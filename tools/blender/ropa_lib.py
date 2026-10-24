@@ -229,7 +229,7 @@ def preview(objs, name, views=(('frente', (1.1, -3.2, 1.0)), ('espalda', (-1.6, 
     sc = bpy.context.scene
     sc.render.engine = 'BLENDER_WORKBENCH'
     sc.display.shading.light = 'STUDIO'; sc.display.shading.color_type = 'MATERIAL'
-    sc.render.resolution_x = 520; sc.render.resolution_y = 640; sc.render.film_transparent = False
+    sc.render.resolution_x = 520; sc.render.resolution_y = 640; sc.render.resolution_percentage = 100; sc.render.film_transparent = False
     sc.world = sc.world or bpy.data.worlds.new('W')
     cam = bpy.data.objects.get('CamPrev')
     if not cam:

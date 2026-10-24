@@ -111,12 +111,23 @@
   // Material por nombre (ver tools/blender/ropa_lib.py): TELA = color/estampado elegido, ACENTO = 2.º color, PAJA = paja
   // (three r128: una malla con piel necesita material.skinning = true; si no, se dibuja quieta en pose T)
   const skinCache = {};
+  // Modelo de Blender para la pieza y estilo: def.glb es un nombre o un mapa estilo → nombre (sin entrada = versión simple)
+  function glbName(def, style) {
+    if (!def.glb) return null;
+    if (typeof def.glb === 'string') return def.glb;
+    return def.glb[style] || def.glb['*'] || null;
+  }
   function ropaMaterial(m, color, style) {
     const W = window.AVWardrobe;
     let base = m, key = null;
-    if (/^TELA/.test(m.name) && W) { base = W.cloth(style, color); key = 'tela' + style + color; }
+    if (/^TELA/.test(m.name) && W) {
+      // la gorra criolla lleva la copa de paja; la playera, estampado tropical
+      const st = style === 'criolla' ? 'paja' : style === 'playera' ? 'caribe' : style;
+      base = W.cloth(st, st === 'paja' ? '#d9b56a' : color); key = 'tela' + st + color;
+    }
     else if (/^PAJA/.test(m.name) && W) { base = W.cloth('paja', '#d9b56a'); key = 'paja'; }
     else if (/^ACENTO/.test(m.name)) { base = m.clone(); base.color.set(color); }
+    else if (/^VIDRIO/.test(m.name)) { base = m.clone(); base.transparent = true; base.opacity = Math.min(base.opacity, 0.55); base.depthWrite = false; }
     if (key && skinCache[key]) return skinCache[key];
     const s = base === m ? m.clone() : base.clone();
     s.skinning = true;
@@ -500,7 +511,7 @@
     }
     // Engancha las mallas con piel de una pieza de Blender al esqueleto de este personaje (huesos por nombre)
     _mountRopa(def, want) {
-      const gltf = ropaCache[def.glb];
+      const gltf = ropaCache[glbName(def, want.style)];
       const sceneCopy = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(gltf.scene) : gltf.scene.clone(true);
       let body = null; this.root.traverse(o => { if (o.isSkinnedMesh && !o.userData.isAccessory && !body) body = o; });
       if (!body) return null;
@@ -531,12 +542,13 @@
           const objects = [];
           // Pieza modelada en Blender (con piel sobre el mismo esqueleto): si ya está cargada se usa;
           // si no, se monta la versión simple y se cambia sola cuando termine de cargar.
-          if (def.glb && ropaCache[def.glb] && ropaCache[def.glb] !== 'error') {
+          const gname = glbName(def, want.style);
+          if (gname && ropaCache[gname] && ropaCache[gname] !== 'error' && !ropaCache[gname].then) {
             const objs = this._mountRopa(def, want);
             if (objs) { this.mounted[slot] = { id: want.id, color: want.color, style: want.style, objects: objs, blender: true }; continue; }
           }
-          if (def.glb && !ropaCache[def.glb]) {
-            loadRopa(def.glb).then(() => {
+          if (gname && !ropaCache[gname]) {
+            loadRopa(gname).then(() => {
               const cur = this.look.accessories[slot], m = this.mounted[slot];
               if (cur && m && cur.id === want.id && cur.style === want.style && cur.color === want.color && !m.blender) {
                 for (const obj of m.objects) obj.parent && obj.parent.remove(obj);
