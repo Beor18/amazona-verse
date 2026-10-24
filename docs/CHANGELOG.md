@@ -60,3 +60,12 @@
 - Hablar: el pico se mueve con ritmo de sílabas, la cabeza asiente y las manos gesticulan; en diálogos el tono de la frase elige la cara; si habla otro, Vittata escucha con curiosidad.
 - Mira alrededor cuando está quieta. Hombros/codos/dedos con vida; cintura gira con el paso y el pecho contrarresta.
 - Pruebas: 45/45 y 10/10.
+
+## 2026-10-24 · Volar, nadar y gestos
+- Volar: 3.er toque de salto en el aire, V o botón Volar. Espacio sube, C baja, soltar desciende suave; 12 m/s; techo 26 m.
+  El cuerpo se tumba según la velocidad, alas en aleteo de vuelo, cámara más alta y lejos. Los obstáculos tienen altura: se pasa volando por encima.
+- Nadar: el río (y la zona inundada) se nada donde cubre más de 0,7 m. Flota medio hundida, brazadas de crol y pataleo,
+  C bucea al fondo, soltar vuelve a flotar, Espacio salta fuera. Salpicadura al entrar (anillos + gotas) y ondas al nadar. Luma flota también.
+- Gestos (teclas 1–7 o botón Gestos): Saludar, Celebrar (clips), Bailar, Idea (con foco), Enojarse (pisotón), Pelear (guardia y golpes), Molestia (brazos cruzados y zapateo).
+  Nuevas caras: idea, pelea, molestia. Un gesto se cancela al moverse, saltar, volar o abrir un diálogo.
+- Medido: despegue 6,7 m en 1 s; vuelo 22 m en 2 s; nado 3,9 m/s; buceo hasta el fondo y regreso a la superficie. Pruebas 45/45 y 10/10.

@@ -543,6 +543,69 @@
       refreshCompanion();
     } catch (e) { failed3D = true; }
   }
+  // Gestos (teclas 1–7 o botón Gestos): clips del modelo o poses procedurales de character.js
+  const EMOTES = {
+    saludar: { label: 'Saludar', clip: 'Welcome', face: 'happy', secs: 2 },
+    celebrar: { label: 'Celebrar', clip: 'Celebrate', face: 'happy', secs: 1.6 },
+    bailar: { label: 'Bailar', pose: 'dance', face: 'happy', secs: 8 },
+    idea: { label: 'Idea', pose: 'idea', face: 'idea', secs: 2.2 },
+    enojo: { label: 'Enojarse', pose: 'angry', face: 'angry', secs: 2.6 },
+    pelea: { label: 'Pelear', pose: 'fight', face: 'fight', secs: 6 },
+    molestia: { label: 'Molestia', pose: 'annoyed', face: 'annoyed', secs: 4 },
+  };
+  const EMOTE_KEYS = Object.keys(EMOTES);
+  const emote = { name: '', until: 0 };
+  function playEmote(name) {
+    if (!EMOTES[name] || dialogOpen() || cardOpen || overlayOpen() || MOVE.flying) return;
+    if (S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01) return;
+    emote.name = name; emote.until = performance.now() + EMOTES[name].secs * 1000;
+    if (player3D && EMOTES[name].clip) { player3D.play(EMOTES[name].clip, true); anim3D.player = 'emote'; }
+  }
+  function stopEmote() { emote.name = ''; anim3D.player = ''; }
+  // Foco de "idea" sobre la cabeza
+  const ideaBulb = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    const grd = g.createRadialGradient(64, 54, 6, 64, 54, 60); grd.addColorStop(0, 'rgba(255,240,150,1)'); grd.addColorStop(1, 'rgba(255,220,80,0)');
+    g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+    g.fillStyle = '#ffe36b'; g.beginPath(); g.arc(64, 52, 26, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#9aa0a3'; g.fillRect(52, 76, 24, 16); g.fillStyle = '#6b7073'; g.fillRect(52, 82, 24, 3); g.fillRect(52, 88, 24, 3);
+    g.strokeStyle = '#fff6c8'; g.lineWidth = 4; g.beginPath(); g.arc(56, 46, 10, Math.PI, Math.PI * 1.5); g.stroke();
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+    s.scale.set(0.9, 0.9, 1); s.visible = false; scene.add(s); return s;
+  })();
+  // Efectos de agua: anillos que se expanden (salpicadura y ondas) y gotas con gravedad
+  const fx = [];
+  function ringFx(x, y, z, size, life, op) {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.5, 32), new THREE.MeshBasicMaterial({ color: '#e8f6ff', transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, y + 0.03, z); scene.add(m);
+    fx.push({ m, t: 0, life, size, op });
+  }
+  function ripple(x, y, z) { ringFx(x, y, z, 1.2, 0.9, 0.4); }
+  function splash(x, y, z, s) {
+    ringFx(x, y, z, 2.2 * s, 0.75, 0.75); ringFx(x, y, z, 1.2 * s, 0.5, 0.55);
+    const n = 18, pos = new Float32Array(n * 3), vel = [];
+    for (let i = 0; i < n; i++) {
+      pos.set([x, y + 0.1, z], i * 3);
+      const a = Math.random() * Math.PI * 2, sp = (1.5 + Math.random() * 2) * s;
+      vel.push([Math.cos(a) * sp, (3 + Math.random() * 3) * s, Math.sin(a) * sp]);
+    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const p = new THREE.Points(g, new THREE.PointsMaterial({ color: '#dff3ff', size: 0.16, transparent: true, opacity: 0.9, depthWrite: false }));
+    scene.add(p); fx.push({ m: p, t: 0, life: 0.9, vel, y0: y, op: 0.9 });
+  }
+  function camDist() { return MOVE.flying ? 9.5 : 7.5; }
+  function updateFx(dt) {
+    for (let i = fx.length - 1; i >= 0; i--) {
+      const f = fx[i]; f.t += dt; const k = f.t / f.life;
+      if (f.vel) {
+        const a = f.m.geometry.attributes.position;
+        f.vel.forEach((v, j) => { v[1] -= 14 * dt; a.setXYZ(j, a.getX(j) + v[0] * dt, Math.max(f.y0, a.getY(j) + v[1] * dt), a.getZ(j) + v[2] * dt); });
+        a.needsUpdate = true;
+      } else f.m.scale.setScalar(0.4 + k * f.size * 2);
+      f.m.material.opacity = (1 - k) * f.op;
+      if (k >= 1) { scene.remove(f.m); f.m.geometry.dispose(); f.m.material.dispose(); fx.splice(i, 1); }
+    }
+  }
   function sync3D(dt, moving, snap) {
     if (player3D) {
       player3D.root.position.set(S.pos.x, S.pos.y, S.pos.z);
@@ -552,20 +615,31 @@
       r.y = snap ? want3 : r.y + dA * Math.min(1, dt * 14);
       // Inclinación al correr / impulsarse y aplastón al aterrizar
       const sp = MOVE.speed || 0, base = player3D.root.userData.s || (player3D.root.userData.s = player3D.root.scale.x);
-      r.x = Math.min(0.35, sp / RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0));
+      // Volando: el cuerpo se tumba hacia adelante según la velocidad, y se endereza al subir
+      const flyLean = MOVE.flying ? 0.2 + Math.min(1, sp / FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 : 0;
+      r.x += ((MOVE.flying ? flyLean : MOVE.swimming ? 0.35 + Math.min(1, sp / SWIM_SPEED) * 0.35 : Math.min(0.35, sp / RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))) - r.x) * Math.min(1, dt * 8);
       const sq = MOVE.land > 0 ? Math.sin(MOVE.land / 0.2 * Math.PI) * 0.18 : 0;
       player3D.root.scale.set(base * (1 + sq * 0.5), base * (1 - sq), base * (1 + sq * 0.5));
-      const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01;
-      const want = moving && !air ? 'Walk' : 'Idle';
-      if (anim3D.player !== want && player3D.play(want)) anim3D.player = want;
-      if (player3D.current) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
-      player3D.gait = air || !moving ? 0 : sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1;
+      const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01 && !MOVE.swimming;
+      const want = moving && !air && !MOVE.swimming ? 'Walk' : 'Idle';
+      const clipEmote = emote.name && EMOTES[emote.name].clip && !moving && !air;
+      if (!clipEmote && anim3D.player !== want && player3D.play(want)) anim3D.player = want;
+      if (player3D.current && !clipEmote) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
+      player3D.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1; // nadando patalea siempre
       player3D.airborne = air;
+      player3D.swimming = MOVE.swimming;
       // Habla y expresión en diálogos; si escucha a otro, atiende con curiosidad
       const inDialog = dialogOpen(), mine = inDialog && talk.who === 'Vittata';
       player3D.talking = mine && performance.now() < talk.until;
-      player3D.expression = !inDialog ? (MOVE.land > 0 ? 'surprised' : 'neutral') : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
-      player3D.wingMode = MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+      // Un gesto se cancela al moverse, saltar, volar o abrir un diálogo
+      if (emote.name && (moving || air || inDialog)) stopEmote();
+      if (emote.name && performance.now() > emote.until) stopEmote();
+      player3D.emote = emote.name && EMOTES[emote.name].pose || null;
+      player3D.expression = emote.name ? EMOTES[emote.name].face
+        : !inDialog ? (MOVE.land > 0 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral') : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
+      player3D.wingMode = MOVE.swimming ? 'swim' : MOVE.flying ? (jumpHeld ? 'flap' : 'fly') : MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+      ideaBulb.visible = emote.name === 'idea';
+      if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
       player3D.update(dt);
     }
     if (companion3D && companion3D.root.visible) {
@@ -574,7 +648,7 @@
       const dx = (tx - companionPos.x) * k, dz = (tz - companionPos.z) * k;
       companionPos.x += dx; companionPos.z += dz;
       for (const c of colliders) pushOut(companionPos, c, 0.4);
-      companion3D.root.position.set(companionPos.x, surfaceY(companionPos.x, companionPos.z), companionPos.z);
+      companion3D.root.position.set(companionPos.x, Math.max(surfaceY(companionPos.x, companionPos.z), waterLevelAt(companionPos.x) - SWIM_DEPTH), companionPos.z);
       const sp = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
       if (sp > 0.6) companion3D.root.rotation.y = Math.atan2(dx, dz);
       const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
@@ -1426,6 +1500,8 @@
     keys.add(e.key.toLowerCase());
     if (e.key === ' ') { jumpHeld = true; if (!e.repeat) tryJump(); e.preventDefault(); }
     if ((e.key === 'f' || e.key === 'F') && !e.repeat) tryDash();
+    if ((e.key === 'v' || e.key === 'V') && !e.repeat) toggleFly();
+    if (/^[1-7]$/.test(e.key) && !e.repeat) playEmote(EMOTE_KEYS[+e.key - 1]);
     if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') action();
     if (e.key === 'Escape') { if (build) cancelBuild(); hideCard(); }
   });
@@ -1450,6 +1526,12 @@
   jumpBtn.addEventListener('pointerup', () => { jumpHeld = false; });
   jumpBtn.addEventListener('pointerleave', () => { jumpHeld = false; });
   $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); tryDash(); });
+  $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); toggleFly(); });
+  // Menú de gestos (celular y ratón)
+  const emoteMenu = $('emotes');
+  emoteMenu.innerHTML = EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${i + 1} · ${EMOTES[k].label}</button>`).join('');
+  emoteMenu.addEventListener('click', e => { const b = e.target.closest('[data-emote]'); if (!b) return; emoteMenu.hidden = true; playEmote(b.dataset.emote); });
+  $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; });
   $('b-act').addEventListener('click', action);
 
   let dragId = null, dragX = 0;
@@ -1472,11 +1554,27 @@
     if (it) it.use();
   }
   // Movimiento de acción: velocidad con aceleración, correr, doble salto con aleteo, impulso y tiempo de coyote
-  const MOVE = { vx: 0, vz: 0, airJumps: 0, coyote: 0, dashT: 0, dashCd: 0, airDash: true, land: 0, wasAir: false };
+  const MOVE = { vx: 0, vz: 0, airJumps: 0, coyote: 0, dashT: 0, dashCd: 0, airDash: true, land: 0, wasAir: false, flying: false };
+  // Vuelo: tercer toque de salto en el aire, o V / botón Volar. Mantener salto sube, C baja, soltar desciende suave.
+  const FLY_SPEED = 12, FLY_CEIL = 26;
+  // Nado: la cotorra flota con el cuerpo medio hundido
+  const SWIM_SPEED = 4.5, SWIM_DEPTH = 0.55;
+  function waterLevelAt(x) { return Math.abs(x - water.position.x) < 16 ? S.water : -Infinity; }
   function tryJump() {
+    if (MOVE.flying) return;
+    if (MOVE.swimming) { S.vy = 7; MOVE.swimming = false; splash(S.pos.x, S.water, S.pos.z, 0.8); return; }
     if (S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 || MOVE.coyote > 0) { S.vy = 7.5; MOVE.coyote = 0; MOVE.airJumps = 1; return; }
-    if (MOVE.airJumps > 0) { S.vy = 6.8; MOVE.airJumps--; }
+    if (MOVE.airJumps > 0) { S.vy = 6.8; MOVE.airJumps--; return; }
+    startFlying();
   }
+  function startFlying() {
+    if (dialogOpen() || cardOpen || overlayOpen()) return;
+    MOVE.flying = true;
+    if (S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01) S.vy = 6; else S.vy = Math.max(S.vy, 2);
+  }
+  function toggleFly() { if (MOVE.flying) MOVE.flying = false; else startFlying(); }
+  // Altura de cada obstáculo para poder pasar volando por encima
+  const KIND_H = { taller: 3.8, post: 1.3, obj: 1.6, bench: 1, refuge: 2.6, npc: 2 };
   function tryDash() {
     if (MOVE.dashCd > 0 || dialogOpen() || cardOpen || overlayOpen()) return;
     const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01;
@@ -1487,6 +1585,7 @@
   // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz)
   function pushOut(p, c, rad) {
     if (c.r <= 0 || (c.when && !c.when())) return;
+    if (p.y != null && p.y - height(c.x, c.z) > (c.h != null ? c.h : c.kind === 'tree' ? c.r * 9 : KIND_H[c.kind] || 2)) return;
     if (c.hx) {
       const qx = Math.max(c.x - c.hx, Math.min(c.x + c.hx, p.x)), qz = Math.max(c.z - c.hz, Math.min(c.z + c.hz, p.z));
       const dx = p.x - qx, dz = p.z - qz, d = Math.hypot(dx, dz);
@@ -1525,7 +1624,7 @@
       const mx = rx * ix - fx * iz, mz = rz * ix - fz * iz, ml = Math.hypot(mx, mz);
       // Shift (o el joystick a fondo) corre
       const run = keys.has('shift') || Math.hypot(stick.x, stick.y) > 0.92;
-      const sp = (run ? RUN_SPEED : SPEED) * (ml > 0 ? 1 / Math.max(1, ml) : 0) * Math.max(mag, 0.35);
+      const sp = (MOVE.flying ? FLY_SPEED : MOVE.swimming ? SWIM_SPEED * (run ? 1.4 : 1) : run ? RUN_SPEED : SPEED) * (ml > 0 ? 1 / Math.max(1, ml) : 0) * Math.max(mag, 0.35);
       tx = mx * sp; tz = mz * sp;
       if (ml > 0.01) S.facing = { x: mx / ml, z: mz / ml };
       const map = player.material.map;
@@ -1537,7 +1636,7 @@
       MOVE.dashT -= dt;
       MOVE.vx = S.facing.x * DASH_SPEED; MOVE.vz = S.facing.z * DASH_SPEED;
     } else {
-      const acc = 1 - Math.exp(-dt * (onGround ? (tx || tz ? 14 : 18) : 5));
+      const acc = 1 - Math.exp(-dt * (onGround ? (tx || tz ? 14 : 18) : MOVE.flying || MOVE.swimming ? 6 : 5));
       MOVE.vx += (tx - MOVE.vx) * acc; MOVE.vz += (tz - MOVE.vz) * acc;
     }
     S.pos.x += MOVE.vx * dt; S.pos.z += MOVE.vz * dt;
@@ -1554,12 +1653,31 @@
     S.pos.x = Math.max(-WORLD, Math.min(WORLD, S.pos.x));
     S.pos.z = Math.max(-WORLD, Math.min(WORLD, S.pos.z));
     const ground = surfaceY(S.pos.x, S.pos.z);
-    const gliding = jumpHeld && S.vy < 0;
-    S.vy -= (gliding ? 6 : 22) * dt;
-    if (gliding) S.vy = Math.max(S.vy, -2.2);
+    // Agua: el río (franja del plano de agua) es nadable donde cubre más de 0,7 m
+    const wY = waterLevelAt(S.pos.x), deep = wY - ground > 0.7;
+    const wasSwim = MOVE.swimming;
+    MOVE.swimming = deep && !MOVE.flying && S.pos.y <= wY - SWIM_DEPTH + 0.15;
+    if (MOVE.swimming && !wasSwim) splash(S.pos.x, wY, S.pos.z, Math.min(1.6, 0.6 + Math.abs(S.vy) * 0.12));
+    if (MOVE.swimming) {
+      // Flota en la superficie; mantener C bucea hasta el fondo; al soltar sube
+      const target = keys.has('c') && !busy ? ground + 0.25 : wY - SWIM_DEPTH;
+      S.vy += ((target - S.pos.y) * 3 - S.vy) * (1 - Math.exp(-dt * 5));
+      MOVE.airJumps = 1; MOVE.airDash = true;
+      if (moving && (MOVE.ripple = (MOVE.ripple || 0) - dt) <= 0) { MOVE.ripple = 0.35; ripple(S.pos.x, wY, S.pos.z); }
+    } else if (MOVE.flying) {
+      // Volando: sin gravedad; sube con salto, baja con C, si no desciende despacio
+      const want = jumpHeld && !busy ? 5.5 : keys.has('c') ? -7 : -1.1;
+      S.vy += (want - S.vy) * (1 - Math.exp(-dt * 4));
+      if (S.pos.y > ground + FLY_CEIL) S.vy = Math.min(S.vy, 0);
+    } else {
+      const gliding = jumpHeld && S.vy < 0;
+      S.vy -= (gliding ? 6 : 22) * dt;
+      if (gliding) S.vy = Math.max(S.vy, -2.2);
+    }
     S.pos.y = Math.max(ground, (S.pos.y || ground) + S.vy * dt);
     if (S.pos.y <= ground) {
       if (MOVE.wasAir && S.vy < -4) MOVE.land = 0.2; // aterrizaje fuerte: pequeño aplastón
+      if (MOVE.flying && S.vy <= 0) MOVE.flying = false; // tocar suelo bajando termina el vuelo
       S.pos.y = ground; S.vy = 0;
       MOVE.coyote = 0.12; MOVE.airJumps = 1; MOVE.airDash = true; MOVE.wasAir = false;
     } else { MOVE.coyote = Math.max(0, MOVE.coyote - dt); MOVE.wasAir = true; }
@@ -1589,7 +1707,7 @@
   let t = 0;
   const camPos = new THREE.Vector3();
   function placeCamera(snap) {
-    camPos.set(S.pos.x + Math.sin(camYaw) * 7.5, S.pos.y + 4.2, S.pos.z + Math.cos(camYaw) * 7.5);
+    camPos.set(S.pos.x + Math.sin(camYaw) * camDist(), S.pos.y + 4.2 + (MOVE.flying ? 1.6 : 0), S.pos.z + Math.cos(camYaw) * camDist());
     if (snap) {
       camera.position.copy(camPos);
       if (companion.visible) {
@@ -1606,7 +1724,7 @@
   function render(dt, moving) {
     t += dt;
     const bob = moving && S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
-    camPos.set(S.pos.x + Math.sin(camYaw) * 7.5, S.pos.y + 4.2, S.pos.z + Math.cos(camYaw) * 7.5);
+    camPos.set(S.pos.x + Math.sin(camYaw) * camDist(), S.pos.y + 4.2 + (MOVE.flying ? 1.6 : 0), S.pos.z + Math.cos(camYaw) * camDist());
     camera.position.lerp(camPos, Math.min(1, dt * 6));
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
     player.material.rotation = jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
@@ -1623,6 +1741,7 @@
     sync3D(dt, moving, false);
     for (const r of RESOURCES) if (resMeshes[r.id].visible) resMeshes[r.id].rotation.y += dt * 0.6;
     tAgua.offset.y = t * 0.04; tAgua.offset.x = Math.sin(t * 0.3) * 0.05;
+    updateFx(dt);
     if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25);
     if (rain.visible) {
       const a = rain.geometry.attributes.position;

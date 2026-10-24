@@ -235,10 +235,13 @@
       if (!L || !R) return;
       const t = this.wingT = (this.wingT || 0) + dt;
       const mode = this.wingMode || 'idle';
-      const open = mode === 'flap' ? 0.8 + 0.6 * Math.sin(t * 20)
+      const open = mode === 'swim' ? 0.45 + 0.35 * Math.sin(t * 7)
+        : mode === 'fly' ? 0.85 + 0.6 * Math.sin(t * 12)
+        : mode === 'flap' ? 0.8 + 0.6 * Math.sin(t * 20)
         : mode === 'glide' ? 1.2 + 0.08 * Math.sin(t * 9)
         : mode === 'walk' ? 0.14 + 0.06 * Math.sin(t * 11) : 0.05 * Math.sin(t * 2.2);
-      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : 0;
+      // Al nadar: brazadas alternas tipo crol
+      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : mode === 'swim' ? 0.75 * Math.sin(t * 7) : 0;
       const k = 1 - Math.exp(-dt * 12);
       this.wOpen = (this.wOpen || 0) + (open - (this.wOpen || 0)) * k;
       this.wSwing = (this.wSwing || 0) + (swing - (this.wSwing || 0)) * k;
@@ -246,6 +249,76 @@
       this.rot(L, "x", this.wSwing); this.rot(R, "x", -this.wSwing);
       this.locomotion(dt, k);
       this.face(dt);
+      this.emotePose(dt);
+    }
+    // Gestos de cuerpo entero (emote: 'dance' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
+    // Hombro: -X adelanta; abrir hacia arriba/afuera es +Z en el izquierdo y -Z en el derecho. Codo +X dobla.
+    emotePose(dt) {
+      const B = this.bones;
+      if (this.emote !== this.emoteLast) { if (this.emote) { this.emoteT = 0; this.emoteName = this.emote; } this.emoteLast = this.emote; }
+      this.eW = (this.eW || 0) + ((this.emote ? 1 : 0) - (this.eW || 0)) * (1 - Math.exp(-dt * 8));
+      const w = this.eW;
+      if (w < 0.01 || !this.emoteName) return;
+      const t = this.emoteT = (this.emoteT || 0) + dt, P = Math.PI * 2;
+      const arm = (side, x, zOut, elbow) => {
+        const sh = B[side === 'L' ? 'armL1' : 'armL1001'], el = B[side === 'L' ? 'armL2' : 'armL2001'];
+        if (!sh || !el) return;
+        this.rot(sh, 'x', x * w); this.rot(sh, 'z', (side === 'L' ? zOut : -zOut) * w); this.rot(el, 'x', elbow * w);
+      };
+      const leg = (side, hip, knee, ankle) => {
+        const s = side === 'L' ? '' : '001';
+        if (!B['pieL1' + s]) return;
+        this.rot(B['pieL1' + s], 'x', hip * w); this.rot(B['pieL2' + s], 'x', knee * w); this.rot(B['pieL3' + s], 'x', ankle * w);
+      };
+      const body = (lean, tilt, twist) => { if (B.espalda1) { this.rot(B.espalda1, 'x', lean * w); this.rot(B.espalda1, 'z', tilt * w); this.rot(B.espalda1, 'y', twist * w); } };
+      const head = (x, y, z) => { if (B.cabeza) { this.rot(B.cabeza, 'x', x * w); this.rot(B.cabeza, 'y', y * w); this.rot(B.cabeza, 'z', z * w); } };
+      const beak = v => { if (B.pico) this.rot(B.pico, 'x', v * w); };
+      const lift = v => { this.root.position.y += v * w * this.root.scale.y; };
+      switch (this.emoteName) {
+        case 'dance': {
+          const b = t * P * 2, h = Math.sin(b / 2);
+          body(0.05, h * 0.22, h * 0.28); lift((1 - Math.cos(b)) * 0.03);
+          arm('L', -0.4 * h, 0.9 + 0.5 * h, 0.7 + 0.4 * Math.sin(b));
+          arm('R', 0.4 * h, 0.9 - 0.5 * h, 0.7 - 0.4 * Math.sin(b));
+          leg('L', -0.2 * Math.max(0, h), -0.6 * Math.max(0, h), 0.3 * Math.max(0, h));
+          leg('R', -0.2 * Math.max(0, -h), -0.6 * Math.max(0, -h), 0.3 * Math.max(0, -h));
+          head(Math.sin(b) * 0.08, 0, h * 0.18); beak(0.12 * Math.max(0, Math.sin(b * 1.5)));
+          break;
+        }
+        case 'fight': {
+          const bounce = Math.sin(t * P * 2.5), cyc = t % 1.4, punch = cyc < 0.18 ? Math.sin(cyc / 0.18 * Math.PI) : 0, side = Math.floor(t / 1.4) % 2;
+          body(0.18, 0, 0.3); lift(-0.03 + bounce * 0.015);
+          leg('L', -0.15, -0.3, 0.3); leg('R', -0.15, -0.3, 0.3);
+          arm('L', -0.9 - (side === 0 ? 0.5 * punch : 0), 0.15, 1.6 - (side === 0 ? 1.3 * punch : 0));
+          arm('R', -0.9 - (side === 1 ? 0.5 * punch : 0), 0.15, 1.6 - (side === 1 ? 1.3 * punch : 0));
+          head(0.12, -0.15, 0); beak(punch * 0.12);
+          break;
+        }
+        case 'angry': {
+          const st = t % 0.55, up = st < 0.3 ? Math.sin(st / 0.3 * Math.PI) : 0, stomp = st > 0.3 && st < 0.38 ? 1 : 0;
+          body(0.15, 0, 0); lift(-stomp * 0.015);
+          leg('L', -0.25 * up, -0.9 * up, 0.4 * up);
+          arm('L', -0.15, -0.15, 0.6); arm('R', -0.15, -0.15, 0.6);
+          head(0.2, Math.sin(t * 25) * 0.07 * (t < 0.6 ? 1 : 0.3), 0); beak(0.16 * Math.max(0, Math.sin(t * 16)));
+          break;
+        }
+        case 'annoyed': {
+          const tap = Math.max(0, Math.sin(t * P * 3));
+          arm('L', -0.7, -0.35, 1.9); arm('R', -0.7, -0.35, 1.9);
+          leg('R', 0, -0.1 * tap, 0.35 * tap);
+          body(0, 0, 0.15); head(0.04, Math.sin(t * 1.5) * 0.2, 0.15);
+          beak(t % 2 < 0.4 ? 0.08 : 0);
+          break;
+        }
+        case 'idea': {
+          const up = Math.min(1, t / 0.3);
+          lift(0.08 * Math.sin(Math.min(1, t / 0.35) * Math.PI));
+          arm('L', -1.9 * up, 0.2, 0.3); arm('R', -0.1, 0, 0.3);
+          body(-0.08, 0, 0); head(-0.2 * up, 0, 0.1);
+          for (const n of ['armL2002', 'armL2003']) if (B[n]) this.rot(B[n], 'x', -0.4 * w * up); // dedo índice estirado
+          break;
+        }
+      }
     }
     // Cara y manos: parpadeo, expresión (párpados, pico, cabeza), hablar, mirar alrededor, gestos y dedos.
     // Ejes medidos: pico +X abre; cabeza X asiente, Y gira, Z ladea; codo +X dobla; dedos +X cierran.
@@ -254,6 +327,7 @@
       const EX = {
         neutral: [0.05, 0, 0, 0], happy: [0.42, 0.12, -0.06, 0.14], surprised: [0, 0.3, -0.16, 0],
         sad: [0.55, 0, 0.22, -0.1], curious: [0.22, 0.05, 0.04, 0.26], angry: [0.48, 0.06, 0.12, 0],
+        idea: [0, 0.18, -0.2, 0], fight: [0.38, 0.05, 0.14, 0], annoyed: [0.52, 0, 0.04, 0.16],
       };
       const e = EX[this.expression] || EX.neutral;
       const ex = this.ex || (this.ex = e.slice());
@@ -324,6 +398,8 @@
       if (B.espalda1 && B.espalda2) { this.rot(B.espalda1, "y", s * 0.14 * w); this.rot(B.espalda2, "y", -s * 0.12 * w); }
       // Codos: más doblados al correr y cuando el brazo va adelante
       for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", (run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w);
+      // Nadando: la cabeza mira al frente aunque el cuerpo vaya tumbado, y no hay rebote de pasos
+      if (this.swimming) { if (B.cabeza) this.rot(B.cabeza, "x", -0.5); return; }
       // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
       this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
     }

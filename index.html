@@ -62,12 +62,14 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #knob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(127,211,143,.7); pointer-events: none; }
 #acts { right: calc(max(12px, env(safe-area-inset-right, 0px)) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); display: flex; gap: 12px; align-items: flex-end; }
 .round { width: 70px; height: 70px; border-radius: 50%; font-size: 14px; padding: 0; }
+#emotes { right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 118px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-width: min(320px, calc(100% - 32px)); }
+#emotes .btn { font-size: 13px; padding: 8px 10px; text-align: left; }
 .round.big { width: 84px; height: 84px; }
 #end { inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16,36,28,.82); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
 #end .panel { max-width: 440px; text-align: center; padding: 22px; }
 #end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
 #tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
-@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto y planear · F impulso · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
+@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto, planear y volar (3.er toque o V; Espacio sube, C baja) · F impulso · 1–7 gestos · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
 @media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
 .note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -142,6 +144,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 </div>
 
 <div id="sys" class="hud">
+  <button class="btn ghost" id="b-emotes" type="button">Gestos</button>
   <button class="btn ghost" id="b-char" type="button">Mi personaje</button>
   <button class="btn ghost" id="b-save" type="button">Guardar</button>
   <button class="btn ghost" id="b-load" type="button">Cargar</button>
@@ -163,7 +166,9 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 </div>
 
 <div id="stick" class="hud" aria-hidden="true"><div id="knob"></div></div>
+<div id="emotes" class="hud" hidden></div>
 <div id="acts" class="hud">
+  <button class="btn round" id="b-fly" type="button">Volar</button>
   <button class="btn round" id="b-dash" type="button">Impulso</button>
   <button class="btn round" id="b-jump" type="button">Saltar</button>
   <button class="btn round big" id="b-act" type="button">Acción</button>
