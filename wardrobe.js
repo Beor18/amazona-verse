@@ -394,7 +394,7 @@
     { id: 'sombrero2', slot: 'head', mount: 'mount_head_top', name: 'Sombreros', colors: ['#8a6a3a', '#5a3a22', '#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'], styles: [['paja', 'De paja'], ['tropical', 'Tropical'], ['vaquero', 'Vaquero'], ['pescador', 'Pescador']], build: brimHat },
     { id: 'casco', slot: 'head', mount: 'mount_head_top', name: 'Cascos', colors: ['#f2c21a', '#f2a03d', '#f4f4f0', '#3d8fb0', '#d6403a'], styles: [['constructor', 'Constructor'], ['marinero', 'Marinero'], ['pirata', 'Pirata']], build: hardHat },
     { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo']], build: shades },
-    { id: 'camisa', slot: 'torso', fit: shirtParts, name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
+    { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
       styles: [['liso', 'Lisa'], ['pr', 'Bandera PR'], ['hawaiana', 'Hawaiana'], ['guayabera', 'Guayabera'], ['deportiva', 'Deportiva 787'], ['camuflaje', 'Camuflaje'], ['chaleco', 'Chaleco explorador']] },
     { id: 'pantalon', slot: 'legs', fit: pantsParts, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d'],
       styles: [['liso', 'Corto'], ['flores', 'De playa'], ['cargo', 'Cargo'], ['camuflaje', 'Militar'], ['mezclilla', 'Mezclilla largo']] },
@@ -403,5 +403,5 @@
     { id: 'equipo', slot: 'back', mount: 'mount_back', name: 'Equipo', colors: ['#3d8fb0', '#d6403a', '#2f8f4e', '#9aa0a3'], styles: [['mochila_pr', 'Mochila PR'], ['cuatro', 'Cuatro puertorriqueño'], ['tanques', 'Tanques de oxígeno'], ['jetpack', 'Jetpack ligero']], build: backItem },
     { id: 'mano', slot: 'hand', fit: handParts, name: 'En la mano', colors: ['#d6403a', '#f2a03d', '#2f8f4e', '#3d8fb0'], styles: [['bandera', 'Bandera de PR'], ['maracas', 'Maracas'], ['linterna', 'Linterna'], ['martillo', 'Martillo'], ['mapa', 'Mapa'], ['coqui', 'Coquí de peluche']] },
   ];
-  window.AVWardrobe = { defs, pattern, prFlag, SLOTS_EXTRA: ['torso', 'legs', 'feet', 'hand'] };
+  window.AVWardrobe = { defs, pattern, prFlag, cloth, SLOTS_EXTRA: ['torso', 'legs', 'feet', 'hand'] };
 })();

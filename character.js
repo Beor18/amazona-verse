@@ -87,6 +87,42 @@
     return gltfPromise;
   }
 
+  // ---------- Ropa modelada en Blender (assets/models/ropa/<nombre>.glb, o su copia base64 en <nombre>_glb.js) ----------
+  const ropaCache = {};
+  function loadRopa(name) {
+    if (ropaCache[name] && ropaCache[name].then) return ropaCache[name];
+    const p = new Promise((resolve, reject) => {
+      const fromB64 = () => {
+        const parse = () => {
+          const bin = atob(window.AV_ROPA_B64[name]), buf = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+          new THREE.GLTFLoader().parse(buf.buffer, 'assets/models/ropa/', resolve, reject);
+        };
+        if (window.AV_ROPA_B64 && window.AV_ROPA_B64[name]) { parse(); return; }
+        const sc = document.createElement('script'); sc.src = 'assets/models/ropa/' + name + '_glb.js';
+        sc.onload = parse; sc.onerror = () => reject(new Error('ropa no disponible')); document.head.appendChild(sc);
+      };
+      if (!THREE.GLTFLoader) { reject(new Error('sin GLTFLoader')); return; }
+      new THREE.GLTFLoader().load('assets/models/ropa/' + name + '.glb', resolve, undefined, fromB64);
+    }).then(g => { ropaCache[name] = g; return g; }, () => { ropaCache[name] = 'error'; });
+    ropaCache[name] = p;
+    return p;
+  }
+  // Material por nombre (ver tools/blender/ropa_lib.py): TELA = color/estampado elegido, ACENTO = 2.º color, PAJA = paja
+  // (three r128: una malla con piel necesita material.skinning = true; si no, se dibuja quieta en pose T)
+  const skinCache = {};
+  function ropaMaterial(m, color, style) {
+    const W = window.AVWardrobe;
+    let base = m, key = null;
+    if (/^TELA/.test(m.name) && W) { base = W.cloth(style, color); key = 'tela' + style + color; }
+    else if (/^PAJA/.test(m.name) && W) { base = W.cloth('paja', '#d9b56a'); key = 'paja'; }
+    else if (/^ACENTO/.test(m.name)) { base = m.clone(); base.color.set(color); }
+    if (key && skinCache[key]) return skinCache[key];
+    const s = base === m ? m.clone() : base.clone();
+    s.skinning = true;
+    if (key) skinCache[key] = s;
+    return s;
+  }
   const HEAD_R = () => (mountsInfo && mountsInfo.head_sphere && mountsInfo.head_sphere.radius) || 0.5104;
   // ---------- Geometría de accesorios (piezas simples, materiales reutilizables) ----------
   const matCache = {};
@@ -462,6 +498,26 @@
       const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) m.color.set(hex); else if (m.userData.base) m.color.copy(m.userData.base); };
       set('Patch', s.patch); set('Ring', s.ring); set('WingTip', s.wingTip); set('Beak', s.beak || null);
     }
+    // Engancha las mallas con piel de una pieza de Blender al esqueleto de este personaje (huesos por nombre)
+    _mountRopa(def, want) {
+      const gltf = ropaCache[def.glb];
+      const sceneCopy = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(gltf.scene) : gltf.scene.clone(true);
+      let body = null; this.root.traverse(o => { if (o.isSkinnedMesh && !o.userData.isAccessory && !body) body = o; });
+      if (!body) return null;
+      const out = [];
+      sceneCopy.traverse(o => { if (o.isSkinnedMesh) out.push(o); });
+      for (const mesh of out) {
+        const bones = mesh.skeleton.bones.map(b => this.bones[b.name]);
+        if (bones.some(b => !b)) return null;
+        mesh.bind(new THREE.Skeleton(bones, mesh.skeleton.boneInverses.map(m => m.clone())), mesh.bindMatrix);
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        const swap = mats.map(m => ropaMaterial(m, want.color, want.style));
+        mesh.material = Array.isArray(mesh.material) ? swap : swap[0];
+        mesh.castShadow = true; mesh.frustumCulled = false; mesh.userData.isAccessory = true;
+        body.parent.add(mesh);
+      }
+      return out;
+    }
     // Monta, quita o recolorea cada ranura; el accesorio queda como hijo del hueso y sigue sus animaciones
     applyLook(look) {
       this.look = normalizeLook(look);
@@ -473,6 +529,21 @@
         if (want && !this.mounted[slot]) {
           const def = ACCESSORIES.find(a => a.id === want.id);
           const objects = [];
+          // Pieza modelada en Blender (con piel sobre el mismo esqueleto): si ya está cargada se usa;
+          // si no, se monta la versión simple y se cambia sola cuando termine de cargar.
+          if (def.glb && ropaCache[def.glb] && ropaCache[def.glb] !== 'error') {
+            const objs = this._mountRopa(def, want);
+            if (objs) { this.mounted[slot] = { id: want.id, color: want.color, style: want.style, objects: objs, blender: true }; continue; }
+          }
+          if (def.glb && !ropaCache[def.glb]) {
+            loadRopa(def.glb).then(() => {
+              const cur = this.look.accessories[slot], m = this.mounted[slot];
+              if (cur && m && cur.id === want.id && cur.style === want.style && cur.color === want.color && !m.blender) {
+                for (const obj of m.objects) obj.parent && obj.parent.remove(obj);
+                delete this.mounted[slot]; this.applyLook(this.look);
+              }
+            });
+          }
           if (def.fit) {
             // Cada parte se pasa del espacio del modelo en reposo al espacio de su hueso, y lo sigue al animarse
             for (const part of def.fit(want.color, want.style)) {
