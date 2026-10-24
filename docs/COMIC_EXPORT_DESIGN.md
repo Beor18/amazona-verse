@@ -15,4 +15,4 @@
 - PNG 1080×1520: probado. Archivo inspeccionado en `tests/out/comic.png`.
 - PDF de 1 página (JPEG incrustado, sin librerías): probado. macOS lo abre; página inspeccionada como imagen.
 - Retrato del personaje en PNG 256×256: probado (`tests/out/retrato.png`).
-- Dentro del visor de Claude las descargas están bloqueadas: el PNG se guarda manteniendo presionada la imagen. **No probado todavía en iPhone ni Android reales.**
+- Dentro del visor de Claude se usa la capacidad oficial `downloads` (el visor pide confirmación al jugador). Fuera del visor se usa un enlace de descarga. Si el visor no la permite, el PNG se guarda manteniendo presionada la imagen. **No probado todavía en iPhone ni Android reales, ni el diálogo de descarga del visor.**

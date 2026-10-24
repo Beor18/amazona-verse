@@ -908,7 +908,20 @@
   }
   async function refreshComic() { return renderComic($('comic-canvas')); }
   let lastPdfUrl = null;
-  async function exportComic(format) {
+  // Descargas oficiales del visor de Claude (capacidad "downloads"); fuera del visor queda en null
+  let downloads = null;
+  try { if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloads = d; }).catch(() => {}); } catch (e) { /* sin visor */ }
+  async function offerFile(filename, blob) {
+    if (!downloads) return false;
+    try { await downloads.save({ filename, data: blob }); toast('Archivo guardado'); return true; }
+    catch (e) {
+      if (e && e.code === 'declined') toast('Descarga cancelada');
+      else if (e && e.code === 'rate_limited') toast('Espera un momento y vuelve a intentarlo');
+      else toast('No se pudo guardar aquí. Mantén presionada la imagen para guardarla.');
+      return false;
+    }
+  }
+  async function exportComic(format, fromUser) {
     await refreshComic();
     const cv = $('comic-canvas');
     let url, bytes;
@@ -927,15 +940,20 @@
       $('c-export-note').textContent = 'En iPhone o Android: mantén presionada la imagen y elige Guardar. En computadora: usa el enlace.';
     }
     $('c-export').hidden = false;
+    $('c-download').hidden = !!downloads;
     logEvent('ComicExported', { format, bytes });
     autosave();
+    if (fromUser && downloads) {
+      const blob = format === 'pdf' ? exportComic.lastBlob : await (await fetch(url)).blob();
+      await offerFile('amazona-verse-mi-comic.' + format, blob);
+    }
     return url;
   }
   $('b-comic').onclick = openComic;
   $('c-close').onclick = () => { $('comic').hidden = true; if (S.complete) $('end').hidden = false; };
   $('c-refresh').onclick = refreshComic;
-  $('c-png').onclick = () => exportComic('png');
-  $('c-pdf').onclick = () => exportComic('pdf');
+  $('c-png').onclick = () => exportComic('png', true);
+  $('c-pdf').onclick = () => exportComic('pdf', true);
 
   // ---------- Creador de personaje ----------
   function openCreator(first) {

@@ -5,6 +5,7 @@
 - Eventos con el esquema del directivo V4; migración de partidas v2 → v3; copia de respaldo y de partidas ilegibles.
 - Editor de cómic: portada, diseño (cuadrícula o tira), reordenar y editar viñetas; exportar PNG y PDF.
 - Solo aparecen viñetas de eventos que ocurrieron.
+- Descarga del PNG y del PDF con la capacidad oficial del visor de Claude (con confirmación del jugador).
 - Correcciones: retrato completo en la tira vertical; el aprendiz sale en las capturas; panel de misión compacto en móvil; aviso de Three.js.
 
 ## 24 oct 2026 · v0.2: capítulo 1 de Kelvin
