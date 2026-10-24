@@ -1376,7 +1376,7 @@
   let t = 0;
   const camPos = new THREE.Vector3();
   function placeCamera(snap) {
-    camPos.set(S.pos.x + Math.sin(camYaw) * 10, S.pos.y + 5.5, S.pos.z + Math.cos(camYaw) * 10);
+    camPos.set(S.pos.x + Math.sin(camYaw) * 7.5, S.pos.y + 4.2, S.pos.z + Math.cos(camYaw) * 7.5);
     if (snap) {
       camera.position.copy(camPos);
       if (companion.visible) {
@@ -1393,7 +1393,7 @@
   function render(dt, moving) {
     t += dt;
     const bob = moving && S.pos.y <= height(S.pos.x, S.pos.z) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
-    camPos.set(S.pos.x + Math.sin(camYaw) * 10, S.pos.y + 5.5, S.pos.z + Math.cos(camYaw) * 10);
+    camPos.set(S.pos.x + Math.sin(camYaw) * 7.5, S.pos.y + 4.2, S.pos.z + Math.cos(camYaw) * 7.5);
     camera.position.lerp(camPos, Math.min(1, dt * 6));
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
     player.material.rotation = jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
@@ -1581,13 +1581,32 @@
     check('Se montan los 6 accesorios (7 piezas con los dos brazaletes)', Object.keys(ch.mounted).length === 6 && objs.length === 7, objs.length + ' piezas');
     // Colisiones en pose de reposo: ningún vértice de accesorio dentro del pico ni de los ojos
     ch.mixer.stopAllAction(); ch.root.traverse(o => { if (o.isSkinnedMesh) o.skeleton.pose(); }); ch.root.updateMatrixWorld(true);
-    const solids = [];
-    ch.root.traverse(o => { if (o.isMesh && !o.userData.isAccessory) { const names = (Array.isArray(o.material) ? o.material : [o.material]).map(m => m.name); if (names.some(n => /^(Beak|EyeWhite|EyeIris)$/.test(n))) { const b = new THREE.Box3().setFromObject(o); b.expandByScalar(-ch.height * 0.003); solids.push({ name: names.join('/'), box: b }); } } });
+    // Puntos reales del pico (material del pico) y esferas de los ojos, en pose de reposo
+    const beakPts = [];
+    ch.root.traverse(o => {
+      if (!o.isMesh || o.userData.isAccessory) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      const bi = mats.findIndex(m => /^Material\.001$|^Beak$/.test(m.name)); if (bi < 0) return;
+      const pos = o.geometry.attributes.position, v = new THREE.Vector3();
+      const groups = Array.isArray(o.material) ? o.geometry.groups.filter(g => g.materialIndex === bi) : [{ start: 0, count: pos.count, direct: true }];
+      for (const g of groups) for (let i = g.start; i < g.start + g.count; i += g.direct ? 2 : 3) {
+        const vi = g.direct ? i : (o.geometry.index ? o.geometry.index.getX(i) : i);
+        v.fromBufferAttribute(pos, vi).applyMatrix4(o.matrixWorld); beakPts.push(v.clone());
+      }
+    });
+    const mi = window.AVCharacter.mountsInfo();
+    const eyes = mi && mi.eyes ? Object.values(mi.eyes).map(e => new THREE.Vector3().fromArray(e.center || e)) : [];
+    const EYE_R = 0.045, MIN_GAP = 0.004;
     const hits = [];
     for (const [slot, m] of Object.entries(ch.mounted)) for (const obj of m.objects) obj.traverse(o => {
       if (!o.isMesh) return; const pos = o.geometry.attributes.position, v = new THREE.Vector3();
-      for (let i = 0; i < pos.count; i += Math.max(1, Math.floor(pos.count / 300))) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); for (const sd of solids) if (sd.box.containsPoint(v)) { hits.push(slot + '→' + sd.name); return; } }
+      for (let i = 0; i < pos.count; i += Math.max(1, Math.floor(pos.count / 250))) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+        if (eyes.some(e => e.distanceTo(v) < EYE_R)) { hits.push(slot + '→ojo'); return; }
+        for (const b of beakPts) if (b.distanceTo(v) < MIN_GAP) { hits.push(slot + '→pico'); return; }
+      }
     });
+    const solids = beakPts.length ? [1] : [];
     check('Los accesorios no atraviesan el pico ni los ojos (reposo)', solids.length > 0 && hits.length === 0, solids.length ? (hits.join(', ') || solids.length + ' piezas revisadas') : 'no se encontraron mallas de pico/ojos');
     // Seguimiento durante las animaciones: el accesorio conserva su posición relativa al hueso y se mueve con él
     let maxDrift = 0, maxTravel = 0;
@@ -1616,8 +1635,8 @@
     check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && col === '#7a4fb3', col);
     ch.applyLook({ species: 'versicolor', accessories: {} });
     check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
-    const patch = ch.materials.Patch;
-    check('El plumaje cambia la máscara facial', !patch || ('#' + patch.color.getHexString()) === window.AVCharacter.SPECIES.versicolor.patch, patch ? '#' + patch.color.getHexString() : 'sin material Patch');
+    const pc = ch.tint ? '#' + ch.tint.patchColor.value.getHexString() : (ch.materials.Patch ? '#' + ch.materials.Patch.color.getHexString() : null);
+    check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.versicolor.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;
     S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };

@@ -1,0 +1,243 @@
+{
+ "model": "vittata.glb",
+ "units": "glTF meters, Y-up, character faces +Z, feet at y=0, rest pose = T-pose (play 'Idle' for relaxed wings)",
+ "height": 1.4,
+ "bbox_min": [
+  -0.8156,
+  0.0,
+  -0.4363
+ ],
+ "bbox_max": [
+  0.8157,
+  1.4,
+  0.4449
+ ],
+ "head_sphere": {
+  "center": [
+   -0.0,
+   1.0901,
+   0.0781
+  ],
+  "radius": 0.5104
+ },
+ "beak_bbox": {
+  "min": [
+   -0.2812,
+   0.8493,
+   -0.0576
+  ],
+  "max": [
+   0.2813,
+   1.1867,
+   0.4449
+  ]
+ },
+ "eyes": {
+  "L": [
+   0.1635,
+   1.2031,
+   0.1238
+  ],
+  "R": [
+   -0.1605,
+   1.2036,
+   0.1253
+  ]
+ },
+ "clearance_note": "distance (m) from mount position to nearest beak (material Material.001) or eye-region surface, rest pose",
+ "mounts": {
+  "mount_head_top": {
+   "position": [
+    0.0,
+    1.3752,
+    0.0781
+   ],
+   "axis_x": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "axis_y": [
+    0.0,
+    -0.0,
+    1.0
+   ],
+   "axis_z_outward": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "parent_bone": "cabeza.001",
+   "clearance": 0.1756,
+   "use": "hats; +Z=up (outward), +Y=forward (beak direction)"
+  },
+  "mount_eyes": {
+   "position": [
+    0.0,
+    1.2033,
+    0.2162
+   ],
+   "axis_x": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "axis_y": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "axis_z_outward": [
+    -0.0,
+    -0.0,
+    1.0
+   ],
+   "parent_bone": "cabeza.001",
+   "clearance": 0.0167,
+   "use": "goggles/glasses; +Z=forward out of face, +Y=up"
+  },
+  "mount_neck": {
+   "position": [
+    -0.0,
+    0.6632,
+    0.1758
+   ],
+   "axis_x": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "axis_y": [
+    0.0,
+    0.97,
+    -0.243
+   ],
+   "axis_z_outward": [
+    0.0,
+    0.243,
+    0.97
+   ],
+   "parent_bone": "espalda2",
+   "clearance": 0.1864,
+   "use": "scarf/bandana; +Z=forward, +Y=up"
+  },
+  "mount_chest": {
+   "position": [
+    -0.0,
+    0.5663,
+    0.2209
+   ],
+   "axis_x": [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   "axis_y": [
+    0.0,
+    1.0,
+    -0.0
+   ],
+   "axis_z_outward": [
+    -0.0,
+    0.0,
+    1.0
+   ],
+   "parent_bone": "espalda2",
+   "clearance": 0.2853,
+   "use": "pendant/badge; +Z=forward, +Y=up"
+  },
+  "mount_back": {
+   "position": [
+    -0.0,
+    0.6279,
+    -0.0919
+   ],
+   "axis_x": [
+    -1.0,
+    -0.0,
+    -0.0
+   ],
+   "axis_y": [
+    -0.0,
+    1.0,
+    0.0
+   ],
+   "axis_z_outward": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "parent_bone": "espalda2",
+   "clearance": 0.334,
+   "use": "backpack; +Z=backward (out of back), +Y=up"
+  },
+  "mount_wing_L": {
+   "position": [
+    0.494,
+    0.7116,
+    0.0049
+   ],
+   "axis_x": [
+    0.047,
+    0.0,
+    0.999
+   ],
+   "axis_y": [
+    0.999,
+    0.0,
+    -0.047
+   ],
+   "axis_z_outward": [
+    -0.0,
+    1.0,
+    -0.0
+   ],
+   "parent_bone": "armL2",
+   "clearance": 0.3876,
+   "use": "bracelet; +Z=out of top of forearm (rest T-pose: up), +Y=along forearm toward hand"
+  },
+  "mount_wing_R": {
+   "position": [
+    -0.4935,
+    0.7119,
+    0.0078
+   ],
+   "axis_x": [
+    0.022,
+    -0.0,
+    -1.0
+   ],
+   "axis_y": [
+    -1.0,
+    0.0,
+    -0.022
+   ],
+   "axis_z_outward": [
+    0.0,
+    1.0,
+    -0.0
+   ],
+   "parent_bone": "armL2.001",
+   "clearance": 0.3873,
+   "use": "bracelet; same as L, mirrored"
+  }
+ },
+ "materials": {
+  "cuerpo": "body/head atlas: green feathers, red forehead patch, white eye rings, eyes, feet+claws (texture vittata_albedo)",
+  "Material.001": "beak (same atlas texture, beak region)"
+ },
+ "masks": "vittata_masks.png",
+ "masks_channels": {
+  "R": "red forehead patch",
+  "G": "white eye-ring",
+  "B": "beak"
+ },
+ "masks_note": "same UVs (TEXCOORD_0) as the albedo; 1024x1024",
+ "animations": {
+  "Celebrate": 1.5,
+  "Curious": 2,
+  "Idle": 3,
+  "Walk": 1,
+  "Welcome": 2
+ }
+}

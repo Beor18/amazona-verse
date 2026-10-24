@@ -113,3 +113,25 @@ Hoy solo hay tres zonas recoloreables (cabeza entera, manos, cuerpo). Para separ
 - **B (sin texturas):** en Blender, separar la cabeza en materiales usando los vertex groups existentes (`PicoUp`, `PicoDown`, `OjoL`, `OjoR`, `Cabeza`, `Lengua`) y exportar con varios materiales (`Beak`, `Eyes`, `Feathers`…). No verificado todavía si esos grupos cubren limpiamente cada zona. No existe grupo para frente ni pecho: habría que pintarlos.
 
 La clonación del material es necesaria para que dos especies en pantalla no compartan color.
+
+## 7. Vittata 3D original (cotorrofiver.blend)
+
+**Fuente:** `04_Blender_3D/cotorro_original/cotorro/cotorrofiver.blend` (se trabajó sobre una copia). Personaje = `Cube.002` (cuerpo completo con alas-mano con dedos y patas, 14.181 vértices, 28.268 tris) + su `Armature` original de 51 huesos. Se excluyeron `Cube.000` (duplicado sin rig), `Cube.001` (proxy low-poly subsurf+mirror), el metarig Rigify `rig`/`WGT-rig_root`, cámara, luces y plano. Se dejó un solo modificador Armature (había 4 duplicados). La versión anterior "cabeza original + cuerpo reconstruido" quedó descartada.
+
+**Textura:** se usa la textura mejorada `cuerpo_Base_color_mejorada.png` (atlas limpio). Encaja directamente en el `UVMap` de `Cube.002` para ambos materiales (pico incluido); no hizo falta transferir UVs ni hornear. Los JPG viejos (ojos marrones, pico rosado) y la imagen faltante `Untitled` (`D:/descargas/loro_body.png`) no se usan. En el GLB va embebida como JPEG 1024 px.
+
+**Salida:** `assets/models/vittata.glb` (1,31 MB), 28.268 tris, altura 1,40 m, Y-up, mira hacia +Z, patas en y=0. Materiales (nombres originales): `cuerpo` (plumas, parche rojo, anillos de los ojos, ojos, patas y garras) y `Material.001` (pico). Ambos usan el mismo atlas.
+
+**Máscaras para recolorear:** `assets/models/vittata_masks.png` (1024 px, mismas UVs): R = parche rojo de la frente, G = anillo blanco de los ojos, B = pico. Las tres zonas son regiones separadas del atlas, así que cada especie se puede teñir en shader (`onBeforeCompile`) o generando una textura por especie.
+
+**Rig:** 51 huesos originales + `root` nuevo (en el suelo, padre de `espalda1`; la cola `espalda1.001` pasó a ser hija de `espalda1`) + 7 huesos de montaje. Pesos limitados a 4 influencias y normalizados. Equivalencias: espalda1 = cadera, espalda2 = pecho, cabeza = cuello, cabeza.001 = cabeza; armL1/armL2/armL3 (+`.001` en el ala derecha) = brazo/antebrazo/mano, con los dedos `armL2.0xx`/`Bone.00x`; pieL1–pieL8 = pierna y dedos; espalda1.001 = cola. No hay huesos de pico ni de ojos, así que no se puede abrir el pico ni parpadear.
+
+**Montajes** (deform=off; +Z local hacia afuera, +Y local hacia arriba; en las alas +Y va a lo largo del antebrazo): `mount_head_top` y `mount_eyes` → cabeza.001; `mount_neck`, `mount_chest` y `mount_back` → espalda2; `mount_wing_L` → armL2; `mount_wing_R` → armL2.001. Las posiciones, los ejes, la holgura frente al pico y los ojos, la esfera de la cabeza, la caja del pico y el alto del modelo están en `assets/models/vittata_mounts.json`. Todas las posiciones son de la pose de reposo (T-pose). Ojo: `mount_eyes` queda sobre el puente del pico, con solo 1,7 cm de holgura.
+
+**Animaciones** (30 fps; todas empiezan y terminan en la pose Idle): `Idle` 3,0 s (en bucle; respira, inclina la cabeza, alas relajadas abajo), `Welcome` 2,0 s (abre las alas hacia el frente), `Celebrate` 1,5 s (salto de unos 13 cm con dos aleteos), `Curious` 2,0 s (se inclina hacia delante, ladea la cabeza y mira a los lados), `Walk` 1,0 s (en bucle, en el sitio, contoneo). En Walk y Curious las garras atraviesan el suelo como mucho entre 1 y 1,3 cm.
+
+**Previews:** `docs/img/vittata3d_idle.png`, `vittata3d_welcome.png`, `vittata3d_celebrate.png` y `vittata3d_mounts.png`, todas renderizadas desde el GLB reimportado.
+
+**Diferencias con la referencia:** el modelo es fiel en forma y colores: parche rojo, anillos blancos, pico y patas amarillos, alas con dedos. Hay tres diferencias: el verde es más lima/claro que en la referencia, los ojos son azules (en la referencia son marrón claro) y el parche rojo sube más hacia la coronilla. El pico es amarillo limón en vez de naranja. Todo eso viene de la textura nueva y no se repintó.
+
+**Scripts:** `/private/tmp/claude-501/vittata_build/` (o1_prep, o3_build, s4_anim (poses), o6_final, o7_maskfix, mkjson, verify).

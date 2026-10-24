@@ -22,12 +22,12 @@
   // Seis accesorios modulares: ranura, hueso de montaje, colores y si es un sustituto pendiente de modelado
   const PALETTE = ['#f2a03d', '#d6403a', '#3d8fb0', '#2f8f4e', '#7a4fb3', '#5a3a22', '#e8c32a', '#2b2b2b'];
   const ACCESSORIES = [
-    { id: 'gafas', slot: 'eyes', mount: 'mount_eyes', offset: [0, 0, 0.05], name: 'Gafas de inventor', colors: ['#5a3a22', '#2b2b2b', '#c9a227', '#3d8fb0'], placeholder: false },
+    { id: 'gafas', slot: 'eyes', mount: 'mount_eyes', offset: [0, 0.09, 0.05], name: 'Gafas de inventor', colors: ['#5a3a22', '#2b2b2b', '#c9a227', '#3d8fb0'], placeholder: false },
     { id: 'sombrero', slot: 'head', mount: 'mount_head_top', offset: [0, -0.08, 0], name: 'Sombrero explorador', colors: ['#8a6a3a', '#5a3a22', '#2f8f4e', '#d6403a'], placeholder: false },
-    { id: 'panuelo', slot: 'neck', mount: 'mount_neck', offset: [0, 0, -0.4], name: 'Pañuelo aventurero', colors: ['#f2a03d', '#3d8fb0', '#d6403a', '#2f8f4e', '#7a4fb3', '#e8c32a'], placeholder: false },
+    { id: 'panuelo', slot: 'neck', mount: 'mount_neck', offset: [0, -0.1, 0], wrap: true, name: 'Pañuelo aventurero', colors: ['#f2a03d', '#3d8fb0', '#d6403a', '#2f8f4e', '#7a4fb3', '#e8c32a'], placeholder: false },
     { id: 'brujula', slot: 'chest', mount: 'mount_chest', offset: [0, 0, 0.06], name: 'Brújula colgante', colors: ['#c9a227', '#b9c4c9', '#b87333'], placeholder: false },
     { id: 'mochila', slot: 'back', mount: 'mount_back', offset: [0, 0, -0.05], name: 'Mochila de exploración', colors: ['#8a5a2b', '#2f8f4e', '#3d8fb0', '#d6403a'], placeholder: true },
-    { id: 'brazaletes', slot: 'wings', mount: 'mount_wing_L', mount2: 'mount_wing_R', offset: [0, 0, 0], name: 'Brazaletes de constructor', colors: ['#c9a227', '#3d8fb0', '#d6403a', '#2b2b2b'], placeholder: false },
+    { id: 'brazaletes', slot: 'wings', mount: 'mount_wing_L', mount2: 'mount_wing_R', offset: [0, -0.06, 0], size: 0.8, name: 'Brazaletes de constructor', colors: ['#c9a227', '#3d8fb0', '#d6403a', '#2b2b2b'], placeholder: false },
   ];
   const SLOTS = ['head', 'eyes', 'neck', 'chest', 'back', 'wings'];
 
@@ -50,14 +50,18 @@
   }
 
   // ---------- Carga compartida ----------
-  let gltfPromise = null, mountsInfo = null;
+  let gltfPromise = null, mountsInfo = null, maskTexture = null;
   function loadGLTF() {
     if (gltfPromise) return gltfPromise;
-    gltfPromise = new Promise((resolve, reject) => {
+    const info = fetch('assets/models/vittata_mounts.json').then(r => r.ok ? r.json() : null).catch(() => null).then(j => {
+      mountsInfo = j;
+      if (!j || !j.masks) return null;
+      return new Promise(res => new THREE.TextureLoader().load('assets/models/' + j.masks, t => { t.flipY = false; maskTexture = t; res(t); }, undefined, () => res(null)));
+    });
+    gltfPromise = info.then(() => new Promise((resolve, reject) => {
       if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
       new THREE.GLTFLoader().load(MODEL_URL, resolve, undefined, reject);
-    });
-    fetch('assets/models/vittata_mounts.json').then(r => r.ok ? r.json() : null).then(j => { mountsInfo = j; }).catch(() => {});
+    }));
     return gltfPromise;
   }
 
@@ -74,12 +78,12 @@
     const M = mat(color), dark = mat('#2b2016', { roughness: 0.5 }), metal = mat('#c9d4d9', { metalness: 0.7, roughness: 0.3 });
     if (id === 'gafas') {
       const lens = new THREE.MeshPhysicalMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.4, roughness: 0.05, metalness: 0.1 });
-      for (const x of [-0.32, 0.32]) {
-        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.05, 10, 28), M); rim.position.set(x, 0, 0); g.add(rim);
-        const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.12, 24, 1, true), M); cup.rotation.x = Math.PI / 2; cup.position.set(x, 0, -0.06); g.add(cup);
-        const l = new THREE.Mesh(new THREE.CircleGeometry(0.2, 24), lens); l.position.set(x, 0, 0.01); g.add(l);
+      for (const x of [-0.37, 0.37]) {
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 10, 28), M); rim.position.set(x, 0, 0); g.add(rim);
+        const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.08, 24, 1, true), M); cup.rotation.x = Math.PI / 2; cup.position.set(x, 0, -0.04); g.add(cup);
+        const l = new THREE.Mesh(new THREE.CircleGeometry(0.18, 24), lens); l.position.set(x, 0, 0.01); g.add(l);
       }
-      const bridge = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.2, 8), M); bridge.rotation.z = Math.PI / 2; g.add(bridge);
+      const bridge = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 6, 14, Math.PI), M); bridge.position.y = 0.08; g.add(bridge);
       const strap = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.035, 6, 40, Math.PI * 1.25), dark); strap.rotation.set(Math.PI / 2, 0, Math.PI * 0.375); strap.position.z = -0.45; g.add(strap);
     } else if (id === 'sombrero') {
       const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.42, 28), M); crown.position.y = 0.2; g.add(crown);
@@ -138,7 +142,32 @@
       this.look = defaultLook();
       if (this.clips.Idle) this.play('Idle');
     }
-    _own(m) { const c = m.clone(); this.materials[m.name] = c; c.userData.base = c.color ? c.color.clone() : null; return c; }
+    _own(m) {
+      const c = m.clone(); this.materials[m.name] = c; c.userData.base = c.color ? c.color.clone() : null;
+      if (maskTexture && c.map) this._addMaskTint(c);
+      return c;
+    }
+    // Recolor por especie con la máscara (R parche, G anillo de ojos, B pico): conserva el detalle de la textura original
+    _addMaskTint(m) {
+      const u = this.tint || (this.tint = {
+        maskMap: { value: maskTexture },
+        patchColor: { value: new THREE.Color('#d63a2f') }, ringColor: { value: new THREE.Color('#f4f4f0') }, beakColor: { value: new THREE.Color('#f2a23a') },
+        tintOn: { value: new THREE.Vector3(0, 0, 0) },
+      });
+      m.onBeforeCompile = sh => {
+        Object.assign(sh.uniforms, u);
+        sh.fragmentShader = 'uniform sampler2D maskMap; uniform vec3 patchColor; uniform vec3 ringColor; uniform vec3 beakColor; uniform vec3 tintOn;\n' +
+          sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+            vec4 mk = texture2D(maskMap, vUv);
+            float lum = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
+            float shade = clamp(0.55 + lum * 0.7, 0.0, 1.25);
+            diffuseColor.rgb = mix(diffuseColor.rgb, patchColor * shade, mk.r * tintOn.x);
+            diffuseColor.rgb = mix(diffuseColor.rgb, ringColor * shade, mk.g * tintOn.y);
+            diffuseColor.rgb = mix(diffuseColor.rgb, beakColor * shade, mk.b * tintOn.z);`);
+      };
+      m.customProgramCacheKey = () => 'avmask';
+      m.needsUpdate = true;
+    }
     missingMounts() { return MOUNTS.filter(n => !this.bones[n]); }
     play(name, once) {
       const clip = this.clips[name]; if (!clip) return false;
@@ -159,6 +188,13 @@
     update(dt) { this.mixer.update(dt); }
     setSpecies(id) {
       const s = SPECIES[id] || SPECIES.vittata;
+      this.species = id;
+      if (this.tint) {
+        const base = SPECIES.vittata, on = this.tint.tintOn.value;
+        this.tint.patchColor.value.set(s.patch); this.tint.ringColor.value.set(s.ring); this.tint.beakColor.value.set(s.beak || '#f2a23a');
+        on.set(s.patch !== base.patch ? 1 : 0, s.ring !== base.ring ? 1 : 0, s.beak ? 1 : 0);
+        return;
+      }
       const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) m.color.set(hex); else if (m.userData.base) m.color.copy(m.userData.base); };
       set('Patch', s.patch); set('Ring', s.ring); set('WingTip', s.wingTip); set('Beak', s.beak || null);
     }
@@ -184,8 +220,17 @@
             acc.quaternion.copy(inv);
             const off = new THREE.Vector3().fromArray(def.offset || [0, 0, 0]).multiplyScalar(this.headR);
             if (mountName.endsWith('_R')) off.x *= -1;
+            let size = def.size ? def.size * this.headR : this.headR;
+            if (def.wrap && mountsInfo && mountsInfo.mounts && mountsInfo.mounts[mountName] && mountsInfo.head_sphere) {
+              // El montaje está en la superficie del frente del cuello: el centro del cuello queda detrás
+              const mp = new THREE.Vector3().fromArray(mountsInfo.mounts[mountName].position);
+              const axis = new THREE.Vector3(0, mp.y, mountsInfo.head_sphere.center[2] - 0.02);
+              const neckR = Math.hypot(mp.x - axis.x, mp.z - axis.z);
+              off.set(axis.x - mp.x, off.y, axis.z - mp.z);
+              size = (neckR * 1.3 + 0.02) / 0.5; // el aro mide 0.5 unidades de radio; holgura para el pecho
+            }
             acc.position.copy(off.applyQuaternion(inv).multiplyScalar(k));
-            acc.scale.setScalar(this.headR * k);
+            acc.scale.setScalar(size * k);
             bone.add(acc); objects.push(acc);
           }
           this.mounted[slot] = { id: want.id, color: want.color, objects };
@@ -222,8 +267,8 @@
     ch.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(ch.root);
     const h = box.max.y - box.min.y;
-    const target = new THREE.Vector3(0, box.min.y + h * 0.66, 0);
-    camera.position.set(h * 0.55, box.min.y + h * 0.8, h * 2.1);
+    const target = new THREE.Vector3(0, box.min.y + h * 0.68, 0);
+    camera.position.set(h * 0.5, box.min.y + h * 0.82, h * 3.0);
     camera.lookAt(target);
     renderer.render(scene, camera);
     return canvas;

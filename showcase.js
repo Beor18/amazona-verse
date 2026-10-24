@@ -11,17 +11,17 @@
 
   function buildWorkshop() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color('#1b2f25');
-    scene.fog = new THREE.Fog('#1b2f25', 7, 16);
+    scene.background = new THREE.Color('#14251c');
+    scene.fog = new THREE.Fog('#14251c', 7, 16);
     camera = new THREE.PerspectiveCamera(30, 1, 0.05, 50);
-    scene.add(new THREE.HemisphereLight('#ffe9c4', '#1f3a2c', 0.6));
-    const key = new THREE.SpotLight('#ffd9a0', 1.4, 14, Math.PI / 5, 0.5, 1.2);
+    scene.add(new THREE.HemisphereLight('#ffe9c4', '#1f3a2c', 0.35));
+    const key = new THREE.SpotLight('#ffd9a0', 1.15, 14, Math.PI / 5, 0.5, 1.2);
     key.position.set(2.2, 4.2, 3.2); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0005;
     scene.add(key); scene.add(key.target);
     const rim = new THREE.DirectionalLight('#9fd7ff', 0.6); rim.position.set(-3, 2.5, -2.5); scene.add(rim);
     const fill = new THREE.PointLight('#ffb36b', 0.4, 8); fill.position.set(-1.8, 1.4, 2); scene.add(fill);
-    const wood = new THREE.MeshStandardMaterial({ color: '#8a5a33', roughness: 0.85 });
-    const woodDark = new THREE.MeshStandardMaterial({ color: '#5e3c22', roughness: 0.9 });
+    const wood = new THREE.MeshStandardMaterial({ color: '#6e4526', roughness: 0.85 });
+    const woodDark = new THREE.MeshStandardMaterial({ color: '#3f2814', roughness: 0.9 });
     const deck = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.25, 0.16, 48), wood);
     deck.position.y = -0.08; deck.receiveShadow = true; scene.add(deck);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.03, 8, 64), new THREE.MeshStandardMaterial({ color: '#f2a03d', metalness: 0.6, roughness: 0.35 }));
@@ -87,7 +87,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.85;
     clock = new THREE.Clock();
     buildWorkshop();
     holder = new THREE.Group(); scene.add(holder);

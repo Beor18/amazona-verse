@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 24 oct 2026 · v0.5: Vittata 3D original y accesorios modulares
+- Vittata en 3D con el modelo original de Kelvin (`cotorrofiver.blend`) y su textura mejorada: esqueleto de 59 huesos, 5 animaciones (espera, bienvenida, celebrar, curiosidad, caminar), 28k triángulos, 1,3 MB.
+- Taller de los Guardianes: el creador muestra al personaje 3D animado, que se puede girar, saluda al entrar, celebra cada cambio y se pone curioso si lo dejas quieto.
+- 6 accesorios 3D modulares en 7 puntos de montaje (cabeza, ojos, cuello, pecho, espalda, dos alas): sombrero, gafas, pañuelo, brújula, mochila (provisional) y brazaletes, cada uno con colores. Miniaturas 3D.
+- Plumajes por especie con máscara sobre la textura original (parche, anillo de ojos, pico).
+- Vittata y el aprendiz caminan en 3D dentro del juego; el retrato del cómic sale del mismo modelo.
+- Perfiles anteriores se convierten al formato nuevo.
+
 ## 24 oct 2026 · v0.4: el mirador
 - Paso 8 del capítulo: subir al mirador de la colina; océano, tres islas lejanas y niebla luminosa (página 12 del guion).
 - Guardado v4 con migración desde v3 y v2.
