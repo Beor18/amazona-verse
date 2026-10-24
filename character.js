@@ -58,9 +58,20 @@
       if (!j || !j.masks) return null;
       return new Promise(res => new THREE.TextureLoader().load('assets/models/' + j.masks, t => { t.flipY = false; maskTexture = t; res(t); }, undefined, () => res(null)));
     });
+    // Primero el .glb; si el host no lo sirve, el mismo modelo empaquetado en vittata_glb.js
+    const fromB64 = () => new Promise((resolve, reject) => {
+      const parse = () => {
+        const bin = atob(window.AV_MODEL_B64), buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        new THREE.GLTFLoader().parse(buf.buffer, 'assets/models/', resolve, reject);
+      };
+      if (window.AV_MODEL_B64) { parse(); return; }
+      const sc = document.createElement('script'); sc.src = 'assets/models/vittata_glb.js';
+      sc.onload = parse; sc.onerror = () => reject(new Error('modelo no disponible')); document.head.appendChild(sc);
+    });
     gltfPromise = info.then(() => new Promise((resolve, reject) => {
       if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
-      new THREE.GLTFLoader().load(MODEL_URL, resolve, undefined, reject);
+      new THREE.GLTFLoader().load(MODEL_URL, resolve, undefined, () => fromB64().then(resolve, reject));
     }));
     return gltfPromise;
   }
