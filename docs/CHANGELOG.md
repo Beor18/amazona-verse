@@ -44,3 +44,10 @@
 - Choques reales con la caja del taller y el banco; Luma también choca; el mirador es suelo.
 - Los materiales se recogen al pasar por encima (E / Acción sigue funcionando).
 - Pruebas: selfTest 45/45, accessoryTest 10/10; movimiento medido: caminar 6,2 m/s, correr 10 m/s, impulso 4,75 m, salto 1,1 m, doble salto 2 m.
+
+## 2026-10-24 · Paso nuevo de Vittata
+- El clip Walk original casi no movía las patas (arrastraba los pies). Se añade un paso procedural sobre el rig:
+  muslo/rodilla/tobillo con levantamiento real, rebote del cuerpo (dos por ciclo), balanceo lateral, inclinación al correr,
+  cabeza que compensa, cola que se mece y patas recogidas en el aire. Caminar 3,4 pasos/s, correr 4,8 con zancada mayor.
+- Arreglo: los ajustes por hueso se deshacen antes de mezclar (el mixer de three solo reescribe cuando el clip cambia).
+- Antes/después: `docs/img/paso_antes.png`, `docs/img/paso_nuevo.png`. Pruebas: 45/45 y 10/10.

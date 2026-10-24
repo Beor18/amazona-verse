@@ -559,6 +559,8 @@
       const want = moving && !air ? 'Walk' : 'Idle';
       if (anim3D.player !== want && player3D.play(want)) anim3D.player = want;
       if (player3D.current) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
+      player3D.gait = air || !moving ? 0 : sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1;
+      player3D.airborne = air;
       player3D.wingMode = MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       player3D.update(dt);
     }
@@ -574,6 +576,7 @@
       const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
       if (anim3D.companion !== want && companion3D.play(want)) anim3D.companion = want;
       companion3D.wingMode = want === 'Walk' ? 'walk' : 'idle';
+      companion3D.gait = want === 'Walk' ? (sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1) : 0;
       companion3D.update(dt);
       cShadow.position.set(companionPos.x, height(companionPos.x, companionPos.z) + 0.03, companionPos.z);
     }

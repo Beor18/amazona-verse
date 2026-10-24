@@ -197,7 +197,11 @@
       return true;
     }
     // wingMode: 'idle' | 'walk' | 'flap' (subiendo) | 'glide' (planeando). Se suma encima del clip activo.
+    // El mixer solo reescribe un hueso cuando el valor del clip cambia, así que los ajustes del cuadro
+    // anterior se deshacen antes de mezclar; si no, se acumulan y el cuerpo termina girado.
     update(dt) {
+      for (const [bone, ax, v] of this.ofs || []) bone.rotation[ax] -= v;
+      this.ofs = [];
       this.mixer.update(dt);
       const L = this.bones.armL1, R = this.bones.armL1001;
       if (!L || !R) return;
@@ -210,8 +214,39 @@
       const k = 1 - Math.exp(-dt * 12);
       this.wOpen = (this.wOpen || 0) + (open - (this.wOpen || 0)) * k;
       this.wSwing = (this.wSwing || 0) + (swing - (this.wSwing || 0)) * k;
-      L.rotation.z += this.wOpen; R.rotation.z -= this.wOpen;
-      L.rotation.x += this.wSwing; R.rotation.x -= this.wSwing;
+      this.rot(L, "z", this.wOpen); this.rot(R, "z", -this.wOpen);
+      this.rot(L, "x", this.wSwing); this.rot(R, "x", -this.wSwing);
+      this.locomotion(dt, k);
+    }
+    rot(bone, ax, v) { bone.rotation[ax] += v; this.ofs.push([bone, ax, v]); }
+    // Paso procedural encima del clip: gait 0 quieto, 1 caminar, 2 correr; airborne recoge las patas.
+    // Ejes medidos en el rig: muslo -X adelanta el pie, rodilla -X lo levanta, tobillo +X lo aplana.
+    locomotion(dt, k) {
+      const B = this.bones, g = this.gait || 0, run = g > 1.5;
+      this.gW = (this.gW || 0) + ((g > 0 ? 1 : 0) - (this.gW || 0)) * k;
+      this.aW = (this.aW || 0) + ((this.airborne ? 1 : 0) - (this.aW || 0)) * k;
+      const w = this.gW, aw = this.aW;
+      if (w > 0.01) this.ph = ((this.ph || 0) + dt * (run ? 4.8 : 3.4) * Math.PI * 2) % (Math.PI * 2);
+      const ph = this.ph || 0, s = Math.sin(ph), c = Math.cos(ph);
+      const A = (run ? 0.8 : 0.55) * w;
+      for (const [hip, knee, ankle, sg] of [['pieL1', 'pieL2', 'pieL3', 1], ['pieL1001', 'pieL2001', 'pieL3001', -1]]) {
+        if (!B[hip]) continue;
+        const sw = s * sg, lift = Math.max(0, c * sg) * w * (run ? 1.1 : 0.85);
+        this.rot(B[hip], "x", -A * sw + aw * 0.55);
+        this.rot(B[knee], "x", -lift * 0.95 - aw * 0.7);
+        this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * 0.3);
+      }
+      if (B.espalda1) {
+        this.rot(B.espalda1, "x", (run ? 0.2 : 0.08) * w + aw * 0.12);
+        this.rot(B.espalda1, "z", s * 0.07 * w);
+      }
+      if (B.cabeza) {
+        this.rot(B.cabeza, "x", -((run ? 0.14 : 0.05) + Math.cos(ph * 2) * 0.04) * w);
+        this.rot(B.cabeza, "z", -s * 0.05 * w);
+      }
+      if (B.espalda1001) this.rot(B.espalda1001, "z", Math.sin(ph + 1) * 0.12 * w);
+      // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
+      this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
     }
     setSpecies(id) {
       const s = SPECIES[id] || SPECIES.vittata;
