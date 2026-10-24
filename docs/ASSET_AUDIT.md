@@ -2,7 +2,7 @@
 
 | Activo | Formato | Estado verificado |
 |---|---|---|
-| Piloto Cotorra.blend | Blender 2.80 | Inspeccionado con Blender 4.2: cabeza de cotorra (225k triángulos) + cuerpo con traje negro de piloto, guantes y botas. **Sin texturas** (apuntan a `E:/cotorras/…`), **sin esqueleto** (falta RigCotorra), 12 animaciones huérfanas. Ver `ASSET_CONVERSION_PLAN.md` |
+| Piloto Cotorra.blend | Blender 2.80 | **Solo trae la cabeza** de la cotorra (con ojos y lengua aparte), no el cuerpo, alas ni patas: los grupos de vértices de brazos, dedos, patas y cola están vacíos. Las texturas originales estaban en `E:/cotorras/Nueva carpeta/Blends/Materials/Amazona brasiliensis 001/`. Inspeccionado con Blender 4.2: cabeza de cotorra (225k triángulos) + cuerpo con traje negro de piloto, guantes y botas. **Sin texturas** (apuntan a `E:/cotorras/…`), **sin esqueleto** (falta RigCotorra), 12 animaciones huérfanas. Ver `ASSET_CONVERSION_PLAN.md` |
 | vittata_base.glb / _lod1.glb | glTF binario | Exportados y verificados: 370k y 20k triángulos (10.4 MB y 473 KB), color verde plano sustituto |
 | Renders de 34 especies | PNG 2048 con transparencia | En uso como sprites (Vittata, Luma, Guardián) y presets del creador (8) |
 | Hojas de poses (14) | Capturas de Finder | Solo referencia visual |
