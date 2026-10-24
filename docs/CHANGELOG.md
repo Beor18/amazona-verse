@@ -51,3 +51,12 @@
   cabeza que compensa, cola que se mece y patas recogidas en el aire. Caminar 3,4 pasos/s, correr 4,8 con zancada mayor.
 - Arreglo: los ajustes por hueso se deshacen antes de mezclar (el mixer de three solo reescribe cuando el clip cambia).
 - Antes/después: `docs/img/paso_antes.png`, `docs/img/paso_nuevo.png`. Pruebas: 45/45 y 10/10.
+
+## 2026-10-24 · Cara, manos y cintura
+- Nuevo hueso `pico` (mandíbula inferior) en el rig: 351 vértices bajo la línea blanca de la boca, pesos suaves hacia las comisuras; +X abre.
+  Scripts en `tools/blender/` (beak2 línea de la boca, beak3 pesos, beak5 hueso + exportación desde o_final.blend, eyes medición de ojos).
+- Párpados 3D sobre los ojos pintados (medidos: radio 6,6 cm, sobresalen 2,2 cm; datos en `vittata_mounts.json` → `eye_lids`).
+- Expresiones: neutral, contento, sorprendido, triste, curioso, enojado (párpados, pico, cabeza). Parpadeo automático (a veces doble).
+- Hablar: el pico se mueve con ritmo de sílabas, la cabeza asiente y las manos gesticulan; en diálogos el tono de la frase elige la cara; si habla otro, Vittata escucha con curiosidad.
+- Mira alrededor cuando está quieta. Hombros/codos/dedos con vida; cintura gira con el paso y el pecho contrarresta.
+- Pruebas: 45/45 y 10/10.

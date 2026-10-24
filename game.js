@@ -561,6 +561,10 @@
       if (player3D.current) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
       player3D.gait = air || !moving ? 0 : sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1;
       player3D.airborne = air;
+      // Habla y expresión en diálogos; si escucha a otro, atiende con curiosidad
+      const inDialog = dialogOpen(), mine = inDialog && talk.who === 'Vittata';
+      player3D.talking = mine && performance.now() < talk.until;
+      player3D.expression = !inDialog ? (MOVE.land > 0 ? 'surprised' : 'neutral') : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
       player3D.wingMode = MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       player3D.update(dt);
     }
@@ -896,6 +900,16 @@
     if (!l) { $('dialog').hidden = true; const d = dialogDone; dialogDone = null; if (d) d(); return; }
     $('d-who').textContent = l.who; $('d-text').textContent = l.text; $('d-img').src = l.img; $('d-img').alt = l.who;
     $('dialog').hidden = false;
+    // Vittata en 3D: mueve el pico mientras "dice" la línea y pone cara según el tono
+    talk.who = l.who; talk.until = performance.now() + Math.min(5000, 600 + l.text.length * 55);
+    talk.mood = l.mood || moodOf(l.text);
+  }
+  const talk = { who: '', until: 0, mood: 'neutral' };
+  function moodOf(text) {
+    if (/…\s*$|perdido|inund|no tenemos/i.test(text)) return 'sad';
+    if (/^¡|!\s*$|gracias|logramos/i.test(text)) return 'happy';
+    if (/\?\s*$/.test(text)) return 'curious';
+    return 'neutral';
   }
   $('d-next').onclick = showNextLine;
   function dialogOpen() { return !$('dialog').hidden; }

@@ -239,5 +239,39 @@
   "Idle": 3,
   "Walk": 1,
   "Welcome": 2
+ },
+ "eye_lids": {
+  "L": {
+   "center": [
+    0.1517,
+    1.2008,
+    0.1046
+   ],
+   "normal": [
+    0.4462,
+    -0.0583,
+    0.893
+   ],
+   "radius": 0.0662,
+   "bulge": 0.0218
+  },
+  "R": {
+   "center": [
+    -0.1499,
+    1.2017,
+    0.1052
+   ],
+   "normal": [
+    -0.3996,
+    -0.0905,
+    0.9122
+   ],
+   "radius": 0.0662,
+   "bulge": 0.0218
+  },
+  "note": "ojo pintado medido sobre la textura (blanco+iris): centro, normal hacia afuera, radio y cuánto sobresale"
+ },
+ "bones_extra": {
+  "pico": "mandíbula inferior, padre cabeza.001; rotación +X abre el pico (0.35 rad ≈ 5,5 cm)"
  }
 }

@@ -6,6 +6,9 @@
 
   const MODEL_URL = 'assets/models/vittata.glb';
   const MOUNTS = ['mount_head_top', 'mount_eyes', 'mount_neck', 'mount_chest', 'mount_back', 'mount_wing_L', 'mount_wing_R'];
+  // Dedos de las alas-mano (nombres de three, sin puntos): tres dedos por mano, dos falanges cada uno
+  const FINGERS = ['armL2002', 'armL2003', 'armL2004', 'armL2005', 'armL2006', 'armL2007',
+    'armL2010', 'armL2011', 'armL2013', 'armL2014', 'armL2016', 'armL2017'];
 
   // Plumajes: base común del proyecto original con máscaras de color por especie (ver grupo_especies_referencia.jpg)
   const SPECIES = {
@@ -151,7 +154,32 @@
       this.mounted = {};
       this.headR = (mountsInfo && mountsInfo.head_sphere && mountsInfo.head_sphere.radius) || this.height * 0.2;
       this.look = defaultLook();
+      this.lids = this._buildLids();
+      this.expression = 'neutral'; this.talking = false;
       if (this.clips.Idle) this.play('Idle');
+    }
+    // Párpados: cúpula sobre cada ojo pintado, pegada al hueso de la cabeza. scale.y 0 = abierto, 1 = cerrado.
+    _buildLids() {
+      const head = this.bones.cabeza001, E = mountsInfo && mountsInfo.eye_lids;
+      if (!head || !E) return [];
+      const mat = new THREE.MeshStandardMaterial({ color: '#4f9e30', roughness: 0.85 });
+      this.root.updateMatrixWorld(true);
+      const qHeadInv = head.getWorldQuaternion(new THREE.Quaternion()).invert(), ws = head.getWorldScale(new THREE.Vector3());
+      return ['L', 'R'].map(k => {
+        // Cúpula algo más ancha y abombada que el ojo pintado, para cubrirlo sin hundirse en él
+        const r = E[k].radius * 1.18, depth = E[k].bulge * 1.9 + 0.006;
+        const geo = new THREE.SphereGeometry(r, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+        geo.rotateX(Math.PI / 2); geo.scale(1, 1, depth / r); geo.translate(0, -r, 0); // borde superior en el origen
+        const p = new THREE.Vector3().fromArray(E[k].center), n = new THREE.Vector3().fromArray(E[k].normal).normalize();
+        const x = new THREE.Vector3(0, 1, 0).cross(n).normalize(), y = n.clone().cross(x);
+        const pivot = new THREE.Object3D();
+        pivot.position.copy(head.worldToLocal(p.clone().addScaledVector(y, r).addScaledVector(n, -0.004)));
+        pivot.quaternion.copy(qHeadInv.clone().multiply(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, n))));
+        pivot.scale.set(1 / ws.x, 1 / ws.y, 1 / ws.z);
+        const lid = new THREE.Mesh(geo, mat); lid.scale.y = 0.05; lid.castShadow = false;
+        pivot.add(lid); head.add(pivot);
+        return lid;
+      });
     }
     _own(m) {
       const c = m.clone(); this.materials[m.name] = c; c.userData.base = c.color ? c.color.clone() : null;
@@ -217,6 +245,53 @@
       this.rot(L, "z", this.wOpen); this.rot(R, "z", -this.wOpen);
       this.rot(L, "x", this.wSwing); this.rot(R, "x", -this.wSwing);
       this.locomotion(dt, k);
+      this.face(dt);
+    }
+    // Cara y manos: parpadeo, expresión (párpados, pico, cabeza), hablar, mirar alrededor, gestos y dedos.
+    // Ejes medidos: pico +X abre; cabeza X asiente, Y gira, Z ladea; codo +X dobla; dedos +X cierran.
+    face(dt) {
+      const B = this.bones, t = this.wingT || 0, k = 1 - Math.exp(-dt * 7);
+      const EX = {
+        neutral: [0.05, 0, 0, 0], happy: [0.42, 0.12, -0.06, 0.14], surprised: [0, 0.3, -0.16, 0],
+        sad: [0.55, 0, 0.22, -0.1], curious: [0.22, 0.05, 0.04, 0.26], angry: [0.48, 0.06, 0.12, 0],
+      };
+      const e = EX[this.expression] || EX.neutral;
+      const ex = this.ex || (this.ex = e.slice());
+      for (let i = 0; i < 4; i++) ex[i] += (e[i] - ex[i]) * k;
+      // Parpadeo con pausas al azar; a veces doble
+      this.blinkIn = (this.blinkIn == null ? 1 + Math.random() * 2 : this.blinkIn) - dt;
+      if (this.blinkIn <= 0) { this.blinkT = 0.15; this.blinkIn = Math.random() < 0.15 ? 0.3 : 2 + Math.random() * 3.5; }
+      let blink = 0;
+      if (this.blinkT > 0) { this.blinkT -= dt; blink = Math.sin(Math.max(0, 1 - this.blinkT / 0.15) * Math.PI); }
+      for (const lid of this.lids || []) lid.scale.y = Math.max(0.03, Math.min(1, ex[0] + blink * (1 - ex[0])));
+      // Hablar: el pico abre y cierra con ritmo de sílabas
+      let talk = 0;
+      if (this.talking) { this.talkPh = (this.talkPh || 0) + dt * 15; talk = Math.max(0, Math.sin(this.talkPh)) * (0.55 + 0.45 * Math.sin(this.talkPh * 0.37 + 1.3)) * 0.32; }
+      this.talkV = (this.talkV || 0) + (talk - (this.talkV || 0)) * Math.min(1, dt * 25);
+      if (B.pico) this.rot(B.pico, "x", ex[1] + this.talkV);
+      // Mirar alrededor cuando está quieto
+      this.lookIn = (this.lookIn || 0) - dt;
+      if (this.lookIn <= 0) { this.lookIn = 1.5 + Math.random() * 3; this.lookGoal = [(Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.25]; }
+      const still = !(this.gW > 0.1) && !this.talking, g = still ? (this.lookGoal || [0, 0]) : [0, 0];
+      const lk = this.lk || (this.lk = [0, 0]);
+      lk[0] += (g[0] - lk[0]) * Math.min(1, dt * 3); lk[1] += (g[1] - lk[1]) * Math.min(1, dt * 3);
+      if (B.cabeza) {
+        const nod = this.talking ? Math.sin((this.talkPh || 0) * 0.45) * 0.06 : 0;
+        this.rot(B.cabeza, "y", lk[0]); this.rot(B.cabeza, "x", lk[1] + ex[2] + nod); this.rot(B.cabeza, "z", ex[3]);
+      }
+      // Gestos al hablar: una mano y luego la otra suben, codo doblado
+      const gest = this.talking ? 1 : 0;
+      this.gestW = (this.gestW || 0) + (gest - (this.gestW || 0)) * k;
+      const gw = this.gestW, gp = (this.talkPh || 0) * 0.18;
+      for (const [sh, el, sg, off] of [['armL1', 'armL2', 1, 0], ['armL1001', 'armL2001', -1, Math.PI]]) {
+        if (!B[sh]) continue;
+        const a = Math.max(0, Math.sin(gp + off)) * gw;
+        this.rot(B[sh], "x", -0.5 * a); this.rot(B[sh], "z", 0.25 * a * sg);
+        this.rot(B[el], "x", 0.12 + 0.9 * a);
+      }
+      // Dedos: algo cerrados en reposo, se abren al gesticular, con leve movimiento propio
+      let i = 0;
+      for (const n of FINGERS) if (B[n]) this.rot(B[n], "x", 0.18 + Math.sin(t * 1.4 + i++) * 0.05 - gw * 0.15);
     }
     rot(bone, ax, v) { bone.rotation[ax] += v; this.ofs.push([bone, ax, v]); }
     // Paso procedural encima del clip: gait 0 quieto, 1 caminar, 2 correr; airborne recoge las patas.
@@ -245,6 +320,10 @@
         this.rot(B.cabeza, "z", -s * 0.05 * w);
       }
       if (B.espalda1001) this.rot(B.espalda1001, "z", Math.sin(ph + 1) * 0.12 * w);
+      // Cintura: la cadera gira con el paso y el pecho contrarresta
+      if (B.espalda1 && B.espalda2) { this.rot(B.espalda1, "y", s * 0.14 * w); this.rot(B.espalda2, "y", -s * 0.12 * w); }
+      // Codos: más doblados al correr y cuando el brazo va adelante
+      for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", (run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w);
       // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
       this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
     }
