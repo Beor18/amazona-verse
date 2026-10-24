@@ -93,14 +93,35 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #c-panels input { min-width: 0; }
 .pm { display: flex; gap: 4px; }
 .btn.sm { padding: 6px 10px; font-size: 14px; }
-#creator { inset: 0; display: flex; align-items: flex-start; justify-content: center; background: rgba(16, 36, 28, .9); overflow: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px; }
-.creator-box { width: min(560px, 100%); margin: auto; padding: 18px; }
-.creator-box h2 { font-family: var(--display); color: var(--leaf-hi); margin: 0 0 4px; font-size: 24px; }
-.creator-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: start; margin: 8px 0 12px; }
-#p-canvas { width: 100%; height: auto; border-radius: 50%; box-shadow: 0 0 0 3px var(--beak), 0 8px 24px rgba(0,0,0,.35); }
+#creator { inset: 0; background: radial-gradient(circle at 30% 20%, #23402f, #0c1a13 70%); overflow: auto; padding-block: calc(env(safe-area-inset-top, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.creator-box { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.stage-wrap { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4 / 5; max-height: calc(100vh - 40px); box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+#p-stage { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.stage-title { position: absolute; left: 16px; top: 14px; pointer-events: none; }
+.stage-title .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--beak); }
+.stage-title h2 { font-family: var(--display); font-size: 28px; margin: 2px 0 0; color: var(--paper); text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.stage-hint { position: absolute; bottom: 10px; width: 100%; text-align: center; margin: 0; font-size: 12px; color: var(--muted); pointer-events: none; }
+.stage-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; color: var(--paper); font-family: var(--display); }
+.creator-side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.creator-side label, .creator-side .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
+.creator-side input, .creator-side select { font: 15px var(--body); color: var(--paper); background: rgba(244,247,241,.08); border: 1px solid rgba(244,247,241,.3); border-radius: 8px; padding: 9px 10px; }
+#p-slots { display: flex; flex-direction: column; gap: 8px; }
+.slot { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: center; background: rgba(244,247,241,.05); border-radius: 12px; padding: 6px; }
+.slot .sname { font-size: 13px; color: var(--paper); }
+.slot .sname small { display: block; color: var(--muted); font-size: 11px; }
+.slot .opts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.thumb { width: 52px; height: 52px; border-radius: 10px; border: 2px solid transparent; background: #1b2f25; padding: 0; cursor: pointer; display: grid; place-items: center; color: var(--muted); font-size: 11px; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+.thumb[aria-pressed="true"] { border-color: var(--beak); background: #26432f; }
+.thumb:focus-visible, .swatch:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
+.swatches { display: flex; gap: 5px; flex-wrap: wrap; }
+.swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(244,247,241,.35); padding: 0; cursor: pointer; }
+.swatch[aria-pressed="true"] { border-color: var(--paper); box-shadow: 0 0 0 2px var(--beak); }
+.ph-tag { font-size: 10px; color: #ffd27a; }
+@media (max-width: 760px) { .creator-box { grid-template-columns: 1fr; } .stage-wrap { aspect-ratio: 1 / 1; max-height: 52vh; } .stage-title h2 { font-size: 22px; } }
 .err { color: #ffb4a8; font-size: 14px; margin: 0 0 8px; }
 @media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
-@media (max-width: 480px) { .creator-grid { grid-template-columns: 1fr; } #p-canvas { max-width: 170px; margin: 4px auto 0; } .creator-box h2 { text-align: center; } }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -203,26 +224,29 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 </div>
 
 <div id="creator" class="hud" hidden role="dialog" aria-label="Crea tu personaje">
-  <div class="panel creator-box">
-    <h2>Crea tu personaje</h2>
-    <p class="note">Serás aprendiz de Vittata en Villa Raíz. Usa un nombre inventado, no tu nombre real.</p>
-    <div class="creator-grid">
-      <canvas id="p-canvas" width="256" height="256" aria-label="Retrato de tu personaje"></canvas>
-      <div class="comic-form">
-        <label for="p-name">Nombre inventado</label>
-        <input id="p-name" type="text" maxlength="16" placeholder="Por ejemplo: Nube Azul" autocomplete="off">
-        <label for="p-preset">Plumaje</label>
-        <select id="p-preset"></select>
-        <label for="p-outfit">Vestimenta</label>
-        <select id="p-outfit"></select>
-        <label for="p-acc">Accesorio</label>
-        <select id="p-acc"></select>
+  <div class="creator-box">
+    <div class="stage-wrap">
+      <canvas id="p-stage" aria-label="Tu personaje en el Taller de los Guardianes"></canvas>
+      <div class="stage-title">
+        <span class="eyebrow">Taller de los Guardianes</span>
+        <h2>Crea tu aventurero</h2>
       </div>
+      <p class="stage-hint">Arrastra para girarlo</p>
+      <p class="stage-status" id="p-stage-status" hidden>Cargando el taller…</p>
     </div>
-    <p class="err" id="p-error" hidden></p>
-    <div class="row center">
-      <button class="btn" id="p-save" type="button">Empezar la aventura</button>
-      <button class="btn ghost" id="p-cancel" type="button">Cancelar</button>
+    <div class="creator-side panel">
+      <label for="p-name">Nombre inventado</label>
+      <input id="p-name" type="text" maxlength="16" placeholder="Por ejemplo: Nube Azul" autocomplete="off">
+      <p class="note">Serás aprendiz de Vittata en Villa Raíz. No uses tu nombre real.</p>
+      <label for="p-species">Plumaje</label>
+      <select id="p-species"></select>
+      <span class="lbl">Accesorios</span>
+      <div id="p-slots"></div>
+      <p class="err" id="p-error" hidden></p>
+      <div class="row center">
+        <button class="btn" id="p-save" type="button">Empezar la aventura</button>
+        <button class="btn ghost" id="p-cancel" type="button">Cancelar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -230,4 +254,8 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 <div id="tag" class="hud">Prototipo · Vittata, Luma y el Guardián usan renders como sustitutos 3D</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="character.js" charset="utf-8"></script>
+<script src="showcase.js" charset="utf-8"></script>
 <script src="game.js" charset="utf-8"></script>

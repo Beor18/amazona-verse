@@ -11,6 +11,7 @@
   // Eventos narrativos: clave del capítulo -> tipo genérico (directivo V4, sección 7.2) y datos de escena
   const EVENT_DEFS = {
     PlayerCharacterCreated: { type: 'CharacterCreated', loc: 'villa_raiz', chars: ['player'], scene: 'portrait' },
+    PlayerCharacterUpdated: { type: 'CharacterCustomized', loc: 'taller_vittata', chars: ['player'], scene: 'portrait' },
     WorkshopExplored: { type: 'LocationDiscovered', loc: 'taller_vittata', chars: ['vittata'], scene: 'workshop' },
     LumaHelped: { type: 'QuestAccepted', loc: 'villa_raiz', chars: ['vittata', 'luma'], scene: 'dialogue' },
     ResourcesCollected: { type: 'ResourceMilestoneReached', loc: 'villa_raiz', chars: ['vittata'], scene: 'gather' },
@@ -129,7 +130,7 @@
       indicators: { seguridad: '—', acceso: '—', habitat: '—' },
       events: [], captures: {},
       saveId: newId(),
-      profile: { created: false, name: 'Aprendiz', preset: 'agilis', outfit: 'naranja', accessory: 'gafas' },
+      profile: { created: false, name: 'Aprendiz', look: null },
       comic: { title: 'Mi primera reconstrucción', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {} },
     };
   }
@@ -397,10 +398,49 @@
   companion.scale.set(1.7, 1.7, 1); companion.visible = false; scene.add(companion);
   const cShadow = blob(0.45); cShadow.visible = false; scene.add(cShadow);
   const companionPos = { x: 0, z: 0 };
+  // Personajes 3D con esqueleto (si el modelo carga); si no, se usan los sprites
+  let player3D = null, companion3D = null, failed3D = false;
+  const anim3D = { player: '', companion: '' };
+  async function init3D() {
+    if (!window.AVCharacter) { failed3D = true; return; }
+    try {
+      const [a, b] = await Promise.all([window.AVCharacter.create(), window.AVCharacter.create()]);
+      a.applyLook({ species: 'vittata', accessories: {} });
+      a.root.scale.setScalar(1.75 / a.height); b.root.scale.setScalar(1.4 / b.height);
+      b.root.visible = false;
+      scene.add(a.root, b.root);
+      player3D = a; companion3D = b;
+      player.visible = false; companion.visible = false;
+      refreshCompanion();
+    } catch (e) { failed3D = true; }
+  }
+  function sync3D(dt, moving, snap) {
+    if (player3D) {
+      player3D.root.position.set(S.pos.x, S.pos.y, S.pos.z);
+      player3D.root.rotation.y = Math.atan2(S.facing.x, S.facing.z);
+      const want = moving && S.pos.y <= height(S.pos.x, S.pos.z) + 0.01 ? 'Walk' : 'Idle';
+      if (anim3D.player !== want && player3D.play(want)) anim3D.player = want;
+      player3D.update(dt);
+    }
+    if (companion3D && companion3D.root.visible) {
+      const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
+      const k = snap ? 1 : Math.min(1, dt * 3);
+      const dx = (tx - companionPos.x) * k, dz = (tz - companionPos.z) * k;
+      companionPos.x += dx; companionPos.z += dz;
+      companion3D.root.position.set(companionPos.x, height(companionPos.x, companionPos.z), companionPos.z);
+      const sp = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
+      if (sp > 0.6) companion3D.root.rotation.y = Math.atan2(dx, dz);
+      const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
+      if (anim3D.companion !== want && companion3D.play(want)) anim3D.companion = want;
+      companion3D.update(dt);
+      cShadow.position.set(companionPos.x, height(companionPos.x, companionPos.z) + 0.03, companionPos.z);
+    }
+  }
   // withBg = retrato de busto (creador, cómic, perfil); sin fondo = cuerpo entero para el sprite del mundo.
   // Los adornos se dibujan en coordenadas del render de 256 px y se transforman con el encuadre.
   async function drawPortrait(ctx, size, p, withBg) {
-    const img = await loadImg('assets/presets/' + p.preset + '.png');
+    p = legacyFields(p);
+    const img = await loadImg(p.preset === 'vittata' ? IMG.V : 'assets/presets/' + p.preset + '.png');
     const outfit = (OUTFITS.find(o => o.id === p.outfit) || OUTFITS[0]).color;
     ctx.save();
     ctx.clearRect(0, 0, size, size);
@@ -437,7 +477,13 @@
     ctx.restore();
   }
   async function refreshCompanion() {
-    if (!S.profile.created) { companion.visible = cShadow.visible = false; return; }
+    if (!S.profile.created) { companion.visible = cShadow.visible = false; if (companion3D) companion3D.root.visible = false; return; }
+    if (companion3D) {
+      companion3D.applyLook(profileLook(S.profile));
+      companion3D.root.visible = true; cShadow.visible = true; companion.visible = false;
+      companionPos.x = S.pos.x - 1.5; companionPos.z = S.pos.z + 1;
+      return;
+    }
     await drawPortrait(portraitCanvas.getContext('2d'), 256, S.profile, false);
     companionTex.needsUpdate = true;
     companion.visible = cShadow.visible = true;
@@ -831,8 +877,7 @@
     try { await document.fonts.load('700 40px Fredoka'); await document.fonts.load('400 24px "Atkinson Hyperlegible"'); } catch (e) { /* fuente de respaldo */ }
     const C = S.comic;
     const panels = orderedPanels();
-    const portrait = document.createElement('canvas'); portrait.width = portrait.height = 512;
-    await drawPortrait(portrait.getContext('2d'), 512, S.profile, true);
+    const portrait = await portraitCanvasFor(512, true);
     const vit = await loadImg(IMG.V);
     const imgs = { workshop: await loadImg(S.captures.workshop), shelter: await loadImg(S.captures.shelter), final: await loadImg(S.captures.final) };
     x.fillStyle = '#10241c'; x.fillRect(0, 0, W, H);
@@ -861,7 +906,7 @@
       const ih = b.h - capH - 20;
       x.save(); x.beginPath(); x.rect(b.x + 10, b.y + 10, b.w - 20, ih); x.clip();
       if (p.img === 'portrait') {
-        const outfit = (OUTFITS.find(o => o.id === S.profile.outfit) || OUTFITS[0]).color;
+        const neckAcc = profileLook(S.profile).accessories.neck, outfit = neckAcc ? neckAcc.color : '#2f8f4e';
         const g = x.createLinearGradient(b.x, b.y, b.x + b.w, b.y + ih); g.addColorStop(0, '#f4f7f1'); g.addColorStop(1, outfit);
         x.fillStyle = g; x.fillRect(b.x + 10, b.y + 10, b.w - 20, ih);
         const s = Math.min(b.w - 20, ih); x.drawImage(portrait, b.x + (b.w - s) / 2, b.y + 10 + (ih - s) / 2, s, s);
@@ -1004,38 +1049,138 @@
   $('c-png').onclick = () => exportComic('png', true);
   $('c-pdf').onclick = () => exportComic('pdf', true);
 
-  // ---------- Creador de personaje ----------
-  function openCreator(first) {
+  // ---------- Creador de personaje: Taller de los Guardianes en 3D ----------
+  const C3 = window.AVCharacter;
+  const SLOT_LABEL = { head: 'Cabeza', eyes: 'Ojos', neck: 'Cuello', chest: 'Pecho', back: 'Espalda', wings: 'Alas' };
+  const LEGACY_SPECIES = { agilis: 1, albifrons: 1, amazonica: 1, festiva: 1, guildingii: 1, oratrix: 1, versicolor: 1 };
+  // Perfiles de versiones anteriores (preset/outfit/accessory) pasan al formato modular
+  function profileLook(p) {
+    if (p && p.look) return C3.normalizeLook(p.look);
+    p = p || {};
+    const outfit = (OUTFITS.find(o => o.id === p.outfit) || OUTFITS[0]).color;
+    const acc = { neck: { id: 'panuelo', color: outfit } };
+    if (p.accessory === 'gafas') acc.eyes = { id: 'gafas' };
+    if (p.accessory === 'gorra') acc.head = { id: 'sombrero' };
+    if (p.accessory === 'medalla') acc.chest = { id: 'brujula' };
+    return C3.normalizeLook({ species: LEGACY_SPECIES[p.preset] ? p.preset : 'vittata', accessories: acc });
+  }
+  // Datos para el retrato 2D de respaldo (cuando no hay modelo 3D)
+  function legacyFields(p) {
+    if (p.preset && p.outfit) return p;
+    const look = profileLook(p);
+    const neck = look.accessories.neck, outfit = neck ? (OUTFITS.find(o => o.color === neck.color) || OUTFITS[0]).id : 'naranja';
+    const accessory = look.accessories.eyes ? 'gafas' : look.accessories.head ? 'gorra' : look.accessories.chest ? 'medalla' : 'ninguno';
+    return { name: p.name, preset: LEGACY_SPECIES[look.species] ? look.species : 'vittata', outfit, accessory };
+  }
+  let draftLook = null;
+  const thumbCache = {};
+  async function accessoryThumb(id, color) {
+    const key = id + color;
+    if (thumbCache[key]) return thumbCache[key];
+    const cv = document.createElement('canvas'); cv.width = cv.height = 104;
+    const rr = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+    const sc = new THREE.Scene();
+    sc.add(new THREE.HemisphereLight('#fff4dc', '#2f5a3a', 0.9));
+    const dl = new THREE.DirectionalLight('#ffffff', 0.9); dl.position.set(1, 2, 3); sc.add(dl);
+    const acc = C3.buildAccessory(id, color); sc.add(acc);
+    const box = new THREE.Box3().setFromObject(acc), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()).length();
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 50);
+    cam.position.set(c.x + sz * 0.9, c.y + sz * 0.6, c.z + sz * 1.6); cam.lookAt(c);
+    rr.render(sc, cam);
+    thumbCache[key] = cv.toDataURL('image/png');
+    rr.dispose(); rr.forceContextLoss();
+    return thumbCache[key];
+  }
+  async function renderSlots() {
+    const look = draftLook;
+    const rows = [];
+    for (const slot of C3.SLOTS) {
+      const def = C3.ACCESSORIES.find(a => a.slot === slot);
+      const cur = look.accessories[slot];
+      const color = cur ? cur.color : def.colors[0];
+      const img = await accessoryThumb(def.id, color);
+      rows.push(`<div class="slot" data-slot="${slot}">
+        <div class="sname">${SLOT_LABEL[slot]}<small>${def.name}${def.placeholder ? ' <span class="ph-tag">(provisional)</span>' : ''}</small></div>
+        <div class="opts">
+          <button class="thumb" type="button" data-act="none" aria-pressed="${!cur}" aria-label="Sin ${def.name}">Nada</button>
+          <button class="thumb" type="button" data-act="on" aria-pressed="${!!cur}" aria-label="${def.name}"><img src="${img}" alt=""></button>
+          <div class="swatches" ${cur ? '' : 'hidden'}>${def.colors.map(c => `<button class="swatch" type="button" data-color="${c}" aria-pressed="${cur && cur.color === c}" aria-label="Color ${c}" style="background:${c}"></button>`).join('')}</div>
+        </div></div>`);
+    }
+    $('p-slots').innerHTML = rows.join('');
+  }
+  function changeLook(mutator) {
+    mutator(draftLook);
+    draftLook = C3.normalizeLook(draftLook);
+    if (window.AVShowcase) window.AVShowcase.setLook(draftLook, true);
+    renderSlots();
+  }
+  $('p-slots').addEventListener('click', e => {
+    const row = e.target.closest('.slot'); if (!row) return;
+    const slot = row.dataset.slot, def = C3.ACCESSORIES.find(a => a.slot === slot);
+    const btn = e.target.closest('button'); if (!btn) return;
+    if (btn.dataset.act === 'none') changeLook(l => { delete l.accessories[slot]; });
+    else if (btn.dataset.act === 'on') changeLook(l => { l.accessories[slot] = { id: def.id, color: (l.accessories[slot] || {}).color || def.colors[0] }; });
+    else if (btn.dataset.color) changeLook(l => { l.accessories[slot] = { id: def.id, color: btn.dataset.color }; });
+  });
+  $('p-species').addEventListener('change', () => changeLook(l => { l.species = $('p-species').value; }));
+  async function openCreator(first) {
     const p = S.profile;
+    draftLook = profileLook(p);
     $('p-name').value = p.created ? p.name : '';
-    $('p-preset').innerHTML = PRESETS.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
-    $('p-outfit').innerHTML = OUTFITS.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
-    $('p-acc').innerHTML = ACCESSORIES.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
-    $('p-preset').value = p.preset; $('p-outfit').value = p.outfit; $('p-acc').value = p.accessory;
+    $('p-species').innerHTML = Object.entries(C3.SPECIES).map(([id, sp]) => `<option value="${id}">${sp.name}</option>`).join('');
+    $('p-species').value = draftLook.species;
     $('p-error').hidden = true;
     $('p-cancel').hidden = !!first;
     $('creator').hidden = false;
-    previewCreator();
+    renderSlots();
+    if (window.AVShowcase) {
+      $('p-stage-status').hidden = false; $('p-stage-status').textContent = 'Cargando el taller…';
+      window.AVShowcase.setLook(draftLook, false);
+      await window.AVShowcase.mount($('p-stage'));
+      const st = window.AVShowcase.status();
+      $('p-stage-status').hidden = st === 'ready';
+      if (st === 'failed') $('p-stage-status').textContent = 'No se pudo cargar el modelo 3D en este dispositivo.';
+    }
   }
-  function creatorDraft() { return { name: $('p-name').value.trim(), preset: $('p-preset').value, outfit: $('p-outfit').value, accessory: $('p-acc').value }; }
-  function previewCreator() { drawPortrait($('p-canvas').getContext('2d'), 256, creatorDraft(), true); }
-  for (const id of ['p-preset', 'p-outfit', 'p-acc']) $(id).addEventListener('change', previewCreator);
+  function closeCreator() { $('creator').hidden = true; if (window.AVShowcase) window.AVShowcase.unmount(); }
   function saveCharacter(draft) {
-    const d = draft || creatorDraft();
+    const d = draft || { name: $('p-name').value.trim(), look: draftLook };
     if (!NAME_OK.test(d.name)) return 'Escribe un nombre inventado de 1 a 16 letras o números.';
-    if (!PRESETS.some(o => o.id === d.preset) || !OUTFITS.some(o => o.id === d.outfit) || !ACCESSORIES.some(o => o.id === d.accessory)) return 'Opción no válida.';
+    if (d.preset && !PRESETS.some(o => o.id === d.preset)) return 'Opción no válida.';
+    const look = d.look ? C3.normalizeLook(d.look) : profileLook(d);
     const firstTime = !S.profile.created;
-    S.profile = { created: true, name: d.name, preset: d.preset, outfit: d.outfit, accessory: d.accessory };
-    if (firstTime) logEvent('PlayerCharacterCreated', { preset: d.preset, outfit: d.outfit, accessory: d.accessory });
-    $('creator').hidden = true;
+    S.profile = { created: true, name: d.name, look };
+    const meta = { species: look.species, accessories: Object.values(look.accessories).map(a => a.id) };
+    logEvent(firstTime ? 'PlayerCharacterCreated' : 'PlayerCharacterUpdated', meta);
+    closeCreator();
     refreshCompanion();
     autosave();
     if (firstTime) setTimeout(() => toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500), 300);
     return null;
   }
   $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
-  $('p-cancel').onclick = () => { $('creator').hidden = true; };
+  $('p-cancel').onclick = closeCreator;
   $('b-char').onclick = () => openCreator(false);
+
+  // Retrato idéntico al del juego: se renderiza con el mismo modelo, plumaje y accesorios
+  async function portraitCanvasFor(size, withBg) {
+    const out = document.createElement('canvas'); out.width = out.height = size;
+    const x = out.getContext('2d');
+    if (window.AVCharacter && !failed3D) {
+      try {
+        const cv = await C3.renderPortrait(profileLook(S.profile), size);
+        if (withBg) {
+          const g = x.createRadialGradient(size * 0.5, size * 0.38, size * 0.05, size * 0.5, size * 0.5, size * 0.72);
+          g.addColorStop(0, '#2d5a43'); g.addColorStop(1, '#10241c'); x.fillStyle = g; x.fillRect(0, 0, size, size);
+        }
+        x.drawImage(cv, 0, 0, size, size);
+        return out;
+      } catch (e) { /* sin modelo: retrato 2D */ }
+    }
+    await drawPortrait(x, size, S.profile, withBg);
+    return out;
+  }
 
   // ---------- Guardado versionado con migración y respaldo ----------
   const SAVED_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'examined', 'collected', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'complete', 'indicators', 'events', 'captures', 'clock'];
@@ -1242,6 +1387,7 @@
     }
     player.position.set(S.pos.x, S.pos.y + 1.05, S.pos.z);
     pShadow.position.set(S.pos.x, height(S.pos.x, S.pos.z) + 0.03, S.pos.z);
+    if (snap) sync3D(0, false, true);
     camera.lookAt(S.pos.x, S.pos.y + 1.2, S.pos.z);
   }
   function render(dt, moving) {
@@ -1261,6 +1407,7 @@
       companion.position.set(companionPos.x, cy + 0.75 + Math.abs(Math.sin(t * 9)) * (moving ? 0.1 : 0), companionPos.z);
       cShadow.position.set(companionPos.x, cy + 0.03, companionPos.z);
     }
+    sync3D(dt, moving, false);
     for (const r of RESOURCES) if (resMeshes[r.id].visible) resMeshes[r.id].rotation.y += dt * 0.6;
     if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25);
     if (rain.visible) {
@@ -1285,6 +1432,7 @@
 
   // ---------- Inicio ----------
   S.pos.y = height(S.pos.x, S.pos.z);
+  init3D();
   if (!load(true)) reset();
   placeCamera(true);
   requestAnimationFrame(frame);
@@ -1305,7 +1453,7 @@
     check('Nombre con símbolos raros se rechaza', saveCharacter({ name: '<b>x</b>', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && hadEvent('PlayerCharacterCreated'));
     await refreshCompanion();
-    check('El aprendiz aparece en el mundo', companion.visible);
+    check('El aprendiz aparece en el mundo', companion.visible || !!(companion3D && companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SPAWN.x, S.pos.z - SPAWN.z) < 0.1);
     useAt('maquina'); drain(); useAt('transmisor'); drain();
     check('Taller explorado y misión con Luma', S.step === 1 && hadEvent('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
@@ -1384,8 +1532,7 @@
       const pngBlob = await (await fetch(png)).blob();
       check('PNG enviado al servidor de pruebas', await post('comic.png', pngBlob));
       check('PDF enviado al servidor de pruebas', await post('comic.pdf', pdf));
-      const portrait = document.createElement('canvas'); portrait.width = portrait.height = 256;
-      await drawPortrait(portrait.getContext('2d'), 256, S.profile, true);
+      const portrait = await portraitCanvasFor(512, true);
       check('Retrato enviado al servidor de pruebas', await post('retrato.png', await (await fetch(portrait.toDataURL('image/png'))).blob()));
     }
     $('comic').hidden = true;
@@ -1417,5 +1564,67 @@
     if (keep) load(true); else openCreator(true);
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
-  window.AV = { get state() { return S; }, teleport, tick, action, nearest: () => nearest() && nearest().id, selfTest, save, load, reset, exportComic };
+  // Pruebas del sistema de accesorios 3D (requieren el modelo con esqueleto)
+  async function accessoryTest() {
+    const out = [];
+    const check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra || '' });
+    let ch;
+    try { ch = await window.AVCharacter.create(); } catch (e) { check('El modelo 3D carga', false, String(e)); return { passed: 0, total: 1, results: out }; }
+    check('El modelo 3D carga', true, Math.round(ch.height * 100) / 100 + ' de alto');
+    check('Tiene los 7 puntos de montaje', ch.missingMounts().length === 0, ch.missingMounts().join(', '));
+    const needed = ['Idle', 'Welcome', 'Celebrate', 'Curious', 'Walk'];
+    check('Tiene las animaciones de espera, presentación, celebración, curiosidad y caminar', needed.every(n => ch.clips[n]), Object.keys(ch.clips).join(', '));
+    const all = { species: 'vittata', accessories: {} };
+    for (const a of window.AVCharacter.ACCESSORIES) all.accessories[a.slot] = { id: a.id, color: a.colors[1] || a.colors[0] };
+    ch.applyLook(all);
+    const objs = Object.values(ch.mounted).flatMap(m => m.objects);
+    check('Se montan los 6 accesorios (7 piezas con los dos brazaletes)', Object.keys(ch.mounted).length === 6 && objs.length === 7, objs.length + ' piezas');
+    // Colisiones en pose de reposo: ningún vértice de accesorio dentro del pico ni de los ojos
+    ch.mixer.stopAllAction(); ch.root.traverse(o => { if (o.isSkinnedMesh) o.skeleton.pose(); }); ch.root.updateMatrixWorld(true);
+    const solids = [];
+    ch.root.traverse(o => { if (o.isMesh && !o.userData.isAccessory) { const names = (Array.isArray(o.material) ? o.material : [o.material]).map(m => m.name); if (names.some(n => /^(Beak|EyeWhite|EyeIris)$/.test(n))) { const b = new THREE.Box3().setFromObject(o); b.expandByScalar(-ch.height * 0.003); solids.push({ name: names.join('/'), box: b }); } } });
+    const hits = [];
+    for (const [slot, m] of Object.entries(ch.mounted)) for (const obj of m.objects) obj.traverse(o => {
+      if (!o.isMesh) return; const pos = o.geometry.attributes.position, v = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i += Math.max(1, Math.floor(pos.count / 300))) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); for (const sd of solids) if (sd.box.containsPoint(v)) { hits.push(slot + '→' + sd.name); return; } }
+    });
+    check('Los accesorios no atraviesan el pico ni los ojos (reposo)', solids.length > 0 && hits.length === 0, solids.length ? (hits.join(', ') || solids.length + ' piezas revisadas') : 'no se encontraron mallas de pico/ojos');
+    // Seguimiento durante las animaciones: el accesorio conserva su posición relativa al hueso y se mueve con él
+    let maxDrift = 0, maxTravel = 0;
+    const inv = new THREE.Matrix4(), rel = new THREE.Vector3();
+    for (const name of needed) {
+      const clip = ch.clips[name]; if (!clip) continue;
+      ch.mixer.stopAllAction(); const act = ch.mixer.clipAction(clip); act.reset().play();
+      const ref = {};
+      for (let k = 0; k <= 6; k++) {
+        ch.mixer.setTime(clip.duration * k / 6); ch.root.updateMatrixWorld(true);
+        for (const [slot, m] of Object.entries(ch.mounted)) m.objects.forEach((obj, j) => {
+          const bone = obj.parent, key = slot + j;
+          const wp = obj.getWorldPosition(new THREE.Vector3());
+          inv.copy(bone.matrixWorld).invert(); rel.copy(wp).applyMatrix4(inv);
+          if (!ref[key]) ref[key] = { rel: rel.clone(), wp: wp.clone() };
+          maxDrift = Math.max(maxDrift, rel.distanceTo(ref[key].rel));
+          maxTravel = Math.max(maxTravel, wp.distanceTo(ref[key].wp));
+        });
+      }
+    }
+    check('Los accesorios siguen a sus huesos en las 5 animaciones', maxDrift < 1e-4 && maxTravel > ch.height * 0.005, 'desvío ' + maxDrift.toExponential(1) + ', recorrido ' + maxTravel.toFixed(3));
+    // Personalización: quitar, cambiar color, especie
+    const before = ch.mounted.neck.objects[0];
+    ch.applyLook(Object.assign({}, all, { accessories: Object.assign({}, all.accessories, { neck: { id: 'panuelo', color: '#7a4fb3' } }) }));
+    let col = null; ch.mounted.neck.objects[0].traverse(o => { if (o.isMesh && !col) col = '#' + o.material.color.getHexString(); });
+    check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && col === '#7a4fb3', col);
+    ch.applyLook({ species: 'versicolor', accessories: {} });
+    check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
+    const patch = ch.materials.Patch;
+    check('El plumaje cambia la máscara facial', !patch || ('#' + patch.color.getHexString()) === window.AVCharacter.SPECIES.versicolor.patch, patch ? '#' + patch.color.getHexString() : 'sin material Patch');
+    // Retrato idéntico para juego y cómic
+    const prevProfile = S.profile;
+    S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };
+    const p1 = (await portraitCanvasFor(256, false)).toDataURL(), p2 = (await portraitCanvasFor(256, false)).toDataURL();
+    check('El retrato del cómic es idéntico en cada render', p1 === p2 && p1.length > 5000, Math.round(p1.length / 1024) + ' KB');
+    S.profile = prevProfile;
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+  window.AV = { get state() { return S; }, teleport, tick, action, nearest: () => nearest() && nearest().id, selfTest, accessoryTest, save, load, reset, exportComic, portraitCanvasFor: (n, bg) => portraitCanvasFor(n, bg) };
 })();
