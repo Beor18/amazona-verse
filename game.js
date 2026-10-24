@@ -580,9 +580,13 @@
     m.rotation.x = -Math.PI / 2; m.position.set(x, y + 0.03, z); scene.add(m);
     fx.push({ m, t: 0, life, size, op });
   }
-  function ripple(x, y, z) { ringFx(x, y, z, 1.2, 0.9, 0.4); }
+  function ripple(x, y, z, size) { ringFx(x, y, z, size || 1.2, 0.9, 0.4); }
   function splash(x, y, z, s) {
     ringFx(x, y, z, 2.2 * s, 0.75, 0.75); ringFx(x, y, z, 1.2 * s, 0.5, 0.55);
+    drops(x, y, z, s, y);
+  }
+  function spray(x, y, z) { drops(x, y, z, 0.7, y - 1.2); }
+  function drops(x, y, z, s, floorY) {
     const n = 18, pos = new Float32Array(n * 3), vel = [];
     for (let i = 0; i < n; i++) {
       pos.set([x, y + 0.1, z], i * 3);
@@ -591,7 +595,7 @@
     }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const p = new THREE.Points(g, new THREE.PointsMaterial({ color: '#dff3ff', size: 0.16, transparent: true, opacity: 0.9, depthWrite: false }));
-    scene.add(p); fx.push({ m: p, t: 0, life: 0.9, vel, y0: y, op: 0.9 });
+    scene.add(p); fx.push({ m: p, t: 0, life: 0.9, vel, y0: floorY, op: 0.9 });
   }
   function camDist() { return MOVE.flying ? 9.5 : 7.5; }
   function updateFx(dt) {
@@ -617,7 +621,13 @@
       const sp = MOVE.speed || 0, base = player3D.root.userData.s || (player3D.root.userData.s = player3D.root.scale.x);
       // Volando: el cuerpo se tumba hacia adelante según la velocidad, y se endereza al subir
       const flyLean = MOVE.flying ? 0.2 + Math.min(1, sp / FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 : 0;
-      r.x += ((MOVE.flying ? flyLean : MOVE.swimming ? 0.35 + Math.min(1, sp / SWIM_SPEED) * 0.35 : Math.min(0.35, sp / RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))) - r.x) * Math.min(1, dt * 8);
+      // Nadando: casi horizontal como un ave que flota (pecho hundido); buceando, de cabeza
+      const diving = MOVE.swimming && keys.has('c');
+      const swimLean = diving ? 1.35 : 1.1 + Math.min(1, sp / SWIM_SPEED) * 0.1;
+      r.x += ((MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))) - r.x) * Math.min(1, dt * 8);
+      // Meceo en el agua: sube y baja suave y se balancea de lado
+      r.z = MOVE.swimming && !diving ? Math.sin(performance.now() / 590) * 0.06 : r.z * 0.9;
+      if (MOVE.swimming && !diving) player3D.root.position.y += Math.sin(performance.now() / 430) * 0.035;
       const sq = MOVE.land > 0 ? Math.sin(MOVE.land / 0.2 * Math.PI) * 0.18 : 0;
       player3D.root.scale.set(base * (1 + sq * 0.5), base * (1 - sq), base * (1 + sq * 0.5));
       const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01 && !MOVE.swimming;
@@ -627,7 +637,9 @@
       if (player3D.current && !clipEmote) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
       player3D.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : sp > (SPEED + RUN_SPEED) / 2 ? 2 : 1; // nadando patalea siempre
       player3D.airborne = air;
-      player3D.swimming = MOVE.swimming;
+      player3D.swimming = MOVE.swimming; player3D.diving = diving;
+      player3D.swimRate = moving ? 1.3 : 0.55;
+      if (MOVE.shake) { player3D.shakeT = 0.7; MOVE.shake = false; }
       // Habla y expresión en diálogos; si escucha a otro, atiende con curiosidad
       const inDialog = dialogOpen(), mine = inDialog && talk.who === 'Vittata';
       player3D.talking = mine && performance.now() < talk.until;
@@ -637,7 +649,7 @@
       player3D.emote = emote.name && EMOTES[emote.name].pose || null;
       player3D.expression = emote.name ? EMOTES[emote.name].face
         : !inDialog ? (MOVE.land > 0 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral') : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
-      player3D.wingMode = MOVE.swimming ? 'swim' : MOVE.flying ? (jumpHeld ? 'flap' : 'fly') : MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+      player3D.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim') : MOVE.flying ? (jumpHeld ? 'flap' : 'fly') : MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       ideaBulb.visible = emote.name === 'idea';
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
       player3D.update(dt);
@@ -1558,7 +1570,7 @@
   // Vuelo: tercer toque de salto en el aire, o V / botón Volar. Mantener salto sube, C baja, soltar desciende suave.
   const FLY_SPEED = 12, FLY_CEIL = 26;
   // Nado: la cotorra flota con el cuerpo medio hundido
-  const SWIM_SPEED = 4.5, SWIM_DEPTH = 0.55;
+  const SWIM_SPEED = 4.5, SWIM_DEPTH = 0.22; // profundidad de los pies: deja cabeza y espalda fuera del agua
   function waterLevelAt(x) { return Math.abs(x - water.position.x) < 16 ? S.water : -Infinity; }
   function tryJump() {
     if (MOVE.flying) return;
@@ -1662,8 +1674,18 @@
       // Flota en la superficie; mantener C bucea hasta el fondo; al soltar sube
       const target = keys.has('c') && !busy ? ground + 0.25 : wY - SWIM_DEPTH;
       S.vy += ((target - S.pos.y) * 3 - S.vy) * (1 - Math.exp(-dt * 5));
-      MOVE.airJumps = 1; MOVE.airDash = true;
-      if (moving && (MOVE.ripple = (MOVE.ripple || 0) - dt) <= 0) { MOVE.ripple = 0.35; ripple(S.pos.x, wY, S.pos.z); }
+      MOVE.airJumps = 1; MOVE.airDash = true; MOVE.wet = true;
+      // Estela en V detrás al avanzar; quieta, solo ondas suaves
+      if ((MOVE.ripple = (MOVE.ripple || 0) - dt) <= 0 && S.pos.y > wY - 1) {
+        if (moving) {
+          MOVE.ripple = 0.16;
+          const bx = S.pos.x - S.facing.x * 0.5, bz = S.pos.z - S.facing.z * 0.5, px = -S.facing.z * 0.35, pz = S.facing.x * 0.35;
+          ripple(bx + px, wY, bz + pz, 0.7); ripple(bx - px, wY, bz - pz, 0.7);
+        } else { MOVE.ripple = 1.1; ripple(S.pos.x, wY, S.pos.z, 1.3); }
+      }
+    } else if (MOVE.wet && onGround) {
+      // Sale del agua a tierra: se sacude como un ave, con gotas
+      MOVE.wet = false; MOVE.shake = true; spray(S.pos.x, S.pos.y + 1.0, S.pos.z);
     } else if (MOVE.flying) {
       // Volando: sin gravedad; sube con salto, baja con C, si no desciende despacio
       const want = jumpHeld && !busy ? 5.5 : keys.has('c') ? -7 : -1.1;

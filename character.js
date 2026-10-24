@@ -235,18 +235,34 @@
       if (!L || !R) return;
       const t = this.wingT = (this.wingT || 0) + dt;
       const mode = this.wingMode || 'idle';
-      const open = mode === 'swim' ? 0.45 + 0.35 * Math.sin(t * 7)
+      // Nado de ave real: las dos alas reman a la vez sobre el agua. Fase de empuje (sin>0): abiertas y hacia atrás;
+      // recuperación: cerradas, codo doblado y hacia adelante. swimRate (Hz) lo pone el juego: lento quieto, más rápido avanzando.
+      if (mode === 'swim' || mode === 'dive') {
+        this.sPh = ((this.sPh || 0) + dt * (this.swimRate || 0.7) * Math.PI * 2) % (Math.PI * 2);
+      }
+      const sS = Math.sin(this.sPh || 0), sC = Math.cos(this.sPh || 0);
+      const open = mode === 'swim' ? 0.62 + 0.3 * sS : mode === 'dive' ? -0.05
         : mode === 'fly' ? 0.85 + 0.6 * Math.sin(t * 12)
         : mode === 'flap' ? 0.8 + 0.6 * Math.sin(t * 20)
         : mode === 'glide' ? 1.2 + 0.08 * Math.sin(t * 9)
         : mode === 'walk' ? 0.14 + 0.06 * Math.sin(t * 11) : 0.05 * Math.sin(t * 2.2);
-      // Al nadar: brazadas alternas tipo crol
-      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : mode === 'swim' ? 0.75 * Math.sin(t * 7) : 0;
+      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : 0;            // alterno (caminar)
+      const reach = mode === 'swim' ? 0.55 * sC : mode === 'dive' ? 0.45 : 0;  // a la vez (remar / pegadas al bucear)
       const k = 1 - Math.exp(-dt * 12);
       this.wOpen = (this.wOpen || 0) + (open - (this.wOpen || 0)) * k;
       this.wSwing = (this.wSwing || 0) + (swing - (this.wSwing || 0)) * k;
+      this.wReach = (this.wReach || 0) + (reach - (this.wReach || 0)) * k;
       this.rot(L, "z", this.wOpen); this.rot(R, "z", -this.wOpen);
-      this.rot(L, "x", this.wSwing); this.rot(R, "x", -this.wSwing);
+      this.rot(L, "x", this.wSwing + this.wReach); this.rot(R, "x", -this.wSwing + this.wReach);
+      if (mode === 'swim') for (const el of ['armL2', 'armL2001']) if (this.bones[el]) this.rot(this.bones[el], "x", 0.15 + 0.6 * Math.max(0, -sS));
+      // Sacudirse el agua al salir: temblor rápido de cuerpo, cabeza y alas
+      if (this.shakeT > 0) {
+        this.shakeT -= dt;
+        const env = Math.sin(Math.min(1, this.shakeT / 0.7) * Math.PI), q = Math.sin(t * 48) * env;
+        if (this.bones.espalda1) this.rot(this.bones.espalda1, "y", q * 0.35);
+        if (this.bones.cabeza) this.rot(this.bones.cabeza, "y", -q * 0.5);
+        this.rot(L, "z", 0.35 * env); this.rot(R, "z", -0.35 * env);
+      }
       this.locomotion(dt, k);
       this.face(dt);
       this.emotePose(dt);
@@ -375,13 +391,14 @@
       this.gW = (this.gW || 0) + ((g > 0 ? 1 : 0) - (this.gW || 0)) * k;
       this.aW = (this.aW || 0) + ((this.airborne ? 1 : 0) - (this.aW || 0)) * k;
       const w = this.gW, aw = this.aW;
-      if (w > 0.01) this.ph = ((this.ph || 0) + dt * (run ? 4.8 : 3.4) * Math.PI * 2) % (Math.PI * 2);
+      if (w > 0.01) this.ph = ((this.ph || 0) + dt * (this.swimming ? (run ? 2.6 : 1.4) : run ? 4.8 : 3.4) * Math.PI * 2) % (Math.PI * 2);
       const ph = this.ph || 0, s = Math.sin(ph), c = Math.cos(ph);
       const A = (run ? 0.8 : 0.55) * w;
       for (const [hip, knee, ankle, sg] of [['pieL1', 'pieL2', 'pieL3', 1], ['pieL1001', 'pieL2001', 'pieL3001', -1]]) {
         if (!B[hip]) continue;
         const sw = s * sg, lift = Math.max(0, c * sg) * w * (run ? 1.1 : 0.85);
-        this.rot(B[hip], "x", -A * sw + aw * 0.55);
+        // Nadando el cuerpo va tumbado: las patas se adelantan ~1 rad para quedar debajo y patalear en el agua
+        this.rot(B[hip], "x", -A * sw + aw * 0.55 - (this.swimming && !this.diving ? 1.0 : 0));
         this.rot(B[knee], "x", -lift * 0.95 - aw * 0.7);
         this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * 0.3);
       }
@@ -399,7 +416,8 @@
       // Codos: más doblados al correr y cuando el brazo va adelante
       for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", (run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w);
       // Nadando: la cabeza mira al frente aunque el cuerpo vaya tumbado, y no hay rebote de pasos
-      if (this.swimming) { if (B.cabeza) this.rot(B.cabeza, "x", -0.5); return; }
+      // (el cuerpo va casi horizontal; el cuello levanta la cabeza para llevar el pico fuera del agua)
+      if (this.swimming) { if (B.cabeza) this.rot(B.cabeza, "x", this.diving ? 0.3 : -0.75); if (B.espalda2) this.rot(B.espalda2, "x", this.diving ? 0 : -0.25); return; }
       // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
       this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
     }

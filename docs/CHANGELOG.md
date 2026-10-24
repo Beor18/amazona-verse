@@ -69,3 +69,9 @@
 - Gestos (teclas 1–7 o botón Gestos): Saludar, Celebrar (clips), Bailar, Idea (con foco), Enojarse (pisotón), Pelear (guardia y golpes), Molestia (brazos cruzados y zapateo).
   Nuevas caras: idea, pelea, molestia. Un gesto se cancela al moverse, saltar, volar o abrir un diálogo.
 - Medido: despegue 6,7 m en 1 s; vuelo 22 m en 2 s; nado 3,9 m/s; buceo hasta el fondo y regreso a la superficie. Pruebas 45/45 y 10/10.
+
+## 2026-10-24 · Nado como ave real
+- Cuerpo casi horizontal (pecho hundido), cabeza levantada con el pico fuera del agua; flota con espalda y cabeza afuera (pies a 22 cm).
+- Las dos alas reman a la vez en la superficie (empuje abiertas hacia atrás, recuperación cerradas con codo doblado); patas patalean debajo, despacio.
+- Meceo suave, estela en V detrás al avanzar, buceo de cabeza con alas pegadas, y al salir a tierra se sacude con gotas.
+- Pruebas 45/45 y 10/10.
