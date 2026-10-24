@@ -8,7 +8,7 @@
 | Renders de 34 especies | PNG 2048 con transparencia | En uso como sprites (Vittata, Luma, Guardián) y presets del creador (8) |
 | Hojas de poses (14) | Capturas de Finder | Solo referencia visual |
 | AV3DMaxTerrainExport.zip / .max | 3ds Max 2015 | **Descarga incompleta** en Safari (102/161 MB y 112/135 MB). Lo legible del ZIP: el .max, MAXFILES.TXT y texturas. Hecho por el usuario de Windows "danie" con CityBuilderPlugin. **No trae FBX/OBJ**; el .max no se abre en Mac ni en Blender |
-| Dependencias del mapa | Texturas | Vienen de **KitBash3D "Ancient Temples"** y **Archmodels Vol. 61**, guardados en una carpeta `D:\Torrents\`. **Riesgo de derechos**: no usar comercialmente sin licencia |
+| Dependencias del mapa | Texturas | **KitBash3D "Ancient Temples"** y **Archmodels Vol. 61**. Kelvin indica que los pagó (24 oct). Antes de publicar en tiendas, guardar los recibos o licencias junto al proyecto |
 | Referencias propias del mapa | JPG/PSD | `WORK/Amazonas/references/canoa.jpg`, `maps/trees.psd` (por extraer cuando termine la descarga) |
 | AV3DMaxExportBuildings.zip | ZIP 1.3 GB | En Google Drive, no descargado |
 | Cotorras cosplay (15) | PNG | En Drive; personajes de terceros, no comercializar |
@@ -16,5 +16,5 @@
 ## Mapa de 3ds Max abierto (24 oct 2026)
 Abierto en Blender 4.2 con la extensión oficial gratuita "Import Autodesk MAX (.max)" (`io_scene_max`).
 - **Terreno propio** (`TerrainBuilderSurface`, 80k triángulos, ~2,2 × 2,8 km, alturas −11 a 154 m): río serpenteante y mesetas tipo tepuy, más el océano. Exportado como `assets/models/terreno_amazonas.glb` (32k triángulos, 0,97 MB). Vistas en `docs/img/mapa3dmax_perspectiva.png` y `mapa3dmax_planta.png`.
-- **Árboles:** 11 modelos de Archmodels (1,1 millones de triángulos) que venían de la carpeta `Torrents`. **No usar.**
+- **Árboles:** 11 modelos de Archmodels (1,1 millones de triángulos). Kelvin indica que pagó estos paquetes y creó el mapa (24 oct). Son demasiado pesados para celular tal cual: hay que aligerarlos antes de usarlos.
 - **Casas:** no vienen en este archivo; están en `AV3DMaxExportBuildings.zip` (1,3 GB, en Drive, sin descargar).

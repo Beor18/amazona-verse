@@ -22,6 +22,7 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Banco de trabajo como mejora del taller | PROVISIONAL | Prototipo |
 | Terrenos "Junto al río" y "La colina" | PROVISIONAL | Guion pág. 6 y prototipo |
 | Agilis como aliada de la primera versión del prototipo | HISTÓRICO (reemplazada por Luma) | Prototipo v1 |
+| Mapa de 3ds Max, paquetes KitBash3D y Archmodels: creados y pagados por Kelvin | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Guion de cómic de Gustavo Soria (2021) | HISTÓRICO, no reutilizar | Material anterior |
 | Saga de Solana Forest y todo lo cripto/NFT | RECHAZADO | Kelvin |
 | Cardboard Citizens | RECHAZADO | Kelvin |
