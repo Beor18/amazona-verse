@@ -6,7 +6,7 @@
 | 2 | Confirmar el diseño oficial de Vittata (render verde vs. traje de piloto del .blend) | Kelvin | Decisión en CANON_REGISTRY | Baja | NEEDS CREATOR |
 | 3 | Conseguir texturas y RigCotorra del modelo original | Archivos del disco E:\ original | GLB con color y animación | Media | BLOCKED |
 | 4 | Terminar descarga del mapa y revisar licencias KitBash3D/Archmodels | Safari / Kelvin | Decidir si se usa, se recompra la licencia o se rehace | Media | BLOCKED |
-| 5 | Episodio 1: mirador y niebla entre islas (pág. 12) | — | Zona elevada visitable con vista a islas | Media | NOT STARTED |
+| 5 | Episodio 1: mirador y niebla entre islas (pág. 12) | — | Zona elevada visitable con vista a islas | Media | TESTED |
 | 6 | Hito 8: construir el bote y navegar a una segunda zona | — | Crafting, bote movible en agua, llegada a otra isla, evento VehicleConstructed | Alta | NOT STARTED |
 | 7 | Sonido: pasos, recoger, construir, lluvia (sonidos originales) | — | Efectos con control de volumen | Media | NOT STARTED |
 | 8 | Tamaño de texto ajustable y remapeo de teclas | — | Opción en un menú de ajustes | Baja | NOT STARTED |

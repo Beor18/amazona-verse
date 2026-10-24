@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 24 oct 2026 · v0.4: el mirador
+- Paso 8 del capítulo: subir al mirador de la colina; océano, tres islas lejanas y niebla luminosa (página 12 del guion).
+- Guardado v4 con migración desde v3 y v2.
+
 ## 24 oct 2026 · v0.3: personaje y cómic
 - Creador de personaje (nombre inventado, 8 plumajes, pañuelo, accesorio) y aprendiz que acompaña a Vittata.
 - Eventos con el esquema del directivo V4; migración de partidas v2 → v3; copia de respaldo y de partidas ilegibles.

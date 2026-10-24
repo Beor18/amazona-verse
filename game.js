@@ -5,7 +5,7 @@
   'use strict';
 
   const SAVE_KEY = 'amazonaverse.save';
-  const SAVE_VERSION = 3;
+  const SAVE_VERSION = 4;
   const EVENT_SCHEMA = 1;
 
   // Eventos narrativos: clave del capítulo -> tipo genérico (directivo V4, sección 7.2) y datos de escena
@@ -24,6 +24,7 @@
     WorkshopUpgradeUnlocked: { type: 'InventionUnlocked', loc: 'taller_vittata', chars: ['guardian'], scene: 'workshop' },
     TransmitterActivated: { type: 'BuildingRepaired', loc: 'taller_vittata', chars: ['vittata', 'guardian'], scene: 'symbol' },
     BoatBlueprintUnlocked: { type: 'InventionUnlocked', loc: 'taller_vittata', chars: ['vittata'], scene: 'symbol' },
+    LocationDiscoveredMirador: { type: 'LocationDiscovered', loc: 'mirador', chars: ['vittata', 'luma'], scene: 'final' },
     ChapterCompleted: { type: 'ChapterCompleted', loc: 'mirador', chars: ['vittata', 'luma', 'guardian'], scene: 'final' },
     ComicExported: { type: 'ComicExported', loc: null, chars: ['player'], scene: null },
   };
@@ -79,6 +80,7 @@
     'Elige un terreno y construye el refugio',
     'Habla con el Guardián Constructor',
     'Repara y activa el transmisor',
+    'Sube al mirador de la colina',
   ];
   const DONE = STEPS.length;
   const LABEL = { madera: 'madera', piedra: 'piedra', componente: 'pieza de metal' };
@@ -91,9 +93,12 @@
     h += 6 * Math.exp(-(dB * dB) / 260);
     const dr = Math.abs(x - RIVER_X);
     if (dr < 9) h -= (9 - dr) * 0.5;
+    const dM = Math.hypot(x + 30, z - 33);
+    h += 6 * Math.exp(-(dM * dM) / 70); // colina del mirador
     return h;
   }
-  const FLATS = ['villa', 'taller', 'A', 'B'].map(k => ({ k, x: PLACES[k].x, z: PLACES[k].z, r: PLACES[k].r, base: rawHeight(PLACES[k].x, PLACES[k].z) }));
+  PLACES.mirador = { x: -30, z: 33, r: 2.5 };
+  const FLATS = ['villa', 'taller', 'A', 'B', 'mirador'].map(k => ({ k, x: PLACES[k].x, z: PLACES[k].z, r: PLACES[k].r, base: rawHeight(PLACES[k].x, PLACES[k].z) }));
   for (const f of FLATS) PLACES[f.k].base = f.base;
   function height(x, z) {
     let h = rawHeight(x, z);
@@ -193,6 +198,7 @@
     if (FLATS.some(f => Math.hypot(x - f.x, z - f.z) < f.r + 3)) continue;
     if (RESOURCES.some(r => Math.hypot(x - r.x, z - r.z) < 3)) continue;
     if (Math.hypot(x, z + 11) < 4) continue;
+    if (Math.hypot(x + 30, z - 33) < 5) continue; // mirador
     treeSpots.push({ x, z, s: 0.8 + R() * 0.7 });
   }
   // Árboles con marcas de agua junto al río (señal de riesgo del terreno A)
@@ -236,6 +242,26 @@
   }
   parcelMarker(PLACES.A, '#f2a03d');
   parcelMarker(PLACES.B, '#d6403a');
+
+  // Océano alrededor y las otras islas, separadas por una niebla luminosa (guion, página 12)
+  const ocean = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshLambertMaterial({ color: '#3a87a8' }));
+  ocean.rotation.x = -Math.PI / 2; ocean.position.y = -2.6; scene.add(ocean);
+  const ISLANDS = [{ x: -95, z: 70, r: 14 }, { x: -40, z: 105, r: 10 }, { x: -110, z: 10, r: 9 }];
+  for (const I of ISLANDS) {
+    const isl = new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
+    isl.position.set(I.x, -2.6 + I.r * 0.3, I.z); scene.add(isl);
+  }
+  const mist = new THREE.Mesh(new THREE.RingGeometry(84, 128, 48), new THREE.MeshBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
+  mist.rotation.x = -Math.PI / 2; mist.position.y = 1.5; scene.add(mist);
+  const MIRADOR = PLACES.mirador;
+  const mirador = new THREE.Group();
+  const deck = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.4, 10), new THREE.MeshLambertMaterial({ color: '#a8743f' }));
+  deck.position.y = 0.2; mirador.add(deck);
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * Math.PI * 2; const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1, 0.12), new THREE.MeshLambertMaterial({ color: '#7a5634' }));
+    post.position.set(Math.cos(a) * 2.1, 0.8, Math.sin(a) * 2.1); mirador.add(post);
+  }
+  mirador.position.set(MIRADOR.x, height(MIRADOR.x, MIRADOR.z), MIRADOR.z); scene.add(mirador);
 
   // Taller de Vittata
   const taller = new THREE.Group();
@@ -430,6 +456,7 @@
     { id: 'maquina', x: MAQ.x, z: MAQ.z, r: 2.2, label: () => 'Examinar la máquina experimental', use: () => examine('maquina') },
     { id: 'transmisor', x: TRX.x, z: TRX.z, r: 2.2, label: () => S.step === 6 ? 'Reparar y activar el transmisor' : 'Examinar el transmisor', use: useTransmitter },
     { id: 'luma', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => 'Hablar con Luma', use: talkLuma },
+    { id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 3.2, label: () => S.step === 7 ? 'Mirar el horizonte desde el mirador' : 'Asomarte al mirador', use: useMirador },
     { id: 'guardian', x: GUARD.x, z: GUARD.z, r: 2.6, visible: () => guardian.sp.visible, label: () => 'Hablar con el Guardián', use: talkGuardian },
     { id: 'refuge', x: 0, z: 0, r: 2.6, visible: () => !!(S.refuge && S.refuge.damaged && !S.event && !S.complete), label: () => 'Desarmar el refugio y recuperar materiales', use: dismantle },
   ];
@@ -626,10 +653,25 @@
       { who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' },
       { who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros.' },
     ], () => {
+      showSymbol(false);
+      advanceTo(7);
+      toast('Sube al mirador de la colina, al norte del refugio de la loma', 4000);
+    });
+  }
+
+  function useMirador() {
+    if (S.step !== 7) { say([{ who: 'Vittata', img: IMG.V, text: 'Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas.' }]); return; }
+    camYaw = Math.atan2(MIRADOR.x - ISLANDS[0].x, MIRADOR.z - ISLANDS[0].z);
+    say([
+      { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
+      { who: 'Luma', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
+      { who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' },
+      { who: 'Narrador', img: IMG.V, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' },
+    ], () => {
       S.boatPlan = true;
       logEvent('BoatBlueprintUnlocked');
+      logEvent('LocationDiscoveredMirador');
       capture('final');
-      showSymbol(false);
       S.complete = true;
       logEvent('ChapterCompleted', { refugeParcel: S.refuge ? S.refuge.parcel : null });
       advanceTo(DONE);
@@ -731,7 +773,7 @@
       { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', text: `Soy ${p.name}, aprendiz de Vittata en Villa Raíz.` },
       { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', text: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.' },
       { id: 'refugio', img: 'shelter', needs: 'ShelterConstructed', text: decision },
-      { id: 'final', img: 'final', needs: 'ChapterCompleted', text: 'Ayudamos a la familia de Luma y el transmisor nos mostró un símbolo de 36 fragmentos.' },
+      { id: 'final', img: 'final', needs: 'ChapterCompleted', text: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.' },
     ];
     return all.filter(x => hadEvent(x.needs)).map(x => Object.assign(x, { text: (S.comic.captions[x.id] || x.text) }));
   }
@@ -1005,6 +1047,14 @@
   function autosave() { saveDebounce = 0.5; }
   // v2 -> v3: eventos al esquema nuevo, perfil y proyecto de cómic por defecto
   function migrate(d) {
+    d = migrateV2(d);
+    if (d && d.v === 3) {
+      d = Object.assign({}, d, { v: 4 });
+      if (d.complete && d.step === 7) d.step = DONE;
+    }
+    return d;
+  }
+  function migrateV2(d) {
     if (d && d.v === 2) {
       const base = freshState();
       const id = newId();
@@ -1280,6 +1330,9 @@
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
     drain();
+    check('Después del transmisor toca subir al mirador', S.step === 7 && !S.complete && $('symbol').hidden, 'paso ' + S.step);
+    check('El mirador está en alto', mirador.position.y > PLACES.villa.base + 2, mirador.position.y.toFixed(1));
+    useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && hadEvent('ChapterCompleted') && !$('end').hidden);
     // Esquema de eventos
     const ev = S.events;
@@ -1344,6 +1397,8 @@
     check('Partida dañada se rechaza y se guarda una copia', load(true) === false && localStorage.getItem(SAVE_KEY + '.unreadable') === '{roto');
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, step: 3 })); } catch (e) { /* sin almacenamiento */ }
     check('Partida v1 (incompatible) se rechaza', load(true) === false);
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
+    check('Partida v3 terminada se migra a v4 como terminada', load(true) && S.complete && S.step === DONE, 'paso ' + S.step);
     // Ruta directa a la colina
     reset(true); saveCharacter({ name: 'Rio', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };

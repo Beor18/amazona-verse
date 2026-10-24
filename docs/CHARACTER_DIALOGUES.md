@@ -34,3 +34,8 @@ Generado desde `game.js` (fuente única). Estado: PROVISIONAL, adaptado del guio
 | 28 | Vittata | ¿Qué pacto? Mira: un símbolo dividido en 36 fragmentos. |
 | 29 | Guardián | No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos. |
 | 30 | Vittata | Si los caminos desaparecieron, construiremos otros. |
+| 31 | Vittata | Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas. |
+| 32 | Vittata | Allá están las otras islas, separadas por esa niebla luminosa. |
+| 33 | Luma | ¿Y cómo vamos a llegar si los caminos desaparecieron? |
+| 34 | Vittata | Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación. |
+| 35 | Narrador | Y así comenzó la aventura que volvería a conectar los mundos. Continuará… |

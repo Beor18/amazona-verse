@@ -20,7 +20,7 @@ Cada evento se guarda en la partida (`events`) y alimenta el cómic personal. No
 | meta | objeto | datos seguros del juego (parcela, intento, formato exportado) |
 
 ## Eventos del capítulo 1
-PlayerCharacterCreated→CharacterCreated · WorkshopExplored→LocationDiscovered · LumaHelped→QuestAccepted · ResourcesCollected→ResourceMilestoneReached · LandInspected→LocationDiscovered · LandSelected→LandDecisionMade · ShelterConstructed→BuildingConstructed · ShelterFlooded→BuildingDamaged · ShelterDismantled→LandDecisionMade · ShelterRelocated→LandDecisionMade · GuardianMet→CharacterMet · WorkshopUpgradeUnlocked→InventionUnlocked · TransmitterActivated→BuildingRepaired · BoatBlueprintUnlocked→InventionUnlocked · ChapterCompleted · ComicExported.
+PlayerCharacterCreated→CharacterCreated · WorkshopExplored→LocationDiscovered · LumaHelped→QuestAccepted · ResourcesCollected→ResourceMilestoneReached · LandInspected→LocationDiscovered · LandSelected→LandDecisionMade · ShelterConstructed→BuildingConstructed · ShelterFlooded→BuildingDamaged · ShelterDismantled→LandDecisionMade · ShelterRelocated→LandDecisionMade · GuardianMet→CharacterMet · WorkshopUpgradeUnlocked→InventionUnlocked · TransmitterActivated→BuildingRepaired · BoatBlueprintUnlocked→InventionUnlocked · LocationDiscoveredMirador→LocationDiscovered · ChapterCompleted · ComicExported.
 
 ## Migración
-Partidas v2 (eventos `{type,t,data}`) se convierten a este esquema al cargar. Partidas ilegibles se copian a `amazonaverse.save.unreadable` antes de empezar de nuevo; cada guardado deja el anterior en `amazonaverse.save.prev`.
+Partidas v2 (eventos `{type,t,data}`) se convierten a este esquema al cargar; las v3 pasan a v4 (se añadió el paso del mirador). Partidas ilegibles se copian a `amazonaverse.save.unreadable` antes de empezar de nuevo; cada guardado deja el anterior en `amazonaverse.save.prev`.
