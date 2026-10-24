@@ -12,3 +12,9 @@
 | Referencias propias del mapa | JPG/PSD | `WORK/Amazonas/references/canoa.jpg`, `maps/trees.psd` (por extraer cuando termine la descarga) |
 | AV3DMaxExportBuildings.zip | ZIP 1.3 GB | En Google Drive, no descargado |
 | Cotorras cosplay (15) | PNG | En Drive; personajes de terceros, no comercializar |
+
+## Mapa de 3ds Max abierto (24 oct 2026)
+Abierto en Blender 4.2 con la extensión oficial gratuita "Import Autodesk MAX (.max)" (`io_scene_max`).
+- **Terreno propio** (`TerrainBuilderSurface`, 80k triángulos, ~2,2 × 2,8 km, alturas −11 a 154 m): río serpenteante y mesetas tipo tepuy, más el océano. Exportado como `assets/models/terreno_amazonas.glb` (32k triángulos, 0,97 MB). Vistas en `docs/img/mapa3dmax_perspectiva.png` y `mapa3dmax_planta.png`.
+- **Árboles:** 11 modelos de Archmodels (1,1 millones de triángulos) que venían de la carpeta `Torrents`. **No usar.**
+- **Casas:** no vienen en este archivo; están en `AV3DMaxExportBuildings.zip` (1,3 GB, en Drive, sin descargar).
