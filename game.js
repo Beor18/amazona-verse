@@ -1296,7 +1296,7 @@
 
   // ---------- Creador de personaje: Taller de los Guardianes en 3D ----------
   const C3 = window.AVCharacter;
-  const SLOT_LABEL = { head: 'Cabeza', eyes: 'Ojos', neck: 'Cuello', chest: 'Pecho', back: 'Espalda', wings: 'Alas' };
+  const SLOT_LABEL = { head: 'Cabeza', eyes: 'Ojos', neck: 'Cuello', torso: 'Camisa', chest: 'Pecho', back: 'Espalda', wings: 'Alas', legs: 'Pantalón', feet: 'Calzado', hand: 'En la mano' };
   const LEGACY_SPECIES = { agilis: 1, albifrons: 1, amazonica: 1, festiva: 1, guildingii: 1, oratrix: 1, versicolor: 1 };
   // Perfiles de versiones anteriores (preset/outfit/accessory) pasan al formato modular
   function profileLook(p) {
@@ -1319,37 +1319,49 @@
   }
   let draftLook = null;
   const thumbCache = {};
-  async function accessoryThumb(id, color) {
-    const key = id + color;
+  // Un solo renderizador para todas las miniaturas (crear uno por pieza agota los contextos WebGL del celular)
+  let thumbRig = null;
+  async function accessoryThumb(id, color, style) {
+    const key = id + color + (style || '');
     if (thumbCache[key]) return thumbCache[key];
-    const cv = document.createElement('canvas'); cv.width = cv.height = 104;
-    const rr = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
-    const sc = new THREE.Scene();
-    sc.add(new THREE.HemisphereLight('#fff4dc', '#2f5a3a', 0.9));
-    const dl = new THREE.DirectionalLight('#ffffff', 0.9); dl.position.set(1, 2, 3); sc.add(dl);
-    const acc = C3.buildAccessory(id, color); sc.add(acc);
-    const box = new THREE.Box3().setFromObject(acc), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()).length();
-    const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 50);
+    if (!thumbRig) {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 104;
+      const rr = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true });
+      const sc = new THREE.Scene();
+      sc.add(new THREE.HemisphereLight('#fff4dc', '#2f5a3a', 0.9));
+      const dl = new THREE.DirectionalLight('#ffffff', 0.9); dl.position.set(1, 2, 3); sc.add(dl);
+      thumbRig = { cv, rr, sc, cam: new THREE.PerspectiveCamera(30, 1, 0.01, 50) };
+    }
+    const { cv, rr, sc, cam } = thumbRig;
+    const acc = C3.buildAccessory(id, color, style); sc.add(acc);
+    const box = new THREE.Box3().setFromObject(acc), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()).length() || 1;
     cam.position.set(c.x + sz * 0.9, c.y + sz * 0.6, c.z + sz * 1.6); cam.lookAt(c);
-    rr.render(sc, cam);
+    rr.clear(); rr.render(sc, cam);
+    sc.remove(acc);
     thumbCache[key] = cv.toDataURL('image/png');
-    rr.dispose(); rr.forceContextLoss();
     return thumbCache[key];
   }
+  // Una fila por ranura: "Nada" + una miniatura por pieza; la pieza elegida muestra sus estilos y colores
   async function renderSlots() {
     const look = draftLook;
     const rows = [];
     for (const slot of C3.SLOTS) {
-      const def = C3.ACCESSORIES.find(a => a.slot === slot);
-      const cur = look.accessories[slot];
-      const color = cur ? cur.color : def.colors[0];
-      const img = await accessoryThumb(def.id, color);
+      const defs = C3.ACCESSORIES.filter(a => a.slot === slot);
+      if (!defs.length) continue;
+      const cur = look.accessories[slot], curDef = cur && defs.find(d => d.id === cur.id);
+      const thumbs = [];
+      for (const d of defs) {
+        const mine = cur && cur.id === d.id;
+        const img = await accessoryThumb(d.id, mine ? cur.color : d.colors[0], mine ? cur.style : d.styles && d.styles[0][0]);
+        thumbs.push(`<button class="thumb" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}" title="${d.name}"><img src="${img}" alt=""></button>`);
+      }
+      const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => `<button class="chip" type="button" data-style="${s}" aria-pressed="${cur.style === s}">${n}</button>`).join('')}</div>` : '';
+      const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => `<button class="swatch" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}" style="background:${c}"></button>`).join('')}</div>` : '';
       rows.push(`<div class="slot" data-slot="${slot}">
-        <div class="sname">${SLOT_LABEL[slot]}<small>${def.name}${def.placeholder ? ' <span class="ph-tag">(provisional)</span>' : ''}</small></div>
+        <div class="sname">${SLOT_LABEL[slot] || slot}<small>${curDef ? curDef.name : 'Nada'}${curDef && curDef.placeholder ? ' <span class="ph-tag">(provisional)</span>' : ''}</small></div>
         <div class="opts">
-          <button class="thumb" type="button" data-act="none" aria-pressed="${!cur}" aria-label="Sin ${def.name}">Nada</button>
-          <button class="thumb" type="button" data-act="on" aria-pressed="${!!cur}" aria-label="${def.name}"><img src="${img}" alt=""></button>
-          <div class="swatches" ${cur ? '' : 'hidden'}>${def.colors.map(c => `<button class="swatch" type="button" data-color="${c}" aria-pressed="${cur && cur.color === c}" aria-label="Color ${c}" style="background:${c}"></button>`).join('')}</div>
+          <div class="thumbs"><button class="thumb" type="button" data-act="none" aria-pressed="${!cur}" aria-label="Sin ${SLOT_LABEL[slot]}">Nada</button>${thumbs.join('')}</div>
+          ${styles}${swatches}
         </div></div>`);
     }
     $('p-slots').innerHTML = rows.join('');
@@ -1362,11 +1374,15 @@
   }
   $('p-slots').addEventListener('click', e => {
     const row = e.target.closest('.slot'); if (!row) return;
-    const slot = row.dataset.slot, def = C3.ACCESSORIES.find(a => a.slot === slot);
+    const slot = row.dataset.slot;
     const btn = e.target.closest('button'); if (!btn) return;
+    const cur = draftLook.accessories[slot];
     if (btn.dataset.act === 'none') changeLook(l => { delete l.accessories[slot]; });
-    else if (btn.dataset.act === 'on') changeLook(l => { l.accessories[slot] = { id: def.id, color: (l.accessories[slot] || {}).color || def.colors[0] }; });
-    else if (btn.dataset.color) changeLook(l => { l.accessories[slot] = { id: def.id, color: btn.dataset.color }; });
+    else if (btn.dataset.id) {
+      const d = C3.ACCESSORIES.find(a => a.id === btn.dataset.id);
+      changeLook(l => { l.accessories[slot] = { id: d.id, color: d.colors[0], style: d.styles && d.styles[0][0] }; });
+    } else if (cur && btn.dataset.style) changeLook(l => { l.accessories[slot] = Object.assign({}, cur, { style: btn.dataset.style }); });
+    else if (cur && btn.dataset.color) changeLook(l => { l.accessories[slot] = Object.assign({}, cur, { color: btn.dataset.color }); });
   });
   $('p-species').addEventListener('change', () => changeLook(l => { l.species = $('p-species').value; }));
   async function openCreator(first) {
@@ -1930,7 +1946,7 @@
     const needed = ['Idle', 'Welcome', 'Celebrate', 'Curious', 'Walk'];
     check('Tiene las animaciones de espera, presentación, celebración, curiosidad y caminar', needed.every(n => ch.clips[n]), Object.keys(ch.clips).join(', '));
     const all = { species: 'vittata', accessories: {} };
-    for (const a of window.AVCharacter.ACCESSORIES) all.accessories[a.slot] = { id: a.id, color: a.colors[1] || a.colors[0] };
+    for (const a of window.AVCharacter.ACCESSORIES) if (window.AVCharacter.BASE_IDS.includes(a.id)) all.accessories[a.slot] = { id: a.id, color: a.colors[1] || a.colors[0] };
     ch.applyLook(all);
     const objs = Object.values(ch.mounted).flatMap(m => m.objects);
     check('Se montan los 6 accesorios (7 piezas con los dos brazaletes)', Object.keys(ch.mounted).length === 6 && objs.length === 7, objs.length + ' piezas');
@@ -1990,6 +2006,32 @@
     check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && col === '#7a4fb3', col);
     ch.applyLook({ species: 'versicolor', accessories: {} });
     check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
+    // Ropero: cada pieza en cada estilo se monta en su hueso, y gorras/lentes no tocan ojos ni pico
+    {
+      let pieces = 0, failed = [], wHits = [];
+      ch.mixer.stopAllAction(); ch.root.traverse(o => { if (o.isSkinnedMesh) o.skeleton.pose(); });
+      for (const d of window.AVCharacter.ACCESSORIES.filter(a => !window.AVCharacter.BASE_IDS.includes(a.id))) {
+        for (const st of (d.styles || [[undefined]]).map(s => s[0])) {
+          ch.applyLook({ species: 'vittata', accessories: { [d.slot]: { id: d.id, color: d.colors[0], style: st } } });
+          const m = ch.mounted[d.slot];
+          if (!m || !m.objects.length || m.objects.some(o => !o.parent)) { failed.push(d.id + ':' + st); continue; }
+          pieces += m.objects.length;
+          if (d.slot === 'head' || d.slot === 'eyes') {
+            ch.root.updateMatrixWorld(true);
+            for (const obj of m.objects) obj.traverse(o => {
+              if (!o.isMesh) return; const pos = o.geometry.attributes.position, v = new THREE.Vector3();
+              for (let i = 0; i < pos.count; i += Math.max(1, Math.floor(pos.count / 200))) {
+                v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+                if (eyes.some(e => e.distanceTo(v) < EYE_R)) { wHits.push(d.id + ':' + st + '→ojo'); return; }
+              }
+            });
+          }
+        }
+      }
+      check('El ropero monta todas sus piezas y estilos en sus huesos', failed.length === 0 && pieces > 0, failed.join(', ') || pieces + ' partes');
+      check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
+      ch.applyLook({ species: 'versicolor', accessories: {} });
+    }
     const pc = ch.tint ? '#' + ch.tint.patchColor.value.getHexString() : (ch.materials.Patch ? '#' + ch.materials.Patch.color.getHexString() : null);
     check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.versicolor.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
     // Retrato idéntico para juego y cómic

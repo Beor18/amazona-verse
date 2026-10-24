@@ -117,6 +117,13 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 .thumb[aria-pressed="true"] { border-color: var(--beak); background: #26432f; }
 .thumb:focus-visible, .swatch:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
 .swatches { display: flex; gap: 5px; flex-wrap: wrap; }
+.slot .opts { flex-direction: column; align-items: stretch; min-width: 0; }
+.thumbs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.thumbs .thumb { flex: 0 0 auto; }
+.styles { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(244,247,241,.25); background: #1b2f25; color: var(--paper); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--beak); color: #1b2f25; border-color: var(--beak); }
+.chip:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
 .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(244,247,241,.35); padding: 0; cursor: pointer; }
 .swatch[aria-pressed="true"] { border-color: var(--paper); box-shadow: 0 0 0 2px var(--beak); }
 .ph-tag { font-size: 10px; color: #ffd27a; }
@@ -262,6 +269,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="wardrobe.js" charset="utf-8"></script>
 <script src="character.js" charset="utf-8"></script>
 <script src="showcase.js" charset="utf-8"></script>
 <script src="game.js" charset="utf-8"></script>

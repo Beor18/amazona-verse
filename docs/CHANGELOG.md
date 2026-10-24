@@ -75,3 +75,19 @@
 - Las dos alas reman a la vez en la superficie (empuje abiertas hacia atrás, recuperación cerradas con codo doblado); patas patalean debajo, despacio.
 - Meceo suave, estela en V detrás al avanzar, buceo de cabeza con alas pegadas, y al salir a tierra se sacude con gotas.
 - Pruebas 45/45 y 10/10.
+
+## 2026-10-24 · Ropero boricua (gorras, ropa, calzado y objetos)
+- Nuevo `wardrobe.js` (cargado antes de character.js). Ideas tomadas de las láminas de Kelvin:
+  `03_Traits_y_Fondos/Traits_PNG_2026-10-24` y `03_Traits_y_Fondos/Boricua_PNG_2026-10-24` (referencias visuales, no modelos).
+- Ranuras nuevas: Camisa, Pantalón, Calzado, En la mano (además de Cabeza, Ojos, Cuello, Pecho, Espalda, Alas).
+- Piezas y estilos:
+  - Gorra: clásica, bandera PR, criolla de paja, playera, hacia atrás, trucker (con parche de la bandera de PR).
+  - Pava jíbara (PR). Sombreros: paja, tropical, vaquero, pescador. Cascos: constructor, marinero, pirata.
+  - Lentes: de sol, redondas, deportivas, máscara de buceo. Pañuelo: liso, bandera PR, coquí, tropical, camuflaje.
+  - Camisa: lisa, bandera PR, hawaiana, guayabera, deportiva 787, camuflaje, chaleco explorador.
+  - Pantalón: corto, de playa, cargo, militar, mezclilla largo. Calzado: aventura, constructor, militares, tenis, espaciales, de buzo, tenis PR, chancletas.
+  - Espalda: mochila PR, cuatro puertorriqueño, tanques de oxígeno, jetpack. En la mano: bandera de PR, maracas, linterna, martillo, mapa, coquí de peluche.
+- La ropa ajustada se construye con las medidas reales del modelo (tools/blender/body.py, head.py) y se reparte por hueso
+  (cadera, pecho, brazos, muslos, tobillos), así dobla con la columna y las patas. Estampados generados en canvas.
+- Creador: miniaturas por pieza con un solo renderizador compartido, chips de estilo y colores.
+- Pruebas: accesorios 12/12 (nuevo: 91 partes del ropero montadas en todos sus estilos; gorras y lentes no tapan los ojos).

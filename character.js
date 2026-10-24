@@ -27,12 +27,17 @@
   const ACCESSORIES = [
     { id: 'gafas', slot: 'eyes', mount: 'mount_eyes', offset: [0, 0.09, 0.05], name: 'Gafas de inventor', colors: ['#5a3a22', '#2b2b2b', '#c9a227', '#3d8fb0'], placeholder: false },
     { id: 'sombrero', slot: 'head', mount: 'mount_head_top', offset: [0, -0.08, 0], name: 'Sombrero explorador', colors: ['#8a6a3a', '#5a3a22', '#2f8f4e', '#d6403a'], placeholder: false },
-    { id: 'panuelo', slot: 'neck', mount: 'mount_neck', offset: [0, -0.1, 0], wrap: true, name: 'Pañuelo aventurero', colors: ['#f2a03d', '#3d8fb0', '#d6403a', '#2f8f4e', '#7a4fb3', '#e8c32a'], placeholder: false },
+    { id: 'panuelo', slot: 'neck', mount: 'mount_neck', offset: [0, -0.1, 0], wrap: true, name: 'Pañuelo aventurero', colors: ['#f2a03d', '#3d8fb0', '#d6403a', '#2f8f4e', '#7a4fb3', '#e8c32a'], placeholder: false,
+      styles: [['liso', 'Liso'], ['pr', 'Bandera PR'], ['coqui', 'Coquí'], ['caribe', 'Tropical'], ['camuflaje', 'Camuflaje']] },
     { id: 'brujula', slot: 'chest', mount: 'mount_chest', offset: [0, 0, 0.06], name: 'Brújula colgante', colors: ['#c9a227', '#b9c4c9', '#b87333'], placeholder: false },
     { id: 'mochila', slot: 'back', mount: 'mount_back', offset: [0, 0, -0.05], name: 'Mochila de exploración', colors: ['#8a5a2b', '#2f8f4e', '#3d8fb0', '#d6403a'], placeholder: true },
     { id: 'brazaletes', slot: 'wings', mount: 'mount_wing_L', mount2: 'mount_wing_R', offset: [0, -0.06, 0], size: 0.8, name: 'Brazaletes de constructor', colors: ['#c9a227', '#3d8fb0', '#d6403a', '#2b2b2b'], placeholder: false },
   ];
-  const SLOTS = ['head', 'eyes', 'neck', 'chest', 'back', 'wings'];
+  // Ropero (wardrobe.js): gorras, ropa ajustada, calzado y objetos; se suman al catálogo base
+  const BASE_IDS = ACCESSORIES.map(a => a.id);
+  if (window.AVWardrobe) ACCESSORIES.push(...window.AVWardrobe.defs);
+  const SLOTS = ['head', 'eyes', 'neck', 'torso', 'chest', 'back', 'wings', 'legs', 'feet', 'hand'];
+  const styleOf = (def, s) => def.styles ? (def.styles.some(x => x[0] === s) ? s : def.styles[0][0]) : undefined;
 
   function defaultLook() {
     return { species: 'vittata', accessories: { neck: { id: 'panuelo', color: '#f2a03d' }, eyes: { id: 'gafas', color: '#5a3a22' } } };
@@ -46,7 +51,10 @@
       for (const slot of SLOTS) {
         const a = look.accessories[slot];
         const def = a && ACCESSORIES.find(x => x.id === a.id && x.slot === slot);
-        if (def) out.accessories[slot] = { id: def.id, color: def.colors.includes(a.color) ? a.color : def.colors[0] };
+        if (def) {
+          out.accessories[slot] = { id: def.id, color: def.colors.includes(a.color) ? a.color : def.colors[0] };
+          if (def.styles) out.accessories[slot].style = styleOf(def, a.style);
+        }
       }
     }
     return out;
@@ -79,6 +87,7 @@
     return gltfPromise;
   }
 
+  const HEAD_R = () => (mountsInfo && mountsInfo.head_sphere && mountsInfo.head_sphere.radius) || 0.5104;
   // ---------- Geometría de accesorios (piezas simples, materiales reutilizables) ----------
   const matCache = {};
   function mat(color, opts) {
@@ -87,9 +96,25 @@
     return matCache[key];
   }
   // Todas las medidas en unidades de "radio de cabeza" (R); se escalan al montar
-  function buildAccessory(id, color) {
+  function buildAccessory(id, color, style) {
+    const def = ACCESSORIES.find(a => a.id === id);
+    if (def && def.fit) {
+      // Pieza ajustada: para la miniatura se juntan todas sus partes en el espacio del modelo
+      const g = new THREE.Group(); g.name = 'acc_' + id;
+      for (const p of def.fit(color, styleOf(def, style))) g.add(p.obj);
+      g.traverse(o => { if (o.isMesh) o.userData.isAccessory = true; });
+      return g;
+    }
+    if (def && def.build) {
+      // Pieza del ropero en metros: se lleva a "radios de cabeza" como las demás
+      const g = new THREE.Group(); g.name = 'acc_' + id;
+      const inner = def.build(color, styleOf(def, style)); inner.scale.setScalar(1 / HEAD_R()); g.add(inner);
+      g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.userData.isAccessory = true; } });
+      return g;
+    }
     const g = new THREE.Group(); g.name = 'acc_' + id;
-    const M = mat(color), dark = mat('#2b2016', { roughness: 0.5 }), metal = mat('#c9d4d9', { metalness: 0.7, roughness: 0.3 });
+    const pat = style && style !== 'liso' && window.AVWardrobe;
+    const M = pat ? new THREE.MeshStandardMaterial({ map: window.AVWardrobe.pattern(style, color), roughness: 0.85 }) : mat(color), dark = mat('#2b2016', { roughness: 0.5 }), metal = mat('#c9d4d9', { metalness: 0.7, roughness: 0.3 });
     if (id === 'gafas') {
       const lens = new THREE.MeshPhysicalMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.4, roughness: 0.05, metalness: 0.1 });
       for (const x of [-0.37, 0.37]) {
@@ -144,6 +169,10 @@
       this.restQuat = {};
       const qRoot = this.root.getWorldQuaternion(new THREE.Quaternion()).invert();
       for (const n of MOUNTS) if (this.bones[n]) this.restQuat[n] = qRoot.clone().multiply(this.bones[n].getWorldQuaternion(new THREE.Quaternion()));
+      // Matriz de reposo de cada hueso respecto al personaje: la ropa ajustada se construye en ese espacio
+      const rootInv = this.root.matrixWorld.clone().invert();
+      this.restMat = {};
+      for (const [n, b] of Object.entries(this.bones)) this.restMat[n] = rootInv.clone().multiply(b.matrixWorld);
       const box = new THREE.Box3().setFromObject(this.root);
       this.height = box.getSize(new THREE.Vector3()).y || 1;
       this.mixer = new THREE.AnimationMixer(this.root);
@@ -440,13 +469,24 @@
       for (const slot of SLOTS) {
         const want = this.look.accessories[slot];
         const have = this.mounted[slot];
-        if (have && (!want || have.id !== want.id || have.color !== want.color)) { for (const obj of have.objects) obj.parent && obj.parent.remove(obj); delete this.mounted[slot]; }
+        if (have && (!want || have.id !== want.id || have.color !== want.color || have.style !== want.style)) { for (const obj of have.objects) obj.parent && obj.parent.remove(obj); delete this.mounted[slot]; }
         if (want && !this.mounted[slot]) {
           const def = ACCESSORIES.find(a => a.id === want.id);
           const objects = [];
+          if (def.fit) {
+            // Cada parte se pasa del espacio del modelo en reposo al espacio de su hueso, y lo sigue al animarse
+            for (const part of def.fit(want.color, want.style)) {
+              const bone = this.bones[part.bone], rest = this.restMat[part.bone]; if (!bone || !rest) continue;
+              part.obj.applyMatrix4(rest.clone().invert());
+              part.obj.traverse(o => { if (o.isMesh) { o.castShadow = true; o.userData.isAccessory = true; } });
+              bone.add(part.obj); objects.push(part.obj);
+            }
+            this.mounted[slot] = { id: want.id, color: want.color, style: want.style, objects };
+            continue;
+          }
           for (const mountName of [def.mount, def.mount2].filter(Boolean)) {
             const bone = this.bones[mountName]; if (!bone) continue;
-            const acc = buildAccessory(def.id, want.color);
+            const acc = buildAccessory(def.id, want.color, want.style);
             const ws = new THREE.Vector3(); bone.getWorldScale(ws);
             const rs = new THREE.Vector3(); this.root.getWorldScale(rs);
             const k = 1 / ((ws.x || 1) / (rs.x || 1));
@@ -468,7 +508,7 @@
             acc.scale.setScalar(size * k);
             bone.add(acc); objects.push(acc);
           }
-          this.mounted[slot] = { id: want.id, color: want.color, objects };
+          this.mounted[slot] = { id: want.id, color: want.color, style: want.style, objects };
         }
       }
     }
@@ -509,5 +549,5 @@
     return canvas;
   }
 
-  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, create, loadGLTF, buildAccessory, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
+  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, BASE_IDS, create, loadGLTF, buildAccessory, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
 })();
