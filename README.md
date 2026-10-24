@@ -1,10 +1,10 @@
-# Amazona Verse: prototipo del juego (hito 1)
+# Amazona Verse: prototipo del juego
 
-Primer capítulo jugable: **"La primera reconstrucción"** (título provisional). Web 3D con Three.js r128.
+Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Web 3D con Three.js r128, creador de personaje y cómic personal exportable (PNG y PDF).
 
 ## Cómo correrlo
 ```
-python3 -m http.server 8765 --directory ~/AmazonaVerse/Juego
+python3 ~/AmazonaVerse/Juego/tests/server.py 8765
 ```
 Después abre http://localhost:8765 en el navegador. Hace falta un servidor; abrir `index.html` con doble clic no carga las texturas.
 
@@ -13,4 +13,4 @@ Después abre http://localhost:8765 en el navegador. Hace falta un servidor; abr
 - Móvil: joystick a la izquierda · botones Saltar y Acción a la derecha · arrastrar la pantalla para girar la cámara.
 
 ## Prueba automática
-En la consola del navegador: `AV.selfTest()` recorre el capítulo completo, las dos rutas, guardar/cargar y las partidas dañadas.
+En la consola del navegador: `await AV.selfTest({saveFiles: true})` recorre el capítulo, el creador, el cómic, la exportación y el guardado (45 comprobaciones) y deja los archivos exportados en `tests/out/`.

@@ -67,7 +67,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
 #tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
 @media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD/flechas mover · Espacio saltar/planear · E acción · Q/R girar cámara"; } }
-@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 12px; } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
+@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
 .note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .row.center { justify-content: center; }
@@ -85,7 +85,21 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 .comic-form input:focus-visible, .comic-form select:focus-visible { outline: 3px solid var(--leaf-hi); }
 #c-export img { width: 100%; border-radius: 8px; margin-bottom: 8px; -webkit-user-select: auto; user-select: auto; -webkit-touch-callout: default; }
 #c-download { display: inline-block; text-decoration: none; }
+.comic-form .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
+#c-panels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+#c-panels li { display: grid; grid-template-columns: 1fr auto; gap: 4px 6px; align-items: center; }
+#c-panels .pn { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+#c-panels input { min-width: 0; }
+.pm { display: flex; gap: 4px; }
+.btn.sm { padding: 6px 10px; font-size: 14px; }
+#creator { inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16, 36, 28, .9); overflow: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px; }
+.creator-box { width: min(560px, 100%); }
+.creator-box h2 { font-family: var(--display); color: var(--leaf-hi); margin: 0 0 4px; font-size: 24px; }
+.creator-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: start; margin: 8px 0 12px; }
+#p-canvas { width: 100%; height: auto; border-radius: 14px; }
+.err { color: #ffb4a8; font-size: 14px; margin: 0 0 8px; }
 @media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .creator-grid { grid-template-columns: 1fr; } #p-canvas { max-width: 180px; margin: 0 auto; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -106,6 +120,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 </div>
 
 <div id="sys" class="hud">
+  <button class="btn ghost" id="b-char" type="button">Mi personaje</button>
   <button class="btn ghost" id="b-save" type="button">Guardar</button>
   <button class="btn ghost" id="b-load" type="button">Cargar</button>
   <button class="btn ghost" id="b-reset" type="button">Reiniciar</button>
@@ -157,24 +172,56 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
       <div class="comic-form">
         <label for="c-title">Título</label>
         <input id="c-title" type="text" maxlength="32" value="Mi primera reconstrucción">
-        <label for="c-phrase">Frase final (viñeta 4)</label>
-        <input id="c-phrase" type="text" maxlength="90" placeholder="Ayudé a la familia de Luma…">
         <label for="c-cover">Portada</label>
         <select id="c-cover">
           <option value="vittata">Vittata</option>
+          <option value="personaje">Mi personaje</option>
           <option value="taller">El taller</option>
           <option value="refugio">El refugio</option>
         </select>
+        <label for="c-layout">Diseño</label>
+        <select id="c-layout">
+          <option value="grid">Cuadrícula 2 × 2</option>
+          <option value="strip">Tira vertical</option>
+        </select>
+        <span class="lbl">Viñetas (puedes editar el texto y cambiar el orden)</span>
+        <ol id="c-panels"></ol>
         <div class="row">
           <button class="btn ghost" id="c-refresh" type="button">Actualizar vista</button>
           <button class="btn" id="c-png" type="button">Exportar PNG</button>
+          <button class="btn" id="c-pdf" type="button">Exportar PDF</button>
         </div>
         <div id="c-export" hidden>
-          <p class="note">En iPhone o Android: mantén presionada la imagen y elige Guardar. En computadora: usa el enlace.</p>
-          <img id="c-export-img" alt="Tu cómic exportado en PNG">
+          <p class="note" id="c-export-note"></p>
+          <img id="c-export-img" alt="Tu cómic exportado">
           <a id="c-download" class="btn ghost" download="amazona-verse-mi-comic.png" href="#">Descargar PNG</a>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="creator" class="hud" hidden role="dialog" aria-label="Crea tu personaje">
+  <div class="panel creator-box">
+    <h2>Crea tu personaje</h2>
+    <p class="note">Serás aprendiz de Vittata en Villa Raíz. Usa un nombre inventado, no tu nombre real.</p>
+    <div class="creator-grid">
+      <canvas id="p-canvas" width="256" height="256" aria-label="Retrato de tu personaje"></canvas>
+      <div class="comic-form">
+        <label for="p-name">Nombre inventado</label>
+        <input id="p-name" type="text" maxlength="16" placeholder="Por ejemplo: Nube Azul" autocomplete="off">
+        <label for="p-preset">Plumaje</label>
+        <select id="p-preset"></select>
+        <label for="p-outfit">Vestimenta</label>
+        <select id="p-outfit"></select>
+        <label for="p-acc">Accesorio</label>
+        <select id="p-acc"></select>
+      </div>
+    </div>
+    <p class="err" id="p-error" hidden></p>
+    <div class="row center">
+      <button class="btn" id="p-save" type="button">Empezar la aventura</button>
+      <button class="btn ghost" id="p-cancel" type="button">Cancelar</button>
     </div>
   </div>
 </div>

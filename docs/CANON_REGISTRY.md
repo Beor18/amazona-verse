@@ -1,12 +1,25 @@
 # CANON_REGISTRY
 
-| Elemento | Etiqueta | Fuente |
+Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL** (para producir; requiere aprobación) · **HISTÓRICO** (versiones anteriores) · **RECHAZADO** (eliminado por Kelvin).
+
+| Elemento | Estado | Fuente |
 |---|---|---|
-| Vittata protagonista, mujer, inventora y constructora | CONFIRMADO | Documento maestro v3.1 |
-| Los 36 personajes fundadores (34 vivos y 2 extintos) | CONFIRMADO | Kelvin, 24 oct 2026 |
-| Martinicana y violacea como consejeras | PROPUESTO por Kelvin | Chat, 24 oct 2026 |
-| Agilis como amiga que da la alerta en el capítulo 1 | PROPUESTO | Prototipo |
-| Título "La primera reconstrucción" | PROPUESTO | Documento maestro |
-| Terrenos "Orilla del río" y "La loma" | PROPUESTO | Prototipo |
-| Taller dañado por una tormenta | PROPUESTO | Prototipo (la causa real de la crisis sigue abierta) |
-| Guion de Gustavo Soria y saga de Solana Forest | HISTÓRICO / NO REUTILIZAR | Material anterior |
+| Amazona Verse es un universo original de Kelvin García | CONFIRMADO | Directivo V4 §1.2 |
+| 36 inspiraciones de personaje del género Amazona (34 vivas + martinicana y violacea extintas) | CONFIRMADO | Kelvin, 24 oct 2026 |
+| Vittata: protagonista, mujer, inventora y líder | CONFIRMADO | Prompt maestro v3.1 y V4 |
+| El jugador crea su propio personaje y genera un cómic con su partida real | CONFIRMADO | V4 §1.2 |
+| Mundo con tierra, agua, botes, aviones y exploración avanzada | CONFIRMADO | V4 §1.2 |
+| Family Quest opcional | CONFIRMADO | V4 §1.2 |
+| Temas: conservación, vivienda y desplazamiento | CONFIRMADO | V4 §1.2 |
+| La Gran Ruptura · Villa Raíz · el Guardián Constructor · Luma · el pacto de los 36 · el sistema de comunicación perdido · las 6 temporadas · la causa de la catástrofe | PROVISIONAL | V4 §1.3 y guion cap. 1 |
+| Martinicana y violacea como consejeras | PROVISIONAL (idea de Kelvin) | Chat 24 oct |
+| El aprendiz del jugador acompaña a Vittata (no la reemplaza) | PROVISIONAL | V4 §3.2, implementado así |
+| Apariencia del Guardián = render de imperialis; de Luma = render de leucocephala | PROVISIONAL (sustitutos) | Prototipo |
+| Banco de trabajo como mejora del taller | PROVISIONAL | Prototipo |
+| Terrenos "Junto al río" y "La colina" | PROVISIONAL | Guion pág. 6 y prototipo |
+| Agilis como aliada de la primera versión del prototipo | HISTÓRICO (reemplazada por Luma) | Prototipo v1 |
+| Guion de cómic de Gustavo Soria (2021) | HISTÓRICO, no reutilizar | Material anterior |
+| Saga de Solana Forest y todo lo cripto/NFT | RECHAZADO | Kelvin |
+| Cardboard Citizens | RECHAZADO | Kelvin |
+
+**Conflictos abiertos:** ¿el traje negro de piloto de `Piloto Cotorra.blend` es el diseño oficial de Vittata? · ¿el Guardián es cotorra, humano u otra forma?

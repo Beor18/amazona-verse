@@ -5,7 +5,46 @@
   'use strict';
 
   const SAVE_KEY = 'amazonaverse.save';
-  const SAVE_VERSION = 2;
+  const SAVE_VERSION = 3;
+  const EVENT_SCHEMA = 1;
+
+  // Eventos narrativos: clave del capítulo -> tipo genérico (directivo V4, sección 7.2) y datos de escena
+  const EVENT_DEFS = {
+    PlayerCharacterCreated: { type: 'CharacterCreated', loc: 'villa_raiz', chars: ['player'], scene: 'portrait' },
+    WorkshopExplored: { type: 'LocationDiscovered', loc: 'taller_vittata', chars: ['vittata'], scene: 'workshop' },
+    LumaHelped: { type: 'QuestAccepted', loc: 'villa_raiz', chars: ['vittata', 'luma'], scene: 'dialogue' },
+    ResourcesCollected: { type: 'ResourceMilestoneReached', loc: 'villa_raiz', chars: ['vittata'], scene: 'gather' },
+    LandInspected: { type: 'LocationDiscovered', loc: 'parcela', chars: ['vittata', 'luma'], scene: 'parcel' },
+    LandSelected: { type: 'LandDecisionMade', loc: 'parcela', chars: ['vittata'], scene: 'parcel' },
+    ShelterConstructed: { type: 'BuildingConstructed', loc: 'parcela', chars: ['vittata', 'luma'], scene: 'shelter' },
+    ShelterFlooded: { type: 'BuildingDamaged', loc: 'parcela_rio', chars: ['vittata', 'luma'], scene: 'shelter' },
+    ShelterDismantled: { type: 'LandDecisionMade', loc: 'parcela_rio', chars: ['vittata'], scene: 'shelter' },
+    ShelterRelocated: { type: 'LandDecisionMade', loc: 'parcela_colina', chars: ['vittata', 'luma'], scene: 'shelter' },
+    GuardianMet: { type: 'CharacterMet', loc: 'sendero_sur', chars: ['vittata', 'guardian'], scene: 'dialogue' },
+    WorkshopUpgradeUnlocked: { type: 'InventionUnlocked', loc: 'taller_vittata', chars: ['guardian'], scene: 'workshop' },
+    TransmitterActivated: { type: 'BuildingRepaired', loc: 'taller_vittata', chars: ['vittata', 'guardian'], scene: 'symbol' },
+    BoatBlueprintUnlocked: { type: 'InventionUnlocked', loc: 'taller_vittata', chars: ['vittata'], scene: 'symbol' },
+    ChapterCompleted: { type: 'ChapterCompleted', loc: 'mirador', chars: ['vittata', 'luma', 'guardian'], scene: 'final' },
+    ComicExported: { type: 'ComicExported', loc: null, chars: ['player'], scene: null },
+  };
+
+  // Creador de personaje (MVP): presets basados en renders oficiales de especies
+  const PRESETS = [
+    { id: 'agilis', name: 'Pico negro (agilis)' }, { id: 'albifrons', name: 'Frente blanca (albifrons)' },
+    { id: 'amazonica', name: 'Ala naranja (amazonica)' }, { id: 'auropalliata', name: 'Nuca amarilla (auropalliata)' },
+    { id: 'festiva', name: 'Festiva (festiva)' }, { id: 'guildingii', name: 'Multicolor (guildingii)' },
+    { id: 'oratrix', name: 'Cabeza amarilla (oratrix)' }, { id: 'versicolor', name: 'Cara azul (versicolor)' },
+  ];
+  const OUTFITS = [
+    { id: 'naranja', name: 'Pañuelo naranja', color: '#f2a03d' }, { id: 'rojo', name: 'Pañuelo rojo', color: '#d6403a' },
+    { id: 'azul', name: 'Pañuelo azul', color: '#3d8fb0' }, { id: 'morado', name: 'Pañuelo morado', color: '#7a4fb3' },
+    { id: 'amarillo', name: 'Pañuelo amarillo', color: '#e8c32a' },
+  ];
+  const ACCESSORIES = [
+    { id: 'ninguno', name: 'Ninguno' }, { id: 'gafas', name: 'Gafas de inventor' },
+    { id: 'gorra', name: 'Gorra de explorador' }, { id: 'medalla', name: 'Medalla de constructor' },
+  ];
+  const NAME_OK = /^[\p{L}\p{N} '\-]{1,16}$/u;
   const RIVER_X = 30;
   const WORLD = 70;
 
@@ -84,15 +123,34 @@
       water: WATER_BASE, event: null, clock: 0,
       indicators: { seguridad: '—', acceso: '—', habitat: '—' },
       events: [], captures: {},
+      saveId: newId(),
+      profile: { created: false, name: 'Aprendiz', preset: 'agilis', outfit: 'naranja', accessory: 'gafas' },
+      comic: { title: 'Mi primera reconstrucción', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {} },
     };
+  }
+  function newId() {
+    try { const a = new Uint8Array(8); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); }
+    catch (e) { return Math.random().toString(16).slice(2, 18); }
   }
   let S = freshState();
   let build = null;
   let dialogQueue = [], dialogDone = null;
   let cardOpen = false;
 
-  function logEvent(type, data) { S.events.push({ type, t: Math.round(S.clock * 10) / 10, data: data || {} }); }
-  function hadEvent(type) { return S.events.some(e => e.type === type); }
+  // Esquema de evento (NARRATIVE_EVENT_SCHEMA.md): sin datos personales
+  function makeEvent(key, data, seq, t) {
+    const def = EVENT_DEFS[key] || { type: key, loc: null, chars: [], scene: null };
+    data = data || {};
+    return {
+      id: S.saveId + '-' + seq, schemaVersion: EVENT_SCHEMA, saveId: S.saveId,
+      type: def.type, key, chapter: 1, seq, t,
+      location: data.parcel ? (data.parcel === 'A' ? 'parcela_rio' : 'parcela_colina') : def.loc,
+      characters: def.chars.slice(), choice: data.choice || (data.parcel || null), outcome: data.outcome || null,
+      sceneTemplate: def.scene, locKey: 'evt.' + key, meta: data,
+    };
+  }
+  function logEvent(key, data) { S.events.push(makeEvent(key, data, S.events.length + 1, Math.round(S.clock * 10) / 10)); }
+  function hadEvent(key) { return S.events.some(e => e.key === key); }
 
   // ---------- Three.js ----------
   const canvas = document.getElementById('game');
@@ -141,7 +199,7 @@
   const markTrees = [{ x: 16.5, z: 11.5, s: 1.1 }, { x: 24.5, z: 1.2, s: 1 }];
   const allTrees = treeSpots.concat(markTrees);
   const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 3, 6), new THREE.MeshLambertMaterial({ color: '#7a5634' }), allTrees.length);
-  const crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.6, 0), new THREE.MeshLambertMaterial({ color: '#2f7d43', flatShading: true }), allTrees.length);
+  const crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.6, 0), new THREE.MeshLambertMaterial({ color: '#2f7d43' }), allTrees.length);
   const m4 = new THREE.Matrix4();
   allTrees.forEach((t, i) => {
     const y = height(t.x, t.z);
@@ -272,7 +330,7 @@
 
   // Recursos
   const resMeshes = {};
-  const resMat = { madera: new THREE.MeshLambertMaterial({ color: '#8a5a2b' }), piedra: new THREE.MeshLambertMaterial({ color: '#9aa0a3', flatShading: true }), componente: new THREE.MeshLambertMaterial({ color: '#c9d4d9', emissive: '#1d3a46' }) };
+  const resMat = { madera: new THREE.MeshLambertMaterial({ color: '#8a5a2b' }), piedra: new THREE.MeshLambertMaterial({ color: '#9aa0a3' }), componente: new THREE.MeshLambertMaterial({ color: '#c9d4d9', emissive: '#1d3a46' }) };
   for (const r of RESOURCES) {
     let m;
     if (r.type === 'madera') { m = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.8, 7), resMat.madera); m.rotation.z = Math.PI / 2; m.position.y = 0.3; }
@@ -306,6 +364,53 @@
   const luma = npcAt(IMG.L, LUMA, 2.0);
   const GUARD = { x: 0, z: -11 };
   const guardian = npcAt(IMG.G, GUARD, 2.6);
+  // Personaje del jugador: aprendiz que acompaña a Vittata (Vittata sigue siendo la protagonista)
+  const portraitCanvas = document.createElement('canvas'); portraitCanvas.width = portraitCanvas.height = 256;
+  const companionTex = new THREE.CanvasTexture(portraitCanvas);
+  const companion = new THREE.Sprite(new THREE.SpriteMaterial({ map: companionTex, transparent: true, alphaTest: 0.05 }));
+  companion.scale.set(1.7, 1.7, 1); companion.visible = false; scene.add(companion);
+  const cShadow = blob(0.45); cShadow.visible = false; scene.add(cShadow);
+  const companionPos = { x: 0, z: 0 };
+  async function drawPortrait(ctx, size, p, withBg) {
+    const img = await loadImg('assets/presets/' + p.preset + '.png');
+    const outfit = (OUTFITS.find(o => o.id === p.outfit) || OUTFITS[0]).color;
+    ctx.clearRect(0, 0, size, size);
+    if (withBg) {
+      const g = ctx.createRadialGradient(size / 2, size * 0.45, size * 0.1, size / 2, size / 2, size * 0.7);
+      g.addColorStop(0, '#f4f7f1'); g.addColorStop(1, outfit);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
+    }
+    if (img) ctx.drawImage(img, 0, 0, size, size);
+    const s = size / 256;
+    // Pañuelo al cuello
+    ctx.save(); ctx.fillStyle = outfit; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 2 * s;
+    ctx.beginPath(); ctx.moveTo(98 * s, 120 * s); ctx.quadraticCurveTo(128 * s, 140 * s, 160 * s, 118 * s); ctx.lineTo(164 * s, 132 * s);
+    ctx.quadraticCurveTo(128 * s, 156 * s, 94 * s, 134 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(122 * s, 142 * s); ctx.lineTo(112 * s, 168 * s); ctx.lineTo(134 * s, 160 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.lineWidth = 4 * s; ctx.strokeStyle = '#3a2a1a';
+    if (p.accessory === 'gafas') {
+      ctx.fillStyle = 'rgba(160,220,255,.35)';
+      for (const cx of [108, 146]) { ctx.beginPath(); ctx.arc(cx * s, 52 * s, 13 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(121 * s, 52 * s); ctx.lineTo(133 * s, 52 * s); ctx.stroke();
+    } else if (p.accessory === 'gorra') {
+      ctx.fillStyle = outfit;
+      ctx.beginPath(); ctx.arc(127 * s, 34 * s, 30 * s, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(150 * s, 35 * s, 22 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else if (p.accessory === 'medalla') {
+      ctx.fillStyle = '#ffd27a';
+      ctx.beginPath(); ctx.arc(128 * s, 176 * s, 11 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  async function refreshCompanion() {
+    if (!S.profile.created) { companion.visible = cShadow.visible = false; return; }
+    await drawPortrait(portraitCanvas.getContext('2d'), 256, S.profile, false);
+    companionTex.needsUpdate = true;
+    companion.visible = cShadow.visible = true;
+    companionPos.x = S.pos.x - 1.5; companionPos.z = S.pos.z + 1;
+  }
+
   function applyGuardianLook() {
     const show = S.builds.length > 0 && !S.event;
     guardian.sp.visible = guardian.sh.visible = show;
@@ -560,7 +665,7 @@
   function toast(text, ms) { $('toast').textContent = text; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
   function toastHTML(html, ms) { $('toast').innerHTML = html; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
   function hideToast() { $('toast').hidden = true; toastTimer = 0; }
-  function overlayOpen() { return !$('end').hidden || !$('comic').hidden; }
+  function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
 
   function renderQuest() {
     const got = type => Math.min(NEEDS[type], S.collected.filter(id => RESOURCES.find(r => r.id === id).type === type).length);
@@ -612,18 +717,29 @@
     } catch (e) { S.captures[key] = null; }
   }
 
-  function comicStory() {
+  // Selección narrativa: cada viñeta sale de eventos reales; si un evento no ocurrió, la viñeta no existe
+  function comicPanels() {
+    const p = S.profile;
     const builds = S.builds;
-    let decision;
-    if (builds[0] === 'B') decision = 'Elegí construir en la colina porque descubrí que el río podía inundar el otro terreno.';
-    else if (builds.includes('A') && S.refuge && S.refuge.parcel === 'B') decision = 'Mi primera idea no era segura. Aprendí a observar mejor el terreno y encontré una solución.';
-    else decision = 'Construí junto al río y la crecida dañó el refugio. Aprendí que construir rápido no siempre es construir bien.';
-    return [
-      { img: 'portrait', text: 'Soy Vittata, inventora de Villa Raíz.' },
-      { img: 'workshop', text: 'La Gran Ruptura dañó mi taller, pero entre los restos vi posibilidades.' },
-      { img: 'shelter', text: decision },
-      { img: 'final', text: 'Ayudé a la familia de Luma y el transmisor me mostró un símbolo de 36 fragmentos.' },
+    let decision = null;
+    if (hadEvent('ShelterConstructed')) {
+      if (builds[0] === 'B') decision = 'Elegí construir en la colina porque descubrí que el río podía inundar el otro terreno.';
+      else if (builds.includes('A') && S.refuge && S.refuge.parcel === 'B') decision = 'Mi primera idea no era segura. Aprendí a observar mejor el terreno y encontré una solución.';
+      else decision = 'Construimos junto al río y la crecida dañó el refugio. Aprendí que construir rápido no siempre es construir bien.';
+    }
+    const all = [
+      { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', text: `Soy ${p.name}, aprendiz de Vittata en Villa Raíz.` },
+      { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', text: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.' },
+      { id: 'refugio', img: 'shelter', needs: 'ShelterConstructed', text: decision },
+      { id: 'final', img: 'final', needs: 'ChapterCompleted', text: 'Ayudamos a la familia de Luma y el transmisor nos mostró un símbolo de 36 fragmentos.' },
     ];
+    return all.filter(x => hadEvent(x.needs)).map(x => Object.assign(x, { text: (S.comic.captions[x.id] || x.text) }));
+  }
+  function orderedPanels() {
+    const panels = comicPanels();
+    const order = S.comic.order.filter(i => i < panels.length);
+    for (let i = 0; i < panels.length; i++) if (!order.includes(i)) order.push(i);
+    return order.map(i => panels[i]);
   }
   const imgCache = {};
   function loadImg(src) {
@@ -638,55 +754,114 @@
     if (ar > tr) { sw = img.height * tr; sx = (img.width - sw) / 2; } else { sh = img.width / tr; sy = (img.height - sh) / 2; }
     ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
   }
-  function wrap(ctx, text, x, y, maxW, lh, maxLines) {
-    const words = text.split(' '); let line = '', lines = 0;
-    for (const w of words) {
-      const t = line ? line + ' ' + w : w;
-      if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = w; if (++lines >= maxLines - 1) { /* última línea */ } }
-      else line = t;
-    }
-    if (line) ctx.fillText(line, x, y);
+  function wrapLines(ctx, text, maxW) {
+    const words = String(text).split(/\s+/); const lines = []; let line = '';
+    for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    return lines;
   }
-  async function renderComic(target, opts) {
-    const W = 1080, H = 1520;
+  // Calcula las cajas de las viñetas (probado en selfTest: sin solapes y dentro de la página)
+  function comicLayout(n, layout, W, H, top) {
+    const boxes = [], g = 20;
+    if (layout === 'strip') {
+      const ph = (H - top - g * (n + 1)) / n;
+      for (let i = 0; i < n; i++) boxes.push({ x: g, y: top + g + i * (ph + g), w: W - 2 * g, h: ph });
+    } else {
+      const rows = Math.ceil(n / 2), pw = (W - 3 * g) / 2, ph = (H - top - g * (rows + 1)) / rows;
+      for (let i = 0; i < n; i++) {
+        const lastAlone = n % 2 === 1 && i === n - 1;
+        boxes.push({ x: lastAlone ? g : g + (i % 2) * (pw + g), y: top + g + Math.floor(i / 2) * (ph + g), w: lastAlone ? W - 2 * g : pw, h: ph });
+      }
+    }
+    return boxes;
+  }
+  async function renderComic(target) {
+    const W = 1080, H = 1520, TOP = 380;
     target.width = W; target.height = H;
     const x = target.getContext('2d');
     try { await document.fonts.load('700 40px Fredoka'); await document.fonts.load('400 24px "Atkinson Hyperlegible"'); } catch (e) { /* fuente de respaldo */ }
-    const panels = comicStory();
-    if (opts.phrase) panels[3].text = opts.phrase;
+    const C = S.comic;
+    const panels = orderedPanels();
+    const portrait = document.createElement('canvas'); portrait.width = portrait.height = 512;
+    await drawPortrait(portrait.getContext('2d'), 512, S.profile, true);
     const vit = await loadImg(IMG.V);
-    const src = { workshop: S.captures.workshop, shelter: S.captures.shelter, final: S.captures.final };
-    const imgs = { workshop: await loadImg(src.workshop), shelter: await loadImg(src.shelter), final: await loadImg(src.final) };
+    const imgs = { workshop: await loadImg(S.captures.workshop), shelter: await loadImg(S.captures.shelter), final: await loadImg(S.captures.final) };
     x.fillStyle = '#10241c'; x.fillRect(0, 0, W, H);
     // Portada
-    const coverImg = opts.cover === 'vittata' ? null : imgs[opts.cover === 'taller' ? 'workshop' : 'shelter'];
-    x.save(); x.beginPath(); x.rect(20, 20, W - 40, 360); x.clip();
-    if (coverImg) coverFit(x, coverImg, 20, 20, W - 40, 360);
-    else { const g = x.createLinearGradient(0, 20, 0, 380); g.addColorStop(0, '#2f8f4e'); g.addColorStop(1, '#10241c'); x.fillStyle = g; x.fillRect(20, 20, W - 40, 360); if (vit) x.drawImage(vit, W - 400, 10, 380, 380); }
-    const shade = x.createLinearGradient(0, 160, 0, 380); shade.addColorStop(0, 'rgba(16,36,28,0)'); shade.addColorStop(1, 'rgba(16,36,28,.92)');
-    x.fillStyle = shade; x.fillRect(20, 160, W - 40, 220); x.restore();
-    x.fillStyle = '#f2a03d'; x.font = '600 26px Fredoka, sans-serif'; x.textBaseline = 'alphabetic'; x.fillText('AMAZONA VERSE · CAPÍTULO 1', 52, 300);
-    x.fillStyle = '#f4f7f1'; x.font = '700 60px Fredoka, sans-serif'; x.fillText((opts.title || 'Mi primera reconstrucción').slice(0, 32), 50, 360);
-    // Viñetas 2x2
-    const pw = (W - 60) / 2, ph = (H - 400 - 40) / 2;
-    for (let i = 0; i < 4; i++) {
-      const px = 20 + (i % 2) * (pw + 20), py = 400 + Math.floor(i / 2) * (ph + 20);
-      x.fillStyle = '#f4f7f1'; x.fillRect(px, py, pw, ph);
-      const ih = ph - 170;
-      x.save(); x.beginPath(); x.rect(px + 10, py + 10, pw - 20, ih); x.clip();
-      const p = panels[i];
-      if (p.img === 'portrait') { const g = x.createRadialGradient(px + pw / 2, py + ih / 2, 20, px + pw / 2, py + ih / 2, pw * 0.7); g.addColorStop(0, '#7fd38f'); g.addColorStop(1, '#2f8f4e'); x.fillStyle = g; x.fillRect(px + 10, py + 10, pw - 20, ih); if (vit) { const s = ih * 0.98; x.drawImage(vit, px + (pw - s) / 2, py + 10 + (ih - s) / 2, s, s); } }
-      else if (imgs[p.img]) coverFit(x, imgs[p.img], px + 10, py + 10, pw - 20, ih);
-      else { x.fillStyle = '#4f9a4c'; x.fillRect(px + 10, py + 10, pw - 20, ih); }
-      if (p.img === 'final') drawSymbol(x, px + pw - 90, py + 90, 70);
-      x.restore();
-      x.fillStyle = '#10241c'; x.font = '600 22px Fredoka, sans-serif'; x.fillText(String(i + 1), px + 16, py + ih + 42);
-      x.font = '400 25px "Atkinson Hyperlegible", sans-serif';
-      wrap(x, p.text, px + 44, py + ih + 42, pw - 64, 33, 4);
+    x.save(); x.beginPath(); x.rect(20, 20, W - 40, TOP - 30); x.clip();
+    const coverImg = C.cover === 'taller' ? imgs.workshop : C.cover === 'refugio' ? imgs.shelter : null;
+    if (coverImg) coverFit(x, coverImg, 20, 20, W - 40, TOP - 30);
+    else {
+      const g = x.createLinearGradient(0, 20, 0, TOP); g.addColorStop(0, '#2f8f4e'); g.addColorStop(1, '#10241c');
+      x.fillStyle = g; x.fillRect(20, 20, W - 40, TOP - 30);
+      if (C.cover === 'personaje') x.drawImage(portrait, W - 380, 10, 360, 360); else if (vit) x.drawImage(vit, W - 400, 0, 380, 380);
     }
+    const shade = x.createLinearGradient(0, 150, 0, TOP); shade.addColorStop(0, 'rgba(16,36,28,0)'); shade.addColorStop(1, 'rgba(16,36,28,.92)');
+    x.fillStyle = shade; x.fillRect(20, 150, W - 40, TOP - 160); x.restore();
+    x.textBaseline = 'alphabetic'; x.textAlign = 'left';
+    x.fillStyle = '#f2a03d'; x.font = '600 26px Fredoka, sans-serif'; x.fillText('AMAZONA VERSE · CAPÍTULO 1', 52, 288);
+    x.fillStyle = '#f4f7f1'; x.font = '700 58px Fredoka, sans-serif'; x.fillText((C.title || 'Mi primera reconstrucción').slice(0, 32), 50, 346);
+    // Viñetas
+    const boxes = comicLayout(panels.length, C.layout, W, H - 30, TOP);
+    panels.forEach((p, i) => {
+      const b = boxes[i];
+      x.fillStyle = '#f4f7f1'; x.fillRect(b.x, b.y, b.w, b.h);
+      x.font = '400 25px "Atkinson Hyperlegible", sans-serif';
+      const lines = wrapLines(x, p.text, b.w - 64).slice(0, 4);
+      const capH = 30 + lines.length * 33;
+      const ih = b.h - capH - 20;
+      x.save(); x.beginPath(); x.rect(b.x + 10, b.y + 10, b.w - 20, ih); x.clip();
+      if (p.img === 'portrait') {
+        const outfit = (OUTFITS.find(o => o.id === S.profile.outfit) || OUTFITS[0]).color;
+        const g = x.createLinearGradient(b.x, b.y, b.x + b.w, b.y + ih); g.addColorStop(0, '#f4f7f1'); g.addColorStop(1, outfit);
+        x.fillStyle = g; x.fillRect(b.x + 10, b.y + 10, b.w - 20, ih);
+        const s = Math.min(b.w - 20, ih); x.drawImage(portrait, b.x + (b.w - s) / 2, b.y + 10 + (ih - s) / 2, s, s);
+      }
+      else if (imgs[p.img]) coverFit(x, imgs[p.img], b.x + 10, b.y + 10, b.w - 20, ih);
+      else { x.fillStyle = '#4f9a4c'; x.fillRect(b.x + 10, b.y + 10, b.w - 20, ih); }
+      if (p.img === 'final') drawSymbol(x, b.x + b.w - 80, b.y + 80, Math.min(64, ih * 0.3));
+      x.restore();
+      x.fillStyle = '#10241c'; x.font = '600 22px Fredoka, sans-serif'; x.fillText(String(i + 1), b.x + 16, b.y + ih + 46);
+      x.font = '400 25px "Atkinson Hyperlegible", sans-serif';
+      lines.forEach((l, k) => x.fillText(l, b.x + 44, b.y + ih + 46 + k * 33));
+    });
     x.fillStyle = '#a9c2b1'; x.font = '400 18px "Atkinson Hyperlegible", sans-serif';
-    x.fillText('Cómic personal generado a partir de tu partida · ' + S.events.length + ' eventos registrados', 24, H - 8);
-    return target;
+    x.fillText('Cómic personal generado con ' + S.events.length + ' eventos reales de tu partida', 24, H - 10);
+    return { target, boxes, panels };
+  }
+
+  // PDF de una página con la imagen JPEG del cómic (sin librerías externas)
+  function dataUrlBytes(url) { const b = atob(url.split(',')[1]); const a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  function buildPdf(jpegUrl, pxW, pxH) {
+    const jpg = dataUrlBytes(jpegUrl);
+    const ptW = 612, ptH = Math.round(612 * pxH / pxW);
+    const enc = s => new TextEncoder().encode(s);
+    const parts = [], offsets = [];
+    let len = 0;
+    const push = u => { parts.push(u); len += u.length; };
+    push(enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
+    const content = `q ${ptW} 0 0 ${ptH} 0 0 cm /Im0 Do Q`;
+    const objs = [
+      `<< /Type /Catalog /Pages 2 0 R >>`,
+      `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${ptW} ${ptH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`,
+      null,
+      `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+      `<< /Title (Amazona Verse - Mi comic) /Producer (Amazona Verse prototipo) >>`,
+    ];
+    objs.forEach((o, i) => {
+      offsets.push(len);
+      if (o === null) {
+        push(enc(`${i + 1} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${pxW} /Height ${pxH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`));
+        push(jpg); push(enc('\nendstream\nendobj\n'));
+      } else push(enc(`${i + 1} 0 obj\n${o}\nendobj\n`));
+    });
+    const xref = len;
+    let xs = `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+    for (const o of offsets) xs += String(o).padStart(10, '0') + ' 00000 n \n';
+    xs += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+    push(enc(xs));
+    return new Blob(parts, { type: 'application/pdf' });
   }
 
   function showEnd() {
@@ -695,51 +870,149 @@
       ' El transmisor reveló el símbolo de los 36 y desbloqueaste el plano de una embarcación. Continuará…';
     $('end').hidden = false;
   }
+  function syncComicForm() {
+    $('c-title').value = S.comic.title; $('c-cover').value = S.comic.cover; $('c-layout').value = S.comic.layout;
+    const panels = orderedPanels();
+    $('c-panels').innerHTML = panels.map((p, i) => `<li><div class="pn">Viñeta ${i + 1}</div>
+      <input id="cap-${p.id}" data-id="${p.id}" type="text" maxlength="120" aria-label="Texto de la viñeta ${i + 1}">
+      <div class="pm"><button class="btn ghost sm" type="button" data-mv="-1" data-i="${i}" aria-label="Subir viñeta ${i + 1}">↑</button><button class="btn ghost sm" type="button" data-mv="1" data-i="${i}" aria-label="Bajar viñeta ${i + 1}">↓</button></div></li>`).join('');
+    panels.forEach(p => { $('cap-' + p.id).value = p.text; });
+  }
+  function moveComicPanel(i, dir) {
+    const n = comicPanels().length;
+    const order = orderedPanels().map(p => comicPanels().findIndex(q => q.id === p.id));
+    const j = i + dir; if (j < 0 || j >= n) return false;
+    [order[i], order[j]] = [order[j], order[i]];
+    S.comic.order = order; return true;
+  }
+  $('c-panels').addEventListener('click', e => {
+    const b = e.target.closest('button[data-mv]'); if (!b) return;
+    if (moveComicPanel(+b.dataset.i, +b.dataset.mv)) { syncComicForm(); refreshComic(); autosave(); }
+  });
+  $('c-panels').addEventListener('change', e => {
+    const inp = e.target.closest('input[data-id]'); if (!inp) return;
+    const v = inp.value.trim().slice(0, 120);
+    if (v) S.comic.captions[inp.dataset.id] = v; else delete S.comic.captions[inp.dataset.id];
+    refreshComic(); autosave();
+  });
+  for (const id of ['c-title', 'c-cover', 'c-layout']) $(id).addEventListener('change', () => {
+    S.comic.title = $('c-title').value.trim().slice(0, 32) || 'Mi primera reconstrucción';
+    S.comic.cover = $('c-cover').value; S.comic.layout = $('c-layout').value;
+    refreshComic(); autosave();
+  });
   async function openComic() {
     $('end').hidden = true; $('comic').hidden = false;
     $('c-export').hidden = true;
+    syncComicForm();
     await refreshComic();
   }
-  async function refreshComic() {
-    await renderComic($('comic-canvas'), { title: $('c-title').value.trim(), phrase: $('c-phrase').value.trim(), cover: $('c-cover').value });
-  }
-  async function exportComic() {
+  async function refreshComic() { return renderComic($('comic-canvas')); }
+  let lastPdfUrl = null;
+  async function exportComic(format) {
     await refreshComic();
-    const url = $('comic-canvas').toDataURL('image/png');
-    $('c-export-img').src = url;
-    $('c-download').href = url;
+    const cv = $('comic-canvas');
+    let url, bytes;
+    if (format === 'pdf') {
+      const blob = buildPdf(cv.toDataURL('image/jpeg', 0.9), cv.width, cv.height);
+      if (lastPdfUrl) URL.revokeObjectURL(lastPdfUrl);
+      url = lastPdfUrl = URL.createObjectURL(blob); bytes = blob.size;
+      $('c-export-img').hidden = true;
+      $('c-download').href = url; $('c-download').download = 'amazona-verse-mi-comic.pdf'; $('c-download').textContent = 'Descargar PDF';
+      $('c-export-note').textContent = 'PDF listo. Si tu navegador no lo descarga aquí, usa Exportar PNG y guarda la imagen.';
+      exportComic.lastBlob = blob;
+    } else {
+      url = cv.toDataURL('image/png'); bytes = url.length;
+      $('c-export-img').src = url; $('c-export-img').hidden = false;
+      $('c-download').href = url; $('c-download').download = 'amazona-verse-mi-comic.png'; $('c-download').textContent = 'Descargar PNG';
+      $('c-export-note').textContent = 'En iPhone o Android: mantén presionada la imagen y elige Guardar. En computadora: usa el enlace.';
+    }
     $('c-export').hidden = false;
-    logEvent('ComicExported', { format: 'png', bytes: url.length });
+    logEvent('ComicExported', { format, bytes });
     autosave();
     return url;
   }
   $('b-comic').onclick = openComic;
   $('c-close').onclick = () => { $('comic').hidden = true; if (S.complete) $('end').hidden = false; };
   $('c-refresh').onclick = refreshComic;
-  $('c-png').onclick = exportComic;
-  for (const id of ['c-title', 'c-phrase', 'c-cover']) $(id).addEventListener('change', refreshComic);
+  $('c-png').onclick = () => exportComic('png');
+  $('c-pdf').onclick = () => exportComic('pdf');
 
-  // ---------- Guardado versionado ----------
-  const SAVED_KEYS = ['pos', 'facing', 'step', 'inv', 'examined', 'collected', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'complete', 'indicators', 'events', 'captures', 'clock'];
+  // ---------- Creador de personaje ----------
+  function openCreator(first) {
+    const p = S.profile;
+    $('p-name').value = p.created ? p.name : '';
+    $('p-preset').innerHTML = PRESETS.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+    $('p-outfit').innerHTML = OUTFITS.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+    $('p-acc').innerHTML = ACCESSORIES.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+    $('p-preset').value = p.preset; $('p-outfit').value = p.outfit; $('p-acc').value = p.accessory;
+    $('p-error').hidden = true;
+    $('p-cancel').hidden = !!first;
+    $('creator').hidden = false;
+    previewCreator();
+  }
+  function creatorDraft() { return { name: $('p-name').value.trim(), preset: $('p-preset').value, outfit: $('p-outfit').value, accessory: $('p-acc').value }; }
+  function previewCreator() { drawPortrait($('p-canvas').getContext('2d'), 256, creatorDraft(), true); }
+  for (const id of ['p-preset', 'p-outfit', 'p-acc']) $(id).addEventListener('change', previewCreator);
+  function saveCharacter(draft) {
+    const d = draft || creatorDraft();
+    if (!NAME_OK.test(d.name)) return 'Escribe un nombre inventado de 1 a 16 letras o números.';
+    if (!PRESETS.some(o => o.id === d.preset) || !OUTFITS.some(o => o.id === d.outfit) || !ACCESSORIES.some(o => o.id === d.accessory)) return 'Opción no válida.';
+    const firstTime = !S.profile.created;
+    S.profile = { created: true, name: d.name, preset: d.preset, outfit: d.outfit, accessory: d.accessory };
+    if (firstTime) logEvent('PlayerCharacterCreated', { preset: d.preset, outfit: d.outfit, accessory: d.accessory });
+    $('creator').hidden = true;
+    refreshCompanion();
+    autosave();
+    if (firstTime) setTimeout(() => toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500), 300);
+    return null;
+  }
+  $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
+  $('p-cancel').onclick = () => { $('creator').hidden = true; };
+  $('b-char').onclick = () => openCreator(false);
+
+  // ---------- Guardado versionado con migración y respaldo ----------
+  const SAVED_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'examined', 'collected', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'complete', 'indicators', 'events', 'captures', 'clock'];
   function serialize() { const o = { v: SAVE_VERSION }; for (const k of SAVED_KEYS) o[k] = S[k]; return JSON.stringify(o); }
   function save(silent) {
-    try { localStorage.setItem(SAVE_KEY, serialize()); if (!silent) toast('Partida guardada'); return true; }
-    catch (e) {
+    try {
+      const prev = localStorage.getItem(SAVE_KEY);
+      if (prev) localStorage.setItem(SAVE_KEY + '.prev', prev);
+      localStorage.setItem(SAVE_KEY, serialize()); if (!silent) toast('Partida guardada'); return true;
+    } catch (e) {
       try { const o = JSON.parse(serialize()); o.captures = {}; localStorage.setItem(SAVE_KEY, JSON.stringify(o)); if (!silent) toast('Partida guardada (sin imágenes del cómic)'); return true; }
       catch (e2) { if (!silent) toast('No se pudo guardar en este navegador'); return false; }
     }
   }
   let saveDebounce = 0;
   function autosave() { saveDebounce = 0.5; }
+  // v2 -> v3: eventos al esquema nuevo, perfil y proyecto de cómic por defecto
+  function migrate(d) {
+    if (d && d.v === 2) {
+      const base = freshState();
+      const id = newId();
+      const m = Object.assign({}, d, { v: 3, saveId: id, profile: base.profile, comic: base.comic });
+      const oldS = S; S = { saveId: id };
+      m.events = (d.events || []).map((e, i) => makeEvent(e.type, e.data, i + 1, e.t || 0));
+      S = oldS;
+      if (m.events.some(e => e.key === 'PlayerCharacterCreated')) m.profile = Object.assign({}, base.profile, { created: true });
+      return m;
+    }
+    return d;
+  }
   function validSave(d) {
-    return d && d.v === SAVE_VERSION && d.pos && typeof d.pos.x === 'number' && typeof d.step === 'number' && d.inv && Array.isArray(d.collected) && Array.isArray(d.events) && d.evaluated && d.examined;
+    return d && d.v === SAVE_VERSION && typeof d.saveId === 'string' && d.profile && d.comic && d.pos && typeof d.pos.x === 'number' && typeof d.step === 'number' &&
+      d.inv && Array.isArray(d.collected) && Array.isArray(d.events) && d.evaluated && d.examined;
   }
   function load(silent) {
     let raw = null;
     try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { raw = null; }
     if (!raw) { if (!silent) toast('No hay partida guardada'); return false; }
-    let d; try { d = JSON.parse(raw); } catch (e) { d = null; }
-    if (!validSave(d)) { if (!silent) toast('La partida guardada está dañada o es de otra versión; empiezas de nuevo'); return false; }
+    let d; try { d = migrate(JSON.parse(raw)); } catch (e) { d = null; }
+    if (!validSave(d)) {
+      try { localStorage.setItem(SAVE_KEY + '.unreadable', raw); } catch (e) { /* sin espacio */ }
+      if (!silent) toast('No se pudo leer la partida guardada; se guardó una copia y empiezas de nuevo');
+      return false;
+    }
     S = Object.assign(freshState(), d, { event: null, water: WATER_BASE, vy: 0, captures: d.captures || {} });
     applyWorld();
     if (!silent) toast('Partida cargada');
@@ -752,15 +1025,16 @@
     water.position.y = S.water; rain.visible = false;
     build = null; ghost.visible = false;
     hideCard(); $('dialog').hidden = true; dialogQueue = []; dialogDone = null;
-    showSymbol(false); $('comic').hidden = true;
+    showSymbol(false); $('comic').hidden = true; $('creator').hidden = true;
     if (S.complete) showEnd(); else $('end').hidden = true;
     renderQuest(); renderInv();
+    refreshCompanion();
   }
-  function reset() {
+  function reset(skipCreator) {
     S = freshState();
     try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* sin almacenamiento */ }
-    logEvent('PlayerCharacterCreated', { character: 'Vittata' });
     applyWorld();
+    if (!skipCreator) openCreator(true);
   }
 
   // ---------- Entrada ----------
@@ -883,7 +1157,14 @@
   const camPos = new THREE.Vector3();
   function placeCamera(snap) {
     camPos.set(S.pos.x + Math.sin(camYaw) * 10, S.pos.y + 5.5, S.pos.z + Math.cos(camYaw) * 10);
-    if (snap) camera.position.copy(camPos);
+    if (snap) {
+      camera.position.copy(camPos);
+      if (companion.visible) {
+        companionPos.x = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1; companionPos.z = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
+        companion.position.set(companionPos.x, height(companionPos.x, companionPos.z) + 0.75, companionPos.z);
+        cShadow.position.set(companionPos.x, height(companionPos.x, companionPos.z) + 0.03, companionPos.z);
+      }
+    }
     player.position.set(S.pos.x, S.pos.y + 1.05, S.pos.z);
     pShadow.position.set(S.pos.x, height(S.pos.x, S.pos.z) + 0.03, S.pos.z);
     camera.lookAt(S.pos.x, S.pos.y + 1.2, S.pos.z);
@@ -897,6 +1178,14 @@
     player.material.rotation = jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
     pShadow.position.set(S.pos.x, height(S.pos.x, S.pos.z) + 0.03, S.pos.z);
     luma.sp.position.y = height(LUMA.x, LUMA.z) + 1.0 + Math.sin(t * 2) * 0.05;
+    if (companion.visible) {
+      const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
+      const k = Math.min(1, dt * 3);
+      companionPos.x += (tx - companionPos.x) * k; companionPos.z += (tz - companionPos.z) * k;
+      const cy = height(companionPos.x, companionPos.z);
+      companion.position.set(companionPos.x, cy + 0.75 + Math.abs(Math.sin(t * 9)) * (moving ? 0.1 : 0), companionPos.z);
+      cShadow.position.set(companionPos.x, cy + 0.03, companionPos.z);
+    }
     for (const r of RESOURCES) if (resMeshes[r.id].visible) resMeshes[r.id].rotation.y += dt * 0.6;
     if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25);
     if (rain.visible) {
@@ -921,7 +1210,7 @@
 
   // ---------- Inicio ----------
   S.pos.y = height(S.pos.x, S.pos.z);
-  if (!load(true)) { reset(); setTimeout(() => toast('La Gran Ruptura dañó tu taller. Examina la máquina y el transmisor.', 4500), 600); }
+  if (!load(true)) reset();
   placeCamera(true);
   requestAnimationFrame(frame);
 
@@ -930,21 +1219,28 @@
   function tick(seconds) { const n = Math.ceil(seconds / 0.05); for (let i = 0; i < n; i++) update(0.05); }
   function drain() { let n = 0; while (dialogOpen() && n++ < 30) showNextLine(); }
   function useAt(id, ox, oz) { const it = interactables.find(i => i.id === id); teleport(it.x + (ox || 0.9), it.z + (oz || 0)); tick(0.1); const nb = nearest(); if (nb && nb.id === id) { action(); return true; } return false; }
-  async function selfTest() {
+  async function selfTest(opts) {
+    opts = opts || {};
     const out = [];
     const check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra || '' });
-    reset();
-    check('Evento PlayerCharacterCreated', hadEvent('PlayerCharacterCreated'));
+    const keep = (() => { try { return localStorage.getItem(SAVE_KEY); } catch (e) { return null; } })();
+    reset(true);
+    // Creador de personaje
+    check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
+    check('Nombre con símbolos raros se rechaza', saveCharacter({ name: '<b>x</b>', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
+    check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && hadEvent('PlayerCharacterCreated'));
+    await refreshCompanion();
+    check('El aprendiz aparece en el mundo', companion.visible);
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SPAWN.x, S.pos.z - SPAWN.z) < 0.1);
     useAt('maquina'); drain(); useAt('transmisor'); drain();
     check('Taller explorado y misión con Luma', S.step === 1 && hadEvent('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     useAt('luma'); drain();
-    check('Luma da la misión (LumaHelped)', S.step === 2 && hadEvent('LumaHelped'), 'paso ' + S.step);
+    check('Luma da la misión', S.step === 2 && hadEvent('LumaHelped'), 'paso ' + S.step);
     for (const id of ['m1', 'm2', 'm3', 'm4', 'p1', 'p2', 'c1']) useAt(id);
-    check('Recursos recolectados (ResourcesCollected)', S.step === 3 && hadEvent('ResourcesCollected'), JSON.stringify(S.inv));
+    check('Recursos recolectados', S.step === 3 && hadEvent('ResourcesCollected'), JSON.stringify(S.inv));
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
-    check('Dos terrenos inspeccionados', S.step === 4 && S.events.filter(e => e.type === 'LandInspected').length === 2, 'paso ' + S.step);
+    check('Dos terrenos inspeccionados', S.step === 4 && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
     startBuild('A'); teleport(PLACES.A.x + 50, PLACES.A.z, 0, 1); tick(0.1);
     check('Construcción fuera del terreno rechazada', build && !build.valid, build && build.reason);
     teleport(PLACES.A.x, PLACES.A.z - 1.5, 0, 1); tick(0.1);
@@ -962,36 +1258,83 @@
     teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && hadEvent('ShelterRelocated'));
     useAt('guardian', 1.4, 0); drain();
-    check('GuardianMet y banco desbloqueado', hadEvent('GuardianMet') && S.benchUnlocked && bench.visible && S.step === 6);
+    check('Guardián conocido y banco desbloqueado', hadEvent('GuardianMet') && S.benchUnlocked && bench.visible && S.step === 6);
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
     drain();
-    check('Transmisor activo, plano de embarcación y capítulo completo', S.transmitterOn && S.boatPlan && S.complete && hadEvent('ChapterCompleted') && !$('end').hidden);
-    check('Capturas para el cómic', !!(S.captures.workshop && S.captures.shelter && S.captures.final));
-    const story = comicStory();
-    check('Cómic cuenta la corrección real', story[2].text.startsWith('Mi primera idea no era segura'), story[2].text);
+    check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && hadEvent('ChapterCompleted') && !$('end').hidden);
+    // Esquema de eventos
+    const ev = S.events;
+    const schemaOk = ev.every((e, i) => e.schemaVersion === EVENT_SCHEMA && e.saveId === S.saveId && e.seq === i + 1 && e.id === S.saveId + '-' + (i + 1) && typeof e.type === 'string' && e.chapter === 1 && 'location' in e && Array.isArray(e.characters) && 'sceneTemplate' in e && e.locKey === 'evt.' + e.key);
+    check('Todos los eventos cumplen el esquema', schemaOk, ev.length + ' eventos');
+    check('Eventos sin el nombre real ni datos personales', !JSON.stringify(ev).includes('Nube Azul'));
+    const json = JSON.stringify(ev);
+    check('Los eventos se serializan y vuelven igual', JSON.stringify(JSON.parse(json)) === json);
+    // Cómic
+    const panels = comicPanels();
+    check('El cómic usa solo eventos reales (4 viñetas)', panels.length === 4);
+    check('Viñeta 1 presenta al personaje creado', panels[0].text.includes('Nube Azul'));
+    check('Viñeta 3 cuenta la corrección real', panels[2].text.startsWith('Mi primera idea no era segura'), panels[2].text);
     await openComic();
-    $('c-title').value = 'Prueba de cómic'; $('c-cover').value = 'taller';
-    const png = await exportComic();
+    S.comic.title = 'Prueba de cómic'; S.comic.cover = 'personaje'; syncComicForm();
+    check('Mover la viñeta 4 hacia arriba cambia el orden', moveComicPanel(3, -1) && orderedPanels()[2].id === 'final');
+    check('No se puede mover fuera de rango', moveComicPanel(0, -1) === false);
+    S.comic.captions.final = 'Mi frase editada';
+    check('Texto editado aparece en la viñeta', orderedPanels().some(p => p.text === 'Mi frase editada'));
+    for (const lay of ['grid', 'strip']) {
+      for (const n of [1, 2, 3, 4]) {
+        const bx = comicLayout(n, lay, 1080, 1490, 380);
+        const inside = bx.every(b => b.x >= 0 && b.y >= 380 && b.x + b.w <= 1080 && b.y + b.h <= 1490 && b.w > 100 && b.h > 100);
+        const overlap = bx.some((a, i) => bx.some((b, j) => i < j && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h));
+        if (!inside || overlap) check(`Diseño ${lay} con ${n} viñetas`, false, JSON.stringify(bx));
+      }
+    }
+    check('Diseños sin solapes y dentro de la página (8 casos)', !out.some(o => o.name.startsWith('Diseño') && !o.ok));
+    S.comic.layout = 'strip';
+    const png = await exportComic('png');
     check('Exporta PNG válido', png.startsWith('data:image/png') && png.length > 50000, Math.round(png.length / 1024) + ' KB');
     const im = await loadImg(png);
     check('El PNG se decodifica a 1080×1520', im && im.width === 1080 && im.height === 1520, im ? im.width + '×' + im.height : 'no carga');
-    check('Evento ComicExported', hadEvent('ComicExported'));
+    await exportComic('pdf');
+    const pdf = exportComic.lastBlob;
+    const head = new TextDecoder().decode(new Uint8Array(await pdf.slice(0, 8).arrayBuffer()));
+    const tail = new TextDecoder().decode(new Uint8Array(await pdf.slice(pdf.size - 6).arrayBuffer()));
+    check('Exporta PDF con cabecera y cierre correctos', head.startsWith('%PDF-1.4') && tail.includes('%%EOF') && pdf.size > 50000, Math.round(pdf.size / 1024) + ' KB');
+    check('Exportaciones registradas', S.events.filter(e => e.key === 'ComicExported').length === 2);
+    if (opts.saveFiles) {
+      const post = (name, body) => fetch('/__save?name=' + encodeURIComponent(name), { method: 'POST', body }).then(r => r.ok).catch(() => false);
+      const pngBlob = await (await fetch(png)).blob();
+      check('PNG enviado al servidor de pruebas', await post('comic.png', pngBlob));
+      check('PDF enviado al servidor de pruebas', await post('comic.pdf', pdf));
+      const portrait = document.createElement('canvas'); portrait.width = portrait.height = 256;
+      await drawPortrait(portrait.getContext('2d'), 256, S.profile, true);
+      check('Retrato enviado al servidor de pruebas', await post('retrato.png', await (await fetch(portrait.toDataURL('image/png'))).blob()));
+    }
     $('comic').hidden = true;
+    // Guardado, migración y respaldo
     check('Guardar funciona', save(true));
     const snap = serialize();
-    reset(); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge);
+    reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
     try { localStorage.setItem(SAVE_KEY, snap); } catch (e) { /* sin almacenamiento */ }
-    check('Cargar restaura progreso, eventos y capturas', load(true) && S.complete && S.events.length > 10 && !!S.captures.final, S.events.length + ' eventos');
+    check('Cargar restaura progreso, personaje, cómic y eventos', load(true) && S.complete && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && S.events.length > 15 && !!S.captures.final, S.events.length + ' eventos');
+    const v2 = { v: 2, pos: { x: 1, z: 2, y: 0 }, facing: { x: 0, z: 1 }, step: 2, inv: { madera: 1, piedra: 0, componente: 0 }, examined: { maquina: true, transmisor: true },
+      collected: ['m1'], evaluated: { A: false, B: false }, refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, complete: false,
+      indicators: { seguridad: '—', acceso: '—', habitat: '—' }, events: [{ type: 'PlayerCharacterCreated', t: 0, data: {} }, { type: 'WorkshopExplored', t: 5, data: {} }, { type: 'LumaHelped', t: 9, data: {} }], captures: {}, clock: 12 };
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(v2)); } catch (e) { /* sin almacenamiento */ }
+    check('Partida v2 se migra a v3 sin perder progreso', load(true) && S.step === 2 && S.collected[0] === 'm1' && S.events.length === 3 && S.events[1].type === 'LocationDiscovered' && S.events[2].seq === 3);
     try { localStorage.setItem(SAVE_KEY, '{roto'); } catch (e) { /* sin almacenamiento */ }
-    check('Partida dañada se rechaza', load(true) === false);
+    check('Partida dañada se rechaza y se guarda una copia', load(true) === false && localStorage.getItem(SAVE_KEY + '.unreadable') === '{roto');
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, step: 3 })); } catch (e) { /* sin almacenamiento */ }
-    check('Partida de la versión 1 se rechaza', load(true) === false);
+    check('Partida v1 (incompatible) se rechaza', load(true) === false);
     // Ruta directa a la colina
-    reset(); S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
+    reset(true); saveCharacter({ name: 'Rio', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
+    S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
     startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
-    check('Ruta colina directa: texto del cómic correcto', comicStory()[2].text.startsWith('Elegí construir en la colina'), comicStory()[2].text);
-    reset();
+    check('Ruta colina directa: texto del cómic correcto', comicPanels()[1] && comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
+    check('Sin capítulo completo no hay viñeta final', !comicPanels().some(p => p.id === 'final'));
+    reset(true);
+    try { localStorage.removeItem(SAVE_KEY + '.unreadable'); if (keep) localStorage.setItem(SAVE_KEY, keep); } catch (e) { /* sin almacenamiento */ }
+    if (keep) load(true); else openCreator(true);
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   window.AV = { get state() { return S; }, teleport, tick, action, nearest: () => nearest() && nearest().id, selfTest, save, load, reset, exportComic };

@@ -1,11 +1,13 @@
 # TEST_REPORT · 24 oct 2026
 
-**Cómo:** servidor local `python3 -m http.server`, navegador Chromium del panel de Claude y `AV.selfTest()` en la consola.
+**Entorno:** macOS 26.6.2, Chromium del panel de Claude, `tests/server.py`, Three.js r128.
+**Comando:** `await AV.selfTest({saveFiles:true})`.
+**Resultado:** **45/45**.
 
-**Resultado:** 24 de 24 comprobaciones pasadas, después de corregir una comprobación que revisaba la lluvia un instante antes de tiempo.
+Cubre: creador (nombres no válidos rechazados, personaje guardado, aprendiz visible) · capítulo completo con ruta río→corrección→colina · esquema de cada evento · los eventos no contienen el nombre del jugador · serialización ida y vuelta · cómic con 4 viñetas solo de eventos reales · reordenar y editar viñetas · 8 diseños sin solapes · PNG 1080×1520 decodificado · PDF con cabecera y cierre · archivos guardados en disco · guardar, reiniciar y cargar · migración v2→v3 · partida dañada copiada y rechazada · v1 rechazada · ruta colina directa · sin viñeta final si no se completa.
 
-Cubre: diálogo con Agilis · recolección e inventario · evaluación de los 2 terrenos · construcción rechazada fuera del terreno · construcción válida con consumo de materiales y colisión nueva · lluvia y subida del agua · refugio dañado en la orilla · indicadores · reparación del taller · pista · capítulo completado · guardar · reiniciar · cargar · partida dañada rechazada · partida de otra versión rechazada · ruta de la loma (refugio intacto).
+**Inspección manual de archivos:** `comic.png` (1080×1520, viñetas y textos correctos), `comic.pdf` (1 página; `file` y PDFKit de macOS lo abren; renderizado y revisado como imagen), `retrato.png` (256×256, gafas y pañuelo visibles).
 
-**No probado todavía:** controles táctiles en iPhone o Android reales, rendimiento en móviles, Safari, partidas guardadas entre dos versiones distintas del juego.
+**Vistas revisadas:** escritorio 800×600 y móvil 375×812 (capturas).
 
-**Corregido en esta prueba:** faltaba declarar UTF-8 (acentos rotos) y la regla que oculta paneles fuera del visor; las cotorras se veían oscuras por la codificación de color de la textura; los botones del sistema tapaban el inventario.
+**No probado:** iPhone y Android reales, Safari, rendimiento, controles táctiles con dedos reales, lectores de pantalla.

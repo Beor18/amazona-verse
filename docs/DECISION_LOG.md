@@ -11,3 +11,19 @@ El modelo `Piloto Cotorra.blend` (Blender 2.80) aún no está convertido: Blende
 
 ## 2026-10-24 · Cámara en tercera persona libre (PROPUESTO)
 Decisión abierta en el documento maestro. Se eligió tercera persona para el prototipo porque es la más fácil de cambiar después.
+
+## 2026-10-24 · Prototipo web como referencia jugable, no como reemplazo
+- La lógica del capítulo está separada del render y los datos (eventos, guardado, cómic) son JSON versionado, para portarlos a Godot o Unity sin rehacer el diseño.
+- **Condición para cambiar de motor:** tener modelos con rig y animaciones (ahora no existen) o necesitar builds nativas de tienda.
+
+## 2026-10-24 · Eventos con esquema propio y migración de partidas (v2 → v3)
+Se adopta el esquema del directivo V4 §7.3. Las partidas v2 se migran; las ilegibles se copian antes de descartarlas.
+
+## 2026-10-24 · PDF sin librerías
+Se genera un PDF de una página con el JPEG del cómic, en vez de cargar jsPDF, para que funcione dentro del visor de Claude (que bloquea fetch externos). Reversible si se necesita texto seleccionable.
+
+## 2026-10-24 · El aprendiz del jugador acompaña a Vittata
+El jugador controla a Vittata en la historia y su personaje creado la sigue y aparece en el cómic. Revisar en pruebas con niños (V4 §3.2).
+
+## 2026-10-24 · Modelo Blender convertido a GLB, pero no se usa todavía
+`vittata_base_lod1.glb` (20k triángulos) existe, pero el .blend no trae texturas (rutas a un disco E:\ de Windows) ni el esqueleto RigCotorra, y muestra un traje negro de piloto. Se sigue usando el render 2D hasta que Kelvin confirme el diseño y aparezcan las texturas y el rig.
