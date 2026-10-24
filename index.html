@@ -68,6 +68,24 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
 @media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD/flechas mover · Espacio saltar/planear · E acción · Q/R girar cámara"; } }
 @media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 12px; } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
+.note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row.center { justify-content: center; }
+#symbol { inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+#symbol canvas { width: min(60vmin, 360px); height: auto; filter: drop-shadow(0 0 24px rgba(255, 210, 122, .55)); }
+#comic { inset: 0; background: rgba(16, 36, 28, .9); overflow: auto; padding-block: calc(env(safe-area-inset-top, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.comic-wrap { max-width: 980px; margin: 0 auto; }
+.comic-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.comic-head h2 { font-family: var(--display); color: var(--beak); margin: 0; font-size: 22px; }
+.comic-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+#comic-canvas { width: 100%; height: auto; border-radius: 8px; background: var(--night); }
+.comic-form { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.comic-form label { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
+.comic-form input, .comic-form select { font: 15px var(--body); color: var(--paper); background: rgba(244,247,241,.08); border: 1px solid rgba(244,247,241,.3); border-radius: 8px; padding: 8px 10px; }
+.comic-form input:focus-visible, .comic-form select:focus-visible { outline: 3px solid var(--leaf-hi); }
+#c-export img { width: 100%; border-radius: 8px; margin-bottom: 8px; -webkit-user-select: auto; user-select: auto; -webkit-touch-callout: default; }
+#c-download { display: inline-block; text-decoration: none; }
+@media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -75,8 +93,8 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 
 <div id="top" class="hud">
   <section id="quest" class="panel" aria-live="polite">
-    <div class="chapter">Capítulo 1 · título provisional</div>
-    <h1>La primera reconstrucción</h1>
+    <div class="chapter">Capítulo 1 · Villa Raíz</div>
+    <h1>El día que el cielo se rompió</h1>
     <ol id="steps"></ol>
     <div id="indicators"></div>
   </section>
@@ -117,11 +135,51 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
   <div class="panel">
     <h2>Capítulo 1 completado</h2>
     <p id="end-text"></p>
-    <button class="btn" id="b-again" type="button">Jugar de nuevo</button>
+    <div class="row center">
+      <button class="btn" id="b-comic" type="button">Crear mi cómic</button>
+      <button class="btn ghost" id="b-again" type="button">Jugar de nuevo</button>
+    </div>
   </div>
 </div>
 
-<div id="tag" class="hud">Prototipo hito 1 · Vittata usa su render como sustituto 3D</div>
+<div id="symbol" class="hud" hidden aria-label="Símbolo de los 36 fragmentos">
+  <canvas id="symbol-canvas" width="360" height="360"></canvas>
+</div>
+
+<div id="comic" class="hud" hidden role="dialog" aria-label="Mi cómic">
+  <div class="comic-wrap panel">
+    <div class="comic-head">
+      <h2>Mi cómic</h2>
+      <button class="btn ghost" id="c-close" type="button">Cerrar</button>
+    </div>
+    <div class="comic-body">
+      <canvas id="comic-canvas" width="1080" height="1520" aria-label="Vista previa del cómic"></canvas>
+      <div class="comic-form">
+        <label for="c-title">Título</label>
+        <input id="c-title" type="text" maxlength="32" value="Mi primera reconstrucción">
+        <label for="c-phrase">Frase final (viñeta 4)</label>
+        <input id="c-phrase" type="text" maxlength="90" placeholder="Ayudé a la familia de Luma…">
+        <label for="c-cover">Portada</label>
+        <select id="c-cover">
+          <option value="vittata">Vittata</option>
+          <option value="taller">El taller</option>
+          <option value="refugio">El refugio</option>
+        </select>
+        <div class="row">
+          <button class="btn ghost" id="c-refresh" type="button">Actualizar vista</button>
+          <button class="btn" id="c-png" type="button">Exportar PNG</button>
+        </div>
+        <div id="c-export" hidden>
+          <p class="note">En iPhone o Android: mantén presionada la imagen y elige Guardar. En computadora: usa el enlace.</p>
+          <img id="c-export-img" alt="Tu cómic exportado en PNG">
+          <a id="c-download" class="btn ghost" download="amazona-verse-mi-comic.png" href="#">Descargar PNG</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tag" class="hud">Prototipo · Vittata, Luma y el Guardián usan renders como sustitutos 3D</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="game.js" charset="utf-8"></script>
