@@ -19,6 +19,7 @@
   --body: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
   color-scheme: dark;
 }
+*, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; }
 body { background: var(--night); color: var(--paper); font-family: var(--body); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
@@ -92,14 +93,14 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #c-panels input { min-width: 0; }
 .pm { display: flex; gap: 4px; }
 .btn.sm { padding: 6px 10px; font-size: 14px; }
-#creator { inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16, 36, 28, .9); overflow: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px; }
-.creator-box { width: min(560px, 100%); }
+#creator { inset: 0; display: flex; align-items: flex-start; justify-content: center; background: rgba(16, 36, 28, .9); overflow: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px; }
+.creator-box { width: min(560px, 100%); margin: auto; padding: 18px; }
 .creator-box h2 { font-family: var(--display); color: var(--leaf-hi); margin: 0 0 4px; font-size: 24px; }
 .creator-grid { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: start; margin: 8px 0 12px; }
-#p-canvas { width: 100%; height: auto; border-radius: 14px; }
+#p-canvas { width: 100%; height: auto; border-radius: 50%; box-shadow: 0 0 0 3px var(--beak), 0 8px 24px rgba(0,0,0,.35); }
 .err { color: #ffb4a8; font-size: 14px; margin: 0 0 8px; }
 @media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
-@media (max-width: 480px) { .creator-grid { grid-template-columns: 1fr; } #p-canvas { max-width: 180px; margin: 0 auto; } }
+@media (max-width: 480px) { .creator-grid { grid-template-columns: 1fr; } #p-canvas { max-width: 170px; margin: 4px auto 0; } .creator-box h2 { text-align: center; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 

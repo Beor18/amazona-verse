@@ -397,35 +397,42 @@
   companion.scale.set(1.7, 1.7, 1); companion.visible = false; scene.add(companion);
   const cShadow = blob(0.45); cShadow.visible = false; scene.add(cShadow);
   const companionPos = { x: 0, z: 0 };
+  // withBg = retrato de busto (creador, cómic, perfil); sin fondo = cuerpo entero para el sprite del mundo.
+  // Los adornos se dibujan en coordenadas del render de 256 px y se transforman con el encuadre.
   async function drawPortrait(ctx, size, p, withBg) {
     const img = await loadImg('assets/presets/' + p.preset + '.png');
     const outfit = (OUTFITS.find(o => o.id === p.outfit) || OUTFITS[0]).color;
+    ctx.save();
     ctx.clearRect(0, 0, size, size);
     if (withBg) {
-      const g = ctx.createRadialGradient(size / 2, size * 0.45, size * 0.1, size / 2, size / 2, size * 0.7);
-      g.addColorStop(0, '#f4f7f1'); g.addColorStop(1, outfit);
+      const g = ctx.createRadialGradient(size * 0.5, size * 0.38, size * 0.05, size * 0.5, size * 0.5, size * 0.72);
+      g.addColorStop(0, '#2d5a43'); g.addColorStop(1, '#10241c');
       ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
-    }
-    if (img) ctx.drawImage(img, 0, 0, size, size);
-    const s = size / 256;
+      ctx.globalAlpha = 0.35; ctx.fillStyle = outfit;
+      ctx.beginPath(); ctx.arc(size * 0.5, size * 1.05, size * 0.62, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      const k = size / 164; ctx.scale(k, k); ctx.translate(-46, 2);
+    } else ctx.scale(size / 256, size / 256);
+    if (img) ctx.drawImage(img, 0, 0, 256, 256);
     // Pañuelo al cuello
-    ctx.save(); ctx.fillStyle = outfit; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 2 * s;
-    ctx.beginPath(); ctx.moveTo(98 * s, 120 * s); ctx.quadraticCurveTo(128 * s, 140 * s, 160 * s, 118 * s); ctx.lineTo(164 * s, 132 * s);
-    ctx.quadraticCurveTo(128 * s, 156 * s, 94 * s, 134 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(122 * s, 142 * s); ctx.lineTo(112 * s, 168 * s); ctx.lineTo(134 * s, 160 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.restore();
-    ctx.save(); ctx.lineWidth = 4 * s; ctx.strokeStyle = '#3a2a1a';
+    ctx.fillStyle = outfit; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(98, 120); ctx.quadraticCurveTo(128, 140, 160, 118); ctx.lineTo(164, 132);
+    ctx.quadraticCurveTo(128, 156, 94, 134); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(122, 142); ctx.lineTo(112, 166); ctx.lineTo(134, 158); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 3.5; ctx.strokeStyle = '#3a2a1a';
     if (p.accessory === 'gafas') {
-      ctx.fillStyle = 'rgba(160,220,255,.35)';
-      for (const cx of [108, 146]) { ctx.beginPath(); ctx.arc(cx * s, 52 * s, 13 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
-      ctx.beginPath(); ctx.moveTo(121 * s, 52 * s); ctx.lineTo(133 * s, 52 * s); ctx.stroke();
+      ctx.fillStyle = 'rgba(170,225,255,.4)';
+      for (const cx of [108, 146]) { ctx.beginPath(); ctx.arc(cx, 52, 13, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(121, 52); ctx.lineTo(133, 52); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      for (const cx of [103, 141]) { ctx.beginPath(); ctx.arc(cx, 47, 3, 0, Math.PI * 2); ctx.fill(); }
     } else if (p.accessory === 'gorra') {
       ctx.fillStyle = outfit;
-      ctx.beginPath(); ctx.arc(127 * s, 34 * s, 30 * s, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(150 * s, 35 * s, 22 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(127, 34, 30, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(150, 35, 22, 6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     } else if (p.accessory === 'medalla') {
       ctx.fillStyle = '#ffd27a';
-      ctx.beginPath(); ctx.arc(128 * s, 176 * s, 11 * s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(124, 150, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
   }
