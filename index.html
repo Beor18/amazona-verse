@@ -1,0 +1,127 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amazona Verse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: juego a pantalla completa; HUD flotante en las esquinas, controles tactiles abajo. Look unico: selva al atardecer. */
+:root {
+  --night: #10241c;      /* fondo y paneles */
+  --leaf: #2f8f4e;       /* verde Vittata */
+  --leaf-hi: #7fd38f;
+  --beak: #f2a03d;       /* naranja pico, acento */
+  --crest: #d6403a;      /* rojo frente */
+  --paper: #f4f7f1;      /* texto claro */
+  --muted: #a9c2b1;
+  --panel: rgba(16, 36, 28, 0.86);
+  --display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--night); color: var(--paper); font-family: var(--body); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+#game { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+.hud { position: fixed; z-index: 5; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+#top { top: calc(env(safe-area-inset-top, 0px) + 10px); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.panel { background: var(--panel); border: 1px solid rgba(127, 211, 143, 0.25); border-radius: 14px; padding: 10px 12px; backdrop-filter: blur(6px); }
+#quest { max-width: 330px; min-width: 0; }
+#quest h1 { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0 0 2px; color: var(--leaf-hi); letter-spacing: .01em; text-wrap: balance; }
+#quest .chapter { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+#quest ol { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.45; }
+#quest li.done { color: var(--muted); text-decoration: line-through; }
+#quest li.now { color: var(--paper); font-weight: 700; }
+#quest li.later { color: var(--muted); opacity: .7; }
+#inv { display: flex; gap: 8px; font-family: var(--display); font-size: 15px; }
+#inv span { display: flex; flex-direction: column; align-items: center; min-width: 54px; font-variant-numeric: tabular-nums; }
+#inv small { font-family: var(--body); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+#indicators { margin-top: 6px; font-size: 12px; color: var(--muted); }
+#indicators b { color: var(--paper); }
+#prompt { left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); font-family: var(--display); font-size: 16px; padding: 8px 14px; border-radius: 999px; background: var(--beak); color: #2b1a05; white-space: nowrap; }
+#dialog { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); margin: 0 auto; max-width: 620px; display: flex; gap: 12px; align-items: flex-start; }
+#dialog img { width: 64px; height: 64px; flex: none; border-radius: 12px; background: rgba(127,211,143,.15); }
+#dialog .who { font-family: var(--display); font-weight: 600; color: var(--beak); font-size: 15px; }
+#dialog p { margin: 2px 0 8px; font-size: 15px; line-height: 1.45; }
+#dialog .txt { min-width: 0; flex: 1; }
+.btn { font-family: var(--display); font-weight: 600; font-size: 15px; color: #2b1a05; background: var(--beak); border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--paper); border: 1px solid rgba(244,247,241,.35); }
+.btn:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
+#card { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100% - 32px)); }
+#card h2 { font-family: var(--display); margin: 0 0 6px; color: var(--leaf-hi); font-size: 20px; }
+#card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0 12px; font-size: 14px; }
+#card dt { color: var(--muted); }
+#card dd { margin: 0; }
+#card .row { display: flex; gap: 8px; flex-wrap: wrap; }
+#sys { right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 78px); display: flex; gap: 6px; }
+#sys .btn { font-size: 13px; padding: 6px 10px; }
+#toast { left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 70px); font-size: 14px; }
+#stick { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); width: 120px; height: 120px; border-radius: 50%; background: rgba(244,247,241,.08); border: 2px solid rgba(244,247,241,.25); touch-action: none; }
+#knob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(127,211,143,.7); pointer-events: none; }
+#acts { right: calc(max(12px, env(safe-area-inset-right, 0px)) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); display: flex; gap: 12px; align-items: flex-end; }
+.round { width: 70px; height: 70px; border-radius: 50%; font-size: 14px; padding: 0; }
+.round.big { width: 84px; height: 84px; }
+#end { inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16,36,28,.82); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+#end .panel { max-width: 440px; text-align: center; padding: 22px; }
+#end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
+#tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
+@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD/flechas mover · Espacio saltar/planear · E acción · Q/R girar cámara"; } }
+@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 12px; } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<canvas id="game" aria-label="Mundo de Amazona Verse"></canvas>
+
+<div id="top" class="hud">
+  <section id="quest" class="panel" aria-live="polite">
+    <div class="chapter">Capítulo 1 · título provisional</div>
+    <h1>La primera reconstrucción</h1>
+    <ol id="steps"></ol>
+    <div id="indicators"></div>
+  </section>
+  <section id="inv" class="panel" aria-label="Inventario">
+    <span><b id="i-madera">0</b><small>Madera</small></span>
+    <span><b id="i-piedra">0</b><small>Piedra</small></span>
+    <span><b id="i-componente">0</b><small>Piezas</small></span>
+  </section>
+</div>
+
+<div id="sys" class="hud">
+  <button class="btn ghost" id="b-save" type="button">Guardar</button>
+  <button class="btn ghost" id="b-load" type="button">Cargar</button>
+  <button class="btn ghost" id="b-reset" type="button">Reiniciar</button>
+</div>
+
+<div id="toast" class="hud panel" hidden></div>
+<div id="prompt" class="hud" hidden></div>
+
+<div id="card" class="hud panel" hidden role="dialog" aria-modal="false"></div>
+
+<div id="dialog" class="hud panel" hidden>
+  <img id="d-img" alt="">
+  <div class="txt">
+    <div class="who" id="d-who"></div>
+    <p id="d-text"></p>
+    <button class="btn" id="d-next" type="button">Seguir</button>
+  </div>
+</div>
+
+<div id="stick" class="hud" aria-hidden="true"><div id="knob"></div></div>
+<div id="acts" class="hud">
+  <button class="btn round" id="b-jump" type="button">Saltar</button>
+  <button class="btn round big" id="b-act" type="button">Acción</button>
+</div>
+
+<div id="end" class="hud" hidden>
+  <div class="panel">
+    <h2>Capítulo 1 completado</h2>
+    <p id="end-text"></p>
+    <button class="btn" id="b-again" type="button">Jugar de nuevo</button>
+  </div>
+</div>
+
+<div id="tag" class="hud">Prototipo hito 1 · Vittata usa su render como sustituto 3D</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="game.js" charset="utf-8"></script>
