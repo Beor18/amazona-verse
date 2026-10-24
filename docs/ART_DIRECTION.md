@@ -16,3 +16,14 @@ Fuente: directiva de Kelvin García, 24 oct 2026. Referencias en `docs/img/refer
 ## Estado
 - El `.blend` contiene la cotorra original ("Amazon parrots") bajo un traje de piloto, sin texturas ni esqueleto. Kelvin va a buscar el archivo original con el rig y las texturas.
 - Mientras tanto se reconstruye una versión jugable desde ese archivo (ver `ASSET_CONVERSION_PLAN.md`), marcada PROVISIONAL.
+
+## Referencia: website original (`img/website_original.jpg`)
+Se conserva como referencia visual del estilo de marca previo:
+- Logo "AMAZONA VERSE" en letras doradas/naranja con hojas tropicales.
+- Islas flotantes con cascada sobre cielo azul/violeta estrellado (mundo hub).
+- Rótulos y menús de **madera** con clavos; tarjetas de **pergamino** con bordes quemados.
+- Símbolos estilo **petroglifo taíno** en blanco (encabezados de tarjetas y franja roja de aliados).
+- Banda roja con borlas doradas como estandarte.
+- Cotorras deportistas (natación, tenis de mesa, boxeo, antorcha, tiro con arco en silla de ruedas): inclusión y deporte.
+
+No reutilizar: los textos de esa página venían de una plantilla de otro juego (menciones a AXS, Chimera, "Axie army", ETH, Play-to-Earn). No son canon de Amazona Verse.
