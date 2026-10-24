@@ -27,3 +27,6 @@ El jugador controla a Vittata en la historia y su personaje creado la sigue y ap
 
 ## 2026-10-24 · Modelo Blender convertido a GLB, pero no se usa todavía
 `vittata_base_lod1.glb` (20k triángulos) existe, pero el .blend no trae texturas (rutas a un disco E:\ de Windows) ni el esqueleto RigCotorra, y muestra un traje negro de piloto. Se sigue usando el render 2D hasta que Kelvin confirme el diseño y aparezcan las texturas y el rig.
+
+## 2026-10-24 · Vittata es la cotorra verde (decisión de Kelvin)
+La protagonista se representa con los renders verdes oficiales. Los uniformes se crearán después. El modelo con traje de piloto se reserva para un minijuego aparte; no se usa en la historia principal.

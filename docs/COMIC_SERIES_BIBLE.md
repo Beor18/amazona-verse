@@ -6,7 +6,8 @@
 
 **Consistencia visual (pendiente de aprobar):**
 - Vittata y las 36 especies parten de los renders oficiales 3D (cuerpo verde redondo, cabeza grande, pico curvo).
-- El modelo `Piloto Cotorra.blend` muestra una cotorra con traje negro de piloto: **¿es ese el diseño oficial de Vittata?** (pregunta abierta para Kelvin).
+- **Vittata es la cotorra verde** de los renders (confirmado por Kelvin). Sus uniformes se diseñarán más adelante.
+- El modelo con traje de piloto (`Piloto Cotorra.blend`) queda para un minijuego aparte.
 - Tipografía del juego: Fredoka (títulos, efectos) y Atkinson Hyperlegible (diálogos, legible para niños).
 - Paleta: verde selva, naranja pico, rojo frente, azul río, dorado del símbolo de los 36.
 

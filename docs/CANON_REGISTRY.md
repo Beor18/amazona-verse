@@ -7,6 +7,9 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Amazona Verse es un universo original de Kelvin García | CONFIRMADO | Directivo V4 §1.2 |
 | 36 inspiraciones de personaje del género Amazona (34 vivas + martinicana y violacea extintas) | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Vittata: protagonista, mujer, inventora y líder | CONFIRMADO | Prompt maestro v3.1 y V4 |
+| Apariencia de Vittata: la cotorra verde de los renders oficiales | CONFIRMADO | Kelvin, 24 oct 2026 |
+| Uniformes y vestuario de Vittata | PENDIENTE (se diseñarán después) | Kelvin, 24 oct 2026 |
+| Modelo con traje negro de piloto (`Piloto Cotorra.blend`) reservado para un minijuego futuro, no es la Vittata de la historia | CONFIRMADO | Kelvin, 24 oct 2026 |
 | El jugador crea su propio personaje y genera un cómic con su partida real | CONFIRMADO | V4 §1.2 |
 | Mundo con tierra, agua, botes, aviones y exploración avanzada | CONFIRMADO | V4 §1.2 |
 | Family Quest opcional | CONFIRMADO | V4 §1.2 |
@@ -22,4 +25,4 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Saga de Solana Forest y todo lo cripto/NFT | RECHAZADO | Kelvin |
 | Cardboard Citizens | RECHAZADO | Kelvin |
 
-**Conflictos abiertos:** ¿el traje negro de piloto de `Piloto Cotorra.blend` es el diseño oficial de Vittata? · ¿el Guardián es cotorra, humano u otra forma?
+**Conflictos abiertos:** ¿el Guardián es cotorra, humano u otra forma?
