@@ -5,7 +5,9 @@
 | 1 | Probar el capítulo en un iPhone y un Android reales | Kelvin juega el link | Lista de fallos de controles y lectura | Baja | NEEDS CREATOR |
 | 2 | Confirmar el diseño oficial de Vittata | Kelvin | Decisión en CANON_REGISTRY | Baja | DONE: la cotorra verde |
 | 2b | Modelo 3D de Vittata verde con rig (a partir del render) y, después, sus uniformes | Diseño de uniformes de Kelvin | Modelo animado en el juego | Alta | NOT STARTED |
-| 3 | Conseguir texturas y RigCotorra del modelo original | Archivos del disco E:\ original | GLB con color y animación | Media | BLOCKED |
+| 3 | Conseguir texturas y RigCotorra del modelo original | Kelvin lo está buscando | GLB con color y animación originales | Media | IN PROGRESS (Kelvin) |
+| 3b | Reconstruir Vittata 3D jugable desde el .blend (colores de referencia, esqueleto con los pesos originales, Idle/Wave/Walk) | — | GLB < 3 MB con animaciones, fiel a la referencia | Alta | IN PROGRESS |
+| 3c | Creador en el Taller de los Guardianes: modelo 3D animado, mira al jugador, personalización en tiempo real | 3b | Capturas revisadas sin T-pose | Alta | IN PROGRESS |
 | 4 | Terminar descarga del mapa y revisar licencias KitBash3D/Archmodels | Safari / Kelvin | Decidir si se usa, se recompra la licencia o se rehace | Media | BLOCKED |
 | 5 | Episodio 1: mirador y niebla entre islas (pág. 12) | — | Zona elevada visitable con vista a islas | Media | TESTED |
 | 6 | Hito 8: construir el bote y navegar a una segunda zona | — | Crafting, bote movible en agua, llegada a otra isla, evento VehicleConstructed | Alta | NOT STARTED |
