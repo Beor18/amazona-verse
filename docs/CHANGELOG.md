@@ -28,3 +28,11 @@
 
 ## 24 oct 2026 · v0.1: hito 1
 - Mundo 3D, Vittata como sprite, recursos, dos terrenos, construcción, crecida, taller, guardado versionado.
+
+## 2026-10-24 · Mundo con el mapa original
+- Suelo con texturas del mapa 3ds Max (pasto pintado + suelo de selva; arena solo en la orilla del río).
+- Palmas (2 de cada 3 árboles) con hoja y corteza del mapa original; colisiones sin cambios.
+- Río con normal map animado.
+- Islas lejanas con el relieve real del terreno de Kelvin (`isla_mapa.glb`, 14k tris, con respaldo base64 para el artifact).
+- Pruebas: selfTest 45/45, accessoryTest 10/10.
+- Pendiente: edificios (`AV3DMaxExportBuildings.zip`, 1,3 GB en Drive) sin descargar.

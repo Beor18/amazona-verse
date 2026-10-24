@@ -165,28 +165,57 @@
   const scene = new THREE.Scene();
   const SKY = new THREE.Color('#bfe1d6');
   scene.background = SKY;
-  scene.fog = new THREE.Fog(SKY, 45, 110);
+  scene.fog = new THREE.Fog(SKY, 55, 165);
   const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 300);
   scene.add(new THREE.HemisphereLight('#fff4dc', '#2f5a3a', 0.95));
   const sun = new THREE.DirectionalLight('#ffe2b0', 0.75);
   sun.position.set(-30, 50, 20);
   scene.add(sun);
 
+  // Texturas del mapa original de 3ds Max: pasto, suelo de selva, palma y agua
+  const TEX = new THREE.TextureLoader();
+  function tex(name) {
+    const t = TEX.load('assets/tex/' + name);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+    return t;
+  }
+  const tPasto = tex('pasto.jpg'), tSuelo = tex('suelo.jpg');
+  // Suelo con UV de mundo; el color de vértice son pesos: r = arena, g = suelo de selva
+  function groundMaterial(scale) {
+    const m = new THREE.MeshLambertMaterial({ vertexColors: true });
+    m.onBeforeCompile = sh => {
+      Object.assign(sh.uniforms, { tPasto: { value: tPasto }, tSuelo: { value: tSuelo }, uScale: { value: scale } });
+      sh.vertexShader = 'varying vec2 vTUv;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+        '#include <begin_vertex>\n  vTUv = (modelMatrix * vec4(position, 1.0)).xz;');
+      sh.fragmentShader = 'uniform sampler2D tPasto, tSuelo; uniform float uScale; varying vec2 vTUv;\n' + sh.fragmentShader.replace('#include <color_fragment>', [
+        'vec3 gP = texture2D(tPasto, vTUv * 0.22 * uScale).rgb * 1.5;',
+        'vec3 gS = texture2D(tSuelo, vTUv * 0.3 * uScale).rgb * 1.15;',
+        'vec3 sand = vec3(0.86, 0.77, 0.55) * (0.88 + 0.2 * gS.g);',
+        'diffuseColor.rgb *= mix(mix(gP, gS, vColor.g), sand, vColor.r);',
+      ].join('\n'));
+    };
+    return m;
+  }
+  const clamp01 = v => Math.min(1, Math.max(0, v));
   const tGeo = new THREE.PlaneGeometry(WORLD * 2 + 20, WORLD * 2 + 20, 110, 110);
   tGeo.rotateX(-Math.PI / 2);
   const tp = tGeo.attributes.position, colors = [];
-  const cSand = new THREE.Color('#d8c48c'), cGrass = new THREE.Color('#4f9a4c'), cHigh = new THREE.Color('#7eb35a'), cMud = new THREE.Color('#6b5a3a');
   for (let i = 0; i < tp.count; i++) {
     const x = tp.getX(i), z = tp.getZ(i), y = height(x, z);
     tp.setY(i, y);
-    const c = y < WATER_BASE + 0.4 ? (y < WATER_BASE - 0.5 ? cMud : cSand) : cGrass.clone().lerp(cHigh, Math.min(1, Math.max(0, (y - 1) / 6)));
-    colors.push(c.r, c.g, c.b);
+    let dirt = Math.max(0, Math.sin(x * 0.21 + Math.cos(z * 0.17) * 2) * Math.cos(z * 0.13 - x * 0.05) - 0.1) * 1.6;
+    for (const f of FLATS) dirt = Math.max(dirt, clamp01((f.r + 1 - Math.hypot(x - f.x, z - f.z)) / 3) * 0.8);
+    // Arena solo en la orilla del río; el resto de las zonas bajas queda con pasto
+    colors.push(clamp01((WATER_BASE + 0.5 - y) / 0.9) * clamp01((15 - Math.abs(x - RIVER_X)) / 4), clamp01(dirt), 0);
   }
   tGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   tGeo.computeVertexNormals();
-  scene.add(new THREE.Mesh(tGeo, new THREE.MeshLambertMaterial({ vertexColors: true })));
+  scene.add(new THREE.Mesh(tGeo, groundMaterial(1)));
 
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(32, WORLD * 2 + 20), new THREE.MeshLambertMaterial({ color: '#3d8fb0', transparent: true, opacity: 0.82 }));
+  const tAgua = tex('agua_normal.jpg'); tAgua.repeat.set(3, 18);
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(32, WORLD * 2 + 20), new THREE.MeshPhongMaterial({
+    color: '#2f7f9f', transparent: true, opacity: 0.85, normalMap: tAgua, normalScale: new THREE.Vector2(0.5, 0.5),
+    shininess: 40, specular: new THREE.Color('#5f8fa8') }));
   water.rotation.x = -Math.PI / 2;
   water.position.set(28, WATER_BASE, 0);
   scene.add(water);
@@ -205,16 +234,62 @@
   // Árboles con marcas de agua junto al río (señal de riesgo del terreno A)
   const markTrees = [{ x: 16.5, z: 11.5, s: 1.1 }, { x: 24.5, z: 1.2, s: 1 }];
   const allTrees = treeSpots.concat(markTrees);
-  const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 3, 6), new THREE.MeshLambertMaterial({ color: '#7a5634' }), allTrees.length);
-  const crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.6, 0), new THREE.MeshLambertMaterial({ color: '#2f7d43' }), allTrees.length);
+  // Dos de cada tres son palmas con la hoja y la corteza del mapa original; el resto, árboles de copa
+  const broad = allTrees.filter((t, i) => i % 3 === 2 || markTrees.includes(t));
+  const palms = allTrees.filter(t => !broad.includes(t));
+  const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 3, 6), new THREE.MeshLambertMaterial({ color: '#7a5634' }), broad.length);
+  const crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.6, 1), new THREE.MeshLambertMaterial({ color: '#2f7d43', flatShading: false }), broad.length);
   const m4 = new THREE.Matrix4();
-  allTrees.forEach((t, i) => {
+  broad.forEach((t, i) => {
     const y = height(t.x, t.z);
     m4.makeScale(t.s, t.s, t.s).setPosition(t.x, y + 1.5 * t.s, t.z); trunks.setMatrixAt(i, m4);
     m4.makeScale(t.s * 1.2, t.s, t.s * 1.2).setPosition(t.x, y + 3.4 * t.s, t.z); crowns.setMatrixAt(i, m4);
-    colliders.push({ x: t.x, z: t.z, r: 0.6 * t.s, kind: 'tree' });
   });
+  for (const t of allTrees) colliders.push({ x: t.x, z: t.z, r: 0.6 * t.s, kind: 'tree' });
   scene.add(trunks, crowns);
+
+  function mergeGeos(geos) {
+    const pos = [], nor = [], uv = [], idx = []; let off = 0;
+    for (const g of geos) {
+      pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array); uv.push(...g.attributes.uv.array);
+      for (const i of g.index.array) idx.push(i + off);
+      off += g.attributes.position.count;
+    }
+    const m = new THREE.BufferGeometry();
+    m.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    m.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    m.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    m.setIndex(idx);
+    return m;
+  }
+  const PALM_H = 4.2;
+  function palmFronds() {
+    const parts = [], N = 8;
+    for (let k = 0; k < N; k++) {
+      const len = 2.8 + (k % 3) * 0.35;
+      const g = new THREE.PlaneGeometry(len, 0.9, 8, 1);
+      g.translate(len / 2, 0, 0); g.rotateX(-Math.PI / 2);
+      const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) { const u = p.getX(i) / len; p.setY(i, u * 0.7 - u * u * (1.5 + (k % 2) * 0.4)); }
+      g.computeVertexNormals();
+      g.rotateY(k * Math.PI * 2 / N + (k % 2) * 0.2);
+      g.translate(0, PALM_H, 0);
+      parts.push(g);
+    }
+    return mergeGeos(parts);
+  }
+  const tHoja = TEX.load('assets/tex/palma_hoja.png'), tTronco = tex('palma_tronco.jpg');
+  tTronco.repeat.set(1, 4);
+  const palmTrunkGeo = new THREE.CylinderGeometry(0.15, 0.27, PALM_H, 7, 1); palmTrunkGeo.translate(0, PALM_H / 2, 0);
+  const palmTrunks = new THREE.InstancedMesh(palmTrunkGeo, new THREE.MeshLambertMaterial({ map: tTronco }), palms.length);
+  const palmLeaves = new THREE.InstancedMesh(palmFronds(), new THREE.MeshLambertMaterial({ map: tHoja, alphaTest: 0.45, side: THREE.DoubleSide }), palms.length);
+  const pQ = new THREE.Quaternion(), pE = new THREE.Euler(), pS = new THREE.Vector3(), pP = new THREE.Vector3();
+  palms.forEach((t, i) => {
+    pE.set(Math.sin(t.x * 3.1) * 0.12, t.x * 7.3 + t.z * 1.7, Math.cos(t.z * 2.3) * 0.12);
+    m4.compose(pP.set(t.x, height(t.x, t.z) - 0.1, t.z), pQ.setFromEuler(pE), pS.setScalar(t.s * 1.05));
+    palmTrunks.setMatrixAt(i, m4); palmLeaves.setMatrixAt(i, m4);
+  });
+  scene.add(palmTrunks, palmLeaves);
   for (const t of markTrees) {
     const band = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.18, 8, 1, true), new THREE.MeshBasicMaterial({ color: '#2d5f7a', side: THREE.DoubleSide }));
     band.position.set(t.x, height(t.x, t.z) + 1.0, t.z);
@@ -248,10 +323,57 @@
   const ocean = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshLambertMaterial({ color: '#3a87a8' }));
   ocean.rotation.x = -Math.PI / 2; ocean.position.y = -2.6; scene.add(ocean);
   const ISLANDS = [{ x: -95, z: 70, r: 14 }, { x: -40, z: 105, r: 10 }, { x: -110, z: 10, r: 9 }];
-  for (const I of ISLANDS) {
+  const islandCones = ISLANDS.map(I => {
     const isl = new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
     isl.position.set(I.x, -2.6 + I.r * 0.3, I.z); scene.add(isl);
+    return isl;
+  });
+  // Las otras islas usan el relieve del mapa 3D original (río serpenteante y mesetas); los conos quedan si no carga
+  function loadIslandGeometry() {
+    return new Promise((resolve, reject) => {
+      if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
+      const done = g => {
+        let mesh = null; g.scene.updateMatrixWorld(true);
+        g.scene.traverse(o => { if (o.isMesh && !mesh) mesh = o; });
+        mesh ? resolve(mesh.geometry.clone().applyMatrix4(mesh.matrixWorld)) : reject(new Error('sin malla'));
+      };
+      const fromB64 = () => {
+        const parse = () => {
+          const bin = atob(window.AV_ISLA_B64), buf = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+          new THREE.GLTFLoader().parse(buf.buffer, 'assets/models/', done, reject);
+        };
+        if (window.AV_ISLA_B64) { parse(); return; }
+        const sc = document.createElement('script'); sc.src = 'assets/models/isla_mapa_glb.js';
+        sc.onload = parse; sc.onerror = () => reject(new Error('isla no disponible')); document.head.appendChild(sc);
+      };
+      new THREE.GLTFLoader().load('assets/models/isla_mapa.glb', done, undefined, fromB64);
+    });
   }
+  loadIslandGeometry().then(geo => {
+    geo.computeBoundingBox();
+    const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3()), w = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z);
+    geo.translate(-c.x, -bb.min.y, -c.z); geo.scale(1 / w, 1 / w, 1 / w);
+    const hMax = (bb.max.y - bb.min.y) / w, p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      // Costa orgánica: hunde el borde rectangular del mapa bajo el mar
+      const x = p.getX(i), z = p.getZ(i), a = Math.atan2(z, x), d = Math.hypot(x, z) * 2;
+      const edge = 0.78 + 0.1 * Math.sin(a * 3 + 0.7) + 0.06 * Math.sin(a * 7 + 2.1);
+      if (d > edge) p.setY(i, p.getY(i) - (d - edge) * 0.6);
+      const hn = p.getY(i) / hMax;
+      col.push(clamp01((0.06 - hn) / 0.06 + (d > edge ? 1 : 0)), clamp01((hn - 0.35) * 2.5), 0);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    const mat = groundMaterial(0.6);
+    ISLANDS.forEach((I, k) => {
+      const m = new THREE.Mesh(geo, mat);
+      const s = I.r * 3.6;
+      m.scale.set(s, s * 1.8, s); m.rotation.y = k * 2.1 + 0.4;
+      m.position.set(I.x, -3.0, I.z);
+      scene.add(m); islandCones[k].visible = false;
+    });
+  }).catch(() => {});
   const mist = new THREE.Mesh(new THREE.RingGeometry(84, 128, 48), new THREE.MeshBasicMaterial({ color: '#fff3d6', transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
   mist.rotation.x = -Math.PI / 2; mist.position.y = 1.5; scene.add(mist);
   const MIRADOR = PLACES.mirador;
@@ -1409,6 +1531,7 @@
     }
     sync3D(dt, moving, false);
     for (const r of RESOURCES) if (resMeshes[r.id].visible) resMeshes[r.id].rotation.y += dt * 0.6;
+    tAgua.offset.y = t * 0.04; tAgua.offset.x = Math.sin(t * 0.3) * 0.05;
     if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25);
     if (rain.visible) {
       const a = rain.geometry.attributes.position;
