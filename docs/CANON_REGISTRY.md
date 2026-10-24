@@ -9,6 +9,7 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Vittata: protagonista, mujer, inventora y líder | CONFIRMADO | Prompt maestro v3.1 y V4 |
 | Apariencia de Vittata: la cotorra verde de los renders oficiales | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Uniformes y vestuario de Vittata | PENDIENTE (se diseñarán después) | Kelvin, 24 oct 2026 |
+| Los demás personajes usan los renders oficiales de su especie (sin modelo Blender por ahora; Kelvin podría tener los archivos) | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Modelo con traje negro de piloto (`Piloto Cotorra.blend`) reservado para un minijuego futuro, no es la Vittata de la historia | CONFIRMADO | Kelvin, 24 oct 2026 |
 | El jugador crea su propio personaje y genera un cómic con su partida real | CONFIRMADO | V4 §1.2 |
 | Mundo con tierra, agua, botes, aviones y exploración avanzada | CONFIRMADO | V4 §1.2 |
