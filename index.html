@@ -67,7 +67,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #end .panel { max-width: 440px; text-align: center; padding: 22px; }
 #end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
 #tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
-@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD/flechas mover · Espacio saltar/planear · E acción · Q/R girar cámara"; } }
+@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto y planear · F impulso · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
 @media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
 .note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -164,6 +164,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 
 <div id="stick" class="hud" aria-hidden="true"><div id="knob"></div></div>
 <div id="acts" class="hud">
+  <button class="btn round" id="b-dash" type="button">Impulso</button>
   <button class="btn round" id="b-jump" type="button">Saltar</button>
   <button class="btn round big" id="b-act" type="button">Acción</button>
 </div>

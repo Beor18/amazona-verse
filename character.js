@@ -196,7 +196,23 @@
       }
       return true;
     }
-    update(dt) { this.mixer.update(dt); }
+    // wingMode: 'idle' | 'walk' | 'flap' (subiendo) | 'glide' (planeando). Se suma encima del clip activo.
+    update(dt) {
+      this.mixer.update(dt);
+      const L = this.bones.armL1, R = this.bones.armL1001;
+      if (!L || !R) return;
+      const t = this.wingT = (this.wingT || 0) + dt;
+      const mode = this.wingMode || 'idle';
+      const open = mode === 'flap' ? 0.8 + 0.6 * Math.sin(t * 20)
+        : mode === 'glide' ? 1.2 + 0.08 * Math.sin(t * 9)
+        : mode === 'walk' ? 0.14 + 0.06 * Math.sin(t * 11) : 0.05 * Math.sin(t * 2.2);
+      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : 0;
+      const k = 1 - Math.exp(-dt * 12);
+      this.wOpen = (this.wOpen || 0) + (open - (this.wOpen || 0)) * k;
+      this.wSwing = (this.wSwing || 0) + (swing - (this.wSwing || 0)) * k;
+      L.rotation.z += this.wOpen; R.rotation.z -= this.wOpen;
+      L.rotation.x += this.wSwing; R.rotation.x -= this.wSwing;
+    }
     setSpecies(id) {
       const s = SPECIES[id] || SPECIES.vittata;
       this.species = id;

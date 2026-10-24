@@ -36,3 +36,11 @@
 - Islas lejanas con el relieve real del terreno de Kelvin (`isla_mapa.glb`, 14k tris, con respaldo base64 para el artifact).
 - Pruebas: selfTest 45/45, accessoryTest 10/10.
 - Pendiente: edificios (`AV3DMaxExportBuildings.zip`, 1,3 GB en Drive) sin descargar.
+
+## 2026-10-24 · Movimiento de acción
+- Alas animadas sobre cualquier clip: balanceo al caminar, aleteo al saltar, alas abiertas al planear e impulsarse.
+- Movimiento con aceleración, correr (Shift o joystick a fondo), doble salto con aleteo, tiempo de coyote, impulso (F / botón Impulso, uno en el aire).
+- Giro suave, inclinación al correr y aplastón al aterrizar; la animación de caminar se acelera con la velocidad.
+- Choques reales con la caja del taller y el banco; Luma también choca; el mirador es suelo.
+- Los materiales se recogen al pasar por encima (E / Acción sigue funcionando).
+- Pruebas: selfTest 45/45, accessoryTest 10/10; movimiento medido: caminar 6,2 m/s, correr 10 m/s, impulso 4,75 m, salto 1,1 m, doble salto 2 m.

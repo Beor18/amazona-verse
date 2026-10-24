@@ -110,6 +110,11 @@
     }
     return h;
   }
+  // Suelo donde se para un personaje: el terreno o la plataforma del mirador
+  function surfaceY(x, z) {
+    const g = height(x, z), M = PLACES.mirador;
+    return Math.hypot(x - M.x, z - M.z) < 2.3 ? Math.max(g, height(M.x, M.z) + 0.4) : g;
+  }
   const WATER_BASE = rawHeight(RIVER_X, 0) + 1.2;
   const FLOOD_LEVEL = PLACES.A.base + 1.1;
   function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296; }
@@ -407,7 +412,8 @@
   taller.add(walls, roofL, roofR, windowGlow, debris);
   taller.position.set(T.x, tY, T.z);
   scene.add(taller);
-  colliders.push({ x: T.x, z: T.z, r: 2.6, kind: 'taller' });
+  // r es el radio para comprobar construcciones; hx/hz es la caja real de las paredes para chocar
+  colliders.push({ x: T.x, z: T.z, r: 2.6, hx: 2.55, hz: 2.05, kind: 'taller' });
 
   // Objetos del taller: máquina experimental, transmisor y banco de trabajo (mejora)
   const MAQ = { x: T.x - 2.6, z: T.z + 3.4 }, TRX = { x: T.x + 3.4, z: T.z + 2.6 };
@@ -433,6 +439,7 @@
   colliders.push({ x: TRX.x, z: TRX.z, r: 0.6, kind: 'obj' });
   const bench = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 0.8), new THREE.MeshLambertMaterial({ color: '#c99a5b' }));
   bench.position.set(T.x - 3.6, tY + 0.45, T.z + 0.2);
+  colliders.push({ x: T.x - 3.6, z: T.z + 0.2, r: 1, hx: 0.95, hz: 0.45, kind: 'bench', when: () => bench.visible });
   scene.add(bench);
 
   function applyTallerLook() {
@@ -539,9 +546,20 @@
   function sync3D(dt, moving, snap) {
     if (player3D) {
       player3D.root.position.set(S.pos.x, S.pos.y, S.pos.z);
-      player3D.root.rotation.y = Math.atan2(S.facing.x, S.facing.z);
-      const want = moving && S.pos.y <= height(S.pos.x, S.pos.z) + 0.01 ? 'Walk' : 'Idle';
+      // Giro suave hacia donde mira (camino más corto)
+      const want3 = Math.atan2(S.facing.x, S.facing.z), r = player3D.root.rotation;
+      const dA = Math.atan2(Math.sin(want3 - r.y), Math.cos(want3 - r.y));
+      r.y = snap ? want3 : r.y + dA * Math.min(1, dt * 14);
+      // Inclinación al correr / impulsarse y aplastón al aterrizar
+      const sp = MOVE.speed || 0, base = player3D.root.userData.s || (player3D.root.userData.s = player3D.root.scale.x);
+      r.x = Math.min(0.35, sp / RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0));
+      const sq = MOVE.land > 0 ? Math.sin(MOVE.land / 0.2 * Math.PI) * 0.18 : 0;
+      player3D.root.scale.set(base * (1 + sq * 0.5), base * (1 - sq), base * (1 + sq * 0.5));
+      const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01;
+      const want = moving && !air ? 'Walk' : 'Idle';
       if (anim3D.player !== want && player3D.play(want)) anim3D.player = want;
+      if (player3D.current) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / SPEED) : 1;
+      player3D.wingMode = MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       player3D.update(dt);
     }
     if (companion3D && companion3D.root.visible) {
@@ -549,11 +567,13 @@
       const k = snap ? 1 : Math.min(1, dt * 3);
       const dx = (tx - companionPos.x) * k, dz = (tz - companionPos.z) * k;
       companionPos.x += dx; companionPos.z += dz;
-      companion3D.root.position.set(companionPos.x, height(companionPos.x, companionPos.z), companionPos.z);
+      for (const c of colliders) pushOut(companionPos, c, 0.4);
+      companion3D.root.position.set(companionPos.x, surfaceY(companionPos.x, companionPos.z), companionPos.z);
       const sp = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
       if (sp > 0.6) companion3D.root.rotation.y = Math.atan2(dx, dz);
       const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
       if (anim3D.companion !== want && companion3D.play(want)) anim3D.companion = want;
+      companion3D.wingMode = want === 'Walk' ? 'walk' : 'idle';
       companion3D.update(dt);
       cShadow.position.set(companionPos.x, height(companionPos.x, companionPos.z) + 0.03, companionPos.z);
     }
@@ -1387,7 +1407,8 @@
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
     if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
     keys.add(e.key.toLowerCase());
-    if (e.key === ' ') { jumpHeld = true; tryJump(); e.preventDefault(); }
+    if (e.key === ' ') { jumpHeld = true; if (!e.repeat) tryJump(); e.preventDefault(); }
+    if ((e.key === 'f' || e.key === 'F') && !e.repeat) tryDash();
     if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') action();
     if (e.key === 'Escape') { if (build) cancelBuild(); hideCard(); }
   });
@@ -1411,6 +1432,7 @@
   jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); jumpHeld = true; tryJump(); });
   jumpBtn.addEventListener('pointerup', () => { jumpHeld = false; });
   jumpBtn.addEventListener('pointerleave', () => { jumpHeld = false; });
+  $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); tryDash(); });
   $('b-act').addEventListener('click', action);
 
   let dragId = null, dragX = 0;
@@ -1432,10 +1454,39 @@
     const it = nearest();
     if (it) it.use();
   }
-  function tryJump() { if (S.pos.y <= height(S.pos.x, S.pos.z) + 0.01) S.vy = 7.5; }
+  // Movimiento de acción: velocidad con aceleración, correr, doble salto con aleteo, impulso y tiempo de coyote
+  const MOVE = { vx: 0, vz: 0, airJumps: 0, coyote: 0, dashT: 0, dashCd: 0, airDash: true, land: 0, wasAir: false };
+  function tryJump() {
+    if (S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 || MOVE.coyote > 0) { S.vy = 7.5; MOVE.coyote = 0; MOVE.airJumps = 1; return; }
+    if (MOVE.airJumps > 0) { S.vy = 6.8; MOVE.airJumps--; }
+  }
+  function tryDash() {
+    if (MOVE.dashCd > 0 || dialogOpen() || cardOpen || overlayOpen()) return;
+    const air = S.pos.y > surfaceY(S.pos.x, S.pos.z) + 0.01;
+    if (air && !MOVE.airDash) return;
+    if (air) { MOVE.airDash = false; S.vy = Math.max(S.vy, 1.5); }
+    MOVE.dashT = 0.2; MOVE.dashCd = 0.7;
+  }
+  // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz)
+  function pushOut(p, c, rad) {
+    if (c.r <= 0 || (c.when && !c.when())) return;
+    if (c.hx) {
+      const qx = Math.max(c.x - c.hx, Math.min(c.x + c.hx, p.x)), qz = Math.max(c.z - c.hz, Math.min(c.z + c.hz, p.z));
+      const dx = p.x - qx, dz = p.z - qz, d = Math.hypot(dx, dz);
+      if (d >= rad) return;
+      if (d > 1e-4) { p.x = qx + dx / d * rad; p.z = qz + dz / d * rad; return; }
+      // Dentro de la caja: sale por el lado más cercano
+      const ox = c.hx - Math.abs(p.x - c.x), oz = c.hz - Math.abs(p.z - c.z);
+      if (ox < oz) p.x = c.x + Math.sign(p.x - c.x || 1) * (c.hx + rad);
+      else p.z = c.z + Math.sign(p.z - c.z || 1) * (c.hz + rad);
+      return;
+    }
+    const dx = p.x - c.x, dz = p.z - c.z, d = Math.hypot(dx, dz), min = c.r + rad;
+    if (d < min && d > 1e-4) { p.x = c.x + dx / d * min; p.z = c.z + dz / d * min; }
+  }
 
   // ---------- Simulación ----------
-  const SPEED = 6.5;
+  const SPEED = 6.5, RUN_SPEED = 10.5, DASH_SPEED = 19;
   function update(dt) {
     S.clock += dt;
     let ix = 0, iz = 0;
@@ -1448,31 +1499,54 @@
     ix += stick.x; iz += stick.y;
     const busy = dialogOpen() || cardOpen || overlayOpen();
     const len = Math.hypot(ix, iz);
-    let moving = false;
+    const onGround = S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01;
+    let tx = 0, tz = 0;
     if (len > 0.12 && !busy) {
+      const mag = Math.min(1, len);
       ix /= Math.max(1, len); iz /= Math.max(1, len);
       const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
       const mx = rx * ix - fx * iz, mz = rz * ix - fz * iz, ml = Math.hypot(mx, mz);
-      S.pos.x += mx * SPEED * dt; S.pos.z += mz * SPEED * dt;
+      // Shift (o el joystick a fondo) corre
+      const run = keys.has('shift') || Math.hypot(stick.x, stick.y) > 0.92;
+      const sp = (run ? RUN_SPEED : SPEED) * (ml > 0 ? 1 / Math.max(1, ml) : 0) * Math.max(mag, 0.35);
+      tx = mx * sp; tz = mz * sp;
       if (ml > 0.01) S.facing = { x: mx / ml, z: mz / ml };
       const map = player.material.map;
       if (ix < -0.1) map.repeat.x = -1; else if (ix > 0.1) map.repeat.x = 1;
       map.offset.x = map.repeat.x < 0 ? 1 : 0;
-      moving = true;
     }
-    for (const c of colliders) {
-      if (c.r <= 0) continue;
-      const dx = S.pos.x - c.x, dz = S.pos.z - c.z, d = Math.hypot(dx, dz), min = c.r + 0.55;
-      if (d < min && d > 1e-4) { S.pos.x = c.x + dx / d * min; S.pos.z = c.z + dz / d * min; }
+    MOVE.dashCd = Math.max(0, MOVE.dashCd - dt);
+    if (MOVE.dashT > 0) {
+      MOVE.dashT -= dt;
+      MOVE.vx = S.facing.x * DASH_SPEED; MOVE.vz = S.facing.z * DASH_SPEED;
+    } else {
+      const acc = 1 - Math.exp(-dt * (onGround ? (tx || tz ? 14 : 18) : 5));
+      MOVE.vx += (tx - MOVE.vx) * acc; MOVE.vz += (tz - MOVE.vz) * acc;
     }
+    S.pos.x += MOVE.vx * dt; S.pos.z += MOVE.vz * dt;
+    const hSpeed = Math.hypot(MOVE.vx, MOVE.vz);
+    const moving = hSpeed > 0.6;
+    MOVE.speed = hSpeed;
+    // Recoger materiales al pasar por encima (también funciona E / Acción desde más lejos)
+    if (!busy) for (const r of RESOURCES) {
+      if (S.collected.includes(r.id)) continue;
+      if (Math.hypot(S.pos.x - r.x, S.pos.z - r.z) < 1.1 && S.pos.y - height(r.x, r.z) < 1.6) collect(r);
+    }
+    // Dos pasadas: al empujar fuera de un objeto se puede quedar dentro de otro vecino
+    for (let pass = 0; pass < 2; pass++) for (const c of colliders) pushOut(S.pos, c, 0.55);
     S.pos.x = Math.max(-WORLD, Math.min(WORLD, S.pos.x));
     S.pos.z = Math.max(-WORLD, Math.min(WORLD, S.pos.z));
-    const ground = height(S.pos.x, S.pos.z);
+    const ground = surfaceY(S.pos.x, S.pos.z);
     const gliding = jumpHeld && S.vy < 0;
     S.vy -= (gliding ? 6 : 22) * dt;
     if (gliding) S.vy = Math.max(S.vy, -2.2);
     S.pos.y = Math.max(ground, (S.pos.y || ground) + S.vy * dt);
-    if (S.pos.y <= ground) { S.pos.y = ground; S.vy = 0; }
+    if (S.pos.y <= ground) {
+      if (MOVE.wasAir && S.vy < -4) MOVE.land = 0.2; // aterrizaje fuerte: pequeño aplastón
+      S.pos.y = ground; S.vy = 0;
+      MOVE.coyote = 0.12; MOVE.airJumps = 1; MOVE.airDash = true; MOVE.wasAir = false;
+    } else { MOVE.coyote = Math.max(0, MOVE.coyote - dt); MOVE.wasAir = true; }
+    MOVE.land = Math.max(0, MOVE.land - dt);
 
     if (S.event) {
       const e = S.event; e.t += dt;
@@ -1508,18 +1582,18 @@
       }
     }
     player.position.set(S.pos.x, S.pos.y + 1.05, S.pos.z);
-    pShadow.position.set(S.pos.x, height(S.pos.x, S.pos.z) + 0.03, S.pos.z);
+    pShadow.position.set(S.pos.x, surfaceY(S.pos.x, S.pos.z) + 0.03, S.pos.z);
     if (snap) sync3D(0, false, true);
     camera.lookAt(S.pos.x, S.pos.y + 1.2, S.pos.z);
   }
   function render(dt, moving) {
     t += dt;
-    const bob = moving && S.pos.y <= height(S.pos.x, S.pos.z) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
+    const bob = moving && S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
     camPos.set(S.pos.x + Math.sin(camYaw) * 7.5, S.pos.y + 4.2, S.pos.z + Math.cos(camYaw) * 7.5);
     camera.position.lerp(camPos, Math.min(1, dt * 6));
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
     player.material.rotation = jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
-    pShadow.position.set(S.pos.x, height(S.pos.x, S.pos.z) + 0.03, S.pos.z);
+    pShadow.position.set(S.pos.x, surfaceY(S.pos.x, S.pos.z) + 0.03, S.pos.z);
     luma.sp.position.y = height(LUMA.x, LUMA.z) + 1.0 + Math.sin(t * 2) * 0.05;
     if (companion.visible) {
       const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
