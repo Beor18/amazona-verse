@@ -130,3 +130,5 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - 2026-10-24 · Cada viñeta guarda la apariencia del jugador del momento del evento. Cambiarse de ropa después no reescribe la historia · Save & Cómic · el cómic cuenta lo que pasó.
 - 2026-10-24 · El PDF sigue sin librerías (JPEG con DCTDecode, una página): jsPDF (~300 KB) no aporta nada para una sola imagen. La entrega usa la capacidad `downloads`; sin ella, en el visor se copia al portapapeles o la imagen queda a la vista con los botones Abrir y Copiar. `<a download>` solo fuera del visor · Save & Cómic · en el visor el enlace no funciona.
 - 2026-10-24 · `?partida=<id>` aísla la clave de guardado de una pestaña; `AV.saveTest`/`AV.comicTest` usan claves aisladas y dejan G.S y la partida real como estaban · Save & Cómic · varios agentes prueban en el mismo origen.
+
+2026-10-24 · v20 publicada desde f3ed616 (estable). Cómic declara la capacidad downloads del visor para guardar el PNG · coordinador · el estudiante guarda su cómic con confirmación
