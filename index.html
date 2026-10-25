@@ -14,6 +14,7 @@
 <meta property="og:locale" content="es_PR">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -238,8 +239,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 .hero-note { display: flex; align-items: flex-start; gap: 10px; font-size: var(--fs-sm); color: #fff; background: rgba(20, 12, 60, 0.5); border-radius: var(--r-md); padding: 10px 14px; max-width: 44ch; --icon-size: 18px; }
 .hero-note::before { margin-top: 2px; color: var(--gold); }
 .hero-media { margin: 0; animation: pop-in 800ms var(--ease-pop) 120ms both; }
-@keyframes rise-in { from { opacity: 0; transform: translateY(18px); } }
-@keyframes pop-in { from { opacity: 0; transform: scale(0.94) translateY(16px); } }
+@keyframes rise-in { from { transform: translateY(18px); } }
+@keyframes pop-in { from { transform: scale(0.96) translateY(14px); } }
 .screen {
   position: relative; aspect-ratio: 16 / 10; max-width: 100%; border-radius: var(--r-xl); overflow: hidden; background: var(--night-2);
   box-shadow: 0 0 0 6px var(--night), 0 0 0 9px rgba(255, 210, 122, 0.7), 0 34px 70px rgba(10, 6, 40, 0.6);
@@ -259,7 +260,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   background: var(--glass); color: var(--paper); font: 600 15px/1 var(--font-display); --icon-size: 16px;
 }
 .vid-btn:hover { background: rgba(12, 30, 22, 0.96); }
-.hero-media figcaption { margin-top: 18px; font-size: var(--fs-sm); color: #fff; text-align: right; opacity: 0.92; }
+.hero-media figcaption { margin-top: 18px; text-align: right; }
+.hero-media figcaption span { display: inline-block; padding: 4px 12px; border-radius: var(--r-pill); background: rgba(20, 12, 60, 0.55); font-size: var(--fs-sm); color: #fff; }
 .hills { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: clamp(90px, 12vw, 170px); z-index: -1; }
 @media (max-width: 900px) {
   .hero { padding-bottom: clamp(84px, 22vw, 130px); }
@@ -313,7 +315,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   background: var(--beak); color: var(--primary-ink); font: 700 var(--fs-sm)/1 var(--font-display); box-shadow: 0 3px 0 var(--beak-lo);
 }
 .talk.luma .name-tab { background: var(--crest); color: #fff; box-shadow: 0 3px 0 #8e2420; }
-.talk.guardian .name-tab { background: #8a73d6; color: #fff; box-shadow: 0 3px 0 #5d4aa6; }
+.talk.guardian .name-tab { background: #6a52c4; color: #fff; box-shadow: 0 3px 0 #4a3796; }
 .talk blockquote { margin: 0; font: 600 var(--fs-lg)/1.35 var(--font-display); color: var(--ink); }
 .talk p.role { margin-top: 8px; font-size: var(--fs-sm); color: var(--ink-muted); }
 .missions { list-style: none; margin: clamp(40px, 6vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: m; }
@@ -624,6 +626,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 .factsheet dt, .factsheet dd { margin: 0; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .factsheet dt { padding-right: 20px; font: 600 var(--fs-sm)/1.4 var(--font-display); color: var(--gold); }
 .factsheet dd { color: var(--paper); }
+.pitch { margin: 0 0 clamp(32px, 5vw, 48px); }
+.pitch video { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-xl); background: #000; box-shadow: 0 0 0 2px var(--line-strong), 0 26px 50px rgba(0, 0, 0, 0.45); }
+.pitch figcaption { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
 .copybox { padding: 22px; border-radius: var(--r-lg); background: var(--parchment); color: var(--ink); box-shadow: 0 0 0 2px var(--paper-edge); }
 .copybox h3 { font-size: var(--fs-lg); }
 .copybox .text { margin-top: 10px; padding: 14px 16px; border-radius: var(--r-md); background: var(--card); box-shadow: inset 0 0 0 1px var(--paper-edge); line-height: 1.6; }
@@ -1228,7 +1233,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         <p class="price"><span data-l="es">$0 para tu escuela</span><span data-l="en">$0 for your school</span></p>
         <h4><span data-l="es">Incluye</span><span data-l="en">Includes</span></h4>
         <ul>
-          <li data-icon="check"><span data-l="es">El capítulo 1 completo, en el navegador</span><span data-l="en">The full Chapter 1, in the browser</span></li>
+          <li data-icon="check"><span data-l="es">El capítulo 1 jugable, en el navegador</span><span data-l="en">Playable Chapter 1, in the browser</span></li>
           <li data-icon="check"><span data-l="es">Guía de 45 minutos y actividades sin pantalla</span><span data-l="en">A 45-minute guide and screen-free activities</span></li>
           <li data-icon="check"><span data-l="es">Modo escuela sin tienda</span><span data-l="en">School mode with no store</span></li>
           <li data-icon="check"><span data-l="es">Reporte de progreso sin datos personales</span><span data-l="en">Progress reports without personal data</span></li>
@@ -1311,6 +1316,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <span class="eyebrow"><span data-l="es">Prensa</span><span data-l="en">Press</span></span>
       <h2 class="h2" id="h-prensa"><span data-l="es">Amazona Verse en pocas líneas</span><span data-l="en">Amazona Verse in a few lines</span></h2>
     </div>
+    <figure class="pitch" id="pitch" hidden>
+      <video controls playsinline preload="none" data-key="pitch" aria-label="Video pitch de Amazona Verse" data-en-aria-label="Amazona Verse pitch video"></video>
+      <figcaption><span data-l="es">Video pitch · 2:45 · con subtítulos en español e inglés. Todas las imágenes son del juego.</span><span data-l="en">Pitch video · 2:45 · with Spanish and English subtitles. All footage is from the game.</span></figcaption>
+    </figure>
     <div class="press-grid">
       <dl class="factsheet">
         <dt><span data-l="es">Qué es</span><span data-l="en">What</span></dt><dd><span data-l="es">Juego educativo 3D que se juega en el navegador</span><span data-l="en">An educational 3D game played in the browser</span></dd>
@@ -1462,6 +1471,8 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
     });
     var og = document.querySelector('meta[property="og:locale"]'); if (og) og.content = l === 'en' ? 'en_US' : 'es_PR';
     updateMenuLabel(); updateVideoLabels();
+    var pv = document.querySelector('#pitch video');
+    if (pv && pv.textTracks) [].forEach.call(pv.textTracks, function (tt) { tt.mode = tt.language === l ? 'showing' : 'disabled'; });
     store('av-web-lang', l);
   }
   document.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
@@ -1517,6 +1528,22 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
       updateVideoLabels();
     });
   }
+  /* Video pitch en Prensa: aparece solo cuando videos.json trae "pitch" (mp4, poster y subtítulos). */
+  getManifest().then(function (m) {
+    var e = m && m.pitch, fig = document.getElementById('pitch');
+    if (!e || !e.mp4 || !fig) return;
+    var v = fig.querySelector('video');
+    if (e.poster) v.poster = e.poster;
+    v.src = e.mp4;
+    Object.keys(e.vtt || {}).forEach(function (l) {
+      var tr = document.createElement('track');
+      tr.kind = 'subtitles'; tr.srclang = l; tr.src = e.vtt[l];
+      tr.label = l === 'en' ? 'English' : 'Español';
+      if (l === lang()) tr.default = true;
+      v.appendChild(tr);
+    });
+    fig.hidden = false;
+  });
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {

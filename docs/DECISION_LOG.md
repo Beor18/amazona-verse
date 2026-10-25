@@ -20,3 +20,7 @@ Formato: fecha · decisión · quién · por qué.
 - 2026-10-24 · Póster del hero: render del kit de entorno (`entorno_kit.png`, Vittata en el bosque); el loop saldrá de `gancho_vuelo_mirador` y `mundo_dron_dosel` · Web lead + comité · Video del juego, no capturas; el póster cubre mientras llega.
 - 2026-10-24 · Demo "¿Dónde construirías?" con los datos reales de los terrenos A y B (`content/cap1/mundo.js`) y las líneas de Luma de `dialogos_cap1` · Web lead · Muestra el aprendizaje con evidencia (O6) mejor que una captura.
 - 2026-10-24 · "La ruta de la gota" se marca "En desarrollo" y la alineación DEPR/NGSS como "propuesta, en revisión con maestros" · Web lead · `EDUCATIVO.md` está en estado PROPUESTA.
+- 2026-10-24 · Piloto: "El capítulo 1 jugable, en el navegador" (no "completo") · Comité · Es un prototipo; no prometer de más.
+- 2026-10-24 · Espacio para el video pitch (2:45) en Prensa, oculto hasta que exista, con subtítulos ES/EN en borrador · Comité + Web lead · Se suma cuando el editor entregue el corte final.
+- 2026-10-24 · Los videos se declaran en `assets/video/videos.json` en vez de comprobar si existen · Web lead · Evita peticiones 404 y errores en consola mientras no hay archivos.
+- 2026-10-24 · Las animaciones de entrada solo mueven (sin opacidad 0) · Web lead · La página se ve completa en cualquier captura o miniatura.
