@@ -133,3 +133,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 
 2026-10-24 · v20 publicada desde f3ed616 (estable). Cómic declara la capacidad downloads del visor para guardar el PNG · coordinador · el estudiante guarda su cómic con confirmación
 2026-10-24 · Directiva V7.0: nuevo AV-ENGINE-AUDITOR independiente (auditoría de motores, sin autorización de migración), aislado en worktree auditoria-motores desde estable · Kelvin/coordinador · decidir motor con evidencia sin frenar el juego
+2026-10-24 · Edificios de Kelvin: hoy 21 de 74 modelos y 29 de 377 instancias. Se convierten los 53 restantes (agente de edificios), se reproduce su layout de 3ds Max (level designer) y entra la carga por zona con LOD (nuevo ingeniero de streaming) · Kelvin/coordinador · usar sus edificios tal cual sin romper la descarga en escuelas

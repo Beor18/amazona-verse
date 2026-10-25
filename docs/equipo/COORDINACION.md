@@ -18,6 +18,7 @@ Kelvin (fundador) pidió que **todos los roles decidan entre sí** para entregar
 | Editor de video / Ingeniero de sonido | `tools/video/*` / `tools/audio/*`, `docs/pitch/VIDEO.md` / `AUDIO.md` |
 | Web lead | `~/AmazonaVerse/Web/*` |
 | Coordinador (CEO/producción) | `index.html` y `src/boot.js` en conflicto, publicación, `docs/DECISION_LOG.md` |
+| Ingeniero de streaming de mundo | `src/engine/streaming.js` (nuevo) y la sección de carga de edificios de `src/engine/mundo.js` (coordinada con el programador gráfico) |
 | AV-ENGINE-AUDITOR (V7.0, independiente) | Solo lectura del repo; escribe en el worktree `~/AmazonaVerse/_auditoria_motores/repo` (rama `auditoria-motores`, entregables en `docs/auditoria/`) y en `_auditoria_motores/poc/`. Sin migrar, sin publicar, sin descargas sin aprobación |
 
 ## Cómo se decide
