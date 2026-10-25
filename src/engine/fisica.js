@@ -119,7 +119,7 @@ AVE.module('fisica', function (G) {
     const fromGround = onGroundNow() || MOVE.swimming;
     if (MOVE.swimming) { MOVE.swimming = false; G.agua.splash(S.pos.x, S.water, S.pos.z, 1.1); }
     MOVE.flying = true; MOVE.landing = false; MOVE.jumping = false; MOVE.grounded = false;
-    if (fromGround) { S.vy = T.takeoffV; MOVE.takeoff = T.takeoffTime; G.audio.play('jump'); }
+    if (fromGround) { S.vy = T.takeoffV; MOVE.takeoff = T.takeoffTime; G.audio.play('despegar'); }
     else { S.vy = Math.max(S.vy, 2); MOVE.takeoff = 0.15; }
     G.emit('vuelo', true);
   }
@@ -339,7 +339,7 @@ AVE.module('fisica', function (G) {
       if (MOVE.wasAir) {
         const fall = -S.vy;
         MOVE.impact = MOVE.flying ? 0.25 : Math.min(1, Math.max(0, (fall - 2) / 12));
-        if (fall > 4 || MOVE.flying) { MOVE.land = T.squashTime; G.audio.play('land'); }
+        if (fall > 4 || MOVE.flying) { MOVE.land = T.squashTime; MOVE.sonarLand = true; } // el sonido, abajo: depende de dónde se posa
         if (fall > T.hardLanding && !MOVE.flying) cam.shake(Math.min(0.35, fall * 0.02), 0.25); // aterrizaje fuerte: aplastón y sacudida
       }
       if (MOVE.flying && S.vy <= 0 && MOVE.takeoff <= 0) endFlight(); // tocar suelo bajando termina el vuelo
@@ -360,7 +360,14 @@ AVE.module('fisica', function (G) {
     MOVE.posado = '';
     if (SOL && MOVE.grounded && !MOVE.onTerrain && Math.abs(SOL.suelo(S.pos.x, S.pos.z, S.pos.y + 0.01) - S.pos.y) < 0.03) MOVE.posado = SOL.fino(S.pos.x, S.pos.z, S.pos.y + 0.01) ? 'fino' : 'alto';
     // Gancho 'posado' una vez por aterrizaje (el cómic cuenta la primera vez en un techo o en una rama alta)
-    if (MOVE.posado && !antes && MOVE.wasAirPosado) G.emit('posado', { tipo: MOVE.posado, que: SOL.que(S.pos.x, S.pos.z, S.pos.y + 0.01), altura: +(S.pos.y - G.terreno.height(S.pos.x, S.pos.z)).toFixed(2) });
+    if (MOVE.posado && !antes && MOVE.wasAirPosado) {
+      const que = SOL.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
+      G.emit('posado', { tipo: MOVE.posado, que, altura: +(S.pos.y - G.terreno.height(S.pos.x, S.pos.z)).toFixed(2) });
+      // Sonido según dónde: techo o cumbrera → aterrizar_techo; rama (y lo fino) → posarse_rama
+      G.audio.play(que === 'techo' || que === 'cumbrera' ? 'aterrizar_techo' : que === 'rama' || MOVE.posado === 'fino' ? 'posarse_rama' : 'aterrizar_techo');
+      MOVE.sonarLand = false;
+    }
+    if (MOVE.sonarLand) { MOVE.sonarLand = false; G.audio.play('land'); }
     MOVE.wasAirPosado = !MOVE.grounded; // en el aire hasta este cuadro: el próximo contacto es un aterrizaje
     MOVE.fase = MOVE.swimming ? 'nado' : MOVE.flying ? (MOVE.takeoff > 0 ? 'despegue' : MOVE.landing ? 'aterrizaje' : hSpeed < 2.5 ? 'cernido' : 'vuelo')
       : MOVE.grounded ? 'suelo' : jumpHeld && S.vy < 0 ? 'planeo' : 'aire';

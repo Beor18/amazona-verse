@@ -2,7 +2,11 @@
    Sonido sintético con WebAudio (sin archivos): buses master / efectos / voz, volumen guardado y registro para probar sin altavoces.
    Sonidos base del motor: pickup, ring, dash, splash, jump, land, unlock, tick, wrong.
    Un pack añade los suyos con G.audio.define(nombre, (t, arg, A) => ...), donde A = { tone, noise, pent }
-   y la opción { bus: 'voice' } manda un tono al bus de voz. */
+   y la opción { bus: 'voice' } manda un tono al bus de voz.
+   Muestras en archivo (assets/audio/, sintetizadas con tools/audio/juego.py; tabla en assets/audio/sonidos.json):
+   aterrizar_techo, posarse_rama, despegar, nido_chispa, eclosion_huevo. Se tocan igual, con G.audio.play(nombre).
+   Se piden tras el primer gesto (autoplay), .ogg o .mp3 según el navegador; mientras cargan suena un sintético
+   de respaldo. Un pack registra más con G.audio.sample(nombre, { url: 'ruta/sin_extension.', gain, respaldo }). */
 AVE.module('audio', function (G) {
   'use strict';
   const STORE = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.audio';
@@ -18,7 +22,49 @@ AVE.module('audio', function (G) {
     master = ctx.createGain(); master.connect(ctx.destination);
     sfxBus = ctx.createGain(); sfxBus.connect(master);
     voiceBus = ctx.createGain(); voiceBus.connect(master);
-    apply(); return ctx;
+    apply(); Object.keys(MUESTRAS).forEach(cargar); return ctx;
+  }
+  // Muestras en archivo: bus de efectos, mismo silencio y volumen que los sintéticos
+  const MUESTRAS = {
+    aterrizar_techo: { gain: 0.9, respaldo: 'land' },
+    posarse_rama: { gain: 0.9, respaldo: 'land' },
+    despegar: { gain: 0.8, respaldo: 'jump' },
+    nido_chispa: { gain: 0.8, respaldo: 'tick' },
+    eclosion_huevo: { gain: 0.9, respaldo: 'unlock' },
+  };
+  const bufs = {}, pedidas = {};
+  let ext = null;
+  function formato() {
+    if (ext) return ext;
+    let ogg = '';
+    try { ogg = document.createElement('audio').canPlayType('audio/ogg; codecs="vorbis"'); } catch (e) { /* sin <audio> */ }
+    return (ext = ogg ? 'ogg' : 'mp3');
+  }
+  // Sin servidor de archivos (file://, host sin binarios): assets/audio/sonidos_b64.js deja el MP3 en AV_AUDIO_B64
+  function desdeB64(n) {
+    const get = () => (window.AV_AUDIO_B64 || {})[n];
+    const listo = get() || !(AVE.assets && AVE.assets.script) ? Promise.resolve() : AVE.assets.script('assets/audio/sonidos_b64.js');
+    return listo.then(() => {
+      const s = get(); if (!s) throw new Error('sin audio ' + n);
+      const bin = atob(s), u = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      return u.buffer;
+    });
+  }
+  function cargar(n) {
+    if (!ctx || bufs[n] || pedidas[n]) return;
+    const m = MUESTRAS[n];
+    pedidas[n] = fetch((m.url || 'assets/audio/' + n + '.') + formato())
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+      .catch(() => desdeB64(n))
+      .then(ab => new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
+      .then(b => { bufs[n] = b; }, () => { /* se queda el respaldo sintético */ });
+  }
+  function muestra(n, t) {
+    const b = bufs[n], m = MUESTRAS[n];
+    if (!b) { cargar(n); if (m.respaldo && SOUNDS[m.respaldo]) SOUNDS[m.respaldo](t); return; }
+    const src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = b; g.gain.value = m.gain == null ? 1 : m.gain; src.connect(g); g.connect(sfxBus); src.start(t);
   }
   function env(g, t0, dur, peak) { g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.02, dur / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); }
   function tone(freq, t0, dur, o) {
@@ -50,9 +96,12 @@ AVE.module('audio', function (G) {
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
   };
+  for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);
   const api = {
     vol, ensure, apply, log: [],
     define(name, fn) { SOUNDS[name] = (t, arg) => fn(t, arg, A); },
+    sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = t => muestra(name, t); cargar(name); },
+    listo: name => !!bufs[name], // la muestra ya está decodificada (para pruebas)
     has: name => !!SOUNDS[name],
     save() { try { localStorage.setItem(STORE, JSON.stringify(vol)); } catch (e) { /* sin almacenamiento */ } },
     // Devuelve true si sonó; el registro sirve para probar sin altavoces

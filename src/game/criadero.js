@@ -1008,9 +1008,11 @@ AVE.module('criadero', function (G) {
     }
     if (T > 9.4) terminarEclosion();
   }
+  let chispaSonada = false;
   function terminarEclosion() {
     if (!hatch.on) return;
     hatch.on = false;
+    if (G.audio && G.audio.play) try { G.audio.play('eclosion_huevo'); } catch (e) { /* sin audio */ }
     const c = st.capsulas[hatch.capId];
     if (c && c.estado === 'lista') c.estado = 'nacida';
     st.vistos['nacio:' + hatch.capId] = 1; st.compa = hatch.capId; guardar(); avisarCompanero();
@@ -1328,6 +1330,9 @@ AVE.module('criadero', function (G) {
       if (nidoMundo.userData.collider) nidoMundo.userData.collider.r = on ? 0.8 : 0;
       const sp = nidoMundo.getObjectByName('chispa'), hv = nidoMundo.getObjectByName('huevo');
       if (sp) { sp.visible = on && novedad(); sp.rotation.y += dt * 2; sp.position.y = 1.65 + Math.sin(performance.now() / 600) * 0.06; }
+      // Sonido de la chispa: una vez cada vez que aparece algo nuevo, cuando Vittata está a 30 m o menos del nido
+      if (!sp || !sp.visible) chispaSonada = false;
+      else if (!chispaSonada && nidoIt && Math.hypot(G.S.pos.x - nidoIt.x, G.S.pos.z - nidoIt.z) <= 30) { chispaSonada = true; if (G.audio && G.audio.play) try { G.audio.play('nido_chispa'); } catch (e) { /* sin audio */ } }
       if (hv) { const c = activa(); hv.visible = !!c && etapaDe(c) === 'huevo'; }
     }
     const b = botonNido();
