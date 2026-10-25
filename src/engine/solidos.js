@@ -314,13 +314,14 @@ AVE.module('solidos', function (G) {
     const bajoX = altoEn(x + d, z, g) < c && altoEn(x - d, z, g) < c, bajoZ = altoEn(x, z + d, g) < c && altoEn(x, z - d, g) < c;
     return bajoX || bajoZ;
   }
-  // Percha cercana para aterrizar: el punto fino más próximo dentro de r con su alto entre y - 1,2 y y + 0,1
-  function percha(x, z, y, r) {
+  // Percha cercana para aterrizar: el punto fino más próximo dentro de r con su alto entre y - bajo (1,2 m) y y + 0,1
+  function percha(x, z, y, r, bajo) {
+    const hasta = bajo != null ? bajo : 1.2;
     let best = null, bd = Infinity;
     const n = Math.ceil(r / CELL);
     for (let j = -n; j <= n; j++) for (let i = -n; i <= n; i++) {
       const px = x + i * CELL, pz = z + j * CELL, d = Math.hypot(i, j) * CELL; if (d > r || d >= bd) continue;
-      const g = altoEn(px, pz, y + 0.1); if (g < y - 1.2 || g === -Infinity) continue;
+      const g = altoEn(px, pz, y + 0.1); if (g < y - hasta || g === -Infinity) continue;
       if (fino(px, pz, g + 0.01)) { bd = d; best = { x: (Math.floor(px / CELL) + 0.5) * CELL, z: (Math.floor(pz / CELL) + 0.5) * CELL, y: g }; }
     }
     return best;

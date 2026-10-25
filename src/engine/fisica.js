@@ -250,9 +250,14 @@ AVE.module('fisica', function (G) {
       }
     }
     // Ayuda para posarse: bajando cerca de algo fino (rama, baranda, poste, cumbrera), se centra encima para aterrizar en él
+    MOVE.perchY = -Infinity;
     if (SOL && !MOVE.grounded && !MOVE.swimming && S.vy < -0.3 && (!MOVE.flying || MOVE.landing || dive)) {
-      const pc = SOL.percha(S.pos.x, S.pos.z, S.pos.y, T.perchAssist);
-      if (pc && S.pos.y - pc.y < 1.2) { const k = rate(8, dt); S.pos.x += (pc.x - S.pos.x) * k; S.pos.z += (pc.z - S.pos.z) * k; MOVE.vx *= 0.9; MOVE.vz *= 0.9; }
+      const bajo = MOVE.landing ? T.flareHeight + 0.4 : 1.2; // aterrizando la ve antes: frena a tiempo sobre la rama
+      const pc = SOL.percha(S.pos.x, S.pos.z, S.pos.y, T.perchAssist, bajo);
+      if (pc && S.pos.y - pc.y < bajo) {
+        MOVE.perchY = pc.y; // el frenado del aterrizaje cuenta con la percha a la que se acerca
+        const k = rate(8, dt); S.pos.x += (pc.x - S.pos.x) * k; S.pos.z += (pc.z - S.pos.z) * k; MOVE.vx *= 0.9; MOVE.vz *= 0.9;
+      }
     }
     // con la altura previa: las perchas sostienen al bajar. En el aire, un sólido solo es suelo si ya está bajo los pies
     let ground = suelo(S.pos.x, S.pos.z, S.pos.y, MOVE.grounded ? undefined : 0.05);
@@ -297,7 +302,7 @@ AVE.module('fisica', function (G) {
       // Vuelo sin gravedad. Despegue: impulso que se apaga. Aterrizaje: baja y frena con las alas cerca del suelo.
       // Si no: mantener salto sube, C baja, y sin nada se cierne en el sitio (o planea perdiendo un poco a velocidad de crucero).
       // Altura sobre el suelo, mirando también 0,35 s adelante: al aterrizar sobre un tejado o un borde frena a tiempo
-      const above = S.pos.y - Math.max(ground, suelo(S.pos.x + MOVE.vx * 0.35, S.pos.z + MOVE.vz * 0.35, S.pos.y));
+      const above = S.pos.y - Math.max(ground, MOVE.perchY, suelo(S.pos.x + MOVE.vx * 0.35, S.pos.z + MOVE.vz * 0.35, S.pos.y));
       let want, k = T.vAccel;
       if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6; k = 2; }
       else if (MOVE.landing) { want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6); k = T.vAccelLand; }
