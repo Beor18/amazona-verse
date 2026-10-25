@@ -21,7 +21,19 @@
     check('Nombre con números, correo o "me llamo" se rechaza (seguridad infantil)', ['Ana123', 'yo@correo', 'me llamo Ana'].every(n => saveCharacter({ name: n, preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null));
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && had('PlayerCharacterCreated'));
     await G.actores.refreshCompanion();
-    check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
+    if (G.criadero && G.criadero.companero) {
+      // Regla de b7182ce: el compañero es la cría del criadero. Sin cría nacida no aparece; con una cría (simulada con el
+      // evento 'companero', sin tocar el criadero del niño) aparece a la escala de su etapa: altura de Vittata × escala.
+      const A = G.actores, c3 = A.companion3D, visible = () => A.companion.visible || !!(c3 && c3.root.visible);
+      G.emit('companero', null);
+      check('Sin cría nacida no hay compañero en el mundo', !visible());
+      const altura = (G.pack.jugador && G.pack.jugador.altura) || 1.75;
+      const cria = { id: 'clasico', etapa: 'bebe', nivel: 1, nombre: 'Prueba', look: window.AVCharacter.defaultLook(), escala: 0.5 };
+      G.emit('companero', cria); tick(0.2);
+      const alto = c3 ? c3.root.scale.x * c3.height : 0;
+      check('Con una cría aparece en el mundo con la escala de su etapa', !c3 || (c3.root.visible && Math.abs(alto - altura * 0.5) < 0.03), alto.toFixed(2) + ' m de ' + (altura * 0.5).toFixed(2));
+      G.emit('companero', G.criadero.companero()); // vuelve la cría real del niño (o ninguna)
+    } else check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SV.spawn.x, S.pos.z - SV.spawn.z) < 0.1);
     useAt('maquina'); drain(); useAt('transmisor'); drain();
     check('Taller explorado y misión con Luma', S.step === 1 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
