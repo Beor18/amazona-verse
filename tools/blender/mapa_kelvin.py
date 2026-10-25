@@ -16,7 +16,11 @@ WEB = {'savage_hut_roundthatched': 'bohio_redondo', 'savage_hut_roundthatched_v2
        'savage_tieredlookout': 'mirador_escalonado', 'savage_bridge': 'puente_madera',
        'savage_wall_pikessm': 'empalizada', 'savage_wall_pikessm_v2': 'empalizada', 'savage_campb': 'toldo_pequeno',
        'canoa': 'canoa', 'ancient_towera': 'ruina_torre', 'ancient_lookout': 'ruina_mirador', 'ancient_pillarc': 'ruina_pilar',
-       'ancient_gateb': 'ruina_portal', 'ancient_altar': 'ruina_altar', 'ancient_mediume': 'templo_mediano', 'ancient_largeb': 'templo_grande'}
+       'ancient_gateb': 'ruina_portal', 'ancient_altar': 'ruina_altar', 'ancient_mediume': 'templo_mediano', 'ancient_largeb': 'templo_grande',
+       'ancient_towerb': 'ruina_torre_b', 'ancient_towere': 'ruina_torre_e', 'ancient_mediumg': 'templo_mediano_g'}
+# La conversión los rompe y no se entregan (TA de personaje): fuera del layout, ni siquiera como marcador
+DESCARTADOS = {'ancient_complejo_group001', 'ancient_largea', 'ancient_larged', 'ancient_largee', 'ancient_largee_v2', 'ancient_largef',
+               'ancient_mediumf', 'ancient_mediumh', 'ancient_mediumj_wallm', 'ancient_towerc', 'ancient_towerf', 'ancient_largej_sculptmd'}
 
 def glb_json(path):
     with open(path, 'rb') as f:
@@ -122,7 +126,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
     out = []; skipped = []
     for idx, ins in enumerate(lay['instancias']):
         a = aj[ins['asset']]
-        if not np.all(np.isfinite(a['lo'])) or np.max(a['hi'] - a['lo']) < 0.05:
+        if ins['asset'] in DESCARTADOS or not np.all(np.isfinite(a['lo'])) or np.max(a['hi'] - a['lo']) < 0.05:
             skipped.append(ins['asset']); continue
         Mi = np.array(ins['matriz_gltf'], float).reshape(4, 4).T
         lo, hi = a['lo'], a['hi']
