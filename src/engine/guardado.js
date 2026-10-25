@@ -25,17 +25,24 @@
                 nido: { activo (hay una misión hecha), presentado (Luma ya lo presentó), visitado } }.
    MIGRACIONES: primero las del pack (v), después las del motor (formato). cap1 v4 → v5 = mapa nuevo (pack) + formato 1 → 2
      (motor: perfil saneado y look modular, misiones completas, Diario y ropa sin duplicados, cómic completo y satélites).
-     Una partida de una versión FUTURA no se carga: se aparta en .unreadable.
+     Una partida de una versión FUTURA no se carga: se aparta en una copia de rescate con fecha (ver COPIAS DE RESCATE).
    ESCRITURA ATÓMICA: <clave>.tmp → se verifica leyéndola → la principal (si es legible) pasa a <clave>.prev → <clave> →
      se borra .tmp. Sin espacio: se reintenta sin capturas, luego sin .prev; si no, queda en memoria. Si el almacén no
      existe o lanza (modo privado, cuota llena, política del navegador), la partida sigue en memoria y se avisa una vez.
-   LECTURA: la más nueva legible entre la principal y .tmp; si no hay, .prev; si no, la memoria de la sesión. La principal
-     ilegible se copia a <clave>.unreadable antes de seguir.
-   NUEVO ESTUDIANTE (gancho de aula.js en equipos compartidos): se borran la partida, .tmp, .prev, .unreadable (con sus
-     satélites) y la memoria; el siguiente niño no hereda nada.
+   LECTURA: la más nueva legible entre la principal y .tmp; si no hay, .prev; si no, la memoria de la sesión. Lo ilegible
+     (dañado o de una versión futura) se aparta en una copia de rescate antes de seguir.
+   COPIAS DE RESCATE: <clave>.unreadable.<aaaammddThhmmssmmm>, hasta 3 (las de la partida y las de cada satélite por separado).
+     Nunca comparten un único hueco: una copia nueva no pisa a las anteriores, y la más vieja solo sale si pasa de 3 o si hace
+     falta sitio. Una copia idéntica a otra ya guardada no se repite (cada arranque ve lo mismo). Antes de escribir encima de
+     una principal ilegible se aparta; si no hay sitio para apartarla, no se pisa (gana la temporal). Antes de este esquema
+     había un solo <clave>.unreadable: cuenta como la copia más vieja.
+   ARRANQUE SIN PARTIDA LEGIBLE: arrancarVacio() empieza una partida nueva en memoria SIN borrar nada; si había algo ilegible
+     se avisa con suavidad al cerrar la portada y la principal ilegible solo se sustituye al guardar, ya con su copia aparte.
+   NUEVO ESTUDIANTE (gancho de aula.js en equipos compartidos): se borran la partida, .tmp, .prev, todas las copias de rescate
+     (con las de los satélites) y la memoria; el siguiente niño no hereda nada.
    BORRADO EXPLÍCITO: la partida y el cómic solo se borran por «Comenzar de cero» (menú de pausa y panel final, los dos con
      pregunta dentro del juego) o «Nuevo estudiante» (Modo Maestro, dos toques). Recargar, cargar, el creador y los errores de
-     lectura no borran: una partida ilegible se aparta en .unreadable antes de empezar vacío. Único recorte sin elección: con
+     lectura no borran: una partida ilegible se aparta en una copia con fecha antes de empezar vacío. Único recorte sin elección: con
      el almacén lleno se sacrifica primero la copia .prev y solo si aun así no cabe se guarda sin las fotos del cómic; en
      memoria siguen intactas y cada guardado vuelve a intentarlo completo.
    PRIVACIDAD (COPPA/FERPA): sin nombre real, correo, teléfono, ubicación, cuentas ni ids de dispositivo; nada se envía.
@@ -82,6 +89,8 @@ AVE.module('guardado', function (G) {
       get(k) { try { const v = fuente().getItem(k); return v == null ? null : String(v); } catch (e) { return null; } },
       set(k, v) { try { fuente().setItem(k, v); return true; } catch (e) { return esCuota(e) ? 'lleno' : 'bloqueado'; } },
       del(k) { try { fuente().removeItem(k); } catch (e) { /* sin almacén */ } },
+      // Claves que empiezan por pre (para las copias de rescate con fecha)
+      claves(pre) { try { const s = fuente(), out = []; for (let i = 0; i < s.length; i++) { const k = s.key(i); if (k != null && k.startsWith(pre)) out.push(k); } return out; } catch (e) { return []; } },
     };
   }
   // Almacén de mentira para las pruebas: 'bloqueado' lanza en todo (modo privado/política); 'lleno' lanza al pasar el límite
@@ -96,14 +105,50 @@ AVE.module('guardado', function (G) {
         m.set(k, String(v));
       },
       removeItem(k) { if (modo === 'bloqueado') throw error('SecurityError'); m.delete(k); },
+      get length() { if (modo === 'bloqueado') throw error('SecurityError'); return m.size; },
+      key(i) { if (modo === 'bloqueado') throw error('SecurityError'); const ks = [...m.keys()]; return i < ks.length ? ks[i] : null; },
     }));
     be.mapa = m;
     return be;
   }
   const NATIVO = almacenDe(() => window.localStorage);
   let almacen = NATIVO; // la prueba lo cambia un momento por uno bloqueado
-  const estado = { almacen: 'local', ultimo: null, fuente: null, reparados: [] };
+  const estado = { almacen: 'local', ultimo: null, fuente: null, reparados: [], ilegible: false };
   (function sondear() { const k = STORE + '.__sonda'; const ok = NATIVO.set(k, '1') === true && NATIVO.get(k) === '1'; NATIVO.del(k); estado.almacen = ok ? 'local' : 'memoria'; })();
+
+  // ---------- Copias de rescate de lo ilegible (ver COPIAS DE RESCATE en la cabecera) ----------
+  const MAX_COPIAS = 3;
+  const sello = () => new Date().toISOString().replace(/[-:.Z]/g, ''); // 20261025T171530123
+  // → [{ clave, fecha, raw }] de la más vieja a la más nueva; el hueco único de antes (<base>.unreadable) cuenta como la más vieja
+  function copiasIlegibles(be, base) {
+    const viejo = base + '.unreadable', ks = be.claves(viejo + '.');
+    if (be.get(viejo) != null) ks.push(viejo);
+    return ks.map(clave => ({ clave, fecha: clave.slice(viejo.length + 1), raw: be.get(clave) })).filter(c => c.raw != null)
+      .sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
+  }
+  // Aparta raw sin pisar ninguna copia → la clave donde queda, o null si no hay sitio (entonces quien llama no debe pisar el original)
+  function archivarIlegible(be, base, raw, fecha) {
+    if (!raw) return null;
+    const previas = copiasIlegibles(be, base), igual = previas.find(c => c.raw === raw);
+    if (igual) return igual.clave;
+    const f = fecha || sello(); let clave = base + '.unreadable.' + f;
+    for (let n = 2; be.get(clave) != null; n++) clave = base + '.unreadable.' + f + '-' + n;
+    let r = be.set(clave, raw);
+    const viejas = previas.slice();
+    while (r === 'lleno' && viejas.length) { be.del(viejas.shift().clave); r = be.set(clave, raw); } // la más vieja sale solo si hace falta sitio
+    if (r !== true) return null;
+    const todas = copiasIlegibles(be, base);
+    for (const c of todas.slice(0, Math.max(0, todas.length - MAX_COPIAS))) be.del(c.clave);
+    return clave;
+  }
+  // Si la principal de la partida no se puede leer, aparta ella y las copias ilegibles (.tmp, .prev) → false si algo no cupo
+  function rescatarIlegibles(be, K) {
+    const main = be.get(K);
+    if (!main || legible(main, be)) return true;
+    let todo = true;
+    for (const s of ['', '.tmp', '.prev']) { const raw = be.get(K + s); if (raw && !legible(raw, be) && !archivarIlegible(be, K, raw)) todo = false; }
+    return todo;
+  }
 
   // ---------- Privacidad: el texto libre se guarda sin correos, teléfonos ni URL ----------
   const PII = [/[^\s@]+@[^\s@]+\.[^\s@]+/g, /\b(?:https?:\/\/|www\.)\S+/gi, /(?:\+?\d[\s().\-]*){7,}/g];
@@ -163,7 +208,7 @@ AVE.module('guardado', function (G) {
     for (const [nombre, clave] of Object.entries(satelitesDef())) {
       const copia = d.satelites[nombre], raw = be.get(clave);
       if (!sateliteSano(nombre, copia) || raw == null || sateliteSano(nombre, leerJSON(raw))) continue;
-      be.set(clave + '.unreadable', raw);
+      archivarIlegible(be, clave, raw); // copia de rescate con fecha, sin pisar las anteriores
       if (be.set(clave, JSON.stringify(copia)) === true) hechos.push(nombre);
     }
     return hechos;
@@ -229,7 +274,11 @@ AVE.module('guardado', function (G) {
     if (r !== true) { be.del(TMP); return r; }
     if (be.get(TMP) !== json) { be.del(TMP); return 'bloqueado'; } // el almacén no devuelve lo escrito: no es fiable
     const cur = be.get(K);
-    if (cur && cur !== json && (cur === c.ultimo || legible(cur, be))) { if (be.set(K + '.prev', cur) !== true) be.del(K + '.prev'); }
+    if (cur && cur !== json) {
+      if (cur === c.ultimo || legible(cur, be)) { if (be.set(K + '.prev', cur) !== true) be.del(K + '.prev'); }
+      // Una principal ilegible nunca se pisa sin su copia de rescate; si no cabe, no se pisa (la temporal verificada gana al cargar)
+      else if (!archivarIlegible(be, K, cur)) return 'lleno';
+    }
     r = be.set(K, json);
     if (r !== true) return r; // la temporal verificada queda y gana al cargar
     be.del(TMP);
@@ -301,20 +350,23 @@ AVE.module('guardado', function (G) {
   // → true si cargó (de la principal, la temporal, la copia anterior o la memoria)
   function cargarDe(c) {
     const r = leerMejor(c);
-    if (r.danada) c.be.set(c.K + '.unreadable', r.danada);
+    if (r.danada) rescatarIlegibles(c.be, c.K); // dañada o de una versión futura: copia con fecha, nunca se borra
     c.fuente = r.fuente;
     if (!r.d) return false;
     aplicar(r.d);
     return true;
   }
+  const MSG_ILEGIBLE = () => L('No pudimos abrir tu partida guardada; la guardamos por si se puede recuperar',
+    'We could not open your saved game; we kept it in case it can be recovered');
   function load(silent) {
     const toast = t => { if (!silent && !G.quiet) G.ui.toast(t); };
+    estado.ilegible = false;
     const ok = cargarDe(REAL);
     estado.fuente = REAL.fuente;
     if (!ok) {
       const danada = REAL.be.get(SAVE_KEY) != null;
-      toast(danada ? L('No se pudo leer la partida guardada; se guardó una copia y empiezas de nuevo', 'The saved game could not be read; a copy was kept and you start over')
-        : L('No hay partida guardada', 'No saved game'));
+      estado.ilegible = danada; // al arrancar, arrancarVacio() avisa cuando la portada deja ver el juego
+      toast(danada ? MSG_ILEGIBLE() : L('No hay partida guardada', 'No saved game'));
       return false;
     }
     if (REAL.fuente === 'anterior' || REAL.fuente === 'temporal') { if (!G.quiet) G.ui.toast(L('Tu partida tenía un problema: se recuperó la última copia buena.', 'Your save had a problem: the last good copy was restored.'), 4500); }
@@ -322,8 +374,26 @@ AVE.module('guardado', function (G) {
     return true;
   }
   function applyWorld() { G.emit('apply'); }
+  // Arranque sin partida legible (src/engine/core.js): empieza una partida nueva en memoria SIN borrar nada. Si había algo
+  // ilegible, load() ya lo apartó en una copia con fecha; se avisa con suavidad cuando la portada deja ver el juego.
+  function arrancarVacio(skipCreator) {
+    replace(freshState());
+    REAL.mem.json = null; REAL.ultimo = null; saveDebounce = 0;
+    applyWorld();
+    if (estado.ilegible && !G.quiet) avisarIlegible();
+    if (!skipCreator) G.creador.open(true);
+  }
+  function avisarIlegible() {
+    const mostrar = () => { if (!G.quiet) G.ui.toast(MSG_ILEGIBLE(), 9000); };
+    const t = $('title');
+    if (!t || !t.open) { mostrar(); return; }
+    const mo = new MutationObserver(() => { if (!t.open) { mo.disconnect(); mostrar(); } });
+    mo.observe(t, { attributes: true, attributeFilter: ['open'] });
+  }
+  // «Comenzar de cero» (elección explícita): borra la partida y su cómic; lo ilegible que hubiera se aparta antes
   function reset(skipCreator) {
     replace(freshState());
+    rescatarIlegibles(almacen, SAVE_KEY);
     for (const s of ['', '.tmp', '.prev']) almacen.del(SAVE_KEY + s);
     REAL.mem.json = null; REAL.ultimo = null; saveDebounce = 0;
     applyWorld();
@@ -331,8 +401,8 @@ AVE.module('guardado', function (G) {
   }
   // Equipo compartido (aula.js): nada del niño anterior queda en este almacén, ni en la copia de los satélites
   function olvidarEstudiante() {
-    for (const s of ['', '.tmp', '.prev', '.unreadable']) almacen.del(SAVE_KEY + s);
-    for (const clave of Object.values(satelitesDef())) almacen.del(clave + '.unreadable');
+    for (const s of ['', '.tmp', '.prev']) almacen.del(SAVE_KEY + s);
+    for (const base of [SAVE_KEY].concat(Object.values(satelitesDef()))) for (const c of copiasIlegibles(almacen, base)) almacen.del(c.clave);
     REAL.mem.json = null; REAL.ultimo = null; saveDebounce = 0;
   }
   G.on('nuevoEstudiante', olvidarEstudiante, 10);
@@ -380,7 +450,7 @@ AVE.module('guardado', function (G) {
     const out = [];
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
     const id = 'prueba-' + G.util.newId().slice(0, 6), KT = SAVE_KEY + '.' + id;
-    const claves = K => ['', '.tmp', '.prev', '.unreadable'].map(s => K + s);
+    const claves = K => ['', '.tmp', '.prev', '.unreadable'].map(s => K + s).concat(NATIVO.claves(K + '.unreadable.'));
     const realAntes = claves(SAVE_KEY).map(k => NATIVO.get(k));
     const respaldo = instantanea();
     const antes = { almacen, mem: REAL.mem.json, ultimo: REAL.ultimo, aviso: avisadoMemoria, quiet: G.quiet, estado: Object.assign({}, estado) };
@@ -432,7 +502,9 @@ AVE.module('guardado', function (G) {
       NATIVO.set(KT, rawPaso4.slice(0, Math.floor(rawPaso4.length / 2)));
       const ok4 = cargarDe(C2);
       check('Partida corrupta: se recupera la copia anterior', ok4 && C2.fuente === 'anterior' && S.step === 3, `fuente ${C2.fuente} · paso ${S.step}`);
-      check('Lo corrupto se aparta en .unreadable', (NATIVO.get(KT + '.unreadable') || '').length === Math.floor(rawPaso4.length / 2));
+      const cop4 = copiasIlegibles(NATIVO, KT);
+      check('Lo corrupto se aparta en una copia de rescate con fecha y la principal no se borra', cop4.length === 1 && /^\d{8}T\d{9}$/.test(cop4[0].fecha) && cop4[0].raw.length === Math.floor(rawPaso4.length / 2) &&
+        NATIVO.get(KT + '.unreadable') == null && NATIVO.get(KT) != null, cop4.map(c => c.clave.slice(KT.length)).join());
       // 4b. Corte entre la temporal y el cambio: gana la temporal verificada (más nueva)
       NATIVO.set(KT, rawPaso4); S.step = 6; NATIVO.set(KT + '.tmp', serialize(false, NATIVO));
       const ok4b = cargarDe(C2);
@@ -442,6 +514,33 @@ AVE.module('guardado', function (G) {
       NATIVO.set(KT, JSON.stringify(Object.assign(JSON.parse(rawPaso4), { v: SAVE_VERSION + 1 }))); NATIVO.set(KT + '.prev', '{"v":1}'); NATIVO.set(KT + '.tmp', 'null');
       const ok4c = cargarDe(C2);
       check('Sin copia sana ni versión conocida: no carga y la sesión sigue intacta', ok4c === false && JSON.stringify(S.profile) + '|' + S.step === firma);
+      const futura = NATIVO.get(KT), cop4c = copiasIlegibles(NATIVO, KT);
+      check('Partida de una versión futura: no se borra; queda la principal y una copia de rescate', !!futura && JSON.parse(futura).v === SAVE_VERSION + 1 && cop4c.some(c => c.raw === futura) && NATIVO.get(KT + '.prev') === '{"v":1}');
+      check('Las copias ilegibles se acumulan sin pisarse (máximo 3; sale la más vieja)', cop4c.length === 3 && new Set(cop4c.map(c => c.clave)).size === 3 && !cop4c.some(c => c.raw.length === Math.floor(rawPaso4.length / 2)), cop4c.length + ' copias');
+      const clavesCop = cop4c.map(c => c.clave).join();
+      cargarDe(C2); cargarDe(C2);
+      check('Abrir otra vez lo mismo no crea copias repetidas', copiasIlegibles(NATIVO, KT).map(c => c.clave).join() === clavesCop);
+      // 4d. Copias de rescate en un almacén de mentira: máximo 3, la del esquema anterior es la más vieja y con poco sitio sale solo la que hace falta
+      const FR = almacenFalso();
+      for (let i = 1; i <= 5; i++) archivarIlegible(FR, KT, 'copia-' + i, '2026010' + i + 'T000000000');
+      check('Cinco copias ilegibles: quedan las 3 más nuevas y ninguna comparte hueco', copiasIlegibles(FR, KT).map(c => c.raw).join() === 'copia-3,copia-4,copia-5' && FR.get(KT + '.unreadable') == null);
+      const FL = almacenFalso(); FL.set(KT + '.unreadable', 'del-esquema-anterior');
+      archivarIlegible(FL, KT, 'nueva-1', '20260101T000000000'); archivarIlegible(FL, KT, 'nueva-2', '20260102T000000000');
+      check('La copia del esquema anterior (.unreadable) se conserva y cuenta como la más vieja', copiasIlegibles(FL, KT).map(c => c.raw).join() === 'del-esquema-anterior,nueva-1,nueva-2');
+      archivarIlegible(FL, KT, 'nueva-3', '20260103T000000000');
+      check('Con la cuarta, sale la del esquema anterior (la más vieja)', copiasIlegibles(FL, KT).map(c => c.raw).join() === 'nueva-1,nueva-2,nueva-3' && FL.get(KT + '.unreadable') == null);
+      const dosCopias = 2 * (KT.length + '.unreadable.F1'.length + 1000) + 50, FS = almacenFalso('lleno', dosCopias);
+      archivarIlegible(FS, KT, 'a'.repeat(1000), 'F1'); archivarIlegible(FS, KT, 'b'.repeat(1000), 'F2');
+      const kS = archivarIlegible(FS, KT, 'c'.repeat(1000), 'F3');
+      check('Sin sitio sale solo la copia más vieja que hace falta y la nueva se guarda', !!kS && copiasIlegibles(FS, KT).map(c => c.raw[0]).join('') === 'bc');
+      // 4e. Guardar encima de una principal ilegible: antes se aparta; si no cabe el rescate, no se pisa y gana la temporal verificada
+      const FG = almacenFalso(); FG.set(KT, '{"roto":');
+      const rG = guardarEn(ctx(FG, KT));
+      check('Guardar sobre una principal ilegible la aparta antes de pisarla', rG === 'ok' && esObj(leerJSON(FG.get(KT))) && copiasIlegibles(FG, KT).some(c => c.raw === '{"roto":'), rG);
+      const R = 'z'.repeat(5000), jsonG = serialize(false, almacenFalso());
+      const FQ = almacenFalso('lleno', (KT.length + R.length) + (KT.length + 4 + jsonG.length) + 50); FQ.set(KT, R);
+      const rQ = escribirAtomico(ctx(FQ, KT), jsonG);
+      check('Si no cabe la copia de rescate, la principal ilegible no se pisa y gana la temporal verificada', rQ === 'lleno' && FQ.get(KT) === R && leerMejor(ctx(FQ, KT)).fuente === 'temporal', String(rQ));
       // 5. Migración desde la versión anterior (cap1: v4, la publicada) con los almacenes del dispositivo
       const F = almacenFalso();
       const vieja = Object.assign(JSON.parse(serialize(false, F)), { v: Math.max(1, SAVE_VERSION - 1) });
@@ -481,7 +580,7 @@ AVE.module('guardado', function (G) {
       const copia = { satelites: { criadero: capViejo } };
       const rep1 = repararSatelites(RF, copia);
       check('Criadero corrupto: se restaura desde la copia (con XP y la presentación de Luma hecha)', rep1.includes('criadero') && leerJSON(RF.get(sat.criadero)).capsulas.h1.xp === 300 &&
-        leerJSON(RF.get(sat.criadero)).presentado === true && RF.get(sat.criadero + '.unreadable') === '{roto');
+        leerJSON(RF.get(sat.criadero)).presentado === true && copiasIlegibles(RF, sat.criadero).some(c => c.raw === '{roto'));
       const RB = almacenFalso(); const rep2 = repararSatelites(RB, copia);
       check('Criadero borrado a propósito: no se resucita', rep2.length === 0 && RB.get(sat.criadero) === null);
       // 6. Almacén bloqueado (modo privado, política o throw): la sesión sigue en memoria
@@ -518,12 +617,27 @@ AVE.module('guardado', function (G) {
         JSON.stringify(p7.comic.captions) === '{"c":2}', p7.profile.name + ' · ' + JSON.stringify(p7.comic.captions));
       // 7b. Nuevo estudiante: la partida y todas sus copias se borran (también la de los satélites)
       const almReal = almacen, NE = almacenFalso();
-      for (const s of ['', '.tmp', '.prev', '.unreadable']) NE.set(SAVE_KEY + s, '{"x":1}');
-      NE.set(sat.criadero + '.unreadable', '{}');
+      for (const s of ['', '.tmp', '.prev', '.unreadable', '.unreadable.20260101T000000001', '.unreadable.20260102T000000002']) NE.set(SAVE_KEY + s, '{"x":1}');
+      NE.set(sat.criadero + '.unreadable', '{}'); NE.set(sat.criadero + '.unreadable.20260101T000000001', '{}');
       almacen = NE; REAL.mem.json = '{"x":1}';
       olvidarEstudiante(); // el mismo manejador del gancho, sin avisar a los demás módulos (borrarían sus datos reales)
       almacen = almReal;
-      check('Nuevo estudiante: se borran la partida, .tmp, .prev, .unreadable y la memoria', NE.mapa.size === 0 && REAL.mem.json === null, NE.mapa.size + ' claves quedan');
+      check('Nuevo estudiante: se borran la partida, .tmp, .prev, todas las copias de rescate (también las de los satélites) y la memoria', NE.mapa.size === 0 && REAL.mem.json === null, NE.mapa.size + ' claves quedan');
+      // 7c. Arranque con una partida de una versión futura (o dañada): no se borra nada, se empieza una nueva y se avisa con suavidad
+      const AR = almacenFalso(), futuraRaw = JSON.stringify(Object.assign(JSON.parse(serialize(false, almacenFalso())), { v: SAVE_VERSION + 1 }));
+      AR.set(SAVE_KEY, futuraRaw); AR.set(SAVE_KEY + '.prev', '{"v":1}');
+      const toastReal = G.ui.toast, avisos = []; G.ui.toast = t => { avisos.push(String(t)); };
+      almacen = AR; REAL.mem.json = null; G.quiet = false;
+      let okAr = null;
+      try { okAr = load(true); arrancarVacio(true); } finally { G.quiet = true; almacen = almReal; G.ui.toast = toastReal; }
+      check('Arranque con partida de versión futura: no carga y empieza una nueva SIN borrar la guardada', okAr === false && AR.get(SAVE_KEY) === futuraRaw && AR.get(SAVE_KEY + '.prev') === '{"v":1}' && S.step === 0 && !S.profile.created && estado.ilegible === true);
+      check('...la deja en una copia de rescate con fecha', copiasIlegibles(AR, SAVE_KEY).some(c => c.raw === futuraRaw));
+      check('...y avisa con suavidad: «No pudimos abrir tu partida guardada; la guardamos por si se puede recuperar»', avisos.some(t => /No pudimos abrir tu partida guardada; la guardamos por si se puede recuperar|We could not open your saved game; we kept it in case it can be recovered/.test(t)), avisos.join(' | '));
+      const rAr = guardarEn(ctx(AR, SAVE_KEY));
+      check('El primer guardado de la partida nueva no pierde la ilegible', rAr === 'ok' && esObj(leerJSON(AR.get(SAVE_KEY))) && copiasIlegibles(AR, SAVE_KEY).some(c => c.raw === futuraRaw), rAr);
+      const AV2 = almacenFalso(); almacen = AV2; REAL.mem.json = null; let okVacio = null;
+      try { okVacio = load(true); arrancarVacio(true); } finally { almacen = almReal; }
+      check('Arranque sin ninguna partida guardada: empieza una nueva sin aviso ni copias', okVacio === false && estado.ilegible === false && AV2.mapa.size === 0);
       // 8. Recarga real (opcional): el juego arranca en un iframe con ?partida=<id> y debe leer lo guardado
       if (opts.iframe) {
         const KI = STORE + '.save.' + id;
@@ -564,5 +678,5 @@ AVE.module('guardado', function (G) {
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.saveTest) AV.saveTest = o => test(o); }, 0);
 
   return { KEY: SAVE_KEY, VERSION: SAVE_VERSION, FORMATO, KEYS: SAVED_KEYS, spawn, freshState, replace, serialize, save, autosave, migrate, validSave, load,
-    applyWorld, reset, estado: () => Object.assign({}, estado), limpiarTexto, suspender, instantanea, restaurar, test };
+    applyWorld, reset, arrancarVacio, copiasIlegibles: (be, base) => copiasIlegibles(be || almacen, base || SAVE_KEY), estado: () => Object.assign({}, estado), limpiarTexto, suspender, instantanea, restaurar, test };
 });

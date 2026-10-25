@@ -83,7 +83,7 @@
     G.S.pos.y = G.terreno.height(G.S.pos.x, G.S.pos.z);
     G.renderer.linearize(G.renderer.scene); // antes de aplicar el mundo: los looks ya escriben colores en lineal
     G.actores.init3D();
-    if (!G.guardado.load(true)) G.guardado.reset();
+    if (!G.guardado.load(true)) G.guardado.arrancarVacio(); // sin partida legible: una nueva, sin borrar lo guardado (ver guardado.js)
     G.camara.place(true);
     G.renderer.start();
     return G;
