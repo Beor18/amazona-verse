@@ -1,81 +1,98 @@
-# GDD Capítulo 1 · "El Vuelo de Vittata" (10–15 min)
+# GDD Capítulo 1 · «El día que el cielo se rompió»
 
-**Diagnóstico.** El capítulo funciona, pero volar, nadar, dash y gestos no tocan la historia. Solución: cada paso de `STEPS` exige una habilidad distinta, sin reescribir el guion. Todo con primitivas Three.js y WebAudio sintético; cero assets nuevos.
+Documento de diseño del capítulo 1 **puesto al día con lo que hay en `main`** (25 de octubre de 2026). Lo que falta está en `CAP1_PENDIENTE.md`; por qué se siente vacío y qué hacer, en `DIVERSION_CAP1.md`; cómo se juega en una página, en `docs/COMO_SE_JUEGA.md`. Historia y canon: `docs/STORY_BIBLE.md`, `docs/CHAPTER_01_SCRIPT.md`, `NARRATIVA_CAP1.md`.
+
+**Principio (directiva V8.0): diversión primero.** Es un juego de aventura, exploración, creatividad y humor para niños y jóvenes de todas las edades. Lo educativo sale del juego de forma natural y tiene fuente verificable; no es el gancho ni se vende como «aprende ciencia». Sin anillos de vuelo, sin loot boxes, sin presión de compra, sin castigos irreversibles; Vittata (modelo y rig) no se toca.
 
 ## 1. Core loop (30–60 s)
-**Ver pista → usar una habilidad → capturar → recompensa juicy → Diario/ropa → pista nueva.** Siempre hay un objetivo visible (haz de luz y flecha).
+**Ver pista → usar una habilidad → conseguir algo → recompensa que se ve → Diario, ropa o nido → pista nueva.** Siempre hay un objetivo visible (haz de luz y flecha) y una barra de 8 pasos. Lo que todavía falla del loop: la primera acción con habilidad llega al minuto ≈3, el mundo no se mueve solo y lo que se gana se ve tarde (`DIVERSION_CAP1.md` §1).
 
 ## 2. Ritmo
-| Min | Beat | Habilidad |
+Los minutos son estimaciones; no hay medida con jugadores (P0-3). Piso automático del E2E: 5 min 42 s a 5 min 55 s sin leer ni explorar.
+
+| Beat (paso de `historia.js`) | Habilidad | Qué pasa |
 |---|---|---|
-| 0–1 | Despertar, taller, Luma | caminar |
-| 1–4 | M1: pieza de metal en el río | nadar |
-| 4–7 | M2: marcas de agua desde el aire | volar |
-| 7–10 | Construir y crecida | dash/volar |
-| 10–13 | M3: coro de coquíes enciende el transmisor | hablar |
-| 13–15 | Mirador, bandada, final | volar |
+| Apertura (`inicio`) | ver | Negro con viento → taller con luz → ZZZT, sacudida y onda en el cielo → fundido |
+| 1 `taller` | caminar, examinar | Máquina experimental y transmisor (E) |
+| 2 `luma` | hablar | Luma pide ayuda y da 3 tablas |
+| 3 `recolectar` · M1 | nadar, bucear | Madera y piedras al pasar; la pieza de metal en el fondo de la poza. Nace el nido |
+| 4 `terrenos` · M2 | volar, nadar, hablar | «La ruta de la gota» (p1–p8) y los dos terrenos desde el aire |
+| 5 `refugio` | construir | Fantasma verde/rojo; crecida con lluvia y trueno; desarmar y mover a la colina |
+| 6 `guardian` | hablar | El Guardián conoce el refugio y regala el banco |
+| 7 `transmisor` · M3 | escuchar, repetir | Simon de 3 coquíes; reparar el transmisor; símbolo de 36 y la Voz |
+| 8 `mirador` | volar, ver | Islas, plano del bote, luz ×3; panel final |
 
-## 3. Tres misiones
-**M1 · "Fondo del río" (nadar).** Luma: "La pieza cayó al río". `c1` pasa a un banco sumergido; se bucea con `c`, burbujas guían. Sin oxígeno ni enemigos.
-**M2 · "Ojos de guaraguao" (volar).** Para evaluar los terrenos, 7 anillos de luz (TorusGeometry) trazan una ruta sobre el río; cada anillo consecutivo sube el tono del sonido. Desde arriba aparece el rastro de las marcas de agua del terreno A.
-**M3 · "Co-quí" (hablar).** El transmisor necesita voz: Vittata, cotorra imitadora, repite el canto de 3 coquíes escondidos (arbustos que brillan). Simon de 2–3 notas ("co" grave, "quí" agudo); al acertar los tres, el coro enciende el transmisor. Incluye una elección de diálogo con Luma que cambia la frase, no el desenlace.
+## 3. Tres misiones (`content/cap1/misiones.js`)
+**M1 · «Fondo del río» (nadar).** La pieza `c1` está sumergida; burbujas guían; bucear con C. Sin oxígeno ni enemigos. Premio: botas azules.
+**M2 · «La ruta de la gota» (volar, nadar, hablar; `educativa.js`, `lecciones.js`).** Predecir con Luma, 4 perchas en flora real (suelo, sotobosque, dosel, emergente), cadena alimentaria, comparar terrenos desde el aire, seguir el vapor y la gota, bucear a la marca de crecida y explicarlo. Sustituye a la M2 de anillos, que el fundador rechazó. Premio: pava jíbara. Mejora propuesta: que p5–p8 se vuelen (`DIVERSION_CAP1.md` mejora 8).
+**M3 · «Co-quí» (escuchar y repetir).** Tres coquíes en arbustos que brillan; Simon de 2–3 notas («co» grave, «quí» agudo); «Pasar» tras 2 fallos; elección de diálogo con Luma que cambia la frase, no el desenlace. Premio: camisa guayabera.
 
-## 4. Diario de Campo Boricua (12 coleccionables)
-Se obtienen por proximidad, con tarjeta de una línea y silueta de primitivas.
-- **Fauna (6):** coquí común, San Pedrito, reinita mariposera, dajao, jicotea, manatí (en el horizonte).
-- **Cultura (6):** maraca, güiro, cuatro, petroglifo taíno, máscara de vejigante, pava jíbara.
+## 4. Diario de Campo Boricua (`content/cap1/coleccionables.js`)
+12 hallazgos por proximidad, con tarjeta de una línea y silueta de primitivas. **Fauna (6):** coquí común, San Pedrito, reinita mariposera, dajao, jicotea, manatí. **Cultura (6):** maraca, güiro, cuatro, petroglifo taíno, máscara de vejigante, pava jíbara. Los 12 textos están **validados con fuente** (`DIARIO_VALIDACION.md`: DRNA, USFWS, USGS, ICP, Smithsonian, UICN, Cornell Lab, Ley 154-2003 y publicaciones académicas). El Diario trae además la sección «Amazonas del mundo» (`src/game/diario.js`, especies con datos verificados; 13 estados UICN esperan a Kelvin) y el Diario de ciencia de la ruta de la gota.
 
-Los datos deben validarse con una fuente cultural antes de publicar.
-
-## 5. Ropa desbloqueable (ids de `wardrobe.js`)
+## 5. Ropa desbloqueable (ids de `src/personaje/wardrobe.js`)
 | Hito | Desbloquea |
 |---|---|
 | M1 | `botas` azules |
-| M2 | `pava` jíbara |
+| M2 «La ruta de la gota» | `pava` jíbara |
 | M3 | `camisa` guayabera |
-| 4 de fauna | `gorra` estilo "pr" |
-| 4 de cultura | `mano` (maraca) |
-| 12/12 | `camisa` "Deportiva 787" y `lentes` dorados |
+| 4 de fauna | `gorra` estilo «pr» (bandera fiel) |
+| 4 de cultura | `mano` maracas |
+| 12/12 | `camisa` «Deportiva 787» y `lentes` dorados |
 
-Cada hito abre un cofre-pluma y se ve al instante en Vittata 3D.
+Cada hito abre un cofre-pluma y se ve al instante en Vittata 3D. Lo bloqueado aparece apagado en «Mi personaje» con su pista. Pendiente de diseño: celebrar la combinación (foto, conjunto con nombre) y pieles de las 22 cotorras para el aprendiz (`DIVERSION_CAP1.md` §2).
 
-## 6. Momentos "wow"
-1. **Despegue del mirador:** el FOV se abre y aparecen las islas.
-2. **Bahía bioluminiscente** (guiño a Vieques): nadando de noche, el agua deja estela azul.
-3. **Coro de coquíes** al atardecer, con luciérnagas (Points).
-4. **Bandada:** tras el último anillo, 20 cotorras (InstancedMesh) vuelan contigo.
-5. **Crecida:** tiembla la cámara; escape en vuelo, sin castigo.
+## 6. Momentos «wow»
+| Momento | Estado |
+|---|---|
+| Apertura con onda en el cielo | Hecho |
+| Crecida: tiembla la cámara, lluvia y trueno, escape sin castigo | Hecho (sin «rescatar cosas en vuelo», mejora 4) |
+| Plano del bote y luz que parpadea tres veces en el mirador | Hecho |
+| Despegue del mirador con FOV abierto | Pendiente (P2-1, S) |
+| Bandada de 20 cotorras (`InstancedMesh`) | Pendiente (P2-1, M) |
+| Coro de coquíes al atardecer con luciérnagas | Pendiente; propuesto diferir al episodio 2 (decisión 7) |
+| Bahía bioluminiscente | Pendiente; necesita noche (decisión 7) |
 
-## 7. Feedback juicy
-- **Sonido (WebAudio):** arpegio pentatónico ascendente al recoger (el combo sube la nota), ruido filtrado para dash y chapuzón, "co-quí" con osciladores, güiro con ráfagas de ruido. Volúmenes separados.
-- **Cámara:** FOV +8 en dash/vuelo, sacudida al aterrizar, zoom en diálogo, hit-stop de 60 ms.
-- **Partículas:** reutilizar `fx`, `ringFx`, `drops`; añadir `burst` (plumas, estrellas de la bandera).
+## 7. Feedback
+- **Sonido (WebAudio sintético, `src/engine/audio.js` y `audio.define` del pack):** recoger, chapuzón, impulso, «co-quí», güiro, ZZZT, viento, lluvia, trueno, golpes al construir, BIP y estática del transmisor. Volúmenes separados. No hay música. Falta comprobarlo de oído en un dispositivo real.
+- **Cámara (`camara.js`):** FOV en impulso y vuelo, sacudida al aterrizar y en la crecida; todo se apaga con «reducir movimiento».
+- **Partículas (`fx`):** `burst` de plumas y estrellas, cofre-pluma, guía con haz y flecha.
+- **Pendiente:** juice de vuelo (rasante, picado, aterrizaje perfecto), «Descubriste: …» al llegar a un lugar con nombre (`DIVERSION_CAP1.md` mejoras 2 y 6).
 
 ## 8. Móvil
-Ya existen joystick, Volar, Impulso, Saltar y Acción. Añadir: botón `Acción` contextual (verbo de `nearest()`), botón Bucear (hoy solo tecla `c`), asistencia de vuelo hacia anillos, botones de 56 px, modo zurdo, vibración al capturar, panel de misión de una línea.
+Hecho: joystick, Volar/Aterrizar, Saltar, Impulso, Acción contextual (verbo de `nearest()`), Bucear táctil, botones de 44 px o más (matriz 375×812). Pendiente: modo zurdo (D4), vibración al capturar y prueba en un iPhone y un Android reales (P0-4).
 
 ## 9. Accesibilidad
-`prefers-reduced-motion` apaga sacudida, FOV y destellos; subtítulos de sonido ("[canta un coquí a la izquierda]"); texto ajustable y remapeo de teclas; modo relajado (anillos grandes, flecha siempre, sin tiempos); iconos y formas además de color; Simon con opción "pasar" tras 2 fallos.
+Hecho: `prefers-reduced-motion` apaga sacudida, FOV y destellos; «Pasar» en el Simon; iconos y formas además de color; remapeo de las teclas de mover, volar, aterrizar y acción con «Restablecer teclas» (`input.js`); subtítulo del Simon («[Canta un coquí…]»). En curso (D2): tamaño de texto en 3 niveles y alto contraste. Pendiente (D4): subtítulos de sonido generales, modo relajado (guía siempre visible, sin tiempos) y modo zurdo.
 
-## 10. Features
+## 10. Modo Retos (`src/game/retos.js`)
+Arcade de habilidad sobre el mismo mundo, desde la portada o la pausa, con «Otra vez» al instante y la partida de la historia intacta (instantánea del estado, guardado suspendido). **Carrera en El Yunque:** 3 rivales con otros plumajes, 6 puntos de control con banderín y flor de maga (nunca anillos), corrientes de aire, meta en el Mirador Yokahú, medallas y récord. **¡Escapa de la tormenta!:** 90 s de vuelo bajo sobre el mar, ramas y rayos anunciados antes, semillas doradas con combo, 3 plumas de vida. Récords en el dispositivo. Siguiente paso: retos dentro del mundo, fantasma propio y código de amigo sin red (`DIVERSION_CAP1.md` mejora 7).
 
-| Feature | Pri | Implementación (enganche en `game.js`) |
+## 11. Features: estado y dónde viven
+| Feature | Estado | Dónde |
 |---|---|---|
-| Módulo `AUDIO` WebAudio + volumen | P0 | Llamar desde `collect`, `splash`, `tryDash`, `tryJump`, `toast` |
-| Flecha/haz guía | P0 | `updateGuide()` en `render`; destino según `S.step` en `checkProgress` |
-| M1 Nado | P0 | Mover `c1` en `RESOURCES`; `collect` exige `MOVE.swimming`; burbujas con `drops` |
-| M2 Anillos de vuelo | P0 | `RINGS` revisados en `update` con `MOVE.flying`; marcan `S.evaluated` vía `openParcelCard` |
-| Acción contextual + Bucear táctil | P0 | Label de `b-act` desde `nearest()`; `b-dive` en `index.html` |
-| Desbloqueo de ropa | P0 | `S.unlocked` en `SAVED_KEYS`; filtrar en `renderSlots`; otorgar en `checkProgress` |
-| M3 Coquíes | P1 | `startChorus()` en paso 6; arbustos en `interactables`; `say` con opciones |
-| Diario de Campo | P1 | `FIELD[]`; `collect` genérico; `renderQuest`; nuevo tipo en `logEvent` |
-| `burst` y combo | P1 | Extender `fx`/`drops`; combo en `collect` |
-| FOV, sacudida, hit-stop | P1 | `render` y `camDist()`; banderas en `MOVE` |
-| Reducir movimiento y subtítulos | P1 | Objeto `A11Y` leído en `render` y `AUDIO`; panel de ajustes |
-| Texto grande, remapeo, zurdo | P1 | Variables CSS; mapa de teclas en `update` |
-| Bandada de cotorras | P2 | `InstancedMesh` en `render` al completar `STEPS[7]` |
-| Bahía bioluminiscente | P2 | `S.clock` + `ringFx` azul en `update` |
-| Final 12/12 | P2 | Flag en `ChapterCompleted`; `renderComic` |
+| Audio WebAudio con volúmenes | Hecho | `src/engine/audio.js`, `audio.define` en `content/cap1/pack.js` e `historia.js` |
+| Flecha y haz guía | Hecho | `fx.guide`, `misiones.guideTarget` |
+| M1 nado y buceo | Hecho | `content/cap1/misiones.js`, `mundo.js` (`c1`, `fondo: true`) |
+| M2 ruta de la gota (en lugar de anillos) | Hecho | `content/cap1/educativa.js`, `lecciones.js`, `assets/data/lecciones_cap1.json` |
+| Paradas de aprendizaje | Hecho | `content/cap1/paradas.js` |
+| Acción contextual y Bucear táctil | Hecho | `src/game/interaccion.js`, `src/engine/input.js` |
+| Desbloqueo de ropa | Hecho | `coleccionables.js` (`ropa`), `src/game/misiones.js` |
+| M3 coquíes | Hecho | `content/cap1/misiones.js` (`startChorus`, `startSimon`) |
+| Diario de Campo (validado) y Amazonas del mundo | Hecho | `coleccionables.js`, `src/game/diario.js` |
+| Nido y criadero | Hecho | `src/game/criadero.js`, `content/comun/huevos.js` |
+| Cómic con hechos reales, PNG/PDF | Hecho | `src/game/comic.js`, `pack.js` (`vinetas`) |
+| Apertura, sonidos de crecida, plano del bote, luz ×3, Voz neutra | Hecho | `content/cap1/historia.js`, `pack.js`, `mundo.js` |
+| Panel final: Seguir explorando, Comenzar de cero con pregunta | Hecho | `src/game/misiones.js`, `src/engine/guardado.js`, `index.html` |
+| Reducir movimiento, remapeo de teclas | Hecho | `renderer.js`, `camara.js`, `input.js` |
+| Calidad automática en equipos modestos | Hecho | `renderer.js` (`perfilEquipo`) |
+| Modo Retos | Hecho | `src/game/retos.js` (carga perezosa) |
+| Texto grande y alto contraste | En curso (D2) | `src/game/accesibilidad.js`, `src/ui/ui.css` |
+| Subtítulos generales, relajado, zurdo | Pendiente (D4) | mismos archivos e `input.js` |
+| Bandada, luciérnagas, bahía, engranaje visible | Pendiente (P2-1, P2-2) | `content/cap1/mundo.js`, `historia.js`, `fx` |
+| Modelos 3D de Luma y el Guardián; máquina y transmisor con calidad comercial | Pendiente (P1-6, P2-5; decisiones 5 y 6) | `tools/blender/`, `assets/models/` |
 
-## 11. Riesgos
-Duración (8–12 min) y rendimiento móvil sin medir: limitar partículas a 200 y bandada a 20. Correr `AV.selfTest` tras cada P0.
+## 12. Riesgos y decisiones abiertas
+- **Duración y FPS sin medir** en jugadores y equipos reales (P0-3, P0-4). Límites del motor: partículas a 200, bandada a 20.
+- **Canon:** aprobación del guion, forma del Guardián, orden de su llegada, medalla, cara definitiva de la Voz, diseño de la máquina y el transmisor, duración meta, idioma, taller con interior (`CAP1_PENDIENTE.md` §3). Son de Kelvin.
+- **Diversión:** el capítulo pide leer y caminar el 65 % del tiempo y volar con habilidad menos del 10 %. Las cinco mejoras ★ de `DIVERSION_CAP1.md` (Luma llama desde arriba, lo que gano se ve, diálogo que no bloquea, la crecida se juega, cómic con humor y foto) son el siguiente trabajo de diseño del capítulo.
