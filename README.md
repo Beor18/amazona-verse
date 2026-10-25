@@ -1,23 +1,59 @@
-# Amazona Verse: prototipo del juego
+# Amazona Verse
 
-Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Web 3D con Three.js r128, creador de personaje y cómic personal exportable (PNG y PDF).
+Juego educativo 3D para el navegador, para escuelas (grados 3 a 6). Lo protagoniza Vittata, la cotorra puertorriqueña.
+
+Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Ciencias alineadas al DEPR 2022 y NGSS, sin cuentas ni anuncios.
+
+**Estado:** versión 25. Qué falta y fechas estimadas: **[ROADMAP.md](ROADMAP.md)**.
 
 ## Cómo correrlo
+Hace falta un servidor local: abrir `index.html` con doble clic no carga los modelos.
 ```
-python3 ~/AmazonaVerse/Juego/tests/server.py 8765
+python3 -m http.server 8765
 ```
-Después abre http://localhost:8765 en el navegador. Hace falta un servidor; abrir `index.html` con doble clic no carga las texturas.
+Después abre http://localhost:8765 en el navegador.
 
 ## Controles
-- Escritorio: WASD o flechas para mover · Espacio para saltar (mantener para planear) · E o Enter para Acción · Q/R o arrastrar el ratón para girar la cámara · Esc para cancelar.
-- Móvil: joystick a la izquierda · botones Saltar y Acción a la derecha · arrastrar la pantalla para girar la cámara.
+- **Escritorio:**
+  - WASD o flechas: moverse.
+  - Espacio: saltar y volar (mantener para planear).
+  - V: aterrizar.
+  - E o Enter: acción.
+  - Q/R o arrastrar el ratón: girar la cámara.
+  - Esc: cancelar.
+- **Móvil:** joystick a la izquierda, botones de vuelo y acción a la derecha; arrastrar la pantalla gira la cámara.
+- `#fps` al final de la URL muestra un panel de rendimiento: FPS, llamadas de dibujo y memoria.
 
-## Prueba automática
-En la consola del navegador: `await AV.selfTest({saveFiles: true})` recorre el capítulo (con la misión "La ruta de la gota"), el creador, el cómic, la exportación y el guardado (46 comprobaciones) y deja los archivos exportados en `tests/out/`.
-También: `AV.missionTest()` (misiones, Diario y ropa), `AV.accessoryTest()` (personaje 3D), `AV.templateTest()` (la plantilla arranca otro juego con el mismo motor), `AV.eduTest()` (juega la misión educativa entera, en 3.º–4.º y 5.º–6.º) y `AV.maestroTest()` (acceso, guía, progreso y reporte del Modo Maestro).
+## Build y pruebas
+```
+tools/build/build.sh HEAD
+tools/build/test.sh tools/build/salida/<ref>/ --extra
+```
+- **`build.sh`** exporta un commit sin tocar la copia de trabajo y deja `site/` listo para publicar, con su manifiesto. Comprime con meshopt y WebP y valida las referencias.
+- **`test.sh`** levanta la build y corre las 13 baterías: `selfTest`, `missionTest`, `accessoryTest`, `templateTest`, `eduTest`, `maestroTest`, `criaderoTest`, `movementTest`, `saveTest`, `comicTest`, `e2eTest`, `contextTest` y `streamingTest`. También mide la carga inicial; el presupuesto es ≤ 8 MB.
+- Más detalle en `docs/equipo/BUILD.md`. Las baterías también se pueden correr a mano desde la consola, por ejemplo `await AV.selfTest()`.
 
 ## Aula
-Menú de pausa → **Aula**: idioma ES/EN de la lección, texto corto y lectura en voz alta. Al pie, **Docentes** abre el Modo Maestro tras una suma (no hay cuentas): guía de 45 min, progreso de este dispositivo y reporte CSV/JSON sin datos personales.
+Menú de pausa → **Aula**:
+- Idioma de la lección en ES/EN.
+- Texto corto.
+- Lectura en voz alta.
+
+Al pie, **Docentes** abre el Modo Maestro, protegido con una suma (no hay cuentas). Incluye:
+- Guía de 45 minutos.
+- Progreso de este dispositivo.
+- Paradas de aprendizaje.
+- Criadero.
+- Reporte en CSV o JSON, sin datos personales.
 
 ## Arquitectura
-Motor en `src/engine` y `src/game`, contenido en `content/cap1` y una plantilla en `content/plantilla` (`index.html?pack=plantilla`). Capas, contratos y cómo forkear: `docs/ARQUITECTURA.md`.
+- **Motor:** `src/engine` y `src/game`, con el personaje en `src/personaje`.
+- **Contenido:** `content/cap1`, más los datos comunes en `content/comun` (huevos y especies) y una plantilla en `content/plantilla` (`index.html?pack=plantilla`).
+- **Herramientas:** de Blender, build y video en `tools/`.
+- Capas, contratos y cómo hacer un fork: `docs/ARQUITECTURA.md`.
+
+## Licencias
+- **Código y contenido:** © Kelvin García / Amazona Verse.
+- **Three.js** (MIT) y **meshoptimizer** (MIT).
+- **Fuentes:** Fredoka y Atkinson Hyperlegible (OFL).
+- **Edificios:** derivados de kits de KitBash3D, usados bajo la licencia de Kelvin. Cada recurso de terceros conserva su propia licencia.
