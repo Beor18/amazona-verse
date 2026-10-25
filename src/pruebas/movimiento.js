@@ -204,6 +204,63 @@ AVE.module('movimiento', function (G) {
         check('Soltar: la caja queda en el suelo delante de las patas', !G.agarre.lleva() && box.parent === G.renderer.scene && !!soltado && Math.abs(p.y - 0.175 - F.suelo(p.x, p.z, p.y)) < 0.1, soltado ? r2(p.y - F.suelo(p.x, p.z, p.y)) + ' m' : 'sin soltar');
         G.renderer.scene.remove(box); box.geometry.dispose(); box.material.dispose();
       }
+      // 8. Elementos del mundo (solidos.js, geometría real): techo, rama, pared y despegar desde arriba
+      const SO = G.solidos, ACT = G.mundo && G.mundo.activos;
+      if (SO && SO.activo && ACT && Object.keys(ACT).length) {
+        SO.terminar();
+        const aterrizarEn = (x, z, y) => { reset(x, z); S.pos.y = y; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) frame(); SO.terminar(); };
+        const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
+        // Techo: el edificio con techo más alto de los de tipo casa, bohío o caney (si no, el primero con más de 3 m)
+        const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3);
+        const idT = ids.find(id => /casa_paja|bohio|caney/.test(id)) || ids[0];
+        if (idT) {
+          const [bx, by, bz] = ACT[idT].pos, tp = altoCerca(bx, bz, 1.5);
+          aterrizarEn(tp.x, tp.z, tp.t + 4);
+          const yl = S.pos.y, ys = frame(null, 180).map(o => o.y), quieta = Math.max(...ys) - Math.min(...ys);
+          met.techo = { edificio: idT, alto: r2(yl - by), deriva3s: r2(quieta), posado: M.posado };
+          check('Aterriza en el techo de un edificio y se queda 3 s sin moverse', M.grounded && !!M.posado && yl - H(S.pos.x, S.pos.z) > 2 && quieta < 0.02, JSON.stringify(met.techo));
+          F.toggleFly(); frame(null, 40);
+          check('Despega desde el techo', M.flying && S.pos.y > yl + 1, r2(S.pos.y - yl) + ' m');
+          // Pared: desde 10 m fuera, caminar hacia el centro 2,5 s con el joystick
+          let peor = 0, probadas = 0, dmin = 99;
+          for (const ang of [0.4, 2.0, 3.6, 5.2]) {
+            const sx = bx + Math.cos(ang) * 10, sz = bz + Math.sin(ang) * 10, sy = F.suelo(sx, sz, H(sx, sz) + 0.3);
+            if (SO.penetra(sx, sz, sy) || G.agua.levelAt(sx, sz) > sy - 0.2) continue;
+            reset(sx, sz); probadas++;
+            const st = toStick(bx - sx, bz - sz);
+            frame(() => { I.stick.x = st.x; I.stick.y = st.y; peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y)); }, 150);
+            I.stick.x = I.stick.y = 0; dmin = Math.min(dmin, Math.hypot(S.pos.x - bx, S.pos.z - bz));
+          }
+          met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
+          check('No atraviesa una pared: choca y se desliza sin meterse', probadas > 0 && peor <= 2, JSON.stringify(met.pared));
+        }
+        // Rama: el árbol más cercano con un punto fino entre 1,5 y 6 m sobre el suelo, lejos del tronco
+        const V = G.vegetacion, sitioArbol = (() => {
+          let mejor = null;
+          for (const m in (V && V.instancias) || {}) {
+            if (!/tabonuco|ceiba|flamboyan|yagrumo|arbol_enano/.test(m)) continue;
+            const P = V.instancias[m];
+            for (let i = 0; i < P.n; i++) { const d = Math.hypot(P.pos[i * 4] - L.x, P.pos[i * 4 + 2] - L.z); if (!mejor || d < mejor.d) mejor = { x: P.pos[i * 4], y: P.pos[i * 4 + 1], z: P.pos[i * 4 + 2], d, m }; }
+          }
+          return mejor;
+        })();
+        if (sitioArbol) {
+          reset(sitioArbol.x + 5, sitioArbol.z); SO.terminar();
+          let rama = null;
+          for (let dz = -4; dz <= 4; dz += 0.3) for (let dx = -4; dx <= 4; dx += 0.3) {
+            const x = sitioArbol.x + dx, z = sitioArbol.z + dz; if (Math.hypot(dx, dz) < 1) continue;
+            const g = SO.altoEn(x, z, sitioArbol.y + 8), hg = g - H(x, z); if (!(hg > 1.5 && hg < 6) || !SO.fino(x, z, g + 0.01)) continue;
+            if (!rama || Math.abs(hg - 3) < Math.abs(rama.hg - 3)) rama = { x, z, g, hg };
+          }
+          if (rama) {
+            aterrizarEn(rama.x, rama.z, rama.g + 2);
+            const ys = frame(null, 60).map(o => o.y);
+            met.rama = { arbol: sitioArbol.m, alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), posado: M.posado };
+            check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
+          } else check('Se posa en una rama', false, 'sin rama cerca de ' + sitioArbol.m);
+        }
+        met.solidos = SO.stats();
+      }
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
     } finally {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;

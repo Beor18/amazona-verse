@@ -48,6 +48,8 @@ AVE.module('camara', function (G) {
     // En laderas y barrancos la cámara no se mete bajo el terreno
     const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
     if (camPos.y < gy) camPos.y = gy;
+    // Tampoco dentro de un edificio, una roca o un árbol (solidos.js): sube por encima
+    if (G.solidos && G.solidos.activo) { const t = G.solidos.dentro(camPos.x, camPos.z, camPos.y); if (t > -Infinity) camPos.y = t + 0.6; }
   }
   const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look;
   // Coloca la cámara: snap = al instante (cargar, capturas); también deja al jugador y al aprendiz en su sitio

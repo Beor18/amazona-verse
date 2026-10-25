@@ -182,7 +182,7 @@ AVE.module('actores', function (G) {
       if (!clipEmote && anim3D.player !== want && P.play(want)) anim3D.player = want;
       P.speed = sp;
       P.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : run ? 2 : 1; // nadando patalea siempre
-      P.airborne = air; P.flying = MOVE.flying;
+      P.airborne = air; P.flying = MOVE.flying; P.posado = MOVE.posado || '';
       P.legsDown = fase === 'aterrizaje' ? 1 : fase === 'cernido' ? 0.65 : fase === 'despegue' ? 0.8 : 0;
       P.swimming = MOVE.swimming; P.diving = diving;
       P.swimRate = moving ? 1.3 : 0.55;

@@ -55,6 +55,7 @@ AVE.module('fisica', function (G) {
     flareHeight: 1.8,     // …y desde esta altura sobre el suelo frena con las alas…
     flareV: 1.3,          // …hasta tocar el suelo a esta velocidad (aterrizaje suave)
     landSpeed: 0.55,      // aterrizando, la velocidad horizontal máxima es esta fracción del crucero
+    perchAssist: 0.6,     // bajando, a esta distancia (m) de algo fino se centra encima para posarse
     vAccel: 4,            // tasa del cambio de velocidad vertical en vuelo
     // Nado
     swim: 4.5, swimRunFactor: 1.4, swimDepth: 0.22, swimJumpV: 7, swimAccel: 6,
@@ -83,7 +84,14 @@ AVE.module('fisica', function (G) {
     if (y != null) for (const p of perchas) {
       if (y >= p.y - PERCHA_TOL && p.y > g && Math.hypot(x - p.x, z - p.z) < p.r && (!p.when || p.when())) g = p.y;
     }
+    // Sólidos sacados de la geometría (solidos.js): techos, cornisas, rocas, ramas, barandas, postes.
+    // Sobre una percha del diseño (misión), su columna de aire manda: una rama encima no la tapa.
+    if (y != null && G.solidos && G.solidos.activo && !columnaPercha(x, z, y)) { const s = G.solidos.suelo(x, z, y); if (s > g) g = s; }
     return g;
+  }
+  function columnaPercha(x, z, y) {
+    for (const p of perchas) if (y >= p.y - PERCHA_TOL && y < p.y + 4 && Math.hypot(x - p.x, z - p.z) < p.r + 0.3 && (!p.when || p.when())) return p;
+    return null;
   }
   const busyNow = () => G.dialogo.open() || G.ui.cardOpen || G.ui.overlayOpen();
   const onGroundNow = () => S.pos.y <= suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01;
@@ -129,9 +137,16 @@ AVE.module('fisica', function (G) {
     MOVE.dashT = T.dashTime; MOVE.dashCd = T.dashCooldown;
     G.audio.play('dash');
   }
-  // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz)
+  // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz). Los de edificios, estructuras y árboles se
+  // ignoran donde solidos.js ya tiene su geometría real (si no, empujarían fuera de un techo a quien está parado encima).
+  const KIND_SOLIDO = { edificio: 1, estructura: 1, arbol: 1 };
   function pushOut(p, c, rad) {
     if (c.r <= 0 || (c.when && !c.when())) return;
+    if (KIND_SOLIDO[c.kind] && G.solidos && G.solidos.activo) {
+      const now = S.clock || 0;
+      if (c._sol === undefined || (!c._sol && now - c._solT > 0.5)) { c._sol = G.solidos.cubre(c); c._solT = now; }
+      if (c._sol) return;
+    }
     if (p.y != null && p.y - G.terreno.height(c.x, c.z) > (c.h != null ? c.h : c.kind === 'tree' ? c.r * 9 : alturas[c.kind] || 2)) return;
     if (c.hx) {
       const qx = Math.max(c.x - c.hx, Math.min(c.x + c.hx, p.x)), qz = Math.max(c.z - c.hz, Math.min(c.z + c.hz, p.z));
@@ -204,7 +219,7 @@ AVE.module('fisica', function (G) {
       MOVE.vx += (tx - MOVE.vx) * a; MOVE.vz += (tz - MOVE.vz) * a;
     }
     // Ladera más empinada que maxSlope bajo los pies: resbala hacia abajo
-    const px = S.pos.x, pz = S.pos.z;
+    const px = S.pos.x, pz = S.pos.z, py = S.pos.y;
     if (onGround && MOVE.grounded && MOVE.onTerrain) {
       const n = slopeAt(px, pz);
       if (n.y < cosMax()) { MOVE.vx += n.x * T.slideAccel * dt; MOVE.vz += n.z * T.slideAccel * dt; }
@@ -216,6 +231,25 @@ AVE.module('fisica', function (G) {
     const WORLD = G.terreno.WORLD;
     S.pos.x = Math.max(-WORLD, Math.min(WORLD, S.pos.x));
     S.pos.z = Math.max(-WORLD, Math.min(WORLD, S.pos.z));
+    // Paredes de la geometría real: un paso que mete más el cuerpo en un sólido se desliza por el eje libre (o no avanza).
+    // Se compara con lo que ya estaba metido: así se sale de un rincón estrecho, pero nunca se entra en una pared.
+    const SOL = G.solidos && G.solidos.activo && !columnaPercha(S.pos.x, S.pos.z, S.pos.y) ? G.solidos : null;
+    if (SOL) {
+      const pn = SOL.penetra(S.pos.x, S.pos.z, S.pos.y);
+      if (pn) {
+        const p0 = SOL.penetra(px, pz, S.pos.y);
+        if (pn > p0) {
+          if (SOL.penetra(S.pos.x, pz, S.pos.y) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
+          else if (SOL.penetra(px, S.pos.z, S.pos.y) <= p0) { S.pos.x = px; MOVE.vx = 0; }
+          else { S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0; }
+        }
+      }
+    }
+    // Ayuda para posarse: bajando cerca de algo fino (rama, baranda, poste, cumbrera), se centra encima para aterrizar en él
+    if (SOL && !MOVE.grounded && !MOVE.swimming && S.vy < -0.3 && (!MOVE.flying || MOVE.landing || dive)) {
+      const pc = SOL.percha(S.pos.x, S.pos.z, S.pos.y, T.perchAssist);
+      if (pc && S.pos.y - pc.y < 1.2) { const k = rate(8, dt); S.pos.x += (pc.x - S.pos.x) * k; S.pos.z += (pc.z - S.pos.z) * k; MOVE.vx *= 0.9; MOVE.vz *= 0.9; }
+    }
     let ground = suelo(S.pos.x, S.pos.z, S.pos.y); // con la altura previa: las perchas sostienen al bajar
     // Pendiente demasiado empinada para subir caminando: se anula la parte cuesta arriba del paso (sigue la curva de nivel)
     const grounded = MOVE.grounded && !MOVE.flying && !MOVE.swimming;
@@ -276,10 +310,21 @@ AVE.module('fisica', function (G) {
       S.vy = Math.max(S.vy, -T.maxFall);
     }
     let ny = (S.pos.y || ground) + S.vy * dt;
+    // Subiendo bajo un techo o una cornisa: la cabeza no lo atraviesa
+    if (SOL && S.vy > 0) { const tch = SOL.techo(S.pos.x, S.pos.z, S.pos.y, ny); if (tch < Infinity) { ny = Math.min(ny, tch - SOL.SO.cuerpo); S.vy = 0; } }
     // Pegado al suelo: caminando cuesta abajo no se despega (sin aleteos ni patas recogidas en cada bajada)
     const d = Math.hypot(S.pos.x - px, S.pos.z - pz);
     if (grounded && S.vy <= 0 && ny > ground && ny - ground <= T.snapDown + d * 1.2) ny = ground;
     S.pos.y = Math.max(ground, ny);
+    // Con la altura nueva (subir o bajar un escalón, una rampa bajo un techo) el cuerpo tampoco puede quedar más metido en un
+    // sólido que antes del paso: si pasa, no avanza (en el aire solo se anula lo horizontal)
+    if (SOL && (S.pos.x !== px || S.pos.z !== pz)) {
+      const pf = SOL.penetra(S.pos.x, S.pos.z, S.pos.y);
+      if (pf && pf > SOL.penetra(px, pz, py)) {
+        S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0;
+        if (grounded) { S.pos.y = py; ground = suelo(px, pz, py); } else { ground = suelo(px, pz, py); S.pos.y = Math.max(ground, S.pos.y); }
+      }
+    }
     if (S.pos.y <= ground) {
       if (MOVE.wasAir) {
         const fall = -S.vy;
@@ -300,6 +345,9 @@ AVE.module('fisica', function (G) {
     MOVE.groundY = ground;
     MOVE.onTerrain = Math.abs(ground - G.terreno.height(S.pos.x, S.pos.z)) < 0.05;
     MOVE.slope = MOVE.grounded && MOVE.onTerrain ? Math.acos(Math.min(1, slopeAt(S.pos.x, S.pos.z).y)) * 180 / Math.PI : 0;
+    // Posada: sobre un sólido ('alto': techo, roca, cornisa) o sobre algo fino ('fino': rama, baranda, poste, cumbrera)
+    MOVE.posado = '';
+    if (SOL && MOVE.grounded && !MOVE.onTerrain && Math.abs(SOL.suelo(S.pos.x, S.pos.z, S.pos.y + 0.01) - S.pos.y) < 0.03) MOVE.posado = SOL.fino(S.pos.x, S.pos.z, S.pos.y + 0.01) ? 'fino' : 'alto';
     MOVE.fase = MOVE.swimming ? 'nado' : MOVE.flying ? (MOVE.takeoff > 0 ? 'despegue' : MOVE.landing ? 'aterrizaje' : hSpeed < 2.5 ? 'cernido' : 'vuelo')
       : MOVE.grounded ? 'suelo' : jumpHeld && S.vy < 0 ? 'planeo' : 'aire';
     return moving;
