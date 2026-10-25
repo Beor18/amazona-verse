@@ -415,6 +415,14 @@
     return { ids, vistas };
   }
 
+  // Las pruebas de pausa necesitan el juego corriendo: si la portada (#title) está abierta la cierran y al final la
+  // vuelven a abrir. Es una condición de la prueba, no un fallo del juego (la portada pausa a propósito).
+  function sinPortada(G) {
+    const t = document.getElementById('title'), estaba = !!(t && t.open);
+    if (estaba) t.close();
+    if (G.pausa && G.pausa.sincronizar) G.pausa.sincronizar();
+    return () => { if (estaba && t && !t.open) { t.show(); if (G.pausa && G.pausa.sincronizar) G.pausa.sincronizar(); } };
+  }
   const leerAula = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const ponerAula = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } };
 
@@ -422,12 +430,12 @@
     const S = G.S, $ = G.util.$, C = G.c, E = C.edu, AU = G.aula, SV = G.guardado, LEC = AU.LEC;
     const { check, result } = T.runner();
     const { teleport, tick, drain, useAt } = T;
-    const keep = T.keepSave(), aulaKeep = leerAula(AU.KEY);
+    const keep = T.keepSave(), aulaKeep = leerAula(AU.KEY), portada = sinPortada(G);
     G.quiet = true;
     try {
       // Datos de la lección
       const M = LEC.mision_educativa || {};
-      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes (p. ej. el cierre de la portada)
+      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes
       check('lecciones.js carga la lección (8 pasos, 4 perchas, 7 preguntas, 23 fichas)', window.AV_LECCIONES_CAP1 === LEC && M.pasos.length === 8 && M.pasos[1].perchas.length === 4 && LEC.preguntas.length === 7 && LEC.diario.length === 23);
       const sinEn = [];
       const bil = (o, path) => { if (!o || typeof o !== 'object') return; if ('es' in o && !('en' in o)) sinEn.push(path); for (const k of Object.keys(o)) bil(o[k], path + '.' + k); };
@@ -463,6 +471,14 @@
       const f = S.edu.fichas;
       check('Fichas por momentos de la historia: nidos y María', f.includes('cotorra_nidos') && f.includes('cotorra_maria'), f.join(','));
       check('Tras construir: objetivos O4 (adaptaciones) y O6 (terreno con evidencia)', AU.partida().objetivos_logrados.join() === 'O1,O2,O4,O5,O6', AU.partida().objetivos_logrados.join());
+      // Paradas de aprendizaje en la aldea (opcionales, después de la misión)
+      const PAR = G.c.paradas.lista;
+      const todos = () => [].concat(G.interaccion.list.map(i => ({ id: i.id, x: i.x, z: i.z })), G.diario.entries.map(f => ({ id: 'diario:' + f.id, x: f.x, z: f.z })), G.objetos.recursos.map(r => ({ id: 'obj:' + r.id, x: r.x, z: r.z })));
+      const cerca = PAR.flatMap(p => todos().filter(o => o.id !== p.id && Math.hypot(o.x - p.x, o.z - p.z) < G.c.paradas.SEPARACION).map(o => p.id + '↔' + o.id));
+      check('3 paradas a 5 m o más de interactuables, hallazgos y objetos', PAR.length === 3 && cerca.length === 0, cerca.join(', '));
+      for (const p of PAR) { useAt(p.id, 1, 0); if ($('ch-' + p.pregunta.correcta)) { $('ch-' + p.pregunta.correcta).click(); if ($('edu-seguir')) $('edu-seguir').click(); } }
+      check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 3, JSON.stringify(S.edu.paradas));
+      check('Modo Maestro: pestaña Paradas con objetivo y estándares', AU.pestanas().includes('paradas'));
       check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'bromelia', 'ceiba', 'heliconia', 'cotorra_alimento', 'tabonuco', 'helecho_gigante'].every(id => !f.includes(id)), f.join(','));
       G.diario.open();
       const dc = $('card').querySelector('.diary.ciencia');
@@ -508,6 +524,7 @@
       SV.reset(true);
       T.restoreSave(keep);
       G.quiet = false;
+      portada();
     }
     return result();
   }
@@ -515,7 +532,7 @@
   async function maestroTest(G, T) {
     const S = G.S, $ = G.util.$, AU = G.aula;
     const { check, result } = T.runner();
-    const aulaKeep = leerAula(AU.KEY), keep = T.keepSave(), prevKeep = leerAula(G.guardado.KEY + '.prev');
+    const aulaKeep = leerAula(AU.KEY), keep = T.keepSave(), prevKeep = leerAula(G.guardado.KEY + '.prev'), portada = sinPortada(G);
     const espera = ms => new Promise(r => setTimeout(r, ms));
     const menu = $('pause');
     const claudeKeep = Object.getOwnPropertyDescriptor(window, 'claude');
@@ -582,6 +599,7 @@
       try { if (menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
       ponerAula(AU.KEY, aulaKeep); AU.recargar();
       ponerAula(G.guardado.KEY + '.prev', prevKeep); T.restoreSave(keep);
+      portada();
     }
     return result();
   }

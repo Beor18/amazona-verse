@@ -117,6 +117,7 @@
     habla(g) { g.beginPath(); g.moveTo(30, 40); g.quadraticCurveTo(30, 30, 40, 30); g.lineTo(88, 30); g.quadraticCurveTo(98, 30, 98, 40); g.lineTo(98, 74); g.quadraticCurveTo(98, 84, 88, 84); g.lineTo(56, 84); g.lineTo(40, 100); g.lineTo(44, 84); g.lineTo(40, 84); g.quadraticCurveTo(30, 84, 30, 74); g.closePath(); g.fill(); g.fillStyle = 'rgba(0,0,0,.5)'; for (const x of [48, 64, 80]) { g.beginPath(); g.arc(x, 57, 6, 0, Math.PI * 2); g.fill(); } },
     flor(g) { for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2 - Math.PI / 2; g.beginPath(); g.arc(64 + Math.cos(a) * 20, 64 + Math.sin(a) * 20, 15, 0, Math.PI * 2); g.fill(); } g.fillStyle = '#ffd84a'; g.beginPath(); g.arc(64, 64, 11, 0, Math.PI * 2); g.fill(); },
     roca(g) { g.beginPath(); g.moveTo(30, 92); g.lineTo(40, 52); g.lineTo(62, 36); g.lineTo(88, 46); g.lineTo(98, 92); g.closePath(); g.fill(); g.fillStyle = '#2d5f7a'; g.fillRect(36, 62, 58, 9); },
+    casa(g) { g.beginPath(); g.moveTo(26, 64); g.lineTo(64, 30); g.lineTo(102, 64); g.lineTo(92, 64); g.lineTo(92, 98); g.lineTo(36, 98); g.lineTo(36, 64); g.closePath(); g.fill(); g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(56, 74, 16, 24); },
     check(g) { g.lineWidth = 14; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = g.fillStyle; g.beginPath(); g.moveTo(38, 66); g.lineTo(56, 84); g.lineTo(92, 44); g.stroke(); },
   };
   const iconos = {};
@@ -934,6 +935,7 @@
         volutaPos: () => (voluta.visible ? { x: voluta.position.x, y: voluta.position.y, z: voluta.position.z } : null),
         fondo: { gota: () => ({ x: L.gota.x, y: yGotaFondo, z: L.gota.z }), roca: () => ({ x: L.roca.x, y: yRoca, z: L.roca.z }) },
         visual: { mkMarcas, perchaVis, mkTerreno, mkPoza, nube, voluta, gota, roca, mkFlamboyan },
+        marcador, // marcador temporal (brillo + ícono) para otras piezas del pack, p. ej. las paradas de aprendizaje
       };
     },
   });
