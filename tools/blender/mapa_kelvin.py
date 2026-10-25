@@ -176,7 +176,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
         g = np.array([ground(x_, y_) for x_, y_ in zip(px, py)])
         if canoa:
             wl = water_level(fx0 + dx, -(fz0 + dz))
-            base = (wl + 0.05) if wl is not None else float(np.percentile(g, 30)) + max(0.0, off * S)
+            base = (wl + 0.05) if wl is not None else float(np.percentile(g, 30)) - 0.05
         else:
             # a menos de 2,5 m de su suelo es ruido del muestreo: se asienta en el terreno; más alto es una pieza apilada
             acostada = abs(L[1, 1]) / max(1e-9, np.linalg.norm(L[:, 1])) < 0.5   # estacas acostadas (muelle): sobre el punto más alto
@@ -216,11 +216,49 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             fb, ft, x0, x1, z0, z1, _, _ = f['_his']
             if fb < b and ft >= b - 1.0 and x0 - 0.5 <= ex <= x1 + 0.5 and z0 - 0.5 <= ez <= z1 + 0.5:
                 if sop is None or ft > sop['_his'][1]: sop = f
-        if sop is None:
-            veci = [f for f in out if not f['_apilada'] and f['asset'] != 'canoa']
-            sop = min(veci, key=lambda f: math.hypot(f['_his'][6] - ex, f['_his'][7] - ez)) if veci else None
-            if sop is not None: e['flotaEnOriginal'] = True
         if sop is not None: mover(e, sop['_d'])
+        else: e['_apilada'] = False   # sin apoyo en su escena: su altura era ruido del terreno original; se asienta abajo
+    # repaso final con las posiciones nuevas (QA-26): de abajo arriba, lo que no tiene apoyo se asienta en el terreno
+    # (ni flota ni queda enterrado) y lo que se apoya en otra pieza sigue la corrección de esa pieza
+    def suelo_huella(h):
+        c, s_ = math.cos(h['rotY']), math.sin(h['rotY']); g_ = []
+        for fu in (-0.8, 0, 0.8):
+            for fv in (-0.8, 0, 0.8):
+                u, v = fu * h['hx'], fv * h['hz']; x = h['x'] + u * c + v * s_; z = h['z'] - u * s_ + v * c
+                g_.append(ground(x, -z))
+        return np.array(g_)
+    def apoyo(e):
+        h = e['huella']; best = None
+        for f in out:
+            if f is e or f.get('oculto'): continue
+            fh = f['huella']; c, s_ = math.cos(fh['rotY']), math.sin(fh['rotY'])
+            du, dv = (h['x'] - fh['x']) * c - (h['z'] - fh['z']) * s_, (h['x'] - fh['x']) * s_ + (h['z'] - fh['z']) * c
+            if abs(du) <= fh['hx'] + 0.3 and abs(dv) <= fh['hz'] + 0.3 and fh['y0'] < h['y0'] - 0.2 and fh['y1'] >= h['y0'] - 0.5:
+                if best is None or fh['y1'] > best['huella']['y1']: best = f
+        return best
+    corr = {}
+    for e in sorted(out, key=lambda e: e['huella']['y0']):
+        if e['asset'] == 'canoa' and e['huella']['y0'] > ground(e['huella']['x'], -e['huella']['z']) - 0.2 and water_level(e['huella']['x'], -e['huella']['z']) is not None:
+            continue   # canoa sobre el agua
+        f = apoyo(e)
+        if f is not None and f['id'] in corr:
+            d = corr[f['id']]
+            if e['asset'].startswith('losa'):
+                gc = float(suelo_huella(e['huella'])[4]); top = e['huella']['y1'] + d
+                if top < gc + 0.05: d += gc + 0.05 - top
+        else:
+            g_ = suelo_huella(e['huella']); h = e['huella']
+            if f is not None: d = 0.0
+            else:
+                base = max(float(np.percentile(g_, 25)), float(g_.mean()) - 0.6) - 0.08
+                alto = h['y1'] - h['y0']; gc = float(g_[4])
+                if e['asset'].startswith('losa'):       # losas: zócalos hundidos a propósito; solo que la cara de arriba no quede bajo tierra
+                    d = (gc + 0.05 - h['y1']) if h['y1'] < gc + 0.05 else 0.0
+                else:
+                    base = max(base, gc - 0.25 * alto)  # nunca enterrada: al menos 75 % del alto sobre el suelo del centro
+                    d = base - h['y0'] if (h['y0'] - g_.max() > 0.3 or h['y0'] < base - 0.3) else 0.0
+        if abs(d) > 1e-3: mover(e, (e['_d'][0], e['_d'][1] + d, e['_d'][2]))
+        corr[e['id']] = d
     for e in out:
         for k in ('_his', '_apilada', '_d'): e.pop(k, None)
     # piezas apiladas: si su base queda alta y lo que las sostiene aún no tiene modelo web, esperan (no se dibujan flotando)
