@@ -4,6 +4,8 @@
    que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
    Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
    construir y de la crecida, retrato neutro de la Voz y final del mirador (plano del bote y luz que parpadea tres veces).
+   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejora 3): la narración y los comentarios salen en bocadillos libres
+   (G.dialogo.say(..., { libre: true })) y solo bloquean las charlas y las decisiones. Las líneas del guion no cambian.
    Lo que depende de Kelvin (canon o arte) queda marcado en el código con «[KELVIN-n]» y listado en PENDIENTES_KELVIN. */
 (function () {
   'use strict';
@@ -42,7 +44,7 @@
             return ` (${got('madera')}/4 · ${got('piedra')}/2 · ${got('componente')}/1)`;
           },
           hasta: { tiene: NEEDS },
-          alCompletar: G => { G.eventos.log('ResourcesCollected', { ...G.S.inv }); if (!G.dialogo.open()) G.dialogo.say(G.dialogo.L('evento:ResourcesCollected')); },
+          alCompletar: G => { G.eventos.log('ResourcesCollected', { ...G.S.inv }); G.dialogo.say(G.dialogo.L('evento:ResourcesCollected'), null, { libre: true }); },
           guia: G => G.misiones.needItems(NEEDS) },
         // La misión educativa "La ruta de la gota" (educativa.js) es este paso: observar, predecir y volver con evidencia.
         // Incluye ver los dos terrenos desde arriba (S.evaluated); al terminarla se elige el terreno.
@@ -70,7 +72,8 @@
     //   inicio:taller    corte al taller lleno de luz (fundido) y el VMMMM del mecanismo (Vittata)
     //   inicio:ruptura   las nubes brillan, ZZZT, la cámara tiembla y una onda cruza el cielo; luego silencio negro (Narrador)
     // Después Vittata abre los ojos: fundido desde el negro y aviso. Las capas son DOM del pack (G.c.apertura, ver preparar()):
-    // sin ellas el gancho es el de siempre.
+    // sin ellas el gancho es el de siempre. Las líneas van en bocadillos libres (mejora 3): el gancho se ve y se oye igual, pero
+    // no hay que pulsar «Seguir» seis veces y el control llega con el fundido.
     inicio(G) {
       const L = G.dialogo.L, A = G.c.apertura, cap = L('inicio:capitulo'), tal = L('inicio:taller'), rupt = L('inicio:ruptura');
       const al = (l, f) => { if (l) l.onShow = f; };
@@ -83,7 +86,7 @@
       G.dialogo.say([...cap, ...tal, ...rupt], () => {
         if (A) A.claro(2200);
         G.ui.toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500);
-      });
+      }, { libre: true });
     },
 
     preparar(G) {
@@ -233,24 +236,27 @@
       function applyGuardianLook() { guardian.setVisible(S.builds.length > 0 && !S.event); }
 
       // ---------- Acciones de la historia ----------
+      const LIBRE = { libre: true };
       function examine(what) {
         const firstTime = !S.examined[what];
         S.examined[what] = true;
-        // La escena de la máquina (evento:WorkshopExplored) se cuenta al examinarla; el transmisor tiene la suya
+        // La escena de la máquina (evento:WorkshopExplored) se cuenta al examinarla; el transmisor tiene la suya. Son comentarios
+        // de Vittata: van en bocadillos libres (se puede seguir moviéndose).
         const lines = what === 'maquina'
           ? L('evento:WorkshopExplored', [{ who: 'Vittata', img: IMG.V, text: 'Mi máquina… Si consigo repararla, todavía podemos…' }])
           : L('interact:transmisor', [{ who: 'Vittata', img: IMG.V, text: 'Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada.' }]);
-        say(lines, () => {
-          if (firstTime && S.step === 0 && S.examined.maquina && S.examined.transmisor) {
-            log('WorkshopExplored'); capture('workshop');
-            say([{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }], () => advanceTo(1));
-          } else checkProgress();
-        });
+        say(lines, null, LIBRE);
+        if (firstTime && S.step === 0 && S.examined.maquina && S.examined.transmisor) {
+          log('WorkshopExplored'); capture('workshop');
+          say([{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }], null, LIBRE);
+          advanceTo(1);
+        } else checkProgress();
       }
       function talkLuma() {
-        if (S.step === 0) { say([{ who: 'Luma', img: IMG.L, text: '¿Estás bien? Revisa tu taller y después ven, por favor.' }]); return; }
+        if (S.step === 0) { say([{ who: 'Luma', img: IMG.L, text: '¿Estás bien? Revisa tu taller y después ven, por favor.' }], null, LIBRE); return; }
         if (S.step === 1) {
-          // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales
+          // La charla de la misión (bloquea: es la conversación, no narración):
+          // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales → las tres tablas
           say([
             ...L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]),
             ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
@@ -265,11 +271,12 @@
           });
           return;
         }
-        if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }]); return; }
-        if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()]); return; }
-        if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }]); return; }
-        if (S.refuge && S.refuge.damaged) { say([{ who: 'Luma', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }]); return; }
-        say([{ who: 'Luma', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }]);
+        // Pistas de Luma (una línea): bocadillos libres, no paran a la cotorra
+        if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }], null, LIBRE); return; }
+        if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()], null, LIBRE); return; }
+        if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }], null, LIBRE); return; }
+        if (S.refuge && S.refuge.damaged) { say([{ who: 'Luma', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }], null, LIBRE); return; }
+        say([{ who: 'Luma', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }], null, LIBRE);
       }
       function openParcelCard(k) {
         const p = PLACES[k];
@@ -290,7 +297,7 @@
               ? [...L('evento:LandInspected', [{ who: 'Vittata', img: IMG.V, text: 'Aquí construiríamos mucho más rápido.' }]),
                  ...L('interact:marcas_agua', [{ who: 'Luma', img: IMG.L, text: 'Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta.' }])]
               : L('interact:colina', [{ who: 'Luma', img: IMG.L, text: 'Allá arriba parece más seguro.' }]);
-            say(line, checkProgress);
+            checkProgress(); say(line, null, LIBRE); // comentarios al salir de la tarjeta: en bocadillos, mientras se sigue
           } else checkProgress();
         };
       }
@@ -329,7 +336,7 @@
         build = null; ghost.visible = false; hideToast();
         C.placeRefugeMesh(); syncRefugeInteractable();
         G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
-        say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]));
+        say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]), null, LIBRE);
         S.event = { t: 0, dur: 8 };
         applyGuardianLook();
         return true;
@@ -360,6 +367,7 @@
         if (e.t > 1 && e.t < e.dur * 0.6) G.camara.shake(0.07, 0.1); // la crecida hace temblar la cámara
         if (e.t >= e.dur) { S.event = null; G.fx.rain.visible = false; finishRainEvent(); }
       }, 20);
+      // Al terminar: la escena de Luma va en bocadillos y la historia sigue en el acto (afterRain)
       function finishRainEvent() {
         if (S.refuge.parcel === 'A') {
           S.refuge.damaged = true;
@@ -367,9 +375,8 @@
           log('ShelterFlooded', { parcel: 'A' });
           C.placeRefugeMesh();
           capture('shelter');
-          say(L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), () => {
-            toast('Si desarmas el refugio recuperas los materiales', 3500); afterRain();
-          });
+          say(L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), null, LIBRE);
+          toast('Si desarmas el refugio recuperas los materiales', 3500); afterRain();
         } else {
           S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
           if (S.builds.includes('A')) log('ShelterRelocated', { from: 'A', to: 'B' });
@@ -377,7 +384,8 @@
           say(L('evento:ShelterRelocated', [
             { who: 'Luma', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
             { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
-          ]), afterRain);
+          ]), null, LIBRE);
+          afterRain();
         }
       }
       function afterRain() {
@@ -392,7 +400,7 @@
         log('ShelterDismantled', { parcel: S.refuge.parcel });
         S.refuge = null; C.placeRefugeMesh();
         S.indicators = { seguridad: '—', acceso: '—', habitat: '—' };
-        say(L('evento:ShelterDismantled'), () => toast('Recuperaste 3 madera y 2 piedras. Ve al letrero de la colina para construir de nuevo.', 3500));
+        say(L('evento:ShelterDismantled'), () => toast('Recuperaste 3 madera y 2 piedras. Ve al letrero de la colina para construir de nuevo.', 3500), LIBRE);
         checkProgress();
       }
 
@@ -403,6 +411,7 @@
           const present = S.refuge && !S.refuge.damaged
             ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
             : [{ who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' }];
+          // El Guardián narra (mejora 3): sus líneas van en bocadillos y el banco se desbloquea en el acto
           say([
             ...L('evento:GuardianMet', [
               { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
@@ -411,17 +420,16 @@
             { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Este es nuestro refugio.' },
             ...present,
             ...L('evento:WorkshopUpgradeUnlocked', [{ who: 'Guardián', img: IMG.G, text: 'Te dejo mi viejo banco de trabajo en tu taller. Con él podrás reparar ese transmisor.' }]),
-          ], () => {
-            S.guardianMet = true; S.benchUnlocked = true;
-            log('GuardianMet', { refugeSafe: !!(S.refuge && !S.refuge.damaged) });
-            log('WorkshopUpgradeUnlocked', { upgrade: 'banco de trabajo' });
-            C.applyTallerLook();
-            toast('Mejora del taller desbloqueada: banco de trabajo', 3000);
-            advanceTo(6);
-          });
+          ], null, LIBRE);
+          S.guardianMet = true; S.benchUnlocked = true;
+          log('GuardianMet', { refugeSafe: !!(S.refuge && !S.refuge.damaged) });
+          log('WorkshopUpgradeUnlocked', { upgrade: 'banco de trabajo' });
+          C.applyTallerLook();
+          toast('Mejora del taller desbloqueada: banco de trabajo', 3000);
+          advanceTo(6);
           return;
         }
-        say([{ who: 'Guardián', img: IMG.G, text: S.step > 5 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : '¿Segura de que funcionará? Bien. Entonces vamos a comprobarlo.' }]);
+        say([{ who: 'Guardián', img: IMG.G, text: S.step > 5 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : '¿Segura de que funcionará? Bien. Entonces vamos a comprobarlo.' }], null, LIBRE);
       }
       function useTransmitter() {
         if (S.step !== 6) { examine('transmisor'); return; }
@@ -437,6 +445,8 @@
         // La Voz no es el Guardián (CAP1_PENDIENTE P0-2): retrato neutro de señal y estática de radio bajo su primera línea
         const voz = L('evento:TransmitterActivated', [{ who: 'Voz', img: IMG.VOZ, text: 'Si alguien puede escucharme… …el pacto…' }]);
         if (voz[0]) voz[0].onShow = () => G.audio.play('estatica');
+        // La Voz y el Guardián narran (mejora 3): bocadillos con el símbolo en pantalla; al terminar se retira el símbolo.
+        // La historia pasa al mirador en el acto (el aviso de hacia dónde ir sale cuando se retira el símbolo).
         say([
           { who: 'Vittata', img: IMG.V, text: '¡Ese transmisor llevaba años sin funcionar!' },
           ...voz,
@@ -445,9 +455,9 @@
           ...L('interact:simbolo_guardian', [{ who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' }]),
         ], () => {
           showSymbol(false);
-          advanceTo(7);
           toast('Sube al mirador de la colina, al norte del refugio de la loma', 4000);
-        });
+        }, LIBRE);
+        advanceTo(7);
       }
       function useMirador() {
         if (S.step !== 7) { say([{ who: 'Vittata', img: IMG.V, text: 'Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas.' }]); return; }
@@ -462,6 +472,8 @@
         ]);
         if (bote[0]) bote[0].onShow = () => { mostrarPlano(true); G.audio.play('nido_chispa'); };
         if (aviso[0]) aviso[0].onShow = () => { mostrarPlano(false); if (luz) luz.parpadear(3); };
+        // El final es narración (Guardián y Narrador, mejora 3): bocadillos con el plano y la luz en su momento; la cotorra puede
+        // mirar alrededor mientras; el panel final llega al terminar el último bocadillo
         say([
           { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
           { who: 'Luma', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
@@ -479,7 +491,7 @@
           log('ChapterCompleted', { refugeParcel: S.refuge ? S.refuge.parcel : null });
           advanceTo(G.misiones.DONE);
           G.misiones.showEnd();
-        });
+        }, LIBRE);
       }
 
       // ---------- Símbolo de los 36 fragmentos (también decora la última viñeta del cómic) ----------

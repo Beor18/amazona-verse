@@ -55,7 +55,9 @@
       G.emit('companero', G.criadero.companero()); // vuelve la cría real del niño (o ninguna)
     } else check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SV.spawn.x, S.pos.z - SV.spawn.z) < 0.1);
-    useAt('maquina'); drain(); useAt('transmisor'); drain();
+    useAt('maquina');
+    check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
+    drain(); useAt('transmisor'); drain();
     check('Taller explorado y misión con Luma', S.step === 1 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     useAt('luma'); drain();
     check('Luma da la misión', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
@@ -114,7 +116,7 @@
     $('b-seguir').click();
     check('«Seguir explorando» cierra el panel y deja la partida terminada', $('end').hidden && !enConfirm() && S.explorando && S.complete && S.step === G.misiones.DONE && had('ChapterCompleted'));
     check('Tras el final el mundo está libre: Vittata se mueve', !G.ui.busy() && avanza() > 0.5);
-    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.open());
+    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.activo());
     drain();
     check('Seguir explorando no repite el final ni el evento ChapterCompleted', $('end').hidden && S.events.filter(e => e.key === 'ChapterCompleted').length === 1);
     check('Guardar y cargar con la partida terminada no reabre el panel final', SV.save(true) && SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
@@ -272,14 +274,17 @@
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
     check('Emoción del .json llega a la cara de Vittata', L('evento:ShelterDismantled')[0].mood === 'angry' && L('interact:transmisor')[0].mood === 'sad');
     G.quiet = false; G.pack.inicio(G);
-    check('Introducción con los disparadores inicio:', G.dialogo.open() && $('d-who').textContent === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
-    let shook = false; while (G.dialogo.open()) { G.dialogo.next(); if (G.camara.juice.shake > 0.5) shook = true; }
+    // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
+    check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
+    const l0 = G.dialogo.actual().text; tick(G.dialogo.LIBRE.max + 0.1);
+    check('Un bocadillo pasa solo con el tiempo del juego', !!G.dialogo.libre() && G.dialogo.actual().text !== l0, G.dialogo.actual().text);
+    let shook = false; while (G.dialogo.activo()) { G.dialogo.next(); if (G.camara.juice.shake > 0.5) shook = true; }
     check('La Ruptura sacude la cámara', shook || G.renderer.REDUCED);
     // Apertura (P1-3): negro y viento → corte al taller con luz (fundido) → brillo y onda → negro → fundido de nuevo
     G.c.apertura.fin(); G.audio.log.length = 0; G.pack.inicio(G);
-    const fade = () => document.getElementById('c1-fade'), obs = () => [$('d-who').textContent, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
-    const ap = [obs()], retratoApertura = $('d-img').getAttribute('src') || '';
-    while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) ap.push(obs()); }
+    const fade = () => document.getElementById('c1-fade'), obs = () => [G.dialogo.actual().who, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
+    const ap = [obs()], retratoApertura = G.dialogo.actual().img || '';
+    while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) ap.push(obs()); }
     check('Apertura: negro con viento hasta el corte al taller, brillo y onda en la Ruptura, negro de nuevo y fundido al despertar',
       ap.length === 6 && ap[0][1] === '1' && ap[1][1] === '1' && ap[2][1] === '0' && ap[3][1] === '0' && !ap[3][2] && ap[4][2] && ap[5][1] === '1' && fade() && fade().style.opacity === '0' && ['viento', 'vmmm', 'zzzt', 'onda'].every(n => G.audio.log.includes(n)), JSON.stringify(ap) + ' ' + G.audio.log.join());
     check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
@@ -287,7 +292,7 @@
     check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
     G.quiet = true;
     useAt('transmisor');
-    check('interact:transmisor usa el texto del guion', $('d-text').textContent === 'Este transmisor llevaba años mudo.', $('d-text').textContent);
+    check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
     useAt('luma');
     check('interact:luma_inicio al hablar con Luma', $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'));
@@ -350,7 +355,10 @@
     useAt('transmisor');
     check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
     // La Voz (P0-2): retrato neutro, no la cara del Guardián ni la de Vittata; suenan el BIP y la estática de la radio
-    const vozL = []; while (G.dialogo.open()) { vozL.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    // La Voz y el Guardián narran en bocadillos libres (mejora 3): la historia ya pasó al mirador mientras hablan
+    check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
+    const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
+    check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
     check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
     check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
@@ -418,13 +426,14 @@
     check('Final · el Guardián presenta el refugio y regala el banco', S.step === 6 && S.benchUnlocked && had('GuardianMet'), 'paso ' + S.step);
     S.inv = { madera: 1, piedra: 0, componente: 1 }; S.missions.m3 = true; // el coro de coquíes ya se probó arriba (M3)
     G.audio.log.length = 0; useAt('transmisor');
-    const voz = []; while (G.dialogo.open()) { voz.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    const voz = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); voz.push([a.who, a.img]); G.dialogo.next(); }
     check('Final · transmisor: símbolo de 36, BIP, estática y la Voz sin la cara del Guardián', S.transmitterOn && ['bip', 'estatica'].every(n => log().includes(n)) && voz.filter(l => l[0] === 'Voz').length === 2 && voz.filter(l => l[0] === 'Voz').every(l => !/guardian|vittata|luma/.test(l[1])) && S.step === 7, JSON.stringify(voz.map(l => [l[0], l[1].slice(0, 20)])));
     // Mirador: plano del bote y luz que parpadea tres veces
     const luz = C.luzMirador;
     G.audio.log.length = 0; useAt('mirador', 2.4, 0);
-    const esc = [], mira = () => esc.push({ who: $('d-who').textContent, txt: $('d-text').textContent, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: $('d-img').getAttribute('src') || '' });
-    mira(); while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) mira(); }
+    const esc = [], mira = () => { const a = G.dialogo.actual(); esc.push({ who: a.who, txt: a.text, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: a.img || '', libre: a.libre }); };
+    mira(); while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) mira(); }
+    check('Final · el mirador narra en bocadillos libres (la cotorra puede mirar alrededor) y el panel llega al terminar', esc.every(e => e.libre) && S.complete, esc.length + ' bocadillos');
     const lPlano = esc.find(e => /^Si los caminos/.test(e.txt)), lLuz = esc.find(e => /^Mira, Vittata\. Esa luz/.test(e.txt)), nar = esc.filter(e => e.who === 'Narrador');
     check('Final · mirador: el plano del bote sale en pantalla con su chispa de sonido', esc.length === 10 && !!lPlano && lPlano.plano && !lPlano.luz && log().includes('nido_chispa'), esc.length + ' líneas');
     check('Final · mirador: el plano se retira y la luz de la niebla se enciende', !!lLuz && !lLuz.plano && lLuz.luz && !esc.slice(0, 4).some(e => e.luz));
