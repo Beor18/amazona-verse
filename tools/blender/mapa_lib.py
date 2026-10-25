@@ -192,12 +192,11 @@ POI = {
     'muelle': (150, -205), 'casita': (-104, -138), 'ruinas': (198, 4),
     'cumbre': (-32, 150), 'picachos': (60, 231), 'cueva_rio': (-226, -80),
     'gruta_mina': (66, 104), 'cueva_mar': (232, 3), 'bahia_bio': (-160, -207),
-    'aldea': (-125, -166), 'ruinas_bosque': (-23, -26), 'templo': (-137, 167),
 }
 # Explanadas: (id, radio, altura fija o None = media del terreno)
 PADS = [('plaza', 10, None), ('taller', 7, None), ('estacion', 9, None), ('terrenoA', 7, None),
         ('terrenoB', 8, None), ('mirador', 6, None), ('casita', 7, None), ('ruinas', 11, None),
-        ('cumbre', 7, None), ('picachos', 6, None), ('aldea', 22, None), ('ruinas_bosque', 12, None), ('templo', 19, None)]
+        ('cumbre', 7, None), ('picachos', 6, None)]
 
 # Senderos: nodos de diseño (mapa X, Y). Entre nodos, la ruta la traza un A* que limita la pendiente
 # (zigzags naturales). 'PS'/'PN' = extremos sur/norte del puente colgante.
@@ -218,8 +217,6 @@ TRAILS = {
     'ruinas':     [(214, 13), (198, 4)],
     'dajao':      [(140, 18), (90, 12)],
     'bahia':      [(-104, -138), (-150, -182)],
-    'aldea':      [(-104, -138), (-125, -160)],
-    'bosque':     [(0, -142), (-20, -40)],
 }
 # Edificios del kit de Kelvin (assets/models/edificios, ver docs/EDIFICIOS.md): (glb, ancla POI o None, dx, dy, giro°, grupo, rol)
 # Dimensiones (ancho X, alto, fondo Z) del catálogo para colisiones aproximadas.
@@ -234,23 +231,8 @@ KELVIN = [
     ('casa_plataforma', 'estacion', 0, 0, 52, 'villa', 'refugio'),
     ('casa_paja_a', 'casita', 0, 0, -135, 'lomas', 'casita'),
     ('mirador_escalonado', 'mirador', 0, 0, -90, 'colina', 'mirador'),
-    ('templo_mediano', 'ruinas', 0, 0, 8, 'ruinas_mesa', 'ruinas'),
-    ('ruina_pilar', 'ruinas', -9, -8, 8, 'ruinas_mesa', None), ('ruina_pilar', 'ruinas', 9, -8, 8, 'ruinas_mesa', None),
-    ('ruina_altar', 'ruinas', 0, 10, 8, 'ruinas_mesa', None),
     ('torre_vigia', 'picachos', 0, 0, 180, 'picachos', None),
-    # aldea taína (yucayeque): batey abierto al centro, caney del cacique al norte, bohíos alrededor, canoas en la playa
-    ('caney_largo', 'aldea', 0, 15, 0, 'aldea', None),
-    ('bohio_redondo', 'aldea', -17, 4, 30, 'aldea', None), ('bohio_redondo', 'aldea', 16, 6, -40, 'aldea', None),
-    ('bohio_puntiagudo', 'aldea', -14, -12, 60, 'aldea', None), ('casa_paja_a', 'aldea', 15, -11, -20, 'aldea', None),
-    ('toldo_pequeno', 'aldea', 3, -16, 10, 'aldea', None),
-    ('empalizada', 'aldea', -7.2, 22, 0, 'aldea', None), ('empalizada', 'aldea', 0, 22.5, 0, 'aldea', None), ('empalizada', 'aldea', 7.2, 22, 0, 'aldea', None),
-    ('canoa', None, -120, -222, 75, 'aldea', None), ('canoa', None, -113, -224, 100, 'aldea', None),
-    # ruinas del Pacto en el bosque de los meandros
-    ('ruina_portal', 'ruinas_bosque', 0, -9, 0, 'ruinas_bosque', None), ('ruina_torre', 'ruinas_bosque', -6, 5, 15, 'ruinas_bosque', None),
-    ('ruina_mirador', 'ruinas_bosque', 7, 4, 90, 'ruinas_bosque', None), ('ruina_pilar', 'ruinas_bosque', -8, -4, 0, 'ruinas_bosque', None),
-    ('ruina_pilar', 'ruinas_bosque', 8, -5, 0, 'ruinas_bosque', None), ('ruina_altar', 'ruinas_bosque', 0, 2, 0, 'ruinas_bosque', None),
-    # gran templo escondido en la niebla del noroeste (secreto mayor)
-    ('templo_grande', 'templo', 0, 0, 0, 'templo', None),
+    # el resto de los edificios de Kelvin va en su escena original (mapa_kelvin.py: 377 instancias por zonas)
 ]
 TRAIL_GMAX = 0.30   # pendiente máxima de los senderos (30 %); las rampas de diseño llegan a 35 %
 RAMPS = {   # id: (puntos, z inicial o None = terreno, z final o id de explanada)
@@ -662,6 +644,7 @@ HEROES = [  # árboles insignia que se ven de lejos
     ('palma_sierra', 171, -80, 1.0), ('yagrumo', 166, -84, 1.0), ('bromelia', 172, -78, 1.0), ('ceiba', 160, -64, 1.0),
     ('bambu', 128, -104, 1.0), ('flamboyan', 150, -160, 0.85),   # hallazgos opcionales: nativa frente a introducidas
 ]
+CLAROS = []   # (x, y, r): claros del bosque sin árboles (paradas de aprendizaje); los llena mapa_build
 SPECIES = ['palma_sierra', 'yagrumo', 'tabonuco', 'tabonuco_enano', 'helecho_gigante', 'ceiba', 'flamboyan', 'bambu',
            'heliconia', 'bromelia', 'helechos', 'rocas', 'troncos']
 
@@ -697,8 +680,8 @@ def flora(M, H, step=2):
         + 3.0 * (1 - be) * ss(-5, -1, sd) * ss(9, 3, sd) + 1.2 * be * ss(-0.9, -0.4, h) * ss(0.1, -0.2, h) * ss(-26, -32, sd)
     land = (sd > 2.5) & (h > 0.8)
     for k in D: D[k] = np.where(free & land, D[k], 0)
+    for cx, cy, cr in CLAROS:   # claro: sin árboles ni arbustos altos, con helechos y bromelias
+        m = np.hypot(X - cx, Y - cy) < cr
+        for k in ('tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'helecho_gigante', 'ceiba', 'flamboyan', 'bambu', 'troncos'): D[k][m] = 0
     D['rocas'] = np.where((td > 2.2), rocks, 0)
     return D, free, X, Y
-for _k in range(12):   # piedras que bordean el batey de la aldea
-    _a = 2 * math.pi * _k / 12
-    HEROES.append(('rocas', POI['aldea'][0] + 10 * math.cos(_a), POI['aldea'][1] + 10 * math.sin(_a), 0.45))

@@ -114,6 +114,34 @@ for e in DATA['edificiosKelvin'] if os.environ.get('MAPA_PROPIAS') != '1' else [
     bpy.ops.import_scene.gltf(filepath=os.path.join(ROOT, e['glb']))
     for o in [o for o in bpy.data.objects if o not in before and o.parent is None]:
         x, y, z = e['pos']; o.location = (x, -z, y); o.rotation_mode = 'XYZ'; o.rotation_euler = (0, 0, e['rotY'])
+# escena original de Kelvin (modelos web con la matriz del mapa; los pendientes no se dibujan)
+C4 = Matrix(((1, 0, 0, 0), (0, 0, -1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+WEBOBJ = {}
+def web_object(m):
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(ROOT, 'assets', 'models', 'edificios', m + '.glb'))
+    new = [o for o in bpy.data.objects if o not in before]
+    meshes = [o for o in new if o.type == 'MESH']
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in meshes: o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+    if len(meshes) > 1: bpy.ops.object.join()
+    ob = bpy.context.view_layer.objects.active
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for o in new:
+        if o != ob and o.name in bpy.data.objects: bpy.data.objects.remove(o)
+    ob.hide_render = True; ob.hide_viewport = True
+    return ob
+nk = 0
+for z_ in DATA.get('escenaKelvin', {}).get('zonas', []) if os.environ.get('MAPA_PROPIAS') != '1' else []:
+    for e in z_['instancias']:
+        if not e.get('modelo') or e.get('oculto') or e.get('espera'): continue
+        if e['modelo'] not in WEBOBJ: WEBOBJ[e['modelo']] = web_object(e['modelo'])
+        o = bpy.data.objects.new('kel_' + e['id'], WEBOBJ[e['modelo']].data); sc.collection.objects.link(o)
+        a_ = e['matriz']; Mg = Matrix([[a_[c * 4 + r] for c in range(4)] for r in range(4)])
+        o.matrix_world = C4 @ Mg @ C4.inverted(); nk += 1
+print('escena de Kelvin en la vista:', nk)
 for e in DATA['estructuras']:
     if e['id'] in REPL: continue
     objs = imp(e['id'])
@@ -225,6 +253,11 @@ SCALE = {'tabonuco': (0.8, 1.2), 'tabonuco_enano': (0.3, 0.45), 'palma_sierra': 
 
 px_col = bpy.data.collections.new('proxies'); sc.collection.children.link(px_col)
 M.footprints = {e['id']: (e['pos'][0], -e['pos'][2], {'refugio': 8.5, 'mirador': 5.5, 'casita': 6, 'puente': 4, 'muelle': 3, 'ruinas': 11}.get(e['id'], 0)) for e in DATA['estructuras'] if not e.get('mundo')}
+for z_ in DATA.get('escenaKelvin', {}).get('zonas', []):
+    for e in z_['instancias']:
+        h_ = e['huella']; M.footprints['esc_' + e['id']] = (h_['x'], -h_['z'], max(h_['hx'], h_['hz']) * 0.85 + 1.0)
+for p_ in DATA['pois']:
+    if p_['id'] == 'parada_claro': ML.CLAROS.append((p_['pos'][0], -p_['pos'][2], 12.0))
 DEN, FREE, FX, FY = ML.flora(M, H, step=2)
 rng = np.random.RandomState(11)
 import base64, re
@@ -243,7 +276,7 @@ for sp in ML.SPECIES:
     reps = k[jj, ii]
     x = np.repeat(FX[jj, ii], reps) + rng.uniform(-1, 1, reps.sum()); y = np.repeat(FY[jj, ii], reps) + rng.uniform(-1, 1, reps.sum())
     PTS[sp] = (x, y)
-CLEAR = [((146, -181), (140, -150)), ((89, 70), (72, 99)), ((150, -230), (148, -200)), ((-125, -192), (-125, -175))]   # líneas de cámara sin plantas cercanas
+CLEAR = [((146, -181), (140, -150)), ((76, -142), (93.6, -118.5)), ((89, 70), (72, 99)), ((150, -230), (148, -200)), ((-125, -192), (-125, -175))]   # líneas de cámara sin plantas cercanas
 def clear_mask(x, y):
     keep = np.ones(len(x), bool)
     for (ax_, ay_), (bx_, by_) in CLEAR:
@@ -411,6 +444,21 @@ if 'playa' in VIEWS:
 if 'aldea' in VIEWS:
     v = vittata(P(-123.0, -183.0, 0.02), math.radians(172))
     look(cam, P(-126, -192, 3.0), (-125, -150, 4.0 + float(hz(np.array([-125]), np.array([-150]))[0])), 26); render('mapa_vista_aldea.png')
+    for o in v: bpy.data.objects.remove(o, do_unlink=True)
+def zona(zid):
+    return next(z_ for z_ in DATA['escenaKelvin']['zonas'] if z_['id'] == zid)
+if 'kelvin_lejos' in VIEWS:
+    cam.data.type = 'PERSP'; mx.inputs[0].default_value = 0
+    look(cam, (-120, -250, 150), (0, 70, 20), 30); render('mapa_kelvin_lejos.png')
+if 'kelvin_suelo' in VIEWS:
+    z_ = zona(os.environ.get('MAPA_ZONA', 'kelvin_aldea_rio_este')); cx, cy = z_['centro'][0], -z_['centro'][2]
+    if os.environ.get('MAPA_CENTRO'): cx, cy = [float(v) for v in os.environ['MAPA_CENTRO'].split(',')]
+    ox, oy = [float(v) for v in os.environ.get('MAPA_OFF', '-20,-24').split(',')]
+    ex, ey = cx + ox, cy + oy
+    dl_ = math.hypot(cx - ex, cy - ey); lat = float(os.environ.get('MAPA_VLAT', '0'))
+    vx_, vy_ = ex + 0.2 * (cx - ex) + lat * (cy - ey) / dl_, ey + 0.2 * (cy - ey) - lat * (cx - ex) / dl_
+    v = vittata(P(vx_, vy_, 0.02), math.atan2(-(cx - vx_), (cy - vy_)) + math.pi)
+    look(cam, P(ex - 0.1 * (cx - ex), ey - 0.1 * (cy - ey), 3.4), P(cx, cy, 3.0), 26); render(os.environ.get('MAPA_SALIDA', 'mapa_kelvin_suelo.png'))
     for o in v: bpy.data.objects.remove(o, do_unlink=True)
 if 'cumbre' in VIEWS:
     look(cam, P(-20, 152, 3.0), P(80, -60, -40), 28); render('mapa_vista_cumbre.png')

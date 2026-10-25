@@ -262,6 +262,8 @@ for sid, fn in builders.items():
             if 'comba' in c: o['comba'] = c['comba']
         COLS.append(o)
     bpy.data.objects.remove(obj)
+EST = [e for e in EST if e['id'] != 'ruinas']   # la Mesa del Este la ocupa la escena de Kelvin; ruinas.glb queda de respaldo
+COLS = [c for c in COLS if c.get('estructura') != 'ruinas']
 log('estructuras', [(e['id'], e['triangulos']) for e in EST])
 
 # ------------------------------------------------------------------ grutas (coordenadas del mundo)
@@ -335,6 +337,102 @@ PB2 = M.river[kb]; nb2 = np.array([-tgk[1], tgk[0]])
 zb2 = max(hz(*(PB2 + nb2 * 5.5)), hz(*(PB2 - nb2 * 5.5)))
 kplace('puente_madera', float(PB2[0]), float(PB2[1]), zb2 - 0.2, math.atan2(nb2[1], nb2[0]), 'meandros', 'puente_dajao')
 log('edificios de Kelvin colocados: %d' % len(KEL))
+
+# ------------------------------------------------------------------ escena original de Kelvin (377 instancias, por zonas)
+import mapa_kelvin as MK
+importlib.reload(MK)
+def hm_at(x, y):
+    fx = (x + ML.HALF) / HM_STEP; fz = (-y + ML.HALF) / HM_STEP; i0 = min(max(int(fx), 0), nh - 2); j0 = min(max(int(fz), 0), nh - 2)
+    tx = fx - i0; tz = fz - j0
+    return float((HM[j0, i0] * (1 - tx) + HM[j0, i0 + 1] * tx) * (1 - tz) + (HM[j0 + 1, i0] * (1 - tx) + HM[j0 + 1, i0 + 1] * tx) * tz)
+POOLS_ = M.pools
+def water_lvl(x, y):
+    if float(bil(M.water_d, np.array([x]), np.array([y]))[0]) > 0.3:
+        return 0.0 if hm_at(x, y) < 0.05 else None
+    for p in POOLS_:
+        if math.hypot(x - p['x'], y - p['y']) < p['r'] + 0.5: return p['nivel']
+    j = int(round(y + ML.HALF)); i = int(round(x + ML.HALF))
+    if M.riverD[j, i] < M.creekD[j, i]: return float(np.interp(M.riverT[j, i], M.river_s, M.river_L))
+    return float(np.interp(M.creekT[j, i], M.creek_s, M.creek_L))
+JUEGO = ('plaza', 'taller', 'estacion', 'terrenoA', 'terrenoB', 'mirador', 'casita', 'cumbre', 'picachos')
+PADR = dict((p[0], p[1]) for p in ML.PADS)
+BLOQ = [(ML.POI[k][0], ML.POI[k][1], PADR[k] + 1.0) for k in JUEGO] + [v for v in M.footprints.values()]
+BLOQ += [(float(x_), float(y_), 3.0) for x_, y_ in np.linspace(PS, PN, 9)]   # puente colgante
+def bloqueos(xs, ys):
+    wd = bil(M.water_d, xs, ys); td = bil(np.minimum(M.trailD, 50), xs, ys); h = np.array([hm_at(a, b) for a, b in zip(xs, ys)])
+    m = (wd < 0.8) | (td < 2.2) | (h < 0.3)
+    for bx, by, br in BLOQ: m |= np.hypot(xs - bx, ys - by) < br
+    return m
+ZN = [('costa', 'la costa', 150, -212), ('villa', 'Villa Raíz', 155, -172), ('meandros', 'los meandros', -60, 10), ('colina', 'la Colina', 40, -178),
+      ('lomas', 'las Lomas del Oeste', -110, -105), ('terrazas', 'las terrazas', 110, 120), ('mina', 'La Mina', 72, 98),
+      ('yunque', 'El Yunque', -30, 140), ('nublado', 'el bosque nublado', -10, 190), ('mesa_este', 'la Mesa del Este', 205, 5),
+      ('rio_este', 'el río del este', 120, -40), ('rio_oeste', 'el río del oeste', -190, 0)]
+def nombra(cx, cy, lst):
+    z = min(ZN, key=lambda q: math.hypot(q[2] - cx, q[3] - cy))
+    n_anc = sum(e['asset'].startswith('ancient') for e in lst); n_sav = sum(e['asset'].startswith('savage') for e in lst)
+    kind = ('ruinas', 'Ruinas') if n_anc >= max(1, n_sav) else ('aldea', 'Aldea') if n_sav else ('orilla', 'Canoas')
+    return 'kelvin_%s_%s' % (kind[0], z[0]), '%s de Kelvin · %s' % (kind[1], z[1])
+ESC = MK.escena(M, ML, hm_at, water_lvl, os.path.join(ROOT, 'assets', 'models', 'edificios'), bloqueos, nombra)
+for z_ in ESC['Z']:
+    for e in z_['instancias']:
+        h = e['huella']; M.footprints['esc_' + e['id']] = (h['x'], -h['z'], max(h['hx'], h['hz']) * 0.85 + 1.0)
+_ins = [e for z_ in ESC['Z'] for e in z_['instancias']]
+log('escena de Kelvin: %d instancias en %d zonas; con modelo web %d; movidas %d; ocultas %d; conversion.json %s' % (
+    len(_ins), len(ESC['Z']), sum(1 for e in _ins if e.get('modelo')), sum(1 for e in _ins if abs(e['ajuste']['dx']) + abs(e['ajuste']['dz']) > 0),
+    sum(1 for e in _ins if e.get('oculto')), ESC['conv']))
+log('esperando apoyo o sin apoyo: %d (%d con modelo web)' % (sum(1 for e in _ins if e.get('espera')), sum(1 for e in _ins if e.get('espera') and e.get('modelo'))))
+# ------------------------------------------------------------------ paradas de aprendizaje en la aldea de Kelvin junto a Villa Raíz
+ZP = next(z_ for z_ in ESC['Z'] if z_['id'] == 'kelvin_aldea_rio_este')
+EDZ = [e for e in ZP['instancias'] if e.get('modelo') and not e.get('espera') and not e.get('oculto')]
+HUTS = [e for e in EDZ if e['modelo'] in ('bohio_redondo', 'bohio_puntiagudo', 'casa_paja_a', 'casa_paja_b', 'torre_vigia', 'caney_largo')]
+acx = float(np.mean([e['huella']['x'] for e in HUTS])); acy = float(-np.mean([e['huella']['z'] for e in HUTS]))
+INTER = [(ML.POI['luma'][0], ML.POI['luma'][1], 5.0), (ML.POI['estacion'][0], ML.POI['estacion'][1], 15.0)]
+INTER += [(x, y, 5.0) for _, _, x, y, _ in ML.PERCHAS] + [(x, y, 5.0) for sp, x, y, s_ in ML.HEROES if sp in ('flamboyan', 'tabonuco', 'ceiba')]
+INTER += [(x, y, 5.0) for _, x, y, _ in ML.BUSHES] + [(x, y, 5.0) for _, _, x, y in ML.RESOURCES] + [(x, y, 5.0) for _, x, y, _, _ in ML.FIELD]
+def dentro(x, y, margen):
+    for e in EDZ + [f for z_ in ESC['Z'] for f in z_['instancias'] if f is not None]:
+        h = e['huella']; c, s_ = math.cos(h['rotY']), math.sin(h['rotY'])
+        du, dv = (x - h['x']) * c - (-y - h['z']) * s_, (x - h['x']) * s_ + (-y - h['z']) * c
+        if abs(du) < h['hx'] + margen and abs(dv) < h['hz'] + margen: return True
+    return False
+def apto(x, y, otros):
+    j, i = int(round(y + ML.HALF)), int(round(x + ML.HALF))
+    if M.slope[j, i] > 20 or M.water_d[j, i] < 2.0 or hm_at(x, y) < 0.5: return False
+    if any(math.hypot(x - a, y - b) < r for a, b, r in INTER + otros): return False
+    return not dentro(x, y, 1.5)
+CAND = [(acx + dx, acy + dy) for dx in np.arange(-45, 46, 1.5) for dy in np.arange(-45, 46, 1.5)]
+def bldg_near(x, y, modelos, r):
+    return [e for e in EDZ if e['modelo'] in modelos and math.hypot(e['huella']['x'] - x, -e['huella']['z'] - y) < r]
+PARADAS = {}
+best = None
+for x, y in CAND:
+    j, i = int(round(y + ML.HALF)), int(round(x + ML.HALF)); wd = M.water_d[j, i]
+    if not (2.5 <= wd <= 7.0) or not apto(x, y, []): continue
+    if not bldg_near(x, y, ('bohio_redondo', 'bohio_puntiagudo'), 28) or not bldg_near(x, y, ('torre_vigia', 'caney_largo', 'casa_paja_a', 'casa_paja_b', 'casa_plataforma'), 40): continue
+    sc_ = wd + 0.1 * math.hypot(x - acx, y - acy)
+    if best is None or sc_ < best[0]: best = (sc_, x, y)
+if best: PARADAS['parada_agua'] = (best[1], best[2])
+best = None
+for e in [f for f in EDZ if f['modelo'] in ('bohio_puntiagudo', 'casa_paja_a', 'bohio_redondo')]:
+    h = e['huella']; r0 = max(h['hx'], h['hz']) + 4.0
+    for k in range(24):
+        a_ = 2 * math.pi * k / 24; x, y = h['x'] + r0 * math.cos(a_), -h['z'] + r0 * math.sin(a_)
+        if not apto(x, y, [(p[0], p[1], 6.0) for p in PARADAS.values()]): continue
+        sc_ = (0 if e['modelo'] == 'bohio_puntiagudo' else 5 if e['modelo'] == 'casa_paja_a' else 10) + 0.05 * math.hypot(x - acx, y - acy)
+        if best is None or sc_ < best[0]: best = (sc_, x, y, e['id'])
+if best: PARADAS['parada_techo'] = (best[1], best[2]); TECHO_DE = best[3]
+best = None
+for x, y in CAND:
+    if not apto(x, y, [(p[0], p[1], 10.0) for p in PARADAS.values()]) or dentro(x, y, 7.0): continue
+    if math.hypot(x - acx, y - acy) > 40: continue
+    j, i = int(round(y + ML.HALF)), int(round(x + ML.HALF))
+    sc_ = M.slope[j, i] + 0.05 * math.hypot(x - acx, y - acy)
+    if best is None or sc_ < best[0]: best = (sc_, x, y)
+if best:
+    PARADAS['parada_claro'] = (best[1], best[2]); ML.CLAROS.append((best[1], best[2], 12.0))
+    ML.HEROES.append(('yagrumo', best[1] + 9.0, best[2] + 4.0, 0.55))   # el pionero, joven, en el borde del claro
+log('paradas de aprendizaje', {k: (round(v[0], 1), round(v[1], 1)) for k, v in PARADAS.items()})
+
 DEN, FREE, FX, FY = ML.flora(M, H, step=2)
 def coarse(A, f=4):
     n_ = (A.shape[0] - 1) // f; return A[:n_ * f, :n_ * f].reshape(n_, f, n_, f).mean((1, 3))
@@ -445,6 +543,11 @@ for e in KEL:
         COLS.append({'estructura': e['id'], 'kit': 'kelvin', 'tipo': 'cilindro', 'x': x, 'z': z, 'r': round(0.42 * min(w_, d_), 2), 'y0': y, 'y1': round(y + h_, 2)})
     else:
         COLS.append({'estructura': e['id'], 'kit': 'kelvin', 'tipo': 'caja', 'x': x, 'z': z, 'hx': round(w_ * 0.45, 2), 'hz': round(d_ * 0.45, 2), 'rotY': e['rotY'], 'y0': y, 'y1': round(y + h_, 2)})
+POIS += [{'id': z_['id'], 'nombre': z_['nombre'], 'pos': z_['centro']} for z_ in ESC['Z'] if len(z_['instancias']) >= 8]
+NOMP = {'parada_agua': 'Parada de aprendizaje · casa baja y casa alta junto al río', 'parada_techo': 'Parada de aprendizaje · techo inclinado',
+        'parada_claro': 'Parada de aprendizaje · claro del bosque'}
+POIS += [{'id': k, 'nombre': NOMP[k], 'pos': pt(*v), 'zona': 'kelvin_aldea_rio_este', **({'edificio': TECHO_DE} if k == 'parada_techo' else {})} for k, v in PARADAS.items()]
+POIS += [{'id': 'aldea', 'nombre': 'Aldea de Kelvin junto a Villa Raíz (centro de los bohíos)', 'pos': pt(acx, acy)}]
 POIS += [{'id': 'puente_dajao', 'nombre': 'Puente de madera de la Poza del Dajao', 'pos': G(float(PB2[0]), float(PB2[1]), zb2)}]
 DPZ = {}
 for zn in ZONES:
@@ -503,6 +606,16 @@ DATA = {
                                   'mirador': 'mirador_escalonado (11 m); la torre Yokahú propia es la referencia de El Yunque',
                                   'refugio': 'casa_plataforma; la estación propia trae la antena-transmisor de la historia'}.get(k, '')} for k in PL},
     'edificiosKelvin': [{k_: v for k_, v in e.items() if k_ != 'glb_n'} for e in KEL],
+    'escenaKelvin': {
+        'fuente': '04_Mapa_3D/migrado/escena_layout.json (AV3DMaxExportBuildings.max de Kelvin)',
+        'escala': round(ESC['S'], 5),
+        'nota': 'Mismo encaje que el terreno (0,255 m por unidad Max): posiciones y tamaños x escala, rotación intacta; solo se ajusta la altura al terreno y se aparta lo que choca con agua, senderos o explanadas. matriz = modelo web -> mundo; matrizMigrado = .glb migrado -> mundo; modelo null = pendiente de conversión (marcador invisible).',
+        'zonas': ESC['Z'],
+        'compacto': MK.compacto(ESC['Z']),
+        'pendientes': {k: sum(1 for e in _ins if e['asset'] == k) for k in sorted({e['asset'] for e in _ins if not e.get('modelo')})},
+        'descartados': ESC['saltados'],
+    },
+    'zonasEdificios': {z_['id']: {'centro': [z_['centro'][0], z_['centro'][2]], 'radio': z_['r'], 'orientar': False, 'yExacta': True, 'escalaPack': False} for z_ in ESC['Z']},
     'colisiones': COLS,
     'decoracion': DECO,
     'grutas': GR,
