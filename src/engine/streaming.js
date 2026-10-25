@@ -46,7 +46,7 @@ AVE.module('streaming', function (G) {
   const R = G.renderer, scene = R.scene;
   const CFG = {
     cerca: { bajo: 90, medio: 110, alto: 120 },    // m al borde de la zona: modelo completo y colisiones
-    precarga: { bajo: 40, medio: 50, alto: 60 },   // m: zonas cuyo modelo completo entra antes de mundoListo (el resto, después)
+    precarga: { bajo: 20, medio: 25, alto: 30 },   // m: zonas cuyo modelo completo entra antes de mundoListo (lo demás visible, con su lejano)
     dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios (la de antes en mundo.js)
     histeresis: 40,                                // m de más para bajar de nivel
     lod: { bajo: 45, medio: 65, alto: 85 },        // m del centro de la instancia a la cámara: cerca → lejos
@@ -331,8 +331,10 @@ AVE.module('streaming', function (G) {
       const max = arrancando ? CFG.descargasArranque : CFG.descargas, pre = CFG.precarga[nivelCal()] || 50;
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
-        if (arrancando && cola[0].prio >= pre) break; // antes de mundoListo, solo lo de precarga (el resto espera)
-        const r = cola.shift();
+        // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
+        const i = arrancando ? cola.findIndex(q => q.tipo === 'lejos' || q.prio < pre) : 0;
+        if (i < 0) break;
+        const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
         if (!r.refs && !r.fijo) { r.estado = 'nada'; continue; }
         r.estado = 'bajando'; enVuelo++;
@@ -635,6 +637,8 @@ AVE.module('streaming', function (G) {
       check('Las colisiones siguen activas tras liberar', colZ() === c1 && alto0() === s1, 'colliders ' + c1 + '→' + colZ() + ' · sólido ' + r2(s1) + '→' + r2(alto0()) + ' m');
       // 4. Fugas: dos vueltas más; geometrías, texturas, bytes y heap estables
       // (geometrías y texturas de three cuentan también la flora, que va por regiones: se informan, no se exigen)
+      // La referencia se toma tras una primera vuelta: así las dos medidas tienen la misma historia de histéresis.
+      await ir(bx, bz, 0, -1); await ir(x0, z0); ST.liberarYa(); dibujar();
       // heap: con window.gc (Chrome con --js-flags=--expose-gc) se recoge antes y se exige ≤ 8 MB; sin gc, el heap incluye basura
       // aún no recogida y solo se rechaza una subida > 32 MB (la memoria propia de los edificios sí se exige estable)
       const gc = typeof window.gc === 'function', tolHeap = gc ? 8 : 32;
