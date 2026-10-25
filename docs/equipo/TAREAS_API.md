@@ -79,7 +79,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
 | A1 | pendiente | | |
-| A2 | pendiente | | |
+| A2 | hecha | 642ffc8 | `.github/workflows/pruebas.yml`: push a `main` → macos-latest, Python 3.11 + numpy/OpenImageIO como `AV_PYTHON`, gltfpack 1.2 con SHA256 del zip y del binario leídos de `BUILD.md`, `build.sh HEAD`, `test.sh --extra` con el Chrome del runner y un paso que lee `reporte-test.json` y falla si cualquier batería (también las extra) no pasa; sube los reportes. Sin probar en GitHub: YAML parseado con Ruby, greps de SHA y chequeo de baterías probados en local (13/13). Riesgo: que el runner no tenga GPU Metal para `--use-angle=metal`. Sin baterías: no toca nada de la build. |
 | A3 | pendiente | | |
 | B1 | pendiente | | |
 | B2 | pendiente | | |
