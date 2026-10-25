@@ -39,7 +39,7 @@ for d in REPORT_DIRS:
         for r in json.load(open(f)):
             if 'error' not in r and r.get('id'):
                 rep[r['id']] = r
-names = sorted(n[:-4] for n in os.listdir(D) if n.endswith('.glb') and not n.endswith('_lejos.glb'))
+names = sorted(n[:-4] for n in os.listdir(D) if n.endswith('.glb') and not n.endswith(('_lejos.glb', '_hd.glb')))
 kit = {}
 for n in names:
     t, rad, alto, mats, size = stats(n)
@@ -49,6 +49,8 @@ for n in names:
                   kb=round(os.path.getsize(os.path.join(D, n + '_glb.js')) / 1024, 1),
                   kbLejos=round(os.path.getsize(os.path.join(D, n + '_lejos_glb.js')) / 1024, 1) if os.path.exists(lj) else 0,
                   mats=mats, src=rep.get(n, {}).get('src'))
+    if os.path.exists(os.path.join(D, n + '_hd.glb')):  # versión cercana de alta fidelidad (edificios_hd.py)
+        kit[n].update(hd=True, trisHD=stats(n + '_hd')[0], kbHD=round(os.path.getsize(os.path.join(D, n + '_hd_glb.js')) / 1024, 1))
 open(os.path.join(D, 'kit.js'), 'w').write(
     '/* Kit de edificios de Kelvin (generado por tools/blender/edificios_manifest.py): tris, lejano, radio y alto en m desde el pivote (centro de la base). */\n'
     'window.AV_EDIFICIOS_KIT = ' + json.dumps(kit, ensure_ascii=False, separators=(',', ':')) + ';\n')
