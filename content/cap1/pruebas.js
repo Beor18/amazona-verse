@@ -618,9 +618,16 @@
       const PAR = G.c.paradas.lista;
       const todos = () => [].concat(G.interaccion.list.map(i => ({ id: i.id, x: i.x, z: i.z })), G.diario.entries.map(f => ({ id: 'diario:' + f.id, x: f.x, z: f.z })), G.objetos.recursos.map(r => ({ id: 'obj:' + r.id, x: r.x, z: r.z })));
       const cerca = PAR.flatMap(p => todos().filter(o => o.id !== p.id && Math.hypot(o.x - p.x, o.z - p.z) < G.c.paradas.SEPARACION).map(o => p.id + '↔' + o.id));
-      check('3 paradas a 5 m o más de interactuables, hallazgos y objetos', PAR.length === 3 && cerca.length === 0, cerca.join(', '));
-      for (const p of PAR) { useAt(p.id, 1, 0); if ($('ch-' + p.pregunta.correcta)) { $('ch-' + p.pregunta.correcta).click(); if ($('edu-seguir')) $('edu-seguir').click(); } }
-      check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 3, JSON.stringify(S.edu.paradas));
+      check('8 paradas a 5 m o más de interactuables, hallazgos y objetos', PAR.length === 8 && cerca.length === 0, cerca.join(', '));
+      const PR = PAR.filter(p => p.fuente);
+      check('5 paradas de ciencia de Puerto Rico con fuente, ficha verificada y textos ES/EN', PR.length === 5 && PR.every(p => AU.verificada(AU.ficha(p.ficha)) && AU.ficha(p.ficha).fuente === p.fuente && [p.pregunta.enunciado, ...p.pregunta.opciones, p.pregunta.retro.correcta, p.pregunta.retro.incorrecta].every(x => x.es && x.en)), PR.map(p => p.id).join(','));
+      // Posiciones medidas sobre el mapa (alrededor del POI 'aldea'): ninguna se apartó de su sitio y todas quedan en seco
+      const aldea = E.poi('aldea'), prov0 = p => ({ x: aldea.x + p.prov[0].dx, z: aldea.z + p.prov[0].dz });
+      check('Las 5 de ciencia quedan donde se midieron (sin apartarse) y en suelo seco', !!aldea && PR.every(p => Math.hypot(p.x - prov0(p).x, p.z - prov0(p).z) < 0.01 && !(G.agua.levelAt(p.x, p.z) > G.terreno.height(p.x, p.z))), PR.map(p => p.id + ' ' + p.x.toFixed(1) + ',' + p.z.toFixed(1)).join(' · '));
+      const conFuente = [];
+      for (const p of PAR) { useAt(p.id, 1, 0); if (p.fuente) conFuente.push($('card').textContent.includes('Fuente: ' + p.fuente)); if ($('ch-' + p.pregunta.correcta)) { $('ch-' + p.pregunta.correcta).click(); if ($('edu-seguir')) $('edu-seguir').click(); } }
+      check('Cada parada de ciencia de Puerto Rico muestra su fuente al abrirse', conFuente.length === 5 && conFuente.every(Boolean), conFuente.join());
+      check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 8, JSON.stringify(S.edu.paradas));
       check('Modo Maestro: pestaña Paradas con objetivo y estándares', AU.pestanas().includes('paradas'));
       check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'bromelia', 'ceiba', 'heliconia', 'cotorra_alimento', 'tabonuco', 'helecho_gigante'].every(id => !f.includes(id)), f.join(','));
       G.diario.open();
