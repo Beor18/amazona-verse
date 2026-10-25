@@ -26,3 +26,4 @@ Formato: fecha · decisión · quién · por qué.
 - 2026-10-24 · Las animaciones de entrada solo mueven (sin opacidad 0) · Web lead · La página se ve completa en cualquier captura o miniatura.
 - 2026-10-24 · Subtítulos del pitch ajustados a `tiempos.json` (FINAL v1; B10 empieza en 141.6) y a las pausas medidas en `stems/voz.wav` · Sonido + Web lead · El archivo del sonido manda sobre `vo_bloques.json`.
 - 2026-10-24 · Loop del hero publicado (hero.mp4, 8.6 s, 3.0 MB, sin audio); el póster sigue siendo el render del bosque y el video entra con fundido · Editor de video + Web lead · El primer cuadro del loop es menos atractivo como imagen fija y en movimiento reducido se queda la imagen.
+- 2026-10-25 · Video pitch publicado en Prensa (pitch.mp4, 2:45.6, 12,9 MB, 960×540; póster pitch.jpg; subtítulos ES/EN) · Video (relevo) + Web lead · El comité pidió sumarlo cuando estuviera el corte final; solo carga al pulsar Play.

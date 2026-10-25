@@ -3,7 +3,14 @@
   "hero": {
     "mp4": "assets/video/hero.mp4"
   },
-  "pitch": null,
+  "pitch": {
+    "mp4": "assets/video/pitch.mp4",
+    "poster": "assets/video/pitch.jpg",
+    "vtt": {
+      "es": "assets/video/pitch.es.vtt",
+      "en": "assets/video/pitch.en.vtt"
+    }
+  },
   "_ejemplo_hero": {
     "mp4": "assets/video/hero.mp4",
     "webm": "assets/video/hero.webm"
