@@ -1,17 +1,17 @@
 /* AVE · estructuras y edificios del mapa (modo mapa)
-   - Edificios de Kelvin (mapa.edificiosKelvin: glb, pos, rotY, grupo, rol): se cargan, se escalan a la cotorra con un factor
-     uniforme por modelo (mundo.edificios.escala, sin deformar), se orientan con el frente hacia el sendero más cercano y se
-     funden por grupo y material (un draw call por material y grupo; el frustum descarta grupos enteros).
+   - Edificios de Kelvin (mapa.edificiosKelvin y mapa.escenaKelvin.compacto): los carga, instancia y libera por zonas
+     src/engine/streaming.js (formato de datos en su encabezado). Aquí quedan la escala a la cotorra (factor uniforme por
+     modelo, mundo.edificios.escala, sin deformar), el frente hacia el sendero más cercano y las colisiones de cada instancia.
    - Estructuras propias del mapa (mapa.estructuras): las que no tienen edificio de Kelvin (p. ej. el puente colgante) o como
      respaldo si el de Kelvin no carga. Colores planos horneados en el color de vértice: una sola malla por estructura.
      Las grutas usan el material de roca del suelo (triplanar con musgo).
    - Colisiones: las del mapa para las estructuras propias; para los edificios de Kelvin, sólidos calculados de la geometría
      real a la altura del personaje (círculo o caja) y pisos caminables (cubiertas y plataformas) detectados en la malla;
      los pisos del mapa (muelle, puentes) se escalan con el edificio.
-   - API: edificio(nombre, { pos, rotY, escala }) → Promise<THREE.Group> (sin fundir, para piezas del contenido como el taller),
-     activos, listo, stats().
+   - API: edificio(nombre, { pos, rotY, escala }) → Promise<THREE.Group> (piezas del contenido como el taller; comparten la carga
+     y los materiales del streaming y no se liberan), activos (instancias ya colocadas), listo, cargarTodo, streaming, stats().
    Datos del pack: mundo.edificios { escala: { defecto, <modelo>: f }, frente: { <modelo>: radianes }, orientar: bool,
-     noOrientar: [modelos], propias: [roles que usan siempre la estructura propia], base, b64 }. */
+     noOrientar: [modelos], propias: [roles que usan siempre la estructura propia], base, b64, kit? (manifiesto del kit) }. */
 AVE.module('mundo', function (G) {
   'use strict';
   const T = G.terreno, MAPA = T.mapa, R = G.renderer, scene = R.scene;
@@ -22,13 +22,8 @@ AVE.module('mundo', function (G) {
   const nombreDe = url => url.split('/').pop().replace(/\.glb$/, '');
   const escalaDe = n => ED.escala[n] != null ? ED.escala[n] : ED.escala.defecto != null ? ED.escala.defecto : 1;
 
-  // ---------- Carga con caché ----------
+  // ---------- Carga con caché (estructuras propias; los edificios de Kelvin los carga streaming.js) ----------
   const cache = {};
-  function cargarKelvin(n) {
-    if (!cache[n]) cache[n] = G.assets.loadGLB(ED.base + n + '.glb', { b64: () => (window[ED.b64] || {})[n], script: ED.base + n + '_glb.js', base: ED.base, error: 'edificio no disponible: ' + n })
-      .then(g => { g.scene.updateMatrixWorld(true); return g.scene; });
-    return cache[n];
-  }
   function cargarPropia(url) {
     const n = nombreDe(url);
     if (!cache['mapa:' + n]) cache['mapa:' + n] = G.assets.loadGLB(url, { b64: () => (window[B64MAPA] || {})[n], script: url.replace(/\.glb$/, '_glb.js'), base: '', error: 'estructura no disponible: ' + n })
@@ -36,17 +31,7 @@ AVE.module('mundo', function (G) {
     return cache['mapa:' + n];
   }
 
-  // ---------- Materiales de los edificios: Phong por píxel (sombras), compartidos por nombre ----------
-  const matsKit = {};
-  function matKit(src) {
-    const k = src.name || src.uuid;
-    if (matsKit[k]) return matsKit[k];
-    const m = new THREE.MeshPhongMaterial({ map: src.map || null, color: src.map ? 0xffffff : src.color, side: src.side, shininess: 8, specular: new THREE.Color(0x101010),
-      alphaTest: src.alphaTest || 0, transparent: false });
-    if (!src.map && src.color) m.color.copy(src.color);
-    m.name = k;
-    return (matsKit[k] = m);
-  }
+  // ---------- Materiales de los edificios: Phong por píxel (sombras), compartidos por nombre: G.streaming.material ----------
   // Estructuras propias (colores planos): un material con color de vértice y una variación suave de mundo para que no se vea plano
   let matPlano = null;
   function materialPlano() {
@@ -209,50 +194,46 @@ AVE.module('mundo', function (G) {
     return null;
   }
 
-  // ---------- Qué se dibuja: Kelvin donde hay, propias donde no ----------
-  const KEL = (MAPA.edificiosKelvin || []).slice();
+  // ---------- Qué se dibuja: Kelvin donde hay (streaming.js), propias donde no ----------
+  const KEL = (MAPA.edificiosKelvin || []).concat((MAPA.escenaKelvin && MAPA.escenaKelvin.compacto) || []);
   const rolesKelvin = new Set(KEL.filter(e => e.rol && !ED.propias.includes(e.rol)).map(e => e.rol));
   const propias = (MAPA.estructuras || []).filter(e => e.mundo || !rolesKelvin.has(e.id));
-  const activos = {}; // id -> { tipo: 'kelvin'|'propia', pos, rotY, escala, grupo }
-  const grupos = {};  // grupo -> { mats: { nombre: [geo] } }
+  const activos = {}; // id -> { tipo: 'kelvin'|'propia', pos, rotY, escala, grupo } (Kelvin: al colocarse la instancia)
   const stats0 = { edificios: 0, propias: 0, mallas: 0, colliders: 0, pisos: 0 };
+  const pisoMapa = c => c.tipo === 'piso' || c.tipo === 'puente' || c.tipo === 'rampa';
+  const conPisoMapa = id => (MAPA.colisiones || []).some(c => c.estructura === id && pisoMapa(c));
 
-  function colocarKelvin(e) {
-    const n = nombreDe(e.glb), esc = escalaDe(n);
-    return cargarKelvin(n).then(root => {
-      let rot = e.rotY || 0;
-      const conPisoMapa = (MAPA.colisiones || []).some(c => c.estructura === e.id && (c.tipo === 'piso' || c.tipo === 'puente' || c.tipo === 'rampa'));
-      if (ED.orientar && !conPisoMapa && !ED.noOrientar.includes(n)) {
-        const a = haciaSendero(e.pos[0], e.pos[2]);
-        if (a != null) rot = a + (ED.frente[n] || 0);
+  // Frente hacia el sendero más cercano (null = respeta rotY): no a los que tienen pisos del mapa ni a los de noOrientar
+  function orientarKelvin(e, n) {
+    if (!ED.orientar || conPisoMapa(e.id) || ED.noOrientar.includes(n)) return null;
+    const a = haciaSendero(e.pos[0], e.pos[2]);
+    return a != null ? a + (ED.frente[n] || 0) : null;
+  }
+  // Colisiones de una instancia (streaming.js la llama una vez, cuando se carga por primera vez; A = analizar del modelo):
+  // pisos del mapa escalados; sólidos y pisos altos de la geometría real
+  function colocarKelvin(I, A) {
+    const n = I.modelo, esc = I.escala, rot = I.rotY, [x, y, z] = I.pos, conPiso = conPisoMapa(I.id);
+    for (const c of MAPA.colisiones || []) if (c.estructura === I.id && pisoMapa(c)) { colisionMapa(c, [x, y, z], esc); stats0.pisos++; }
+    if (!conPiso && A.sol && n !== 'canoa' && I.erguido) {
+      const piso = A.pisos.find(f => f.y > 1.2 && f.y < A.alto - 0.8 && (f.x1 - f.x0) * (f.z1 - f.z0) > 6);
+      const rol = I.e.rol;
+      const hSol = rol === 'mirador' && piso ? piso.y - 0.2 : A.alto;
+      // el mirador escalonado es abierto: solo choca su núcleo, se camina por debajo de las cubiertas y se sube volando
+      const sol = rol === 'mirador' ? { tipo: 'circulo', cx: A.sol.cx, cz: A.sol.cz, r: Math.min(1.4, A.sol.r || A.sol.hx || 1.4) } : A.sol;
+      stats0.colliders += colliderMundo(sol, [x, y, z], rot, hSol, 'edificio', I.id).length;
+      if (piso) {
+        const c = Math.cos(rot), s = Math.sin(rot), lx = (piso.x0 + piso.x1) / 2, lz = (piso.z0 + piso.z1) / 2;
+        T.addPlatform({ tipo: 'rect', x: x + lx * c + lz * s, z: z - lx * s + lz * c, hx: (piso.x1 - piso.x0) / 2, hz: (piso.z1 - piso.z0) / 2, rotY: rot, top: y + piso.y, id: I.id });
+        stats0.pisos++;
       }
-      const y = e.pos[1] != null ? Math.min(e.pos[1], T.height(e.pos[0], e.pos[2])) : T.height(e.pos[0], e.pos[2]);
-      const m4 = new THREE.Matrix4().compose(new THREE.Vector3(e.pos[0], y, e.pos[2]), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rot), new THREE.Vector3(esc, esc, esc));
-      const gk = e.grupo || e.id, grp = grupos[gk] || (grupos[gk] = { mats: {} });
-      root.traverse(o => {
-        if (!o.isMesh) return;
-        const mt = matKit(o.material);
-        const geo = o.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(m4, o.matrixWorld));
-        (grp.mats[mt.name] || (grp.mats[mt.name] = { mat: mt, geos: [] })).geos.push(geo);
-      });
-      // Colisiones: pisos del mapa escalados; sólidos y pisos altos de la geometría real
-      const A = analizar(root, esc);
-      for (const c of MAPA.colisiones || []) if (c.estructura === e.id && (c.tipo === 'piso' || c.tipo === 'puente' || c.tipo === 'rampa')) { colisionMapa(c, [e.pos[0], y, e.pos[2]], esc); stats0.pisos++; }
-      if (!conPisoMapa && A.sol && n !== 'canoa') {
-        const piso = A.pisos.find(f => f.y > 1.2 && f.y < A.alto - 0.8 && (f.x1 - f.x0) * (f.z1 - f.z0) > 6);
-        const hSol = e.rol === 'mirador' && piso ? piso.y - 0.2 : A.alto;
-        // el mirador escalonado es abierto: solo choca su núcleo, se camina por debajo de las cubiertas y se sube volando
-        const sol = e.rol === 'mirador' ? { tipo: 'circulo', cx: A.sol.cx, cz: A.sol.cz, r: Math.min(1.4, A.sol.r || A.sol.hx || 1.4) } : A.sol;
-        stats0.colliders += colliderMundo(sol, [e.pos[0], y, e.pos[2]], rot, hSol, 'edificio', e.id).length;
-        if (piso) {
-          const c = Math.cos(rot), s = Math.sin(rot), lx = (piso.x0 + piso.x1) / 2, lz = (piso.z0 + piso.z1) / 2;
-          T.addPlatform({ tipo: 'rect', x: e.pos[0] + lx * c + lz * s, z: e.pos[2] - lx * s + lz * c, hx: (piso.x1 - piso.x0) / 2, hz: (piso.z1 - piso.z0) / 2, rotY: rot, top: y + piso.y, id: e.id });
-          stats0.pisos++;
-        }
-      }
-      activos[e.id] = { tipo: 'kelvin', modelo: n, pos: [e.pos[0], y, e.pos[2]], rotY: rot, escala: esc, grupo: gk, rol: e.rol || null, alto: A.alto };
-      stats0.edificios++;
-    });
+    }
+    activos[I.id] = { tipo: 'kelvin', modelo: n, pos: [x, y, z], rotY: rot, escala: esc, grupo: I.zona, rol: I.e.rol || null, alto: A.alto };
+    stats0.edificios++;
+  }
+  // Si el modelo de Kelvin no carga: la estructura propia de ese rol
+  function respaldoKelvin(I) {
+    const p = I.e.rol && (MAPA.estructuras || []).find(s => s.id === I.e.rol);
+    if (p && !activos[p.id]) colocarPropia(p).catch(() => {});
   }
   function colocarPropia(e) {
     return cargarPropia(e.glb).then(root => {
@@ -287,73 +268,23 @@ AVE.module('mundo', function (G) {
       stats0.propias++;
     });
   }
-  const lejanos = []; // mallas fundidas: se apagan más allá de la distancia de dibujo (la niebla ya las esconde)
-  function publicarGrupos(solo) {
-    for (const gk in grupos) {
-      if (solo && gk !== solo) continue;
-      const g = grupos[gk];
-      for (const k in g.mats) {
-        const it = g.mats[k];
-        if (!it.geos.length) continue;
-        const mesh = new THREE.Mesh(fundir(it.geos, false), it.mat);
-        mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'edificios:' + gk + ':' + k; mesh.matrixAutoUpdate = false;
-        scene.add(mesh); stats0.mallas++; lejanos.push(mesh);
-        it.geos.length = 0;
-      }
-    }
-  }
-  const DIST_EDIF = { bajo: 150, medio: 190, alto: 320 };
-  let cuadro = 0;
-  G.on('render', () => {
-    if (++cuadro % 12) return;
-    const cp = R.camera.position, max = DIST_EDIF[R.calidad.nivel] || 250;
-    for (const m of lejanos) { const bs = m.geometry.boundingSphere; m.visible = cp.distanceTo(bs.center) - bs.radius < max; }
-  }, 23);
-
   // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material.
-  // Carga por grupos: al arrancar, los grupos cercanos al jugador (CARGA_POR); el resto cuando se acerca (los .glb de
-  // Kelvin pesan ~7 MB en total: en la red de una escuela no se bajan las aldeas lejanas hasta que hacen falta).
-  const CARGA_POR = { bajo: 180, medio: 230, alto: 330 }; // un poco más que la distancia de dibujo de cada preset
-  const porGrupo = {};
-  for (const e of KEL) { const k = e.grupo || e.id; (porGrupo[k] || (porGrupo[k] = { lista: [], x: 0, z: 0, cargado: false })).lista.push(e); }
-  for (const k in porGrupo) { const g = porGrupo[k]; for (const e of g.lista) { g.x += e.pos[0] / g.lista.length; g.z += e.pos[2] / g.lista.length; } }
-  function cargarGrupo(k) {
-    const g = porGrupo[k]; if (g.cargado) return g.promesa; g.cargado = true;
-    g.promesa = Promise.all(g.lista.map(e => colocarKelvin(e).catch(err => {
-      console.warn('AVE edificios:', err && err.message || err);
-      const p = e.rol && (MAPA.estructuras || []).find(s => s.id === e.rol); // respaldo: la estructura propia de ese rol
-      if (p && !activos[p.id]) return colocarPropia(p).catch(() => {});
-      return null;
-    }))).then(() => publicarGrupos(k));
-    return g.promesa;
-  }
-  const cerca = (g, x, z) => Math.hypot(g.x - x, g.z - z) < (CARGA_POR[R.calidad.nivel] || 230);
+  // streaming.js carga antes de mundoListo lo cercano al inicio y el resto por zonas al acercarse (y lo libera al alejarse).
+  const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
   const listo = T.listo.then(() => {
-    const S = G.S, px = S.pos ? S.pos.x : 0, pz = S.pos ? S.pos.z : 0;
-    const tareas = Object.keys(porGrupo).filter(k => cerca(porGrupo[k], px, pz)).map(cargarGrupo);
+    const tareas = [ST.arrancar()];
     for (const e of propias) tareas.push(colocarPropia(e).catch(err => console.warn('AVE estructura:', err && err.message || err)));
     return Promise.all(tareas);
   }).then(() => { G.emit('mundoListo'); });
-  let revision = 0;
-  G.on('update', dt => {
-    if ((revision += dt) < 1.5) return; revision = 0;
-    const S = G.S; if (!S.pos || !T.exacto) return;
-    for (const k in porGrupo) if (!porGrupo[k].cargado && cerca(porGrupo[k], S.pos.x, S.pos.z)) cargarGrupo(k);
-  }, 70);
-  // todos (pruebas y capturas): G.mundo.cargarTodo()
-  const cargarTodo = () => Promise.all(Object.keys(porGrupo).map(cargarGrupo));
+  // todos (pruebas y capturas): G.mundo.cargarTodo(); G.mundo.streaming.soltarTodo() vuelve a la carga por zonas
+  const cargarTodo = () => ST.cargarTodo();
 
   // Una pieza suelta del kit para el contenido (taller de Vittata, etc.): un grupo con los materiales compartidos
   function edificio(nombre, o) {
     o = o || {};
-    return cargarKelvin(nombre).then(root => {
+    return ST.modelo(nombre).then(r => {
       const g = new THREE.Group();
-      root.traverse(src => {
-        if (!src.isMesh) return;
-        const m = new THREE.Mesh(src.geometry, matKit(src.material));
-        m.applyMatrix4(src.matrixWorld); m.castShadow = m.receiveShadow = true;
-        g.add(m);
-      });
+      for (const p of r.partes) { const m = new THREE.Mesh(p.geo, p.mat); m.castShadow = m.receiveShadow = true; g.add(m); }
       const esc = o.escala != null ? o.escala : escalaDe(nombre);
       g.scale.setScalar(esc);
       if (o.pos) g.position.set(o.pos[0], o.pos[1] != null ? o.pos[1] : T.height(o.pos[0], o.pos[2]), o.pos[2]);
@@ -363,5 +294,5 @@ AVE.module('mundo', function (G) {
     });
   }
 
-  return { listo, edificio, activos, analizar, escalaDe, cargarTodo, grupos: porGrupo, stats: () => Object.assign({}, stats0) };
+  return { listo, edificio, activos, analizar, escalaDe, cargarTodo, streaming: ST, grupos: ST.zonas, stats: () => Object.assign({}, stats0, { streaming: ST.stats() }) };
 });

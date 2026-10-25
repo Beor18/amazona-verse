@@ -71,3 +71,33 @@ Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/
 
 ## Datos compartidos entre packs (`content/comun/`)
 Datos que varios content packs pueden reutilizar sin copiarlos (hoy: `huevos.js`, los huevos, etapas y XP del criadero). Un fork los conserva o los reemplaza; ningún motor depende de ellos.
+
+## Streaming de edificios (`src/engine/streaming.js`)
+Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js` lo arranca y pone las colisiones de cada instancia.
+- **Zonas:** una zona es el `grupo` de sus entradas. Según la distancia del jugador al borde de la zona, y por preset, tiene tres niveles:
+  - *cerca* (≤ 90/110/120 m): el modelo completo, más las colisiones de cada instancia la primera vez que llega a este nivel. Las colisiones ya no se quitan.
+  - *lejos* (hasta la distancia de dibujo de 150/190/320 m, recortada por la niebla): solo el LOD lejano.
+  - *fuera*: nada en memoria.
+  - Histéresis de 40 m, y 3 s de gracia antes de soltar un modelo.
+- **Arranque:** antes de `mundoListo` entra el modelo completo de las zonas a menos de 40/50/60 m del inicio, y el LOD lejano propio de las visibles. El resto llega después, en segundo plano: lo más cercano primero, una descarga a la vez y la CPU troceada con `requestIdleCallback`.
+- **Dibujo:**
+  - Una `InstancedMesh` por modelo × LOD × material, con el nombre `edificiosInst:*` y `sinSolido`.
+  - Cada cuadro se eligen las instancias visibles. Pasan las que están dentro del frustum y de la distancia de dibujo, y también las de cerca que caen en el radio de sombra.
+  - El LOD de cada instancia lo decide su distancia a la cámara, con 45/65/85 m ± 8.
+  - Los sólidos de Movimiento llegan por `G.solidos.agregar` en cada instancia.
+- **Liberar:** quita las mallas, llama a `geometry.dispose()` y suelta materiales y texturas. Los materiales se comparten por nombre y llevan conteo de referencias. La cadena base64 la suelta `AVE.assets.loadGLB`.
+- **Kit:**
+  - `<modelo>.glb | _glb.js` es el modelo de cerca.
+  - `<modelo>_lejos.glb | _glb.js` es el lejano, con el material `AV_Lejos` y color de vértice. Solo se usa si el manifiesto opcional `AV_EDIFICIOS_KIT` (`mundo.edificios.kit`) lo declara. Si no, el lejano se genera simplificando el de cerca.
+- **Datos del mapa:** `edificiosKelvin` y `escenaKelvin.compacto`.
+  - Forma plana: `{ id, glb|modelo, pos, rotY, grupo, rol?, escala?, orientar?, yExacta?, escalaPack? }`.
+  - Forma compacta: `{ grupo, modelo, inst: [[x, y, z, rotY, escala?] | matriz de 16], … }`.
+  - `zonasEdificios.<grupo>` lleva `{ centro, radio, orientar?, yExacta?, escalaPack? }`.
+  - El detalle está en el encabezado de `streaming.js`.
+- **Prueba:** `AV.streamingTest`. Comprueba que:
+  - lo de cerca del inicio está cargado;
+  - la vista más cargada no pasa de 150 draw calls;
+  - al entrar en una zona, esta carga y coloca sus instancias, y sus colisiones quedan activas;
+  - al salir, se sueltan el modelo completo y luego el lejano;
+  - no queda base64 en memoria;
+  - tras dos vueltas, la memoria de los edificios y el heap siguen estables.
