@@ -1,0 +1,2184 @@
+{
+ "nota": "Guion de captura del pitch. Los ids son los de docs/pitch/TOMAS.json (tiempos y títulos del comité); aquí va CÓMO se captura cada toma. Mundo: mapa El Yunque (POIs de assets/data/mapa_cap1.js). Tiempos de acciones y cámara en s desde el punto de entrada; 'margen' añade cuadros antes y después para fundidos.",
+ "version": "v1",
+ "salida": {
+  "ancho": 1920,
+  "alto": 1080,
+  "ss": 2,
+  "calidad": 0.92
+ },
+ "margen": [
+  0.5,
+  0.7
+ ],
+ "titulos": "docs/pitch/TOMAS.json",
+ "base": {
+  "paso": 3,
+  "aprendiz": true,
+  "nombre": "Nube Azul"
+ },
+ "ropas": {
+  "base": {},
+  "exploradora": {
+   "feet": {
+    "id": "botas",
+    "color": "#3d8fb0",
+    "style": "aventura"
+   },
+   "neck": {
+    "id": "panuelo",
+    "color": "#f2a03d"
+   },
+   "eyes": {
+    "id": "gafas",
+    "color": "#5a3a22"
+   }
+  },
+  "pava": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   }
+  },
+  "boricua": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   },
+   "hand": {
+    "id": "mano",
+    "color": "#d6403a",
+    "style": "maracas"
+   }
+  },
+  "bandera": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   }
+  },
+  "deportiva": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#d6403a",
+    "style": "deportiva"
+   },
+   "eyes": {
+    "id": "lentes",
+    "color": "#c9a227",
+    "style": "sol"
+   }
+  }
+ },
+ "graficos": [
+  {
+   "id": "marco_navegador",
+   "estilo": "navegador"
+  }
+ ],
+ "tomas": [
+  {
+   "id": "gancho_primer_plano",
+   "dur": 3.6,
+   "preroll": 0.8,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dz": -6.5,
+     "dx": 1.5
+    },
+    "mirarA": "cumbre",
+    "ropa": "base",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": 55,
+    "dist": [
+     3.0,
+     2.2
+    ],
+    "alto": 1.32,
+    "miraAlto": 1.12,
+    "fov": 40,
+    "rumboFijo": true,
+    "suave": 0.2,
+    "pulso": 0.012
+   },
+   "acciones": [
+    {
+     "t": 2.1,
+     "a": "mirarCamara"
+    }
+   ],
+   "montaje": {
+    "transicion": 0.8
+   }
+  },
+  {
+   "id": "gancho_vuelo_mirador",
+   "dur": 4.8,
+   "preroll": 0.5,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dx": 2.5,
+     "dz": 0.5
+    },
+    "ropa": "base",
+    "aprendiz": false,
+    "rumbo": 90
+   },
+   "camara": {
+    "tipo": "dron",
+    "puntos": [
+     {
+      "jugador0": true,
+      "frente": 2.5,
+      "lado": -6,
+      "dy": 1.4
+     },
+     {
+      "jugador0": true,
+      "frente": 5,
+      "lado": -10,
+      "dy": 11
+     },
+     {
+      "jugador0": true,
+      "frente": 7,
+      "lado": -15,
+      "dy": 28
+     }
+    ],
+    "fov": [
+     50,
+     58
+    ],
+    "curva": "inOut",
+    "miraAlto": 0.6,
+    "suaveMira": 0.15
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "caminar",
+     "rumbo": 92,
+     "correr": true
+    },
+    {
+     "t": 0.15,
+     "a": "saltar"
+    },
+    {
+     "t": 0.3,
+     "a": "vuelo",
+     "dur": 6.0,
+     "curva": "lineal",
+     "puntos": [
+      [
+       26,
+       174
+      ],
+      [
+       45,
+       181
+      ],
+      [
+       72,
+       189
+      ],
+      [
+       104,
+       197
+      ]
+     ],
+     "sobreSuelo": 19
+    }
+   ]
+  },
+  {
+   "id": "problema_vuelo_rio",
+   "dur": 4.2,
+   "preroll": 0.6,
+   "estado": {
+    "pos": [
+     182,
+     116
+    ],
+    "mirarA": [
+     165.8,
+     127.5
+    ],
+    "ropa": "base",
+    "volando": true,
+    "altura": 4,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": [
+     1.5,
+     -0.5
+    ],
+    "lado": -4.5,
+    "alto": 1.4,
+    "adelante": 2.0,
+    "miraAlto": 0.0,
+    "fov": 50,
+    "suave": 0.18,
+    "suaveGiro": 0.5
+   },
+   "acciones": [
+    {
+     "t": -1.2,
+     "a": "vuelo",
+     "dur": 6.6,
+     "curva": "lineal",
+     "puntos": [
+      [
+       174.8,
+       119.6
+      ],
+      [
+       165.8,
+       127.5
+      ],
+      [
+       157.9,
+       136.5
+      ],
+      [
+       149.1,
+       144.7
+      ],
+      [
+       137.8,
+       148
+      ],
+      [
+       127.1,
+       142.9
+      ]
+     ],
+     "sobreSuelo": 5
+    }
+   ]
+  },
+  {
+   "id": "problema_estacion",
+   "dur": 3.0,
+   "preroll": 0.5,
+   "estado": {
+    "pos": [
+     120,
+     196
+    ],
+    "mirarA": [
+     182,
+     160
+    ],
+    "ropa": "base",
+    "volando": true,
+    "altura": 10,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "dron",
+    "puntos": [
+     {
+      "poi": "estacion",
+      "dx": -26,
+      "dz": 22,
+      "dy": 30
+     },
+     {
+      "poi": "estacion",
+      "dx": -18,
+      "dz": 15,
+      "dy": 22
+     }
+    ],
+    "mira": [
+     {
+      "poi": "estacion",
+      "dy": 3
+     },
+     {
+      "poi": "estacion",
+      "dx": -4,
+      "dy": 2
+     }
+    ],
+    "fov": 50,
+    "curva": "lineal"
+   },
+   "acciones": [
+    {
+     "t": -0.8,
+     "a": "vuelo",
+     "dur": 4.6,
+     "curva": "lineal",
+     "puntos": [
+      [
+       132,
+       203
+      ],
+      [
+       150,
+       192
+      ],
+      [
+       176,
+       176
+      ]
+     ],
+     "sobreSuelo": 14
+    }
+   ]
+  },
+  {
+   "id": "problema_saludo_plaza",
+   "dur": 3.6,
+   "preroll": 0.5,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": 6,
+     "dz": 6
+    },
+    "mirarA": "plaza",
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "fija",
+    "pos": {
+     "poi": "plaza",
+     "dx": -0.2,
+     "dz": -0.3,
+     "dy": 1.15
+    },
+    "miraAlto": 1.0,
+    "fov": 42,
+    "suaveMira": 0.3,
+    "pulso": 0.015
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "plaza",
+       "dx": 2.2,
+       "dz": 2.2
+      }
+     ],
+     "frenar": 2.5
+    },
+    {
+     "t": 2.3,
+     "a": "parar"
+    },
+    {
+     "t": 2.35,
+     "a": "mirarCamara"
+    },
+    {
+     "t": 2.5,
+     "a": "gesto",
+     "nombre": "saludar"
+    }
+   ]
+  },
+  {
+   "id": "problema_percha_dosel",
+   "dur": 2.4,
+   "preroll": 0.5,
+   "hud": true,
+   "estado": {
+    "edu": "p2",
+    "pos": [
+     160,
+     92
+    ],
+    "mirarA": [
+     171,
+     80
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 10,
+    "js": "S.edu.perchas.suelo = true; S.edu.perchas.sotobosque = true;"
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 5,
+    "alto": 1.5,
+    "adelante": 1.0,
+    "miraAlto": 0.6,
+    "fov": 55,
+    "suave": 0.25,
+    "suaveGiro": 0.8
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 1.9,
+     "curva": "salida",
+     "puntos": [
+      {
+       "xz": [
+        171,
+        80
+       ],
+       "dy": 9.2
+      }
+     ],
+     "aterrizar": true
+    }
+   ]
+  },
+  {
+   "id": "problema_observar_ui",
+   "dur": 3.6,
+   "preroll": 0.4,
+   "hud": true,
+   "estado": {
+    "edu": "p2",
+    "en": {
+     "xz": [
+      171,
+      80
+     ]
+    },
+    "camYaw": 150,
+    "ropa": "exploradora",
+    "js": "S.edu.perchas.suelo = true; S.edu.perchas.sotobosque = true;"
+   },
+   "camara": {
+    "tipo": "juego",
+    "giro": 6
+   },
+   "acciones": [
+    {
+     "t": 0.3,
+     "a": "accion"
+    },
+    {
+     "t": 2.2,
+     "a": "clic",
+     "sel": ".edu-opt",
+     "texto": "Bromelias"
+    }
+   ]
+  },
+  {
+   "id": "mundo_isla_logo",
+   "dur": 2.4,
+   "preroll": 0.3,
+   "estado": {
+    "en": {
+     "poi": "cumbre"
+    },
+    "ropa": "base",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     0,
+     0
+    ],
+    "radio": 330,
+    "alto": 230,
+    "ang": 200,
+    "vel": 2.9,
+    "miraAlto": 0,
+    "fov": 50,
+    "far": 1400,
+    "niebla": [
+     400,
+     1300
+    ]
+   },
+   "montaje": {
+    "titulo": {
+     "estilo": "logo",
+     "ancho": 1000
+    },
+    "transicion": 0.4
+   }
+  },
+  {
+   "id": "mundo_taller_idea",
+   "dur": 4.8,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "taller",
+     "dz": 4.5
+    },
+    "mirarA": {
+     "poi": "taller",
+     "dz": 12
+    },
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": 38,
+    "dist": [
+     3.4,
+     2.8
+    ],
+    "alto": 1.55,
+    "miraAlto": 1.45,
+    "fov": 42,
+    "rumboFijo": true,
+    "pulso": 0.012
+   },
+   "acciones": [
+    {
+     "t": 1.0,
+     "a": "gesto",
+     "nombre": "idea"
+    }
+   ]
+  },
+  {
+   "id": "mundo_dron_dosel",
+   "dur": 3.2,
+   "preroll": 0.6,
+   "estado": {
+    "pos": [
+     -46,
+     149
+    ],
+    "mirarA": [
+     -85,
+     157
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 14,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 8,
+    "lado": 3.5,
+    "alto": 3.5,
+    "adelante": 6,
+    "miraAlto": -1.0,
+    "fov": 60,
+    "suave": 0.15,
+    "suaveGiro": 0.6
+   },
+   "acciones": [
+    {
+     "t": -1.0,
+     "a": "vuelo",
+     "dur": 5.6,
+     "curva": "lineal",
+     "puntos": [
+      [
+       -70,
+       153
+      ],
+      [
+       -95,
+       159
+      ],
+      [
+       -118,
+       165
+      ],
+      [
+       -135,
+       171
+      ]
+     ],
+     "sobreSuelo": 14
+    }
+   ]
+  },
+  {
+   "id": "mundo_camina",
+   "dur": 0.6,
+   "preroll": 0.5,
+   "estado": {
+    "pos": [
+     153.5,
+     11.5,
+     132.6
+    ],
+    "mirarA": [
+     162.5,
+     141.4
+    ],
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 0.3,
+    "lado": -4,
+    "alto": 0.5,
+    "adelante": 0.5,
+    "miraAlto": 0.7,
+    "fov": 50,
+    "suave": 0.1
+   },
+   "acciones": [
+    {
+     "t": -0.8,
+     "a": "ruta",
+     "puntos": [
+      [
+       162.5,
+       141.4
+      ]
+     ],
+     "correr": true
+    }
+   ]
+  },
+  {
+   "id": "mundo_vuela",
+   "dur": 0.8,
+   "preroll": 0.4,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -3,
+     "dz": 3
+    },
+    "mirarA": {
+     "poi": "plaza",
+     "dx": -8,
+     "dz": -2
+    },
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "fija",
+    "pos": {
+     "jugador0": true,
+     "frente": 2.8,
+     "lado": 1.5,
+     "dy": 0.35
+    },
+    "miraAlto": 1.2,
+    "fov": 52,
+    "suaveMira": 0.08
+   },
+   "acciones": [
+    {
+     "t": -0.35,
+     "a": "saltar",
+     "mantener": 0.3
+    },
+    {
+     "t": 0.0,
+     "a": "volar",
+     "subir": 1.5
+    }
+   ]
+  },
+  {
+   "id": "mundo_nada",
+   "dur": 1.0,
+   "preroll": 1.2,
+   "estado": {
+    "pos": [
+     70.5,
+     -82.5
+    ],
+    "mirarA": [
+     74.5,
+     -100
+    ],
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 4,
+    "alto": 1.0,
+    "adelante": 3,
+    "miraAlto": 0.3,
+    "fov": 55,
+    "suave": 0.15
+   },
+   "acciones": [
+    {
+     "t": -1.5,
+     "a": "ruta",
+     "puntos": [
+      [
+       74,
+       -97
+      ]
+     ],
+     "mag": 1.0
+    }
+   ]
+  },
+  {
+   "id": "mundo_bucea",
+   "dur": 0.8,
+   "preroll": 1.5,
+   "estado": {
+    "pos": [
+     183,
+     111
+    ],
+    "mirarA": [
+     191,
+     118
+    ],
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 2.6,
+    "alto": 1.0,
+    "adelante": 1.5,
+    "miraAlto": -0.3,
+    "fov": 55,
+    "suave": 0.12
+   },
+   "acciones": [
+    {
+     "t": -1.5,
+     "a": "ruta",
+     "puntos": [
+      [
+       192,
+       119
+      ]
+     ],
+     "mag": 0.8
+    },
+    {
+     "t": 0.05,
+     "a": "bucear"
+    }
+   ]
+  },
+  {
+   "id": "mundo_asombro",
+   "dur": 0.8,
+   "preroll": 0.15,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": 2,
+     "dz": -3
+    },
+    "mirarA": {
+     "poi": "plaza",
+     "dx": 2,
+     "dz": 5
+    },
+    "ropa": "exploradora",
+    "aprendiz": false,
+    "js": "S.pos.y += 3.4;"
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": 8,
+    "dist": 1.9,
+    "alto": 1.25,
+    "miraAlto": 1.2,
+    "fov": 40,
+    "rumboFijo": true
+   },
+   "acciones": [
+    {
+     "t": -0.2,
+     "a": "expresion",
+     "nombre": "surprised"
+    }
+   ]
+  },
+  {
+   "id": "mundo_celebra",
+   "dur": 1.2,
+   "preroll": 0.5,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": 2,
+     "dz": -3
+    },
+    "mirarA": {
+     "poi": "plaza",
+     "dx": 2,
+     "dz": 5
+    },
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": -15,
+    "dist": 2.3,
+    "alto": 0.85,
+    "miraAlto": 1.05,
+    "fov": 42,
+    "rumboFijo": true
+   },
+   "acciones": [
+    {
+     "t": -0.25,
+     "a": "gesto",
+     "nombre": "celebrar"
+    }
+   ]
+  },
+  {
+   "id": "mundo_ropero_pava",
+   "dur": 3.0,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -1,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "estacion"
+    },
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "orbita",
+    "relativo": true,
+    "rumboFijo": true,
+    "radio": 2.6,
+    "alto": 1.25,
+    "ang": -40,
+    "vel": 52,
+    "miraAlto": 1.0,
+    "fov": 42
+   },
+   "acciones": [
+    {
+     "t": 0.6,
+     "a": "gesto",
+     "nombre": "bailar"
+    }
+   ]
+  },
+  {
+   "id": "mundo_gorra_bandera",
+   "dur": 3.0,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -1,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "estacion"
+    },
+    "ropa": "bandera",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": [
+     -35,
+     10
+    ],
+    "dist": 1.9,
+    "alto": 1.85,
+    "miraAlto": 1.55,
+    "fov": 32,
+    "rumboFijo": true,
+    "curva": "suave"
+   }
+  },
+  {
+   "id": "aprender_predecir",
+   "dur": 4.8,
+   "preroll": 0.5,
+   "hud": true,
+   "estado": {
+    "edu": "p1",
+    "en": {
+     "xz": [
+      184.4,
+      129.6
+     ]
+    },
+    "mirarA": [
+     186,
+     128
+    ],
+    "ropa": "exploradora",
+    "camYaw": 200
+   },
+   "camara": {
+    "tipo": "juego",
+    "giro": 4
+   },
+   "acciones": [
+    {
+     "t": 0.2,
+     "a": "accion"
+    },
+    {
+     "t": 2.0,
+     "a": "clic",
+     "sel": "#d-next"
+    },
+    {
+     "t": 2.2,
+     "a": "clic",
+     "sel": "#d-next"
+    },
+    {
+     "t": 3.8,
+     "a": "clic",
+     "sel": ".edu-opt",
+     "texto": "monta"
+    }
+   ],
+   "montaje": {
+    "transicion": 0.4
+   }
+  },
+  {
+   "id": "aprender_vapor_nube",
+   "dur": 3.6,
+   "preroll": 0.6,
+   "estado": {
+    "edu": "p5",
+    "pos": [
+     187.8,
+     115
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 4,
+    "aprendiz": false,
+    "mirarA": [
+     150,
+     60
+    ]
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 6,
+    "alto": -1.0,
+    "adelante": 0,
+    "miraAlto": 4.5,
+    "fov": 58,
+    "suave": 0.2
+   },
+   "acciones": [
+    {
+     "t": -0.6,
+     "a": "vuelo",
+     "dur": 5.0,
+     "curva": "lineal",
+     "puntos": [
+      {
+       "xz": [
+        180,
+        104
+       ],
+       "dy": 10
+      },
+      {
+       "xz": [
+        170,
+        90
+       ],
+       "dy": 20
+      },
+      {
+       "xz": [
+        158,
+        74
+       ],
+       "dy": 30
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "aprender_gota_rio",
+   "dur": 1.2,
+   "preroll": 0.5,
+   "estado": {
+    "edu": "p6",
+    "pos": [
+     150,
+     60
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 12,
+    "aprendiz": false,
+    "mirarA": [
+     172,
+     128
+    ]
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 5,
+    "alto": 2,
+    "adelante": 3,
+    "miraAlto": -0.5,
+    "fov": 55,
+    "suave": 0.15
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 2.4,
+     "curva": "lineal",
+     "puntos": [
+      {
+       "xz": [
+        160,
+        90
+       ],
+       "dy": 9
+      },
+      {
+       "xz": [
+        170,
+        118
+       ],
+       "dy": 6
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "aprender_buceo_crecida",
+   "dur": 3.0,
+   "preroll": 1.5,
+   "estado": {
+    "edu": "p7",
+    "pos": [
+     183,
+     113
+    ],
+    "mirarA": [
+     196.6,
+     115
+    ],
+    "ropa": "exploradora",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 3.2,
+    "alto": 1.8,
+    "adelante": 1.0,
+    "miraAlto": -0.8,
+    "fov": 55,
+    "suave": 0.2
+   },
+   "acciones": [
+    {
+     "t": -1.5,
+     "a": "ruta",
+     "puntos": [
+      [
+       188,
+       115
+      ],
+      [
+       195,
+       115
+      ]
+     ],
+     "mag": 0.7
+    },
+    {
+     "t": -1.0,
+     "a": "bucear"
+    }
+   ]
+  },
+  {
+   "id": "aprender_predije_vi",
+   "dur": 3.6,
+   "preroll": 0.4,
+   "hud": true,
+   "estado": {
+    "edu": "p8",
+    "en": {
+     "xz": [
+      184.4,
+      129.6
+     ]
+    },
+    "mirarA": [
+     186,
+     128
+    ],
+    "ropa": "exploradora",
+    "camYaw": 200
+   },
+   "camara": {
+    "tipo": "juego",
+    "giro": 3
+   },
+   "acciones": [
+    {
+     "t": 0.2,
+     "a": "js",
+     "js": "G.c.edu.contraste && G.c.edu.contraste();"
+    }
+   ]
+  },
+  {
+   "id": "aprender_pava_premio",
+   "dur": 3.0,
+   "preroll": 0.4,
+   "hud": true,
+   "estado": {
+    "edu": "p8",
+    "en": {
+     "xz": [
+      184.4,
+      129.6
+     ]
+    },
+    "mirarA": [
+     190,
+     134
+    ],
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": 10,
+    "dist": 2.4,
+    "alto": 1.25,
+    "miraAlto": 1.1,
+    "fov": 44,
+    "rumboFijo": true
+   },
+   "acciones": [
+    {
+     "t": 0.1,
+     "a": "js",
+     "js": "G.misiones.complete && G.misiones.complete('educativa');"
+    },
+    {
+     "t": 0.5,
+     "a": "ropa",
+     "ropa": "pava"
+    },
+    {
+     "t": 0.9,
+     "a": "gesto",
+     "nombre": "celebrar"
+    }
+   ]
+  },
+  {
+   "id": "diario_hallazgo",
+   "dur": 2.4,
+   "preroll": 0.5,
+   "hud": true,
+   "estado": {
+    "en": {
+     "xz": [
+      151,
+      171
+     ]
+    },
+    "mirarA": [
+     158,
+     176
+    ],
+    "ropa": "exploradora",
+    "js": "(S.field = (S.field || []).filter(f => f !== 'flamboyan'));"
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 5,
+    "alto": 2.0,
+    "adelante": 2,
+    "miraAlto": 1.0,
+    "fov": 52,
+    "suave": 0.25
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "ruta",
+     "puntos": [
+      [
+       157.2,
+       175.4
+      ]
+     ],
+     "frenar": 2
+    }
+   ]
+  },
+  {
+   "id": "diario_ficha",
+   "dur": 4.8,
+   "preroll": 0.3,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "plaza"
+    },
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": -0.3,
+     "a": "js",
+     "js": "G.aula.desbloquear && G.aula.desbloquear('cotorra_estatus'); G.diario.open(); setTimeout(() => { const el = document.querySelector('#card [data-ficha=cotorra_estatus], #card .ficha-ciencia, #card [data-seccion=ciencia]'); if (el) el.scrollIntoView({block:'center'}); }, 50);"
+    }
+   ],
+   "montaje": {
+    "zoom": [
+     1.0,
+     1.35
+    ],
+    "zoom_centro": [
+     620,
+     640
+    ]
+   }
+  },
+  {
+   "id": "maestro_panel",
+   "dur": 3.6,
+   "preroll": 0.3,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "plaza"
+    },
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": -0.3,
+     "a": "js",
+     "js": "G.aula.abrirMaestro && G.aula.abrirMaestro();"
+    },
+    {
+     "t": 0.8,
+     "a": "js",
+     "js": "const b=[...document.querySelectorAll('button,[role=tab]')].find(e=>/gu[ií]a/i.test(e.textContent)); b && b.click();"
+    }
+   ]
+  },
+  {
+   "id": "maestro_reporte",
+   "dur": 3.6,
+   "preroll": 0.3,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "plaza"
+    },
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": -0.3,
+     "a": "js",
+     "js": "G.aula.setAjuste && G.aula.setAjuste('estacion','Estación 4'); G.aula.abrirMaestro && G.aula.abrirMaestro(); const b=[...document.querySelectorAll('button,[role=tab]')].find(e=>/reporte/i.test(e.textContent)); b && b.click();"
+    }
+   ],
+   "montaje": {
+    "zoom": [
+     1.0,
+     1.1
+    ]
+   }
+  },
+  {
+   "id": "maestro_idiomas_voz",
+   "dur": 4.8,
+   "preroll": 0.4,
+   "hud": true,
+   "estado": {
+    "edu": "p1",
+    "en": {
+     "xz": [
+      184.4,
+      129.6
+     ]
+    },
+    "mirarA": [
+     186,
+     128
+    ],
+    "ropa": "exploradora",
+    "camYaw": 200,
+    "js": "G.aula.setAjuste && G.aula.setAjuste('idioma','es');"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": 0.2,
+     "a": "accion"
+    },
+    {
+     "t": 2.0,
+     "a": "clic",
+     "sel": "#d-next"
+    },
+    {
+     "t": 2.2,
+     "a": "clic",
+     "sel": "#d-next"
+    },
+    {
+     "t": 2.9,
+     "a": "js",
+     "js": "G.aula.setAjuste('idioma','en');"
+    },
+    {
+     "t": 3.9,
+     "a": "clic",
+     "sel": "#card button",
+     "texto": "Listen"
+    },
+    {
+     "t": 3.95,
+     "a": "clic",
+     "sel": "#card button",
+     "texto": "Escuchar"
+    }
+   ]
+  },
+  {
+   "id": "criadero_seq",
+   "dur": 6.0,
+   "preroll": 3.0,
+   "lienzo": ".cr-canvas",
+   "nota": "Eclosión real del criadero (G.criadero.debug). T de la eclosión = t + 2.8: grietas 3.4-4.6, patitas 5.0, hatch 7.6. criadero_eclosion usa 0-4.8 y criadero_bebe 4.8-6.0 de esta captura.",
+   "estado": {
+    "ropa": "base",
+    "js": "return G.criadero.debug.etapa('clasico','huevo');"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": -2.8,
+     "a": "js",
+     "js": "return G.criadero.debug.eclosion('clasico');"
+    }
+   ]
+  },
+  {
+   "id": "criadero_eclosion",
+   "sinCaptura": true,
+   "captura_de": "criadero_seq",
+   "montaje": {
+    "entrada": 0.5,
+    "transicion": 0.4
+   }
+  },
+  {
+   "id": "criadero_bebe",
+   "sinCaptura": true,
+   "captura_de": "criadero_seq",
+   "montaje": {
+    "entrada": 5.3
+   }
+  },
+  {
+   "id": "criadero_juvenil",
+   "dur": 1.2,
+   "preroll": 1.0,
+   "lienzo": ".cr-canvas",
+   "estado": {
+    "ropa": "base",
+    "js": "return G.criadero.debug.etapa('clasico','juvenil').then(() => G.criadero.debug.postura('saltando', 8));"
+   },
+   "camara": {
+    "tipo": "juego"
+   }
+  },
+  {
+   "id": "criadero_adulto",
+   "dur": 1.8,
+   "preroll": 1.0,
+   "lienzo": ".cr-canvas",
+   "estado": {
+    "ropa": "base",
+    "js": "return G.criadero.debug.etapa('clasico','adulto');"
+   },
+   "camara": {
+    "tipo": "juego"
+   }
+  },
+  {
+   "id": "criadero_vuelo",
+   "dur": 3.0,
+   "preroll": 1.2,
+   "nota": "La cría (compañera) sigue a Vittata en el mundo.",
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -2,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "taller"
+    },
+    "ropa": "exploradora",
+    "aprendiz": true,
+    "js": "return G.criadero.debug.etapa('clasico','bebe').then(() => { G.criadero.cerrar(); });"
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 2.5,
+    "lado": -4.2,
+    "alto": 0.9,
+    "adelante": 0,
+    "miraAlto": 0.6,
+    "fov": 46,
+    "suave": 0.3,
+    "suaveGiro": 1.0
+   },
+   "acciones": [
+    {
+     "t": -1.0,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "taller",
+       "dz": 5
+      }
+     ],
+     "mag": 0.55
+    }
+   ]
+  },
+  {
+   "id": "tec_navegador",
+   "dur": 6.0,
+   "preroll": 0.3,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "taller",
+     "dz": 4
+    },
+    "mirarA": {
+     "poi": "plaza"
+    },
+    "ropa": "exploradora",
+    "camYaw": 20,
+    "js": "document.getElementById('title').setAttribute('open','');"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": 2.0,
+     "a": "clic",
+     "sel": "#title form button"
+    },
+    {
+     "t": 3.6,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "plaza"
+      }
+     ]
+    }
+   ],
+   "montaje": {
+    "marco": {
+     "grafico": "marco_navegador",
+     "area": [
+      160,
+      120,
+      1600,
+      900
+     ]
+    },
+    "transicion": 0.4
+   }
+  },
+  {
+   "id": "tec_motor_cap1",
+   "dur": 7.2,
+   "preroll": 0.5,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": 4,
+     "dz": 4
+    },
+    "mirarA": {
+     "poi": "taller"
+    },
+    "ropa": "exploradora",
+    "camYaw": -40
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": 0.3,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "taller",
+       "dz": 6
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tec_motor_plantilla",
+   "dur": 7.2,
+   "preroll": 0.5,
+   "hud": true,
+   "pack": "plantilla",
+   "estado": {},
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": 0.3,
+     "a": "caminar",
+     "rumbo": 200
+    },
+    {
+     "t": 3.5,
+     "a": "caminar",
+     "rumbo": 120
+    }
+   ],
+   "montaje": {
+    "dividida": [
+     "tec_motor_cap1",
+     "tec_motor_plantilla"
+    ]
+   }
+  },
+  {
+   "id": "tec_vuelo_rendimiento",
+   "dur": 2.4,
+   "preroll": 0.5,
+   "estado": {
+    "pos": [
+     150,
+     222
+    ],
+    "mirarA": [
+     0,
+     226
+    ],
+    "ropa": "bandera",
+    "volando": true,
+    "altura": 10,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 0.8,
+    "lado": -6,
+    "alto": 1.0,
+    "adelante": 1.5,
+    "miraAlto": 0.4,
+    "fov": 52,
+    "suave": 0.15
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 3.6,
+     "curva": "lineal",
+     "puntos": [
+      [
+       124,
+       223
+      ],
+      [
+       100,
+       224
+      ],
+      [
+       78,
+       226
+      ]
+     ],
+     "sobreSuelo": 9
+    }
+   ]
+  },
+  {
+   "id": "tec_isla_completa",
+   "dur": 3.6,
+   "preroll": 0.5,
+   "estado": {
+    "pos": [
+     150,
+     200
+    ],
+    "mirarA": [
+     60,
+     120
+    ],
+    "ropa": "bandera",
+    "volando": true,
+    "altura": 30,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 25,
+    "alto": 15,
+    "adelante": 10,
+    "miraAlto": -3,
+    "fov": 60,
+    "suave": 0.3
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 4.8,
+     "curva": "lineal",
+     "puntos": [
+      [
+       128,
+       180
+      ],
+      [
+       104,
+       158
+      ],
+      [
+       80,
+       138
+      ]
+     ],
+     "sobreSuelo": 30
+    }
+   ]
+  },
+  {
+   "id": "mercado_aprendiz",
+   "dur": 4.8,
+   "preroll": 1.0,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -2
+    },
+    "mirarA": {
+     "poi": "taller"
+    },
+    "ropa": "exploradora",
+    "aprendiz": true
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 1.0,
+    "lado": -5.5,
+    "alto": 1.1,
+    "adelante": 0,
+    "miraAlto": 0.8,
+    "fov": 46,
+    "suave": 0.3,
+    "suaveGiro": 1.0
+   },
+   "acciones": [
+    {
+     "t": -1.0,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "taller",
+       "dz": 5
+      }
+     ],
+     "mag": 0.7
+    }
+   ],
+   "montaje": {
+    "transicion": 0.4
+   }
+  },
+  {
+   "id": "mercado_cifras",
+   "dur": 7.2,
+   "preroll": 0.5,
+   "estado": {
+    "en": {
+     "poi": "muelle"
+    },
+    "mirarA": {
+     "poi": "playa",
+     "dz": 20
+    },
+    "ropa": "bandera",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "dron",
+    "puntos": [
+     {
+      "xz": [
+       146,
+       226
+      ],
+      "dy": 25
+     },
+     {
+      "xz": [
+       176,
+       226
+      ],
+      "dy": 24
+     }
+    ],
+    "mira": [
+     {
+      "xz": [
+       146,
+       200
+      ],
+      "dy": 0
+     },
+     {
+      "xz": [
+       176,
+       200
+      ],
+      "dy": 0
+     }
+    ],
+    "fov": 50,
+    "curva": "lineal",
+    "margenSuelo": 20
+   }
+  },
+  {
+   "id": "mercado_ropero",
+   "dur": 6.6,
+   "preroll": 0.6,
+   "hud": true,
+   "estado": {
+    "en": {
+     "poi": "plaza"
+    },
+    "ropa": "exploradora",
+    "js": "G.creador.open(false);"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": 1.0,
+     "a": "clic",
+     "sel": "#p-slots .thumb",
+     "texto": ""
+    },
+    {
+     "t": 2.4,
+     "a": "js",
+     "js": "const b=[...document.querySelectorAll('#p-slots [data-style]')].find(e=>/deport/i.test(e.dataset.style)); b && b.click();"
+    },
+    {
+     "t": 4.0,
+     "a": "js",
+     "js": "const b=[...document.querySelectorAll('#p-slots .thumb')].find(e=>/lentes/i.test(e.dataset.id||'')); b && b.click();"
+    }
+   ]
+  },
+  {
+   "id": "mercado_baile_plaza",
+   "dur": 5.4,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -1,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "luma"
+    },
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "orbita",
+    "relativo": true,
+    "rumboFijo": true,
+    "radio": 3.5,
+    "alto": 1.3,
+    "ang": 20,
+    "vel": 20,
+    "miraAlto": 1.0,
+    "fov": 44
+   },
+   "acciones": [
+    {
+     "t": -0.4,
+     "a": "gesto",
+     "nombre": "bailar"
+    }
+   ]
+  },
+  {
+   "id": "cierre_mirador_camina",
+   "dur": 7.2,
+   "preroll": 0.8,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dx": -4,
+     "dz": 5
+    },
+    "mirarA": {
+     "poi": "mirador",
+     "dx": 2,
+     "dz": 5
+    },
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": [
+     4,
+     5
+    ],
+    "alto": [
+     1.6,
+     2.4
+    ],
+    "adelante": 4,
+    "miraAlto": 1.0,
+    "fov": 50,
+    "suave": 0.4,
+    "suaveGiro": 1.2
+   },
+   "acciones": [
+    {
+     "t": -0.8,
+     "a": "ruta",
+     "puntos": [
+      {
+       "poi": "mirador",
+       "dx": 1.5,
+       "dz": 4.8
+      },
+      {
+       "poi": "mirador",
+       "dx": 5.2,
+       "dz": 1.2
+      }
+     ],
+     "mag": 0.4,
+     "frenar": 1.5
+    },
+    {
+     "t": 5.0,
+     "a": "mirar",
+     "hacia": [
+      60,
+      190
+     ]
+    }
+   ],
+   "montaje": {
+    "transicion": 0.5
+   }
+  },
+  {
+   "id": "cierre_primer_plano",
+   "dur": 4.8,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dx": 5.2,
+     "dz": 1.2
+    },
+    "mirarA": [
+     60,
+     190
+    ],
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": -150,
+    "dist": [
+     1.9,
+     1.45
+    ],
+    "alto": 1.3,
+    "miraAlto": 1.15,
+    "fov": 38,
+    "rumboFijo": true
+   },
+   "acciones": [
+    {
+     "t": 0.6,
+     "a": "mirarCamara"
+    },
+    {
+     "t": 0.7,
+     "a": "expresion",
+     "nombre": "happy"
+    },
+    {
+     "t": 1.1,
+     "a": "gesto",
+     "nombre": "saludar"
+    }
+   ]
+  },
+  {
+   "id": "cierre_despegue",
+   "dur": 4.8,
+   "preroll": 0.5,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dx": 2.5,
+     "dz": 0.5
+    },
+    "rumbo": 90,
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "dron",
+    "puntos": [
+     {
+      "jugador0": true,
+      "frente": 2.5,
+      "lado": -6,
+      "dy": 1.4
+     },
+     {
+      "jugador0": true,
+      "frente": 5,
+      "lado": -14,
+      "dy": 12
+     },
+     {
+      "jugador0": true,
+      "frente": 7,
+      "lado": -30,
+      "dy": 25
+     }
+    ],
+    "fov": [
+     45,
+     60
+    ],
+    "curva": "inOut",
+    "miraAlto": 0.6,
+    "suaveMira": 0.12
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "caminar",
+     "rumbo": 92,
+     "correr": true
+    },
+    {
+     "t": 0.15,
+     "a": "saltar"
+    },
+    {
+     "t": 0.3,
+     "a": "vuelo",
+     "dur": 12.0,
+     "curva": "lineal",
+     "puntos": [
+      [
+       26,
+       174
+      ],
+      [
+       45,
+       181
+      ],
+      [
+       72,
+       189
+      ],
+      [
+       104,
+       197
+      ],
+      [
+       135,
+       205
+      ],
+      [
+       160,
+       214
+      ]
+     ],
+     "sobreSuelo": 19
+    }
+   ],
+   "montaje": {
+    "transicion": 0.0
+   }
+  },
+  {
+   "id": "cierre_logo",
+   "dur": 7.2,
+   "preroll": 0.5,
+   "estado": {
+    "pos": [
+     90,
+     193
+    ],
+    "mirarA": [
+     170,
+     214
+    ],
+    "ropa": "boricua",
+    "volando": true,
+    "altura": 19,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 12,
+    "alto": 6,
+    "adelante": 6,
+    "miraAlto": 0,
+    "fov": 55,
+    "suave": 0.3
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 8.4,
+     "curva": "lineal",
+     "puntos": [
+      [
+       112,
+       199
+      ],
+      [
+       135,
+       205
+      ],
+      [
+       160,
+       213
+      ],
+      [
+       185,
+       220
+      ]
+     ],
+     "sobreSuelo": 16
+    }
+   ],
+   "montaje": {
+    "desenfoque": [
+     0,
+     14
+    ],
+    "titulo": {
+     "estilo": "logoSub",
+     "sub": "Hecho en Puerto Rico",
+     "ancho": 900
+    },
+    "titulo_inicio": 0.0,
+    "fundido_salida": 0.8
+   }
+  },
+  {
+   "id": "mercado_cifras_escuelas",
+   "sinCaptura": true,
+   "captura_de": "mercado_cifras",
+   "montaje": {
+    "entrada": 0.5,
+    "desenfoque": 10
+   }
+  },
+  {
+   "id": "mercado_cifras_hispanos",
+   "sinCaptura": true,
+   "captura_de": "mercado_cifras",
+   "montaje": {
+    "entrada": 4.1,
+    "desenfoque": 10
+   }
+  }
+ ],
+ "opciones_montaje": {
+  "logo": false
+ }
+}

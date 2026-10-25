@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Captura del pitch · Amazona Verse</title>
+<!-- Abre el juego en un iframe de 1280x720 CSS, le inyecta tools/video/captura.js y corre un guion de captura.
+     Parámetros: ?guion=tools/video/guiones/pitch.json&ver=v1[&solo=toma1,toma2][&previa=1][&graficos=0][&ss=2]
+     Lo abre tools/video/capturar.py (Chrome sin ventana); también se puede abrir a mano en el navegador. -->
+<style>
+  html, body { margin: 0; height: 100%; background: #0d1f17; color: #eaf6ef; font: 15px/1.4 system-ui, sans-serif; overflow: hidden; }
+  #estado { position: fixed; left: 12px; top: 10px; z-index: 2; background: rgba(0,0,0,.6); padding: 8px 12px; border-radius: 8px; white-space: pre; }
+  #marco { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; border: 0; transform-origin: 0 0; }
+</style>
+<div id="estado">Preparando…</div>
+<iframe id="marco" title="Juego"></iframe>
+<script>
+(async function () {
+  'use strict';
+  const q = new URLSearchParams(location.search);
+  const guion = q.get('guion') || 'tools/video/guiones/v0.json';
+  const ver = q.get('ver') || 'v0';
+  const solo = q.get('solo') ? q.get('solo').split(',') : null;
+  const ss = q.get('ss') ? +q.get('ss') : undefined;
+  const estado = document.getElementById('estado');
+  const marco = document.getElementById('marco');
+  // El juego se maqueta a 1280x720 CSS (como un Chromebook): así la interfaz viva y la que se rasteriza para el HUD
+  // coinciden. El lienzo WebGL se renderiza aparte a 1920x1080 (x2 de supermuestreo) desde captura.js.
+  const ajustar = () => { const k = Math.min(innerWidth / 1280, innerHeight / 720); marco.style.transform = `scale(${k})`; };
+  addEventListener('resize', ajustar); ajustar();
+  const base = location.pathname.replace(/tools\/video\/[^/]*$/, '');
+  const aviso = async (obj) => { try { await fetch(base + '__save?name=' + encodeURIComponent(`pitch-${ver}-estado.json`), { method: 'POST', body: JSON.stringify(obj) }); } catch (e) { /* sin servidor */ } };
+  try {
+    marco.src = base + 'index.html?captura=' + Date.now() + (q.get('pack') ? '&pack=' + encodeURIComponent(q.get('pack')) : '');
+    await new Promise(r => marco.addEventListener('load', r, { once: true }));
+    const w = marco.contentWindow;
+    estado.textContent = 'Esperando al juego…';
+    await new Promise((res, rej) => { const t0 = Date.now(); (function mira() { const A = w.AV && w.AV.G && w.AV.G.actores; if (A && (A.player3D || A.failed3D || Date.now() - t0 > 20000)) return res(); if (Date.now() - t0 > 90000) return rej(new Error('el juego no arrancó en 90 s')); setTimeout(mira, 200); })(); });
+    await new Promise((res, rej) => { const s = w.document.createElement('script'); s.src = base + 'tools/video/captura.js?t=' + Date.now(); s.onload = res; s.onerror = () => rej(new Error('no cargó captura.js')); w.document.head.append(s); });
+    const CAP = w.AVCAP;
+    const reloj = setInterval(() => { const s = CAP.status || {}; estado.textContent = `Captura ${ver} · ${s.fase || ''}\n${s.toma || ''} ${s.cuadro || ''}/${s.de || ''} · ${s.fpsCaptura || ''} cps · ${s.mb || 0} MB${s.error ? '\nERROR ' + s.error : ''}`; }, 500);
+    const op = { version: ver };
+    if (solo) op.solo = solo;
+    if (q.get('previa') === '1') op.tiempos = true;
+    if (ss) op.salida = { ss };
+    let gfx = [];
+    if (q.get('graficos') !== '0' && !solo) { estado.textContent = 'Gráficos (títulos y logo)…'; gfx = await CAP.graficos(guion, { version: ver }); }
+    const m = await CAP.guion(guion, op);
+    clearInterval(reloj);
+    estado.textContent = `Terminado ${ver}: ${m.tomas.length} tomas · ${m.mb} MB · ${m.segundos} s${m.error ? '\nERROR ' + m.error : ''}`;
+    await aviso({ fase: 'terminada', graficos: gfx, error: m.error || null });
+  } catch (e) {
+    estado.textContent = 'ERROR: ' + (e && e.message || e);
+    await aviso({ fase: 'error', error: String(e && e.message || e) });
+  }
+})();
+</script>
