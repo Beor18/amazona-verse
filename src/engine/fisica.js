@@ -137,9 +137,9 @@ AVE.module('fisica', function (G) {
     MOVE.dashT = T.dashTime; MOVE.dashCd = T.dashCooldown;
     G.audio.play('dash');
   }
-  // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz). Los de edificios, estructuras y árboles se
-  // ignoran donde solidos.js ya tiene su geometría real (si no, empujarían fuera de un techo a quien está parado encima).
-  const KIND_SOLIDO = { edificio: 1, estructura: 1, arbol: 1 };
+  // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz). Los de edificios, estructuras, árboles, el taller
+  // y las estacas se ignoran donde solidos.js ya tiene su geometría real (si no, empujarían fuera de un techo a quien está parado encima).
+  const KIND_SOLIDO = { edificio: 1, estructura: 1, arbol: 1, taller: 1, post: 1 };
   function pushOut(p, c, rad) {
     if (c.r <= 0 || (c.when && !c.when())) return;
     if (KIND_SOLIDO[c.kind] && G.solidos && G.solidos.activo) {
