@@ -22,7 +22,9 @@ def M():
                 MADERA_OSCURA=mat('MADERA_OSCURA', hexrgb('#5a3519'), 0.5), METAL=mat('METAL', hexrgb('#b9c4c9'), 0.3, 0.9),
                 ACENTO=mat('ACENTO', hexrgb('#2a5bd7'), 0.5), NEGRO=mat('NEGRO', hexrgb('#1c1c1e'), 0.6),
                 BLANCO=mat('BLANCO', hexrgb('#f6f6f2'), 0.6), ROJO=mat('ROJO', hexrgb('#e3262e'), 0.6),
-                AZUL=mat('AZUL', hexrgb('#2c6fd6'), 0.6), DORADO=mat('DORADO', hexrgb('#d8b04a'), 0.3, 0.9),
+                AZUL=mat('AZUL', hexrgb('#2c6fd6'), 0.6),
+                PR_ROJO=mat('PR_ROJO', hexrgb('#ee0000'), 0.6), PR_AZUL=mat('PR_AZUL', hexrgb('#0044ff'), 0.6),
+                PR_BLANCO=mat('PR_BLANCO', hexrgb('#ffffff'), 0.6), DORADO=mat('DORADO', hexrgb('#d8b04a'), 0.3, 0.9),
                 PAPEL=mat('PAPEL', hexrgb('#efe2b8'), 0.9), TINTA=mat('TINTA', hexrgb('#7a5634'), 0.8))
 
 
@@ -54,6 +56,12 @@ def fit_grip(r, back, fwd, clear=0.003):
     return best[1]
 
 
+def normals_out(o):
+    """Normales hacia fuera en una cáscara cerrada (la tela de la bandera se veía oscura por un lado: normales al revés)."""
+    bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(o.data); bm.free()
+    o.data.update(); return o
+
+
 def F(G, s, a=0.0, b=0.0):
     """Punto del marco del objeto: s a lo largo de A, a hacia afuera (S), b hacia arriba (NUP)."""
     return G + A * s + S * a + NUP * b
@@ -65,14 +73,17 @@ def handle(G, s0, s1, r0, r1, mt, seg=12):
 
 # ---------------------------------------------------------------------------------------------- piezas
 def bandera():
-    mt = M(); r = 0.0105
+    """Bandera de PR fiel (docs/BANDERA_PR_GUIA.md): 2:3, 5 franjas iguales, triángulo equilátero en el asta y estrella
+    de 5 puntas centrada en el baricentro (radio exterior = alto/6, interior 0,382). Colores #EE0000 / #0044FF / #FFFFFF.
+    Auditoría: 18 × 27 cm (antes 15 × 22,5): se lee a la distancia de juego; asta de Ø 2,4 cm."""
+    mt = M(); r = 0.012
     G = fit_grip(r, 0.07, 0.14)
-    parts = [handle(G, -0.07, 0.52, r, r * 0.9, mt['MADERA'])]
-    parts.append(set_mat(sphere('remate', F(G, 0.535), 0.017, seg=12, rings=8), mt['DORADO']))
-    parts.append(set_mat(revolve('punta', F(G, 0.545), F(G, 0.585), [(0, 0.007), (1, 0.0)], seg=10, cap1=False), mt['DORADO']))
-    parts.append(set_mat(revolve('regaton', F(G, -0.082), F(G, -0.064), [(0, 0.009), (1, 0.0115)], seg=12), mt['DORADO']))
+    parts = [handle(G, -0.07, 0.565, r, r * 0.9, mt['MADERA'])]
+    parts.append(set_mat(sphere('remate', F(G, 0.58), 0.019, seg=14, rings=8), mt['DORADO']))
+    parts.append(set_mat(revolve('punta', F(G, 0.592), F(G, 0.635), [(0, 0.008), (1, 0.0)], seg=12, cap1=False), mt['DORADO']))
+    parts.append(set_mat(revolve('regaton', F(G, -0.082), F(G, -0.064), [(0, 0.0105), (1, 0.013)], seg=14), mt['DORADO']))
     # bandera de PR ondeando (5 franjas, triángulo azul con estrella blanca), plano (A, NUP)
-    s0, hoist, fly = 0.355, 0.15, 0.225
+    s0, hoist, fly = 0.375, 0.18, 0.27
     def fp(s, q, side=0.0):
         t = q / fly; wave = 0.014 * math.sin(2 * math.pi * (1.15 * t) + 0.4) * t + 0.004 * math.sin(math.pi * s / hoist)
         return F(G, s0 + s - 0.01 * t * t, wave + side, r * 0.6 + q)
@@ -83,11 +94,11 @@ def bandera():
     rows.append(hoist)
     G2 = [[fp(s, fly * i / nq) for i in range(nq + 1)] for s in rows]
     fl = grid_mesh('bandera', G2)
-    fl.data.materials.append(mt['ROJO']); fl.data.materials.append(mt['BLANCO'])
+    fl.data.materials.append(mt['PR_ROJO']); fl.data.materials.append(mt['PR_BLANCO'])
     for p in fl.data.polygons:
         row = p.index // nq; stripe = row // 2
         p.material_index = 0 if stripe % 2 == 0 else 1
-    add_mod(fl, 'SOLIDIFY', thickness=0.0024, offset=0, use_rim=True); apply_mods(fl)
+    add_mod(fl, 'SOLIDIFY', thickness=0.0024, offset=0, use_rim=True); apply_mods(fl); normals_out(fl)
     parts.append(fl)
     # triángulo y estrella por los dos lados
     apex = hoist * math.sqrt(3) / 2
@@ -97,12 +108,13 @@ def bandera():
         for k in range(n + 1):
             s = hoist * k / n; tri.append([fp(s, 0.0, side), fp(s, apex * (1 - abs(2 * k / n - 1)) * 0.999, side)])
         t = grid_mesh('triangulo', tri)
-        add_mod(t, 'SOLIDIFY', thickness=0.0008, offset=0, use_rim=True); apply_mods(t)
-        parts.append(set_mat(t, mt['AZUL']))
+        add_mod(t, 'SOLIDIFY', thickness=0.0008, offset=0, use_rim=True); apply_mods(t); normals_out(t)
+        parts.append(set_mat(t, mt['PR_AZUL']))
         c = fp(hoist / 2, apex / 3, side * 1.5); u = (fp(hoist / 2 + 0.01, apex / 3, side * 1.5) - c).normalized()
         n_ = S if side > 0 else -S
-        pts = [(math.cos(R(90) + k * math.pi / 5) * (0.022 if k % 2 == 0 else 0.009), math.sin(R(90) + k * math.pi / 5) * (0.022 if k % 2 == 0 else 0.009)) for k in range(10)]
-        parts.append(set_mat(prism('estrella', pts, 0, 0.0008, frame=(c, u, n_.cross(u), n_)), mt['BLANCO']))
+        ro = hoist / 6; ri = ro * 0.382   # una punta hacia arriba (hacia el borde de arriba de la bandera)
+        pts = [(math.cos(R(90) + k * math.pi / 5) * (ro if k % 2 == 0 else ri), math.sin(R(90) + k * math.pi / 5) * (ro if k % 2 == 0 else ri)) for k in range(10)]
+        parts.append(set_mat(prism('estrella', pts, 0, 0.0008, frame=(c, u, n_.cross(u), n_)), mt['PR_BLANCO']))
     return parts
 
 
@@ -137,39 +149,45 @@ def maracas():
 
 
 def linterna():
-    mt = M(); r = 0.02; parts = []
+    """Linterna: cabeza de Ø 8,4 cm (antes 7) y 0,25 m; el mango (Ø 4,8 cm) sigue en el puño."""
+    mt = M(); r = 0.024; parts = []
     G = fit_grip(r, 0.05, 0.12)
-    prof = [(0, 0.017), (0.03, 0.02), (0.62, 0.02), (0.7, 0.024), (0.86, 0.033), (0.88, 0.035), (1.0, 0.035)]
+    _F = globals()['F']
+    def F(G_, s, a=0.0, b=0.0): return _F(G_, s * 1.2, a * 1.2, b * 1.2)
+    prof = [(t, rr * 1.2) for t, rr in [(0, 0.017), (0.03, 0.02), (0.62, 0.02), (0.7, 0.024), (0.86, 0.033), (0.88, 0.035), (1.0, 0.035)]]
     parts.append(set_mat(revolve('cuerpo', F(G, -0.055), F(G, 0.15), prof, seg=20, cap0=True, cap1=False), mt['METAL']))
     for s in (-0.03, -0.015, 0.0, 0.015, 0.03, 0.045):   # estrías del mango
-        ring = [F(G, s) + (S * math.cos(2 * math.pi * i / 20) + NUP * math.sin(2 * math.pi * i / 20)) * 0.0205 for i in range(20)]
-        parts.append(set_mat(tube_path('estria', ring, 0.0016, seg=4, closed=True), mt['NEGRO']))
-    lens = revolve('luz', F(G, 0.146), F(G, 0.156), [(0, 0.031), (0.5, 0.031), (1, 0.026)], seg=20)
+        ring = [F(G, s) + (S * math.cos(2 * math.pi * i / 20) + NUP * math.sin(2 * math.pi * i / 20)) * 0.0246 for i in range(20)]
+        parts.append(set_mat(tube_path('estria', ring, 0.002, seg=6, closed=True), mt['NEGRO']))
+    lens = revolve('luz', F(G, 0.146), F(G, 0.156), [(0, 0.037), (0.5, 0.037), (1, 0.031)], seg=24)
     parts.append(set_mat(lens, cristal()))
-    bez = [F(G, 0.152) + (S * math.cos(2 * math.pi * i / 24) + NUP * math.sin(2 * math.pi * i / 24)) * 0.0345 for i in range(24)]
-    parts.append(set_mat(tube_path('bisel', bez, 0.004, seg=6, closed=True), mt['METAL']))
-    parts.append(set_mat(rbox('boton', F(G, 0.085, 0, 0.022), (0.014, 0.02, 0.008), bevel=0.003, axes=(S, A, NUP)), mt['ACENTO']))
+    bez = [F(G, 0.152) + (S * math.cos(2 * math.pi * i / 24) + NUP * math.sin(2 * math.pi * i / 24)) * 0.0414 for i in range(24)]
+    parts.append(set_mat(tube_path('bisel', bez, 0.0048, seg=8, closed=True), mt['METAL']))
+    parts.append(set_mat(rbox('boton', F(G, 0.085, 0, 0.0215), (0.017, 0.024, 0.0096), bevel=0.0036, axes=(S, A, NUP)), mt['ACENTO']))
     loop = [F(G, -0.055, 0, 0.0), F(G, -0.07, 0, 0.008), F(G, -0.078, 0, 0.0), F(G, -0.07, 0, -0.008), F(G, -0.055, 0, 0.0)]
-    parts.append(set_mat(tube_path('cordel', loop, 0.0022, seg=5), mt['ACENTO']))
+    parts.append(set_mat(tube_path('cordel', loop, 0.0028, seg=8), mt['ACENTO']))
     return parts
 
 
 def martillo():
-    mt = M(); r = 0.0125; parts = []
+    """Martillo de juguete robusto (auditoría: el de antes se veía de alambre): mango de Ø 3,4 cm y 0,33 m, cabeza de
+    5,2 cm con cara de golpe de Ø 4,6 cm y uña gruesa partida en V."""
+    mt = M(); r = 0.016; parts = []
     G = fit_grip(r, 0.05, 0.12)
-    parts.append(set_mat(revolve('mango', F(G, -0.055), F(G, 0.255), [(0, 0.014), (0.04, 0.0155), (0.3, 0.014), (0.85, 0.0115), (1, 0.012)], seg=12), mt['MADERA']))
-    parts.append(set_mat(revolve('virola', F(G, 0.235), F(G, 0.262), [(0, 0.0135), (1, 0.0135)], seg=12), mt['METAL']))
-    hc = F(G, 0.272)
-    parts.append(set_mat(rbox('cabeza', hc, (0.034, 0.036, 0.04), bevel=0.004, axes=(S, A, NUP)), mt['METAL']))
+    parts.append(set_mat(revolve('mango', F(G, -0.06), F(G, 0.27), [(0, 0.016), (0.04, 0.019), (0.3, 0.017), (0.85, 0.0145), (1, 0.015)], seg=16), mt['MADERA']))
+    parts.append(set_mat(revolve('tope', F(G, -0.072), F(G, -0.058), [(0, 0.015), (0.5, 0.02), (1, 0.019)], seg=16), mt['ACENTO']))
+    parts.append(set_mat(revolve('virola', F(G, 0.245), F(G, 0.278), [(0, 0.0165), (1, 0.0165)], seg=16), mt['METAL']))
+    hc = F(G, 0.29)
+    parts.append(set_mat(rbox('cabeza', hc, (0.046, 0.05, 0.054), bevel=0.007, segs=3, axes=(S, A, NUP)), mt['METAL']))
     # cara de golpe hacia abajo (-NUP)
-    parts.append(set_mat(revolve('cara', hc - NUP * 0.018, hc - NUP * 0.062, [(0, 0.016), (0.8, 0.017), (0.9, 0.019), (1, 0.017)], seg=16), mt['METAL']))
+    parts.append(set_mat(revolve('cara', hc - NUP * 0.024, hc - NUP * 0.08, [(0, 0.021), (0.75, 0.022), (0.88, 0.025), (1, 0.022)], seg=20), mt['METAL']))
     # orejas (uña) hacia arriba, curvadas hacia atrás y partidas en V
     for sd in (-1, 1):
         pts = []; rs = []
-        for k in range(7):
-            t = k / 6; pts.append(hc + NUP * (0.018 + 0.05 * t) - A * (0.022 * t * t) + S * sd * (0.006 + 0.004 * t)); rs.append(0.009 * (1 - 0.65 * t))
-        parts.append(set_mat(tube_path('una', pts, rs, seg=8), mt['METAL']))
-    parts.append(set_mat(rbox('cuna', hc + A * 0.0, (0.02, 0.012, 0.006), bevel=0.002, axes=(S, NUP, A)), mt['MADERA_OSCURA']))
+        for k in range(8):
+            t = k / 7; pts.append(hc + NUP * (0.024 + 0.062 * t) - A * (0.03 * t * t) + S * sd * (0.008 + 0.005 * t)); rs.append(0.0125 * (1 - 0.6 * t))
+        parts.append(set_mat(tube_path('una', pts, rs, seg=10), mt['METAL']))
+    parts.append(set_mat(rbox('cuna', hc + A * 0.0, (0.026, 0.016, 0.008), bevel=0.0025, axes=(S, NUP, A)), mt['MADERA_OSCURA']))
     return parts
 
 
@@ -180,7 +198,7 @@ def mapa():
     parts.append(set_mat(revolve('rollo', F(G, s0), F(G, s1), [(0, 0.014), (0.03, r), (0.97, r), (1, 0.014)], seg=16), mt['PAPEL']))
     for s in (s0, s1):  # bordes enrollados (espiral) a cada lado
         sp = [F(G, s + (0.0015 if s == s0 else -0.0015), 0.0, 0.0) + (S * math.cos(t) + NUP * math.sin(t)) * (0.004 + 0.0018 * t) for t in [k * 0.5 for k in range(14)]]
-        parts.append(set_mat(tube_path('espiral', sp, 0.0012, seg=4), mt['TINTA']))
+        parts.append(set_mat(tube_path('espiral', sp, 0.0012, seg=6), mt['TINTA']))
     # hoja abierta colgando del rollo hacia abajo y afuera, con el otro extremo enrollado
     L = 0.17; nl = 12; ns = 8
     def sheet(s, t, off=0.0):
@@ -204,7 +222,7 @@ def mapa():
             ang = 2 * math.pi * k / 28
             rr = 1 + 0.18 * math.sin(3 * ang) + 0.08 * math.cos(5 * ang)
             isla.append(sheet(0.5 + 0.36 * math.cos(ang) * rr, 0.42 + 0.17 * math.sin(ang) * rr, off)[0])
-        parts.append(set_mat(tube_path('isla', isla, 0.0013, seg=4, closed=True), mt['TINTA']))
+        parts.append(set_mat(tube_path('isla', isla, 0.0013, seg=6, closed=True), mt['TINTA']))
         for k in range(6):
             t = k / 5; p, n = sheet(0.25 + 0.45 * t, 0.62 - 0.32 * t + 0.08 * math.sin(math.pi * t * 2), off)
             parts.append(set_mat(sphere('paso', p, 0.0026, scale=(1, 1, 1), seg=6, rings=3), mt['ROJO']))
@@ -256,7 +274,12 @@ def coqui(cx=0.65, cy=-0.02):
         for k in (-1, 0, 1):
             parts.append(E('dedo', ft + Vector((k * 0.008 + sx * 0.003, -0.02 + abs(k) * 0.004, 0.0)), (0.0042, 0.0042, 0.0028), DEDO, seg=8, rings=4))
     mouth = [Vector((cx + 0.022 * math.cos(a), cy - 0.0585 + 0.004 * math.sin(a) * 0, z0 + 0.074 - 0.008 * math.sin(a))) for a in [math.pi * k / 8 for k in range(9)]]
-    parts.append(set_mat(tube_path('boca', mouth, 0.0016, seg=4), PUP))
+    parts.append(set_mat(tube_path('boca', mouth, 0.0016, seg=6), PUP))
+    # auditoría: ×1,4 (14 cm de alto; antes no se distinguía en la mano a la distancia de juego)
+    piv = Vector((cx, cy, z0))
+    for o in parts:
+        for v in o.data.vertices: v.co = piv + (v.co - piv) * 1.4
+        o.data.update()
     # lift: sube todo hasta que el punto más bajo quede a 3 mm de la mano
     for _ in range(4):
         w = 9.0
@@ -278,7 +301,7 @@ def finish(name):
     parts = PIEZAS[name]()
     for p in parts: apply_mods(p); ensure_uv(p)
     o = join(parts, name)
-    shade_smooth(o, 45)
+    shade_smooth(o, 75)
     check_clear([o], eyes=False)
     rigid(o, 'armL2')
     print('TRIS', name, tri_count(o), 'MATS', [m.name for m in o.data.materials])
