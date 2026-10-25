@@ -30,7 +30,7 @@ Abre http://127.0.0.1:8790. Con doble clic sobre `index.html` también funciona,
 ## Video
 Los loops van en `assets/video/` con estos nombres: `hero.mp4` y `hero.webm` (tomas `gancho_vuelo_mirador` y `mundo_dron_dosel` de `Juego/docs/pitch/TOMAS.json`). Formato: H.264 yuv420p con faststart, sin audio, ≤4 MB, 6–10 s en bucle; WebM VP9 opcional. Al dejar el archivo, añade su entrada en `assets/video/videos.json`, por ejemplo `"hero": {"mp4": "assets/video/hero.mp4", "webm": "assets/video/hero.webm"}`. Con `null` (o sin servidor) se ve el póster; así no hay peticiones 404. Solo carga cuando la sección se acerca a la pantalla, no se reproduce sola con *movimiento reducido* y siempre tiene botón de pausa.
 
-**Video pitch (2:45).** Va en Prensa y queda oculto hasta que `videos.json` traiga `"pitch"` con `mp4`, `poster` y `vtt`. Los subtítulos `pitch.es.vtt` y `pitch.en.vtt` ya están en borrador (texto de `Juego/docs/pitch/VO.txt`, tiempos estimados desde `GUION.md`): ajústalos al corte final. Se reproduce solo cuando la persona pulsa Play y muestra los subtítulos del idioma elegido.
+**Video pitch (2:45).** Va en Prensa y queda oculto hasta que `videos.json` traiga `"pitch"` con `mp4`, `poster` y `vtt`. Los subtítulos `pitch.es.vtt` y `pitch.en.vtt` ya están hechos: texto de `Juego/docs/pitch/VO.txt` con la grafía real y tiempos de `_trabajo_claude/pitch/audio/vo/vo_bloques.json` (si el sonido publica `tiempos.json` con cambios, ese manda). Se reproduce solo cuando la persona pulsa Play y muestra los subtítulos del idioma elegido.
 
 Para añadir otro loop (ropero, aprender, criadero), copia el bloque `.screen[data-video]` del hero, cambia `data-key` y el póster, y añade la clave en `videos.json`.
 
