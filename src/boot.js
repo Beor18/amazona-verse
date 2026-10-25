@@ -33,6 +33,7 @@
     if (G.streaming && G.streaming.test) AV.streamingTest = o => G.streaming.test(o); // src/engine/streaming.js
     if (G.guiaControles) AV.controlesTest = o => controles().then(m => m.test(o)); // src/game/guia_controles.js
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
+    if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
     // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
     let retos = null;
     const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => window.AVRetos(G), e => { retos = null; throw e; }));
