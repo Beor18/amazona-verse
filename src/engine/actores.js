@@ -51,6 +51,7 @@ AVE.module('actores', function (G) {
       a.applyLook({ species: J.especie, accessories: Object.assign({}, S.wear) });
       a.root.scale.setScalar(J.altura / a.height); b.root.scale.setScalar(((J.acompanante && J.acompanante.altura) || 1.4) / b.height);
       b.root.visible = false;
+      a.root.userData.sinCulling = b.root.userData.sinCulling = true; // siempre cerca de la cámara: el culling de objetos pequeños no los toca
       scene.add(a.root, b.root);
       player3D = a; companion3D = b;
       player.visible = false; companion.visible = false;
@@ -96,50 +97,124 @@ AVE.module('actores', function (G) {
   emoteMenu.addEventListener('click', e => { const b = e.target.closest('[data-emote]'); if (!b) return; emoteMenu.hidden = true; playEmote(b.dataset.emote); });
   $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; });
 
+  // ---------- Pico sincronizado con el diálogo ----------
+  // Fuente de la boca, por orden: la voz que lee la línea (speechSynthesis), la máquina de escribir de src/ui/ui.js (#d-type) o nada.
+  // Un cursor recorre el texto; cada sílaba que empieza abre el pico según su vocal (a/o más, i/u menos), las consonantes
+  // labiales (m, b, p) lo cierran antes y la puntuación lo cierra. Como mucho MOUTH.maxHz aperturas por segundo: a 45 letras/s
+  // el pico no vibra, aletea a ritmo de sílabas. Si un módulo emite G.emit('voz', { charIndex }) en cada palabra, se corrige el cursor.
+  const MOUTH = { maxHz: 9, voiceCps: 13, hold: 0.07, rest: 0.12 };
+  const VOWEL = { a: 1, á: 1, o: 0.9, ó: 0.9, e: 0.75, é: 0.75, i: 0.5, í: 0.5, u: 0.45, ú: 0.45, y: 0.4 };
+  const mouth = { text: '', cur: 0, last: -1, open: 0, t: 0, pulse: 0, src: '', vStart: 0, vChar: null };
+  G.on('voz', ev => { if (ev && ev.charIndex != null) mouth.vChar = ev.charIndex; });
+  function mouthFor(dt, mine) {
+    const dlg = $('dialog');
+    if (!mine || !dlg || dlg.hidden) { mouth.src = ''; mouth.open = 0; return null; }
+    const text = ($('d-text') && $('d-text').textContent) || '';
+    if (text !== mouth.text) { mouth.text = text; mouth.cur = 0; mouth.last = -1; mouth.t = 1; mouth.vStart = 0; mouth.vChar = null; } // la primera sílaba abre ya
+    let speaking = false; try { speaking = !!(window.speechSynthesis && speechSynthesis.speaking); } catch (e) { speaking = false; }
+    const tw = document.querySelector('#d-type > span'), typing = dlg.classList.contains('is-typing');
+    let cur = null;
+    if (speaking) {
+      if (!mouth.vStart) mouth.vStart = performance.now();
+      cur = mouth.vChar != null ? mouth.vChar + 1 : (performance.now() - mouth.vStart) / 1000 * MOUTH.voiceCps;
+      mouth.src = 'voz';
+    } else if (typing && tw) { cur = tw.textContent.length; mouth.src = 'texto'; }
+    else { mouth.src = ''; mouth.vStart = 0; if (!tw) return undefined; } // sin máquina de escribir ni voz: ritmo genérico
+    mouth.t += dt; mouth.pulse = Math.max(0, mouth.pulse - dt);
+    if (cur == null || cur >= text.length + 1) { mouth.open = 0; return 0; }
+    // ¿Empezó una sílaba nueva entre el cursor anterior y este? (vocal precedida de consonante, espacio o inicio)
+    let target = mouth.pulse > 0 ? mouth.open : MOUTH.rest * (/[\s.,;:!?…¡¿]/.test(text[Math.floor(cur) - 1] || ' ') ? 0 : 1);
+    for (let i = Math.max(0, mouth.last + 1); i < Math.min(text.length, Math.floor(cur)); i++) {
+      const ch = text[i].toLowerCase(), prev = (text[i - 1] || ' ').toLowerCase();
+      if (VOWEL[ch] && !VOWEL[prev] && mouth.t >= 1 / MOUTH.maxHz) {
+        target = VOWEL[ch] * (/[mbp]/.test(prev) ? 0.85 : 1); mouth.pulse = MOUTH.hold; mouth.t = 0;
+      }
+    }
+    mouth.last = Math.floor(cur) - 1;
+    mouth.open = target;
+    return mouth.open;
+  }
+  // Ladeo en las curvas y giro: se mide la velocidad de giro real del cuerpo
+  const turn = { yaw: null, rate: 0 };
+  // Recoger algo: un saltito de alegría (sin tocar objetos.js: se nota en S.collected)
+  const joy = { n: -1, t: 0 };
+
   function sync3D(dt, moving, snap) {
     const F = G.fisica, MOVE = F.MOVE, keys = G.input.keys, talk = G.dialogo.talk, jumpHeld = G.input.jumpHeld;
     if (player3D) {
-      player3D.root.position.set(S.pos.x, S.pos.y, S.pos.z);
+      const P = player3D, root = P.root;
+      root.rotation.order = 'YXZ'; // giro, luego inclinación sobre su propio eje lateral, luego ladeo (con XYZ, de lado se tumbaba de costado)
+      root.position.set(S.pos.x, S.pos.y, S.pos.z);
       // Giro suave hacia donde mira (camino más corto)
-      const want3 = Math.atan2(S.facing.x, S.facing.z), r = player3D.root.rotation;
+      const want3 = Math.atan2(S.facing.x, S.facing.z), r = root.rotation;
       const dA = Math.atan2(Math.sin(want3 - r.y), Math.cos(want3 - r.y));
-      r.y = snap ? want3 : r.y + dA * Math.min(1, dt * 14);
-      // Inclinación al correr / impulsarse y aplastón al aterrizar
-      const sp = MOVE.speed || 0, base = player3D.root.userData.s || (player3D.root.userData.s = player3D.root.scale.x);
-      // Volando: el cuerpo se tumba hacia adelante según la velocidad, y se endereza al subir
-      const flyLean = MOVE.flying ? 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 : 0;
-      // Nadando: casi horizontal como un ave que flota (pecho hundido); buceando, de cabeza
+      const prevY = r.y;
+      r.y = snap ? want3 : r.y + dA * Math.min(1, dt * (MOVE.flying ? 8 : 14));
+      const yawRate = dt > 0 ? Math.atan2(Math.sin(r.y - prevY), Math.cos(r.y - prevY)) / dt : 0;
+      turn.rate += (yawRate - turn.rate) * Math.min(1, dt * 6);
+      const sp = MOVE.speed || 0, base = root.userData.s || (root.userData.s = root.scale.x);
+      const fase = MOVE.fase || '';
+      // Inclinación (pitch): corriendo e impulsándose hacia adelante; volando según la velocidad, recta al subir, de pico al
+      // bajar; cernida casi derecha; al aterrizar se echa atrás para frenar con las alas
       const diving = MOVE.swimming && keys.has('c');
       const swimLean = diving ? 1.35 : 1.1 + Math.min(1, sp / F.SWIM_SPEED) * 0.1;
-      r.x += ((MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))) - r.x) * Math.min(1, dt * 8);
-      // Meceo en el agua: sube y baja suave y se balancea de lado
-      r.z = MOVE.swimming && !diving ? Math.sin(performance.now() / 590) * 0.06 : r.z * 0.9;
-      if (MOVE.swimming && !diving) player3D.root.position.y += Math.sin(performance.now() / 430) * 0.035;
-      const sq = MOVE.land > 0 ? Math.sin(MOVE.land / 0.2 * Math.PI) * 0.18 : 0;
-      player3D.root.scale.set(base * (1 + sq * 0.5), base * (1 - sq), base * (1 + sq * 0.5));
-      const air = S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01 && !MOVE.swimming;
-      const want = moving && !air && !MOVE.swimming ? 'Walk' : 'Idle';
+      const flyLean = fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight ? -0.3 : 0.1)
+        : fase === 'despegue' ? 0.05 : fase === 'cernido' ? 0.12 + Math.min(1, sp / 2.5) * 0.1
+        : 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 + Math.max(0, -S.vy) * 0.03;
+      const lean = MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0));
+      r.x += (lean - r.x) * Math.min(1, dt * 8);
+      // Ladeo (roll): volando se inclina hacia dentro de la curva como un ave; corriendo, apenas; en el agua, meceo
+      const bank = MOVE.flying ? Math.max(-0.65, Math.min(0.65, -turn.rate * Math.min(1, sp / F.FLY_SPEED) * 0.45))
+        : !MOVE.swimming && MOVE.grounded ? Math.max(-0.12, Math.min(0.12, -turn.rate * sp / F.RUN_SPEED * 0.05)) : 0;
+      if (MOVE.swimming && !diving) r.z = Math.sin(performance.now() / 590) * 0.06;
+      else r.z += (bank - r.z) * Math.min(1, dt * 5);
+      if (MOVE.swimming && !diving) root.position.y += Math.sin(performance.now() / 430) * 0.035;
+      // Aplastón al aterrizar, proporcional al golpe (aterrizar volando: suave)
+      const sq = MOVE.land > 0 ? Math.sin(MOVE.land / F.TUNING.squashTime * Math.PI) * (0.06 + 0.16 * (MOVE.impact || 0)) : 0;
+      // Estirón al despegar o saltar (anticipa y sigue el impulso)
+      const st = !MOVE.grounded && !MOVE.flying && !MOVE.swimming && S.vy > 3 ? Math.min(0.06, (S.vy - 3) * 0.015) : fase === 'despegue' ? 0.05 : 0;
+      root.scale.set(base * (1 + sq * 0.5 - st * 0.4), base * (1 - sq + st), base * (1 + sq * 0.5 - st * 0.4));
+      const air = !MOVE.grounded && !MOVE.swimming && S.pos.y > F.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01;
+      const run = sp > (F.SPEED + F.RUN_SPEED) / 2;
+      // Clip base: Walk caminando (su fase la marca la velocidad, en character.js); corriendo a saltitos, Idle
+      const want = moving && !air && !MOVE.swimming && !run ? 'Walk' : 'Idle';
       const clipEmote = emote.name && EMOTES[emote.name].clip && !moving && !air;
-      if (!clipEmote && anim3D.player !== want && player3D.play(want)) anim3D.player = want;
-      if (player3D.current && !clipEmote) player3D.current.timeScale = want === 'Walk' ? Math.max(0.8, sp / F.SPEED) : 1;
-      player3D.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : sp > (F.SPEED + F.RUN_SPEED) / 2 ? 2 : 1; // nadando patalea siempre
-      player3D.airborne = air;
-      player3D.swimming = MOVE.swimming; player3D.diving = diving;
-      player3D.swimRate = moving ? 1.3 : 0.55;
-      if (MOVE.shake) { player3D.shakeT = 0.7; MOVE.shake = false; }
-      // Habla y expresión en diálogos; si escucha a otro, atiende con curiosidad
+      if (!clipEmote && anim3D.player !== want && P.play(want)) anim3D.player = want;
+      P.speed = sp;
+      P.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : run ? 2 : 1; // nadando patalea siempre
+      P.airborne = air; P.flying = MOVE.flying;
+      P.legsDown = fase === 'aterrizaje' ? 1 : fase === 'cernido' ? 0.65 : fase === 'despegue' ? 0.8 : 0;
+      P.swimming = MOVE.swimming; P.diving = diving;
+      P.swimRate = moving ? 1.3 : 0.55;
+      // IK de patas: el suelo bajo cada pie (terreno, pisos y perchas)
+      P.groundY = MOVE.groundY; P.groundAt = MOVE.grounded ? groundAt : null;
+      if (MOVE.shake) { P.shakeT = 0.7; MOVE.shake = false; }
+      // Habla y expresión en diálogos; si escucha a otro, lo mira y atiende con curiosidad
       const inDialog = G.dialogo.open(), mine = inDialog && talk.who === J.nombre;
-      player3D.talking = mine && performance.now() < talk.until;
+      const m = mouthFor(dt, mine);
+      if (m === undefined) { P.mouth = null; P.talking = mine && performance.now() < talk.until; }
+      else { P.mouth = mine ? m : null; P.talking = mine && mouth.src !== ''; }
+      P.lookAt = inDialog ? speakerPos(mine ? null : talk.who) : (G.agarre && G.agarre.mira) || null;
       // Un gesto se cancela al moverse, saltar, volar o abrir un diálogo
       if (emote.name && (moving || air || inDialog)) stopEmote();
       if (emote.name && performance.now() > emote.until) stopEmote();
-      player3D.emote = emote.name && EMOTES[emote.name].pose || null;
-      player3D.expression = emote.name ? EMOTES[emote.name].face
-        : !inDialog ? (MOVE.land > 0 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral') : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
-      player3D.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim') : MOVE.flying ? (jumpHeld ? 'flap' : 'fly') : MOVE.dashT > 0 ? 'glide' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+      P.emote = emote.name && EMOTES[emote.name].pose || null;
+      // Alegría al recoger: saltito, cara feliz y un aleteo corto
+      const nCol = (S.collected || []).length;
+      if (joy.n < 0 || snap) joy.n = nCol;
+      if (nCol > joy.n && !inDialog) joy.t = 0.6;
+      joy.n = nCol; joy.t = Math.max(0, joy.t - dt);
+      if (joy.t > 0 && MOVE.grounded) root.position.y += Math.sin((0.6 - joy.t) / 0.6 * Math.PI) * 0.12;
+      P.expression = emote.name ? EMOTES[emote.name].face
+        : !inDialog ? (joy.t > 0 ? 'happy' : MOVE.land > 0 && MOVE.impact > 0.4 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral')
+        : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
+      P.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim')
+        : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight + 0.5 ? 'land' : 'glide')
+          : jumpHeld ? 'flap' : fase === 'cernido' ? 'hover' : S.vy < -0.2 && sp > F.FLY_SPEED * 0.7 ? 'glide' : 'fly')
+        : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       ideaBulb.visible = emote.name === 'idea';
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
-      player3D.update(dt);
+      P.update(dt);
     }
     if (companion3D && companion3D.root.visible) {
       const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
@@ -153,10 +228,25 @@ AVE.module('actores', function (G) {
       const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
       if (anim3D.companion !== want && companion3D.play(want)) anim3D.companion = want;
       companion3D.wingMode = want === 'Walk' ? 'walk' : 'idle';
-      companion3D.gait = want === 'Walk' ? (sp > (F.SPEED + F.RUN_SPEED) / 2 ? 2 : 1) : 0;
+      companion3D.speed = sp;
+      companion3D.gait = want === 'Walk' ? 1 : 0;
       companion3D.update(dt);
       cShadow.position.set(companionPos.x, H(companionPos.x, companionPos.z) + 0.03, companionPos.z);
     }
+  }
+  // Suelo bajo un pie (terreno, pisos de una vía y perchas) para el IK de patas
+  function groundAt(x, z) { return G.fisica.suelo(x, z, S.pos.y + 0.05); }
+  // Dónde mirar en un diálogo: al NPC que habla (por nombre) o, si habla Vittata, al NPC visible más cercano (a menos de 7 m)
+  const speakTarget = new THREE.Vector3();
+  function speakerPos(who) {
+    let best = null, bd = 7;
+    for (const id in npcs) {
+      const n = npcs[id]; if (!n.visible) continue;
+      if (who) { if (n.def.nombre === who || id === String(who).toLowerCase()) { best = n; break; } continue; }
+      const d = Math.hypot(n.def.x - S.pos.x, n.def.z - S.pos.z); if (d < bd) { bd = d; best = n; }
+    }
+    if (!best) return null;
+    return speakTarget.set(best.sp.position.x, best.sp.position.y + 0.4, best.sp.position.z);
   }
   // Aprendiz: modelo 3D con su look, o retrato 2D como sprite si no hay modelo
   async function refreshCompanion() {

@@ -13,6 +13,30 @@
   // Pantalón: las alas se abren WING_CLEAR rad. Aletas: cadera abierta y punta hacia fuera (ejes medidos en el rig).
   const SWIM_BACK_SHIFT = 0.6;
   const SOLE_LIFT = 0.006, WING_CLEAR = 0.12, SPLAY = { axis: 'z', sign: 1, twist: 'y', tsign: 1, amount: 0.09 };
+  // ---------- Animación procedural: ajuste fino (rol Movimiento y animación; docs/equipo/MOVIMIENTO.md) ----------
+  // El juego pone en cada instancia, antes de update(dt): speed (m/s), gait, airborne, flying, legsDown (0..1), wingMode,
+  // mouth (0..1 o null), lookAt (Vector3 del mundo o null), groundY + groundAt(x, z) (IK de patas), carry/reach/use (agarre.js).
+  const ANIM = {
+    strideWalk: 1.25,         // m recorridos por ciclo de paso (dos pasos): cadencia = velocidad / zancada, sin patinar
+    strideRun: 3.0,           // m por saltito al correr (galope de ave con aleteo, patas juntas)
+    cadence: [1.2, 6],        // Hz mínimo y máximo del paso
+    walkRef: 6.5,             // velocidad de referencia para la amplitud del paso
+    walkAmp: [0.35, 0.75],    // amplitud de la cadera (rad) de paso lento a paso rápido
+    runAmp: 0.85,
+    bobWalk: 0.05, bobRun: 0.12, // rebote del cuerpo (unidades del modelo)
+    // Alas por modo: [apertura media, amplitud, frecuencia rad/s, barrido (-X adelanta)]; la bajada es más rápida que la subida
+    wings: {
+      idle: [0, 0.05, 2.2, 0], walk: [0.14, 0.05, 11, 0], hop: [0.55, 0.35, 0, 0],
+      fly: [1.0, 0.55, 11, 0], flap: [0.95, 0.7, 18, 0], hover: [1.0, 0.62, 17, -0.15], takeoff: [0.95, 0.8, 15, -0.05],
+      glide: [1.25, 0.05, 9, 0], land: [1.15, 0.22, 20, -0.55],
+    },
+    mouthMax: 0.4,            // apertura máxima del pico al hablar (rad; 0,35 ≈ 5,5 cm): algo más para que se lea de lejos
+    lookMax: [1.05, 0.45],    // giro máximo de la cabeza al mirar a alguien (lado, arriba/abajo)
+    footIK: 0.32,             // corrección máxima de cada pata en pendiente (unidades del modelo)
+  };
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _bp = new THREE.Vector3(), _ep = new THREE.Vector3(), _tg = new THREE.Vector3();
+  const _q = new THREE.Quaternion(), _qw = new THREE.Quaternion(), _qp = new THREE.Quaternion(), _qi = new THREE.Quaternion();
   const FINGERS = ['armL2002', 'armL2003', 'armL2004', 'armL2005', 'armL2006', 'armL2007',
     'armL2010', 'armL2011', 'armL2013', 'armL2014', 'armL2016', 'armL2017'];
 
@@ -399,7 +423,38 @@
       this.rigY = this.rigNode ? this.rigNode.position.y : 0;
       this.fitAdj = {};
       this.expression = 'neutral'; this.talking = false;
+      this.anchors = this._buildAnchors();
+      this.ikSaved = [];
       if (this.clips.Idle) this.play('Idle');
+    }
+    // Anclas para llevar cosas (agarre.js): puntos del modelo en reposo, derechos y a escala del personaje, que siguen a su hueso.
+    // manoL/manoR: palma de cada ala-mano; pico: entre las puntas del pico (en la cabeza: abrir el pico no lo suelta);
+    // pecho: delante del pecho (carga con los dos brazos); patas: entre las patas (lo que lleva volando, como las aves).
+    // También mide hacia dónde gira la cabeza (signos de los ejes) para mirar a quien habla.
+    _buildAnchors() {
+      const A = {}, inv = new THREE.Matrix4(), m = new THREE.Matrix4();
+      const mk = (name, bone, p) => {
+        const b = this.bones[bone], rest = this.restMat[bone]; if (!b || !rest) return;
+        const o = new THREE.Object3D(); o.name = 'ancla_' + name;
+        inv.copy(rest).invert(); m.makeTranslation(p[0], p[1], p[2]); inv.multiply(m);
+        inv.decompose(o.position, o.quaternion, o.scale);
+        b.add(o); A[name] = o;
+      };
+      mk('manoL', 'armL2', [0.66, 0.688, 0.05]); mk('manoR', 'armL2001', [-0.66, 0.688, 0.05]);
+      mk('pico', 'cabeza001', [0, 0.9, 0.4]); mk('pecho', 'espalda2', [0, 0.5, 0.25]); mk('patas', 'espalda1', [0, 0.1, 0.08]);
+      // Pies (bola del pie) para el IK de patas
+      this.feet = [['pieL4', ['pieL1', 'pieL2', 'pieL3']], ['pieL4001', ['pieL1001', 'pieL2001', 'pieL3001']]]
+        .filter(([f, ch]) => this.bones[f] && ch.every(n => this.bones[n])).map(([f, ch]) => ({ eff: this.bones[f], chain: ch.map(n => this.bones[n]) }));
+      // Signos medidos de la cabeza: girar en +Y lleva el pico hacia ±X; inclinar en +X lo baja o lo sube
+      const head = this.bones.cabeza, tip = A.pico;
+      this.headSign = { yaw: 1, pitch: 1 };
+      if (head && tip) {
+        const at = () => { this.root.updateMatrixWorld(true); return this.root.worldToLocal(tip.getWorldPosition(new THREE.Vector3())); };
+        const p0 = at(); head.rotation.y += 0.3; const p1 = at(); head.rotation.y -= 0.3; head.rotation.x += 0.3; const p2 = at(); head.rotation.x -= 0.3;
+        this.root.updateMatrixWorld(true);
+        this.headSign.yaw = p1.x > p0.x ? 1 : -1; this.headSign.pitch = p2.y < p0.y ? 1 : -1; // pitch: +1 si +X baja el pico
+      }
+      return A;
     }
     // Párpados: casquete esférico que se desliza sobre el ojo pintado como un párpado real (gira alrededor del eje
     // horizontal del ojo, centrado en la curvatura medida del ojo). Abierto, el casquete queda pasado el borde de arriba,
@@ -479,36 +534,46 @@
       }
       return true;
     }
-    // wingMode: 'idle' | 'walk' | 'flap' (subiendo) | 'glide' (planeando). Se suma encima del clip activo.
+    // wingMode: 'idle' | 'walk' | 'flap' (subiendo) | 'glide' (planeando) | 'fly' (crucero) | 'hover' (cernido) | 'takeoff'
+    // (despegue) | 'land' (frena para aterrizar) | 'swim' | 'dive'. Se suma encima del clip activo (ver ANIM.wings).
     // El mixer solo reescribe un hueso cuando el valor del clip cambia, así que los ajustes del cuadro
-    // anterior se deshacen antes de mezclar; si no, se acumulan y el cuerpo termina girado.
+    // anterior se deshacen antes de mezclar; si no, se acumulan y el cuerpo termina girado (el IK se deshace igual).
     update(dt) {
+      this._restoreIK();
       for (const [bone, ax, v] of this.ofs || []) bone.rotation[ax] -= v;
       this.ofs = [];
+      this._gaitPhase(dt);
       this.mixer.update(dt);
       const L = this.bones.armL1, R = this.bones.armL1001;
       if (!L || !R) return;
       const t = this.wingT = (this.wingT || 0) + dt;
-      const mode = this.wingMode || 'idle';
+      let mode = this.wingMode || 'idle';
+      if (mode === 'walk' && (this.gait || 0) > 1.5 && !this.swimming) mode = 'hop'; // corriendo: saltitos con las alas a medio abrir
+      if (this.carry && this.carry !== 'pico' && (mode === 'walk' || mode === 'idle' || mode === 'hop')) mode = 'idle';
       // Nado de ave real: las dos alas reman a la vez sobre el agua. Fase de empuje (sin>0): abiertas y hacia atrás;
       // recuperación: cerradas, codo doblado y hacia adelante. swimRate (Hz) lo pone el juego: lento quieto, más rápido avanzando.
       if (mode === 'swim' || mode === 'dive') {
         this.sPh = ((this.sPh || 0) + dt * (this.swimRate || 0.7) * Math.PI * 2) % (Math.PI * 2);
       }
       const sS = Math.sin(this.sPh || 0), sC = Math.cos(this.sPh || 0);
-      const open = mode === 'swim' ? 0.62 + 0.3 * sS : mode === 'dive' ? -0.05
-        : mode === 'fly' ? 0.85 + 0.6 * Math.sin(t * 12)
-        : mode === 'flap' ? 0.8 + 0.6 * Math.sin(t * 20)
-        : mode === 'glide' ? 1.2 + 0.08 * Math.sin(t * 9)
-        : mode === 'walk' ? 0.14 + 0.06 * Math.sin(t * 11) : 0.05 * Math.sin(t * 2.2);
-      const swing = mode === 'walk' ? 0.3 * Math.sin(t * 11) : 0;            // alterno (caminar)
-      const reach = mode === 'swim' ? 0.55 * sC : mode === 'dive' ? 0.45 : 0;  // a la vez (remar / pegadas al bucear)
       const k = 1 - Math.exp(-dt * 12);
-      this.wOpen = (this.wOpen || 0) + (open - (this.wOpen || 0)) * k;
+      // Aleteo con fase propia (la frecuencia cambia sin saltos) y bajada rápida: s = sin(φ + 0,4·sin φ)
+      const Wd = ANIM.wings[mode] || ANIM.wings.idle;
+      this.flRate = (this.flRate || Wd[2]) + (Wd[2] - (this.flRate || Wd[2])) * k;
+      this.flPh = ((this.flPh || 0) + dt * this.flRate) % (Math.PI * 2);
+      const fs = mode === 'hop' ? Math.cos(this.ph || 0) : Math.sin(this.flPh + 0.4 * Math.sin(this.flPh));
+      let center = Wd[0], amp = Wd[1], sweep = Wd[3];
+      if (mode === 'swim') { center = 0.62; amp = 0.3; } else if (mode === 'dive') { center = -0.05; amp = 0; }
+      const swing = mode === 'walk' ? 0.3 * Math.sin(this.ph || 0) * (this.gW || 0) : 0;   // alterno, en fase con el paso
+      const reach = mode === 'swim' ? 0.55 * sC : mode === 'dive' ? 0.45 : 0;  // a la vez (remar / pegadas al bucear)
+      this.wOpen = (this.wOpen || 0) + (center - (this.wOpen || 0)) * k;
+      this.wAmp = (this.wAmp || 0) + (amp - (this.wAmp || 0)) * k;
+      this.wSweep = (this.wSweep || 0) + (sweep - (this.wSweep || 0)) * k;
       this.wSwing = (this.wSwing || 0) + (swing - (this.wSwing || 0)) * k;
       this.wReach = (this.wReach || 0) + (reach - (this.wReach || 0)) * k;
-      this.rot(L, "z", this.wOpen); this.rot(R, "z", -this.wOpen);
-      this.rot(L, "x", this.wSwing + this.wReach); this.rot(R, "x", -this.wSwing + this.wReach);
+      const open = this.wOpen + this.wAmp * (mode === 'swim' ? sS : fs);
+      this.rot(L, "z", open); this.rot(R, "z", -open);
+      this.rot(L, "x", this.wSwing + this.wReach + this.wSweep); this.rot(R, "x", -this.wSwing + this.wReach + this.wSweep);
       if (mode === 'swim') for (const el of ['armL2', 'armL2001']) if (this.bones[el]) this.rot(this.bones[el], "x", 0.15 + 0.6 * Math.max(0, -sS));
       // Sacudirse el agua al salir: temblor rápido de cuerpo, cabeza y alas
       if (this.shakeT > 0) {
@@ -521,7 +586,21 @@
       this.locomotion(dt, k);
       this.face(dt);
       this.emotePose(dt);
+      this.actPose(dt);
       this.clothes();
+      this._footIK(dt);
+      this._armIK(dt);
+    }
+    // Fase del paso: la cadencia sale de la velocidad real (speed / zancada), así los pies no patinan; el clip Walk se
+    // sincroniza con esa fase (su pie izquierdo va adelante en t = 0,25 del ciclo, igual que el paso procedural en φ = π/2).
+    _gaitPhase(dt) {
+      const g = this.gait || 0, run = g > 1.5, sp = this.speed;
+      const hz = this.swimming ? (run ? 2.6 : 1.4) : sp != null ? clamp(sp / (run ? ANIM.strideRun : ANIM.strideWalk), ANIM.cadence[0], ANIM.cadence[1]) : run ? 4.8 : 3.4;
+      this.hz = this.hz == null ? hz : this.hz + (hz - this.hz) * Math.min(1, dt * 8);
+      if (g > 0 || (this.gW || 0) > 0.01) this.ph = ((this.ph || 0) + dt * this.hz * Math.PI * 2) % (Math.PI * 2);
+      const wa = this.actions.Walk;
+      if (wa && wa.isScheduled() && !this.swimming) { wa.timeScale = 0; wa.time = (this.ph || 0) / (Math.PI * 2) * wa.getClip().duration; }
+      else if (wa && wa.timeScale === 0) wa.timeScale = 1;
     }
     // Ajustes por la ropa puesta, encima de todo lo demás (con rot(): se deshacen solos en el cuadro siguiente).
     // - Calzado: los dedos se quedan en su pose de reposo dentro del zapato (al caminar se doblaban y salían ~5 cm por la puntera).
@@ -620,15 +699,26 @@
       let blink = 0;
       if (this.blinkT > 0) { this.blinkT -= dt; blink = Math.sin(Math.max(0, 1 - this.blinkT / 0.15) * Math.PI); }
       for (const lid of this.lids || []) this._lid(lid, Math.max(0.03, Math.min(1, ex[0] + blink * (1 - ex[0]))));
-      // Hablar: el pico abre y cierra con ritmo de sílabas
+      // Hablar: el pico sigue a mouth (0..1) si el juego lo da (sílabas del texto que se escribe o de la voz que lee);
+      // si no, abre y cierra con un ritmo de sílabas genérico. Abre rápido y cierra algo más lento, como un pico real.
       let talk = 0;
-      if (this.talking) { this.talkPh = (this.talkPh || 0) + dt * 15; talk = Math.max(0, Math.sin(this.talkPh)) * (0.55 + 0.45 * Math.sin(this.talkPh * 0.37 + 1.3)) * 0.32; }
-      this.talkV = (this.talkV || 0) + (talk - (this.talkV || 0)) * Math.min(1, dt * 25);
+      if (this.talking) this.talkPh = (this.talkPh || 0) + dt * 15;
+      if (this.mouth != null) talk = clamp(this.mouth, 0, 1) * ANIM.mouthMax;
+      else if (this.talking) talk = Math.max(0, Math.sin(this.talkPh)) * (0.55 + 0.45 * Math.sin(this.talkPh * 0.37 + 1.3)) * 0.32;
+      if (this.carry === 'pico') talk *= 0.35; // con algo en el pico habla entre dientes
+      this.talkV = (this.talkV || 0) + (talk - (this.talkV || 0)) * Math.min(1, dt * (talk > (this.talkV || 0) ? 38 : 22));
       if (B.pico) this.rot(B.pico, "x", ex[1] + this.talkV);
-      // Mirar alrededor cuando está quieto
+      // Mirar a alguien (lookAt: quien habla, lo que va a agarrar) o, quieta, mirar alrededor
       this.lookIn = (this.lookIn || 0) - dt;
       if (this.lookIn <= 0) { this.lookIn = 1.5 + Math.random() * 3; this.lookGoal = [(Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.25]; }
-      const still = !(this.gW > 0.1) && !this.talking, g = still ? (this.lookGoal || [0, 0]) : [0, 0];
+      const still = !(this.gW > 0.1) && !this.talking;
+      let g = still ? (this.lookGoal || [0, 0]) : [0, 0];
+      if (this.lookAt && this.anchors && this.anchors.pico) {
+        this.root.updateMatrixWorld(true);
+        const v = this.root.worldToLocal(_tg.copy(this.lookAt)), hy = 1.0;
+        g = [clamp(Math.atan2(v.x, v.z), -ANIM.lookMax[0], ANIM.lookMax[0]) * this.headSign.yaw,
+          clamp(-Math.atan2(v.y - hy, Math.hypot(v.x, v.z)), -ANIM.lookMax[1], ANIM.lookMax[1]) * this.headSign.pitch];
+      }
       const lk = this.lk || (this.lk = [0, 0]);
       lk[0] += (g[0] - lk[0]) * Math.min(1, dt * 3); lk[1] += (g[1] - lk[1]) * Math.min(1, dt * 3);
       if (B.cabeza) {
@@ -650,37 +740,46 @@
       for (const n of FINGERS) if (B[n]) this.rot(B[n], "x", 0.18 + Math.sin(t * 1.4 + i++) * 0.05 - gw * 0.15);
     }
     rot(bone, ax, v) { bone.rotation[ax] += v; this.ofs.push([bone, ax, v]); }
-    // Paso procedural encima del clip: gait 0 quieto, 1 caminar, 2 correr; airborne recoge las patas.
+    // Paso procedural encima del clip: gait 0 quieto, 1 caminar, 2 correr (saltitos con las patas juntas); airborne recoge
+    // las patas; legsDown (cernido, aterrizaje) las baja y adelanta para recibir el suelo.
     // Ejes medidos en el rig: muslo -X adelanta el pie, rodilla -X lo levanta, tobillo +X lo aplana.
     locomotion(dt, k) {
       const B = this.bones, g = this.gait || 0, run = g > 1.5;
       this.gW = (this.gW || 0) + ((g > 0 ? 1 : 0) - (this.gW || 0)) * k;
+      this.rW = (this.rW || 0) + ((run && !this.swimming ? 1 : 0) - (this.rW || 0)) * k;
       this.aW = (this.aW || 0) + ((this.airborne ? 1 : 0) - (this.aW || 0)) * k;
-      const w = this.gW, aw = this.aW;
-      if (w > 0.01) this.ph = ((this.ph || 0) + dt * (this.swimming ? (run ? 2.6 : 1.4) : run ? 4.8 : 3.4) * Math.PI * 2) % (Math.PI * 2);
+      this.ldW = (this.ldW || 0) + ((this.airborne ? this.legsDown || 0 : 0) - (this.ldW || 0)) * k;
+      const w = this.gW, rw = this.rW, ld = this.ldW, aw = this.aW * (1 - ld);
       const ph = this.ph || 0, s = Math.sin(ph), c = Math.cos(ph);
-      const A = (run ? 0.8 : 0.55) * w;
+      const sp01 = this.speed != null ? Math.min(1, this.speed / ANIM.walkRef) : 1;
+      const A = ((ANIM.walkAmp[0] + (ANIM.walkAmp[1] - ANIM.walkAmp[0]) * sp01) * (1 - rw) + ANIM.runAmp * rw) * w;
       for (const [hip, knee, ankle, sg] of [['pieL1', 'pieL2', 'pieL3', 1], ['pieL1001', 'pieL2001', 'pieL3001', -1]]) {
         if (!B[hip]) continue;
-        const sw = s * sg, lift = Math.max(0, c * sg) * w * (run ? 1.1 : 0.85);
+        const sgE = sg * (1 - rw) + rw;   // caminar: piernas alternas; correr: juntas
+        const sw = s * sgE, lift = Math.max(0, c * sgE) * w * (0.85 + 0.3 * rw);
         // Nadando el cuerpo va tumbado: las patas se adelantan ~1 rad para quedar debajo y patalear en el agua
-        this.rot(B[hip], "x", -A * sw + aw * 0.55 - (this.swimming && !this.diving ? 1.0 : 0));
-        this.rot(B[knee], "x", -lift * 0.95 - aw * 0.7);
-        this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * 0.3);
+        this.rot(B[hip], "x", -A * sw + aw * 0.55 - ld * 0.5 - (this.swimming && !this.diving ? 1.0 : 0));
+        this.rot(B[knee], "x", -lift * 0.95 - aw * 0.7 - ld * 0.2);
+        this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * 0.3 + ld * 0.3);
       }
       if (B.espalda1) {
-        this.rot(B.espalda1, "x", (run ? 0.2 : 0.08) * w + aw * 0.12);
-        this.rot(B.espalda1, "z", s * 0.07 * w);
+        this.rot(B.espalda1, "x", (run ? 0.2 : 0.08) * w + this.aW * 0.12);
+        this.rot(B.espalda1, "z", s * 0.07 * w * (1 - rw));
       }
       if (B.cabeza) {
         this.rot(B.cabeza, "x", -((run ? 0.14 : 0.05) + Math.cos(ph * 2) * 0.04) * w);
-        this.rot(B.cabeza, "z", -s * 0.05 * w);
+        this.rot(B.cabeza, "z", -s * 0.05 * w * (1 - rw));
+        // Volando, la cabeza se queda casi nivelada aunque el cuerpo se incline o se ladee (estabiliza la mirada, como las aves)
+        if (this.flying) {
+          const r = this.root.rotation;
+          this.rot(B.cabeza, "x", -r.x * 0.55 * this.headSign.pitch); this.rot(B.cabeza, "z", -r.z * 0.5);
+        }
       }
       if (B.espalda1001) this.rot(B.espalda1001, "z", Math.sin(ph + 1) * 0.12 * w);
       // Cintura: la cadera gira con el paso y el pecho contrarresta
-      if (B.espalda1 && B.espalda2) { this.rot(B.espalda1, "y", s * 0.14 * w); this.rot(B.espalda2, "y", -s * 0.12 * w); }
+      if (B.espalda1 && B.espalda2) { this.rot(B.espalda1, "y", s * 0.14 * w * (1 - rw)); this.rot(B.espalda2, "y", -s * 0.12 * w * (1 - rw)); }
       // Codos: más doblados al correr y cuando el brazo va adelante
-      for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", (run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w);
+      for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", ((run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w) * (1 - rw));
       // Nadando: la cabeza mira al frente aunque el cuerpo vaya tumbado, y no hay rebote de pasos
       // (el cuerpo va casi horizontal; el cuello levanta la cabeza para llevar el pico fuera del agua)
       // Con algo a la espalda (mochila, cuatro, tanques, jetpack) parte de esa extensión pasa del cuello al pecho: la mirada
@@ -691,8 +790,83 @@
         if (B.espalda2) this.rot(B.espalda2, "x", this.diving ? 0 : -0.25 - sh);
         return;
       }
-      // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
-      this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
+      // Rebote del cuerpo: caminando, dos subidas por ciclo (una por pie); corriendo, un saltito por ciclo con las patas recogidas
+      const bob = (1 - Math.cos(ph * 2)) * 0.5 * ANIM.bobWalk * (1 - rw) + Math.max(0, c) * ANIM.bobRun * rw;
+      this.root.position.y += bob * w * this.root.scale.y;
+    }
+    // Agarrar, llevar y usar (los pesos los anima src/engine/agarre.js): reach 0..1 agacharse y alcanzar (con el pico, bajar la
+    // cabeza), use 0..1 gesto de uso. Las manos van con IK a carryTargets (en _armIK); aquí solo el cuerpo.
+    actPose(dt) {
+      const B = this.bones, r = this.reach || 0, u = this.use || 0, beak = this.reachMode === 'pico';
+      if (r > 0.001) {
+        if (B.espalda1) this.rot(B.espalda1, 'x', (beak ? 0.55 : 0.42) * r);
+        if (B.espalda2) this.rot(B.espalda2, 'x', (beak ? 0.3 : 0.15) * r);
+        if (B.cabeza) this.rot(B.cabeza, 'x', (beak ? 0.45 : 0.2) * r * this.headSign.pitch);
+        for (const [h, kn, an] of [['pieL1', 'pieL2', 'pieL3'], ['pieL1001', 'pieL2001', 'pieL3001']]) if (B[h]) {
+          this.rot(B[h], 'x', -0.35 * r); this.rot(B[kn], 'x', -0.45 * r); this.rot(B[an], 'x', 0.35 * r);
+        }
+        this.root.position.y -= 0.06 * r * this.root.scale.y;
+        if (beak && B.pico) this.rot(B.pico, 'x', 0.25 * Math.sin(Math.min(1, r) * Math.PI));
+      }
+      if (u > 0.001 && this.carry === 'pico' && B.cabeza) this.rot(B.cabeza, 'x', 0.3 * Math.sin(u * Math.PI) * this.headSign.pitch);
+      if (this.carry === 'pico' && B.pico) this.rot(B.pico, 'x', 0.06); // el pico sujeta: apenas abierto
+    }
+    // ---------- IK (CCD sobre los huesos ya animados; se deshace al empezar el cuadro siguiente) ----------
+    _restoreIK() {
+      const sv = this.ikSaved || [];
+      for (let i = sv.length - 1; i >= 0; i--) sv[i][0].quaternion.copy(sv[i][1]);
+      sv.length = 0;
+    }
+    // Lleva el punto mundial de `eff` hacia `target` girando la cadena (de la raíz al extremo); w 0..1, maxA rad por hueso
+    _ccd(chain, eff, target, w, iters, maxA) {
+      if (w < 0.01) return;
+      for (const b of chain) this.ikSaved.push([b, b.quaternion.clone()]);
+      for (let it = 0; it < iters; it++) {
+        for (let i = chain.length - 1; i >= 0; i--) {
+          const b = chain[i];
+          b.getWorldPosition(_bp); eff.getWorldPosition(_ep);
+          _v1.subVectors(_ep, _bp); _v2.subVectors(target, _bp);
+          if (_v1.lengthSq() < 1e-10 || _v2.lengthSq() < 1e-10) continue;
+          _v1.normalize(); _v2.normalize();
+          const ang = Math.acos(clamp(_v1.dot(_v2), -1, 1));
+          if (ang < 1e-4) continue;
+          _q.setFromUnitVectors(_v1, _v2);
+          _qi.identity().slerp(_q, Math.min(1, Math.min(ang, maxA) / ang * w));
+          b.parent.getWorldQuaternion(_qp); b.getWorldQuaternion(_qw);
+          _qw.premultiply(_qi); b.quaternion.copy(_qp.invert().multiply(_qw));
+          b.updateMatrixWorld(true);
+        }
+      }
+    }
+    // IK de patas: en pendiente o escalón cada pie busca su suelo (groundAt) y la cadera baja lo que pida el pie más bajo
+    _footIK(dt) {
+      const on = !!(this.groundAt && !this.airborne && !this.swimming && this.feet && this.feet.length === 2);
+      this.fkW = (this.fkW || 0) + ((on ? 1 : 0) - (this.fkW || 0)) * Math.min(1, dt * 10);
+      if (this.fkW < 0.02 || !on) { this.ikFeet = null; return; }
+      this.root.updateMatrixWorld(true);
+      const sc = this.root.scale.y, max = ANIM.footIK * sc, g0 = this.groundY != null ? this.groundY : this.root.position.y;
+      const d = this.feet.map(f => { f.eff.getWorldPosition(_ep); return clamp(this.groundAt(_ep.x, _ep.z) - g0, -max, max); });
+      const pelvis = Math.min(0, d[0], d[1]) * this.fkW;
+      if (pelvis < -1e-4) { this.root.position.y += pelvis; this.root.updateMatrixWorld(true); }
+      this.ikFeet = d;
+      this.feet.forEach((f, i) => {
+        const raise = d[i] * this.fkW - pelvis;
+        if (raise < 0.003) return;
+        f.eff.getWorldPosition(_tg); _tg.y += raise;
+        this._ccd(f.chain, f.eff, _tg, 1, 3, 0.7);
+      });
+    }
+    // IK de brazos: con algo en las manos (agarre.js pone carryTargets = { L, R } en el espacio del modelo y el peso armW)
+    _armIK() {
+      const T = this.carryTargets, w = this.armW || 0;
+      if (!T || w < 0.01 || !this.anchors) return;
+      this.root.updateMatrixWorld(true);
+      for (const [side, sh, el, anc] of [['L', 'armL1', 'armL2', 'manoL'], ['R', 'armL1001', 'armL2001', 'manoR']]) {
+        const p = T[side], B = this.bones;
+        if (!p || !B[sh] || !B[el] || !this.anchors[anc]) continue;
+        _tg.set(p[0], p[1], p[2]); this.root.localToWorld(_tg);
+        this._ccd([B[sh], B[el]], this.anchors[anc], _tg, w, 3, 1.2);
+      }
     }
     setSpecies(id) {
       const s = SPECIES[id] || SPECIES.vittata;
