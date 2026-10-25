@@ -1,0 +1,88 @@
+# Amazona Verse · integración continua (dueño: Build/Release Engineer). Ver docs/equipo/BUILD.md.
+# En cada push a main: instala gltfpack 1.2 (SHA256 contra BUILD.md), construye HEAD con tools/build/build.sh y corre
+# tools/build/test.sh --extra con el Chrome del runner. Falla si falla la build, el test o cualquier batería (también las extra).
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      SALIDA: tools/build/salida/ci
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python 3.11 con numpy y OpenImageIO: lo mismo que usa la build con el python de Blender (AV_PYTHON en lib.sh).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencias de Python
+        run: |
+          python -m pip install --disable-pip-version-check numpy OpenImageIO
+          echo "AV_PYTHON=$(python -c 'import sys; print(sys.executable)')" >> "$GITHUB_ENV"
+
+      - name: gltfpack 1.2 (SHA256 de docs/equipo/BUILD.md)
+        run: |
+          set -euo pipefail
+          url=$(grep -o 'https://github.com/zeux/meshoptimizer/releases/download/v1.2/gltfpack-macos.zip' docs/equipo/BUILD.md | head -1)
+          zip_sha=$(grep 'gltfpack-macos.zip' docs/equipo/BUILD.md | grep -oE '[0-9a-f]{64}' | head -1)
+          bin_sha=$(grep 'tools/build/bin/gltfpack` (' docs/equipo/BUILD.md | grep -oE '[0-9a-f]{64}' | head -1)
+          [ -n "$url" ] && [ -n "$zip_sha" ] && [ -n "$bin_sha" ] || { echo "::error::no encuentro la URL o los SHA256 de gltfpack en BUILD.md"; exit 1; }
+          tmp=$(mktemp -d)
+          curl -fsSL --retry 3 -o "$tmp/gltfpack-macos.zip" "$url"
+          echo "$zip_sha  $tmp/gltfpack-macos.zip" | shasum -a 256 -c -
+          unzip -q "$tmp/gltfpack-macos.zip" -d "$tmp/zip"
+          mkdir -p tools/build/bin
+          install -m 0755 "$(find "$tmp/zip" -type f -name gltfpack | head -1)" tools/build/bin/gltfpack
+          echo "$bin_sha  tools/build/bin/gltfpack" | shasum -a 256 -c -
+          tools/build/bin/gltfpack -v 2>&1 | head -1 || true
+
+      - name: Build de HEAD
+        run: tools/build/build.sh HEAD "$SALIDA"
+
+      - name: Pruebas en Chrome (--extra)
+        run: |
+          chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          [ -x "$chrome" ] || { echo "::error::el runner no trae Chrome en $chrome"; exit 1; }
+          AV_CHROME="$chrome" tools/build/test.sh "$SALIDA" --extra
+
+      # test.sh solo avisa si falla una batería extra: aquí cualquier batería que no pase hace fallar el job.
+      - name: Todas las baterías en verde
+        run: |
+          python - "$SALIDA/reporte-test.json" <<'PY'
+          import json, sys
+          bats = json.load(open(sys.argv[1])).get('baterias') or {}
+          mal = []
+          for n, r in bats.items():
+              if not r.get('existe') or 'error' in r or not r.get('total') or r.get('passed') != r.get('total'):
+                  mal.append('%s: %s' % (n, r.get('error') or '%s/%s' % (r.get('passed'), r.get('total'))))
+              print('%-16s %s/%s%s' % (n, r.get('passed'), r.get('total'), '' if r.get('requerida') else ' (extra)'))
+          if not bats:
+              mal.append('el reporte no trae baterías')
+          for m in mal:
+              print('::error::' + m)
+          sys.exit(1 if mal else 0)
+          PY
+
+      - name: Reportes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-${{ github.sha }}
+          path: |
+            ${{ env.SALIDA }}/reporte-*.md
+            ${{ env.SALIDA }}/reporte-*.json
+            ${{ env.SALIDA }}/*.png
+            ${{ env.SALIDA }}/*.log
+          if-no-files-found: ignore
