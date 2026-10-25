@@ -629,44 +629,310 @@ def visor_wrap(name, kind):
 
 
 # ---------------------------------------------------------------------------------------------- pañuelo
-def neck_r(z, a, cy=-0.03):
+# Bandana de verdad, de una sola tela (TELA, para que el juego la estampe entera):
+#  - banda enrollada alrededor de la BASE del cuello (más baja al frente, visible bajo el pico; sube por los lados por encima
+#    del hombro) con relieve de tela torcida;
+#  - pico triangular que cae sobre el pecho con pliegues que convergen a la punta, dobladillo en los bordes y caída hacia fuera;
+#  - nudo atrás (dos lóbulos y la vuelta que los aprieta) con dos puntas sueltas que caen por la espalda.
+# Pesos copiados de la piel (incluidos los hombros: la tela se mueve con la piel que tiene debajo) y alisados.
+# Shape key 'camisa': todo lo que quedaría dentro de la camisa se lleva 7 mm por fuera de ella (el juego la activa con camisa).
+NECK_Y = -0.03
+
+
+def neck_r(z, a, cy=NECK_Y):
     """Radio de la superficie del cuello/pecho desde dentro (no ve los brazos)."""
     d = D(a); hit = body_bvh().ray_cast(Vector((0, cy, z)), d, 1.0)
-    return hit[3] if hit[0] is not None else 0.12
+    r = hit[3] if hit[0] is not None else 0.12
+    return min(r, 1 / math.hypot(math.sin(a) / 0.2, math.cos(a) / 0.26))  # por los lados el rayo podría seguir por el brazo
+
+
+def band_z(a):
+    """Altura del centro de la banda: 0,682 al frente (bajo el pico), 0,737 a los lados (encima del hombro), 0,712 atrás."""
+    return 0.682 + 0.055 * math.sin(a) ** 2 + 0.03 * max(0.0, -math.cos(a))
+
+
+BAND_GAP, BAND_RR, BAND_RZ = 0.007, 0.0125, 0.02   # holgura con el cuello y semiejes del rollo (radial, vertical)
+
+
+def band_center(a):
+    z = band_z(a)
+    return Vector((0, NECK_Y, z)) + D(a) * (neck_r(z, a) + BAND_GAP + BAND_RR)
+
+
+def panuelo_band(mt, N=80, M=10):
+    """Rollo de tela alrededor del cuello: sección elíptica con crestas en hélice (tela torcida)."""
+    me = bpy.data.meshes.new('banda'); bm = bmesh.new(); rings = []
+    C = [band_center(2 * math.pi * i / N - math.pi) for i in range(N)]
+    for _ in range(2):  # suaviza el recorrido (el cuello no es liso)
+        C = [(C[i - 1] + 2 * C[i] + C[(i + 1) % N]) / 4 for i in range(N)]
+    for i in range(N):
+        t = (C[(i + 1) % N] - C[i - 1]).normalized(); up = Vector((0, 0, 1))
+        out = t.cross(up).normalized()
+        if out.dot(C[i] - Vector((0, NECK_Y, C[i].z))) < 0: out = -out
+        up = out.cross(t).normalized()
+        if up.z < 0: up = -up
+        ring = []
+        for j in range(M):
+            ph = 2 * math.pi * j / M
+            twist = 1 + 0.2 * math.sin(3 * ph + 2 * math.pi * i / N * 16)    # crestas diagonales del rollo
+            ring.append(bm.verts.new(C[i] + out * math.cos(ph) * BAND_RR * twist + up * math.sin(ph) * BAND_RZ * (0.92 + 0.08 * twist)))
+        rings.append(ring)
+    for i in range(N):
+        r0, r1 = rings[i], rings[(i + 1) % N]
+        for j in range(M): bm.faces.new((r0[j], r0[(j + 1) % M], r1[(j + 1) % M], r1[j]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new('banda', me); bpy.context.collection.objects.link(o)
+    return put(o, mt['TELA'])
+
+
+def panuelo_pico(mt, A=R(60), z_tip=0.448, rows=18, cols=24):
+    """Pico triangular: cuelga del borde inferior de la banda (±A) a la punta, con pliegues y caída."""
+    P = []
+    for m in range(rows + 1):
+        v = m / rows * 0.97; row = []
+        for k in range(cols + 1):
+            u = -1 + 2 * k / cols
+            a_top = u * A; a = a_top * (1 - v) ** 0.92
+            z_top = band_z(a_top) - BAND_RZ * 0.55
+            z = z_top + (z_tip - z_top) * v
+            # caída: se separa del pecho hacia la punta; pliegues verticales que convergen a la punta (tres crestas y un
+            # pliegue central), más fuertes a media altura; los bordes laterales se curvan un poco hacia dentro
+            env = math.sin(math.pi * min(1.0, v / 0.8) * 0.5 + math.pi * 0.5 * max(0.0, v - 0.8) / 0.2)
+            fold = 0.0095 * env * math.cos(2.5 * math.pi * u) * (1 - 0.3 * abs(u))
+            crease = 0.006 * v * max(0.0, 1 - abs(u) / 0.18)       # lomo central del pico doblado
+            off = 0.013 + 0.014 * v * v + fold + crease + 0.004 * (1 - abs(u)) * v
+            row.append(Vector((0, NECK_Y, z)) + D(a) * (neck_r(z, a) + off))
+        P.append(row)
+    tip = P[-1][cols // 2] + Vector((0, -0.004, -0.014))
+    o = grid_mesh('pico', P, pole=tip)
+    orient_out(o, (0, -0.02, 0.6))
+    edges = [[P[m][0] for m in range(rows + 1)] + [tip], [P[m][cols] for m in range(rows + 1)] + [tip]]
+    add_mod(o, 'SOLIDIFY', thickness=0.004, offset=1, use_rim=True, use_even_offset=True)
+    apply_mods(o)
+    put(o, mt['TELA'])
+    hems = [put(tube_path('dobladillo', e, 0.0028, seg=5), mt['TELA']) for e in edges]
+    return [o] + hems
+
+
+def panuelo_nudo(mt):
+    """Nudo atrás (dos lóbulos y la vuelta que los aprieta) y dos puntas sueltas que caen por la espalda."""
+    a = math.pi; zk = band_z(a) - 0.006
+    out = D(a); kc = Vector((0, NECK_Y, zk)) + out * (neck_r(zk, a) + 0.024)
+    X = Vector((1, 0, 0)); Z = Vector((0, 0, 1))
+    parts = []
+    for sx in (-1, 1):  # lóbulos
+        c = kc + X * sx * 0.011 + Z * 0.002
+        U = (X * math.cos(0.5 * sx) + Z * math.sin(0.5 * sx)).normalized(); W = out; V = W.cross(U).normalized()
+        parts.append(put(oriented_sphere('nudo', c, 0.018, U, V, W, s=(1.25, 0.85, 0.8), seg=14, rings=8), mt['TELA']))
+    # vuelta que aprieta el nudo (anillo inclinado alrededor del centro)
+    ring = []
+    for i in range(16):
+        ph = 2 * math.pi * i / 16
+        ring.append(kc + (Z * math.cos(ph) * 0.019 + out * math.sin(ph) * 0.014) + X * 0.004 * math.sin(ph))
+    parts.append(put(tube_path('vuelta', ring, 0.0075, seg=8, closed=True), mt['TELA']))
+    # puntas: cintas que bajan y se abren, pegadas a la espalda con holgura, con giro suave y punta en pico
+    for sx in (-1, 1):
+        rows = []; n = 12
+        for i in range(n + 1):
+            t = i / n
+            x = sx * (0.013 + 0.058 * t ** 1.1)
+            z = zk - 0.008 - 0.125 * t
+            a2 = math.pi - math.atan2(x, 0.11)            # acimut del punto (atrás = 180°)
+            base = Vector((x, NECK_Y, z)); base.y = NECK_Y
+            r = neck_r(z, a2)
+            ctr = Vector((0, NECK_Y, z)) + D(a2) * (r + 0.022 + 0.016 * t)
+            ctr.x = x
+            tang = Vector((sx * 0.45, 0.0, -1.0)).normalized()
+            nrm = D(a2)
+            side = tang.cross(nrm).normalized()
+            tw = 0.55 * t * sx                                   # giro de la cinta
+            side = (side * math.cos(tw) + nrm * math.sin(tw)).normalized()
+            w = 0.024 * (1 - t) ** 0.65 + 0.002
+            sag = 0.004 * math.sin(math.pi * t * 1.5)            # pequeña ondulación
+            c = ctr + nrm * sag
+            rows.append([c - side * w, c - side * w * 0.3 + nrm * 0.0015, c + side * w * 0.3 + nrm * 0.0015, c + side * w])
+        tail = grid_mesh('punta', rows)
+        orient_out(tail, (0, NECK_Y, zk - 0.05))
+        add_mod(tail, 'SOLIDIFY', thickness=0.0035, offset=0, use_rim=True)
+        add_mod(tail, 'SUBSURF', levels=1); apply_mods(tail)
+        parts.append(put(tail, mt['TELA']))
+    return parts
 
 
 def panuelo(name='panuelo'):
-    mt = M(); seg = 32; rows = 8
-    side = lambda a: math.sin(a) ** 2  # 1 a los lados (hombros), 0 frente/atrás
-    zt = lambda a: 0.742 + 0.03 * side(a) - 0.008 * max(0.0, math.cos(a))
-    zb = lambda a: 0.668 + 0.04 * side(a) - 0.185 * max(0.0, 1 - abs(a) / R(58)) ** 1.15
-    G = []
-    for m in range(rows + 1):
-        t = m / rows; row = []
-        for i in range(seg):
-            a = math.pi + 2 * math.pi * i / seg; a = (a + math.pi) % (2 * math.pi) - math.pi
-            z = zt(a) + (zb(a) - zt(a)) * t
-            fold = 0.006 * math.sin(a * 7) * t * max(0.0, math.cos(a))  # pliegues en la punta
-            cap = 1 / math.hypot(math.sin(a) / 0.135, math.cos(a) / 0.24)  # el rayo no debe seguir por el brazo
-            row.append(Vector((0, -0.03, z)) + D(a) * (min(neck_r(z, a), cap) + 0.016 + 0.012 * t * max(0.0, math.cos(a)) + fold))
-        G.append(row)
-    o = grid_mesh(name, G, close_u=True)
-    orient_out(o, (0, -0.03, 0.66))
-    wrap_outside(o, offset=0.01, smooth=5, thickness=0.006, subdiv=1)
-    put(o, mt['TELA'])
-    # nudo atrás y dos puntas sueltas
-    zk = 0.70; kc = Vector((0, -0.03, zk)) + D(math.pi) * (neck_r(zk, math.pi) + 0.03)
-    parts = [o, put(oriented_sphere('nudo', kc, 0.03, Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((0, 1, 0)), s=(1.1, 0.85, 0.7), seg=12, rings=8), mt['TELA'])]
-    for sx in (-1, 1):
-        base = kc + Vector((sx * 0.012, 0.006, -0.012))
-        tip = base + Vector((sx * 0.05, 0.02, -0.075))
-        side = Vector((-sx * 0.0, 1, 0)).cross(tip - base).normalized()
-        Gt = [[base.lerp(tip, t) + side * (0.022 * (1 - t) * q) + Vector((0, 0.01 * math.sin(math.pi * t), 0)) for q in (-1, 0, 1)] for t in (0, 0.33, 0.66, 1.0)]
-        fl = grid_mesh('punta', Gt)
-        add_mod(fl, 'SOLIDIFY', thickness=0.005, offset=0, use_rim=True)
-        add_mod(fl, 'SUBSURF', levels=1); apply_mods(fl)
-        parts.append(put(fl, mt['TELA']))
-    return parts
+    mt = M()
+    return [panuelo_band(mt)] + panuelo_pico(mt) + panuelo_nudo(mt)
+
+
+def push_clear(o, target_bvh, need, smooth=4):
+    """Desplazamientos que llevan cada vértice al menos `need` por fuera de la superficie de target_bvh (normal de la cara
+    más cercana), dilatados y alisados por la malla. Devuelve la lista de vectores (uno por vértice)."""
+    me = o.data; n = len(me.vertices)
+    disp = [Vector((0, 0, 0)) for _ in range(n)]
+    for v in me.vertices:
+        p = o.matrix_world @ v.co
+        loc, nrm, idx, dist = target_bvh.find_nearest(p)
+        if loc is None: continue
+        sd = (p - loc).dot(nrm)
+        if sd < need and dist < 0.06: disp[v.index] = nrm * (need - sd)
+    adj = [[] for _ in range(n)]
+    for e in me.edges: a, b = e.vertices; adj[a].append(b); adj[b].append(a)
+    for _ in range(2):  # dilata: el vecino más empujado manda (las dos caras de la tela se mueven juntas)
+        disp = [max([disp[i]] + [disp[j] for j in adj[i]], key=lambda d: d.length) for i in range(n)]
+    for _ in range(smooth):  # alisado que nunca reduce un empuje necesario: el bulto queda suave
+        new = []
+        for i in range(n):
+            if not adj[i]: new.append(disp[i]); continue
+            avg = (disp[i] * 2 + sum((disp[j] for j in adj[i]), Vector((0, 0, 0)))) / (2 + len(adj[i]))
+            new.append(avg if avg.length > disp[i].length else disp[i])
+        disp = new
+    return disp
+
+
+def smooth_weights(o, repeat=4, factor=0.5):
+    """Alisa los pesos por la malla (media con los vecinos), sin operadores de modo edición."""
+    me = o.data; n = len(me.vertices); G = len(o.vertex_groups)
+    adj = [[] for _ in range(n)]
+    for e in me.edges: a, b = e.vertices; adj[a].append(b); adj[b].append(a)
+    W = [[0.0] * G for _ in range(n)]
+    for v in me.vertices:
+        for g in v.groups: W[v.index][g.group] = g.weight
+    for _ in range(repeat):
+        W2 = []
+        for i in range(n):
+            if not adj[i]: W2.append(W[i]); continue
+            avg = [sum(W[j][k] for j in adj[i]) / len(adj[i]) for k in range(G)]
+            W2.append([W[i][k] * (1 - factor) + avg[k] * factor for k in range(G)])
+        W = W2
+    for k, vg in enumerate(o.vertex_groups):
+        for i in range(n):
+            if W[i][k] > 1e-4: vg.add([i], W[i][k], 'REPLACE')
+            else: vg.remove([i])
+
+
+# Poses en las que se ajusta la forma 'camisa': las acciones del rig (Idle y Walk muestreadas) y las capas que el juego
+# suma por código (character.js: bailar = brazos arriba y codos; nadar = alas abiertas, cabeza y pecho hacia atrás).
+EXTRA_POSES = {
+    'bailar': {'armL1': ('Z', 0.9), 'armL1.001': ('Z', -0.9), 'armL2': ('X', 0.7), 'armL2.001': ('X', 0.7)},
+    'bailar2': {'armL1': ('Z', 1.4), 'armL1.001': ('Z', -0.5), 'armL2': ('X', 1.1), 'armL2.001': ('X', 0.3)},
+    'nadar': {'armL1': ('Z', 0.92), 'armL1.001': ('Z', -0.92), 'cabeza': ('X', -0.75), 'espalda2': ('X', -0.25)},
+    'nadar2': {'armL1': ('Z', 0.32), 'armL1.001': ('Z', -0.32), 'armL2': ('X', 0.75), 'armL2.001': ('X', 0.75), 'cabeza': ('X', -0.75), 'espalda2': ('X', -0.25)},
+}
+
+
+def pose_iter():
+    """Recorre poses: reposo, Idle y Walk (6 cuadros cada una) y las poses extra sobre el cuadro medio de Idle."""
+    from mathutils import Quaternion
+    rig = RIG(); sc = bpy.context.scene
+    rest_pose(); yield 'reposo'
+    rig.animation_data_create()
+    for an in ('Idle', 'Walk'):
+        act = bpy.data.actions[an]; rig.animation_data.action = act
+        f0, f1 = act.frame_range
+        for k in range(6):
+            sc.frame_set(int(round(f0 + (f1 - f0) * k / 6))); bpy.context.view_layer.update(); yield '%s%d' % (an, k)
+    act = bpy.data.actions['Idle']; rig.animation_data.action = act
+    for name, rot in EXTRA_POSES.items():
+        sc.frame_set(int(sum(act.frame_range) / 2))
+        for bn, (ax, ang) in rot.items():
+            pb = rig.pose.bones[bn]; pb.rotation_mode = 'QUATERNION'
+            pb.rotation_quaternion = pb.rotation_quaternion @ Quaternion({'X': (1, 0, 0), 'Y': (0, 1, 0), 'Z': (0, 0, 1)}[ax], ang)
+        bpy.context.view_layer.update(); yield name
+    rig.animation_data.action = None; rest_pose()
+
+
+def skin_mats(o):
+    """Matriz de deformación (3×3) de cada vértice de `o` en la pose actual (mezcla lineal de huesos, como el juego)."""
+    rig = RIG(); mw = rig.matrix_world; mwi = mw.inverted()
+    B = {pb.name: (mw @ pb.matrix @ pb.bone.matrix_local.inverted() @ mwi).to_3x3() for pb in rig.pose.bones if pb.bone.use_deform}
+    names = {g.index: g.name for g in o.vertex_groups}; out = []
+    from mathutils import Matrix
+    for v in o.data.vertices:
+        M = Matrix(((0, 0, 0), (0, 0, 0), (0, 0, 0))); tw = 0.0
+        for g in v.groups:
+            bm = B.get(names[g.group])
+            if bm is None or g.weight <= 0: continue
+            M += bm * g.weight; tw += g.weight
+        out.append(M * (1 / tw) if tw > 0 else Matrix.Identity(3))
+    return out
+
+
+def fit_over_shirt(o, need=0.007, passes=2):
+    """Forma 'camisa' del pañuelo: en cada pose, todo vértice que quede a menos de `need` de la cara exterior de la camisa
+    (o dentro) se empuja por su normal; el empuje se pasa al espacio de reposo con la inversa de la piel del vértice, se
+    toma el mayor de todas las poses y se alisa. Dos pasadas (la segunda corrige lo que la primera no alcanzó)."""
+    import ropa_camisa
+    sh = ropa_camisa.camisa('camisa_ajuste')
+    bvh0 = body_bvh(); me = sh.data
+    outer = []
+    for pl in me.polygons:  # cara exterior: mirando hacia dentro (−normal) se encuentra el cuerpo enseguida
+        c = sh.matrix_world @ pl.center; n = (sh.matrix_world.to_3x3() @ pl.normal).normalized()
+        if bvh0.ray_cast(c - n * 0.0005, -n, 0.06)[0] is not None: outer.append(tuple(pl.vertices))
+    print('CAMISA caras exteriores %d de %d' % (len(outer), len(me.polygons)))
+    n = len(o.data.vertices); total = [Vector((0, 0, 0)) for _ in range(n)]
+    key = o.shape_key_add(name='camisa', from_mix=False) if not (o.data.shape_keys and 'camisa' in o.data.shape_keys.key_blocks) else o.data.shape_keys.key_blocks['camisa']
+    key.value = 1.0
+    for ps in range(passes):
+        best = [Vector((0, 0, 0)) for _ in range(n)]; worst = {}
+        for pname in pose_iter():
+            dg = bpy.context.evaluated_depsgraph_get()
+            se = sh.evaluated_get(dg); sm = se.to_mesh(); SV = [sh.matrix_world @ v.co for v in sm.vertices]; se.to_mesh_clear()
+            bvh = BVHTree.FromPolygons(SV, outer)
+            oe = o.evaluated_get(dg); om = oe.to_mesh(); P = [o.matrix_world @ v.co for v in om.vertices]; oe.to_mesh_clear()
+            S = skin_mats(o); w = 1.0
+            for i, p in enumerate(P):
+                q, nr, idx, dist = bvh.find_nearest(p, 0.05)
+                if q is None: continue
+                sd = (p - q).dot(nr); w = min(w, sd)
+                if sd < need:
+                    d = S[i].inverted_safe() @ (nr * (need - sd))
+                    if d.length > best[i].length: best[i] = d
+            worst[pname] = round(w, 4)
+        print('PASADA', ps, 'peor por pose', worst)
+        adj = [[] for _ in range(n)]
+        for e in o.data.edges: a_, b_ = e.vertices; adj[a_].append(b_); adj[b_].append(a_)
+        for _ in range(2):
+            best = [max([best[i]] + [best[j] for j in adj[i]], key=lambda d: d.length) for i in range(n)]
+        for _ in range(5):
+            nb = []
+            for i in range(n):
+                avg = (best[i] * 2 + sum((best[j] for j in adj[i]), Vector((0, 0, 0)))) / (2 + len(adj[i]))
+                nb.append(avg if avg.length > best[i].length else best[i])
+            best = nb
+        for i in range(n):
+            total[i] = total[i] + best[i]
+            key.data[i].co = o.data.vertices[i].co + total[i]
+    bpy.data.objects.remove(sh, do_unlink=True)
+    print('CAMISA morph: verts movidos', sum(1 for d in total if d.length > 1e-5), 'max %.4f' % max(d.length for d in total))
+    key.value = 0.0
+
+
+def finish_panuelo(name='panuelo'):
+    parts = panuelo(name)
+    for p in parts: apply_mods(p)
+    o = join(parts, name)
+    cyl_uv(o)
+    shade_smooth(o, 60)
+    # separación mínima del cuerpo en reposo (por si algún punto quedó cerca de las plumas)
+    disp = push_clear(o, body_bvh(), 0.009, smooth=3)
+    for v, d in zip(o.data.vertices, disp): v.co += d
+    o.data.update()
+    check_clear([o], eyes=True)
+    # pesos: los de la piel más cercana (cuello, pecho y hombros), alisados para que la tela no se arrugue de golpe
+    weights_from_body(o)
+    smooth_weights(o, repeat=4)
+    clean_weights(o)
+    add_armature(o)
+    # shape key 'camisa': por fuera de la camisa en todas las poses de prueba (el juego la activa con camisa puesta)
+    o.shape_key_add(name='Basis', from_mix=False)
+    fit_over_shirt(o)
+    print('GROUPS', [g.name for g in o.vertex_groups])
+    print('TRIS', name, tri_count(o), 'MATS', [m.name for m in o.data.materials])
+    preview_head([o], name, target=(0, -0.05, 0.64), dist=1.45, views=(('frente', -8), ('lado', 90), ('atras', 160)))
+    export([o], name, morph=True)
+    print('KB', name, round(glb_kb(name), 1))
+    bpy.data.objects.remove(o, do_unlink=True)
 
 
 # ---------------------------------------------------------------------------------------------- final
@@ -706,7 +972,7 @@ PIEZAS = {
     'lentes_redondas': lambda: finish('lentes_redondas', lentes('lentes_redondas', 'redondas'), eyes=False, dist=1.1, target=(0, -0.08, 1.2)),
     'lentes_deportivas': lambda: finish('lentes_deportivas', visor_wrap('lentes_deportivas', 'deportivas'), eyes=False, dist=1.15, target=(0, -0.06, 1.2)),
     'lentes_buceo': lambda: finish('lentes_buceo', visor_wrap('lentes_buceo', 'buceo'), eyes=False, dist=1.35, target=(0, -0.04, 1.25)),
-    'panuelo': lambda: finish('panuelo', panuelo(), skin=True, dist=1.7, target=(0, -0.05, 0.66)),
+    'panuelo': lambda: finish_panuelo('panuelo'),
 }
 
 if __name__ == '__main__':

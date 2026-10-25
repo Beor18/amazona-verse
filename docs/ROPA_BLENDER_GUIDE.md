@@ -51,6 +51,16 @@ Z arriba, el personaje mira hacia **-Y**, pies en z=0, alto 1.40. Pose de reposo
 - Cualquier otro nombre (p. ej. `CUERO_OSCURO`, `METAL`, `SUELA`, `MADERA`, `BLANCO`) conserva el color que le pongas en Blender
   con `mat('NOMBRE', hexrgb('#…'), rough, metal)`.
 
+## Color, UV y formas (lo que hace el juego con el .glb)
+- `hexrgb('#…')` pasa el hex sRGB a lineal con la curva sRGB EXACTA y `mat()` marca el material con `av_srgb = 1` (sale como
+  extras del glTF). Los .glb exportados antes (gamma 2,2) los corrige el juego al cargar (`AVColor.fixGamma22`); los marcados no
+  se tocan. Así un `#8a5a2b` de Blender se ve igual que el mismo hex en el creador.
+- UV de `TELA`/`PAJA`: el juego gira 180° las UV al cargar (el exportador invierte V y `cyl_uv` corre U al revés que el lienzo
+  de los estampados). Sigue usando `cyl_uv`/`hat_uv` tal cual: frente en u = 0,5 y la parte de arriba de la prenda arriba.
+- Morph targets: `export([...], nombre, morph=True)` exporta las shape keys. El pañuelo trae la forma `camisa` (se separa
+  para ir por encima de la camisa en todas las poses de prueba) y el juego la activa sola cuando hay camisa puesta.
+- Una pieza con piel debe ser UNA sola primitiva si va en la ranura del cuello (el test cuenta piezas montadas).
+
 ## Calidad que se espera
 - Formas con volumen y grosor (Solidify), bordes biselados (Bevel), Subdivision Surface nivel 1–2 aplicada, shade smooth.
 - Detalles que se lean a distancia: costuras/ribetes como tubos finos, botones, hebillas, suela separada, cordones simples.

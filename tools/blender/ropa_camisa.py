@@ -6,16 +6,25 @@ from ropa_lib import *
 T = [(0.29, 0.15, -0.013, 0.145), (0.34, 0.18, -0.008, 0.19), (0.38, 0.188, 0.0, 0.215), (0.42, 0.195, -0.015, 0.22),
      (0.46, 0.212, -0.03, 0.215), (0.505, 0.212, -0.045, 0.2), (0.54, 0.206, -0.054, 0.19), (0.58, 0.19, -0.062, 0.178),
      (0.62, 0.162, -0.053, 0.166), (0.66, 0.13, -0.04, 0.152), (0.70, 0.105, -0.03, 0.13)]
-body = lathe('camisa', T, seg=48)
-sleeves = [tube_between('mangaL', (0.12, -0.017, 0.668), (0.30, -0.013, 0.655), 0.085, 0.072),
-           tube_between('mangaR', (-0.12, -0.017, 0.668), (-0.30, -0.013, 0.655), 0.085, 0.072)]
-o = join([body] + sleeves, 'camisa')
-wrap_outside(o, offset=0.012, smooth=6, thickness=0.007, subdiv=1)
-cyl_uv(o)
-weights_from_body(o)
-limb_weights(o, 'armL1', 'armL1.001', 0.15, 0.21)  # mangas: siguen al brazo
-o.data.materials.append(mat('TELA', hexrgb('#f4f4f0')))
-shade_smooth(o)
-add_armature(o)
-print('FINAL', len(o.data.vertices), len(o.data.polygons))
-export([o], 'camisa')
+
+
+def camisa(name='camisa'):
+    """Construye la camisa con piel sobre el Rig (sin exportar). La usa también ropa_cabeza.py para ajustar el pañuelo."""
+    body = lathe(name, T, seg=48)
+    sleeves = [tube_between('mangaL', (0.12, -0.017, 0.668), (0.30, -0.013, 0.655), 0.085, 0.072),
+               tube_between('mangaR', (-0.12, -0.017, 0.668), (-0.30, -0.013, 0.655), 0.085, 0.072)]
+    o = join([body] + sleeves, name)
+    wrap_outside(o, offset=0.012, smooth=6, thickness=0.007, subdiv=1)
+    cyl_uv(o)
+    weights_from_body(o)
+    limb_weights(o, 'armL1', 'armL1.001', 0.15, 0.21)  # mangas: siguen al brazo
+    o.data.materials.append(mat('TELA', hexrgb('#f4f4f0')))
+    shade_smooth(o)
+    add_armature(o)
+    return o
+
+
+if __name__ == '__main__':
+    o = camisa()
+    print('FINAL', len(o.data.vertices), len(o.data.polygons))
+    export([o], 'camisa')

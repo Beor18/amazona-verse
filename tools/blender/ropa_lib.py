@@ -29,12 +29,14 @@ def mat(name, color=(0.8, 0.8, 0.8), rough=0.8, metal=0.0):
     b.inputs['Roughness'].default_value = rough
     b.inputs['Metallic'].default_value = metal
     m.diffuse_color = (*color, 1)
+    m['av_srgb'] = 1  # color con la curva sRGB exacta (el juego no le aplica la corrección de los .glb viejos de gamma 2,2)
     return m
 
 
 def hexrgb(h):
+    """'#rrggbb' (sRGB, como en el juego) → color lineal con la curva sRGB exacta (glTF guarda baseColorFactor en lineal)."""
     h = h.lstrip('#'); c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
-    return tuple(x ** 2.2 for x in c)  # sRGB → lineal
+    return tuple(x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c)
 
 
 def apply_mods(o):
@@ -204,9 +206,11 @@ def shade_smooth(o, angle=40):
         pass
 
 
-def export(objs, name):
+def export(objs, name, morph=False):
     """Exporta las piezas con el Rig (piel), sin animaciones, a assets/models/ropa/<name>.glb
-    y una copia base64 <name>_glb.js para el artifact (que no sirve .glb)."""
+    y una copia base64 <name>_glb.js para el artifact (que no sirve .glb). morph=True exporta las shape keys
+    como morph targets (p. ej. 'camisa' en el pañuelo: se separa para ir por encima de la camisa).
+    Las propiedades personalizadas (material['av_srgb']) salen como extras del glTF."""
     rig = RIG()
     if rig.animation_data: rig.animation_data.action = None
     for pb in rig.pose.bones: pb.rotation_quaternion = (1, 0, 0, 0); pb.location = (0, 0, 0); pb.scale = (1, 1, 1)
@@ -216,7 +220,8 @@ def export(objs, name):
     path = os.path.join(OUT, name + '.glb')
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_yup=True, export_apply=False,
                               export_texcoords=True, export_normals=True, export_materials='EXPORT', export_skins=True,
-                              export_def_bones=False, export_animations=False, export_morph=False, export_cameras=False, export_lights=False)
+                              export_def_bones=False, export_animations=False, export_morph=morph, export_morph_normal=False,
+                              export_extras=True, export_cameras=False, export_lights=False)
     import base64
     with open(path, 'rb') as f: b = base64.b64encode(f.read()).decode()
     with open(os.path.join(OUT, name + '_glb.js'), 'w') as f:
