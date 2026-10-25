@@ -7,8 +7,8 @@
      3. Obtener un huevo en el criadero y ver la animación de patitas en la eclosión (BLOQUEADO si no hay criadero).
      4. Las 8 etapas de la historia con las acciones del jugador (Acción, botones de tarjetas y diálogos, buceo con C):
         4.2 Luma llama desde la copa (el primer vuelo del capítulo: se mide cuándo llega) · 4.1 taller · 4.3 recolección y M1 (bucear) ·
-        4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» · 4.5 construir y la crecida · 4.6 corregir (rama A) o reubicar ·
-        4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
+        4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» · 4.5 construir y la crecida (se agarra al vuelo algo que arrastra el río
+        y se suelta en seco) · 4.6 corregir (rama A) o reubicar · 4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
         4.9 mirador y pantalla final (con «Seguir explorando» si el pack lo ofrece) · 4.10 objetivo y guía en cada paso.
         Los bocadillos libres (G.dialogo.say(..., { libre: true }), DIVERSION_CAP1 mejora 3) se cuentan aparte: no paran el juego.
      5. Guardar a mitad del capítulo, recargar el iframe y verificar que todo persiste (y se sigue jugando tras recargar).
@@ -271,13 +271,47 @@
       const c1b = colocar(rama);
       const crecidaLibre = !!S.event && !G.ui.busy();                           // «¡Lo logramos! … viene más lluvia» en bocadillos: la crecida ya corre
       drain();
+      // Mejora 4: la crecida se juega. El río arrastra tres cosas; se agarra una al vuelo (Acción cerca) y se suelta donde el agua no llega
+      const CRE = G.c.crecida, accionesAntes = reloj.acciones;
+      tick(1);
+      const flotan = CRE ? CRE.objetos().filter(o => o.fase === 'flota') : [];
+      const puedeAgarrar = !!(G.agarre && G.agarre.agarrar && G.actores.player3D && G.actores.player3D.anchors);
+      const rescate = { flotan: flotan.map(o => o.id), agarrado: null, soltadoEn: null, salvado: false, guiaAlgoFlota: null, guiaLlevando: null };
+      if (flotan.length && puedeAgarrar) {
+        const o = flotan[0];
+        rescate.guiaAlgoFlota = G.misiones.guideTarget();
+        volar(o.it.x + 0.8, o.obj.position.y + 1.4, o.it.z); tick(0.3);          // hasta lo que flota, en vuelo
+        despejar('crecida');                                                      // p. ej. Luma presenta el nido (criadero) justo ahora: Acción la pasaría en vez de agarrar
+        const nbF = G.interaccion.nearest();
+        if (nbF && nbF.id === o.it.id) { G.interaccion.action(); reloj.acciones++; }
+        // Los gestos de agarrar y soltar corren en los cuadros de dibujo (gancho render), no en update: en el iframe oculto no hay
+        // requestAnimationFrame, así que se dibujan cuadros a mano (0,05 s cada uno) hasta que el gesto termina
+        const cuadros = (n, fin) => { for (let i = 0; i < n && !fin(); i++) G.renderer.render(0.05, false); return fin(); };
+        const llevado = cuadros(40, () => !!G.agarre.lleva() && G.agarre.lleva().id === o.id && o.fase === 'llevado');
+        rescate.agarrado = llevado ? o.id : (nbF ? nbF.id : 'nada cerca');
+        if (llevado) {
+          rescate.guiaLlevando = G.misiones.guideTarget();
+          const alto = G.misiones.closest(CRE.altos()); rescate.soltadoEn = alto && { x: Math.round(alto.x), y: +alto.y.toFixed(1), z: Math.round(alto.z) };
+          volar(alto.x, alto.y + 1.6, alto.z); G.fisica.MOVE.flying = false; tick(1.2);   // a tierra seca (copa, techo o colina) y posarse
+          despejar('crecida-soltar');
+          if (!G.interaccion.nearest()) { G.interaccion.action(); reloj.acciones++; } else { G.agarre.soltar(); reloj.acciones++; }   // sin nada cerca, Acción suelta
+          rescate.salvado = cuadros(40, () => o.fase === 'salvado');
+        }
+      }
       tick(4);
       const subio = S.water > G.terreno.waterBase + 0.5;
       check('4.5', 'Construir el refugio en el terreno ' + rama + ' desde el cartel (tarjeta, fantasma verde, Acción) gastando los materiales; llega la lluvia (sin parar el juego) y el río sube',
         c1b.abre && c1b.tarjeta && c1b.modo && c1b.valido && !!S.refuge && S.refuge.parcel === rama && S.inv.madera === c1b.antesMat.madera - costoR.madera && S.inv.piedra === c1b.antesMat.piedra - costoR.piedra && had('ShelterConstructed') && subio && crecidaLibre,
         { terreno: rama, cartel: c1b.abre, tarjeta: c1b.tarjeta, modoConstruir: c1b.modo, valido: c1b.valido, razon: c1b.razon, refugio: S.refuge, inv: S.inv, agua: +(S.water - G.terreno.waterBase).toFixed(2), libre: crecidaLibre, atajo: 'teleport al terreno; el fantasma sigue a Vittata' });
       if (corte('4.5', !!S.refuge)) return fin();
-      tick(6); drain();                                                         // fin de la crecida y su escena
+      for (let i = 0; i < 40 && S.event; i++) tick(1);                        // fin de la crecida (20 s) y su escena
+      drain();
+      const accionesCrecida = reloj.acciones - accionesAntes;
+      if (!CRE) check('4.5', 'Crecida jugable (DIVERSION_CAP1, mejora 4)', 'bloqueado', 'este pack no tiene G.c.crecida');
+      else if (!puedeAgarrar) check('4.5', 'Crecida jugable: agarrar al vuelo lo que arrastra el río', 'bloqueado', 'sin modelo 3D con anclas (G.agarre necesita player3D.anchors); flotaban: ' + rescate.flotan.join());
+      else check('4.5', 'Crecida jugable: el río arrastra 3 cosas (tablas, coquí, hallazgo); se agarra una al vuelo con Acción, se suelta en seco y queda salvada (FloodRescue); lo demás se recupera después, sin castigo',
+        flotan.length === 3 && rescate.salvado && had('FloodRescue') && !!rescate.guiaAlgoFlota && !!rescate.guiaLlevando && CRE.perdidos.length === 2 && accionesCrecida >= 2,
+        { flotan: rescate.flotan.join(','), agarrado: rescate.agarrado, guias: [!!rescate.guiaAlgoFlota, !!rescate.guiaLlevando], soltadoEn: rescate.soltadoEn, salvado: rescate.salvado, salvados: CRE.salvados.join(','), perdidos: CRE.perdidos.join(','), evento: had('FloodRescue'), acciones: accionesCrecida, atajo: 'vuelo directo hasta lo que flota y hasta tierra seca' }, 900);
       if (rama === 'A') {
         check('4.5', 'Crecida: el refugio del río queda dañado y aparece el Guardián (paso «Habla con el Guardián»)', !!S.refuge && S.refuge.damaged && had('ShelterFlooded') && G.actores.npc('guardian').sp.visible && S.step === 5 && !!S.captures.shelter && S.indicators.seguridad === 'baja',
           { refugio: S.refuge, paso: S.step, guardian: G.actores.npc('guardian').sp.visible, indicadores: S.indicators, foto: !!S.captures.shelter });
@@ -287,7 +321,7 @@
         const desarma = useAt('refuge', 1.6, 0); const cercR = ultimoCercano; drain();
         check('4.6', 'Corregir: desarmar el refugio dañado devuelve los materiales (3 madera y 2 piedras)', desarma && !S.refuge && had('ShelterDismantled') && S.inv.madera === inv3.madera && S.inv.piedra === inv3.piedra, { inv: S.inv, esperado: inv3, cercano: desarma ? null : cercR });
         const c2b = colocar('B');
-        drain(); tick(9); drain();
+        drain(); for (let i = 0; i < 40 && S.event; i++) tick(1); drain();  // segunda crecida (20 s): lo que flota se recupera después
         check('4.6', 'Reconstruir en la colina: el refugio aguanta la crecida y queda a salvo', c2b.valido && !!S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated') && S.indicators.seguridad === 'alta' && S.builds.join() === 'A,B',
           { refugio: S.refuge, construcciones: S.builds, indicadores: S.indicators, valido: c2b.valido, razon: c2b.razon, paso: S.step });
       } else {

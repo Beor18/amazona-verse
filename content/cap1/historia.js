@@ -4,9 +4,10 @@
    que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
    Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
    construir y de la crecida, retrato neutro de la Voz y final del mirador (plano del bote y luz que parpadea tres veces).
-   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejoras 1 y 3): Luma llama desde la copa del flamboyán de la plaza y el
+   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejoras 1, 3 y 4): Luma llama desde la copa del flamboyán de la plaza y el
    primer paso es volar hasta ella (el taller va después); la narración y los comentarios salen en bocadillos libres
-   (G.dialogo.say(..., { libre: true })) y solo bloquean las charlas y las decisiones. Las líneas del guion no cambian.
+   (G.dialogo.say(..., { libre: true })) y solo bloquean las charlas y las decisiones; la crecida dura 20 s y arrastra tres cosas
+   que se agarran en vuelo y se sueltan a salvo (sin castigo). Las líneas del guion no cambian.
    Lo que depende de Kelvin (canon o arte) queda marcado en el código con «[KELVIN-n]» y listado en PENDIENTES_KELVIN. */
 (function () {
   'use strict';
@@ -56,8 +57,9 @@
         { id: 'terrenos', texto: (S, G) => G.c.edu ? G.c.edu.textoPaso() : 'Inspecciona los dos terrenos',
           hasta: { marca: ['evaluated.A', 'evaluated.B'], mision: 'educativa' },
           guia: G => (G.c.edu && G.c.edu.guia()) || at(G, !G.S.evaluated.A ? 'postA' : 'postB') },
-        { id: 'refugio', texto: 'Elige un terreno y construye el refugio',
-          guia: G => { const S = G.S; return S.event ? null : S.refuge && S.refuge.damaged ? at(G, 'refuge') : S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]); } },
+        // Mejora 4: durante la crecida el objetivo es salvar lo que arrastra el río (la guía apunta a lo que flota o a tierra seca)
+        { id: 'refugio', texto: S => (S.event ? '¡Crecida! Agarra al vuelo lo que arrastra el río y ponlo a salvo' : 'Elige un terreno y construye el refugio'),
+          guia: G => { const S = G.S; return S.event ? (G.c.crecida ? G.c.crecida.guia() : null) : S.refuge && S.refuge.damaged ? at(G, 'refuge') : S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]); } },
         { id: 'guardian', texto: 'Habla con el Guardián Constructor', guia: G => at(G, 'guardian') },
         { id: 'transmisor', texto: 'Repara y activa el transmisor',
           progreso: (S, G) => S.chorus && !S.missions.m3 ? ` (coquíes ${S.coquis.length}/${G.c.BUSHES.length})` : '',
@@ -348,7 +350,9 @@
         C.placeRefugeMesh(); syncRefugeInteractable();
         G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
         say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]), null, LIBRE);
-        S.event = { t: 0, dur: 8 };
+        // La crecida dura 20 s (mejora 4): el río sube 12 s, se queda y baja; mientras, arrastra tres cosas que se pueden salvar
+        S.event = { t: 0, dur: 20 };
+        crecida.empezar();
         applyGuardianLook();
         return true;
       }
@@ -376,26 +380,30 @@
         G.agua.setLevel(WATER_BASE + (FLOOD_LEVEL - WATER_BASE) * k * (1 - fall * 0.85));
         G.fx.rain.visible = true;
         if (e.t > 1 && e.t < e.dur * 0.6) G.camara.shake(0.07, 0.1); // la crecida hace temblar la cámara
-        if (e.t >= e.dur) { S.event = null; G.fx.rain.visible = false; finishRainEvent(); }
+        crecida.flotar(dt, e);
+        if (e.t >= e.dur) { S.event = null; G.fx.rain.visible = false; crecida.terminar(); finishRainEvent(); }
       }, 20);
-      // Al terminar: la escena de Luma va en bocadillos y la historia sigue en el acto (afterRain)
+      // Al terminar: la escena de Luma va en bocadillos y la historia sigue en el acto (afterRain); si se salvó algo, Luma lo agradece
+      // y lo que se llevó el río se da por recuperado después (sin castigo). [KELVIN] las dos frases de Luma sobre el rescate son provisionales.
       function finishRainEvent() {
+        const gracias = crecida.salvados.length ? [{ who: 'Luma', img: IMG.L, text: '¡Salvaste ' + crecida.nombres(crecida.salvados) + '! Mi familia te lo agradece.', mood: 'happy' }] : [];
+        const rio = crecida.perdidos.length ? [{ who: 'Luma', img: IMG.L, text: 'El río se llevó ' + crecida.nombres(crecida.perdidos) + '. Tranquila: aparecerá río abajo y lo recogemos después.' }] : [];
         if (S.refuge.parcel === 'A') {
           S.refuge.damaged = true;
           S.indicators = { seguridad: 'baja', acceso: 'corto', habitat: 'nidos de ribera alterados' };
           log('ShelterFlooded', { parcel: 'A' });
           C.placeRefugeMesh();
           capture('shelter');
-          say(L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), null, LIBRE);
+          say([...L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), ...gracias, ...rio], null, LIBRE);
           toast('Si desarmas el refugio recuperas los materiales', 3500); afterRain();
         } else {
           S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
           if (S.builds.includes('A')) log('ShelterRelocated', { from: 'A', to: 'B' });
           capture('shelter');
-          say(L('evento:ShelterRelocated', [
+          say([...L('evento:ShelterRelocated', [
             { who: 'Luma', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
             { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
-          ]), null, LIBRE);
+          ]), ...gracias, ...rio], null, LIBRE);
           afterRain();
         }
       }
@@ -554,6 +562,152 @@
         guia: () => (lumaArriba() ? { x: percha.x, z: percha.z, y: percha.y + 0.6 } : { x: lumaIt.x, z: lumaIt.z }),
       };
 
+      // ---------- La crecida se juega (DIVERSION_CAP1, mejora 4) ----------
+      // Mientras el río sube, el agua de la zona de la crecida arrastra tres cosas: las tablas de Luma, un coquí en su hoja y un
+      // hallazgo del Diario (el más cercano sin encontrar). Se agarran en vuelo (Acción cerca; G.agarre, las lleva en las patas) y
+      // se sueltan donde el agua no llegue: una copa, el techo del taller, la colina o cualquier suelo seco. Sin castigo: lo que no
+      // se salva se da por recuperado después (el hallazgo sigue en su sitio). Lo salvado queda en el registro (evento FloodRescue)
+      // y el hallazgo entra al Diario.
+      const ZONA = (MAPA_C1 && MAPA_C1.agua && MAPA_C1.agua.crecida && MAPA_C1.agua.crecida.zona) || { x: PLACES.A.x, z: PLACES.A.z, r: 16 };
+      const RIO_A = (G.terreno.poi && G.terreno.poi('rio_terrenoA')) || null;
+      const scene = G.renderer.scene;
+      // La corriente: en el mapa, la polilínea del río ([x, z, nivel, medioAncho]) hacia donde baja el nivel, a 1,2 m/s y a flote desde
+      // el primer segundo (salen de la orilla junto al terreno A); sin mapa, un remolino dentro de la zona de la crecida
+      const RIO = (MAPA_C1 && MAPA_C1.agua && MAPA_C1.agua.rio && MAPA_C1.agua.rio.puntos && MAPA_C1.agua.rio.puntos.length > 1) ? MAPA_C1.agua.rio.puntos : null;
+      const RIO_DIR = RIO ? (RIO[RIO.length - 1][2] <= RIO[0][2] ? 1 : -1) : 1;
+      const CORRIENTE = 1.2;
+      function rioIdx(x, z) { let b = 0, bd = Infinity; for (let i = 0; i < RIO.length - 1; i++) { const d = Math.hypot(RIO[i][0] - x, RIO[i][1] - z); if (d < bd) { bd = d; b = i; } } return b; }
+      // Punto del río en la posición k (índice + fracción) desplazado lat × medio ancho hacia un lado
+      function puntoRio(k, lat) {
+        const i = Math.max(0, Math.min(RIO.length - 2, Math.floor(k))), f = Math.min(1, Math.max(0, k - i));
+        const a = RIO[i], b = RIO[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz) || 1;
+        const w = (a[3] + (b[3] - a[3]) * f) * lat;
+        return { x: a[0] + dx * f - dz / len * w, z: a[1] + dz * f + dx / len * w, len };
+      }
+      const kRio = k => Math.max(0, Math.min(RIO.length - 1.001, k));
+      const objs = [], salvados = [], perdidos = [];
+      const mat = c => new THREE.MeshLambertMaterial({ color: c }); // en sRGB: G.renderer.linearize los pasa a lineal una sola vez
+      function mallaTablas() {
+        const g = new THREE.Group(), m = mat('#a8743f');
+        for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.3), m); t.position.set(0, 0.05 + i * 0.1, (i - 1) * 0.12); t.rotation.y = (i - 1) * 0.12; t.castShadow = true; g.add(t); }
+        return g;
+      }
+      function mallaCoqui() {
+        const g = new THREE.Group();
+        const hoja = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.26, 0.04, 14), mat('#3f8f3a')); hoja.position.y = 0.02; g.add(hoja);
+        const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat('#b07a3c')); cuerpo.scale.set(1, 0.8, 1.25); cuerpo.position.y = 0.14; g.add(cuerpo);
+        for (const s of [-1, 1]) { const ojo = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat('#1a1208')); ojo.position.set(s * 0.07, 0.22, 0.11); g.add(ojo); }
+        return g;
+      }
+      function hallazgoCercano() {
+        const DI = G.diario; if (!DI || !DI.entries) return null;
+        let best = null, bd = Infinity;
+        for (const f of DI.entries) { if (f.agua || S.field.includes(f.id)) continue; const d = Math.hypot(f.x - ZONA.x, f.z - ZONA.z); if (d < bd) { bd = d; best = f; } }
+        return best;
+      }
+      function crear(id, nombre, obj, extra) {
+        const o = Object.assign({ id, nombre, obj, fase: 'flota', ang: 0, rad: 9, bob: Math.random() * 6 }, extra);
+        // Un interactuable por cosa, reutilizado en cada crecida (sus funciones se vuelven a enlazar al objeto nuevo)
+        o.it = G.interaccion.find('crecida_' + id) || G.interaccion.add({ id: 'crecida_' + id, x: 0, z: 0, r: 2.4 });
+        o.it.label = () => 'Agarrar ' + o.nombre; o.it.use = () => agarrar(o);
+        o.it.visible = () => o.fase === 'flota' && !!S.event && !(G.agarre && G.agarre.lleva());
+        return o;
+      }
+      function agarrar(o) {
+        if (!G.agarre || !G.agarre.agarrar) { toast('Sin el modelo 3D no se puede agarrar', 2500); return; }
+        if (!G.agarre.agarrar(o.obj, { id: o.id })) toast('Acércate un poco más y vuelve a pulsar Acción', 2200);
+      }
+      // Superficie donde flota algo en (x, z): el agua (río o crecida) o el suelo si el agua todavía no llegó
+      const flotaY = (x, z) => { const lv = G.agua.levelAt(x, z); return Math.max(lv > -Infinity ? lv : -Infinity, H(x, z)) + 0.08; };
+      const aFlote = (x, z) => G.agua.levelAt(x, z) > H(x, z) + 0.02;
+      function colocar(o) {
+        let x, z;
+        if (RIO) { const p = puntoRio(o.k, o.lat); x = p.x; z = p.z; } else { x = ZONA.x + Math.cos(o.ang) * o.rad; z = ZONA.z + Math.sin(o.ang) * o.rad; }
+        o.obj.position.set(x, flotaY(x, z) + Math.sin(S.clock * 1.6 + o.bob) * 0.05, z);
+        o.obj.rotation.set(Math.sin(S.clock * 1.1 + o.bob) * 0.06, o.ang + Math.PI / 2, Math.cos(S.clock * 1.4 + o.bob) * 0.06);
+        o.it.x = x; o.it.z = z;
+      }
+      function empezar() {
+        limpiar();
+        salvados.length = 0; perdidos.length = 0;
+        const f = hallazgoCercano();
+        const lista = [
+          crear('tablas', 'las tablas de Luma', mallaTablas()),
+          crear('coqui', 'el coquí', mallaCoqui()),
+        ];
+        if (f && G.diario.meshes[f.id]) {
+          const m = G.diario.meshes[f.id].clone(); const sp = m.getObjectByName('spark'); if (sp) m.remove(sp);
+          lista.push(crear('hallazgo', f.nombre, m, { hallazgo: f }));
+        }
+        // Salen del río junto al terreno A (a flote, uno tras otro) y la corriente se los lleva río abajo; sin mapa, un remolino en la zona
+        const a0 = RIO_A ? Math.atan2(RIO_A.z - ZONA.z, RIO_A.x - ZONA.x) : 0;
+        const k0 = RIO ? rioIdx(RIO_A ? RIO_A.x : ZONA.x, RIO_A ? RIO_A.z : ZONA.z) + 0.5 : 0;
+        lista.forEach((o, i) => {
+          if (RIO) { o.k = kRio(k0 - RIO_DIR * i * 0.6); o.lat = [0.35, -0.3, 0.5][i] || 0; }
+          else { o.ang = a0 + (i - 1) * 0.75; o.rad = Math.min(ZONA.r - 4, 9 + (i % 2) * 1.5); }
+          G.renderer.linearize(o.obj); scene.add(o.obj); colocar(o); objs.push(o);
+        });
+        toastHTML('¡El río crece y se lleva las cosas de Luma! <b>Agárralas al vuelo</b> (Acción cerca) y suéltalas donde el agua no llegue.', 6000);
+        G.misiones.renderQuest(); // el objetivo del HUD pasa a «¡Crecida! …»
+      }
+      function flotar(dt) {
+        for (const o of objs) {
+          if (o.fase !== 'flota') continue;
+          if (aFlote(o.obj.position.x, o.obj.position.z)) { // a flote: la corriente lo lleva
+            if (RIO) o.k = kRio(o.k + RIO_DIR * dt * CORRIENTE / puntoRio(o.k, o.lat).len); else o.ang += dt * 0.14;
+          }
+          colocar(o);
+        }
+      }
+      function nombres(ids) { const n = ids.map(id => (objs.find(o => o.id === id) || {}).nombre).filter(Boolean); return n.length > 1 ? n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1] : n[0] || ''; }
+      function salvar(o, pos) {
+        o.fase = 'salvado'; salvados.push(o.id);
+        log('FloodRescue', { item: o.id });
+        const p = pos || o.obj.getWorldPosition(new THREE.Vector3());
+        G.fx.burst(p.x, p.y + 0.8, p.z, 'stars', 18); G.camara.hitStop(0.05);
+        if (o.id === 'coqui') { G.audio.play('co'); setTimeout(() => G.audio.play('qui'), 260); } else G.audio.play('pickup', 3);
+        if (o.hallazgo) { scene.remove(o.obj); G.diario.found(o.hallazgo); } // el hallazgo entra al Diario (su tarjeta lo cuenta)
+        else toast('¡Salvaste ' + o.nombre + '! A salvo del agua.', 3500);
+        G.misiones.renderQuest();
+      }
+      function reflotar(o, pos) {
+        const dx = pos.x - ZONA.x, dz = pos.z - ZONA.z, d = Math.hypot(dx, dz);
+        if (RIO) { o.k = kRio(rioIdx(pos.x, pos.z) + 0.5); o.lat = 0.2; } else { o.ang = Math.atan2(dz, dx); o.rad = Math.max(4, Math.min(ZONA.r - 3, d)); }
+        o.fase = 'flota';
+        toast('Ahí el agua lo alcanza: llévalo a una copa, un techo o tierra seca', 3200);
+      }
+      // Está a salvo donde no llega el agua: dentro de la zona inundada, por encima del nivel de la crecida (rama, techo);
+      // fuera, en cualquier sitio sin agua (o sobre ella: una rama del río)
+      function aSalvo(pos) {
+        const gy = H(pos.x, pos.z), lv = G.agua.levelAt(pos.x, pos.z);
+        if (Math.hypot(pos.x - ZONA.x, pos.z - ZONA.z) < ZONA.r + 1) return pos.y >= FLOOD_LEVEL + 0.5 || gy >= FLOOD_LEVEL + 0.3;
+        return !(lv > -Infinity) || gy > lv + 0.05 || pos.y > lv + 0.6;
+      }
+      G.on('agarrado', id => { const o = objs.find(x => x.id === id); if (o && o.fase === 'flota') { o.fase = 'llevado'; toast('¡Lo tienes! Suéltalo con Acción donde el agua no llegue.', 3000); } });
+      G.on('soltado', (id, obj, pos) => {
+        const o = objs.find(x => x.id === id); if (!o || o.fase !== 'llevado') return;
+        if (!S.event || aSalvo(pos)) salvar(o, pos); else reflotar(o, pos);
+      });
+      function terminar() {
+        for (const o of objs) {
+          if (o.fase === 'llevado') salvar(o);                       // todavía en las patas al bajar el agua: a salvo
+          else if (o.fase === 'flota') { o.fase = 'perdido'; perdidos.push(o.id); scene.remove(o.obj); } // río abajo; se recupera después
+        }
+        G.misiones.renderQuest();
+      }
+      function limpiar() { for (const o of objs) if (o.obj.parent === scene) scene.remove(o.obj); objs.length = 0; }
+      // Lugares secos y altos para la guía mientras se lleva algo: la copa de Luma, el techo del taller y la colina
+      const altos = () => [{ x: percha.x, z: percha.z, y: percha.y }, { x: C.T.x, z: C.T.z, y: C.T.base + 3.9 }, { x: PLACES.B.x, z: PLACES.B.z, y: PLACES.B.base }].filter(p => p.y >= FLOOD_LEVEL + 0.5);
+      const crecida = {
+        objetos: () => objs.slice(), salvados, perdidos, nombres, ZONA, altos, aSalvo, empezar, flotar, terminar, limpiar,
+        guia: () => {
+          if (G.agarre && G.agarre.lleva()) return G.misiones.closest(altos());
+          const f = objs.filter(o => o.fase === 'flota').map(o => ({ x: o.it.x, z: o.it.z, y: o.obj.position.y + 1 }));
+          return G.misiones.closest(f);
+        },
+      };
+      G.on('apply', () => { limpiar(); salvados.length = 0; perdidos.length = 0; }, 36);
+
       // ---------- Símbolo de los 36 fragmentos (también decora la última viñeta del cómic) ----------
       const FRAG_COLORS = ['#2f8f4e', '#d6403a', '#f2a03d', '#3d8fb0', '#7fd38f', '#c9a227'];
       function drawSymbol(ctx, cx, cy, r) {
@@ -581,7 +735,7 @@
       G.on('apply', () => showSymbol(false), 50);
 
       Object.assign(C, { build: () => build, startBuild, cancelBuild, placeRefuge, openParcelCard, syncRefugeInteractable, applyGuardianLook, drawSymbol, showSymbol, examine,
-        apertura, drawBlueprint, mostrarPlano, planoVisible, luma: lumaAPI, pendientesKelvin: PENDIENTES_KELVIN });
+        apertura, drawBlueprint, mostrarPlano, planoVisible, luma: lumaAPI, crecida, pendientesKelvin: PENDIENTES_KELVIN });
     },
   });
 })();

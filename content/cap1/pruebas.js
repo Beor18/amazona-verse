@@ -93,15 +93,27 @@
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
     action(); drain();
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
+    // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
+    const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
+    check('La crecida empieza al construir y no bloquea (la escena de Luma va en bocadillos)', !!S.event && S.event.dur === 20 && !G.ui.busy());
     tick(4); check('La crecida sube el agua', S.water > G.terreno.waterBase + 0.5);
-    tick(5); drain();
+    const aFlote = o => { const lv = G.agua.levelAt(o.obj.position.x, o.obj.position.z); return lv > -Infinity && o.obj.position.y >= lv - 0.01; };
+    check('El río arrastra las tablas de Luma, el coquí y un hallazgo, a flote y cerca del terreno de la crecida', flotando().length === 3 && flotando().every(o => aFlote(o) && Math.hypot(o.obj.position.x - CRE.ZONA.x, o.obj.position.z - CRE.ZONA.z) < 45), flotando().map(o => o.id + '@' + o.obj.position.y.toFixed(1) + (aFlote(o) ? '' : ' EN SECO')).join());
+    check('Durante la crecida la guía apunta a lo que flota y el objetivo lo dice', !!G.misiones.guideTarget() && /Crecida/.test($('steps').querySelector('li.now').textContent), $('steps').querySelector('li.now').textContent);
+    tick(2); const p0 = flotando()[0].obj.position.clone(); tick(3);   // el agua llega a la orilla hacia el segundo 6 y entonces los arrastra
+    check('Lo que flota se mueve con la corriente', flotando()[0].obj.position.distanceTo(p0) > 0.5, flotando()[0].obj.position.distanceTo(p0).toFixed(2) + ' m');
+    check('A salvo = donde el agua no llega (colina, copa, techo); en el agua de la zona, no', CRE.aSalvo({ x: PLACES.B.x, y: PLACES.B.base, z: PLACES.B.z }) && CRE.aSalvo({ x: C.luma.percha.x, y: C.luma.percha.y, z: C.luma.percha.z }) && !CRE.aSalvo({ x: CRE.ZONA.x, y: S.water, z: CRE.ZONA.z }));
+    const coq = flotando().find(o => o.id === 'coqui'); coq.fase = 'llevado'; G.emit('soltado', coq.id, coq.obj, { x: PLACES.B.x, y: PLACES.B.base, z: PLACES.B.z });
+    check('Soltar algo en tierra seca lo salva y queda en el registro (FloodRescue)', coq.fase === 'salvado' && CRE.salvados.includes('coqui') && had('FloodRescue'));
+    tick(15); drain();
+    check('Al bajar el agua, lo no salvado se da por perdido sin castigo y Luma lo cuenta', !S.event && CRE.perdidos.length === 2 && !CRE.objetos().some(o => o.fase === 'flota' && o.obj.parent) && S.events.filter(e => e.key === 'FloodRescue').length === 1, CRE.perdidos.join());
     check('Consecuencia visible: refugio inundado', S.refuge.damaged && C.refugeMesh().rotation.z > 0.1 && had('ShelterFlooded'));
     check('Aparece el Guardián', G.actores.npc('guardian').sp.visible && S.step === 5);
     C.syncRefugeInteractable(); useAt('refuge', 1.6, 0); drain(); // escena evento:ShelterDismantled
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
-    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
+    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
     useAt('guardian', 1.4, 0); drain();
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
@@ -260,7 +272,7 @@
     // Ruta directa a la colina
     SV.reset(true); saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
-    C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
+    C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
     SV.reset(true);
@@ -436,9 +448,9 @@
     check('Final · construir suena a martillazos', !!S.refuge && log().includes('construir'), log().join());
     tick(1.2);
     check('Final · crecida: llueve y se oye un trueno lejano', !!S.event && log().includes('lluvia') && log().includes('trueno'), log().join());
-    tick(1.5);
+    tick(5); // el rugido del río llega al 30 % de la crecida (20 s desde la mejora 4)
     check('Final · crecida: el río sube con su rugido y la lluvia no se corta', log().includes('crecida') && cuenta('lluvia') >= 2, 'lluvia ×' + cuenta('lluvia'));
-    tick(6); drain();
+    tick(14); drain();
     const llovio = cuenta('lluvia'); tick(2);
     check('Final · al terminar la crecida deja de llover', !S.event && cuenta('lluvia') <= llovio && S.refuge && !S.refuge.damaged && S.step === 5, 'paso ' + S.step);
     // Guardián (banco) y transmisor (Voz con retrato neutro)
@@ -639,7 +651,7 @@
       check('Objetivos con evidencia del juego al terminar la misión', reg.objetivos_logrados.join() === 'O1,O2,O5', reg.objetivos_logrados.join());
       // Construir con la evidencia: la elección sigue libre; llegan las fichas del refugio y de la crecida
       const B = G.terreno.places.B;
-      C.startBuild('B'); teleport(B.x, B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain(); tick(9); drain(); tick(1.5); drain(); tick(1);
+      C.startBuild('B'); teleport(B.x, B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain(); tick(21); drain(); tick(1.5); drain(); tick(1);
       const f = S.edu.fichas;
       check('Fichas por momentos de la historia: nidos y María', f.includes('cotorra_nidos') && f.includes('cotorra_maria'), f.join(','));
       check('Tras construir: objetivos O4 (adaptaciones) y O6 (terreno con evidencia)', AU.partida().objetivos_logrados.join() === 'O1,O2,O4,O5,O6', AU.partida().objetivos_logrados.join());
