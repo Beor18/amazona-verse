@@ -6,7 +6,7 @@
   "alto_m": 8.0,
   "ancho_m": 6.02,
   "tris": 1018,
-  "kb": 164,
+  "kb": 173,
   "materiales": [
    "HOJA_palma_sierra",
    "CORTEZA_palma_sierra"
@@ -22,7 +22,7 @@
   "alto_m": 7.99,
   "ancho_m": 5.0,
   "tris": 1776,
-  "kb": 188,
+  "kb": 189,
   "materiales": [
    "HOJA_yagrumo",
    "CORTEZA_yagrumo"
@@ -38,7 +38,7 @@
   "alto_m": 0.48,
   "ancho_m": 0.75,
   "tris": 56,
-  "kb": 60,
+  "kb": 65,
   "materiales": [
    "HOJA_pasto"
   ],
@@ -53,7 +53,7 @@
   "alto_m": 11.49,
   "ancho_m": 10.1,
   "tris": 2062,
-  "kb": 227,
+  "kb": 230,
   "materiales": [
    "HOJA_tabonuco",
    "CORTEZA_tabonuco"
@@ -69,7 +69,7 @@
   "alto_m": 5.29,
   "ancho_m": 5.19,
   "tris": 902,
-  "kb": 175,
+  "kb": 177,
   "materiales": [
    "HOJA_helecho_arboreo",
    "CORTEZA_helecho_arboreo"
@@ -85,7 +85,7 @@
   "alto_m": 14.45,
   "ancho_m": 19.0,
   "tris": 5674,
-  "kb": 458,
+  "kb": 463,
   "materiales": [
    "HOJA_ceiba",
    "CORTEZA_ceiba"
@@ -98,10 +98,10 @@
   "especie": "Flamboyán",
   "cientifico": "Delonix regia",
   "alto_real_m": "8-12",
-  "alto_m": 7.1,
-  "ancho_m": 12.91,
-  "tris": 2154,
-  "kb": 268,
+  "alto_m": 9.17,
+  "ancho_m": 12.27,
+  "tris": 2864,
+  "kb": 312,
   "materiales": [
    "HOJA_flamboyan",
    "CORTEZA_flamboyan"
@@ -117,7 +117,7 @@
   "alto_m": 6.98,
   "ancho_m": 7.86,
   "tris": 2171,
-  "kb": 174,
+  "kb": 178,
   "materiales": [
    "HOJA_bambu",
    "CORTEZA_bambu"
@@ -131,9 +131,9 @@
   "cientifico": "Heliconia caribaea",
   "alto_real_m": "2-4",
   "alto_m": 1.66,
-  "ancho_m": 2.24,
+  "ancho_m": 2.26,
   "tris": 352,
-  "kb": 51,
+  "kb": 76,
   "materiales": [
    "HOJA_heliconia"
   ],
@@ -148,7 +148,7 @@
   "alto_m": 0.6,
   "ancho_m": 1.17,
   "tris": 448,
-  "kb": 81,
+  "kb": 83,
   "materiales": [
    "HOJA_bromelia"
   ],
@@ -163,7 +163,7 @@
   "alto_m": 0.62,
   "ancho_m": 1.55,
   "tris": 312,
-  "kb": 98,
+  "kb": 103,
   "materiales": [
    "HOJA_helecho_suelo"
   ],
@@ -178,7 +178,7 @@
   "alto_m": 0.03,
   "ancho_m": 2.14,
   "tris": 36,
-  "kb": 62,
+  "kb": 65,
   "materiales": [
    "HOJA_hojarasca"
   ],
@@ -253,7 +253,7 @@
   "alto_m": 4.64,
   "ancho_m": 4.63,
   "tris": 728,
-  "kb": 152,
+  "kb": 161,
   "materiales": [
    "HOJA_palma_sierra",
    "CORTEZA_palma_sierra"
@@ -269,7 +269,7 @@
   "alto_m": 3.66,
   "ancho_m": 3.77,
   "tris": 1064,
-  "kb": 154,
+  "kb": 155,
   "materiales": [
    "HOJA_yagrumo",
    "CORTEZA_yagrumo"
@@ -285,7 +285,7 @@
   "alto_m": 3.43,
   "ancho_m": 5.74,
   "tris": 1304,
-  "kb": 259,
+  "kb": 263,
   "materiales": [
    "HOJA_arbol_enano",
    "CORTEZA_arbol_enano"

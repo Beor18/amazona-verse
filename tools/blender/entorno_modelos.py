@@ -514,14 +514,15 @@ def ceiba(rng):
 def flamboyan(rng):
     sp = 'flamboyan'
     mb = L.MB()
-    HT = 2.3
-    pts = [Vector((0.1 * t, 0.05 * t, -0.1 + (HT + 0.1) * t)) for t in [i / 4 for i in range(5)]]
-    rad = [0.42 + 0.16 * (1 - t) ** 3 for t in [i / 4 for i in range(5)]]
+    # copa alta (base a ~6.3 m): la cámara de tercera persona (jugador + 4.2 m) pasa por debajo, no por dentro
+    HT = 3.8
+    pts = [Vector((0.12 * t, 0.06 * t, -0.1 + (HT + 0.1) * t)) for t in [i / 5 for i in range(6)]]
+    rad = [0.4 + 0.16 * (1 - t) ** 3 for t in [i / 5 for i in range(6)]]
     L.tube(mb, pts, rad, 12, 1, uv_rep=2, v_len=1.2, ao=lambda p, t: 0.45 + 0.4 * sm(0, 0.5, t),
            wind=lambda p, t: 0.05 * t)
     for k in range(5):  # raíces superficiales
         buttress(mb, TAU * k / 5 + rng.uniform(-0.2, 0.2), 0.42, rng.uniform(1.2, 1.8), 0.6, 0.2, 1, rng, segs=6)
-    crown = (Vector((0, 0, 5.2)), Vector((5.6, 5.6, 1.7)))
+    crown = (Vector((0, 0, 7.3)), Vector((5.6, 5.6, 1.7)))
     puffs = []
     top = pts[-1]
     for k in range(5):
@@ -529,25 +530,25 @@ def flamboyan(rng):
         d = Vector((math.cos(az), math.sin(az), 0))
         reach = rng.uniform(3.4, 4.4)
         p0 = top + Vector((0, 0, -0.1))
-        p2 = p0 + d * reach + Vector((0, 0, rng.uniform(2.4, 3.0)))
-        p1 = p0 + d * (reach * 0.35) + Vector((0, 0, 1.6))
+        p2 = p0 + d * reach + Vector((0, 0, rng.uniform(2.7, 3.1)))
+        p1 = p0 + d * (reach * 0.35) + Vector((0, 0, 1.8))
         branch(mb, p0, p1, p2, 0.22, 0.08, 1, segs=6, sides=7, H=7, ph=k / 5, w_top=0.35)
         for j in (-1, 1):
             q0 = L.bez(p0, p1, p2, 0.6)
             e = Vector((math.cos(az + j * 0.75), math.sin(az + j * 0.75), 0))
-            q2 = q0 + e * rng.uniform(1.6, 2.2) + Vector((0, 0, 0.6))
+            q2 = q0 + e * rng.uniform(1.6, 2.2) + Vector((0, 0, 1.15))
             branch(mb, q0, q0 + e * 0.8 + Vector((0, 0, 0.4)), q2, 0.08, 0.035, 1, segs=3, sides=5, H=7,
                    ph=k / 5 + 0.04 * j, w_top=0.4)
             puffs.append((q2 + Vector((0, 0, 0.35)), Vector((1.8, 1.8, 0.85)), k / 5 + 0.04 * j))
         puffs.append((p2 + Vector((0, 0, 0.3)), Vector((2.2, 2.2, 0.95)), k / 5))
-    puffs.append((Vector((0, 0, 6.0)), Vector((2.8, 2.8, 1.0)), 0.95))
+    puffs.append((Vector((0, 0, 8.0)), Vector((2.8, 2.8, 1.0)), 0.95))
     for k in range(5):
         a = TAU * k / 5 + 0.6
-        puffs.append((Vector((math.cos(a) * 2.2, math.sin(a) * 2.2, 5.7)), Vector((1.8, 1.8, 0.9)), 0.9 + k * 0.01))
-    red = [(0.0, 0.5, 0.5, 1.0), (0.5, 0.5, 1.0, 1.0)]
+        puffs.append((Vector((math.cos(a) * 2.2, math.sin(a) * 2.2, 7.6)), Vector((1.8, 1.8, 0.9)), 0.9 + k * 0.01))
+    red = [(0.0, 0.5, 1.0, 1.0)]
     green = [(0.0, 0.0, 0.5, 0.5)]
     for c, ax, ph in puffs:
-        n = int(20 * (ax.x * ax.y) / 3.3)
+        n = int(34 * (ax.x * ax.y) / 3.3)
         k = 0
         i = 0
         while k < n and i < n * 3:
@@ -557,9 +558,12 @@ def flamboyan(rng):
                 continue
             p = c + Vector((d.x * ax.x, d.y * ax.y, d.z * ax.z)) * rng.uniform(0.78, 1.0)
             nn = (ell_n(p, c, ax) + Vector((rng.uniform(-.25, .25), rng.uniform(-.25, .25), rng.uniform(-.1, .3)))).normalized()
-            uv = rng.choice(red) if (d.z > -0.15 and rng.random() < 0.82) else green[0]
-            card(mb, p, nn, rng.uniform(1.3, 1.7), uv, 0, rng, crown, fold=0.16, ph=ph + rng.uniform(0, .08),
-                 wmin=0.35, puff=(c, ax))
+            if d.z > -0.15 and rng.random() < 0.8:  # flores: franja 2:1 → tarjeta de 1.6×0.8 m
+                card(mb, p, nn, rng.uniform(0.72, 0.88), red[0], 0, rng, crown, fold=0.1, ar=2.0,
+                     ph=ph + rng.uniform(0, .08), wmin=0.35, puff=(c, ax))
+            else:
+                card(mb, p, nn, rng.uniform(1.0, 1.2), green[0], 0, rng, crown, fold=0.16, ph=ph + rng.uniform(0, .08),
+                     wmin=0.35, puff=(c, ax))
             k += 1
     for k in range(12):  # vainas colgantes
         c, ax, ph = rng.choice(puffs)
@@ -622,12 +626,12 @@ def heliconia(rng):
         base = d * rng.uniform(0.02, 0.15)
         hp = rng.uniform(0.45, 0.85)
         top = base + d * (0.12 + 0.1 * rng.random()) + Vector((0, 0, hp))
-        strip(mb, [base, base.lerp(top, 0.5), top], 0.05, (0.74, 0.52, 0.98, 0.98), 0, d.cross(UP).normalized(),
+        strip(mb, [base, base.lerp(top, 0.5), top], 0.05, (0.52, 0.52, 0.98, 0.98), 0, d.cross(UP).normalized(),
               (0.35, 0.7), (0.0, 0.35), ph=k / 7)
-        strip(mb, [base, base.lerp(top, 0.5), top], 0.05, (0.74, 0.52, 0.98, 0.98), 0, d, (0.35, 0.7), (0.0, 0.35),
+        strip(mb, [base, base.lerp(top, 0.5), top], 0.05, (0.52, 0.52, 0.98, 0.98), 0, d, (0.35, 0.7), (0.0, 0.35),
               ph=k / 7)
         Ln = rng.uniform(0.95, 1.2)
-        frond(mb, top, az, math.radians(rng.uniform(40, 68)), Ln, Ln * 0.34, (0.0, 0.0, 0.68, 1.0), 0,
+        frond(mb, top, az, math.radians(rng.uniform(40, 68)), Ln, Ln * 0.5, (0.0, 0.0, 0.5, 1.0), 0,
               droop=rng.uniform(0.25, 0.45), fold=math.radians(18), twist=rng.uniform(-0.4, 0.4), segs=6, ao0=0.55,
               ao1=1.0, w0=0.35, ph=k / 7, cen=cen, nb=0.35, upb=0.3)
     for k in range(2):  # inflorescencias erectas: brácteas rojas y amarillas en zigzag
@@ -637,9 +641,9 @@ def heliconia(rng):
         Hs = rng.uniform(1.25, 1.5)
         top = base + d * 0.12 + Vector((0, 0, Hs))
         side = d.cross(UP).normalized()
-        strip(mb, [base, base.lerp(top, 0.5), top], 0.045, (0.74, 0.52, 0.98, 0.98), 0, side, (0.4, 0.8), (0.0, 0.5),
+        strip(mb, [base, base.lerp(top, 0.5), top], 0.045, (0.52, 0.52, 0.98, 0.98), 0, side, (0.4, 0.8), (0.0, 0.5),
               ph=0.3 + k * 0.4)
-        strip(mb, [base, base.lerp(top, 0.5), top], 0.045, (0.74, 0.52, 0.98, 0.98), 0, d, (0.4, 0.8), (0.0, 0.5),
+        strip(mb, [base, base.lerp(top, 0.5), top], 0.045, (0.52, 0.52, 0.98, 0.98), 0, d, (0.4, 0.8), (0.0, 0.5),
               ph=0.3 + k * 0.4)
         nb = 7
         for j in range(nb):
@@ -660,7 +664,7 @@ def heliconia(rng):
                     nn = (tipd.cross(fwd) * (-1 if j % 2 else 1) * 0.3 + fwd * sx * 0.6 + UP * 0.4).normalized()
                     row.append(mb.v(p, 0.65 + 0.35 * f, 0.4 + 0.2 * t, 0.3 + k * 0.4, nn))
                 ids.append(row)
-            us = (0.73, 0.86, 0.99)
+            us = (0.52, 0.75, 0.98)
             for rr in range(2):
                 for cc in range(2):
                     q = (ids[rr][cc], ids[rr][cc + 1], ids[rr + 1][cc + 1], ids[rr + 1][cc])

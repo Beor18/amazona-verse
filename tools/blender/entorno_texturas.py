@@ -257,13 +257,25 @@ def downsample(a, f):
 LEAF_MAX = 512  # pedido del programador gráfico: hojas ≤512 px para móvil
 
 
+def blur1(x, sigma):
+    r = max(1, int(3 * sigma))
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+    p = np.pad(x, r, mode='constant')
+    p = sum(k[i] * p[i:i + x.shape[0], :] for i in range(2 * r + 1))
+    p = sum(k[i] * p[:, i:i + x.shape[1]] for i in range(2 * r + 1))
+    return p
+
+
 def save_leaf(name, sc):
     a = albedo_from(render_np(sc, name))
     f = max(1, max(a.shape[:2]) // LEAF_MAX)
+    # alfa suave de ~2 px centrado en el contorno (tipo campo de distancia): con alphaTest 0.5 el borde queda donde
+    # está la hoja y, al magnificar, el filtrado bilineal da un contorno liso en vez de escalones
+    a[..., 3] = blur1(a[..., 3], 0.75 * f)
     if f > 1:
         a = downsample(a, f)
-    # borde de alfa limpio: transición de ~1 px para que el alphaTest con mipmaps no se coma las hojas
-    a[..., 3] = np.clip((a[..., 3] - 0.5) * 2.5 + 0.5, 0, 1)
+    a[..., 3] = np.clip((a[..., 3] - 0.5) * 1.25 + 0.5, 0, 1)
     a = L.pad_rgba(a)
     path = os.path.join(L.TEX, name + '.png')
     size = L.save_png_indexed(a, path)
@@ -556,32 +568,39 @@ def flower(tb, rng, x, y, R, z, orange=False):
 
 
 def flamboyan_texture():
+    """Atlas 512²: arriba una franja 2:1 de flores (tarjetas de 1.6×0.8 m → flores de ~14 cm con ~50 px cada una),
+    abajo a la izquierda hojas plumosas (foliolos gruesos para que no hagan aliasing) y a la derecha las vainas."""
     sc = capture_scene(1.0, 1.0, 1024, 1024)
     tb = TB()
-    for v, (ox, oy) in enumerate(((0.0, 0.5), (0.5, 0.5))):
-        rng = random.Random(41 + v)
-        i0 = tb.mark()
-        cx, cy = ox + 0.25, oy + 0.25
-        for k in range(6):  # follaje plumoso detrás de las flores
-            a = TAU * k / 6 + rng.uniform(-0.3, 0.3)
-            bipinnate(tb, rng, cx, cy, a, 0.2, 7, 7, (H('#3a7a2e'), H('#78ad48')), 0.1 + 0.2 * rng.random(), 0.014)
-        n = 26
-        for k in range(n):
-            r = 0.17 * math.sqrt(rng.random())
-            a = rng.uniform(0, TAU)
-            flower(tb, rng, cx + math.cos(a) * r, cy + math.sin(a) * r, rng.uniform(0.032, 0.042),
-                   0.4 + 0.5 * rng.random(), orange=(v == 1 and rng.random() < 0.6))
-        for k in range(10):  # botones
-            r = 0.2 * math.sqrt(rng.random())
-            a = rng.uniform(0, TAU)
-            tb.leaf(cx + math.cos(a) * r, cy + math.sin(a) * r, rng.uniform(0, TAU), 0.02, 0.014, 'oval', z=0.95,
-                    cb=H('#8a2a1a'), ct=H('#c2402a'), vein=0, nt=4, ns=1)
-        tb.fit(i0, ox, oy, ox + 0.5, oy + 0.5, 'center')
+    rng = random.Random(41)
+    i0 = tb.mark()
+    for k in range(12):  # follaje plumoso detrás de las flores
+        x, y = rng.uniform(0.12, 0.88), rng.uniform(0.6, 0.9)
+        bipinnate(tb, rng, x, y, rng.uniform(0, TAU), 0.15, 6, 6, (H('#3a7a2e'), H('#7cb04a')), 0.1 + 0.2 * rng.random(),
+                  0.026)
+    placed = []
+    for k in range(400):
+        if len(placed) >= 34:
+            break
+        a = rng.uniform(0, TAU)
+        r = math.sqrt(rng.random())
+        x, y = 0.5 + math.cos(a) * r * 0.42, 0.75 + math.sin(a) * r * 0.19
+        if any(math.hypot(x - px, y - py) < 0.07 for px, py in placed):
+            continue
+        placed.append((x, y))
+        flower(tb, rng, x, y, rng.uniform(0.042, 0.05), 0.4 + 0.5 * rng.random(), orange=rng.random() < 0.3)
+    for k in range(16):  # botones
+        a = rng.uniform(0, TAU)
+        r = math.sqrt(rng.random())
+        tb.leaf(0.5 + math.cos(a) * r * 0.44, 0.75 + math.sin(a) * r * 0.2, rng.uniform(0, TAU), 0.03, 0.02, 'oval',
+                z=0.95, cb=H('#8a2a1a'), ct=H('#c2402a'), vein=0, nt=4, ns=2)
+    tb.fit(i0, 0.0, 0.5, 1.0, 1.0, 'center', 0.012)
     rng = random.Random(45)
     i0 = tb.mark()
-    for k in range(12):
-        a = TAU * k / 12 + rng.uniform(-0.2, 0.2)
-        bipinnate(tb, rng, 0.25 + rng.uniform(-0.03, 0.03), 0.25 + rng.uniform(-0.03, 0.03), a, 0.22 * rng.uniform(0.75, 1.0), 9, 9, (H('#2f6e2a'), H('#7db04a')), 0.3 + 0.6 * rng.random(), 0.013)
+    for k in range(10):
+        a = TAU * k / 10 + rng.uniform(-0.2, 0.2)
+        bipinnate(tb, rng, 0.25 + rng.uniform(-0.03, 0.03), 0.25 + rng.uniform(-0.03, 0.03), a, 0.21 * rng.uniform(0.8, 1.0),
+                  6, 6, (H('#2f6e2a'), H('#82b44c')), 0.3 + 0.6 * rng.random(), 0.03)
     tb.fit(i0, 0.0, 0.0, 0.5, 0.5, 'center')
     for k in range(3):  # vainas (semillas)
         x = 0.58 + k * 0.14
@@ -702,26 +721,24 @@ def bamboo_texture():
 
 
 def heliconia_texture():
-    sc = capture_scene(0.5, 1.0, 1024, 2048)
+    """Atlas 512²: hoja tipo remo en x 0..0.5; bráctea roja/amarilla en x 0.5..1, y 0..0.5; tallo en x 0.5..1, y 0.5..1."""
+    sc = capture_scene(1.0, 1.0, 1024, 1024)
     tb = TB()
     rng = random.Random(91)
-    # hoja grande tipo remo (mitad izquierda del atlas: x 0..0.34)
-    tb.leaf(0.17, 0.006, math.pi / 2, 0.988, 0.32, 'paddle', z=0.2, cb=H('#3a7a30'), ct=H('#62a03e'), vein=1.0,
-            nv=26, nt=24, ns=4, edge=0.8, vang=24)
+    tb.leaf(0.25, 0.006, math.pi / 2, 0.988, 0.47, 'paddle', z=0.2, cb=H('#3a7a30'), ct=H('#62a03e'), vein=1.0,
+            nv=26, nt=28, ns=5, edge=0.8, vang=24)
     for k in range(5):  # rasgaduras del viento
         t = rng.uniform(0.25, 0.85)
         sd = rng.choice((-1, 1))
         y = 0.006 + t * 0.988
         ang = -math.radians(24) if sd < 0 else math.radians(204)
-        tb.leaf(0.17 + sd * 0.175, y, ang, rng.uniform(0.07, 0.13), 0.007, 'taper', z=0.9, m=1, nt=2, ns=1)
-    # bráctea: rojo con labio amarillo y quilla verde (x 0.36..0.5, y 0..0.5)
-    tb.leaf(0.43, 0.0, math.pi / 2, 0.5, 0.13, 'line', z=0.2, cb=H('#c51f1c'), ct=H('#e8392a'), vein=0, edge=0.5,
+        tb.leaf(0.25 + sd * 0.24, y, ang, rng.uniform(0.1, 0.18), 0.008, 'taper', z=0.9, m=1, nt=2, ns=1)
+    tb.leaf(0.75, 0.0, math.pi / 2, 0.5, 0.46, 'line', z=0.2, cb=H('#c51f1c'), ct=H('#e8392a'), vein=0, edge=0.5,
             nt=8, ns=2)
-    tb.leaf(0.43, 0.36, math.pi / 2, 0.14, 0.13, 'line', z=0.3, cb=H('#f4b82a'), ct=H('#ffd84a'), vein=0, edge=0.2,
+    tb.leaf(0.75, 0.36, math.pi / 2, 0.14, 0.46, 'line', z=0.3, cb=H('#f4b82a'), ct=H('#ffd84a'), vein=0, edge=0.2,
             gend=0.5, nt=2, ns=2)
-    tb.leaf(0.43, 0.38, math.pi / 2, 0.12, 0.012, 'line', z=0.4, cb=H('#6c9a38'), ct=H('#9cbf4a'), vein=0, nt=2, ns=1)
-    # tallo (x 0.36..0.5, y 0.5..1)
-    tb.leaf(0.43, 0.5, math.pi / 2, 0.5, 0.13, 'line', z=0.2, cb=H('#4f7a2e'), ct=H('#7da040'), vein=0, edge=0.6,
+    tb.leaf(0.75, 0.38, math.pi / 2, 0.12, 0.03, 'line', z=0.4, cb=H('#6c9a38'), ct=H('#9cbf4a'), vein=0, nt=2, ns=1)
+    tb.leaf(0.75, 0.5, math.pi / 2, 0.5, 0.46, 'line', z=0.2, cb=H('#4f7a2e'), ct=H('#7da040'), vein=0, edge=0.6,
             nt=4, ns=2)
     tb.build([leaf_material(), holdout_material()])
     save_leaf('hoja_heliconia', sc)

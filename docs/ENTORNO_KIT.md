@@ -13,7 +13,7 @@ Lámina: `docs/img/entorno_kit.png`. Scripts (Blender 4.2 sin ventana, en orden)
 | palma_sierra_joven | 4.6 | 728 | Brota rápido en los claros. |
 | yagrumo_joven | 3.7 | 1064 | De los primeros en ocupar un claro. |
 | ceiba | 14.5 (copa 19) | 5674 | Sus raíces en tabla la sostienen. |
-| flamboyan | 7.1 (copa 13) | 2154 | No es nativo: viene de Madagascar. |
+| flamboyan | 9.2 (copa 12) | 2864 | No es nativo: viene de Madagascar. |
 | bambu | 7.0 | 2171 | Hierba gigante introducida. |
 | heliconia | 1.7 | 352 | Los colibríes visitan sus brácteas. |
 | bromelia | 0.6 | 448 | Guarda agua; el coquí pone allí sus huevos. |
