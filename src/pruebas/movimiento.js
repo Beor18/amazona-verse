@@ -3,8 +3,9 @@
    latencia de entrada, arranque y frenado, salto (alto, toque corto, doble, búfer y coyote), pendientes, vuelo (despegue,
    cernido, aterrizaje suave), agua, el pico al hablar (máquina de escribir) y agarrar → llevar → soltar.
    Devuelve { passed, total, results, metricas }. La partida y la posición del jugador quedan como estaban.
-   Opciones: { lugar: { x, z } } para medir en otro sitio. */
-AVE.module('movimiento', function (G) {
+   Opciones: { lugar: { x, z } } para medir en otro sitio.
+   Se carga al pedir la prueba (boot.js: AV.movementTest), no en la descarga inicial del juego. */
+window.AVMovimientoTest = function (G) {
   'use strict';
   const S = G.S, DT = 1 / 60;
   const r2 = v => Math.round(v * 100) / 100, ms = n => Math.round(n * DT * 1000);
@@ -223,7 +224,8 @@ AVE.module('movimiento', function (G) {
       const SO = G.solidos, ACT = G.mundo && G.mundo.activos;
       if (SO && SO.activo && ACT && Object.keys(ACT).length) {
         SO.terminar();
-        const aterrizarEn = (x, z, y) => { reset(x, z); S.pos.y = y; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) frame(); SO.terminar(); };
+        // empieza ya en el aire (sin pasar por el suelo: junto a una estaca quedaría metida en ella y la red de seguridad de fisica.js la sacaría)
+        const aterrizarEn = (x, z, y) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) frame(); SO.terminar(); };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
@@ -396,6 +398,86 @@ AVE.module('movimiento', function (G) {
         check('Todos los edificios cargados: no se atraviesan y tienen dónde pararse encima', revisados > 0 && !fallos.length, revisados + ' edificios' + (fallos.length ? ' · ' + fallos.join(', ') : ''));
         met.solidos = SO.stats();
       }
+      // 9. Subir siempre sube y nunca encajada (rol Movimiento y controles). Lo que contó Kelvin: «a veces la cotorra no eleva
+      // más» y Vittata metida en la pared de una torre de las ruinas, con la cabeza atravesando la plataforma de arriba.
+      {
+        const SOL = G.solidos, centroDentro = () => SOL.penetra(S.pos.x, S.pos.z, S.pos.y) > 0 && SOL.dentro(S.pos.x, S.pos.z, S.pos.y + 0.75) > S.pos.y + SOL.SO.stepUp;
+        // a) Con el foco en un botón del HUD (tras un clic en el Diario), el Espacio sube igual (antes lo pulsaba el botón)
+        const bd = $('b-diary');
+        if (bd) {
+          reset(L.x, L.z); F.toggleFly(); frame(null, 40);
+          bd.focus(); bd.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+          const sube = I.jumpHeld, suelta = document.activeElement !== bd, ya = S.pos.y; frame(null, 30);
+          bd.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+          met.espacioConFoco = { sube, sueltaFoco: suelta, subeM: r2(S.pos.y - ya) };
+          check('Espacio sube aunque un botón del HUD tenga el foco (tras un clic en el Diario)', sube && suelta && S.pos.y - ya > 0.5 && !I.jumpHeld, JSON.stringify(met.espacioConFoco));
+        }
+        // b) Mantener subir sube siempre hasta el techo de vuelo, que se nota (frena), no se pasa y se explica (viento)
+        reset(L.x, L.z); F.toggleFly(); frame(null, 30);
+        { const lim = F.techoVuelo(S.pos.x, S.pos.z), y0 = S.pos.y; let y2 = null, maxY = -Infinity, nf = 0, trabada = 0, prev = S.pos.y;
+          while (nf++ < 1200) {
+            frame(() => { I.jumpHeld = true; }); maxY = Math.max(maxY, S.pos.y);
+            if (nf === 120) y2 = S.pos.y;
+            if (S.pos.y < lim - 1.5 && S.pos.y - prev < 0.01) trabada++; prev = S.pos.y;
+            if (nf > 120 && S.pos.y > lim - 0.4) break;
+          }
+          const r = frame(() => { I.jumpHeld = true; }, 120); for (const o of r) maxY = Math.max(maxY, o.y);
+          met.subir = { sube2sM: r2(y2 - y0), techoM: r2(lim - G.terreno.height(S.pos.x, S.pos.z)), alTechoM: r2(S.pos.y - lim), sobreTechoMaxM: r2(maxY - lim), viento: !!M.viento, cuadrosTrabada: trabada, ms: ms(nf) };
+          I.jumpHeld = false; frame(null, 2);
+          check('Mantener subir siempre sube (más de 8 m en 2 s) hasta el techo de vuelo, sin trabarse', y2 - y0 > 8 && S.pos.y > lim - 1.5 && trabada === 0, JSON.stringify(met.subir));
+          check('El techo de vuelo se nota y se explica: frena, no se pasa y avisa del viento fuerte', met.subir.viento && maxY < lim + 0.3, JSON.stringify(met.subir));
+        }
+        // c) La torre antigua (ruina_torre de las ruinas de El Yunque): torre hueca con plataforma de baldosa arriba
+        const STR2 = G.mundo.streaming, torre = STR2 && (STR2.instancias || []).find(i => i.id === 'ruina_torre@kelvin_ruinas_yunque#0' && i.pos);
+        if (torre && SOL && SOL.activo) {
+          const [tx, , tz] = torre.pos;
+          reset(tx + 14, tz);
+          if (STR2.alrededor) await STR2.alrededor(tx, tz);
+          if (STR2.terminar) await STR2.terminar();
+          SOL.terminar();
+          // dentro de la cavidad: suelo abajo, la plataforma encima a más de 6 m y nada sólido para el cuerpo
+          let cav = null;
+          for (let rr = 0; rr <= 3 && !cav; rr += 0.3) for (let a = 0; a < 16 && !cav; a++) {
+            const x = tx + Math.cos(a / 16 * Math.PI * 2) * rr, z = tz + Math.sin(a / 16 * Math.PI * 2) * rr, y = F.suelo(x, z, H(x, z) + 0.5), cap = SOL.techo(x, z, y, y + 30, 1.5);
+            if (cap - y > 6 && cap < Infinity && !SOL.penetra(x, z, y)) cav = { x, z, y, cap, top: SOL.dentro(x, z, cap + 0.01) };
+          }
+          if (cav) {
+            const mt = met.torre = { plataforma: r2(cav.top), cavidad: r2(cav.cap - cav.y) };
+            // c1) Volando hacia el borde de la plataforma con los pies algo por debajo: no se mete (antes quedaba dentro)
+            let peor = 0, dentroN = 0;
+            for (const dy of [0.15, 0.3, 0.42]) {
+              reset(tx + 7, tz); S.pos.y = cav.top - dy; M.flying = true; M.grounded = false;
+              const st = toStick(tx - S.pos.x, tz - S.pos.z);
+              frame(() => { I.stick.x = st.x; I.stick.y = st.y; peor = Math.max(peor, SOL.penetra(S.pos.x, S.pos.z, S.pos.y)); if (centroDentro()) dentroN++; }, 150);
+              I.stick.x = I.stick.y = 0; frame(() => { if (centroDentro()) dentroN++; }, 60);
+            }
+            mt.bordePenetraMax = peor; mt.bordeCuadrosDentro = dentroN;
+            check('Torre antigua: volando contra el borde de la plataforma no se mete en la piedra', dentroN === 0 && peor <= 2, JSON.stringify(mt));
+            // c2) Metida en la plataforma con la cabeza fuera (la captura de Kelvin), a pie y volando: sale sola, sin castigo
+            for (const vuela of [false, true]) {
+              reset(cav.x, cav.z); S.pos.y = cav.top - 0.5; M.grounded = !vuela; M.flying = vuela; M.desatascos = 0;
+              const r = frame(null, 96), libre = r.findIndex(o => !SOL.penetra(o.x, o.z, o.y));
+              mt[vuela ? 'saleVolandoMs' : 'saleAPieMs'] = libre < 0 ? -1 : ms(libre + 1);
+              check(`Torre antigua: metida en la plataforma ${vuela ? 'volando' : 'a pie'} sale sola en menos de 1,6 s`, libre >= 0 && ms(libre + 1) <= 1600 && !SOL.penetra(S.pos.x, S.pos.z, S.pos.y) && S.pos.y >= cav.top - 0.1, JSON.stringify(mt));
+            }
+            // c3) Dentro de la torre hueca manteniendo subir: no se queda trabada bajo la plataforma, sale por arriba
+            reset(cav.x, cav.z); M.desatascos = 0; F.toggleFly();
+            const r3 = frame(() => { I.jumpHeld = true; }, 330); I.jumpHeld = false;
+            const arriba = r3.findIndex(o => o.y >= cav.top - 0.05);
+            mt.subeDesdeDentroMs = arriba < 0 ? -1 : ms(arriba + 1); mt.desatascos = M.desatascos || 0;
+            check('Torre antigua: dentro de la torre hueca, mantener subir la saca por encima de la plataforma', arriba >= 0 && !SOL.penetra(S.pos.x, S.pos.z, S.pos.y) && !r3.some(o => o.y > cav.cap - 1.5 && o.y < cav.top - 0.05 && SOL.penetra(o.x, o.z, o.y) > 2), JSON.stringify(mt));
+            // c4) A pie dentro de la torre hueca, empujando contra la pared: a los 1,5 s se recoloca fuera, sin castigo
+            reset(cav.x, cav.z); M.desatascos = 0;
+            const st4 = toStick(tx + 5 - cav.x, tz - cav.z);
+            const r4 = frame(() => { I.stick.x = st4.x; I.stick.y = st4.y; }, 180); I.stick.x = I.stick.y = 0;
+            const sale = r4.findIndex(o => o.y > cav.cap - 0.5 || Math.hypot(o.x - tx, o.z - tz) > 4.5);
+            const parada = r4.findIndex((o, i) => i > 0 && Math.hypot(o.x - r4[i - 1].x, o.z - r4[i - 1].z) < 0.005); // deja de avanzar contra la pared
+            mt.recolocaTrasPararMs = sale < 0 || parada < 0 ? -1 : ms(sale - parada);
+            check('Torre antigua: encerrada a pie sin poder salir, a los 1,5 s sin avanzar se recoloca fuera (red de seguridad)', sale > parada && parada >= 0 && ms(sale - parada) <= 2000 && (M.desatascos || 0) >= 1 && !SOL.penetra(S.pos.x, S.pos.z, S.pos.y), JSON.stringify(mt));
+          } else check('Torre antigua de las ruinas', false, 'no se encontró la cavidad de la torre (¿cambió el modelo o el mapa?)');
+          reset(L.x, L.z);
+        } else check('Torre antigua de las ruinas', true, 'sin la torre en este mapa');
+      }
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
     } finally {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;
@@ -409,4 +491,4 @@ AVE.module('movimiento', function (G) {
     return res;
   }
   return { test, sleep };
-});
+};

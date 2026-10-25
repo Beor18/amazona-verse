@@ -23,7 +23,10 @@
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
-    if (G.movimiento && G.movimiento.test) AV.movementTest = o => G.movimiento.test(o); // src/pruebas/movimiento.js
+    // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
+    const aDemanda = (src, fabrica) => { let p = null; return () => p || (p = AVE.assets.script(src).then(() => window[fabrica](G), e => { p = null; throw e; })); };
+    const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest');
+    AV.movementTest = o => movimiento().then(m => m.test(o));
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js

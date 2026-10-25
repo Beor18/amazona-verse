@@ -5,7 +5,16 @@
    Colisiones: círculos (r) y cajas alineadas (hx/hz) contra el jugador; sin motor de física (CTO_PLAN §2).
    Un collider es { x, z, r, hx?, hz?, h?, kind, when?, id? }: h = altura que se puede sobrevolar (si falta, alturas[kind]).
    Ganchos: 'moved' (busy) justo después de mover al jugador y antes de chocar (p. ej. recoger objetos al pasar);
-   'vuelo' (true | false) al despegar y al terminar el vuelo.
+   'vuelo' (true | false) al despegar y al terminar el vuelo; 'viento' (true | false) al llegar subiendo al techo de vuelo y al
+   dejarlo; 'desatasco' ({ x, y, z, como }) cuando la red de seguridad la saca de dentro de un sólido.
+   Subir siempre sube (volando, mantener salto) hasta el techo de vuelo: flyCeil m sobre lo más alto del terreno y los sólidos
+   a menos de techoRadio m. Los últimos techoZona m frenan la subida y, por encima, el viento la baja suave (lo avisa la guía).
+   Bajo un saliente (plataforma, alero) que tapa la subida, se desliza sola hacia el cielo abierto más cercano.
+   Volando, rozar el suelo o un tejado a velocidad de crucero no termina el vuelo: sigue rasante. Se posa al aterrizar (V o X),
+   al bajar con C hasta el suelo o al tocarlo despacio, sin subir.
+   Nunca encajada: en el aire los pies no entran en un sólido (un borde bajo se sube, como un escalón); si aun así queda dentro,
+   sale empujada al punto libre más cercano (al lado o encima) y, si lleva más de T.atasco s sin poder moverse metida en la
+   geometría, se recoloca allí sin castigo (MOVE.atasco: s que lleva así; MOVE.desatascos: cuántas veces).
    Perchas: superficies de una vía que añade un pack con addPercha({ x, z, r, y, when? }) (y = tope absoluto). Solo sostienen a
    quien llega desde arriba (y >= tope - 0,3 m); desde abajo se atraviesan volando. suelo(x, z, y) = terreno o percha.
    Estado legible (MOVE): flying, landing (bajando para aterrizar), swimming, grounded, fase ('suelo' | 'aire' | 'planeo' |
@@ -46,7 +55,13 @@ AVE.module('fisica', function (G) {
     fly: 12,              // velocidad de crucero
     flyAccel: 3.5,        // tasa de aceleración en el aire (inercia de ave; radio de giro ≈ fly / flyAccel)
     flyBrake: 2.6,        // tasa de frenado al soltar la dirección (se queda cernida)
-    flyCeil: 26,          // techo de vuelo sobre el suelo
+    flyCeil: 26,          // techo de vuelo: m sobre lo más alto del terreno y los sólidos a menos de techoRadio m
+    techoRadio: 25,       // m alrededor que cuentan para el techo (junto a una torre o un cerro se puede subir por encima)
+    techoZona: 3,         // en los últimos m bajo el techo la subida se frena poco a poco (se nota antes de llegar)
+    vientoV: 1.5,         // por encima del techo, el viento fuerte la baja a esta velocidad (gancho 'viento': aviso)
+    techoAyuda: 4,        // subiendo bajo un saliente que la tapa, se desliza hacia el cielo abierto a esta velocidad (m/s)
+    atasco: 1.5,          // s metida en un sólido sin poder moverse antes de recolocarla (al lado o encima, sin castigo)
+    salirV: 5,            // metida en un sólido, sale empujada hacia el punto libre más cercano a esta velocidad (m/s)
     climbV: 5.5,          // subir (mantener salto)
     diveV: 7,             // bajar (C)
     glideSink: 0.45,      // a velocidad de crucero, sin subir ni bajar, planea perdiendo esta altura por segundo
@@ -85,8 +100,9 @@ AVE.module('fisica', function (G) {
   function addPercha(p) { perchas.push(p); return p; }
   function removePercha(p) { const i = perchas.indexOf(p); if (i >= 0) perchas.splice(i, 1); }
   // Suelo bajo (x, z) para algo a la altura y: el del terreno o el de una percha que tenga debajo
-  function suelo(x, z, y, tolSolido) {
-    let g = G.terreno.surfaceY(x, z, y); // con y, el terreno cuenta también sus pisos de una vía (puente, muelle, mirador)
+  // sinPisos: sin los pisos de una vía del terreno (fisica los quita si subir a uno metería el cuerpo en un sólido)
+  function suelo(x, z, y, tolSolido, sinPisos) {
+    let g = sinPisos ? G.terreno.height(x, z) : G.terreno.surfaceY(x, z, y); // con y, el terreno cuenta también sus pisos de una vía (puente, muelle, mirador)
     if (y != null) for (const p of perchas) {
       if (y >= p.y - PERCHA_TOL && p.y > g && Math.hypot(x - p.x, z - p.z) < p.r && (!p.when || p.when())) g = p.y;
     }
@@ -175,6 +191,118 @@ AVE.module('fisica', function (G) {
   const cosMax = () => Math.cos(T.maxSlope * Math.PI / 180);
   const rate = (k, dt) => 1 - Math.exp(-dt * k);
 
+  // ---------- Subir siempre sube y nunca encajada (sólidos de solidos.js) ----------
+  const ANILLO = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]];
+  // Techo al subir con todo el cuerpo (centro y 4 puntos del borde): un saliente que solo tapa el borde también para la cabeza
+  function techoCuerpo(SOL, x, z, y0, y1, h) {
+    const r = SOL.SO.radio * 0.7; let t = Infinity;
+    for (let k = 0; k < 5; k++) t = Math.min(t, SOL.techo(x + ANILLO[k][0] * r, z + ANILLO[k][1] * r, y0, y1, h));
+    return t;
+  }
+  // Lo más alto en (x, z) a la altura de un escalón sobre los pies, en todo el cuerpo (para subir un borde bajo en el aire)
+  function bordeBajo(SOL, x, z, y) {
+    const r = SOL.SO.radio, d = SOL.SO.stepUp - SOL.SO.tolSuelo; let t = -Infinity;
+    for (const [dx, dz] of ANILLO) t = Math.max(t, SOL.altoEn(x + dx * r, z + dz * r, y + d));
+    return t;
+  }
+  // Techo de vuelo: lo más alto del terreno y los sólidos alrededor (se recalcula cada 3 m)
+  const zona = { x: 1e9, z: 1e9, alto: -Infinity };
+  function altoZona(x, z) {
+    if (Math.hypot(x - zona.x, z - zona.z) > 3) {
+      const SOL = G.solidos && G.solidos.activo ? G.solidos : null; let a = G.terreno.height(x, z);
+      for (const f of [0.5, 1]) for (let i = 0; i < 8; i++) {
+        const ax = x + Math.cos(i * Math.PI / 4) * T.techoRadio * f, az = z + Math.sin(i * Math.PI / 4) * T.techoRadio * f;
+        a = Math.max(a, G.terreno.height(ax, az), SOL ? SOL.altoEn(ax, az, 1e4) : -Infinity);
+      }
+      zona.x = x; zona.z = z; zona.alto = a;
+    }
+    return zona.alto;
+  }
+  const techoVuelo = (x, z, ground) => Math.max(ground, altoZona(x, z)) + T.flyCeil;
+  // Cielo abierto alcanzable: avanza en 32 direcciones a la altura y (pasos de 0,3 m hasta maxR) sin meterse más en un sólido,
+  // hasta una columna sin techo en `alto` m sobre la cabeza. El más cercano, o null (encerrada: dentro de una torre hueca)
+  function cieloAlcanzable(SOL, pen, y, h, maxR, alto) {
+    const p0 = pen(S.pos.x, S.pos.z, y); let mejor = null;
+    for (let i = 0; i < 32; i++) {
+      const ux = Math.cos(i / 32 * Math.PI * 2), uz = Math.sin(i / 32 * Math.PI * 2);
+      for (let r = 0.3; r <= maxR + 0.01 && (!mejor || r < mejor.r); r += 0.3) {
+        const x = S.pos.x + ux * r, z = S.pos.z + uz * r;
+        if (pen(x, z, y) > p0) break;
+        if (techoCuerpo(SOL, x, z, y, y + alto, h) === Infinity) { mejor = { x, z, r }; break; }
+      }
+    }
+    return mejor;
+  }
+  // Salir por arriba de lo que la tapa (y = el bajo de ese techo): sube por los tramos hasta un sitio libre para el cuerpo
+  function salirPorArriba(SOL, pen, y, h) {
+    for (let i = 0; i < 8; i++) {
+      const t = SOL.dentro(S.pos.x, S.pos.z, y + 0.01); if (t > y) y = t + 0.02;
+      const encima = techoCuerpo(SOL, S.pos.x, S.pos.z, y, y + 0.3, h);
+      if (encima === Infinity && !pen(S.pos.x, S.pos.z, y)) return y;
+      if (encima < Infinity) y = encima;
+    }
+    return Math.max(SOL.altoEn(S.pos.x, S.pos.z, 1e4), G.terreno.height(S.pos.x, S.pos.z)) + 0.05;
+  }
+  // Punto libre más cercano para salir de un sólido: encima (el tope de lo que la contiene) o al lado, a la misma altura volando
+  // o en su suelo caminando; sin hueco en 4,5 m, encima de todo. abierto: el lado tiene que estar bajo el cielo abierto (al
+  // salir de dentro de la piedra, nunca a otra cavidad); si no, vale el hueco más cercano (rozando, un empujoncito)
+  function libreCerca(SOL, h, abierto) {
+    const x = S.pos.x, z = S.pos.z, y = S.pos.y;
+    let mejor = null;
+    const top = SOL.dentro(x, z, y + h * 0.5);
+    if (top > y && !SOL.penetra(x, z, top + 0.02, h)) mejor = { x, z, y: top + 0.02, d: (top - y) * 1.2, como: 'arriba' };
+    for (let r = 0.3; r <= 4.51 && !(mejor && mejor.como === 'lado') && (!mejor || r < mejor.d); r += 0.3) {
+      for (let i = 0; i < 16; i++) {
+        const a = i / 16 * Math.PI * 2, cx = x + Math.cos(a) * r, cz = z + Math.sin(a) * r;
+        const cy = MOVE.flying ? y : Math.min(y, suelo(cx, cz, y + SOL.SO.stepUp));
+        if (SOL.penetra(cx, cz, cy, h) || (abierto && techoCuerpo(SOL, cx, cz, cy, cy + 30, h) < Infinity)) continue;
+        mejor = { x: cx, z: cz, y: cy, d: r, como: 'lado' }; break;
+      }
+    }
+    if (!mejor) mejor = { x, z, y: Math.max(SOL.altoEn(x, z, 1e4), G.terreno.height(x, z)) + 0.05, d: 99, como: 'arriba' };
+    return mejor;
+  }
+  // Red de seguridad, sin castigo:
+  // - metida en un sólido (el centro del cuerpo dentro): sale empujada hacia el punto libre más cercano; a los T.atasco s, va;
+  // - pidiendo moverse sin avanzar 0,6 m en T.atasco s, rozando un sólido o encerrada (techo encima y ningún cielo abierto
+  //   alcanzable en 8 m: dentro de una torre hueca): se recoloca al lado o encima.
+  const ATS = { t: 0, x: 0, y: 0, z: 0, salida: null, ult: null };
+  function recolocar(o) {
+    S.pos.x = o.x; S.pos.y = o.y; S.pos.z = o.z; S.vy = 0; MOVE.vx = MOVE.vz = 0;
+    ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; MOVE.desatascos = (MOVE.desatascos || 0) + 1;
+    G.emit('desatasco', { x: o.x, y: o.y, z: o.z, como: o.como });
+  }
+  // Empuja hacia o a T.salirV; true al llegar
+  function empujar(o, dt) {
+    const dx = o.x - S.pos.x, dy = o.y - S.pos.y, dz = o.z - S.pos.z, d = Math.hypot(dx, dy, dz), paso = Math.min(d, T.salirV * dt);
+    if (d > 1e-3) { S.pos.x += dx / d * paso; S.pos.y += dy / d * paso; S.pos.z += dz / d * paso; if (dy > 0) { S.vy = Math.max(S.vy, 0); MOVE.grounded = false; } }
+    return d - paso < 0.01;
+  }
+  function desencajar(dt, SOL, pen, h, pide) {
+    // Un salto de más de 2 m desde el cuadro anterior es un teletransporte (misión, prueba, cargar partida): lo de antes no cuenta
+    const u = ATS.ult; ATS.ult = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+    if (u && Math.hypot(S.pos.x - u.x, S.pos.y - u.y, S.pos.z - u.z) > 2) { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; }
+    // Saliendo: sigue hasta el punto libre aunque a medio camino ya no cuente como metida (los pies en el borde de una losa)
+    if (ATS.salida) {
+      ATS.t += dt; MOVE.atasco = ATS.t;
+      if (ATS.t > T.atasco) recolocar(ATS.salida);
+      else if (empujar(ATS.salida, dt)) { ATS.salida = null; ATS.t = 0; MOVE.atasco = 0; }
+      return;
+    }
+    const n = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, h);
+    const dentro = n > 0 && SOL.dentro(S.pos.x, S.pos.z, S.pos.y + h * 0.5) > S.pos.y + SOL.SO.stepUp;
+    if (dentro) { ATS.salida = libreCerca(SOL, h, true); ATS.t = dt; MOVE.atasco = dt; if (empujar(ATS.salida, dt)) { ATS.salida = null; ATS.t = 0; MOVE.atasco = 0; } return; }
+    if (!pide) { ATS.t = 0; MOVE.atasco = 0; return; }
+    // pidiendo moverse: si avanza de verdad (0,6 m) no está atascada
+    if (!ATS.t || Math.hypot(S.pos.x - ATS.x, S.pos.z - ATS.z, S.pos.y - ATS.y) > 0.6) { ATS.t = 0; ATS.x = S.pos.x; ATS.y = S.pos.y; ATS.z = S.pos.z; }
+    ATS.t += dt; MOVE.atasco = ATS.t;
+    if (ATS.t <= T.atasco) return;
+    ATS.t = 0; MOVE.atasco = 0;
+    const tapa = techoCuerpo(SOL, S.pos.x, S.pos.z, S.pos.y, S.pos.y + 30, h);
+    if (tapa < Infinity && !cieloAlcanzable(SOL, pen, S.pos.y, h, 8, 30)) recolocar({ x: S.pos.x, z: S.pos.z, y: salirPorArriba(SOL, pen, tapa, h), como: 'arriba' });
+    else if (n) recolocar(libreCerca(SOL, h, false));
+  }
+
   // ---------- Un paso de simulación del jugador; devuelve si se está moviendo ----------
   function step(dt, busy) {
     const keys = G.input.keys, stick = G.input.stick, cam = G.camara;
@@ -243,16 +371,24 @@ AVE.module('fisica', function (G) {
     let hCuerpo;
     // En el suelo (o aún agachada) el cuerpo puede agacharse hasta altoAgachada: pasa bajo un toldo bajo sin que la cabeza roce
     const agachable = SOL && !MOVE.swimming && (MOVE.grounded || MOVE.agachada > 0.01);
+    // pen(x, z, y): cuánto se mete el cuerpo. En el suelo se sube un escalón (stepUp); en el aire los pies no entran en un
+    // sólido: volando junto al borde de una plataforma ya no se cuela con los pies bajo el borde y, al bajar, queda metida dentro
+    let pen = null;
     if (SOL) {
       // nadando en superficie, el cuerpo llega hasta encima del agua: no se cuela por debajo de una canoa a flote
       const wy0 = MOVE.swimming && !dive ? G.agua.levelAt(S.pos.x) : -Infinity;
       hCuerpo = wy0 > -1e9 ? Math.max(SOL.SO.cuerpo, wy0 + 0.6 - S.pos.y) : agachable ? T.altoAgachada : undefined;
-      const pn = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, hCuerpo);
+      const aire = !MOVE.grounded && !MOVE.swimming, pie = aire ? SOL.SO.stepUp - 0.05 : 0, hP = (hCuerpo != null ? hCuerpo : SOL.SO.cuerpo) + pie;
+      pen = (x, z, y) => SOL.penetra(x, z, y - pie, hP);
+      const pn = pen(S.pos.x, S.pos.z, S.pos.y);
       if (pn) {
-        const p0 = SOL.penetra(px, pz, S.pos.y, hCuerpo);
+        const p0 = pen(px, pz, S.pos.y);
         if (pn > p0) {
-          if (SOL.penetra(S.pos.x, pz, S.pos.y, hCuerpo) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
-          else if (SOL.penetra(px, S.pos.z, S.pos.y, hCuerpo) <= p0) { S.pos.x = px; MOVE.vx = 0; }
+          // En el aire, contra un borde bajo (hasta un escalón sobre los pies): se sube encima, como caminando
+          const borde = aire ? bordeBajo(SOL, S.pos.x, S.pos.z, S.pos.y) : -Infinity;
+          if (borde > S.pos.y && pen(S.pos.x, S.pos.z, borde + 0.02) <= p0) { S.pos.y = borde + 0.02; S.vy = Math.max(S.vy, 0); }
+          else if (pen(S.pos.x, pz, S.pos.y) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
+          else if (pen(px, S.pos.z, S.pos.y) <= p0) { S.pos.x = px; MOVE.vx = 0; }
           else { S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0; }
         }
       }
@@ -269,6 +405,9 @@ AVE.module('fisica', function (G) {
     }
     // con la altura previa: las perchas sostienen al bajar. En el aire, un sólido solo es suelo si ya está bajo los pies
     let ground = suelo(S.pos.x, S.pos.z, S.pos.y, MOVE.grounded ? undefined : 0.05);
+    // Un piso de una vía del terreno (la cubierta de un mirador, la plataforma de una torre) no sube a quien llega desde abajo
+    // si eso le mete el cuerpo en un sólido: volando bajo la plataforma de la torre antigua, la cabeza la atravesaba
+    if (SOL && ground > S.pos.y + 0.01 && pen(S.pos.x, S.pos.z, ground) > pen(S.pos.x, S.pos.z, S.pos.y)) ground = suelo(S.pos.x, S.pos.z, S.pos.y, MOVE.grounded ? undefined : 0.05, true);
     // Pendiente demasiado empinada para subir caminando: se anula la parte cuesta arriba del paso (sigue la curva de nivel)
     const grounded = MOVE.grounded && !MOVE.flying && !MOVE.swimming;
     if (grounded && ground > S.pos.y + 0.02 && Math.abs(ground - G.terreno.height(S.pos.x, S.pos.z)) < 0.05) {
@@ -317,8 +456,15 @@ AVE.module('fisica', function (G) {
       else if (jumpHeld && !busy) want = T.climbV;
       else if (dive) want = above < T.flareHeight ? -Math.max(T.flareV, T.diveV * above / T.flareHeight) : -T.diveV;
       else want = -T.glideSink * Math.min(1, hSpeed / FLY_SPEED) ** 2;
+      // Techo de vuelo: la subida se frena en los últimos techoZona m y, por encima, el viento la baja suave (y se avisa)
+      const lim = techoVuelo(S.pos.x, S.pos.z, ground);
+      if (want > 0) want *= Math.max(0, Math.min(1, (lim - S.pos.y) / T.techoZona));
+      if (S.pos.y > lim) want = Math.min(want, -T.vientoV);
       S.vy += (want - S.vy) * rate(k, dt);
-      if (S.pos.y > ground + FLY_CEIL) S.vy = Math.min(S.vy, 0);
+      if (S.pos.y > lim + 1) S.vy = Math.min(S.vy, -T.vientoV); // muy por encima (el suelo bajó de golpe): baja ya
+      const viento = jumpHeld && !busy && S.pos.y > lim - 0.6;
+      if (viento !== !!MOVE.viento) { MOVE.viento = viento; G.emit('viento', viento); }
+      MOVE.techoVuelo = lim;
       if (dive && above < 0.25 && S.vy <= 0) MOVE.landing = true; // bajar con C hasta el suelo también aterriza
     } else {
       if (MOVE.wet && onGround) { MOVE.wet = false; MOVE.shake = true; G.agua.spray(S.pos.x, S.pos.y + 1.0, S.pos.z); } // sale del agua: se sacude
@@ -327,11 +473,30 @@ AVE.module('fisica', function (G) {
       if (gliding) S.vy = Math.max(S.vy, -T.glideMaxFall);
       S.vy = Math.max(S.vy, -T.maxFall);
     }
+    if (!MOVE.flying && MOVE.viento) { MOVE.viento = false; G.emit('viento', false); }
     let ny = (S.pos.y || ground) + S.vy * dt;
-    // Subiendo bajo un techo o una cornisa: la cabeza no lo atraviesa
+    // Subiendo bajo un techo o una cornisa: la cabeza (y el borde del cuerpo) no lo atraviesa. Volando y pidiendo subir,
+    // se desliza hacia el cielo abierto más cercano: mantener subir nunca se queda trabado bajo una plataforma o un alero
+    MOVE.ayudaTecho = 0;
     if (SOL && S.vy > 0) {
-      const hT = agachable ? T.altoAgachada : SOL.SO.cuerpo, tch = SOL.techo(S.pos.x, S.pos.z, S.pos.y, ny, hT);
-      if (tch < Infinity) { ny = Math.min(ny, tch - hT); S.vy = 0; }
+      const hT = agachable ? T.altoAgachada : SOL.SO.cuerpo, tch = techoCuerpo(SOL, S.pos.x, S.pos.z, S.pos.y, ny, hT);
+      if (tch < Infinity) {
+        ny = Math.min(ny, tch - hT); S.vy = 0;
+        if (MOVE.flying && (jumpHeld || MOVE.takeoff > 0) && !busy && !MOVE.landing) {
+          if ((MOVE.cieloT = (MOVE.cieloT || 0) - dt) <= 0) { MOVE.cielo = cieloAlcanzable(SOL, pen, S.pos.y, hT, 4, 3); MOVE.cieloT = 0.3; }
+          const c = MOVE.cielo;
+          if (c) {
+            MOVE.tapadaT = 0;
+            const dx = c.x - S.pos.x, dz = c.z - S.pos.z, d = Math.hypot(dx, dz), paso = Math.min(d, T.techoAyuda * dt);
+            const qx = S.pos.x + dx / (d || 1) * paso, qz = S.pos.z + dz / (d || 1) * paso;
+            if (pen(qx, qz, S.pos.y) <= pen(S.pos.x, S.pos.z, S.pos.y)) { S.pos.x = qx; S.pos.z = qz; MOVE.ayudaTecho = 1; }
+          } else if ((MOVE.tapadaT = (MOVE.tapadaT || 0) + dt) > T.atasco) {
+            // Sin cielo abierto alcanzable (encerrada, p. ej. dentro de una torre hueca): sale por encima de lo que la tapa
+            MOVE.tapadaT = 0; ny = salirPorArriba(SOL, pen, tch, hT);
+            MOVE.desatascos = (MOVE.desatascos || 0) + 1; G.emit('desatasco', { x: S.pos.x, y: ny, z: S.pos.z, como: 'arriba' });
+          }
+        }
+      } else { MOVE.cielo = null; MOVE.cieloT = 0; MOVE.tapadaT = 0; }
     }
     // Pegado al suelo: caminando cuesta abajo no se despega (sin aleteos ni patas recogidas en cada bajada)
     const d = Math.hypot(S.pos.x - px, S.pos.z - pz);
@@ -340,13 +505,17 @@ AVE.module('fisica', function (G) {
     // Con la altura nueva (subir o bajar un escalón, una rampa bajo un techo) el cuerpo tampoco puede quedar más metido en un
     // sólido que antes del paso: si pasa, no avanza (en el aire solo se anula lo horizontal)
     if (SOL && (S.pos.x !== px || S.pos.z !== pz)) {
-      const pf = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, hCuerpo);
-      if (pf && pf > SOL.penetra(px, pz, py, hCuerpo)) {
+      const pf = pen(S.pos.x, S.pos.z, S.pos.y);
+      if (pf && pf > pen(px, pz, py)) {
         S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0;
         if (grounded) { S.pos.y = py; ground = suelo(px, pz, py); } else { ground = suelo(px, pz, py); S.pos.y = Math.max(ground, S.pos.y); }
       }
     }
-    if (S.pos.y <= ground) {
+    // Volando, rozar el suelo o un tejado a velocidad de crucero (o subiendo) no termina el vuelo: sigue rasante.
+    // Se posa al aterrizar (V, X), al bajar con C hasta el suelo o al tocarlo despacio sin pedir subir.
+    const rasante = MOVE.flying && S.pos.y <= ground && !(S.vy <= 0 && MOVE.takeoff <= 0 && (MOVE.landing || dive || (!jumpHeld && hSpeed < 2.5)));
+    if (rasante) { S.pos.y = ground; S.vy = Math.max(S.vy, 0); MOVE.grounded = false; }
+    else if (S.pos.y <= ground) {
       if (MOVE.wasAir) {
         const fall = -S.vy;
         MOVE.impact = MOVE.flying ? 0.25 : Math.min(1, Math.max(0, (fall - 2) / 12));
@@ -361,6 +530,9 @@ AVE.module('fisica', function (G) {
     } else { MOVE.coyote = Math.max(0, MOVE.coyote - dt); MOVE.wasAir = true; MOVE.grounded = false; }
     MOVE.buffer = Math.max(0, MOVE.buffer - dt);
     MOVE.land = Math.max(0, MOVE.land - dt);
+    // Red de seguridad: metida en un sólido sale sola; atascada más de T.atasco s, se recoloca al lado o encima (sin castigo)
+    if (SOL && !MOVE.swimming) desencajar(dt, SOL, pen, hCuerpo != null ? hCuerpo : SOL.SO.cuerpo, (len > 0.12 || jumpHeld) && !busy);
+    else if (MOVE.atasco || ATS.salida) { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; }
     // Lo que leen la animación, la cámara y las pruebas
     MOVE.grade = MOVE.grounded && d > 1e-3 ? (ground - MOVE.groundY) / d : 0;
     MOVE.groundY = ground;
@@ -401,5 +573,6 @@ AVE.module('fisica', function (G) {
 
   return { MOVE, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders,
     tryJump, releaseJump, startFlying, land, toggleFly, endFlight, tryDash, step, slopeAt,
+    techoVuelo: (x, z) => techoVuelo(x, z, suelo(x, z, S.pos.y)),
     SPEED, RUN_SPEED, DASH_SPEED, FLY_SPEED, FLY_CEIL, SWIM_SPEED, SWIM_DEPTH };
 });

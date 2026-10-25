@@ -72,10 +72,20 @@ AVE.module('input', function (G) {
     return Object.values(CANON).includes(k) ? null : k; // una W que ya no mueve no cuenta como W
   }
 
+  // Foco con el ratón en un botón del HUD (Diario, Gestos, Pausa, Controles): tras un clic el botón se queda con el foco y el
+  // Espacio lo volvía a pulsar en lugar de saltar o subir volando («a veces no eleva más»). Ahora el Espacio va al juego y el
+  // botón suelta el foco. Navegando con Tab, Espacio y Enter activan el botón como siempre.
+  let conTab = false;
+  addEventListener('keydown', e => { if (e.key === 'Tab') conTab = true; }, true);
+  addEventListener('pointerdown', () => { conTab = false; }, true);
+  const botonDelHud = b => !conTab && !b.closest('#pause, #card, #dialog, #creator, #comic, #end') && !!b.closest('#sys, #acts, #emotes, .guia-hud');
   addEventListener('keydown', e => {
     if (capturando) return; // la sección Teclas está esperando una tecla
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
-    if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
+    if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) {
+      if (e.key !== ' ' || !botonDelHud(e.target)) return;
+      e.target.blur();
+    }
     const k = e.key.toLowerCase(), t = tokenDe(k);
     if (t != null) { keys.add(t); pulsadas.set(k, t); }
     if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
