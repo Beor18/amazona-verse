@@ -1,0 +1,437 @@
+{
+ "_nota": "Fuente única de tiempos del pitch (corte cerrado v2: 48 tomas, 165.6 s; puntos de imagen del editor v1). Acordado con el comité (a93ae081466170deb) y el editor (a525cb0276ee81ea7). Compases de 2,4 s (100 BPM, 4/4). Los SFX usan 't' absoluto (sincronía con la imagen) o 'ancla' = 'BLOQUE|palabra' (voz.py mide cuándo empieza esa palabra). gain_db es relativo al archivo de sfx/; 'duck': true hace que el efecto también baje la música (como la voz).",
+ "voz_tts_definitiva": true,
+ "_voz": "Decisión de Kelvin (24 oct 2026): la voz de la Mac (Paulina es_MX) es la pista definitiva de la v1. Poner false si vuelve a ser guía.",
+ "bpm": 100,
+ "tiempos_por_compas": 4,
+ "duracion_s": 165.6,
+ "secciones": [
+  {
+   "id": "gancho",
+   "inicio_c": 0,
+   "fin_c": 11,
+   "nota": "solo viento hasta c4 (9.6 s); entra la música con el problema"
+  },
+  {
+   "id": "mundo",
+   "inicio_c": 11,
+   "fin_c": 20
+  },
+  {
+   "id": "aprender",
+   "inicio_c": 20,
+   "fin_c": 36
+  },
+  {
+   "id": "criadero",
+   "inicio_c": 36,
+   "fin_c": 41
+  },
+  {
+   "id": "tecnologia",
+   "inicio_c": 41,
+   "fin_c": 49,
+   "nota": "baja la energía en 98.4"
+  },
+  {
+   "id": "mercado",
+   "inicio_c": 49,
+   "fin_c": 59
+  },
+  {
+   "id": "cierre",
+   "inicio_c": 59,
+   "fin_c": 69,
+   "nota": "corte seco 152.4-153.6, despegue 153.6, logo 158.4"
+  }
+ ],
+ "eventos": {
+  "musica_entra_s": 9.6,
+  "silencio_musica": [
+   152.4,
+   153.6
+  ],
+  "despegue_s": 153.6,
+  "logo_s": 158.4
+ },
+ "sfx": [
+  {
+   "id": "viento_bosque",
+   "t": 0.0,
+   "gain_db": -7,
+   "fade_in": 1.5,
+   "dur": 36.0,
+   "fade_out": 7.0,
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     9.6,
+     0
+    ],
+    [
+     11.5,
+     -9
+    ],
+    [
+     36,
+     -9
+    ]
+   ]
+  },
+  {
+   "id": "coqui_1",
+   "t": 0.15,
+   "gain_db": -14,
+   "pan": -0.35
+  },
+  {
+   "id": "aleteo_despegue",
+   "t": 4.98,
+   "gain_db": -10,
+   "pan": -0.1,
+   "_nota": "salto del mirador 4.95, despegue 5.1"
+  },
+  {
+   "id": "rafaga_huracan",
+   "ancla": "B01|huracán",
+   "off": -0.6,
+   "gain_db": -10
+  },
+  {
+   "id": "coqui_2",
+   "t": 9.0,
+   "gain_db": -18,
+   "pan": 0.55
+  },
+  {
+   "id": "aleteo_bandada",
+   "ancla": "B02|bosques",
+   "off": -0.4,
+   "gain_db": -10
+  },
+  {
+   "id": "aterrizaje",
+   "t": 21.5,
+   "gain_db": -10,
+   "pan": 0.1,
+   "_nota": "apoyo en la percha 21.9"
+  },
+  {
+   "id": "ui_whoosh",
+   "t": 23.05,
+   "gain_db": -17,
+   "_nota": "se abre la tarjeta Observar 23.1"
+  },
+  {
+   "id": "ui_tick",
+   "t": 23.1,
+   "gain_db": -17
+  },
+  {
+   "id": "ui_click",
+   "t": 25.0,
+   "gain_db": -13
+  },
+  {
+   "id": "vittata_wepa",
+   "t": 26.0,
+   "gain_db": -1,
+   "duck": true,
+   "_nota": "'¡Wepa!' en el diálogo 26.0-26.3, sin pisar la voz"
+  },
+  {
+   "id": "corte_golpe",
+   "t": 36.8,
+   "gain_db": -11
+  },
+  {
+   "id": "corte_golpe",
+   "t": 37.4,
+   "gain_db": -12
+  },
+  {
+   "id": "corte_golpe",
+   "t": 38.2,
+   "gain_db": -12
+  },
+  {
+   "id": "corte_golpe",
+   "t": 39.2,
+   "gain_db": -12
+  },
+  {
+   "id": "corte_golpe",
+   "t": 40.0,
+   "gain_db": -12
+  },
+  {
+   "id": "corte_golpe",
+   "t": 40.8,
+   "gain_db": -11
+  },
+  {
+   "id": "aleteo_despegue",
+   "t": 37.4,
+   "gain_db": -8,
+   "pan": 0.15
+  },
+  {
+   "id": "rio",
+   "t": 37.7,
+   "gain_db": -10,
+   "dur": 5.5,
+   "fade_in": 0.5,
+   "fade_out": 1.5
+  },
+  {
+   "id": "chapoteo",
+   "t": 38.2,
+   "gain_db": -11,
+   "pan": -0.2,
+   "_nota": "nado"
+  },
+  {
+   "id": "chapoteo",
+   "t": 39.25,
+   "gain_db": -6,
+   "pan": 0.05,
+   "_nota": "buceo de cabeza"
+  },
+  {
+   "id": "burbujas_buceo",
+   "t": 39.45,
+   "gain_db": -7,
+   "dur": 2.8,
+   "fade_out": 1.0
+  },
+  {
+   "id": "aterrizaje",
+   "t": 40.0,
+   "gain_db": -11,
+   "_nota": "aterrizaje de mundo_asombro 40.4"
+  },
+  {
+   "id": "ui_logro",
+   "t": 40.8,
+   "gain_db": -13
+  },
+  {
+   "id": "ui_whoosh",
+   "t": 42.6,
+   "gain_db": -18,
+   "_nota": "baile de la pava"
+  },
+  {
+   "id": "ui_whoosh",
+   "t": 48.15,
+   "gain_db": -18,
+   "_nota": "Luma abre el diálogo"
+  },
+  {
+   "id": "ui_click",
+   "t": 50.0,
+   "gain_db": -14
+  },
+  {
+   "id": "ui_tick",
+   "t": 50.2,
+   "gain_db": -15
+  },
+  {
+   "id": "ui_confirmar",
+   "t": 51.8,
+   "gain_db": -13,
+   "_nota": "opción 'Llovió mucho en la montaña'"
+  },
+  {
+   "id": "vapor_sube",
+   "ancla": "B04|vapor",
+   "off": -0.2,
+   "gain_db": -15
+  },
+  {
+   "id": "gotas_lluvia",
+   "ancla": "B04|lluvia",
+   "off": -0.2,
+   "gain_db": -8,
+   "dur": 3.0,
+   "fade_out": 1.0
+  },
+  {
+   "id": "burbujas_buceo",
+   "ancla": "B04|bucea",
+   "off": -0.1,
+   "gain_db": -9,
+   "dur": 2.8,
+   "fade_out": 1.0
+  },
+  {
+   "id": "ui_click",
+   "t": 60.8,
+   "gain_db": -13,
+   "_nota": "tarjeta Predije/Vi"
+  },
+  {
+   "id": "ui_logro",
+   "t": 63.4,
+   "gain_db": -12,
+   "_nota": "COMPRUEBA"
+  },
+  {
+   "id": "ui_premio",
+   "t": 64.3,
+   "gain_db": -11,
+   "_nota": "pava desbloqueada"
+  },
+  {
+   "id": "ui_encaje",
+   "t": 64.7,
+   "gain_db": -7,
+   "_nota": "ropa puesta"
+  },
+  {
+   "id": "ui_logro",
+   "ancla": "B05|Diario",
+   "off": -0.05,
+   "gain_db": -14
+  },
+  {
+   "id": "ui_click",
+   "ancla": "B06|Modo",
+   "off": -0.03,
+   "gain_db": -15
+  },
+  {
+   "id": "ui_tick",
+   "ancla": "B06|reporte",
+   "off": -0.03,
+   "gain_db": -16
+  },
+  {
+   "id": "ui_whoosh",
+   "t": 81.75,
+   "gain_db": -18,
+   "_nota": "diálogo de Luma"
+  },
+  {
+   "id": "ui_tick",
+   "t": 84.5,
+   "gain_db": -15,
+   "_nota": "cambio a EN"
+  },
+  {
+   "id": "ui_click",
+   "t": 85.5,
+   "gain_db": -13,
+   "_nota": "clic en Listen"
+  },
+  {
+   "id": "juego_lectura_en",
+   "t": 85.56,
+   "gain_db": -4,
+   "duck": true
+  },
+  {
+   "id": "pop_bebe",
+   "t": 91.2,
+   "gain_db": -12
+  },
+  {
+   "id": "pop_juvenil",
+   "t": 92.4,
+   "gain_db": -12
+  },
+  {
+   "id": "pop_adulta",
+   "t": 93.6,
+   "gain_db": -12
+  },
+  {
+   "id": "aleteo_corto",
+   "t": 95.5,
+   "gain_db": -10,
+   "pan": 0.1
+  },
+  {
+   "id": "ui_click",
+   "t": 100.4,
+   "gain_db": -12,
+   "_nota": "clic en Jugar"
+  },
+  {
+   "id": "ui_encaje",
+   "ancla": "B08|encima",
+   "off": -0.03,
+   "gain_db": -6
+  },
+  {
+   "id": "ui_whoosh",
+   "ancla": "B08|liviano",
+   "off": -0.15,
+   "gain_db": -14
+  },
+  {
+   "id": "ui_tick",
+   "ancla": "B09|pilotos",
+   "off": -0.03,
+   "gain_db": -16
+  },
+  {
+   "id": "ui_click",
+   "t": 130.6,
+   "gain_db": -14,
+   "_nota": "ropero"
+  },
+  {
+   "id": "ui_click",
+   "t": 132.0,
+   "gain_db": -14
+  },
+  {
+   "id": "ui_confirmar",
+   "ancla": "B09|GRATIS",
+   "off": -0.03,
+   "gain_db": -13
+  },
+  {
+   "id": "ui_click",
+   "t": 133.6,
+   "gain_db": -14
+  },
+  {
+   "id": "whoosh_transicion",
+   "t": 140.6,
+   "gain_db": -13
+  },
+  {
+   "id": "coqui_coro",
+   "t": 153.6,
+   "gain_db": -4,
+   "fade_in": 0.25,
+   "dur": 12.0,
+   "fade_out": 3.5
+  },
+  {
+   "id": "aleteo_despegue",
+   "t": 153.75,
+   "gain_db": -7,
+   "pan": -0.1,
+   "_nota": "salto 153.75, despegue 153.9"
+  },
+  {
+   "id": "coqui_1",
+   "t": 159.9,
+   "gain_db": -14,
+   "pan": 0.2
+  },
+  {
+   "id": "coqui_2",
+   "t": 162.7,
+   "gain_db": -17,
+   "pan": -0.4
+  }
+ ]
+}
