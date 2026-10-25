@@ -234,30 +234,32 @@ AVE.module('movimiento', function (G) {
           met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
           check('No atraviesa una pared: choca y se desliza sin meterse', probadas > 0 && peor <= 2, JSON.stringify(met.pared));
         }
-        // Rama: el árbol más cercano con un punto fino entre 1,5 y 6 m sobre el suelo, lejos del tronco
-        const V = G.vegetacion, sitioArbol = (() => {
-          let mejor = null;
-          for (const m in (V && V.instancias) || {}) {
-            if (!/tabonuco|ceiba|flamboyan|yagrumo|arbol_enano/.test(m)) continue;
-            const P = V.instancias[m];
-            for (let i = 0; i < P.n; i++) { const d = Math.hypot(P.pos[i * 4] - L.x, P.pos[i * 4 + 2] - L.z); if (!mejor || d < mejor.d) mejor = { x: P.pos[i * 4], y: P.pos[i * 4 + 1], z: P.pos[i * 4 + 2], d, m }; }
-          }
-          return mejor;
-        })();
-        if (sitioArbol) {
-          reset(sitioArbol.x + 5, sitioArbol.z); SO.terminar();
-          let rama = null;
+        // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
+        // (un tabonuco alto puede no tener ramas bajas: se prueba el siguiente)
+        const V = G.vegetacion, arboles = [];
+        for (const m in (V && V.instancias) || {}) {
+          if (!/tabonuco|ceiba|flamboyan|yagrumo|arbol_enano/.test(m)) continue;
+          const P = V.instancias[m];
+          for (let i = 0; i < P.n; i++) arboles.push({ x: P.pos[i * 4], y: P.pos[i * 4 + 1], z: P.pos[i * 4 + 2], d: Math.hypot(P.pos[i * 4] - L.x, P.pos[i * 4 + 2] - L.z), m });
+        }
+        arboles.sort((a, b) => a.d - b.d);
+        let rama = null, arbol = null;
+        for (const t of arboles.slice(0, 10)) {
+          reset(t.x + 5, t.z); SO.terminar();
           for (let dz = -4; dz <= 4; dz += 0.3) for (let dx = -4; dx <= 4; dx += 0.3) {
-            const x = sitioArbol.x + dx, z = sitioArbol.z + dz; if (Math.hypot(dx, dz) < 1) continue;
-            const g = SO.altoEn(x, z, sitioArbol.y + 8), hg = g - H(x, z); if (!(hg > 1.5 && hg < 6) || !SO.fino(x, z, g + 0.01)) continue;
-            if (!rama || Math.abs(hg - 3) < Math.abs(rama.hg - 3)) rama = { x, z, g, hg };
+            const x = t.x + dx, z = t.z + dz; if (Math.hypot(dx, dz) < 1) continue;
+            const g = SO.altoEn(x, z, t.y + 10), hg = g - H(x, z); if (!(hg > 1.5 && hg < 8) || !SO.fino(x, z, g + 0.01)) continue;
+            if (!rama || Math.abs(hg - 3.5) < Math.abs(rama.hg - 3.5)) rama = { x, z, g, hg };
           }
+          if (rama) { arbol = t; break; }
+        }
+        if (arboles.length) {
           if (rama) {
             aterrizarEn(rama.x, rama.z, rama.g + 2);
             const ys = frame(null, 60).map(o => o.y);
-            met.rama = { arbol: sitioArbol.m, alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), posado: M.posado };
+            met.rama = { arbol: arbol.m, distancia: r2(arbol.d), alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), posado: M.posado };
             check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
-          } else check('Se posa en una rama', false, 'sin rama cerca de ' + sitioArbol.m);
+          } else check('Se posa en una rama', false, 'sin rama entre 1,5 y 8 m en los 10 árboles más cercanos');
         }
         // Todos los edificios cargados (de mundo.js o del streaming): no se atraviesan y tienen dónde pararse encima
         const msK = SO.SO.msCuadro; SO.SO.msCuadro = 0.3; // la flora espera: aquí solo cuentan los edificios

@@ -256,11 +256,11 @@ AVE.module('solidos', function (G) {
 
   let estaticosListos = false, resolver = null;
   const listo = new Promise(r => { resolver = r; });
-  Promise.all([G.mundo && G.mundo.listo, G.vegetacion && G.vegetacion.listo].filter(Boolean)).then(() => {
-    prepararFlora(); estaticos(); floraCerca();
-    setTimeout(contenido, 1500); // el taller carga sus piezas después
-    setInterval(estaticos, 2000); // edificios que se añadan después (InstancedMesh por zonas, piezas del contenido)
-  }).catch(() => {});
+  // La flora y lo estático arrancan por separado: con el streaming de edificios, mundo.listo puede tardar o no llegar,
+  // y sin esto los árboles se quedaban sin sólido (ni ramas ni troncos)
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { prepararFlora(); floraCerca(); }).catch(() => {});
+  Promise.resolve(G.mundo && G.mundo.listo).then(() => { estaticos(); setTimeout(contenido, 1500); }).catch(() => {}); // el taller carga después
+  setInterval(estaticos, 2000); // edificios que se añadan después (InstancedMesh por zonas, piezas del contenido)
   G.on('update', () => {
     if (!cola.length && !colaFlora.length && !estaticosListos && blocks.size && porRegion) { estaticosListos = true; resolver(); }
     floraCerca();
