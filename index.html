@@ -1,219 +1,186 @@
+<!doctype html>
+<html lang="es">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amazona Verse</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
-<style>
-/* Layout: juego a pantalla completa; HUD flotante en las esquinas, controles tactiles abajo. Look unico: selva al atardecer. */
-:root {
-  --night: #10241c;      /* fondo y paneles */
-  --leaf: #2f8f4e;       /* verde Vittata */
-  --leaf-hi: #7fd38f;
-  --beak: #f2a03d;       /* naranja pico, acento */
-  --crest: #d6403a;      /* rojo frente */
-  --paper: #f4f7f1;      /* texto claro */
-  --muted: #a9c2b1;
-  --panel: rgba(16, 36, 28, 0.86);
-  --display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
-  --body: "Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
-  color-scheme: dark;
-}
-*, *::before, *::after { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { height: 100%; margin: 0; }
-body { background: var(--night); color: var(--paper); font-family: var(--body); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
-#game { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
-.hud { position: fixed; z-index: 5; pointer-events: none; }
-.hud > * { pointer-events: auto; }
-#top { top: calc(env(safe-area-inset-top, 0px) + 10px); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
-.panel { background: var(--panel); border: 1px solid rgba(127, 211, 143, 0.25); border-radius: 14px; padding: 10px 12px; backdrop-filter: blur(6px); }
-#quest { max-width: 330px; min-width: 0; }
-#quest h1 { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0 0 2px; color: var(--leaf-hi); letter-spacing: .01em; text-wrap: balance; }
-#quest .chapter { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-#quest ol { margin: 6px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.45; }
-#quest li.done { color: var(--muted); text-decoration: line-through; }
-#quest li.now { color: var(--paper); font-weight: 700; }
-#quest li.later { color: var(--muted); opacity: .7; }
-#inv { display: flex; gap: 8px; font-family: var(--display); font-size: 15px; }
-#inv span { display: flex; flex-direction: column; align-items: center; min-width: 54px; font-variant-numeric: tabular-nums; }
-#inv small { font-family: var(--body); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
-#indicators { margin-top: 6px; font-size: 12px; color: var(--muted); }
-#indicators b { color: var(--paper); }
-#prompt { left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); font-family: var(--display); font-size: 16px; padding: 8px 14px; border-radius: 999px; background: var(--beak); color: #2b1a05; white-space: nowrap; }
-#dialog { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); margin: 0 auto; max-width: 620px; display: flex; gap: 12px; align-items: flex-start; }
-#dialog img { width: 64px; height: 64px; flex: none; border-radius: 12px; background: rgba(127,211,143,.15); }
-#dialog .who { font-family: var(--display); font-weight: 600; color: var(--beak); font-size: 15px; }
-#dialog p { margin: 2px 0 8px; font-size: 15px; line-height: 1.45; }
-#dialog .txt { min-width: 0; flex: 1; }
-.btn { font-family: var(--display); font-weight: 600; font-size: 15px; color: #2b1a05; background: var(--beak); border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer; }
-.btn.ghost { background: transparent; color: var(--paper); border: 1px solid rgba(244,247,241,.35); }
-.btn:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
-#card { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100% - 32px)); }
-#card h2 { font-family: var(--display); margin: 0 0 6px; color: var(--leaf-hi); font-size: 20px; }
-#card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0 12px; font-size: 14px; }
-#card dt { color: var(--muted); }
-#card dd { margin: 0; }
-#card .row { display: flex; gap: 8px; flex-wrap: wrap; }
-#sys { right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 78px); display: flex; gap: 6px; }
-#sys .btn { font-size: 13px; padding: 6px 10px; }
-#toast { left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 70px); font-size: 14px; }
-#stick { left: calc(max(12px, env(safe-area-inset-left, 0px)) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); width: 120px; height: 120px; border-radius: 50%; background: rgba(244,247,241,.08); border: 2px solid rgba(244,247,241,.25); touch-action: none; }
-#knob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(127,211,143,.7); pointer-events: none; }
-#acts { right: calc(max(12px, env(safe-area-inset-right, 0px)) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); display: flex; gap: 12px; align-items: flex-end; }
-.round { width: 70px; height: 70px; border-radius: 50%; font-size: 14px; padding: 0; }
-#emotes { right: max(12px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 118px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-width: min(320px, calc(100% - 32px)); }
-#emotes .btn { font-size: 13px; padding: 8px 10px; text-align: left; }
-.round.big { width: 84px; height: 84px; }
-#end { inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16,36,28,.82); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
-#end .panel { max-width: 440px; text-align: center; padding: 22px; }
-#end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
-#tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
-@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto, planear y volar (3.er toque o V; Espacio sube, C baja) · C bucear · F impulso · 1–7 gestos · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
-@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 196px); left: max(12px, env(safe-area-inset-left, 0px)); flex-wrap: wrap; justify-content: flex-end; } #toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 290px); } }
-.note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-.row.center { justify-content: center; }
-#symbol { inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-#symbol canvas { width: min(60vmin, 360px); height: auto; filter: drop-shadow(0 0 24px rgba(255, 210, 122, .55)); }
-#comic { inset: 0; background: rgba(16, 36, 28, .9); overflow: auto; padding-block: calc(env(safe-area-inset-top, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.comic-wrap { max-width: 980px; margin: 0 auto; }
-.comic-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
-.comic-head h2 { font-family: var(--display); color: var(--beak); margin: 0; font-size: 22px; }
-.comic-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-#comic-canvas { width: 100%; height: auto; border-radius: 8px; background: var(--night); }
-.comic-form { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.comic-form label { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
-.comic-form input, .comic-form select { font: 15px var(--body); color: var(--paper); background: rgba(244,247,241,.08); border: 1px solid rgba(244,247,241,.3); border-radius: 8px; padding: 8px 10px; }
-.comic-form input:focus-visible, .comic-form select:focus-visible { outline: 3px solid var(--leaf-hi); }
-#c-export img { width: 100%; border-radius: 8px; margin-bottom: 8px; -webkit-user-select: auto; user-select: auto; -webkit-touch-callout: default; }
-#c-download { display: inline-block; text-decoration: none; }
-.comic-form .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
-#c-panels { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-#c-panels li { display: grid; grid-template-columns: 1fr auto; gap: 4px 6px; align-items: center; }
-#c-panels .pn { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
-#c-panels input { min-width: 0; }
-.pm { display: flex; gap: 4px; }
-.btn.sm { padding: 6px 10px; font-size: 14px; }
-#creator { inset: 0; background: radial-gradient(circle at 30% 20%, #23402f, #0c1a13 70%); overflow: auto; padding-block: calc(env(safe-area-inset-top, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.creator-box { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.stage-wrap { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4 / 5; max-height: calc(100vh - 40px); box-shadow: 0 18px 40px rgba(0,0,0,.45); }
-#p-stage { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-.stage-title { position: absolute; left: 16px; top: 14px; pointer-events: none; }
-.stage-title .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--beak); }
-.stage-title h2 { font-family: var(--display); font-size: 28px; margin: 2px 0 0; color: var(--paper); text-shadow: 0 2px 10px rgba(0,0,0,.5); }
-.stage-hint { position: absolute; bottom: 10px; width: 100%; text-align: center; margin: 0; font-size: 12px; color: var(--muted); pointer-events: none; }
-.stage-status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; color: var(--paper); font-family: var(--display); }
-.creator-side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.creator-side label, .creator-side .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 6px; }
-.creator-side input, .creator-side select { font: 15px var(--body); color: var(--paper); background: rgba(244,247,241,.08); border: 1px solid rgba(244,247,241,.3); border-radius: 8px; padding: 9px 10px; }
-#p-slots { display: flex; flex-direction: column; gap: 8px; }
-.slot { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: center; background: rgba(244,247,241,.05); border-radius: 12px; padding: 6px; }
-.slot .sname { font-size: 13px; color: var(--paper); }
-.slot .sname small { display: block; color: var(--muted); font-size: 11px; }
-.slot .opts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.thumb { width: 52px; height: 52px; border-radius: 10px; border: 2px solid transparent; background: #1b2f25; padding: 0; cursor: pointer; display: grid; place-items: center; color: var(--muted); font-size: 11px; }
-.thumb img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
-.thumb[aria-pressed="true"] { border-color: var(--beak); background: #26432f; }
-.thumb:focus-visible, .swatch:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
-.swatches { display: flex; gap: 5px; flex-wrap: wrap; }
-.slot .opts { flex-direction: column; align-items: stretch; min-width: 0; }
-.thumbs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
-.thumbs .thumb { flex: 0 0 auto; }
-.styles { display: flex; gap: 5px; flex-wrap: wrap; }
-.chip { font: inherit; font-size: 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(244,247,241,.25); background: #1b2f25; color: var(--paper); cursor: pointer; }
-.chip[aria-pressed="true"] { background: var(--beak); color: #1b2f25; border-color: var(--beak); }
-.chip:focus-visible { outline: 3px solid var(--leaf-hi); outline-offset: 2px; }
-.swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(244,247,241,.35); padding: 0; cursor: pointer; }
-.swatch[aria-pressed="true"] { border-color: var(--paper); box-shadow: 0 0 0 2px var(--beak); }
-.ph-tag { font-size: 10px; color: #ffd27a; }
-@media (max-width: 760px) { .creator-box { grid-template-columns: 1fr; } .stage-wrap { aspect-ratio: 1 / 1; max-height: 52vh; } .stage-title h2 { font-size: 22px; } }
-.err { color: #ffb4a8; font-size: 14px; margin: 0 0 8px; }
-@media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
-
-/* Sprint 1: misiones, Diario de Campo, Simon de coquíes y ropa bloqueada */
-#missions { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--muted); }
-#missions .ok { color: var(--leaf-hi); }
-#card { max-height: calc(100vh - 40px); overflow: auto; }
-.diary, .ropa { list-style: none; margin: 6px 0 10px; padding: 0; display: grid; gap: 6px; font-size: 13px; }
-.diary li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; color: var(--muted); }
-.diary li b { display: block; color: var(--paper); }
-.diary li small, .ropa small { color: var(--muted); }
-.diary li.found b { color: var(--leaf-hi); }
-.ropa li.found { color: var(--leaf-hi); }
-.ico { width: 18px; height: 18px; margin-top: 2px; border: 2px dashed rgba(244,247,241,.35); border-radius: 50%; }
-.ico.fauna { border: 0; background: var(--leaf); border-radius: 50% 50% 50% 0; }
-.ico.cultura { border: 0; background: var(--beak); border-radius: 3px; transform: rotate(45deg) scale(.8); }
-.sdots { display: flex; gap: 10px; align-items: flex-end; min-height: 52px; margin: 4px 0 12px; }
-.sdot { width: 30px; height: 30px; border-radius: 50%; border: 2px dashed rgba(244,247,241,.4); display: grid; place-items: center; font-size: 11px; font-family: var(--display); }
-.sdot.co, .sdot.sing-co { width: 40px; height: 40px; background: var(--leaf); border: 0; }
-.sdot.qui, .sdot.sing-qui { width: 24px; height: 24px; background: var(--beak); border: 0; color: #2b1a05; transform: translateY(-20px); }
-.sdot.sing { box-shadow: 0 0 0 4px rgba(255, 216, 74, .55); }
-.thumb.locked, .chip.locked, .swatch.locked { opacity: .4; filter: grayscale(1); cursor: not-allowed; position: relative; }
-.thumb .lock { position: absolute; bottom: 2px; left: 2px; right: 2px; font-size: 9px; background: rgba(16,36,28,.85); color: #ffd27a; border-radius: 4px; }
-.thumb { position: relative; }
-
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-</style>
+<link rel="stylesheet" href="src/ui/tokens.css">
+<link rel="stylesheet" href="src/ui/ui.css">
 
 <canvas id="game" aria-label="Mundo de Amazona Verse"></canvas>
+
+<!-- Pantalla de título: <dialog open> que se cierra con el formulario (sin JS). -->
+<dialog id="title" open aria-labelledby="title-logo">
+  <div class="title-sky" aria-hidden="true">
+    <span class="stars"></span><span class="stars s2"></span>
+    <span class="sun"></span>
+    <span class="cloud" style="--y:9%;--w:170px;--t:70s;--d:-20s"></span>
+    <span class="cloud" style="--y:20%;--w:300px;--t:110s;--d:-70s"></span>
+    <span class="cloud" style="--y:33%;--w:220px;--t:90s;--d:-40s"></span>
+    <svg class="island i1" viewBox="0 0 200 170"><path d="M94 74h12v70h-12z" fill="#9fdcff" opacity=".7"/><path d="M22 62q78-26 156 0l-34 46-44 52-42-52z" fill="#6c5a9a"/><path d="M50 92l50 60 40-48" fill="none" stroke="#4d3f78" stroke-width="6" stroke-linecap="round"/><path d="M14 62q86-34 172 0-86 22-172 0z" fill="#52b06f"/><path d="M60 50c2-16 6-28 14-36l5 2c-7 9-11 20-12 34zM74 15c10-8 24-8 34 2-12-2-22 0-34-2zm0 0c-10-6-24-4-32 6 12-4 22-4 32-6zm0 0c4-10 14-16 26-14-10 4-18 8-26 14z" fill="#2c6b45"/></svg>
+    <svg class="island i2" viewBox="0 0 200 170"><path d="M22 62q78-26 156 0l-34 46-44 52-42-52z" fill="#6c5a9a"/><path d="M14 62q86-34 172 0-86 22-172 0z" fill="#52b06f"/></svg>
+    <svg class="hills" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice">
+      <path style="fill:var(--jungle-1)" opacity=".75" d="M0 210c150-60 300-30 420-50s280-40 430 10 250-30 350 10v220H0z"/>
+      <g transform="translate(640 228) scale(.55)"><g class="palm p2" style="fill:var(--jungle-1)"><path d="M-6 0c2-50 10-100 24-150l8 2C14-100 8-50 6 0z"/><path d="M22-150c38-25 78-20 108 10-35-15-70-10-108-10zm0 0c-32-30-72-25-102 5 35-15 70-10 102-5zm0 0c18-40 48-55 78-50-30 10-55 25-78 50zm0 0c-17-45-47-60-72-55 25 13 50 30 72 55zm0 0c28 0 58 30 68 65-20-30-40-50-68-65zm0 0c-27 5-57 35-67 70 20-32 42-55 67-70z"/></g></g>
+      <path style="fill:var(--jungle-2)" d="M0 280c120-40 260-20 380-40s260-20 380 20 280-30 440 0v140H0z"/>
+      <g transform="translate(150 300) scale(.9)"><g class="palm" style="fill:var(--jungle-2)"><path d="M-6 0c2-50 10-100 24-150l8 2C14-100 8-50 6 0z"/><path d="M22-150c38-25 78-20 108 10-35-15-70-10-108-10zm0 0c-32-30-72-25-102 5 35-15 70-10 102-5zm0 0c18-40 48-55 78-50-30 10-55 25-78 50zm0 0c-17-45-47-60-72-55 25 13 50 30 72 55zm0 0c28 0 58 30 68 65-20-30-40-50-68-65zm0 0c-27 5-57 35-67 70 20-32 42-55 67-70z"/></g></g>
+      <path style="fill:var(--jungle-3)" d="M0 340c160-30 300-10 460-20s300-20 440 10 200-20 300-10v80H0z"/>
+      <g transform="translate(1030 352) scale(1.15)"><g class="palm p2" style="fill:var(--jungle-3)"><path d="M-6 0c2-50 10-100 24-150l8 2C14-100 8-50 6 0z"/><path d="M22-150c38-25 78-20 108 10-35-15-70-10-108-10zm0 0c-32-30-72-25-102 5 35-15 70-10 102-5zm0 0c18-40 48-55 78-50-30 10-55 25-78 50zm0 0c-17-45-47-60-72-55 25 13 50 30 72 55zm0 0c28 0 58 30 68 65-20-30-40-50-68-65zm0 0c-27 5-57 35-67 70 20-32 42-55 67-70z"/></g></g>
+      <g transform="translate(330 360) scale(.7)"><g class="palm" style="fill:var(--jungle-3)"><path d="M-6 0c2-50 10-100 24-150l8 2C14-100 8-50 6 0z"/><path d="M22-150c38-25 78-20 108 10-35-15-70-10-108-10zm0 0c-32-30-72-25-102 5 35-15 70-10 102-5zm0 0c18-40 48-55 78-50-30 10-55 25-78 50zm0 0c-17-45-47-60-72-55 25 13 50 30 72 55zm0 0c28 0 58 30 68 65-20-30-40-50-68-65zm0 0c-27 5-57 35-67 70 20-32 42-55 67-70z"/></g></g>
+    </svg>
+    <span class="floater" style="--x:8%;--t:15s;--d:-3s"></span>
+    <span class="floater" style="--x:22%;--t:19s;--d:-11s;--s:16px;--c:var(--gold)"></span>
+    <span class="floater" style="--x:41%;--t:17s;--d:-7s;--s:18px"></span>
+    <span class="floater" style="--x:63%;--t:21s;--d:-15s;--s:26px;--c:var(--crest)"></span>
+    <span class="floater" style="--x:79%;--t:16s;--d:-1s;--s:18px;--c:var(--gold)"></span>
+    <span class="floater" style="--x:92%;--t:20s;--d:-9s"></span>
+    <span class="firefly" style="--x:12%;--y:72%;--t:6s"></span>
+    <span class="firefly" style="--x:30%;--y:82%;--t:8s;--d:-3s;--dx:-30px"></span>
+    <span class="firefly" style="--x:55%;--y:76%;--t:7s;--d:-1s;--dy:-50px"></span>
+    <span class="firefly" style="--x:72%;--y:86%;--t:9s;--d:-5s;--dx:50px"></span>
+    <span class="firefly" style="--x:88%;--y:70%;--t:6.5s;--d:-2s;--dx:-40px"></span>
+  </div>
+  <div class="title-main">
+    <h1 class="logo" id="title-logo">
+      <svg viewBox="0 0 640 260" role="img" aria-label="Amazona Verse">
+        <defs>
+          <linearGradient id="lg-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8cf"/><stop offset=".45" stop-color="#ffcb3d"/><stop offset="1" stop-color="#ee7a12"/></linearGradient>
+          <linearGradient id="lg-shine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <linearGradient id="lg-leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a6ea72"/><stop offset="1" stop-color="#23824a"/></linearGradient>
+          <linearGradient id="lg-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0604f"/><stop offset="1" stop-color="#b52f2a"/></linearGradient>
+          <clipPath id="clip-word"><text x="320" y="160" text-anchor="middle" font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="700" font-size="128" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text></clipPath>
+        </defs>
+        <g class="logo-leaves">
+          <path d="M70 120C40 80 50 30 96 6c6 44-4 84-26 114z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M70 120C78 80 84 44 96 6" fill="none" stroke="#1d5e33" stroke-width="4" stroke-linecap="round"/>
+          <path d="M84 126C58 104 30 98 4 108c26 26 56 30 80 18z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M568 112c34-34 34-82-4-112-14 40-12 80 4 112z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M568 112C566 74 566 38 564 0" fill="none" stroke="#1d5e33" stroke-width="4" stroke-linecap="round"/>
+          <path d="M556 124c28-24 58-28 82-14-28 24-58 26-82 14z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+        </g>
+        <g font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="700" font-size="128" text-anchor="middle">
+          <text x="320" y="168" fill="#2b1405" stroke="#2b1405" stroke-width="26" stroke-linejoin="round" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+          <text x="320" y="160" fill="#4a2408" stroke="#4a2408" stroke-width="18" stroke-linejoin="round" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+          <text x="320" y="160" fill="url(#lg-gold)" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+        </g>
+        <g clip-path="url(#clip-word)"><polygon class="logo-shine" points="0,40 60,40 20,180 -40,180" fill="url(#lg-shine)"/></g>
+        <path d="M206 196h-48l16 22-16 22h62z" fill="#8e2420"/>
+        <path d="M434 196h48l-16 22 16 22h-62z" fill="#8e2420"/>
+        <path d="M200 180q120-18 240 0v50q-120-18-240 0z" fill="url(#lg-ribbon)" stroke="#5e1512" stroke-width="5" stroke-linejoin="round"/>
+        <circle cx="158" cy="240" r="8" fill="#ffd27a" stroke="#8a5a2b" stroke-width="3"/>
+        <circle cx="482" cy="240" r="8" fill="#ffd27a" stroke="#8a5a2b" stroke-width="3"/>
+        <text x="320" y="219" text-anchor="middle" font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="700" font-size="38" letter-spacing="12" fill="#fff6e0" stroke="#5e1512" stroke-width="6" stroke-linejoin="round" paint-order="stroke">VERSE</text>
+      </svg>
+    </h1>
+    <p class="title-sub">Capítulo 1 · <b>El día que el cielo se rompió</b></p>
+    <form method="dialog" class="title-actions">
+      <button class="btn xl" type="submit" data-icon="play" autofocus>Jugar</button>
+    </form>
+    <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
+  </div>
+  <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
+  <p class="title-foot">Prototipo · Villa Raíz, Puerto Rico</p>
+</dialog>
 
 <div id="top" class="hud">
   <section id="quest" class="panel" aria-live="polite">
     <div class="chapter">Capítulo 1 · Villa Raíz</div>
     <h1>El día que el cielo se rompió</h1>
-    <ol id="steps"></ol>
+    <ol id="steps" aria-label="Pasos del capítulo"></ol>
     <div id="missions" aria-label="Misiones y Diario"></div>
     <div id="indicators"></div>
   </section>
   <section id="inv" class="panel" aria-label="Inventario">
-    <span><b id="i-madera">0</b><small>Madera</small></span>
-    <span><b id="i-piedra">0</b><small>Piedra</small></span>
-    <span><b id="i-componente">0</b><small>Piezas</small></span>
+    <span class="res res-wood"><i class="res-ic" data-icon="wood" aria-hidden="true"></i><span class="res-txt"><b id="i-madera">0</b><small>Madera</small></span></span>
+    <span class="res res-stone"><i class="res-ic" data-icon="stone" aria-hidden="true"></i><span class="res-txt"><b id="i-piedra">0</b><small>Piedra</small></span></span>
+    <span class="res res-metal"><i class="res-ic" data-icon="gear" aria-hidden="true"></i><span class="res-txt"><b id="i-componente">0</b><small>Piezas</small></span></span>
   </section>
 </div>
 
-<div id="sys" class="hud">
-  <button class="btn ghost" id="b-diary" type="button">Diario 0/12</button>
-  <button class="btn ghost" id="b-emotes" type="button">Gestos</button>
-  <button class="btn ghost" id="b-char" type="button">Mi personaje</button>
-  <button class="btn ghost" id="b-save" type="button">Guardar</button>
-  <button class="btn ghost" id="b-load" type="button">Cargar</button>
-  <button class="btn ghost" id="b-reset" type="button">Reiniciar</button>
-  <button class="btn ghost" id="b-sound" type="button" aria-pressed="true">Sonido: sí</button>
-</div>
+<nav id="sys" class="hud" aria-label="Menú del juego">
+  <button class="btn ghost hud-btn" id="b-diary" type="button" data-icon="book">Diario 0/12</button>
+  <button class="btn ghost hud-btn" id="b-emotes" type="button" data-icon="smile">Gestos</button>
+  <button class="btn ghost hud-btn" id="b-menu" type="button" data-icon="pause" popovertarget="pause" aria-label="Pausa y opciones"></button>
+  <!-- Menú de pausa: popover nativo (abre/cierra sin JS; Esc y clic fuera lo cierran). -->
+  <div id="pause" popover role="dialog" aria-labelledby="pause-title">
+    <div class="pause-head">
+      <h2 id="pause-title">Pausa</h2>
+      <button class="btn ghost icon" type="button" data-icon="close" popovertarget="pause" popovertargetaction="hide" aria-label="Cerrar el menú"></button>
+    </div>
+    <button class="btn xl pause-resume" type="button" data-icon="play" popovertarget="pause" popovertargetaction="hide" autofocus>Seguir jugando</button>
+    <div class="pause-grid">
+      <button class="btn tile" id="b-char" type="button" data-icon="shirt" popovertarget="pause" popovertargetaction="hide">Mi personaje</button>
+      <button class="btn tile" id="b-save" type="button" data-icon="save" popovertarget="pause" popovertargetaction="hide">Guardar</button>
+      <button class="btn tile" id="b-load" type="button" data-icon="load" popovertarget="pause" popovertargetaction="hide">Cargar</button>
+      <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
+      <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Reiniciar</button>
+    </div>
+    <section class="pause-help" aria-labelledby="help-title">
+      <h3 id="help-title">Controles</h3>
+      <dl class="keys help-keys">
+        <div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Moverte (o flechas)</dd></div>
+        <div><dt><kbd>Shift</kbd></dt><dd>Correr</dd></div>
+        <div><dt><kbd>Espacio</kbd></dt><dd>Saltar, doble salto y planear</dd></div>
+        <div><dt><kbd>V</kbd></dt><dd>Volar (o 3.er salto en el aire)</dd></div>
+        <div><dt><kbd>C</kbd></dt><dd>Bucear o bajar en vuelo</dd></div>
+        <div><dt><kbd>F</kbd></dt><dd>Impulso</dd></div>
+        <div><dt><kbd>E</kbd></dt><dd>Acción: hablar, examinar, usar</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Gestos</dd></div>
+        <div><dt><kbd>Q</kbd><kbd>R</kbd></dt><dd>Girar la cámara</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Cerrar ventanas</dd></div>
+      </dl>
+      <dl class="keys help-touch">
+        <div><dt>Joystick</dt><dd>Moverte</dd></div>
+        <div><dt>Saltar</dt><dd>Otra vez en el aire para planear; la 3.ª vez vuelas</dd></div>
+        <div><dt>Acción</dt><dd>Hablar, examinar y usar</dd></div>
+        <div><dt>Arrastrar</dt><dd>Girar la cámara</dd></div>
+      </dl>
+      <p class="note">Los materiales se recogen al pasar por encima.</p>
+    </section>
+    <div id="confirm-reset" popover role="alertdialog" aria-labelledby="cr-title" aria-describedby="cr-text">
+      <h2 id="cr-title">¿Empezar de nuevo?</h2>
+      <p id="cr-text">Se borra la partida guardada y vuelves al principio del capítulo.</p>
+      <div class="row center">
+        <button class="btn ghost" type="button" popovertarget="confirm-reset" popovertargetaction="hide" autofocus>No, seguir</button>
+        <button class="btn danger" id="b-reset" type="button" data-icon="reset" popovertarget="pause" popovertargetaction="hide">Sí, empezar</button>
+      </div>
+    </div>
+  </div>
+</nav>
 
-<div id="toast" class="hud panel" hidden></div>
+<div id="toast" class="hud panel" hidden role="status" aria-live="polite"></div>
 <div id="prompt" class="hud" hidden></div>
 
-<div id="card" class="hud panel" hidden role="dialog" aria-modal="false"></div>
+<div id="card" class="hud panel" hidden role="dialog" aria-modal="false" aria-label="Tarjeta"></div>
 
-<div id="dialog" class="hud panel" hidden>
-  <img id="d-img" alt="">
+<div id="dialog" class="hud panel" hidden role="region" aria-label="Conversación">
+  <div class="d-portrait"><img id="d-img" alt=""></div>
   <div class="txt">
     <div class="who" id="d-who"></div>
-    <p id="d-text"></p>
-    <button class="btn" id="d-next" type="button">Seguir</button>
+    <div class="d-say"><p id="d-text" aria-live="polite"></p></div>
+    <button class="btn" id="d-next" type="button" data-icon="play">Seguir</button>
   </div>
 </div>
 
 <div id="stick" class="hud" aria-hidden="true"><div id="knob"></div></div>
 <div id="emotes" class="hud" hidden></div>
 <div id="acts" class="hud">
-  <button class="btn round" id="b-dive" type="button" hidden>Bucear</button>
-  <button class="btn round" id="b-fly" type="button">Volar</button>
-  <button class="btn round" id="b-dash" type="button">Impulso</button>
-  <button class="btn round" id="b-jump" type="button">Saltar</button>
-  <button class="btn round big" id="b-act" type="button">Acción</button>
+  <button class="btn round" id="b-dive" type="button" data-icon="dive" hidden>Bucear</button>
+  <button class="btn round" id="b-fly" type="button" data-icon="wing">Volar</button>
+  <button class="btn round" id="b-dash" type="button" data-icon="dash">Impulso</button>
+  <button class="btn round" id="b-jump" type="button" data-icon="jump">Saltar</button>
+  <button class="btn round big" id="b-act" type="button" data-icon="sparkle">Acción</button>
 </div>
 
-<div id="end" class="hud" hidden>
+<div id="end" class="hud" hidden role="dialog" aria-labelledby="end-title">
   <div class="panel">
-    <h2>Capítulo 1 completado</h2>
+    <h2 id="end-title">Capítulo 1 completado</h2>
     <p id="end-text"></p>
     <div class="row center">
-      <button class="btn" id="b-comic" type="button">Crear mi cómic</button>
-      <button class="btn ghost" id="b-again" type="button">Jugar de nuevo</button>
+      <button class="btn xl" id="b-comic" type="button" data-icon="book">Crear mi cómic</button>
+      <button class="btn ghost" id="b-again" type="button" data-icon="reset">Jugar de nuevo</button>
     </div>
   </div>
 </div>
@@ -226,7 +193,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
   <div class="comic-wrap panel">
     <div class="comic-head">
       <h2>Mi cómic</h2>
-      <button class="btn ghost" id="c-close" type="button">Cerrar</button>
+      <button class="btn ghost" id="c-close" type="button" data-icon="close">Cerrar</button>
     </div>
     <div class="comic-body">
       <canvas id="comic-canvas" width="1080" height="1520" aria-label="Vista previa del cómic"></canvas>
@@ -248,14 +215,14 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
         <span class="lbl">Viñetas (puedes editar el texto y cambiar el orden)</span>
         <ol id="c-panels"></ol>
         <div class="row">
-          <button class="btn ghost" id="c-refresh" type="button">Actualizar vista</button>
-          <button class="btn" id="c-png" type="button">Exportar PNG</button>
-          <button class="btn" id="c-pdf" type="button">Exportar PDF</button>
+          <button class="btn ghost" id="c-refresh" type="button" data-icon="reset">Actualizar vista</button>
+          <button class="btn" id="c-png" type="button" data-icon="save">Exportar PNG</button>
+          <button class="btn" id="c-pdf" type="button" data-icon="save">Exportar PDF</button>
         </div>
         <div id="c-export" hidden>
           <p class="note" id="c-export-note"></p>
           <img id="c-export-img" alt="Tu cómic exportado">
-          <a id="c-download" class="btn ghost" download="amazona-verse-mi-comic.png" href="#">Descargar PNG</a>
+          <a id="c-download" class="btn ghost" download="amazona-verse-mi-comic.png" href="#" data-icon="save">Descargar PNG</a>
         </div>
       </div>
     </div>
@@ -283,13 +250,14 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
       <div id="p-slots"></div>
       <p class="err" id="p-error" hidden></p>
       <div class="row center">
-        <button class="btn" id="p-save" type="button">Empezar la aventura</button>
+        <button class="btn" id="p-save" type="button" data-icon="play">Empezar la aventura</button>
         <button class="btn ghost" id="p-cancel" type="button">Cancelar</button>
       </div>
     </div>
   </div>
 </div>
 
+<div id="keyhint" class="hud" aria-hidden="true"><span><kbd>WASD</kbd> Moverte</span><span><kbd>Espacio</kbd> Saltar y volar</span><span><kbd>E</kbd> Acción</span></div>
 <div id="tag" class="hud">Prototipo · Vittata 3D con el modelo original · Luma y el Guardián aún son renders</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
