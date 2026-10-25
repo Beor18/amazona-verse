@@ -22,6 +22,7 @@ AVE.module('camara', function (G) {
     lazyDelay: 1.2,                // s sin tocar la cámara antes de seguir por detrás
     lazy: 0.55, lazyFly: 1.1,      // fuerza del seguimiento perezoso (rad/s por rad de diferencia, a velocidad de carrera)
     groundClear: 0.9,              // separación mínima sobre el terreno
+    copaMin: 2.4, copaDentro: 2.8, // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m)
   }, G.pack.jugador && G.pack.jugador.camaraAjuste);
   // combo/comboT: racha de capturas (la usan objetos y diario para subir la nota del arpegio)
   const juice = { shake: 0, amp: 0, hitStop: 0, combo: 0, comboT: 0 };
@@ -42,9 +43,47 @@ AVE.module('camara', function (G) {
     else if (y > anchorY + CAM.anchorBand) want = y - CAM.anchorBand;
     anchorY += (want - anchorY) * rate(k, dt);
   }
+  // Copas de árbol entre la cámara y Vittata (QA-27): esferas de copa de los árboles cercanos (se rehacen cada 0,5 s)
+  const copas = []; let copasT = -1;
+  const cabeza = new THREE.Vector3(), dirCam = new THREE.Vector3();
+  function copasCerca() {
+    const V = G.vegetacion, now = performance.now();
+    if (!V || !V.instancias || !V.info || now - copasT < 500) return;
+    copasT = now; copas.length = 0;
+    for (const m in V.instancias) {
+      const inf = V.info[m], P = V.instancias[m]; if (!inf || !inf.alto || inf.alto < 3 || !(inf.tronco > 0.08)) continue;
+      for (let i = 0; i < P.n; i++) {
+        const x = P.pos[i * 4], z = P.pos[i * 4 + 2], sc = P.pos[i * 4 + 3];
+        if (Math.abs(x - S.pos.x) > 25 || Math.abs(z - S.pos.z) > 25) continue;
+        copas.push(x, P.pos[i * 4 + 1] + inf.alto * sc * 0.66, z, Math.min(7, inf.ancho * 0.42) * sc * 0.9);
+      }
+    }
+  }
+  // Acerca la cámara si la línea cabeza→cámara cruza una copa; si Vittata está dentro de una (posada en una rama),
+  // la cámara baja bajo la copa, cerca de ella, mirando hacia arriba
+  function evitarCopas() {
+    // solo posada o en alto (rama, techo, vuelo bajo copas): a ras de suelo la cámara no salta al pasar junto a los árboles
+    const M = G.fisica.MOVE; if (!M.posado && S.pos.y - G.terreno.height(S.pos.x, S.pos.z) < 1.5) return;
+    copasCerca(); if (!copas.length) return;
+    cabeza.set(S.pos.x, S.pos.y + 1.2, S.pos.z); dirCam.subVectors(camPos, cabeza);
+    const L2 = dirCam.lengthSq(); if (L2 < 1e-6) return;
+    let tMin = 1, dentro = false;
+    for (let i = 0; i < copas.length; i += 4) {
+      const ox = cabeza.x - copas[i], oy = cabeza.y - copas[i + 1], oz = cabeza.z - copas[i + 2], r = copas[i + 3];
+      const c = ox * ox + oy * oy + oz * oz - r * r;
+      if (c < 0) { dentro = true; continue; }
+      const b = ox * dirCam.x + oy * dirCam.y + oz * dirCam.z; if (b >= 0) continue;
+      const disc = b * b - L2 * c; if (disc < 0) continue;
+      const t = (-b - Math.sqrt(disc)) / L2; if (t > 0 && t < tMin) tMin = t;
+    }
+    const L = Math.sqrt(L2);
+    if (dentro) { const k = Math.min(1, CAM.copaDentro / L); camPos.set(cabeza.x + dirCam.x * k, S.pos.y - 0.3, cabeza.z + dirCam.z * k); }
+    else if (tMin < 1) { const k = Math.max(CAM.copaMin / L, tMin - 0.4 / L); camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
+  }
   function target() {
     const fly = G.fisica.MOVE.flying, ay = anchorY == null ? S.pos.y : anchorY;
     camPos.set(S.pos.x + Math.sin(yaw) * dist(), ay + (fly ? CAM.heightFly : CAM.height), S.pos.z + Math.cos(yaw) * dist());
+    evitarCopas();
     // En laderas y barrancos la cámara no se mete bajo el terreno
     const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
     if (camPos.y < gy) camPos.y = gy;
