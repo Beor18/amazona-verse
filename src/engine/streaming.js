@@ -123,6 +123,9 @@ AVE.module('streaming', function (G) {
   const matLejos = new THREE.MeshLambertMaterial({ vertexColors: true, name: 'AV_Lejos' });
 
   // ---------- Geometría: fundir partes, simplificar para el LOD lejano ----------
+  // Factor de un atributo entero normalizado (COLOR_0 Uint16 del _lejos, cuantización): en r128 getX no desnormaliza (QA-25)
+  const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
+    : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
   function fundir(geos, conColor) {
     let nv = 0, ni = 0;
     for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
@@ -131,12 +134,12 @@ AVE.module('streaming', function (G) {
     const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
     let vo = 0, io = 0;
     for (const g of geos) {
-      const a = g.attributes, n = a.position.count;
+      const a = g.attributes, n = a.position.count, kp = kNorm(a.position), kn = kNorm(a.normal), ku = kNorm(a.uv), kc = kNorm(a.color);
       for (let i = 0; i < n; i++) {
-        pos[(vo + i) * 3] = a.position.getX(i); pos[(vo + i) * 3 + 1] = a.position.getY(i); pos[(vo + i) * 3 + 2] = a.position.getZ(i);
-        if (a.normal) { nor[(vo + i) * 3] = a.normal.getX(i); nor[(vo + i) * 3 + 1] = a.normal.getY(i); nor[(vo + i) * 3 + 2] = a.normal.getZ(i); }
-        if (uv) { uv[(vo + i) * 2] = a.uv.getX(i); uv[(vo + i) * 2 + 1] = a.uv.getY(i); }
-        if (col) { const c = a.color; col[(vo + i) * 3] = c ? c.getX(i) : 1; col[(vo + i) * 3 + 1] = c ? c.getY(i) : 1; col[(vo + i) * 3 + 2] = c ? c.getZ(i) : 1; }
+        pos[(vo + i) * 3] = a.position.getX(i) * kp; pos[(vo + i) * 3 + 1] = a.position.getY(i) * kp; pos[(vo + i) * 3 + 2] = a.position.getZ(i) * kp;
+        if (a.normal) { nor[(vo + i) * 3] = a.normal.getX(i) * kn; nor[(vo + i) * 3 + 1] = a.normal.getY(i) * kn; nor[(vo + i) * 3 + 2] = a.normal.getZ(i) * kn; }
+        if (uv) { uv[(vo + i) * 2] = a.uv.getX(i) * ku; uv[(vo + i) * 2 + 1] = a.uv.getY(i) * ku; }
+        if (col) { const c = a.color; col[(vo + i) * 3] = c ? c.getX(i) * kc : 1; col[(vo + i) * 3 + 1] = c ? c.getY(i) * kc : 1; col[(vo + i) * 3 + 2] = c ? c.getZ(i) * kc : 1; }
       }
       if (g.index) for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
       else for (let i = 0; i < n; i++) idx[io + i] = i + vo;
