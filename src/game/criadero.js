@@ -783,6 +783,8 @@ AVE.module('criadero', function (G) {
     }
     return { species: 'vittata', accessories: acc };
   }
+  // Piel de especie de la cría (huevos.js: 'especie' opcional por cápsula). Sin especie o sin piel: Vittata con su tinte
+  const pielCria = (ch, capId) => { const h = huevoDef(capId); if (window.AVE.pieles) window.AVE.pieles.aplicar(ch, (h && h.especie) || null); };
   const tieneNuevo = (capId, etapa, id) => { const h = huevoDef(capId); const o = etapa === 'adulto' ? ['bebe', 'juvenil', 'adulto'] : etapa === 'juvenil' ? ['bebe', 'juvenil'] : ['bebe']; return o.some(e => (h.traits[e] || []).some(p => p.nuevo === id)); };
   function fijarEtapa(etapa, animar) {
     const k = scene3d.chick; if (!k) return;
@@ -795,7 +797,7 @@ AVE.module('criadero', function (G) {
     if (animar && !REDUCED) k.grow = { t: 0, dur: 1.8, from, to: target, fromS, toS: P.escala, fromFl, toFl, plumon: P.plumon };
     else { k.f = target; k.escala = P.escala; k.fl = toFl; aplicarPlumon(k, toFl, P.plumon); k.yOff = medirPies(k); }
     // Cascarón-gorro (bebé), anillo científico (adulto) y look
-    k.ch.applyLook(lookDe(k.capId, etapa));
+    k.ch.applyLook(lookDe(k.capId, etapa)); pielCria(k.ch, k.capId);
     extras(k, etapa);
   }
   // Escala por hueso: se deshace antes de ch.update y se reaplica después
@@ -1158,7 +1160,7 @@ AVE.module('criadero', function (G) {
     const k = { ch, holder: ch.root, base: 1, capId: info.id, f: {}, fNow: {}, fluff: crearPlumon(ch), extras: {}, etapa: info.etapa, yOff: 0 };
     for (const [b, v] of Object.entries(P.huesos || {})) if (ch.bones[b]) k.f[b] = v;
     aplicarPlumon(k, P.plumon || { capas: 0, largo: 0 }, P.plumon);
-    ch.applyLook(info.look);
+    ch.applyLook(info.look); pielCria(ch, info.id);
     k.yOff = medirPies(k);              // deja las escalas puestas (fNow)
     ch.root.updateMatrixWorld(true);
     extras(k, info.etapa);

@@ -27,6 +27,7 @@
     const aDemanda = (src, fabrica) => { let p = null; return () => p || (p = AVE.assets.script(src).then(() => window[fabrica](G), e => { p = null; throw e; })); };
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
+    if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js

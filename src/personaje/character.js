@@ -939,10 +939,12 @@
         const base = SPECIES.vittata, on = this.tint.tintOn.value;
         const C = window.AVColor; C.set(this.tint.patchColor.value, s.patch); C.set(this.tint.ringColor.value, s.ring); C.set(this.tint.beakColor.value, s.beak || '#f2a23a');
         on.set(s.patch !== base.patch ? 1 : 0, s.ring !== base.ring ? 1 : 0, s.beak ? 1 : 0);
-        return;
+      } else {
+        const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) window.AVColor.set(m.color, hex); else if (m.userData.base) m.color.copy(m.userData.base); };
+        set('Patch', s.patch); set('Ring', s.ring); set('WingTip', s.wingTip); set('Beak', s.beak || null);
       }
-      const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) window.AVColor.set(m.color, hex); else if (m.userData.base) m.color.copy(m.userData.base); };
-      set('Patch', s.patch); set('Ring', s.ring); set('WingTip', s.wingTip); set('Beak', s.beak || null);
+      // Piel real de la especie si la tiene (src/personaje/pieles.js, carga perezosa); si no, queda el tinte de arriba
+      if (window.AVE && window.AVE.pieles) window.AVE.pieles.alCambiarEspecie(this, id);
     }
     // Engancha las mallas con piel de una pieza de Blender al esqueleto de este personaje (huesos por nombre)
     _mountRopa(def, want) {
@@ -1074,6 +1076,7 @@
     const nl = normalizeLook(look);
     await preloadRopa(Object.values(nl.accessories).map(a => { const d = ACCESSORIES.find(x => x.id === a.id); return d && glbName(d, a.style); }).filter(Boolean));
     ch.applyLook(nl);
+    if (window.AVE && window.AVE.pieles) await window.AVE.pieles.listo(ch); // la piel de la especie, antes de dibujar
     if (window.AVColor) window.AVColor.setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
     // Pose estable del retrato: un fotograma fijo de Welcome (o Idle), más los ajustes de la ropa (dedos, alas, aletas)
     for (const [bone, ax, v] of ch.ofs || []) bone.rotation[ax] -= v;
