@@ -1,10 +1,10 @@
 /* Amazona Verse · capa de presentación de la interfaz (sin lógica de juego)
    1. Máquina de escribir en el diálogo. #d-text conserva SIEMPRE el texto completo (lectores de pantalla y
       AV.selfTest lo leen); una copia aria-hidden (#d-type) lo revela letra a letra con la misma maquetación.
-      Mientras escribe, Seguir / Acción / E / Enter completan la frase en vez de saltarla.
+      Mientras escribe, un toque en la caja del diálogo (o Seguir / Acción / E / Enter) completa la frase en vez de saltarla.
    2. Esc o P abren el menú de pausa (#pause) cuando no hay otra ventana abierta.
    3. "Rebote" de los contadores del inventario y del Diario cuando cambian.
-   Se enlaza con <script src="src/ui/ui.js" defer></script> (etiqueta a cargo del arquitecto; ver docs/UI_SYSTEM.md). */
+   Enlazado en index.html con <script src="src/ui/ui.js" defer></script> (ver docs/UI_SYSTEM.md). */
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -42,7 +42,7 @@
     if (text.textContent) start();
     const typing = () => raf !== 0 && !dialog.hidden;
     document.addEventListener('click', e => {
-      if (typing() && e.target.closest && e.target.closest('#d-next, #b-act')) { e.stopPropagation(); e.preventDefault(); finish(); }
+      if (typing() && e.target.closest && e.target.closest('#dialog, #b-act')) { e.stopPropagation(); e.preventDefault(); finish(); }
     }, true);
     addEventListener('keydown', e => {
       if (!typing() || e.repeat) return;

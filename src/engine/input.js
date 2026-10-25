@@ -1,18 +1,21 @@
 /* AVE · entrada
    Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
    Solo traduce entrada a llamadas: G.fisica (saltar, impulso, volar), G.actores (gestos), G.interaccion (acción).
-   Esc emite el gancho 'escape' (un pack cancela ahí sus modos, p. ej. construir) y cierra la tarjeta abierta. */
+   Esc emite el gancho 'escape' (un pack cancela ahí sus modos, p. ej. construir) y cierra la tarjeta abierta.
+   Con el juego en pausa (G.pausa) se ignoran las acciones: saltar, impulso, volar, gestos, Acción y los botones táctiles. */
 AVE.module('input', function (G) {
   'use strict';
   const $ = G.util.$;
   const keys = new Set();
   const stick = { x: 0, y: 0 };
   let jumpHeld = false, diveHeld = false;
+  const paused = () => !!(G.pausa && G.pausa.activa());
 
   addEventListener('keydown', e => {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
     if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
     keys.add(e.key.toLowerCase());
+    if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
     if (e.key === ' ') { jumpHeld = true; if (!e.repeat) G.fisica.tryJump(); e.preventDefault(); }
     if ((e.key === 'f' || e.key === 'F') && !e.repeat) G.fisica.tryDash();
     if ((e.key === 'v' || e.key === 'V') && !e.repeat) G.fisica.toggleFly();
@@ -37,13 +40,13 @@ AVE.module('input', function (G) {
     knob.style.transform = `translate(${dx * 35}px, ${dy * 35}px)`;
   }
   const jumpBtn = $('b-jump');
-  jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); jumpHeld = true; G.fisica.tryJump(); });
+  jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (paused()) return; jumpHeld = true; G.fisica.tryJump(); });
   jumpBtn.addEventListener('pointerup', () => { jumpHeld = false; });
   jumpBtn.addEventListener('pointerleave', () => { jumpHeld = false; });
-  $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); G.fisica.tryDash(); });
-  $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); G.fisica.toggleFly(); });
+  $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.tryDash(); });
+  $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
   const actBtn = $('b-act');
-  actBtn.addEventListener('click', () => G.interaccion.action());
+  actBtn.addEventListener('click', () => { if (!paused()) G.interaccion.action(); });
   // Bucear en táctil: mantener el botón equivale a mantener C
   // (en el agua ocupa el lugar de Volar, así caben los botones en un teléfono)
   const diveBtn = $('b-dive'), flyBtn = $('b-fly');
