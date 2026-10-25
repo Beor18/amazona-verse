@@ -30,7 +30,25 @@ AVE.module('comic', function (G) {
   const aviso = (t, ms) => { if (!G.quiet) G.ui.toast(t, ms); };
   const vin = () => (S.comic.vinetas && typeof S.comic.vinetas === 'object' ? S.comic.vinetas : (S.comic.vinetas = {}));
 
-  function capture(key) { S.captures[key] = G.renderer.snapshot(480, 360, 0.72); }
+  // Captura del mundo. Si el lienzo no tiene tamaño (ventana 0×0, pestaña minimizada), snapshot() da null: no se guarda
+  // y la captura queda pendiente hasta que el lienzo vuelva a tener tamaño (QA-21)
+  const pendientes = new Set();
+  const lienzoListo = () => { const c = G.renderer.canvas; return !!c && c.width > 0 && c.height > 0; };
+  function capture(key) {
+    let img = null;
+    if (lienzoListo()) { try { img = G.renderer.snapshot(480, 360, 0.72); } catch (e) { img = null; } }
+    if (typeof img === 'string' && /^data:image\/[a-z]+;base64,/.test(img) && img.length > 2000) { S.captures[key] = img; pendientes.delete(key); return true; }
+    pendientes.add(key);
+    return false;
+  }
+  let esperaCaptura = 0;
+  G.on('update', dt => {
+    if (!pendientes.size || (esperaCaptura -= dt) > 0) return;
+    esperaCaptura = 0.5;
+    if (!lienzoListo()) return;
+    for (const k of Array.from(pendientes)) if (S.captures[k] || capture(k)) pendientes.delete(k);
+    if (!pendientes.size) G.guardado.autosave();
+  }, 79);
 
   // ---------- Viñetas que nacen de eventos reales, con la apariencia del jugador de ese momento ----------
   function lookActual() {
@@ -51,7 +69,7 @@ AVE.module('comic', function (G) {
       for (const v of C.vinetas || []) {
         if (v.needs !== e.key || vin()[v.id]) continue;
         vin()[v.id] = { look: lookActual(), seq: e.seq };
-        if (v.img && v.img !== 'portrait' && !S.captures[v.img]) { try { capture(v.img); } catch (er) { /* sin WebGL: la viñeta usa su fondo */ } }
+        if (v.img && v.img !== 'portrait' && !S.captures[v.img]) capture(v.img); // sin WebGL o sin tamaño: queda pendiente
         nuevas++;
       }
     }
@@ -445,7 +463,11 @@ AVE.module('comic', function (G) {
   $('c-refresh').onclick = refreshComic;
   $('c-png').onclick = () => exportComic('png', true);
   $('c-pdf').onclick = () => exportComic('pdf', true);
-  G.on('apply', () => { vistos = Array.isArray(S.events) ? S.events.length : 0; $('comic').hidden = true; }, 60);
+  G.on('apply', () => {
+    vistos = Array.isArray(S.events) ? S.events.length : 0; $('comic').hidden = true;
+    pendientes.clear();
+    for (const k of Object.keys(S.captures || {})) if (!S.captures[k]) delete S.captures[k]; // partidas con capturas nulas (QA-21)
+  }, 60);
 
   // =====================================================================================================================
   // AV.comicTest(): un evento real del juego genera su viñeta con la apariencia actual del jugador; la página se compone
@@ -478,7 +500,10 @@ AVE.module('comic', function (G) {
       const reg = vin()[def.id], p = comicPanels().find(q => q.id === def.id);
       check('Evento real → viñeta', !!p && G.eventos.had(def.needs) && !!reg, `${def.needs} → ${def.id}`);
       check('La viñeta guarda la apariencia del jugador de ese momento', reg && claveLook(reg.look) === claveLook(lookActual()), reg && reg.look ? reg.look.species : 'sin look');
-      if (def.img !== 'portrait') check('El mundo se capturó para la viñeta', /^data:image\//.test(S.captures[def.img] || ''), def.img);
+      if (def.img !== 'portrait') {
+        if (lienzoListo()) check('El mundo se capturó para la viñeta', /^data:image\//.test(S.captures[def.img] || ''), def.img);
+        else check('Lienzo sin tamaño: la captura no guarda null y queda pendiente', !(def.img in S.captures) && pendientes.has(def.img), 'ventana 0×0');
+      }
       // Componer y exportar a PNG
       S.comic.layout = 'grid';
       const url = await exportComic('png');
