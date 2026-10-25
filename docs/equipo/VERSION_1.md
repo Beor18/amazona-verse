@@ -13,7 +13,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 6 | «Mis récords» (de la casa, locales) y compartir el cómic con una puerta para adultos | en curso | recordsTest |
 | 7 | La ciudad de Kelvin completa y fiel (edificios cercanos de alta fidelidad) | en curso | streamingTest, capturas |
 | 8 | Pieles de las 22 especies (criadero y rivales) | en curso | pielesTest |
-| 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | en curso | casos D2 y D4 |
+| 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | **Hecho** · falta: los Retos no leen el modo relajado; a 320 px no caben joystick y botones (de antes) | accesibilidadTest 36/36 |
 | 10 | Diario: datos validados con fuente; especies y 5 paradas | **Hecho** | eduTest 79/79, DIARIO_VALIDACION.md |
 | 11 | Pruebas estables (contextTest) | en curso | 3 corridas seguidas en verde |
 | 12 | Mejoras de diversión de Fable (las 5 ★ de `DIVERSION_CAP1.md`) | en curso (Fable; Kelvin pidió «terminar lo más posible») | casos de cada mejora |
