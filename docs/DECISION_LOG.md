@@ -122,3 +122,11 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 
 ## 2026-10-24 · Voz del pitch
 - Kelvin decidió: el pitch v1 sale con la voz sintética de la Mac (no grabará la suya). Queda listo el flujo para cambiarla por una voz boricua si más adelante se consigue una.
+
+## 2026-10-24 · Guardado v5 y cómic (Save & Cómic Engineer)
+- 2026-10-24 · La partida (`amazonaverse.save`) lleva un sobre del motor (`formato` 2) sobre la versión del pack (v5). La migración v4 → v5 junta el mapa (pack) con el formato 1 → 2 (motor). El esquema está documentado al inicio de `guardado.js` · Save & Cómic · las migraciones del motor no dependen de los números de versión de cada pack.
+- 2026-10-24 · Criadero y aula conservan su clave y su dueño. La partida guarda una copia (`satelites`) y un `resumen` (idioma; huevos, etapa, nivel y XP) que solo se restaura si la clave propia está corrupta, nunca si se borró a propósito. "Nuevo estudiante" borra la partida y todas sus copias · Save & Cómic + criadero · no se pisan archivos ajenos y el siguiente niño no hereda nada.
+- 2026-10-24 · Escritura atómica: .tmp verificada → .prev → principal. Sin espacio: sin capturas, luego sin .prev, luego memoria. Si el almacén falla (modo privado o throw), la sesión sigue en memoria y se avisa una vez. Una versión futura no se carga: se aparta en .unreadable · Save & Cómic · localStorage no tiene transacciones.
+- 2026-10-24 · Cada viñeta guarda la apariencia del jugador del momento del evento. Cambiarse de ropa después no reescribe la historia · Save & Cómic · el cómic cuenta lo que pasó.
+- 2026-10-24 · El PDF sigue sin librerías (JPEG con DCTDecode, una página): jsPDF (~300 KB) no aporta nada para una sola imagen. La entrega usa la capacidad `downloads`; sin ella, en el visor se copia al portapapeles o la imagen queda a la vista con los botones Abrir y Copiar. `<a download>` solo fuera del visor · Save & Cómic · en el visor el enlace no funciona.
+- 2026-10-24 · `?partida=<id>` aísla la clave de guardado de una pestaña; `AV.saveTest`/`AV.comicTest` usan claves aisladas y dejan G.S y la partida real como estaban · Save & Cómic · varios agentes prueban en el mismo origen.
