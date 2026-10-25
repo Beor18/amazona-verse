@@ -86,3 +86,4 @@ Medido: la semana va por el 43 % de todos los modelos (tope 75 %, quedan 32 punt
 - **Mac**: como mucho 7 agentes pesados a la vez; cada uno compila en su propia carpeta (QA-35).
 - **API** ($40 en total, $20 por día): carriles bien definidos cuando Kelvin pueda pegar la clave en la Mac.
 - **Coordinador**: al cerrar la versión 1, documento de traspaso y una sesión nueva (si la app lo permite, con Fable) para no releer un contexto de 480 000 tokens en cada turno.
+| 25-oct | Pieles de las 22 especies sobre Vittata | agente · Opus | 360 000 tokens, 163 herramientas | 83 min | `tools/blender/pieles_cocer.py`, `assets/textures/pieles/` (1,5 MB, carga perezosa), `especies.js` (`piel`), `src/personaje/pieles.js`, enganches | 18/18, pielesTest 13/13, retosTest 50/50 | 4e0c2f1, 3598338, 521097d: 22 pieles al 0,042 % de distancia; rivales y creador ya las usan |
