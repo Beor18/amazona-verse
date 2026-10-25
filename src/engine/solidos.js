@@ -395,9 +395,159 @@ AVE.module('solidos', function (G) {
     for (const [dx, dz] of pts) { let hay = false; spans(c.x + dx, c.z + dz, () => { hay = true; return false; }); if (hay && (++n >= Math.min(2, pts.length))) return true; }
     return false;
   }
+  // ---------- Vanos de los edificios sin interior (B4) ----------
+  // Los modelos del kit tienen puertas abiertas a un interior vacío: de cerca se ven huecos y Vittata se metía dentro.
+  // streaming.js llama a cerrarVanos(nombre, partes, fundir) al cargar el modelo completo; aquí se buscan los vanos en el
+  // espacio del modelo y se tapa cada uno con un panel (puerta de tablas o tela, con un material del propio modelo) que se
+  // funde en esa parte: se dibuja con las instancias y entra en los sólidos como el resto del edificio.
+  // Planta 2D en la franja de paso (sobre la base del modelo): pared = algo entre 0,3 y 1,1; techo = algo más arriba. Se
+  // cierra la planta (dilatar y erosionar) con radios crecientes; interior = libre, cubierto en su mayoría y encerrado tras
+  // el cierre; si sin el cierre se sale al exterior, los vanos son lo que el cierre tapa en el camino corto entre los dos.
+  // Los macizos (pirámides, muros) quedan «cerrados» y los abiertos (portales, toldos, cercas) «sin interior»: no se tocan.
+  const VA = { cel: 0.15, banda: [0.3, 1.1], radios: [0.45, 0.7, 1.0, 1.3], minInterior: 1.5, cubierto: 0.7, ancho: [0.6, 4], minAlto: 1, max: 6, grosor: 0.08 };
+  const vanosHechos = new Map(); // nombre → { vanos, motivo, ms }
+  const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
+    : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
+  function buscarVanos(partes) {
+    const caja = new THREE.Box3(); for (const p of partes) { if (!p.geo.boundingBox) p.geo.computeBoundingBox(); caja.union(p.geo.boundingBox); }
+    const C = VA.cel, pad = Math.ceil(VA.radios[VA.radios.length - 1] / C) + 2;
+    const ox = caja.min.x - pad * C, oz = caja.min.z - pad * C, y0 = caja.min.y;
+    const nx = Math.ceil((caja.max.x - caja.min.x) / C) + 2 * pad, nz = Math.ceil((caja.max.z - caja.min.z) / C) + 2 * pad, N = nx * nz;
+    if (N > 2e6) return { motivo: 'grande', vanos: [] };
+    const Bp = new Uint8Array(N), T = new Uint8Array(N), techoV = new Float32Array(N).fill(Infinity);
+    for (const p of partes) {
+      const pos = p.geo.attributes.position, I = p.geo.index, nt = I ? I.count / 3 : pos.count / 3, k = kNorm(pos);
+      for (let t = 0; t < nt; t++) {
+        va.fromBufferAttribute(pos, I ? I.getX(t * 3) : t * 3).multiplyScalar(k); vb.fromBufferAttribute(pos, I ? I.getX(t * 3 + 1) : t * 3 + 1).multiplyScalar(k);
+        vc.fromBufferAttribute(pos, I ? I.getX(t * 3 + 2) : t * 3 + 2).multiplyScalar(k);
+        const ymin = Math.min(va.y, vb.y, vc.y) - y0, ymax = Math.max(va.y, vb.y, vc.y) - y0;
+        if (ymax < VA.banda[0]) continue;
+        const paso = C * (ymin > VA.banda[1] ? 1.4 : 0.7); // el techo solo hace falta a grandes rasgos
+        const nu = Math.max(1, Math.ceil(va.distanceTo(vb) / paso)), nv = Math.max(1, Math.ceil(va.distanceTo(vc) / paso));
+        for (let i = 0; i <= nu; i++) {
+          const u = i / nu;
+          for (let j = 0; j <= nv; j++) {
+            const v = j / nv; if (u + v > 1.0001) break;
+            const y = va.y + (vb.y - va.y) * u + (vc.y - va.y) * v - y0; if (y < VA.banda[0]) continue;
+            const c = Math.floor((va.x + (vb.x - va.x) * u + (vc.x - va.x) * v - ox) / C) + Math.floor((va.z + (vb.z - va.z) * u + (vc.z - va.z) * v - oz) / C) * nx;
+            if (y <= VA.banda[1]) Bp[c] = 1; else { T[c] = 1; if (y < techoV[c]) techoV[c] = y; }
+          }
+        }
+      }
+    }
+    const vec4 = (i, fn) => { const x = i % nx; if (x > 0) fn(i - 1); if (x < nx - 1) fn(i + 1); if (i >= nx) fn(i - nx); if (i < N - nx) fn(i + nx); };
+    // dilatar (max) o erosionar (min) con un cuadrado de radio r, separable; fuera de la rejilla cuenta como libre / lleno
+    const filtro = (src, r, max) => {
+      const t = new Uint8Array(N), o = new Uint8Array(N);
+      for (let pasada = 0; pasada < 2; pasada++) {
+        const A = pasada ? t : src, D = pasada ? o : t, paso = pasada ? nx : 1, n1 = pasada ? nz : nx;
+        for (let i = 0; i < N; i++) {
+          const q = pasada ? (i / nx) | 0 : i % nx; let v = max ? 0 : 1;
+          for (let d = -r; d <= r; d++) { const qq = q + d, s = qq < 0 || qq >= n1 ? (max ? 0 : 1) : A[i + d * paso]; if (max ? s : !s) { v = max ? 1 : 0; break; } }
+          D[i] = v;
+        }
+      }
+      return o;
+    };
+    const cola = new Int32Array(N);
+    for (const radio of VA.radios) {
+      const r = Math.round(radio / C), Cl = filtro(filtro(Bp, r, true), r, false);
+      for (let i = 0; i < N; i++) if (Bp[i]) Cl[i] = 1;
+      const E = new Uint8Array(N); let h = 0, tl = 0;
+      for (let i = 0; i < N; i++) { const x = i % nx, z = (i / nx) | 0; if ((!x || !z || x === nx - 1 || z === nz - 1) && !Cl[i]) { E[i] = 1; cola[tl++] = i; } }
+      while (h < tl) vec4(cola[h++], j => { if (!Cl[j] && !E[j]) { E[j] = 1; cola[tl++] = j; } });
+      const In = new Uint8Array(N), vis = new Uint8Array(N); let nIn = 0;
+      for (let s = 0; s < N; s++) {
+        if (Cl[s] || E[s] || vis[s]) continue;
+        const comp = []; h = tl = 0; cola[tl++] = s; vis[s] = 1;
+        while (h < tl) { const i = cola[h++]; comp.push(i); vec4(i, j => { if (!Cl[j] && !E[j] && !vis[j]) { vis[j] = 1; cola[tl++] = j; } }); }
+        let cub = 0; for (const i of comp) cub += T[i];
+        if (comp.length * C * C >= VA.minInterior && cub >= comp.length * VA.cubierto) for (const i of comp) { In[i] = 1; nIn++; }
+      }
+      if (!nIn) continue;
+      // ¿se sale del interior al exterior sin el cierre? Si no, el edificio ya es cerrado
+      const R0 = new Uint8Array(N); let fuga = false; h = tl = 0;
+      for (let i = 0; i < N; i++) if (In[i]) { R0[i] = 1; cola[tl++] = i; }
+      while (h < tl && !fuga) vec4(cola[h++], j => { if (!Bp[j] && !R0[j]) { if (E[j]) fuga = true; R0[j] = 1; cola[tl++] = j; } });
+      if (!fuga) return { motivo: 'cerrado', vanos: [] };
+      const dist = M => {
+        const D = new Uint16Array(N).fill(65535); h = tl = 0;
+        for (let i = 0; i < N; i++) if (M[i]) { D[i] = 0; cola[tl++] = i; }
+        while (h < tl) { const i = cola[h++], d = D[i]; vec4(i, j => { if (Cl[j] && !Bp[j] && D[j] > d + 1) { D[j] = d + 1; cola[tl++] = j; } }); }
+        return D;
+      };
+      const DI = dist(In), DE = dist(E), lim = 2 * r + 2, K = new Uint8Array(N);
+      for (let i = 0; i < N; i++) if (Cl[i] && !Bp[i] && DI[i] + DE[i] <= lim) K[i] = 1;
+      const vanos = [];
+      for (let s = 0; s < N; s++) {
+        if (K[s] !== 1) continue;
+        const P = []; h = tl = 0; cola[tl++] = s; K[s] = 2;
+        while (h < tl) {
+          const i = cola[h++]; P.push(i); const x = i % nx, z = (i / nx) | 0;
+          for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Z = z + dz; if (X < 0 || Z < 0 || X >= nx || Z >= nz) continue; const j = Z * nx + X; if (K[j] === 1) { K[j] = 2; cola[tl++] = j; } }
+        }
+        // normal del panel: del interior al exterior (vecinos de cada lado); el ancho va a lo largo de la pared
+        let mx = 0, mz = 0, ix = 0, iz = 0, ni = 0, ex = 0, ez = 0, ne = 0;
+        const X = i => ox + (i % nx + 0.5) * C, Z = i => oz + (((i / nx) | 0) + 0.5) * C;
+        for (const i of P) {
+          mx += X(i); mz += Z(i);
+          vec4(i, j => { if (In[j]) { ix += X(j); iz += Z(j); ni++; } else if (E[j] && !Cl[j]) { ex += X(j); ez += Z(j); ne++; } });
+        }
+        mx /= P.length; mz /= P.length;
+        if (!ni || !ne) continue;
+        let nxv = ex / ne - ix / ni, nzv = ez / ne - iz / ni; const ln = Math.hypot(nxv, nzv); if (ln < 1e-6) continue;
+        nxv /= ln; nzv /= ln;
+        // vano alargado: la normal es la perpendicular a su eje principal (con el sentido hacia fuera)
+        let sxx = 0, sxz = 0, szz = 0; for (const i of P) { const dx = X(i) - mx, dz = Z(i) - mz; sxx += dx * dx; sxz += dx * dz; szz += dz * dz; }
+        const tr = sxx + szz, raiz = Math.sqrt(Math.max(0, (sxx - szz) ** 2 / 4 + sxz * sxz)), l1 = tr / 2 + raiz, l2 = tr / 2 - raiz;
+        if (l1 > 2.5 * Math.max(l2, 1e-9)) {
+          const ang = 0.5 * Math.atan2(2 * sxz, sxx - szz), px = -Math.sin(ang), pz = Math.cos(ang), sg = px * nxv + pz * nzv < 0 ? -1 : 1;
+          nxv = px * sg; nzv = pz * sg;
+        }
+        let u0 = Infinity, u1 = -Infinity; const ts = [];
+        for (const i of P) { const u = (X(i) - mx) * -nzv + (Z(i) - mz) * nxv; u0 = Math.min(u0, u); u1 = Math.max(u1, u); if (isFinite(techoV[i])) ts.push(techoV[i]); }
+        if (!ts.length) continue; // sin techo encima: es un patio o un paso, no una puerta
+        ts.sort((p, q) => p - q);
+        const w = u1 - u0 + C, alto = ts[ts.length >> 1], uc = (u0 + u1) / 2;
+        if (w < VA.ancho[0] || w > VA.ancho[1] || alto < VA.minAlto) continue;
+        vanos.push({ x: mx - nzv * uc, z: mz + nxv * uc, nx: nxv, nz: nzv, w, y0, alto: y0 + alto });
+      }
+      return vanos.length > VA.max ? { motivo: 'demasiados (' + vanos.length + ')', vanos: [] } : { motivo: vanos.length ? 'vanos' : 'sin vanos', radio, vanos };
+    }
+    return { motivo: 'sin interior', vanos: [] };
+  }
+  // Panel de un vano: caja fina que entra un poco en las jambas, el dintel y el suelo; uv a escala (1 m de textura ≈ 1 m)
+  function panelVano(v) {
+    const ancho = v.w + VA.cel * 2, alto = v.alto - v.y0 + 0.1;
+    const g = new THREE.BoxGeometry(ancho, alto, VA.grosor);
+    const uv = g.attributes.uv, pos = g.attributes.position;
+    for (let i = 0; i < uv.count; i++) {
+      const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i), lado = Math.abs(pz) > VA.grosor * 0.49;
+      uv.setXY(i, (lado ? px : pz) + ancho / 2, py + alto / 2);
+    }
+    g.rotateY(Math.atan2(v.nx, v.nz)); // la cara z del panel mira hacia fuera
+    g.translate(v.x, v.y0 - 0.05 + alto / 2, v.z);
+    return g;
+  }
+  const PREFERIDO = [/WoodPlanks/i, /Tarp|Fabric/i, /WoodHewn/i, /Bark/i];
+  function cerrarVanos(nombre, partes, fundir) {
+    if (!partes || !partes.length || typeof fundir !== 'function') return 0;
+    let R = vanosHechos.get(nombre);
+    if (!R) { const t0 = performance.now(); try { R = buscarVanos(partes); } catch (e) { R = { motivo: 'error: ' + e.message, vanos: [] }; } R.ms = Math.round(performance.now() - t0); vanosHechos.set(nombre, R); }
+    if (!R.vanos.length) return 0;
+    // la parte que recibe los paneles: con uv y sin color de vértice (fundir solo conserva posición, normal y uv)
+    const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
+    let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }
+    p = p || partes.find(sirve); if (!p) return 0;
+    const paneles = R.vanos.map(panelVano), viejo = p.geo;
+    p.geo = fundir([viejo, ...paneles], false);
+    for (const g of paneles) g.dispose();
+    return R.vanos.length;
+  }
   function stats() {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn };
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn,
+    cerrarVanos, vanos: vanosHechos };
 });
