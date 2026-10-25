@@ -1,6 +1,8 @@
 /* AVE · entrada
    Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
-   Solo traduce entrada a llamadas: G.fisica (saltar, impulso, volar), G.actores (gestos), G.interaccion (acción).
+   Solo traduce entrada a llamadas: G.fisica (saltar, soltar el salto, impulso, volar/aterrizar), G.actores (gestos), G.interaccion (acción).
+   Volar y dejar de volar: V (o el botón Volar) despega; volando, V (o el botón, que pasa a decir "Aterrizar") baja suave hasta el
+   suelo; otra vez V o Saltar sigue volando. Volando sin tocar nada se queda cernida en el sitio; Espacio sube y C baja.
    Esc emite el gancho 'escape' (un pack cancela ahí sus modos, p. ej. construir) y cierra la tarjeta abierta.
    Con el juego en pausa (G.pausa) se ignoran las acciones: saltar, impulso, volar, gestos, Acción y los botones táctiles. */
 AVE.module('input', function (G) {
@@ -23,7 +25,7 @@ AVE.module('input', function (G) {
     if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') G.interaccion.action();
     if (e.key === 'Escape') { G.emit('escape'); G.ui.hideCard(); }
   });
-  addEventListener('keyup', e => { keys.delete(e.key.toLowerCase()); if (e.key === ' ') jumpHeld = false; });
+  addEventListener('keyup', e => { keys.delete(e.key.toLowerCase()); if (e.key === ' ') { jumpHeld = false; G.fisica.releaseJump(); } });
   addEventListener('blur', () => { keys.clear(); jumpHeld = false; });
 
   const stickEl = $('stick'), knob = $('knob');
@@ -41,8 +43,10 @@ AVE.module('input', function (G) {
   }
   const jumpBtn = $('b-jump');
   jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (paused()) return; jumpHeld = true; G.fisica.tryJump(); });
-  jumpBtn.addEventListener('pointerup', () => { jumpHeld = false; });
-  jumpBtn.addEventListener('pointerleave', () => { jumpHeld = false; });
+  const jumpUp = () => { if (jumpHeld) G.fisica.releaseJump(); jumpHeld = false; };
+  jumpBtn.addEventListener('pointerup', jumpUp);
+  jumpBtn.addEventListener('pointerleave', jumpUp);
+  jumpBtn.addEventListener('pointercancel', jumpUp);
   $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.tryDash(); });
   $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
   const actBtn = $('b-act');
@@ -52,11 +56,16 @@ AVE.module('input', function (G) {
   const diveBtn = $('b-dive'), flyBtn = $('b-fly');
   diveBtn.addEventListener('pointerdown', e => { e.preventDefault(); diveHeld = true; keys.add('c'); });
   for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) diveBtn.addEventListener(ev, () => { if (diveHeld) keys.delete('c'); diveHeld = false; });
-  // Muestra Bucear en lugar de Volar mientras se nada
+  // Muestra Bucear en lugar de Volar mientras se nada; volando, el botón Volar dice "Aterrizar" (y al revés mientras aterriza)
   function syncSwimButtons(swimming) {
     if (diveBtn.hidden === !!swimming) {
       diveBtn.hidden = !swimming; flyBtn.hidden = !!swimming;
       if (!swimming && diveHeld) { keys.delete('c'); diveHeld = false; }
+    }
+    const M = G.fisica.MOVE, land = M.flying && !M.landing, label = land ? 'Aterrizar' : 'Volar';
+    if (flyBtn.textContent !== label) {
+      flyBtn.textContent = label; flyBtn.dataset.icon = land ? 'dive' : 'wing';
+      flyBtn.setAttribute('aria-label', land ? 'Aterrizar: bajar suave hasta el suelo' : 'Volar');
     }
   }
 
@@ -64,7 +73,7 @@ AVE.module('input', function (G) {
   const canvas = G.renderer.canvas;
   let dragId = null, dragX = 0;
   canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; });
-  canvas.addEventListener('pointermove', e => { if (e.pointerId !== dragId) return; G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX; });
+  canvas.addEventListener('pointermove', e => { if (e.pointerId !== dragId) return; G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX; if (G.camara.manual) G.camara.manual(); });
   const endDrag = e => { if (e.pointerId === dragId) dragId = null; };
   canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 
