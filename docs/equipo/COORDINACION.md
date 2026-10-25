@@ -16,7 +16,7 @@ Kelvin (fundador) pidió que **todos los roles decidan entre sí** para entregar
 | Movimiento y animación | `src/engine/fisica.js`, `input.js`, `camara.js`, `actores.js`, `src/engine/agarre.js`, animación procedural de `src/personaje/character.js` (locomoción, cara, gestos, alas, pico, IK, poses de carga) |
 | Comité de pitch (CEO/CTO/Growth) | `docs/pitch/GUION.md`, `TOMAS.json`, `VO.txt`; supervisa la web |
 | Editor de video / Ingeniero de sonido | `tools/video/*` / `tools/audio/*`, `docs/pitch/VIDEO.md` / `AUDIO.md` |
-| Web lead | `~/AmazonaVerse/Web/*` |
+| Web lead | `web/*` (la landing vive en main; `~/AmazonaVerse/Web` queda como copia antigua) |
 | Coordinador (CEO/producción) | `index.html` y `src/boot.js` en conflicto, publicación, `docs/DECISION_LOG.md` |
 | Ingeniero de streaming de mundo | `src/engine/streaming.js` (nuevo) y la sección de carga de edificios de `src/engine/mundo.js` (coordinada con el programador gráfico) |
 | AV-ENGINE-AUDITOR (V7.0, independiente) | Solo lectura del repo; escribe en el worktree `~/AmazonaVerse/_auditoria_motores/repo` (rama `auditoria-motores`, entregables en `docs/auditoria/`) y en `_auditoria_motores/poc/`. Sin migrar, sin publicar, sin descargas sin aprobación |
@@ -40,7 +40,7 @@ Kelvin (fundador) pidió que **todos los roles decidan entre sí** para entregar
 ## Integración y estados (directiva V6.1, en ejecución en paralelo)
 - Estados de tarea: BACKLOG → READY → EN CURSO → INTEGRACIÓN → PRUEBAS → APROBADO (o BLOQUEADO con causa). Tablero: `docs/equipo/PRODUCTION_DASHBOARD.md`.
 - **Nadie aprueba su propia entrega**: QA valida de forma independiente.
-- Rama `estable`: solo el coordinador (Integration Lead) la mueve, tras el recorrido E2E de QA. Cada versión publicada lleva etiqueta (`v16-publicada`, …). El Build Engineer arma la build desde esa rama.
+- Una sola rama: **todo se trabaja en `main`** (código, `web/`, docs y `sitio/`). Cada versión publicada lleva etiqueta (`v16-publicada`, …) tras el recorrido de QA; el coordinador arma `sitio/` con `tools/build/sitio.sh` y Vercel publica `main`.
 - Prohibido `git checkout`, `reset` o `stash` sobre archivos de otro dueño. La copia de trabajo siempre debe arrancar.
 - Dueños nuevos: Build/Release Engineer → `tools/build/*`; Save & Cómic Engineer → `src/engine/guardado.js`, `src/game/comic.js`; Seguridad infantil → `docs/equipo/SEGURIDAD_INFANTIL.md`.
 
