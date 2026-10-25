@@ -299,10 +299,13 @@ AVE.module('aula', function (G) {
       const sg = $('edu-seguir'); if (sg) { sg.onclick = () => o.alTerminar(s.intento); sg.focus(); }
       else { const f = card.querySelector('.edu-opt:not([disabled])'); if (f) f.focus(); }
     };
+    // La etiqueta «Pista:» la pone la tarjeta; si el texto de la lección ya la trae, no se repite (QA-23)
+    const sinEtiqueta = x => String(x || '').replace(/^\s*(pista|hint)\s*:\s*/i, '');
     const fallo = () => {
       G.audio.play('wrong');
       if (s.intento >= 2) { s.intento = 3; s.hecho = true; pintar(`<b>${esc(u('asi'))}:</b> ${esc(t(q.retro.correcta))}`, 'asi'); auto(t(q.retro.correcta)); return; }
-      s.intento = 2; pintar(`<b>${esc(u('pista'))}:</b> ${esc(t(q.retro.incorrecta))}`, 'pista'); auto(t(q.retro.incorrecta));
+      const pista = sinEtiqueta(t(q.retro.incorrecta));
+      s.intento = 2; pintar(`<b>${esc(u('pista'))}:</b> ${esc(pista)}`, 'pista'); auto(u('pista') + ': ' + pista);
     };
     function elegir(i) {
       if (s.hecho) return;
