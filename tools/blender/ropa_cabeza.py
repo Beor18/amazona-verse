@@ -114,13 +114,19 @@ def cap_rim(back=1.238, front=1.292, arch=0.05, arch_w=R(30)):
     return f
 
 
+FLAG_GORRA = 0.073   # alto (m) del parche BANDERA de la gorra
+
+
 def gorra(name='gorra', reves=False, trucker=False):
     mt = M(); seg = 48; th = 0.0045
     if reves:
-        def rimf(a):  # borde casi plano y alto (visera sobre el mechón); abertura en arco al frente
-            z = 1.296 - 0.004 * math.cos(a)
+        # Auditoría: antes el borde iba plano a z≈1,296 y la copa quedaba alta y chica. Ahora baja por los lados como la
+        # gorra normal (1,268), al frente queda sobre los ojos (1,284, con el arco del cierre) y atrás sigue alta (1,296)
+        # para que la visera pase sobre el mechón.
+        def rimf(a):
+            c = math.cos(a); z = 1.268 - 0.006 * c + 0.022 * c * c
             d = abs((a + math.pi) % (2 * math.pi) - math.pi)
-            if d < R(26): z += 0.032 * math.cos(d / R(26) * math.pi / 2) ** 2
+            if d < R(26): z += 0.022 * math.cos(d / R(26) * math.pi / 2) ** 2
             return z
         rim = rimf
     else:
@@ -155,9 +161,12 @@ def gorra(name='gorra', reves=False, trucker=False):
     if reves:  # correa del cierre, cruzando la abertura (ahora al frente)
         pts = []
         for k in range(-4, 5):
-            a = R(6.5 * k); z = 1.293
+            a = R(6.5 * k); z = 1.289
             pts.append(Vector((0, 0.03, z)) + D(a) * (head_radius(z, a, 0.03) + 0.011))
         parts.append(put(tube_path('correa', pts, 0.0055, seg=6), mt['ACENTO']))
+    if not reves and not trucker:   # parche BANDERA 3:2 (11 × 7,3 cm) en el panel delantero: el juego lo muestra sólo con 'pr'
+        up = Vector((0, 0.36, 0.93))
+        parts.append(flag_patch('bandera', Vector((0, -0.2, 1.352)), Vector((1, 0, 0)), up, FLAG_GORRA, onto=target_bvh([cr]), off=0.0018, nu=10, nv=6))
     if trucker:  # cierre trasero (snapback) bajo el arco
         ib = seg // 2; pts = [V[0][(ib + k) % seg] + N[0][(ib + k) % seg] * 0.004 for k in range(-4, 5)]
         parts.append(put(tube_path('broche', pts, 0.006, seg=6), mt['ACENTO']))
@@ -315,12 +324,14 @@ def sombrero(name, kind):
         i = round(R(70) / (2 * math.pi) * seg); u_, v_, n_ = frame_at(N[1][i])
         parts.append(put(oriented_sphere('hebilla', V[1][i] + N[1][i] * 0.009, 0.014, u_, v_, n_, (1, 0.9, 0.35)), mt['ACENTO']))
     elif kind == 'pescador':
-        zb = lambda a: 1.296 - 0.006 * math.cos(a)
-        prof = [(0, 1.0), (0.012, 0.99), (0.04, 0.965), (0.07, 0.935), (0.1, 0.9), (0.125, 0.86), (0.142, 0.78),
-                (0.162, 0.6), (0.168, 0.32), (0.17, 0)]
+        # Auditoría: el ala caía 8,5 cm al frente y tapaba los ojos. Ahora la base va 1 cm más alta, la copa es un 10 %
+        # más baja y el ala cae parejo (3,5 cm al frente, 7 cm atrás), como un bucket de caricatura.
+        zb = lambda a: 1.306 - 0.006 * math.cos(a)
+        prof = [(dz * 0.9, s_) for dz, s_ in [(0, 1.0), (0.012, 0.99), (0.04, 0.965), (0.07, 0.935), (0.1, 0.9), (0.125, 0.86), (0.142, 0.78),
+                (0.162, 0.6), (0.168, 0.32), (0.17, 0)]]
         cr, V, N = hat_crown(name, zb, prof, rx=0.255, ry=0.268)
         put(cr, mt['TELA'])
-        b, G = brim('ala', V[0], N[0], lambda a: (0.35, 0.37), lambda a, t: -(0.085 * (0.5 + 0.5 * math.cos(a)) ** 0.8 + 0.003) * t, rows=6, th=0.007)
+        b, G = brim('ala', V[0], N[0], lambda a: (0.34, 0.36), lambda a, t: -(0.035 + 0.035 * (0.5 - 0.5 * math.cos(a)) + 0.003) * t ** 1.3, rows=6, th=0.009)
         parts += [put(b, mt['TELA'])]
         for m in (2, 4, 6):  # costuras circulares del ala
             parts.append(put(ring_tube('pespunte', G, m, 0.0045 if m < 6 else 0.0, 0.0018 if m < 6 else 0.005, seg=4 if m < 6 else 6, step=1 if m == 6 else 2), mt['TELA']))
@@ -506,19 +517,19 @@ def lentes(name, kind):
     if kind == 'sol':
         P, nl = lens_frame(d=0.05, k=0.24)
         ol = outline(0.084, 0.058, 0.004, 0.014, m=3.2, cut=0.3, top=0.08)
-        w, rr = 0.013, 0.0055
-        parts += lens_parts(P, nl, ol, w, 0.012, mt['ACENTO'], vid)
+        w, rr = 0.016, 0.0085      # auditoría: montura 1,6 cm y patilla Ø 1,7 cm (antes 1,3 y 1,1: de lejos desaparecían)
+        parts += lens_parts(P, nl, ol, w, 0.015, mt['ACENTO'], vid)
     else:
         P, nl = lens_frame(d=0.048, k=0.16)
         ol = outline(0.07, 0.07, 0.0, 0.012, m=2.0)
-        w, rr = 0.004, 0.0032
-        parts += lens_parts(P, nl, ol, w, 0.004, mt['ACENTO'], vid, round_tube=0.0035)
+        w, rr = 0.006, 0.0055      # auditoría: aro Ø 1,3 cm y patilla Ø 1,1 cm (antes 0,7 y 0,6: alambre invisible)
+        parts += lens_parts(P, nl, ol, w, 0.006, mt['ACENTO'], vid, round_tube=0.0065)
     # bisagra y patilla
     iu = max(range(len(ol)), key=lambda i: ol[i][0] - 0.3 * abs(ol[i][1] - 0.03))
     hu, hv = ol[iu]; hinge = P(hu + w * 0.6, hv, -0.004)
     if kind == 'sol':
-        parts.append(put(oriented_sphere('bisagra', hinge, 0.009, *frame_at(nl), s=(1, 1.3, 0.8)), mt['ACENTO']))
-    parts.append(put(temple(hinge, r=rr), mt['ACENTO']))
+        parts.append(put(oriented_sphere('bisagra', hinge, 0.012, *frame_at(nl), s=(1, 1.3, 0.8)), mt['ACENTO']))
+    parts.append(put(temple(hinge, r=rr, gap=0.008 + rr), mt['ACENTO']))
     # puente (mitad izquierda; se refleja)
     il = min(range(len(ol)), key=lambda i: ol[i][0] - 0.3 * abs(ol[i][1] - 0.03))
     bu, bv = ol[il]; b0 = P(bu - w * 0.4, bv)
@@ -621,9 +632,12 @@ def visor_wrap(name, kind):
                      (1.115, R(84)), (1.085, R(70)), (1.075, R(57))):
             rr = max(head_radius(z, a) + 0.045, 0.27)
             pts.append(Vector((0, 0.04, z)) + D(a) * rr)
-        parts.append(put(tube_path('snorkel', pts, 0.011, seg=10), sn))
-        parts.append(put(oriented_sphere('boquilla', pts[-1] + D(R(50)) * 0.008, 0.016, *frame_at(D(R(57))), s=(1.2, 0.8, 0.6)), sn))
-        parts.append(put(tube_path('clip', [pts[4] + Vector((0, 0, -0.018)), pts[4] + Vector((0, 0, 0.018))], 0.015, seg=10), neg))
+        # auditoría: tubo de Ø 3,2 cm (antes 2,2: parecía una pajita), boquilla y clip más grandes y remate arriba
+        parts.append(put(tube_path('snorkel', pts, 0.016, seg=12), sn))
+        parts.append(put(oriented_sphere('boquilla', pts[-1] + D(R(50)) * 0.01, 0.022, *frame_at(D(R(57))), s=(1.2, 0.8, 0.6)), sn))
+        parts.append(put(tube_path('clip', [pts[4] + Vector((0, 0, -0.022)), pts[4] + Vector((0, 0, 0.022))], 0.021, seg=12), neg))
+        tip = pts[0]; ax = (pts[0] - pts[1]).normalized()
+        parts.append(put(revolve('remate', tip - ax * 0.004, tip + ax * 0.026, [(0, 0.02), (0.7, 0.021), (1, 0.012)], seg=14), neg))
     return parts
 
 
@@ -939,8 +953,8 @@ def finish_panuelo(name='panuelo'):
 def finish(name, parts, eyes=True, bone='cabeza.001', skin=False, uv='cyl', target=(0, -0.04, 1.25), dist=1.35):
     for p in parts: apply_mods(p)
     o = join(parts, name)
-    (hat_uv if uv == 'hat' else cyl_uv)(o)
-    shade_smooth(o, 50)
+    keep_flag_uv(o, hat_uv if uv == 'hat' else cyl_uv)
+    shade_smooth(o, 60)
     check_clear([o], eyes=eyes)
     if not eyes and bone == 'cabeza.001': check_lens([o])
     if skin:

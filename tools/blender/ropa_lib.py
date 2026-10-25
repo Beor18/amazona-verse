@@ -798,3 +798,14 @@ def flag_patch(name, center, right, up, h, onto=None, off=0.002, nu=12, nv=8, th
         add_mod(o, 'BEVEL', width=th * 0.45, segments=1, limit_method='ANGLE', angle_limit=math.radians(60))
         apply_mods(o)
     return set_mat(o, mat('BANDERA', hexrgb('#ffffff'), 0.75))
+
+
+def keep_flag_uv(o, uvfn, *a, **k):
+    """Aplica una UV general (cyl_uv, hat_uv…) sin pisar la UV del parche BANDERA (que va de (0,0) a (1,1))."""
+    me = o.data; bi = {i for i, m in enumerate(me.materials) if m and m.name == 'BANDERA'}
+    uvl = me.uv_layers.get('UVMap') or (me.uv_layers[0] if me.uv_layers else None)
+    saved = {li: tuple(uvl.data[li].uv) for p in me.polygons if p.material_index in bi for li in p.loop_indices} if (bi and uvl) else {}
+    uvfn(o, *a, **k)
+    if saved:
+        uvl = me.uv_layers['UVMap']
+        for li, uv in saved.items(): uvl.data[li].uv = uv
