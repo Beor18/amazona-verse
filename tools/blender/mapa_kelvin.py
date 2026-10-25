@@ -166,7 +166,9 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             base = (wl + 0.05) if wl is not None else float(np.percentile(g, 30)) + max(0.0, off * S)
         else:
             # a menos de 2,5 m de su suelo es ruido del muestreo: se asienta en el terreno; más alto es una pieza apilada
-            base = max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (off * S if off * S > 2.5 else min(0.0, off * S))
+            acostada = abs(L[1, 1]) / max(1e-9, np.linalg.norm(L[:, 1])) < 0.5   # estacas acostadas (muelle): sobre el punto más alto
+            base = (float(g.max()) + 0.05) if acostada else \
+                max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (off * S if off * S > 2.5 else min(0.0, off * S))
         dy = base - Wn[:, 1].min()
         Mn[0, 3] += dx; Mn[1, 3] += dy; Mn[2, 3] += dz
         e = {'id': 'k%03d' % idx, 'asset': ins['asset'], 'nodo': ins.get('nodo_max'),
