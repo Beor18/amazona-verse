@@ -56,6 +56,20 @@ def fit_grip(r, back, fwd, clear=0.003):
     return best[1]
 
 
+FLAG_PHI = 40   # grados
+
+
+def fan_solid(name, center, ring, th):
+    """Polígono en abanico (centro + contorno) con grosor: estrellas que siguen la superficie curva del paño."""
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    c = bm.verts.new(center); V = [bm.verts.new(p) for p in ring]; n = len(V)
+    for i in range(n): bm.faces.new((c, V[i], V[(i + 1) % n]))
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(o)
+    add_mod(o, 'SOLIDIFY', thickness=th, offset=0, use_rim=True); apply_mods(o)
+    return normals_out(o)
+
+
 def normals_out(o):
     """Normales hacia fuera en una cáscara cerrada (la tela de la bandera se veía oscura por un lado: normales al revés)."""
     bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(o.data); bm.free()
@@ -73,21 +87,30 @@ def handle(G, s0, s1, r0, r1, mt, seg=12):
 
 # ---------------------------------------------------------------------------------------------- piezas
 def bandera():
-    """Bandera de PR fiel (docs/BANDERA_PR_GUIA.md): 2:3, 5 franjas iguales, triángulo equilátero en el asta y estrella
-    de 5 puntas centrada en el baricentro (radio exterior = alto/6, interior 0,382). Colores #EE0000 / #0044FF / #FFFFFF.
-    Auditoría: 18 × 27 cm (antes 15 × 22,5): se lee a la distancia de juego; asta de Ø 2,4 cm."""
+    """Bandera de PR fiel (docs/BANDERA_PR_GUIA.md): 2:3, 5 franjas iguales (rojo arriba y abajo), triángulo equilátero en
+    el asta por las dos caras y estrella regular de 5 puntas con una punta hacia arriba, en el baricentro (radio alto/6,
+    interior 0,382). Colores #EE0000 / #FFFFFF / #0044FF.
+    Paño de 22 × 33 cm (antes 15 × 22,5) en un asta de 0,69 m, ondulación suave (8 mm).
+    Orientación: en Idle el brazo cuelga y el eje S de la mano (hacia los dedos en pose T) queda hacia abajo y adelante,
+    y NUP hacia afuera. Por eso el vuelo va hacia −S abierto FLAG_PHI hacia NUP: en el juego el paño sube hacia atrás y
+    afuera desde el asta, de cara a la luz. Antes iba en (A, NUP) y en Idle quedaba horizontal, mostrando la cara de
+    abajo, oscura."""
     mt = M(); r = 0.012
     G = fit_grip(r, 0.07, 0.14)
-    parts = [handle(G, -0.07, 0.565, r, r * 0.9, mt['MADERA'])]
-    parts.append(set_mat(sphere('remate', F(G, 0.58), 0.019, seg=14, rings=8), mt['DORADO']))
-    parts.append(set_mat(revolve('punta', F(G, 0.592), F(G, 0.635), [(0, 0.008), (1, 0.0)], seg=12, cap1=False), mt['DORADO']))
+    top = 0.62
+    parts = [handle(G, -0.07, top, r, r * 0.9, mt['MADERA'])]
+    parts.append(set_mat(sphere('remate', F(G, top + 0.015), 0.02, seg=16, rings=8), mt['DORADO']))
+    parts.append(set_mat(revolve('punta', F(G, top + 0.028), F(G, top + 0.072), [(0, 0.0085), (1, 0.0)], seg=12, cap1=False), mt['DORADO']))
     parts.append(set_mat(revolve('regaton', F(G, -0.082), F(G, -0.064), [(0, 0.0105), (1, 0.013)], seg=14), mt['DORADO']))
-    # bandera de PR ondeando (5 franjas, triángulo azul con estrella blanca), plano (A, NUP)
-    s0, hoist, fly = 0.375, 0.18, 0.27
+    s0, hoist = top - 0.225, 0.22
+    fly = 1.5 * hoist
+    PHI = R(FLAG_PHI)   # el vuelo se abre hacia afuera (en Idle) para no tapar la panza ni cruzar el cuerpo al bailar
+    FL = (-S * math.cos(PHI) + NUP * math.sin(PHI)).normalized(); NR = (NUP * math.cos(PHI) + S * math.sin(PHI)).normalized()
     def fp(s, q, side=0.0):
-        t = q / fly; wave = 0.014 * math.sin(2 * math.pi * (1.15 * t) + 0.4) * t + 0.004 * math.sin(math.pi * s / hoist)
-        return F(G, s0 + s - 0.01 * t * t, wave + side, r * 0.6 + q)
-    nq = 14; rows = []
+        t = q / fly
+        wave = 0.008 * math.sin(2 * math.pi * 0.9 * t + 0.3) * t + 0.003 * math.sin(math.pi * s / hoist) * t
+        return G + A * (s0 + s - 0.008 * t * t) + FL * (r * 0.6 + q) + NR * (wave + side)
+    nq = 18; rows = []
     for st in range(5):
         for h in (0, 0.5):
             rows.append(hoist * (st + h) / 5)
@@ -100,21 +123,20 @@ def bandera():
         p.material_index = 0 if stripe % 2 == 0 else 1
     add_mod(fl, 'SOLIDIFY', thickness=0.0024, offset=0, use_rim=True); apply_mods(fl); normals_out(fl)
     parts.append(fl)
-    # triángulo y estrella por los dos lados
+    # triángulo (equilátero, base en el asta) y estrella, por las dos caras
     apex = hoist * math.sqrt(3) / 2
     for side in (0.0021, -0.0021):
-        tri = []
-        n = 8
+        tri = []; n = 12; m = 10   # rejilla que sigue la onda del paño (antes cuerdas rectas: la tela lo atravesaba)
         for k in range(n + 1):
-            s = hoist * k / n; tri.append([fp(s, 0.0, side), fp(s, apex * (1 - abs(2 * k / n - 1)) * 0.999, side)])
+            s = hoist * k / n; qmax = apex * (1 - abs(2 * k / n - 1)) * 0.999
+            tri.append([fp(s, qmax * j / m, side) for j in range(m + 1)])
         t = grid_mesh('triangulo', tri)
         add_mod(t, 'SOLIDIFY', thickness=0.0008, offset=0, use_rim=True); apply_mods(t); normals_out(t)
         parts.append(set_mat(t, mt['PR_AZUL']))
-        c = fp(hoist / 2, apex / 3, side * 1.5); u = (fp(hoist / 2 + 0.01, apex / 3, side * 1.5) - c).normalized()
-        n_ = S if side > 0 else -S
-        ro = hoist / 6; ri = ro * 0.382   # una punta hacia arriba (hacia el borde de arriba de la bandera)
-        pts = [(math.cos(R(90) + k * math.pi / 5) * (ro if k % 2 == 0 else ri), math.sin(R(90) + k * math.pi / 5) * (ro if k % 2 == 0 else ri)) for k in range(10)]
-        parts.append(set_mat(prism('estrella', pts, 0, 0.0008, frame=(c, u, n_.cross(u), n_)), mt['PR_BLANCO']))
+        # estrella pegada al paño (sigue la onda): punta k=0 hacia +s, el borde de arriba (el remate del asta)
+        ro = hoist / 6; ri = ro * 0.382; sc, qc = hoist / 2, apex / 3
+        star_pts = [fp(sc + math.cos(k * math.pi / 5) * (ro if k % 2 == 0 else ri), qc + math.sin(k * math.pi / 5) * (ro if k % 2 == 0 else ri), side * 1.6) for k in range(10)]
+        parts.append(set_mat(fan_solid('estrella', fp(sc, qc, side * 1.6), star_pts, 0.0008), mt['PR_BLANCO']))
     return parts
 
 
