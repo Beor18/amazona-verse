@@ -1,9 +1,24 @@
 /* Content pack cap1 · historia "El día que el cielo se rompió" (guion de Kelvin García, v1.0)
    Los 8 pasos del capítulo son datos (texto, progreso, guía y, si avanzan solos, su disparador "hasta");
    las escenas con decisiones (terrenos, construir, la crecida, el Guardián, el transmisor y el mirador) son scripts del pack
-   que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí. */
+   que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
+   Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
+   construir y de la crecida, retrato neutro de la Voz y final del mirador (plano del bote y luz que parpadea tres veces).
+   Lo que depende de Kelvin (canon o arte) queda marcado en el código con «[KELVIN-n]» y listado en PENDIENTES_KELVIN. */
 (function () {
   'use strict';
+  // Marcadores para Kelvin: escenas del guion que no se hacen sin una decisión de canon o sin arte nuevo. Se buscan en content/cap1 con «[KELVIN-n]».
+  // Mientras tanto el juego usa lo neutro (retrato de señal, luz sin color de personaje, dibujo genérico de bote).
+  const PENDIENTES_KELVIN = [
+    { id: 'KELVIN-1', que: 'Identidad del Guardián (¿cotorra, humano u otra forma?): retrato, sprite y modelo 3D', donde: 'mundo.js (npcs), pack.js (retratos)', bloquea: 'arte del Guardián (P2-5)' },
+    { id: 'KELVIN-2', que: 'Orden del Guardián: el guion lo hace llegar antes de construir y ayudar (p.7-8); el juego lo hace llegar tras la crecida', donde: 'historia.js (talkGuardian, applyGuardianLook)', bloquea: 'p.8: el Guardián sostiene una pieza (P1-2)' },
+    { id: 'KELVIN-3', que: 'Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): ¿es canon? Una línea más y un detalle en su figura', donde: 'historia.js (useTransmitter), mundo.js (npcs)', bloquea: 'giro de la escena p.11' },
+    { id: 'KELVIN-4', que: 'Cara de la Voz del transmisor (silueta, onda o ninguna) y si es alguien del pacto de los 36 sin nombrarlo', donde: 'pack.js (RETRATO_VOZ)', bloquea: 'retrato definitivo' },
+    { id: 'KELVIN-5', que: 'Familia de Luma entrando al refugio (SCRIPT p.9): ni arte ni diseño de los personajes', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
+    { id: 'KELVIN-6', que: 'Diseño de la máquina experimental y del transmisor antiguo, y engranaje visible en el techo del refugio', donde: 'mundo.js (preparar, objetos del taller)', bloquea: 'P1-6 y P2-2, modelos en Blender' },
+    { id: 'KELVIN-7', que: 'Diseño del bote: el plano es un dibujo genérico (casco, mástil y dos velas) hasta el episodio 2', donde: 'historia.js (drawBlueprint)', bloquea: 'plano definitivo' },
+    { id: 'KELVIN-8', que: 'Quién contesta con la luz de la niebla: no se revela en el cap. 1 y la luz es neutra', donde: 'mundo.js (luzMirador)', bloquea: 'cliffhanger al cap. 2' },
+  ];
   const NEEDS = { madera: 4, piedra: 2, componente: 1 };
   const REFUGE_COST = { madera: 3, piedra: 2 };
   const REPAIR_COST = { madera: 1, componente: 1 };
@@ -50,12 +65,25 @@
     },
     costos: { NEEDS, REFUGE_COST, REPAIR_COST, REGALO_LUMA },
 
-    // Gancho del capítulo (inicio:capitulo → inicio:taller → inicio:ruptura): la Ruptura sacude la cámara
+    // Gancho del capítulo (SCRIPT p.1-3 · NARRATIVA «Gancho»), antes de dar el control:
+    //   inicio:capitulo  pantalla negra y viento (Narrador)
+    //   inicio:taller    corte al taller lleno de luz (fundido) y el VMMMM del mecanismo (Vittata)
+    //   inicio:ruptura   las nubes brillan, ZZZT, la cámara tiembla y una onda cruza el cielo; luego silencio negro (Narrador)
+    // Después Vittata abre los ojos: fundido desde el negro y aviso. Las capas son DOM del pack (G.c.apertura, ver preparar()):
+    // sin ellas el gancho es el de siempre.
     inicio(G) {
-      const L = G.dialogo.L, rupt = L('inicio:ruptura');
-      if (rupt[0]) rupt[0].onShow = () => { G.camara.shake(0.6, 1.2); G.audio.play('zzzt'); };
-      G.dialogo.say([...L('inicio:capitulo'), ...L('inicio:taller'), ...rupt],
-        () => G.ui.toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500));
+      const L = G.dialogo.L, A = G.c.apertura, cap = L('inicio:capitulo'), tal = L('inicio:taller'), rupt = L('inicio:ruptura');
+      const al = (l, f) => { if (l) l.onShow = f; };
+      if (A) A.negro();
+      G.audio.play('viento');
+      al(cap[1], () => G.audio.play('viento'));
+      al(tal[0], () => { if (A) A.claro(2400); G.audio.play('vmmm'); });
+      al(rupt[0], () => { G.camara.shake(0.6, 1.2); G.audio.play('zzzt'); if (A) A.ruptura(); });
+      al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
+      G.dialogo.say([...cap, ...tal, ...rupt], () => {
+        if (A) A.claro(2200);
+        G.ui.toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500);
+      });
     },
 
     preparar(G) {
@@ -65,10 +93,129 @@
       const toast = G.ui.toast, toastHTML = G.ui.toastHTML, hideToast = G.ui.hideToast;
       const { has, pay, missingText } = G.objetos;
       const advanceTo = n => G.misiones.advanceTo(n), checkProgress = () => G.misiones.check();
-      const capture = k => G.comic.capture(k);
+      // Las fotos del cómic salen sin el haz y la flecha de la guía (se vuelven a dibujar en el siguiente cuadro)
+      const capture = k => { G.fx.guide(null, 0); G.comic.capture(k); };
       const WATER_BASE = G.terreno.waterBase, FLOOD_LEVEL = C.FLOOD_LEVEL;
       const guardian = G.actores.npc('guardian');
       G.audio.define('zzzt', (t, a, A) => { A.noise(t, 1.0, { freq: 200, to: 4200, q: 6, gain: 0.28 }); A.tone(110, t, 1.0, { type: 'sawtooth', to: 40, gain: 0.1 }); });
+
+      // ---------- Capas DOM de las escenas: apertura y plano del bote ----------
+      // Las inyecta el pack (ni index.html ni ui.css): pointer-events: none, encima del HUD (z 5-6) y debajo del diálogo y la tarjeta (z 10).
+      // Con «reducir movimiento» no hay onda ni deslizamiento, solo fundidos y un brillo suave; el brillo no parpadea (sin destellos rápidos).
+      const REDUCIDO = G.renderer.REDUCED;
+      const quitar = id => { const e = document.getElementById(id); if (e) e.remove(); };
+      function estilos() {
+        if (document.getElementById('c1-escenas-css')) return;
+        const st = document.createElement('style'); st.id = 'c1-escenas-css';
+        st.textContent =
+          '#c1-fade{position:fixed;inset:0;z-index:9;background:#000;pointer-events:none;opacity:0}' +
+          '#c1-ruptura{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden}' +
+          '#c1-ruptura .brillo{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(176,255,228,.72),rgba(176,255,228,0) 62%);mix-blend-mode:screen;opacity:0;animation:c1-brillo 3.4s ease-out forwards}' +
+          '#c1-ruptura .onda{position:absolute;left:50%;top:36%;width:30vmax;height:30vmax;margin:-15vmax 0 0 -15vmax;border-radius:50%;border:.8vmax solid rgba(214,255,242,.85);' +
+          'box-shadow:0 0 5vmax rgba(160,255,225,.7),inset 0 0 5vmax rgba(160,255,225,.5);opacity:0;animation:c1-onda 2.7s cubic-bezier(.2,.6,.3,1) .5s forwards}' +
+          '@keyframes c1-brillo{0%{opacity:0}30%{opacity:1}100%{opacity:0}}' +
+          '@keyframes c1-onda{0%{transform:scale(.1);opacity:0}15%{opacity:.9}100%{transform:scale(3.4);opacity:0}}' +
+          '@media (prefers-reduced-motion:reduce){#c1-ruptura .onda{display:none}#c1-ruptura .brillo{animation-duration:2.2s}}' +
+          '#c1-plano{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 6vh);z-index:9;display:flex;justify-content:center;pointer-events:none;transition:opacity .25s ease}' +
+          '#c1-plano.sale{opacity:0}' +
+          '#c1-plano canvas{width:min(78vw,440px,70vh);height:auto;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45));animation:c1-plano-in .7s cubic-bezier(.2,1.2,.4,1) both}' +
+          '@keyframes c1-plano-in{from{opacity:0;transform:translateY(24px) rotate(-3deg) scale(.9)}to{opacity:1;transform:none}}' +
+          '@media (prefers-reduced-motion:reduce){#c1-plano canvas{animation:c1-plano-op .4s ease both}@keyframes c1-plano-op{from{opacity:0}to{opacity:1}}}';
+        document.head.appendChild(st);
+      }
+      let tFade = 0, tRupt = 0, tPlano = 0;
+      const dur = ms => (REDUCIDO ? Math.min(ms, 500) : ms);
+      const apertura = {
+        // Pantalla negra: sin ms es un corte seco; con ms, un fundido hasta el negro
+        negro(ms) {
+          estilos(); clearTimeout(tFade);
+          let f = document.getElementById('c1-fade');
+          if (!f) { f = document.createElement('div'); f.id = 'c1-fade'; f.setAttribute('aria-hidden', 'true'); document.body.appendChild(f); }
+          f.style.transition = ms ? 'opacity ' + dur(ms) + 'ms ease' : 'none';
+          void f.offsetWidth; // reflow: la transición arranca desde el valor actual
+          f.style.opacity = '1';
+        },
+        // Fundido desde el negro; la capa se quita cuando termina
+        claro(ms) {
+          const f = document.getElementById('c1-fade'); if (!f) return;
+          clearTimeout(tFade); const d = dur(ms || 1600);
+          f.style.transition = 'opacity ' + d + 'ms ease'; void f.offsetWidth; f.style.opacity = '0';
+          tFade = setTimeout(() => quitar('c1-fade'), d + 250);
+        },
+        // Las nubes brillan y una onda luminosa cruza el cielo (la cámara tiembla y suena ZZZT en historia.inicio)
+        ruptura() {
+          estilos(); quitar('c1-ruptura'); clearTimeout(tRupt);
+          const r = document.createElement('div'); r.id = 'c1-ruptura'; r.setAttribute('aria-hidden', 'true');
+          r.innerHTML = '<div class="brillo"></div><div class="onda"></div>';
+          document.body.appendChild(r);
+          tRupt = setTimeout(() => quitar('c1-ruptura'), 4300);
+        },
+        fin() { clearTimeout(tFade); clearTimeout(tRupt); quitar('c1-fade'); quitar('c1-ruptura'); },
+      };
+
+      // Plano del bote (SCRIPT p.12): lo dibuja Vittata en el mirador. Canvas como el símbolo de los 36; cuadro de 100×70 unidades.
+      // También decora la última viñeta del cómic (pack.js, comic.decorar).
+      // [KELVIN-7] El diseño del bote es provisional (casco, mástil y dos velas genéricos, sin números ni bandera) hasta el episodio 2.
+      function drawBlueprint(ctx, x, y, w) {
+        const u = w / 100, TINTA = '#e8f6ff', ORO = '#ffd27a', AGUA = '#7fd3c8';
+        ctx.save(); ctx.translate(x, y); ctx.scale(u, u);
+        const rr = (a, b, c, d, r) => { ctx.beginPath(); ctx.moveTo(a + r, b); ctx.arcTo(a + c, b, a + c, b + d, r); ctx.arcTo(a + c, b + d, a, b + d, r); ctx.arcTo(a, b + d, a, b, r); ctx.arcTo(a, b, a + c, b, r); ctx.closePath(); };
+        // papel azul con cuadrícula
+        rr(0, 0, 100, 70, 3); ctx.fillStyle = '#134a73'; ctx.fill();
+        ctx.save(); ctx.clip(); ctx.lineWidth = 0.25;
+        for (let i = 5; i < 100; i += 5) { ctx.strokeStyle = i % 25 ? 'rgba(191,232,255,.13)' : 'rgba(191,232,255,.26)'; ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 70); ctx.stroke(); }
+        for (let j = 5; j < 70; j += 5) { ctx.strokeStyle = j % 25 ? 'rgba(191,232,255,.13)' : 'rgba(191,232,255,.26)'; ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(100, j); ctx.stroke(); }
+        ctx.restore();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        rr(1.2, 1.2, 97.6, 67.6, 2.4); ctx.strokeStyle = 'rgba(232,246,255,.7)'; ctx.lineWidth = 0.6; ctx.stroke();
+        // eje central (trazo y punto) y casco en vista lateral
+        ctx.strokeStyle = 'rgba(232,246,255,.45)'; ctx.lineWidth = 0.4; ctx.setLineDash([3, 1.2, 0.6, 1.2]);
+        ctx.beginPath(); ctx.moveTo(52, 7); ctx.lineTo(52, 57); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = TINTA; ctx.lineWidth = 0.9; ctx.fillStyle = 'rgba(232,246,255,.1)';
+        ctx.beginPath(); ctx.moveTo(16, 40); ctx.lineTo(84, 40); ctx.bezierCurveTo(82, 49, 71, 54, 57, 54); ctx.lineTo(34, 54); ctx.bezierCurveTo(23, 54, 17.5, 48, 16, 40); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(30, 45, 1.5, 0, Math.PI * 2); ctx.arc(40, 45, 1.5, 0, Math.PI * 2); ctx.stroke();
+        // mástil y botavara; vela mayor y foque en oro
+        ctx.beginPath(); ctx.moveTo(52, 40); ctx.lineTo(52, 9); ctx.moveTo(52, 36); ctx.lineTo(74, 36); ctx.stroke();
+        ctx.strokeStyle = ORO; ctx.fillStyle = 'rgba(255,210,122,.2)';
+        ctx.beginPath(); ctx.moveTo(53.5, 11); ctx.lineTo(53.5, 34.5); ctx.lineTo(73, 34.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(50.5, 13); ctx.lineTo(50.5, 34.5); ctx.lineTo(33, 34.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // línea de flotación y una fila de olas
+        ctx.strokeStyle = AGUA; ctx.lineWidth = 0.6; ctx.setLineDash([2.2, 1.6]);
+        ctx.beginPath(); ctx.moveTo(8, 47); ctx.lineTo(92, 47); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = 14 + k * 12; ctx.moveTo(a, 58); ctx.quadraticCurveTo(a + 3, 56, a + 6, 58); ctx.quadraticCurveTo(a + 9, 60, a + 12, 58); } ctx.stroke();
+        // cotas: largo arriba y alto a la izquierda, con flechas (sin números: no hay medidas inventadas)
+        ctx.strokeStyle = 'rgba(255,210,122,.85)'; ctx.lineWidth = 0.5;
+        const cota = (x1, y1, x2, y2) => {
+          const a = Math.atan2(y2 - y1, x2 - x1);
+          ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+          for (const [px, py, s] of [[x1, y1, 1], [x2, y2, -1]]) { ctx.moveTo(px, py); ctx.lineTo(px + s * 1.7 * Math.cos(a - 0.4), py + s * 1.7 * Math.sin(a - 0.4)); ctx.moveTo(px, py); ctx.lineTo(px + s * 1.7 * Math.cos(a + 0.4), py + s * 1.7 * Math.sin(a + 0.4)); }
+          ctx.stroke();
+        };
+        ctx.beginPath(); ctx.moveTo(16, 3); ctx.lineTo(16, 38); ctx.moveTo(84, 3); ctx.lineTo(84, 38); ctx.moveTo(6, 9); ctx.lineTo(50, 9); ctx.moveTo(6, 40); ctx.lineTo(14, 40); ctx.stroke();
+        cota(16, 5.5, 84, 5.5); cota(8, 9, 8, 40);
+        // vista desde arriba (un casco puntiagudo) y cajetín
+        ctx.strokeStyle = TINTA; ctx.lineWidth = 0.6; ctx.fillStyle = 'rgba(232,246,255,.1)';
+        ctx.beginPath(); ctx.moveTo(6, 64.2); ctx.bezierCurveTo(12, 59.5, 24, 59.5, 31, 64.2); ctx.bezierCurveTo(24, 68.8, 12, 68.8, 6, 64.2); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(6, 64.2); ctx.lineTo(31, 64.2); ctx.stroke();
+        rr(66, 60.5, 31, 7.5, 1); ctx.strokeStyle = 'rgba(232,246,255,.6)'; ctx.stroke();
+        ctx.fillStyle = ORO; ctx.font = '700 3.3px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('PLANO · BOTE', 81.5, 64.4);
+        ctx.restore();
+        return w * 0.7;
+      }
+      // Muestra u oculta el plano (sale con un fundido corto; cada vez que se muestra se dibuja de nuevo y su animación arranca)
+      function mostrarPlano(on) {
+        clearTimeout(tPlano);
+        if (!on) { const p = document.getElementById('c1-plano'); if (p) { p.classList.add('sale'); tPlano = setTimeout(() => quitar('c1-plano'), 320); } return; }
+        estilos(); quitar('c1-plano');
+        const p = document.createElement('div'); p.id = 'c1-plano';
+        const c = document.createElement('canvas'); c.width = 720; c.height = 504;
+        c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Plano de un bote: casco, mástil y dos velas');
+        p.appendChild(c); document.body.appendChild(p);
+        drawBlueprint(c.getContext('2d'), 0, 0, c.width);
+      }
+      const planoVisible = () => { const p = document.getElementById('c1-plano'); return !!p && !p.classList.contains('sale'); };
+      G.on('apply', () => { apertura.fin(); clearTimeout(tPlano); quitar('c1-plano'); }, 50);
 
       // ---------- Interactuables ----------
       const add = G.interaccion.add;
@@ -181,7 +328,7 @@
         log('ShelterConstructed', { parcel: build.parcel, attempt: S.builds.length });
         build = null; ghost.visible = false; hideToast();
         C.placeRefugeMesh(); syncRefugeInteractable();
-        G.audio.play('unlock'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24);
+        G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
         say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]));
         S.event = { t: 0, dur: 8 };
         applyGuardianLook();
@@ -192,9 +339,20 @@
       G.on('update', updateGhost, 45);
 
       // ---------- La crecida: lluvia, el río sube y el refugio del terreno A se inunda ----------
+      // Sonido de la crecida (CAP1_PENDIENTE P1-4): lluvia continua (se vuelve a tocar cada segundo y se solapa), un trueno lejano al
+      // empezar y el rugido del río al subir. Corre con el tiempo del juego (e.t), así que se puede probar con tick().
+      const suena = { t: 0, lluvia: 0, trueno: false, crecida: false };
+      function sonidoCrecida(e) {
+        if (e.t < suena.t) { suena.lluvia = 0; suena.trueno = suena.crecida = false; } // evento nuevo
+        suena.t = e.t;
+        if (e.t >= suena.lluvia) { suena.lluvia = e.t + 1; G.audio.play('lluvia'); }
+        if (!suena.trueno && e.t > 0.8) { suena.trueno = true; G.audio.play('trueno'); }
+        if (!suena.crecida && e.t > e.dur * 0.3) { suena.crecida = true; G.audio.play('crecida'); }
+      }
       G.on('update', dt => {
         if (!S.event) return;
         const e = S.event; e.t += dt;
+        sonidoCrecida(e);
         const k = Math.min(1, e.t / (e.dur * 0.6));
         const fall = e.t > e.dur * 0.8 ? Math.min(1, (e.t - e.dur * 0.8) / (e.dur * 0.2)) : 0;
         G.agua.setLevel(WATER_BASE + (FLOOD_LEVEL - WATER_BASE) * k * (1 - fall * 0.85));
@@ -223,6 +381,8 @@
         }
       }
       function afterRain() {
+        // [KELVIN-5] SCRIPT p.9: aquí entraría la familia de Luma al refugio («Pensé que hoy lo habíamos perdido todo»). Sin arte ni
+        // diseño de la familia no se puede hacer; hoy solo habla Luma (ver PENDIENTES_KELVIN).
         applyGuardianLook();
         if (S.step === 4) { advanceTo(5); toast('Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
@@ -238,6 +398,7 @@
 
       // ---------- Guardián, transmisor y mirador ----------
       function talkGuardian() {
+        // [KELVIN-2] El guion (p.7-8) lo hace llegar antes de construir y sostener una pieza con Vittata; aquí llega tras la crecida.
         if (S.step === 5) {
           const present = S.refuge && !S.refuge.damaged
             ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
@@ -271,12 +432,16 @@
         S.transmitterOn = true;
         C.applyTallerLook();
         log('TransmitterActivated');
-        G.audio.play('chorus'); G.camara.shake(0.15, 0.6); G.fx.burst(TRX.x, H(TRX.x, TRX.z) + 1.6, TRX.z, 'gold', 30);
+        G.audio.play('chorus'); G.audio.play('bip'); G.camara.shake(0.15, 0.6); G.fx.burst(TRX.x, H(TRX.x, TRX.z) + 1.6, TRX.z, 'gold', 30);
         showSymbol(true);
+        // La Voz no es el Guardián (CAP1_PENDIENTE P0-2): retrato neutro de señal y estática de radio bajo su primera línea
+        const voz = L('evento:TransmitterActivated', [{ who: 'Voz', img: IMG.VOZ, text: 'Si alguien puede escucharme… …el pacto…' }]);
+        if (voz[0]) voz[0].onShow = () => G.audio.play('estatica');
         say([
           { who: 'Vittata', img: IMG.V, text: '¡Ese transmisor llevaba años sin funcionar!' },
-          ...L('evento:TransmitterActivated', [{ who: 'Voz', img: IMG.G, text: 'Si alguien puede escucharme… …el pacto…' }]),
+          ...voz,
           ...L('interact:simbolo', [{ who: 'Vittata', img: IMG.V, text: '¿Qué pacto? Mira: un símbolo dividido en 36 fragmentos.' }]),
+          // [KELVIN-3] Aquí iría la medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»), si es canon: hoy solo reconoce el símbolo y calla.
           ...L('interact:simbolo_guardian', [{ who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' }]),
         ], () => {
           showSymbol(false);
@@ -286,18 +451,29 @@
       }
       function useMirador() {
         if (S.step !== 7) { say([{ who: 'Vittata', img: IMG.V, text: 'Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas.' }]); return; }
-        const I0 = G.terreno.islas[0];
-        G.camara.yaw = Math.atan2(MIRADOR.x - I0.x, MIRADOR.z - I0.z);
+        // Final (SCRIPT p.12 · NARRATIVA «Final»): la cámara mira a la isla de la luz; Vittata abre el plano del bote (tarjeta en pantalla
+        // y chispa de sonido); al seguir, la luz de la niebla parpadea tres veces como respuesta a la señal; el Guardián calla y habla el Narrador.
+        const luz = C.luzMirador, I0 = luz ? luz.isla : G.terreno.islas[0];
+        if (I0) G.camara.yaw = Math.atan2(MIRADOR.x - I0.x, MIRADOR.z - I0.z);
+        const bote = L('evento:BoatBlueprintUnlocked', [{ who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' }]);
+        const aviso = L('evento:LocationDiscoveredMirador', [
+          { who: 'Luma', img: IMG.L, text: 'Mira, Vittata. Esa luz en la niebla…' },
+          { who: 'Luma', img: IMG.L, text: '¡Parpadeó tres veces! Alguien contesta.' },
+        ]);
+        if (bote[0]) bote[0].onShow = () => { mostrarPlano(true); G.audio.play('nido_chispa'); };
+        if (aviso[0]) aviso[0].onShow = () => { mostrarPlano(false); if (luz) luz.parpadear(3); };
         say([
           { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
           { who: 'Luma', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
-          ...L('evento:BoatBlueprintUnlocked', [{ who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' }]),
-          ...L('evento:LocationDiscoveredMirador'),
-          ...L('evento:ChapterCompleted', [{ who: 'Narrador', img: IMG.V, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' }]),
+          ...bote,
+          ...aviso,
+          ...L('evento:ChapterCompleted', [{ who: 'Narrador', img: IMG.N, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' }]),
         ], () => {
+          mostrarPlano(false);
           S.boatPlan = true;
           log('BoatBlueprintUnlocked');
           log('LocationDiscoveredMirador');
+          if (luz) luz.destello(); // la foto de la última viñeta lleva la luz en su punto más brillante
           capture('final');
           S.complete = true;
           log('ChapterCompleted', { refugeParcel: S.refuge ? S.refuge.parcel : null });
@@ -332,7 +508,8 @@
       G.on('apply', () => { build = null; ghost.visible = false; }, 42);
       G.on('apply', () => showSymbol(false), 50);
 
-      Object.assign(C, { build: () => build, startBuild, cancelBuild, placeRefuge, openParcelCard, syncRefugeInteractable, applyGuardianLook, drawSymbol, showSymbol, examine });
+      Object.assign(C, { build: () => build, startBuild, cancelBuild, placeRefuge, openParcelCard, syncRefugeInteractable, applyGuardianLook, drawSymbol, showSymbol, examine,
+        apertura, drawBlueprint, mostrarPlano, planoVisible, pendientesKelvin: PENDIENTES_KELVIN });
     },
   });
 })();
