@@ -20,7 +20,8 @@
                 criadero (`<almacen>.criadero`: cápsulas/huevos con su estado y XP) y aula (pack.aula.clave: ajustes ES/EN,
                 texto corto, voz, grado, estación y registro del Modo Maestro). Su clave propia manda: la copia solo se
                 restaura al arrancar si esa clave está CORRUPTA (si falta porque se borró a propósito, no se resucita).
-     resumen    solo lectura, derivado al escribir: { idioma, criadero: { huevos, activa, etapa, nivel, xp } }.
+     resumen    solo lectura, derivado al escribir: { idioma, criadero: { huevos, activa, etapa, nivel, xp },
+                nido: { activo (hay una misión hecha), presentado (Luma ya lo presentó), visitado } }.
    MIGRACIONES: primero las del pack (v), después las del motor (formato). cap1 v4 → v5 = mapa nuevo (pack) + formato 1 → 2
      (motor: perfil saneado y look modular, misiones completas, Diario y ropa sin duplicados, cómic completo y satélites).
      Una partida de una versión FUTURA no se carga: se aparta en .unreadable.
@@ -136,9 +137,11 @@ AVE.module('guardado', function (G) {
     for (const [nombre, clave] of Object.entries(satelitesDef())) { const d = leerJSON(be.get(clave)); out[nombre] = sateliteSano(nombre, d) ? d : null; }
     return out;
   }
-  function resumenDe(sat) {
-    const r = { idioma: sat.aula && sat.aula.ajustes && sat.aula.ajustes.idioma === 'en' ? 'en' : 'es', criadero: null };
+  function resumenDe(sat, missions) {
+    const r = { idioma: sat.aula && sat.aula.ajustes && sat.aula.ajustes.idioma === 'en' ? 'en' : 'es', criadero: null, nido: null };
     const c = sat.criadero;
+    // Nido del mundo (criadero.js): aparece con la primera misión; Luma lo presenta una sola vez (st.presentado)
+    r.nido = { activo: Object.values(esObj(missions) ? missions : {}).some(v => v === true), presentado: !!(c && c.presentado), visitado: !!(c && c.vistos && c.vistos.abierto) };
     if (c) {
       const caps = c.capsulas || {}, a = c.activa && caps[c.activa], CR = G.criadero;
       let etapa = null, nivel = null;
@@ -169,7 +172,7 @@ AVE.module('guardado', function (G) {
     o.comic = limpiarComic(S.comic);
     if (sinCapturas) o.captures = {};
     o.satelites = leerSatelites(be || almacen);
-    o.resumen = resumenDe(o.satelites);
+    o.resumen = resumenDe(o.satelites, o.missions);
     return o;
   }
   function serialize(sinCapturas, be) { return JSON.stringify(paraGuardar(sinCapturas, be)); }
@@ -188,7 +191,7 @@ AVE.module('guardado', function (G) {
       m.wear = esObj(d.wear) ? d.wear : {};
       m.comic = limpiarComic(d.comic);
       m.satelites = leerSatelites(be);
-      m.resumen = resumenDe(m.satelites);
+      m.resumen = resumenDe(m.satelites, m.missions);
       return m;
     },
   };
@@ -375,6 +378,8 @@ AVE.module('guardado', function (G) {
       S.step = 3; S.comic.title = 'Título de prueba';
       if (mision) S.missions[mision] = true;
       if (hallazgo) S.field = [hallazgo.id];
+      const lookTecho = { species: 'agilis', accessories: { neck: { id: 'panuelo', color: '#7a4fb3' } } };
+      S.comic.vinetas = Object.assign({}, S.comic.vinetas, { techo: { look: lookTecho, seq: 99 } }); // viñeta del motor con su look
       const r1 = guardarEn(C), d1 = leerJSON(NATIVO.get(KT));
       check('Guardar escribe la partida en su clave', r1 === 'ok' && !!d1, r1);
       check(`Esquema v${SAVE_VERSION} · formato ${FORMATO}: perfil, apariencia, misiones, Diario, ropa, cómic, satélites y resumen`,
@@ -393,6 +398,13 @@ AVE.module('guardado', function (G) {
       check('Tras cerrar y recargar, la partida persiste igual', ok3 && C2.fuente === 'principal' && comparable(JSON.parse(serialize(false, C2.be))) === esperado,
         `paso ${S.step} · ${S.profile.name} · fuente ${C2.fuente}`);
       check('Persisten misiones y Diario', (!mision || S.missions[mision] === true) && (!hallazgo || S.field[0] === hallazgo.id));
+      check('Persiste la viñeta del motor con la apariencia de su momento', S.comic.vinetas.techo && JSON.stringify(S.comic.vinetas.techo.look) === JSON.stringify(lookTecho));
+      // Nido y presentación de Luma: viajan en la copia del criadero y en el resumen
+      const FN = almacenFalso();
+      FN.set(sat.criadero, JSON.stringify({ v: 1, activa: 'h1', capsulas: { h1: { estado: 'incubando', xp: 40 } }, presentado: true, vistos: { abierto: 1 } }));
+      guardarEn(ctx(FN, KT)); const dN = leerJSON(FN.get(KT));
+      check('Se guardan el nido y la presentación de Luma', dN && dN.satelites.criadero && dN.satelites.criadero.presentado === true && dN.resumen.nido &&
+        dN.resumen.nido.presentado && dN.resumen.nido.visitado && dN.resumen.nido.activo === Object.values(S.missions).some(v => v === true), dN ? JSON.stringify(dN.resumen.nido) : '');
       // 4. Corrupción: principal truncada → se recupera .prev y lo dañado se aparta
       NATIVO.set(KT, rawPaso4.slice(0, Math.floor(rawPaso4.length / 2)));
       const ok4 = cargarDe(C2);
@@ -416,7 +428,10 @@ AVE.module('guardado', function (G) {
       vieja.profile = { created: true, name: 'Ana 787 555 0123', preset: 'agilis', outfit: 'morado', accessory: 'gafas' }; // perfil viejo, sin look
       vieja.field = hallazgo ? [hallazgo.id, hallazgo.id] : []; vieja.unlocked = ['pava', 'pava']; vieja.step = 2;
       vieja.comic = { title: 'Mi cómic', captions: { intro: 'escríbeme a ana@correo.com' } }; vieja.captures = {};
-      const capViejo = { v: 1, activa: 'h1', vista: 'h1', capsulas: { h1: { estado: 'nacida', xp: 300 } }, otorgado: {}, banco: 0, cargas: 2, fuentes: { aprender: 300 } };
+      const capViejo = { v: 1, activa: 'h1', vista: 'h1', capsulas: { h1: { estado: 'nacida', xp: 300 } }, otorgado: {}, banco: 0, cargas: 2, fuentes: { aprender: 300 },
+        presentado: true, vistos: { abierto: 1, 'nacio:h1': 1 }, compa: 'h1' };
+      const conMision = !!mision && mision !== nueva;
+      if (conMision) vieja.missions[mision] = true; // con una misión hecha, el nido ya está en el mundo
       const aulaVieja = { v: 1, ajustes: { idioma: 'en', corto: true, voz: false, grado: '5-6', estacion: 'Estación 4' }, partidas: [{ grado: '5-6', pasos: 8 }] };
       F.set(KT, JSON.stringify(vieja)); F.set(sat.criadero, JSON.stringify(capViejo)); if (sat.aula) F.set(sat.aula, JSON.stringify(aulaVieja));
       const CF = ctx(F, KT), m = leerMejor(CF).d;
@@ -429,6 +444,9 @@ AVE.module('guardado', function (G) {
           m.field.length === (hallazgo ? 1 : 0) && m.unlocked.length === 1);
         const cr = m.satelites.criadero, rc = m.resumen && m.resumen.criadero;
         check('Migra el criadero (huevos, etapa y XP)', cr && cr.capsulas.h1.xp === 300 && rc && rc.huevos === 1 && rc.xp === 300 && (!G.criadero || !!rc.etapa), rc ? `${rc.huevos} huevo · ${rc.etapa} · nivel ${rc.nivel} · ${rc.xp} XP` : 'sin criadero');
+        const nm = m.resumen && m.resumen.nido;
+        check('Migra el nido y la presentación de Luma (no se repite)', cr && cr.presentado === true && cr.vistos.abierto === 1 && nm && nm.presentado && nm.visitado && nm.activo === conMision,
+          nm ? JSON.stringify(nm) : 'sin nido');
         if (sat.aula) check('Migra aula/Modo Maestro y ajustes ES/EN', m.satelites.aula && m.satelites.aula.ajustes.idioma === 'en' && m.satelites.aula.partidas.length === 1 && m.resumen.idioma === 'en');
         const js = JSON.stringify(m);
         check('La migración limpia datos personales (teléfono y correo)', !js.includes('555 0123') && !js.includes('ana@') && m.profile.name === 'Ana', m.profile.name);
@@ -439,7 +457,8 @@ AVE.module('guardado', function (G) {
       const RF = almacenFalso(); RF.set(sat.criadero, '{roto');
       const copia = { satelites: { criadero: capViejo } };
       const rep1 = repararSatelites(RF, copia);
-      check('Criadero corrupto: se restaura desde la copia de la partida', rep1.includes('criadero') && leerJSON(RF.get(sat.criadero)).capsulas.h1.xp === 300 && RF.get(sat.criadero + '.unreadable') === '{roto');
+      check('Criadero corrupto: se restaura desde la copia (con XP y la presentación de Luma hecha)', rep1.includes('criadero') && leerJSON(RF.get(sat.criadero)).capsulas.h1.xp === 300 &&
+        leerJSON(RF.get(sat.criadero)).presentado === true && RF.get(sat.criadero + '.unreadable') === '{roto');
       const RB = almacenFalso(); const rep2 = repararSatelites(RB, copia);
       check('Criadero borrado a propósito: no se resucita', rep2.length === 0 && RB.get(sat.criadero) === null);
       // 6. Almacén bloqueado (modo privado, política o throw): la sesión sigue en memoria

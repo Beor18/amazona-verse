@@ -3,9 +3,16 @@
      viñeta, el cómic guarda la apariencia del jugador de ese momento (S.comic.vinetas[id] = { look, seq }) y, si el pack
      no capturó el mundo para esa viñeta, lo captura. Cambiarse de ropa después no reescribe la historia. Las partidas
      viejas sin look usan el actual.
+   - Viñetas del motor (cualquier pack; comic.vinetasMotor = false las quita, o se redefine una con su id): ganchos de otros
+     sistemas que se vuelven eventos narrativos una vez por partida y nunca en las baterías (G.quiet):
+       G.emit('posado', { tipo, que, altura }) (movimiento): techo o cumbrera → FirstRoofPerch; rama a 2,5 m o más →
+         FirstHighBranchPerch.
+       G.emit('criadero', 'nido') (Luma presenta el nido) → NestAppeared; G.emit('criadero', 'eclosion', { id, imagen? })
+         → ChickHatched (con la foto de la escena del criadero; sin foto, el nido y la eclosión se ilustran).
+     Las viñetas van en el orden en que pasaron.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida
      (0 = el texto de la historia); S.comic.title = uno de los títulos.
-   - Página de 1080×1520: portada, viñetas en cuadrícula o tira (comicLayout, sin solapes) con marco de tinta y, en cada
+   - Página de 1080×1520 (más alta si hay más de 4 viñetas): portada, viñetas en cuadrícula o tira (comicLayout, sin solapes) con marco de tinta y, en cada
      una, el retrato 3D del jugador con su look de ese momento (de busto si img = 'portrait'; si no, un medallón abajo a la
      izquierda, lejos de lo que dibuja decorar).
    - PNG fiable: canvas.toBlob (o toDataURL de respaldo), con la firma PNG y el IHDR (ancho y alto) verificados. Si el lienzo
@@ -66,10 +73,10 @@ AVE.module('comic', function (G) {
     let nuevas = 0;
     for (; vistos < ev.length; vistos++) {
       const e = ev[vistos];
-      for (const v of C.vinetas || []) {
+      for (const v of VINETAS) {
         if (v.needs !== e.key || vin()[v.id]) continue;
         vin()[v.id] = { look: lookActual(), seq: e.seq };
-        if (v.img && v.img !== 'portrait' && !S.captures[v.img]) capture(v.img); // sin WebGL o sin tamaño: queda pendiente
+        if (v.img && v.img !== 'portrait' && !v.sinCaptura && !S.captures[v.img]) capture(v.img); // sin WebGL o sin tamaño: queda pendiente
         nuevas++;
       }
     }
@@ -77,6 +84,65 @@ AVE.module('comic', function (G) {
     return nuevas;
   }
   G.on('update', () => { if (Array.isArray(S.events) && S.events.length !== vistos) revisarEventos(); }, 79);
+
+  // ---------- Viñetas del motor: eventos de sistemas que sirven a cualquier pack (movimiento y criadero) ----------
+  const VIT = (G.pack.jugador && G.pack.jugador.nombre) || 'Vittata';
+  const EV_MOTOR = {
+    FirstRoofPerch: { type: 'LocationDiscovered', loc: null, chars: ['vittata'], scene: 'perch' },
+    FirstHighBranchPerch: { type: 'LocationDiscovered', loc: null, chars: ['vittata'], scene: 'perch' },
+    NestAppeared: { type: 'LocationDiscovered', loc: null, chars: ['vittata'], scene: 'nest' },
+    ChickHatched: { type: 'CharacterMet', loc: null, chars: ['vittata'], scene: 'hatch' },
+  };
+  if (G.eventos.defs) for (const [k, d] of Object.entries(EV_MOTOR)) if (!G.eventos.defs[k]) G.eventos.defs[k] = d;
+  const VMOTOR = [
+    { id: 'techo', img: 'techo', needs: 'FirstRoofPerch',
+      texto: () => L(`${VIT} aterrizó en un techo por primera vez. ¡Desde arriba todo se ve distinto!`, `${VIT} landed on a roof for the first time. Everything looks different from above!`),
+      opciones: [() => L('Desde el techo se veía todo alrededor.', 'From the roof we could see everything around.'),
+        () => L('Aprendimos a aterrizar con calma, sin prisa.', 'We learned to land calmly, without rushing.'),
+        () => L('Allá arriba el viento nos despeinó las plumas.', 'Up there the wind ruffled our feathers.')] },
+    { id: 'rama', img: 'rama', needs: 'FirstHighBranchPerch',
+      texto: () => L(`${VIT} se posó en una rama alta por primera vez, como las cotorras del bosque.`, `${VIT} perched on a high branch for the first time, like the forest parrots.`),
+      opciones: [() => L('Desde la rama mirábamos el bosque.', 'From the branch we watched the forest.'),
+        () => L('Agarrarse bien a una rama también se aprende.', 'Holding on to a branch is something you learn too.'),
+        () => L('Allá arriba el bosque sonaba distinto.', 'Up there the forest sounded different.')] },
+    { id: 'nido', img: 'nido', needs: 'NestAppeared', sinCaptura: true, ilustracion: 'nido',
+      texto: () => L('Encontramos un nido con una cápsula. Lo que aprenda le dará calor.', 'We found a nest with a capsule. What I learn will keep it warm.'),
+      opciones: [() => L('Un nido nuevo nos esperaba cerca del camino.', 'A new nest was waiting for us near the path.'),
+        () => L('Cada cosa que aprendo ayuda a mi cotorrita.', 'Everything I learn helps my little parrot.'),
+        () => L('Prometí visitar el nido muy seguido.', 'I promised to visit the nest often.')] },
+    { id: 'eclosion', img: 'eclosion', needs: 'ChickHatched', sinCaptura: true, ilustracion: 'eclosion',
+      texto: () => L('¡Nació mi cotorrita! Creció con todo lo que aprendí.', 'My little parrot hatched! It grew with everything I learned.'),
+      opciones: [() => L('Le di la bienvenida a mi cotorrita.', 'I welcomed my little parrot.'),
+        () => L('La cuidaré y seguiré aprendiendo para que crezca.', 'I will care for it and keep learning so it grows.'),
+        () => L('Un día volará libre en el bosque.', 'One day it will fly free in the forest.')] },
+  ];
+  const VINETAS = (C.vinetas || []).concat(C.vinetasMotor === false ? [] : VMOTOR.filter(v => !(C.vinetas || []).some(p => p.id === v.id)));
+
+  // Ganchos de otros sistemas → eventos narrativos (una vez por partida; nunca en las baterías: G.quiet)
+  const RAMA_ALTA = 2.5; // m sobre el terreno
+  function registrar(key, datos) {
+    if (G.quiet || C.vinetasMotor === false || G.eventos.had(key)) return false;
+    G.eventos.log(key, datos || {});
+    revisarEventos(); // la viñeta nace en este instante, con la apariencia de ahora
+    return true;
+  }
+  function alPosarse(info) {
+    if (!info || typeof info !== 'object') return false;
+    const alt = Math.round((Number(info.altura) || 0) * 10) / 10;
+    if (info.que === 'techo' || info.que === 'cumbrera') return registrar('FirstRoofPerch', { superficie: info.que, altura: alt });
+    if (info.que === 'rama' && alt >= RAMA_ALTA) return registrar('FirstHighBranchPerch', { superficie: 'rama', altura: alt });
+    return false;
+  }
+  G.on('posado', info => alPosarse(info));
+  G.on('criadero', (tipo, datos) => {
+    if (tipo === 'nido') registrar('NestAppeared', {});
+    else if (tipo === 'eclosion') {
+      if (G.quiet || C.vinetasMotor === false || G.eventos.had('ChickHatched')) return;
+      const im = datos && datos.imagen; // foto de la escena del criadero (si la da)
+      if (typeof im === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(im) && im.length > 2000 && im.length < 800000) S.captures.eclosion = im;
+      registrar('ChickHatched', { cria: datos && typeof datos.id === 'string' ? datos.id.slice(0, 24) : null });
+    }
+  });
 
   // ---------- Selección narrativa ----------
   const TITULOS = (C.titulos && C.titulos.length ? C.titulos : [C.tituloDefecto || 'Mi cómic']).slice();
@@ -92,10 +158,12 @@ AVE.module('comic', function (G) {
   }
   function comicPanels() {
     revisarEventos();
-    return (C.vinetas || []).filter(v => G.eventos.had(v.needs)).map(v => {
+    const seqDe = key => { const e = S.events.find(ev => ev.key === key); return e && e.seq ? e.seq : Infinity; };
+    // En el orden en que pasaron (a igual orden, el de la definición)
+    return VINETAS.filter(v => G.eventos.had(v.needs)).map((v, k) => {
       const ops = opcionesDe(v), i = eleccion(v, ops), r = vin()[v.id];
-      return { id: v.id, img: v.img, needs: v.needs, text: ops[i], opciones: ops, eleccion: i, look: (r && r.look) || null };
-    });
+      return { id: v.id, img: v.img, needs: v.needs, ilustracion: v.ilustracion || null, text: ops[i], opciones: ops, eleccion: i, look: (r && r.look) || null, seq: seqDe(v.needs), k };
+    }).sort((a, b) => a.seq - b.seq || a.k - b.k);
   }
   const tituloValido = t => (TITULOS.includes(t) ? t : TITULOS[0]);
   function orderedPanels() {
@@ -160,25 +228,72 @@ AVE.module('comic', function (G) {
     return out;
   }
 
+  // Alto de la página: 1520 hasta 4 viñetas; con más, crece para que cada viñeta conserve su tamaño
+  function altoPagina(n, layout) { return Math.max(H, Math.round(layout === 'strip' ? 430 + n * 272.5 : 430 + Math.ceil(n / 2) * 545)); }
+
+  // Ilustraciones del motor (sin foto del momento): el nido con su huevo y la eclosión
+  function ilustrar(x, tipo, ix, iy, iw, ih) {
+    const s = Math.min(iw * 0.62, ih * 1.1), cx = ix + iw * 0.6, cy = iy + ih * 0.56;
+    const cielo = x.createLinearGradient(ix, iy, ix, iy + ih); cielo.addColorStop(0, '#cdeedb'); cielo.addColorStop(1, '#5d9e6c');
+    x.fillStyle = cielo; x.fillRect(ix, iy, iw, ih);
+    const luz = x.createRadialGradient(cx, cy - s * 0.2, s * 0.05, cx, cy - s * 0.2, s * 0.9);
+    luz.addColorStop(0, 'rgba(255,248,214,.85)'); luz.addColorStop(1, 'rgba(255,248,214,0)'); x.fillStyle = luz; x.fillRect(ix, iy, iw, ih);
+    for (let k = 0; k < 14; k++) { // hojas del dosel
+      const hx = ix + iw * ((k * 0.173 + 0.05) % 1), hy = iy + ih * (0.04 + (k % 4) * 0.07), r = s * (0.16 + (k % 3) * 0.05);
+      x.fillStyle = k % 2 ? 'rgba(36,104,60,.75)' : 'rgba(58,135,78,.7)';
+      x.beginPath(); x.ellipse(hx, hy, r, r * 0.42, (k * 0.9) % Math.PI, 0, Math.PI * 2); x.fill();
+    }
+    x.lineCap = 'round'; x.strokeStyle = '#5b3a1e'; x.lineWidth = Math.max(6, s * 0.09); // rama
+    x.beginPath(); x.moveTo(ix - 10, cy + s * 0.42); x.quadraticCurveTo(cx - s * 0.2, cy + s * 0.5, ix + iw + 10, cy + s * 0.28); x.stroke();
+    const nidoY = cy + s * 0.2;
+    x.fillStyle = '#6e4a2a'; x.beginPath(); x.ellipse(cx, nidoY, s * 0.46, s * 0.2, 0, 0, Math.PI); x.fill(); // cuenco
+    x.strokeStyle = '#a8793f'; x.lineWidth = Math.max(2, s * 0.018);
+    for (let k = 0; k < 12; k++) { const t = k / 11; x.beginPath(); x.ellipse(cx, nidoY + t * s * 0.14, s * (0.46 - t * 0.1), s * (0.08 + t * 0.03), k % 2 ? 0.05 : -0.05, 0, Math.PI); x.stroke(); }
+    const huevo = (ex, ey, rx, ry) => {
+      const g = x.createRadialGradient(ex - rx * 0.35, ey - ry * 0.4, rx * 0.1, ex, ey, ry * 1.1);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#d9d2c2'); x.fillStyle = g;
+      x.beginPath(); x.ellipse(ex, ey, rx, ry, 0, 0, Math.PI * 2); x.fill();
+    };
+    if (tipo === 'eclosion') {
+      // Cría asomando del cascarón partido, la otra mitad a un lado y destellos
+      const ex = cx, ey = nidoY - s * 0.12, rx = s * 0.15, ry = s * 0.2;
+      x.fillStyle = '#7fc35a'; x.beginPath(); x.arc(ex, ey - ry * 0.55, rx * 0.85, 0, Math.PI * 2); x.fill(); // cabeza
+      x.fillStyle = '#9fd77a'; x.beginPath(); x.arc(ex - rx * 0.25, ey - ry * 0.75, rx * 0.35, 0, Math.PI * 2); x.fill(); // plumón
+      x.fillStyle = '#f2a03d'; x.beginPath(); x.moveTo(ex + rx * 0.55, ey - ry * 0.6); x.lineTo(ex + rx * 1.05, ey - ry * 0.45); x.lineTo(ex + rx * 0.55, ey - ry * 0.3); x.closePath(); x.fill(); // pico
+      x.fillStyle = '#10241c'; x.beginPath(); x.arc(ex + rx * 0.2, ey - ry * 0.65, rx * 0.12, 0, Math.PI * 2); x.fill(); // ojo
+      x.fillStyle = '#fff'; x.beginPath(); x.arc(ex + rx * 0.24, ey - ry * 0.69, rx * 0.04, 0, Math.PI * 2); x.fill();
+      x.save(); x.beginPath(); x.moveTo(ex - rx, ey - ry * 0.05); // mitad de abajo con borde quebrado
+      for (let k = 0; k <= 8; k++) x.lineTo(ex - rx + (2 * rx * k) / 8, ey - ry * (k % 2 ? 0.28 : 0.02));
+      x.lineTo(ex + rx, ey + ry); x.lineTo(ex - rx, ey + ry); x.closePath(); x.clip(); huevo(ex, ey, rx, ry); x.restore();
+      x.save(); x.translate(ex + rx * 2.1, ey + ry * 0.55); x.rotate(0.9); // mitad de arriba en el nido
+      x.beginPath(); x.rect(-rx, -ry, 2 * rx, ry * 0.75); x.clip(); huevo(0, 0, rx, ry); x.restore();
+      x.fillStyle = '#ffe27a';
+      for (const [dx, dy, r] of [[-1.9, -1.4, 0.16], [1.6, -1.6, 0.12], [2.2, -0.6, 0.09], [-2.4, -0.3, 0.1]]) {
+        const sx = ex + dx * rx, sy = ey + dy * ry * 0.7, R = r * s;
+        x.beginPath(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, rr = k % 2 ? R * 0.35 : R; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } x.closePath(); x.fill();
+      }
+    } else huevo(cx, nidoY - s * 0.1, s * 0.14, s * 0.19);
+  }
+
   // ---------- Composición ----------
   let ultimoRender = null;
   // opts.seguro: solo imágenes embebidas (data:), para un lienzo que no quede contaminado
   async function renderComic(target, opts) {
     opts = opts || {};
-    target.width = W; target.height = H;
+    const CM = S.comic;
+    const panels = orderedPanels(), HP = altoPagina(panels.length, CM.layout);
+    target.width = W; target.height = HP;
     const x = target.getContext('2d');
     try { await document.fonts.load('700 40px Fredoka'); await document.fonts.load('400 24px "Atkinson Hyperlegible"'); } catch (e) { /* fuente de respaldo */ }
-    const CM = S.comic;
-    const panels = orderedPanels();
     const propia = src => !!src && (!opts.seguro || /^data:/.test(src));
     const portrait = await retratoDe(null, 512);
     const vit = propia(G.actores.sprite) ? await loadImg(G.actores.sprite) : null;
     const imgs = {};
-    for (const k of C.capturas || []) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]) : null;
+    for (const k of new Set((C.capturas || []).concat(panels.map(p => p.img).filter(k => k && k !== 'portrait')))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]) : null;
     // Retratos de cada viñeta, en secuencia (el renderizador de retratos es uno solo)
     const rets = [];
     for (const p of panels) rets.push(p.img === 'portrait' ? await retratoDe(p.look, 512, false) : await retratoDe(p.look, 320));
-    x.fillStyle = '#10241c'; x.fillRect(0, 0, W, H);
+    x.fillStyle = '#10241c'; x.fillRect(0, 0, W, HP);
     // Portada
     x.save(); x.beginPath(); x.rect(20, 20, W - 40, TOP - 30); x.clip();
     const coverKey = (C.portadas || {})[CM.cover];
@@ -195,7 +310,7 @@ AVE.module('comic', function (G) {
     x.fillStyle = '#f2a03d'; x.font = '600 26px Fredoka, sans-serif'; x.fillText(C.marca || '', 52, 288);
     x.fillStyle = '#f4f7f1'; x.font = '700 58px Fredoka, sans-serif'; x.fillText(tituloValido(CM.title).slice(0, 32), 50, 346);
     // Viñetas
-    const boxes = comicLayout(panels.length, CM.layout, W, H - 30, TOP);
+    const boxes = comicLayout(panels.length, CM.layout, W, HP - 30, TOP);
     const cameos = [], looks = {};
     panels.forEach((p, i) => {
       const b = boxes[i], ret = rets[i];
@@ -214,6 +329,7 @@ AVE.module('comic', function (G) {
         const s = Math.min(iw, ih); x.drawImage(ret, b.x + (b.w - s) / 2, iy + (ih - s) / 2, s, s);
       } else {
         if (imgs[p.img]) coverFit(x, imgs[p.img], ix, iy, iw, ih);
+        else if (p.ilustracion) ilustrar(x, p.ilustracion, ix, iy, iw, ih);
         else { x.fillStyle = '#4f9a4c'; x.fillRect(ix, iy, iw, ih); }
       }
       if (C.decorar) C.decorar(x, p, b, ih, G);
@@ -233,7 +349,7 @@ AVE.module('comic', function (G) {
       lines.forEach((l, k) => x.fillText(l, b.x + 44, b.y + ih + 46 + k * 33));
     });
     x.fillStyle = '#a9c2b1'; x.font = '400 18px "Atkinson Hyperlegible", sans-serif';
-    x.fillText(L('Cómic personal generado con ', 'Personal comic made from ') + S.events.length + L(' eventos reales de tu partida', ' real events of your game'), 24, H - 10);
+    x.fillText(L('Cómic personal generado con ', 'Personal comic made from ') + S.events.length + L(' eventos reales de tu partida', ' real events of your game'), 24, HP - 10);
     ultimoRender = { target, boxes, panels, cameos, looks };
     return ultimoRender;
   }
@@ -505,12 +621,12 @@ AVE.module('comic', function (G) {
         else check('Lienzo sin tamaño: la captura no guarda null y queda pendiente', !(def.img in S.captures) && pendientes.has(def.img), 'ventana 0×0');
       }
       // Componer y exportar a PNG
-      S.comic.layout = 'grid';
+      S.comic.layout = 'grid'; S.comic.order = [];
       const url = await exportComic('png');
-      const blob = ultimo.png, v = await verificarPNG(blob, W, H);
-      check('PNG válido: firma, IHDR y 1080×1520', v.ok && typeof url === 'string' && url.startsWith('data:image/png'), `${v.ancho}×${v.alto} · ${Math.round((v.bytes || 0) / 1024)} KB`);
+      const HP = altoPagina(ultimoRender.panels.length, 'grid'), blob = ultimo.png, v = await verificarPNG(blob, W, HP);
+      check(`PNG válido: firma, IHDR y ${W}×${HP}`, v.ok && typeof url === 'string' && url.startsWith('data:image/png'), `${v.ancho}×${v.alto} · ${Math.round((v.bytes || 0) / 1024)} KB`);
       const im = url ? await loadImg(url) : null;
-      check('El PNG se decodifica con esas dimensiones', im && im.width === W && im.height === H, im ? im.width + '×' + im.height : 'no carga');
+      check('El PNG se decodifica con esas dimensiones', im && im.width === W && im.height === HP, im ? im.width + '×' + im.height : 'no carga');
       const eT = im && estadisticas(im);
       check('El PNG no está en blanco', eT && !enBlanco(eT), eT ? `desv. ${eT.desviacion.toFixed(1)} · ${eT.colores} colores` : '');
       const R = ultimoRender, i = R ? R.panels.findIndex(q => q.id === def.id) : -1, caja = i >= 0 ? R.boxes[i] : null;
@@ -525,6 +641,42 @@ AVE.module('comic', function (G) {
       try { S.profile = Object.assign({}, S.profile, { look: G.creador.profileLook({ preset: 'oratrix', outfit: 'amarillo', accessory: 'gorra' }) }); } catch (e) { /* sin modelo */ }
       const p2 = comicPanels().find(q => q.id === def.id);
       check('Cambiar de apariencia después no cambia esa viñeta', p2 && claveLook(p2.look) === claveLook(reg.look) && claveLook(lookActual()) !== claveLook(reg.look));
+      // Viñetas del motor por sus ganchos: techo/cumbrera y rama alta (movimiento), nido y eclosión (criadero)
+      if (C.vinetasMotor !== false) {
+        const foto = (() => { const c = document.createElement('canvas'); c.width = 480; c.height = 360; const g = c.getContext('2d');
+          const gr = g.createLinearGradient(0, 0, 480, 360); gr.addColorStop(0, '#2d5a43'); gr.addColorStop(1, '#f2a03d'); g.fillStyle = gr; g.fillRect(0, 0, 480, 360);
+          g.fillStyle = '#7fc35a'; g.beginPath(); g.arc(240, 180, 90, 0, 7); g.fill(); return c.toDataURL('image/jpeg', 0.8); })();
+        const casos = [
+          { id: 'techo', key: 'FirstRoofPerch', look: { preset: 'albifrons', outfit: 'naranja', accessory: 'gorra' }, disparar: () => G.emit('posado', { tipo: 'alto', que: 'cumbrera', altura: 4.2 }) },
+          { id: 'rama', key: 'FirstHighBranchPerch', look: { preset: 'versicolor', outfit: 'azul', accessory: 'medalla' }, disparar: () => G.emit('posado', { tipo: 'fino', que: 'rama', altura: 3.1 }) },
+          { id: 'nido', key: 'NestAppeared', look: { preset: 'festiva', outfit: 'rojo', accessory: 'ninguno' }, disparar: () => G.emit('criadero', 'nido') },
+          { id: 'eclosion', key: 'ChickHatched', look: { preset: 'guildingii', outfit: 'amarillo', accessory: 'gafas' }, disparar: () => G.emit('criadero', 'eclosion', { id: 'h1', imagen: foto }) },
+        ];
+        for (const c of casos) { S.events = S.events.filter(e => e.key !== c.key); delete vin()[c.id]; delete S.captures[c.id]; }
+        vistos = S.events.length;
+        // Con G.quiet (baterías) los ganchos no crean nada; una rama baja, una roca o un poste tampoco cuentan
+        G.emit('posado', { tipo: 'alto', que: 'techo', altura: 5 }); G.emit('criadero', 'nido');
+        G.quiet = false;
+        try { G.emit('posado', { tipo: 'fino', que: 'rama', altura: 1.2 }); G.emit('posado', { tipo: 'alto', que: 'roca', altura: 3 }); G.emit('posado', { tipo: 'fino', que: 'poste', altura: 3 }); }
+        finally { G.quiet = true; }
+        check('Con G.quiet, en una rama baja, una roca o un poste no hay viñeta', !casos.some(c => G.eventos.had(c.key)));
+        for (const c of casos) {
+          try { S.profile = Object.assign({}, S.profile, { look: G.creador.profileLook(c.look) }); } catch (e) { /* sin modelo */ }
+          G.quiet = false; try { c.disparar(); } finally { G.quiet = true; }
+          const r = vin()[c.id], pm = comicPanels().find(q => q.id === c.id);
+          check(`Gancho → ${c.key} → viñeta «${c.id}» con la apariencia de ese momento`, G.eventos.had(c.key) && !!pm && r && claveLook(r.look) === claveLook(lookActual()), r && r.look ? r.look.species : 'sin look');
+        }
+        check('La eclosión usa la foto de la escena del criadero', S.captures.eclosion === foto);
+        G.quiet = false; try { G.emit('criadero', 'nido'); G.emit('posado', { tipo: 'alto', que: 'techo', altura: 6 }); } finally { G.quiet = true; }
+        check('Cada evento del motor cuenta una sola vez por partida', S.events.filter(e => e.key === 'NestAppeared' || e.key === 'FirstRoofPerch').length === 2);
+        // Página con todas las viñetas: más alta si hace falta, PNG válido y cada viñeta nueva con contenido y en orden
+        const url2 = await exportComic('png'), R2 = ultimoRender, alto = altoPagina(R2.panels.length, 'grid');
+        const v2 = await verificarPNG(ultimo.png, W, alto), im2 = url2 ? await loadImg(url2) : null;
+        check(`PNG con ${R2.panels.length} viñetas: válido y de ${W}×${alto}`, v2.ok && im2 && im2.width === W && im2.height === alto, `${v2.ancho}×${v2.alto}`);
+        const vacias = casos.filter(c => { const j = R2.panels.findIndex(q => q.id === c.id), e = j >= 0 && im2 ? estadisticas(im2, R2.boxes[j]) : null; return !e || enBlanco(e); });
+        check('Las 4 viñetas nuevas están en la página y no en blanco', vacias.length === 0, vacias.map(c => c.id).join(', ') || 'todas con imagen');
+        check('Las viñetas van en el orden en que pasaron', R2.panels.every((q, j) => j === 0 || R2.panels[j - 1].seq <= q.seq));
+      }
       // Diseños: sin solapes y dentro de la página
       let malos = 0;
       for (const lay of ['grid', 'strip']) for (let n = 1; n <= 6; n++) {

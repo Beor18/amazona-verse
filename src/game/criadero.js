@@ -1023,6 +1023,21 @@ AVE.module('criadero', function (G) {
     if (scene3d.flag) { /* la bandera se queda junto al nido */ }
     if (k) { k.holder.visible = true; k.popT = null; k.popS = null; fijarEtapa(etapaDe(c), false); postura('jugando', 2.4); }
     pintar();
+    // Cómic (src/game/comic.js): viñeta de la eclosión con la foto de esta escena. Nunca en las pruebas.
+    if (!silencio && !G.quiet) G.emit('criadero', 'eclosion', { id: hatch.capId, imagen: fotoEscena() });
+  }
+  // Foto de la escena 3D del criadero para el cómic (480×360, recorte centrado); null si no se puede
+  function fotoEscena() {
+    try {
+      if (!scene3d.renderer || !scene3d.scene || !scene3d.camera) return null;
+      scene3d.renderer.render(scene3d.scene, scene3d.camera);
+      const src = scene3d.renderer.domElement, sw = src.width, sh = src.height;
+      if (!sw || !sh) return null;
+      const c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
+      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 480, 360);
+      return c.toDataURL('image/jpeg', 0.78);
+    } catch (e) { return null; }
   }
   function crecer(etapa) {
     const k = scene3d.chick; if (!k || hatch.on) { construirNido(); return; }
@@ -1344,6 +1359,7 @@ AVE.module('criadero', function (G) {
     if (presentarT > 1.5) {
       presentarT = 0;
       st.presentado = true; guardar();
+      if (!silencio) G.emit('criadero', 'nido'); // cómic: viñeta de la aparición del nido (src/game/comic.js)
       const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
       G.dialogo.say([
         { who: 'Luma', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
