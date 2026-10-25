@@ -101,3 +101,31 @@ Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js
   - al salir, se sueltan el modelo completo y luego el lejano;
   - no queda base64 en memoria;
   - tras dos vueltas, la memoria de los edificios y el heap siguen estables.
+
+## Geometría meshopt y texturas WebP en la build (`tools/build/`)
+La copia de trabajo guarda los modelos sin comprimir. La build (`tools/build/build.sh` → `avbuild.py`, configurada en `tools/build/config.json` › `geometria`) los comprime al publicar:
+- **WebP primero:** con OpenImageIO (el python de Blender) pasa a WebP, calidad 85, las texturas embebidas de `assets/models/entorno/` y la paleta externa de `assets/models/edificios/tex/`. three r128 las carga con el decodificador del navegador.
+- **Después gltfpack 1.2** (`tools/build/bin/gltfpack`, fuera del sitio; versión, URL y SHA256 en `docs/equipo/BUILD.md`) sobre `assets/models/`: `EXT_meshopt_compression` y `KHR_mesh_quantization`. Las opciones conservan nombres de nodos y materiales, extras, el color de vértice del viento y las animaciones sin remuestrear. Solo se aplica si ahorra al menos un 5 %.
+- **Al cargar:** `src/engine/assets.js` pasa `MeshoptDecoder` (`assets/vendor/meshopt`) al `GLTFLoader` y convierte los atributos cuantizados a Float32 (`descuantizar`). `skinIndex` queda entero. Un modelo sin comprimir pasa igual.
+- **Validación:** `avbuild.py` (`validar_gltf`) rechaza imágenes con un tipo MIME falso y extensiones obligatorias que r128 no sabe leer.
+
+## Contexto WebGL: pérdida y recuperación (`src/engine/renderer.js`)
+En un Chromebook el contexto se pierde al suspender, al cambiar de pestaña o cuando falta memoria de GPU.
+- **Al perderse** (`webglcontextlost`): se pausa con `G.pausa.set('contexto', true)` y `G.S` no cambia. Se emite `G.emit('contexto', false)` y un aviso infantil en ES/EN (`#av-contexto`) tapa el lienzo. Si a los 5 s no ha vuelto, ofrece Recargar, que guarda la partida y recarga la página.
+- **Al volver** (`webglcontextrestored`): three r128 vuelve a subir desde la CPU geometrías, instancias, imágenes y DataTextures. Lo que solo vivía en la GPU lo repinta su módulo en el gancho `G.on('contexto', ok => …)`; hoy es el atlas de impostores de `src/engine/vegetacion.js`. Después se precalienta, se quita la pausa y el bucle sigue.
+- **Regla:** quien sube cosas a la GPU no libera los arreglos ni las imágenes de origen (nada de `onUpload(dispose)`, `image = null` ni `canvas.width = 0`).
+- **Prueba:** `AV.contextTest({ rapido })`. Estado en `G.renderer.contexto` (`perdido`, `perdidas`, `restauradas`).
+
+## Sitio publicable (`tools/build/sitio.sh` y `sitio/`)
+`tools/build/sitio.sh <build>/site` rehace `sitio/` desde cero:
+- la landing (`git archive HEAD:web`, sin sus docs) en la raíz;
+- el juego ya construido y probado con `build.sh` + `test.sh` en `sitio/juego/`;
+- un `vercel.json` con caché para `assets/` y cabeceras de seguridad.
+
+Vercel publica `main` con Root Directory = `sitio`. Solo lo arma y lo commitea el coordinador, tras el recorrido de QA y con su etiqueta de versión. Nadie edita `sitio/` a mano.
+
+## Ejecutor con créditos de la API (`tools/agente_api/`)
+Corre las tareas de `docs/equipo/TAREAS_API.md` con el Claude Agent SDK y los créditos de la API, no con el plan Max.
+- **Lanzarlo:** `tools/agente_api/ejecutar.sh --prueba | --tarea D1 | --carril B [--modelo sonnet|opus] [--presupuesto USD] [--total USD]`. Usa el entorno aislado `~/AmazonaVerse/_herramientas/agent-sdk/venv`. Si la clave no está en el entorno, la pide sin mostrarla y no la guarda.
+- **Carriles:** `ejecutor.py` (`CARRILES`) define los carriles A–D. Tocan archivos distintos y pueden correr en paralelo, uno por Terminal. Dentro de un carril las tareas van en orden y hay un tope total (`--total`, por defecto 50 USD).
+- **Límites:** tope de gasto por tarea (`max_budget_usd`; por defecto 6 USD con sonnet y 15 con opus) y configuración aislada en `~/.claude-sdk`. El filtro `permiso` niega push, reset/checkout/stash, borrados, permisos de superusuario, descargas e instaladores, y cualquier cambio en `sitio/` o fuera del repo.
