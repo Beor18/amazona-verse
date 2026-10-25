@@ -515,6 +515,30 @@ AVE.module('renderer', function (G) {
     try { (T.b ? b : el.querySelector('.avx-panel')).focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
   }
 
+  // ---------- Panel de rendimiento: solo con ?fps=1 en la URL o #fps (el artifact solo pasa el ancla) ----------
+  // Arriba a la derecha, bajo los botones del sistema (no pisa el diálogo ni los controles táctiles), sin eventos de puntero: FPS medio y mínimo del último segundo, draw calls, triángulos, calidad,
+  // resolución dinámica (DPR actual / máximo) y memoria JS (performance.memory: Chrome y Android). Sin el parámetro no existe.
+  const PERF = /(?:^|[?&])fps=1(?:&|$)/.test(location.search) || /^#(?:.*[&,])?fps(?:=1)?(?:[&,]|$)/.test(location.hash) ? { el: null, ms: [], t: 0 } : null;
+  function perfCuadro(now, raw) {
+    const P = PERF;
+    if (raw > 0 && raw < 1000) { P.ms.push([now, raw]); while (now - P.ms[0][0] > 1000) P.ms.shift(); }
+    if (now - P.t < 250 || !P.ms.length) return;
+    P.t = now;
+    if (!P.el) {
+      P.el = document.createElement('div'); P.el.id = 'av-fps'; P.el.setAttribute('aria-hidden', 'true');
+      P.el.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 140px);z-index:35;' +
+        'pointer-events:none;padding:3px 9px;border-radius:8px;background:rgba(8,20,14,.78);color:#f4f7f1;white-space:pre;text-align:right;' +
+        'font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums';
+      document.body.appendChild(P.el);
+    }
+    let suma = 0, max = 0; for (const [, m] of P.ms) { suma += m; max = Math.max(max, m); }
+    const k = v => (v >= 1e6 ? (v / 1e6).toFixed(1) + ' M' : v >= 1e3 ? Math.round(v / 1e3) + ' k' : String(v));
+    const mem = performance.memory ? ' · JS ' + Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB' : '';
+    P.el.textContent = Math.round(1000 * P.ms.length / suma) + ' FPS · mín ' + Math.round(1000 / max) + '\n' +
+      cuenta.ultimo.calls + ' draw calls · ' + k(cuenta.ultimo.tris) + ' triángulos\n' +
+      calidad.nivel + ' · DPR ' + renderer.getPixelRatio().toFixed(2) + '/' + DPR_MAX.toFixed(2) + mem;
+  }
+
   // ---------- Simulación y dibujo ----------
   function update(dt) {
     const S = G.S;
@@ -546,6 +570,7 @@ AVE.module('renderer', function (G) {
     cuenta.ultimo = { calls: cuenta.calls, tris: cuenta.tris }; cuenta.calls = cuenta.tris = 0;
     adaptDPR(now - last);
     adaptCalidad(now - last);
+    if (PERF) perfCuadro(now, now - last);
     medidor.frames++;
     if (now - medidor.t0 > 500) { medidor.fps = medidor.frames * 1000 / (now - medidor.t0); medidor.frames = 0; medidor.t0 = now; }
     let dt = Math.min(0.05, (now - last) / 1000); last = now;
