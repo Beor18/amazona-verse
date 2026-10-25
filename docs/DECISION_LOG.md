@@ -30,3 +30,10 @@ El jugador controla a Vittata en la historia y su personaje creado la sigue y ap
 
 ## 2026-10-24 · Vittata es la cotorra verde (decisión de Kelvin)
 La protagonista se representa con los renders verdes oficiales. Los uniformes se crearán después. El modelo con traje de piloto se reserva para un minijuego aparte; no se usa en la historia principal.
+
+## 2026-10-24 · Mapa del Cap. 1 "El Yunque" (level designer)
+- 2026-10-24 · El relieve base es el terreno original de Kelvin (`AV3DMaxTerrainExport.max`, a 0,255 m/u), con su río serpenteante y sus mesetas. Encima van isla, montaña en terrazas, quebrada de La Mina, costa y senderos · level designer · usar los assets del fundador y guiar con el relieve, sin paredes invisibles.
+- 2026-10-24 · Cada punto del layout usa un edificio del kit de Kelvin (`edificiosKelvin`, 31 piezas, con aldea taína y ruinas). Las estructuras propias quedan de respaldo; el puente colgante de 25 m es propio porque el kit no tiene equivalente · level designer + coordinador · pedido de Kelvin.
+- 2026-10-24 · El mapa no lleva anillos: `RINGS` se sustituye por `misiones.perchas` y `misiones.rutaGota` (La ruta de la gota) · level designer · regla del fundador y EDUCATIVO.md.
+- 2026-10-24 · Las piezas "Ancient Temples" se presentan como Ruinas del Pacto (ficción del canon), no como arquitectura taína. La aldea taína usa bohíos, caney, batey con piedras y canoas · level designer · rigor cultural en un juego escolar.
+- 2026-10-24 · Las especies de flora conservan sus ids y se traducen al kit con `flora.modelos`. Se pidieron las variantes arbol_enano, palma_sierra_joven y yagrumo_joven · level designer + programador gráfico + artista de entorno · no romper el código del motor.
