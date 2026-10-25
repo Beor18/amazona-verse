@@ -336,7 +336,26 @@ AVE.module('renderer', function (G) {
   // ---------- Calidad adaptativa por FPS ----------
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
   const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity };
-  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { fpsM.warm = 3000; }); });
+  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => requestAnimationFrame(() => { precalentar(); fpsM.warm = 3000; })); });
+  // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
+  G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
+  // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
+  // visible y sin frustum culling, antes de que el jugador mire alrededor (sin esto cada vista nueva daba tirones: QA-20)
+  function precalentar() {
+    const rt = new THREE.WebGLRenderTarget(32, 32), guardado = [];
+    scene.traverse(o => {
+      if (!(o.isMesh || o.isPoints || o.isSprite)) return;
+      const propio = /^(terreno|flora|edificios|estructura)/.test(o.name || '');
+      guardado.push([o, o.frustumCulled, o.visible, o.isInstancedMesh ? o.count : null]);
+      o.frustumCulled = false;
+      if (propio) { o.visible = true; if (o.isInstancedMesh && o.count === 0) o.count = 1; }
+    });
+    try { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }
+    catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
+    renderer.setRenderTarget(null);
+    for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; }
+    rt.dispose();
+  }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
     const keep = { manual: !!manual || calidad.manual, gpu: GPU, objetivo: OBJETIVO, texMax: calidad.texMax };
@@ -351,14 +370,14 @@ AVE.module('renderer', function (G) {
   function adaptCalidad(raw) {
     if (!(raw > 0 && raw < 120) || calidad.manual) return;
     if (fpsM.warm > 0) { fpsM.warm -= raw; return; }
-    if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return;   // portada o creador: el mundo no se dibuja                 // el primer arranque compila shaders: no cuenta
+    if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return;   // portada o creador: el mundo no se dibuja
     fpsM.ms += (raw - fpsM.ms) * 0.04; fpsM.t += raw; fpsM.bloqueo = Math.max(0, fpsM.bloqueo - raw);
     if (fpsM.t < 1000) return;
     fpsM.t = 0;
     const fps = 1000 / fpsM.ms, i = NIVELES.indexOf(calidad.nivel);
     const dprAlMinimo = renderer.getPixelRatio() <= DPR_MIN + 0.01;
-    // Baja si no llega al objetivo y la resolución dinámica del TA ya no puede ayudar (o va muy mal)
-    fpsM.bajo = fps < OBJETIVO * 0.85 && (dprAlMinimo || fps < OBJETIVO * 0.6) ? fpsM.bajo + 1 : 0;
+    // Baja solo si no llega al objetivo y la resolución dinámica del TA ya está en su mínimo (primero actúa ella)
+    fpsM.bajo = fps < OBJETIVO * 0.85 && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }

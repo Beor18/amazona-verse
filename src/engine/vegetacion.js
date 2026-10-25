@@ -20,7 +20,7 @@ AVE.module('vegetacion', function (G) {
   const W = G.pack.mundo || {}, FL = W.flora || {};
   const KIT = Object.assign({ base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' }, FL.kit);
   const VI = Object.assign({ dir: [0.8, 0.35], fuerza: 1 }, FL.viento);
-  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 22 }, FL.distancias);
+  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 19 }, FL.distancias);
   const { rng } = G.util;
   const C = R.calidad;
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
