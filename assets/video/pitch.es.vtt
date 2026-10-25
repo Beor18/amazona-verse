@@ -2,128 +2,127 @@ WEBVTT
 
 NOTE
 Video pitch de Amazona Verse (2:45.6). Texto de Juego/docs/pitch/VO.txt con la grafía real (Chromebooks, WebAssembly).
-Tiempos: inicio y fin de cada bloque de _trabajo_claude/pitch/audio/vo/vo_bloques.json; dentro del bloque, repartidos por palabras.
-Si el ingeniero de sonido publica tiempos.json con cambios, ese manda.
+Tiempos: bloques de _trabajo_claude/pitch/audio/tiempos.json (FINAL v1) y pausas medidas en stems/voz.wav.
 
 b01a
-00:00:01.200 --> 00:00:03.218
+00:00:01.200 --> 00:00:02.900
 Su especie es real.
 
 b01b
-00:00:03.718 --> 00:00:10.157
+00:00:03.470 --> 00:00:10.033
 En 2017, el huracán María dejó a El Yunque
 sin una sola cotorra silvestre.
 
 b02a
-00:00:10.400 --> 00:00:16.397
+00:00:10.400 --> 00:00:16.210
 Hoy hay más de 900, entre bosques y aviarios,
 gracias a gente que no se rindió.
 
 b02b
-00:00:16.897 --> 00:00:20.739
+00:00:16.910 --> 00:00:20.290
 Pero nuestros niños casi nunca se ven en sus juegos…
 
 b02c
-00:00:20.789 --> 00:00:24.272
+00:00:20.420 --> 00:00:24.148
 y las escuelas buscan ciencia en español que enganche.
 
 b03a
-00:00:26.800 --> 00:00:29.229
+00:00:26.800 --> 00:00:28.860
 Por eso creamos Amazona Verse.
 
 b03b
-00:00:29.729 --> 00:00:37.822
+00:00:29.570 --> 00:00:37.480
 Tú eres Vittata, inventora boricua, en una isla inspirada
 en El Yunque, con yagrumos y palmas de sierra.
 
 b03c
-00:00:37.872 --> 00:00:41.608
+00:00:37.480 --> 00:00:41.850
 Camina, vuela, nada… y bucea.
 Se asombra. Celebra.
 
 b03d
-00:00:41.658 --> 00:00:46.701
+00:00:42.000 --> 00:00:47.076
 Se viste como nosotros: pava jíbara…
 y gorra con nuestra bandera.
 
 b04a
-00:00:48.400 --> 00:00:50.779
+00:00:48.400 --> 00:00:51.160
 Cada misión enseña ciencia del currículo.
 
 b04b
-00:00:50.829 --> 00:01:02.079
+00:00:51.300 --> 00:01:02.010
 En «La ruta de la gota», Vittata sigue el agua: sube con el vapor a la nube,
 baja con la lluvia al río, y bucea hasta la marca de la crecida.
 
 b04c
-00:01:02.579 --> 00:01:04.248
+00:01:02.690 --> 00:01:04.379
 Primero predice… después comprueba.
 
 b05
-00:01:07.600 --> 00:01:11.803
+00:01:07.600 --> 00:01:12.273
 Cada hallazgo va al Diario de Campo,
 con dato verificado y fuente.
 
 b06a
-00:01:14.800 --> 00:01:21.339
+00:01:14.800 --> 00:01:21.640
 El Modo Maestro trae guía de clase de 45 minutos
 y reporte de progreso, sin datos personales.
 
 b06b
-00:01:21.389 --> 00:01:24.968
+00:01:21.790 --> 00:01:25.146
 En español o inglés, con lectura en voz alta.
 
 b07a
-00:01:26.800 --> 00:01:32.638
+00:01:26.800 --> 00:01:32.960
 En el criadero, tu cotorra crece con lo que aprendes:
 huevo… bebé… juvenil… adulta.
 
 b07b
-00:01:32.688 --> 00:01:37.328
+00:01:33.060 --> 00:01:37.506
 Como en los aviarios que hoy ayudan a recuperar la especie.
 
 b08a
-00:01:38.800 --> 00:01:44.534
+00:01:38.800 --> 00:01:43.910
 Corre en el navegador, sin instalar,
 pensado para las Chromebooks de la escuela.
 
 b08b
-00:01:45.034 --> 00:01:52.033
+00:01:44.470 --> 00:01:51.720
 El motor está separado del contenido: el próximo capítulo,
 o la próxima materia, se monta encima.
 
 b08c
-00:01:52.083 --> 00:01:56.130
+00:01:51.870 --> 00:01:56.110
 Y WebAssembly, solo donde aporta: para que cargue liviano.
 
 b09a
-00:01:58.000 --> 00:02:02.870
+00:01:58.000 --> 00:02:02.940
 Crecemos de maestro a maestro:
 pilotos gratis en Puerto Rico;
 
 b09b
-00:02:02.920 --> 00:02:11.023
+00:02:02.940 --> 00:02:10.570
 luego, Estados Unidos: casi 99 mil escuelas públicas,
 y casi 3 de cada 10 estudiantes son hispanos.
 
 b09c
-00:02:11.523 --> 00:02:18.703
+00:02:11.160 --> 00:02:18.390
 El capítulo 1 es gratis. La escuela paga licencia anual;
 la familia, ropa digital opcional.
 
 b09d
-00:02:18.753 --> 00:02:21.313
+00:02:18.540 --> 00:02:21.340
 Sin anuncios… ni cajas sorpresa.
 
 b10
-00:02:22.000 --> 00:02:28.209
+00:02:21.600 --> 00:02:28.091
 Buscamos escuelas piloto, aliados de conservación y capital
 para llevar Amazona Verse a cada salón.
 
 b11
-00:02:28.400 --> 00:02:32.033
+00:02:28.400 --> 00:02:32.083
 Porque cuando nuestros niños aprenden a cuidar su isla…
 
 b12
-00:02:33.000 --> 00:02:35.039
+00:02:33.000 --> 00:02:35.089
 la cotorra vuelve a volar.

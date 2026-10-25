@@ -24,3 +24,4 @@ Formato: fecha · decisión · quién · por qué.
 - 2026-10-24 · Espacio para el video pitch (2:45) en Prensa, oculto hasta que exista, con subtítulos ES/EN en borrador · Comité + Web lead · Se suma cuando el editor entregue el corte final.
 - 2026-10-24 · Los videos se declaran en `assets/video/videos.json` en vez de comprobar si existen · Web lead · Evita peticiones 404 y errores en consola mientras no hay archivos.
 - 2026-10-24 · Las animaciones de entrada solo mueven (sin opacidad 0) · Web lead · La página se ve completa en cualquier captura o miniatura.
+- 2026-10-24 · Subtítulos del pitch ajustados a `tiempos.json` (FINAL v1; B10 empieza en 141.6) y a las pausas medidas en `stems/voz.wav` · Sonido + Web lead · El archivo del sonido manda sobre `vo_bloques.json`.
