@@ -97,15 +97,15 @@
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
-    // Panel final: «Seguir explorando» deja jugar libre; «Jugar de nuevo» pregunta DENTRO del juego antes de borrar (nunca confirm())
+    // Panel final: «Seguir explorando» deja jugar libre; «Comenzar de cero» pregunta DENTRO del juego antes de borrar (nunca confirm())
     const confirmNativo = window.confirm; let confirmLlamado = 0; window.confirm = () => { confirmLlamado++; return true; };
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
     const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
     teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
-    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Jugar de nuevo»', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && !enConfirm());
+    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm());
     check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
     $('b-again').click();
-    check('«Jugar de nuevo» pregunta «¿Empezar de nuevo?» dentro del panel y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Empezar de nuevo?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
+    check('«Comenzar de cero» pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero», y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Comenzar de cero?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-again-no').textContent.trim() === 'No, volver' && $('b-again-si').textContent.trim() === 'Sí, comenzar de cero' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
     check('La pregunta lleva el foco a «No, volver» (la opción segura)', document.activeElement === $('b-again-no'));
     $('b-again-no').click();
     check('Cancelar no borra nada y vuelve al panel final', !enConfirm() && !$('end-acciones').hidden && !$('end').hidden && S.complete && S.step === G.misiones.DONE && S.profile.created && had('ChapterCompleted') && !!S.captures.final);
@@ -207,14 +207,36 @@
     const sinCampo = JSON.parse(snap); delete sinCampo.explorando;
     try { localStorage.setItem(KEY, JSON.stringify(sinCampo)); } catch (e) { /* sin almacenamiento */ }
     check('Partida terminada de antes (sin el campo «explorando») abre el panel final una vez', SV.load(true) && S.complete && !S.explorando && !$('end').hidden && !enConfirm());
-    // «Sí, empezar de nuevo» borra partida, cómic y capturas (la prueba salta el creador que abre reset())
+    // La partida y el cómic solo se borran con «Comenzar de cero» (la prueba salta el creador que abre reset())
     const resetReal = SV.reset; let resetLlamado = 0; SV.reset = () => { resetLlamado++; return resetReal(true); };
-    const hechoAntes = S.complete && S.comic.layout === 'strip' && !!S.captures.final && S.profile.created;
+    const intacta = () => S.complete && S.step === G.misiones.DONE && S.profile.created && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && !!S.captures.final && had('ChapterCompleted');
+    check('Premisa: partida terminada con perfil, cómic y foto del final', intacta());
+    check('Mi personaje (creador) no borra el avance ni el cómic', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && intacta() && $('creator').hidden && resetLlamado === 0);
+    check('Cargar una y otra vez no borra nada: la partida sigue en el almacén', SV.load(true) && SV.load(true) && intacta() && !!localStorage.getItem(KEY) && resetLlamado === 0);
+    const tileReset = document.querySelector('[popovertarget="confirm-reset"]');
+    check('Menú de pausa: «Comenzar de cero» (ya no «Reiniciar») con la misma pregunta', !!tileReset && tileReset.textContent.trim() === 'Comenzar de cero' && !/Reiniciar/.test($('pause').textContent) && $('cr-title').textContent === '¿Comenzar de cero?' && $('cr-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-reset').textContent.trim() === 'Sí, comenzar de cero' && !!$('confirm-reset').querySelector('.btn.ghost') && $('confirm-reset').querySelector('.btn.ghost').textContent.trim() === 'No, volver');
+    if (window.CSS && CSS.supports && CSS.supports('selector(:popover-open)')) {
+      try {
+        $('pause').showPopover(); tileReset.click();
+        check('Menú: el primer toque solo abre la pregunta y no borra nada', $('confirm-reset').matches(':popover-open') && resetLlamado === 0 && intacta());
+        $('confirm-reset').querySelector('.btn.ghost').click();
+        check('Menú: «No, volver» cierra la pregunta y deja la partida y el cómic intactos', !$('confirm-reset').matches(':popover-open') && resetLlamado === 0 && intacta());
+      } catch (e) { check('Menú de pausa con popover', false, String(e && e.message || e)); }
+      finally { try { if ($('pause').matches(':popover-open')) $('pause').hidePopover(); } catch (e) { /* ya cerrado */ } }
+      await new Promise(r => setTimeout(r, 60));
+      check('Cerrar el menú de pausa deja el juego en marcha', !G.pausa.activa());
+    }
+    $('b-reset').click();
+    check('Menú: «Sí, comenzar de cero» borra la partida y el cómic (una sola vez)', resetLlamado === 1 && S.step === 0 && !S.complete && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !localStorage.getItem(KEY));
+    try { localStorage.setItem(KEY, JSON.stringify(sinCampo)); } catch (e) { /* sin almacenamiento */ }
+    check('Se vuelve a la partida terminada para seguir probando el panel final', SV.load(true) && S.complete && !S.explorando && !$('end').hidden && intacta());
+    resetLlamado = 0;
+    const hechoAntes = intacta();
     $('b-again').click();
-    check('Antes de confirmar «Jugar de nuevo» la partida y el cómic siguen intactos', enConfirm() && resetLlamado === 0 && hechoAntes && S.complete && S.comic.layout === 'strip' && !!S.captures.final);
+    check('Antes de confirmar «Comenzar de cero» la partida y el cómic siguen intactos', enConfirm() && resetLlamado === 0 && hechoAntes && intacta());
     $('b-again-si').click();
     SV.reset = resetReal;
-    check('«Sí, empezar de nuevo» borra la partida, el cómic y las capturas y cierra el panel', resetLlamado === 1 && S.step === 0 && !S.complete && !S.explorando && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !had('ChapterCompleted') && $('end').hidden && !enConfirm());
+    check('«Sí, comenzar de cero» borra la partida, el cómic y las capturas y cierra el panel', resetLlamado === 1 && S.step === 0 && !S.complete && !S.explorando && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !had('ChapterCompleted') && $('end').hidden && !enConfirm());
     window.confirm = confirmNativo;
     check('El panel final no usa confirm() del navegador', confirmLlamado === 0, confirmLlamado + ' llamadas');
     // Ruta directa a la colina
@@ -705,7 +727,10 @@
       const csv = AU.reporteCSV();
       check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
       const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
-      $('m-nuevo').click(); $('m-nuevo-si').click();
+      const saveIdAntes = S.saveId, pasoAntes = S.step;
+      $('m-nuevo').click();
+      check('Nuevo estudiante pide un segundo toque: el primero no borra la partida ni el cómic', !$('m-nuevo-si').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo-si').click();
       check('Nuevo estudiante: borra la partida y conserva el reporte', !S.profile.created && AU.partidas.length === partidasAntes && !leerAula(G.guardado.KEY + '.prev') && perfilKeep !== undefined);
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
