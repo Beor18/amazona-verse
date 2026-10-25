@@ -189,7 +189,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | G1 | pendiente | | |
 | G2 | pendiente | | |
 | H1 | pendiente | | |
-| K1 | pendiente | | |
+| K1 | hecha | 0fd6b3f | Relajado: la carrera sin reloj límite y la tormenta de práctica (golpe sin perder plumas ni combo, se sigue sumando); fantasma de la mejor carrera (muestras cada 0,1 s en decímetros, diferencias base 36, ~5 KB/min, clave `.retos.fantasma`, cotorra translúcida y botón para apagarlo); retosTest 64/64, las otras 12 baterías verdes; e2eTest 2/3 falla ya en HEAD (`G.dialogo.activo`, ajeno). Pendiente: «Nuevo estudiante» (boot.js) no borra la clave del fantasma. |
 | K2 | pendiente | | |
 | L1 | pendiente | | |
 | M1 | pendiente | | |
