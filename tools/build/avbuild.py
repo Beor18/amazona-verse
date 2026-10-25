@@ -351,8 +351,10 @@ def validar_gltf(j, binc):
                     E.append('images[%d] dice JPEG y no lo es' % i)
                 elif mt == 'image/png' and d[:8] != PNG_SIG:
                     E.append('images[%d] dice PNG y no lo es' % i)
-                elif mt not in ('image/jpeg', 'image/png'):
-                    E.append('images[%d] con mimeType %r (three r128 solo carga jpeg/png)' % (i, mt))
+                elif mt == 'image/webp' and (d[:4] != b'RIFF' or d[8:12] != b'WEBP'):
+                    E.append('images[%d] dice WebP y no lo es' % i)
+                elif mt not in ('image/jpeg', 'image/png', 'image/webp'):
+                    E.append('images[%d] con mimeType %r (three r128 carga jpeg, png y webp)' % (i, mt))
         elif 'uri' in im:
             if not im['uri'].startswith('data:'):
                 uris.append(im['uri'])
@@ -1129,6 +1131,34 @@ def paso_compartidas(sitio, cfg, reg):
     return grupos
 
 
+def a_webp(datos, calidad):
+    """PNG/JPEG → WebP con OpenImageIO (el de Blender; conserva el alfa). None si no se puede o no ahorra."""
+    try:
+        import OpenImageIO as oiio
+    except ImportError:
+        return None
+    with tempfile.TemporaryDirectory(prefix='avwebp-') as td:
+        ext = '.png' if datos[:8] == PNG_SIG else '.jpg'
+        i, o = os.path.join(td, 'in' + ext), os.path.join(td, 'out.webp')
+        escribir(i, datos)
+        inp = oiio.ImageInput.open(i)
+        if not inp:
+            return None
+        spec = inp.spec()
+        px = inp.read_image(oiio.UINT8)
+        inp.close()
+        if spec.nchannels not in (3, 4):
+            return None
+        s2 = oiio.ImageSpec(spec.width, spec.height, spec.nchannels, oiio.UINT8)
+        s2.attribute('compression', 'webp:%d' % calidad)
+        out = oiio.ImageOutput.create(o)
+        if not out or not out.open(o, s2) or not out.write_image(px):
+            return None
+        out.close()
+        w = leer(o)
+    return w if w[:4] == b'RIFF' and w[8:12] == b'WEBP' and len(w) < len(datos) * 0.9 else None
+
+
 def paso_geometria(sitio, cfg, reg, hilos, cache):
     """Comprime la geometría de los *_glb.js con gltfpack (EXT_meshopt_compression + KHR_mesh_quantization). El juego la
     decodifica con assets/vendor/meshopt y pasa los atributos a Float32 al cargar (src/engine/assets.js). Ver BUILD.md."""
@@ -1141,16 +1171,60 @@ def paso_geometria(sitio, cfg, reg, hilos, cache):
         reg.add('error', 'geometria', 'tools/build/bin/gltfpack no coincide con el SHA256 de config.json (geometria.sha256)')
         return {'hecho': False}
     opts = list(C.get('opciones') or [])
-    clave = sha256(('%s %s' % (C.get('version', ''), ' '.join(opts))).encode())
+    W = C.get('webp') or {}
+    clave = sha256(('%s %s %s' % (C.get('version', ''), ' '.join(opts), json.dumps(W, sort_keys=True))).encode())
     files = sorted(f for f in listar(sitio) if f.endswith('_glb.js') and any(f.startswith(c) for c in C.get('carpetas') or []))
+    # Texturas externas a WebP (p. ej. la paleta de edificios en tex/): se escribe el .webp, se quita el original y los glTF
+    # que las nombran pasan a la uri nueva (abajo, antes de gltfpack)
+    renombre, webp_ext = {}, []
+    for carpeta in W.get('externas') or []:
+        for f in sorted(listar(sitio)):
+            if not (f.startswith(carpeta) and re.search(r'\.(jpe?g|png)$', f, re.I)):
+                continue
+            d = leer(os.path.join(sitio, f))
+            w = a_webp(d, W.get('calidad', 85))
+            if not w:
+                continue
+            nuevo = re.sub(r'\.(jpe?g|png)$', '.webp', f, flags=re.I)
+            escribir(os.path.join(sitio, nuevo), w)
+            os.remove(os.path.join(sitio, f))
+            renombre[f] = nuevo
+            webp_ext.append({'archivo': nuevo, 'antes': len(d), 'despues': len(w)})
 
     def uno(f):
         p = os.path.join(sitio, f)
         pre, b64, post, _, _ = leer_glb_js(leer(p).decode('utf-8'))
         raw = base64.b64decode(b64)
-        j, _ = partir_glb(raw)
+        j, binc = partir_glb(raw)
         if 'EXT_meshopt_compression' in (j.get('extensionsUsed') or []):
             return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido'}
+        # WebP: uris de texturas externas convertidas, y las embebidas en las carpetas configuradas
+        cambio = False
+        base_f = posixpath.dirname(f)
+        for im in j.get('images') or []:
+            if 'uri' in im:
+                destino = posixpath.normpath(posixpath.join(base_f, im['uri']))
+                if destino in renombre:
+                    im['uri'] = posixpath.relpath(renombre[destino], base_f)
+                    im['mimeType'] = 'image/webp'
+                    cambio = True
+        if any(f.startswith(c) for c in W.get('embebidas') or []):
+            nuevos = {}
+            tx = j.get('textures') or []
+            normales = {tx[m['normalTexture']['index']].get('source') for m in j.get('materials') or [] if 'normalTexture' in m and m['normalTexture'].get('index', -1) < len(tx)}
+            for k_im, im, d in imagenes_embebidas(j, binc):
+                if k_im in normales:
+                    continue  # los mapas de normales se quedan como están
+                w = a_webp(d, W.get('calidad', 85)) if im.get('mimeType') in ('image/png', 'image/jpeg') else None
+                if w:
+                    nuevos[im['bufferView']] = w
+                    im['mimeType'] = 'image/webp'
+            if nuevos:
+                binc = reescribir_bin(j, binc, nuevos, set())
+                cambio = True
+        antes_raw = len(raw)
+        if cambio:
+            raw = armar_glb(j, binc)
         h = sha256(raw + clave.encode())
         cp = os.path.join(cache, h + '.glb') if cache else None
         if cp and os.path.exists(cp):
@@ -1169,20 +1243,23 @@ def paso_geometria(sitio, cfg, reg, hilos, cache):
         E, _ = validar_gltf(j2, b2)
         img = lambda jj: [('u:' + im['uri']) if 'uri' in im else 'bv' for im in jj.get('images') or []]
         if E or sorted(img(j)) != sorted(img(j2)):
-            return {'archivo': f, 'antes': len(raw), 'despues': None, 'estado': 'salida rechazada: ' + ('; '.join(E[:2]) or 'cambian las imágenes')}
+            return {'archivo': f, 'antes': antes_raw, 'despues': None, 'estado': 'salida rechazada: ' + ('; '.join(E[:2]) or 'cambian las imágenes')}
         if len(out) > len(raw) * (1 - C.get('ahorro_min', 0.05)):
-            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'sin ahorro'}
+            if cambio:  # sin ahorro de geometría pero con las uris o las imágenes nuevas: va el glb con WebP sin comprimir
+                escribir(p, (pre + base64.b64encode(raw).decode('ascii') + post).encode('utf-8'))
+            return {'archivo': f, 'antes': antes_raw, 'despues': len(raw), 'estado': 'sin ahorro de geometría'}
         escribir(p, (pre + base64.b64encode(out).decode('ascii') + post).encode('utf-8'))
-        return {'archivo': f, 'antes': len(raw), 'despues': len(out), 'estado': 'ok'}
+        return {'archivo': f, 'antes': antes_raw, 'despues': len(out), 'estado': 'ok'}
 
     with cf.ThreadPoolExecutor(max(1, hilos)) as ex:
         res = list(ex.map(uno, files))
     for r in res:
         if r['despues'] is None:
-            reg.add('aviso', 'geometria', '%s: %s (queda sin comprimir)' % (r['archivo'], r['estado']))
+            reg.add('aviso' if not renombre else 'error', 'geometria', '%s: %s (queda sin comprimir)' % (r['archivo'], r['estado']))
     ok = [r for r in res if r['estado'] == 'ok']
     return {'hecho': True, 'gltfpack': C.get('version'), 'opciones': opts, 'archivos': len(res), 'comprimidos': len(ok),
             'antes_mb': mb(sum(r['antes'] for r in ok)), 'despues_mb': mb(sum(r['despues'] for r in ok)),
+            'webp_externas': webp_ext,
             'fallidos': [r for r in res if r['despues'] is None]}
 
 

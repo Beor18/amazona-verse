@@ -81,7 +81,13 @@
     "sha256": "037336fafa46f342fe118ce8d17877fecb3deb1cd6dd8f62ee2a95bfaf2b79df",
     "opciones": ["-c", "-ce", "ext", "-kn", "-km", "-ke", "-kv", "-tr", "-vtf", "-vn", "10", "-af", "0", "-ac", "-ar", "16"],
     "carpetas": ["assets/models/"],
-    "ahorro_min": 0.05
+    "ahorro_min": 0.05,
+    "webp": {
+      "_nota": "Antes de gltfpack, texturas a WebP con OpenImageIO (el python de Blender): las embebidas PNG/JPEG de la flora y la paleta externa de edificios (tex/). r128 las carga con el navegador (Chrome, Safari 14+, Firefox).",
+      "calidad": 85,
+      "embebidas": ["assets/models/entorno/"],
+      "externas": ["assets/models/edificios/tex/"]
+    }
   },
 
   "texturas_compartidas": {

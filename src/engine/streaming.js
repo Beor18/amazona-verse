@@ -14,7 +14,7 @@
    puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
    ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
    Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
-   todo lo visible; los demás modelos completos esperan a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
+   lo visible a menos de CFG.lejosQuieto; el resto espera a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
    más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
    referencias por nombre de material: el kit comparte su paleta). La cadena base64 la suelta AVE.assets.loadGLB al decodificar.
    El buffer de instancias de cada modelo×LOD se reutiliza (three r128 no lo libera al quitar la malla).
@@ -48,6 +48,7 @@ AVE.module('streaming', function (G) {
   const CFG = {
     cerca: { bajo: 50, medio: 60, alto: 75 },      // m al borde de la zona: modelo completo y colisiones (≥ distancia de LOD)
     precarga: { bajo: 20, medio: 25, alto: 30 },   // m: zonas cuyo modelo completo entra antes de mundoListo (lo demás visible, con su lejano)
+    lejosQuieto: { bajo: 120, medio: 150, alto: 150 }, // m: hasta que el jugador se mueve, solo baja el lejano de las zonas a menos de esto
     dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios (la de antes en mundo.js)
     histeresis: 30,                                // m de más para bajar de nivel
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
@@ -338,7 +339,8 @@ AVE.module('streaming', function (G) {
         cola.sort((a, b) => a.prio - b.prio);
         // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
         // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
-        const i = arrancando || quieto ? cola.findIndex(q => q.tipo === 'lejos' || q.prio < pre) : 0;
+        const lq = CFG.lejosQuieto[nivelCal()] || 150;
+        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || q.prio < pre) : 0;
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
@@ -498,7 +500,8 @@ AVE.module('streaming', function (G) {
           if (Z.nivel === 2) ps.push(res(n, 'cerca').promesa);
         }
       }
-      for (const id in zonas) if (zonas[id].nivel >= 1) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(res(n, 'lejos').promesa);
+      const lq = quieto ? CFG.lejosQuieto[nivelCal()] || 150 : Infinity;
+      for (const id in zonas) if (zonas[id].nivel >= 1 && zonas[id].d < lq) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(res(n, 'lejos').promesa);
       return Promise.all(ps.filter(Boolean).map(p => p.catch(() => null))).then(() => new Promise(ok => {
         const hecho = () => { for (const id in zonas) { const Z = zonas[id]; if (filtro(Z) && Z.nivel === 2 && Z.inst.some(I => !I.colocado && res(I.modelo, 'cerca').estado === 'listo')) return false; } return true; };
         const mirar = () => { if (hecho()) ok(); else { if (arrancando || !programado) drenarColocar(); setTimeout(mirar, 30); } };

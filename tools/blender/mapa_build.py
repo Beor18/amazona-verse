@@ -598,10 +598,8 @@ DATA = {
         'fuente': '04_Mapa_3D/migrado/escena_layout.json (AV3DMaxExportBuildings.max de Kelvin)',
         'escala': round(ESC['S'], 5),
         'nota': 'Mismo encaje que el terreno (0,255 m por unidad Max): posiciones y tamaños x escala, rotación intacta; solo se ajusta la altura al terreno y se aparta lo que choca con agua, senderos o explanadas. matriz = modelo web -> mundo; matrizMigrado = .glb migrado -> mundo; modelo null = pendiente de conversión (marcador invisible).',
-        'zonas': ESC['Z'],
         'compacto': MK.compacto(ESC['Z']),
-        'pendientes': {k: sum(1 for e in _ins if e['asset'] == k) for k in sorted({e['asset'] for e in _ins if not e.get('modelo')})},
-        'descartados': ESC['saltados'],
+        'detalle': 'assets/data/escena_kelvin_cap1.json',  # zonas con todas las instancias, pendientes y descartados (no lo carga el juego)
     },
     'zonasEdificios': {z_['id']: {'centro': [z_['centro'][0], z_['centro'][2]], 'radio': z_['r'], 'orientar': False, 'yExacta': True, 'escalaPack': False} for z_ in ESC['Z']},
     'colisiones': COLS,
@@ -645,6 +643,10 @@ D.nivelAguaEn = function (x, z) {
 js = '// Generado por tools/blender/mapa_build.py. No editar a mano.\n(function () {\nvar D = window.AV_MAPA_CAP1 = ' + json.dumps(DATA, ensure_ascii=False, separators=(',', ':')) + ';\n' + HELP + \
      'D.alturaEn = function (x, z) { return window.AV_MAPA_CAP1_ALTURA ? window.AV_MAPA_CAP1_ALTURA.alturaEn(x, z) : 0; };\n})();\n'
 open(os.path.join(OUT_D, 'mapa_cap1.js'), 'w').write(js)
+# Detalle de la escena de Kelvin (marcadores sin modelo, matrices del migrado): lo leen mapa_render.py y el level designer;
+# fuera de mapa_cap1.js para no bajarlo al jugar (~165 KB)
+json.dump({'zonas': ESC['Z'], 'pendientes': {k: sum(1 for e in _ins if e['asset'] == k) for k in sorted({e['asset'] for e in _ins if not e.get('modelo')})},
+           'descartados': ESC['saltados']}, open(os.path.join(OUT_D, 'escena_kelvin_cap1.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
 HJS = '''// Generado por tools/blender/mapa_build.py. Alturas del terreno del Cap. 1 muestreadas de la malla final.
 (function () {
 var A = window.AV_MAPA_CAP1_ALTURA = {nx: %d, nz: %d, x0: %s, z0: %s, paso: %s, min: %s, max: %s, formato: 'Uint16 little-endian, fila = z, columna = x; altura = min + v / 65535 * (max - min)',

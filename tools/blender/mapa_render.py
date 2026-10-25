@@ -18,6 +18,9 @@ sc = bpy.context.scene
 M, H = ML.build()
 ML.splat(M, H)
 DATA = json.loads(open(os.path.join(ROOT, 'assets', 'data', 'mapa_cap1.js')).read().split('window.AV_MAPA_CAP1 = ', 1)[1].split(';\n', 1)[0])
+_det = os.path.join(ROOT, 'assets', 'data', 'escena_kelvin_cap1.json')  # zonas con todas sus instancias (fuera de mapa_cap1.js)
+if os.path.exists(_det) and 'escenaKelvin' in DATA and 'zonas' not in DATA['escenaKelvin']:
+    DATA['escenaKelvin'].update(json.load(open(_det)))
 
 def imp(name):
     before = set(bpy.data.objects)

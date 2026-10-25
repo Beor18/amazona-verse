@@ -79,7 +79,7 @@ Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js
   - *lejos* (hasta la distancia de dibujo de 150/190/320 m, recortada por la niebla): solo el LOD lejano.
   - *fuera*: nada en memoria.
   - Histéresis de 30 m, y 3 s de gracia antes de soltar un modelo.
-- **Arranque:** antes de `mundoListo` entra el modelo completo de las zonas a menos de 20/25/30 m del inicio y el LOD lejano de todas las visibles. Los demás modelos completos esperan a que el jugador ande 2 m y llegan en segundo plano: lo más cercano primero, una descarga a la vez y la CPU troceada con `requestIdleCallback`.
+- **Arranque:** antes de `mundoListo` entra el modelo completo de las zonas a menos de 20/25/30 m del inicio y el LOD lejano de las visibles a menos de 120/150/150 m. El resto espera a que el jugador ande 2 m y llegan en segundo plano: lo más cercano primero, una descarga a la vez y la CPU troceada con `requestIdleCallback`.
 - **Dibujo:**
   - Una `InstancedMesh` por modelo × LOD × material, con el nombre `edificiosInst:*` y `sinSolido`.
   - Cada cuadro se eligen las instancias visibles. Pasan las que están dentro del frustum y de la distancia de dibujo, y también las de cerca que caen en el radio de sombra.
