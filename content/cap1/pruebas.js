@@ -20,6 +20,9 @@
     check('Nombre con símbolos raros se rechaza', saveCharacter({ name: '<b>x</b>', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
     check('Nombre con números, correo o "me llamo" se rechaza (seguridad infantil)', ['Ana123', 'yo@correo', 'me llamo Ana'].every(n => saveCharacter({ name: n, preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null));
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && had('PlayerCharacterCreated'));
+    await G.creador.open(false); G.creador.pintarNombre('Luna del Mar'); $('p-save').click();
+    check('El creador da el nombre de dos listas (sin texto libre)', S.profile.name === 'Luna del Mar' && $('p-name-a').tagName === 'SELECT' && !document.querySelector('#creator input[type=text]'), S.profile.name);
+    saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' });
     await G.actores.refreshCompanion();
     if (G.criadero && G.criadero.companero) {
       // Regla de b7182ce: el compañero es la cría del criadero. Sin cría nacida no aparece; con una cría (simulada con el
@@ -90,14 +93,17 @@
     check('Viñeta 1 presenta al personaje creado', panels[0].text.includes('Nube Azul'));
     check('Viñeta 3 cuenta la corrección real', panels[2].text.startsWith('Mi primera idea no era segura'), panels[2].text);
     await CM.openComic();
-    S.comic.title = 'Prueba de cómic'; S.comic.cover = 'personaje'; CM.syncComicForm();
+    S.comic.title = CM.titulos[1]; S.comic.cover = 'personaje'; CM.syncComicForm();
     check('Mover la viñeta 4 hacia arriba cambia el orden', CM.moveComicPanel(3, -1) && CM.orderedPanels()[2].id === 'final');
     check('No se puede mover fuera de rango', CM.moveComicPanel(0, -1) === false);
-    const ci = document.querySelector('#c-panels input[data-id]');
-    ci.value = 'Mi teléfono es 787 555 1234'; ci.dispatchEvent(new Event('change', { bubbles: true }));
-    check('El cómic no guarda números ni datos personales', !Object.values(S.comic.captions).some(v => /\d/.test(v)) && ci.value !== 'Mi teléfono es 787 555 1234');
-    S.comic.captions.final = 'Mi frase editada';
-    check('Texto editado aparece en la viñeta', CM.orderedPanels().some(p => p.text === 'Mi frase editada'));
+    const ci = document.querySelector('#c-panels select[data-id]');
+    check('Sin texto libre en el cómic: título y viñetas se eligen de listas', $('c-title').tagName === 'SELECT' && !!ci && !document.querySelector('#comic input[type=text]') && $('c-title').value === CM.titulos[1]);
+    ci.value = '2'; ci.dispatchEvent(new Event('change', { bubbles: true }));
+    const elegida = CM.comicPanels().find(p => p.id === ci.dataset.id);
+    check('Elegir otro texto cambia la viñeta', elegida.eleccion === 2 && CM.orderedPanels().some(p => p.id === ci.dataset.id && p.text === elegida.opciones[2]));
+    S.comic.captions.final = 'Mi teléfono es 787 555 1234';
+    check('Texto libre de partidas viejas no se usa en el cómic', !CM.orderedPanels().some(p => /787/.test(p.text)));
+    S.comic.captions.final = 3;
     for (const lay of ['grid', 'strip']) {
       for (const n of [1, 2, 3, 4]) {
         const bx = CM.comicLayout(n, lay, 1080, 1490, 380);
@@ -134,6 +140,9 @@
     SV.reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
     try { localStorage.setItem(KEY, snap); } catch (e) { /* sin almacenamiento */ }
     check('Cargar restaura progreso, personaje, cómic y eventos', SV.load(true) && S.complete && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && S.events.length > 15 && !!S.captures.final, S.events.length + ' eventos');
+    const vieja = JSON.parse(snap); vieja.profile.name = 'Ana'; vieja.comic.title = 'La casa de Ana';
+    try { localStorage.setItem(KEY, JSON.stringify(vieja)); } catch (e) { /* sin almacenamiento */ }
+    check('Partida vieja: el nombre escrito a mano se cambia por uno de la lista', SV.load(true) && S.profile.name !== 'Ana' && G.creador.esNombreDeLista(S.profile.name), S.profile.name);
     const v2 = { v: 2, pos: { x: 1, z: 2, y: 0 }, facing: { x: 0, z: 1 }, step: 2, inv: { madera: 1, piedra: 0, componente: 0 }, examined: { maquina: true, transmisor: true },
       collected: ['m1'], evaluated: { A: false, B: false }, refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, complete: false,
       indicators: { seguridad: '—', acceso: '—', habitat: '—' }, events: [{ type: 'PlayerCharacterCreated', t: 0, data: {} }, { type: 'WorkshopExplored', t: 5, data: {} }, { type: 'LumaHelped', t: 9, data: {} }], captures: {}, clock: 12 };
@@ -146,7 +155,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
     check('Partida v3 terminada se migra a v4 como terminada', SV.load(true) && S.complete && S.step === G.misiones.DONE, 'paso ' + S.step);
     // Ruta directa a la colina
-    SV.reset(true); saveCharacter({ name: 'Rio', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
+    SV.reset(true); saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
     C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
@@ -168,7 +177,7 @@
     const { teleport, tick, drain, useAt } = T;
     const keep = T.keepSave();
     G.quiet = true;
-    SV.reset(true); G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+    SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
     check('dialogos_cap1.js carga las 27 escenas', scenes.length === 27, scenes.length + ' escenas');
@@ -408,7 +417,7 @@
       check('Lugares por id de POI (los que faltan, provisionales y documentados)', Object.values(E.L).every(p => isFinite(p.x) && isFinite(p.z)) && Object.keys(E.origen).includes('marcas_agua'), JSON.stringify(E.origen).slice(0, 160));
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
-      SV.reset(true); G.creador.saveCharacter({ name: 'Nube Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+      SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
       useAt('maquina'); drain(); useAt('transmisor'); drain(); useAt('luma'); drain();
       check('Recolección -1 min: Luma aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
@@ -456,9 +465,9 @@
       drain(); AU.setAjuste('voz', false);
       // Reporte sin datos personales
       const csv = AU.reporteCSV();
-      check('Reporte sin nombre, ids ni texto libre', !csv.includes('Nube Prueba') && !csv.includes(S.saveId) && !csv.includes('_id') && csv.split('\n')[0].includes('estacion'));
+      check('Reporte sin nombre, ids ni texto libre', !csv.includes('Nube Valiente') && !csv.includes(S.saveId) && !csv.includes('_id') && csv.split('\n')[0].includes('estacion'));
       // Segunda partida: 5.º–6.º, predicción acertada, hallazgo del flamboyán y guardar a mitad de misión
-      SV.reset(true); G.creador.saveCharacter({ name: 'Rio', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
+      SV.reset(true); G.creador.saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
       AU.setAjuste('grado', '5-6');
       const fl = E.L.flamboyan; teleport(fl.x + 0.5, fl.z); tick(0.6);
       check('Hallazgo opcional: flamboyán (verificado) en la plaza', S.edu.fichas.includes('flamboyan'));
@@ -526,7 +535,10 @@
       guardado = null; $('m-json').click(); await espera(60);
       let js = null; try { js = JSON.parse(guardado.data); } catch (e) { js = null; }
       check('JSON con las partidas y sin ids internos', js && js.partidas.length === 1 && !guardado.data.includes('_id') && /\.json$/.test(guardado.filename));
-      check('La privacidad del reporte dice la verdad (fuentes y motor externos, voz local)', js && js.privacidad.some(x => /Google Fonts/.test(x)) && !js.privacidad.some(x => /servicios de terceros|texto libre para el niño/i.test(x)));
+      // La declaración solo es cierta si de verdad nada se pidió a otro origen (motor y fuentes servidos por el juego)
+      const ajenos = performance.getEntriesByType('resource').map(r => r.name).filter(n => !n.startsWith(location.origin) && !/^(data|blob):/.test(n));
+      check('Sin peticiones a terceros al cargar (motor y fuentes del propio juego)', ajenos.length === 0, ajenos.slice(0, 3).join(' '));
+      check('La privacidad del reporte dice la verdad (sin terceros, sin texto libre, voz local)', js && js.privacidad.some(x => /vienen con el juego/.test(x)) && js.privacidad.some(x => /Sin texto libre/.test(x)) && !js.privacidad.some(x => /Google Fonts|cdnjs|jsdelivr/i.test(x)));
       ponerClaude({ use: async () => ({ save: async () => { throw { code: 'declined', message: 'no' }; } }) });
       $('m-csv').click(); await espera(60);
       check('Si el docente cancela la descarga se avisa', /cancel/i.test($('m-estado').textContent), $('m-estado').textContent);

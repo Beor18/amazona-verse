@@ -82,6 +82,11 @@
       // Los eventos de un terreno llevan su lugar y la elección
       extra: (def, data) => ({ location: data.parcel ? (data.parcel === 'A' ? 'parcela_rio' : 'parcela_colina') : def.loc, choice: data.choice || (data.parcel || null) }),
     },
+    // Nombres de aventurero que el niño elige en el creador (dos listas; sin texto libre). Ver src/game/creador.js
+    nombres: {
+      a: ['Nube', 'Pluma', 'Brisa', 'Rayo', 'Trueno', 'Lluvia', 'Semilla', 'Hoja', 'Coral', 'Estrella', 'Luna', 'Sol', 'Ola', 'Flor', 'Viento', 'Cielo', 'Ceiba', 'Palma'],
+      b: ['Azul', 'Verde', 'Veloz', 'Valiente', 'Feliz', 'Alegre', 'Brillante', 'Gentil', 'Tropical', 'Solar', 'del Río', 'del Monte', 'del Yunque', 'de la Bahía', 'del Mar'],
+    },
     // Aula (src/game/aula.js): progreso del aula en el dispositivo, separado de la partida; lecciones en lecciones.js
     aula: { clave: 'amazonaverse.aula.cap1', estado: 'edu', archivo: 'amazonaverse_cap1', lecciones: () => window.AV_LECCIONES_CAP1 },
     // Diálogos del guion (dialogos_cap1.js, generado desde dialogos_cap1.json)
@@ -93,17 +98,22 @@
     },
     comic: {
       marca: 'AMAZONA VERSE · CAPÍTULO 1', tituloDefecto: 'Mi primera reconstrucción',
+      // Sin texto libre (seguridad infantil): el niño elige el título y el texto de cada viñeta
+      titulos: ['Mi primera reconstrucción', 'El día que el cielo se rompió', 'La ruta de la gota', 'Vittata y yo', 'Aprendiz de Villa Raíz', 'Construimos juntos'],
       archivo: 'amazona-verse-mi-comic', pdfTitulo: 'Amazona Verse - Mi comic', pdfProductor: 'Amazona Verse prototipo',
       capturas: ['workshop', 'shelter', 'final'], portadas: { taller: 'workshop', refugio: 'shelter' },
       vinetas: [
-        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.` },
-        { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', texto: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.' },
+        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.`,
+          opciones: ['Hoy empezó mi aventura en Villa Raíz.', 'Me convertí en aprendiz de Vittata.', 'Con mi pañuelo listo, salí a ayudar.'] },
+        { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', texto: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.',
+          opciones: ['El taller quedó hecho pedazos, pero no nos rendimos.', 'Entre los restos encontramos piezas útiles.', 'Vittata me enseñó a ver posibilidades.'] },
         { id: 'refugio', img: 'shelter', needs: 'ShelterConstructed', texto: S => {
           if (S.builds[0] === 'B') return 'Elegí construir en la colina porque descubrí que el río podía inundar el otro terreno.';
           if (S.builds.includes('A') && S.refuge && S.refuge.parcel === 'B') return 'Mi primera idea no era segura. Aprendí a observar mejor el terreno y encontré una solución.';
           return 'Construimos junto al río y la crecida dañó el refugio. Aprendí que construir rápido no siempre es construir bien.';
-        } },
-        { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.' },
+        }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
+        { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
+          opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
       ],
       decorar: (x, p, b, ih, G) => { if (p.img === 'final') G.c.drawSymbol(x, b.x + b.w - 80, b.y + 80, Math.min(64, ih * 0.3)); },
     },

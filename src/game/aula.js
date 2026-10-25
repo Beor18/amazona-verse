@@ -435,14 +435,14 @@ AVE.module('aula', function (G) {
   const PRIVACIDAD = {
     es: ['Sin cuentas, correos, fotos, audio ni ubicación. El reporte no lleva nombres ni identificadores.',
       'El juego no envía datos del estudiante por la red: el progreso queda solo en este dispositivo.',
-      'El navegador descarga el motor 3D (Three.js, desde cdnjs y jsdelivr) y las fuentes (Google Fonts); a esos servidores no se les manda ningún dato del estudiante.',
-      'El nombre inventado y los textos del cómic los escribe el niño (sin números, correos ni enlaces) y quedan en el dispositivo; no van en el reporte.',
+      'El motor 3D (Three.js) y las fuentes vienen con el juego: no se piden a servidores de terceros.',
+      'Sin texto libre: el niño elige de listas su nombre de aventurero y los textos de su cómic, que quedan en el dispositivo y no van en el reporte.',
       'La lectura en voz alta usa solo voces del dispositivo.',
       'El maestro decide qué hacer con el archivo descargado; el juego no lo envía.'],
     en: ['No accounts, emails, photos, audio or location. The report has no names or identifiers.',
       'The game sends no student data over the network: progress stays on this device only.',
-      'The browser downloads the 3D engine (Three.js, from cdnjs and jsdelivr) and the fonts (Google Fonts); no student data is sent to those servers.',
-      'The made-up name and comic texts are typed by the child (no numbers, emails or links) and stay on the device; they are not in the report.',
+      'The 3D engine (Three.js) and the fonts ship with the game: nothing is requested from third-party servers.',
+      'No free text: the child picks an adventurer name and comic texts from lists; they stay on the device and are not in the report.',
       'Read-aloud uses on-device voices only.',
       'The teacher decides what to do with the downloaded file; the game does not send it.'],
   };

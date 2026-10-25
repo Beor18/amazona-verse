@@ -18,8 +18,21 @@ AVE.module('creador', function (G) {
     { id: 'azul', name: 'Pañuelo azul', color: '#3d8fb0' }, { id: 'morado', name: 'Pañuelo morado', color: '#7a4fb3' },
     { id: 'amarillo', name: 'Pañuelo amarillo', color: '#e8c32a' },
   ];
-  // Nombre inventado: solo letras (sin números, @ ni frases como "me llamo"): seguridad infantil, sin datos personales
-  const NAME_OK = /^[\p{L} '\-]{1,16}$/u;
+  // Nombre de aventurero: el niño lo ELIGE de dos listas (seguridad infantil: sin texto libre). Un pack puede dar las suyas
+  // en pack.nombres { a: [...], b: [...] }; si las da, al cargar una partida un nombre que no salga de ellas se cambia por uno
+  // de la lista (partidas viejas con nombre escrito a mano). saveCharacter(draft) por código sigue aceptando letras sueltas.
+  const NOMBRES = Object.assign({
+    a: ['Nube', 'Pluma', 'Brisa', 'Rayo', 'Trueno', 'Lluvia', 'Semilla', 'Hoja', 'Coral', 'Estrella', 'Luna', 'Sol', 'Ola', 'Flor', 'Viento', 'Cielo', 'Ceiba', 'Palma'],
+    b: ['Azul', 'Verde', 'Veloz', 'Valiente', 'Feliz', 'Alegre', 'Brillante', 'Gentil', 'Tropical', 'Solar', 'del Río', 'del Monte', 'del Yunque', 'de la Bahía', 'del Mar'],
+  }, G.pack.nombres);
+  const nombreDe = (a, b) => a + ' ' + b;
+  const esNombreDeLista = n => typeof n === 'string' && NOMBRES.a.some(a => n.startsWith(a + ' ') && NOMBRES.b.includes(n.slice(a.length + 1)));
+  const nombreAzar = (semilla) => {
+    const R = semilla != null ? G.util.rng(semilla) : Math.random;
+    return nombreDe(NOMBRES.a[Math.floor(R() * NOMBRES.a.length)], NOMBRES.b[Math.floor(R() * NOMBRES.b.length)]);
+  };
+  // Solo letras (sin números, @ ni frases como "me llamo"): para nombres que llegan por código
+  const NAME_OK = /^[\p{L} '\-]{1,24}$/u;
   // Texto libre del niño (nombre, título y viñetas del cómic): rechaza números, contactos, enlaces y frases de datos personales.
   // Devuelve el motivo o null si es seguro.
   function textoSeguro(t) {
@@ -166,10 +179,29 @@ AVE.module('creador', function (G) {
     else if (cur && btn.dataset.color) changeLook(l => { l.accessories[slot] = Object.assign({}, cur, { color: btn.dataset.color }); });
   });
   $('p-species').addEventListener('change', () => changeLook(l => { l.species = $('p-species').value; }));
+  // ---------- Nombre de aventurero (dos listas) ----------
+  const opciones = lista => lista.map(x => `<option>${x.replace(/[<>&"]/g, '')}</option>`).join('');
+  $('p-name-a').innerHTML = opciones(NOMBRES.a); $('p-name-b').innerHTML = opciones(NOMBRES.b);
+  function nombreElegido() { return nombreDe($('p-name-a').value, $('p-name-b').value); }
+  function pintarNombre(n) {
+    const a = NOMBRES.a.find(x => n.startsWith(x + ' ')) || NOMBRES.a[0];
+    $('p-name-a').value = a; $('p-name-b').value = NOMBRES.b.includes(n.slice(a.length + 1)) ? n.slice(a.length + 1) : NOMBRES.b[0];
+    $('p-name').textContent = nombreElegido();
+  }
+  for (const id of ['p-name-a', 'p-name-b']) $(id).addEventListener('change', () => { $('p-name').textContent = nombreElegido(); });
+  $('p-name-azar').addEventListener('click', () => { let n = nombreElegido(); for (let k = 0; k < 5 && n === nombreElegido(); k++) n = nombreAzar(); pintarNombre(n); });
+  // Partidas viejas: un nombre escrito a mano (que podría ser real) se cambia por uno de la lista, estable por partida
+  if (G.pack.nombres) G.on('apply', () => {
+    const p = S.profile;
+    if (p && p.created && !esNombreDeLista(p.name)) {
+      let h = 7; for (const c of String(S.saveId || p.name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+      p.name = nombreAzar(h); G.guardado.autosave();
+    }
+  }, 20);
   async function open(first) {
     const p = S.profile;
     draftLook = profileLook(p);
-    $('p-name').value = p.created ? p.name : '';
+    pintarNombre(p.created && esNombreDeLista(p.name) ? p.name : nombreAzar());
     $('p-species').innerHTML = Object.entries(C3.SPECIES).map(([id, sp]) => `<option value="${id}">${sp.name}</option>`).join('');
     $('p-species').value = draftLook.species;
     $('p-error').hidden = true;
@@ -188,8 +220,8 @@ AVE.module('creador', function (G) {
   function close() { $('creator').hidden = true; if (window.AVShowcase) window.AVShowcase.unmount(); }
   // Devuelve null si se guardó, o el texto del error
   function saveCharacter(draft) {
-    const d = draft || { name: $('p-name').value.trim(), look: draftLook };
-    if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Escribe un nombre inventado de 1 a 16 letras, sin números. No uses tu nombre real.';
+    const d = draft || { name: nombreElegido(), look: draftLook };
+    if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Elige un nombre de aventurero de las listas.';
     if (d.preset && !PRESETS.some(o => o.id === d.preset)) return 'Opción no válida.';
     const look = d.look ? C3.normalizeLook(d.look) : profileLook(d);
     const firstTime = !S.profile.created;
@@ -226,5 +258,5 @@ AVE.module('creador', function (G) {
   }
   G.on('apply', () => { $('creator').hidden = true; }, 60);
 
-  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro };
+  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre };
 });

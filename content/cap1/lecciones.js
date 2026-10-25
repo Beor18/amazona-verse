@@ -440,7 +440,7 @@ window.AV_LECCIONES_CAP1 = {
 
   "modo_maestro": {
     "acceso": {
-      "como": "Mantener pulsado el logo 3 segundos y resolver una suma (p. ej. 7 + 5).",
+      "como": "En el menú de pausa, mantener pulsado 'Docentes' 1,2 segundos y resolver una multiplicación (p. ej. 14 × 7).",
       "nota": "No es contraseña ni cuenta. Solo evita que un niño entre por accidente."
     },
     "guia_45_min": {
@@ -519,13 +519,14 @@ window.AV_LECCIONES_CAP1 = {
     },
     "reporte_progreso": {
       "principios": [
-        "Sin cuentas, nombres, correos, fotos, voz ni ubicación.",
-        "Sin campos de texto libre para el niño (evita que escriba datos personales).",
-        "Sin red: ninguna llamada fetch, analítica, anuncios ni servicios de terceros.",
+        "Sin cuentas, nombres reales, correos, fotos, audio ni ubicación. El reporte no lleva nombres ni identificadores.",
+        "Sin texto libre: el niño elige de listas su nombre de aventurero, el título y el texto de su cómic.",
+        "El juego no envía datos del estudiante por la red (sin fetch, analítica ni anuncios): el progreso queda solo en el dispositivo. El motor 3D (Three.js) y las fuentes vienen con el juego: no se piden a servidores de terceros.",
+        "La lectura en voz alta usa solo voces del dispositivo.",
         "El maestro decide qué hacer con el archivo descargado; el juego no lo envía."
       ],
       "almacenamiento": { "donde": "localStorage del dispositivo", "clave": "amazonaverse.aula.cap1", "separado_de": "partida del juego (SAVE_KEY)", "retencion": "Hasta que el maestro pulse 'Borrar progreso de este dispositivo'." },
-      "identificador": "Etiqueta de estación que escribe el maestro (p. ej. 'Estación 4'). Nunca el nombre del estudiante.",
+      "identificador": "Estación que el maestro elige de una lista (Estación 1 a 40). Nunca el nombre del estudiante.",
       "campos_por_partida": [
         "estacion", "fecha (día, sin hora)", "idioma", "modo_texto_corto", "lectura_voz",
         "pasos_completados (p1 a p8)", "perchas_observadas (0-4)", "cadena_correcta_intento (1-3)",
@@ -534,14 +535,14 @@ window.AV_LECCIONES_CAP1 = {
       ],
       "prohibido": ["nombre", "fecha de nacimiento", "correo", "IP", "identificador de dispositivo", "texto libre", "audio", "imagen"],
       "formatos": ["csv", "json"],
-      "descarga": "Blob + enlace con atributo download, generado en el navegador.",
+      "descarga": "Archivo generado en el navegador y ofrecido con la capacidad downloads del artifact; si no está, se copia al portapapeles.",
       "nombre_archivo": "amazonaverse_cap1_{estacion}_{AAAA-MM-DD}.csv",
       "ejemplo_csv": "estacion,fecha,idioma,perchas,cadena_intento,prediccion_coincidio,q1,q2,q3,q4,q5,q6,q7,objetivos\nEstación 4,2026-11-03,es,4,1,no,1,2,1,1,1,1,2,O1|O2|O3|O4|O5|O6",
       "cumplimiento": "COPPA: el juego no recoge información personal de niños. FERPA: el juego no guarda expedientes; si el maestro anota nombres en el archivo, el registro queda bajo control de la escuela. Validar con el abogado de COPPA antes del piloto (ROADMAP §6)."
     },
     "funciones_aula": {
       "texto_corto": "Muestra 'corto' e iconos en lugar de 'dato' e 'instruccion'. El texto largo sigue disponible con el botón Escuchar.",
-      "lectura_voz": "Botón Escuchar en cada ficha, paso y pregunta. Usa speechSynthesis del navegador (lang es-PR, luego es-US; en-US). Preferir voces con localService = true. Solo lee texto del juego; nunca datos del estudiante. Velocidad 0.9 por defecto.",
+      "lectura_voz": "Botón Escuchar en cada ficha, paso y pregunta. Usa speechSynthesis del navegador (lang es-PR, luego es-US; en-US) y solo voces del dispositivo (localService = true): si no hay, no se lee. Solo lee texto del juego; nunca datos del estudiante. Velocidad 0.9 por defecto.",
       "idioma": "ES, EN o bilingüe (ES arriba, EN abajo). El maestro fija el predeterminado.",
       "sin_tienda": "Modo escuela: oculta tienda y compras (MODELO_NEGOCIO §4.2).",
       "sin_enlaces_externos": "El niño ve solo la etiqueta de la fuente (p. ej. 'Fuente: USFWS'); las URL aparecen solo en Modo Maestro.",

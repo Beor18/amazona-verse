@@ -1,8 +1,12 @@
 /* Juego · cómic personal
    Capturas del mundo en momentos clave, viñetas que salen solo de eventos reales (si un evento no ocurrió, la viñeta no existe),
-   texto editable, orden, portada, diseño en cuadrícula o tira, y exportación a PNG y PDF de una página sin librerías.
-   Datos: pack.comic { marca, tituloDefecto, archivo, pdfTitulo, pdfProductor, capturas: [claves], portadas: { valorDelSelect: claveDeCaptura },
-     vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string }], decorar?(ctx, viñeta, caja, altoImagen, G) }. */
+   texto elegido de una lista (sin texto libre: seguridad infantil), orden, portada, diseño en cuadrícula o tira, y exportación
+   a PNG y PDF de una página sin librerías.
+   Datos: pack.comic { marca, tituloDefecto, titulos?: [textos], archivo, pdfTitulo, pdfProductor, capturas: [claves],
+     portadas: { valorDelSelect: claveDeCaptura },
+     vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string] }],
+     decorar?(ctx, viñeta, caja, altoImagen, G) }.
+   S.comic.captions[id] = índice de la opción elegida (0 = el texto de la historia); S.comic.title = uno de los títulos. */
 AVE.module('comic', function (G) {
   'use strict';
   const S = G.S, $ = G.util.$, C = G.pack.comic || {};
@@ -12,10 +16,24 @@ AVE.module('comic', function (G) {
   function capture(key) { S.captures[key] = G.renderer.snapshot(480, 360, 0.72); }
 
   // Selección narrativa: cada viñeta sale de eventos reales
-  function comicPanels() {
-    const all = (C.vinetas || []).map(v => ({ id: v.id, img: v.img, needs: v.needs, text: typeof v.texto === 'function' ? v.texto(S, G) : v.texto }));
-    return all.filter(x => G.eventos.had(x.needs)).map(x => Object.assign(x, { text: (S.comic.captions[x.id] || x.text) }));
+  const TITULOS = (C.titulos && C.titulos.length ? C.titulos : [C.tituloDefecto || 'Mi cómic']).slice();
+  const val = (f) => (typeof f === 'function' ? f(S, G) : f);
+  // Textos que se pueden elegir para una viñeta: el de la historia y sus opciones
+  const opcionesDe = v => [v.texto].concat(v.opciones || []).map(val);
+  // Índice elegido (las partidas viejas guardaban texto libre: solo vale si coincide con una opción)
+  function eleccion(v, ops) {
+    const c = S.comic.captions[v.id];
+    if (typeof c === 'number' && c >= 0 && c < ops.length) return c;
+    const i = typeof c === 'string' ? ops.indexOf(c) : -1;
+    return i >= 0 ? i : 0;
   }
+  function comicPanels() {
+    return (C.vinetas || []).filter(v => G.eventos.had(v.needs)).map(v => {
+      const ops = opcionesDe(v), i = eleccion(v, ops);
+      return { id: v.id, img: v.img, needs: v.needs, text: ops[i], opciones: ops, eleccion: i };
+    });
+  }
+  const tituloValido = t => (TITULOS.includes(t) ? t : TITULOS[0]);
   function orderedPanels() {
     const panels = comicPanels();
     const order = S.comic.order.filter(i => i < panels.length);
@@ -75,7 +93,7 @@ AVE.module('comic', function (G) {
     x.fillStyle = shade; x.fillRect(20, 150, W - 40, TOP - 160); x.restore();
     x.textBaseline = 'alphabetic'; x.textAlign = 'left';
     x.fillStyle = '#f2a03d'; x.font = '600 26px Fredoka, sans-serif'; x.fillText(C.marca || '', 52, 288);
-    x.fillStyle = '#f4f7f1'; x.font = '700 58px Fredoka, sans-serif'; x.fillText((CM.title || C.tituloDefecto || '').slice(0, 32), 50, 346);
+    x.fillStyle = '#f4f7f1'; x.font = '700 58px Fredoka, sans-serif'; x.fillText(tituloValido(CM.title).slice(0, 32), 50, 346);
     // Viñetas
     const boxes = comicLayout(panels.length, CM.layout, W, H - 30, TOP);
     panels.forEach((p, i) => {
@@ -140,12 +158,15 @@ AVE.module('comic', function (G) {
   }
 
   function syncComicForm() {
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    S.comic.title = tituloValido(S.comic.title);
+    $('c-title').innerHTML = TITULOS.map(t => `<option>${esc(t)}</option>`).join('');
     $('c-title').value = S.comic.title; $('c-cover').value = S.comic.cover; $('c-layout').value = S.comic.layout;
     const panels = orderedPanels();
     $('c-panels').innerHTML = panels.map((p, i) => `<li><div class="pn">Viñeta ${i + 1}</div>
-      <input id="cap-${p.id}" data-id="${p.id}" type="text" maxlength="120" aria-label="Texto de la viñeta ${i + 1}">
+      <select id="cap-${p.id}" data-id="${p.id}" aria-label="Texto de la viñeta ${i + 1}">${p.opciones.map((o, k) => `<option value="${k}"${k === p.eleccion ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>
       <div class="pm"><button class="btn ghost sm" type="button" data-mv="-1" data-i="${i}" aria-label="Subir viñeta ${i + 1}">↑</button><button class="btn ghost sm" type="button" data-mv="1" data-i="${i}" aria-label="Bajar viñeta ${i + 1}">↓</button></div></li>`).join('');
-    panels.forEach(p => { $('cap-' + p.id).value = p.text; });
+
   }
   function moveComicPanel(i, dir) {
     const n = comicPanels().length;
@@ -159,17 +180,13 @@ AVE.module('comic', function (G) {
     if (moveComicPanel(+b.dataset.i, +b.dataset.mv)) { syncComicForm(); refreshComic(); G.guardado.autosave(); }
   });
   $('c-panels').addEventListener('change', e => {
-    const inp = e.target.closest('input[data-id]'); if (!inp) return;
-    const v = inp.value.trim().slice(0, 120);
-    const malo = G.creador.textoSeguro(v);
-    if (malo) { G.ui.toast(malo, 3500); inp.value = S.comic.captions[inp.dataset.id] || (comicPanels().find(p => p.id === inp.dataset.id) || {}).text || ''; return; }
-    if (v) S.comic.captions[inp.dataset.id] = v; else delete S.comic.captions[inp.dataset.id];
+    const sel = e.target.closest('select[data-id]'); if (!sel) return;
+    const i = parseInt(sel.value, 10);
+    if (i > 0) S.comic.captions[sel.dataset.id] = i; else delete S.comic.captions[sel.dataset.id];
     refreshComic(); G.guardado.autosave();
   });
   for (const id of ['c-title', 'c-cover', 'c-layout']) $(id).addEventListener('change', () => {
-    const malo = G.creador.textoSeguro($('c-title').value);
-    if (malo) { G.ui.toast(malo, 3500); $('c-title').value = S.comic.title; }
-    S.comic.title = $('c-title').value.trim().slice(0, 32) || C.tituloDefecto || '';
+    S.comic.title = tituloValido($('c-title').value);
     S.comic.cover = $('c-cover').value; S.comic.layout = $('c-layout').value;
     refreshComic(); G.guardado.autosave();
   });
@@ -229,5 +246,5 @@ AVE.module('comic', function (G) {
   $('c-pdf').onclick = () => exportComic('pdf', true);
   G.on('apply', () => { $('comic').hidden = true; }, 60);
 
-  return { capture, comicPanels, orderedPanels, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic, get lastBlob() { return exportComic.lastBlob; } };
+  return { titulos: TITULOS, capture, comicPanels, orderedPanels, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic, get lastBlob() { return exportComic.lastBlob; } };
 });
