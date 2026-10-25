@@ -131,7 +131,7 @@
     if (key && skinCache[key]) return skinCache[key];
     const s = base === m ? m.clone() : base.clone();
     s.skinning = true;
-    if (key) skinCache[key] = s;
+    if (key) { skinCache[key] = s; s.userData.shared = true; }
     return s;
   }
   const HEAD_R = () => (mountsInfo && mountsInfo.head_sphere && mountsInfo.head_sphere.radius) || 0.5104;
@@ -139,8 +139,22 @@
   const matCache = {};
   function mat(color, opts) {
     const key = color + JSON.stringify(opts || {});
-    if (!matCache[key]) matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0.05 }, opts || {}));
+    if (!matCache[key]) { matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0.05 }, opts || {})); matCache[key].userData.shared = true; }
     return matCache[key];
+  }
+  // Libera la GPU de una pieza quitada: geometría propia y materiales sin caché. Las texturas están todas en caché
+  // (estampados, banderas, parches) y la ropa de Blender comparte geometría con el modelo cargado: esas se conservan.
+  function disposeObject(obj, sharedGeometry) {
+    obj.traverse(o => {
+      if (o.isSkinnedMesh && o.skeleton && o.userData.isAccessory) o.skeleton.dispose();
+      if (o.geometry && !sharedGeometry) o.geometry.dispose();
+      if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (!m.userData.shared) m.dispose();
+    });
+  }
+  function unmountSlot(ch, slot) {
+    const m = ch.mounted[slot]; if (!m) return;
+    for (const obj of m.objects) { if (obj.parent) obj.parent.remove(obj); disposeObject(obj, !!m.blender); }
+    delete ch.mounted[slot];
   }
   // Todas las medidas en unidades de "radio de cabeza" (R); se escalan al montar
   function buildAccessory(id, color, style) {
@@ -536,7 +550,7 @@
       for (const slot of SLOTS) {
         const want = this.look.accessories[slot];
         const have = this.mounted[slot];
-        if (have && (!want || have.id !== want.id || have.color !== want.color || have.style !== want.style)) { for (const obj of have.objects) obj.parent && obj.parent.remove(obj); delete this.mounted[slot]; }
+        if (have && (!want || have.id !== want.id || have.color !== want.color || have.style !== want.style)) unmountSlot(this, slot);
         if (want && !this.mounted[slot]) {
           const def = ACCESSORIES.find(a => a.id === want.id);
           const objects = [];
@@ -551,8 +565,7 @@
             loadRopa(gname).then(() => {
               const cur = this.look.accessories[slot], m = this.mounted[slot];
               if (cur && m && cur.id === want.id && cur.style === want.style && cur.color === want.color && !m.blender) {
-                for (const obj of m.objects) obj.parent && obj.parent.remove(obj);
-                delete this.mounted[slot]; this.applyLook(this.look);
+                unmountSlot(this, slot); this.applyLook(this.look);
               }
             });
           }
@@ -632,5 +645,5 @@
     return canvas;
   }
 
-  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, BASE_IDS, create, loadGLTF, buildAccessory, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
+  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, BASE_IDS, create, loadGLTF, buildAccessory, disposeObject, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
 })();

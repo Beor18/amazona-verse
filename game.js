@@ -28,6 +28,11 @@
     LocationDiscoveredMirador: { type: 'LocationDiscovered', loc: 'mirador', chars: ['vittata', 'luma'], scene: 'final' },
     ChapterCompleted: { type: 'ChapterCompleted', loc: 'mirador', chars: ['vittata', 'luma', 'guardian'], scene: 'final' },
     ComicExported: { type: 'ComicExported', loc: null, chars: ['player'], scene: null },
+    // Sprint 1: misiones de habilidad, Diario de Campo y ropa desbloqueable
+    MissionCompleted: { type: 'QuestCompleted', loc: 'villa_raiz', chars: ['vittata'], scene: null },
+    FieldEntryFound: { type: 'CollectibleFound', loc: 'villa_raiz', chars: ['vittata'], scene: null },
+    OutfitUnlocked: { type: 'ItemUnlocked', loc: null, chars: ['vittata'], scene: null },
+    LumaChoice: { type: 'DialogueChoiceMade', loc: 'taller_vittata', chars: ['vittata', 'luma'], scene: 'dialogue' },
   };
 
   // Creador de personaje (MVP): presets basados en renders oficiales de especies
@@ -70,7 +75,8 @@
     { id: 'm5', type: 'madera', x: -17, z: -13 },
     { id: 'p1', type: 'piedra', x: 12, z: -2 }, { id: 'p2', type: 'piedra', x: -6, z: 13 },
     { id: 'p3', type: 'piedra', x: 4, z: -15 }, { id: 'p4', type: 'piedra', x: -15, z: 8 },
-    { id: 'c1', type: 'componente', x: -12, z: -16 }, { id: 'c2', type: 'componente', x: 9, z: 14 },
+    // M1 "Fondo del río": la pieza c1 cayó al fondo de la poza del río; solo se alcanza buceando (C o Bucear)
+    { id: 'c1', type: 'componente', x: 30, z: -18, under: true }, { id: 'c2', type: 'componente', x: 9, z: 14 },
   ];
 
   const STEPS = [
@@ -87,6 +93,61 @@
   const LABEL = { madera: 'madera', piedra: 'piedra', componente: 'pieza de metal' };
   const IMG = { V: 'assets/vittata.png', L: 'assets/luma.png', G: 'assets/guardian.png' };
 
+  // ---------- Sprint 1: misiones de habilidad (GDD_CAP1.md §3), Diario de Campo (§4) y ropa (§5) ----------
+  const POOL = { x: 30, z: -18 };
+  // M2 "Ojos de guaraguao": 7 anillos de luz sobre el río; y = metros sobre el suelo. Termina sobre el terreno A.
+  const RINGS = [
+    { x: 10, z: -8, y: 6 }, { x: 18, z: -16, y: 8 }, { x: 27, z: -12, y: 9 }, { x: 32, z: -2, y: 10 },
+    { x: 30, z: 9, y: 10 }, { x: 24, z: 15, y: 9 }, { x: 19, z: 8, y: 8 },
+  ];
+  // M3 "Co-quí": tres coquíes escondidos; cada uno canta un patrón corto (co = grave, quí = agudo)
+  const BUSHES = [
+    { id: 'coqui1', x: -20, z: -6, song: ['co', 'qui'] },
+    { id: 'coqui2', x: -1, z: 16, song: ['co', 'qui', 'qui'] },
+    { id: 'coqui3', x: 15, z: -13, song: ['qui', 'co', 'qui'] },
+  ];
+  // Diario de Campo Boricua: 12 hallazgos por proximidad. Textos pendientes de validar con una fuente cultural.
+  const FIELD = [
+    { id: 'coqui', cat: 'fauna', name: 'Coquí común', x: -17, z: 1, text: 'Ranita que solo vive en Puerto Rico. De noche, el macho canta "co-quí".' },
+    { id: 'sanpedrito', cat: 'fauna', name: 'San Pedrito', x: -4, z: -21, text: 'Ave diminuta, verde y con garganta roja. Anida en túneles que cava en la tierra.' },
+    { id: 'reinita', cat: 'fauna', name: 'Reinita mariposera', x: -33, z: 8, text: 'Ave de Puerto Rico que vive en los bosques de montaña. Hay muy pocas.' },
+    { id: 'dajao', cat: 'fauna', name: 'Dajao', x: 29, z: -5, r: 2.6, water: true, text: 'Pez de nuestros ríos. Nada contra la corriente hasta la montaña.' },
+    { id: 'jicotea', cat: 'fauna', name: 'Jicotea', x: 21, z: -21, text: 'Tortuga de agua dulce de Puerto Rico. Toma sol en las orillas.' },
+    { id: 'manati', cat: 'fauna', name: 'Manatí', x: 30, z: 42, r: 3.5, water: true, text: 'Mamífero grande y tranquilo que come hierbas del agua. Está protegido.' },
+    { id: 'maraca', cat: 'cultura', name: 'Maraca', x: 0, z: 5, text: 'Instrumento de origen taíno: una higüera seca con semillas adentro.' },
+    { id: 'guiro', cat: 'cultura', name: 'Güiro', x: 14, z: 3, text: 'Calabaza con rayas que se raspa con un pincho. Suena en la música jíbara.' },
+    { id: 'cuatro', cat: 'cultura', name: 'Cuatro', x: -5, z: -13, text: 'Guitarra pequeña de diez cuerdas. Es el instrumento nacional de Puerto Rico.' },
+    { id: 'petroglifo', cat: 'cultura', name: 'Petroglifo taíno', x: -14, z: 27, text: 'Dibujo tallado en piedra por los taínos, como los de Caguana en Utuado.' },
+    { id: 'vejigante', cat: 'cultura', name: 'Máscara de vejigante', x: 8, z: -21, text: 'Careta con cuernos de las fiestas de Loíza y del carnaval de Ponce.' },
+    { id: 'pava', cat: 'cultura', name: 'Pava jíbara', x: -25, z: 29, text: 'Sombrero de paja del jíbaro, el campesino de la montaña.' },
+  ];
+  // Ropa que se desbloquea al progresar (ids de wardrobe.js). key: pieza entera, pieza:estilo o pieza:color.
+  const UNLOCKS = [
+    { key: 'botas', when: 'm1', name: 'Botas azules', hint: 'la misión del río', wear: { slot: 'feet', id: 'botas', color: '#3d8fb0', style: 'aventura' } },
+    { key: 'pava', when: 'm2', name: 'Pava jíbara', hint: 'los 7 anillos', wear: { slot: 'head', id: 'pava', color: '#d6403a' } },
+    { key: 'camisa:guayabera', when: 'm3', name: 'Camisa guayabera', hint: 'el coro de coquíes', wear: { slot: 'torso', id: 'camisa', color: '#f4f4f0', style: 'guayabera' } },
+    { key: 'gorra:pr', when: 'fauna4', name: 'Gorra de la bandera', hint: '4 animales del Diario', wear: { slot: 'head', id: 'gorra', color: '#d6403a', style: 'pr' } },
+    { key: 'mano:maracas', when: 'cultura4', name: 'Maracas', hint: '4 objetos de cultura del Diario', wear: { slot: 'hand', id: 'mano', color: '#d6403a', style: 'maracas' } },
+    { key: 'camisa:deportiva', when: 'all12', name: 'Camisa Deportiva 787', hint: 'el Diario completo', wear: { slot: 'torso', id: 'camisa', color: '#d6403a', style: 'deportiva' } },
+    { key: 'lentes:#c9a227', when: 'all12', name: 'Lentes dorados', hint: 'el Diario completo', wear: { slot: 'eyes', id: 'lentes', color: '#c9a227', style: 'sol' } },
+  ];
+  const UNLOCK_KEYS = UNLOCKS.map(u => u.key);
+  // Sitios que deben quedar libres de árboles
+  const KEEP_CLEAR = [POOL, ...BUSHES, ...FIELD.filter(f => !f.water)];
+
+  // ---------- Diálogos del capítulo (assets/data/dialogos_cap1.js, generado desde el .json) ----------
+  // disparador "evento:<clave de EVENT_DEFS>", "inicio:<momento>" o "interact:<objeto>"; escenas del mismo disparador en orden
+  const WHO_IMG = { Vittata: 'V', Luma: 'L', 'Guardián': 'G', Voz: 'G', Narrador: 'V' };
+  const EMO_MOOD = { feliz: 'happy', triste: 'sad', sorpresa: 'surprised', idea: 'idea', enojo: 'angry' };
+  const DIALOG = {};
+  for (const sc of ((window.AV_DIALOGOS_CAP1 || {}).escenas || [])) {
+    (DIALOG[sc.disparador] = DIALOG[sc.disparador] || []).push(...sc.lineas.map(text => ({
+      who: sc.personaje, img: IMG[WHO_IMG[sc.personaje] || 'V'], text, mood: EMO_MOOD[sc.emocion] || null, scene: sc.id,
+    })));
+  }
+  // Líneas de un disparador (copia); si el archivo de datos falta, se usan las líneas de respaldo del código
+  function L(trigger, fallback) { const l = DIALOG[trigger]; return l && l.length ? l.map(x => Object.assign({}, x)) : (fallback || []); }
+
   // ---------- Terreno ----------
   function rawHeight(x, z) {
     let h = Math.sin(x * 0.06) * 1.2 + Math.cos(z * 0.05) * 1.0 + Math.sin((x + z) * 0.03) * 1.5;
@@ -96,6 +157,8 @@
     if (dr < 9) h -= (9 - dr) * 0.5;
     const dM = Math.hypot(x + 30, z - 33);
     h += 6 * Math.exp(-(dM * dM) / 70); // colina del mirador
+    const dP = Math.hypot(x - POOL.x, z - POOL.z);
+    h -= 3.2 * Math.exp(-(dP * dP) / 14); // poza honda del río (misión de nado)
     return h;
   }
   PLACES.mirador = { x: -30, z: 33, r: 2.5 };
@@ -134,6 +197,8 @@
       water: WATER_BASE, event: null, clock: 0,
       indicators: { seguridad: '—', acceso: '—', habitat: '—' },
       events: [], captures: {},
+      // Sprint 1: misiones (m1 nado, m2 anillos, m3 coquíes), Diario, ropa desbloqueada y ropa puesta en Vittata
+      missions: { m1: false, m2: false, m3: false }, rings: 0, chorus: false, coquis: [], field: [], unlocked: [], wear: {},
       saveId: newId(),
       profile: { created: false, name: 'Aprendiz', look: null },
       comic: { title: 'Mi primera reconstrucción', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {} },
@@ -147,6 +212,7 @@
   let build = null;
   let dialogQueue = [], dialogDone = null;
   let cardOpen = false;
+  let quiet = false; // pruebas automáticas: sin la escena de introducción
 
   // Esquema de evento (NARRATIVE_EVENT_SCHEMA.md): sin datos personales
   function makeEvent(key, data, seq, t) {
@@ -165,8 +231,28 @@
 
   // ---------- Three.js ----------
   const canvas = document.getElementById('game');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  // Presupuesto móvil (CTO_PLAN §3.2): DPR máximo 1,5 en pantallas táctiles y sin MSAA si el DPR real es 2 o más.
+  // capture() renderiza y lee el lienzo en la misma tarea, así que no hace falta preserveDrawingBuffer.
+  const MOBILE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const DEVICE_DPR = window.devicePixelRatio || 1;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !(MOBILE && DEVICE_DPR >= 2), preserveDrawingBuffer: false });
+  renderer.setPixelRatio(Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2));
+  // Mismo color que el creador y el retrato (sRGB + ACES): Vittata se ve igual en el taller y en el mundo.
+  // Los colores del mundo se escribieron pensando en sRGB: linearize() los pasa a lineal una vez.
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.7; // ACES escala por 1/0,6: 0,7 deja el verde del mundo cerca del original
+  const linDone = new WeakSet();
+  function linMat(m) {
+    if (!m || linDone.has(m)) return m;
+    linDone.add(m);
+    if (m.color) m.color.convertSRGBToLinear();
+    if (m.emissive) m.emissive.convertSRGBToLinear();
+    if (m.specular) m.specular.convertSRGBToLinear();
+    if (m.map) m.map.encoding = THREE.sRGBEncoding;
+    if (m.isSpriteMaterial) m.toneMapped = false; // renders oficiales: sin curva de tono
+    return m;
+  }
+  function linearize(obj) { obj.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(linMat); }); return obj; }
   const scene = new THREE.Scene();
   const SKY = new THREE.Color('#bfe1d6');
   scene.background = SKY;
@@ -193,9 +279,10 @@
       sh.vertexShader = 'varying vec2 vTUv;\n' + sh.vertexShader.replace('#include <begin_vertex>',
         '#include <begin_vertex>\n  vTUv = (modelMatrix * vec4(position, 1.0)).xz;');
       sh.fragmentShader = 'uniform sampler2D tPasto, tSuelo; uniform float uScale; varying vec2 vTUv;\n' + sh.fragmentShader.replace('#include <color_fragment>', [
-        'vec3 gP = texture2D(tPasto, vTUv * 0.22 * uScale).rgb * 1.5;',
-        'vec3 gS = texture2D(tSuelo, vTUv * 0.3 * uScale).rgb * 1.15;',
-        'vec3 sand = vec3(0.86, 0.77, 0.55) * (0.88 + 0.2 * gS.g);',
+        // texturas sRGB leídas a mano: se pasan a lineal como las demás
+        'vec3 gP = pow(texture2D(tPasto, vTUv * 0.22 * uScale).rgb * 1.5, vec3(2.2));',
+        'vec3 gS = pow(texture2D(tSuelo, vTUv * 0.3 * uScale).rgb * 1.15, vec3(2.2));',
+        'vec3 sand = pow(vec3(0.86, 0.77, 0.55) * (0.88 + 0.2 * pow(gS.g, 0.4545)), vec3(2.2));',
         'diffuseColor.rgb *= mix(mix(gP, gS, vColor.g), sand, vColor.r);',
       ].join('\n'));
     };
@@ -232,6 +319,7 @@
     if (Math.abs(x - RIVER_X) < 7) continue;
     if (FLATS.some(f => Math.hypot(x - f.x, z - f.z) < f.r + 3)) continue;
     if (RESOURCES.some(r => Math.hypot(x - r.x, z - r.z) < 3)) continue;
+    if (KEEP_CLEAR.some(r => Math.hypot(x - r.x, z - r.z) < 3)) continue;
     if (Math.hypot(x, z + 11) < 4) continue;
     if (Math.hypot(x + 30, z - 33) < 5) continue; // mirador
     treeSpots.push({ x, z, s: 0.8 + R() * 0.7 });
@@ -446,12 +534,12 @@
     const fixed = S.transmitterOn;
     if (fixed) {
       roofR.rotation.set(-Math.PI / 2 - 0.55, 0, 0); roofR.position.set(0, 3.3, 1);
-      debris.visible = false; windowGlow.material.color.set('#ffd27a');
-      trxAnt.rotation.z = 0; trxLight.material.color.set('#7fd38f');
+      debris.visible = false; windowGlow.material.color.set('#ffd27a').convertSRGBToLinear();
+      trxAnt.rotation.z = 0; trxLight.material.color.set('#7fd38f').convertSRGBToLinear();
     } else {
       roofR.rotation.set(-0.3, 0.2, 0.9); roofR.position.set(2.6, 0.6, 1.8);
-      debris.visible = true; windowGlow.material.color.set('#3a2a1a');
-      trxAnt.rotation.z = 0.5; trxLight.material.color.set('#4a4a4a');
+      debris.visible = true; windowGlow.material.color.set('#3a2a1a').convertSRGBToLinear();
+      trxAnt.rotation.z = 0.5; trxLight.material.color.set('#4a4a4a').convertSRGBToLinear();
     }
     bench.visible = S.benchUnlocked;
   }
@@ -465,7 +553,7 @@
     const roof = new THREE.Mesh(new THREE.ConeGeometry(1.9, 1.2, 4), new THREE.MeshLambertMaterial({ color: '#5e8f3a', transparent, opacity }));
     roof.position.y = 2.2; roof.rotation.y = Math.PI / 4;
     g.add(body, roof);
-    return g;
+    return linearize(g);
   }
   const ghost = hutMesh(0.5); ghost.visible = false; scene.add(ghost);
   let refugeMesh = null;
@@ -477,8 +565,8 @@
     refugeMesh.position.set(S.refuge.x, height(S.refuge.x, S.refuge.z), S.refuge.z);
     if (S.refuge.damaged) {
       refugeMesh.rotation.z = 0.18;
-      refugeMesh.children[0].material.color.set('#7a6a52');
-      refugeMesh.children[1].material.color.set('#40603a');
+      refugeMesh.children[0].material.color.set('#7a6a52').convertSRGBToLinear();
+      refugeMesh.children[1].material.color.set('#40603a').convertSRGBToLinear();
     }
     scene.add(refugeMesh);
     colliders.push({ x: S.refuge.x, z: S.refuge.z, r: 1.4, kind: 'refuge' });
@@ -496,6 +584,70 @@
     g.position.set(r.x, height(r.x, r.z), r.z);
     scene.add(g); resMeshes[r.id] = g;
   }
+
+  // ---------- Sprint 1: anillos de vuelo, coquíes, Diario de Campo y guía ----------
+  for (const r of RINGS) r.wy = height(r.x, r.z) + r.y;
+  const ringMeshes = RINGS.map((r, i) => {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.16, 10, 36), new THREE.MeshBasicMaterial({ color: '#ffd84a', transparent: true, opacity: 0.85, depthWrite: false }));
+    m.position.set(r.x, r.wy, r.z);
+    const n = RINGS[i + 1] || RINGS[i - 1];
+    m.lookAt(n.x, n.wy, n.z); m.visible = false; scene.add(m);
+    return m;
+  });
+  // Rastro de la crecida sobre el terreno A: se ve desde el aire al terminar los anillos
+  const floodHint = new THREE.Mesh(new THREE.PlaneGeometry(PLACES.A.half * 2 + 6, PLACES.A.half * 2 + 6), new THREE.MeshBasicMaterial({ color: '#3d8fb0', transparent: true, opacity: 0.38, depthWrite: false }));
+  floodHint.rotation.x = -Math.PI / 2; floodHint.position.set(PLACES.A.x, FLOOD_LEVEL - 0.35, PLACES.A.z); floodHint.visible = false; scene.add(floodHint);
+  // Arbustos de los coquíes (brillan durante la misión del coro)
+  const bushMeshes = {};
+  for (const b of BUSHES) {
+    const g = new THREE.Group(), y = height(b.x, b.z);
+    const leaf = new THREE.MeshLambertMaterial({ color: '#3f8f3a' });
+    for (const [dx, dy, dz, s] of [[0, 0.5, 0, 0.75], [0.45, 0.35, 0.2, 0.5], [-0.4, 0.38, -0.15, 0.55]]) {
+      const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), leaf); m.position.set(dx, dy, dz); g.add(m);
+    }
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(1.15, 16, 12), new THREE.MeshBasicMaterial({ color: '#c8ff7a', transparent: true, opacity: 0.22, depthWrite: false }));
+    glow.position.y = 0.5; glow.visible = false; g.add(glow);
+    const frog = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), new THREE.MeshLambertMaterial({ color: '#c98a3a' }));
+    frog.position.set(0.25, 1.05, 0.45); frog.visible = false; g.add(frog);
+    g.position.set(b.x, y, b.z); scene.add(g);
+    bushMeshes[b.id] = { g, glow, frog };
+    colliders.push({ x: b.x, z: b.z, r: 0.7, kind: 'obj' });
+  }
+  // Hallazgos del Diario: siluetas hechas con primitivas y un destello dorado encima
+  function fieldModel(f) {
+    const g = new THREE.Group(), M = c => new THREE.MeshLambertMaterial({ color: c });
+    const add = (geo, c, x, y, z, sx, sy, sz) => { const m = new THREE.Mesh(geo, M(c)); m.position.set(x, y, z); if (sx) m.scale.set(sx, sy, sz); g.add(m); return m; };
+    const S1 = new THREE.SphereGeometry(1, 12, 10);
+    switch (f.id) {
+      case 'coqui': add(S1, '#b0773a', 0, 0.12, 0, 0.14, 0.11, 0.17); add(S1, '#1b1b1b', 0.06, 0.2, 0.1, 0.035, 0.035, 0.035); add(S1, '#1b1b1b', -0.06, 0.2, 0.1, 0.035, 0.035, 0.035); break;
+      case 'sanpedrito': add(S1, '#3fae4a', 0, 0.2, 0, 0.12, 0.12, 0.15); add(S1, '#d6403a', 0, 0.16, 0.11, 0.06, 0.05, 0.04); add(new THREE.ConeGeometry(0.03, 0.16, 6), '#d6403a', 0, 0.24, 0.2).rotation.x = Math.PI / 2; break;
+      case 'reinita': add(S1, '#2b2b2b', 0, 0.22, 0, 0.11, 0.11, 0.15); add(S1, '#f4f4f0', 0, 0.2, 0.1, 0.07, 0.07, 0.04); add(new THREE.ConeGeometry(0.08, 0.2, 6), '#2b2b2b', 0, 0.2, -0.18).rotation.x = -Math.PI / 2; break;
+      case 'dajao': add(S1, '#b8c6cc', 0, 0, 0, 0.12, 0.13, 0.35); add(new THREE.ConeGeometry(0.14, 0.2, 6), '#8fa3ab', 0, 0, -0.42).rotation.x = Math.PI / 2; break;
+      case 'jicotea': add(new THREE.SphereGeometry(0.3, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), '#4f6f2f', 0, 0, 0); add(S1, '#7a9a3a', 0, 0.08, 0.33, 0.09, 0.08, 0.1); break;
+      case 'manati': add(S1, '#7f8a8f', 0, 0, 0, 0.8, 0.55, 1.6); add(new THREE.ConeGeometry(0.5, 0.6, 8), '#6f7a7f', 0, 0, -1.9).rotation.x = -Math.PI / 2; break;
+      case 'maraca': add(S1, '#d6403a', 0, 0.42, 0, 0.14, 0.17, 0.14); add(new THREE.CylinderGeometry(0.03, 0.035, 0.3, 8), '#8a6a3a', 0, 0.15, 0); break;
+      case 'guiro': { const b = add(S1, '#c9a04a', 0, 0.3, 0, 0.14, 0.14, 0.42); b.rotation.x = 0.2; for (let i = -2; i <= 2; i++) add(new THREE.TorusGeometry(0.14, 0.012, 4, 16), '#7a5634', 0, 0.3, i * 0.1); break; }
+      case 'cuatro': add(S1, '#a8743f', 0, 0.3, 0, 0.26, 0.3, 0.07); add(new THREE.BoxGeometry(0.07, 0.5, 0.04), '#5a3a22', 0, 0.78, 0); add(new THREE.CircleGeometry(0.07, 12), '#2b1a0a', 0, 0.36, 0.075); break;
+      case 'petroglifo': { const r = add(new THREE.DodecahedronGeometry(0.55, 0), '#8f8a80', 0, 0.3, 0, 1, 0.6, 1); r.rotation.y = 0.5; add(new THREE.TorusGeometry(0.16, 0.025, 4, 18), '#4a4640', 0, 0.48, 0.42); break; }
+      case 'vejigante': add(S1, '#d6403a', 0, 0.45, 0, 0.26, 0.28, 0.2); for (const [x, rz] of [[-0.14, 0.5], [0, 0], [0.14, -0.5]]) add(new THREE.ConeGeometry(0.05, 0.28, 6), '#ffd84a', x, 0.78, 0).rotation.z = rz; add(S1, '#1b1b1b', 0.08, 0.5, 0.17, 0.04, 0.04, 0.03); add(S1, '#1b1b1b', -0.08, 0.5, 0.17, 0.04, 0.04, 0.03); break;
+      case 'pava': add(new THREE.CylinderGeometry(0.42, 0.42, 0.03, 24), '#d9b56a', 0, 0.3, 0); add(new THREE.ConeGeometry(0.2, 0.22, 16), '#d9b56a', 0, 0.42, 0); add(new THREE.CylinderGeometry(0.19, 0.2, 0.05, 16, 1, true), '#d6403a', 0, 0.35, 0); break;
+    }
+    const spark = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), new THREE.MeshBasicMaterial({ color: '#ffd84a' }));
+    spark.position.y = f.id === 'manati' ? 1.6 : 1.1; spark.name = 'spark'; g.add(spark);
+    return g;
+  }
+  const fieldMeshes = {};
+  for (const f of FIELD) {
+    const g = fieldModel(f);
+    f.y = f.water ? WATER_BASE - (f.id === 'manati' ? 0.25 : 0.35) : height(f.x, f.z);
+    g.position.set(f.x, f.y, f.z); scene.add(g); fieldMeshes[f.id] = g;
+  }
+  // Guía: haz de luz sobre el objetivo y flecha sobre Vittata (GDD §1: siempre hay un objetivo visible)
+  const guideBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.7, 40, 14, 1, true), new THREE.MeshBasicMaterial({ color: '#fff1b0', transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  guideBeam.visible = false; scene.add(guideBeam);
+  const arrowGeo = new THREE.ConeGeometry(0.2, 0.55, 12); arrowGeo.rotateX(Math.PI / 2);
+  const guideArrow = new THREE.Mesh(arrowGeo, new THREE.MeshBasicMaterial({ color: '#f2a03d' }));
+  guideArrow.visible = false; scene.add(guideArrow);
 
   // Sprites (renders oficiales como sustitutos)
   const loader = new THREE.TextureLoader();
@@ -534,7 +686,7 @@
     if (!window.AVCharacter) { failed3D = true; return; }
     try {
       const [a, b] = await Promise.all([window.AVCharacter.create(), window.AVCharacter.create()]);
-      a.applyLook({ species: 'vittata', accessories: {} });
+      a.applyLook({ species: 'vittata', accessories: Object.assign({}, S.wear) });
       a.root.scale.setScalar(1.75 / a.height); b.root.scale.setScalar(1.4 / b.height);
       b.root.visible = false;
       scene.add(a.root, b.root);
@@ -576,12 +728,13 @@
   // Efectos de agua: anillos que se expanden (salpicadura y ondas) y gotas con gravedad
   const fx = [];
   function ringFx(x, y, z, size, life, op) {
-    const m = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.5, 32), new THREE.MeshBasicMaterial({ color: '#e8f6ff', transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide }));
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.5, 32), linMat(new THREE.MeshBasicMaterial({ color: '#e8f6ff', transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide })));
     m.rotation.x = -Math.PI / 2; m.position.set(x, y + 0.03, z); scene.add(m);
     fx.push({ m, t: 0, life, size, op });
   }
   function ripple(x, y, z, size) { ringFx(x, y, z, size || 1.2, 0.9, 0.4); }
   function splash(x, y, z, s) {
+    AUDIO.play('splash');
     ringFx(x, y, z, 2.2 * s, 0.75, 0.75); ringFx(x, y, z, 1.2 * s, 0.5, 0.55);
     drops(x, y, z, s, y);
   }
@@ -594,21 +747,142 @@
       vel.push([Math.cos(a) * sp, (3 + Math.random() * 3) * s, Math.sin(a) * sp]);
     }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const p = new THREE.Points(g, new THREE.PointsMaterial({ color: '#dff3ff', size: 0.16, transparent: true, opacity: 0.9, depthWrite: false }));
+    const p = new THREE.Points(g, linMat(new THREE.PointsMaterial({ color: '#dff3ff', size: 0.16, transparent: true, opacity: 0.9, depthWrite: false })));
     scene.add(p); fx.push({ m: p, t: 0, life: 0.9, vel, y0: floorY, op: 0.9 });
   }
   function camDist() { return MOVE.flying ? 9.5 : 7.5; }
   function updateFx(dt) {
     for (let i = fx.length - 1; i >= 0; i--) {
       const f = fx[i]; f.t += dt; const k = f.t / f.life;
-      if (f.vel) {
-        const a = f.m.geometry.attributes.position;
-        f.vel.forEach((v, j) => { v[1] -= 14 * dt; a.setXYZ(j, a.getX(j) + v[0] * dt, Math.max(f.y0, a.getY(j) + v[1] * dt), a.getZ(j) + v[2] * dt); });
+      if (f.anim) f.anim(f, Math.min(1, k));
+      else if (f.vel) {
+        const a = f.m.geometry.attributes.position, grav = f.grav != null ? f.grav : 14, drag = f.drag ? Math.exp(-f.drag * dt) : 1;
+        f.vel.forEach((v, j) => {
+          v[0] *= drag; v[2] *= drag; v[1] -= grav * dt;
+          let y = Math.max(f.y0, a.getY(j) + v[1] * dt); if (f.ceil != null) y = Math.min(f.ceil, y);
+          a.setXYZ(j, a.getX(j) + v[0] * dt, y, a.getZ(j) + v[2] * dt);
+        });
         a.needsUpdate = true;
       } else f.m.scale.setScalar(0.4 + k * f.size * 2);
-      f.m.material.opacity = (1 - k) * f.op;
-      if (k >= 1) { scene.remove(f.m); f.m.geometry.dispose(); f.m.material.dispose(); fx.splice(i, 1); }
+      if (!f.anim) f.m.material.opacity = (1 - k) * f.op;
+      if (k >= 1) {
+        scene.remove(f.m); liveParticles -= f.n || 0;
+        f.m.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+        fx.splice(i, 1);
+      }
     }
+  }
+
+  // ---------- Feedback juicy (GDD §7): sonido WebAudio sintético, sacudida, FOV, hit-stop y partículas ----------
+  const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const AUDIO = (() => {
+    let ctx = null, master = null, sfxBus = null, voiceBus = null, noiseBuf = null, lastAt = 0;
+    const vol = { master: 0.7, sfx: 0.8, voice: 0.9, muted: false };
+    try { const v = JSON.parse(localStorage.getItem('amazonaverse.audio') || 'null'); if (v && typeof v === 'object') Object.assign(vol, v); } catch (e) { /* sin almacenamiento */ }
+    function apply() { if (!ctx) return; master.gain.value = vol.muted ? 0 : vol.master; sfxBus.gain.value = vol.sfx; voiceBus.gain.value = vol.voice; }
+    // El navegador solo deja sonar después de un gesto del jugador
+    function ensure() {
+      if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); return ctx; }
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      try { ctx = new AC(); } catch (e) { return null; }
+      master = ctx.createGain(); master.connect(ctx.destination);
+      sfxBus = ctx.createGain(); sfxBus.connect(master);
+      voiceBus = ctx.createGain(); voiceBus.connect(master);
+      apply(); return ctx;
+    }
+    function env(g, t0, dur, peak) { g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.02, dur / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); }
+    function tone(freq, t0, dur, o) {
+      o = o || {};
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = o.type || 'triangle'; osc.frequency.setValueAtTime(freq, t0);
+      if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+      env(g, t0, dur, o.gain || 0.2); osc.connect(g); g.connect(o.bus || sfxBus); osc.start(t0); osc.stop(t0 + dur + 0.03);
+    }
+    function noise(t0, dur, o) {
+      o = o || {};
+      if (!noiseBuf) { noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+      const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = noiseBuf; f.type = o.type || 'bandpass'; f.Q.value = o.q || 1;
+      f.frequency.setValueAtTime(o.freq || 1200, t0); if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+      env(g, t0, dur, o.gain || 0.25); src.connect(f); f.connect(g); g.connect(sfxBus); src.start(t0, Math.random() * 0.5); src.stop(t0 + dur + 0.03);
+    }
+    const PENTA = [0, 2, 4, 7, 9]; // pentatónica mayor: el combo sube la nota
+    const pent = (i, base) => base * Math.pow(2, (PENTA[i % 5] + 12 * Math.floor(i / 5)) / 12);
+    const SOUNDS = {
+      pickup: (t, c) => { c = Math.min(c || 0, 9); for (let k = 0; k < 3; k++) tone(pent(c + k * 2, 523.25), t + k * 0.07, 0.2, { gain: 0.16 }); },
+      ring: (t, i) => { tone(pent(i + 2, 392), t, 0.4, { type: 'sine', gain: 0.22 }); tone(pent(i + 4, 392), t + 0.08, 0.35, { type: 'sine', gain: 0.1 }); },
+      dash: t => noise(t, 0.25, { freq: 600, to: 2600, q: 0.8, gain: 0.22 }),
+      splash: t => noise(t, 0.45, { type: 'lowpass', freq: 1800, to: 280, gain: 0.3 }),
+      jump: t => tone(330, t, 0.12, { type: 'square', to: 540, gain: 0.05 }),
+      land: t => noise(t, 0.14, { type: 'lowpass', freq: 520, gain: 0.25 }),
+      co: t => tone(1150, t, 0.14, { type: 'sine', to: 1020, gain: 0.28, bus: voiceBus }),
+      qui: t => tone(1650, t, 0.22, { type: 'sine', to: 2350, gain: 0.28, bus: voiceBus }),
+      guiro: t => { for (let k = 0; k < 7; k++) noise(t + k * 0.045, 0.035, { freq: 3200, q: 4, gain: 0.22 }); },
+      unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },
+      chorus: t => { for (let k = 0; k < 6; k++) { tone(1150, t + k * 0.22, 0.12, { type: 'sine', to: 1030, gain: 0.16, bus: voiceBus }); tone(1700, t + k * 0.22 + 0.12, 0.16, { type: 'sine', to: 2350, gain: 0.16, bus: voiceBus }); } },
+      zzzt: t => { noise(t, 1.0, { freq: 200, to: 4200, q: 6, gain: 0.28 }); tone(110, t, 1.0, { type: 'sawtooth', to: 40, gain: 0.1 }); },
+      tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
+      wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
+    };
+    const api = {
+      vol, ensure, apply, log: [],
+      save() { try { localStorage.setItem('amazonaverse.audio', JSON.stringify(vol)); } catch (e) { /* sin almacenamiento */ } },
+      // Devuelve true si sonó; el registro sirve para probar sin altavoces
+      play(name, arg) {
+        if (!SOUNDS[name]) return false;
+        const now = performance.now();
+        if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
+        lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
+        if (!ctx || ctx.state !== 'running' || vol.muted) return false;
+        try { SOUNDS[name](ctx.currentTime + 0.01, arg); } catch (e) { return false; }
+        return true;
+      },
+    };
+    return api;
+  })();
+  addEventListener('pointerdown', () => AUDIO.ensure(), { passive: true });
+  addEventListener('keydown', () => AUDIO.ensure());
+  const juice = { shake: 0, amp: 0, hitStop: 0, combo: 0, comboT: 0 };
+  // prefers-reduced-motion apaga la sacudida y el cambio de FOV
+  function shake(amp, secs) { if (REDUCED) return; juice.amp = Math.max(juice.amp, amp); juice.shake = Math.max(juice.shake, secs || 0.3); }
+  function hitStop(secs) { juice.hitStop = Math.max(juice.hitStop, secs || 0.06); }
+  let liveParticles = 0;
+  const MAX_PARTICLES = 200; // límite del GDD para móvil
+  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'] };
+  // Ráfaga de plumas, estrellas de la bandera, burbujas o chispas doradas
+  function burst(x, y, z, kind, n, ceil) {
+    n = Math.min(n || 24, MAX_PARTICLES - liveParticles); if (n <= 0) return;
+    const pal = PALETTE[kind] || PALETTE.feathers, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), vel = [], c = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+      pos.set([x + (kind === 'bubbles' ? (Math.random() - 0.5) * 0.5 : 0), y, z + (kind === 'bubbles' ? (Math.random() - 0.5) * 0.5 : 0)], i * 3);
+      c.set(pal[i % pal.length]).convertSRGBToLinear(); col.set([c.r, c.g, c.b], i * 3);
+      const a = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 2.5;
+      vel.push(kind === 'bubbles' ? [(Math.random() - 0.5) * 0.3, 0.8 + Math.random() * 0.8, (Math.random() - 0.5) * 0.3] : [Math.cos(a) * sp, 2.5 + Math.random() * 3.5, Math.sin(a) * sp]);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const p = new THREE.Points(g, new THREE.PointsMaterial({ size: kind === 'bubbles' ? 0.14 : 0.26, vertexColors: true, transparent: true, opacity: 1, depthWrite: false }));
+    scene.add(p); liveParticles += n;
+    fx.push({ m: p, t: 0, n, life: kind === 'bubbles' ? 1.8 : 1.3, vel, y0: -Infinity, ceil: ceil != null ? ceil : null, op: 1,
+      grav: kind === 'bubbles' ? -0.6 : kind === 'feathers' ? 4 : 9, drag: kind === 'feathers' ? 2.2 : 0 });
+  }
+  // Cofre-pluma: aparece frente a Vittata, abre la tapa y suelta plumas y estrellas
+  function featherChest() {
+    const g = new THREE.Group(), wood = new THREE.MeshLambertMaterial({ color: new THREE.Color('#a8743f').convertSRGBToLinear() });
+    const gold = new THREE.MeshLambertMaterial({ color: new THREE.Color('#ffd84a').convertSRGBToLinear(), emissive: new THREE.Color('#5a3a00').convertSRGBToLinear() });
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.55), wood); box.position.y = 0.25; g.add(box);
+    const band = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.08, 0.57), gold); band.position.y = 0.42; g.add(band);
+    const hinge = new THREE.Group(); hinge.position.set(0, 0.5, -0.275); g.add(hinge);
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.55), wood); lid.position.set(0, 0.07, 0.275); hinge.add(lid);
+    const fxX = S.pos.x + S.facing.x * 1.6, fxZ = S.pos.z + S.facing.z * 1.6, gy = surfaceY(fxX, fxZ);
+    g.position.set(fxX, Math.max(gy, S.pos.y), fxZ); g.rotation.y = Math.atan2(-S.facing.x, -S.facing.z);
+    scene.add(g);
+    let popped = false;
+    fx.push({ m: g, t: 0, life: 2.4, anim: (f, k) => {
+      g.scale.setScalar(k < 0.15 ? k / 0.15 * 1.15 : k > 0.85 ? Math.max(0.001, (1 - k) / 0.15) : 1);
+      hinge.rotation.x = -Math.min(1.9, Math.max(0, (k - 0.2) * 8));
+      if (!popped && k > 0.3) { popped = true; burst(g.position.x, g.position.y + 0.6, g.position.z, 'feathers', 30); burst(g.position.x, g.position.y + 0.6, g.position.z, 'stars', 18); }
+    } });
   }
   function sync3D(dt, moving, snap) {
     if (player3D) {
@@ -748,13 +1022,18 @@
     { id: 'guardian', x: GUARD.x, z: GUARD.z, r: 2.6, visible: () => guardian.sp.visible, label: () => 'Hablar con el Guardián', use: talkGuardian },
     { id: 'refuge', x: 0, z: 0, r: 2.6, visible: () => !!(S.refuge && S.refuge.damaged && !S.event && !S.complete), label: () => 'Desarmar el refugio y recuperar materiales', use: dismantle },
   ];
-  for (const r of RESOURCES) interactables.push({ id: r.id, x: r.x, z: r.z, r: 1.8, visible: () => !S.collected.includes(r.id), label: () => 'Recoger ' + LABEL[r.type], use: () => collect(r) });
+  for (const r of RESOURCES) interactables.push({ id: r.id, x: r.x, z: r.z, r: 1.8, visible: () => resAvailable(r), label: () => (r.under && !reachUnder(r) ? 'Bucear (C) hasta la ' : 'Recoger ') + LABEL[r.type], use: () => { if (r.under && !reachUnder(r)) { toast('La pieza está en el fondo de la poza: mantén C (o Bucear) para bajar', 3000); return; } collect(r); } });
+  for (const b of BUSHES) interactables.push({ id: b.id, x: b.x, z: b.z, r: 2.2, visible: () => S.chorus && !S.missions.m3 && !S.coquis.includes(b.id), label: () => 'Escuchar al coquí escondido', use: () => startSimon(b) });
   for (const k of ['A', 'B']) {
     const p = PLACES[k];
     interactables.push({ id: 'post' + k, x: p.post.x, z: p.post.z, r: 2.2, label: () => 'Inspeccionar terreno: ' + p.name, use: () => openParcelCard(k) });
   }
   function syncRefugeInteractable() { const it = interactables.find(i => i.id === 'refuge'); if (S.refuge) { it.x = S.refuge.x; it.z = S.refuge.z; } }
 
+  // c2 aparece después de la recolección: así la pieza de metal del paso 3 sale del río (M1)
+  function resAvailable(r) { return !S.collected.includes(r.id) && S.step >= (r.id === 'c2' ? 3 : 0); }
+  // Las piezas del fondo solo se alcanzan buceando: los pies a menos de 1,6 m del fondo
+  function reachUnder(r) { return S.pos.y - height(r.x, r.z) < 1.6; }
   function nearest() {
     let best = null, bd = Infinity;
     for (const it of interactables) {
@@ -773,13 +1052,14 @@
   function examine(what) {
     const firstTime = !S.examined[what];
     S.examined[what] = true;
+    // La escena de la máquina (evento:WorkshopExplored) se cuenta al examinarla; el transmisor tiene la suya
     const lines = what === 'maquina'
-      ? [{ who: 'Vittata', img: IMG.V, text: 'Mi máquina… Si consigo repararla, todavía podemos…' }]
-      : [{ who: 'Vittata', img: IMG.V, text: 'Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada.' }];
+      ? L('evento:WorkshopExplored', [{ who: 'Vittata', img: IMG.V, text: 'Mi máquina… Si consigo repararla, todavía podemos…' }])
+      : L('interact:transmisor', [{ who: 'Vittata', img: IMG.V, text: 'Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada.' }]);
     say(lines, () => {
       if (firstTime && S.step === 0 && S.examined.maquina && S.examined.transmisor) {
         logEvent('WorkshopExplored'); capture('workshop');
-        say([{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!' }], () => advanceTo(1));
+        say([{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }], () => advanceTo(1));
       } else checkProgress();
     });
   }
@@ -787,14 +1067,16 @@
   function talkLuma() {
     if (S.step === 0) { say([{ who: 'Luma', img: IMG.L, text: '¿Estás bien? Revisa tu taller y después ven, por favor.' }]); return; }
     if (S.step === 1) {
+      // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales
       say([
-        { who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' },
-        { who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' },
-        { who: 'Luma', img: IMG.L, text: 'No tenemos suficientes materiales.' },
-        { who: 'Vittata', img: IMG.V, text: 'Tenemos más de lo que parece. Busquemos madera, piedras y piezas de metal.' },
+        ...L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]),
+        ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
+        ...L('interact:materiales', [{ who: 'Luma', img: IMG.L, text: 'No tenemos suficientes materiales.' }]),
+        { who: 'Vittata', img: IMG.V, text: 'Busquemos madera, piedras y piezas de metal. ¡Una cayó al fondo del río!' },
       ], () => { logEvent('LumaHelped'); advanceTo(2); });
       return;
     }
+    if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }]); return; }
     if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }]); return; }
     if (S.refuge && S.refuge.damaged) { say([{ who: 'Luma', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }]); return; }
     say([{ who: 'Luma', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }]);
@@ -804,7 +1086,12 @@
     S.collected.push(r.id);
     S.inv[r.type]++;
     resMeshes[r.id].visible = false;
-    toast('+1 ' + LABEL[r.type]);
+    // Combo: recoger seguido sube la nota del arpegio
+    juice.combo = S.clock - juice.comboT < 3 ? juice.combo + 1 : 0; juice.comboT = S.clock;
+    AUDIO.play('pickup', juice.combo); hitStop(0.06);
+    burst(r.x, height(r.x, r.z) + 0.6, r.z, r.under ? 'bubbles' : 'feathers', r.under ? 20 : 16, r.under ? S.water : null);
+    toast('+1 ' + LABEL[r.type] + (juice.combo > 0 ? '  ·  combo x' + (juice.combo + 1) : ''));
+    if (r.under) completeMission('m1');
     checkProgress();
   }
 
@@ -824,8 +1111,9 @@
       hideCard();
       if (first) {
         const line = k === 'A'
-          ? [{ who: 'Vittata', img: IMG.V, text: 'Aquí construiríamos mucho más rápido.' }, { who: 'Luma', img: IMG.L, text: 'Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta.' }]
-          : [{ who: 'Luma', img: IMG.L, text: 'Allá arriba parece más seguro.' }];
+          ? [...L('evento:LandInspected', [{ who: 'Vittata', img: IMG.V, text: 'Aquí construiríamos mucho más rápido.' }]),
+             ...L('interact:marcas_agua', [{ who: 'Luma', img: IMG.L, text: 'Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta.' }])]
+          : L('interact:colina', [{ who: 'Luma', img: IMG.L, text: 'Allá arriba parece más seguro.' }]);
         say(line, checkProgress);
       } else checkProgress();
     };
@@ -849,7 +1137,7 @@
     else if (colliders.some(c => c.kind !== 'refuge' && c.r > 0 && Math.hypot(gx - c.x, gz - c.z) < c.r + 1.3)) reason = 'Choca con algo';
     build.valid = !reason; build.reason = reason;
     ghost.position.set(gx, height(gx, gz), gz);
-    ghost.children.forEach(m => m.material.color.set(build.valid ? '#7fd38f' : '#d6403a'));
+    ghost.children.forEach(m => m.material.color.set(build.valid ? '#7fd38f' : '#d6403a').convertSRGBToLinear());
   }
   function placeRefuge() {
     if (!build || !build.valid) { toast(build ? build.reason : 'No hay nada que colocar'); return false; }
@@ -861,7 +1149,8 @@
     logEvent('ShelterConstructed', { parcel: build.parcel, attempt: S.builds.length });
     build = null; ghost.visible = false; hideToast();
     placeRefugeMesh(); syncRefugeInteractable();
-    say([{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]);
+    AUDIO.play('unlock'); burst(S.refuge.x, height(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24);
+    say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]));
     S.event = { t: 0, dur: 8 };
     applyGuardianLook();
     return true;
@@ -873,18 +1162,17 @@
       logEvent('ShelterFlooded', { parcel: 'A' });
       placeRefugeMesh();
       capture('shelter');
-      say([
-        { who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' },
-        { who: 'Vittata', img: IMG.V, text: 'Quise construir rápido y no escuché lo de las marcas de agua. Si lo desarmo, recupero los materiales.' },
-      ], afterRain);
+      say(L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), () => {
+        toast('Si desarmas el refugio recuperas los materiales', 3500); afterRain();
+      });
     } else {
       S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
       if (S.builds.includes('A')) logEvent('ShelterRelocated', { from: 'A', to: 'B' });
       capture('shelter');
-      say([
+      say(L('evento:ShelterRelocated', [
         { who: 'Luma', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
         { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
-      ], afterRain);
+      ]), afterRain);
     }
   }
   function afterRain() {
@@ -897,22 +1185,23 @@
     logEvent('ShelterDismantled', { parcel: S.refuge.parcel });
     S.refuge = null; placeRefugeMesh();
     S.indicators = { seguridad: '—', acceso: '—', habitat: '—' };
-    toast('Recuperaste 3 madera y 2 piedras. Ve al letrero de la colina para construir de nuevo.', 3500);
+    say(L('evento:ShelterDismantled'), () => toast('Recuperaste 3 madera y 2 piedras. Ve al letrero de la colina para construir de nuevo.', 3500));
     checkProgress();
   }
 
   function talkGuardian() {
     if (S.step === 5) {
       const present = S.refuge && !S.refuge.damaged
-        ? { who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }
-        : { who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' };
+        ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
+        : [{ who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' }];
       say([
-        { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
-        { who: 'Vittata', img: IMG.V, text: '¿Y usted quién es?' },
-        { who: 'Guardián', img: IMG.G, text: 'Alguien que construyó muchas cosas… y perdió algunas de las más importantes.' },
+        ...L('evento:GuardianMet', [
+          { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
+          { who: 'Guardián', img: IMG.G, text: 'Alguien que construyó muchas cosas… y perdió algunas de las más importantes.' },
+        ]),
         { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Este es nuestro refugio.' },
-        present,
-        { who: 'Guardián', img: IMG.G, text: 'Te dejo mi viejo banco de trabajo en tu taller. Con él podrás reparar ese transmisor.' },
+        ...present,
+        ...L('evento:WorkshopUpgradeUnlocked', [{ who: 'Guardián', img: IMG.G, text: 'Te dejo mi viejo banco de trabajo en tu taller. Con él podrás reparar ese transmisor.' }]),
       ], () => {
         S.guardianMet = true; S.benchUnlocked = true;
         logEvent('GuardianMet', { refugeSafe: !!(S.refuge && !S.refuge.damaged) });
@@ -929,17 +1218,19 @@
   function useTransmitter() {
     if (S.step !== 6) { examine('transmisor'); return; }
     if (!has(REPAIR_COST)) { toast('Para repararlo te falta ' + missingText(REPAIR_COST)); return; }
+    // M3: el transmisor necesita voz; el coro de coquíes lo enciende
+    if (!S.missions.m3) { startChorus(); return; }
     pay(REPAIR_COST);
     S.transmitterOn = true;
     applyTallerLook();
     logEvent('TransmitterActivated');
+    AUDIO.play('chorus'); shake(0.15, 0.6); burst(TRX.x, height(TRX.x, TRX.z) + 1.6, TRX.z, 'gold', 30);
     showSymbol(true);
     say([
       { who: 'Vittata', img: IMG.V, text: '¡Ese transmisor llevaba años sin funcionar!' },
-      { who: 'Voz', img: IMG.G, text: 'Si alguien puede escucharme… …el pacto…' },
-      { who: 'Vittata', img: IMG.V, text: '¿Qué pacto? Mira: un símbolo dividido en 36 fragmentos.' },
-      { who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' },
-      { who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros.' },
+      ...L('evento:TransmitterActivated', [{ who: 'Voz', img: IMG.G, text: 'Si alguien puede escucharme… …el pacto…' }]),
+      ...L('interact:simbolo', [{ who: 'Vittata', img: IMG.V, text: '¿Qué pacto? Mira: un símbolo dividido en 36 fragmentos.' }]),
+      ...L('interact:simbolo_guardian', [{ who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' }]),
     ], () => {
       showSymbol(false);
       advanceTo(7);
@@ -953,8 +1244,9 @@
     say([
       { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
       { who: 'Luma', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
-      { who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' },
-      { who: 'Narrador', img: IMG.V, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' },
+      ...L('evento:BoatBlueprintUnlocked', [{ who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' }]),
+      ...L('evento:LocationDiscoveredMirador'),
+      ...L('evento:ChapterCompleted', [{ who: 'Narrador', img: IMG.V, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' }]),
     ], () => {
       S.boatPlan = true;
       logEvent('BoatBlueprintUnlocked');
@@ -971,12 +1263,174 @@
     let changed = true;
     while (changed) {
       changed = false;
-      if (S.step === 2 && has(NEEDS)) { S.step = 3; logEvent('ResourcesCollected', { ...S.inv }); changed = true; }
+      if (S.step === 2 && has(NEEDS)) {
+        S.step = 3; logEvent('ResourcesCollected', { ...S.inv }); changed = true;
+        if (!dialogOpen()) say(L('evento:ResourcesCollected'));
+      }
       else if (S.step === 3 && S.evaluated.A && S.evaluated.B) { S.step = 4; changed = true; }
     }
+    for (const r of RESOURCES) resMeshes[r.id].visible = resAvailable(r);
     renderQuest(); renderInv(); autosave();
   }
   function advanceTo(n) { if (n > S.step) S.step = n; checkProgress(); }
+
+  // ---------- Sprint 1: misiones, ropa desbloqueable, Diario de Campo y coro de coquíes ----------
+  function completeMission(key) {
+    if (S.missions[key]) return;
+    S.missions[key] = true;
+    logEvent('MissionCompleted', { mission: key });
+    grant(key);
+    renderQuest(); autosave();
+  }
+  // Abre un cofre-pluma, viste a Vittata al instante y deja la pieza disponible en "Mi personaje"
+  function grant(when) {
+    const got = UNLOCKS.filter(u => u.when === when && !S.unlocked.includes(u.key));
+    if (!got.length) return [];
+    for (const u of got) {
+      S.unlocked.push(u.key);
+      const w = u.wear; S.wear[w.slot] = { id: w.id, color: w.color, style: w.style };
+      logEvent('OutfitUnlocked', { item: u.key, milestone: when });
+    }
+    S.wear = Object.assign({}, S.wear);
+    applyVittataWear();
+    AUDIO.play('unlock'); featherChest(); shake(0.12, 0.3);
+    if (navigator.vibrate && MOBILE) try { navigator.vibrate(60); } catch (e) { /* sin vibración */ }
+    toast('¡Ropa nueva: ' + got.map(u => u.name).join(' y ') + '! Vittata la estrena y ya está en Mi personaje.', 4200);
+    autosave();
+    return got;
+  }
+  function applyVittataWear() { if (player3D) player3D.applyLook({ species: 'vittata', accessories: Object.assign({}, S.wear) }); }
+  // Clave bloqueada para el creador: pieza entera, pieza:estilo o pieza:color
+  function lockOf(id, style, color) {
+    for (const k of [id, id + ':' + style, id + ':' + color]) if (UNLOCK_KEYS.includes(k) && !S.unlocked.includes(k)) return UNLOCKS.find(u => u.key === k);
+    return null;
+  }
+  function foundField(f) {
+    if (S.field.includes(f.id)) return;
+    S.field.push(f.id);
+    fieldMeshes[f.id].visible = false;
+    logEvent('FieldEntryFound', { entry: f.id, cat: f.cat });
+    juice.combo = S.clock - juice.comboT < 3 ? juice.combo + 1 : 0; juice.comboT = S.clock;
+    AUDIO.play(f.cat === 'cultura' ? 'guiro' : 'pickup', juice.combo + 3); hitStop(0.06);
+    burst(f.x, f.y + 0.8, f.z, f.cat === 'cultura' ? 'stars' : 'feathers', 22);
+    toastHTML(`<b>Diario de Campo · ${f.name}</b> (${S.field.length}/12)<br>${f.text}`, 5000);
+    const n = c => FIELD.filter(x => x.cat === c && S.field.includes(x.id)).length;
+    if (n('fauna') >= 4) grant('fauna4');
+    if (n('cultura') >= 4) grant('cultura4');
+    if (S.field.length >= FIELD.length) grant('all12');
+    renderQuest(); autosave();
+  }
+  function ringsActive() { return S.step >= 3 && !S.missions.m2 && !S.complete; }
+  function passRing() {
+    const r = RINGS[S.rings];
+    S.rings++;
+    AUDIO.play('ring', S.rings); burst(r.x, r.wy, r.z, 'stars', 16);
+    if (S.rings < RINGS.length) { toast(`Anillo ${S.rings} de ${RINGS.length}`, 1200); autosave(); return; }
+    // Ojos de guaraguao: desde arriba se ve hasta dónde llegó la crecida en el terreno A
+    completeMission('m2');
+    if (!S.evaluated.A) openParcelCard('A');
+    else toast('Desde el aire se ve la marca azul: el río inunda el terreno A', 4000);
+  }
+  function startChorus() {
+    if (S.chorus) { toast(`El transmisor necesita voz: faltan ${BUSHES.length - S.coquis.length} coquíes que brillan`, 3000); return; }
+    S.chorus = true; renderQuest(); autosave();
+    say([
+      { who: 'Vittata', img: IMG.V, text: 'Ya casi está, pero este transmisor no tiene voz. Necesita un canto fuerte.', mood: 'idea' },
+      { who: 'Luma', img: IMG.L, text: '¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?', mood: 'happy' },
+    ], () => choose({ who: 'Luma', text: '¿Cómo los vas a convencer de cantar?' }, [
+      { label: 'Cantando yo primero: ¡co-quí!', value: 'cantar', reply: { who: 'Luma', img: IMG.L, text: '¡Eso, nena! Si cantas bonito, te van a contestar.', mood: 'happy' } },
+      { label: 'Escuchando con paciencia', value: 'escuchar', reply: { who: 'Luma', img: IMG.L, text: 'Buena idea. Primero se escucha y después se canta.', mood: 'idea' } },
+    ], o => { logEvent('LumaChoice', { choice: o.value }); say([o.reply], () => toast('Busca los 3 coquíes que brillan y repite su canto', 3500)); }));
+  }
+  // Elección de diálogo: cambia la frase de respuesta, no el desenlace
+  function choose(line, options, done) {
+    showCard(`<h2>${line.who}</h2><p>${line.text}</p><div class="row">${options.map((o, i) => `<button class="btn" id="ch-${i}" type="button">${o.label}</button>`).join('')}</div>`);
+    options.forEach((o, i) => { $('ch-' + i).onclick = () => { hideCard(); done(o); }; });
+    const b = $('ch-0'); if (b) b.focus();
+  }
+  // Simon de 2–3 notas: el coquí canta, Vittata repite (co = grave, quí = agudo). "Pasar" aparece tras 2 fallos.
+  let simon = null, simonTimers = [];
+  function startSimon(b) { simon = { b, i: 0, fails: 0 }; renderSimon('Escucha al coquí y repite su canto.'); playSong(); }
+  function playSong() {
+    simonTimers.forEach(clearTimeout); simonTimers = [];
+    if (!simon) return;
+    simon.b.song.forEach((n, k) => simonTimers.push(setTimeout(() => {
+      if (!simon) return;
+      AUDIO.play(n);
+      const d = document.getElementById('sd-' + k); if (d) { d.classList.add('sing', 'sing-' + n); simonTimers.push(setTimeout(() => d.classList.remove('sing', 'sing-' + n), 340)); }
+    }, 350 + k * 480)));
+  }
+  function renderSimon(msg) {
+    const b = simon.b;
+    const dots = b.song.map((n, k) => `<span class="sdot${k < simon.i ? ' ok ' + n : ''}" id="sd-${k}">${k < simon.i ? (n === 'co' ? 'co' : 'quí') : ''}</span>`).join('');
+    showCard(`<h2>Coquí escondido</h2><p>${msg}</p><p class="note">[Canta un coquí: ${b.song.length} notas. Grave = círculo grande abajo, agudo = pequeño arriba]</p>
+      <div class="sdots" aria-hidden="true">${dots}</div>
+      <div class="row"><button class="btn" id="s-co" type="button">Co (grave)</button><button class="btn" id="s-qui" type="button">Quí (agudo)</button>
+      <button class="btn ghost" id="s-again" type="button">Escuchar otra vez</button>${simon.fails >= 2 ? '<button class="btn ghost" id="s-skip" type="button">Pasar</button>' : ''}</div>`);
+    $('s-co').onclick = () => simonPress('co'); $('s-qui').onclick = () => simonPress('qui');
+    $('s-again').onclick = () => { simon.i = 0; renderSimon('Escucha otra vez.'); playSong(); };
+    if ($('s-skip')) $('s-skip').onclick = () => simonWin();
+  }
+  function simonPress(n) {
+    if (!simon) return false;
+    AUDIO.play(n);
+    if (n === simon.b.song[simon.i]) {
+      simon.i++;
+      if (simon.i >= simon.b.song.length) { simonWin(); return true; }
+      renderSimon('¡Bien! Sigue…');
+    } else {
+      simon.fails++; simon.i = 0; AUDIO.play('wrong');
+      renderSimon(simon.fails >= 2 ? 'Casi. Escucha otra vez, o pulsa Pasar.' : 'Casi. Escucha otra vez.');
+      simonTimers.push(setTimeout(playSong, 400));
+    }
+    return true;
+  }
+  function simonWin() {
+    const b = simon.b;
+    hideCard();
+    if (!S.coquis.includes(b.id)) S.coquis.push(b.id);
+    AUDIO.play('chorus'); burst(b.x, height(b.x, b.z) + 1.2, b.z, 'gold', 20);
+    if (S.coquis.length >= BUSHES.length) { completeMission('m3'); setTimeout(() => { if (S.missions.m3 && !S.transmitterOn) toast('¡El coro de coquíes está listo! Vuelve al transmisor.', 4000); }, 4300); }
+    else toast(`¡Coquí ${S.coquis.length} de ${BUSHES.length}! Busca los otros arbustos que brillan.`, 3000);
+    renderQuest(); autosave();
+  }
+  function openDiary() {
+    const n = c => FIELD.filter(x => x.cat === c && S.field.includes(x.id)).length;
+    const items = FIELD.map(f => S.field.includes(f.id)
+      ? `<li class="found"><span class="ico ${f.cat}" aria-hidden="true"></span><div><b>${f.name}</b><small>${f.text}</small></div></li>`
+      : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${f.cat === 'fauna' ? 'Un animal' : 'Algo de nuestra cultura'} por descubrir</small></div></li>`).join('');
+    const ropa = UNLOCKS.map(u => `<li class="${S.unlocked.includes(u.key) ? 'found' : ''}">${S.unlocked.includes(u.key) ? '✓' : '·'} ${u.name} <small>(${u.hint})</small></li>`).join('');
+    showCard(`<h2>Diario de Campo Boricua</h2><p class="note">${S.field.length}/12 · Fauna ${n('fauna')}/6 · Cultura ${n('cultura')}/6</p>
+      <ul class="diary">${items}</ul><span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
+      <div class="row"><button class="btn ghost" id="d-close" type="button">Cerrar</button></div>`);
+    $('d-close').onclick = hideCard;
+  }
+  // Objetivo actual de la guía según el paso de la historia
+  function guideTarget() {
+    if (S.complete || build) return null;
+    const at = id => { const it = interactables.find(i => i.id === id); return it ? { x: it.x, z: it.z } : null; };
+    const closest = list => { let best = null, bd = Infinity; for (const p of list) { const d = Math.hypot(S.pos.x - p.x, S.pos.z - p.z); if (d < bd) { bd = d; best = p; } } return best; };
+    if (ringsActive() && (MOVE.flying || S.rings > 0)) { const r = RINGS[S.rings]; return { x: r.x, z: r.z, y: r.wy }; }
+    const needRes = cost => closest(RESOURCES.filter(r => resAvailable(r) && S.inv[r.type] < cost[r.type]));
+    switch (S.step) {
+      case 0: return at(!S.examined.maquina ? 'maquina' : 'transmisor');
+      case 1: return at('luma');
+      case 2: return needRes(NEEDS);
+      case 3: return at(!S.evaluated.A ? 'postA' : 'postB');
+      case 4: return S.event ? null : S.refuge && S.refuge.damaged ? at('refuge') : S.refuge ? null : closest([at('postA'), at('postB')]);
+      case 5: return at('guardian');
+      case 6: return !has(REPAIR_COST) ? needRes(REPAIR_COST) : S.chorus && !S.missions.m3 ? closest(BUSHES.filter(b => !S.coquis.includes(b.id))) : at('transmisor');
+      case 7: return at('mirador');
+    }
+    return null;
+  }
+  // Gancho del capítulo (inicio:capitulo → inicio:taller → inicio:ruptura): la Ruptura sacude la cámara
+  function playIntro() {
+    const rupt = L('inicio:ruptura');
+    if (rupt[0]) rupt[0].fx = 'ruptura';
+    say([...L('inicio:capitulo'), ...L('inicio:taller'), ...rupt],
+      () => toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500));
+  }
 
   // ---------- Interfaz ----------
   const $ = id => document.getElementById(id);
@@ -989,6 +1443,7 @@
     // Vittata en 3D: mueve el pico mientras "dice" la línea y pone cara según el tono
     talk.who = l.who; talk.until = performance.now() + Math.min(5000, 600 + l.text.length * 55);
     talk.mood = l.mood || moodOf(l.text);
+    if (l.fx === 'ruptura') { shake(0.6, 1.2); AUDIO.play('zzzt'); }
   }
   const talk = { who: '', until: 0, mood: 'neutral' };
   function moodOf(text) {
@@ -1000,9 +1455,9 @@
   $('d-next').onclick = showNextLine;
   function dialogOpen() { return !$('dialog').hidden; }
   function showCard(html) { $('card').innerHTML = html; $('card').hidden = false; cardOpen = true; }
-  function hideCard() { $('card').hidden = true; cardOpen = false; }
+  function hideCard() { $('card').hidden = true; cardOpen = false; simon = null; simonTimers.forEach(clearTimeout); simonTimers = []; }
   let toastTimer = 0;
-  function toast(text, ms) { $('toast').textContent = text; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
+  function toast(text, ms) { AUDIO.play('tick'); $('toast').textContent = text; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
   function toastHTML(html, ms) { $('toast').innerHTML = html; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
   function hideToast() { $('toast').hidden = true; toastTimer = 0; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
@@ -1014,9 +1469,19 @@
       if (i === 0) label += ` (${(S.examined.maquina ? 1 : 0) + (S.examined.transmisor ? 1 : 0)}/2)`;
       if (i === 2) label += ` (${got('madera')}/4 · ${got('piedra')}/2 · ${got('componente')}/1)`;
       if (i === 3) label += ` (${(S.evaluated.A ? 1 : 0) + (S.evaluated.B ? 1 : 0)}/2)`;
+      if (i === 6 && S.chorus && !S.missions.m3) label += ` (coquíes ${S.coquis.length}/${BUSHES.length})`;
       const cls = i < S.step ? 'done' : i === S.step ? 'now' : 'later';
       return `<li class="${cls}">${label}</li>`;
     }).join('');
+    // Misiones de habilidad y Diario en una línea (con forma además de color: ✓ hecho, · pendiente)
+    const mk = (ok, txt) => `<span class="${ok ? 'ok' : ''}">${ok ? '✓' : '·'} ${txt}</span>`;
+    $('missions').innerHTML = [
+      mk(S.missions.m1, 'Río: bucear'),
+      mk(S.missions.m2, `Anillos ${S.rings}/${RINGS.length}`),
+      mk(S.missions.m3, `Coquíes ${S.coquis.length}/${BUSHES.length}`),
+      mk(S.field.length >= FIELD.length, `Diario ${S.field.length}/12`),
+    ].join('');
+    $('b-diary').textContent = `Diario ${S.field.length}/12`;
     const I = S.indicators;
     $('indicators').innerHTML = S.refuge ? `Seguridad del refugio: <b>${I.seguridad}</b> · Acceso: <b>${I.acceso}</b> · Hábitat: <b>${I.habitat}</b>` : '';
   }
@@ -1327,6 +1792,7 @@
     if (!thumbRig) {
       const cv = document.createElement('canvas'); cv.width = cv.height = 104;
       const rr = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true });
+      rr.outputEncoding = THREE.sRGBEncoding; rr.toneMapping = THREE.ACESFilmicToneMapping; rr.toneMappingExposure = 0.7; // mismo color que el creador
       const sc = new THREE.Scene();
       sc.add(new THREE.HemisphereLight('#fff4dc', '#2f5a3a', 0.9));
       const dl = new THREE.DirectionalLight('#ffffff', 0.9); dl.position.set(1, 2, 3); sc.add(dl);
@@ -1338,6 +1804,7 @@
     cam.position.set(c.x + sz * 0.9, c.y + sz * 0.6, c.z + sz * 1.6); cam.lookAt(c);
     rr.clear(); rr.render(sc, cam);
     sc.remove(acc);
+    if (C3.disposeObject) C3.disposeObject(acc); // la miniatura queda en caché como imagen; la malla ya no hace falta
     thumbCache[key] = cv.toDataURL('image/png');
     return thumbCache[key];
   }
@@ -1350,13 +1817,16 @@
       if (!defs.length) continue;
       const cur = look.accessories[slot], curDef = cur && defs.find(d => d.id === cur.id);
       const thumbs = [];
+      // Ropa desbloqueable (GDD §5): lo bloqueado se ve, pero apagado y con la pista de cómo conseguirlo
+      const lockAttr = u => u ? ` disabled data-locked="1" title="Se desbloquea con ${u.hint}"` : '';
       for (const d of defs) {
         const mine = cur && cur.id === d.id;
+        const lk = lockOf(d.id);
         const img = await accessoryThumb(d.id, mine ? cur.color : d.colors[0], mine ? cur.style : d.styles && d.styles[0][0]);
-        thumbs.push(`<button class="thumb" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}" title="${d.name}"><img src="${img}" alt=""></button>`);
+        thumbs.push(`<button class="thumb${lk ? ' locked' : ''}" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}${lk ? ' (bloqueado)' : ''}" title="${d.name}"${lockAttr(lk)}><img src="${img}" alt="">${lk ? '<span class="lock">Bloq.</span>' : ''}</button>`);
       }
-      const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => `<button class="chip" type="button" data-style="${s}" aria-pressed="${cur.style === s}">${n}</button>`).join('')}</div>` : '';
-      const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => `<button class="swatch" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}" style="background:${c}"></button>`).join('')}</div>` : '';
+      const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => { const lk = lockOf(curDef.id, s); return `<button class="chip${lk ? ' locked' : ''}" type="button" data-style="${s}" aria-pressed="${cur.style === s}"${lockAttr(lk)}>${n}${lk ? ' (bloq.)' : ''}</button>`; }).join('')}</div>` : '';
+      const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => { const lk = lockOf(curDef.id, undefined, c); return `<button class="swatch${lk ? ' locked' : ''}" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}${lk ? ' (bloqueado)' : ''}" style="background:${c}"${lockAttr(lk)}></button>`; }).join('')}</div>` : '';
       rows.push(`<div class="slot" data-slot="${slot}">
         <div class="sname">${SLOT_LABEL[slot] || slot}<small>${curDef ? curDef.name : 'Nada'}${curDef && curDef.placeholder ? ' <span class="ph-tag">(provisional)</span>' : ''}</small></div>
         <div class="opts">
@@ -1375,7 +1845,7 @@
   $('p-slots').addEventListener('click', e => {
     const row = e.target.closest('.slot'); if (!row) return;
     const slot = row.dataset.slot;
-    const btn = e.target.closest('button'); if (!btn) return;
+    const btn = e.target.closest('button'); if (!btn || btn.dataset.locked) return;
     const cur = draftLook.accessories[slot];
     if (btn.dataset.act === 'none') changeLook(l => { delete l.accessories[slot]; });
     else if (btn.dataset.id) {
@@ -1417,7 +1887,7 @@
     closeCreator();
     refreshCompanion();
     autosave();
-    if (firstTime) setTimeout(() => toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500), 300);
+    if (firstTime && !quiet) setTimeout(playIntro, 300);
     return null;
   }
   $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
@@ -1444,7 +1914,7 @@
   }
 
   // ---------- Guardado versionado con migración y respaldo ----------
-  const SAVED_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'examined', 'collected', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'complete', 'indicators', 'events', 'captures', 'clock'];
+  const SAVED_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'examined', 'collected', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'complete', 'indicators', 'events', 'captures', 'clock', 'missions', 'rings', 'chorus', 'coquis', 'field', 'unlocked', 'wear'];
   function serialize() { const o = { v: SAVE_VERSION }; for (const k of SAVED_KEYS) o[k] = S[k]; return JSON.stringify(o); }
   function save(silent) {
     try {
@@ -1500,7 +1970,9 @@
     return true;
   }
   function applyWorld() {
-    for (const r of RESOURCES) resMeshes[r.id].visible = !S.collected.includes(r.id);
+    for (const r of RESOURCES) resMeshes[r.id].visible = resAvailable(r);
+    for (const f of FIELD) fieldMeshes[f.id].visible = !S.field.includes(f.id);
+    applyVittataWear();
     placeRefugeMesh(); syncRefugeInteractable();
     applyTallerLook(); applyGuardianLook();
     water.position.y = S.water; rain.visible = false;
@@ -1560,7 +2032,19 @@
   emoteMenu.innerHTML = EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${i + 1} · ${EMOTES[k].label}</button>`).join('');
   emoteMenu.addEventListener('click', e => { const b = e.target.closest('[data-emote]'); if (!b) return; emoteMenu.hidden = true; playEmote(b.dataset.emote); });
   $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; });
-  $('b-act').addEventListener('click', action);
+  const actBtn = $('b-act');
+  actBtn.addEventListener('click', action);
+  // Bucear en táctil: mantener el botón equivale a mantener C
+  // (en el agua ocupa el lugar de Volar, así caben los botones en un teléfono)
+  const diveBtn = $('b-dive'), flyBtn = $('b-fly');
+  let diveHeld = false;
+  diveBtn.addEventListener('pointerdown', e => { e.preventDefault(); diveHeld = true; keys.add('c'); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) diveBtn.addEventListener(ev, () => { if (diveHeld) keys.delete('c'); diveHeld = false; });
+  $('b-diary').addEventListener('click', () => { if (!overlayOpen()) openDiary(); });
+  const soundBtn = $('b-sound');
+  const soundLabel = () => { soundBtn.textContent = AUDIO.vol.muted ? 'Sonido: no' : 'Sonido: sí'; soundBtn.setAttribute('aria-pressed', String(!AUDIO.vol.muted)); };
+  soundBtn.addEventListener('click', () => { AUDIO.vol.muted = !AUDIO.vol.muted; AUDIO.ensure(); AUDIO.apply(); AUDIO.save(); soundLabel(); AUDIO.play('tick'); });
+  soundLabel();
 
   let dragId = null, dragX = 0;
   canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; });
@@ -1591,8 +2075,8 @@
   function tryJump() {
     if (MOVE.flying) return;
     if (MOVE.swimming) { S.vy = 7; MOVE.swimming = false; splash(S.pos.x, S.water, S.pos.z, 0.8); return; }
-    if (S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 || MOVE.coyote > 0) { S.vy = 7.5; MOVE.coyote = 0; MOVE.airJumps = 1; return; }
-    if (MOVE.airJumps > 0) { S.vy = 6.8; MOVE.airJumps--; return; }
+    if (S.pos.y <= surfaceY(S.pos.x, S.pos.z) + 0.01 || MOVE.coyote > 0) { S.vy = 7.5; MOVE.coyote = 0; MOVE.airJumps = 1; AUDIO.play('jump'); return; }
+    if (MOVE.airJumps > 0) { S.vy = 6.8; MOVE.airJumps--; AUDIO.play('jump'); burst(S.pos.x, S.pos.y + 0.6, S.pos.z, 'feathers', 6); return; }
     startFlying();
   }
   function startFlying() {
@@ -1609,6 +2093,7 @@
     if (air && !MOVE.airDash) return;
     if (air) { MOVE.airDash = false; S.vy = Math.max(S.vy, 1.5); }
     MOVE.dashT = 0.2; MOVE.dashCd = 0.7;
+    AUDIO.play('dash');
   }
   // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz)
   function pushOut(p, c, rad) {
@@ -1673,7 +2158,7 @@
     MOVE.speed = hSpeed;
     // Recoger materiales al pasar por encima (también funciona E / Acción desde más lejos)
     if (!busy) for (const r of RESOURCES) {
-      if (S.collected.includes(r.id)) continue;
+      if (!resAvailable(r)) continue;
       if (Math.hypot(S.pos.x - r.x, S.pos.z - r.z) < 1.1 && S.pos.y - height(r.x, r.z) < 1.6) collect(r);
     }
     // Dos pasadas: al empujar fuera de un objeto se puede quedar dentro de otro vecino
@@ -1714,7 +2199,7 @@
     }
     S.pos.y = Math.max(ground, (S.pos.y || ground) + S.vy * dt);
     if (S.pos.y <= ground) {
-      if (MOVE.wasAir && S.vy < -4) MOVE.land = 0.2; // aterrizaje fuerte: pequeño aplastón
+      if (MOVE.wasAir && S.vy < -4) { MOVE.land = 0.2; AUDIO.play('land'); if (S.vy < -9) shake(Math.min(0.35, -S.vy * 0.02), 0.25); } // aterrizaje fuerte: aplastón y sacudida
       if (MOVE.flying && S.vy <= 0) MOVE.flying = false; // tocar suelo bajando termina el vuelo
       S.pos.y = ground; S.vy = 0;
       MOVE.coyote = 0.12; MOVE.airJumps = 1; MOVE.airDash = true; MOVE.wasAir = false;
@@ -1728,7 +2213,17 @@
       S.water = WATER_BASE + (FLOOD_LEVEL - WATER_BASE) * k * (1 - fall * 0.85);
       water.position.y = S.water;
       rain.visible = true;
+      if (e.t > 1 && e.t < e.dur * 0.6) shake(0.07, 0.1); // la crecida hace temblar la cámara
       if (e.t >= e.dur) { S.event = null; rain.visible = false; finishRainEvent(); }
+    }
+    // M2: el siguiente anillo se cruza en el aire; Diario: los hallazgos se recogen al acercarse
+    if (!busy && ringsActive() && S.rings < RINGS.length) {
+      const r = RINGS[S.rings];
+      if (Math.hypot(S.pos.x - r.x, S.pos.y + 0.8 - r.wy, S.pos.z - r.z) < 1.9) passRing();
+    }
+    if (!busy) for (const f of FIELD) {
+      if (S.field.includes(f.id)) continue;
+      if (Math.hypot(S.pos.x - f.x, S.pos.z - f.z) < (f.r || 1.6) && (f.water ? S.pos.y < S.water + 1.5 : Math.abs(S.pos.y - f.y) < 3)) foundField(f);
     }
     updateGhost();
     if (saveDebounce > 0) { saveDebounce -= dt; if (saveDebounce <= 0) save(true); }
@@ -1738,6 +2233,13 @@
     if (build && !busy) { pr.textContent = build.valid ? 'Acción: colocar refugio' : build.reason; pr.hidden = false; }
     else if (it) { pr.textContent = 'Acción: ' + it.label(); pr.hidden = false; }
     else pr.hidden = true;
+    // Botón Acción contextual: el verbo de lo que hay cerca
+    const verb = build && !busy ? 'Colocar' : it ? it.label().split(' ')[0] : dialogOpen() ? 'Seguir' : 'Acción';
+    if (actBtn.textContent !== verb) actBtn.textContent = verb;
+    if (diveBtn.hidden === !!MOVE.swimming) {
+      diveBtn.hidden = !MOVE.swimming; flyBtn.hidden = !!MOVE.swimming;
+      if (!MOVE.swimming && diveHeld) { keys.delete('c'); diveHeld = false; }
+    }
     return moving;
   }
 
@@ -1787,8 +2289,65 @@
       a.needsUpdate = true;
       rain.position.set(S.pos.x, height(S.pos.x, S.pos.z), S.pos.z);
     }
+    updateSprintVisuals(dt);
+    // FOV +8 al volar o en el impulso (GDD §7); prefers-reduced-motion lo deja fijo
+    const wantFov = 55 + (!REDUCED && (MOVE.flying || MOVE.dashT > 0) ? 8 : 0);
+    if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov += (wantFov - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
     camera.lookAt(S.pos.x, S.pos.y + 1.2, S.pos.z);
+    // Sacudida: se suma solo durante el dibujo para no ensuciar el seguimiento de la cámara
+    let sx = 0, sy = 0, sz = 0;
+    if (juice.shake > 0) {
+      juice.shake -= dt;
+      const a = juice.amp * Math.min(1, Math.max(0, juice.shake) / 0.2);
+      sx = (Math.random() - 0.5) * a; sy = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a;
+      camera.position.x += sx; camera.position.y += sy; camera.position.z += sz;
+      if (juice.shake <= 0) juice.amp = 0;
+    }
     renderer.render(scene, camera);
+    camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
+  }
+  let bubbleT = 0;
+  function updateSprintVisuals(dt) {
+    const now = performance.now() / 1000;
+    // Anillos: el siguiente brilla y late; los demás esperan tenues
+    const on = ringsActive();
+    ringMeshes.forEach((m, i) => {
+      m.visible = on && i >= S.rings;
+      if (!m.visible) return;
+      const next = i === S.rings;
+      m.material.opacity = next ? 0.9 : 0.25;
+      m.scale.setScalar(next ? 1 + Math.sin(now * 5) * 0.08 : 0.85);
+    });
+    floodHint.visible = S.missions.m2 && S.step <= 4 && !(S.refuge && S.refuge.parcel === 'B');
+    // Coquíes: los arbustos brillan durante el coro
+    for (const b of BUSHES) {
+      const bm = bushMeshes[b.id], live = S.chorus && !S.missions.m3 && !S.coquis.includes(b.id);
+      bm.glow.visible = live; bm.frog.visible = S.coquis.includes(b.id) || S.missions.m3;
+      if (live) { const k = 1 + Math.sin(now * 3 + b.x) * 0.08; bm.glow.scale.setScalar(k); bm.glow.material.opacity = 0.18 + Math.sin(now * 3 + b.x) * 0.06; }
+    }
+    // Diario: cada hallazgo flota y su destello gira
+    for (const f of FIELD) {
+      const g = fieldMeshes[f.id]; if (!g.visible) continue;
+      g.position.y = f.y + (f.water ? Math.sin(now * 1.5 + f.x) * 0.08 : 0.15 + Math.sin(now * 2 + f.z) * 0.08);
+      const sp = g.getObjectByName('spark'); sp.rotation.y += dt * 2.5;
+    }
+    // Burbujas que guían hasta la pieza del fondo de la poza
+    const c1 = RESOURCES.find(r => r.id === 'c1');
+    if (resAvailable(c1) && S.step >= 2 && (bubbleT -= dt) <= 0) { bubbleT = 0.7; burst(c1.x, height(c1.x, c1.z) + 0.4, c1.z, 'bubbles', 5, S.water); }
+    // Guía: haz sobre el objetivo y flecha sobre Vittata
+    const tg = dialogOpen() || cardOpen || overlayOpen() ? null : guideTarget();
+    guideBeam.visible = !!tg; guideArrow.visible = false;
+    if (tg) {
+      const gy = tg.y != null ? tg.y - 20 : height(tg.x, tg.z) + 20;
+      guideBeam.position.set(tg.x, gy, tg.z);
+      guideBeam.material.opacity = 0.16 + Math.sin(now * 3) * 0.06;
+      const d = Math.hypot(tg.x - S.pos.x, tg.z - S.pos.z);
+      if (d > 4) {
+        guideArrow.visible = true;
+        guideArrow.position.set(S.pos.x + (tg.x - S.pos.x) / d * 0.9, S.pos.y + 2.75 + Math.sin(now * 4) * 0.06, S.pos.z + (tg.z - S.pos.z) / d * 0.9);
+        guideArrow.lookAt(tg.x, tg.y != null ? tg.y : guideArrow.position.y, tg.z);
+      }
+    }
   }
   function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
   addEventListener('resize', resize);
@@ -1796,13 +2355,17 @@
 
   let last = performance.now();
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    render(dt, update(dt));
+    let dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (juice.hitStop > 0) { juice.hitStop -= dt; dt = 0; } // hit-stop de 60 ms al capturar
+    const moving = update(dt);
+    // Con el creador abierto (opaco) el mundo no se dibuja: una sola escena por cuadro
+    if ($('creator').hidden) render(dt, moving);
     requestAnimationFrame(frame);
   }
 
   // ---------- Inicio ----------
   S.pos.y = height(S.pos.x, S.pos.z);
+  linearize(scene); // antes de aplicar el mundo: applyTallerLook ya escribe colores en lineal
   init3D();
   if (!load(true)) reset();
   placeCamera(true);
@@ -1818,6 +2381,7 @@
     const out = [];
     const check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra || '' });
     const keep = (() => { try { return localStorage.getItem(SAVE_KEY); } catch (e) { return null; } })();
+    quiet = true;
     reset(true);
     // Creador de personaje
     check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
@@ -1832,6 +2396,7 @@
     check('Luma da la misión', S.step === 2 && hadEvent('LumaHelped'), 'paso ' + S.step);
     for (const id of ['m1', 'm2', 'm3', 'm4', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && hadEvent('ResourcesCollected'), JSON.stringify(S.inv));
+    drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
     check('Dos terrenos inspeccionados', S.step === 4 && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
@@ -1845,7 +2410,7 @@
     tick(5); drain();
     check('Consecuencia visible: refugio inundado', S.refuge.damaged && refugeMesh.rotation.z > 0.1 && hadEvent('ShelterFlooded'));
     check('Aparece el Guardián', guardian.sp.visible && S.step === 5);
-    syncRefugeInteractable(); useAt('refuge', 1.6, 0);
+    syncRefugeInteractable(); useAt('refuge', 1.6, 0); drain(); // escena evento:ShelterDismantled
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
@@ -1853,6 +2418,9 @@
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && hadEvent('ShelterRelocated'));
     useAt('guardian', 1.4, 0); drain();
     check('Guardián conocido y banco desbloqueado', hadEvent('GuardianMet') && S.benchUnlocked && bench.visible && S.step === 6);
+    // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
+    useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
+    for (const b of BUSHES) { useAt(b.id, 1.3, 0); for (const n of b.song) simonPress(n); }
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
     drain();
@@ -1933,6 +2501,122 @@
     reset(true);
     try { localStorage.removeItem(SAVE_KEY + '.unreadable'); if (keep) localStorage.setItem(SAVE_KEY, keep); } catch (e) { /* sin almacenamiento */ }
     if (keep) load(true); else openCreator(true);
+    quiet = false;
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+  // Pruebas del sprint 1: diálogos del .json, misiones de nado, vuelo y coro, Diario, ropa, guía, sonido y fugas
+  async function missionTest() {
+    const out = [];
+    const check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra || '' });
+    const keep = (() => { try { return localStorage.getItem(SAVE_KEY); } catch (e) { return null; } })();
+    quiet = true;
+    reset(true); saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+    // Diálogos
+    const scenes = (window.AV_DIALOGOS_CAP1 || {}).escenas || [];
+    check('dialogos_cap1.js carga las 27 escenas', scenes.length === 27, scenes.length + ' escenas');
+    const unknown = scenes.filter(sc => { const [k, v] = sc.disparador.split(':'); return k === 'evento' ? !EVENT_DEFS[v] : !['inicio', 'interact'].includes(k); });
+    check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
+    check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
+    check('Emoción del .json llega a la cara de Vittata', L('evento:ShelterDismantled')[0].mood === 'angry' && L('interact:transmisor')[0].mood === 'sad');
+    quiet = false; playIntro();
+    check('Introducción con los disparadores inicio:', dialogOpen() && $('d-who').textContent === 'Narrador' && dialogQueue.length === 5, dialogQueue.length + 1 + ' líneas');
+    let shook = false; while (dialogOpen()) { showNextLine(); if (juice.shake > 0.5) shook = true; }
+    check('La Ruptura sacude la cámara', shook || REDUCED);
+    quiet = true;
+    useAt('transmisor');
+    check('interact:transmisor usa el texto del guion', $('d-text').textContent === 'Este transmisor llevaba años mudo.', $('d-text').textContent);
+    drain(); useAt('maquina'); drain();
+    useAt('luma');
+    check('interact:luma_inicio al hablar con Luma', $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'));
+    drain();
+    // M1: nado
+    check('c2 espera al paso 3 (la pieza del paso 2 sale del río)', !resAvailable(RESOURCES.find(r => r.id === 'c2')));
+    const c1 = RESOURCES.find(r => r.id === 'c1');
+    teleport(c1.x + 0.5, c1.z); S.pos.y = S.water - SWIM_DEPTH; tick(0.3);
+    check('La poza es honda: flotando no se alcanza la pieza', MOVE.swimming && !S.collected.includes('c1') && !reachUnder(c1), 'fondo a ' + (S.pos.y - height(c1.x, c1.z)).toFixed(1) + ' m');
+    keys.add('c'); tick(2.5); keys.delete('c');
+    check('M1: buceando con C se recoge la pieza', S.collected.includes('c1') && S.missions.m1);
+    check('M1 desbloquea las botas azules y Vittata las lleva', S.unlocked.includes('botas') && S.wear.feet && S.wear.feet.id === 'botas' && (!player3D || !!player3D.mounted.feet));
+    for (const id of ['m1', 'm2', 'm3', 'm4', 'p1', 'p2']) useAt(id);
+    drain();
+    check('Con la pieza del río se completa la recolección', S.step === 3 && resAvailable(RESOURCES.find(r => r.id === 'c2')), 'paso ' + S.step);
+    // Guía
+    const g3 = guideTarget();
+    check('La guía apunta al terreno sin inspeccionar', g3 && Math.hypot(g3.x - PLACES.A.post.x, g3.z - PLACES.A.post.z) < 0.01);
+    // M2: anillos de vuelo
+    teleport(RINGS[0].x - 6, RINGS[0].z); startFlying(); tick(0.2);
+    for (let i = 0; i < RINGS.length; i++) {
+      const r = RINGS[i];
+      if (i === 3) { const before = S.rings; S.pos.x = RINGS[5].x; S.pos.z = RINGS[5].z; S.pos.y = RINGS[5].wy - 0.8; S.vy = 0; tick(0.05); check('Saltarse un anillo no cuenta', S.rings === before); }
+      S.pos.x = r.x; S.pos.z = r.z; S.pos.y = r.wy - 0.8; S.vy = 0; MOVE.vx = MOVE.vz = 0; tick(0.05);
+    }
+    check('M2: los 7 anillos en orden', S.rings === RINGS.length && S.missions.m2, S.rings + '/' + RINGS.length);
+    check('M2 evalúa el terreno A desde el aire y da la pava', S.evaluated.A && hadEvent('LandInspected') && S.unlocked.includes('pava') && !$('card').hidden);
+    hideCard(); drain();
+    // Diario de Campo y ropa por hitos
+    const fauna = FIELD.filter(f => f.cat === 'fauna'), cult = FIELD.filter(f => f.cat === 'cultura');
+    for (const f of fauna.slice(0, 4)) { teleport(f.x + 0.4, f.z); if (f.water) S.pos.y = S.water - SWIM_DEPTH; tick(0.1); }
+    check('Diario: 4 animales por proximidad dan la gorra de la bandera', S.field.length === 4 && S.unlocked.includes('gorra:pr'), S.field.join(','));
+    for (const f of cult.slice(0, 4)) { teleport(f.x + 0.4, f.z); tick(0.1); }
+    check('Diario: 4 objetos de cultura dan las maracas', S.unlocked.includes('mano:maracas'));
+    for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.water) S.pos.y = S.water - SWIM_DEPTH; tick(0.1); }
+    check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
+    openDiary();
+    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary li.found').length === 12);
+    hideCard();
+    // Creador: lo bloqueado se ve apagado y no se puede elegir
+    S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
+    check('Bloqueos por pieza, estilo y color', !lockOf('botas') && !!lockOf('camisa', 'guayabera') && !lockOf('camisa', 'liso') && !lockOf('lentes', 'sol', '#c9a227'));
+    // M3: coro de coquíes
+    S.step = 6; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
+    useAt('transmisor'); drain();
+    check('M3: el transmisor pide voz y ofrece una elección con Luma', S.chorus && !S.transmitterOn && !!$('ch-0'));
+    $('ch-0').click();
+    check('La elección cambia la frase de Luma', $('d-text').textContent.startsWith('¡Eso, nena!') && hadEvent('LumaChoice'));
+    drain();
+    const b0 = BUSHES[0];
+    useAt(b0.id, 1.3, 0);
+    check('Un arbusto brillante abre el Simon del coquí', !!simon && !!$('s-co'));
+    simonPress(b0.song[0] === 'co' ? 'qui' : 'co'); simonPress(b0.song[0] === 'co' ? 'qui' : 'co');
+    check('Tras 2 fallos aparece "Pasar"', !!$('s-skip') && simon.fails === 2);
+    for (const n of b0.song) simonPress(n);
+    for (const b of BUSHES.slice(1)) { useAt(b.id, 1.3, 0); for (const n of b.song) simonPress(n); }
+    check('M3: 3 coquíes completan el coro y dan la guayabera', S.missions.m3 && S.unlocked.includes('camisa:guayabera'), S.coquis.join(','));
+    useAt('transmisor');
+    check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
+    drain();
+    // Sonido y feedback
+    check('Sonidos sintéticos registrados (recoger, anillo, coquí, desbloqueo)', ['pickup', 'ring', 'co', 'qui', 'unlock'].every(n => AUDIO.log.includes(n)), AUDIO.log.slice(-8).join(','));
+    check('Partículas dentro del límite de 200', liveParticles <= MAX_PARTICLES, liveParticles + ' vivas');
+    // Guardado del progreso del sprint
+    save(true); const snap = serialize(); reset(true);
+    try { localStorage.setItem(SAVE_KEY, snap); } catch (e) { /* sin almacenamiento */ }
+    check('Se guardan misiones, Diario y ropa', load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === UNLOCKS.length && S.wear.feet);
+    // Color y presupuesto de render
+    check('Juego y creador con el mismo color (sRGB + ACES)', renderer.outputEncoding === THREE.sRGBEncoding && renderer.toneMapping === THREE.ACESFilmicToneMapping);
+    check('Pixel ratio limitado', renderer.getPixelRatio() <= (MOBILE ? 1.5 : 2), String(renderer.getPixelRatio()));
+    // Fugas: cambiar de ropa muchas veces no aumenta geometrías ni texturas en la GPU
+    if (window.AVCharacter) {
+      try {
+        const ch = await window.AVCharacter.create();
+        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+        const rr = new THREE.WebGLRenderer({ canvas: cv }), sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 0.01, 50);
+        cam.position.set(0, 1, 4); sc.add(ch.root, new THREE.HemisphereLight());
+        const looks = [{ head: { id: 'gorra', color: '#d6403a', style: 'liso' }, hand: { id: 'mano', color: '#d6403a', style: 'bandera' }, eyes: { id: 'gafas', color: '#2b2b2b' } },
+          { head: { id: 'sombrero', color: '#8a6a3a' }, hand: { id: 'mano', color: '#d6403a', style: 'mapa' }, neck: { id: 'panuelo', color: '#3d8fb0' } }];
+        const mem = () => ({ g: rr.info.memory.geometries, t: rr.info.memory.textures });
+        for (let i = 0; i < 4; i++) { ch.applyLook({ species: 'vittata', accessories: looks[i % 2] }); rr.render(sc, cam); }
+        const m0 = mem();
+        for (let i = 0; i < 12; i++) { ch.applyLook({ species: 'vittata', accessories: looks[i % 2] }); rr.render(sc, cam); }
+        const m1 = mem();
+        check('Cambiar de ropa 12 veces no acumula memoria de GPU', m1.g <= m0.g && m1.t <= m0.t, `geometrías ${m0.g}→${m1.g}, texturas ${m0.t}→${m1.t}`);
+        rr.dispose(); rr.forceContextLoss();
+      } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
+    }
+    reset(true);
+    try { if (keep) localStorage.setItem(SAVE_KEY, keep); } catch (e) { /* sin almacenamiento */ }
+    if (keep) load(true); else openCreator(true);
+    quiet = false;
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   // Pruebas del sistema de accesorios 3D (requieren el modelo con esqueleto)
@@ -2042,5 +2726,5 @@
     S.profile = prevProfile;
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
-  window.AV = { get state() { return S; }, teleport, tick, action, nearest: () => nearest() && nearest().id, selfTest, accessoryTest, save, load, reset, exportComic, portraitCanvasFor: (n, bg) => portraitCanvasFor(n, bg) };
+  window.AV = { get state() { return S; }, get renderer() { return renderer; }, debug: { RINGS, FIELD, BUSHES, guideTarget, height, camYaw: v => (v != null ? (camYaw = v) : camYaw) }, teleport, tick, action, nearest: () => nearest() && nearest().id, selfTest, accessoryTest, missionTest, save, load, reset, exportComic, portraitCanvasFor: (n, bg) => portraitCanvasFor(n, bg) };
 })();

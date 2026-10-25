@@ -98,14 +98,24 @@
   const matCache = {};
   function mat(color, opts) {
     const key = color + JSON.stringify(opts || {});
-    return matCache[key] || (matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.7, metalness: 0.02 }, opts || {})));
+    if (!matCache[key]) { matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.7, metalness: 0.02 }, opts || {})); matCache[key].userData.shared = true; }
+    return matCache[key];
+  }
+  // Material con CanvasTexture dibujada una sola vez (bandera, mapa, parche)
+  function sharedMat(key, draw, opts) {
+    key = 'canvas' + key;
+    if (!matCache[key]) {
+      const t = new THREE.CanvasTexture(draw()); texCache[key] = t;
+      matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ map: t }, opts)); matCache[key].userData.shared = true;
+    }
+    return matCache[key];
   }
   function cloth(style, color) {
     const key = 'cloth' + style + color;
     if (!matCache[key]) {
       const plain = !style || style === 'liso';
       matCache[key] = new THREE.MeshStandardMaterial(plain ? { color, roughness: 0.85 } : { map: pattern(style, color), roughness: 0.85 });
-      matCache[key].side = THREE.DoubleSide;
+      matCache[key].side = THREE.DoubleSide; matCache[key].userData.shared = true;
     }
     return matCache[key];
   }
@@ -212,9 +222,8 @@
     const h = ARM.hand, g = new THREE.Group(); g.position.fromArray(h);
     if (style === 'bandera') {
       const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.6, 8), mat('#8a6a3a')); pole.position.y = 0.18; g.add(pole);
-      const [c, gg] = canvas(240, 160); prFlag(gg, 0, 0, 240, 160);
-      const t = new THREE.CanvasTexture(c);
-      const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.2, 8, 1), new THREE.MeshStandardMaterial({ map: t, side: THREE.DoubleSide, roughness: 0.8 }));
+      // Texturas de bandera, mapa y parche en caché (antes se creaba una CanvasTexture nueva en cada montaje)
+      const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.2, 8, 1), sharedMat('flag', () => { const [c, gg] = canvas(240, 160); prFlag(gg, 0, 0, 240, 160); return c; }, { side: THREE.DoubleSide, roughness: 0.8 }));
       flag.position.set(0, 0.38, 0.15); flag.rotation.y = -Math.PI / 2; g.add(flag);
     } else if (style === 'maracas') {
       for (const dz of [0, 0.08]) {
@@ -242,9 +251,11 @@
     // En pose T el puño agarra a lo largo de +Z; con el brazo abajo, los objetos largos quedan apuntando al frente
     if (style === 'bandera' || style === 'maracas' || style === 'martillo') g.rotation.x = Math.PI / 2 - 0.35;
     if (style === 'mapa') {
-      const [c, gg] = canvas(200, 140); gg.fillStyle = '#efe2b8'; gg.fillRect(0, 0, 200, 140); gg.strokeStyle = '#7a5634'; gg.lineWidth = 3;
-      gg.beginPath(); gg.moveTo(20, 110); gg.bezierCurveTo(60, 20, 120, 120, 180, 30); gg.stroke(); gg.fillStyle = '#d6403a'; gg.font = 'bold 30px sans-serif'; gg.fillText('X', 150, 50);
-      const map = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.17), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(c), side: THREE.DoubleSide }));
+      const map = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.17), sharedMat('mapa', () => {
+        const [c, gg] = canvas(200, 140); gg.fillStyle = '#efe2b8'; gg.fillRect(0, 0, 200, 140); gg.strokeStyle = '#7a5634'; gg.lineWidth = 3;
+        gg.beginPath(); gg.moveTo(20, 110); gg.bezierCurveTo(60, 20, 120, 120, 180, 30); gg.stroke(); gg.fillStyle = '#d6403a'; gg.font = 'bold 30px sans-serif'; gg.fillText('X', 150, 50);
+        return c;
+      }, { side: THREE.DoubleSide }));
       map.position.set(0, 0.04, 0.12); map.rotation.x = -0.9; g.add(map);
     }
     return [{ bone: 'armL2', obj: g }];
@@ -271,8 +282,7 @@
     }
     if (style !== 'pr') {
       // Parche frontal con la bandera de Puerto Rico
-      const [c, gg] = canvas(150, 100); prFlag(gg, 0, 0, 150, 100);
-      const patch = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.066), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(c), roughness: 0.8 }));
+      const patch = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.066), sharedMat('parche', () => { const [c, gg] = canvas(150, 100); prFlag(gg, 0, 0, 150, 100); return c; }, { roughness: 0.8 }));
       const front = style === 'reves' ? -1 : 1;
       patch.position.fromArray(rel(0, 1.34, -0.03 + front * 0.205)); patch.rotation.x = -0.55 * front; if (front < 0) patch.rotation.y = Math.PI;
       g.add(patch);

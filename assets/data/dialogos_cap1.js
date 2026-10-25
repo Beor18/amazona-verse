@@ -1,0 +1,276 @@
+/* Amazona Verse · Diálogos del capítulo 1 (generado desde assets/data/dialogos_cap1.json; no editar a mano).
+   El artifact no permite fetch de .json en todos los casos: los datos se incrustan como variable global.
+   Para regenerarlo: copiar el .json tal cual detrás de "window.AV_DIALOGOS_CAP1 = " y cerrar con ";". */
+window.AV_DIALOGOS_CAP1 = {
+ "escenas": [
+  {
+   "id": "c1_gancho_narrador",
+   "disparador": "inicio:capitulo",
+   "personaje": "Narrador",
+   "emocion": "sorpresa",
+   "lineas": [
+    "Hubo un tiempo en que las islas estaban conectadas.",
+    "Cada idea nueva parecía acercar el futuro."
+   ]
+  },
+  {
+   "id": "c1_gancho_motor",
+   "disparador": "inicio:taller",
+   "personaje": "Vittata",
+   "emocion": "feliz",
+   "lineas": [
+    "¡Lo sabía! ¡Solo era ajustar el equilibrio!",
+    "Con este motor llegaremos a cualquier isla. ¡Wepa!"
+   ]
+  },
+  {
+   "id": "c1_ruptura",
+   "disparador": "inicio:ruptura",
+   "personaje": "Narrador",
+   "emocion": "sorpresa",
+   "lineas": [
+    "Las nubes brillaron. Todo hizo ZZZT.",
+    "Y llegó la Gran Ruptura."
+   ]
+  },
+  {
+   "id": "c1_maquina",
+   "disparador": "evento:WorkshopExplored",
+   "personaje": "Vittata",
+   "emocion": "triste",
+   "lineas": [
+    "Mi máquina… Si consigo repararla, todavía podemos…",
+    "Ay, bendito. Quedó hecha pedazos."
+   ]
+  },
+  {
+   "id": "c1_transmisor",
+   "disparador": "interact:transmisor",
+   "personaje": "Vittata",
+   "emocion": "triste",
+   "lineas": [
+    "Este transmisor llevaba años mudo.",
+    "Y ahora tiene la antena doblada."
+   ]
+  },
+  {
+   "id": "c1_luma_llama",
+   "disparador": "interact:luma_inicio",
+   "personaje": "Luma",
+   "emocion": "sorpresa",
+   "lineas": [
+    "¡Vittata! ¡Necesitamos ayuda!",
+    "Mi familia no tiene dónde quedarse. Nuestro árbol se partió."
+   ]
+  },
+  {
+   "id": "c1_acepta_ayuda",
+   "disparador": "evento:LumaHelped",
+   "personaje": "Vittata",
+   "emocion": "idea",
+   "lineas": [
+    "Yo puedo sola… no, mejor dicho: ¿me ayudas?",
+    "Vamos a construir algo nuevo, Luma. ¡Dale!"
+   ]
+  },
+  {
+   "id": "c1_materiales",
+   "disparador": "interact:materiales",
+   "personaje": "Luma",
+   "emocion": "triste",
+   "lineas": [
+    "No tenemos suficientes materiales."
+   ]
+  },
+  {
+   "id": "c1_posibilidades",
+   "disparador": "evento:ResourcesCollected",
+   "personaje": "Vittata",
+   "emocion": "idea",
+   "lineas": [
+    "Tenemos más de lo que parece.",
+    "Lo que otros ven como restos, yo lo veo como posibilidades."
+   ]
+  },
+  {
+   "id": "c1_terreno_rio",
+   "disparador": "evento:LandInspected",
+   "personaje": "Vittata",
+   "emocion": "enojo",
+   "lineas": [
+    "Aquí construiríamos mucho más rápido.",
+    "¡La colina queda lejísimo, nena!"
+   ]
+  },
+  {
+   "id": "c1_marcas_agua",
+   "disparador": "interact:marcas_agua",
+   "personaje": "Luma",
+   "emocion": "idea",
+   "lineas": [
+    "Mira esas marcas en el árbol.",
+    "El río llegó hasta aquí durante la tormenta."
+   ]
+  },
+  {
+   "id": "c1_colina",
+   "disparador": "interact:colina",
+   "personaje": "Luma",
+   "emocion": "idea",
+   "lineas": [
+    "Allá arriba parece más seguro.",
+    "Y un nido necesita un lugar seguro."
+   ]
+  },
+  {
+   "id": "c1_refugio_listo",
+   "disparador": "evento:ShelterConstructed",
+   "personaje": "Luma",
+   "emocion": "feliz",
+   "lineas": [
+    "¡Lo logramos! Mi familia tiene un techo.",
+    "…¿Oyes eso? Viene más lluvia."
+   ]
+  },
+  {
+   "id": "c1_inundado",
+   "disparador": "evento:ShelterFlooded",
+   "personaje": "Luma",
+   "emocion": "triste",
+   "lineas": [
+    "El río subió y el refugio se inundó…",
+    "Tranquila. Todavía podemos moverlo."
+   ]
+  },
+  {
+   "id": "c1_error_prisa",
+   "disparador": "evento:ShelterDismantled",
+   "personaje": "Vittata",
+   "emocion": "enojo",
+   "lineas": [
+    "Quise ir rápido y no escuché las marcas.",
+    "Lo desarmo y recupero todo. No más prisa."
+   ]
+  },
+  {
+   "id": "c1_colina_firme",
+   "disparador": "evento:ShelterRelocated",
+   "personaje": "Luma",
+   "emocion": "feliz",
+   "lineas": [
+    "La colina aguantó la crecida.",
+    "Mi familia está a salvo. ¡Gracias, Vittata!"
+   ]
+  },
+  {
+   "id": "c1_engranaje",
+   "disparador": "evento:ShelterRelocated",
+   "personaje": "Vittata",
+   "emocion": "idea",
+   "lineas": [
+    "Le puse el engranaje de mi máquina al techo.",
+    "Construir rápido no sirve si hay que empezar otra vez."
+   ]
+  },
+  {
+   "id": "c1_guardian_llega",
+   "disparador": "evento:GuardianMet",
+   "personaje": "Guardián",
+   "emocion": "feliz",
+   "lineas": [
+    "Veo que todavía quedan constructores por aquí.",
+    "Construí mucho… y perdí algunas cosas importantes."
+   ]
+  },
+  {
+   "id": "c1_guardian_hogar",
+   "disparador": "interact:guardian_refugio",
+   "personaje": "Guardián",
+   "emocion": "idea",
+   "lineas": [
+    "Buen lugar, mija. Más vale paso firme que carrera ciega.",
+    "Un hogar es lo que construimos y también lo que cuidamos."
+   ]
+  },
+  {
+   "id": "c1_banco",
+   "disparador": "evento:WorkshopUpgradeUnlocked",
+   "personaje": "Guardián",
+   "emocion": "idea",
+   "lineas": [
+    "Te dejo mi viejo banco de trabajo.",
+    "Con él podrás reparar ese transmisor."
+   ]
+  },
+  {
+   "id": "c1_voz",
+   "disparador": "evento:TransmitterActivated",
+   "personaje": "Voz",
+   "emocion": "sorpresa",
+   "lineas": [
+    "Si alguien puede escucharme…",
+    "…el pacto… viene otra tormenta…"
+   ]
+  },
+  {
+   "id": "c1_simbolo",
+   "disparador": "interact:simbolo",
+   "personaje": "Vittata",
+   "emocion": "sorpresa",
+   "lineas": [
+    "¿Qué pacto? ¡Un símbolo dividido en 36 piezas!",
+    "Esa voz no es vieja. ¡Es de ahora!"
+   ]
+  },
+  {
+   "id": "c1_guardian_calla",
+   "disparador": "interact:simbolo_guardian",
+   "personaje": "Guardián",
+   "emocion": "triste",
+   "lineas": [
+    "No veía ese símbolo desde hace mucho.",
+    "Esta historia es más grande de lo que imaginamos."
+   ]
+  },
+  {
+   "id": "c1_plano_bote",
+   "disparador": "evento:BoatBlueprintUnlocked",
+   "personaje": "Vittata",
+   "emocion": "idea",
+   "lineas": [
+    "Si los caminos desaparecieron, construiremos otros.",
+    "Empezando por un bote. ¡Pa'lante!"
+   ]
+  },
+  {
+   "id": "c1_mirador",
+   "disparador": "evento:LocationDiscoveredMirador",
+   "personaje": "Luma",
+   "emocion": "sorpresa",
+   "lineas": [
+    "Mira, Vittata. Esa luz en la niebla…",
+    "¡Parpadeó tres veces! Alguien contesta."
+   ]
+  },
+  {
+   "id": "c1_cliffhanger",
+   "disparador": "evento:ChapterCompleted",
+   "personaje": "Guardián",
+   "emocion": "triste",
+   "lineas": [
+    "Antes de buscarlos, hay que tener dónde esperar la tormenta.",
+    "Y esa tormenta llega pronto."
+   ]
+  },
+  {
+   "id": "c1_fin",
+   "disparador": "evento:ChapterCompleted",
+   "personaje": "Narrador",
+   "emocion": "sorpresa",
+   "lineas": [
+    "Y así comenzó la aventura que volvería a conectar los mundos.",
+    "Continuará…"
+   ]
+  }
+ ]
+};

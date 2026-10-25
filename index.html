@@ -69,8 +69,8 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 #end .panel { max-width: 440px; text-align: center; padding: 22px; }
 #end h2 { font-family: var(--display); font-size: 26px; color: var(--beak); margin: 0 0 8px; text-wrap: balance; }
 #tag { left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); font-size: 10px; color: var(--muted); opacity: .8; pointer-events: none; }
-@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto, planear y volar (3.er toque o V; Espacio sube, C baja) · F impulso · 1–7 gestos · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
-@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 160px); } }
+@media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } #tag::after { content: " · WASD mover · Shift correr · Espacio saltar, doble salto, planear y volar (3.er toque o V; Espacio sube, C baja) · C bucear · F impulso · 1–7 gestos · E acción · Q/R cámara · los materiales se recogen al pasar por encima"; } }
+@media (max-width: 560px) { #quest { max-width: 100%; flex: 1 1 100%; } #quest ol { font-size: 13px; } #quest li.done, #quest li.later { display: none; } #quest ol { list-style: none; padding-left: 0; } #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 220px); width: calc(100% - 32px); } #sys { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 196px); left: max(12px, env(safe-area-inset-left, 0px)); flex-wrap: wrap; justify-content: flex-end; } #toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 290px); } }
 .note { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .row.center { justify-content: center; }
@@ -131,6 +131,28 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 .err { color: #ffb4a8; font-size: 14px; margin: 0 0 8px; }
 @media (max-width: 720px) { .comic-body { grid-template-columns: 1fr; } }
 
+/* Sprint 1: misiones, Diario de Campo, Simon de coquíes y ropa bloqueada */
+#missions { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--muted); }
+#missions .ok { color: var(--leaf-hi); }
+#card { max-height: calc(100vh - 40px); overflow: auto; }
+.diary, .ropa { list-style: none; margin: 6px 0 10px; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.diary li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; color: var(--muted); }
+.diary li b { display: block; color: var(--paper); }
+.diary li small, .ropa small { color: var(--muted); }
+.diary li.found b { color: var(--leaf-hi); }
+.ropa li.found { color: var(--leaf-hi); }
+.ico { width: 18px; height: 18px; margin-top: 2px; border: 2px dashed rgba(244,247,241,.35); border-radius: 50%; }
+.ico.fauna { border: 0; background: var(--leaf); border-radius: 50% 50% 50% 0; }
+.ico.cultura { border: 0; background: var(--beak); border-radius: 3px; transform: rotate(45deg) scale(.8); }
+.sdots { display: flex; gap: 10px; align-items: flex-end; min-height: 52px; margin: 4px 0 12px; }
+.sdot { width: 30px; height: 30px; border-radius: 50%; border: 2px dashed rgba(244,247,241,.4); display: grid; place-items: center; font-size: 11px; font-family: var(--display); }
+.sdot.co, .sdot.sing-co { width: 40px; height: 40px; background: var(--leaf); border: 0; }
+.sdot.qui, .sdot.sing-qui { width: 24px; height: 24px; background: var(--beak); border: 0; color: #2b1a05; transform: translateY(-20px); }
+.sdot.sing { box-shadow: 0 0 0 4px rgba(255, 216, 74, .55); }
+.thumb.locked, .chip.locked, .swatch.locked { opacity: .4; filter: grayscale(1); cursor: not-allowed; position: relative; }
+.thumb .lock { position: absolute; bottom: 2px; left: 2px; right: 2px; font-size: 9px; background: rgba(16,36,28,.85); color: #ffd27a; border-radius: 4px; }
+.thumb { position: relative; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -141,6 +163,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
     <div class="chapter">Capítulo 1 · Villa Raíz</div>
     <h1>El día que el cielo se rompió</h1>
     <ol id="steps"></ol>
+    <div id="missions" aria-label="Misiones y Diario"></div>
     <div id="indicators"></div>
   </section>
   <section id="inv" class="panel" aria-label="Inventario">
@@ -151,11 +174,13 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 </div>
 
 <div id="sys" class="hud">
+  <button class="btn ghost" id="b-diary" type="button">Diario 0/12</button>
   <button class="btn ghost" id="b-emotes" type="button">Gestos</button>
   <button class="btn ghost" id="b-char" type="button">Mi personaje</button>
   <button class="btn ghost" id="b-save" type="button">Guardar</button>
   <button class="btn ghost" id="b-load" type="button">Cargar</button>
   <button class="btn ghost" id="b-reset" type="button">Reiniciar</button>
+  <button class="btn ghost" id="b-sound" type="button" aria-pressed="true">Sonido: sí</button>
 </div>
 
 <div id="toast" class="hud panel" hidden></div>
@@ -175,6 +200,7 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 <div id="stick" class="hud" aria-hidden="true"><div id="knob"></div></div>
 <div id="emotes" class="hud" hidden></div>
 <div id="acts" class="hud">
+  <button class="btn round" id="b-dive" type="button" hidden>Bucear</button>
   <button class="btn round" id="b-fly" type="button">Volar</button>
   <button class="btn round" id="b-dash" type="button">Impulso</button>
   <button class="btn round" id="b-jump" type="button">Saltar</button>
@@ -272,4 +298,5 @@ body { background: var(--night); color: var(--paper); font-family: var(--body); 
 <script src="wardrobe.js" charset="utf-8"></script>
 <script src="character.js" charset="utf-8"></script>
 <script src="showcase.js" charset="utf-8"></script>
+<script src="assets/data/dialogos_cap1.js" charset="utf-8"></script>
 <script src="game.js" charset="utf-8"></script>

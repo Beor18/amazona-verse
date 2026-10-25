@@ -83,8 +83,10 @@
   async function mount(canvas) {
     if (renderer) return;
     canvasEl = canvas;
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Móvil: DPR máximo 1,5 y sin MSAA con DPR real ≥ 2 (mismo presupuesto que el juego)
+    const mobile = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches), dpr = window.devicePixelRatio || 1;
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: !(mobile && dpr >= 2), preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(dpr, mobile ? 1.5 : 2));
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.85;

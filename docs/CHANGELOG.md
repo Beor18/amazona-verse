@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 24 oct 2026 · v0.6: Sprint 1 (diálogos del guion, misiones de habilidad, Diario y juice)
+- **Diálogos:** `assets/data/dialogos_cap1.json` se incrusta como `assets/data/dialogos_cap1.js` (`window.AV_DIALOGOS_CAP1`, cargado con `<script>`; sin fetch). Las 27 escenas se usan en `say()` por disparador (`evento:` de `EVENT_DEFS`, `inicio:` para el gancho con sacudida y "ZZZT", `interact:` en máquina, transmisor, Luma, terrenos, Guardián y símbolo). La `emocion` pone la cara de Vittata. Si falta el archivo, quedan las líneas anteriores.
+- **M1 "Fondo del río" (nadar):** la pieza `c1` está en una poza honda del río (≈5 m) y solo se recoge buceando (C o botón Bucear, que en el agua ocupa el lugar de Volar). Las burbujas guían. `c2` aparece en el paso 3.
+- **M2 "Ojos de guaraguao" (volar):** 7 anillos sobre el río, en orden y con nota ascendente. Al terminar, se evalúa el terreno A desde el aire y se ve la mancha de la crecida.
+- **M3 "Co-quí" (hablar):** el transmisor pide voz. Se elige con Luma (cambia su frase, no el desenlace) y se repite el canto de 3 coquíes en arbustos que brillan (Simon co/quí, con "Pasar" tras 2 fallos). El coro enciende el transmisor.
+- **Diario de Campo Boricua:** 12 hallazgos (6 de fauna y 6 de cultura) que se recogen por proximidad, con siluetas de primitivas, tarjeta de una línea y botón Diario. **Los textos están pendientes de validar con una fuente cultural.**
+- **Ropa desbloqueable:** M1 botas, M2 pava, M3 guayabera, 4 de fauna gorra PR, 4 de cultura maracas, 12/12 Deportiva 787 y lentes dorados. Cada pieza se abre en un cofre-pluma y Vittata la estrena al instante. En el creador, lo bloqueado se ve apagado y explica cómo conseguirlo.
+- **Juice:** módulo `AUDIO` con WebAudio sintético (arpegio pentatónico con combo, anillo, impulso, chapuzón, co/quí, güiro, desbloqueo) y botón Sonido. También sacudida de cámara (Ruptura, crecida, aterrizaje fuerte), FOV +8 al volar o impulsarse, hit-stop de 60 ms, partículas `burst` (plumas, estrellas de la bandera, burbujas; máximo 200), guía con haz de luz y flecha, y botón Acción con el verbo contextual. `prefers-reduced-motion` apaga la sacudida y el FOV.
+- **CTO, quick wins:**
+  - En táctil, el DPR máximo es 1,5 y no hay MSAA si el DPR es 2 o más (juego y creador). El juego ya no usa `preserveDrawingBuffer`.
+  - Con el creador abierto, el mundo no se dibuja.
+  - Fugas al cambiar ropa: `applyLook` libera la geometría y los materiales sin caché, y las CanvasTexture de bandera, mapa y parche quedan en caché.
+  - Juego, miniaturas y creador usan sRGB + ACES, y los colores del mundo se pasan a lineal.
+- **Pruebas:** `AV.selfTest` 45/45 (flujo con el coro y dos `drain()` nuevos), `AV.accessoryTest` 12/12 y `AV.missionTest` 34/34 (diálogos, M1–M3, Diario, desbloqueos, guía, guardado, color y memoria de GPU estable tras 12 cambios de ropa).
+- **Capturas:** `docs/img/sprint1_nado_poza.png`, `sprint1_anillos_vuelo.png` (escena preparada por código) y `sprint1_ropa_desbloqueada.png`.
+- **Pendiente:** compresión meshopt, partir `game.js`, panel de accesibilidad (subtítulos, remapeo, modo zurdo), bandada y bahía bioluminiscente, ajuste fino de color con arte y prueba en un iPhone real.
+
 ## 24 oct 2026 · v0.5: Vittata 3D original y accesorios modulares
 - Vittata en 3D con el modelo original de Kelvin (`cotorrofiver.blend`) y su textura mejorada: esqueleto de 59 huesos, 5 animaciones (espera, bienvenida, celebrar, curiosidad, caminar), 28k triángulos, 1,3 MB.
 - Taller de los Guardianes: el creador muestra al personaje 3D animado, que se puede girar, saluda al entrar, celebra cada cambio y se pone curioso si lo dejas quieto.
