@@ -68,3 +68,6 @@ Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/
 - Cada pack trae sus pruebas en `pruebas`. Antes de cada commit deben pasar `AV.selfTest`, `AV.missionTest`, `AV.accessoryTest` y `AV.templateTest` (en cap1, también `AV.eduTest` y `AV.maestroTest`).
 - Perchas de una vía (ramas donde posarse): `G.fisica.addPercha({ x, z, r, y })`; el suelo bajo el jugador es `G.fisica.suelo(x, z, y)`.
 - Eventos y guardado sin datos personales.
+
+## Datos compartidos entre packs (`content/comun/`)
+Datos que varios content packs pueden reutilizar sin copiarlos (hoy: `huevos.js`, los huevos, etapas y XP del criadero). Un fork los conserva o los reemplaza; ningún motor depende de ellos.
