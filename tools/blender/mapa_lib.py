@@ -231,7 +231,6 @@ KELVIN = [
     ('casa_plataforma', 'estacion', 0, 0, 52, 'villa', 'refugio'),
     ('casa_paja_a', 'casita', 0, 0, -135, 'lomas', 'casita'),
     ('mirador_escalonado', 'mirador', 0, 0, -90, 'colina', 'mirador'),
-    ('torre_vigia', 'picachos', 0, 0, 180, 'picachos', None),
     # el resto de los edificios de Kelvin va en su escena original (mapa_kelvin.py: 377 instancias por zonas)
 ]
 TRAIL_GMAX = 0.30   # pendiente máxima de los senderos (30 %); las rampas de diseño llegan a 35 %

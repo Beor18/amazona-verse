@@ -218,6 +218,8 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
         if n_: z['id'] = '%s_%d' % (z['id'], n_ + 1)
     return {'Z': Z, 'S': S, 'aj': aj, 'saltados': skipped, 'conv': bool(conv)}
 
+DECORATIVOS = ('canoa', 'empalizada', 'muelle_troncos')
+
 def compacto(Z):
     """Forma compacta para streaming.js: una entrada por modelo y zona. inst = [x, y, z, rotY, escala] si es giro en Y con
     escala uniforme; si no, la matriz completa (16, column-major)."""
@@ -237,5 +239,7 @@ def compacto(Z):
                 it = e['matriz']
             per.setdefault(e['modelo'], []).append(it)
         for m, lst in per.items():
-            out.append({'grupo': z['id'], 'modelo': m, 'inst': lst, 'orientar': False, 'yExacta': True, 'escalaPack': False})
+            ent = {'grupo': z['id'], 'modelo': m, 'inst': lst, 'orientar': False, 'yExacta': True, 'escalaPack': False}
+            if m in DECORATIVOS: ent['decorativo'] = True   # sin techo donde pararse: estacas y canoas (sí chocan)
+            out.append(ent)
     return out

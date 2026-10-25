@@ -326,16 +326,8 @@ for glb, anc, dx, dy, rot, grupo, rol in ML.KELVIN:
     else:
         x, y = dx, dy; z = hz(x, y)
     kplace(glb, x, y, z, th, grupo, rol)
-mx_, my_ = PL['muelle'][:2]
-for k in range(4):   # muelle de troncos: cuatro tramos en fila sobre el eje del muelle
-    kplace('muelle_troncos', mx_, my_ - 3.6 - 7.2 * k, 0.75, math.radians(90), 'costa', 'muelle' if k == 0 else None)
-pdj = [p for p in M.pools if p['id'] == 'poza_dajao'][0]
-kr = int(np.argmin(np.hypot(M.river[:, 0] - pdj['x'], M.river[:, 1] - pdj['y'])))
-kb = min(len(M.river) - 3, kr + int((pdj['r'] + 12) / 2.0))
-tgk = M.river[kb + 2] - M.river[kb - 2]; tgk /= np.linalg.norm(tgk)
-PB2 = M.river[kb]; nb2 = np.array([-tgk[1], tgk[0]])
-zb2 = max(hz(*(PB2 + nb2 * 5.5)), hz(*(PB2 - nb2 * 5.5)))
-kplace('puente_madera', float(PB2[0]), float(PB2[1]), zb2 - 0.2, math.atan2(nb2[1], nb2[0]), 'meandros', 'puente_dajao')
+# muelle: el propio (pilotes, piso y escalera); los tramos de muelle_troncos no tienen superficie para pararse
+# (movementTest). La torre de los Picachos y el puente del Dajao eran añadidos míos: la escena de Kelvin trae los suyos.
 log('edificios de Kelvin colocados: %d' % len(KEL))
 
 # ------------------------------------------------------------------ escena original de Kelvin (377 instancias, por zonas)
@@ -548,7 +540,7 @@ NOMP = {'parada_agua': 'Parada de aprendizaje · casa baja y casa alta junto al 
         'parada_claro': 'Parada de aprendizaje · claro del bosque'}
 POIS += [{'id': k, 'nombre': NOMP[k], 'pos': pt(*v), 'zona': 'kelvin_aldea_rio_este', **({'edificio': TECHO_DE} if k == 'parada_techo' else {})} for k, v in PARADAS.items()]
 POIS += [{'id': 'aldea', 'nombre': 'Aldea de Kelvin junto a Villa Raíz (centro de los bohíos)', 'pos': pt(acx, acy)}]
-POIS += [{'id': 'puente_dajao', 'nombre': 'Puente de madera de la Poza del Dajao', 'pos': G(float(PB2[0]), float(PB2[1]), zb2)}]
+
 DPZ = {}
 for zn in ZONES:
     cx_, cz_ = zn['centro'][0], zn['centro'][2]; m_ = np.hypot(FX - cx_, FY + cz_) < zn['r']
@@ -601,7 +593,7 @@ DATA = {
                          'respaldo': 'assets/models/mapa/%s.glb' % k,
                          'edificioKelvin': next(({'id': e['id'], 'glb': e['glb'], 'pos': e['pos'], 'rotY': e['rotY']} for e in KEL if e['rol'] == k), None),
                          'nota': {'puente': 'el kit no tiene un puente colgante de 25 m: se usa el propio; puente_madera va en la Poza del Dajao',
-                                  'muelle': 'muelle_troncos x4 en fila (sin pilotes); el muelle propio tiene pilotes, farol y escalera',
+                                  'muelle': 'se usa el muelle propio (piso caminable, pilotes, farol y escalera); muelle_troncos no tiene superficie para pararse',
                                   'casita': 'casa_paja_a es choza de paja; la casita jíbara propia (madera y zinc) es más fiel a la montaña boricua',
                                   'mirador': 'mirador_escalonado (11 m); la torre Yokahú propia es la referencia de El Yunque',
                                   'refugio': 'casa_plataforma; la estación propia trae la antena-transmisor de la historia'}.get(k, '')} for k in PL},
