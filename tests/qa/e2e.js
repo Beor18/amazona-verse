@@ -6,7 +6,7 @@
      2. Equipar un accesorio, guardar y ver la escena de inicio del capítulo (el gancho se juega, no se salta).
      3. Obtener un huevo en el criadero y ver la animación de patitas en la eclosión (BLOQUEADO si no hay criadero).
      4. Las 8 etapas de la historia con las acciones del jugador (Acción, botones de tarjetas y diálogos, buceo con C):
-        4.1 taller · 4.2 Luma · 4.3 recolección y M1 (bucear) ·
+        4.2 Luma llama desde la copa (el primer vuelo del capítulo: se mide cuándo llega) · 4.1 taller · 4.3 recolección y M1 (bucear) ·
         4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» · 4.5 construir y la crecida · 4.6 corregir (rama A) o reubicar ·
         4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
         4.9 mirador y pantalla final (con «Seguir explorando» si el pack lo ofrece) · 4.10 objetivo y guía en cada paso.
@@ -158,7 +158,7 @@
       const accs = Object.values(look.accessories || {}).map(a => a.id);
       check('2', 'Equipar un accesorio y guardar (creador cerrado, perfil con la pieza)', S.profile.created && $('creator').hidden && !!pieza && accs.includes(pieza.dataset.id),
         { pieza: pieza && pieza.dataset.id, especie: look.species, accesorios: accs, nombre: S.profile.name });
-      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (Narrador y Vittata, en bocadillos que no paran el juego) y queda el objetivo «Examina tu taller»', !!hayInicio && inicioLibre && nInicio >= 3 && S.step === 0 && !S.complete && /taller/i.test(hudAhora()),
+      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (Narrador y Vittata, en bocadillos que no paran el juego) y queda el objetivo «Vuela hasta Luma»', !!hayInicio && inicioLibre && nInicio >= 3 && S.step === 0 && !S.complete && /Luma/i.test(hudAhora()),
         { lineas: nInicio, libre: inicioLibre, primera: quien0 + ': ' + texto0.slice(0, 60), aviso: toastInicio.slice(0, 60), paso: S.step, hud: hudAhora() });
       // El jugador nunca cambia de modelo: misma firma que el modelo base (solo plumaje y accesorios)
       const comp = G.actores.companion3D, prota = G.actores.player3D;
@@ -187,19 +187,34 @@
       // ====================================================================================================================
       despejar('inicio'); muestraGuia();                                        // paso 0
 
-      // ---------- 4.1 Taller: examinar la máquina y el transmisor (comentarios en bocadillos) ----------
-      fase('Taller');
-      const m1ok = useAt('maquina'); const cercM = ultimoCercano; const libreM = !!G.dialogo.libre() && !G.ui.busy(); drain();
-      const tx1ok = useAt('transmisor'); const cercT = ultimoCercano; drain();  // al examinar los dos, Luma pide ayuda
-      check('4.1', 'Taller: examinar la máquina y el transmisor (Acción) con los comentarios de Vittata en bocadillos libres; Luma pide ayuda', m1ok && tx1ok && libreM && S.step === 1 && S.examined.maquina && S.examined.transmisor && had('WorkshopExplored') && !!S.captures.workshop,
-        { maquina: m1ok, transmisor: tx1ok, bocadillo: libreM, paso: S.step, cercano: m1ok && tx1ok ? null : [cercM, cercT], foto: !!S.captures.workshop });
-      if (corte('4.1', S.step === 1)) return fin();
+      // ---------- 4.2 Luma llama desde la copa del flamboyán: el primer vuelo del capítulo (DIVERSION_CAP1, mejora 1) ----------
+      fase('Luma');
+      const LU = G.c.luma, perchaL = LU ? LU.percha : null, H0 = G.terreno.height;
+      const desdeSuelo = LU ? useAt('luma') : null;                              // bajo la copa, desde el suelo, no se le puede hablar
+      const guiaLuma = G.misiones.guideTarget();
+      primerVuelo = { seg: Math.round(seg(reloj, false)), segLeyendo: Math.round(seg(reloj, true) + reloj.carLibres / CAR_POR_SEG), alturaPercha: perchaL ? +(perchaL.y - H0(perchaL.x, perchaL.z)).toFixed(1) : null, donde: LU ? LU.donde() : null };
+      let posada = false, llamada = null, charla = false, lumaOk = false;
+      if (perchaL) {
+        volar(perchaL.x + 0.6, perchaL.y + 1.6, perchaL.z); G.fisica.MOVE.flying = false; tick(1.2);   // despegar, llegar y posarse a su lado
+        posada = LU.junto() && !G.fisica.MOVE.flying;
+        llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Luma llamó desde arriba al acercarse (bocadillo)
+        const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma';
+        if (lumaOk) { G.interaccion.action(); reloj.acciones++; }
+        charla = G.dialogo.open(); drain();
+      }
+      check('4.2', 'Luma llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
+        !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Luma' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
+        { desdeSuelo, guia: guiaLuma && { y: +guiaLuma.y.toFixed(1) }, posada, llamada: llamada && llamada.text.slice(0, 30), charla, lumaOk, paso: S.step, madera: S.inv.madera, arriba: LU && LU.arriba(), cercano: lumaOk ? null : ultimoCercano, atajo: 'vuelo directo a la percha de la copa' }, 700);
+      check('4.2', 'El primer vuelo del capítulo llega antes de 90 s (medida de DIVERSION_CAP1, mejora 1)', !!primerVuelo && primerVuelo.seg < 90 && primerVuelo.segLeyendo < 90, primerVuelo);
+      if (corte('4.2', S.step >= 1)) return fin();
 
-      // ---------- 4.2 Luma: acepta ayudar y recibe 3 tablas ----------
-      fase('Luma'); muestraGuia();
-      const lumaOk = useAt('luma'); const cercL = ultimoCercano; drain();
-      check('4.2', 'Luma: hablar con ella, Vittata acepta ayudar y la familia entrega 3 tablas', lumaOk && S.step === 2 && had('LumaHelped') && S.inv.madera >= 3, { paso: S.step, inv: S.inv, cercano: lumaOk ? null : cercL });
-      if (corte('4.2', S.step === 2)) return fin();
+      // ---------- 4.1 Taller: examinar la máquina y el transmisor (comentarios en bocadillos; el paso avanza solo) ----------
+      fase('Taller'); muestraGuia();
+      const m1ok = useAt('maquina'); const cercM = ultimoCercano; const libreM = !!G.dialogo.libre() && !G.ui.busy(); drain();
+      const tx1ok = useAt('transmisor'); const cercT = ultimoCercano; drain();
+      check('4.1', 'Taller: examinar la máquina y el transmisor (Acción) con los comentarios de Vittata en bocadillos libres; queda la foto y el paso pasa a «Recolectar»', m1ok && tx1ok && libreM && S.step === 2 && S.examined.maquina && S.examined.transmisor && had('WorkshopExplored') && !!S.captures.workshop,
+        { maquina: m1ok, transmisor: tx1ok, bocadillo: libreM, paso: S.step, cercano: m1ok && tx1ok ? null : [cercM, cercT], foto: !!S.captures.workshop });
+      if (corte('4.1', S.step === 2)) return fin();
 
       // ---------- 4.3 Recolectar (1 madera, 2 piedras) y bucear por la pieza del fondo (M1) ----------
       fase('Recolección y M1'); muestraGuia();
@@ -433,7 +448,7 @@
 
       // ---------- Orden de los eventos del capítulo y materiales ----------
       const clave = S.events.map(e => e.key);
-      const esperados = ['PlayerCharacterCreated', 'WorkshopExplored', 'LumaHelped', 'ResourcesCollected', 'LandInspected', 'LandInspected', 'LandSelected', 'ShelterConstructed']
+      const esperados = ['PlayerCharacterCreated', 'LumaHelped', 'WorkshopExplored', 'ResourcesCollected', 'LandInspected', 'LandInspected', 'LandSelected', 'ShelterConstructed']
         .concat(rama === 'A' ? ['ShelterFlooded', 'ShelterDismantled', 'LandSelected', 'ShelterConstructed', 'ShelterRelocated'] : [])
         .concat(['GuardianMet', 'WorkshopUpgradeUnlocked', 'TransmitterActivated', 'BoatBlueprintUnlocked', 'LocationDiscoveredMirador', 'ChapterCompleted']);
       let kEv = 0; for (const c of clave) if (kEv < esperados.length && c === esperados[kEv]) kEv++;

@@ -4,7 +4,8 @@
    que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
    Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
    construir y de la crecida, retrato neutro de la Voz y final del mirador (plano del bote y luz que parpadea tres veces).
-   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejora 3): la narración y los comentarios salen en bocadillos libres
+   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejoras 1 y 3): Luma llama desde la copa del flamboyán de la plaza y el
+   primer paso es volar hasta ella (el taller va después); la narración y los comentarios salen en bocadillos libres
    (G.dialogo.say(..., { libre: true })) y solo bloquean las charlas y las decisiones. Las líneas del guion no cambian.
    Lo que depende de Kelvin (canon o arte) queda marcado en el código con «[KELVIN-n]» y listado en PENDIENTES_KELVIN. */
 (function () {
@@ -34,10 +35,14 @@
     id: 'cap1',
     historia: {
       pasos: [
-        { id: 'taller', texto: 'Examina tu taller dañado',
+        // Mejora 1: al despertar, Luma llama desde la copa del flamboyán de la plaza (o el techo del taller): hay que despegar y posarse
+        { id: 'luma', texto: (S, G) => 'Vuela hasta Luma, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
+          guia: G => (G.c.luma ? G.c.luma.guia() : at(G, 'luma')) },
+        // Revisar el taller avanza solo al examinar la máquina y el transmisor (también vale si se revisaron antes de subir con Luma)
+        { id: 'taller', texto: 'Revisa tu taller dañado',
           progreso: S => ` (${(S.examined.maquina ? 1 : 0) + (S.examined.transmisor ? 1 : 0)}/2)`,
+          hasta: { marca: ['examined.maquina', 'examined.transmisor'] },
           guia: G => at(G, !G.S.examined.maquina ? 'maquina' : 'transmisor') },
-        { id: 'luma', texto: 'Ayuda a Luma: habla con ella', guia: G => at(G, 'luma') },
         { id: 'recolectar', texto: 'Recolecta 4 madera, 2 piedras y 1 pieza de metal',
           progreso: S => {
             const got = type => Math.min(NEEDS[type], S.inv[type]);
@@ -85,7 +90,7 @@
       al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
       G.dialogo.say([...cap, ...tal, ...rupt], () => {
         if (A) A.claro(2200);
-        G.ui.toast('La Gran Ruptura dañó el taller de Vittata. Examina la máquina y el transmisor.', 4500);
+        G.ui.toast('La Gran Ruptura dañó el taller. ¡Luma te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.', 5000);
       }, { libre: true });
     },
 
@@ -224,6 +229,7 @@
       const add = G.interaccion.add;
       add({ id: 'maquina', x: MAQ.x, z: MAQ.z, r: 2.2, label: () => 'Examinar la máquina experimental', use: () => examine('maquina') });
       add({ id: 'transmisor', x: TRX.x, z: TRX.z, r: 2.2, label: () => S.step === 6 ? 'Reparar y activar el transmisor' : 'Examinar el transmisor', use: useTransmitter });
+      // Luma: su x/z y su visibilidad las lleva el módulo «Luma llama desde arriba» (abajo): en la copa solo se le habla posada a su lado
       add({ id: 'luma', x: G.actores.npc('luma').def.x, z: G.actores.npc('luma').def.z, r: 2.4, label: () => 'Hablar con Luma', use: talkLuma });
       add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 3.2, label: () => S.step === 7 ? 'Mirar el horizonte desde el mirador' : 'Asomarte al mirador', use: useMirador });
       add({ id: 'guardian', x: guardian.def.x, z: guardian.def.z, r: 2.6, visible: () => guardian.sp.visible, label: () => 'Hablar con el Guardián', use: talkGuardian });
@@ -241,24 +247,28 @@
         const firstTime = !S.examined[what];
         S.examined[what] = true;
         // La escena de la máquina (evento:WorkshopExplored) se cuenta al examinarla; el transmisor tiene la suya. Son comentarios
-        // de Vittata: van en bocadillos libres (se puede seguir moviéndose).
+        // de Vittata: van en bocadillos libres (se puede seguir moviéndose); el paso «taller» avanza solo con los dos revisados.
         const lines = what === 'maquina'
           ? L('evento:WorkshopExplored', [{ who: 'Vittata', img: IMG.V, text: 'Mi máquina… Si consigo repararla, todavía podemos…' }])
           : L('interact:transmisor', [{ who: 'Vittata', img: IMG.V, text: 'Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada.' }]);
         say(lines, null, LIBRE);
-        if (firstTime && S.step === 0 && S.examined.maquina && S.examined.transmisor) {
+        if (firstTime && S.examined.maquina && S.examined.transmisor && !G.eventos.had('WorkshopExplored')) {
           log('WorkshopExplored'); capture('workshop');
-          say([{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }], null, LIBRE);
-          advanceTo(1);
-        } else checkProgress();
+          if (S.step >= 1) toast('Taller revisado. Ahora, a juntar los materiales del refugio.', 3500);
+        }
+        checkProgress();
       }
+      // La llamada de Luma desde arriba (interact:luma_inicio): suena al acercarse a la copa, en bocadillos; si la charla
+      // empieza antes de que termine, lo que faltaba se funde en la charla para no cambiar el orden del guion
+      const LLAMADA = () => L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }, { who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]);
       function talkLuma() {
-        if (S.step === 0) { say([{ who: 'Luma', img: IMG.L, text: '¿Estás bien? Revisa tu taller y después ven, por favor.' }], null, LIBRE); return; }
-        if (S.step === 1) {
-          // La charla de la misión (bloquea: es la conversación, no narración):
+        if (S.step === 0) {
+          // La charla de la misión, posada junto a Luma en la copa (bloquea: es la conversación, no narración):
           // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales → las tres tablas
+          const inicio = C.luma.llamo() ? G.dialogo.cancelarLibre() : LLAMADA();
+          C.luma.llamado();
           say([
-            ...L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]),
+            ...inicio,
             ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
             ...L('interact:materiales', [{ who: 'Luma', img: IMG.L, text: 'No tenemos suficientes materiales.' }]),
             { who: 'Luma', img: IMG.L, text: 'Solo pudimos salvar tres tablas del árbol partido. Tómalas.' },
@@ -266,12 +276,13 @@
           ], () => {
             for (const k in REGALO_LUMA) S.inv[k] += REGALO_LUMA[k];
             G.objetos.renderInv(); G.audio.play('pickup', 2);
-            toast('+3 madera de la familia de Luma');
-            log('LumaHelped'); advanceTo(2);
+            log('LumaHelped'); advanceTo(1);
+            toast(S.step >= 2 ? '+3 madera de la familia de Luma. Ahora, a juntar los materiales.' : '+3 madera de la familia de Luma. Pasa por tu taller: revisa la máquina y el transmisor.', 4500);
           });
           return;
         }
-        // Pistas de Luma (una línea): bocadillos libres, no paran a la cotorra
+        // Pistas de Luma (una línea): bocadillos libres, no paran a la cotorra. [KELVIN] la del paso «taller» es provisional.
+        if (S.step === 1) { say([{ who: 'Luma', img: IMG.L, text: 'Revisa tu taller: la máquina y el transmisor. Después buscamos los materiales.' }], null, LIBRE); return; }
         if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }], null, LIBRE); return; }
         if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()], null, LIBRE); return; }
         if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }], null, LIBRE); return; }
@@ -494,6 +505,55 @@
         }, LIBRE);
       }
 
+      // ---------- Luma llama desde arriba (DIVERSION_CAP1, mejora 1) ----------
+      // Al despertar, Luma está en la copa del flamboyán de la plaza (sin mapa, en el techo del taller): para hablarle hay que
+      // despegar y posarse a su lado (una percha de fisica sostiene a Vittata en la copa, y queda para siempre como percha de la
+      // plaza). Al acercarse, Luma llama desde arriba (interact:luma_inicio, bocadillos); la charla de la misión es en la copa y
+      // después Luma baja a su sitio de la plaza. Sigue siendo el sprite con flota: true de mundo.js.
+      // [KELVIN] si Luma vuela o solo flota: hoy baja en línea recta en 1,4 s, sin alas ni animación.
+      const MAPA_C1 = window.AV_MAPA_CAP1 || null;
+      const lumaN = G.actores.npc('luma'), lumaIt = G.interaccion.find('luma');
+      const LUMA_SUELO = { x: lumaN.def.x, z: lumaN.def.z };
+      const percha = (() => {
+        const p = G.terreno.poi && G.terreno.poi('flamboyan_plaza');
+        if (p) {
+          const hero = ((((MAPA_C1 || {}).flora || {}).heroes) || []).find(h => h.especie === 'flamboyan' && Math.hypot(h.pos[0] - p.x, h.pos[2] - p.z) < 0.5);
+          return { x: p.x, z: p.z, y: H(p.x, p.z) + 7, r: 1.7, esc: (hero && hero.escala) || 1, arbol: true, nombre: 'la copa del flamboyán de la plaza' };
+        }
+        const T = C.T; return { x: T.x, z: T.z, y: T.base + 3.9, r: 1.6, esc: 1, arbol: false, nombre: 'el techo del taller' };
+      })();
+      // Altura de la copa: la del modelo del flamboyán por su escala en el mapa, cuando carga la flora (hasta entonces, 7 m)
+      if (percha.arbol && G.vegetacion && G.vegetacion.listo) G.vegetacion.listo.then(() => {
+        const inf = G.vegetacion.info && G.vegetacion.info.flamboyan;
+        if (inf && inf.alto) percha.y = H(percha.x, percha.z) + Math.max(5, inf.alto * percha.esc * 0.92);
+      }).catch(() => {});
+      G.fisica.addPercha({ x: percha.x, z: percha.z, r: percha.r, get y() { return percha.y; } });
+      const lumaArriba = () => S.step === 0 && !S.complete;
+      let lumaK = lumaArriba() ? 0 : 1; // 0 = en la percha, 1 = en su sitio de la plaza
+      let llamo = false;
+      // Posada junto a Luma: a su altura y dentro de la percha (desde el suelo, bajo la copa, no se le puede hablar)
+      const juntoALuma = () => Math.abs(S.pos.y - percha.y) < 1.6;
+      lumaIt.visible = () => !lumaArriba() || juntoALuma();
+      G.on('render', (dt, t) => {
+        const want = lumaArriba() ? 0 : 1;
+        lumaK = want > lumaK ? Math.min(1, lumaK + dt / 1.4) : want; // baja en 1,4 s; al cargar una partida se coloca de golpe
+        const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), e = lumaK * lumaK * (3 - 2 * lumaK);
+        const x = percha.x + (LUMA_SUELO.x - percha.x) * e, z = percha.z + (LUMA_SUELO.z - percha.z) * e, y = percha.y + (gy - percha.y) * e;
+        lumaIt.x = x; lumaIt.z = z; lumaN.collider.x = x; lumaN.collider.z = z; lumaN.collider.r = lumaK < 1 ? 0 : (lumaN.visible ? 0.6 : 0);
+        if (lumaK >= 1) { lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
+        lumaN.sp.position.set(x, y + 1.0 + Math.sin(t * 2) * 0.05, z); lumaN.sh.position.set(x, y + 0.03, z);
+      }, 12);
+      // La llamada: al acercarse a la copa (18 m; desde el taller no se oye) con Luma arriba y sin otra cosa en pantalla, en bocadillos
+      G.on('update', (dt, busy) => {
+        if (llamo || !lumaArriba() || busy || G.dialogo.activo() || S.clock < 0.5) return; // el gancho del capítulo arranca antes del medio segundo
+        if (Math.hypot(S.pos.x - percha.x, S.pos.z - percha.z) < 18) { llamo = true; say(LLAMADA(), null, LIBRE); }
+      }, 46);
+      G.on('apply', () => { llamo = false; lumaK = lumaArriba() ? 0 : 1; }, 36);
+      const lumaAPI = {
+        percha, arriba: lumaArriba, junto: juntoALuma, llamo: () => llamo, llamado: () => { llamo = true; }, donde: () => percha.nombre,
+        guia: () => (lumaArriba() ? { x: percha.x, z: percha.z, y: percha.y + 0.6 } : { x: lumaIt.x, z: lumaIt.z }),
+      };
+
       // ---------- Símbolo de los 36 fragmentos (también decora la última viñeta del cómic) ----------
       const FRAG_COLORS = ['#2f8f4e', '#d6403a', '#f2a03d', '#3d8fb0', '#7fd38f', '#c9a227'];
       function drawSymbol(ctx, cx, cy, r) {
@@ -521,7 +581,7 @@
       G.on('apply', () => showSymbol(false), 50);
 
       Object.assign(C, { build: () => build, startBuild, cancelBuild, placeRefuge, openParcelCard, syncRefugeInteractable, applyGuardianLook, drawSymbol, showSymbol, examine,
-        apertura, drawBlueprint, mostrarPlano, planoVisible, pendientesKelvin: PENDIENTES_KELVIN });
+        apertura, drawBlueprint, mostrarPlano, planoVisible, luma: lumaAPI, pendientesKelvin: PENDIENTES_KELVIN });
     },
   });
 })();

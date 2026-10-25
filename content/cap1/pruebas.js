@@ -22,6 +22,15 @@
     };
   }
 
+  // Mejora 1 (DIVERSION_CAP1): Luma espera en la copa del flamboyán; para hablarle hay que volar y posarse a su lado.
+  // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Luma.
+  function posarseLuma(G, T) {
+    const S = G.S, p = G.c.luma.percha;
+    S.pos.x = p.x + 0.6; S.pos.y = p.y + 1.6; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true; T.tick(0.1);
+    G.fisica.MOVE.flying = false; T.tick(1.2);
+    return G.c.luma.junto() && !G.fisica.MOVE.flying;
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -55,12 +64,19 @@
       G.emit('companero', G.criadero.companero()); // vuelve la cría real del niño (o ninguna)
     } else check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SV.spawn.x, S.pos.z - SV.spawn.z) < 0.1);
+    // Mejora 1: Luma llama desde la copa; el primer objetivo es volar hasta ella y desde el suelo, bajo la copa, no se le habla
+    check('Al despertar, Luma está arriba y el primer objetivo es volar hasta ella', C.luma.arriba() && S.step === 0 && /Luma/.test($('steps').querySelector('li.now').textContent) && C.luma.percha.y > G.terreno.height(C.luma.percha.x, C.luma.percha.z) + 3, C.luma.percha.y.toFixed(1) + ' m');
+    check('Desde el suelo, bajo la copa, no se le puede hablar a Luma', !useAt('luma'));
+    const posada = posarseLuma(G, T);
+    check('Posada a su lado: Luma llamó desde arriba (bocadillo libre, el juego no se para) y se le puede hablar', posada && !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && !G.ui.busy() && !!G.interaccion.nearest() && G.interaccion.nearest().id === 'luma', JSON.stringify(G.dialogo.actual()));
+    action();
+    check('La charla de la misión sí bloquea y sigue el orden del guion (interact:luma_inicio primero)', G.dialogo.open() && $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'), $('d-text').textContent);
+    drain();
+    check('Luma da la misión, regala 3 tablas y baja a la plaza', S.step === 1 && had('LumaHelped') && S.inv.madera === 3 && !C.luma.arriba(), 'paso ' + S.step);
     useAt('maquina');
     check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
     drain(); useAt('transmisor'); drain();
-    check('Taller explorado y misión con Luma', S.step === 1 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
-    useAt('luma'); drain();
-    check('Luma da la misión', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
+    check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     // Luma aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && had('ResourcesCollected'), JSON.stringify(S.inv));
@@ -294,9 +310,13 @@
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
-    useAt('luma');
-    check('interact:luma_inicio al hablar con Luma', $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'));
+    check('Revisar el taller antes de subir con Luma también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
+    posarseLuma(G, T);
+    check('interact:luma_inicio: Luma llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
+    G.interaccion.action();
+    check('La charla con Luma es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Luma' && !G.dialogo.libre());
     drain();
+    check('Con el taller ya revisado, tras Luma el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
     check('c2 espera al paso 3 (la pieza del paso 2 sale del río)', !O.available(O.find('c2')));
     const c1 = O.find('c1');
@@ -597,7 +617,7 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); useAt('luma'); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
       check('Recolección -1 min: Luma aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
