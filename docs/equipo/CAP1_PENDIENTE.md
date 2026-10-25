@@ -44,7 +44,7 @@ Estados: **Hecho** (localizado en código y cubierto por prueba), **Parcial** (e
 | 23 | Accesibilidad (GDD §9) | **Parcial** | Reducir movimiento (`renderer.js:27`, `camara.js:117`), «Pasar» en el Simon, HUD con ✓. En curso sin commit: texto en 3 niveles y alto contraste (`src/game/accesibilidad.js`, tarea D2). Falta remapeo (D3), subtítulos de sonido y modo relajado |
 | 24 | Guardado, migraciones y recuperación | Hecho | `pack.js` guardado v5; saveTest 27/27 |
 | 25 | Idioma | **Parcial** | La misión educativa y el Aula son ES/EN (33 líneas con `en:` en `educativa.js`); historia, HUD y diálogos (`historia.js`, `misiones.js`, `dialogos_cap1.json`) solo en español |
-| 26 | Duración 10-15 min (GDD) / 20-30 min (GAMEPLAY) / 45 min de clase (EDUCATIVO) | **Falta (sin medir)** | No hay ninguna sesión con jugadores. El Aula ya registra `minutos_mision` (`educativa.js:390`), pero nadie lo ha leído de un niño |
+| 26 | Duración 10-15 min (GDD) / 20-30 min (GAMEPLAY) / 45 min de clase (EDUCATIVO) | **Falta (sin medir)** | No hay ninguna sesión con jugadores. El Aula ya registra `minutos_mision` (`educativa.js:390`), pero nadie lo ha leído de un niño. **Piso medido por el E2E (QA): 5 min 42 s a 5 min 55 s** de recorrido mínimo automático, que no mide a ningún jugador (ver P0-3) |
 | 27 | Rendimiento en equipos de escuela | **Falta (sin medir)** | `ROADMAP.md` Fase 0 y `BUGS.md`: FPS no medibles; el único valor válido es de un M4. Descarga inicial 7,98 MB (cumple) |
 | 28 | Calidad visual de los objetos de la historia | **Parcial** | Máquina, transmisor, banco y coquíes son primitivas (`mundo.js:279-301`, `misiones.js` `preparar`). Luma y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY), junto a una Vittata 3D |
 
@@ -69,15 +69,27 @@ Tamaños: S = menos de medio día, M = 1 a 2 días, L = más. «Choque» se refi
 **P0-3 · Medir la duración real con jugadores.** (M, depende de personas)
 - El diseño da tres metas distintas y ninguna está medida. Sesión cronometrada con 3 a 5 jugadores nuevos de edades distintas y un docente, leyendo `minutos_mision` y el tiempo total; dejar el resultado en `docs/equipo/` y decidir si se recorta o se añade (decisión 4 de la sección 3).
 - Archivos: ninguno de código (a lo sumo un contador de tiempo total en el estado). Sin choque.
+- **Duración: mínimo del recorrido automático (QA, paquete C, 2026-10-25).** El E2E (`tests/qa/e2e.js`) recorre el capítulo con la build publicada `HEAD-37e15c5` y mide, sin leer ni explorar, cuánto dura **como mínimo**: segundos de juego simulado (esperas del juego: crecida, vapor, gota, buceo) + trayectos (distancia de los teleports a la velocidad de carrera de 10,5 m/s o de vuelo de 12 m/s) + 0,8 s por pulsación (línea de diálogo o botón de tarjeta).
+
+  | Recorrido | Mínimo sin leer | Leyendo (15 caracteres/s) | Juego simulado | Trayectos | Líneas de diálogo | Clics en tarjetas |
+  |---|---|---|---|---|---|---|
+  | Rama B (colina directa) | **5 min 42 s** | 8 min 18 s | 2 min 13 s | 2 min 5 s (937 m a pie + 435 m en vuelo) | 64 (3109 caracteres) | 40 |
+  | Rama A (río, crecida y corrección) | **5 min 55 s** | 8 min 41 s | 2 min 19 s | 2 min 7 s (949 m + 435 m) | 70 (3330 caracteres) | 41 |
+
+  Por tramo (rama B, segundos): inicio 6 · taller 6 · Luma 8 · recolección y M1 30 · **la ruta de la gota 185** · construir y crecida 32 · Guardián 12 · transmisor y coquíes 44 · mirador y final 20. La ruta de la gota es el 54 % del mínimo, y 114 s son esperas del propio juego (vapor, gota y crecida del río).
+  - **Qué es y qué no.** Es un piso, no una estimación: un jugador real también lee, se equivoca, explora, esquiva obstáculos y repite el Simon. «Leyendo» solo cuenta los diálogos, a la velocidad de un adulto (~180 palabras por minuto); el texto de las tarjetas no se cuenta. No incluye el creador, el nido ni el cómic.
+  - **No reemplaza medir con jugadores reales** (la sesión de arriba): con este piso no se puede decir que el capítulo cumpla 10-15, 20-30 ni 45 minutos. Sirve para vigilar, versión a versión, si el recorrido mínimo se alarga o se acorta (la prueba lo repite y lo anota en su paso «T»), y como cota inferior cuando Kelvin decida la meta de duración (decisión 7 de la sección 3).
+  - Cómo repetirla: `tools/build/test.sh <build>` y leer el paso «T · Duración simulada» de `AV.e2eTest` en `reporte-test.json`.
 
 **P0-4 · FPS y controles en equipos reales.** (S-M, depende de dispositivos)
 - Android de Kelvin, un Chromebook y un iPad/iPhone con `?fps=1` y `?calidad=` (`ROADMAP.md` Fase 0; BACKLOG 1; PRODUCTION_DASHBOARD H3). Anotar fallos de controles y de lectura.
 - Choque: **A3** (calidad automática en `renderer.js`). Medir después de A3, para no medir dos veces; QA-33 (`renderer.js:529`) también espera a A.
 
 **P0-5 · Recorrido completo hasta `ChapterCompleted` con la build publicada.** (M)
-- `tests/qa/e2e.js` cubre creador, accesorio, nido, M1, refugio, guardado y cómic, pero no llega al final; el capítulo entero solo lo recorre `missionTest` con atajos (llamadas directas y teletransportes). v18 salió rota para jugadores nuevos justo por esa brecha (QA-17).
-- Qué hacer: ampliar el E2E con entradas reales (acciones del jugador) desde la crecida hasta el mirador y el panel final, y comprobar el nuevo «Seguir explorando».
-- Archivos: `tests/qa/e2e.js` (y `qa.js` si hace falta). Choque: A2 (CI) lo ejecutará pero no lo edita.
+- **Hecho (QA, paquete C, 2026-10-25).** `tests/qa/e2e.js` recorre el capítulo completo con la build publicada: portada → creador → gancho → las 8 etapas (ruta de la gota, refugio, crecida y corrección, Guardián, coquíes, transmisor, mirador) → panel final → «Jugar de nuevo» con pregunta → cómic y PNG → «Seguir explorando» → guardar y recargar. Sobre `HEAD-37e15c5`: e2eTest **42/42** (rama A) y 40/40 (rama B), y las 11 baterías de `test.sh` en verde. Detalle, límites y cómo correrlo: `BUGS.md`, «E2E del capítulo 1 completo».
+- Cada avance sale de `G.interaccion.action()` ante el objeto real o del botón de la tarjeta; no se llama a `advanceTo` ni se escribe el estado. Atajos dichos en cada evidencia: teleport en vez de caminar y vuelo a puntos de la ruta de la gota.
+- **Queda fuera:** caminar con teclado o dedo reales entre los puntos (no hay prueba de que el camino esté libre), móvil y FPS (P0-4).
+- Tolera «Seguir explorando» y, si el panel final pregunta antes de borrar, lo comprueba. Su hallazgo, QA-34 (la Voz con la cara del Guardián = P0-2), ya está cerrado.
 
 ### P1 · para un piloto escolar con la historia completa
 
