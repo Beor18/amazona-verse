@@ -562,7 +562,8 @@
               check('memoria', 'Todas las piezas GLB cargan en < 10 s', !M.sinCargarA10s.length, M.sinCargarA10s.length ? JSON.stringify(M.sinCargarA10s) : 'sí', 'aviso');
             }
           } catch (e) { check('memoria', 'Cambiar de ropa sin fugas', false, 'lanzó: ' + str(e)); }
-          // Pruebas del juego
+          // Pruebas del juego. Con la ventana en 0×0 (panel oculto, iframe plegado) el lienzo queda en 0 y fallan capturas y retratos
+          if (!innerWidth || !innerHeight) check('entorno', 'La ventana tiene tamaño al correr las pruebas', false, innerWidth + '×' + innerHeight + ': las capturas del cómic salen vacías; abre el panel o fija un tamaño (resize_window)', 'aviso');
           report.pruebas = await runTests(opts.tests);
         }
         // Carga en frío y consola del arranque

@@ -13,7 +13,7 @@ Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO co
 | Carga en frío (local) | personaje 3D a 1,5 s · **15,1 MB** en 125 peticiones (presupuesto 8 MB) |
 | Publicable | **35,5 MB**, presupuesto 30 MB (ropa 11,9, edificios 10,6, entorno 4,0) |
 | Draw calls (calidad alta) | 97–112 por cuadro, con post-proceso y sombras |
-| FPS (M4, 1950×1110) | En v19 sin medir (el panel no pintaba). En main 227f99e, pintando y en calidad alta: **taller 24,8** con 70 tirones (QA-20), villa 48 y A 60 |
+| FPS (M4, 1950×1110) | En main 8196c65, pintando y en calidad alta: taller **60** (mín 53, 0 tirones), villa 60 y A 60. QA-20 cerrado; v19 todavía no lo lleva |
 
 ## Tareas por estado
 | Estado | Tarea | Dueño | Evidencia o causa |
@@ -21,8 +21,9 @@ Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO co
 | APROBADO | Personaje y ropero sin cambiar la cotorra | TA de personaje | E2E pasos 1–2; accessoryTest; fuga 0 |
 | APROBADO | Motor reutilizable y plantilla | Arquitecto | templateTest 19/19 |
 | APROBADO | Movimiento, vuelo, nado y agarre | Movimiento | movementTest 22/22 en la batería; táctil sin errores a 375, 768 y 1366 px |
-| APROBADO | Guardar y recargar (perfil, misión, refugio, criadero) | Save & Cómic y gameplay | E2E paso 5 |
-| APROBADO | Cómic: viñeta del evento y exportar PNG | Save & Cómic y gameplay | E2E paso 6; selfTest |
+| APROBADO | Guardado v5: escritura atómica, recuperación y migraciones (c3b44e8) | Save & Cómic | saveTest 27/27 y 28/28 con iframe; corrupción, versión futura y almacén bloqueado probados a mano; E2E paso 5 |
+| APROBADO | Cómic con la apariencia del jugador y PNG verificado (92f5364) | Save & Cómic | comicTest 19/19; E2E paso 6; exportar sin downloads muestra la imagen con Descargar, Abrir y Copiar |
+| APROBADO | Mundo sin tirones en el taller (QA-20, 8196c65) | Programador gráfico | 60 FPS en taller, villa y A con calidad alta en un M4, pintando |
 | APROBADO | Vigilante de memoria y disco con el arreglo QA-11 | Técnico PC | pid 55685; servidores con nice 0 |
 | PRUEBAS | Criadero: huevo, eclosión con patitas y compañero | Game designer de huevos | criaderoTest 32/32 y E2E paso 3. Falta una entrada para el jugador fuera de `?criadero=1` y del Modo Maestro |
 | PRUEBAS | «La ruta de la gota», aula y Modo Maestro | Gameplay | eduTest 63/63, maestroTest 22/22 |
@@ -45,7 +46,7 @@ Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO co
 6. **Entorno de trabajo:** swap de 5,8 de 7,2 GB, varios Blender a la vez y el panel del navegador oculto. Hace las cargas lentas y las medidas de FPS inválidas.
 
 ## Próximos hitos
-- **H1 · v20:** publicar main con QA-16 (ya está), QA-04, QA-05 y QA-20, con el E2E y las 11 baterías en verde (hoy pasan saveTest 27/27 y comicTest 19/19).
+- **H1 · v20:** publicar main (8196c65 o posterior) con QA-16 y QA-20 ya cerrados, y si da tiempo QA-04 y QA-05. Requisito: el E2E y las 11 baterías en verde con la ventana con tamaño (QA-21).
 - **H2 · Peso:** descarga inicial ≤ 8 MB (carga diferida de ropa, edificios y flora; gltfpack).
 - **H3 · Rendimiento real:** matriz de FPS en Chromebook, iPad y Android, con `?calidad=bajo|medio|alto`.
 - **H4 · Criadero accesible para el jugador** y el compañero visible en la historia.
