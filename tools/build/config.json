@@ -1,0 +1,151 @@
+{
+  "_nota": "Configuración de tools/build (dueño: Build/Release Engineer). La leen avbuild.py y avtest.py. Documentada en docs/equipo/BUILD.md.",
+  "exportar": [
+    "index.html",
+    "src",
+    "content",
+    "assets"
+  ],
+  "quitar_siempre": [
+    "*.glb",
+    "*.blend",
+    "*.blend1",
+    "*.DS_Store",
+    "*.pyc"
+  ],
+  "limites": {
+    "archivos_max": 255,
+    "total_max_mb": 64,
+    "archivo_max_mb": 16,
+    "objetivo_mb": 30
+  },
+  "hosts_permitidos": {
+    "scripts": [
+      "cdnjs.cloudflare.com",
+      "cdn.jsdelivr.net"
+    ],
+    "estilos": [
+      "fonts.googleapis.com"
+    ],
+    "fuentes": [
+      "fonts.gstatic.com"
+    ]
+  },
+  "espacios_xml": [
+    "www.w3.org"
+  ],
+  "podar": {
+    "_nota": "Solo se podan cargas (payloads): los *_glb.js y los archivos con estas extensiones que nada alcanza desde index.html, src/ y content/. El código .js/.css/.html nunca se poda (se carga por listas dinámicas: post de three, packs).",
+    "extensiones": [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp",
+      "gif",
+      "json",
+      "txt",
+      "md",
+      "csv",
+      "bin",
+      "gltf",
+      "mp3",
+      "ogg",
+      "wav",
+      "m4a",
+      "woff",
+      "woff2",
+      "ttf",
+      "otf"
+    ],
+    "conservar": [],
+    "quitar": []
+  },
+  "texturas": {
+    "_nota": "Recompresión con sips solo si no hay pérdida visible: PSNR (RGB) >= psnr_color dB, o >= psnr_normal en mapas de normales; y solo si ahorra al menos ahorro_min. Los PNG externos solo se reescriben sin pérdida (mismos píxeles). Los PNG embebidos opacos pueden pasar a JPEG.",
+    "calidades_jpeg": [
+      75,
+      70,
+      65,
+      60,
+      55,
+      50
+    ],
+    "psnr_color": 40.0,
+    "psnr_normal": 44.0,
+    "patron_normal": "(_n|_normal|normal|_nrm)(\\.|$)",
+    "ahorro_min": 0.05
+  },
+  "texturas_compartidas": {
+    "_nota": "Una textura embebida que se repite en varios *_glb.js de la misma carpeta sale a <carpeta>/tex/ y los glTF la referencian por uri relativa. Solo en carpetas cuyo cargador pasa base = su propia carpeta (mundo.js ED.base y vegetacion.js KIT.base).",
+    "carpetas": [
+      "assets/models/edificios/",
+      "assets/models/entorno/"
+    ],
+    "min_repeticiones": 2
+  },
+  "pruebas": {
+    "baterias": [
+      "selfTest",
+      "missionTest",
+      "accessoryTest",
+      "templateTest",
+      "eduTest",
+      "maestroTest",
+      "criaderoTest",
+      "movementTest",
+      "saveTest",
+      "comicTest",
+      "e2eTest"
+    ],
+    "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso).",
+    "inyectar": [
+      "tests/qa/e2e.js"
+    ],
+    "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
+    "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar. Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
+    "preparar_js": "(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), $ = id => document.getElementById(id); const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { if (f()) return true; await sleep(100); } return !!f(); }; const t = $('title'); if (!t || !t.open) return 'no hay portada abierta'; const b = t.querySelector('form[method=dialog] button'); if (!b) return 'la portada no tiene el botón Jugar'; b.click(); if (!await espera(() => !t.open, 3000)) return 'la portada sigue abierta tras Jugar'; const cr = $('creator'); if (!cr || !await espera(() => !cr.hidden, 8000)) return 'el creador no se abrió para un jugador nuevo'; await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000); const s = $('p-save'); if (!s) return 'el creador no tiene Empezar (#p-save)'; s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador: ' + (($('p-error') && !$('p-error').hidden && $('p-error').textContent) || 'sin mensaje'); const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'el creador cerró sin crear el perfil'; return 'ok: portada → creador → Empezar (' + S.profile.name + ')'; })()",
+    "espera_listo_s": 150,
+    "espera_red_s": 30,
+    "medir_heap_tras_s": 9,
+    "bateria_max_s": 600,
+    "total_max_s": 1800,
+    "_nota_presupuestos": "Medidos en la carga inicial (hasta el mundo jugable, antes de las baterías). Los que estén en 'fallan' hacen fallar test.sh; el resto da aviso.",
+    "presupuestos": {
+      "descarga_inicial_mb": 8,
+      "heap_mb": 120,
+      "heap_gc_mb": 100,
+      "b64_residente_mb": 0.5,
+      "fallan": [
+        "b64_residente_mb"
+      ]
+    },
+    "consola_errores_fallan": true,
+    "errores_permitidos": [],
+    "ventana": [
+      1280,
+      800
+    ],
+    "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "chrome_flags": [
+      "--headless=new",
+      "--use-angle=metal",
+      "--enable-gpu",
+      "--ignore-gpu-blocklist",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-extensions",
+      "--mute-audio",
+      "--disable-sync",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-component-update",
+      "--metrics-recording-only",
+      "--enable-precise-memory-info"
+    ],
+    "puertos_prohibidos": [
+      9333
+    ],
+    "_nota_chrome": "GPU real por Metal: con SwiftShader (software) el primer cuadro del mundo bloquea la página varios minutos y la prueba no llega a window.AV."
+  }
+}

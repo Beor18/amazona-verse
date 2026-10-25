@@ -1,0 +1,3 @@
+# Builds locales (tools/build/build.sh <ref> sin <salida>)
+salida/
+__pycache__/
