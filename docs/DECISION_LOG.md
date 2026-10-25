@@ -141,3 +141,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 2026-10-25 · v21 publicada desde c6fe45d (estable), con build.sh; QA aprobó sin bloqueantes. Posarse en piezas decorativas pasa a P2 · coordinador
 2026-10-25 · v22 publicada desde f0ec4b0 (estable) con build.sh y test.sh en verde (11 baterías); QA validó los arreglos. Descarga inicial 16,3 MB (QA-10 sigue abierto) · coordinador
 2026-10-25 · Con el kit completo (64 edificios) el sitio publicable sube a ~38 MB: se acepta, porque el streaming solo descarga lo cercano y lo que manda en la escuela es la descarga inicial (QA-10). Tope de archivos a 511 por versión · coordinador
+2026-10-25 · v23 publicada desde f59361d (estable): escena de Kelvin completa. QA aprobó lo visual (QA-25 y QA-27 cerrados); QA-26 (piezas flotando) corregido por level design y no bloqueante según QA; test.sh PASA. Colisiones de edificios se mantienen en memoria (3–5 MB), sin P2 · coordinador
