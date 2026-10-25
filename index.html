@@ -4,8 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amazona Verse</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/vendor/fonts/fuentes.css">
 <link rel="stylesheet" href="src/ui/tokens.css">
 <link rel="stylesheet" href="src/ui/ui.css">
 <link rel="stylesheet" href="src/ui/criadero.css" data-criadero>
@@ -200,7 +199,7 @@
       <canvas id="comic-canvas" width="1080" height="1520" aria-label="Vista previa del cómic"></canvas>
       <div class="comic-form">
         <label for="c-title">Título</label>
-        <input id="c-title" type="text" maxlength="32" value="Mi primera reconstrucción">
+        <select id="c-title"></select>
         <label for="c-cover">Portada</label>
         <select id="c-cover">
           <option value="vittata">Vittata</option>
@@ -213,7 +212,7 @@
           <option value="grid">Cuadrícula 2 × 2</option>
           <option value="strip">Tira vertical</option>
         </select>
-        <span class="lbl">Viñetas (puedes editar el texto y cambiar el orden)</span>
+        <span class="lbl">Viñetas (elige el texto y cambia el orden)</span>
         <ol id="c-panels"></ol>
         <div class="row">
           <button class="btn ghost" id="c-refresh" type="button" data-icon="reset">Actualizar vista</button>
@@ -242,9 +241,14 @@
       <p class="stage-status" id="p-stage-status" hidden>Cargando el taller…</p>
     </div>
     <div class="creator-side panel">
-      <label for="p-name">Nombre inventado</label>
-      <input id="p-name" type="text" maxlength="16" placeholder="Por ejemplo: Nube Azul" autocomplete="off">
-      <p class="note">Serás aprendiz de Vittata en Villa Raíz. No uses tu nombre real.</p>
+      <span class="lbl" id="p-name-lbl">Nombre de aventurero</span>
+      <div class="name-pick" role="group" aria-labelledby="p-name-lbl">
+        <select id="p-name-a" aria-label="Primera palabra del nombre"></select>
+        <select id="p-name-b" aria-label="Segunda palabra del nombre"></select>
+        <button class="btn ghost icon" id="p-name-azar" type="button" data-icon="sparkle" aria-label="Otro nombre al azar" title="Otro nombre al azar"></button>
+      </div>
+      <output id="p-name" for="p-name-a p-name-b" aria-live="polite"></output>
+      <p class="note">Serás aprendiz de Vittata en Villa Raíz. Elige tu nombre de aventurero.</p>
       <label for="p-species">Plumaje</label>
       <select id="p-species"></select>
       <span class="lbl">Accesorios</span>
