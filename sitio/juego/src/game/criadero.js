@@ -144,10 +144,14 @@ AVE.module('criadero', function (G) {
     if (c && antes && antes !== despues && c.estado === 'nacida') st.avisos.push({ tipo: 'etapa', id: st.activa, de: antes, a: despues });
   }
 
+  // Fuentes de XP del juego que no están en huevos.js (DIVERSION_CAP1 mejora 2): descubrir un lugar con nombre del mapa
+  // (src/game/lugares.js) da poca XP de «explorar»; si huevos.js define la fuente, manda la suya.
+  const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } } };
+  const fuenteDe = tipo => (D() && D().xp.fuentes[tipo]) || FUENTES_EXTRA[tipo] || null;
   // Evento de aprendizaje del juego (también lo usan los botones del prototipo)
   function dar(tipo, id, intento) {
     if (!D()) return 0;
-    const F = D().xp.fuentes[tipo]; if (!F) return 0;
+    const F = fuenteDe(tipo); if (!F) return 0;
     const k = tipo + ':' + id;
     if (st.otorgado[k]) return 0;
     st.otorgado[k] = intento || 1;
@@ -158,6 +162,7 @@ AVE.module('criadero', function (G) {
     guardar();
     avisarCompanero();
     if (abierto()) { pintar(); procesarAvisos(); }
+    avisarXP(xp);
     return xp;
   }
   // Durante las baterías automáticas (G.quiet) el criadero no registra nada: las pruebas no ensucian la cría del niño
@@ -1075,7 +1080,10 @@ AVE.module('criadero', function (G) {
     const r = canvas.getBoundingClientRect(), p = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(p, scene3d.camera);
     const hit = ray.intersectObject(k.holder, true);
-    if (hit.length) { postura(k.etapa === 'adulto' ? 'aleteando' : 'saltando', 2.2); scene3d.fx.burst(hit[0].point, 10, ['#ffffff', '#ffd27a'], 0.8, 1.5); }
+    if (hit.length) {
+      postura(k.etapa === 'adulto' ? 'aleteando' : 'saltando', 2.2); scene3d.fx.burst(hit[0].point, 10, ['#ffffff', '#ffd27a'], 0.8, 1.5);
+      G.emit('criadero', 'brinco', { id: k.capId, foto: () => fotoEscena() }); // cómic: viñeta del brinco (src/game/momentos.js)
+    }
   }
   function resize() {
     if (!scene3d.renderer || !canvas) return;
@@ -1262,11 +1270,72 @@ AVE.module('criadero', function (G) {
 
 
   // =====================================================================================================================
-  // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión; Luma lo presenta una vez.
-  // Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'), la plaza o el inicio.
+  // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión o, antes, cuando se cumple
+  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Luma, minuto 2; DIVERSION_CAP1 mejora 2);
+  // Luma lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
+  // la plaza o el inicio.
   // =====================================================================================================================
-  const nidoActivo = () => !!D() && misionesHechas().size > 0;
+  function desdeCumplido() {
+    const d = (G.pack.criadero || {}).desde;
+    if (!d) return false;
+    if (typeof d === 'function') { try { return !!d(G); } catch (e) { return false; } }
+    return !!(G.eventos && G.eventos.had && G.eventos.had(d));
+  }
+  const nidoActivo = () => !!D() && (misionesHechas().size > 0 || desdeCumplido());
   let nidoMundo = null, nidoIt = null, nidoBtnHidden = null, presentarT = 0, revisarT = 0;
+  // ---------- «+XP al nido» y el huevo en el HUD (mejora 2: la XP ya no sube en silencio) ----------
+  // Dentro del botón «Nido»: un huevo que se va llenando con los días de incubación (o la cría cuando ya nació) y, con cada
+  // XP que llega, un «+25 XP al nido» que sube y se desvanece. Estilo inyectado aquí (ui.css es de otro carril).
+  const ESTILO_HUD = '#b-nido{position:relative;overflow:visible}' +
+    '#b-nido .nido-huevo{display:inline-block;width:14px;height:18px;margin-left:6px;vertical-align:-3px;flex:none}' +
+    '#b-nido .nido-huevo svg{display:block;width:100%;height:100%;overflow:visible}' +
+    '#b-nido .nido-mas{position:absolute;left:50%;top:-6px;transform:translate(-50%,0);white-space:nowrap;pointer-events:none;' +
+    'font:700 13px/1.2 var(--font-display,sans-serif);color:#fff;background:var(--c-primary,#f2a03d);border-radius:999px;padding:3px 10px;' +
+    'box-shadow:0 2px 0 var(--c-primary-lip,#b86f1a);opacity:0;animation:nido-mas 1.7s ease-out forwards}' +
+    '@keyframes nido-mas{0%{opacity:0;transform:translate(-50%,6px)}15%{opacity:1;transform:translate(-50%,-14px)}75%{opacity:1;transform:translate(-50%,-30px)}100%{opacity:0;transform:translate(-50%,-40px)}}' +
+    '#b-nido .nido-huevo.late svg{animation:nido-late .6s ease-out}@keyframes nido-late{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}' +
+    '@media (prefers-reduced-motion:reduce){#b-nido .nido-mas{animation:nido-mas-quieto 1.7s linear forwards;transform:translate(-50%,-24px)}@keyframes nido-mas-quieto{0%,70%{opacity:1}100%{opacity:0}}#b-nido .nido-huevo.late svg{animation:none}}';
+  let hudHuevo = null, hudHuevoClave = '';
+  // El <style> va dentro de #sys (junto al botón) para que la maqueta móvil de accesibilidad.js, que copia #sys, lo lleve
+  function estiloHUD() {
+    if (document.getElementById('estilo-nido-hud')) return;
+    const s = document.createElement('style'); s.id = 'estilo-nido-hud'; s.textContent = ESTILO_HUD;
+    const b = document.getElementById('b-nido'), padre = b && b.parentNode;
+    if (padre) padre.insertBefore(s, b); else document.head.appendChild(s);
+  }
+  // Huevo (ruta cerrada) con relleno desde abajo según los días; nacida: la cría (círculo) en vez del huevo
+  function pintarHuevoHUD(b) {
+    if (!b) return;
+    const c = activa(), huevo = !!c && etapaDe(c) === 'huevo', dias = c ? diasDe(c) : 0, tot = D() ? D().incubacion.dias : 26;
+    const clave = c ? `${huevo ? 'h' : 'c'}:${dias}/${tot}` : '';
+    if (clave === hudHuevoClave && hudHuevo) return;
+    hudHuevoClave = clave;
+    if (!hudHuevo) { estiloHUD(); hudHuevo = document.createElement('span'); hudHuevo.className = 'nido-huevo'; hudHuevo.setAttribute('aria-hidden', 'true'); b.appendChild(hudHuevo); }
+    if (!c) { hudHuevo.innerHTML = ''; b.setAttribute('aria-label', 'Nido: mi cotorrita'); return; }
+    const f = huevo ? Math.max(0, Math.min(1, dias / tot)) : 1, h = 18 * f;
+    hudHuevo.innerHTML = huevo
+      ? `<svg viewBox="0 0 14 18"><defs><clipPath id="nido-huevo-clip"><rect x="0" y="${(18 - h).toFixed(2)}" width="14" height="${h.toFixed(2)}"/></clipPath></defs>` +
+        `<path d="M7 1C3.4 1 1 6.2 1 10.4 1 14.6 3.6 17 7 17s6-2.4 6-6.6C13 6.2 10.6 1 7 1Z" fill="rgba(255,255,255,.22)" stroke="currentColor" stroke-width="1.4"/>` +
+        `<path d="M7 1C3.4 1 1 6.2 1 10.4 1 14.6 3.6 17 7 17s6-2.4 6-6.6C13 6.2 10.6 1 7 1Z" fill="var(--c-primary,#f2a03d)" clip-path="url(#nido-huevo-clip)"/></svg>`
+      : `<svg viewBox="0 0 14 18"><circle cx="7" cy="9" r="6" fill="var(--c-primary,#f2a03d)" stroke="currentColor" stroke-width="1.2"/><circle cx="5" cy="8" r="1" fill="#10241c"/><path d="M9 9.5l3 .8-3 .8z" fill="#10241c"/></svg>`;
+    b.setAttribute('aria-label', huevo ? `Nido: mi cotorrita · huevo, ${dias} de ${tot} días` : 'Nido: mi cotorrita');
+  }
+  // «+N XP al nido» sobre el botón; sin botón visible (nido aún no activo) no se muestra
+  function avisarXP(xp) {
+    const b = botonNido();
+    if (!b || b.hidden || !xp) return false;
+    estiloHUD();
+    const m = document.createElement('span'); m.className = 'nido-mas'; m.setAttribute('aria-hidden', 'true');
+    m.textContent = `+${xp} XP ${t({ es: 'al nido', en: 'to the nest' })}`;
+    for (const viejo of b.querySelectorAll('.nido-mas')) viejo.remove();
+    b.appendChild(m);
+    setTimeout(() => { if (m.parentNode) m.remove(); }, 1800);
+    if (hudHuevo) { hudHuevo.classList.remove('late'); void hudHuevo.offsetWidth; hudHuevo.classList.add('late'); }
+    let vivo = document.getElementById('nido-xp-vivo');
+    if (!vivo) { vivo = document.createElement('div'); vivo.id = 'nido-xp-vivo'; vivo.setAttribute('aria-live', 'polite'); vivo.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)'; document.body.appendChild(vivo); }
+    vivo.textContent = m.textContent;
+    return true;
+  }
   function sitioNido() {
     const T = G.terreno, cfg = G.pack.criadero || {};
     if (cfg.nido && T.poi) { const p = T.poi(cfg.nido); if (p) return { x: p.x, z: p.z }; }
@@ -1352,7 +1421,9 @@ AVE.module('criadero', function (G) {
   }
   function puedePresentar() {
     const S = G.S || {}, leccion = (G.aula && G.aula.enCurso && G.aula.enCurso()) || (S.step === 3 && S.missions && !S.missions.educativa);
-    return !G.quiet && !open && !leccion && !!G.ui && !G.ui.busy() && !!G.dialogo && !G.dialogo.open();
+    // Ni durante un evento (la crecida se juega) ni con un bocadillo libre en pantalla: el nido espera a que haya calma
+    const calma = !S.event && !(G.dialogo && G.dialogo.libre && G.dialogo.libre());
+    return !G.quiet && !open && !leccion && calma && !!G.ui && !G.ui.busy() && !!G.dialogo && !G.dialogo.open();
   }
   function pasoMundo(dt) {
     const on = nidoActivo();
@@ -1373,6 +1444,7 @@ AVE.module('criadero', function (G) {
     }
     const b = botonNido();
     if (b && nidoBtnHidden !== !on) { nidoBtnHidden = !on; b.hidden = !on; if (on) b.setAttribute('aria-label', 'Nido: mi cotorrita'); }
+    if (b && on) pintarHuevoHUD(b);
     // Presentación (una vez): Luma cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
     // Tampoco en medio de una lección (las tarjetas de la misión educativa se reabren con retraso)
     // y solo tras 1,5 s seguidos de juego libre (entre baterías automáticas G.quiet cambia muy rápido)
@@ -1564,14 +1636,27 @@ AVE.module('criadero', function (G) {
       check('Guardado sin datos personales', !/name|nombre|profile|email|correo/i.test(Object.keys(st).join(',')));
       cerrar();
       check('Cerrar suelta la pausa', !open && root.hidden && (!G.pausa || !G.pausa.motivos.has('criadero')));
-      // Integración en el juego: nido en el mundo y botón «Nido» del HUD, solo después de la primera misión
-      const misBk = JSON.parse(JSON.stringify((G.S && G.S.missions) || {}));
+      // Integración en el juego: nido en el mundo y botón «Nido» del HUD, tras la primera misión o el disparador del pack
+      const misBk = JSON.parse(JSON.stringify((G.S && G.S.missions) || {})), cfgBk = G.pack.criadero;
       try {
         st = fresh(); st.presentado = true;
         for (const k of Object.keys(G.S.missions || {})) G.S.missions[k] = false;
+        G.pack.criadero = Object.assign({}, cfgBk || {}, { desde: () => false }); // la prueba controla el disparador del pack
         pasoMundo(0);
         const btn = document.getElementById('b-nido');
-        check('Sin misión: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
+        check('Sin misión ni disparador del pack: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
+        // Disparador del pack (criadero.desde; cap1: la charla con Luma, minuto 2): el nido entra antes de la primera misión
+        G.pack.criadero.desde = () => true; pasoMundo(0); pasoMundo(2.1);
+        check('Con el disparador del pack y sin misión: nido visible y botón «Nido» en el HUD', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden && !!nidoIt && nidoIt.visible());
+        check('El pack cap1 engancha el nido a la charla con Luma (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
+        // Huevo del HUD y «+XP al nido»: la XP ya no sube en silencio
+        const xpLugar = dar('lugar', 'prueba-lugar'), mas = btn && btn.querySelector('.nido-mas');
+        check('Descubrir un lugar da XP de explorar (fuente extra, 8 XP) y el botón muestra «+8 XP al nido»', xpLugar === 8 && st.fuentes.explorar >= 8 && !!mas && /\+8 XP/.test(mas.textContent), mas ? mas.textContent : 'sin aviso');
+        check('La misma fuente no se repite (lugar ya otorgado)', dar('lugar', 'prueba-lugar') === 0);
+        pasoMundo(0);
+        const huevoHUD = btn && btn.querySelector('.nido-huevo svg'), etiqueta = btn ? btn.getAttribute('aria-label') || '' : '';
+        check('El botón «Nido» lleva el huevo con los días de incubación', !!activa() && !!huevoHUD && /huevo, \d+ de \d+ d/.test(etiqueta), etiqueta);
+        G.pack.criadero.desde = () => false; st = fresh(); st.presentado = true; pasoMundo(0);
         const primera = Object.keys(G.S.missions || {})[0];
         if (primera) {
           G.S.missions[primera] = true; pasoMundo(0); pasoMundo(2.1);
@@ -1593,7 +1678,7 @@ AVE.module('criadero', function (G) {
           pasoMundo(2);
           check('La presentación no se repite', !G.dialogo.open());
         }
-      } finally { for (const k of Object.keys(misBk)) G.S.missions[k] = misBk[k]; pasoMundo(0); }
+      } finally { for (const k of Object.keys(misBk)) G.S.missions[k] = misBk[k]; G.pack.criadero = cfgBk; pasoMundo(0); }
       check('Sin errores de JavaScript nuevos', (window.__aveErrores || []).length === errores0, (window.__aveErrores || []).slice(errores0).join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, e && e.stack || e);

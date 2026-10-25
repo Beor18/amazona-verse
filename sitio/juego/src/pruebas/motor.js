@@ -8,7 +8,8 @@ AVE.module('pruebas', function (G) {
   const S = G.S;
   function teleport(x, z, fx, fz) { S.pos.x = x; S.pos.z = z; S.pos.y = G.terreno.height(x, z); S.vy = 0; if (fx !== undefined) S.facing = { x: fx, z: fz }; }
   function tick(seconds) { const n = Math.ceil(seconds / 0.05); for (let i = 0; i < n; i++) G.renderer.update(0.05); }
-  function drain() { let n = 0; while (G.dialogo.open() && n++ < 30) G.dialogo.next(); }
+  // Pasa la caja de diálogo y también los bocadillos libres (dialogo.activo), para que sus `done` lleguen sin esperar el reloj
+  function drain() { let n = 0; while ((G.dialogo.activo ? G.dialogo.activo() : G.dialogo.open()) && n++ < 40) G.dialogo.next(); }
   function useAt(id, ox, oz) {
     const it = G.interaccion.find(id); teleport(it.x + (ox || 0.9), it.z + (oz || 0)); tick(0.1);
     const nb = G.interaccion.nearest(); if (nb && nb.id === id) { G.interaccion.action(); return true; } return false;

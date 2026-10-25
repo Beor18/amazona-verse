@@ -98,6 +98,38 @@ AVE.module('misiones', function (G) {
   }
 
   // ---------- HUD ----------
+  // «Próximo: <premio> · <pista>» bajo el objetivo (DIVERSION_CAP1 mejora 2: lo que se gana se ve antes de ganarlo).
+  // El premio es la primera pieza de pack.ropa que aún no se tiene, en el orden del pack; con todo ganado o el capítulo
+  // terminado no se muestra. El elemento y su estilo los pone este módulo (ui.css es de otro carril); el <style> va dentro
+  // de #quest para que la maqueta móvil de accesibilidad.js (copia #top con sus hojas enlazadas) lo lleve. La línea se
+  // oculta donde no cabe: pantallas bajas (teléfono apaisado: el objetivo no debe pisar los controles), teléfonos de 320 px
+  // y, con el texto más grande (a11y-t2), hasta 560 px (ahí los subtítulos de sonido van debajo de #quest y no deben
+  // llegar a los botones de acción ni al diálogo).
+  function proximoPremio() { return S.complete ? null : unlocks.find(u => u.pista && !S.unlocked.includes(u.clave)) || null; }
+  const ESTILO_PROXIMO = '#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}' +
+    '#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}' +
+    '#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}' +
+    '@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}';
+  function cajaProximo() {
+    let el = $('next-reward');
+    if (el) return el;
+    const steps = $('steps'); if (!steps || !steps.parentNode) return null;
+    if (!document.getElementById('estilo-proximo')) { const st = document.createElement('style'); st.id = 'estilo-proximo'; st.textContent = ESTILO_PROXIMO; steps.parentNode.insertBefore(st, steps.nextSibling); }
+    el = document.createElement('div'); el.id = 'next-reward'; el.hidden = true;
+    const ancla = document.getElementById('estilo-proximo') || steps;
+    ancla.parentNode.insertBefore(el, ancla.nextSibling);
+    return el;
+  }
+  function renderProximo() {
+    const el = cajaProximo(); if (!el) return null;
+    const u = proximoPremio();
+    el.hidden = !u;
+    if (u) {
+      const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      el.innerHTML = `<span class="nr-k">Próximo:</span> <b>${esc(u.nombre)}</b> <span class="nr-p">· ${esc(u.pista)}</span>`;
+    } else el.textContent = '';
+    return u;
+  }
   function renderQuest() {
     // Número de pasos para la barra del HUD (variables CSS --n y --n-label de src/ui/ui.css)
     const el = $('steps'); el.style.setProperty('--n', steps.length); el.style.setProperty('--n-label', '"' + steps.length + '"');
@@ -106,6 +138,7 @@ AVE.module('misiones', function (G) {
       const cls = i < S.step ? 'done' : i === S.step ? 'now' : 'later';
       return `<li class="${cls}">${label}</li>`;
     }).join('');
+    renderProximo();
     // Misiones y Diario en una línea (con forma además de color: ✓ hecho, · pendiente)
     const mk = (ok, txt) => `<span class="${ok ? 'ok' : ''}">${ok ? '✓' : '·'} ${txt}</span>`;
     const parts = activas().filter(m => m.hud).map(m => mk(!!S.missions[m.id], typeof m.hud === 'function' ? m.hud(S, G) : m.hud));
@@ -154,5 +187,5 @@ AVE.module('misiones', function (G) {
   G.on('apply', () => { verConfirmacion(false, false); if (S.complete && !S.explorando) showEnd(); else $('end').hidden = true; }, 70);
   G.on('apply', renderQuest, 90);
 
-  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, showEnd, seguirExplorando };
+  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando };
 });

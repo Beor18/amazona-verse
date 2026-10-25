@@ -22,6 +22,15 @@
     };
   }
 
+  // Mejora 1 (DIVERSION_CAP1): Luma espera en la copa del flamboyán; para hablarle hay que volar y posarse a su lado.
+  // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Luma.
+  function posarseLuma(G, T) {
+    const S = G.S, p = G.c.luma.percha;
+    S.pos.x = p.x + 0.6; S.pos.y = p.y + 1.6; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true; T.tick(0.1);
+    G.fisica.MOVE.flying = false; T.tick(1.2);
+    return G.c.luma.junto() && !G.fisica.MOVE.flying;
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -55,10 +64,19 @@
       G.emit('companero', G.criadero.companero()); // vuelve la cría real del niño (o ninguna)
     } else check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SV.spawn.x, S.pos.z - SV.spawn.z) < 0.1);
-    useAt('maquina'); drain(); useAt('transmisor'); drain();
-    check('Taller explorado y misión con Luma', S.step === 1 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
-    useAt('luma'); drain();
-    check('Luma da la misión', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
+    // Mejora 1: Luma llama desde la copa; el primer objetivo es volar hasta ella y desde el suelo, bajo la copa, no se le habla
+    check('Al despertar, Luma está arriba y el primer objetivo es volar hasta ella', C.luma.arriba() && S.step === 0 && /Luma/.test($('steps').querySelector('li.now').textContent) && C.luma.percha.y > G.terreno.height(C.luma.percha.x, C.luma.percha.z) + 3, C.luma.percha.y.toFixed(1) + ' m');
+    check('Desde el suelo, bajo la copa, no se le puede hablar a Luma', !useAt('luma'));
+    const posada = posarseLuma(G, T);
+    check('Posada a su lado: Luma llamó desde arriba (bocadillo libre, el juego no se para) y se le puede hablar', posada && !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && !G.ui.busy() && !!G.interaccion.nearest() && G.interaccion.nearest().id === 'luma', JSON.stringify(G.dialogo.actual()));
+    action();
+    check('La charla de la misión sí bloquea y sigue el orden del guion (interact:luma_inicio primero)', G.dialogo.open() && $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'), $('d-text').textContent);
+    drain();
+    check('Luma da la misión, regala 3 tablas y baja a la plaza', S.step === 1 && had('LumaHelped') && S.inv.madera === 3 && !C.luma.arriba(), 'paso ' + S.step);
+    useAt('maquina');
+    check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
+    drain(); useAt('transmisor'); drain();
+    check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     // Luma aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && had('ResourcesCollected'), JSON.stringify(S.inv));
@@ -75,15 +93,27 @@
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
     action(); drain();
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
+    // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
+    const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
+    check('La crecida empieza al construir y no bloquea (la escena de Luma va en bocadillos)', !!S.event && S.event.dur === 20 && !G.ui.busy());
     tick(4); check('La crecida sube el agua', S.water > G.terreno.waterBase + 0.5);
-    tick(5); drain();
+    const aFlote = o => { const lv = G.agua.levelAt(o.obj.position.x, o.obj.position.z); return lv > -Infinity && o.obj.position.y >= lv - 0.01; };
+    check('El río arrastra las tablas de Luma, el coquí y un hallazgo, a flote y cerca del terreno de la crecida', flotando().length === 3 && flotando().every(o => aFlote(o) && Math.hypot(o.obj.position.x - CRE.ZONA.x, o.obj.position.z - CRE.ZONA.z) < 45), flotando().map(o => o.id + '@' + o.obj.position.y.toFixed(1) + (aFlote(o) ? '' : ' EN SECO')).join());
+    check('Durante la crecida la guía apunta a lo que flota y el objetivo lo dice', !!G.misiones.guideTarget() && /Crecida/.test($('steps').querySelector('li.now').textContent), $('steps').querySelector('li.now').textContent);
+    tick(2); const p0 = flotando()[0].obj.position.clone(); tick(3);   // el agua llega a la orilla hacia el segundo 6 y entonces los arrastra
+    check('Lo que flota se mueve con la corriente', flotando()[0].obj.position.distanceTo(p0) > 0.5, flotando()[0].obj.position.distanceTo(p0).toFixed(2) + ' m');
+    check('A salvo = donde el agua no llega (colina, copa, techo); en el agua de la zona, no', CRE.aSalvo({ x: PLACES.B.x, y: PLACES.B.base, z: PLACES.B.z }) && CRE.aSalvo({ x: C.luma.percha.x, y: C.luma.percha.y, z: C.luma.percha.z }) && !CRE.aSalvo({ x: CRE.ZONA.x, y: S.water, z: CRE.ZONA.z }));
+    const coq = flotando().find(o => o.id === 'coqui'); coq.fase = 'llevado'; G.emit('soltado', coq.id, coq.obj, { x: PLACES.B.x, y: PLACES.B.base, z: PLACES.B.z });
+    check('Soltar algo en tierra seca lo salva y queda en el registro (FloodRescue)', coq.fase === 'salvado' && CRE.salvados.includes('coqui') && had('FloodRescue'));
+    tick(15); drain();
+    check('Al bajar el agua, lo no salvado se da por perdido sin castigo y Luma lo cuenta', !S.event && CRE.perdidos.length === 2 && !CRE.objetos().some(o => o.fase === 'flota' && o.obj.parent) && S.events.filter(e => e.key === 'FloodRescue').length === 1, CRE.perdidos.join());
     check('Consecuencia visible: refugio inundado', S.refuge.damaged && C.refugeMesh().rotation.z > 0.1 && had('ShelterFlooded'));
     check('Aparece el Guardián', G.actores.npc('guardian').sp.visible && S.step === 5);
     C.syncRefugeInteractable(); useAt('refuge', 1.6, 0); drain(); // escena evento:ShelterDismantled
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
-    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
+    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
     useAt('guardian', 1.4, 0); drain();
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
@@ -114,7 +144,7 @@
     $('b-seguir').click();
     check('«Seguir explorando» cierra el panel y deja la partida terminada', $('end').hidden && !enConfirm() && S.explorando && S.complete && S.step === G.misiones.DONE && had('ChapterCompleted'));
     check('Tras el final el mundo está libre: Vittata se mueve', !G.ui.busy() && avanza() > 0.5);
-    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.open());
+    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.activo());
     drain();
     check('Seguir explorando no repite el final ni el evento ChapterCompleted', $('end').hidden && S.events.filter(e => e.key === 'ChapterCompleted').length === 1);
     check('Guardar y cargar con la partida terminada no reabre el panel final', SV.save(true) && SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
@@ -242,7 +272,7 @@
     // Ruta directa a la colina
     SV.reset(true); saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
-    C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(9); drain();
+    C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
     SV.reset(true);
@@ -272,14 +302,17 @@
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
     check('Emoción del .json llega a la cara de Vittata', L('evento:ShelterDismantled')[0].mood === 'angry' && L('interact:transmisor')[0].mood === 'sad');
     G.quiet = false; G.pack.inicio(G);
-    check('Introducción con los disparadores inicio:', G.dialogo.open() && $('d-who').textContent === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
-    let shook = false; while (G.dialogo.open()) { G.dialogo.next(); if (G.camara.juice.shake > 0.5) shook = true; }
+    // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
+    check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
+    const l0 = G.dialogo.actual().text; tick(G.dialogo.LIBRE.max + 0.1);
+    check('Un bocadillo pasa solo con el tiempo del juego', !!G.dialogo.libre() && G.dialogo.actual().text !== l0, G.dialogo.actual().text);
+    let shook = false; while (G.dialogo.activo()) { G.dialogo.next(); if (G.camara.juice.shake > 0.5) shook = true; }
     check('La Ruptura sacude la cámara', shook || G.renderer.REDUCED);
     // Apertura (P1-3): negro y viento → corte al taller con luz (fundido) → brillo y onda → negro → fundido de nuevo
     G.c.apertura.fin(); G.audio.log.length = 0; G.pack.inicio(G);
-    const fade = () => document.getElementById('c1-fade'), obs = () => [$('d-who').textContent, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
-    const ap = [obs()], retratoApertura = $('d-img').getAttribute('src') || '';
-    while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) ap.push(obs()); }
+    const fade = () => document.getElementById('c1-fade'), obs = () => [G.dialogo.actual().who, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
+    const ap = [obs()], retratoApertura = G.dialogo.actual().img || '';
+    while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) ap.push(obs()); }
     check('Apertura: negro con viento hasta el corte al taller, brillo y onda en la Ruptura, negro de nuevo y fundido al despertar',
       ap.length === 6 && ap[0][1] === '1' && ap[1][1] === '1' && ap[2][1] === '0' && ap[3][1] === '0' && !ap[3][2] && ap[4][2] && ap[5][1] === '1' && fade() && fade().style.opacity === '0' && ['viento', 'vmmm', 'zzzt', 'onda'].every(n => G.audio.log.includes(n)), JSON.stringify(ap) + ' ' + G.audio.log.join());
     check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
@@ -287,11 +320,15 @@
     check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
     G.quiet = true;
     useAt('transmisor');
-    check('interact:transmisor usa el texto del guion', $('d-text').textContent === 'Este transmisor llevaba años mudo.', $('d-text').textContent);
+    check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
-    useAt('luma');
-    check('interact:luma_inicio al hablar con Luma', $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'));
+    check('Revisar el taller antes de subir con Luma también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
+    posarseLuma(G, T);
+    check('interact:luma_inicio: Luma llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
+    G.interaccion.action();
+    check('La charla con Luma es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Luma' && !G.dialogo.libre());
     drain();
+    check('Con el taller ya revisado, tras Luma el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
     check('c2 espera al paso 3 (la pieza del paso 2 sale del río)', !O.available(O.find('c2')));
     const c1 = O.find('c1');
@@ -350,7 +387,10 @@
     useAt('transmisor');
     check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
     // La Voz (P0-2): retrato neutro, no la cara del Guardián ni la de Vittata; suenan el BIP y la estática de la radio
-    const vozL = []; while (G.dialogo.open()) { vozL.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    // La Voz y el Guardián narran en bocadillos libres (mejora 3): la historia ya pasó al mirador mientras hablan
+    check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
+    const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
+    check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
     check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
     check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
@@ -408,9 +448,9 @@
     check('Final · construir suena a martillazos', !!S.refuge && log().includes('construir'), log().join());
     tick(1.2);
     check('Final · crecida: llueve y se oye un trueno lejano', !!S.event && log().includes('lluvia') && log().includes('trueno'), log().join());
-    tick(1.5);
+    tick(5); // el rugido del río llega al 30 % de la crecida (20 s desde la mejora 4)
     check('Final · crecida: el río sube con su rugido y la lluvia no se corta', log().includes('crecida') && cuenta('lluvia') >= 2, 'lluvia ×' + cuenta('lluvia'));
-    tick(6); drain();
+    tick(14); drain();
     const llovio = cuenta('lluvia'); tick(2);
     check('Final · al terminar la crecida deja de llover', !S.event && cuenta('lluvia') <= llovio && S.refuge && !S.refuge.damaged && S.step === 5, 'paso ' + S.step);
     // Guardián (banco) y transmisor (Voz con retrato neutro)
@@ -418,13 +458,14 @@
     check('Final · el Guardián presenta el refugio y regala el banco', S.step === 6 && S.benchUnlocked && had('GuardianMet'), 'paso ' + S.step);
     S.inv = { madera: 1, piedra: 0, componente: 1 }; S.missions.m3 = true; // el coro de coquíes ya se probó arriba (M3)
     G.audio.log.length = 0; useAt('transmisor');
-    const voz = []; while (G.dialogo.open()) { voz.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    const voz = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); voz.push([a.who, a.img]); G.dialogo.next(); }
     check('Final · transmisor: símbolo de 36, BIP, estática y la Voz sin la cara del Guardián', S.transmitterOn && ['bip', 'estatica'].every(n => log().includes(n)) && voz.filter(l => l[0] === 'Voz').length === 2 && voz.filter(l => l[0] === 'Voz').every(l => !/guardian|vittata|luma/.test(l[1])) && S.step === 7, JSON.stringify(voz.map(l => [l[0], l[1].slice(0, 20)])));
     // Mirador: plano del bote y luz que parpadea tres veces
     const luz = C.luzMirador;
     G.audio.log.length = 0; useAt('mirador', 2.4, 0);
-    const esc = [], mira = () => esc.push({ who: $('d-who').textContent, txt: $('d-text').textContent, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: $('d-img').getAttribute('src') || '' });
-    mira(); while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) mira(); }
+    const esc = [], mira = () => { const a = G.dialogo.actual(); esc.push({ who: a.who, txt: a.text, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: a.img || '', libre: a.libre }); };
+    mira(); while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) mira(); }
+    check('Final · el mirador narra en bocadillos libres (la cotorra puede mirar alrededor) y el panel llega al terminar', esc.every(e => e.libre) && S.complete, esc.length + ' bocadillos');
     const lPlano = esc.find(e => /^Si los caminos/.test(e.txt)), lLuz = esc.find(e => /^Mira, Vittata\. Esa luz/.test(e.txt)), nar = esc.filter(e => e.who === 'Narrador');
     check('Final · mirador: el plano del bote sale en pantalla con su chispa de sonido', esc.length === 10 && !!lPlano && lPlano.plano && !lPlano.luz && log().includes('nido_chispa'), esc.length + ' líneas');
     check('Final · mirador: el plano se retira y la luz de la niebla se enciende', !!lLuz && !lLuz.plano && lLuz.luz && !esc.slice(0, 4).some(e => e.luz));
@@ -588,7 +629,7 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); useAt('luma'); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
       check('Recolección -1 min: Luma aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
@@ -610,7 +651,7 @@
       check('Objetivos con evidencia del juego al terminar la misión', reg.objetivos_logrados.join() === 'O1,O2,O5', reg.objetivos_logrados.join());
       // Construir con la evidencia: la elección sigue libre; llegan las fichas del refugio y de la crecida
       const B = G.terreno.places.B;
-      C.startBuild('B'); teleport(B.x, B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain(); tick(9); drain(); tick(1.5); drain(); tick(1);
+      C.startBuild('B'); teleport(B.x, B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain(); tick(21); drain(); tick(1.5); drain(); tick(1);
       const f = S.edu.fichas;
       check('Fichas por momentos de la historia: nidos y María', f.includes('cotorra_nidos') && f.includes('cotorra_maria'), f.join(','));
       check('Tras construir: objetivos O4 (adaptaciones) y O6 (terreno con evidencia)', AU.partida().objetivos_logrados.join() === 'O1,O2,O4,O5,O6', AU.partida().objetivos_logrados.join());
