@@ -1,8 +1,8 @@
 # Movimiento y animación de Vittata
 
-Dueño: rol Movimiento y animación. Archivos: `src/engine/fisica.js`, `input.js`, `camara.js`, `actores.js`, `agarre.js`, `src/pruebas/movimiento.js` y la capa procedural de `src/personaje/character.js`. El modelo y el rig no se tocan.
+Dueño: rol Movimiento y animación. Archivos: `src/engine/fisica.js`, `input.js`, `camara.js`, `actores.js`, `agarre.js`, `src/pruebas/movimiento.js`, `src/game/guia_controles.js` y la capa procedural de `src/personaje/character.js`. El modelo y el rig no se tocan.
 
-Prueba: `AV.movementTest()` da 22 de 22, con las métricas en `.metricas`. `selfTest`, `missionTest`, `accessoryTest` y `templateTest` siguen pasando.
+Pruebas: `AV.movementTest()` (con las métricas en `.metricas`) y `AV.controlesTest()` (guía de controles con teclado, `src/pruebas/controles.js`). Las dos se cargan al pedirlas (boot.js): no van en la descarga inicial. `selfTest`, `missionTest`, `accessoryTest` y `templateTest` siguen pasando.
 
 ## 1. Playtest: problemas encontrados y prioridad
 
@@ -10,6 +10,9 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 
 | Prio | Problema | Medida antes | Estado |
 |---|---|---|---|
+| P0 | «En computadora no se sabe cómo mover» (Kelvin). Solo había una franja pequeña abajo a la izquierda y la ayuda de la pausa. | — | Resuelto: guía de controles con teclado (§ 3): panel inicial con las teclas reales, icono «Controles» con leyenda, pastilla «Dejar de volar» al volar y pistas la primera vez. No sale en táctil. |
+| P0 | «A veces la cotorra no eleva más» (Kelvin). Causas: (1) tras un clic en el Diario, Gestos o Pausa el botón se quedaba con el foco y el Espacio lo volvía a pulsar en vez de subir; (2) techo de vuelo fijo de 26 m sobre el suelo de debajo, sin aviso: al salir de un risco o junto a una torre alta se trababa sin explicación; (3) bajo una plataforma o un alero no subía ni se apartaba; (4) rozar un tejado o el suelo a velocidad de crucero terminaba el vuelo, y entonces Espacio solo saltaba. | sube 0 m | Resuelto: Espacio va al juego aunque un botón del HUD tenga el foco; techo de vuelo a 26 m sobre lo más alto en 25 m, que se nota (frena en los últimos 3 m) y se explica (viento fuerte y aviso); bajo un saliente se desliza al cielo abierto más cercano; rozando a crucero sigue volando rasante. Mantener subir sube 10,9 m en 2 s. |
+| P0 | Vittata encajada en la torre antigua de las ruinas (captura de Kelvin), con la cabeza atravesando la plataforma. Causas: (1) en el aire los pies entraban en el escalón de un sólido (0,45 m) y el planeo la hundía en la piedra; (2) la torre es hueca, y el piso de una vía de mundo.js (0,9 m bajo la losa) subía de golpe a quien llegaba desde abajo con la cabeza dentro de la losa; (3) dentro de la torre, la losa tapaba la subida y no había por dónde salir. | metida 8–11 puntos | Resuelto: en el aire los pies no entran en un sólido (un borde bajo se sube como un escalón); un piso de una vía no sube a nadie a un sólido; metida en la piedra sale sola al punto libre más cercano; encerrada o sin poder moverse 1,5 s, se recoloca fuera o encima sin castigo (`docs/img/mov_torre_*.png`). |
 | P0 | Volar no se sostenía. V o Volar en el suelo daba un saltito de 0,94 m y aterrizaba solo a los 1,5 s, porque sin tocar nada bajaba a 1,1 m/s. No había cernido. | 0,94 m, 1,5 s | Resuelto: despega unos 4 m y se queda cernida (deriva de 0,15 m en 2 s). |
 | P0 | Dejar de volar era caer en picada. V en el aire apagaba el vuelo y caía con gravedad. En táctil no había un control claro. | 16,6 m → impacto a −27 m/s | Resuelto: V o el botón ("Aterrizar") baja a 5,5 m/s y frena con las alas: toca a −2 m/s. Saltar o V otra vez sigue volando. |
 | P0 | Volar hasta el agua la metía bajo el agua, hasta el fondo. Volar desde el agua volaba sumergida. | −5,4 m | Resuelto: tocar el agua honda volando pasa a nadar con salpicadura. Despega desde el agua. |
@@ -42,15 +45,18 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 | Aterrizar desde 8,9 m | −27 m/s (caída) | 2,1 s, −2 m/s |
 | Cuesta abajo en el suelo | 3 % | 100 % |
 | Pico al hablar | sin sincronía | ~5 sílabas por segundo, cerrado al terminar |
+| Subir volando (mantener Espacio) | 0 m con el foco en un botón del HUD | 10,9 m en 2 s, hasta el techo de vuelo sin trabarse |
+| Torre antigua: metida en la losa | se quedaba dentro | sale en < 0,1 s; encerrada, se recoloca a los 1,5 s |
 
 ## 3. Controles
 
-- **Teclado:** WASD/flechas para moverse, Shift para correr y Espacio para saltar. Un toque da un salto corto y mantener, uno largo. En el aire, Espacio otra vez hace el doble salto y, si se mantiene, planea; la tercera vez despega. **V** despega y, volando, **V aterriza**. Volando, Espacio sube y C baja; sin tocar nada se queda cernida. F da un impulso y E sirve para Acción, recoger y soltar.
+- **Teclado:** WASD/flechas para moverse, Shift para correr y Espacio para saltar. Un toque da un salto corto y mantener, uno largo. En el aire, Espacio otra vez hace el doble salto y, si se mantiene, planea; la tercera vez despega. **V** despega y, volando, **V o X aterrizan** (dejar de volar). Volando, mantener Espacio sube y C baja; sin tocar nada se queda cernida. F da un impulso y E sirve para Acción, recoger y soltar. La cámara se gira arrastrando con el ratón o con Q y R. Mover, volar, aterrizar y acción se pueden cambiar en la pausa (Teclas).
+- **Guía con teclado** (`src/game/guia_controles.js`; prueba `AV.controlesTest`): panel inicial «¡Así se juega!» con las teclas reales del mapa (sale la primera vez y mientras no haya volado nunca; se cierra solo al moverse; en la pausa, «Ver la guía de controles»); icono fijo «Controles» abajo a la derecha con la leyenda al pasar el ratón o pulsarlo; volando, la pastilla dorada «X Dejar de volar»; pistas la primera vez que hacen falta («Pulsa V para volar», «Mantén Espacio para subir», «Para dejar de volar, pulsa X») y avisos de viento fuerte y de «ya está libre». Nada de esto sale en táctil. Capturas: `docs/img/mov_guia_*.png`.
 - **Táctil:** el botón **Volar** cambia a **Aterrizar** mientras vuela. Saltar sube y Acción recoge y suelta.
 
 ## 4. Ajuste fino (para forks)
 
-- **Física:** `G.fisica.TUNING`, en `fisica.js` y documentado línea a línea. Un pack lo cambia con `jugador.fisica = { walk, jumpV, fly, landV, … }`.
+- **Física:** `G.fisica.TUNING`, en `fisica.js` y documentado línea a línea. Un pack lo cambia con `jugador.fisica = { walk, jumpV, fly, landV, … }`. Techo de vuelo y red de seguridad: `flyCeil`, `techoRadio`, `techoZona`, `vientoV`, `techoAyuda`, `atasco` y `salirV`.
 - **Cámara:** `G.camara.CAM`; el pack usa `jugador.camaraAjuste`.
 - **Animación:** `ANIM` en `character.js` (zancada, cadencias, alas por modo, apertura del pico, giro de cabeza e IK).
 - **Agarre:** `G.agarre.AG` (tiempos y tamaños por enganche).
