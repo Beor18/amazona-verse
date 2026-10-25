@@ -145,3 +145,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 2026-10-25 · v24 publicada desde ad304c9 (estable): QA aprobó (QA-28/29/31 cerrados), test.sh --extra 13/13 baterías. Abiertos: QA-30 (contextTest intermitente, baja) y QA-10 (descarga inicial) · coordinador
 2026-10-25 · Kelvin sube el tope semanal de uso de 40 % a 70 %; tiene un Android para medir y se encarga de la revisión legal de la bandera (Reglamento 5282) · Kelvin
 2026-10-25 · v25 publicada desde dd4eabe (estable): QA aprobó bd73556; d98dd27 y d87717a (QA-33/32) entran con test.sh --extra 13/13. Kelvin confirmó que el visor permite WebAssembly (meshopt). Descarga inicial 7,98 MB (QA-10 cumplido) · coordinador
+2026-10-25 · Kelvin fija el tope semanal de uso en 45 % (antes 70 %) · Kelvin

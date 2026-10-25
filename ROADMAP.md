@@ -84,4 +84,4 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 
 ## Ritmo y límites
 - El trabajo lo hace un equipo de agentes de Claude por roles, coordinados. QA valida de forma independiente antes de cada publicación.
-- Tope de uso semanal fijado por Kelvin en **70 %**. Al llegar a ese tope se guarda todo y se para una semana. Con ese tope rinden unas 17 horas de equipo completo por semana.
+- Tope de uso semanal fijado por Kelvin en **45 %**. Al llegar a ese tope se guarda todo y se para una semana.
