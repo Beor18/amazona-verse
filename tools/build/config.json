@@ -14,7 +14,7 @@
     "*.pyc"
   ],
   "limites": {
-    "archivos_max": 255,
+    "archivos_max": 511,
     "total_max_mb": 64,
     "archivo_max_mb": 16,
     "objetivo_mb": 30
