@@ -25,3 +25,4 @@ Formato: fecha · decisión · quién · por qué.
 - 2026-10-24 · Los videos se declaran en `assets/video/videos.json` en vez de comprobar si existen · Web lead · Evita peticiones 404 y errores en consola mientras no hay archivos.
 - 2026-10-24 · Las animaciones de entrada solo mueven (sin opacidad 0) · Web lead · La página se ve completa en cualquier captura o miniatura.
 - 2026-10-24 · Subtítulos del pitch ajustados a `tiempos.json` (FINAL v1; B10 empieza en 141.6) y a las pausas medidas en `stems/voz.wav` · Sonido + Web lead · El archivo del sonido manda sobre `vo_bloques.json`.
+- 2026-10-24 · Loop del hero publicado (hero.mp4, 8.6 s, 3.0 MB, sin audio); el póster sigue siendo el render del bosque y el video entra con fundido · Editor de video + Web lead · El primer cuadro del loop es menos atractivo como imagen fija y en movimiento reducido se queda la imagen.

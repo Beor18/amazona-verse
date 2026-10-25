@@ -1,7 +1,19 @@
 {
   "_nota": "Lista de videos disponibles. null = todavía no existe (se ve el póster o el bloque queda oculto). Ejemplos de entrada al final.",
-  "hero": null,
+  "hero": {
+    "mp4": "assets/video/hero.mp4"
+  },
   "pitch": null,
-  "_ejemplo_hero": { "mp4": "assets/video/hero.mp4", "webm": "assets/video/hero.webm" },
-  "_ejemplo_pitch": { "mp4": "assets/video/pitch.mp4", "poster": "assets/video/pitch.jpg", "vtt": { "es": "assets/video/pitch.es.vtt", "en": "assets/video/pitch.en.vtt" } }
+  "_ejemplo_hero": {
+    "mp4": "assets/video/hero.mp4",
+    "webm": "assets/video/hero.webm"
+  },
+  "_ejemplo_pitch": {
+    "mp4": "assets/video/pitch.mp4",
+    "poster": "assets/video/pitch.jpg",
+    "vtt": {
+      "es": "assets/video/pitch.es.vtt",
+      "en": "assets/video/pitch.en.vtt"
+    }
+  }
 }
