@@ -260,6 +260,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   background: var(--glass); color: var(--paper); font: 600 15px/1 var(--font-display); --icon-size: 16px;
 }
 .vid-btn:hover { background: rgba(12, 30, 22, 0.96); }
+@media (max-width: 560px) {
+  .vid-btn { width: 44px; padding: 0; justify-content: center; right: 10px; bottom: 10px; --icon-size: 18px; }
+  .vid-btn .vid-lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 .hero-media figcaption { margin-top: 18px; text-align: right; }
 .hero-media figcaption span { display: inline-block; padding: 4px 12px; border-radius: var(--r-pill); background: rgba(20, 12, 60, 0.55); font-size: var(--fs-sm); color: #fff; }
 .hills { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: clamp(90px, 12vw, 170px); z-index: -1; }
@@ -269,6 +273,19 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   .hero-lead { max-width: 40ch; }
   .hero-media figcaption { text-align: left; }
 }
+
+/* Loops secundarios */
+.loop-fig { margin: 0; min-width: 0; }
+.screen.loop { aspect-ratio: 16 / 9; border-radius: var(--r-lg); box-shadow: 0 0 0 4px var(--night), 0 0 0 6px rgba(255, 210, 122, 0.55), 0 24px 48px rgba(0, 0, 0, 0.45); }
+.paper .screen.loop { box-shadow: 0 0 0 4px var(--card), 0 0 0 6px var(--paper-edge), 0 20px 36px rgba(90, 56, 24, 0.2); }
+.loop-fig figcaption { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
+.paper .loop-fig figcaption { color: var(--ink-muted); }
+.head-media { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
+.section .head-media > .section-head + * { margin-top: 0; }
+.head-media + * { margin-top: clamp(32px, 5vw, 56px); }
+.story-copy .loop-fig { margin-top: 32px; }
+.ns-media { display: grid; gap: 24px; min-width: 0; }
+@media (max-width: 900px) { .head-media { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- Franja de hechos ---------- */
 .facts { background: var(--night); padding-block: 8px 24px; }
@@ -796,6 +813,16 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         <p class="muted" data-l="es">No hay villanos. Los errores enseñan y siempre tienen salida. Para una cotorra, un árbol partido es un nido perdido: proteger el hogar es proteger la especie.</p>
         <p class="muted" data-l="en">There are no villains. Mistakes teach, and there is always a way out. For a parrot, a broken tree is a lost nest: protecting the home means protecting the species.</p>
         <p class="question"><small><span data-l="es">La pregunta del capítulo</span><span data-l="en">The chapter's question</span></small><span data-l="es">¿Salvar lo que construiste, o usar lo que sabes para ayudar?</span><span data-l="en">Save what you built, or use what you know to help?</span></p>
+      <figure class="loop-fig">
+        <div class="screen loop" data-video="historia">
+          <img src="assets/video/historia.jpg" width="1280" height="720" loading="lazy"
+               alt="Vittata, con lentes de aviador y pañuelo, saluda desde el techo de un bohío en Villa Raíz, entre flamboyanes y bambú."
+               data-en-alt="Vittata, wearing aviator goggles and a scarf, waves from the roof of a hut in Villa Raíz, among flamboyant trees and bamboo.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="historia"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">Vittata en Villa Raíz. Imágenes del juego.</span><span data-l="en">Vittata in Villa Raíz. In-game footage.</span></figcaption>
+      </figure>
       </div>
       <div class="cast">
         <article class="talk">
@@ -862,11 +889,23 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 <section class="section paper" id="aprender" aria-labelledby="h-aprender">
   <span class="margin-line" aria-hidden="true"></span>
   <div class="wrap">
+    <div class="head-media">
     <div class="section-head">
       <span class="eyebrow"><span data-l="es">Aprender jugando</span><span data-l="en">Learning through play</span></span>
       <h2 class="h2" id="h-aprender"><span data-l="es">Cada misión pide una habilidad y deja evidencia</span><span data-l="en">Every mission asks for a skill and leaves evidence</span></h2>
       <p class="lead" data-l="es">El estudiante predice, observa y explica. El juego registra lo que hizo y lo que aprendió, no un puntaje.</p>
       <p class="lead" data-l="en">Students predict, observe and explain. The game records what they did and what they learned, not a score.</p>
+    </div>
+      <figure class="loop-fig">
+        <div class="screen loop" data-video="aprender">
+          <img src="assets/video/aprender.jpg" width="1280" height="720" loading="lazy"
+               alt="Vittata se posa en la percha del dosel, junto a un flamboyán, para observar la capa más alta del bosque."
+               data-en-alt="Vittata lands on the canopy perch, next to a flamboyant tree, to observe the upper layer of the forest.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="aprender"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">La percha del dosel en la misión «La ruta de la gota».</span><span data-l="en">The canopy perch in the “Path of the Drop” mission.</span></figcaption>
+      </figure>
     </div>
 
     <div class="decide on-paper" id="decide">
@@ -1073,6 +1112,16 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <p class="promise" data-icon="shield"><span><span data-l="es">Lo cultural (pava, guayabera, maracas) se gana jugando y no se vende. Sin cajas sorpresa y sin presión de compra.</span><span data-l="en">Cultural items (pava, guayabera, maracas) are earned by playing and never sold. No loot boxes and no pressure to buy.</span></span></p>
     </div>
     <div class="showcase">
+      <figure class="loop-fig">
+        <div class="screen loop" data-video="ropero">
+          <img src="assets/video/ropero.jpg" width="1280" height="720" loading="lazy"
+               alt="Vittata con pava jíbara, camisa blanca y maracas, en un sendero del bosque."
+               data-en-alt="Vittata wearing a jíbaro straw hat, a white shirt and maracas, on a forest trail.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="ropero"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">Pava, camisa y maracas: se ganan jugando.</span><span data-l="en">Pava, shirt and maracas: earned by playing.</span></figcaption>
+      </figure>
       <figure class="vitrina">
         <img src="assets/img/ropero.jpg" width="1000" height="300" loading="lazy"
              alt="Cinco conjuntos del ropero en la cotorra 3D: pava con camisa blanca, lentes y camisa de flores con maraca, gorra con camisa 787, sombrero amarillo con martillo, y gorra con camisa de camuflaje."
@@ -1115,12 +1164,24 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       </ul>
       <p class="real-layer"><span data-l="es"><b>La capa real:</b> al lado del juego, el estudiante ve cómo los aviarios de Iguaca, en El Yunque, y José L. Vivaldi, en Río Abajo, incuban, crían y liberan cotorras.</span><span data-l="en"><b>The real-world layer:</b> next to the game, students see how the Iguaca Aviary in El Yunque and the José L. Vivaldi Aviary in Río Abajo incubate, raise and release parrots.</span></p>
     </div>
+    <div class="ns-media">
+      <figure class="loop-fig">
+        <div class="screen loop" data-video="criadero">
+          <img src="assets/video/criadero.jpg" width="1280" height="720" loading="lazy"
+               alt="Una cotorrita verde de frente roja sale del cascarón en un nido sobre un tronco."
+               data-en-alt="A little green parrot with a red forehead hatches from its shell in a nest on a tree stump.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="criadero"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">La eclosión en el criadero, en desarrollo.</span><span data-l="en">Hatching in the nursery, in development.</span></figcaption>
+      </figure>
     <ol class="stages" aria-label="Etapas de la cotorrita" data-en-aria-label="Growth stages">
       <li><span class="dot" aria-hidden="true"></span><b><span data-l="es">Huevo</span><span data-l="en">Egg</span></b></li>
       <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Bebé</span><span data-l="en">Baby</span></b></li>
       <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Juvenil</span><span data-l="en">Juvenile</span></b></li>
       <li><span class="dot" data-icon="wing" aria-hidden="true"></span><b><span data-l="es">Adulta</span><span data-l="en">Adult</span></b></li>
     </ol>
+    </div>
   </div>
 </section>
 

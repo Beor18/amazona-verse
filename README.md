@@ -32,7 +32,7 @@ Los loops van en `assets/video/` con estos nombres: `hero.mp4` y `hero.webm` (to
 
 **Video pitch (2:45).** Va en Prensa y queda oculto hasta que `videos.json` traiga `"pitch"` con `mp4`, `poster` y `vtt`. Los subtítulos `pitch.es.vtt` y `pitch.en.vtt` ya están hechos: texto de `Juego/docs/pitch/VO.txt` con la grafía real; tiempos de los bloques de `_trabajo_claude/pitch/audio/tiempos.json` (FINAL v1) y pausas medidas en `stems/voz.wav`. Si cambia la mezcla, vuelve a ajustarlos con esos dos archivos. Se reproduce solo cuando la persona pulsa Play y muestra los subtítulos del idioma elegido.
 
-Para añadir otro loop (ropero, aprender, criadero), copia el bloque `.screen[data-video]` del hero, cambia `data-key` y el póster, y añade la clave en `videos.json`.
+Hoy hay cinco loops: hero, historia, aprender, ropero y criadero. Para añadir otro, copia un bloque `.loop-fig` (`.screen.loop[data-video]`), cambia `data-key` y el póster, y añade la clave en `videos.json`.
 
 ## Reglas de contenido
 - Vittata y los personajes se usan tal cual vienen del juego; no se retocan.
