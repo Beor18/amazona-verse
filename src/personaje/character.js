@@ -37,6 +37,7 @@
     footIK: 0.32,             // corrección máxima de cada pata en pendiente (unidades del modelo)
     // Posada en algo fino: cadera, patas juntas, rodilla, tobillo, dedos cerrados (rad) y cuánto baja el cuerpo (modelo)
     perch: { cadera: 0.15, juntas: 0.08, rodilla: 0.45, tobillo: 0.35, dedos: 0.6, bajar: 0.04 },
+    agachada: { espalda: 1.0, pecho: 0.45, cabeza: 0.4, cadera: 0.45, rodilla: 0.7, tobillo: 0.5, bajar: 0.1 }, // de 1,75 a 0,81 m
   };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _bp = new THREE.Vector3(), _ep = new THREE.Vector3(), _tg = new THREE.Vector3();
@@ -591,6 +592,7 @@
       this.face(dt);
       this.emotePose(dt);
       this.actPose(dt);
+      this.crouchPose();
       this.clothes();
       this._footIK(dt);
       this._armIK(dt);
@@ -821,6 +823,20 @@
       if (!(this.fitAdj && this.fitAdj.toes)) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', ANIM.perch.dedos * w);
       if (B.espalda1) { this.rot(B.espalda1, 'x', 0.12 * w); this.rot(B.espalda1, 'z', bal); }
       this.root.position.y -= ANIM.perch.bajar * w * this.root.scale.y;
+    }
+    // Agachada bajo un toldo o un alero bajo (agachada 0..1, ya suavizada por fisica.js): patas flexionadas, el cuerpo se tumba
+    // hacia delante y la cabeza se encoge. Con la raíz del peso la cabeza queda siempre por debajo del hueco que pide fisica.js
+    // (medido con los vértices deformados: hueco 1,55 m → cabeza a 1,42; 1,4 → 1,11; 1,15 → 0,81).
+    crouchPose() {
+      const a = this.swimming || this.airborne ? 0 : Math.min(1, Math.max(0, this.agachada || 0)); if (a < 0.01) return;
+      const B = this.bones, A = ANIM.agachada, w = Math.sqrt(a);
+      if (B.espalda1) this.rot(B.espalda1, 'x', A.espalda * w);
+      if (B.espalda2) this.rot(B.espalda2, 'x', A.pecho * w);
+      if (B.cabeza) this.rot(B.cabeza, 'x', A.cabeza * w * this.headSign.pitch);
+      for (const [h, kn, an] of [['pieL1', 'pieL2', 'pieL3'], ['pieL1001', 'pieL2001', 'pieL3001']]) if (B[h]) {
+        this.rot(B[h], 'x', -A.cadera * w); this.rot(B[kn], 'x', -A.rodilla * w); this.rot(B[an], 'x', A.tobillo * w);
+      }
+      this.root.position.y -= A.bajar * w * this.root.scale.y;
     }
     // Agarrar, llevar y usar (los pesos los anima src/engine/agarre.js): reach 0..1 agacharse y alcanzar (con el pico, bajar la
     // cabeza), use 0..1 gesto de uso. Las manos van con IK a carryTargets (en _armIK); aquí solo el cuerpo.
