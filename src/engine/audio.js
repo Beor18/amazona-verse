@@ -102,6 +102,7 @@ AVE.module('audio', function (G) {
   for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);
   const api = {
     vol, ensure, apply, log: [],
+    get ctx() { return ctx; }, get master() { return master; }, // para src/game/musica.js, que cuelga su música y su ambiente del mismo master (ctx es null hasta el primer gesto)
     alSonar(fn) { if (typeof fn === 'function') oyentes.push(fn); },
     define(name, fn) { SOUNDS[name] = (t, arg) => fn(t, arg, A); },
     sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = t => muestra(name, t); cargar(name); },
