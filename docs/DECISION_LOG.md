@@ -132,3 +132,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - 2026-10-24 · `?partida=<id>` aísla la clave de guardado de una pestaña; `AV.saveTest`/`AV.comicTest` usan claves aisladas y dejan G.S y la partida real como estaban · Save & Cómic · varios agentes prueban en el mismo origen.
 
 2026-10-24 · v20 publicada desde f3ed616 (estable). Cómic declara la capacidad downloads del visor para guardar el PNG · coordinador · el estudiante guarda su cómic con confirmación
+2026-10-24 · Directiva V7.0: nuevo AV-ENGINE-AUDITOR independiente (auditoría de motores, sin autorización de migración), aislado en worktree auditoria-motores desde estable · Kelvin/coordinador · decidir motor con evidencia sin frenar el juego
