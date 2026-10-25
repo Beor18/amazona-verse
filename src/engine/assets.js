@@ -3,6 +3,9 @@
      Lo usan el mundo (islas), character.js (modelo y ropa) y cualquier pack. En el artifact de Claude el .glb puede dar 404
      y entonces se usa el base64; los .js de datos se cargan con <script src> relativo (sin fetch a otros dominios).
      La build publicada (<meta name="ave:sin-glb">) va directo al base64, y la cadena se suelta en cuanto se decodifica.
+     La build comprime la geometría con gltfpack (EXT_meshopt_compression + KHR_mesh_quantization; docs/equipo/BUILD.md):
+     se decodifica con MeshoptDecoder (assets/vendor/meshopt) y los atributos cuantizados pasan a Float32 al cargar, así el
+     resto del motor (vegetación, sólidos, colisiones, streaming) lee las mismas posiciones, normales y colores que antes.
    - AVE.assets.image: imágenes en caché (resuelve null si fallan).
    - Módulo G.assets: además, texturas repetibles para el mundo. */
 (function () {
@@ -44,10 +47,38 @@
   let sinGLB = null;
   const buildSinGLB = () => (sinGLB != null ? sinGLB : (sinGLB = !!document.querySelector('meta[name="ave:sin-glb"]')));
 
+  // Atributos enteros (cuantizados por gltfpack) → Float32 con su valor real: normalizados se dividen por el máximo del tipo
+  // (getX de r128 no desnormaliza) y los enteros sin normalizar (posiciones -vpi) conservan su valor, con la escala en el nodo.
+  // skinIndex se queda entero (son índices de hueso). Sin cuantizar no hace nada.
+  const MAXN = [[Int8Array, 127], [Uint8Array, 255], [Int16Array, 32767], [Uint16Array, 65535]];
+  function aFloat(a) {
+    if (!a || a.array instanceof Float32Array) return a;
+    const fila = MAXN.find(([T]) => a.array instanceof T), k = a.normalized && fila ? 1 / fila[1] : 1;
+    const signo = !!(a.normalized && fila && (fila[0] === Int8Array || fila[0] === Int16Array));
+    const n = a.count, s = a.itemSize, out = new Float32Array(n * s), get = [a.getX, a.getY, a.getZ, a.getW];
+    for (let i = 0; i < n; i++) for (let c = 0; c < s && c < 4; c++) { const v = get[c].call(a, i) * k; out[i * s + c] = signo ? Math.max(v, -1) : v; }
+    return new THREE.BufferAttribute(out, s);
+  }
+  function descuantizar(gltf) {
+    const hechas = new Set();
+    gltf.scene.traverse(o => {
+      const g = o.geometry; if (!g || hechas.has(g)) return; hechas.add(g);
+      for (const k in g.attributes) if (k !== 'skinIndex') { const a = g.attributes[k], f = aFloat(a); if (f !== a) g.setAttribute(k, f); }
+      for (const k in g.morphAttributes) g.morphAttributes[k] = g.morphAttributes[k].map(aFloat);
+    });
+    return gltf;
+  }
+  function cargador() {
+    const L = new THREE.GLTFLoader();
+    if (window.MeshoptDecoder && L.setMeshoptDecoder) L.setMeshoptDecoder(window.MeshoptDecoder);
+    return L;
+  }
+
   // o = { b64: () => cadena base64 o undefined, script: ruta del _glb.js que define el global, base: ruta de recursos, error: texto }
   function loadGLB(url, o) {
     o = o || {};
-    return new Promise((resolve, reject) => {
+    return new Promise((ok, reject) => {
+      const resolve = gltf => { try { ok(descuantizar(gltf)); } catch (e) { reject(e); } };
       if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
       const falla = () => reject(new Error(o.error || 'no disponible: ' + url));
       const parse = () => {
@@ -56,7 +87,7 @@
         try {
           const buf = bytesB64(s);
           soltarB64(s);
-          new THREE.GLTFLoader().parse(buf.buffer, o.base || '', resolve, reject);
+          cargador().parse(buf.buffer, o.base || '', resolve, reject);
         } catch (e) { reject(e); }
       };
       const fromB64 = () => {
@@ -68,7 +99,7 @@
         document.head.appendChild(sc);
       };
       if (buildSinGLB() && (o.script || (o.b64 && o.b64()))) fromB64();
-      else new THREE.GLTFLoader().load(url, resolve, undefined, fromB64);
+      else cargador().load(url, resolve, undefined, fromB64);
     });
   }
 

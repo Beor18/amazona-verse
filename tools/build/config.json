@@ -75,6 +75,15 @@
     "patron_normal": "(_n|_normal|normal|_nrm)(\\.|$)",
     "ahorro_min": 0.05
   },
+  "geometria": {
+    "_nota": "Compresión de geometría con gltfpack (tools/build/bin/gltfpack, fuera del sitio; versión, URL y SHA256 en docs/equipo/BUILD.md). EXT_meshopt_compression (r128 lo lee con MeshoptDecoder de assets/vendor/meshopt) y KHR_mesh_quantization; assets.js pasa los atributos a Float32 al cargar. -kn -km -ke -kv conservan nombres de nodos y materiales, extras y atributos (el color de vértice del viento de la flora); -tr deja las texturas como están; -vtf UV en float (sin KHR_texture_transform: los materiales se comparten por nombre); -af 0 -ac -ar 16: animaciones sin remuestrear ni podar.",
+    "version": "1.2",
+    "sha256": "037336fafa46f342fe118ce8d17877fecb3deb1cd6dd8f62ee2a95bfaf2b79df",
+    "opciones": ["-c", "-ce", "ext", "-kn", "-km", "-ke", "-kv", "-tr", "-vtf", "-vn", "10", "-af", "0", "-ac", "-ar", "16"],
+    "carpetas": ["assets/models/"],
+    "ahorro_min": 0.05
+  },
+
   "texturas_compartidas": {
     "_nota": "Una textura embebida que se repite en varios *_glb.js de la misma carpeta sale a <carpeta>/tex/ y los glTF la referencian por uri relativa. Solo en carpetas cuyo cargador pasa base = su propia carpeta (mundo.js ED.base y vegetacion.js KIT.base).",
     "carpetas": [

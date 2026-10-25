@@ -313,7 +313,9 @@ def validar_gltf(j, binc):
     for i, bf in enumerate(col['buffers']):
         L = bf.get('byteLength', 0)
         if 'uri' not in bf:
-            if i != 0 or binc is None:
+            if ((bf.get('extensions') or {}).get('EXT_meshopt_compression') or {}).get('fallback'):
+                pass  # buffer de reserva de EXT_meshopt_compression: no tiene datos (los bufferViews comprimidos van en el BIN)
+            elif i != 0 or binc is None:
                 E.append('buffers[%d] sin uri y sin trozo BIN' % i)
             elif L > len(binc):
                 E.append('buffers[0] declara %d bytes y el BIN tiene %d' % (L, len(binc)))
@@ -1126,6 +1128,63 @@ def paso_compartidas(sitio, cfg, reg):
     return grupos
 
 
+def paso_geometria(sitio, cfg, reg, hilos, cache):
+    """Comprime la geometría de los *_glb.js con gltfpack (EXT_meshopt_compression + KHR_mesh_quantization). El juego la
+    decodifica con assets/vendor/meshopt y pasa los atributos a Float32 al cargar (src/engine/assets.js). Ver BUILD.md."""
+    C = cfg.get('geometria') or {}
+    exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gltfpack')
+    if not os.path.exists(exe):
+        reg.add('aviso', 'geometria', 'sin tools/build/bin/gltfpack: la geometría no se comprime (instalarlo según docs/equipo/BUILD.md)')
+        return {'hecho': False}
+    if C.get('sha256') and sha256(leer(exe)) != C['sha256']:
+        reg.add('error', 'geometria', 'tools/build/bin/gltfpack no coincide con el SHA256 de config.json (geometria.sha256)')
+        return {'hecho': False}
+    opts = list(C.get('opciones') or [])
+    clave = sha256(('%s %s' % (C.get('version', ''), ' '.join(opts))).encode())
+    files = sorted(f for f in listar(sitio) if f.endswith('_glb.js') and any(f.startswith(c) for c in C.get('carpetas') or []))
+
+    def uno(f):
+        p = os.path.join(sitio, f)
+        pre, b64, post, _, _ = leer_glb_js(leer(p).decode('utf-8'))
+        raw = base64.b64decode(b64)
+        j, _ = partir_glb(raw)
+        if 'EXT_meshopt_compression' in (j.get('extensionsUsed') or []):
+            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido'}
+        h = sha256(raw + clave.encode())
+        cp = os.path.join(cache, h + '.glb') if cache else None
+        if cp and os.path.exists(cp):
+            out = leer(cp)
+        else:
+            with tempfile.TemporaryDirectory(prefix='avgeo-') as td:
+                i, o = os.path.join(td, 'in.glb'), os.path.join(td, 'out.glb')
+                escribir(i, raw)
+                r = subprocess.run(['taskpolicy', '-b', 'nice', '-n', '15', exe, '-i', i, '-o', o] + opts, capture_output=True, text=True)
+                if r.returncode or not os.path.exists(o):
+                    return {'archivo': f, 'antes': len(raw), 'despues': None, 'estado': 'gltfpack falló: ' + (r.stderr or '').strip()[-200:]}
+                out = leer(o)
+            if cp:
+                escribir(cp, out)
+        j2, b2 = partir_glb(out)
+        E, _ = validar_gltf(j2, b2)
+        img = lambda jj: [('u:' + im['uri']) if 'uri' in im else 'bv' for im in jj.get('images') or []]
+        if E or sorted(img(j)) != sorted(img(j2)):
+            return {'archivo': f, 'antes': len(raw), 'despues': None, 'estado': 'salida rechazada: ' + ('; '.join(E[:2]) or 'cambian las imágenes')}
+        if len(out) > len(raw) * (1 - C.get('ahorro_min', 0.05)):
+            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'sin ahorro'}
+        escribir(p, (pre + base64.b64encode(out).decode('ascii') + post).encode('utf-8'))
+        return {'archivo': f, 'antes': len(raw), 'despues': len(out), 'estado': 'ok'}
+
+    with cf.ThreadPoolExecutor(max(1, hilos)) as ex:
+        res = list(ex.map(uno, files))
+    for r in res:
+        if r['despues'] is None:
+            reg.add('aviso', 'geometria', '%s: %s (queda sin comprimir)' % (r['archivo'], r['estado']))
+    ok = [r for r in res if r['estado'] == 'ok']
+    return {'hecho': True, 'gltfpack': C.get('version'), 'opciones': opts, 'archivos': len(res), 'comprimidos': len(ok),
+            'antes_mb': mb(sum(r['antes'] for r in ok)), 'despues_mb': mb(sum(r['despues'] for r in ok)),
+            'fallidos': [r for r in res if r['despues'] is None]}
+
+
 def duplicados_archivos(sitio):
     por_hash = {}
     for f, s in listar(sitio).items():
@@ -1248,6 +1307,7 @@ def main():
     ap.add_argument('--config', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json'))
     ap.add_argument('--sin-optimizar', action='store_true')
     ap.add_argument('--sin-texturas-compartidas', action='store_true')
+    ap.add_argument('--sin-geometria', action='store_true', help='no comprimir la geometría con gltfpack')
     ap.add_argument('--sin-cache', action='store_true')
     ap.add_argument('--estricto', action='store_true')
     ap.add_argument('--hilos', type=int, default=min(8, os.cpu_count() or 4))
@@ -1297,6 +1357,11 @@ def main():
             R['compartidas'] = paso_compartidas(sitio, cfg, reg)
             R['compartidas_ahorro_mb'] = mb(antes - sum(listar(sitio).values()))
             etapa('Texturas duplicadas compartidas')
+        if not a.sin_geometria:
+            print('· geometría con gltfpack (%d hilos)…' % a.hilos, flush=True)
+            cache = None if a.sin_cache else os.path.join(os.environ.get('AV_BUILD_CACHE') or os.path.expanduser('~/Library/Caches/amazonaverse-build'), 'geo')
+            R['geometria'] = paso_geometria(sitio, cfg, reg, a.hilos, cache)
+            etapa('Geometría comprimida (meshopt)')
     print('· validación final', flush=True)
     vf = paso_validar(sitio, cfg, reg, 'final', a.estricto)
     files = listar(sitio)

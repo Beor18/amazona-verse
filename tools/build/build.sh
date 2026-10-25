@@ -1,7 +1,7 @@
 #!/bin/bash
 # Amazona Verse · build reproducible del artifact (dueño: Build/Release Engineer). Documentado en docs/equipo/BUILD.md.
 #
-#   tools/build/build.sh <ref> [<salida>] [--anterior <lista>] [--sin-optimizar] [--sin-texturas-compartidas] [--estricto] [--sin-cache]
+#   tools/build/build.sh <ref> [<salida>] [--anterior <lista>] [--sin-optimizar] [--sin-texturas-compartidas] [--sin-geometria] [--estricto] [--sin-cache]
 #
 # Exporta <ref> con git archive (no toca la copia de trabajo), quita .glb/.blend, marca index.html (ave:sin-glb), valida,
 # poda, optimiza texturas y escribe <salida>/site (lo que se publica), <salida>/manifiesto.json y reporte-build.{md,json}.
@@ -21,7 +21,7 @@ OPTS=()
 while [ $# -gt 0 ]; do
   a="$1"; shift
   case "$a" in
-    --sin-optimizar|--sin-texturas-compartidas|--estricto|--sin-cache) OPTS+=("$a") ;;
+    --sin-optimizar|--sin-texturas-compartidas|--sin-geometria|--estricto|--sin-cache) OPTS+=("$a") ;;
     --anterior) [ $# -ge 1 ] || { avb_err "--anterior necesita un archivo"; exit 2; }
                 [ -f "$1" ] || { avb_err "no existe $1"; exit 2; }
                 OPTS+=(--anterior "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"); shift ;;
