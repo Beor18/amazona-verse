@@ -14,7 +14,8 @@ AVE.module('movimiento', function (G) {
     opts = opts || {};
     const F = G.fisica, M = F.MOVE, T = F.TUNING, K = G.input.keys, I = G.input, H = G.terreno.height;
     const R = G.pruebas.runner(), check = R.check, met = {};
-    const keep = { pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), vy: S.vy, yaw: G.camara.yaw, quiet: G.quiet };
+    const keep = { pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), vy: S.vy, yaw: G.camara.yaw, quiet: G.quiet, lazy: [G.camara.CAM.lazy, G.camara.CAM.lazyFly] };
+    G.camara.CAM.lazy = G.camara.CAM.lazyFly = 0; // la cámara no gira sola durante la prueba: las direcciones son repetibles
     G.quiet = true;
     const P3 = G.actores.player3D;
     const frame = (fn, n) => { const out = []; for (let i = 0; i < (n || 1); i++) { if (fn) fn(i); G.renderer.update(DT); out.push({ x: S.pos.x, y: S.pos.y, z: S.pos.z, vy: S.vy, sp: M.speed, g: M.groundY, fly: M.flying, sw: !!M.swimming, gr: M.grounded }); } return out; };
@@ -201,6 +202,7 @@ AVE.module('movimiento', function (G) {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;
       F.endFlight(); M.vx = M.vz = 0; M.swimming = false;
       Object.assign(S.pos, keep.pos); S.facing = keep.facing; S.vy = 0; G.camara.yaw = keep.yaw; G.quiet = keep.quiet;
+      G.camara.CAM.lazy = keep.lazy[0]; G.camara.CAM.lazyFly = keep.lazy[1];
       G.camara.place(true);
     }
     const res = R.result(); res.metricas = met;

@@ -60,10 +60,9 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 
 - **Gameplay** decide qué se agarra: `G.agarre.agarrar(obj, { id, enganche })`, `soltar({ en })`, `usar()` y `lleva()`, con los ganchos `agarrado`, `soltado` y `usado`. Acción suelta lo que se lleva (interaccion.js, d978bd0). Opcional: `G.emit('voz', { charIndex })` para que el pico siga la voz palabra a palabra.
 - **Perchas:** `addPercha`, `suelo` y la regla de "posado" no cambian.
-- **Criadero:** el compañero será la cría nacida. El game designer de huevos lo implementa ahora en criadero.js: `companero()`, `vestir(ch, info)` y el evento `companero`. Lo mío es el seguimiento: el bebé va a saltitos sin volar, el juvenil camina y el adulto vuela con Vittata.
+- **Criadero:** el compañero es la cría nacida. criadero.js da `companero()`, `vestir(ch, info)` y el evento `companero`; actores.js la sigue. El bebé va a saltitos a 1,2 m y no vuela; el juvenil camina a 1,6 m; el adulto, a 1,9 m, vuela junto a Vittata. Si se queda a más de 25 m, reaparece detrás. Sin cría nacida no hay compañero; sin criadero en el pack, sigue el aprendiz (`docs/img/mov_companero.png`).
 
 ## 6. Pendiente
 
-- Compañero = cría del criadero, cuando criadero.js publique `companero()`.
 - El IK de patas deja ~7 cm de error en el pie de arriba en laderas de más de 20°. Se puede afinar con más iteraciones o con una inclinación del tobillo según la normal.
 - Un gesto de "posarse" propio en las perchas y en el nido (ahora usa el aterrizaje general).

@@ -257,7 +257,8 @@ AVE.module('fisica', function (G) {
     } else if (MOVE.flying) {
       // Vuelo sin gravedad. Despegue: impulso que se apaga. Aterrizaje: baja y frena con las alas cerca del suelo.
       // Si no: mantener salto sube, C baja, y sin nada se cierne en el sitio (o planea perdiendo un poco a velocidad de crucero).
-      const above = S.pos.y - ground;
+      // Altura sobre el suelo, mirando también 0,35 s adelante: al aterrizar sobre un tejado o un borde frena a tiempo
+      const above = S.pos.y - Math.max(ground, suelo(S.pos.x + MOVE.vx * 0.35, S.pos.z + MOVE.vz * 0.35, S.pos.y));
       let want, k = T.vAccel;
       if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6; k = 2; }
       else if (MOVE.landing) want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6);

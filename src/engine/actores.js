@@ -216,23 +216,61 @@ AVE.module('actores', function (G) {
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
       P.update(dt);
     }
-    if (companion3D && companion3D.root.visible) {
-      const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;
-      const k = snap ? 1 : Math.min(1, dt * 3);
-      const dx = (tx - companionPos.x) * k, dz = (tz - companionPos.z) * k;
-      companionPos.x += dx; companionPos.z += dz;
-      for (const c of F.colliders) F.pushOut(companionPos, c, 0.4);
-      companion3D.root.position.set(companionPos.x, Math.max(G.terreno.surfaceY(companionPos.x, companionPos.z, S.pos.y), G.agua.levelAt(companionPos.x, companionPos.z) - F.SWIM_DEPTH), companionPos.z);
-      const sp = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
-      if (sp > 0.6) companion3D.root.rotation.y = Math.atan2(dx, dz);
-      const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
-      if (anim3D.companion !== want && companion3D.play(want)) anim3D.companion = want;
-      companion3D.wingMode = want === 'Walk' ? 'walk' : 'idle';
-      companion3D.speed = sp;
-      companion3D.gait = want === 'Walk' ? 1 : 0;
-      companion3D.update(dt);
-      cShadow.position.set(companionPos.x, H(companionPos.x, companionPos.z) + 0.03, companionPos.z);
+    if (companion3D && companion3D.root.visible) followCompanion(dt, snap);
+  }
+  // ---------- Compañero: la cría del criadero (o, sin criadero, el aprendiz del niño) ----------
+  // Bebé: va a saltitos detrás (1,2 m), no vuela (salta y aletea). Juvenil: camina detrás (1,6 m). Adulto (y aprendiz): 1,9 m y
+  // vuela junto a Vittata. Si se queda a más de COMPA.lejos m, reaparece detrás de ella. Mira a Vittata cuando habla.
+  const COMPA = { dist: { bebe: 1.2, juvenil: 1.6, adulto: 1.9 }, lado: 0.9, vel: 12, acel: 7, lejos: 25, alturaVuelo: 0.4 };
+  const cmp = { vx: 0, vz: 0, y: null, vy: 0, joy: 0 };
+  function followCompanion(dt, snap) {
+    const F = G.fisica, MOVE = F.MOVE, C = companion3D, etapa = compa.info ? compa.info.etapa : 'adulto';
+    const vuela = etapa !== 'bebe' && etapa !== 'juvenil';
+    const d = COMPA.dist[etapa] || 1.9;
+    const tx = S.pos.x - S.facing.x * d + S.facing.z * COMPA.lado, tz = S.pos.z - S.facing.z * d - S.facing.x * COMPA.lado;
+    let ex = tx - companionPos.x, ez = tz - companionPos.z;
+    const far = Math.hypot(ex, ez);
+    // Muy lejos (Vittata voló o se teletransportó): reaparece detrás de ella cuando vuelve a pisar suelo
+    if (snap || (far > COMPA.lejos && (MOVE.grounded || MOVE.swimming || vuela))) { companionPos.x = tx; companionPos.z = tz; cmp.vx = cmp.vz = 0; cmp.y = null; ex = ez = 0; }
+    // Velocidad: llega al punto de seguimiento con frenada suave (sin teletransportarse ni pasarse)
+    const want = Math.min(COMPA.vel * (etapa === 'bebe' ? 0.85 : 1), Math.hypot(ex, ez) * 3.2), el = Math.hypot(ex, ez) || 1;
+    const k = Math.min(1, dt * COMPA.acel);
+    cmp.vx += (ex / el * want - cmp.vx) * k; cmp.vz += (ez / el * want - cmp.vz) * k;
+    companionPos.x += cmp.vx * dt; companionPos.z += cmp.vz * dt;
+    for (const c of F.colliders) F.pushOut(companionPos, c, 0.4);
+    const ground = Math.max(G.terreno.surfaceY(companionPos.x, companionPos.z, S.pos.y), G.agua.levelAt(companionPos.x, companionPos.z) - F.SWIM_DEPTH);
+    // Altura: en el suelo, o volando junto a Vittata (solo la adulta); el bebé y el juvenil saltan si ella salta cerca
+    const flyY = vuela && MOVE.flying ? Math.max(ground, S.pos.y + COMPA.alturaVuelo) : ground;
+    if (cmp.y == null) cmp.y = flyY;
+    if (vuela && (MOVE.flying || cmp.y > ground + 0.05)) { cmp.y += (flyY - cmp.y) * Math.min(1, dt * 3); if (cmp.y < ground) cmp.y = ground; cmp.vy = 0; }
+    else {
+      if (cmp.y <= ground + 0.01 && MOVE.jumping && S.vy > 3 && Math.hypot(S.pos.x - companionPos.x, S.pos.z - companionPos.z) < 4) cmp.vy = etapa === 'bebe' ? 4 : 5.5;
+      cmp.vy -= 22 * dt; cmp.y += cmp.vy * dt;
+      if (cmp.y <= ground) { cmp.y = ground; cmp.vy = 0; }
     }
+    const air = cmp.y > ground + 0.05, flying = vuela && air && MOVE.flying;
+    C.root.position.set(companionPos.x, cmp.y, companionPos.z);
+    if (compa.vest && compa.vest.pies) C.root.position.y -= compa.vest.pies();
+    const sp = Math.hypot(cmp.vx, cmp.vz);
+    if (sp > 0.6) { const want3 = Math.atan2(cmp.vx, cmp.vz), r = C.root.rotation, dA = Math.atan2(Math.sin(want3 - r.y), Math.cos(want3 - r.y)); r.y += dA * Math.min(1, dt * 10); }
+    else if (G.dialogo.open() || sp < 0.2) { const want3 = Math.atan2(S.pos.x - companionPos.x, S.pos.z - companionPos.z), r = C.root.rotation, dA = Math.atan2(Math.sin(want3 - r.y), Math.cos(want3 - r.y)); r.y += dA * Math.min(1, dt * 3); }
+    C.root.rotation.order = 'YXZ';
+    C.root.rotation.x += ((flying ? 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.5 : 0) - C.root.rotation.x) * Math.min(1, dt * 6);
+    const moving = sp > 0.6;
+    const clip = moving && !air && etapa !== 'bebe' && sp < (F.SPEED + F.RUN_SPEED) / 2 ? 'Walk' : 'Idle';
+    if (anim3D.companion !== clip && C.play(clip)) anim3D.companion = clip;
+    C.speed = sp; C.airborne = air; C.flying = flying; C.legsDown = flying && sp < 2.5 ? 0.6 : 0;
+    // Bebé: siempre a saltitos (patas juntas) y aleteando al saltar; juvenil y adulto caminan o corren
+    C.gait = !moving || air ? 0 : etapa === 'bebe' || sp > (F.SPEED + F.RUN_SPEED) / 2 ? 2 : 1;
+    C.wingMode = flying ? (sp < 2.5 ? 'hover' : 'fly') : air ? 'flap' : moving ? 'walk' : 'idle';
+    C.groundY = ground; C.groundAt = !air ? groundAt : null;
+    // Mira a Vittata cuando ella habla; se alegra cuando ella recoge algo
+    C.lookAt = G.dialogo.open() && G.dialogo.talk.who === J.nombre && player3D ? player3D.root.position.clone().setY(player3D.root.position.y + 1.4) : null;
+    C.expression = joy.t > 0 ? 'happy' : G.dialogo.open() ? 'curious' : flying ? 'happy' : 'neutral';
+    if (compa.vest) compa.vest.antes();
+    C.update(dt);
+    if (compa.vest) compa.vest.despues();
+    cShadow.position.set(companionPos.x, H(companionPos.x, companionPos.z) + 0.03, companionPos.z);
   }
   // Suelo bajo un pie (terreno, pisos de una vía y perchas) para el IK de patas
   function groundAt(x, z) { return G.fisica.suelo(x, z, S.pos.y + 0.05); }
@@ -249,12 +287,37 @@ AVE.module('actores', function (G) {
     return speakTarget.set(best.sp.position.x, best.sp.position.y + 0.4, best.sp.position.z);
   }
   // Aprendiz: modelo 3D con su look, o retrato 2D como sprite si no hay modelo
+  // Datos del compañero: con criadero, su cría nacida (sin cría nacida no hay compañero); sin criadero, el aprendiz del niño
+  const compa = { key: null, info: null, vest: null };
+  function setCompa(info) {
+    const key = info ? info.id + ':' + info.etapa : '';
+    if (key === compa.key && (!info || companion3D.root.visible)) return;
+    if (compa.vest) { compa.vest.quitar(); compa.vest = null; }
+    compa.key = key; compa.info = info;
+    if (!info) { companion3D.root.visible = false; cShadow.visible = companion.visible = false; return; }
+    const altura = J.altura * (info.escala || 1);
+    companion3D.root.scale.setScalar(altura / companion3D.height);
+    companion3D.root.userData.s = companion3D.root.scale.x;
+    try { compa.vest = G.criadero.vestir(companion3D, info); } catch (e) { compa.vest = null; companion3D.applyLook(info.look); }
+    if (!compa.vest) companion3D.applyLook(info.look);
+    companion3D.root.visible = true; cShadow.visible = true; companion.visible = false;
+    companionPos.x = S.pos.x - S.facing.x * 1.6; companionPos.z = S.pos.z - S.facing.z * 1.6; cmp.y = null;
+  }
+  G.on('companero', info => { if (companion3D) setCompa(info || null); });
   async function refreshCompanion() {
+    const CR = G.criadero && G.criadero.companero ? G.criadero : null;
+    if (CR) {
+      let info = null; try { info = CR.companero(); } catch (e) { info = null; }
+      if (companion3D) { compa.key = null; setCompa(info); return; }
+      companion.visible = cShadow.visible = false; // sin modelo 3D, la cría no se dibuja como sprite
+      return;
+    }
     if (!S.profile.created) { companion.visible = cShadow.visible = false; if (companion3D) companion3D.root.visible = false; return; }
     if (companion3D) {
+      companion3D.root.scale.setScalar(((J.acompanante && J.acompanante.altura) || 1.4) / companion3D.height);
       companion3D.applyLook(G.creador.profileLook(S.profile));
       companion3D.root.visible = true; cShadow.visible = true; companion.visible = false;
-      companionPos.x = S.pos.x - 1.5; companionPos.z = S.pos.z + 1;
+      companionPos.x = S.pos.x - 1.5; companionPos.z = S.pos.z + 1; cmp.y = null;
       return;
     }
     await G.creador.drawPortrait(portraitCanvas.getContext('2d'), 256, S.profile, false);
