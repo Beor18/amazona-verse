@@ -1,15 +1,15 @@
 # SEGURIDAD_INFANTIL · Amazona Verse · 24 oct 2026
 
-Revisión de `src/`, `content/` e `index.html` (estados al día con 647ebfd y a5a72ac). Borrador para el abogado de COPPA; no es asesoría legal.
+Revisión de `src/`, `content/` e `index.html` (estados al día con 48524f5). Borrador para el abogado de COPPA; no es asesoría legal.
 
-**Resumen:** sin cuentas, anuncios, chat, analítica ni compras; todo queda en el dispositivo. Pero el producto promete más de lo que cumple: el niño escribe texto libre y la página llama a terceros.
+**Resumen:** sin cuentas, anuncios, chat, analítica ni compras; todo queda en el dispositivo. Pero el producto promete más de lo que cumple: el niño escribe texto libre y la página aún llama a Google Fonts.
 
 ## 1. Checklist COPPA/FERPA
 
 | # | Control | Estado | Evidencia |
 |---|---|---|---|
 | 1 | Sin cuentas, anuncios ni envío de datos | Cumple | Único POST: pruebas, mismo origen (`content/cap1/pruebas.js:106`) |
-| 2 | Sin terceros que reciban la IP | Riesgo | Google Fonts `index.html:7-8`; cdnjs/jsDelivr `index.html:264-266`, `src/engine/renderer.js:240`; sin `integrity` |
+| 2 | Sin terceros que reciban la IP | Riesgo | Solo Google Fonts (`index.html:7-8`); three r128 local desde 48524f5 (`index.html:264-266`); jsDelivr solo si falta la copia local (`src/engine/renderer.js:253`) |
 | 3 | Sin texto libre del niño | Riesgo (filtrado en 647ebfd; faltan listas) | Nombre `index.html:246`, `src/game/creador.js:21`; título y viñetas `index.html:203`, `src/game/comic.js:146` |
 | 4 | Declaraciones de privacidad exactas | Riesgo bajo (reporte corregido en 647ebfd; falta `lecciones.js`) | `content/cap1/lecciones.js:522-524` dice "sin texto libre" y "sin terceros"; va dentro del JSON (`src/game/aula.js:380`) |
 | 5 | Sin voz, cámara, ubicación ni fotos | Cumple | Sin `getUserMedia` ni `geolocation`; el cómic captura la escena 3D |
@@ -31,7 +31,7 @@ Revisión de `src/`, `content/` e `index.html` (estados al día con 647ebfd y a5
 **Altos**
 1. **Declaraciones falsas (#4).** La FTC puede tratarlo como engaño. Alinear texto y código.
 2. **Texto libre (#3).** El niño puede escribir su nombre o su escuela; queda en `localStorage` y sale en el PNG/PDF del cómic (`content/cap1/pack.js:99`). Usar listas de nombres y frases.
-3. **Terceros sin SRI (#2).** Google y las CDN ven la IP de cada niño; una CDN comprometida ejecutaría código. Servir three.js y las fuentes desde el paquete.
+3. **Google Fonts (#2).** Google ve la IP de cada niño. three.js ya es local (48524f5); servir las fuentes desde el paquete requiere aprobación de Kelvin.
 4. **Host (#15).** Confirmarlo antes del piloto.
 
 **Medios**
@@ -54,7 +54,7 @@ Revisión de `src/`, `content/` e `index.html` (estados al día con 647ebfd y a5
 **Amazona Verse: tu privacidad, en simple**
 - No pedimos nombre, correo, fotos, voz ni ubicación. No hay cuentas, anuncios, chat ni compras.
 - El progreso se guarda solo en este equipo; no lo recibimos.
-- El navegador descarga el motor 3D y las letras de servidores de terceros, que ven la dirección de internet del equipo. *[Quitar al servirlas desde el paquete.]*
+- El navegador descarga las letras desde Google Fonts, que ve la dirección de internet del equipo. *[Quitar al servirlas desde el paquete.]*
 - El maestro puede descargar un reporte con estación, fecha, grado y respuestas, sin nombres. Si la escuela añade nombres, el archivo pasa a ser un registro escolar (FERPA) bajo su control.
 - Para borrar: Modo Maestro → "Borrar progreso"; Pausa → "Reiniciar". Borrar los datos del navegador lo elimina todo.
 - Pedimos a los niños no escribir su nombre real.
