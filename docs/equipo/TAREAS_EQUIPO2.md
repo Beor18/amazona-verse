@@ -36,5 +36,5 @@ Actualiza `docs/equipo/GDD_CAP1.md`, `docs/CHAPTER_01_GAMEPLAY.md` y `docs/equip
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
 | E2-1 | pendiente | | |
-| E2-2 | en curso (la toma la sesión principal: Kelvin prioriza cerrar el cap. 1) | | |
+| E2-2 | pendiente | | |
 | E2-3 | pendiente | | |
