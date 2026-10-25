@@ -1,7 +1,8 @@
 /* Content pack cap1 · misiones de habilidad (GDD_CAP1 §3)
    Cada misión es un objeto de datos (pasos con disparadores "hasta" y una recompensa por hito, ver src/game/misiones.js);
    lo que no cabe en datos (el Simon del coquí) es un minijuego de este pack en preparar(G).
-   La M2 de anillos de vuelo se quitó (la rechazó el fundador): su lugar es el hueco "educativa". */
+   La M2 de anillos de vuelo se quitó (la rechazó el fundador): su lugar es la misión educativa "La ruta de la gota"
+   (docs/equipo/EDUCATIVO.md), cuyos pasos p1–p8 son estos datos y cuyo juego está en educativa.js. */
 (function () {
   'use strict';
   // M3 "Co-quí": tres coquíes escondidos; cada uno canta un patrón corto (co = grave, quí = agudo)
@@ -18,17 +19,14 @@
       { id: 'm1', titulo: 'Fondo del río', hud: 'Río: bucear',
         pasos: [{ texto: 'Bucea hasta la pieza de metal del fondo de la poza', hasta: { recogido: 'c1' } }],
         recompensa: { hito: 'm1' } },
-      // ---------- HUECO: misión educativa (M2) ----------
-      // La llena el rol Educativo siguiendo docs/equipo/EDUCATIVO.md ("La ruta de la gota").
-      // Mientras "pasos" esté vacío el motor la ignora: no sale en el HUD, no guía y no se completa.
-      // Su recompensa ya está reservada: la pava jíbara (coleccionables.js, hito 'educativa').
-      // Para llenarla: pasos [{ texto, hasta, guia? }] con disparadores de src/game/misiones.js; lo que no quepa en datos
-      // (perchas, preguntas) va como minijuego en un preparar(G) de este pack, como el Simon de M3. Los datos de lecciones
-      // deben ir en un .js que asigne un global (como dialogos_cap1.js): el artifact no permite fetch del .json.
-      // Referencia: EDUCATIVO.md §6 reutiliza como perchas las coordenadas de los antiguos anillos (y = metros sobre el suelo).
-      { id: 'educativa', titulo: 'Misión educativa', hud: null, pasos: [], recompensa: { hito: 'educativa' },
-        referencia: { anillos: [{ x: 10, z: -8, y: 6 }, { x: 18, z: -16, y: 8 }, { x: 27, z: -12, y: 9 }, { x: 32, z: -2, y: 10 },
-          { x: 30, z: 9, y: 10 }, { x: 24, z: 15, y: 9 }, { x: 19, z: 8, y: 8 }] } },
+      // ---------- M2 educativa: "La ruta de la gota" (EDUCATIVO.md §2) ----------
+      // Cada paso se cumple con una marca en S.edu.hecho que pone educativa.js; el último (p8) incluye "Luma te pregunta".
+      // Textos visibles, perchas, preguntas y fichas salen de lecciones.js (AV_LECCIONES_CAP1) en ES/EN.
+      { id: 'educativa', titulo: 'La ruta de la gota', leccion: 'mision_educativa',
+        hud: (S, G) => (G.c.edu ? G.c.edu.hud() : 'La ruta de la gota'),
+        pasos: ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'].map(id => ({ id, texto: id, hasta: { marca: 'edu.hecho.' + id } })),
+        guia: G => (G.c.edu ? G.c.edu.guia() : null),
+        recompensa: { hito: 'educativa' } },
       { id: 'm3', titulo: 'Co-quí', hud: S => `Coquíes ${S.coquis.length}/${BUSHES.length}`,
         pasos: [
           { texto: 'Pide voz para el transmisor', hasta: { marca: 'chorus' } },

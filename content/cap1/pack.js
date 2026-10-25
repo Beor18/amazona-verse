@@ -37,11 +37,17 @@
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
       version: 4,
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis'],
+      // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
         indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [],
+        edu: {
+          hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
+          inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
+          rio: 0, poza: { gota: false, marca: false }, explicacion: 0, contraste: false, fichas: [], formativa: {}, registro: null,
+        },
       }),
       validar: d => !!(d.evaluated && d.examined),
       // v2 -> v3: eventos al esquema nuevo, perfil y proyecto de cómic por defecto; v3 -> v4: capítulo terminado = paso final
@@ -65,6 +71,8 @@
       // Los eventos de un terreno llevan su lugar y la elección
       extra: (def, data) => ({ location: data.parcel ? (data.parcel === 'A' ? 'parcela_rio' : 'parcela_colina') : def.loc, choice: data.choice || (data.parcel || null) }),
     },
+    // Aula (src/game/aula.js): progreso del aula en el dispositivo, separado de la partida; lecciones en lecciones.js
+    aula: { clave: 'amazonaverse.aula.cap1', estado: 'edu', archivo: 'amazonaverse_cap1', lecciones: () => window.AV_LECCIONES_CAP1 },
     // Diálogos del guion (dialogos_cap1.js, generado desde dialogos_cap1.json)
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,

@@ -52,8 +52,10 @@
 #card:has(.diary) .lbl.lbl-ciencia::before { background: var(--leaf); -webkit-mask-image: var(--i-sparkle); mask-image: var(--i-sparkle); }
 .lbl-ciencia small { margin-left: auto; font: 700 var(--fs-sm)/1 var(--font-body); color: var(--c-ink-muted); }
 .diary.ciencia li .fuente { margin-top: var(--sp-1); font-weight: 700; color: var(--leaf) !important; }
-.diary.ciencia li .btn.sm { margin-top: var(--sp-2); min-height: 36px; padding: 0 var(--sp-3); font-size: var(--fs-sm); }
-.diary .ico.ciencia { background: var(--leaf-hi); }
+.diary .ico.ciencia { border: 0; background: #3d8fb0; }
+.diary .ico.ciencia::before { background: #fff; -webkit-mask-image: var(--i-bulb); mask-image: var(--i-bulb); }
+.diary.ciencia li .edu-leer { position: absolute; right: 8px; bottom: 8px; min-height: 36px; min-width: 36px; width: 36px; --icon-size: 18px; }
+.diary.ciencia li.found { padding-bottom: 48px; }
 
 /* ---------- Menú de pausa: sección Aula y acceso discreto de docentes ---------- */
 .pause-aula { padding: var(--sp-4); border-radius: var(--r-lg); background: rgba(244, 247, 241, 0.05); border: 1px solid rgba(244, 247, 241, 0.1); }

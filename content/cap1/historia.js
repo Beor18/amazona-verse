@@ -29,10 +29,11 @@
           hasta: { tiene: NEEDS },
           alCompletar: G => { G.eventos.log('ResourcesCollected', { ...G.S.inv }); if (!G.dialogo.open()) G.dialogo.say(G.dialogo.L('evento:ResourcesCollected')); },
           guia: G => G.misiones.needItems(NEEDS) },
-        { id: 'terrenos', texto: 'Inspecciona los dos terrenos',
-          progreso: S => ` (${(S.evaluated.A ? 1 : 0) + (S.evaluated.B ? 1 : 0)}/2)`,
-          hasta: { marca: ['evaluated.A', 'evaluated.B'] },
-          guia: G => at(G, !G.S.evaluated.A ? 'postA' : 'postB') },
+        // La misión educativa "La ruta de la gota" (educativa.js) es este paso: observar, predecir y volver con evidencia.
+        // Incluye ver los dos terrenos desde arriba (S.evaluated); al terminarla se elige el terreno.
+        { id: 'terrenos', texto: (S, G) => G.c.edu ? G.c.edu.textoPaso() : 'Inspecciona los dos terrenos',
+          hasta: { marca: ['evaluated.A', 'evaluated.B'], mision: 'educativa' },
+          guia: G => (G.c.edu && G.c.edu.guia()) || at(G, !G.S.evaluated.A ? 'postA' : 'postB') },
         { id: 'refugio', texto: 'Elige un terreno y construye el refugio',
           guia: G => { const S = G.S; return S.event ? null : S.refuge && S.refuge.damaged ? at(G, 'refuge') : S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]); } },
         { id: 'guardian', texto: 'Habla con el Guardián Constructor', guia: G => at(G, 'guardian') },
@@ -117,6 +118,7 @@
           return;
         }
         if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }]); return; }
+        if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()]); return; }
         if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }]); return; }
         if (S.refuge && S.refuge.damaged) { say([{ who: 'Luma', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }]); return; }
         say([{ who: 'Luma', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }]);
@@ -166,7 +168,7 @@
         else if (G.fisica.colliders.some(c => c.kind !== 'refuge' && c.r > 0 && Math.hypot(gx - c.x, gz - c.z) < c.r + 1.3)) reason = 'Choca con algo';
         build.valid = !reason; build.reason = reason;
         ghost.position.set(gx, H(gx, gz), gz);
-        ghost.children.forEach(m => m.material.color.set(build.valid ? '#7fd38f' : '#d6403a').convertSRGBToLinear());
+        ghost.traverse(m => { if (m.material && m.material.color) m.material.color.set(build.valid ? '#7fd38f' : '#d6403a').convertSRGBToLinear(); });
       }
       function placeRefuge() {
         if (!build || !build.valid) { toast(build ? build.reason : 'No hay nada que colocar'); return false; }

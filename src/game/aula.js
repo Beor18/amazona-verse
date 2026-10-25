@@ -128,7 +128,9 @@ AVE.module('aula', function (G) {
   if (dText) new MutationObserver(() => {
     if (aj.voz && !$('dialog').hidden && dText.textContent) leer(dText.textContent, dText.lang || 'es');
   }).observe(dText, { childList: true, characterData: true, subtree: true });
-  const btnLeer = (texto, lang) => `<button class="btn ghost sm" type="button" data-icon="sound" data-leer="${esc(texto)}" data-lang="${lang || aj.idioma}">${u('escuchar')}</button>`;
+  const btnLeer = (texto, lang, compacto) => compacto
+    ? `<button class="btn ghost sm icon edu-leer" type="button" data-icon="sound" data-leer="${esc(texto)}" data-lang="${lang || aj.idioma}" aria-label="${u('escuchar')}" title="${u('escuchar')}"></button>`
+    : `<button class="btn ghost sm" type="button" data-icon="sound" data-leer="${esc(texto)}" data-lang="${lang || aj.idioma}">${u('escuchar')}</button>`;
   // Lectura automática de una tarjeta de la lección (si el maestro o el niño la activaron)
   const auto = texto => { if (aj.voz) leer(texto); };
 
@@ -234,7 +236,7 @@ AVE.module('aula', function (G) {
     const lista = fichasPublicadas();
     if (!lista.length) return '';
     const items = lista.map(f => tieneFicha(f.id)
-      ? `<li class="found" lang="${aj.idioma}"><span class="ico ciencia" aria-hidden="true"></span><div><b>${esc(t(f.titulo))}</b><small>${esc(tc(f.dato, f.corto))}</small><small class="fuente">${esc(u('fuente'))}: ${esc(f.fuente)}</small>${btnLeer(t(f.titulo) + '. ' + t(f.dato))}</div></li>`
+      ? `<li class="found" lang="${aj.idioma}"><span class="ico ciencia" aria-hidden="true"></span><div><b>${esc(t(f.titulo))}</b><small>${esc(tc(f.dato, f.corto))}</small><small class="fuente">${esc(u('fuente'))}: ${esc(f.fuente)}</small>${btnLeer(t(f.titulo) + '. ' + t(f.dato), null, true)}</div></li>`
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${esc(u('porDescubrir'))}</small></div></li>`).join('');
     const n = lista.filter(f => tieneFicha(f.id)).length;
     return `<span class="lbl lbl-ciencia">${esc(u('ciencia'))} · ${esc(t(LEC.meta && LEC.meta.titulo))} <small>${n}/${lista.length}</small></span><ul class="diary ciencia">${items}</ul>`;
@@ -245,9 +247,11 @@ AVE.module('aula', function (G) {
   const pregunta = id => PREG.find(q => q.id === id) || null;
   // Sin validar no se pregunta (mismo criterio que las fichas)
   const preguntaPublicable = q => !!q && !/^por_verificar/.test(String(q.verificacion || ''));
-  function mezclar(n, semilla) {
+  // Orden de las opciones (estable por semilla). evitar: índice que no debe quedar primero (la respuesta correcta)
+  function mezclar(n, semilla, evitar) {
     const R = G.util.rng(semilla || 1), idx = Array.from({ length: n }, (_, i) => i);
     for (let i = n - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+    if (evitar != null && n > 1 && idx[0] === evitar) [idx[0], idx[1]] = [idx[1], idx[0]];
     return idx;
   }
   // Una pregunta en la tarjeta. o = { cabecera: html, alTerminar(intento 1-3) }
@@ -255,7 +259,7 @@ AVE.module('aula', function (G) {
     const s = { intento: 1, orden: [], hecho: false, semilla: (q.id.charCodeAt(1) || 7) * 31 };
     const pintar = (msg, cls) => {
       const opts = q.opciones.map((op, i) => ({ op, i }));
-      const vista = q.tipo === 'ordenar' ? opts : mezclar(opts.length, s.semilla).map(k => opts[k]);
+      const vista = q.tipo === 'ordenar' ? opts : mezclar(opts.length, s.semilla, q.correcta).map(k => opts[k]);
       const correcta = q.correcta;
       let cuerpo;
       if (q.tipo === 'ordenar') {
@@ -459,7 +463,7 @@ AVE.module('aula', function (G) {
   function htmlProgreso() {
     if (!data.partidas.length) return `<p class="note">${esc(m('sinPartidas'))}</p><p class="note">${esc(m('soloDisp'))}</p>`;
     const C = t(MU.cols);
-    const yn = v => (v === true ? '✓' : v === false ? '·' : '');
+    const yn = v => (v === true ? t({ es: 'sí', en: 'yes' }) : v === false ? t({ es: 'no', en: 'no' }) : '');
     const filas = data.partidas.slice().reverse().map(p => {
       const pr = p.preguntas ? Object.entries(p.preguntas).filter(([, v]) => v).map(([k, v]) => `${k}:${v}`).join(' ') : '';
       return `<tr><td>${esc(p.fecha)}</td><td>${esc(p.estacion || aj.estacion)}</td><td>${esc(p.grado)}</td><td>${(p.pasos_completados || []).length}/8</td>

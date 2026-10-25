@@ -1,5 +1,6 @@
-/* Content pack cap1 · pruebas automáticas del capítulo (AV.selfTest y AV.missionTest)
-   Recorren la historia, el creador, el cómic, la exportación, el guardado, las misiones, el Diario y la ropa.
+/* Content pack cap1 · pruebas automáticas del capítulo (AV.selfTest, AV.missionTest, AV.eduTest y AV.maestroTest)
+   Recorren la historia, el creador, el cómic, la exportación, el guardado, las misiones, el Diario y la ropa,
+   la misión educativa "La ruta de la gota" (jugada con las mismas acciones que un jugador) y el Modo Maestro.
    Usan las ayudas del motor (G.pruebas) y las piezas del pack en G.c. */
 (function () {
   'use strict';
@@ -31,7 +32,9 @@
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
-    check('Dos terrenos inspeccionados', S.step === 4 && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
+    check('Sin la ruta de la gota todavía no se elige terreno', S.step === 3 && S.evaluated.A && S.evaluated.B, 'paso ' + S.step);
+    jugarRutaGota(G, T);
+    check('Dos terrenos inspeccionados y misión educativa hecha', S.step === 4 && S.missions.educativa && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
     C.startBuild('A'); teleport(PLACES.A.x + 50, PLACES.A.z, 0, 1); tick(0.1);
     const build = () => C.build();
     check('Construcción fuera del terreno rechazada', build() && !build().valid, build() && build().reason);
@@ -178,13 +181,13 @@
     for (const id of ['m1', 'p1', 'p2']) useAt(id);
     drain();
     check('Con la pieza del río se completa la recolección', S.step === 3 && O.available(O.find('c2')), 'paso ' + S.step);
-    // Guía
-    const g3 = G.misiones.guideTarget();
-    check('La guía apunta al terreno sin inspeccionar', g3 && Math.hypot(g3.x - PLACES.A.post.x, g3.z - PLACES.A.post.z) < 0.01);
-    // M2: sin anillos de vuelo; queda el hueco de la misión educativa (docs/equipo/EDUCATIVO.md)
+    // Guía: la misión educativa empieza en las marcas de agua del terreno A
+    const g3 = G.misiones.guideTarget(), mk = C.edu.L.marcas;
+    check('La guía lleva a las marcas de agua (La ruta de la gota)', g3 && Math.hypot(g3.x - mk.x, g3.z - mk.z) < 0.01, JSON.stringify(g3));
+    // M2: sin anillos de vuelo; su lugar es la misión educativa "La ruta de la gota" (docs/equipo/EDUCATIVO.md)
     const edu = G.misiones.missions.find(m => m.id === 'educativa');
     check('Sin misión de anillos: ni datos, ni anillos en el mundo, ni línea en el HUD', !G.misiones.missions.some(m => m.id === 'm2') && !G.pack.anillos && !G.c.RINGS && !/Anillos/.test($('missions').textContent), $('missions').textContent);
-    check('El hueco "educativa" existe vacío y el motor lo ignora', edu && edu.pasos.length === 0 && S.missions.educativa === false && (G.misiones.check(), !S.missions.educativa), JSON.stringify(S.missions));
+    check('La misión educativa tiene sus 8 pasos y no se completa sola', edu && edu.pasos.length === 8 && S.missions.educativa === false && (G.misiones.check(), !S.missions.educativa), JSON.stringify(S.missions));
     const pava = G.misiones.unlocks.find(u => u.clave === 'pava');
     check('La pava queda reservada para la misión educativa', pava && pava.hito === 'educativa' && !S.unlocked.includes('pava') && !!G.misiones.lockOf('pava'));
     F.startFlying(); tick(0.5);
@@ -200,7 +203,7 @@
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = S.water - F.SWIM_DEPTH; tick(0.1); }
     check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary li.found').length === 12);
+    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia) li.found').length === 12);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -260,5 +263,272 @@
     return result();
   }
 
-  AVE.registerPack({ id: 'cap1', pruebas: { selfTest, missionTest } });
+  // ---------- La ruta de la gota ----------
+  // Juega la misión educativa como un jugador: Acción en las marcas, vuelo hasta las perchas, toques en las tarjetas, seguir el
+  // vapor y la gota, bucear en la poza y explicarle el ciclo a Luma. o = { check, pred1 (índice), errores (equivocarse una vez en
+  // cada actividad), fallarPregunta (id que se falla dos veces), trasP4() }.
+  function jugarRutaGota(G, T, o) {
+    o = o || {};
+    const S = G.S, $ = G.util.$, E = G.c.edu, F = G.fisica, H = G.terreno.height, AU = G.aula, LEC = AU.LEC;
+    const { teleport, tick, drain, useAt } = T;
+    const ok = o.check || (() => {});
+    const paso = id => LEC.mision_educativa.pasos.find(p => p.id === id);
+    const click = id => { const b = $(id); if (b && !b.disabled) { b.click(); return true; } return false; };
+    const card = () => ($('card').hidden ? '' : $('card').textContent);
+    const opts = () => ($('card').hidden ? 0 : $('card').querySelectorAll('.edu-opt').length);
+    const volarA = (x, y, z) => { S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; F.MOVE.flying = true; };
+    // p1 Predecir
+    useAt('marcas_agua', 0.5, 0);
+    ok('p1: en las marcas Luma pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
+    drain();
+    ok('p1: predicción con 3 opciones, sin juicio', opts() === 3 && /predicción|prediction/i.test(card()));
+    click('ch-' + (o.pred1 != null ? o.pred1 : 1)); drain();
+    ok('p1 hecho y predicción guardada', S.edu.hecho.p1 && !!S.edu.pred1, S.edu.pred1);
+    // p2 Capas (perchas) y p3 Cadena en el dosel
+    const P2 = paso('p2');
+    for (const p of E.PERCHAS) {
+      const def = P2.perchas.find(x => x.capa === p.capa);
+      if (p.capa === 'sotobosque') ok('Percha de una vía: desde abajo se atraviesa volando, desde arriba sostiene', F.suelo(p.x, p.z, p.y - 1.5) < p.y - 1 && Math.abs(F.suelo(p.x, p.z, p.y + 0.2) - p.y) < 1e-6);
+      volarA(p.x, p.y + 1.6, p.z); F.MOVE.flying = false; tick(1);
+      const nb = G.interaccion.nearest();
+      ok(`p2: se posa en la percha "${p.capa}" y aparece Observar`, E.posado(p) && nb && nb.id === 'percha_' + p.capa && /(Observar|Observe):/.test($('prompt').textContent), `y ${S.pos.y.toFixed(2)} / ${p.y.toFixed(2)} · ${nb && nb.id}`);
+      G.interaccion.action();
+      if (o.errores && p.capa === 'suelo') {
+        click('ch-' + ((def.correcta + 1) % def.opciones.length));
+        ok('Observar mal: "Mira otra vez" y otra oportunidad', /Mira otra vez|Look around/.test(card()) && !S.edu.perchas.suelo);
+      }
+      click('ch-' + def.correcta);
+      if (p.capa === 'dosel') {
+        tick(1); drain();
+        const I = paso('p3').interaccion, seq = AU.aj.grado === '5-6' ? I.grados_5_6 : I.grados_3_4;
+        ok(`p3: cadena alimentaria en el dosel con ${seq.length} tarjetas`, $('card').querySelectorAll('.edu-cadena li').length === seq.length && opts() === seq.length);
+        if (o.errores) { click('ch-1'); ok('Cadena mal empezada: pista y vuelve a empezar', /Pista|Hint/.test(card()) || card().includes(AU.t(I.retro_incorrecta))); }
+        seq.forEach((k, i) => click('ch-' + i));
+        ok('Cadena: la palma de sierra no se presenta como alimento de la cotorra (dato sin validar)', AU.verificada(AU.ficha('cotorra_alimento')) || !card().includes(AU.t(I.etiquetas.palma_sierra)));
+        click('edu-seguir');
+      }
+    }
+    drain();
+    ok('p2 y p3 hechos: 4 capas observadas y cadena', S.edu.hecho.p2 && S.edu.hecho.p3 && Object.keys(S.edu.perchas).length === 4, JSON.stringify(S.edu.perchas));
+    // p4 Ojos de cotorra
+    for (const k of ['A', 'B']) { const p = E.L[k]; volarA(p.x, H(p.x, p.z) + 6, p.z); tick(0.2); }
+    tick(1.5);
+    ok('p4: tras ver los dos terrenos desde arriba, pregunta cuál está más bajo', S.edu.vistos.A && S.edu.vistos.B && opts() === 2);
+    if (o.errores) click('ch-1');
+    click('ch-0');
+    ok('p4 hecho y terrenos evaluados (S.evaluated)', S.edu.hecho.p4 && S.evaluated.A && S.evaluated.B);
+    if (o.trasP4) o.trasP4();
+    // p5 Nace la gota
+    const pz = E.L.poza; volarA(pz.x + 3, Math.max(G.agua.levelAt(pz.x, pz.z), H(pz.x, pz.z)) + 2, pz.z); tick(0.3);
+    ok('p5: en la poza sube el vapor', E.estado().voluta);
+    for (let i = 0; i < 900 && E.estado().vapor < 1; i++) { const v = E.volutaPos(); if (!v) break; volarA(v.x + 1, v.y, v.z); tick(0.1); }
+    const nb = E.nube(); volarA(nb.x, nb.y, nb.z); tick(0.3);
+    ok('p5: en la nube, segunda predicción', opts() === 3 && card().includes(AU.t(paso('p5').interaccion.pregunta)), card().slice(0, 60));
+    click('ch-0');
+    ok('p5 hecho y empieza a llover', S.edu.hecho.p5 && !!E.estado().gota);
+    // p6 Sigue la gota
+    // Se sigue a la gota a 1,5 m (sobre la superficie si se infiltra); con el mapa grande el recorrido dura ~1 min
+    for (let i = 0; i < 1800; i++) { const st = E.estado(); if (!st.gota || st.gota.parada) break; const g = E.gotaPos(); volarA(g.x + 1, Math.max(g.y, H(g.x, g.z)) + 1.5, g.z); tick(0.1); }
+    tick(2.5);
+    ok('p6: la gota corre al río, el río crece y se pregunta dónde se juntó el agua', S.water > G.agua.base + 0.2 && opts() === 2, 'río +' + (S.water - G.agua.base).toFixed(2));
+    click('ch-0');
+    ok('p6 hecho', S.edu.hecho.p6);
+    // p7 La poza
+    for (let i = 0; i < 900 && E.estado().gota; i++) { const g = E.gotaPos(); if (!g) break; volarA(g.x + 1, Math.max(g.y + 1, S.water + 2), g.z); tick(0.1); }
+    const fg = E.fondo.gota(); teleport(fg.x, fg.z); F.MOVE.flying = false; S.pos.y = H(fg.x, fg.z) + 0.3; tick(0.2);
+    ok('p7: buceando se encuentra la gota en el fondo', S.edu.poza.gota);
+    const fr = E.fondo.roca(); teleport(fr.x + 1.2, fr.z); S.pos.y = S.water - 0.3; tick(0.2);
+    ok('p7: y la marca de la crecida en la roca', S.edu.poza.marca && G.dialogo.open());
+    drain(); tick(6);
+    ok('p7 hecho: el ciclo se cierra y el río vuelve a su nivel', S.edu.hecho.p7 && Math.abs(S.water - G.agua.base) < 0.05, (S.water - G.agua.base).toFixed(3));
+    // p8 Explícale a Luma
+    useAt('marcas_agua', 0.5, 0);
+    ok('p8: en las marcas se explica el ciclo eligiendo frases', opts() === 5);
+    if (o.errores) { click('ch-4'); click('ch-3'); ok('Tras 2 fallos brilla la frase que sigue', !!$('card').querySelector('.edu-opt.brilla')); }
+    for (let i = 0; i < 5; i++) click('ch-' + i);
+    const pred = AU.t(paso('p1').interaccion.opciones[S.edu.pred1i]);
+    ok('Predije y vi: la predicción frente a la evidencia', /Predije|I predicted/.test(card()) && card().includes(pred), pred);
+    click('edu-seguir'); drain();
+    // Luma te pregunta (formativa)
+    const ids = E.idsFormativa(), vistas = [];
+    for (let k = 0; k < 12; k++) {
+      const cur = AU.enCurso(); if (!cur) break;
+      const q = cur.q; vistas.push(q.id);
+      if (o.fallarPregunta === q.id) {
+        if (q.tipo === 'ordenar') { click('ch-' + q.correcta[1]); click('ch-' + q.correcta[1]); }
+        else { click('ch-' + (q.correcta + 1) % q.opciones.length); ok('Pregunta fallada: pista en el 2.º intento', /Pista|Hint/.test(card())); click('ch-' + (q.correcta + 2) % q.opciones.length); }
+        ok('3.er intento: se muestra la respuesta y se explica', /Así es|Here's how/.test(card()));
+      } else if (q.tipo === 'ordenar') q.correcta.forEach(i => click('ch-' + i));
+      else click('ch-' + q.correcta);
+      ok(`Formativa ${q.id}: retroalimentación inmediata y sin puntaje visible`, !!$('edu-seguir') && !!$('card').querySelector('.edu-retro') && !/\d+\s*\/\s*\d+|puntos|points|score/i.test($('card').textContent));
+      click('edu-seguir');
+    }
+    drain();
+    ok(`Luma te pregunta: ${ids.join(', ')}`, vistas.join() === ids.join() && ids.every(id => S.edu.formativa[id]), vistas.join());
+    ok('Misión completa: pava y paso de elegir terreno', S.missions.educativa && S.unlocked.includes('pava') && S.step === 4, 'paso ' + S.step);
+    return { ids, vistas };
+  }
+
+  const leerAula = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const ponerAula = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } };
+
+  async function eduTest(G, T) {
+    const S = G.S, $ = G.util.$, C = G.c, E = C.edu, AU = G.aula, SV = G.guardado, LEC = AU.LEC;
+    const { check, result } = T.runner();
+    const { teleport, tick, drain, useAt } = T;
+    const keep = T.keepSave(), aulaKeep = leerAula(AU.KEY);
+    G.quiet = true;
+    try {
+      // Datos de la lección
+      const M = LEC.mision_educativa || {};
+      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes (p. ej. el cierre de la portada)
+      check('lecciones.js carga la lección (8 pasos, 4 perchas, 7 preguntas, 23 fichas)', window.AV_LECCIONES_CAP1 === LEC && M.pasos.length === 8 && M.pasos[1].perchas.length === 4 && LEC.preguntas.length === 7 && LEC.diario.length === 23);
+      const sinEn = [];
+      const bil = (o, path) => { if (!o || typeof o !== 'object') return; if ('es' in o && !('en' in o)) sinEn.push(path); for (const k of Object.keys(o)) bil(o[k], path + '.' + k); };
+      bil(M, 'mision'); bil(LEC.preguntas, 'preguntas'); bil(LEC.diario, 'diario');
+      check('Textos de la lección en ES y EN', sinEn.length === 0, sinEn.slice(0, 5).join(', '));
+      check('Lugares por id de POI (los que faltan, provisionales y documentados)', Object.values(E.L).every(p => isFinite(p.x) && isFinite(p.z)) && Object.keys(E.origen).includes('marcas_agua'), JSON.stringify(E.origen).slice(0, 160));
+      // Partida nueva en 3.º–4.º, español
+      AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
+      SV.reset(true); G.creador.saveCharacter({ name: 'Nube Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); useAt('luma'); drain();
+      check('Recolección -1 min: Luma aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
+      for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
+      drain();
+      check('4 recogidas en vez de 7 completan la recolección', S.step === 3 && S.collected.length === 4, S.collected.join(','));
+      check('Paso 3 del HUD: La ruta de la gota', /La ruta de la gota/.test($('steps').textContent) && /Ruta de la gota 0\/8/.test($('missions').textContent));
+      // Pausa real
+      G.pausa.set('prueba', true);
+      const vy0 = S.vy;
+      dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })); dispatchEvent(new KeyboardEvent('keyup', { key: ' ' }));
+      check('Pausa real: el bucle se congela (dt = 0) y no se puede saltar', G.camara.juice.hitStop === Infinity && S.vy === vy0);
+      G.pausa.set('prueba', false);
+      check('Al quitar la pausa el bucle sigue', G.camara.juice.hitStop === 0 && !G.pausa.activa());
+      // La misión completa, con errores para probar pistas y sin castigo
+      const r = jugarRutaGota(G, T, { check, pred1: 0, errores: true, fallarPregunta: 'q2' });
+      check('Formativa breve de 3.º–4.º sin preguntas por verificar (q3, q4)', r.ids.join() === 'q1,q2,q5,q6', r.ids.join());
+      const reg = AU.partida();
+      check('Registro del aula: pasos, perchas, intentos y predicción', reg && reg.pasos_completados.length === 8 && reg.perchas_observadas === 4 && reg.cadena_correcta_intento === 2 && reg.explicacion_ciclo_intento === 2 && reg.prediccion_registrada === true && reg.prediccion_coincidio === false, JSON.stringify(reg));
+      check('Intentos por pregunta (q2 fallada dos veces = 3)', reg.preguntas.q2 === 3 && reg.preguntas.q1 === 1 && reg.preguntas.q3 === '', JSON.stringify(reg.preguntas));
+      check('Objetivos con evidencia del juego al terminar la misión', reg.objetivos_logrados.join() === 'O1,O2,O5', reg.objetivos_logrados.join());
+      // Construir con la evidencia: la elección sigue libre; llegan las fichas del refugio y de la crecida
+      const B = G.terreno.places.B;
+      C.startBuild('B'); teleport(B.x, B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain(); tick(9); drain(); tick(1.5); drain(); tick(1);
+      const f = S.edu.fichas;
+      check('Fichas por momentos de la historia: nidos y María', f.includes('cotorra_nidos') && f.includes('cotorra_maria'), f.join(','));
+      check('Tras construir: objetivos O4 (adaptaciones) y O6 (terreno con evidencia)', AU.partida().objetivos_logrados.join() === 'O1,O2,O4,O5,O6', AU.partida().objetivos_logrados.join());
+      check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'bromelia', 'ceiba', 'heliconia', 'cotorra_alimento', 'tabonuco', 'helecho_gigante'].every(id => !f.includes(id)), f.join(','));
+      G.diario.open();
+      const dc = $('card').querySelector('.diary.ciencia');
+      check('Diario de Campo · Ciencia: cada ficha con su fuente y sin enlaces', dc && dc.querySelectorAll('li.found').length === f.length && dc.querySelectorAll('li.found .fuente').length === f.length && /Fuente: USFWS/.test(dc.textContent) && !/https?:/.test(dc.innerHTML), dc && dc.querySelectorAll('li').length + ' fichas');
+      check('3.º–4.º no muestra las fichas de 5.º–6.º (aviarios)', !dc.textContent.includes('Aviarios'));
+      AU.setAjuste('corto', true); G.diario.open();
+      check('Texto corto: la ficha muestra su frase corta', $('card').querySelector('.diary.ciencia').textContent.includes(AU.t(AU.ficha('cotorra_estatus').corto)));
+      AU.setAjuste('idioma', 'en'); G.diario.open();
+      check('Inglés: fichas y paso de la misión en EN', /Source: USFWS/.test($('card').textContent) && $('card').textContent.includes('Only native U.S. parrot.'));
+      G.ui.hideCard(); AU.setAjuste('corto', false);
+      check('HUD de la misión en inglés', /Raindrop's path 8\/8/.test($('missions').textContent), $('missions').textContent);
+      AU.setAjuste('idioma', 'es');
+      // Lectura en voz alta: nunca rompe, aunque no haya voces
+      let voz = null; try { voz = AU.leer('La gota cae en la montaña.', 'es'); AU.callar(); } catch (e) { voz = e; }
+      check('Lectura en voz alta tolera que falle (speechSynthesis ' + (AU.vozDisponible() ? 'disponible' : 'no disponible') + ')', typeof voz === 'boolean');
+      AU.setAjuste('voz', true); G.dialogo.say([{ who: 'Luma', img: 'assets/luma.png', text: 'Prueba de voz.', lang: 'es' }]);
+      await new Promise(r => setTimeout(r, 0));
+      check('Con la voz activada se leen las líneas del diálogo en su idioma', AU.vozLog.some(v => v.texto === 'Prueba de voz.' && v.lang === 'es'));
+      drain(); AU.setAjuste('voz', false);
+      // Reporte sin datos personales
+      const csv = AU.reporteCSV();
+      check('Reporte sin nombre, ids ni texto libre', !csv.includes('Nube Prueba') && !csv.includes(S.saveId) && !csv.includes('_id') && csv.split('\n')[0].includes('estacion'));
+      // Segunda partida: 5.º–6.º, predicción acertada, hallazgo del flamboyán y guardar a mitad de misión
+      SV.reset(true); G.creador.saveCharacter({ name: 'Rio', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
+      AU.setAjuste('grado', '5-6');
+      const fl = E.L.flamboyan; teleport(fl.x + 0.5, fl.z); tick(0.6);
+      check('Hallazgo opcional: flamboyán (verificado) en la plaza', S.edu.fichas.includes('flamboyan'));
+      S.step = 3; S.inv = { madera: 4, piedra: 2, componente: 1 }; G.misiones.check();
+      const r2 = jugarRutaGota(G, T, { check: (n, ok, x) => { if (!ok) check('5.º–6.º · ' + n, ok, x); }, pred1: 1, trasP4: () => {
+        SV.save(true); const snap = SV.serialize(); SV.reset(true);
+        try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
+        check('Guardar y cargar a mitad de la misión conserva el avance', SV.load(true) && S.edu.hecho.p4 && !S.edu.hecho.p5 && S.step === 3);
+      } });
+      check('5.º–6.º: formativa con q7 (abierta por el flamboyán), sin q3 ni q4', r2.ids.join() === 'q1,q2,q5,q6,q7', r2.ids.join());
+      check('Predicción acertada: Luma lo reconoce', S.edu.pred1 === 'lluvia_montana' && AU.partida().prediccion_coincidio === true);
+      check('Dos partidas en el registro del dispositivo', AU.partidas.length === 2 && AU.partidas[1].grado === '5-6');
+      check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
+    } catch (e) {
+      check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
+    } finally {
+      G.ui.hideCard(); G.dialogo.clear();
+      ponerAula(AU.KEY, aulaKeep); AU.recargar();
+      SV.reset(true);
+      T.restoreSave(keep);
+      G.quiet = false;
+    }
+    return result();
+  }
+
+  async function maestroTest(G, T) {
+    const S = G.S, $ = G.util.$, AU = G.aula;
+    const { check, result } = T.runner();
+    const aulaKeep = leerAula(AU.KEY);
+    const espera = ms => new Promise(r => setTimeout(r, ms));
+    const menu = $('pause');
+    const claudeKeep = Object.getOwnPropertyDescriptor(window, 'claude');
+    const ponerClaude = v => Object.defineProperty(window, 'claude', { value: v, configurable: true, writable: true });
+    try {
+      AU.borrarProgreso();
+      S.edu.registro = null;
+      AU.registrar({ pasos_completados: ['p1', 'p2'], perchas_observadas: 2, preguntas: { q1: 1, q2: '' }, objetivos_logrados: ['O1'] });
+      menu.showPopover(); await espera(60);
+      check('El menú de pausa congela el juego', G.pausa.motivos.has('menu') && G.camara.juice.hitStop === Infinity);
+      check('Sección Aula en la pausa: ES/EN, texto corto y voz', !!menu.querySelector('[data-aula-idioma="en"]') && !!menu.querySelector('[data-aula-op="corto"]') && !!menu.querySelector('[data-aula-op="voz"]'));
+      const link = menu.querySelector('.maestro-link');
+      check('Acceso discreto: enlace pequeño y tenue al pie de la pausa', link && link.offsetHeight > 0 && parseFloat(getComputedStyle(link).opacity) < 0.8 && parseFloat(getComputedStyle(link).fontSize) <= 13);
+      link.click();
+      const form = menu.querySelector('.maestro-reto'), inp = $('maestro-resp');
+      check('Pide resolver una suma (código simple, sin cuenta)', !form.hidden && /\d+ \+ \d+/.test(form.textContent));
+      inp.value = String(AU.reto() + 1); form.requestSubmit();
+      check('Suma equivocada: no entra y propone otra', !AU.maestroAbierto() && !menu.querySelector('.maestro-err').hidden);
+      inp.value = String(AU.reto()); form.requestSubmit(); await espera(60);
+      check('Suma correcta: Modo Maestro abierto y el juego sigue en pausa', AU.maestroAbierto() && G.pausa.motivos.has('maestro') && !menu.matches(':popover-open') && G.camara.juice.hitStop === Infinity);
+      const g = AU.LEC.modo_maestro.guia_45_min;
+      check('Guía de clase: pregunta guía, antes/durante/después y rúbrica', $('m-panel').textContent.includes(AU.t(g.pregunta_guia)) && $('m-panel').textContent.includes(g.antes.pasos[0]) && /Rúbrica|Rubric/.test($('m-panel').textContent));
+      $('m-tab-progreso').click();
+      check('Progreso de este dispositivo en una tabla', $('m-panel').querySelectorAll('tbody tr').length === AU.partidas.length && AU.partidas.length === 1);
+      $('m-tab-fuentes').click();
+      check('Las URL de las fuentes solo aparecen en Modo Maestro', /https:\/\/www\.fws\.gov\//.test($('m-panel').textContent));
+      $('m-tab-reporte').click();
+      const est = $('m-estacion'); est.value = 'Estación 4'; est.dispatchEvent(new Event('change'));
+      check('Etiqueta de estación (no nombres)', AU.aj.estacion === 'Estación 4' && /nombre|name/.test($('m-panel').textContent));
+      let guardado = null;
+      ponerClaude({ use: async n => (n === 'downloads' ? { save: async o => { guardado = o; return { status: 'saved' }; } } : null) });
+      $('m-csv').click(); await espera(60);
+      check('CSV con la capacidad downloads del artifact', guardado && /^amazonaverse_cap1_Estacion_4_\d{4}-\d{2}-\d{2}\.csv$/.test(guardado.filename) && guardado.data.includes('Estación 4') && guardado.data.includes('pasos_completados'), guardado && guardado.filename);
+      guardado = null; $('m-json').click(); await espera(60);
+      let js = null; try { js = JSON.parse(guardado.data); } catch (e) { js = null; }
+      check('JSON con las partidas y sin ids internos', js && js.partidas.length === 1 && !guardado.data.includes('_id') && /\.json$/.test(guardado.filename));
+      ponerClaude({ use: async () => ({ save: async () => { throw { code: 'declined', message: 'no' }; } }) });
+      $('m-csv').click(); await espera(60);
+      check('Si el docente cancela la descarga se avisa', /cancel/i.test($('m-estado').textContent), $('m-estado').textContent);
+      ponerClaude({ use: async () => null });
+      $('m-csv').click(); await espera(150);
+      check('Sin descargas: copia al portapapeles o deja el texto listo para copiar', /portapapeles|clipboard/.test($('m-estado').textContent) || (!$('m-manual').hidden && $('m-manual').value.includes('estacion')), $('m-estado').textContent);
+      const csv = AU.reporteCSV();
+      check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
+      $('m-borrar').click(); $('m-borrar-si').click();
+      check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
+      $('maestro').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      check('Esc cierra el Modo Maestro y el juego sigue', !AU.maestroAbierto() && !G.pausa.activa() && G.camara.juice.hitStop === 0);
+      check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
+    } catch (e) {
+      check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
+    } finally {
+      if (claudeKeep) Object.defineProperty(window, 'claude', claudeKeep); else { try { delete window.claude; } catch (e) { /* propiedad fija */ } }
+      AU.cerrarMaestro();
+      try { if (menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
+      ponerAula(AU.KEY, aulaKeep); AU.recargar();
+    }
+    return result();
+  }
+
+  AVE.registerPack({ id: 'cap1', pruebas: { selfTest, missionTest, eduTest, maestroTest } });
 })();
