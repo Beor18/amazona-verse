@@ -48,6 +48,53 @@ AVE.module('comic', function (G) {
     pendientes.add(key);
     return false;
   }
+  // Encuadre de una posada (QA-32): la foto con la cámara del juego puede quedar tapada por un tronco. Se busca un punto de
+  // cámara cerca de Vittata desde el que ningún sólido (tronco, pared, roca: G.solidos) tape su cabeza, se fotografía con la
+  // cámara del juego y se devuelve la cámara a su sitio. null si no hay ángulo libre o no hay lienzo.
+  function fotoPosada() {
+    const R = G.renderer, cam = R.camera, SO = G.solidos;
+    if (!lienzoListo() || !cam || !R.drawScene || !window.THREE) return null;
+    const cab = new THREE.Vector3(S.pos.x, S.pos.y + 1.1, S.pos.z);
+    const base = Math.atan2(cam.position.x - S.pos.x, cam.position.z - S.pos.z);
+    const libre = q => {
+      if (q.y < G.terreno.height(q.x, q.z) + 0.3) return false;
+      if (!SO || !SO.activo || !SO.dentro) return true;
+      for (let i = 0; i <= 11; i++) { const t = i / 14; if (SO.dentro(q.x + (cab.x - q.x) * t, q.z + (cab.z - q.z) * t, q.y + (cab.y - q.y) * t) > -Infinity) return false; }
+      return true;
+    };
+    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of [[3.0, 0.5], [3.8, -0.3]]) {
+      const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, S.pos.y + dy, S.pos.z + Math.cos(a) * dist);
+      if (libre(q)) return fotoDesde(q, cab);
+    }
+    return null;
+  }
+  function fotoDesde(q, mira) {
+    const R = G.renderer, cam = R.camera, pos = cam.position.clone(), rot = cam.quaternion.clone();
+    try {
+      cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
+      R.drawScene();
+      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
+      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 480, 360);
+      const url = c.toDataURL('image/jpeg', 0.72);
+      return url.length > 2000 ? url : null;
+    } catch (e) { return null; }
+    finally { cam.position.copy(pos); cam.quaternion.copy(rot); cam.updateMatrixWorld(); }
+  }
+  // Las posadas se fotografían un instante después (el modelo ya quedó en su sitio). Sin ángulo libre: la viñeta con
+  // ilustración la usa; si no tiene, se toma la captura normal.
+  const posadas = [];
+  function fotografiarPosadas(dt) {
+    for (let i = posadas.length - 1; i >= 0; i--) {
+      const P = posadas[i]; if ((P.t -= dt) > 0) continue;
+      posadas.splice(i, 1);
+      if (S.captures[P.v.img]) continue;
+      const f = fotoPosada();
+      if (f) S.captures[P.v.img] = f; else if (!P.v.ilustracion) capture(P.v.img);
+      G.guardado.autosave();
+    }
+  }
+  G.on('update', dt => { if (posadas.length) fotografiarPosadas(dt); }, 79);
   let esperaCaptura = 0;
   G.on('update', dt => {
     if (!pendientes.size || (esperaCaptura -= dt) > 0) return;
@@ -76,7 +123,8 @@ AVE.module('comic', function (G) {
       for (const v of VINETAS) {
         if (v.needs !== e.key || vin()[v.id]) continue;
         vin()[v.id] = { look: lookActual(), seq: e.seq };
-        if (v.img && v.img !== 'portrait' && !v.sinCaptura && !S.captures[v.img]) capture(v.img); // sin WebGL o sin tamaño: queda pendiente
+        if (v.encuadre === 'posada' && !S.captures[v.img]) posadas.push({ v, t: 0.25 }); // QA-32
+        else if (v.img && v.img !== 'portrait' && !v.sinCaptura && !S.captures[v.img]) capture(v.img); // sin WebGL o sin tamaño: queda pendiente
         nuevas++;
       }
     }
@@ -95,12 +143,12 @@ AVE.module('comic', function (G) {
   };
   if (G.eventos.defs) for (const [k, d] of Object.entries(EV_MOTOR)) if (!G.eventos.defs[k]) G.eventos.defs[k] = d;
   const VMOTOR = [
-    { id: 'techo', img: 'techo', needs: 'FirstRoofPerch',
+    { id: 'techo', img: 'techo', needs: 'FirstRoofPerch', encuadre: 'posada',
       texto: () => L(`${VIT} aterrizó en un techo por primera vez. ¡Desde arriba todo se ve distinto!`, `${VIT} landed on a roof for the first time. Everything looks different from above!`),
       opciones: [() => L('Desde el techo se veía todo alrededor.', 'From the roof we could see everything around.'),
         () => L('Aprendimos a aterrizar con calma, sin prisa.', 'We learned to land calmly, without rushing.'),
         () => L('Allá arriba el viento nos despeinó las plumas.', 'Up there the wind ruffled our feathers.')] },
-    { id: 'rama', img: 'rama', needs: 'FirstHighBranchPerch',
+    { id: 'rama', img: 'rama', needs: 'FirstHighBranchPerch', encuadre: 'posada', ilustracion: 'rama',
       texto: () => L(`${VIT} se posó en una rama alta por primera vez, como las cotorras del bosque.`, `${VIT} perched on a high branch for the first time, like the forest parrots.`),
       opciones: [() => L('Desde la rama mirábamos el bosque.', 'From the branch we watched the forest.'),
         () => L('Agarrarse bien a una rama también se aprende.', 'Holding on to a branch is something you learn too.'),
@@ -245,6 +293,13 @@ AVE.module('comic', function (G) {
     }
     x.lineCap = 'round'; x.strokeStyle = '#5b3a1e'; x.lineWidth = Math.max(6, s * 0.09); // rama
     x.beginPath(); x.moveTo(ix - 10, cy + s * 0.42); x.quadraticCurveTo(cx - s * 0.2, cy + s * 0.5, ix + iw + 10, cy + s * 0.28); x.stroke();
+    if (tipo === 'rama') { // rama alta en el dosel, sin nido
+      x.strokeStyle = '#6b4526'; x.lineWidth = Math.max(4, s * 0.05);
+      x.beginPath(); x.moveTo(cx + s * 0.1, cy + s * 0.45); x.quadraticCurveTo(cx + s * 0.35, cy + s * 0.1, cx + s * 0.75, cy - s * 0.05); x.stroke();
+      x.fillStyle = 'rgba(46,120,70,.85)';
+      for (let k = 0; k < 7; k++) { x.beginPath(); x.ellipse(cx + s * (0.2 + k * 0.09), cy + s * (0.3 - k * 0.06), s * 0.09, s * 0.035, -0.6 + (k % 2) * 1.1, 0, Math.PI * 2); x.fill(); }
+      return;
+    }
     const nidoY = cy + s * 0.2;
     x.fillStyle = '#6e4a2a'; x.beginPath(); x.ellipse(cx, nidoY, s * 0.46, s * 0.2, 0, 0, Math.PI); x.fill(); // cuenco
     x.strokeStyle = '#a8793f'; x.lineWidth = Math.max(2, s * 0.018);
@@ -580,7 +635,7 @@ AVE.module('comic', function (G) {
   $('c-png').onclick = () => exportComic('png', true);
   $('c-pdf').onclick = () => exportComic('pdf', true);
   G.on('apply', () => {
-    vistos = Array.isArray(S.events) ? S.events.length : 0; $('comic').hidden = true;
+    vistos = Array.isArray(S.events) ? S.events.length : 0; $('comic').hidden = true; posadas.length = 0;
     pendientes.clear();
     for (const k of Object.keys(S.captures || {})) if (!S.captures[k]) delete S.captures[k]; // partidas con capturas nulas (QA-21)
   }, 60);
@@ -667,6 +722,11 @@ AVE.module('comic', function (G) {
           check(`Gancho → ${c.key} → viñeta «${c.id}» con la apariencia de ese momento`, G.eventos.had(c.key) && !!pm && r && claveLook(r.look) === claveLook(lookActual()), r && r.look ? r.look.species : 'sin look');
         }
         check('La eclosión usa la foto de la escena del criadero', S.captures.eclosion === foto);
+        for (let i = 0; i < 8; i++) G.renderer.update(0.05); // las posadas se fotografían un instante después
+        if (lienzoListo()) check('Techo y rama: foto encuadrada desde un ángulo libre (QA-32)', /^data:image\/jpeg/.test(S.captures.techo || '') && /^data:image\/jpeg/.test(S.captures.rama || ''));
+        const solBk = G.solidos;
+        try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
+        finally { G.solidos = solBk; }
         G.quiet = false; try { G.emit('criadero', 'nido'); G.emit('posado', { tipo: 'alto', que: 'techo', altura: 6 }); } finally { G.quiet = true; }
         check('Cada evento del motor cuenta una sola vez por partida', S.events.filter(e => e.key === 'NestAppeared' || e.key === 'FirstRoofPerch').length === 2);
         // Página con todas las viñetas: más alta si hace falta, PNG válido y cada viñeta nueva con contenido y en orden
