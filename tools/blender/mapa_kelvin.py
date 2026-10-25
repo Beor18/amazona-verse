@@ -18,9 +18,8 @@ WEB = {'savage_hut_roundthatched': 'bohio_redondo', 'savage_hut_roundthatched_v2
        'canoa': 'canoa', 'ancient_towera': 'ruina_torre', 'ancient_lookout': 'ruina_mirador', 'ancient_pillarc': 'ruina_pilar',
        'ancient_gateb': 'ruina_portal', 'ancient_altar': 'ruina_altar', 'ancient_mediume': 'templo_mediano', 'ancient_largeb': 'templo_grande',
        'ancient_towerb': 'ruina_torre_b', 'ancient_towere': 'ruina_torre_e', 'ancient_mediumg': 'templo_mediano_g'}
-# La conversión los rompe y no se entregan (TA de personaje): fuera del layout, ni siquiera como marcador
-DESCARTADOS = {'ancient_complejo_group001', 'ancient_largea', 'ancient_larged', 'ancient_largee', 'ancient_largee_v2', 'ancient_largef',
-               'ancient_mediumf', 'ancient_mediumh', 'ancient_mediumj_wallm', 'ancient_towerc', 'ancient_towerf', 'ancient_largej_sculptmd'}
+# Los 11 ancient que hoy rompe la conversión quedan como marcadores (modelo null) hasta que Edificios los arregle
+DESCARTADOS = set()
 
 def glb_json(path):
     with open(path, 'rb') as f:
