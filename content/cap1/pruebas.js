@@ -180,17 +180,15 @@
     // Guía
     const g3 = G.misiones.guideTarget();
     check('La guía apunta al terreno sin inspeccionar', g3 && Math.hypot(g3.x - PLACES.A.post.x, g3.z - PLACES.A.post.z) < 0.01);
-    // M2: anillos de vuelo
-    const RINGS = C.RINGS, WY = C.ringWY;
-    teleport(RINGS[0].x - 6, RINGS[0].z); F.startFlying(); tick(0.2);
-    for (let i = 0; i < RINGS.length; i++) {
-      const r = RINGS[i];
-      if (i === 3) { const before = S.rings; S.pos.x = RINGS[5].x; S.pos.z = RINGS[5].z; S.pos.y = WY[5] - 0.8; S.vy = 0; tick(0.05); check('Saltarse un anillo no cuenta', S.rings === before); }
-      S.pos.x = r.x; S.pos.z = r.z; S.pos.y = WY[i] - 0.8; S.vy = 0; F.MOVE.vx = F.MOVE.vz = 0; tick(0.05);
-    }
-    check('M2: los 7 anillos en orden', S.rings === RINGS.length && S.missions.m2, S.rings + '/' + RINGS.length);
-    check('M2 evalúa el terreno A desde el aire y da la pava', S.evaluated.A && had('LandInspected') && S.unlocked.includes('pava') && !$('card').hidden);
-    G.ui.hideCard(); drain();
+    // M2: sin anillos de vuelo; queda el hueco de la misión educativa (docs/equipo/EDUCATIVO.md)
+    const edu = G.misiones.missions.find(m => m.id === 'educativa');
+    check('Sin misión de anillos: ni datos, ni anillos en el mundo, ni línea en el HUD', !G.misiones.missions.some(m => m.id === 'm2') && !G.pack.anillos && !G.c.RINGS && !/Anillos/.test($('missions').textContent), $('missions').textContent);
+    check('El hueco "educativa" existe vacío y el motor lo ignora', edu && edu.pasos.length === 0 && S.missions.educativa === false && (G.misiones.check(), !S.missions.educativa), JSON.stringify(S.missions));
+    const pava = G.misiones.unlocks.find(u => u.clave === 'pava');
+    check('La pava queda reservada para la misión educativa', pava && pava.hito === 'educativa' && !S.unlocked.includes('pava') && !!G.misiones.lockOf('pava'));
+    F.startFlying(); tick(0.5);
+    check('Volar sobre el río ya no guía a ningún anillo', G.misiones.guideTarget() && G.misiones.guideTarget().y == null && !S.missions.educativa);
+    F.toggleFly(); tick(1.5);
     // Diario de Campo y ropa por hitos
     const FIELD = G.diario.entries;
     const fauna = FIELD.filter(f => f.cat === 'fauna'), cult = FIELD.filter(f => f.cat === 'cultura');
@@ -226,12 +224,13 @@
     check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
     drain();
     // Sonido y feedback
-    check('Sonidos sintéticos registrados (recoger, anillo, coquí, desbloqueo)', ['pickup', 'ring', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-8).join(','));
+    check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));
     check('Partículas dentro del límite de 200', G.fx.live <= G.fx.MAX_PARTICLES, G.fx.live + ' vivas');
     // Guardado del progreso del sprint
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.length && S.wear.feet);
+    // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa)
+    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
     check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && R.toneMapping === THREE.ACESFilmicToneMapping);

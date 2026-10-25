@@ -37,11 +37,11 @@
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
       version: 4,
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'rings', 'chorus', 'coquis'],
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, rings: 0, chorus: false, coquis: [],
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [],
       }),
       validar: d => !!(d.evaluated && d.examined),
       // v2 -> v3: eventos al esquema nuevo, perfil y proyecto de cómic por defecto; v3 -> v4: capítulo terminado = paso final
@@ -88,7 +88,7 @@
       ],
       decorar: (x, p, b, ih, G) => { if (p.img === 'final') G.c.drawSymbol(x, b.x + b.w - 80, b.y + 80, Math.min(64, ih * 0.3)); },
     },
-    depuracion: G => ({ BUSHES: G.c.BUSHES, RINGS: G.c.RINGS }),
+    depuracion: G => ({ BUSHES: G.c.BUSHES }),
     preparar(G) {
       G.audio.define('guiro', (t, a, A) => { for (let k = 0; k < 7; k++) A.noise(t + k * 0.045, 0.035, { freq: 3200, q: 4, gain: 0.22 }); });
     },

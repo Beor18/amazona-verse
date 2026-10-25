@@ -44,7 +44,8 @@
     // Ropa que se desbloquea al progresar (ids de src/personaje/wardrobe.js). clave: pieza entera, pieza:estilo o pieza:color.
     ropa: [
       { clave: 'botas', hito: 'm1', nombre: 'Botas azules', pista: 'la misión del río', viste: { slot: 'feet', id: 'botas', color: '#3d8fb0', style: 'aventura' } },
-      { clave: 'pava', hito: 'm2', nombre: 'Pava jíbara', pista: 'los 7 anillos', viste: { slot: 'head', id: 'pava', color: '#d6403a' } },
+      // Reservada para la misión educativa (hueco en misiones.js); EDUCATIVO.md §6 cambia la pista a "la ruta de la gota" al llenarla
+      { clave: 'pava', hito: 'educativa', nombre: 'Pava jíbara', pista: 'la misión educativa (muy pronto)', viste: { slot: 'head', id: 'pava', color: '#d6403a' } },
       { clave: 'camisa:guayabera', hito: 'm3', nombre: 'Camisa guayabera', pista: 'el coro de coquíes', viste: { slot: 'torso', id: 'camisa', color: '#f4f4f0', style: 'guayabera' } },
       { clave: 'gorra:pr', hito: 'fauna4', nombre: 'Gorra de la bandera', pista: '4 animales del Diario', viste: { slot: 'head', id: 'gorra', color: '#d6403a', style: 'pr' } },
       { clave: 'mano:maracas', hito: 'cultura4', nombre: 'Maracas', pista: '4 objetos de cultura del Diario', viste: { slot: 'hand', id: 'mano', color: '#d6403a', style: 'maracas' } },
