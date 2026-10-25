@@ -22,7 +22,7 @@ Publicado en https://amazona-verse.vercel.app (juego en `/juego/`). Repo: github
 - **Tu tarea:** está en un archivo `docs/equipo/TAREAS_*.md` que te indican al empezar. Quédate en los archivos de tu tarea; los dueños de cada zona están en `docs/equipo/COORDINACION.md`.
 - **Commits:** pequeños y solo de tus archivos (`git add` de rutas concretas). Termina el mensaje con la línea `Co-Authored-By` de tu modelo. Si aparece `index.lock`, espera 20 s y reintenta.
 - **Pruebas antes de cada commit de código:**
-  - `taskpolicy -b nice -n 15 tools/build/build.sh HEAD`
+  - `taskpolicy -b nice -n 15 tools/build/build.sh HEAD tools/build/salida/<tu-tarea>-<sha>`, siempre con una carpeta de salida propia. Si dos agentes comparten `salida/HEAD-<sha>`, uno pisa al otro y salen rojos falsos (QA-35).
   - `tools/build/test.sh tools/build/salida/<ref>/ --extra`
 
   Las 13 baterías tienen que quedar en verde, con 0 errores de consola.
