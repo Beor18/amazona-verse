@@ -115,3 +115,7 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - 2026-10-24 · Agarrar: el juego decide qué y cuándo (G.agarre.agarrar), el motor cómo se ve (pico, mano, brazos y patas en vuelo); Acción también suelta · Movimiento + Gameplay · un solo botón para los niños.
 - 2026-10-24 · El pico sigue las sílabas del texto que se escribe o de la voz, máx. 9 por segundo · Movimiento · a 45 letras/s el pico vibraba; ahora habla.
 - 2026-10-24 · El compañero será la cría del criadero: datos y aspecto de criadero.js (companero, vestir y el evento companero), seguimiento y animación de actores.js; el bebé no vuela · Coordinador + Movimiento + Game designer de huevos.
+
+## 2026-10-24 · Escala del mundo
+- Vittata mide 1,75 m en el juego (pack.js); el mundo quedó escalado a 1,75 y así se mantiene (cambiarlo ahora movería mapa, colisiones y ropa sin beneficio). Decisión del coordinador.
+- Interiores recorribles de los edificios grandes: P2, después del capítulo 1.
