@@ -35,6 +35,6 @@ Actualiza `docs/equipo/GDD_CAP1.md`, `docs/CHAPTER_01_GAMEPLAY.md` y `docs/equip
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
-| E2-1 | pendiente | | |
+| E2-1 | pasa a la API (tarea H1 de TAREAS_API.md) | | |
 | E2-2 | pasa a la API (tarea E1 de TAREAS_API.md) | | |
 | E2-3 | pasa a la API (tarea E2 de TAREAS_API.md) | | |
