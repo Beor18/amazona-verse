@@ -155,6 +155,45 @@ AVE.module('renderer', function (G) {
     sky.name = 'cielo'; sky.frustumCulled = false; sky.renderOrder = -100; sky.scale.setScalar(FAR * 0.8);
     scene.add(sky);
   }
+  // Nubes: cúmulos pintados en un lienzo, como tarjetas que miran a la cámara, todas en una llamada (mundo.cielo.nubes = n)
+  const nubesU = { uTime: { value: 0 }, tNube: { value: null }, uSolDir: { value: sunDir }, uAlto: skyU.uSolCol, uBajo: { value: new THREE.Color(cielo.nubeSombra || '#a9bfd6').convertSRGBToLinear() } };
+  if (ATMOS && cielo.nubes !== 0) {
+    const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+    const x = cv.getContext('2d'), rr = G.util.rng(77);
+    for (let i = 0; i < 26; i++) {
+      const cx = 40 + rr() * 176, cy = 70 - Math.sin((cx - 40) / 176 * Math.PI) * 30 + rr() * 18, r = 18 + rr() * 26;
+      const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+      gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.55, 'rgba(255,255,255,0.75)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = gr; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+    }
+    nubesU.tNube.value = new THREE.CanvasTexture(cv);
+    const N = cielo.nubes || 16, q = new THREE.PlaneGeometry(1, 0.5), ig = new THREE.InstancedBufferGeometry();
+    ig.index = q.index; ig.setAttribute('position', q.attributes.position); ig.setAttribute('uv', q.attributes.uv);
+    const d = new Float32Array(N * 4); const rn = G.util.rng(311);
+    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2 + rn() * 0.4, r = FAR * (0.38 + rn() * 0.2); d.set([Math.cos(a) * r, 110 + rn() * 120, Math.sin(a) * r, 140 + rn() * 160], i * 4); }
+    ig.setAttribute('iNube', new THREE.InstancedBufferAttribute(d, 4)); ig.instanceCount = N;
+    const nubes = new THREE.Mesh(ig, new THREE.ShaderMaterial({
+      uniforms: nubesU, transparent: true, depthWrite: false, fog: false,
+      vertexShader: `attribute vec4 iNube; uniform float uTime; varying vec2 vUv; varying float vH;
+        void main() {
+          vec3 c = iNube.xyz; float ang = uTime * 0.004; c.xz = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c.xz;
+          vec3 toCam = normalize(vec3(cameraPosition.x - c.x, 0.0, cameraPosition.z - c.z)); vec3 right = vec3(toCam.z, 0.0, -toCam.x);
+          vec3 w = c + right * position.x * iNube.w + vec3(0.0, position.y * iNube.w, 0.0);
+          vUv = uv; vH = uv.y;
+          gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
+        }`,
+      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; varying vec2 vUv; varying float vH;
+        void main() {
+          vec4 t = texture2D(tNube, vUv);
+          vec3 c = mix(uBajo, uAlto * 0.42 + vec3(0.55), smoothstep(0.15, 0.8, vH));
+          gl_FragColor = vec4(c, t.a * 0.9);
+          #include <tonemapping_fragment>
+          #include <encodings_fragment>
+        }`,
+    }));
+    nubes.name = 'cielo-nubes'; nubes.frustumCulled = false; nubes.renderOrder = -90;
+    scene.add(nubes);
+  }
 
   // ---------- Luces ----------
   const hemi = new THREE.HemisphereLight(L.cielo || '#fff4dc', L.suelo || '#2f5a3a', L.hemi != null ? L.hemi : 0.95);
@@ -248,8 +287,37 @@ AVE.module('renderer', function (G) {
   }
   aplicarPost(calidad);
 
+  // ---------- Culling de objetos pequeños lejanos ----------
+  // Objetos de juego (hallazgos, recursos, marcadores, NPC) de menos de 4 m que quedan más lejos que la distancia del preset
+  // pasan a la capa 31 (ni la cámara ni la sombra la dibujan). No toca .visible: esa la manda la lógica del juego.
+  const PROPIOS = /^(terreno|flora|edificios|estructura|mar$|rio$|cielo|rocio$|crecida$)/;
+  const DIST_PEQ = { bajo: 55, medio: 75, alto: 130 };
+  const cullCache = new WeakMap(), cBox = new THREE.Box3(), cSph = new THREE.Sphere();
+  let cullN = 0;
+  function cullPequenos(cam) {
+    if (++cullN % 10) return;
+    const max = DIST_PEQ[calidad.nivel] || 100, cp = cam.position;
+    for (const o of scene.children) {
+      if (o.isLight || PROPIOS.test(o.name || '') || o.userData.sinCulling) continue;
+      let c = cullCache.get(o);
+      if (!c || cullN - c.n > 300) {
+        cBox.setFromObject(o);
+        if (cBox.isEmpty()) { cullCache.set(o, c = { n: cullN, r: Infinity }); continue; }
+        cBox.getBoundingSphere(cSph);
+        const meshes = []; o.traverse(m => { if (m.isMesh || m.isSprite || m.isPoints || m.isLine) meshes.push(m); });
+        c = { n: cullN, r: cSph.radius, off: cSph.center.clone().sub(o.position), meshes, lejos: false };
+        cullCache.set(o, c);
+      }
+      if (!(c.r < 4)) continue;
+      const lejos = cp.distanceTo(cSph.center.copy(o.position).add(c.off)) > max;
+      if (lejos !== c.lejos) { c.lejos = lejos; for (const m of c.meshes) m.layers.set(lejos ? 31 : 0); }
+    }
+  }
+
   // Dibuja la escena del mundo (la cámara lo llama cada cuadro)
   function drawScene(cam) {
+    nubesU.uTime.value = t;
+    cullPequenos(cam || camera);
     seguirSombra();
     if (sky) sky.position.copy((cam || camera).position);
     if (post.activo && post.composer) post.composer.render();

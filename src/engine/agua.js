@@ -151,8 +151,11 @@ AVE.module('agua', function (G) {
       vec3 V = cameraPosition - vW; float dist = length(V); V /= dist;
       vec2 uv1 = xz * 0.045 + vec2(uTime * 0.012, uTime * 0.007), uv2 = xz * 0.083 + vec2(-uTime * 0.009, uTime * 0.015);
       vec3 n1 = texture2D(tNormal, uv1).xzy * 2.0 - 1.0, n2 = texture2D(tNormal, uv2).xzy * 2.0 - 1.0;
-      float lejos = smoothstep(30.0, 400.0, dist);
-      vec3 N = normalize(vec3((n1.x + n2.x) * mix(0.5, 0.12, lejos), 1.0, (n1.z + n2.z) * mix(0.5, 0.12, lejos)));
+      float lejos = smoothstep(20.0, 260.0, dist);
+      // tercera muestra muy grande y lenta: rompe la repetición de las otras dos a lo lejos
+      vec3 n3 = texture2D(tNormal, xz * 0.0071 + vec2(uTime * 0.002, -uTime * 0.0013)).xzy * 2.0 - 1.0;
+      vec2 nxz = (n1.xz + n2.xz) * mix(0.5, 0.04, lejos) + n3.xz * mix(0.15, 0.22, lejos);
+      vec3 N = normalize(vec3(nxz.x, 1.0, nxz.y));
       // color por profundidad: laguna turquesa, borde arenoso y azul hondo
       float k = 1.0 - exp(-max(prof, 0.0) * 0.28);
       vec3 col = mix(uLaguna, uSomero, smoothstep(0.0, 0.45, k));
@@ -163,7 +166,7 @@ AVE.module('agua', function (G) {
       float fres = 0.03 + 0.9 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
       col = mix(col, skyRefl(reflect(-V, N)), fres);
       vec3 Hh = normalize(uSolDir + V);
-      col += uSolCol * pow(max(dot(N, Hh), 0.0), 320.0) * 3.0 * (1.0 - lejos * 0.6);
+      col += uSolCol * pow(max(dot(N, Hh), 0.0), mix(320.0, 90.0, lejos)) * mix(3.0, 0.6, lejos);
       // espuma de orilla: bandas que llegan a la playa, rotas con ruido
       float nz = vnoise(xz * 0.9 + uTime * 0.15) * 0.6 + vnoise(xz * 2.7 - uTime * 0.2) * 0.4;
       float orilla = 1.0 - smoothstep(0.0, 1.5, prof);
@@ -247,8 +250,10 @@ AVE.module('agua', function (G) {
       float nz = vnoise(vec2(vUv.x * 1.3, vUv.y * 0.8 - uTime * vel * 1.2)) * 0.65 + vnoise(vW.xz * 1.7 + uTime * 0.3) * 0.35;
       float esp = (1.0 - smoothstep(0.05, 0.45 + nz * 0.25, prof)) * 0.8;
       esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4));
-      float vetas = vnoise(vec2(vUv.x * 2.2, vW.y * 0.6 + uTime * 6.0)) * 0.7 + vnoise(vec2(vUv.x * 5.0, vW.y * 1.5 + uTime * 9.0)) * 0.3;
-      esp = max(esp, cae * smoothstep(0.25, 0.65, vetas));
+      // cascada: vetas verticales que caen (la u de la cinta es el ancho) sobre agua verde clara, con más espuma abajo
+      float vetas = vnoise(vec2(vUv.x * 3.1, vW.y * 0.45 + uTime * 5.5)) * 0.65 + vnoise(vec2(vUv.x * 8.0, vW.y * 1.2 + uTime * 8.5)) * 0.35;
+      float pie = 1.0 - smoothstep(0.0, 2.5, fract(vW.y) + vetas);
+      esp = max(esp, cae * (smoothstep(0.48, 0.78, vetas) * 0.85 + pie * 0.2));
       for (int i = 0; i < 8; i++) {
         vec4 p = uPies[i];
         if (p.w <= 0.0) continue;
@@ -260,7 +265,8 @@ AVE.module('agua', function (G) {
       col = mix(col, uHemiCielo * 0.9 + uSolCol * 0.4, esp * 0.9);
       float a = mix(0.62, 0.9, k);
       a = max(a, esp * 0.95);
-      a = mix(a, 0.82, cae);
+      col = mix(col, mix(uClaro, vec3(0.9), 0.35) * (uHemiCielo * 0.7 + 0.25), cae * 0.55);
+      a = mix(a, 0.78, cae);
       a *= smoothstep(-0.25, 0.05, prof + cae);
       gl_FragColor = vec4(col, a);
       #include <tonemapping_fragment>

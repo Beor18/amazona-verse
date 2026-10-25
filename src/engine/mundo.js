@@ -82,6 +82,13 @@ AVE.module('mundo', function (G) {
       io += p.index ? p.index.count : n; vo += n;
     }
     const g = new THREE.BufferGeometry();
+    // atributos extra comunes a todas las partes (p. ej. splat de las grutas)
+    for (const k in partes[0].attributes) {
+      if (['position', 'normal', 'uv', 'color'].includes(k) || !partes.every(p => p.attributes[k])) continue;
+      const it = partes[0].attributes[k].itemSize, arr = new Float32Array(nv * it); let o = 0;
+      for (const p of partes) { const a = p.attributes[k]; for (let i = 0; i < a.count; i++) for (let c = 0; c < it; c++) arr[o++] = a.array[i * it + c]; }
+      g.setAttribute(k, new THREE.BufferAttribute(arr, it));
+    }
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
     if (uv) g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     if (col) g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -256,17 +263,16 @@ AVE.module('mundo', function (G) {
         scene.add(mesh); stats0.mallas++;
       }
       if (roca.length && T.chunks[0]) {
-        for (const g of roca) {
-          const mesh = new THREE.Mesh(g, T.chunks[0].material); g.computeBoundingSphere();
-          mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'estructura:' + e.id; mesh.matrixAutoUpdate = false;
-          scene.add(mesh); stats0.mallas++;
-        }
+        const mesh = new THREE.Mesh(fundir(roca, false), T.chunks[0].material);
+        mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'estructura:' + e.id; mesh.matrixAutoUpdate = false;
+        scene.add(mesh); stats0.mallas++;
       }
       for (const c of MAPA.colisiones || []) if (c.estructura === e.id && c.kit !== 'kelvin') colisionMapa(c, null, 1);
       activos[e.id] = { tipo: 'propia', pos: e.pos, rotY: e.rotY || 0, escala: 1 };
       stats0.propias++;
     });
   }
+  const lejanos = []; // mallas fundidas: se apagan más allá de la distancia de dibujo (la niebla ya las esconde)
   function publicarGrupos() {
     for (const gk in grupos) {
       const g = grupos[gk];
@@ -275,11 +281,18 @@ AVE.module('mundo', function (G) {
         if (!it.geos.length) continue;
         const mesh = new THREE.Mesh(fundir(it.geos, false), it.mat);
         mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'edificios:' + gk + ':' + k; mesh.matrixAutoUpdate = false;
-        scene.add(mesh); stats0.mallas++;
+        scene.add(mesh); stats0.mallas++; lejanos.push(mesh);
         it.geos.length = 0;
       }
     }
   }
+  const DIST_EDIF = { bajo: 150, medio: 190, alto: 320 };
+  let cuadro = 0;
+  G.on('render', () => {
+    if (++cuadro % 12) return;
+    const cp = R.camera.position, max = DIST_EDIF[R.calidad.nivel] || 250;
+    for (const m of lejanos) { const bs = m.geometry.boundingSphere; m.visible = cp.distanceTo(bs.center) - bs.radius < max; }
+  }, 23);
 
   // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material
   const listo = T.listo.then(() => {

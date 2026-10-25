@@ -194,12 +194,14 @@
         const g = new THREE.Group();
         const mat = new THREE.MeshLambertMaterial({ color: lin(color) });
         const h = p.half;
-        for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          const post = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.1, 0.16), madera);
-          post.position.set(p.x + sx * h, H(p.x + sx * h, p.z + sz * h) + 0.5, p.z + sz * h); post.castShadow = true;
-          const cap = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.16, 0.2), mat); cap.position.copy(post.position); cap.position.y += 0.6;
-          g.add(post, cap);
-        }
+        // estacas y sus topes de color: dos mallas instanciadas (2 draw calls por terreno)
+        const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.16, 1.1, 0.16), madera, 4), caps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.2, 0.16, 0.2), mat, 4);
+        const m4 = new THREE.Matrix4();
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz], i) => {
+          const x = p.x + sx * h, z = p.z + sz * h, y = H(x, z);
+          posts.setMatrixAt(i, m4.makeTranslation(x, y + 0.5, z)); caps.setMatrixAt(i, m4.makeTranslation(x, y + 1.1, z));
+        });
+        posts.castShadow = true; posts.frustumCulled = caps.frustumCulled = false; g.add(posts, caps);
         const pts = [[-1, -1], [1, -1], [1, 1], [-1, 1], [-1, -1]].map(([sx, sz]) => new THREE.Vector3(p.x + sx * h, H(p.x + sx * h, p.z + sz * h) + 0.85, p.z + sz * h));
         g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: lin(color) })));
         const sx = p.x - h - 1.2, sz = p.z - h, sy = H(sx, sz);
@@ -237,11 +239,12 @@
       const wood = new THREE.MeshLambertMaterial({ color: lin('#a8743f') });
       const windowGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.8), new THREE.MeshBasicMaterial({ color: lin('#3a2a1a') }));
       const debris = new THREE.Group();
+      const tablas = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 0.12, 0.35), wood, 5);
       for (let i = 0; i < 5; i++) {
-        const b = new THREE.Mesh(new THREE.BoxGeometry(2, 0.12, 0.35), wood);
-        b.position.set(-2 + i * 0.9, 0.08, 3.6 + (i % 2) * 0.6); b.rotation.y = i * 0.7; b.castShadow = true;
-        debris.add(b);
+        const o = new THREE.Object3D(); o.position.set(-2 + i * 0.9, 0.08, 3.6 + (i % 2) * 0.6); o.rotation.y = i * 0.7; o.updateMatrix();
+        tablas.setMatrixAt(i, o.matrix);
       }
+      tablas.castShadow = true; tablas.frustumCulled = false; debris.add(tablas);
       let roofL = null, roofR = null, toldo = null;
       // el taller mira hacia la plaza
       const facing = Math.atan2(PLACES.villa.x - T.x, PLACES.villa.z - T.z);
