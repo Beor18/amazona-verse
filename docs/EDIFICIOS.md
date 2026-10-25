@@ -20,7 +20,8 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 - Retopología:
   - Savage: los troncos `Pikes` pasan a prismas; las sogas (`Lashing`) y los escombros (`Debris`) se quitan.
   - Ancient: remallado por vóxeles de las piezas que el decimado no reduce.
-  - templo_grande_a, _d y _f y complejo_ruinas: modelo entero con *solidify*, remallado por vóxeles (0,15 m; 0,3 m en el complejo), plano y colapso a ≤5 000 tris. El material es el de la cara original más cercana y la textura del kit va reproyectada en caja.
+  - templo_grande_a, _d y _f: modelo entero con *solidify*, remallado por vóxeles (0,15 m), plano y colapso a ≤5 000 tris. El material es el de la cara original más cercana y la textura del kit va reproyectada en caja. En calidad media y alta se ven con su `_hd` (§ Ciudad completa).
+  - complejo_ruinas: se rehízo desde las piezas originales recolocadas (`edificios_complejo.py`). Es la excepción al ≤5 000: son 12 templos.
 
 ## Catálogo
 | nombre | kit · pieza KB3D | tris | KB js | tris lejano | instancias |
@@ -44,7 +45,7 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 | casa_paja_b | Savage · BldgB | 3503 | 215 | 550 | 3 |
 | casa_plataforma | Savage · HutWithDeck | 3568 | 292 | 513 | 3 |
 | cercado_redondo | Savage · Hall_Round | 2957 | 298 | 572 | 2 |
-| complejo_ruinas | Ancient Temples · Group001 (torres y templos unidos) | 4711 | 473 | 582 | 1 |
+| complejo_ruinas | Ancient Temples · Group001 (LargeG, H y J, 8 MediumC y TowerE), reconstruido (§ Ciudad completa) | 15954 | 1418 | 1954 | 1 |
 | corral | Savage · Pen_Fabric001 | 4017 | 328 | 467 | 1 |
 | empalizada | Savage · Wall_PikesSM | 1008 | 81 | 248 | 25 |
 | losa_piedra | propio · Box | 12 | 3 | 12 | 9 |
@@ -89,6 +90,82 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 | toldo_pequeno | Savage · CampB | 1176 | 63 | 285 | 13 |
 | torre_vigia | Savage · TowerA | 4452 | 297 | 560 | 14 |
 | torre_vigia_b | Savage · TowerB | 3463 | 260 | 565 | 7 |
+
+## Ciudad completa (25-oct-2026)
+Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captura (torre antigua de paredes planas color arena, bordes recortados y piezas rotas) es el modelo ligero de `ruina_torre` y de los templos remallados por vóxeles.
+
+**Referencia del original.** Render de la escena de 3ds Max (ene-2022): `09_Capturas_Investigacion/Screen Shot 2022-01-28 at 3.34.21 PM.png` y `3.44.43 PM.png`, copia reducida en `docs/img/ciudad_referencia_2022.jpg`. Templos color crema con torres altas, bloques, frisos y pilares; aldeas Savage con tejados rojos. La portada del juego de 2022 (`2022-01-27 at 3.44.15 PM.png`) muestra el complejo de ruinas.
+
+**Diagnóstico.**
+- a) **No hay más ciudad.** En el proyecto solo están `AV3DMaxExportBuildings.max` (377 instancias; 376 en el juego) y `AV3DMaxTerrainExport.max` (terreno). No hay otros .max, .fbx, .obj ni .blend de la ciudad. El paquete Ancient Temples del proyecto solo trae texturas (16 materiales de 4K con normales) y Savage, 10.
+- b) **Lo que se ve sin terminar** (tabla). Causas comunes: el ligero usa 6 de las 16 texturas Ancient a 512 px, sin mapas de normales y, en los remallados, proyectadas en caja. Además, el complejo de ruinas llegó roto desde la migración.
+- c) **`ancient_largej_sculptmd`** es el nodo `LargeJ_SculptMd`: una caja de 12 caras de tamaño 0 en (−2, 9, −821) m, a 600 m fuera de la escena (que va de x −236 a 230 y de z −197 a 222). Es un resto suelto del .max, sin geometría que recuperar. No es un edificio de la ciudad y sigue descartado.
+- d) **Sogas y escombros.** En Savage, las sogas (`Rope`) son la mayor parte de los triángulos: `monumento_a` 208 000 de 272 000, `puente_madera` 333 000 de 589 000, `torre_vigia` 44 000 y `muralla_atalaya_b` 25 000. El ligero las quitó junto con los escombros (`Debris`) y cambió los troncos por prismas. En Ancient, los escombros (`damageM`, `mudDarkM`) se conservan en el _hd, reducidos.
+
+| Zona | Qué falta | Qué se ve mal | Prioridad | Estado |
+|---|---|---|---|---|
+| Ruinas de El Yunque (`kelvin_ruinas_yunque`, 57; `_2`, 23) | Nada | Templos A, B, E y F remallados: torres «derretidas», picos rotos, `muro_templo` en tablas sueltas, arena plana | P1 | Lote 1: _hd |
+| Torres sueltas (`ruina_torre` ×12, `_b` ×12, `_c`, `_e`, `_f` ×3) | Nada | Paredes planas color arena (wallL/mudM), sin frisos ni ladrillos: «de cartón» (captura de Kelvin) | P1 | Lote 1: _hd |
+| Ruinas del este (`kelvin_aldea_rio_este_2`: templo D, 3 medianos H, 7 torres) | Nada | Templo D en vóxeles; la base de roca del mediano H recortada en planos sueltos; piezas que flotan | P1 | Lote 1: _hd |
+| La Colina (`kelvin_aldea_colina`: complejo de ruinas) | **Las posiciones de sus 12 templos** | El migrado perdió las traslaciones del grupo: LargeG, H, J, 8 MediumC y TowerE apilados en el origen con giros distintos. Es la masa rota junto al mirador | P1 | Lote 2: reconstruido |
+| Aldeas Savage (7 zonas) | Sogas y escombros | Troncos en prisma, sin amarres; materiales planos sin normales | P2 | Pendiente: lote 3 (atlas `hd_savage` listo en el pipeline) |
+| Lejanos Ancient | — | Salen del vóxel: siluetas de vela derretida a más de 60 m | P2 | El _hd de los templos llega a 90 m; el lejano sigue siendo el de antes (salvo el complejo) |
+| Losas, plataformas y bloques de piedra | — | Cajas de 12 tris con `floorM` | P3 | Sin cambios |
+
+**Versión cercana de alta fidelidad (`<modelo>_hd`).** La generan `tools/blender/edificios_hd.py` y `edificios_hd_atlas.py`.
+- Geometría y UV originales del migrado, sin vóxeles. Solo se reduce lo que pasa del presupuesto:
+  - disolución plana que respeta UV y normales;
+  - colapso por material: la arquitectura pesa 3 veces más que el escombro;
+  - y, en el escombro, se quitan las piezas sueltas más pequeñas.
+- Las normales son suaves en lo orgánico y con aristas vivas a 40° en la piedra labrada. Las caras de nodos en espejo se invierten.
+- Texturas: las 16 originales con normales en un atlas 4×4 de 2048 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 512 px con margen de 16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
+- Se guarda ya comprimido con el gltfpack de la build. Las texturas van en `tex_hd/` y no en `tex/`, porque la build pasa `tex/` a WebP y no reescribe las uris de un glTF ya comprimido.
+- Streaming: se pide con la zona en nivel cerca, en calidad media (hasta 40 m) o alta (hasta 90 m), con WebGL2 y cuando el jugador ya se movió. En calidad baja se queda el ligero. Los grandes (más de 10 m de radio) cuentan la distancia desde su mitad cercana, tanto en el LOD como en el _hd.
+- **Colisiones, pisos y vanos salen siempre del ligero**: son iguales en todos los equipos.
+
+| _hd | tris ligero → _hd | KB del _hd (js) |
+|---|---|---|
+| templo_grande (B) | 2742 → 21 363 | 664 |
+| templo_grande_a | 4662 → 23 117 | 505 |
+| templo_grande_d | 4665 → 20 493 | 495 |
+| templo_grande_e | 3772 → 33 016 | 741 |
+| templo_grande_f | 4723 → 34 252 | 765 |
+| templo_mediano (E, F, G) | 3906, 4436, 3917 → 14 101, 13 639, 13 857 | 333, 289, 375 |
+| templo_mediano_h | 3941 → 23 360 | 509 |
+| muro_templo | 1410 → 11 900 | 251 |
+| ruina_torre (A, B, C, E, F) | 1924, 948, 1088, 1156, 1445 → 5622, 417, 7516, 2388, 7265 | 106, 15, 140, 67, 119 |
+| ruina_altar, _mirador, _pilar, _portal | 1107, 1916, 394, 2621 → 2562, 1202, 588, 2566 | 47, 20, 15, 45 |
+| complejo_ruinas | 4711 → 41 657 | 1038 |
+
+En total, el _hd suma 6,5 MB de js (streaming, nada en la descarga inicial) más el atlas, de 2,8 MB.
+
+**Complejo reconstruido (lote 2).** Lo hace `tools/blender/edificios_complejo.py`.
+- Las traslaciones salen del inventario de la migración (`_trabajo_claude/av_max/assets.json`, `members[].local`).
+- Las piezas se recolocan con la misma x y z del grupo que tenían en el migrado, y la base va sobre la loma (35,75 m, la cota de las losas).
+- Con la geometría y la UV originales salen sus tres versiones:
+  - _hd: 41 657 tris;
+  - ligero: 15 954 tris, con la paleta del kit y que también da las colisiones;
+  - lejano: 1954 tris, por vóxeles desde el ligero.
+- La escena no cambia. La corrección está en el modelo y en `conversion.json` (M del complejo).
+- Mide 51 × 35 m (antes, 34 × 20 m de masa rota), así que sobresale de la meseta por el oeste unos metros sobre la ladera. **Decisión de Kelvin:** dejarlo así, moverlo o quitar alguno de los MediumC del borde.
+
+**Capturas** (calidad alta, mismas cámaras, Chrome sin interfaz con GPU Apple M4; `docs/img/ciudad_<vista>_{antes,despues}.png`). Antes = build 920bc30; después = build d90e631. Son cifras del cuadro entero.
+
+| Vista | draw calls | triángulos | FPS |
+|---|---|---|---|
+| torre antigua (El Yunque) | 112 → 89 | 363 000 → 765 000 | 60 → 60 |
+| ruinas de El Yunque, desde arriba | 123 → 105 | 422 000 → 730 000 | 60 → 60 |
+| complejo de la Colina | 88 → 85 | 284 000 → 322 000 | 60 → 60 |
+| ruinas del este | 87 → 81 | 323 000 → 423 000 | 60 → 60 |
+
+La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw calls (≤ 150). La build pasa de 17,6 a 28,6 MB, de los que unos 10 MB son de los _hd y del atlas. Suma 42 archivos (390 de 511). La descarga inicial no cambia (8,2 MB, igual que HEAD).
+
+**Calidad.** Bajo no usa _hd. Medio lo usa hasta 40 m y alto, hasta 90 m. Hace falta WebGL2.
+
+**Pendiente.**
+- Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
+- Lejanos Ancient desde la geometría original.
+- Decisión sobre el borde oeste del complejo.
 
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.
