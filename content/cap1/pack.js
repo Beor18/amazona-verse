@@ -36,7 +36,7 @@
     meta: { titulo: 'El día que el cielo se rompió', capitulo: 1, almacen: 'amazonaverse' },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
-      version: 4,
+      version: 5,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu'],
       estado: () => ({
@@ -62,6 +62,17 @@
         if (d && d.v === 3) {
           d = Object.assign({}, d, { v: 4 });
           if (d.complete && d.step === 7) d.step = DONE;
+        }
+        // v4 -> v5: mapa nuevo de El Yunque (programador gráfico). Las posiciones del mundo viejo (±70 m) no existen en el mapa:
+        // el jugador vuelve a la aparición y el refugio construido pasa a su terreno (A o B) en el mapa nuevo.
+        if (d && d.v === 4) {
+          d = Object.assign({}, d, { v: 5 });
+          const MD = window.AV_MAPA_CAP1;
+          if (MD) {
+            d.pos = Object.assign({}, h.freshState().pos);
+            const L = d.refuge && MD.lugares && MD.lugares[d.refuge.parcel];
+            if (L) d.refuge = Object.assign({}, d.refuge, { x: L.x, z: L.z - 1.5 });
+          }
         }
         return d;
       },
