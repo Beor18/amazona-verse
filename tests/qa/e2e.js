@@ -86,6 +86,9 @@
 
       // ---------- 3a. Obtener un huevo (criadero) ----------
       const CR = G.criadero;
+      // Juego normal (sin ?criadero=1): antes de la primera misión no hay nido en el mundo ni botón «Nido» (d4a7a45)
+      const nidoMundo = () => G.renderer.scene.getObjectByName('nido_criadero');
+      const nidoAntes = { boton: !!$('b-nido') && !$('b-nido').hidden, nido: !!(nidoMundo() && nidoMundo().visible) };
       if (!CR) check('3', 'Obtener un huevo y ver las patitas en la eclosión', 'bloqueado', 'el criadero no está integrado en esta build (G.criadero no existe)');
       else {
         await CR.abrir();
@@ -106,6 +109,14 @@
         T.tick(0.5); T.drain();
       }
       check('4', 'Misión M1 «Fondo del río» completada buceando (C) hasta la pieza', !!(S.missions && S.missions.m1), { poza: poza && [Math.round(poza.x), Math.round(poza.z)], nado: G.fisica.MOVE.swimming, inv: S.inv, misiones: S.missions, atajo: 'teleport a la poza; el buceo es con la tecla C simulada' });
+      if (CR) {
+        T.tick(2.5);
+        const n = nidoMundo(), est = G.terreno.poi && G.terreno.poi('estacion');
+        const dEst = n && est ? Math.round(Math.hypot(n.position.x - est.x, n.position.z - est.z) * 10) / 10 : null;
+        check('3', 'Juego normal: sin misión no hay nido ni botón; tras la primera misión aparecen el nido junto a la Estación y el botón «Nido»',
+          !nidoAntes.boton && !nidoAntes.nido && !!n && n.visible && !$('b-nido').hidden && dEst != null && dEst < 25,
+          { antes: nidoAntes, despues: { nido: !!(n && n.visible), boton: !$('b-nido').hidden, donde: n && n.userData.donde, metrosEstacion: dEst } });
+      }
       // Materiales para el refugio jugando: recogidas reales (useAt) de lo que haga falta
       const costo = (G.pack.costos && G.pack.costos.REFUGE_COST) || { madera: 3, piedra: 2 };
       for (const o of (G.objetos.recursos || [])) {

@@ -1,23 +1,30 @@
 # Tablero de producción · Amazona Verse
 
-Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO con evidencia de QA (batería o E2E). Actualizado el 2026-10-24 a las 22:55 (hora local).
+Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO con evidencia de QA (batería o E2E). Actualizado el 2026-10-25 a las 00:45 (hora local), con la validación de v21.
 
-## Build estable
+## Build estable y candidato
 | | |
 |---|---|
-| Rama `estable` | **19d152a = v19-publicada**. El reflog la muestra pasando por d978bd0 (v16), 4559da5 (v17), 85db4f0, 0e25e91, f4a31d1 (v18) y 19d152a (v19) |
-| E2E de aceptación (`AV.e2eTest`) | v19: **13/13** · v18: **8/13**, el creador no deja empezar (QA-17) |
-| Batería `tests/qa` en v19 | selfTest 52/52 · missionTest 35/35 · accessoryTest 12/12 · templateTest 19/19 · eduTest 63/63 · maestroTest 22/22 · criaderoTest 32/32 · movementTest 22/22 · e2eTest 13/13 |
-| Consola | v19: 0 errores de JS y 1 recurso que falla (QA-16). main 227f99e: 0, con QA-16 cerrado en 9f970d5 |
-| Memoria | 10 cambios de ropa: fuga 0 en geometrías, texturas, programas y objetos |
-| Carga en frío (local) | personaje 3D a 1,5 s · **15,1 MB** en 125 peticiones (presupuesto 8 MB) |
-| Publicable | **35,5 MB**, presupuesto 30 MB (ropa 11,9, edificios 10,6, entorno 4,0) |
-| Draw calls (calidad alta) | 97–112 por cuadro, con post-proceso y sombras |
-| FPS (M4, 1950×1110) | En main 8196c65, pintando y en calidad alta: taller **60** (mín 53, 0 tirones), villa 60 y A 60. QA-20 cerrado; v19 todavía no lo lleva |
+| Rama `estable` | **f3ed616 = v20-publicada** (antes 19d152a = v19) |
+| Candidato v21 | **c6fe45d**, armado con `tools/build/build.sh c6fe45d`: PASA, 216 archivos, **29,35 MB** (cumple los 30 MB), sin .glb y con `ave:sin-glb` |
+| Batería `tests/qa` en v21 | selfTest 52/52 · missionTest 35/35 · accessoryTest 12/12 · templateTest 19/19 · eduTest 66/66 · maestroTest 22/22 · criaderoTest 40/40 · movementTest 27/27 · saveTest 27/27 · comicTest 19/19 · **e2eTest 14/14** |
+| contextTest (1386aec) | No concluyente con el panel oculto: 10/11 y 10/12 (QA-24) |
+| Consola | v21: 0 errores, 0 warnings, 0 recursos que fallan y 0 peticiones a terceros |
+| Memoria | 10 cambios de ropa: fuga 0. Sólidos: 0,63–0,66 MB (edificios + flora) |
+| Carga en frío (local) | **15,25 MB** en 154 peticiones (presupuesto 8 MB, QA-10) |
+| Draw calls (calidad alta) | 81–94 por cuadro (v19: 97–112) |
+| FPS (M4) | v21 **sin medir**: panel oculto y compartido. Última medida válida: main 8196c65, 60 en taller, villa y A |
 
 ## Tareas por estado
 | Estado | Tarea | Dueño | Evidencia o causa |
 |---|---|---|---|
+| APROBADO (v21) | Sólidos de la geometría real: chocar, pararse en techos y posarse (6cc3f16, 5f0c6e4, f26be1b) | Movimiento | movementTest 27/27 con el caso genérico; vuelo manual con V hasta los postes de la casa plataforma, posado fino y Δ 0; 0,63 MB y 0,029 ms por paso en móvil |
+| APROBADO (v21) | Criadero en el juego normal: nido tras M1 y botón «Nido» (d4a7a45) | Huevos | criaderoTest 40/40; E2E 14/14 con el paso nuevo; a mano: presentación única, HUD, acción E y persistencia |
+| APROBADO (v21) | Paradas de aprendizaje en la aldea (a125977) | Gameplay | eduTest 66/66; a mano: respuesta, registro y XP. QA-23 (pista duplicada) es baja |
+| APROBADO (v21) | Accesibilidad y HUD móvil, QA-04 a QA-08 (f3ed616) | Gameplay | Foco en creador y Diario, `role="alert"`, objetivo de 45 px y aviso sin cortes a 375×812 |
+| APROBADO (v21) | Build de publicación reproducible (`build.sh`, cf88cdd y 0962f07) | Build/Release | La build sale en 29,35 MB y el juego corre desde ella con las 11 baterías en verde |
+| PRUEBAS | Recuperar el contexto WebGL (1386aec) | Gráfico | QA-24: repetir contextTest con el panel visible |
+| EN CURSO | El haz de objetivo tapa media pantalla con la cámara cerca (QA-22) | Gráfico | BUGS.md |
 | APROBADO | Personaje y ropero sin cambiar la cotorra | TA de personaje | E2E pasos 1–2; accessoryTest; fuga 0 |
 | APROBADO | Motor reutilizable y plantilla | Arquitecto | templateTest 19/19 |
 | APROBADO | Movimiento, vuelo, nado y agarre | Movimiento | movementTest 22/22 en la batería; táctil sin errores a 375, 768 y 1366 px |
@@ -25,17 +32,14 @@ Lo mantiene QA como validador independiente. Las tareas solo pasan a APROBADO co
 | APROBADO | Cómic con la apariencia del jugador y PNG verificado (92f5364) | Save & Cómic | comicTest 19/19; E2E paso 6; exportar sin downloads muestra la imagen con Descargar, Abrir y Copiar |
 | APROBADO | Mundo sin tirones en el taller (QA-20, 8196c65) | Programador gráfico | 60 FPS en taller, villa y A con calidad alta en un M4, pintando |
 | APROBADO | Vigilante de memoria y disco con el arreglo QA-11 | Técnico PC | pid 55685; servidores con nice 0 |
-| PRUEBAS | Criadero: huevo, eclosión con patitas y compañero | Game designer de huevos | criaderoTest 32/32 y E2E paso 3. Falta una entrada para el jugador fuera de `?criadero=1` y del Modo Maestro |
 | PRUEBAS | «La ruta de la gota», aula y Modo Maestro | Gameplay | eduTest 63/63, maestroTest 22/22 |
 | PRUEBAS | Mapa de El Yunque: terreno, flora, agua y edificios | Gráfico, level, entorno, edificios | Hay draw calls; faltan FPS en equipo real y bajar la descarga de 15 MB |
 | PRUEBAS | Sin terceros y sin texto libre | Seguridad infantil | maestroTest comprueba que no se pide nada a otro origen; el nombre y el cómic salen de listas |
 | INTEGRACIÓN | Web con video del pitch | Web lead y editor | `videos.json` con `pitch: null`; el MP4 v1 existe en `~/AmazonaVerse/Pitch` |
-| EN CURSO | Accesibilidad con teclado y HUD móvil (QA-04 a QA-08) | Gameplay | BUGS.md |
 | EN CURSO | Guardado (`guardado.js` modificado sin commit) | Save & Cómic | `git status` |
-| EN CURSO | Build de publicación | Build/Release | `tools/build/config.json` sin commit; no hay build |
-| BACKLOG | Bajar la descarga inicial a ≤ 8 MB y lo publicable a ≤ 30 MB | Gráfico, traits, edificios y coordinador | QA-10; CTO_PLAN (gltfpack, carga diferida) |
+| BACKLOG | Bajar la descarga inicial a ≤ 8 MB (lo publicable ya cumple: 29,35 MB) | Gráfico, traits, edificios y coordinador | QA-10; CTO_PLAN (gltfpack, carga diferida) |
 | BACKLOG | Medir FPS en Chromebook y móvil reales | QA, con el gráfico | Este entorno no pinta con el panel oculto |
-| BLOQUEADO | — | — | No hay tareas bloqueadas en v19 |
+| BLOQUEADO | — | — | No hay tareas bloqueadas en v21 (c6fe45d) |
 
 ## Riesgos
 1. **Publicar sin E2E:** v18 salió rota para jugadores nuevos. Regla: `estable` se mueve solo con `AV.e2eTest` y la batería en verde, con el informe adjunto.
