@@ -295,9 +295,10 @@ AVE.module('actores', function (G) {
   const tag = (() => {
     const c = document.createElement('canvas'); c.width = 512; c.height = 112;
     const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 4;
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 }));
+    // Tamaño fijo en pantalla (UI_SYSTEM.md ítem 1): sin atenuación por distancia y escalado cada cuadro a TAG_PX de alto
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0, sizeAttenuation: false }));
     sp.visible = false; sp.renderOrder = 10; sp.userData.sinCulling = true; sp.name = 'letrero_compa'; scene.add(sp);
-    return { c, tex, sp, text: '', a: 0 };
+    return { c, tex, sp, text: '', a: 0, w: 512 };
   })();
   function drawTag(text) {
     tag.text = text || '';
@@ -311,13 +312,20 @@ AVE.module('actores', function (G) {
     g.fillStyle = v('--c-paper', '#f6ecd2'); g.fill(); g.lineWidth = 5; g.strokeStyle = v('--c-paper-edge', '#d9bf8a'); g.stroke();
     g.fillStyle = v('--c-ink', '#2b2116'); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(tag.text, tag.c.width / 2, 58, w - 40);
     tag.tex.needsUpdate = true;
-    tag.sp.scale.set(1.7 * w / tag.c.width * (tag.c.width / 512), 1.7 * 112 / 512, 1);
+    // Solo la parte usada del lienzo (sin deformar el texto): ancho w de 512 centrado
+    tag.w = w; tag.tex.repeat.set(w / tag.c.width, 1); tag.tex.offset.set((tag.c.width - w) / 2 / tag.c.width, 0);
   }
+  const TAG_PX = 36; // alto del letrero en píxeles de pantalla (CSS)
   function updateTag(dt) {
     const show = companion3D && companion3D.root.visible && !!tag.text && Math.hypot(S.pos.x - companionPos.x, S.pos.z - companionPos.z) <= 3;
     tag.a += ((show ? 1 : 0) - tag.a) * Math.min(1, dt * 6);
     tag.sp.visible = tag.a > 0.02; tag.sp.material.opacity = tag.a;
-    if (tag.sp.visible) { const r = companion3D.root.position, h = J.altura * ((compa.info && compa.info.escala) || 1); tag.sp.position.set(r.x, r.y + h + 0.35, r.z); }
+    if (tag.sp.visible) {
+      const r = companion3D.root.position, h = J.altura * ((compa.info && compa.info.escala) || 1); tag.sp.position.set(r.x, r.y + h + 0.35, r.z);
+      // sizeAttenuation false: alto en NDC = escala × P[5]; px = NDC × alto/2 → escala = 2·px / (alto del lienzo × P[5])
+      const cam = G.renderer.camera, H = G.renderer.canvas.clientHeight || innerHeight, k = 2 / (H * cam.projectionMatrix.elements[5]);
+      tag.sp.scale.set(TAG_PX * k * tag.w / tag.c.height, TAG_PX * k, 1);
+    }
   }
   function setCompa(info) {
     const key = info ? info.id + ':' + info.etapa : '';
