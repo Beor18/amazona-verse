@@ -752,6 +752,51 @@ def bromelia_texture():
     save_leaf('hoja_bromelia', sc)
 
 
+def enano_texture():
+    """Bosque enano de la cumbre: racimos de hojas pequeñas y coriáceas, bromelia epífita y musgo colgante."""
+    sc = capture_scene(1.0, 1.0, 1024, 1024)
+    tb = TB()
+    for v, (ox, oy) in enumerate(((0.0, 0.5), (0.5, 0.5))):
+        rng = random.Random(141 + v)
+        i0 = tb.mark()
+        cx, cy = ox + 0.25, oy + 0.25
+        cols = (H('#2f5c25'), H('#76a444')) if v == 0 else (H('#41662a'), H('#a8a952'))
+        for k in range(26):
+            r = 0.17 * math.sqrt(rng.random())
+            a = rng.uniform(0, TAU)
+            x, y = cx + math.cos(a) * r, cy + math.sin(a) * r
+            z0 = 0.3 + 0.7 * rng.random()
+            rot = rng.uniform(0, TAU)
+            nl = rng.randint(5, 7)
+            for j in range(nl):  # roseta de hojas en la punta de una ramita
+                b = rot + TAU * j / nl + rng.uniform(-0.15, 0.15)
+                Ln = rng.uniform(0.05, 0.07)
+                tb.leaf(x, y, b, Ln, Ln * 0.55, 'ovate', z=z0 + j * 0.002, cb=L.jitter(cols[0], rng, 0.12),
+                        ct=L.jitter(cols[1], rng, 0.14, 0.05), vein=0.7, nv=5, shade=z0, nt=6, ns=2, edge=1.0)
+        tb.fit(i0, ox, oy, ox + 0.5, oy + 0.5, 'center')
+    rng = random.Random(149)
+    i0 = tb.mark()
+    bromeliad_rosette(tb, rng, 0.25, 0.06, 0.36)
+    tb.fit(i0, 0.0, 0.0, 0.5, 0.5, 'bottom')
+    for k in range(11):  # musgo colgante (barbas): hebras continuas con pelillos laterales
+        x, y = 0.55 + k * 0.04 + rng.uniform(-0.01, 0.01), 0.49
+        Lk = rng.uniform(0.28, 0.46)
+        n = 14
+        for i in range(n):
+            a = -math.pi / 2 + 0.35 * math.sin(i * 0.8 + k * 1.7)
+            sl = Lk / n
+            wd = 0.009 * (1 - i / (n + 2))
+            tb.leaf(x, y, a, sl * 1.08, wd, 'line', z=0.3 + 0.01 * k, cb=H('#6c8749'), ct=H('#9fb27a'), vein=0, nt=1,
+                    ns=1, edge=0.5)
+            for sd in (-1, 1):
+                if rng.random() < 0.7:
+                    tb.leaf(x, y, a + sd * rng.uniform(0.6, 1.1), rng.uniform(0.012, 0.022), 0.004, 'taper',
+                            z=0.25 + 0.01 * k, cb=H('#7f9a5a'), ct=H('#b7c690'), vein=0, nt=1, ns=1)
+            x, y = x + math.cos(a) * sl, y + math.sin(a) * sl
+    tb.build([leaf_material()])
+    save_leaf('hoja_arbol_enano', sc)
+
+
 LITTER = ['#6b4428', '#8a5a32', '#a67a3e', '#c09040', '#4a3020', '#7a5030', '#b5843e', '#5d3a24']
 
 
@@ -1074,10 +1119,21 @@ def bark_bambu(t, uv):
     return c, h
 
 
+def bark_enano(t, uv):
+    v, w, c, h = bark_common(t, uv, '#5e554a', '#857a6a', streak=0.18, lichen=0.6)
+    m1 = t.noise(v, t.add(w, 60.0), 2.2, 5, 0.6)
+    fz = t.noise(v, t.add(w, 61.0), 40.0, 5, 0.7)
+    moss = t.ramp(t.add(m1, t.mul(t.sub(fz, 0.5), 0.3)), 0.48, 0.6)
+    mc = t.mix(L.hexl('#2f5a1e'), L.hexl('#86b23e'), t.ramp(fz, 0.35, 0.7))
+    c = t.mix(c, mc, moss)
+    h = t.add(h, t.mul(moss, t.add(0.35, t.mul(fz, 0.3))))
+    return c, h
+
+
 BARKS = {
     'palma_sierra': (bark_palma, 5.0), 'yagrumo': (bark_yagrumo, 4.0), 'tabonuco': (bark_tabonuco, 3.0),
     'ceiba': (bark_ceiba, 4.0), 'flamboyan': (bark_flamboyan, 4.0), 'helecho_arboreo': (bark_helecho, 6.0),
-    'bambu': (bark_bambu, 4.0),
+    'bambu': (bark_bambu, 4.0), 'arbol_enano': (bark_enano, 5.0),
 }
 
 
@@ -1092,7 +1148,7 @@ JOBS = {
     'hoja_palma_sierra': palm_texture, 'hoja_yagrumo': yagrumo_texture, 'hoja_tabonuco': tabonuco_texture,
     'hoja_ceiba': ceiba_texture, 'hoja_flamboyan': flamboyan_texture, 'hoja_helecho_arboreo': helecho_arboreo_texture,
     'hoja_helecho_suelo': helecho_suelo_texture, 'hoja_pasto': pasto_texture, 'hoja_bambu': bamboo_texture,
-    'hoja_heliconia': heliconia_texture, 'hoja_bromelia': bromelia_texture, 'hoja_hojarasca': hojarasca_texture,
+    'hoja_heliconia': heliconia_texture, 'hoja_arbol_enano': enano_texture, 'hoja_bromelia': bromelia_texture, 'hoja_hojarasca': hojarasca_texture,
     'suelo_tierra_hojarasca': suelo_tierra_hojarasca, 'suelo_musgo': suelo_musgo, 'suelo_roca': suelo_roca,
     'suelo_arena_rio': suelo_arena_rio,
 }

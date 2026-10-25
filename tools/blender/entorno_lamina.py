@@ -20,6 +20,7 @@ FONT_B = '/System/Library/Fonts/Supplemental/Verdana.ttf'
 FONT_I = '/System/Library/Fonts/Supplemental/Verdana Italic.ttf'
 MAN = json.load(open(os.path.join(L.MODELS, 'entorno_kit.json')))
 TREES = ['ceiba', 'tabonuco', 'yagrumo', 'palma_sierra', 'bambu', 'flamboyan', 'helecho_arboreo']
+VARIANTS = ['arbol_enano', 'palma_sierra_joven', 'yagrumo_joven']
 SMALL = ['heliconia', 'bromelia', 'helecho_suelo', 'pasto', 'hojarasca', 'tronco_caido', 'roca_musgo_a', 'roca_musgo_b',
          'piedras_rio']
 GROUNDS = [('suelo_tierra_hojarasca', 'Tierra húmeda con hojarasca'), ('suelo_musgo', 'Musgo'), ('suelo_roca', 'Roca'),
@@ -515,12 +516,13 @@ def sheet():
     hdr, heroH = 130, 820
     tw, th = W // 7, 560
     sw, sh_ = W // 9, 330
-    gw, gh = W // 4, 300
-    Ht = hdr + heroH + 20 + th + 84 + 10 + sh_ + 84 + 10 + gh + 60 + 40
+    vw, gh = 310, 330
+    gw = (W - len(VARIANTS) * vw) // 4
+    Ht = hdr + heroH + 20 + th + 84 + 10 + sh_ + 84 + 10 + gh + 84 + 40
     bg = vgrad(Ht, W, srgb_hex('#f6efe0'), srgb_hex('#efe4cf'))
     y = 0
     t = text_image([('Amazona Verse · Flora de El Yunque', FONT_T, 46, '#24401f', 40, 82),
-                    ('Kit de entorno estilizado: 16 piezas .glb, texturas horneadas en Blender, '
+                    ('Kit de entorno estilizado: 19 piezas .glb, texturas horneadas en Blender, '
                      'escala de mundo con la cotorra de 1.4 m', FONT_B, 18, '#5a6a4e', 42, 42),
                     ('Eevee · luz cálida tropical', FONT_I, 16, '#8a5a2a', W - 300, 42)], W, hdr)
     over(bg, t, 0, y)
@@ -544,13 +546,20 @@ def sheet():
                    sw - 8)
         over(bg, lb, i * sw + 4, y + sh_)
     y += sh_ + 84 + 10
+    for i, n in enumerate(VARIANTS):  # variantes pedidas por el level designer
+        a = tile(n, vw - 10, gh)
+        over(bg, a, i * vw + 5, y)
+        mm = MAN[n]
+        over(bg, label(mm['especie'], mm['cientifico'] + f" · {mm['alto_m']:.1f} m", f"{mm['tris']} tris", vw - 10),
+             i * vw + 5, y + gh)
+    x0 = len(VARIANTS) * vw
     for i, (tex, nm) in enumerate(GROUNDS):
-        a = ground_swatch(tex, gw - 16, gh)
-        over(bg, a, i * gw + 8, y)
-        lb = text_image([(nm, FONT_T, 20, '#2b3a22', 10, 34), ('1024 px tileable + normal map', FONT_I, 13, '#5d6a52',
-                                                                10, 12)], gw - 16, 50)
-        over(bg, lb, i * gw + 8, y + gh + 4)
-    y += gh + 60
+        a = ground_swatch(tex, gw - 12, gh - 40)
+        over(bg, a, x0 + i * gw + 6, y + 40)
+        lb = text_image([(nm, FONT_T, 19, '#2b3a22', 10, 34), ('1024 px tileable + normal map', FONT_I, 12, '#5d6a52',
+                                                                10, 12)], gw - 12, 50)
+        over(bg, lb, x0 + i * gw + 6, y + gh + 4)
+    y += gh + 84
     tot = sum(v['kb'] for v in MAN.values())
     ft = text_image([(f"Total modelos: {tot / 1024:.1f} MB (.glb con texturas incluidas) · Color de vértice: "
                       "R = AO, G = viento, B = fase · Hojas HOJA_* con alphaTest · Corteza CORTEZA_*", FONT_B, 15,

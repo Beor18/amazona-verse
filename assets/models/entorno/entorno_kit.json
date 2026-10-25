@@ -245,5 +245,53 @@
   "dato": "Al pudrirse alimenta hongos, insectos y plantas nuevas.",
   "ficha": null,
   "radio_colision": 0.4
+ },
+ "palma_sierra_joven": {
+  "especie": "Palma de sierra joven",
+  "cientifico": "Prestoea montana",
+  "alto_real_m": "3-6",
+  "alto_m": 4.64,
+  "ancho_m": 4.63,
+  "tris": 728,
+  "kb": 152,
+  "materiales": [
+   "HOJA_palma_sierra",
+   "CORTEZA_palma_sierra"
+  ],
+  "dato": "Joven: brota rápido en los claros que abren los huracanes.",
+  "ficha": "palma_sierra",
+  "radio_colision": 0.25
+ },
+ "yagrumo_joven": {
+  "especie": "Yagrumo joven",
+  "cientifico": "Cecropia schreberiana",
+  "alto_real_m": "3-6",
+  "alto_m": 3.66,
+  "ancho_m": 3.77,
+  "tris": 1064,
+  "kb": 154,
+  "materiales": [
+   "HOJA_yagrumo",
+   "CORTEZA_yagrumo"
+  ],
+  "dato": "Crece muy rápido: es de los primeros en ocupar un claro.",
+  "ficha": "yagrumo",
+  "radio_colision": 0.15
+ },
+ "arbol_enano": {
+  "especie": "Árbol del bosque enano",
+  "cientifico": "Tabebuia rigida",
+  "alto_real_m": "3-6",
+  "alto_m": 3.43,
+  "ancho_m": 5.74,
+  "tris": 1304,
+  "kb": 259,
+  "materiales": [
+   "HOJA_arbol_enano",
+   "CORTEZA_arbol_enano"
+  ],
+  "dato": "En las cumbres llueve 150-200 pulgadas al año; el viento y la niebla lo mantienen bajo y con musgo.",
+  "ficha": "lluvia_bosque_enano",
+  "radio_colision": 0.3
  }
 }

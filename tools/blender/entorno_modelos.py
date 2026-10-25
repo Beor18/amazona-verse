@@ -210,41 +210,41 @@ def finish(mb, name, mats):
 
 
 # ───────────────────────── ÁRBOLES ─────────────────────────
-def palma_sierra(rng):
+def palma_sierra(rng, HT=5.5, N=16, ls=1.0, fruits=3, dry=2, roots=9):
+    """HT: altura del estípite; ls: escala de las hojas. La variante joven usa HT=2.6, N=11, ls=0.78."""
     sp = 'palma_sierra'
     mb = L.MB()
-    HT = 5.5
-    lean = Vector((0.4, 0.15, 0))
+    k_ = HT / 5.5
+    lean = Vector((0.4, 0.15, 0)) * k_
     pts = [lean * (t * t) + Vector((0, 0, HT * t)) for t in [i / 10 for i in range(11)]]
-    rad = [0.15 + 0.09 * (1 - t) ** 3 - 0.02 * t for t in [i / 10 for i in range(11)]]
+    rad = [(0.15 + 0.09 * (1 - t) ** 3 - 0.02 * t) * (0.75 + 0.25 * k_) for t in [i / 10 for i in range(11)]]
     L.tube(mb, pts, rad, 9, 1, uv_rep=1, v_len=1.1,
            ao=lambda p, t: 0.5 + 0.45 * sm(0, 0.3, t) - 0.3 * sm(0.82, 1, t),
            wind=lambda p, t: 0.3 * t * t)
-    for k in range(9):  # cono de raíces zancudas
-        a = TAU * k / 9 + rng.uniform(-0.15, 0.15)
+    for k in range(roots):  # cono de raíces zancudas
+        a = TAU * k / roots + rng.uniform(-0.15, 0.15)
         d = Vector((math.cos(a), math.sin(a), 0))
-        p0 = d * 0.1 + Vector((0, 0, rng.uniform(0.35, 0.65)))
-        p2 = d * rng.uniform(0.42, 0.6) + Vector((0, 0, -0.06))
+        p0 = d * 0.1 + Vector((0, 0, rng.uniform(0.35, 0.65) * (0.6 + 0.4 * k_)))
+        p2 = d * rng.uniform(0.42, 0.6) * (0.7 + 0.3 * k_) + Vector((0, 0, -0.06))
         p1 = d * 0.38 + Vector((0, 0, p0.z * 0.6))
         L.tube(mb, L.curve(p0, p1, p2, 4), [0.045, 0.04, 0.035, 0.03], 5, 1, uv_rep=1, v_len=1.1,
                ao=lambda p, t: 0.35 + 0.4 * sm(0, 0.6, p.z), wind=lambda p, t: 0.0)
     top = pts[-1]
     # vaina verde-oliva bajo la corona (usa la franja de tallo del atlas: frutos/ramitas → no; usamos corteza)
     cen = top + Vector((0, 0, 0.3))
-    N = 16
     for k in range(N):
         age = k / (N - 1)
         az = k * GOLD + rng.uniform(-0.1, 0.1)
         elev = math.radians(70 - 100 * age ** 0.9 + rng.uniform(-6, 6))
-        Ln = 2.5 + 0.7 * math.sin(math.pi * min(1, age * 1.2)) + rng.uniform(-0.15, 0.15)
+        Ln = (2.5 + 0.7 * math.sin(math.pi * min(1, age * 1.2)) + rng.uniform(-0.15, 0.15)) * ls
         frond(mb, top + Vector((0, 0, 0.12 - 0.25 * age)), az, elev, Ln, Ln * 0.5, (0.0, 0.0, 0.5, 1.0), 0,
               droop=0.25 + 0.35 * age, fold=math.radians(32), twist=rng.uniform(-0.5, 0.5), segs=8,
               ao0=0.38 + 0.2 * (1 - age), ao1=0.8 + 0.2 * (1 - age), w0=0.3, ph=k / N, cen=cen, nb=0.4, upb=0.3)
-    for k in range(2):  # hojas secas colgando
+    for k in range(dry):  # hojas secas colgando
         az = rng.uniform(0, TAU)
-        frond(mb, top + Vector((0, 0, -0.25)), az, math.radians(-70), 1.6, 0.8, (0.5, 0.0, 1.0, 0.5), 0, droop=0.05,
+        frond(mb, top + Vector((0, 0, -0.25)), az, math.radians(-70), 1.6 * ls, 0.8 * ls, (0.5, 0.0, 1.0, 0.5), 0, droop=0.05,
               fold=math.radians(25), segs=4, ao0=0.3, ao1=0.55, w0=0.3, ph=rng.random(), cen=cen, nb=0.3, upb=0.1)
-    for k in range(3):  # racimos de frutos (alimento de la cotorra)
+    for k in range(fruits):  # racimos de frutos
         az = TAU * k / 3 + rng.uniform(-0.3, 0.3)
         d = Vector((math.cos(az), math.sin(az), 0))
         a = top + d * 0.12 + Vector((0, 0, -0.35))
@@ -287,32 +287,33 @@ def umbrella_leaf(mb, c, n, R, m, rng, ph, crown, droop=0.35):
                 mb.f((hid, b_[0], a_[0]), (huv, b_[1], a_[1]), m)
 
 
-def yagrumo(rng):
+def yagrumo(rng, HT=6.6, nb=4, nl=9, ls=1.0):
+    """La variante joven usa HT=3.0, nb=2, nl=7: tronco corto y pocas hojas grandes."""
     sp = 'yagrumo'
     mb = L.MB()
-    HT = 6.6
+    bs = min(1.0, HT / 6.6 * 1.4)
     pts = [Vector((0.35 * math.sin(t * 2.2) * t, 0.15 * t * t, HT * t)) for t in [i / 11 for i in range(12)]]
-    rad = [0.13 + 0.07 * (1 - t) ** 3 - 0.03 * t for t in [i / 11 for i in range(12)]]
+    rad = [(0.13 + 0.07 * (1 - t) ** 3 - 0.03 * t) * (0.15 + 0.85 * bs ** 2) for t in [i / 11 for i in range(12)]]
     L.tube(mb, pts, rad, 8, 1, uv_rep=1, v_len=1.2, ao=lambda p, t: 0.5 + 0.45 * sm(0, 0.25, t) - 0.15 * sm(0.85, 1, t),
            wind=lambda p, t: 0.3 * t * t)
     for k in range(4):  # contrafuertes pequeños
         a = TAU * k / 4 + 0.4
-        buttress(mb, a, 0.18, 0.55, 0.5, 0.14, 1, rng, segs=5)
+        buttress(mb, a, 0.18 * bs, 0.55 * bs, 0.5 * bs, 0.14 * bs, 1, rng, segs=5)
     top = pts[-1]
-    crown = (top + Vector((0, 0, 0.6)), Vector((2.8, 2.8, 1.6)))
+    crown = (top + Vector((0, 0, 0.6 * bs)), Vector((2.8, 2.8, 1.6)) * bs)
     tips = []
-    for k in range(4):
-        az = TAU * k / 4 + rng.uniform(-0.3, 0.3)
+    for k in range(nb):
+        az = TAU * k / nb + rng.uniform(-0.3, 0.3)
         d = Vector((math.cos(az), math.sin(az), 0))
-        z0 = HT - 1.2 + k * 0.32
+        z0 = HT - 1.2 * bs + k * 0.32 * bs
         p0 = pts[int(z0 / HT * 11)]
-        p2 = p0 + d * rng.uniform(1.3, 1.9) + Vector((0, 0, rng.uniform(1.0, 1.5)))
-        p1 = p0 + d * 1.0 + Vector((0, 0, 0.2))
-        branch(mb, p0, p1, p2, 0.09, 0.05, 1, segs=5, sides=6, H=HT + 1.5, ph=k / 4, w_top=0.45)
-        tips.append((p2, k / 4))
+        p2 = p0 + d * rng.uniform(1.3, 1.9) * bs + Vector((0, 0, rng.uniform(1.0, 1.5) * bs))
+        p1 = p0 + d * 1.0 * bs + Vector((0, 0, 0.2 * bs))
+        branch(mb, p0, p1, p2, 0.09 * bs, 0.05 * bs, 1, segs=5, sides=6, H=HT + 1.5, ph=k / nb, w_top=0.45)
+        tips.append((p2, k / nb))
     tips.append((top + Vector((0, 0, 0.1)), 0.9))
     for tip, ph in tips:
-        n_l = 9
+        n_l = nl
         for j in range(n_l):
             az = j * GOLD + rng.uniform(-0.2, 0.2)
             el = math.radians(rng.uniform(-5, 50) if j > 1 else 70)
@@ -326,7 +327,7 @@ def yagrumo(rng):
             nrm = (UP * 1.0 + d * rng.uniform(0.2, 0.9) + Vector((rng.uniform(-.3, .3), rng.uniform(-.3, .3), 0))).normalized()
             if rng.random() < 0.12:  # algunas volteadas por el viento: se ve el envés plateado
                 nrm = (d * 1.0 - UP * 0.4).normalized()
-            umbrella_leaf(mb, c, nrm, rng.uniform(0.5, 0.7) * (0.7 if j < 2 else 1), 0, rng, ph + j * 0.02, crown)
+            umbrella_leaf(mb, c, nrm, rng.uniform(0.5, 0.7) * (0.7 if j < 2 else 1) * ls, 0, rng, ph + j * 0.02, crown)
         for j in range(2):  # amentos colgantes
             az = rng.uniform(0, TAU)
             side = Vector((math.cos(az), math.sin(az), 0))
@@ -334,6 +335,57 @@ def yagrumo(rng):
             strip(mb, [a + Vector((0, 0, -0.75)), a + Vector((0, 0, -0.35)), a], 0.6, (0.02, 0.02, 0.48, 0.47), 0, side,
                   (0.5, 0.6), (0.7, 0.5), ph=ph)
     return finish(mb, sp, [leaf_mat(sp, double=False), bark_mat(sp)])
+
+
+def arbol_enano(rng):
+    """Bosque enano de la cumbre: tronco corto y retorcido cubierto de musgo, copa baja aplastada por el viento,
+    bromelias epífitas y musgo colgante."""
+    sp = 'arbol_enano'
+    mb = L.MB()
+    pts = []
+    for i in range(9):
+        t = i / 8
+        pts.append(Vector((0.35 * math.sin(t * 3.4) + 0.25 * t, 0.25 * math.sin(t * 2.3 + 1.0), 1.7 * t)))
+    rad = [0.2 + 0.1 * (1 - t) ** 3 - 0.05 * t for t in [i / 8 for i in range(9)]]
+    L.tube(mb, pts, rad, 9, 1, uv_rep=1, v_len=0.9, ao=lambda p, t: 0.42 + 0.45 * sm(0, 0.5, t),
+           wind=lambda p, t: 0.15 * t * t)
+    for k in range(4):
+        buttress(mb, TAU * k / 4 + rng.uniform(-0.3, 0.3), 0.25, rng.uniform(0.55, 0.8), 0.45, 0.16, 1, rng, segs=5,
+                 wig=0.35)
+    top = pts[-1]
+    crown = (Vector((0.3, 0.1, 2.9)), Vector((2.4, 2.4, 0.9)))
+    puffs, limbs = [], []
+    for k in range(4):
+        az = TAU * k / 4 + rng.uniform(-0.35, 0.35)
+        d = Vector((math.cos(az), math.sin(az), 0))
+        p0 = pts[5 + k % 3]
+        reach = rng.uniform(1.3, 2.0)
+        p2 = p0 + d * reach + Vector((0, 0, rng.uniform(0.7, 1.2)))
+        mid = p0.lerp(p2, 0.5) + Vector((rng.uniform(-.3, .3), rng.uniform(-.3, .3), rng.uniform(-0.25, 0.1)))
+        branch(mb, p0, mid, p2, 0.11, 0.045, 1, segs=6, sides=6, H=3.5, ph=k / 4, w_top=0.3)
+        limbs.append((p0, mid, p2, az))
+        q0 = L.bez(p0, mid, p2, 0.55)
+        e = Vector((math.cos(az + 0.9), math.sin(az + 0.9), 0))
+        q2 = q0 + e * 0.8 + Vector((0, 0, 0.45))
+        branch(mb, q0, q0 + e * 0.3 + Vector((0, 0, 0.3)), q2, 0.05, 0.025, 1, segs=3, sides=5, H=3.5, ph=k / 4 + .05)
+        puffs.append((p2 + Vector((0, 0, 0.15)), Vector((1.05, 1.05, 0.55)), k / 4))
+        puffs.append((q2 + Vector((0, 0, 0.1)), Vector((0.75, 0.75, 0.45)), k / 4 + 0.05))
+    puffs.append((top + Vector((0.1, 0, 1.0)), Vector((1.1, 1.1, 0.55)), 0.95))
+    uvrs = [(0.0, 0.5, 0.5, 1.0), (0.5, 0.5, 1.0, 1.0)]
+    for c, ax, ph in puffs:
+        puff(mb, c, ax, max(16, int(30 * ax.x * ax.y)), 0.85, uvrs, 0, rng, crown, zmin=-0.45, ph=ph, fold=0.15)
+    for k, (p0, mid, p2, az) in enumerate(limbs):
+        b = L.bez(p0, mid, p2, 0.35) + Vector((0, 0, 0.08))
+        for j in range(2):  # bromelia epífita
+            sd = Vector((math.cos(az + j * math.pi / 2 + 0.6), math.sin(az + j * math.pi / 2 + 0.6), 0))
+            strip(mb, [b + Vector((0, 0, -0.12)), b + Vector((0, 0, 0.42))], 0.54, (0.02, 0.0, 0.48, 0.48), 0, sd,
+                  (0.55, 0.85), (0.2, 0.3), ph=k / 4)
+        a = L.bez(p0, mid, p2, 0.75)
+        for j in range(2):  # musgo colgante
+            sd = Vector((math.cos(az + j * math.pi / 2), math.sin(az + j * math.pi / 2), 0))
+            strip(mb, [a + Vector((0, 0, -0.85)), a + Vector((0, 0, -0.4)), a], 0.55, (0.52, 0.02, 0.98, 0.49), 0, sd,
+                  (0.45, 0.7), (0.8, 0.4), ph=k / 4 + 0.5)
+    return finish(mb, sp, [leaf_mat(sp), bark_mat(sp)])
 
 
 def tabonuco(rng):
@@ -940,6 +992,14 @@ KIT = {
     'yagrumo': (yagrumo, 'Yagrumo', 'Cecropia schreberiana', '15-20',
                 'Árbol pionero: tras un huracán llena los claros; el envés plateado de sus hojas brilla con el viento.',
                 'yagrumo', 0.25),
+    'palma_sierra_joven': (lambda r: palma_sierra(r, HT=2.6, N=11, ls=0.78, fruits=0, dry=1, roots=6),
+                           'Palma de sierra joven', 'Prestoea montana', '3-6',
+                           'Joven: brota rápido en los claros que abren los huracanes.', 'palma_sierra', 0.25),
+    'yagrumo_joven': (lambda r: yagrumo(r, HT=3.0, nb=2, nl=7, ls=0.85), 'Yagrumo joven', 'Cecropia schreberiana',
+                      '3-6', 'Crece muy rápido: es de los primeros en ocupar un claro.', 'yagrumo', 0.15),
+    'arbol_enano': (arbol_enano, 'Árbol del bosque enano', 'Tabebuia rigida', '3-6',
+                    'En las cumbres llueve 150-200 pulgadas al año; el viento y la niebla lo mantienen bajo y con musgo.',
+                    'lluvia_bosque_enano', 0.3),
     'tabonuco': (tabonuco, 'Tabonuco', 'Dacryodes excelsa', '25-35',
                  'Da nombre al bosque más bajo de El Yunque, por debajo de unos 2,000 pies.', 'tabonuco', 0.45),
     'helecho_arboreo': (helecho_arboreo, 'Helecho gigante', 'Cyathea arborea', '5-10',

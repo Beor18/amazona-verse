@@ -1,6 +1,6 @@
 # ENTORNO_KIT · Flora de El Yunque
 
-Lámina: `docs/img/entorno_kit.png`. Scripts de Blender 4.2 sin ventana, en orden: `tools/blender/entorno_texturas.py`, `entorno_modelos.py` y `entorno_lamina.py` (más la librería `entorno_lib.py`).
+Lámina: `docs/img/entorno_kit.png`. Scripts (Blender 4.2 sin ventana, en orden): `tools/blender/entorno_texturas.py`, `entorno_modelos.py` y `entorno_lamina.py`.
 
 ## Piezas (`assets/models/entorno/<nombre>.glb` + `<nombre>_glb.js`)
 | Pieza | Alto m | Tris | Dato |
@@ -9,6 +9,9 @@ Lámina: `docs/img/entorno_kit.png`. Scripts de Blender 4.2 sin ventana, en orde
 | yagrumo | 8.0 | 1776 | Pionero: llena los claros; su envés plateado brilla con el viento. |
 | tabonuco | 11.5 | 2062 | Da nombre al bosque más bajo de El Yunque. |
 | helecho_arboreo | 5.3 | 902 | Un helecho del tamaño de un árbol. |
+| arbol_enano | 3.4 | 1304 | En las cumbres, viento y niebla lo mantienen bajo. |
+| palma_sierra_joven | 4.6 | 728 | Brota rápido en los claros. |
+| yagrumo_joven | 3.7 | 1064 | De los primeros en ocupar un claro. |
 | ceiba | 14.5 (copa 19) | 5674 | Sus raíces en tabla la sostienen. |
 | flamboyan | 7.1 (copa 13) | 2154 | No es nativo: viene de Madagascar. |
 | bambu | 7.0 | 2171 | Hierba gigante introducida. |
@@ -21,10 +24,10 @@ Lámina: `docs/img/entorno_kit.png`. Scripts de Blender 4.2 sin ventana, en orde
 | piedras_rio | 0.3 | 360 | El agua las redondea. |
 | tronco_caido | largo 4.3 | 304 | Alimenta hongos e insectos. |
 
-Total: 2.4 MB; el .glb más pesado (ceiba) pesa 458 KB. `entorno_kit.json` trae ancho, KB, `radio_colision` y la `ficha` del Diario de cada pieza.
+Total: 2.9 MB; el .glb más pesado (ceiba) pesa 458 KB. Las variantes jóvenes comparten materiales con el adulto. `entorno_kit.json` trae ancho, KB, `radio_colision` y la `ficha` del Diario.
 
 ## Escala
-El mundo está a escala de la cotorra: mide 1.4 m, unas 4.5 veces su tamaño real. Los árboles miden ≈1/3 de su altura real; las plantas, ≈1:1. Pivote en la base, metros, Y arriba.
+La cotorra mide 1.4 m (unas 4.5 veces su tamaño real). Los árboles miden ≈1/3 de su altura real; las plantas, ≈1:1. Pivote en la base, metros, Y arriba.
 
 ## Materiales
 - `HOJA_<especie>`: PNG ≤512 px con alfa (MASK 0.5 → `alphaTest: 0.5`), doble cara. Excepciones de una sola cara: yagrumo (su envés plateado es una segunda capa) y hojarasca. Las normales son esféricas: quitar `normal *= faceDirection`.
@@ -45,4 +48,3 @@ En el shader: `diffuse *= mix(0.12, 1.0, R)` y `pos.xz += dir * sin(t*1.7 + B*6.
 ## Texturas (`assets/tex/entorno/`, horneadas en Cycles)
 - Hojas `hoja_*.png`; cortezas `corteza_*.jpg` con su `_n.jpg`.
 - Cuatro suelos tileables de 1024 px con normal map: `suelo_tierra_hojarasca`, `suelo_musgo`, `suelo_roca` y `suelo_arena_rio`. Repetirlos cada ≈2.2 m.
-- Rocas y tronco tienen mapas propios.
