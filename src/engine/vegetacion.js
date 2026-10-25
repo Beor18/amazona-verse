@@ -11,7 +11,8 @@
    - Sombras: en 'alto' los árboles cercanos proyectan sombra real; en todos, una mancha suave bajo cada árbol los asienta.
    - Colisiones: troncos cercanos al jugador como colliders (se actualizan al moverse).
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
-   API: G.vegetacion.listo (promesa), stats(), instancias, especies. */
+   API: G.vegetacion.listo (promesa), stats(), instancias, especies, atlas (render target de los impostores; se repinta si se
+   pierde el contexto WebGL). */
 AVE.module('vegetacion', function (G) {
   'use strict';
   const T = G.terreno, MAPA = T.mapa, R = G.renderer, scene = R.scene, S = G.S;
@@ -299,41 +300,46 @@ AVE.module('vegetacion', function (G) {
   }
 
   // ---------- Impostores: atlas con un render de cada árbol ----------
-  const IMP = { tex: null, tile: {}, mesh: null, n: 0 };
+  const IMP = { tex: null, tile: {}, mesh: null, n: 0, rt: null, pintar: null };
   function hornearImpostores() {
     const lista = [...ARBOLES].filter(m => geos[m] && porModelo[m]);
     if (!lista.length) return;
     const TS = 256, cols = 4, rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
     const rt = new THREE.WebGLRenderTarget(TS * cols, TS * rows, { minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, generateMipmaps: true });
-    const sc = new THREE.Scene();
-    sc.add(new THREE.HemisphereLight(R.hemi.color, R.hemi.groundColor, R.hemi.intensity * 1.05));
-    const dl = new THREE.DirectionalLight(R.sun.color, R.sun.intensity * 0.9); dl.position.set(0.4, 1, 0.8); sc.add(dl);
-    const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-    const r = R.renderer, prevRT = r.getRenderTarget(), prevClear = r.getClearColor(new THREE.Color()), prevA = r.getClearAlpha(), prevShadow = r.shadowMap.enabled;
-    r.shadowMap.enabled = false;
-    r.setRenderTarget(rt); r.setClearColor(0x6b8a5a, 0); r.clear();
-    lista.forEach((m, k) => {
-      const holder = new THREE.Group();
-      for (const p of geos[m]) {
-        const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map });
-        holder.add(new THREE.Mesh(p.geo, mat));
-      }
-      sc.add(holder);
-      const bx = info[m].box, w = Math.max(bx.max.x - bx.min.x, bx.max.z - bx.min.z) * 1.04, h = bx.max.y * 1.02;
-      const half = Math.max(w, h) / 2;
-      cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half; cam.near = 0.1; cam.far = 200;
-      cam.position.set(0, half, 60); cam.lookAt(0, half, 0); cam.updateProjectionMatrix();
-      const cx = k % cols, cy = Math.floor(k / cols);
-      rt.viewport.set(cx * TS, (rows - 1 - cy) * TS, TS, TS); rt.scissor.copy(rt.viewport); rt.scissorTest = true;
-      r.setRenderTarget(rt);
-      r.render(sc, cam);
-      sc.remove(holder);
-      holder.traverse(o => { if (o.material) o.material.dispose(); });
-      // tile en uv (u0, v0, du, dv) y tamaño del cuadro en metros
-      IMP.tile[m] = { k, u: cx / cols, v: (rows - 1 - cy) / rows, du: 1 / cols, dv: 1 / rows, lado: half * 2 };
-    });
-    rt.scissorTest = false; rt.viewport.set(0, 0, TS * cols, TS * rows);
-    r.setRenderTarget(prevRT); r.setClearColor(prevClear, prevA); r.shadowMap.enabled = prevShadow;
+    // El atlas solo vive en la GPU: si se pierde el contexto WebGL, se repinta al volver (gancho 'contexto', más abajo)
+    const pintar = () => {
+      const sc = new THREE.Scene();
+      sc.add(new THREE.HemisphereLight(R.hemi.color, R.hemi.groundColor, R.hemi.intensity * 1.05));
+      const dl = new THREE.DirectionalLight(R.sun.color, R.sun.intensity * 0.9); dl.position.set(0.4, 1, 0.8); sc.add(dl);
+      const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+      const r = R.renderer, prevRT = r.getRenderTarget(), prevClear = r.getClearColor(new THREE.Color()), prevA = r.getClearAlpha(), prevShadow = r.shadowMap.enabled;
+      r.shadowMap.enabled = false;
+      r.setRenderTarget(rt); r.setClearColor(0x6b8a5a, 0); r.clear();
+      lista.forEach((m, k) => {
+        const holder = new THREE.Group();
+        for (const p of geos[m]) {
+          const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map });
+          holder.add(new THREE.Mesh(p.geo, mat));
+        }
+        sc.add(holder);
+        const bx = info[m].box, w = Math.max(bx.max.x - bx.min.x, bx.max.z - bx.min.z) * 1.04, h = bx.max.y * 1.02;
+        const half = Math.max(w, h) / 2;
+        cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half; cam.near = 0.1; cam.far = 200;
+        cam.position.set(0, half, 60); cam.lookAt(0, half, 0); cam.updateProjectionMatrix();
+        const cx = k % cols, cy = Math.floor(k / cols);
+        rt.viewport.set(cx * TS, (rows - 1 - cy) * TS, TS, TS); rt.scissor.copy(rt.viewport); rt.scissorTest = true;
+        r.setRenderTarget(rt);
+        r.render(sc, cam);
+        sc.remove(holder);
+        holder.traverse(o => { if (o.material) o.material.dispose(); });
+        // tile en uv (u0, v0, du, dv) y tamaño del cuadro en metros
+        IMP.tile[m] = { k, u: cx / cols, v: (rows - 1 - cy) / rows, du: 1 / cols, dv: 1 / rows, lado: half * 2 };
+      });
+      rt.scissorTest = false; rt.viewport.set(0, 0, TS * cols, TS * rows);
+      r.setRenderTarget(prevRT); r.setClearColor(prevClear, prevA); r.shadowMap.enabled = prevShadow;
+    };
+    pintar();
+    Object.assign(IMP, { rt, pintar });
     IMP.tex = rt.texture;
     // Malla: un cuadro por instancia, mirando a la cámara en el eje Y
     let cap = 0; for (const m of lista) cap += porModelo[m].n;
@@ -620,11 +626,14 @@ AVE.module('vegetacion', function (G) {
   }, 22);
   G.on('update', () => { if (activo) actualizarColliders(false); }, 60);
   G.on('calidad', () => { if (activo) { actualizar(true); actualizarPasto(true); } });
+  // Contexto WebGL recuperado: three vuelve a subir mallas, instancias y texturas desde sus arreglos; el atlas no tiene copia
+  // en la CPU y se repinta aquí (el renderer emite 'contexto' antes de precalentar y de volver a dibujar)
+  G.on('contexto', ok => { if (ok && IMP.pintar) try { IMP.pintar(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); } });
 
   function stats() {
     const out = { total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     return out;
   }
-  return { listo, stats, libre, get instancias() { return porModelo; }, info, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+  return { listo, stats, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
 });

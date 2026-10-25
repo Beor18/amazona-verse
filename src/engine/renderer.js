@@ -7,7 +7,9 @@
    'calidad' (G.on('calidad', C => …)) para que terreno, vegetación y agua bajen o suban su detalle. ?calidad=bajo fija uno.
    Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala] },
    mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom }.
-   Sin cielo.cenit se usa el fondo plano de antes (plantillas viejas). */
+   Sin cielo.cenit se usa el fondo plano de antes (plantillas viejas).
+   Contexto WebGL: si se pierde, pausa con un aviso y al volver lo rehace todo sin tocar G.S (gancho 'contexto'; ver la sección
+   «Contexto WebGL»). Prueba: contextTest() (AV.contextTest). */
 AVE.module('renderer', function (G) {
   'use strict';
   const W = G.pack.mundo || {};
@@ -347,9 +349,11 @@ AVE.module('renderer', function (G) {
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
-  // visible y sin frustum culling, antes de que el jugador mire alrededor (sin esto cada vista nueva daba tirones: QA-20)
+  // visible y sin frustum culling, antes de que el jugador mire alrededor (sin esto cada vista nueva daba tirones: QA-20).
+  // Incluye la capa 31 (objetos pequeños lejanos): tras perder el contexto WebGL también hay que volver a subir lo suyo.
   function precalentar() {
-    const rt = new THREE.WebGLRenderTarget(32, 32), guardado = [];
+    const rt = new THREE.WebGLRenderTarget(32, 32), guardado = [], capa31 = (camera.layers.mask & (1 << 31)) !== 0;
+    camera.layers.enable(31);
     scene.traverse(o => {
       if (!(o.isMesh || o.isPoints || o.isSprite)) return;
       const propio = /^(terreno|flora|edificios|estructura)/.test(o.name || '');
@@ -360,6 +364,7 @@ AVE.module('renderer', function (G) {
     try { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     renderer.setRenderTarget(null);
+    if (!capa31) camera.layers.disable(31);
     for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; }
     rt.dispose();
   }
@@ -396,6 +401,118 @@ AVE.module('renderer', function (G) {
 
   resize();
 
+  // ---------- Contexto WebGL: pérdida y recuperación ----------
+  // En un Chromebook el contexto se pierde al suspender, al cambiar de pestaña o cuando falta memoria de GPU. Al perderse, el
+  // bucle y la simulación se detienen (G.S no cambia) y un aviso para niños (ES/EN, el idioma del aula) tapa el lienzo.
+  // Al volver, three r128 rehace su estado (programas, buffers, texturas y render targets, con los ajustes de sombra) y
+  // vuelve a subir todo desde la CPU: geometrías, instancias, imágenes, lienzos y DataTextures. El composer, el bloom y el
+  // mapa de sombras se repintan solos en cada cuadro. Lo que solo vivía en la GPU lo repinta su módulo en el gancho
+  // 'contexto' (G.on('contexto', ok => …): false al perderse y true al volver; hoy, el atlas de impostores de la flora).
+  // Después se precalienta (compila y sube todo de una vez) y el juego sigue donde iba. Si no vuelve en 5 s, el aviso
+  // ofrece Recargar: guarda la partida y recarga la página, y el guardado la retoma.
+  // Regla para quien sube cosas a la GPU: no liberar los arreglos ni las imágenes después de subirlos (nada de
+  // onUpload(dispose), image = null ni canvas.width = 0), porque three los vuelve a subir desde ahí.
+  const CTX = { perdido: false, perdidas: 0, restauradas: 0, fase: '', timer: 0, el: null, foco: null };
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); perderContexto(); }, false);
+  canvas.addEventListener('webglcontextrestored', () => restaurarContexto(), false);
+  function perderContexto() {
+    const ya = CTX.perdido;
+    CTX.perdido = true;
+    if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
+    avisoContexto('perdido');
+    clearTimeout(CTX.timer);
+    CTX.timer = setTimeout(() => { if (CTX.perdido) avisoContexto('tarda'); }, 5000);
+  }
+  function restaurarContexto() {
+    clearTimeout(CTX.timer);
+    avisoContexto('volviendo');
+    // Un cuadro para que se vea "¡Ya casi!" antes de compilar (en un Chromebook puede tardar uno o dos segundos)
+    requestAnimationFrame(() => setTimeout(() => {
+      if (renderer.getContext().isContextLost()) return; // se volvió a perder: lo atiende webglcontextlost
+      try { G.emit('contexto', true); precalentar(); }
+      catch (e) { console.warn('AVE contexto:', e && e.message || e); }
+      CTX.perdido = false; CTX.restauradas++;
+      // el tirón de compilar no cuenta para la calidad adaptativa ni para la resolución dinámica
+      fpsM.warm = Math.max(fpsM.warm, 3000); dyn.t = dyn.slow = dyn.fast = 0;
+      if (G.pausa) G.pausa.set('contexto', false);
+      avisoContexto(null);
+      start();
+    }, 0));
+  }
+  const AVISO = {
+    perdido: { ojo: ['Un momento', 'One moment'], t: ['La selva tomó un respiro', 'The forest is taking a breather'],
+      d: ['Tu computadora pausó los gráficos. Tu partida está a salvo y en seguida seguimos.', 'Your computer paused the graphics. Your game is safe, and we will keep going in a moment.'] },
+    volviendo: { ojo: ['Un momento', 'One moment'], t: ['¡Ya casi!', 'Almost there!'], d: ['Estamos preparando la selva otra vez…', 'We are getting the forest ready again…'] },
+    tarda: { ojo: ['Un momento', 'One moment'], t: ['Esto está tardando', 'This is taking a while'],
+      d: ['Pulsa Recargar para seguir jugando. Antes guardamos tu partida.', 'Press Reload to keep playing. We will save your game first.'], b: ['Recargar', 'Reload'] },
+    sinGuardar: { ojo: ['Un momento', 'One moment'], t: ['No pudimos guardar', 'We could not save'],
+      d: ['Si recargas, sigues desde tu último guardado. También puedes esperar un poco más.', 'If you reload, you will continue from your last save. You can also wait a little longer.'], b: ['Recargar igual', 'Reload anyway'] },
+  };
+  const AVISO_CSS = `
+#av-contexto { position: fixed; inset: 0; z-index: calc(var(--z-title, 40) + 20); display: none; place-items: center; box-sizing: border-box;
+  width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: var(--sp-4, 16px); border: 0; overflow: auto;
+  color: var(--c-text, #f4f7f1); background: rgba(16, 36, 28, 0.9); background: color-mix(in srgb, var(--c-bg, #10241c) 90%, transparent);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  font-family: var(--font-body, system-ui, sans-serif); }
+#av-contexto.abierto { display: grid; }
+#av-contexto::backdrop { background: transparent; }
+#av-contexto .avx-panel { position: relative; box-sizing: border-box; width: min(440px, 100%); margin-top: 52px; padding: 68px var(--sp-6, 24px) var(--sp-6, 24px);
+  text-align: center; outline: none; background: var(--c-surface-solid, #132b21) radial-gradient(130% 80% at 50% 0%, rgba(127, 211, 143, 0.16), transparent 60%);
+  border: 2px solid var(--c-line, rgba(127, 211, 143, 0.28)); border-radius: var(--r-xl, 28px); box-shadow: var(--sh-3, 0 24px 60px rgba(0, 0, 0, 0.5));
+  animation: pop-in var(--dur-3, 420ms) var(--ease-pop, ease-out); }
+#av-contexto .avx-ave { position: absolute; left: 50%; top: -54px; width: 108px; height: 108px; margin-left: -54px; border-radius: 50%;
+  background: var(--c-surface-raised, #21463a) url("assets/vittata.png") 56% 16% / 170% no-repeat; box-shadow: var(--sh-2, 0 10px 28px rgba(0, 0, 0, 0.35)); }
+#av-contexto .avx-ave::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 5px solid rgba(244, 247, 241, 0.14);
+  border-top-color: var(--beak, #f2a03d); border-right-color: var(--leaf-hi, #7fd38f); animation: spin 1.3s linear infinite; }
+#av-contexto[data-fase="tarda"] .avx-ave::after, #av-contexto[data-fase="sinGuardar"] .avx-ave::after { animation-duration: 2.6s; }
+#av-contexto .avx-ojo { margin: 0; }
+#av-contexto h2 { margin: var(--sp-2, 8px) 0; font: 700 var(--fs-2xl, 28px)/1.15 var(--font-display, system-ui, sans-serif); color: var(--c-text, #f4f7f1); }
+#av-contexto .avx-d { margin: 0; font-size: var(--fs-lg, 18px); line-height: var(--lh-body, 1.5); color: var(--c-text-muted, #a9c2b1); }
+#av-contexto .btn { margin-top: var(--sp-5, 20px); }
+#av-contexto .btn[hidden] { display: none; }
+@media (max-width: 420px) { #av-contexto h2 { font-size: var(--fs-xl, 22px); } #av-contexto .avx-d { font-size: var(--fs-md, 16px); } }`;
+  function crearAviso() {
+    const st = document.createElement('style'); st.id = 'av-contexto-css'; st.textContent = AVISO_CSS; document.head.appendChild(st);
+    const el = document.createElement('div');
+    el.id = 'av-contexto';
+    el.setAttribute('role', 'alertdialog'); el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'avx-t'); el.setAttribute('aria-describedby', 'avx-d');
+    el.innerHTML = '<div class="avx-panel" tabindex="-1"><div class="avx-ave" aria-hidden="true"></div><p class="eyebrow avx-ojo"></p>' +
+      '<h2 id="avx-t"></h2><p class="avx-d" id="avx-d" aria-live="polite"></p><button class="btn xl" type="button" data-icon="reset" hidden></button></div>';
+    // Popover manual: entra en la capa superior, por encima del menú de pausa y de la portada
+    if (el.showPopover) el.setAttribute('popover', 'manual');
+    el.querySelector('button').addEventListener('click', () => {
+      let ok = false;
+      try { ok = G.guardado.save(true) !== false; } catch (e) { ok = false; }
+      if (!ok && CTX.fase !== 'sinGuardar') { avisoContexto('sinGuardar'); return; }
+      location.reload();
+    });
+    document.body.appendChild(el);
+    return el;
+  }
+  function avisoContexto(fase) {
+    CTX.fase = fase || '';
+    if (!fase) {
+      const el = CTX.el; if (!el || !el.classList.contains('abierto')) return;
+      el.classList.remove('abierto');
+      try { if (el.matches(':popover-open')) el.hidePopover(); } catch (e) { /* sin popover */ }
+      const f = CTX.foco; CTX.foco = null;
+      if (f && f.isConnected && f.focus) try { f.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
+      return;
+    }
+    const el = CTX.el || (CTX.el = crearAviso()), T = AVISO[fase];
+    const en = G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 1 : 0;
+    if (!el.classList.contains('abierto')) CTX.foco = document.activeElement;
+    el.lang = en ? 'en' : 'es'; el.dataset.fase = fase;
+    el.querySelector('.avx-ojo').textContent = T.ojo[en];
+    el.querySelector('h2').textContent = T.t[en];
+    el.querySelector('.avx-d').textContent = T.d[en];
+    const b = el.querySelector('button'); b.hidden = !T.b; if (T.b) b.textContent = T.b[en];
+    el.classList.add('abierto');
+    try { if (el.showPopover && !el.matches(':popover-open')) el.showPopover(); } catch (e) { /* sin popover: z-index */ }
+    try { (T.b ? b : el.querySelector('.avx-panel')).focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
+  }
+
   // ---------- Simulación y dibujo ----------
   function update(dt) {
     const S = G.S;
@@ -419,7 +536,11 @@ AVE.module('renderer', function (G) {
   const cuenta = { calls: 0, tris: 0, ultimo: { calls: 0, tris: 0 } };
   const renderCrudo = renderer.render.bind(renderer);
   renderer.render = function (sc, cam) { renderCrudo(sc, cam); cuenta.calls += renderer.info.render.calls; cuenta.tris += renderer.info.render.triangles; };
+  let vivo = false, cuadros = 0;
   function frame(now) {
+    if (CTX.perdido) { vivo = false; return; } // sin contexto ni se simula ni se dibuja; restaurarContexto() lo reanuda
+    if (last == null) last = now;
+    cuadros++;
     cuenta.ultimo = { calls: cuenta.calls, tris: cuenta.tris }; cuenta.calls = cuenta.tris = 0;
     adaptDPR(now - last);
     adaptCalidad(now - last);
@@ -433,10 +554,13 @@ AVE.module('renderer', function (G) {
     if (!G.ui.worldHidden()) render(dt, moving);
     requestAnimationFrame(frame);
   }
-  function start() { requestAnimationFrame(frame); }
+  // Un solo bucle: llamar a start() con el bucle vivo no hace nada; al reanudar, el primer cuadro tiene dt = 0
+  function start() { if (vivo) return; vivo = true; last = null; requestAnimationFrame(frame); }
 
   // Foto del mundo desde la cámara colocada al instante, recortada a w×h (JPEG en data URL; null si falla). Sin post: directo al lienzo.
+  // Sin contexto WebGL devuelve null (el cómic reintenta después).
   function snapshot(w, h, quality) {
+    if (CTX.perdido || renderer.getContext().isContextLost()) return null;
     try {
       G.camara.place(true);
       fogColorFor(false); seguirSombra();
@@ -452,6 +576,96 @@ AVE.module('renderer', function (G) {
     } catch (e) { return null; }
   }
 
+  // ---------- Prueba de pérdida de contexto: AV.contextTest({ rapido }) ----------
+  // Pierde y recupera el contexto de verdad (WEBGL_lose_context) con el mundo quieto (pausa de prueba, dt = 0) y comprueba la
+  // pausa y el aviso, el bucle detenido, Recargar a los 5 s (rapido: true lo salta), que al volver se dibuja el mismo mundo
+  // (píxeles del lienzo antes y después: texturas, mallas e instancias), el atlas de impostores, el post y las sombras, G.S intacta
+  // y la consola limpia.
+  async function contextTest(opts) {
+    opts = opts || {};
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const fin = () => ({ passed: out.filter(o => o.ok).length, total: out.length, results: out });
+    const espera = ms => new Promise(r => setTimeout(r, ms));
+    const hasta = async (fn, ms) => { const t0 = performance.now(); while (!fn()) { if (performance.now() - t0 > ms) return false; await espera(40); } return true; };
+    const enCuadros = async n => { const c0 = cuadros; await hasta(() => cuadros >= c0 + n, 5000); };
+    const pct = v => (v * 100).toFixed(1) + ' %';
+    const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_lose_context');
+    if (!ext || CTX.perdido) { check('Se puede simular la pérdida (WEBGL_lose_context, contexto vivo)', false, ext ? 'el contexto ya está perdido' : 'sin la extensión'); return fin(); }
+    // Lienzo: dibuja el mundo y lee sus píxeles en la misma tarea (sin preserveDrawingBuffer)
+    const foto = () => {
+      drawScene(camera); renderer.setRenderTarget(null);
+      const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      return { w, h, px };
+    };
+    const comparar = (A, B) => {
+      let n = 0, vivos = 0, distintos = 0;
+      for (let i = 0; i < B.px.length; i += 12) {
+        n++; const a = A.px, b = B.px;
+        if (b[i] + b[i + 1] + b[i + 2] > 30) vivos++;
+        if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 48) distintos++;
+      }
+      return { vivos: vivos / n, distintos: A.w === B.w && A.h === B.h ? distintos / n : 1 };
+    };
+    const atlas = () => {
+      const rt = G.vegetacion && G.vegetacion.atlas; if (!rt) return null;
+      const px = new Uint8Array(rt.width * rt.height * 4); renderer.readRenderTargetPixels(rt, 0, 0, rt.width, rt.height, px);
+      let cubre = 0; for (let i = 3; i < px.length; i += 4) if (px[i] > 127) cubre++;
+      return { w: rt.width, h: rt.height, px, cubre: cubre / (rt.width * rt.height) };
+    };
+    const errores = [], ce = console.error, e0 = (window.__aveErrores || []).length;
+    console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
+    const idioma = G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'en' : 'es';
+    try {
+      await Promise.resolve(G.vegetacion && G.vegetacion.listo);
+      if (G.pausa) G.pausa.set('prueba-contexto', true);
+      await enCuadros(3);
+      const A = foto(), atA = atlas(), estado = JSON.stringify(G.S), r0 = CTX.restauradas;
+      const conPost = post.activo, conSombra = sun.castShadow;
+      const t0 = performance.now();
+      ext.loseContext();
+      check('Detecta la pérdida y pausa el juego', await hasta(() => CTX.perdido, 3000) && (!G.pausa || G.pausa.activa()), Math.round(performance.now() - t0) + ' ms');
+      const el = CTX.el, abierto = () => !!el && el.classList.contains('abierto');
+      check('Aviso para niños visible, en el idioma del juego', abierto() && el.lang === idioma && el.querySelector('h2').textContent.length > 5 &&
+        el.getBoundingClientRect().width > 0, el ? idioma + ' · ' + el.querySelector('h2').textContent : 'sin aviso');
+      const reloj = G.S.clock, n0 = cuadros; await espera(400);
+      check('Sin contexto se detienen el bucle y la simulación', cuadros === n0 && G.S.clock === reloj, (cuadros - n0) + ' cuadros en 400 ms');
+      check('Sin contexto snapshot() devuelve null (el cómic reintenta)', snapshot(64, 36, 0.8) === null);
+      if (!opts.rapido) {
+        await espera(5300);
+        const b = el && el.querySelector('button');
+        check('Si no vuelve en 5 s ofrece Recargar', CTX.fase === 'tarda' && b && !b.hidden && b.getBoundingClientRect().width > 0 && document.activeElement === b, b && b.textContent);
+      }
+      const t1 = performance.now();
+      ext.restoreContext();
+      check('El contexto vuelve, el juego sigue y el aviso se cierra', await hasta(() => CTX.restauradas > r0 && !CTX.perdido, 20000) && !abierto(),
+        Math.round(performance.now() - t1) + ' ms');
+      await enCuadros(3);
+      const B = foto(), cmp = comparar(A, B);
+      check('Después se dibuja el mundo (píxeles no negros)', cmp.vivos > 0.9, pct(cmp.vivos) + ' con color');
+      check('El mundo se ve igual que antes de perderse', cmp.distintos < 0.02, pct(cmp.distintos) + ' de píxeles distintos');
+      if (atA) {
+        const atB = atlas(); let d = 0; for (let i = 0; i < atA.px.length; i += 16) if (Math.abs(atA.px[i] - atB.px[i]) > 8) d++;
+        check('El atlas de impostores de la flora se repintó', atB.cubre > 0.05 && Math.abs(atB.cubre - atA.cubre) < 0.01 && d / (atA.px.length / 16) < 0.01,
+          'cobertura ' + pct(atA.cubre) + ' → ' + pct(atB.cubre));
+      }
+      if (conPost) check('Vuelven el composer y el bloom', post.activo && !!renderer.properties.get(post.composer.renderTarget1.texture).__webglTexture);
+      if (conSombra) check('Vuelven las sombras', renderer.shadowMap.enabled && sun.castShadow && !!sun.shadow.map && !!renderer.properties.get(sun.shadow.map.texture).__webglTexture);
+      check('La partida (G.S) no cambia', JSON.stringify(G.S) === estado);
+      const nuevos = (window.__aveErrores || []).slice(e0);
+      check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
+    } catch (e) {
+      check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
+    } finally {
+      console.error = ce;
+      if (gl.isContextLost()) { try { ext.restoreContext(); } catch (e) { /* ya volvía */ } }
+      await hasta(() => !CTX.perdido, 10000);
+      if (G.pausa) G.pausa.set('prueba-contexto', false);
+    }
+    return fin();
+  }
+
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
-    sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, get t() { return t; } };
+    sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, get t() { return t; },
+    contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest };
 });
