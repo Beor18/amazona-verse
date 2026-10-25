@@ -59,11 +59,12 @@
     guardado: {
       version: 5,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu'],
+      // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu', 'lugares'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [],
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [],
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
           inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
@@ -110,6 +111,12 @@
     },
     // Aula (src/game/aula.js): progreso del aula en el dispositivo, separado de la partida; lecciones en lecciones.js
     aula: { clave: 'amazonaverse.aula.cap1', estado: 'edu', archivo: 'amazonaverse_cap1', lecciones: () => window.AV_LECCIONES_CAP1 },
+    // Criadero (src/game/criadero.js): el nido entra en el mundo desde la charla con Luma (evento LumaHelped, minuto 2), no al
+    // terminar la primera misión (DIVERSION_CAP1 mejora 2). Luma lo presenta en cuanto el jugador queda libre.
+    criadero: { desde: 'LumaHelped' },
+    // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Luma (es un
+    // personaje), las paradas de aprendizaje y los grupos de la escena de Kelvin (nombres internos de assets/data/mapa_cap1.js).
+    descubrir: { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] },
     // Diálogos del guion (dialogos_cap1.js, generado desde dialogos_cap1.json)
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,
