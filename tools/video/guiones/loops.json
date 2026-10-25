@@ -1,0 +1,459 @@
+{
+ "nota": "Guion de captura de los loops de la web (tools/video/loops.py). Las tomas con id del pitch copian su receta de pitch.json; las web_* son propias. Sin HUD ni títulos. El loop hero sale de las tomas del pitch v1 (gancho_vuelo_mirador y mundo_dron_dosel), igual que hero.mp4.",
+ "version": "web1",
+ "salida": {
+  "ancho": 1920,
+  "alto": 1080,
+  "ss": 2,
+  "calidad": 0.92
+ },
+ "margen": [
+  0.5,
+  0.7
+ ],
+ "base": {
+  "paso": 3,
+  "aprendiz": true,
+  "nombre": "Nube Azul"
+ },
+ "ropas": {
+  "base": {},
+  "exploradora": {
+   "feet": {
+    "id": "botas",
+    "color": "#3d8fb0",
+    "style": "aventura"
+   },
+   "neck": {
+    "id": "panuelo",
+    "color": "#f2a03d"
+   },
+   "eyes": {
+    "id": "gafas",
+    "color": "#5a3a22"
+   }
+  },
+  "pava": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   }
+  },
+  "boricua": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   },
+   "hand": {
+    "id": "mano",
+    "color": "#d6403a",
+    "style": "maracas"
+   }
+  },
+  "bandera": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   }
+  },
+  "deportiva": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#d6403a",
+    "style": "deportiva"
+   },
+   "eyes": {
+    "id": "lentes",
+    "color": "#c9a227",
+    "style": "sol"
+   }
+  }
+ },
+ "tomas": [
+  {
+   "id": "mundo_taller_idea",
+   "dur": 4.8,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "taller",
+     "dz": 4.5
+    },
+    "mirarA": {
+     "poi": "taller",
+     "dz": 12
+    },
+    "ropa": "exploradora"
+   },
+   "camara": {
+    "tipo": "primerPlano",
+    "ang": 38,
+    "dist": [
+     3.4,
+     2.8
+    ],
+    "alto": 1.55,
+    "miraAlto": 1.45,
+    "fov": 42,
+    "rumboFijo": true,
+    "pulso": 0.012
+   },
+   "acciones": [
+    {
+     "t": 1.0,
+     "a": "gesto",
+     "nombre": "idea"
+    }
+   ]
+  },
+  {
+   "id": "web_techo_taller",
+   "dur": 4.4,
+   "preroll": 0.6,
+   "nota": "Vittata llega volando y se para en la punta del techo de su taller (sólido real; techo a 3,2 m en 133,178). Al fondo, Villa Raíz con los edificios de Kelvin.",
+   "estado": {
+    "pos": [
+     119,
+     182
+    ],
+    "mirarA": [
+     133,
+     178
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 7,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "fija",
+    "pos": {
+     "xz": [
+      127,
+      186.5
+     ],
+     "dy": 4.8
+    },
+    "mira": "jugador",
+    "miraAlto": 0.2,
+    "fov": 36,
+    "suaveMira": 0.35
+   },
+   "acciones": [
+    {
+     "t": -0.6,
+     "a": "vuelo",
+     "dur": 2.8,
+     "curva": "salida",
+     "puntos": [
+      {
+       "xz": [
+        127,
+        179.5
+       ],
+       "dy": 6.2
+      },
+      {
+       "xz": [
+        133.4,
+        178
+       ],
+       "dy": 3.9
+      }
+     ],
+     "aterrizar": true
+    },
+    {
+     "t": 2.6,
+     "a": "mirarCamara"
+    },
+    {
+     "t": 2.9,
+     "a": "gesto",
+     "nombre": "idea"
+    }
+   ]
+  },
+  {
+   "id": "aprender_vapor_nube",
+   "dur": 3.6,
+   "preroll": 0.6,
+   "estado": {
+    "edu": "p5",
+    "pos": [
+     187.8,
+     115
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 4,
+    "aprendiz": false,
+    "mirarA": [
+     150,
+     60
+    ]
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 6,
+    "alto": -1.0,
+    "adelante": 0,
+    "miraAlto": 4.5,
+    "fov": 58,
+    "suave": 0.2
+   },
+   "acciones": [
+    {
+     "t": -0.6,
+     "a": "vuelo",
+     "dur": 5.0,
+     "curva": "lineal",
+     "puntos": [
+      {
+       "xz": [
+        180,
+        104
+       ],
+       "dy": 10
+      },
+      {
+       "xz": [
+        170,
+        90
+       ],
+       "dy": 20
+      },
+      {
+       "xz": [
+        158,
+        74
+       ],
+       "dy": 30
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "web_percha_dosel",
+   "dur": 4.0,
+   "preroll": 0.5,
+   "hud": false,
+   "estado": {
+    "edu": "p2",
+    "pos": [
+     160,
+     92
+    ],
+    "mirarA": [
+     171,
+     80
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 10,
+    "js": "S.edu.perchas.suelo = true; S.edu.perchas.sotobosque = true;"
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 5,
+    "alto": 1.5,
+    "adelante": 1.0,
+    "miraAlto": 0.6,
+    "fov": 55,
+    "suave": 0.25,
+    "suaveGiro": 0.8
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "vuelo",
+     "dur": 1.9,
+     "curva": "salida",
+     "puntos": [
+      {
+       "xz": [
+        171,
+        80
+       ],
+       "dy": 9.2
+      }
+     ],
+     "aterrizar": true
+    }
+   ],
+   "nota": "Como problema_percha_dosel, sin HUD y más larga: se posa en el dosel y observa."
+  },
+  {
+   "id": "mundo_ropero_pava",
+   "dur": 3.0,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -1,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "estacion"
+    },
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "orbita",
+    "relativo": true,
+    "rumboFijo": true,
+    "radio": 2.6,
+    "alto": 1.25,
+    "ang": -40,
+    "vel": 52,
+    "miraAlto": 1.0,
+    "fov": 42
+   },
+   "acciones": [
+    {
+     "t": 0.6,
+     "a": "gesto",
+     "nombre": "bailar"
+    }
+   ]
+  },
+  {
+   "id": "mercado_baile_plaza",
+   "dur": 5.4,
+   "preroll": 0.6,
+   "estado": {
+    "en": {
+     "poi": "plaza",
+     "dx": -1,
+     "dz": 1
+    },
+    "mirarA": {
+     "poi": "luma"
+    },
+    "ropa": "boricua",
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "orbita",
+    "relativo": true,
+    "rumboFijo": true,
+    "radio": 3.5,
+    "alto": 1.3,
+    "ang": 20,
+    "vel": 20,
+    "miraAlto": 1.0,
+    "fov": 44
+   },
+   "acciones": [
+    {
+     "t": -0.4,
+     "a": "gesto",
+     "nombre": "bailar"
+    }
+   ]
+  },
+  {
+   "id": "web_nido_mundo",
+   "dur": 3.6,
+   "preroll": 0.6,
+   "nota": "El nido del criadero en Villa Raíz (aparece tras la primera misión; G.quiet evita la presentación de Luma). Nido en 173.3,184.4.",
+   "estado": {
+    "pos": [
+     180.5,
+     181.0
+    ],
+    "mirarA": [
+     173.3,
+     184.4
+    ],
+    "ropa": "base",
+    "volando": true,
+    "altura": 5,
+    "aprendiz": false,
+    "js": "G.quiet = true; S.missions = Object.assign({}, S.missions || {}, { mision1: true }); G.criadero.debug.mundo(0.1); G.criadero.debug.mundo(2.5);"
+   },
+   "camara": {
+    "tipo": "orbita",
+    "centro": {
+     "xz": [
+      174.25,
+      183.95
+     ],
+     "dy": 0.9
+    },
+    "radio": 5.0,
+    "alto": 1.8,
+    "ang": 185,
+    "vel": -7,
+    "miraAlto": 0.3,
+    "fov": 46
+   },
+   "acciones": [
+    {
+     "t": -0.6,
+     "a": "vuelo",
+     "dur": 1.9,
+     "curva": "salida",
+     "puntos": [
+      {
+       "xz": [
+        175.2,
+        183.5
+       ],
+       "dy": 1.2
+      }
+     ],
+     "aterrizar": true
+    },
+    {
+     "t": 1.4,
+     "a": "mirarCamara"
+    },
+    {
+     "t": 1.8,
+     "a": "gesto",
+     "nombre": "celebrar"
+    }
+   ]
+  },
+  {
+   "id": "criadero_seq",
+   "dur": 6.0,
+   "preroll": 3.0,
+   "lienzo": ".cr-canvas",
+   "nota": "Eclosión real del criadero (G.criadero.debug). T de la eclosión = t + 2.8: grietas 3.4-4.6, patitas 5.0, hatch 7.6. criadero_eclosion usa 0-4.8 y criadero_bebe 4.8-6.0 de esta captura.",
+   "estado": {
+    "ropa": "base",
+    "js": "G.quiet = false; return G.criadero.debug.etapa('clasico','huevo');"
+   },
+   "camara": {
+    "tipo": "juego"
+   },
+   "acciones": [
+    {
+     "t": -2.8,
+     "a": "js",
+     "js": "return G.criadero.debug.eclosion('clasico');"
+    }
+   ]
+  }
+ ]
+}

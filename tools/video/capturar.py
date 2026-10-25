@@ -140,6 +140,7 @@ class Movedor:
 
 
 def main():
+    global PUERTO
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--ver', required=True, help='versión de la captura (letras, números y _), p. ej. v1')
     ap.add_argument('--guion', default='tools/video/guiones/pitch.json', help='guion de captura, relativo a Juego/')
@@ -150,7 +151,10 @@ def main():
     ap.add_argument('--navegador', choices=['chrome', 'abrir'], default='chrome')
     ap.add_argument('--solo-mover', action='store_true')
     ap.add_argument('--timeout', type=float, default=3600)
+    ap.add_argument('--puerto', type=int, default=8765,
+                    help='puerto del servidor de desarrollo (tests/server.py); usa uno propio si 8765 es de otro')
     a = ap.parse_args()
+    PUERTO = a.puerto
     if not re.fullmatch(r'[A-Za-z0-9_]+', a.ver):
         sys.exit('--ver solo admite letras, números y _')
 

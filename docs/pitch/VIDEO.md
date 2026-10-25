@@ -87,8 +87,11 @@ captura dice cómo se graba cada toma:
   `criadero_seq`, con `"lienzo": ".cr-canvas"`, porque la vista del criadero tiene su propio WebGL. `criadero_vuelo`
   muestra a la cría (Iguaca, la compañera) siguiendo a Vittata por el mundo. Para recapturar el criadero:
   `--solo criadero_seq,criadero_juvenil,criadero_adulto,criadero_vuelo`.
-- Loops de la web (sin audio, menos de 4 MB, cierre limpio): `python3 tools/video/loops.py --ver v1 [--solo hero]`.
-  Salen a `~/AmazonaVerse/Web/assets/video/` (mp4 + webm + póster jpg).
+- Loops de la web (sin audio, menos de 4 MB, cierre limpio): se capturan con su propio guion y se montan con loops.py.
+  `capturar.py --ver web1 --guion tools/video/guiones/loops.json --sin-graficos --puerto 8791` (servidor propio:
+  el 8765 suele ser de otro) y después `loops.py [--solo historia,ropero] [--solo-poster]`. Salen a
+  `~/AmazonaVerse/Web/assets/video/` (mp4 + webm VP9 + póster jpg). El hero sale de las tomas de v1, como `hero.mp4`.
+  Ropero: solo la pava (la gorra con la bandera no va en anuncios, `docs/BANDERA_PR_GUIA.md` §6).
 - Ritmo del render: `taskpolicy -b` deja a Blender en los núcleos de eficiencia, así que el master de 165 s tarda
   entre 30 y 90 min, según la carga de la Mac. El `_ligero` (720p) ya sale siempre del master recodificado: exportar el
   montaje a 1280x720 recortaba el centro del cuadro (le pasó al `_ligero` de v1 del 24 oct, 23:48; hay que rehacerlo).
