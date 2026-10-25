@@ -1,6 +1,6 @@
 # Amazona Verse
 
-Juego educativo 3D para el navegador, para escuelas (grados 3 a 6). Lo protagoniza Vittata, la cotorra puertorriqueña.
+Juego educativo 3D para el navegador, para todas las edades: familias, escuelas y curiosos de la naturaleza. Lo protagoniza Vittata, la cotorra puertorriqueña.
 
 Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Ciencias alineadas al DEPR 2022 y NGSS, sin cuentas ni anuncios.
 
