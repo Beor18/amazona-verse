@@ -97,6 +97,37 @@
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
+    // Panel final: «Seguir explorando» deja jugar libre; «Jugar de nuevo» pregunta DENTRO del juego antes de borrar (nunca confirm())
+    const confirmNativo = window.confirm; let confirmLlamado = 0; window.confirm = () => { confirmLlamado++; return true; };
+    const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
+    const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
+    teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
+    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Jugar de nuevo»', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && !enConfirm());
+    check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
+    $('b-again').click();
+    check('«Jugar de nuevo» pregunta «¿Empezar de nuevo?» dentro del panel y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Empezar de nuevo?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
+    check('La pregunta lleva el foco a «No, volver» (la opción segura)', document.activeElement === $('b-again-no'));
+    $('b-again-no').click();
+    check('Cancelar no borra nada y vuelve al panel final', !enConfirm() && !$('end-acciones').hidden && !$('end').hidden && S.complete && S.step === G.misiones.DONE && S.profile.created && had('ChapterCompleted') && !!S.captures.final);
+    $('b-again').click(); G.emit('escape');
+    check('Esc cancela la pregunta sin cerrar el panel final ni borrar', !enConfirm() && !$('end').hidden && S.complete && S.profile.created);
+    $('b-seguir').click();
+    check('«Seguir explorando» cierra el panel y deja la partida terminada', $('end').hidden && !enConfirm() && S.explorando && S.complete && S.step === G.misiones.DONE && had('ChapterCompleted'));
+    check('Tras el final el mundo está libre: Vittata se mueve', !G.ui.busy() && avanza() > 0.5);
+    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.open());
+    drain();
+    check('Seguir explorando no repite el final ni el evento ChapterCompleted', $('end').hidden && S.events.filter(e => e.key === 'ChapterCompleted').length === 1);
+    check('Guardar y cargar con la partida terminada no reabre el panel final', SV.save(true) && SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
+    S.explorando = false; G.misiones.showEnd(); G.emit('escape');
+    check('Esc en el panel final lo cierra como «Seguir explorando»', $('end').hidden && S.explorando && S.complete);
+    $('pause').dispatchEvent(new Event('toggle'));
+    check('Con la partida terminada el cómic está en el menú de pausa', !$('b-comic-menu').hidden);
+    await $('b-comic-menu').onclick();
+    check('«Mi cómic» del menú abre el cómic sin pasar por el panel final', !$('comic').hidden && $('end').hidden);
+    $('c-close').click();
+    check('Cerrar el cómic abierto desde el menú vuelve al mundo, no al panel final', $('comic').hidden && $('end').hidden && !G.ui.busy());
+    S.explorando = false; G.misiones.showEnd(); await CM.openComic(); $('c-close').click();
+    check('Cerrar el cómic abierto desde el panel final vuelve a ese panel mientras siga pendiente', $('comic').hidden && !$('end').hidden && !enConfirm());
     // Esquema de eventos
     const ev = S.events, SCHEMA = G.eventos.SCHEMA;
     const schemaOk = ev.every((e, i) => e.schemaVersion === SCHEMA && e.saveId === S.saveId && e.seq === i + 1 && e.id === S.saveId + '-' + (i + 1) && typeof e.type === 'string' && e.chapter === 1 && 'location' in e && Array.isArray(e.characters) && 'sceneTemplate' in e && e.locKey === 'evt.' + e.key);
@@ -171,6 +202,21 @@
     check('Partida v1 (incompatible) se rechaza', SV.load(true) === false);
     try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
     check('Partida v3 terminada se migra a v4 como terminada', SV.load(true) && S.complete && S.step === G.misiones.DONE, 'paso ' + S.step);
+    try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { explorando: true }))); } catch (e) { /* sin almacenamiento */ }
+    check('Partida terminada con «Seguir explorando» carga con el panel final cerrado', SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
+    const sinCampo = JSON.parse(snap); delete sinCampo.explorando;
+    try { localStorage.setItem(KEY, JSON.stringify(sinCampo)); } catch (e) { /* sin almacenamiento */ }
+    check('Partida terminada de antes (sin el campo «explorando») abre el panel final una vez', SV.load(true) && S.complete && !S.explorando && !$('end').hidden && !enConfirm());
+    // «Sí, empezar de nuevo» borra partida, cómic y capturas (la prueba salta el creador que abre reset())
+    const resetReal = SV.reset; let resetLlamado = 0; SV.reset = () => { resetLlamado++; return resetReal(true); };
+    const hechoAntes = S.complete && S.comic.layout === 'strip' && !!S.captures.final && S.profile.created;
+    $('b-again').click();
+    check('Antes de confirmar «Jugar de nuevo» la partida y el cómic siguen intactos', enConfirm() && resetLlamado === 0 && hechoAntes && S.complete && S.comic.layout === 'strip' && !!S.captures.final);
+    $('b-again-si').click();
+    SV.reset = resetReal;
+    check('«Sí, empezar de nuevo» borra la partida, el cómic y las capturas y cierra el panel', resetLlamado === 1 && S.step === 0 && !S.complete && !S.explorando && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !had('ChapterCompleted') && $('end').hidden && !enConfirm());
+    window.confirm = confirmNativo;
+    check('El panel final no usa confirm() del navegador', confirmLlamado === 0, confirmLlamado + ' llamadas');
     // Ruta directa a la colina
     SV.reset(true); saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
