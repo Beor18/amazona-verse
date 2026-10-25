@@ -374,14 +374,14 @@
       if (corte('4.9', S.complete)) return fin();
       cerrarFase();
 
-      // Panel final: «Jugar de nuevo» no debe borrar nada con un toque (solo se pulsa si el pack ya pregunta antes: #end-confirm)
+      // Panel final: «Comenzar de cero» (antes «Jugar de nuevo») no debe borrar nada con un toque (solo se pulsa si el pack ya pregunta antes: #end-confirm)
       const botonSeguir = () => [...W.document.querySelectorAll('#end button')].find(b => b.id === 'b-seguir' || /seguir explorando|keep exploring/i.test(b.textContent));
       if ($('end-confirm') && $('b-again')) {
         $('b-again').click();
         const pregunta = !$('end-confirm').hidden, intacto = S.complete && S.profile.created && S.step === G.misiones.DONE;
         const no = $('b-again-no'); if (no) no.click();
-        check('4.9', '«Jugar de nuevo» pregunta antes de borrar la partida y «No» la conserva', pregunta && intacto && !!no && $('end-confirm').hidden && S.complete && !$('end').hidden, { pregunta, intacto, boton_no: !!no, confirmacionCerrada: $('end-confirm').hidden });
-      } else check('4.9', '«Jugar de nuevo» pregunta antes de borrar (informativa: este build no tiene #end-confirm; no se pulsa para no perder la partida; ver BUGS.md)', true, 'sin confirmación en el panel final: un toque en «Jugar de nuevo» borraría la partida');
+        check('4.9', '«Comenzar de cero» (antes «Jugar de nuevo») pregunta antes de borrar la partida y «No, volver» la conserva', pregunta && intacto && !!no && $('end-confirm').hidden && S.complete && !$('end').hidden, { pregunta, intacto, boton_no: !!no, confirmacionCerrada: $('end-confirm').hidden });
+      } else check('4.9', '«Comenzar de cero» pregunta antes de borrar (informativa: este build no tiene #end-confirm; no se pulsa para no perder la partida; ver BUGS.md)', true, 'sin confirmación en el panel final: un toque en el botón de reinicio (#b-again) borraría la partida');
 
       // ---------- 6. Cómic: abrirlo desde el panel final y exportar ----------
       click('b-comic');
