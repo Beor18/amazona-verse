@@ -33,7 +33,7 @@ Pedido de Kelvin: Vittata es un ave y tiene que poder pararse y posarse sobre lo
 | Bohío puntiagudo | sí | sí (5,6 m) | fino en la punta | sí | Collider de cilindro: no se podía subir | Sólido real |
 | Casa de paja (×2) | sí | sí (5,0–5,1 m) | fino en la cumbrera | sí | Ídem | Ídem |
 | Caney largo | sí | sí (6,7 m) | fino en la cumbrera | sí | Ídem | Ídem |
-| Toldo pequeño | roza (4/11 bajo el toldo) | sí (3,1 m) | fino | sí | Al pasar por debajo, la cabeza roza la lona | Aceptado: el toldo es bajo (P2: agacharse) |
+| Toldo pequeño | sí (agachada) | sí (3,1 m) | fino | sí | Al pasar por debajo, la cabeza roza la lona | Se agacha: `MOVE.agachada` con `solidos.libre`, cuerpo de 1,15 m y pose `crouchPose`; cabeza 0,30 m bajo la lona (B2) |
 | Casa plataforma (refugio) | sí | sí (6,4 m) | fino | sí | Subiendo la rampa se metía bajo el techo del porche | Paso que mete más el cuerpo, revertido |
 | Mirador escalonado | sí | sí (10,5 m) | fino | sí | Solo chocaba su núcleo | Sólido real; sus pisos siguen como plataformas |
 | Torre vigía | sí | sí (7,2 m) | alto | sí | Collider de caja: no se podía subir | Sólido real |
@@ -43,7 +43,7 @@ Pedido de Kelvin: Vittata es un ave y tiene que poder pararse y posarse sobre lo
 | Empalizada (×3, cerca) | sí | sí (3,7 m) | fino en las puntas | sí | Collider de caja | Sólido real |
 | Canoas (×2, botes) | sí | sí (0,6–1,0 m) | alto | sí | Sin colisión (excluidas a propósito) | Sólido real |
 | Muelle de troncos (×4) | sí | sí, sobre la cubierta | posa en los pilotes | sí | — | La cubierta sigue como plataforma; pilotes, sólidos |
-| Puente de madera y puente colgante | sí | sí (cubierta) | fino en el pasamanos rígido | sí | Postes con colliders de 0,3 m | Sólido real. La cuerda floja no es percha (P2) |
+| Puente de madera y puente colgante | sí | sí (cubierta) | fino en el pasamanos rígido | sí | Postes con colliders de 0,3 m | Sólido real. La cuerda es percha: su malla sigue la comba; `que()` la llama 'cuerda' y suena como rama (B2) |
 | Taller de Vittata | sí | sí (3,4 m) | fino en la punta | sí | Su collider la empujaba fuera del techo | Collider `taller` sustituido por el sólido |
 | Estacas y letreros de los terrenos (postes) | sí | sí (hasta 5,9 m) | fino | sí | Collider sin altura | Collider `post` sustituido. Una estaca (72,177) sigue con su collider: su grupo está lejos del punto |
 | Rocas con musgo (a, b) | sí | sí (0,3–7,5 m) | alto o fino | sí | Sin colisión | Sólido real |
@@ -59,7 +59,7 @@ Pruebas nuevas en `AV.movementTest` (26 de 26): aterrizar en el techo de un edif
 ## Pendiente (P2)
 
 - Interiores de los edificios grandes: ahora son macizos. No se atraviesan, pero no se puede entrar.
-- Agacharse bajo toldos bajos.
-- Posarse en cuerdas y lonas (puente colgante, toldo): no son rígidas.
+- ~~Agacharse bajo toldos bajos~~ y ~~posarse en la cuerda del puente colgante~~: hechos en B2 (`movementTest` lo comprueba).
+- Que la cuerda y la lona se muevan al posarse (ahora son rígidas).
 - Con viento, las ramas se mueven en el shader y la colisión no, así que pueden separarse unos centímetros. Se puede calmar el viento cerca de Vittata cuando está posada.
 - Coordinación: el streaming de edificios (InstancedMesh `edificiosInst:*`) llamará `G.solidos.agregar(grupo)` por instancia. El level designer puede usar InstancedMesh `edificios:*`, que se recorre instancia a instancia.
