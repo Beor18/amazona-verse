@@ -91,7 +91,9 @@ AVE.module('pruebas', function (G) {
     // Personalización: quitar, cambiar color, especie
     const before = ch.mounted.neck.objects[0];
     ch.applyLook(Object.assign({}, all, { accessories: Object.assign({}, all.accessories, { neck: { id: 'panuelo', color: '#7a4fb3' } }) }));
-    let col = null; ch.mounted.neck.objects[0].traverse(o => { if (o.isMesh && !col) col = '#' + o.material.color.getHexString(); });
+    // los colores del personaje se guardan en lineal (AVColor): se comparan de vuelta en hex sRGB
+    const hexOf = c => window.AVColor ? window.AVColor.hex(c) : '#' + c.getHexString();
+    let col = null; ch.mounted.neck.objects[0].traverse(o => { if (o.isMesh && !col) col = hexOf(o.material.color); });
     // El material puede guardar el color en sRGB o ya pasado a lineal (flujo de color del personaje): ambos son el color elegido
     const lin = '#' + new THREE.Color('#7a4fb3').convertSRGBToLinear().getHexString();
     check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && (col === '#7a4fb3' || col === lin), col);
@@ -100,6 +102,8 @@ AVE.module('pruebas', function (G) {
     // Ropero: cada pieza en cada estilo se monta en su hueso, y gorras/lentes no tocan ojos ni pico
     {
       let pieces = 0; const failed = [], wHits = [];
+      // Las piezas de Blender se cargan antes: sin esto la prueba revisaba a veces la versión simple (según lo que ya hubiera en caché)
+      if (window.AVCharacter.preloadRopa) await window.AVCharacter.preloadRopa();
       ch.mixer.stopAllAction(); ch.root.traverse(o => { if (o.isSkinnedMesh) o.skeleton.pose(); });
       for (const d of window.AVCharacter.ACCESSORIES.filter(a => !window.AVCharacter.BASE_IDS.includes(a.id))) {
         for (const st of (d.styles || [[undefined]]).map(s => s[0])) {
@@ -113,7 +117,8 @@ AVE.module('pruebas', function (G) {
               if (!o.isMesh) return; const pos = o.geometry.attributes.position, v = new THREE.Vector3();
               for (let i = 0; i < pos.count; i += Math.max(1, Math.floor(pos.count / 200))) {
                 v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
-                if (eyes.some(e => e.distanceTo(v) < EYE_R)) { wHits.push(d.id + ':' + st + '→ojo'); return; }
+                // gorras: lejos de los ojos; lentes: delante del ojo, con al menos 1 cm de aire (no lo tocan)
+                if (eyes.some(e => e.distanceTo(v) < (d.slot === 'eyes' ? 0.01 : EYE_R))) { wHits.push(d.id + ':' + st + '→ojo'); return; }
               }
             });
           }
@@ -123,7 +128,7 @@ AVE.module('pruebas', function (G) {
       check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
       ch.applyLook({ species: 'versicolor', accessories: {} });
     }
-    const pc = ch.tint ? '#' + ch.tint.patchColor.value.getHexString() : (ch.materials.Patch ? '#' + ch.materials.Patch.color.getHexString() : null);
+    const pc = ch.tint ? hexOf(ch.tint.patchColor.value) : (ch.materials.Patch ? hexOf(ch.materials.Patch.color) : null);
     check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.versicolor.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;

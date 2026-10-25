@@ -11,8 +11,11 @@
 
   function buildWorkshop() {
     scene = new THREE.Scene();
+    // Fondo y niebla como el cielo del mundo: three r128 escribe el color de fondo tal cual (sin curva de salida)
     scene.background = new THREE.Color('#14251c');
     scene.fog = new THREE.Fog('#14251c', 7, 16);
+    // Materiales del taller con sus colores sRGB pasados a lineal (igual que la ropa y el mundo)
+    const M = (Ctor, o) => window.AVColor ? window.AVColor.make(Ctor, o) : new Ctor(o);
     camera = new THREE.PerspectiveCamera(30, 1, 0.05, 50);
     scene.add(new THREE.HemisphereLight('#ffe9c4', '#1f3a2c', 0.35));
     const key = new THREE.SpotLight('#ffd9a0', 1.15, 14, Math.PI / 5, 0.5, 1.2);
@@ -20,11 +23,11 @@
     scene.add(key); scene.add(key.target);
     const rim = new THREE.DirectionalLight('#9fd7ff', 0.6); rim.position.set(-3, 2.5, -2.5); scene.add(rim);
     const fill = new THREE.PointLight('#ffb36b', 0.4, 8); fill.position.set(-1.8, 1.4, 2); scene.add(fill);
-    const wood = new THREE.MeshStandardMaterial({ color: '#6e4526', roughness: 0.85 });
-    const woodDark = new THREE.MeshStandardMaterial({ color: '#3f2814', roughness: 0.9 });
+    const wood = M(THREE.MeshStandardMaterial, { color: '#6e4526', roughness: 0.85 });
+    const woodDark = M(THREE.MeshStandardMaterial, { color: '#3f2814', roughness: 0.9 });
     const deck = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.25, 0.16, 48), wood);
     deck.position.y = -0.08; deck.receiveShadow = true; scene.add(deck);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.03, 8, 64), new THREE.MeshStandardMaterial({ color: '#f2a03d', metalness: 0.6, roughness: 0.35 }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.03, 8, 64), M(THREE.MeshStandardMaterial, { color: '#f2a03d', metalness: 0.6, roughness: 0.35 }));
     ring.rotation.x = Math.PI / 2; ring.position.y = 0.005; scene.add(ring);
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), woodDark);
     floor.rotation.x = -Math.PI / 2; floor.position.y = -0.16; floor.receiveShadow = true; scene.add(floor);
@@ -37,17 +40,17 @@
     for (const [x, z] of [[-0.8, -0.28], [0.8, -0.28], [-0.8, 0.28], [0.8, 0.28]]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.85, 0.08), woodDark); leg.position.set(x, 0.42, z); bench.add(leg);
     }
-    const plan = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.42), new THREE.MeshStandardMaterial({ color: '#cfe3f0', roughness: 1 }));
+    const plan = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.42), M(THREE.MeshStandardMaterial, { color: '#cfe3f0', roughness: 1 }));
     plan.rotation.set(-Math.PI / 2, 0, 0.15); plan.position.set(-0.3, 0.91, 0); bench.add(plan);
-    const gear = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.04, 8, 14), new THREE.MeshStandardMaterial({ color: '#c9d4d9', metalness: 0.8, roughness: 0.3 }));
+    const gear = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.04, 8, 14), M(THREE.MeshStandardMaterial, { color: '#c9d4d9', metalness: 0.8, roughness: 0.3 }));
     gear.position.set(0.45, 0.95, 0.05); gear.rotation.x = Math.PI / 2; bench.add(gear);
-    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.18, 16, 1, true), new THREE.MeshStandardMaterial({ color: '#2f8f4e', side: THREE.DoubleSide }));
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.18, 16, 1, true), M(THREE.MeshStandardMaterial, { color: '#2f8f4e', side: THREE.DoubleSide }));
     shade.position.set(0.7, 1.35, -0.1); bench.add(shade);
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), new THREE.MeshBasicMaterial({ color: '#ffe2a8' }));
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), M(THREE.MeshBasicMaterial, { color: '#ffe2a8' }));
     bulb.position.set(0.7, 1.28, -0.1); bench.add(bulb);
     bench.position.set(-2.1, -0.16, -1.6); bench.rotation.y = 0.5; scene.add(bench);
     const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.3), wood); shelf.position.set(2.0, 1.9, -2.4); scene.add(shelf);
-    const symbol = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.06, 8, 36), new THREE.MeshStandardMaterial({ color: '#ffd27a', emissive: '#7a4a10', metalness: 0.4, roughness: 0.4 }));
+    const symbol = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.06, 8, 36), M(THREE.MeshStandardMaterial, { color: '#ffd27a', emissive: '#7a4a10', metalness: 0.4, roughness: 0.4 }));
     symbol.position.set(2.0, 2.3, -2.45); scene.add(symbol);
   }
 
@@ -83,10 +86,12 @@
   async function mount(canvas) {
     if (renderer) return;
     canvasEl = canvas;
-    // Móvil: DPR máximo 1,5 y sin MSAA con DPR real ≥ 2 (mismo presupuesto que el juego)
-    const mobile = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches), dpr = window.devicePixelRatio || 1;
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: !(mobile && dpr >= 2), preserveDrawingBuffer: true });
-    renderer.setPixelRatio(Math.min(dpr, mobile ? 1.5 : 2));
+    // El taller es el escaparate de la ropa: MSAA siempre y DPR hasta 2 también en móvil (es una sola figura en una
+    // escena pequeña; el mundo no se dibuja mientras el creador está abierto). Texturas con la anisotropía máxima del GPU.
+    const dpr = window.devicePixelRatio || 1;
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(dpr, 2));
+    if (window.AVColor) window.AVColor.setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.85;

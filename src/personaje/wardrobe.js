@@ -7,20 +7,90 @@
 (function () {
   'use strict';
 
+  // ---------- Color: un solo camino sRGB → lineal (AVColor) ----------
+  // El render trabaja en lineal (outputEncoding sRGB + ACES) y three r128 NO convierte: Color.set('#f2a03d') guarda el
+  // número tal cual y el renderer lo trata como lineal, así que todo sale lavado (el naranja se ve crema).
+  // Regla del proyecto: todo color escrito a mano (paleta, creador, especies, piezas) entra por AVColor, y toda textura
+  // de color (CanvasTexture) se marca sRGB con AVColor.tex. Los .glb de Blender guardan el color ya en lineal.
+  const SRGB_LIN = c => c < 0.04045 ? c * 0.0773993808 : Math.pow(c * 0.9478672986 + 0.0521327014, 2.4);
+  const AVColor = window.AVColor = {
+    lin: hex => new THREE.Color(hex).convertSRGBToLinear(),                   // Color nuevo, en lineal
+    set: (c, hex) => c.set(hex).convertSRGBToLinear(),                         // hex sRGB → Color existente (lineal)
+    hex: c => { const s = c.clone().convertLinearToSRGB(); return '#' + [s.r, s.g, s.b].map(v => Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, '0')).join(''); }, // lineal → hex sRGB (redondeado)
+    // Anisotropía: three la recorta al máximo de renderer.capabilities; quien tenga el renderer la fija con setMaxAnisotropy
+    maxAniso: 16,
+    setMaxAnisotropy(n) { if (n > 0) AVColor.maxAniso = n; },
+    // Textura de color: sRGB, mipmaps trilineales y anisotropía máxima. wrap: 'u' repite en U (vuelta al cuerpo), 'uv' en ambos
+    tex(t, wrap) {
+      t.encoding = THREE.sRGBEncoding; t.anisotropy = AVColor.maxAniso;
+      t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter;
+      if (wrap) t.wrapS = THREE.RepeatWrapping;
+      if (wrap === 'uv') t.wrapT = THREE.RepeatWrapping;
+      t.needsUpdate = true; return t;
+    },
+    // Material con colores en hex sRGB (color, emissive, specular) pasados a lineal y su mapa de color en sRGB
+    make(Ctor, opts) {
+      const o = Object.assign({}, opts);
+      for (const k of ['color', 'emissive', 'specular']) if (o[k] != null && !o[k].isColor) o[k] = AVColor.lin(o[k]);
+      if (o.map && o.map.encoding !== THREE.sRGBEncoding) AVColor.tex(o.map);
+      return new Ctor(o);
+    },
+    // .glb exportados con la aproximación gamma 2,2 de ropa_lib.hexrgb: se pasan a la curva sRGB exacta una sola vez.
+    // Los exportados con la curva exacta llevan extras.av_srgb = 1 (material.userData) y no se tocan.
+    fixGamma22(m) {
+      if (!m || !m.color || (m.userData && (m.userData.av_srgb || m.userData.avLinFixed))) return m;
+      m.userData.avLinFixed = true;
+      const f = v => SRGB_LIN(Math.pow(v, 1 / 2.2));
+      m.color.setRGB(f(m.color.r), f(m.color.g), f(m.color.b));
+      if (m.emissive && (m.emissive.r || m.emissive.g || m.emissive.b)) m.emissive.setRGB(f(m.emissive.r), f(m.emissive.g), f(m.emissive.b));
+      return m;
+    },
+  };
+
   // ---------- Estampados (CanvasTexture, en caché por estilo+color) ----------
-  const PR = { red: '#e8112d', blue: '#0a50a1', white: '#ffffff' };
-  const texCache = {};
+  // Colores de la bandera (docs/BANDERA_PR_GUIA.md): rojo #EE0000, azul medio #0044FF (tono oficial de facto desde 1995), blanco
+  const PR = { red: '#ee0000', blue: '#0044ff', white: '#ffffff' };
+  const MOBILE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  // El diseño se dibuja en un lienzo LÓGICO de 512×256 (vuelta completa al cuerpo × alto, frente en x = 256) y se escala ×4
+  // (×2 en móvil): 2048×1024 son ~1,7 texeles por mm en el torso. Con mipmaps y anisotropía se ve nítido de cerca y estable
+  // de lejos. Las texturas grandes viven en una caché LRU: las que salen se liberan de la GPU.
+  const PW = MOBILE ? 1024 : 2048, PH = PW / 2, PK = PW / 512;
+  const MAX_PAT = MOBILE ? 6 : 10;
+  const texCache = new Map(), staticTex = {}, evictHooks = [];
   function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h || w; return [c, c.getContext('2d')]; }
+  // Estrella regular de cinco puntas (radio interior = exterior × 0,382), con una punta hacia arriba
   function star(g, x, y, r, color) {
     g.fillStyle = color; g.beginPath();
-    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.42 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.381966 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
     g.closePath(); g.fill();
   }
-  // Bandera de Puerto Rico en un rectángulo: cinco franjas y triángulo azul con estrella blanca
+  // Bandera de Puerto Rico FIEL (regla de Kelvin, docs/BANDERA_PR_GUIA.md): rectángulo 3:2 (w = 1,5·h), cinco franjas
+  // iguales (rojo, blanco, rojo, blanco, rojo), triángulo EQUILÁTERO azul en el asta (lado = alto, punta en x + h·√3/2) y
+  // estrella blanca de cinco puntas centrada en el baricentro del triángulo (x + h·√3/6, y + h/2).
   function prFlag(g, x, y, w, h) {
-    for (let i = 0; i < 5; i++) { g.fillStyle = i % 2 ? PR.white : PR.red; g.fillRect(x, y + i * h / 5, w, h / 5 + 0.5); }
-    g.fillStyle = PR.blue; g.beginPath(); g.moveTo(x, y); g.lineTo(x + w * 0.43, y + h / 2); g.lineTo(x, y + h); g.closePath(); g.fill();
-    star(g, x + w * 0.15, y + h / 2, h * 0.16, PR.white);
+    const sh = h / 5;
+    for (let i = 0; i < 5; i++) { g.fillStyle = i % 2 ? PR.white : PR.red; g.fillRect(x, y + i * sh, w, i < 4 ? sh + 0.6 : sh); }
+    const tw = h * Math.sqrt(3) / 2;
+    g.fillStyle = PR.blue; g.beginPath(); g.moveTo(x, y); g.lineTo(x + tw, y + h / 2); g.lineTo(x, y + h); g.closePath(); g.fill();
+    star(g, x + tw / 3, y + h / 2, h / 6, PR.white);   // radio exterior h/6: diámetro = 1/3 del alto
+  }
+  // Estrella de cinco puntas como geometría plana (radio interior 0,382 del exterior), punta hacia arriba
+  function starGeo(r) {
+    const sh = new THREE.Shape();
+    for (let i = 0; i < 10; i++) { const a = Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.381966 : r; i ? sh.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : sh.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+    return new THREE.ShapeGeometry(sh);
+  }
+  // Bandera plana para el material BANDERA de los .glb (parche plano en gorra, tenis, mochila…): lienzo 3:2 de 1536×1024,
+  // UV de Blender tal cual (0,0 = abajo en el asta; 1,1 = arriba al vuelo), por eso flipY = false como las texturas glTF.
+  function flagMap() {
+    if (staticTex.flag) return staticTex.flag;
+    const [c, g] = canvas(1536, 1024); prFlag(g, 0, 0, 1536, 1024);
+    const t = AVColor.tex(new THREE.CanvasTexture(c)); t.flipY = false;
+    return (staticTex.flag = t);
+  }
+  function flagMat() {
+    if (!matCache.bandera) { matCache.bandera = AVColor.make(THREE.MeshStandardMaterial, { map: flagMap(), roughness: 0.8, side: THREE.DoubleSide }); matCache.bandera.userData.shared = true; }
+    return matCache.bandera;
   }
   function rng(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
   function flower(g, x, y, r, petal, center) {
@@ -28,18 +98,81 @@
     for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5; g.beginPath(); g.ellipse(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.5, r * 0.32, a, 0, Math.PI * 2); g.fill(); }
     g.fillStyle = center; g.beginPath(); g.arc(x, y, r * 0.22, 0, Math.PI * 2); g.fill();
   }
-  // u = vuelta alrededor del cuerpo con el FRENTE en el centro (x = W/2); v = de abajo (0) a arriba (1)
-  function pattern(style, color) {
-    const key = style + color;
-    if (texCache[key]) return texCache[key];
-    const W = 512, H = 256, [c, g] = canvas(W, H), R = rng(7);
-    g.fillStyle = color; g.fillRect(0, 0, W, H);
-    // tejido sutil
-    g.globalAlpha = 0.06; for (let i = 0; i < 1400; i++) { g.fillStyle = R() > 0.5 ? '#000' : '#fff'; g.fillRect(R() * W, R() * H, 2, 2); } g.globalAlpha = 1;
-    if (style === 'pr') {
-      prFlag(g, W * 0.25, H * 0.12, W * 0.5, H * 0.76);
-      star(g, W * 0.0 + 30, H * 0.5, 22, PR.white); star(g, W - 30, H * 0.5, 22, PR.white);
-    } else if (style === 'hawaiana' || style === 'flores') {
+
+  // Tejido suave (tafetán): hilos de perfil redondo que pasan por encima y por debajo, con sombreado continuo (sin bordes
+  // duros ni ruido de píxel). Sustituye al "tejido" de cuadritos de 2 px: con mipmaps se funde en color liso a distancia.
+  // P = periodo en px (dos hilos por dirección); valores 0,93–1 para multiplicar sobre el color (se nota de cerca, no de lejos).
+  const weaveTiles = {};
+  function weaveTile(P) {
+    if (weaveTiles[P]) return weaveTiles[P];
+    const [c, g] = canvas(P, P), img = g.createImageData(P, P), d = img.data, h = P / 2, SS = 3;
+    for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) {
+      let acc = 0;
+      for (let sy = 0; sy < SS; sy++) for (let sx = 0; sx < SS; sx++) {
+        const X = x + (sx + 0.5) / SS, Y = y + (sy + 0.5) / SS;
+        const fx = (X % h) / h, fy = (Y % h) / h;
+        const warpTop = (Math.floor(X / h) + Math.floor(Y / h)) % 2 === 0;
+        const across = Math.sin(Math.PI * (warpTop ? fx : fy));            // perfil redondo del hilo de arriba
+        const arch = Math.sin(Math.PI * (warpTop ? fy : fx));              // se arquea entre cruces
+        acc += across * (0.6 + 0.4 * arch);
+      }
+      const v = Math.round(255 * (0.93 + 0.07 * acc / (SS * SS))), i = (y * P + x) * 4;
+      d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    return (weaveTiles[P] = c);
+  }
+  const WEAVE_P = 4 * PK; // 16 px en 2048 (hilo de ~4,7 mm en el torso)
+  function weaveOver(g, W, H) {
+    g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = g.createPattern(weaveTile(WEAVE_P), 'repeat');
+    g.fillRect(0, 0, W, H); g.restore();
+  }
+  // Mapa gris de tejido para la tela lisa (multiplica al color elegido; el color queda en material.color)
+  function weaveMap() {
+    if (staticTex.weave) return staticTex.weave;
+    const S = PW / 8, [c, g] = canvas(S, S);
+    g.fillStyle = g.createPattern(weaveTile(WEAVE_P), 'repeat'); g.fillRect(0, 0, S, S);
+    const t = AVColor.tex(new THREE.CanvasTexture(c), 'uv'); t.repeat.set(8, 4); // misma densidad que los estampados
+    return (staticTex.weave = t);
+  }
+  // Paja: sarga diagonal 2/2 de tiras redondeadas con degradado (cada tira pasa por encima de dos y por debajo de dos,
+  // desplazada una por fila), tonos por tira y vetas suaves. Tile sin costuras que se repite (8×4 por unidad de UV).
+  function strawMap(color) {
+    const key = 'paja' + color;
+    if (staticTex[key]) return staticTex[key];
+    const T = 256, [c, g] = canvas(T, T), img = g.createImageData(T, T), d = img.data;
+    const base = new THREE.Color(color), S = T / (4 * 4 * Math.SQRT2), SS = 3; // 4 periodos de sarga por tile
+    const tone = [1.0, 0.9, 1.06, 0.95, 0.92, 1.04, 0.97, 1.08];
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+      let r = 0, gg = 0, b = 0;
+      for (let sy = 0; sy < SS; sy++) for (let sx = 0; sx < SS; sx++) {
+        const X = x + (sx + 0.5) / SS, Y = y + (sy + 0.5) / SS;
+        const p = (X + Y) / Math.SQRT2 / S, q = (X - Y) / Math.SQRT2 / S;
+        const i = Math.floor(p), j = Math.floor(q), fp = p - i, fq = q - j;
+        const aTop = (((i + j) % 4) + 4) % 4 < 2;                         // tira A (a lo largo de p) encima
+        const k = aTop ? (((i + j) % 4) + 4) % 4 : (((i + j) % 4) + 4) % 4 - 2;
+        const across = Math.sin(Math.PI * (aTop ? fq : fp));
+        const run = (k + (aTop ? fp : fq)) / 2;                           // posición en su tramo de 2 por encima
+        const arch = Math.pow(Math.sin(Math.PI * run), 0.6);
+        const idx = aTop ? ((j % 4) + 4) % 4 : 4 + ((i % 4) + 4) % 4;
+        const vein = 1 + 0.05 * Math.sin((aTop ? p : q) * (Math.PI * 2 * 23 / 16) + idx * 1.7) * across;
+        const shade = (0.6 + 0.4 * across) * (0.74 + 0.26 * arch) * tone[idx] * vein;
+        const hi = Math.pow(Math.max(0, across), 10) * arch * 0.14;     // brillo en el lomo de la tira
+        r += Math.min(1, base.r * shade + hi); gg += Math.min(1, base.g * shade + hi); b += Math.min(1, base.b * shade + hi * 0.8);
+      }
+      const n = SS * SS, o = (y * T + x) * 4;
+      d[o] = Math.round(255 * r / n); d[o + 1] = Math.round(255 * gg / n); d[o + 2] = Math.round(255 * b / n); d[o + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    const t = AVColor.tex(new THREE.CanvasTexture(c), 'uv'); t.repeat.set(6, 3); // tiras de ~1–2 cm en copa y ala
+    return (staticTex[key] = t);
+  }
+
+  // Diseños en el lienzo lógico 512×256 (u = vuelta con el FRENTE en x = 256; y = 0 arriba). Se dibujan tres veces
+  // desplazados ±512 para que los motivos crucen la costura de atrás sin cortarse.
+  function design(g, style, color, R) {
+    const W = 512, H = 256;
+    if (style === 'hawaiana' || style === 'flores') {
       for (let i = 0; i < 26; i++) {
         const x = R() * W, y = R() * H;
         g.fillStyle = '#1f7a3a'; g.beginPath(); g.ellipse(x + 14, y + 10, 22, 8, R() * 3, 0, Math.PI * 2); g.fill();
@@ -65,8 +198,8 @@
     } else if (style === 'deportiva') {
       g.fillStyle = '#ffffff'; g.fillRect(0, H * 0.82, W, 14);
       g.font = 'bold 92px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.lineWidth = 8; g.strokeStyle = 'rgba(0,0,0,.35)'; g.strokeText('787', W / 2, H * 0.5); g.fillText('787', W / 2, H * 0.5);
-      g.font = 'bold 70px sans-serif'; g.strokeText('PR', 0, H * 0.5); g.fillText('PR', 0, H * 0.5); g.strokeText('PR', W, H * 0.5); g.fillText('PR', W, H * 0.5);
+      g.lineWidth = 8; g.lineJoin = 'round'; g.strokeStyle = 'rgba(0,0,0,.35)'; g.strokeText('787', W / 2, H * 0.5); g.fillText('787', W / 2, H * 0.5);
+      g.font = 'bold 70px sans-serif'; g.strokeText('PR', 0, H * 0.5); g.fillText('PR', 0, H * 0.5);
     } else if (style === 'chaleco') {
       g.fillStyle = '#f2ece0'; g.fillRect(W / 2 - 34, 0, 68, H);  // camisa blanca por la abertura
       g.fillStyle = 'rgba(0,0,0,.22)';
@@ -88,36 +221,82 @@
         g.fillStyle = '#ffffff'; for (const dx of [-8, 8]) { g.beginPath(); g.arc(x + dx, y - 12, 6, 0, Math.PI * 2); g.fill(); }
         g.fillStyle = '#1b1b1b'; for (const dx of [-8, 8]) { g.beginPath(); g.arc(x + dx, y - 12, 3, 0, Math.PI * 2); g.fill(); }
       }
-    } else if (style === 'paja') {
-      g.fillStyle = color; g.fillRect(0, 0, W, H);
-      for (let y = 0; y < H; y += 8) for (let x = (y / 8) % 2 * 8; x < W; x += 16) { g.fillStyle = 'rgba(120,80,20,.22)'; g.fillRect(x, y, 8, 8); }
     }
-    const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.anisotropy = 4;
-    texCache[key] = t; return t;
+  }
+  const TILE_V = { hawaiana: 1, flores: 1, camuflaje: 1, caribe: 1, coqui: 1, mezclilla: 1 };
+  // Estampado 'pr': UNA bandera fiel centrada en el lienzo (el centro cae en el frente de la pieza) sobre el color elegido,
+  // con un ribete blanco para que se lea sobre cualquier color. flag = { h, w } en px lógicos (del tamaño real de cada pieza,
+  // lo calcula character.js con las UV métricas); sin él, la bandera grande de la camisa simple. No se repite en U.
+  function flagKey(flag) { return flag ? '@' + Math.round(flag.h) + 'x' + Math.round(flag.w) : ''; }
+  function prDesign(g, flag) {
+    const h = flag ? flag.h : 256 * 0.62, w = flag ? flag.w : h * 1.5, b = Math.max(1.2, h * 0.045);
+    const x = 256 - w / 2, y = 128 - h / 2;
+    g.fillStyle = PR.white; g.fillRect(x - b, y - b, w + 2 * b, h + 2 * b);
+    prFlag(g, x, y, w, h);
+  }
+  function pattern(style, color, flag) {
+    if (style === 'paja') return strawMap(color);
+    const key = style + color + (style === 'pr' ? flagKey(flag) : '');
+    if (texCache.has(key)) { const t = texCache.get(key); texCache.delete(key); texCache.set(key, t); return t; }
+    const [c, g] = canvas(PW, PH);
+    g.fillStyle = color; g.fillRect(0, 0, PW, PH);
+    g.save(); g.scale(PK, PK);
+    if (style === 'pr') prDesign(g, flag);
+    else for (const dx of [-512, 0, 512]) { g.save(); g.translate(dx, 0); design(g, style, color, rng(7)); g.restore(); }
+    g.restore();
+    weaveOver(g, PW, PH);
+    const t = AVColor.tex(new THREE.CanvasTexture(c), style === 'pr' ? null : TILE_V[style] ? 'uv' : 'u');
+    texCache.set(key, t);
+    // LRU: la más vieja sale de la caché y de la GPU (si alguna pieza puesta aún la usa, three la vuelve a subir)
+    while (texCache.size > MAX_PAT) {
+      const [old, ot] = texCache.entries().next().value;
+      texCache.delete(old); delete matCache['cloth' + old]; ot.dispose();
+      for (const fn of evictHooks) fn(old);
+    }
+    return t;
   }
   const matCache = {};
   function mat(color, opts) {
     const key = color + JSON.stringify(opts || {});
-    if (!matCache[key]) { matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.7, metalness: 0.02 }, opts || {})); matCache[key].userData.shared = true; }
+    if (!matCache[key]) { matCache[key] = AVColor.make(THREE.MeshStandardMaterial, Object.assign({ color, roughness: 0.7, metalness: 0.02 }, opts || {})); matCache[key].userData.shared = true; }
     return matCache[key];
   }
   // Material con CanvasTexture dibujada una sola vez (bandera, mapa, parche)
   function sharedMat(key, draw, opts) {
     key = 'canvas' + key;
     if (!matCache[key]) {
-      const t = new THREE.CanvasTexture(draw()); texCache[key] = t;
-      matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ map: t }, opts)); matCache[key].userData.shared = true;
+      const t = AVColor.tex(new THREE.CanvasTexture(draw())); staticTex[key] = t;
+      matCache[key] = AVColor.make(THREE.MeshStandardMaterial, Object.assign({ map: t }, opts)); matCache[key].userData.shared = true;
     }
     return matCache[key];
   }
-  function cloth(style, color) {
-    const key = 'cloth' + style + color;
+  // Tela: lisa = color elegido × tejido suave; con estampado = textura (el color va pintado en ella)
+  function cloth(style, color, flag) {
+    const key = 'cloth' + style + color + (style === 'pr' ? flagKey(flag) : '');
     if (!matCache[key]) {
       const plain = !style || style === 'liso';
-      matCache[key] = new THREE.MeshStandardMaterial(plain ? { color, roughness: 0.85 } : { map: pattern(style, color), roughness: 0.85 });
+      matCache[key] = AVColor.make(THREE.MeshStandardMaterial, plain ? { color, map: weaveMap(), roughness: 0.85 } : { map: pattern(style, color, flag), roughness: style === 'paja' ? 0.9 : 0.85 });
       matCache[key].side = THREE.DoubleSide; matCache[key].userData.shared = true;
+      if (style === 'paja') triplanar(matCache[key], 0.2);
     }
     return matCache[key];
+  }
+  // Paja proyectada en tres planos (posición de la pieza en metros, mezcla por la normal): el tejido sale del mismo tamaño en
+  // copa, ala y cinta, sin el remolino que hacían las UV polares en lo alto de la copa. tile = metros por repetición.
+  function triplanar(m, tile) {
+    m.userData.triplanar = tile;
+    m.onBeforeCompile = sh => {
+      sh.vertexShader = 'varying vec3 vTriP; varying vec3 vTriN;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n  vTriP = position; vTriN = normal;');
+      sh.fragmentShader = 'varying vec3 vTriP; varying vec3 vTriN;\n' + sh.fragmentShader.replace('#include <map_fragment>', `
+        vec3 tw = pow(abs(normalize(vTriN)), vec3(4.0)); tw /= (tw.x + tw.y + tw.z);
+        vec3 tp = vTriP * ${(1 / tile).toFixed(4)};
+        vec4 texelColor = texture2D(map, tp.zy) * tw.x + texture2D(map, tp.xz) * tw.y + texture2D(map, tp.xy) * tw.z;
+        texelColor = mapTexelToLinear(texelColor);
+        diffuseColor *= texelColor;`);
+    };
+    m.customProgramCacheKey = () => 'avtri' + tile;
+    m.needsUpdate = true;
+    return m;
   }
 
   // ---------- Geometrías ajustadas ----------
@@ -309,7 +488,7 @@
     brim.position.fromArray(rel(0, style === 'pescador' ? 1.29 : 1.31, -0.02)); g.add(brim);
     if (style === 'vaquero') {
       for (const s of [-1, 1]) { const curl = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.016, 16, 1, false, 0, Math.PI), M); curl.position.fromArray(rel(s * 0.4, 1.36, -0.02)); curl.rotation.set(0, s > 0 ? -Math.PI / 2 : Math.PI / 2, s * 0.9); g.add(curl); }
-      const dent = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.3), mat('#00000033')); dent.position.fromArray(rel(0, 1.51, -0.02)); g.add(dent);
+      const dent = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.3), mat('#3a2a1a', { roughness: 0.9 })); dent.position.fromArray(rel(0, 1.51, -0.02)); g.add(dent);
     }
     const band = new THREE.Mesh(new THREE.CylinderGeometry(0.235, 0.24, 0.035, 28, 1, true), mat(straw ? color : '#2b2016')); band.position.fromArray(rel(0, 1.34, -0.02)); g.add(band);
     if (style === 'tropical') for (let i = 0; i < 5; i++) {
@@ -342,7 +521,7 @@
   // Gafas de sol / deportivas / máscara de buceo (metros relativos a mount_eyes, ojos a ±0.15)
   function shades(color, style) {
     const g = new THREE.Group();
-    const dark = new THREE.MeshPhysicalMaterial({ color: style === 'buceo' ? '#bfe8ff' : '#1b2430', transparent: true, opacity: style === 'buceo' ? 0.35 : 0.82, roughness: 0.05, metalness: 0.3 });
+    const dark = AVColor.make(THREE.MeshPhysicalMaterial, { color: style === 'buceo' ? '#bfe8ff' : '#1b2430', transparent: true, opacity: style === 'buceo' ? 0.35 : 0.82, roughness: 0.05, metalness: 0.3 });
     if (style === 'buceo') {
       const frame = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.025, 8, 28), mat(color)); frame.scale.set(1.45, 0.75, 1); frame.position.set(0, 0.0, 0.06); g.add(frame);
       const glass = new THREE.Mesh(new THREE.CircleGeometry(0.16, 28), dark); glass.scale.set(1.45, 0.75, 1); glass.position.set(0, 0, 0.07); g.add(glass);
@@ -375,7 +554,7 @@
     if (style === 'mochila_pr') {
       const bag = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.34, 0.16), cloth('pr', PR.red)); bag.position.set(0, 0, -0.1); g.add(bag);
       const flap = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.12, 0.17), mat(PR.blue)); flap.position.set(0, 0.13, -0.1); g.add(flap);
-      const st = new THREE.Mesh(new THREE.CircleGeometry(0.035, 5), mat(PR.white)); st.position.set(0, 0.12, -0.186); st.rotation.y = Math.PI; g.add(st);
+      const st = new THREE.Mesh(starGeo(0.035), mat(PR.white)); st.position.set(0, 0.12, -0.186); st.rotation.y = Math.PI; g.add(st);
       return g;
     }
     if (style === 'tanques') {
@@ -390,7 +569,7 @@
     for (const x of [-0.08, 0.08]) {
       const t = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 0.28, 16), mat('#d9dde0', { metalness: 0.6, roughness: 0.3 })); t.position.set(x, 0, -0.09); g.add(t);
       const nz = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.08, 14, 1, true), mat('#2b2b2b')); nz.position.set(x, -0.18, -0.09); nz.rotation.x = Math.PI; g.add(nz);
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.12, 10), new THREE.MeshBasicMaterial({ color: '#ffb347', transparent: true, opacity: 0.8 })); flame.position.set(x, -0.27, -0.09); flame.rotation.x = Math.PI; flame.userData.flame = true; g.add(flame);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.12, 10), AVColor.make(THREE.MeshBasicMaterial, { color: '#ffb347', transparent: true, opacity: 0.8 })); flame.position.set(x, -0.27, -0.09); flame.rotation.x = Math.PI; flame.userData.flame = true; g.add(flame);
     }
     const plate = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 0.03), mat(color)); plate.position.set(0, 0.02, -0.03); g.add(plate);
     return g;
@@ -406,12 +585,22 @@
     { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo' }, build: shades },
     { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
       styles: [['liso', 'Lisa'], ['pr', 'Bandera PR'], ['hawaiana', 'Hawaiana'], ['guayabera', 'Guayabera'], ['deportiva', 'Deportiva 787'], ['camuflaje', 'Camuflaje'], ['chaleco', 'Chaleco explorador']] },
-    { id: 'pantalon', slot: 'legs', fit: pantsParts, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d'],
+    // Pantalón: liso/flores/cargo/camuflaje van sobre el corto; mezclilla, sobre el largo
+    { id: 'pantalon', slot: 'legs', fit: pantsParts, glb: { liso: 'pantalon_corto', flores: 'pantalon_corto', cargo: 'pantalon_corto', camuflaje: 'pantalon_corto', mezclilla: 'pantalon_largo' }, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d'],
       styles: [['liso', 'Corto'], ['flores', 'De playa'], ['cargo', 'Cargo'], ['camuflaje', 'Militar'], ['mezclilla', 'Mezclilla largo']] },
-    { id: 'botas', slot: 'feet', fit: bootParts, name: 'Calzado', colors: ['#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'],
+    { id: 'botas', slot: 'feet', fit: bootParts, glb: { aventura: 'botas_aventura', constructor: 'botas_constructor', militar: 'botas_militar', tenis: 'botas_tenis', espacial: 'botas_espacial', buzo: 'botas_buzo', tenis_pr: 'botas_tenis_pr', chancletas: 'botas_chancletas' }, name: 'Calzado', colors: ['#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'],
       styles: [['aventura', 'Aventura'], ['constructor', 'Constructor'], ['militar', 'Militares'], ['tenis', 'Tenis'], ['espacial', 'Espaciales'], ['buzo', 'De buzo'], ['tenis_pr', 'Tenis PR'], ['chancletas', 'Chancletas']] },
-    { id: 'equipo', slot: 'back', mount: 'mount_back', name: 'Equipo', colors: ['#3d8fb0', '#d6403a', '#2f8f4e', '#9aa0a3'], styles: [['mochila_pr', 'Mochila PR'], ['cuatro', 'Cuatro puertorriqueño'], ['tanques', 'Tanques de oxígeno'], ['jetpack', 'Jetpack ligero']], build: backItem },
-    { id: 'mano', slot: 'hand', fit: handParts, name: 'En la mano', colors: ['#d6403a', '#f2a03d', '#2f8f4e', '#3d8fb0'], styles: [['bandera', 'Bandera de PR'], ['maracas', 'Maracas'], ['linterna', 'Linterna'], ['martillo', 'Martillo'], ['mapa', 'Mapa'], ['coqui', 'Coquí de peluche']] },
+    { id: 'equipo', slot: 'back', mount: 'mount_back', name: 'Equipo', colors: ['#3d8fb0', '#d6403a', '#2f8f4e', '#9aa0a3'], styles: [['mochila_pr', 'Mochila PR'], ['cuatro', 'Cuatro puertorriqueño'], ['tanques', 'Tanques de oxígeno'], ['jetpack', 'Jetpack ligero']],
+      glb: { mochila_pr: 'equipo_mochila_pr', cuatro: 'equipo_cuatro', tanques: 'equipo_tanques', jetpack: 'equipo_jetpack' }, build: backItem },
+    { id: 'mano', slot: 'hand', fit: handParts, name: 'En la mano', colors: ['#d6403a', '#f2a03d', '#2f8f4e', '#3d8fb0'], styles: [['bandera', 'Bandera de PR'], ['maracas', 'Maracas'], ['linterna', 'Linterna'], ['martillo', 'Martillo'], ['mapa', 'Mapa'], ['coqui', 'Coquí de peluche']],
+      glb: { bandera: 'mano_bandera', maracas: 'mano_maracas', linterna: 'mano_linterna', martillo: 'mano_martillo', mapa: 'mano_mapa', coqui: 'mano_coqui' } },
   ];
-  window.AVWardrobe = { defs, pattern, prFlag, cloth, SLOTS_EXTRA: ['torso', 'legs', 'feet', 'hand'] };
+  const PATTERNS = ['pr', 'hawaiana', 'flores', 'camuflaje', 'caribe', 'guayabera', 'deportiva', 'chaleco', 'cargo', 'mezclilla', 'coqui', 'paja'];
+  window.AVWardrobe = {
+    defs, pattern, prFlag, cloth, weaveMap, strawMap, flagMat, SLOTS_EXTRA: ['torso', 'legs', 'feet', 'hand'],
+    isPattern: s => PATTERNS.includes(s), flagKey,
+    CANVAS_M: [1.2, 0.6],                          // metros que mide el lienzo lógico 512×256 sobre la prenda (UV métricas)
+    onEvict: fn => evictHooks.push(fn),            // la caché LRU de estampados avisa al soltar uno (character.js limpia lo suyo)
+    stats: () => ({ patterns: texCache.size, max: MAX_PAT, size: PW + '×' + PH }),
+  };
 })();

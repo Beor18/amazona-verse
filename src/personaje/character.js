@@ -7,6 +7,12 @@
   const MODEL_URL = 'assets/models/vittata.glb';
   const MOUNTS = ['mount_head_top', 'mount_eyes', 'mount_neck', 'mount_chest', 'mount_back', 'mount_wing_L', 'mount_wing_R'];
   // Dedos de las alas-mano (nombres de three, sin puntos): tres dedos por mano, dos falanges cada uno
+  // Dedos de las patas (dos adelante y dos atrás por pie): con calzado se quedan en su pose de reposo dentro del zapato
+  const TOES = ['pieL4', 'pieL5', 'pieL6', 'pieL7', 'pieL8', 'pieL8002', 'pieL4001', 'pieL5001', 'pieL6001', 'pieL7001', 'pieL8001', 'pieL8003'];
+  // Calzado de Blender: la suela baja 6 mm de z=0 (para que los dedos no la atraviesen), así que el personaje sube 6 mm.
+  // Pantalón: las alas se abren WING_CLEAR rad. Aletas: cadera abierta y punta hacia fuera (ejes medidos en el rig).
+  const SWIM_BACK_SHIFT = 0.6;
+  const SOLE_LIFT = 0.006, WING_CLEAR = 0.12, SPLAY = { axis: 'z', sign: 1, twist: 'y', tsign: 1, amount: 0.09 };
   const FINGERS = ['armL2002', 'armL2003', 'armL2004', 'armL2005', 'armL2006', 'armL2007',
     'armL2010', 'armL2011', 'armL2013', 'armL2014', 'armL2016', 'armL2017'];
 
@@ -83,33 +89,136 @@
     const p = window.AVE.assets.loadGLB('assets/models/ropa/' + name + '.glb', {
       b64: () => window.AV_ROPA_B64 && window.AV_ROPA_B64[name], script: 'assets/models/ropa/' + name + '_glb.js',
       base: 'assets/models/ropa/', error: 'ropa no disponible',
-    }).then(g => { ropaCache[name] = g; return g; }, () => { ropaCache[name] = 'error'; });
+    }).then(g => { prepRopa(g, name); ropaCache[name] = g; return g; }, () => { ropaCache[name] = 'error'; });
     ropaCache[name] = p;
     return p;
+  }
+  // Una vez por .glb cargado (la geometría y los materiales se comparten entre personajes):
+  // - UV de TELA/PAJA: el exportador glTF invierte V y cyl_uv corre U al revés que el lienzo de los estampados, así que el
+  //   diseño salía girado 180° (787 cabeza abajo, la bandera con el triángulo a la derecha). Se gira de vuelta.
+  // - Colores fijos (CUERO, SUELA, GOMA, MADERA…): de la aproximación gamma 2,2 a la curva sRGB exacta.
+  // - Normales: Blender ya exporta shade smooth; si alguna primitiva llega sin normales se calculan.
+  function prepRopa(g, name) {
+    let patch = false; g.scene.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) if (/^BANDERA/.test(m.name)) patch = true; });
+    g.scene.traverse(o => { if (o.geometry) o.geometry.userData.avFlagPatch = patch; });
+    g.scene.traverse(o => {
+      if (!o.isMesh) return;
+      const geo = o.geometry, mats = Array.isArray(o.material) ? o.material : [o.material];
+      if (!geo.attributes.normal) geo.computeVertexNormals();
+      if (!geo.userData.avSmooth) { geo.userData.avSmooth = true; smoothByAngle(geo, 45); }
+      if (!geo.userData.avUv && geo.attributes.uv && mats.some(m => /^(TELA|PAJA)/.test(m.name))) {
+        const uv = geo.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, 1 - uv.getX(i), 1 - uv.getY(i));
+        geo.userData.avUv = true;
+        uvMetric(geo, name, mats.find(m => /^(TELA|PAJA)/.test(m.name)));
+        uv.needsUpdate = true;
+      }
+      for (const m of mats) if (!/^(TELA|PAJA|ACENTO|BANDERA)/.test(m.name) && window.AVColor) window.AVColor.fixGamma22(m);
+    });
+  }
+  // UV métricas: el lienzo de los estampados (512×256 lógicos) mide 1,2 × 0,6 m sobre CUALQUIER prenda, con el frente (o el
+  // centro de la zona de la bandera) en (0,5, 0,5). Así flores, camuflaje y coquíes salen del mismo tamaño en camisa, gorra y
+  // tenis, sin estirarse, y la bandera se dibuja del tamaño de cada pieza. Los .glb ya métricos (material extras.av_uv) no se
+  // tocan. En piezas que dan la vuelta (cyl_uv) la escala en U se redondea a vueltas enteras: la costura de atrás no se corta.
+  // Alto de la bandera por pieza (m): extras.av_flag_h del material, esta tabla o el 70 % del alto visible de la pieza.
+  const FLAG_H = { camisa: 0.15, gorra: 0.11, panuelo: 0.075, botas_tenis_pr: 0.06 };
+  function uvMetric(geo, name, mat) {
+    const P = geo.attributes.position, UV = geo.attributes.uv, I = geo.index, CM = (window.AVWardrobe && window.AVWardrobe.CANVAS_M) || [1.2, 0.6];
+    const tri = I ? I.count / 3 : P.count / 3, at = (t, k) => I ? I.getX(t * 3 + k) : t * 3 + k;
+    let umin = 1e9, umax = -1e9; for (let i = 0; i < UV.count; i++) { const u = UV.getX(i); umin = Math.min(umin, u); umax = Math.max(umax, u); }
+    const wraps = umax - umin > 0.9, mu = [], mv = [], vs = [], us = [], side = [];
+    const fn = new THREE.Vector3();
+    const p0 = new THREE.Vector3(), p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), Ju = new THREE.Vector3(), Jv = new THREE.Vector3();
+    for (let t = 0; t < tri; t++) {
+      const a = at(t, 0), b = at(t, 1), c = at(t, 2);
+      const u0 = UV.getX(a), v0 = UV.getY(a), du1 = UV.getX(b) - u0, dv1 = UV.getY(b) - v0, du2 = UV.getX(c) - u0, dv2 = UV.getY(c) - v0;
+      const det = du1 * dv2 - du2 * dv1; if (Math.abs(det) < 1e-9) continue;
+      if (wraps && Math.abs((u0 + du1 / 3 + du2 / 3) - 0.5) > 0.12) continue;     // solo el frente (u ≈ 0,5)
+      p0.fromBufferAttribute(P, a); p1.fromBufferAttribute(P, b).sub(p0); p2.fromBufferAttribute(P, c).sub(p0);
+      Ju.copy(p1).multiplyScalar(dv2).addScaledVector(p2, -dv1).divideScalar(det);
+      Jv.copy(p2).multiplyScalar(du1).addScaledVector(p1, -du2).divideScalar(det);
+      mu.push(Ju.length()); mv.push(Jv.length()); vs.push(v0 + dv1 / 3 + dv2 / 3); us.push(u0 + du1 / 3 + du2 / 3);
+      fn.crossVectors(p1, p2).normalize(); if (Math.abs(fn.y) < 0.55) side.push(v0 + dv1 / 3 + dv2 / 3);   // pared casi vertical
+    }
+    if (mu.length < 4) return;
+    const med = arr => arr.slice().sort((x, y) => x - y)[arr.length >> 1];
+    // centro vertical: el de las paredes casi verticales del frente (en un zapato, el lateral y no el empeine)
+    const sv = side.length >= 20 ? side : vs;
+    const MU = med(mu), MV = med(mv), vc = med(sv), vlo = Math.min(...sv), vhi = Math.max(...sv);
+    if (!(mat && mat.userData && mat.userData.av_uv)) {
+      const ku = wraps ? Math.max(1, Math.round(MU / CM[0])) : MU / CM[0], kv = MV / CM[1], uc = wraps ? 0.5 : med(us);
+      for (let i = 0; i < UV.count; i++) UV.setXY(i, 0.5 + (UV.getX(i) - uc) * ku, 0.5 + (UV.getY(i) - vc) * kv);
+      geo.userData.avMetric = { mu: MU / ku, mv: CM[1] };     // metros por unidad de UV tras normalizar
+    } else geo.userData.avMetric = { mu: CM[0], mv: CM[1] };
+    // Bandera: alto en metros → px lógicos del lienzo (el ancho, 1,5 × alto real, según los metros por unidad de U de la pieza)
+    const visH = (vhi - vlo) * MV;
+    const fh = (mat && mat.userData && mat.userData.av_flag_h) || FLAG_H[name] || Math.min(0.2, Math.max(0.05, visH * 0.7));
+    geo.userData.avFlag = { h: fh / geo.userData.avMetric.mv * 256, w: fh * 1.5 / geo.userData.avMetric.mu * 512, m: +fh.toFixed(3) };
+  }
+  // Piezas exportadas con sombreado plano (cada triángulo con sus propios vértices: se ven facetadas, como los objetos de
+  // mano y la mochila PR): se suavizan por ángulo como "shade smooth by angle" de Blender. Las aristas de más de `deg`
+  // grados (bordes de caja, filos) se quedan vivas. Las piezas ya suavizadas (vértices compartidos) no se tocan.
+  function smoothByAngle(geo, deg) {
+    const P = geo.attributes.position, I = geo.index, n = P.count, cosT = Math.cos(deg * Math.PI / 180);
+    const groups = new Map();
+    for (let i = 0; i < n; i++) {
+      const k = Math.round(P.getX(i) * 1e4) + ',' + Math.round(P.getY(i) * 1e4) + ',' + Math.round(P.getZ(i) * 1e4);
+      let g = groups.get(k); if (!g) groups.set(k, g = []); g.push(i);
+    }
+    if (n / groups.size < 2.2) return false;
+    const fn = new Float32Array(n * 3), a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    const tri = I ? I.count / 3 : n / 3;
+    for (let t = 0; t < tri; t++) {
+      const i0 = I ? I.getX(t * 3) : t * 3, i1 = I ? I.getX(t * 3 + 1) : t * 3 + 1, i2 = I ? I.getX(t * 3 + 2) : t * 3 + 2;
+      a.fromBufferAttribute(P, i0); b.fromBufferAttribute(P, i1); c.fromBufferAttribute(P, i2);
+      c.sub(b); a.sub(b); c.cross(a); // normal × 2·área
+      for (const i of [i0, i1, i2]) { fn[i * 3] += c.x; fn[i * 3 + 1] += c.y; fn[i * 3 + 2] += c.z; }
+    }
+    const unit = i => { const l = Math.hypot(fn[i * 3], fn[i * 3 + 1], fn[i * 3 + 2]) || 1; return [fn[i * 3] / l, fn[i * 3 + 1] / l, fn[i * 3 + 2] / l]; };
+    const N = geo.attributes.normal;
+    for (const g of groups.values()) {
+      const U = g.map(unit);
+      g.forEach((i, k) => {
+        let x = 0, y = 0, z = 0;
+        g.forEach((j, m) => { if (U[k][0] * U[m][0] + U[k][1] * U[m][1] + U[k][2] * U[m][2] >= cosT) { x += fn[j * 3]; y += fn[j * 3 + 1]; z += fn[j * 3 + 2]; } });
+        const l = Math.hypot(x, y, z) || 1; N.setXYZ(i, x / l, y / l, z / l);
+      });
+    }
+    N.needsUpdate = true;
+    return true;
   }
   // Material por nombre (ver tools/blender/ropa_lib.py): TELA = color/estampado elegido, ACENTO = 2.º color, PAJA = paja
   // (three r128: una malla con piel necesita material.skinning = true; si no, se dibuja quieta en pose T)
   const skinCache = {};
+  if (window.AVWardrobe && window.AVWardrobe.onEvict) window.AVWardrobe.onEvict(key => { delete skinCache['tela' + key]; });
+  // Estilo de la pieza → estampado de su TELA (la criolla lleva copa de paja; la playera, tropical; tenis y mochila PR, bandera).
+  // Un estilo que no es estampado (aventura, militar…) deja la TELA lisa del color elegido.
+  const TELA_STYLE = { criolla: 'paja', playera: 'caribe', tenis_pr: 'pr', mochila_pr: 'pr' };
   // Modelo de Blender para la pieza y estilo: def.glb es un nombre o un mapa estilo → nombre (sin entrada = versión simple)
   function glbName(def, style) {
     if (!def.glb) return null;
     if (typeof def.glb === 'string') return def.glb;
     return def.glb[style] || def.glb['*'] || null;
   }
-  function ropaMaterial(m, color, style) {
+  // morph: la malla trae morph targets (el pañuelo, con su forma 'camisa'); en r128 el material debe declararlo
+  function ropaMaterial(m, color, style, morph, geo) {
     const W = window.AVWardrobe;
     let base = m, key = null;
     if (/^TELA/.test(m.name) && W) {
-      // la gorra criolla lleva la copa de paja; la playera, estampado tropical
-      const st = style === 'criolla' ? 'paja' : style === 'playera' ? 'caribe' : style;
-      base = W.cloth(st, st === 'paja' ? '#d9b56a' : color); key = 'tela' + st + color;
+      let st = TELA_STYLE[style] || style;
+      if (!W.isPattern(st) || (st === 'pr' && geo && geo.userData.avFlagPatch)) st = 'liso';  // con parche plano, la tela va lisa
+      const c = st === 'paja' ? '#d9b56a' : color, flag = st === 'pr' && geo ? geo.userData.avFlag : null;
+      base = W.cloth(st, c, flag); key = 'tela' + st + c + (st === 'pr' ? W.flagKey(flag) : '');
     }
-    else if (/^PAJA/.test(m.name) && W) { base = W.cloth('paja', '#d9b56a'); key = 'paja'; }
-    else if (/^ACENTO/.test(m.name)) { base = m.clone(); base.color.set(color); }
+    else if (/^PAJA/.test(m.name) && W) { base = W.cloth('paja', '#d9b56a'); key = 'telapaja#d9b56a'; }
+    else if (/^BANDERA/.test(m.name) && W) { base = W.flagMat(); key = 'bandera'; }   // parche plano: bandera fiel 3:2
+    else if (/^ACENTO/.test(m.name)) { base = m.clone(); window.AVColor.set(base.color, color); }
     else if (/^VIDRIO/.test(m.name)) { base = m.clone(); base.transparent = true; base.opacity = Math.min(base.opacity, 0.55); base.depthWrite = false; }
+    if (key && morph) key += '|morph';
     if (key && skinCache[key]) return skinCache[key];
     const s = base === m ? m.clone() : base.clone();
-    s.skinning = true;
+    s.skinning = true; s.morphTargets = !!morph;
+    if (base.onBeforeCompile && base.userData.triplanar) { s.onBeforeCompile = base.onBeforeCompile; s.customProgramCacheKey = base.customProgramCacheKey; } // clone() no los copia
     if (key) { skinCache[key] = s; s.userData.shared = true; }
     return s;
   }
@@ -118,7 +227,7 @@
   const matCache = {};
   function mat(color, opts) {
     const key = color + JSON.stringify(opts || {});
-    if (!matCache[key]) { matCache[key] = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0.05 }, opts || {})); matCache[key].userData.shared = true; }
+    if (!matCache[key]) { matCache[key] = window.AVColor.make(THREE.MeshStandardMaterial, Object.assign({ color, roughness: 0.6, metalness: 0.05 }, opts || {})); matCache[key].userData.shared = true; }
     return matCache[key];
   }
   // Libera la GPU de una pieza quitada: geometría propia y materiales sin caché. Las texturas están todas en caché
@@ -154,9 +263,9 @@
     }
     const g = new THREE.Group(); g.name = 'acc_' + id;
     const pat = style && style !== 'liso' && window.AVWardrobe;
-    const M = pat ? new THREE.MeshStandardMaterial({ map: window.AVWardrobe.pattern(style, color), roughness: 0.85 }) : mat(color), dark = mat('#2b2016', { roughness: 0.5 }), metal = mat('#c9d4d9', { metalness: 0.7, roughness: 0.3 });
+    const M = pat ? window.AVWardrobe.cloth(style, color) : mat(color), dark = mat('#2b2016', { roughness: 0.5 }), metal = mat('#c9d4d9', { metalness: 0.7, roughness: 0.3 });
     if (id === 'gafas') {
-      const lens = new THREE.MeshPhysicalMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.4, roughness: 0.05, metalness: 0.1 });
+      const lens = window.AVColor.make(THREE.MeshPhysicalMaterial, { color: '#bfe8ff', transparent: true, opacity: 0.4, roughness: 0.05, metalness: 0.1 });
       for (const x of [-0.37, 0.37]) {
         const rim = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 10, 28), M); rim.position.set(x, 0, 0); g.add(rim);
         const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.08, 24, 1, true), M); cup.rotation.x = Math.PI / 2; cup.position.set(x, 0, -0.04); g.add(cup);
@@ -189,6 +298,66 @@
     }
     g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.userData.isAccessory = true; } });
     return g;
+  }
+
+  // ---------- Párpados: forma medida de los ojos pintados (la misma para todos los personajes) ----------
+  // Para cada ojo se ajusta una esfera a su abombamiento (h = h0 − ρ²/2R a lo largo de la normal) con los vértices del
+  // cuerpo en reposo, y se construye el párpado como un trozo de esfera 2,5 mm por fuera, más un labio en el borde libre.
+  let lidFit = null;
+  function measureEyes(root, E) {
+    const meshes = []; root.traverse(o => { if (o.isSkinnedMesh && !o.userData.isAccessory) meshes.push(o); });
+    if (!meshes.length) return null;
+    const out = {}, v = new THREE.Vector3();
+    for (const k of ['L', 'R']) {
+      const c = new THREE.Vector3().fromArray(E[k].center), n = new THREE.Vector3().fromArray(E[k].normal).normalize();
+      const x = new THREE.Vector3(0, 1, 0).cross(n).normalize(), y = n.clone().cross(x);
+      const bins = new Array(11).fill(-1), pts = [];
+      for (const o of meshes) {
+        const p = o.geometry.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+          v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+          const d = v.clone().sub(c), h = d.dot(n); if (h < -0.03 || h > 0.08) continue;
+          const rho = Math.hypot(d.dot(x), d.dot(y)); if (rho > 0.065) continue;
+          pts.push(v.clone());
+          const b = Math.round(rho / 0.005); if (b < bins.length) bins[b] = Math.max(bins[b], h);
+        }
+      }
+      // mínimos cuadrados de h frente a ρ² (contorno exterior por anillos de 5 mm)
+      let sx = 0, sy = 0, sxx = 0, sxy = 0, cnt = 0;
+      bins.forEach((h, b) => { if (h < -0.5) return; const X = (b * 0.005) ** 2; sx += X; sy += h; sxx += X * X; sxy += X * h; cnt++; });
+      const slope = (cnt * sxy - sx * sy) / Math.max(1e-12, cnt * sxx - sx * sx), h0 = (sy - slope * sx) / cnt;
+      const Rs = Math.min(0.2, Math.max(0.05, -1 / (2 * Math.min(-1e-6, slope))));
+      const c0 = c.clone().addScaledVector(n, h0 - Rs);
+      let RL = Rs;
+      const rEye = E[k].radius * 0.92;
+      for (const q of pts) { const d = q.clone().sub(c), h = d.dot(n); if (h > 0 && Math.hypot(d.dot(x), d.dot(y)) < rEye) RL = Math.max(RL, q.distanceTo(c0)); }
+      RL += 0.0025;
+      const th = Math.asin(Math.min(0.97, E[k].radius / Rs)), alpha = th + 0.14, beta = th + 0.16;
+      out[k] = { c0, x, y, n, RL, th, alpha, shell: lidShell(RL, alpha, beta), lip: lidLip(RL, alpha, beta) };
+    }
+    return out;
+  }
+  const lidDir = (t, s) => new THREE.Vector3(Math.sin(s), Math.sin(t) * Math.cos(s), Math.cos(t) * Math.cos(s));
+  // Trozo de esfera: t (elevación) de −alpha (borde libre, abajo) a +alpha; s (lado) de −beta a +beta. Normales hacia fuera.
+  function lidShell(R, alpha, beta, NT, NS) {
+    NT = NT || 16; NS = NS || 28;
+    const pos = [], nor = [], idx = [];
+    for (let i = 0; i <= NT; i++) for (let j = 0; j <= NS; j++) {
+      const d = lidDir(-alpha + 2 * alpha * i / NT, -beta + 2 * beta * j / NS);
+      pos.push(d.x * R, d.y * R, d.z * R); nor.push(d.x, d.y, d.z);
+    }
+    for (let i = 0; i < NT; i++) for (let j = 0; j < NS; j++) {
+      const a = i * (NS + 1) + j, b = a + 1, c = a + NS + 1, d = c + 1;
+      idx.push(a, b, c, b, d, c);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setIndex(idx); return g;
+  }
+  // Labio del borde libre: tubo fino que sigue el borde (t = −alpha)
+  function lidLip(R, alpha, beta) {
+    const pts = []; for (let j = 0; j <= 24; j++) pts.push(lidDir(-alpha, -beta + 2 * beta * j / 24).multiplyScalar(R + 0.0012));
+    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.0032, 8, false);
   }
 
   // ---------- Instancia de personaje ----------
@@ -224,31 +393,48 @@
       this.headR = (mountsInfo && mountsInfo.head_sphere && mountsInfo.head_sphere.radius) || this.height * 0.2;
       this.look = defaultLook();
       this.lids = this._buildLids();
+      // Pose de reposo de los dedos de las patas y nodo del esqueleto (para levantar al personaje el grosor de la suela)
+      this.toeRest = {}; for (const n of TOES) if (this.bones[n]) this.toeRest[n] = this.bones[n].rotation.clone();
+      this.rigNode = this.root.children.find(c => { let b = false; c.traverse(o => { if (o.isBone) b = true; }); return b; }) || null;
+      this.rigY = this.rigNode ? this.rigNode.position.y : 0;
+      this.fitAdj = {};
       this.expression = 'neutral'; this.talking = false;
       if (this.clips.Idle) this.play('Idle');
     }
-    // Párpados: cúpula sobre cada ojo pintado, pegada al hueso de la cabeza. scale.y 0 = abierto, 1 = cerrado.
+    // Párpados: casquete esférico que se desliza sobre el ojo pintado como un párpado real (gira alrededor del eje
+    // horizontal del ojo, centrado en la curvatura medida del ojo). Abierto, el casquete queda pasado el borde de arriba,
+    // por debajo de la superficie de la cabeza (oculto: nada flota); cerrado, cubre el ojo entero. Lleva el color del anillo
+    // del ojo de la especie y un labio algo más oscuro en el borde, que es lo que se lee al parpadear.
     _buildLids() {
       const head = this.bones.cabeza001, E = mountsInfo && mountsInfo.eye_lids;
       if (!head || !E) return [];
-      const mat = new THREE.MeshStandardMaterial({ color: '#4f9e30', roughness: 0.85 });
       this.root.updateMatrixWorld(true);
+      const fit = lidFit || (lidFit = measureEyes(this.root, E));
+      if (!fit) return [];
+      const C = window.AVColor;
+      this.lidMat = { skin: C.make(THREE.MeshStandardMaterial, { color: '#f4f4f0', roughness: 0.55 }), lip: C.make(THREE.MeshStandardMaterial, { color: '#f4f4f0', roughness: 0.6 }) };
       const qHeadInv = head.getWorldQuaternion(new THREE.Quaternion()).invert(), ws = head.getWorldScale(new THREE.Vector3());
       return ['L', 'R'].map(k => {
-        // Cúpula algo más ancha y abombada que el ojo pintado, para cubrirlo sin hundirse en él
-        const r = E[k].radius * 1.18, depth = E[k].bulge * 1.9 + 0.006;
-        const geo = new THREE.SphereGeometry(r, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2);
-        geo.rotateX(Math.PI / 2); geo.scale(1, 1, depth / r); geo.translate(0, -r, 0); // borde superior en el origen
-        const p = new THREE.Vector3().fromArray(E[k].center), n = new THREE.Vector3().fromArray(E[k].normal).normalize();
-        const x = new THREE.Vector3(0, 1, 0).cross(n).normalize(), y = n.clone().cross(x);
-        const pivot = new THREE.Object3D();
-        pivot.position.copy(head.worldToLocal(p.clone().addScaledVector(y, r).addScaledVector(n, -0.004)));
-        pivot.quaternion.copy(qHeadInv.clone().multiply(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, n))));
+        const F = fit[k];
+        const pivot = new THREE.Object3D(); pivot.name = 'parpado_' + k;
+        pivot.position.copy(head.worldToLocal(F.c0.clone()));
+        pivot.quaternion.copy(qHeadInv.clone().multiply(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(F.x, F.y, F.n))));
         pivot.scale.set(1 / ws.x, 1 / ws.y, 1 / ws.z);
-        const lid = new THREE.Mesh(geo, mat); lid.scale.y = 0.05; lid.castShadow = false;
+        const lid = new THREE.Group();
+        lid.add(new THREE.Mesh(F.shell, this.lidMat.skin), new THREE.Mesh(F.lip, this.lidMat.lip));
+        lid.children.forEach(m => { m.castShadow = false; m.receiveShadow = false; });
+        lid.userData.fit = F;
         pivot.add(lid); head.add(pivot);
+        this._lid(lid, 0.05);
         return lid;
       });
+    }
+    // Cierre del párpado: 0 abierto (oculto) … 1 cerrado. El borde libre baja de forma lineal por la altura del ojo.
+    _lid(lid, v) {
+      const F = lid.userData.fit, m = 0.1;
+      const edge = (F.th + m) - v * (2 * F.th + 2 * m);
+      lid.rotation.x = -(edge + F.alpha);
+      lid.visible = v > 0.02;
     }
     _own(m) {
       const c = m.clone(); this.materials[m.name] = c; c.userData.base = c.color ? c.color.clone() : null;
@@ -259,7 +445,7 @@
     _addMaskTint(m) {
       const u = this.tint || (this.tint = {
         maskMap: { value: maskTexture },
-        patchColor: { value: new THREE.Color('#d63a2f') }, ringColor: { value: new THREE.Color('#f4f4f0') }, beakColor: { value: new THREE.Color('#f2a23a') },
+        patchColor: { value: window.AVColor.lin('#d63a2f') }, ringColor: { value: window.AVColor.lin('#f4f4f0') }, beakColor: { value: window.AVColor.lin('#f2a23a') },
         tintOn: { value: new THREE.Vector3(0, 0, 0) },
       });
       m.onBeforeCompile = sh => {
@@ -335,6 +521,17 @@
       this.locomotion(dt, k);
       this.face(dt);
       this.emotePose(dt);
+      this.clothes();
+    }
+    // Ajustes por la ropa puesta, encima de todo lo demás (con rot(): se deshacen solos en el cuadro siguiente).
+    // - Calzado: los dedos se quedan en su pose de reposo dentro del zapato (al caminar se doblaban y salían ~5 cm por la puntera).
+    // - Pantalón: las alas plegadas se separan un poco de la cadera para no entrar en la tela.
+    // - Aletas de buzo: piernas algo abiertas y puntas hacia fuera, para que una aleta no choque con la otra pata.
+    clothes() {
+      const B = this.bones, f = this.fitAdj;
+      if (f.toes) for (const n of TOES) { const b = B[n], r = this.toeRest[n]; if (b && r) for (const ax of ['x', 'y', 'z']) this.rot(b, ax, r[ax] - b.rotation[ax]); }
+      if (f.wing && B.armL1 && B.armL1001) { this.rot(B.armL1, 'z', f.wing); this.rot(B.armL1001, 'z', -f.wing); }
+      if (f.splay) for (const [h, sg] of [['pieL1', 1], ['pieL1001', -1]]) if (B[h]) { this.rot(B[h], SPLAY.axis, sg * f.splay * SPLAY.sign); this.rot(B[h], SPLAY.twist, sg * f.splay * SPLAY.tsign * 1.4); }
     }
     // Gestos de cuerpo entero (emote: 'dance' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
     // Hombro: -X adelanta; abrir hacia arriba/afuera es +Z en el izquierdo y -Z en el derecho. Codo +X dobla.
@@ -422,7 +619,7 @@
       if (this.blinkIn <= 0) { this.blinkT = 0.15; this.blinkIn = Math.random() < 0.15 ? 0.3 : 2 + Math.random() * 3.5; }
       let blink = 0;
       if (this.blinkT > 0) { this.blinkT -= dt; blink = Math.sin(Math.max(0, 1 - this.blinkT / 0.15) * Math.PI); }
-      for (const lid of this.lids || []) lid.scale.y = Math.max(0.03, Math.min(1, ex[0] + blink * (1 - ex[0])));
+      for (const lid of this.lids || []) this._lid(lid, Math.max(0.03, Math.min(1, ex[0] + blink * (1 - ex[0]))));
       // Hablar: el pico abre y cierra con ritmo de sílabas
       let talk = 0;
       if (this.talking) { this.talkPh = (this.talkPh || 0) + dt * 15; talk = Math.max(0, Math.sin(this.talkPh)) * (0.55 + 0.45 * Math.sin(this.talkPh * 0.37 + 1.3)) * 0.32; }
@@ -486,20 +683,29 @@
       for (const [el, sg] of [['armL2', 1], ['armL2001', -1]]) if (B[el]) this.rot(B[el], "x", (run ? 0.55 : 0.25) * w + Math.max(0, s * sg) * 0.2 * w);
       // Nadando: la cabeza mira al frente aunque el cuerpo vaya tumbado, y no hay rebote de pasos
       // (el cuerpo va casi horizontal; el cuello levanta la cabeza para llevar el pico fuera del agua)
-      if (this.swimming) { if (B.cabeza) this.rot(B.cabeza, "x", this.diving ? 0.3 : -0.75); if (B.espalda2) this.rot(B.espalda2, "x", this.diving ? 0 : -0.25); return; }
+      // Con algo a la espalda (mochila, cuatro, tanques, jetpack) parte de esa extensión pasa del cuello al pecho: la mirada
+      // queda casi igual y la nuca no se mete en la pieza (docs/equipo/TRAITS_PEDIDOS.md).
+      if (this.swimming) {
+        const sh = this.diving || !this.mounted.back ? 0 : (this.swimBackShift != null ? this.swimBackShift : SWIM_BACK_SHIFT);
+        if (B.cabeza) this.rot(B.cabeza, "x", this.diving ? 0.3 : -0.75 + sh);
+        if (B.espalda2) this.rot(B.espalda2, "x", this.diving ? 0 : -0.25 - sh);
+        return;
+      }
       // Rebote del cuerpo: dos subidas por ciclo (una por pie); el juego fija root.position antes de update
       this.root.position.y += (1 - Math.cos(ph * 2)) * 0.5 * (run ? 0.09 : 0.05) * w * this.root.scale.y;
     }
     setSpecies(id) {
       const s = SPECIES[id] || SPECIES.vittata;
       this.species = id;
+      // Párpados del color del anillo del ojo (piel desnuda alrededor del ojo); el labio, un tono más oscuro
+      if (this.lidMat) { window.AVColor.set(this.lidMat.skin.color, s.ring); this.lidMat.lip.color.copy(this.lidMat.skin.color).multiplyScalar(0.45); }
       if (this.tint) {
         const base = SPECIES.vittata, on = this.tint.tintOn.value;
-        this.tint.patchColor.value.set(s.patch); this.tint.ringColor.value.set(s.ring); this.tint.beakColor.value.set(s.beak || '#f2a23a');
+        const C = window.AVColor; C.set(this.tint.patchColor.value, s.patch); C.set(this.tint.ringColor.value, s.ring); C.set(this.tint.beakColor.value, s.beak || '#f2a23a');
         on.set(s.patch !== base.patch ? 1 : 0, s.ring !== base.ring ? 1 : 0, s.beak ? 1 : 0);
         return;
       }
-      const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) m.color.set(hex); else if (m.userData.base) m.color.copy(m.userData.base); };
+      const set = (name, hex) => { const m = this.materials[name]; if (!m) return; if (hex) window.AVColor.set(m.color, hex); else if (m.userData.base) m.color.copy(m.userData.base); };
       set('Patch', s.patch); set('Ring', s.ring); set('WingTip', s.wingTip); set('Beak', s.beak || null);
     }
     // Engancha las mallas con piel de una pieza de Blender al esqueleto de este personaje (huesos por nombre)
@@ -515,12 +721,24 @@
         if (bones.some(b => !b)) return null;
         mesh.bind(new THREE.Skeleton(bones, mesh.skeleton.boneInverses.map(m => m.clone())), mesh.bindMatrix);
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        const swap = mats.map(m => ropaMaterial(m, want.color, want.style));
+        const swap = mats.map(m => ropaMaterial(m, want.color, want.style, !!mesh.morphTargetInfluences, mesh.geometry));
         mesh.material = Array.isArray(mesh.material) ? swap : swap[0];
+        if (mats.every(m => /^BANDERA/.test(m.name))) mesh.visible = (TELA_STYLE[want.style] || want.style) === 'pr';
         mesh.castShadow = true; mesh.frustumCulled = false; mesh.userData.isAccessory = true;
         body.parent.add(mesh);
       }
       return out;
+    }
+    // Qué ajustes de pose y altura pide la ropa puesta (los aplica clothes() en cada cuadro)
+    _fitClothes() {
+      const M = this.mounted, feet = M.feet, legs = M.legs;
+      this.fitAdj = { toes: !!feet, wing: legs ? WING_CLEAR : 0, splay: feet && feet.style === 'buzo' ? SPLAY.amount : 0 };
+      if (this.rigNode) this.rigNode.position.y = this.rigY + (feet && feet.blender ? SOLE_LIFT : 0);
+      // Pañuelo de Blender: con camisa puesta va por encima de ella (forma 'camisa' del .glb)
+      if (M.neck && M.neck.blender) for (const o of M.neck.objects) if (o.morphTargetInfluences) {
+        const i = o.morphTargetDictionary && o.morphTargetDictionary.camisa;
+        o.morphTargetInfluences[i != null ? i : 0] = M.torso ? 1 : 0;
+      }
     }
     // Monta, quita o recolorea cada ranura; el accesorio queda como hijo del hueso y sigue sus animaciones
     applyLook(look) {
@@ -586,10 +804,16 @@
           this.mounted[slot] = { id: want.id, color: want.color, style: want.style, objects };
         }
       }
+      this._fitClothes();
     }
   }
 
   async function create() { const gltf = await loadGLTF(); return new Character(gltf); }
+  // Carga por adelantado los .glb de ropa (todos los del catálogo o los nombres dados); útil para pruebas y para el creador
+  function preloadRopa(names) {
+    const all = names || [...new Set(ACCESSORIES.flatMap(d => !d.glb ? [] : typeof d.glb === 'string' ? [d.glb] : Object.values(d.glb)))];
+    return Promise.all(all.map(n => ropaCache[n] && !ropaCache[n].then ? null : loadRopa(n)));
+  }
 
   // ---------- Retrato: misma cámara y luz para el creador, el juego y el cómic ----------
   let portraitRig = null;
@@ -624,5 +848,5 @@
     return canvas;
   }
 
-  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, BASE_IDS, create, loadGLTF, buildAccessory, disposeObject, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
+  window.AVCharacter = { SPECIES, ACCESSORIES, SLOTS, MOUNTS, BASE_IDS, create, loadGLTF, preloadRopa, buildAccessory, disposeObject, normalizeLook, defaultLook, renderPortrait, mountsInfo: () => mountsInfo };
 })();
