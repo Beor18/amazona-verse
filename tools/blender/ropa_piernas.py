@@ -4,6 +4,9 @@
 # afuera sube como cadera (anillos medidos con rayos contra el cuerpo) y la mitad de adentro es la costura del tiro
 # (plano x=0, por debajo de la panza). La cintura baja por detrás para dejar salir la cola.
 # Pesos: weights_from_body + limb_weights_z (pieL1 / pieL1.001 por altura) y prueba de flexión de piernas.
+# Auditoría 2026-10-24: el largo terminaba en z≈0,15 (3 cm bajo el corto) y se leía como otro corto; ahora baja por el
+# tarso hasta el tobillo (z=0,07, por encima del calzado, que lo tapa si es bota). Las perneras conservan los pesos de
+# pierna de la piel (antes todo el bajo iba al muslo y la rodilla y el tarso lo atravesaban 1–2 cm al andar).
 import sys, os, math
 sys.path.insert(0, os.path.expanduser('~/AmazonaVerse/Juego/tools/blender'))
 from ropa_lib import *
@@ -112,13 +115,13 @@ def pocket(name, bvh, a_c, a_w, z0, z1, off, mt, mt_st, nu=5, nv=5):
 
 def build(name, long=False):
     mt = M()
-    if long:
-        hem_z, hem_r = 0.152, 0.037
-        hem_c = lambda s: Vector((s * 0.178, 0.012, hem_z))
+    if long:   # bajo en el tobillo, sobre el eje del tarso (tobillo alto (0.174, 0.017, 0.189) → tobillo (0.195, -0.001, 0.042))
+        hem_z, hem_r = 0.07, 0.036
+        hem_c = lambda s: Vector((s * 0.191, 0.0025, hem_z))
     else:
         hem_z, hem_r = 0.196, 0.066
         hem_c = lambda s: Vector((s * 0.172, -0.004, hem_z))
-    o = pants_mesh(name, hem_z, hem_c, hem_r, L=8 if long else 5)
+    o = pants_mesh(name, hem_z, hem_c, hem_r, L=14 if long else 5)
     push_outside(o, offset=0.016, smooth=3, passes=3)
     orient_out(o, (0, CY, 0.3))
     bvh = BVHTree.FromObject(o, bpy.context.evaluated_depsgraph_get())
@@ -152,7 +155,7 @@ def build(name, long=False):
             for i in range(n):
                 d = Vector((math.sin(2 * math.pi * i / n), -math.cos(2 * math.pi * i / n), 0)); q = Vector((c.x, c.y, z))
                 rr = max(r, ray_in(q, d, L=0.25, bvh=bvh) + (r - hem_r) * 0.8, ray_in(q, d, L=0.25) + 0.012 + (r - hem_r))
-                out.append(q + d * rr)
+                out.append(q + d * min(rr, r + 0.022))   # tope: el rayo podía dar en la cola y sacar un pico hacia atrás
             return out
         h = 0.02 if not long else 0.014
         cf = grid_mesh('dobladillo', [ring(hem_z - 0.003, hem_r + 0.004), ring(hem_z + h, hem_r + 0.006)], close_u=True)
@@ -164,15 +167,105 @@ def build(name, long=False):
     for p in parts: apply_mods(p)
     o = join(parts, name)
     cyl_uv(o)
-    shade_smooth(o, 50)
+    shade_smooth(o, 60)
     return o
+
+
+def smooth_leg_weights(o, repeat=3):
+    """Alisa los pesos (la tela no copia los pliegues de la piel de la rodilla)."""
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+    bpy.ops.object.vertex_group_smooth(group_select_mode='ALL', factor=0.5, repeat=repeat)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    clean_weights(o)
+
+
+def snap_detail_weights(o):
+    """Bolsillos, presillas, botón, costuras y dobladillo copian los pesos de la tela del pantalón que tienen debajo
+    (no de la piel): si no, al andar una esquina del bolsillo de atrás se despegaba como un pico."""
+    from mathutils import kdtree
+    me = o.data; n = len(me.vertices); parent = list(range(n))
+    def find(a):
+        while parent[a] != a: parent[a] = parent[parent[a]]; a = parent[a]
+        return a
+    for e in me.edges:
+        a, b = find(e.vertices[0]), find(e.vertices[1])
+        if a != b: parent[a] = b
+    roots = [find(i) for i in range(n)]
+    from collections import Counter
+    main = Counter(roots).most_common(1)[0][0]
+    idx = [i for i in range(n) if roots[i] == main]
+    kd = kdtree.KDTree(len(idx))
+    for k, i in enumerate(idx): kd.insert(me.vertices[i].co, i)
+    kd.balance()
+    W = {i: [(g.group, g.weight) for g in me.vertices[i].groups] for i in idx}
+    for i in range(n):
+        if roots[i] == main: continue
+        _, j, _ = kd.find(me.vertices[i].co)
+        v = me.vertices[i]
+        for g in list(v.groups): o.vertex_groups[g.group].remove([i])
+        for gi, w in W[j]: o.vertex_groups[gi].add([i], w, 'REPLACE')
+    clean_weights(o)
+
+
+TWIN = {'pieL8.002': 'pieL8.003', 'pieL8.003': 'pieL8.002'}   # dedos de atrás (izq. .002, der. .003)
+
+
+def side_weights(o, soft=0.025):
+    """Cada pernera sólo sigue a su pierna: el peso de la pierna contraria (la piel más cercana por detrás del tiro puede
+    ser la del otro muslo) pasa al hueso homólogo de este lado; cerca de x=0 se reparte."""
+    names = {g.index: g.name for g in o.vertex_groups}
+    for v in o.data.vertices:
+        if abs(v.co.x) < 1e-6: continue
+        f = min(1.0, abs(v.co.x) / soft)
+        for e in list(v.groups):
+            n = names[e.group]
+            if not n.startswith('pieL') or e.weight <= 0: continue
+            right = n.endswith('.001') or n.endswith('.003')
+            if (v.co.x > 0) != right: continue          # ya es de este lado
+            twin = TWIN.get(n) or (n[:-4] if n.endswith('.001') else n + '.001')
+            g2 = o.vertex_groups.get(twin) or o.vertex_groups.new(name=twin); names[g2.index] = twin
+            mv = e.weight * f; e.weight -= mv; g2.add([v.index], mv, 'ADD')
+    clean_weights(o)
+
+
+def merge_group(o, src, dst):
+    gs = o.vertex_groups.get(src)
+    if not gs: return
+    gd = o.vertex_groups.get(dst) or o.vertex_groups.new(name=dst)
+    for v in o.data.vertices:
+        for e in v.groups:
+            if e.group == gs.index and e.weight > 0: gd.add([v.index], e.weight, 'ADD')
+    o.vertex_groups.remove(gs)
+    clean_weights(o)
+
+
+def tail_to_pelvis(o):
+    """La cola se mueve sola al andar: la tela de atrás no la sigue (su peso pasa a la cadera, espalda1)."""
+    gp = o.vertex_groups.get('espalda1') or o.vertex_groups.new(name='espalda1')
+    tail = o.vertex_groups.get('espalda1.001')
+    if tail:
+        for v in o.data.vertices:
+            for e in v.groups:
+                if e.group == tail.index and e.weight > 0: gp.add([v.index], e.weight, 'ADD'); e.weight = 0.0
+        o.vertex_groups.remove(tail)
+    clean_weights(o)
 
 
 def finish(name, long):
     o = build(name, long)
     check_clear([o], eyes=False)
     weights_from_body(o)
-    limb_weights_z(o, 'pieL1', 'pieL1.001', 0.25, 0.20, keep=())  # las perneras siguen al muslo
+    side_weights(o)
+    tail_to_pelvis(o)   # antes que limb_weights_z: si no, el bajo de atrás quedaba con peso de cadera y se quedaba atrás en un pico
+    limb_weights_z(o, 'pieL1', 'pieL1.001', 0.25, 0.20, keep=('pieL',))  # lo que no es pierna (panza, cadera) pasa al muslo
+    smooth_leg_weights(o)
+    snap_detail_weights(o)
+    for t in ('pieL4', 'pieL5', 'pieL6', 'pieL7', 'pieL8'):   # el bajo del largo no sigue a los dedos (el juego los mueve)
+        merge_group(o, t, 'pieL3'); merge_group(o, t + '.001', 'pieL3.001')
+    merge_group(o, 'pieL8.002', 'pieL3'); merge_group(o, 'pieL8.003', 'pieL3.001')
+    if not long:   # el corto acaba sobre el tarso: su peso pasa a la rodilla (el bajo de atrás giraba con el tarso en un pico)
+        merge_group(o, 'pieL3', 'pieL2'); merge_group(o, 'pieL3.001', 'pieL2.001')
     add_armature(o)
     print('TRIS', name, tri_count(o), 'MATS', [m.name for m in o.data.materials], 'GROUPS', [g.name for g in o.vertex_groups])
     # prueba de flexión: paso adelante / atrás y rodilla doblada (ejes del rig: muslo -X adelanta, rodilla -X levanta)
