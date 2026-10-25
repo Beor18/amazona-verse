@@ -429,6 +429,16 @@
     }
     // En pose T el puño agarra a lo largo de +Z; con el brazo abajo, los objetos largos quedan apuntando al frente
     if (style === 'bandera' || style === 'maracas' || style === 'martillo') g.rotation.x = Math.PI / 2 - 0.35;
+    if (style === 'cuaderno') {   // libreta con tapa del color elegido, hojas y elástico
+      const cover = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.14), mat(color, { roughness: 0.8 })); cover.position.set(0, 0.06, 0.08); g.add(cover);
+      const pages = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.19, 0.13), mat('#efe2b8')); pages.position.set(0.003, 0.06, 0.08); g.add(pages);
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.205, 0.008), mat('#1b1b1b')); band.position.set(0, 0.06, 0.13); g.add(band);
+    } else if (style === 'lupa') {   // aro dorado, lente y mango de madera
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.14, 10), mat('#8a6a3a')); handle.position.y = 0.04; g.add(handle);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.01, 8, 28), mat('#d8b04a', { metalness: 0.8, roughness: 0.3 })); ring.position.y = 0.17; g.add(ring);
+      const glass = new THREE.Mesh(new THREE.CircleGeometry(0.06, 24), AVColor.make(THREE.MeshPhysicalMaterial, { color: '#cfefff', transparent: true, opacity: 0.35, roughness: 0.05, side: THREE.DoubleSide })); glass.position.y = 0.17; g.add(glass);
+      const cap = new THREE.Mesh(new THREE.TorusGeometry(0.018, 0.006, 6, 14), mat(color)); cap.rotation.x = Math.PI / 2; cap.position.y = 0.11; g.add(cap);
+    }
     if (style === 'mapa') {
       const map = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.17), sharedMat('mapa', () => {
         const [c, gg] = canvas(200, 140); gg.fillStyle = '#efe2b8'; gg.fillRect(0, 0, 200, 140); gg.strokeStyle = '#7a5634'; gg.lineWidth = 3;
@@ -529,6 +539,14 @@
       const snorkel = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.35, 8), mat('#f2a03d')); snorkel.position.set(0.25, 0.08, -0.02); g.add(snorkel);
       return g;
     }
+    if (style === 'binoculares') {   // dos tubos con oculares y puente (la versión de Blender lleva correa)
+      for (const x of [-0.15, 0.15]) {
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 0.16, 18), mat(color, { roughness: 0.5 })); tube.rotation.x = Math.PI / 2; tube.position.set(x, 0, 0.14); g.add(tube);
+        const lens = new THREE.Mesh(new THREE.CircleGeometry(0.05, 18), dark); lens.position.set(x, 0, 0.221); g.add(lens);
+      }
+      const br = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.08), mat('#2b2b2b')); br.position.set(0, 0.02, 0.14); g.add(br);
+      return g;
+    }
     const round = style === 'redondas';
     for (const x of [-0.15, 0.15]) {
       const lens = new THREE.Mesh(new THREE.CircleGeometry(round ? 0.075 : 0.085, 24), dark); lens.position.set(x, 0, 0.07); if (!round) lens.scale.set(1.15, 0.8, 1); g.add(lens);
@@ -582,7 +600,7 @@
     { id: 'pava', slot: 'head', mount: 'mount_head_top', name: 'Pava jíbara (PR)', colors: ['#d6403a', '#0a50a1', '#2b2b2b', '#2f8f4e'], glb: 'pava', build: pavaGroup },
     { id: 'sombrero2', slot: 'head', mount: 'mount_head_top', name: 'Sombreros', colors: ['#8a6a3a', '#5a3a22', '#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'], styles: [['paja', 'De paja'], ['tropical', 'Tropical'], ['vaquero', 'Vaquero'], ['pescador', 'Pescador']], glb: { paja: 'sombrero_paja', tropical: 'sombrero_tropical', vaquero: 'sombrero_vaquero', pescador: 'sombrero_pescador' }, build: brimHat },
     { id: 'casco', slot: 'head', mount: 'mount_head_top', name: 'Cascos', colors: ['#f2c21a', '#f2a03d', '#f4f4f0', '#3d8fb0', '#d6403a'], styles: [['constructor', 'Constructor'], ['marinero', 'Marinero'], ['pirata', 'Pirata']], glb: { constructor: 'casco_constructor', marinero: 'casco_marinero', pirata: 'casco_pirata' }, build: hardHat },
-    { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo' }, build: shades },
+    { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo'], ['binoculares', 'Binoculares']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo', binoculares: 'lentes_binoculares' }, build: shades },
     { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
       styles: [['liso', 'Lisa'], ['pr', 'Bandera PR'], ['hawaiana', 'Hawaiana'], ['guayabera', 'Guayabera'], ['deportiva', 'Deportiva 787'], ['camuflaje', 'Camuflaje'], ['chaleco', 'Chaleco explorador']] },
     // Pantalón: liso/flores/cargo/camuflaje van sobre el corto; mezclilla, sobre el largo
@@ -592,8 +610,8 @@
       styles: [['aventura', 'Aventura'], ['constructor', 'Constructor'], ['militar', 'Militares'], ['tenis', 'Tenis'], ['espacial', 'Espaciales'], ['buzo', 'De buzo'], ['tenis_pr', 'Tenis PR'], ['chancletas', 'Chancletas']] },
     { id: 'equipo', slot: 'back', mount: 'mount_back', name: 'Equipo', colors: ['#3d8fb0', '#d6403a', '#2f8f4e', '#9aa0a3'], styles: [['mochila_pr', 'Mochila PR'], ['cuatro', 'Cuatro puertorriqueño'], ['tanques', 'Tanques de oxígeno'], ['jetpack', 'Jetpack ligero']],
       glb: { mochila_pr: 'equipo_mochila_pr', cuatro: 'equipo_cuatro', tanques: 'equipo_tanques', jetpack: 'equipo_jetpack' }, build: backItem },
-    { id: 'mano', slot: 'hand', fit: handParts, name: 'En la mano', colors: ['#d6403a', '#f2a03d', '#2f8f4e', '#3d8fb0'], styles: [['bandera', 'Bandera de PR'], ['maracas', 'Maracas'], ['linterna', 'Linterna'], ['martillo', 'Martillo'], ['mapa', 'Mapa'], ['coqui', 'Coquí de peluche']],
-      glb: { bandera: 'mano_bandera', maracas: 'mano_maracas', linterna: 'mano_linterna', martillo: 'mano_martillo', mapa: 'mano_mapa', coqui: 'mano_coqui' } },
+    { id: 'mano', slot: 'hand', fit: handParts, name: 'En la mano', colors: ['#d6403a', '#f2a03d', '#2f8f4e', '#3d8fb0'], styles: [['bandera', 'Bandera de PR'], ['maracas', 'Maracas'], ['linterna', 'Linterna'], ['martillo', 'Martillo'], ['mapa', 'Mapa'], ['coqui', 'Coquí de peluche'], ['cuaderno', 'Cuaderno de campo'], ['lupa', 'Lupa']],
+      glb: { bandera: 'mano_bandera', maracas: 'mano_maracas', linterna: 'mano_linterna', martillo: 'mano_martillo', mapa: 'mano_mapa', coqui: 'mano_coqui', cuaderno: 'mano_cuaderno', lupa: 'mano_lupa' } },
   ];
   const PATTERNS = ['pr', 'hawaiana', 'flores', 'camuflaje', 'caribe', 'guayabera', 'deportiva', 'chaleco', 'cargo', 'mezclilla', 'coqui', 'paja'];
   window.AVWardrobe = {
