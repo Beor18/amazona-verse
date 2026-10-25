@@ -374,6 +374,20 @@ for z_ in ESC['Z']:
     for e in z_['instancias']:
         h = e['huella']; M.footprints['esc_' + e['id']] = (h['x'], -h['z'], max(h['hx'], h['hz']) * 0.85 + 1.0)
 _ins = [e for z_ in ESC['Z'] for e in z_['instancias']]
+if os.environ.get('MAPA_ZOCALOS') == '1':   # una vez: zócalos bajo lo grande que queda en ladera fuerte
+    ZOC = []
+    for e in _ins:
+        h = e['huella']; alto = h['y1'] - h['y0']
+        if e['asset'] in ('canoa',) or e['asset'].startswith('losa') or e.get('oculto') or h['hx'] * h['hz'] * 4 < 40: continue
+        c, s_ = math.cos(h['rotY']), math.sin(h['rotY']); g_ = []
+        for fu in (-0.9, 0, 0.9):
+            for fv in (-0.9, 0, 0.9):
+                u, v = fu * h['hx'], fv * h['hz']; g_.append(hm_at(h['x'] + u * c + v * s_, -(h['z'] - u * s_ + v * c)))
+        if max(g_) - min(g_) > max(2.5, 0.35 * alto):
+            ZOC.append([round(h['x'], 2), round(-h['z'], 2), round(math.hypot(h['hx'], h['hz']) + 1.5, 2), round(h['y0'] + 0.1, 2)])
+    json.dump({'nota': 'zócalos de terreno (x, y del mapa, radio, altura) bajo edificios de Kelvin en laderas; generado con MAPA_ZOCALOS=1', 'zocalos': ZOC},
+              open(os.path.join(HERE, 'mapa_zocalos_kelvin.json'), 'w'))
+    log('zócalos generados: %d (vuelve a correr sin MAPA_ZOCALOS para aplicarlos)' % len(ZOC))
 log('escena de Kelvin: %d instancias en %d zonas; con modelo web %d; movidas %d; ocultas %d; conversion.json %s' % (
     len(_ins), len(ESC['Z']), sum(1 for e in _ins if e.get('modelo')), sum(1 for e in _ins if abs(e['ajuste']['dx']) + abs(e['ajuste']['dz']) > 0),
     sum(1 for e in _ins if e.get('oculto')), ESC['conv']))

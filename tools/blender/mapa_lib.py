@@ -170,6 +170,7 @@ REEF = (150, -214, 75)   # arrecife frente a la playa sur: (x, y, radio de influ
 SPINE = ((-110.0, 196.0), (120.0, 196.0))
 TERRACES = [92.0, 72.0, 52.0]      # distancia a la cresta de cada banda de acantilado
 TERRACE_H = 13.0
+YUNQUE_Z = 97.0      # altura de la meseta plana de El Yunque
 TERRACE_GAPS = [(136, -150), (98, -118), (138, -86)]   # pasos (X) por banda: rampas que guían sin paredes
 
 # Quebrada de La Mina (nace en la Charca de las Nubes y cae al río). Coordenadas del mapa.
@@ -352,6 +353,9 @@ def build(verbose=True):
     base = kel + T + U + W
     # la meseta de Kelvin conserva su tope plano sobre la terraza
     base += mesa * np.maximum(0, (TERRACE_H * 3 + 9) * ss(100, 45, rS) - U) * 0.6
+    # El Yunque es un yunque: la meseta de Kelvin queda plana arriba, como en su terreno, para su ciudad de ruinas (QA-28)
+    yq = mesa * ss(-110, -95, X) * (1 - ss(40, 55, X)) * ss(98, 112, Y) * (1 - ss(166, 180, Y))
+    base = base * (1 - yq) + YUNQUE_Z * yq
 
     # ---- costa
     coast = np.array(COAST, float)
@@ -466,6 +470,13 @@ def build(verbose=True):
         wgt = 1 - ss(pr, pr + 6, d)
         H = H * (1 - wgt) + z * wgt
     M.padz = padz
+    # zócalos de terreno bajo los edificios grandes de Kelvin en laderas (QA-28; los genera mapa_build con MAPA_ZOCALOS=1)
+    import json as _json
+    fz_ = os.path.join(HERE, 'mapa_zocalos_kelvin.json')
+    if os.path.exists(fz_):
+        for zx, zy, zr, zz in _json.load(open(fz_))['zocalos']:
+            d = np.hypot(X - zx, Y - zy); wgt = 1 - ss(zr, zr + 7, d)
+            H = H * (1 - wgt) + zz * wgt
 
     # ---- tallado de cauces
     def carve(H, P, s, Lv, wv, dv, Bv):
