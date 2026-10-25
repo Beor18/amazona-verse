@@ -83,15 +83,18 @@ AVE.module('diario', function (G) {
       + '#card:has(.diary) details.especies > summary.lbl::before { -webkit-mask-image: var(--i-paw); mask-image: var(--i-paw); }'
       + '#card details.especies > summary.lbl::after { content: ""; margin-left: auto; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }'
       + '#card details.especies[open] > summary.lbl::after { transform: rotate(45deg); }'
-      + '#card details.especies > ul.diary { margin-top: var(--sp-3); }';
+      + '#card details.especies > ul.diary { margin-top: var(--sp-3); }'
+      + '#card details.especies li small { overflow-wrap: anywhere; }';
     document.head.appendChild(st);
   }
+  // «BirdLife International (2020). Amazona vittata. IUCN Red List 2020: e.T22686239A179276011» → «BirdLife International (2020), Lista Roja UICN e.T22686239A179276011»
+  const citaUicn = ev => { const m = /^(.*?\(\d{4}\))\.\s.*?(e\.T\w+)\s*$/.exec(ev || ''); return m ? `${m[1]}, ${idioma() === 'en' ? 'IUCN Red List' : 'Lista Roja UICN'} ${m[2]}` : ev; };
   function htmlEspecies() {
     const L = especies(), l = idioma(), otro = l === 'es' ? 'en' : 'es';
     if (!L.length) return '';
     const items = L.map(s => {
       const estado = s.uicn ? `${esc(s.uicnNombre[l])} (${s.uicn})` : esc(tx('porVerificar'));
-      const fuente = ['Wikipedia (EN, ES)'].concat(s.evaluacion ? [s.evaluacion] : []).join(' · ');
+      const fuente = ['Wikipedia (EN, ES)'].concat(s.evaluacion ? [citaUicn(s.evaluacion)] : []).join(' · ');
       return `<li class="found" lang="${l}" data-especie="${esc(s.id)}"><span class="ico fauna" aria-hidden="true"></span><div>`
         + `<b>${esc(s.comun[l])}</b><small><span lang="${otro}">${esc(s.comun[otro])}</span> · <i lang="la">${esc(s.cientifico)}</i></small>`
         + `<small>${esc(s.distribucion[l])}</small><small class="uicn">${esc(tx('uicn'))}: ${estado}</small>`
