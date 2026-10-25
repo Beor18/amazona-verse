@@ -1,18 +1,20 @@
 /* AVE · sólidos del mundo sacados de la geometría real (rol Movimiento y animación; docs/equipo/INTERACCION_ELEMENTOS.md)
    Mapa de alturas por capas (2,5D) en celdas de 0,3 m: cada celda guarda hasta 2 tramos [bajo, alto] con la pendiente de
    su cara de arriba. Se rasterizan los triángulos de los edificios (mallas edificios:*), las estructuras del mapa
-   (estructura:*; también InstancedMesh, instancia a instancia), el taller y las estacas del contenido (los grupos con collider 'taller' o 'post'), las rocas, los troncos
+   (estructura:*; también InstancedMesh, instancia a instancia), el taller y las estacas y el letrero de los terrenos (los grupos
+   con collider 'taller' o 'post'; las piezas decorativas del mapa, cercas y canoas, entran con el streaming), las rocas, los troncos
    caídos y la corteza de los árboles (troncos y ramas; las hojas no). Con eso fisica.js:
    - choca y se desliza por las paredes: bloquea(x, z, y) = algún tramo corta el cuerpo y sube más que un escalón;
    - se para encima de techos, cornisas, bordes, rocas y ramas: suelo(x, z, y) = el alto de un tramo que tiene debajo;
    - se posa en lo fino (rama, baranda, poste, cumbrera): fino(x, z, y) = tramo estrecho con caída a los dos lados, y
      percha(x, z, y, r) busca uno cerca para ayudar a aterrizar encima;
-   - no sube volando a través de un techo: techo(x, z, y0, y1).
+   - no sube volando a través de un techo: techo(x, z, y0, y1, alto);
+   - se agacha bajo un toldo o un alero bajo: libre(x, z, y) = espacio sobre los pies hasta lo que tiene encima.
    Los colliders a mano de esos mismos elementos (kind 'edificio', 'estructura', 'arbol') se ignoran donde hay sólidos.
    Presupuesto: 13 bytes por celda (alturas en cm en Int16, pendiente en Int8) en bloques de 8×8 celdas. Se construye por
    tandas de ≤ 5 ms por cuadro: edificios, estructuras y contenido al terminar de cargar el mundo (~1,4 MB); rocas y árboles
    por regiones de 24 m en 40 m alrededor del jugador, y se descargan al alejarse (~0,5–1 MB).
-   Un Mesh con userData.sinSolido no se rasteriza. API: listo, activo, suelo, bloquea, techo, fino, percha, cubre, agregar(obj),
+   Un Mesh con userData.sinSolido no se rasteriza. API: listo, activo, suelo, bloquea, techo, libre, fino, percha, cubre, agregar(obj),
    stats(). */
 AVE.module('solidos', function (G) {
   'use strict';
@@ -168,9 +170,15 @@ AVE.module('solidos', function (G) {
     !(o.material && (o.material.transparent || o.material.depthWrite === false || o.material.isMeshBasicMaterial));
   // Para añadir piezas en cualquier momento (p. ej. el streaming de edificios): Mesh o Group de Mesh con su matriz (matrix o
   // position/quaternion/scale; sin padre, o con el padre ya colocado). Va a lo estático (no se descarga).
+  // Un InstancedMesh dentro (las estacas de los terrenos) va instancia a instancia.
+  const mPieza = new THREE.Matrix4();
   function agregar(obj) {
     obj.updateMatrixWorld(true);
-    obj.traverse(o => { if (valida(o) && o.geometry && o.geometry.attributes.position) encolar(o.geometry, o.matrixWorld, o.name); });
+    obj.traverse(o => {
+      if (!valida(o) || !o.geometry || !o.geometry.attributes.position) return;
+      if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mPieza); encolar(o.geometry, mPieza.premultiply(o.matrixWorld), o.name); }
+      else encolar(o.geometry, o.matrixWorld, o.name);
+    });
   }
 
   // ---------- Qué se rasteriza ----------
@@ -197,9 +205,9 @@ AVE.module('solidos', function (G) {
       regiones.delete(k); // si la región ya estaba hecha, se rehace con el edificio nuevo
     }
   }
-  // Grupos del contenido con collider de taller o de estaca (el taller, los postes de los terrenos)
+  // Grupos del contenido con collider de taller o de estaca (el taller, las estacas y el letrero de los terrenos)
   const KIND_CONTENIDO = new Set(['taller', 'post']);
-  const contHechos = new Map();
+  const contHechos = new Map(), contOrigen = new Map();
   function contenido() {
     for (const c of G.fisica.colliders) {
       if (!KIND_CONTENIDO.has(c.kind)) continue;
@@ -207,6 +215,15 @@ AVE.module('solidos', function (G) {
       for (const o of scene.children) {
         if (!o.isGroup && !o.isMesh) continue;
         const d = Math.hypot(o.position.x - c.x, o.position.z - c.z); if (d < bd) { bd = d; best = o; }
+      }
+      // Grupo en el origen con las piezas en coordenadas de mundo (las estacas y el letrero de un terreno): por la pieza
+      // más cercana al collider; se busca una vez
+      if (!best && !(best = contOrigen.get(c))) {
+        for (const o of scene.children) {
+          if (!o.isGroup || o.position.lengthSq() > 1e-6) continue;
+          for (const h of o.children) if (h.isMesh && !h.isInstancedMesh) { const d = Math.hypot(h.position.x - c.x, h.position.z - c.z); if (d < bd) { bd = d; best = o; } }
+        }
+        if (best) contOrigen.set(c, best);
       }
       if (!best) continue;
       let n = 0; best.traverse(o => { if (valida(o)) n++; });
@@ -300,10 +317,21 @@ AVE.module('solidos', function (G) {
     return n;
   }
   const bloquea = (x, z, y) => penetra(x, z, y) > 0;
-  // Techo al subir: el bajo del primer tramo que cruza la cabeza entre y0 y y1 (o Infinity)
-  function techo(x, z, y0, y1) {
+  // Techo al subir: el bajo del primer tramo que cruza la cabeza entre y0 y y1 (o Infinity); alto = alto del cuerpo
+  // (por defecto SO.cuerpo; agachada bajo un toldo, fisica.js pasa el suyo)
+  function techo(x, z, y0, y1, alto) {
+    const h = alto != null ? alto : SO.cuerpo;
     let t = Infinity;
-    spans(x, z, (lo, top) => { if (lo >= y0 + SO.cuerpo - 0.05 && lo < y1 + SO.cuerpo && lo < t) t = lo; });
+    spans(x, z, (lo, top) => { if (lo >= y0 + h - 0.05 && lo < y1 + h && lo < t) t = lo; });
+    return t;
+  }
+  // Espacio libre sobre los pies en (x, z) (centro y borde a r, por defecto SO.radio): lo que hay entre y y el bajo del tramo
+  // más bajo que empieza más de desde m por encima (por defecto un escalón): toldo, alero, lona; Infinity si no hay nada.
+  // Para agacharse: fisica.js pasa desde = alto agachada, así un poste o una pared al lado (empiezan abajo) no cuentan.
+  function libre(x, z, y, r, desde) {
+    const rr = r != null ? r : SO.radio, d = desde != null ? desde : SO.stepUp;
+    let t = Infinity;
+    for (let k = 0; k < RING.length; k++) spans(x + RING[k][0] * rr, z + RING[k][1] * rr, lo => { if (lo > y + d && lo - y < t) t = lo - y; });
     return t;
   }
   // Lo fino: el tramo bajo los pies cae más de finoCaida a ambos lados en x o en z (rama, baranda, poste, cumbrera)
@@ -328,7 +356,19 @@ AVE.module('solidos', function (G) {
   }
   // Para la cámara: el alto del tramo que contiene la altura y (con margen), o -Infinity
   function dentro(x, z, y) { let t = -Infinity; spans(x, z, (lo, top) => { if (y > lo - 0.3 && y < top + 0.4 && top > t) t = top; }); return t; }
-  // Sobre qué está parada en (x, z) con los pies en y: 'techo', 'cumbrera', 'baranda', 'poste', 'cornisa', 'rama', 'roca' o null
+  // Lo fino a la altura del pasamanos (0,5–1,6 m sobre la cubierta) y al borde de un puente del mapa (terreno, tipo 'puente'):
+  // la cuerda del puente colgante. Su malla ya sigue la comba de la cuerda, así que sostiene como una rama.
+  function cuerdaPuente(x, z, y) {
+    for (const p of G.terreno.plataformas || []) {
+      if (p.tipo !== 'puente' || (p.when && !p.when())) continue;
+      const ux = p.bx - p.ax, uz = p.bz - p.az, L2 = ux * ux + uz * uz || 1, t = ((x - p.ax) * ux + (z - p.az) * uz) / L2;
+      if (t < 0 || t > 1) continue;
+      const d = Math.hypot(x - (p.ax + ux * t), z - (p.az + uz * t)), cub = p.ay + (p.by - p.ay) * t - p.comba * 4 * t * (1 - t);
+      if (d > p.ancho / 2 - 0.3 && d < p.ancho / 2 + 0.6 && y - cub > 0.5 && y - cub < 1.6) return true;
+    }
+    return false;
+  }
+  // Sobre qué está parada en (x, z) con los pies en y: 'techo', 'cumbrera', 'baranda', 'cuerda', 'poste', 'cornisa', 'rama', 'roca' o null
   function que(x, z, y) {
     const ix = Math.floor(x / CELL), iz = Math.floor(z / CELL), bx = Math.floor(ix / B), bz = Math.floor(iz / B), kk = key(bx, bz), c = (ix - bx * B) + (iz - bz * B) * B;
     let mejor = -Infinity, deFlora = false, tipo = 0;
@@ -338,8 +378,9 @@ AVE.module('solidos', function (G) {
     }
     if (mejor === -Infinity) return null;
     if (deFlora && tipo) return tipo & 2 && !(tipo & 1) ? 'roca' : 'rama'; // edificios instanciados (tipo 0): como los demás
-    const h = y - G.terreno.height(x, z);
+    const h = y - Math.max(G.terreno.height(x, z), G.agua ? G.agua.levelAt(x, z) : -Infinity); // sobre el agua: una canoa a flote no es un techo
     if (!fino(x, z, y + 0.01)) return h >= 1.8 ? 'techo' : 'cornisa';
+    if (cuerdaPuente(x, z, y)) return 'cuerda';
     const d = CELL * 1.5, g = altoEn(x, z, y + 0.01), c2 = g - SO.finoCaida;
     const bajoX = altoEn(x + d, z, g) < c2 && altoEn(x - d, z, g) < c2, bajoZ = altoEn(x, z + d, g) < c2 && altoEn(x, z - d, g) < c2;
     return h >= 2.5 ? 'cumbrera' : bajoX && bajoZ ? 'poste' : 'baranda';
@@ -358,5 +399,5 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn };
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn };
 });

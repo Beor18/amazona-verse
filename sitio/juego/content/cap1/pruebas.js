@@ -97,6 +97,37 @@
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
+    // Panel final: «Seguir explorando» deja jugar libre; «Comenzar de cero» pregunta DENTRO del juego antes de borrar (nunca confirm())
+    const confirmNativo = window.confirm; let confirmLlamado = 0; window.confirm = () => { confirmLlamado++; return true; };
+    const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
+    const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
+    teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
+    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm());
+    check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
+    $('b-again').click();
+    check('«Comenzar de cero» pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero», y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Comenzar de cero?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-again-no').textContent.trim() === 'No, volver' && $('b-again-si').textContent.trim() === 'Sí, comenzar de cero' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
+    check('La pregunta lleva el foco a «No, volver» (la opción segura)', document.activeElement === $('b-again-no'));
+    $('b-again-no').click();
+    check('Cancelar no borra nada y vuelve al panel final', !enConfirm() && !$('end-acciones').hidden && !$('end').hidden && S.complete && S.step === G.misiones.DONE && S.profile.created && had('ChapterCompleted') && !!S.captures.final);
+    $('b-again').click(); G.emit('escape');
+    check('Esc cancela la pregunta sin cerrar el panel final ni borrar', !enConfirm() && !$('end').hidden && S.complete && S.profile.created);
+    $('b-seguir').click();
+    check('«Seguir explorando» cierra el panel y deja la partida terminada', $('end').hidden && !enConfirm() && S.explorando && S.complete && S.step === G.misiones.DONE && had('ChapterCompleted'));
+    check('Tras el final el mundo está libre: Vittata se mueve', !G.ui.busy() && avanza() > 0.5);
+    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.open());
+    drain();
+    check('Seguir explorando no repite el final ni el evento ChapterCompleted', $('end').hidden && S.events.filter(e => e.key === 'ChapterCompleted').length === 1);
+    check('Guardar y cargar con la partida terminada no reabre el panel final', SV.save(true) && SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
+    S.explorando = false; G.misiones.showEnd(); G.emit('escape');
+    check('Esc en el panel final lo cierra como «Seguir explorando»', $('end').hidden && S.explorando && S.complete);
+    $('pause').dispatchEvent(new Event('toggle'));
+    check('Con la partida terminada el cómic está en el menú de pausa', !$('b-comic-menu').hidden);
+    await $('b-comic-menu').onclick();
+    check('«Mi cómic» del menú abre el cómic sin pasar por el panel final', !$('comic').hidden && $('end').hidden);
+    $('c-close').click();
+    check('Cerrar el cómic abierto desde el menú vuelve al mundo, no al panel final', $('comic').hidden && $('end').hidden && !G.ui.busy());
+    S.explorando = false; G.misiones.showEnd(); await CM.openComic(); $('c-close').click();
+    check('Cerrar el cómic abierto desde el panel final vuelve a ese panel mientras siga pendiente', $('comic').hidden && !$('end').hidden && !enConfirm());
     // Esquema de eventos
     const ev = S.events, SCHEMA = G.eventos.SCHEMA;
     const schemaOk = ev.every((e, i) => e.schemaVersion === SCHEMA && e.saveId === S.saveId && e.seq === i + 1 && e.id === S.saveId + '-' + (i + 1) && typeof e.type === 'string' && e.chapter === 1 && 'location' in e && Array.isArray(e.characters) && 'sceneTemplate' in e && e.locKey === 'evt.' + e.key);
@@ -171,6 +202,43 @@
     check('Partida v1 (incompatible) se rechaza', SV.load(true) === false);
     try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
     check('Partida v3 terminada se migra a v4 como terminada', SV.load(true) && S.complete && S.step === G.misiones.DONE, 'paso ' + S.step);
+    try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { explorando: true }))); } catch (e) { /* sin almacenamiento */ }
+    check('Partida terminada con «Seguir explorando» carga con el panel final cerrado', SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
+    const sinCampo = JSON.parse(snap); delete sinCampo.explorando;
+    try { localStorage.setItem(KEY, JSON.stringify(sinCampo)); } catch (e) { /* sin almacenamiento */ }
+    check('Partida terminada de antes (sin el campo «explorando») abre el panel final una vez', SV.load(true) && S.complete && !S.explorando && !$('end').hidden && !enConfirm());
+    // La partida y el cómic solo se borran con «Comenzar de cero» (la prueba salta el creador que abre reset())
+    const resetReal = SV.reset; let resetLlamado = 0; SV.reset = () => { resetLlamado++; return resetReal(true); };
+    const intacta = () => S.complete && S.step === G.misiones.DONE && S.profile.created && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && !!S.captures.final && had('ChapterCompleted');
+    check('Premisa: partida terminada con perfil, cómic y foto del final', intacta());
+    check('Mi personaje (creador) no borra el avance ni el cómic', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && intacta() && $('creator').hidden && resetLlamado === 0);
+    check('Cargar una y otra vez no borra nada: la partida sigue en el almacén', SV.load(true) && SV.load(true) && intacta() && !!localStorage.getItem(KEY) && resetLlamado === 0);
+    const tileReset = document.querySelector('[popovertarget="confirm-reset"]');
+    check('Menú de pausa: «Comenzar de cero» (ya no «Reiniciar») con la misma pregunta', !!tileReset && tileReset.textContent.trim() === 'Comenzar de cero' && !/Reiniciar/.test($('pause').textContent) && $('cr-title').textContent === '¿Comenzar de cero?' && $('cr-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-reset').textContent.trim() === 'Sí, comenzar de cero' && !!$('confirm-reset').querySelector('.btn.ghost') && $('confirm-reset').querySelector('.btn.ghost').textContent.trim() === 'No, volver');
+    if (window.CSS && CSS.supports && CSS.supports('selector(:popover-open)')) {
+      try {
+        $('pause').showPopover(); tileReset.click();
+        check('Menú: el primer toque solo abre la pregunta y no borra nada', $('confirm-reset').matches(':popover-open') && resetLlamado === 0 && intacta());
+        $('confirm-reset').querySelector('.btn.ghost').click();
+        check('Menú: «No, volver» cierra la pregunta y deja la partida y el cómic intactos', !$('confirm-reset').matches(':popover-open') && resetLlamado === 0 && intacta());
+      } catch (e) { check('Menú de pausa con popover', false, String(e && e.message || e)); }
+      finally { try { if ($('pause').matches(':popover-open')) $('pause').hidePopover(); } catch (e) { /* ya cerrado */ } }
+      await new Promise(r => setTimeout(r, 60));
+      check('Cerrar el menú de pausa deja el juego en marcha', !G.pausa.activa());
+    }
+    $('b-reset').click();
+    check('Menú: «Sí, comenzar de cero» borra la partida y el cómic (una sola vez)', resetLlamado === 1 && S.step === 0 && !S.complete && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !localStorage.getItem(KEY));
+    try { localStorage.setItem(KEY, JSON.stringify(sinCampo)); } catch (e) { /* sin almacenamiento */ }
+    check('Se vuelve a la partida terminada para seguir probando el panel final', SV.load(true) && S.complete && !S.explorando && !$('end').hidden && intacta());
+    resetLlamado = 0;
+    const hechoAntes = intacta();
+    $('b-again').click();
+    check('Antes de confirmar «Comenzar de cero» la partida y el cómic siguen intactos', enConfirm() && resetLlamado === 0 && hechoAntes && intacta());
+    $('b-again-si').click();
+    SV.reset = resetReal;
+    check('«Sí, comenzar de cero» borra la partida, el cómic y las capturas y cierra el panel', resetLlamado === 1 && S.step === 0 && !S.complete && !S.explorando && !S.profile.created && S.comic.layout === 'grid' && !S.captures.final && !had('ChapterCompleted') && $('end').hidden && !enConfirm());
+    window.confirm = confirmNativo;
+    check('El panel final no usa confirm() del navegador', confirmLlamado === 0, confirmLlamado + ' llamadas');
     // Ruta directa a la colina
     SV.reset(true); saveCharacter({ name: 'Rayo Veloz', preset: 'agilis', outfit: 'rojo', accessory: 'ninguno' });
     S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
@@ -207,6 +275,16 @@
     check('Introducción con los disparadores inicio:', G.dialogo.open() && $('d-who').textContent === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
     let shook = false; while (G.dialogo.open()) { G.dialogo.next(); if (G.camara.juice.shake > 0.5) shook = true; }
     check('La Ruptura sacude la cámara', shook || G.renderer.REDUCED);
+    // Apertura (P1-3): negro y viento → corte al taller con luz (fundido) → brillo y onda → negro → fundido de nuevo
+    G.c.apertura.fin(); G.audio.log.length = 0; G.pack.inicio(G);
+    const fade = () => document.getElementById('c1-fade'), obs = () => [$('d-who').textContent, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
+    const ap = [obs()], retratoApertura = $('d-img').getAttribute('src') || '';
+    while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) ap.push(obs()); }
+    check('Apertura: negro con viento hasta el corte al taller, brillo y onda en la Ruptura, negro de nuevo y fundido al despertar',
+      ap.length === 6 && ap[0][1] === '1' && ap[1][1] === '1' && ap[2][1] === '0' && ap[3][1] === '0' && !ap[3][2] && ap[4][2] && ap[5][1] === '1' && fade() && fade().style.opacity === '0' && ['viento', 'vmmm', 'zzzt', 'onda'].every(n => G.audio.log.includes(n)), JSON.stringify(ap) + ' ' + G.audio.log.join());
+    check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
+    G.c.apertura.fin();
+    check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
     G.quiet = true;
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion', $('d-text').textContent === 'Este transmisor llevaba años mudo.', $('d-text').textContent);
@@ -271,7 +349,10 @@
     check('M3: 3 coquíes completan el coro y dan la guayabera', S.missions.m3 && S.unlocked.includes('camisa:guayabera'), S.coquis.join(','));
     useAt('transmisor');
     check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
-    drain();
+    // La Voz (P0-2): retrato neutro, no la cara del Guardián ni la de Vittata; suenan el BIP y la estática de la radio
+    const vozL = []; while (G.dialogo.open()) { vozL.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
+    check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
     check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));
     check('Partículas dentro del límite de 200', G.fx.live <= G.fx.MAX_PARTICLES, G.fx.live + ' vivas');
@@ -302,11 +383,73 @@
         rr.dispose(); rr.forceContextLoss();
       } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
     }
+    await recorrerFinal(G, T, check);
     SV.reset(true);
     devolver();
     T.restoreSave(keep);
     G.quiet = false;
     return result();
+  }
+
+  // ---------- El final del capítulo en escena (paquete B de CAP1_PENDIENTE) ----------
+  // Recorre del refugio al mirador con las acciones del jugador y mira lo que se ve y suena en cada escena: golpes al construir y sonido
+  // de la crecida, retrato neutro de la Voz, plano del bote en pantalla, luz de la niebla con tres destellos, viñeta final del cómic,
+  // carga con el capítulo terminado y marcadores para Kelvin. Los sonidos se leen de G.audio.log (se registran aunque no haya altavoces).
+  async function recorrerFinal(G, T, check) {
+    const S = G.S, $ = G.util.$, C = G.c, P = G.terreno.places, SV = G.guardado, had = G.eventos.had;
+    const { teleport, tick, drain, useAt } = T;
+    const log = () => G.audio.log.slice(), cuenta = n => log().filter(x => x === n).length;
+    G.quiet = true;
+    SV.reset(true); G.creador.saveCharacter({ name: 'Brisa Azul', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+    // Refugio en la colina: martillazos al construir; en la crecida llueve sin parar, truena de lejos y el río ruge
+    S.step = 4; S.evaluated = { A: true, B: true }; S.inv = { madera: 4, piedra: 2, componente: 1 };
+    G.audio.log.length = 0;
+    C.startBuild('B'); teleport(P.B.x, P.B.z - 1.5, 0, 1); tick(0.1); G.interaccion.action(); drain();
+    check('Final · construir suena a martillazos', !!S.refuge && log().includes('construir'), log().join());
+    tick(1.2);
+    check('Final · crecida: llueve y se oye un trueno lejano', !!S.event && log().includes('lluvia') && log().includes('trueno'), log().join());
+    tick(1.5);
+    check('Final · crecida: el río sube con su rugido y la lluvia no se corta', log().includes('crecida') && cuenta('lluvia') >= 2, 'lluvia ×' + cuenta('lluvia'));
+    tick(6); drain();
+    const llovio = cuenta('lluvia'); tick(2);
+    check('Final · al terminar la crecida deja de llover', !S.event && cuenta('lluvia') <= llovio && S.refuge && !S.refuge.damaged && S.step === 5, 'paso ' + S.step);
+    // Guardián (banco) y transmisor (Voz con retrato neutro)
+    useAt('guardian', 1.4, 0); drain();
+    check('Final · el Guardián presenta el refugio y regala el banco', S.step === 6 && S.benchUnlocked && had('GuardianMet'), 'paso ' + S.step);
+    S.inv = { madera: 1, piedra: 0, componente: 1 }; S.missions.m3 = true; // el coro de coquíes ya se probó arriba (M3)
+    G.audio.log.length = 0; useAt('transmisor');
+    const voz = []; while (G.dialogo.open()) { voz.push([$('d-who').textContent, $('d-img').getAttribute('src') || '']); G.dialogo.next(); }
+    check('Final · transmisor: símbolo de 36, BIP, estática y la Voz sin la cara del Guardián', S.transmitterOn && ['bip', 'estatica'].every(n => log().includes(n)) && voz.filter(l => l[0] === 'Voz').length === 2 && voz.filter(l => l[0] === 'Voz').every(l => !/guardian|vittata|luma/.test(l[1])) && S.step === 7, JSON.stringify(voz.map(l => [l[0], l[1].slice(0, 20)])));
+    // Mirador: plano del bote y luz que parpadea tres veces
+    const luz = C.luzMirador;
+    G.audio.log.length = 0; useAt('mirador', 2.4, 0);
+    const esc = [], mira = () => esc.push({ who: $('d-who').textContent, txt: $('d-text').textContent, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: $('d-img').getAttribute('src') || '' });
+    mira(); while (G.dialogo.open()) { G.dialogo.next(); if (G.dialogo.open()) mira(); }
+    const lPlano = esc.find(e => /^Si los caminos/.test(e.txt)), lLuz = esc.find(e => /^Mira, Vittata\. Esa luz/.test(e.txt)), nar = esc.filter(e => e.who === 'Narrador');
+    check('Final · mirador: el plano del bote sale en pantalla con su chispa de sonido', esc.length === 10 && !!lPlano && lPlano.plano && !lPlano.luz && log().includes('nido_chispa'), esc.length + ' líneas');
+    check('Final · mirador: el plano se retira y la luz de la niebla se enciende', !!lLuz && !lLuz.plano && lLuz.luz && !esc.slice(0, 4).some(e => e.luz));
+    check('Final · mirador: el Narrador cierra con su propio retrato, no el de Vittata', nar.length === 2 && nar.every(e => /^data:image\/svg/.test(e.img)));
+    check('Final · capítulo completo con el plano desbloqueado y sin plano en pantalla', S.complete && S.boatPlan && had('BoatBlueprintUnlocked') && had('ChapterCompleted') && !$('end').hidden && !C.planoVisible());
+    let picos = 0, alto = false, mx = 0;
+    for (let i = 0; i < 90; i++) { tick(0.05); mx = Math.max(mx, luz.brillo); const a = luz.brillo > 0.5; if (a && !alto) picos++; alto = a; }
+    check('Final · la luz parpadea exactamente tres veces (con campanita) y queda encendida', picos === 3 && luz.destellos === 3 && mx > 0.8 && cuenta('parpadeo') === 3 && luz.fijo && !luz.seq && luz.sprite.visible && luz.brillo < 0.5, `picos ${picos} · destellos ${luz.destellos} · máx ${mx.toFixed(2)} · parpadeo ×${cuenta('parpadeo')}`);
+    // Viñeta final del cómic: el plano se dibuja abajo a la derecha y solo en esa viñeta
+    const cv = document.createElement('canvas'); cv.width = 500; cv.height = 400;
+    const cx = cv.getContext('2d'), px = (x, y) => Array.from(cx.getImageData(x, y, 1, 1).data);
+    G.pack.comic.decorar(cx, { img: 'final' }, { x: 0, y: 0, w: 500, h: 400 }, 330, G);
+    const papel = px(469, 213), vacio = px(40, 300);
+    const cv2 = document.createElement('canvas'); cv2.width = 500; cv2.height = 400;
+    G.pack.comic.decorar(cv2.getContext('2d'), { img: 'taller' }, { x: 0, y: 0, w: 500, h: 400 }, 330, G);
+    check('Final · el cómic dibuja el plano del bote en la viñeta final y en ninguna otra', papel[3] === 255 && papel[2] > papel[0] && vacio[3] === 0 && !cv2.getContext('2d').getImageData(0, 0, 500, 400).data.some(v => v), 'papel ' + papel.join(','));
+    // Cargar con el capítulo terminado deja la luz encendida; reiniciar apaga la luz y quita el plano y las capas
+    const snap = SV.serialize(); SV.reset(true);
+    check('Final · al reiniciar se apagan la luz, el plano y las capas de la apertura', !luz.sprite.visible && !luz.fijo && !document.getElementById('c1-plano') && !document.getElementById('c1-fade') && !document.getElementById('c1-ruptura'));
+    try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
+    check('Final · al cargar la partida terminada la luz sigue encendida', SV.load(true) && S.complete && luz.fijo && luz.sprite.visible);
+    // Marcadores de lo que espera una decisión de Kelvin (canon o arte)
+    const PK = C.pendientesKelvin;
+    check('Final · los 8 marcadores para Kelvin están listados con su lugar y lo que bloquean', PK.length === 8 && PK.every((p, i) => p.id === 'KELVIN-' + (i + 1) && p.que && p.donde && p.bloquea), PK.map(p => p.id).join());
+    G.quiet = false;
   }
 
   // ---------- La ruta de la gota ----------
@@ -584,7 +727,10 @@
       const csv = AU.reporteCSV();
       check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
       const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
-      $('m-nuevo').click(); $('m-nuevo-si').click();
+      const saveIdAntes = S.saveId, pasoAntes = S.step;
+      $('m-nuevo').click();
+      check('Nuevo estudiante pide un segundo toque: el primero no borra la partida ni el cómic', !$('m-nuevo-si').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo-si').click();
       check('Nuevo estudiante: borra la partida y conserva el reporte', !S.profile.created && AU.partidas.length === partidasAntes && !leerAula(G.guardado.KEY + '.prev') && perfilKeep !== undefined);
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);

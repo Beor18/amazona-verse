@@ -28,6 +28,17 @@
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
     if (G.streaming && G.streaming.test) AV.streamingTest = o => G.streaming.test(o); // src/engine/streaming.js
+    if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
+    // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
+    let retos = null;
+    const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => window.AVRetos(G), e => { retos = null; throw e; }));
+    AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
+    AV.retosTest = o => cargarRetos().then(r => r.test(o));
+    const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
+    if (bRetos) bRetos.addEventListener('click', () => AV.retos());
+    if (portada) portada.addEventListener('close', () => { if (portada.returnValue === 'retos') { portada.returnValue = ''; AV.retos(); } });
+    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos'; // récords aparte de la partida; «Nuevo estudiante» los borra
+    G.on('nuevoEstudiante', () => { try { localStorage.removeItem(recRetos); } catch (e) { /* sin almacén */ } });
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }

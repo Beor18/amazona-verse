@@ -12,8 +12,9 @@
      profile    perfil { created, name, look }. name = nombre INVENTADO, se guarda saneado (sin correo, teléfono ni URL);
                 look = apariencia 3D (AVCharacter.normalizeLook). Los perfiles viejos (preset/outfit/accessory) se conservan.
      wear       ropa puesta por ranura · unlocked: piezas ganadas · missions: { idMisión: bool }, con todas las del pack.
-     step, complete: historia · field: Diario (ids de hallazgos) · events: eventos narrativos (eventos.js, sin datos
-                personales) · comic: { title (de la lista del pack), cover, layout, order, captions: { id: índice de opción },
+     step, complete: historia · explorando: true si cerró el panel final con «Seguir explorando» (no se reabre solo; un
+                guardado sin el campo cuenta como false) · field: Diario (ids de hallazgos) · events: eventos narrativos
+                (eventos.js, sin datos personales) · comic: { title (de la lista del pack), cover, layout, order, captions: { id: índice de opción },
                 vinetas: { id: { look, seq } } } · captures:
                 JPEG del mundo · pos, facing, inv, collected, clock: mundo · + claves del pack (cap1: examined, refuge, edu…).
      satelites  copia de respaldo de los almacenes del dispositivo que tienen otro dueño:
@@ -32,6 +33,11 @@
      ilegible se copia a <clave>.unreadable antes de seguir.
    NUEVO ESTUDIANTE (gancho de aula.js en equipos compartidos): se borran la partida, .tmp, .prev, .unreadable (con sus
      satélites) y la memoria; el siguiente niño no hereda nada.
+   BORRADO EXPLÍCITO: la partida y el cómic solo se borran por «Comenzar de cero» (menú de pausa y panel final, los dos con
+     pregunta dentro del juego) o «Nuevo estudiante» (Modo Maestro, dos toques). Recargar, cargar, el creador y los errores de
+     lectura no borran: una partida ilegible se aparta en .unreadable antes de empezar vacío. Único recorte sin elección: con
+     el almacén lleno se sacrifica primero la copia .prev y solo si aun así no cabe se guarda sin las fotos del cómic; en
+     memoria siguen intactas y cada guardado vuelve a intentarlo completo.
    PRIVACIDAD (COPPA/FERPA): sin nombre real, correo, teléfono, ubicación, cuentas ni ids de dispositivo; nada se envía.
    PRUEBAS: AV.saveTest() usa claves aisladas `<clave>.prueba-*` y deja intacta la partida real. ?partida=<id> en la URL
      aísla la clave de guardado de una pestaña (QA y agentes que comparten el origen). */
@@ -44,7 +50,7 @@ AVE.module('guardado', function (G) {
   const SAVE_VERSION = P.version || 1;
   const FORMATO = 2;
   const spawn = Object.assign({ x: 0, z: 0 }, G.pack.jugador && G.pack.jugador.aparicion);
-  const BASE_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'collected', 'complete', 'events', 'captures', 'clock', 'missions', 'field', 'unlocked', 'wear'];
+  const BASE_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'collected', 'complete', 'explorando', 'events', 'captures', 'clock', 'missions', 'field', 'unlocked', 'wear'];
   const SAVED_KEYS = BASE_KEYS.concat(P.claves || []);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
   const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -56,7 +62,7 @@ AVE.module('guardado', function (G) {
     return Object.assign({
       v: SAVE_VERSION,
       pos: { x: spawn.x, z: spawn.z, y: 0 }, vy: 0, facing: { x: 0, z: 1 },
-      step: 0, inv, collected: [], complete: false,
+      step: 0, inv, collected: [], complete: false, explorando: false,
       water: G.terreno.waterBase, event: null, clock: 0,
       events: [], captures: {},
       missions, field: [], unlocked: [], wear: {},
@@ -237,9 +243,10 @@ AVE.module('guardado', function (G) {
     let r = escribirAtomico(c, json);
     if (r === true) return 'ok';
     if (r === 'lleno') {
-      json = serialize(true, c.be); r = escribirAtomico(c, json);
-      if (r === true) return 'sin-capturas';
-      if (r === 'lleno') { c.be.del(c.K + '.prev'); r = escribirAtomico(c, json); if (r === true) return 'sin-copia'; }
+      // Sin espacio: primero se sacrifica la copia de respaldo (.prev); las fotos del cómic son lo último que se recorta
+      c.be.del(c.K + '.prev'); r = escribirAtomico(c, json);
+      if (r === true) return 'sin-copia';
+      if (r === 'lleno') { json = serialize(true, c.be); r = escribirAtomico(c, json); if (r === true) return 'sin-capturas'; }
     }
     return 'memoria';
   }
@@ -339,8 +346,24 @@ AVE.module('guardado', function (G) {
 
   $('b-save').onclick = () => save(false);
   $('b-load').onclick = () => load(false);
-  $('b-reset').onclick = () => { reset(); G.ui.toast(L('Partida nueva', 'New game')); };
-  $('b-again').onclick = () => { reset(); };
+  // «Comenzar de cero»: la partida y el cómic solo se borran por esta elección explícita (menú de pausa, panel final, o
+  // «Nuevo estudiante» del Modo Maestro). Menú: con popover el botón solo se alcanza dentro de la pregunta #confirm-reset;
+  // sin popover (navegadores viejos) src/ui/ui.css lo deja suelto en la fila del menú, así que pide dos toques seguidos.
+  // Panel final: la pregunta vive en src/game/misiones.js (#end-confirm) y también llama a reset().
+  const HAY_POPOVER = !!(window.CSS && CSS.supports && CSS.supports('selector(:popover-open)'));
+  const bReset = $('b-reset'), TXT_RESET = L('Comenzar de cero', 'Start from scratch');
+  let armado = 0;
+  const desarmar = () => { clearTimeout(armado); armado = 0; if (!HAY_POPOVER) bReset.textContent = TXT_RESET; };
+  if (!HAY_POPOVER) bReset.textContent = TXT_RESET;
+  bReset.onclick = () => {
+    if (!HAY_POPOVER && !armado) {
+      bReset.textContent = L('Toca otra vez: se borrará tu partida y tu cómic', 'Tap again: your game and comic will be erased');
+      armado = setTimeout(desarmar, 5000);
+      return;
+    }
+    desarmar();
+    G.guardado.reset(); G.ui.toast(L('Partida nueva', 'New game')); // por la API pública (igual que el panel final)
+  };
 
   // Las pruebas de otros módulos (cómic) congelan el guardado real mientras cambian G.S
   function suspender(v) { suspendido = !!v; saveDebounce = 0; }
@@ -473,12 +496,18 @@ AVE.module('guardado', function (G) {
       try { rReal = save(true); } catch (e) { lanzoReal = true; }
       suspendido = true; almacen = antes.almacen;
       check('El save() del juego con el almacén bloqueado no lanza y pasa a modo memoria', !lanzoReal && rReal === false && estado.almacen === 'memoria' && estado.ultimo === 'memoria');
-      // 6b. Cuota llena: primero sin capturas; si no cabe nada, en memoria
+      // 6b. Cuota llena: sin .prev; si aun así no cabe, sin capturas; si no cabe nada, en memoria
       S.captures = Object.assign({}, S.captures, { prueba: 'data:image/jpeg;base64,' + 'A'.repeat(60000) });
       const chico = serialize(true, almacenFalso()).length;
       const Q = almacenFalso('lleno', 2 * chico + 4 * KT.length + 2000), CQ = ctx(Q, KT);
       const r7 = guardarEn(CQ);
       check('Cuota llena: se guarda sin las imágenes del cómic', r7 === 'sin-capturas' && esObj(leerJSON(Q.get(KT))), r7);
+      // 6c. Con copia de respaldo ocupando el espacio, se sacrifica .prev y las fotos del cómic se conservan
+      const grande = serialize(false, almacenFalso()).length;
+      const Q3 = almacenFalso('lleno', Math.round(2.6 * grande) + 8 * KT.length);
+      Q3.set(KT, serialize(false, almacenFalso())); Q3.set(KT + '.prev', serialize(false, almacenFalso()));
+      const r7b = guardarEn(ctx(Q3, KT)), d7b = leerJSON(Q3.get(KT));
+      check('Cuota llena con copia de respaldo: se sacrifica .prev y las fotos del cómic se conservan', r7b === 'sin-copia' && esObj(d7b) && !!(d7b.captures && d7b.captures.prueba) && Q3.get(KT + '.prev') == null, r7b);
       const r8 = guardarEn(ctx(almacenFalso('lleno', 100), KT));
       check('Cuota agotada: queda en memoria, sin lanzar', r8 === 'memoria', r8);
       // 7. Privacidad: el texto libre no guarda correos, teléfonos ni URL

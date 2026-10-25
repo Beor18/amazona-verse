@@ -225,6 +225,8 @@ AVE.module('movimiento', function (G) {
         SO.terminar();
         const aterrizarEn = (x, z, y) => { reset(x, z); S.pos.y = y; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) frame(); SO.terminar(); };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
+        // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
+        const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
         // Techo: el edificio con techo más alto de los de tipo casa, bohío o caney (si no, el primero con más de 3 m)
         const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3).sort((a, b) => ACT[b].alto - ACT[a].alto);
         const idT = ids.find(id => /casa_paja|bohio|caney/.test(id)) || ids[0];
@@ -243,7 +245,7 @@ AVE.module('movimiento', function (G) {
             if (SO.penetra(sx, sz, sy) || G.agua.levelAt(sx, sz) > sy - 0.2) continue;
             reset(sx, sz); probadas++;
             const st = toStick(bx - sx, bz - sz);
-            frame(() => { I.stick.x = st.x; I.stick.y = st.y; peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y)); }, 150);
+            frame(() => { I.stick.x = st.x; I.stick.y = st.y; peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y, cuerpo())); }, 150);
             I.stick.x = I.stick.y = 0; dmin = Math.min(dmin, Math.hypot(S.pos.x - bx, S.pos.z - bz));
           }
           met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
@@ -276,6 +278,88 @@ AVE.module('movimiento', function (G) {
             check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
           } else check('Se posa en una rama', false, 'sin rama entre 1,5 y 8 m en los 10 árboles más cercanos');
         }
+        // Cuerda del puente colgante (pisos 'puente' del terreno): aterrizar 0,35 m fuera de la cuerda; la ayuda la centra
+        // encima, se posa ('fino', que = 'cuerda') y se queda 3 s
+        const PU = (G.terreno.plataformas || []).find(p => p.tipo === 'puente');
+        if (PU) {
+          const ux = PU.bx - PU.ax, uz = PU.bz - PU.az, Lp = Math.hypot(ux, uz), nx = -uz / Lp, nz = ux / Lp, t = 0.5;
+          const cx = PU.ax + ux * t, cz = PU.az + uz * t, cub = PU.ay + (PU.by - PU.ay) * t - PU.comba * 4 * t * (1 - t);
+          reset(cx, cz, cub); SO.terminar(true);
+          let cu = null;
+          for (let d = PU.ancho / 2 - 0.3; d <= PU.ancho / 2 + 0.6; d += 0.05) { const x = cx + nx * d, z = cz + nz * d, g = SO.altoEn(x, z, cub + 3); if (g - cub > 0.5 && g - cub < 1.6 && (!cu || g > cu.g)) cu = { x, z, g, d }; }
+          if (cu) {
+            aterrizarEn(cu.x + nx * 0.35, cu.z + nz * 0.35, cu.g + 2.5);
+            const ys = frame(null, 180).map(o => o.y), que = SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
+            met.cuerda = { sobreCubierta: r2(S.pos.y - cub), alCentro: r2(Math.hypot(S.pos.x - cu.x, S.pos.z - cu.z)), posado: M.posado, que, deriva3s: r2(Math.max(...ys) - Math.min(...ys)) };
+            check('Se posa en la cuerda del puente colgante (percha) y se queda 3 s', M.grounded && M.posado === 'fino' && que === 'cuerda' && S.pos.y - cub > 0.5 && met.cuerda.deriva3s < 0.02, JSON.stringify(met.cuerda));
+          } else check('Se posa en la cuerda del puente colgante', false, 'sin cuerda sólida a mitad del puente');
+        }
+        // Toldo bajo (toldo_pequeno del streaming): caminando hacia un punto con menos espacio que su cabeza, se agacha y pasa;
+        // la cabeza (vértices deformados por los huesos) nunca llega a la lona, y al salir se levanta
+        const STR = G.mundo.streaming, toldos = ((STR && STR.instancias) || []).filter(i => i.modelo === 'toldo_pequeno' && i.pos);
+        if (toldos.length) {
+          const P3v = G.actores.player3D, vv = new THREE.Vector3();
+          const tope = () => { let mx = -Infinity; P3v.root.updateMatrixWorld(true); P3v.root.traverse(o => { if (!o.isSkinnedMesh || !o.visible) return; const p = o.geometry.attributes.position; for (let i = 0; i < p.count; i += 3) { vv.fromBufferAttribute(p, i); o.boneTransform(i, vv); vv.applyMatrix4(o.matrixWorld); if (vv.y > mx) mx = vv.y; } }); return mx - S.pos.y; };
+          let hecho = null;
+          for (const tl of toldos.slice().sort((a, b) => b.escala - a.escala).slice(0, 4)) {
+            const [tx, , tz] = tl.pos;
+            reset(tx + 6, tz);
+            for (let i = 0; i < 80 && !tl.colocado; i++) { if (STR.revisar) STR.revisar(S.pos.x, S.pos.z); await sleep(50); frame(); }
+            SO.terminar(); // los edificios instanciados van por regiones, como la flora
+            // bajo la lona (sobre el centro, no en su borde): espacio entre altoAgachada + 0,1 y altoCabeza - 0,2, sin pared para el cuerpo agachado
+            const pts = [];
+            for (let dz = -2; dz <= 2; dz += 0.3) for (let dx = -2; dx <= 2; dx += 0.3) {
+              const x = tx + dx, z = tz + dz, y = F.suelo(x, z, H(x, z) + 0.3), lb = SO.libre(x, z, y, 0, T.altoAgachada - 0.05);
+              if (SO.libre(x, z, y, 0.45, T.altoAgachada - 0.05) > T.altoAgachada + 0.05 && lb > T.altoAgachada + 0.1 && lb < T.altoCabeza - 0.2 && !SO.penetra(x, z, y, T.altoAgachada) && G.agua.levelAt(x, z) < y - 0.2) pts.push({ x, z, lb, y });
+            }
+            pts.sort((a, b) => a.lb - b.lb);
+            for (const pt of pts.slice(0, 6)) {
+              for (const ang of [0, 1.6, 3.1, 4.7]) {
+                const sx = pt.x + Math.cos(ang) * 4, sz = pt.z + Math.sin(ang) * 4, sy = F.suelo(sx, sz, H(sx, sz) + 0.3);
+                if (SO.penetra(sx, sz, sy) || SO.libre(sx, sz, sy, 0.45, T.altoAgachada - 0.05) < T.altoCabeza || G.agua.levelAt(sx, sz) > sy - 0.2) continue;
+                reset(sx, sz); SO.terminar();
+                let roce = -Infinity, agMax = 0, llego = false, lbMin = Infinity;
+                for (let i = 0; i < 240 && !llego; i++) {
+                  const st = toStick(pt.x - S.pos.x, pt.z - S.pos.z), m = Math.min(1, Math.hypot(pt.x - S.pos.x, pt.z - S.pos.z) * 2);
+                  I.stick.x = st.x * m * 0.7; I.stick.y = st.y * m * 0.7; anim(1);
+                  agMax = Math.max(agMax, M.agachada);
+                  const lb = SO.libre(S.pos.x, S.pos.z, S.pos.y, 0.45, T.altoAgachada - 0.05);
+                  if (lb < 2.2) { roce = Math.max(roce, tope() - lb); lbMin = Math.min(lbMin, lb); }
+                  llego = Math.hypot(pt.x - S.pos.x, pt.z - S.pos.z) < 0.15;
+                }
+                I.stick.x = I.stick.y = 0;
+                const dy = S.pos.y - pt.y;
+                if (!llego || Math.abs(dy) > 0.3) continue; // el camino la subió a otra pieza: otro intento
+                anim(20); { const lb = SO.libre(S.pos.x, S.pos.z, S.pos.y, 0.45, T.altoAgachada - 0.05); if (lb < 2.2) { roce = Math.max(roce, tope() - lb); lbMin = Math.min(lbMin, lb); } }
+                // vuelve a salir: se levanta
+                const st = toStick(sx - S.pos.x, sz - S.pos.z); frame(() => { I.stick.x = st.x * 0.7; I.stick.y = st.y * 0.7; }, 90); I.stick.x = I.stick.y = 0; anim(40);
+                hecho = { toldo: tl.id, espacio: r2(pt.lb), espacioMin: r2(lbMin), dy: r2(dy), agachada: r2(agMax), cabezaMenosLona: r2(roce), deNuevoDePie: M.agachada < 0.05, alto: r2(tope()) };
+                break;
+              }
+              if (hecho) break;
+            }
+            if (hecho) break;
+          }
+          met.toldo = hecho;
+          check('Bajo un toldo bajo se agacha y la cabeza no roza la lona; al salir se levanta', !!hecho && hecho.agachada > 0.2 && Number.isFinite(hecho.cabezaMenosLona) && hecho.cabezaMenosLona < 0 && hecho.deNuevoDePie, hecho ? JSON.stringify(hecho) : 'sin punto bajo un toldo al que llegar caminando');
+        }
+        // Estacas de los terrenos (contenido, collider 'post'): sólido real, que sustituye al cilindro sin alto. Aterrizar
+        // 0,3 m al lado de la estaca más cercana al letrero; la ayuda la centra encima, se posa ('fino', 'poste') y se queda 3 s
+        const poste = F.colliders.find(c => c.kind === 'post');
+        if (poste) {
+          reset(poste.x + 3, poste.z); SO.terminar(true);
+          let es = null;
+          for (let dz = -6; dz <= 6; dz += 0.15) for (let dx = -6; dx <= 6; dx += 0.15) {
+            const x = poste.x + dx, z = poste.z + dz, g = SO.altoEn(x, z, H(x, z) + 3), hg = g - H(x, z), d = Math.hypot(dx, dz);
+            if (hg > 0.8 && hg < 1.4 && (!es || d < es.d) && SO.fino(x, z, g + 0.01)) es = { x, z, g, d };
+          }
+          if (es) {
+            aterrizarEn(es.x + 0.3, es.z, es.g + 2);
+            const ys = frame(null, 180).map(o => o.y), que = SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
+            met.estaca = { alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), sobreEstaca: r2(S.pos.y - es.g), posado: M.posado, que, deriva3s: r2(Math.max(...ys) - Math.min(...ys)), colliderSustituido: SO.cubre(poste) };
+            check('Se posa en una estaca de los terrenos (sólido real, sin el collider macizo) y se queda 3 s', M.grounded && M.posado === 'fino' && que === 'poste' && Math.abs(S.pos.y - es.g) < 0.1 && met.estaca.deriva3s < 0.02 && met.estaca.colliderSustituido, JSON.stringify(met.estaca));
+          } else check('Se posa en una estaca de los terrenos', false, 'sin estaca sólida a menos de 6 m del letrero (collider sustituido: ' + SO.cubre(poste) + ')');
+        }
         // Todos los edificios cargados (de mundo.js o del streaming): no se atraviesan y tienen dónde pararse encima
         const msK = SO.SO.msCuadro; SO.SO.msCuadro = 0.3; // la flora espera: aquí solo cuentan los edificios
         const fallos = [], enterrados = []; let revisados = 0;
@@ -298,7 +382,7 @@ AVE.module('movimiento', function (G) {
               reset(sx, sz); n++;
               const st = toStick(bx - sx, bz - sz);
               // a ras de suelo (subirse a un alero bajo no cuenta como meterse)
-              frame(() => { I.stick.x = st.x; I.stick.y = st.y; if (S.pos.y - H(S.pos.x, S.pos.z) < 0.5) peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y)); }, 110);
+              frame(() => { I.stick.x = st.x; I.stick.y = st.y; if (S.pos.y - H(S.pos.x, S.pos.z) < 0.5) peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y, cuerpo())); }, 110);
               I.stick.x = I.stick.y = 0;
             }
             revisados++;

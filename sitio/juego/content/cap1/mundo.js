@@ -146,6 +146,10 @@
   AVE.registerPack({
     id: 'cap1',
     mundo: MUNDO_MAPA || MUNDO_ANALITICO,
+    // Luma y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY: PROVISIONALES), junto a una Vittata 3D.
+    // [KELVIN-1] Identidad del Guardián (¿cotorra, humano u otra forma?): decide su retrato, su sprite y su modelo 3D.
+    // [KELVIN-3] Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): si es canon, falta un detalle visible en su figura.
+    // [KELVIN-5] Familia de Luma (SCRIPT p.9: entra al refugio): no hay arte ni diseño, solo Luma. Ver historia.js, afterRain().
     npcs: [
       { id: 'luma', nombre: 'Luma', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.0, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARD.x, z: GUARD.z, escala: 2.6 },
@@ -175,7 +179,9 @@
       const MAPA = !!G.terreno.mapa;
       Object.assign(G.fisica.alturas, { taller: 3.8, bench: 1, refuge: 2.6 });
       // Retratos de las líneas escritas en el código del pack y nivel de la crecida sobre el terreno A
-      G.c.IMG = { V: 'assets/vittata.png', L: 'assets/luma.png', G: 'assets/guardian.png' };
+      // VOZ y N: retratos neutros de la Voz del transmisor y del Narrador (pack.js); nunca la cara del Guardián ni la de Vittata
+      const RET = (G.pack.dialogos && G.pack.dialogos.retratos) || {};
+      G.c.IMG = { V: 'assets/vittata.png', L: 'assets/luma.png', G: 'assets/guardian.png', VOZ: RET.Voz || '', N: RET.Narrador || '' };
       G.c.FLOOD_LEVEL = PLACES.A.base + 1.1;
       // Marcas de agua a 1 m en los árboles junto al río (en el mapa, ajustadas al tronco real cuando carga la flora)
       const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -273,6 +279,8 @@
       else colliders.push({ x: T.x, z: T.z, r: 2.6, hx: 2.55, hz: 2.05, kind: 'taller' });
 
       // Objetos del taller: máquina experimental, transmisor y banco de trabajo (mejora), al frente del taller
+      // [KELVIN-6] Diseño de la máquina experimental y del transmisor antiguo: hoy son primitivas (cilindro con aspa, caja con antena).
+      // Tampoco hay engranaje visible en el techo del refugio (NARRATIVA M2) ni la máquina cambia al sacrificarlo (CAP1_PENDIENTE P2-2).
       const fx = Math.sin(facing), fz = Math.cos(facing), rx = Math.cos(facing), rz = -Math.sin(facing);
       const MAQ = MAPA ? { x: T.x + fx * 4.4 - rx * 2.4, z: T.z + fz * 4.4 - rz * 2.4 } : { x: T.x - 2.6, z: T.z + 3.4 };
       const TRX = MAPA ? { x: T.x + fx * 4.2 + rx * 3.0, z: T.z + fz * 4.2 + rz * 3.0 } : { x: T.x + 3.4, z: T.z + 2.6 };
@@ -360,7 +368,54 @@
       // El transmisor encendido late
       G.on('render', (dt, t) => { if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25); }, 35);
 
-      Object.assign(G.c, { PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh });
+      // ---------- Luz en la niebla (SCRIPT p.12 · NARRATIVA «Final») ----------
+      // Desde el mirador, una luz lejana parpadea tres veces, como respuesta a la señal. Es un sprite aditivo sin niebla puesto en la
+      // isla del centro; solo existe desde esa escena (S.boatPlan) y luego queda encendida con un pulso lento. El tamaño sale de la
+      // distancia (unos 5° en pantalla) y el parpadeo corre en el gancho update (con el tiempo del juego), así que se puede probar con tick().
+      // [KELVIN-8] Quién contesta (¿la Voz?, ¿el pacto de los 36?) no se revela en el cap. 1: la luz es neutra, sin color de personaje.
+      const luzMirador = (() => {
+        const islas = G.terreno.islas || [];
+        if (!islas.length) return null;
+        const I = islas[Math.min(1, islas.length - 1)];
+        const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+        const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 0, 64, 64, 64);
+        gr.addColorStop(0, 'rgba(255,252,235,1)'); gr.addColorStop(0.1, 'rgba(255,238,175,0.95)'); gr.addColorStop(0.3, 'rgba(255,214,130,0.4)'); gr.addColorStop(1, 'rgba(255,214,130,0)');
+        cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+        const sp = new THREE.Sprite(G.renderer.linMat(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, opacity: 0 })));
+        // En la orilla de la isla que mira al mirador y a unos metros sobre el mar
+        const d = Math.hypot(I.x - MIRADOR.x, I.z - MIRADOR.z) || 1, k = (d - I.r * 0.5) / d;
+        const dist = d * k, esc = dist * 0.1;
+        sp.position.set(MIRADOR.x + (I.x - MIRADOR.x) * k, (MAPA ? 0 : -2.6) + I.r * 0.34, MIRADOR.z + (I.z - MIRADOR.z) * k);
+        sp.scale.set(esc, esc, 1); sp.visible = false; sp.renderOrder = 5; scene.add(sp);
+        const L = { sprite: sp, isla: I, seq: null, fijo: false, destellos: 0, brillo: 0 };
+        // 3 destellos de 0,5 s, uno por segundo, tras 0,4 s de espera; al terminar la luz queda encendida
+        L.parpadear = (veces) => { L.seq = { t: 0, n: veces || 3, ultimo: -1 }; L.destellos = 0; sp.visible = true; };
+        L.reposo = () => { L.seq = null; L.fijo = true; sp.visible = true; };
+        L.destello = () => { sp.visible = true; sp.material.opacity = 1; L.brillo = 1; }; // brillo máximo hasta el siguiente cuadro (foto de la última viñeta)
+        L.apagar = () => { L.seq = null; L.fijo = false; L.destellos = 0; L.brillo = 0; sp.visible = false; sp.material.opacity = 0; };
+        G.on('update', dt => {
+          if (!sp.visible) return;
+          let b = 0;
+          if (L.seq) {
+            const q = L.seq, u = (q.t += dt) - 0.4;
+            if (u >= 0) {
+              const i = Math.floor(u), f = u - i;
+              if (i < q.n) {
+                b = f < 0.5 ? Math.pow(Math.sin(Math.PI * f / 0.5), 2) : 0;
+                if (i !== q.ultimo) { q.ultimo = i; L.destellos = i + 1; G.audio.play('parpadeo', i); }
+              } else if (u > q.n + 0.2) L.reposo();
+            }
+          }
+          if (!L.seq && L.fijo) b = 0.28 + 0.06 * Math.sin(S.clock * 1.3);
+          L.brillo = b; sp.material.opacity = Math.min(1, b);
+          sp.visible = !!L.seq || L.fijo;
+        }, 36);
+        // Al cargar o reiniciar: encendida con pulso lento solo si el plano del bote ya se desbloqueó
+        G.on('apply', () => { L.apagar(); if (S.boatPlan) L.reposo(); }, 36);
+        return L;
+      })();
+
+      Object.assign(G.c, { PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
     },
   });
 })();

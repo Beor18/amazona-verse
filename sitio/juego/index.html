@@ -2,7 +2,7 @@
 <html lang="es">
 <meta charset="utf-8">
 <meta name="ave:sin-glb" content="1">
-<meta name="ave:build" content="5bda66c 5bda66cd8cb5">
+<meta name="ave:build" content="HEAD 207680856894">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amazona Verse</title>
 <meta name="description" content="Juega el capítulo 1 de Amazona Verse: vuela con Vittata por El Yunque, explora y descubre Puerto Rico. Para todas las edades, gratis en el navegador.">
@@ -91,6 +91,7 @@
     <p class="title-sub">Capítulo 1 · <b>El día que el cielo se rompió</b></p>
     <form method="dialog" class="title-actions">
       <button class="btn xl" type="submit" data-icon="play" autofocus>Jugar</button>
+      <button class="btn ghost" type="submit" value="retos" data-icon="trophy" style="animation:none">Retos</button>
     </form>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
   </div>
@@ -127,10 +128,12 @@
     <button class="btn xl pause-resume" type="button" data-icon="play" popovertarget="pause" popovertargetaction="hide" autofocus>Seguir jugando</button>
     <div class="pause-grid">
       <button class="btn tile" id="b-char" type="button" data-icon="shirt" popovertarget="pause" popovertargetaction="hide">Mi personaje</button>
+      <button class="btn tile" id="b-comic-menu" type="button" data-icon="book" popovertarget="pause" popovertargetaction="hide" hidden>Mi cómic</button>
       <button class="btn tile" id="b-save" type="button" data-icon="save" popovertarget="pause" popovertargetaction="hide">Guardar</button>
       <button class="btn tile" id="b-load" type="button" data-icon="load" popovertarget="pause" popovertargetaction="hide">Cargar</button>
+      <button class="btn tile" id="b-retos" type="button" data-icon="trophy" popovertarget="pause" popovertargetaction="hide">Retos</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
-      <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Reiniciar</button>
+      <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
     </div>
     <section class="pause-help" aria-labelledby="help-title">
       <h3 id="help-title">Controles</h3>
@@ -155,11 +158,11 @@
       <p class="note">Los materiales se recogen al pasar por encima.</p>
     </section>
     <div id="confirm-reset" popover role="alertdialog" aria-labelledby="cr-title" aria-describedby="cr-text">
-      <h2 id="cr-title">¿Empezar de nuevo?</h2>
-      <p id="cr-text">Se borra la partida guardada y vuelves al principio del capítulo.</p>
+      <h2 id="cr-title">¿Comenzar de cero?</h2>
+      <p id="cr-text">Se borrará tu partida y tu cómic.</p>
       <div class="row center">
-        <button class="btn ghost" type="button" popovertarget="confirm-reset" popovertargetaction="hide" autofocus>No, seguir</button>
-        <button class="btn danger" id="b-reset" type="button" data-icon="reset" popovertarget="pause" popovertargetaction="hide">Sí, empezar</button>
+        <button class="btn ghost" type="button" popovertarget="confirm-reset" popovertargetaction="hide" autofocus>No, volver</button>
+        <button class="btn danger" id="b-reset" type="button" data-icon="reset" popovertarget="pause" popovertargetaction="hide">Sí, comenzar de cero</button>
       </div>
     </div>
   </div>
@@ -193,9 +196,19 @@
   <div class="panel">
     <h2 id="end-title">Capítulo 1 completado</h2>
     <p id="end-text"></p>
-    <div class="row center">
+    <div class="row center" id="end-acciones">
       <button class="btn xl" id="b-comic" type="button" data-icon="book">Crear mi cómic</button>
-      <button class="btn ghost" id="b-again" type="button" data-icon="reset">Jugar de nuevo</button>
+      <button class="btn" id="b-seguir" type="button" data-icon="play">Seguir explorando</button>
+      <button class="btn ghost" id="b-again" type="button" data-icon="reset">Comenzar de cero</button>
+    </div>
+    <!-- Pregunta dentro del juego antes de borrar la partida (la abre «Comenzar de cero»; src/game/misiones.js) -->
+    <div id="end-confirm" role="alertdialog" aria-labelledby="end-confirm-title" aria-describedby="end-confirm-text" hidden>
+      <h2 id="end-confirm-title">¿Comenzar de cero?</h2>
+      <p id="end-confirm-text">Se borrará tu partida y tu cómic.</p>
+      <div class="row center">
+        <button class="btn" id="b-again-no" type="button" data-icon="close">No, volver</button>
+        <button class="btn danger" id="b-again-si" type="button" data-icon="reset">Sí, comenzar de cero</button>
+      </div>
     </div>
   </div>
 </div>

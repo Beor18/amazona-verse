@@ -630,7 +630,16 @@ AVE.module('comic', function (G) {
     return url;
   }
   $('b-comic').onclick = openComic;
-  $('c-close').onclick = () => { $('comic').hidden = true; if (S.complete) $('end').hidden = false; };
+  // Con la partida terminada el cómic también se abre desde el menú de pausa («Mi cómic»), para quien eligió «Seguir explorando».
+  // Al cerrarlo vuelve al panel final solo si ese panel sigue pendiente (S.explorando = ya lo cerró).
+  const bMenu = $('b-comic-menu');
+  if (bMenu) {
+    bMenu.onclick = openComic;
+    const verMenu = () => { bMenu.hidden = !S.complete; };
+    G.on('apply', verMenu, 65); verMenu();
+    if ($('pause')) $('pause').addEventListener('toggle', verMenu);
+  }
+  $('c-close').onclick = () => { $('comic').hidden = true; if (S.complete && !S.explorando) $('end').hidden = false; };
   $('c-refresh').onclick = refreshComic;
   $('c-png').onclick = () => exportComic('png', true);
   $('c-pdf').onclick = () => exportComic('pdf', true);
