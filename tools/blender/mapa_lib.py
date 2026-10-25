@@ -205,13 +205,13 @@ TRAILS = {
     'playa':      [(150, -205), (150, -172)],
     'estacion':   [(150, -172), (160, -178)],
     'taller':     [(150, -172), (138, -177)],
-    'puente_sur': [(150, -170), 'PS'],
+    'puente_sur': [(150, -170), (166, -157), 'PS'],
     'norte':      ['PN', (164, -84), (171, -50), (140, 18), (126, 60), (136, 81), (136, 109), (98, 102), (98, 126),
                    (138, 126), (138, 151), (100, 176), (44, 186), (-6, 198)],
     'la_mina':    [(126, 60), (86, 86)],
     'cumbre':     [(-46, 151), (-32, 150)],
     'picachos':   [(44, 186), (0, 204)],
-    'colina':     [(150, -170), (98, -166), (56, -190)],
+    'colina':     [(150, -170), (98, -166), (80, -158), (48, -164), (56, -190)],
     'oeste':      [(98, -166), (40, -150), (0, -142), (-104, -138)],
     'cueva_rio':  [(-104, -138), (-214, -70)],
     'este':       [(140, 18), (146, 30)],
@@ -252,8 +252,9 @@ KELVIN = [
     # gran templo escondido en la niebla del noroeste (secreto mayor)
     ('templo_grande', 'templo', 0, 0, 0, 'templo', None),
 ]
+TRAIL_GMAX = 0.30   # pendiente máxima de los senderos (30 %); las rampas de diseño llegan a 35 %
 RAMPS = {   # id: (puntos, z inicial o None = terreno, z final o id de explanada)
-    'escalinata_yunque': ([(44, 186), (20, 177), (-10, 171), (-45, 167), (-60, 158), (-46, 151)], None, 'cumbre'),
+    'escalinata_yunque': ([(44, 186), (24, 180), (0, 174), (-25, 170), (-50, 167), (-66, 160), (-62, 150), (-46, 151)], None, 'cumbre'),
     'rampa_ruinas':      ([(146, 30), (180, 28), (208, 23), (214, 13)], None, 'ruinas'),
     'rampa_b':           ([(98, -166), (86, -162), (70, -164), (60, -172), (64, -182), (72, -182)], None, 'terrenoB'),
     'rampa_mirador':     ([(56, -190), (44, -192), (30, -192), (16, -189), (5, -183), (3, -173), (8, -172)], None, 'mirador'),
@@ -418,7 +419,7 @@ def build(verbose=True):
     PS, PN = (e1, e2) if np.linalg.norm(e1 - plaza) < np.linalg.norm(e2 - plaza) else (e2, e1)
     M.bridge = {'centro': R[ib].copy(), 'sur': PS, 'norte': PN, 'i': ib}
     for e in (PS, PN):
-        H += 6.5 * gauss(X, Y, e[0], e[1], 9.5)
+        H += 5.5 * gauss(X, Y, e[0], e[1], 11.0)
 
     # ---- niveles del río (escalones de 1 m) y de la quebrada (escalones de 1.5 m; las terrazas hacen las cascadas)
     def sample(G, P):
@@ -523,6 +524,7 @@ def build(verbose=True):
         wgt = np.where(np.isfinite(D), 1 - ss(2.2, 4.5, D), 0)
         H = H * (1 - wgt) + prof * wgt
         M.ramp_ends[rid + '_a'] = (Pp[0, 0], Pp[0, 1], za); M.ramp_ends[rid + '_b'] = (Pp[-1, 0], Pp[-1, 1], zb_)
+        M.rampD = np.minimum(getattr(M, 'rampD', np.full(X.shape, np.inf)), np.where(np.isfinite(D), D, np.inf))
         M.ramps = getattr(M, 'ramps', {}); M.ramps[rid] = np.c_[Pr, za + (zb_ - za) * np.r_[0, np.cumsum(np.linalg.norm(np.diff(Pr, axis=0), axis=1))] / sr[-1]]
     M.H_pre = H.copy()
     # ---- senderos: A* con pendiente limitada sobre la rejilla de 2 m; perfil suavizado; corte y relleno
@@ -556,6 +558,12 @@ def build(verbose=True):
         Lr = min(30.0, sq[-1] * 0.5); zs = zsm.copy()
         if pins[0] is not None: zs += (pins[0] - zsm[0]) * np.clip(1 - sq / Lr, 0, 1)
         if pins[1] is not None: zs += (pins[1] - zsm[-1]) * np.clip(1 - (sq[-1] - sq) / Lr, 0, 1)
+        # pendiente máxima: envolventes de Lipschitz (corte y relleno repartidos), se repite para respetar los extremos fijos
+        for _ in range(3):
+            Dm = np.abs(sq[:, None] - sq[None, :])
+            zs = 0.5 * (np.min(zs[None, :] + TRAIL_GMAX * Dm, axis=1) + np.max(zs[None, :] - TRAIL_GMAX * Dm, axis=1))
+            if pins[0] is not None: zs += (pins[0] - zs[0]) * np.clip(1 - sq / Lr, 0, 1)
+            if pins[1] is not None: zs += (pins[1] - zs[-1]) * np.clip(1 - (sq[-1] - sq) / Lr, 0, 1)
         D, Tt, _ = polyline_field(X, Y, P, 4.0)
         prof = np.interp(Tt, sq, zs)
         wgt = (1 - ss(1.3, 3.2, D)) * ss(0.5, 2.5, water_d)
@@ -566,7 +574,19 @@ def build(verbose=True):
         M.trails[tid] = np.c_[P, zs - 0.12]
         im = int(np.argmax(g))
         M.trail_grades[tid] = (int(sq[-1]), int(np.percentile(g, 90) * 100), int(g.max() * 100), (int(P[im, 0]), int(P[im, 1])))
-    M.trailD = TD
+    for rid, Rp in M.ramps.items():   # las rampas se vuelven a tallar encima de los senderos que las tocan
+        D, Tt, sr_ = polyline_field(X, Y, Rp[:, :2], 6.0)
+        prof = np.interp(Tt, sr_, Rp[:, 2]); wgt = np.where(np.isfinite(D), 1 - ss(2.2, 4.5, D), 0)
+        H = H * (1 - wgt) + prof * wgt
+    M.trailD = np.minimum(TD, M.rampD)   # las rampas cuentan como sendero (tierra, sin plantas, más vértices)
+    # suaviza los escalones entre tramos cercanos (curvas en zigzag) solo sobre los senderos
+    Hb = H.copy()
+    for _ in range(3):
+        P_ = np.pad(Hb, 1, mode='edge')
+        Hb = (P_[:-2, :-2] + P_[:-2, 1:-1] + P_[:-2, 2:] + P_[1:-1, :-2] + P_[1:-1, 1:-1] + P_[1:-1, 2:] + P_[2:, :-2] + P_[2:, 1:-1] + P_[2:, 2:]) / 9
+    wb = (1 - ss(2.5, 4.5, TD)) * ss(0.5, 2.5, water_d) * ss(4.0, 7.0, M.rampD)
+    for e in (PS, PN): wb = wb * ss(6.0, 10.0, np.hypot(X - e[0], Y - e[1]))
+    H = H * (1 - wb) + Hb * wb
 
     # ---- grutas: grietas talladas en la roca (el techo es la malla grutas.glb)
     caves = {}

@@ -77,7 +77,8 @@ ob = bpy.data.objects.new('terreno_full', me); bpy.context.scene.collection.obje
 VG_FACTOR = float(os.environ.get('MAPA_VGF', '1'))
 TBAND = float(os.environ.get('MAPA_TBAND', '1.6'))
 IJ = np.indices(M.trailD.shape)
-wdet = ((M.trailD < TBAND) & (M.trailD > TBAND - 1.0) & (IJ[0] % 2 == 0) & (IJ[1] % 2 == 0)).astype(float).ravel()   # borde de los senderos (1 de cada 4)
+wdet = (((M.trailD < TBAND) & (M.trailD > TBAND - 1.0)) | ((M.trailD < 0.8) & (M.slope > 12))) & (IJ[0] % 2 == 0) & (IJ[1] % 2 == 0)
+wdet = wdet.astype(float).ravel()   # borde de los senderos y su eje en las cuestas (1 de cada 4)
 vg = ob.vertex_groups.new(name='detalle')
 for lo, hi_, val in ((0.25, 0.6, 0.4), (0.6, 0.85, 0.75), (0.85, 1.01, 1.0)):
     ids = np.nonzero((wdet >= lo) & (wdet < hi_))[0].tolist()
@@ -449,6 +450,14 @@ DPZ = {}
 for zn in ZONES:
     cx_, cz_ = zn['centro'][0], zn['centro'][2]; m_ = np.hypot(FX - cx_, FY + cz_) < zn['r']
     if m_.sum(): DPZ[zn['id']] = {sp: round(float(DEN[sp][m_].mean()), 2) for sp in ML.SPECIES if DEN[sp][m_].mean() > 0.01}
+# decoración: rocas con musgo del kit alrededor de la gruta y la poza de La Mina
+ga, gb, gw = ML.CAVES['gruta_mina']; rr_ = random.Random(4) if False else None
+DECO = []
+for k, (dx, dy, sc_, kit) in enumerate(((-3.2, -0.5, 1.3, 'roca_musgo_a'), (3.0, 0.2, 1.1, 'roca_musgo_b'), (-5.5, -3.0, 0.9, 'roca_musgo_b'),
+                                        (5.5, -3.5, 0.8, 'roca_musgo_a'), (-1.5, -5.0, 0.6, 'piedras_rio'), (9.0, -8.5, 0.9, 'roca_musgo_a'),
+                                        (-9.5, -9.0, 1.0, 'roca_musgo_b'), (12.0, -14.0, 0.8, 'piedras_rio'))):
+    x_, y_ = ga[0] + dx, ga[1] + dy
+    DECO.append({'kit': kit, 'pos': pt(x_, y_, -0.2), 'rotY': round(k * 1.7 % 6.283, 3), 'escala': sc_, 'grupo': 'la_mina'})
 # ruta de la gota: vapor desde la Poza Honda a la nube de la cumbre, lluvia en las bromelias, escorrentía por la quebrada y el río
 cum = ML.POI['cumbre']; jr_ = int(np.argmin(np.hypot(M.river[:, 0] - M.creek[-1, 0], M.river[:, 1] - M.creek[-1, 1])))
 ih_ = int(np.argmin(np.hypot(M.river[:, 0] - ph['x'], M.river[:, 1] - ph['y'])))
@@ -495,20 +504,22 @@ DATA = {
                                   'refugio': 'casa_plataforma; la estación propia trae la antena-transmisor de la historia'}.get(k, '')} for k in PL},
     'edificiosKelvin': [{k_: v for k_, v in e.items() if k_ != 'glb_n'} for e in KEL],
     'colisiones': COLS,
+    'decoracion': DECO,
     'grutas': GR,
     'senderos': TR,
     'rutasVuelo': FLIGHT, 'corrientes': UPDRAFT, 'zonas': ZONES,
     'flora': {'especies': ML.SPECIES, **FL,
-              'modelos': {'palma_sierra': {'kit': ['palma_sierra']}, 'yagrumo': {'kit': ['yagrumo']}, 'tabonuco': {'kit': ['tabonuco'], 'extra': 'hojarasca bajo la copa'},
-                          'tabonuco_enano': {'kit': ['arbol_enano'], 'respaldo': {'kit': 'tabonuco', 'escala': 0.55}, 'nota': 'bosque enano de la cumbre; arbol_enano en producción'},
+              'modelos': {'palma_sierra': {'kit': ['palma_sierra', 'palma_sierra_joven'], 'mezcla': {'palma_sierra_joven': 0.3}, 'nota': 'jóvenes al borde de las terrazas'},
+                          'yagrumo': {'kit': ['yagrumo', 'yagrumo_joven'], 'mezcla': {'yagrumo_joven': 0.4}, 'nota': 'jóvenes junto a senderos y claros'}, 'tabonuco': {'kit': ['tabonuco'], 'extra': 'hojarasca bajo la copa'},
+                          'tabonuco_enano': {'kit': ['arbol_enano'], 'nota': 'bosque enano de la cumbre (y > 62 m)'},
                           'helecho_gigante': {'kit': ['helecho_arboreo']}, 'ceiba': {'kit': ['ceiba']}, 'flamboyan': {'kit': ['flamboyan'], 'nota': 'introducido: solo en claros y pueblo'},
                           'bambu': {'kit': ['bambu'], 'nota': 'introducido: orillas'}, 'heliconia': {'kit': ['heliconia']}, 'bromelia': {'kit': ['bromelia']},
                           'helechos': {'kit': ['helecho_suelo']}, 'rocas': {'kit': ['roca_musgo_a', 'roca_musgo_b', 'piedras_rio'], 'nota': 'piedras_rio a menos de 4 m del agua; roca_musgo en el resto'},
                           'troncos': {'kit': ['tronco_caido']}},
               'densidadPorZona': DPZ,
-              'variantes': [{'id': 'arbol_enano', 'especie': 'tabonuco_enano', 'uso': 'todo el bosque enano (y > 62 m)', 'mientras': 'tabonuco x0.55'},
-                            {'id': 'palma_sierra_joven', 'especie': 'palma_sierra', 'uso': '30 % de las palmas a menos de 8 m del borde de una terraza', 'mientras': 'palma_sierra x0.6'},
-                            {'id': 'yagrumo_joven', 'especie': 'yagrumo', 'uso': '40 % de los yagrumos junto a senderos y claros', 'mientras': 'yagrumo x0.55'}],
+              'variantes': [{'id': 'arbol_enano', 'especie': 'tabonuco_enano', 'uso': 'todo el bosque enano (y > 62 m)', 'estado': 'listo'},
+                            {'id': 'palma_sierra_joven', 'especie': 'palma_sierra', 'uso': '30 % de las palmas a menos de 8 m del borde de una terraza', 'estado': 'listo'},
+                            {'id': 'yagrumo_joven', 'especie': 'yagrumo', 'uso': '40 % de los yagrumos junto a senderos y claros', 'estado': 'listo'}],
               'colorKit': 'COLOR_0 del kit = R AO, G peso de viento, B fase (no es color)',
               'extras': {'hojarasca': 'un parche de 2 m bajo cada tabonuco y ceiba', 'pasto': 'claros con densidad de árboles < 0.3 y explanadas (plaza, batey, terrenos A y B): 20 por 100 m2',
                          'impostores': 'árboles a más de 90 m como impostores (acordado entre programador gráfico y artista de entorno)'}},
@@ -566,3 +577,11 @@ for f in ('mapa_cap1.js', 'mapa_cap1_altura.js'):
     sz = os.path.getsize(os.path.join(OUT_D, f)); tot += sz; print('   %-26s %8.1f KB' % (f, sz / 1024))
 log('TOTAL glb + datos: %.2f MB; copias base64: %.2f MB' % (tot / 1048576, totb / 1048576))
 log('senderos (largo m, p90 %, máx %)', M.trail_grades)
+def hmq(x, y):
+    fx = (x + ML.HALF) / HM_STEP; fz = (-y + ML.HALF) / HM_STEP; i0 = np.clip(fx.astype(int), 0, nh - 2); j0 = np.clip(fz.astype(int), 0, nh - 2); tx = fx - i0; tz = fz - j0
+    return (HM[j0, i0] * (1 - tx) + HM[j0, i0 + 1] * tx) * (1 - tz) + (HM[j0 + 1, i0] * (1 - tx) + HM[j0 + 1, i0 + 1] * tx) * tz
+chk = {}
+for tid, P in list(M.trails.items()) + [(k, r) for k, r in M.ramps.items()]:
+    Q = ML.resample(P[:, :2], 1.0); z = hmq(Q[:, 0], Q[:, 1]); g = np.abs(z[4:] - z[:-4]) / 4.0
+    im = int(np.argmax(g)); chk[tid] = (int(np.percentile(g, 95) * 100), int(g.max() * 100)) + (((int(Q[im + 2, 0]), int(Q[im + 2, 1])),) if g.max() > 0.35 else ())
+log('pendiente real en la malla (p95 %, máx % en 4 m)', chk)

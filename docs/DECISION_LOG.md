@@ -37,6 +37,7 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - 2026-10-24 · El mapa no lleva anillos: `RINGS` se sustituye por `misiones.perchas` y `misiones.rutaGota` (La ruta de la gota) · level designer · regla del fundador y EDUCATIVO.md.
 - 2026-10-24 · Las piezas "Ancient Temples" se presentan como Ruinas del Pacto (ficción del canon), no como arquitectura taína. La aldea taína usa bohíos, caney, batey con piedras y canoas · level designer · rigor cultural en un juego escolar.
 - 2026-10-24 · Las especies de flora conservan sus ids y se traducen al kit con `flora.modelos`. Se pidieron las variantes arbol_enano, palma_sierra_joven y yagrumo_joven · level designer + programador gráfico + artista de entorno · no romper el código del motor.
+- 2026-10-24 · Los senderos tienen una pendiente máxima de diseño del 30 % (corte y relleno) y las rampas de la cumbre, la colina, los Picachos y las ruinas llegan al 32 %. En la malla final no queda ningún tramo por encima del 50 % · level designer + programador gráfico · pedido del coordinador.
 
 ## 2026-10-24 · Ropa: color, nitidez, pañuelo, párpados y piezas nuevas (TA de personaje)
 - 2026-10-24 · Todo color hecho a mano del personaje y la ropa pasa a lineal con un único helper, `AVColor` (wardrobe.js). Las CanvasTexture van en sRGB con mipmaps y la anisotropía máxima. Los .glb viejos con gamma 2,2 se corrigen al cargar; los nuevos llevan `av_srgb` · TA · el naranja #f2a03d salía crema (#edd9a6). Medido: creador y juego dan el tono elegido en la parte iluminada.

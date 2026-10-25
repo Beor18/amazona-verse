@@ -279,10 +279,10 @@ def gn_instancer(name, pts, proxy_ob, smin, smax):
     L.new(iop.outputs[0], go.inputs[0])
     mod = ob.modifiers.new('gn', 'NODES'); mod.node_group = ng
 KIT = os.path.join(ROOT, 'assets', 'models', 'entorno')
-KMAP = {'tabonuco': 'tabonuco', 'tabonuco_enano': 'tabonuco', 'palma_sierra': 'palma_sierra', 'yagrumo': 'yagrumo', 'helecho_gigante': 'helecho_arboreo',
+KMAP = {'tabonuco': 'tabonuco', 'tabonuco_enano': 'arbol_enano', 'palma_sierra': 'palma_sierra', 'yagrumo': 'yagrumo', 'helecho_gigante': 'helecho_arboreo',
         'ceiba': 'ceiba', 'flamboyan': 'flamboyan', 'bambu': 'bambu', 'heliconia': 'heliconia', 'bromelia': 'bromelia', 'helechos': 'helecho_suelo',
         'rocas': 'roca_musgo_a', 'troncos': 'tronco_caido'}
-KSCALE = {'tabonuco': (0.9, 1.2), 'tabonuco_enano': (0.45, 0.6), 'palma_sierra': (0.85, 1.2), 'yagrumo': (0.85, 1.15), 'helecho_gigante': (0.8, 1.15),
+KSCALE = {'tabonuco': (0.9, 1.2), 'tabonuco_enano': (0.85, 1.15), 'palma_sierra': (0.85, 1.2), 'yagrumo': (0.85, 1.15), 'helecho_gigante': (0.8, 1.15),
           'ceiba': (0.95, 1.1), 'flamboyan': (0.9, 1.1), 'bambu': (0.85, 1.15), 'heliconia': (0.8, 1.25), 'bromelia': (0.8, 1.4), 'helechos': (0.8, 1.4),
           'rocas': (0.5, 1.2), 'troncos': (0.8, 1.1)}
 def kit_object(name):
