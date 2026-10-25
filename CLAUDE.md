@@ -64,6 +64,7 @@ Publicado en https://amazona-verse.vercel.app (juego en `/juego/`). Repo: github
 
 **Documentos que conviene leer:**
 - `ROADMAP.md`: qué falta y fechas.
+- `docs/COMO_TRABAJAMOS_CON_IA.md`: cómo pedir cosas a la IA, los límites y cómo funciona el consumo.
 - `docs/equipo/CAP1_PENDIENTE.md`: lo que falta para cerrar el capítulo 1.
 - `docs/equipo/BUGS.md`
 - `docs/ARQUITECTURA.md`
