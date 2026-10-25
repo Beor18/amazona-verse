@@ -3,8 +3,8 @@
    calidad adaptativa y bucle principal.
    Bucle: update(dt) = reloj + G.fisica.step + gancho 'update'; render(dt) = G.camara.follow + gancho 'render' + G.camara.draw
    (que llama a drawScene: post-proceso si está activo, si no render directo).
-   Calidad: presets bajo / medio / alto (calidad, setCalidad). Se elige por GPU y se ajusta por FPS; cada cambio emite el gancho
-   'calidad' (G.on('calidad', C => …)) para que terreno, vegetación y agua bajen o suban su detalle. ?calidad=bajo fija uno.
+   Calidad: presets bajo / medio / alto (calidad, setCalidad). Se elige por GPU, núcleos y memoria (perfilEquipo), baja en los primeros 3 s si no llega al objetivo (decidirArranque) y se ajusta por FPS; cada cambio emite el gancho
+   'calidad' (G.on('calidad', C => …)) para que terreno, vegetación y agua bajen o suban su detalle. ?calidad=bajo fija uno. Prueba: calidadTest() (corre también dentro de contextTest).
    Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala] },
    mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom }.
    Sin cielo.cenit se usa el fondo plano de antes (plantillas viejas).
@@ -77,8 +77,32 @@ AVE.module('renderer', function (G) {
   const SOFTWARE = /SwiftShader|llvmpipe|Software|Microsoft Basic/i.test(GPU);
   const MODEST = MOBILE || CHROMEOS || /Intel|Mali|Adreno|PowerVR|Apple GPU|Vivante/i.test(GPU) && !/Apple M\d|Iris\(R\) Xe|Arc/i.test(GPU);
   const OBJETIVO = MOBILE || CHROMEOS ? 30 : 55; // FPS mínimos que se defienden
+  // Equipo modesto (A3): GPU, núcleos y memoria. Lo que el navegador no dice (Safari no da deviceMemory) no cuenta; un equipo
+  // potente (GPU dedicada o Apple M, ≥ 6 núcleos, ≥ 8 GB) sigue en alto.
+  function perfilEquipo(e) {
+    const n = e.nucleos > 0 ? e.nucleos : 0, m = e.memoria > 0 ? e.memoria : 0, motivos = [];
+    if (e.software) motivos.push('GPU por software');
+    if (n && n <= 2) motivos.push(n + ' núcleos');
+    if (m && m <= 2) motivos.push(m + ' GB');
+    if (motivos.length) return { nivel: 'bajo', motivos };
+    if ((e.movil || e.chromeos) && (n && n <= 4 || m && m <= 4)) return { nivel: 'bajo', motivos: [(e.chromeos ? 'Chromebook' : 'móvil') + ' con ' + (n || '?') + ' núcleos y ' + (m || '?') + ' GB'] };
+    if (e.modesto) motivos.push(e.movil ? 'móvil' : e.chromeos ? 'Chromebook' : 'GPU integrada');
+    if (n && n <= 4) motivos.push(n + ' núcleos');
+    if (m && m <= 4) motivos.push(m + ' GB');
+    return { nivel: motivos.length ? 'medio' : 'alto', motivos };
+  }
+  // Primeros segundos jugando (A3): si el equipo no llega al objetivo, baja enseguida sin esperar a la resolución dinámica.
+  // Solo baja, una vez: por debajo de la mitad del objetivo va directo a bajo; por debajo del 85 %, un nivel.
+  function decidirArranque(fps, nivel, objetivo) {
+    const i = NIVELES.indexOf(nivel);
+    if (!(fps > 0) || i <= 0) return nivel;
+    if (fps < objetivo * 0.5) return 'bajo';
+    return fps < objetivo * 0.85 ? NIVELES[i - 1] : nivel;
+  }
+  const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
+  const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
-  const inicial = NIVELES.includes(fromUrl) ? fromUrl : SOFTWARE ? 'bajo' : MODEST ? 'medio' : 'alto';
+  const inicial = NIVELES.includes(fromUrl) ? fromUrl : PERFIL.nivel;
   const calidad = Object.assign({}, PRESETS[inicial], { manual: NIVELES.includes(fromUrl), gpu: GPU, objetivo: OBJETIVO });
 
   // ---------- Escena, cielo y niebla ----------
@@ -344,7 +368,7 @@ AVE.module('renderer', function (G) {
 
   // ---------- Calidad adaptativa por FPS ----------
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
-  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity };
+  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
   G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => requestAnimationFrame(() => { precalentar(); fpsM.warm = 3000; })); });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
@@ -383,7 +407,15 @@ AVE.module('renderer', function (G) {
     if (!(raw > 0 && raw < 120) || calidad.manual) return;
     if (fpsM.warm > 0) { fpsM.warm -= raw; return; }
     if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return;   // portada o creador: el mundo no se dibuja
-    fpsM.ms += (raw - fpsM.ms) * 0.04; fpsM.t += raw; fpsM.bloqueo = Math.max(0, fpsM.bloqueo - raw);
+    const A = fpsM.arranque;
+    if (!A.hecho) {
+      A.t += raw; A.n++;
+      if (A.t < 3000) return;
+      A.hecho = true; A.fps = A.n * 1000 / A.t;
+      const nivel = decidirArranque(A.fps, calidad.nivel, OBJETIVO);
+      if (nivel !== calidad.nivel) { setCalidad(nivel); fpsM.bloqueo = 60000; fpsM.warm = 2500; return; }
+    }
+    fpsM.ms +=(raw - fpsM.ms) * 0.04; fpsM.t += raw; fpsM.bloqueo = Math.max(0, fpsM.bloqueo - raw);
     if (fpsM.t < 1000) return;
     fpsM.t = 0;
     const fps = 1000 / fpsM.ms, i = NIVELES.indexOf(calidad.nivel);
@@ -607,6 +639,33 @@ AVE.module('renderer', function (G) {
     } catch (e) { return null; }
   }
 
+  // ---------- Prueba de calidad automática (A3): equipos simulados, sin tocar la calidad real; también corre en contextTest ----------
+  function calidadTest() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const p = e => perfilEquipo(Object.assign({ software: false, modesto: false, movil: false, chromeos: false, nucleos: 0, memoria: 0 }, e));
+    const casos = [
+      ['Equipo potente (GPU dedicada, 12 núcleos, 8 GB) sigue en alto', { nucleos: 12, memoria: 8 }, 'alto'],
+      ['Navegador que no dice núcleos ni memoria y GPU buena: alto', {}, 'alto'],
+      ['Chromebook de 4 núcleos y 4 GB arranca en bajo', { chromeos: true, modesto: true, nucleos: 4, memoria: 4 }, 'bajo'],
+      ['Móvil de 8 núcleos y 8 GB arranca en medio', { movil: true, modesto: true, nucleos: 8, memoria: 8 }, 'medio'],
+      ['Móvil de 4 GB arranca en bajo', { movil: true, modesto: true, nucleos: 8, memoria: 4 }, 'bajo'],
+      ['Portátil con GPU integrada arranca en medio', { modesto: true, nucleos: 8, memoria: 8 }, 'medio'],
+      ['Escritorio de 4 núcleos arranca en medio', { nucleos: 4, memoria: 8 }, 'medio'],
+      ['Equipo de 2 GB arranca en bajo', { nucleos: 8, memoria: 2 }, 'bajo'],
+      ['GPU por software arranca en bajo', { software: true, nucleos: 16, memoria: 8 }, 'bajo'],
+    ];
+    for (const [nombre, e, nivel] of casos) { const r = p(e); check(nombre, r.nivel === nivel, r.nivel + (r.motivos.length ? ' (' + r.motivos.join(', ') + ')' : '')); }
+    const d = (fps, n) => decidirArranque(fps, n, 55);
+    check('Arranque: a 60 FPS no cambia la calidad', d(60, 'alto') === 'alto' && d(60, 'medio') === 'medio');
+    check('Arranque: a 40 FPS baja un nivel', d(40, 'alto') === 'medio' && d(40, 'medio') === 'bajo');
+    check('Arranque: a 20 FPS va directo a bajo', d(20, 'alto') === 'bajo');
+    check('Arranque: nunca sube ni baja de bajo', d(10, 'bajo') === 'bajo' && d(0, 'alto') === 'alto');
+    check('Este equipo: perfil coherente con la calidad inicial', calidad.manual || PRESETS[PERFIL.nivel] && inicial === PERFIL.nivel,
+      PERFIL.nivel + ' · ' + (EQUIPO.nucleos || '?') + ' núcleos · ' + (EQUIPO.memoria || '?') + ' GB · ' + (GPU || 'GPU sin nombre').slice(0, 60) +
+      (fpsM.arranque.hecho ? ' · arranque ' + Math.round(fpsM.arranque.fps) + ' FPS' : ''));
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+
   // ---------- Prueba de pérdida de contexto: AV.contextTest({ rapido }) ----------
   // Pierde y recupera el contexto de verdad (WEBGL_lose_context) con el mundo quieto (pausa de prueba, dt = 0) y comprueba la
   // pausa y el aviso, el bucle detenido, Recargar a los 5 s (rapido: true lo salta), que al volver se dibuja el mismo mundo
@@ -616,6 +675,7 @@ AVE.module('renderer', function (G) {
     opts = opts || {};
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const fin = () => ({ passed: out.filter(o => o.ok).length, total: out.length, results: out });
+    out.push(...calidadTest().results); // calidad automática (A3)
     const espera = ms => new Promise(r => setTimeout(r, ms));
     const hasta = async (fn, ms) => { const t0 = performance.now(); while (!fn()) { if (performance.now() - t0 > ms) return false; await espera(40); } return true; };
     const enCuadros = async n => { const c0 = cuadros; await hasta(() => cuadros >= c0 + n, 5000); };
@@ -700,5 +760,5 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, get t() { return t; },
-    contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest };
+    contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });
