@@ -4,6 +4,9 @@
 # La pata tiene 2 dedos adelante (hasta y=-0.224) y 2 atrás (hasta y=+0.13); el zapato se modela como un "loft"
 # desde el contorno de la planta hasta el cuello alrededor del tarso, se empuja por fuera del cuerpo y se le da grosor.
 # Suela separada (material SUELA): sobresale 1.4 cm del suelo y baja 6 mm bajo z=0 (los dedos no la atraviesan por fuera).
+# Auditoría 2026-10-24: en el juego se leían como pantuflas largas y planas. Ahora: puntera abombada (TOE_BULGE), punta
+# levantada (TOE_SPRING), suelas más gruesas, cordones y ojales más gruesos, caña de la bota militar más baja y abierta
+# (rozaba la rodilla al andar), aletas de buzo con grosor de verdad y los tenis PR con un parche BANDERA 3:2 por lado.
 import sys, os, math
 sys.path.insert(0, os.path.expanduser('~/AmazonaVerse/Juego/tools/blender'))
 from ropa_lib import *
@@ -12,6 +15,9 @@ R = math.radians
 CX, CY = 0.176, -0.048                       # centro de la planta (pie izquierdo)
 TA = Vector((0.174, 0.017, 0.189)); TB = Vector((0.195, -0.001, 0.042))   # tarso: tobillo alto → tobillo
 TH = 0.006                                   # grosor del empeine
+TOE_BULGE = -0.034                           # (<0) sube la puntera a media altura: caja de dedos redonda de caricatura
+TOE_SPRING = 0.008                           # la punta de la suela se levanta hasta ~5 mm (los dedos siguen dentro)
+FLAG_TENIS = 0.056                           # alto (m) del parche BANDERA en el lado de afuera de cada tenis (8,4 × 5,6 cm)
 
 
 def M():
@@ -51,7 +57,7 @@ def outline_ring(N, s, grow=0.0, **kw):
     return out
 
 
-def upper(name, s, N=40, R_=8, zf=0.012, zc=0.098, rc=0.041, ztop=None, rtop=None, dz=0.016, grow=0.0, low_toe=0.0):
+def upper(name, s, N=40, R_=8, zf=0.012, zc=0.098, rc=0.041, ztop=None, rtop=None, dz=0.016, grow=0.0, low_toe=TOE_BULGE):
     """Empeine: rejilla de filas desde la planta (fila 0) hasta el cuello y, si ztop, la caña por el tarso.
     Devuelve (obj, V, Nn) con posiciones y normales por fila/columna (columna 0 = punta)."""
     foot = outline_ring(N, s, grow); C = axis_at(zc, s)
@@ -122,7 +128,7 @@ def welt(name, s, z, grow, r=0.0022):
     return tube_path(name, [Vector((p.x, p.y, z)) for p in ring], r, seg=4, closed=True)
 
 
-def laces(V, Nn, j0, j1, half, lift, r=0.0024, mt=None, eyelet=None, step=1):
+def laces(V, Nn, j0, j1, half, lift, r=0.0031, mt=None, eyelet=None, step=1):
     """Cordones en X sobre el empeine (filas j0..j1) + ojales opcionales."""
     out = []; L = []
     for j in range(j0, j1 + 1, step):
@@ -131,7 +137,7 @@ def laces(V, Nn, j0, j1, half, lift, r=0.0024, mt=None, eyelet=None, step=1):
     for (a0, b0, na, nb), (a1, b1, _, _) in zip(L, L[1:]):
         for p, q in ((a0, b1), (b0, a1)):
             mid = (p + q) / 2 + (na + nb).normalized() * 0.003
-            out.append(tube_path('cordon', [p, mid, q], r, seg=5))
+            out.append(tube_path('cordon', [p, mid, q], r, seg=6))
     a, b, na, nb = L[-1]
     out.append(tube_path('cordon', [a, (a + b) / 2 + (na + nb).normalized() * 0.003, b], r, seg=6))
     # lazo arriba
@@ -143,7 +149,7 @@ def laces(V, Nn, j0, j1, half, lift, r=0.0024, mt=None, eyelet=None, step=1):
     if eyelet:
         for a, b, na, nb in L:
             for p, n in ((a, na), (b, nb)):
-                e = revolve('ojal', p - n * 0.002, p + n * 0.0015, [(0, 0.0045), (1, 0.0045)], seg=6, cap0=False)
+                e = revolve('ojal', p - n * 0.002, p + n * 0.0018, [(0, 0.0055), (1, 0.0055)], seg=8, cap0=False)
                 out.append(set_mat(e, eyelet))
     return out
 
@@ -181,20 +187,19 @@ def star(name, c, n, u, r=0.02, th=0.0025, mt=None):
 def tenis(s, pr=False):
     mt = M(); mt['SUELA'] = mat('SUELA', hexrgb('#f4f4f0'), 0.7); mt['CORDON'] = mat('CORDON', hexrgb('#f4f4f0'), 0.8)
     N = 40; R_ = 8
-    up, V, Nn = upper('empeine', s, N=N, R_=R_, zf=0.012, zc=0.098, rc=0.041, ztop=0.104, rtop=0.042)
+    up, V, Nn = upper('empeine', s, N=N, R_=R_, zf=0.014, zc=0.098, rc=0.041, ztop=0.104, rtop=0.042)
     top = len(V) - 1; ctr = (s * CX, CY + 0.03, 0.03)
-    parts = [set_mat(thicken(up, bevel=0), mt['TELA']), set_mat(sole('suela', s), mt['SUELA'])]
+    parts = [set_mat(thicken(up, bevel=0), mt['TELA']), set_mat(sole('suela', s, z1=0.018), mt['SUELA'])]
     parts.append(set_mat(patch('puntera', V, Nn, range(0, 3), cols_around(N, 0, 6), TH + 0.0008, 0.003, ctr), mt['SUELA']))
     parts.append(set_mat(patch('talon', V, Nn, range(0, 2), cols_around(N, N // 2, 7), TH + 0.0008, 0.003, ctr), mt['SUELA']))
     parts.append(tongue(V, Nn, top, s, mt['TELA']))
     parts += laces(V, Nn, top - 4, top - 1, 0.017, TH + 0.0065, mt=mt['CORDON'])
     parts.append(collar_ring(V, Nn, top, 0.006, mt['ACENTO']))
     parts.append(heel_tab(V, Nn, top, mt['ACENTO']))
-    if pr:  # estrella blanca a cada lado (afuera y adentro)
-        for sd in (1, -1):
-            c, n = row_pt(V, Nn, 4, sd, 0.2)
-            u = (row_pt(V, Nn, 4, sd, 0.21)[0] - c)
-            parts.append(star('estrella', c + n * (TH + 0.0006), n, u, r=0.024, mt=mt['BLANCO']))
+    if pr:  # bandera de PR: parche BANDERA 3:2 en el lado de afuera, leída normal desde fuera (asta a la izquierda)
+        body = parts[0]
+        parts.append(flag_patch('bandera', Vector((s * (CX + 0.11), CY - 0.012, 0.053)), Vector((0, s, 0)), Vector((0, 0, 1)),
+                                FLAG_TENIS, onto=target_bvh([body]), off=0.0016, nu=14, nv=8))
     else:   # franja lateral ACENTO
         for sd in (1, -1):
             cols = [(sd * k) % N for k in range(5, 17)]
@@ -204,10 +209,10 @@ def tenis(s, pr=False):
 
 def bota(s, kind):
     mt = M(); N = 40; R_ = 8
-    cfg = dict(aventura=dict(ztop=0.166, rtop=0.047, up='CUERO', sole='#3b2a1f', lace='ACENTO', pad='ACENTO', z1=0.018),
-               constructor=dict(ztop=0.166, rtop=0.048, up='ACENTO', sole='#2a2a2a', lace='CORDON', pad='CUERO_OSCURO', z1=0.022),
-               militar=dict(ztop=0.181, rtop=0.051, up='TELA', sole='#1c1c1c', lace='CORDON', pad='CUERO_OSCURO', z1=0.018),
-               espacial=dict(ztop=0.160, rtop=0.052, up='BLANCO', sole='#8f969c', lace=None, pad='METAL', z1=0.030))[kind]
+    cfg = dict(aventura=dict(ztop=0.166, rtop=0.049, up='CUERO', sole='#3b2a1f', lace='ACENTO', pad='ACENTO', z1=0.024),
+               constructor=dict(ztop=0.166, rtop=0.05, up='ACENTO', sole='#2a2a2a', lace='CORDON', pad='CUERO_OSCURO', z1=0.028),
+               militar=dict(ztop=0.162, rtop=0.058, up='TELA', sole='#1c1c1c', lace='CORDON', pad='CUERO_OSCURO', z1=0.024),
+               espacial=dict(ztop=0.160, rtop=0.052, up='BLANCO', sole='#8f969c', lace=None, pad='METAL', z1=0.032))[kind]
     mt['SUELA'] = mat('SUELA', hexrgb(cfg['sole']), 0.75, 0.4 if kind == 'espacial' else 0.0)
     if kind == 'constructor': mt['ACENTO'] = mat('ACENTO', hexrgb('#e8b62a'), 0.6)
     if kind == 'militar':
@@ -252,7 +257,7 @@ def buzo(s):
     parts = [set_mat(thicken(up, bevel=0), mt['GOMA']), set_mat(sole('suela', s), mt['SUELA'])]
     parts.append(collar_ring(V, Nn, top, 0.0065, mt['GOMA']))
     # aleta: hoja ACENTO hacia adelante, más ancha en la punta, con bordes (rieles) y nervios
-    G = []; nu = 9; nv = 10; y0 = -0.226; y1 = -0.47
+    G = []; nu = 9; nv = 10; y0 = -0.226; y1 = -0.45
     for m in range(nv + 1):
         t = m / nv; hw = 0.07 + 0.035 * t ** 0.8
         row = []
@@ -263,24 +268,24 @@ def buzo(s):
             row.append(Vector((s * (CX + u * hw), y, z)))
         G.append(row)
     bl = grid_mesh('aleta', G); orient_out(bl, (s * CX, -0.3, -0.2))
-    parts.append(set_mat(thicken(bl, 0.007, 0.002), mt['ACENTO']))
+    parts.append(set_mat(thicken(bl, 0.011, 0.003), mt['ACENTO']))      # antes 7 mm: de canto parecía una hoja de papel
     for k in (0, nu - 1):
-        parts.append(set_mat(tube_path('riel', [G[m][k] + Vector((0, 0, 0.0035)) for m in range(nv + 1)], 0.0065, seg=8), mt['ACENTO']))
+        parts.append(set_mat(tube_path('riel', [G[m][k] + Vector((0, 0, 0.0055)) for m in range(nv + 1)], [0.011 - 0.004 * m / nv for m in range(nv + 1)], seg=10), mt['ACENTO']))
     for k in (2, nu - 3):
-        parts.append(set_mat(tube_path('nervio', [G[m][k] + Vector((0, 0, 0.007)) for m in range(1, nv)], 0.0028, seg=6), mt['GOMA']))
+        parts.append(set_mat(tube_path('nervio', [G[m][k] + Vector((0, 0, 0.011)) for m in range(1, nv)], 0.0042, seg=8), mt['GOMA']))
     # tira del talón con hebilla
     zt = 0.09; Cz = axis_at(zt, s); pts = []
     for a in range(-110, 111, 20):
         th_ = R(180 + a); d = Vector((math.sin(th_) * s, -math.cos(th_), 0))
         pts.append(Cz + d * 0.06 + Vector((0, 0, -0.012 * abs(a) / 110)))
     nr = [((p - axis_at(p.z, s)) * Vector((1, 1, 0))).normalized() for p in pts]
-    parts.append(set_mat(ribbon('tira', pts, nr, 0.016, 0.004), mt['ACENTO']))
+    parts.append(set_mat(ribbon('tira', pts, nr, 0.02, 0.005), mt['ACENTO']))
     return parts
 
 
 def chancletas(s):
     mt = M(); mt['SUELA'] = mat('SUELA', hexrgb('#f2ece0'), 0.8)
-    parts = [set_mat(sole('suela', s, z0=-0.006, z1=0.012, grow=0.012), mt['SUELA'])]
+    parts = [set_mat(sole('suela', s, z0=-0.006, z1=0.016, grow=0.012), mt['SUELA'])]
     # tira ancha ACENTO en arco sobre la base de los dedos (perfil = techo de los dedos + holgura)
     bvh = body_bvh(); xs = [CX - 0.088 + 0.176 * k / 16 for k in range(17)]; zs = []
     for x in xs:
@@ -298,7 +303,7 @@ def chancletas(s):
         t = (pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized(); n = t.cross(Vector((0, 1, 0))).normalized()
         if n.z < 0: n = -n
         nr.append(n)
-    parts.append(set_mat(ribbon('tira', pts, nr, 0.036, 0.006), mt['ACENTO']))
+    parts.append(set_mat(ribbon('tira', pts, nr, 0.038, 0.008), mt['ACENTO']))
     for p in (pts[1], pts[-2]):  # remaches
         parts.append(set_mat(sphere('remache', p + Vector((0, 0, 0.004)), 0.005, seg=8, rings=4), mt['ACENTO']))
     return parts
@@ -320,10 +325,21 @@ def finish(name, build):
     sides = []
     for s, bone in ((1, 'pieL3'), (-1, 'pieL3.001')):
         parts = build(s)
-        for p in parts: apply_mods(p)
+        for p in parts: apply_mods(p); ensure_uv(p)
+        for p in parts:   # punta levantada (toe spring): todo el zapato, más cuanto más adelante
+            for v in p.data.vertices:
+                f = max(0.0, (CY - 0.06 - v.co.y) / 0.17); v.co.z += TOE_SPRING * f * f
+            p.data.update()
+        flags = [p for p in parts if p.data.materials and p.data.materials[0].name == 'BANDERA']
         o = join(parts, name + ('_L' if s > 0 else '_R'))
+        keep = [m.name for m in o.data.materials if m.name != 'BANDERA']
+        if flags:   # cyl_uv_at pisa todas las caras: se guarda y se repone la UV del parche
+            bi = [i for i, m in enumerate(o.data.materials) if m.name == 'BANDERA'][0]
+            saved = {li: tuple(o.data.uv_layers['UVMap'].data[li].uv) for pl in o.data.polygons if pl.material_index == bi for li in pl.loop_indices}
         cyl_uv_at(o, s * CX, CY, R(90), sx=s)
-        shade_smooth(o, 45)
+        if flags:
+            for li, uv in saved.items(): o.data.uv_layers['UVMap'].data[li].uv = uv
+        shade_smooth(o, 60)
         sides.append((o, bone))
     check_clear([o for o, _ in sides], eyes=False)
     for o, b in sides: rigid(o, b)
