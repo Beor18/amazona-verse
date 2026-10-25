@@ -43,7 +43,8 @@
         { id: 'mirador', texto: 'Sube al mirador de la colina', guia: G => at(G, 'mirador') },
       ],
       guiaBloqueada: G => !!G.c.build(),
-      indicadores: S => { const I = S.indicators; return S.refuge ? `Seguridad del refugio: <b>${I.seguridad}</b> · Acceso: <b>${I.acceso}</b> · Hábitat: <b>${I.habitat}</b>` : ''; },
+      // Antes de la crecida los indicadores no se conocen: «por descubrir» en vez de «—» (UI v21 P3)
+      indicadores: S => { const I = S.indicators, v = x => (x && x !== '—' ? x : 'por descubrir'); return S.refuge ? `Seguridad del refugio: <b>${v(I.seguridad)}</b> · Acceso: <b>${v(I.acceso)}</b> · Hábitat: <b>${v(I.habitat)}</b>` : ''; },
       fin: S => (S.refuge && S.refuge.parcel === 'B' ? 'El refugio de la colina protege a la familia de Luma.' : 'El refugio quedó junto al río y la crecida lo dañó.') +
         ' El transmisor reveló el símbolo de los 36 y desbloqueaste el plano de una embarcación. Continuará…',
     },

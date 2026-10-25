@@ -625,6 +625,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #steps li.now { display: block; font-size: 15px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #steps li.now::after { display: none; }
   #quest.abierto { padding-bottom: var(--sp-3); }
+  #quest.abierto #steps { margin-top: 6px; } /* la barra no queda pegada al capítulo (UI v21 P3) */
   #quest.abierto .chapter, #quest.abierto #missions:not(:empty) { display: flex; }
   #quest.abierto #indicators:not(:empty) { display: block; }
   #quest.abierto #steps li.now { display: flex; white-space: normal; }
