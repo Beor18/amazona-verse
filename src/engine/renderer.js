@@ -426,8 +426,10 @@ AVE.module('renderer', function (G) {
   function restaurarContexto() {
     clearTimeout(CTX.timer);
     avisoContexto('volviendo');
-    // Un cuadro para que se vea "¡Ya casi!" antes de compilar (en un Chromebook puede tardar uno o dos segundos)
-    requestAnimationFrame(() => setTimeout(() => {
+    // Una pausa corta para que se vea "¡Ya casi!" antes de compilar (en un Chromebook puede tardar uno o dos segundos). Con
+    // setTimeout y no con requestAnimationFrame: en una pestaña o un panel ocultos no hay cuadros y la vuelta se quedaba
+    // esperando (QA-24); el bucle sí espera a que la pestaña se vea.
+    setTimeout(() => {
       if (renderer.getContext().isContextLost()) return; // se volvió a perder: lo atiende webglcontextlost
       try { G.emit('contexto', true); precalentar(); }
       catch (e) { console.warn('AVE contexto:', e && e.message || e); }
@@ -437,7 +439,7 @@ AVE.module('renderer', function (G) {
       if (G.pausa) G.pausa.set('contexto', false);
       avisoContexto(null);
       start();
-    }, 0));
+    }, 60);
   }
   const AVISO = {
     perdido: { ojo: ['Un momento', 'One moment'], t: ['La selva tomó un respiro', 'The forest is taking a breather'],
