@@ -1,4 +1,4 @@
-# Pipeline de edificios de Kelvin (.max -> migrado fiel + kit web). Ver docs/EDIFICIOS.md. Datos de trabajo en $AV_MAX_WORK.
+# Pipeline de edificios de Kelvin (.max -> migrado fiel + kit web). Ver docs/EDIFICIOS.md.
 """Genera assets/models/edificios/kit.js (AV_EDIFICIOS_KIT) y conversion.json (migrado -> web) a partir de
 los _report_web_*.json del pipeline y de los GLB del repo.
 

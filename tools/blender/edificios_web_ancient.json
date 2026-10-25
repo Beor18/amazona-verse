@@ -3,40 +3,38 @@
   "src": "ancient_complejo_group001",
   "desc": "Complejo de ruinas (torres y templos unidos)",
   "drop": [
-   "damage",
-   "deco",
-   "beams",
-   "sculpt",
-   "bricks"
+   "debris",
+   "damage"
   ],
-  "maxverts": 7840,
-  "boxfit": true
+  "maxverts": 999999,
+  "remesh": 1,
+  "budget": 4900,
+  "voxel": 0.3,
+  "rmplanar": 8
  },
  "templo_grande_a": {
   "src": "ancient_largea",
   "desc": "Templo grande A",
   "drop": [
-   "damage",
-   "deco",
-   "beams",
-   "sculpt",
-   "bricks"
+   "debris",
+   "damage"
   ],
-  "maxverts": 7840,
-  "boxfit": true
+  "maxverts": 999999,
+  "remesh": 1,
+  "budget": 4900,
+  "voxel": 0.15
  },
  "templo_grande_d": {
   "src": "ancient_larged",
   "desc": "Templo grande D",
   "drop": [
-   "damage",
-   "deco",
-   "beams",
-   "sculpt",
-   "bricks"
+   "debris",
+   "damage"
   ],
-  "maxverts": 7840,
-  "boxfit": true
+  "maxverts": 999999,
+  "remesh": 1,
+  "budget": 4900,
+  "voxel": 0.15
  },
  "templo_grande_e": {
   "src": "ancient_largee",
@@ -54,14 +52,13 @@
   "src": "ancient_largef",
   "desc": "Templo grande F",
   "drop": [
-   "damage",
-   "deco",
-   "beams",
-   "sculpt",
-   "bricks"
+   "debris",
+   "damage"
   ],
-  "maxverts": 7840,
-  "boxfit": true
+  "maxverts": 999999,
+  "remesh": 1,
+  "budget": 4900,
+  "voxel": 0.15
  },
  "templo_mediano_f": {
   "src": "ancient_mediumf",

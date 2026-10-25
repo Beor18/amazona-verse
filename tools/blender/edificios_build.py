@@ -781,17 +781,27 @@ def remesh_optimize(objs, budget, res):
     dst = src.copy()
     dst.data = src.data.copy()
     bpy.context.scene.collection.objects.link(dst)
+    vsz = VOXEL_M if VOXEL_M > 0 else ((res / 1000.0) if res >= 20 and res < 1000 and VOXEL_ABS else max(0.05, size / res))
+    # open shells (single-sided walls, slabs) vanish in a voxel remesh: give everything thickness first
+    sd = dst.modifiers.new('sd', 'SOLIDIFY')
+    sd.thickness = vsz * 1.5
+    sd.offset = 0.0
+    sd.use_even_offset = False
+    bpy.context.view_layer.objects.active = dst
+    bpy.ops.object.modifier_apply(modifier=sd.name)
     rm = dst.modifiers.new('vx', 'REMESH')
     rm.mode = 'VOXEL'
-    rm.voxel_size = (res / 1000.0) if res >= 20 and res < 1000 and VOXEL_ABS else max(0.05, size / res)
+    rm.voxel_size = vsz
     rm.use_smooth_shade = False
     bpy.context.view_layer.objects.active = dst
     bpy.ops.object.modifier_apply(modifier=rm.name)
-    log('  remesh voxel %.3f m -> %d tris' % (rm.voxel_size, tri_count([dst])))
+    log('  remesh voxel %.3f m -> %d tris' % (vsz, tri_count([dst])))
+    check_mem(MEMLIM)
     m = dst.modifiers.new('pl', 'DECIMATE')
     m.decimate_type = 'DISSOLVE'
-    m.angle_limit = math.radians(3.0)
+    m.angle_limit = math.radians(RM_PLANAR)
     bpy.ops.object.modifier_apply(modifier=m.name)
+    log('  planar -> %d tris' % tri_count([dst]))
     enforce_budget(dst, budget)
     # materials from nearest original face
     dg = bpy.context.evaluated_depsgraph_get()
@@ -1382,6 +1392,8 @@ PLANAR = not args.get('noplanar')
 PLANAR_DEG = float(args.get('planar', 4.0))
 VOXEL_ABS = bool(args.get('voxabs'))
 PART_REMESH = bool(args.get('partremesh'))
+VOXEL_M = float(args.get('voxel', 0) or 0)
+RM_PLANAR = float(args.get('rmplanar', 3.0))
 for name in IDS:
     aid = WEBMAP[name]['src'] if MODE == 'web' else name
     try:
@@ -1401,6 +1413,10 @@ for name in IDS:
                        secs=round(time.time() - ta, 1), peak=round(rss_peak_gb(), 2))
         else:
             spec = WEBMAP[name]
+            if spec.get('voxel'):
+                VOXEL_M = float(spec['voxel'])
+            if spec.get('rmplanar'):
+                RM_PLANAR = float(spec['rmplanar'])
             budget = int(spec.get('budget', BUDGET))
             maxverts = int(spec.get('maxverts', budget * (1.6 if budget > 2000 else 1.3)))
             for attempt in range(3):

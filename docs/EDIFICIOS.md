@@ -8,7 +8,7 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 
 ## Convenciones
 - Metros, Y arriba y pivote en el centro de la base (y = 0). 1 unidad Max = 0,3048 m.
-- Tris: ≤5 000 en edificios y ≤1 500 en props (carpas, campamentos, losas, pilares, torres pequeñas, muros). La media es de 194 KB por `_glb.js`.
+- Tris: ≤5 000 en edificios y ≤1 500 en props (carpas, campamentos, losas, pilares, torres pequeñas, muros). La media es de 201 KB por `_glb.js`.
 - Texturas compartidas en `tex/`: 14 JPG de 512 px en repetición, referenciados por uri.
   - Un material por textura, con el mismo nombre en todos los modelos y 1–3 materiales por modelo.
   - Paleta Savage: RoofThatched, WoodPlanks, WoodHewn, BarkNew, TarpFabricDamaged, RockSharp, MudRocky.
@@ -19,7 +19,8 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 - `conversion.json` da, por asset migrado, `M` (web = M·p_migrado), `k` y `c`. Las variantes `_v2` reutilizan su base; las losas `_v4`…`_v7` usan una M no uniforme.
 - Retopología:
   - Savage: los troncos `Pikes` pasan a prismas; las sogas (`Lashing`) y los escombros (`Debris`) se quitan.
-  - Ancient: remallado por vóxeles de las piezas que el decimado no reduce. Los templos grandes y el complejo son un *blockout* de cajas por bloque.
+  - Ancient: remallado por vóxeles de las piezas que el decimado no reduce.
+  - templo_grande_a, _d y _f y complejo_ruinas: modelo entero con *solidify*, remallado por vóxeles (0,15 m; 0,3 m en el complejo), plano y colapso a ≤5 000 tris. El material es el de la cara original más cercana y la textura del kit va reproyectada en caja.
 
 ## Catálogo
 | nombre | kit · pieza KB3D | tris | KB js | tris lejano | instancias |
@@ -43,7 +44,7 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 | casa_paja_b | Savage · BldgB | 3503 | 215 | 550 | 3 |
 | casa_plataforma | Savage · HutWithDeck | 3568 | 292 | 513 | 3 |
 | cercado_redondo | Savage · Hall_Round | 2957 | 298 | 572 | 2 |
-| complejo_ruinas | Ancient Temples · LargeH_DebrisBlocksLg001 | 3756 | 347 | 559 | 1 | blockout
+| complejo_ruinas | Ancient Temples · Group001 (torres y templos unidos) | 4711 | 473 | 582 | 1 |
 | corral | Savage · Pen_Fabric001 | 4017 | 328 | 467 | 1 |
 | empalizada | Savage · Wall_PikesSM | 1008 | 81 | 248 | 25 |
 | losa_piedra | propio · Box | 12 | 3 | 12 | 9 |
@@ -76,10 +77,10 @@ Fuente: `04_Mapa_3D/AV3DMaxExportBuildings/AV3DMaxExportBuildings.max` (3ds Max 
 | ruina_torre_e | Ancient Temples · Component_TowerE | 1156 | 105 | 276 | 1 |
 | ruina_torre_f | Ancient Temples · Component_TowerF | 1445 | 90 | 348 | 3 |
 | templo_grande | Ancient Temples · LargeB | 2742 | 300 | 575 | 3 |
-| templo_grande_a | Ancient Temples · LargeA | 3792 | 346 | 567 | 3 | blockout
-| templo_grande_d | Ancient Temples · LargeD | 3732 | 344 | 515 | 1 | blockout
+| templo_grande_a | Ancient Temples · LargeA | 4662 | 436 | 581 | 3 |
+| templo_grande_d | Ancient Temples · LargeD | 4665 | 507 | 579 | 1 |
 | templo_grande_e | Ancient Temples · LargeE | 3772 | 348 | 557 | 2 |
-| templo_grande_f | Ancient Temples · LargeF | 3876 | 345 | 526 | 1 | blockout
+| templo_grande_f | Ancient Temples · LargeF | 4723 | 433 | 573 | 1 |
 | templo_mediano | Ancient Temples · MediumE | 3906 | 301 | 594 | 1 |
 | templo_mediano_f | Ancient Temples · MediumF | 4436 | 344 | 578 | 1 |
 | templo_mediano_g | Ancient Temples · MediumG | 3917 | 333 | 578 | 1 |
