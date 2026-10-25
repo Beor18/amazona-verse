@@ -72,10 +72,20 @@ AVE.module('input', function (G) {
     return Object.values(CANON).includes(k) ? null : k; // una W que ya no mueve no cuenta como W
   }
 
+  // Foco con el ratón en un botón del HUD (Diario, Gestos, Pausa, Controles): tras un clic el botón se queda con el foco y el
+  // Espacio lo volvía a pulsar en lugar de saltar o subir volando («a veces no eleva más»). Ahora el Espacio va al juego y el
+  // botón suelta el foco. Navegando con Tab, Espacio y Enter activan el botón como siempre.
+  let conTab = false;
+  addEventListener('keydown', e => { if (e.key === 'Tab') conTab = true; }, true);
+  addEventListener('pointerdown', () => { conTab = false; }, true);
+  const botonDelHud = b => !conTab && !b.closest('#pause, #card, #dialog, #creator, #comic, #end') && !!b.closest('#sys, #acts, #emotes, .guia-hud');
   addEventListener('keydown', e => {
     if (capturando) return; // la sección Teclas está esperando una tecla
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
-    if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
+    if (e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) {
+      if (e.key !== ' ' || !botonDelHud(e.target)) return;
+      e.target.blur();
+    }
     const k = e.key.toLowerCase(), t = tokenDe(k);
     if (t != null) { keys.add(t); pulsadas.set(k, t); }
     if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
@@ -172,7 +182,8 @@ AVE.module('input', function (G) {
   $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.tryDash(); });
   $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
   const actBtn = $('b-act');
-  actBtn.addEventListener('click', () => { if (!paused()) G.interaccion.action(); });
+  // pointerdown como los demás botones: en iOS el 'click' de un segundo dedo (con el joystick agarrado) no llega
+  actBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.interaccion.action(); });
   // Bucear en táctil: mantener el botón equivale a mantener C
   // (en el agua ocupa el lugar de Volar, así caben los botones en un teléfono)
   const diveBtn = $('b-dive'), flyBtn = $('b-fly');
@@ -218,6 +229,10 @@ AVE.module('input', function (G) {
       ok('flechas siguen fijas', (tecla('keydown', 'ArrowUp'), keys.has('arrowup')) && (tecla('keyup', 'ArrowUp'), !keys.has('arrowup')));
       ok('tecla ocupada: se intercambian', asignar('accion', 'i') && mapa.accion === 'i' && mapa.arriba === 'e', `${mapa.accion}/${mapa.arriba}`);
       ok('reservadas rechazadas (Espacio, C, 1, Enter, flecha)', ![' ', 'c', '1', 'Enter', 'ArrowUp'].some(k => asignar('volar', k)) && mapa.volar === 'v');
+      const accionReal = G.interaccion.action; let toques = 0;
+      G.interaccion.action = () => { toques++; };
+      try { actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' })); } finally { G.interaccion.action = accionReal; }
+      ok('botón Acción táctil responde al tocar (pointerdown)', toques === (paused() ? 0 : 1), String(toques));
       ok('sin teclas repetidas', new Set(ACCIONES.map(a => mapa[a])).size === ACCIONES.length);
       asignar('aterrizar', 'b');
       ok('es(): aterrizar con B, acción con I y con Enter', es('aterrizar', { key: 'B' }) && es('accion', { key: 'I' }) && es('accion', { key: 'Enter' }) && !es('accion', { key: 'e' }));

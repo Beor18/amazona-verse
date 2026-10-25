@@ -368,7 +368,8 @@ AVE.module('renderer', function (G) {
 
   // ---------- Calidad adaptativa por FPS ----------
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
-  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
+  // quieta: contextTest la congela mientras compara fotos (con la máquina cargada bajaba un nivel entre una foto y otra; QA-30)
+  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
   G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => requestAnimationFrame(() => { precalentar(); fpsM.warm = 3000; })); });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
@@ -404,7 +405,7 @@ AVE.module('renderer', function (G) {
   function manchaJugador() { const A = G.actores; if (A && A.pShadow) A.pShadow.material.opacity = sun.castShadow ? 0.16 : 0.25; }
   G.on('listo', manchaJugador);
   function adaptCalidad(raw) {
-    if (!(raw > 0 && raw < 120) || calidad.manual) return;
+    if (!(raw > 0 && raw < 120) || calidad.manual || fpsM.quieta) return;
     if (fpsM.warm > 0) { fpsM.warm -= raw; return; }
     if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return;   // portada o creador: el mundo no se dibuja
     const A = fpsM.arranque;
@@ -689,15 +690,20 @@ AVE.module('renderer', function (G) {
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
       return { w, h, px };
     };
+    // caja: rectángulo (en % del lienzo, y hacia abajo) donde caen los píxeles distintos, para saber qué cambió si falla
     const comparar = (A, B) => {
-      let n = 0, vivos = 0, vivosA = 0, distintos = 0;
+      let n = 0, vivos = 0, vivosA = 0, distintos = 0, x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1;
       for (let i = 0; i < B.px.length; i += 12) {
         n++; const a = A.px, b = B.px;
         if (b[i] + b[i + 1] + b[i + 2] > 30) vivos++;
         if (a[i] + a[i + 1] + a[i + 2] > 30) vivosA++;
-        if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 48) distintos++;
+        if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 48) {
+          distintos++; const p = i >> 2, x = p % B.w, y = B.h - 1 - Math.floor(p / B.w);
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
       }
-      return { vivos: vivos / n, vivosA: vivosA / n, distintos: A.w === B.w && A.h === B.h ? distintos / n : 1 };
+      const caja = x1 < 0 ? '' : ' en x ' + Math.round(100 * x0 / B.w) + '–' + Math.round(100 * x1 / B.w) + ' %, y ' + Math.round(100 * y0 / B.h) + '–' + Math.round(100 * y1 / B.h) + ' %';
+      return { vivos: vivos / n, vivosA: vivosA / n, distintos: A.w === B.w && A.h === B.h ? distintos / n : 1, caja };
     };
     const atlas = () => {
       const rt = G.vegetacion && G.vegetacion.atlas; if (!rt) return null;
@@ -705,18 +711,43 @@ AVE.module('renderer', function (G) {
       let cubre = 0; for (let i = 3; i < px.length; i += 4) if (px[i] > 127) cubre++;
       return { w: rt.width, h: rt.height, px, cubre: cubre / (rt.width * rt.height) };
     };
+    // Mundo asentado antes de cada foto (QA-30): después de otras baterías puede quedar streaming por colocar o sólidos por
+    // añadir (la cámara choca con ellos). Termina lo pendiente y repite la foto hasta que dos seguidas (3 cuadros entre ellas)
+    // coincidan. Se cuenta en cuadros y no en milisegundos: con la máquina cargada un cuadro tarda mucho más.
+    // Si el jugador no se ha movido desde el inicio, el streaming deja a propósito modelos en cola hasta que se mueva y
+    // terminar() no acaba nunca (la prueba se colgaba en una partida recién abierta): esa espera llega como mucho a 240 cuadros.
+    const asentar = async () => {
+      const ST = G.mundo && G.mundo.streaming;
+      if (ST && ST.terminar) { let hecho = false; ST.terminar().then(() => { hecho = true; }); const c0 = cuadros; await hasta(() => hecho || cuadros >= c0 + 240, 60000); }
+      if (G.solidos && G.solidos.terminar) G.solidos.terminar();
+      await enCuadros(3);
+      let f = foto(), ruido = 1;
+      for (let i = 0; i < 10 && ruido >= 0.005; i++) {
+        await enCuadros(3);
+        const g = foto(); ruido = comparar(f, g).distintos; f = g;
+      }
+      return { f, ruido };
+    };
     const errores = [], ce = console.error, e0 = (window.__aveErrores || []).length;
     console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
     const idioma = G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'en' : 'es';
+    // Causa de QA-30: el haz guía y su flecha laten con el reloj real (misiones.js le pasa performance.now()) aunque el mundo
+    // esté en pausa; con el haz cerca de la cámara cubre una franja del lienzo y entre la foto de antes y la de después su
+    // brillo cambiaba hasta un 2,4 % de los píxeles. Durante la prueba quedan quietos en un instante fijo (se siguen dibujando).
+    // La calidad adaptativa tampoco cambia a mitad de la prueba.
+    const guia0 = G.fx && G.fx.guide;
+    if (guia0) G.fx.guide = tg => guia0(tg, 0);
+    fpsM.quieta = true;
     try {
       await Promise.resolve(G.vegetacion && G.vegetacion.listo);
       if (G.pausa) G.pausa.set('prueba-contexto', true);
-      await enCuadros(3);
-      const A = foto(), atA = atlas(), estado = JSON.stringify(G.S), r0 = CTX.restauradas;
+      const { f: A, ruido } = await asentar();
+      const atA = atlas(), estado = JSON.stringify(G.S), r0 = CTX.restauradas;
       const conPost = post.activo, conSombra = sun.castShadow;
       const t0 = performance.now();
       ext.loseContext();
-      check('Detecta la pérdida y pausa el juego', await hasta(() => CTX.perdido, 3000) && (!G.pausa || G.pausa.activa()), Math.round(performance.now() - t0) + ' ms');
+      // Esperas largas por condición (pérdida y vuelta): con la máquina cargada, compilar al volver llegó a tardar 25 s
+      check('Detecta la pérdida y pausa el juego', await hasta(() => CTX.perdido, 15000) && (!G.pausa || G.pausa.activa()), Math.round(performance.now() - t0) + ' ms');
       const el = CTX.el, abierto = () => !!el && el.classList.contains('abierto');
       check('Aviso para niños visible, en el idioma del juego', abierto() && el.lang === idioma && el.querySelector('h2').textContent.length > 5 &&
         el.getBoundingClientRect().width > 0, el ? idioma + ' · ' + el.querySelector('h2').textContent : 'sin aviso');
@@ -730,13 +761,13 @@ AVE.module('renderer', function (G) {
       }
       const t1 = performance.now();
       ext.restoreContext();
-      check('El contexto vuelve, el juego sigue y el aviso se cierra', await hasta(() => CTX.restauradas > r0 && !CTX.perdido, 20000) && !abierto(),
+      check('El contexto vuelve, el juego sigue y el aviso se cierra', await hasta(() => CTX.restauradas > r0 && !CTX.perdido, 90000) && !abierto(),
         Math.round(performance.now() - t1) + ' ms');
-      await enCuadros(3);
-      const B = foto(), cmp = comparar(A, B);
+      const B = (await asentar()).f, cmp = comparar(A, B);
       // Relativo a la foto de antes (una vista con sombra o cielo oscuro tiene menos píxeles claros; QA-30)
       check('Después se dibuja el mundo (píxeles no negros)', cmp.vivos > 0.5 && cmp.vivos >= cmp.vivosA - 0.02, pct(cmp.vivosA) + ' → ' + pct(cmp.vivos) + ' con color');
-      check('El mundo se ve igual que antes de perderse', cmp.distintos < 0.02, pct(cmp.distintos) + ' de píxeles distintos');
+      check('El mundo se ve igual que antes de perderse', cmp.distintos < 0.02, pct(cmp.distintos) + ' de píxeles distintos' +
+        (cmp.distintos >= 0.02 ? cmp.caja : '') + ' (ruido antes ' + pct(ruido) + ', calidad ' + calidad.nivel + ')');
       if (atA) {
         const atB = atlas(); let d = 0; for (let i = 0; i < atA.px.length; i += 16) if (Math.abs(atA.px[i] - atB.px[i]) > 8) d++;
         check('El atlas de impostores de la flora se repintó', atB.cubre > 0.05 && Math.abs(atB.cubre - atA.cubre) < 0.01 && d / (atA.px.length / 16) < 0.01,
@@ -751,8 +782,10 @@ AVE.module('renderer', function (G) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
       console.error = ce;
+      if (guia0) G.fx.guide = guia0;
+      fpsM.quieta = false;
       if (gl.isContextLost()) { try { ext.restoreContext(); } catch (e) { /* ya volvía */ } }
-      await hasta(() => !CTX.perdido, 10000);
+      await hasta(() => !CTX.perdido, 90000);
       if (G.pausa) G.pausa.set('prueba-contexto', false);
     }
     return fin();

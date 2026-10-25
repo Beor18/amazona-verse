@@ -36,7 +36,9 @@ AVE.module('interaccion', function (G) {
     if (modoActivo()) { api.modo.accion(); return; }
     const it = nearest();
     if (it) { it.use(); return; }
-    if (lleva()) G.agarre.soltar();
+    if (lleva()) { G.agarre.soltar(); return; }
+    // Nada cerca: que el botón no parezca roto
+    G.ui.toast('Aquí no hay nada para usar. Acércate a lo que brilla: el botón cambia de nombre.');
   }
   const lleva = () => !!(G.agarre && G.agarre.lleva && G.agarre.lleva());
   // Aviso de acción, verbo del botón contextual y botón Bucear (al final de cada paso de simulación)
@@ -51,6 +53,9 @@ AVE.module('interaccion', function (G) {
     const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0] : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
     const actBtn = G.input.actBtn;
     if (actBtn.textContent !== verb) actBtn.textContent = verb;
+    // Atenuado cuando no hay nada que hacer; con algo cerca se ve pleno y dice el verbo
+    const libre = verb === 'Acción';
+    if (actBtn.classList.contains('sin-objetivo') !== libre) { actBtn.classList.toggle('sin-objetivo', libre); actBtn.style.opacity = libre ? '0.65' : ''; }
     G.input.syncSwimButtons(G.fisica.MOVE.swimming);
   }, 90);
   return api;

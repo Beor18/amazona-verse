@@ -182,7 +182,7 @@
     }
     $('comic').hidden = true;
     // Guardado, migración y respaldo
-    const KEY = SV.KEY;
+    const KEY = SV.KEY, copiasAntes = new Set(SV.copiasIlegibles().map(c => c.clave)); // copias de rescate que ya había: la prueba solo quita las suyas
     check('Guardar funciona', SV.save(true));
     const snap = SV.serialize();
     SV.reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
@@ -197,7 +197,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(v2)); } catch (e) { /* sin almacenamiento */ }
     check('Partida v2 se migra a v3 sin perder progreso', SV.load(true) && S.step === 2 && S.collected[0] === 'm1' && S.events.length === 3 && S.events[1].type === 'LocationDiscovered' && S.events[2].seq === 3);
     try { localStorage.setItem(KEY, '{roto'); } catch (e) { /* sin almacenamiento */ }
-    check('Partida dañada se rechaza y se guarda una copia', SV.load(true) === false && localStorage.getItem(KEY + '.unreadable') === '{roto');
+    check('Partida dañada se rechaza y se guarda una copia de rescate con fecha', SV.load(true) === false && SV.copiasIlegibles().some(c => c.raw === '{roto' && !copiasAntes.has(c.clave)) && localStorage.getItem(KEY) === '{roto');
     try { localStorage.setItem(KEY, JSON.stringify({ v: 1, step: 3 })); } catch (e) { /* sin almacenamiento */ }
     check('Partida v1 (incompatible) se rechaza', SV.load(true) === false);
     try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
@@ -246,7 +246,7 @@
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
     SV.reset(true);
-    try { localStorage.removeItem(KEY + '.unreadable'); } catch (e) { /* sin almacenamiento */ }
+    try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
     devolver();
     T.restoreSave(keep);
     G.quiet = false;
@@ -326,7 +326,7 @@
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
     check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia) li.found').length === 12);
+    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 12);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -618,9 +618,16 @@
       const PAR = G.c.paradas.lista;
       const todos = () => [].concat(G.interaccion.list.map(i => ({ id: i.id, x: i.x, z: i.z })), G.diario.entries.map(f => ({ id: 'diario:' + f.id, x: f.x, z: f.z })), G.objetos.recursos.map(r => ({ id: 'obj:' + r.id, x: r.x, z: r.z })));
       const cerca = PAR.flatMap(p => todos().filter(o => o.id !== p.id && Math.hypot(o.x - p.x, o.z - p.z) < G.c.paradas.SEPARACION).map(o => p.id + '↔' + o.id));
-      check('3 paradas a 5 m o más de interactuables, hallazgos y objetos', PAR.length === 3 && cerca.length === 0, cerca.join(', '));
-      for (const p of PAR) { useAt(p.id, 1, 0); if ($('ch-' + p.pregunta.correcta)) { $('ch-' + p.pregunta.correcta).click(); if ($('edu-seguir')) $('edu-seguir').click(); } }
-      check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 3, JSON.stringify(S.edu.paradas));
+      check('8 paradas a 5 m o más de interactuables, hallazgos y objetos', PAR.length === 8 && cerca.length === 0, cerca.join(', '));
+      const PR = PAR.filter(p => p.fuente);
+      check('5 paradas de ciencia de Puerto Rico con fuente, ficha verificada y textos ES/EN', PR.length === 5 && PR.every(p => AU.verificada(AU.ficha(p.ficha)) && AU.ficha(p.ficha).fuente === p.fuente && [p.pregunta.enunciado, ...p.pregunta.opciones, p.pregunta.retro.correcta, p.pregunta.retro.incorrecta].every(x => x.es && x.en)), PR.map(p => p.id).join(','));
+      // Posiciones medidas sobre el mapa (alrededor del POI 'aldea'): ninguna se apartó de su sitio y todas quedan en seco
+      const aldea = E.poi('aldea'), prov0 = p => ({ x: aldea.x + p.prov[0].dx, z: aldea.z + p.prov[0].dz });
+      check('Las 5 de ciencia quedan donde se midieron (sin apartarse) y en suelo seco', !!aldea && PR.every(p => Math.hypot(p.x - prov0(p).x, p.z - prov0(p).z) < 0.01 && !(G.agua.levelAt(p.x, p.z) > G.terreno.height(p.x, p.z))), PR.map(p => p.id + ' ' + p.x.toFixed(1) + ',' + p.z.toFixed(1)).join(' · '));
+      const conFuente = [];
+      for (const p of PAR) { useAt(p.id, 1, 0); if (p.fuente) conFuente.push($('card').textContent.includes('Fuente: ' + p.fuente)); if ($('ch-' + p.pregunta.correcta)) { $('ch-' + p.pregunta.correcta).click(); if ($('edu-seguir')) $('edu-seguir').click(); } }
+      check('Cada parada de ciencia de Puerto Rico muestra su fuente al abrirse', conFuente.length === 5 && conFuente.every(Boolean), conFuente.join());
+      check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 8, JSON.stringify(S.edu.paradas));
       check('Modo Maestro: pestaña Paradas con objetivo y estándares', AU.pestanas().includes('paradas'));
       check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'bromelia', 'ceiba', 'heliconia', 'cotorra_alimento', 'tabonuco', 'helecho_gigante'].every(id => !f.includes(id)), f.join(','));
       G.diario.open();
@@ -634,6 +641,24 @@
       G.ui.hideCard(); AU.setAjuste('corto', false);
       check('HUD de la misión en inglés', /Raindrop's path 8\/8/.test($('missions').textContent), $('missions').textContent);
       AU.setAjuste('idioma', 'es');
+      // Diario · Amazonas del mundo (content/comun/especies.js): solo datos verificados; las 13 de
+      // docs/equipo/ESPECIES_DISCREPANCIAS.md van sin estado UICN hasta que Kelvin decida
+      const DISCREPANCIAS = ['diadema', 'imperialis', 'lilacina', 'tresmariae', 'rhodocorytha', 'agilis', 'auropalliata', 'barbadensis', 'brasiliensis', 'farinosa', 'festiva', 'kawalli', 'aestiva'];
+      const SP = G.diario.especies(), spId = id => SP.find(x => x.id === id);
+      check('Amazonas del mundo: especies con nombre ES y EN, científico y distribución', SP.length >= 30 && SP.every(x => x.comun.es && x.comun.en && /^Amazona /.test(x.cientifico) && x.distribucion.es && x.distribucion.en), SP.length + ' especies');
+      check('Amazonas del mundo: sin nombre común en español verificado no sale (guatemalae, kawalli)', !spId('guatemalae') && !spId('kawalli'));
+      check('Amazonas del mundo: las 13 discrepancias sin estado UICN', DISCREPANCIAS.every(id => !spId(id) || (spId(id).uicn === null && spId(id).evaluacion === null)), DISCREPANCIAS.filter(id => spId(id) && spId(id).uicn).join(','));
+      check('Amazonas del mundo: las demás con estado UICN y su evaluación', SP.filter(x => !DISCREPANCIAS.includes(x.id)).every(x => x.uicn && x.evaluacion && /BirdLife/.test(x.evaluacion)) && spId('vittata').uicn === 'CR', SP.filter(x => !DISCREPANCIAS.includes(x.id) && !x.uicn).map(x => x.id).join(','));
+      G.diario.open();
+      const de = $('card').querySelector('details.especies ul.diary.especies'), li = id => de && de.querySelector(`[data-especie="${id}"]`);
+      check('Diario: sección «Amazonas del mundo» con una tarjeta por especie, fuente y sin enlaces', de && /Amazonas del mundo/.test($('card').querySelector('details.especies summary').textContent) && de.querySelectorAll('li').length === SP.length && de.querySelectorAll('li .fuente').length === SP.length && !/https?:/.test(de.innerHTML));
+      check('Diario: la cotorra puertorriqueña con ambos nombres, científico y estado', li('vittata') && /cotorra puertorriqueña/.test(li('vittata').textContent) && /Puerto Rican amazon/.test(li('vittata').textContent) && /Amazona vittata/.test(li('vittata').textContent) && /En peligro crítico \(CR\)/.test(li('vittata').textContent));
+      check('Diario: la fuente del estado UICN es corta y trae la evaluación (BirdLife, año e identificador)', li('vittata') && /Fuente: Wikipedia \(EN, ES\) · BirdLife International \(2020\), Lista Roja UICN e\.T22686239A179276011/.test(li('vittata').textContent) && !/IUCN Red List 2020/.test(li('vittata').textContent));
+      check('Diario: el loro imperial dice «por verificar» y no muestra categoría', li('imperialis') && /Estado UICN: por verificar/.test(li('imperialis').textContent) && !/\((CR|EN|VU|NT|LC)\)/.test(li('imperialis').textContent));
+      check('Diario: una especie extinta (loro de Martinica) con su estado y sin repetir «extinta»', li('martinicana') && /Estado UICN: Extinta \(EX\)/.test(li('martinicana').textContent) && !/ · extinta/.test(li('martinicana').textContent));
+      AU.setAjuste('idioma', 'en'); G.diario.open();
+      check('Diario en inglés: Amazons of the world', /Amazons of the world/.test($('card').textContent) && /IUCN status: Critically Endangered \(CR\)/.test($('card').textContent));
+      AU.setAjuste('idioma', 'es'); G.ui.hideCard();
       // Lectura en voz alta: nunca rompe, aunque no haya voces
       let voz = null; try { voz = AU.leer('La gota cae en la montaña.', 'es'); AU.callar(); } catch (e) { voz = e; }
       check('Lectura en voz alta tolera que falle (speechSynthesis ' + (AU.vozDisponible() ? 'disponible' : 'no disponible') + ')', typeof voz === 'boolean');
@@ -729,8 +754,11 @@
       const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
       const saveIdAntes = S.saveId, pasoAntes = S.step;
       $('m-nuevo').click();
-      check('Nuevo estudiante pide un segundo toque: el primero no borra la partida ni el cómic', !$('m-nuevo-si').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
-      $('m-nuevo-si').click();
+      check('Nuevo estudiante pregunta como el juego: «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» (foco) y «Sí, comenzar de cero»', !$('m-nuevo-conf').hidden && $('m-nuevo').hidden && $('m-nuevo-q').textContent === '¿Comenzar de cero? Se borrará tu partida y tu cómic.' && $('m-nuevo-no').textContent.trim() === 'No, volver' && $('m-nuevo-si').textContent.trim() === 'Sí, comenzar de cero' && document.activeElement === $('m-nuevo-no'));
+      check('El primer toque no borra la partida ni el cómic', S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo-no').click();
+      check('«No, volver» cierra la pregunta y no borra nada', $('m-nuevo-conf').hidden && !$('m-nuevo').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo').click(); $('m-nuevo-si').click();
       check('Nuevo estudiante: borra la partida y conserva el reporte', !S.profile.created && AU.partidas.length === partidasAntes && !leerAula(G.guardado.KEY + '.prev') && perfilKeep !== undefined);
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
