@@ -311,6 +311,11 @@ log('grutas: %d triángulos' % gt)
 M.footprints = {k: (v[0], v[1], {'refugio': 8.5, 'mirador': 5.5, 'casita': 6, 'puente': 4, 'muelle': 3, 'ruinas': 11}[k]) for k, v in PL.items()}
 # ------------------------------------------------------------------ edificios del kit de Kelvin
 KEL = []
+import mapa_kelvin as MK
+for n_ in list(ML.KDIM):   # dimensiones reales de los modelos web actuales (ancho X, alto, fondo Z)
+    f_ = os.path.join(ROOT, 'assets', 'models', 'edificios', n_ + '.glb')
+    if os.path.exists(f_):
+        lo_, hi_ = MK.bbox(MK.glb_json(f_)); ML.KDIM[n_] = tuple(round(float(v), 2) for v in (hi_ - lo_))
 def kplace(glb, x, y, z, rot, grupo, rol):
     n = sum(1 for k in KEL if k['glb_n'] == glb)
     w_, h_, d_ = ML.KDIM[glb]

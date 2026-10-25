@@ -78,10 +78,12 @@ def conversion(web_dir):
     """M (migrado -> web) del agente de edificios (assets/models/edificios/conversion.json); A = M^-1 (web -> migrado)."""
     p = os.path.join(web_dir, 'conversion.json')
     if not os.path.exists(p): return {}
-    d = json.load(open(p)); d = d if isinstance(d, list) else [dict(migrado=k, **v) for k, v in d.items()]
+    d = json.load(open(p))
+    if isinstance(d, dict) and 'assets' in d: d = d['assets']
+    d = d if isinstance(d, list) else [dict(migrado=k, **v) for k, v in d.items() if isinstance(v, dict)]
     out = {}
     for e in d:
-        if not e.get('web') or not e.get('M'): continue
+        if not e.get('web') or not e.get('M') or not os.path.exists(os.path.join(web_dir, e['web'] + '.glb')): continue
         Mx = np.array(e['M'], float).reshape(4, 4).T
         out[e['migrado']] = {'web': e['web'], 'A': np.linalg.inv(Mx), 'k': e.get('k')}
     return out
@@ -187,6 +189,9 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
              'huella': {'x': round(fx0 + dx, 2), 'z': round(fz0 + dz, 2), 'hx': round(hx, 2), 'hz': round(hz_, 2), 'rotY': round(yaw, 4),
                         'y0': round(float(Wn[:, 1].min() + dy), 2), 'y1': round(float(Wn[:, 1].max() + dy), 2)},
              'ajuste': {'dx': round(dx, 2), 'dy': round(float(dy), 2), 'dz': round(dz, 2)}}
+        e['_his'] = (float(base_his), float(Wh[:, 1].max()), float(Wh[:, 0].min()), float(Wh[:, 0].max()), float(Wh[:, 2].min()), float(Wh[:, 2].max()), float(cx), float(cz))
+        e['_apilada'] = (not canoa) and off * S > 2.5
+        e['_d'] = (dx, float(dy), dz)
         if not ok: e['oculto'] = 'choca con agua o sendero'
         if a['web']:
             e['modelo'] = a['web']
@@ -194,6 +199,30 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
         else:
             e['modelo'] = None
         out.append(e)
+    # piezas apiladas: siguen a la pieza que las sostiene en su escena (mismo desplazamiento), así los conjuntos no se
+    # desarman al asentar cada pieza en el terreno nuevo; si en su escena no hay apoyo, siguen a la vecina asentada más cercana
+    def mover(e, d):
+        ddx, ddy, ddz = d[0] - e['_d'][0], d[1] - e['_d'][1], d[2] - e['_d'][2]
+        for key in ('matriz', 'matrizMigrado'):
+            if e.get(key): e[key][12] = round(e[key][12] + ddx, 5); e[key][13] = round(e[key][13] + ddy, 5); e[key][14] = round(e[key][14] + ddz, 5)
+        h = e['huella']; h['x'] = round(h['x'] + ddx, 2); h['z'] = round(h['z'] + ddz, 2); h['y0'] = round(h['y0'] + ddy, 2); h['y1'] = round(h['y1'] + ddy, 2)
+        e['ajuste'] = {'dx': round(d[0], 2), 'dy': round(d[1], 2), 'dz': round(d[2], 2)}; e['_d'] = d
+    orden = sorted(out, key=lambda e: e['_his'][0])
+    for e in orden:
+        if not e['_apilada']: continue
+        b, _, _, _, _, _, ex, ez = e['_his']; sop = None
+        for f in orden:
+            if f is e: continue
+            fb, ft, x0, x1, z0, z1, _, _ = f['_his']
+            if fb < b and ft >= b - 1.0 and x0 - 0.5 <= ex <= x1 + 0.5 and z0 - 0.5 <= ez <= z1 + 0.5:
+                if sop is None or ft > sop['_his'][1]: sop = f
+        if sop is None:
+            veci = [f for f in out if not f['_apilada'] and f['asset'] != 'canoa']
+            sop = min(veci, key=lambda f: math.hypot(f['_his'][6] - ex, f['_his'][7] - ez)) if veci else None
+            if sop is not None: e['flotaEnOriginal'] = True
+        if sop is not None: mover(e, sop['_d'])
+    for e in out:
+        for k in ('_his', '_apilada', '_d'): e.pop(k, None)
     # piezas apiladas: si su base queda alta y lo que las sostiene aún no tiene modelo web, esperan (no se dibujan flotando)
     for e in out:
         if e['asset'] == 'canoa': continue
@@ -206,8 +235,8 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             du, dv = (hu['x'] - fh['x']) * c - (hu['z'] - fh['z']) * s_, (hu['x'] - fh['x']) * s_ + (hu['z'] - fh['z']) * c
             if abs(du) <= fh['hx'] + 0.5 and abs(dv) <= fh['hz'] + 0.5 and fh['y1'] >= hu['y0'] - 1.0 and fh['y0'] < hu['y0']:
                 if sop is None or f.get('modelo'): sop = f
-        if sop is None: e['espera'] = 'sin apoyo: flota %.1f m' % gap
-        elif not sop.get('modelo'): e['espera'] = 'apoyo pendiente: %s' % sop['asset']
+        if sop is None: continue   # el conjunto sigue a su apoyo original (fiel a su escena)
+        if not sop.get('modelo'): e['espera'] = 'apoyo pendiente: %s' % sop['asset']
         else: e['_sop'] = sop
     for _ in range(6):   # si lo que la sostiene también espera, espera
         for e in out:
