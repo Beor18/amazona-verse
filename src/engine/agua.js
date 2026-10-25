@@ -246,14 +246,16 @@ AVE.module('agua', function (G) {
       float fres = 0.03 + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
       col = mix(col, skyRefl(reflect(-V, N)), fres * (1.0 - cae));
       col += uSolCol * pow(max(dot(N, normalize(uSolDir + V)), 0.0), 220.0) * 2.0 * (1.0 - cae);
+      col = mix(col, uClaro * 0.75 * (uHemiCielo * 0.8 + 0.2), cae * 0.6); // la lámina que cae: verde claro translúcido
       // espuma: orillas (poca profundidad), saltos (R del color de vértice), cascadas con vetas y pie de las cascadas
       float nz = vnoise(vec2(vUv.x * 1.3, vUv.y * 0.8 - uTime * vel * 1.2)) * 0.65 + vnoise(vW.xz * 1.7 + uTime * 0.3) * 0.35;
-      float esp = (1.0 - smoothstep(0.05, 0.45 + nz * 0.25, prof)) * 0.8;
-      esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4));
-      // cascada: vetas verticales que caen (la u de la cinta es el ancho) sobre agua verde clara, con más espuma abajo
-      float vetas = vnoise(vec2(vUv.x * 3.1, vW.y * 0.45 + uTime * 5.5)) * 0.65 + vnoise(vec2(vUv.x * 8.0, vW.y * 1.2 + uTime * 8.5)) * 0.35;
-      float pie = 1.0 - smoothstep(0.0, 2.5, fract(vW.y) + vetas);
-      esp = max(esp, cae * (smoothstep(0.48, 0.78, vetas) * 0.85 + pie * 0.2));
+      float esp = (1.0 - smoothstep(0.05, 0.45 + nz * 0.25, prof)) * 0.8 * (1.0 - cae); // orillas (no en la lámina que cae)
+      esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4) * (1.0 - cae * 0.7));
+      // cascada: vetas finas y largas que caen (u = ancho de la cinta), sobre agua translúcida
+      float s1 = vnoise(vec2(vUv.x * 5.5, vW.y * 0.18 + uTime * 2.6));
+      float s2 = vnoise(vec2(vUv.x * 13.0 + 3.1, vW.y * 0.42 + uTime * 4.4));
+      float vetas = s1 * 0.6 + s2 * 0.4;
+      esp = max(esp, cae * smoothstep(0.44, 0.74, vetas));
       for (int i = 0; i < 8; i++) {
         vec4 p = uPies[i];
         if (p.w <= 0.0) continue;
@@ -265,8 +267,7 @@ AVE.module('agua', function (G) {
       col = mix(col, uHemiCielo * 0.9 + uSolCol * 0.4, esp * 0.9);
       float a = mix(0.62, 0.9, k);
       a = max(a, esp * 0.95);
-      col = mix(col, mix(uClaro, vec3(0.9), 0.35) * (uHemiCielo * 0.7 + 0.25), cae * 0.55);
-      a = mix(a, 0.78, cae);
+      a = mix(a, 0.5 + esp * 0.45, cae);
       a *= smoothstep(-0.25, 0.05, prof + cae);
       gl_FragColor = vec4(col, a);
       #include <tonemapping_fragment>
@@ -354,7 +355,7 @@ AVE.module('agua', function (G) {
           float ang = aSeed.y * 6.2832, sp = (0.8 + aSeed.z * 1.6) * (0.6 + caida * 0.08);
           p.x += cos(ang) * sp * t * (1.0 + aKind); p.z += sin(ang) * sp * t * (1.0 + aKind);
           p.y += (aKind > 0.5 ? (0.4 + caida * 0.18) * t : (2.4 + caida * 0.25) * t - 4.9 * t * t * 1.2);
-          vA = sin(t * 3.1416) * mix(0.75, 0.32, aKind) * step(aSeed.z, uCant);
+          vA = sin(t * 3.1416) * mix(0.8, 0.42, aKind) * step(aSeed.z, uCant);
           vK = aKind;
           vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
           gl_Position = projectionMatrix * mvPosition;

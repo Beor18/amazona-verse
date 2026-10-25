@@ -97,6 +97,19 @@ AVE.module('mundo', function (G) {
     return g;
   }
 
+  // Normales suaves soldando vértices por posición (las caras planas de una malla facetada pasan a curvas)
+  function suavizar(g) {
+    const p = g.attributes.position, n = g.attributes.normal, idx = g.index, acc = new Map(), key = i => Math.round(p.getX(i) * 50) + ',' + Math.round(p.getY(i) * 50) + ',' + Math.round(p.getZ(i) * 50);
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let t = 0; t < idx.count; t += 3) {
+      const i0 = idx.getX(t), i1 = idx.getX(t + 1), i2 = idx.getX(t + 2);
+      a.fromBufferAttribute(p, i0); b.fromBufferAttribute(p, i1).sub(a); c.fromBufferAttribute(p, i2).sub(a); b.cross(c);
+      for (const i of [i0, i1, i2]) { const k = key(i); const v = acc.get(k); if (v) v.add(b); else acc.set(k, b.clone()); }
+    }
+    for (let i = 0; i < p.count; i++) { const v = acc.get(key(i)); if (v) { a.copy(v).normalize(); n.setXYZ(i, a.x, a.y, a.z); } }
+    n.needsUpdate = true;
+  }
+
   // ---------- Senderos: punto más cercano para orientar los frentes ----------
   const sendas = [];
   for (const k in MAPA.senderos || {}) for (const p of MAPA.senderos[k]) sendas.push(p);
@@ -263,7 +276,9 @@ AVE.module('mundo', function (G) {
         scene.add(mesh); stats0.mallas++;
       }
       if (roca.length && T.chunks[0]) {
-        const mesh = new THREE.Mesh(fundir(roca, false), T.chunks[0].material);
+        const geo = fundir(roca, false);
+        suavizar(geo); // las rocas de las grutas son icosferas facetadas: normales suaves para que se vean orgánicas
+        const mesh = new THREE.Mesh(geo, T.chunks[0].material);
         mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'estructura:' + e.id; mesh.matrixAutoUpdate = false;
         scene.add(mesh); stats0.mallas++;
       }

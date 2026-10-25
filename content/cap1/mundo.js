@@ -321,7 +321,7 @@
       // ---------- Refugio: fantasma del modo construir y el refugio construido ----------
       // Mapa: bohío pequeño del kit de Kelvin (cuando carga); antes, y en el mundo analítico, la choza de primitivas.
       let modeloRefugio = null;
-      if (MAPA && G.mundo && G.mundo.edificio) G.mundo.edificio('bohio_redondo', { agregar: false, escala: 0.55 }).then(g => { modeloRefugio = g; refrescarFantasma(); if (S.refuge) placeRefugeMesh(); }).catch(() => {});
+      if (MAPA && G.mundo && G.mundo.edificio) G.mundo.edificio('bohio_redondo', { agregar: false, escala: 0.7 }).then(g => { modeloRefugio = g; refrescarFantasma(); if (S.refuge) placeRefugeMesh(); }).catch(() => {});
       function hutMesh(opacity) {
         const g = new THREE.Group();
         const transparent = opacity < 1;
@@ -354,7 +354,7 @@
           refugeMesh.traverse(o => { if (o.isMesh && o.material && o.material.color) o.material.color.multiply(new THREE.Color(0.55, 0.5, 0.42)); });
         }
         scene.add(refugeMesh);
-        colliders.push({ x: S.refuge.x, z: S.refuge.z, r: 1.4, kind: 'refuge' });
+        colliders.push({ x: S.refuge.x, z: S.refuge.z, r: modeloRefugio ? 1.9 : 1.4, kind: 'refuge' }); // bohío de 4,4 m (pared de 1,6 m: a escala con la cotorra)
       }
       // El transmisor encendido late
       G.on('render', (dt, t) => { if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25); }, 35);

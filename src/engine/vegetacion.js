@@ -221,6 +221,7 @@ AVE.module('vegetacion', function (G) {
           const y = T.height(x, z);
           if (enAgua(x, z, y)) continue;
           if (tapado(x, z, esArb ? 3 : 1.6)) continue;
+          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.62) continue; // matas: no en paredes de roca
           let m = md.kit[0];
           if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
@@ -421,6 +422,7 @@ AVE.module('vegetacion', function (G) {
     PASTO.mesh = im; PASTO.cap = cap; PASTO.own = own;
   }
   const hash2 = (x, z) => { let h = Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const nTmp = {};
   // Candidatos de un bloque de 8 m (se calculan una vez): x, y, z, escala, giro, tinte
   function bloquePasto(bx, bz) {
     const key = bx * 8192 + bz;
@@ -438,6 +440,7 @@ AVE.module('vegetacion', function (G) {
       if (pasto < 0.25 + r * 0.45) continue;
       const y = T.height(x, z);
       if (G.agua.levelAt(x, z) > y - 0.05) continue;
+      if (T.normalAt(x, z, nTmp).y < 0.82) continue; // nada de pasto en acantilados ni taludes
       b.push(x, y, z, 0.75 + hash2(gx + 9, gz + 3) * 0.6, hash2(gx - 5, gz + 11) * 6.283, r);
     }
     PASTO.bloques.set(key, b);
