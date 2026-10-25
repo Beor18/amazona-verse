@@ -13,9 +13,9 @@
    queda fuera del frustum o de la distancia de dibujo (las de cerca a menos del radio de sombra se dibujan igual: su sombra
    puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
    ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
-   Carga: lo que está "cerca" del punto de inicio (y el LOD lejano propio de lo visible) entra antes de mundoListo; el resto
-   llega en segundo plano, más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback,
-   CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
+   Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
+   todo lo visible; los demás modelos completos esperan a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
+   más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
    referencias por nombre de material: el kit comparte su paleta). La cadena base64 la suelta AVE.assets.loadGLB al decodificar.
    El buffer de instancias de cada modelo×LOD se reutiliza (three r128 no lo libera al quitar la malla).
 
@@ -46,10 +46,11 @@ AVE.module('streaming', function (G) {
   'use strict';
   const R = G.renderer, scene = R.scene;
   const CFG = {
-    cerca: { bajo: 90, medio: 110, alto: 120 },    // m al borde de la zona: modelo completo y colisiones
+    cerca: { bajo: 50, medio: 60, alto: 75 },      // m al borde de la zona: modelo completo y colisiones (≥ distancia de LOD)
     precarga: { bajo: 20, medio: 25, alto: 30 },   // m: zonas cuyo modelo completo entra antes de mundoListo (lo demás visible, con su lejano)
     dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios (la de antes en mundo.js)
-    histeresis: 40,                                // m de más para bajar de nivel
+    histeresis: 30,                                // m de más para bajar de nivel
+    moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
@@ -68,7 +69,7 @@ AVE.module('streaming', function (G) {
 
   // ---------- Trabajo troceado ----------
   const trabajos = [];
-  let programado = false, arrancando = true;
+  let programado = false, arrancando = true, quieto = true; // quieto: el jugador no se ha movido desde el inicio
   const ric = window.requestIdleCallback ? (fn => window.requestIdleCallback(fn, { timeout: 60 })) : (fn => setTimeout(fn, 16));
   function programar() { if (!programado && trabajos.length) { programado = true; ric(bombear); } }
   function bombear(dl) {
@@ -336,7 +337,8 @@ AVE.module('streaming', function (G) {
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
         // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
-        const i = arrancando ? cola.findIndex(q => q.tipo === 'lejos' || q.prio < pre) : 0;
+        // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
+        const i = arrancando || quieto ? cola.findIndex(q => q.tipo === 'lejos' || q.prio < pre) : 0;
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
@@ -472,8 +474,11 @@ AVE.module('streaming', function (G) {
       if (!avisados.has(n)) { avisados.add(n); console.warn('AVE edificios:', err && err.message || err); }
       for (const I of Z.inst) if (I.modelo === n && cfg.respaldo) cfg.respaldo(I);
     }
+    let inicio = null;
     function revisar(x, z) {
       if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
+      if (!inicio) inicio = [x, z];
+      else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
       const Rc = radioCerca(), Rl = alcance(), H = CFG.histeresis;
       for (const id in zonas) {
         const Z = zonas[id];
@@ -593,6 +598,7 @@ AVE.module('streaming', function (G) {
     };
     const tam = g => { let b = 0; if (!g) return 0; for (const k in g.attributes) b += g.attributes[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
     G.on('update', dt => {
+      if (iniciado && quieto && inicio && G.S.pos && Math.hypot(G.S.pos.x - inicio[0], G.S.pos.z - inicio[1]) > CFG.moverse) revisionT = CFG.revisar;
       if (!iniciado || (revisionT += dt) < CFG.revisar) return;
       revisionT = 0; revisar();
     }, 71);

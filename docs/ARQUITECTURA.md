@@ -75,11 +75,11 @@ Datos que varios content packs pueden reutilizar sin copiarlos (hoy: `huevos.js`
 ## Streaming de edificios (`src/engine/streaming.js`)
 Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js` lo arranca y pone las colisiones de cada instancia.
 - **Zonas:** una zona es el `grupo` de sus entradas. Según la distancia del jugador al borde de la zona, y por preset, tiene tres niveles:
-  - *cerca* (≤ 90/110/120 m): el modelo completo, más las colisiones de cada instancia la primera vez que llega a este nivel. Las colisiones ya no se quitan.
+  - *cerca* (≤ 50/60/75 m): el modelo completo, más las colisiones de cada instancia la primera vez que llega a este nivel. Las colisiones ya no se quitan.
   - *lejos* (hasta la distancia de dibujo de 150/190/320 m, recortada por la niebla): solo el LOD lejano.
   - *fuera*: nada en memoria.
-  - Histéresis de 40 m, y 3 s de gracia antes de soltar un modelo.
-- **Arranque:** antes de `mundoListo` entra el modelo completo de las zonas a menos de 20/25/30 m del inicio, y el LOD lejano propio de las visibles. El resto llega después, en segundo plano: lo más cercano primero, una descarga a la vez y la CPU troceada con `requestIdleCallback`.
+  - Histéresis de 30 m, y 3 s de gracia antes de soltar un modelo.
+- **Arranque:** antes de `mundoListo` entra el modelo completo de las zonas a menos de 20/25/30 m del inicio y el LOD lejano de todas las visibles. Los demás modelos completos esperan a que el jugador ande 2 m y llegan en segundo plano: lo más cercano primero, una descarga a la vez y la CPU troceada con `requestIdleCallback`.
 - **Dibujo:**
   - Una `InstancedMesh` por modelo × LOD × material, con el nombre `edificiosInst:*` y `sinSolido`.
   - Cada cuadro se eligen las instancias visibles. Pasan las que están dentro del frustum y de la distancia de dibujo, y también las de cerca que caen en el radio de sombra.
