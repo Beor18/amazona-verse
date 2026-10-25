@@ -19,8 +19,8 @@
    - aves de día (silbidos, trinos y, de vez en cuando, una cotorra) y coquíes de noche («co-quí» de un coro de ranas) más grillos;
    - el río (y el mar, más grave y con olas) según la cercanía al agua: 33 consultas a G.agua.levelAt cada 0,4 s;
    - viento según la altura sobre el suelo y sobre el mar.
-   La hora sale de S.hora (0 a 24) si algún día el mundo tiene ciclo de día y noche; si no, del reloj del equipo (de día de 6:30 a 17:30, de noche
-   de 19:00 a 5:00, con un atardecer y un amanecer suaves). Provisional hasta que el cielo tenga su propio ciclo.
+   La hora sale de S.hora (0 a 24) si algún día el mundo tiene ciclo de día y noche (de día de 6:30 a 17:30, de noche de 19:00 a 5:00,
+   con un atardecer y un amanecer suaves); mientras el cielo sea siempre de día, el ambiente es de día.
    Las ranas callan 9 s si suena el Simon de los coquíes (sonidos co, qui y chorus) para no confundir el juego. La música baja mientras habla la voz
    del Aula (gancho 'voz').
 
@@ -549,7 +549,7 @@
     function horaActual() {
       if (horaForzada != null) return horaForzada;
       if (Number.isFinite(S.hora)) return ((S.hora % 24) + 24) % 24;
-      const d = new Date(); return d.getHours() + d.getMinutes() / 60;
+      return 12; // el cielo del juego es siempre de día: sin S.hora, ambiente de día (nada de coquíes con sol)
     }
     function entradasAmbiente(e) {
       const a = entornoAgua(), M = G.fisica && G.fisica.MOVE;
@@ -746,7 +746,7 @@
         check('El viento sube con la altura (en el suelo es una brisa)', alto0.viento > 0.9 && dia0.viento > 0.05 && dia0.viento < 0.2 && calcularAmbiente({ evento: true }).viento > dia0.viento + 0.3, `${dia0.viento.toFixed(2)} → ${alto0.viento.toFixed(2)}`);
         const tormenta0 = calcularAmbiente({ hora: 12, evento: true });
         check('En la tormenta casi no hay aves; detrás de la portada todo baja', tormenta0.aves < 0.2 && calcularAmbiente({ hora: 12, portada: true }).aves < 0.4 && calcularAmbiente({ hora: 12, rio: 1, retos: true }).rio < 0.8);
-        check('La hora sale de S.hora si existe, o del reloj del equipo', (() => { const h = S.hora; S.hora = 21.5; const a = horaActual(); S.hora = 3; const b = horaActual(); if (h === undefined) delete S.hora; else S.hora = h; const r = horaActual(); return a === 21.5 && b === 3 && r >= 0 && r < 24; })());
+        check('La hora sale de S.hora si existe; sin ella, de día como el cielo', (() => { const h = S.hora; S.hora = 21.5; const a = horaActual(); S.hora = 3; const b = horaActual(); if (h === undefined) delete S.hora; else S.hora = h; const r = horaActual(); return a === 21.5 && b === 3 && (h !== undefined || r === 12); })());
         check('noche(): día de 6:30 a 17:30, noche de 19 a 5', noche(12) === 0 && noche(7) === 0 && noche(20) === 1 && noche(2) === 1 && noche(0) === 1 && noche(23.9) === 1);
 
         // 5. Ajustes
