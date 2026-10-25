@@ -30,6 +30,7 @@ AVE.module('agarre', function (G) {
   const api = { AG, agarrar, soltar, usar, lleva, mira: null, get fase() { return act.fase; } };
 
   const P = () => G.actores.player3D;
+  const manoOcupada = () => { const p = P(); return !!(p && p.look && p.look.accessories && p.look.accessories.hand); };
   // Caja del objeto en su propio espacio (sin su posición, giro ni escala)
   function medir(obj) {
     const parent = obj.parent, p = obj.position.clone(), q = obj.quaternion.clone(), s = obj.scale.clone();
@@ -59,14 +60,15 @@ AVE.module('agarre', function (G) {
     else if (en === 'mano') off.set(0, ext.y * 0.15, ext.z * 0.5 + 0.02);       // de pie en la mano
     else if (en === 'brazos') off.set(0, -ext.y * 0.1, ext.z / 2 + AG.gap);     // delante del pecho, sin tocarlo
     else off.set(0, -ext.y / 2 - AG.gap, 0);                                   // entre las patas
-    const ancla = en === 'pico' ? 'pico' : en === 'mano' ? 'manoL' : en === 'brazos' ? 'pecho' : 'patas';
+    // Con un objeto del ropero en la mano izquierda (bandera, maracas…), lo agarrado va en la derecha
+    const ancla = en === 'pico' ? 'pico' : en === 'mano' ? (manoOcupada() ? 'manoR' : 'manoL') : en === 'brazos' ? 'pecho' : 'patas';
     return { en, ancla, qg, off, ext };
   }
   // Objetivos de las manos (espacio del modelo) para la pose de carga
   function manos(h) {
     const p = P(); if (!p || !h || !h.grip) return null;
     const g = h.grip, sc = p.root.scale.x;
-    if (g.en === 'mano') return { L: [0.3, 0.5, 0.4] };
+    if (g.en === 'mano') return g.ancla === 'manoR' ? { R: [-0.3, 0.5, 0.4] } : { L: [0.3, 0.5, 0.4] };
     if (g.en !== 'brazos') return null;
     // Centro del objeto en el espacio del modelo: el ancla del pecho (0, 0,5, 0,25) más el desplazamiento
     const cx = 0, cy = 0.5 + g.off.y / sc, cz = 0.25 + g.off.z / sc, half = Math.min(0.24, g.ext.x / sc / 2 * 0.9);
@@ -170,7 +172,7 @@ AVE.module('agarre', function (G) {
     if (act.fase === 'alcanzar' && held && held.enganche !== 'pico' && api.mira) {
       p.root.updateMatrixWorld(true);
       const lp = p.root.worldToLocal(_v.copy(api.mira));
-      T = held.enganche === 'brazos' ? { L: [lp.x + 0.15, lp.y + 0.1, lp.z], R: [lp.x - 0.15, lp.y + 0.1, lp.z] } : { L: [lp.x, lp.y + 0.05, lp.z] };
+      T = held.enganche === 'brazos' ? { L: [lp.x + 0.15, lp.y + 0.1, lp.z], R: [lp.x - 0.15, lp.y + 0.1, lp.z] } : manoOcupada() ? { R: [lp.x, lp.y + 0.05, lp.z] } : { L: [lp.x, lp.y + 0.05, lp.z] };
     }
     if (T && use > 0) for (const s of ['L', 'R']) if (T[s]) T[s] = held.grip.en === 'mano' ? [T[s][0], T[s][1] + 0.45 * use, T[s][2] + 0.1 * use] : [T[s][0], T[s][1] + 0.08 * use, T[s][2] + 0.18 * use];
     const wantW = T ? (act.fase === 'alcanzar' ? reach : 1) : 0;

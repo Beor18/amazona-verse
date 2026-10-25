@@ -838,6 +838,23 @@
         }
       }
     }
+    // Bandera en la mano izquierda: el antebrazo se orienta para que el asta quede vertical, sea cual sea la pose (pedido del TA).
+    // Eje del asta en reposo (ropero: rotation.x = π/2 - 0,35 sobre +Y) pasado al espacio del antebrazo una vez.
+    _holdUpright() {
+      const hand = this.look && this.look.accessories && this.look.accessories.hand, el = this.bones.armL2;
+      if (!hand || hand.style !== 'bandera' || !el || !this.restMat.armL2 || (this.carryTargets && this.carryTargets.L && (this.armW || 0) > 0.05)) return;
+      if (!this.poleLocal) {
+        const qr = new THREE.Quaternion(); this.restMat.armL2.decompose(new THREE.Vector3(), qr, new THREE.Vector3());
+        this.poleLocal = new THREE.Vector3(0, Math.sin(0.35), Math.cos(0.35)).applyQuaternion(qr.invert()).normalize();
+      }
+      this.root.updateMatrixWorld(true);
+      el.getWorldQuaternion(_qw); _v1.copy(this.poleLocal).applyQuaternion(_qw); _v2.set(0, 1, 0);
+      if (_v1.dot(_v2) > 0.966) return; // ya está a menos de 15°
+      this.ikSaved.push([el, el.quaternion.clone()]);
+      _q.setFromUnitVectors(_v1, _v2); _qi.identity().slerp(_q, 0.9);
+      el.parent.getWorldQuaternion(_qp); _qw.premultiply(_qi); el.quaternion.copy(_qp.invert().multiply(_qw));
+      el.updateMatrixWorld(true);
+    }
     // IK de patas: en pendiente o escalón cada pie busca su suelo (groundAt) y la cadera baja lo que pida el pie más bajo
     _footIK(dt) {
       const on = !!(this.groundAt && !this.airborne && !this.swimming && this.feet && this.feet.length === 2);
@@ -858,6 +875,7 @@
     }
     // IK de brazos: con algo en las manos (agarre.js pone carryTargets = { L, R } en el espacio del modelo y el peso armW)
     _armIK() {
+      this._holdUpright();
       const T = this.carryTargets, w = this.armW || 0;
       if (!T || w < 0.01 || !this.anchors) return;
       this.root.updateMatrixWorld(true);
