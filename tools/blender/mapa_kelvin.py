@@ -174,8 +174,19 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
                     if ok: break
         px, py = pts(dx, dz)
         g = np.array([ground(x_, y_) for x_, y_ in zip(px, py)])
-        if canoa:
-            wl = water_level(fx0 + dx, -(fz0 + dz))
+        if canoa:   # canoa: sobre agua de verdad (fondo 0,25 m bajo el nivel en toda su huella); si no, se acerca al agua
+            def flota(tx, tz):
+                wl_ = water_level(fx0 + tx, -(fz0 + tz))
+                if wl_ is None: return None
+                qx, qy = pts(tx, tz)
+                return wl_ if all(ground(a_, b_) < wl_ - 0.25 for a_, b_ in zip(qx, qy)) else None
+            if flota(0, 0) is None:
+                for r in np.arange(1.0, 12.1, 1.0):
+                    hit = next(((r * math.cos(2 * math.pi * k / 16), r * math.sin(2 * math.pi * k / 16)) for k in range(16)
+                                if flota(r * math.cos(2 * math.pi * k / 16), r * math.sin(2 * math.pi * k / 16)) is not None), None)
+                    if hit: dx, dz = hit; break
+            px, py = pts(dx, dz); g = np.array([ground(x_, y_) for x_, y_ in zip(px, py)])
+            wl = flota(dx, dz)
             base = (wl + 0.05) if wl is not None else float(np.percentile(g, 30)) - 0.05
         else:
             # a menos de 2,5 m de su suelo es ruido del muestreo: se asienta en el terreno; más alto es una pieza apilada
