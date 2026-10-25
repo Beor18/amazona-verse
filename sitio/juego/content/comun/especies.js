@@ -1,6 +1,6 @@
 /* Datos compartidos entre packs · Las 34 especies de Amazona del catálogo de Kelvin (+ 2 extintas)
-   Solo dato reutilizable (window.AV_ESPECIES): la integración visual (texturas por especie) es otra fase y queda pendiente de
-   que Kelvin recupere las texturas originales (disco E:). Hoy el juego tiñe 8 especies con máscaras (character.js).
+   Solo dato reutilizable (window.AV_ESPECIES). piel: nombre de la piel cocida sobre la Vittata (assets/textures/pieles/<piel>.jpg,
+   de los 22 .blend de Kelvin; la aplica src/personaje/pieles.js). Sin piel, el juego tiñe con máscaras (character.js).
    Regla: lo que no se pudo verificar va en null; nunca se rellena de memoria.
    Fuentes (verificado el 24–25 oct 2026):
    - Categoría UICN: la evaluación de BirdLife International (autoridad de la Lista Roja para aves) tal como la cita el infobox
@@ -83,6 +83,7 @@
       },
       {
         "id": "diadema",
+        "piel": "diadema",
         "cientifico": "Amazona diadema",
         "comun": {
           "es": "loro diadema",
@@ -161,6 +162,7 @@
       },
       {
         "id": "imperialis",
+        "piel": "imperialis",
         "cientifico": "Amazona imperialis",
         "comun": {
           "es": "loro imperial",
@@ -239,6 +241,7 @@
       },
       {
         "id": "oratrix",
+        "piel": "oratrix",
         "cientifico": "Amazona oratrix",
         "comun": {
           "es": "loro cabeza amarilla",
@@ -278,6 +281,7 @@
       },
       {
         "id": "tresmariae",
+        "piel": "tresmariae",
         "cientifico": "Amazona tresmariae",
         "comun": {
           "es": null,
@@ -315,6 +319,7 @@
       },
       {
         "id": "rhodocorytha",
+        "piel": "rhodocorytha",
         "cientifico": "Amazona rhodocorytha",
         "comun": {
           "es": "loro de cejas rojas",
@@ -393,6 +398,7 @@
       },
       {
         "id": "viridigenalis",
+        "piel": "viridigenalis",
         "cientifico": "Amazona viridigenalis",
         "comun": {
           "es": "loro tamaulipeco",
@@ -510,6 +516,7 @@
       },
       {
         "id": "auropalliata",
+        "piel": "auropalliata",
         "cientifico": "Amazona auropalliata",
         "comun": {
           "es": "loro de nuca amarilla",
@@ -549,6 +556,7 @@
       },
       {
         "id": "barbadensis",
+        "piel": "barbadensis",
         "cientifico": "Amazona barbadensis",
         "comun": {
           "es": "cotorra cabeciamarilla",
@@ -588,6 +596,7 @@
       },
       {
         "id": "brasiliensis",
+        "piel": "brasiliensis",
         "cientifico": "Amazona brasiliensis",
         "comun": {
           "es": "papagayo de cara roja",
@@ -666,6 +675,7 @@
       },
       {
         "id": "guildingii",
+        "piel": "guildingii",
         "cientifico": "Amazona guildingii",
         "comun": {
           "es": "loro de San Vicente",
@@ -822,6 +832,7 @@
       },
       {
         "id": "versicolor",
+        "piel": "versicolor",
         "cientifico": "Amazona versicolor",
         "comun": {
           "es": "loro de Santa Lucía",
@@ -861,6 +872,7 @@
       },
       {
         "id": "dufresniana",
+        "piel": "dufresniana",
         "cientifico": "Amazona dufresniana",
         "comun": {
           "es": "loro de cachetes azules",
@@ -900,6 +912,7 @@
       },
       {
         "id": "farinosa",
+        "piel": "farinosa",
         "cientifico": "Amazona farinosa",
         "comun": {
           "es": "loro corona azul",
@@ -978,6 +991,7 @@
       },
       {
         "id": "guatemalae",
+        "piel": "guatemalae",
         "cientifico": "Amazona guatemalae",
         "comun": {
           "es": null,
@@ -1016,6 +1030,7 @@
       },
       {
         "id": "kawalli",
+        "piel": "kawalli",
         "cientifico": "Amazona kawalli",
         "comun": {
           "es": null,
@@ -1054,6 +1069,7 @@
       },
       {
         "id": "leucocephala",
+        "piel": "leucocephala",
         "cientifico": "Amazona leucocephala",
         "comun": {
           "es": "loro cubano",
@@ -1093,6 +1109,7 @@
       },
       {
         "id": "aestiva",
+        "piel": "aestiva",
         "cientifico": "Amazona aestiva",
         "comun": {
           "es": "loro hablador",
@@ -1171,6 +1188,7 @@
       },
       {
         "id": "amazonica",
+        "piel": "amazonica",
         "cientifico": "Amazona amazonica",
         "comun": {
           "es": "loro guaro",
@@ -1249,6 +1267,7 @@
       },
       {
         "id": "mercenarius",
+        "piel": "mercenarius",
         "cientifico": "Amazona mercenarius",
         "comun": {
           "es": "loro mercenario",
@@ -1288,6 +1307,7 @@
       },
       {
         "id": "ochrocephala",
+        "piel": "ochrocephala",
         "cientifico": "Amazona ochrocephala",
         "comun": {
           "es": "loro real amazónico",
@@ -1327,6 +1347,7 @@
       },
       {
         "id": "xantholora",
+        "piel": "xantholora",
         "cientifico": "Amazona xantholora",
         "comun": {
           "es": "loro yucateco",

@@ -27,22 +27,34 @@
     const aDemanda = (src, fabrica) => { let p = null; return () => p || (p = AVE.assets.script(src).then(() => window[fabrica](G), e => { p = null; throw e; })); };
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
+    if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
     if (G.streaming && G.streaming.test) AV.streamingTest = o => G.streaming.test(o); // src/engine/streaming.js
     if (G.guiaControles) AV.controlesTest = o => controles().then(m => m.test(o)); // src/game/guia_controles.js
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
+    if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
+    // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
+    // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca
+    let records = null;
+    const cargarRecords = () => records || (records = AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G), e => { records = null; throw e; }));
+    AV.records = o => cargarRecords().then(r => r.abrir(o), () => G.ui.toast('No se pudieron abrir tus récords. Prueba otra vez.', 3000));
+    AV.recordsTest = o => cargarRecords().then(r => r.test(o));
+    for (const [id, accion, o] of [['b-records', 'abrir', { desde: 'pausa' }], ['b-records-title', 'abrir', { desde: 'portada' }], ['c-share', 'compartirComic']]) {
+      const b = document.getElementById(id);
+      if (b) b.addEventListener('click', () => cargarRecords().then(r => r[accion](o), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000)));
+    }
     // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
     let retos = null;
-    const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => window.AVRetos(G), e => { retos = null; throw e; }));
+    const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
     AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
     AV.retosTest = o => cargarRetos().then(r => r.test(o));
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     if (portada) portada.addEventListener('close', () => { if (portada.returnValue === 'retos') { portada.returnValue = ''; AV.retos(); } });
-    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos'; // récords aparte de la partida; «Nuevo estudiante» los borra
-    G.on('nuevoEstudiante', () => { try { localStorage.removeItem(recRetos); } catch (e) { /* sin almacén */ } });
+    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
+    G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }

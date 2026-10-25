@@ -379,6 +379,8 @@ AVE.module('streaming', function (G) {
           if (!geo.boundingSphere) geo.computeBoundingSphere();
           r.partes.push({ geo, mat });
         }
+        // vanos de puerta a un interior vacío: solidos.js los tapa con un panel fundido en una de las partes (B4)
+        if (G.solidos && G.solidos.cerrarVanos) G.solidos.cerrarVanos(r.n, r.partes, fundir);
         const caja = new THREE.Box3(); for (const p of r.partes) caja.union(p.geo.boundingBox);
         const esf = caja.getBoundingSphere(new THREE.Sphere());
         r.radio = esf.radius; r.centro = esf.center; r.alto = caja.max.y;

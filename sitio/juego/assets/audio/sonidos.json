@@ -1,0 +1,86 @@
+{
+ "_nota": "Sonidos del juego sintetizados con tools/audio/juego.py. Se tocan con G.audio.play(nombre); src/engine/audio.js elige .ogg o .mp3 según el navegador y respeta silencio y autoplay.",
+ "formato": "mono 48 kHz; OGG Vorbis 72 kbps y MP3 80 kbps",
+ "sonidos": {
+  "aterrizar_techo": {
+   "descripcion": "Vittata aterriza en un techo (aletazos de frenado + golpe hueco de madera).",
+   "duracion_s": 0.75,
+   "sonoridad_activa_lu": -21.7,
+   "pico_wav_dbfs": -4.0,
+   "ogg": {
+    "archivo": "aterrizar_techo.ogg",
+    "kb": 7.5,
+    "pico_decodificado": -4.3
+   },
+   "mp3": {
+    "archivo": "aterrizar_techo.mp3",
+    "kb": 8.0,
+    "pico_decodificado": -4.4
+   }
+  },
+  "posarse_rama": {
+   "descripcion": "Se posa en una rama: aletazo, rama, crujido y roce de patas suave.",
+   "duracion_s": 0.8,
+   "sonoridad_activa_lu": -22.3,
+   "pico_wav_dbfs": -4.0,
+   "ogg": {
+    "archivo": "posarse_rama.ogg",
+    "kb": 9.1,
+    "pico_decodificado": -4.3
+   },
+   "mp3": {
+    "archivo": "posarse_rama.mp3",
+    "kb": 8.5,
+    "pico_decodificado": -4.5
+   }
+  },
+  "despegar": {
+   "descripcion": "Despega con aleteo (5 aletazos) y hojas al impulsarse.",
+   "duracion_s": 1.02,
+   "sonoridad_activa_lu": -20.6,
+   "pico_wav_dbfs": -4.0,
+   "ogg": {
+    "archivo": "despegar.ogg",
+    "kb": 11.4,
+    "pico_decodificado": -5.8
+   },
+   "mp3": {
+    "archivo": "despegar.mp3",
+    "kb": 10.6,
+    "pico_decodificado": -5.1
+   }
+  },
+  "nido_chispa": {
+   "descripcion": "Chispa del nido cuando hay algo nuevo (celesta en pentatónica).",
+   "duracion_s": 1.1,
+   "sonoridad_activa_lu": -20.0,
+   "pico_wav_dbfs": -8.3,
+   "ogg": {
+    "archivo": "nido_chispa.ogg",
+    "kb": 10.1,
+    "pico_decodificado": -8.2
+   },
+   "mp3": {
+    "archivo": "nido_chispa.mp3",
+    "kb": 11.3,
+    "pico_decodificado": -8.7
+   }
+  },
+  "eclosion_huevo": {
+   "descripcion": "Eclosión: tres cracks, pop, destellos y un pío.",
+   "duracion_s": 1.75,
+   "sonoridad_activa_lu": -20.0,
+   "pico_wav_dbfs": -7.8,
+   "ogg": {
+    "archivo": "eclosion_huevo.ogg",
+    "kb": 15.1,
+    "pico_decodificado": -8.1
+   },
+   "mp3": {
+    "archivo": "eclosion_huevo.mp3",
+    "kb": 17.6,
+    "pico_decodificado": -8.2
+   }
+  }
+ }
+}

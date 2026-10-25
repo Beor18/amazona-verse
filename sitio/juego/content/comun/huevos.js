@@ -92,6 +92,8 @@
     //                { misiones: min } · { liberadas: min } · { xpAprender: min } · { todas: [cond, ...] }
     // traits: por etapa, piezas del ropero ({ slot, id, color, style }) y piezas NUEVAS ({ nuevo: 'id_trait' }, ver TRAITS_V2.md),
     //   con 'respaldo' existente para que el prototipo las muestre ya.
+    // especie (opcional): id de content/comun/especies.js; si esa especie tiene piel, la cría (bebé, juvenil y adulto) la lleva
+    //   (src/personaje/pieles.js). Sin especie, la cría es Vittata. Qué cápsula trae qué especie lo decide Kelvin.
     huevos: [
       { id: 'clasico', cria: { es: 'Iguaca', en: 'Iguaca' }, rareza: 'inicial', nombre: { es: 'Cápsula de nido', en: 'Nest capsule' },
         lema: { es: 'Como la cavidad de un palo colorado.', en: 'Like a palo colorado tree cavity.' },

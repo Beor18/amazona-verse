@@ -103,19 +103,20 @@ AVE.module('fx', function (G) {
   const arrowGeo = new THREE.ConeGeometry(0.2, 0.55, 12); arrowGeo.rotateX(Math.PI / 2);
   const guideArrow = new THREE.Mesh(arrowGeo, new THREE.MeshBasicMaterial({ color: '#f2a03d' }));
   guideArrow.visible = false; scene.add(guideArrow);
-  // tg = { x, z, y? } o null
+  // tg = { x, z, y? } o null. Modo relajado (src/game/accesibilidad.js): el haz brilla más y la flecha, más grande, se ve también de cerca
   function guide(tg, now) {
     guideBeam.visible = !!tg; guideArrow.visible = false;
     if (!tg) return;
+    const relajado = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
     const gy = tg.y != null ? tg.y - 20 : G.terreno.height(tg.x, tg.z) + 20;
     guideBeam.position.set(tg.x, gy, tg.z);
     // Con la cámara pegada al haz, el cilindro aditivo tapaba media pantalla (QA-22): se desvanece entre 8 y 2,5 m del eje
     const cp = G.renderer.camera.position, cerca = THREE.MathUtils.smoothstep(Math.hypot(cp.x - tg.x, cp.z - tg.z), 2.5, 8);
     guideBeam.visible = cerca > 0.01;
-    guideBeam.material.opacity = (0.16 + Math.sin(now * 3) * 0.06) * cerca;
+    guideBeam.material.opacity = (0.16 + Math.sin(now * 3) * 0.06) * cerca * (relajado ? 1.8 : 1);
     const d = Math.hypot(tg.x - S.pos.x, tg.z - S.pos.z);
-    if (d > 4) {
-      guideArrow.visible = true;
+    if (d > (relajado ? 1.5 : 4)) {
+      guideArrow.visible = true; guideArrow.scale.setScalar(relajado ? 1.4 : 1);
       guideArrow.position.set(S.pos.x + (tg.x - S.pos.x) / d * 0.9, S.pos.y + 2.75 + Math.sin(now * 4) * 0.06, S.pos.z + (tg.z - S.pos.z) / d * 0.9);
       guideArrow.lookAt(tg.x, tg.y != null ? tg.y : guideArrow.position.y, tg.z);
     }
