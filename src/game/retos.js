@@ -1264,7 +1264,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         check('Tras 3-2-1 empieza la tormenta', TM.fase === 'juego');
         check('Hay semillas para recoger', TM.semillas.length >= 4, TM.semillas.length);
         // Una semilla junto al jugador suma puntos y la siguiente sube el combo
-        const recoger = () => { const s = TM.semillas[0]; colocarJugador(s.x, s.y - 0.7, s.z, 0, -1); tick(0.05); };
+        // Una semilla sin otra al alcance (se recoge a menos de 2,2 m y 2,6 m de alto): salen al azar y, si dos caían juntas, un
+        // solo paso recogía las dos y el combo subía de más (0 → 30 → 60, combo 3)
+        const sola = () => TM.semillas.find(s => TM.semillas.every(o => o === s || Math.hypot(o.x - s.x, o.z - s.z) > 3 || Math.abs(o.y - s.y) > 3));
+        const recoger = () => { const s = sola() || TM.semillas[0]; colocarJugador(s.x, s.y - 0.7, s.z, 0, -1); tick(0.05); };
         const p0 = TM.puntos; recoger(); const p1 = TM.puntos; recoger();
         check('Recoger semillas suma puntos', p1 > p0 && TM.recogidas === 2, p0 + ' → ' + p1 + ' → ' + TM.puntos);
         check('Seguidas suben el combo', TM.combo === 2, TM.combo);
