@@ -182,7 +182,8 @@ AVE.module('input', function (G) {
   $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.tryDash(); });
   $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
   const actBtn = $('b-act');
-  actBtn.addEventListener('click', () => { if (!paused()) G.interaccion.action(); });
+  // pointerdown como los demás botones: en iOS el 'click' de un segundo dedo (con el joystick agarrado) no llega
+  actBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.interaccion.action(); });
   // Bucear en táctil: mantener el botón equivale a mantener C
   // (en el agua ocupa el lugar de Volar, así caben los botones en un teléfono)
   const diveBtn = $('b-dive'), flyBtn = $('b-fly');
@@ -228,6 +229,10 @@ AVE.module('input', function (G) {
       ok('flechas siguen fijas', (tecla('keydown', 'ArrowUp'), keys.has('arrowup')) && (tecla('keyup', 'ArrowUp'), !keys.has('arrowup')));
       ok('tecla ocupada: se intercambian', asignar('accion', 'i') && mapa.accion === 'i' && mapa.arriba === 'e', `${mapa.accion}/${mapa.arriba}`);
       ok('reservadas rechazadas (Espacio, C, 1, Enter, flecha)', ![' ', 'c', '1', 'Enter', 'ArrowUp'].some(k => asignar('volar', k)) && mapa.volar === 'v');
+      const accionReal = G.interaccion.action; let toques = 0;
+      G.interaccion.action = () => { toques++; };
+      try { actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' })); } finally { G.interaccion.action = accionReal; }
+      ok('botón Acción táctil responde al tocar (pointerdown)', toques === (paused() ? 0 : 1), String(toques));
       ok('sin teclas repetidas', new Set(ACCIONES.map(a => mapa[a])).size === ACCIONES.length);
       asignar('aterrizar', 'b');
       ok('es(): aterrizar con B, acción con I y con Enter', es('aterrizar', { key: 'B' }) && es('accion', { key: 'I' }) && es('accion', { key: 'Enter' }) && !es('accion', { key: 'e' }));
