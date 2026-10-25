@@ -74,3 +74,14 @@ Cada tarea se anota al terminar: objetivo, responsable y modelo, consumo, tiempo
 | 25-oct | Partida dañada sin borrar, Aula «Comenzar de cero» y doc de seguridad | agente · Sonnet | 464 000 tokens en total, 156 herramientas (cierre del capítulo y ajustes) | 96 min | `core.js`, `guardado.js`, `aula.js`, `SEGURIDAD_INFANTIL.md` | saveTest 45/45, maestroTest 25/25 | 7232117, b8b68f4, bdb893f: copias con fecha, aviso suave, nada se borra solo |
 | 25-oct | E1 Diario validado y E2 documentos y Cómo se juega | agente · Fable | 310 000 tokens, 139 herramientas | 25 min | `coleccionables.js` (textos), `DIARIO_VALIDACION.md`, `GDD_CAP1.md`, `CHAPTER_01_GAMEPLAY.md`, `EDUCATIVO.md`, `COMO_SE_JUEGA.md` | 15/15, eduTest 78/78 | ee215a9, 487085d: 12 textos con fuente, 7 corregidos |
 | 25-oct | E2E del capítulo completo y duración (paquete C) | agente · Sonnet | 441 000 tokens, 151 herramientas | 151 min | `tests/qa/e2e.js`, `BUGS.md`, `CAP1_PENDIENTE.md` | e2eTest 42/42 (rama A) y 40/40 (rama B) | fa29fcc: el capítulo llega al final; piso de duración de 6 min sin leer y 8,5 min leyendo; QA-35 (carpeta de build compartida) |
+| 25-oct | Controles en PC (icono, panel «¡Así se juega!»), «no eleva» y encaje en la torre | agente · Opus | 599 000 tokens, 267 herramientas | 78 min | `fisica.js`, `input.js`, `src/game/guia_controles.js`, `movimiento.js`, docs | 15 baterías en verde, movementTest 38/38, controlesTest 19/19 | 00e8516, 486aa79, 8266362: 4 causas de «no eleva» corregidas; red de seguridad contra encajes |
+| 25-oct | Botón Acción en móvil (iOS) | coordinador · Opus | pequeño | 15 min | `input.js`, `interaccion.js` | caso nuevo en teclasTest; batería completa en curso | fa5a62b: pointerdown, aviso si no hay nada cerca, botón atenuado |
+
+## Reparto de recursos (25-oct, 19:00) · «terminar lo más posible»
+Medido: la semana va por el 43 % de todos los modelos (tope 75 %, quedan 32 puntos para 6 días) y por el **4 % de Fable**. Unos 580 000 tokens de Fable movieron su ventana 4 puntos, mientras «todos los modelos» subía sobre todo por los agentes de Opus y Sonnet: **Fable tiene mucho margen y no parece gastar la cuota general**.
+- **Fable** pasa también a implementar: las mejoras de diversión 1, 3 y 4, y 2 y 5 (dos agentes).
+- **Opus**, solo donde ya trabaja: ciudad, pieles y pruebas estables.
+- **Sonnet**: récords y compartir, accesibilidad.
+- **Mac**: como mucho 7 agentes pesados a la vez; cada uno compila en su propia carpeta (QA-35).
+- **API** ($40 en total, $20 por día): carriles bien definidos cuando Kelvin pueda pegar la clave en la Mac.
+- **Coordinador**: al cerrar la versión 1, documento de traspaso y una sesión nueva (si la app lo permite, con Fable) para no releer un contexto de 480 000 tokens en cada turno.
