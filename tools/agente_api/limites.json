@@ -1,6 +1,6 @@
 {
-  "nota": "Topes de gasto del ejecutor de la API en USD (directiva V8.0). Solo Kelvin los cambia. Aprobados por Kelvin el 25-oct-2026.",
-  "tope_total_usd": 40,
-  "tope_dia_usd": 20,
+  "nota": "Topes de gasto del ejecutor de la API en USD (directiva V8.0). Solo Kelvin los cambia. El 25-oct-2026 Kelvin los subió para aprovechar los créditos promocionales, que vencen el 29-oct.",
+  "tope_total_usd": 170,
+  "tope_dia_usd": 50,
   "alerta_pct": 80
 }

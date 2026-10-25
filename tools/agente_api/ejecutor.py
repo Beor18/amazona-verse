@@ -159,7 +159,8 @@ async def _sesion(opciones, mensajes, marca, presupuesto, resultado):
 
 
 CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3', 'D4'],
-            'E': ['E1', 'E2'], 'F': ['F1', 'F2'], 'G': ['G1', 'G2'], 'H': ['H1']}
+            'E': ['E1', 'E2'], 'F': ['F1', 'F2'], 'G': ['G1', 'G2'], 'H': ['H1'],
+            'K': ['K1', 'K2'], 'L': ['L1'], 'M': ['M1']}
 MODELOS = {'sonnet': 'claude-sonnet-5-5', 'opus': 'claude-opus-5-5'}
 
 

@@ -135,6 +135,36 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 5. Añade su prueba al estilo de `templateTest`: el pack arranca y la misión se completa.
 6. El capítulo 1 tiene que seguir intacto.
 
+## Carril K: más Retos (`src/game/retos.js`; el resto del juego no se toca)
+**K1 · Modo relajado y fantasma de tu mejor carrera.**
+- Con `G.accesibilidad.relajado()`:
+  - la carrera no tiene reloj límite;
+  - la tormenta es de práctica: no se pierden plumas de vida y se sigue sumando.
+- **Fantasma:** graba la trayectoria de tu mejor carrera (muestras cada ~0,1 s, en su propia clave) y en la siguiente vuela a tu lado una cotorra translúcida con esa ruta. Se puede apagar.
+- Que pese poco: comprime la ruta.
+- Casos nuevos en `retosTest`.
+
+**K2 · Reto nuevo «Contrarreloj del río».**
+- Vuelo bajo siguiendo el cauce del río por puntos marcados con flores o banderines, **sin anillos**, contra el reloj, con medallas, récord y fantasma (el de K1).
+- Que aparezca en el menú de Retos y lo lea «Mis récords» (gancho `retosResultado`).
+- Casos nuevos en `retosTest`.
+
+## Carril L: que abra más rápido
+**L1 · Descarga inicial de 8 MB o menos** (hoy 8,16 MB, con aviso en `test.sh`).
+- Mide qué baja al arrancar y deja para después lo que no hace falta en la portada: módulos que se pueden cargar perezosos, texturas o audio que se piden al usarlos.
+- Sin quitar nada del juego y sin bajar la calidad visible.
+- Mide también el tiempo hasta la portada y el primer cuadro jugable, antes y después.
+- Archivos: `index.html`, `src/boot.js`, `tools/build/config.json` y los módulos que hagas perezosos. Toca `index.html` con un hunk mínimo y relee antes: otros agentes también lo tocan.
+
+## Carril M: un mundo con vida
+**M1 · Bandada de cotorras** (módulo nuevo `src/game/bandada.js`; enganche mínimo en `boot.js`).
+- 12 a 20 cotorras con pieles de distintas especies (`AVE.pieles`) que vuelan en bandada sobre El Yunque.
+- Salen en momentos bonitos: al despertar a lo lejos, al terminar una misión y de vez en cuando por la tarde.
+- Si Vittata se acerca, la acompañan un rato.
+- Rendimiento: instancias, LOD y respeto a la calidad automática de `renderer.js` (pocas o ninguna en equipos modestos). Mide FPS y draw calls con `#fps`.
+- No toques `content/cap1/historia.js` ni `mundo.js`, que los usan otros agentes. Engánchate a eventos que ya existan (`G.on`).
+- `bandadaTest` y 2 capturas en `docs/img/`.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -159,3 +189,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | G1 | pendiente | | |
 | G2 | pendiente | | |
 | H1 | pendiente | | |
+| K1 | pendiente | | |
+| K2 | pendiente | | |
+| L1 | pendiente | | |
+| M1 | pendiente | | |
