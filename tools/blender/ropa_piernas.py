@@ -121,7 +121,7 @@ def build(name, long=False):
     else:
         hem_z, hem_r = 0.196, 0.066
         hem_c = lambda s: Vector((s * 0.172, -0.004, hem_z))
-    o = pants_mesh(name, hem_z, hem_c, hem_r, L=14 if long else 5)
+    o = pants_mesh(name, hem_z, hem_c, hem_r, L=8 if long else 5)   # largo: 8 anillos (≤ 6 000 tris)
     push_outside(o, offset=0.016, smooth=3, passes=3)
     orient_out(o, (0, CY, 0.3))
     bvh = BVHTree.FromObject(o, bpy.context.evaluated_depsgraph_get())

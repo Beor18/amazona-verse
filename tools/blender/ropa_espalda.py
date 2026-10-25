@@ -201,7 +201,7 @@ def tanques():
     for s in (1, -1):
         a = P(s * gx, u0, r + 0.006); b = a + U * L
         prof = [(0, 0.0), (0.02, r * 0.55), (0.06, r * 0.88), (0.11, r), (0.85, r), (0.92, r * 0.88), (0.97, r * 0.55), (1.0, r * 0.18)]
-        t = revolve('tanque', a, b, prof, seg=24, cap0=False, cap1=True)
+        t = revolve('tanque', a, b, prof, seg=20, cap0=False, cap1=True)
         add_mod(t, 'SUBSURF', levels=1); apply_mods(t)
         parts.append(set_mat(t, mt['METAL']))
         for f in (0.28, 0.72):  # franjas ACENTO

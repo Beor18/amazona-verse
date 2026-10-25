@@ -12,6 +12,18 @@ T = [(0.29, 0.15, -0.013, 0.145), (0.34, 0.18, -0.008, 0.19), (0.38, 0.188, 0.0,
 TAIL_LIFT, TAIL_P = 0.17, 4.0   # el bajo de atrás sube 17 cm en arco sobre la cola (antes la cola atravesaba la tela)
 
 
+def dense_rows(rows, n):
+    """Interpola el perfil (z, medio ancho, centro y, medio fondo) en n filas repartidas en altura."""
+    z0, z1 = rows[0][0], rows[-1][0]; out = []
+    for k in range(n):
+        z = z0 + (z1 - z0) * k / (n - 1)
+        i = max(0, min(len(rows) - 2, max(j for j in range(len(rows) - 1) if rows[j][0] <= z + 1e-9)))
+        a, b = rows[i], rows[i + 1]; t = (z - a[0]) / (b[0] - a[0])
+        t = t * t * (3 - 2 * t) * 0.5 + t * 0.5   # entre lineal y suave
+        out.append(tuple(a[c] + (b[c] - a[c]) * t for c in range(4)))
+    return out
+
+
 def lift_back_hem(o, z0=T[0][0], ztop=T[-1][0]):
     """Sube el bajo por detrás en arco (máximo en la espalda, a=180°) y reparte el resto de filas hasta el cuello."""
     for v in o.data.vertices:
@@ -38,12 +50,14 @@ def sleeve_weights(o, bone_l, bone_r, x0=0.15, x1=0.21, z0=0.585, z1=0.625):
 
 def camisa(name='camisa'):
     """Construye la camisa con piel sobre el Rig (sin exportar). La usa también ropa_cabeza.py para ajustar el pañuelo."""
-    body = lathe(name, T, seg=48)
+    # Presupuesto (≤ 6 000 tris): antes seg=48 + subdivisión daban 13 824. Ahora 56 segmentos y 20 filas interpoladas,
+    # sin subdivisión: ~5 400 tris, igual de suave (el alisado de wrap_outside redondea la forma).
+    body = lathe(name, dense_rows(T, 20), seg=56)
     lift_back_hem(body)
-    sleeves = [tube_between('mangaL', (0.12, -0.017, 0.668), (0.30, -0.013, 0.655), 0.085, 0.072),
-               tube_between('mangaR', (-0.12, -0.017, 0.668), (-0.30, -0.013, 0.655), 0.085, 0.072)]
+    sleeves = [tube_between('mangaL', (0.12, -0.017, 0.668), (0.30, -0.013, 0.655), 0.085, 0.072, seg=24, rings=5),
+               tube_between('mangaR', (-0.12, -0.017, 0.668), (-0.30, -0.013, 0.655), 0.085, 0.072, seg=24, rings=5)]
     o = join([body] + sleeves, name)
-    wrap_outside(o, offset=0.012, smooth=6, thickness=0.007, subdiv=1)
+    wrap_outside(o, offset=0.012, smooth=6, thickness=0.007, subdiv=0)
     cyl_uv(o)
     weights_from_body(o)
     sleeve_weights(o, 'armL1', 'armL1.001')  # mangas: siguen al brazo
