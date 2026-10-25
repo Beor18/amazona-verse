@@ -288,8 +288,9 @@ AVE.module('mundo', function (G) {
     });
   }
   const lejanos = []; // mallas fundidas: se apagan más allá de la distancia de dibujo (la niebla ya las esconde)
-  function publicarGrupos() {
+  function publicarGrupos(solo) {
     for (const gk in grupos) {
+      if (solo && gk !== solo) continue;
       const g = grupos[gk];
       for (const k in g.mats) {
         const it = g.mats[k];
@@ -309,18 +310,38 @@ AVE.module('mundo', function (G) {
     for (const m of lejanos) { const bs = m.geometry.boundingSphere; m.visible = cp.distanceTo(bs.center) - bs.radius < max; }
   }, 23);
 
-  // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material
-  const listo = T.listo.then(() => {
-    const tareas = KEL.map(e => colocarKelvin(e).catch(err => {
+  // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material.
+  // Carga por grupos: al arrancar, los grupos cercanos al jugador (CARGA_POR); el resto cuando se acerca (los .glb de
+  // Kelvin pesan ~7 MB en total: en la red de una escuela no se bajan las aldeas lejanas hasta que hacen falta).
+  const CARGA_POR = { bajo: 180, medio: 230, alto: 330 }; // un poco más que la distancia de dibujo de cada preset
+  const porGrupo = {};
+  for (const e of KEL) { const k = e.grupo || e.id; (porGrupo[k] || (porGrupo[k] = { lista: [], x: 0, z: 0, cargado: false })).lista.push(e); }
+  for (const k in porGrupo) { const g = porGrupo[k]; for (const e of g.lista) { g.x += e.pos[0] / g.lista.length; g.z += e.pos[2] / g.lista.length; } }
+  function cargarGrupo(k) {
+    const g = porGrupo[k]; if (g.cargado) return g.promesa; g.cargado = true;
+    g.promesa = Promise.all(g.lista.map(e => colocarKelvin(e).catch(err => {
       console.warn('AVE edificios:', err && err.message || err);
-      // respaldo: la estructura propia de ese rol
-      const p = e.rol && (MAPA.estructuras || []).find(s => s.id === e.rol);
+      const p = e.rol && (MAPA.estructuras || []).find(s => s.id === e.rol); // respaldo: la estructura propia de ese rol
       if (p && !activos[p.id]) return colocarPropia(p).catch(() => {});
       return null;
-    }));
+    }))).then(() => publicarGrupos(k));
+    return g.promesa;
+  }
+  const cerca = (g, x, z) => Math.hypot(g.x - x, g.z - z) < (CARGA_POR[R.calidad.nivel] || 230);
+  const listo = T.listo.then(() => {
+    const S = G.S, px = S.pos ? S.pos.x : 0, pz = S.pos ? S.pos.z : 0;
+    const tareas = Object.keys(porGrupo).filter(k => cerca(porGrupo[k], px, pz)).map(cargarGrupo);
     for (const e of propias) tareas.push(colocarPropia(e).catch(err => console.warn('AVE estructura:', err && err.message || err)));
     return Promise.all(tareas);
-  }).then(() => { publicarGrupos(); G.emit('mundoListo'); });
+  }).then(() => { G.emit('mundoListo'); });
+  let revision = 0;
+  G.on('update', dt => {
+    if ((revision += dt) < 1.5) return; revision = 0;
+    const S = G.S; if (!S.pos || !T.exacto) return;
+    for (const k in porGrupo) if (!porGrupo[k].cargado && cerca(porGrupo[k], S.pos.x, S.pos.z)) cargarGrupo(k);
+  }, 70);
+  // todos (pruebas y capturas): G.mundo.cargarTodo()
+  const cargarTodo = () => Promise.all(Object.keys(porGrupo).map(cargarGrupo));
 
   // Una pieza suelta del kit para el contenido (taller de Vittata, etc.): un grupo con los materiales compartidos
   function edificio(nombre, o) {
@@ -342,5 +363,5 @@ AVE.module('mundo', function (G) {
     });
   }
 
-  return { listo, edificio, activos, analizar, escalaDe, stats: () => Object.assign({}, stats0) };
+  return { listo, edificio, activos, analizar, escalaDe, cargarTodo, grupos: porGrupo, stats: () => Object.assign({}, stats0) };
 });
