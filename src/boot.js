@@ -24,6 +24,8 @@
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
     if (G.movimiento && G.movimiento.test) AV.movementTest = o => G.movimiento.test(o); // src/pruebas/movimiento.js
+    if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
+    if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }

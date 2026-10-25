@@ -1,0 +1,1385 @@
+{
+  "version": 1,
+  "proyecto": "Amazona Verse · video pitch",
+  "fecha": "2026-10-24",
+  "autor": "Comité de pitch (CEO, CTO, Growth)",
+  "duracion": 165.6,
+  "vo_referencia": "~/AmazonaVerse/_trabajo_claude/pitch/audio/vo/vo_bloques.json (tiempos y marcas de palabra de la VO)",
+  "bpm": 100,
+  "compas_s": 2.4,
+  "secciones": [
+    {
+      "id": "gancho",
+      "inicio": 0.0,
+      "fin": 26.4,
+      "nota": "gancho 0-9.6 (solo viento) y problema 9.6-26.4 (entra la música)"
+    },
+    {
+      "id": "mundo",
+      "inicio": 26.4,
+      "fin": 48.0
+    },
+    {
+      "id": "aprender",
+      "inicio": 48.0,
+      "fin": 86.4,
+      "nota": "misión 48.0-67.2 · Diario 67.2-74.4 · Modo Maestro 74.4-86.4"
+    },
+    {
+      "id": "criadero",
+      "inicio": 86.4,
+      "fin": 98.4
+    },
+    {
+      "id": "tecnologia",
+      "inicio": 98.4,
+      "fin": 141.6,
+      "nota": "tecnología 98.4-117.6 · mercado y modelo 117.6-141.6"
+    },
+    {
+      "id": "cierre",
+      "inicio": 141.6,
+      "fin": 165.6,
+      "nota": "la música corta en 152.4 y vuelve en 153.6 con el despegue y el coro de coquíes"
+    }
+  ],
+  "logo": {
+    "inicio": 158.4,
+    "dur": 7.2
+  },
+  "silencio_musica": {
+    "inicio": 152.4,
+    "fin": 153.6
+  },
+  "notas": [
+    "Tiempos en segundos de video. Los cortes van en múltiplos de 0.6 s y se alinearon con las marcas de palabra de la VO real (vo_bloques.json). Las tomas con corte_a_palabra (montaje de verbos) cortan sobre la palabra, no sobre el pulso.",
+    "PITCH.grabar(id, s) graba la duración de la toma más 1.2 s de margen para recortar.",
+    "titulo.inicio es relativo al inicio de la toma.",
+    "Todas las tomas son video en movimiento capturado del juego. La única que no viene del canvas es tec_navegador, una grabación de pantalla real; mercado_cifras lleva gráficos del editor encima del gameplay.",
+    "Antes de capturar: abrir index.html (pack cap1, mapa El Yunque activo), crear o cargar una partida y pegar helpers_js en la consola. PITCH.formato() fija 1920x1080 con DPR 1.",
+    "Los campos dur y duracion_s, y que y descripcion, son iguales: unos los lee tools/video/montaje.py y los otros son el formato que pidió Kelvin.",
+    "Las coordenadas y alturas de cámara son un punto de partida. El editor las ajusta mirando el cuadro. Ninguna toma debe atravesar terreno ni edificios.",
+    "Reglas: no cambiar a Vittata ni su modelo; bandera de PR fiel (revisar mundo_gorra_bandera con docs/BANDERA_PR_GUIA.md); solo fichas verificadas en el Diario; nada de datos personales en pantalla (pestañas, perfiles, nombres de estudiantes).",
+    "Tomas con 'pendiente': el criadero aún no tiene API. Usar el 'sustituto' y avisar al comité para cambiar la línea de voz B07."
+  ],
+  "helpers_js": [
+    "/* PITCH · ayudas de captura del video pitch. Pegar en la consola con index.html cargado (pack cap1, mapa El Yunque) y una partida abierta.",
+    "   Solo lectura del motor: sustituye G.camara.follow/draw mientras hay una toma de cine y mueve a Vittata con un gancho 'update'. Recargar la página lo deshace todo. */",
+    "(function () {",
+    "  'use strict';",
+    "  const G = AV.G, S = G.S, R = G.renderer, cam = R.camera, M = G.fisica.MOVE, H = G.terreno.height, keys = G.input.keys;",
+    "  const MAPA = window.AV_MAPA_CAP1 || {};",
+    "  const V = (x, y, z) => new THREE.Vector3(x, y, z);",
+    "  const esperar = s => new Promise(r => setTimeout(r, s * 1000));",
+    "  // ---------- Lugares ----------",
+    "  function poi(id) {",
+    "    if (id && typeof id === 'object') return id;",
+    "    const p = G.terreno.poi && G.terreno.poi(id);",
+    "    if (p) return { x: p.x, y: p.y != null ? p.y : H(p.x, p.z), z: p.z };",
+    "    const q = (MAPA.pois || []).find(o => o.id === id);",
+    "    if (q) return { x: q.pos[0], y: q.pos[1], z: q.pos[2] };",
+    "    throw new Error('POI desconocido: ' + id);",
+    "  }",
+    "  const MIRADOR_Y = ((MAPA.lugares || {}).mirador || {}).yPlataforma || 47.52;",
+    "  // ---------- Formato y HUD ----------",
+    "  let fmt = null;",
+    "  function formato(w = 1920, h = 1080) { fmt = [w, h]; R.renderer.setPixelRatio(1); R.renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }",
+    "  const HUD = ['top', 'sys', 'acts', 'stick', 'keyhint', 'tag', 'prompt', 'toast'];",
+    "  function hud(ver) { HUD.forEach(id => { const e = document.getElementById(id); if (e) e.style.visibility = ver ? '' : 'hidden'; }); }",
+    "  function limpiar() { G.pruebas.drain(); G.ui.hideCard(); G.ui.hideToast(); parar(); }",
+    "  // ---------- Ropa (ids de src/personaje y content/cap1/coleccionables.js) ----------",
+    "  const ROPA = {",
+    "    base: {},",
+    "    exploradora: { feet: { id: 'botas', color: '#3d8fb0', style: 'aventura' }, neck: { id: 'panuelo', color: '#f2a03d' }, eyes: { id: 'gafas', color: '#5a3a22' } },",
+    "    pava: { head: { id: 'pava', color: '#d6403a' } },",
+    "    boricua: { head: { id: 'pava', color: '#d6403a' }, torso: { id: 'camisa', color: '#f4f4f0', style: 'guayabera' }, hand: { id: 'mano', color: '#d6403a', style: 'maracas' } },",
+    "    bandera: { head: { id: 'gorra', color: '#d6403a', style: 'pr' }, torso: { id: 'camisa', color: '#f4f4f0', style: 'guayabera' } },",
+    "    deportiva: { head: { id: 'gorra', color: '#d6403a', style: 'pr' }, torso: { id: 'camisa', color: '#d6403a', style: 'deportiva' }, eyes: { id: 'lentes', color: '#c9a227', style: 'sol' } },",
+    "  };",
+    "  function vestir(n) { const look = typeof n === 'string' ? ROPA[n] : n; S.wear = S.wear || {}; Object.keys(S.wear).forEach(k => delete S.wear[k]); Object.assign(S.wear, JSON.parse(JSON.stringify(look))); G.actores.applyWear(); }",
+    "  // ---------- Vittata ----------",
+    "  function mirar(id) { const q = poi(id), dx = q.x - S.pos.x, dz = q.z - S.pos.z, l = Math.hypot(dx, dz) || 1; S.facing = { x: dx / l, z: dz / l }; }",
+    "  function ir(id, o = {}) {",
+    "    const p = poi(id); vuelo = null; M.flying = false;",
+    "    AV.teleport(p.x + (o.dx || 0), p.z + (o.dz || 0));",
+    "    if (o.y != null) { S.pos.y = o.y; S.vy = 0; }",
+    "    if (o.mirar) mirar(o.mirar);",
+    "    G.camara.place(true);",
+    "  }",
+    "  function caminar(hacia, correr) { const q = poi(hacia); G.camara.yaw = Math.atan2(-(q.x - S.pos.x), -(q.z - S.pos.z)); keys.add('w'); if (correr) keys.add('shift'); else keys.delete('shift'); }",
+    "  function parar() { ['w', 'a', 's', 'd', 'shift', 'c'].forEach(k => keys.delete(k)); G.input.jumpHeld = false; }",
+    "  const bucear = si => (si ? keys.add('c') : keys.delete('c'));",
+    "  const gesto = n => G.actores.playEmote(n);           // saludar, celebrar, bailar, idea, enojo, pelea, molestia",
+    "  const saltar = () => G.fisica.tryJump();",
+    "  const despegar = () => G.fisica.startFlying();",
+    "  // ---------- Vuelo guiado por ruta (rutasVuelo del mapa o RUTAS de aquí) ----------",
+    "  const RUTAS = {",
+    "    mirador_costa: { puntos: [[14, MIRADOR_Y + 1, 172], [50, 40, 185], [95, 26, 195], [150, 14, 214]] },",
+    "    dosel_aldea: { xz: [[-50, 150], [-85, 157], [-118, 165], [-150, 176]], sobreSuelo: 14 },",
+    "    rio_bajo: { xz: [[176, 152], [168, 128], [165, 100], [170, 72]], sobreSuelo: 9 },",
+    "    isla_larga: { xz: [[150, 200], [60, 120], [-20, 20], [-30, -120]], sobreSuelo: 30 },",
+    "    villa_paso: { xz: [[118, 192], [138, 180], [158, 170], [182, 160]], sobreSuelo: 10 },",
+    "  };",
+    "  let vuelo = null;",
+    "  function volar(ruta, dur, o = {}) {",
+    "    const def = typeof ruta === 'string' ? (RUTAS[ruta] || (MAPA.rutasVuelo || []).find(r => r.id === ruta)) : { puntos: ruta };",
+    "    if (!def) throw new Error('Ruta desconocida: ' + ruta);",
+    "    const alto = o.sobreSuelo != null ? o.sobreSuelo : def.sobreSuelo;",
+    "    const pts = def.puntos ? def.puntos.map(p => V(p[0], p[1], p[2])) : def.xz.map(p => V(p[0], H(p[0], p[1]) + (alto || 10), p[1]));",
+    "    const curva = new THREE.CatmullRomCurve3(pts), largo = curva.getLength();",
+    "    let t = 0, y = pts[0].y;",
+    "    M.flying = true; S.pos.x = pts[0].x; S.pos.y = y; S.pos.z = pts[0].z;",
+    "    return new Promise(fin => {",
+    "      vuelo = dt => {",
+    "        t += dt;",
+    "        const u = Math.min(1, t / dur), p = curva.getPointAt(u), tg = curva.getTangentAt(u);",
+    "        const piso = alto != null ? H(p.x, p.z) + alto : -1e9;",
+    "        y += (Math.max(p.y, piso) - y) * Math.min(1, dt * 3);",
+    "        S.pos.x = p.x; S.pos.z = p.z; S.pos.y = y; S.vy = 0;",
+    "        const l = Math.hypot(tg.x, tg.z) || 1; S.facing = { x: tg.x / l, z: tg.z / l };",
+    "        M.flying = true; M.vx = S.facing.x * largo / dur; M.vz = S.facing.z * largo / dur;",
+    "        if (u >= 1) { vuelo = null; if (!o.seguirVolando) M.flying = false; fin(); }",
+    "      };",
+    "    });",
+    "  }",
+    "  G.on('update', dt => { if (vuelo) vuelo(dt); }, 999);",
+    "  // ---------- Cámara de cine ----------",
+    "  let toma = null;",
+    "  const orig = { follow: G.camara.follow, draw: G.camara.draw };",
+    "  G.camara.follow = dt => { if (!toma) orig.follow(dt); };",
+    "  G.camara.draw = dt => {",
+    "    if (fmt && R.renderer.getPixelRatio() !== 1) formato(fmt[0], fmt[1]);   // la resolución dinámica no cambia la grabación",
+    "    if (!toma) return orig.draw(dt);",
+    "    toma.t += dt;",
+    "    const p = toma.pos(toma.t), m = toma.mira(toma.t);",
+    "    if (toma.suave && toma.prev) p.lerpVectors(toma.prev, p, Math.min(1, dt * toma.suave));",
+    "    toma.prev = p.clone();",
+    "    cam.position.copy(p); cam.lookAt(m);",
+    "    if (toma.fov) { cam.fov = toma.fov; cam.updateProjectionMatrix(); }",
+    "    R.renderer.render(R.scene, cam);",
+    "  };",
+    "  const yo = (dy = 1.1) => () => V(S.pos.x, S.pos.y + dy, S.pos.z);",
+    "  const fn = (v, d) => (typeof v === 'function' ? v : v ? () => V(v[0], v[1], v[2]) : d);",
+    "  const CAM = {",
+    "    juego: null,   // cámara normal del juego (tercera persona)",
+    "    seguir: (dist = 6, alto = 2.2, lado = 0) => ({ suave: 4, pos: () => { const f = S.facing; return V(S.pos.x - f.x * dist + f.z * lado, S.pos.y + alto, S.pos.z - f.z * dist - f.x * lado); }, mira: yo() }),",
+    "    lateral: (dist = 5, alto = 1.2) => CAM.seguir(0.5, alto, dist),",
+    "    frente: (d0 = 2.4, d1 = 1.5, dur = 4, alto = 1.3) => ({ suave: 6, pos: t => { const f = S.facing, d = d0 + (d1 - d0) * Math.min(1, t / dur); return V(S.pos.x + f.x * d, S.pos.y + alto, S.pos.z + f.z * d); }, mira: yo(1.05) }),",
+    "    orbita: (c, radio, alto, vel = 0.15, ang0 = 0, mira) => { const C = typeof c === 'function' ? c : () => { const q = poi(c); return V(q.x, q.y, q.z); }; return { pos: t => { const k = C(); return V(k.x + Math.cos(ang0 + t * vel) * radio, k.y + alto, k.z + Math.sin(ang0 + t * vel) * radio); }, mira: mira || (() => C()) }; },",
+    "    dron: (p0, p1, dur, mira) => ({ pos: t => { const u = Math.min(1, t / dur), e = u * u * (3 - 2 * u); return V(p0[0], p0[1], p0[2]).lerp(V(p1[0], p1[1], p1[2]), e); }, mira: fn(mira, yo()) }),",
+    "    fija: (p, mira) => ({ pos: () => V(p[0], p[1], p[2]), mira: fn(mira, yo()) }),",
+    "  };",
+    "  function camara(c, fov) { toma = c ? Object.assign({ t: 0, prev: null, fov }, c) : null; }",
+    "  // ---------- Estado de la misión educativa (S.step 3 = \"La ruta de la gota\") ----------",
+    "  function eduHasta(pid) {",
+    "    if (S.step < 3) G.misiones.advanceTo(3);",
+    "    const orden = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'], n = orden.indexOf(pid);",
+    "    orden.slice(0, n).forEach(k => (S.edu.hecho[k] = true));",
+    "    if (n > 1) ['suelo', 'sotobosque', 'dosel', 'emergente'].forEach(c => (S.edu.perchas[c] = S.edu.perchas[c] || true));",
+    "    if (n > 3) { S.edu.vistos.A = S.edu.vistos.B = true; S.evaluated = S.evaluated || {}; S.evaluated.A = S.evaluated.B = true; }",
+    "    if (!S.edu.pred1) S.edu.pred1 = 'lluvia_montana';",
+    "    G.emit('apply');",
+    "    return G.c.edu.estado();   // si \"actual\" no es pid, jugar el tramo (AV.eduTest muestra las acciones exactas)",
+    "  }",
+    "  // ---------- Grabación de respaldo (el editor puede usar su propio capturador) ----------",
+    "  function grabar(id, seg, fps = 60) {",
+    "    const rec = new MediaRecorder(R.canvas.captureStream(fps), { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 16e6 }), parts = [];",
+    "    rec.ondataavailable = e => parts.push(e.data);",
+    "    return new Promise(fin => {",
+    "      rec.onstop = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(parts, { type: 'video/webm' })); a.download = id + '.webm'; a.click(); fin(); };",
+    "      rec.start(); setTimeout(() => rec.stop(), seg * 1000 + 300);",
+    "    });",
+    "  }",
+    "  window.G = G;   // los códigos de cada toma usan G (= AV.G)",
+    "  window.PITCH = { poi, MIRADOR_Y, formato, hud, limpiar, ROPA, vestir, mirar, ir, caminar, parar, bucear, gesto, saltar, despegar, RUTAS, volar, CAM, camara, yo, eduHasta, grabar, esperar };",
+    "})();"
+  ],
+  "tomas": [
+    {
+      "id": "gancho_negro",
+      "seccion": "gancho",
+      "inicio": 0.0,
+      "dur": 1.2,
+      "duracion_s": 1.2,
+      "que": "Negro total. Solo viento.",
+      "descripcion": "Negro total. Solo viento.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "no requiere juego",
+        "posicion": "-",
+        "accion": "-",
+        "ropa": "-",
+        "camara": "negro",
+        "codigo": "// sin captura: negro generado en montaje"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "gancho_primer_plano",
+      "seccion": "gancho",
+      "inicio": 1.2,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Primer plano de Vittata en la plataforma del Mirador Yokahú. Mira el bosque y luego gira la cabeza hacia la cámara. Calma, viento en las plumas.",
+      "descripcion": "Primer plano de Vittata en la plataforma del Mirador Yokahú. Mira el bosque y luego gira la cabeza hacia la cámara. Calma, viento en las plumas.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "partida abierta, sin diálogos ni tarjetas; HUD oculto",
+        "posicion": "POI mirador, sobre la plataforma (y = yPlataforma), mirando al norte, hacia la cumbre",
+        "accion": "quieta (Idle), expresión neutral; ningún gesto",
+        "ropa": "base (sin ropa: la cotorra tal cual)",
+        "camara": "frente: se acerca despacio de 2.4 a 1.5 m a la altura de los ojos; fov 40",
+        "codigo": "PITCH.formato(); PITCH.hud(false); PITCH.limpiar(); PITCH.vestir('base'); PITCH.ir('mirador', { y: PITCH.MIRADOR_Y + 0.05, mirar: 'cumbre' }); PITCH.camara(PITCH.CAM.frente(2.4, 1.5, 3.6, 1.25), 40); PITCH.grabar('gancho_primer_plano', 4.8);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "gancho_vuelo_mirador",
+      "seccion": "gancho",
+      "inicio": 4.8,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Vittata salta de la plataforma del mirador y planea sola sobre el dosel hacia la costa. La cámara de dron se queda atrás y sube, y se revela la isla, el mar y la niebla de El Yunque. Vittata se ve pequeña: sola en el bosque.",
+      "descripcion": "Vittata salta de la plataforma del mirador y planea sola sobre el dosel hacia la costa. La cámara de dron se queda atrás y sube, y se revela la isla, el mar y la niebla de El Yunque. Vittata se ve pequeña: sola en el bosque.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "igual que la toma anterior",
+        "posicion": "sale del POI mirador; ruta PITCH.RUTAS.mirador_costa (o rutasVuelo salto_mirador)",
+        "accion": "despegue y planeo (wingMode fly/flap automático), expresión happy al volar",
+        "ropa": "base",
+        "camara": "dron: arranca 6 m detrás y 3 m arriba de Vittata, y retrocede y sube hasta unos 40 m sobre el mirador mirando a Vittata",
+        "codigo": "PITCH.ir('mirador', { y: PITCH.MIRADOR_Y + 0.05, mirar: 'playa' }); PITCH.camara(PITCH.CAM.dron([4, PITCH.MIRADOR_Y + 4, 168], [-30, PITCH.MIRADOR_Y + 40, 150], 4.8, PITCH.yo(0.8)), 55); PITCH.volar('mirador_costa', 9); PITCH.grabar('gancho_vuelo_mirador', 6.0);"
+      },
+      "texto_pantalla": "Huracán María · 2017",
+      "titulo": {
+        "texto": "Huracán María · 2017",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "problema_vuelo_rio",
+      "seccion": "gancho",
+      "inicio": 9.6,
+      "dur": 4.2,
+      "duracion_s": 4.2,
+      "que": "Seguimiento lateral: Vittata vuela río arriba entre palmas de sierra y yagrumos, bajo el dosel, con el río brillando debajo. Entra la música.",
+      "descripcion": "Seguimiento lateral: Vittata vuela río arriba entre palmas de sierra y yagrumos, bajo el dosel, con el río brillando debajo. Entra la música.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "ruta rutasVuelo rio_arriba (tramo inicial) o PITCH.RUTAS.rio_bajo",
+        "accion": "vuelo de crucero; aletea al subir",
+        "ropa": "base",
+        "camara": "lateral a 5 m, a la altura de Vittata, con suavizado (el río al fondo del cuadro)",
+        "codigo": "PITCH.camara(PITCH.CAM.lateral(5, 0.8), 50); PITCH.volar('rio_bajo', 6); PITCH.grabar('problema_vuelo_rio', 5.4);"
+      },
+      "texto_pantalla": "Más de 900 hoy · USFWS",
+      "titulo": {
+        "texto": "Más de 900 hoy · USFWS",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.7
+      }
+    },
+    {
+      "id": "problema_estacion",
+      "seccion": "gancho",
+      "inicio": 13.8,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "Dron lento sobre Villa Raíz: la Estación de Conservación (edificio del fundador) junto a la plaza y el muelle. Vittata llega volando y cruza el cuadro. Va con 'gracias a gente que no se rindió'.",
+      "descripcion": "Dron lento sobre Villa Raíz: la Estación de Conservación (edificio del fundador) junto a la plaza y el muelle. Vittata llega volando y cruza el cuadro. Va con 'gracias a gente que no se rindió'.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI estacion (Estación de Conservación de Villa Raíz)",
+        "accion": "vuelo de paso (ruta villa_paso)",
+        "ropa": "base",
+        "camara": "dron que baja de 30 a 22 m acercándose a la Estación, mirando al edificio",
+        "codigo": "PITCH.vestir('base'); PITCH.camara(PITCH.CAM.dron([190, 30, 205], [175, 22, 196], 3.0, [167, 6, 183]), 50); PITCH.volar('villa_paso', 4); PITCH.grabar('problema_estacion', 4.2);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "problema_saludo_plaza",
+      "seccion": "gancho",
+      "inicio": 16.8,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Plaza de Villa Raíz con la Estación de Conservación detrás. Vittata camina hacia la cámara, se detiene y saluda con alegría (gesto saludar). Que se vea su personalidad.",
+      "descripcion": "Plaza de Villa Raíz con la Estación de Conservación detrás. Vittata camina hacia la cámara, se detiene y saluda con alegría (gesto saludar). Que se vea su personalidad.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; Luma visible al fondo si está en la plaza",
+        "posicion": "POI plaza, 6 m al sur; camina hacia el POI plaza",
+        "accion": "caminar 2.5 s, parar y gesto 'saludar' (clip Welcome, cara happy)",
+        "ropa": "exploradora (botas, pañuelo, gafas)",
+        "camara": "frente fija a 3 m del punto de parada, a la altura del pecho; Vittata entra al cuadro caminando",
+        "codigo": "PITCH.vestir('exploradora'); PITCH.ir('plaza', { dz: 6, mirar: 'plaza' }); PITCH.camara(PITCH.CAM.fija([150, PITCH.poi('plaza').y + 1.4, 167.2], PITCH.yo(1))); PITCH.caminar('plaza'); setTimeout(() => { PITCH.parar(); PITCH.gesto('saludar'); }, 1500); PITCH.grabar('problema_saludo_plaza', 4.8);"
+      },
+      "texto_pantalla": "Niños boricuas, protagonistas",
+      "titulo": {
+        "texto": "Niños boricuas, protagonistas",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "problema_percha_dosel",
+      "seccion": "gancho",
+      "inicio": 20.4,
+      "dur": 2.4,
+      "duracion_s": 2.4,
+      "que": "Vittata vuela y se posa en la percha del dosel (palma de sierra). Al aterrizar hace un gesto de sorpresa. El HUD de la misión en español está visible.",
+      "descripcion": "Vittata vuela y se posa en la percha del dosel (palma de sierra). Al aterrizar hace un gesto de sorpresa. El HUD de la misión en español está visible.",
+      "camara": "seguimiento",
+      "hud": true,
+      "como_capturar": {
+        "estado": "misión educativa en p2: PITCH.eduHasta('p2'); HUD visible (texto de misión en español)",
+        "posicion": "percha del dosel (G.c.edu.PERCHAS, capa 'dosel', o POI dosel)",
+        "accion": "aproximación en vuelo y aterrizaje en la percha (MOVE.land da la cara 'surprised')",
+        "ropa": "exploradora",
+        "camara": "seguir a 5 m detrás y 1.5 m arriba; al posarse, la cámara se queda quieta",
+        "codigo": "PITCH.eduHasta('p2'); PITCH.hud(true); const pd = G.c.edu.PERCHAS.find(p => p.capa === 'dosel'); PITCH.ir({ x: pd.x - 8, y: pd.y + 3, z: pd.z - 6 }); PITCH.despegar(); PITCH.camara(PITCH.CAM.seguir(5, 1.5)); PITCH.volar([[pd.x - 8, pd.y + 3, pd.z - 6], [pd.x - 3, pd.y + 2, pd.z - 2], [pd.x, pd.y + 0.2, pd.z]], 3.2); PITCH.grabar('problema_percha_dosel', 3.6);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "problema_observar_ui",
+      "seccion": "gancho",
+      "inicio": 22.8,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Ya posada, Vittata pulsa Observar y aparece la tarjeta de la capa del dosel con las opciones en español. Se elige una opción (clic visible).",
+      "descripcion": "Ya posada, Vittata pulsa Observar y aparece la tarjeta de la capa del dosel con las opciones en español. Se elige una opción (clic visible).",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "posada en la percha del dosel (toma anterior); tarjeta Observar abierta",
+        "posicion": "percha del dosel",
+        "accion": "acción Observar (AV.action() o G.c.edu.observar) y clic en una opción .edu-opt",
+        "ropa": "exploradora",
+        "camara": "cámara del juego (tercera persona) con giro lento usando AV.debug.camYaw",
+        "codigo": "AV.action(); setTimeout(() => document.querySelector('#card .edu-opt') && document.querySelector('#card .edu-opt').click(), 2200); PITCH.grabar('problema_observar_ui', 4.8);"
+      },
+      "texto_pantalla": "Ciencia en español",
+      "titulo": {
+        "texto": "Ciencia en español",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "mundo_isla_logo",
+      "seccion": "mundo",
+      "inicio": 26.4,
+      "dur": 2.4,
+      "duracion_s": 2.4,
+      "que": "Vista aérea muy alta de toda la isla: la montaña de El Yunque, el río serpenteante, la costa y el mar. Órbita lenta. Aquí aparece el logo de Amazona Verse.",
+      "descripcion": "Vista aérea muy alta de toda la isla: la montaña de El Yunque, el río serpenteante, la costa y el mar. Órbita lenta. Aquí aparece el logo de Amazona Verse.",
+      "camara": "orbita",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; Vittata en cualquier lugar (no se ve)",
+        "posicion": "centro de la isla (0, 0, 0)",
+        "accion": "ninguna",
+        "ropa": "-",
+        "camara": "órbita a 330 m de radio y 230 m de alto mirando al centro de la isla, a 0.05 rad/s; fov 50",
+        "codigo": "PITCH.hud(false); PITCH.camara(PITCH.CAM.orbita({ x: 0, y: 20, z: 0 }, 330, 230, 0.05, 0.8), 50); PITCH.grabar('mundo_isla_logo', 3.6);"
+      },
+      "texto_pantalla": "Amazona Verse",
+      "titulo": {
+        "texto": "Amazona Verse",
+        "estilo": "centro",
+        "inicio": 0.3,
+        "dur": 1.9
+      }
+    },
+    {
+      "id": "mundo_taller_idea",
+      "seccion": "mundo",
+      "inicio": 28.8,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Frente al taller de Vittata (edificio del fundador). Vittata mira su invento, se le ocurre algo (gesto idea, aparece el foco sobre la cabeza) y sonríe.",
+      "descripcion": "Frente al taller de Vittata (edificio del fundador). Vittata mira su invento, se le ocurre algo (gesto idea, aparece el foco sobre la cabeza) y sonríe.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI taller, 3 m delante de la puerta, mirando al taller",
+        "accion": "gesto 'idea' (cara idea + foco)",
+        "ropa": "exploradora",
+        "camara": "frente a 45 grados, a 2.2 m; el taller queda desenfocado detrás",
+        "codigo": "PITCH.vestir('exploradora'); PITCH.ir('taller', { dx: 2, dz: 4, mirar: 'taller' }); PITCH.camara(PITCH.CAM.frente(2.6, 2.0, 4.8, 1.3), 42); setTimeout(() => PITCH.gesto('idea'), 1200); PITCH.grabar('mundo_taller_idea', 6.0);"
+      },
+      "texto_pantalla": "Vittata, inventora boricua",
+      "titulo": {
+        "texto": "Vittata, inventora boricua",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "mundo_dron_dosel",
+      "seccion": "mundo",
+      "inicio": 33.6,
+      "dur": 3.2,
+      "duracion_s": 3.2,
+      "que": "Dron bajo y rápido sobre el dosel: yagrumos, palmas de sierra y helechos gigantes. Vittata cruza el cuadro volando y pasamos sobre el yucayeque (bohíos y caney, edificios del fundador).",
+      "descripcion": "Dron bajo y rápido sobre el dosel: yagrumos, palmas de sierra y helechos gigantes. Vittata cruza el cuadro volando y pasamos sobre el yucayeque (bohíos y caney, edificios del fundador).",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "ruta PITCH.RUTAS.dosel_aldea, hacia el POI aldea",
+        "accion": "vuelo de crucero",
+        "ropa": "exploradora",
+        "camara": "seguir a 7 m detrás y 3 m arriba, con suavizado; la aldea entra al final",
+        "codigo": "PITCH.camara(PITCH.CAM.seguir(7, 3)); PITCH.volar('dosel_aldea', 5); PITCH.grabar('mundo_dron_dosel', 4.4);"
+      },
+      "texto_pantalla": "Flora real de El Yunque",
+      "titulo": {
+        "texto": "Flora real de El Yunque",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.7
+      }
+    },
+    {
+      "id": "mundo_camina",
+      "seccion": "mundo",
+      "inicio": 36.8,
+      "dur": 0.6,
+      "duracion_s": 0.6,
+      "que": "Vittata camina rápido cruzando el puente colgante.",
+      "descripcion": "Vittata camina rápido cruzando el puente colgante.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI puente; entra por un extremo",
+        "accion": "caminar con shift (correr suave)",
+        "ropa": "exploradora",
+        "camara": "lateral a 4 m, a la altura de las patas",
+        "codigo": "PITCH.ir('puente', { dx: -6, mirar: 'puente' }); PITCH.camara(PITCH.CAM.lateral(4, 0.6)); PITCH.caminar('puente', true); PITCH.grabar('mundo_camina', 1.8);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_vuela",
+      "seccion": "mundo",
+      "inicio": 37.4,
+      "dur": 0.8,
+      "duracion_s": 0.8,
+      "que": "Despegue: Vittata salta y abre las alas; la cámara se inclina hacia arriba.",
+      "descripcion": "Despegue: Vittata salta y abre las alas; la cámara se inclina hacia arriba.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "Villa Raíz, plaza",
+        "accion": "saltar y despegar (aleteo)",
+        "ropa": "exploradora",
+        "camara": "contrapicado a 3 m",
+        "codigo": "PITCH.ir('plaza', { mirar: 'taller' }); PITCH.camara(PITCH.CAM.seguir(3, -0.5, 1.5)); PITCH.saltar(); setTimeout(PITCH.despegar, 150); PITCH.grabar('mundo_vuela', 2.0);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_nada",
+      "seccion": "mundo",
+      "inicio": 38.2,
+      "dur": 1.0,
+      "duracion_s": 1.0,
+      "que": "Vittata nada en la Poza La Mina con la cascada al fondo, dejando estela.",
+      "descripcion": "Vittata nada en la Poza La Mina con la cascada al fondo, dejando estela.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI poza_la_mina",
+        "accion": "nadar hacia la cascada (w)",
+        "ropa": "exploradora",
+        "camara": "seguir a 4 m detrás y 1 m arriba del agua",
+        "codigo": "PITCH.ir('poza_la_mina'); PITCH.camara(PITCH.CAM.seguir(4, 1)); PITCH.caminar('gruta_mina'); PITCH.grabar('mundo_nada', 2.2);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_bucea",
+      "seccion": "mundo",
+      "inicio": 39.2,
+      "dur": 0.8,
+      "duracion_s": 0.8,
+      "que": "Vittata bucea en la Poza Honda con las alas en modo buceo. Se ve desde la superficie, a través del agua translúcida (el motor no tiene render subacuático).",
+      "descripcion": "Vittata bucea en la Poza Honda con las alas en modo buceo. Se ve desde la superficie, a través del agua translúcida (el motor no tiene render subacuático).",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI poza_honda",
+        "accion": "nadar y mantener C (bucear) avanzando",
+        "ropa": "exploradora",
+        "camara": "seguir a 3.5 m, a ras de la superficie, mirando hacia abajo",
+        "codigo": "PITCH.ir('poza_honda'); PITCH.camara(PITCH.CAM.seguir(3.5, 0.2)); PITCH.bucear(true); PITCH.caminar('terrenoA'); PITCH.grabar('mundo_bucea', 2.0);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_asombro",
+      "seccion": "mundo",
+      "inicio": 40.0,
+      "dur": 0.8,
+      "duracion_s": 0.8,
+      "que": "Primer plano: Vittata aterriza y pone cara de asombro (expresión surprised al tocar suelo).",
+      "descripcion": "Primer plano: Vittata aterriza y pone cara de asombro (expresión surprised al tocar suelo).",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "plaza de Villa Raíz",
+        "accion": "caer desde 3 m de alto; al aterrizar, MOVE.land activa 'surprised'",
+        "ropa": "exploradora",
+        "camara": "frente a 1.6 m, ojos en el tercio superior",
+        "codigo": "PITCH.ir('plaza', { mirar: 'luma' }); AV.G.S.pos.y += 3; PITCH.camara(PITCH.CAM.frente(1.6, 1.6, 1, 1.2), 40); PITCH.grabar('mundo_asombro', 2.0);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_celebra",
+      "seccion": "mundo",
+      "inicio": 40.8,
+      "dur": 1.2,
+      "duracion_s": 1.2,
+      "que": "Vittata celebra (clip Celebrate) con alegría.",
+      "descripcion": "Vittata celebra (clip Celebrate) con alegría.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "plaza de Villa Raíz",
+        "accion": "gesto 'celebrar'",
+        "ropa": "exploradora",
+        "camara": "frente a 2.2 m, un poco de abajo",
+        "codigo": "PITCH.camara(PITCH.CAM.frente(2.2, 2.2, 1, 0.9), 45); PITCH.gesto('celebrar'); PITCH.grabar('mundo_celebra', 2.4);"
+      },
+      "texto_pantalla": null,
+      "corte_a_palabra": true
+    },
+    {
+      "id": "mundo_ropero_pava",
+      "seccion": "mundo",
+      "inicio": 42.0,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "Vittata con pava jíbara, guayabera y maracas. La cámara gira a su alrededor en la plaza.",
+      "descripcion": "Vittata con pava jíbara, guayabera y maracas. La cámara gira a su alrededor en la plaza.",
+      "camara": "orbita",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "plaza de Villa Raíz",
+        "accion": "quieta, luego gesto 'bailar' (pose dance)",
+        "ropa": "boricua (pava, guayabera, maracas)",
+        "camara": "órbita alrededor de Vittata a 2.4 m de radio y 1.3 m de alto, a 0.9 rad/s",
+        "codigo": "PITCH.vestir('boricua'); PITCH.camara(PITCH.CAM.orbita(PITCH.yo(0.9), 2.4, 0.4, 0.9)); PITCH.gesto('bailar'); PITCH.grabar('mundo_ropero_pava', 4.2);"
+      },
+      "texto_pantalla": "Pava jíbara",
+      "titulo": {
+        "texto": "Pava jíbara",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.5
+      }
+    },
+    {
+      "id": "mundo_gorra_bandera",
+      "seccion": "mundo",
+      "inicio": 45.0,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "Primer plano de la gorra con la bandera de Puerto Rico: debe verse fiel (5 franjas, triángulo azul, estrella blanca). Vittata gira la cabeza hacia la cámara.",
+      "descripcion": "Primer plano de la gorra con la bandera de Puerto Rico: debe verse fiel (5 franjas, triángulo azul, estrella blanca). Vittata gira la cabeza hacia la cámara.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; revisar la bandera con docs/BANDERA_PR_GUIA.md antes de aprobar la toma",
+        "posicion": "plaza de Villa Raíz",
+        "accion": "quieta mirando a cámara",
+        "ropa": "bandera (gorra PR, guayabera)",
+        "camara": "frente cerrado a 1.2 m, a la altura de la gorra, con un leve movimiento lateral",
+        "codigo": "PITCH.vestir('bandera'); PITCH.camara(PITCH.CAM.frente(1.4, 1.1, 1.8, 1.5), 35); PITCH.grabar('mundo_gorra_bandera', 4.2);"
+      },
+      "texto_pantalla": "Bandera de Puerto Rico, fiel",
+      "titulo": {
+        "texto": "Bandera de Puerto Rico, fiel",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.5
+      }
+    },
+    {
+      "id": "aprender_predecir",
+      "seccion": "aprender",
+      "inicio": 48.0,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Luma junto a las marcas de agua del árbol pregunta: '¿De dónde salió tanta agua?' Aparecen las 3 opciones y se elige 'Llovió mucho en la montaña'. UI real en español.",
+      "descripcion": "Luma junto a las marcas de agua del árbol pregunta: '¿De dónde salió tanta agua?' Aparecen las 3 opciones y se elige 'Llovió mucho en la montaña'. UI real en español.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "inicio de la misión: PITCH.eduHasta('p1'); HUD visible",
+        "posicion": "POI marcas_agua, junto al terreno A (G.c.edu.L.marcas)",
+        "accion": "acción en las marcas (AV.action()) y clic en la opción lluvia_montana",
+        "ropa": "exploradora",
+        "camara": "cámara del juego, a 7.5 m, girada para que se vean Luma y el árbol marcado",
+        "codigo": "PITCH.eduHasta('p1'); PITCH.hud(true); const mk = G.c.edu.L.marcas; PITCH.ir({ x: mk.x + 1, y: 0, z: mk.z }, { mirar: mk }); PITCH.camara(null); AV.action(); setTimeout(() => { const b = [...document.querySelectorAll('#card .edu-opt')].find(e => /montaña|mountain/i.test(e.textContent)); b && b.click(); }, 2600); PITCH.grabar('aprender_predecir', 6.0);"
+      },
+      "texto_pantalla": "Estándares DEPR y NGSS",
+      "titulo": {
+        "texto": "Estándares DEPR y NGSS",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "aprender_vapor_nube",
+      "seccion": "aprender",
+      "inicio": 52.8,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Vittata sigue la voluta de vapor que sube desde la poza hasta la nube de la cumbre. La cámara mira hacia arriba, hacia la nube.",
+      "descripcion": "Vittata sigue la voluta de vapor que sube desde la poza hasta la nube de la cumbre. La cámara mira hacia arriba, hacia la nube.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "misión en p5: PITCH.eduHasta('p5'); la voluta visible (G.c.edu.volutaPos())",
+        "posicion": "de la poza (G.c.edu.L.poza) a la nube (G.c.edu.nube())",
+        "accion": "vuelo detrás de la voluta, subiendo",
+        "ropa": "exploradora",
+        "camara": "seguir a 6 m detrás y 1 m abajo (contrapicado, se ve la nube)",
+        "codigo": "PITCH.eduHasta('p5'); PITCH.hud(false); const pz = G.c.edu.L.poza, nb = G.c.edu.nube(); PITCH.ir(pz); PITCH.despegar(); PITCH.camara(PITCH.CAM.seguir(6, -1)); PITCH.volar([[pz.x, PITCH.poi(pz).y + 2, pz.z], [(pz.x + nb.x) / 2, (PITCH.poi(pz).y + nb.y) / 2 + 6, (pz.z + nb.z) / 2], [nb.x, nb.y - 2, nb.z]], 8, { seguirVolando: true }); PITCH.grabar('aprender_vapor_nube', 4.8);"
+      },
+      "texto_pantalla": "Evaporación",
+      "titulo": {
+        "texto": "Evaporación",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "aprender_gota_rio",
+      "seccion": "aprender",
+      "inicio": 56.4,
+      "dur": 1.2,
+      "duracion_s": 1.2,
+      "que": "La gota cae de la nube, rueda por la quebrada y llega al río, que crece. La cámara sigue a la gota; Vittata vuela detrás.",
+      "descripcion": "La gota cae de la nube, rueda por la quebrada y llega al río, que crece. La cámara sigue a la gota; Vittata vuela detrás.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "misión en p6: PITCH.eduHasta('p6'); gota visible (G.c.edu.gotaPos())",
+        "posicion": "de la nube al río (G.c.edu.L.rio)",
+        "accion": "Vittata sigue la gota (volar detrás de gotaPos)",
+        "ropa": "exploradora",
+        "camara": "dron que sigue a la gota a 5 m detrás y 2 m arriba (mira = G.c.edu.gotaPos())",
+        "codigo": "PITCH.eduHasta('p6'); const g = () => { const p = G.c.edu.gotaPos() || G.c.edu.L.rio; return new THREE.Vector3(p.x, (p.y != null ? p.y : 5), p.z); }; PITCH.camara({ suave: 3, pos: () => g().add(new THREE.Vector3(-5, 2, -5)), mira: g }); PITCH.grabar('aprender_gota_rio', 2.4);"
+      },
+      "texto_pantalla": "Lluvia y escorrentía",
+      "titulo": {
+        "texto": "Lluvia y escorrentía",
+        "estilo": "tercio",
+        "inicio": 0.1,
+        "dur": 0.9
+      }
+    },
+    {
+      "id": "aprender_buceo_crecida",
+      "seccion": "aprender",
+      "inicio": 57.6,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "Vittata bucea en la Poza Honda hasta la gota brillante y la marca de la crecida en la roca. Se ve a ras de la superficie, a través del agua translúcida.",
+      "descripcion": "Vittata bucea en la Poza Honda hasta la gota brillante y la marca de la crecida en la roca. Se ve a ras de la superficie, a través del agua translúcida.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "misión en p7: PITCH.eduHasta('p7')",
+        "posicion": "fondo de la poza: G.c.edu.fondo.gota() y G.c.edu.fondo.roca()",
+        "accion": "bucear (C) hacia la gota y luego hacia la roca",
+        "ropa": "exploradora",
+        "camara": "seguir a 3 m a ras de la superficie, con picado sobre la roca marcada (la cámara nunca va bajo el plano del agua)",
+        "codigo": "PITCH.eduHasta('p7'); const fg = G.c.edu.fondo.gota(); PITCH.ir({ x: fg.x - 4, y: 0, z: fg.z - 4 }, { mirar: fg }); PITCH.camara(PITCH.CAM.seguir(3, 0.6)); PITCH.bucear(true); PITCH.caminar(fg); PITCH.grabar('aprender_buceo_crecida', 4.2);"
+      },
+      "texto_pantalla": "Evidencia bajo el agua",
+      "titulo": {
+        "texto": "Evidencia bajo el agua",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.5
+      }
+    },
+    {
+      "id": "aprender_predije_vi",
+      "seccion": "aprender",
+      "inicio": 60.6,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Tarjeta de cierre con Luma: 'Predije / Vi'. Se ve la predicción y lo observado.",
+      "descripcion": "Tarjeta de cierre con Luma: 'Predije / Vi'. Se ve la predicción y lo observado.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "misión en p8: PITCH.eduHasta('p8'); tarjeta de contraste abierta (G.c.edu.contraste)",
+        "posicion": "marcas de agua, con Luma",
+        "accion": "abrir el contraste de p8 (acción en las marcas o G.c.edu.contraste())",
+        "ropa": "exploradora",
+        "camara": "cámara del juego; la tarjeta ocupa el centro",
+        "codigo": "PITCH.eduHasta('p8'); PITCH.hud(true); const mk2 = G.c.edu.L.marcas; PITCH.ir({ x: mk2.x + 1, y: 0, z: mk2.z }, { mirar: mk2 }); PITCH.camara(null); AV.action(); PITCH.grabar('aprender_predije_vi', 4.8);"
+      },
+      "texto_pantalla": "Predije · Vi",
+      "titulo": {
+        "texto": "Predije · Vi",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "aprender_pava_premio",
+      "seccion": "aprender",
+      "inicio": 64.2,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "Misión completada: aviso de 'Pava jíbara' desbloqueada. Vittata aparece con la pava y celebra junto a Luma. Lo cultural se gana jugando, no se compra.",
+      "descripcion": "Misión completada: aviso de 'Pava jíbara' desbloqueada. Vittata aparece con la pava y celebra junto a Luma. Lo cultural se gana jugando, no se compra.",
+      "camara": "primerPlano",
+      "hud": true,
+      "como_capturar": {
+        "estado": "completar la misión educativa (G.misiones.complete('educativa')); HUD visible para el aviso de desbloqueo",
+        "posicion": "marcas de agua, con Luma",
+        "accion": "vestir la pava y gesto 'celebrar'",
+        "ropa": "pava",
+        "camara": "frente a 2.2 m con Luma en el fondo",
+        "codigo": "G.misiones.complete('educativa'); PITCH.vestir('pava'); PITCH.hud(true); PITCH.camara(PITCH.CAM.frente(2.4, 2.0, 3, 1.1), 42); setTimeout(() => PITCH.gesto('celebrar'), 400); PITCH.grabar('aprender_pava_premio', 4.2);"
+      },
+      "texto_pantalla": "La pava se gana jugando",
+      "titulo": {
+        "texto": "La pava se gana jugando",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.5
+      }
+    },
+    {
+      "id": "diario_hallazgo",
+      "seccion": "aprender",
+      "inicio": 67.2,
+      "dur": 2.4,
+      "duracion_s": 2.4,
+      "que": "Vittata se acerca al flamboyán de la plaza (hallazgo opcional): destello y tarjeta de una línea del hallazgo.",
+      "descripcion": "Vittata se acerca al flamboyán de la plaza (hallazgo opcional): destello y tarjeta de una línea del hallazgo.",
+      "camara": "seguimiento",
+      "hud": true,
+      "como_capturar": {
+        "estado": "HUD visible; ficha flamboyan sin desbloquear",
+        "posicion": "POI flamboyan_plaza (o G.c.edu.L flamboyán; provisional: 6 m al este de la plaza)",
+        "accion": "caminar hasta el hallazgo; salta la tarjeta",
+        "ropa": "exploradora",
+        "camara": "seguir a 5 m",
+        "codigo": "PITCH.hud(true); const fl = (G.terreno.poi && G.terreno.poi('flamboyan_plaza')) || { x: 156, z: 170 }; PITCH.ir({ x: fl.x - 5, y: 0, z: fl.z }, { mirar: fl }); PITCH.camara(PITCH.CAM.seguir(5, 2)); PITCH.caminar(fl); PITCH.grabar('diario_hallazgo', 3.6);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "diario_ficha",
+      "seccion": "aprender",
+      "inicio": 69.6,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Diario de Campo abierto, en la ficha de ciencia 'Cotorra puertorriqueña: Es el único loro nativo de Estados Unidos…' con la etiqueta 'Fuente: USFWS'. El editor hace un zoom lento sobre el dato y la fuente.",
+      "descripcion": "Diario de Campo abierto, en la ficha de ciencia 'Cotorra puertorriqueña: Es el único loro nativo de Estados Unidos…' con la etiqueta 'Fuente: USFWS'. El editor hace un zoom lento sobre el dato y la fuente.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "ficha verificada cotorra_estatus desbloqueada; solo se muestran fichas verificadas",
+        "posicion": "cualquier lugar; overlay del Diario",
+        "accion": "G.aula.desbloquear('cotorra_estatus'); G.diario.open(); desplazarse a la sección Ciencia",
+        "ropa": "exploradora",
+        "camara": "pantalla del Diario; zoom digital en montaje",
+        "codigo": "G.aula.desbloquear(['cotorra_estatus', 'yagrumo', 'palma_sierra', 'flamboyan'], { silencioso: true }); G.diario.open(); PITCH.grabar('diario_ficha', 6.0);"
+      },
+      "texto_pantalla": "Dato verificado · Fuente: USFWS",
+      "titulo": {
+        "texto": "Dato verificado · Fuente: USFWS",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "maestro_panel",
+      "seccion": "aprender",
+      "inicio": 74.4,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Menú de pausa, sección Aula: se resuelve la suma y se abre el panel del Modo Maestro en la guía de clase de 45 minutos (Antes, Durante, Después).",
+      "descripcion": "Menú de pausa, sección Aula: se resuelve la suma y se abre el panel del Modo Maestro en la guía de clase de 45 minutos (Antes, Durante, Después).",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "partida abierta; idioma ES",
+        "posicion": "cualquier lugar",
+        "accion": "abrir pausa, resolver el reto de suma (G.aula.reto()) y abrir el maestro; o G.aula.abrirMaestro() directo",
+        "ropa": "-",
+        "camara": "pantalla del panel; desplazamiento lento por la guía",
+        "codigo": "document.getElementById('b-menu').click(); setTimeout(() => G.aula.abrirMaestro(), 1200); PITCH.grabar('maestro_panel', 4.8);"
+      },
+      "texto_pantalla": "Modo Maestro · guía de 45 min",
+      "titulo": {
+        "texto": "Modo Maestro · guía de 45 min",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "maestro_reporte",
+      "seccion": "aprender",
+      "inicio": 78.0,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Panel del Modo Maestro en el reporte: etiqueta 'Estación 4', progreso por objetivo y botones de descarga CSV/JSON. Mensaje visible: sin datos personales.",
+      "descripcion": "Panel del Modo Maestro en el reporte: etiqueta 'Estación 4', progreso por objetivo y botones de descarga CSV/JSON. Mensaje visible: sin datos personales.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "Modo Maestro abierto; ajuste estacion = 'Estación 4'; al menos una partida registrada (correr antes el tramo de la misión)",
+        "posicion": "overlay del maestro",
+        "accion": "G.aula.setAjuste('estacion', 'Estación 4'); desplazarse a la sección Reporte",
+        "ropa": "-",
+        "camara": "pantalla del panel; zoom digital suave sobre 'sin datos personales'",
+        "codigo": "G.aula.setAjuste('estacion', 'Estación 4'); PITCH.grabar('maestro_reporte', 4.8);"
+      },
+      "texto_pantalla": "Reporte sin datos personales",
+      "titulo": {
+        "texto": "Reporte sin datos personales",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "maestro_idiomas_voz",
+      "seccion": "aprender",
+      "inicio": 81.6,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Luma habla en una tarjeta de la misión; el ajuste cambia de ES a EN y la misma línea aparece en inglés; se pulsa 'Leer en voz alta' (el botón se ilumina).",
+      "descripcion": "Luma habla en una tarjeta de la misión; el ajuste cambia de ES a EN y la misma línea aparece en inglés; se pulsa 'Leer en voz alta' (el botón se ilumina).",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "misión en p1 con Luma; ajustes idioma y voz",
+        "posicion": "marcas de agua con Luma",
+        "accion": "a 2.4 s: G.aula.setAjuste('idioma', 'en'); a 3.2 s: botón leer (G.aula.btnLeer)",
+        "ropa": "exploradora",
+        "camara": "cámara del juego; la tarjeta de Luma en el centro",
+        "codigo": "G.aula.cerrarMaestro(); PITCH.eduHasta('p1'); G.aula.setAjuste('idioma', 'es'); G.aula.setAjuste('voz', true); AV.action(); setTimeout(() => { G.aula.setAjuste('idioma', 'en'); AV.action(); }, 2400); PITCH.grabar('maestro_idiomas_voz', 6.0);"
+      },
+      "texto_pantalla": "Español · English · voz alta",
+      "titulo": {
+        "texto": "Español · English · voz alta",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "criadero_eclosion",
+      "seccion": "criadero",
+      "inicio": 86.4,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Vista del criadero: un huevo en su nido tiembla y eclosiona.",
+      "descripcion": "Vista del criadero: un huevo en su nido tiembla y eclosiona.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "vista del criadero abierta (?criadero=1 o debug.abrir()); una cápsula en etapa huevo",
+        "posicion": "vista propia del criadero (no es un lugar del mapa)",
+        "accion": "debug.etapa(id, 'huevo') y luego debug.eclosion()",
+        "ropa": "-",
+        "camara": "cámara de la vista del criadero; acercamiento lento en montaje si la vista no tiene cámara libre",
+        "codigo": "const C = AV.G.criadero.debug; C.abrir(); C.etapa(ID_CAPSULA, 'huevo'); setTimeout(() => C.eclosion(), 600); PITCH.grabar('criadero_eclosion', 6.0);  // ID_CAPSULA: el que indique el game designer"
+      },
+      "texto_pantalla": "El criadero",
+      "titulo": {
+        "texto": "El criadero",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      },
+      "pendiente": "ganchos AV.G.criadero.debug en programación (game designer de huevos avisará al editor cuando estén probados)",
+      "sustituto": "Si los ganchos aún no están probados: Vittata junto a un hueco de nido en un árbol (dato verificado: anida en huecos, ficha cotorra_nidos) y vuelo con su aprendiz. Avisar al comité para revisar la línea B07."
+    },
+    {
+      "id": "criadero_bebe",
+      "seccion": "criadero",
+      "inicio": 91.2,
+      "dur": 1.2,
+      "duracion_s": 1.2,
+      "que": "La cotorra bebé, con plumón, se mueve en el nido.",
+      "descripcion": "La cotorra bebé, con plumón, se mueve en el nido.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "vista del criadero",
+        "posicion": "vista propia del criadero",
+        "accion": "debug.etapa(id, 'bebe') y debug.postura(...) con alguna postura viva",
+        "ropa": "-",
+        "camara": "mismo encuadre que criadero_eclosion (corte por coincidencia)",
+        "codigo": "const C = AV.G.criadero.debug; C.abrir(); C.etapa(ID_CAPSULA, 'bebe'); PITCH.grabar('criadero_bebe', 2.4);"
+      },
+      "texto_pantalla": "Bebé",
+      "titulo": {
+        "texto": "Bebé",
+        "estilo": "tercio",
+        "inicio": 0.1,
+        "dur": 0.9
+      },
+      "pendiente": "ganchos AV.G.criadero.debug en programación (game designer de huevos avisará al editor cuando estén probados)",
+      "sustituto": "Si los ganchos aún no están probados: Vittata junto a un hueco de nido en un árbol (dato verificado: anida en huecos, ficha cotorra_nidos) y vuelo con su aprendiz. Avisar al comité para revisar la línea B07."
+    },
+    {
+      "id": "criadero_juvenil",
+      "seccion": "criadero",
+      "inicio": 92.4,
+      "dur": 1.2,
+      "duracion_s": 1.2,
+      "que": "La misma cotorra, ya juvenil, da saltitos y abre las alas.",
+      "descripcion": "La misma cotorra, ya juvenil, da saltitos y abre las alas.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "vista del criadero",
+        "posicion": "vista propia del criadero",
+        "accion": "debug.etapa(id, 'juvenil')",
+        "ropa": "-",
+        "camara": "mismo encuadre (corte por coincidencia)",
+        "codigo": "const C = AV.G.criadero.debug; C.abrir(); C.etapa(ID_CAPSULA, 'juvenil'); PITCH.grabar('criadero_juvenil', 2.4);"
+      },
+      "texto_pantalla": "Juvenil",
+      "titulo": {
+        "texto": "Juvenil",
+        "estilo": "tercio",
+        "inicio": 0.1,
+        "dur": 0.9
+      },
+      "pendiente": "ganchos AV.G.criadero.debug en programación (game designer de huevos avisará al editor cuando estén probados)",
+      "sustituto": "Si los ganchos aún no están probados: Vittata junto a un hueco de nido en un árbol (dato verificado: anida en huecos, ficha cotorra_nidos) y vuelo con su aprendiz. Avisar al comité para revisar la línea B07."
+    },
+    {
+      "id": "criadero_adulto",
+      "seccion": "criadero",
+      "inicio": 93.6,
+      "dur": 1.8,
+      "duracion_s": 1.8,
+      "que": "La cotorra adulta, verde y con la frente roja, posada sobre el nido.",
+      "descripcion": "La cotorra adulta, verde y con la frente roja, posada sobre el nido.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "vista del criadero",
+        "posicion": "vista propia del criadero",
+        "accion": "debug.etapa(id, 'adulto')",
+        "ropa": "-",
+        "camara": "mismo encuadre, abriendo un poco el plano",
+        "codigo": "const C = AV.G.criadero.debug; C.abrir(); C.etapa(ID_CAPSULA, 'adulto'); PITCH.grabar('criadero_adulto', 3.0);"
+      },
+      "texto_pantalla": "Adulta",
+      "titulo": {
+        "texto": "Adulta",
+        "estilo": "tercio",
+        "inicio": 0.1,
+        "dur": 1.5
+      },
+      "pendiente": "ganchos AV.G.criadero.debug en programación (game designer de huevos avisará al editor cuando estén probados)",
+      "sustituto": "Si los ganchos aún no están probados: Vittata junto a un hueco de nido en un árbol (dato verificado: anida en huecos, ficha cotorra_nidos) y vuelo con su aprendiz. Avisar al comité para revisar la línea B07."
+    },
+    {
+      "id": "criadero_vuelo",
+      "seccion": "criadero",
+      "inicio": 95.4,
+      "dur": 3.0,
+      "duracion_s": 3.0,
+      "que": "La cotorra adulta abre las alas y vuela sobre el nido (postura 'volando'). Volar junto a Vittata en el mundo todavía no existe.",
+      "descripcion": "La cotorra adulta abre las alas y vuela sobre el nido (postura 'volando'). Volar junto a Vittata en el mundo todavía no existe.",
+      "camara": "juego",
+      "hud": false,
+      "como_capturar": {
+        "estado": "vista del criadero; adulta",
+        "posicion": "vista propia del criadero",
+        "accion": "debug.volar() o debug.postura('volando')",
+        "ropa": "-",
+        "camara": "mismo encuadre; el editor puede rematar con un desvanecido al vuelo de tec_vuelo_rendimiento",
+        "codigo": "const C = AV.G.criadero.debug; C.abrir(); C.etapa(ID_CAPSULA, 'adulto'); C.volar(); PITCH.grabar('criadero_vuelo', 4.2);"
+      },
+      "texto_pantalla": "Como en los aviarios reales",
+      "titulo": {
+        "texto": "Como en los aviarios reales",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 2.5
+      },
+      "pendiente": "ganchos AV.G.criadero.debug en programación (game designer de huevos avisará al editor cuando estén probados)",
+      "sustituto": "Si los ganchos aún no están probados: Vittata junto a un hueco de nido en un árbol (dato verificado: anida en huecos, ficha cotorra_nidos) y vuelo con su aprendiz. Avisar al comité para revisar la línea B07."
+    },
+    {
+      "id": "tec_navegador",
+      "seccion": "tecnologia",
+      "inicio": 98.4,
+      "dur": 6.0,
+      "duracion_s": 6.0,
+      "que": "Navegador: la pestaña carga, aparece la portada, Jugar y Vittata en Villa Raíz. Sin instalar nada. Versión 1: captura real del juego dentro de un marco de navegador neutro (sin URL inventada ni datos personales). Versión final: grabación de pantalla real de Kelvin (ideal en Chromebook) en _trabajo_claude/pitch/externos/tec_navegador.mp4.",
+      "descripcion": "Navegador: la pestaña carga, aparece la portada, Jugar y Vittata en Villa Raíz. Sin instalar nada. Versión 1: captura real del juego dentro de un marco de navegador neutro (sin URL inventada ni datos personales). Versión final: grabación de pantalla real de Kelvin (ideal en Chromebook) en _trabajo_claude/pitch/externos/tec_navegador.mp4.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "ventana del navegador completa con barra de direcciones; caché vacía para que se vea la carga",
+        "posicion": "spawn del mapa (taller)",
+        "accion": "cargar la página y mover a Vittata 2 s con el teclado",
+        "ropa": "exploradora",
+        "camara": "captura de pantalla del sistema (no del canvas); si es en Chromebook, filmar el equipo o usar su grabador",
+        "codigo": "// Captura del sistema operativo. No usar PITCH.grabar (no ve la barra de direcciones). No mostrar datos personales en pestañas, marcadores ni perfil."
+      },
+      "texto_pantalla": "Navegador · sin instalar",
+      "titulo": {
+        "texto": "Navegador · sin instalar",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 5.5
+      }
+    },
+    {
+      "id": "tec_motor_plantilla",
+      "seccion": "tecnologia",
+      "inicio": 104.4,
+      "dur": 7.2,
+      "duracion_s": 7.2,
+      "que": "Pantalla dividida: a la izquierda, el capítulo 1 (Vittata en Villa Raíz); a la derecha, el mismo motor con content/plantilla (?pack=plantilla), otro juego. Mismo motor, contenido distinto.",
+      "descripcion": "Pantalla dividida: a la izquierda, el capítulo 1 (Vittata en Villa Raíz); a la derecha, el mismo motor con content/plantilla (?pack=plantilla), otro juego. Mismo motor, contenido distinto.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "dos pestañas: index.html y index.html?pack=plantilla",
+        "posicion": "spawn de cada pack",
+        "accion": "caminar unos segundos en cada uno",
+        "ropa": "exploradora (cap1)",
+        "camara": "dos capturas en paralelo y composición en montaje",
+        "codigo": "// pestaña 1: index.html → PITCH.grabar('tec_motor_cap1', 8.4). Pestaña 2: index.html?pack=plantilla → pegar helpers y PITCH.grabar('tec_motor_plantilla', 8.4)"
+      },
+      "texto_pantalla": "Un motor, muchos capítulos",
+      "titulo": {
+        "texto": "Un motor, muchos capítulos",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 6.7
+      }
+    },
+    {
+      "id": "tec_vuelo_rendimiento",
+      "seccion": "tecnologia",
+      "inicio": 111.6,
+      "dur": 2.4,
+      "duracion_s": 2.4,
+      "que": "Vittata vuela rápido sobre el bosque y la costa, fluido. En una esquina, un contador discreto de draw calls reales (renderer.info). Los FPS solo aparecen si QA o el técnico de PC aportan una medida real con su equipo.",
+      "descripcion": "Vittata vuela rápido sobre el bosque y la costa, fluido. En una esquina, un contador discreto de draw calls reales (renderer.info). Los FPS solo aparecen si QA o el técnico de PC aportan una medida real con su equipo.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; registrar renderer.info.render.calls y FPS durante la toma (para el overlay)",
+        "posicion": "ruta rutasVuelo costa_sur",
+        "accion": "vuelo de crucero largo",
+        "ropa": "bandera",
+        "camara": "lateral a 6 m con suavizado; overlay de métricas en montaje",
+        "codigo": "PITCH.vestir('bandera'); PITCH.hud(false); const met = []; const iv = setInterval(() => met.push({ t: performance.now(), calls: AV.renderer.info.render.calls }), 250); PITCH.camara(PITCH.CAM.lateral(6, 1)); PITCH.volar('costa_sur', 14); PITCH.grabar('tec_vuelo_rendimiento', 3.6).then(() => { clearInterval(iv); console.log(JSON.stringify(met)); });"
+      },
+      "texto_pantalla": "WebAssembly solo donde aporta",
+      "titulo": {
+        "texto": "WebAssembly solo donde aporta",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 1.9
+      }
+    },
+    {
+      "id": "tec_isla_completa",
+      "seccion": "tecnologia",
+      "inicio": 114.0,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Dron alto: Vittata cruza la isla de la costa a la montaña. Se ve que el mundo es grande y carga entero.",
+      "descripcion": "Dron alto: Vittata cruza la isla de la costa a la montaña. Se ve que el mundo es grande y carga entero.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "ruta PITCH.RUTAS.isla_larga",
+        "accion": "vuelo largo y rápido",
+        "ropa": "bandera",
+        "camara": "dron a 25 m detrás y 15 m arriba, con suavizado; fov 60",
+        "codigo": "PITCH.camara(PITCH.CAM.seguir(25, 15), 60); PITCH.volar('isla_larga', 12); PITCH.grabar('tec_isla_completa', 4.8);"
+      },
+      "texto_pantalla": "Mundo grande, carga liviana",
+      "titulo": {
+        "texto": "Mundo grande, carga liviana",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "mercado_aprendiz",
+      "seccion": "tecnologia",
+      "inicio": 117.6,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Vittata camina por Villa Raíz con su aprendiz (el personaje del jugador la sigue). Metáfora de maestro a maestro.",
+      "descripcion": "Vittata camina por Villa Raíz con su aprendiz (el personaje del jugador la sigue). Metáfora de maestro a maestro.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; aprendiz visible (G.actores.companion3D)",
+        "posicion": "de la plaza al taller",
+        "accion": "caminar despacio; el aprendiz la sigue",
+        "ropa": "exploradora",
+        "camara": "lateral a 5 m a la altura de los dos personajes, con suavizado",
+        "codigo": "PITCH.vestir('exploradora'); PITCH.ir('plaza', { mirar: 'taller' }); PITCH.camara(PITCH.CAM.lateral(5, 0.9)); PITCH.caminar('taller'); PITCH.grabar('mercado_aprendiz', 6.0);"
+      },
+      "texto_pantalla": "De maestro a maestro",
+      "titulo": {
+        "texto": "De maestro a maestro",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.3
+      }
+    },
+    {
+      "id": "mercado_cifras_escuelas",
+      "seccion": "tecnologia",
+      "inicio": 122.4,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Fondo: dron lento sobre la costa y el muelle, desenfocado. Encima, gráfico del editor: Puerto Rico → Estados Unidos y '98,577 escuelas públicas' con la fuente (NCES, 2020-21).",
+      "descripcion": "Fondo: dron lento sobre la costa y el muelle, desenfocado. Encima, gráfico del editor: Puerto Rico → Estados Unidos y '98,577 escuelas públicas' con la fuente (NCES, 2020-21).",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI muelle y playa",
+        "accion": "ninguna (Vittata posada en el muelle)",
+        "ropa": "bandera",
+        "camara": "dron que se desplaza en paralelo a la costa a 25 m de alto; desenfoque en montaje",
+        "codigo": "PITCH.vestir('bandera'); PITCH.ir('muelle', { mirar: 'playa' }); PITCH.camara(PITCH.CAM.dron([120, 25, 240], [150, 25, 240], 3.6, [150, 2, 205]), 50); PITCH.grabar('mercado_cifras_escuelas', 4.8);"
+      },
+      "texto_pantalla": "98,577 escuelas públicas · NCES",
+      "titulo": {
+        "texto": "98,577 escuelas públicas · NCES",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "mercado_cifras_hispanos",
+      "seccion": "tecnologia",
+      "inicio": 126.0,
+      "dur": 3.6,
+      "duracion_s": 3.6,
+      "que": "Sigue el mismo movimiento de dron (continuación). Gráfico: '29 % de estudiantes hispanos' con la fuente (NCES, otoño 2022).",
+      "descripcion": "Sigue el mismo movimiento de dron (continuación). Gráfico: '29 % de estudiantes hispanos' con la fuente (NCES, otoño 2022).",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "POI muelle y playa",
+        "accion": "ninguna",
+        "ropa": "bandera",
+        "camara": "continuación del dron anterior, de x = 150 a 180",
+        "codigo": "PITCH.camara(PITCH.CAM.dron([150, 25, 240], [180, 25, 240], 3.6, [150, 2, 205]), 50); PITCH.grabar('mercado_cifras_hispanos', 4.8);"
+      },
+      "texto_pantalla": "29 % estudiantes hispanos · NCES",
+      "titulo": {
+        "texto": "29 % estudiantes hispanos · NCES",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 3.1
+      }
+    },
+    {
+      "id": "mercado_ropero",
+      "seccion": "tecnologia",
+      "inicio": 129.6,
+      "dur": 6.6,
+      "duracion_s": 6.6,
+      "que": "Ropero (creador de personaje): se recorren las piezas; Vittata en la vitrina 3D gira con la camisa deportiva y los lentes dorados. Ni precios ni tienda en pantalla.",
+      "descripcion": "Ropero (creador de personaje): se recorren las piezas; Vittata en la vitrina 3D gira con la camisa deportiva y los lentes dorados. Ni precios ni tienda en pantalla.",
+      "camara": "juego",
+      "hud": true,
+      "como_capturar": {
+        "estado": "creador abierto (G.creador.open()); modo escuela sin tienda",
+        "posicion": "overlay del creador",
+        "accion": "elegir piezas en p-slots",
+        "ropa": "deportiva",
+        "camara": "pantalla del creador; el giro de la vitrina es automático o se arrastra",
+        "codigo": "PITCH.vestir('deportiva'); G.creador.open(); PITCH.grabar('mercado_ropero', 7.8);"
+      },
+      "texto_pantalla": "Gratis · licencia escolar · ropa opcional",
+      "titulo": {
+        "texto": "Gratis · licencia escolar · ropa opcional",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 6.1
+      }
+    },
+    {
+      "id": "mercado_baile_plaza",
+      "seccion": "tecnologia",
+      "inicio": 136.2,
+      "dur": 5.4,
+      "duracion_s": 5.4,
+      "que": "Vittata baila en la plaza con pava y guayabera, y Luma al fondo. Pantalla limpia: sin anuncios ni ventanas emergentes.",
+      "descripcion": "Vittata baila en la plaza con pava y guayabera, y Luma al fondo. Pantalla limpia: sin anuncios ni ventanas emergentes.",
+      "camara": "orbita",
+      "hud": false,
+      "como_capturar": {
+        "estado": "creador cerrado; HUD oculto",
+        "posicion": "plaza de Villa Raíz",
+        "accion": "gesto 'bailar' (8 s)",
+        "ropa": "boricua",
+        "camara": "órbita lenta a 3.5 m alrededor de Vittata, a 0.35 rad/s",
+        "codigo": "G.creador.close(); PITCH.vestir('boricua'); PITCH.ir('plaza', { mirar: 'luma' }); PITCH.camara(PITCH.CAM.orbita(PITCH.yo(0.8), 3.5, 0.7, 0.35)); PITCH.gesto('bailar'); PITCH.grabar('mercado_baile_plaza', 6.6);"
+      },
+      "texto_pantalla": "Sin anuncios ni cajas sorpresa",
+      "titulo": {
+        "texto": "Sin anuncios ni cajas sorpresa",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 4.9
+      }
+    },
+    {
+      "id": "cierre_mirador_camina",
+      "seccion": "cierre",
+      "inicio": 141.6,
+      "dur": 7.2,
+      "duracion_s": 7.2,
+      "que": "Vittata, vestida con lo que ganó (pava, guayabera, maracas), camina despacio hacia el borde de la plataforma del Mirador Yokahú. Se ve la isla y el mar delante.",
+      "descripcion": "Vittata, vestida con lo que ganó (pava, guayabera, maracas), camina despacio hacia el borde de la plataforma del Mirador Yokahú. Se ve la isla y el mar delante.",
+      "camara": "seguimiento",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "plataforma del POI mirador, de la escalera al borde sur",
+        "accion": "caminar despacio y detenerse en el borde",
+        "ropa": "boricua",
+        "camara": "seguir a 4 m detrás y 1.6 m arriba (de espaldas, el paisaje se abre)",
+        "codigo": "PITCH.vestir('boricua'); PITCH.ir('mirador', { dz: -2.5, y: PITCH.MIRADOR_Y + 0.05, mirar: 'playa' }); PITCH.camara(PITCH.CAM.seguir(4, 1.6)); PITCH.caminar({ x: 14, z: 175.2 }); setTimeout(PITCH.parar, 2600); PITCH.grabar('cierre_mirador_camina', 8.4);"
+      },
+      "texto_pantalla": "Buscamos escuelas, aliados y capital",
+      "titulo": {
+        "texto": "Buscamos escuelas, aliados y capital",
+        "estilo": "tercio",
+        "inicio": 0.3,
+        "dur": 6.7
+      }
+    },
+    {
+      "id": "cierre_primer_plano",
+      "seccion": "cierre",
+      "inicio": 148.8,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "Primer plano: Vittata se vuelve a la cámara, sonríe (expresión happy, gesto saludar) y se prepara para saltar.",
+      "descripcion": "Primer plano: Vittata se vuelve a la cámara, sonríe (expresión happy, gesto saludar) y se prepara para saltar.",
+      "camara": "primerPlano",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "borde de la plataforma del mirador",
+        "accion": "gesto 'saludar' y luego agacharse para saltar",
+        "ropa": "boricua",
+        "camara": "frente a 1.8 m que se acerca a 1.4 m; fov 38",
+        "codigo": "PITCH.mirar('taller'); PITCH.camara(PITCH.CAM.frente(1.8, 1.4, 4.8, 1.25), 38); PITCH.gesto('saludar'); PITCH.grabar('cierre_primer_plano', 6.0);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "cierre_despegue",
+      "seccion": "cierre",
+      "inicio": 153.6,
+      "dur": 4.8,
+      "duracion_s": 4.8,
+      "que": "EL MOMENTO: Vittata salta del mirador, la cámara se abre en dron y aparecen las islas y el mar. Si existe la bandada final (Sprint 3), las cotorras se unen a su vuelo; si no, vuela con su aprendiz. Suena el coro de coquíes.",
+      "descripcion": "EL MOMENTO: Vittata salta del mirador, la cámara se abre en dron y aparecen las islas y el mar. Si existe la bandada final (Sprint 3), las cotorras se unen a su vuelo; si no, vuela con su aprendiz. Suena el coro de coquíes.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto; bandada final si existe",
+        "posicion": "del POI mirador por PITCH.RUTAS.mirador_costa",
+        "accion": "despegar y planear",
+        "ropa": "boricua",
+        "camara": "dron: de 4 m detrás a 35 m atrás y 25 m arriba, sin perder a Vittata; fov de 45 a 60",
+        "codigo": "PITCH.camara(PITCH.CAM.dron([10, PITCH.MIRADOR_Y + 2, 168], [-20, PITCH.MIRADOR_Y + 27, 140], 4.8, PITCH.yo(0.8)), 55); PITCH.saltar(); PITCH.volar('mirador_costa', 10, { seguirVolando: true }); PITCH.grabar('cierre_despegue', 6.0);"
+      },
+      "texto_pantalla": null
+    },
+    {
+      "id": "cierre_logo",
+      "seccion": "cierre",
+      "inicio": 158.4,
+      "dur": 7.2,
+      "duracion_s": 7.2,
+      "que": "Continúa el vuelo hacia la costa, desenfocado. Logo de Amazona Verse y debajo 'Hecho en Puerto Rico'. Contacto: solo si Kelvin confirma el correo.",
+      "descripcion": "Continúa el vuelo hacia la costa, desenfocado. Logo de Amazona Verse y debajo 'Hecho en Puerto Rico'. Contacto: solo si Kelvin confirma el correo.",
+      "camara": "dron",
+      "hud": false,
+      "como_capturar": {
+        "estado": "HUD oculto",
+        "posicion": "final de PITCH.RUTAS.mirador_costa",
+        "accion": "planeo",
+        "ropa": "boricua",
+        "camara": "seguir a 12 m detrás y 6 m arriba; desenfoque y logo en montaje",
+        "codigo": "PITCH.camara(PITCH.CAM.seguir(12, 6), 55); PITCH.grabar('cierre_logo', 8.4);"
+      },
+      "texto_pantalla": "Amazona Verse · Hecho en Puerto Rico",
+      "titulo": {
+        "texto": "Amazona Verse · Hecho en Puerto Rico",
+        "estilo": "centro",
+        "inicio": 0.3,
+        "dur": 6.7
+      }
+    }
+  ]
+}
