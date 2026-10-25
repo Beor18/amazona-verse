@@ -2,7 +2,8 @@
    Widgets del HUD que ya existen en index.html (el markup y el estilo son del rol UI/UX; aquí solo se usan por id):
    tarjeta (#card), aviso (#toast), overlays (#end, #comic, #creator), botón de sonido.
    Gancho 'cardHidden' al cerrar la tarjeta (un pack limpia ahí sus minijuegos).
-   Un pack puede retitular el HUD con meta.hud { capitulo, titulo, etiqueta, fin, nota, inventario: { idElemento: etiqueta } }. */
+   Un pack puede retitular el HUD con meta.hud { capitulo, titulo, portada, etiqueta, fin, nota, inventario: { idElemento: etiqueta } }
+   (los contadores de inventario que no nombre se ocultan). */
 AVE.module('ui', function (G) {
   'use strict';
   const $ = G.util.$;
@@ -30,7 +31,7 @@ AVE.module('ui', function (G) {
   const H = G.pack.meta && G.pack.meta.hud;
   if (H) {
     const set = (sel, txt) => { const el = document.querySelector(sel); if (el && txt != null) el.textContent = txt; };
-    set('#quest .chapter', H.capitulo); set('#quest h1', H.titulo); set('#tag', H.etiqueta); set('#end h2', H.fin);
+    set('#quest .chapter', H.capitulo); set('#quest h1', H.titulo); set('#tag', H.etiqueta); set('#end h2', H.fin); set('#title .title-sub', H.portada);
     set('#creator .creator-side .note', H.nota);
     if (H.inventario) for (const span of document.querySelectorAll('#inv > span')) {
       const b = span.querySelector('b'), lbl = b && H.inventario[b.id];

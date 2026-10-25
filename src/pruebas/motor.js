@@ -152,7 +152,8 @@ AVE.module('pruebas', function (G) {
     }
     if (!W) { fr.remove(); check('La plantilla arranca en un iframe (?pack=' + packId + ')', false, 'sin window.AV tras ' + Math.round((performance.now() - t0) / 1000) + ' s'); return result(); }
     const A = W.AV, G2 = A.G, P = G2.pack, doc = W.document;
-    const keep = (() => { try { return localStorage.getItem(G2.guardado.KEY); } catch (e) { return null; } })();
+    const K = G2.guardado.KEY, read = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const keep = read(K), keepPrev = read(K + '.prev');
     try {
       check('La plantilla arranca con su propio content pack', A.pack === packId && P.id === packId, A.pack);
       check('Mismo motor: todos los módulos instanciados', W.AVE.modules().every(m => !!G2[m]), W.AVE.modules().length + ' módulos');
@@ -170,7 +171,8 @@ AVE.module('pruebas', function (G) {
       const errs = W.__aveErrores || [];
       check('Sin errores de JavaScript en la plantilla', errs.length === 0, errs.slice(0, 3).join(' | '));
     } finally {
-      try { if (keep) localStorage.setItem(G2.guardado.KEY, keep); else localStorage.removeItem(G2.guardado.KEY); localStorage.removeItem(G2.guardado.KEY + '.prev'); } catch (e) { /* sin almacenamiento */ }
+      const put = (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ } };
+      put(K, keep); put(K + '.prev', keepPrev); // la partida de la plantilla queda como estaba
       try { G2.renderer.renderer.dispose(); G2.renderer.renderer.forceContextLoss(); } catch (e) { /* ya cerrado */ }
       if (!opts.keep) fr.remove();
     }

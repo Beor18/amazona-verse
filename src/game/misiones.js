@@ -98,7 +98,9 @@ AVE.module('misiones', function (G) {
 
   // ---------- HUD ----------
   function renderQuest() {
-    $('steps').innerHTML = steps.map((s, i) => {
+    // Número de pasos para la barra del HUD (variables CSS --n y --n-label de src/ui/ui.css)
+    const el = $('steps'); el.style.setProperty('--n', steps.length); el.style.setProperty('--n-label', '"' + steps.length + '"');
+    el.innerHTML = steps.map((s, i) => {
       const label = s.texto + (s.progreso ? s.progreso(S, G) : '');
       const cls = i < S.step ? 'done' : i === S.step ? 'now' : 'later';
       return `<li class="${cls}">${label}</li>`;
