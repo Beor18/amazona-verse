@@ -3,6 +3,10 @@
 # Las piezas se modelan en un marco "plano de la espalda" (montaje (0, 0.092, 0.628), inclinado como la espalda),
 # se asientan por FUERA (holgura sobre la camisa) con BVH, quedan por encima de la cola (z>0.5) y bajo la cabeza,
 # y las correas van por encima de los hombros siguiendo la superficie del cuerpo, sin tocar las alas.
+# Auditoría 2026-10-24: en el juego todo el equipo se veía de juguete (~40 % del ancho de la espalda) y las correas,
+# rígidas al pecho, se metían 2 cm en el hombro con las alas bajadas (Idle). Ahora cada pieza se escala por K sobre su
+# cara de apoyo, las correas y la manguera llevan los pesos de la piel (siguen hombros y pecho, nunca la cabeza) y la
+# mochila PR usa el contrato métrico de TELA con la bandera centrada en la cara de atrás.
 import sys, os, math
 sys.path.insert(0, os.path.expanduser('~/AmazonaVerse/Juego/tools/blender'))
 from ropa_lib import *
@@ -33,6 +37,17 @@ def local(o, fn=None):
     o.data.update(); return o
 
 
+def scale_about(objs, c, k):
+    """Escala las piezas (ya en el marco de la espalda) alrededor de `c`."""
+    for o in objs:
+        for v in o.data.vertices: v.co = c + (v.co - c) * k
+        o.data.update()
+
+
+def skin(o):
+    o['skin'] = 1; return o
+
+
 def seat(objs, clear=0.03, it=6):
     """Mueve las piezas a lo largo de W hasta que el vértice más cercano quede a `clear` del cuerpo."""
     bvh = body_bvh()
@@ -55,74 +70,75 @@ def strap(name, keys, width=0.03, th=0.005, gap=0.024, mt=None):
     pts, nrm = body_path(keys, gap=gap, n_per=5, fixed=(0, -1))
     for i in (0, -1):  # en los extremos la normal mira hacia afuera de la pieza (W)
         nrm[i] = (nrm[i] + W).normalized()
-    return set_mat(ribbon(name, pts, nrm, width, th), mt)
+    return skin(set_mat(ribbon(name, pts, nrm, width, th), mt))
 
 
-def harness(top, bot, mt, sternum=True, buckle=None, z_st=0.62):
+def harness(top, bot, mt, sternum=True, buckle=None, z_st=0.62, sw=0.034):
     """Dos correas de hombro: de `top(s)` por encima del hombro y bajan por el pecho hasta la panza (no rodean el
     costado: ahí van las alas plegadas). `bot(s)`: correíta corta del fondo de la pieza. + correa de pecho con hebilla."""
     out = []
     for s in (1, -1):
-        keys = [top(s), Vector((s * 0.11, 0.06, 0.765)), Vector((s * 0.135, -0.03, 0.758)), Vector((s * 0.13, -0.13, 0.7)),
+        keys = [top(s), Vector((s * 0.11, 0.06, 0.765)), Vector((s * 0.128, -0.03, 0.758)), Vector((s * 0.13, -0.13, 0.7)),
                 Vector((s * 0.13, -0.2, 0.62)), Vector((s * 0.135, -0.215, 0.52))]
-        pts, nrm = body_path(keys, gap=0.024, n_per=5, fixed=(0,))
+        pts, nrm = body_path(keys, gap=0.022, n_per=5, fixed=(0,))
         nrm[0] = (nrm[0] + W).normalized()
-        out.append(set_mat(ribbon('correa', pts, nrm, 0.03, 0.005), mt))
+        out.append(skin(set_mat(ribbon('correa', pts, nrm, sw, 0.006), mt)))
         tip = pts[-1]; n = nrm[-1]; d = (pts[-1] - pts[-2]).normalized()
-        out.append(set_mat(rbox('punta', tip + n * 0.004 - d * 0.012, (0.034, 0.026, 0.006), bevel=0.0025, axes=(n.cross(d).normalized(), d, n)), buckle or mt))
+        out.append(skin(set_mat(rbox('punta', tip + n * 0.005 - d * 0.013, (sw + 0.006, 0.028, 0.007), bevel=0.0028, axes=(n.cross(d).normalized(), d, n)), buckle or mt)))
     if sternum:
         keys = [Vector((0.13, -0.24, z_st)), Vector((0.0, -0.27, z_st)), Vector((-0.13, -0.24, z_st))]
-        pts, nrm = body_path(keys, gap=0.03, n_per=4, fixed=())
-        out.append(set_mat(ribbon('pecho', pts, nrm, 0.018, 0.004), mt))
+        pts, nrm = body_path(keys, gap=0.028, n_per=4, fixed=())
+        out.append(skin(set_mat(ribbon('pecho', pts, nrm, 0.02, 0.005), mt)))
         c = pts[len(pts) // 2]; n = nrm[len(nrm) // 2]
-        out.append(set_mat(rbox('hebilla', c + n * 0.006, (0.034, 0.008, 0.024), bevel=0.003, axes=(X, -n, Vector((0, 0, 1)))), buckle or mt))
+        out.append(skin(set_mat(rbox('hebilla', c + n * 0.007, (0.04, 0.009, 0.028), bevel=0.0035, axes=(X, -n, Vector((0, 0, 1)))), buckle or mt)))
     return out
 
 
-def box_uv(o, half_w, u0, u1):
-    """UV para la cara de afuera (normal ≈ W): u 0.25..0.75 a lo ancho (hoist a la izquierda vista desde atrás),
-    v a lo alto. Costados → márgenes (u<0.25 o >0.75)."""
-    me = o.data; uv = me.uv_layers.get('UVMap') or me.uv_layers.new(name='UVMap')
-    for p in me.polygons:
-        n = p.normal
-        for li in p.loop_indices:
-            co = me.vertices[me.loops[li].vertex_index].co; q = co - O
-            x, u, w = q.dot(X), q.dot(U), q.dot(W)
-            v = min(1.0, max(0.0, (u - u0) / (u1 - u0)))
-            if n.dot(W) > 0.4: uu = 0.25 + 0.5 * (half_w - x) / (2 * half_w)
-            elif abs(n.x) > 0.5: uu = 0.12 if n.x > 0 else 0.88
-            else: uu = 0.05
-            uv.data[li].uv = (uu, v)
-
-
 # ---------------------------------------------------------------------------------------------- piezas
+FLAG_MOCHILA = 0.107  # alto (m) del parche BANDERA 3:2 en la cara de atrás (16 × 10,7 cm)
+
+
 def mochila_pr():
-    mt = M(); hw = 0.125
-    bag = local(rbox('mochila', (0, 0, 0.068), (2 * hw, 0.262, 0.136), bevel=0.045, segs=4))
-    pocket = local(rbox('bolsillo', (0, -0.055, 0.15), (0.19, 0.12, 0.05), bevel=0.022, segs=3))
+    """Mochila escolar: cuerpo 0,31 × 0,29 × 0,17 m (antes 0,25 × 0,26 × 0,14), bolsillo delantero, cremalleras, asa y
+    arnés. La bandera es un parche BANDERA (textura fiel del juego); la TELA lleva la UV métrica y sale lisa."""
+    # El canto de arriba queda 2 cm por debajo de la nuca en Idle/dance (al bailar la cabeza se ladea sobre la mochila).
+    mt = M(); hw, hh, dp, uc = 0.155, 0.145, 0.17, -0.01
+    bag = local(rbox('mochila', (0, uc, dp / 2), (2 * hw, 2 * hh, dp), bevel=0.055, segs=5))
+    pocket = local(rbox('bolsillo', (0, uc - 0.084, dp + 0.022), (0.235, 0.1, 0.05), bevel=0.022, segs=4))
     seat([bag, pocket], clear=0.03)
-    # desplazamiento real tras asentar
-    off = (min((v.co - O).dot(W) for v in bag.data.vertices))
-    Pw = lambda x, u, w: P(x, u, w + off)
+    off = min((v.co - O).dot(W) for v in bag.data.vertices)
+    Pw = lambda x, u, w: P(x, u + uc, w + off)
     parts = [set_mat(bag, mt['TELA']), set_mat(pocket, mt['TELA'])]
-    # cremalleras con tirador
+    # cremallera por encima (de costado a costado, siguiendo el canto redondeado) y la del bolsillo, con tiradores
     ztop = []
-    for k in range(13):
-        a = math.pi * k / 12; ztop.append(Pw(-0.1 * math.cos(a), 0.131, 0.068 + 0.062 * math.sin(a)))
-    parts.append(set_mat(tube_path('cremallera', ztop, 0.0028, seg=6), mt['METAL']))
-    zp = [Pw(-0.085 + 0.017 * k, 0.005, 0.176) for k in range(11)]
-    parts.append(set_mat(tube_path('cremallera', zp, 0.0025, seg=6), mt['METAL']))
-    for p in (ztop[3], zp[-2]):
-        parts.append(set_mat(rbox('tirador', p + W * 0.004 - U * 0.012, (0.008, 0.022, 0.004), bevel=0.0015, axes=(X, U, W)), mt['ACENTO']))
+    for k in range(17):
+        a = math.pi * k / 16; ztop.append(Pw(-0.122 * math.cos(a), hh + 0.002 - 0.012 * math.cos(a) ** 8, dp / 2 + 0.056 * math.sin(a)))
+    parts.append(set_mat(tube_path('cremallera', ztop, 0.0035, seg=8), mt['METAL']))
+    zp = [Pw(-0.1 + 0.02 * k, -0.046, dp + 0.0475) for k in range(11)]
+    parts.append(set_mat(tube_path('cremallera', zp, 0.003, seg=8), mt['METAL']))
+    for p in (ztop[4], zp[-2]):
+        parts.append(set_mat(rbox('tirador', p + W * 0.005 - U * 0.014, (0.01, 0.026, 0.005), bevel=0.0018, axes=(X, U, W)), mt['ACENTO']))
     # asa arriba
-    asa = [Pw(-0.04, 0.127, 0.088), Pw(-0.034, 0.148, 0.094), Pw(0, 0.156, 0.096), Pw(0.034, 0.148, 0.094), Pw(0.04, 0.127, 0.088)]
-    parts.append(set_mat(tube_path('asa', asa, 0.0055, seg=8), mt['ACENTO']))
-    # correas
-    top = lambda s: Pw(s * 0.075, 0.12, 0.012)
-    bot = lambda s: Pw(s * 0.11, -0.12, 0.012)
-    parts += harness(top, bot, mt['ACENTO'], buckle=mt['NEGRO'])
-    for p in parts[:2]: box_uv(p, hw, -0.131 + 0, 0.131)
-    return parts, 'TELA'
+    # (en la mitad de afuera del canto y baja: la nuca está a 4 cm cuando la cabeza mira arriba)
+    asa = [Pw(-0.048, hh - 0.006, 0.112), Pw(-0.04, hh + 0.012, 0.116), Pw(0, hh + 0.019, 0.118), Pw(0.04, hh + 0.012, 0.116), Pw(0.048, hh - 0.006, 0.112)]
+    parts.append(set_mat(tube_path('asa', asa, 0.0065, seg=10), mt['ACENTO']))
+    # ribete del canto de atrás (da peso y forma de mochila de verdad)
+    rib = []
+    for k in range(48):
+        a = 2 * math.pi * k / 48; cx, cu = math.cos(a), math.sin(a)
+        e = 1 / max(abs(cx), abs(cu)) ** 0.5   # cuadrado redondeado
+        rib.append(Pw((hw - 0.012) * cx * min(1, e * 0.82), (hh - 0.012) * cu * min(1, e * 0.82), dp - 0.004))
+    parts.append(set_mat(tube_path('ribete', rib, 0.0042, seg=8, closed=True), mt['ACENTO']))
+    # correas (más anchas) y punto de anclaje en el canto de arriba y abajo de la mochila
+    top = lambda s: Pw(s * 0.085, hh - 0.02, 0.012)
+    bot = lambda s: Pw(s * 0.12, -hh + 0.02, 0.012)
+    parts += harness(top, bot, mt['ACENTO'], buckle=mt['NEGRO'], sw=0.036)
+    # bandera de PR: parche 3:2 cosido en la cara de atrás, encima del bolsillo (asta a la izquierda vista desde atrás)
+    parts.append(flag_patch('bandera', Pw(0, 0.034, dp), Vector((-1, 0, 0)), U, FLAG_MOCHILA, onto=target_bvh([bag]), off=0.0018))
+    return parts, ('planar', Pw(0, 0.034, dp), None)
+
+
+K_CUATRO = 1.04
 
 
 def cuatro():
@@ -135,8 +151,8 @@ def cuatro():
     side = [(hwid(l), l) for l in ls]
     pts = [(w, l) for w, l in side] + [(-w, l) for w, l in reversed(side[1:-1])]
     # ejes del instrumento en el plano de la espalda (diagonal 42°: el clavijero hacia la derecha del ave, -X)
-    Ld = (U * math.cos(R(42)) - X * math.sin(R(42))).normalized(); Wd = W.cross(Ld).normalized() * -1
-    base = P(0.085, -0.135, 0.0)
+    Ld = (U * math.cos(R(46)) - X * math.sin(R(46))).normalized(); Wd = W.cross(Ld).normalized() * -1
+    base = P(0.095, -0.15, 0.0)
     fr = lambda d: (base + W * d, Wd, Ld, W)  # marco (origen, eje ancho, eje largo, eje afuera)
     def Q(w, l, d): return base + Wd * w + Ld * l + W * d
     body = prism('caja', pts, 0.0, 0.048, frame=fr(0), bevel=0.005, segs=2)
@@ -167,9 +183,10 @@ def cuatro():
         for e in (-0.0018, 0.0018):
             w = (c - 2) * 0.0072 + e
             parts.append(set_mat(tube_path('cuerda', [Q(w * 1.6, 0.06, 0.06), Q(w, Lb + Ln - 0.005, 0.0525)], 0.0007, seg=4, cap=False), mt['CUERDA']))
+    scale_about(parts, base, K_CUATRO)       # 0,58 m, más bajo y abierto (46°): el clavijero no toca la cabeza al andar
     seat(parts, clear=0.03)
     off = min((v.co - O).dot(W) for v in body.data.vertices)
-    Qs = lambda w, l, d: Q(w, l, d) + W * off
+    Qs = lambda w, l, d: base + (Q(w, l, d) - base) * K_CUATRO + W * off
     # correa en diagonal: del botón de abajo, por el costado izquierdo, cruza el pecho y sube al hombro derecho
     keys = [Qs(0, -0.004, 0.024), Vector((0.1, 0.07, 0.7)), Vector((0.135, -0.03, 0.758)), Vector((0.12, -0.15, 0.68)),
             Vector((0.0, -0.235, 0.57)), Vector((-0.12, -0.15, 0.68)), Vector((-0.135, -0.03, 0.758)), Vector((-0.11, 0.06, 0.77)),
@@ -179,39 +196,43 @@ def cuatro():
 
 
 def tanques():
-    mt = M(); parts = []; r = 0.054; L = 0.25
+    """Dos botellas de buceo de 0,27 m (antes 0,25) y Ø 12,6 cm (antes 10,8), placa, abrazaderas, arnés y manguera."""
+    mt = M(); parts = []; r = 0.063; L = 0.27; gx = 0.072; u0 = -0.148   # válvulas 2 cm bajo la nuca
     for s in (1, -1):
-        a = P(s * 0.062, -0.122, r + 0.006); b = a + U * L
+        a = P(s * gx, u0, r + 0.006); b = a + U * L
         prof = [(0, 0.0), (0.02, r * 0.55), (0.06, r * 0.88), (0.11, r), (0.85, r), (0.92, r * 0.88), (0.97, r * 0.55), (1.0, r * 0.18)]
-        t = revolve('tanque', a, b, prof, seg=20, cap0=False, cap1=True)
+        t = revolve('tanque', a, b, prof, seg=24, cap0=False, cap1=True)
         add_mod(t, 'SUBSURF', levels=1); apply_mods(t)
         parts.append(set_mat(t, mt['METAL']))
         for f in (0.28, 0.72):  # franjas ACENTO
-            c0 = a + U * (L * f - 0.018); c1 = a + U * (L * f + 0.018)
-            parts.append(set_mat(revolve('franja', c0, c1, [(0, r + 0.0025), (0.15, r + 0.004), (0.85, r + 0.004), (1, r + 0.0025)], seg=20, cap0=False, cap1=False), mt['ACENTO']))
-        v0 = b - U * 0.004; v1 = v0 + U * 0.032
-        parts.append(set_mat(revolve('valvula', v0, v1, [(0, 0.013), (0.6, 0.013), (0.7, 0.017), (1, 0.017)], seg=12), mt['METAL']))
-        kn = v1 - U * 0.008
-        parts.append(set_mat(revolve('perilla', kn - X * s * 0.0, kn + X * s * 0.028, [(0, 0.006), (0.6, 0.006), (0.65, 0.014), (1, 0.014)], seg=12), mt['ACENTO']))
-    pl = set_mat(rbox('placa', P(0, 0.0, 0.006), (0.15, 0.24, 0.012), bevel=0.004, axes=(X, U, W)), mt['NEGRO'])
+            c0 = a + U * (L * f - 0.02); c1 = a + U * (L * f + 0.02)
+            parts.append(set_mat(revolve('franja', c0, c1, [(0, r + 0.003), (0.15, r + 0.0045), (0.85, r + 0.0045), (1, r + 0.003)], seg=24, cap0=False, cap1=False), mt['ACENTO']))
+        v0 = b - U * 0.004; v1 = v0 + U * 0.034
+        parts.append(set_mat(revolve('valvula', v0, v1, [(0, 0.015), (0.6, 0.015), (0.7, 0.019), (1, 0.019)], seg=14), mt['METAL']))
+        kn = v1 - U * 0.009
+        parts.append(set_mat(revolve('perilla', kn, kn + X * s * 0.03, [(0, 0.007), (0.6, 0.007), (0.65, 0.016), (1, 0.016)], seg=14), mt['ACENTO']))
+    pl = set_mat(rbox('placa', P(0, u0 + L / 2, 0.006), (0.17, 0.27, 0.012), bevel=0.004, axes=(X, U, W)), mt['NEGRO'])
     parts.append(pl)
-    for k, f in enumerate((0.3, 0.7)):  # abrazaderas negras
-        c0 = P(0, -0.122 + L * f, 0.0)
-        parts.append(set_mat(rbox('abrazadera', c0 + W * 0.04, (0.26, 0.016, 0.012), bevel=0.004, axes=(X, U, W)), mt['NEGRO']))
+    for f in (0.3, 0.7):  # abrazaderas negras
+        c0 = P(0, u0 + L * f, 0.0)
+        parts.append(set_mat(rbox('abrazadera', c0 + W * (r * 0.75), (2 * (gx + r) + 0.012, 0.02, 0.014), bevel=0.0045, axes=(X, U, W)), mt['NEGRO']))
     seat(parts, clear=0.03)
     off = min((v.co - O).dot(W) for v in pl.data.vertices)
     Pw = lambda x, u, w: P(x, u, w + off)
-    top = lambda s: Pw(s * 0.06, 0.11, 0.004)
-    bot = lambda s: Pw(s * 0.07, -0.11, 0.004)
+    top = lambda s: Pw(s * 0.065, u0 + L - 0.04, 0.004)
+    bot = lambda s: Pw(s * 0.075, u0 + 0.03, 0.004)
     parts += harness(top, bot, mt['NEGRO'], buckle=mt['ACENTO'])
-    # manguera desde la válvula izquierda sobre el hombro hasta el regulador en el pecho
-    v_top = Pw(0.062, -0.122 + L + 0.02, r + 0.006)
-    keys = [v_top + X * 0.03, Vector((0.17, 0.11, 0.80)), Vector((0.165, 0.0, 0.81)), Vector((0.16, -0.13, 0.74)), Vector((0.12, -0.215, 0.65))]
+    # manguera desde la válvula izquierda sobre el hombro hasta el regulador en el pecho (sigue la piel)
+    v_top = Pw(gx, u0 + L + 0.022, r + 0.006)
+    keys = [v_top + X * 0.032, Vector((0.17, 0.11, 0.80)), Vector((0.165, 0.0, 0.81)), Vector((0.16, -0.13, 0.74)), Vector((0.12, -0.215, 0.65))]
     pts, nrm = body_path(keys, gap=0.04, n_per=5, fixed=(0,))
-    parts.append(set_mat(tube_path('manguera', pts, 0.008, seg=8), mt['NEGRO']))
+    parts.append(skin(set_mat(tube_path('manguera', pts, 0.009, seg=10), mt['NEGRO'])))
     reg = pts[-1]; n = nrm[-1]
-    parts.append(set_mat(revolve('regulador', reg, reg + n * 0.03, [(0, 0.02), (0.7, 0.02), (1, 0.012)], seg=12), mt['NEGRO']))
+    parts.append(skin(set_mat(revolve('regulador', reg, reg + n * 0.032, [(0, 0.022), (0.7, 0.022), (1, 0.013)], seg=16), mt['NEGRO'])))
     return parts, None
+
+
+K_JET = 1.22
 
 
 def jetpack():
@@ -236,9 +257,10 @@ def jetpack():
     parts.append(set_mat(rbox('panel', P(0, 0.03, 0.082), (0.08, 0.07, 0.008), bevel=0.003, axes=(X, U, W)), mt['METAL']))
     for k, c in enumerate(('#f2a03d', '#5ad15a')):
         parts.append(set_mat(sphere('boton', P(-0.02 + 0.04 * k, 0.03, 0.088), 0.008, seg=10, rings=5), mat('LUZ%d' % k, hexrgb(c), 0.3)))
+    scale_about(parts, P(0, -0.01, 0), K_JET)   # cuerpo 0,19 × 0,28 m y celdas de Ø 11,7 cm (antes 0,15 × 0,22 y Ø 9,6)
     seat(parts, clear=0.03)
     off = min((v.co - O).dot(W) for v in core.data.vertices)
-    Pw = lambda x, u, w: P(x, u, w + off)
+    Pw = lambda x, u, w: P(x * K_JET, u * K_JET, w + off)
     top = lambda s: Pw(s * 0.055, 0.1, 0.004)
     bot = lambda s: Pw(s * 0.065, -0.1, 0.004)
     parts += harness(top, bot, mt['NEGRO'], buckle=mt['METAL'])
@@ -249,15 +271,24 @@ PIEZAS = {'equipo_mochila_pr': mochila_pr, 'equipo_cuatro': cuatro, 'equipo_tanq
 
 
 def finish(name):
-    parts, uvmat = PIEZAS[name]()
-    for p in parts: apply_mods(p)
-    for p in parts: ensure_uv(p)
+    parts, uvinfo = PIEZAS[name]()
+    for p in parts: apply_mods(p); ensure_uv(p)
+    # pesos antes de juntar: la pieza rígida a espalda2; correas, hebillas y manguera con la piel (sin la cabeza)
+    for p in parts:
+        if p.get('skin'): skin_part(p)
+        else: rigid_part(p, 'espalda2')
     o = join(parts, name)
-    if uvmat is None: cyl_uv(o)
-    shade_smooth(o, 40)
+    if uvinfo is None: cyl_uv(o)
+    else:   # contrato métrico de TELA: bandera centrada en la cara de atrás, leída desde atrás (derecha = -X)
+        _, c, fh = uvinfo
+        keep = [m.name for m in o.data.materials if m.name != 'BANDERA']        # el parche BANDERA conserva su UV
+        uv_planar_metric(o, c, Vector((-1, 0, 0)), U, mat_names=keep)
+        for m in o.data.materials:
+            if m.name.startswith('TELA'): tela_metric(m, fh)
+    shade_smooth(o, 75)
     check_clear([o], eyes=False)
-    rigid(o, 'espalda2')
-    print('TRIS', name, tri_count(o), 'MATS', [m.name for m in o.data.materials])
+    add_armature(o)
+    print('TRIS', name, tri_count(o), 'MATS', [m.name for m in o.data.materials], 'GROUPS', [g.name for g in o.vertex_groups])
     preview_tiles([o], name, 'espalda', target=(0, 0.02, 0.66), dist=1.5, views=(('b', 160), ('l', 75), ('f', -20)), size=210, elev=0.25)
     export([o], name)
     print('KB', name, round(glb_kb(name), 1))

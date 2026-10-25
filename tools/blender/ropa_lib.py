@@ -698,3 +698,103 @@ def check_posed(objs, rot, min_out=0.0):
 def glb_kb(name):
     p = os.path.join(OUT, name + '.glb')
     return os.path.getsize(p) / 1024 if os.path.exists(p) else 0
+
+
+# ---------------------------------------------------------------------------------------------- contrato de UV de TELA
+# Acordado con el TA (wardrobe.js), 2026-10-24: escala métrica fija, 1 unidad de u = 1,2 m y 1 de v = 0,6 m (lienzo de
+# 512×256 isotrópico), V sin invertir (arriba de la prenda = arriba), y en Blender u crece hacia la IZQUIERDA de quien mira
+# la cara desde fuera (el juego gira 180° las UV de TELA/PAJA al cargar: así el asta de la bandera queda a la izquierda).
+# La bandera (estilo 'pr') se dibuja centrada en (0.5, 0.5) con el alto `av_flag_h` (m) que lleve el material TELA.
+UV_MU, UV_MV = 1.2, 0.6
+
+
+def tela_metric(m, flag_h=None):
+    """Marca el material TELA con el contrato métrico (extras av_uv y, si hay bandera, av_flag_h en metros)."""
+    m['av_uv'] = 1
+    if flag_h: m['av_flag_h'] = round(float(flag_h), 4)
+    return m
+
+
+def uv_planar_metric(o, origin, right, up, mat_names=None):
+    """UV métrica plana: u = 0.5 − (p−origin)·right/1.2, v = 0.5 + (p−origin)·up/0.6. `right` es la derecha de quien
+    mira la cara desde fuera; `origin` es el centro de la bandera. mat_names: sólo esas caras (None = todas)."""
+    me = o.data; uv = me.uv_layers.get('UVMap') or me.uv_layers.new(name='UVMap')
+    org = Vector(origin); rt = Vector(right).normalized(); up = Vector(up).normalized()
+    names = [m.name if m else '' for m in me.materials]
+    for p in me.polygons:
+        if mat_names and names[p.material_index] not in mat_names: continue
+        for li in p.loop_indices:
+            q = me.vertices[me.loops[li].vertex_index].co - org
+            uv.data[li].uv = (0.5 - q.dot(rt) / UV_MU, 0.5 + q.dot(up) / UV_MV)
+
+
+def skin_part(o, block=('cabeza.001', 'cabeza', 'pico'), to='espalda2'):
+    """Pesos de la piel más cercana para correas y tiras que van sobre el cuerpo (siguen hombros y pecho al animarse),
+    sin seguir a la cabeza: el peso de los huesos de `block` pasa a `to`. Deja la pieza sin modificador de esqueleto."""
+    o.vertex_groups.clear()
+    weights_from_body(o)
+    names = {g.index: g.name for g in o.vertex_groups}
+    gt = o.vertex_groups.get(to) or o.vertex_groups.new(name=to)
+    for v in o.data.vertices:
+        moved = 0.0
+        for g in v.groups:
+            if names.get(g.group) in block: moved += g.weight; g.weight = 0.0
+        if moved: gt.add([v.index], moved, 'ADD')
+    for b in block:
+        g = o.vertex_groups.get(b)
+        if g: o.vertex_groups.remove(g)
+    clean_weights(o)
+    return o
+
+
+def rigid_part(o, bone):
+    """Como rigid() pero sin modificador (para juntar con piezas pesadas por piel y poner el esqueleto al final)."""
+    o.vertex_groups.clear()
+    g = o.vertex_groups.new(name=bone); g.add(list(range(len(o.data.vertices))), 1.0, 'REPLACE')
+    return o
+
+
+def target_bvh(objs):
+    """BVH de unas mallas (coordenadas de mundo) para pegar parches encima."""
+    verts, polys = [], []
+    for o in objs:
+        me = o.data; mw = o.matrix_world; base = len(verts)
+        verts += [mw @ v.co for v in me.vertices]; polys += [tuple(base + i for i in p.vertices) for p in me.polygons]
+    return BVHTree.FromPolygons(verts, polys)
+
+
+def flag_patch(name, center, right, up, h, onto=None, off=0.002, nu=12, nv=8, th=0.0012):
+    """Parche de la bandera de Puerto Rico (contrato con el TA): material BANDERA, 3:2 (ancho = 1,5·h), UV (0,0) abajo
+    en el asta y (1,1) arriba al vuelo, sin giro (el juego le pone la textura fiel). `right`/`up` son la derecha y el
+    arriba de quien lo mira de frente (el asta queda a su izquierda). Con `onto` (BVH) se pega a `off` de esa superficie
+    siguiendo su curvatura (parche cosido); si no, queda plano. Grosor `th` hacia dentro, con canto."""
+    c = Vector(center); rt = Vector(right).normalized(); up = Vector(up).normalized()
+    up = (up - rt * up.dot(rt)).normalized(); n = rt.cross(up)   # n: hacia quien mira
+    w = 1.5 * h
+    me = bpy.data.meshes.new(name); bm = bmesh.new(); V = []
+    for j in range(nv + 1):
+        row = []
+        for i in range(nu + 1):
+            p = c + rt * (w * (i / nu - 0.5)) + up * (h * (j / nv - 0.5))
+            if onto is not None:
+                hit = onto.ray_cast(p + n * 0.06, -n, 0.15)
+                if hit[0] is not None:
+                    nn = hit[1] if hit[1].dot(n) > 0 else -hit[1]
+                    p = hit[0] + nn * off
+            row.append(bm.verts.new(p))
+        V.append(row)
+    uvl = bm.loops.layers.uv.new('UVMap')
+    for j in range(nv):
+        for i in range(nu):
+            f = bm.faces.new((V[j][i], V[j][i + 1], V[j + 1][i + 1], V[j + 1][i]))
+            for lp, (a, b) in zip(f.loops, ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1))):
+                lp[uvl].uv = (a / nu, b / nv)
+    bm.normal_update()
+    if sum(f.normal.dot(n) for f in bm.faces) < 0: bmesh.ops.reverse_faces(bm, faces=bm.faces)
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(o)
+    if th:
+        add_mod(o, 'SOLIDIFY', thickness=th, offset=-1, use_rim=True)
+        add_mod(o, 'BEVEL', width=th * 0.45, segments=1, limit_method='ANGLE', angle_limit=math.radians(60))
+        apply_mods(o)
+    return set_mat(o, mat('BANDERA', hexrgb('#ffffff'), 0.75))
