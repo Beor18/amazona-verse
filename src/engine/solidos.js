@@ -275,21 +275,26 @@ AVE.module('solidos', function (G) {
   // ---------- Consultas para fisica.js ----------
   const RING = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]];
   // Suelo: el alto más alto de los tramos que quedan bajo los pies (hasta tolSuelo por encima), en el pie y un poco alrededor
-  function suelo(x, z, y) {
+  // tol: cuánto por encima de los pies cuenta como suelo (por defecto tolSuelo, para subir escalones caminando; en el aire,
+  // fisica.js pasa casi 0: así un saltito junto a una cerca no la sube encima)
+  function suelo(x, z, y, tol) {
     if (!blocks.size && !flora.size) return -Infinity;
+    const t = tol != null ? tol : SO.tolSuelo;
     let g = -Infinity;
     for (let k = 0; k < 5; k++) {
-      spans(x + RING[k][0] * SO.pie, z + RING[k][1] * SO.pie, (lo, top) => { if (top <= y + SO.tolSuelo && top > g) g = top; });
+      spans(x + RING[k][0] * SO.pie, z + RING[k][1] * SO.pie, (lo, top) => { if (top <= y + t && top > g) g = top; });
     }
     return g;
   }
   // Cuánto se mete el cuerpo en (x, z) con los pies en y en algo más alto que un escalón: 0 = libre; el centro pesa 3 y
   // cada punto del borde 1. fisica.js deja moverse si no aumenta (así se sale de un sitio estrecho y se desliza por la pared).
-  function penetra(x, z, y) {
+  // h: alto del cuerpo (por defecto SO.cuerpo; nadando, fisica.js lo alarga hasta encima del agua: una canoa a flote frena)
+  function penetra(x, z, y, h) {
     let n = 0;
+    const alto = h != null ? h : SO.cuerpo;
     for (let k = 0; k < RING.length; k++) {
       let hit = false;
-      spans(x + RING[k][0] * SO.radio, z + RING[k][1] * SO.radio, (lo, top) => { if (lo < y + SO.cuerpo && top > y + SO.stepUp) { hit = true; return false; } });
+      spans(x + RING[k][0] * SO.radio, z + RING[k][1] * SO.radio, (lo, top) => { if (lo < y + alto && top > y + SO.stepUp) { hit = true; return false; } });
       if (hit) n += k ? 1 : 3;
     }
     return n;

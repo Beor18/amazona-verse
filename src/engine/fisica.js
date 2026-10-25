@@ -52,11 +52,12 @@ AVE.module('fisica', function (G) {
     takeoffV: 7.5,        // despegue desde el suelo o el agua: impulso hacia arriba…
     takeoffTime: 0.45,    // …durante este tiempo (sube ~2,5 m y se queda cernida)
     landV: 5.5,           // aterrizar (V o botón Aterrizar): baja a esta velocidad…
-    flareHeight: 1.8,     // …y desde esta altura sobre el suelo frena con las alas…
+    flareHeight: 2.6,     // …y desde esta altura sobre el suelo frena con las alas…
     flareV: 1.3,          // …hasta tocar el suelo a esta velocidad (aterrizaje suave)
     landSpeed: 0.55,      // aterrizando, la velocidad horizontal máxima es esta fracción del crucero
     perchAssist: 0.6,     // bajando, a esta distancia (m) de algo fino se centra encima para posarse
     vAccel: 4,            // tasa del cambio de velocidad vertical en vuelo
+    vAccelLand: 7,        // al aterrizar, más firme: llega a flareV antes de tocar aunque baje de 20 m o hacia una ladera
     // Nado
     swim: 4.5, swimRunFactor: 1.4, swimDepth: 0.22, swimJumpV: 7, swimAccel: 6,
     // Aterrizaje
@@ -79,14 +80,14 @@ AVE.module('fisica', function (G) {
   function addPercha(p) { perchas.push(p); return p; }
   function removePercha(p) { const i = perchas.indexOf(p); if (i >= 0) perchas.splice(i, 1); }
   // Suelo bajo (x, z) para algo a la altura y: el del terreno o el de una percha que tenga debajo
-  function suelo(x, z, y) {
+  function suelo(x, z, y, tolSolido) {
     let g = G.terreno.surfaceY(x, z, y); // con y, el terreno cuenta también sus pisos de una vía (puente, muelle, mirador)
     if (y != null) for (const p of perchas) {
       if (y >= p.y - PERCHA_TOL && p.y > g && Math.hypot(x - p.x, z - p.z) < p.r && (!p.when || p.when())) g = p.y;
     }
     // Sólidos sacados de la geometría (solidos.js): techos, cornisas, rocas, ramas, barandas, postes.
     // Sobre una percha del diseño (misión), su columna de aire manda: una rama encima no la tapa.
-    if (y != null && G.solidos && G.solidos.activo && !columnaPercha(x, z, y)) { const s = G.solidos.suelo(x, z, y); if (s > g) g = s; }
+    if (y != null && G.solidos && G.solidos.activo && !columnaPercha(x, z, y)) { const s = G.solidos.suelo(x, z, y, tolSolido); if (s > g) g = s; }
     return g;
   }
   function columnaPercha(x, z, y) {
@@ -233,13 +234,17 @@ AVE.module('fisica', function (G) {
     // Paredes de la geometría real: un paso que mete más el cuerpo en un sólido se desliza por el eje libre (o no avanza).
     // Se compara con lo que ya estaba metido: así se sale de un rincón estrecho, pero nunca se entra en una pared.
     const SOL = G.solidos && G.solidos.activo && !columnaPercha(S.pos.x, S.pos.z, S.pos.y) ? G.solidos : null;
+    let hCuerpo;
     if (SOL) {
-      const pn = SOL.penetra(S.pos.x, S.pos.z, S.pos.y);
+      // nadando en superficie, el cuerpo llega hasta encima del agua: no se cuela por debajo de una canoa a flote
+      const wy0 = MOVE.swimming && !dive ? G.agua.levelAt(S.pos.x) : -Infinity;
+      hCuerpo = wy0 > -1e9 ? Math.max(SOL.SO.cuerpo, wy0 + 0.6 - S.pos.y) : undefined;
+      const pn = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, hCuerpo);
       if (pn) {
-        const p0 = SOL.penetra(px, pz, S.pos.y);
+        const p0 = SOL.penetra(px, pz, S.pos.y, hCuerpo);
         if (pn > p0) {
-          if (SOL.penetra(S.pos.x, pz, S.pos.y) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
-          else if (SOL.penetra(px, S.pos.z, S.pos.y) <= p0) { S.pos.x = px; MOVE.vx = 0; }
+          if (SOL.penetra(S.pos.x, pz, S.pos.y, hCuerpo) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
+          else if (SOL.penetra(px, S.pos.z, S.pos.y, hCuerpo) <= p0) { S.pos.x = px; MOVE.vx = 0; }
           else { S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0; }
         }
       }
@@ -249,7 +254,8 @@ AVE.module('fisica', function (G) {
       const pc = SOL.percha(S.pos.x, S.pos.z, S.pos.y, T.perchAssist);
       if (pc && S.pos.y - pc.y < 1.2) { const k = rate(8, dt); S.pos.x += (pc.x - S.pos.x) * k; S.pos.z += (pc.z - S.pos.z) * k; MOVE.vx *= 0.9; MOVE.vz *= 0.9; }
     }
-    let ground = suelo(S.pos.x, S.pos.z, S.pos.y); // con la altura previa: las perchas sostienen al bajar
+    // con la altura previa: las perchas sostienen al bajar. En el aire, un sólido solo es suelo si ya está bajo los pies
+    let ground = suelo(S.pos.x, S.pos.z, S.pos.y, MOVE.grounded ? undefined : 0.05);
     // Pendiente demasiado empinada para subir caminando: se anula la parte cuesta arriba del paso (sigue la curva de nivel)
     const grounded = MOVE.grounded && !MOVE.flying && !MOVE.swimming;
     if (grounded && ground > S.pos.y + 0.02 && Math.abs(ground - G.terreno.height(S.pos.x, S.pos.z)) < 0.05) {
@@ -294,7 +300,7 @@ AVE.module('fisica', function (G) {
       const above = S.pos.y - Math.max(ground, suelo(S.pos.x + MOVE.vx * 0.35, S.pos.z + MOVE.vz * 0.35, S.pos.y));
       let want, k = T.vAccel;
       if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6; k = 2; }
-      else if (MOVE.landing) want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6);
+      else if (MOVE.landing) { want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6); k = T.vAccelLand; }
       else if (jumpHeld && !busy) want = T.climbV;
       else if (dive) want = above < T.flareHeight ? -Math.max(T.flareV, T.diveV * above / T.flareHeight) : -T.diveV;
       else want = -T.glideSink * Math.min(1, hSpeed / FLY_SPEED) ** 2;
@@ -318,8 +324,8 @@ AVE.module('fisica', function (G) {
     // Con la altura nueva (subir o bajar un escalón, una rampa bajo un techo) el cuerpo tampoco puede quedar más metido en un
     // sólido que antes del paso: si pasa, no avanza (en el aire solo se anula lo horizontal)
     if (SOL && (S.pos.x !== px || S.pos.z !== pz)) {
-      const pf = SOL.penetra(S.pos.x, S.pos.z, S.pos.y);
-      if (pf && pf > SOL.penetra(px, pz, py)) {
+      const pf = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, hCuerpo);
+      if (pf && pf > SOL.penetra(px, pz, py, hCuerpo)) {
         S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0;
         if (grounded) { S.pos.y = py; ground = suelo(px, pz, py); } else { ground = suelo(px, pz, py); S.pos.y = Math.max(ground, S.pos.y); }
       }
