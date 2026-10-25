@@ -182,7 +182,7 @@
     }
     $('comic').hidden = true;
     // Guardado, migración y respaldo
-    const KEY = SV.KEY;
+    const KEY = SV.KEY, copiasAntes = new Set(SV.copiasIlegibles().map(c => c.clave)); // copias de rescate que ya había: la prueba solo quita las suyas
     check('Guardar funciona', SV.save(true));
     const snap = SV.serialize();
     SV.reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
@@ -197,7 +197,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(v2)); } catch (e) { /* sin almacenamiento */ }
     check('Partida v2 se migra a v3 sin perder progreso', SV.load(true) && S.step === 2 && S.collected[0] === 'm1' && S.events.length === 3 && S.events[1].type === 'LocationDiscovered' && S.events[2].seq === 3);
     try { localStorage.setItem(KEY, '{roto'); } catch (e) { /* sin almacenamiento */ }
-    check('Partida dañada se rechaza y se guarda una copia', SV.load(true) === false && localStorage.getItem(KEY + '.unreadable') === '{roto');
+    check('Partida dañada se rechaza y se guarda una copia de rescate con fecha', SV.load(true) === false && SV.copiasIlegibles().some(c => c.raw === '{roto' && !copiasAntes.has(c.clave)) && localStorage.getItem(KEY) === '{roto');
     try { localStorage.setItem(KEY, JSON.stringify({ v: 1, step: 3 })); } catch (e) { /* sin almacenamiento */ }
     check('Partida v1 (incompatible) se rechaza', SV.load(true) === false);
     try { localStorage.setItem(KEY, JSON.stringify(Object.assign(JSON.parse(snap), { v: 3, step: 7 }))); } catch (e) { /* sin almacenamiento */ }
@@ -246,7 +246,7 @@
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
     SV.reset(true);
-    try { localStorage.removeItem(KEY + '.unreadable'); } catch (e) { /* sin almacenamiento */ }
+    try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
     devolver();
     T.restoreSave(keep);
     G.quiet = false;
@@ -754,8 +754,11 @@
       const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
       const saveIdAntes = S.saveId, pasoAntes = S.step;
       $('m-nuevo').click();
-      check('Nuevo estudiante pide un segundo toque: el primero no borra la partida ni el cómic', !$('m-nuevo-si').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
-      $('m-nuevo-si').click();
+      check('Nuevo estudiante pregunta como el juego: «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» (foco) y «Sí, comenzar de cero»', !$('m-nuevo-conf').hidden && $('m-nuevo').hidden && $('m-nuevo-q').textContent === '¿Comenzar de cero? Se borrará tu partida y tu cómic.' && $('m-nuevo-no').textContent.trim() === 'No, volver' && $('m-nuevo-si').textContent.trim() === 'Sí, comenzar de cero' && document.activeElement === $('m-nuevo-no'));
+      check('El primer toque no borra la partida ni el cómic', S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo-no').click();
+      check('«No, volver» cierra la pregunta y no borra nada', $('m-nuevo-conf').hidden && !$('m-nuevo').hidden && S.saveId === saveIdAntes && S.step === pasoAntes && S.profile.created === perfilKeep);
+      $('m-nuevo').click(); $('m-nuevo-si').click();
       check('Nuevo estudiante: borra la partida y conserva el reporte', !S.profile.created && AU.partidas.length === partidasAntes && !leerAula(G.guardado.KEY + '.prev') && perfilKeep !== undefined);
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
