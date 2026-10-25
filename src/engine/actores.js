@@ -73,11 +73,13 @@ AVE.module('actores', function (G) {
   };
   const EMOTE_KEYS = Object.keys(EMOTES);
   const emote = { name: '', until: 0 };
+  // → true si el gesto empezó (en el suelo, sin volar ni diálogo)
   function playEmote(name) {
-    if (!EMOTES[name] || G.ui.busy() || G.fisica.MOVE.flying) return;
-    if (S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01) return;
+    if (!EMOTES[name] || G.ui.busy() || G.fisica.MOVE.flying) return false;
+    if (S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01) return false;
     emote.name = name; emote.until = performance.now() + EMOTES[name].secs * 1000;
     if (player3D && EMOTES[name].clip) { player3D.play(EMOTES[name].clip, true); anim3D.player = 'emote'; }
+    return true;
   }
   function stopEmote() { emote.name = ''; anim3D.player = ''; }
   // Foco de "idea" sobre la cabeza
@@ -91,11 +93,36 @@ AVE.module('actores', function (G) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
     s.scale.set(0.9, 0.9, 1); s.visible = false; scene.add(s); return s;
   })();
-  // Menú de gestos (celular y ratón)
+  // Menú de gestos (celular y ratón) y «Foto» (DIVERSION_CAP1 mejora 5): Foto → «¿Con qué pose?» → un gesto → la foto va al
+  // cómic (src/game/momentos.js escucha G.emit('foto', { gesto })). Con un gesto en marcha (p. ej. bailando), Foto la toma ya.
+  // pack.foto = false la quita.
   const emoteMenu = $('emotes');
-  emoteMenu.innerHTML = EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${i + 1} · ${EMOTES[k].label}</button>`).join('');
-  emoteMenu.addEventListener('click', e => { const b = e.target.closest('[data-emote]'); if (!b) return; emoteMenu.hidden = true; playEmote(b.dataset.emote); });
-  $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; });
+  const CON_FOTO = G.pack.foto !== false;
+  // En teléfonos (≤ 560 px, ui.css) el panel va centrado y no debe llegar a los controles táctiles: con Foto (una fila más
+  // cuando la letra grande pone los gestos en una columna) se limita su alto y se desplaza por dentro. El <style> va dentro
+  // de #emotes para que la maqueta móvil de accesibilidad.js (copia #emotes con sus hojas enlazadas) lo lleve.
+  const ESTILO_EMOTES = CON_FOTO ? '<style id="estilo-emotes">@media (max-width:560px){#emotes{max-height:calc(100vh - 440px);max-height:calc(100dvh - 440px);overflow-y:auto;overscroll-behavior:contain}}</style>' : '';
+  emoteMenu.innerHTML = ESTILO_EMOTES + EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${i + 1} · ${EMOTES[k].label}</button>`).join('') +
+    (CON_FOTO ? '<button class="btn" type="button" data-foto="1" data-icon="sparkle" aria-pressed="false">Foto</button>' : '');
+  const fotoBtn = emoteMenu.querySelector('[data-foto]');
+  let fotoModo = false;
+  function modoFoto(on) {
+    fotoModo = !!on && !!fotoBtn;
+    if (fotoBtn) { fotoBtn.setAttribute('aria-pressed', String(fotoModo)); fotoBtn.textContent = fotoModo ? '¿Con qué pose?' : 'Foto'; }
+    return fotoModo;
+  }
+  emoteMenu.addEventListener('click', e => {
+    if (e.target.closest('[data-foto]')) {
+      if (emote.name) { emoteMenu.hidden = true; modoFoto(false); G.emit('foto', { gesto: emote.name }); return; }
+      modoFoto(!fotoModo); return;
+    }
+    const b = e.target.closest('[data-emote]'); if (!b) return;
+    emoteMenu.hidden = true;
+    const conFoto = fotoModo; modoFoto(false);
+    const ok = playEmote(b.dataset.emote);
+    if (conFoto) { if (ok) G.emit('foto', { gesto: b.dataset.emote }); else G.ui.toast('Para la foto, posa en el suelo y quieta.', 2600); }
+  });
+  $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; if (emoteMenu.hidden) modoFoto(false); });
 
   // ---------- Pico sincronizado con el diálogo ----------
   // Fuente de la boca, por orden: la voz que lee la línea (speechSynthesis), la máquina de escribir de src/ui/ui.js (#d-type) o nada.
@@ -409,7 +436,7 @@ AVE.module('actores', function (G) {
   return {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
-    init3D, applyWear, refreshCompanion, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, sync3D,
+    init3D, applyWear, refreshCompanion, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
     placePlayerSprite, snapCompanionSprite, flipSprite, nombre: J.nombre, sprite: J.sprite, especie: J.especie,
   };
 });

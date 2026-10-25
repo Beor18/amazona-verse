@@ -101,13 +101,15 @@ AVE.module('misiones', function (G) {
   // «Próximo: <premio> · <pista>» bajo el objetivo (DIVERSION_CAP1 mejora 2: lo que se gana se ve antes de ganarlo).
   // El premio es la primera pieza de pack.ropa que aún no se tiene, en el orden del pack; con todo ganado o el capítulo
   // terminado no se muestra. El elemento y su estilo los pone este módulo (ui.css es de otro carril); el <style> va dentro
-  // de #quest para que la maqueta móvil de accesibilidad.js (copia #top con sus hojas enlazadas) lo lleve. En pantallas
-  // bajas (teléfono apaisado) la línea se oculta: el objetivo no debe pisar los controles táctiles.
+  // de #quest para que la maqueta móvil de accesibilidad.js (copia #top con sus hojas enlazadas) lo lleve. La línea se
+  // oculta donde no cabe: pantallas bajas (teléfono apaisado: el objetivo no debe pisar los controles), teléfonos de 320 px
+  // y, con el texto más grande (a11y-t2), hasta 560 px (ahí los subtítulos de sonido van debajo de #quest y no deben
+  // llegar a los botones de acción ni al diálogo).
   function proximoPremio() { return S.complete ? null : unlocks.find(u => u.pista && !S.unlocked.includes(u.clave)) || null; }
   const ESTILO_PROXIMO = '#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}' +
     '#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}' +
     '#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}' +
-    '@media (max-height:480px){#next-reward{display:none}}';
+    '@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}';
   function cajaProximo() {
     let el = $('next-reward');
     if (el) return el;

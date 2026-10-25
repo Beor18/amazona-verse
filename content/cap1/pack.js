@@ -28,8 +28,19 @@
     FieldEntryFound: { type: 'CollectibleFound', loc: 'villa_raiz', chars: ['vittata'], scene: null },
     OutfitUnlocked: { type: 'ItemUnlocked', loc: null, chars: ['vittata'], scene: null },
     LumaChoice: { type: 'DialogueChoiceMade', loc: 'taller_vittata', chars: ['vittata', 'luma'], scene: 'dialogue' },
+    // Momentos del cómic (src/game/momentos.js; DIVERSION_CAP1 mejora 5): hechos que ya pasan, una vez por partida
+    FirstSplash: { type: 'SkillMoment', loc: null, chars: ['vittata'], scene: 'splash' },
+    FirstHardLanding: { type: 'SkillMoment', loc: null, chars: ['vittata'], scene: 'landing' },
+    ChickJumped: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'nest' },
+    FirstChallengeRecord: { type: 'RecordAchieved', loc: null, chars: ['vittata'], scene: 'race' },
+    PhotoTaken: { type: 'PhotoTaken', loc: null, chars: ['player'], scene: 'photo' },
   };
   const DONE = 8; // pasos de la historia (historia.js)
+  // Viñetas de los momentos: el último evento de una clave y el tiempo m:ss.d de la carrera
+  const ultimo = (S, key) => { for (let i = S.events.length - 1; i >= 0; i--) if (S.events[i].key === key) return S.events[i]; return null; };
+  const reloj = ms => { const d = Math.round(ms / 100), m = Math.floor(d / 600), s = d - m * 600; return `${m}:${String(Math.floor(s / 10)).padStart(2, '0')}.${s % 10}`; };
+  // Texto de la foto según el gesto (ids de src/engine/actores.js EMOTES)
+  const POSES = { saludar: '¡hola desde Villa Raíz!', celebrar: '¡lo logramos!', bailar: '¡a bailar!', idea: '¡tengo una idea!', enojo: 'cara de enojo (de mentira).', pelea: 'pose de aventurera valiente.', molestia: 'hoy no me gustó el mangó.' };
 
   // ---------- Retratos neutros (SVG en línea, sin archivos nuevos) ----------
   // La Voz del transmisor y el Narrador no llevan la cara de ningún personaje (CAP1_PENDIENTE P0-2): el guion no revela quién habla
@@ -143,6 +154,21 @@
         }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
         { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
           opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
+        // Momentos graciosos (src/game/momentos.js; DIVERSION_CAP1 mejora 5): viñetas por hechos que ya pasan, con tres textos de
+        // humor amable a elegir (nunca burla). Las fotos las pone momentos.js en S.captures con la clave de img; el brinco y la
+        // foto no capturan el mundo (sinCaptura): el brinco trae la foto del criadero (o la ilustración del nido) y la foto, la suya.
+        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
+          opciones: ['Las plumas mojadas pesan, pero el agua estaba buenísima.', 'Quise volar bajito. Bajito de más.', 'Los peces me miraron como a un pez nuevo con plumas.'] },
+        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
+          opciones: ['Aterricé de panza. Diez puntos por el estilo.', 'El suelo llegó antes de lo que yo pensaba.', 'Me sacudí las plumas y seguí como si nada.'] },
+        { id: 'brinco', img: 'brinco', needs: 'ChickJumped', sinCaptura: true, ilustracion: 'eclosion', texto: 'Toqué a mi cotorrita y dio un brinco de alegría.',
+          opciones: ['¡Un brinco! Casi se sale del nido.', 'Le hice cosquillas y saltó como un coquí.', 'Cada vez que la toco, brinca más alto.'] },
+        { id: 'record', img: 'record', needs: 'FirstChallengeRecord', texto: S => {
+          const e = ultimo(S, 'FirstChallengeRecord'), m = (e && e.meta) || {};
+          return m.modo === 'tormenta' ? `¡Mi primer récord en «Escapa de la tormenta»: ${m.puntos || 0} puntos!` : `¡Mi primer récord en la carrera de El Yunque${m.ms ? ': ' + reloj(m.ms) : ''}!`;
+        }, opciones: ['Volé tan rápido que el viento me pidió que esperara.', 'Récord nuevo. Mañana lo rompo otra vez.', 'Mis plumas todavía van a toda velocidad.'] },
+        { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
+          opciones: ['Esta es mi mejor pose. Sin discusión.', 'Lista para la foto: plumas peinadas y todo.', '¡Digan «coquí»!'] },
       ],
       // Viñeta final: el símbolo de los 36 arriba a la derecha y el plano del bote abajo a la derecha (el medallón del jugador va abajo a la izquierda)
       decorar: (x, p, b, ih, G) => {

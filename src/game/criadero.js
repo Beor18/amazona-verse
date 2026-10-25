@@ -1080,7 +1080,10 @@ AVE.module('criadero', function (G) {
     const r = canvas.getBoundingClientRect(), p = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(p, scene3d.camera);
     const hit = ray.intersectObject(k.holder, true);
-    if (hit.length) { postura(k.etapa === 'adulto' ? 'aleteando' : 'saltando', 2.2); scene3d.fx.burst(hit[0].point, 10, ['#ffffff', '#ffd27a'], 0.8, 1.5); }
+    if (hit.length) {
+      postura(k.etapa === 'adulto' ? 'aleteando' : 'saltando', 2.2); scene3d.fx.burst(hit[0].point, 10, ['#ffffff', '#ffd27a'], 0.8, 1.5);
+      G.emit('criadero', 'brinco', { id: k.capId, foto: () => fotoEscena() }); // cómic: viñeta del brinco (src/game/momentos.js)
+    }
   }
   function resize() {
     if (!scene3d.renderer || !canvas) return;
