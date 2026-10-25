@@ -1,0 +1,213 @@
+/* =====================================================================
+   Amazona Verse · Criadero (overlay #criadero). Dueño: game designer de huevos.
+   Solo usa los tokens de src/ui/tokens.css y los componentes de ui.css (.btn, .chip, .paper).
+   Se inyecta al abrir el criadero (src/game/criadero.js): el juego normal no lo carga.
+   ===================================================================== */
+.cr {
+  --cr-col: 320px; --cr-dock-h: 156px; --cr-gap: var(--sp-4);
+  position: fixed; inset: 0; z-index: calc(var(--z-title) + 5);
+  background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); font-size: var(--fs-md);
+  overflow: hidden;
+}
+.cr[hidden] { display: none; }
+.cr-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+.cr-loading { position: absolute; inset: 0; display: grid; place-items: center; font: 600 var(--fs-xl)/1 var(--font-display); color: var(--c-text-muted); pointer-events: none; }
+.cr-loading[hidden] { display: none; }
+
+/* ---------- Cabecera ---------- */
+.cr-top {
+  position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: max(var(--sp-3), env(safe-area-inset-top)) var(--cr-gap) var(--sp-6);
+  background: linear-gradient(180deg, rgba(8, 20, 14, 0.72), transparent); pointer-events: none;
+}
+.cr-top > * { pointer-events: auto; }
+.cr-brand h1 { margin: 0; font: 700 var(--fs-2xl)/var(--lh-tight) var(--font-display); text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.cr-eyebrow { margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-eyebrow); }
+.cr-eyebrow.ink { color: var(--c-ink-muted); }
+.cr-top-actions { display: flex; gap: var(--sp-2); }
+
+/* ---------- Columnas de tarjetas ---------- */
+.cr-col {
+  position: absolute; top: 84px; bottom: calc(var(--cr-dock-h) + var(--sp-2)); width: var(--cr-col);
+  display: flex; flex-direction: column; gap: var(--sp-3); overflow-y: auto; overscroll-behavior: contain;
+  padding: 2px 2px var(--sp-2); scrollbar-width: thin;
+}
+.cr-left { left: var(--cr-gap); }
+.cr-right { right: var(--cr-gap); }
+.cr-card {
+  background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg);
+  padding: var(--sp-4); box-shadow: var(--sh-2); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.cr-card[hidden] { display: none; }
+.cr-card h2 { margin: var(--sp-1) 0 0; font: 700 var(--fs-xl)/var(--lh-tight) var(--font-display); }
+.cr-card h3 { margin: 0 0 var(--sp-3); font: 600 var(--fs-lg)/var(--lh-tight) var(--font-display); display: flex; align-items: baseline; justify-content: space-between; }
+.cr-card h3 small { font: 700 var(--fs-sm)/1 var(--font-body); color: var(--c-text-muted); }
+.cr-lema { margin: var(--sp-1) 0 var(--sp-3); font-size: var(--fs-sm); color: var(--c-text-muted); }
+.cr-empty, .cr-hint { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.cr-card .btn { margin-top: var(--sp-3); }
+
+/* Etapas: huevo → bebé → juvenil → adulto */
+.cr-stages { list-style: none; margin: 0 0 var(--sp-3); padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-1); counter-reset: etapa; }
+.cr-stages li {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--sp-2) 2px;
+  border-radius: var(--r-sm); background: rgba(255, 255, 255, 0.06); border: 1px solid transparent; text-align: center;
+}
+.cr-stages b { font: 600 var(--fs-sm)/1.1 var(--font-display); }
+.cr-stages small { font-size: var(--fs-xs); color: var(--c-text-muted); }
+.cr-stages li.done { background: rgba(127, 211, 143, 0.16); }
+.cr-stages li.done b::before { content: "✓ "; color: var(--c-success); }
+.cr-stages li.on { background: var(--c-primary); color: var(--c-primary-ink); box-shadow: 0 3px 0 var(--c-primary-lip); }
+.cr-stages li.on small { color: var(--c-primary-ink); opacity: 0.8; }
+
+.cr-stat { display: flex; align-items: baseline; gap: var(--sp-2); margin: 0 0 var(--sp-2); }
+.cr-stat span { font: 700 var(--fs-xs)/1 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-text-muted); }
+.cr-stat b { font: 700 var(--fs-2xl)/1 var(--font-display); }
+.cr-stat em { margin-left: auto; font-style: normal; font-weight: 700; color: var(--c-eyebrow); }
+.cr-free { margin: var(--sp-3) 0 0; font-weight: 700; color: var(--c-success); }
+
+/* Barras */
+.cr-bar { height: 12px; border-radius: var(--r-pill); background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.cr-bar i { display: block; height: 100%; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, var(--leaf), var(--leaf-hi)); transition: width var(--dur-3) var(--ease-out); }
+.cr-bar.warm i { background: linear-gradient(90deg, var(--beak-lo), var(--beak), var(--gold)); }
+.cr-bar.learn i { background: linear-gradient(90deg, #3f86c2, var(--sky)); }
+.cr-bar.explore i { background: linear-gradient(90deg, var(--leaf), var(--leaf-hi)); }
+.cr-bar.care i { background: linear-gradient(90deg, #8a73d6, var(--violet)); }
+
+/* Capa real (papel, como el Diario): .cr-card.paper recupera el papel de ui.css */
+.cr-card.paper {
+  color: var(--c-ink); background: var(--c-paper) radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.7), transparent 55%);
+  border: 3px solid var(--c-paper-edge); box-shadow: 0 5px 0 #b79a63, var(--sh-2); -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.cr-real { padding: var(--sp-4) var(--sp-5); }
+.cr-real p { margin: var(--sp-2) 0 0; line-height: var(--lh-body); }
+.cr-real .cr-src { font-size: var(--fs-xs); color: var(--c-ink-muted); font-weight: 700; }
+
+/* Cápsulas */
+.cr-cap-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
+.cr-cap {
+  width: 100%; min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
+  padding: var(--sp-2) 2px; border-radius: var(--r-md); border: var(--bw) solid rgba(244, 247, 241, 0.16);
+  background: rgba(255, 255, 255, 0.05); color: var(--c-text); cursor: pointer; font-family: var(--font-body);
+  transition: transform var(--dur-1) var(--ease-pop), border-color var(--dur-1);
+}
+.cr-cap:hover { border-color: rgba(244, 247, 241, 0.5); }
+.cr-cap:active { transform: scale(0.96); }
+.cr-cap.sel { border-color: var(--c-primary); background: rgba(242, 160, 61, 0.14); }
+.cr-cap b { font: 600 var(--fs-xs)/1.1 var(--font-display); text-align: center; }
+.cr-cap small { font-size: var(--fs-xs); line-height: 1.1; color: var(--c-text-muted); text-align: center; }
+.cr-cap-egg {
+  width: 30px; height: 38px; border-radius: 50% 50% 50% 50% / 62% 62% 40% 40%;
+  background: radial-gradient(60% 50% at 35% 30%, rgba(255, 255, 255, 0.7), transparent 60%), linear-gradient(160deg, var(--a), var(--b));
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.cr-cap.bloqueada .cr-cap-egg { background: rgba(244, 247, 241, 0.12); box-shadow: inset 0 0 0 2px rgba(244, 247, 241, 0.25); }
+.cr-cap.bloqueada b { color: var(--c-text-muted); }
+.cr-cap.nacida .cr-cap-egg, .cr-cap.liberada .cr-cap-egg { border-radius: 50%; width: 32px; height: 32px; }
+.cr-cap.lista .cr-cap-egg { animation: cr-wobble 1.2s var(--ease-out) infinite; }
+
+/* Aprender */
+.cr-src-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.cr-src-list li { display: grid; grid-template-columns: 78px 1fr auto; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); }
+.cr-src-list b { font-size: var(--fs-xs); color: var(--c-text-muted); min-width: 52px; text-align: right; }
+.cr-demo { margin-top: var(--sp-3); font-size: var(--fs-sm); }
+.cr-demo summary { cursor: pointer; color: var(--c-text-muted); min-height: var(--tap-sm); display: flex; align-items: center; }
+.cr-demo-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+/* ---------- Dock de cuidado ---------- */
+.cr-dock {
+  position: absolute; left: 50%; bottom: max(var(--sp-3), env(safe-area-inset-bottom)); transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); max-width: calc(100% - 2 * var(--cr-col) - 4 * var(--cr-gap));
+}
+.cr-care-row { display: flex; gap: var(--sp-3); }
+.cr-care {
+  --care: var(--beak);
+  width: var(--tap-xl); height: var(--tap-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-1);
+  border-radius: var(--r-lg); border: var(--bw) solid rgba(255, 255, 255, 0.14); cursor: pointer;
+  background: var(--c-surface-raised) linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 60%);
+  color: var(--c-text); font: 600 var(--fs-sm)/1 var(--font-display); box-shadow: 0 var(--lip) 0 #0a1a12, var(--sh-1);
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1);
+}
+.cr-care svg { width: 34px; height: 34px; color: var(--care); filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3)); }
+.cr-care:active { transform: translateY(3px); box-shadow: 0 1px 0 #0a1a12; }
+.cr-care[aria-disabled="true"] { opacity: 0.5; filter: grayscale(0.6); }
+.cr-care[data-v="agua"] { --care: var(--sky); }
+.cr-care[data-v="juego"] { --care: var(--crest); }
+.cr-care[data-v="descanso"] { --care: var(--violet); }
+.cr-pips { display: flex; gap: 6px; margin-top: 2px; }
+.cr-pips i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.16); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2); }
+.cr-pips i.on { background: var(--gold); box-shadow: 0 0 8px rgba(255, 210, 122, 0.7); }
+.cr-pose-row { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-1); }
+.cr-pose-row .chip { min-height: var(--tap-sm); padding: 0 var(--sp-3); background: var(--c-surface); }
+.cr-pose-row .chip[aria-pressed="true"] { background: var(--c-primary); color: var(--c-primary-ink); border-color: var(--c-primary); }
+
+/* ---------- Eclosión, avisos y modal ---------- */
+.cr-hatch { position: absolute; left: 50%; bottom: calc(var(--cr-dock-h) + var(--sp-6)); transform: translateX(-50%); }
+.cr-hatch[hidden], .cr-skip[hidden], .cr-banner[hidden], .cr-toast[hidden], .cr-modal[hidden] { display: none; }
+.cr-hatch .btn { animation: cr-pulse 1.4s var(--ease-out) infinite; }
+.cr-skip { position: absolute; right: calc(var(--cr-col) + 2 * var(--cr-gap)); bottom: var(--sp-4); }
+.cr-banner {
+  position: absolute; left: 50%; top: 18%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-8); border-radius: var(--r-xl); text-align: center; pointer-events: none;
+  background: var(--c-paper); color: var(--c-ink); border: 3px solid var(--c-paper-edge); box-shadow: 0 6px 0 #b79a63, var(--sh-3);
+}
+.cr-banner b { font: 700 var(--fs-3xl)/1 var(--font-display); color: var(--c-ink); }
+.cr-banner span { font-weight: 700; color: var(--c-ink-muted); }
+.cr-banner.pop { animation: cr-pop 3.4s var(--ease-pop) both; }
+.cr-toast {
+  position: absolute; left: 50%; bottom: calc(var(--cr-dock-h) + var(--sp-3)); transform: translateX(-50%); max-width: min(520px, calc(100% - 2 * var(--sp-4)));
+  padding: var(--sp-3) var(--sp-5); border-radius: var(--r-md); text-align: center; font-weight: 700; line-height: var(--lh-body);
+  background: var(--c-surface-solid); border: 1px solid var(--c-line-strong); box-shadow: var(--sh-2);
+}
+.cr-modal { position: absolute; inset: 0; display: grid; place-items: center; background: var(--c-scrim); padding: var(--sp-4); }
+.cr-modal-box { width: min(520px, 100%); padding: var(--sp-6); }
+.cr-modal-box h2 { margin: var(--sp-2) 0 var(--sp-4); font: 700 var(--fs-xl)/var(--lh-tight) var(--font-display); }
+.cr-opts { display: grid; gap: var(--sp-2); }
+.cr-opts .btn { justify-content: flex-start; text-align: left; }
+.cr-fb { min-height: 1.5em; margin: var(--sp-3) 0 0; font-weight: 700; color: var(--c-ink-muted); }
+
+/* Globo de papel sobre la cabeza de la cría (frases del cuidado: no tapa el nido) */
+.cr-globo {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, calc(-100% - 12px)); pointer-events: none; z-index: 2; white-space: nowrap;
+  background: var(--c-paper); color: var(--c-ink); border: 2px solid var(--c-paper-edge); border-radius: var(--r-lg);
+  padding: 4px 12px; font: 700 var(--fs-md)/1.3 var(--font-display); box-shadow: var(--sh-1);
+}
+.cr-globo::after {
+  content: ""; position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%);
+  border: 8px solid transparent; border-top-color: var(--c-paper-edge); border-bottom: 0;
+}
+.cr-globo[hidden] { display: none; }
+@keyframes cr-pop { 0% { opacity: 0; transform: translateX(-50%) scale(0.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1.06); } 20% { transform: translateX(-50%) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-12px); } }
+@keyframes cr-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes cr-wobble { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-8deg); } 40% { transform: rotate(7deg); } 60% { transform: rotate(-4deg); } }
+@media (prefers-reduced-motion: reduce) { .cr-banner.pop, .cr-hatch .btn, .cr-cap.lista .cr-cap-egg { animation: none; } }
+
+/* ---------- Tableta vertical y móvil: escena arriba y tarjetas debajo (se desplaza) ---------- */
+@media (max-width: 900px) {
+  .cr { display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; --cr-gap: var(--sp-3); }
+  .cr:not([hidden]) { display: flex; }
+  .cr-canvas { position: sticky; top: 0; flex: none; height: 54vh; height: 54svh; z-index: 0; order: 0; }
+  .cr-dock { order: 1; }
+  .cr-left { order: 2; }
+  .cr-right { order: 3; }
+  .cr-top { position: absolute; }
+  .cr-dock { position: relative; left: auto; bottom: auto; transform: none; max-width: none; margin: calc(-1 * var(--sp-2)) var(--cr-gap) var(--sp-3); z-index: 1; }
+  .cr-care-row { width: 100%; justify-content: center; gap: var(--sp-2); }
+  .cr-care { width: auto; flex: 1 1 0; max-width: 104px; height: 82px; }
+  .cr-col { position: relative; top: auto; bottom: auto; left: auto; right: auto; width: auto; overflow: visible; margin: 0 var(--cr-gap) var(--sp-3); z-index: 1; }
+  .cr-hatch { position: absolute; top: calc(54svh - 96px); bottom: auto; z-index: 2; }
+  .cr-skip { position: absolute; top: calc(54svh - 60px); right: var(--sp-3); bottom: auto; z-index: 2; }
+  .cr-banner { position: fixed; top: 16%; z-index: 3; }
+  .cr-banner b { font-size: var(--fs-2xl); }
+  .cr-toast { position: fixed; bottom: var(--sp-4); z-index: 3; }
+  .cr-modal { position: fixed; z-index: 4; }
+  .cr-cap-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .cr-brand h1 { font-size: var(--fs-xl); }
+  .cr-top .btn.sm { padding: 0 var(--sp-2); }
+  .cr-care span { font-size: var(--fs-xs); }
+}
+
+/* ---------- Botón «Nido» del HUD (#b-nido en #sys; en móvil queda solo el icono con la regla .hud-btn de ui.css) ---------- */
+[data-icon="nido"] { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c-2.2 0-4 3-4 5.6S9.8 13 12 13s4-1.3 4-3.9S14.2 3.5 12 3.5z'/%3E%3Cpath d='M3.5 13.5c1 4 4.5 6.5 8.5 6.5s7.5-2.5 8.5-6.5'/%3E%3Cpath d='M6 15.5l2.5 1.5M18 15.5l-2.5 1.5M12 17v3'/%3E%3C/svg%3E"); }
+#b-nido[hidden] { display: none; }

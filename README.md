@@ -49,6 +49,8 @@ Al pie, **Docentes** abre el Modo Maestro, protegido con una suma (no hay cuenta
 ## Arquitectura
 - **Motor:** `src/engine` y `src/game`, con el personaje en `src/personaje`.
 - **Contenido:** `content/cap1`, más los datos comunes en `content/comun` (huevos y especies) y una plantilla en `content/plantilla` (`index.html?pack=plantilla`).
+- **Landing:** `web/` (página del producto).
+- **Sitio publicable:** `sitio/` (landing en la raíz + juego en `/juego/`), generado con `tools/build/sitio.sh <build>/site`. Vercel publica `main` con Root Directory `sitio`.
 - **Herramientas:** de Blender, build y video en `tools/`.
 - Capas, contratos y cómo hacer un fork: `docs/ARQUITECTURA.md`.
 

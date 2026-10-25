@@ -1,0 +1,47 @@
+{
+  "_nota": "Lista de videos disponibles. null = todavía no existe (se ve el póster o el bloque queda oculto). Ejemplos de entrada al final.",
+  "hero": {
+    "mp4": "assets/video/hero.mp4",
+    "webm": "assets/video/hero.webm"
+  },
+  "pitch": {
+    "mp4": "assets/video/pitch.mp4",
+    "poster": "assets/video/pitch.jpg",
+    "vtt": {
+      "es": "assets/video/pitch.es.vtt",
+      "en": "assets/video/pitch.en.vtt"
+    }
+  },
+  "_ejemplo_hero": {
+    "mp4": "assets/video/hero.mp4",
+    "webm": "assets/video/hero.webm"
+  },
+  "_ejemplo_pitch": {
+    "mp4": "assets/video/pitch.mp4",
+    "poster": "assets/video/pitch.jpg",
+    "vtt": {
+      "es": "assets/video/pitch.es.vtt",
+      "en": "assets/video/pitch.en.vtt"
+    }
+  },
+  "historia": {
+    "mp4": "assets/video/historia.mp4",
+    "webm": "assets/video/historia.webm",
+    "poster": "assets/video/historia.jpg"
+  },
+  "aprender": {
+    "mp4": "assets/video/aprender.mp4",
+    "webm": "assets/video/aprender.webm",
+    "poster": "assets/video/aprender.jpg"
+  },
+  "ropero": {
+    "mp4": "assets/video/ropero.mp4",
+    "webm": "assets/video/ropero.webm",
+    "poster": "assets/video/ropero.jpg"
+  },
+  "criadero": {
+    "mp4": "assets/video/criadero.mp4",
+    "webm": "assets/video/criadero.webm",
+    "poster": "assets/video/criadero.jpg"
+  }
+}

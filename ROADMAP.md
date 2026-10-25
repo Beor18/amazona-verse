@@ -83,5 +83,6 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Temporadas 2 a 6, según `docs/STORY_BIBLE.md`.
 
 ## Ritmo y límites
+- Se trabaja siempre en la rama `main`: código, landing (`web/`), documentación y sitio publicable (`sitio/`).
 - El trabajo lo hace un equipo de agentes de Claude por roles, coordinados. QA valida de forma independiente antes de cada publicación.
 - Tope de uso semanal fijado por Kelvin en **45 %**. Al llegar a ese tope se guarda todo y se para una semana.
