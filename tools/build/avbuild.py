@@ -419,7 +419,8 @@ def validar_gltf(j, binc):
     if not col['scenes'] or not col['meshes']:
         E.append('sin escenas o sin mallas')
     ext_req = set(j.get('extensionsRequired') or [])
-    soportadas = {'KHR_materials_unlit', 'KHR_texture_transform', 'KHR_mesh_quantization', 'KHR_materials_pbrSpecularGlossiness'}
+    # EXT_meshopt_compression: el juego trae MeshoptDecoder (assets/vendor/meshopt) y assets.js lo pasa al GLTFLoader
+    soportadas = {'KHR_materials_unlit', 'KHR_texture_transform', 'KHR_mesh_quantization', 'KHR_materials_pbrSpecularGlossiness', 'EXT_meshopt_compression'}
     if ext_req - soportadas:
         E.append('extensiones obligatorias que three r128 no trae sin decodificador: %s' % ', '.join(sorted(ext_req - soportadas)))
     return E, {'mallas': len(col['meshes']), 'imagenes': len(col['images']), 'bytes_imagenes': img_bytes, 'uris': uris,
