@@ -19,7 +19,7 @@ estaban.
 | lentes_redondas | 4/3/2/5 | Aro de alambre (0,7 cm), invisible | 4/4/4/5 | Aro de Ø 1,3 cm y patilla de Ø 1,1 cm |
 | lentes_deportivas | 4/4/4/5 | — | = | Sin cambios |
 | lentes_buceo | 4/4/3/5 | El snorkel parecía una pajita | 4/4/4/5 | Tubo de Ø 3,2 cm con remate, boquilla y clip más grandes |
-| panuelo (TA) | 4/4/4/4 | 6 172 triángulos (supera los 6 000) | 4/4/4/4 | Diseño intacto. Forma 'camisa' regenerada sobre la camisa nueva: Idle +1 mm y Walk +2 mm; dance y swim, roces de −11 mm que no se ven |
+| panuelo (TA) | 4/4/4/4 | 6 172 triángulos (supera los 6 000) | 4/4/4/4 | Diseño intacto, 5 932 tris (banda con 72 anillos y dobladillo de 4 lados; autorizado por el TA). Forma 'camisa' regenerada: Idle +2 mm y Walk +2 mm; dance y swim, roces de −11 mm que no se ven |
 | camisa | 4/2/3/1 | Los costados seguían al ala: con las alas bajadas la tela entraba 16 cm y dejaba ver la piel; la cola atravesaba la espalda | 4/4/4/4 | Mangas pesadas al brazo solo sobre la axila; bajo de atrás en arco (+17 cm) sobre la cola; 5 632 triángulos (antes 13 824). Vértices dentro en Idle: de 784 a 33 (peor −2 cm, cara interior) |
 | pantalon_corto | 4/4/4/3 | Pico de tela bajo el asiento al andar | 4/4/4/3 | Pesos por pierna, sin cola ni dedos. **Pendiente:** el pliegue en punta sigue en Walk (ver abajo) |
 | pantalon_largo | 2/3/4/3 | Acababa en z 0,15 y se leía como otro corto | 4/4/4/4 | Bajo en el tobillo (z 0,07), sobre el eje del tarso; dobla con rodilla y tarso |
@@ -38,14 +38,14 @@ estaban.
 | mano_maracas, mano_mapa | 4/4/4/4 | — | 4/4/4/4 | Tubos con 6 lados y sombreado suave a 75° (antes se veían facetados) |
 
 **Límites:** todas las piezas quedan en ≤ 6 000 triángulos (la camisa bajó de 13 824 a 5 632; la más cargada es pantalon_largo,
-con 5 808), salvo el pañuelo del TA (6 172, un 3 % por encima; queda para el TA). Pares de zapatos ≤ 9 240 y archivos ≤ 434 KB.
+con 5 808; el pañuelo pasó de 6 172 a 5 932). Pares de zapatos ≤ 9 240 y archivos ≤ 434 KB.
 
 ## Pendientes y pedidos
 - **pantalon_corto:** al andar, cuando la pierna va atrás, sale un pliegue en punta bajo el asiento. Ya estaba antes.
   Probé pesos por lado, sin cola, tiro a la cadera y corto solo de muslo, y nada lo quita. Viene de la tela entre las
   piernas: el cuerpo de Vittata acaba a la altura de la rodilla (z≈0,22). Siguiente intento: rehacer el tiro con un
   refuerzo propio (gusset) en vez de la malla del rayo.
-- **Choques que dependen de la animación (código del TA):** en dance, la bandera de mano cruza el pico (pedido abierto
-  en `TRAITS_PEDIDOS.md`). Al nadar con equipo de espalda ya está resuelto con `SWIM_BACK_SHIFT`. Quedan roces leves
-  de la cabeza con el canto de la mochila al bailar.
+- **Choques que dependen de la animación (código del TA):** resueltos. En dance, con bandera, mapa o martillo, el brazo
+  izquierdo queda en alto y abierto (ed8a54f; objeto a 5,8–13,8 cm de la cabeza). Al nadar con equipo de espalda se usa
+  `SWIM_BACK_SHIFT`. Quedan roces leves de la cabeza con el canto de la mochila al bailar.
 - **TRAITS_V2 (criadero):** P0 de modelos nuevos (binoculares, cuaderno de campo y lupa). Están sin empezar.

@@ -673,7 +673,7 @@ def band_center(a):
     return Vector((0, NECK_Y, z)) + D(a) * (neck_r(z, a) + BAND_GAP + BAND_RR)
 
 
-def panuelo_band(mt, N=80, M=10):
+def panuelo_band(mt, N=72, M=10):   # 72 (antes 80): el pañuelo entra en 6 000 tris
     """Rollo de tela alrededor del cuello: sección elíptica con crestas en hélice (tela torcida)."""
     me = bpy.data.meshes.new('banda'); bm = bmesh.new(); rings = []
     C = [band_center(2 * math.pi * i / N - math.pi) for i in range(N)]
@@ -725,7 +725,7 @@ def panuelo_pico(mt, A=R(60), z_tip=0.448, rows=18, cols=24):
     add_mod(o, 'SOLIDIFY', thickness=0.004, offset=1, use_rim=True, use_even_offset=True)
     apply_mods(o)
     put(o, mt['TELA'])
-    hems = [put(tube_path('dobladillo', e, 0.0028, seg=5), mt['TELA']) for e in edges]
+    hems = [put(tube_path('dobladillo', e, 0.0028, seg=4), mt['TELA']) for e in edges]
     return [o] + hems
 
 
