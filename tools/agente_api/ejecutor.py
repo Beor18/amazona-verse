@@ -133,6 +133,9 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     resultado = {'costo': 0.0, 'turnos': 0, 'estado': 'interrumpida'}
     try:
         await _sesion(opciones, mensajes, marca, presupuesto, resultado)
+    except Exception as e:
+        resultado['estado'] = f'error: {type(e).__name__}: {str(e)[:160]}'
+        raise
     finally:
         reservado -= presupuesto
         registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'])
@@ -187,7 +190,11 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
             print(f'\n{marca}== Tope total del carril alcanzado (${gasto:.2f} de ${total}); paro antes de {t}. ==')
             return gasto
         print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gasto:.2f} ########', flush=True)
-        costo = await correr(prompt_tarea(t), min(por_tarea, queda), turnos, marca, t)
+        try:
+            costo = await correr(prompt_tarea(t), min(por_tarea, queda), turnos, marca, t)
+        except Exception as e:   # un fallo de una tarea (red, SDK) no tumba el carril ni a los demás
+            print(f'\n{marca}== {t} falló ({type(e).__name__}: {str(e)[:200]}); sigo con la siguiente. ==', flush=True)
+            continue
         if costo is None:
             return gasto
         gasto += costo
@@ -197,8 +204,12 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
 
 async def varios(letras, por_tarea, total, turnos):
     """Varios carriles a la vez en un solo proceso (una sola clave); --total es el tope de cada carril."""
-    gastos = await asyncio.gather(*(carril(CARRILES[l], por_tarea, total, turnos, f'[{l}] ') for l in letras))
-    print(f'\n== Todos los carriles terminados: ${sum(gastos):.2f} gastados ==')
+    gastos = await asyncio.gather(*(carril(CARRILES[l], por_tarea, total, turnos, f'[{l}] ') for l in letras),
+                                  return_exceptions=True)
+    for l, g in zip(letras, gastos):
+        if isinstance(g, BaseException):
+            print(f'== Carril {l} terminó con error: {type(g).__name__}: {str(g)[:200]} ==')
+    print(f'\n== Todos los carriles terminados: ${sum(g for g in gastos if isinstance(g, float)):.2f} gastados ==')
 
 
 def main():
