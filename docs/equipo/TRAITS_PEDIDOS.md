@@ -24,4 +24,6 @@ Formato: para · de · qué · por qué · estado.
   izquierdo (≈+0,5 rad en `armL1`); o bajar ese objeto mientras dura el gesto.
 - **Por qué:** en Idle, Walk, Run y swim la bandera queda limpia (solo el agarre del puño, −8 mm). Un asta legible no
   puede ser más corta sin perder la proporción 2:3 del paño a la distancia de juego.
-- **Estado:** pendiente.
+- **Estado:** resuelto por el TA (character.js, `clothes()`): con bandera, mapa o martillo en la mano, al bailar el brazo
+  izquierdo deja de barrer por delante de la cara y se queda en alto y abierto. Distancia mínima del objeto a la cabeza en 20
+  instantes del baile: bandera 13,8 cm, mapa 11,4 cm y martillo 5,8 cm (antes 0,1–0,4 cm). Al pelear no hace falta: más de 20 cm.

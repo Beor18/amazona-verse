@@ -12,6 +12,8 @@
   // Calzado de Blender: la suela baja 6 mm de z=0 (para que los dedos no la atraviesen), así que el personaje sube 6 mm.
   // Pantalón: las alas se abren WING_CLEAR rad. Aletas: cadera abierta y punta hacia fuera (ejes medidos en el rig).
   const SWIM_BACK_SHIFT = 0.6;
+  // Objetos largos en la mano y cuánto se abre el brazo izquierdo (rad) en los gestos que lo llevan a la cara
+  const LONG_HAND = { bandera: 1, mapa: 1, martillo: 1 }, LONG_HAND_DANCE = 0.9;
   const SOLE_LIFT = 0.006, WING_CLEAR = 0.12, SPLAY = { axis: 'z', sign: 1, twist: 'y', tsign: 1, amount: 0.09 };
   // ---------- Animación procedural: ajuste fino (rol Movimiento y animación; docs/equipo/MOVIMIENTO.md) ----------
   // El juego pone en cada instancia, antes de update(dt): speed (m/s), gait, airborne, flying, legsDown (0..1), wingMode,
@@ -611,6 +613,13 @@
       if (f.toes) for (const n of TOES) { const b = B[n], r = this.toeRest[n]; if (b && r) for (const ax of ['x', 'y', 'z']) this.rot(b, ax, r[ax] - b.rotation[ax]); }
       if (f.wing && B.armL1 && B.armL1001) { this.rot(B.armL1, 'z', f.wing); this.rot(B.armL1001, 'z', -f.wing); }
       if (f.splay) for (const [h, sg] of [['pieL1', 1], ['pieL1001', -1]]) if (B[h]) { this.rot(B[h], SPLAY.axis, sg * f.splay * SPLAY.sign); this.rot(B[h], SPLAY.twist, sg * f.splay * SPLAY.tsign * 1.4); }
+      // Objeto largo en la mano izquierda (bandera, mapa, martillo): al bailar, ese brazo deja de barrer por delante de la cara
+      // (se anula su vaivén) y se queda en alto y abierto, agitando la bandera; así el asta no cruza el pico
+      // (docs/equipo/TRAITS_PEDIDOS.md). Pelear no lo necesita: el objeto queda a más de 20 cm de la cabeza.
+      if (f.longHand && this.emoteName === 'dance' && this.eW > 0.01 && B.armL1 && B.armL2) {
+        const w = (this.longHandOpen != null ? this.longHandOpen : 1) * this.eW, b = (this.emoteT || 0) * Math.PI * 4, h = Math.sin(b / 2);
+        this.rot(B.armL1, 'x', 0.4 * h * w); this.rot(B.armL1, 'z', (LONG_HAND_DANCE - 0.5 * h) * w); this.rot(B.armL2, 'x', -0.4 * Math.sin(b) * w);
+      }
     }
     // Gestos de cuerpo entero (emote: 'dance' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
     // Hombro: -X adelanta; abrir hacia arriba/afuera es +Z en el izquierdo y -Z en el derecho. Codo +X dobla.
@@ -924,7 +933,8 @@
     // Qué ajustes de pose y altura pide la ropa puesta (los aplica clothes() en cada cuadro)
     _fitClothes() {
       const M = this.mounted, feet = M.feet, legs = M.legs;
-      this.fitAdj = { toes: !!feet, wing: legs ? WING_CLEAR : 0, splay: feet && feet.style === 'buzo' ? SPLAY.amount : 0 };
+      const hand = M.hand;
+      this.fitAdj = { toes: !!feet, wing: legs ? WING_CLEAR : 0, splay: feet && feet.style === 'buzo' ? SPLAY.amount : 0, longHand: !!(hand && LONG_HAND[hand.style]) };
       if (this.rigNode) this.rigNode.position.y = this.rigY + (feet && feet.blender ? SOLE_LIFT : 0);
       // Pañuelo de Blender: con camisa puesta va por encima de ella (forma 'camisa' del .glb)
       if (M.neck && M.neck.blender) for (const o of M.neck.objects) if (o.morphTargetInfluences) {
@@ -1025,11 +1035,18 @@
     }
     const { canvas, renderer, scene, camera, ch } = portraitRig;
     renderer.setSize(size, size, false);
-    ch.applyLook(look);
-    // Pose estable del retrato: un fotograma fijo de Welcome (o Idle)
+    // Las piezas de Blender de ese look se esperan antes de dibujar: si no, el primer retrato salía con la versión simple
+    const nl = normalizeLook(look);
+    await preloadRopa(Object.values(nl.accessories).map(a => { const d = ACCESSORIES.find(x => x.id === a.id); return d && glbName(d, a.style); }).filter(Boolean));
+    ch.applyLook(nl);
+    if (window.AVColor) window.AVColor.setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
+    // Pose estable del retrato: un fotograma fijo de Welcome (o Idle), más los ajustes de la ropa (dedos, alas, aletas)
+    for (const [bone, ax, v] of ch.ofs || []) bone.rotation[ax] -= v;
+    ch.ofs = [];
     ch.mixer.stopAllAction();
     const clip = ch.clips[pose || 'Welcome'] || ch.clips.Idle;
     if (clip) { const a = ch.mixer.clipAction(clip); a.reset().play(); ch.mixer.setTime(clip.duration * 0.45); }
+    ch.clothes();
     ch.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(ch.root);
     const h = box.max.y - box.min.y;
