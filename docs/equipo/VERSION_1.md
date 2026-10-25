@@ -11,7 +11,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 4 | Modo Retos: carrera y tormenta, con récord | **Hecho y publicado** | retosTest 50/50 |
 | 5 | Controles claros en la computadora (icono fijo y panel), «no eleva», no quedar encajada; botón Acción en móvil | **Hecho** (Acción: en pruebas) | movementTest 38/38, controlesTest 19/19 |
 | 6 | «Mis récords» (de la casa, locales) y compartir el cómic y el récord con una puerta para adultos | **Hecho** | recordsTest 46/46 |
-| 7 | La ciudad de Kelvin completa y fiel (edificios cercanos de alta fidelidad) | en curso | streamingTest, capturas |
+| 7 | La ciudad de Kelvin completa y fiel (edificios cercanos de alta fidelidad) | **Hecho** lotes 1 y 2 (ruinas en HD y complejo de La Colina reconstruido) · falta el lote 3 (sogas y escombros de las aldeas) | streamingTest 11/11, capturas `ciudad_*` |
 | 8 | Pieles de las 22 especies (rivales de Retos y creador; crías sin especie hasta que decida Kelvin) | **Hecho** | pielesTest 13/13 |
 | 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | **Hecho** · falta: los Retos no leen el modo relajado; a 320 px no caben joystick y botones (de antes) | accesibilidadTest 36/36 |
 | 10 | Diario: datos validados con fuente; especies y 5 paradas | **Hecho** | eduTest 79/79, DIARIO_VALIDACION.md |
