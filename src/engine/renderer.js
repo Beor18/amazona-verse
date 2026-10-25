@@ -237,16 +237,20 @@ AVE.module('renderer', function (G) {
   // El render target es multisample (WebGL2) y de media precisión: guarda el color ya con ACES (r128 lo aplica en cada material)
   // en lineal; el último pase gradúa y codifica a sRGB, así el color final es el mismo que sin post.
   const PP = W.post || {};
-  const CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/';
-  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null };
+  // Scripts del post (three r128 examples/js): primero la copia local del repo (assets/vendor/three/examples/js/, sin
+  // peticiones a terceros; ver docs/equipo/SEGURIDAD_INFANTIL.md); si no está, jsDelivr con versión exacta, salvo que
+  // AVE.config.sinTerceros esté activo (entonces no hay post).
+  const LOCAL = 'assets/vendor/three/examples/js/', CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/';
+  const POST_JS = ['shaders/CopyShader.js', 'shaders/LuminosityHighPassShader.js', 'postprocessing/EffectComposer.js',
+    'postprocessing/RenderPass.js', 'postprocessing/ShaderPass.js', 'postprocessing/UnrealBloomPass.js'];
+  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, origen: null };
   const fogLin = fogSRGB.clone().convertSRGBToLinear();
   function fogColorFor(rt) { if (scene.fog && ATMOS) scene.fog.color.copy(rt ? fogLin : fogSRGB); }
+  function cargarDesde(base) { return POST_JS.reduce((p, f) => p.then(() => AVE.assets.script(base + f)), Promise.resolve()).then(() => { post.origen = base; }); }
   function cargarPost() {
     if (post.cargando) return post.cargando;
-    const s = AVE.assets.script;
-    post.cargando = s(CDN + 'shaders/CopyShader.js').then(() => s(CDN + 'shaders/LuminosityHighPassShader.js'))
-      .then(() => s(CDN + 'postprocessing/EffectComposer.js')).then(() => s(CDN + 'postprocessing/RenderPass.js'))
-      .then(() => s(CDN + 'postprocessing/ShaderPass.js')).then(() => s(CDN + 'postprocessing/UnrealBloomPass.js'))
+    const sinTerceros = !!(AVE.config && AVE.config.sinTerceros);
+    post.cargando = cargarDesde(LOCAL).catch(e => { if (sinTerceros) throw e; return cargarDesde(CDN); })
       .then(() => {
         const size = renderer.getDrawingBufferSize(new THREE.Vector2());
         const opts = { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
@@ -298,14 +302,19 @@ AVE.module('renderer', function (G) {
     if (++cullN % 10) return;
     const max = DIST_PEQ[calidad.nivel] || 100, cp = cam.position;
     for (const o of scene.children) {
-      if (o.isLight || PROPIOS.test(o.name || '') || o.userData.sinCulling) continue;
       let c = cullCache.get(o);
+      if (o.isLight || PROPIOS.test(o.name || '') || o.userData.sinCulling) {
+        if (c && c.lejos) { c.lejos = false; for (const m of c.meshes) m.layers.set(0); }
+        continue;
+      }
       if (!c || cullN - c.n > 300) {
         cBox.setFromObject(o);
         if (cBox.isEmpty()) { cullCache.set(o, c = { n: cullN, r: Infinity }); continue; }
         cBox.getBoundingSphere(cSph);
-        const meshes = []; o.traverse(m => { if (m.isMesh || m.isSprite || m.isPoints || m.isLine) meshes.push(m); });
-        c = { n: cullN, r: cSph.radius, off: cSph.center.clone().sub(o.position), meshes, lejos: false };
+        const meshes = []; let piel = false;
+        o.traverse(m => { if (m.isSkinnedMesh) piel = true; if (m.isMesh || m.isSprite || m.isPoints || m.isLine) meshes.push(m); });
+        // personajes con esqueleto: nunca (su caja cambia con la animación y el teleport)
+        c = { n: cullN, r: piel ? Infinity : cSph.radius, off: cSph.center.clone().sub(o.position), meshes, lejos: false };
         cullCache.set(o, c);
       }
       if (!(c.r < 4)) continue;
@@ -356,8 +365,7 @@ AVE.module('renderer', function (G) {
   }
   const medidor = { fps: 0, ms: 0, frames: 0, t0: performance.now() };
   function stats() {
-    const info = renderer.info.render;
-    return { fps: Math.round(medidor.fps), calls: info.calls, triangulos: info.triangles, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU };
+    return { fps: Math.round(medidor.fps), calls: cuenta.ultimo.calls, triangulos: cuenta.ultimo.tris, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU };
   }
 
   resize();
@@ -380,9 +388,13 @@ AVE.module('renderer', function (G) {
     G.camara.draw(dt);
   }
   let last = performance.now();
-  renderer.info.autoReset = false; // con post-proceso hay varios render() por cuadro: se cuenta el cuadro entero
+  // Draw calls del cuadro entero (con post hay varios render() por cuadro). No se toca info.autoReset: en r128 info.reset()
+  // avanza info.render.frame y los esqueletos solo se actualizan cuando cambia; un render extra (cómic, retratos) los necesita.
+  const cuenta = { calls: 0, tris: 0, ultimo: { calls: 0, tris: 0 } };
+  const renderCrudo = renderer.render.bind(renderer);
+  renderer.render = function (sc, cam) { renderCrudo(sc, cam); cuenta.calls += renderer.info.render.calls; cuenta.tris += renderer.info.render.triangles; };
   function frame(now) {
-    renderer.info.reset();
+    cuenta.ultimo = { calls: cuenta.calls, tris: cuenta.tris }; cuenta.calls = cuenta.tris = 0;
     adaptDPR(now - last);
     adaptCalidad(now - last);
     medidor.frames++;
