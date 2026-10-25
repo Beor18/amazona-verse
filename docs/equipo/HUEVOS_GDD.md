@@ -64,9 +64,9 @@ La rareza es la dificultad del reto, nunca una probabilidad ni un precio:
 | Playa | Exploración | Misión del fondo del río · 150 XP |
 | Bosque | Diario | "La ruta de la gota" · 3 fichas |
 | Boricua (PR) | Cultura | 4 hallazgos de cultura. Estrellas en la cáscara y **bandera fiel en asta** junto al nido |
-| Espacial | Reto raro | Responder las 7 preguntas de Luma (cualquier intento) |
-| Dorada | Reto épico | Diario 12/12 y 3 misiones |
-| Cristal | Reto legendario | Criar una cotorra hasta adulta y completar la lección de la liberación |
+| Espacial | Reto de preguntas | Responder las 7 preguntas de Luma (cualquier intento) |
+| Dorada | Reto del Diario completo | Diario 12/12 y 3 misiones |
+| Cristal | Reto de conservación | Criar una cotorra hasta adulta y completar la lección de la liberación |
 
 ## 4. Traits únicos por cápsula y etapa
 - **Cada etapa suma piezas** y la de mayor etapa gana su ranura. Ejemplo tropical: pañuelo caribe (bebé), sombrero tropical (juvenil), hawaiana con chancletas (adulto).

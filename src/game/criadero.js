@@ -19,6 +19,8 @@ AVE.module('criadero', function (G) {
   const D = () => window.AV_HUEVOS;
   const KEY = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // Botones para simular XP: solo en el prototipo con ?demo=1 (en clase la XP sale del juego)
+  const DEMO = /^(1|true)$/i.test(new URLSearchParams(location.search).get('demo') || '');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const lang = () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'en' : 'es');
   const t = v => (v == null ? '' : typeof v === 'string' ? v : v[lang()] != null ? v[lang()] : v.es || '');
@@ -292,11 +294,11 @@ AVE.module('criadero', function (G) {
     const F = st.fuentes, tot = F.aprender + F.explorar + F.cuidar || 1;
     const fila = (k, cls) => `<li><span>${esc(u(k))}</span>${barra(F[k], tot, cls)}<b>${F[k]} XP</b></li>`;
     root.querySelector('.cr-learn').innerHTML = `<h3>${esc(u('aprende'))}</h3><ul class="cr-src-list">${fila('aprender', 'learn')}${fila('explorar', 'explore')}${fila('cuidar', 'care')}</ul>
-      <details class="cr-demo"><summary>${esc(u('demo'))}</summary><div class="cr-demo-row">
+      ${DEMO ? `<details class="cr-demo"><summary>${esc(u('demo'))}</summary><div class="cr-demo-row">
         <button class="chip" type="button" data-cr="demo" data-v="ficha:1">+40 ${esc(t(D().xp.fuentes.ficha.nombre))}</button>
         <button class="chip" type="button" data-cr="demo" data-v="hallazgo:1">+25 ${esc(t(D().xp.fuentes.hallazgo.nombre))}</button>
         <button class="chip" type="button" data-cr="demo" data-v="mision:1">+60 ${esc(t(D().xp.fuentes.mision.nombre))}</button>
-        <button class="chip" type="button" data-cr="demo" data-v="pregunta:1">+20 ${esc(t(D().xp.fuentes.pregunta.nombre))}</button></div></details>`;
+        <button class="chip" type="button" data-cr="demo" data-v="pregunta:1">+20 ${esc(t(D().xp.fuentes.pregunta.nombre))}</button></div></details>` : ''}`;
     // --- Dock de cuidado ---
     const nac = selC && selC.estado === 'nacida';
     const pips = Array.from({ length: D().cuidado.cargasMax }, (_, i) => `<i class="${i < st.cargas ? 'on' : ''}"></i>`).join('');
@@ -906,7 +908,7 @@ AVE.module('criadero', function (G) {
     ch.gait = pose === 'caminando' ? 1 : 0;
     ch.airborne = false;
     ch.wingMode = pose === 'aleteando' ? 'flap' : pose === 'caminando' ? 'walk' : pose === 'volando' ? 'fly' : 'idle';
-    ch.expression = pose === 'durmiendo' ? 'sad' : pose === 'jugando' || pose === 'comiendo' ? 'happy' : pose === 'bebiendo' ? 'curious' : 'neutral';
+    ch.expression = pose === 'durmiendo' ? 'happy' : pose === 'jugando' || pose === 'comiendo' ? 'happy' : pose === 'bebiendo' ? 'curious' : 'neutral';
     deshacer(k);
     ch.update(dt);
     reaplicar(k);
@@ -1049,9 +1051,11 @@ AVE.module('criadero', function (G) {
     else if (hatch.on) { ty = 0.95; dist = 2.6; }
     if (narrow) dist *= 1.45;
     const want = new THREE.Vector3(Math.sin(scene3d.t * 0.12) * 0.25, ty + 0.62, dist);
-    cam.position.lerp(want, Math.min(1, dt * 2.2));
     const look = cam.userData.look || (cam.userData.look = new THREE.Vector3(0, ty, 0));
-    look.lerp(new THREE.Vector3(0, ty - (narrow ? 0.12 : 0), 0), Math.min(1, dt * 2.2));
+    const lookWant = new THREE.Vector3(0, ty - (narrow ? 0.12 : 0), 0);
+    // Al abrir, la cámara se coloca de golpe (sin entrar volando desde el centro del nido)
+    const k2 = scene3d.camSnap ? 1 : Math.min(1, dt * 2.2); scene3d.camSnap = false;
+    cam.position.lerp(want, k2); look.lerp(lookWant, k2);
     cam.lookAt(look);
   }
   function frame() {
@@ -1158,7 +1162,7 @@ AVE.module('criadero', function (G) {
       console.error('criadero: no se pudo abrir', e); (window.__aveErrores || []).push('criadero: ' + (e && e.message));
       cerrar(); return false;
     }
-    scene3d.clock.getDelta();
+    scene3d.clock.getDelta(); scene3d.camSnap = true;
     if (!scene3d.raf) frame();
     setTimeout(() => { const l = root.querySelector('.cr-loading'); if (l) l.hidden = true; }, 400);
     procesarAvisos();
@@ -1187,10 +1191,21 @@ AVE.module('criadero', function (G) {
         <div class="cr-opts">${q.opciones.map((o, j) => j).map((_, k, a) => a[(k + i + 1) % a.length]).map(j => `<button class="btn secondary" type="button" data-op="${j}">${esc(t(q.opciones[j]))}</button>`).join('')}</div>
         <p class="cr-fb" role="status">${fb ? esc(fb) : ''}</p>`;
       for (const b of box.querySelectorAll('[data-op]')) b.onclick = () => {
-        if (+b.dataset.op === q.correcta) { i++; if (i >= Q.length) { modal.hidden = true; liberar(); } else pintarQ(); }
+        if (+b.dataset.op === q.correcta) { i++; if (i >= Q.length) confirmar(); else pintarQ(); }
         else pintarQ(t({ es: 'Casi. Piensa en lo que hacen los aviarios del programa.', en: 'Almost. Think about what the program\'s aviaries do.' }));
       };
       const f = box.querySelector('[data-op]'); if (f) f.focus();
+    };
+    // Confirmación final: liberar es para siempre en el criadero, pero la cotorra sigue en el álbum de cápsulas
+    const confirmar = () => {
+      const nom = t(huevoDef(st.vista).cria);
+      box.innerHTML = `<p class="cr-eyebrow ink">${esc(u('liberar'))}</p><h2 id="cr-modal-t">${esc(t({ es: '¿Lista para volar libre, ' + nom + '?', en: 'Ready to fly free, ' + nom + '?' }))}</h2>
+        <p>${esc(t({ es: 'Volará al bosque como las cotorras de los aviarios. Seguirá en tu álbum y tu próxima cápsula la puedes incubar.', en: 'It will fly to the forest like the aviary parrots. It stays in your album and you can incubate your next capsule.' }))}</p>
+        <div class="cr-opts"><button class="btn magic" type="button" data-fin="si" data-icon="feather">${esc(t({ es: 'Sí, ¡a volar!', en: 'Yes, fly!' }))}</button>
+        <button class="btn secondary" type="button" data-fin="no">${esc(t({ es: 'Todavía no', en: 'Not yet' }))}</button></div>`;
+      box.querySelector('[data-fin="si"]').onclick = () => { modal.hidden = true; liberar(); };
+      box.querySelector('[data-fin="no"]').onclick = () => { modal.hidden = true; };
+      box.querySelector('[data-fin="si"]').focus();
     };
     modal.hidden = false; pintarQ();
   }
@@ -1247,6 +1262,7 @@ AVE.module('criadero', function (G) {
   function registrarMaestro() {
     if (G.aula && G.aula.pestana) G.aula.pestana({ id: 'criadero', titulo: { es: 'Criadero', en: 'Hatchery' }, html: htmlMaestro, enlazar: enlazarMaestro });
   }
+  G.on('nuevoEstudiante', () => { if (open) cerrar(); borrar(); });
   G.on('listo', () => {
     registrarMaestro();
     if (/^(1|true|si|sí)$/i.test(new URLSearchParams(location.search).get('criadero') || '')) setTimeout(() => abrir(), 0);

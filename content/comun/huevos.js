@@ -140,7 +140,7 @@
           // La bandera va en asta junto al nido en todas las etapas (no en la mano: así siempre se ve plana y derecha)
           adulto: [{ slot: 'torso', id: 'camisa', color: '#f4f4f0', style: 'guayabera' }, { slot: 'hand', id: 'mano', color: '#2f8f4e', style: 'coqui' }, { nuevo: 'anillo_cientifico' }],
         } },
-      { id: 'espacial', cria: { es: 'Estrella', en: 'Star' }, rareza: 'raro', nombre: { es: 'Cápsula espacial', en: 'Space capsule' },
+      { id: 'espacial', cria: { es: 'Estrella', en: 'Star' }, rareza: 'preguntas', nombre: { es: 'Cápsula espacial', en: 'Space capsule' },
         lema: { es: 'Un cielo de estrellas y nebulosas.', en: 'A sky of stars and nebulae.' },
         aspecto: { patron: 'cosmos', a: '#141a3c', b: '#7cc6ff', brillo: 0.2 },
         obtener: { texto: { es: 'Responde las 7 preguntas de «Luma te pregunta» (cualquier intento cuenta).', en: 'Answer all 7 "Luma asks" questions (any attempt counts).' }, cap1: { preguntas: 7 }, defecto: { preguntas: 5 } },
@@ -149,7 +149,7 @@
           juvenil: [{ slot: 'feet', id: 'botas', color: '#3d8fb0', style: 'espacial' }],
           adulto: [{ slot: 'back', id: 'equipo', color: '#9aa0a3', style: 'jetpack' }, { nuevo: 'visor_espacial', respaldo: null }, { nuevo: 'anillo_cientifico' }],
         } },
-      { id: 'dorado', cria: { es: 'Sol', en: 'Sun' }, rareza: 'epico', nombre: { es: 'Cápsula dorada', en: 'Golden capsule' },
+      { id: 'dorado', cria: { es: 'Sol', en: 'Sun' }, rareza: 'coleccion', nombre: { es: 'Cápsula dorada', en: 'Golden capsule' },
         lema: { es: 'Para quien completa su Diario de Campo.', en: 'For those who complete their field journal.' },
         aspecto: { patron: 'grabado', a: '#e6b422', b: '#fff1b0', brillo: 1 },
         obtener: { texto: { es: 'Completa el Diario de Campo (12/12) y 3 misiones.', en: 'Complete the field journal (12/12) and 3 missions.' }, cap1: { todas: [{ hallazgos: { min: 12 } }, { misiones: 3 }] }, defecto: { xpAprender: 900 } },
@@ -158,7 +158,7 @@
           juvenil: [{ slot: 'wings', id: 'brazaletes', color: '#c9a227' }],
           adulto: [{ slot: 'eyes', id: 'gafas', color: '#c9a227' }, { nuevo: 'lupa', respaldo: null }, { nuevo: 'anillo_cientifico' }],
         } },
-      { id: 'cristal', cria: { es: 'Rocío', en: 'Dew' }, rareza: 'legendario', nombre: { es: 'Cápsula de cristal', en: 'Crystal capsule' },
+      { id: 'cristal', cria: { es: 'Rocío', en: 'Dew' }, rareza: 'conservacion', nombre: { es: 'Cápsula de cristal', en: 'Crystal capsule' },
         lema: { es: 'Para quien cría una cotorra y aprende cómo se libera.', en: 'For those who raise a parrot and learn how it is released.' },
         aspecto: { patron: 'cristal', a: '#bfefff', b: '#e3c8ff', brillo: 0.6 },
         obtener: { texto: { es: 'Cría una cotorra hasta adulta y completa la lección de la liberación.', en: 'Raise a parrot to adulthood and finish the release lesson.' }, defecto: { liberadas: 1 } },
@@ -168,10 +168,11 @@
           adulto: [{ nuevo: 'kit_cientifico', respaldo: { slot: 'back', id: 'equipo', color: '#3d8fb0', style: 'mochila_pr' } }, { nuevo: 'anillo_cientifico' }],
         } },
     ],
+    // Etiquetas del reto: hablan de lo que se aprende, nunca de "raro/épico/legendario" (vocabulario de cajas de botín)
     rarezas: {
       inicial: { es: 'Inicial', en: 'Starter' }, exploracion: { es: 'Exploración', en: 'Exploration' }, diario: { es: 'Diario', en: 'Journal' },
-      cultura: { es: 'Cultura', en: 'Culture' }, raro: { es: 'Reto raro', en: 'Rare challenge' }, epico: { es: 'Reto épico', en: 'Epic challenge' },
-      legendario: { es: 'Reto legendario', en: 'Legendary challenge' },
+      cultura: { es: 'Cultura', en: 'Culture' }, preguntas: { es: 'Reto de preguntas', en: 'Questions challenge' },
+      coleccion: { es: 'Reto del Diario completo', en: 'Full journal challenge' }, conservacion: { es: 'Reto de conservación', en: 'Conservation challenge' },
     },
 
     // ---------- Capa real: programa de recuperación de la cotorra puertorriqueña ----------
