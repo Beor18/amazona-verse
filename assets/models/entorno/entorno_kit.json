@@ -1,0 +1,249 @@
+{
+ "palma_sierra": {
+  "especie": "Palma de sierra",
+  "cientifico": "Prestoea montana",
+  "alto_real_m": "10-15",
+  "alto_m": 8.0,
+  "ancho_m": 6.02,
+  "tris": 1018,
+  "kb": 164,
+  "materiales": [
+   "HOJA_palma_sierra",
+   "CORTEZA_palma_sierra"
+  ],
+  "dato": "Tras los huracanes Hugo y Georges fue la especie que más creció en un estudio de El Yunque.",
+  "ficha": "palma_sierra",
+  "radio_colision": 0.35
+ },
+ "yagrumo": {
+  "especie": "Yagrumo",
+  "cientifico": "Cecropia schreberiana",
+  "alto_real_m": "15-20",
+  "alto_m": 7.99,
+  "ancho_m": 5.0,
+  "tris": 1776,
+  "kb": 188,
+  "materiales": [
+   "HOJA_yagrumo",
+   "CORTEZA_yagrumo"
+  ],
+  "dato": "Árbol pionero: tras un huracán llena los claros; el envés plateado de sus hojas brilla con el viento.",
+  "ficha": "yagrumo",
+  "radio_colision": 0.25
+ },
+ "pasto": {
+  "especie": "Pasto",
+  "cientifico": "gramíneas",
+  "alto_real_m": "0.3-0.6",
+  "alto_m": 0.48,
+  "ancho_m": 0.75,
+  "tris": 56,
+  "kb": 60,
+  "materiales": [
+   "HOJA_pasto"
+  ],
+  "dato": "Sus raíces sujetan la tierra de las orillas.",
+  "ficha": null,
+  "radio_colision": 0.0
+ },
+ "tabonuco": {
+  "especie": "Tabonuco",
+  "cientifico": "Dacryodes excelsa",
+  "alto_real_m": "25-35",
+  "alto_m": 11.49,
+  "ancho_m": 10.1,
+  "tris": 2062,
+  "kb": 227,
+  "materiales": [
+   "HOJA_tabonuco",
+   "CORTEZA_tabonuco"
+  ],
+  "dato": "Da nombre al bosque más bajo de El Yunque, por debajo de unos 2,000 pies.",
+  "ficha": "tabonuco",
+  "radio_colision": 0.45
+ },
+ "helecho_arboreo": {
+  "especie": "Helecho gigante",
+  "cientifico": "Cyathea arborea",
+  "alto_real_m": "5-10",
+  "alto_m": 5.29,
+  "ancho_m": 5.19,
+  "tris": 902,
+  "kb": 175,
+  "materiales": [
+   "HOJA_helecho_arboreo",
+   "CORTEZA_helecho_arboreo"
+  ],
+  "dato": "Un helecho del tamaño de un árbol; es común en El Yunque.",
+  "ficha": "helecho_gigante",
+  "radio_colision": 0.25
+ },
+ "ceiba": {
+  "especie": "Ceiba",
+  "cientifico": "Ceiba pentandra",
+  "alto_real_m": "30-50",
+  "alto_m": 14.45,
+  "ancho_m": 19.0,
+  "tris": 5674,
+  "kb": 458,
+  "materiales": [
+   "HOJA_ceiba",
+   "CORTEZA_ceiba"
+  ],
+  "dato": "Uno de los árboles más altos; sus raíces en tabla la sostienen.",
+  "ficha": "ceiba",
+  "radio_colision": 2.0
+ },
+ "flamboyan": {
+  "especie": "Flamboyán",
+  "cientifico": "Delonix regia",
+  "alto_real_m": "8-12",
+  "alto_m": 7.1,
+  "ancho_m": 12.91,
+  "tris": 2154,
+  "kb": 268,
+  "materiales": [
+   "HOJA_flamboyan",
+   "CORTEZA_flamboyan"
+  ],
+  "dato": "No es nativo: viene de Madagascar. Florece rojo en verano.",
+  "ficha": "flamboyan",
+  "radio_colision": 0.6
+ },
+ "bambu": {
+  "especie": "Bambú",
+  "cientifico": "Bambusa vulgaris",
+  "alto_real_m": "10-15",
+  "alto_m": 6.98,
+  "ancho_m": 7.86,
+  "tris": 2171,
+  "kb": 174,
+  "materiales": [
+   "HOJA_bambu",
+   "CORTEZA_bambu"
+  ],
+  "dato": "Una hierba gigante introducida en Puerto Rico; no es nativa.",
+  "ficha": "bambu",
+  "radio_colision": 0.7
+ },
+ "heliconia": {
+  "especie": "Heliconia",
+  "cientifico": "Heliconia caribaea",
+  "alto_real_m": "2-4",
+  "alto_m": 1.66,
+  "ancho_m": 2.24,
+  "tris": 352,
+  "kb": 51,
+  "materiales": [
+   "HOJA_heliconia"
+  ],
+  "dato": "Sus brácteas rojas las visitan los colibríes.",
+  "ficha": "heliconia",
+  "radio_colision": 0.0
+ },
+ "bromelia": {
+  "especie": "Bromelia",
+  "cientifico": "Guzmania berteroniana",
+  "alto_real_m": "0.4-0.6",
+  "alto_m": 0.6,
+  "ancho_m": 1.17,
+  "tris": 448,
+  "kb": 81,
+  "materiales": [
+   "HOJA_bromelia"
+  ],
+  "dato": "Guarda agua entre sus hojas; el coquí pone allí sus huevos.",
+  "ficha": "bromelia",
+  "radio_colision": 0.0
+ },
+ "helecho_suelo": {
+  "especie": "Helecho de suelo",
+  "cientifico": "Nephrolepis sp.",
+  "alto_real_m": "0.5-1",
+  "alto_m": 0.62,
+  "ancho_m": 1.55,
+  "tris": 312,
+  "kb": 98,
+  "materiales": [
+   "HOJA_helecho_suelo"
+  ],
+  "dato": "Se reproduce con esporas, no con semillas.",
+  "ficha": null,
+  "radio_colision": 0.0
+ },
+ "hojarasca": {
+  "especie": "Hojarasca",
+  "cientifico": "-",
+  "alto_real_m": "-",
+  "alto_m": 0.03,
+  "ancho_m": 2.14,
+  "tris": 36,
+  "kb": 62,
+  "materiales": [
+   "HOJA_hojarasca"
+  ],
+  "dato": "Hongos e insectos la descomponen y devuelven nutrientes al suelo.",
+  "ficha": null,
+  "radio_colision": 0.0
+ },
+ "roca_musgo_a": {
+  "especie": "Roca con musgo",
+  "cientifico": "-",
+  "alto_real_m": "-",
+  "alto_m": 0.69,
+  "ancho_m": 1.74,
+  "tris": 320,
+  "kb": 103,
+  "materiales": [
+   "ROCA_roca_musgo_a"
+  ],
+  "dato": "El musgo retiene agua como una esponja.",
+  "ficha": null,
+  "radio_colision": 0.75
+ },
+ "roca_musgo_b": {
+  "especie": "Roca con musgo",
+  "cientifico": "-",
+  "alto_real_m": "-",
+  "alto_m": 0.47,
+  "ancho_m": 2.04,
+  "tris": 320,
+  "kb": 108,
+  "materiales": [
+   "ROCA_roca_musgo_b"
+  ],
+  "dato": "El musgo retiene agua como una esponja.",
+  "ficha": null,
+  "radio_colision": 0.9
+ },
+ "piedras_rio": {
+  "especie": "Piedras de río",
+  "cientifico": "-",
+  "alto_real_m": "-",
+  "alto_m": 0.31,
+  "ancho_m": 1.75,
+  "tris": 360,
+  "kb": 77,
+  "materiales": [
+   "ROCA_piedras_rio"
+  ],
+  "dato": "El agua del río las pule y redondea con el tiempo.",
+  "ficha": null,
+  "radio_colision": 0.0
+ },
+ "tronco_caido": {
+  "especie": "Tronco caído",
+  "cientifico": "-",
+  "alto_real_m": "-",
+  "alto_m": 0.91,
+  "ancho_m": 4.28,
+  "tris": 304,
+  "kb": 114,
+  "materiales": [
+   "CORTEZA_tronco_caido"
+  ],
+  "dato": "Al pudrirse alimenta hongos, insectos y plantas nuevas.",
+  "ficha": null,
+  "radio_colision": 0.4
+ }
+}
