@@ -12,8 +12,9 @@
      profile    perfil { created, name, look }. name = nombre INVENTADO, se guarda saneado (sin correo, teléfono ni URL);
                 look = apariencia 3D (AVCharacter.normalizeLook). Los perfiles viejos (preset/outfit/accessory) se conservan.
      wear       ropa puesta por ranura · unlocked: piezas ganadas · missions: { idMisión: bool }, con todas las del pack.
-     step, complete: historia · field: Diario (ids de hallazgos) · events: eventos narrativos (eventos.js, sin datos
-                personales) · comic: { title (de la lista del pack), cover, layout, order, captions: { id: índice de opción },
+     step, complete: historia · explorando: true si cerró el panel final con «Seguir explorando» (no se reabre solo; un
+                guardado sin el campo cuenta como false) · field: Diario (ids de hallazgos) · events: eventos narrativos
+                (eventos.js, sin datos personales) · comic: { title (de la lista del pack), cover, layout, order, captions: { id: índice de opción },
                 vinetas: { id: { look, seq } } } · captures:
                 JPEG del mundo · pos, facing, inv, collected, clock: mundo · + claves del pack (cap1: examined, refuge, edu…).
      satelites  copia de respaldo de los almacenes del dispositivo que tienen otro dueño:
@@ -44,7 +45,7 @@ AVE.module('guardado', function (G) {
   const SAVE_VERSION = P.version || 1;
   const FORMATO = 2;
   const spawn = Object.assign({ x: 0, z: 0 }, G.pack.jugador && G.pack.jugador.aparicion);
-  const BASE_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'collected', 'complete', 'events', 'captures', 'clock', 'missions', 'field', 'unlocked', 'wear'];
+  const BASE_KEYS = ['saveId', 'profile', 'comic', 'pos', 'facing', 'step', 'inv', 'collected', 'complete', 'explorando', 'events', 'captures', 'clock', 'missions', 'field', 'unlocked', 'wear'];
   const SAVED_KEYS = BASE_KEYS.concat(P.claves || []);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
   const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -56,7 +57,7 @@ AVE.module('guardado', function (G) {
     return Object.assign({
       v: SAVE_VERSION,
       pos: { x: spawn.x, z: spawn.z, y: 0 }, vy: 0, facing: { x: 0, z: 1 },
-      step: 0, inv, collected: [], complete: false,
+      step: 0, inv, collected: [], complete: false, explorando: false,
       water: G.terreno.waterBase, event: null, clock: 0,
       events: [], captures: {},
       missions, field: [], unlocked: [], wear: {},
@@ -340,7 +341,7 @@ AVE.module('guardado', function (G) {
   $('b-save').onclick = () => save(false);
   $('b-load').onclick = () => load(false);
   $('b-reset').onclick = () => { reset(); G.ui.toast(L('Partida nueva', 'New game')); };
-  $('b-again').onclick = () => { reset(); };
+  // «Jugar de nuevo» (panel final): pregunta primero y llama a reset(); vive en src/game/misiones.js
 
   // Las pruebas de otros módulos (cómic) congelan el guardado real mientras cambian G.S
   function suspender(v) { suspendido = !!v; saveDebounce = 0; }

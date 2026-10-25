@@ -115,13 +115,44 @@ AVE.module('misiones', function (G) {
     G.diario.renderButton();
     $('indicators').innerHTML = HIST.indicadores ? HIST.indicadores(S, G) : '';
   }
+  // ---------- Pantalla final ----------
+  // «Crear mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
+  // (S.explorando, que se guarda: al recargar el panel no vuelve a abrirse solo); «Jugar de nuevo» borra la partida y el
+  // cómic, así que primero pregunta DENTRO del juego (#end-confirm; nunca confirm()). Esc cancela la pregunta o, sin
+  // pregunta, cierra el panel como «Seguir explorando».
+  const FIN_PRINCIPAL = ['end-title', 'end-text', 'end-acciones'];
+  const confirmando = () => { const c = $('end-confirm'); return !!c && !c.hidden; };
+  function verConfirmacion(on, foco) {
+    const c = $('end-confirm'); if (!c) return;
+    c.hidden = !on;
+    for (const id of FIN_PRINCIPAL) { const el = $(id); if (el) el.hidden = !!on; }
+    if (foco !== false && !$('end').hidden) { const b = $(on ? 'b-again-no' : 'b-again'); if (b) b.focus({ preventScroll: true }); }
+  }
   function showEnd() {
     $('end-text').textContent = HIST.fin ? HIST.fin(S, G) : '';
+    verConfirmacion(false, false);
     $('end').hidden = false;
   }
+  function seguirExplorando() {
+    if (!S.complete || $('end').hidden) return false;
+    S.explorando = true;
+    verConfirmacion(false, false);
+    $('end').hidden = true;
+    G.guardado.autosave();
+    if (!G.quiet) G.ui.toast('Tu cómic te espera en el menú de pausa', 4000);
+    return true;
+  }
+  function jugarDeNuevo() { verConfirmacion(false, false); $('end').hidden = true; G.guardado.reset(); }
+  const alPulsar = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+  alPulsar('b-seguir', seguirExplorando);
+  alPulsar('b-again', () => verConfirmacion(true));
+  alPulsar('b-again-no', () => verConfirmacion(false));
+  alPulsar('b-again-si', jugarDeNuevo);
+  G.on('escape', () => { if ($('end').hidden) return; if (confirmando()) verConfirmacion(false); else seguirExplorando(); });
+
   G.on('render', () => { G.fx.guide(G.ui.busy() ? null : guideTarget(), performance.now() / 1000); }, 60);
-  G.on('apply', () => { if (S.complete) showEnd(); else $('end').hidden = true; }, 70);
+  G.on('apply', () => { verConfirmacion(false, false); if (S.complete && !S.explorando) showEnd(); else $('end').hidden = true; }, 70);
   G.on('apply', renderQuest, 90);
 
-  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, showEnd };
+  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, showEnd, seguirExplorando };
 });
