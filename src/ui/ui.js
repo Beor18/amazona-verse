@@ -48,7 +48,8 @@
     }, true);
     addEventListener('keydown', e => {
       if (!typing() || e.repeat) return;
-      if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') { e.stopImmediatePropagation(); e.preventDefault(); finish(); }
+      const accion = G.input && G.input.es ? G.input.es('accion', e) : (e.key === 'e' || e.key === 'E' || e.key === 'Enter'); // tecla remapeable (input.js)
+      if (accion) { e.stopImmediatePropagation(); e.preventDefault(); finish(); }
     }, true);
   }
 
