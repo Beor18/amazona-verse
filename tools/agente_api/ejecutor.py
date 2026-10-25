@@ -6,6 +6,7 @@ Se lanza desde la Terminal de Kelvin con su clave ya exportada (este script nunc
   tools/agente_api/ejecutar.sh --prueba           # tarea mínima para comprobar en la facturación que cobra el crédito
   tools/agente_api/ejecutar.sh --tarea A1          # una sola tarea de docs/equipo/TAREAS_API.md
   tools/agente_api/ejecutar.sh --carril B --modelo opus --total 50   # todo un carril, en orden, con tope total
+  tools/agente_api/ejecutar.sh --carriles A,C,D,E --modelo opus --total 25   # varios carriles a la vez, una sola clave
 
 Reglas que impone, además de las del archivo de tareas: modelo Sonnet, tope de gasto por corrida (max_budget_usd),
 configuración aislada (~/.claude-sdk, no la sesión de la app ni el login Max) y bloqueo de comandos peligrosos
@@ -54,7 +55,7 @@ async def permiso(tool, entrada, _ctx):
     return PermissionResultAllow()
 
 
-async def correr(prompt, presupuesto, turnos):
+async def correr(prompt, presupuesto, turnos, marca=''):
     clave = os.environ.get('ANTHROPIC_API_KEY', '')
     if not clave.startswith('sk-ant-'):
         sys.exit('Falta la clave. En esta Terminal escribe primero:  export ANTHROPIC_API_KEY=\'tu clave\'')
@@ -78,37 +79,55 @@ async def correr(prompt, presupuesto, turnos):
             if isinstance(m, AssistantMessage):
                 for b in m.content:
                     if isinstance(b, TextBlock) and b.text.strip():
-                        print('·', b.text.strip()[:400], flush=True)
+                        print(f'{marca}·', b.text.strip()[:400], flush=True)
                     elif isinstance(b, ToolUseBlock):
                         detalle = b.input.get('command') or b.input.get('file_path') or b.input.get('pattern') or ''
-                        print(f'  [{b.name}] {str(detalle)[:140]}', flush=True)
+                        print(f'{marca}  [{b.name}] {str(detalle)[:140]}', flush=True)
             elif isinstance(m, ResultMessage):
                 costo = m.total_cost_usd if m.total_cost_usd is not None else 0
-                print(f'\n== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
+                print(f'\n{marca}== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
                 if m.result:
                     print(m.result[:1500])
     return costo
 
 
-CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3']}
+CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3', 'D4'],
+            'E': ['E1', 'E2']}
 MODELOS = {'sonnet': 'claude-sonnet-5-5', 'opus': 'claude-opus-5-5'}
 
 
 def prompt_tarea(t):
     return (f'Lee docs/equipo/TAREAS_API.md y haz SOLO la tarea {t}, de principio a fin, siguiendo sus reglas. '
+            'Puede haber cambios tuyos a medias sin commit de una corrida anterior: revísalos y continúa desde ahí. '
             'Al terminar marca su estado en la tabla y resume en 3 líneas.')
 
 
-async def carril(tareas, por_tarea, total, turnos):
+def hecha(t):
+    """Lee la tabla «Estado» de TAREAS_API.md en el momento: las tareas marcadas «hecha» no se vuelven a correr."""
+    tabla = (JUEGO / 'docs/equipo/TAREAS_API.md').read_text(encoding='utf-8')
+    return re.search(rf'^\|\s*{t}\s*\|\s*hecha', tabla, re.M) is not None
+
+
+async def carril(tareas, por_tarea, total, turnos, marca=''):
     gastado = 0.0
     for t in tareas:
+        if hecha(t):
+            print(f'{marca}== {t} ya está hecha; la salto. ==', flush=True)
+            continue
         queda = total - gastado
         if queda < 0.5:
-            print(f'\n== Tope total del carril alcanzado (${gastado:.2f} de ${total}); paro antes de {t}. ==')
-            return
-        print(f'\n######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gastado:.2f} ########', flush=True)
-        gastado += await correr(prompt_tarea(t), min(por_tarea, queda), turnos)
-    print(f'\n== Carril terminado: ${gastado:.2f} gastados ==')
+            print(f'\n{marca}== Tope total del carril alcanzado (${gastado:.2f} de ${total}); paro antes de {t}. ==')
+            return gastado
+        print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gastado:.2f} ########', flush=True)
+        gastado += await correr(prompt_tarea(t), min(por_tarea, queda), turnos, marca)
+    print(f'\n{marca}== Carril terminado: ${gastado:.2f} gastados ==')
+    return gastado
+
+
+async def varios(letras, por_tarea, total, turnos):
+    """Varios carriles a la vez en un solo proceso (una sola clave); --total es el tope de cada carril."""
+    gastos = await asyncio.gather(*(carril(CARRILES[l], por_tarea, total, turnos, f'[{l}] ') for l in letras))
+    print(f'\n== Todos los carriles terminados: ${sum(gastos):.2f} gastados ==')
 
 
 def main():
@@ -117,7 +136,8 @@ def main():
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--prueba', action='store_true', help='tarea mínima para verificar el cobro (tope $0,50)')
     g.add_argument('--tarea', help='una tarea de docs/equipo/TAREAS_API.md, por ejemplo A1')
-    g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A, B, C o D)')
+    g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A a E)')
+    g.add_argument('--carriles', help='varios carriles a la vez con una sola clave, por ejemplo A,C,D,E')
     ap.add_argument('--modelo', choices=sorted(MODELOS), default='sonnet', help='sonnet (por defecto) u opus')
     ap.add_argument('--presupuesto', type=float, help='tope en USD por tarea (por defecto 6 con sonnet, 15 con opus)')
     ap.add_argument('--total', type=float, default=50.0, help='tope en USD de todo el carril (por defecto 50)')
@@ -131,6 +151,12 @@ def main():
         asyncio.run(correr(prompt, a.presupuesto or 0.5, 6))
     elif a.carril:
         asyncio.run(carril(CARRILES[a.carril], por_tarea, a.total, a.turnos))
+    elif a.carriles:
+        letras = [l.strip().upper() for l in a.carriles.split(',') if l.strip()]
+        malas = [l for l in letras if l not in CARRILES]
+        if malas:
+            sys.exit(f'Carriles desconocidos: {", ".join(malas)}')
+        asyncio.run(varios(letras, por_tarea, a.total, a.turnos))
     else:
         asyncio.run(correr(prompt_tarea(a.tarea.upper()), por_tarea, a.turnos))
 
