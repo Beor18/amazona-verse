@@ -230,6 +230,9 @@ AVE.module('aula', function (G) {
   const FICHAS = LEC.diario || [];
   const rango = g => String(g || '3-6').split('-').map(Number);
   const enGrado = g => { const [a, b] = rango(g), [x, y] = rango(aj.grado); return a <= y && (b || a) >= x; };
+  // Lo que ve el maestro: «Nivel 1» (antes 3.º–4.º) y «Nivel 2» (antes 5.º–6.º); los valores internos siguen siendo 3-4 / 5-6
+  const nivelDe = g => { const [a, b] = rango(g), x = a <= 4 ? 1 : 2, y = (b || a) <= 4 ? 1 : 2;
+    return x === y ? t({ es: 'Nivel ' + x, en: 'Level ' + x }) : t({ es: 'Niveles 1 y 2', en: 'Levels 1 and 2' }); };
   const verificada = f => f && f.verificacion === 'verificado';
   const publicada = f => verificada(f) && enGrado(f.grado);
   const ficha = id => FICHAS.find(f => f.id === id) || null;
@@ -378,6 +381,7 @@ AVE.module('aula', function (G) {
     const o = {};
     for (const k of Object.keys(p)) if (k[0] !== '_') o[k] = p[k];
     if (!o.estacion) o.estacion = aj.estacion || '';
+    if ('grado' in o) { o.nivel = nivelDe(o.grado); delete o.grado; }
     return o;
   }
   function aplanar(o) {
@@ -465,7 +469,7 @@ AVE.module('aula', function (G) {
     nuevo: { es: 'Nuevo estudiante en este equipo', en: 'New student on this device' }, nuevoSeguro: { es: 'Sí, empezar de cero', en: 'Yes, start fresh' },
     nuevoNota: { es: 'Borra la partida de este equipo (personaje, avance, cómic y criadero) para el siguiente estudiante. El reporte del aula se conserva.', en: 'Erases the game on this device (character, progress, comic and nursery) for the next student. The class report is kept.' },
     nuevoHecho: { es: 'Listo para el siguiente estudiante.', en: 'Ready for the next student.' },
-    grado: { es: 'Grado', en: 'Grade' }, predet: { es: 'Predeterminados de este dispositivo', en: 'Defaults for this device' },
+    grado: { es: 'Nivel', en: 'Level' }, predet: { es: 'Predeterminados de este dispositivo', en: 'Defaults for this device' },
     csv: { es: 'Descargar CSV', en: 'Download CSV' }, json: { es: 'Descargar JSON', en: 'Download JSON' }, copiar: { es: 'Copiar CSV', en: 'Copy CSV' },
     borrar: { es: 'Borrar progreso de este dispositivo', en: 'Erase progress on this device' }, borrarSeguro: { es: 'Sí, borrar todo', en: 'Yes, erase everything' },
     borrado: { es: 'Progreso borrado.', en: 'Progress erased.' }, preparando: { es: 'Preparando el archivo…', en: 'Preparing the file…' },
@@ -477,7 +481,7 @@ AVE.module('aula', function (G) {
     publicadas: { es: 'Fichas publicadas (verificadas)', en: 'Published cards (verified)' },
     noPublicadas: { es: 'No publicadas hasta verificar su fuente', en: 'Not published until their source is verified' },
     estandares: { es: 'Estándares', en: 'Standards' },
-    cols: { es: ['Fecha', 'Estación', 'Grado', 'Pasos', 'Perchas', 'Cadena', 'Predicción', 'Explicación', 'Preguntas', 'Objetivos', 'Min'], en: ['Date', 'Station', 'Grade', 'Steps', 'Perches', 'Chain', 'Prediction', 'Explanation', 'Questions', 'Objectives', 'Min'] },
+    cols: { es: ['Fecha', 'Estación', 'Nivel', 'Pasos', 'Perchas', 'Cadena', 'Predicción', 'Explicación', 'Preguntas', 'Objetivos', 'Min'], en: ['Date', 'Station', 'Level', 'Steps', 'Perches', 'Chain', 'Prediction', 'Explanation', 'Questions', 'Objectives', 'Min'] },
   };
   const m = k => t(MU[k]);
   const TABS = ['guia', 'progreso', 'reporte', 'fuentes'];
@@ -498,7 +502,7 @@ AVE.module('aula', function (G) {
     const fase = (k, f) => f ? `<details${k === 'antes' ? ' open' : ''}><summary>${esc(m(k))} · ${f.minutos} ${esc(m('min'))}</summary><ol>${(f.pasos || []).map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : '';
     const dif = g.diferenciacion ? `<details><summary>${esc(m('dif'))}</summary><dl>${Object.entries(g.diferenciacion).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>` : '';
     const obj = (LEC.objetivos || []).map(o => `<li><b>${esc(o.id)}</b> ${esc(t(o.enunciado))} <small>DEPR ${esc((o.depr_2022 || []).join(', '))} · NGSS ${esc((o.ngss || []).join(', '))}</small></li>`).join('');
-    const act = (MM.actividades_sin_pantalla || []).map(a => `<details><summary>${esc(a.titulo)} · ${esc(a.grados)} · ${a.minutos} ${esc(m('min'))}</summary>
+    const act = (MM.actividades_sin_pantalla || []).map(a => `<details><summary>${esc(a.titulo)} · ${esc(nivelDe(a.grados))} · ${a.minutos} ${esc(m('min'))}</summary>
       <p><b>${esc(m('materiales'))}:</b> ${esc((a.materiales || []).join(', '))}</p><ol>${(a.pasos || []).map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>`).join('');
     const R = MM.rubrica;
     const rub = R ? `<details><summary>${esc(m('rubrica'))}</summary><div class="maestro-scroll"><table><thead><tr><th></th>${Object.keys(R.escala).sort().reverse().map(k => `<th>${k} · ${esc(R.escala[k])}</th>`).join('')}</tr></thead>
@@ -516,7 +520,7 @@ AVE.module('aula', function (G) {
     const yn = v => (v === true ? t({ es: 'sí', en: 'yes' }) : v === false ? t({ es: 'no', en: 'no' }) : '');
     const filas = data.partidas.slice().reverse().map(p => {
       const pr = p.preguntas ? Object.entries(p.preguntas).filter(([, v]) => v).map(([k, v]) => `${k}:${v}`).join(' ') : '';
-      return `<tr><td>${esc(p.fecha)}</td><td>${esc(p.estacion || aj.estacion)}</td><td>${esc(p.grado)}</td><td>${(p.pasos_completados || []).length}/8</td>
+      return `<tr><td>${esc(p.fecha)}</td><td>${esc(p.estacion || aj.estacion)}</td><td>${esc(nivelDe(p.grado))}</td><td>${(p.pasos_completados || []).length}/8</td>
         <td>${p.perchas_observadas != null ? p.perchas_observadas + '/4' : ''}</td><td>${p.cadena_correcta_intento || ''}</td>
         <td>${yn(p.prediccion_coincidio)}</td><td>${p.explicacion_ciclo_intento || ''}</td><td>${esc(pr)}</td>
         <td>${esc((p.objetivos_logrados || []).join(' '))}</td><td>${p.minutos_mision != null ? p.minutos_mision : ''}</td></tr>`;
@@ -532,7 +536,7 @@ AVE.module('aula', function (G) {
       <select id="m-estacion"><option value="">${esc(m('sinEstacion'))}</option>${ests.map(e => `<option${e === aj.estacion ? ' selected' : ''}>${esc(e)}</option>`).join('')}</select>
       <p class="note">${esc(m('estacionNota'))}</p>
       <label for="m-grado">${esc(m('grado'))}</label>
-      <select id="m-grado"><option value="3-4"${aj.grado === '3-4' ? ' selected' : ''}>3.º–4.º</option><option value="5-6"${aj.grado === '5-6' ? ' selected' : ''}>5.º–6.º</option></select>
+      <select id="m-grado"><option value="3-4"${aj.grado === '3-4' ? ' selected' : ''}>${esc(t({ es: 'Nivel 1', en: 'Level 1' }))}</option><option value="5-6"${aj.grado === '5-6' ? ' selected' : ''}>${esc(t({ es: 'Nivel 2', en: 'Level 2' }))}</option></select>
       <span class="lbl">${esc(m('predet'))}</span>
       <div class="row maestro-chips">${chip('idioma-es', aj.idioma === 'es', 'ES')}${chip('idioma-en', aj.idioma === 'en', 'EN')}${chip('corto', !!aj.corto, u('corto'))}${vozDisponible() ? chip('voz', !!aj.voz, u('voz')) : ''}</div>
       <div class="row maestro-acciones"><button class="btn" type="button" id="m-csv" data-icon="save">${esc(m('csv'))}</button>
@@ -550,7 +554,7 @@ AVE.module('aula', function (G) {
   function htmlFuentes() {
     const pub = FICHAS.filter(verificada), no = FICHAS.filter(f => !verificada(f));
     const E = (LEC.meta && LEC.meta.fuentes_estandares) || {};
-    return `<h3>${esc(m('publicadas'))}</h3><ul class="maestro-fuentes">${pub.map(f => `<li><b>${esc(t(f.titulo))}</b> · ${esc(f.fuente)} <small>(${esc(f.grado)})</small><br><code>${esc(f.fuente_url || '')}</code></li>`).join('')}</ul>
+    return `<h3>${esc(m('publicadas'))}</h3><ul class="maestro-fuentes">${pub.map(f => `<li><b>${esc(t(f.titulo))}</b> · ${esc(f.fuente)} <small>(${esc(nivelDe(f.grado))})</small><br><code>${esc(f.fuente_url || '')}</code></li>`).join('')}</ul>
       <details><summary>${esc(m('noPublicadas'))} (${no.length})</summary><ul class="maestro-fuentes">${no.map(f => `<li><b>${esc(t(f.titulo))}</b> · ${esc(f.verificacion)}${f.nota_verificacion ? ' · ' + esc(f.nota_verificacion) : ''}</li>`).join('')}</ul></details>
       <h3>${esc(m('estandares'))}</h3><ul class="maestro-fuentes"><li>DEPR 2022 <code>${esc(E.depr_2022 || '')}</code></li><li>NGSS <code>${esc(E.ngss || '')}</code></li></ul>`;
   }
