@@ -230,7 +230,14 @@ AVE.module('renderer', function (G) {
     sun.position.copy(lsC).addScaledVector(sunDir, 160);
   }
 
-  function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); if (post.composer) post.resize(); }
+  // Tamaño del lienzo: con la ventana en 0×0 (panel oculto, iframe plegado del visor) se conserva el último válido; si
+  // nunca hubo uno, 1280×720. Así snapshot() (fotos del cómic) siempre tiene píxeles (QA-21).
+  const tam = { w: 1280, h: 720 };
+  function resize() {
+    if (innerWidth > 0 && innerHeight > 0) { tam.w = innerWidth; tam.h = innerHeight; }
+    renderer.setSize(tam.w, tam.h, false); camera.aspect = tam.w / tam.h; camera.updateProjectionMatrix();
+    if (post.composer) post.resize();
+  }
   addEventListener('resize', resize);
 
   // ---------- Post-proceso opcional (alto): bloom suave + gradación, con EffectComposer de r128 ----------
@@ -278,7 +285,7 @@ AVE.module('renderer', function (G) {
         });
         comp.addPass(grade);
         Object.assign(post, { composer: comp, bloom, grade });
-        post.resize = () => { comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(innerWidth, innerHeight); };
+        post.resize = () => { comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(tam.w, tam.h); };
         post.resize();
       });
     return post.cargando;
