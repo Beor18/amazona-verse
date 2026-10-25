@@ -161,10 +161,14 @@ AVE.module('comic', function (G) {
   $('c-panels').addEventListener('change', e => {
     const inp = e.target.closest('input[data-id]'); if (!inp) return;
     const v = inp.value.trim().slice(0, 120);
+    const malo = G.creador.textoSeguro(v);
+    if (malo) { G.ui.toast(malo, 3500); inp.value = S.comic.captions[inp.dataset.id] || (comicPanels().find(p => p.id === inp.dataset.id) || {}).text || ''; return; }
     if (v) S.comic.captions[inp.dataset.id] = v; else delete S.comic.captions[inp.dataset.id];
     refreshComic(); G.guardado.autosave();
   });
   for (const id of ['c-title', 'c-cover', 'c-layout']) $(id).addEventListener('change', () => {
+    const malo = G.creador.textoSeguro($('c-title').value);
+    if (malo) { G.ui.toast(malo, 3500); $('c-title').value = S.comic.title; }
     S.comic.title = $('c-title').value.trim().slice(0, 32) || C.tituloDefecto || '';
     S.comic.cover = $('c-cover').value; S.comic.layout = $('c-layout').value;
     refreshComic(); G.guardado.autosave();

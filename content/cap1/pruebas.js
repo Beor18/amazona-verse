@@ -18,6 +18,7 @@
     // Creador de personaje
     check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
     check('Nombre con símbolos raros se rechaza', saveCharacter({ name: '<b>x</b>', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
+    check('Nombre con números, correo o "me llamo" se rechaza (seguridad infantil)', ['Ana123', 'yo@correo', 'me llamo Ana'].every(n => saveCharacter({ name: n, preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null));
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && had('PlayerCharacterCreated'));
     await G.actores.refreshCompanion();
     check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
@@ -80,6 +81,9 @@
     S.comic.title = 'Prueba de cómic'; S.comic.cover = 'personaje'; CM.syncComicForm();
     check('Mover la viñeta 4 hacia arriba cambia el orden', CM.moveComicPanel(3, -1) && CM.orderedPanels()[2].id === 'final');
     check('No se puede mover fuera de rango', CM.moveComicPanel(0, -1) === false);
+    const ci = document.querySelector('#c-panels input[data-id]');
+    ci.value = 'Mi teléfono es 787 555 1234'; ci.dispatchEvent(new Event('change', { bubbles: true }));
+    check('El cómic no guarda números ni datos personales', !Object.values(S.comic.captions).some(v => /\d/.test(v)) && ci.value !== 'Mi teléfono es 787 555 1234');
     S.comic.captions.final = 'Mi frase editada';
     check('Texto editado aparece en la viñeta', CM.orderedPanels().some(p => p.text === 'Mi frase editada'));
     for (const lay of ['grid', 'strip']) {
@@ -471,7 +475,7 @@
   async function maestroTest(G, T) {
     const S = G.S, $ = G.util.$, AU = G.aula;
     const { check, result } = T.runner();
-    const aulaKeep = leerAula(AU.KEY);
+    const aulaKeep = leerAula(AU.KEY), keep = T.keepSave(), prevKeep = leerAula(G.guardado.KEY + '.prev');
     const espera = ms => new Promise(r => setTimeout(r, ms));
     const menu = $('pause');
     const claudeKeep = Object.getOwnPropertyDescriptor(window, 'claude');
@@ -485,9 +489,11 @@
       check('Sección Aula en la pausa: ES/EN, texto corto y voz', !!menu.querySelector('[data-aula-idioma="en"]') && !!menu.querySelector('[data-aula-op="corto"]') && !!menu.querySelector('[data-aula-op="voz"]'));
       const link = menu.querySelector('.maestro-link');
       check('Acceso discreto: enlace pequeño y tenue al pie de la pausa', link && link.offsetHeight > 0 && parseFloat(getComputedStyle(link).opacity) < 0.8 && parseFloat(getComputedStyle(link).fontSize) <= 13);
-      link.click();
       const form = menu.querySelector('.maestro-reto'), inp = $('maestro-resp');
-      check('Pide resolver una suma (código simple, sin cuenta)', !form.hidden && /\d+ \+ \d+/.test(form.textContent));
+      link.click();
+      check('Un clic no abre la puerta docente', form.hidden);
+      link.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); await espera(1350);
+      check('Mantener pulsado 1,2 s pide una multiplicación (código simple, sin cuenta)', !form.hidden && /\d+ × \d+/.test(form.textContent));
       inp.value = String(AU.reto() + 1); form.requestSubmit();
       check('Suma equivocada: no entra y propone otra', !AU.maestroAbierto() && !menu.querySelector('.maestro-err').hidden);
       inp.value = String(AU.reto()); form.requestSubmit(); await espera(60);
@@ -500,7 +506,7 @@
       check('Las URL de las fuentes solo aparecen en Modo Maestro', /https:\/\/www\.fws\.gov\//.test($('m-panel').textContent));
       $('m-tab-reporte').click();
       const est = $('m-estacion'); est.value = 'Estación 4'; est.dispatchEvent(new Event('change'));
-      check('Etiqueta de estación (no nombres)', AU.aj.estacion === 'Estación 4' && /nombre|name/.test($('m-panel').textContent));
+      check('Estación elegida de una lista (sin texto libre)', est.tagName === 'SELECT' && est.options.length >= 41 && AU.aj.estacion === 'Estación 4');
       let guardado = null;
       ponerClaude({ use: async n => (n === 'downloads' ? { save: async o => { guardado = o; return { status: 'saved' }; } } : null) });
       $('m-csv').click(); await espera(60);
@@ -508,6 +514,7 @@
       guardado = null; $('m-json').click(); await espera(60);
       let js = null; try { js = JSON.parse(guardado.data); } catch (e) { js = null; }
       check('JSON con las partidas y sin ids internos', js && js.partidas.length === 1 && !guardado.data.includes('_id') && /\.json$/.test(guardado.filename));
+      check('La privacidad del reporte dice la verdad (fuentes y motor externos, voz local)', js && js.privacidad.some(x => /Google Fonts/.test(x)) && !js.privacidad.some(x => /servicios de terceros|texto libre para el niño/i.test(x)));
       ponerClaude({ use: async () => ({ save: async () => { throw { code: 'declined', message: 'no' }; } }) });
       $('m-csv').click(); await espera(60);
       check('Si el docente cancela la descarga se avisa', /cancel/i.test($('m-estado').textContent), $('m-estado').textContent);
@@ -516,6 +523,9 @@
       check('Sin descargas: copia al portapapeles o deja el texto listo para copiar', /portapapeles|clipboard/.test($('m-estado').textContent) || (!$('m-manual').hidden && $('m-manual').value.includes('estacion')), $('m-estado').textContent);
       const csv = AU.reporteCSV();
       check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
+      const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
+      $('m-nuevo').click(); $('m-nuevo-si').click();
+      check('Nuevo estudiante: borra la partida y conserva el reporte', !S.profile.created && AU.partidas.length === partidasAntes && !leerAula(G.guardado.KEY + '.prev') && perfilKeep !== undefined);
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
       $('maestro').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
@@ -528,6 +538,7 @@
       AU.cerrarMaestro();
       try { if (menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
       ponerAula(AU.KEY, aulaKeep); AU.recargar();
+      ponerAula(G.guardado.KEY + '.prev', prevKeep); T.restoreSave(keep);
     }
     return result();
   }

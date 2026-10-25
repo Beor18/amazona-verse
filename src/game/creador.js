@@ -18,7 +18,17 @@ AVE.module('creador', function (G) {
     { id: 'azul', name: 'Pañuelo azul', color: '#3d8fb0' }, { id: 'morado', name: 'Pañuelo morado', color: '#7a4fb3' },
     { id: 'amarillo', name: 'Pañuelo amarillo', color: '#e8c32a' },
   ];
-  const NAME_OK = /^[\p{L}\p{N} '\-]{1,16}$/u;
+  // Nombre inventado: solo letras (sin números, @ ni frases como "me llamo"): seguridad infantil, sin datos personales
+  const NAME_OK = /^[\p{L} '\-]{1,16}$/u;
+  // Texto libre del niño (nombre, título y viñetas del cómic): rechaza números, contactos, enlaces y frases de datos personales.
+  // Devuelve el motivo o null si es seguro.
+  function textoSeguro(t) {
+    t = String(t || '');
+    if (/[0-9]/.test(t)) return 'Sin números: pueden ser un teléfono, una edad o una dirección.';
+    if (/@|https?:|www\.|\.(com|net|org|pr)\b/i.test(t)) return 'Sin correos ni enlaces.';
+    if (/\b(me llamo|mi nombre|my name|i live|vivo en|mi casa|tel[eé]fono|phone|whatsapp|instagram|tiktok)\b/i.test(t)) return 'No escribas datos tuyos: este cómic es de tu personaje.';
+    return null;
+  }
   const SLOT_LABEL = { head: 'Cabeza', eyes: 'Ojos', neck: 'Cuello', torso: 'Camisa', chest: 'Pecho', back: 'Espalda', wings: 'Alas', legs: 'Pantalón', feet: 'Calzado', hand: 'En la mano' };
   const LEGACY_SPECIES = { agilis: 1, albifrons: 1, amazonica: 1, festiva: 1, guildingii: 1, oratrix: 1, versicolor: 1 };
   const playerSprite = G.actores.sprite;
@@ -179,7 +189,7 @@ AVE.module('creador', function (G) {
   // Devuelve null si se guardó, o el texto del error
   function saveCharacter(draft) {
     const d = draft || { name: $('p-name').value.trim(), look: draftLook };
-    if (!NAME_OK.test(d.name)) return 'Escribe un nombre inventado de 1 a 16 letras o números.';
+    if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Escribe un nombre inventado de 1 a 16 letras, sin números. No uses tu nombre real.';
     if (d.preset && !PRESETS.some(o => o.id === d.preset)) return 'Opción no válida.';
     const look = d.look ? C3.normalizeLook(d.look) : profileLook(d);
     const firstTime = !S.profile.created;
@@ -216,5 +226,5 @@ AVE.module('creador', function (G) {
   }
   G.on('apply', () => { $('creator').hidden = true; }, 60);
 
-  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots };
+  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro };
 });

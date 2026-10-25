@@ -47,10 +47,11 @@ AVE.module('aula', function (G) {
   const UI = {
     aula: { es: 'Aula', en: 'Classroom' }, idioma: { es: 'Idioma', en: 'Language' },
     corto: { es: 'Texto corto', en: 'Short text' }, voz: { es: 'Leer en voz alta', en: 'Read aloud' },
-    sinVoz: { es: 'Voz no disponible', en: 'Voice not available' },
+    sinVoz: { es: 'Sin voz en este equipo', en: 'No on-device voice' },
     escuchar: { es: 'Escuchar', en: 'Listen' }, seguir: { es: 'Seguir', en: 'Continue' },
     docentes: { es: 'Docentes', en: 'Teachers' }, entrar: { es: 'Entrar', en: 'Enter' }, cancelar: { es: 'Cancelar', en: 'Cancel' },
     reto: { es: 'Para docentes: ¿cuánto es', en: 'For teachers: what is' }, retoMal: { es: 'No es correcto. Prueba esta otra.', en: 'Not quite. Try this one.' },
+    mantener: { es: 'Mantén pulsado', en: 'Press and hold' },
     maestro: { es: 'Modo Maestro', en: 'Teacher Mode' }, cerrar: { es: 'Cerrar', en: 'Close' },
     guia: { es: 'Guía de clase', en: 'Lesson guide' }, progreso: { es: 'Progreso', en: 'Progress' },
     reporte: { es: 'Reporte', en: 'Report' }, fuentes: { es: 'Fuentes', en: 'Sources' },
@@ -71,20 +72,22 @@ AVE.module('aula', function (G) {
   }
 
   // ---------- Lectura en voz alta (speechSynthesis; si falla, el juego sigue igual) ----------
+  // Solo voces locales (localService): una voz en línea mandaría el texto a un servidor de terceros (seguridad infantil).
   const synth = (() => { try { return window.speechSynthesis || null; } catch (e) { return null; } })();
-  const vozDisponible = () => !!(synth && window.SpeechSynthesisUtterance);
-  let voces = [];
-  function cargarVoces() { try { voces = synth.getVoices() || []; } catch (e) { voces = []; } }
-  if (vozDisponible()) {
+  const hayMotorVoz = () => !!(synth && window.SpeechSynthesisUtterance);
+  let voces = [], montado = false;
+  function cargarVoces() { try { voces = (synth.getVoices() || []).filter(v => v.localService); } catch (e) { voces = []; } if (montado) syncPausa(); }
+  const vozDisponible = () => hayMotorVoz() && !!vozPara(aj.idioma);
+  if (hayMotorVoz()) {
     cargarVoces();
     try { if (synth.addEventListener) synth.addEventListener('voiceschanged', cargarVoces); else synth.onvoiceschanged = cargarVoces; } catch (e) { /* sin evento */ }
   }
-  // Variante de Puerto Rico primero; se prefieren voces locales (sin red)
+  // Variante de Puerto Rico primero; solo voces del dispositivo
   const PREF = { es: ['es-PR', 'es-US', 'es-419', 'es-MX', 'es'], en: ['en-US', 'en'] };
   function vozPara(lang) {
     for (const p of PREF[lang] || [lang]) {
       const m = voces.filter(v => String(v.lang || '').replace('_', '-').toLowerCase().startsWith(p.toLowerCase()));
-      if (m.length) return m.find(v => v.localService) || m[0];
+      if (m.length) return m[0];
     }
     return null;
   }
@@ -102,22 +105,25 @@ AVE.module('aula', function (G) {
     if (!texto) return false;
     lang = lang === 'en' || lang === 'es' ? lang : aj.idioma;
     vozLog.push({ lang, texto: String(texto).slice(0, 80) }); if (vozLog.length > 20) vozLog.shift();
-    if (!vozDisponible()) return false;
+    const v = hayMotorVoz() ? vozPara(lang) : null;
+    if (!v) return false; // sin voz local no se lee (nunca una voz en línea)
     try {
       synth.cancel();
-      const v = vozPara(lang);
+      let base = 0;
       for (const tr of trozos(texto)) {
-        const ut = new SpeechSynthesisUtterance(tr);
-        ut.lang = v ? v.lang : lang === 'en' ? 'en-US' : 'es-US';
-        if (v) ut.voice = v;
-        ut.rate = 0.9;
+        const ut = new SpeechSynthesisUtterance(tr), off = base;
+        ut.lang = v.lang; ut.voice = v; ut.rate = 0.9;
         ut.onerror = () => {};
+        // Para que el pico siga la voz (rol de movimiento): índice de la letra que se está diciendo
+        ut.onboundary = e => G.emit('voz', { charIndex: off + (e.charIndex || 0), texto: String(texto) });
+        ut.onend = () => G.emit('voz', { fin: true, texto: String(texto) });
         synth.speak(ut);
+        base += tr.length + 1;
       }
       return true;
     } catch (e) { return false; }
   }
-  function callar() { try { if (vozDisponible()) synth.cancel(); } catch (e) { /* nada que callar */ } }
+  function callar() { try { if (hayMotorVoz()) synth.cancel(); } catch (e) { /* nada que callar */ } }
   // Botones "Escuchar" de cualquier tarjeta: <button data-leer="texto" data-lang="es">
   document.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-leer]');
@@ -168,7 +174,16 @@ AVE.module('aula', function (G) {
       if (b.dataset.aulaOp) setAjuste(b.dataset.aulaOp, !aj[b.dataset.aulaOp]);
     });
     const link = pie.querySelector('.maestro-link'), form = pie.querySelector('form');
-    link.addEventListener('click', () => { nuevoReto(); link.hidden = true; form.hidden = false; form.querySelector('input').focus(); });
+    // Puerta docente: mantener pulsado 1,2 s (dedo, ratón o Enter/Espacio) y resolver una multiplicación. No es contraseña:
+    // solo evita que un niño entre por accidente o por curiosidad.
+    let hold = 0;
+    const abrirReto = () => { hold = 0; link.classList.remove('manteniendo'); nuevoReto(); link.hidden = true; form.hidden = false; form.querySelector('input').focus(); };
+    const empezar = e => { if (e.type === 'keydown' && (e.repeat || (e.key !== 'Enter' && e.key !== ' '))) return; if (e.type === 'keydown') e.preventDefault(); clearTimeout(hold); link.classList.add('manteniendo'); hold = setTimeout(abrirReto, HOLD_MS); };
+    const soltar = () => { clearTimeout(hold); hold = 0; link.classList.remove('manteniendo'); };
+    link.addEventListener('pointerdown', empezar); link.addEventListener('keydown', empezar);
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel', 'keyup', 'blur']) link.addEventListener(ev, soltar);
+    link.addEventListener('click', e => e.preventDefault());
+    link.addEventListener('contextmenu', e => e.preventDefault());
     form.querySelector('[data-cancelar]').addEventListener('click', cerrarReto);
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -178,13 +193,15 @@ AVE.module('aula', function (G) {
       nuevoReto(); inp.value = ''; inp.focus();
     });
     menu.addEventListener('toggle', e => { if (e.newState !== 'open') cerrarReto(); });
+    montado = true;
     syncPausa();
   }
+  const HOLD_MS = 1200;
   function nuevoReto() {
-    const a = 12 + Math.floor(Math.random() * 37), b = 3 + Math.floor(Math.random() * 7);
-    retoSuma = a + b;
+    const a = 13 + Math.floor(Math.random() * 7), b = 6 + Math.floor(Math.random() * 4); // 13–19 × 6–9
+    retoSuma = a * b;
     const lbl = menu && menu.querySelector('.maestro-reto label');
-    if (lbl) lbl.innerHTML = `${esc(u('reto'))} <b>${a} + ${b}</b>?`;
+    if (lbl) lbl.innerHTML = `${esc(u('reto'))} <b>${a} × ${b}</b>?`;
   }
   function cerrarReto() {
     if (!menu) return;
@@ -204,6 +221,7 @@ AVE.module('aula', function (G) {
       b.setAttribute('aria-pressed', String(!!aj[k] && !off));
     }
     set('.maestro-link', u('docentes'));
+    const ml = menu.querySelector('.maestro-link'); if (ml) ml.title = u('mantener');
     set('.maestro-reto [type=submit]', u('entrar')); set('.maestro-reto [data-cancelar]', u('cancelar'));
     if (panel && !panel.hidden) pintarMaestro();
   }
@@ -377,7 +395,7 @@ AVE.module('aula', function (G) {
     const R = LEC.modo_maestro && LEC.modo_maestro.reporte_progreso;
     return JSON.stringify({
       juego: 'Amazona Verse', capitulo: LEC.meta && LEC.meta.capitulo, leccion: LEC.meta && LEC.meta.titulo, version_leccion: LEC.meta && LEC.meta.version,
-      generado: hoy(), estacion: aj.estacion || '', privacidad: R ? R.principios : [],
+      generado: hoy(), estacion: aj.estacion || '', privacidad: t(PRIVACIDAD).concat(R && R.cumplimiento ? ['Pendiente: ' + R.cumplimiento] : []),
       nota: 'objetivos_logrados = evidencia del juego. O5 y O6 se completan en clase con la rúbrica (R5) y el boleto de salida.',
       partidas: data.partidas.map(exportable),
     }, null, 2);
@@ -402,7 +420,32 @@ AVE.module('aula', function (G) {
     }
     return (await copiar(contenido)) ? 'copiado' : 'manual';
   }
+  // Equipos compartidos: borra la partida (y sus copias .prev/.unreadable, que guardan el nombre inventado) sin tocar el
+  // reporte del aula. Los demás módulos (criadero) borran lo suyo con el gancho 'nuevoEstudiante'.
+  function nuevoEstudiante() {
+    const K = G.guardado.KEY;
+    for (const k of [K, K + '.prev', K + '.unreadable']) { try { localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ } }
+    G.emit('nuevoEstudiante');
+    G.guardado.reset(true);
+    try { localStorage.removeItem(K + '.prev'); } catch (e) { /* sin almacenamiento */ }
+  }
   function borrarProgreso() { data.partidas = []; persistir(); const s = st(); s.registro = null; G.guardado.autosave(); }
+
+  // Declaración de privacidad del reporte y del Modo Maestro: solo lo que es cierto hoy (revisión de seguridad infantil)
+  const PRIVACIDAD = {
+    es: ['Sin cuentas, correos, fotos, audio ni ubicación. El reporte no lleva nombres ni identificadores.',
+      'El juego no envía datos del estudiante por la red: el progreso queda solo en este dispositivo.',
+      'El navegador descarga el motor 3D (Three.js, desde cdnjs y jsdelivr) y las fuentes (Google Fonts); a esos servidores no se les manda ningún dato del estudiante.',
+      'El nombre inventado y los textos del cómic los escribe el niño (sin números, correos ni enlaces) y quedan en el dispositivo; no van en el reporte.',
+      'La lectura en voz alta usa solo voces del dispositivo.',
+      'El maestro decide qué hacer con el archivo descargado; el juego no lo envía.'],
+    en: ['No accounts, emails, photos, audio or location. The report has no names or identifiers.',
+      'The game sends no student data over the network: progress stays on this device only.',
+      'The browser downloads the 3D engine (Three.js, from cdnjs and jsdelivr) and the fonts (Google Fonts); no student data is sent to those servers.',
+      'The made-up name and comic texts are typed by the child (no numbers, emails or links) and stay on the device; they are not in the report.',
+      'Read-aloud uses on-device voices only.',
+      'The teacher decides what to do with the downloaded file; the game does not send it.'],
+  };
 
   // ---------- Modo Maestro ----------
   const MU = {
@@ -414,7 +457,11 @@ AVE.module('aula', function (G) {
     soloEs: { es: '', en: 'The detailed guide is in Spanish.' },
     sinPartidas: { es: 'Todavía no hay partidas en este dispositivo.', en: 'No sessions on this device yet.' },
     soloDisp: { es: 'Solo lo guardado en este dispositivo. No se envía nada por la red.', en: 'Only what is stored on this device. Nothing is sent over the network.' },
-    estacion: { es: 'Etiqueta de estación', en: 'Station label' }, estacionNota: { es: 'Por ejemplo «Estación 4». Nunca el nombre de un estudiante.', en: 'For example "Station 4". Never a student\'s name.' },
+    estacion: { es: 'Estación', en: 'Station' }, estacionNota: { es: 'Solo un número de estación: el reporte nunca lleva nombres de estudiantes.', en: 'Only a station number: the report never includes student names.' },
+    sinEstacion: { es: '(sin estación)', en: '(no station)' },
+    nuevo: { es: 'Nuevo estudiante en este equipo', en: 'New student on this device' }, nuevoSeguro: { es: 'Sí, empezar de cero', en: 'Yes, start fresh' },
+    nuevoNota: { es: 'Borra la partida de este equipo (personaje, avance, cómic y criadero) para el siguiente estudiante. El reporte del aula se conserva.', en: 'Erases the game on this device (character, progress, comic and nursery) for the next student. The class report is kept.' },
+    nuevoHecho: { es: 'Listo para el siguiente estudiante.', en: 'Ready for the next student.' },
     grado: { es: 'Grado', en: 'Grade' }, predet: { es: 'Predeterminados de este dispositivo', en: 'Defaults for this device' },
     csv: { es: 'Descargar CSV', en: 'Download CSV' }, json: { es: 'Descargar JSON', en: 'Download JSON' }, copiar: { es: 'Copiar CSV', en: 'Copy CSV' },
     borrar: { es: 'Borrar progreso de este dispositivo', en: 'Erase progress on this device' }, borrarSeguro: { es: 'Sí, borrar todo', en: 'Yes, erase everything' },
@@ -476,8 +523,10 @@ AVE.module('aula', function (G) {
   function htmlReporte() {
     const R = LEC.modo_maestro && LEC.modo_maestro.reporte_progreso;
     const chip = (k, on, txt) => `<button class="chip" type="button" data-m-op="${k}" aria-pressed="${on}">${esc(txt)}</button>`;
+    const ests = Array.from({ length: 40 }, (_, i) => `${t({ es: 'Estación', en: 'Station' })} ${i + 1}`);
+    if (aj.estacion && !ests.includes(aj.estacion)) ests.unshift(aj.estacion);
     return `<label for="m-estacion">${esc(m('estacion'))}</label>
-      <input id="m-estacion" type="text" maxlength="24" autocomplete="off" value="${esc(aj.estacion)}">
+      <select id="m-estacion"><option value="">${esc(m('sinEstacion'))}</option>${ests.map(e => `<option${e === aj.estacion ? ' selected' : ''}>${esc(e)}</option>`).join('')}</select>
       <p class="note">${esc(m('estacionNota'))}</p>
       <label for="m-grado">${esc(m('grado'))}</label>
       <select id="m-grado"><option value="3-4"${aj.grado === '3-4' ? ' selected' : ''}>3.º–4.º</option><option value="5-6"${aj.grado === '5-6' ? ' selected' : ''}>5.º–6.º</option></select>
@@ -488,9 +537,12 @@ AVE.module('aula', function (G) {
         <button class="btn ghost" type="button" id="m-copiar">${esc(m('copiar'))}</button></div>
       <p class="maestro-estado" id="m-estado" role="status" aria-live="polite"></p>
       <textarea id="m-manual" readonly hidden rows="5" aria-label="CSV"></textarea>
+      <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-nuevo" data-icon="reset">${esc(m('nuevo'))}</button>
+        <button class="btn danger sm" type="button" id="m-nuevo-si" hidden>${esc(m('nuevoSeguro'))}</button></div>
+      <p class="note">${esc(m('nuevoNota'))}</p>
       <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-borrar" data-icon="reset">${esc(m('borrar'))}</button>
         <button class="btn danger sm" type="button" id="m-borrar-si" hidden>${esc(m('borrarSeguro'))}</button></div>
-      ${R ? `<details><summary>${esc(m('privacidad'))}</summary>${lista(R.principios)}<p class="note">${esc(R.cumplimiento)}</p></details>` : ''}`;
+      <details><summary>${esc(m('privacidad'))}</summary>${lista(t(PRIVACIDAD))}${R && R.cumplimiento ? `<p class="note">${esc(R.cumplimiento)}</p>` : ''}</details>`;
   }
   function htmlFuentes() {
     const pub = FICHAS.filter(verificada), no = FICHAS.filter(f => !verificada(f));
@@ -517,7 +569,7 @@ AVE.module('aula', function (G) {
   }
   function enlazarReporte(box) {
     const est = box.querySelector('#m-estacion');
-    est.addEventListener('change', () => setAjuste('estacion', est.value.replace(/[<>"=]/g, '').trim().slice(0, 24)));
+    est.addEventListener('change', () => setAjuste('estacion', est.value.slice(0, 24)));
     box.querySelector('#m-grado').addEventListener('change', e => setAjuste('grado', e.target.value === '5-6' ? '5-6' : '3-4'));
     for (const b of box.querySelectorAll('[data-m-op]')) b.onclick = () => {
       const k = b.dataset.mOp;
@@ -529,9 +581,12 @@ AVE.module('aula', function (G) {
       const ta = box.querySelector('#m-manual');
       if (ta) { ta.hidden = r !== 'manual'; if (r === 'manual') { ta.value = contenido; ta.focus(); ta.select(); } }
     };
-    box.querySelector('#m-csv').onclick = async () => { if (est.value.trim() !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteCSV(); fin(await descargar(nombreArchivo('csv'), c), c); };
-    box.querySelector('#m-json').onclick = async () => { if (est.value.trim() !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteJSON(); fin(await descargar(nombreArchivo('json'), c), c); };
+    box.querySelector('#m-csv').onclick = async () => { if (est.value !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteCSV(); fin(await descargar(nombreArchivo('csv'), c), c); };
+    box.querySelector('#m-json').onclick = async () => { if (est.value !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteJSON(); fin(await descargar(nombreArchivo('json'), c), c); };
     box.querySelector('#m-copiar').onclick = async () => { const c = reporteCSV(); fin((await copiar(c)) ? 'copiado' : 'manual', c); if (box.querySelector('#m-estado').textContent === m('copiado')) estado(t({ es: 'Reporte copiado al portapapeles.', en: 'Report copied to the clipboard.' })); };
+    const nb = box.querySelector('#m-nuevo'), nsi = box.querySelector('#m-nuevo-si');
+    nb.onclick = () => { nsi.hidden = false; nsi.focus(); };
+    nsi.onclick = () => { nuevoEstudiante(); nsi.hidden = true; estado(m('nuevoHecho')); };
     const bb = box.querySelector('#m-borrar'), si = box.querySelector('#m-borrar-si');
     bb.onclick = () => { si.hidden = false; si.focus(); };
     si.onclick = () => { borrarProgreso(); si.hidden = true; estado(m('borrado')); };
@@ -563,7 +618,7 @@ AVE.module('aula', function (G) {
     vozDisponible, leer, callar, auto, btnLeer, vozLog,
     ficha, fichas: fichasPublicadas, verificada, publicada, desbloquear, tieneFicha,
     pregunta, preguntaPublicable, hacerPregunta, serie, enCurso: () => enCurso, mezclar,
-    partida, registrar, reporteCSV, reporteJSON, nombreArchivo, descargar, copiar, borrarProgreso,
+    partida, registrar, reporteCSV, reporteJSON, nombreArchivo, descargar, copiar, borrarProgreso, nuevoEstudiante, PRIVACIDAD,
     abrirMaestro, cerrarMaestro, maestroAbierto, nuevoReto, reto: () => retoSuma, pestana, pestanas: () => TABS.concat(extras.map(x => x.id)),
     get partidas() { return data.partidas; }, recargar() { data = cargar(); Object.assign(aj, data.ajustes); data.ajustes = aj; syncPausa(); },
   };

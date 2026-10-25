@@ -70,7 +70,10 @@
   font: 400 var(--fs-xs)/1 var(--font-body); color: var(--c-text-muted); background: none; border: 0; border-radius: var(--r-pill);
   opacity: 0.55; cursor: pointer; --icon-size: 14px;
 }
-.maestro-link:hover, .maestro-link:focus-visible { opacity: 1; }
+.maestro-link:hover, .maestro-link:focus-visible, .maestro-link.manteniendo { opacity: 1; }
+.maestro-link { position: relative; overflow: hidden; touch-action: none; -webkit-touch-callout: none; }
+.maestro-link.manteniendo::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 8px; height: 3px; border-radius: 2px; background: var(--c-primary); transform-origin: left; animation: maestro-hold 1.2s linear forwards; }
+@keyframes maestro-hold { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .maestro-reto { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--c-text); }
 .maestro-reto input { width: 4.5em; min-height: var(--tap-sm); padding: 0 var(--sp-2); font: 700 var(--fs-lg)/1 var(--font-display); text-align: center; border-radius: var(--r-sm); border: 2px solid var(--c-line-strong); background: #0f2219; color: var(--c-text); }
 .maestro-err { flex-basis: 100%; margin: 0; text-align: center; color: #ffc9bf; }
