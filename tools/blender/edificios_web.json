@@ -1,0 +1,405 @@
+{
+ "bohio_redondo": {
+  "src": "savage_hut_roundthatched",
+  "desc": "Bohío redondo con techo de paja",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "bohio_puntiagudo": {
+  "src": "savage_hut_roundpointed",
+  "desc": "Bohío de techo cónico alto",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "caney_largo": {
+  "src": "savage_hall_long",
+  "desc": "Caney largo de paja y madera",
+  "scale": 2.16,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "casa_paja_a": {
+  "src": "savage_bldga",
+  "desc": "Casa de madera con techo de paja",
+  "scale": 0.736,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "casa_paja_b": {
+  "src": "savage_bldgb",
+  "desc": "Casa pequeña de madera y lona",
+  "scale": 2.16,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "casa_plataforma": {
+  "src": "savage_hutwithdeck",
+  "desc": "Casa sobre plataforma con terraza",
+  "scale": 1.28,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "torre_vigia": {
+  "src": "savage_towera",
+  "desc": "Torre de vigía de madera",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "mirador_escalonado": {
+  "src": "savage_tieredlookout",
+  "desc": "Mirador de madera escalonado",
+  "scale": 0.752,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "puente_madera": {
+  "src": "savage_bridge",
+  "desc": "Puente de madera entre dos plataformas",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "empalizada": {
+  "src": "savage_wall_pikessm",
+  "desc": "Empalizada de troncos",
+  "logfit": [
+   "pikes"
+  ],
+  "drop": [
+   "lashing"
+  ],
+  "budget": 1500,
+  "maxmats": 2,
+  "logshare": 0.95
+ },
+ "muelle_troncos": {
+  "src": "savage_wall_pikessm",
+  "desc": "Muelle/balsa de troncos (empalizada acostada, como en la escena)",
+  "lay_flat": true,
+  "logfit": [
+   "pikes"
+  ],
+  "drop": [
+   "lashing"
+  ],
+  "budget": 1500,
+  "maxmats": 2,
+  "logshare": 0.95
+ },
+ "toldo_pequeno": {
+  "src": "savage_campb",
+  "desc": "Toldo pequeño de lona",
+  "logfit": [
+   "pikes"
+  ],
+  "budget": 1500,
+  "maxmats": 2
+ },
+ "canoa": {
+  "src": "canoa",
+  "desc": "Canoa (modelo propio del archivo)",
+  "budget": 1500,
+  "maxmats": 1
+ },
+ "ruina_torre": {
+  "src": "ancient_towera",
+  "desc": "Torre de ruina de piedra"
+ },
+ "ruina_mirador": {
+  "src": "ancient_lookout",
+  "desc": "Mirador de piedra en ruinas"
+ },
+ "ruina_altar": {
+  "src": "ancient_altar",
+  "desc": "Altar de piedra",
+  "budget": 1500,
+  "maxmats": 2
+ },
+ "ruina_portal": {
+  "src": "ancient_gateb",
+  "desc": "Portal de templo"
+ },
+ "ruina_pilar": {
+  "src": "ancient_pillarc",
+  "desc": "Pilar de piedra",
+  "budget": 1500,
+  "maxmats": 2
+ },
+ "templo_mediano": {
+  "src": "ancient_mediume",
+  "desc": "Templo mediano en ruinas",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxmats": 3
+ },
+ "templo_grande": {
+  "src": "ancient_largeb",
+  "desc": "Templo grande en ruinas",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxmats": 3
+ },
+ "cercado_redondo": {
+  "src": "savage_hall_round",
+  "desc": "Cercado redondo de troncos (plaza/batey)",
+  "scale": 2.16,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "bloque_piedra": {
+  "src": "losa_piso",
+  "desc": "Bloque de piedra",
+  "budget": 1500,
+  "maxmats": 1
+ },
+ "losa_piedra": {
+  "src": "losa_piso_v3",
+  "desc": "Losa de piedra",
+  "budget": 1500,
+  "maxmats": 1
+ },
+ "plataforma_piedra": {
+  "src": "losa_piso_v2",
+  "desc": "Plataforma de piedra",
+  "budget": 1500,
+  "maxmats": 1
+ },
+ "monumento_a": {
+  "src": "savage_monumenta",
+  "desc": "Monumento de paja y empalizada A",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_b": {
+  "src": "savage_monumentb",
+  "desc": "Monumento B",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_c": {
+  "src": "savage_monumentc",
+  "desc": "Monumento C",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_d": {
+  "src": "savage_monumentd",
+  "desc": "Monumento D",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_e": {
+  "src": "savage_monumente",
+  "desc": "Monumento E",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_f": {
+  "src": "savage_monumentf",
+  "desc": "Monumento F",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "monumento_g": {
+  "src": "savage_monumentg",
+  "desc": "Monumento G",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "portal_madera_a": {
+  "src": "savage_entrancea",
+  "desc": "Portal de madera A",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "portal_madera_b": {
+  "src": "savage_entranceb",
+  "desc": "Portal de madera B",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "portal_madera_c": {
+  "src": "savage_entrancec",
+  "desc": "Portal de madera C",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "portal_puas": {
+  "src": "savage_entrance_spiked",
+  "desc": "Portal con púas",
+  "logfit": [
+   "pikes"
+  ],
+  "scale": 0.5698
+ },
+ "muralla_atalaya_a": {
+  "src": "savage_wall_watchtowera",
+  "desc": "Muralla con atalaya A",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "muralla_atalaya_b": {
+  "src": "savage_wall_watchtowerb",
+  "desc": "Muralla con atalaya B",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "muro_roca": {
+  "src": "savage_wall_rock",
+  "desc": "Muro de troncos y roca",
+  "budget": 1500,
+  "maxmats": 2,
+  "logshare": 0.7,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "torre_vigia_b": {
+  "src": "savage_towerb",
+  "desc": "Torre de vigía B",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "corral": {
+  "src": "savage_pen",
+  "desc": "Corral con cobertizo",
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "campamento_a": {
+  "src": "savage_campa",
+  "desc": "Campamento A",
+  "budget": 1500,
+  "maxmats": 2,
+  "scale": 2.2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "campamento_c": {
+  "src": "savage_campc",
+  "desc": "Campamento C",
+  "budget": 1500,
+  "maxmats": 2,
+  "scale": 0.65,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "campamento_f": {
+  "src": "savage_campf",
+  "desc": "Campamento F",
+  "budget": 1500,
+  "maxmats": 2,
+  "scale": 1.1,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "tienda_pequena": {
+  "src": "savage_tentsm",
+  "desc": "Tienda pequeña",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ],
+  "scale": 1.3
+ },
+ "carpa_a": {
+  "src": "savage_carpa_suelta_a",
+  "desc": "Carpa suelta A",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_b": {
+  "src": "savage_carpa_suelta_b",
+  "desc": "Carpa suelta B",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_c": {
+  "src": "savage_carpa_suelta_c",
+  "desc": "Carpa suelta C",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_d": {
+  "src": "savage_carpa_suelta_d",
+  "desc": "Carpa suelta D",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_e": {
+  "src": "savage_carpa_suelta_e",
+  "desc": "Carpa suelta E",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_f": {
+  "src": "savage_carpa_suelta_f",
+  "desc": "Carpa suelta F",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ },
+ "carpa_g": {
+  "src": "savage_carpa_suelta_g",
+  "desc": "Carpa suelta G",
+  "budget": 1500,
+  "maxmats": 2,
+  "logfit": [
+   "pikes"
+  ]
+ }
+}

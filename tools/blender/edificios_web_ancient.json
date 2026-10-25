@@ -1,0 +1,137 @@
+{
+ "complejo_ruinas": {
+  "src": "ancient_complejo_group001",
+  "desc": "Complejo de ruinas (torres y templos unidos)",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840,
+  "boxfit": true
+ },
+ "templo_grande_a": {
+  "src": "ancient_largea",
+  "desc": "Templo grande A",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840,
+  "boxfit": true
+ },
+ "templo_grande_d": {
+  "src": "ancient_larged",
+  "desc": "Templo grande D",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840,
+  "boxfit": true
+ },
+ "templo_grande_e": {
+  "src": "ancient_largee",
+  "desc": "Templo grande E",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840
+ },
+ "templo_grande_f": {
+  "src": "ancient_largef",
+  "desc": "Templo grande F",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840,
+  "boxfit": true
+ },
+ "templo_mediano_f": {
+  "src": "ancient_mediumf",
+  "desc": "Templo mediano F",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840
+ },
+ "templo_mediano_g": {
+  "src": "ancient_mediumg",
+  "desc": "Templo mediano G",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840
+ },
+ "templo_mediano_h": {
+  "src": "ancient_mediumh",
+  "desc": "Templo mediano H",
+  "drop": [
+   "damage",
+   "deco",
+   "beams",
+   "sculpt",
+   "bricks"
+  ],
+  "maxverts": 7840
+ },
+ "muro_templo": {
+  "src": "ancient_mediumj_wallm",
+  "desc": "Muro de templo",
+  "budget": 1500,
+  "maxmats": 2,
+  "maxverts": 2400
+ },
+ "ruina_torre_b": {
+  "src": "ancient_towerb",
+  "desc": "Torre de piedra B",
+  "budget": 1500,
+  "maxmats": 2,
+  "maxverts": 2400
+ },
+ "ruina_torre_c": {
+  "src": "ancient_towerc",
+  "desc": "Torre de piedra C",
+  "budget": 1500,
+  "maxmats": 2,
+  "maxverts": 2400
+ },
+ "ruina_torre_e": {
+  "src": "ancient_towere",
+  "desc": "Torre de piedra E",
+  "budget": 1500,
+  "maxmats": 2,
+  "maxverts": 2400
+ },
+ "ruina_torre_f": {
+  "src": "ancient_towerf",
+  "desc": "Torre de piedra F (baja)",
+  "budget": 1500,
+  "maxmats": 2,
+  "maxverts": 2400
+ }
+}
