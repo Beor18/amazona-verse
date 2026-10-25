@@ -98,6 +98,14 @@ def _cluster(P, dist):
         c += 1
     return lab
 
+ZONAS_FIJAS = [   # (id, x, z, nombre): sacadas una vez con k-medias (radio <= 65 m) sobre las 376 instancias
+    ('kelvin_ruinas_yunque', -4.0, -130.8, 'Ruinas de Kelvin · El Yunque'), ('kelvin_aldea_rio_este', 112.2, 96.9, 'Aldea de Kelvin · el río del este'),
+    ('kelvin_aldea_rio_oeste', -134.4, 27.4, 'Aldea de Kelvin · el río del oeste'), ('kelvin_aldea_lomas', -87.2, 90.9, 'Aldea de Kelvin · las Lomas del Oeste'),
+    ('kelvin_aldea_rio_este_2', 135.9, 12.6, 'Aldea de Kelvin · el río del este'), ('kelvin_aldea_mina', 78.1, -105.6, 'Aldea de Kelvin · La Mina'),
+    ('kelvin_aldea_meandros', -14.3, 16.8, 'Aldea de Kelvin · los meandros'), ('kelvin_ruinas_yunque_2', -74.1, -131.9, 'Ruinas de Kelvin · El Yunque'),
+    ('kelvin_aldea_colina', -5.3, 141.2, 'Aldea de Kelvin · la Colina'), ('kelvin_aldea_mina_2', 96.2, -42.9, 'Aldea de Kelvin · La Mina'),
+    ('kelvin_aldea_rio_este_3', 37.9, 52.3, 'Aldea de Kelvin · el río del este'), ('kelvin_aldea_rio_oeste_2', -134.0, -40.5, 'Aldea de Kelvin · el río del oeste'),
+    ('kelvin_aldea_yunque', -21.0, -70.3, 'Aldea de Kelvin · El Yunque'), ('kelvin_aldea_meandros_2', -74.3, -68.2, 'Aldea de Kelvin · los meandros')]
 RADIO_ZONA = 65.0   # streaming: zonas compactas (radio <= ~80 m) para que la carga sea granular
 
 def _zonas(P, rmax):
@@ -208,20 +216,16 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
                 e['espera'] = 'apoyo pendiente: %s' % e['_sop']['asset']
     for e in out: e.pop('_sop', None)
     # zonas por cercanía (para la carga por zonas)
-    P = np.array([[e['huella']['x'], -e['huella']['z']] for e in out])
-    lab = _zonas(P, RADIO_ZONA)
+    # zonas fijas (estables entre lotes de modelos: streaming y gameplay usan sus ids); centro en coordenadas del juego
+    C = np.array([[c[1], c[2]] for c in ZONAS_FIJAS])
     zonas = {}
-    for e, l in zip(out, lab): zonas.setdefault(int(l), []).append(e)
+    for e in out:
+        j = int(np.argmin(np.hypot(C[:, 0] - e['huella']['x'], C[:, 1] - e['huella']['z']))); zonas.setdefault(j, []).append(e)
     Z = []
-    for l, lst in sorted(zonas.items(), key=lambda kv: -len(kv[1])):
-        cx = float(np.mean([e['huella']['x'] for e in lst])); cz = float(np.mean([e['huella']['z'] for e in lst]))
+    for j, lst in sorted(zonas.items()):
+        zid, cx, cz, nm = ZONAS_FIJAS[j]
         r = float(max(math.hypot(e['huella']['x'] - cx, e['huella']['z'] - cz) + max(e['huella']['hx'], e['huella']['hz']) for e in lst))
-        nm = nombres(cx, -cz, lst)
-        Z.append({'id': nm[0], 'nombre': nm[1], 'centro': [round(cx, 1), round(ground(cx, -cz), 1), round(cz, 1)], 'r': round(r, 1), 'instancias': lst})
-    ids = {}
-    for z in Z:   # ids únicos
-        n_ = ids.get(z['id'], 0); ids[z['id']] = n_ + 1
-        if n_: z['id'] = '%s_%d' % (z['id'], n_ + 1)
+        Z.append({'id': zid, 'nombre': nm, 'centro': [cx, round(ground(cx, -cz), 1), cz], 'r': round(r, 1), 'instancias': lst})
     return {'Z': Z, 'S': S, 'aj': aj, 'saltados': skipped, 'conv': bool(conv)}
 
 DECORATIVOS = ('canoa', 'empalizada', 'muelle_troncos')

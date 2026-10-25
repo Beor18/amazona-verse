@@ -392,37 +392,14 @@ def apto(x, y, otros):
     if M.slope[j, i] > 20 or M.water_d[j, i] < 2.0 or hm_at(x, y) < 0.5: return False
     if any(math.hypot(x - a, y - b) < r for a, b, r in INTER + otros): return False
     return not dentro(x, y, 1.5)
-CAND = [(acx + dx, acy + dy) for dx in np.arange(-45, 46, 1.5) for dy in np.arange(-45, 46, 1.5)]
-def bldg_near(x, y, modelos, r):
-    return [e for e in EDZ if e['modelo'] in modelos and math.hypot(e['huella']['x'] - x, -e['huella']['z'] - y) < r]
-PARADAS = {}
-best = None
-for x, y in CAND:
-    j, i = int(round(y + ML.HALF)), int(round(x + ML.HALF)); wd = M.water_d[j, i]
-    if not (2.5 <= wd <= 7.0) or not apto(x, y, []): continue
-    if not bldg_near(x, y, ('bohio_redondo', 'bohio_puntiagudo'), 28) or not bldg_near(x, y, ('torre_vigia', 'caney_largo', 'casa_paja_a', 'casa_paja_b', 'casa_plataforma'), 40): continue
-    sc_ = wd + 0.1 * math.hypot(x - acx, y - acy)
-    if best is None or sc_ < best[0]: best = (sc_, x, y)
-if best: PARADAS['parada_agua'] = (best[1], best[2])
-best = None
-for e in [f for f in EDZ if f['modelo'] in ('bohio_puntiagudo', 'casa_paja_a', 'bohio_redondo')]:
-    h = e['huella']; r0 = max(h['hx'], h['hz']) + 4.0
-    for k in range(24):
-        a_ = 2 * math.pi * k / 24; x, y = h['x'] + r0 * math.cos(a_), -h['z'] + r0 * math.sin(a_)
-        if not apto(x, y, [(p[0], p[1], 6.0) for p in PARADAS.values()]): continue
-        sc_ = (0 if e['modelo'] == 'bohio_puntiagudo' else 5 if e['modelo'] == 'casa_paja_a' else 10) + 0.05 * math.hypot(x - acx, y - acy)
-        if best is None or sc_ < best[0]: best = (sc_, x, y, e['id'])
-if best: PARADAS['parada_techo'] = (best[1], best[2]); TECHO_DE = best[3]
-best = None
-for x, y in CAND:
-    if not apto(x, y, [(p[0], p[1], 10.0) for p in PARADAS.values()]) or dentro(x, y, 7.0): continue
-    if math.hypot(x - acx, y - acy) > 40: continue
-    j, i = int(round(y + ML.HALF)), int(round(x + ML.HALF))
-    sc_ = M.slope[j, i] + 0.05 * math.hypot(x - acx, y - acy)
-    if best is None or sc_ < best[0]: best = (sc_, x, y)
-if best:
-    PARADAS['parada_claro'] = (best[1], best[2]); ML.CLAROS.append((best[1], best[2], 12.0))
-    ML.HEROES.append(('yagrumo', best[1] + 9.0, best[2] + 4.0, 0.55))   # el pionero, joven, en el borde del claro
+# posiciones fijas (gameplay las usa por id; eduTest valida las distancias): solo se comprueba que sigan siendo aptas
+PARADAS = {'parada_agua': (109.51, -112.45), 'parada_techo': (101.42, -118.67), 'parada_claro': (106.51, -140.95)}
+TECHO_DE = 'k196'
+acx, acy = 93.01, -119.95
+for k_, (x_, y_) in PARADAS.items():
+    if not apto(x_, y_, [(p[0], p[1], 5.0) for q, p in PARADAS.items() if q != k_]): log('AVISO: %s ya no es apta; revisar' % k_)
+ML.CLAROS.append((PARADAS['parada_claro'][0], PARADAS['parada_claro'][1], 12.0))
+ML.HEROES.append(('yagrumo', PARADAS['parada_claro'][0] + 9.0, PARADAS['parada_claro'][1] + 4.0, 0.55))
 log('paradas de aprendizaje', {k: (round(v[0], 1), round(v[1], 1)) for k, v in PARADAS.items()})
 
 DEN, FREE, FX, FY = ML.flora(M, H, step=2)
