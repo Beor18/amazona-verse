@@ -6,9 +6,11 @@
      2. Equipar un accesorio, guardar y ver la escena de inicio del capítulo (el gancho se juega, no se salta).
      3. Obtener un huevo en el criadero y ver la animación de patitas en la eclosión (BLOQUEADO si no hay criadero).
      4. Las 8 etapas de la historia con las acciones del jugador (Acción, botones de tarjetas y diálogos, buceo con C):
-        4.1 taller · 4.2 Luma · 4.3 recolección y M1 (bucear) · 4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» ·
-        4.5 construir y la crecida · 4.6 corregir (rama A) o reubicar · 4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
+        4.2 Luma llama desde la copa (el primer vuelo del capítulo: se mide cuándo llega) · 4.1 taller · 4.3 recolección y M1 (bucear) ·
+        4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» · 4.5 construir y la crecida (se agarra al vuelo algo que arrastra el río
+        y se suelta en seco) · 4.6 corregir (rama A) o reubicar · 4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
         4.9 mirador y pantalla final (con «Seguir explorando» si el pack lo ofrece) · 4.10 objetivo y guía en cada paso.
+        Los bocadillos libres (G.dialogo.say(..., { libre: true }), DIVERSION_CAP1 mejora 3) se cuentan aparte: no paran el juego.
      5. Guardar a mitad del capítulo, recargar el iframe y verificar que todo persiste (y se sigue jugando tras recargar).
      6. Eventos narrativos → viñetas del cómic (con el nombre del jugador) → exportar PNG (se decodifica; 1080×1520 hasta 4 viñetas).
      7. Guardar al final, recargar y verificar que el capítulo sigue completo.
@@ -55,8 +57,8 @@
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
     const url = new URL(location.href); url.search = ''; url.hash = '';
-    const abrir = async () => {
-      const W = await until(() => { const w = fr.contentWindow; return w && w.AV && w.AV.G && (w.AV.G.actores.player3D || w.AV.G.actores.failed3D) && w; }, opts.timeout || 180000, 100);   // con la máquina cargada (otros agentes) el arranque tarda más de 60 s
+    const abrir = async (viejo) => {
+      const W = await until(() => { const w = fr.contentWindow; return w && !(viejo && w.__avViejo) && w.AV && w.AV.G && (w.AV.G.actores.player3D || w.AV.G.actores.failed3D) && w; }, opts.timeout || 180000, 100);   // con la máquina cargada (otros agentes) el arranque tarda más de 60 s
       if (W) { await sleep(800); const t = W.document.getElementById('title'); if (t && t.open) { const b = t.querySelector('button'); if (b) b.click(); else t.close(); } await sleep(300); }
       return W;
     };
@@ -69,7 +71,8 @@
     const cerrarVentana = () => { erroresAcum.push(...(W.__aveErrores || []).slice(errores0)); errores0 = 0; };
 
     // ---------- Reloj de la prueba (modelo de duración) ----------
-    const reloj = { sim: 0, suelo: 0, aire: 0, lineas: 0, car: 0, clics: 0, acciones: 0 };
+    const reloj = { sim: 0, suelo: 0, aire: 0, lineas: 0, car: 0, clics: 0, acciones: 0, libres: 0, carLibres: 0 }; // libres: bocadillos que no paran el juego (no suman al mínimo)
+    let primerVuelo = null;   // cuándo llega el primer vuelo del recorrido (DIVERSION_CAP1, mejora 1: antes de 90 s)
     const intrusos = [], vistas = [];   // vistas: quién habla y con qué retrato en cada línea de diálogo
     const fasesHechas = []; let faseAct = null;
     const velSuelo = () => (G && G.fisica && G.fisica.RUN_SPEED) || 10.5, velAire = () => (G && G.fisica && G.fisica.FLY_SPEED) || 12;
@@ -79,10 +82,16 @@
 
     // ---------- Acciones del jugador (lo que se hace con el teclado, el ratón o el dedo) ----------
     const tick = secs => { T.tick(secs); reloj.sim += Math.ceil(secs / 0.05) * 0.05; };
-    // Pulsar «Seguir» hasta cerrar el diálogo, contando líneas y caracteres que leería el niño
+    // Pulsar «Seguir» hasta cerrar el diálogo, contando líneas y caracteres que leería el niño. Los bocadillos libres también se
+    // pasan (así llegan sus «done»), pero se cuentan aparte: la cotorra sigue jugando mientras salen
     const drain = () => {
       let n = 0;
-      while (G.dialogo.open() && n++ < 150) { reloj.lineas++; reloj.car += ($('d-text').textContent || '').length; vistas.push({ who: $('d-who').textContent, img: $('d-img').getAttribute('src') || '' }); $('d-next').click(); }
+      while (G.dialogo.activo() && n++ < 150) {
+        const a = G.dialogo.actual();
+        if (a.libre) { reloj.libres++; reloj.carLibres += (a.text || '').length; } else { reloj.lineas++; reloj.car += (a.text || '').length; }
+        vistas.push({ who: a.who, img: a.img || '', libre: !!a.libre });
+        if (a.libre) G.dialogo.next(); else $('d-next').click();
+      }
       return n;
     };
     const click = id => { const b = $(id); if (b && !b.disabled && !(b.closest && b.closest('[hidden]'))) { b.click(); reloj.clics++; return true; } return false; };
@@ -139,9 +148,9 @@
       if (na && nb) { na.selectedIndex = 1 % na.options.length; nb.selectedIndex = 1 % nb.options.length; for (const e of [na, nb]) e.dispatchEvent(new W.Event('change', { bubbles: true })); }
       else if (nombre && 'value' in nombre && nombre.tagName === 'INPUT') { nombre.value = 'Nube E2E'; nombre.dispatchEvent(new W.Event('input', { bubbles: true })); }
       $('p-save').click();                                          // sin G.quiet: el gancho del capítulo se juega como lo vería el niño
-      const hayInicio = await until(() => G.dialogo.open(), 45000, 50);   // el temporizador de 300 ms llega tarde si la máquina está cargada
+      const hayInicio = await until(() => G.dialogo.activo(), 45000, 50);   // el temporizador de 300 ms llega tarde si la máquina está cargada
       fase('Inicio');
-      const quien0 = hayInicio ? $('d-who').textContent : '', texto0 = hayInicio ? $('d-text').textContent : '';
+      const a0 = hayInicio ? G.dialogo.actual() : null, quien0 = a0 ? a0.who : '', texto0 = a0 ? a0.text : '', inicioLibre = !!a0 && a0.libre && !G.ui.busy();
       const nInicio = drain();
       const toastInicio = !$('toast').hidden ? $('toast').textContent : '';
       await sleep(200);
@@ -149,8 +158,8 @@
       const accs = Object.values(look.accessories || {}).map(a => a.id);
       check('2', 'Equipar un accesorio y guardar (creador cerrado, perfil con la pieza)', S.profile.created && $('creator').hidden && !!pieza && accs.includes(pieza.dataset.id),
         { pieza: pieza && pieza.dataset.id, especie: look.species, accesorios: accs, nombre: S.profile.name });
-      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (escena del Narrador y Vittata) y queda el objetivo «Examina tu taller»', !!hayInicio && nInicio >= 3 && S.step === 0 && !S.complete && /taller/i.test(hudAhora()),
-        { lineas: nInicio, primera: quien0 + ': ' + texto0.slice(0, 60), aviso: toastInicio.slice(0, 60), paso: S.step, hud: hudAhora() });
+      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (Narrador y Vittata, en bocadillos que no paran el juego) y queda el objetivo «Vuela hasta Luma»', !!hayInicio && inicioLibre && nInicio >= 3 && S.step === 0 && !S.complete && /Luma/i.test(hudAhora()),
+        { lineas: nInicio, libre: inicioLibre, primera: quien0 + ': ' + texto0.slice(0, 60), aviso: toastInicio.slice(0, 60), paso: S.step, hud: hudAhora() });
       // El jugador nunca cambia de modelo: misma firma que el modelo base (solo plumaje y accesorios)
       const comp = G.actores.companion3D, prota = G.actores.player3D;
       const fComp = comp ? firma(comp) : null, fProta = prota ? firma(prota) : null;
@@ -178,19 +187,34 @@
       // ====================================================================================================================
       despejar('inicio'); muestraGuia();                                        // paso 0
 
-      // ---------- 4.1 Taller: examinar la máquina y el transmisor ----------
-      fase('Taller');
-      const m1ok = useAt('maquina'); const cercM = ultimoCercano; drain();
-      const tx1ok = useAt('transmisor'); const cercT = ultimoCercano; drain();  // al examinar los dos, Luma pide ayuda
-      check('4.1', 'Taller: examinar la máquina y el transmisor (Acción) y Luma pide ayuda', m1ok && tx1ok && S.step === 1 && S.examined.maquina && S.examined.transmisor && had('WorkshopExplored') && !!S.captures.workshop,
-        { maquina: m1ok, transmisor: tx1ok, paso: S.step, cercano: m1ok && tx1ok ? null : [cercM, cercT], foto: !!S.captures.workshop });
-      if (corte('4.1', S.step === 1)) return fin();
+      // ---------- 4.2 Luma llama desde la copa del flamboyán: el primer vuelo del capítulo (DIVERSION_CAP1, mejora 1) ----------
+      fase('Luma');
+      const LU = G.c.luma, perchaL = LU ? LU.percha : null, H0 = G.terreno.height;
+      const desdeSuelo = LU ? useAt('luma') : null;                              // bajo la copa, desde el suelo, no se le puede hablar
+      const guiaLuma = G.misiones.guideTarget();
+      primerVuelo = { seg: Math.round(seg(reloj, false)), segLeyendo: Math.round(seg(reloj, true) + reloj.carLibres / CAR_POR_SEG), alturaPercha: perchaL ? +(perchaL.y - H0(perchaL.x, perchaL.z)).toFixed(1) : null, donde: LU ? LU.donde() : null };
+      let posada = false, llamada = null, charla = false, lumaOk = false;
+      if (perchaL) {
+        volar(perchaL.x + 0.6, perchaL.y + 1.6, perchaL.z); G.fisica.MOVE.flying = false; tick(1.2);   // despegar, llegar y posarse a su lado
+        posada = LU.junto() && !G.fisica.MOVE.flying;
+        llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Luma llamó desde arriba al acercarse (bocadillo)
+        const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma';
+        if (lumaOk) { G.interaccion.action(); reloj.acciones++; }
+        charla = G.dialogo.open(); drain();
+      }
+      check('4.2', 'Luma llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
+        !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Luma' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
+        { desdeSuelo, guia: guiaLuma, posada, llamada: llamada && llamada.text.slice(0, 40), charla, paso: S.step, inv: S.inv, cercano: lumaOk ? null : ultimoCercano, atajo: 'vuelo directo a la percha de la copa' });
+      check('4.2', 'El primer vuelo del capítulo llega antes de 90 s (medida de DIVERSION_CAP1, mejora 1)', !!primerVuelo && primerVuelo.seg < 90 && primerVuelo.segLeyendo < 90, primerVuelo);
+      if (corte('4.2', S.step >= 1)) return fin();
 
-      // ---------- 4.2 Luma: acepta ayudar y recibe 3 tablas ----------
-      fase('Luma'); muestraGuia();
-      const lumaOk = useAt('luma'); const cercL = ultimoCercano; drain();
-      check('4.2', 'Luma: hablar con ella, Vittata acepta ayudar y la familia entrega 3 tablas', lumaOk && S.step === 2 && had('LumaHelped') && S.inv.madera >= 3, { paso: S.step, inv: S.inv, cercano: lumaOk ? null : cercL });
-      if (corte('4.2', S.step === 2)) return fin();
+      // ---------- 4.1 Taller: examinar la máquina y el transmisor (comentarios en bocadillos; el paso avanza solo) ----------
+      fase('Taller'); muestraGuia();
+      const m1ok = useAt('maquina'); const cercM = ultimoCercano; const libreM = !!G.dialogo.libre() && !G.ui.busy(); drain();
+      const tx1ok = useAt('transmisor'); const cercT = ultimoCercano; drain();
+      check('4.1', 'Taller: examinar la máquina y el transmisor (Acción) con los comentarios de Vittata en bocadillos libres; queda la foto y el paso pasa a «Recolectar»', m1ok && tx1ok && libreM && S.step === 2 && S.examined.maquina && S.examined.transmisor && had('WorkshopExplored') && !!S.captures.workshop,
+        { maquina: m1ok, transmisor: tx1ok, bocadillo: libreM, paso: S.step, cercano: m1ok && tx1ok ? null : [cercM, cercT], foto: !!S.captures.workshop });
+      if (corte('4.1', S.step === 2)) return fin();
 
       // ---------- 4.3 Recolectar (1 madera, 2 piedras) y bucear por la pieza del fondo (M1) ----------
       fase('Recolección y M1'); muestraGuia();
@@ -207,7 +231,7 @@
         keys.add('c'); for (let i = 0; i < 120 && !S.collected.includes('c1'); i++) tick(0.1); keys.delete('c');   // buceo con la tecla C
         tick(0.5);
       }
-      const dialogoRecursos = G.dialogo.open(); drain();
+      const dialogoRecursos = G.dialogo.activo() ? (G.dialogo.libre() ? 'bocadillo' : 'caja') : false; drain();
       check('4.3', 'Recolectar madera y piedras (Acción) y bucear (C) hasta la pieza del fondo: M1 «Fondo del río» y paso «Recolectar» completos', !!poza && S.collected.includes('c1') && !!S.missions.m1 && S.step === 3 && had('ResourcesCollected') && Object.keys(NEEDS).every(k => S.inv[k] >= NEEDS[k]),
         { poza: poza && [Math.round(poza.x), Math.round(poza.z)], inv: S.inv, paso: S.step, m1: !!S.missions.m1, escena: dialogoRecursos, ropaM1: ropaOk('m1') ? 'desbloqueada' : 'falta ' + hitoRopa('m1').filter(k => !S.unlocked.includes(k)).join(','), atajo: 'teleport a la poza; el buceo es con la tecla C simulada' });
       if (corte('4.3', S.step === 3)) return fin();
@@ -245,14 +269,45 @@
       };
       const costoR = (G.pack.costos && G.pack.costos.REFUGE_COST) || { madera: 3, piedra: 2 };
       const c1b = colocar(rama);
-      drain();                                                                  // «¡Lo logramos! … viene más lluvia»
+      const crecidaLibre = !!S.event && !G.ui.busy();                           // «¡Lo logramos! … viene más lluvia» en bocadillos: la crecida ya corre
+      drain();
+      // Mejora 4: la crecida se juega. El río arrastra tres cosas; se agarra una al vuelo (Acción cerca) y se suelta donde el agua no llega
+      const CRE = G.c.crecida, accionesAntes = reloj.acciones;
+      tick(1);
+      const flotan = CRE ? CRE.objetos().filter(o => o.fase === 'flota') : [];
+      const puedeAgarrar = !!(G.agarre && G.agarre.agarrar && G.actores.player3D && G.actores.player3D.anchors);
+      const rescate = { flotan: flotan.map(o => o.id), agarrado: null, soltadoEn: null, salvado: false, guiaAlgoFlota: null, guiaLlevando: null };
+      if (flotan.length && puedeAgarrar) {
+        const o = flotan[0];
+        rescate.guiaAlgoFlota = G.misiones.guideTarget();
+        volar(o.it.x + 0.8, o.obj.position.y + 1.4, o.it.z); tick(0.3);          // hasta lo que flota, en vuelo
+        const nbF = G.interaccion.nearest();
+        if (nbF && nbF.id === o.it.id) { G.interaccion.action(); reloj.acciones++; }
+        const llevado = await until(() => G.agarre.lleva() && G.agarre.lleva().id === o.id && o.fase === 'llevado', 4000, 50);   // el gesto de alcanzar corre con los cuadros reales
+        rescate.agarrado = llevado ? o.id : (nbF ? nbF.id : 'nada cerca');
+        if (llevado) {
+          rescate.guiaLlevando = G.misiones.guideTarget();
+          const alto = G.misiones.closest(CRE.altos()); rescate.soltadoEn = alto && { x: Math.round(alto.x), y: +alto.y.toFixed(1), z: Math.round(alto.z) };
+          volar(alto.x, alto.y + 1.6, alto.z); G.fisica.MOVE.flying = false; tick(1.2);   // a tierra seca (copa, techo o colina) y posarse
+          if (!G.interaccion.nearest()) { G.interaccion.action(); reloj.acciones++; } else { G.agarre.soltar(); reloj.acciones++; }   // sin nada cerca, Acción suelta
+          await until(() => o.fase === 'salvado', 4000, 50);
+          rescate.salvado = o.fase === 'salvado';
+        }
+      }
       tick(4);
       const subio = S.water > G.terreno.waterBase + 0.5;
-      check('4.5', 'Construir el refugio en el terreno ' + rama + ' desde el cartel (tarjeta, fantasma verde, Acción) gastando los materiales; llega la lluvia y el río sube',
-        c1b.abre && c1b.tarjeta && c1b.modo && c1b.valido && !!S.refuge && S.refuge.parcel === rama && S.inv.madera === c1b.antesMat.madera - costoR.madera && S.inv.piedra === c1b.antesMat.piedra - costoR.piedra && had('ShelterConstructed') && subio,
-        { terreno: rama, cartel: c1b.abre, tarjeta: c1b.tarjeta, modoConstruir: c1b.modo, valido: c1b.valido, razon: c1b.razon, refugio: S.refuge, inv: S.inv, agua: +(S.water - G.terreno.waterBase).toFixed(2), atajo: 'teleport al terreno; el fantasma sigue a Vittata' });
+      check('4.5', 'Construir el refugio en el terreno ' + rama + ' desde el cartel (tarjeta, fantasma verde, Acción) gastando los materiales; llega la lluvia (sin parar el juego) y el río sube',
+        c1b.abre && c1b.tarjeta && c1b.modo && c1b.valido && !!S.refuge && S.refuge.parcel === rama && S.inv.madera === c1b.antesMat.madera - costoR.madera && S.inv.piedra === c1b.antesMat.piedra - costoR.piedra && had('ShelterConstructed') && subio && crecidaLibre,
+        { terreno: rama, cartel: c1b.abre, tarjeta: c1b.tarjeta, modoConstruir: c1b.modo, valido: c1b.valido, razon: c1b.razon, refugio: S.refuge, inv: S.inv, agua: +(S.water - G.terreno.waterBase).toFixed(2), libre: crecidaLibre, atajo: 'teleport al terreno; el fantasma sigue a Vittata' });
       if (corte('4.5', !!S.refuge)) return fin();
-      tick(6); drain();                                                         // fin de la crecida y su escena
+      for (let i = 0; i < 40 && S.event; i++) tick(1);                        // fin de la crecida (20 s) y su escena
+      drain();
+      const accionesCrecida = reloj.acciones - accionesAntes;
+      if (!CRE) check('4.5', 'Crecida jugable (DIVERSION_CAP1, mejora 4)', 'bloqueado', 'este pack no tiene G.c.crecida');
+      else if (!puedeAgarrar) check('4.5', 'Crecida jugable: agarrar al vuelo lo que arrastra el río', 'bloqueado', 'sin modelo 3D con anclas (G.agarre necesita player3D.anchors); flotaban: ' + rescate.flotan.join());
+      else check('4.5', 'Crecida jugable: el río arrastra 3 cosas (tablas, coquí, hallazgo); se agarra una al vuelo con Acción, se suelta en seco y queda salvada (FloodRescue); lo demás se recupera después, sin castigo',
+        flotan.length === 3 && rescate.salvado && had('FloodRescue') && !!rescate.guiaAlgoFlota && !!rescate.guiaLlevando && CRE.perdidos.length === 2 && accionesCrecida >= 2,
+        { rescate, salvados: CRE.salvados.slice(), perdidos: CRE.perdidos.slice(), accionesEnLaCrecida: accionesCrecida, atajo: 'vuelo directo hasta lo que flota y hasta tierra seca' });
       if (rama === 'A') {
         check('4.5', 'Crecida: el refugio del río queda dañado y aparece el Guardián (paso «Habla con el Guardián»)', !!S.refuge && S.refuge.damaged && had('ShelterFlooded') && G.actores.npc('guardian').sp.visible && S.step === 5 && !!S.captures.shelter && S.indicators.seguridad === 'baja',
           { refugio: S.refuge, paso: S.step, guardian: G.actores.npc('guardian').sp.visible, indicadores: S.indicators, foto: !!S.captures.shelter });
@@ -262,7 +317,7 @@
         const desarma = useAt('refuge', 1.6, 0); const cercR = ultimoCercano; drain();
         check('4.6', 'Corregir: desarmar el refugio dañado devuelve los materiales (3 madera y 2 piedras)', desarma && !S.refuge && had('ShelterDismantled') && S.inv.madera === inv3.madera && S.inv.piedra === inv3.piedra, { inv: S.inv, esperado: inv3, cercano: desarma ? null : cercR });
         const c2b = colocar('B');
-        drain(); tick(9); drain();
+        drain(); for (let i = 0; i < 40 && S.event; i++) tick(1); drain();  // segunda crecida (20 s): lo que flota se recupera después
         check('4.6', 'Reconstruir en la colina: el refugio aguanta la crecida y queda a salvo', c2b.valido && !!S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated') && S.indicators.seguridad === 'alta' && S.builds.join() === 'A,B',
           { refugio: S.refuge, construcciones: S.builds, indicadores: S.indicators, valido: c2b.valido, razon: c2b.razon, paso: S.step });
       } else {
@@ -313,9 +368,9 @@
       const antes = instantanea();
       const guardo = G.guardado.save(true);
       cerrarVentana();
+      fr.contentWindow.__avViejo = true;   // marca la ventana vieja: la nueva no la tiene
       fr.contentWindow.location.reload();
-      await sleep(500);
-      W = await abrir();
+      W = await abrir(true);
       if (!W) { check('5', 'Recargar la build', false, 'no volvió a arrancar'); return fin(); }
       enlazar();
       const despues = instantanea();
@@ -423,7 +478,7 @@
 
       // ---------- Orden de los eventos del capítulo y materiales ----------
       const clave = S.events.map(e => e.key);
-      const esperados = ['PlayerCharacterCreated', 'WorkshopExplored', 'LumaHelped', 'ResourcesCollected', 'LandInspected', 'LandInspected', 'LandSelected', 'ShelterConstructed']
+      const esperados = ['PlayerCharacterCreated', 'LumaHelped', 'WorkshopExplored', 'ResourcesCollected', 'LandInspected', 'LandInspected', 'LandSelected', 'ShelterConstructed']
         .concat(rama === 'A' ? ['ShelterFlooded', 'ShelterDismantled', 'LandSelected', 'ShelterConstructed', 'ShelterRelocated'] : [])
         .concat(['GuardianMet', 'WorkshopUpgradeUnlocked', 'TransmitterActivated', 'BoatBlueprintUnlocked', 'LocationDiscoveredMirador', 'ChapterCompleted']);
       let kEv = 0; for (const c of clave) if (kEv < esperados.length && c === esperados[kEv]) kEv++;
@@ -436,9 +491,9 @@
       const fin0 = resumenFin();
       const guardo2 = G.guardado.save(true);
       cerrarVentana();
+      fr.contentWindow.__avViejo = true;   // marca la ventana vieja: la nueva no la tiene
       fr.contentWindow.location.reload();
-      await sleep(500);
-      W = await abrir();
+      W = await abrir(true);
       if (!W) { check('7', 'Recargar la build al final', false, 'no volvió a arrancar'); return fin(); }
       enlazar();
       const fin1 = resumenFin();
@@ -450,16 +505,20 @@
       else check('7', 'Tras recargar con el capítulo terminado (informativa: sin «Seguir explorando» el panel final se reabre y bloquea el juego)', true, { panel, ocupado: G.ui.busy() });
 
       // ---------- Duración (sin el creador, el criadero ni el cómic) ----------
-      const tot = { sim: 0, suelo: 0, aire: 0, lineas: 0, car: 0, clics: 0, acciones: 0 };
+      const tot = { sim: 0, suelo: 0, aire: 0, lineas: 0, car: 0, clics: 0, acciones: 0, libres: 0, carLibres: 0 };
       for (const f of fasesHechas) for (const kk of Object.keys(tot)) tot[kk] += f.d[kk] || 0;
       const min1 = seg(tot, false), min2 = seg(tot, true), tray = tot.suelo / velSuelo() + tot.aire / velAire();
-      const porFase = fasesHechas.map(f => f.nombre + ' ' + Math.round(seg(f.d, false)) + ' s (' + Math.round(f.d.sim) + ' sim + ' + Math.round(f.d.suelo / velSuelo() + f.d.aire / velAire()) + ' trayecto + ' + f.d.lineas + ' líneas + ' + f.d.clics + ' clics)').join(' · ');
+      const porFase = fasesHechas.map(f => f.nombre + ' ' + Math.round(seg(f.d, false)) + ' s (' + Math.round(f.d.sim) + ' sim + ' + Math.round(f.d.suelo / velSuelo() + f.d.aire / velAire()) + ' trayecto + ' + f.d.lineas + ' líneas + ' + f.d.clics + ' clics' + (f.d.libres ? ' + ' + f.d.libres + ' bocadillos' : '') + ')').join(' · ');
+      // Segundos parados por diálogo (ui.busy): solo las líneas de la caja; los bocadillos libres salen mientras se juega
+      const bloqueadoLeyendo = Math.round(tot.car / CAR_POR_SEG), bloqueadoSinLeer = Math.round(tot.lineas * SEG_POR_PULSACION);
       duracion = { rama, minimoSinLeerSeg: Math.round(min1), minimoLeyendoSeg: Math.round(min2), simSeg: Math.round(tot.sim), trayectoSeg: Math.round(tray), metrosSuelo: Math.round(tot.suelo), metrosAire: Math.round(tot.aire), lineas: tot.lineas, caracteres: tot.car, acciones: tot.acciones, clics: tot.clics,
-        fases: fasesHechas.map(f => ({ fase: f.nombre, seg: Math.round(seg(f.d, false)), sim: Math.round(f.d.sim), lineas: f.d.lineas })), intrusos };
+        bocadillosLibres: tot.libres, caracteresLibres: tot.carLibres, bloqueadoPorDialogoSeg: { leyendo: bloqueadoLeyendo, sinLeer: bloqueadoSinLeer }, primerVuelo,
+        fases: fasesHechas.map(f => ({ fase: f.nombre, seg: Math.round(seg(f.d, false)), sim: Math.round(f.d.sim), lineas: f.d.lineas, libres: f.d.libres })), intrusos };
       const resumen = 'MÍNIMO AUTOMÁTICO ' + fmt(min1) + ' sin leer (' + Math.round(min1) + ' s) · ' + fmt(min2) + ' leyendo a ' + CAR_POR_SEG + ' car/s · juego simulado ' + fmt(tot.sim) + ' + trayectos ' + fmt(tray) +
-        ' (' + Math.round(tot.suelo) + ' m a pie a ' + velSuelo() + ' m/s, ' + Math.round(tot.aire) + ' m en vuelo a ' + velAire() + ' m/s) + ' + tot.lineas + ' líneas de diálogo (' + tot.car + ' caracteres) y ' + tot.clics + ' clics en tarjetas, a ' + SEG_POR_PULSACION + ' s cada pulsación · ' + tot.acciones + ' Acciones · rama ' + rama +
+        ' (' + Math.round(tot.suelo) + ' m a pie a ' + velSuelo() + ' m/s, ' + Math.round(tot.aire) + ' m en vuelo a ' + velAire() + ' m/s) + ' + tot.lineas + ' líneas de diálogo que paran el juego (' + tot.car + ' caracteres = ' + bloqueadoLeyendo + ' s leyendo, ' + bloqueadoSinLeer + ' s solo pulsando) y ' + tot.clics + ' clics en tarjetas, a ' + SEG_POR_PULSACION + ' s cada pulsación · ' +
+        tot.libres + ' bocadillos libres (' + tot.carLibres + ' caracteres) que salen mientras se juega, sin sumar · primer vuelo a los ' + (primerVuelo ? primerVuelo.seg + ' s (' + primerVuelo.segLeyendo + ' s leyendo)' : '—') + ' · ' + tot.acciones + ' Acciones · rama ' + rama +
         ' · SIN el creador, el criadero ni el cómic · NO sustituye medir con jugadores reales · fases: ' + porFase + (intrusos.length ? ' · diálogos sueltos cerrados: ' + intrusos.join(' | ') : '');
-      check('T', 'Duración simulada del capítulo 1 (mínimo del recorrido automático; informativa)', true, resumen, 2200);
+      check('T', 'Duración simulada del capítulo 1 (mínimo del recorrido automático; informativa)', true, resumen, 2400);
 
       const errs = erroresAcum.concat((W.__aveErrores || []).slice(0));
       check('·', 'Sin errores de JavaScript en todo el recorrido', !errs.length, errs.slice(0, 3).join(' | ') || 'ninguno');

@@ -4,7 +4,8 @@
   - quita los `.glb` y `.blend`;
   - marca `index.html` con `<meta name="ave:sin-glb">`, así `loadGLB` va directo al `*_glb.js`, sin 404 de sondeo;
   - poda lo que nada carga, recomprime texturas sin pérdida visible (PSNR ≥ 40 dB) y valida.
-  - Salida por defecto: `tools/build/salida/<ref>-<commit7>/`.
+  - Salida por defecto: `tools/build/salida/<ref>-<commit7>-<pid>/` (única por corrida, así dos agentes no se pisan).
+  - `test.sh` cierra su Chrome y su perfil al salir (EXIT, INT, TERM); `test.sh --limpiar` cierra solo los Chrome `avtest-chrome-*` huérfanos (padre 1) con más de 30 min.
 - **Qué sale:** `site/`, que es lo que se publica; `manifiesto.json`, con ruta, bytes y sha256 de cada archivo; y `reporte-build.md`.
 - **Lista exacta:** `manifiesto.artifact.files_map` va tal cual al parámetro `files` del Artifact tool, con `root` = `site/`. Con `--anterior`, cada archivo publicado que ya no está va como `null`, así no quedan huérfanos.
 - **`--anterior`:** la salida de Artifact `action: "list"`, `scope: "files"` del artifact publicado, guardada en un `.txt`, o el `manifiesto.json` de la publicación anterior.

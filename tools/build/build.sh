@@ -6,7 +6,7 @@
 # Exporta <ref> con git archive (no toca la copia de trabajo), quita .glb/.blend, marca index.html (ave:sin-glb), valida,
 # poda, optimiza texturas y escribe <salida>/site (lo que se publica), <salida>/manifiesto.json y reporte-build.{md,json}.
 # --anterior: lo publicado hoy (lista de archivos del artifact o manifiesto anterior) para quitar los huérfanos.
-# <salida> por defecto: tools/build/salida/<ref>-<commit7> (ignorada por git y dentro del repo, así el Artifact tool la
+# <salida> por defecto: tools/build/salida/<ref>-<commit7>-<pid> (única por corrida; ignorada por git y dentro del repo, así el Artifact tool la
 # acepta como origen). Salida: 0 pasa, 1 falla la validación, 2 error de uso.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -33,7 +33,7 @@ done
 PY="$(avb_python)" || exit 2
 SHA="$(git -C "$AVB_REPO" rev-parse --verify --quiet "$REF^{commit}")" || { avb_err "el ref '$REF' no existe en $AVB_REPO"; exit 2; }
 FECHA="$(git -C "$AVB_REPO" show -s --format=%cI "$SHA")"
-[ -n "$OUT" ] || OUT="$AVB_DIR/salida/$(printf '%s' "$REF" | tr -c 'A-Za-z0-9._-' '_')-${SHA:0:7}"
+[ -n "$OUT" ] || OUT="$AVB_DIR/salida/$(printf '%s' "$REF" | tr -c 'A-Za-z0-9._-' '_')-${SHA:0:7}-$$"   # única por proceso (QA-35)
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 
