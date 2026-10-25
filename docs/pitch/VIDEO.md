@@ -89,8 +89,14 @@ captura dice cómo se graba cada toma:
   `--solo criadero_seq,criadero_juvenil,criadero_adulto,criadero_vuelo`.
 - Loops de la web (sin audio, menos de 4 MB, cierre limpio): `python3 tools/video/loops.py --ver v1 [--solo hero]`.
   Salen a `~/AmazonaVerse/Web/assets/video/` (mp4 + webm + póster jpg).
-- Ritmo del render: `taskpolicy -b` deja a Blender en los núcleos de eficiencia. El master y el ligero se pueden lanzar
-  en paralelo (`--sin-ligero` y `--solo-ligero`); cada uno tarda unos 30–45 min con 165 s.
+- Ritmo del render: `taskpolicy -b` deja a Blender en los núcleos de eficiencia, así que el master de 165 s tarda
+  entre 30 y 90 min, según la carga de la Mac. El `_ligero` (720p) ya sale siempre del master recodificado: exportar el
+  montaje a 1280x720 recortaba el centro del cuadro (le pasó al `_ligero` de v1 del 24 oct, 23:48; hay que rehacerlo).
+  Rehacerlo solo: `montaje.py --ver v1 --ligero-desde-master`.
+- Pitch para la web (≤ 14 MB, 960x540, video 480 kb/s + AAC 128 kb/s, póster en el logo):
+  `montaje.py --ver v1 --ligero-desde-master --alto 540 --kbps 480 --poster 27.2 --destino ~/AmazonaVerse/Web/assets/video/pitch.mp4`.
+- Python: los comandos `python3 …` de esta guía se corren con el de Blender
+  (`~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11 -I`), nunca con el del sistema.
 - `tec_navegador`: por ahora es un marco neutro de navegador sobre una captura real de la portada y el juego. Si llega
   una grabación real, va en `externos/tec_navegador.mp4`.
 - Bajo el agua el motor no tiene render subacuático, así que esas tomas se graban a ras de la superficie.

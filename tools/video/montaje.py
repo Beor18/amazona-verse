@@ -6,6 +6,10 @@ Un solo comando (lanza Blender por su cuenta, en segundo plano y con prioridad b
   python3 tools/video/montaje.py --ver v0 --edl tools/video/guiones/v0.json   # montaje propio de un guion de prueba
 Opciones: --salida N (número de versión del MP4; por defecto el de --ver), --audio ruta.wav, --sin-audio,
           --sin-ligero, --solo-ligero, --hasta SEG (montar solo los primeros SEG segundos, para revisar).
+Recodificar el master ya hecho (minutos, sin volver a montar):
+  python3 tools/video/montaje.py --ver v1 --ligero-desde-master                        # Pitch/..._v1_ligero.mp4, 720p
+  python3 tools/video/montaje.py --ver v1 --ligero-desde-master --alto 540 --kbps 480 --poster 27.2 \
+          --destino ~/AmazonaVerse/Web/assets/video/pitch.mp4                         # web: <= 14 MB + pitch.jpg
 
 Entradas
   - EDL: docs/pitch/TOMAS.json (comité) o la sección "montaje" de un guion de captura. Tiempos en segundos de video.
@@ -45,6 +49,14 @@ def leer_args(argv):
     ap.add_argument('--solo-ligero', action='store_true')
     ap.add_argument('--hasta', type=float, help='montar solo hasta este segundo (revisión rápida)')
     ap.add_argument('--blend', action='store_true', help='guardar también el .blend del montaje junto al MP4')
+    ap.add_argument('--fotos', help='en vez de video, fotos JPEG del montaje en estos segundos (coma) para revisar')
+    ap.add_argument('--ligero-desde-master', action='store_true',
+                    help='hace la versión ligera recodificando el MP4 master ya hecho (mucho más rápido que volver a montar)')
+    ap.add_argument('--destino', help='con --ligero-desde-master: ruta del MP4 (por defecto, Pitch/..._ligero.mp4)')
+    ap.add_argument('--alto', type=int, default=720, help='con --ligero-desde-master: alto en píxeles, 16:9 (720, 540…)')
+    ap.add_argument('--kbps', type=int, default=2000, help='con --ligero-desde-master: kb/s de video')
+    ap.add_argument('--audio-kbps', type=int, default=128, help='con --ligero-desde-master: kb/s del AAC')
+    ap.add_argument('--poster', type=float, help='con --ligero-desde-master: segundo del póster JPG (mismo nombre, .jpg)')
     return ap.parse_args(argv)
 
 
@@ -347,7 +359,7 @@ def montar(a):
     return sc, edl, avisos
 
 
-def exportar(sc, destino, ligero, con_audio):
+def exportar(sc, destino, ligero, con_audio, alto=720, kbps=2000, akbps=128):
     import bpy
     r = sc.render
     r.image_settings.file_format = 'FFMPEG'
@@ -356,11 +368,12 @@ def exportar(sc, destino, ligero, con_audio):
     ff.gopsize, ff.use_max_b_frames, ff.max_b_frames = FPS, True, 2
     if ligero:
         r.resolution_percentage = 100
-        r.resolution_x, r.resolution_y = 1280, 720
+        r.resolution_x, r.resolution_y = (alto * 16 // 9 + 1) // 2 * 2, alto
         ff.constant_rate_factor = 'NONE'
-        ff.video_bitrate, ff.minrate, ff.maxrate, ff.buffersize = 2000, 0, 3000, 2000 * 8
-        ff.ffmpeg_preset = 'GOOD'
-        ff.audio_bitrate = 128
+        ff.video_bitrate, ff.minrate, ff.maxrate, ff.buffersize = kbps, 0, int(kbps * 1.5), kbps * 8
+        # con poco caudal, x264 «slower» rinde bastante más por bit que «medium»
+        ff.ffmpeg_preset = 'BEST' if kbps < 1000 else 'GOOD'
+        ff.audio_bitrate = akbps
     else:
         r.resolution_x, r.resolution_y, r.resolution_percentage = 1920, 1080, 100
         ff.constant_rate_factor = 'HIGH'
@@ -373,11 +386,54 @@ def exportar(sc, destino, ligero, con_audio):
     bpy.ops.render.render(animation=True)
 
 
+def ligero_desde_master(base, a):
+    import bpy
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    sc = bpy.context.scene
+    sc.render.fps, sc.render.fps_base = FPS, 1
+    sc.view_settings.view_transform = 'Standard'
+    sc.sequencer_colorspace_settings.name = 'sRGB'
+    # El ajuste (FIT) se calcula con la resolución de la escena al crear la tira: primero la resolución de salida.
+    # Cambiarla después NO reescala las tiras, solo recorta el centro (así salió recortado el _ligero de v1).
+    sc.render.resolution_x, sc.render.resolution_y = (a.alto * 16 // 9 + 1) // 2 * 2, a.alto
+    sc.render.resolution_percentage = 100
+    seqs = sc.sequence_editor_create().sequences
+    mv = seqs.new_movie('master', base + '.mp4', 1, 1, fit_method='FIT')
+    mv.colorspace_settings.name = 'sRGB'
+    snd = seqs.new_sound('audio', base + '.mp4', 2, 1)
+    sc.frame_start, sc.frame_end = 1, mv.frame_final_duration
+    sc.render.use_sequencer = True
+    destino = os.path.expanduser(a.destino) if a.destino else base + '_ligero.mp4'
+    exportar(sc, destino, True, snd is not None, a.alto, a.kbps, a.audio_kbps)
+    if a.poster is not None:
+        r = sc.render
+        r.image_settings.file_format = 'JPEG'
+        r.image_settings.quality = 78
+        sc.frame_set(int(round(a.poster * FPS)) + 1)
+        r.filepath = os.path.splitext(destino)[0] + '.jpg'
+        bpy.ops.render.render(write_still=True)
+
+
 def en_blender(argv):
     a = leer_args(argv)
     nombre = a.salida or a.ver.lstrip('v')
     os.makedirs(SALIDA, exist_ok=True)
+    if a.ligero_desde_master:
+        ligero_desde_master(os.path.join(SALIDA, f'AmazonaVerse_Pitch_v{nombre}'), a)
+        return
     sc, edl, avisos = montar(a)
+    if a.fotos:
+        import bpy
+        d = os.path.join(TRABAJO, 'revision')
+        os.makedirs(d, exist_ok=True)
+        sc.render.image_settings.file_format = 'JPEG'
+        sc.render.image_settings.quality = 85
+        sc.render.resolution_percentage = 50
+        for t in a.fotos.split(','):
+            sc.frame_set(int(round(float(t) * FPS)) + 1)
+            sc.render.filepath = os.path.join(d, f'v{nombre}_{float(t):06.1f}.jpg')
+            bpy.ops.render.render(write_still=True)
+        return
     con_audio = not a.sin_audio and os.path.exists(a.audio)
     base = os.path.join(SALIDA, f'AmazonaVerse_Pitch_v{nombre}')
     if a.blend:
@@ -385,10 +441,11 @@ def en_blender(argv):
         bpy.ops.wm.save_as_mainfile(filepath=os.path.join(TRABAJO, f'montaje_v{nombre}.blend'))
     if not a.solo_ligero:
         exportar(sc, base + '.mp4', False, con_audio)
-    if not a.sin_ligero:
-        exportar(sc, base + '_ligero.mp4', True, con_audio)
     with open(os.path.join(TRABAJO, f'montaje_v{nombre}.json'), 'w', encoding='utf-8') as f:
         json.dump({'avisos': avisos, 'duracion': sc.frame_end / FPS, 'tomas': len(edl['tomas']), 'titulos': len(edl['titulos'])}, f, ensure_ascii=False, indent=1)
+    # El ligero sale del master (escala bien y tarda minutos). Exportar el montaje a 1280x720 recortaba el centro.
+    if not a.sin_ligero and os.path.exists(base + '.mp4'):
+        ligero_desde_master(base, a)
 
 
 def main():
@@ -396,14 +453,17 @@ def main():
         en_blender(sys.argv[sys.argv.index('--') + 1:])
         return
     a = leer_args(sys.argv[1:])
-    cmd = ['taskpolicy', '-b', 'nice', '-n', '15', BLENDER, '-b', '--factory-startup', '--python', os.path.abspath(__file__), '--'] + sys.argv[1:]
+    cmd = ['taskpolicy', '-b', 'nice', '-n', '15', BLENDER, '-b', '--factory-startup', '--python-exit-code', '1',
+           '--python', os.path.abspath(__file__), '--'] + sys.argv[1:]
     print('·', ' '.join(cmd[:8]), '…')
     rc = subprocess.call(cmd)
     if rc != 0:
         sys.exit(f'Blender terminó con error {rc}')
     nombre = a.salida or a.ver.lstrip('v')
-    for suf in ('', '_ligero'):
-        p = os.path.join(SALIDA, f'AmazonaVerse_Pitch_v{nombre}{suf}.mp4')
+    rutas = [os.path.join(SALIDA, f'AmazonaVerse_Pitch_v{nombre}{suf}.mp4') for suf in ('', '_ligero')]
+    if a.ligero_desde_master and a.destino:
+        rutas = [os.path.expanduser(a.destino)]
+    for p in rutas:
         if os.path.exists(p):
             faststart(p)
             print(f'{p}  {os.path.getsize(p) / 1e6:.1f} MB')
