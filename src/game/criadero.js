@@ -1421,7 +1421,9 @@ AVE.module('criadero', function (G) {
   }
   function puedePresentar() {
     const S = G.S || {}, leccion = (G.aula && G.aula.enCurso && G.aula.enCurso()) || (S.step === 3 && S.missions && !S.missions.educativa);
-    return !G.quiet && !open && !leccion && !!G.ui && !G.ui.busy() && !!G.dialogo && !G.dialogo.open();
+    // Ni durante un evento (la crecida se juega) ni con un bocadillo libre en pantalla: el nido espera a que haya calma
+    const calma = !S.event && !(G.dialogo && G.dialogo.libre && G.dialogo.libre());
+    return !G.quiet && !open && !leccion && calma && !!G.ui && !G.ui.busy() && !!G.dialogo && !G.dialogo.open();
   }
   function pasoMundo(dt) {
     const on = nidoActivo();
