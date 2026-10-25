@@ -9,7 +9,8 @@
    Perchas: superficies de una vía que añade un pack con addPercha({ x, z, r, y, when? }) (y = tope absoluto). Solo sostienen a
    quien llega desde arriba (y >= tope - 0,3 m); desde abajo se atraviesan volando. suelo(x, z, y) = terreno o percha.
    Estado legible (MOVE): flying, landing (bajando para aterrizar), swimming, grounded, fase ('suelo' | 'aire' | 'planeo' |
-   'despegue' | 'vuelo' | 'cernido' | 'aterrizaje' | 'nado'), speed, land (s de aplastón), impact (0..1), slope (°). */
+   'despegue' | 'vuelo' | 'cernido' | 'aterrizaje' | 'nado'), speed, land (s de aplastón), impact (0..1), slope (°),
+   agachada (0..1: bajo un toldo o un alero bajo; la lee la pose de character.js) y alto (alto del cuerpo para chocar). */
 AVE.module('fisica', function (G) {
   'use strict';
   const S = G.S;
@@ -56,6 +57,10 @@ AVE.module('fisica', function (G) {
     flareV: 1.3,          // …hasta tocar el suelo a esta velocidad (aterrizaje suave)
     landSpeed: 0.55,      // aterrizando, la velocidad horizontal máxima es esta fracción del crucero
     perchAssist: 0.6,     // bajando, a esta distancia (m) de algo fino se centra encima para posarse
+    // Agacharse (bajo un toldo, un alero o una lona bajos): con menos espacio que altoCabeza sobre los pies se agacha
+    altoCabeza: 1.8,      // alto de Vittata de pie con margen (el modelo mide 1,75 m)
+    altoAgachada: 1.15,   // alto mínimo agachada: lo que quede más bajo es pared
+    agacharMira: 0.3,     // mira el espacio libre también donde estará en estos s (se agacha antes de llegar)
     vAccel: 4,            // tasa del cambio de velocidad vertical en vuelo
     vAccelLand: 7,        // al aterrizar, más firme: llega a flareV antes de tocar aunque baje de 20 m o hacia una ladera
     // Nado
@@ -70,7 +75,7 @@ AVE.module('fisica', function (G) {
   const SWIM_SPEED = T.swim, SWIM_DEPTH = T.swimDepth;
   const MOVE = { vx: 0, vz: 0, airJumps: 0, coyote: 0, dashT: 0, dashCd: 0, airDash: true, land: 0, impact: 0, wasAir: false,
     flying: false, landing: false, takeoff: 0, jumping: false, buffer: 0, grounded: true, groundY: 0, grade: 0, onTerrain: true,
-    fase: 'suelo', slope: 0, speed: 0 };
+    fase: 'suelo', slope: 0, speed: 0, agachada: 0, alto: 0 };
   const colliders = [];
   // Altura de cada tipo de obstáculo para poder pasar volando por encima (un pack añade los suyos)
   const alturas = { post: 1.3, obj: 1.6, npc: 2 };
@@ -196,6 +201,7 @@ AVE.module('fisica', function (G) {
       let sp = MOVE.flying ? FLY_SPEED * (MOVE.landing ? T.landSpeed : 1) : MOVE.swimming ? SWIM_SPEED * (run ? T.swimRunFactor : 1) : run ? RUN_SPEED : SPEED;
       // Cuesta arriba se frena (según la subida del cuadro anterior)
       if (MOVE.grounded && MOVE.grade > 0) sp /= 1 + T.uphillSlow * Math.min(1.2, MOVE.grade);
+      if (MOVE.agachada && !MOVE.flying) sp *= 1 - 0.4 * MOVE.agachada; // agachada camina más despacio
       sp *= (ml > 0 ? 1 / Math.max(1, ml) : 0) * Math.max(mag, 0.35);
       tx = mx * sp; tz = mz * sp;
       if (ml > 0.01) wantDir = { x: mx / ml, z: mz / ml };
@@ -235,10 +241,12 @@ AVE.module('fisica', function (G) {
     // Se compara con lo que ya estaba metido: así se sale de un rincón estrecho, pero nunca se entra en una pared.
     const SOL = G.solidos && G.solidos.activo && !columnaPercha(S.pos.x, S.pos.z, S.pos.y) ? G.solidos : null;
     let hCuerpo;
+    // En el suelo (o aún agachada) el cuerpo puede agacharse hasta altoAgachada: pasa bajo un toldo bajo sin que la cabeza roce
+    const agachable = SOL && !MOVE.swimming && (MOVE.grounded || MOVE.agachada > 0.01);
     if (SOL) {
       // nadando en superficie, el cuerpo llega hasta encima del agua: no se cuela por debajo de una canoa a flote
       const wy0 = MOVE.swimming && !dive ? G.agua.levelAt(S.pos.x) : -Infinity;
-      hCuerpo = wy0 > -1e9 ? Math.max(SOL.SO.cuerpo, wy0 + 0.6 - S.pos.y) : undefined;
+      hCuerpo = wy0 > -1e9 ? Math.max(SOL.SO.cuerpo, wy0 + 0.6 - S.pos.y) : agachable ? T.altoAgachada : undefined;
       const pn = SOL.penetra(S.pos.x, S.pos.z, S.pos.y, hCuerpo);
       if (pn) {
         const p0 = SOL.penetra(px, pz, S.pos.y, hCuerpo);
@@ -321,7 +329,10 @@ AVE.module('fisica', function (G) {
     }
     let ny = (S.pos.y || ground) + S.vy * dt;
     // Subiendo bajo un techo o una cornisa: la cabeza no lo atraviesa
-    if (SOL && S.vy > 0) { const tch = SOL.techo(S.pos.x, S.pos.z, S.pos.y, ny); if (tch < Infinity) { ny = Math.min(ny, tch - SOL.SO.cuerpo); S.vy = 0; } }
+    if (SOL && S.vy > 0) {
+      const hT = agachable ? T.altoAgachada : SOL.SO.cuerpo, tch = SOL.techo(S.pos.x, S.pos.z, S.pos.y, ny, hT);
+      if (tch < Infinity) { ny = Math.min(ny, tch - hT); S.vy = 0; }
+    }
     // Pegado al suelo: caminando cuesta abajo no se despega (sin aleteos ni patas recogidas en cada bajada)
     const d = Math.hypot(S.pos.x - px, S.pos.z - pz);
     if (grounded && S.vy <= 0 && ny > ground && ny - ground <= T.snapDown + d * 1.2) ny = ground;
@@ -355,6 +366,20 @@ AVE.module('fisica', function (G) {
     MOVE.groundY = ground;
     MOVE.onTerrain = Math.abs(ground - G.terreno.height(S.pos.x, S.pos.z)) < 0.05;
     MOVE.slope = MOVE.grounded && MOVE.onTerrain ? Math.acos(Math.min(1, slopeAt(S.pos.x, S.pos.z).y)) * 180 / Math.PI : 0;
+    // Agachada: con menos espacio que altoCabeza sobre los pies se agacha. Mira también por delante (hasta agacharMira s de
+    // camino, 0,6 m como mínimo) con menos peso cuanto más lejos: así baja poco a poco al acercarse a la lona y, debajo, nunca
+    // va por detrás del espacio que tiene (la cabeza del modelo, 1,75 m, no roza). Al salir se levanta despacio.
+    let quiere = 0;
+    if (SOL && MOVE.grounded && !MOVE.swimming) {
+      const v = Math.hypot(MOVE.vx, MOVE.vz), D = Math.max(0.6, v * T.agacharMira), ux = v > 0.1 ? MOVE.vx / v : S.facing.x, uz = v > 0.1 ? MOVE.vz / v : S.facing.z;
+      for (let i = 0; i <= 4; i++) {
+        const lb = SOL.libre(S.pos.x + ux * D * i / 4, S.pos.z + uz * D * i / 4, S.pos.y, 0.45, T.altoAgachada - 0.05);
+        if (lb < T.altoCabeza) quiere = Math.max(quiere, Math.min(1, (T.altoCabeza - lb) / (T.altoCabeza - T.altoAgachada)) * (1 - 0.75 * i / 4));
+      }
+    }
+    MOVE.agachada = quiere >= MOVE.agachada ? quiere : MOVE.agachada + (quiere - MOVE.agachada) * rate(8, dt);
+    if (MOVE.agachada < 0.005) MOVE.agachada = 0;
+    MOVE.alto = T.altoCabeza - (T.altoCabeza - T.altoAgachada) * MOVE.agachada;
     // Posada: sobre un sólido ('alto': techo, roca, cornisa) o sobre algo fino ('fino': rama, baranda, poste, cumbrera)
     const antes = MOVE.posado;
     MOVE.posado = '';

@@ -6,6 +6,7 @@
    - Seguimiento perezoso: si el jugador no toca la cámara en CAM.lazyDelay s y se mueve, se coloca poco a poco detrás de él
      (no cuando corre hacia la cámara). G.camara.manual() lo pausa (input.js lo llama al arrastrar y con Q/R).
    - En laderas y barrancos no se mete bajo el terreno.
+   - Agachada bajo un toldo o un alero (MOVE.agachada), baja y se acerca para que la lona no la tape.
    Dato del pack: jugador.camara (giro inicial, 0,35 por defecto) y jugador.camaraAjuste = { clave: valor } sobre CAM. */
 AVE.module('camara', function (G) {
   'use strict';
@@ -22,6 +23,7 @@ AVE.module('camara', function (G) {
     lazyDelay: 1.2,                // s sin tocar la cámara antes de seguir por detrás
     lazy: 0.55, lazyFly: 1.1,      // fuerza del seguimiento perezoso (rad/s por rad de diferencia, a velocidad de carrera)
     groundClear: 0.9,              // separación mínima sobre el terreno
+    agachadaAlto: 1.3, agachadaDist: 4.2, // agachada bajo un toldo: la cámara baja y se acerca para verla bajo la lona
     copaMin: 2.4, copaDentro: 2.8, // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m)
   }, G.pack.jugador && G.pack.jugador.camaraAjuste);
   // combo/comboT: racha de capturas (la usan objetos y diario para subir la nota del arpegio)
@@ -81,8 +83,10 @@ AVE.module('camara', function (G) {
     else if (tMin < 1) { const k = Math.max(CAM.copaMin / L, tMin - 0.4 / L); camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
   }
   function target() {
-    const fly = G.fisica.MOVE.flying, ay = anchorY == null ? S.pos.y : anchorY;
-    camPos.set(S.pos.x + Math.sin(yaw) * dist(), ay + (fly ? CAM.heightFly : CAM.height), S.pos.z + Math.cos(yaw) * dist());
+    const M = G.fisica.MOVE, fly = M.flying, ay = anchorY == null ? S.pos.y : anchorY, ag = fly ? 0 : M.agachada || 0;
+    let h = fly ? CAM.heightFly : CAM.height, d = dist();
+    if (ag) { h += (CAM.agachadaAlto - h) * ag; d += (CAM.agachadaDist - d) * ag; }
+    camPos.set(S.pos.x + Math.sin(yaw) * d, ay + h, S.pos.z + Math.cos(yaw) * d);
     evitarCopas();
     // En laderas y barrancos la cámara no se mete bajo el terreno
     const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
@@ -90,7 +94,7 @@ AVE.module('camara', function (G) {
     // Tampoco dentro de un edificio, una roca o un árbol (solidos.js): sube por encima
     if (G.solidos && G.solidos.activo) { const t = G.solidos.dentro(camPos.x, camPos.z, camPos.y); if (t > -Infinity) camPos.y = t + 0.6; }
   }
-  const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look;
+  const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look - 0.5 * (G.fisica.MOVE.flying ? 0 : G.fisica.MOVE.agachada || 0);
   // Coloca la cámara: snap = al instante (cargar, capturas); también deja al jugador y al aprendiz en su sitio
   function place(snap) {
     if (snap) updateAnchor(0, true);
