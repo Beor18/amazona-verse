@@ -343,6 +343,23 @@ AVE.module('movimiento', function (G) {
           met.toldo = hecho;
           check('Bajo un toldo bajo se agacha y la cabeza no roza la lona; al salir se levanta', !!hecho && hecho.agachada > 0.2 && Number.isFinite(hecho.cabezaMenosLona) && hecho.cabezaMenosLona < 0 && hecho.deNuevoDePie, hecho ? JSON.stringify(hecho) : 'sin punto bajo un toldo al que llegar caminando');
         }
+        // Estacas de los terrenos (contenido, collider 'post'): sólido real, que sustituye al cilindro sin alto. Aterrizar
+        // 0,3 m al lado de la estaca más cercana al letrero; la ayuda la centra encima, se posa ('fino', 'poste') y se queda 3 s
+        const poste = F.colliders.find(c => c.kind === 'post');
+        if (poste) {
+          reset(poste.x + 3, poste.z); SO.terminar(true);
+          let es = null;
+          for (let dz = -6; dz <= 6; dz += 0.15) for (let dx = -6; dx <= 6; dx += 0.15) {
+            const x = poste.x + dx, z = poste.z + dz, g = SO.altoEn(x, z, H(x, z) + 3), hg = g - H(x, z), d = Math.hypot(dx, dz);
+            if (hg > 0.8 && hg < 1.4 && (!es || d < es.d) && SO.fino(x, z, g + 0.01)) es = { x, z, g, d };
+          }
+          if (es) {
+            aterrizarEn(es.x + 0.3, es.z, es.g + 2);
+            const ys = frame(null, 180).map(o => o.y), que = SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
+            met.estaca = { alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), sobreEstaca: r2(S.pos.y - es.g), posado: M.posado, que, deriva3s: r2(Math.max(...ys) - Math.min(...ys)), colliderSustituido: SO.cubre(poste) };
+            check('Se posa en una estaca de los terrenos (sólido real, sin el collider macizo) y se queda 3 s', M.grounded && M.posado === 'fino' && que === 'poste' && Math.abs(S.pos.y - es.g) < 0.1 && met.estaca.deriva3s < 0.02 && met.estaca.colliderSustituido, JSON.stringify(met.estaca));
+          } else check('Se posa en una estaca de los terrenos', false, 'sin estaca sólida a menos de 6 m del letrero (collider sustituido: ' + SO.cubre(poste) + ')');
+        }
         // Todos los edificios cargados (de mundo.js o del streaming): no se atraviesan y tienen dónde pararse encima
         const msK = SO.SO.msCuadro; SO.SO.msCuadro = 0.3; // la flora espera: aquí solo cuentan los edificios
         const fallos = [], enterrados = []; let revisados = 0;

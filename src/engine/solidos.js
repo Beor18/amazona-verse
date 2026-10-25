@@ -1,7 +1,8 @@
 /* AVE · sólidos del mundo sacados de la geometría real (rol Movimiento y animación; docs/equipo/INTERACCION_ELEMENTOS.md)
    Mapa de alturas por capas (2,5D) en celdas de 0,3 m: cada celda guarda hasta 2 tramos [bajo, alto] con la pendiente de
    su cara de arriba. Se rasterizan los triángulos de los edificios (mallas edificios:*), las estructuras del mapa
-   (estructura:*; también InstancedMesh, instancia a instancia), el taller y las estacas del contenido (los grupos con collider 'taller' o 'post'), las rocas, los troncos
+   (estructura:*; también InstancedMesh, instancia a instancia), el taller y las estacas y el letrero de los terrenos (los grupos
+   con collider 'taller' o 'post'; las piezas decorativas del mapa, cercas y canoas, entran con el streaming), las rocas, los troncos
    caídos y la corteza de los árboles (troncos y ramas; las hojas no). Con eso fisica.js:
    - choca y se desliza por las paredes: bloquea(x, z, y) = algún tramo corta el cuerpo y sube más que un escalón;
    - se para encima de techos, cornisas, bordes, rocas y ramas: suelo(x, z, y) = el alto de un tramo que tiene debajo;
@@ -169,9 +170,15 @@ AVE.module('solidos', function (G) {
     !(o.material && (o.material.transparent || o.material.depthWrite === false || o.material.isMeshBasicMaterial));
   // Para añadir piezas en cualquier momento (p. ej. el streaming de edificios): Mesh o Group de Mesh con su matriz (matrix o
   // position/quaternion/scale; sin padre, o con el padre ya colocado). Va a lo estático (no se descarga).
+  // Un InstancedMesh dentro (las estacas de los terrenos) va instancia a instancia.
+  const mPieza = new THREE.Matrix4();
   function agregar(obj) {
     obj.updateMatrixWorld(true);
-    obj.traverse(o => { if (valida(o) && o.geometry && o.geometry.attributes.position) encolar(o.geometry, o.matrixWorld, o.name); });
+    obj.traverse(o => {
+      if (!valida(o) || !o.geometry || !o.geometry.attributes.position) return;
+      if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mPieza); encolar(o.geometry, mPieza.premultiply(o.matrixWorld), o.name); }
+      else encolar(o.geometry, o.matrixWorld, o.name);
+    });
   }
 
   // ---------- Qué se rasteriza ----------
@@ -198,9 +205,9 @@ AVE.module('solidos', function (G) {
       regiones.delete(k); // si la región ya estaba hecha, se rehace con el edificio nuevo
     }
   }
-  // Grupos del contenido con collider de taller o de estaca (el taller, los postes de los terrenos)
+  // Grupos del contenido con collider de taller o de estaca (el taller, las estacas y el letrero de los terrenos)
   const KIND_CONTENIDO = new Set(['taller', 'post']);
-  const contHechos = new Map();
+  const contHechos = new Map(), contOrigen = new Map();
   function contenido() {
     for (const c of G.fisica.colliders) {
       if (!KIND_CONTENIDO.has(c.kind)) continue;
@@ -208,6 +215,15 @@ AVE.module('solidos', function (G) {
       for (const o of scene.children) {
         if (!o.isGroup && !o.isMesh) continue;
         const d = Math.hypot(o.position.x - c.x, o.position.z - c.z); if (d < bd) { bd = d; best = o; }
+      }
+      // Grupo en el origen con las piezas en coordenadas de mundo (las estacas y el letrero de un terreno): por la pieza
+      // más cercana al collider; se busca una vez
+      if (!best && !(best = contOrigen.get(c))) {
+        for (const o of scene.children) {
+          if (!o.isGroup || o.position.lengthSq() > 1e-6) continue;
+          for (const h of o.children) if (h.isMesh && !h.isInstancedMesh) { const d = Math.hypot(h.position.x - c.x, h.position.z - c.z); if (d < bd) { bd = d; best = o; } }
+        }
+        if (best) contOrigen.set(c, best);
       }
       if (!best) continue;
       let n = 0; best.traverse(o => { if (valida(o)) n++; });
@@ -362,7 +378,7 @@ AVE.module('solidos', function (G) {
     }
     if (mejor === -Infinity) return null;
     if (deFlora && tipo) return tipo & 2 && !(tipo & 1) ? 'roca' : 'rama'; // edificios instanciados (tipo 0): como los demás
-    const h = y - G.terreno.height(x, z);
+    const h = y - Math.max(G.terreno.height(x, z), G.agua ? G.agua.levelAt(x, z) : -Infinity); // sobre el agua: una canoa a flote no es un techo
     if (!fino(x, z, y + 0.01)) return h >= 1.8 ? 'techo' : 'cornisa';
     if (cuerdaPuente(x, z, y)) return 'cuerda';
     const d = CELL * 1.5, g = altoEn(x, z, y + 0.01), c2 = g - SO.finoCaida;

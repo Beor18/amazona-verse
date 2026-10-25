@@ -45,7 +45,7 @@ Pedido de Kelvin: Vittata es un ave y tiene que poder pararse y posarse sobre lo
 | Muelle de troncos (×4) | sí | sí, sobre la cubierta | posa en los pilotes | sí | — | La cubierta sigue como plataforma; pilotes, sólidos |
 | Puente de madera y puente colgante | sí | sí (cubierta) | fino en el pasamanos rígido | sí | Postes con colliders de 0,3 m | Sólido real. La cuerda es percha: su malla sigue la comba; `que()` la llama 'cuerda' y suena como rama (B2) |
 | Taller de Vittata | sí | sí (3,4 m) | fino en la punta | sí | Su collider la empujaba fuera del techo | Collider `taller` sustituido por el sólido |
-| Estacas y letreros de los terrenos (postes) | sí | sí (hasta 5,9 m) | fino | sí | Collider sin altura | Collider `post` sustituido. Una estaca (72,177) sigue con su collider: su grupo está lejos del punto |
+| Estacas y letreros de los terrenos (postes) | sí | sí (hasta 5,9 m) | fino | sí | Collider sin altura; luego ninguna tenía sólido (su grupo está en el origen y las 4 estacas son un InstancedMesh) | `contenido()` busca el grupo por la pieza más cercana y `agregar()` va instancia a instancia: las 2 estacas `post` sustituidas, se posa en la punta de la estaca a 1,2 m (`fino`, `poste`, deriva 0; B3). Cercas y canoas del streaming ya tenían superficie en todas sus celdas; sobre el agua, `que()` mide desde el agua (una canoa no es «techo») |
 | Rocas con musgo (a, b) | sí | sí (0,3–7,5 m) | alto o fino | sí | Sin colisión | Sólido real |
 | Piedras del río | sí | bajo el agua: nada | — | sí | — | Correcto (están sumergidas) |
 | Troncos caídos | sí | sí | alto | sí | Sin colisión | Sólido real |
