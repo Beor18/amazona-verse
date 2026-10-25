@@ -309,15 +309,15 @@ def medir(cdp, ses, estado, P):
     out['red_quieta_s'] = round(time.monotonic() - t0, 1)
     # Como la auditoría: el heap a ~9 s de empezar a cargar (sin forzar GC)
     try:
-        ahora = evaluar(cdp, ses, 'performance.now()', 10, promesa=False) or 0
+        ahora = evaluar(cdp, ses, 'performance.now()', 60, promesa=False) or 0
         falta = P.get('medir_heap_tras_s', 9) - ahora / 1000
         if falta > 0:
             cdp.bombear(falta)
-        m = json.loads(evaluar(cdp, ses, MEMORIA_JS, 20, promesa=False))
+        m = json.loads(evaluar(cdp, ses, MEMORIA_JS, 60, promesa=False))
         out.update(heap_mb=round(m['usado'] / MB, 1) if m.get('usado') else None, heap_t_s=round(m['t_ms'] / 1000, 1),
                    b64_residente_mb=round(m['b64_bytes'] / MB, 2), b64_residente_cadenas=m['b64_cadenas'])
     except (CDPError, JSError, TimeoutError, ValueError) as e:
-        out['error_heap'] = str(e)[:200]
+        out['error_heap'] = ('%s: %s' % (type(e).__name__, e))[:200]  # la página ocupada (máquina cargada) da TimeoutError
     try:
         cdp.call('HeapProfiler.enable', {}, ses, 20)
         for _ in range(2):
@@ -327,12 +327,14 @@ def medir(cdp, ses, estado, P):
         for k, n in (('embedderHeapUsedSize', 'heap_gc_embedder_mb'), ('backingStorageSize', 'heap_gc_arraybuffers_mb')):
             if hu.get(k) is not None:
                 out[n] = round(hu[k] / MB, 1)
-        m2 = json.loads(evaluar(cdp, ses, MEMORIA_JS, 20, promesa=False))
+        m2 = json.loads(evaluar(cdp, ses, MEMORIA_JS, 60, promesa=False))
         if m2.get('usado'):
             out['heap_gc_pm_mb'] = round(m2['usado'] / MB, 1)
+        out.setdefault('b64_residente_mb', round(m2['b64_bytes'] / MB, 2))
+        out.setdefault('b64_residente_cadenas', m2['b64_cadenas'])
         cdp.call('HeapProfiler.disable', {}, ses, 20)
     except (CDPError, JSError, TimeoutError, KeyError, ValueError) as e:
-        out['error_heap_gc'] = str(e)[:200]
+        out['error_heap_gc'] = ('%s: %s' % (type(e).__name__, e))[:200]
     return out
 
 
@@ -716,7 +718,10 @@ def correr(a, cfg):
     for clave, valor, unidad in (('descarga_inicial_mb', ini['mb'], 'MB de descarga inicial'), ('heap_mb', med.get('heap_mb'), 'MB de heap a ~9 s'),
                                  ('heap_gc_mb', med.get('heap_gc_mb'), 'MB de heap tras GC'), ('b64_residente_mb', med.get('b64_residente_mb'), 'MB de base64 residente')):
         lim = PR.get(clave)
-        if lim is None or valor is None:
+        if lim is None:
+            continue
+        if valor is None:
+            aviso('presupuesto sin medir: %s (%s)' % (clave, med.get('error_heap') or med.get('error_heap_gc') or 'sin dato'))
             continue
         if valor > lim:
             (falla if clave in duros else aviso)('presupuesto: %s %s (límite %s)' % (valor, unidad, lim))
