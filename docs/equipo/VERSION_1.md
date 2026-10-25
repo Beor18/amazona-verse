@@ -7,7 +7,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 |---|---|---|---|
 | 1 | El capítulo se juega de principio a fin | **Hecho** | e2eTest 42/42 |
 | 2 | Final en escena: tormenta, Voz neutra, plano del bote, luz ×3 | **Hecho** | missionTest 55/55 |
-| 3 | Nada se borra salvo «Comenzar de cero» | **Hecho** · en curso: partida dañada al arrancar, Aula | saveTest |
+| 3 | Nada se borra salvo «Comenzar de cero» (también partida dañada al arrancar y Aula) | **Hecho** | saveTest 45/45, maestroTest 25/25 |
 | 4 | Modo Retos: carrera y tormenta, con récord | **Hecho y publicado** | retosTest 50/50 |
 | 5 | Controles claros en la computadora (icono fijo y panel), «no eleva», no quedar encajada | en curso | movementTest |
 | 6 | «Mis récords» (de la casa, locales) y compartir el cómic con una puerta para adultos | en curso | recordsTest |
