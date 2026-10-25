@@ -1,3 +1,8 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): renders de diagnóstico → BUILD/diag_*.png
+# Comando: Blender -b BUILD/<archivo>.blend --python tools/blender/diag.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, bmesh, math
 from mathutils import Vector
 sc=bpy.context.scene
@@ -24,5 +29,5 @@ sc.render.engine='BLENDER_EEVEE_NEXT'; sc.render.resolution_x=500; sc.render.res
 for name,d in [("front",Vector((0,-1,0))),("side",Vector((1,0,0))),("q",Vector((0.7,-1,0.3))),("top",Vector((0.0,-0.3,1)))]:
     d.normalize(); cam.location=c+d*12
     cam.rotation_euler=(c-cam.location).to_track_quat('-Z','Y').to_euler()
-    sc.render.filepath=f"/private/tmp/claude-501/vittata_build/diag_{name}.png"
+    sc.render.filepath=build(f"diag_{name}.png")
     bpy.ops.render.render(write_still=True)

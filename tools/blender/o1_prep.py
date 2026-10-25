@@ -1,5 +1,10 @@
+# Pipeline de Vittata · paso 1/9: limpia el original de Kelvin (borra cámara/luces/metarig/duplicados, deja un modificador Armature) → BUILD/o_clean.blend
+# Comando: Blender -b SRC/cotorrofiver.blend --python tools/blender/o1_prep.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, os
-D="/private/tmp/claude-501/vittata_build/orig/"
+D=src("")
 for n in ["Camera","Cube.000","Cube.001","Lamp","Plane","rig","Sun","WGT-rig_root"]:
     o=bpy.data.objects.get(n)
     if o: bpy.data.objects.remove(o)
@@ -18,4 +23,4 @@ for gname in ["mouth","body","eye"]:
     gi=o.vertex_groups[gname].index
     n=sum(1 for v in o.data.vertices for g in v.groups if g.group==gi and g.weight>0)
     print("group",gname,n)
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/o_clean.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("o_clean.blend"))

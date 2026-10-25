@@ -1,3 +1,6 @@
+# HISTÓRICO: primer intento (cabeza original + cuerpo reconstruido), descartado. No entra en la build actual; s4_anim.py sí:
+# o3_build.py ejecuta sus funciones de animación. Rutas relativas al repo (vittata_paths.py).
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, math, sys
 from mathutils import Vector, Matrix, Quaternion, Euler
 sc=bpy.context.scene; sc.render.fps=30
@@ -109,5 +112,5 @@ rig.animation_data.action=bpy.data.actions["Idle"]
 sc.frame_start=0; sc.frame_end=90
 # check every action starts/ends at base
 apply_pose(*idle(0))
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/animated.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("animated.blend"))
 print("ACTIONS",[(a.name,tuple(a.frame_range)) for a in bpy.data.actions])

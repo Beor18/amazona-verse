@@ -1,5 +1,8 @@
+# HISTÓRICO: primer intento (cabeza original + cuerpo reconstruido), descartado. No entra en la build actual; s4_anim.py sí:
+# o3_build.py ejecuta sus funciones de animación. Rutas relativas al repo (vittata_paths.py).
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, bmesh, math, sys
-sys.path.insert(0,"/private/tmp/claude-501/vittata_build")
+sys.path.insert(0,tool(""))
 from common import *
 from mathutils import Vector, Matrix, Quaternion
 def ellip(bm,c,rad,dirx=None,seg=20,ring=12):
@@ -100,4 +103,4 @@ for p,d in claws:
 set_mats(feet,["Feet","Claws"])
 bm.to_mesh(feet.data); bm.free()
 mz=min(v.co.z for v in feet.data.vertices); print("FEET minz",mz)
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/model.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("model.blend"))

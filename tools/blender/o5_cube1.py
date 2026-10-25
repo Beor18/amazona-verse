@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): inspección de Cube.001/Cube.000 del original.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy
 o=bpy.data.objects["Cube.001"]; me=o.data
 print("C1 verts",len(me.vertices),"uv",[u.name for u in me.uv_layers],"mats",[m.name for m in me.materials])

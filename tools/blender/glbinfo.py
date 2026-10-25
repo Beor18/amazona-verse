@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): resumen de un .glb (python de Blender: glbinfo.py archivo.glb).
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import json, struct, sys
 import numpy as np
 f=open(sys.argv[1],'rb').read()

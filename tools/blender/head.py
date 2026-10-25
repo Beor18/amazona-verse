@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): medidas de la cabeza para gorras y lentes (BUILD/o_final_pico.blend).
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, json
 o=bpy.data.objects['Vittata']; me=o.data
 gi={g.index:g.name for g in o.vertex_groups}

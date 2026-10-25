@@ -1,3 +1,8 @@
+# Pipeline de Vittata · paso 2/9: escala a 1,4 m, raíz, puntos de montaje, landmarks.json y las 5 animaciones (s4_anim.py) → BUILD/o_anim.blend
+# Comando: Blender -b BUILD/o_clean.blend --python tools/blender/o3_build.py -- 60   (60 = ángulo de brazos en Idle)
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, bmesh, math, sys, json
 from mathutils import Vector, Matrix, Quaternion
 from mathutils.bvhtree import BVHTree
@@ -102,10 +107,10 @@ for name,(loc,_,_,_) in M.items():
     d=min(beak_bvh.find_nearest(loc)[3],eye_bvh.find_nearest(loc)[3]); clear[name]=d
 LM={"k":k,"head_center":list(hc),"head_radius":hr,"beak_bbox":[list(x) for x in bbox(beak_verts)],"eyes":{s:list(c) for s,c in eyes.items()},
     "clearance":clear,"mount_parent":{n:v[3] for n,v in M.items()}}
-json.dump(LM,open("/private/tmp/claude-501/vittata_build/landmarks.json","w"),indent=1)
+json.dump(LM,open(build("landmarks.json"),"w"),indent=1)
 bm.free()
 # ---------- animation
-src=open("/private/tmp/claude-501/vittata_build/s4_anim.py").read()
+src=open(tool("s4_anim.py")).read()
 exec(src[src.index("def sm("):src.index("def apply_pose")])
 def base():
     P={}
@@ -149,5 +154,5 @@ for name,fn,n in ACTS:
     act.frame_range=(0,n); act.use_frame_range=True
     tr=rig.animation_data.nla_tracks.new(); tr.name=name; tr.strips.new(name,0,act); tr.mute=True
 rig.animation_data.action=bpy.data.actions["Idle"]; sc.frame_start=0; sc.frame_end=90
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/o_anim.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("o_anim.blend"))
 print("ACTIONS",[(a.name,tuple(a.frame_range)) for a in bpy.data.actions])

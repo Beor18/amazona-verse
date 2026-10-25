@@ -1,5 +1,10 @@
+# Pipeline de Vittata · paso 3/9: textura mejorada, materiales, máscaras de especie (OUT/vittata_masks.png) y exportación provisional → BUILD/o_final.blend
+# Comando: Blender -b BUILD/o_anim.blend --python tools/blender/o6_final.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, numpy as np
-img=bpy.data.images.load("/private/tmp/claude-501/vittata_build/orig/cuerpo_Base_color_mejorada.png")
+img=bpy.data.images.load(src("cuerpo_Base_color_mejorada.png"))
 img.name="vittata_albedo"
 o=bpy.data.objects["Vittata"]
 for m in o.data.materials:
@@ -38,14 +43,14 @@ for t in me.loop_triangles:
 print("mask coverage R,G,B %",[round(float(x.mean()*100),2) for x in (R,G,B)])
 mask=np.dstack([R,G,B,np.ones_like(R)]).astype(np.float32)
 mi=bpy.data.images.new("vittata_masks",W,W,alpha=False); mi.pixels.foreach_set(mask.ravel())
-mi.filepath_raw="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata_masks.png"; mi.file_format='PNG'; mi.save()
+mi.filepath_raw=out("vittata_masks.png"); mi.file_format='PNG'; mi.save()
 bpy.data.images.remove(mi)
 rig=bpy.data.objects["Rig"]; rig.animation_data.action=None
 for pb in rig.pose.bones: pb.rotation_quaternion=(1,0,0,0); pb.location=(0,0,0); pb.scale=(1,1,1)
 bpy.context.scene.frame_set(0)
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/o_final.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("o_final.blend"))
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata.glb",
+bpy.ops.export_scene.gltf(filepath=out("vittata.glb"),
   export_format='GLB', export_yup=True, export_apply=True, export_texcoords=True, export_normals=True,
   export_materials='EXPORT', export_image_format='JPEG', export_jpeg_quality=90,
   export_skins=True, export_def_bones=False, export_all_influences=False,

@@ -1,5 +1,10 @@
+# Pipeline de Vittata · paso 4/9: cierra huecos de la máscara del pico (canal B) en OUT/vittata_masks.png
+# Comando: Blender -b --python tools/blender/o7_maskfix.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, numpy as np
-p="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata_masks.png"
+p=out("vittata_masks.png")
 im=bpy.data.images.load(p); W=im.size[0]
 a=np.array(im.pixels[:],np.float32).reshape(W,W,4)
 B=a[...,2]>0.5

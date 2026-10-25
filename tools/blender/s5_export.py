@@ -1,3 +1,6 @@
+# HISTÓRICO: primer intento (cabeza original + cuerpo reconstruido), descartado. No entra en la build actual; s4_anim.py sí:
+# o3_build.py ejecuta sus funciones de animación. Rutas relativas al repo (vittata_paths.py).
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy
 rig=bpy.data.objects["Rig"]
 rig.animation_data.action=None
@@ -5,7 +8,7 @@ for pb in rig.pose.bones:
     pb.rotation_quaternion=(1,0,0,0); pb.location=(0,0,0); pb.scale=(1,1,1)
 bpy.context.scene.frame_set(0)
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata.glb",
+bpy.ops.export_scene.gltf(filepath=out("vittata.glb"),
   export_format='GLB', use_selection=False, export_yup=True, export_apply=True,
   export_texcoords=False, export_normals=True, export_tangents=False,
   export_materials='EXPORT', export_vertex_color='MATERIAL',

@@ -1,6 +1,11 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): comprueba el .glb exportado (altura, tamaño, montajes) y deja capturas en docs/img/
+# Comando: Blender -b --python tools/blender/verify.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, os, math
 from mathutils import Vector
-G="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata.glb"; OUT="/Users/kelvingarciapr/AmazonaVerse/Juego/docs/img/"
+G=out("vittata.glb"); OUT=_os.path.join(tool(".."), "..", "docs", "img") + "/"
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc=bpy.context.scene; sc.render.fps=30
 bpy.ops.import_scene.gltf(filepath=G)

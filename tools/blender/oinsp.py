@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): inspección de o_clean/o_anim.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy
 for o in bpy.data.objects:
     print("OBJ",o.name,o.type,o.parent.name if o.parent else None,tuple(round(x,3) for x in o.location),tuple(round(x,3) for x in o.rotation_euler),tuple(round(x,3) for x in o.scale),[(m.type,getattr(m,'object',None) and m.object.name) for m in getattr(o,'modifiers',[])], o.hide_render, o.hide_get())

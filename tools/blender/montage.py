@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): une renders en una lámina; correr desde BUILD.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import sys, bpy, numpy as np
 args=sys.argv[sys.argv.index("--")+1:]
 out=args[0]; arrs=[]

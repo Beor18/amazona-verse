@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): utilidades del intento histórico s1–s5.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, math
 from mathutils import Vector
 def hexrgb(h):

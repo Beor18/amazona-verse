@@ -1,5 +1,8 @@
+# HISTÓRICO: primer intento (cabeza original + cuerpo reconstruido), descartado. No entra en la build actual; s4_anim.py sí:
+# o3_build.py ejecuta sus funciones de animación. Rutas relativas al repo (vittata_paths.py).
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, bmesh, math, sys
-sys.path.insert(0,"/private/tmp/claude-501/vittata_build")
+sys.path.insert(0,tool(""))
 from common import *
 from mathutils import Vector, Matrix
 from mathutils.bvhtree import BVHTree
@@ -107,4 +110,4 @@ for s,(c,r) in eyes.items():
             col.data[li].color=colr
     vg=eo.vertex_groups.new(name="Ojo"+s); vg.add(list(range(len(em.vertices))),1.0,'REPLACE')
     eo["gaze"]=list(gaze); eo["center"]=list(c); eo["radius"]=r
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/head.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("head.blend"))

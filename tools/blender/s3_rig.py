@@ -1,5 +1,8 @@
+# HISTÓRICO: primer intento (cabeza original + cuerpo reconstruido), descartado. No entra en la build actual; s4_anim.py sí:
+# o3_build.py ejecuta sus funciones de animación. Rutas relativas al repo (vittata_paths.py).
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, bmesh, math, sys, json
-sys.path.insert(0,"/private/tmp/claude-501/vittata_build")
+sys.path.insert(0,tool(""))
 from common import *
 from mathutils import Vector, Matrix, Quaternion, Euler
 from mathutils.bvhtree import BVHTree
@@ -129,4 +132,4 @@ for name,(loc,nrm,up,par) in mounts.items():
     print("MOUNT",name,tuple(round(x,4) for x in loc))
 bpy.ops.object.mode_set(mode='OBJECT')
 rig.data.pose_position='POSE'
-bpy.ops.wm.save_as_mainfile(filepath="/private/tmp/claude-501/vittata_build/rigged.blend")
+bpy.ops.wm.save_as_mainfile(filepath=build("rigged.blend"))

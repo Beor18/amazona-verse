@@ -1,8 +1,13 @@
+# Pipeline de Vittata · paso 9/9: mide los ojos pintados y añade eye_lids y bones_extra a OUT/vittata_mounts.json
+# Comando: Blender -b BUILD/o_final_pico.blend --python tools/blender/eyes.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, numpy as np, json
 o=bpy.data.objects['Vittata']; me=o.data
 img=bpy.data.images['vittata_albedo']; W,H=img.size; px=np.array(img.pixels[:],dtype=np.float32).reshape(H,W,4)
 uv=me.uv_layers.active.data
-M=json.load(open('/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata_mounts.json'))
+M=json.load(open(out("vittata_mounts.json")))
 res={}
 for k,e in M['eyes'].items():
     c=np.array([e[0],-e[2],e[1]])  # glTF (x,y,z) -> Blender (x,-z,y)
@@ -24,3 +29,10 @@ for k,e in M['eyes'].items():
     g=lambda a:[float(a[0]),float(a[2]),float(-a[1])]  # Blender -> glTF
     res[k]={"center":g(cen),"normal":g(n),"radius":float(rad),"bulge":float(bulge),"n":len(P)}
 print("EYES",json.dumps(res))
+# Párpados (character.js) y hueso extra: se guardan en vittata_mounts.json con 4 decimales
+r4 = lambda a: [round(float(x), 4) for x in a]
+M['eye_lids'] = {k: {"center": r4(v["center"]), "normal": r4(v["normal"]), "radius": round(v["radius"], 4), "bulge": round(v["bulge"], 4)} for k, v in res.items()}
+M['eye_lids']["note"] = "ojo pintado medido sobre la textura (blanco+iris): centro, normal hacia afuera, radio y cuánto sobresale"
+M['bones_extra'] = {"pico": "mandíbula inferior, padre cabeza.001; rotación +X abre el pico (0.35 rad ≈ 5,5 cm)"}
+json.dump(M, open(out("vittata_mounts.json"), "w"), indent=1, ensure_ascii=False)
+print("OK eye_lids")

@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): inspección del original.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, bmesh, collections
 from mathutils import Vector
 for o in bpy.data.objects:

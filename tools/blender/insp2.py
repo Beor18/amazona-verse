@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): inspección del original.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, collections
 p=bpy.data.objects["Amazon parrots"]; me=p.data
 print("mats",[m.name if m else None for m in me.materials])

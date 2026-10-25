@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): renders de revisión (frente, 3/4, lado, atrás) de un .blend; correr desde BUILD.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, sys
 from mathutils import Vector
 args=sys.argv[sys.argv.index("--")+1:]

@@ -1,6 +1,11 @@
+# Pipeline de Vittata · paso 7/9: hueso 'pico' con sus pesos, exportación FINAL OUT/vittata.glb y BUILD/o_final_pico.blend (= 04_Blender_3D/vittata_rig_final.blend)
+# Comando: Blender -b BUILD/o_final.blend --python tools/blender/beak5.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, json
 from mathutils import Vector, kdtree
-J=json.load(open('/tmp/claude-501/jaw.json')); c=J['coef']; D={d[0]:d for d in json.load(open('/tmp/claude-501/beakverts.json'))}
+J=json.load(open(build("jaw.json"))); c=J["coef"]; D={d[0]:d for d in json.load(open(build("beakverts.json")))}
 zl=lambda x,y: c[0]+c[1]*x*x+c[2]*y
 rig=bpy.data.objects['Rig']; o=bpy.data.objects['Vittata']; me=o.data
 kd=kdtree.KDTree(len(me.vertices))
@@ -23,9 +28,9 @@ bpy.ops.object.vertex_group_normalize_all(group_select_mode='ALL',lock_active=Fa
 if rig.animation_data: rig.animation_data.action=None
 for pb in rig.pose.bones: pb.rotation_quaternion=(1,0,0,0); pb.location=(0,0,0); pb.scale=(1,1,1)
 bpy.context.scene.frame_set(0)
-bpy.ops.wm.save_as_mainfile(filepath='/private/tmp/claude-501/vittata_build/o_final_pico.blend')
+bpy.ops.wm.save_as_mainfile(filepath=build("o_final_pico.blend"))
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata.glb",
+bpy.ops.export_scene.gltf(filepath=out("vittata.glb"),
   export_format='GLB', export_yup=True, export_apply=True, export_texcoords=True, export_normals=True,
   export_materials='EXPORT', export_image_format='JPEG', export_jpeg_quality=90,
   export_skins=True, export_def_bones=False, export_all_influences=False,

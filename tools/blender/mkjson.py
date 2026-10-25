@@ -1,5 +1,10 @@
+# Pipeline de Vittata · paso 8/9: OUT/vittata_mounts.json (montajes, cabeza, pico, ojos, animaciones) desde el .glb y BUILD/landmarks.json
+# Comando: <python de Blender (numpy)> tools/blender/mkjson.py   (p. ej. ~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11)
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import build, out as OUTP
 import json, struct, numpy as np, os
-G="/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata.glb"
+G=OUTP("vittata.glb")
 f=open(G,'rb').read(); jl=struct.unpack('<I',f[12:16])[0]; J=json.loads(f[20:20+jl])
 nodes=J['nodes']; parent={}
 for i,n in enumerate(nodes):
@@ -14,7 +19,7 @@ def world(i):
     while i in parent: i=parent[i]; M=local(nodes[i])@M
     return M
 byname={n.get('name'):i for i,n in enumerate(nodes)}
-LM=json.load(open("/private/tmp/claude-501/vittata_build/landmarks.json"))
+LM=json.load(open(build("landmarks.json")))
 g=lambda v:[round(v[0],4),round(v[2],4),round(-v[1],4)]
 mins=[];maxs=[]
 for m in J['meshes']:
@@ -45,7 +50,7 @@ out={"model":"vittata.glb","units":"glTF meters, Y-up, character faces +Z, feet 
 # durations
 for a in J['animations']:
     t=max(J['accessors'][s['input']]['max'][0] for s in a['samplers']); out["animations"][a['name']]=round(t,3)
-json.dump(out,open("/Users/kelvingarciapr/AmazonaVerse/Juego/assets/models/vittata_mounts.json","w"),indent=1)
+json.dump(out,open(OUTP("vittata_mounts.json"),"w"),indent=1)
 print(json.dumps({k:out[k] for k in ["height","bbox_min","bbox_max","head_sphere","beak_bbox","animations"]}))
 for n,m in mounts.items(): print(n,m["position"],"Z",m["axis_z_outward"],"Y",m["axis_y"],"clr",m["clearance"])
 print("size",os.path.getsize(G),"images",[(i.get('name'),i.get('mimeType')) for i in J.get('images',[])],"materials",[m['name'] for m in J['materials']])

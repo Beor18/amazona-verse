@@ -1,3 +1,8 @@
+# Pipeline de Vittata · paso 5/9: color de la textura en cada vértice del pico → BUILD/beakverts.json
+# Comando: Blender -b BUILD/o_anim.blend --python tools/blender/beak2.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, numpy as np, json
 o=bpy.data.objects['Vittata']; me=o.data
 mat=me.materials[0]; img=[n.image for n in mat.node_tree.nodes if n.type=='TEX_IMAGE'][0]
@@ -18,4 +23,4 @@ for vi,cs in col.items():
 print("IMG",img.name,W,H,"WHITE",len(white))
 if white:
     print("WHITE x",min(v.x for v in white),max(v.x for v in white),"y",min(v.y for v in white),max(v.y for v in white),"z",min(v.z for v in white),max(v.z for v in white))
-json.dump(data,open('/tmp/claude-501/beakverts.json','w'))
+json.dump(data,open(build("beakverts.json"),"w"))

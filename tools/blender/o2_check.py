@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): comprueba pesos e imágenes de o_clean.blend.
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy, collections
 o=bpy.data.objects["Cube.002"]
 names={g.index:g.name for g in o.vertex_groups}

@@ -1,3 +1,5 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): mide la altura de los pies en Walk (ajuste de s4_anim.py).
+# Regenerar todo desde cero (vittata.glb, máscaras, montajes, vittata_glb.js): tools/blender/vittata_build.sh
 import bpy
 rig=bpy.data.objects["Rig"]; o=bpy.data.objects["Vittata"]; sc=bpy.context.scene
 rig.animation_data.action=bpy.data.actions["Walk"]; zs=[]

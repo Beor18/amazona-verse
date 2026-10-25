@@ -1,3 +1,8 @@
+# Pipeline de Vittata · auxiliar (no entra en la build): medidas del cuerpo para la ropa → BUILD/body.json
+# Comando: Blender -b BUILD/o_final_pico.blend --python tools/blender/body.py
+# Regenerar todo desde cero (vittata.glb, vittata_masks.png, vittata_mounts.json, vittata_glb.js):
+#   tools/blender/vittata_build.sh    · rutas en tools/blender/vittata_paths.py (SRC original, BUILD intermedios, OUT)
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__))); from vittata_paths import src, build, out, tool
 import bpy, json
 from mathutils import Vector
 o=bpy.data.objects['Vittata']; me=o.data; rig=bpy.data.objects['Rig']
@@ -25,5 +30,5 @@ for i in range(0,20):
 def bb(pts):
     return {"min":G(Vector((min(p.x for p in pts),max(p.y for p in pts),min(p.z for p in pts)))),"max":G(Vector((max(p.x for p in pts),min(p.y for p in pts),max(p.z for p in pts))))}
 B={b.name:{"head":G(b.head_local),"tail":G(b.tail_local)} for b in rig.data.bones if b.name in ('espalda1','espalda2','cabeza','pieL1','pieL2','pieL3','pieL1.001','pieL2.001','pieL3.001','armL1','armL2','armL3','armL1.001','armL2.001','armL2.008','Bone.005','armL2.003','armL2.005')}
-json.dump({"torso_sections":sec,"feetL":bb(feetL),"feetR":bb(feetR),"thighs":bb(thighs),"bones":B},open('/tmp/claude-501/body.json','w'),indent=1)
+json.dump({"torso_sections":sec,"feetL":bb(feetL),"feetR":bb(feetR),"thighs":bb(thighs),"bones":B},open(build("body.json"),"w"),indent=1)
 print("OK",len(torso),len(feetL),len(thighs))
