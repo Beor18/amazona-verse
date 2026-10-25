@@ -516,7 +516,7 @@ AVE.module('renderer', function (G) {
   }
 
   // ---------- Panel de rendimiento: solo con ?fps=1 en la URL o #fps (el artifact solo pasa el ancla) ----------
-  // Arriba a la derecha, bajo los botones del sistema (no pisa el diálogo ni los controles táctiles), sin eventos de puntero: FPS medio y mínimo del último segundo, draw calls, triángulos, calidad,
+  // Arriba a la derecha, bajo la fila superior del HUD (no pisa el diálogo ni los controles táctiles), sin eventos de puntero: FPS medio y mínimo del último segundo, draw calls, triángulos, calidad,
   // resolución dinámica (DPR actual / máximo) y memoria JS (performance.memory: Chrome y Android). Sin el parámetro no existe.
   const PERF = /(?:^|[?&])fps=1(?:&|$)/.test(location.search) || /^#(?:.*[&,])?fps(?:=1)?(?:[&,]|$)/.test(location.hash) ? { el: null, ms: [], t: 0 } : null;
   function perfCuadro(now, raw) {
@@ -537,6 +537,10 @@ AVE.module('renderer', function (G) {
     P.el.textContent = Math.round(1000 * P.ms.length / suma) + ' FPS · mín ' + Math.round(1000 / max) + '\n' +
       cuenta.ultimo.calls + ' draw calls · ' + k(cuenta.ultimo.tris) + ' triángulos\n' +
       calidad.nivel + ' · DPR ' + renderer.getPixelRatio().toFixed(2) + '/' + DPR_MAX.toFixed(2) + mem;
+    // Debajo de lo más bajo de la fila superior del HUD (objetivo desplegado en el móvil, botones del sistema): QA-33
+    let y = 140;
+    for (const id of ['quest', 'inv', 'sys']) { const e = document.getElementById(id), r = e && e.getBoundingClientRect(); if (r && r.height) y = Math.max(y, r.bottom + 8); }
+    P.el.style.top = Math.round(y) + 'px';
   }
 
   // ---------- Simulación y dibujo ----------
