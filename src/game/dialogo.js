@@ -30,11 +30,17 @@ AVE.module('dialogo', function (G) {
     if (/\?\s*$/.test(text)) return 'curious';
     return 'neutral';
   }
+  // Retrato de la línea; sin imagen no se pone src vacío (el navegador pediría la propia página): se oculta
+  function retrato(src, who) {
+    const el = $('d-img');
+    if (src) { if (el.getAttribute('src') !== src) el.src = src; el.alt = who || ''; el.hidden = false; }
+    else { el.removeAttribute('src'); el.alt = ''; el.hidden = true; }
+  }
   function say(lines, done) { queue = lines.slice(); onDone = done || null; next(); }
   function next() {
     const l = queue.shift();
     if (!l) { $('dialog').hidden = true; const d = onDone; onDone = null; if (d) d(); return; }
-    $('d-who').textContent = l.who; $('d-text').lang = l.lang || ''; $('d-text').textContent = l.text; $('d-img').src = l.img; $('d-img').alt = l.who;
+    $('d-who').textContent = l.who; $('d-text').lang = l.lang || ''; $('d-text').textContent = l.text; retrato(l.img || img(l.who), l.who);
     $('dialog').hidden = false;
     // El protagonista en 3D mueve el pico mientras "dice" la línea y pone cara según el tono
     talk.who = l.who; talk.until = performance.now() + Math.min(5000, 600 + l.text.length * 55);
