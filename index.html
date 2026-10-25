@@ -125,6 +125,7 @@
     <button class="btn xl pause-resume" type="button" data-icon="play" popovertarget="pause" popovertargetaction="hide" autofocus>Seguir jugando</button>
     <div class="pause-grid">
       <button class="btn tile" id="b-char" type="button" data-icon="shirt" popovertarget="pause" popovertargetaction="hide">Mi personaje</button>
+      <button class="btn tile" id="b-comic-menu" type="button" data-icon="book" popovertarget="pause" popovertargetaction="hide" hidden>Mi cómic</button>
       <button class="btn tile" id="b-save" type="button" data-icon="save" popovertarget="pause" popovertargetaction="hide">Guardar</button>
       <button class="btn tile" id="b-load" type="button" data-icon="load" popovertarget="pause" popovertargetaction="hide">Cargar</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
@@ -191,9 +192,19 @@
   <div class="panel">
     <h2 id="end-title">Capítulo 1 completado</h2>
     <p id="end-text"></p>
-    <div class="row center">
+    <div class="row center" id="end-acciones">
       <button class="btn xl" id="b-comic" type="button" data-icon="book">Crear mi cómic</button>
+      <button class="btn" id="b-seguir" type="button" data-icon="play">Seguir explorando</button>
       <button class="btn ghost" id="b-again" type="button" data-icon="reset">Jugar de nuevo</button>
+    </div>
+    <!-- Pregunta dentro del juego antes de borrar la partida (la abre «Jugar de nuevo»; src/game/misiones.js) -->
+    <div id="end-confirm" role="alertdialog" aria-labelledby="end-confirm-title" aria-describedby="end-confirm-text" hidden>
+      <h2 id="end-confirm-title">¿Empezar de nuevo?</h2>
+      <p id="end-confirm-text">Se borrará tu partida y tu cómic.</p>
+      <div class="row center">
+        <button class="btn" id="b-again-no" type="button" data-icon="close">No, volver</button>
+        <button class="btn danger" id="b-again-si" type="button" data-icon="reset">Sí, empezar de nuevo</button>
+      </div>
     </div>
   </div>
 </div>
