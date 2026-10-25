@@ -99,6 +99,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 **F1 · Pruebas más baratas y sin choques** (`tools/build/build.sh`, `tools/build/test.sh` y `docs/equipo/BUILD.md`).
 - **QA-35:** que `build.sh` sin carpeta de salida use una propia y única (por ejemplo `salida/<ref>-<pid>`), así dos agentes no se pisan.
 - **Chrome huérfanos:** `test.sh` dejaba Chrome sin ventana vivos al fallar o al agotar el tiempo (el 25-oct había 22, algunos de 18 h, y subían la carga a 44). Que cierre su Chrome y su perfil temporal en cualquier salida, con `trap` en EXIT, INT y TERM, y añade `--limpiar`, que cierre solo los Chrome `avtest-chrome-*` huérfanos (padre 1) con más de 30 min.
+- **E2E tras recargar** (`tests/qa/e2e.js`): después de `location.reload()` espera 500 ms y `abrir()` puede agarrar la ventana vieja (`W.AV` undefined, e2eTest 25/26 con carga alta). Que espere a una ventana nueva, por condición.
 - **Opción nueva** `test.sh <build> --solo bateria1,bateria2`: corre solo esas baterías, siempre con la medida de consola y de red, y deja la batería completa para QA.
 - Documenta las dos cosas en `BUILD.md` y en la sección «Pruebas» de este archivo.
 - Comprueba que `--extra` sin `--solo` da exactamente el mismo resultado que hoy.

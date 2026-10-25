@@ -15,7 +15,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 8 | Pieles de las 22 especies (rivales de Retos y creador; crías sin especie hasta que decida Kelvin) | **Hecho** | pielesTest 13/13 |
 | 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | **Hecho** · falta: los Retos no leen el modo relajado; a 320 px no caben joystick y botones (de antes) | accesibilidadTest 36/36 |
 | 10 | Diario: datos validados con fuente; especies y 5 paradas | **Hecho** | eduTest 79/79, DIARIO_VALIDACION.md |
-| 11 | Pruebas estables (contextTest) | en curso | 3 corridas seguidas en verde |
+| 11 | Pruebas estables (contextTest y retosTest) | **Hecho** · el E2E tras recargar va en F1 | 3 corridas seguidas de 16/16 y 17/17 |
 | 12 | Mejoras de diversión de Fable (las 5 ★ de `DIVERSION_CAP1.md`) | en curso (Fable; Kelvin pidió «terminar lo más posible») | casos de cada mejora |
 | 13 | Jugarlo con 2–3 niños de verdad: duración, dónde se traban, qué les divierte | **Kelvin** (Android y niños) | notas en `BUGS.md` |
 | 14 | Canon pendiente (Guardián, Voz, máquina, medalla) | sale con marcadores neutros; decide Kelvin | `[KELVIN-n]` en `historia.js` |
