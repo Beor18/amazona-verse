@@ -427,7 +427,7 @@ AVE.module('aula', function (G) {
     }
     return (await copiar(contenido)) ? 'copiado' : 'manual';
   }
-  // Equipos compartidos: borra la partida (y sus copias .prev/.unreadable, que guardan el nombre inventado) sin tocar el
+  // Equipos compartidos: borra la partida (y sus copias .prev y de rescate, que guardan el nombre inventado) sin tocar el
   // reporte del aula. Los demás módulos (criadero) borran lo suyo con el gancho 'nuevoEstudiante'.
   function nuevoEstudiante() {
     const K = G.guardado.KEY;
@@ -466,8 +466,10 @@ AVE.module('aula', function (G) {
     soloDisp: { es: 'Solo lo guardado en este dispositivo. No se envía nada por la red.', en: 'Only what is stored on this device. Nothing is sent over the network.' },
     estacion: { es: 'Estación', en: 'Station' }, estacionNota: { es: 'Solo un número de estación: el reporte nunca lleva nombres de estudiantes.', en: 'Only a station number: the report never includes student names.' },
     sinEstacion: { es: '(sin estación)', en: '(no station)' },
-    nuevo: { es: 'Nuevo estudiante en este equipo', en: 'New student on this device' }, nuevoSeguro: { es: 'Sí, empezar de cero', en: 'Yes, start fresh' },
-    nuevoNota: { es: 'Borra la partida de este equipo (personaje, avance, cómic y criadero) para el siguiente estudiante. El reporte del aula se conserva.', en: 'Erases the game on this device (character, progress, comic and nursery) for the next student. The class report is kept.' },
+    nuevo: { es: 'Nuevo estudiante: comenzar de cero', en: 'New student: start from scratch' },
+    nuevoPregunta: { es: '¿Comenzar de cero? Se borrará tu partida y tu cómic.', en: 'Start from scratch? Your game and comic will be erased.' },
+    nuevoNo: { es: 'No, volver', en: 'No, go back' }, nuevoSeguro: { es: 'Sí, comenzar de cero', en: 'Yes, start from scratch' },
+    nuevoNota: { es: 'Borra la partida de este equipo (personaje, avance, cómic, criadero y copias de rescate) para el siguiente estudiante. El reporte del aula se conserva.', en: 'Erases the game on this device (character, progress, comic, nursery and rescue copies) for the next student. The class report is kept.' },
     nuevoHecho: { es: 'Listo para el siguiente estudiante.', en: 'Ready for the next student.' },
     grado: { es: 'Nivel', en: 'Level' }, predet: { es: 'Predeterminados de este dispositivo', en: 'Defaults for this device' },
     csv: { es: 'Descargar CSV', en: 'Download CSV' }, json: { es: 'Descargar JSON', en: 'Download JSON' }, copiar: { es: 'Copiar CSV', en: 'Copy CSV' },
@@ -544,8 +546,12 @@ AVE.module('aula', function (G) {
         <button class="btn ghost" type="button" id="m-copiar">${esc(m('copiar'))}</button></div>
       <p class="maestro-estado" id="m-estado" role="status" aria-live="polite"></p>
       <textarea id="m-manual" readonly hidden rows="5" aria-label="CSV"></textarea>
-      <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-nuevo" data-icon="reset">${esc(m('nuevo'))}</button>
-        <button class="btn danger sm" type="button" id="m-nuevo-si" hidden>${esc(m('nuevoSeguro'))}</button></div>
+      <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-nuevo" data-icon="reset">${esc(m('nuevo'))}</button></div>
+      <div id="m-nuevo-conf" role="alertdialog" aria-labelledby="m-nuevo-q" hidden>
+        <p class="maestro-estado" id="m-nuevo-q">${esc(m('nuevoPregunta'))}</p>
+        <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-nuevo-no" data-icon="close">${esc(m('nuevoNo'))}</button>
+          <button class="btn danger sm" type="button" id="m-nuevo-si" data-icon="reset">${esc(m('nuevoSeguro'))}</button></div>
+      </div>
       <p class="note">${esc(m('nuevoNota'))}</p>
       <div class="row maestro-borrar"><button class="btn ghost sm" type="button" id="m-borrar" data-icon="reset">${esc(m('borrar'))}</button>
         <button class="btn danger sm" type="button" id="m-borrar-si" hidden>${esc(m('borrarSeguro'))}</button></div>
@@ -591,9 +597,12 @@ AVE.module('aula', function (G) {
     box.querySelector('#m-csv').onclick = async () => { if (est.value !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteCSV(); fin(await descargar(nombreArchivo('csv'), c), c); };
     box.querySelector('#m-json').onclick = async () => { if (est.value !== aj.estacion) est.dispatchEvent(new Event('change')); estado(m('preparando')); const c = reporteJSON(); fin(await descargar(nombreArchivo('json'), c), c); };
     box.querySelector('#m-copiar').onclick = async () => { const c = reporteCSV(); fin((await copiar(c)) ? 'copiado' : 'manual', c); if (box.querySelector('#m-estado').textContent === m('copiado')) estado(t({ es: 'Reporte copiado al portapapeles.', en: 'Report copied to the clipboard.' })); };
-    const nb = box.querySelector('#m-nuevo'), nsi = box.querySelector('#m-nuevo-si');
-    nb.onclick = () => { nsi.hidden = false; nsi.focus(); };
-    nsi.onclick = () => { nuevoEstudiante(); nsi.hidden = true; estado(m('nuevoHecho')); };
+    // «Nuevo estudiante» = «Comenzar de cero» del juego: la misma pregunta, «No, volver» (con el foco) y «Sí, comenzar de cero»
+    const nb = box.querySelector('#m-nuevo'), nsi = box.querySelector('#m-nuevo-si'), nno = box.querySelector('#m-nuevo-no'), nconf = box.querySelector('#m-nuevo-conf');
+    const preguntarNuevo = on => { nconf.hidden = !on; nb.hidden = on; (on ? nno : nb).focus(); };
+    nb.onclick = () => preguntarNuevo(true);
+    nno.onclick = () => preguntarNuevo(false);
+    nsi.onclick = () => { nuevoEstudiante(); nconf.hidden = true; nb.hidden = false; estado(m('nuevoHecho')); };
     const bb = box.querySelector('#m-borrar'), si = box.querySelector('#m-borrar-si');
     bb.onclick = () => { si.hidden = false; si.focus(); };
     si.onclick = () => { borrarProgreso(); si.hidden = true; estado(m('borrado')); };

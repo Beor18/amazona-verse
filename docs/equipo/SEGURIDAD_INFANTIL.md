@@ -56,7 +56,7 @@ Revisión de `src/`, `content/` e `index.html` (estados al día con 48524f5). Bo
 - El progreso se guarda solo en este equipo; no lo recibimos.
 - El navegador descarga las letras desde Google Fonts, que ve la dirección de internet del equipo. *[Quitar al servirlas desde el paquete.]*
 - El maestro puede descargar un reporte con estación, fecha, grado y respuestas, sin nombres. Si la escuela añade nombres, el archivo pasa a ser un registro escolar (FERPA) bajo su control.
-- Para borrar: Modo Maestro → "Borrar progreso"; Pausa → "Reiniciar". Borrar los datos del navegador lo elimina todo.
+- Para borrar: la partida y el cómic solo se borran si el jugador lo elige: Pausa → «Comenzar de cero» (o «Comenzar de cero» en el panel final), que pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero». En un equipo compartido, Modo Maestro → «Nuevo estudiante: comenzar de cero» (la misma pregunta, dos toques; borra partida, cómic, nido, récords y copias de rescate) y «Borrar progreso» (solo el reporte del aula). Una partida guardada que no se puede leer no se borra: se aparta en hasta 3 copias de rescate con fecha en este equipo, y «Nuevo estudiante» las elimina. Borrar los datos del navegador lo elimina todo.
 - Pedimos a los niños no escribir su nombre real.
 - Si algún día recogemos datos, antes pediremos permiso a la escuela o la familia.
 - Contacto: *[correo del responsable]*.
