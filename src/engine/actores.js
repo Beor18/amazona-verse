@@ -217,6 +217,7 @@ AVE.module('actores', function (G) {
       P.update(dt);
     }
     if (companion3D && companion3D.root.visible) followCompanion(dt, snap);
+    updateTag(dt);
   }
   // ---------- Compañero: la cría del criadero (o, sin criadero, el aprendiz del niño) ----------
   // Bebé: va a saltitos detrás (1,2 m), no vuela (salta y aletea). Juvenil: camina detrás (1,6 m). Adulto (y aprendiz): 1,9 m y
@@ -289,11 +290,42 @@ AVE.module('actores', function (G) {
   // Aprendiz: modelo 3D con su look, o retrato 2D como sprite si no hay modelo
   // Datos del compañero: con criadero, su cría nacida (sin cría nacida no hay compañero); sin criadero, el aprendiz del niño
   const compa = { key: null, info: null, vest: null };
+  // Letrero con el nombre de la cría ("Iguaca · Bebé · nivel 3", de G.criadero.etiqueta): papel claro y tinta oscura,
+  // sobre la cabeza y con fundido cuando Vittata está a 3 m o menos. Nunca lleva texto escrito por el niño.
+  const tag = (() => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 112;
+    const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 4;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 }));
+    sp.visible = false; sp.renderOrder = 10; sp.userData.sinCulling = true; sp.name = 'letrero_compa'; scene.add(sp);
+    return { c, tex, sp, text: '', a: 0 };
+  })();
+  function drawTag(text) {
+    tag.text = text || '';
+    const g = tag.c.getContext('2d'), css = getComputedStyle(document.documentElement), v = (k, d) => (css.getPropertyValue(k) || '').trim() || d;
+    const font = v('--font-display', '"Fredoka", system-ui, sans-serif');
+    g.clearRect(0, 0, tag.c.width, tag.c.height);
+    if (!tag.text) { tag.tex.needsUpdate = true; return; }
+    g.font = '600 44px ' + font;
+    const w = Math.min(tag.c.width - 8, g.measureText(tag.text).width + 56), x0 = (tag.c.width - w) / 2, r = 26;
+    g.beginPath(); g.moveTo(x0 + r, 6); g.arcTo(x0 + w, 6, x0 + w, 106, r); g.arcTo(x0 + w, 106, x0, 106, r); g.arcTo(x0, 106, x0, 6, r); g.arcTo(x0, 6, x0 + w, 6, r); g.closePath();
+    g.fillStyle = v('--c-paper', '#f6ecd2'); g.fill(); g.lineWidth = 5; g.strokeStyle = v('--c-paper-edge', '#d9bf8a'); g.stroke();
+    g.fillStyle = v('--c-ink', '#2b2116'); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(tag.text, tag.c.width / 2, 58, w - 40);
+    tag.tex.needsUpdate = true;
+    tag.sp.scale.set(1.7 * w / tag.c.width * (tag.c.width / 512), 1.7 * 112 / 512, 1);
+  }
+  function updateTag(dt) {
+    const show = companion3D && companion3D.root.visible && !!tag.text && Math.hypot(S.pos.x - companionPos.x, S.pos.z - companionPos.z) <= 3;
+    tag.a += ((show ? 1 : 0) - tag.a) * Math.min(1, dt * 6);
+    tag.sp.visible = tag.a > 0.02; tag.sp.material.opacity = tag.a;
+    if (tag.sp.visible) { const r = companion3D.root.position, h = J.altura * ((compa.info && compa.info.escala) || 1); tag.sp.position.set(r.x, r.y + h + 0.35, r.z); }
+  }
   function setCompa(info) {
     const key = info ? info.id + ':' + info.etapa : '';
     if (key === compa.key && (!info || companion3D.root.visible)) return;
     if (compa.vest) { compa.vest.quitar(); compa.vest = null; }
     compa.key = key; compa.info = info;
+    let txt = ''; try { txt = info && G.criadero.etiqueta ? G.criadero.etiqueta(info) : ''; } catch (e) { txt = ''; }
+    drawTag(txt);
     if (!info) { companion3D.root.visible = false; cShadow.visible = companion.visible = false; return; }
     const altura = J.altura * (info.escala || 1);
     companion3D.root.scale.setScalar(altura / companion3D.height);
@@ -303,7 +335,7 @@ AVE.module('actores', function (G) {
     companion3D.root.visible = true; cShadow.visible = true; companion.visible = false;
     companionPos.x = S.pos.x - S.facing.x * 1.6; companionPos.z = S.pos.z - S.facing.z * 1.6; cmp.y = null;
   }
-  G.on('companero', info => { if (companion3D) setCompa(info || null); });
+  G.on('companero', info => { if (companion3D) { compa.key = null; setCompa(info || null); } }); // también rehace el letrero (etapa, nivel)
   async function refreshCompanion() {
     const CR = G.criadero && G.criadero.companero ? G.criadero : null;
     if (CR) {

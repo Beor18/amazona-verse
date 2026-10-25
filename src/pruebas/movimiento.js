@@ -16,6 +16,13 @@ AVE.module('movimiento', function (G) {
     const R = G.pruebas.runner(), check = R.check, met = {};
     const keep = { pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), vy: S.vy, yaw: G.camara.yaw, quiet: G.quiet, lazy: [G.camara.CAM.lazy, G.camara.CAM.lazyFly] };
     G.camara.CAM.lazy = G.camara.CAM.lazyFly = 0; // la cámara no gira sola durante la prueba: las direcciones son repetibles
+    // Mundo limpio, venga de donde venga (otras pruebas, partida nueva con el creador abierto): sin ventanas ni diálogos,
+    // MOVE en reposo y la cámara con el giro inicial del pack (las direcciones de la prueba son relativas a la cámara)
+    const $ = G.util.$, ventanas = ['creator', 'comic', 'end'].filter(id => $(id) && !$(id).hidden);
+    for (const id of ventanas) $(id).hidden = true;
+    if (G.dialogo.open()) G.dialogo.clear(); if (G.ui.cardOpen) G.ui.hideCard();
+    Object.assign(M, { flying: false, landing: false, takeoff: 0, swimming: false, dashT: 0, dashCd: 0, jumping: false, buffer: 0, land: 0, vx: 0, vz: 0 });
+    S.vy = 0; G.camara.yaw = G.pack.jugador && G.pack.jugador.camara != null ? G.pack.jugador.camara : 0.35;
     G.quiet = true;
     const P3 = G.actores.player3D;
     const frame = (fn, n) => { const out = []; for (let i = 0; i < (n || 1); i++) { if (fn) fn(i); G.renderer.update(DT); out.push({ x: S.pos.x, y: S.pos.y, z: S.pos.z, vy: S.vy, sp: M.speed, g: M.groundY, fly: M.flying, sw: !!M.swimming, gr: M.grounded }); } return out; };
@@ -203,6 +210,7 @@ AVE.module('movimiento', function (G) {
       F.endFlight(); M.vx = M.vz = 0; M.swimming = false;
       Object.assign(S.pos, keep.pos); S.facing = keep.facing; S.vy = 0; G.camara.yaw = keep.yaw; G.quiet = keep.quiet;
       G.camara.CAM.lazy = keep.lazy[0]; G.camara.CAM.lazyFly = keep.lazy[1];
+      for (const id of ventanas) $(id).hidden = false;
       G.camara.place(true);
     }
     const res = R.result(); res.metricas = met;
