@@ -92,7 +92,9 @@ AVE.module('pruebas', function (G) {
     const before = ch.mounted.neck.objects[0];
     ch.applyLook(Object.assign({}, all, { accessories: Object.assign({}, all.accessories, { neck: { id: 'panuelo', color: '#7a4fb3' } }) }));
     let col = null; ch.mounted.neck.objects[0].traverse(o => { if (o.isMesh && !col) col = '#' + o.material.color.getHexString(); });
-    check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && col === '#7a4fb3', col);
+    // El material puede guardar el color en sRGB o ya pasado a lineal (flujo de color del personaje): ambos son el color elegido
+    const lin = '#' + new THREE.Color('#7a4fb3').convertSRGBToLinear().getHexString();
+    check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && (col === '#7a4fb3' || col === lin), col);
     ch.applyLook({ species: 'versicolor', accessories: {} });
     check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
     // Ropero: cada pieza en cada estilo se monta en su hueso, y gorras/lentes no tocan ojos ni pico
