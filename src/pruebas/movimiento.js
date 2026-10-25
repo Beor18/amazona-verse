@@ -40,12 +40,14 @@ AVE.module('movimiento', function (G) {
       if (opts.lugar) return opts.lugar;
       const c = G.pack.jugador && G.pack.jugador.aparicion || keep.pos;
       let best = null;
-      for (let rr = 0; rr <= 48; rr += 4) for (let a = 0; a < (rr ? 16 : 1); a++) {
+      for (let rr = 0; rr <= 120; rr += 6) for (let a = 0; a < (rr ? 16 : 1); a++) {
         const x = c.x + Math.cos(a / 16 * Math.PI * 2) * rr, z = c.z + Math.sin(a / 16 * Math.PI * 2) * rr;
         if (Math.abs(x) > G.terreno.WORLD - 14 || Math.abs(z) > G.terreno.WORLD - 14) continue;
         let mx = -1e9, mn = 1e9;
         for (let b = 0; b < 8; b++) for (const d of [3, 7, 11]) { const h = H(x + Math.cos(b) * d, z + Math.sin(b) * d); mx = Math.max(mx, h); mn = Math.min(mn, h); }
         if (G.agua.levelAt(x, z) > H(x, z) - 0.5) continue;
+        // ni agua a menos de 30 m (el vuelo de prueba no debe acabar nadando en el mar o el río)
+        if ([10, 20, 30].some(d => [0, 1, 2, 3, 4, 5, 6, 7].some(b => { const ax = x + Math.cos(b * Math.PI / 4) * d, az = z + Math.sin(b * Math.PI / 4) * d; return G.agua.levelAt(ax, az) > H(ax, az) - 0.3; }))) continue;
         if (F.colliders.some(k => k.r > 0 && (!k.when || k.when()) && Math.hypot(k.x - x, k.z - z) < 12 + (k.r || 0) + Math.max(k.hx || 0, k.hz || 0))) continue;
         if (F.perchas.some(p => Math.hypot(p.x - x, p.z - z) < 12 + p.r)) continue;
         if (!best || mx - mn < best.d) best = { x, z, d: mx - mn };
@@ -98,7 +100,19 @@ AVE.module('movimiento', function (G) {
       reset(L.x, L.z); S.pos.y += 0.4; M.grounded = false; M.coyote = T.coyote; frame(null, 4);
       F.tryJump();
       check('Tiempo de coyote: salta 0,07 s después de dejar el suelo', S.vy > T.jumpV * 0.9 && !M.flying, T.coyote + ' s');
-      // 3. Vuelo: despegar, cernirse sin tocar nada, aterrizar suave
+      // 3. Vuelo: despegar, cernirse sin tocar nada, aterrizar suave.
+      // La cámara mira hacia el lado más despejado: el relieve más bajo a 60 m (y a la derecha, por el giro) y sin agua,
+      // para que el crucero y el giro no choquen con una ladera ni acaben sobre el mar
+      { let mejor = null; const h0 = H(L.x, L.z);
+        for (let b2 = 0; b2 < 16; b2++) {
+          const ang = b2 / 16 * Math.PI * 2, fx = Math.sin(ang), fz = Math.cos(ang), rx = -fz, rz = fx;
+          let alto = -1e9, agua = false;
+          for (const d of [10, 20, 30, 40, 50, 60]) for (const [ux, uz] of [[fx, fz], [(fx + rx) * 0.7, (fz + rz) * 0.7], [rx, rz]]) {
+            const x = L.x + ux * d, z = L.z + uz * d; alto = Math.max(alto, H(x, z) - h0); if (G.agua.levelAt(x, z) > H(x, z) - 0.3) agua = true;
+          }
+          const score = alto + (agua ? 100 : 0); if (!mejor || score < mejor.score) mejor = { score, fx, fz };
+        }
+        G.camara.yaw = Math.atan2(-mejor.fx, -mejor.fz); met.direccionVuelo = { despejeM: r2(mejor.score) }; }
       reset(L.x, L.z);
       F.toggleFly(); r = frame(null, 60);
       const alto = S.pos.y - y0;
@@ -107,7 +121,8 @@ AVE.module('movimiento', function (G) {
       r = frame(null, 120);
       met.cernidoDeriva = r2(Math.abs(r[r.length - 1].y - r[0].y));
       check('Cernido: sin tocar nada se queda en el sitio (no cae)', M.flying && met.cernidoDeriva < 0.3, met.cernidoDeriva + ' m en 2 s');
-      r = frame(() => I.jumpHeld = true, 120); I.jumpHeld = false;
+      // sube hasta 20 m sobre el suelo (o 5 s): crucero y giro por encima de las copas, lejos del suelo y del agua
+      { let nn = 0; while (S.pos.y - M.groundY < 20 && nn++ < 300) frame(() => I.jumpHeld = true); } I.jumpHeld = false;
       met.subirMs = r2(T.climbV);
       r = frame(() => K.add('w'), 150); K.clear();
       met.vueloVel = r2(M.speed);
