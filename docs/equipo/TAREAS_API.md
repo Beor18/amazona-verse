@@ -95,6 +95,45 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - Crea `docs/COMO_SE_JUEGA.md`, de una página y en lenguaje para Kelvin y para familias: la meta del juego, qué hace el jugador minuto a minuto, los controles, el Modo Retos (si ya está en main) y el progreso (Diario, ropa, cómic).
 - Para todas las edades, sin «grados 3 a 6»; lo educativo no es el gancho. Solo documentos.
 
+## Carril F: herramientas que ahorran tiempo de máquina
+**F1 · Pruebas más baratas y sin choques** (`tools/build/build.sh`, `tools/build/test.sh` y `docs/equipo/BUILD.md`).
+- **QA-35:** que `build.sh` sin carpeta de salida use una propia y única (por ejemplo `salida/<ref>-<pid>`), así dos agentes no se pisan.
+- **Chrome huérfanos:** `test.sh` dejaba Chrome sin ventana vivos al fallar o al agotar el tiempo (el 25-oct había 22, algunos de 18 h, y subían la carga a 44). Que cierre su Chrome y su perfil temporal en cualquier salida, con `trap` en EXIT, INT y TERM, y añade `--limpiar`, que cierre solo los Chrome `avtest-chrome-*` huérfanos (padre 1) con más de 30 min.
+- **Opción nueva** `test.sh <build> --solo bateria1,bateria2`: corre solo esas baterías, siempre con la medida de consola y de red, y deja la batería completa para QA.
+- Documenta las dos cosas en `BUILD.md` y en la sección «Pruebas» de este archivo.
+- Comprueba que `--extra` sin `--solo` da exactamente el mismo resultado que hoy.
+
+**F2 · La landing cuenta lo nuevo** (`web/index.html`, `web/assets/` solo si hace falta).
+- Añade una sección breve y atractiva del **Modo Retos** (carrera en El Yunque y ¡Escapa de la tormenta!) con las capturas `docs/img/retos_carrera.png` y `retos_tormenta.png`, optimizadas a WebP o JPG de 1200 px como mucho.
+- Menciona los récords de la casa y el cómic para compartir, sin prometer lo que no esté en main.
+- Para todas las edades. Lo educativo no es el gancho («Vuela, explora y salva tu isla»).
+- No toques los créditos del pie.
+- **No publiques:** publica la sesión principal.
+
+## Carril G: pulido del juego
+**G1 · Fundido de la flora entre la cámara y Vittata** (la antigua B1, en `src/engine/vegetacion.js`).
+- La planta que tapa a la cotorra se vuelve translúcida.
+- Hay cambios a medias, sin commit, de una corrida anterior en `vegetacion.js`: revísalos y continúa.
+- 2 capturas, antes y después, en `docs/img/`. Añade un caso de prueba.
+
+**G2 · Controles táctiles en teléfonos de 320 px** (`src/ui/ui.css`, sección de controles táctiles).
+- A 320×568 el joystick y los botones no caben uno al lado del otro, con o sin modo zurdo.
+- Que quepan sin taparse y con botones de 44 px o más.
+- Añade el caso a `accesibilidadTest`, en su maqueta móvil de `src/game/accesibilidad.js`.
+
+## Carril H: episodio 2
+**H1 · Prototipo jugable del episodio 2** (`content/ep2/`, nuevo; antes era la E2-1 de `TAREAS_EQUIPO2.md`).
+1. Lee `docs/equipo/EP2_GDD.md`, `EP2_NARRATIVA.md` y `EP2_MISIONES.md`.
+2. Crea el pack `content/ep2` a partir de `content/plantilla`. Ese es el modelo de cómo un pack reutiliza el motor: no copies código del motor.
+3. Que arranque con `index.html?pack=ep2`, con:
+   - una zona jugable;
+   - la **primera misión completa**;
+   - diálogos;
+   - una parada con un dato verificable y su fuente.
+4. Lo que dependa del canon de Kelvin (la lista está al final de `EP2_GDD.md`) va con **marcadores neutros** `[KELVIN]`.
+5. Añade su prueba al estilo de `templateTest`: el pack arranca y la misión se completa.
+6. El capítulo 1 tiene que seguir intacto.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
