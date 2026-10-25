@@ -143,8 +143,7 @@ AVE.module('fisica', function (G) {
   function pushOut(p, c, rad) {
     if (c.r <= 0 || (c.when && !c.when())) return;
     if (KIND_SOLIDO[c.kind] && G.solidos && G.solidos.activo) {
-      const now = S.clock || 0;
-      if (c._sol === undefined || (!c._sol && now - c._solT > 0.5)) { c._sol = G.solidos.cubre(c); c._solT = now; }
+      if (c._solV !== G.solidos.version) { c._sol = G.solidos.cubre(c); c._solV = G.solidos.version; } // se renueva al crecer los sólidos
       if (c._sol) return;
     }
     if (p.y != null && p.y - G.terreno.height(c.x, c.z) > (c.h != null ? c.h : c.kind === 'tree' ? c.r * 9 : alturas[c.kind] || 2)) return;
@@ -346,8 +345,12 @@ AVE.module('fisica', function (G) {
     MOVE.onTerrain = Math.abs(ground - G.terreno.height(S.pos.x, S.pos.z)) < 0.05;
     MOVE.slope = MOVE.grounded && MOVE.onTerrain ? Math.acos(Math.min(1, slopeAt(S.pos.x, S.pos.z).y)) * 180 / Math.PI : 0;
     // Posada: sobre un sólido ('alto': techo, roca, cornisa) o sobre algo fino ('fino': rama, baranda, poste, cumbrera)
+    const antes = MOVE.posado;
     MOVE.posado = '';
     if (SOL && MOVE.grounded && !MOVE.onTerrain && Math.abs(SOL.suelo(S.pos.x, S.pos.z, S.pos.y + 0.01) - S.pos.y) < 0.03) MOVE.posado = SOL.fino(S.pos.x, S.pos.z, S.pos.y + 0.01) ? 'fino' : 'alto';
+    // Gancho 'posado' una vez por aterrizaje (el cómic cuenta la primera vez en un techo o en una rama alta)
+    if (MOVE.posado && !antes && MOVE.wasAirPosado) G.emit('posado', { tipo: MOVE.posado, que: SOL.que(S.pos.x, S.pos.z, S.pos.y + 0.01), altura: +(S.pos.y - G.terreno.height(S.pos.x, S.pos.z)).toFixed(2) });
+    MOVE.wasAirPosado = !MOVE.grounded; // en el aire hasta este cuadro: el próximo contacto es un aterrizaje
     MOVE.fase = MOVE.swimming ? 'nado' : MOVE.flying ? (MOVE.takeoff > 0 ? 'despegue' : MOVE.landing ? 'aterrizaje' : hSpeed < 2.5 ? 'cernido' : 'vuelo')
       : MOVE.grounded ? 'suelo' : jumpHeld && S.vy < 0 ? 'planeo' : 'aire';
     return moving;

@@ -20,7 +20,7 @@ AVE.module('solidos', function (G) {
   const CELL = 0.3, B = 8, NS = 2, GAP = 1.2;          // celda (m), bloque (celdas), tramos por celda, hueco que separa tramos (m)
   const SO = { stepUp: 0.45, cuerpo: 1.5, radio: 0.32, pie: 0.15, tolSuelo: 0.35, finoCaida: 0.45, regionM: 24, regionR: 40, msCuadro: 5 };
   const blocks = new Map(), flora = new Map(); // estático (edificios, estructuras, contenido) y flora (por regiones, se descarga lejos)
-  let destino = blocks, regionActual = null;
+  let destino = blocks, regionActual = null, tipoActual = 0; // tipo de la flora que se rasteriza: 1 árbol, 2 roca
   const sucios = new Set(); // bloques estáticos tocados desde el último rellenar
   const regionBloques = new Map();
   let celdas = 0, triangulos = 0;
@@ -41,6 +41,7 @@ AVE.module('solidos', function (G) {
   function insert(ix, iz, y, top, gx, gz) {
     const bx = Math.floor(ix / B), bz = Math.floor(iz / B), b = block(bx, bz, true), c = (ix - bx * B) + (iz - bz * B) * B;
     const yc = cm(y), tc = cm(top), gap = GAP * 100;
+    if (destino === flora && tipoActual) (b.k || (b.k = new Uint8Array(B * B)))[c] |= tipoActual;
     let n = b.n[c];
     if (!n) celdas++;
     for (let s = 0; s < n; s++) {
@@ -145,12 +146,12 @@ AVE.module('solidos', function (G) {
     sucios.clear();
     return nuevos.length;
   }
-  let rellenas = 0;
-  function trabajar(msMax) {
+  let rellenas = 0, version = 0; // version sube cada vez que termina una pieza (fisica renueva su caché de colliders)
+  function trabajar(msMax, soloEstatico) {
     const t0 = performance.now();
-    while ((cola.length || colaFlora.length) && performance.now() - t0 < msMax) {
+    while ((cola.length || (colaFlora.length && !soloEstatico)) && performance.now() - t0 < msMax) {
       const Q = cola.length ? cola : colaFlora, J = Q[0], p = J.pos, I = J.idx, m = J.m;
-      destino = J.region ? flora : blocks; regionActual = J.region || null;
+      destino = J.region ? flora : blocks; regionActual = J.region || null; tipoActual = /^(edificios|estructura)/.test(J.etiqueta || '') ? 0 : /roca|piedras/.test(J.etiqueta || '') ? 2 : 1;
       const fin = Math.min(J.nt, J.t + 400);
       for (let t = J.t; t < fin; t++) {
         const i0 = I ? I.getX(t * 3) : t * 3, i1 = I ? I.getX(t * 3 + 1) : t * 3 + 1, i2 = I ? I.getX(t * 3 + 2) : t * 3 + 2;
@@ -158,7 +159,7 @@ AVE.module('solidos', function (G) {
         tri(va, vb, vc);
       }
       J.t = fin;
-      if (J.t >= J.nt) { Q.shift(); if (Q === cola && !cola.length) { destino = blocks; rellenas += rellenar(); } }
+      if (J.t >= J.nt) { Q.shift(); version++; if (Q === cola && !cola.length) { destino = blocks; rellenas += rellenar(); } }
     }
     destino = blocks; regionActual = null;
     return !cola.length && !colaFlora.length;
@@ -266,7 +267,10 @@ AVE.module('solidos', function (G) {
     if (cola.length || colaFlora.length) trabajar(SO.msCuadro);
   }, 96);
   // Termina todo lo pendiente ya (pruebas y capturas)
-  function terminar() { floraCerca(); while (cola.length || colaFlora.length) trabajar(50); if (!estaticosListos && porRegion) { estaticosListos = true; resolver(); } }
+  function terminar(soloEstatico) {
+    if (soloEstatico) { while (cola.length) trabajar(50, true); return; }
+    floraCerca(); while (cola.length || colaFlora.length) trabajar(50); if (!estaticosListos && porRegion) { estaticosListos = true; resolver(); }
+  }
 
   // ---------- Consultas para fisica.js ----------
   const RING = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]];
@@ -318,15 +322,35 @@ AVE.module('solidos', function (G) {
   }
   // Para la cámara: el alto del tramo que contiene la altura y (con margen), o -Infinity
   function dentro(x, z, y) { let t = -Infinity; spans(x, z, (lo, top) => { if (y > lo - 0.3 && y < top + 0.4 && top > t) t = top; }); return t; }
+  // Sobre qué está parada en (x, z) con los pies en y: 'techo', 'cumbrera', 'baranda', 'poste', 'cornisa', 'rama', 'roca' o null
+  function que(x, z, y) {
+    const ix = Math.floor(x / CELL), iz = Math.floor(z / CELL), bx = Math.floor(ix / B), bz = Math.floor(iz / B), kk = key(bx, bz), c = (ix - bx * B) + (iz - bz * B) * B;
+    let mejor = -Infinity, deFlora = false, tipo = 0;
+    for (const M of [blocks, flora]) {
+      const b = M.get(kk); if (!b) continue;
+      for (let s2 = 0; s2 < b.n[c]; s2++) { const top = b.hi[c * NS + s2] / 100; if (top <= y + SO.tolSuelo && top > mejor) { mejor = top; deFlora = M === flora; tipo = deFlora && b.k ? b.k[c] : 0; } }
+    }
+    if (mejor === -Infinity) return null;
+    if (deFlora && tipo) return tipo & 2 && !(tipo & 1) ? 'roca' : 'rama'; // edificios instanciados (tipo 0): como los demás
+    const h = y - G.terreno.height(x, z);
+    if (!fino(x, z, y + 0.01)) return h >= 1.8 ? 'techo' : 'cornisa';
+    const d = CELL * 1.5, g = altoEn(x, z, y + 0.01), c2 = g - SO.finoCaida;
+    const bajoX = altoEn(x + d, z, g) < c2 && altoEn(x - d, z, g) < c2, bajoZ = altoEn(x, z + d, g) < c2 && altoEn(x, z - d, g) < c2;
+    return h >= 2.5 ? 'cumbrera' : bajoX && bajoZ ? 'poste' : 'baranda';
+  }
   // ¿Hay sólido donde está el collider a mano? (entonces sobra)
   function cubre(c) {
     if (c.kind === 'arbol' && !regionHecha(c.x, c.z)) return false;
-    let hay = false; spans(c.x, c.z, () => { hay = true; return false; });
-    return hay;
+    // el centro y, en los grandes, puntos a 0,3 y 0,6 del radio (el centro de un techo de paja puede estar hueco)
+    const r = c.hx ? Math.max(c.hx, c.hz) : c.r || 0, pts = [[0, 0]];
+    if (r > 1) for (const f of [0.3, 0.6]) for (const [dx, dz] of RING.slice(1)) pts.push([dx * r * f, dz * r * f]);
+    let n = 0;
+    for (const [dx, dz] of pts) { let hay = false; spans(c.x + dx, c.z + dz, () => { hay = true; return false; }); if (hay && (++n >= Math.min(2, pts.length))) return true; }
+    return false;
   }
   function stats() {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, fino, percha, cubre, dentro, agregar, terminar, stats, altoEn };
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn };
 });

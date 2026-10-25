@@ -211,7 +211,7 @@ AVE.module('movimiento', function (G) {
         const aterrizarEn = (x, z, y) => { reset(x, z); S.pos.y = y; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) frame(); SO.terminar(); };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // Techo: el edificio con techo más alto de los de tipo casa, bohío o caney (si no, el primero con más de 3 m)
-        const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3);
+        const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3).sort((a, b) => ACT[b].alto - ACT[a].alto);
         const idT = ids.find(id => /casa_paja|bohio|caney/.test(id)) || ids[0];
         if (idT) {
           const [bx, by, bz] = ACT[idT].pos, tp = altoCerca(bx, bz, 1.5);
@@ -259,6 +259,40 @@ AVE.module('movimiento', function (G) {
             check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
           } else check('Se posa en una rama', false, 'sin rama cerca de ' + sitioArbol.m);
         }
+        // Todos los edificios cargados (de mundo.js o del streaming): no se atraviesan y tienen dónde pararse encima
+        const msK = SO.SO.msCuadro; SO.SO.msCuadro = 0.3; // la flora espera: aquí solo cuentan los edificios
+        const fallos = [], enterrados = []; let revisados = 0;
+        // Piezas marcadas decorativo: true en el mapa (cercas, canoas, muelles compactos): chocan, pero no se les pide techo
+        const STI = G.mundo.streaming && G.mundo.streaming.instancias, instDe = id => STI && (Array.isArray(STI) ? STI.find(i => i.id === id) : STI[id]);
+        const decorativo = id => !!(ACT[id].decorativo || ((instDe(id) || {}).e || {}).decorativo);
+        try {
+          for (const id of Object.keys(ACT)) {
+            const a = ACT[id]; if (!a || a.tipo !== 'kelvin' || !a.pos) continue;
+            const [bx, , bz] = a.pos;
+            SO.terminar(true);
+            const tp = altoCerca(bx, bz, Math.min(5, Math.max(2.4, a.alto || 0))), sobre = !!tp && tp.t - H(tp.x, tp.z) > 0.15; // cercas largas y canoas bajas también
+            // desde arriba, ahí hay suelo (dentro de la columna de una percha del diseño manda la percha: también vale)
+            const enPercha = !!tp && F.perchas.some(p => Math.hypot(tp.x - p.x, tp.z - p.z) < p.r + 0.3 && tp.t + 0.2 >= p.y - 0.3 && tp.t < p.y + 4 && (!p.when || p.when()));
+            const paraOk = sobre && (enPercha || F.suelo(tp.x, tp.z, tp.t + 0.2) >= tp.t - 0.05);
+            let peor = 0, n = 0;
+            for (const ang of [0.5, 2.6, 4.7]) {
+              const sx = bx + Math.cos(ang) * 9, sz = bz + Math.sin(ang) * 9, sy = F.suelo(sx, sz, H(sx, sz) + 0.3);
+              if (SO.penetra(sx, sz, sy) || G.agua.levelAt(sx, sz) > sy - 0.2) continue;
+              reset(sx, sz); n++;
+              const st = toStick(bx - sx, bz - sz);
+              // a ras de suelo (subirse a un alero bajo no cuenta como meterse)
+              frame(() => { I.stick.x = st.x; I.stick.y = st.y; if (S.pos.y - H(S.pos.x, S.pos.z) < 0.5) peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y)); }, 110);
+              I.stick.x = I.stick.y = 0;
+            }
+            revisados++;
+            // meterse = más que el centro y un punto del borde (un poste fino bajo el centro al pasar rozando no cuenta).
+            // Sin sólido = fallo del motor; con sólido pero por debajo del terreno = pieza enterrada (datos del mapa): se informa aparte.
+            if (tp && !sobre) enterrados.push(id);
+            if (decorativo(id) ? peor > 4 : !tp || (sobre && !paraOk) || peor > 4) fallos.push(id + (!tp ? ' sin sólido' : sobre && !paraOk ? ' sin techo' : '') + (peor > 4 ? ' se mete ' + peor : ''));
+          }
+        } finally { SO.SO.msCuadro = msK; I.stick.x = I.stick.y = 0; }
+        met.edificios = { revisados, fallos: fallos.length, enterrados };
+        check('Todos los edificios cargados: no se atraviesan y tienen dónde pararse encima', revisados > 0 && !fallos.length, revisados + ' edificios' + (fallos.length ? ' · ' + fallos.join(', ') : ''));
         met.solidos = SO.stats();
       }
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
