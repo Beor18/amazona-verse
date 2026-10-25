@@ -9,6 +9,9 @@
 
   const AVE = window.AVE = window.AVE || {};
   AVE.version = '1.0.0';
+  // Errores de JavaScript de la página (las pruebas de la plantilla los revisan)
+  window.__aveErrores = window.__aveErrores || [];
+  addEventListener('error', e => window.__aveErrores.push(String(e.message || e)));
 
   // ---------- Módulos ----------
   const modules = [];
