@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" width="900" height="600">
+<title>Bandera de Puerto Rico: plantilla de referencia (2:3, triángulo equilátero, estrella con radio H/6 en el baricentro)</title>
+<rect y="0" width="900" height="120" fill="#EE0000"/><rect y="120" width="900" height="120" fill="#FFFFFF"/><rect y="240" width="900" height="120" fill="#EE0000"/><rect y="360" width="900" height="120" fill="#FFFFFF"/><rect y="480" width="900" height="120" fill="#EE0000"/>
+<path d="M0 0L519.62 300.0L0 600Z" fill="#0044FF"/>
+<polygon points="173.21,200.00 195.66,269.10 268.31,269.10 209.53,311.80 231.98,380.90 173.21,338.20 114.43,380.90 136.88,311.80 78.10,269.10 150.75,269.10" fill="#FFFFFF"/>
+</svg>
