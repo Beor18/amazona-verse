@@ -35,8 +35,12 @@ Kelvin (fundador) pidió que **todos los roles decidan entre sí** para entregar
 - **Base reutilizable**: motor separado del contenido.
 - Trabajo **continuo**: no pausar por confirmaciones menores.
 
-## Reglas de convivencia en el repo
+## Integración y estados (directiva V6.1, en ejecución en paralelo)
+- Estados de tarea: BACKLOG → READY → EN CURSO → INTEGRACIÓN → PRUEBAS → APROBADO (o BLOQUEADO con causa). Tablero: `docs/equipo/PRODUCTION_DASHBOARD.md`.
+- **Nadie aprueba su propia entrega**: QA valida de forma independiente.
+- Rama `estable`: solo el coordinador (Integration Lead) la mueve, tras el recorrido E2E de QA. Cada versión publicada lleva etiqueta (`v16-publicada`, …). El Build Engineer arma la build desde esa rama.
 - Prohibido `git checkout`, `reset` o `stash` sobre archivos de otro dueño. La copia de trabajo siempre debe arrancar.
+- Dueños nuevos: Build/Release Engineer → `tools/build/*`; Save & Cómic Engineer → `src/engine/guardado.js`, `src/game/comic.js`; Seguridad infantil → `docs/equipo/SEGURIDAD_INFANTIL.md`.
 
 ## Calidad antes de entregar
 - `AV.selfTest`, `missionTest`, `accessoryTest`, `templateTest` (y los tuyos) pasan; consola sin errores.
