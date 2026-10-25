@@ -196,3 +196,7 @@
   .cr-top .btn.sm { padding: 0 var(--sp-2); }
   .cr-care span { font-size: var(--fs-xs); }
 }
+
+/* ---------- Botón «Nido» del HUD (#b-nido en #sys; en móvil queda solo el icono con la regla .hud-btn de ui.css) ---------- */
+[data-icon="nido"] { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5c2.7 0 4.6 3.4 4.6 6.4 0 1.1-.2 2-.6 2.8H8c-.4-.8-.6-1.7-.6-2.8 0-3 1.9-6.4 4.6-6.4z'/%3E%3Cpath d='M2.3 12.6h19.4c-.5 4.9-4.7 8.6-9.7 8.6s-9.2-3.7-9.7-8.6zM5 15.2l2.4.9 2.3-.9 2.3.9 2.3-.9 2.3.9 2.4-.9-.6 1.6-1.8.6-2.3-.8-2.3.8-2.3-.8-2.3.8-1.8-.6z'/%3E%3C/svg%3E"); }
+#b-nido[hidden] { display: none; }

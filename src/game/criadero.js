@@ -160,7 +160,8 @@ AVE.module('criadero', function (G) {
     if (abierto()) { pintar(); procesarAvisos(); }
     return xp;
   }
-  G.on('aprendizaje', d => { if (d && d.tipo && d.id != null) dar(d.tipo, d.id, d.intento); });
+  // Durante las baterías automáticas (G.quiet) el criadero no registra nada: las pruebas no ensucian la cría del niño
+  G.on('aprendizaje', d => { if (!G.quiet && d && d.tipo && d.id != null) dar(d.tipo, d.id, d.intento); });
 
   // Cuidado: gasta una carga, da poca XP y una animación. Sin cargas: no castiga, invita a aprender.
   function cuidar(accion) {
@@ -1153,7 +1154,7 @@ AVE.module('criadero', function (G) {
     root.hidden = false; open = true;
     G.pausa && G.pausa.set('criadero', true);
     try {
-      revisarCapsulas(); guardar();
+      st.vistos.abierto = 1; revisarCapsulas(); guardar();
       if (!st.vista) st.vista = st.activa;
       initScene(); resize();
       construirNido(); pintar();
@@ -1221,6 +1222,133 @@ AVE.module('criadero', function (G) {
     revisarCapsulas(); guardar(); pintar(); procesarAvisos(); avisarCompanero();
   }
 
+
+  // =====================================================================================================================
+  // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión; Luma lo presenta una vez.
+  // Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'), la plaza o el inicio.
+  // =====================================================================================================================
+  const nidoActivo = () => !!D() && misionesHechas().size > 0;
+  let nidoMundo = null, nidoIt = null, nidoBtnHidden = null, presentarT = 0, revisarT = 0;
+  function sitioNido() {
+    const T = G.terreno, cfg = G.pack.criadero || {};
+    if (cfg.nido && T.poi) { const p = T.poi(cfg.nido); if (p) return { x: p.x, z: p.z }; }
+    for (const id of ['nido_criadero', 'estacion', 'plaza']) { const p = T.poi && T.poi(id); if (p) return { x: p.x + 2.8, z: p.z + 1.4, donde: id }; }
+    const sp = (G.pack.jugador && G.pack.jugador.aparicion) || { x: 0, z: 0 };
+    return { x: sp.x + 3, z: sp.z + 2 };
+  }
+  // Sitio libre: a 5 m o más de cualquier otro interactuable (si no, nearest() podría quedarse con Luma o el flamboyán),
+  // fuera de los colliders fijos (edificios, NPC, objetos; los árboles de vegetacion.js se recrean y no cuentan) y en tierra firme.
+  // El mundo carga sus edificios después: pasoMundo vuelve a comprobarlo cada 2 s y lo mueve si quedó dentro de algo.
+  function libreNido(q) {
+    const otros = (G.interaccion.list || []).filter(it => it.id !== 'nido_criadero' && typeof it.x === 'number');
+    const cols = ((G.fisica && G.fisica.colliders) || []).filter(c => c.id !== 'nido_criadero' && typeof c.x === 'number' && c.r > 0 && !/^(arbol|tree)$/.test(c.kind || ''));
+    const seco = !(G.agua && G.agua.levelAt && G.terreno.height) || G.agua.levelAt(q.x, q.z) < G.terreno.height(q.x, q.z) - 0.05;
+    return seco && otros.every(it => Math.hypot(it.x - q.x, it.z - q.z) >= 5) && cols.every(c => Math.hypot(c.x - q.x, c.z - q.z) >= c.r + 1.4) && sinCopa(q);
+  }
+  // Lejos de las copas de los árboles (posiciones fijas de G.vegetacion): que la cámara no quede dentro de las hojas
+  const ARBOLES = ['palma_sierra', 'yagrumo', 'tabonuco', 'helecho_arboreo', 'ceiba', 'flamboyan', 'bambu'];
+  function sinCopa(q) {
+    const V = G.vegetacion, inst = V && V.instancias, info = V && V.info;
+    if (!inst || !info) return true;
+    for (const m of ARBOLES) {
+      const P = inst[m], I = info[m]; if (!P || !I) continue;
+      const base = Math.min(7, (I.ancho || 4) * 0.42);
+      for (let i = 0; i < P.n; i++) {
+        const dx = P.pos[i * 4] - q.x, dz = P.pos[i * 4 + 2] - q.z, r = base * P.pos[i * 4 + 3] + 1.5;
+        if (dx * dx + dz * dz < r * r) return false;
+      }
+    }
+    return true;
+  }
+  function separarNido(p) {
+    if (libreNido(p)) return p;
+    for (let r = 2; r <= 24; r += 1.5) for (let k = 0; k < 12; k++) {
+      const a = k * Math.PI / 6, q = { x: p.x + Math.cos(a) * r, z: p.z + Math.sin(a) * r, donde: p.donde };
+      if (libreNido(q)) return q;
+    }
+    return p;
+  }
+  function moverNido(p) {
+    if (!nidoMundo) return;
+    nidoMundo.position.set(p.x, G.terreno.height ? G.terreno.height(p.x, p.z) : 0, p.z);
+    if (nidoIt) { nidoIt.x = p.x; nidoIt.z = p.z; }
+    const c = nidoMundo.userData.collider; if (c) { c.x = p.x; c.z = p.z; }
+  }
+  function construirNidoMundo() {
+    if (nidoMundo || !G.renderer || !G.renderer.scene || !window.AVColor) return;
+    const p = separarNido(sitioNido()), y = G.terreno.height ? G.terreno.height(p.x, p.z) : 0;
+    const g = new THREE.Group(); g.name = 'nido_criadero'; g.position.set(p.x, y, p.z);
+    const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.56, 0.85, 18), MS({ color: '#6b4a2e', roughness: 0.95 }));
+    tronco.position.y = 0.42; tronco.castShadow = tronco.receiveShadow = true; g.add(tronco);
+    const tapa = new THREE.Mesh(new THREE.CylinderGeometry(0.47, 0.47, 0.02, 18), MS({ color: '#c99a62', roughness: 0.85 })); tapa.position.y = 0.85; g.add(tapa);
+    const n = nido(); n.position.y = 0.85; n.scale.setScalar(0.95); g.add(n);
+    // Huevo blanco en el nido mientras la cría activa es un huevo (pista: allí está tu cápsula)
+    const huevo = new THREE.Mesh(new THREE.LatheGeometry(eggProfile(0.1, 0.14, 20), 20), MS({ color: '#f7f3e8', roughness: 0.5 }));
+    huevo.position.y = 1.02; huevo.castShadow = true; huevo.name = 'huevo'; g.add(huevo);
+    // Letrero de madera "Criadero"
+    const cv = document.createElement('canvas'); cv.width = 256; cv.height = 96; const x = cv.getContext('2d');
+    x.fillStyle = '#8a5a2b'; x.fillRect(0, 0, 256, 96); x.strokeStyle = '#5a3818'; x.lineWidth = 8; x.strokeRect(4, 4, 248, 88);
+    x.fillStyle = '#fbf1dc'; x.font = 'bold 44px Fredoka, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('Criadero', 128, 52);
+    const signM = MS({ map: C().tex(new THREE.CanvasTexture(cv)), roughness: 0.9 });
+    for (const sd of [1, -1]) { const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.24), signM); sign.position.set(0, 0.5, sd * 0.575); if (sd < 0) sign.rotation.y = Math.PI; g.add(sign); }
+    // Chispa dorada (como los hallazgos del Diario) cuando hay algo nuevo: cápsula lista, cápsula ganada o primera visita
+    const spark = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), new THREE.MeshBasicMaterial({ color: C().lin('#ffd84a') }));
+    spark.position.y = 1.65; spark.name = 'chispa'; g.add(spark);
+    g.scale.setScalar(1.3); // que se vea desde el sendero (Vittata mide 1,75 m)
+    g.visible = false; g.userData.donde = p.donde || ''; G.renderer.scene.add(g); nidoMundo = g;
+    // Collider del tronco (como los NPC de actores.js: r = 0 mientras el nido no está activo)
+    g.userData.collider = { x: p.x, z: p.z, r: 0, kind: 'objeto', id: 'nido_criadero' };
+    if (G.fisica && G.fisica.colliders) G.fisica.colliders.push(g.userData.collider);
+    nidoIt = G.interaccion.add({ id: 'nido_criadero', x: p.x, z: p.z, r: 2.6, visible: () => nidoActivo() && !open,
+      label: () => (novedad() ? 'Visitar el nido: ¡hay algo nuevo!' : 'Visitar el nido de mi cotorrita'), use: () => abrir() });
+  }
+  // ¿Hay algo que mirar en el nido? (cápsula lista para nacer, cápsula ganada sin ver o el nido sin abrir nunca)
+  function novedad() {
+    if (!st.vistos.abierto) return true;
+    return Object.values(st.capsulas).some(c => c.estado === 'lista') || st.avisos.some(a => a.tipo === 'capsula');
+  }
+  function botonNido() {
+    const b = document.getElementById('b-nido'); if (!b) return null;
+    if (!b.dataset.cr) { b.dataset.cr = '1'; b.addEventListener('click', () => abrir()); }
+    return b;
+  }
+  function puedePresentar() {
+    const S = G.S || {}, leccion = (G.aula && G.aula.enCurso && G.aula.enCurso()) || (S.step === 3 && S.missions && !S.missions.educativa);
+    return !G.quiet && !open && !leccion && !!G.ui && !G.ui.busy() && !!G.dialogo && !G.dialogo.open();
+  }
+  function pasoMundo(dt) {
+    const on = nidoActivo();
+    if (on && !nidoMundo) construirNidoMundo();
+    if (nidoMundo && on && nidoIt && (revisarT += dt) > 2) {
+      revisarT = 0;
+      if (!libreNido({ x: nidoIt.x, z: nidoIt.z })) moverNido(separarNido(sitioNido()));
+    }
+    if (nidoMundo) {
+      nidoMundo.visible = on;
+      if (nidoMundo.userData.collider) nidoMundo.userData.collider.r = on ? 0.8 : 0;
+      const sp = nidoMundo.getObjectByName('chispa'), hv = nidoMundo.getObjectByName('huevo');
+      if (sp) { sp.visible = on && novedad(); sp.rotation.y += dt * 2; sp.position.y = 1.65 + Math.sin(performance.now() / 600) * 0.06; }
+      if (hv) { const c = activa(); hv.visible = !!c && etapaDe(c) === 'huevo'; }
+    }
+    const b = botonNido();
+    if (b && nidoBtnHidden !== !on) { nidoBtnHidden = !on; b.hidden = !on; if (on) b.setAttribute('aria-label', 'Nido: mi cotorrita'); }
+    // Presentación (una vez): Luma cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
+    // Tampoco en medio de una lección (las tarjetas de la misión educativa se reabren con retraso)
+    // y solo tras 1,5 s seguidos de juego libre (entre baterías automáticas G.quiet cambia muy rápido)
+    presentarT = on && !st.presentado && puedePresentar() ? presentarT + dt : 0;
+    if (presentarT > 1.5) {
+      presentarT = 0;
+      st.presentado = true; guardar();
+      const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
+      G.dialogo.say([
+        { who: 'Luma', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
+          ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
+          : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
+        { who: 'Luma', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
+      ]);
+    }
+  }
+  G.on('update', dt => pasoMundo(dt), 70);
   // =====================================================================================================================
   // Modo Maestro (pestaña en G.aula) · arranque con ?criadero=1
   // =====================================================================================================================
@@ -1293,6 +1421,8 @@ AVE.module('criadero', function (G) {
     cria: () => scene3d.chick,
     hatch: () => Object.assign({}, hatch),
     paso: dt => paso(dt),
+    // Un paso del nido del mundo (revisión del sitio, botón del HUD y presentación de Luma)
+    mundo: dt => pasoMundo(dt || 0),
     // Lleva la eclosión en curso al segundo t (0–9,4) para capturas
     irA: tt => { if (hatch.on) { hatch.t = tt; pasoEclosion(0); } return hatch.on; },
   };
@@ -1378,6 +1508,36 @@ AVE.module('criadero', function (G) {
       check('Guardado sin datos personales', !/name|nombre|profile|email|correo/i.test(Object.keys(st).join(',')));
       cerrar();
       check('Cerrar suelta la pausa', !open && root.hidden && (!G.pausa || !G.pausa.motivos.has('criadero')));
+      // Integración en el juego: nido en el mundo y botón «Nido» del HUD, solo después de la primera misión
+      const misBk = JSON.parse(JSON.stringify((G.S && G.S.missions) || {}));
+      try {
+        st = fresh(); st.presentado = true;
+        for (const k of Object.keys(G.S.missions || {})) G.S.missions[k] = false;
+        pasoMundo(0);
+        const btn = document.getElementById('b-nido');
+        check('Sin misión: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
+        const primera = Object.keys(G.S.missions || {})[0];
+        if (primera) {
+          G.S.missions[primera] = true; pasoMundo(0); pasoMundo(2.1);
+          check('Con la primera misión: nido visible e interactuable', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!nidoIt && nidoIt.visible());
+          const lejos = (G.interaccion.list || []).filter(it => it !== nidoIt && typeof it.x === 'number').every(it => Math.hypot(it.x - nidoIt.x, it.z - nidoIt.z) >= 5);
+          // Solo colliders fijos (edificios, NPC, objetos): los árboles de vegetacion.js se recrean alrededor del jugador
+          const fijo = c => !/^(arbol|tree)$/.test(c.kind || '');
+          const fuera = ((G.fisica && G.fisica.colliders) || []).filter(c => c.id !== 'nido_criadero' && typeof c.x === 'number' && c.r > 0 && fijo(c)).every(c => Math.hypot(c.x - nidoIt.x, c.z - nidoIt.z) >= c.r + 1);
+          check('El nido queda a 5 m o más de otros interactuables, fuera de edificios y de copas de árboles', lejos && fuera && sinCopa({ x: nidoIt.x, z: nidoIt.z }));
+          check('Botón Nido visible en el HUD', !!btn && !btn.hidden);
+          await nidoIt.use();
+          check('Se abre desde el nido del mundo', open); cerrar();
+          if (btn) { btn.click(); for (let i = 0; i < 60 && !open; i++) await new Promise(r => setTimeout(r, 50)); }
+          check('Se abre desde el botón Nido del HUD', open); cerrar();
+          st.presentado = false; if (G.dialogo.open()) G.dialogo.clear();
+          const puede = puedePresentar(); pasoMundo(2);
+          check('Luma presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
+          if (G.dialogo.open()) G.dialogo.clear();
+          pasoMundo(2);
+          check('La presentación no se repite', !G.dialogo.open());
+        }
+      } finally { for (const k of Object.keys(misBk)) G.S.missions[k] = misBk[k]; pasoMundo(0); }
       check('Sin errores de JavaScript nuevos', (window.__aveErrores || []).length === errores0, (window.__aveErrores || []).slice(errores0).join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, e && e.stack || e);

@@ -88,8 +88,7 @@ La rareza es la dificultad del reto, nunca una probabilidad ni un precio:
 - **Movimiento reducido:** la eclosión dura la mitad y no hay temblores.
 
 ## 6. Encaje con el capítulo 1 y los futuros
-- **Capítulo 1:** las cápsulas premian las misiones existentes (m1, educativa y m3) y los hitos del Diario, sin tocar el guion. El criadero es una vista aparte: hoy se abre con `?criadero=1` o desde el Modo Maestro.
-  - **Pendiente de gameplay:** un punto de acceso en el mundo (el nido del aviario en Villa Raíz).
+- **Capítulo 1:** las cápsulas premian las misiones existentes (m1, educativa y m3) y los hitos del Diario, sin tocar el guion. Al terminar la primera misión aparece un nido junto a la Estación de Conservación y el botón «Nido» del HUD; Luma lo presenta una vez.
 - **Compañero:** la cría nacida sigue a Vittata en el mundo (`companero()` y `vestir()` aquí; seguimiento en actores.js).
 - **Capítulos futuros:**
   - Comparten el criadero (`<almacen>.criadero`), porque la clave es del juego y no del pack.
