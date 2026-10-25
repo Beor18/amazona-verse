@@ -16,3 +16,21 @@
   - Falla con cualquier 404, error de consola o base64 retenido. Con `--solo-medir`, no corre las baterías.
 - **Publicar (solo el coordinador):** `file_path` = `site/index.html`, `files` = `files_map` y la `url` del artifact. No se pasa `capabilities`, para conservar `downloads`.
 - **Entorno:** el Python de Blender (`lib.sh` lo busca; también sirve `AV_PYTHON`), nunca `python3` del sistema. Ajustes en `tools/build/config.json`. `salida/` no se versiona.
+
+## Compresión de geometría y WebP (QA-10)
+- **Paso `geometria` de la build** (`avbuild.py`, `config.json` → `geometria`; se desactiva con `--sin-geometria`):
+  - Antes de gltfpack, pasa a WebP q85, con OpenImageIO (el Python de Blender), las texturas embebidas de la flora (no los mapas de normales) y la paleta externa de edificios (`edificios/tex/*.webp`).
+  - Luego pasa cada `*_glb.js` de `assets/models/` por gltfpack: `-c -ce ext -kn -km -ke -kv -tr -vtf -vn 10 -af 0 -ac -ar 16`.
+  - Valida la salida y la guarda en caché en `~/Library/Caches/amazonaverse-build/geo`.
+  - En el juego, `assets.js` le pasa `MeshoptDecoder` al GLTFLoader y convierte a Float32 los atributos cuantizados al cargar. Así el resto del motor lee lo mismo que antes.
+- **gltfpack 1.2** (meshoptimizer, binario de macOS arm64):
+  - Origen: `https://github.com/zeux/meshoptimizer/releases/download/v1.2/gltfpack-macos.zip`, 1 657 609 bytes, SHA256 `9f5288a6ad585bef3befbc2907c9f9b9fdeeb0b5a29eaa57f0fe15521b82eb28`.
+  - Se descomprime en `tools/build/bin/gltfpack` (3 252 584 bytes, SHA256 `037336fafa46f342fe118ce8d17877fecb3deb1cd6dd8f62ee2a95bfaf2b79df`, el mismo que comprueba `config.json`). Si llega en cuarentena, `xattr -d com.apple.quarantine`.
+  - `bin/` no se versiona y nunca entra en el sitio. Se ejecuta con `taskpolicy -b nice -n 15`.
+  - Sin el binario, la build avisa y sale sin comprimir: funciona, pero pesa el doble.
+- **MeshoptDecoder 1.2.0** (npm `meshoptimizer`):
+  - Origen: `https://cdn.jsdelivr.net/npm/meshoptimizer@1.2.0/meshopt_decoder.cjs`, guardado como `assets/vendor/meshopt/meshopt_decoder.js`.
+  - 29 400 bytes, SHA256 `fedf06f101ff2ba59d66335578230b7e8f5fac5057dee084be64c67444ac6c12`.
+  - Se carga local desde `index.html`, sin CDN en tiempo de juego.
+  - Usa WebAssembly: al publicar, comprobar en el artifact que cargan los modelos, con 0 errores de consola.
+- **Medido** (`build.sh HEAD` 0751c92 y `test.sh --extra`): descarga inicial de 7,98 MB (antes 13,33 MB), lo publicable 17,3 MB (antes 37,8) y las 13 baterías en verde.
