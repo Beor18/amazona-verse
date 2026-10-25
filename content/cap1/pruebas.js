@@ -326,7 +326,7 @@
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
     check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia) li.found').length === 12);
+    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 12);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -634,6 +634,23 @@
       G.ui.hideCard(); AU.setAjuste('corto', false);
       check('HUD de la misión en inglés', /Raindrop's path 8\/8/.test($('missions').textContent), $('missions').textContent);
       AU.setAjuste('idioma', 'es');
+      // Diario · Amazonas del mundo (content/comun/especies.js): solo datos verificados; las 13 de
+      // docs/equipo/ESPECIES_DISCREPANCIAS.md van sin estado UICN hasta que Kelvin decida
+      const DISCREPANCIAS = ['diadema', 'imperialis', 'lilacina', 'tresmariae', 'rhodocorytha', 'agilis', 'auropalliata', 'barbadensis', 'brasiliensis', 'farinosa', 'festiva', 'kawalli', 'aestiva'];
+      const SP = G.diario.especies(), spId = id => SP.find(x => x.id === id);
+      check('Amazonas del mundo: especies con nombre ES y EN, científico y distribución', SP.length >= 30 && SP.every(x => x.comun.es && x.comun.en && /^Amazona /.test(x.cientifico) && x.distribucion.es && x.distribucion.en), SP.length + ' especies');
+      check('Amazonas del mundo: sin nombre común en español verificado no sale (guatemalae, kawalli)', !spId('guatemalae') && !spId('kawalli'));
+      check('Amazonas del mundo: las 13 discrepancias sin estado UICN', DISCREPANCIAS.every(id => !spId(id) || (spId(id).uicn === null && spId(id).evaluacion === null)), DISCREPANCIAS.filter(id => spId(id) && spId(id).uicn).join(','));
+      check('Amazonas del mundo: las demás con estado UICN y su evaluación', SP.filter(x => !DISCREPANCIAS.includes(x.id)).every(x => x.uicn && x.evaluacion && /BirdLife/.test(x.evaluacion)) && spId('vittata').uicn === 'CR', SP.filter(x => !DISCREPANCIAS.includes(x.id) && !x.uicn).map(x => x.id).join(','));
+      G.diario.open();
+      const de = $('card').querySelector('details.especies ul.diary.especies'), li = id => de && de.querySelector(`[data-especie="${id}"]`);
+      check('Diario: sección «Amazonas del mundo» con una tarjeta por especie, fuente y sin enlaces', de && /Amazonas del mundo/.test($('card').querySelector('details.especies summary').textContent) && de.querySelectorAll('li').length === SP.length && de.querySelectorAll('li .fuente').length === SP.length && !/https?:/.test(de.innerHTML));
+      check('Diario: la cotorra puertorriqueña con ambos nombres, científico y estado', li('vittata') && /cotorra puertorriqueña/.test(li('vittata').textContent) && /Puerto Rican amazon/.test(li('vittata').textContent) && /Amazona vittata/.test(li('vittata').textContent) && /En peligro crítico \(CR\)/.test(li('vittata').textContent));
+      check('Diario: el loro imperial dice «por verificar» y no muestra categoría', li('imperialis') && /Estado UICN: por verificar/.test(li('imperialis').textContent) && !/\((CR|EN|VU|NT|LC)\)/.test(li('imperialis').textContent));
+      check('Diario: una especie extinta (loro de Martinica) con su estado y sin repetir «extinta»', li('martinicana') && /Estado UICN: Extinta \(EX\)/.test(li('martinicana').textContent) && !/ · extinta/.test(li('martinicana').textContent));
+      AU.setAjuste('idioma', 'en'); G.diario.open();
+      check('Diario en inglés: Amazons of the world', /Amazons of the world/.test($('card').textContent) && /IUCN status: Critically Endangered \(CR\)/.test($('card').textContent));
+      AU.setAjuste('idioma', 'es'); G.ui.hideCard();
       // Lectura en voz alta: nunca rompe, aunque no haya voces
       let voz = null; try { voz = AU.leer('La gota cae en la montaña.', 'es'); AU.callar(); } catch (e) { voz = e; }
       check('Lectura en voz alta tolera que falle (speechSynthesis ' + (AU.vozDisponible() ? 'disponible' : 'no disponible') + ')', typeof voz === 'boolean');
