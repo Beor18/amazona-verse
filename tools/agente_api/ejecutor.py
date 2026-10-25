@@ -4,8 +4,8 @@ Se lanza desde la Terminal de Kelvin con su clave ya exportada (este script nunc
 
   export ANTHROPIC_API_KEY='...'
   tools/agente_api/ejecutar.sh --prueba           # tarea mínima para comprobar en la facturación que cobra el crédito
-  tools/agente_api/ejecutar.sh --tarea 1          # hace solo la tarea 1 de docs/equipo/TAREAS_API.md
-  tools/agente_api/ejecutar.sh --tarea 2 --presupuesto 8
+  tools/agente_api/ejecutar.sh --tarea A1          # una sola tarea de docs/equipo/TAREAS_API.md
+  tools/agente_api/ejecutar.sh --carril B --modelo opus --total 50   # todo un carril, en orden, con tope total
 
 Reglas que impone, además de las del archivo de tareas: modelo Sonnet, tope de gasto por corrida (max_budget_usd),
 configuración aislada (~/.claude-sdk, no la sesión de la app ni el login Max) y bloqueo de comandos peligrosos
@@ -71,6 +71,7 @@ async def correr(prompt, presupuesto, turnos):
     async def mensajes():
         yield {'type': 'user', 'message': {'role': 'user', 'content': prompt}}
 
+    costo = 0.0
     async with ClaudeSDKClient(options=opciones) as cliente:
         await cliente.query(mensajes())
         async for m in cliente.receive_response():
@@ -86,24 +87,52 @@ async def correr(prompt, presupuesto, turnos):
                 print(f'\n== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
                 if m.result:
                     print(m.result[:1500])
+    return costo
+
+
+CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3']}
+MODELOS = {'sonnet': 'claude-sonnet-5-5', 'opus': 'claude-opus-5-5'}
+
+
+def prompt_tarea(t):
+    return (f'Lee docs/equipo/TAREAS_API.md y haz SOLO la tarea {t}, de principio a fin, siguiendo sus reglas. '
+            'Al terminar marca su estado en la tabla y resume en 3 líneas.')
+
+
+async def carril(tareas, por_tarea, total, turnos):
+    gastado = 0.0
+    for t in tareas:
+        queda = total - gastado
+        if queda < 0.5:
+            print(f'\n== Tope total del carril alcanzado (${gastado:.2f} de ${total}); paro antes de {t}. ==')
+            return
+        print(f'\n######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gastado:.2f} ########', flush=True)
+        gastado += await correr(prompt_tarea(t), min(por_tarea, queda), turnos)
+    print(f'\n== Carril terminado: ${gastado:.2f} gastados ==')
 
 
 def main():
+    global MODELO
     ap = argparse.ArgumentParser(description='Ejecutor de tareas de Amazona Verse con el Agent SDK (créditos de la API).')
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--prueba', action='store_true', help='tarea mínima para verificar el cobro (tope $0,50)')
-    g.add_argument('--tarea', type=int, help='número de tarea de docs/equipo/TAREAS_API.md')
-    ap.add_argument('--presupuesto', type=float, help='tope de gasto en USD para esta corrida (por defecto 6)')
-    ap.add_argument('--turnos', type=int, default=120)
+    g.add_argument('--tarea', help='una tarea de docs/equipo/TAREAS_API.md, por ejemplo A1')
+    g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A, B, C o D)')
+    ap.add_argument('--modelo', choices=sorted(MODELOS), default='sonnet', help='sonnet (por defecto) u opus')
+    ap.add_argument('--presupuesto', type=float, help='tope en USD por tarea (por defecto 6 con sonnet, 15 con opus)')
+    ap.add_argument('--total', type=float, default=50.0, help='tope en USD de todo el carril (por defecto 50)')
+    ap.add_argument('--turnos', type=int, default=150)
     a = ap.parse_args()
+    MODELO = MODELOS[a.modelo]
+    por_tarea = a.presupuesto or (15.0 if a.modelo == 'opus' else 6.0)
     if a.prueba:
         prompt = ('Lee docs/equipo/TAREAS_API.md y responde en una sola línea cuántas tareas hay y cuál es la primera. '
                   'No edites nada ni ejecutes comandos.')
         asyncio.run(correr(prompt, a.presupuesto or 0.5, 6))
+    elif a.carril:
+        asyncio.run(carril(CARRILES[a.carril], por_tarea, a.total, a.turnos))
     else:
-        prompt = (f'Lee docs/equipo/TAREAS_API.md y haz SOLO la tarea {a.tarea}, de principio a fin, siguiendo sus reglas. '
-                  'Al terminar marca su estado en la tabla y resume en 3 líneas.')
-        asyncio.run(correr(prompt, a.presupuesto or 6.0, a.turnos))
+        asyncio.run(correr(prompt_tarea(a.tarea.upper()), por_tarea, a.turnos))
 
 
 if __name__ == '__main__':
