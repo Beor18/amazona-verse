@@ -83,3 +83,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - Regla nueva: nadie ejecuta `git checkout`/`reset`/`stash` sobre archivos de otro dueño.
 - Diario Boricua: las 12 entradas sin fuente se ocultan hasta verificarlas (misma regla que el Diario de ciencia).
 - Compañero 3D: la segunda cotorra que sigue a Vittata es la cotorra creada por el jugador; se ve casi igual a Vittata y confunde. Se encarga a diseño (huevos) + gameplay que el compañero sea la cotorrita nacida del criadero (bebé→juvenil→adulto) y se distinga claramente.
+- Actualización (Kelvin): ignorar la directiva V6.1 hasta terminar todo lo que está en curso. Queda en pausa; se mantienen solo la regla de no tocar archivos ajenos con checkout/reset/stash, el Diario Boricua oculto hasta verificar y el compañero = cotorrita del criadero.

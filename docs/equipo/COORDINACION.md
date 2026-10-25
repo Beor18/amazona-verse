@@ -35,6 +35,9 @@ Kelvin (fundador) pidió que **todos los roles decidan entre sí** para entregar
 - **Base reutilizable**: motor separado del contenido.
 - Trabajo **continuo**: no pausar por confirmaciones menores.
 
+## Reglas de convivencia en el repo
+- Prohibido `git checkout`, `reset` o `stash` sobre archivos de otro dueño. La copia de trabajo siempre debe arrancar.
+
 ## Calidad antes de entregar
 - `AV.selfTest`, `missionTest`, `accessoryTest`, `templateTest` (y los tuyos) pasan; consola sin errores.
 - Revisa tus capturas con ojo de cliente exigente.
