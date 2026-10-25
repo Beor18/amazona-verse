@@ -315,8 +315,93 @@ def coqui(cx=0.65, cy=-0.02):
     return parts
 
 
+def cuaderno():
+    """Cuaderno de campo (P0 de TRAITS_V2, cápsula del bosque · adulto): libreta de 20 × 14,5 × 2,6 cm pinzada entre el
+    pulgar (delante) y los dedos (detrás). En Idle cuelga junto a la pata con la tapa de cara al frente. Tapa ACENTO
+    (color elegido), hojas PAPEL con lomo redondeado, elástico NEGRO, etiqueta BLANCO con una hoja dibujada y un lápiz
+    bajo el elástico. Se coloca con BVH: holgura de 3–6 mm con el pulgar y los dedos, lo más cerca posible de la palma."""
+    mt = M(); bvh = body_bvh()
+    VERDE = mat('HOJA', hexrgb('#3f9b4a'), 0.7); AMAR = mat('LAPIZ', hexrgb('#f2c21a'), 0.55); ROSA = mat('GOMA_BORRAR', hexrgb('#f28fa0'), 0.8)
+    Lx, Wz, T = 0.2, 0.145, 0.026            # largo (hacia los dedos), ancho (arriba en pose T), grosor (Y)
+    def slab_clear(x0, yc, zc):
+        worst = 9.0
+        for i in range(9):
+            for j in range(7):
+                for yy in (yc - T / 2 - 0.004, yc + T / 2 + 0.004):
+                    q = Vector((x0 + Lx * i / 8, yy, zc - Wz / 2 + Wz * j / 6))
+                    loc, nr, k, d = bvh.find_nearest(q); worst = min(worst, d if (q - loc).dot(nr) >= 0 else -d)
+        return worst
+    best = None
+    for x0 in (0.70, 0.705, 0.71, 0.715, 0.72, 0.73):
+        for yc in [-0.095 + 0.0025 * k for k in range(9)]:
+            for zc in (0.69, 0.70, 0.71, 0.72):
+                w = slab_clear(x0, yc, zc)
+                if w < 0.003: continue      # pinzado: holgura de 3–6 mm, lo más cerca de la palma posible
+                sc = -(x0 - 0.70) - 2 * abs(w - 0.0045) - 0.2 * abs(zc - 0.70)
+                if best is None or sc > best[0]: best = (sc, x0, yc, zc, w)
+    _, x0, yc, zc, w = best
+    print('CUADERNO x0=%.3f yc=%.3f zc=%.3f holgura=%.4f' % (x0, yc, zc, w))
+    X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
+    C = Vector((x0 + Lx / 2, yc, zc))
+    Q = lambda x, y, z: C + X * x + Y * y + Z * z
+    parts = []
+    # tapas (delante -Y y detrás +Y), lomo redondeado en -Z (hacia el cuerpo en Idle) y bloque de hojas
+    for sy in (-1, 1):
+        parts.append(set_mat(rbox('tapa', Q(0, sy * (T / 2 - 0.002), 0.001), (Lx, 0.004, Wz), bevel=0.0018, segs=2), mt['ACENTO']))
+    parts.append(set_mat(revolve('lomo', Q(-Lx / 2, 0, -Wz / 2 + 0.003), Q(Lx / 2, 0, -Wz / 2 + 0.003), [(0, T / 2), (1, T / 2)], seg=16), mt['ACENTO']))
+    parts.append(set_mat(rbox('hojas', Q(0, 0, 0.0), (Lx - 0.008, T - 0.008, Wz - 0.006), bevel=0.0015, segs=1), mt['PAPEL']))
+    for k in range(1, 4):   # cantos de las hojas (líneas finas en el borde abierto)
+        yy = -T / 2 + 0.004 + (T - 0.008) * k / 4
+        parts.append(set_mat(tube_path('canto', [Q(-Lx / 2 + 0.006, yy, Wz / 2 - 0.0028), Q(Lx / 2 - 0.006, yy, Wz / 2 - 0.0028)], 0.0006, seg=4), mt['TINTA']))
+    # etiqueta con una hoja dibujada (cara de delante)
+    yf = -T / 2 - 0.0005
+    parts.append(set_mat(rbox('etiqueta', Q(-0.035, yf - 0.0006, -0.005), (0.075, 0.0012, 0.055), bevel=0.0005, segs=1), mt['BLANCO']))
+    leaf = [(math.cos(t) * 0.022, math.sin(t) * 0.011 * (1 - 0.35 * math.cos(t))) for t in [2 * math.pi * k / 20 for k in range(20)]]
+    parts.append(set_mat(prism('hoja', leaf, 0, 0.0008, frame=(Q(-0.035, yf - 0.0013, -0.005), X, Z, -Y)), VERDE))
+    parts.append(set_mat(tube_path('nervio', [Q(-0.06, yf - 0.0022, -0.005), Q(-0.012, yf - 0.0022, -0.005)], 0.0007, seg=4), mt['TINTA']))
+    # lápiz bajo el elástico, a lo largo del cuaderno, cerca del borde abierto
+    zp = Wz / 2 - 0.022; yp = yf - 0.0065; rp = 0.0055
+    parts.append(set_mat(revolve('lapiz', Q(-Lx / 2 + 0.01, yp, zp), Q(Lx / 2 - 0.03, yp, zp), [(0, rp), (1, rp)], seg=6), AMAR))
+    parts.append(set_mat(revolve('virola', Q(-Lx / 2 + 0.0, yp, zp), Q(-Lx / 2 + 0.012, yp, zp), [(0, rp * 1.05), (1, rp * 1.05)], seg=10), mt['METAL']))
+    parts.append(set_mat(revolve('borrador', Q(-Lx / 2 - 0.009, yp, zp), Q(-Lx / 2 + 0.001, yp, zp), [(0, rp * 0.8), (0.3, rp), (1, rp)], seg=10), ROSA))
+    parts.append(set_mat(revolve('punta', Q(Lx / 2 - 0.031, yp, zp), Q(Lx / 2 - 0.012, yp, zp), [(0, rp), (1, 0.0018)], seg=10, cap1=False), mt['MADERA_CLARA']))
+    parts.append(set_mat(revolve('mina', Q(Lx / 2 - 0.0125, yp, zp), Q(Lx / 2 - 0.006, yp, zp), [(0, 0.0019), (1, 0.0)], seg=8, cap1=False), mt['TINTA']))
+    # elástico: lazo alrededor del cuaderno (por encima del lápiz delante)
+    ze = zp; ye0, ye1 = yp - rp - 0.002, T / 2 + 0.0025; xa, xb = -Lx / 2 - 0.0025, Lx / 2 + 0.0025
+    loop = [Q(xa, ye0, ze), Q(0, ye0 - 0.001, ze), Q(xb, ye0, ze), Q(xb, 0, ze), Q(xb, ye1, ze), Q(0, ye1, ze), Q(xa, ye1, ze), Q(xa, 0, ze)]
+    parts.append(set_mat(tube_path('elastico', catmull(loop + [loop[0]], 3), 0.0026, seg=6, closed=True), mt['NEGRO']))
+    return parts
+
+
+def lupa():
+    """Lupa (P0 de TRAITS_V2, cápsula dorada · adulto; primera ficha de ciencia): mango de madera torneado de 14 cm con
+    anillo ACENTO, casquillo y aro DORADO de Ø 12,7 cm y lente VIDRIO clara y abombada. El aro va en el plano del mango,
+    girado 45° hacia arriba y afuera (en Idle se ve desde la cámara de detrás y desde el lado). Largo total 0,29 m."""
+    mt = M(); r = 0.0145
+    G = fit_grip(r, 0.05, 0.10)
+    lente = mat('VIDRIO', hexrgb('#e3f4ff'), 0.05)
+    parts = [set_mat(revolve('mango', F(G, -0.05), F(G, 0.095), [(0, 0.012), (0.04, 0.0165), (0.12, 0.0175), (0.3, 0.0155),
+                                                               (0.62, 0.0145), (0.85, 0.0128), (1, 0.0118)], seg=16), mt['MADERA'])]
+    parts.append(set_mat(revolve('remate', F(G, -0.062), F(G, -0.046), [(0, 0.007), (0.6, 0.0125), (1, 0.0125)], seg=16), mt['DORADO']))
+    parts.append(set_mat(revolve('anillo', F(G, 0.062), F(G, 0.074), [(0, 0.0147), (0.5, 0.0156), (1, 0.0147)], seg=16), mt['ACENTO']))
+    parts.append(set_mat(revolve('casquillo', F(G, 0.09), F(G, 0.118), [(0, 0.0128), (0.4, 0.0118), (0.8, 0.009), (1, 0.008)], seg=16), mt['DORADO']))
+    Rr, tr = 0.055, 0.0085
+    c = F(G, 0.118 + tr + Rr)
+    nrm = (NUP * math.cos(R(45)) - S * math.sin(R(45))).normalized()
+    ex = A; ey = nrm.cross(ex).normalized()
+    ring = [c + (ex * math.cos(2 * math.pi * k / 40) + ey * math.sin(2 * math.pi * k / 40)) * Rr for k in range(40)]
+    parts.append(set_mat(tube_path('aro', ring, tr, seg=12, closed=True), mt['DORADO']))
+    for sg in (1, -1):   # bisel interior que sujeta la lente
+        lip = [c + nrm * sg * 0.004 + (ex * math.cos(2 * math.pi * k / 40) + ey * math.sin(2 * math.pi * k / 40)) * (Rr - tr * 0.6) for k in range(40)]
+        parts.append(set_mat(tube_path('bisel', lip, 0.0026, seg=6, closed=True), mt['DORADO']))
+    parts.append(set_mat(revolve('lente', c - nrm * 0.006, c + nrm * 0.006, [(0, 0.0), (0.12, Rr * 0.55), (0.3, Rr * 0.85), (0.5, Rr - tr * 0.5),
+                                                                           (0.7, Rr * 0.85), (0.88, Rr * 0.55), (1, 0.0)], seg=32, cap0=False, cap1=False), lente))
+    parts.append(set_mat(revolve('cuello', F(G, 0.112), F(G, 0.118 + tr * 0.6), [(0, 0.0085), (1, 0.0105)], seg=12), mt['DORADO']))
+    return parts
+
+
 PIEZAS = {'mano_bandera': bandera, 'mano_maracas': maracas, 'mano_linterna': linterna, 'mano_martillo': martillo,
-          'mano_mapa': mapa, 'mano_coqui': coqui}
+          'mano_mapa': mapa, 'mano_coqui': coqui, 'mano_cuaderno': cuaderno, 'mano_lupa': lupa}
 
 
 def finish(name):

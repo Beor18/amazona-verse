@@ -642,6 +642,78 @@ def visor_wrap(name, kind):
 
 
 
+# ---------------------------------------------------------------------------------------------- binoculares
+# Binoculares de explorador puestos como gafas (P0 de TRAITS_V2, cápsula del bosque · juvenil): un tubo por ojo que sale
+# del ojo hacia el frente (eje entre la normal del ojo y el frente, para no bizquear ni abrirse), copa de goma que no
+# toca la cara, cuerpo ACENTO (color elegido), aro METAL, cristal VIDRIO (el ojo se ve a través) y fondo NEGRO dentro.
+# Puente con rueda de enfoque por delante de la frente y correa elástica por detrás de la cabeza.
+BINO_L = 0.16       # largo del tubo: se lee como binocular (ocular estrecho que se abre al objetivo), no como gafas
+BINO_RE, BINO_RO = 0.056, 0.072  # radio del ocular y del objetivo (Ø 14,4 cm: algo más que el ojo, de 13,2 cm; robustos)
+SEG_B = 24
+
+
+def bino_axis(n):
+    return (n + Vector((0, -0.75, 0))).normalized()
+
+
+def binoculares(name='lentes_binoculares'):
+    mt = M(); mt['GOMA'] = mat('GOMA', hexrgb('#1e1f22'), 0.7); mt['METAL'] = mat('METAL', hexrgb('#c9d0d4'), 0.3, 0.9)
+    vid = mat('VIDRIO', hexrgb('#bfe3f0'), 0.05)
+    c, n = EYES[0]; ax = bino_axis(n); bvh = body_bvh()
+    d0 = 0.04
+    for _ in range(40):   # la copa (radio 0,056) a ≥ 11 mm de la cara (y ≥ 1 cm de aire delante del ojo)
+        u, v, w = frame_from(ax); worst = 9.0
+        for k in range(24):
+            a = 2 * math.pi * k / 24
+            q = c + ax * d0 + (u * math.cos(a) + v * math.sin(a)) * 0.064
+            loc, nr, i, dd = bvh.find_nearest(q)
+            worst = min(worst, dd if (q - loc).dot(nr) >= 0 else -dd)
+        if worst >= 0.011: break
+        d0 += 0.003
+    print('BINO d0=%.3f holgura copa=%.4f' % (d0, worst))
+    a0 = c + ax * d0; L = BINO_L; re, ro = BINO_RE, BINO_RO
+    P = lambda t: a0 + ax * (L * t)
+    u, v, w = frame_from(ax)
+    ring = lambda t, r, k, n_: P(t) + (u * math.cos(2 * math.pi * k / n_) + v * math.sin(2 * math.pi * k / n_)) * r
+    parts = []
+    parts.append(put(revolve('copa', P(-0.015), P(0.12), [(0, 0.06), (0.3, 0.064), (0.75, 0.062), (1, 0.057)], seg=SEG_B, cap0=False, cap1=False), mt['GOMA']))
+    body = [(0, re), (0.25, re), (0.45, re * 1.04), (0.7, ro * 0.96), (0.85, ro), (1, ro)]
+    parts.append(put(revolve('tubo', P(0.1), P(0.84), body, seg=SEG_B, cap0=False, cap1=False), mt['ACENTO']))
+    parts.append(put(revolve('aro', P(0.82), P(0.9), [(0, ro * 1.04), (0.5, ro * 1.09), (1, ro * 1.04)], seg=SEG_B, cap0=False, cap1=False), mt['METAL']))
+    parts.append(put(revolve('boca', P(0.88), P(1.0), [(0, ro * 1.06), (0.7, ro * 1.1), (1, ro * 1.08)], seg=SEG_B, cap0=False, cap1=False), mt['ACENTO']))
+    parts.append(put(tube_path('labio', [ring(1.0, ro * 1.03, k, SEG_B) for k in range(SEG_B)], 0.0055, seg=8, closed=True), mt['ACENTO']))
+    # interior negro (se ve por el cristal) y cristal VIDRIO cerca de la boca: el ojo de Vittata se ve a través
+    parts.append(put(revolve('interior', P(0.0), P(1.0), [(0, 0.056), (0.15, re * 0.86), (0.6, ro * 0.84), (1, ro * 0.97)], seg=SEG_B, cap0=False, cap1=False), mt['NEGRO']))
+    parts.append(put(revolve('cristal', P(0.93), P(0.955), [(0, ro * 0.99), (0.5, ro * 0.99), (1, ro * 0.7)], seg=SEG_B, cap0=True, cap1=True), vid))
+    for t in (0.5, 0.6, 0.7):   # gajos de goma donde se agarra
+        rr = re * 1.04 + (ro * 0.96 - re * 1.04) * (t - 0.45) / 0.25
+        parts.append(put(tube_path('gajo', [ring(t, rr, k, SEG_B) for k in range(SEG_B)], 0.0035, seg=6, closed=True), mt['GOMA']))
+    left = join(parts, 'bino_L'); right = mirror_x(left, 'bino_R')
+    out = [left, right]
+    # puente con bisagra y rueda de enfoque, por delante de la frente y por encima del pico
+    zb = P(0.6).z + 0.035; yb = min(P(0.6).y, front_y(zb) - 0.06)
+    hinge = Vector((0, yb, zb))
+    for sx in (1, -1):
+        for t in (0.35, 0.75):
+            pt = P(t); pt = Vector((sx * pt.x, pt.y, pt.z)); h2 = hinge + ax * 0 + Vector((0, (P(t).y - P(0.55).y), 0))
+            out.append(put(tube_path('puente', [pt, (pt + h2) / 2 + Vector((0, 0, 0.012)), h2], 0.013, seg=10), mt['ACENTO']))
+    hax = Vector((0, ax.y, ax.z)).normalized()
+    out.append(put(revolve('bisagra', hinge + Vector((0, P(0.3).y - P(0.55).y, 0)), hinge + Vector((0, P(0.85).y - P(0.55).y, 0)),
+                           [(0, 0.012), (0.08, 0.016), (0.92, 0.016), (1, 0.012)], seg=16), mt['ACENTO']))
+    wc = hinge + Vector((0, P(0.4).y - P(0.55).y, 0.02))
+    out.append(put(revolve('rueda', wc - Vector((0.014, 0, 0)), wc + Vector((0.014, 0, 0)), [(0, 0.013), (0.1, 0.017), (0.9, 0.017), (1, 0.013)], seg=16), mt['METAL']))
+    for k in range(10):   # estrías de la rueda de enfoque
+        a = 2 * math.pi * k / 10; d = Vector((0, math.cos(a), math.sin(a)))
+        out.append(put(rbox('estria', wc + d * 0.0172, (0.024, 0.0035, 0.0035), bevel=0.0008, segs=1, axes=(Vector((1, 0, 0)), d, Vector((1, 0, 0)).cross(d))), mt['METAL']))
+    # correa elástica por detrás de la cabeza, con presillas en cada tubo
+    q0 = P(0.2); a_s = math.atan2(q0.x, -(q0.y - 0.04)) + R(10)
+    out.append(put(strap('correa', a_s, q0.z, 1.30, w=0.02, gap=0.009), mt['NEGRO']))
+    for sx in (1, -1):
+        q = Vector((sx * q0.x, q0.y, q0.z)); side = Vector((sx, 0.3, 0)).normalized()
+        out.append(put(rbox('presilla', q + side * (re + 0.005), (0.012, 0.028, 0.022), bevel=0.003, axes=(side, Vector((0, 0, 1)).cross(side) * sx, Vector((0, 0, 1)))), mt['NEGRO']))
+    return out
+
+
 # ---------------------------------------------------------------------------------------------- pañuelo
 # Bandana de verdad, de una sola tela (TELA, para que el juego la estampe entera):
 #  - banda enrollada alrededor de la BASE del cuello (más baja al frente, visible bajo el pico; sube por los lados por encima
@@ -987,6 +1059,7 @@ PIEZAS = {
     'lentes_deportivas': lambda: finish('lentes_deportivas', visor_wrap('lentes_deportivas', 'deportivas'), eyes=False, dist=1.15, target=(0, -0.06, 1.2)),
     'lentes_buceo': lambda: finish('lentes_buceo', visor_wrap('lentes_buceo', 'buceo'), eyes=False, dist=1.35, target=(0, -0.04, 1.25)),
     'panuelo': lambda: finish_panuelo('panuelo'),
+    'lentes_binoculares': lambda: finish('lentes_binoculares', binoculares(), eyes=False, dist=1.25, target=(0, -0.1, 1.22)),
 }
 
 if __name__ == '__main__':
