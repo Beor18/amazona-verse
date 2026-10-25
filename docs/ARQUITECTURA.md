@@ -20,8 +20,8 @@ Three.js r128 (CDN) · assets/ (modelos .glb y su _glb.js base64, texturas, spri
 
 Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/cap1` no edita `src/`.
 
-- **src/engine:** `core` (namespace, módulos, packs, ganchos, arranque), `assets` (cargador único GLB/base64), `renderer` (WebGL y bucle), `camara`, `input`, `fisica` (colisiones y movimiento), `terreno`, `agua`, `audio`, `fx`, `ui`, `actores` y `guardado`.
-- **src/game:** `eventos`, `dialogo`, `interaccion`, `objetos`, `misiones`, `diario`, `creador` y `comic`.
+- **src/engine:** `core` (namespace, módulos, packs, ganchos, arranque), `assets` (cargador único GLB/base64), `renderer` (WebGL y bucle), `camara`, `input`, `fisica` (colisiones y movimiento), `terreno`, `agua`, `audio`, `fx`, `ui`, `pausa` (congela el mundo: menú, portada o `G.pausa.set`), `actores` y `guardado`.
+- **src/game:** `eventos`, `dialogo`, `interaccion`, `objetos`, `misiones`, `diario`, `aula` (idioma, voz, texto corto, fichas verificadas, preguntas y Modo Maestro; lo activa `pack.aula`), `creador` y `comic`.
 - **src/pruebas/motor.js:** ayudas de prueba, `accessoryTest` y `templateTest`.
 - **src/boot.js:** elige el pack y expone `window.AV`.
 
@@ -38,13 +38,13 @@ Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/
   - `update(dt, busy, moving)` y `render(dt, t, moving)`, en cada cuadro.
   - `moved(busy)`: tras mover al jugador.
   - `apply`: tras cargar o reiniciar, cada módulo deja el mundo como dice `G.S`.
-  - `escape`, `cardHidden` y `listo`.
+  - `escape`, `cardHidden`, `listo`, `pausa(activa)`, `aula(clave, valor)` y `aprendizaje({ tipo, id, intento })`.
 - **Misión** = `{ id, titulo, hud, pasos: [{ texto, hasta, guia }], recompensa: { hito }, alCompletar }`.
-  - Se completa cuando todos sus pasos se cumplen en orden. Sin pasos es un hueco y se ignora (así está `educativa` en cap1).
+  - Se completa cuando todos sus pasos se cumplen en orden. Sin pasos es un hueco y se ignora. La `educativa` de cap1 ("La ruta de la gota", `content/cap1/educativa.js`) marca sus pasos en `S.edu.hecho` y referencia los lugares por id de POI.
   - Disparadores `hasta`: `tiene`, `recogido`, `evento`, `marca`, `cuenta`, `paso`, `mision`, `cerca`, `todos`, `alguno` o una función `(S, G)`.
 - **Historia:** `historia.pasos` (índice en `S.step`). Un paso avanza solo con `hasta`; si no, lo avanza un script con `G.misiones.advanceTo(n)`.
 - **Recompensas:** `ropa: [{ clave, hito, nombre, pista, viste }]`. El hito es el id de una misión o de un hito del Diario.
-- **Pack (claves):** `meta`, `jugador`, `mundo`, `npcs`, `objetos`, `recursos`, `historia`, `misiones`, `diario`, `ropa`, `eventos`, `dialogos`, `comic`, `guardado`, `gestos`, `inicio(G)`, `preparar(G)`, `pruebas` y `depuracion`. Cada esquema está documentado al inicio del módulo que lo lee.
+- **Pack (claves):** `meta`, `jugador`, `mundo`, `npcs`, `objetos`, `recursos`, `historia`, `misiones`, `diario`, `ropa`, `eventos`, `dialogos`, `comic`, `guardado`, `gestos`, `aula`, `inicio(G)`, `preparar(G)`, `pruebas` y `depuracion`. Cada esquema está documentado al inicio del módulo que lo lee.
 - **Personaje** (`src/personaje`, del TA):
   - El motor usa de `AVCharacter`: `create()` (`root`, `height`, `applyLook`, `play`, `update` y las banderas de animación), `normalizeLook`, `buildAccessory`, `disposeObject`, `renderPortrait`, `SLOTS`, `ACCESSORIES` y `SPECIES`. De `AVShowcase`: `mount`, `unmount`, `setLook` y `status`.
   - `character.js` depende de `AVE.assets.loadGLB`.
@@ -65,5 +65,6 @@ Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/
 - Las rutas son relativas al documento, no al script.
 - Las claves de los datos del pack van en español. Las claves de `G.S` son estables: renombrarlas exige una migración en `guardado.migrar` y subir `guardado.version`.
 - Los colores se escriben en sRGB y `renderer.linearize` los pasa a lineal. El color de salida y el tone mapping son del TA.
-- Cada pack trae sus pruebas en `pruebas`. Antes de cada commit deben pasar `AV.selfTest`, `AV.missionTest`, `AV.accessoryTest` y `AV.templateTest`.
+- Cada pack trae sus pruebas en `pruebas`. Antes de cada commit deben pasar `AV.selfTest`, `AV.missionTest`, `AV.accessoryTest` y `AV.templateTest` (en cap1, también `AV.eduTest` y `AV.maestroTest`).
+- Perchas de una vía (ramas donde posarse): `G.fisica.addPercha({ x, z, r, y })`; el suelo bajo el jugador es `G.fisica.suelo(x, z, y)`.
 - Eventos y guardado sin datos personales.

@@ -41,8 +41,8 @@ Entradas: `pop-in`, `rise-in`, `toast-in`, `badge-pop`. Ambiente: `bob`, `sway`,
 `:hover` brillo +7 %; `:active` hunde el labio; `:focus-visible` anillo amarillo de 4 px con halo oscuro (azul sobre papel); `[aria-pressed=true]` dorado con ✓; `.locked`/`:disabled` gris con candado. Con diálogo o tarjeta abiertos se apartan los controles táctiles.
 
 ## Cambios de UI que requieren JS
-1. **Enlazar** `<script src="src/ui/ui.js" defer></script>`: máquina de escribir, Esc/P abre la pausa y rebote de contadores. Probado inyectándolo (selfTest 45/45; `#d-text` conserva el texto completo).
-2. **Pausa real:** congelar el bucle con `#pause` abierto (evento `toggle`) y con la portada `#title` abierta.
+1. **Hecho.** `src/ui/ui.js` enlazado con `defer`: máquina de escribir (un toque en la caja del diálogo completa la frase), Esc/P abre la pausa y rebote de contadores.
+2. **Hecho.** Pausa real en `src/engine/pausa.js`: con `#pause`, la portada `#title` o `G.pausa.set(motivo, true)` (Modo Maestro) el mundo se congela (dt = 0) y `input.js` ignora las acciones. La barra de pasos usa `--n`/`--n-label` desde `misiones.renderQuest()`.
 3. **Movimiento reducido en el juego:** `shake()`, `hitStop()` y partículas deben respetar `prefers-reduced-motion`.
 4. **Logro de ropa:** `grant()` usa `toast()`; con `toastHTML('<b>¡Ropa nueva!</b> …')` toma el estilo de logro.
 5. **Foco:** llevarlo a la tarjeta al abrirla y devolverlo al cerrar.
@@ -50,3 +50,6 @@ Entradas: `pop-in`, `rise-in`, `toast-in`, `badge-pop`. Ambiente: `bob`, `sway`,
 7. **Botón Acción:** icono según el verbo (`data-icon`).
 8. **Diario:** filtros Fauna/Cultura y `.progress`.
 9. **Pruebas automáticas:** cerrar la portada con `document.getElementById('title').close()`.
+
+## Aula (src/ui/aula.css, la carga src/game/aula.js)
+Tarjetas de la lección en `#card` (`.edu`: cabecera con retrato, opciones `.edu-opt` con estados `bad`/`ok`/`brilla`, `.edu-retro` pista/ok/así es, secuencias `.edu-seq`, cadena `.edu-cadena`, "Predije y vi" `.edu-cmp`, puntos de avance `.edu-dots` sin puntaje), sección **Aula** en la pausa (chips ES/EN, texto corto, voz), enlace discreto **Docentes** al pie y panel **Modo Maestro** (`#maestro`, papel, pestañas). Capturas: `docs/img/edu_*.png`.

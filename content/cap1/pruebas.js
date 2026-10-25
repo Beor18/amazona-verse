@@ -146,6 +146,8 @@
   async function missionTest(G, T) {
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, SV = G.guardado;
     const O = G.objetos, F = G.fisica, L = G.dialogo.L;
+    // Nivel del agua en un punto (el mapa nuevo tiene río, pozas y mar a distintas alturas)
+    const nivel = (x, z) => { const lv = G.agua.levelAt(x, z); return lv > -Infinity ? lv : S.water; };
     const { check, result } = T.runner();
     const { teleport, tick, drain, useAt } = T;
     const keep = T.keepSave();
@@ -172,7 +174,7 @@
     // M1: nado
     check('c2 espera al paso 3 (la pieza del paso 2 sale del río)', !O.available(O.find('c2')));
     const c1 = O.find('c1');
-    teleport(c1.x + 0.5, c1.z); S.pos.y = S.water - F.SWIM_DEPTH; tick(0.3);
+    teleport(c1.x + 0.5, c1.z); S.pos.y = nivel(c1.x, c1.z) - F.SWIM_DEPTH; tick(0.3);
     check('La poza es honda: flotando no se alcanza la pieza', F.MOVE.swimming && !S.collected.includes('c1') && !O.reachUnder(c1), 'fondo a ' + (S.pos.y - G.terreno.height(c1.x, c1.z)).toFixed(1) + ' m');
     G.input.keys.add('c'); tick(2.5); G.input.keys.delete('c');
     check('M1: buceando con C se recoge la pieza', S.collected.includes('c1') && S.missions.m1);
@@ -196,11 +198,11 @@
     // Diario de Campo y ropa por hitos
     const FIELD = G.diario.entries;
     const fauna = FIELD.filter(f => f.cat === 'fauna'), cult = FIELD.filter(f => f.cat === 'cultura');
-    for (const f of fauna.slice(0, 4)) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = S.water - F.SWIM_DEPTH; tick(0.1); }
+    for (const f of fauna.slice(0, 4)) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
     check('Diario: 4 animales por proximidad dan la gorra de la bandera', S.field.length === 4 && S.unlocked.includes('gorra:pr'), S.field.join(','));
     for (const f of cult.slice(0, 4)) { teleport(f.x + 0.4, f.z); tick(0.1); }
     check('Diario: 4 objetos de cultura dan las maracas', S.unlocked.includes('mano:maracas'));
-    for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = S.water - F.SWIM_DEPTH; tick(0.1); }
+    for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
     check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
     check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia) li.found').length === 12);
