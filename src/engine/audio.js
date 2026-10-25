@@ -6,12 +6,15 @@
    Muestras en archivo (assets/audio/, sintetizadas con tools/audio/juego.py; tabla en assets/audio/sonidos.json):
    aterrizar_techo, posarse_rama, despegar, nido_chispa, eclosion_huevo. Se tocan igual, con G.audio.play(nombre).
    Se piden tras el primer gesto (autoplay), .ogg o .mp3 según el navegador; mientras cargan suena un sintético
-   de respaldo. Un pack registra más con G.audio.sample(nombre, { url: 'ruta/sin_extension.', gain, respaldo }). */
+   de respaldo. Un pack registra más con G.audio.sample(nombre, { url: 'ruta/sin_extension.', gain, respaldo }).
+   G.audio.alSonar(fn): fn(nombre, arg) en cada G.audio.play de un sonido que existe, suene o no (sin altavoces, con el sonido apagado o
+   antes del primer gesto del jugador). Lo usan los subtítulos de sonido (src/game/accesibilidad.js); un fallo del oyente no frena el sonido. */
 AVE.module('audio', function (G) {
   'use strict';
   const STORE = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.audio';
   let ctx = null, master = null, sfxBus = null, voiceBus = null, noiseBuf = null, lastAt = 0;
   const vol = { master: 0.7, sfx: 0.8, voice: 0.9, muted: false };
+  const oyentes = [];
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') Object.assign(vol, v); } catch (e) { /* sin almacenamiento */ }
   function apply() { if (!ctx) return; master.gain.value = vol.muted ? 0 : vol.master; sfxBus.gain.value = vol.sfx; voiceBus.gain.value = vol.voice; }
   // El navegador solo deja sonar después de un gesto del jugador
@@ -99,6 +102,7 @@ AVE.module('audio', function (G) {
   for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);
   const api = {
     vol, ensure, apply, log: [],
+    alSonar(fn) { if (typeof fn === 'function') oyentes.push(fn); },
     define(name, fn) { SOUNDS[name] = (t, arg) => fn(t, arg, A); },
     sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = t => muestra(name, t); cargar(name); },
     listo: name => !!bufs[name], // la muestra ya está decodificada (para pruebas)
@@ -110,6 +114,7 @@ AVE.module('audio', function (G) {
       const now = performance.now();
       if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
       lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
+      for (const f of oyentes) { try { f(name, arg); } catch (e) { /* un oyente no frena el sonido */ } }
       if (!ctx || ctx.state !== 'running' || vol.muted) return false;
       try { SOUNDS[name](ctx.currentTime + 0.01, arg); } catch (e) { return false; }
       return true;
