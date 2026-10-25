@@ -2,6 +2,8 @@
 
 Foto del 2026-10-24 a las 22:50 (hora local), con la validación de Save & Cómic y QA-20 a las 23:05, sobre `main` = `estable` = v19-publicada = 19d152a (antes, v18-publicada = f4a31d1). El repo cambia minuto a minuto: todo se puede comprobar con el hash o el comando citado. QA no aprueba su propia entrega.
 
+**Actualización v21 (2026-10-25, QA nuevo, candidato c6fe45d):** pasan a **aprobada** Movimiento (sólidos de la geometría real, movementTest 27/27), Game designer de huevos (el nido entra al juego normal tras M1, criaderoTest 40/40 y E2E 14/14), Gameplay (paradas y QA-04 a QA-08) y Build/Release (`build.sh`: 29,35 MB y la build corre con las 11 baterías en verde). El programador gráfico tiene abiertos QA-22 (haz de objetivo) y QA-24 (contextTest sin confirmar). El hueco del criadero «sin entrada para el jugador» queda cerrado. La tabla de abajo es la foto de v19.
+
 **Escala:** no localizada → entregada (hay archivos o commits) → integrada (el juego o el canal publicado la carga) → probada (una prueba automática la cubre y pasa) → aprobada (QA la validó de forma independiente: batería y E2E sobre la build, sin bugs altos abiertos en esa área).
 
 Roles en `~/AmazonaVerse/_trabajo_claude/equipo_ids.md`: 20 más el coordinador (no 27). Si faltan estados, no están en ese archivo.
