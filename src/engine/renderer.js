@@ -601,13 +601,14 @@ AVE.module('renderer', function (G) {
       return { w, h, px };
     };
     const comparar = (A, B) => {
-      let n = 0, vivos = 0, distintos = 0;
+      let n = 0, vivos = 0, vivosA = 0, distintos = 0;
       for (let i = 0; i < B.px.length; i += 12) {
         n++; const a = A.px, b = B.px;
         if (b[i] + b[i + 1] + b[i + 2] > 30) vivos++;
+        if (a[i] + a[i + 1] + a[i + 2] > 30) vivosA++;
         if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 48) distintos++;
       }
-      return { vivos: vivos / n, distintos: A.w === B.w && A.h === B.h ? distintos / n : 1 };
+      return { vivos: vivos / n, vivosA: vivosA / n, distintos: A.w === B.w && A.h === B.h ? distintos / n : 1 };
     };
     const atlas = () => {
       const rt = G.vegetacion && G.vegetacion.atlas; if (!rt) return null;
@@ -644,7 +645,8 @@ AVE.module('renderer', function (G) {
         Math.round(performance.now() - t1) + ' ms');
       await enCuadros(3);
       const B = foto(), cmp = comparar(A, B);
-      check('Después se dibuja el mundo (píxeles no negros)', cmp.vivos > 0.9, pct(cmp.vivos) + ' con color');
+      // Relativo a la foto de antes (una vista con sombra o cielo oscuro tiene menos píxeles claros; QA-30)
+      check('Después se dibuja el mundo (píxeles no negros)', cmp.vivos > 0.5 && cmp.vivos >= cmp.vivosA - 0.02, pct(cmp.vivosA) + ' → ' + pct(cmp.vivos) + ' con color');
       check('El mundo se ve igual que antes de perderse', cmp.distintos < 0.02, pct(cmp.distintos) + ' de píxeles distintos');
       if (atA) {
         const atB = atlas(); let d = 0; for (let i = 0; i < atA.px.length; i += 16) if (Math.abs(atA.px[i] - atB.px[i]) > 8) d++;
