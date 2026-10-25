@@ -280,16 +280,15 @@
         await CR.abrir(); await sleep(400);
         const boton = W.document.querySelector('#criadero [data-cr="eclosion"]');
         if (boton && !boton.closest('[hidden]')) boton.click(); else if (CR.debug && CR.debug.eclosion) await CR.debug.eclosion(id);
-        const cria = await until(() => CR.debug && CR.debug.cria && CR.debug.cria(), 15000);
-        let raiz = cria && cria.holder; while (raiz && raiz.parent) raiz = raiz.parent;
-        const huevo = raiz && raiz.getObjectByName('huevo');
-        const patas = huevo && huevo.children.find(o => o.isGroup && o.children.length === 2);
+        // La cría puede existir antes de que su modelo del huevo termine de armarse: se espera a las patitas, no solo a la cría
+        const buscar = () => { const cr = CR.debug && CR.debug.cria && CR.debug.cria(); let raiz = cr && cr.holder; while (raiz && raiz.parent) raiz = raiz.parent; const hv = raiz && raiz.getObjectByName('huevo'); return { cria: !!cr, huevo: !!hv, patas: hv && hv.children.find(o => o.isGroup && o.children.length === 2) }; };
+        const patas = (await until(() => buscar().patas, 20000, 80)) || null, hallado = buscar();
         const escala = () => { if (!patas) return null; const v = new W.THREE.Vector3(); patas.children[0].getWorldScale(v); return +v.x.toFixed(3); };
         CR.debug.irA(1.0); const e1 = escala();
         CR.debug.irA(6.0); const e6 = escala();
         CR.debug.irA(9.6); await sleep(300);                         // terminarEclosion corre con T > 9,4
         const tras = CR.estado().capsulas[id] || {};
-        check('3', 'Eclosión: las patitas salen del huevo (escala ~0 a 1 s, visible a 6 s)', patas && e1 < 0.05 && e6 > 0.5, { escala1s: e1, escala6s: e6, xpPorJugar: xpTras - xpAntes, xpDePrueba: atajoXP, boton: !!boton });
+        check('3', 'Eclosión: las patitas salen del huevo (escala ~0 a 1 s, visible a 6 s)', patas && e1 < 0.05 && e6 > 0.5, { escala1s: e1, escala6s: e6, xpPorJugar: xpTras - xpAntes, xpDePrueba: atajoXP, boton: !!boton, cria: hallado.cria, huevo: hallado.huevo });
         check('3', 'Tras la eclosión la cápsula queda nacida', tras.estado === 'nacida', { estado: tras.estado, xp: tras.xp });
         CR.cerrar && CR.cerrar();
         despejar('eclosión');
@@ -347,10 +346,10 @@
       drain();
       check('4.8', 'Reparar y activar el transmisor: aparece el símbolo de 36 fragmentos, suena la Voz y la historia pasa al mirador', t2 && simboloVisible && $('symbol').hidden && S.transmitterOn && had('TransmitterActivated') && S.step === 7 && s(S.inv) === s(invFinal),
         { simbolo: simboloVisible, simboloCerrado: $('symbol').hidden, paso: S.step, inv: S.inv, esperado: invFinal, cercano: t2 ? null : cercX2 });
-      // La Voz del transmisor no debe llevar la cara del Guardián (CAP1_PENDIENTE P0-2): informativa mientras QA-36 esté abierto
+      // La Voz del transmisor no debe llevar la cara del Guardián (CAP1_PENDIENTE P0-2): informativa mientras QA-34 esté abierto
       const imgVoz = (vistas.find(l => l.who === 'Voz') || {}).img, imgGuardian = (vistas.find(l => l.who === 'Guardián') || {}).img;
       const vozIgual = !!imgVoz && imgVoz === imgGuardian;
-      check('4.8', vozIgual ? 'La Voz del transmisor lleva un retrato distinto al del Guardián (informativa: QA-36 ABIERTO, hoy usa el mismo)' : 'La Voz del transmisor lleva un retrato distinto al del Guardián (QA-36 corregido)', !!imgVoz, { voz: imgVoz || 'la Voz no habló', guardian: imgGuardian || 'el Guardián no habló', igual: vozIgual });
+      check('4.8', vozIgual ? 'La Voz del transmisor lleva un retrato distinto al del Guardián (informativa: QA-34 ABIERTO, hoy usa el mismo)' : 'La Voz del transmisor lleva un retrato distinto al del Guardián (QA-34 corregido)', !!imgVoz, { voz: imgVoz || 'la Voz no habló', guardian: imgGuardian || 'el Guardián no habló', igual: vozIgual });
       if (corte('4.8', S.step === 7)) return fin();
 
       // ---------- 4.9 Mirador: el final del capítulo ----------
