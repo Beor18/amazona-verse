@@ -174,7 +174,7 @@ AVE.module('criadero', function (G) {
     const prev = st.activa; st.activa = st.vista;   // el cuidado premia a la cría que estás mirando
     sumar(D().xp.fuentes.cuidado.xp, 'cuidar');
     st.activa = prev && st.capsulas[prev] && st.capsulas[prev].estado !== 'liberada' ? prev : st.vista;
-    guardar(); aviso(t(A.frase)); pintar(); procesarAvisos();
+    guardar(); globo(t(A.frase)); pintar(); procesarAvisos();
     return { ok: true };
   }
 
@@ -225,6 +225,7 @@ AVE.module('criadero', function (G) {
       <button class="btn ghost sm cr-skip" type="button" data-cr="saltar" hidden></button>
       <div class="cr-banner" hidden aria-live="assertive"></div>
       <div class="cr-toast" role="status" aria-live="polite" hidden></div>
+      <div class="cr-globo" role="status" aria-live="polite" hidden></div>
       <div class="cr-modal" hidden><div class="cr-modal-box paper" role="dialog" aria-modal="true" aria-labelledby="cr-modal-t"></div></div>`;
     document.body.appendChild(root);
     canvas = root.querySelector('.cr-canvas');
@@ -328,6 +329,23 @@ AVE.module('criadero', function (G) {
     const el = root.querySelector('.cr-toast'); el.textContent = txt; el.hidden = false;
     clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, ms || 3200);
     if (G.audio && G.audio.play) try { G.audio.play('tick'); } catch (e) { /* sin audio */ }
+  }
+  // Globo de papel sobre la cabeza de la cría (se recoloca en cada cuadro en paso())
+  let globoT = 0;
+  function globo(txt, ms) {
+    if (!root) return;
+    const el = root.querySelector('.cr-globo'); el.textContent = txt; el.hidden = false;
+    clearTimeout(globoT); globoT = setTimeout(() => { el.hidden = true; }, ms || 2600);
+    colocarGlobo();
+  }
+  const _v = new THREE.Vector3();
+  function colocarGlobo() {
+    const el = root && root.querySelector('.cr-globo'), k = scene3d.chick;
+    if (!el || el.hidden || !k || !scene3d.camera) return;
+    const head = k.ch.bones.cabeza001 || k.ch.root;
+    head.getWorldPosition(_v); _v.y += 0.6 * (k.escala || 1) * (k.f.cabeza001 || 1); _v.project(scene3d.camera); // sobre la coronilla
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    el.style.left = Math.round((_v.x * 0.5 + 0.5) * w) + 'px'; el.style.top = Math.round((-_v.y * 0.5 + 0.5) * h) + 'px';
   }
   function banner(txt, sub) {
     const el = root.querySelector('.cr-banner');
@@ -1096,6 +1114,7 @@ AVE.module('criadero', function (G) {
     scene3d.fx.step(dt);
     const pol = scene3d.scene.getObjectByName('polen'); if (pol) pol.rotation.y += dt * 0.02;
     camara(dt);
+    colocarGlobo();
   }
 
 
@@ -1130,7 +1149,7 @@ AVE.module('criadero', function (G) {
     if (key === ultimoCompa) return;
     const antes = ultimoCompa; ultimoCompa = key;
     // Fuera del criadero, un aviso amable cuando la cotorrita crece mientras el niño aprende en el mundo
-    if (info && !open && antes.split(':')[0] === info.id && G.ui && G.ui.toast) { try { G.ui.toast('¡' + info.nombre + ' creció! Ahora es ' + t(etapaDef(info.etapa).nombre).toLowerCase() + '.', 3200); } catch (e) { /* sin HUD */ } }
+    if (info && !open && antes.split(':')[0] === info.id && G.ui && (G.ui.toastHTML || G.ui.toast)) { try { const msg = `<b>¡${esc(info.nombre)} creció!</b> Ahora es ${esc(t(etapaDef(info.etapa).nombre).toLowerCase())}.`; if (G.ui.toastHTML) G.ui.toastHTML(msg, 3200); else G.ui.toast(msg.replace(/<[^>]+>/g, ''), 3200); } catch (e) { /* sin HUD */ } }
     G.emit('companero', info);
   }
   function vestir(ch, info) {
@@ -1466,6 +1485,20 @@ AVE.module('criadero', function (G) {
       const sinAzar = H.huevos.every(h => h.obtener && (h.obtener.defecto || h.obtener.cap1) && !JSON.stringify(h).match(/precio|probabilidad|azar|aleatori|random|price/i));
       check('Rareza ganada: cada cápsula tiene reto y ninguna tiene precio ni azar', sinAzar);
       check('Cada huevo tiene traits por etapa', H.huevos.every(h => ['bebe', 'juvenil', 'adulto'].every(e => (h.traits[e] || []).length)));
+      // Especies (content/comun/especies.js): 34 vivas del catálogo + 2 extintas, campos obligatorios y fuentes por dato
+      if (!window.AV_ESPECIES) { try { await AVE.assets.script('content/comun/especies.js'); } catch (e) { /* la comprobación falla abajo */ } }
+      const ES = window.AV_ESPECIES;
+      const IDS34 = ['vittata', 'diadema', 'finschi', 'imperialis', 'lilacina', 'oratrix', 'tresmariae', 'rhodocorytha', 'vinacea', 'viridigenalis', 'agilis', 'arausiaca',
+        'auropalliata', 'barbadensis', 'brasiliensis', 'collaria', 'guildingii', 'pretrei', 'tucumana', 'ventralis', 'versicolor', 'dufresniana', 'farinosa', 'festiva',
+        'guatemalae', 'kawalli', 'leucocephala', 'aestiva', 'albifrons', 'amazonica', 'autumnalis', 'mercenarius', 'ochrocephala', 'xantholora'];
+      check('Especies: las 34 del catálogo sin repetir, más 2 extintas', !!ES && ES.especies.length === 34 && new Set(ES.especies.map(x => x.id)).size === 34 && IDS34.every(id => ES.especies.some(x => x.id === id)) && ES.extintas.length === 2, ES && ES.especies.length);
+      const https = v => typeof v === 'string' && /^https:\/\//.test(v);
+      const sp = ES ? ES.especies.concat(ES.extintas) : [];
+      const incompletas = sp.filter(x => !(x.id && x.cientifico === 'Amazona ' + x.id && x.comun && x.comun.en && 'es' in x.comun && 'distribucion' in x && x.uicn && 'categoria' in x.uicn && Array.isArray(x.rasgos) && x.catalogo && x.catalogo.nombre && x.fuentes && https(x.fuentes.comun_en)));
+      check('Especies: campos obligatorios presentes (null si no se pudo verificar)', !!ES && !incompletas.length, incompletas.map(x => x && x.id).join(','));
+      const sinFuente = sp.filter(x => (x.comun.es && !https(x.fuentes.comun_es)) || (x.uicn.categoria && !(https(x.fuentes.uicn) && x.uicn.evaluacion && https(x.uicn.url) && ES.categorias[x.uicn.categoria])) || (x.distribucion && !https(x.fuentes.distribucion)) || (x.rasgos.length && !https(x.fuentes.rasgos)));
+      check('Especies: cada dato verificado trae su fuente (UICN con evaluación y ficha)', !!ES && !sinFuente.length, sinFuente.map(x => x.id).join(','));
+      check('Especies: textos en ES y EN; las extintas son EX', !!ES && sp.every(x => (!x.distribucion || (x.distribucion.es && x.distribucion.en)) && x.rasgos.every(r => r.es && r.en)) && ES.extintas.every(x => x.uicn.categoria === 'EX'));
       // Estado limpio para la prueba
       st = fresh(); quitarCria();
       revisarCapsulas();
