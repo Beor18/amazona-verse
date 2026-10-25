@@ -1,6 +1,6 @@
 # Amazona Verse: roadmap y pendientes
 
-Actualizado el 25 de octubre de 2026, con la **versión 25** publicada (`main` en 52d7558).
+Actualizado el 25 de octubre de 2026, con la **versión 25** publicada en https://amazona-verse.vercel.app (`main` en 52d7558).
 Detalle de bugs en `docs/equipo/BUGS.md`, decisiones en `docs/DECISION_LOG.md` y plan técnico del auditor en la rama `auditoria-motores` (`docs/auditoria/`).
 
 ## Dónde estamos

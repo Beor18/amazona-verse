@@ -147,3 +147,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 2026-10-25 · v25 publicada desde dd4eabe (estable): QA aprobó bd73556; d98dd27 y d87717a (QA-33/32) entran con test.sh --extra 13/13. Kelvin confirmó que el visor permite WebAssembly (meshopt). Descarga inicial 7,98 MB (QA-10 cumplido) · coordinador
 2026-10-25 · Kelvin fija el tope semanal de uso en 45 % (antes 70 %) · Kelvin
 2026-10-25 · Una sola rama: todo en main (se unen auditoria-motores y la landing en web/; se borran estable y deploy). El sitio publicable va en sitio/ y Vercel publica main con Root Directory sitio · Kelvin
+2026-10-25 · Vercel: proyecto amazona-verse en la cuenta Pro de Fernando (Kelvin lo eligió), Root Directory = sitio; publica main en https://amazona-verse.vercel.app · coordinador

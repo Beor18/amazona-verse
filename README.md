@@ -4,6 +4,8 @@ Juego educativo 3D para el navegador, para escuelas (grados 3 a 6). Lo protagoni
 
 Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Ciencias alineadas al DEPR 2022 y NGSS, sin cuentas ni anuncios.
 
+**Jugar:** https://amazona-verse.vercel.app (landing) · https://amazona-verse.vercel.app/juego/ (juego)
+
 **Estado:** versión 25. Qué falta y fechas estimadas: **[ROADMAP.md](ROADMAP.md)**.
 
 ## Cómo correrlo
