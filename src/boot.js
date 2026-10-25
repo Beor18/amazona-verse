@@ -22,6 +22,7 @@
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
+    if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
     if (G.movimiento && G.movimiento.test) AV.movementTest = o => G.movimiento.test(o); // src/pruebas/movimiento.js
     window.AV = AV;
   }
