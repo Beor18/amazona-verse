@@ -10,7 +10,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 3 | Nada se borra salvo «Comenzar de cero» (también partida dañada al arrancar y Aula) | **Hecho** | saveTest 45/45, maestroTest 25/25 |
 | 4 | Modo Retos: carrera y tormenta, con récord | **Hecho y publicado** | retosTest 50/50 |
 | 5 | Controles claros en la computadora (icono fijo y panel), «no eleva», no quedar encajada; botón Acción en móvil | **Hecho** (Acción: en pruebas) | movementTest 38/38, controlesTest 19/19 |
-| 6 | «Mis récords» (de la casa, locales) y compartir el cómic con una puerta para adultos | en curso | recordsTest |
+| 6 | «Mis récords» (de la casa, locales) y compartir el cómic y el récord con una puerta para adultos | **Hecho** | recordsTest 46/46 |
 | 7 | La ciudad de Kelvin completa y fiel (edificios cercanos de alta fidelidad) | en curso | streamingTest, capturas |
 | 8 | Pieles de las 22 especies (rivales de Retos y creador; crías sin especie hasta que decida Kelvin) | **Hecho** | pielesTest 13/13 |
 | 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | **Hecho** · falta: los Retos no leen el modo relajado; a 320 px no caben joystick y botones (de antes) | accesibilidadTest 36/36 |
