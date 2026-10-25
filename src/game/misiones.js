@@ -117,7 +117,7 @@ AVE.module('misiones', function (G) {
   }
   // ---------- Pantalla final ----------
   // «Crear mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
-  // (S.explorando, que se guarda: al recargar el panel no vuelve a abrirse solo); «Jugar de nuevo» borra la partida y el
+  // (S.explorando, que se guarda: al recargar el panel no vuelve a abrirse solo); «Comenzar de cero» borra la partida y el
   // cómic, así que primero pregunta DENTRO del juego (#end-confirm; nunca confirm()). Esc cancela la pregunta o, sin
   // pregunta, cierra el panel como «Seguir explorando».
   const FIN_PRINCIPAL = ['end-title', 'end-text', 'end-acciones'];
@@ -142,12 +142,12 @@ AVE.module('misiones', function (G) {
     if (!G.quiet) G.ui.toast('Tu cómic te espera en el menú de pausa', 4000);
     return true;
   }
-  function jugarDeNuevo() { verConfirmacion(false, false); $('end').hidden = true; G.guardado.reset(); }
+  function comenzarDeCero() { verConfirmacion(false, false); $('end').hidden = true; G.guardado.reset(); }
   const alPulsar = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
   alPulsar('b-seguir', seguirExplorando);
   alPulsar('b-again', () => verConfirmacion(true));
   alPulsar('b-again-no', () => verConfirmacion(false));
-  alPulsar('b-again-si', jugarDeNuevo);
+  alPulsar('b-again-si', comenzarDeCero);
   G.on('escape', () => { if ($('end').hidden) return; if (confirmando()) verConfirmacion(false); else seguirExplorando(); });
 
   G.on('render', () => { G.fx.guide(G.ui.busy() ? null : guideTarget(), performance.now() / 1000); }, 60);
