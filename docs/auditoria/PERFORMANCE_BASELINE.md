@@ -39,15 +39,13 @@ Línea base medida sobre `estable` = `f3ed616` (v20) el 2026-10-24, con servidor
 | Heap tras 10 cambios de ropa | 48,2 MB, con una caché que creció 10,3 MB y se estabilizó |
 | Fuga en 10 cambios de ropa | **0** geometrías · 0 texturas · 0 programas · 0 objetos de escena |
 | Objetos de GPU (`renderer.info`) | 192 geometrías y 98 texturas al empezar; 240 y 110 ya calentado |
-| **Heap ~9 s después de cargar, vía `.glb`** | **67,9 MB** |
-| **Heap ~9 s después de cargar, vía artifact (`_glb.js`)** | **179,6 MB** |
-| Cadenas base64 residentes tras decodificar | **15,2 MB** en 42 cadenas (`AV_MAPA_B64.*`, `AV_EDIFICIOS_B64.*`, `AV_ISLA_B64`…) que nunca se liberan |
+| Heap de JS ~9 s después de cargar | Entre 60 y 180 MB según el momento del GC (cinco muestras en las dos vías). **No es comparable** sin forzar el GC, así que no saco conclusiones de él |
+| Cadenas base64 residentes tras decodificar (vía artifact) | **15,2 MB** en 42 cadenas (`AV_MAPA_B64.*`, `AV_EDIFICIOS_B64.*`, `AV_ISLA_B64`…) que nunca se liberan. Es un dato determinista |
 
-**Hallazgo:** en el modo publicado, el juego usa unos **110 MB más de heap** que con `.glb`. Dos causas:
-- las cadenas base64 se quedan en `window`;
-- `atob` crea copias intermedias.
-
-En un iPad o un Chromebook de 4 GB, esto se suma a la presión de memoria de los 5 contextos WebGL. Arreglarlo es barato: `delete window.AV_*_B64[k]` después de `parse`, y tal vez decodificar con `fetch(data:)` o `Uint8Array.fromBase64` cuando exista. Ver `ENGINE_AUDIT.md` M-2.
+**Hallazgo:**
+- En el modo publicado quedan 15,2 MB de base64 en `window` durante toda la sesión.
+- La primera estimación de «~110 MB más de heap» se descartó: al repetir la medida, el heap varía con el GC.
+- La mejora M-2 de `ENGINE_AUDIT.md`, aplicada en esta rama, deja **0 MB** residentes. Ver §7.
 
 ## 4. Carga
 | Vía | Peticiones | MB transferidos | Detalle |
@@ -87,7 +85,46 @@ Con 25 dispositivos compartiendo el ancho de banda de un aula, hay que multiplic
 | Consumo de batería y temperatura | Sin instrumentación |
 | Memoria de GPU en bytes | WebGL no la expone. Solo hay recuentos de `renderer.info` |
 
-## 7. Cómo repetir
+## 7. Mejora aplicada en esta rama (`src/engine/assets.js`)
+Medido con el servidor que imita el artifact (8781). Estas cifras son deterministas: no dependen de la carga del equipo.
+
+| Medida | v20 | Rama con M-1 y M-2 |
+|---|---|---|
+| Peticiones | 172 | **127** |
+| 404 de sondeo `.glb` | 46 | **1** |
+| Base64 residente | 15,2 MB | **0** |
+| Personaje 3D | Sí | Sí |
+| Errores de consola | 0 | 0 |
+
+- **Tiempo hasta terminar la red:** 10,5 s con v20 y 7,4 s con la rama.
+- Lo mido con load average de 21–27 (otros agentes con Blender), así que no es fiable.
+- **Batería completa sobre la rama: no corrida.** El panel quedó oculto y sin rAF. Es lo primero que hay que hacer antes de integrar.
+
+## 8. Godot (PoC): cifras de la corrida aprobada
+Condiciones de la corrida:
+- ventana propia de 1280×720, renderer Compatibility (GL), en el M4;
+- `nice -n 15` sin `-b`, aprobado por Kelvin para una sola corrida;
+- el panel del navegador estaba oculto;
+- 4 procesos de Blender `-b` de otros agentes y load average de 21–23.
+
+Resultados:
+
+| Medida | Valor |
+|---|---|
+| FPS medio | **77,9** (mín 52) |
+| Draw calls | 15,6 |
+| Primitivas | 40.562 |
+| Memoria estática | 42 MB |
+| Memoria de video | 19,8 MB |
+| RSS máximo | 214 MB |
+
+- La misma corrida con `taskpolicy -b` dio 27,4 FPS: no es comparable.
+- **La escena web equivalente no se pudo medir.**
+  - El panel oculto dejó rAF en 0.
+  - Chrome con ventana bajo `-b` no informó en 120 s.
+  - Es una escena de juguete, así que su FPS no decide nada. El dato útil del motor actual es el del juego real: 60 FPS con 97–112 draw calls en El Yunque (§2).
+
+## 9. Cómo repetir
 1. Arranca el servidor:
    ```
    ~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11 -I -m http.server 8780 --bind 127.0.0.1 --directory <repo>

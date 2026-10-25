@@ -1,0 +1,22 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+
+BENCH> {"draw_calls":15.648275862069,"fps_medio":77.8534482758621,"fps_min":52.0,"mem_estatica_MB":42.4039087295532,"mem_video_MB":19.8271427154541,"metodo":"gl_compatibility","ms_proceso_medio":39.8632551724138,"objetos":1538.0,"primitivas":40562.5103448276,"renderer":"Apple M4"}
+       11.38 real         1.68 user         1.08 sys
+           213876736  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               34358  page reclaims
+                6401  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   3  messages sent
+                   0  messages received
+                   0  signals received
+                1228  voluntary context switches
+               61966  involuntary context switches
+         13139293185  instructions retired
+          9160203163  cycles elapsed
+           314819712  peak memory footprint

@@ -61,7 +61,7 @@
 
 **Mejoras sin rehacer (detalle en `ENGINE_AUDIT.md` §Mejoras):**
 - cuantización y meshopt de los GLB, con carga diferida;
-- liberar las cadenas base64 después de decodificarlas (≈ 110 MB de heap medidos);
+- liberar las cadenas base64 después de decodificarlas (15,2 MB residentes; ya probado en esta rama);
 - `webglcontextlost`;
 - runner headless en CI, que ya está a medias en `tools/build` sin commit;
 - pipeline de Vittata reproducible, porque hoy depende de `/private/tmp`;

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PoC Three.js r128</title>
+<style>html,body{margin:0;height:100%;background:#9cc7e8;overflow:hidden}canvas{display:block;width:100%;height:100%}#result{position:fixed;left:8px;top:8px;font:12px monospace;background:#fffc;padding:4px;white-space:pre}</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<pre id="result"></pre>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/GLTFLoader.js"></script>
+<script>addEventListener("error",e=>{document.getElementById("result").textContent+="ERR "+e.message+"\n"});addEventListener("unhandledrejection",e=>{document.getElementById("result").textContent+="REJ "+e.reason+"\n"})</script>
+<script src="poc.js"></script>
+</body>
+</html>
