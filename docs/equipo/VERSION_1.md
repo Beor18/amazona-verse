@@ -14,7 +14,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 7 | La ciudad de Kelvin completa y fiel (edificios cercanos de alta fidelidad) | en curso | streamingTest, capturas |
 | 8 | Pieles de las 22 especies (criadero y rivales) | en curso | pielesTest |
 | 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | en curso | casos D2 y D4 |
-| 10 | Diario: datos validados con fuente; especies y 5 paradas | especies y paradas **hechas** · validación en curso | eduTest 79/79 |
+| 10 | Diario: datos validados con fuente; especies y 5 paradas | **Hecho** | eduTest 79/79, DIARIO_VALIDACION.md |
 | 11 | Pruebas estables (contextTest) | en curso | 3 corridas seguidas en verde |
 | 12 | Mejoras de diversión de Fable (★ en `DIVERSION_CAP1.md`) | **elige Kelvin** cuáles entran | según cada mejora |
 | 13 | Jugarlo con 2–3 niños de verdad: duración, dónde se traban, qué les divierte | **Kelvin** (Android y niños) | notas en `BUGS.md` |
