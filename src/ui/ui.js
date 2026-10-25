@@ -4,6 +4,8 @@
       Mientras escribe, un toque en la caja del diálogo (o Seguir / Acción / E / Enter) completa la frase en vez de saltarla.
    2. Esc o P abren el menú de pausa (#pause) cuando no hay otra ventana abierta.
    3. "Rebote" de los contadores del inventario y del Diario cuando cambian.
+   4. Móvil: el objetivo es una sola línea; un toque lo despliega (misiones e indicadores) y se pliega solo a los 8 s.
+   5. Portada abierta: lo de atrás es inerte (no recibe el foco con Tab); al cerrarla, el foco va al creador si está abierto.
    Enlazado en index.html con <script src="src/ui/ui.js" defer></script> (ver docs/UI_SYSTEM.md). */
 (function () {
   'use strict';
@@ -67,6 +69,39 @@
       if (s.open) { if (e.key !== 'Escape' && isOpen(pause)) pause.hidePopover(); return; } // Esc ya lo cierra el navegador
       if (!s.busy && !isOpen(pause)) pause.showPopover();
     });
+  }
+
+  // ---------- 4. Objetivo compacto en el móvil (QA-06) ----------
+  const quest = $('quest');
+  if (quest && !$('quest-toggle')) {
+    const tg = document.createElement('button');
+    tg.type = 'button'; tg.id = 'quest-toggle'; tg.className = 'quest-toggle'; tg.setAttribute('aria-controls', 'quest');
+    quest.appendChild(tg);
+    let plegar = 0;
+    const abrir = on => {
+      quest.classList.toggle('abierto', on);
+      tg.setAttribute('aria-expanded', String(on));
+      tg.setAttribute('aria-label', on ? 'Plegar el objetivo' : 'Ver el objetivo completo');
+      clearTimeout(plegar); if (on) plegar = setTimeout(() => abrir(false), 8000);
+    };
+    tg.addEventListener('click', () => abrir(!quest.classList.contains('abierto')));
+    abrir(false);
+  }
+
+  // ---------- 5. Portada: fondo inerte y foco al cerrarla (QA-04) ----------
+  const portada = $('title');
+  if (portada) {
+    const atras = ['top', 'sys', 'acts', 'stick', 'creator', 'dialog', 'card', 'toast', 'prompt', 'emotes', 'keyhint', 'end', 'comic'].map($).filter(Boolean);
+    let antes = null;
+    const sync = () => {
+      const ab = !!portada.open;
+      if (ab === antes) return; antes = ab;
+      for (const el of atras) el.inert = ab;
+      if (!ab) { const c = $('creator'), f = $('p-name-a'); if (c && !c.hidden && f) f.focus(); }
+    };
+    // El atributo open cambia al instante (el evento close puede llegar tarde en una pestaña en segundo plano)
+    new MutationObserver(sync).observe(portada, { attributes: true, attributeFilter: ['open'] });
+    sync();
   }
 
   // ---------- 3. Rebote de contadores ----------

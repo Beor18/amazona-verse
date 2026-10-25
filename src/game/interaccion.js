@@ -22,6 +22,13 @@ AVE.module('interaccion', function (G) {
     return best;
   }
   const modoActivo = () => !!(api.modo && api.modo.activo());
+  // El texto del aviso va en un span: así se recorta con puntos suspensivos (o en 2 líneas en el móvil) y no a mitad de palabra
+  function promptTxt() {
+    const pr = $('prompt');
+    let t = pr.querySelector('.prompt-txt');
+    if (!t) { pr.textContent = ''; t = document.createElement('span'); t.className = 'prompt-txt'; pr.appendChild(t); }
+    return t;
+  }
   function action() {
     if (G.ui.overlayOpen()) return;
     if (G.dialogo.open()) { G.dialogo.next(); return; }
@@ -36,9 +43,10 @@ AVE.module('interaccion', function (G) {
   G.on('update', (dt, busy) => {
     const modo = modoActivo();
     const it = (!busy && !modo) ? nearest() : null;
-    const pr = $('prompt');
-    if (modo && !busy) { pr.textContent = api.modo.aviso(); pr.hidden = false; }
-    else if (it) { pr.textContent = 'Acción: ' + it.label(); pr.hidden = false; }
+    const pr = $('prompt'), txt = promptTxt();
+    const poner = t => { if (txt.textContent !== t) txt.textContent = t; pr.hidden = false; };
+    if (modo && !busy) poner(api.modo.aviso());
+    else if (it) poner('Acción: ' + it.label());
     else pr.hidden = true;
     const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0] : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
     const actBtn = G.input.actBtn;

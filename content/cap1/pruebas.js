@@ -5,6 +5,23 @@
 (function () {
   'use strict';
 
+  // Lo que una prueba no debe dejar cambiado: el registro del aula (amazonaverse.aula.cap1) y el criadero (su clave y su
+  // estado en memoria). Devuelve la función que lo restaura.
+  function conservar(G) {
+    const AU = G.aula, CR = G.criadero;
+    const aula = AU && AU.activo ? leerAula(AU.KEY) : undefined;
+    const criaK = CR && CR.KEY, cria = criaK ? leerAula(criaK) : undefined;
+    const criaSt = CR && CR.estado ? JSON.stringify(CR.estado()) : null;
+    return () => {
+      if (aula !== undefined) { ponerAula(AU.KEY, aula); AU.recargar(); }
+      if (criaK) ponerAula(criaK, cria);
+      if (criaSt) {
+        const st = CR.estado(); for (const k of Object.keys(st)) delete st[k]; Object.assign(st, JSON.parse(criaSt));
+        if (CR.companero) G.emit('companero', CR.companero());
+      }
+    };
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -12,7 +29,7 @@
     const { teleport, tick, drain, useAt } = T;
     const saveCharacter = d => G.creador.saveCharacter(d);
     const action = () => G.interaccion.action();
-    const keep = T.keepSave();
+    const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
     SV.reset(true);
     // Creador de personaje
@@ -162,6 +179,7 @@
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
     SV.reset(true);
     try { localStorage.removeItem(KEY + '.unreadable'); } catch (e) { /* sin almacenamiento */ }
+    devolver();
     T.restoreSave(keep);
     G.quiet = false;
     return result();
@@ -175,7 +193,7 @@
     const nivel = (x, z) => { const lv = G.agua.levelAt(x, z); return lv > -Infinity ? lv : S.water; };
     const { check, result } = T.runner();
     const { teleport, tick, drain, useAt } = T;
-    const keep = T.keepSave();
+    const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
@@ -285,6 +303,7 @@
       } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
     }
     SV.reset(true);
+    devolver();
     T.restoreSave(keep);
     G.quiet = false;
     return result();

@@ -62,7 +62,12 @@ AVE.module('diario', function (G) {
       <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
       <div class="row"><button class="btn ghost" id="d-close" type="button">Cerrar</button></div>`);
     $('d-close').onclick = G.ui.hideCard;
+    // Foco: entra a la tarjeta al abrirla y vuelve al botón Diario al cerrarla (QA-07)
+    abierto = true;
+    const card = $('card'); card.tabIndex = -1; card.focus({ preventScroll: true });
   }
+  let abierto = false;
+  G.on('cardHidden', () => { if (!abierto) return; abierto = false; const b = $('b-diary'); if (b && !b.hidden) b.focus({ preventScroll: true }); });
   // Línea del HUD y botón del Diario
   function hud() { return total ? { ok: S.field.length >= total, text: `${D.boton || 'Diario'} ${S.field.length}/${total}` } : null; }
   function renderButton() { const b = $('b-diary'); b.hidden = !total; b.textContent = `${D.boton || 'Diario'} ${S.field.length}/${total}`; }

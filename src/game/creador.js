@@ -179,6 +179,8 @@ AVE.module('creador', function (G) {
     else if (cur && btn.dataset.color) changeLook(l => { l.accessories[slot] = Object.assign({}, cur, { color: btn.dataset.color }); });
   });
   $('p-species').addEventListener('change', () => changeLook(l => { l.species = $('p-species').value; }));
+  // El error del creador se anuncia en lectores de pantalla (QA-08)
+  $('p-error').setAttribute('role', 'alert');
   // ---------- Nombre de aventurero (dos listas) ----------
   const opciones = lista => lista.map(x => `<option>${x.replace(/[<>&"]/g, '')}</option>`).join('');
   $('p-name-a').innerHTML = opciones(NOMBRES.a); $('p-name-b').innerHTML = opciones(NOMBRES.b);
@@ -206,6 +208,9 @@ AVE.module('creador', function (G) {
     $('p-species').value = draftLook.species;
     $('p-error').hidden = true;
     $('p-cancel').hidden = !!first;
+    // Foco al primer campo (si la portada está encima, src/ui/ui.js lo pone al cerrarla)
+    const portada = $('title');
+    if (!portada || !portada.open) setTimeout(() => { const f = $('p-name-a'); if (f && !$('creator').hidden) f.focus(); }, 0);
     $('creator').hidden = false;
     renderSlots();
     if (window.AVShowcase) {

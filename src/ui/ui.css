@@ -312,6 +312,9 @@ kbd {
 @media (hover: none), (pointer: coarse) {
   #prompt::before { content: ""; border-radius: 50%; background: var(--i-sparkle) center / 20px no-repeat, var(--c-primary); box-shadow: 0 3px 0 var(--c-primary-lip); }
 }
+/* El texto del aviso va en .prompt-txt (src/game/interaccion.js): se recorta con puntos suspensivos, nunca a mitad de palabra */
+#prompt .prompt-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quest-toggle { display: none; }
 
 /* 4.7 Caja de diálogo: retrato + nombre en pestaña + texto grande */
 #dialog {
@@ -610,6 +613,29 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #indicators { font-size: var(--fs-xs); }
   #inv b { font-size: var(--fs-lg); }
   #inv .res-ic { width: 32px; height: 32px; --icon-size: 18px; }
+  /* Objetivo compacto (QA-06): una sola línea que no tapa el juego; un toque (src/ui/ui.js) despliega capítulo, misiones e
+     indicadores y se pliega solo. El inventario queda en una fila fina debajo, a la derecha. */
+  #top { gap: 6px; }
+  #quest { position: relative; padding: 7px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
+  #quest .chapter, #missions, #indicators { display: none; }
+  #steps { margin: 0; padding-top: 10px; }
+  #steps li::before { height: 4px; }
+  #steps li.now { display: block; font-size: 15px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #steps li.now::after { display: none; }
+  #quest.abierto { padding-bottom: var(--sp-3); }
+  #quest.abierto .chapter, #quest.abierto #missions:not(:empty) { display: flex; }
+  #quest.abierto #indicators:not(:empty) { display: block; }
+  #quest.abierto #steps li.now { display: flex; white-space: normal; }
+  #quest.abierto #steps li.now::after { display: block; }
+  .quest-toggle { display: block; position: absolute; inset: 0; width: 100%; margin: 0; padding: 0; background: none; border: 0; border-radius: inherit; cursor: pointer; }
+  .quest-toggle::after { content: ""; position: absolute; right: 12px; top: 15px; border: 6px solid transparent; border-top-color: var(--c-text-muted); transform-origin: 50% 25%; transition: transform var(--dur-2) var(--ease-out); }
+  #quest.abierto .quest-toggle::after { transform: rotate(180deg); }
+  #inv { padding: 3px; }
+  #inv .res { gap: 4px; padding-right: var(--sp-2); }
+  #inv small { display: none; }
+  /* Aviso de acción: hasta 2 líneas en vez de cortar */
+  #prompt { white-space: normal; border-radius: var(--r-lg); max-width: calc(100vw - 24px); }
+  #prompt .prompt-txt { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
   /* Botones de sistema: columna de iconos al borde derecho */
   #sys { top: 50%; transform: translateY(-50%); flex-direction: column; }
   .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
