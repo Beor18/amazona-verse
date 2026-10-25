@@ -582,9 +582,11 @@ AVE.module('streaming', function (G) {
         if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
         const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         if (d - I.r > max) continue;
-        if (I.lod === 0 && d > lodD + H) I.lod = 1; else if (I.lod === 1 && d < lodD - H) I.lod = 0;
-        // _hd: dentro del LOD y, los grandes (templos de más de CFG.hdGrande m de radio), también más allá, hasta hdD de su mitad cercana
-        I.hd = hdD > 0 && (I.lod === 0 || I.r > CFG.hdGrande) && d - I.r * 0.5 < hdD + (I.hd ? H : -H);
+        // los grandes (más de CFG.hdGrande m de radio: templos, el complejo) cuentan desde su mitad cercana: junto a uno de 40 m
+        // de radio no se ve su lejano. Su _hd sigue más allá del LOD, hasta hdD (los pequeños, el lejano: menos draw calls)
+        const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
+        if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
+        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
         if (!L) continue;
         const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
