@@ -1,5 +1,5 @@
 /* Juego · misiones (data-driven)
-   - Historia: pack.historia.pasos = lista ordenada (S.step = índice). Un paso avanza solo si tiene "hasta" y se cumple;
+   - Historia: pack.historia.pasos = lista ordenada (S.step = índice; texto: string o (S, G) => string). Un paso avanza solo si tiene "hasta" y se cumple;
      si no, lo avanza un script del pack con G.misiones.advanceTo(n).
    - Misiones secundarias: pack.misiones = [{ id, titulo, hud, pasos: [{ texto, hasta }], recompensa: { hito }, guia?, alCompletar? }].
      Se completan cuando todos sus pasos se cumplen en orden; una misión sin pasos es un hueco reservado y se ignora.
@@ -43,6 +43,7 @@ AVE.module('misiones', function (G) {
     const m = missions.find(x => x.id === id);
     S.missions[id] = true;
     G.eventos.log('MissionCompleted', { mission: id });
+    G.emit('aprendizaje', { tipo: 'mision', id });
     grant((m && m.recompensa && m.recompensa.hito) || id);
     renderQuest(); G.guardado.autosave();
     if (m && m.alCompletar) m.alCompletar(G);
@@ -101,7 +102,7 @@ AVE.module('misiones', function (G) {
     // Número de pasos para la barra del HUD (variables CSS --n y --n-label de src/ui/ui.css)
     const el = $('steps'); el.style.setProperty('--n', steps.length); el.style.setProperty('--n-label', '"' + steps.length + '"');
     el.innerHTML = steps.map((s, i) => {
-      const label = s.texto + (s.progreso ? s.progreso(S, G) : '');
+      const label = (typeof s.texto === 'function' ? s.texto(S, G) : s.texto) + (s.progreso ? s.progreso(S, G) : '');
       const cls = i < S.step ? 'done' : i === S.step ? 'now' : 'later';
       return `<li class="${cls}">${label}</li>`;
     }).join('');

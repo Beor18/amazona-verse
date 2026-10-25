@@ -4,7 +4,7 @@
    Datos: pack.dialogos { datos: () => { escenas: [{ id, disparador, personaje, emocion, lineas }] }, retratos: { personaje: img },
    retratoDefecto, emociones: { emocion: mood } }. Disparadores: "evento:<Clave>", "inicio:<momento>", "interact:<objeto>";
    las escenas del mismo disparador se encadenan en orden.
-   Línea = { who, img, text, mood?, onShow? }. */
+   Línea = { who, img, text, mood?, onShow?, lang? } (lang marca el idioma de la línea en #d-text: lectores y voz). */
 AVE.module('dialogo', function (G) {
   'use strict';
   const $ = G.util.$, D = G.pack.dialogos || {};
@@ -34,7 +34,7 @@ AVE.module('dialogo', function (G) {
   function next() {
     const l = queue.shift();
     if (!l) { $('dialog').hidden = true; const d = onDone; onDone = null; if (d) d(); return; }
-    $('d-who').textContent = l.who; $('d-text').textContent = l.text; $('d-img').src = l.img; $('d-img').alt = l.who;
+    $('d-who').textContent = l.who; $('d-text').lang = l.lang || ''; $('d-text').textContent = l.text; $('d-img').src = l.img; $('d-img').alt = l.who;
     $('dialog').hidden = false;
     // El protagonista en 3D mueve el pico mientras "dice" la línea y pone cara según el tono
     talk.who = l.who; talk.until = performance.now() + Math.min(5000, 600 + l.text.length * 55);

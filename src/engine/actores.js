@@ -74,7 +74,7 @@ AVE.module('actores', function (G) {
   const emote = { name: '', until: 0 };
   function playEmote(name) {
     if (!EMOTES[name] || G.ui.busy() || G.fisica.MOVE.flying) return;
-    if (S.pos.y > G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.01) return;
+    if (S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01) return;
     emote.name = name; emote.until = performance.now() + EMOTES[name].secs * 1000;
     if (player3D && EMOTES[name].clip) { player3D.play(EMOTES[name].clip, true); anim3D.player = 'emote'; }
   }
@@ -117,7 +117,7 @@ AVE.module('actores', function (G) {
       if (MOVE.swimming && !diving) player3D.root.position.y += Math.sin(performance.now() / 430) * 0.035;
       const sq = MOVE.land > 0 ? Math.sin(MOVE.land / 0.2 * Math.PI) * 0.18 : 0;
       player3D.root.scale.set(base * (1 + sq * 0.5), base * (1 - sq), base * (1 + sq * 0.5));
-      const air = S.pos.y > G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.01 && !MOVE.swimming;
+      const air = S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01 && !MOVE.swimming;
       const want = moving && !air && !MOVE.swimming ? 'Walk' : 'Idle';
       const clipEmote = emote.name && EMOTES[emote.name].clip && !moving && !air;
       if (!clipEmote && anim3D.player !== want && player3D.play(want)) anim3D.player = want;
@@ -147,7 +147,7 @@ AVE.module('actores', function (G) {
       const dx = (tx - companionPos.x) * k, dz = (tz - companionPos.z) * k;
       companionPos.x += dx; companionPos.z += dz;
       for (const c of F.colliders) F.pushOut(companionPos, c, 0.4);
-      companion3D.root.position.set(companionPos.x, Math.max(G.terreno.surfaceY(companionPos.x, companionPos.z), G.agua.levelAt(companionPos.x) - F.SWIM_DEPTH), companionPos.z);
+      companion3D.root.position.set(companionPos.x, Math.max(G.terreno.surfaceY(companionPos.x, companionPos.z, S.pos.y), G.agua.levelAt(companionPos.x, companionPos.z) - F.SWIM_DEPTH), companionPos.z);
       const sp = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
       if (sp > 0.6) companion3D.root.rotation.y = Math.atan2(dx, dz);
       const want = sp > 0.6 && !snap ? 'Walk' : 'Idle';
@@ -176,7 +176,7 @@ AVE.module('actores', function (G) {
   // ---------- Posición de los sprites (la cámara llama a estas al colocarse) ----------
   function placePlayerSprite(bob) {
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
-    pShadow.position.set(S.pos.x, G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.03, S.pos.z);
+    pShadow.position.set(S.pos.x, G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.03, S.pos.z);
   }
   function snapCompanionSprite() {
     if (!companion.visible) return;
@@ -194,10 +194,10 @@ AVE.module('actores', function (G) {
   for (const def of G.pack.npcs || []) spawnNpc(def);
 
   G.on('render', (dt, t, moving) => {
-    const bob = moving && S.pos.y <= G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
+    const bob = moving && S.pos.y <= G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
     player.material.rotation = G.input.jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
-    pShadow.position.set(S.pos.x, G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.03, S.pos.z);
+    pShadow.position.set(S.pos.x, G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.03, S.pos.z);
   }, 5);
   G.on('render', (dt, t) => { for (const id in npcs) { const n = npcs[id]; if (n.def.flota) n.sp.position.y = H(n.def.x, n.def.z) + 1.0 + Math.sin(t * 2) * 0.05; } }, 10);
   G.on('render', (dt, t, moving) => {

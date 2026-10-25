@@ -2,7 +2,9 @@
    Movimiento de acción: aceleración, correr, doble salto con aleteo, planeo, impulso, tiempo de coyote, vuelo y nado.
    Colisiones: círculos (r) y cajas alineadas (hx/hz) contra el jugador; sin motor de física (CTO_PLAN §2).
    Un collider es { x, z, r, hx?, hz?, h?, kind, when?, id? }: h = altura que se puede sobrevolar (si falta, alturas[kind]).
-   Ganchos: 'moved' (busy) justo después de mover al jugador y antes de chocar (p. ej. recoger objetos al pasar). */
+   Ganchos: 'moved' (busy) justo después de mover al jugador y antes de chocar (p. ej. recoger objetos al pasar).
+   Perchas: superficies de una vía que añade un pack con addPercha({ x, z, r, y, when? }) (y = tope absoluto). Solo sostienen a
+   quien llega desde arriba (y >= tope - 0,3 m); desde abajo se atraviesan volando. suelo(x, z, y) = terreno o percha. */
 AVE.module('fisica', function (G) {
   'use strict';
   const S = G.S;
@@ -17,8 +19,20 @@ AVE.module('fisica', function (G) {
   // Altura de cada tipo de obstáculo para poder pasar volando por encima (un pack añade los suyos)
   const alturas = { post: 1.3, obj: 1.6, npc: 2 };
 
+  const perchas = [];
+  const PERCHA_TOL = 0.3;
+  function addPercha(p) { perchas.push(p); return p; }
+  function removePercha(p) { const i = perchas.indexOf(p); if (i >= 0) perchas.splice(i, 1); }
+  // Suelo bajo (x, z) para algo a la altura y: el del terreno o el de una percha que tenga debajo
+  function suelo(x, z, y) {
+    let g = G.terreno.surfaceY(x, z, y); // con y, el terreno cuenta también sus pisos de una vía (puente, muelle, mirador)
+    if (y != null) for (const p of perchas) {
+      if (y >= p.y - PERCHA_TOL && p.y > g && Math.hypot(x - p.x, z - p.z) < p.r && (!p.when || p.when())) g = p.y;
+    }
+    return g;
+  }
   const busyNow = () => G.dialogo.open() || G.ui.cardOpen || G.ui.overlayOpen();
-  const onGroundNow = () => S.pos.y <= G.terreno.surfaceY(S.pos.x, S.pos.z) + 0.01;
+  const onGroundNow = () => S.pos.y <= suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01;
 
   function tryJump() {
     if (MOVE.flying) return;
@@ -105,7 +119,7 @@ AVE.module('fisica', function (G) {
     const WORLD = G.terreno.WORLD;
     S.pos.x = Math.max(-WORLD, Math.min(WORLD, S.pos.x));
     S.pos.z = Math.max(-WORLD, Math.min(WORLD, S.pos.z));
-    const ground = G.terreno.surfaceY(S.pos.x, S.pos.z);
+    const ground = suelo(S.pos.x, S.pos.z, S.pos.y); // con la altura previa: las perchas sostienen al bajar
     // Agua: el río (franja del plano de agua) es nadable donde cubre más de 0,7 m
     const wY = G.agua.levelAt(S.pos.x), deep = wY - ground > 0.7;
     const wasSwim = MOVE.swimming;
@@ -149,6 +163,6 @@ AVE.module('fisica', function (G) {
     return moving;
   }
 
-  return { MOVE, colliders, alturas, pushOut, removeColliders, tryJump, startFlying, toggleFly, tryDash, step,
+  return { MOVE, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders, tryJump, startFlying, toggleFly, tryDash, step,
     SPEED, RUN_SPEED, DASH_SPEED, FLY_SPEED, FLY_CEIL, SWIM_SPEED, SWIM_DEPTH };
 });
