@@ -1,0 +1,69 @@
+# Arquitectura · Amazona Verse Engine (AVE)
+
+Base reutilizable para juegos educativos 3D: Three.js r128 UMD, scripts clásicos sin bundler, publicable como Claude artifact. Un fork cambia el contenido sin tocar el motor.
+
+## Capas
+
+```
+index.html          markup y estilo (rol UI/UX); aquí solo cambian las <script>
+      │
+content/<pack>/     el juego: datos + scripts pequeños    AVE.registerPack({ id, ... })
+      │  lo leen
+src/game/           sistemas genéricos                    AVE.module('misiones', G => api)
+      │
+src/engine/         motor                                 AVE.module('renderer', G => api)
+      │
+src/personaje/      Vittata 3D y ropero (rol TA)          window.AVCharacter, AVWardrobe, AVShowcase
+      │
+Three.js r128 (CDN) · assets/ (modelos .glb y su _glb.js base64, texturas, sprites)
+```
+
+Una capa solo usa las de abajo. El motor no sabe nada de Villa Raíz y `content/cap1` no edita `src/`.
+
+- **src/engine:** `core` (namespace, módulos, packs, ganchos, arranque), `assets` (cargador único GLB/base64), `renderer` (WebGL y bucle), `camara`, `input`, `fisica` (colisiones y movimiento), `terreno`, `agua`, `audio`, `fx`, `ui`, `actores` y `guardado`.
+- **src/game:** `eventos`, `dialogo`, `interaccion`, `objetos`, `misiones`, `diario`, `creador` y `comic`.
+- **src/pruebas/motor.js:** ayudas de prueba, `accessoryTest` y `templateTest`.
+- **src/boot.js:** elige el pack y expone `window.AV`.
+
+## Arranque
+
+1. Cada archivo de `src/` registra una fábrica; cada archivo de `content/` aporta su parte del pack (las claves se fusionan).
+2. `boot.js` elige el pack: `?pack=<id>`, luego `AVE.config.pack` y si no, el primero registrado. Si falta, carga `content/<id>/pack.js` y los `archivos` que liste.
+3. `AVE.boot(id)` instancia los módulos en orden de carga, corre los `preparar(G)` del pack, carga la partida (o abre el creador) y arranca el bucle.
+
+## Contratos
+
+- **G es el único canal.** `G.S` es el estado (identidad fija: `guardado.replace` lo rellena), `G.pack` el pack, `G.c` el espacio privado del pack y `G.<módulo>` cada API. Sin más globales que `AVE` y `AV`.
+- **Ganchos** `G.on(nombre, fn, prioridad)`; el número menor va antes:
+  - `update(dt, busy, moving)` y `render(dt, t, moving)`, en cada cuadro.
+  - `moved(busy)`: tras mover al jugador.
+  - `apply`: tras cargar o reiniciar, cada módulo deja el mundo como dice `G.S`.
+  - `escape`, `cardHidden` y `listo`.
+- **Misión** = `{ id, titulo, hud, pasos: [{ texto, hasta, guia }], recompensa: { hito }, alCompletar }`.
+  - Se completa cuando todos sus pasos se cumplen en orden. Sin pasos es un hueco y se ignora (así está `educativa` en cap1).
+  - Disparadores `hasta`: `tiene`, `recogido`, `evento`, `marca`, `cuenta`, `paso`, `mision`, `cerca`, `todos`, `alguno` o una función `(S, G)`.
+- **Historia:** `historia.pasos` (índice en `S.step`). Un paso avanza solo con `hasta`; si no, lo avanza un script con `G.misiones.advanceTo(n)`.
+- **Recompensas:** `ropa: [{ clave, hito, nombre, pista, viste }]`. El hito es el id de una misión o de un hito del Diario.
+- **Pack (claves):** `meta`, `jugador`, `mundo`, `npcs`, `objetos`, `recursos`, `historia`, `misiones`, `diario`, `ropa`, `eventos`, `dialogos`, `comic`, `guardado`, `gestos`, `inicio(G)`, `preparar(G)`, `pruebas` y `depuracion`. Cada esquema está documentado al inicio del módulo que lo lee.
+- **Personaje** (`src/personaje`, del TA):
+  - El motor usa de `AVCharacter`: `create()` (`root`, `height`, `applyLook`, `play`, `update` y las banderas de animación), `normalizeLook`, `buildAccessory`, `disposeObject`, `renderPortrait`, `SLOTS`, `ACCESSORIES` y `SPECIES`. De `AVShowcase`: `mount`, `unmount`, `setLook` y `status`.
+  - `character.js` depende de `AVE.assets.loadGLB`.
+
+## Forkear y crear un juego nuevo en 30 minutos
+
+1. **2 min.** Copia `content/plantilla/` a `content/mijuego/` y cambia `id: 'mijuego'` y `meta.almacen` (prefijo propio en localStorage).
+2. **3 min.** Ábrelo con `index.html?pack=mijuego`. Corre `AV.selfTest()` dentro.
+3. **10 min, el mundo.** En `mundo` defines relieve (`ondas`, `relieves`), `lugares`, `agua`, `arboles`, `cielo` e `islas`. Después vienen `npcs`, `objetos` y `recursos`. Sin `modelo`, el motor usa uno genérico.
+4. **10 min, el juego.** Define `historia.pasos`, `misiones`, `diario`, `ropa`, `dialogos` (escenas con disparadores) e `inicio(G)`. Si hace falta, añade `meta.hud` para retitular el HUD.
+5. **5 min, lo que no es dato.** Va en `preparar(G)`: piezas 3D, interactuables con `G.interaccion.add`, minijuegos y ganchos. Ejemplo: el Simon del coquí en `content/cap1/misiones.js`.
+6. **Para publicarlo como juego propio,** en `index.html` cambia las `<script>` de `content/cap1/` por las de tu pack. Pasa `AV.selfTest`, `AV.accessoryTest` y `AV.templateTest`.
+
+## Convenciones
+
+- Una fábrica o IIFE por archivo, `'use strict'`, sin `import` y sin `fetch` a otros dominios. Las CDN solo pueden ser cdnjs, jsdelivr/npm o unpkg, con versión exacta.
+- Los datos grandes (diálogos, lecciones, modelos) van en `.js` que asignan un global (`window.AV_*`); el `.json` queda como fuente. El artifact no siempre permite `fetch`.
+- Las rutas son relativas al documento, no al script.
+- Las claves de los datos del pack van en español. Las claves de `G.S` son estables: renombrarlas exige una migración en `guardado.migrar` y subir `guardado.version`.
+- Los colores se escriben en sRGB y `renderer.linearize` los pasa a lineal. El color de salida y el tone mapping son del TA.
+- Cada pack trae sus pruebas en `pruebas`. Antes de cada commit deben pasar `AV.selfTest`, `AV.missionTest`, `AV.accessoryTest` y `AV.templateTest`.
+- Eventos y guardado sin datos personales.

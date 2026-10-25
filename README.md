@@ -14,3 +14,7 @@ Después abre http://localhost:8765 en el navegador. Hace falta un servidor; abr
 
 ## Prueba automática
 En la consola del navegador: `await AV.selfTest({saveFiles: true})` recorre el capítulo, el creador, el cómic, la exportación y el guardado (45 comprobaciones) y deja los archivos exportados en `tests/out/`.
+También: `AV.missionTest()` (misiones, Diario y ropa), `AV.accessoryTest()` (personaje 3D) y `AV.templateTest()` (la plantilla arranca otro juego con el mismo motor).
+
+## Arquitectura
+Motor en `src/engine` y `src/game`, contenido en `content/cap1` y una plantilla en `content/plantilla` (`index.html?pack=plantilla`). Capas, contratos y cómo forkear: `docs/ARQUITECTURA.md`.
