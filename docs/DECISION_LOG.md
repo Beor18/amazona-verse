@@ -119,3 +119,6 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 ## 2026-10-24 · Escala del mundo
 - Vittata mide 1,75 m en el juego (pack.js); el mundo quedó escalado a 1,75 y así se mantiene (cambiarlo ahora movería mapa, colisiones y ropa sin beneficio). Decisión del coordinador.
 - Interiores recorribles de los edificios grandes: P2, después del capítulo 1.
+
+## 2026-10-24 · Voz del pitch
+- Kelvin decidió: el pitch v1 sale con la voz sintética de la Mac (no grabará la suya). Queda listo el flujo para cambiarla por una voz boricua si más adelante se consigue una.
