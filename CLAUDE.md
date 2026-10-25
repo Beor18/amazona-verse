@@ -4,6 +4,10 @@ Juego 3D de aventura en el navegador, creado por **Kelvin García** (proyecto de
 
 Publicado en https://amazona-verse.vercel.app (juego en `/juego/`). Repo: github.com/Beor18/amazona-verse.
 
+**Equipo fundador:** los nombres y cargos van solo en los créditos de la web (`web/index.html`), por decisión de Kelvin. No los copies en documentos del repo.
+
+**Diversión primero (directiva V8.0).** Es un videojuego de aventura, exploración, creatividad, humor y experiencias en familia. La diversión manda sobre lo educativo: el capítulo 1 no es un curso. Lo educativo sale del juego de forma natural y se ampliará más adelante.
+
 ## Reglas de Kelvin (siempre)
 - **Público:** nunca escribas «grados 3 a 6» ni vendas el juego como «aprende ciencia». En el Aula los niveles son «Nivel 1» y «Nivel 2».
 - **Vittata:** no se cambia, ni el modelo ni el rig.
@@ -22,14 +26,26 @@ Publicado en https://amazona-verse.vercel.app (juego en `/juego/`). Repo: github
   - `tools/build/test.sh tools/build/salida/<ref>/ --extra`
 
   Las 13 baterías tienen que quedar en verde, con 0 errores de consola.
-- **Publicación:** solo la hace la sesión coordinadora de Kelvin. No toques `sitio/`; se regenera con `tools/build/sitio.sh`.
+- **Publicación:** solo la hace la sesión coordinadora de Kelvin, y **con su aprobación** (un push a GitHub o a Vercel es público). No toques `sitio/`; se regenera con `tools/build/sitio.sh`.
+- **Sin aprobación de Kelvin no hay:** gastos nuevos (créditos de la API incluidos; los topes están en `tools/agente_api/limites.json`), cambios grandes de arquitectura ni cambios de canon. Nunca pongas claves de la API en documentos, mensajes ni archivos del repo.
+- **Eficiencia:**
+  - No repitas auditorías completas del repo: reutiliza los documentos, las pruebas y los componentes que ya existen.
+  - Que dos agentes no investiguen ni hagan lo mismo.
+  - Registra cada tarea en `docs/equipo/REGISTRO_TAREAS.md`.
+  - Un documento largo no es un resultado: lo que cuenta es lo verificable.
 - **Mac:**
   - Nunca uses `python3` del sistema (se cuelga). Usa `~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11 -I`.
   - Procesos pesados con `taskpolicy -b nice -n 15`.
   - No cierres apps de Kelvin.
   - No borres nada de forma permanente: a la Papelera.
   - Nada de descargas, cuentas ni claves sin aprobación de Kelvin.
-- **Modelo:** usa Sonnet por defecto y Opus solo para lo difícil (motor, gráficos). Sé breve: lee solo lo necesario.
+- **Modelo:**
+  - **Fable:** planificación compleja y evaluación creativa.
+  - **Opus:** implementación y diagnóstico complejos (motor, gráficos).
+  - **Sonnet:** tareas habituales.
+  - **Haiku:** verificaciones sencillas.
+
+  Sé breve: lee solo lo necesario.
 
 ## Mapa del repo
 | Ruta | Qué es |

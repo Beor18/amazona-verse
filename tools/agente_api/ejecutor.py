@@ -14,9 +14,11 @@ configuración aislada (~/.claude-sdk, no la sesión de la app ni el login Max) 
 """
 import argparse
 import asyncio
+import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 from claude_agent_sdk import (AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, PermissionResultAllow,
@@ -55,10 +57,66 @@ async def permiso(tool, entrada, _ctx):
     return PermissionResultAllow()
 
 
-async def correr(prompt, presupuesto, turnos, marca=''):
+# Control de gasto (directiva V8.0): topes en tools/agente_api/limites.json (sin él no corre nada) y registro de cada
+# tarea en un archivo fuera del repo. El registro solo cuenta lo corrido desde que existe; lo anterior está en la Console.
+GASTOS = Path.home() / 'AmazonaVerse/_herramientas/agent-sdk/gastos.jsonl'
+LIMITES = JUEGO / 'tools/agente_api/limites.json'
+reservado = 0.0   # topes de las tareas en curso dentro de este proceso (varios carriles a la vez)
+
+
+def gastado():
+    total = hoy = 0.0
+    if GASTOS.exists():
+        for linea in GASTOS.read_text(encoding='utf-8').splitlines():
+            r = json.loads(linea)
+            total += r['costo']
+            hoy += r['costo'] if r['fecha'].startswith(time.strftime('%Y-%m-%d')) else 0
+    return total, hoy
+
+
+def autorizar(presupuesto, marca=''):
+    """Antes de cada tarea: la niega si su tope rebasaría el tope total o el del día; avisa al pasar alerta_pct."""
+    try:
+        L = json.loads(LIMITES.read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        print(f'{marca}== PARO: falta tools/agente_api/limites.json. ==', flush=True)
+        return False
+    total, hoy = gastado()
+    for nombre, usado, tope in (('total', total + reservado, L['tope_total_usd']), ('del día', hoy + reservado, L['tope_dia_usd'])):
+        if usado + presupuesto > tope:
+            print(f'{marca}== PARO: no alcanza el tope {nombre} (${tope}): ${usado:.2f} gastado o en curso + '
+                  f'${presupuesto:.2f} de esta tarea. Los topes solo los cambia Kelvin. ==', flush=True)
+            return False
+        if tope and usado >= tope * L['alerta_pct'] / 100:
+            print(f'{marca}== ALERTA: gasto {nombre} ${usado:.2f} de ${tope} ({usado / tope:.0%}). ==', flush=True)
+    return True
+
+
+def registrar(tarea, costo, turnos, estado):
+    GASTOS.parent.mkdir(parents=True, exist_ok=True)
+    with GASTOS.open('a', encoding='utf-8') as f:
+        f.write(json.dumps({'fecha': time.strftime('%Y-%m-%dT%H:%M:%S'), 'tarea': tarea, 'modelo': MODELO,
+                            'costo': round(costo, 4), 'turnos': turnos, 'estado': estado}) + '\n')
+
+
+def resumen():
+    total, hoy = gastado()
+    print(f'Gastado según el registro: ${total:.2f} en total, ${hoy:.2f} hoy (registro: {GASTOS}).')
+    if GASTOS.exists():
+        for linea in GASTOS.read_text(encoding='utf-8').splitlines()[-20:]:
+            r = json.loads(linea)
+            print(f"  {r['fecha']}  {r['tarea']:<6} {r['modelo']:<18} ${r['costo']:>7.2f}  {r['turnos']:>3} turnos  {r['estado']}")
+
+
+async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
+    """Corre una tarea; devuelve su costo, o None si los topes no la dejan arrancar."""
+    global reservado
     clave = os.environ.get('ANTHROPIC_API_KEY', '')
     if not clave.startswith('sk-ant-'):
         sys.exit('Falta la clave. En esta Terminal escribe primero:  export ANTHROPIC_API_KEY=\'tu clave\'')
+    if not autorizar(presupuesto, marca):
+        return None
+    reservado += presupuesto
     config = Path.home() / '.claude-sdk'
     config.mkdir(exist_ok=True)
     opciones = ClaudeAgentOptions(
@@ -72,7 +130,16 @@ async def correr(prompt, presupuesto, turnos, marca=''):
     async def mensajes():
         yield {'type': 'user', 'message': {'role': 'user', 'content': prompt}}
 
-    costo = 0.0
+    resultado = {'costo': 0.0, 'turnos': 0, 'estado': 'interrumpida'}
+    try:
+        await _sesion(opciones, mensajes, marca, presupuesto, resultado)
+    finally:
+        reservado -= presupuesto
+        registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'])
+    return resultado['costo']
+
+
+async def _sesion(opciones, mensajes, marca, presupuesto, resultado):
     async with ClaudeSDKClient(options=opciones) as cliente:
         await cliente.query(mensajes())
         async for m in cliente.receive_response():
@@ -85,10 +152,10 @@ async def correr(prompt, presupuesto, turnos, marca=''):
                         print(f'{marca}  [{b.name}] {str(detalle)[:140]}', flush=True)
             elif isinstance(m, ResultMessage):
                 costo = m.total_cost_usd if m.total_cost_usd is not None else 0
+                resultado.update(costo=costo, turnos=m.num_turns, estado=m.subtype)
                 print(f'\n{marca}== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
                 if m.result:
                     print(m.result[:1500])
-    return costo
 
 
 CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3', 'D4'],
@@ -109,19 +176,22 @@ def hecha(t):
 
 
 async def carril(tareas, por_tarea, total, turnos, marca=''):
-    gastado = 0.0
+    gasto = 0.0
     for t in tareas:
         if hecha(t):
             print(f'{marca}== {t} ya está hecha; la salto. ==', flush=True)
             continue
-        queda = total - gastado
+        queda = total - gasto
         if queda < 0.5:
-            print(f'\n{marca}== Tope total del carril alcanzado (${gastado:.2f} de ${total}); paro antes de {t}. ==')
-            return gastado
-        print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gastado:.2f} ########', flush=True)
-        gastado += await correr(prompt_tarea(t), min(por_tarea, queda), turnos, marca)
-    print(f'\n{marca}== Carril terminado: ${gastado:.2f} gastados ==')
-    return gastado
+            print(f'\n{marca}== Tope total del carril alcanzado (${gasto:.2f} de ${total}); paro antes de {t}. ==')
+            return gasto
+        print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gasto:.2f} ########', flush=True)
+        costo = await correr(prompt_tarea(t), min(por_tarea, queda), turnos, marca, t)
+        if costo is None:
+            return gasto
+        gasto += costo
+    print(f'\n{marca}== Carril terminado: ${gasto:.2f} gastados ==')
+    return gasto
 
 
 async def varios(letras, por_tarea, total, turnos):
@@ -134,6 +204,7 @@ def main():
     global MODELO
     ap = argparse.ArgumentParser(description='Ejecutor de tareas de Amazona Verse con el Agent SDK (créditos de la API).')
     g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument('--gastos', action='store_true', help='muestra lo gastado según el registro y no corre nada')
     g.add_argument('--prueba', action='store_true', help='tarea mínima para verificar el cobro (tope $0,50)')
     g.add_argument('--tarea', help='una tarea de docs/equipo/TAREAS_API.md, por ejemplo A1')
     g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A a E)')
@@ -145,10 +216,12 @@ def main():
     a = ap.parse_args()
     MODELO = MODELOS[a.modelo]
     por_tarea = a.presupuesto or (15.0 if a.modelo == 'opus' else 6.0)
-    if a.prueba:
+    if a.gastos:
+        resumen()
+    elif a.prueba:
         prompt = ('Lee docs/equipo/TAREAS_API.md y responde en una sola línea cuántas tareas hay y cuál es la primera. '
                   'No edites nada ni ejecutes comandos.')
-        asyncio.run(correr(prompt, a.presupuesto or 0.5, 6))
+        asyncio.run(correr(prompt, a.presupuesto or 0.5, 6, tarea='prueba'))
     elif a.carril:
         asyncio.run(carril(CARRILES[a.carril], por_tarea, a.total, a.turnos))
     elif a.carriles:
@@ -158,7 +231,7 @@ def main():
             sys.exit(f'Carriles desconocidos: {", ".join(malas)}')
         asyncio.run(varios(letras, por_tarea, a.total, a.turnos))
     else:
-        asyncio.run(correr(prompt_tarea(a.tarea.upper()), por_tarea, a.turnos))
+        asyncio.run(correr(prompt_tarea(a.tarea.upper()), por_tarea, a.turnos, tarea=a.tarea.upper()))
 
 
 if __name__ == '__main__':

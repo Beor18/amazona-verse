@@ -1,0 +1,8 @@
+{
+  "nota": "Topes de gasto del ejecutor de la API en USD (directiva V8.0). Solo Kelvin los cambia. En 0 no corre nada. La propuesta queda abajo, sin aplicar.",
+  "tope_total_usd": 0,
+  "tope_dia_usd": 0,
+  "alerta_pct": 80,
+  "propuesta_tope_total_usd": 40,
+  "propuesta_tope_dia_usd": 20
+}
