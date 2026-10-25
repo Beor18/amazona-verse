@@ -88,6 +88,6 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | C1 | pendiente | | |
 | C2 | pendiente | | |
 | C3 | pendiente | | |
-| D1 | pendiente | | |
+| D1 | hecha | 8808c5a | `docs/ARQUITECTURA.md`: secciones nuevas de meshopt/WebP en la build, contexto WebGL, `sitio.sh`/`sitio/` y `tools/agente_api`; el streaming ya estaba documentado. Solo docs, sin baterías. |
 | D2 | pendiente | | |
 | D3 | pendiente | | |
