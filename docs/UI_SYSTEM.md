@@ -53,3 +53,11 @@ Entradas: `pop-in`, `rise-in`, `toast-in`, `badge-pop`. Ambiente: `bob`, `sway`,
 
 ## Aula (src/ui/aula.css, la carga src/game/aula.js)
 Tarjetas de la lección en `#card` (`.edu`: cabecera con retrato, opciones `.edu-opt` con estados `bad`/`ok`/`brilla`, `.edu-retro` pista/ok/así es, secuencias `.edu-seq`, cadena `.edu-cadena`, "Predije y vi" `.edu-cmp`, puntos de avance `.edu-dots` sin puntaje), sección **Aula** en la pausa (chips ES/EN, texto corto, voz), enlace discreto **Docentes** al pie y panel **Modo Maestro** (`#maestro`, papel, pestañas). Capturas: `docs/img/edu_*.png`.
+
+## Revisión v21 (375×812, 700/768 y 1366×768)
+1. **P1 · Etiqueta del compañero ilegible:** el texto mide 6–7 px a la distancia de juego. En `src/engine/actores.js` (gameplay): `sizeAttenuation: false` en el SpriteMaterial, escalarla cada cuadro a 36 px de alto (`k = 2 / (alto del lienzo × camera.projectionMatrix.elements[5])`) y usar `tex.repeat`/`offset` para no deformar el texto.
+2. **P1 · Con «Nido», los 4 botones de `#sys` pisan el objetivo entre 561 y 760 px** (a 700 px se montan 54 px). En `ui.css`: `@media (max-width: 760px) { .hud-btn { width: var(--tap); padding: 0; font-size: 0; } }`.
+3. **P2 · Criadero (`criadero.css`):** los chips de postura miden 36 px (pasar a `min-height: var(--tap-sm)`); los textos de cápsulas y etapas son de 10–11 px (pasar a `var(--fs-xs)`); el aviso «¡Ñam!» tapa el nido (mejor un globo de papel sobre la cría).
+4. **P2 · El icono «Nido» es relleno y el resto del catálogo es de trazo 2.4:** hay una propuesta de trazo (huevo + nido tejido). «¡X creció!» debería ir con `toastHTML` y `<b>` para tomar el estilo de logro.
+5. **P3 · Objetivo desplegado en el móvil:** la barra queda pegada al eyebrow (`#quest.abierto #steps { margin-top: 6px }`) y «Seguridad del refugio: —» confunde (mejor «por descubrir»). El aviso de pérdida de WebGL ya usa los tokens: está bien.
+
