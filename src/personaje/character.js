@@ -1,5 +1,5 @@
 /* Amazona Verse · personaje 3D modular
-   Carga el modelo con esqueleto (assets/models/vittata.glb), crea instancias independientes,
+   Carga el modelo con esqueleto (assets/models/vittata.glb, con el cargador único AVE.assets), crea instancias independientes,
    monta accesorios 3D en huesos de montaje y renderiza retratos idénticos para el juego y el cómic. */
 (function () {
   'use strict';
@@ -69,20 +69,9 @@
       if (!j || !j.masks) return null;
       return new Promise(res => new THREE.TextureLoader().load('assets/models/' + j.masks, t => { t.flipY = false; maskTexture = t; res(t); }, undefined, () => res(null)));
     });
-    // Primero el .glb; si el host no lo sirve, el mismo modelo empaquetado en vittata_glb.js
-    const fromB64 = () => new Promise((resolve, reject) => {
-      const parse = () => {
-        const bin = atob(window.AV_MODEL_B64), buf = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-        new THREE.GLTFLoader().parse(buf.buffer, 'assets/models/', resolve, reject);
-      };
-      if (window.AV_MODEL_B64) { parse(); return; }
-      const sc = document.createElement('script'); sc.src = 'assets/models/vittata_glb.js';
-      sc.onload = parse; sc.onerror = () => reject(new Error('modelo no disponible')); document.head.appendChild(sc);
-    });
-    gltfPromise = info.then(() => new Promise((resolve, reject) => {
-      if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
-      new THREE.GLTFLoader().load(MODEL_URL, resolve, undefined, () => fromB64().then(resolve, reject));
+    // Primero el .glb; si el host no lo sirve, el mismo modelo empaquetado en vittata_glb.js (cargador único del motor)
+    gltfPromise = info.then(() => window.AVE.assets.loadGLB(MODEL_URL, {
+      b64: () => window.AV_MODEL_B64, script: 'assets/models/vittata_glb.js', base: 'assets/models/', error: 'modelo no disponible',
     }));
     return gltfPromise;
   }
@@ -91,19 +80,9 @@
   const ropaCache = {};
   function loadRopa(name) {
     if (ropaCache[name] && ropaCache[name].then) return ropaCache[name];
-    const p = new Promise((resolve, reject) => {
-      const fromB64 = () => {
-        const parse = () => {
-          const bin = atob(window.AV_ROPA_B64[name]), buf = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-          new THREE.GLTFLoader().parse(buf.buffer, 'assets/models/ropa/', resolve, reject);
-        };
-        if (window.AV_ROPA_B64 && window.AV_ROPA_B64[name]) { parse(); return; }
-        const sc = document.createElement('script'); sc.src = 'assets/models/ropa/' + name + '_glb.js';
-        sc.onload = parse; sc.onerror = () => reject(new Error('ropa no disponible')); document.head.appendChild(sc);
-      };
-      if (!THREE.GLTFLoader) { reject(new Error('sin GLTFLoader')); return; }
-      new THREE.GLTFLoader().load('assets/models/ropa/' + name + '.glb', resolve, undefined, fromB64);
+    const p = window.AVE.assets.loadGLB('assets/models/ropa/' + name + '.glb', {
+      b64: () => window.AV_ROPA_B64 && window.AV_ROPA_B64[name], script: 'assets/models/ropa/' + name + '_glb.js',
+      base: 'assets/models/ropa/', error: 'ropa no disponible',
     }).then(g => { ropaCache[name] = g; return g; }, () => { ropaCache[name] = 'error'; });
     ropaCache[name] = p;
     return p;
