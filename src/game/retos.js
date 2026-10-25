@@ -5,6 +5,9 @@
      variación lateral y «goma» (si va muy por delante del jugador se frena y si va muy por detrás acelera; cerca de la meta
      la goma se suaviza para que gane quien vuela mejor). HUD: puesto (1.º/4), tiempo, punto y flecha al siguiente.
      Resultados con medalla (1.º oro, 2.º plata, 3.º bronce) y récord personal.
+   - «Contrarreloj del río»: la misma carrera sin rivales ni corrientes, siguiendo el cauce (mapa.agua.rio) a 4,5 m del agua desde el tramo
+     medio hasta la desembocadura: 7 flores con banderín y la meta. Medallas por tiempo (oro, plata, bronce), récord y fantasma propios
+     (`<almacén>.retos.fantasma.rio`); en los récords: rio: { mejor (ms), medalla, oros, jugadas }, y emite retosResultado con modo 'rio'.
    - «¡Escapa de la tormenta!»: 90 s de vuelo bajo sobre el mar frente a la playa. El frente de la tormenta avanza desde el
      mar; las ramas que caen se anuncian con su sombra en el agua y los rayos con un brillo, antes de llegar. Semillas doradas
      (y alguna pluma dorada) suman puntos; seguidas, suben el combo. 3 plumas de vida. La dificultad sube poco a poco.
@@ -58,8 +61,8 @@
     // Récords (aparte de la partida)
     // =================================================================================================================
     function leerRec() {
-      try { const d = JSON.parse(localStorage.getItem(claveRec) || 'null'); if (d && d.v === 1) return Object.assign({ carrera: {}, tormenta: {} }, d); } catch (e) { /* sin almacén o dañado */ }
-      return { v: 1, carrera: {}, tormenta: {} };
+      try { const d = JSON.parse(localStorage.getItem(claveRec) || 'null'); if (d && d.v === 1) return Object.assign({ carrera: {}, tormenta: {}, rio: {} }, d); } catch (e) { /* sin almacén o dañado */ }
+      return { v: 1, carrera: {}, tormenta: {}, rio: {} };
     }
     function guardarRec(d) { try { localStorage.setItem(claveRec, JSON.stringify(d)); return true; } catch (e) { return false; } }
     const relajado = () => !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
@@ -67,7 +70,8 @@
     // Fantasma de la mejor carrera: { v: 1, dt: 0.1, ms, p: 'x0 y0 z0 dx dy dz …' } con decímetros enteros y diferencias en base 36
     // (unos 5 KB por minuto de vuelo); su propia clave, junto a los récords
     const FANTASMA_DT = 0.1, FANTASMA_MAX = 6000;
-    const claveFantasma = () => claveRec + '.fantasma';
+    const claveFantasmaDe = r => claveRec + (r === 'rio' ? '.fantasma.rio' : '.fantasma'); // un fantasma por reto de tiempo
+    const claveFantasma = () => claveFantasmaDe(st.reto);
     function codificarFantasma(m) { // m: [x, y, z, x, y, z, …] en metros
       const q = m.map(v => Math.round(v * 10)), o = [];
       for (let i = 0; i < q.length; i++) o.push((i < 3 ? q[i] : q[i] - q[i - 3]).toString(36));
@@ -275,6 +279,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   background: var(--c-paper); color: var(--c-ink); border-radius: var(--r-lg); padding: 24px; box-shadow: 0 6px 0 var(--c-paper-edge), 0 18px 50px rgba(0,0,0,.45); text-align: center; animation: pop-in .45s var(--ease-pop) both; }
 #retos .rt-panel h2 { margin: 0 0 6px; font: 700 var(--fs-2xl)/1.15 var(--font-display); }
 #retos .rt-panel p { margin: 0 0 14px; font: 400 var(--fs-md)/1.4 var(--font-body); color: var(--c-ink-muted); }
+#retos .rt-menu .rt-panel { width: min(780px, calc(100vw - 32px)); }
 #retos .rt-retos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 10px 0 16px; text-align: left; }
 #retos .rt-reto { background: #fff8e8; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); padding: 14px; display: grid; gap: 8px; align-content: start; }
 #retos .rt-reto h3 { margin: 0; font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--c-ink); }
@@ -336,8 +341,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="carrera"></span><button class="btn" type="button" data-jugar="carrera" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>¡Escapa de la tormenta!</h3><p>Aguanta 90 segundos sobre el mar. Mira las sombras y los brillos: avisan dónde caen las ramas y los rayos. Recoge semillas doradas.</p>
       <span class="rt-rec" data-rec="tormenta"></span><button class="btn" type="button" data-jugar="tormenta" data-icon="bolt">Jugar</button></div>
+    <div class="rt-reto"><h3>Contrarreloj del río</h3><p>Vuela bajo, siguiendo el cauce, por las flores y los banderines hasta la desembocadura. Sin rivales: solo tú, el reloj y tu fantasma.</p>
+      <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
   </div>
-  <p class="rt-nota" hidden>Modo relajado: la carrera no tiene tiempo límite y la tormenta es de práctica.</p>
+  <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
 </div></div>
 <div class="rt-fin" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-fin-t">
@@ -461,6 +468,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const rec = leerRec();
       ui.menu.querySelector('[data-rec="carrera"]').textContent = rec.carrera.mejor ? 'Récord: ' + reloj(rec.carrera.mejor / 1000) + (rec.carrera.puesto ? ' · mejor puesto ' + ordinal(rec.carrera.puesto) : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
+      ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
       ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
@@ -473,7 +481,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       cerrarPaneles(); limpiarFx();
       ui.el.hidden = false;
       if (modo) modo.terminar();
-      st.reto = reto; modo = reto === 'tormenta' ? TORMENTA : CARRERA;
+      st.reto = reto; C.rio = reto === 'rio'; modo = reto === 'tormenta' ? TORMENTA : CARRERA;
       G.pausa.set('retos', false);
       modo.iniciar();
       return true;
@@ -560,6 +568,24 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (let i = 1; i <= 6; i++) { const t = i / 7 * Math.PI * 2; pts.push({ x: a.x + Math.sin(t) * 55, z: a.z - 55 + Math.cos(t) * 55, nombre: 'Punto ' + i }); }
       return { salida: { x: a.x, z: a.z, nombre: 'Salida' }, puntos: pts, meta: { x: a.x + 8, z: a.z - 4, nombre: 'Meta' } };
     }
+    // Contrarreloj del río: la ruta es el cauce (mapa.agua.rio, [x, z, nivel, medioAncho]) desde el tramo medio hasta la desembocadura,
+    // con 7 puntos a igual distancia y la meta en la boca. Vuelo bajo: la ruta va a T_RIO.alto sobre el agua. Medallas por tiempo.
+    const T_RIO = { alto: 4.5, radioPunto: 8, altoPunto: 8, ventana: 8, desde: 430, puntos: 7, medallas: [16.5, 14, 11.5], limite: 180 };
+    function datosRio() {
+      const P = MAPA && MAPA.agua && MAPA.agua.rio && MAPA.agua.rio.puntos;
+      if (P && P.length > 40) {
+        const L = [0]; for (let i = 1; i < P.length; i++) L.push(L[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+        const i0 = Math.max(0, L.findIndex(v => v >= T_RIO.desde)), total = L[L.length - 1] - L[i0], pts = [];
+        let k = 1;
+        for (let i = i0 + 1; i < P.length - 1; i++) {
+          const marca = k <= T_RIO.puntos && L[i] - L[i0] >= total * k / (T_RIO.puntos + 1);
+          if (marca) { pts.push({ x: P[i][0], z: P[i][1], nombre: 'Recodo ' + k }); k++; } else pts.push({ x: P[i][0], z: P[i][1], via: true });
+        }
+        const a = P[i0], z = P[P.length - 1];
+        return { rio: true, salida: { x: a[0], z: a[1], nombre: 'Nacimiento' }, puntos: pts, meta: { x: z[0], z: z[1], nombre: 'La desembocadura' } };
+      }
+      const d = datosCarrera(); d.rio = true; return d; // pack sin río: el mismo círculo, pero a ras del terreno
+    }
     // Rejilla (celdas de 6 m) con la cima de lo que sobresale del terreno: edificios de Kelvin (alto y radio del kit, por
     // instancia, aunque aún no se hayan cargado) y copas de los árboles. Así la ruta pasa por encima de torres y templos.
     function rejillaAltos() {
@@ -590,7 +616,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // terreno con margen y pasa sobre edificios y copas (máximo adelantado ±30 m y suavizado), así la IA y la ayuda de altura
     // no chocan con colinas, torres ni árboles
     function construirRuta(def) {
-      const alto = rejillaAltos();
+      const rio = !!def.rio, alto = rio ? () => -Infinity : rejillaAltos();
       const ctrl = [def.salida].concat(def.puntos, [def.meta]).map(p => new THREE.Vector3(p.x, 0, p.z));
       const curva = new THREE.CatmullRomCurve3(ctrl, false, 'centripetal');
       const n = Math.max(40, Math.ceil(curva.getLength()));
@@ -600,22 +626,24 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (let i = 0; i < N; i++) {
         X[i] = pts[i].x; Z[i] = pts[i].z;
         let m = -Infinity, o = -Infinity; for (const [ox, oz] of disco) { m = Math.max(m, superficie(X[i] + ox, Z[i] + oz)); o = Math.max(o, alto(X[i] + ox, Z[i] + oz)); }
+        if (rio) { const w = nivelAgua(X[i], Z[i]); m = w > -Infinity ? w : superficie(X[i], Z[i]); o = -Infinity; } // río: a T_RIO.alto del agua, no de la orilla
         techo[i] = superficie(X[i], Z[i]) + 23; // por debajo del techo de vuelo (fisica: flyCeil 26 m sobre el suelo)
         obst[i] = o;
-        base[i] = Math.min(techo[i], Math.max(m + T_CARRERA.margenSuelo, o));
+        base[i] = Math.min(techo[i], Math.max(m + (rio ? T_RIO.alto : T_CARRERA.margenSuelo), o));
       }
-      const mx = new Float32Array(N);
-      for (let i = 0; i < N; i++) { let m = -Infinity; for (let j = Math.max(0, i - 25); j <= Math.min(N - 1, i + 25); j++) m = Math.max(m, base[j]); mx[i] = m; }
-      for (let i = 0; i < N; i++) { let s = 0, c = 0; for (let j = Math.max(0, i - 18); j <= Math.min(N - 1, i + 18); j++) { s += mx[j]; c++; } Y[i] = Math.min(techo[i], Math.max(base[i], s / c)); }
+      const mx = new Float32Array(N), v1 = rio ? T_RIO.ventana : 25, v2 = rio ? T_RIO.ventana : 18;
+      for (let i = 0; i < N; i++) { let m = -Infinity; for (let j = Math.max(0, i - v1); j <= Math.min(N - 1, i + v1); j++) m = Math.max(m, base[j]); mx[i] = m; }
+      for (let i = 0; i < N; i++) { let s = 0, c = 0; for (let j = Math.max(0, i - v2); j <= Math.min(N - 1, i + v2); j++) { s += mx[j]; c++; } Y[i] = Math.min(techo[i], Math.max(base[i], s / c)); }
       // Final: la meta está sobre la plataforma del mirador; los últimos 60 m bajan suave hasta ella
       if (def.meta.y != null) for (let i = Math.max(0, N - 60); i < N; i++) { const k = (i - (N - 60)) / 59; Y[i] = Math.max(base[i] - 6, lerp(Y[i], def.meta.y, k * k)); }
       // s de cada control (el más cercano de la muestra)
       const sDe = p => { let b = 0, bd = Infinity; for (let i = 0; i < N; i++) { const d = (X[i] - p.x) ** 2 + (Z[i] - p.z) ** 2; if (d < bd) { bd = d; b = i; } } return b; };
       const cps = def.puntos.filter(p => !p.via);
       const puntos = cps.map((p, i) => ({ i, s: sDe(p), nombre: p.nombre })).concat([{ i: cps.length, s: N - 1, nombre: def.meta.nombre, meta: true }]);
-      return { N, X, Y, Z, largo: N - 1, puntos, def, obst };
+      return { N, X, Y, Z, largo: N - 1, puntos, def, obst, rio, medallas: rio ? T_RIO.medallas.map(v => Math.round((N - 1) / v)) : null };
     }
     const ruta = { R: null };
+    const ESC = {}; // lo armado de cada ruta: { R, objetos, corrientes, grupo }
     // Posición y tangente a una distancia s de la ruta (interpolada)
     function enRuta(s, out) {
       const Rr = ruta.R, f = clamp(s, 0, Rr.largo), i = Math.min(Rr.N - 2, Math.floor(f)), k = f - i;
@@ -634,8 +662,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // ---------- Puntos de control: banderín con número, flor de maga que brilla y haz de luz ----------
     function hacerPunto(p, n, total) {
       const m = mats(), g = new THREE.Group(), q = enRuta(p.s, {});
-      const nx = -q.tz, nz = q.tx, y = q.y, lado = p.i % 2 ? 1 : -1;
-      const px = q.x + nx * 6.5 * lado, pz = q.z + nz * 6.5 * lado, py = superficie(px, pz), alto = y + 3.2 - py;
+      const nx = -q.tz, nz = q.tx, y = q.y, lado = p.i % 2 ? 1 : -1, sep = ruta.R.rio ? 7.5 : 6.5;
+      const px = q.x + nx * sep * lado, pz = q.z + nz * sep * lado, py = superficie(px, pz), alto = Math.max(y + 3.2 - py, ruta.R.rio ? 5 : 0.5);
       const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, alto, 8), m.palo); palo.position.set(px, py + alto / 2, pz); g.add(palo);
       const bola = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 8), lm(new THREE.MeshLambertMaterial({ color: '#ffd24a', emissive: '#6a4a00' }))); bola.position.set(px, py + alto + 0.15, pz); g.add(bola);
       const txt = p.meta ? 'META' : String(n);
@@ -719,14 +747,18 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const CARRERA = {
       iniciar() {
         mats();
-        if (!ruta.R) ruta.R = construirRuta(datosCarrera());
+        // La carrera y la contrarreloj del río tienen cada una su ruta, sus puntos y su grupo (se arman una vez)
+        const K = ESC[C.rio ? 'rio' : 'carrera'] || (ESC[C.rio ? 'rio' : 'carrera'] = {});
+        if (!K.R) K.R = construirRuta(C.rio ? datosRio() : datosCarrera());
+        ruta.R = K.R;
         const Rr = ruta.R;
-        // Escena: puntos, corrientes (en el 55 % de cada tramo, a un lado y al otro) y rivales
-        if (!C.objetos.length) {
-          Rr.puntos.forEach((p, i) => { const o = hacerPunto(p, i + 1, Rr.puntos.length); C.objetos.push(o); });
-          let s0 = 0; Rr.puntos.forEach((p, i) => { C.corrientes.push(hacerCorriente(s0 + (p.s - s0) * 0.55, i % 2 ? -1 : 1)); s0 = p.s; });
+        // Escena: puntos, corrientes (en el 55 % de cada tramo, a un lado y al otro; el río no tiene) y rivales
+        if (!K.objetos) {
+          K.objetos = Rr.puntos.map((p, i) => hacerPunto(p, i + 1, Rr.puntos.length)); K.corrientes = [];
+          if (!C.rio) { let s0 = 0; Rr.puntos.forEach((p, i) => { K.corrientes.push(hacerCorriente(s0 + (p.s - s0) * 0.55, i % 2 ? -1 : 1)); s0 = p.s; }); }
+          K.grupo = new THREE.Group(); K.objetos.concat(K.corrientes.map(c => c.g)).forEach(o => K.grupo.add(o)); sobreAgua(K.grupo);
         }
-        if (!C.grupo) { C.grupo = new THREE.Group(); C.objetos.concat(C.corrientes.map(c => c.g)).forEach(o => C.grupo.add(o)); sobreAgua(C.grupo); }
+        C.objetos = K.objetos; C.corrientes = K.corrientes; C.grupo = K.grupo;
         raiz.add(C.grupo); C.grupo.visible = true;
         Object.assign(C, { fase: 'cuenta', t: 0, cuenta: T_CARRERA.cuentaPaso * 3, sig: 0, sJug: 0, llegadas: [], boostT: 0, ultCorriente: null, tiempo: 0, puesto: 0, finT: 0, ya: false, ultimoN: 4 });
         C.objetos.forEach(o => { o.visible = true; o.userData.flor.visible = o.userData.halo.visible = o.userData.haz.visible = true; });
@@ -738,7 +770,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         Object.assign(G.camara.CAM, { distFly: 8.6, heightFly: 3.4, follow: 9 });
         G.camara.place(true);
         C.fan = null; C.grab = { acc: 0, m: [] };
-        crearRivales().then(lista => {
+        if (C.rio) { C.rivales = []; C.tags = []; ui.tags.textContent = ''; montarFantasma(); } else crearRivales().then(lista => {
           if (modo !== CARRERA) return;
           C.rivales = lista.map((ch, i) => ({ ch, def: RIVALES[i], s: 4, lat: [-4.5, 4.5, 9][i], v: 0, boostT: 0, llego: false, tLlegada: 0, ult: null, yaw: 0, latV: 0 }));
           for (const r of C.rivales) { raiz.add(r.ch.root); r.ch.root.visible = true; }
@@ -747,7 +779,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           montarFantasma();
         });
         ui.hud.hidden = false; ui.flecha.hidden = false;
-        ui.chipVidas.hidden = ui.chipPuntos.hidden = true; ui.chipPos.hidden = ui.chipPts.hidden = ui.chipTiempo.hidden = false;
+        ui.chipVidas.hidden = ui.chipPuntos.hidden = true; ui.chipPos.hidden = !!C.rio; ui.chipPts.hidden = ui.chipTiempo.hidden = false;
         ui.posN.textContent = '/' + (RIVALES.length + 1);
         st.fase = 'juego';
         sonar('r_cuenta'); mostrarCuenta('3');
@@ -877,9 +909,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       // Puntos de control en orden (la flor del siguiente)
       if (C.fase === 'juego' && C.sig < Rr.puntos.length) {
         const o = C.objetos[C.sig].userData;
-        if (Math.hypot(S.pos.x - o.x, S.pos.z - o.z) < T_CARRERA.radioPunto && Math.abs(S.pos.y + 0.8 - o.y) < T_CARRERA.altoPunto) pasarPunto();
+        const TP = C.rio ? T_RIO : T_CARRERA;
+        if (Math.hypot(S.pos.x - o.x, S.pos.z - o.z) < TP.radioPunto && Math.abs(S.pos.y + 0.8 - o.y) < TP.altoPunto) pasarPunto();
       }
-      if (C.fase === 'juego' && C.t > T_CARRERA.limite && !relajado()) acabarCarrera(false); // en modo relajado no hay reloj límite
+      if (C.fase === 'juego' && C.t > (C.rio ? T_RIO.limite : T_CARRERA.limite) && !relajado()) acabarCarrera(false); // en modo relajado no hay reloj límite
       rivalesIA(dt);
       if (C.fase === 'fin' && C.finT > 1.6 && st.fase !== 'fin') mostrarResultadosCarrera();
       seguirCamara(dt, 2.4);
@@ -899,21 +932,38 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
     function acabarCarrera(llego) {
       C.fase = 'fin'; C.finT = 0; C.tiempo = Math.round(C.t * 1000) / 1000; C.llego = llego;
-      C.puesto = llego ? 1 + C.llegadas.length : puestoActual();
-      if (llego) { sonar(C.puesto <= 3 ? 'r_meta' : 'r_bien'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'petalos', 30); aviso(C.puesto === 1 ? '¡Primera!' : '¡Meta!'); }
+      C.puesto = C.rio ? 1 : llego ? 1 + C.llegadas.length : puestoActual();
+      if (C.rio) C.medalla = llego ? medallaRio(C.tiempo) : null;
+      if (llego) { sonar(C.rio ? (C.medalla ? 'r_meta' : 'r_bien') : C.puesto <= 3 ? 'r_meta' : 'r_bien'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'petalos', 30); aviso(C.rio ? '¡Meta!' : C.puesto === 1 ? '¡Primera!' : '¡Meta!'); }
       else { sonar('r_fin_mal'); aviso('¡Se acabó el tiempo!'); }
       // Récord (solo si llegó)
-      const rec = leerRec(), r = rec.carrera, ms = Math.round(C.tiempo * 1000);
+      const rec = leerRec(), r = C.rio ? rec.rio : rec.carrera, ms = Math.round(C.tiempo * 1000);
       C.nuevo = llego && (!r.mejor || ms < r.mejor);
       r.jugadas = (r.jugadas || 0) + 1;
-      if (llego) { if (C.nuevo) r.mejor = ms; r.puesto = Math.min(r.puesto || 9, C.puesto); if (C.puesto === 1) r.oros = (r.oros || 0) + 1; }
-      C.recAnterior = rec.carrera.mejor; guardarRec(rec); C.rec = r;
+      if (C.rio) { if (llego) { if (C.nuevo) r.mejor = ms; if (MEDALLAS.indexOf(C.medalla) >= 0 && MEDALLAS.indexOf(C.medalla) < (MEDALLAS.indexOf(r.medalla) < 0 ? 9 : MEDALLAS.indexOf(r.medalla))) r.medalla = C.medalla; if (C.medalla === 'oro') r.oros = (r.oros || 0) + 1; } }
+      else if (llego) { if (C.nuevo) r.mejor = ms; r.puesto = Math.min(r.puesto || 9, C.puesto); if (C.puesto === 1) r.oros = (r.oros || 0) + 1; }
+      C.recAnterior = r.mejor; guardarRec(rec); C.rec = r;
       if (C.nuevo && C.grab && C.grab.m.length >= 6) { C.grab.m.push(S.pos.x, S.pos.y, S.pos.z); guardarFantasma(C.grab.m, ms); } // mejor carrera: su ruta es el nuevo fantasma
       C.grab = null;
       // «Mis récords» (src/game/records.js) anota el resultado a nombre de la cotorra que jugó; prueba = la clave de las pruebas
-      G.emit('retosResultado', { modo: 'carrera', llego, puesto: C.puesto, ms, rivales: (C.rivales || []).map(x => x.def.especie), prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', C.rio ? { modo: 'rio', llego, ms, medalla: C.medalla, prueba: claveRec !== ALMACEN } : { modo: 'carrera', llego, puesto: C.puesto, ms, rivales: (C.rivales || []).map(x => x.def.especie), prueba: claveRec !== ALMACEN });
+    }
+    const MEDALLAS = ['oro', 'plata', 'bronce'];
+    const medallaRio = t => { const m = ruta.R.medallas, i = m.findIndex(v => t <= v); return i < 0 ? null : MEDALLAS[i]; };
+    function mostrarResultadosRio() {
+      resultados(() => {
+        const md = ui.medalla, m = C.medalla, Mr = ruta.R.medallas;
+        md.className = 'rt-medalla ' + (m || 'sin'); md.textContent = m ? String(MEDALLAS.indexOf(m) + 1) : C.llego ? '¡Bien!' : '…';
+        ui.finT.textContent = !C.llego ? 'Casi llegas a la desembocadura' : m === 'oro' ? '¡Medalla de oro!' : m === 'plata' ? '¡Medalla de plata!' : m === 'bronce' ? '¡Medalla de bronce!' : '¡Llegaste a la desembocadura!';
+        ui.nuevo.hidden = !C.nuevo;
+        ui.datos.innerHTML = `<div class="rt-dato"><small>Tu tiempo</small>${C.llego ? reloj(C.tiempo) : '—'}</div>` +
+          `<div class="rt-dato"><small>Récord</small>${C.rec.mejor ? reloj(C.rec.mejor / 1000) : '—'}</div>` +
+          `<div class="rt-dato"><small>Oro · plata · bronce</small>${Mr.map(v => reloj(v)).join(' · ')}</div>` +
+          `<div class="rt-dato"><small>Veces jugado</small>${C.rec.jugadas || 0}</div>`;
+      });
     }
     function mostrarResultadosCarrera() {
+      if (C.rio) return mostrarResultadosRio();
       resultados(() => {
         const p = C.puesto, md = ui.medalla;
         md.className = 'rt-medalla ' + (!C.llego ? 'sin' : p === 1 ? 'oro' : p === 2 ? 'plata' : p === 3 ? 'bronce' : 'sin');
@@ -1313,11 +1363,11 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       apartados.forEach(id => { $(id).hidden = true; });
       if (G.ui.cardOpen) G.ui.hideCard();
       claveRec = ALMACEN + '.prueba';
-      try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasma()); } catch (e) { /* sin almacén */ }
-      const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
+      try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasmaDe('carrera')); localStorage.removeItem(claveFantasmaDe('rio')); } catch (e) { /* sin almacén */ }
+      let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 2);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 3);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
@@ -1406,6 +1456,54 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         ponerRelajado(false);
         tick(0.1);
         check('Sin el modo relajado el reloj límite acaba la carrera', C.fase === 'fin' && C.llego === false);
+        // ---------- Contrarreloj del río ----------
+        const ghCarrera = leer(claveFantasmaDe('carrera'));
+        abrir();
+        check('El menú muestra la contrarreloj del río, sin récord aún', !!ui.menu.querySelector('[data-jugar="rio"]') && ui.menu.querySelector('[data-rec="rio"]').textContent === 'Aún sin récord');
+        let emitido = null; emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
+        check('La contrarreloj arranca', jugar('rio') && modo === CARRERA && C.rio === true && C.fase === 'cuenta');
+        const Rio = ruta.R;
+        check('La ruta del río: 7 puntos más la desembocadura', Rio.rio && Rio.puntos.length === 8 && Rio.puntos[7].meta, Rio.puntos.length);
+        check('Ruta de 500 a 1200 m', Rio.largo > 500 && Rio.largo < 1200, Rio.largo);
+        let fuera = 0, altMin = Infinity, altMax = -Infinity, malo = '';
+        for (let s = 0; s < Rio.largo; s += 4) { const q = enRuta(s, {}), w = nivelAgua(q.x, q.z); if (w === -Infinity) fuera++; else { altMin = Math.min(altMin, q.y - w); if (q.y - w > altMax) { altMax = q.y - w; malo = ' en s=' + s + ' (' + q.x.toFixed(0) + ', ' + q.z.toFixed(0) + ') y=' + q.y.toFixed(1) + ' agua=' + w + ' suelo=' + H(q.x, q.z).toFixed(1); } } }
+        check('La ruta sigue el cauce (sobre el agua)', fuera <= Rio.largo / 4 * 0.03, fuera);
+        check('Vuelo bajo: de 3 a 9 m sobre el agua', altMin > 3 && altMax < 9, altMin.toFixed(1) + ' – ' + altMax.toFixed(1) + malo);
+        anillos = 0; C.grupo.traverse(o => { if (o.geometry && /Ring|Torus/.test(o.geometry.type)) anillos++; });
+        check('Sin anillos: flores y banderines, sin corrientes ni rivales', !anillos && !C.corrientes.length && C.objetos.length === 8 && C.objetos.every(o => o.userData.flor && o.userData.tela) && !C.rivales.length, anillos);
+        check('Sin puesto en el HUD', ui.chipPos.hidden && !ui.chipTiempo.hidden);
+        check('Las medallas por tiempo van de oro a bronce', Rio.medallas.length === 3 && Rio.medallas[0] < Rio.medallas[1] && Rio.medallas[1] < Rio.medallas[2], Rio.medallas.join('/'));
+        tick(3);
+        check('Tras 3-2-1 corre el reloj', C.fase === 'juego' && C.t > 0);
+        tick(4); // el fantasma necesita unas muestras
+        const irR = o => { colocarJugador(o.x, o.y - 0.8, o.z, 1, 0); C.sJug = proyectar(o.x, o.z, C.sJug); tick(0.1); };
+        C.sJug = 0; C.sig = 0; irR(C.objetos[3].userData);
+        check('Saltarse una flor no cuenta', C.sig === 0);
+        const mR = []; for (let i = 0; i < 7; i++) { irR(C.objetos[i].userData); mR.push(C.sig); }
+        check('Se cruzan las 7 flores en orden', mR.join(',') === '1,2,3,4,5,6,7', mR.join(','));
+        C.t = Rio.medallas[0] - 2; irR(C.objetos[7].userData);
+        check('Cruzar la desembocadura termina: medalla de oro', C.fase === 'fin' && C.medalla === 'oro', C.fase + ' ' + C.medalla);
+        tick(2);
+        check('Resultados con medalla de oro y sin puesto', st.fase === 'fin' && ui.medalla.classList.contains('oro') && !/Puesto/.test(ui.datos.textContent));
+        const rr1 = JSON.parse(leer(claveRec) || 'null');
+        check('Récord del río en su propia entrada', rr1 && rr1.rio.mejor === Math.round(C.tiempo * 1000) && rr1.rio.medalla === 'oro' && rr1.rio.oros === 1 && rr1.rio.jugadas === 1 && rr1.carrera.jugadas === 3, leer(claveRec));
+        check('«Mis récords» recibe el gancho retosResultado', emitido && emitido.modo === 'rio' && emitido.llego === true && emitido.ms === rr1.rio.mejor && emitido.medalla === 'oro' && emitido.prueba === true, JSON.stringify(emitido));
+        const ghRio = leerFantasma();
+        check('El fantasma del río se graba en su propia clave', st.reto === 'rio' && ghRio && ghRio.n >= 30 && leer(claveFantasma()) && claveFantasma() !== claveFantasmaDe('carrera') && leer(claveFantasmaDe('carrera')) === ghCarrera);
+        otraVez();
+        for (let i = 0; i < 60 && !C.fan; i++) await esperar(25);
+        check('En el siguiente intento vuela el fantasma, sin rivales', C.fan && C.fan.ch.root.visible && !C.rivales.length && ui.chipPos.hidden);
+        tick(3); C.t = Rio.medallas[2] - 1; C.sig = 7; irR(C.objetos[7].userData);
+        const rr2 = JSON.parse(leer(claveRec) || 'null');
+        check('Un tiempo peor (bronce) no pisa el récord ni la medalla', C.medalla === 'bronce' && !C.nuevo && rr2.rio.mejor === rr1.rio.mejor && rr2.rio.medalla === 'oro' && rr2.rio.jugadas === 2);
+        tick(2);
+        check('Pasarse de la medalla de bronce: llega, sin medalla', (otraVez(), tick(3), C.t = Rio.medallas[2] + 20, C.sig = 7, irR(C.objetos[7].userData), C.llego === true && C.medalla === null && ui.nuevo.hidden !== undefined));
+        check('Con el modo relajado el río tampoco tiene reloj límite', (otraVez(), tick(3), ponerRelajado(true), C.t = T_RIO.limite + 5, tick(0.2), C.fase === 'juego'), C.fase);
+        ponerRelajado(false); tick(0.1);
+        check('Sin el modo relajado, el reloj límite lo acaba', C.fase === 'fin' && C.llego === false && C.medalla === null);
+        G.emit = emit0;
+        jugar('carrera');
+        check('Volver a la carrera: su ruta, sus corrientes y sus rivales', C.rio === false && ruta.R.puntos.length === 7 && C.corrientes.length === 7 && C.objetos.length === 7 && !ui.chipPos.hidden && C.grupo !== ESC.rio.grupo && !ESC.rio.grupo.visible);
         // ---------- Tormenta ----------
         abrir();
         check('«Otro reto» vuelve al menú', !ui.menu.hidden && ui.fin.hidden);
@@ -1464,9 +1562,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
         try { salir(); } catch (e2) { /* ya fuera */ }
       } finally {
-        console.error = ce; G.accesibilidad.relajado = relOrig;
+        console.error = ce; G.accesibilidad.relajado = relOrig; if (emit0) G.emit = emit0;
         apartados.forEach(id => { $(id).hidden = false; });
-        try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasma()); } catch (e) { /* sin almacén */ }
+        try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasmaDe('carrera')); localStorage.removeItem(claveFantasmaDe('rio')); } catch (e) { /* sin almacén */ }
         claveRec = ALMACEN;
       }
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };

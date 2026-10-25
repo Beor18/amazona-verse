@@ -7,7 +7,7 @@
    La partida (`amazonaverse.save`) y el cómic no se tocan: el panel LEE y no escribe nada en G.S. Lo único que se guarda es el
    libro de la casa, en su propia clave `<almacen>.records` (cap1: amazonaverse.records):
      { v: 1, adoptado: bool, vistas: [id de especie], jugadores: { "<nombre de la cotorra>": { carrera: { mejor (ms), puesto,
-       oros, jugadas }, tormenta: { mejor (puntos), jugadas } } } }
+       oros, jugadas }, tormenta: { mejor (puntos), jugadas }, rio: { mejor (ms), medalla, oros, jugadas } } } }
    Nada se borra desde aquí (no hay botón de borrar). «Nuevo estudiante» (equipo compartido) lo borra junto con los récords de
    Retos (boot.js); «Comenzar de cero» no, porque es lo que permite que la casa guarde a varias cotorras.
 
@@ -58,7 +58,7 @@
       titulo: ['Mis récords', 'My records'], cerrar: ['Cerrar', 'Close'],
       local: ['Todo se guarda solo en este dispositivo. No se envía nada a ningún servidor.', 'Everything is saved only on this device. Nothing is sent to any server.'],
       retos: ['Modo Retos', 'Challenge mode'], retosNota: ['Lo mejor de este dispositivo.', 'The best on this device.'],
-      carrera: ['Carrera en El Yunque', 'El Yunque race'], tormenta: ['¡Escapa de la tormenta!', 'Escape the storm!'],
+      rio: ['Contrarreloj del río', 'River time trial'], carrera: ['Carrera en El Yunque', 'El Yunque race'], tormenta: ['¡Escapa de la tormenta!', 'Escape the storm!'],
       mejorTiempo: ['Mejor tiempo', 'Best time'], mejorPuntos: ['Mejor puntuación', 'Best score'], mejorPuesto: ['Mejor puesto', 'Best place'], ganadas: ['Carreras ganadas', 'Races won'],
       jugadas: ['Veces jugado', 'Times played'], puntos: ['puntos', 'points'], aguantado: ['Más tiempo aguantado', 'Longest time'],
       sinRecord: ['Aún sin récord. ¡Prueba este reto!', 'No record yet. Try this challenge!'],
@@ -104,11 +104,13 @@
     const nombreDe = s => (s && s.profile && s.profile.created ? limpiarNombre(s.profile.name) : null);
     const especieDe = s => { const sp = s && s.profile && s.profile.look && s.profile.look.species; return typeof sp === 'string' && /^[a-z]{3,24}$/.test(sp) ? sp : null; };
 
+    const MEDALLAS_RIO = ['oro', 'plata', 'bronce'];
     function retosDe(d) {
-      const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {};
+      const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {};
       return {
         carrera: { mejor: num(c.mejor), puesto: Number.isInteger(c.puesto) && c.puesto >= 1 && c.puesto <= PARTICIPANTES_MAX ? c.puesto : null, oros: ent(c.oros), jugadas: ent(c.jugadas) },
         tormenta: { mejor: num(q.mejor), tiempo: num(q.tiempo), jugadas: ent(q.jugadas) },
+        rio: { mejor: num(w.mejor), medalla: MEDALLAS_RIO.includes(w.medalla) ? w.medalla : null, oros: ent(w.oros), jugadas: ent(w.jugadas) },
       };
     }
     const medallaCarrera = p => (!p ? null : p === 1 ? 'oro' : p === 2 ? 'plata' : p === 3 ? 'bronce' : 'meta');
@@ -157,8 +159,8 @@
       if (Array.isArray(d.vistas)) out.vistas = [...new Set(d.vistas.filter(x => typeof x === 'string' && /^[a-z]{3,24}$/.test(x)))].slice(0, 80);
       for (const [n, e] of Object.entries(esObj(d.jugadores) ? d.jugadores : {})) {
         const nombre = limpiarNombre(n); if (!nombre || !esObj(e) || out.jugadores[nombre] || Object.keys(out.jugadores).length >= MAX_CASA) continue;
-        const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta });
-        out.jugadores[nombre] = { carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas } };
+        const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta, rio: e.rio });
+        out.jugadores[nombre] = { carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
       }
       return out;
     }
@@ -190,7 +192,7 @@
     // Escritura del libro de la casa (clave propia; nunca la partida)
     // =================================================================================================================
     const entradaDe = (libro, nombre) => libro.jugadores[nombre] || (Object.keys(libro.jugadores).length < MAX_CASA
-      ? (libro.jugadores[nombre] = { carrera: { mejor: null, puesto: null, oros: 0, jugadas: 0 }, tormenta: { mejor: null, jugadas: 0 } }) : null);
+      ? (libro.jugadores[nombre] = { carrera: { mejor: null, puesto: null, oros: 0, jugadas: 0 }, tormenta: { mejor: null, jugadas: 0 }, rio: { mejor: null, medalla: null, oros: 0, jugadas: 0 } }) : null);
     // Une un récord con otro quedándose con lo mejor de cada cosa (los contadores, con el mayor)
     function unir(e, r) {
       const c = e.carrera, q = e.tormenta;
@@ -199,6 +201,10 @@
       c.oros = Math.max(c.oros, r.carrera.oros); c.jugadas = Math.max(c.jugadas, r.carrera.jugadas);
       if (r.tormenta.mejor && (!q.mejor || r.tormenta.mejor > q.mejor)) q.mejor = r.tormenta.mejor;
       q.jugadas = Math.max(q.jugadas, r.tormenta.jugadas);
+      const w = e.rio;
+      if (r.rio.mejor && (!w.mejor || r.rio.mejor < w.mejor)) w.mejor = r.rio.mejor;
+      if (r.rio.medalla && (!w.medalla || MEDALLAS_RIO.indexOf(r.rio.medalla) < MEDALLAS_RIO.indexOf(w.medalla))) w.medalla = r.rio.medalla;
+      w.oros = Math.max(w.oros, r.rio.oros); w.jugadas = Math.max(w.jugadas, r.rio.jugadas);
     }
     function sumarVistas(libro, ids) {
       const cat = catalogo(); let cambio = false;
@@ -213,7 +219,7 @@
       if (!libro.adoptado && nombre) {
         libro.adoptado = true; cambio = true;
         const r = retosDe(leerJSON(CLAVE.retos));
-        if (r.carrera.mejor || r.carrera.jugadas || r.tormenta.mejor || r.tormenta.jugadas) { const e = entradaDe(libro, nombre); if (e) unir(e, r); }
+        if (r.carrera.mejor || r.carrera.jugadas || r.tormenta.mejor || r.tormenta.jugadas || r.rio.mejor || r.rio.jugadas) { const e = entradaDe(libro, nombre); if (e) unir(e, r); }
       }
       if (cambio) guardarCasa(libro);
       return libro;
@@ -232,6 +238,13 @@
         const q = e.tormenta; q.jugadas++;
         const pts = typeof r.puntos === 'number' && r.puntos > 0 && r.puntos <= 1e5 ? Math.round(r.puntos) : null;
         if (pts && (!q.mejor || pts > q.mejor)) q.mejor = pts;
+      } else if (r.modo === 'rio') {
+        const w = e.rio; w.jugadas++;
+        const ms = typeof r.ms === 'number' && r.ms >= 1000 && r.ms <= 36e5 ? Math.round(r.ms) : null;
+        if (r.llego === true && ms) {
+          if (!w.mejor || ms < w.mejor) w.mejor = ms;
+          if (MEDALLAS_RIO.includes(r.medalla)) { if (!w.medalla || MEDALLAS_RIO.indexOf(r.medalla) < MEDALLAS_RIO.indexOf(w.medalla)) w.medalla = r.medalla; if (r.medalla === 'oro') w.oros++; }
+        }
       } else return false;
       sumarVistas(libro, [especieDe(sOpc || fuenteS())]);
       guardarCasa(libro);
@@ -313,7 +326,11 @@
     const dato = (k, v) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`;
 
     function htmlRetos(d) {
-      const c = d.retos.carrera, q = d.retos.tormenta, mc = medallaCarrera(c.puesto), mq = medallaTormenta(q.mejor);
+      const c = d.retos.carrera, q = d.retos.tormenta, w = d.retos.rio, mc = medallaCarrera(c.puesto), mq = medallaTormenta(q.mejor);
+      const rio = w.mejor
+        ? `<div class="rec-grande">${medalla(w.medalla, w.medalla ? '★' : null)}<div><b class="rec-num">${reloj(w.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}${w.medalla ? ' · ' + esc(tx(w.medalla)) : ''}</small></div></div>
+           <dl>${dato(tx('jugadas'), w.jugadas)}</dl>`
+        : `<p>${esc(tx('sinRecord'))}</p>${w.jugadas ? `<dl>${dato(tx('jugadas'), w.jugadas)}</dl>` : ''}`;
       const carrera = c.mejor
         ? `<div class="rec-grande">${medalla(mc, c.puesto <= 3 ? c.puesto : '★')}<div><b class="rec-num">${reloj(c.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))} · ${esc(medallaTxt(mc))}</small></div></div>
            <dl>${dato(tx('mejorPuesto'), esc(ordinal(c.puesto || 1)))}${dato(tx('ganadas'), c.oros)}${dato(tx('jugadas'), c.jugadas)}</dl>`
@@ -323,7 +340,7 @@
            <dl>${q.tiempo ? dato(tx('aguantado'), q.tiempo + ' s') : ''}${dato(tx('jugadas'), q.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${q.jugadas ? `<dl>${dato(tx('jugadas'), q.jugadas)}</dl>` : ''}`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article></div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article></div></section>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;
@@ -710,6 +727,7 @@
         // ---------- La casa ----------
         check('Con una sola cotorra la casa explica que aquí saldrán las demás', /varias cotorras/.test(root.textContent) && !root.querySelector('.rec-casa'));
         const ana = nuevoS('Ana Luna'), beto = nuevoS('Beto Mar'), tel = nuevoS('Cielo 787 555 0123');
+        check('Anota la contrarreloj del río (mejor tiempo y mejor medalla) a nombre de la cotorra', anotar({ modo: 'rio', llego: true, ms: 64000, medalla: 'plata' }, ana) && anotar({ modo: 'rio', llego: true, ms: 70000, medalla: 'oro' }, ana) && (() => { const w = leerCasa().jugadores['Ana Luna'].rio; return w.mejor === 64000 && w.medalla === 'oro' && w.oros === 1 && w.jugadas === 2; })() && retosDe({ v: 1, rio: { mejor: 5000, medalla: 'madera' } }).rio.medalla === null);
         check('Anota una carrera a nombre de la cotorra', anotar({ modo: 'carrera', llego: true, puesto: 2, ms: 70100, rivales: ['oratrix', 'versicolor', 'albifrons'] }, ana) && leerCasa().jugadores['Ana Luna'].carrera.mejor === 70100);
         anotar({ modo: 'tormenta', sobrevivio: true, puntos: 900 }, ana);
         anotar({ modo: 'carrera', llego: true, puesto: 1, ms: 61000, rivales: [] }, beto);
