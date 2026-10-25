@@ -83,7 +83,7 @@ Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js
 - **Dibujo:**
   - Una `InstancedMesh` por modelo × LOD × material, con el nombre `edificiosInst:*` y `sinSolido`.
   - Cada cuadro se eligen las instancias visibles. Pasan las que están dentro del frustum y de la distancia de dibujo, y también las de cerca que caen en el radio de sombra.
-  - El LOD de cada instancia lo decide su distancia a la cámara, con 45/65/85 m ± 8.
+  - El LOD de cada instancia lo decide su distancia a la cámara, con 35/50/60 m ± 8. Una zona que queda entera más allá de esa distancia se dibuja con sus lejanos fundidos en una sola malla (`edificiosZona:*`): un draw call por zona.
   - Los sólidos de Movimiento llegan por `G.solidos.agregar` en cada instancia.
 - **Liberar:** quita las mallas, llama a `geometry.dispose()` y suelta materiales y texturas. Los materiales se comparten por nombre y llevan conteo de referencias. La cadena base64 la suelta `AVE.assets.loadGLB`.
 - **Kit:**

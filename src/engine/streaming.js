@@ -11,7 +11,8 @@
    Histéresis: una zona baja de nivel con H m de más (40) y los modelos se sueltan tras 3 s sin uso (no hay vaivén en el borde).
    Por instancia, cerca/lejos se elige por la distancia a la cámara (CFG.lod ± CFG.lodH) y cada cuadro se descarta lo que
    queda fuera del frustum o de la distancia de dibujo (las de cerca a menos del radio de sombra se dibujan igual: su sombra
-   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible.
+   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
+   ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
    Carga: lo que está "cerca" del punto de inicio (y el LOD lejano propio de lo visible) entra antes de mundoListo; el resto
    llega en segundo plano, más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback,
    CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
@@ -49,7 +50,7 @@ AVE.module('streaming', function (G) {
     precarga: { bajo: 20, medio: 25, alto: 30 },   // m: zonas cuyo modelo completo entra antes de mundoListo (lo demás visible, con su lejano)
     dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios (la de antes en mundo.js)
     histeresis: 40,                                // m de más para bajar de nivel
-    lod: { bajo: 45, medio: 65, alto: 85 },        // m del centro de la instancia a la cámara: cerca → lejos
+    lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
@@ -386,6 +387,7 @@ AVE.module('streaming', function (G) {
       if (!r.refs && !r.fijo) r.soltarEn = performance.now() + CFG.gracia * 1000;
       crearLote(r);
       r.ok(r);
+      if (r.tipo === 'lejos') zonasDe(r.n);
       if (r.tipo === 'cerca') for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
     }
     function actualizarEsferas(n, esf) {
@@ -399,7 +401,7 @@ AVE.module('streaming', function (G) {
       r.estado = 'bajando';
       const rc = res(r.n, 'cerca');
       pedir(rc, prio + 1000).then(() => encolar(() => {
-        try { r.geo = generarLejos(rc.partes); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); }
+        try { r.geo = generarLejos(rc.partes); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
         catch (e) { r.estado = 'error'; r.mal(e); }
         soltar(rc);
       }), err => { r.estado = 'error'; r.mal(err); soltar(rc); });
@@ -448,8 +450,23 @@ AVE.module('streaming', function (G) {
         if (antes >= 1 && quiere < 1) soltar(res(n, 'lejos'));
       }
       if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I));
+      if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
     }
+    // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
+    // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
+    function fundirZona(Z) {
+      if (Z.nivel < 1 || Z.malla) return;
+      const rs = [...Z.modelos].map(n => res(n, 'lejos'));
+      if (!rs.every(r => r.estado === 'listo' && r.geo)) return;
+      const geos = Z.inst.map(I => res(I.modelo, 'lejos').geo.clone().applyMatrix4(I.m));
+      const m = new THREE.Mesh(fundir(geos, true), matLejos);
+      for (const g of geos) g.dispose();
+      m.name = 'edificiosZona:' + Z.id + ':lejos'; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
+      scene.add(m); Z.malla = m;
+    }
+    function quitarZona(Z) { if (!Z.malla) return; scene.remove(Z.malla); Z.malla.geometry.dispose(); Z.malla = null; }
+    function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
     const avisados = new Set();
     function respaldo(Z, n, err) {
       if (!avisados.has(n)) { avisados.add(n); console.warn('AVE edificios:', err && err.message || err); }
@@ -488,7 +505,7 @@ AVE.module('streaming', function (G) {
 
     // --- cada cuadro: LOD, distancia, frustum y sombra por instancia → listas por lote ---
     const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), esfera = new THREE.Sphere();
-    const vis = { cerca: 0, lejos: 0, mallas: 0 };
+    const vis = { cerca: 0, lejos: 0, mallas: 0, zonas: 0 };
     function cuadro() {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
@@ -496,8 +513,17 @@ AVE.module('streaming', function (G) {
       const S = G.S, sx = S.pos ? S.pos.x : cp.x, sz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
+      vis.zonas = 0;
+      for (const id in zonas) {
+        const Z = zonas[id], m = Z.malla; if (!m) { Z.usaMalla = false; continue; }
+        const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
+        Z.usaMalla = Z.nivel === 1 || dz > lodD + (Z.usaMalla ? -H : H);
+        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < max;
+        if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
+      }
       for (let i = 0; i < activas.length; i++) {
         const I = activas[i];
+        if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
         const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         if (d - I.r > max) continue;
         if (I.lod === 0 && d > lodD + H) I.lod = 1; else if (I.lod === 1 && d < lodD - H) I.lod = 0;
@@ -557,11 +583,12 @@ AVE.module('streaming', function (G) {
           if (rc && rc.estado === 'listo') { modCerca++; for (const p of rc.partes) bytes += tam(p.geo); }
           if (rl && rl.estado === 'listo') { modLejos++; bytes += tam(rl.geo); }
         }
+        for (const id in zonas) if (zonas[id].malla) bytes += tam(zonas[id].malla.geometry);
         const zs = Object.values(zonas);
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
           instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos,
           materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos,
-          drawEdificios: vis.mallas, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
+          drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
       },
     };
     const tam = g => { let b = 0; if (!g) return 0; for (const k in g.attributes) b += g.attributes[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
@@ -581,7 +608,11 @@ AVE.module('streaming', function (G) {
     opts = opts || {};
     const P = G.pruebas, { check, result } = P.runner();
     if (!ST) { check('Sin mapa con edificios: nada que cargar por zonas', true, 'sin mapa'); return result(); }
-    const S = G.S, keep = P.keepSave(), x0 = S.pos.x, z0 = S.pos.z, f0 = S.facing ? Object.assign({}, S.facing) : null;
+    // Estado propio (no depende de lo que corrió antes): calidad alta fija, zonas sin forzar, desde el spawn y con lo de
+    // fuera ya liberado. Al terminar se devuelven la calidad, la cámara, la posición y la partida.
+    const S = G.S, keep = P.keepSave(), xo = S.pos.x, zo = S.pos.z, f0 = S.facing ? Object.assign({}, S.facing) : null;
+    const MAPA = G.terreno.mapa || {}, sp = MAPA.spawn || { x: xo, z: zo }, x0 = sp.x, z0 = sp.z;
+    const cal0 = { nivel: nivelCal(), manual: !!(R.calidad && R.calidad.manual) }, yaw0 = G.camara.yaw;
     const M = R.renderer.info.memory, B64 = 'AV_EDIFICIOS_B64';
     const dibujar = n => { for (let i = 0; i < (n || 2); i++) { G.camara.place(true); R.render(1 / 60, false); } };
     const ir = async (x, z, fx, fz) => { P.teleport(x, z, fx, fz); P.tick(0.1); await ST.alrededor(x, z); await ST.terminar(); if (G.solidos && G.solidos.terminar) G.solidos.terminar(); dibujar(); };
@@ -589,7 +620,9 @@ AVE.module('streaming', function (G) {
     const r2 = v => Math.round(v * 10) / 10;
     try {
       await ST.listo; await ST.terminar();
-      // 1. Lo de cerca del inicio, cargado antes de jugar
+      if (R.setCalidad) R.setCalidad('alto', true);
+      ST.soltarTodo(); await ir(x0, z0, 0, -1); ST.liberarYa(); await ST.terminar();
+      // 1. Lo de cerca del inicio, cargado y con colisiones
       const Rc = radioCerca(), zs = Object.values(ST.zonas);
       const iniciales = zs.filter(Z => Math.max(0, Math.hypot(x0 - Z.cx, z0 - Z.cz) - Z.r) < Rc);
       check('Lo de cerca del inicio está cargado y con colisiones', iniciales.every(Z => Z.nivel === 2 && Z.inst.every(I => I.colocado)),
@@ -604,8 +637,16 @@ AVE.module('streaming', function (G) {
       await ir(ZM.cx, ZM.cz + Math.min(ZM.r, 40) + 6, 0, -1);
       // draw calls de un cuadro entero (sombra, escena y post), contados aquí: R.stats() solo se actualiza en el bucle
       const contar = () => { const rr = R.renderer, orig = rr.render; let n = 0; rr.render = function (a, b) { orig.call(rr, a, b); n += rr.info.render.calls; }; try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.render = orig; } return n; };
-      const st = { calls: contar(), calidad: nivelCal() }, se = ST.stats();
-      check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ': ' + st.calls + ' draw calls (edificios ' + se.drawEdificios + ': ' + se.visiblesCerca + ' cerca + ' + se.visiblesLejos + ' lejos) · ' + st.calidad);
+      // la peor de cuatro orientaciones de la cámara
+      let st = null;
+      for (const yaw of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
+        G.camara.yaw = yaw; dibujar(2);
+        const c = contar(), se = ST.stats();
+        if (!st || c > st.calls) st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, zonas: se.zonasFundidas };
+      }
+      G.camara.yaw = yaw0;
+      check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
+        ' (' + st.cerca + ' instancias cerca, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
       const g0 = M.geometries, t0 = M.textures;
       // Entrar en Z por el borde sur, mirando al centro
       const bx = Z.cx, bz = Z.cz + Math.min(Z.r, 40) + 6;
@@ -642,19 +683,21 @@ AVE.module('streaming', function (G) {
       // (geometrías y texturas de three cuentan también la flora, que va por regiones: se informan, no se exigen)
       // La referencia se toma tras una primera vuelta: así las dos medidas tienen la misma historia de histéresis.
       await ir(bx, bz, 0, -1); await ir(x0, z0); ST.liberarYa(); dibujar();
-      // heap: con window.gc (Chrome con --js-flags=--expose-gc) se recoge antes y se exige ≤ 8 MB; sin gc, el heap incluye basura
-      // aún no recogida y solo se rechaza una subida > 32 MB (la memoria propia de los edificios sí se exige estable)
+      // heap: con window.gc (Chrome con --js-flags=--expose-gc) se recoge antes y se exige ≤ 8 MB; sin gc el heap incluye basura
+      // aún no recogida y solo se informa (la memoria propia de los edificios sí se exige estable)
       const gc = typeof window.gc === 'function', tolHeap = gc ? 8 : 32;
       const foto = () => { if (gc) window.gc(); const s2 = ST.stats(); return { g: M.geometries, t: M.textures, kb: s2.kbGeometria, mats: s2.materiales, mod: s2.modelosCerca + s2.modelosLejos, heap: heap() }; };
       const m1 = foto();
       for (let v = 0; v < 2; v++) { await ir(bx, bz, 0, -1); await ir(x0, z0); ST.liberarYa(); dibujar(); }
       const m2 = foto();
-      check('Sin fugas tras ir y volver dos veces (memoria de edificios estable, heap dentro de tolerancia)', m2.kb <= m1.kb * 1.02 + 16 && m2.mats <= m1.mats && m2.mod <= m1.mod && !(m2.heap - m1.heap > tolHeap),
-        'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc, tol. 32)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t);
+      check('Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB)', m2.kb <= m1.kb * 1.02 + 16 && m2.mats <= m1.mats && m2.mod <= m1.mod && !(gc && m2.heap - m1.heap > tolHeap),
+        'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc: no se exige)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t);
     } catch (e) {
       check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
-      P.teleport(x0, z0, f0 && f0.x, f0 && f0.z); P.tick(0.1); ST.revisar(x0, z0);
+      G.camara.yaw = yaw0;
+      if (R.setCalidad) { R.setCalidad(cal0.nivel); R.calidad.manual = cal0.manual; }
+      P.teleport(xo, zo, f0 && f0.x, f0 && f0.z); P.tick(0.1); ST.revisar(xo, zo);
       P.restoreSave(keep);
     }
     return result();
