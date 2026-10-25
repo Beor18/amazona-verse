@@ -606,16 +606,23 @@ AVE.module('comic', function (G) {
     return 'manual';
   }
   const ultimo = { png: null, pdf: null, pdfUrl: null };
-  async function exportComic(format, fromUser) {
-    const cv = $('comic-canvas'), pdf = format === 'pdf';
-    const tipo = pdf ? 'image/jpeg' : 'image/png', calidad = pdf ? 0.9 : undefined;
+  // Compone la página y la codifica; el PNG se verifica (firma + ancho y alto). Sin avisos, eventos ni guardado:
+  // lo usan exportComic y pngSinRegistro (el botón «Compartir», src/game/records.js)
+  async function blobDelComic(cv, tipo, calidad) {
     await renderComic(cv);
     let blob = await aBlob(cv, tipo, calidad);
     if (!blob) { await renderComic(cv, { seguro: true }); blob = await aBlob(cv, tipo, calidad); } // lienzo contaminado
-    if (blob && !pdf && !(await verificarPNG(blob, cv.width, cv.height)).ok) {
+    if (blob && tipo === 'image/png' && !(await verificarPNG(blob, cv.width, cv.height)).ok) {
       try { blob = dataUrlABlob(cv.toDataURL('image/png')); } catch (e) { blob = null; }
       if (blob && !(await verificarPNG(blob, cv.width, cv.height)).ok) blob = null;
     }
+    return blob;
+  }
+  const pngSinRegistro = () => blobDelComic($('comic-canvas'), 'image/png');
+  async function exportComic(format, fromUser) {
+    const cv = $('comic-canvas'), pdf = format === 'pdf';
+    const tipo = pdf ? 'image/jpeg' : 'image/png', calidad = pdf ? 0.9 : undefined;
+    let blob = await blobDelComic(cv, tipo, calidad);
     if (!blob) { aviso(L('Este navegador no pudo crear la imagen del cómic.', 'This browser could not create the comic image.'), 4000); return null; }
     let url;
     if (pdf) {
@@ -790,7 +797,7 @@ AVE.module('comic', function (G) {
   // AV.comicTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.comicTest) AV.comicTest = o => test(o); }, 0);
 
-  return { titulos: TITULOS, capture, comicPanels, orderedPanels, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic,
+  return { titulos: TITULOS, capture, comicPanels, orderedPanels, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic, pngSinRegistro,
     revisarEventos, verificarPNG, estadisticas, entregar, test,
     get lastBlob() { return ultimo.pdf; }, get lastPng() { return ultimo.png; } };
 });

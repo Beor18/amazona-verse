@@ -21,7 +21,8 @@
      El almacén de la partida no se escribe en ningún momento.
    Récords aparte, en este dispositivo: localStorage `<almacen>.retos` = { v: 1, carrera: { mejor (ms), puesto (mejor),
    oros, jugadas }, tormenta: { mejor (puntos), tiempo (s), jugadas } }. «Nuevo estudiante» lo borra (gancho en boot.js);
-   «Comenzar de cero» no (no es la partida).
+   «Comenzar de cero» no (no es la partida). Al acabar una partida emite G.emit('retosResultado', { modo, ..., prueba }) para «Mis récords»
+   (src/game/records.js), que anota el mejor resultado por nombre de cotorra en su propia clave.
    Controles: los del vuelo, con las teclas remapeables de input.js (mover), Espacio sube, C baja, F impulso; en táctil el
    joystick, Subir, Bajar e Impulso. En la carrera la altura se ayuda sola hacia la de la ruta (quien no toca Subir/Bajar
    no se estrella). En los resultados: Enter, Espacio o la tecla de Acción = «Otra vez»; Esc abre la pausa.
@@ -792,6 +793,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       r.jugadas = (r.jugadas || 0) + 1;
       if (llego) { if (C.nuevo) r.mejor = ms; r.puesto = Math.min(r.puesto || 9, C.puesto); if (C.puesto === 1) r.oros = (r.oros || 0) + 1; }
       C.recAnterior = rec.carrera.mejor; guardarRec(rec); C.rec = r;
+      // «Mis récords» (src/game/records.js) anota el resultado a nombre de la cotorra que jugó; prueba = la clave de las pruebas
+      G.emit('retosResultado', { modo: 'carrera', llego, puesto: C.puesto, ms, rivales: (C.rivales || []).map(x => x.def.especie), prueba: claveRec !== ALMACEN });
     }
     function mostrarResultadosCarrera() {
       resultados(() => {
@@ -1118,6 +1121,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       TM.nuevo = TM.total > 0 && (!r.mejor || TM.total > r.mejor);
       r.jugadas = (r.jugadas || 0) + 1; if (TM.nuevo) r.mejor = TM.total; r.tiempo = Math.max(r.tiempo || 0, Math.round(TM.t));
       guardarRec(rec); TM.rec = r;
+      G.emit('retosResultado', { modo: 'tormenta', sobrevivio, puntos: TM.total, prueba: claveRec !== ALMACEN });
     }
     function mostrarResultadosTormenta() {
       resultados(() => {

@@ -90,6 +90,7 @@
     <form method="dialog" class="title-actions">
       <button class="btn xl" type="submit" data-icon="play" autofocus>Jugar</button>
       <button class="btn ghost" type="submit" value="retos" data-icon="trophy" style="animation:none">Retos</button>
+      <button class="btn ghost" type="button" id="b-records-title" data-icon="star" style="animation:none">Mis récords</button>
     </form>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
   </div>
@@ -130,6 +131,7 @@
       <button class="btn tile" id="b-save" type="button" data-icon="save" popovertarget="pause" popovertargetaction="hide">Guardar</button>
       <button class="btn tile" id="b-load" type="button" data-icon="load" popovertarget="pause" popovertargetaction="hide">Cargar</button>
       <button class="btn tile" id="b-retos" type="button" data-icon="trophy" popovertarget="pause" popovertargetaction="hide">Retos</button>
+      <button class="btn tile" id="b-records" type="button" data-icon="star" popovertarget="pause" popovertargetaction="hide">Mis récords</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
       <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
     </div>
@@ -244,6 +246,7 @@
           <button class="btn ghost" id="c-refresh" type="button" data-icon="reset">Actualizar vista</button>
           <button class="btn" id="c-png" type="button" data-icon="save">Exportar PNG</button>
           <button class="btn" id="c-pdf" type="button" data-icon="save">Exportar PDF</button>
+          <button class="btn success" id="c-share" type="button" data-icon="share" style="--icon: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 15V4M8 8l4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6'/%3E%3C/svg%3E&quot;)">Compartir</button>
         </div>
         <div id="c-export" hidden>
           <p class="note" id="c-export-note"></p>
