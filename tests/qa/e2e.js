@@ -22,8 +22,9 @@
    Modelo de duración (todo se mide en la propia prueba; las constantes están abajo):
      tiempo mínimo = segundos de juego simulados (esperas del juego: crecida, vapor, gota, buceo…)
                    + trayectos (distancia de los teleports / velocidad de carrera o de vuelo del juego)
-                   + líneas de diálogo × 0,8 s (solo pulsar, sin leer).
-     «Leyendo» cambia las líneas por sus caracteres / 15 por segundo (~180 palabras por minuto, un adulto que lee).
+                   + (líneas de diálogo + clics en botones de tarjetas) × 0,8 s (solo pulsar, sin leer).
+     «Leyendo» cambia las líneas por sus caracteres / 15 por segundo (~180 palabras por minuto, un adulto que lee); el texto de las
+     tarjetas no se cuenta, así que ambas cifras son cotas inferiores.
    Carga: tests/qa/qa.js lo inyecta solo (?qa=1); a mano: inyectar este archivo y  await AV.e2eTest(). */
 (function () {
   'use strict';
@@ -34,7 +35,7 @@
     return null;
   }
   const s = v => { try { return typeof v === 'string' ? v : JSON.stringify(v); } catch (e) { return String(v); } };
-  const SEG_POR_LINEA = 0.8;   // pulsar «Seguir» sin leer
+  const SEG_POR_PULSACION = 0.8;   // pulsar «Seguir» o el botón de una tarjeta, sin leer
   const CAR_POR_SEG = 15;      // lectura de un adulto (~180 palabras por minuto)
   const fmt = seg => { seg = Math.round(seg); const m = Math.floor(seg / 60); return m ? m + ' min ' + (seg % 60) + ' s' : seg + ' s'; };
 
@@ -72,7 +73,7 @@
     const intrusos = [], vistas = [];   // vistas: quién habla y con qué retrato en cada línea de diálogo
     const fasesHechas = []; let faseAct = null;
     const velSuelo = () => (G && G.fisica && G.fisica.RUN_SPEED) || 10.5, velAire = () => (G && G.fisica && G.fisica.FLY_SPEED) || 12;
-    const seg = (d, lectura) => d.sim + d.suelo / velSuelo() + d.aire / velAire() + (lectura ? d.car / CAR_POR_SEG : d.lineas * SEG_POR_LINEA);
+    const seg = (d, lectura) => d.sim + d.suelo / velSuelo() + d.aire / velAire() + d.clics * SEG_POR_PULSACION + (lectura ? d.car / CAR_POR_SEG : d.lineas * SEG_POR_PULSACION);
     const cerrarFase = () => { if (!faseAct) return; const a = faseAct.ini, d = {}; for (const k of Object.keys(a)) d[k] = reloj[k] - a[k]; fasesHechas.push({ nombre: faseAct.nombre, d }); faseAct = null; };
     const fase = nombre => { cerrarFase(); faseAct = { nombre, ini: Object.assign({}, reloj) }; };
 
@@ -279,16 +280,27 @@
         if ((CR.estado().capsulas[id] || {}).estado !== 'lista') { for (let i = 0; i < 6 && (CR.estado().capsulas[id] || {}).estado !== 'lista'; i++) atajoXP += CR.dar('mision', 'e2e-' + i) || 0; }
         await CR.abrir(); await sleep(400);
         const boton = W.document.querySelector('#criadero [data-cr="eclosion"]');
-        if (boton && !boton.closest('[hidden]')) boton.click(); else if (CR.debug && CR.debug.eclosion) await CR.debug.eclosion(id);
-        // La cría puede existir antes de que su modelo del huevo termine de armarse: se espera a las patitas, no solo a la cría
-        const buscar = () => { const cr = CR.debug && CR.debug.cria && CR.debug.cria(); let raiz = cr && cr.holder; while (raiz && raiz.parent) raiz = raiz.parent; const hv = raiz && raiz.getObjectByName('huevo'); return { cria: !!cr, huevo: !!hv, patas: hv && hv.children.find(o => o.isGroup && o.children.length === 2) }; };
-        const patas = (await until(() => buscar().patas, 20000, 80)) || null, hallado = buscar();
+        if (boton && !boton.closest('[hidden]')) boton.click();
+        // El botón solo arranca la eclosión si la escena 3D ya armó la cápsula; con la máquina cargada puede tardar: si no arranca, se fuerza por la API de depuración
+        let arranco = await until(() => CR.debug.hatch().on, 6000, 50), atajoEcl = false;
+        if (!arranco && CR.debug && CR.debug.eclosion) { atajoEcl = true; await CR.debug.eclosion(id); arranco = await until(() => CR.debug.hatch().on, 6000, 50); }
+        // Se buscan las patitas en TODOS los objetos «huevo» de la escena de la cría (el nido del mundo también tiene uno). El bucle del criadero
+        // avanza la línea de tiempo en tiempo real mientras carga el modelo de la cría: se sostiene en 1 s hasta tener las patitas a la vista
+        const buscar = () => {
+          const cr = CR.debug && CR.debug.cria && CR.debug.cria(); let raiz = cr && cr.holder; while (raiz && raiz.parent) raiz = raiz.parent;
+          const huevos = []; if (raiz) raiz.traverse(o => { if (o.name === 'huevo') huevos.push(o); });
+          const con = huevos.find(h => h.children.some(o => o.isGroup && o.children.length === 2));
+          return { cria: !!cr, raiz: raiz ? raiz.type : null, huevos: huevos.map(h => h.type + '[' + h.children.map(c => c.type + ':' + c.children.length).join(',') + ']@' + (h.parent ? h.parent.name || h.parent.type : '-')), patas: con ? con.children.find(o => o.isGroup && o.children.length === 2) : null };
+        };
+        let hallado = buscar();
+        for (let i = 0; i < 250 && !hallado.patas && arranco; i++) { CR.debug.irA(1.0); await sleep(80); hallado = buscar(); }
+        const patas = hallado.patas;
         const escala = () => { if (!patas) return null; const v = new W.THREE.Vector3(); patas.children[0].getWorldScale(v); return +v.x.toFixed(3); };
         CR.debug.irA(1.0); const e1 = escala();
         CR.debug.irA(6.0); const e6 = escala();
         CR.debug.irA(9.6); await sleep(300);                         // terminarEclosion corre con T > 9,4
         const tras = CR.estado().capsulas[id] || {};
-        check('3', 'Eclosión: las patitas salen del huevo (escala ~0 a 1 s, visible a 6 s)', patas && e1 < 0.05 && e6 > 0.5, { escala1s: e1, escala6s: e6, xpPorJugar: xpTras - xpAntes, xpDePrueba: atajoXP, boton: !!boton, cria: hallado.cria, huevo: hallado.huevo });
+        check('3', 'Eclosión: las patitas salen del huevo (escala ~0 a 1 s, visible a 6 s)', patas && e1 < 0.05 && e6 > 0.5, { escala1s: e1, escala6s: e6, xpPorJugar: xpTras - xpAntes, xpDePrueba: atajoXP, boton: !!boton, arranco: !!arranco, atajo: atajoEcl ? 'la eclosión se forzó con CR.debug.eclosion' : 'botón de eclosión del criadero', cria: hallado.cria, huevos: hallado.huevos });
         check('3', 'Tras la eclosión la cápsula queda nacida', tras.estado === 'nacida', { estado: tras.estado, xp: tras.xp });
         CR.cerrar && CR.cerrar();
         despejar('eclosión');
@@ -349,7 +361,7 @@
       // La Voz del transmisor no debe llevar la cara del Guardián (CAP1_PENDIENTE P0-2): informativa mientras QA-34 esté abierto
       const imgVoz = (vistas.find(l => l.who === 'Voz') || {}).img, imgGuardian = (vistas.find(l => l.who === 'Guardián') || {}).img;
       const vozIgual = !!imgVoz && imgVoz === imgGuardian;
-      check('4.8', vozIgual ? 'La Voz del transmisor lleva un retrato distinto al del Guardián (informativa: QA-34 ABIERTO, hoy usa el mismo)' : 'La Voz del transmisor lleva un retrato distinto al del Guardián (QA-34 corregido)', !!imgVoz, { voz: imgVoz || 'la Voz no habló', guardian: imgGuardian || 'el Guardián no habló', igual: vozIgual });
+      check('4.8', vozIgual ? 'La Voz del transmisor lleva un retrato distinto al del Guardián (informativa: QA-34 ABIERTO, hoy usa el mismo)' : 'La Voz del transmisor lleva un retrato distinto al del Guardián (QA-34 corregido)', !!imgVoz, { voz: imgVoz ? imgVoz.slice(0, 60) : 'la Voz no habló', guardian: imgGuardian ? imgGuardian.slice(0, 60) : 'el Guardián no habló', igual: vozIgual });
       if (corte('4.8', S.step === 7)) return fin();
 
       // ---------- 4.9 Mirador: el final del capítulo ----------
@@ -441,11 +453,11 @@
       const tot = { sim: 0, suelo: 0, aire: 0, lineas: 0, car: 0, clics: 0, acciones: 0 };
       for (const f of fasesHechas) for (const kk of Object.keys(tot)) tot[kk] += f.d[kk] || 0;
       const min1 = seg(tot, false), min2 = seg(tot, true), tray = tot.suelo / velSuelo() + tot.aire / velAire();
-      const porFase = fasesHechas.map(f => f.nombre + ' ' + Math.round(seg(f.d, false)) + ' s (' + Math.round(f.d.sim) + ' sim + ' + Math.round(f.d.suelo / velSuelo() + f.d.aire / velAire()) + ' trayecto + ' + f.d.lineas + ' líneas)').join(' · ');
+      const porFase = fasesHechas.map(f => f.nombre + ' ' + Math.round(seg(f.d, false)) + ' s (' + Math.round(f.d.sim) + ' sim + ' + Math.round(f.d.suelo / velSuelo() + f.d.aire / velAire()) + ' trayecto + ' + f.d.lineas + ' líneas + ' + f.d.clics + ' clics)').join(' · ');
       duracion = { rama, minimoSinLeerSeg: Math.round(min1), minimoLeyendoSeg: Math.round(min2), simSeg: Math.round(tot.sim), trayectoSeg: Math.round(tray), metrosSuelo: Math.round(tot.suelo), metrosAire: Math.round(tot.aire), lineas: tot.lineas, caracteres: tot.car, acciones: tot.acciones, clics: tot.clics,
         fases: fasesHechas.map(f => ({ fase: f.nombre, seg: Math.round(seg(f.d, false)), sim: Math.round(f.d.sim), lineas: f.d.lineas })), intrusos };
       const resumen = 'MÍNIMO AUTOMÁTICO ' + fmt(min1) + ' sin leer (' + Math.round(min1) + ' s) · ' + fmt(min2) + ' leyendo a ' + CAR_POR_SEG + ' car/s · juego simulado ' + fmt(tot.sim) + ' + trayectos ' + fmt(tray) +
-        ' (' + Math.round(tot.suelo) + ' m a pie a ' + velSuelo() + ' m/s, ' + Math.round(tot.aire) + ' m en vuelo a ' + velAire() + ' m/s) + ' + tot.lineas + ' líneas de diálogo (' + tot.car + ' caracteres, ' + SEG_POR_LINEA + ' s cada una al pulsar) · ' + tot.acciones + ' Acciones y ' + tot.clics + ' clics en tarjetas · rama ' + rama +
+        ' (' + Math.round(tot.suelo) + ' m a pie a ' + velSuelo() + ' m/s, ' + Math.round(tot.aire) + ' m en vuelo a ' + velAire() + ' m/s) + ' + tot.lineas + ' líneas de diálogo (' + tot.car + ' caracteres) y ' + tot.clics + ' clics en tarjetas, a ' + SEG_POR_PULSACION + ' s cada pulsación · ' + tot.acciones + ' Acciones · rama ' + rama +
         ' · SIN el creador, el criadero ni el cómic · NO sustituye medir con jugadores reales · fases: ' + porFase + (intrusos.length ? ' · diálogos sueltos cerrados: ' + intrusos.join(' | ') : '');
       check('T', 'Duración simulada del capítulo 1 (mínimo del recorrido automático; informativa)', true, resumen, 2200);
 
