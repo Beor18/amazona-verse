@@ -1,0 +1,33 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+  ok   Modelo de la cotorra cargado
+  ok   Esqueleto de 60 huesos
+  ok   Huesos de montaje presentes
+  ok   5 animaciones originales (Celebrate, Curious, Idle, Walk, Welcome)
+  ok   Se mueve en 3D (≥ 4 m en 1 s)
+  ok   Queda sobre el suelo (no cae ni flota)
+  ok   Reproduce Walk al moverse
+  ok   El esqueleto se anima (la pose cambia entre cuadros)
+  ok   La cámara sigue al jugador
+  ok   Vuelve a Idle al parar
+  ok   Pone la gorra
+  ok   La gorra queda enlazada al esqueleto de la cotorra
+  ok   Todos los huesos de la gorra existen en la cotorra
+  ok   Cambia a sombrero (la gorra se libera)
+  ok   10 cambios sin fuga de nodos
+  ok   Huevo sin patitas al principio
+  ok   El huevo se bambolea
+  ok   Eclosión: patitas a escala 1
+  ok   El pichón camina (el huevo se desplaza)
+  ok   Guarda (escritura atómica .tmp → final)
+  ok   Reiniciar limpia el estado
+  ok   Carga la partida
+  ok   Restaura posición, accesorio y eclosión
+ERROR: Parse JSON failed. Error at line 0: Expected key
+   at: parse_string (core/io/json.cpp:629)
+   GDScript backtrace (most recent call first):
+       [0] cargar (res://main.gd:270)
+       [1] _correr (res://tests/run_tests.gd:95)
+       [2] frames (res://tests/run_tests.gd:22)
+  ok   Partida dañada se rechaza sin romper
+RESULT> {"fallos":[],"ms":3881,"ok":24,"total":24}
