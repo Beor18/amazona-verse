@@ -23,6 +23,10 @@
    oros, jugadas }, tormenta: { mejor (puntos), tiempo (s), jugadas } }. «Nuevo estudiante» lo borra (gancho en boot.js);
    «Comenzar de cero» no (no es la partida). Al acabar una partida emite G.emit('retosResultado', { modo, ..., prueba }) para «Mis récords»
    (src/game/records.js), que anota el mejor resultado por nombre de cotorra en su propia clave.
+   Modo relajado (G.accesibilidad.relajado()): la carrera no tiene reloj límite y la tormenta es de práctica (los golpes no quitan
+   plumas ni combo y se sigue sumando). Fantasma: la mejor carrera se graba (una muestra cada 0,1 s, en decímetros, por diferencias en
+   base 36) en su propia clave `<almacén>.retos.fantasma` y en la siguiente vuela a tu lado una cotorra translúcida con esa ruta;
+   el botón «Fantasma» del menú lo apaga (se guarda en los récords como fantasma: false).
    Controles: los del vuelo, con las teclas remapeables de input.js (mover), Espacio sube, C baja, F impulso; en táctil el
    joystick, Subir, Bajar e Impulso. En la carrera la altura se ayuda sola hacia la de la ruta (quien no toca Subir/Bajar
    no se estrella). En los resultados: Enter, Espacio o la tecla de Acción = «Otra vez»; Esc abre la pausa.
@@ -58,6 +62,43 @@
       return { v: 1, carrera: {}, tormenta: {} };
     }
     function guardarRec(d) { try { localStorage.setItem(claveRec, JSON.stringify(d)); return true; } catch (e) { return false; } }
+    const relajado = () => !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
+
+    // Fantasma de la mejor carrera: { v: 1, dt: 0.1, ms, p: 'x0 y0 z0 dx dy dz …' } con decímetros enteros y diferencias en base 36
+    // (unos 5 KB por minuto de vuelo); su propia clave, junto a los récords
+    const FANTASMA_DT = 0.1, FANTASMA_MAX = 6000;
+    const claveFantasma = () => claveRec + '.fantasma';
+    function codificarFantasma(m) { // m: [x, y, z, x, y, z, …] en metros
+      const q = m.map(v => Math.round(v * 10)), o = [];
+      for (let i = 0; i < q.length; i++) o.push((i < 3 ? q[i] : q[i] - q[i - 3]).toString(36));
+      return o.join(' ');
+    }
+    function decodificarFantasma(txt) {
+      const t = String(txt).split(' ').map(v => parseInt(v, 36));
+      if (!t.length || t.length % 3 || t.some(v => !isFinite(v))) return null;
+      const out = new Float32Array(t.length);
+      for (let i = 0; i < t.length; i++) { if (i >= 3) t[i] += t[i - 3]; out[i] = t[i] / 10; }
+      return out;
+    }
+    function leerFantasma() {
+      try {
+        const d = JSON.parse(localStorage.getItem(claveFantasma()) || 'null');
+        if (d && d.v === 1 && d.dt === FANTASMA_DT && typeof d.p === 'string') { const p = decodificarFantasma(d.p); if (p && p.length >= 6) return { ms: d.ms, p, n: p.length / 3 }; }
+      } catch (e) { /* sin almacén o dañado */ }
+      return null;
+    }
+    function guardarFantasma(m, ms) { try { localStorage.setItem(claveFantasma(), JSON.stringify({ v: 1, dt: FANTASMA_DT, ms, p: codificarFantasma(m) })); return true; } catch (e) { return false; } }
+    const fantasmaActivo = () => leerRec().fantasma !== false;
+    function alternarFantasma() {
+      const rec = leerRec(); rec.fantasma = rec.fantasma === false; guardarRec(rec);
+      pintarFantasma();
+      return rec.fantasma;
+    }
+    function pintarFantasma() {
+      const b = ui && ui.menu.querySelector('[data-fantasma]'); if (!b) return;
+      const on = fantasmaActivo(); b.setAttribute('aria-pressed', String(on));
+      b.textContent = 'Fantasma de tu mejor carrera: ' + (on ? 'sí' : 'no');
+    }
 
     // =================================================================================================================
     // Sonido (sintetizado con audio.js)
@@ -296,7 +337,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     <div class="rt-reto"><h3>¡Escapa de la tormenta!</h3><p>Aguanta 90 segundos sobre el mar. Mira las sombras y los brillos: avisan dónde caen las ramas y los rayos. Recoge semillas doradas.</p>
       <span class="rt-rec" data-rec="tormenta"></span><button class="btn" type="button" data-jugar="tormenta" data-icon="bolt">Jugar</button></div>
   </div>
-  <div class="rt-fila"><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
+  <p class="rt-nota" hidden>Modo relajado: la carrera no tiene tiempo límite y la tormenta es de práctica.</p>
+  <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
 </div></div>
 <div class="rt-fin" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-fin-t">
   <div class="rt-medalla"></div>
@@ -321,6 +363,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (b.dataset.jugar) jugar(b.dataset.jugar);
         else if (b.hasAttribute('data-otra')) otraVez();
         else if (b.hasAttribute('data-menu')) abrir();
+        else if (b.hasAttribute('data-fantasma')) alternarFantasma();
         else if (b.hasAttribute('data-salir')) salir();
       });
       return ui;
@@ -418,6 +461,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const rec = leerRec();
       ui.menu.querySelector('[data-rec="carrera"]').textContent = rec.carrera.mejor ? 'Récord: ' + reloj(rec.carrera.mejor / 1000) + (rec.carrera.puesto ? ' · mejor puesto ' + ordinal(rec.carrera.puesto) : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
+      ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
       const b = ui.menu.querySelector('[data-jugar]'); if (b) b.focus({ preventScroll: true });
@@ -671,7 +715,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const C = { fase: 'nada', t: 0, cuenta: 0, sig: 0, sJug: 0, objetos: [], corrientes: [], rivales: [], llegadas: [], boostT: 0, ultCorriente: null,
-      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [] };
+      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null };
     const CARRERA = {
       iniciar() {
         mats();
@@ -693,12 +737,14 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         mirarHacia(q0.tx, q0.tz);
         Object.assign(G.camara.CAM, { distFly: 8.6, heightFly: 3.4, follow: 9 });
         G.camara.place(true);
+        C.fan = null; C.grab = { acc: 0, m: [] };
         crearRivales().then(lista => {
           if (modo !== CARRERA) return;
           C.rivales = lista.map((ch, i) => ({ ch, def: RIVALES[i], s: 4, lat: [-4.5, 4.5, 9][i], v: 0, boostT: 0, llego: false, tLlegada: 0, ult: null, yaw: 0, latV: 0 }));
           for (const r of C.rivales) { raiz.add(r.ch.root); r.ch.root.visible = true; }
           ui.tags.innerHTML = C.rivales.map(r => `<span class="rt-tag" style="--c:${r.def.color}">${r.def.nombre}</span>`).join('');
           C.tags = Array.from(ui.tags.children);
+          montarFantasma();
         });
         ui.hud.hidden = false; ui.flecha.hidden = false;
         ui.chipVidas.hidden = ui.chipPuntos.hidden = true; ui.chipPos.hidden = ui.chipPts.hidden = ui.chipTiempo.hidden = false;
@@ -709,11 +755,79 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       terminar() {
         if (C.grupo) C.grupo.visible = false;
         for (const r of C.rivales) { r.ch.root.visible = false; raiz.remove(r.ch.root); }
+        quitarFantasma();
         C.rivales = []; C.tags = []; C.fase = 'nada';
       },
       update(dt) { actualizarCarrera(dt); },
       render(dt) { dibujarCarrera(dt); },
     };
+    // ---------- Fantasma: cotorra translúcida que repite la mejor carrera ----------
+    let fantasmaListo = null;
+    function crearFantasma() {
+      if (fantasmaListo) return fantasmaListo;
+      return (fantasmaListo = window.AVCharacter.create().then(ch => {
+        ch.applyLook({ species: 'vittata' });
+        const alto = (G.pack.jugador && G.pack.jugador.altura) || 1.75;
+        ch.root.scale.setScalar(alto / ch.height); ch.root.userData.sinCulling = true; ch.root.visible = false;
+        ch.root.rotation.order = 'YXZ'; ch.play('Idle');
+        ch.root.traverse(o => {
+          if (!o.material) return;
+          const tr = m => { const c = m.clone(); c.transparent = true; c.opacity = 0.38; c.depthWrite = false; return c; };
+          o.material = Array.isArray(o.material) ? o.material.map(tr) : tr(o.material);
+          o.renderOrder = Math.max(o.renderOrder, 7);
+        });
+        return ch;
+      }).catch(() => (fantasmaListo = null)));
+    }
+    function montarFantasma() {
+      C.fan = null;
+      if (!fantasmaActivo()) return;
+      const g = leerFantasma(); if (!g) return;
+      crearFantasma().then(ch => {
+        if (!ch || modo !== CARRERA || C.fan || C.fase === 'nada') return;
+        C.fan = Object.assign({ ch, yaw: 0 }, g); raiz.add(ch.root); ch.root.visible = true;
+        const tag = document.createElement('span'); tag.className = 'rt-tag'; tag.style.setProperty('--c', '#cfe8ff'); tag.textContent = 'Tu fantasma'; ui.tags.appendChild(tag); C.fan.tag = tag;
+      });
+    }
+    function quitarFantasma() {
+      if (C.fan) { C.fan.ch.root.visible = false; raiz.remove(C.fan.ch.root); if (C.fan.tag) C.fan.tag.remove(); }
+      C.fan = null;
+    }
+    // Posición del fantasma a los t segundos (interpolada entre muestras; fuera de la ruta se queda en la última)
+    function enFantasma(f, t, out) {
+      const u = Math.max(0, t / FANTASMA_DT), i = Math.min(f.n - 1, Math.floor(u)), j = Math.min(f.n - 1, i + 1), k = Math.min(1, u - i), p = f.p;
+      out.x = lerp(p[i * 3], p[j * 3], k); out.y = lerp(p[i * 3 + 1], p[j * 3 + 1], k); out.z = lerp(p[i * 3 + 2], p[j * 3 + 2], k);
+      out.vx = (p[j * 3] - p[i * 3]) / FANTASMA_DT; out.vz = (p[j * 3 + 2] - p[i * 3 + 2]) / FANTASMA_DT; out.fin = u >= f.n - 1;
+      return out;
+    }
+    const _qf = {};
+    function dibujarFantasma(dt) {
+      const f = C.fan; if (!f) return;
+      const t = C.fase === 'cuenta' ? 0 : C.fase === 'fin' ? C.tiempo + C.finT : C.t;
+      enFantasma(f, t, _qf);
+      const root = f.ch.root, sp = Math.hypot(_qf.vx, _qf.vz), prevYaw = root.rotation.y;
+      root.position.set(_qf.x, _qf.y, _qf.z);
+      if (sp > 1) root.rotation.y += giro(Math.atan2(_qf.vx, _qf.vz) - root.rotation.y) * Math.min(1, dt * 6);
+      const yawRate = dt > 0 ? giro(root.rotation.y - prevYaw) / dt : 0, quieto = _qf.fin || C.fase === 'cuenta';
+      root.rotation.x += ((quieto ? 0.12 : 0.55) - root.rotation.x) * Math.min(1, dt * 5);
+      root.rotation.z += (clamp(-yawRate * 0.5, -0.6, 0.6) - root.rotation.z) * Math.min(1, dt * 4);
+      Object.assign(f.ch, { speed: quieto ? 1 : sp, gait: 0, airborne: true, flying: true, legsDown: quieto ? 0.65 : 0, swimming: false, diving: false,
+        wingMode: quieto ? 'hover' : sp < 10 ? 'flap' : 'fly', expression: 'happy', mouth: null, lookAt: null, emote: null, posado: '', agachada: 0, groundY: superficie(_qf.x, _qf.z), groundAt: null });
+      f.ch.update(dt);
+      if (f.tag) {
+        const cam = R.camera, v3 = new THREE.Vector3(_qf.x, _qf.y + 2.3, _qf.z).project(cam), d = Math.hypot(_qf.x - S.pos.x, _qf.y - S.pos.y, _qf.z - S.pos.z);
+        const ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
+        f.tag.style.display = ver ? '' : 'none';
+        if (ver) f.tag.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+      }
+    }
+    // Grabación: una muestra cada 0,1 s mientras corre el reloj de la carrera
+    function grabarFantasma(dt) {
+      const g = C.grab; if (!g || C.fase !== 'juego') return;
+      if (!g.m.length) g.m.push(S.pos.x, S.pos.y, S.pos.z);
+      g.acc += dt;
+      while (g.acc >= FANTASMA_DT && g.m.length < FANTASMA_MAX * 3) { g.acc -= FANTASMA_DT; g.m.push(S.pos.x, S.pos.y, S.pos.z); }
+    }
     function progresoJugador() {
       const Rr = ruta.R; if (C.fase === 'fin') return Rr.largo + 1000 - C.tiempo;
       const lim = C.sig < Rr.puntos.length ? Rr.puntos[C.sig].s - 0.5 : Rr.largo;
@@ -736,6 +850,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       }
       if (C.fase === 'juego') C.t += dt;
       else C.finT += dt;
+      grabarFantasma(dt);
       // Vuelo del jugador: nunca aterriza en carrera; empuje que sube la velocidad de crucero y ayuda de altura
       forzarVuelo();
       C.sJug = proyectar(S.pos.x, S.pos.z, C.sJug);
@@ -764,7 +879,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const o = C.objetos[C.sig].userData;
         if (Math.hypot(S.pos.x - o.x, S.pos.z - o.z) < T_CARRERA.radioPunto && Math.abs(S.pos.y + 0.8 - o.y) < T_CARRERA.altoPunto) pasarPunto();
       }
-      if (C.fase === 'juego' && C.t > T_CARRERA.limite) acabarCarrera(false);
+      if (C.fase === 'juego' && C.t > T_CARRERA.limite && !relajado()) acabarCarrera(false); // en modo relajado no hay reloj límite
       rivalesIA(dt);
       if (C.fase === 'fin' && C.finT > 1.6 && st.fase !== 'fin') mostrarResultadosCarrera();
       seguirCamara(dt, 2.4);
@@ -793,6 +908,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       r.jugadas = (r.jugadas || 0) + 1;
       if (llego) { if (C.nuevo) r.mejor = ms; r.puesto = Math.min(r.puesto || 9, C.puesto); if (C.puesto === 1) r.oros = (r.oros || 0) + 1; }
       C.recAnterior = rec.carrera.mejor; guardarRec(rec); C.rec = r;
+      if (C.nuevo && C.grab && C.grab.m.length >= 6) { C.grab.m.push(S.pos.x, S.pos.y, S.pos.z); guardarFantasma(C.grab.m, ms); } // mejor carrera: su ruta es el nuevo fantasma
+      C.grab = null;
       // «Mis récords» (src/game/records.js) anota el resultado a nombre de la cotorra que jugó; prueba = la clave de las pruebas
       G.emit('retosResultado', { modo: 'carrera', llego, puesto: C.puesto, ms, rivales: (C.rivales || []).map(x => x.def.especie), prueba: claveRec !== ALMACEN });
     }
@@ -845,6 +962,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         }
       });
       for (const c of C.corrientes) animarCorriente(c, dt);
+      dibujarFantasma(dt);
       // Rivales
       const cam = R.camera, w = innerWidth, h = innerHeight, v3 = new THREE.Vector3();
       C.rivales.forEach((r, i) => {
@@ -1017,12 +1135,14 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
     function golpe(desdeX, desdeZ) {
       if (TM.invul > 0 || TM.fase !== 'juego') return false;
-      TM.vidas--; TM.golpes++; TM.combo = 0; TM.comboT = 0; TM.invul = T_TORMENTA.invul;
+      const practica = relajado(); // modo relajado: la tormenta es de práctica, el golpe no quita plumas ni combo
+      if (!practica) { TM.vidas--; TM.combo = 0; TM.comboT = 0; }
+      TM.golpes++; TM.invul = T_TORMENTA.invul;
       const dx = S.pos.x - desdeX, dz = S.pos.z - desdeZ, d = Math.hypot(dx, dz) || 1;
       M.vx += dx / d * 8; M.vz += dz / d * 8; S.vy += 2;
       sonar('r_golpe'); G.camara.shake(0.25, 0.35);
       G.fx.burst(S.pos.x, S.pos.y + 1.4, S.pos.z, 'stars', 16);
-      pintarVidas(); aviso(TM.vidas > 0 ? '¡Uy! Te quedan ' + TM.vidas : '¡Uy!');
+      pintarVidas(); aviso(practica ? '¡Uy! Sigue, es práctica' : TM.vidas > 0 ? '¡Uy! Te quedan ' + TM.vidas : '¡Uy!');
       if (TM.vidas <= 0) acabarTormenta(false);
       return true;
     }
@@ -1193,8 +1313,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       apartados.forEach(id => { $(id).hidden = true; });
       if (G.ui.cardOpen) G.ui.hideCard();
       claveRec = ALMACEN + '.prueba';
-      try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ }
-      const busy0 = G.ui.busy, step0 = F.step;
+      try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasma()); } catch (e) { /* sin almacén */ }
+      const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
         check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 2);
@@ -1252,13 +1372,40 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const rec1 = JSON.parse(leer(claveRec) || 'null');
         check('Se guarda el récord de tiempo (clave aparte)', rec1 && rec1.v === 1 && rec1.carrera.mejor === Math.round(C.tiempo * 1000) && rec1.carrera.oros === 1, leer(claveRec));
         check('Primer récord marcado como nuevo', C.nuevo === true && !ui.nuevo.hidden);
+        // Fantasma: la mejor carrera se grabó, comprimida, en su propia clave
+        const gh1 = leer(claveFantasma()), ghD = leerFantasma();
+        check('Se graba el fantasma de la mejor carrera en su propia clave', gh1 && ghD && ghD.n >= 30 && Math.abs(ghD.n * FANTASMA_DT - C.tiempo) < 0.3, ghD && ghD.n);
+        check('El fantasma pesa poco (< 10 bytes por muestra)', gh1 && gh1.length < ghD.n * 10 + 60, gh1 && (gh1.length + ' B, ' + ghD.n + ' muestras'));
+        const rt = decodificarFantasma(codificarFantasma([1.04, -2.26, 300.1, 1.95, -2.2, 299.04]));
+        check('Codificar y decodificar la ruta conserva los decímetros', rt && rt.length === 6 && Math.abs(rt[0] - 1) < 0.01 && Math.abs(rt[1] + 2.3) < 0.01 && Math.abs(rt[5] - 299) < 0.01);
         // «Otra vez» con Enter
         dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
         check('Enter en los resultados: otra vez', modo === CARRERA && C.fase === 'cuenta' && ui.fin.hidden && C.sig === 0);
+        for (let i = 0; i < 60 && !C.fan; i++) await esperar(25);
+        let ghOp = 1; if (C.fan) C.fan.ch.root.traverse(o => { if (o.material && o.isMesh) ghOp = Math.min(ghOp, [].concat(o.material)[0].opacity); });
+        check('En la siguiente carrera vuela a tu lado la cotorra fantasma, translúcida', C.fan && C.fan.ch.root.visible && C.fan.ch.root.parent === raiz && ghOp < 1, ghOp);
+        check('El fantasma no cuenta como rival (sigue «/4»)', C.rivales.length === 3 && ui.posN.textContent === '/4');
+        { C.t = 1; C.fase = 'juego'; modo.render(0.016); const e = enFantasma(C.fan, 1, {}), r0 = C.fan.ch.root.position;
+          check('El fantasma sigue la ruta grabada', Math.hypot(r0.x - e.x, r0.z - e.z) < 0.01 && Math.abs(r0.y - e.y) < 0.01);
+          C.t = 0; C.fase = 'cuenta'; }
         // Un tiempo peor no pisa el récord
         tick(3); C.t = 999; C.sig = 6; ir(C.objetos[6].userData);
         const rec2 = JSON.parse(leer(claveRec) || 'null');
         check('Un tiempo peor no cambia el récord', rec2.carrera.mejor === rec1.carrera.mejor && rec2.carrera.jugadas === 2 && !C.nuevo);
+        check('Un tiempo peor no pisa el fantasma', leer(claveFantasma()) === gh1);
+        // Apagar el fantasma
+        check('El botón apaga el fantasma (se guarda)', alternarFantasma() === false && leerRec().fantasma === false && !fantasmaActivo());
+        otraVez(); await esperar(120);
+        check('Apagado, no sale el fantasma', modo === CARRERA && !C.fan);
+        check('El botón lo vuelve a encender', alternarFantasma() === true && fantasmaActivo());
+        // Modo relajado: sin reloj límite en la carrera
+        const ponerRelajado = v => { G.accesibilidad.relajado = v ? () => true : relOrig; }; // sin tocar los ajustes guardados
+        tick(3);
+        ponerRelajado(true);
+        check('Con el modo relajado la carrera no tiene reloj límite', relajado() && (C.t = T_CARRERA.limite + 5, tick(0.2), C.fase === 'juego'), C.fase);
+        ponerRelajado(false);
+        tick(0.1);
+        check('Sin el modo relajado el reloj límite acaba la carrera', C.fase === 'fin' && C.llego === false);
         // ---------- Tormenta ----------
         abrir();
         check('«Otro reto» vuelve al menú', !ui.menu.hidden && ui.fin.hidden);
@@ -1284,6 +1431,14 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // Golpe: pierde una pluma y el combo; luego invulnerable un momento
         TM.invul = 0; const v0d = TM.vidas; golpe(S.pos.x + 1, S.pos.z);
         check('Un golpe quita una pluma y el combo', TM.vidas === v0d - 1 && TM.combo === 0 && TM.invul > 0);
+        // Modo relajado: la tormenta es de práctica (sin perder plumas ni combo) y se sigue sumando
+        ponerRelajado(true);
+        TM.invul = 0; TM.vidas = 1; TM.combo = 2; TM.comboT = 3; const pR = TM.puntos; golpe(S.pos.x + 1, S.pos.z);
+        check('Relajado: el golpe no quita plumas ni combo y la partida sigue', TM.vidas === 1 && TM.combo === 2 && TM.fase === 'juego' && TM.invul > 0);
+        recoger();
+        check('Relajado: se sigue sumando', TM.puntos > pR, pR + ' → ' + TM.puntos);
+        ponerRelajado(false);
+        TM.vidas = v0d - 1; TM.combo = 0; TM.invul = 0;
         // La dificultad sube: más peligros por segundo al final
         const contar = t0 => { TM.t = t0; TM.vidas = 99; TM.invul = 99; TM.rT = TM.lT = 0; const n0 = TM.lanzados; tick(5); return TM.lanzados - n0; };
         const nIni = contar(1), nFin = contar(80);
@@ -1309,16 +1464,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
         try { salir(); } catch (e2) { /* ya fuera */ }
       } finally {
-        console.error = ce;
+        console.error = ce; G.accesibilidad.relajado = relOrig;
         apartados.forEach(id => { $(id).hidden = false; });
-        try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ }
+        try { localStorage.removeItem(claveRec); localStorage.removeItem(claveFantasma()); } catch (e) { /* sin almacén */ }
         claveRec = ALMACEN;
       }
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
-      _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
+      alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
   };
 })();
