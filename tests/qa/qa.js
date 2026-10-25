@@ -28,12 +28,19 @@
   const KB = b => Math.round(b / 1024);
   const DEF = {
     autorun: true, save: true, history: true,
-    tests: ['selfTest', 'missionTest', 'accessoryTest', 'templateTest'],
+    tests: 'todas',                                // las 4 obligatorias + cualquier otra AV.*Test del pack (eduTest, maestroTest…)
     puntos: ['taller', 'villa', 'A'],              // lugares de G.terreno.places (o {nombre, x, z})
     fpsSegundos: 5, cuadrosSinteticos: 120, cambiosRopa: 10,
     presupuesto: { fpsMin: 50, fpsFalla: 30, drawCalls: 150, cargaS: 6, cargaInicialMB: 8, publicableMB: 30, publicableMaxMB: 64, archivoMaxMB: 15 },
   };
   try { performance.setResourceTimingBufferSize(4000); } catch (e) { /* sin Resource Timing */ }
+  // La prueba E2E de aceptación vive al lado (tests/qa/e2e.js) y se expone como AV.e2eTest: la batería la corre al final
+  const SELF = (document.currentScript && document.currentScript.src) || '';
+  if (TOP && !window.AVQA_E2E) {
+    const sc = document.createElement('script'); sc.charset = 'utf-8';
+    sc.src = SELF ? new URL('e2e.js', SELF).href : 'tests/qa/e2e.js';
+    (document.head || document.documentElement).appendChild(sc);
+  }
 
   // ---------- 1. Consola: se escucha desde que carga este archivo ----------
   const logs = { error: [], warn: [], pagina: [], recursos: [], rechazos: [] };
@@ -113,7 +120,9 @@
   };
 
   // ---------- 3. Pruebas del juego ----------
+  const OBLIGATORIAS = ['selfTest', 'missionTest', 'accessoryTest', 'templateTest'];
   async function runTests(names) {
+    if (names === 'todas') names = OBLIGATORIAS.concat(Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && !OBLIGATORIAS.includes(k) && k !== 'e2eTest'), window.AV && window.AV.e2eTest ? ['e2eTest'] : []);
     const out = {};
     for (const name of names) {
       const fn = window.AV && window.AV[name];
@@ -121,10 +130,13 @@
       status('AV.' + name + '()…');
       const t0 = performance.now();
       try {
-        const r = await fn.call(window.AV);
-        const fallidas = (r.results || []).filter(x => !x.ok).map(x => ({ nombre: x.name, detalle: x.extra }));
+        const r0 = await fn.call(window.AV) || {};
+        const lista = r0.results || r0.checks || [];
+        const r = { total: r0.total != null ? r0.total : lista.length, passed: r0.passed != null ? r0.passed : r0.pasan != null ? r0.pasan : lista.filter(x => x.ok).length, results: lista };
+        const fallidas = lista.filter(x => !x.ok).map(x => ({ nombre: x.name, detalle: x.extra != null ? x.extra : x.info }));
         out[name] = { passed: r.passed, total: r.total, ms: Math.round(performance.now() - t0), fallidas };
-        check('pruebas', 'AV.' + name, r.passed === r.total && r.total > 0, r.passed + '/' + r.total + (fallidas.length ? ' · falla: ' + fallidas.map(f => f.nombre + (f.detalle ? ' (' + f.detalle + ')' : '')).join(' | ') : ''));
+        if (r0.bloqueados) out[name].bloqueados = r0.bloqueados;
+        check('pruebas', 'AV.' + name, r.passed === r.total && r.total > 0, r.passed + '/' + r.total + (r0.bloqueados ? ' (' + r0.bloqueados + ' BLOQUEADO)' : '') + (fallidas.length ? ' · falla: ' + fallidas.map(f => f.nombre + (f.detalle ? ' (' + f.detalle + ')' : '')).join(' | ') : ''));
       } catch (e) {
         out[name] = { error: str(e), ms: Math.round(performance.now() - t0) };
         check('pruebas', 'AV.' + name, false, 'lanzó: ' + str(e).split('\n')[0]);
@@ -154,12 +166,19 @@
   }
   function wrapRender(R) {
     const orig = R.render, acc = { calls: 0, tris: 0, passes: 0 };
-    R.render = function (s, c) { const r = orig.call(this, s, c); acc.calls += this.info.render.calls; acc.tris += this.info.render.triangles; acc.passes++; return r; };
+    // Con post-proceso el motor pone info.autoReset = false y los contadores se acumulan entre pasadas: se suma la diferencia
+    R.render = function (s, c) {
+      const i = this.info.render, c0 = this.info.autoReset ? 0 : i.calls, t0 = this.info.autoReset ? 0 : i.triangles;
+      const r = orig.call(this, s, c);
+      acc.calls += i.calls - c0; acc.tris += i.triangles - t0; acc.passes++;
+      return r;
+    };
     return { acc, restore: () => { R.render = orig; } };
   }
   async function measurePoint(G, p, opts) {
     const R = G.renderer.renderer, gl = R.getContext();
     const progs0 = R.info.programs ? R.info.programs.length : 0, tex0 = R.info.memory.textures;
+    const nivel = () => (G.renderer.calidad && G.renderer.calidad.nivel) || null, nivel0 = nivel();
     G.pruebas.teleport(p.x, p.z);
     G.camara.place(true);
     await sleep(800);                                             // asentar cámara, LOD y cargas en vuelo
@@ -206,6 +225,7 @@
       geometrias: R.info.memory.geometries, texturas: R.info.memory.textures, texturasNuevas: R.info.memory.textures - tex0,
       sintetico: { msMedio: s.media && r2(s.media), msP95: s.p95 && r2(s.p95), fpsEquivalentes: s.media ? Math.round(1000 / s.media) : null },
       pixelRatio: R.getPixelRatio(), visibilidad: document.visibilityState, mundoVisible: !G.ui.worldHidden(),
+      calidad: nivel0 === nivel() ? nivel0 : nivel0 + '→' + nivel(),
     };
   }
   async function performanceAt(G, opts) {
@@ -270,7 +290,16 @@
     const pasos = [];
     for (const l of looks) { await wear(l, true); pasos.push(Object.assign({ look: Object.values(l).map(a => a.id + (a.style ? ':' + a.style : '')).join('+') }, snap())); }
     await wear(wear0, true); await sleep(300);
-    const final = snap();
+    let final = snap(), repetida = false, real = final;
+    // Una textura o geometría del mundo que termina de cargar en medio da un falso +1: si sube, se repite la vuelta y solo
+    // cuenta como fuga si vuelve a subir
+    if (final.geometrias > calentada.geometrias || final.texturas > calentada.texturas) {
+      const antes = final; repetida = true;
+      for (const l of looks) await wear(l, true);
+      await wear(wear0, true); await sleep(300);
+      const otra = snap(); real = otra;
+      final = (otra.geometrias > antes.geometrias || otra.texturas > antes.texturas) ? otra : Object.assign({}, otra, { geometrias: calentada.geometrias + Math.max(0, otra.geometrias - antes.geometrias), texturas: calentada.texturas + Math.max(0, otra.texturas - antes.texturas) });
+    }
     status('ropa: cambios rápidos sin esperar la carga…');
     for (const l of looks) await wear(l, false);
     await wear(wear0, true); await sleep(2500); await wear(wear0, true);
@@ -279,7 +308,7 @@
     const diff = (a, b) => ({ geometrias: b.geometrias - a.geometrias, texturas: b.texturas - a.texturas, programas: b.programas - a.programas,
       objetosEscena: b.objetosEscena - a.objetosEscena, heapMB: a.heapMB != null ? r2(b.heapMB - a.heapMB) : null });
     return { cambios: looks.length, looks: looks.map(l => Object.values(l).map(a => a.id + (a.style ? ':' + a.style : '')).join('+')),
-      inicial, calentada, final, rapida, cacheCrecio: diff(inicial, calentada), fuga: diff(calentada, final), fugaRapida: diff(calentada, rapida),
+      inicial, calentada, final, rapida, vueltaRepetida: repetida, cacheCrecio: diff(inicial, calentada), fuga: diff(calentada, final), fugaRapida: diff(real, rapida),
       sinCargarA10s: timeouts.map(i => looks[i]), pasos };
   }
 
@@ -375,7 +404,11 @@
       .filter(u => !/tests\/qa\/qa\.js/.test(u));
     const res = await pool(urls, 8, async u => Object.assign({ url: u }, await head(new URL(u, location.href).href)));
     const fallidos = res.filter(r => !(r.status === 200 || r.status === 0));
-    const enlazados = new Set(urls.filter(u => !/^https?:/.test(u)).map(u => u.split('?')[0]));
+    // Enlazados: los de index.html y los que la página inyecta en vivo (p. ej. aula.js pone <link id="aula-css">)
+    const vivos = [...document.querySelectorAll('script[src], link[rel="stylesheet"][href]')]
+      .map(e => new URL(e.getAttribute('src') || e.getAttribute('href'), location.href))
+      .filter(u => u.origin === location.origin).map(u => decodeURIComponent(u.pathname.replace(/^\//, '')));
+    const enlazados = new Set(urls.filter(u => !/^https?:/.test(u)).map(u => u.split('?')[0]).concat(vivos));
     // Módulos del motor, del juego, de la UI y del capítulo que existen en disco pero index.html no carga
     const disco = (await crawl(['src/', 'content/cap1/'], 400)).filter(f => /\.(js|css)$/.test(f));
     const huerfanos = disco.filter(f => !enlazados.has(f));
@@ -514,7 +547,7 @@
               check('rendimiento', 'FPS por rAF en ' + p.nombre, false, 'el navegador no pintó la pestaña (rAF detenido): se juzga por el coste sintético', 'aviso');
               // Sin pintar, el navegador también relega la GPU: el sintético orienta, pero no basta para declarar una falla
               check('rendimiento', 'Coste por cuadro en ' + p.nombre + ' (sintético, pestaña sin pintar)', p.sintetico.fpsEquivalentes >= P.fpsMin, p.sintetico.msMedio + ' ms medio, p95 ' + p.sintetico.msP95 + ' ms (≈' + p.sintetico.fpsEquivalentes + ' FPS); repetir con la pestaña al frente', 'aviso');
-            } else check('rendimiento', 'FPS en ' + p.nombre, p.fpsMedio >= P.fpsMin, `medio ${p.fpsMedio}, mín ${p.fpsMin}, 1 % ${p.fps1pctBajo}, ${p.tirones33ms} tirones`, p.fpsMedio >= P.fpsFalla ? 'aviso' : 'falla');
+            } else check('rendimiento', 'FPS en ' + p.nombre, p.fpsMedio >= P.fpsMin, `medio ${p.fpsMedio}, mín ${p.fpsMin}, 1 % ${p.fps1pctBajo}, ${p.tirones33ms} tirones` + (p.calidad ? ', calidad ' + p.calidad : '') + (p.programasNuevos ? ', ' + p.programasNuevos + ' shaders nuevos' : ''), p.fpsMedio >= P.fpsFalla ? 'aviso' : 'falla');
             check('rendimiento', 'Draw calls en ' + p.nombre + ' ≤ ' + P.drawCalls, p.drawCalls <= P.drawCalls, `${p.drawCalls} (máx ${p.drawCallsMax}), ${p.triangulos} triángulos, ${p.pasadasPorCuadro} pasadas`, 'aviso');
           }
           // Memoria
