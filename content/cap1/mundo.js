@@ -108,6 +108,7 @@
     edificios: {
       escala: { defecto: 0.95, templo_grande: 1, templo_mediano: 1, ruina_torre: 1, ruina_mirador: 1, ruina_pilar: 1, ruina_portal: 1, ruina_altar: 1, muelle_troncos: 1, puente_madera: 1, canoa: 1 },
       frente: {}, orientar: true, noOrientar: ['empalizada', 'canoa', 'ruina_pilar', 'ruina_altar', 'muelle_troncos', 'puente_madera'], propias: ['puente'],
+      kit: 'assets/models/edificios/kit.js', // manifiesto del kit web (64 modelos, ver docs/EDIFICIOS.md)
     },
     islas: {
       lista: (M.ISLANDS || []).map(i => ({ x: i.x, z: i.z, r: i.r })),
