@@ -107,3 +107,11 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - 2026-10-24 · La bandera en gorra, tenis PR y mochila PR es un parche plano 3:2 con material BANDERA (UV 0–1, textura fiel del TA) y la TELA de esos estilos sale lisa; camisa y pañuelo siguen con el estampado · traits + TA + huevos · guía de bandera: nada envuelto ni a medias.
 - 2026-10-24 · Al nadar con la ranura back ocupada, 0,6 rad de la extensión del cuello pasan al pecho (SWIM_BACK_SHIFT) en vez de achicar u ocultar el equipo · traits + TA · la nuca entraba 10 cm en mochila, tanques y jetpack.
 - 2026-10-24 · Equipo de espalda a ~80 % del ancho de la espalda y correas con pesos de piel; camisa con mangas que siguen al brazo solo sobre la axila y bajo en arco sobre la cola; pantalón largo hasta el tobillo · traits · proporción con Vittata (docs/equipo/TRAITS_AUDITORIA.md).
+
+## 2026-10-24 · Movimiento y animación de Vittata (rol Movimiento; docs/equipo/MOVIMIENTO.md)
+- 2026-10-24 · Volar se detiene con un control claro: V (o el botón, que pasa a decir "Aterrizar") baja suave y frena con las alas; sin tocar nada se queda cernida · Movimiento · antes el vuelo se apagaba solo a los 1,5 s y V dejaba caer en picada a −27 m/s.
+- 2026-10-24 · Salto variable (un toque 0,71 m, mantener 1,22 m), búfer de 0,13 s y caída más firme; mismas velocidades de caminar (6,5) y correr (10,5) para no cambiar los tiempos del capítulo · Movimiento · control fino en perchas sin alargar la partida.
+- 2026-10-24 · Pendientes: más de 48° no se sube caminando y cuesta abajo se pega al suelo · Movimiento · sin paredes invisibles: el relieve guía y los riscos se vuelan.
+- 2026-10-24 · Agarrar: el juego decide qué y cuándo (G.agarre.agarrar), el motor cómo se ve (pico, mano, brazos y patas en vuelo); Acción también suelta · Movimiento + Gameplay · un solo botón para los niños.
+- 2026-10-24 · El pico sigue las sílabas del texto que se escribe o de la voz, máx. 9 por segundo · Movimiento · a 45 letras/s el pico vibraba; ahora habla.
+- 2026-10-24 · El compañero será la cría del criadero: datos y aspecto de criadero.js (companero, vestir y el evento companero), seguimiento y animación de actores.js; el bebé no vuela · Coordinador + Movimiento + Game designer de huevos.
