@@ -7,6 +7,10 @@
   const NEEDS = { madera: 4, piedra: 2, componente: 1 };
   const REFUGE_COST = { madera: 3, piedra: 2 };
   const REPAIR_COST = { madera: 1, componente: 1 };
+  // Recolección recortada 1 min (DECISION_LOG, "La ruta de la gota"): la familia de Luma aporta 3 tablas de su árbol partido.
+  // Quedan 4 recogidas (1 madera, 2 piedras y la pieza de la poza) en vez de 7: ~50 m de ruta guiada en vez de ~113 m.
+  // La construcción no cambia (REFUGE_COST).
+  const REGALO_LUMA = { madera: 3 };
   const at = (G, id) => G.misiones.at(id);
 
   AVE.registerPack({
@@ -18,8 +22,8 @@
           guia: G => at(G, !G.S.examined.maquina ? 'maquina' : 'transmisor') },
         { id: 'luma', texto: 'Ayuda a Luma: habla con ella', guia: G => at(G, 'luma') },
         { id: 'recolectar', texto: 'Recolecta 4 madera, 2 piedras y 1 pieza de metal',
-          progreso: (S, G) => {
-            const got = type => Math.min(NEEDS[type], S.collected.filter(id => G.objetos.find(id).tipo === type).length);
+          progreso: S => {
+            const got = type => Math.min(NEEDS[type], S.inv[type]);
             return ` (${got('madera')}/4 · ${got('piedra')}/2 · ${got('componente')}/1)`;
           },
           hasta: { tiene: NEEDS },
@@ -42,7 +46,7 @@
       fin: S => (S.refuge && S.refuge.parcel === 'B' ? 'El refugio de la colina protege a la familia de Luma.' : 'El refugio quedó junto al río y la crecida lo dañó.') +
         ' El transmisor reveló el símbolo de los 36 y desbloqueaste el plano de una embarcación. Continuará…',
     },
-    costos: { NEEDS, REFUGE_COST, REPAIR_COST },
+    costos: { NEEDS, REFUGE_COST, REPAIR_COST, REGALO_LUMA },
 
     // Gancho del capítulo (inicio:capitulo → inicio:taller → inicio:ruptura): la Ruptura sacude la cámara
     inicio(G) {
@@ -102,8 +106,14 @@
             ...L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]),
             ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
             ...L('interact:materiales', [{ who: 'Luma', img: IMG.L, text: 'No tenemos suficientes materiales.' }]),
-            { who: 'Vittata', img: IMG.V, text: 'Busquemos madera, piedras y piezas de metal. ¡Una cayó al fondo del río!' },
-          ], () => { log('LumaHelped'); advanceTo(2); });
+            { who: 'Luma', img: IMG.L, text: 'Solo pudimos salvar tres tablas del árbol partido. Tómalas.' },
+            { who: 'Vittata', img: IMG.V, text: 'Con eso empezamos. Faltan una madera, dos piedras y una pieza de metal. ¡Una cayó al fondo del río!' },
+          ], () => {
+            for (const k in REGALO_LUMA) S.inv[k] += REGALO_LUMA[k];
+            G.objetos.renderInv(); G.audio.play('pickup', 2);
+            toast('+3 madera de la familia de Luma');
+            log('LumaHelped'); advanceTo(2);
+          });
           return;
         }
         if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }]); return; }

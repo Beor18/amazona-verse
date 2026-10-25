@@ -25,7 +25,8 @@
     check('Taller explorado y misión con Luma', S.step === 1 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     useAt('luma'); drain();
     check('Luma da la misión', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
-    for (const id of ['m1', 'm2', 'm3', 'm4', 'p1', 'p2', 'c1']) useAt(id);
+    // Luma aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
+    for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && had('ResourcesCollected'), JSON.stringify(S.inv));
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
@@ -174,7 +175,7 @@
     check('M1: buceando con C se recoge la pieza', S.collected.includes('c1') && S.missions.m1);
     const p3 = G.actores.player3D;
     check('M1 desbloquea las botas azules y Vittata las lleva', S.unlocked.includes('botas') && S.wear.feet && S.wear.feet.id === 'botas' && (!p3 || !!p3.mounted.feet));
-    for (const id of ['m1', 'm2', 'm3', 'm4', 'p1', 'p2']) useAt(id);
+    for (const id of ['m1', 'p1', 'p2']) useAt(id);
     drain();
     check('Con la pieza del río se completa la recolección', S.step === 3 && O.available(O.find('c2')), 'paso ' + S.step);
     // Guía
