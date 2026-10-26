@@ -20,6 +20,7 @@
       exportComic: (f, u) => G.comic.exportComic(f, u), portraitCanvasFor: (n, bg) => G.creador.portraitCanvasFor(n, bg),
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
       ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
+      ep6Test: o => T.templateTest(Object.assign({ pack: 'ep6', timeout: 60000 }, o)), // content/ep6: el capítulo 6 «El pacto de los 36» de principio a fin, ES y EN
       ep5Test: o => T.templateTest(Object.assign({ pack: 'ep5' }, o)), // content/ep5: capítulo 5 de principio a fin
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)

@@ -141,6 +141,7 @@ window.AV_EN = {
  "Capítulo 1 completado": "Chapter 1 complete",
  "Capítulo 1 completado · seguir explorando": "Chapter 1 complete · keep exploring",
  "Capítulo 1 ·": "Chapter 1 ·",
+ "Capítulo 6 · El pacto de los 36": "Chapter 6 · The Pact of the 36",
  "Capítulo 1 · Villa Raíz": "Chapter 1 · Villa Raíz",
  "Capítulos terminados": "Chapters finished",
  "Careta con cuernos: de coco en las fiestas de Santiago Apóstol de Loíza y de papel maché en el carnaval de Ponce.": "A horned mask: made of coconut at the Santiago Apóstol festivals in Loíza and of papier-mâché at the Ponce carnival.",
