@@ -40,12 +40,13 @@ button, input, select { font: inherit; }
 .btn {
   --btn-bg: var(--c-primary); --btn-ink: var(--c-primary-ink); --btn-lip: var(--c-primary-lip);
   --btn-shine: rgba(255, 255, 255, 0.32); --btn-border: transparent;
+  --btn-glow: rgba(0, 0, 0, 0.3); --btn-glow: color-mix(in srgb, var(--btn-bg) var(--glow-k), transparent);   /* sombra del color del botón */
   position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
   min-height: var(--tap); min-width: var(--tap); padding: 0 var(--sp-5);
   font: 600 var(--fs-md)/1.1 var(--font-display); letter-spacing: 0.01em; text-align: center; text-decoration: none;
   color: var(--btn-ink); background: var(--btn-bg) linear-gradient(180deg, var(--btn-shine), transparent 60%);
   border: var(--bw) solid var(--btn-border); border-radius: var(--r-md);
-  box-shadow: 0 var(--lip) 0 var(--btn-lip), var(--sh-1);
+  box-shadow: 0 var(--lip) 0 var(--btn-lip), 0 calc(var(--lip) + 4px) 14px -4px var(--btn-glow);
   cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation;
   transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out), filter var(--dur-1);
 }
@@ -69,8 +70,8 @@ button, input, select { font: inherit; }
 /* 3.2 Panel: vidrio oscuro del HUD */
 .panel {
   background: var(--c-surface); color: var(--c-text);
-  border: 1px solid var(--c-line); border-radius: var(--r-lg); padding: var(--sp-3) var(--sp-4);
-  box-shadow: var(--sh-2); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: var(--bw) solid var(--c-line); border-radius: var(--r-panel); padding: var(--sp-3) var(--sp-4);
+  box-shadow: var(--sh-2), inset 0 1px 0 var(--c-highlight); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 /* 3.3 Papel: tarjetas, diálogo y diario (texto oscuro, foco azul) */
 .paper, #card, #dialog, #end .panel, #confirm-reset {
@@ -863,3 +864,33 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 [data-icon="rotate"] { --icon: var(--i-rotate); }
 [data-icon="trophy"] { --icon: var(--i-trophy); }
 [data-icon="keyboard"] { --icon: var(--i-keyboard); }
+
+/* ---------- 9. UI 2026 (ficha 26-H de docs/equipo/MODERNIZACION_2026.md; los paneles con borde de 2 px y filo de luz y la sombra
+   de color de los botones están en 3.1 y 3.2): brillo que recorre barras y segmentos, y el contador que suelta un destello al cambiar.
+   Solo decoración: no cambia colores de texto (el contraste AA de docs/UI_SYSTEM.md se mantiene) y con
+   prefers-reduced-motion la sección 7 apaga todas las animaciones. ---------- */
+.btn.ghost, .btn.tile { --btn-glow: rgba(0, 0, 0, 0.35); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:not(:disabled):not([aria-disabled="true"]):not(:active):not(:focus-visible):hover { box-shadow: 0 var(--lip) 0 var(--btn-lip), 0 calc(var(--lip) + 6px) 20px -2px var(--btn-glow); }
+}
+/* Barras: un brillo blanco recorre la parte llena (barra genérica y segmento del objetivo actual) */
+.progress::after {
+  background: linear-gradient(100deg, transparent 35%, var(--c-shine) 50%, transparent 65%) 110% 0 / 250% 100% no-repeat, linear-gradient(90deg, var(--leaf-hi), var(--gold));
+  animation: bar-shine var(--dur-shine) ease-in-out 600ms infinite;
+}
+#steps li.now::before {
+  background: linear-gradient(100deg, transparent 35%, var(--c-shine) 50%, transparent 65%) 110% 0 / 250% 100% no-repeat, var(--c-primary);
+  animation: seg-pulse 1.6s ease-in-out infinite, bar-shine var(--dur-shine) ease-in-out infinite;
+}
+/* Aviso: el icono entra con un salto en todos los avisos (no solo en los logros) */
+#toast::before { animation: badge-pop 600ms var(--ease-pop) both; }
+/* Contador del inventario: al saltar (clase .bump de src/ui/ui.js) suelta un destello dorado que sube y se apaga.
+   Sube desde la esquina de la cifra sin salirse a lo ancho de #inv (accesibilidadTest mide su scrollWidth). Va en ::after sin texto, así que no lo leen los lectores de pantalla ni cambia el textContent de la cifra. */
+#inv b { position: relative; }
+#inv b.bump::after {
+  content: ""; position: absolute; right: -4px; bottom: 70%; width: 14px; height: 14px; pointer-events: none;
+  background: var(--gold); -webkit-mask: var(--i-sparkle) center / contain no-repeat; mask: var(--i-sparkle) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(255, 210, 122, 0.9)); opacity: 0; animation: spark-up 700ms var(--ease-out) both;
+}
+@keyframes bar-shine { 0% { background-position: 110% 0, 0 0; } 60%, 100% { background-position: -10% 0, 0 0; } }
+@keyframes spark-up { 0% { opacity: 0; transform: translateY(6px) scale(0.4) rotate(-30deg); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(1.1) rotate(20deg); } }

@@ -35,7 +35,7 @@ Contraste AA comprobado en 22 pares de texto e iconos; el peor, 5:1 (texto sobre
 SVG inline de 24×24, trazo 2.4 redondeado, catalogados al final de `ui.css` como `--i-nombre` (data-URI). Uso: `data-icon="book"`. Se pinta en `::before` con `mask` y `currentColor`, así sobrevive cuando el JS reescribe `textContent`. Tamaño: `--icon-size`. Sobre un círculo de color se usa como `background` (glifo negro).
 
 ## Movimiento
-Entradas: `pop-in`, `rise-in`, `toast-in`, `badge-pop`. Ambiente: `bob`, `sway`, `drift`, `twinkle`. Atención: `ring` (Jugar) y `seg-pulse` (paso actual). Cada animación define solo su `from`; con `prefers-reduced-motion: reduce` se apagan y queda el estado de reposo.
+Entradas: `pop-in`, `rise-in`, `toast-in`, `badge-pop`. Ambiente: `bob`, `sway`, `drift`, `twinkle`. Atención: `ring` (Jugar) y `seg-pulse` (paso actual). UI 2026 (ficha 26-H, sección 9 de `ui.css`): `bar-shine` (brillo que recorre las barras y el segmento actual, `--dur-shine`), `spark-up` (destello dorado del contador del inventario al cambiar, en `::after` sin texto), icono de todos los avisos con `badge-pop`, paneles con borde de 2 px y filo de luz (`--r-panel`, `--c-highlight`) y botones con sombra de su color (`--btn-glow`, `--glow-k`). No cambian colores de texto. Fuentes autoalojadas con su licencia en `assets/vendor/fonts/OFL.txt`. Cada animación define solo su `from`; con `prefers-reduced-motion: reduce` se apagan y queda el estado de reposo.
 
 ## Estados
 `:hover` brillo +7 %; `:active` hunde el labio; `:focus-visible` anillo amarillo de 4 px con halo oscuro (azul sobre papel); `[aria-pressed=true]` dorado con ✓; `.locked`/`:disabled` gris con candado. Con diálogo o tarjeta abiertos se apartan los controles táctiles.
