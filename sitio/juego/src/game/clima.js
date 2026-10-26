@@ -13,7 +13,7 @@
      alto y nunca con «reducir movimiento». Las hojas no salen si G.fx.live > 140.
    - Quieto en las baterías (G.quiet) y en Modo Retos: sol, salvo que una prueba lo fije. No edita fisica.js: empuja el vuelo
      desde 'update' (prio 45) con G.fisica.MOVE, S.pos y techoVuelo.
-   - Se carga al pedirlo (boot.js, tras el arranque). window.AVClima(G) → G.clima = { estado, fijar, enTermica, viento, test }.
+   - Se carga en el primer gesto del jugador o al pedirlo (boot.js: alPrimerGesto). window.AVClima(G) → G.clima = { estado, fijar, enTermica, viento, test }.
    Prueba: AV.climaTest(). */
 window.AVClima = function (G) {
   'use strict';

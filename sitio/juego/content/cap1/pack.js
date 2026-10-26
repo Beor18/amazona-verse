@@ -46,7 +46,8 @@
   // La Voz del transmisor y el Narrador no llevan la cara de ningún personaje (CAP1_PENDIENTE P0-2): el guion no revela quién habla
   // por el transmisor y la propia Vittata dice «esa voz es de ahora». La caja de diálogo recorta el retrato con
   // translate(-8%, 35%) scale(1.6), así que lo que se ve es el cuadro (0.24-0.86, 0-0.59) del SVG: todo va centrado en (55, 30).
-  // [KELVIN-4] Cara definitiva de la Voz (silueta, onda o ninguna) y si es alguien del pacto de los 36: decide Kelvin.
+  // [KELVIN-4] Decidido por Kelvin (26-oct): la Voz son los dos guardianes extintos (martinicana y violacea). En el cap. 1 no se
+  // revela: se queda el retrato neutro. Su aspecto y la revelación van en el cap. 2 (docs/CANON_REGISTRY.md).
   const svgURI = cuerpo => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + cuerpo + '</svg>');
   const RETRATO_VOZ = svgURI(
     '<style>.o{fill:none;stroke:#ffd27a;stroke-linecap:round}' +

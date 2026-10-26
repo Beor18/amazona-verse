@@ -127,7 +127,7 @@
       { id: 'bosque', cria: { es: 'Musgo', en: 'Moss' }, rareza: 'diario', nombre: { es: 'Cápsula del bosque', en: 'Forest capsule' },
         lema: { es: 'Musgo y hojas de los cuatro pisos del bosque.', en: 'Moss and leaves from the four forest layers.' },
         aspecto: { patron: 'hojas', a: '#4f8f3a', b: '#a6d46a', brillo: 0 },
-        obtener: { texto: { es: 'Completa «La ruta de la gota».', en: 'Finish "The path of the drop".' }, cap1: { mision: 'educativa' }, defecto: { fichas: 3 } },
+        obtener: { texto: { es: 'Completa «La ruta de la gota».', en: 'Finish "The path of the drop".' }, cap1: { mision: 'educativa' }, ep2: { mision: 'casa' }, defecto: { fichas: 3 } }, // ep2: el nido de M3 es el hito de las cavidades
         traits: {
           bebe: [{ nuevo: 'cascaron_gorro' }, { slot: 'neck', id: 'panuelo', color: '#2f8f4e', style: 'liso' }],
           juvenil: [{ nuevo: 'binoculares', respaldo: { slot: 'eyes', id: 'lentes', color: '#2b2b2b', style: 'redondas' } }],

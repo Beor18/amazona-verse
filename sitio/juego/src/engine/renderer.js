@@ -5,8 +5,10 @@
    (que llama a drawScene: post-proceso si está activo, si no render directo).
    Calidad: presets bajo / medio / alto (calidad, setCalidad). Se elige por GPU, núcleos y memoria (perfilEquipo), baja en los primeros 3 s si no llega al objetivo (decidirArranque) y se ajusta por FPS; cada cambio emite el gancho
    'calidad' (G.on('calidad', C => …)) para que terreno, vegetación y agua bajen o suban su detalle. ?calidad=bajo fija uno. Prueba: calidadTest() (corre también dentro de contextTest).
-   Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala] },
-   mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom }.
+   Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala], nubes, nubesAltas },
+   mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom, rayos }.
+   Cielo vivo (26-B): degradado de tres paradas con horizonte cálido, halo y disco del sol, nubes en dos capas (una llamada) y
+   rayos de luz en alto (pase radial a 1/4 en el composer, post.rayos); clima.js y look.js mandan sobre sus colores.
    Sin cielo.cenit se usa el fondo plano de antes (plantillas viejas).
    Contexto WebGL: si se pierde, pausa con un aviso y al volver lo rehace todo sin tocar G.S (gancho 'contexto'; ver la sección
    «Contexto WebGL»). Prueba: contextTest() (AV.contextTest). */
@@ -150,7 +152,9 @@ AVE.module('renderer', function (G) {
       '#endif',
     ].join('\n');
   }
-  // Cielo: degradado cenit → horizonte con un halo cálido alrededor del sol y su disco; sigue a la cámara
+  // Cielo vivo (ficha 26-B): degradado de tres paradas (cenit, medio y horizonte cálido hacia el sol), halo del sol y su
+  // disco; sigue a la cámara. El clima (clima.js) y el look (look.js) escriben uCenit, uHorizonte y uSolCol: la parada
+  // intermedia y el calor del horizonte se derivan de ellos, así con aguacero o neblina el cielo entero se agrisa solo.
   let sky = null;
   const skyU = {
     uCenit: { value: new THREE.Color(cielo.cenit || '#3d8fd6').convertSRGBToLinear() },
@@ -167,12 +171,19 @@ AVE.module('renderer', function (G) {
         'void main() {',
         '  vec3 d = normalize(vDir);',
         '  float h = d.y;',
-        '  float t = pow(clamp(h, 0.0, 1.0), 0.45);',
-        '  vec3 c = mix(uHorizonte, uCenit, t);',
-        '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
         '  float s = max(dot(d, uSolDir), 0.0);',
-        '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45) * smoothstep(-0.1, 0.1, h);',
-        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9993, 0.9997, s));',
+        // tres paradas: horizonte → medio (más claro y limpio) → cenit; el medio sale de los dos colores que mandan clima y look
+        '  vec3 medio = mix(uHorizonte, uCenit, 0.55) * 1.05;',
+        '  vec3 c = mix(uHorizonte, medio, smoothstep(0.0, 0.22, h));',
+        '  c = mix(c, uCenit, pow(smoothstep(0.05, 0.9, h), 0.7));',
+        // horizonte cálido: más hacia el lado del sol; con el sol apagado por la lluvia (uSolCol baja) se apaga también
+        '  float lado = 0.5 + 0.5 * dot(normalize(d.xz + vec2(1e-4)), normalize(uSolDir.xz + vec2(1e-4)));',
+        '  float franja = (1.0 - smoothstep(0.0, 0.2, h)) * smoothstep(-0.08, 0.0, h);',
+        '  c += uSolCol * franja * (0.05 + 0.11 * lado * lado);',
+        '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
+        // halo ancho, halo cerrado y disco
+        '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45 + pow(s, 300.0) * 0.5) * smoothstep(-0.1, 0.1, h);',
+        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9991, 0.9996, s));',
         '  gl_FragColor = vec4(c, 1.0);',
         '  #include <tonemapping_fragment>',
         '  #include <encodings_fragment>',
@@ -182,7 +193,9 @@ AVE.module('renderer', function (G) {
     sky.name = 'cielo'; sky.frustumCulled = false; sky.renderOrder = -100; sky.scale.setScalar(FAR * 0.8);
     scene.add(sky);
   }
-  // Nubes: cúmulos pintados en un lienzo, como tarjetas que miran a la cámara, todas en una llamada (mundo.cielo.nubes = n)
+  // Nubes en dos capas, todas en una llamada: cúmulos pintados en un lienzo como tarjetas que miran a la cámara. La capa baja
+  // (mundo.cielo.nubes = n, 16) es densa y pasa rápido; la alta (mundo.cielo.nubesAltas = n, 12) es más fina, más blanca y lenta.
+  // uTime deforma la tarjeta (ondea el contorno) y las hace derivar. clima.js toma uBajo de este material (sombra de la nube).
   const nubesU = { uTime: { value: 0 }, tNube: { value: null }, uSolDir: { value: sunDir }, uAlto: skyU.uSolCol, uBajo: { value: new THREE.Color(cielo.nubeSombra || '#a9bfd6').convertSRGBToLinear() } };
   if (ATMOS && cielo.nubes !== 0) {
     const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
@@ -194,26 +207,31 @@ AVE.module('renderer', function (G) {
       x.fillStyle = gr; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
     }
     nubesU.tNube.value = new THREE.CanvasTexture(cv);
-    const N = cielo.nubes || 16, q = new THREE.PlaneGeometry(1, 0.5), ig = new THREE.InstancedBufferGeometry();
+    const NB = cielo.nubes || 16, NA = cielo.nubesAltas != null ? cielo.nubesAltas : 12, N = NB + NA;
+    const q = new THREE.PlaneGeometry(1, 0.5), ig = new THREE.InstancedBufferGeometry();
     ig.index = q.index; ig.setAttribute('position', q.attributes.position); ig.setAttribute('uv', q.attributes.uv);
-    const d = new Float32Array(N * 4); const rn = G.util.rng(311);
-    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2 + rn() * 0.4, r = FAR * (0.38 + rn() * 0.2); d.set([Math.cos(a) * r, 110 + rn() * 120, Math.sin(a) * r, 140 + rn() * 160], i * 4); }
-    ig.setAttribute('iNube', new THREE.InstancedBufferAttribute(d, 4)); ig.instanceCount = N;
+    const d = new Float32Array(N * 4), capa = new Float32Array(N * 2); const rn = G.util.rng(311);
+    for (let i = 0; i < NB; i++) { const a = i / NB * Math.PI * 2 + rn() * 0.4, r = FAR * (0.38 + rn() * 0.2); d.set([Math.cos(a) * r, 110 + rn() * 120, Math.sin(a) * r, 140 + rn() * 160], i * 4); capa.set([0, rn() * 6.28], i * 2); }
+    for (let i = 0; i < NA; i++) { const a = i / NA * Math.PI * 2 + rn() * 0.5, r = FAR * (0.3 + rn() * 0.25); d.set([Math.cos(a) * r, 300 + rn() * 160, Math.sin(a) * r, 260 + rn() * 220], (NB + i) * 4); capa.set([1, rn() * 6.28], (NB + i) * 2); }
+    ig.setAttribute('iNube', new THREE.InstancedBufferAttribute(d, 4)); ig.setAttribute('iCapa', new THREE.InstancedBufferAttribute(capa, 2)); ig.instanceCount = N;
     const nubes = new THREE.Mesh(ig, new THREE.ShaderMaterial({
       uniforms: nubesU, transparent: true, depthWrite: false, fog: false,
-      vertexShader: `attribute vec4 iNube; uniform float uTime; varying vec2 vUv; varying float vH;
+      vertexShader: `attribute vec4 iNube; attribute vec2 iCapa; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
         void main() {
-          vec3 c = iNube.xyz; float ang = uTime * 0.004; c.xz = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c.xz;
+          vec3 c = iNube.xyz; float ang = uTime * mix(0.006, 0.0022, iCapa.x); c.xz = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c.xz;
           vec3 toCam = normalize(vec3(cameraPosition.x - c.x, 0.0, cameraPosition.z - c.z)); vec3 right = vec3(toCam.z, 0.0, -toCam.x);
-          vec3 w = c + right * position.x * iNube.w + vec3(0.0, position.y * iNube.w, 0.0);
-          vUv = uv; vH = uv.y;
+          float resp = 1.0 + 0.03 * sin(uTime * 0.21 + iCapa.y);
+          vec3 w = c + right * position.x * iNube.w * resp + vec3(0.0, position.y * iNube.w * (2.0 - resp), 0.0);
+          vUv = uv; vH = uv.y; vCapa = iCapa.x; vFase = iCapa.y;
           gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
         }`,
-      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; varying vec2 vUv; varying float vH;
+      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
         void main() {
-          vec4 t = texture2D(tNube, vUv);
-          vec3 c = mix(uBajo, uAlto * 0.42 + vec3(0.55), smoothstep(0.15, 0.8, vH));
-          gl_FragColor = vec4(c, t.a * 0.9);
+          vec2 uv = vUv + vec2(0.012 * sin(uTime * 0.33 + vUv.y * 7.0 + vFase), 0.01 * cos(uTime * 0.27 + vUv.x * 5.0 + vFase));
+          vec4 t = texture2D(tNube, uv);
+          vec3 claro = uAlto * 0.42 + vec3(0.55);
+          vec3 c = mix(mix(uBajo, claro, 0.55 * vCapa), claro, smoothstep(0.15, 0.8, vH));
+          gl_FragColor = vec4(c, t.a * mix(0.9, 0.62, vCapa));
           #include <tonemapping_fragment>
           #include <encodings_fragment>
         }`,
@@ -275,6 +293,10 @@ AVE.module('renderer', function (G) {
   const PP = W.post || {};
   const GRADO = { sat: PP.saturacion != null ? PP.saturacion : 1.08, con: PP.contraste != null ? PP.contraste : 1.04, tint: [1.0, 0.995, 0.985] };
   const BLOOM = { 2: { escala: 1 / 2, fuerza: PP.bloom != null ? PP.bloom : 0.22 }, 1: { escala: 1 / 4, fuerza: PP.bloomMedio != null ? PP.bloomMedio : 0.18 } };
+  const RAYOS = PP.rayos != null ? PP.rayos : 0.8; // fuerza de los rayos de luz (alto); 0 los apaga
+  // Máscara de los rayos (lineal, tras ACES): lo muy claro (disco, halo, nubes) y lo azul claro (el cielo entre las copas);
+  // el follaje (verde o amarillo) y la tierra quedan fuera. La misma función la usa el pase de gradación para restarla.
+  const MASCARA_GLSL = 'float mascaraCielo(vec3 c) { float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); return max(smoothstep(0.55, 0.8, l), smoothstep(0.03, 0.14, c.b - max(c.r, c.g)) * smoothstep(0.08, 0.2, l)); }';
   const CUSTOM_TM = 'vec3 CustomToneMapping( vec3 color ) { return color; }';
   {
     const g = GRADO, n = v => (Math.round(v * 1000) / 1000).toFixed(3);
@@ -298,7 +320,7 @@ AVE.module('renderer', function (G) {
   const LOCAL = 'assets/vendor/three/examples/js/', CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/';
   const POST_JS = ['shaders/CopyShader.js', 'shaders/LuminosityHighPassShader.js', 'postprocessing/EffectComposer.js',
     'postprocessing/RenderPass.js', 'postprocessing/ShaderPass.js', 'postprocessing/UnrealBloomPass.js'];
-  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, origen: null, escala: 1 / 2, GRADO, BLOOM };
+  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, rayos: null, origen: null, escala: 1 / 2, GRADO, BLOOM, RAYOS };
   const fogLin = fogSRGB.clone().convertSRGBToLinear();
   function fogColorFor(rt) { if (scene.fog && ATMOS) scene.fog.color.copy(rt ? fogLin : fogSRGB); }
   function cargarDesde(base) { return POST_JS.reduce((p, f) => p.then(() => AVE.assets.script(base + f)), Promise.resolve()).then(() => { post.origen = base; }); }
@@ -312,6 +334,65 @@ AVE.module('renderer', function (G) {
         const rt = new THREE.WebGLMultisampleRenderTarget(size.x, size.y, opts); rt.samples = 4;
         const comp = new THREE.EffectComposer(renderer, rt);
         comp.addPass(new THREE.RenderPass(scene, camera));
+        // Rayos de luz (ficha 26-B, solo alto): máscara del sol (el cielo claro y el disco, con la escena ya dibujada: los
+        // árboles y el relieve lo tapan) estirada hacia el sol en pantalla con dos pases radiales de 8 muestras a 1/4 de
+        // resolución (64 muestras efectivas). La cámara del juego mira 25° hacia abajo y el sol está a 48°: el disco casi
+        // nunca entra en el encuadre, así que los rayos salen del cielo que asoma entre las copas y bajan hacia la escena
+        // (se restan donde el píxel ya es cielo: no aclaran el cielo, solo se cuelan en lo oscuro). No cambia el búfer del
+        // composer: el pase de gradación suma tRayos en lineal.
+        class RayosPass extends THREE.Pass {
+          constructor() {
+            super(); this.needsSwap = false; this.enabled = false;
+            const o = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false };
+            this.rtA = new THREE.WebGLRenderTarget(4, 4, o); this.rtB = new THREE.WebGLRenderTarget(4, 4, o);
+            const vs = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
+            // pase 1: muestra hacia el sol solo lo que supera el umbral, con caída radial (el radio en fracción de la pantalla)
+            this.matA = new THREE.ShaderMaterial({
+              uniforms: { tDiffuse: { value: null }, uSol: { value: new THREE.Vector2(0.5, 0.5) }, uAspecto: { value: new THREE.Vector2(1, 1) }, uRadio: { value: 1.6 }, uPaso: { value: 0.03 } },
+              vertexShader: vs,
+              fragmentShader: [
+                'uniform sampler2D tDiffuse; uniform vec2 uSol, uAspecto; uniform float uRadio, uPaso; varying vec2 vUv;', MASCARA_GLSL,
+                'void main() {',
+                '  vec2 haciaSol = uSol - vUv; float dist = length(haciaSol * uAspecto);',
+                '  vec2 paso = haciaSol / max(dist, 1e-3) * uPaso / uAspecto; vec2 uv = vUv; vec3 acc = vec3(0.0); float w = 1.0, sw = 0.0;',
+                '  for (int i = 0; i < 8; i++) {',
+                '    vec3 c = texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb;',
+                '    acc += c * (mascaraCielo(c) * w); sw += w; w *= 0.88; uv += paso;',
+                '  }',
+                '  gl_FragColor = vec4(acc / sw * (1.0 - smoothstep(0.0, uRadio, dist)), 1.0);',
+                '}'].join('\n'),
+            });
+            // pase 2: vuelve a estirar hacia el sol lo del pase 1 (pasos más largos)
+            this.matB = new THREE.ShaderMaterial({
+              uniforms: { tDiffuse: { value: null }, uSol: { value: this.matA.uniforms.uSol.value }, uAspecto: { value: this.matA.uniforms.uAspecto.value }, uPaso: { value: 0.06 } },
+              vertexShader: vs,
+              fragmentShader: [
+                'uniform sampler2D tDiffuse; uniform vec2 uSol, uAspecto; uniform float uPaso; varying vec2 vUv;',
+                'void main() {',
+                '  vec2 haciaSol = uSol - vUv; float dist = length(haciaSol * uAspecto);',
+                '  vec2 paso = haciaSol / max(dist, 1e-3) * uPaso / uAspecto; vec2 uv = vUv; vec3 acc = vec3(0.0); float w = 1.0, sw = 0.0;',
+                '  for (int i = 0; i < 8; i++) { acc += texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb * w; sw += w; w *= 0.9; uv += paso; }',
+                '  gl_FragColor = vec4(acc / sw, 1.0);',
+                '}'].join('\n'),
+            });
+            this.quad = new THREE.FullScreenQuad(this.matA);
+          }
+          setSize(w, h) {
+            const a = Math.max(2, Math.round(w / 4)), b = Math.max(2, Math.round(h / 4));
+            this.rtA.setSize(a, b); this.rtB.setSize(a, b);
+            this.matA.uniforms.uAspecto.value.set(w / h, 1);
+          }
+          render(renderer, writeBuffer, readBuffer) {
+            this.matA.uniforms.tDiffuse.value = readBuffer.texture; this.quad.material = this.matA;
+            renderer.setRenderTarget(this.rtA); this.quad.render(renderer);
+            this.matB.uniforms.tDiffuse.value = this.rtA.texture; this.quad.material = this.matB;
+            renderer.setRenderTarget(this.rtB); this.quad.render(renderer);
+            renderer.setRenderTarget(null);
+          }
+          get textura() { return this.rtB.texture; }
+        }
+        const rayos = new RayosPass();
+        comp.addPass(rayos);
         const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), BLOOM[2].fuerza, 0.45, 0.9);
         // UnrealBloomPass trabaja a la mitad de lo que recibe: con 2 × escala, su primera cadena queda a 1/2 (alto) o 1/4 (medio)
         const tamBloom = bloom.setSize.bind(bloom);
@@ -319,12 +400,16 @@ AVE.module('renderer', function (G) {
         comp.addPass(bloom);
         const grade = new THREE.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uSat: { value: GRADO.sat }, uCon: { value: GRADO.con },
-            uTint: { value: new THREE.Vector3(...GRADO.tint) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 } },
+            uTint: { value: new THREE.Vector3(...GRADO.tint) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 },
+            tRayos: { value: rayos.textura }, uRayos: { value: 0 } },
           vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
           fragmentShader: [
-            'uniform sampler2D tDiffuse; uniform float uSat, uCon, uVig; uniform vec3 uTint; varying vec2 vUv;',
+            'uniform sampler2D tDiffuse, tRayos; uniform float uSat, uCon, uVig, uRayos; uniform vec3 uTint; varying vec2 vUv;', MASCARA_GLSL,
             'void main() {',
-            '  vec3 c = LinearTosRGB(vec4(max(texture2D(tDiffuse, vUv).rgb, 0.0), 1.0)).rgb;',
+            '  vec3 lin = max(texture2D(tDiffuse, vUv).rgb, 0.0);',
+            '  vec3 rayo = texture2D(tRayos, vUv).rgb - lin * mascaraCielo(lin);',
+            '  lin += max(rayo, 0.0) * uRayos;',
+            '  vec3 c = LinearTosRGB(vec4(lin, 1.0)).rgb;',
             '  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));',
             '  c = mix(vec3(l), c, uSat);',
             '  c = (c - 0.5) * uCon + 0.5;',
@@ -335,7 +420,7 @@ AVE.module('renderer', function (G) {
           ].join('\n'),
         });
         comp.addPass(grade);
-        Object.assign(post, { composer: comp, bloom, grade });
+        Object.assign(post, { composer: comp, bloom, grade, rayos });
         post.resize = () => { comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(tam.w, tam.h); };
         post.resize();
       });
@@ -352,6 +437,8 @@ AVE.module('renderer', function (G) {
       post.activo = calidad.post > 0; fogColorFor(post.activo); gradoEnTono(!post.activo);
       if (post.escala !== B.escala) { post.escala = B.escala; post.resize(); }
       post.bloom.strength = B.fuerza;
+      post.rayos.quiere = post.activo && calidad.post >= 2 && RAYOS > 0; // rayos de luz solo en alto (situarRayos los sitúa cada cuadro)
+      post.rayos.enabled = post.rayos.quiere; post.grade.uniforms.uRayos.value = 0;
     }).catch(e => { console.warn('AVE post:', e && e.message || e); post.activo = false; fogColorFor(false); gradoEnTono(true); });
   }
   aplicarPost(calidad);
@@ -389,12 +476,26 @@ AVE.module('renderer', function (G) {
   }
 
   // Dibuja la escena del mundo (la cámara lo llama cada cuadro)
+  // Rayos: el sol en pantalla (proyección de su dirección, normalmente por encima del encuadre) y su fuerza: suben al mirar
+  // hacia el sol y se apagan al darle la espalda, y bajan con el clima (clima.js atenúa uSolCol en lluvia y neblina: la
+  // luminancia respecto a la del mundo)
+  const solPant = new THREE.Vector3(), solFrente = new THREE.Vector3(), solLum0 = Math.max(1e-3, skyU.uSolCol.value.r * 0.2126 + skyU.uSolCol.value.g * 0.7152 + skyU.uSolCol.value.b * 0.0722);
+  function situarRayos(cam) {
+    const R = post.rayos; if (!R || !R.quiere) { if (R) { R.enabled = false; post.grade.uniforms.uRayos.value = 0; } return; }
+    solPant.copy(sunDir).multiplyScalar(1000).add(cam.position).project(cam);
+    const c = skyU.uSolCol.value, lum = Math.min(1, (c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722) / solLum0);
+    const frente = cam.getWorldDirection(solFrente).dot(sunDir), a = Math.min(1, Math.max(0, (frente + 0.3) / 0.6)), ang = a * a * (3 - 2 * a);
+    R.matA.uniforms.uSol.value.set(solPant.x * 0.5 + 0.5, solPant.y * 0.5 + 0.5);
+    const k = solPant.z < 1 ? lum * lum * ang : 0;
+    post.grade.uniforms.uRayos.value = RAYOS * k;
+    R.enabled = k > 0; // sin sol en pantalla no se corren los pases
+  }
   function drawScene(cam) {
     nubesU.uTime.value = t;
     cullPequenos(cam || camera);
     seguirSombra();
     if (sky) sky.position.copy((cam || camera).position);
-    if (post.activo && post.composer) post.composer.render();
+    if (post.activo && post.composer) { situarRayos(cam || camera); post.composer.render(); }
     else renderer.render(scene, cam || camera);
   }
 
