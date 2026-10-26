@@ -451,7 +451,8 @@ window.AVRescate = function (G) {
     const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates' && k !== 'clock' && k !== 'marcador') o[k] = d && d[k]; return JSON.stringify(o); }; // clock y el cronómetro del marcador avanzan con cada tick de la prueba
     const realAntes = claves.map(leer), sAntes = comparable(S), propioAntes = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
-    const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), flying: M.flying, grounded: M.grounded, swimming: M.swimming, pausa: G.pausa.activa(), banq: G.banqueteApi, sbanq: S.banquete };
+    const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, fauna: S.fauna && S.fauna.slice(), peces: S.peces && S.peces.slice(), // fauna y peces se observan solos al pasar junto al agua
+      pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), flying: M.flying, grounded: M.grounded, swimming: M.swimming, pausa: G.pausa.activa(), banq: G.banqueteApi, sbanq: S.banquete };
     const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
     const estCri = G.criadero && G.criadero.estado ? G.criadero.estado() : null, criBackup = estCri ? JSON.parse(JSON.stringify(estCri)) : null, criKey = G.criadero && G.criadero.KEY, criLS = criKey ? leer(criKey) : null;
     let casaKey = null, casaLS = null;
@@ -555,13 +556,13 @@ window.AVRescate = function (G) {
       if (estCri && criBackup) { for (const k of Object.keys(estCri)) delete estCri[k]; Object.assign(estCri, criBackup); try { if (criLS == null) localStorage.removeItem(criKey); else localStorage.setItem(criKey, criLS); } catch (e) { /* sin almacén */ } }
       try { if (casaKey) { if (casaLS == null) localStorage.removeItem(casaKey); else localStorage.setItem(casaKey, casaLS); } } catch (e) { /* sin almacén */ }
       try { if (propioAntes == null) localStorage.removeItem(ALMACEN); else localStorage.setItem(ALMACEN, propioAntes); } catch (e) { /* sin almacén */ }
-      S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; G.banqueteApi = guard.banq;
+      S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; if (guard.fauna) S.fauna = guard.fauna; if (guard.peces) S.peces = guard.peces; G.banqueteApi = guard.banq;
       Object.assign(S.pos, guard.pos); S.facing = guard.facing; M.flying = guard.flying; M.grounded = guard.grounded; M.swimming = guard.swimming;
       R.fase = ''; R.resultado = null; tick(0.05);
       if (SV.suspender) SV.suspender(false); G.quiet = guard.quiet; console.error = ce;
       apartados.forEach(id => { $(id).hidden = false; });
     }
-    check('La partida (G.S) queda intacta salvo S.rescates', comparable(S) === sAntes && S.rescates === guard.rescates);
+    check('La partida (G.S) queda intacta salvo S.rescates', comparable(S) === sAntes && S.rescates === guard.rescates, (() => { try { const a = JSON.parse(sAntes), b = JSON.parse(comparable(S)); return Object.keys(a).filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])).join(', '); } catch (e) { return ''; } })());
     check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
     check('El mundo no queda en pausa', G.pausa.activa() === guard.pausa);
     const nuevos = (window.__aveErrores || []).slice(errores0);

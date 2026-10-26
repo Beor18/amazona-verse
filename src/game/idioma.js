@@ -14,7 +14,7 @@ AVE.module('idioma', function (G) {
   const PALABRA = /(?:^|[\s«"(¡¿])(el|la|los|las|de|del|que|con|para|por|una?|tu|tus|te|se|es|al|su|mi|no|hay|más|muy|ya|vamos|hola|pulsa|toca|usa|elige|sigue|busca|ve|cierra|abre|aún|sin|ahora|otra|otro|cerca|hasta|desde|todo|todos|esta|este|eso|aquí|allí|qué|cómo|dónde)(?=$|[\s.,;:!?»")])/i;
   const esEs = s => ACENTO.test(s) || PALABRA.test(s);
   // Nombres propios y palabras del lugar que se quedan como son en inglés (con tilde o artículo en español)
-  const NOMBRES = /(El Yunque|Villa Raíz|Río Abajo|Co-quí|Pava jíbara|Raíz|Río|María|José|Coquí|coquí|coquís|Taíno|taíno|jíbaro|jíbara|güiro|Güiro|Iguaca|Maricao|Loíza|Yokahú|Caguana|Utuado|flamboyán|yagrumo|tabonuco|ceiba|Mina|Dajao|Boricua|boricua|Wepa|Pa'lante|Apóstol|vejigante|pavas?|quí)/g;
+  const NOMBRES = /(El Yunque|Villa Raíz|Río Abajo|Flamboyán|Co-quí|Pava jíbara|Raíz|Río|María|José|Coquí|coquí|coquís|Taíno|taíno|jíbaro|jíbara|güiro|Güiro|Iguaca|Maricao|Loíza|Yokahú|Caguana|Utuado|flamboyán|yagrumo|tabonuco|ceiba|Mina|Dajao|Boricua|boricua|Wepa|Pa'lante|Apóstol|vejigante|pavas?|quí)/g;
   // Lo que queda en español en un texto (ya traducido o no), sin contar esos nombres
   const resto = s => { const t = s.replace(NOMBRES, ' '); return ACENTO.test(t) || /\b(el|la|los|las|de|del|que|con|para|por|una|tu|tus|te|se|al|su|mi|hay|más|muy|ya|sin|aún)\b/i.test(t); };
 
