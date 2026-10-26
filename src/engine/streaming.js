@@ -16,7 +16,9 @@
    ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
    Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
    lo visible a menos de CFG.lejosQuieto; el resto espera a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
-   más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
+   más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda).
+   La fusión de una zona lejana va por tandas. El programa de las ráfagas (burbujas al llegar a la caleta) y el del atlas
+   se compilan al cargar, dentro de la escena, para no hacerlo en el cuadro en el que Vittata aparece. Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
    referencias por nombre de material: el kit comparte su paleta). La cadena base64 la suelta AVE.assets.loadGLB al decodificar.
    El buffer de instancias de cada modelo×LOD se reutiliza (three r128 no lo libera al quitar la malla).
 
@@ -99,6 +101,46 @@ AVE.module('streaming', function (G) {
   }
   function encolar(fn) { trabajos.push(fn); programar(); }
   function drenar() { while (trabajos.length) { const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); } } }
+
+  // ---------- Precarga del programa de las ráfagas ----------
+  // fx.burst crea el PointsMaterial al llegar al agua (burbujas de la caleta): el primer dibujo, en SwiftShader,
+  // se queda varios segundos en getProgramInfoLog. Se deja una de cada familia en la escena y el primer render
+  // de verdad (luces y sombras ya puestos) la compila; luego se oculta. El material sigue vivo para no soltar el programa.
+  let rafagas = [];
+  function precargarRafagas() {
+    if (!G.fx || !G.fx.burst || rafagas.length) return;
+    const antes = new Set();
+    scene.traverse(o => { if (o.isPoints) antes.add(o); });
+    for (const k of ['bubbles', 'feathers', 'gold', 'stars']) { try { G.fx.burst(0, -500, 0, k, 1); } catch (e) { console.warn('AVE precarga:', e && e.message || e); } }
+    const nuevos = [];
+    scene.traverse(o => { if (o.isPoints && !antes.has(o)) nuevos.push(o); });
+    for (const o of nuevos) {
+      const mat = o.material;
+      o.visible = false;
+      scene.remove(o);
+      o.material = new THREE.PointsMaterial();
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([0, -500, 0], 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1], 3));
+      const ancla = new THREE.Points(g, mat);
+      ancla.name = 'precarga-rafaga'; ancla.visible = false; ancla.frustumCulled = false; ancla.userData.sinSolido = true;
+      scene.add(ancla); rafagas.push(ancla);
+    }
+    // También el PointsMaterial sin mapa (llovizna, gotas): es otro programa y, si no, se compila al llegar.
+    const g0 = new THREE.BufferGeometry();
+    g0.setAttribute('position', new THREE.Float32BufferAttribute([0, -500, 0], 3));
+    const plano = new THREE.Points(g0, new THREE.PointsMaterial({ size: 0.16, transparent: true, depthWrite: false, sizeAttenuation: true, fog: true }));
+    plano.name = 'precarga-rafaga'; plano.visible = false; plano.frustumCulled = false; plano.userData.sinSolido = true;
+    scene.add(plano); rafagas.push(plano);
+  }
+  G.on('mundoListo', precargarRafagas, 90);
+  // Primer render de la escena: se ven un cuadro (compila con las luces y las sombras de verdad) y al siguiente se ocultan.
+  let rafagaPaso = 0;
+  G.on('render', () => {
+    if (!rafagas.length || rafagaPaso > 1) return;
+    rafagaPaso++;
+    for (const a of rafagas) a.visible = rafagaPaso === 1;
+  }, 1);
 
   // ---------- Materiales compartidos por nombre, con conteo de referencias ----------
   const mats = {}; // nombre → { mat, refs, fijo }
@@ -548,17 +590,40 @@ AVE.module('streaming', function (G) {
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
+    // La zona se funde en tandas de pocos milisegundos: cerrarla de una vez trababa el cuadro.
     function fundirZona(Z) {
-      if (Z.nivel < 1 || Z.malla) return;
+      if (Z.nivel < 1 || Z.malla || Z.fundir) return;
       const rs = [...Z.modelos].map(n => res(n, 'lejos'));
       if (!rs.every(r => r.estado === 'listo' && r.geo)) return;
-      const geos = Z.inst.map(I => res(I.modelo, 'lejos').geo.clone().applyMatrix4(I.m));
-      const m = new THREE.Mesh(fundir(geos, true), matLejos);
-      for (const g of geos) g.dispose();
+      Z.fundir = { i: 0, geos: [] };
+      encolar(() => fundirPaso(Z));
+    }
+    function fundirPaso(Z) {
+      const F = Z.fundir;
+      if (!F || Z.malla || Z.nivel < 1) { if (F) { for (const g of F.geos) g.dispose(); Z.fundir = null; } return; }
+      const t0 = performance.now();
+      while (F.i < Z.inst.length && performance.now() - t0 < 6) {
+        const I = Z.inst[F.i++], geo = res(I.modelo, 'lejos').geo;
+        if (!geo) { for (const g of F.geos) g.dispose(); Z.fundir = null; return; }
+        F.geos.push(geo.clone().applyMatrix4(I.m));
+      }
+      if (F.i < Z.inst.length || performance.now() - t0 >= 6) { encolar(() => (Z.fundir && Z.fundir.i < Z.inst.length) ? fundirPaso(Z) : fundirCerrar(Z)); return; }
+      fundirCerrar(Z);
+    }
+    function fundirCerrar(Z) {
+      const F = Z.fundir; if (!F) return;
+      Z.fundir = null;
+      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos) g.dispose(); return; }
+      if (!F.geos.length) return;
+      const m = new THREE.Mesh(fundir(F.geos, true), matLejos);
+      for (const g of F.geos) g.dispose();
       m.name = 'edificiosZona:' + Z.id + ':lejos'; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
       scene.add(m); Z.malla = m;
     }
-    function quitarZona(Z) { if (!Z.malla) return; scene.remove(Z.malla); Z.malla.geometry.dispose(); Z.malla = null; }
+    function quitarZona(Z) {
+      if (Z.fundir) { for (const g of Z.fundir.geos) g.dispose(); Z.fundir = null; }
+      if (!Z.malla) return; scene.remove(Z.malla); Z.malla.geometry.dispose(); Z.malla = null;
+    }
     function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
     const avisados = new Set();
     function respaldo(Z, n, err) {
@@ -836,6 +901,8 @@ AVE.module('streaming', function (G) {
     return result();
   }
 
-  return { iniciar, material, soltarMaterial, generarLejos, CFG, test, get gestor() { return ST; },
+  return { iniciar, material, soltarMaterial, generarLejos, CFG, test,
+    rafagasListas: () => rafagaPaso >= 1 && rafagas.length > 0,
+    get gestor() { return ST; },
     modelo: n => ST ? ST.modelo(n) : Promise.reject(new Error('streaming sin iniciar')) };
 });

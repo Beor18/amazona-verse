@@ -105,11 +105,24 @@ AVE.module('terreno', function (G) {
       const k0 = Math.max(0, Math.floor((Math.min(az, bz, cz) - T.z0) / cell)), k1 = Math.min(nz - 1, Math.floor((Math.max(az, bz, cz) - T.z0) / cell));
       for (let k = k0; k <= k1; k++) for (let i = i0; i <= i1; i++) f(k * nx + i);
     };
-    for (let t = 0; t < nt; t++) each(t, ci => cnt[ci + 1]++);
-    for (let i = 1; i < cnt.length; i++) cnt[i] += cnt[i - 1];
-    const list = new Uint32Array(cnt[cnt.length - 1]), fill = cnt.slice(0, nx * nz);
-    for (let t = 0; t < nt; t++) each(t, ci => { list[fill[ci]++] = t; });
-    Object.assign(TG, { pos, col, tri, start: cnt, list, nx, nz, x0: T.x0, z0: T.z0, ready: true });
+    return new Promise(resolve => {
+      let t = 0, fase = 'contar', list = null, fill = null;
+      const luego = fn => (window.requestIdleCallback ? window.requestIdleCallback(() => fn(), { timeout: 50 }) : setTimeout(fn, 0));
+      const paso = () => {
+        const t0 = performance.now();
+        if (fase === 'contar') {
+          while (t < nt && performance.now() - t0 < 8) each(t++, ci => cnt[ci + 1]++);
+          if (t < nt) return luego(paso);
+          for (let i = 1; i < cnt.length; i++) cnt[i] += cnt[i - 1];
+          list = new Uint32Array(cnt[cnt.length - 1]); fill = cnt.slice(0, nx * nz); t = 0; fase = 'llenar';
+        }
+        while (t < nt && performance.now() - t0 < 8) { const k = t++; each(k, ci => { list[fill[ci]++] = k; }); }
+        if (t < nt) return luego(paso);
+        Object.assign(TG, { pos, col, tri, start: cnt, list, nx, nz, x0: T.x0, z0: T.z0, ready: true });
+        resolve();
+      };
+      paso();
+    });
   }
   // Triángulo bajo (x, z): devuelve la altura (el más alto si hay varios) o NaN; deja vértices y pesos en hit
   const hit = { a: 0, b: 0, c: 0, wa: 0, wb: 0, wc: 0 };
@@ -448,8 +461,9 @@ AVE.module('terreno', function (G) {
     }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })))
       .then(geos => {
         const ok = geos.filter(Boolean);
-        if (ok.length) buildTriGrid(ok);
-        G.emit('terrenoListo');
+        const fin = () => G.emit('terrenoListo');
+        if (!ok.length) { fin(); return; }
+        return buildTriGrid(ok).then(fin);
       });
     G.on('calidad', C => { for (const m of chunks) m.castShadow = !!C.sombraTerreno; });
   } else {
