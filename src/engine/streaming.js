@@ -31,8 +31,9 @@
      originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las 16
      texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda):
      un draw call por modelo. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
-     de moverse si ya estás en la zona; mientras no está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos
-     salen siempre del ligero (iguales en todo equipo).
+     de moverse si ya estás en la zona. La distancia es hasta la superficie (cámara o Vittata, la que esté más cerca):
+     encima de una torre no cuenta el centro, que queda abajo, y no se dibuja el lod beige. Mientras el _hd baja se ve
+     el ligero, no la silueta. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
 
    Formato de datos en el mapa (compatible con el anterior; lo genera el level designer):
    - mapa.edificiosKelvin: [ entrada ] y mapa.escenaKelvin.compacto: [ entrada compacta ] (se leen las dos listas).
@@ -151,8 +152,10 @@ AVE.module('streaming', function (G) {
           '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
           '  float lod = clamp( log2( max( max( menor, mayor / 4.0 ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
           '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
-        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace('texture2D( map, vUv )', 'avAtlas( map, vUv )'))
-        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vUv )', 'avAtlas( normalMap, vUv )'));
+        // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
+        // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
+        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )'))
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
   }
@@ -179,7 +182,9 @@ AVE.module('streaming', function (G) {
       for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
         for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) {
           const t = m[k]; if (!t || vistas.has(t) || usados.has(t)) continue;
-          vistas.add(t); t.dispose(); if (t.image && typeof t.image.close === 'function') t.image.close();
+          vistas.add(t); t.dispose();
+          // El atlas es un ImageBitmap compartido: close() del sobrante dejaba en blanco el material que se queda.
+          if (t.image && typeof t.image.close === 'function' && !(AVE.assets && AVE.assets.imagenRetenida && AVE.assets.imagenRetenida(t.image))) t.image.close();
         }
         if (!usados.has(m)) m.dispose();
       }
@@ -528,11 +533,18 @@ AVE.module('streaming', function (G) {
       if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
     }
-    // Versión _hd de los modelos de la zona: se pide en nivel cerca (calidad media o alta) y se suelta al salir
+    // Distancia al modelo más cercano de la zona (prioridad de descarga: lo que tienes delante entra antes que el resto).
+    function distModelo(Z, n) {
+      const S = G.S, x = S.pos ? S.pos.x : Z.cx, z = S.pos ? S.pos.z : Z.cz;
+      let m = Z.d;
+      for (const I of Z.inst) if (I.modelo === n && I.pos) m = Math.min(m, Math.hypot(I.pos[0] - x, I.pos[2] - z) - (I.r || 0));
+      return m;
+    }
+    // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
       if (!!Z.hd === quiere) return;
       Z.hd = quiere;
-      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 0.5).catch(() => {}); else soltar(res(n, 'hd')); }
+      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), distModelo(Z, n)).catch(() => {}); else soltar(res(n, 'hd')); }
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
@@ -566,6 +578,10 @@ AVE.module('streaming', function (G) {
         const lejos = Z.nivel >= 1 ? Z.d < Rl + H : Z.d < Rl;
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
         ajustarHD(Z, Z.nivel === 2 && hdActivo() && Z.d < Rc + (Z.hd ? H : 0)); // forzada de lejos (cargarTodo): sin _hd
+        if (Z.hd) for (const n of Z.modelos) {
+          const rh = recursos[n] && recursos[n].hd;
+          if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
+        }
       }
       liberarVencidos(performance.now());
     }
@@ -596,32 +612,39 @@ AVE.module('streaming', function (G) {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
       const cp = cam.position, max = alcance(), maxZ = alcanceZona(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH, hdD = hdActivo() ? CFG.hd[nivelCal()] : 0;
-      const S = G.S, sx = S.pos ? S.pos.x : cp.x, sz = S.pos ? S.pos.z : cp.z;
+      const S = G.S, px = S.pos ? S.pos.x : cp.x, py = S.pos ? S.pos.y : cp.y, pz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
       vis.zonas = 0;
       for (const id in zonas) {
         const Z = zonas[id], m = Z.malla; if (!m) { Z.usaMalla = false; continue; }
         const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
-        Z.usaMalla = Z.nivel === 1 || dz > lodD + (Z.usaMalla ? -H : H);
+        const dj = Math.hypot(px - Z.cx, pz - Z.cz) - Z.r;
+        const umbral = lodD + (Z.usaMalla ? -H : H);
+        // La silueta fundida solo si la cámara y Vittata están lejos del borde. Junto a las ruinas se dibujan las mallas.
+        Z.usaMalla = Z.nivel === 1 || (dz > umbral && dj > umbral);
         const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
       for (let i = 0; i < activas.length; i++) {
         const I = activas[i];
         if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
-        const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
-        if (d - I.r > max) continue;
-        // los grandes (más de CFG.hdGrande m de radio: templos, el complejo) cuentan desde su mitad cercana: junto a uno de 40 m
-        // de radio no se ve su lejano. Dentro de hdD se dibuja el modelo completo, chico o grande.
-        const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
+        const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
+        if (dCam - I.r > max) continue;
+        // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
+        // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
+        const dPla = Math.hypot(I.cx - px, I.cy - py, I.cz - pz);
+        const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
+        const grande = I.r > CFG.hdGrande;
         if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
-        // Junto al edificio (LOD cerca) se dibuja la malla completa en cualquier calidad. Los grandes siguen en HD
-        // más allá del LOD, hasta hdD. La torre chica, de lejos, queda en la silueta.
-        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
-        let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
+        // Junto a la pared, la malla completa en cualquier calidad. Los grandes siguen en HD más allá del LOD, hasta hdD.
+        // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.
+        const junto = hdD > 0 && dl < hdD + (I.hd ? H : -H);
+        I.hd = junto && (I.lod === 0 || grande);
+        const base = (I.lod === 0 || junto) ? 'cerca' : 'lejos';
+        let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + ':' + base] || lotes[I.modelo + ':' + (base === 'cerca' ? 'lejos' : 'cerca')];
         if (!L) continue;
-        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
+        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < rS + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
         L.lista.push(I); if (sombra) L.sombra = true;

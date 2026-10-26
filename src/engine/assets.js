@@ -11,6 +11,55 @@
 (function () {
   'use strict';
 
+  // Una sola descarga por imagen. three r128 deja THREE.Cache apagado (encenderlo también retendría
+  // cada .glb de FileLoader). En Chrome el glTF usa ImageBitmapLoader, no ImageLoader: cada modelo _hd
+  // volvía a bajar el atlas. El bitmap se comparte; quien lo suelta no llama a close() si sigue aquí.
+  const imagenes = new Map();
+  const bitmaps = new Map();
+  function retenida(img) {
+    if (!img) return false;
+    for (const s of imagenes.values()) if (s.listo === img) return true;
+    for (const s of bitmaps.values()) if (s.listo === img) return true;
+    return false;
+  }
+  function cacheCarga(mapa, Clase) {
+    const origen = Clase.prototype.load;
+    Clase.prototype.load = function (url, onLoad, onProgress, onError) {
+      let abs = url;
+      if (this.path !== undefined) abs = this.path + url;
+      abs = this.manager.resolveURL(abs);
+      const ya = mapa.get(abs);
+      if (ya && ya.listo) {
+        const img = ya.listo, mgr = this.manager;
+        mgr.itemStart(abs);
+        setTimeout(() => { if (onLoad) onLoad(img); mgr.itemEnd(abs); }, 0);
+        return ya.el;
+      }
+      if (ya) {
+        this.manager.itemStart(abs);
+        ya.wait.push({ onLoad, onError, manager: this.manager });
+        return ya.el;
+      }
+      const slot = { listo: null, el: null, wait: [] };
+      mapa.set(abs, slot);
+      const el = origen.call(this, url, img => {
+        slot.listo = img;
+        const ws = slot.wait.splice(0);
+        if (onLoad) onLoad(img);
+        for (const w of ws) { try { if (w.onLoad) w.onLoad(img); } finally { w.manager.itemEnd(abs); } }
+      }, onProgress, err => {
+        mapa.delete(abs);
+        if (onError) onError(err);
+        const ws = slot.wait.splice(0);
+        for (const w of ws) { try { if (w.onError) w.onError(err); } finally { w.manager.itemEnd(abs); } }
+      });
+      slot.el = el;
+      return el;
+    };
+  }
+  if (window.THREE && THREE.ImageLoader) cacheCarga(imagenes, THREE.ImageLoader);
+  if (window.THREE && THREE.ImageBitmapLoader) cacheCarga(bitmaps, THREE.ImageBitmapLoader);
+
   const scripts = {};
   // Carga un .js clásico por ruta relativa (una vez por ruta)
   function script(src) {
@@ -111,8 +160,24 @@
     return imgCache[src];
   }
 
+  // La build marca <meta name="ave:build">. El service worker cachea modelos y tex_hd con ese sha:
+  // la primera vez se bajan al pedirlos; las visitas siguientes los leen de caché si el sha no cambió.
+  function registrarCache() {
+    if (!('serviceWorker' in navigator)) return;
+    let sha = '';
+    try {
+      const m = document.querySelector('meta[name="ave:build"]');
+      sha = m && (m.getAttribute('content') || '').trim().split(/\s+/).pop() || '';
+    } catch (e) { return; }
+    if (!sha) return;
+    const u = new URL('sw.js', document.baseURI);
+    u.searchParams.set('b', sha);
+    navigator.serviceWorker.register(u.href).catch(() => {});
+  }
+  registrarCache();
+
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
