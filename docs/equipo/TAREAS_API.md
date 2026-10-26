@@ -227,6 +227,40 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - **X1 · Fichas 26-C y 26-D:** agua estilizada y vegetación.
 - **Y1 · Fichas 26-E y 26-F:** zonas con identidad de color y ambiente (`ambiente.js`).
 
+## PRIORIDAD (Kelvin, 26-oct): primero terminar los capítulos de la temporada 1 y corregir bugs; los minijuegos van después
+La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodios»). El 1 es jugable y el 2 es un prototipo (`content/ep2/`, `EP2_GDD.md`, `EP2_MISIONES.md`, `EP2_NARRATIVA.md`). Del 3 al 6 no hay nada.
+
+**Reglas de los capítulos:**
+- **Reutiliza el motor, el mapa, los personajes y los sistemas que ya existen.** Cada capítulo es un pack de contenido como `content/ep2/` (mira también `content/plantilla/`); no construyas mundos nuevos.
+- **El canon lo decide Kelvin.** Todo lo que no esté CONFIRMADO en `docs/CANON_REGISTRY.md` va con marcadores `[KELVIN]`, como en el episodio 2. Respeta lo confirmado: Vittata, Iguaca, el Guardián, las voces de los dos guardianes extintos (que hablan «desde ahora») y el pacto de los 36.
+- **Diversión primero, para todas las edades:**
+  - nada de violencia, villanos caricaturescos, chat ni compras;
+  - datos educativos con fuente o «por verificar»;
+  - ninguna decisión lo maximiza todo (regla narrativa).
+- **Cada capítulo, jugable de principio a fin** con prueba E2E (`epNTest`), en ES y EN y con capturas. Que se pueda abrir desde el menú cuando esté listo.
+
+**Carril AD, capítulo 2 «Un lugar para todos» terminado** (AD1 y AD2, arriba): de punta a punta, pulido y con entrada en el menú.
+
+**Carril AG, capítulo 3 «Más allá de la bahía»** (construir el primer bote y llegar a otra comunidad; confiar en quien navega):
+- **AG1:** diseño en `docs/equipo/EP3_GDD.md`, `EP3_MISIONES.md` y `EP3_NARRATIVA.md`, con el mismo formato que el episodio 2:
+  - 3 misiones y una formativa;
+  - qué se reutiliza (el modelo `canoa` del kit, el río y el mar, las aldeas existentes como «otra comunidad»).
+- **AG2:** implementación jugable en `content/ep3/`, con `ep3Test` E2E, ES y EN, y entrada en el menú.
+
+**Carril AH, capítulo 4 «El precio del progreso»** (un proyecto con beneficios y costos; sin una sola respuesta correcta):
+- **AH1:** diseño `EP4_*`.
+- **AH2:** implementación jugable en `content/ep4/` con `ep4Test`.
+
+**Carril AI, capítulos 5 y 6:**
+- **AI1:** diseño de `EP5_*`, «Las voces olvidadas»: mensajes del transmisor, ruinas, un relevo de comunicación y la memoria incompleta del Guardián. Aquí se revela a las dos voces extintas: deja `[KELVIN]` en cómo se presentan.
+- **AI2:** diseño de `EP6_*`, «El pacto de los 36»: puzzle cooperativo; la fuerza de Vittata es ayudar a otros a trabajar juntos.
+- Si sobra crédito, implementa el capítulo 5 en `content/ep5/`.
+
+**Carril AJ, bugs:**
+- **AJ1:** cierra los bugs abiertos de `docs/equipo/BUGS.md` (QA-30, 32, 33, 35 y los que estén sin cerrar). Cada uno se reproduce, se arregla y se cierra con su commit; si no se reproduce, se explica.
+- **AJ2:** los 2 errores intermitentes «THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN» que a veces frenan la publicación con la Mac cargada. Encuentra el módulo con `console.trace` en una build bajo carga, arréglalo y añade una prueba.
+- **AJ3:** una ronda de QA de jugador nuevo en escritorio y en móvil a 375×812: aventura, capítulos, Retos, Flight, criadero y menú. Arregla lo roto y anota el resto en `BUGS.md`.
+
 ## Ronda del 26-oct (tarde): minijuegos y episodio 2
 **Antes de empezar, obligatorio:**
 - **Lee y sigue `AGENTS.md`.** Los commits se hacen con índice temporal: Grok, en Cursor, y Claude hacen commits a la vez.
@@ -345,3 +379,12 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | AD2 | pendiente | | |
 | AE1 | pendiente | | |
 | AF1 | pendiente | | |
+| AG1 | pendiente | | |
+| AG2 | pendiente | | |
+| AH1 | pendiente | | |
+| AH2 | pendiente | | |
+| AI1 | pendiente | | |
+| AI2 | pendiente | | |
+| AJ1 | pendiente | | |
+| AJ2 | pendiente | | |
+| AJ3 | pendiente | | |
