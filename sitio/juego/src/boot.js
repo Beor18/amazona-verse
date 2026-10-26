@@ -23,7 +23,6 @@
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
-    if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
     // Pruebas del pack que se cargan al pedirlas (pack.pruebasDiferidas = { archivo, nombres }): no van en la descarga inicial
     const dif = P.pruebasDiferidas;
     if (dif) {
@@ -31,6 +30,7 @@
       const cargarPruebas = () => carga || (carga = AVE.assets.script(dif.archivo).then(() => P.pruebas, e => { carga = null; throw e; }));
       for (const name of dif.nombres) if (!AV[name]) AV[name] = opts => cargarPruebas().then(ps => ps[name](G, T, opts));
     }
+    if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
     // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
     // Módulos que no van en la descarga inicial: se piden en el primer gesto del jugador (Jugar en la portada, una tecla o un toque)
     const alPrimerGesto = fn => { let hecho = false; const ir = () => { if (hecho) return; hecho = true; setTimeout(() => fn().catch(() => {}), 300); };
@@ -39,6 +39,7 @@
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
+    if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
@@ -61,6 +62,31 @@
     const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
     AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
     AV.retosTest = o => cargarRetos().then(r => r.test(o));
+    // «Save the Parrot» (src/game/rescate.js): cartel con caja nido tras la crecida; se carga sola tras el arranque y al pedir su prueba
+    let rescate = null;
+    const cargarRescate = () => rescate || (rescate = AVE.assets.script('src/game/rescate.js').then(() => window.AVRescate(G), e => { rescate = null; throw e; }));
+    AV.rescateTest = o => cargarRescate().then(r => r.test(o));
+    setTimeout(() => cargarRescate().catch(() => {}), 6000);
+    // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar si la calidad no es «bajo», y al pedir su prueba
+    let bandada = null;
+    const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
+    AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
+    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
+    let rioVivo = null;
+    const cargarRioVivo = () => rioVivo || (rioVivo = AVE.assets.script('src/game/rio_vivo.js').then(() => window.AVRioVivo(G), e => { rioVivo = null; throw e; }));
+    AV.rioVivoTest = o => cargarRioVivo().then(r => r.test(o));
+    if (G.terreno.mapa && G.terreno.mapa.agua) alPrimerGesto(cargarRioVivo);
+    // Banquete en la selva (src/game/banquete.js): frutos en los árboles y el reto «¡Banquete!»; se carga sola tras el arranque y al pedir su prueba
+    let banquete = null;
+    const cargarBanquete = () => banquete || (banquete = AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G), e => { banquete = null; throw e; }));
+    AV.banqueteTest = o => cargarBanquete().then(b => b.test(o));
+    alPrimerGesto(cargarBanquete);
+    // Minimapa (src/game/minimapa.js): se carga solo tras el arranque (no va en la descarga inicial) y al pedir su prueba; M o un toque lo amplía
+    let minimapa = null;
+    const cargarMinimapa = () => minimapa || (minimapa = AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G), e => { minimapa = null; throw e; }));
+    AV.minimapaTest = o => cargarMinimapa().then(m => m.test(o));
+    alPrimerGesto(cargarMinimapa);
     // Marcador del capítulo (src/game/marcador.js): cronómetro, puntuación y medalla; se carga al arrancar para contar desde el primer cuadro
     let marcador = null;
     const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
@@ -76,23 +102,12 @@
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
     let musica = null;
     const cargarMusica = () => musica || (musica = AVE.assets.script('src/game/musica.js').then(() => window.AVMusica(G), e => { musica = null; throw e; }));
-    // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar si la calidad no es «bajo», y al pedir su prueba
-    let bandada = null;
-    const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
-    AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
-    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
-    // Banquete en la selva (src/game/banquete.js): frutos en los árboles y el reto «¡Banquete!»; se carga sola tras el arranque y al pedir su prueba
-    let banquete = null;
-    const cargarBanquete = () => banquete || (banquete = AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G), e => { banquete = null; throw e; }));
-    AV.banqueteTest = o => cargarBanquete().then(b => b.test(o));
-    alPrimerGesto(cargarBanquete);
-    // Minimapa (src/game/minimapa.js): se carga solo tras el arranque (no va en la descarga inicial) y al pedir su prueba; M o un toque lo amplía
-    let minimapa = null;
-    const cargarMinimapa = () => minimapa || (minimapa = AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G), e => { minimapa = null; throw e; }));
-    AV.minimapaTest = o => cargarMinimapa().then(m => m.test(o));
-    alPrimerGesto(cargarMinimapa);
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
+    // Clima de El Yunque (src/game/clima.js): sol, llovizna, aguacero y neblina; se carga solo tras el arranque y al pedir su prueba
+    const cargarClima = aDemanda('src/game/clima.js', 'AVClima');
+    AV.climaTest = o => cargarClima().then(c => c.test(o));
+    setTimeout(() => cargarClima().catch(() => {}), 6000);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
     // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');

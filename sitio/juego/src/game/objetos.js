@@ -47,12 +47,14 @@ AVE.module('objetos', function (G) {
     const juice = G.camara.juice;
     juice.combo = S.clock - juice.comboT < 3 ? juice.combo + 1 : 0; juice.comboT = S.clock;
     G.audio.play('pickup', juice.combo); G.camara.hitStop(0.06);
-    G.fx.burst(r.x, H(r.x, r.z) + 0.6, r.z, r.fondo ? 'bubbles' : 'feathers', r.fondo ? 20 : 16, r.fondo ? S.water : null);
+    G.fx.recoger(r.x, H(r.x, r.z) + 0.6, r.z, r.fondo ? 'bubbles' : 'feathers', r.fondo ? 20 : 16, r.fondo ? S.water : null);
     G.ui.toast('+1 ' + label(r.tipo) + (juice.combo > 0 ? '  ·  combo x' + (juice.combo + 1) : ''));
     G.misiones.check();
   }
   function syncVisible() { for (const r of recursos) meshes[r.id].visible = available(r); }
-  function renderInv() { for (const k of Object.keys(tipos)) { const el = $(tipos[k].hud || 'i-' + k); if (el) el.textContent = S.inv[k]; } }
+  // La cifra que cambia salta (fx.js, ficha 26-I)
+  const visto = {};
+  function renderInv() { for (const k of Object.keys(tipos)) { const el = $(tipos[k].hud || 'i-' + k); if (!el) continue; if (visto[k] != null && S.inv[k] > visto[k]) G.fx.saltar(el); visto[k] = S.inv[k]; el.textContent = S.inv[k]; } }
 
   // Recoger al pasar por encima (también funciona E / Acción desde más lejos)
   G.on('moved', busy => {
@@ -72,7 +74,7 @@ AVE.module('objetos', function (G) {
     }
   }, 54);
   G.on('apply', syncVisible, 10);
-  G.on('apply', renderInv, 91);
+  G.on('apply', () => { for (const k in visto) delete visto[k]; renderInv(); }, 91); // al cargar no salta
 
   return { tipos, recursos, meshes, label, available, reachUnder, has, pay, missingText, collect, syncVisible, renderInv, find: id => recursos.find(r => r.id === id) };
 });

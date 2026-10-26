@@ -1,6 +1,6 @@
 /* AVE · audio
    Sonido sintético con WebAudio (sin archivos): buses master / efectos / voz, volumen guardado y registro para probar sin altavoces.
-   Sonidos base del motor: pickup, ring, dash, splash, jump, land, unlock, tick, wrong.
+   Sonidos base del motor: pickup, ring, dash, splash, jump, land, unlock, tick, wrong, descubrir.
    Un pack añade los suyos con G.audio.define(nombre, (t, arg, A) => ...), donde A = { tone, noise, pent }
    y la opción { bus: 'voice' } manda un tono al bus de voz.
    Muestras en archivo (assets/audio/, sintetizadas con tools/audio/juego.py; tabla en assets/audio/sonidos.json):
@@ -98,6 +98,7 @@ AVE.module('audio', function (G) {
     unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
+    descubrir: t => { [0, 4, 7, 12].forEach((n, k) => tone(392 * Math.pow(2, n / 12), t + k * 0.05, 0.9 - k * 0.1, { type: 'sine', gain: 0.1 })); noise(t + 0.1, 0.8, { freq: 7000, q: 0.6, gain: 0.04 }); }, // acorde corto al descubrir un lugar (fx.js)
   };
   for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);
   const api = {

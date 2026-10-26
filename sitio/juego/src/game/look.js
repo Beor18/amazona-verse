@@ -393,7 +393,7 @@ window.AVLook = function (G) {
           const hojaSh = { vertexShader: 'void main(){ vWPos = mvPosition.xyz; vLightFront += saturate( dotNL ) * d; }', fragmentShader: '#include <color_fragment>' }; refinarHoja(hojaSh, L);
           check(`Look «${n}»: el shader de la hoja recibe la variación por altura (vAvAlt) y la rampa`, hojaSh.vertexShader.includes('vAvAlt = transformed.y * iesc;') && hojaSh.fragmentShader.includes('vAvAlt )') && !hojaSh.vertexShader.includes('+= saturate( dotNL )'));
         }
-        check(`Look «${n}»: mismo número de draw calls que de fábrica (±5 %)`, Math.abs(m1.calls - m0.calls) <= Math.max(3, m0.calls * 0.05), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
+        check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
       }
       quitar(); await cuadro(); await cuadro();
       const F1 = firma(), c2 = foto().croma, m2 = medir();

@@ -398,6 +398,47 @@ window.AVMovimientoTest = function (G) {
         check('Todos los edificios cargados: no se atraviesan y tienen dónde pararse encima', revisados > 0 && !fallos.length, revisados + ' edificios' + (fallos.length ? ' · ' + fallos.join(', ') : ''));
         met.solidos = SO.stats();
       }
+      // 8b. Cámara con vida (MODERNIZACION_2026 ficha 26-G): roll al girar en vuelo que vuelve a 0, FOV según la velocidad,
+      // dolly al aterrizar, plano de descubrimiento sin meterse en el terreno; prefers-reduced-motion (CAM.sinVida) lo apaga todo
+      {
+        const C = G.camara, CAM = C.CAM, V = C.vida, cam = G.renderer.camera, sinVida0 = CAM.sinVida, deg = v => r2(v * 180 / Math.PI);
+        const sigue = n => { for (let i = 0; i < n; i++) { C.follow(DT); C.fov(DT); } };
+        // vuelo a mano (sin física): rumbo que gira w rad/s durante n cuadros
+        let rumbo = 0;
+        const volar = (w, n) => { for (let i = 0; i < n; i++) { rumbo += w * DT; M.vx = Math.sin(rumbo) * F.FLY_SPEED; M.vz = Math.cos(rumbo) * F.FLY_SPEED; sigue(1); } };
+        const probar = () => {
+          const o = {};
+          reset(L.x, L.z); C.place(true); M.flying = true; M.grounded = false; M.speed = F.FLY_SPEED;
+          volar(1.2, 60); o.rollGiro = deg(V.roll);
+          volar(0, 150); o.rollRecto = deg(V.roll);
+          o.fovVuelo = r2(C.fovExtra()); M.dashT = 0.2; o.fovImpulso = r2(C.fovExtra()); M.dashT = 0;
+          M.flying = false; M.grounded = true; M.speed = 0; M.vx = M.vz = 0; volar(0, 1); sigue(120); o.rollSuelo = deg(V.roll); o.fovSuelo = r2(C.fovExtra());
+          M.impact = 1; M.land = 0.2; sigue(1); o.caida = r2(V.caida); M.land = 0; sigue(120); o.caidaFin = r2(V.caida);
+          // plano de descubrimiento: la cámara gira y nunca queda bajo el terreno
+          const y0 = C.yaw; o.plano = C.descubrir(); let minSep = Infinity, giro = 0;
+          for (let i = 0; i < Math.ceil(CAM.plano / DT) + 10; i++) {
+            sigue(1); minSep = Math.min(minSep, cam.position.y - H(cam.position.x, cam.position.z));
+            const da = Math.atan2(cam.position.x - S.pos.x, cam.position.z - S.pos.z) - y0; giro = Math.max(giro, Math.abs(Math.atan2(Math.sin(da), Math.cos(da))));
+          }
+          o.planoGiro = r2(giro); o.planoSep = r2(minSep); o.planoFin = V.plano;
+          return o;
+        };
+        try {
+          CAM.sinVida = false;
+          if (!G.renderer.REDUCED) {
+            const o = met.camaraVida = probar();
+            check('Cámara con vida: se inclina al girar en vuelo (sin pasar de ±4°) y vuelve a 0 al ir recto y en el suelo', Math.abs(o.rollGiro) > 1.5 && Math.abs(o.rollGiro) <= CAM.rollMax + 1e-6 && Math.abs(o.rollRecto) < 0.1 && o.rollSuelo === 0, JSON.stringify(o));
+            check('Cámara con vida: FOV +4 al volar, +12 en el impulso, 0 en el suelo; dolly al aterrizar que vuelve', o.fovVuelo === CAM.fovMin && o.fovImpulso === CAM.fovMax && o.fovSuelo === 0 && o.caida > 0.2 && o.caidaFin === 0, JSON.stringify(o));
+            check('Plano de descubrimiento: órbita corta de 1,2 s que no atraviesa el terreno', o.plano && o.planoGiro > 0.2 && o.planoSep >= 0.3 && o.planoFin === 0, JSON.stringify(o));
+          } else check('Cámara con vida (prefers-reduced-motion activo en este navegador)', true, 'solo el caso apagado');
+          CAM.sinVida = true;
+          const q = met.camaraQuieta = probar();
+          check('Con prefers-reduced-motion la cámara no se inclina, no cambia el FOV, no baja al aterrizar ni hace el plano', q.rollGiro === 0 && q.fovVuelo === 0 && q.fovImpulso === 0 && q.caida === 0 && q.plano === false, JSON.stringify(q));
+        } finally {
+          CAM.sinVida = sinVida0; V.plano = 0; V.roll = 0; M.flying = false; M.dashT = 0; M.land = 0;
+          reset(L.x, L.z); cam.fov = 55; cam.updateProjectionMatrix();
+        }
+      }
       // 9. Subir siempre sube y nunca encajada (rol Movimiento y controles). Lo que contó Kelvin: «a veces la cotorra no eleva
       // más» y Vittata metida en la pared de una torre de las ruinas, con la cabeza atravesando la plataforma de arriba.
       {
@@ -477,6 +518,17 @@ window.AVMovimientoTest = function (G) {
           } else check('Torre antigua de las ruinas', false, 'no se encontró la cavidad de la torre (¿cambió el modelo o el mapa?)');
           reset(L.x, L.z);
         } else check('Torre antigua de las ruinas', true, 'sin la torre en este mapa');
+      }
+      // Fundido de la flora (G1): con la cámara de seguimiento a su distancia normal la flora entre ella y Vittata se
+      // tramea (uOcluA.w = FUNDIDO.fuerza); con la cámara pegada a Vittata (menos de 1,5 radios) se apaga
+      if (G.vegetacion && G.vegetacion.fundido) {
+        const FU = G.vegetacion.fundido, cam = G.renderer.camera;
+        reset(L.x, L.z); frame(null, 40); G.vegetacion.fundir();
+        const lejos = G.vegetacion.stats().fundido, dist = cam.position.distanceTo(new THREE.Vector3(S.pos.x, S.pos.y + FU.alto, S.pos.z));
+        const p0 = cam.position.clone(); cam.position.set(S.pos.x + 0.3, S.pos.y + FU.alto + 0.3, S.pos.z); G.vegetacion.fundir();
+        const cerca = G.vegetacion.stats().fundido; cam.position.copy(p0);
+        met.fundido = { fuerza: FU.fuerza, lejos, cerca, distCam: r2(dist) };
+        check('Fundido de la flora: activo con la cámara a distancia normal y apagado con la cámara pegada a Vittata', FU.fuerza > 0 && lejos === FU.fuerza && cerca === 0 && dist > FU.radio * 1.5, JSON.stringify(met.fundido));
       }
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
     } finally {

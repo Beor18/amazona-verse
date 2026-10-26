@@ -256,6 +256,7 @@ AVE.module('terreno', function (G) {
   const SPLAT_FRAG_PARS = [
     'uniform sampler2D tA0, tA1, tA2, tA3, tN0, tN1, tN2, tN3, tMacro;',
     'uniform vec4 uEsc, uSat; uniform vec3 uTint0, uTint1, uTint2, uTint3; uniform float uMar;',
+    'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
     'vec2 rotUv(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }',
@@ -311,6 +312,16 @@ AVE.module('terreno', function (G) {
   c2 = mix(c2, c0 * 0.78, musgoRoca * 0.75);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
   alb *= 1.0 - 0.25 * (1.0 - smoothstep(uMar + 0.05, uMar + 0.6, vWPos.y)) * (1.0 - steep);
+  #ifdef SPLAT_ZONAS
+    // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
+    vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
+    alb *= mix(vec3(1.0), zn.rgb + 0.5, 1.0 - bw.z * 0.5);
+    #ifdef SPLAT_MUSGO
+      // musgo húmedo en los llanos altos (pendiente < 15°, más de 60 m) de las zonas húmedas
+      float musgo = zn.a * smoothstep(0.955, 0.975, nG.y) * smoothstep(56.0, 64.0, vWPos.y) * smoothstep(0.3, 0.6, mac.g + mac2.r * 0.4);
+      alb = mix(alb, c0 * vec3(0.62, 0.9, 0.66), musgo * 0.6);
+    #endif
+  #endif
   diffuseColor.rgb *= alb;
 `;
   // Normales de las 4 capas en el espacio tangente de la proyección planar (T = +x, B = +z), fuertes de cerca y suaves de lejos
@@ -337,6 +348,7 @@ AVE.module('terreno', function (G) {
   #endif
 `;
   const splatMats = [];
+  const ZONAS = G.ambiente && G.ambiente.zonas; // src/engine/ambiente.js (va antes en index.html); null sin mapa
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
@@ -348,6 +360,7 @@ AVE.module('terreno', function (G) {
       tMacro: { value: macroNoise() }, uEsc: { value: new THREE.Vector4(L[0].e, L[1].e, L[2].e, L[3].e) },
       uTint0: { value: L[0].t }, uTint1: { value: L[1].t }, uTint2: { value: L[2].t }, uTint3: { value: L[3].t },
       uMar: { value: q.mar || 0 }, uSat: { value: new THREE.Vector4(L[0].s, L[1].s, L[2].s, L[3].s) },
+      tZona: { value: ZONAS ? ZONAS.tex : null }, uZona: { value: ZONAS ? new THREE.Vector4(ZONAS.x0, ZONAS.z0, 1 / ZONAS.ancho, 1 / ZONAS.largo) : new THREE.Vector4() },
     };
     m.defines = {};
     m.userData.splat = true; m.userData.uniforms = U;
@@ -361,7 +374,9 @@ AVE.module('terreno', function (G) {
       ].join('\n'));
       sh.fragmentShader = SPLAT_FRAG_PARS + '\n' + sh.fragmentShader
         .replace('#include <map_fragment>', SPLAT_ALBEDO)
-        .replace('#include <normal_fragment_maps>', SPLAT_NORMAL);
+        .replace('#include <normal_fragment_maps>', SPLAT_NORMAL)
+        // sin brillo plástico (ficha 26-F): la roca y la tierra casi no reflejan; el musgo y la arena húmeda, algo
+        .replace('#include <specularmap_fragment>', '#include <specularmap_fragment>\n  specularStrength *= 1.0 - bw.z * 0.8 - bw.y * 0.4;');
     };
     m.customProgramCacheKey = () => 'splat:' + Object.keys(m.defines).join(',');
     splatMats.push(m);
@@ -372,6 +387,7 @@ AVE.module('terreno', function (G) {
     const d = {};
     if (C.normalesSuelo) { d.SPLAT_NORMALES = ''; d.SPLAT_TRIPLANAR = ''; }
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
+    if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
     if (Object.keys(d).join() !== Object.keys(m.defines).join()) { m.defines = d; m.needsUpdate = true; }
   }
   G.on('calidad', C => { for (const m of splatMats) calidadSplat(m, C); });

@@ -385,7 +385,7 @@ AVE.module('accesibilidad', function (G) {
       }
 
       // 2. Modo zurdo: el joystick a la derecha y los botones de acción a la izquierda (teléfono vertical y horizontal)
-      for (const [W, H] of [[375, 812], [412, 915], [812, 375]]) { // (a 320 px el joystick y los botones ya no caben uno al lado del otro, también sin zurdo)
+      for (const [W, H] of [[375, 812], [412, 915], [812, 375], [320, 568]]) {
         const malosZ = [];
         for (const zurdo of [false, true]) {
           const m = await maqueta(W, H, zurdo ? 'a11y-zurdo' : '');

@@ -93,10 +93,11 @@ AVE.module('agua', function (G) {
     uSolDir: { value: R.sunDir }, uSolCol: { value: sunCol },
     uCielo: { value: lin((W.cielo && W.cielo.cenit) || '#3d8fd6') }, uHorizonte: { value: lin((W.cielo && W.cielo.color) || '#bfe1d6') },
     uHemiSuelo: { value: R.hemi.groundColor.clone() }, uHemiCielo: { value: R.hemi.color.clone().multiplyScalar(R.hemi.intensity) },
+    uEstilo: { value: C.agua > 0 ? 1 : 0 }, // 26-C: espuma en bandas de borde duro y destellos del sol (medio y alto)
   };
   const COMMON_FRAG = `
     uniform float uTime; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec;
-    uniform vec3 uSolDir, uSolCol, uCielo, uHorizonte, uHemiSuelo, uHemiCielo;
+    uniform vec3 uSolDir, uSolCol, uCielo, uHorizonte, uHemiSuelo, uHemiCielo; uniform float uEstilo;
     float alturaTerreno(vec2 xz) {
       #ifdef HAY_ALTURA
         vec2 uv = (xz - uHInfo.xy) / uHInfo.zw;
@@ -110,6 +111,11 @@ AVE.module('agua', function (G) {
     float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
       return mix(mix(hash12(i), hash12(i + vec2(1.0, 0.0)), f.x), mix(hash12(i + vec2(0.0, 1.0)), hash12(i + 1.0), f.x), f.y); }
     vec3 skyRefl(vec3 r) { float h = clamp(r.y, 0.0, 1.0); return mix(uHorizonte, uCielo, pow(h, 0.5)); }
+    vec3 saturar(vec3 c, float s) { return max(mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, s), 0.0); }
+    // destellos del sol: el lóbulo ancho pow(60) solo donde el ruido deja puntos sueltos que titilan
+    float destello(vec3 N, vec3 H, vec2 xz) {
+      return pow(max(dot(N, H), 0.0), 60.0) * smoothstep(0.74, 0.9, vnoise(xz * 3.1 + N.xz * 9.0 + uTime * 0.7)) * uEstilo;
+    }
   `;
   function waterMaterial(vert, frag, extra, defines) {
     const m = new THREE.ShaderMaterial({
@@ -160,6 +166,7 @@ AVE.module('agua', function (G) {
       float k = 1.0 - exp(-max(prof, 0.0) * 0.28);
       vec3 col = mix(uLaguna, uSomero, smoothstep(0.0, 0.45, k));
       col = mix(col, uHondo, smoothstep(0.45, 1.0, k));
+      col = saturar(col, 1.3); // turquesa más puro (26-C)
       // luz: cielo y suelo, sol
       float ndl = max(dot(N, uSolDir), 0.0);
       col *= uHemiCielo * 0.55 + uSolCol * ndl * 0.35 + 0.1;
@@ -167,11 +174,16 @@ AVE.module('agua', function (G) {
       col = mix(col, skyRefl(reflect(-V, N)), fres);
       vec3 Hh = normalize(uSolDir + V);
       col += uSolCol * pow(max(dot(N, Hh), 0.0), mix(320.0, 90.0, lejos)) * mix(3.0, 0.6, lejos);
-      // espuma de orilla: bandas que llegan a la playa, rotas con ruido
+      col += uSolCol * destello(N, Hh, xz) * 1.4 * (1.0 - lejos * 0.8);
+      // espuma de orilla: bandas que llegan a la playa, rotas con ruido; en medio y alto con borde duro y una 2.ª banda fina más afuera
       float nz = vnoise(xz * 0.9 + uTime * 0.15) * 0.6 + vnoise(xz * 2.7 - uTime * 0.2) * 0.4;
       float orilla = 1.0 - smoothstep(0.0, 1.5, prof);
       float bandas = sin(prof * 5.5 - uTime * 1.4 + nz * 3.0 + vOla * 1.5) * 0.5 + 0.5;
-      float espuma = orilla * smoothstep(0.62, 0.8, bandas + nz * 0.35) + (1.0 - smoothstep(0.03, 0.22 + nz * 0.15, prof));
+      float espuma = orilla * smoothstep(mix(0.62, 0.685, uEstilo), mix(0.8, 0.71, uEstilo), bandas + nz * 0.35);
+      float bandas2 = sin(prof * 2.6 - uTime * 0.9 + nz * 2.2 + vOla) * 0.5 + 0.5;
+      espuma = max(espuma, uEstilo * (1.0 - smoothstep(0.9, 2.6, prof)) * smoothstep(0.4, 0.9, prof) * (smoothstep(0.86, 0.885, bandas2) - smoothstep(0.93, 0.955, bandas2)));
+      float pie = 0.13 + nz * 0.15;
+      espuma += 1.0 - smoothstep(mix(0.03, pie - 0.03, uEstilo), mix(pie + 0.09, pie, uEstilo), prof);
       espuma = clamp(espuma, 0.0, 1.0) * (1.0 - lejos);
       col = mix(col, uHemiCielo * 0.85 + uSolCol * 0.35, espuma * 0.85);
       float a = mix(0.55, 0.96, smoothstep(0.0, 1.6, prof));
@@ -241,15 +253,18 @@ AVE.module('agua', function (G) {
       float k = 1.0 - exp(-max(prof, 0.0) * 0.6);
       vec3 col = mix(uClaro, uHondo, k);
       col = mix(col, uTurbio, uTurbidez);
+      col = saturar(col, 1.18);
       float ndl = max(dot(N, uSolDir), 0.0);
       col *= uHemiCielo * 0.6 + uSolCol * ndl * 0.3 + 0.08;
       float fres = 0.03 + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
       col = mix(col, skyRefl(reflect(-V, N)), fres * (1.0 - cae));
       col += uSolCol * pow(max(dot(N, normalize(uSolDir + V)), 0.0), 220.0) * 2.0 * (1.0 - cae);
+      col += uSolCol * destello(N, normalize(uSolDir + V), vW.xz) * (1.0 - cae) * (1.0 - smoothstep(40.0, 160.0, dist));
       col = mix(col, uClaro * 0.75 * (uHemiCielo * 0.8 + 0.2), cae * 0.6); // la lámina que cae: verde claro translúcido
       // espuma: orillas (poca profundidad), saltos (R del color de vértice), cascadas con vetas y pie de las cascadas
       float nz = vnoise(vec2(vUv.x * 1.3, vUv.y * 0.8 - uTime * vel * 1.2)) * 0.65 + vnoise(vW.xz * 1.7 + uTime * 0.3) * 0.35;
-      float esp = (1.0 - smoothstep(0.05, 0.45 + nz * 0.25, prof)) * 0.8 * (1.0 - cae); // orillas (no en la lámina que cae)
+      float ori = 0.3 + nz * 0.25;
+      float esp = (1.0 - smoothstep(mix(0.05, ori - 0.04, uEstilo), mix(0.45 + nz * 0.25, ori, uEstilo), prof)) * 0.8 * (1.0 - cae); // orillas (no en la lámina que cae)
       esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4) * (1.0 - cae * 0.7));
       // cascada: vetas finas y largas que caen (u = ancho de la cinta), sobre agua translúcida
       float s1 = vnoise(vec2(vUv.x * 5.5, vW.y * 0.18 + uTime * 2.6));
@@ -380,6 +395,7 @@ AVE.module('agua', function (G) {
   }
   function calidadAgua(Q) {
     if (rocio) rocio.material.uniforms.uCant.value = Q.particulas;
+    U.uEstilo.value = Q.agua > 0 ? 1 : 0;
   }
   calidadAgua(C);
   G.on('calidad', calidadAgua);

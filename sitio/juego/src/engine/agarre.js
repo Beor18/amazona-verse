@@ -120,7 +120,7 @@ AVE.module('agarre', function (G) {
     o = o || {};
     if (!held || act.fase === 'soltar') return null;
     const h = held;
-    if (o.instantaneo || !P()) { dejar(o.en); return h.obj; }
+    if (o.instantaneo || !P()) { if (act.fase === 'alcanzar') { act.fase = ''; act.done = true; } dejar(o.en); return h.obj; } // soltar al instante corta el gesto de alcanzar (sin enganche de un held nulo)
     act.fase = 'soltar'; act.t = 0; act.dur = AG.dropTime; act.done = false; act.en = o.en || null;
     return h.obj;
   }
@@ -155,7 +155,7 @@ AVE.module('agarre', function (G) {
       const k = Math.min(1, act.t / act.dur);
       if (act.fase === 'alcanzar') {
         reach = Math.sin(k * Math.PI);
-        if (!act.done && k >= AG.grabAt) { act.done = true; enganche(held); api.mira = null; G.emit('agarrado', held.id, held.obj); }
+        if (!act.done && k >= AG.grabAt) { act.done = true; if (held) { enganche(held); G.emit('agarrado', held.id, held.obj); } api.mira = null; }
       } else if (act.fase === 'soltar') {
         reach = Math.sin(k * Math.PI) * 0.8;
         if (!act.done && k >= 0.5) { act.done = true; dejar(act.en); }

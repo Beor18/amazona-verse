@@ -1,6 +1,9 @@
 /* AVE · cámara (rol Movimiento y animación; ver docs/equipo/MOVIMIENTO.md)
-   Cámara en tercera persona que sigue al jugador (giro con Q/R o arrastrando), FOV +8 al volar o en el impulso,
-   sacudida y hit-stop (GDD §7). prefers-reduced-motion apaga la sacudida y el cambio de FOV.
+   Cámara en tercera persona que sigue al jugador (giro con Q/R o arrastrando), sacudida y hit-stop (GDD §7).
+   - Cámara con vida (MODERNIZACION_2026 ficha 26-G): FOV +4…+12 según la velocidad al volar o en el impulso, inclinación
+     (roll) de hasta ±4° al girar en vuelo, que vuelve a 0 al ir recto o posarse, dolly y leve sacudida al aterrizar,
+     balanceo de 1 cm al caminar y «plano de descubrimiento» de 1,2 s (órbita corta) al descubrir un lugar ('lugar').
+     prefers-reduced-motion (o CAM.sinVida) apaga todo esto, la sacudida y el cambio de FOV.
    - Altura estable al saltar: la cámara no sube y baja con cada salto (ancla en la altura del último suelo, como en los
      plataformas 3D); sigue al jugador si sube mucho, si cae por debajo, al volar y al nadar.
    - Seguimiento perezoso: si el jugador no toca la cámara en CAM.lazyDelay s y se mueve, se coloca poco a poco detrás de él
@@ -25,12 +28,20 @@ AVE.module('camara', function (G) {
     groundClear: 0.9,              // separación mínima sobre el terreno
     agachadaAlto: 1.3, agachadaDist: 4.2, // agachada bajo un toldo: la cámara baja y se acerca para verla bajo la lona
     copaMin: 2.4, copaDentro: 2.8, // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m)
+    rollMax: 4, rollK: 0.09,       // inclinación en vuelo: máximo (°) y grados por grado/s de giro del rumbo
+    fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
+    caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
+    plano: 1.2, planoGiro: 0.55,   // plano de descubrimiento: duración (s) y giro de la órbita (rad)
+    sinVida: false,                // true: sin cámara con vida (como prefers-reduced-motion; lo usa movementTest)
   }, G.pack.jugador && G.pack.jugador.camaraAjuste);
   // combo/comboT: racha de capturas (la usan objetos y diario para subir la nota del arpegio)
   const juice = { shake: 0, amp: 0, hitStop: 0, combo: 0, comboT: 0 };
   const camPos = new THREE.Vector3();
   let anchorY = null, lastManual = -1e9;
   const now = () => performance.now() / 1000;
+  // Cámara con vida: roll (rad), caida (m, dolly al aterrizar), fase del balanceo, plano de descubrimiento en curso (s)
+  const vida = { roll: 0, caida: 0, fase: 0, plano: 0, planoDir: 1, rumbo: null, giro: 0, land: 0 };
+  const quieta = () => R.REDUCED || CAM.sinVida;
   const rate = (k, dt) => 1 - Math.exp(-dt * k);
 
   function manual() { lastManual = now(); }
@@ -86,7 +97,10 @@ AVE.module('camara', function (G) {
     const M = G.fisica.MOVE, fly = M.flying, ay = anchorY == null ? S.pos.y : anchorY, ag = fly ? 0 : M.agachada || 0;
     let h = fly ? CAM.heightFly : CAM.height, d = dist();
     if (ag) { h += (CAM.agachadaAlto - h) * ag; d += (CAM.agachadaDist - d) * ag; }
-    camPos.set(S.pos.x + Math.sin(yaw) * d, ay + h, S.pos.z + Math.cos(yaw) * d);
+    // Plano de descubrimiento: órbita corta de ida y vuelta alrededor de Vittata, algo más cerca y más baja
+    let yw = yaw;
+    if (vida.plano > 0) { const s = Math.sin(Math.PI * (1 - vida.plano / CAM.plano)); yw += vida.planoDir * CAM.planoGiro * s; d *= 1 - 0.18 * s; h *= 1 - 0.2 * s; }
+    camPos.set(S.pos.x + Math.sin(yw) * d, ay + h - vida.caida, S.pos.z + Math.cos(yw) * d);
     evitarCopas();
     // En laderas y barrancos la cámara no se mete bajo el terreno
     const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
@@ -113,33 +127,73 @@ AVE.module('camara', function (G) {
     const k = (M.flying ? CAM.lazyFly : CAM.lazy) * Math.min(1, sp / G.fisica.RUN_SPEED);
     yaw += diff * Math.min(1, k * dt);
   }
+  // Roll, dolly del aterrizaje y plano: avanzan con el seguimiento (no al dibujar) para que las pruebas los muevan sin dibujar
+  function vivir(dt) {
+    const M = G.fisica.MOVE;
+    if (quieta()) { vida.roll = vida.caida = vida.plano = 0; vida.rumbo = null; vida.land = M.land || 0; return; }
+    // Inclinación: proporcional a la velocidad de giro del rumbo en vuelo (suavizada); fuera del vuelo vuelve a 0
+    let want = 0;
+    if (M.flying && (M.speed || 0) > 2) {
+      const r = Math.atan2(M.vx, M.vz);
+      if (vida.rumbo != null && dt > 0) { const w = Math.atan2(Math.sin(r - vida.rumbo), Math.cos(r - vida.rumbo)) / dt; vida.giro += (w - vida.giro) * rate(5, dt); }
+      vida.rumbo = r;
+      const lim = CAM.rollMax * Math.PI / 180;
+      want = Math.max(-lim, Math.min(lim, vida.giro * CAM.rollK));
+    } else { vida.rumbo = null; vida.giro = 0; }
+    vida.roll += (want - vida.roll) * rate(4, dt);
+    if (Math.abs(vida.roll) < 1e-4 && !want) vida.roll = 0;
+    // Aterrizaje (fisica.js pone MOVE.land al tocar suelo): la cámara baja un poco y vuelve; posarse en vuelo sacude leve
+    if ((M.land || 0) > vida.land + 1e-3) { vida.caida = Math.max(vida.caida, CAM.caida * Math.max(0.3, M.impact || 0)); if ((M.impact || 0) <= 0.3) shake(0.04, 0.15); }
+    vida.land = M.land || 0;
+    vida.caida *= 1 - rate(5, dt); if (vida.caida < 1e-3) vida.caida = 0;
+    if (vida.plano > 0) vida.plano = Math.max(0, vida.plano - dt);
+    // Balanceo al caminar: fase según la distancia recorrida en el suelo
+    if (M.grounded && !M.flying && !M.swimming && (M.speed || 0) > 0.5) vida.fase += dt * (M.speed || 0) * 2.4; else vida.fase = 0;
+  }
+  // Plano de descubrimiento (1,2 s): gira hacia el lado que aparta la cámara de la pendiente; nada con prefers-reduced-motion
+  function descubrir() {
+    if (quieta()) return false;
+    const l = G.terreno.height(S.pos.x + Math.sin(yaw + 0.5) * 6, S.pos.z + Math.cos(yaw + 0.5) * 6), r = G.terreno.height(S.pos.x + Math.sin(yaw - 0.5) * 6, S.pos.z + Math.cos(yaw - 0.5) * 6);
+    vida.planoDir = l <= r ? 1 : -1; vida.plano = CAM.plano; return true;
+  }
+  G.on('lugar', () => descubrir());
   function follow(dt) {
+    vivir(dt);
     lazyYaw(dt);
     updateAnchor(dt, false);
     target(); camera.position.lerp(camPos, rate(CAM.follow, dt));
   }
   function shake(amp, secs) { if (R.REDUCED) return; juice.amp = Math.max(juice.amp, amp); juice.shake = Math.max(juice.shake, secs || 0.3); }
   function hitStop(secs) { juice.hitStop = Math.max(juice.hitStop, secs || 0.06); }
+  // FOV: +4 al volar o en el impulso, hasta +12 a la velocidad del impulso
+  function fovExtra() {
+    const M = G.fisica.MOVE, F = G.fisica;
+    if (quieta() || !(M.flying || M.dashT > 0)) return 0;
+    const base = M.flying ? F.FLY_SPEED : F.SPEED; // volando, el crucero da fovMin; solo el impulso lo sube
+    const k = M.dashT > 0 ? 1 : Math.max(0, Math.min(1, ((M.speed || 0) - base) / Math.max(0.1, F.DASH_SPEED - base)));
+    return CAM.fovMin + (CAM.fovMax - CAM.fovMin) * k;
+  }
   function fov(dt) {
-    const M = G.fisica.MOVE;
-    const wantFov = 55 + (!R.REDUCED && (M.flying || M.dashT > 0) ? 8 : 0);
+    const wantFov = 55 + fovExtra();
     if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov += (wantFov - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
   }
   // Dibuja: la sacudida se suma solo durante el dibujo para no ensuciar el seguimiento de la cámara
   function draw(dt) {
     camera.lookAt(S.pos.x, lookY(), S.pos.z);
-    let sx = 0, sy = 0, sz = 0;
+    if (vida.roll) camera.rotateZ(vida.roll);
+    let sx = 0, sy = quieta() ? 0 : Math.sin(vida.fase) * CAM.bob, sz = 0;
+    camera.position.y += sy;
     if (juice.shake > 0) {
       juice.shake -= dt;
       const a = juice.amp * Math.min(1, Math.max(0, juice.shake) / 0.2);
-      sx = (Math.random() - 0.5) * a; sy = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a;
-      camera.position.x += sx; camera.position.y += sy; camera.position.z += sz;
+      const ry = (Math.random() - 0.5) * a; sx = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a; sy += ry;
+      camera.position.x += sx; camera.position.y += ry; camera.position.z += sz;
       if (juice.shake <= 0) juice.amp = 0;
     }
     if (R.drawScene) R.drawScene(camera); else R.renderer.render(R.scene, camera); // drawScene: sombras, cielo y post-proceso
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, dist, place, follow, shake, hitStop, fov, draw, manual,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir,
     get anchorY() { return anchorY; } };
 });

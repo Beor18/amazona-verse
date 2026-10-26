@@ -444,7 +444,7 @@ kbd {
 }
 #toast b { font: 700 var(--fs-md)/1.25 var(--font-display); }
 /* Logro: el toast trae un título en <b> (Diario de Campo) */
-#toast:has(b) { color: var(--c-ink); background: linear-gradient(135deg, #fff6d6, var(--gold)); border-color: #e0a93a; overflow: hidden; }
+#toast:has(b) { color: var(--c-ink); background: linear-gradient(135deg, #fff6d6, var(--gold)) #fff6d6; border-color: #e0a93a; overflow: hidden; } /* el color de fondo explícito: el contraste se mide contra background-color */
 #toast:has(b)::before { background: var(--i-star) center / 22px no-repeat, #fff; box-shadow: 0 0 0 3px #e0a93a, 0 0 18px rgba(255, 255, 255, 0.9); animation: badge-pop 600ms var(--ease-pop) both; }
 #toast:has(b)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%); transform: translateX(-100%); animation: shine-x 1.4s ease-out 300ms both; pointer-events: none; }
 /* Modo construcción: trae un botón */
@@ -755,7 +755,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
 /* Subtítulos de sonido (el contenedor lo crea src/game/accesibilidad.js): arriba y al centro, bajo el objetivo; el diálogo va abajo y no se tapan.
    En tabletas (hasta 944 px) van a la derecha del objetivo y en el móvil bajo el objetivo y el inventario, sin la columna de botones;
    accesibilidad.js ajusta --sub-top según la altura real de esos paneles. */
-#subtitulos { left: 0; right: 0; margin-inline: auto; width: fit-content; max-width: clamp(260px, calc(100vw - 740px), 560px); top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 76px)); z-index: calc(var(--z-card) + 1); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+#subtitulos { left: 0; right: 0; margin-inline: auto; width: fit-content; max-width: clamp(260px, calc(100vw - 920px), 560px); /* con el botón del nido y letra grande, #sys llega a 837 px en 1280 */ top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 76px)); z-index: calc(var(--z-card) + 1); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
 #subtitulos[hidden] { display: none; }
 #subtitulos > * { pointer-events: none; }
 .sub { margin: 0; display: flex; align-items: center; gap: var(--sp-2); max-width: 100%; padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3); font: 600 var(--fs-md)/1.3 var(--font-body); color: var(--c-text); background: var(--c-surface-solid); border: 2px solid var(--c-line); border-radius: var(--r-lg); box-shadow: var(--sh-2); overflow-wrap: break-word; animation: sub-in var(--dur-2) var(--ease-out) both; }
@@ -785,6 +785,15 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 :root.a11y-zurdo #acts {
   right: auto; left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px);
   grid-template-columns: var(--tap-xl) 78px; grid-template-areas: "dash fly" "act jump";
+}
+/* Teléfonos de 360 px o menos (320×568): joystick y botones más compactos para que quepan lado a lado, con o sin modo zurdo (botones ≥ 44 px) */
+@media (max-width: 360px) {
+  :root { --stick: 104px; --tap-lg: 56px; --tap-xl: 68px; }
+  #acts { grid-template-columns: 60px var(--tap-xl); grid-template-rows: 56px var(--tap-xl); gap: 8px; }
+  #acts #b-jump { --sz: 60px; --icon-size: 26px; }
+  #acts #b-act { --icon-size: 28px; font-size: 12px; padding: 0 4px; }
+  #knob { left: calc(50% - 26px); top: calc(50% - 26px); width: 52px; height: 52px; }
+  :root.a11y-zurdo #acts { grid-template-columns: var(--tap-xl) 60px; }
 }
 @media (hover: hover) and (pointer: fine) { .a11y-solo-tactil { display: none; } }
 .pause-a11y .note { margin: var(--sp-2) 0 0; }

@@ -32,6 +32,8 @@
         mision: { xp: 60, grupo: 'explorar', nombre: { es: 'Misión', en: 'Mission' } },
         liberacion: { xp: 80, grupo: 'aprender', nombre: { es: 'Lección de la liberación', en: 'Release lesson' } },
         cuidado: { xp: 5, grupo: 'cuidar', nombre: { es: 'Cuidado', en: 'Care' } },
+        fauna: { xp: 15, grupo: 'explorar', nombre: { es: 'Animal observado', en: 'Animal observed' } }, // src/game/fauna.js (observar por primera vez)
+        clima: { xp: 10, grupo: 'explorar', nombre: { es: 'Refugio de la lluvia', en: 'Shelter from the rain' } }, // src/game/clima.js (aguacero bajo techo)
       },
     },
 
@@ -89,7 +91,7 @@
     // FANTASÍA: la cápsula decorada (pétalos que se abren). REAL: dentro siempre hay un huevo BLANCO, como el de Amazona vittata.
     // cria: nombre de la cotorrita (preestablecido; el niño no escribe texto libre). rareza: nivel del reto (no es probabilidad). obtener: condición por pack; 'defecto' para packs sin mapa propio.
     //   Condiciones: { inicio } · { mision: id } · { hallazgos: { cat?, min } } · { fichas: min } · { preguntas: min }
-    //                { misiones: min } · { liberadas: min } · { xpAprender: min } · { todas: [cond, ...] }
+    //                { misiones: min } · { liberadas: min } · { xpAprender: min } · { rescates: min } · { todas: [cond, ...] }
     // traits: por etapa, piezas del ropero ({ slot, id, color, style }) y piezas NUEVAS ({ nuevo: 'id_trait' }, ver TRAITS_V2.md),
     //   con 'respaldo' existente para que el prototipo las muestre ya.
     // especie (opcional): id de content/comun/especies.js; si esa especie tiene piel, la cría (bebé, juvenil y adulto) la lleva
@@ -169,12 +171,23 @@
           juvenil: [{ nuevo: 'visor_solar', respaldo: { slot: 'eyes', id: 'lentes', color: '#3d8fb0', style: 'deportivas' } }],
           adulto: [{ nuevo: 'kit_cientifico', respaldo: { slot: 'back', id: 'equipo', color: '#3d8fb0', style: 'mochila_pr' } }, { nuevo: 'anillo_cientifico' }],
         } },
+      // [KELVIN] nombre y piel de esta cápsula (src/game/rescate.js, «Save the Parrot»)
+      { id: 'rescatado', cria: { es: 'Pío', en: 'Pío' }, rareza: 'rescate', nombre: { es: 'Cápsula del pichón rescatado', en: 'Rescued chick capsule' },
+        lema: { es: 'Para quien devuelve pichones a su nido.', en: 'For those who bring chicks back to their nest.' },
+        aspecto: { patron: 'paja', a: '#9cc56a', b: '#5a7a2e', brillo: 0.2 },
+        obtener: { texto: { es: 'Devuelve 5 pichones a su caja nido en «¡Salva al pichón!».', en: 'Bring 5 chicks back to their nest box in "Save the Parrot".' }, defecto: { rescates: 5 } },
+        traits: {
+          bebe: [{ nuevo: 'cascaron_gorro' }, { slot: 'neck', id: 'panuelo', color: '#3fae4a', style: 'liso' }],
+          juvenil: [{ slot: 'eyes', id: 'gafas', color: '#5a3a22' }],
+          adulto: [{ slot: 'chest', id: 'brujula', color: '#c9a227' }, { nuevo: 'anillo_cientifico' }],
+        } },
     ],
     // Etiquetas del reto: hablan de lo que se aprende, nunca de "raro/épico/legendario" (vocabulario de cajas de botín)
     rarezas: {
       inicial: { es: 'Inicial', en: 'Starter' }, exploracion: { es: 'Exploración', en: 'Exploration' }, diario: { es: 'Diario', en: 'Journal' },
       cultura: { es: 'Cultura', en: 'Culture' }, preguntas: { es: 'Reto de preguntas', en: 'Questions challenge' },
       coleccion: { es: 'Reto del Diario completo', en: 'Full journal challenge' }, conservacion: { es: 'Reto de conservación', en: 'Conservation challenge' },
+      rescate: { es: 'Reto de rescate', en: 'Rescue challenge' }, // src/game/rescate.js
     },
 
     // ---------- Rareza de la cría (src/game/rareza.js; directiva P2) ----------
