@@ -11,8 +11,8 @@ Dos ejes que no se mezclan: la **cápsula** se gana con un reto (sin azar, como 
 | «Mis récords» cuenta huevos, crías y libres | EXISTE → ampliado con la colección por rareza | `records.js` |
 | Huevos por rescates (cápsula «Pichón rescatado») | PARCIAL (carril rescate; entra por `G.criadero.dar` y `obtener`) | `rescate.js` |
 | Rareza al nacer (común 60 · rara 29 · épica 10 · legendaria 1), garantías, marco, aura, poderes, Retos sin poderes, guardado viejo | HECHO aquí | `rareza.js` + hunks |
-| Velocidad de vuelo, impulso y vista de frutos aplicados en el motor | PENDIENTE (1 línea cada uno, dueños de `fisica.js` y `banquete.js`: `G.rareza.mult('vuelo'|'impulso'|'vista')`) | pedido abajo |
-| La bandada acude al canto (`G.on('canto')` → `pedir('canto', { en: 1 })`) | PENDIENTE (dueño de `bandada.js`) | pedido abajo |
+| Velocidad de vuelo, impulso y vista de frutos aplicados en el motor | HECHO (`5b7a512`): vuelo solo en el aire, impulso en el despegue, vista en el radio de los frutos del mundo | `fisica.js`, `banquete.js` |
+| La bandada acude al canto (`G.on('canto')` → `pedir('canto', { en: 1 })`) | HECHO (`5b7a512`) | `bandada.js` |
 
 ## Diseño
 - **Cuándo se decide:** al tocar «Ver la eclosión» (`asignar` en `iniciarEclosion`) y se guarda al instante: recargar no vuelve a tirar. La sorpresa es la eclosión; no hay botón de repetir ni pantalla de tragamonedas.
@@ -27,4 +27,4 @@ Dos ejes que no se mezclan: la **cápsula** se gana con un reto (sin azar, como 
 ## Pendientes y decisiones
 - `[KELVIN]` nombres de las rarezas: aquí los de P2 (Común, Rara, Épica, Legendaria); opción neutra sin vocabulario de cajas de botín: Nido, Bosque, Cielo, Leyenda (se cambian en `rarezaCria.niveles[].nombre`).
 - `[KELVIN]` si la legendaria es una especie concreta (hoy: la especie la decide la cápsula; la rareza no la cambia) y el nombre del canto (hoy «Canto de la bandada»).
-- Pedidos: `fisica.js` (`sp *= G.rareza ? G.rareza.mult('vuelo') : 1`; `takeoffV` × `mult('impulso')`), `banquete.js` (radio de ver frutos × `mult('vista')`), `bandada.js` (`G.on('canto', …)`).
+- Pedidos de motor: hechos en `5b7a512`. `fisica.js` multiplica el crucero por `mult('vuelo')` y el despegue por `mult('impulso')`. `banquete.js` alarga el radio de ver los frutos del mundo por `mult('vista')` (el minijuego no). `bandada.js` escucha `canto` y pide la bandada a 1 s. En Retos y duelos `mult()` sigue en 1.
