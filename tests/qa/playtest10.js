@@ -1,7 +1,8 @@
 /* QA · playtest automático de 10 minutos (AV.playtest10) · no toca el juego, solo lo juega
    Un niño nuevo en un iframe del mismo origen con el almacenamiento vacío (la partida de la pestaña se respalda y se devuelve):
-     1 menú de modos y creador corto · 2 vuelo · 3 coquí (neblina) · 4 comer un fruto · 5 lluvia · 6 rescate «Save the Parrot» ·
-     7 río y peces con el visor · 8 foto para el cómic (PNG) · 9 guardar y reabrir.
+     1 menú de modos y creador corto · 2 vuelo · 3 coquí (neblina) · 3b coquí al atardecer · 3c bahía de noche ·
+     4 comer un fruto · 5 lluvia · 6 rescate «Save the Parrot» · 7 río y peces con el visor · 7b edificios completos ·
+     8 foto para el cómic (PNG) · 9 guardar y reabrir.
    Atajos, siempre dichos: AV.teleport (en vez de caminar), el tiempo es el del juego (T.tick, 0,05 s por cuadro), no el reloj de pared.
    Por tramo mide: segundos de juego, ms de pared, ms por cuadro (→ FPS sintéticos; el iframe no se pinta al frente), memoria del
    heap, errores de consola y «segundos sin acción» (cuadros de 0,5 s sin que el jugador se mueva ni pase algo del juego).
@@ -136,6 +137,11 @@
         const seg = r1((performance.now() - t0) / 1000);
         check('1 · Tras el primer gesto llegan clima, rescate, río y banquete (carga diferida)', !!modulos, { segundos: seg, clima: !!G.clima, rescate: !!G.rescate, rioVivo: !!G.rioVivo, banquete: !!G.banquete });
         nota('módulos diferidos listos a los ' + seg + ' s de pared tras el primer gesto');
+        const look = W.AV && W.AV.look;
+        check('1 · El look de fábrica es el toon (vibrant_toon), sin pedirlo en la URL', !!look && look.actual === 'vibrant_toon', look && look.actual);
+        const cielo = G.renderer.scene && G.renderer.scene.getObjectByName('cielo');
+        const nubes = G.renderer.scene && G.renderer.scene.getObjectByName('cielo-nubes');
+        check('1 · El cielo vivo está en la escena (degradado y nubes)', !!cielo && !!nubes, { cielo: !!cielo, nubes: !!nubes, calidad: G.renderer.calidad && G.renderer.calidad.nivel });
       });
 
       // ---------- 2. Vuelo ----------
@@ -177,6 +183,56 @@
         const nuevos = (S.fauna || []).filter(x => !antes.includes(x));
         check('3 · Quieta junto al coquí con neblina lo observa (S.fauna)', nuevos.includes('coqui') || (S.fauna || []).includes('coqui'), { fauna: S.fauna, clima: cl && cl.estado && s(cl.estado()) });
         if (!(S.fauna || []).includes('coqui')) bugs.push({ tramo: '3 · Coquí', que: 'quieta 8 s junto al arbusto con neblina fijada y no se observa el coquí (¿arbusto fuera de la zona o clima no aplicado?)', donde: 'src/game/fauna.js:280 coquiVisible / :294 observar' });
+      });
+
+      // ---------- 3b. Coquí al atardecer (C9): sin neblina, con el atardecer forzado y M3 hecha ----------
+      await paso('3b · Coquí al atardecer', async () => {
+        const cl = G.clima;
+        if (cl && cl.fijar) cl.fijar('sol', { inmediato: true, forzar: true });
+        const cargar = W.AV && W.AV.atardecer;
+        if (typeof cargar !== 'function') { check('3b · Se puede cargar el atardecer', false, 'sin AV.atardecer'); return; }
+        const A = G.atardecer || await cargar();
+        if (!A || !A.forzar) { check('3b · El atardecer expone forzar', false, 'no cargó'); return; }
+        const m3 = !!(S.missions && S.missions.m3);
+        S.missions = S.missions || {}; S.missions.m3 = true; // atajo dicho: tras M3 el coquí solo sale de tarde
+        A.forzar(true); A.avanzar((A.DUR || 8) + 1); await jugar(1);
+        nota('atardecer activo=' + A.activo() + ' · hora=' + S.hora + ' · k=' + (A.k && r1(A.k())));
+        const z = (G.pack.datos && G.pack.datos.zonas && G.pack.datos.zonas.coquiHojas) || { x: -10, z: -185 };
+        const arb = (G.c && G.c.BUSHES && G.c.BUSHES[0]) || z;
+        ir(arb.x + 1.9, arb.z + 0.3, -1, 0); S.pos.y = G.terreno.height(S.pos.x, S.pos.z);
+        if (Array.isArray(S.fauna)) { const i = S.fauna.indexOf('coqui'); if (i >= 0) S.fauna.splice(i, 1); } // se vuelve a observar: el de la neblina no cuenta
+        const antes = (S.fauna || []).slice();
+        if (G.camara.place) G.camara.place(true);
+        if (G.renderer.render) G.renderer.render(0.05, false);
+        await jugar(8);
+        if (G.camara.place) G.camara.place(true);
+        if (G.renderer.render) G.renderer.render(0.05, false);
+        const vio = (S.fauna || []).includes('coqui') && !antes.includes('coqui');
+        const est = A.estado ? A.estado() : {};
+        check('3b · Con sol y atardecer, quieta junto al arbusto, observa al coquí', vio && A.activo(), { fauna: S.fauna, hora: S.hora, antes, clima: cl && cl.estado && s(cl.estado()) });
+        check('3b · Hay luciérnagas del atardecer cerca del arbusto', !!est.luciernagas, est);
+        nota('peor cuadro del atardecer: ' + Math.round(tr.peorMs) + ' ms');
+        if (!vio) bugs.push({ tramo: '3b · Coquí al atardecer', que: 'con sol, M3 hecha y atardecer forzado no se observa el coquí', donde: 'src/game/fauna.js coquiVisible / src/game/atardecer.js' });
+        A.forzar(false); A.avanzar((A.DUR || 8) + 1); A.forzar(null);
+        if (m3) S.missions.m3 = true; else delete S.missions.m3;
+        if (cl && cl.fijar) { cl.fijar('sol', { inmediato: true, forzar: true }); cl.fijar(null); }
+      });
+
+      // ---------- 3c. Bahía bioluminiscente de noche (G5) ----------
+      await paso('3c · Bahía de noche', async () => {
+        const esperar = async () => { const t0 = performance.now(); while (performance.now() - t0 < 8000) { if (G.maravillas) return G.maravillas; await sleep(100); } return G.maravillas || null; };
+        const M = await esperar();
+        if (!M || !M.bahia) { check('3c · Maravillas cargadas y la caleta está en el mapa', false, 'sin G.maravillas'); return; }
+        const hora0 = S.hora, tenia = Object.prototype.hasOwnProperty.call(S, 'hora');
+        S.hora = 21;
+        ir(M.bahia.x, M.bahia.z, 0, -1); S.pos.y = G.terreno.height(S.pos.x, S.pos.z) + 3;
+        await jugar(3);
+        const chi = G.renderer.scene && G.renderer.scene.getObjectByName('bahia_bio');
+        const n = chi && chi.geometry && chi.geometry.drawRange ? chi.geometry.drawRange.count : 0;
+        check('3c · De noche, en la caleta, se ven las chispas azules', !!(chi && chi.visible && n > 0), { fase: M.fase && M.fase(S.clock || 0), n, visible: chi && chi.visible, hora: S.hora, pos: [r1(S.pos.x), r1(S.pos.z)] });
+        nota('bahía en ' + [r1(M.bahia.x), r1(M.bahia.z)].join(',') + ' · chispas ' + n + ' · peor cuadro ' + Math.round(tr.peorMs) + ' ms');
+        if (!(chi && chi.visible && n > 0)) bugs.push({ tramo: '3c · Bahía de noche', que: 'de noche en la caleta no se dibujan las chispas', donde: 'src/game/maravillas.js faseDe / chispas' });
+        if (tenia) S.hora = hora0; else delete S.hora;
       });
 
       // ---------- 4. Comer un fruto ----------
@@ -282,6 +338,33 @@
         tecla('keydown', 'x'); for (let i = 0; i < 40 && G.fisica.MOVE.flying; i++) await jugar(0.5); tecla('keyup', 'x'); await jugar(1);
       });
 
+      // ---------- 7b. Edificios completos (kit HD) en la zona con más casas ----------
+      await paso('7b · Edificios', async () => {
+        const ST = G.streaming;
+        if (!ST || !ST.zonas) { check('7b · Hay streaming de edificios', false, 'sin G.streaming'); return; }
+        const zs = Object.values(ST.zonas);
+        if (!zs.length) { check('7b · El mapa tiene zonas de edificios', false, '0 zonas'); return; }
+        const Z = zs.slice().sort((a, b) => (b.inst || []).length - (a.inst || []).length)[0];
+        const cal0 = G.renderer.calidad && G.renderer.calidad.nivel;
+        if (G.renderer.setCalidad) G.renderer.setCalidad('alto', true);
+        ir(Z.cx + Math.min(Z.r || 20, 40) + 25, Z.cz, -1, 0); await jugar(1);
+        ir(Z.cx, Z.cz, 0, -1); S.pos.y = G.terreno.height(S.pos.x, S.pos.z) + 6;
+        if (G.camara.place) G.camara.place(true);
+        if (ST.revisar) ST.revisar(S.pos.x, S.pos.z);
+        if (G.renderer.render) G.renderer.render(0.05, false);
+        let st = ST.stats ? ST.stats() : null;
+        for (let i = 0; i < 16; i++) { await jugar(0.5); st = ST.stats ? ST.stats() : st; if (st && st.visiblesHD > 0 && st.descargando === 0 && st.trabajos === 0) break; }
+        const peorLlegada = tr.peorMs;
+        if (ST.terminar) { try { await ST.terminar(); } catch (e) { nota('terminar: ' + e.message); } }
+        await jugar(2);
+        st = ST.stats ? ST.stats() : st;
+        check('7b · Junto a la zona más llena se dibuja el edificio completo', !!(st && st.hd && st.visiblesHD > 0), { zona: Z.id, inst: (Z.inst || []).length, stats: st, calidad: G.renderer.calidad && G.renderer.calidad.nivel });
+        nota('zona ' + Z.id + ' · HD visibles ' + (st && st.visiblesHD) + ' · modelos HD ' + (st && st.modelosHD) + ' · peor al llegar ' + Math.round(peorLlegada) + ' ms · peor del tramo ' + Math.round(tr.peorMs) + ' ms');
+        if (!(st && st.visiblesHD > 0)) bugs.push({ tramo: '7b · Edificios', que: 'en la zona con más casas, en calidad alta, no hay ninguna malla _hd a la vista', donde: 'src/engine/streaming.js hd' });
+        if (peorLlegada >= 100) bugs.push({ tramo: '7b · Edificios', que: 'al entrar en la zona el peor cuadro fue ' + Math.round(peorLlegada) + ' ms (meta < 100)', donde: 'src/engine/streaming.js' });
+        if (G.renderer.setCalidad && cal0) G.renderer.setCalidad(cal0, false);
+      });
+
       // ---------- 8. Foto para el cómic ----------
       await paso('8 · Foto para el cómic', async () => {
         const C = G.comic;
@@ -359,5 +442,7 @@
     }
   }
 
-  (window.AV = window.AV || {}).playtest10 = playtest10;
+  const AV = (window.AV = window.AV || {});
+  AV.playtest10 = playtest10;
+  AV.playtest10Test = playtest10; // solo corre si este archivo se inyecta; test.sh no lo inyecta
 })();
