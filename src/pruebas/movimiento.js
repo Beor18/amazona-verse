@@ -37,7 +37,7 @@ window.AVMovimientoTest = function (G) {
     // Dirección de cámara → tecla: 'w' avanza alejándose de la cámara
     const fwd = () => ({ x: -Math.sin(G.camara.yaw), z: -Math.cos(G.camara.yaw) });
     // Sitio de pruebas: llano, seco y sin obstáculos cerca del jugador (o el pedido)
-    function sitio() {
+    function sitio(rechazados) {
       if (opts.lugar) return opts.lugar;
       const c = G.pack.jugador && G.pack.jugador.aparicion || keep.pos;
       let best = null;
@@ -51,19 +51,34 @@ window.AVMovimientoTest = function (G) {
         if ([10, 20, 30].some(d => [0, 1, 2, 3, 4, 5, 6, 7].some(b => { const ax = x + Math.cos(b * Math.PI / 4) * d, az = z + Math.sin(b * Math.PI / 4) * d; return G.agua.levelAt(ax, az) > H(ax, az) - 0.3; }))) continue;
         if (F.colliders.some(k => k.r > 0 && (!k.when || k.when()) && Math.hypot(k.x - x, k.z - z) < 12 + (k.r || 0) + Math.max(k.hx || 0, k.hz || 0))) continue;
         if (F.perchas.some(p => Math.hypot(p.x - x, p.z - z) < 12 + p.r)) continue;
+        if (rechazados && rechazados.some(q => q.x === x && q.z === z)) continue;
         if (!best || mx - mn < best.d) best = { x, z, d: mx - mn };
         if (best.d < 0.6) return best;
       }
       return best || { x: c.x, z: c.z };
     }
     try {
-      const L = sitio(); met.sitio = { x: r2(L.x), z: r2(L.z) };
+      // El sitio se comprueba andando de verdad: los colliders a mano no ven los sólidos de la geometría (edificios, flora por
+      // regiones, que se rasteriza por tandas y cambia con la carga). Si a 6 m en línea recta algo frena el paso, se prueba otro.
+      let L = sitio();
+      if (!opts.lugar) {
+        const malos = [];
+        for (let intento = 0; intento < 10; intento++) {
+          reset(L.x, L.z);
+          const w = frame(i => { if (i === 0) K.add('w'); }, 45); K.clear();
+          const pico = Math.max(...w.map(o => o.sp)), fin = w.slice(30).map(o => o.sp);
+          if (Math.min(...fin) > Math.min(pico, T.walk) * 0.7) break; // llegó a crucero y se mantiene (la cuesta ya lo frena un poco)
+          malos.push(L); L = sitio(malos);
+        }
+        met.sitiosDescartados = malos.length;
+      }
+      met.sitio = { x: r2(L.x), z: r2(L.z) };
       // 1. Latencia y arranque: la tecla se lee en el primer paso tras pulsarla
       reset(L.x, L.z);
       let r = frame(i => { if (i === 0) K.add('w'); }, 45);
       const lat = r.findIndex(o => o.sp > 0.05);
       met.latenciaCuadros = lat + 1;
-      const top = r[r.length - 1].sp; // velocidad de crucero real (en cuesta arriba es algo menor que walk)
+      const top = Math.max(...r.map(o => o.sp)); // velocidad de crucero real (en cuesta arriba es algo menor que walk); el máximo, no el último cuadro: un tope no lo falsea
       met.arranque90ms = ms(r.findIndex(o => o.sp >= top * 0.9) + 1);
       check('Respuesta inmediata: se mueve en el primer cuadro tras la tecla', lat === 0, met.latenciaCuadros + ' cuadro');
       check('Arranque: 90 % de la velocidad en menos de 0,18 s', met.arranque90ms <= 180, met.arranque90ms + ' ms');
