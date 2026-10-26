@@ -118,7 +118,7 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
   - colapso por material: la arquitectura pesa 3 veces más que el escombro;
   - y, en el escombro, se quitan las piezas sueltas más pequeñas.
 - Las normales son suaves en lo orgánico y con aristas vivas a 40° en la piedra labrada. Las caras de nodos en espejo se invierten.
-- Texturas: las 16 originales con normales en un atlas 4×4 de 2048 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 512 px con margen de 16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
+- Texturas: las 16 originales con normales en un atlas 4×4 de 4096 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 1024 px con margen de 32; la fracción es la misma que 512/16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
 - Se guarda ya comprimido con el gltfpack de la build. Las texturas van en `tex_hd/` y no en `tex/`, porque la build pasa `tex/` a WebP y no reescribe las uris de un glTF ya comprimido.
 - Streaming: se pide con la zona en nivel cerca, en calidad media (hasta 40 m) o alta (hasta 90 m), con WebGL2 y cuando el jugador ya se movió. En calidad baja se queda el ligero. Los grandes (más de 10 m de radio) cuentan la distancia desde su mitad cercana, tanto en el LOD como en el _hd.
 - **Colisiones, pisos y vanos salen siempre del ligero**: son iguales en todos los equipos.
@@ -160,7 +160,7 @@ En total, el _hd suma 6,5 MB de js (streaming, nada en la descarga inicial) más
 
 La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw calls (≤ 150). La build pasa de 17,6 a 28,6 MB, de los que unos 10 MB son de los _hd y del atlas. Suma 42 archivos (390 de 511). La descarga inicial no cambia (8,2 MB, igual que HEAD).
 
-**Calidad.** Bajo no usa _hd. Medio lo usa hasta 40 m y alto, hasta 90 m. Hace falta WebGL2.
+**Calidad.** Bajo lo usa hasta 45 m, medio hasta 70 m y alto hasta 90 m, cuando el edificio está en el LOD cercano (los grandes, también más allá). Hace falta WebGL2. Se pide también antes de moverse si ya estás en la zona.
 
 **Pendiente.**
 - Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
@@ -220,8 +220,8 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 | `AV3DMaxTerrainExport.max` | El mismo terreno, suelto | Igual que la fila de arriba. |
 
 **Qué cambió en el kit.**
-- El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB: no se publicó en G6. Kelvin retiró el tope de 64 MB el 26-oct-2026; esta nota no reabre G6. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
-- Lo que sí se ve, en calidad alta: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. El `_hd` solo se pide en alta (90 m) y después de moverse. Bajo, medio y el móvil se quedan en la paleta de 512, que ya entra en el arranque. En el móvil el atlas no se descarga, así que no suma memoria de texturas.
+- El atlas que se publica es el de **4096 (celda 1024, margen 32)**, JPG, las 16 de Ancient y las 10 de Savage, desde las 4K del Drive. Kelvin, 26-oct-2026: en el juego tiene que estar el kit completo; no se recorta por calidad ni por el tope de peso (ese tope ya no está). La paleta ligera del arranque sigue en 512: es el respaldo mientras llega el `_hd`, no lo que se ve junto al edificio.
+- El look de fábrica no encoge `tex_hd/`. `?tex=512` sigue pudiendo medirlo chico. El `_hd` se pide en bajo (45 m), medio (70 m) y alto (90 m), también antes de moverse si ya estás en la zona. De lejos, la torre chica sigue en silueta; el templo grande no.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
 
@@ -229,6 +229,33 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 - No hay otra ciudad dentro del `.max`. Releerlo no añade edificios. El `.max` de 2,4 GB no se abre: no hay 3ds Max.
 - Palmeras, Archmodels, hierba y losas pintadas vienen de carpetas `Torrents/` o del plugin. No son el kit y la licencia no está confirmada. No se copiaron.
 - `canoa.jpg` sigue en 512. La foto de Drive es la misma fuente, y la licencia sigue sin verificar.
-- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal.
+- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal. No se fuerzan.
+
+## Lectura del .max sin 3ds Max (26-oct-2026, noche)
+
+No hay 3ds Max ni Blender en esta máquina (el `python3.11` de Blender es un enlace al Python del sistema). El `.max` tampoco lo abre Assimp. Se releyó con el lector OLE que ya está en el repo (`tools/blender/edificios_maxscene.py` y `edificios_maxindex.py`): el flujo `Scene` (2,4 GB), 27 885 objetos, 1 828 nodos, 1 516 Editable Poly, 293 Dummy, 17 Box, 2 Editable Mesh y 15 778 860 caras de malla base. Son las mismas 377 raíces. No aparece un edificio que no esté ya en el catálogo. `LargeJ_SculptMd` sigue siendo una caja de 12 caras y se deja fuera. Las losas, bloques y plataformas son primitivas Box del propio archivo: no hay una losa labrada que copiar. La canoa es un Editable Poly de 54 caras con TurboSmooth; el juego ya tiene las 432 de esa suavidad y no se rehizo (hace falta Blender para el modificador). `canoa.jpg` no se tocó.
+
+Los `_hd` que ya estaban usan las 16 celdas Ancient y las 10 Savage (UV2 decodificada con el meshopt del repo). El ligero sigue en la paleta corta, sin normales.
+
+Lo que el ligero no dibujaba y el `.max` sí tiene, y ahora entra como `_hd` (misma escala y pivote que el modelo ligero; la lona o el muro que el ligero conservó encaja a menos de 5 cm):
+
+| modelo | tris del ligero → `_hd` | qué vuelve |
+|---|---|---|
+| ruina_torre_b | 948 → 1086 (antes el `_hd` tenía 417) | las 543 caras del `.max`: stoneM, wallL, pillarsM, decoM |
+| campamento_a | 702 → 34 036 | sogas (Rope), picos y corteza |
+| campamento_c | 1375 → 3 282 | lona y corteza quemada |
+| campamento_f | 921 → 66 500 | sogas |
+| toldo_pequeno | 1176 → 3 282 | la lona entera (el ligero había quedado en una lámina de unos 7 cm) |
+| tienda_pequena | 942 → 47 196 | sogas |
+| muro_roca | 871 → 34 140 | sogas |
+| corral | 4017 → 253 910 | sogas, barro y lona. Siete caras de `BuildingMesh` no tenían bitmap del kit y no se copiaron |
+| monumento_b | 1588 → 136 457 | sogas y RockSmooth. La malla entera (355 733 tris) pasa de 16 MB; se agrupó a 8,5 cm para caber |
+| monumento_d | 1905 → 322 423 | sogas y RockSmooth |
+| monumento_e | 3198 → 140 900 | sogas y tablas |
+| monumento_g | 2864 → 203 558 | sogas |
+| carpa_a, _c, _d, _e, _f | ver catálogo | la lona del `.max`, con sogas donde la pieza las trae |
+| carpa_b | 925 → 188 504 | sogas |
+
+No entró `carpa_g`: la única pieza que quedaba en el `.max` mide unas 2,5 veces el modelo del juego y no encaja en su sitio. El muelle no tiene instancias; es la misma malla que `empalizada`, que ya tiene `_hd`. Los gloss de Savage siguen fuera. Palmeras, Archmodels y el scatter del terreno no se copiaron (licencia no confirmada). El `.max` del terreno no trae edificios ni píxeles nuevos.
 - Rope (3600×1375) y la difusa de WoodHewn (3572) se estiran a la celda cuadrada, como ya hacía el pipeline.
 - El `.max` del terreno no trae píxeles nuevos. No se integró.
