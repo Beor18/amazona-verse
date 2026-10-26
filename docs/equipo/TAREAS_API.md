@@ -266,6 +266,6 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | W1 | pendiente | | |
 | W2 | pendiente | | |
 | Z1 | pendiente | | |
-| Z2 | pendiente | | |
+| Z2 | hecha | 00d67bf | Fredoka (títulos, botones y cifras) y Atkinson ya estaban autoalojadas en `assets/vendor/fonts/` con `font-display: swap`; nada que descargar. Se añade su licencia (`OFL.txt`, texto SIL OFL 1.1; las líneas de copyright vienen de los metadatos publicados y quedan «por verificar» contra la tabla name de los .woff2). `tokens.css`: `--c-line` más luminoso, `--c-highlight`, `--c-shine`, `--r-panel` 18 px, `--glow-k`, `--dur-shine`. `ui.css`: paneles con borde de 2 px y filo de luz, botones con sombra de su color (`color-mix`, con respaldo) que crece al pasar el ratón, brillo que recorre `.progress` y el segmento del objetivo, icono que salta en todos los avisos y destello dorado que sube del contador del inventario al cambiar (en `::after` sin texto: no lo leen los lectores ni cambia la cifra). No cambia colores de texto (AA intacto); con «reducir movimiento» se apaga todo. `docs/UI_SYSTEM.md` al día. `index.html` sin tocar. 31/31 baterías (`accesibilidadTest` 36/36, con 375, 320 y otras maquetas) y 0 errores de consola. Ojo: Z1 sigue pendiente; Z2 no depende de sus archivos. Las líneas de G2 en `ui.css` siguen sin commit. |
 | X1 | pendiente | | |
 | Y1 | pendiente | | |
