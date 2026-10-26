@@ -1,6 +1,8 @@
 /* Content pack EP2 · «Un lugar para todos» · PROTOTIPO jugable de las misiones 1 a 3: «Lee la tierra», «Escuchar primero»
-   y «Casa que aguanta». Sale de content/plantilla y reutiliza el motor tal cual (nada de src/ tocado). Diseño: docs/equipo/EP2_GDD.md,
-   EP2_NARRATIVA.md y EP2_MISIONES.md §2–4. Ábrelo con index.html?pack=ep2 (boot.js lo carga solo).
+   y «Casa que aguanta», más el Aula del episodio (EP2_MISIONES.md §5–7): «Iguaca te pregunta» (formativa, opcional, sin puntaje),
+   el Modo Maestro (misma puerta y esquema que el ep. 1: src/game/aula.js con lecciones.js) y el Diario y el criadero del ep. 2.
+   Sale de content/plantilla y reutiliza el motor tal cual (nada de src/ tocado). Diseño: docs/equipo/EP2_GDD.md,
+   EP2_NARRATIVA.md y EP2_MISIONES.md §2–7. Ábrelo con index.html?pack=ep2 (boot.js lo carga solo, con lecciones.js).
    Lo que depende del canon de Kelvin (EP2_GDD.md §10) va con el marcador neutro [KELVIN] y no es canon.
    Lo que el jugador observa en cada sitio (pendiente, suelo, viento) y lo que falla en la tormenta son valores del juego, no datos
    del mundo real: la ciencia de suelos y de cajas nido sigue «por verificar» (EP2_MISIONES.md §2 y §4). El único dato real es el de
@@ -88,11 +90,12 @@
     { id: 'e_escucha', disparador: 'evento:ListenChoice', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es escuchar primero: ahora sabes lo que la casa tiene que lograr y lo que no puedes saltarte.', 'Ve a tu sitio y dibuja la casa.'] },
     { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.'] },
     { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo. [KELVIN: si hay huevo en escena]'] },
-    { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!'] },
+    { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
   ] };
 
   AVE.registerPack({
     id: 'ep2',
+    archivos: ['lecciones.js'], // la lección del Aula (window.AV_LECCIONES_EP2); boot.js la carga después de este archivo
     meta: {
       titulo: 'Un lugar para todos', capitulo: 2, almacen: 'ep2',
       hud: { capitulo: 'Episodio 2 · Prototipo', titulo: 'Un lugar para todos', portada: 'Episodio 2 · Un lugar para todos',
@@ -100,7 +103,16 @@
         nota: 'Prototipo: las tres misiones del episodio 2. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -4, z: 6 }, camara: 0.6 },
-    guardado: { version: 1 },
+    // edu: aula del episodio (fichas, respuestas de «Iguaca te pregunta» y el registro local). Las partidas del prototipo sin la
+    // clave la reciben vacía (aula.js la crea si falta).
+    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    // Aula (src/game/aula.js): misma puerta («Docentes» + multiplicación) y mismo esquema que el ep. 1; clave propia del dispositivo
+    aula: { clave: 'amazonaverse.aula.cap2', estado: 'edu', archivo: 'amazonaverse_cap2', lecciones: () => window.AV_LECCIONES_EP2 },
+    // Criadero (src/game/criadero.js, content/comun/huevos.js): el nido entra en el mundo al cerrar M1 con Iguaca (SiteChosen).
+    // Las cápsulas se ganan con lo de siempre (condiciones 'defecto' de huevos.js: preguntas, hallazgos, XP); ninguna se compra.
+    // Pedido fuera de este pack (huevos.js y criadero.js no son de C7): obtener.ep2 para la cápsula del bosque = { mision: 'casa' }
+    // (el nido de M3 es el hito de las cavidades) y un almacén compartido con el ep. 1 para que la cría siga a Vittata.
+    criadero: { desde: 'SiteChosen' },
 
     mundo: {
       tamano: 40, segmentos: 80,
@@ -141,7 +153,7 @@
         { id: 'mejorar', texto: 'Cambia solo lo que falló', hasta: { evento: 'HomeImproved' }, guia: G => G.misiones.at('obra') },
         { id: 'prueba2', texto: 'Prueba otra vez', guia: G => G.misiones.at('obra') },
       ],
-      fin: () => 'Leíste la tierra, escuchaste primero y probaste la casa hasta que aguantó. La abuela ya entró y el nido del papá está seco y en alto.',
+      fin: () => 'Leíste la tierra, escuchaste primero y probaste la casa hasta que aguantó. La abuela ya entró y el nido del papá está seco y en alto. Iguaca tiene unas preguntas para ti, cuando quieras.',
     },
     misiones: [
       { id: 'lee_tierra', titulo: 'Lee la tierra', hud: 'Pendiente, suelo y viento',
@@ -156,13 +168,35 @@
           { texto: 'Mejora lo que falló', hasta: { evento: 'HomeImproved' } }, { texto: 'Segunda prueba', hasta: { evento: 'NestPlaced' } }],
         recompensa: { hito: 'casa' } },
     ],
-    // Sin hallazgos propios: la parada del nido es una charla con fuente (abajo)
-    diario: { titulo: 'Cuaderno del terreno', corto: 'Cuaderno', boton: 'Cuaderno', categorias: { terreno: { nombre: 'Terreno', desconocido: 'Un sitio', sonido: 'pickup', rafaga: 'feathers' } }, entradas: [], hitos: [] },
+    // Diario del ep. 2 (§7): 6 hallazgos, 3 de ciencia del terreno y 3 de cultura de la construcción en PR. Lo que el niño lee aquí
+    // describe solo lo que hay en el juego; el dato real de cada uno está en lecciones.js (diario, mismo id) y va «por verificar»:
+    // no sale al Diario hasta tener fuente. La parada del nido es la única charla con dato y fuente (abajo).
+    diario: {
+      titulo: 'Cuaderno del terreno', corto: 'Cuaderno', boton: 'Cuaderno',
+      categorias: { terreno: { nombre: 'Terreno', desconocido: 'Una marca del terreno', sonido: 'pickup', rafaga: 'feathers' },
+        cultura: { nombre: 'Casas de aquí', desconocido: 'Un trozo de casa vieja', sonido: 'pickup', rafaga: 'gold' } },
+      entradas: [
+        { id: 'charco', cat: 'terreno', nombre: 'Charco del llano', x: -12, z: 15, texto: 'El agua del cubo se quedó aquí un buen rato. La abuela lo sabía.',
+          modelo: (add, S1) => { add(new THREE.CylinderGeometry(0.6, 0.6, 0.04, 14), '#5a7a9a', 0, 0.02, 0); } },
+        { id: 'cinta_lluvia', cat: 'terreno', nombre: 'Cinta de lluvia', x: 19, z: -1, texto: 'Un hilo de agua bajando por la loma, cada vez más rápido.',
+          modelo: (add) => { add(new THREE.BoxGeometry(0.12, 0.04, 1.6), '#7ab8e0', 0, 0.05, 0); } },
+        { id: 'poste_viento', cat: 'terreno', nombre: 'Poste con cinta', x: -5, z: -18, texto: 'En la loma la cinta se agita; en el claro, apenas.',
+          modelo: (add) => { add(new THREE.CylinderGeometry(0.05, 0.06, 1.2, 6), '#8a6a3a', 0, 0.6, 0); add(new THREE.PlaneGeometry(0.5, 0.18), '#d6403a', 0.3, 1.05, 0); } },
+        { id: 'zocos', cat: 'cultura', nombre: 'Zocos viejos', x: 13, z: 12, texto: 'Cuatro postes de madera que una vez levantaron una casa del suelo.',
+          modelo: (add) => { for (const [dx, dz] of [[-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4]]) add(new THREE.CylinderGeometry(0.07, 0.08, 0.7, 6), '#6b4a2a', dx, 0.35, dz); } },
+        { id: 'techo_zinc', cat: 'cultura', nombre: 'Plancha de techo', x: -14, z: -12, texto: 'Una plancha ondulada, puesta inclinada para que el agua corra.',
+          modelo: (add) => { const m = add(new THREE.BoxGeometry(1.2, 0.04, 0.8), '#9aa0a6', 0, 0.35, 0); m.rotation.z = 0.5; } },
+        { id: 'bohio', cat: 'cultura', nombre: 'Hojas de palma trenzadas', x: -16, z: 2, texto: 'Un trozo de techo hecho de hojas de palma, como los de las casas de hace mucho.',
+          modelo: (add) => { const m = add(new THREE.ConeGeometry(0.6, 0.5, 8, 1, true), '#a8903a', 0, 0.3, 0); m.material.side = THREE.DoubleSide; } },
+      ],
+      hitos: [{ id: 'cuaderno', todos: true }],
+    },
     ropa: [
       { clave: 'lentes:#2b2b2b:binoculares', hito: 'tierra', nombre: 'Lentes binoculares', pista: 'leer la tierra', viste: { slot: 'eyes', id: 'lentes', color: '#2b2b2b', style: 'binoculares' } },
       { clave: 'mano:cuaderno', hito: 'escuchar', nombre: 'Cuaderno de campo', pista: 'escuchar primero', viste: { slot: 'hand', id: 'mano', color: '#2f8f4e', style: 'cuaderno' } },
       { clave: 'casco:constructor', hito: 'casa', nombre: 'Casco de constructor', pista: 'una casa que aguanta', viste: { slot: 'head', id: 'casco', color: '#f2c21a', style: 'constructor' } },
       { clave: 'botas:constructor', hito: 'casa', nombre: 'Botas de constructor', viste: { slot: 'feet', id: 'botas', color: '#2b2b2b', style: 'constructor' } },
+      { clave: 'mano:mapa', hito: 'cuaderno', nombre: 'Mapa del terreno', pista: 'el Cuaderno completo', viste: { slot: 'hand', id: 'mano', color: '#c9a227', style: 'mapa' } },
     ],
     eventos: { defs: {
       PlayerCharacterCreated: { type: 'CharacterCreated', loc: 'villa', chars: ['player'], scene: 'portrait' },
@@ -200,13 +234,66 @@
       const valor = (pref, ops) => ops.find(o => tiene(pref + o));
       const elegir = (who, text, opciones, done) => G.dialogo.choose(di(who, text), opciones, done);
 
-      // ---------- Iguaca: da cada misión y, en medio, una pista del paso en curso ----------
+      // ---------- Aula del episodio (§5 y §6): «Iguaca te pregunta» y el registro local del Modo Maestro (src/game/aula.js) ----------
+      const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
+      const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
+      const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
+      // Objetivos E1–E4 con la evidencia del juego (lecciones.js, objetivos); una pregunta cuenta si se acertó en 2 intentos o menos
+      function objetivos() {
+        const f = E().formativa || {}, ok = id => f[id] && f[id] <= 2, pre = id => f[id] != null, had = ev => G.eventos.had(ev);
+        const res = [];
+        if (leidos().length === 3 && elegido() && (!pre('q1') || ok('q1')) && (!pre('q2') || ok('q2'))) res.push('E1');
+        if (NEC.every(tiene) && had('NeedsListed') && (!pre('q3') || ok('q3'))) res.push('E2');
+        if (had('HomeImproved') && had('NestPlaced') && (!pre('q4') || ok('q4')) && (!pre('q5') || ok('q5'))) res.push('E3');
+        if (tiene('nido_listo') && ok('q6')) res.push('E4');
+        return res;
+      }
+      // Fila del reporte local (sin nombre ni texto libre): lo que el maestro ve en Progreso y descarga en CSV/JSON
+      function registrar() {
+        const e = E();
+        if (!AU.activo || e.inicio == null) return;
+        const pregs = {}; for (const id of idsFormativa()) pregs[id] = (e.formativa || {})[id] || '';
+        AU.registrar({
+          misiones_completadas: ['lee_tierra', 'escuchar', 'casa'].filter(m => S.missions[m]),
+          sitios_observados: leidos().length, sitio_elegido: elegido() ? SITIOS[elegido()].nombre : '',
+          tarjetas_necesidades: NEC.filter(tiene).length, choque_resuelto: G.eventos.had('ListenChoice'),
+          falla_tormenta: ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p)) || '', mejora_hecha: G.eventos.had('HomeImproved'), nido_listo: tiene('nido_listo'),
+          preguntas: pregs, objetivos_logrados: objetivos(),
+          minutos_mision: e.fin != null ? Math.max(1, Math.round((e.fin - e.inicio) / 60)) : '',
+        });
+      }
+      // «Iguaca te pregunta»: 6 preguntas seguidas en la tarjeta del aula (pista en el 2.º intento, respuesta en el 3.º, sin puntaje)
+      function formativa() {
+        const ids = idsFormativa(), esc = AU.esc;
+        const cab = (i, n) => `<div class="edu-head"><img class="edu-cara" src="${IMG.Iguaca}" alt=""><div><span class="eyebrow">${esc(AU.t(LEC.meta && LEC.meta.titulo))}</span><h2>${esc(AU.t({ es: 'Iguaca te pregunta', en: 'Iguaca asks you' }))}</h2></div></div>` +
+          `<div class="edu-dots" aria-hidden="true">${Array.from({ length: n }, (_, k) => `<span class="${k < i ? 'ok' : k === i ? 'now' : ''}"></span>`).join('')}</div>`;
+        AU.serie(ids, { cabecera: cab, alResponder: registrar, alTerminar: () => {
+          G.ui.hideCard(); registrar();
+          G.dialogo.say([Lu('¡Eso es pensar como quien construye! Ya sabes leer la tierra, escuchar primero y probar hasta que aguante.')]);
+        } });
+      }
+      // Pestaña del Modo Maestro con las columnas del episodio (la pestaña «Progreso» de aula.js lleva las del ep. 1)
+      if (AU.activo && AU.pestana) AU.pestana({ id: 'ep2', titulo: { es: 'Progreso ep. 2', en: 'Ep. 2 progress' }, html: () => {
+        const esc = AU.esc, t = AU.t, P = AU.partidas, yn = v => (v === true ? t({ es: 'sí', en: 'yes' }) : v === false ? t({ es: 'no', en: 'no' }) : '');
+        if (!P.length) return `<p class="note">${esc(t({ es: 'Todavía no hay partidas en este dispositivo.', en: 'No sessions on this device yet.' }))}</p>`;
+        const C = t({ es: ['Fecha', 'Estación', 'Misiones', 'Sitios', 'Sitio', 'Tarjetas', 'Falló', 'Mejoró', 'Preguntas', 'Objetivos', 'Min'], en: ['Date', 'Station', 'Missions', 'Sites', 'Site', 'Cards', 'Failed', 'Improved', 'Questions', 'Objectives', 'Min'] });
+        const filas = P.slice().reverse().map(p => `<tr><td>${esc(p.fecha)}</td><td>${esc(p.estacion || AU.aj.estacion)}</td><td>${(p.misiones_completadas || []).length}/3</td><td>${p.sitios_observados != null ? p.sitios_observados + '/3' : ''}</td><td>${esc(p.sitio_elegido || '')}</td><td>${p.tarjetas_necesidades != null ? p.tarjetas_necesidades + '/7' : ''}</td><td>${esc(p.falla_tormenta || '')}</td><td>${yn(p.mejora_hecha)}</td><td>${esc(p.preguntas ? Object.entries(p.preguntas).filter(([, v]) => v).map(([k, v]) => k + ':' + v).join(' ') : '')}</td><td>${esc((p.objetivos_logrados || []).join(' '))}</td><td>${p.minutos_mision != null ? p.minutos_mision : ''}</td></tr>`).join('');
+        return `<p class="note">${esc(t({ es: 'Solo lo guardado en este dispositivo. No se envía nada por la red.', en: 'Only what is stored on this device. Nothing is sent over the network.' }))}</p><div class="maestro-scroll"><table class="maestro-tabla"><thead><tr>${C.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${filas}</tbody></table></div>`;
+      } });
+
+      // ---------- Iguaca: da cada misión y, en medio, una pista del paso en curso; al final, las preguntas (opcionales) ----------
       function hablar() {
-        if (S.step === 0) { G.dialogo.say(L('interact:iguaca'), () => G.misiones.advanceTo(1)); return; }
+        if (S.step === 0) { G.dialogo.say(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); }); return; }
         if (S.step === 1) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
         if (S.step === 2) {
-          G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock');
+          G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock'); registrar();
           G.dialogo.say(L('evento:SiteChosen'), () => { G.misiones.advanceTo(3); G.ui.toast('Enséñale tu plano a la abuela', 3000); });
+          return;
+        }
+        if (S.complete && AU.activo && !todasPreguntadas()) {
+          elegir('Iguaca', '¡La casa aguanta! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.',
+            [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
         const pistas = {
@@ -308,7 +395,7 @@
             G.dialogo.say([o.v === 'abuela' ? di('Papá', '¿Y el nido? Si queda abajo, no me sirve. ¿No hay forma de que sirva a los dos?') : di('Abuela', '¿Y yo cómo subo, mi niña? ¿No hay forma de que sirva a los dos?')], choque);
             return;
           }
-          poner('frase_' + o.v); G.eventos.log('ListenChoice', { choice: FRASES[o.v] }); G.comic.capture('escuchar'); G.audio.play('unlock');
+          poner('frase_' + o.v); G.eventos.log('ListenChoice', { choice: FRASES[o.v] }); G.comic.capture('escuchar'); G.audio.play('unlock'); registrar();
           G.dialogo.say([di('Vittata', FRASES[o.v] + ' Abajo, la entrada baja para la abuela; arriba, el nido del papá.')].concat(L('evento:ListenChoice')), () => G.misiones.check());
         }));
       }
@@ -357,7 +444,7 @@
       function armarNido(i) {
         i = i || 0; const p = NIDO_PASOS[i];
         if (!p) {
-          poner('nido_listo'); G.eventos.log('HomeBuilt'); G.audio.play('unlock'); dibujarCasa(); G.misiones.check();
+          poner('nido_listo'); G.eventos.log('HomeBuilt'); G.audio.play('unlock'); dibujarCasa(); G.misiones.check(); registrar();
           G.dialogo.say([di('Papá', 'Alto, oscuro y seco. Así sí.'), Lu('La casa está hecha. ¿Aguantará? Solo hay una forma de saberlo.')]);
           return;
         }
@@ -376,7 +463,7 @@
         poner('falla_' + f.parte); dibujarCasa();
         tormenta([di('Guardián', '¡Llega la tormenta! Viento, lluvia… y la casa nueva en medio.'), di('Vittata', '¡Algo cede! ' + f.que),
           Lu('Lo marqué en rojo. No pasa nada: para eso se prueba. Ahora sabes cuál es la parte más débil.')], () => {
-          G.eventos.log('StormTested', { outcome: 'falla:' + f.parte }); G.misiones.check();
+          G.eventos.log('StormTested', { outcome: 'falla:' + f.parte }); G.misiones.check(); registrar();
         });
       }
       function mejorar() {
@@ -388,7 +475,7 @@
             return;
           }
           poner('mejora_' + o.k); G.audio.play('unlock'); dibujarCasa();
-          G.eventos.log('HomeImproved', { choice: o.k });
+          G.eventos.log('HomeImproved', { choice: o.k }); registrar();
           G.dialogo.say([di('Vittata', ARREGLOS[o.k] + '. Listo. ¿Y ahora?'), Lu('Ahora se vuelve a probar. Una sola prueba no basta.')], () => G.misiones.check());
         });
       }
@@ -398,8 +485,8 @@
           G.eventos.log('NestPlaced'); poner('fiesta'); dibujarCasa(); G.comic.capture('casa'); G.misiones.check();
           const y = H(obra.x, obra.z);
           G.fx.burst(obra.x, y + 3, obra.z, 'gold', 40); G.fx.burst(obra.x, y + 3, obra.z, 'feathers', 30); G.audio.play('unlock');
-          S.complete = true; G.eventos.log('Chapter2Completed');
-          G.misiones.advanceTo(G.misiones.DONE);
+          S.complete = true; G.eventos.log('Chapter2Completed'); E().fin = S.clock;
+          G.misiones.advanceTo(G.misiones.DONE); registrar();
           G.dialogo.say(L('evento:Chapter2Completed'), () => G.misiones.showEnd());
         });
       }
@@ -457,7 +544,7 @@
 
     pruebas: {
       async selfTest(G, T) {
-        const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt } = T;
+        const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         // Pulsa la opción de la tarjeta de elección cuyo texto contiene `txt`; luego pasa los diálogos
         const pick = txt => { const b = [...document.querySelectorAll('[id^="ch-"]')].find(x => x.textContent.includes(txt)); if (b) b.click(); drain(); return !!b; };
@@ -519,10 +606,56 @@
         check('M3 · Prueba 2: aguanta, nido, casco y botas', G.eventos.had('NestPlaced') && S.missions.casa && ['casco:constructor', 'botas:constructor'].every(k => S.unlocked.includes(k)));
         check('Final: fiesta y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter2Completed') && !$('end').hidden);
         check('El cómic sale de los eventos', G.comic.comicPanels().length === 4, G.comic.comicPanels().length);
+
+        // ---------- §5 «Iguaca te pregunta» · §6 Modo Maestro · §7 Diario y criadero ----------
+        const AU = G.aula, LEC = AU.LEC || {}, MM = LEC.modo_maestro || {}, QS = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
+        const aulaRaw = (() => { try { return localStorage.getItem(AU.KEY); } catch (e) { return null; } })();
+        check('Aula del ep. 2 con su propia clave y la misma puerta que el ep. 1 (multiplicación)', AU.activo && AU.KEY === 'amazonaverse.aula.cap2' && (AU.nuevoReto(), AU.reto() >= 78 && AU.reto() <= 171), AU.KEY);
+        const g45 = MM.guia_45_min || {};
+        check('Esquema igual al ep. 1: 4 objetivos, 6 preguntas, 6 fichas, guía de 45 min, 3 sin pantalla y rúbrica de 5',
+          (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
+          (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
+        check('Ninguna ficha sale al Diario sin fuente verificada: las 6 van por verificar, con fuente propuesta y nota', AU.fichas().length === 0 && LEC.diario.every(f => f.verificacion === 'por_verificar' && f.fuente && f.nota_verificacion));
+        check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
+        check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
+        check('Antes de contestar, el reporte no lleva preguntas ni E4', AU.partida() && !AU.partida().preguntas.q1 && !AU.partida().objetivos_logrados.includes('E4'), JSON.stringify(AU.partida() && AU.partida().objetivos_logrados));
+        useAt('iguaca'); drain();
+        check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join());
+        pick('Ahora no');
+        check('«Ahora no»: ni tarjeta ni castigo', !G.ui.cardOpen && !Object.keys(S.edu.formativa).length);
+        useAt('iguaca'); drain(); pick('Sí, pregúntame');
+        const card = $('card'), opt = i => card.querySelector(`.edu-opt[data-i="${i}"]`), correcta = id => AU.pregunta(id).correcta;
+        check('Iguaca te pregunta: tarjeta formativa con cara y sin puntaje visible', G.ui.cardOpen && card.querySelector('.edu-q') && card.querySelector('.edu-cara') && !/punt|score|\d+\s*\/\s*\d+|%/i.test(card.textContent), card.textContent.slice(0, 80));
+        opt(correcta('q1') === 0 ? 1 : 0).click();
+        check('Fallo en q1: pista en el segundo intento, sin castigo ni registro', G.ui.cardOpen && card.querySelector('.edu-retro.pista') && S.edu.formativa.q1 == null);
+        opt(correcta('q1')).click();
+        check('Acierta en el 2.º intento: retroalimentación y botón Seguir', card.querySelector('.edu-retro.ok') && $('edu-seguir'));
+        $('edu-seguir').click();
+        check('Se registra el intento (2) y sigue la q2', S.edu.formativa.q1 === 2 && /cinta de lluvia/i.test(card.textContent), card.textContent.slice(0, 60));
+        for (const id of QS.slice(1)) { opt(correcta(id)).click(); const sg = $('edu-seguir'); if (sg) sg.click(); }
+        drain();
+        check('Las 6 respondidas: la tarjeta se cierra e Iguaca cierra', QS.every(id => S.edu.formativa[id]) && !G.ui.cardOpen, JSON.stringify(S.edu.formativa));
+        const p = AU.partida();
+        check('Reporte local del aula: preguntas, 3 misiones y los 4 objetivos, sin el nombre del jugador', p && p.preguntas.q1 === 2 && p.preguntas.q6 === 1 && p.misiones_completadas.length === 3 && ['E1', 'E2', 'E3', 'E4'].every(o => p.objetivos_logrados.includes(o)) && !JSON.stringify(p).includes('Prueba'), JSON.stringify(p));
+        const csv = AU.reporteCSV();
+        check('CSV del Modo Maestro con el sitio elegido y lo que falló', csv.includes('sitio_elegido') && csv.includes('el claro') && csv.includes('techo'));
+        check('Modo Maestro: pestaña del ep. 2 y guía con el vocabulario', AU.pestanas().includes('ep2') && (AU.abrirMaestro(), AU.maestroAbierto()) && /criterio/i.test($('maestro').textContent) && /restricci/i.test($('maestro').textContent) && (AU.cerrarMaestro(), !AU.maestroAbierto()));
+        useAt('iguaca'); drain();
+        check('Iguaca no repite las preguntas', !G.ui.cardOpen && opciones().length === 0);
+        // §7 Diario
+        for (const f of G.diario.entries) { teleport(f.x + 0.3, f.z); tick(0.1); }
+        check('Diario: 6 hallazgos (3 del terreno, 3 de casas de aquí) y el mapa del terreno', S.field.length === 6 && G.diario.count('terreno') === 3 && G.diario.count('cultura') === 3 && S.unlocked.includes('mano:mapa'), S.field.join(','));
+        check('Cada hallazgo tiene su ficha por verificar en la lección y el texto del juego no afirma el dato real', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)) && !/arcill|taíno|zinc|pilote/i.test(G.diario.entries.map(e => e.texto).join(' ')));
+        // §7 Criadero (compartido con todos los packs: content/comun/huevos.js)
+        const H = (window.AV_HUEVOS && window.AV_HUEVOS.huevos) || [], cond = id => { const h = H.find(x => x.id === id); return (h && h.obtener && h.obtener.defecto) || {}; };
+        check('Criadero del juego: el nido entra al elegir sitio (SiteChosen) y ninguna cápsula se compra', !!G.criadero && G.pack.criadero.desde === 'SiteChosen' && G.eventos.had('SiteChosen') && H.length > 0 && H.every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))));
+        check('Cápsulas alcanzables en el ep. 2: la espacial con las preguntas y la boricua con el Diario', cond('espacial').preguntas <= 6 && cond('pr').hallazgos && cond('pr').hallazgos.min <= 6);
+        try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-        check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_anclaje'));
+        check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_anclaje') && S.edu && S.edu.formativa.q1 === 2 && S.field.length === 6, JSON.stringify(S.edu));
         G.guardado.reset(true);
+        if (AU.recargar) AU.recargar();
         T.restoreSave(keep);
         G.quiet = false;
         return result();
