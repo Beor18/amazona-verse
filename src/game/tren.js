@@ -1,4 +1,5 @@
-/* Juego · El tren de Vittata (C16, pedido de Kelvin, 26-oct-2026; oculto en fase 1: ?mini=tren o AV.tren(); pruebas AV.trenTest())
+/* Juego · El tren de Vittata (C16, pedido de Kelvin, 26-oct-2026; ?mini=tren o AV.tren(); pruebas AV.trenTest(). Fase 2: tarjeta en
+   «¿Cómo quieres jugar?» (menu_modos.js, index.html), en Retos (retos.js) y récord «tren» en Mis récords (records.js))
    Un tren corto de carga por una vía que da la vuelta al llano del sureste del mapa, entre la costa y el bosque. Vittata (la original,
    modelo y rig intactos) va posada en el techo de la locomotora. Inspiración: el tren de Puerto Rico que a principios del siglo XX
    rodeaba casi toda la isla y llevaba la caña a las centrales azucareras (American Railroad Company of Porto Rico; datos en SABIAS, con
@@ -49,7 +50,7 @@
       inicio: 'el primer toque o tecla arranca el turno', victoria: null, derrota: 'ninguna: el turno dura 2 min 30 s; en las curvas rápidas se cae una caja (sin daño)',
       puntuacion: '100 por entrega + hasta 50 si llega a tiempo; 60 si llega tarde', musica: 'retos (clase retos-on)',
       resultados: ['puntos', 'entregas', 'aTiempo', 'perdidas', 'mejor', 'nuevoRecord', 'medalla'], records: { clave: 'tren', campos: ['mejor', 'jugadas'], gancho: 'retosResultado' },
-      oculto: true, // fase 1: solo ?mini=tren y AV.tren(); la tarjeta del menú y Retos llegan en la fase 2
+      oculto: false, // fase 2 (C16): tarjeta en «¿Cómo quieres jugar?» y en Retos; también ?mini=tren y AV.tren()
     };
 
     // ---------- Parámetros (metros y segundos) ----------
@@ -849,6 +850,8 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Al salir G.quiet vuelve, el mundo no queda en pausa, Vittata ya no está posada y la flora recupera su rank', G.quiet === quiet0 && G.pausa.activa() === pausa0 && M.posado === '' && flora.length === 0);
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
           check('Récords reales intactos', leer(ALMACEN) === recReal);
+          { const tarj = document.querySelector('#modos [data-modo="tren"]');
+            check('Fase 2: tarjeta «El tren de Vittata» en «¿Cómo quieres jugar?» (submit, con icono y subtítulo) y DECL publicado', !!tarj && tarj.type === 'submit' && tarj.value === 'tren' && !!tarj.querySelector('svg.modo-img') && /desvíos/.test(tarj.querySelector('small').textContent) && DECL.oculto === false, tarj ? tarj.querySelector('small').textContent : 'sin tarjeta'); }
           check('Nada del tren queda en la escena: grupo fuera, vía y tren liberados', !raiz.parent && raiz.children.length === 0 && !st.via && !E.tren && Object.keys(MAT).length === 0);
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();
