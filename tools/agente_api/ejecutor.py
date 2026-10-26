@@ -182,15 +182,49 @@ def hecha(t):
     return re.search(rf'^\|\s*{t}\s*\|\s*hecha', tabla, re.M) is not None
 
 
+BLOQUEOS = Path.home() / 'AmazonaVerse/_herramientas/agent-sdk/bloqueos'
+
+
+def tomar(t):
+    """Bloqueo por tarea entre ventanas de Terminal: si otra corrida viva ya tiene la tarea, no se repite
+    (26-oct: varias ventanas hicieron la misma tarea a la vez)."""
+    BLOQUEOS.mkdir(parents=True, exist_ok=True)
+    f = BLOQUEOS / f'{t}.pid'
+    try:
+        pid = int(f.read_text().strip())
+        if pid != os.getpid():
+            os.kill(pid, 0)   # sigue viva: la tarea es suya
+            return False
+    except (FileNotFoundError, ValueError, ProcessLookupError):
+        pass
+    except PermissionError:
+        return False
+    f.write_text(str(os.getpid()))
+    return True
+
+
+def soltar(t):
+    f = BLOQUEOS / f'{t}.pid'
+    try:
+        if f.read_text().strip() == str(os.getpid()):
+            f.unlink()
+    except FileNotFoundError:
+        pass
+
+
 async def carril(tareas, por_tarea, total, turnos, marca=''):
     gasto = 0.0
     for t in tareas:
         if hecha(t):
             print(f'{marca}== {t} ya está hecha; la salto. ==', flush=True)
             continue
+        if not tomar(t):
+            print(f'{marca}== {t} la está haciendo otra ventana de Terminal; la salto. ==', flush=True)
+            continue
         queda = total - gasto
         if queda < 0.5:
             print(f'\n{marca}== Tope total del carril alcanzado (${gasto:.2f} de ${total}); paro antes de {t}. ==')
+            soltar(t)
             return gasto
         print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gasto:.2f} ########', flush=True)
         try:
@@ -198,6 +232,8 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
         except Exception as e:   # un fallo de una tarea (red, SDK) no tumba el carril ni a los demás
             print(f'\n{marca}== {t} falló ({type(e).__name__}: {str(e)[:200]}); sigo con la siguiente. ==', flush=True)
             continue
+        finally:
+            soltar(t)
         if costo is None:
             return gasto
         gasto += costo
