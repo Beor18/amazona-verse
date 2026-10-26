@@ -38,6 +38,10 @@ PRESUPUESTO = {
     'templo_mediano_g': 13000, 'templo_mediano_h': 15000, 'muro_templo': 8000,
 }
 DEFECTO = 12000
+DEFECTO_SAVAGE = 7000  # aldeas: muchas instancias y modelos; las sogas y los escombros vuelven sin pasar de ~200 KB por modelo
+SOGA = 'Rope'
+PRESUPUESTO.update({'empalizada': 3000, 'muelle_troncos': 3000, 'bohio_redondo': 6000, 'bohio_puntiagudo': 6000,
+                    'monumento_a': 9000, 'puente_madera': 9000, 'torre_vigia': 8000, 'muralla_atalaya_a': 8000})
 # Materiales orgánicos (barro, escombro, roca, talla, soga, lona, paja, corteza): normales suaves y se reducen antes que la
 # arquitectura (piedra labrada, muros, pilares, suelos, frisos, vigas, tablas), que guarda aristas vivas y casi todo su detalle.
 ORGANICO = {'mudM', 'mudDarkM', 'damageM', 'damageL', 'rockM', 'sculptM',
@@ -261,6 +265,8 @@ def repartir(cuentas, areas, total, minimo=600):
     if sum(cuentas.values()) <= total:
         return dict(cuentas)
     peso = {m: max(areas[m], 1e-3) * (1 if m in ORGANICO else 3) for m in cuentas}
+    if SOGA in peso and len(peso) > 1:  # las sogas tienen poca área pero dan la vida: casi un tercio del presupuesto
+        peso[SOGA] = 0.4 * sum(v for m, v in peso.items() if m != SOGA)
     libres, out, T = dict(cuentas), {}, float(total)
     while libres:
         W = sum(peso[m] for m in libres)
@@ -400,7 +406,7 @@ def construir(nombre, conv):
     limpiar()
     asset, M = origen(nombre, conv)
     ps = piezas(os.path.join(MIG, asset + '.glb'), M)
-    obs, t0, cuentas = reducir(nombre, ps, PRESUPUESTO.get(nombre, DEFECTO))
+    obs, t0, cuentas = reducir(nombre, ps, PRESUPUESTO.get(nombre, DEFECTO_SAVAGE if kit_de(asset) == 'savage' else DEFECTO))
     rec = exportar(list(obs.values()), nombre, kit_de(asset))
     rec.update(id=nombre, src=asset, trisOrigen=t0, trisTrasPlano=sum(cuentas.values()), mats=sorted(obs))
     return rec
@@ -428,7 +434,11 @@ def reducir(nombre, ps, presupuesto):
     cuentas = {m: tris(o) for m, o in obs.items()}
     meta = repartir(cuentas, {m: area(o) for m, o in obs.items()}, presupuesto)
     for m, o in obs.items():
-        if colapsar(o, meta[m], m in ORGANICO) > meta[m] * 1.3 and m in ORGANICO:
+        org = m in ORGANICO and m != SOGA  # cada soga es una pieza suelta pequeña: se reduce, no se quita
+        for _ in range(3):  # el colapso no baja de un 2 % por pasada (las sogas de Savage tienen cientos de miles de tris)
+            if colapsar(o, meta[m], org) <= meta[m] * 1.3:
+                break
+        if tris(o) > meta[m] * 1.3 and org:
             quitar_islas(o, meta[m])
     for m, o in obs.items():
         o.data.shade_smooth()

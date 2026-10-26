@@ -214,7 +214,9 @@ AVE.module('mundo', function (G) {
   function colocarKelvin(I, A) {
     const n = I.modelo, esc = I.escala, rot = I.rotY, [x, y, z] = I.pos, conPiso = conPisoMapa(I.id);
     for (const c of MAPA.colisiones || []) if (c.estructura === I.id && pisoMapa(c)) { colisionMapa(c, [x, y, z], esc); stats0.pisos++; }
-    if (!conPiso && A.sol && n !== 'canoa' && I.erguido) {
+    // el complejo de ruinas son 12 templos con plazas y calles entre ellos: una sola caja de 42 × 28 m serían paredes
+    // invisibles; lo detienen sus sólidos reales (solidos.js), como a los demás
+    if (!conPiso && A.sol && n !== 'canoa' && n !== 'complejo_ruinas' && I.erguido) {
       const piso = A.pisos.find(f => f.y > 1.2 && f.y < A.alto - 0.8 && (f.x1 - f.x0) * (f.z1 - f.z0) > 6);
       const rol = I.e.rol;
       const hSol = rol === 'mirador' && piso ? piso.y - 0.2 : A.alto;

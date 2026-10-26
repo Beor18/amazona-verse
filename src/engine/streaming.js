@@ -6,7 +6,8 @@
    - cerca (d < R.cerca, ~120 m): modelo completo (texturas, sombras) y colisiones. La primera vez que una instancia llega
      aquí se le ponen sus colisiones (las de mundo.js y G.solidos.agregar) y ya no se quitan: siguen activas aunque la zona
      se libere (son pocas y pesan poco).
-   - lejos (d < alcance = min(distancia de dibujo del preset, alcance de la niebla)): solo el LOD lejano.
+   - lejos (d < CFG.zonaLejos, 650 m, o la niebla si llega antes): solo el LOD lejano, fundido por zona; los edificios
+     sueltos se dibujan hasta CFG.dibujo del preset.
    - fuera: nada en memoria.
    Histéresis: una zona baja de nivel con H m de más (40) y los modelos se sueltan tras 3 s sin uso (no hay vaivén en el borde).
    Por instancia, cerca/lejos se elige por la distancia a la cámara (CFG.lod ± CFG.lodH) y cada cuadro se descarta lo que
@@ -54,7 +55,10 @@ AVE.module('streaming', function (G) {
     cerca: { bajo: 50, medio: 60, alto: 75 },      // m al borde de la zona: modelo completo y colisiones (≥ distancia de LOD)
     precarga: { bajo: 20, medio: 25, alto: 30 },   // m: zonas cuyo modelo completo entra antes de mundoListo (lo demás visible, con su lejano)
     lejosQuieto: { bajo: 120, medio: 150, alto: 150 }, // m: hasta que el jugador se mueve, solo baja el lejano de las zonas a menos de esto
-    dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios (la de antes en mundo.js)
+    dibujo: { bajo: 150, medio: 190, alto: 320 },  // m: distancia de dibujo de los edificios sueltos (la de antes en mundo.js)
+    // m: distancia de dibujo de las zonas lejanas, cada una una sola malla fundida (un draw call): la ciudad entera se ve
+    // desde cualquier punto de la isla (470 m) en todas las calidades; antes, en el móvil solo llegaban 8 de 17 zonas
+    zonaLejos: { bajo: 650, medio: 650, alto: 650 },
     histeresis: 30,                                // m de más para bajar de nivel
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
@@ -74,6 +78,7 @@ AVE.module('streaming', function (G) {
   }
   const alcance = () => Math.min(CFG.dibujo[nivelCal()] || 190, alcanceNiebla());
   const radioCerca = () => Math.min(CFG.cerca[nivelCal()] || 110, alcance());
+  const alcanceZona = () => Math.min(Math.max(CFG.zonaLejos[nivelCal()] || 0, alcance()), alcanceNiebla());
 
   // ---------- Trabajo troceado ----------
   const trabajos = [];
@@ -528,7 +533,7 @@ AVE.module('streaming', function (G) {
       if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
       if (!inicio) inicio = [x, z];
       else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
-      const Rc = radioCerca(), Rl = alcance(), H = CFG.histeresis;
+      const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
       for (const id in zonas) {
         const Z = zonas[id];
         Z.d = Math.max(0, Math.hypot(x - Z.cx, z - Z.cz) - Z.r);
@@ -565,7 +570,7 @@ AVE.module('streaming', function (G) {
     function cuadro() {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
-      const cp = cam.position, max = alcance(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH, hdD = hdActivo() ? CFG.hd[nivelCal()] : 0;
+      const cp = cam.position, max = alcance(), maxZ = alcanceZona(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH, hdD = hdActivo() ? CFG.hd[nivelCal()] : 0;
       const S = G.S, sx = S.pos ? S.pos.x : cp.x, sz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
@@ -574,7 +579,7 @@ AVE.module('streaming', function (G) {
         const Z = zonas[id], m = Z.malla; if (!m) { Z.usaMalla = false; continue; }
         const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
         Z.usaMalla = Z.nivel === 1 || dz > lodD + (Z.usaMalla ? -H : H);
-        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < max;
+        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
       for (let i = 0; i < activas.length; i++) {
@@ -744,10 +749,10 @@ AVE.module('streaming', function (G) {
       check('Al salir de su radio, la zona suelta el modelo completo (geometría, texturas, mallas)', Z.nivel < 2 && libres('cerca', propiosCerca) && libres('hd', propios),
         'nivel ' + Z.nivel + ' · geometrías ' + g0 + '→' + M.geometries + ' · texturas ' + t0 + '→' + M.textures + ' · ' + propiosCerca.join(','));
       // Lejos de todo (distancia de dibujo 1 m, simulado): también se suelta el LOD lejano
-      const dib = CFG.dibujo; CFG.dibujo = { bajo: 1, medio: 1, alto: 1 };
+      const dib = CFG.dibujo, dibZ = CFG.zonaLejos; CFG.dibujo = CFG.zonaLejos = { bajo: 1, medio: 1, alto: 1 };
       ST.revisar(); ST.liberarYa(); dibujar();
       check('Fuera de la vista, la zona se libera del todo (nivel 0, sin LOD lejano)', Z.nivel === 0 && libres('lejos', propios), 'nivel ' + Z.nivel + ' · geometrías ' + M.geometries);
-      CFG.dibujo = dib; ST.revisar(); await ST.terminar();
+      CFG.dibujo = dib; CFG.zonaLejos = dibZ; ST.revisar(); await ST.terminar();
       check('La cadena base64 no queda en memoria', modelosZ.every(n => !(window[B64] || {})[n]), '');
       check('Las colisiones siguen activas tras liberar', colZ() === c1 && alto0() === s1, 'colliders ' + c1 + '→' + colZ() + ' · sólido ' + r2(s1) + '→' + r2(alto0()) + ' m');
       // 4. Fugas: dos vueltas más; geometrías, texturas, bytes y heap estables

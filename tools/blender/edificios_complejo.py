@@ -13,7 +13,7 @@ cambia: la corrección va en el modelo y en conversion.json (M del complejo).
 
 Blender -b --python edificios_complejo.py -- [--base 35.75] [--out DIR] [--kit] [--sin-hd]   (--kit: escribe kit.js y conversion.json)
 """
-import bpy, sys, os, json, math, base64, struct
+import bpy, sys, os, json, math, base64, struct, re
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +29,13 @@ ASSET, NOMBRE = 'ancient_complejo_group001', 'complejo_ruinas'
 U = 0.3048
 C = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]], float)
 BASE = float(H.A.get('base', 35.75))      # m: cota de las losas de la loma (losa_piedra, y1 ≈ 35,8)
+# Ajuste a la loma del juego (más pequeña que la del .max; decisión delegada por Kelvin, 25-oct): fuera los tres templos
+# del borde oeste que quedaban en el aire sobre la ladera, 4 m al este (con 2 m libres hasta el mirador) y la base de los
+# templos (mediana de sus bases) a ras de las losas. Los oscuros (mudDarkM, floorDarkM) van a su versión clara: el
+# complejo se veía casi negro a contraluz y en el render de 2022 es color crema.
+QUITAR = {'MediumC#007', 'MediumC#008', 'TowerE'}
+ESTE = 4.0
+CLARO = {'mudDarkM': 'mudM', 'floorDarkM': 'floorM'}
 LIGERO, LEJOS = 12000, 1200   # el complejo son 12 templos: más que el ≤ 5 000 de un edificio; el lejano, cerca de los ≤ 600 (entra en la descarga inicial)
 # paleta del kit ligero (tex/kb3d_*.jpg) para cada material original
 PALETA = {'stoneM': 'stoneM', 'blocksL': 'stoneM', 'bricksM': 'stoneM', 'decoM': 'stoneM', 'sculptM': 'stoneM', 'rockM': 'stoneM',
@@ -42,6 +49,11 @@ def piezas_corregidas():
     j, acc = H.leer_glb(os.path.join(H.MIG, ASSET + '.glb'))
     out = []
     for nd in j['nodes']:
+        g = re.match(r'(Component_)?([A-Za-z]+?)_', nd['name']).group(2)
+        if g == 'MediumC':
+            g += '#' + nd['name'][-3:]
+        if g in QUITAR:
+            continue
         L = np.array(mem[nd['name']]['local'], float)
         for pr in j['meshes'][nd['mesh']]['primitives']:
             V = acc(pr['attributes']['POSITION']).astype(float)
@@ -51,7 +63,10 @@ def piezas_corregidas():
             G = np.stack([W[:, 0], W[:, 2], -W[:, 1]], 1)
             if np.linalg.det(L[:3, :3]) < 0:
                 I = I[:, [0, 2, 1]]
-            out.append((j['materials'][pr['material']]['name'].replace('KB3D_', ''), G, UV, I))
+            if not np.isfinite(G).all():
+                continue
+            m = j['materials'][pr['material']]['name'].replace('KB3D_', '')
+            out.append((CLARO.get(m, m), G, UV, I, g))
     return out
 
 
@@ -59,9 +74,12 @@ def colocar(ps):
     """Desplazamiento d en el espacio del modelo: misma x y z del grupo que en el migrado y la base sobre la loma."""
     inst = [i for z in json.load(open(ESCENA))['zonas'] for i in z['instancias'] if i.get('modelo') == NOMBRE][0]
     s, mt, gt = inst['matriz'][0], inst['matriz'][12:15], inst['matrizMigrado'][12:15]
-    ymin = min(P[:, 1].min() for _, P, _, _ in ps)
-    d = np.array([(gt[0] - mt[0]) / s, (BASE - mt[1]) / s - ymin, (gt[2] - mt[2]) / s])
-    return [(m, P + d, UV, I) for m, P, UV, I in ps], d, inst
+    bases = {}
+    for _, P, _, _, g in ps:
+        bases[g] = min(bases.get(g, np.inf), P[:, 1].min())
+    ymin = float(np.median(list(bases.values())))
+    d = np.array([(gt[0] - mt[0] + ESTE) / s, (BASE - mt[1]) / s - ymin, (gt[2] - mt[2]) / s])
+    return [(m, P + d, UV, I) for m, P, UV, I, _ in ps], d, inst
 
 
 def unir(obs):

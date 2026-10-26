@@ -36,9 +36,9 @@
    "nota": "reconstruido (tools/blender/edificios_complejo.py): el migrado perdió las traslaciones de las piezas del grupo; web = M · p, con p = las piezas recolocadas con members[].local del inventario (no el GLB migrado tal cual)",
    "k": 1.0,
    "c": [
-    0.526,
-    -13.69,
-    1.747
+    -4.2557,
+    -9.0847,
+    1.7467
    ],
    "M": [
     1.0,
@@ -53,9 +53,9 @@
     0,
     1.0,
     0,
-    -0.526,
-    13.69,
-    -1.747,
+    4.25566,
+    9.08472,
+    -1.74672,
     1.0
    ]
   },
