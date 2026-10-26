@@ -108,7 +108,7 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
 | Torres sueltas (`ruina_torre` ×12, `_b` ×12, `_c`, `_e`, `_f` ×3) | Nada | Paredes planas color arena (wallL/mudM), sin frisos ni ladrillos: «de cartón» (captura de Kelvin) | P1 | Lote 1: _hd |
 | Ruinas del este (`kelvin_aldea_rio_este_2`: templo D, 3 medianos H, 7 torres) | Nada | Templo D en vóxeles; la base de roca del mediano H recortada en planos sueltos; piezas que flotan | P1 | Lote 1: _hd |
 | La Colina (`kelvin_aldea_colina`: complejo de ruinas) | **Las posiciones de sus 12 templos** | El migrado perdió las traslaciones del grupo: LargeG, H, J, 8 MediumC y TowerE apilados en el origen con giros distintos. Es la masa rota junto al mirador | P1 | Lote 2: reconstruido |
-| Aldeas Savage (7 zonas) | Sogas y escombros | Troncos en prisma, sin amarres; materiales planos sin normales | P2 | Pendiente: lote 3 (atlas `hd_savage` listo en el pipeline) |
+| Aldeas Savage (7 zonas) | Sogas y escombros | Troncos en prisma, sin amarres; materiales planos sin normales | P2 | Ronda 2: lote 3 (_hd con sogas) |
 | Lejanos Ancient | — | Salen del vóxel: siluetas de vela derretida a más de 60 m | P2 | El _hd de los templos llega a 90 m; el lejano sigue siendo el de antes (salvo el complejo) |
 | Losas, plataformas y bloques de piedra | — | Cajas de 12 tris con `floorM` | P3 | Sin cambios |
 
@@ -166,6 +166,45 @@ La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw c
 - Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
 - Lejanos Ancient desde la geometría original.
 - Decisión sobre el borde oeste del complejo.
+
+## Ciudad completa, ronda 2 (25-oct-2026, noche)
+Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero moderna». Delegó las decisiones.
+
+**¿Falta ciudad en el .max?** No.
+- `AV3DMaxExportBuildings.max` tiene 1828 nodos: 1516 Editable Poly, 293 Dummy, 17 Box y 2 Editable Mesh. No hay ninguna clase de plugin.
+- Sus DLL son las de Autodesk más V-Ray. CityBuilderPlugin es un script de MAXScript: solo aparece por las rutas de 7 texturas de MAXFILES.TXT (palmeras, agua y plano), no por objetos.
+- Los 1535 nodos de geometría cuelgan, todos, de alguna de las 377 instancias exportadas. No hay capas con nombre ni grupos sin exportar.
+- `AV3DMaxTerrainExport.max` tiene 17 nodos: 11 Editable Poly (terreno) y un MultiScatter (vegetación de Archmodels), sin edificios.
+- La «ciudad tipo Asgard» son los templos y las torres de KitBash3D Ancient Temples en la cumbre de El Yunque (`ruinas_yunque` y `_2`), más las ruinas del este y el complejo. Es el grupo dorado de la izquierda en el render de 2022.
+
+**Por qué no se veía.** La distancia de dibujo de los edificios era de 150 m en calidad baja, 190 m en media y 320 m en alta, medida al borde de cada zona. La isla mide 470 m.
+- Desde el inicio, en el móvil (calidad media), solo se dibujaban 9 de las 17 zonas: ni las dos ruinas de El Yunque (a 269 y 328 m) ni 6 aldeas. La cumbre se veía vacía (`ciudad_r2_vuelo_movil_antes.png`).
+- En alta faltaban 2 zonas.
+- Con calidad baja, el LOD y el `far` de la cámara no influían: el `far` es de 1600 m y la niebla atmosférica pasa de 3 km.
+
+**Arreglo.** En `streaming.js`, `CFG.zonaLejos` = 650 m en todas las calidades, solo para las mallas lejanas fundidas por zona: un draw call por zona. Los edificios sueltos siguen con `CFG.dibujo`.
+- Ahora se ven las 17 zonas desde cualquier punto.
+- En el móvil (calidad media, desde el inicio), +4 draw calls (55 → 59) y +54 000 triángulos (283 000 → 337 000), a 60 FPS.
+- La descarga inicial no cambia: los lejanos que pasan de 150 m esperan a que el jugador se mueva.
+
+**Lejanos de los templos** (`tools/blender/edificios_lejos.py`). Salen de la geometría original (la misma del `_hd`), con grosor y remallado por vóxeles a diagonal/110. Tienen entre 1070 y 2000 tris y color de vértice del atlas. Antes salían del vóxel del ligero: las torres «derretidas» medían 33 m en lugar de 42 y les faltaban las coronas.
+
+**Lote 3, aldeas Savage** (`edificios_hd.py`, atlas `tex_hd/hd_savage*.jpg`). Llevan `_hd` 21 modelos con sogas y escombros:
+- torres, murallas con atalaya, monumentos A, C y F, puente, portales, mirador escalonado, casa con plataforma, bohíos, caney, casas de paja, cercado y empalizada.
+- Las sogas reciben casi un tercio del presupuesto y no se quitan como escombro.
+- Entre 6400 y 38 000 tris por modelo; 5,3 MB de js en total, todo por streaming.
+
+**Complejo de La Colina** (decisión delegada):
+- fuera los 3 templos del borde oeste que quedaban en el aire sobre la ladera (MediumC 007 y 008 y TowerE);
+- 4 m al este, con 2 m libres hasta el mirador;
+- la base de los templos (mediana de sus bases) a ras de las losas: antes flotaban unos 4 m;
+- mudDarkM y floorDarkM pasan a su versión clara, que coincide con el color crema del render de 2022 y ya no se ve negro a contraluz;
+- 41 179 tris en el `_hd`, 15 190 en el ligero y 1732 en el lejano.
+- Sin caja de colisión gruesa (`mundo.js`): era una caja de 42 × 28 m sobre 12 templos con plazas entre ellos. Lo detienen sus sólidos reales, como a los demás.
+
+**Peso.** La build pasa de 28,6 a 36,6 MB y 420 archivos (límites: 64 MB y 511). Supera el objetivo de 30 MB: son los `_hd` de las aldeas y su atlas, todo por streaming.
+
+Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio en alta).
 
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.
