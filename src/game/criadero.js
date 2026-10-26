@@ -1469,12 +1469,13 @@ AVE.module('criadero', function (G) {
       st.presentado = true; guardar();
       if (!silencio) G.emit('criadero', 'nido'); // cómic: viñeta de la aparición del nido (src/game/comic.js)
       const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
+      // Bocadillo: la presentación no frena el vuelo (playtest G10: la caja bloqueante dejaba a Vittata quieta y sin frutos ni peces)
       G.dialogo.say([
         { who: 'Iguaca', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
           ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
           : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
         { who: 'Iguaca', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
-      ]);
+      ], null, { libre: true });
     }
   }
   G.on('update', dt => pasoMundo(dt), 70);
@@ -1690,8 +1691,8 @@ AVE.module('criadero', function (G) {
           check('Se abre desde el botón Nido del HUD', open); cerrar();
           st.presentado = false; if (G.dialogo.open()) G.dialogo.clear();
           const puede = puedePresentar(); pasoMundo(2);
-          check('Iguaca presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
-          if (G.dialogo.open()) G.dialogo.clear();
+          check('Iguaca presenta el nido una sola vez, en bocadillo, sin frenar el juego', puede ? st.presentado && !!G.dialogo.libre() && !G.dialogo.open() : !st.presentado);
+          if (G.dialogo.clear) G.dialogo.clear();
           pasoMundo(2);
           check('La presentación no se repite', !G.dialogo.open());
         }

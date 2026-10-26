@@ -340,8 +340,8 @@
 
       // ---------- 7b. Edificios completos (kit HD) en la zona con más casas ----------
       await paso('7b · Edificios', async () => {
-        const ST = G.streaming;
-        if (!ST || !ST.zonas) { check('7b · Hay streaming de edificios', false, 'sin G.streaming'); return; }
+        const ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor) || null;
+        if (!ST || !ST.zonas) { check('7b · Hay streaming de edificios', false, ST ? 'sin zonas' : 'sin gestor'); return; }
         const zs = Object.values(ST.zonas);
         if (!zs.length) { check('7b · El mapa tiene zonas de edificios', false, '0 zonas'); return; }
         const Z = zs.slice().sort((a, b) => (b.inst || []).length - (a.inst || []).length)[0];
