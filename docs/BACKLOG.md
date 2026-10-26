@@ -13,7 +13,7 @@
 | 3f | Huesos de pico y párpados para expresiones | Modelado | Abrir pico, parpadear | Media | NOT STARTED |
 | 4 | Terminar descarga del mapa y revisar licencias KitBash3D/Archmodels | Safari / Kelvin | Decidir si se usa, se recompra la licencia o se rehace | Media | BLOCKED |
 | 5 | Episodio 1: mirador y niebla entre islas (pág. 12) | — | Zona elevada visitable con vista a islas | Media | TESTED |
-| 5b | Usar el terreno original (`terreno_amazonas.glb`) como mundo del juego | — | Vittata camina sobre el terreno original | Alta | NOT STARTED |
+| 5b | Usar el terreno original (`terreno_amazonas.glb`) como mundo del juego | — | Vittata camina sobre el terreno original | Alta | DIAGNOSED: ya es la base de la isla; región aparte en `docs/equipo/MAPA_COMPLETO.md` (espera a Kelvin) |
 | 5c | Casas del mapa: descargar AV3DMaxExportBuildings.zip (1,3 GB) y abrirlo con la extensión .max; revisar licencias | Kelvin descarga | Casas en el juego | Alta | NEEDS CREATOR |
 | 6 | Hito 8: construir el bote y navegar a una segunda zona | — | Crafting, bote movible en agua, llegada a otra isla, evento VehicleConstructed | Alta | NOT STARTED |
 | 7 | Sonido: pasos, recoger, construir, lluvia (sonidos originales) | — | Efectos con control de volumen | Media | NOT STARTED |
