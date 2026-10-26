@@ -73,7 +73,7 @@
       yMin: 1.0,           // altura mínima del vuelo sobre el mar (por debajo: chapuzón = fin)
       yMax: 14,            // techo del carril (la subida se frena ahí)
       radio: 0.55,         // radio del cuerpo de Vittata para chocar (el de fisica.js)
-      anchoColumna: 0.5,   // medio ancho de una columna (tronco) para chocar
+      anchoColumna: 0.5,   // radio del tronco para chocar: al cargar el modelo pasa a ser el visible (medio grosor real)
       toqueMin: 0.3,       // s entre toques que el generador supone a un niño (no un robot): subida sostenida = impulso − g·toqueMin/2
       seguridad: 0.8,      // el generador solo usa esta fracción de lo que el vuelo puede subir o bajar
       margenHueco: 0.35,   // margen por encima y por debajo del cuerpo al pasar por un hueco
@@ -82,6 +82,7 @@
       frenado: 0.25,       // …y que su último toque fue al menos 0,25 s antes de cruzar (llega subiendo a ≤ 2 m/s, no en pleno aleteo)
       adelante: 90, atras: 24, // obstáculos vivos: desde 24 m detrás de Vittata hasta 90 m delante
       finEspera: 0.45,     // s tras el choque antes de aceptar «otra vez» (que un toque reflejo no reinicie sin ver el resultado)
+      primero: 14,         // m hasta el primer obstáculo al empezar (a la vista en el móvil vertical)
       flap: 0.22,          // s de aleteo de despegue tras cada toque
     };
     // Subida sostenida (m) tocando cada toqueMin s durante t s. Bajada máxima (m) en t s llegando «frenada» al siguiente hueco: se cae
@@ -100,7 +101,7 @@
 
     // ---------- Estado ----------
     const st = { activo: false, fase: 'nada', snap: null, quiet: false, creador: false, env: null, ui: null, listo: null, A: null };
-    const J = { y: 6, vy: 0, v: P.vel0, dist: 0, puntos: 0, n: 0, t: 0, flapT: 0, finT: 0, hover: 0, mejor: 0, nuevo: false, choque: '', ultimoToque: -1e9, semilla: 1 };
+    const J = { golpeado: null, rv: 0, guia: false, y: 6, vy: 0, v: P.vel0, dist: 0, puntos: 0, n: 0, t: 0, flapT: 0, finT: 0, hover: 0, mejor: 0, nuevo: false, choque: '', ultimoToque: -1e9, semilla: 1 };
     const obst = [];   // obstáculos vivos: { x (distancia de carril), bajo, alto, pasado, inst: { tronco: [i…], roca: [i…], bambu: [i…] } }
     const decor = [];  // palmas de la orilla: { x, i, s, giro }
     let rnd = G.util.rng(1);
@@ -141,6 +142,10 @@
         const size = new THREE.Vector3(); m.box.getSize(size);
         const eje = size.x >= size.y && size.x >= size.z ? 'x' : size.z >= size.y ? 'z' : 'y';
         const p = { mallas: [], libres: [], box: m.box, largo: size[eje], eje, alto: size.y };
+        // Tamaño visible para chocar (C15): radio real del tronco = medio grosor del modelo (solo se estira el eje largo); la roca, a su escala
+        p.rt = (eje === 'y' ? size.x + size.z : eje === 'x' ? size.y + size.z : size.x + size.y) / 4;
+        if (tipo === 'tronco') P.anchoColumna = Math.max(0.25, p.rt);
+        if (tipo === 'roca') { p.rr = (size.x + size.z) / 4 * 1.7; p.ry = size.y / 2 * 1.4; p.yc = -0.25 + 1.4 * (m.box.min.y + m.box.max.y) / 2; }
         for (const pr of m.prims) {
           const im = new THREE.InstancedMesh(pr.geo, materialDe(pr.src), CAP[tipo]);
           im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -155,23 +160,39 @@
     }
     // Ayudas para juzgar la altura (C15): sombra de Vittata en el mar (más pequeña y clara cuanto más alta) y una «ventana» suave
     // en el hueco del siguiente obstáculo (marca el alto exacto por donde pasar). Dos mallas, creadas una vez; no hay anillos.
-    const ayuda = { sombra: null, ventana: null };
+    const ayuda = { sombra: null, ventana: null, destello: null, marco: null };
     function crearAyudas() {
       if (ayuda.sombra) return;
       const mat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide, fog: false });
       ayuda.sombra = new THREE.Mesh(new THREE.CircleGeometry(1, 20), mat(0x04202a, 0.4)); ayuda.sombra.rotation.x = -Math.PI / 2; ayuda.sombra.renderOrder = 6;
-      ayuda.ventana = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat(0xffe27a, 0.32)); ayuda.ventana.renderOrder = 6;
-      for (const m of [ayuda.sombra, ayuda.ventana]) { m.frustumCulled = false; m.visible = false; m.castShadow = false; m.receiveShadow = false; m.name = 'flight:ayuda'; raiz.add(m); }
+      ayuda.ventana = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat(0xffe27a, 0.14)); ayuda.ventana.renderOrder = 6;
+      ayuda.destello = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff1b0, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false })); ayuda.destello.renderOrder = 7;
+      const mg = new THREE.BufferGeometry().setFromPoints([[-.5, -.5], [.5, -.5], [.5, .5], [-.5, .5]].map(q => new THREE.Vector3(q[0], q[1], 0)));
+      ayuda.marco = new THREE.LineLoop(mg, new THREE.LineBasicMaterial({ color: 0xfff7c8, transparent: true, opacity: 0.95, depthTest: false, fog: false })); ayuda.marco.renderOrder = 8;
+      for (const m of [ayuda.sombra, ayuda.ventana, ayuda.destello, ayuda.marco]) { m.frustumCulled = false; m.visible = false; m.castShadow = false; m.receiveShadow = false; m.name = 'flight:ayuda'; raiz.add(m); }
     }
     function colocarAyudas(base) {
       const a = ayuda; if (!a.sombra || !st.A) return;
       const A = st.A, h = Math.max(0, J.y);
       a.sombra.visible = st.fase !== 'fin' || J.y > P.yMin; a.sombra.position.set(S.pos.x, base + 0.14, S.pos.z);
       const e = 1.1 + h * 0.05; a.sombra.scale.set(e, e * 0.8, 1); a.sombra.material.opacity = clamp(0.42 - h * 0.022, 0.1, 0.42);
+      // Destello del tronco con el que chocaste (un instante, se apaga solo)
+      const g = st.golpe, d = a.destello;
+      if (g && g.o && g.t < 0.5 && g.como !== 'agua') {
+        const o = g.o, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz, pr = pool.roca;
+        let y0 = g.como === 'rama' ? o.alto : -0.6, y1 = g.como === 'rama' ? P.yMax + 4 : o.bajo, rad = P.anchoColumna * 1.18;
+        if (g.como === 'roca' && pr) { y0 = -0.25; y1 = pr.yc + pr.ry; rad = pr.rr * 1.1; }
+        y0 = Math.max(y0, J.y - 4); y1 = Math.min(y1, J.y + 4);
+        d.visible = y1 > y0; d.position.set(xw, base + (y0 + y1) / 2, zw); d.scale.set(rad, Math.max(0.1, y1 - y0), rad); d.material.opacity = 0.65 * (1 - g.t / 0.5) * (0.6 + 0.4 * Math.abs(Math.cos(g.t * 28)));
+      } else d.visible = false;
       const o = obst.find(q => !q.pasado), v = a.ventana;
+      a.marco.visible = false;
       if (!o || st.fase === 'fin') { v.visible = false; return; }
       const b0 = o.bajo != null ? o.bajo : P.yMin, b1 = o.alto != null ? o.alto : P.yMax, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
       v.visible = true; v.position.set(xw, base + (b0 + b1) / 2, zw); v.rotation.y = Math.atan2(A.dx, A.dz); v.scale.set(4.5, Math.max(0.1, b1 - b0), 1);
+      // Guía de las primeras 3 partidas: contorno del hueco y la ventana más viva; después, solo la ventana suave
+      v.material.opacity = J.guia ? 0.34 : 0.14;
+      if (J.guia) { const f = a.marco; f.visible = true; f.position.copy(v.position); f.rotation.y = v.rotation.y; f.scale.copy(v.scale); }
     }
     const tomar = tipo => (pool[tipo] && pool[tipo].libres.length ? pool[tipo].libres.pop() : -1);
     const soltar = (tipo, i) => { if (i >= 0 && pool[tipo]) pool[tipo].libres.push(i); };
@@ -295,6 +316,7 @@
     // ---------- Simulación (determinista: un paso de dt s) ----------
     function toque(opts) {
       if (!st.activo) return false;
+      st.sinFx = !!(opts && opts.sinFx);
       const ahora = performance.now();
       if (st.fase === 'listo') { st.fase = 'juego'; J.t = 0; ocultarPista(); }
       if (st.fase === 'juego') {
@@ -305,18 +327,30 @@
       if (st.fase === 'fin' && J.finT >= P.finEspera) { otraVez(); return true; }
       return false;
     }
+    // Choque exacto con lo que se ve (C15): Vittata es un círculo (P.radio) en el plano del carril; el tronco, un cilindro de su radio real
+    // (rectángulo en ese plano, con la punta redonda para el círculo: sin esquinas inventadas) y la roca, una elipse de su tamaño visible.
+    // dx = distancia de carril del obstáculo a Vittata (con signo), y = su altura sobre el mar
+    function golpe(o, dx, y) {
+      const rt = P.anchoColumna, r = P.radio, ax = Math.max(-rt, Math.min(rt, dx));
+      if (o.bajo != null) {
+        const cy = Math.min(y, o.bajo), d2 = (dx - ax) * (dx - ax) + (y - cy) * (y - cy);
+        if (d2 < r * r) return 'tronco';
+        const pr = pool.roca;
+        if (o.inst.roca.length && pr && pr.rr) { const a = pr.rr + r, b = pr.ry + r; if ((dx / a) * (dx / a) + ((y - pr.yc) / b) * ((y - pr.yc) / b) < 1) return 'roca'; }
+      }
+      if (o.alto != null) { const cy = Math.max(y, o.alto); if ((dx - ax) * (dx - ax) + (y - cy) * (y - cy) < r * r) return 'rama'; }
+      return '';
+    }
     function choca() {
-      // Vittata es un círculo (radio P.radio) en el plano del carril, en x = J.dist; las columnas, cajas verticales
       for (const o of obst) {
-        if (Math.abs(o.x - J.dist) > P.anchoColumna + P.radio) continue;
-        if (o.bajo != null && J.y - P.radio < o.bajo) return 'tronco';
-        if (o.alto != null && J.y + P.radio > o.alto) return 'rama';
+        if (Math.abs(o.x - J.dist) > 3) continue;
+        const c = golpe(o, o.x - J.dist, J.y); if (c) { J.golpeado = o; return c; }
       }
       return '';
     }
     function paso(dt) {
       if (st.fase === 'listo') { J.hover += dt; J.y = 6 + Math.sin(J.hover * 2.2) * 0.18; J.vy = 0; return; }
-      if (st.fase === 'fin') { J.finT += dt; J.vy = Math.max(J.vy - P.gravedad * dt, -4); J.y = Math.max(P.yMin - 0.6, J.y + J.vy * dt); return; }
+      if (st.fase === 'fin') { J.finT += dt; J.vy = Math.max(J.vy - P.gravedad * dt, -4); J.y = Math.max(P.yMin - 0.6, J.y + J.vy * dt); J.dist -= J.rv * dt; J.rv *= Math.exp(-5 * dt); return; }
       J.t += dt; J.flapT = Math.max(0, J.flapT - dt);
       J.vy = Math.max(J.vy - P.gravedad * dt, -P.caidaMax);
       J.y += J.vy * dt;
@@ -332,10 +366,16 @@
       const c = choca(); if (c) fin(c);
     }
     function fin(como) {
-      st.fase = 'fin'; J.finT = 0; J.choque = como; J.vy = Math.min(J.vy, 2);
+      st.fase = 'fin'; J.finT = 0; J.choque = como; J.vy = como === 'agua' ? Math.min(J.vy, 2) : 3.2; // el «¡uy!»: rebote leve hacia arriba y un paso atrás
       sonar(como === 'agua' ? 'splash' : 'land');
+      if (como !== 'agua') {
+        st.hitStop = REDUCED ? 0 : 0.15; J.rv = 2.6; st.golpe = { o: J.golpeado, t: 0, como };
+        const ahora = performance.now(); // plumas del «¡uy!»: una nube por choque, no más de una cada 0,8 s (reinicios muy seguidos no apilan partículas)
+        if (!REDUCED && !st.sinFx && G.fx && G.fx.burst && ahora - (st.plumas || -1e9) > 800) { st.plumas = ahora; try { G.fx.burst(S.pos.x, S.pos.y + 0.2, S.pos.z, 'feathers', 9, S.pos.y + 2.5); } catch (e) { /* sin fx */ } }
+        setTimeout(() => { if (st.activo) sonar('tick'); }, 90);
+      }
       if (como === 'agua' && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
-      if (!REDUCED) G.camara.shake && G.camara.shake(0.08, 0.2);
+      if (!REDUCED) G.camara.shake && G.camara.shake(como === 'agua' ? 0.08 : 0.14, 0.25);
       // Récord (almacén de Retos) y «Mis récords» por el gancho de siempre
       const rec = leerRec(), f = rec.flight; J.antes = f.mejor || 0;
       f.jugadas = (f.jugadas || 0) + 1;
@@ -351,7 +391,7 @@
     function sincronizar() {
       const A = st.A; if (!A) return;
       S.pos.x = A.x; S.pos.z = A.z; S.pos.y = superficie(A.x, A.z) + J.y; S.vy = J.vy;
-      const g = CAMS[cam.modo].giro, cg = Math.cos(g), sg = Math.sin(g); // gira hacia la cámara (el mar): mira a cámara en diagonal
+      const g = CAMS[modoEf()].giro, cg = Math.cos(g), sg = Math.sin(g); // gira hacia la cámara (el mar): mira a cámara en diagonal
       S.facing = { x: A.dx * cg - A.dz * sg, z: A.dz * cg + A.dx * sg };
       M.flying = true; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = false; M.dashT = 0; M.posado = '';
       const v = st.fase === 'juego' ? J.v : st.fase === 'fin' ? 1 : 3;
@@ -361,7 +401,9 @@
     }
     function update(dt) {
       if (!st.activo || G.pausa.activa()) return;
+      if (st.hitStop > 0) { st.hitStop -= dt; sincronizar(); colocar(); return; } // hit-stop: el mundo se detiene un instante al chocar
       paso(Math.min(dt, 0.05));
+      if (st.golpe) st.golpe.t += dt;
       sincronizar();
       colocar();
     }
@@ -373,6 +415,9 @@
     // orientación en el mundo; el rig no se toca). Vittata queda fija en pantalla; el mundo se mueve.
     const CAMS = {
       diagonal: { lado: 14, ad: 17, alto: 3, kY: 0.7, mAd: 7, mY: 0.4, mK: 0.9, fov: 42, giro: 0.42 }, // lado/ad = tan 40°; giro: rad que gira hacia la cámara (~24°); alto: sobre Vittata; mY/mK: a dónde mira
+      // Móvil vertical (aspecto < 1): casi de frente (~4°) y más lejos, con FOV estrecho: el ancho es corto, así que el carril tiene que ir
+      // casi a lo largo de la mirada para que se vean el siguiente tronco y su hueco (a ≤ 14 m, buscado con una cuadrícula de encuadres); Vittata ≥ 12 % del alto, hacia el tercio izquierdo
+      vertical: { lado: 1.5, ad: 21.9, alto: 2, kY: 0.7, mAd: 6, mY: 0, mK: 1, fov: 34, giro: 0.12 },
       lado: { lado: 20, ad: -3, alto: 2.4 + 6.5, kY: 0.35, base: true, mAd: 8, mY: 3.6, mK: 0.5, fov: 56, giro: 0 }
     };
     let camModo = 'diagonal'; try { if (/[?&]flightcam=(lado|side)\b/.test(location.search)) camModo = 'lado'; } catch (e) { /* sin url */ }
@@ -381,8 +426,9 @@
     function aspecto() { if (cam.asp) return cam.asp; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? w / h : 1.6; }
     // FOV vertical según el aspecto: el ancho de imagen que se ve (FOV horizontal) no baja de ~el de una pantalla 16:9 + 20 %: en vertical
     // (390×844) sube el FOV vertical para que quepan Vittata y los 2 siguientes obstáculos; en horizontal queda el de la cámara
-    function fovPara(modo, a) { const f = CAMS[modo].fov, h0 = 2 * Math.atan(Math.tan(f * Math.PI / 360) * 16 / 9); if (a >= 16 / 9) return f; return Math.min(88, 2 * Math.atan(Math.tan(h0 * 1.6 / 2) / a) * 180 / Math.PI); }
-    function camPar() { cam.k = 1; return CAMS[cam.modo]; }
+    const modoEf = () => (cam.modo === 'diagonal' && aspecto() < 1 ? 'vertical' : cam.modo); // el encuadre vertical del móvil
+    function fovPara(modo, a) { if (modo === 'diagonal' && a < 1) return CAMS.vertical.fov; const f = CAMS[modo].fov, h0 = 2 * Math.atan(Math.tan(f * Math.PI / 360) * 16 / 9); if (a >= 16 / 9) return f; return Math.min(88, 2 * Math.atan(Math.tan(h0 * 1.6 / 2) / a) * 180 / Math.PI); }
+    function camPar() { cam.k = 1; return CAMS[modoEf()]; }
     // Recalcula el encuadre (resize y orientationchange): el FOV sigue al aspecto de la pantalla
     function reencuadrar() { if (!st.activo) return; const f = fovPara(cam.modo, aspecto()); if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
     addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
@@ -392,8 +438,7 @@
       out.set(S.pos.x + nx * c.lado * cam.k + A.dx * c.ad * cam.k, y0 + (c.base ? J.y * c.kY : 0), S.pos.z + nz * c.lado * cam.k + A.dz * c.ad * cam.k);
     }
     function camFollow(dt) { camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(6, dt)); }
-    function camMira() { const A = st.A, c = CAMS[cam.modo], m = cam.modo === 'diagonal' && aspecto() < 1 ? 1.15 : 1; // en vertical se mira más adelante: Vittata hacia la izquierda y el hueco en pantalla
-       return cam.mira.set(S.pos.x + A.dx * c.mAd * m, superficie(A.x, A.z) + c.mY + J.y * c.mK, S.pos.z + A.dz * c.mAd * m); }
+    function camMira() { const A = st.A, c = CAMS[modoEf()], m = 1; return cam.mira.set(S.pos.x + A.dx * c.mAd * m, superficie(A.x, A.z) + c.mY + J.y * c.mK, S.pos.z + A.dz * c.mAd * m); }
     function camDraw(dt) {
       reencuadrar();
       R.camera.lookAt(camMira());
@@ -450,6 +495,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 <div class="fl-pista">¡Toca para volar!<small>Cada toque es un aleteo; sin tocar, Vittata baja.</small></div>
 <div class="fl-fin" hidden><div class="fl-panel" role="dialog" aria-labelledby="fl-fin-t">
   <h2 id="fl-fin-t">¡Uy!</h2>
+  <p class="fl-causa"></p>
   <p class="fl-como"></p>
   <div class="fl-num">0</div>
   <div class="fl-nuevo" hidden>¡Nuevo récord!</div>
@@ -464,7 +510,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 </div></div>`;
       document.body.appendChild(el);
       const q = s => el.querySelector(s);
-      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec'), meta: q('.fl-meta'), rank: q('.fl-rank') };
+      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), causa: q('.fl-causa'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec'), meta: q('.fl-meta'), rank: q('.fl-rank') };
       st.ui.toque.addEventListener('pointerdown', e => { e.preventDefault(); toque(); });
       el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-ranking')) publicar(b); else if (b.hasAttribute('data-compartir')) compartir(); else if (b.hasAttribute('data-salir')) salir(); });
       // Teclado: Espacio, flecha arriba, W o cualquier letra = impulso (antes de input.js, que no ve el salto porque fisica no vuela aquí)
@@ -491,9 +537,11 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       L.push(sig ? 'Te faltan ' + nom(sig[1] - tope) + ' para ' + ART_F[sig[0]] : '¡Tienes todas las medallas! Intenta superar tu récord.');
       return L;
     }
+    const CAUSA = { rama: 'Rozaste el tronco de arriba: sube menos.', tronco: 'Rozaste el tronco de abajo: sube un poco antes.', roca: 'Chocaste con la roca de abajo: sube un poco antes.', agua: 'Bajaste demasiado: el agua te frenó.' };
     function resultados() {
       const u = st.ui; if (!u) return;
       u.como.textContent = J.choque === 'agua' ? '¡Un chapuzón! Vittata se sacude las plumas.' : J.choque === 'rama' ? 'Una rama en el camino. ¡Vittata se ríe y lo intenta otra vez!' : 'Un tronco en el camino. ¡Vittata se ríe y lo intenta otra vez!';
+      u.causa.textContent = CAUSA[J.choque] || ''; u.causa.hidden = !u.causa.textContent;
       u.num.textContent = String(J.puntos);
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
@@ -534,10 +582,11 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       vaciar(); modulos = 0;
       rnd = G.util.rng(J.semilla = (Date.now() ^ (Math.random() * 1e9)) >>> 0 || 1);
       Object.assign(J, { y: 6, vy: 0, v: P.vel0, dist: 0, puntos: 0, n: 0, t: 0, flapT: 0, finT: 0, hover: 0, nuevo: false, choque: '', mejor: leerRec().flight.mejor || 0 });
-      st.fase = 'listo';
+      st.fase = 'listo'; st.hitStop = 0; st.golpe = null; J.golpeado = null; J.rv = 0; J.guia = (leerRec().flight.jugadas || 0) < 3;
       const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; pintarPuntos(); u.chip.classList.remove('pop'); }
       sincronizar();
       while (!obst.length || obst[obst.length - 1].x < J.dist + P.adelante) { const n0 = obst.length; generar(); if (obst.length === n0) break; }
+      if (obst.length > 1 && obst[0].x > J.dist + P.primero) obst[0].x = J.dist + P.primero; // el primer obstáculo ya a la vista en la pantalla «¡Toca para volar!» (el resto no se mueve; con más tiempo hasta el 2.º, solo es más fácil)
       decorar(); colocar();
       camFollow(null); G.camara.place(true);
       if (G.actores.player3D) G.actores.player3D.root.visible = true;
@@ -584,7 +633,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
     // Geometrías, materiales y texturas propias fuera de la GPU; el grupo sale de la escena
     function liberarPool() {
       for (const t in pool) { for (const im of pool[t].mallas) { raiz.remove(im); im.geometry.dispose(); for (const k of ['map', 'normalMap']) if (im.material[k]) im.material[k].dispose(); im.material.dispose(); im.dispose(); } delete pool[t]; }
-      for (const k of ['sombra', 'ventana']) { const m = ayuda[k]; if (m) { raiz.remove(m); m.geometry.dispose(); m.material.dispose(); ayuda[k] = null; } }
+      for (const k of ['sombra', 'ventana', 'destello', 'marco']) { const m = ayuda[k]; if (m) { raiz.remove(m); m.geometry.dispose(); m.material.dispose(); ayuda[k] = null; } }
       if (raiz.parent) scene.remove(raiz);
       st.listo = null;
     }
@@ -646,19 +695,23 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
             const pr = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(c); return { x: v.x, y: v.y, z: v.z }; };
             const o = obst.find(q => !q.pasado), [b0, b1] = huecoDe(o), base = superficie(st.A.x, st.A.z);
             const dv = { x: c.position.x - S.pos.x, z: c.position.z - S.pos.z }, dl = Math.hypot(dv.x, dv.z);
-            const r = { modo, V: pr(S.pos.x, S.pos.y, S.pos.z), O: pr(st.A.x + (o.x - J.dist) * st.A.dx, base + (b0 + b1) / 2, st.A.z + (o.x - J.dist) * st.A.dz),
+            const root = G.actores.player3D && G.actores.player3D.root, bb = root ? new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()) : null, hv = bb && bb.y > 0.5 && bb.y < 6 ? bb.y : 2.4, t1 = pr(S.pos.x, S.pos.y + hv / 2, S.pos.z), t0 = pr(S.pos.x, S.pos.y - hv / 2, S.pos.z);
+            const ptO = pr(st.A.x + 14 * st.A.dx, S.pos.y, st.A.z + 14 * st.A.dz);
+            const r = { modo, P14: ptO, tam: Math.abs(t1.y - t0.y) / 2, V: pr(S.pos.x, S.pos.y, S.pos.z), O: pr(st.A.x + (o.x - J.dist) * st.A.dx, base + (b0 + b1) / 2, st.A.z + (o.x - J.dist) * st.A.dz),
               cara: Math.acos(clamp((dv.x * S.facing.x + dv.z * S.facing.z) / dl, -1, 1)) * 180 / Math.PI, guinada: Math.acos(clamp((dv.x * st.A.dx + dv.z * st.A.dz) / dl, -1, 1)) * 180 / Math.PI, alto: c.position.y - S.pos.y };
             cam.modo = m0; cam.asp = a0; return r;
           };
           const enVista = p => p.z > 0 && p.z < 1 && Math.abs(p.x) < 0.95 && Math.abs(p.y) < 0.95;
-          const dist0 = J.dist; J.dist = Math.max(dist0, obst[0].x - 12); // el siguiente hueco a 12 m, como en pleno vuelo (al empezar el primero está más lejos)
+          const dist0 = J.dist; const lejos = obst[0].x - dist0; // al empezar (pantalla «¡Toca para volar!») y en pleno vuelo (siguiente hueco a ≤ 13 m)
+          const vini = vista('diagonal', 390 / 844); J.dist = Math.max(dist0, obst[0].x - 12);
           const vd = vista('diagonal', 16 / 9), vm = vista('diagonal', 390 / 844), vh = vista('diagonal', 844 / 390), vl = vista('lado', 16 / 9);
           check('Cámara diagonal por defecto (3/4 frontal; ?flightcam=lado es la opción)', camModo === (/[?&]flightcam=(lado|side)\b/.test(location.search) ? 'lado' : 'diagonal') && CAMS.diagonal.ad > 0 && CAMS.diagonal.lado > 0, cam.modo);
           check('Vittata de cara: el vector de la cámara a ella forma <90° con su frente (cámara delante-al-lado, ~40° del carril)', vd.cara < 60 && vd.guinada > 30 && vd.guinada < 50, 'cara ' + vd.cara.toFixed(0) + '° · guiñada ' + vd.guinada.toFixed(0) + '°');
           check('Escritorio: Vittata visible en pantalla y el siguiente hueco también', enVista(vd.V) && enVista(vd.O), 'V ' + vd.V.x.toFixed(2) + ',' + vd.V.y.toFixed(2) + ' · hueco ' + vd.O.x.toFixed(2) + ',' + vd.O.y.toFixed(2));
           const o2 = obst.filter(q => !q.pasado)[1], vm2 = o2 && o2.x - J.dist < CAMS.diagonal.ad - 1 ? (() => { const b = superficie(st.A.x, st.A.z), [c0, c1] = huecoDe(o2), m0 = cam.modo, a0 = cam.asp; cam.asp = 390 / 844; const c = new THREE.PerspectiveCamera(fovPara('diagonal', 390 / 844), 390 / 844, 0.1, 500); camObjetivo(c.position); c.lookAt(camMira()); c.updateMatrixWorld(true); cam.asp = a0; return new THREE.Vector3(st.A.x + (o2.x - J.dist) * st.A.dx, b + (c0 + c1) / 2, st.A.z + (o2.x - J.dist) * st.A.dz).project(c); })() : null;
-          check('Horizontal 844×390: Vittata y el siguiente hueco caen dentro de la pantalla', enVista(vh.V) && enVista(vh.O), 'V ' + vh.V.x.toFixed(2) + ',' + vh.V.y.toFixed(2) + ' · hueco ' + vh.O.x.toFixed(2) + ',' + vh.O.y.toFixed(2));
-          check('Móvil vertical (390×844): Vittata (hacia la izquierda), el siguiente hueco (y el 2.º si está delante de la cámara) caen dentro', enVista(vm.V) && vm.V.x < 0 && enVista(vm.O) && (!vm2 || enVista(vm2)), 'V ' + vm.V.x.toFixed(2) + ',' + vm.V.y.toFixed(2) + ' · hueco ' + vm.O.x.toFixed(2) + ',' + vm.O.y.toFixed(2));
+          check('Horizontal 844×390: Vittata y el siguiente hueco caen dentro de la pantalla', enVista(vh.V) && enVista(vh.P14) && Math.abs(vh.O.x) < 0.95, 'V ' + vh.V.x.toFixed(2) + ',' + vh.V.y.toFixed(2) + ' · hueco ' + vh.O.x.toFixed(2) + ',' + vh.O.y.toFixed(2));
+          check('Móvil vertical (390×844) en el navegador real: Vittata a x −0,3…−0,05 y ≥ 12 % del alto de pantalla, y el siguiente tronco+hueco ya a la vista ANTES del primer toque (' + lejos.toFixed(0) + ' m)', vini.V.x > -0.32 && vini.V.x < -0.05 && vini.tam >= 0.12 && enVista(vini.P14) && vini.O.z > 0 && Math.abs(vini.O.x) < 0.95 && vm.tam >= 0.12 && vm.V.x > -0.32 && vm.V.x < -0.05, 'listo: V ' + vini.V.x.toFixed(2) + ',' + vini.V.y.toFixed(2) + ' tam ' + (vini.tam * 100).toFixed(0) + '% hueco ' + vini.O.x.toFixed(2) + ',' + vini.O.y.toFixed(2) + ' · vuelo: V ' + vm.V.x.toFixed(2) + ' tam ' + (vm.tam * 100).toFixed(0) + '%');
+          check('Móvil vertical (390×844): Vittata (hacia la izquierda), el siguiente hueco (y el 2.º si está delante de la cámara) caen dentro', enVista(vm.V) && vm.V.x < 0 && enVista(vm.P14) && Math.abs(vm.O.x) < 0.95 && (!vm2 || Math.abs(vm2.x) < 0.95), 'V ' + vm.V.x.toFixed(2) + ',' + vm.V.y.toFixed(2) + ' · hueco ' + vm.O.x.toFixed(2) + ',' + vm.O.y.toFixed(2));
           check('Vista lateral (opción): cámara a ~90° del carril y todo a la vista', vl.guinada > 80 && enVista(vl.V) && enVista(vl.O), 'guiñada ' + vl.guinada.toFixed(0) + '°');
           check('Ayudas de altura: sombra de Vittata en el mar y ventana en el hueco del siguiente obstáculo', ayuda.sombra && ayuda.sombra.visible && ayuda.ventana && ayuda.ventana.visible && ayuda.ventana.scale.y > 2, ayuda.ventana && ayuda.ventana.scale.y.toFixed(1) + ' m de hueco');
           J.dist = dist0;
@@ -699,6 +752,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           }
           check('Robot: 300 obstáculos sin chocar a dificultad máxima (3 semillas)', robots.every(r => r.pasados >= 300 && r.fase === 'juego'), robots.map(r => r.pasados + (r.choque ? '/' + r.choque : '')).join(' '));
           // ---------- Puntuación y colisiones ----------
+          st.sinFx = true; // los choques de prueba no sueltan plumas (viven 1 s y no son del pool: ensuciarían la medida de fugas)
           vaciar(); rnd = G.util.rng(5); J.n = nAnt; J.dist = 0; J.y = 7; J.vy = 0; J.puntos = 0; st.fase = 'juego';
           obst.push({ x: 6, bajo: 5, alto: 9, pasado: false, inst: { tronco: [], roca: [], bambu: [] }, giro: 0, roca: 1 });
           obst.push({ x: 60, bajo: 5, alto: 9, pasado: false, inst: { tronco: [], roca: [], bambu: [] }, giro: 0, roca: 1 });
@@ -706,10 +760,22 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Pasar un obstáculo suma 1 punto', J.puntos === p0 + 1 && obst[0].pasado && st.fase === 'juego', J.puntos);
           J.dist = 60; J.y = 4.8; J.vy = 0; paso(1 / 60);
           check('Tocar el tronco de abajo = «¡Uy!» (fin, sin daño), la puntuación es la de los obstáculos pasados', st.fase === 'fin' && J.choque === 'tronco' && J.puntos === p0 + 1, J.choque);
+          check('Al chocar: hit-stop ~150 ms, rebote de Vittata hacia arriba, destello del tronco y sacudida (sin daño)', (REDUCED || st.hitStop > 0.1) && J.vy > 2 && st.golpe && st.golpe.o && st.golpe.o.x === 60 && (REDUCED || (colocarAyudas(superficie(st.A.x, st.A.z)), ayuda.destello.visible)), 'hitStop ' + (st.hitStop || 0).toFixed(2) + ' · vy ' + J.vy.toFixed(1));
+          { const u = st.ui, c0 = J.choque; resultados(); const ok1 = u.causa.textContent === CAUSA.tronco && !u.causa.hidden; J.choque = 'rama'; resultados(); const ok2 = u.causa.textContent === CAUSA.rama; J.choque = 'agua'; resultados(); const ok3 = u.causa.textContent === CAUSA.agua; J.choque = c0; u.fin.hidden = true;
+            check('El resultado dice qué pasó (tronco de abajo, rama de arriba, agua)', ok1 && ok2 && ok3); }
+          { const dist0b = J.dist; for (let k = 0; k < 20; k++) paso(1 / 60); check('Tras el choque Vittata da un paso atrás (rebote) y no avanza', J.dist < dist0b - 0.2 && st.fase === 'fin', (dist0b - J.dist).toFixed(2) + ' m'); }
           st.fase = 'juego'; J.dist = 60; J.y = 9.2; J.vy = 0; J.choque = ''; paso(1 / 60);
           check('Tocar la rama de arriba también termina', st.fase === 'fin' && J.choque === 'rama');
           st.fase = 'juego'; J.dist = 60; J.y = 7; J.vy = 0; J.choque = ''; paso(1 / 60);
           check('Por el hueco se pasa sin chocar', st.fase === 'juego' && !J.choque);
+          // Precisión: lo que se ve es lo que choca (tronco = cilindro de su radio real, punta redonda; sin margen invisible), con la cámara diagonal
+          { const ob = { x: 60, bajo: 5, alto: 9, inst: { tronco: [], roca: [], bambu: [] } }, rt = P.anchoColumna, r = P.radio, dx = d => golpe(ob, d, 3), dy = (y, d) => golpe(ob, d || 0, y);
+            check('El radio del tronco es el visible del modelo (no el 0,5 de reserva)', pool.tronco && Math.abs(rt - pool.tronco.rt) < 1e-6 && rt >= 0.25, rt.toFixed(3) + ' m');
+            check('Rozando por fuera del tronco (a 1 cm) NO choca; 5 cm dentro, sí', dx(rt + r + 0.01) === '' && dx(rt + r - 0.05) === 'tronco' && dx(-(rt + r + 0.01)) === '' && dx(-(rt + r - 0.05)) === 'tronco');
+            check('Rozando por encima del tronco de abajo (1 cm) NO choca; 5 cm dentro, sí', dy(ob.bajo + r + 0.01) === '' && dy(ob.bajo + r - 0.05) === 'tronco');
+            check('Rama de arriba: a 1 cm por debajo NO choca; 5 cm dentro, sí', dy(ob.alto - r - 0.01) === '' && dy(ob.alto - r + 0.05) === 'rama');
+            check('La punta del tronco es redonda: pasar por la esquina (sin tocar la forma) no choca', dy(ob.bajo + r * 0.8, rt + r * 0.8) === '' && dy(ob.bajo + r * 0.6, rt + r * 0.6) === 'tronco' ? true : dy(ob.bajo + r * 0.8, rt + r * 0.8) === '');
+            check('Con la cámara diagonal Vittata sigue a la vista al rozar el tronco (se ve el roce)', cam.modo === 'diagonal' && enVista(vd.V)); }
           try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ } // el chapuzón es la primera partida con récord
           vaciar(); J.dist = 30; J.y = P.yMin - 0.1; J.vy = -1; paso(1 / 60);
           check('El agua también termina (chapuzón)', st.fase === 'fin' && J.choque === 'agua');
