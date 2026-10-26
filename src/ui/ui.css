@@ -755,7 +755,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
 /* Subtítulos de sonido (el contenedor lo crea src/game/accesibilidad.js): arriba y al centro, bajo el objetivo; el diálogo va abajo y no se tapan.
    En tabletas (hasta 944 px) van a la derecha del objetivo y en el móvil bajo el objetivo y el inventario, sin la columna de botones;
    accesibilidad.js ajusta --sub-top según la altura real de esos paneles. */
-#subtitulos { left: 0; right: 0; margin-inline: auto; width: fit-content; max-width: clamp(260px, calc(100vw - 740px), 560px); top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 76px)); z-index: calc(var(--z-card) + 1); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+#subtitulos { left: 0; right: 0; margin-inline: auto; width: fit-content; max-width: clamp(260px, calc(100vw - 920px), 560px); /* con el botón del nido y letra grande, #sys llega a 837 px en 1280 */ top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 76px)); z-index: calc(var(--z-card) + 1); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
 #subtitulos[hidden] { display: none; }
 #subtitulos > * { pointer-events: none; }
 .sub { margin: 0; display: flex; align-items: center; gap: var(--sp-2); max-width: 100%; padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-3); font: 600 var(--fs-md)/1.3 var(--font-body); color: var(--c-text); background: var(--c-surface-solid); border: 2px solid var(--c-line); border-radius: var(--r-lg); box-shadow: var(--sh-2); overflow-wrap: break-word; animation: sub-in var(--dur-2) var(--ease-out) both; }

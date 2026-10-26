@@ -558,7 +558,7 @@ window.AVRescate = function (G) {
       try { if (propioAntes == null) localStorage.removeItem(ALMACEN); else localStorage.setItem(ALMACEN, propioAntes); } catch (e) { /* sin almacén */ }
       S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; if (guard.fauna) S.fauna = guard.fauna; if (guard.peces) S.peces = guard.peces; G.banqueteApi = guard.banq;
       Object.assign(S.pos, guard.pos); S.facing = guard.facing; M.flying = guard.flying; M.grounded = guard.grounded; M.swimming = guard.swimming;
-      R.fase = ''; R.resultado = null; tick(0.05);
+      R.fase = ''; R.resultado = null; tick(0.05); Object.assign(S.pos, guard.pos); S.vy = 0; // el último tick la mueve un poco
       if (SV.suspender) SV.suspender(false); G.quiet = guard.quiet; console.error = ce;
       apartados.forEach(id => { $(id).hidden = false; });
     }
