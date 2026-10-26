@@ -26,6 +26,11 @@
      simplificando el de cerca (agrupado de vértices) con el color medio de cada textura.
    - Manifiesto opcional window.AV_EDIFICIOS_KIT = { <modelo>: { lejos: bool, radio, alto, tris, kb, kbLejos } } (se carga
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
+   - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
+     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las texturas
+     originales (difusa y normales) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
+     con la zona en nivel cerca, en calidad media o alta y con WebGL2 (CFG.hd), cuando el jugador ya se movió; mientras no
+     está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
 
    Formato de datos en el mapa (compatible con el anterior; lo genera el level designer):
    - mapa.edificiosKelvin: [ entrada ] y mapa.escenaKelvin.compacto: [ entrada compacta ] (se leen las dos listas).
@@ -54,6 +59,8 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
+    hd: { bajo: 0, medio: 40, alto: 90 },          // m de la cámara a la mitad cercana de la instancia con el modelo de alta fidelidad (_hd); 0 = solo el ligero
+    hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
     descargas: 1, descargasArranque: 3,            // descargas a la vez
@@ -93,7 +100,31 @@ AVE.module('streaming', function (G) {
       specular: new THREE.Color(0x101010), alphaTest: src.alphaTest || 0, transparent: false, vertexColors: !!src.vertexColors });
     if (!src.map && src.color) m.color.copy(src.color);
     m.name = k;
+    if (/^AV_HD_/.test(k)) atlasHD(m, src);
     return m;
+  }
+  // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
+  // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
+  // dentro de la celda, que tiene un margen que repite su borde, y el nivel de mipmap sale de la UV sin envolver (sin costuras).
+  const HD = { celdas: 4, celda: 512, margen: 16, lodMax: 4 };
+  const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
+  function atlasHD(m, src) {
+    if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
+    const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
+    m.onBeforeCompile = sh => {
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
+        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\n' +
+          'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
+          '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ', dy = dFdy( uv ) * ' + f(dentro) + ';\n' +
+          '  float lod = clamp( 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1e-8 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
+          '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
+        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace('texture2D( map, vUv )', 'avAtlas( map, vUv )'))
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vUv )', 'avAtlas( normalMap, vUv )'));
+    };
+    m.customProgramCacheKey = () => 'av-hd-atlas';
   }
   function material(src, fijo) {
     const k = src.name || src.uuid;
@@ -107,6 +138,7 @@ AVE.module('streaming', function (G) {
     if (--it.refs > 0 || it.fijo) return;
     delete mats[m.name];
     if (m.map) m.map.dispose();
+    if (m.normalMap) m.normalMap.dispose();
     m.dispose();
   }
   // Texturas del parseo que no se adoptaron (otro modelo ya trajo esa textura con el mismo nombre de material)
@@ -297,12 +329,12 @@ AVE.module('streaming', function (G) {
       if (!cap || lotes[k]) return; // pieza solo del contenido (taller) o ya creado
       let attr = buffers[k];
       if (!attr || attr.count < cap) { attr = buffers[k] = new THREE.InstancedBufferAttribute(new Float32Array(cap * 16), 16); attr.setUsage(THREE.DynamicDrawUsage); }
-      const partes = r.tipo === 'cerca' ? r.partes : [{ geo: r.geo, mat: matLejos }];
+      const partes = r.tipo === 'lejos' ? [{ geo: r.geo, mat: matLejos }] : r.partes;
       const L = lotes[k] = { n: r.n, tipo: r.tipo, attr, mallas: [], lista: [], prev: [], sombra: false };
       for (const p of partes) {
         const m = new THREE.InstancedMesh(p.geo, p.mat, cap);
         m.instanceMatrix = attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
-        m.castShadow = m.receiveShadow = r.tipo === 'cerca';
+        m.castShadow = m.receiveShadow = r.tipo !== 'lejos';
         m.name = 'edificiosInst:' + r.n + ':' + r.tipo + ':' + p.mat.name; m.userData.sinSolido = true;
         scene.add(m); L.mallas.push(m);
       }
@@ -318,6 +350,8 @@ AVE.module('streaming', function (G) {
     const cola = []; let enVuelo = 0;
     const cargarGLB = clave => G.assets.loadGLB(base + clave + '.glb', { b64: () => (window[B64] || {})[clave], script: base + clave + '_glb.js', base, error: 'edificio no disponible: ' + clave });
     const tieneLejos = n => { const k = KIT(); return !!(k && k[n] && k[n].lejos); };
+    const tieneHD = n => { const k = KIT(); return !!(k && k[n] && k[n].hd); };
+    const hdActivo = () => (CFG.hd[nivelCal()] || 0) > 0 && hdGL2();
     function pedir(r, prio) {
       r.refs++; r.soltarEn = 0;
       if (r.estado === 'nada') {
@@ -340,13 +374,13 @@ AVE.module('streaming', function (G) {
         // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
         // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
         const lq = CFG.lejosQuieto[nivelCal()] || 150;
-        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || q.prio < pre) : 0;
+        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || (q.tipo === 'cerca' && q.prio < pre)) : 0;
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
         if (!r.refs && !r.fijo) { r.estado = 'nada'; continue; }
         r.estado = 'bajando'; enVuelo++;
-        cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.n)
+        cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.tipo === 'hd' ? r.n + '_hd' : r.n)
           .then(gltf => encolar(() => procesar(r, gltf.scene)), err => { r.estado = 'error'; r.error = err; r.mal(err); })
           .then(() => { enVuelo--; siguiente(); });
       }
@@ -373,21 +407,26 @@ AVE.module('streaming', function (G) {
         r.partes = [];
         for (const [, gr] of grupos) {
           const mat = material(gr.src, r.fijo);
-          usados.add(mat); if (mat.map) usados.add(mat.map);
+          usados.add(mat); if (mat.map) usados.add(mat.map); if (mat.normalMap) usados.add(mat.normalMap);
           const geo = gr.geos.length === 1 ? gr.geos[0] : fundir(gr.geos, false);
           if (!geo.boundingBox) geo.computeBoundingBox();
           if (!geo.boundingSphere) geo.computeBoundingSphere();
+          // celda del atlas de la versión _hd: TEXCOORD_1 llega como uv2 (en r128 lo leen el aoMap y el lightMap)
+          if (r.tipo === 'hd' && geo.attributes.uv2) { geo.setAttribute('avCelda', geo.attributes.uv2); geo.deleteAttribute('uv2'); }
           r.partes.push({ geo, mat });
         }
-        // vanos de puerta a un interior vacío: solidos.js los tapa con un panel fundido en una de las partes (B4)
-        if (G.solidos && G.solidos.cerrarVanos) G.solidos.cerrarVanos(r.n, r.partes, fundir);
-        const caja = new THREE.Box3(); for (const p of r.partes) caja.union(p.geo.boundingBox);
-        const esf = caja.getBoundingSphere(new THREE.Sphere());
-        r.radio = esf.radius; r.centro = esf.center; r.alto = caja.max.y;
-        actualizarEsferas(r.n, esf);
+        // la versión _hd es solo imagen: esferas, vanos y colisiones son las del ligero
+        if (r.tipo === 'cerca') {
+          // vanos de puerta a un interior vacío: solidos.js los tapa con un panel fundido en una de las partes (B4)
+          if (G.solidos && G.solidos.cerrarVanos) G.solidos.cerrarVanos(r.n, r.partes, fundir);
+          const caja = new THREE.Box3(); for (const p of r.partes) caja.union(p.geo.boundingBox);
+          const esf = caja.getBoundingSphere(new THREE.Sphere());
+          r.radio = esf.radius; r.centro = esf.center; r.alto = caja.max.y;
+          actualizarEsferas(r.n, esf);
+        }
       }
       soltarSobrantes(root, usados);
-      root.traverse(o => { if (o.isMesh && r.tipo === 'cerca' && !r.partes.some(p => p.geo === o.geometry)) o.geometry.dispose(); });
+      root.traverse(o => { if (o.isMesh && r.tipo !== 'lejos' && !r.partes.some(p => p.geo === o.geometry)) o.geometry.dispose(); });
       if (r.tipo === 'lejos') root.traverse(o => { if (o.isMesh && o.geometry !== r.geo) o.geometry.dispose(); });
       r.estado = 'listo';
       if (!r.refs && !r.fijo) r.soltarEn = performance.now() + CFG.gracia * 1000;
@@ -414,7 +453,7 @@ AVE.module('streaming', function (G) {
     }
     function liberar(r) {
       quitarLote(r);
-      if (r.tipo === 'cerca' && r.partes) { for (const p of r.partes) { p.geo.dispose(); soltarMaterial(p.mat); } r.partes = null; }
+      if (r.tipo !== 'lejos' && r.partes) { for (const p of r.partes) { p.geo.dispose(); soltarMaterial(p.mat); } r.partes = null; }
       if (r.tipo === 'lejos' && r.geo) { r.geo.dispose(); r.geo = null; }
       r.estado = 'nada'; r.promesa = null; r.soltarEn = 0;
     }
@@ -459,6 +498,12 @@ AVE.module('streaming', function (G) {
       if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
     }
+    // Versión _hd de los modelos de la zona: se pide en nivel cerca (calidad media o alta) y se suelta al salir
+    function ajustarHD(Z, quiere) {
+      if (!!Z.hd === quiere) return;
+      Z.hd = quiere;
+      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 0.5).catch(() => {}); else soltar(res(n, 'hd')); }
+    }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
     function fundirZona(Z) {
@@ -490,6 +535,7 @@ AVE.module('streaming', function (G) {
         const cerca = Z.forzada || (Z.nivel === 2 ? Z.d < Rc + H : Z.d < Rc);
         const lejos = Z.nivel >= 1 ? Z.d < Rl + H : Z.d < Rl;
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
+        ajustarHD(Z, Z.nivel === 2 && hdActivo() && Z.d < Rc + (Z.hd ? H : 0)); // forzada de lejos (cargarTodo): sin _hd
       }
       liberarVencidos(performance.now());
     }
@@ -515,11 +561,11 @@ AVE.module('streaming', function (G) {
 
     // --- cada cuadro: LOD, distancia, frustum y sombra por instancia → listas por lote ---
     const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), esfera = new THREE.Sphere();
-    const vis = { cerca: 0, lejos: 0, mallas: 0, zonas: 0 };
+    const vis = { cerca: 0, lejos: 0, hd: 0, mallas: 0, zonas: 0 };
     function cuadro() {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
-      const cp = cam.position, max = alcance(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH;
+      const cp = cam.position, max = alcance(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH, hdD = hdActivo() ? CFG.hd[nivelCal()] : 0;
       const S = G.S, sx = S.pos ? S.pos.x : cp.x, sz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
@@ -536,15 +582,19 @@ AVE.module('streaming', function (G) {
         if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
         const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         if (d - I.r > max) continue;
-        if (I.lod === 0 && d > lodD + H) I.lod = 1; else if (I.lod === 1 && d < lodD - H) I.lod = 0;
-        let L = lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
+        // los grandes (más de CFG.hdGrande m de radio: templos, el complejo) cuentan desde su mitad cercana: junto a uno de 40 m
+        // de radio no se ve su lejano. Su _hd sigue más allá del LOD, hasta hdD (los pequeños, el lejano: menos draw calls)
+        const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
+        if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
+        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
+        let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
         if (!L) continue;
-        const sombra = L.tipo === 'cerca' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
+        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
         L.lista.push(I); if (sombra) L.sombra = true;
       }
-      vis.cerca = vis.lejos = vis.mallas = 0;
+      vis.cerca = vis.lejos = vis.hd = vis.mallas = 0;
       for (const k in lotes) {
         const L = lotes[k], li = L.lista, pr = L.prev;
         let igual = li.length === pr.length;
@@ -555,7 +605,7 @@ AVE.module('streaming', function (G) {
           L.attr.needsUpdate = true;
           L.prev = li.slice();
         }
-        for (const m of L.mallas) { m.count = li.length; m.visible = li.length > 0; m.castShadow = L.tipo === 'cerca' && L.sombra; }
+        for (const m of L.mallas) { m.count = li.length; m.visible = li.length > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
         if (li.length) { vis[L.tipo] += li.length; vis.mallas += L.mallas.length; }
       }
     }
@@ -587,17 +637,18 @@ AVE.module('streaming', function (G) {
         return espera().then(() => { drenarColocar(); drenar(); });
       },
       stats() {
-        let modCerca = 0, modLejos = 0, bytes = 0;
+        let modCerca = 0, modLejos = 0, modHD = 0, bytes = 0;
         for (const n in recursos) {
-          const rc = recursos[n].cerca, rl = recursos[n].lejos;
+          const rc = recursos[n].cerca, rl = recursos[n].lejos, rh = recursos[n].hd;
           if (rc && rc.estado === 'listo') { modCerca++; for (const p of rc.partes) bytes += tam(p.geo); }
+          if (rh && rh.estado === 'listo') { modHD++; for (const p of rh.partes) bytes += tam(p.geo); }
           if (rl && rl.estado === 'listo') { modLejos++; bytes += tam(rl.geo); }
         }
         for (const id in zonas) if (zonas[id].malla) bytes += tam(zonas[id].malla.geometry);
         const zs = Object.values(zonas);
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
-          instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos,
-          materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos,
+          instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos, modelosHD: modHD,
+          materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos, visiblesHD: vis.hd, hd: hdActivo(),
           drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
       },
     };
@@ -610,6 +661,7 @@ AVE.module('streaming', function (G) {
     G.on('render', () => { if (iniciado) cuadro(); }, 22);
     // modelo(n) fijo para el contenido (taller, refugio): comparte la carga y los materiales con las instancias
     gestor.modelo = n => { const r = res(n, 'cerca'); r.fijo = true; return pedir(r, -1).then(() => r); };
+    gestor.tieneHD = tieneHD;
     ST = gestor;
     return gestor;
   }
@@ -649,15 +701,23 @@ AVE.module('streaming', function (G) {
       // draw calls de un cuadro entero (sombra, escena y post), contados aquí: R.stats() solo se actualiza en el bucle
       const contar = () => { const rr = R.renderer, orig = rr.render; let n = 0; rr.render = function (a, b) { orig.call(rr, a, b); n += rr.info.render.calls; }; try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.render = orig; } return n; };
       // la peor de cuatro orientaciones de la cámara
-      let st = null;
+      let st = null, hdMax = 0;
       for (const yaw of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
         G.camara.yaw = yaw; dibujar(2);
         const c = contar(), se = ST.stats();
-        if (!st || c > st.calls) st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, zonas: se.zonasFundidas };
+        if (!st || c > st.calls) st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, hd: se.visiblesHD, zonas: se.zonasFundidas };
+        hdMax = Math.max(hdMax, se.visiblesHD);
       }
       G.camara.yaw = yaw0;
+      // Versión cercana de alta fidelidad (_hd) de los modelos que la tienen: cargada y dibujada en calidad alta con WebGL2
+      const conHD = [...ZM.modelos].filter(n => ST.tieneHD(n));
+      if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
+        const listosHD = conHD.filter(n => ST.recursos[n].hd && ST.recursos[n].hd.estado === 'listo');
+        check('Cerca, los edificios con versión de alta fidelidad la cargan y la dibujan', listosHD.length === conHD.length && hdMax > 0,
+          ZM.id + ': ' + listosHD.length + '/' + conHD.length + ' modelos _hd, hasta ' + hdMax + ' instancias _hd a la vista');
+      }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
-        ' (' + st.cerca + ' instancias cerca, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
+        ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
       const g0 = M.geometries, t0 = M.textures;
       // Entrar en Z por el borde sur, mirando al centro
       const bx = Z.cx, bz = Z.cz + Math.min(Z.r, 40) + 6;
@@ -681,7 +741,7 @@ AVE.module('streaming', function (G) {
       ST.liberarYa(); dibujar();
       const libres = (tipo, ns) => ns.every(n => { const r = ST.recursos[n][tipo]; return !r || r.estado === 'nada' || r.fijo; }) && !scene.children.some(o => ns.some(n => (o.name || '').startsWith('edificiosInst:' + n + ':' + tipo)));
       const propiosCerca = propios.filter(n => !ST.recursos[n].cerca.fijo);
-      check('Al salir de su radio, la zona suelta el modelo completo (geometría, texturas, mallas)', Z.nivel < 2 && libres('cerca', propiosCerca),
+      check('Al salir de su radio, la zona suelta el modelo completo (geometría, texturas, mallas)', Z.nivel < 2 && libres('cerca', propiosCerca) && libres('hd', propios),
         'nivel ' + Z.nivel + ' · geometrías ' + g0 + '→' + M.geometries + ' · texturas ' + t0 + '→' + M.textures + ' · ' + propiosCerca.join(','));
       // Lejos de todo (distancia de dibujo 1 m, simulado): también se suelta el LOD lejano
       const dib = CFG.dibujo; CFG.dibujo = { bajo: 1, medio: 1, alto: 1 };
@@ -697,7 +757,7 @@ AVE.module('streaming', function (G) {
       // heap: con window.gc (Chrome con --js-flags=--expose-gc) se recoge antes y se exige ≤ 8 MB; sin gc el heap incluye basura
       // aún no recogida y solo se informa (la memoria propia de los edificios sí se exige estable)
       const gc = typeof window.gc === 'function', tolHeap = gc ? 8 : 32;
-      const foto = () => { if (gc) window.gc(); const s2 = ST.stats(); return { g: M.geometries, t: M.textures, kb: s2.kbGeometria, mats: s2.materiales, mod: s2.modelosCerca + s2.modelosLejos, heap: heap() }; };
+      const foto = () => { if (gc) window.gc(); const s2 = ST.stats(); return { g: M.geometries, t: M.textures, kb: s2.kbGeometria, mats: s2.materiales, mod: s2.modelosCerca + s2.modelosLejos + s2.modelosHD, heap: heap() }; };
       const m1 = foto();
       for (let v = 0; v < 2; v++) { await ir(bx, bz, 0, -1); await ir(x0, z0); ST.liberarYa(); dibujar(); }
       const m2 = foto();

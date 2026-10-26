@@ -77,7 +77,7 @@ AVE.module('momentos', function (G) {
   function alResultado(d) {
     if (!d || d.prueba || G.eventos.had('FirstChallengeRecord') || pendRecord) return false;
     const dev = (G.retosApi && G.retosApi._dev) || {};
-    const nuevo = d.modo === 'carrera' ? (dev.C ? dev.C.nuevo === true : !!d.llego) : (dev.TM ? dev.TM.nuevo === true : (d.puntos || 0) > 0);
+    const nuevo = d.modo === 'carrera' || d.modo === 'rio' ? (dev.C ? dev.C.nuevo === true : !!d.llego) : (dev.TM ? dev.TM.nuevo === true : (d.puntos || 0) > 0);
     if (!nuevo) return false;
     let foto = null;
     try { foto = G.renderer && G.renderer.snapshot ? G.renderer.snapshot(480, 360, 0.72) : null; } catch (e) { foto = null; }
