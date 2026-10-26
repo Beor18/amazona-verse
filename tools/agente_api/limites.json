@@ -1,6 +1,6 @@
 {
-  "nota": "Topes de gasto del ejecutor de la API en USD. Solo Kelvin los cambia. El 25-oct-2026 Kelvin pidió priorizar el uso de los créditos promocionales (quedan ~184 USD y vencen el 29-oct): tope total 184 y diario 70.",
+  "nota": "Topes de gasto del ejecutor de la API en USD. Solo Kelvin los cambia. El 25-oct-2026 Kelvin pidió priorizar el uso de los créditos promocionales (quedan ~184 USD y vencen el 29-oct): tope total 184 y diario 150 (25-oct, antes de dormir).",
   "tope_total_usd": 184,
-  "tope_dia_usd": 70,
+  "tope_dia_usd": 150,
   "alerta_pct": 80
 }
