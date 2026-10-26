@@ -196,6 +196,22 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - Nada de pesca. Para todas las edades.
 - Código en `src/game/rio_vivo.js`, `rioVivoTest` y capturas.
 
+## Carril U: inglés
+**U1 · Inglés completo, listo para activarse.**
+- La historia, el HUD, los diálogos, las misiones, los Retos, el Banquete, el minimapa, el menú de modos y los avisos tienen que tener su texto EN junto al ES, con la misma estructura `{ es, en }` o `data-l` que ya usa el juego.
+- Hoy solo el Aula y la misión educativa están en EN.
+- Traducción natural para niños y familias, no literal. Iguaca se queda como «Iguaca».
+- El idioma por defecto sigue en español; el cambio de idioma ya existe o se añade en la pausa.
+- Prueba: ningún texto visible sin EN (`idiomaTest`).
+- No toques la lógica.
+
+## Carril V: playtest automático
+**V1 · Recorrido de 10 minutos como un niño** (`tests/qa/`, sin tocar el juego).
+- Una prueba nueva, `playtest10`, que juegue en este orden: menú de modos, vuelo, coquí, comer un fruto, lluvia (si existe el clima), rescate («Save the Parrot»), río y peces con el visor, una foto para el cómic, guardar y reabrir.
+- Que mida el tiempo de cada tramo, los FPS, la memoria y los errores.
+- Que escriba `docs/equipo/PLAYTEST10.md` con dónde se atasca o se aburre (segundos sin acción) y 5 mejoras concretas.
+- Si algo del juego está roto, lo anota en `BUGS.md` con el archivo y la línea, sin arreglarlo.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -230,3 +246,5 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | Q1 | pendiente | | |
 | R1 | pendiente | | |
 | T1 | pendiente | | |
+| U1 | pendiente | | |
+| V1 | pendiente | | |
