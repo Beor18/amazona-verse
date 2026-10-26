@@ -203,7 +203,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | F2 | hecha | 25-oct | Sección «Modo Retos» en la landing (`#retos`): capturas de la carrera y de la tormenta en JPG, récords de la casa, cómic para compartir, enlace en el menú; ES y EN, probada a 375 px y a escritorio. |
 | G1 | pendiente | | |
 | G2 | pendiente | | |
-| H1 | pendiente | | |
+| H1 | hecha | 11ecc7c | Pack `content/ep2` (desde la plantilla, sin tocar el motor): `index.html?pack=ep2`, zona con 3 sitios, misión 1 «Lee la tierra» completa, diálogos, parada del nido con fuente (USFWS), marcadores `[KELVIN]`; `AV.ep2Test` 19/19 y las 13 baterías en verde. |
 | K1 | hecha | 0fd6b3f | Relajado: la carrera sin reloj límite y la tormenta de práctica (golpe sin perder plumas ni combo, se sigue sumando); fantasma de la mejor carrera (muestras cada 0,1 s en decímetros, diferencias base 36, ~5 KB/min, clave `.retos.fantasma`, cotorra translúcida y botón para apagarlo); retosTest 64/64, las otras 12 baterías verdes; e2eTest 2/3 falla ya en HEAD (`G.dialogo.activo`, ajeno). Pendiente: «Nuevo estudiante» (boot.js) no borra la clave del fantasma. |
 | K2 | hecha | c36abe6 | Contrarreloj del río: ruta por el cauce (mapa.agua.rio, ~970 m) a 4,5 m del agua, 7 flores con banderín y meta en la desembocadura, sin anillos, rivales ni corrientes; medallas por tiempo, récord y fantasma propio (`.retos.fantasma.rio`); en el menú de Retos, en «Mis récords» (records.js, retosResultado modo 'rio') y en el cómic del primer récord; retosTest 87/87, recordsTest 47/47, las 13 baterías verdes. Pendiente: «Nuevo estudiante» (boot.js) no borra las claves de fantasma. |
 | L1 | pendiente | | |
