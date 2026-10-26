@@ -373,7 +373,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | Y1 | hecha (integrada 26-oct) | f5c1f99 | Fichas 26-E y 26-F: `src/engine/ambiente.js` (mapa de zonas 64×64 y partículas en 1 draw call), identidad de color por zona y musgo en el suelo (`terreno.js`), rim suave en NPC y fauna (`actores.rim`). |
 | AB1 | pendiente | | |
 | AC1 | pendiente | | |
-| AD1 | pendiente | | |
+| AD1 | en curso por la otra sesión de la API (`--carriles AD,AG,AH,AI,AJ`) | ed28fbf | Dos sesiones la hacían a la vez; esta paró y dejó sus cambios sin commit y lo medido en PEDIDOS.md (recorrido completo, 2–5,5 min, 177 textos sin EN). |
 | AB2 | pendiente | | |
 | AC2 | pendiente | | |
 | AD2 | pendiente | | |
