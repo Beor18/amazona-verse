@@ -379,7 +379,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AD2 | pendiente | | |
 | AE1 | pendiente | | |
 | AF1 | pendiente | | |
-| AG1 | pendiente | | |
+| AG1 | hecha | f178156 | `EP3_GDD.md`, `EP3_MISIONES.md` y `EP3_NARRATIVA.md` (mismo formato que el ep. 2): M1 «¿Qué flota?» (prueba de 6 materiales y botadura con parte débil), M2 «Leer el agua» (viento, nubes, corriente, código de señales y quién lleva el timón), M3 «Más allá de la bahía» (travesía por la ruta de datos del muelle a una aldea existente, chubasco y bajío) y formativa q1–q6; reutiliza `canoa`, río, mar, aldeas, agarre, construcción del ep. 2 y ropero; 10 decisiones `[KELVIN]`. Solo documentos (sin build). Otra sesión escribió a la vez un GDD propio; quedó integrado en el commit |
 | AG2 | pendiente | | |
 | AH1 | pendiente | | |
 | AH2 | pendiente | | |
