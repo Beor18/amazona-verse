@@ -6,14 +6,17 @@ Las corre `tools/agente_api/ejecutar.sh` con los créditos promocionales de la A
 - **Repo y rama:** el repo es `~/AmazonaVerse/Juego` y hay **una sola rama, `main`**. Nada de ramas ni worktrees.
 - **Antes de empezar:** lee `docs/equipo/COORDINACION.md` y `ROADMAP.md`.
 - **Tu zona:** quédate en los archivos de tu carril. Si necesitas tocar otro, hazlo en un commit aparte y mínimo, y explícalo en el resultado.
-- **Commits:**
-  - Pequeños, solo de tus archivos (`git add` de rutas concretas; revisa con `git diff --cached`).
-  - Si git dice `index.lock`, espera 20 s y reintenta: hay otros carriles haciendo commit.
-  - Prohibido `checkout`, `reset` y `stash`.
+- **Commits (con índice temporal, porque varios agentes trabajan en la misma copia):**
+  - `T=$(mktemp); GIT_INDEX_FILE=$T git read-tree HEAD; GIT_INDEX_FILE=$T git add <tus rutas>; GIT_INDEX_FILE=$T git commit -m "…"; rm $T; git reset -q`
+  - Solo tus archivos. Si un archivo compartido tiene cambios ajenos sin commit, mete solo tus hunks (`git diff -U0` de tus líneas y `git apply --cached --unidiff-zero` sobre el índice temporal).
+  - Prohibido `checkout`, `reset --hard` y `stash`.
+  - **NUNCA termines una tarea sin commit.** El 26-oct se perdieron horas porque AB1, AC2 y AJ1 terminaron con todo el trabajo sin guardar. Si se te acaban los turnos o el tiempo, haz commit de lo que funcione y escribe en «Estado» qué falta.
 - **No publiques:** nada de push ni de `sitio/`. La sesión principal revisa y publica.
-- **Pruebas** antes de cada commit de código:
-  - `taskpolicy -b nice -n 15 tools/build/build.sh HEAD tools/build/salida/<tarea>-<sha>` (siempre en una carpeta propia: QA-35) y luego `tools/build/test.sh <esa carpeta>/ --extra`.
-  - Las 13 baterías tienen que quedar en verde, con 0 errores de consola.
+- **Pruebas** antes de cada commit de código, sobre tu trabajo y no sobre HEAD:
+  - Haz un commit de prueba que no mueve main: crea el índice temporal como arriba, luego `TREE=$(GIT_INDEX_FILE=$T git write-tree); C=$(git commit-tree $TREE -p HEAD -m prueba)`.
+  - Después corre `taskpolicy -b nice -n 15 tools/build/build.sh $C tools/build/salida/<tarea>-<algo>` (siempre en una carpeta propia: QA-35) y `tools/build/test.sh <esa carpeta>/ --extra`.
+  - Las baterías tienen que quedar en verde, con 0 errores de consola.
+  - Si algo falla solo por la carga de la Mac (tiempos agotados en baterías que no tocaste), repite una vez. Si sigue igual, haz commit de todas formas y anótalo en «Estado»; la sesión principal vuelve a probar antes de publicar.
 - **Recursos:**
   - Nunca `python3` del sistema: usa `~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11 -I`.
   - Nada de descargas, cuentas ni claves.
