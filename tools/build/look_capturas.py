@@ -3,12 +3,17 @@
 
     python3.11 -I tools/build/look_capturas.py [--looks fabrica,vibrante,soleado,toon] [--vistas aldea,yunque,rio,ciudad]
                                                [--raiz .] [--salida docs/img] [--calidad alto] [--lamina] [--solo-lamina]
+                                               [--prefijo look_] [--movil] [--repetir 1] [--titulo …]
 
 Sirve la carpeta --raiz (el repo o una build) con el servidor y el Chrome sin interfaz de avtest.py (GPU real por Metal),
 abre el juego una vez por look (?look=…&calidad=…&clima=sol), pasa el flujo de jugador nuevo, lleva a Vittata a cada vista,
 espera el streaming, mide 90 cuadros (ms por cuadro, draw calls, triángulos, programas y memoria estimada de texturas) y
-guarda el lienzo del mundo (sin HUD) en <salida>/look_<look>_<vista>.png. Con --lamina compone <salida>/look_comparacion.png
-(filas: looks; columnas: vistas) y escribe <salida>/look_medidas.json. Una captura a la vez (la Mac va cargada).
+guarda el lienzo del mundo (sin HUD) en <salida>/<prefijo><look>_<vista>.png. Con --lamina compone <salida>/<prefijo>comparacion.png
+(filas: looks; columnas: vistas) y escribe <salida>/<prefijo>medidas.json. Una captura a la vez (la Mac va cargada).
+Medida por vista: tras 60 cuadros de calentamiento, 180 cuadros con su tiempo (media, mediana y p90 en ms), más draw calls,
+triángulos, programas, memoria estimada de texturas y heap JS. --movil emula un celular (390×844, dpr 2, táctil, pointer:coarse;
+el juego elige su calidad como en un móvil, salvo --calidad). --repetir N repite cada look N veces (medidas independientes,
+en el JSON quedan todas bajo "series"). La vista «criadero» abre el nido (G.criadero.abrir) y captura su lienzo.
 """
 import argparse
 import base64
@@ -74,6 +79,7 @@ VISTAS = {  # en las vistas de vuelo Vittata queda 8 m bajo la cámara (fuera de
     'yunque': {'x': 80, 'y': 30, 'z': 8, 'vuelo': True, 'yaw': 0.6, 'cam': [80, 38, 8], 'mirar': [-30, 95, -150], 'nota': 'El Yunque: paredes, cascadas y cumbre'},
     'rio': {'x': 190, 'alt': 0, 'z': 122, 'vuelo': False, 'yaw': 2.6, 'cam': [194.7, 5.5, 114.3], 'mirar': [179.6, 4, 139.2], 'nota': 'Río junto a Poza Honda'},
     'ciudad': {'x': 52, 'y': 110, 'z': -84, 'vuelo': True, 'yaw': 0.885, 'cam': [52, 118, -84], 'mirar': [-10, 100, -140], 'nota': 'Ruinas de Kelvin (ciudad antigua)'},
+    'criadero': {'criadero': True, 'nota': 'Criadero (nido, su propio lienzo)'},
 }
 
 VISTA_JS = r'''(async () => {
@@ -93,14 +99,36 @@ VISTA_JS = r'''(async () => {
   G.camara.yaw = V.yaw; G.camara.place(true);
   await cuadros(60);
   G.camara.yaw = V.yaw; G.camara.place(true);
-  const t0 = performance.now(); await cuadros(90); const ms = (performance.now() - t0) / 90;
-  const med = AV.look && AV.look.medir ? AV.look.medir() : R.stats();
-  med.ms = Math.round(ms * 100) / 100; med.fpsMedidos = Math.round(1000 / ms); med.cam = [R.camera.position.x, R.camera.position.y, R.camera.position.z].map(v => Math.round(v));
+  const med = await medirCuadros(180, AV.look && AV.look.medir ? AV.look.medir() : R.stats());
+  med.cam = [R.camera.position.x, R.camera.position.y, R.camera.position.z].map(v => Math.round(v));
   med.look = AV.look ? (AV.look.actual || 'fabrica') : 'fabrica'; med.tamano = [R.canvas.width, R.canvas.height];
   G.camara.place(true);
   if (V.cam) { R.camera.position.set(V.cam[0], V.cam[1], V.cam[2]); R.camera.lookAt(V.mirar[0], V.mirar[1], V.mirar[2]); R.camera.updateMatrixWorld(); }
   R.drawScene(R.camera);
   const png = R.canvas.toDataURL('image/png');
+  return JSON.stringify({ med, png });
+})()'''
+
+# Tiempos por cuadro (rAF): media, mediana y p90 de n cuadros; se añade a la medida base
+MEDIR_JS = r'''
+  const medirCuadros = (n, base) => new Promise(r => { const dts = []; let prev = 0; const f = t => { if (prev) dts.push(t - prev); prev = t; if (dts.length >= n) return r(fin()); requestAnimationFrame(f); };
+    const fin = () => { const o = dts.slice().sort((a, b) => a - b), q = p => o[Math.min(o.length - 1, Math.floor(p * o.length))], ms = dts.reduce((a, b) => a + b, 0) / dts.length;
+      return Object.assign(base, { ms: Math.round(ms * 100) / 100, fpsMedidos: Math.round(1000 / ms), msMediana: Math.round(q(0.5) * 100) / 100, msP90: Math.round(q(0.9) * 100) / 100, cuadros: dts.length }); };
+    requestAnimationFrame(f); });'''
+VISTA_JS = VISTA_JS.replace('const cuadros = n =>', MEDIR_JS + '\n  const cuadros = n =>')
+
+CRIADERO_JS = r'''(async () => {
+  const AV = window.AV, G = AV.G, R = G.renderer;''' + MEDIR_JS + r'''
+  const cuadros = n => new Promise(r => { let k = 0; const f = () => (++k >= n ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); });
+  if (!G.criadero || !G.criadero.abrir) return JSON.stringify({ error: 'sin criadero' });
+  const ok = await G.criadero.abrir(); if (!ok) return JSON.stringify({ error: 'el criadero no abrió' });
+  await cuadros(90);
+  const med = await medirCuadros(180, AV.look && AV.look.medir ? AV.look.medir() : R.stats());
+  med.look = AV.look ? (AV.look.actual || 'fabrica') : 'fabrica';
+  const c = document.querySelector('#criadero .cr-canvas, #criadero canvas');
+  med.tamano = c ? [c.width, c.height] : null;
+  const png = c ? c.toDataURL('image/png') : '';
+  G.criadero.cerrar();
   return JSON.stringify({ med, png });
 })()'''
 
@@ -113,29 +141,30 @@ small { display: block; color: #b8c7bd; font-weight: 500; font-size: 12px; margi
 h1 { margin: 10px 12px 0; font-size: 20px; } p { margin: 2px 12px 8px; color: #b8c7bd; font-weight: 500; font-size: 13px; }
 </style><h1>Amazona Verse · looks de color (A/B)</h1><p>Mismas cuatro vistas y calidad «%(calidad)s»; el lienzo del mundo sin HUD. Medidas bajo cada imagen: ms por cuadro · draw calls · texturas estimadas (MB).</p>
 <table>%(filas)s</table>'''
+LAMINA_TITULO = 'Amazona Verse · looks de color (A/B)'
 
 
-def lamina(cdp, ses, origen, salida, looks, vistas, medidas, calidad):
+def lamina(cdp, ses, origen, salida, looks, vistas, medidas, calidad, prefijo='look_', titulo=None):
     w, h = 480, 300
     filas = ['<tr><th></th>' + ''.join('<th class="col">%s<small>%s</small></th>' % (v, VISTAS[v]['nota']) for v in vistas) + '</tr>']
     for lk in looks:
         celdas = []
         for v in vistas:
             m = medidas.get(lk, {}).get(v) or {}
-            txt = ('%.1f ms · %s calls · %s MB tex' % (m.get('ms', 0), m.get('calls', '?'), m.get('texturasMB', '?'))) if m else 'sin medida'
-            celdas.append('<td><img src="look_%s_%s.png?%d"><small>%s</small></td>' % (lk, v, int(time.time()), txt))
+            txt = ('%.1f ms (mediana %s) · %s calls · %s MB tex' % (m.get('ms', 0), m.get('msMediana', '?'), m.get('calls', '?'), m.get('texturasMB', '?'))) if m else 'sin medida'
+            celdas.append('<td><img src="%s%s_%s.png?%d"><small>%s</small></td>' % (prefijo, lk, v, int(time.time()), txt))
         filas.append('<tr><th class="fila">%s</th>%s</tr>' % (lk, ''.join(celdas)))
-    html = LAMINA_HTML % {'w': w, 'h': h, 'filas': ''.join(filas), 'calidad': calidad}
+    html = (LAMINA_HTML % {'w': w, 'h': h, 'filas': ''.join(filas), 'calidad': calidad}).replace(LAMINA_TITULO, titulo or LAMINA_TITULO)
     ancho, alto = 140 + (w + 14) * len(vistas), 90 + (h + 42) * len(looks)
     cdp.call('Emulation.setDeviceMetricsOverride', {'width': ancho, 'height': alto, 'deviceScaleFactor': 1, 'mobile': False}, ses)
-    tmp = os.path.join(salida, 'look_lamina_tmp.html')
+    tmp = os.path.join(salida, prefijo + 'lamina_tmp.html')
     open(tmp, 'w', encoding='utf-8').write(html)
-    cdp.call('Page.navigate', {'url': '%s/%s/look_lamina_tmp.html' % (origen, os.path.relpath(salida, REPO))}, ses)
+    cdp.call('Page.navigate', {'url': '%s/%s/%slamina_tmp.html' % (origen, os.path.relpath(os.path.abspath(salida), REPO), prefijo)}, ses)
     cdp.bombear(1.5)
     avtest.evaluar(cdp, ses, 'Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })))', 60)
     cdp.bombear(0.5)
     png = cdp.call('Page.captureScreenshot', {'format': 'png', 'captureBeyondViewport': True}, ses, 60)['data']
-    ruta = os.path.join(salida, 'look_comparacion.png')
+    ruta = os.path.join(salida, prefijo + 'comparacion.png')
     open(ruta, 'wb').write(base64.b64decode(png))
     os.remove(tmp)
     print('· lámina', ruta, flush=True)
@@ -151,6 +180,10 @@ def main():
     ap.add_argument('--lamina', action='store_true')
     ap.add_argument('--solo-lamina', action='store_true')
     ap.add_argument('--vistas-json', help='vistas de prueba {nombre: {x, y|alt, z, vuelo, yaw}} (exploración)')
+    ap.add_argument('--prefijo', default='look_', help='prefijo de los PNG, la lámina y el JSON (p. ej. vtr_)')
+    ap.add_argument('--movil', action='store_true', help='emula un celular (390×844, dpr 2, táctil)')
+    ap.add_argument('--repetir', type=int, default=1, help='repite cada look N veces (series independientes)')
+    ap.add_argument('--titulo', help='título de la lámina')
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(AQUI, 'config.json')))
     P = cfg['pruebas']
@@ -159,7 +192,7 @@ def main():
         VISTAS.update(json.load(open(a.vistas_json)))
         vistas = list(json.load(open(a.vistas_json)))
     os.makedirs(a.salida, exist_ok=True)
-    ruta_med = os.path.join(a.salida, 'look_medidas.json')
+    ruta_med = os.path.join(a.salida, a.prefijo + ('movil_' if a.movil else '') + 'medidas.json')
     medidas = json.load(open(ruta_med)) if os.path.exists(ruta_med) else {}
     estado = {'excepciones': [], 'consola': []}
 
@@ -179,14 +212,18 @@ def main():
         ws = avtest.WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path))
         cdp = avtest.CDP(ws, al_evento)
         print('· servidor %s · Chrome %s' % (origen, chrome.version), flush=True)
-        for lk in ([] if a.solo_lamina else looks):
+        for lk in ([] if a.solo_lamina else [x for x in looks for _ in range(a.repetir)]):
             tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
             ses = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
             for me in ('Page.enable', 'Runtime.enable', 'Log.enable'):
                 cdp.call(me, {}, ses)
+            if a.movil:
+                cdp.call('Emulation.setDeviceMetricsOverride', {'width': 390, 'height': 844, 'deviceScaleFactor': 2, 'mobile': True}, ses)
+                cdp.call('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints': 5}, ses)
+                cdp.call('Emulation.setUserAgentOverride', {'userAgent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'}, ses)
             # Cada look empieza como jugador nuevo (mismo perfil de Chrome): se vacía el almacén antes de que corra el juego
             cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': 'try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}'}, ses)
-            url = '%s/index.html?calidad=%s&clima=sol' % (origen, a.calidad) + ('' if lk == 'fabrica' else '&look=' + lk)
+            url = '%s/index.html?clima=sol' % origen + ('&calidad=' + a.calidad if a.calidad else '') + ('' if lk == 'fabrica' else '&look=' + lk)
             cdp.call('Page.navigate', {'url': url}, ses)
             t0 = time.monotonic()
             while time.monotonic() - t0 < P['espera_listo_s']:
@@ -205,13 +242,20 @@ def main():
                 raise avtest.Infra('flujo de jugador nuevo: %s' % prep)
             avtest.evaluar(cdp, ses, '(async () => { const G = window.AV.G; await (G.mundo && G.mundo.listo); if (window.AV.look === undefined) await new Promise(r => setTimeout(r, 8000)); return (window.AV.look && window.AV.look.actual) || "fabrica"; })()', 120)
             for v in vistas:
-                r = json.loads(avtest.evaluar(cdp, ses, VISTA_JS % json.dumps(VISTAS[v]), 240))
-                ruta = os.path.join(a.salida, 'look_%s_%s.png' % (lk, v))
-                open(ruta, 'wb').write(base64.b64decode(r['png'].split(',', 1)[1]))
-                medidas.setdefault(lk, {})[v] = r['med']
+                js = CRIADERO_JS if VISTAS[v].get('criadero') else VISTA_JS % json.dumps(VISTAS[v])
+                r = json.loads(avtest.evaluar(cdp, ses, js, 240))
+                if r.get('error'):
+                    print('  · %s/%s: %s' % (lk, v, r['error']), flush=True)
+                    continue
+                if r.get('png'):
+                    ruta = os.path.join(a.salida, '%s%s_%s.png' % (a.prefijo, lk, v))
+                    open(ruta, 'wb').write(base64.b64decode(r['png'].split(',', 1)[1]))
                 m = r['med']
-                print('  · %s/%s: %.1f ms (%s FPS) · %s calls · %s tris · %s programas · %s MB tex (%s > 512 px) · cámara %s' % (
-                    lk, v, m.get('ms', 0), m.get('fpsMedidos'), m.get('calls'), m.get('triangulos'), m.get('programas'), m.get('texturasMB'), m.get('texturasGrandes'), m.get('cam')), flush=True)
+                m['movil'] = bool(a.movil)
+                medidas.setdefault(lk, {})[v] = m
+                medidas.setdefault('series', {}).setdefault(lk, {}).setdefault(v, []).append({k: m.get(k) for k in ('ms', 'msMediana', 'msP90', 'fps', 'calls', 'programas', 'heapMB', 'texturasMB', 'calidad')})
+                print('  · %s/%s: %.1f ms media · %s mediana · %s p90 (%s FPS) · %s calls · %s tris · %s programas · %s MB tex (%s > 512 px) · heap %s MB · calidad %s · cámara %s' % (
+                    lk, v, m.get('ms', 0), m.get('msMediana'), m.get('msP90'), m.get('fpsMedidos'), m.get('calls'), m.get('triangulos'), m.get('programas'), m.get('texturasMB'), m.get('texturasGrandes'), m.get('heapMB'), m.get('calidad'), m.get('cam')), flush=True)
                 json.dump(medidas, open(ruta_med, 'w'), indent=1, ensure_ascii=False)
             cdp.call('Target.closeTarget', {'targetId': tid})
             cdp.bombear(1.0)
@@ -220,7 +264,7 @@ def main():
             ses = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
             for me in ('Page.enable', 'Runtime.enable'):
                 cdp.call(me, {}, ses)
-            lamina(cdp, ses, origen, a.salida, looks, vistas, medidas, a.calidad)
+            lamina(cdp, ses, origen, a.salida, looks, vistas, medidas, a.calidad or 'auto', a.prefijo, a.titulo)
         if estado['excepciones'] or estado['consola']:
             print('· errores de consola:', (estado['excepciones'] + estado['consola'])[:5], flush=True)
         else:

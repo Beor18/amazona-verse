@@ -47,6 +47,30 @@ window.AVLook = function (G) {
       luces: { cielo: '#a6d2ff', suelo: '#548a2c', hemi: 0.9, sol: '#ffe6b8', solInt: 1.9 },
       terrenoSat: 1.3, hoja: [0.95, 1.12, 0.85], toon: true, texMax: 512,
     },
+    // «Vibrant Toon Refinado» (decisión de dirección de arte del 26-oct, docs/equipo/DECISION_VISUAL_2026.md): toon como base,
+    // refinado. Prototipo: DEFECTO no cambia; Fernando decide la integración. Qué refina respecto a toon:
+    // - gradación con rodilla: la saturación baja en las altas luces y hay un hombro suave (no quema cielo, agua ni plumas claras);
+    // - rampa toon a medias (mezcla 40 % con el Lambert normal): rocas y ruinas conservan relieve;
+    // - bosque con variación: tinte por especie (paleta por material de hoja, con límites) y por altura (copas más cálidas y
+    //   claras, bajos más fríos), en el shader de la hoja;
+    // - paleta unificada: rocas frías, corteza cálida, ruinas color piedra cálida, cielo y agua con el mismo azul, sombras azuladas;
+    // - borde de luz (rim) en los personajes (mallas con esqueleto: Vittata, cotorras, bandada): un define AV_RIM en su material
+    //   Standard; ni geometría, ni rig, ni texturas se tocan y al quitar el look el define desaparece.
+    vibrant_toon: {
+      titulo: 'Vibrant Toon', exposicion: 0.78,
+      grade: { sat: 1.24, con: 1.07, tint: [1.02, 1.0, 0.96], rodilla: true },
+      cielo: { cenit: '#1e78e8', horizonte: '#b4e4ff', sol: '#fff4d6' },
+      niebla: { color: '#b8e4ff', inicio: 80, fin: 1500 },
+      luces: { cielo: '#a8d4ff', suelo: '#4a7a34', hemi: 0.84, sol: '#ffe4b0', solInt: 2.05 },
+      terrenoSat: 1.1, hoja: [0.96, 1.08, 0.84], toon: true, texMax: 512,
+      refinado: {
+        rampa: [-0.08, 0.5, 0.4],                                      // smoothstep(a, b) mezclado con saturate() al 40 %
+        especies: [[1.0, 1.0, 1.0], [1.12, 1.04, 0.72], [0.8, 1.02, 1.0], [0.98, 1.1, 0.84], [1.14, 0.96, 0.8]], // por material de hoja (±20 % por canal)
+        altura: { bajo: [0.72, 0.9, 0.92], alto: [1.12, 1.06, 0.8], h0: 0.5, h1: 9 }, // tinte por altura local (m)
+        tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.06, 1.0, 0.9] },
+        rim: { color: [0.75, 0.88, 1.0], int: 0.55, borde: [0.55, 1.0] }, // color (lineal), fuerza y rango del borde
+      },
+    },
   };
   const NOMBRES = Object.keys(LOOKS);
   const q = new URLSearchParams(location.search);
@@ -64,27 +88,61 @@ window.AVLook = function (G) {
   function envolverClave(m) {
     if (!Object.prototype.hasOwnProperty.call(m, 'customProgramCacheKey') || propias.has(m)) return;
     const k = m.customProgramCacheKey; propias.set(m, k);
-    m.customProgramCacheKey = () => k() + sufijo();
+    // |ref: la hoja con el onBeforeCompile envuelto (refinado) no puede reutilizar el programa compilado antes de envolverla
+    m.customProgramCacheKey = () => k() + sufijo() + (obcOriginal.has(m) && m.onBeforeCompile !== obcOriginal.get(m) ? '|ref' : '');
   }
   const claveOriginal = m => { const k = propias.get(m); return k ? k() : null; };
 
   // ---------- Shaders: gradación, rampa toon ----------
   const f = v => (Math.round(v * 1000) / 1000).toFixed(3);
   function chunkTone(L) {
-    const g = L.grade, t = g.tint;
+    const g = L.grade, t = g.tint, Rf = L.refinado;
+    // Con rodilla: la saturación cae hacia 1 en las altas luces (l > 0,78) y un hombro suave recorta lo que pasa de 0,9 (no quema)
+    const satExpr = g.rodilla ? `mix( ${f(g.sat)}, 1.0, smoothstep( 0.78, 1.0, l ) )` : f(g.sat);
     const extra = [
       '\t{ vec3 c = sqrt( max( gl_FragColor.rgb, 0.0 ) ); float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );',
-      `\t  c = mix( vec3( l ), c, ${f(g.sat)} ); c = ( c - 0.5 ) * ${f(g.con)} + 0.5;`,
+      `\t  c = mix( vec3( l ), c, ${satExpr} ); c = ( c - 0.5 ) * ${f(g.con)} + 0.5;`,
+      g.rodilla ? '\t  c = c - 0.6 * max( c - 0.9, 0.0 );' : '',
       `\t  c = max( c * vec3( ${f(t[0])}, ${f(t[1])}, ${f(t[2])} ), 0.0 ); gl_FragColor.rgb = c * c; }`,
-    ].join('\n');
+    ].filter(Boolean).join('\n');
     const linea = 'gl_FragColor.rgb = toneMapping( gl_FragColor.rgb );';
-    return ORIG.tone.includes(linea) ? ORIG.tone.replace(linea, linea + '\n' + extra) : ORIG.tone;
+    let out = ORIG.tone.includes(linea) ? ORIG.tone.replace(linea, linea + '\n' + extra) : ORIG.tone;
+    // Borde de luz en los personajes: antes del tone mapping, solo en el shader físico (STANDARD) y solo si el material lleva
+    // el define AV_RIM (lo ponen tocar() en las mallas con esqueleto). normal, vViewPosition y diffuseColor son los de meshphysical.
+    if (Rf && Rf.rim) {
+      const r = Rf.rim, c = r.color, b = r.borde;
+      out = [
+        '#if defined( STANDARD ) && defined( AV_RIM )',
+        `\t{ float avRim = smoothstep( ${f(b[0])}, ${f(b[1])}, 1.0 - saturate( dot( normalize( vViewPosition ), normal ) ) );`,
+        '\t  float avL = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );',
+        `\t  gl_FragColor.rgb += vec3( ${f(c[0])}, ${f(c[1])}, ${f(c[2])} ) * ( avRim * ${f(r.int)} * ( 0.3 + 0.7 * smoothstep( 0.0, 0.4, avL ) ) ); }`,
+        '#endif',
+      ].join('\n') + '\n' + out;
+    }
+    return out;
   }
-  const RAMPA = 'smoothstep( -0.05, 0.45, ';
+  // Rampa toon en la luz directa: toon = smoothstep puro; refinado = mezcla con el Lambert normal (conserva relieve)
+  const RAMPA = 'smoothstep( -0.0'; // marca común a las dos rampas (para las pruebas)
+  const rampaDe = L => L.refinado && L.refinado.rampa
+    ? (x => { const [a, b, k] = L.refinado.rampa; return `mix( smoothstep( ${f(a)}, ${f(b)}, ${x} ), saturate( ${x} ), ${f(k)} )`; })
+    : (x => `smoothstep( -0.05, 0.45, ${x} )`);
+  const rampaLambert = (src, L) => { const r = rampaDe(L); return src.split('saturate( dotNL )').join(r('dotNL')).split('saturate( -dotNL )').join(r('-dotNL')); };
   function aplicarChunks(L) {
     SC.tonemapping_fragment = L ? chunkTone(L) : ORIG.tone;
-    SC.lights_phong_pars_fragment = L && L.toon ? ORIG.phong.replace('float dotNL = saturate( dot( geometry.normal, directLight.direction ) );', 'float dotNL = ' + RAMPA + 'dot( geometry.normal, directLight.direction ) );') : ORIG.phong;
-    SC.lights_lambert_vertex = L && L.toon ? ORIG.lambert.split('saturate( dotNL )').join(RAMPA + 'dotNL )').split('saturate( -dotNL )').join(RAMPA + '-dotNL )') : ORIG.lambert;
+    SC.lights_phong_pars_fragment = L && L.toon ? ORIG.phong.replace('float dotNL = saturate( dot( geometry.normal, directLight.direction ) );', 'float dotNL = ' + rampaDe(L)('dot( geometry.normal, directLight.direction )') + ';') : ORIG.phong;
+    SC.lights_lambert_vertex = L && L.toon ? rampaLambert(ORIG.lambert, L) : ORIG.lambert;
+  }
+  // Hoja (vegetacion.js): su onBeforeCompile envuelve el Lambert con una copia propia del chunk (sin la rampa) y vWPos; aquí se
+  // envuelve una vez más para el refinado: rampa, y tinte por altura local (transformed.y × escala de la instancia) en el fragmento.
+  function refinarHoja(sh, L) {
+    const A = L.refinado.altura, lo = A.bajo, hi = A.alto;
+    sh.vertexShader = rampaLambert(sh.vertexShader, L);
+    const ancla = 'vWPos = mvPosition.xyz;';
+    if (sh.vertexShader.includes(ancla) && sh.fragmentShader.includes('#include <color_fragment>')) {
+      sh.vertexShader = 'varying float vAvAlt;\n' + sh.vertexShader.replace(ancla, ancla + ' vAvAlt = transformed.y * iesc;');
+      sh.fragmentShader = 'varying float vAvAlt;\n' + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' +
+        `  diffuseColor.rgb *= mix( vec3( ${f(lo[0])}, ${f(lo[1])}, ${f(lo[2])} ), vec3( ${f(hi[0])}, ${f(hi[1])}, ${f(hi[2])} ), smoothstep( ${f(A.h0)}, ${f(A.h1)}, vAvAlt ) );`);
+    }
   }
 
   // ---------- Materiales: recompilar, saturación del suelo, tinte de hojas, texturas pequeñas ----------
@@ -105,23 +163,59 @@ window.AVLook = function (G) {
     const c = document.createElement('canvas'); c.width = Math.min(max, o.width); c.height = Math.min(max, o.height);
     try { c.getContext('2d').drawImage(o, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; } catch (e) { /* imagen sin leer: se queda */ }
   }
-  function tocar(m, L) {
+  // Especie de un material de hoja: índice estable (nombre de la textura o de su imagen; si no, orden de llegada) → paleta
+  const especieDe = new WeakMap(); let especies = 0;
+  function indiceEspecie(m) {
+    if (!especieDe.has(m)) {
+      const t = m.map, nom = t && (t.name || (t.image && (t.image.src || t.image.currentSrc))) || '';
+      let h = 0; for (let i = 0; i < nom.length; i++) h = (h * 31 + nom.charCodeAt(i)) >>> 0;
+      especieDe.set(m, nom ? h : especies++);
+    }
+    return especieDe.get(m);
+  }
+  const obcOriginal = new WeakMap(); // onBeforeCompile de la hoja antes de envolverlo (se repone al quitar)
+  function tocar(m, L, esqueleto, forzar) {
     envolverClave(m);
+    const Rf = L && L.refinado, clave = claveOriginal(m);
+    let recompilar = !!forzar; // al aplicar o quitar (cambia el chunk global) siempre; en el barrido, solo si cambia el programa
+    if (!forzar && L) { // compilado antes del look (r128 guarda la clave en el programa): hay que recompilar; sin compilar aún: no
+      const pr = R.renderer.properties.get(m), prog = pr && pr.currentProgram;
+      if (prog && prog.cacheKey && !String(prog.cacheKey).includes('|look:' + actual)) recompilar = true;
+    }
     const u = m.userData && m.userData.splat && m.userData.uniforms;
     if (u && u.uSat) { if (!guardado.has(u.uSat)) guardado.set(u.uSat, u.uSat.value.clone()); u.uSat.value.copy(guardado.get(u.uSat)).multiplyScalar(L ? L.terrenoSat : 1); }
-    if (claveOriginal(m) === 'hoja' && m.color) { if (!guardado.has(m)) guardado.set(m, m.color.clone()); m.color.copy(guardado.get(m)); if (L) m.color.multiply(new THREE.Color(L.hoja[0], L.hoja[1], L.hoja[2])); }
+    const tinte = L && (clave === 'hoja' ? L.hoja : Rf && Rf.tintes && Rf.tintes[clave]);
+    if ((tinte || guardado.has(m)) && m.color) {
+      if (!guardado.has(m)) guardado.set(m, m.color.clone());
+      m.color.copy(guardado.get(m));
+      if (tinte) m.color.multiply(new THREE.Color(tinte[0], tinte[1], tinte[2]));
+      if (tinte && clave === 'hoja' && Rf && Rf.especies) { const p = Rf.especies[indiceEspecie(m) % Rf.especies.length]; m.color.multiply(new THREE.Color(p[0], p[1], p[2])); }
+    }
+    if (clave === 'hoja' && (Rf || obcOriginal.has(m))) {
+      if (!obcOriginal.has(m)) obcOriginal.set(m, m.onBeforeCompile);
+      const o = obcOriginal.get(m), antes = m.onBeforeCompile;
+      m.onBeforeCompile = Rf ? sh => { if (o) o(sh); refinarHoja(sh, L); } : o;
+      if (m.onBeforeCompile !== antes) recompilar = true;
+    }
+    // Borde de luz: define AV_RIM en los materiales Standard/Physical de las mallas con esqueleto (personajes). Solo el define.
+    if (m.isMeshStandardMaterial && (esqueleto || (m.defines && m.defines.AV_RIM))) {
+      const tenia = !!(m.defines && m.defines.AV_RIM);
+      if (Rf && Rf.rim && esqueleto) { m.defines = m.defines || {}; m.defines.AV_RIM = 1; }
+      else if (m.defines) delete m.defines.AV_RIM;
+      if (tenia !== !!(m.defines && m.defines.AV_RIM)) recompilar = true;
+    }
     const max = L ? TEX_URL || L.texMax || 0 : 0;
     texturasDe(m, t => encoger(t, max));
-    m.needsUpdate = true;
+    if (recompilar) m.needsUpdate = true;
     if (L) tocados.add(m); else tocados.delete(m);
   }
   function barrer(L, todos) {
     const max = L ? TEX_URL || L.texMax || 0 : 0;
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-      if (todos || !tocados.has(m)) tocar(m, L);
+      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos);
       else if (max) texturasDe(m, t => encoger(t, max)); // las imágenes llegan después del primer toque: se encogen al verlas
     } });
-    if (!L) { for (const m of tocados) tocar(m, null); tocados.clear(); }
+    if (!L) { for (const m of tocados) tocar(m, null, false, true); tocados.clear(); }
   }
 
   // ---------- Luces, cielo, niebla y agua ----------
@@ -188,7 +282,15 @@ window.AVLook = function (G) {
   // El clima (src/game/clima.js) escribe luz, niebla y cielo durante sus transiciones; al volver el sol deja sus valores de
   // fábrica, así que con el cielo quieto se repone el ambiente del look.
   const climaQuieto = () => !G.clima || (G.clima.F ? G.clima.F.estado === 'sol' && !G.clima.F.trans : G.clima.estado() === 'sol');
-  G.on('render', () => { if (actual && ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); if (climaQuieto()) aplicarAmbiente(LOOKS[actual]); } }, 90);
+  // Además, en cuanto llega contenido nuevo (cambia el número de geometrías o texturas del renderer: streaming, flora, criadero)
+  // se barre ese mismo cuadro, para que la hoja refinada y el rim compilen una sola vez (antes de su primer cuadro, no después).
+  let huella = -1;
+  const huellaDe = () => { const m = R.renderer.info.memory; return m.geometries * 4096 + m.textures; };
+  G.on('render', () => {
+    if (!actual) return;
+    const h = huellaDe(), nuevo = h !== huella; huella = h;
+    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
+  }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
 
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
@@ -202,8 +304,9 @@ window.AVLook = function (G) {
     }); });
     const C = R.calidad, sombra = C.sombras ? C.sombras * C.sombras * 4 : 0;
     const dbs = R.renderer.getDrawingBufferSize(new THREE.Vector2()), post = R.post.activo ? dbs.x * dbs.y * 8 * 2.5 : 0;
+    const pm = performance.memory, heapMB = pm && pm.usedJSHeapSize ? Math.round(pm.usedJSHeapSize / 1048576) : null;
     return { look: actual || 'fabrica', fps: s.fps, calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, post: s.post,
-      programas: R.renderer.info.programs.length, texturas: n, texturasGrandes: grandes, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
+      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
       sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10 };
   }
 
@@ -240,9 +343,9 @@ window.AVLook = function (G) {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
-      let croma = 0, n = 0;
-      for (let i = 0; i < px.length; i += 16) { const r = px[i], g = px[i + 1], b = px[i + 2]; croma += Math.max(r, g, b) - Math.min(r, g, b); n++; }
-      return croma / n;
+      let croma = 0, n = 0, quemado = 0;
+      for (let i = 0; i < px.length; i += 16) { const r = px[i], g = px[i + 1], b = px[i + 2], mx = Math.max(r, g, b); croma += mx - Math.min(r, g, b); if (mx >= 252 && Math.min(r, g, b) >= 236) quemado++; n++; }
+      return { croma: croma / n, quemado: quemado / n }; // croma medio (0–255) y fracción de píxeles casi blancos (quemados)
     };
     const firma = () => {
       const u = R.sky && R.sky.material.uniforms, fog = R.scene.fog;
@@ -256,7 +359,7 @@ window.AVLook = function (G) {
     try {
       if (actual) quitar();
       await cuadro();
-      const F0 = firma(), c0 = foto(), m0 = medir();
+      const F0 = firma(), f0 = foto(), c0 = f0.croma, m0 = medir();
       check('De fábrica: los ShaderChunks de three son los originales', SC.tonemapping_fragment === ORIG.tone && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
       check('De fábrica: exposición y luces del pack', R.renderer.toneMappingExposure === (W.exposicion != null ? W.exposicion : 0.7) && (!W.luces || R.sun.intensity === W.luces.solInt),
         'exposición ' + R.renderer.toneMappingExposure + ' · sol ' + R.sun.intensity);
@@ -267,23 +370,42 @@ window.AVLook = function (G) {
       for (const n of NOMBRES) {
         const t0 = performance.now(); aplicar(n); const tApl = performance.now() - t0;
         await cuadro(); await cuadro();
-        const c1 = foto(), m1 = medir(), L = LOOKS[n];
+        const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n];
         check(`Look «${n}»: se aplica (chunk, exposición, sol, cielo, niebla y clave de programas)`, actual === n && SC.tonemapping_fragment !== ORIG.tone && R.renderer.toneMappingExposure === L.exposicion &&
           R.sun.intensity === L.luces.solInt && (!R.sky || hex(R.sky.material.uniforms.uCenit.value) === hex(lin(L.cielo.cenit))) && (!R.ATMOS || R.scene.fog.far === L.niebla.fin) &&
           new THREE.MeshBasicMaterial().customProgramCacheKey().endsWith('|look:' + n), Math.round(tApl) + ' ms en aplicar');
         check(`Look «${n}»: la imagen tiene más color que la de fábrica`, c1 > c0 * 1.03, 'croma medio ' + c0.toFixed(1) + ' → ' + c1.toFixed(1));
         check(`Look «${n}»: el chip de la pausa lo marca`, !!sec && sec.querySelector(`button[data-look="${n}"]`).getAttribute('aria-pressed') === 'true');
         if (L.toon) {
-          check('Look «toon»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian', SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
-          check('Look «toon»: las texturas grandes del mundo bajan a 512 px', m1.texturasGrandes < m0.texturasGrandes || m0.texturasGrandes === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' texturas de más de 512 px · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
+          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, m1.texturasGrandes < m0.texturasGrandes || m0.texturasGrandes === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' texturas de más de 512 px · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+        }
+        if (L.refinado) {
+          const hojas = new Set(), tintes = new Set(), rim = [], sinRim = [];
+          R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+            if (claveOriginal(m) === 'hoja') { hojas.add(m); tintes.add(hex(m.color)); }
+            if (m.isMeshStandardMaterial) (o.isSkinnedMesh ? rim : sinRim).push(m);
+          } });
+          check(`Look «${n}»: rampa a medias (mezcla con el Lambert normal) en Phong, Lambert y en la hoja`, SC.lights_phong_pars_fragment.includes('saturate( dot( geometry.normal, directLight.direction ) ), ' + f(L.refinado.rampa[2])) && SC.lights_lambert_vertex.includes(', saturate( dotNL ), ') && [...hojas].every(m => obcOriginal.has(m) && m.onBeforeCompile !== obcOriginal.get(m)));
+          check(`Look «${n}»: el bosque no es un bloque verde (tinte distinto por especie de hoja)`, hojas.size < 2 || tintes.size >= Math.min(2, hojas.size), hojas.size + ' materiales de hoja · ' + tintes.size + ' tintes');
+          check(`Look «${n}»: borde de luz solo en los personajes (define AV_RIM en Standard de mallas con esqueleto, no en el resto)`, rim.length > 0 && rim.every(m => m.defines && m.defines.AV_RIM === 1) && sinRim.every(m => !(m.defines && m.defines.AV_RIM)) && SC.tonemapping_fragment.includes('AV_RIM'), rim.length + ' con rim · ' + sinRim.length + ' sin');
+          check(`Look «${n}»: la gradación lleva rodilla y no quema más luces que fábrica`, SC.tonemapping_fragment.includes('smoothstep( 0.78, 1.0, l )') && f1.quemado <= f0.quemado * 1.5 + 0.01, 'quemado ' + (f0.quemado * 100).toFixed(2) + ' % → ' + (f1.quemado * 100).toFixed(2) + ' %');
+          const hojaSh = { vertexShader: 'void main(){ vWPos = mvPosition.xyz; vLightFront += saturate( dotNL ) * d; }', fragmentShader: '#include <color_fragment>' }; refinarHoja(hojaSh, L);
+          check(`Look «${n}»: el shader de la hoja recibe la variación por altura (vAvAlt) y la rampa`, hojaSh.vertexShader.includes('vAvAlt = transformed.y * iesc;') && hojaSh.fragmentShader.includes('vAvAlt )') && !hojaSh.vertexShader.includes('+= saturate( dotNL )'));
         }
         check(`Look «${n}»: mismo número de draw calls que de fábrica (±5 %)`, Math.abs(m1.calls - m0.calls) <= Math.max(3, m0.calls * 0.05), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
       }
       quitar(); await cuadro(); await cuadro();
-      const F1 = firma(), c2 = foto(), m2 = medir();
+      const F1 = firma(), c2 = foto().croma, m2 = medir();
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
       check('Al quitar el look las texturas vuelven a su tamaño', m2.texturasGrandes === m0.texturasGrandes && Math.abs(m2.texturasMB - m0.texturasMB) < 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
+      { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+          if (m.defines && m.defines.AV_RIM) rim++;
+          if (guardado.has(m) && m.color && hex(m.color) !== hex(guardado.get(m))) colores++;
+          if (obcOriginal.has(m) && m.onBeforeCompile !== obcOriginal.get(m)) obc++;
+        } });
+        check('Al quitar el look los personajes no llevan AV_RIM, los tintes de hoja, roca, corteza y ruinas vuelven y la hoja recupera su onBeforeCompile', !rim && !colores && !obc, rim + ' rim · ' + colores + ' tintes · ' + obc + ' hojas'); }
       const nuevos = (window.__aveErrores || []).slice(e0);
       check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
     } catch (e) {
