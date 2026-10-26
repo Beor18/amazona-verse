@@ -690,7 +690,7 @@
       const out = [], check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
       const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < (ms || 3000)) { if (f()) return true; await new Promise(r => setTimeout(r, 20)); } return !!f(); };
       // Lo que la partida guarda; el reloj, la posición y el agua cambian solos con el juego en marcha
-      const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event'];
+      const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event', 'marcador']; // marcador: el cronómetro sigue contando mientras corre la prueba
       const comparable = () => JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !VOLATIL.includes(k))));
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, G.pack.aula && G.pack.aula.clave].filter(Boolean);

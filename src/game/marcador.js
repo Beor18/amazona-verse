@@ -7,7 +7,7 @@
    CRONÓMETRO. Cuenta el tiempo de juego real del capítulo: se detiene en la pausa, la portada, los diálogos, las tarjetas, los
    menús, el Modo Retos y con la pestaña oculta (solo suma en el 'update' del juego cuando nada de eso está activo). Se ve en el
    HUD, dentro del cuadro del objetivo (#marcador), y se puede ocultar desde la pausa («Cronómetro: sí/no», preferencia del
-   dispositivo en <almacén>.marcador.ajustes). En el modo relajado no se muestra, no hay medalla ni bonificación por tiempo y no
+   dispositivo en <almacén>.marcador.ajustes). Estilos: src/ui/marcador.css. En el modo relajado no se muestra, no hay medalla ni bonificación por tiempo y no
    se anota ningún tiempo (el capítulo no tiene tiempos).
 
    PUNTUACIÓN (todo suma, nada resta; [KELVIN] los valores son provisionales):
@@ -135,43 +135,8 @@
     const M = () => (esObj(S.marcador) && S.marcador.v === 1 ? S.marcador : normalizar());
 
     // ---------- HUD ----------
-    const CSS = `
-:root { --i-reloj: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='13' r='8' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M12 8.5V13l3 2M9.5 2.5h5'/%3E%3C/svg%3E"); }
-#quest { position: relative; }
-/* En una esquina del cuadro del objetivo, sin sumarle altura (así no empuja ni tapa nada) */
-#marcador { position: absolute; z-index: 1; top: var(--sp-3); right: var(--sp-4); display: flex; align-items: center; flex-wrap: nowrap; gap: 8px var(--sp-3); margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
-#marcador[hidden] { display: none; }
-#marcador span { display: inline-flex; align-items: center; gap: 5px; }
-#marcador i { flex: none; width: 13px; height: 13px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; color: var(--c-eyebrow); }
-#marcador .mc-t i { --icon: var(--i-reloj); }
-#marcador .mc-p i { --icon: var(--i-star, none); }
-#marcador .mc-p.late { animation: mc-late .45s var(--ease-pop, ease-out); }
-#marcador .mc-pops { position: absolute; left: 0; right: 0; top: 100%; height: 0; pointer-events: none; }
-#marcador .mc-pop { position: absolute; left: 24px; top: 0; white-space: nowrap; font: 700 var(--fs-md)/1 var(--font-display); color: var(--gold, #ffd24a); text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 10px rgba(255, 210, 74, .6); animation: mc-sube 1.4s ease-out forwards; }
-#marcador .mc-pop small { font: 600 var(--fs-xs)/1 var(--font-body); color: var(--c-text); opacity: .85; }
-@keyframes mc-sube { 0% { opacity: 0; transform: translateY(-4px) scale(.8); } 15% { opacity: 1; transform: translateY(2px) scale(1.15); } 100% { opacity: 0; transform: translateY(26px) scale(1); } }
-@keyframes mc-late { 40% { transform: scale(1.25); } }
-.mc-med { display: inline-grid; place-items: center; flex: none; width: 56px; height: 56px; border-radius: 50%; font: 700 var(--fs-xl)/1 var(--font-display); color: #4a2a05;
-  background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 3px #fff, 0 3px 0 3px rgba(0, 0, 0, .18); }
-.mc-med.oro { --m1: #ffd24a; --m2: #c98a10; } .mc-med.plata { --m1: #e4ecf2; --m2: #8a9aa8; } .mc-med.bronce { --m1: #f0a86a; --m2: #9a5a24; }
-#end-marcador { display: grid; gap: var(--sp-2); justify-items: center; margin: var(--sp-3) 0; text-align: center; }
-#end-marcador[hidden] { display: none; }
-.panel:has(#end-confirm:not([hidden])) #end-marcador { display: none; }
-#end-marcador .mc-fila { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-3) var(--sp-5); }
-#end-marcador .mc-dato { display: grid; gap: 2px; }
-#end-marcador .mc-dato b { font: 700 var(--fs-3xl)/1 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
-#end-marcador .mc-dato small { font: 400 var(--fs-sm)/1.2 var(--font-body); color: var(--c-text-muted); }
-#end-marcador .mc-rec { margin: 0; font: 700 var(--fs-md)/1.3 var(--font-display); color: var(--c-eyebrow); }
-#end-marcador .mc-nota { margin: 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
-@media (max-width: 560px) {
-  #marcador { top: auto; bottom: 9px; right: 34px; }
-  #quest.abierto #marcador { top: 10px; bottom: auto; }
-  #quest:not(.abierto):has(#marcador .mc-t:not([hidden])) #steps li.now { padding-right: 96px; }
-  #quest:not(.abierto):has(#marcador .mc-t[hidden]) #steps li.now { padding-right: 56px; }
-}
-@media (prefers-reduced-motion: reduce) { #marcador .mc-pop { animation: mc-fundir 1.4s linear forwards; } #marcador .mc-p.late { animation: none; } @keyframes mc-fundir { 0%, 70% { opacity: 1; } 100% { opacity: 0; } } }
-`;
-    if (!document.getElementById('marcador-css')) { const st = document.createElement('style'); st.id = 'marcador-css'; st.textContent = CSS; document.head.appendChild(st); }
+    // Hoja de estilos propia (src/ui/marcador.css), como <link>: las maquetas de pruebas copian las hojas enlazadas
+    if (!document.getElementById('marcador-css')) { const ln = document.createElement('link'); ln.id = 'marcador-css'; ln.rel = 'stylesheet'; ln.href = 'src/ui/marcador.css'; document.head.appendChild(ln); }
 
     const verCrono = () => { const a = leerJSON(CLAVE.ajustes); return !(a && a.ver === false); };
     let ver = verCrono();
@@ -433,6 +398,7 @@
       let hiddenDef = false;
       const base = () => { for (const k of Object.keys(S)) delete S[k]; Object.assign(S, JSON.parse(JSON.stringify(G.guardado.freshState()))); alAplicar(); };
       const paso = (dt, busy) => { G.emit('update', dt, !!busy, false); };
+      const seg = (n, busy) => { for (let i = 0; i < n * 5; i++) paso(0.2, busy); }; // pasos de 0,2 s (el tope por cuadro es 0,25 s)
       G.guardado.suspender(true); G.quiet = true; claveCasa = pruebaCasa; quitarRaw(pruebaCasa);
       try {
         // 1. Partida nueva: empieza en 0
@@ -440,15 +406,15 @@
         check('Partida nueva: cronómetro y puntos en 0, sin final', M().t === 0 && M().pts === 0 && M().fin === null && S.marcador && S.marcador.v === 1);
         check('El HUD (#marcador) está dentro del cuadro del objetivo (#quest) y muestra 0:00', !!$('marcador') && $('quest').contains($('marcador')) && /0:00/.test($('marcador').textContent));
         // 2. El cronómetro cuenta jugando y se detiene
-        paso(1); paso(1);
+        seg(2);
         check('Jugando, el cronómetro suma el tiempo del juego', Math.abs(M().t - 2) < 1e-6, M().t);
-        G.pausa.set(motivoPausa, true); paso(5); G.pausa.set(motivoPausa, false);
+        G.pausa.set(motivoPausa, true); seg(5); G.pausa.set(motivoPausa, false);
         check('En pausa (menú, portada o motivo de otro módulo) se detiene', Math.abs(M().t - 2) < 1e-6, M().t);
-        paso(5, true);
+        seg(5, true);
         check('Con un diálogo, tarjeta o menú abierto (busy) se detiene', Math.abs(M().t - 2) < 1e-6, M().t);
         try { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); hiddenDef = true; } catch (e) { /* sin override */ }
-        if (hiddenDef) { paso(5); check('Con la pestaña oculta se detiene', Math.abs(M().t - 2) < 1e-6, M().t); delete document.hidden; hiddenDef = false; }
-        const retosAntes = G.retosApi; G.retosApi = { activo: true }; paso(5); G.retosApi = retosAntes;
+        if (hiddenDef) { seg(5); check('Con la pestaña oculta se detiene', Math.abs(M().t - 2) < 1e-6, M().t); delete document.hidden; hiddenDef = false; }
+        const retosAntes = G.retosApi; G.retosApi = { activo: true }; seg(5); G.retosApi = retosAntes;
         check('En el Modo Retos se detiene (tiene su propio reloj)', Math.abs(M().t - 2) < 1e-6, M().t);
         paso(30);
         check('Un salto grande de tiempo (pestaña dormida) cuenta como mucho 0,25 s', Math.abs(M().t - 2.25) < 1e-6, M().t);
@@ -479,7 +445,7 @@
         const f = M().fin;
         check('Al terminar: oro, bonificación 1000 y puntos finales', f && f.medalla === 'oro' && f.bonus === 1000 && f.pts === antes + 1000 && f.t === 1200, JSON.stringify(f));
         check('Es el primer récord de esta cotorra', f && f.rec && f.rec.primero === true);
-        const tFin = M().t; paso(5); G.emit('aprendizaje', { tipo: 'hallazgo', id: 'y' });
+        const tFin = M().t; paso(0.2); G.emit('aprendizaje', { tipo: 'hallazgo', id: 'y' });
         check('Terminado, el cronómetro y los puntos quedan fijos', M().t === tFin && M().pts === f.pts);
         check('El panel final muestra tiempo, puntos, medalla, récord y el botón de compartir', (() => { const e = $('end-marcador'); return !!e && !e.hidden && /20:00/.test(e.textContent) && e.textContent.includes(String(f.pts)) && !!e.querySelector('.mc-med.oro') && /récord|record/i.test(e.textContent) && !!e.querySelector('[data-mc-compartir]'); })());
         check('El libro de la casa tiene la marca de la cotorra (aparte de la partida)', (() => { const c = leerCasa()[nombreCotorra()]; return c && c.mejorT === 1200 && c.mejorPts === f.pts && c.medalla === 'oro' && c.jugadas === 1; })());
