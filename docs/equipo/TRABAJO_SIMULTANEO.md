@@ -16,7 +16,7 @@ Varios agentes trabajan a la vez en `main`: Claude (sesión coordinadora y subag
 | S2 | Clima y rescate arrancan con `alPrimerGesto` en vez de `setTimeout(6 s)` (pendiente de L1) | `src/game/clima.js`, `src/game/rescate.js` | Grok | | libre | |
 | S3 | **Ganchos de rareza de los huevos** (`docs/equipo/HUEVOS_RAREZA.md`): vuelo e impulso, vista del Banquete y canto de la bandada. Efectos pequeños, sin ventaja de pago | `src/engine/fisica.js` (solo el gancho), `src/game/banquete.js`, `src/game/bandada.js`, `src/game/rareza.js` | Grok | | libre | |
 | S4 | Bajar la descarga inicial de 8,24 MB a menos de 8 MB, sin perder calidad visible (carga perezosa o compresión) | `tools/build/*` (empaquetado); pídelo antes si toca `src/boot.js` | Grok o Claude | | libre | |
-| C1 | **Cielo vivo (W2, ficha 26-B):** degradado, disco solar, nubes en 2 capas y rayos en calidad alta | `src/engine/renderer.js` (cielo), archivo nuevo de cielo | Claude | | libre | |
+| C1 | **Cielo vivo (W2, ficha 26-B):** degradado, disco solar, nubes en 2 capas y rayos en calidad alta | `src/engine/renderer.js` (cielo), archivo nuevo de cielo | Claude | Claude Fable · 08:05 | en curso | |
 | C2 | Prueba E2E que recorre el capítulo 1 completo con la build publicada (P0-5) | `tests/qa/*` | Claude | Claude Sonnet · 08:03 | en curso | |
 | C3 | **La Voz con su propio retrato (P0-2).** Necesita que Kelvin decida el arte o canon de la Voz | `content/cap1/pack.js`, `content/cap1/historia.js` | Kelvin decide | | bloqueada | |
 
