@@ -221,7 +221,7 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 
 **Qué cambió en el kit.**
 - Atlas HD de 2048 (celda 512) a **4096 (celda 1024, margen 32)**. La fracción margen/atlas es la misma (16/2048), así que la UV2 de los `_hd` no se rehizo. Van en WebP (`tex_hd/hd_ancient.webp`, `hd_ancient_n.webp`, `hd_savage.webp`, `hd_savage_n.webp`): el JPEG de las normales a 4096 pesaba 14 MB y el tope por archivo es 16 MB.
-- Paleta ligera de 512 a **1024**, desde las mismas 4K, y cada `kb3d_*.jpg` tiene su `kb3d_*_n.jpg`. El glTF ligero la referencia; `streaming.js` la aplica (antes el normal solo existía en el `_hd`).
+- Paleta ligera de 512 a **1024**, desde las mismas 4K. Las normales de esa paleta se generaron y no se publican: en la aldea del inicio subían la descarga inicial por encima de 8 MB. El relieve queda en el atlas, solo en alta.
 - El atlas 4K se pide solo en calidad **alta**, y solo después de que Vittata se mueve (no entra en la descarga inicial ni en el móvil, que se queda en la paleta de 1024). Pedido de la coordinadora en `PEDIDOS.md`.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` vuelve a enganchar la normal al regenerar.

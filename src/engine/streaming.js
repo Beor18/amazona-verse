@@ -109,7 +109,7 @@ AVE.module('streaming', function (G) {
     const m = new THREE.MeshPhongMaterial({ map: src.map || null, color: src.map ? 0xffffff : src.color, side: src.side, shininess: 8,
       specular: new THREE.Color(0x101010), alphaTest: src.alphaTest || 0, transparent: false, vertexColors: !!src.vertexColors });
     if (!src.map && src.color) m.color.copy(src.color);
-    // La paleta ligera trae el mapa de normales en el glTF (tex/kb3d_*_n.jpg). El _hd lo pone atlasHD.
+    // Si el glTF ligero trae normalMap, se usa. El kit de ahora no la trae: en la aldea del inicio pesaba en la descarga. El relieve va en el atlas, solo en alta.
     if (src.normalMap && !/^AV_HD_/.test(k)) {
       m.normalMap = src.normalMap;
       if (src.normalScale) m.normalScale.copy(src.normalScale);
