@@ -165,6 +165,21 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - No toques `content/cap1/historia.js` ni `mundo.js`, que los usan otros agentes. Engánchate a eventos que ya existan (`G.on`).
 - `bandadaTest` y 2 capturas en `docs/img/`.
 
+## Carriles N, O y P: bosque vivo (diseño cerrado en `docs/equipo/BOSQUE_VIVO_DISENO.md`; implementar la ficha tal cual)
+**N1 · Fauna que reacciona** (ficha 2): `src/game/fauna.js` y `content/cap1/fauna.js`, con el lagartijo, la mariposa, el coquí visible y la boa opcional dormida, más el álbum con fuentes. Las decisiones `[KELVIN]` van con la opción neutra que propone la ficha. `faunaTest` y capturas.
+
+**O1 · Clima de El Yunque** (ficha 1): `src/game/clima.js`, perezoso, con sol, llovizna, aguacero y neblina, presupuesto de gotas según la calidad, y sin interferir con la crecida. `climaTest` y capturas. Mide los FPS en calidad baja.
+
+**P1 · «Save the Parrot»** (ficha 3): `src/game/rescate.js`, rescate repetible con récord en `records.js` (modo `rescate`). Sin choques con `banquete.js`. `rescateTest` y capturas.
+
+## Carril Q: episodio 2
+**Q1 · Misiones 2 y 3 del episodio 2** (`content/ep2/`, que ya tiene el prototipo de H1). Sigue `docs/equipo/EP2_MISIONES.md`: las misiones «Escuchar primero» y «Casa que aguanta», jugables de principio a fin, con marcadores neutros `[KELVIN]` para el canon. El personaje que antes se llamaba Luma ahora se llama **Iguaca**. Para todas las edades, diversión primero. Amplía su prueba. El capítulo 1 sigue intacto.
+
+**Para todos:**
+- Cada tarea en sus propios archivos.
+- En `index.html` y `boot.js`, solo enganches mínimos releyendo antes.
+- Build en carpeta propia y `test.sh --extra` en verde antes de cada commit.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -193,3 +208,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | K2 | hecha | c36abe6 | Contrarreloj del río: ruta por el cauce (mapa.agua.rio, ~970 m) a 4,5 m del agua, 7 flores con banderín y meta en la desembocadura, sin anillos, rivales ni corrientes; medallas por tiempo, récord y fantasma propio (`.retos.fantasma.rio`); en el menú de Retos, en «Mis récords» (records.js, retosResultado modo 'rio') y en el cómic del primer récord; retosTest 87/87, recordsTest 47/47, las 13 baterías verdes. Pendiente: «Nuevo estudiante» (boot.js) no borra las claves de fantasma. |
 | L1 | pendiente | | |
 | M1 | hecha | 31b8952 | `src/game/bandada.js` (carga perezosa desde `boot.js`, 5 líneas): 12 (medio) o 20 (alto) cotorras, ninguna con calidad baja; el color de cada una es la media de la piel de hasta 6 especies de `AVE.pieles` (se bajan solo si sale la bandada). Salen al despertar (a lo lejos, 6 s tras `apply`), al terminar una misión (`aprendizaje` tipo `mision`, más cerca) y por la tarde (cada 2,5 a 5 min de juego); si Vittata queda a menos de 30 m la acompañan 18 s en círculo y se van. Dos `InstancedMesh` (LOD: 126 vértices de cerca, 528 a menos de 55 m, aleteo en el vertex shader), +2 draw calls como máximo medidos con `stats()`. Hallazgo: `cullPequenos` de `renderer.js` mandaba la malla a la capa 31 por su caja en el origen; se evita con `userData.sinCulling`. `bandadaTest` 14/14 (extra); 23/23 baterías con 0 errores de consola. Capturas `docs/img/m1_bandada_lejos.jpg` y `m1_bandada_acompana.jpg` (colocadas a mano cerca de la cámara; sin medir FPS en equipo real). Los colores salen casi todos verdes: las pieles lo son. |
+| N1 | pendiente | | |
+| O1 | pendiente | | |
+| P1 | pendiente | | |
+| Q1 | pendiente | | |
