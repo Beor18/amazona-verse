@@ -42,7 +42,7 @@
 .edu-cmp-fila p:last-child span { color: var(--leaf); }
 @media (max-width: 420px) { .edu-cmp-fila { grid-template-columns: 1fr; } }
 .edu-luma { font: 600 var(--fs-lg)/1.4 var(--font-display) !important; padding-left: var(--sp-3); border-left: 4px solid var(--c-primary); }
-/* Avance de "Luma te pregunta": puntos, sin números ni puntaje */
+/* Avance de "Iguaca te pregunta": puntos, sin números ni puntaje */
 .edu-dots { display: flex; gap: 6px; margin: 0 0 var(--sp-3); }
 .edu-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--c-paper-2); border: 2px solid var(--c-paper-edge); }
 .edu-dots span.ok { background: var(--leaf-hi); border-color: var(--leaf); }

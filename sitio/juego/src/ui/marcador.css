@@ -1,0 +1,34 @@
+/* Marcador del capítulo (cronómetro, puntuación, medalla): lo carga src/game/marcador.js con un <link> para que las maquetas
+   de pruebas (accesibilidad.js copia el HUD en un iframe con las mismas hojas) lo vean igual. Tokens de tokens.css. */
+:root { --i-reloj: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='13' r='8' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M12 8.5V13l3 2M9.5 2.5h5'/%3E%3C/svg%3E"); }
+#quest { position: relative; }
+/* En una esquina del cuadro del objetivo, sin sumarle altura (así no empuja ni tapa nada) */
+#marcador { position: absolute; z-index: 1; top: var(--sp-3); right: var(--sp-4); display: flex; align-items: center; flex-wrap: nowrap; gap: 8px var(--sp-3); margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
+#marcador[hidden] { display: none; }
+#marcador span { display: inline-flex; align-items: center; gap: 5px; }
+#marcador i { flex: none; width: 13px; height: 13px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; color: var(--c-eyebrow); }
+#marcador .mc-t i { --icon: var(--i-reloj); }
+#marcador .mc-p i { --icon: var(--i-star, none); }
+#marcador .mc-p.late { animation: mc-late .45s var(--ease-pop, ease-out); }
+#marcador .mc-pops { position: absolute; left: 0; right: 0; top: 100%; height: 0; pointer-events: none; }
+#marcador .mc-pop { position: absolute; left: 24px; top: 0; white-space: nowrap; font: 700 var(--fs-md)/1 var(--font-display); color: var(--gold, #ffd24a); text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 10px rgba(255, 210, 74, .6); animation: mc-sube 1.4s ease-out forwards; }
+#marcador .mc-pop small { font: 600 var(--fs-xs)/1 var(--font-body); color: var(--c-text); opacity: .85; }
+@keyframes mc-sube { 0% { opacity: 0; transform: translateY(-4px) scale(.8); } 15% { opacity: 1; transform: translateY(2px) scale(1.15); } 100% { opacity: 0; transform: translateY(26px) scale(1); } }
+@keyframes mc-late { 40% { transform: scale(1.25); } }
+.mc-med { display: inline-grid; place-items: center; flex: none; width: 56px; height: 56px; border-radius: 50%; font: 700 var(--fs-xl)/1 var(--font-display); color: #4a2a05;
+  background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 3px #fff, 0 3px 0 3px rgba(0, 0, 0, .18); }
+.mc-med.oro { --m1: #ffd24a; --m2: #c98a10; } .mc-med.plata { --m1: #e4ecf2; --m2: #8a9aa8; } .mc-med.bronce { --m1: #f0a86a; --m2: #9a5a24; }
+#end-marcador { display: grid; gap: var(--sp-2); justify-items: center; margin: var(--sp-3) 0; text-align: center; }
+#end-marcador[hidden] { display: none; }
+.panel:has(#end-confirm:not([hidden])) #end-marcador { display: none; }
+#end-marcador .mc-fila { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--sp-3) var(--sp-5); }
+#end-marcador .mc-dato { display: grid; gap: 2px; }
+#end-marcador .mc-dato b { font: 700 var(--fs-3xl)/1 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
+#end-marcador .mc-dato small { font: 400 var(--fs-sm)/1.2 var(--font-body); color: var(--c-text-muted); }
+#end-marcador .mc-rec { margin: 0; font: 700 var(--fs-md)/1.3 var(--font-display); color: var(--c-eyebrow); }
+#end-marcador .mc-nota { margin: 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+/* Móvil: el objetivo es una sola línea; el marcador cuelga debajo, a la izquierda (el inventario queda a la derecha), como una pastilla propia */
+@media (max-width: 560px) {
+  #marcador { top: calc(100% + 6px); left: 0; right: auto; bottom: auto; padding: 4px var(--sp-3); background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-pill); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+}
+@media (prefers-reduced-motion: reduce) { #marcador .mc-pop { animation: mc-fundir 1.4s linear forwards; } #marcador .mc-p.late { animation: none; } @keyframes mc-fundir { 0%, 70% { opacity: 1; } 100% { opacity: 0; } } }

@@ -19,11 +19,22 @@
       save: s => G.guardado.save(s), load: s => G.guardado.load(s), reset: s => G.guardado.reset(s),
       exportComic: (f, u) => G.comic.exportComic(f, u), portraitCanvasFor: (n, bg) => G.creador.portraitCanvasFor(n, bg),
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
+      ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
+    // Pruebas del pack que se cargan al pedirlas (pack.pruebasDiferidas = { archivo, nombres }): no van en la descarga inicial
+    const dif = P.pruebasDiferidas;
+    if (dif) {
+      let carga = null;
+      const cargarPruebas = () => carga || (carga = AVE.assets.script(dif.archivo).then(() => P.pruebas, e => { carga = null; throw e; }));
+      for (const name of dif.nombres) if (!AV[name]) AV[name] = opts => cargarPruebas().then(ps => ps[name](G, T, opts));
+    }
     // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
+    // Módulos que no van en la descarga inicial: se piden en el primer gesto del jugador (Jugar en la portada, una tecla o un toque)
+    const alPrimerGesto = fn => { let hecho = false; const ir = () => { if (hecho) return; hecho = true; setTimeout(() => fn().catch(() => {}), 300); };
+      for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, ir, { once: true, passive: true }); };
     const aDemanda = (src, fabrica) => { let p = null; return () => p || (p = AVE.assets.script(src).then(() => window[fabrica](G), e => { p = null; throw e; })); };
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
@@ -50,9 +61,15 @@
     const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
     AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
     AV.retosTest = o => cargarRetos().then(r => r.test(o));
+    // Marcador del capítulo (src/game/marcador.js): cronómetro, puntuación y medalla; se carga al arrancar para contar desde el primer cuadro
+    let marcador = null;
+    const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
+    AV.marcadorTest = o => cargarMarcador().then(m => m.test(o));
+    alPrimerGesto(cargarMarcador); // cuenta desde que el jugador empieza (Jugar), no desde la portada
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
-    if (portada) portada.addEventListener('close', () => { if (portada.returnValue === 'retos') { portada.returnValue = ''; AV.retos(); } });
+    // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); }
     const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
     G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
@@ -62,7 +79,17 @@
     let bandada = null;
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
-    if (G.renderer.calidad.nivel !== 'bajo') setTimeout(() => cargarBandada().catch(() => {}), 4000);
+    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    // Banquete en la selva (src/game/banquete.js): frutos en los árboles y el reto «¡Banquete!»; se carga sola tras el arranque y al pedir su prueba
+    let banquete = null;
+    const cargarBanquete = () => banquete || (banquete = AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G), e => { banquete = null; throw e; }));
+    AV.banqueteTest = o => cargarBanquete().then(b => b.test(o));
+    alPrimerGesto(cargarBanquete);
+    // Minimapa (src/game/minimapa.js): se carga solo tras el arranque (no va en la descarga inicial) y al pedir su prueba; M o un toque lo amplía
+    let minimapa = null;
+    const cargarMinimapa = () => minimapa || (minimapa = AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G), e => { minimapa = null; throw e; }));
+    AV.minimapaTest = o => cargarMinimapa().then(m => m.test(o));
+    alPrimerGesto(cargarMinimapa);
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });

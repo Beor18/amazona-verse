@@ -72,6 +72,7 @@
       sinCriadero: ['Aún no hay huevos. ¡Abre el criadero!', 'No eggs yet. Open the hatchery!'],
       casa: ['Récords de la casa', 'House records'], tu: ['tú', 'you'], casaNota: ['Cuando jueguen varias cotorras en este dispositivo, aquí verás el mejor récord de cada una.', 'When several parrots play on this device, you will see each one\'s best record here.'],
       carreraCorta: ['Carrera', 'Race'], tormentaCorta: ['Tormenta', 'Storm'],
+      banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
       puertaTitulo: ['Pide ayuda a un adulto', 'Ask an adult for help'], puertaTexto: ['Para compartir hace falta un adulto. Resuelve esta suma:', 'Sharing needs a grown-up. Solve this sum:'],
@@ -106,8 +107,9 @@
 
     const MEDALLAS_RIO = ['oro', 'plata', 'bronce'];
     function retosDe(d) {
-      const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {};
+      const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {}, b = ok && esObj(d.banquete) ? d.banquete : {};
       return {
+        banquete: { mejor: num(b.mejor), frutos: ent(b.frutos), jugadas: ent(b.jugadas) }, // src/game/banquete.js
         carrera: { mejor: num(c.mejor), puesto: Number.isInteger(c.puesto) && c.puesto >= 1 && c.puesto <= PARTICIPANTES_MAX ? c.puesto : null, oros: ent(c.oros), jugadas: ent(c.jugadas) },
         tormenta: { mejor: num(q.mejor), tiempo: num(q.tiempo), jugadas: ent(q.jugadas) },
         rio: { mejor: num(w.mejor), medalla: MEDALLAS_RIO.includes(w.medalla) ? w.medalla : null, oros: ent(w.oros), jugadas: ent(w.jugadas) },
@@ -131,7 +133,9 @@
     function huevoDef(id) { const H = window.AV_HUEVOS; return H && (H.huevos || []).find(h => h.id === id) || null; }
     function criaderoDe(d) {
       const caps = esObj(d) && esObj(d.capsulas) ? d.capsulas : {}, H = window.AV_HUEVOS;
-      const r = { huevos: 0, crias: 0, libres: 0, lista: [], total: 0 };
+      // Rareza de la cría (src/game/rareza.js; crías de partidas viejas = común): colección por rareza en el panel
+      const RZ = G.rareza, RC = H && H.rarezaCria, rzDe = c => (RZ ? RZ.de(c) : 'comun');
+      const r = { huevos: 0, crias: 0, libres: 0, lista: [], total: 0, rarezas: Object.fromEntries(((RC && RC.niveles) || [{ id: 'comun' }]).map(n => [n.id, 0])) };
       for (const [id, c] of Object.entries(caps)) {
         if (!esObj(c) || !huevoDef(id)) continue;
         r.total++;
@@ -141,7 +145,9 @@
         if (c.estado === 'nacida' || c.estado === 'liberada') {
           let nivel = 0, etapa = null;
           try { nivel = G.criadero.nivelDe(c.xp || 0); const e = G.criadero.etapaDe(c); etapa = (H.etapas.find(x => x.id === e) || {}).nombre || null; } catch (e) { /* sin criadero */ }
-          r.lista.push({ id, cria: huevoDef(id).cria, libre: c.estado === 'liberada', nivel, etapa });
+          const rareza = rzDe(c), rzD = RC && (RC.niveles || []).find(n => n.id === rareza);
+          if (rareza in r.rarezas) r.rarezas[rareza]++;
+          r.lista.push({ id, cria: huevoDef(id).cria, libre: c.estado === 'liberada', nivel, etapa, rareza, rarezaNombre: rzD ? rzD.nombre : null, rarezaColor: rzD ? rzD.color : null });
         }
       }
       return r;
@@ -159,8 +165,8 @@
       if (Array.isArray(d.vistas)) out.vistas = [...new Set(d.vistas.filter(x => typeof x === 'string' && /^[a-z]{3,24}$/.test(x)))].slice(0, 80);
       for (const [n, e] of Object.entries(esObj(d.jugadores) ? d.jugadores : {})) {
         const nombre = limpiarNombre(n); if (!nombre || !esObj(e) || out.jugadores[nombre] || Object.keys(out.jugadores).length >= MAX_CASA) continue;
-        const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta, rio: e.rio });
-        out.jugadores[nombre] = { carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
+        const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta, rio: e.rio, banquete: e.banquete });
+        out.jugadores[nombre] = { banquete: r.banquete, carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
       }
       return out;
     }
@@ -192,7 +198,8 @@
     // Escritura del libro de la casa (clave propia; nunca la partida)
     // =================================================================================================================
     const entradaDe = (libro, nombre) => libro.jugadores[nombre] || (Object.keys(libro.jugadores).length < MAX_CASA
-      ? (libro.jugadores[nombre] = { carrera: { mejor: null, puesto: null, oros: 0, jugadas: 0 }, tormenta: { mejor: null, jugadas: 0 }, rio: { mejor: null, medalla: null, oros: 0, jugadas: 0 } }) : null);
+      ? (libro.jugadores[nombre] = { carrera: { mejor: null, puesto: null, oros: 0, jugadas: 0 }, tormenta: { mejor: null, jugadas: 0 }, rio: { mejor: null, medalla: null, oros: 0, jugadas: 0 }, banquete: { mejor: null, frutos: 0, jugadas: 0 } }) : null);
+    const banqueteDe = e => e.banquete || (e.banquete = { mejor: null, frutos: 0, jugadas: 0 }); // entradas de antes del banquete
     // Une un récord con otro quedándose con lo mejor de cada cosa (los contadores, con el mayor)
     function unir(e, r) {
       const c = e.carrera, q = e.tormenta;
@@ -205,6 +212,9 @@
       if (r.rio.mejor && (!w.mejor || r.rio.mejor < w.mejor)) w.mejor = r.rio.mejor;
       if (r.rio.medalla && (!w.medalla || MEDALLAS_RIO.indexOf(r.rio.medalla) < MEDALLAS_RIO.indexOf(w.medalla))) w.medalla = r.rio.medalla;
       w.oros = Math.max(w.oros, r.rio.oros); w.jugadas = Math.max(w.jugadas, r.rio.jugadas);
+      const b = banqueteDe(e), rb = r.banquete || { mejor: null, frutos: 0, jugadas: 0 };
+      if (rb.mejor && (!b.mejor || rb.mejor > b.mejor)) b.mejor = rb.mejor;
+      b.frutos = Math.max(b.frutos, rb.frutos); b.jugadas = Math.max(b.jugadas, rb.jugadas);
     }
     function sumarVistas(libro, ids) {
       const cat = catalogo(); let cambio = false;
@@ -219,7 +229,7 @@
       if (!libro.adoptado && nombre) {
         libro.adoptado = true; cambio = true;
         const r = retosDe(leerJSON(CLAVE.retos));
-        if (r.carrera.mejor || r.carrera.jugadas || r.tormenta.mejor || r.tormenta.jugadas || r.rio.mejor || r.rio.jugadas) { const e = entradaDe(libro, nombre); if (e) unir(e, r); }
+        if (r.carrera.mejor || r.carrera.jugadas || r.tormenta.mejor || r.tormenta.jugadas || r.rio.mejor || r.rio.jugadas || r.banquete.mejor || r.banquete.jugadas) { const e = entradaDe(libro, nombre); if (e) unir(e, r); }
       }
       if (cambio) guardarCasa(libro);
       return libro;
@@ -245,6 +255,11 @@
           if (!w.mejor || ms < w.mejor) w.mejor = ms;
           if (MEDALLAS_RIO.includes(r.medalla)) { if (!w.medalla || MEDALLAS_RIO.indexOf(r.medalla) < MEDALLAS_RIO.indexOf(w.medalla)) w.medalla = r.medalla; if (r.medalla === 'oro') w.oros++; }
         }
+      } else if (r.modo === 'banquete') {
+        const b = banqueteDe(e); b.jugadas++;
+        const pts = typeof r.puntos === 'number' && r.puntos > 0 && r.puntos <= 1e5 ? Math.round(r.puntos) : null, fr = Number.isInteger(r.frutos) && r.frutos > 0 && r.frutos <= 999 ? r.frutos : 0;
+        if (pts && (!b.mejor || pts > b.mejor)) b.mejor = pts;
+        b.frutos = Math.max(b.frutos, fr);
       } else return false;
       sumarVistas(libro, [especieDe(sOpc || fuenteS())]);
       guardarCasa(libro);
@@ -290,6 +305,9 @@
 #records .rec-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); margin: var(--sp-2) 0 0; padding: 0; list-style: none; }
 #records .rec-chips li { padding: 3px var(--sp-3); font: 600 var(--fs-xs)/1.3 var(--font-body); color: var(--c-ink); background: #e3f6e6; border: 1px solid #9fd8aa; border-radius: var(--r-pill); }
 #records .rec-chips li.libre { background: #fff0cf; border-color: #e0bd78; }
+#records .rec-chips li.rz { border-color: var(--rz, #9fd8aa); box-shadow: 0 0 0 1px color-mix(in srgb, var(--rz, #9fd8aa) 50%, transparent), 0 0 8px color-mix(in srgb, var(--rz, #9fd8aa) 45%, transparent); }
+#records .rec-coleccion { margin: var(--sp-2) 0 0; font: 600 var(--fs-xs)/1.5 var(--font-body); color: var(--c-ink-muted); }
+#records .rec-coleccion span { display: inline-block; padding: 0 var(--sp-2); border-radius: var(--r-pill); border: 1px solid var(--rz, #9fd8aa); color: var(--c-ink); background: color-mix(in srgb, var(--rz, #9fd8aa) 22%, #fff); }
 #records .rec-casa { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
 #records .rec-casa li { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)); gap: var(--sp-1) var(--sp-3); align-items: center; padding: var(--sp-2) var(--sp-3); background: #fffaf0; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); font-size: var(--fs-sm); overflow-wrap: anywhere; }
 #records .rec-casa li[aria-current] { background: #e3f6e6; border-color: #9fd8aa; }
@@ -339,8 +357,13 @@
         ? `<div class="rec-grande">${medalla(mq, '★')}<div><b class="rec-num">${q.mejor} <small>${esc(tx('puntos'))}</small></b><small>${esc(tx('mejorPuntos'))}${mq ? ' · ' + esc(medallaTxt(mq)) : ''}</small></div></div>
            <dl>${q.tiempo ? dato(tx('aguantado'), q.tiempo + ' s') : ''}${dato(tx('jugadas'), q.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${q.jugadas ? `<dl>${dato(tx('jugadas'), q.jugadas)}</dl>` : ''}`;
+      const b = d.retos.banquete || { mejor: null, frutos: 0, jugadas: 0 }, mb = !b.mejor ? null : b.mejor >= 1200 ? 'oro' : b.mejor >= 600 ? 'plata' : 'bronce';
+      const banquete = b.mejor
+        ? `<div class="rec-grande">${medalla(mb, '★')}<div><b class="rec-num">${b.mejor} <small>${esc(tx('puntos'))}</small></b><small>${esc(tx('mejorPuntos'))}${mb ? ' · ' + esc(medallaTxt(mb)) : ''}</small></div></div>
+           <dl>${b.frutos ? dato(tx('frutos'), b.frutos) : ''}${dato(tx('jugadas'), b.jugadas)}</dl>`
+        : `<p>${esc(tx('sinRecord'))}</p>${b.jugadas ? `<dl>${dato(tx('jugadas'), b.jugadas)}</dl>` : ''}`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article></div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article></div></section>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;
@@ -351,9 +374,12 @@
       const diario = `<div class="rec-grande"><b class="rec-num">${di.n}/${di.total}</b><small>${esc(tx('hallazgos'))}</small></div><div class="progress" style="--value:${di.total ? di.n / di.total : 0}" role="progressbar" aria-valuemin="0" aria-valuemax="${di.total}" aria-valuenow="${di.n}" aria-label="${esc(tx('diario'))}"></div>${cats ? `<p>${cats}</p>` : ''}`;
       const especies = `<div class="rec-grande"><b class="rec-num">${es.vistas.length} <small>${esc(tx('de'))} ${es.total}</small></b></div>${es.vistas.length
         ? `<ul class="rec-chips">${es.vistas.map(e => `<li>${esc(e.nombre)}</li>`).join('')}</ul>` : `<p>${esc(tx('sinEspecies'))}</p>`}`;
-      const crias = cr.lista.length ? `<ul class="rec-chips">${cr.lista.map(c => `<li class="${c.libre ? 'libre' : ''}">${esc(L(c.cria.es, c.cria.en))}${c.libre ? ' · ' + esc(tx('libres').toLowerCase()) : c.etapa ? ' · ' + esc(L(c.etapa.es, c.etapa.en)) : ''}</li>`).join('')}</ul>` : '';
+      // Cada cría lleva el color de su rareza (rareza.js); debajo, la colección por rareza
+      const crias = cr.lista.length ? `<ul class="rec-chips">${cr.lista.map(c => `<li class="${c.libre ? 'libre' : ''}${c.rareza ? ' rz' : ''}"${c.rarezaColor ? ` style="--rz:${esc(c.rarezaColor)}"` : ''}>${esc(L(c.cria.es, c.cria.en))}${c.rarezaNombre ? ' · ' + esc(L(c.rarezaNombre.es, c.rarezaNombre.en)) : ''}${c.libre ? ' · ' + esc(tx('libres').toLowerCase()) : c.etapa ? ' · ' + esc(L(c.etapa.es, c.etapa.en)) : ''}</li>`).join('')}</ul>` : '';
+      const RC = window.AV_HUEVOS && window.AV_HUEVOS.rarezaCria, nivelesRz = (RC && RC.niveles) || [];
+      const coleccion = cr.lista.length && cr.rarezas && nivelesRz.length ? `<p class="rec-coleccion">${esc(L('Colección', 'Collection'))}: ${nivelesRz.map(n => `<span style="--rz:${esc(n.color)}">${esc(L(n.nombre.es, n.nombre.en))} ${cr.rarezas[n.id] || 0}</span>`).join(' · ')}</p>` : '';
       const criadero = cr.total
-        ? `<dl>${dato(tx('huevos'), cr.huevos)}${dato(tx('crias'), cr.crias)}${dato(tx('libres'), cr.libres)}</dl>${crias}` : `<p>${esc(tx('sinCriadero'))}</p>`;
+        ? `<dl>${dato(tx('huevos'), cr.huevos)}${dato(tx('crias'), cr.crias)}${dato(tx('libres'), cr.libres)}</dl>${crias}${coleccion}` : `<p>${esc(tx('sinCriadero'))}</p>`;
       const t = h.titulo ? `${esc(L('Capítulo', 'Chapter'))} ${h.capitulo} · ${esc(h.titulo)}` : esc(tx('historia'));
       return `<section class="rec-sec" aria-labelledby="rec-h-juego"><h3 id="rec-h-juego">${esc(tx('historia'))}</h3><div class="rec-grid rec-dos">
         <article class="rec-card"><h4>${t}</h4>${hist}</article><article class="rec-card"><h4>${esc(tx('diario'))}</h4>${diario}</article>
@@ -374,7 +400,7 @@
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlRetos(d)}${htmlHistoria(d)}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
@@ -674,7 +700,7 @@
       const out = [], check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
       const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < (ms || 3000)) { if (f()) return true; await new Promise(r => setTimeout(r, 20)); } return !!f(); };
       // Lo que la partida guarda; el reloj, la posición y el agua cambian solos con el juego en marcha
-      const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event'];
+      const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event', 'marcador']; // marcador: el cronómetro sigue contando mientras corre la prueba
       const comparable = () => JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !VOLATIL.includes(k))));
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, G.pack.aula && G.pack.aula.clave].filter(Boolean);

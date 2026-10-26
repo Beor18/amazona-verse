@@ -11,12 +11,15 @@
      en pausa (G.pausa.set('criadero')). Estilos: src/ui/criadero.css (index.html lo enlaza; si falta, se inyecta al abrir).
    - Guardado propio en localStorage `${pack.meta.almacen}.criadero`: sin datos personales ni texto libre.
    - Modo Maestro: pestaña 'criadero' en G.aula.pestana (misma puerta de suma del menú de pausa).
+   - Rareza de la cría (src/game/rareza.js, se carga desde aquí): se asigna al tocar «Ver la eclosión» y se guarda al instante;
+     marco en la cápsula, etiqueta y aura (extras) sin tocar el modelo. docs/equipo/HUEVOS_RAREZA.md.
    API: G.criadero = { abrir, cerrar, abierto, estado, dar, test, debug }.
    Diseño: docs/equipo/HUEVOS_GDD.md. Bandera: docs/BANDERA_PR_GUIA.md. */
 AVE.module('criadero', function (G) {
   'use strict';
   const DATA_SRC = 'content/comun/huevos.js', CSS_SRC = 'src/ui/criadero.css';
   const D = () => window.AV_HUEVOS;
+  const RZ = () => G.rareza || null; // src/game/rareza.js (se carga abajo; sin él, todo sigue igual que antes)
   const KEY = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   // Botones para simular XP: solo en el prototipo con ?demo=1 (en clase la XP sale del juego)
@@ -146,7 +149,8 @@ AVE.module('criadero', function (G) {
 
   // Fuentes de XP del juego que no están en huevos.js (DIVERSION_CAP1 mejora 2): descubrir un lugar con nombre del mapa
   // (src/game/lugares.js) da poca XP de «explorar»; si huevos.js define la fuente, manda la suya.
-  const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } } };
+  const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } },
+    fruta: { xp: 5, grupo: 'cuidar', nombre: { es: 'Fruto llevado al nido', en: 'Fruit brought to the nest' } } }; // src/game/banquete.js
   const fuenteDe = tipo => (D() && D().xp.fuentes[tipo]) || FUENTES_EXTRA[tipo] || null;
   // Evento de aprendizaje del juego (también lo usan los botones del prototipo)
   function dar(tipo, id, intento) {
@@ -277,7 +281,8 @@ AVE.module('criadero', function (G) {
           <p class="cr-hint">${L < D().xp.nivelMax ? `${hi - c.xp} XP ${esc(u('xpSig'))} ${L + 1}` : esc(u('max'))}${sig ? ` · ${esc(u('proxima'))}: ${esc(t(sig.nombre))} (${esc(u('nivel'))} ${sig.niveles[0]})` : ''}</p>
           ${c.estado === 'liberada' ? `<p class="cr-free">${esc(u('libre'))}</p>` : et === 'adulto' ? `<button class="btn magic sm" type="button" data-cr="liberar" data-icon="feather">${esc(u('liberar'))}</button>` : ''}`;
       }
-      pet.innerHTML = `<p class="cr-eyebrow">${esc(t(D().rarezas[h.rareza]))}</p><h2>${esc(t(h.nombre))}</h2><p class="cr-lema">${esc(t(h.lema))}</p>
+      const rzP = RZ() && et !== 'huevo' ? RZ().def(RZ().de(c)) : null; // rareza de la cría (solo nacida o libre)
+      pet.innerHTML = `<p class="cr-eyebrow">${esc(t(D().rarezas[h.rareza]))}${rzP ? ` <span class="cr-rz" style="--rz:${rzP.color}">${esc(t(rzP.nombre))}</span>` : ''}</p><h2>${esc(t(h.nombre))}</h2><p class="cr-lema">${esc(rzP ? t(rzP.lema) : t(h.lema))}</p>
         <ol class="cr-stages" aria-label="Etapas">${chips}</ol>${cuerpo}`;
     }
     // --- Capa real ---
@@ -289,8 +294,8 @@ AVE.module('criadero', function (G) {
       const cc = st.capsulas[hh.id], est = cc ? cc.estado : 'bloqueada', e2 = etapaDe(cc);
       const sel = st.vista === hh.id;
       const sub = !cc ? u('bloqueada') : est === 'liberada' ? u('libre') : est === 'disponible' ? t(D().rarezas[hh.rareza]) : t(etapaDef(e2).nombre) + (e2 !== 'huevo' ? ' · ' + nivelDe(cc.xp) : '');
-      const a = hh.aspecto;
-      return `<li><button type="button" class="cr-cap ${est}${sel ? ' sel' : ''}" data-cr="capsula" data-v="${hh.id}" aria-pressed="${sel}" style="--a:${a.a};--b:${a.b}" aria-label="${esc(t(hh.nombre))}: ${esc(sub)}${!cc ? '. ' + esc(t(hh.obtener.texto)) : ''}">
+      const a = hh.aspecto, rzC = RZ() && e2 !== 'huevo' ? RZ().def(RZ().de(cc)) : null; // marco del color de la rareza (cría nacida o libre)
+      return `<li><button type="button" class="cr-cap ${est}${sel ? ' sel' : ''}" data-cr="capsula" data-v="${hh.id}" aria-pressed="${sel}" style="--a:${a.a};--b:${a.b}${rzC ? `;--rz:${rzC.color}` : ''}"${rzC ? ` data-rz="${rzC.id}"` : ''} aria-label="${esc(t(hh.nombre))}: ${esc(sub)}${rzC ? ' · ' + esc(t(rzC.nombre)) : ''}${!cc ? '. ' + esc(t(hh.obtener.texto)) : ''}">
         <span class="cr-cap-egg" aria-hidden="true"></span><b>${esc(t(hh.nombre))}</b><small>${esc(sub)}</small></button></li>`;
     }).join('');
     const selH = st.vista && huevoDef(st.vista), selC = st.vista && st.capsulas[st.vista];
@@ -886,6 +891,8 @@ AVE.module('criadero', function (G) {
       wrap.rotation.set(0, 0.25, 0.3);
       B.mount_head_top.add(wrap); k.extras.cascaron = wrap;
     }
+    // Aura de la rareza (rareza.js): sprite bajo la cría, en el criadero y en el mundo; el modelo no cambia
+    if (RZ()) { const au = RZ().aura(RZ().de(st.capsulas[k.capId]), (k.holder === k.ch.root ? 1.1 : 1.25) * (etapa === 'adulto' ? 1 : etapa === 'juvenil' ? 0.85 : 0.7)); if (au) { k.holder.add(au); k.extras.aura = au; } }
     if (etapa === 'adulto' && tieneNuevo(k.capId, etapa, 'anillo_cientifico') && B.pieL3) {
       const ring = new THREE.Group();
       const band = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.03, 20, 1, true), MS({ color: '#c9d1d6', metalness: 0.85, roughness: 0.3, side: THREE.DoubleSide }));
@@ -984,6 +991,7 @@ AVE.module('criadero', function (G) {
     const c = st.vista && st.capsulas[st.vista];
     if (!c || c.estado !== 'lista' || hatch.on || !scene3d.capsule) return false;
     hatch.on = true; hatch.t = 0; hatch.capId = st.vista; hatch.speed = REDUCED ? 2.2 : 1; hatch.fase = 'abrir'; hatch.done = {};
+    if (RZ()) { RZ().asignar(c, st); guardar(); } // la rareza se decide aquí y queda guardada: recargar no vuelve a tirar
     root.querySelector('.cr-hatch').hidden = true; root.querySelector('.cr-skip').hidden = false;
     // la cría se prepara oculta (el modelo tarda en cargar la primera vez)
     ponerCria(hatch.capId, 'bebe', false).then(k => { if (k) { k.holder.visible = false; } });
@@ -1023,7 +1031,10 @@ AVE.module('criadero', function (G) {
       if (once('pop')) {
         scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.12, 0)), 60, ['#ffe08a', '#ffffff', '#9fe3a0', '#ffb347'], 1.8, 2.2);
         const k = scene3d.chick; if (k) { k.holder.visible = true; k.popT = 0; k.popS = 0.25; postura('aleteando', 2); }
-        banner(u('nacio'), t(huevoDef(hatch.capId).nombre));
+        // Rareza: chispas del color del nivel (más cuanto más rara) y la etiqueta en el cartel. Sin tragamonedas: un solo momento
+        const rz = RZ() && RZ().de(st.capsulas[hatch.capId]), rzDef = rz && RZ().def(rz);
+        if (rzDef && rz !== 'comun') scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.3, 0)), 20 + 20 * RZ().niveles().indexOf(rz), [rzDef.color, '#ffffff'], 2.2, 2.6);
+        banner(u('nacio'), t(huevoDef(hatch.capId).nombre) + (rzDef ? ' · ' + t(rzDef.nombre) : ''));
       }
       const x = Math.min(1, (T - 7.6) / 1.4);
       E.top.position.set(Math.sin(x * 2.4) * 0.25, 0.25 * Math.sin(x * Math.PI) + x * 0.15, 0.05);
@@ -1271,8 +1282,8 @@ AVE.module('criadero', function (G) {
 
   // =====================================================================================================================
   // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión o, antes, cuando se cumple
-  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Luma, minuto 2; DIVERSION_CAP1 mejora 2);
-  // Luma lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
+  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Iguaca, minuto 2; DIVERSION_CAP1 mejora 2);
+  // Iguaca lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
   // la plaza o el inicio.
   // =====================================================================================================================
   function desdeCumplido() {
@@ -1343,7 +1354,7 @@ AVE.module('criadero', function (G) {
     const sp = (G.pack.jugador && G.pack.jugador.aparicion) || { x: 0, z: 0 };
     return { x: sp.x + 3, z: sp.z + 2 };
   }
-  // Sitio libre: a 5 m o más de cualquier otro interactuable (si no, nearest() podría quedarse con Luma o el flamboyán),
+  // Sitio libre: a 5 m o más de cualquier otro interactuable (si no, nearest() podría quedarse con Iguaca o el flamboyán),
   // fuera de los colliders fijos (edificios, NPC, objetos; los árboles de vegetacion.js se recrean y no cuentan) y en tierra firme.
   // El mundo carga sus edificios después: pasoMundo vuelve a comprobarlo cada 2 s y lo mueve si quedó dentro de algo.
   function libreNido(q) {
@@ -1445,7 +1456,7 @@ AVE.module('criadero', function (G) {
     const b = botonNido();
     if (b && nidoBtnHidden !== !on) { nidoBtnHidden = !on; b.hidden = !on; if (on) b.setAttribute('aria-label', 'Nido: mi cotorrita'); }
     if (b && on) pintarHuevoHUD(b);
-    // Presentación (una vez): Luma cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
+    // Presentación (una vez): Iguaca cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
     // Tampoco en medio de una lección (las tarjetas de la misión educativa se reabren con retraso)
     // y solo tras 1,5 s seguidos de juego libre (entre baterías automáticas G.quiet cambia muy rápido)
     presentarT = on && !st.presentado && puedePresentar() ? presentarT + dt : 0;
@@ -1455,10 +1466,10 @@ AVE.module('criadero', function (G) {
       if (!silencio) G.emit('criadero', 'nido'); // cómic: viñeta de la aparición del nido (src/game/comic.js)
       const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
       G.dialogo.say([
-        { who: 'Luma', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
+        { who: 'Iguaca', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
           ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
           : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
-        { who: 'Luma', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
+        { who: 'Iguaca', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
       ]);
     }
   }
@@ -1510,6 +1521,8 @@ AVE.module('criadero', function (G) {
     if (/^(1|true|si|sí)$/i.test(new URLSearchParams(location.search).get('criadero') || '')) setTimeout(() => abrir(), 0);
   });
   if (!D()) datos().catch(() => { /* se reintenta al abrir */ });
+  // Rareza de las crías (perezosa, no va en index.html): si no carga, el criadero funciona como antes (todas comunes)
+  if (!RZ()) AVE.assets.script('src/game/rareza.js').then(() => { if (window.AVRareza) { window.AVRareza(G); if (open) pintar(); } }).catch(() => { /* sin rareza */ });
 
   // =====================================================================================================================
   // Depuración (video del pitch y pruebas)
@@ -1535,7 +1548,7 @@ AVE.module('criadero', function (G) {
     cria: () => scene3d.chick,
     hatch: () => Object.assign({}, hatch),
     paso: dt => paso(dt),
-    // Un paso del nido del mundo (revisión del sitio, botón del HUD y presentación de Luma)
+    // Un paso del nido del mundo (revisión del sitio, botón del HUD y presentación de Iguaca)
     mundo: dt => pasoMundo(dt || 0),
     // Lleva la eclosión en curso al segundo t (0–9,4) para capturas
     irA: tt => { if (hatch.on) { hatch.t = tt; pasoEclosion(0); } return hatch.on; },
@@ -1645,10 +1658,10 @@ AVE.module('criadero', function (G) {
         pasoMundo(0);
         const btn = document.getElementById('b-nido');
         check('Sin misión ni disparador del pack: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
-        // Disparador del pack (criadero.desde; cap1: la charla con Luma, minuto 2): el nido entra antes de la primera misión
+        // Disparador del pack (criadero.desde; cap1: la charla con Iguaca, minuto 2): el nido entra antes de la primera misión
         G.pack.criadero.desde = () => true; pasoMundo(0); pasoMundo(2.1);
         check('Con el disparador del pack y sin misión: nido visible y botón «Nido» en el HUD', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden && !!nidoIt && nidoIt.visible());
-        check('El pack cap1 engancha el nido a la charla con Luma (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
+        check('El pack cap1 engancha el nido a la charla con Iguaca (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
         // Huevo del HUD y «+XP al nido»: la XP ya no sube en silencio
         const xpLugar = dar('lugar', 'prueba-lugar'), mas = btn && btn.querySelector('.nido-mas');
         check('Descubrir un lugar da XP de explorar (fuente extra, 8 XP) y el botón muestra «+8 XP al nido»', xpLugar === 8 && st.fuentes.explorar >= 8 && !!mas && /\+8 XP/.test(mas.textContent), mas ? mas.textContent : 'sin aviso');
@@ -1673,7 +1686,7 @@ AVE.module('criadero', function (G) {
           check('Se abre desde el botón Nido del HUD', open); cerrar();
           st.presentado = false; if (G.dialogo.open()) G.dialogo.clear();
           const puede = puedePresentar(); pasoMundo(2);
-          check('Luma presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
+          check('Iguaca presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
           if (G.dialogo.open()) G.dialogo.clear();
           pasoMundo(2);
           check('La presentación no se repite', !G.dialogo.open());

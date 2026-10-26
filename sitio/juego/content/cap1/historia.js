@@ -4,7 +4,7 @@
    que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
    Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
    construir y de la crecida, retrato neutro de la Voz y final del mirador (plano del bote y luz que parpadea tres veces).
-   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejoras 1, 3 y 4): Luma llama desde la copa del flamboyán de la plaza y el
+   Diversión primero (docs/equipo/DIVERSION_CAP1.md, mejoras 1, 3 y 4): Iguaca llama desde la copa del flamboyán de la plaza y el
    primer paso es volar hasta ella (el taller va después); la narración y los comentarios salen en bocadillos libres
    (G.dialogo.say(..., { libre: true })) y solo bloquean las charlas y las decisiones; la crecida dura 20 s y arrastra tres cosas
    que se agarran en vuelo y se sueltan a salvo (sin castigo). Las líneas del guion no cambian.
@@ -18,7 +18,7 @@
     { id: 'KELVIN-2', que: 'Orden del Guardián: el guion lo hace llegar antes de construir y ayudar (p.7-8); el juego lo hace llegar tras la crecida', donde: 'historia.js (talkGuardian, applyGuardianLook)', bloquea: 'p.8: el Guardián sostiene una pieza (P1-2)' },
     { id: 'KELVIN-3', que: 'Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): ¿es canon? Una línea más y un detalle en su figura', donde: 'historia.js (useTransmitter), mundo.js (npcs)', bloquea: 'giro de la escena p.11' },
     { id: 'KELVIN-4', que: 'Cara de la Voz del transmisor (silueta, onda o ninguna) y si es alguien del pacto de los 36 sin nombrarlo', donde: 'pack.js (RETRATO_VOZ)', bloquea: 'retrato definitivo' },
-    { id: 'KELVIN-5', que: 'Familia de Luma entrando al refugio (SCRIPT p.9): ni arte ni diseño de los personajes', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
+    { id: 'KELVIN-5', que: 'Familia de Iguaca entrando al refugio (SCRIPT p.9): ni arte ni diseño de los personajes', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
     { id: 'KELVIN-6', que: 'Diseño de la máquina experimental y del transmisor antiguo, y engranaje visible en el techo del refugio', donde: 'mundo.js (preparar, objetos del taller)', bloquea: 'P1-6 y P2-2, modelos en Blender' },
     { id: 'KELVIN-7', que: 'Diseño del bote: el plano es un dibujo genérico (casco, mástil y dos velas) hasta el episodio 2', donde: 'historia.js (drawBlueprint)', bloquea: 'plano definitivo' },
     { id: 'KELVIN-8', que: 'Quién contesta con la luz de la niebla: no se revela en el cap. 1 y la luz es neutra', donde: 'mundo.js (luzMirador)', bloquea: 'cliffhanger al cap. 2' },
@@ -26,7 +26,7 @@
   const NEEDS = { madera: 4, piedra: 2, componente: 1 };
   const REFUGE_COST = { madera: 3, piedra: 2 };
   const REPAIR_COST = { madera: 1, componente: 1 };
-  // Recolección recortada 1 min (DECISION_LOG, "La ruta de la gota"): la familia de Luma aporta 3 tablas de su árbol partido.
+  // Recolección recortada 1 min (DECISION_LOG, "La ruta de la gota"): la familia de Iguaca aporta 3 tablas de su árbol partido.
   // Quedan 4 recogidas (1 madera, 2 piedras y la pieza de la poza) en vez de 7: ~50 m de ruta guiada en vez de ~113 m.
   // La construcción no cambia (REFUGE_COST).
   const REGALO_LUMA = { madera: 3 };
@@ -36,10 +36,10 @@
     id: 'cap1',
     historia: {
       pasos: [
-        // Mejora 1: al despertar, Luma llama desde la copa del flamboyán de la plaza (o el techo del taller): hay que despegar y posarse
-        { id: 'luma', texto: (S, G) => 'Vuela hasta Luma, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
+        // Mejora 1: al despertar, Iguaca llama desde la copa del flamboyán de la plaza (o el techo del taller): hay que despegar y posarse
+        { id: 'luma', texto: (S, G) => 'Vuela hasta Iguaca, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
           guia: G => (G.c.luma ? G.c.luma.guia() : at(G, 'luma')) },
-        // Revisar el taller avanza solo al examinar la máquina y el transmisor (también vale si se revisaron antes de subir con Luma)
+        // Revisar el taller avanza solo al examinar la máquina y el transmisor (también vale si se revisaron antes de subir con Iguaca)
         { id: 'taller', texto: 'Revisa tu taller dañado',
           progreso: S => ` (${(S.examined.maquina ? 1 : 0) + (S.examined.transmisor ? 1 : 0)}/2)`,
           hasta: { marca: ['examined.maquina', 'examined.transmisor'] },
@@ -69,7 +69,7 @@
       guiaBloqueada: G => !!G.c.build(),
       // Antes de la crecida los indicadores no se conocen: «por descubrir» en vez de «—» (UI v21 P3)
       indicadores: S => { const I = S.indicators, v = x => (x && x !== '—' ? x : 'por descubrir'); return S.refuge ? `Seguridad del refugio: <b>${v(I.seguridad)}</b> · Acceso: <b>${v(I.acceso)}</b> · Hábitat: <b>${v(I.habitat)}</b>` : ''; },
-      fin: S => (S.refuge && S.refuge.parcel === 'B' ? 'El refugio de la colina protege a la familia de Luma.' : 'El refugio quedó junto al río y la crecida lo dañó.') +
+      fin: S => (S.refuge && S.refuge.parcel === 'B' ? 'El refugio de la colina protege a la familia de Iguaca.' : 'El refugio quedó junto al río y la crecida lo dañó.') +
         ' El transmisor reveló el símbolo de los 36 y desbloqueaste el plano de una embarcación. Continuará…',
     },
     costos: { NEEDS, REFUGE_COST, REPAIR_COST, REGALO_LUMA },
@@ -92,7 +92,7 @@
       al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
       G.dialogo.say([...cap, ...tal, ...rupt], () => {
         if (A) A.claro(2200);
-        G.ui.toast('La Gran Ruptura dañó el taller. ¡Luma te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.', 5000);
+        G.ui.toast('La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.', 5000);
       }, { libre: true });
     },
 
@@ -231,8 +231,9 @@
       const add = G.interaccion.add;
       add({ id: 'maquina', x: MAQ.x, z: MAQ.z, r: 2.2, label: () => 'Examinar la máquina experimental', use: () => examine('maquina') });
       add({ id: 'transmisor', x: TRX.x, z: TRX.z, r: 2.2, label: () => S.step === 6 ? 'Reparar y activar el transmisor' : 'Examinar el transmisor', use: useTransmitter });
-      // Luma: su x/z y su visibilidad las lleva el módulo «Luma llama desde arriba» (abajo): en la copa solo se le habla posada a su lado
-      add({ id: 'luma', x: G.actores.npc('luma').def.x, z: G.actores.npc('luma').def.z, r: 2.4, label: () => 'Hablar con Luma', use: talkLuma });
+      // (ids internos «luma», LumaHelped, lumaK…: históricos; el personaje se llama Iguaca)
+      // Iguaca: su x/z y su visibilidad las lleva el módulo «Iguaca llama desde arriba» (abajo): en la copa solo se le habla posada a su lado
+      add({ id: 'luma', x: G.actores.npc('luma').def.x, z: G.actores.npc('luma').def.z, r: 2.4, label: () => 'Hablar con Iguaca', use: talkLuma });
       add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 3.2, label: () => S.step === 7 ? 'Mirar el horizonte desde el mirador' : 'Asomarte al mirador', use: useMirador });
       add({ id: 'guardian', x: guardian.def.x, z: guardian.def.z, r: 2.6, visible: () => guardian.sp.visible, label: () => 'Hablar con el Guardián', use: talkGuardian });
       const refugeIt = add({ id: 'refuge', x: 0, z: 0, r: 2.6, visible: () => !!(S.refuge && S.refuge.damaged && !S.event && !S.complete), label: () => 'Desarmar el refugio y recuperar materiales', use: dismantle });
@@ -260,36 +261,36 @@
         }
         checkProgress();
       }
-      // La llamada de Luma desde arriba (interact:luma_inicio): suena al acercarse a la copa, en bocadillos; si la charla
+      // La llamada de Iguaca desde arriba (interact:luma_inicio): suena al acercarse a la copa, en bocadillos; si la charla
       // empieza antes de que termine, lo que faltaba se funde en la charla para no cambiar el orden del guion
-      const LLAMADA = () => L('interact:luma_inicio', [{ who: 'Luma', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }, { who: 'Luma', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]);
+      const LLAMADA = () => L('interact:luma_inicio', [{ who: 'Iguaca', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }, { who: 'Iguaca', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]);
       function talkLuma() {
         if (S.step === 0) {
-          // La charla de la misión, posada junto a Luma en la copa (bloquea: es la conversación, no narración):
+          // La charla de la misión, posada junto a Iguaca en la copa (bloquea: es la conversación, no narración):
           // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales → las tres tablas
           const inicio = C.luma.llamo() ? G.dialogo.cancelarLibre() : LLAMADA();
           C.luma.llamado();
           say([
             ...inicio,
             ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
-            ...L('interact:materiales', [{ who: 'Luma', img: IMG.L, text: 'No tenemos suficientes materiales.' }]),
-            { who: 'Luma', img: IMG.L, text: 'Solo pudimos salvar tres tablas del árbol partido. Tómalas.' },
+            ...L('interact:materiales', [{ who: 'Iguaca', img: IMG.L, text: 'No tenemos suficientes materiales.' }]),
+            { who: 'Iguaca', img: IMG.L, text: 'Solo pudimos salvar tres tablas del árbol partido. Tómalas.' },
             { who: 'Vittata', img: IMG.V, text: 'Con eso empezamos. Faltan una madera, dos piedras y una pieza de metal. ¡Una cayó al fondo del río!' },
           ], () => {
             for (const k in REGALO_LUMA) S.inv[k] += REGALO_LUMA[k];
             G.objetos.renderInv(); G.audio.play('pickup', 2);
             log('LumaHelped'); advanceTo(1);
-            toast(S.step >= 2 ? '+3 madera de la familia de Luma. Ahora, a juntar los materiales.' : '+3 madera de la familia de Luma. Pasa por tu taller: revisa la máquina y el transmisor.', 4500);
+            toast(S.step >= 2 ? '+3 madera de la familia de Iguaca. Ahora, a juntar los materiales.' : '+3 madera de la familia de Iguaca. Pasa por tu taller: revisa la máquina y el transmisor.', 4500);
           });
           return;
         }
-        // Pistas de Luma (una línea): bocadillos libres, no paran a la cotorra. [KELVIN] la del paso «taller» es provisional.
-        if (S.step === 1) { say([{ who: 'Luma', img: IMG.L, text: 'Revisa tu taller: la máquina y el transmisor. Después buscamos los materiales.' }], null, LIBRE); return; }
-        if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Luma', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }], null, LIBRE); return; }
+        // Pistas de Iguaca (una línea): bocadillos libres, no paran a la cotorra. [KELVIN] la del paso «taller» es provisional.
+        if (S.step === 1) { say([{ who: 'Iguaca', img: IMG.L, text: 'Revisa tu taller: la máquina y el transmisor. Después buscamos los materiales.' }], null, LIBRE); return; }
+        if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Iguaca', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }], null, LIBRE); return; }
         if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()], null, LIBRE); return; }
-        if (S.step <= 3) { say([{ who: 'Luma', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }], null, LIBRE); return; }
-        if (S.refuge && S.refuge.damaged) { say([{ who: 'Luma', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }], null, LIBRE); return; }
-        say([{ who: 'Luma', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }], null, LIBRE);
+        if (S.step <= 3) { say([{ who: 'Iguaca', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }], null, LIBRE); return; }
+        if (S.refuge && S.refuge.damaged) { say([{ who: 'Iguaca', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }], null, LIBRE); return; }
+        say([{ who: 'Iguaca', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }], null, LIBRE);
       }
       function openParcelCard(k) {
         const p = PLACES[k];
@@ -308,8 +309,8 @@
           if (first) {
             const line = k === 'A'
               ? [...L('evento:LandInspected', [{ who: 'Vittata', img: IMG.V, text: 'Aquí construiríamos mucho más rápido.' }]),
-                 ...L('interact:marcas_agua', [{ who: 'Luma', img: IMG.L, text: 'Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta.' }])]
-              : L('interact:colina', [{ who: 'Luma', img: IMG.L, text: 'Allá arriba parece más seguro.' }]);
+                 ...L('interact:marcas_agua', [{ who: 'Iguaca', img: IMG.L, text: 'Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta.' }])]
+              : L('interact:colina', [{ who: 'Iguaca', img: IMG.L, text: 'Allá arriba parece más seguro.' }]);
             checkProgress(); say(line, null, LIBRE); // comentarios al salir de la tarjeta: en bocadillos, mientras se sigue
           } else checkProgress();
         };
@@ -349,7 +350,7 @@
         build = null; ghost.visible = false; hideToast();
         C.placeRefugeMesh(); syncRefugeInteractable();
         G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
-        say(L('evento:ShelterConstructed', [{ who: 'Luma', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]), null, LIBRE);
+        say(L('evento:ShelterConstructed', [{ who: 'Iguaca', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]), null, LIBRE);
         // La crecida dura 20 s (mejora 4): el río sube 12 s, se queda y baja; mientras, arrastra tres cosas que se pueden salvar
         S.event = { t: 0, dur: 20 };
         crecida.empezar();
@@ -383,33 +384,33 @@
         crecida.flotar(dt, e);
         if (e.t >= e.dur) { S.event = null; G.fx.rain.visible = false; crecida.terminar(); finishRainEvent(); }
       }, 20);
-      // Al terminar: la escena de Luma va en bocadillos y la historia sigue en el acto (afterRain); si se salvó algo, Luma lo agradece
-      // y lo que se llevó el río se da por recuperado después (sin castigo). [KELVIN] las dos frases de Luma sobre el rescate son provisionales.
+      // Al terminar: la escena de Iguaca va en bocadillos y la historia sigue en el acto (afterRain); si se salvó algo, Iguaca lo agradece
+      // y lo que se llevó el río se da por recuperado después (sin castigo). [KELVIN] las dos frases de Iguaca sobre el rescate son provisionales.
       function finishRainEvent() {
-        const gracias = crecida.salvados.length ? [{ who: 'Luma', img: IMG.L, text: '¡Salvaste ' + crecida.nombres(crecida.salvados) + '! Mi familia te lo agradece.', mood: 'happy' }] : [];
-        const rio = crecida.perdidos.length ? [{ who: 'Luma', img: IMG.L, text: 'El río se llevó ' + crecida.nombres(crecida.perdidos) + '. Tranquila: aparecerá río abajo y lo recogemos después.' }] : [];
+        const gracias = crecida.salvados.length ? [{ who: 'Iguaca', img: IMG.L, text: '¡Salvaste ' + crecida.nombres(crecida.salvados) + '! Mi familia te lo agradece.', mood: 'happy' }] : [];
+        const rio = crecida.perdidos.length ? [{ who: 'Iguaca', img: IMG.L, text: 'El río se llevó ' + crecida.nombres(crecida.perdidos) + '. Tranquila: aparecerá río abajo y lo recogemos después.' }] : [];
         if (S.refuge.parcel === 'A') {
           S.refuge.damaged = true;
           S.indicators = { seguridad: 'baja', acceso: 'corto', habitat: 'nidos de ribera alterados' };
           log('ShelterFlooded', { parcel: 'A' });
           C.placeRefugeMesh();
           capture('shelter');
-          say([...L('evento:ShelterFlooded', [{ who: 'Luma', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), ...gracias, ...rio], null, LIBRE);
+          say([...L('evento:ShelterFlooded', [{ who: 'Iguaca', img: IMG.L, text: 'El río subió y el refugio se inundó…' }]), ...gracias, ...rio], null, LIBRE);
           toast('Si desarmas el refugio recuperas los materiales', 3500); afterRain();
         } else {
           S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
           if (S.builds.includes('A')) log('ShelterRelocated', { from: 'A', to: 'B' });
           capture('shelter');
           say([...L('evento:ShelterRelocated', [
-            { who: 'Luma', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
+            { who: 'Iguaca', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
             { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
           ]), ...gracias, ...rio], null, LIBRE);
           afterRain();
         }
       }
       function afterRain() {
-        // [KELVIN-5] SCRIPT p.9: aquí entraría la familia de Luma al refugio («Pensé que hoy lo habíamos perdido todo»). Sin arte ni
-        // diseño de la familia no se puede hacer; hoy solo habla Luma (ver PENDIENTES_KELVIN).
+        // [KELVIN-5] SCRIPT p.9: aquí entraría la familia de Iguaca al refugio («Pensé que hoy lo habíamos perdido todo»). Sin arte ni
+        // diseño de la familia no se puede hacer; hoy solo habla Iguaca (ver PENDIENTES_KELVIN).
         applyGuardianLook();
         if (S.step === 4) { advanceTo(5); toast('Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
@@ -486,8 +487,8 @@
         if (I0) G.camara.yaw = Math.atan2(MIRADOR.x - I0.x, MIRADOR.z - I0.z);
         const bote = L('evento:BoatBlueprintUnlocked', [{ who: 'Vittata', img: IMG.V, text: 'Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación.' }]);
         const aviso = L('evento:LocationDiscoveredMirador', [
-          { who: 'Luma', img: IMG.L, text: 'Mira, Vittata. Esa luz en la niebla…' },
-          { who: 'Luma', img: IMG.L, text: '¡Parpadeó tres veces! Alguien contesta.' },
+          { who: 'Iguaca', img: IMG.L, text: 'Mira, Vittata. Esa luz en la niebla…' },
+          { who: 'Iguaca', img: IMG.L, text: '¡Parpadeó tres veces! Alguien contesta.' },
         ]);
         if (bote[0]) bote[0].onShow = () => { mostrarPlano(true); G.audio.play('nido_chispa'); };
         if (aviso[0]) aviso[0].onShow = () => { mostrarPlano(false); if (luz) luz.parpadear(3); };
@@ -495,7 +496,7 @@
         // mirar alrededor mientras; el panel final llega al terminar el último bocadillo
         say([
           { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
-          { who: 'Luma', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
+          { who: 'Iguaca', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
           ...bote,
           ...aviso,
           ...L('evento:ChapterCompleted', [{ who: 'Narrador', img: IMG.N, text: 'Y así comenzó la aventura que volvería a conectar los mundos. Continuará…' }]),
@@ -513,12 +514,12 @@
         }, LIBRE);
       }
 
-      // ---------- Luma llama desde arriba (DIVERSION_CAP1, mejora 1) ----------
-      // Al despertar, Luma está en la copa del flamboyán de la plaza (sin mapa, en el techo del taller): para hablarle hay que
+      // ---------- Iguaca llama desde arriba (DIVERSION_CAP1, mejora 1) ----------
+      // Al despertar, Iguaca está en la copa del flamboyán de la plaza (sin mapa, en el techo del taller): para hablarle hay que
       // despegar y posarse a su lado (una percha de fisica sostiene a Vittata en la copa, y queda para siempre como percha de la
-      // plaza). Al acercarse, Luma llama desde arriba (interact:luma_inicio, bocadillos); la charla de la misión es en la copa y
-      // después Luma baja a su sitio de la plaza. Sigue siendo el sprite con flota: true de mundo.js.
-      // [KELVIN] si Luma vuela o solo flota: hoy baja en línea recta en 1,4 s, sin alas ni animación.
+      // plaza). Al acercarse, Iguaca llama desde arriba (interact:luma_inicio, bocadillos); la charla de la misión es en la copa y
+      // después Iguaca baja a su sitio de la plaza. Sigue siendo el sprite con flota: true de mundo.js.
+      // [KELVIN] si Iguaca vuela o solo flota: hoy baja en línea recta en 1,4 s, sin alas ni animación.
       const MAPA_C1 = window.AV_MAPA_CAP1 || null;
       const lumaN = G.actores.npc('luma'), lumaIt = G.interaccion.find('luma');
       const LUMA_SUELO = { x: lumaN.def.x, z: lumaN.def.z };
@@ -539,7 +540,7 @@
       const lumaArriba = () => S.step === 0 && !S.complete;
       let lumaK = lumaArriba() ? 0 : 1; // 0 = en la percha, 1 = en su sitio de la plaza
       let llamo = false;
-      // Posada junto a Luma: a su altura y dentro de la percha (desde el suelo, bajo la copa, no se le puede hablar)
+      // Posada junto a Iguaca: a su altura y dentro de la percha (desde el suelo, bajo la copa, no se le puede hablar)
       const juntoALuma = () => Math.abs(S.pos.y - percha.y) < 1.6;
       lumaIt.visible = () => !lumaArriba() || juntoALuma();
       G.on('render', (dt, t) => {
@@ -551,7 +552,7 @@
         if (lumaK >= 1) { lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
         lumaN.sp.position.set(x, y + 1.0 + Math.sin(t * 2) * 0.05, z); lumaN.sh.position.set(x, y + 0.03, z);
       }, 12);
-      // La llamada: al acercarse a la copa (18 m; desde el taller no se oye) con Luma arriba y sin otra cosa en pantalla, en bocadillos
+      // La llamada: al acercarse a la copa (18 m; desde el taller no se oye) con Iguaca arriba y sin otra cosa en pantalla, en bocadillos
       G.on('update', (dt, busy) => {
         if (llamo || !lumaArriba() || busy || G.dialogo.activo() || S.clock < 0.5) return; // el gancho del capítulo arranca antes del medio segundo
         if (Math.hypot(S.pos.x - percha.x, S.pos.z - percha.z) < 18) { llamo = true; say(LLAMADA(), null, LIBRE); }
@@ -563,7 +564,7 @@
       };
 
       // ---------- La crecida se juega (DIVERSION_CAP1, mejora 4) ----------
-      // Mientras el río sube, el agua de la zona de la crecida arrastra tres cosas: las tablas de Luma, un coquí en su hoja y un
+      // Mientras el río sube, el agua de la zona de la crecida arrastra tres cosas: las tablas de Iguaca, un coquí en su hoja y un
       // hallazgo del Diario (el más cercano sin encontrar). Se agarran en vuelo (Acción cerca; G.agarre, las lleva en las patas) y
       // se sueltan donde el agua no llegue: una copa, el techo del taller, la colina o cualquier suelo seco. Sin castigo: lo que no
       // se salva se da por recuperado después (el hallazgo sigue en su sitio). Lo salvado queda en el registro (evento FloodRescue)
@@ -632,7 +633,7 @@
         salvados.length = 0; perdidos.length = 0;
         const f = hallazgoCercano();
         const lista = [
-          crear('tablas', 'las tablas de Luma', mallaTablas()),
+          crear('tablas', 'las tablas de Iguaca', mallaTablas()),
           crear('coqui', 'el coquí', mallaCoqui()),
         ];
         if (f && G.diario.meshes[f.id]) {
@@ -647,7 +648,7 @@
           else { o.ang = a0 + (i - 1) * 0.75; o.rad = Math.min(ZONA.r - 4, 9 + (i % 2) * 1.5); }
           G.renderer.linearize(o.obj); scene.add(o.obj); colocar(o); objs.push(o);
         });
-        toastHTML('¡El río crece y se lleva las cosas de Luma! <b>Agárralas al vuelo</b> (Acción cerca) y suéltalas donde el agua no llegue.', 6000);
+        toastHTML('¡El río crece y se lleva las cosas de Iguaca! <b>Agárralas al vuelo</b> (Acción cerca) y suéltalas donde el agua no llegue.', 6000);
         G.misiones.renderQuest(); // el objetivo del HUD pasa a «¡Crecida! …»
       }
       function flotar(dt) {
@@ -696,7 +697,7 @@
         G.misiones.renderQuest();
       }
       function limpiar() { for (const o of objs) if (o.obj.parent === scene) scene.remove(o.obj); objs.length = 0; }
-      // Lugares secos y altos para la guía mientras se lleva algo: la copa de Luma, el techo del taller y la colina
+      // Lugares secos y altos para la guía mientras se lleva algo: la copa de Iguaca, el techo del taller y la colina
       const altos = () => [{ x: percha.x, z: percha.z, y: percha.y }, { x: C.T.x, z: C.T.z, y: C.T.base + 3.9 }, { x: PLACES.B.x, z: PLACES.B.z, y: PLACES.B.base }].filter(p => p.y >= FLOOD_LEVEL + 0.5);
       const crecida = {
         objetos: () => objs.slice(), salvados, perdidos, nombres, ZONA, altos, aSalvo, empezar, flotar, terminar, limpiar,

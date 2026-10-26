@@ -48,7 +48,7 @@
     }, true);
     addEventListener('keydown', e => {
       if (!typing() || e.repeat) return;
-      const accion = G.input && G.input.es ? G.input.es('accion', e) : (e.key === 'e' || e.key === 'E' || e.key === 'Enter'); // tecla remapeable (input.js)
+      const Gj = window.AV && window.AV.G, accion = Gj && Gj.input && Gj.input.es ? Gj.input.es('accion', e) : (e.key === 'e' || e.key === 'E' || e.key === 'Enter'); // tecla remapeable (input.js)
       if (accion) { e.stopImmediatePropagation(); e.preventDefault(); finish(); }
     }, true);
   }

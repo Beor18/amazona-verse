@@ -20,7 +20,7 @@
         pasos: [{ texto: 'Bucea hasta la pieza de metal del fondo de la poza', hasta: { recogido: 'c1' } }],
         recompensa: { hito: 'm1' } },
       // ---------- M2 educativa: "La ruta de la gota" (EDUCATIVO.md §2) ----------
-      // Cada paso se cumple con una marca en S.edu.hecho que pone educativa.js; el último (p8) incluye "Luma te pregunta".
+      // Cada paso se cumple con una marca en S.edu.hecho que pone educativa.js; el último (p8) incluye "Iguaca te pregunta".
       // Textos visibles, perchas, preguntas y fichas salen de lecciones.js (AV_LECCIONES_CAP1) en ES/EN.
       { id: 'educativa', titulo: 'La ruta de la gota', leccion: 'mision_educativa',
         hud: (S, G) => (G.c.edu ? G.c.edu.hud() : 'La ruta de la gota'),
@@ -73,10 +73,10 @@
         S.chorus = true; G.misiones.renderQuest(); G.guardado.autosave();
         G.dialogo.say([
           { who: 'Vittata', img: IMG.V, text: 'Ya casi está, pero este transmisor no tiene voz. Necesita un canto fuerte.', mood: 'idea' },
-          { who: 'Luma', img: IMG.L, text: '¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?', mood: 'happy' },
-        ], () => G.dialogo.choose({ who: 'Luma', text: '¿Cómo los vas a convencer de cantar?' }, [
-          { label: 'Cantando yo primero: ¡co-quí!', value: 'cantar', reply: { who: 'Luma', img: IMG.L, text: '¡Eso, nena! Si cantas bonito, te van a contestar.', mood: 'happy' } },
-          { label: 'Escuchando con paciencia', value: 'escuchar', reply: { who: 'Luma', img: IMG.L, text: 'Buena idea. Primero se escucha y después se canta.', mood: 'idea' } },
+          { who: 'Iguaca', img: IMG.L, text: '¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?', mood: 'happy' },
+        ], () => G.dialogo.choose({ who: 'Iguaca', text: '¿Cómo los vas a convencer de cantar?' }, [
+          { label: 'Cantando yo primero: ¡co-quí!', value: 'cantar', reply: { who: 'Iguaca', img: IMG.L, text: '¡Eso, nena! Si cantas bonito, te van a contestar.', mood: 'happy' } },
+          { label: 'Escuchando con paciencia', value: 'escuchar', reply: { who: 'Iguaca', img: IMG.L, text: 'Buena idea. Primero se escucha y después se canta.', mood: 'idea' } },
         ], o => { G.eventos.log('LumaChoice', { choice: o.value }); G.dialogo.say([o.reply], () => G.ui.toast('Busca los 3 coquíes que brillan y repite su canto', 3500)); }));
       }
       // Simon de 2–3 notas: el coquí canta, Vittata repite (co = grave, quí = agudo). "Pasar" aparece tras 2 fallos.

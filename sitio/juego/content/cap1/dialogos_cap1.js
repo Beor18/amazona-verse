@@ -56,7 +56,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_luma_llama",
    "disparador": "interact:luma_inicio",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "sorpresa",
    "lineas": [
     "¡Vittata! ¡Necesitamos ayuda!",
@@ -70,13 +70,13 @@ window.AV_DIALOGOS_CAP1 = {
    "emocion": "idea",
    "lineas": [
     "Yo puedo sola… no, mejor dicho: ¿me ayudas?",
-    "Vamos a construir algo nuevo, Luma. ¡Dale!"
+    "Vamos a construir algo nuevo, Iguaca. ¡Dale!"
    ]
   },
   {
    "id": "c1_materiales",
    "disparador": "interact:materiales",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "triste",
    "lineas": [
     "No tenemos suficientes materiales."
@@ -105,7 +105,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_marcas_agua",
    "disparador": "interact:marcas_agua",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "idea",
    "lineas": [
     "Mira esas marcas en el árbol.",
@@ -115,7 +115,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_colina",
    "disparador": "interact:colina",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "idea",
    "lineas": [
     "Allá arriba parece más seguro.",
@@ -125,7 +125,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_refugio_listo",
    "disparador": "evento:ShelterConstructed",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "feliz",
    "lineas": [
     "¡Lo logramos! Mi familia tiene un techo.",
@@ -135,7 +135,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_inundado",
    "disparador": "evento:ShelterFlooded",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "triste",
    "lineas": [
     "El río subió y el refugio se inundó…",
@@ -155,7 +155,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_colina_firme",
    "disparador": "evento:ShelterRelocated",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "feliz",
    "lineas": [
     "La colina aguantó la crecida.",
@@ -245,7 +245,7 @@ window.AV_DIALOGOS_CAP1 = {
   {
    "id": "c1_mirador",
    "disparador": "evento:LocationDiscoveredMirador",
-   "personaje": "Luma",
+   "personaje": "Iguaca",
    "emocion": "sorpresa",
    "lineas": [
     "Mira, Vittata. Esa luz en la niebla…",

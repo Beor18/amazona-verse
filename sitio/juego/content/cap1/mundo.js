@@ -146,12 +146,13 @@
   AVE.registerPack({
     id: 'cap1',
     mundo: MUNDO_MAPA || MUNDO_ANALITICO,
-    // Luma y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY: PROVISIONALES), junto a una Vittata 3D.
+    // Iguaca y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY: PROVISIONALES), junto a una Vittata 3D.
     // [KELVIN-1] Identidad del Guardián (¿cotorra, humano u otra forma?): decide su retrato, su sprite y su modelo 3D.
     // [KELVIN-3] Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): si es canon, falta un detalle visible en su figura.
-    // [KELVIN-5] Familia de Luma (SCRIPT p.9: entra al refugio): no hay arte ni diseño, solo Luma. Ver historia.js, afterRain().
+    // [KELVIN-5] Familia de Iguaca (SCRIPT p.9: entra al refugio): no hay arte ni diseño, solo Iguaca. Ver historia.js, afterRain().
     npcs: [
-      { id: 'luma', nombre: 'Luma', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.0, flota: true },
+      // id histórico 'luma' (partidas guardadas, escenas c1_luma_*, LumaHelped): el personaje se llama Iguaca
+      { id: 'luma', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.0, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARD.x, z: GUARD.z, escala: 2.6 },
     ],
     objetos: {

@@ -1,0 +1,61 @@
+/* Amazona Verse · «¿Cómo quieres jugar?» (portada con tarjetas; lógica en src/game/menu_modos.js)
+   Tarjetas grandes (≥ 44 px) sobre la portada (#title), en una rejilla que cabe en 320 px de ancho (2 columnas) y se desplaza
+   en pantallas bajas (la portada no desborda). Usa los tokens de tokens.css y el botón .btn.tile de ui.css. */
+#title:has(#modos) { place-items: stretch center; }
+#title:has(#modos) .title-main {
+  box-sizing: border-box; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  justify-content: safe center; gap: var(--sp-3);
+  padding: max(var(--sp-4), env(safe-area-inset-top, 0px)) max(var(--sp-4), env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 44px) max(var(--sp-4), env(safe-area-inset-left, 0px));
+}
+@supports not (justify-content: safe center) { #title:has(#modos) .title-main { justify-content: flex-start; } }
+#title:has(#modos) .logo svg { width: min(520px, 78vw); }
+#title:has(#modos) .title-hero { z-index: 0; width: min(34vh, 26vw); opacity: 0.95; }
+#title:has(#modos) .title-foot { z-index: 0; }
+
+.modos { margin: 0; width: 100%; max-width: 780px; }
+.modos-t { margin: 0 0 var(--sp-3); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: #fff; text-shadow: 0 2px 0 rgba(27, 21, 80, 0.6), 0 6px 18px rgba(27, 21, 80, 0.5); }
+.modos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)); gap: var(--sp-3); width: 100%; }
+.modo {
+  position: relative; min-height: 124px; min-width: 0; padding: var(--sp-3) var(--sp-2); gap: var(--sp-1);
+  font-size: var(--fs-md); line-height: 1.15; text-align: center; white-space: normal; overflow-wrap: anywhere;
+  --btn-bg: rgba(16, 36, 28, 0.86); --btn-border: rgba(255, 255, 255, 0.22);
+  animation: modo-in var(--dur-3) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+  transition: transform var(--dur-2) var(--ease-pop), filter var(--dur-2);
+}
+.modo .modo-img { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35)); transition: transform var(--dur-2) var(--ease-pop); }
+.modo b { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lg); }
+.modo small { font-size: var(--fs-sm); line-height: 1.2; color: var(--c-text-muted); font-weight: 500; }
+.modo:hover, .modo:focus-visible { transform: translateY(-4px) scale(1.03); filter: brightness(1.08); }
+.modo:hover .modo-img, .modo:focus-visible .modo-img { transform: scale(1.12) rotate(-4deg); }
+.modo:active { transform: translateY(2px) scale(0.98); }
+.modo.es-ultimo { --btn-border: var(--gold); animation: modo-in var(--dur-3) var(--ease-out) both, ring 2.4s ease-out 1.2s infinite; }
+.modo .modo-ultimo {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 1; white-space: nowrap;
+  font: 700 var(--fs-xs)/1 var(--font-body); letter-spacing: 0.02em; color: var(--c-primary-ink); background: var(--gold);
+  padding: 5px 10px; border-radius: var(--r-pill); box-shadow: 0 2px 0 #b8903a;
+}
+.modo .modo-ultimo[hidden] { display: none; }
+@keyframes modo-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } }
+@media (max-width: 400px) {
+  .modos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }
+  .modo { min-height: 112px; padding: var(--sp-2) var(--sp-1); }
+  .modo .modo-img { width: 44px; height: 44px; }
+  .modo b { font-size: var(--fs-md); }
+  .modos-t { font-size: var(--fs-xl); }
+}
+@media (max-width: 560px) {
+  #title:has(#modos) .title-main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px); }
+  #title:has(#modos) .title-hero { right: -6vw; bottom: 0; margin: 0; width: 42vw; opacity: 0.45; }
+  #title:has(#modos) .title-hint { display: none; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #title:has(#modos) .logo svg { width: min(320px, 40vw); }
+  .modos-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .modo { min-height: 96px; }
+  .modo .modo-img { width: 36px; height: 36px; }
+}
+/* Creador «corto» (primera vez desde el menú): nombre y plumaje; los accesorios se cambian luego en «Mi personaje» */
+#creator.creator-corto :is(#p-slots, .creator-side > .lbl:not(#p-name-lbl), .creator-side > .note) { display: none; }
+/* Vuelo libre: sin el panel de misiones ni la pista de teclas; el resto del HUD sigue */
+html.modo-libre :is(#quest, #keyhint) { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .modo, .modo.es-ultimo { animation: none; } }

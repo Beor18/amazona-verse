@@ -534,7 +534,13 @@ AVE.module('terreno', function (G) {
     isl.position.set(I.x, seaY + I.r * (MAPA ? 0.12 : 0.3), I.z); scene.add(isl);
     return isl;
   });
-  if (islas.length && ISL.modelo) {
+  // El relieve de las islas se pide cuando la cotorra se acerca a una (a menos de ISLA_VER m de su orilla): hasta entonces
+  // se ven los conos de respaldo y no entra en la descarga inicial. Sin posición todavía, espera.
+  const ISLA_VER = 420;
+  let islasPedidas = false;
+  const cercaDeIsla = () => { const P = G.S && G.S.pos; return !!P && islas.some(I => Math.hypot(P.x - I.x, P.z - I.z) - I.r <= ISLA_VER); };
+  const pedirIslas = () => {
+    if (islasPedidas) return; islasPedidas = true;
     const M = ISL.modelo;
     G.assets.loadGLB(M.url, { b64: () => window[M.b64], script: M.script, base: M.base, error: 'isla no disponible' }).then(g => {
       let mesh = null; g.scene.updateMatrixWorld(true);
@@ -564,6 +570,12 @@ AVE.module('terreno', function (G) {
         scene.add(m); islandCones[k].visible = false;
       });
     }).catch(() => {});
+  };
+  if (islas.length && ISL.modelo) {
+    // Solo tras el primer gesto del jugador (Jugar, una tecla o un toque): el relieve de las islas no es parte de la descarga inicial
+    let n = 0, jugable = false;
+    for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { jugable = true; }, { once: true, passive: true });
+    G.on('update', () => { if (jugable && !islasPedidas && ++n % 20 === 0 && cercaDeIsla()) pedirIslas(); });
   }
 
   return {
