@@ -1,6 +1,7 @@
 """Efectos de sonido sintetizados (numpy) para el pitch de Amazona Verse.
 
-Coquí (co grave constante + quí agudo que sube), aleteo, río, chapoteo, burbujas, lluvia, vapor,
+Cotorra puertorriqueña (llamado nasal «rrá-ak» con armónicos y formantes; bandada que se aleja), coquí (co grave
+constante + quí agudo que sube; ya no se usa en el pitch porque solo canta de noche), aleteo, río, chapoteo, burbujas, lluvia, vapor,
 eclosión del huevo (crack + pop + destellos), UI de madera/celesta, viento del bosque, ráfaga de
 huracán, y la lectura en voz alta del juego (TTS en inglés). Escribe en OUT/sfx/*.wav (24 bit, estéreo).
 
@@ -151,6 +152,105 @@ def coqui_coro(dur=14.0, seed=5):
     out = wet(out, IR_BOSQUE, 0.35)
     out = out[: n_(dur)]
     fi, fo = n_(0.4), n_(1.5)
+    out[:fi] *= np.linspace(0, 1, fi)[:, None]
+    out[-fo:] *= np.linspace(1, 0, fo)[:, None] ** 1.5
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Cotorra puertorriqueña (Amazona vittata)
+# ---------------------------------------------------------------------------
+def cotorra_nota(f0=760.0, dur=0.30, seed=0, sube=0.5, rasp=0.16):
+    """Una nota de cotorra: tono con armónicos (~1/h), contorno que sube y baja, rugosidad de la siringe
+    (AM de ~50 Hz), un poco de aire y dos formantes nasales (~1,25 y ~2,9 kHz). Sin descargas ni grabaciones."""
+    r = rng(seed)
+    n = n_(dur)
+    t = np.arange(n) / SR
+    x = t / dur
+    pk = 0.32
+    cont = np.where(x < pk, 0.82 + 0.55 * sube * (x / pk) ** 0.8,
+                    0.82 + 0.55 * sube - 0.30 * (np.maximum(x - pk, 0) / (1 - pk)) ** 1.3)
+    # vibrato lento y deriva aleatoria suave
+    deriva = np.cumsum(r.standard_normal(n)) / np.sqrt(n) * 0.004
+    f = f0 * cont * (1 + 0.012 * np.sin(2 * np.pi * 23 * t + r.random() * 6) + deriva)
+    ph = 2 * np.pi * np.cumsum(f) / SR + r.random() * 6
+    y = np.zeros(n)
+    nh = 18
+    for h in range(1, nh + 1):
+        fh = f * h
+        w = h ** -0.95
+        w *= 1 + 2.4 * np.exp(-0.5 * (np.log(np.maximum(fh, 1) / 1250.0) / 0.42) ** 2)   # formante 1
+        w = w * (1 + 0.8 * np.exp(-0.5 * (np.log(np.maximum(fh, 1) / 2900.0) / 0.35) ** 2))  # formante 2
+        w = w * np.clip((5600 - fh) / 2200.0, 0, 1)   # nada por encima de ~5,6 kHz: suave, no chillón
+        y += np.sin(h * ph + r.random() * 6) * w
+    y *= 1 + rasp * np.sin(2 * np.pi * r.uniform(46, 58) * t + r.random() * 6)
+    y += bandpass(r.standard_normal(n), 1500, 5000, 2) * 0.05 * (1 - 0.6 * x)
+    env = np.minimum(1, x / 0.10) ** 1.5 * np.minimum(1, (1 - x) / 0.22) ** 1.2
+    y *= env * (1 - 0.18 * x)
+    return y / (np.max(np.abs(y)) + 1e-12)
+
+
+def cotorra_llamado(patron="a", f0=760.0, seed=0, dist=0.0):
+    """Frase de la cotorra: «rrá-ak» (a), «ra-ak-ak» (b) o una sola nota larga (c). `dist` 0 cerca, 1 lejos."""
+    r = rng(seed)
+    if patron == "a":
+        notas = [(0.00, 0.30, 1.00, 0.55), (0.40, 0.20, 0.86, 0.15)]
+    elif patron == "b":
+        notas = [(0.00, 0.22, 0.95, 0.45), (0.30, 0.18, 0.92, 0.30), (0.56, 0.24, 0.80, 0.10)]
+    else:
+        notas = [(0.00, 0.50, 1.00, 0.65)]
+    tot = max(a + d for a, d, _, _ in notas) + 0.1
+    out = np.zeros(n_(tot))
+    for k, (a, d, g, s) in enumerate(notas):
+        nt = cotorra_nota(f0 * r.uniform(0.97, 1.04) * (1 if k == 0 else 1.06), d, seed * 31 + k, s) * g
+        i = n_(a)
+        out[i:i + len(nt)] += nt
+    if dist > 0:
+        out = lowpass(out, 6500 - 3800 * dist, 1) * undb(-9 * dist)
+    return out
+
+
+def cotorra_amanecer(seed=3):
+    """Llamado de la cotorra al empezar el video: una cerca y otra que contesta lejos."""
+    n = n_(3.2)
+    out = np.zeros((n, 2))
+    c1 = st(cotorra_llamado("a", 780, seed, 0.0), -0.3)
+    out[: len(c1)] += c1
+    c2 = st(cotorra_llamado("b", 700, seed + 1, 0.55), 0.5) * 0.7
+    i = n_(1.30)
+    out[i:i + len(c2)] += c2
+    out = wet(out, IR_BOSQUE, 0.22)
+    return out
+
+
+def cotorra_bandada(dur=9.0, seed=7):
+    """Bandada de cotorras que sale volando y se aleja: llamados que se espacian y se apagan, con aleteo."""
+    r = rng(seed)
+    n = n_(dur + 1.5)
+    out = np.zeros((n, 2))
+    aves = []
+    for k in range(9):
+        aves.append(dict(p=r.uniform(-0.9, 0.9), s=r.uniform(0.88, 1.18), t0=r.uniform(0.1, 1.2) + 0.25 * k,
+                         per=r.uniform(1.0, 1.9), d0=r.uniform(0.05, 0.4), vp=r.uniform(-0.5, 0.5)))
+    for k, a in enumerate(aves):
+        t = a["t0"]
+        while t < dur:
+            u = t / dur
+            dist = min(1.0, a["d0"] + 0.8 * u)
+            pat = "abc"[int(r.integers(0, 3))]
+            c = cotorra_llamado(pat, 700 * a["s"], seed * 100 + k * 7 + int(t * 10), dist)
+            seg = st(c * undb(-14 * u - 3 * k * 0.3), float(np.clip(a["p"] + a["vp"] * u, -1, 1)))
+            i = n_(t)
+            out[i:i + len(seg)] += seg[: n - i]
+            t += a["per"] * (1 + 1.2 * u) * r.uniform(0.85, 1.2)
+    # aleteo de la bandada, que se aleja
+    ale = aleteo_seq([6.0, 6.8, 6.2, 5.6], dur, seed=71, gain_curve=lambda u: 0.55 * np.exp(-2.2 * u) + 0.03,
+                     pan_curve=lambda u: 0.1 + 0.4 * u, bright_curve=lambda u: 0.9 - 0.4 * u)
+    m = min(len(ale), n)
+    out[:m] += ale[:m] * 0.8
+    out = wet(out, IR_BOSQUE, 0.3)
+    out = out[: n_(dur)]
+    fi, fo = n_(0.25), n_(3.0)
     out[:fi] *= np.linspace(0, 1, fi)[:, None]
     out[-fo:] *= np.linspace(1, 0, fo)[:, None] ** 1.5
     return out
@@ -718,6 +818,9 @@ def main():
     guardar("coqui_2", wet(st(lowpass(pad_tail(coqui_call(1085, 1790, 2190, seed=2, co_d=0.11), 0.6), 7000, 1)),
                            IR_BOSQUE, 0.35))
     guardar("coqui_coro", coqui_coro(), "lufs", -20)
+    guardar("cotorra_amanecer", cotorra_amanecer(), objetivo=-3)
+    guardar("cotorra_lejos", wet(st(pad_tail(cotorra_llamado("c", 690, 11, 0.6), 0.5), 0.45), IR_BOSQUE, 0.3), objetivo=-3)
+    guardar("cotorra_bandada", cotorra_bandada(), "lufs", -22)
     guardar("aleteo_despegue", aleteo_despegue())
     guardar("aleteo_bandada", aleteo_bandada())
     guardar("aleteo_vuelo", aleteo_seq([5.6, 5.6], 3.0, seed=36, pan_curve=lambda u: 0.0, bright_curve=lambda u: 0.85))

@@ -82,10 +82,11 @@
    ]
   },
   {
-   "id": "coqui_1",
+   "id": "cotorra_amanecer",
    "t": 0.15,
-   "gain_db": -14,
-   "pan": -0.35
+   "gain_db": -10,
+   "pan": 0.0,
+   "_nota": "decisión de Kelvin (26 oct): al empezar suena una cotorra (los coquíes solo cantan de noche); el llamado cercano cae en 0.15 y otra contesta a lo lejos en 1.45"
   },
   {
    "id": "aleteo_despegue",
@@ -99,12 +100,6 @@
    "ancla": "B01|huracán",
    "off": -0.6,
    "gain_db": -10
-  },
-  {
-   "id": "coqui_2",
-   "t": 9.0,
-   "gain_db": -18,
-   "pan": 0.55
   },
   {
    "id": "aleteo_bandada",
@@ -407,12 +402,13 @@
    "gain_db": -13
   },
   {
-   "id": "coqui_coro",
-   "t": 153.6,
-   "gain_db": -4,
+   "id": "cotorra_bandada",
+   "t": 153.9,
+   "gain_db": -3,
    "fade_in": 0.25,
-   "dur": 12.0,
-   "fade_out": 3.5
+   "dur": 9.0,
+   "fade_out": 3.0,
+   "_nota": "la bandada sale volando con el despegue (153.6) y se aleja; sustituye al coro de coquíes"
   },
   {
    "id": "aleteo_despegue",
@@ -422,16 +418,11 @@
    "_nota": "salto 153.75, despegue 153.9"
   },
   {
-   "id": "coqui_1",
-   "t": 159.9,
-   "gain_db": -14,
-   "pan": 0.2
-  },
-  {
-   "id": "coqui_2",
-   "t": 162.7,
-   "gain_db": -17,
-   "pan": -0.4
+   "id": "cotorra_lejos",
+   "t": 160.4,
+   "gain_db": -12,
+   "pan": 0.45,
+   "_nota": "una cotorra lejana sobre el logo; sustituye al coquí"
   }
  ]
 }
