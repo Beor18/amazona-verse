@@ -45,7 +45,7 @@ Prioridad cuando coinciden: final > criadero > portada o creador > arena > Retos
 ## Peso y carga
 
 - AAC-LC estéreo **96 kb/s** CBR, 48 kHz, con el índice (`moov`) al principio para empezar a sonar sin bajar todo: exploracion 2,16 MB · carrera 2,05 MB · criadero 2,04 MB · tormenta 1,98 MB · arena 1,88 MB (10,1 MB en el repo).
-- La build publica los 4 en uso (**8,24 MB**); Arena no se publica hasta que exista su modo. El sitio pasa de 51,6 a 59,5 MB (límite de la build: 64 MB).
+- La build publica los 4 en uso (**8,24 MB**); Arena no se publica hasta que exista su modo. El sitio pasa de 51,6 a 59,5 MB. Kelvin retiró el tope de 64 MB el 26-oct-2026: el peso se sigue midiendo y ya no corta la publicación.
 - **No entran en la descarga inicial:** se piden por streaming (`<audio preload=auto>` + `MediaElementSource`) solo cuando toca y solo el que toca (si cambias de momento antes de que cargue, la petición se suelta). Sin gesto no se pide ninguno (lo comprueba `musicaTest`).
 
 **Medidas (26-oct, build de prueba, Chrome con móvil emulado 375×812, táctil, modo de música «ligero»):** vuelo libre → carrera → «Otra vez» → criadero → exploración. Cada tema bajó una vez (2,1 / 2,0 / 2,0 MB) y empezó a sonar en menos de 2 s; nunca más de 2 `<audio>` vivos (1 sonando + 1 saliendo durante el fundido); heap de JS 39,5 → 40,7 MB; 0 tareas largas (>50 ms) y el reloj del hilo principal con ≤ 3 ms de retraso durante los cambios; 0 errores de consola. Con «Sonido: no» la posición se queda quieta (pausado) y al volver sigue. La descarga inicial medida por `test.sh` no cambia (9,31 MB en 166 archivos, igual que la build sin C13: la subida de 8,18 a 9,31 MB viene del atlas de edificios de G6, ya pedida en `PEDIDOS.md`).

@@ -202,7 +202,7 @@ Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero m
 - 41 179 tris en el `_hd`, 15 190 en el ligero y 1732 en el lejano.
 - Sin caja de colisión gruesa (`mundo.js`): era una caja de 42 × 28 m sobre 12 templos con plazas entre ellos. Lo detienen sus sólidos reales, como a los demás.
 
-**Peso.** La build pasa de 28,6 a 36,6 MB y 420 archivos (límites: 64 MB y 511). Supera el objetivo de 30 MB: son los `_hd` de las aldeas y su atlas, todo por streaming.
+**Peso.** La build pasa de 28,6 a 36,6 MB y 420 archivos (límite de archivos: 511). Supera el objetivo de 30 MB: son los `_hd` de las aldeas y su atlas, todo por streaming. Kelvin retiró el tope de 64 MB el 26-oct-2026: el peso se mide y ya no rechaza la publicación.
 
 Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio en alta).
 
@@ -220,7 +220,7 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 | `AV3DMaxTerrainExport.max` | El mismo terreno, suelto | Igual que la fila de arriba. |
 
 **Qué cambió en el kit.**
-- El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB (tope 64): no se publica. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
+- El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB: no se publicó en G6. Kelvin retiró el tope de 64 MB el 26-oct-2026; esta nota no reabre G6. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
 - Lo que sí se ve, en calidad alta: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. El `_hd` solo se pide en alta (90 m) y después de moverse. Bajo, medio y el móvil se quedan en la paleta de 512, que ya entra en el arranque. En el móvil el atlas no se descarga, así que no suma memoria de texturas.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.

@@ -14,8 +14,8 @@
     "*.pyc"
   ],
   "limites": {
+    "_nota": "Sin tope de peso total (Kelvin, 26-oct-2026): el tamaño se mide en el reporte y no rechaza la publicación. Siguen el máximo de archivos, el máximo por archivo y el objetivo.",
     "archivos_max": 511,
-    "total_max_mb": 64,
     "archivo_max_mb": 16,
     "objetivo_mb": 30
   },
