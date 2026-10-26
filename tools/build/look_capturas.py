@@ -96,6 +96,7 @@ VISTA_JS = r'''(async () => {
   if (ST) { if (ST.alrededor) await ST.alrededor(V.x, V.z); if (ST.terminar) await ST.terminar(); }
   if (G.solidos && G.solidos.terminar) G.solidos.terminar();
   await Promise.resolve(G.vegetacion && G.vegetacion.listo);
+  if (AV.guineo) await AV.guineo().then(g => g.listo).catch(() => {}); // huertos de guineo (C12): perezosos, se piden en el primer gesto
   G.camara.yaw = V.yaw; G.camara.place(true);
   await cuadros(60);
   G.camara.yaw = V.yaw; G.camara.place(true);
