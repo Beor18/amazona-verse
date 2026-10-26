@@ -2,8 +2,8 @@
    Feedback real: los coquíes (Eleutherodactylus coqui) son nocturnos y cantan del atardecer al amanecer (USGS NAS, ficha de la
    especie: «These treefrogs are nocturnal insectivores»; el horario exacto «del atardecer al amanecer» queda por verificar con DRNA).
    La misión 3 «Co-quí» se jugaba a pleno sol porque el cielo del juego siempre es de día. Desde aquí, cuando empieza el coro
-   (S.chorus) el mundo pasa en unos 8 s a atardecer y se queda así hasta terminar el capítulo (S.complete): el final del mirador,
-   con la luz en la niebla, queda mejor con el sol bajo (docs/DECISION_LOG.md, 26-oct).
+   (S.chorus) el mundo pasa en unos 8 s a atardecer y vuelve el día al terminar la misión del coquí (S.missions.m3; decisión de
+   Kelvin, docs/DECISION_LOG.md, 26-oct).
 
    Cómo funciona (sin tocar renderer.js, clima.js ni look.js):
    - Un gancho de render con prioridad 95 (después del clima, que escribe en 'update' 45, y del look, que escribe en 'render' 90)
@@ -40,7 +40,7 @@
     const ESC = { solInt: 0.72, hemiInt: 0.78, exposicion: 0.93, solAltura: 0.16 }; // × la base; solAltura: seno de la altura del sol al final
 
     let forzado = null, k = 0, enMarcha = false, horaPuesta = false;
-    const deseado = () => (forzado != null ? !!forzado : !G.quiet && !!S.chorus && !S.complete);
+    const deseado = () => (forzado != null ? !!forzado : !G.quiet && !!S.chorus && !(S.missions && S.missions.m3) && !S.complete); // Kelvin: el día vuelve al terminar M3
     const skyU = R.sky ? R.sky.material.uniforms : null, aguaU = G.agua && G.agua.uniforms, fog = scene.fog;
 
     // ---------- Ranuras: cada valor con su base de día y lo último que escribimos ----------
@@ -176,6 +176,7 @@
         check('En las baterías (G.quiet) no se enciende solo aunque el coro esté en marcha', !deseado());
         G.quiet = false;
         check('Con el coro en marcha (S.chorus) y el capítulo sin terminar, pide atardecer', deseado());
+        { const nuevo = !S.missions, ms = S.missions || (S.missions = {}), m30 = ms.m3; ms.m3 = true; check('Al terminar la misión del coquí (M3) vuelve el día', !deseado()); if (nuevo) delete S.missions; else if (m30 === undefined) delete ms.m3; else ms.m3 = m30; }
         S.complete = true; check('Al terminar el capítulo vuelve el día', !deseado()); if (tieneComplete) S.complete = complete0; else delete S.complete;
         G.quiet = quiet0; S.chorus = chorus0;
         forzar(true); const k1 = avanzar(DUR + 1);

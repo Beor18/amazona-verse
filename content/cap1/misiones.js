@@ -60,12 +60,12 @@
         bushMeshes[b.id] = { g, glow, frog };
         G.fisica.colliders.push({ x: b.x, z: b.z, r: 0.7, kind: 'obj' });
       }
-      // C9: el coquí canta al atardecer. Mientras dura el coro (S.chorus) y hasta terminar el capítulo, src/game/atardecer.js
+      // C9: el coquí canta al atardecer. Mientras dura el coro (S.chorus) y hasta terminar M3 (decisión de Kelvin), src/game/atardecer.js
       // funde el mundo a atardecer y pone S.hora para que el ambiente (musica.js) suene a coquíes; también al recargar a mitad de M3.
       let atardecerPedido = false;
       G.on('render', () => {
         const now = performance.now() / 1000;
-        if (S.chorus && !S.complete && !atardecerPedido && window.AV && window.AV.atardecer) { atardecerPedido = true; window.AV.atardecer().catch(() => { atardecerPedido = false; }); }
+        if (S.chorus && !S.missions.m3 && !S.complete && !atardecerPedido && window.AV && window.AV.atardecer) { atardecerPedido = true; window.AV.atardecer().catch(() => { atardecerPedido = false; }); }
         for (const b of BUSHES) {
           const bm = bushMeshes[b.id], live = S.chorus && !S.missions.m3 && !S.coquis.includes(b.id);
           bm.glow.visible = live; bm.frog.visible = S.coquis.includes(b.id) || S.missions.m3;

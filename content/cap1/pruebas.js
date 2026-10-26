@@ -419,7 +419,7 @@
     const enTarde = await fetch((G.pack.idioma || 'content/cap1/en.js') + '?c9').then(r => r.text()).catch(() => '');
     check('La frase tiene su versión en inglés (en.js)', enTarde.includes(JSON.stringify(FRASE_TARDE) + ':'));
     const AT = window.AV && window.AV.atardecer ? await window.AV.atardecer() : null;
-    check('Con el coro en marcha el mundo pide atardecer (se queda hasta terminar el capítulo)', AT && (() => { const q = G.quiet; G.quiet = false; const d = AT.deseado(); G.quiet = q; return d && S.chorus && !S.complete; })(), AT ? JSON.stringify(AT.estado()) : 'sin atardecer.js');
+    check('El atardecer dura lo que el coro: con el coro en marcha y M3 sin terminar lo pide; al terminar M3 vuelve el día', AT && (() => { const q = G.quiet; G.quiet = false; const d = AT.deseado(); G.quiet = q; return d === (!!S.chorus && !S.missions.m3 && !S.complete); })(), AT ? JSON.stringify(AT.estado()) : 'sin atardecer.js');
     if (AT) {
       const R0 = G.renderer, sky0 = R0.sky && R0.sky.material.uniforms, dia = sky0 ? sky0.uHorizonte.value.clone() : null, solY = R0.sunDir ? R0.sunDir.y : 1;
       AT.forzar(true); AT.avanzar(AT.DUR + 1);
