@@ -4,8 +4,8 @@
 python3.11 -I edificios_hd_atlas.py <ancient|savage> <assets/models/edificios/tex_hd> [celda=512] [margen=16]   → hd_<kit>.jpg, hd_<kit>_n.jpg
 python3.11 -I edificios_hd_atlas.py paleta <assets/models/edificios/tex> [lado=512]   → kb3d_*.jpg y kb3d_*_n.jpg del kit ligero
 (tex_hd y no tex/: la build pasa tex/ a WebP y no reescribe las uris de un glTF ya comprimido con meshopt)
-El juego publica celda 512 (atlas 2048). El atlas 4096 sale de la misma 4K y la build pasa de 60,6 a 75 MB (tope 64).
-La piedra blanda era el look de fábrica, que bajaba el atlas a 512 y dejaba la celda en 128. Eso se corrige en look.js.
+El juego publica celda 1024 (atlas 4096), las 16 de Ancient y las 10 de Savage, desde las JPG 4K del Drive.
+La fracción del margen es la misma que 512/16: la UV2 de los _hd no se rehace. El look no encoge tex_hd/.
 
 Cada celda guarda la textura de repetición (celda - 2·margen px) con un margen que repite su propio borde (envolvente):
 así el filtrado y los mipmaps cercanos no mezclan celdas vecinas. El shader (streaming.js, AV_HD) envuelve la UV original

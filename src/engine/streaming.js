@@ -28,10 +28,11 @@
    - Manifiesto opcional window.AV_EDIFICIOS_KIT = { <modelo>: { lejos: bool, radio, alto, tris, kb, kbLejos } } (se carga
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
-     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las texturas
-     originales (difusa y normales, atlas 2048) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
-     con la zona en nivel cerca, en calidad media o alta y con WebGL2 (CFG.hd), cuando el jugador ya se movió; mientras no
-     está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
+     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las 16
+     texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda):
+     un draw call por modelo. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
+     de moverse si ya estás en la zona; mientras no está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos
+     salen siempre del ligero (iguales en todo equipo).
 
    Formato de datos en el mapa (compatible con el anterior; lo genera el level designer):
    - mapa.edificiosKelvin: [ entrada ] y mapa.escenaKelvin.compacto: [ entrada compacta ] (se leen las dos listas).
@@ -63,7 +64,7 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 0, medio: 0, alto: 90 },          // m: el atlas HD solo en alta y tras moverse (pedido de la coordinadora). Bajo y medio usan la paleta de 512; el móvil no lo baja.
+    hd: { bajo: 50, medio: 80, alto: 120 },       // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
@@ -122,9 +123,9 @@ AVE.module('streaming', function (G) {
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
   // dentro de la celda, que tiene un margen que repite su borde, y el nivel de mipmap sale de la UV sin envolver (sin costuras).
-  // Celda 512 y margen 16 (atlas 2048). La UV2 ya horneada es el origen de la celda; el margen entra en el shader.
+  // Celda 1024 y margen 32 (atlas 4096). La fracción es la misma que 512/16, así que la UV2 horneada no cambia.
   // El lod usa el eje corto cuando el otro es mucho mayor (relieve de lado, sin pasar el margen de la celda).
-  const HD = { celdas: 4, celda: 512, margen: 16, lodMax: 4 };
+  const HD = { celdas: 4, celda: 1024, margen: 32, lodMax: 5 };
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
@@ -394,7 +395,7 @@ AVE.module('streaming', function (G) {
         // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
         // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
         const lq = CFG.lejosQuieto[nivelCal()] || 150;
-        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || (q.tipo === 'cerca' && q.prio < pre)) : 0;
+        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || ((q.tipo === 'cerca' || q.tipo === 'hd') && q.prio < pre)) : 0;
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
@@ -603,10 +604,11 @@ AVE.module('streaming', function (G) {
         const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         if (d - I.r > max) continue;
         // los grandes (más de CFG.hdGrande m de radio: templos, el complejo) cuentan desde su mitad cercana: junto a uno de 40 m
-        // de radio no se ve su lejano. Su _hd sigue más allá del LOD, hasta hdD (los pequeños, el lejano: menos draw calls)
+        // de radio no se ve su lejano. Dentro de hdD se dibuja el modelo completo, chico o grande.
         const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
         if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
-        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
+        // Dentro del alcance HD se dibuja la malla completa, también la torre chica: el lejano es la silueta, no el edificio.
+        I.hd = hdD > 0 && dl < hdD + (I.hd ? H : -H);
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
         if (!L) continue;
         const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
@@ -729,8 +731,15 @@ AVE.module('streaming', function (G) {
         hdMax = Math.max(hdMax, se.visiblesHD);
       }
       G.camara.yaw = yaw0;
-      // Versión cercana de alta fidelidad (_hd) de los modelos que la tienen: cargada y dibujada en calidad alta con WebGL2
+      // Versión cercana de alta fidelidad (_hd): cargada y dibujada en calidad alta con WebGL2. Media y baja también la piden.
       const conHD = [...ZM.modelos].filter(n => ST.tieneHD(n));
+      if (hdGL2()) {
+        if (R.setCalidad) R.setCalidad('medio', true);
+        check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && hdActivo(), 'medio ' + (CFG.hd.medio || 0) + ' m');
+        if (R.setCalidad) R.setCalidad('bajo', true);
+        check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && hdActivo(), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
+        if (R.setCalidad) R.setCalidad('alto', true);
+      }
       if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
         const listosHD = conHD.filter(n => ST.recursos[n].hd && ST.recursos[n].hd.estado === 'listo');
         check('Cerca, los edificios con versión de alta fidelidad la cargan y la dibujan', listosHD.length === conHD.length && hdMax > 0,

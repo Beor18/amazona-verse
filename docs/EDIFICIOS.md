@@ -118,7 +118,7 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
   - colapso por material: la arquitectura pesa 3 veces más que el escombro;
   - y, en el escombro, se quitan las piezas sueltas más pequeñas.
 - Las normales son suaves en lo orgánico y con aristas vivas a 40° en la piedra labrada. Las caras de nodos en espejo se invierten.
-- Texturas: las 16 originales con normales en un atlas 4×4 de 2048 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 512 px con margen de 16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
+- Texturas: las 16 originales con normales en un atlas 4×4 de 4096 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 1024 px con margen de 32; la fracción es la misma que 512/16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
 - Se guarda ya comprimido con el gltfpack de la build. Las texturas van en `tex_hd/` y no en `tex/`, porque la build pasa `tex/` a WebP y no reescribe las uris de un glTF ya comprimido.
 - Streaming: se pide con la zona en nivel cerca, en calidad media (hasta 40 m) o alta (hasta 90 m), con WebGL2 y cuando el jugador ya se movió. En calidad baja se queda el ligero. Los grandes (más de 10 m de radio) cuentan la distancia desde su mitad cercana, tanto en el LOD como en el _hd.
 - **Colisiones, pisos y vanos salen siempre del ligero**: son iguales en todos los equipos.
@@ -160,7 +160,7 @@ En total, el _hd suma 6,5 MB de js (streaming, nada en la descarga inicial) más
 
 La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw calls (≤ 150). La build pasa de 17,6 a 28,6 MB, de los que unos 10 MB son de los _hd y del atlas. Suma 42 archivos (390 de 511). La descarga inicial no cambia (8,2 MB, igual que HEAD).
 
-**Calidad.** Bajo no usa _hd. Medio lo usa hasta 40 m y alto, hasta 90 m. Hace falta WebGL2.
+**Calidad.** Bajo lo usa hasta 50 m, medio hasta 80 m y alto hasta 120 m, chico o grande. Hace falta WebGL2. Se pide también antes de moverse si ya estás en la zona.
 
 **Pendiente.**
 - Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
@@ -220,8 +220,8 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 | `AV3DMaxTerrainExport.max` | El mismo terreno, suelto | Igual que la fila de arriba. |
 
 **Qué cambió en el kit.**
-- El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB: no se publicó en G6. Kelvin retiró el tope de 64 MB el 26-oct-2026; esta nota no reabre G6. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
-- Lo que sí se ve, en calidad alta: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. El `_hd` solo se pide en alta (90 m) y después de moverse. Bajo, medio y el móvil se quedan en la paleta de 512, que ya entra en el arranque. En el móvil el atlas no se descarga, así que no suma memoria de texturas.
+- El atlas que se publica es el de **4096 (celda 1024, margen 32)**, JPG, las 16 de Ancient y las 10 de Savage, desde las 4K del Drive. Kelvin, 26-oct-2026: en el juego tiene que estar el kit completo; no se recorta por calidad ni por el tope de peso (ese tope ya no está). La paleta ligera del arranque sigue en 512: es el respaldo mientras llega el `_hd`, no lo que se ve junto al edificio.
+- El look de fábrica no encoge `tex_hd/`. `?tex=512` sigue pudiendo medirlo chico. El `_hd` se pide en bajo (50 m), medio (80 m) y alto (120 m), también antes de moverse si ya estás en la zona.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
 
