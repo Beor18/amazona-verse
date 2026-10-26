@@ -38,8 +38,15 @@ mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 
 # Solo se reutiliza una carpeta que ya sea una build (marcador .avbuild); nunca se borra otra cosa.
+REUSAR=""
 if [ -n "$(ls -A "$OUT")" ]; then
   [ -f "$OUT/.avbuild" ] || { avb_err "$OUT no está vacía y no es una build anterior; elige otra carpeta"; exit 2; }
+  REUSAR=1
+fi
+# Si otro build.sh o test.sh está usando la carpeta, no se toca (QA-35: antes se borraba site/ a mitad de una prueba).
+avb_ocupar "$OUT" || exit 2
+trap avb_soltar EXIT
+if [ -n "$REUSAR" ]; then
   rm -rf "$OUT/site" "$OUT/manifiesto.json" "$OUT/reporte-build.md" "$OUT/reporte-build.json" \
          "$OUT/reporte-test.md" "$OUT/reporte-test.json" "$OUT/captura-arranque.png" "$OUT/captura-final.png"
 fi

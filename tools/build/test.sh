@@ -33,6 +33,8 @@ fi
 [ -d "$1" ] || { avb_err "no existe la carpeta $1"; exit 2; }
 
 PY="$(avb_python)" || exit 2
+# Mientras se prueba, ningún build.sh rehace esta carpeta (QA-35).
+avb_ocupar "$(cd "$1" && pwd)" || exit 2
 
 # Carpeta temporal propia: el perfil de Chrome (avtest-chrome-*) cae dentro; al salir se cierra todo lo que la use.
 TMP_RUN="$(mktemp -d "${TMPDIR:-/tmp}/avtest-run.XXXXXX")"
@@ -45,6 +47,7 @@ limpiar_salida() {
   sleep 1
   pkill -KILL -f "user-data-dir=$TMP_RUN" 2>/dev/null || true
   rm -rf "$TMP_RUN"
+  avb_soltar
 }
 trap limpiar_salida EXIT
 trap 'exit 130' INT
