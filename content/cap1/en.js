@@ -1280,6 +1280,11 @@ window.AV_EN = {
  "Mis sellos": "My stickers",
  "uno por cada medalla que consigas": "one for every medal you earn",
  "aún sin conseguir": "not earned yet",
+ "Episodios": "Episodes",
+ "Capítulo 1": "Chapter 1",
+ "Episodio 2 · Un lugar para todos": "Episode 2 · A Place for Everyone",
+ "Episodio 3 · Más allá de la bahía": "Episode 3 · Beyond the Bay",
+ "Capítulo 5 · Las voces olvidadas": "Chapter 5 · The Forgotten Voices",
  "Pasa un obstáculo en Amazona Flight para compartir tu récord.": "Pass an obstacle in Amazona Flight to share your record.",
  // River Rush (src/game/river_rush.js, AC2): tarjetas, modalidades, marcador y resultados
  "River Rush": "River Rush",

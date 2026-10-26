@@ -54,6 +54,10 @@
   .modo { min-height: 96px; }
   .modo .modo-img { width: 36px; height: 36px; }
 }
+/* Episodios (AG2): enlaces bajo las tarjetas; cada uno abre su content pack (?pack=<id>) */
+.title-episodios { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+.title-episodios a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--sp-1) var(--sp-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 700; color: #fff; text-decoration: none; background: rgba(20, 12, 60, 0.55); }
+.title-episodios a:hover, .title-episodios a:focus-visible { background: rgba(20, 12, 60, 0.8); outline: 2px solid var(--gold); outline-offset: 2px; }
 /* Creador «corto» (primera vez desde el menú): nombre y plumaje; los accesorios se cambian luego en «Mi personaje» */
 #creator.creator-corto :is(#p-slots, .creator-side > .lbl:not(#p-name-lbl), .creator-side > .note) { display: none; }
 /* Vuelo libre: sin el panel de misiones ni la pista de teclas; el resto del HUD sigue */
