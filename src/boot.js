@@ -115,6 +115,8 @@
     const cargarAtardecer = aDemanda('src/game/atardecer.js', 'AVAtardecer');
     AV.atardecer = cargarAtardecer; AV.atardecerTest = o => cargarAtardecer().then(a => a.test(o));
     if (/[?&]atardecer=/.test(location.search)) cargarAtardecer().catch(() => {});
+    // Amazona Flight (C14, src/game/flight.js): prototipo oculto (fase 3 la deciden Kelvin y Fernando); ?mini=flight (al cerrar la portada) o AV.flight() lo abren; AV.flightTest()
+    const cargarFlight = aDemanda('src/game/flight.js', 'AVFlight'); AV.flight = () => cargarFlight().then(f => f.abrir()); AV.flightTest = o => cargarFlight().then(f => f.test(o)); if (/[?&]mini=flight\b/.test(location.search)) { const ir = () => setTimeout(() => AV.flight().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color
