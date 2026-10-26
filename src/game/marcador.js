@@ -137,15 +137,17 @@
     // ---------- HUD ----------
     const CSS = `
 :root { --i-reloj: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='13' r='8' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M12 8.5V13l3 2M9.5 2.5h5'/%3E%3C/svg%3E"); }
-#marcador { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 4px var(--sp-4); margin: var(--sp-2) 0 0; font: 700 var(--fs-sm)/1.2 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
+#quest { position: relative; }
+/* En una esquina del cuadro del objetivo, sin sumarle altura (así no empuja ni tapa nada) */
+#marcador { position: absolute; z-index: 1; top: var(--sp-3); right: var(--sp-4); display: flex; align-items: center; flex-wrap: nowrap; gap: 8px var(--sp-3); margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-display); color: var(--c-text); font-variant-numeric: tabular-nums; }
 #marcador[hidden] { display: none; }
 #marcador span { display: inline-flex; align-items: center; gap: 5px; }
-#marcador i { flex: none; width: 15px; height: 15px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; color: var(--c-eyebrow); }
+#marcador i { flex: none; width: 13px; height: 13px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; color: var(--c-eyebrow); }
 #marcador .mc-t i { --icon: var(--i-reloj); }
 #marcador .mc-p i { --icon: var(--i-star, none); }
 #marcador .mc-p.late { animation: mc-late .45s var(--ease-pop, ease-out); }
 #marcador .mc-pops { position: absolute; left: 0; right: 0; top: 100%; height: 0; pointer-events: none; }
-#marcador .mc-pop { position: absolute; left: 62px; top: 0; white-space: nowrap; font: 700 var(--fs-md)/1 var(--font-display); color: var(--gold, #ffd24a); text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 10px rgba(255, 210, 74, .6); animation: mc-sube 1.4s ease-out forwards; }
+#marcador .mc-pop { position: absolute; left: 24px; top: 0; white-space: nowrap; font: 700 var(--fs-md)/1 var(--font-display); color: var(--gold, #ffd24a); text-shadow: 0 2px 0 rgba(0, 0, 0, .55), 0 0 10px rgba(255, 210, 74, .6); animation: mc-sube 1.4s ease-out forwards; }
 #marcador .mc-pop small { font: 600 var(--fs-xs)/1 var(--font-body); color: var(--c-text); opacity: .85; }
 @keyframes mc-sube { 0% { opacity: 0; transform: translateY(-4px) scale(.8); } 15% { opacity: 1; transform: translateY(2px) scale(1.15); } 100% { opacity: 0; transform: translateY(26px) scale(1); } }
 @keyframes mc-late { 40% { transform: scale(1.25); } }
@@ -161,6 +163,12 @@
 #end-marcador .mc-dato small { font: 400 var(--fs-sm)/1.2 var(--font-body); color: var(--c-text-muted); }
 #end-marcador .mc-rec { margin: 0; font: 700 var(--fs-md)/1.3 var(--font-display); color: var(--c-eyebrow); }
 #end-marcador .mc-nota { margin: 0; font-size: var(--fs-sm); color: var(--c-text-muted); }
+@media (max-width: 560px) {
+  #marcador { top: auto; bottom: 9px; right: 34px; }
+  #quest.abierto #marcador { top: 10px; bottom: auto; }
+  #quest:not(.abierto):has(#marcador .mc-t:not([hidden])) #steps li.now { padding-right: 96px; }
+  #quest:not(.abierto):has(#marcador .mc-t[hidden]) #steps li.now { padding-right: 56px; }
+}
 @media (prefers-reduced-motion: reduce) { #marcador .mc-pop { animation: mc-fundir 1.4s linear forwards; } #marcador .mc-p.late { animation: none; } @keyframes mc-fundir { 0%, 70% { opacity: 1; } 100% { opacity: 0; } } }
 `;
     if (!document.getElementById('marcador-css')) { const st = document.createElement('style'); st.id = 'marcador-css'; st.textContent = CSS; document.head.appendChild(st); }
@@ -506,7 +514,7 @@
         base(); M().t = 100; S.complete = true; S.events.push({ key: 'ChapterCompleted', t: 1 }); paso(0.016);
         let blob = null;
         const pr = compartir({ preparar: () => new Blob(['x'], { type: 'image/png' }), azar: () => 0.5, descargar: async b => { blob = b; return 'descargado'; }, movil: false });
-        await new Promise(r => setTimeout(r, 30));
+        for (let i = 0; i < 200 && !($('rec-puerta') && !$('rec-puerta').hidden); i++) await new Promise(r => setTimeout(r, 25));
         const pu = $('rec-puerta');
         check('Compartir abre la puerta para adultos antes de compartir nada', !!pu && !pu.hidden && blob === null);
         if (pu) pu.querySelector('#rp-no').click();
