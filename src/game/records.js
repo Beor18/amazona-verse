@@ -72,6 +72,7 @@
       sinCriadero: ['Aún no hay huevos. ¡Abre el criadero!', 'No eggs yet. Open the hatchery!'],
       casa: ['Récords de la casa', 'House records'], tu: ['tú', 'you'], casaNota: ['Cuando jueguen varias cotorras en este dispositivo, aquí verás el mejor récord de cada una.', 'When several parrots play on this device, you will see each one\'s best record here.'],
       carreraCorta: ['Carrera', 'Race'], tormentaCorta: ['Tormenta', 'Storm'],
+      rescate: ['¡Salva al pichón!', 'Save the Parrot'], // src/game/rescate.js
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
@@ -106,6 +107,7 @@
     const especieDe = s => { const sp = s && s.profile && s.profile.look && s.profile.look.species; return typeof sp === 'string' && /^[a-z]{3,24}$/.test(sp) ? sp : null; };
 
     const MEDALLAS_RIO = ['oro', 'plata', 'bronce'];
+    const rescateLimpio = z => ({ mejor: num(z.mejor), medalla: MEDALLAS_RIO.includes(z.medalla) ? z.medalla : null, oros: ent(z.oros), jugadas: ent(z.jugadas) }); // src/game/rescate.js
     function retosDe(d) {
       const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {}, b = ok && esObj(d.banquete) ? d.banquete : {};
       return {
@@ -167,6 +169,7 @@
         const nombre = limpiarNombre(n); if (!nombre || !esObj(e) || out.jugadores[nombre] || Object.keys(out.jugadores).length >= MAX_CASA) continue;
         const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta, rio: e.rio, banquete: e.banquete });
         out.jugadores[nombre] = { banquete: r.banquete, carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
+        if (esObj(e.rescate)) out.jugadores[nombre].rescate = rescateLimpio(e.rescate); // src/game/rescate.js
       }
       return out;
     }
@@ -184,6 +187,7 @@
       const ids = cat.vivas.map(e => e.id).concat(Object.keys(cat.todas).filter(id => !cat.vivas.some(e => e.id === id)));
       return {
         nombre: nombreDe(s), retos: retosDe(leerJSON(CLAVE.retos)), historia: historiaDe(s), diario: diarioDe(s), criadero: cr,
+        rescate: (casa.jugadores[nombreDe(s)] || {}).rescate || null, // src/game/rescate.js
         especies: { total: cat.vivas.length, vistas: ids.filter(id => vistas.has(id)).map(id => ({ id, nombre: nombreEspecie(id, cat) })) },
         casa: Object.entries(casa.jugadores).sort(ordenCasa).map(([nombre, e]) => ({ nombre, carrera: e.carrera, tormenta: e.tormenta })),
       };
@@ -260,6 +264,13 @@
         const pts = typeof r.puntos === 'number' && r.puntos > 0 && r.puntos <= 1e5 ? Math.round(r.puntos) : null, fr = Number.isInteger(r.frutos) && r.frutos > 0 && r.frutos <= 999 ? r.frutos : 0;
         if (pts && (!b.mejor || pts > b.mejor)) b.mejor = pts;
         b.frutos = Math.max(b.frutos, fr);
+      } else if (r.modo === 'rescate') { // src/game/rescate.js (como el río: mejor tiempo y mejor medalla)
+        const z = e.rescate || (e.rescate = rescateLimpio({})); z.jugadas++;
+        const ms = typeof r.ms === 'number' && r.ms >= 1000 && r.ms <= 36e5 ? Math.round(r.ms) : null;
+        if (r.llego === true && ms) {
+          if (!z.mejor || ms < z.mejor) z.mejor = ms;
+          if (MEDALLAS_RIO.includes(r.medalla)) { if (!z.medalla || MEDALLAS_RIO.indexOf(r.medalla) < MEDALLAS_RIO.indexOf(z.medalla)) z.medalla = r.medalla; if (r.medalla === 'oro') z.oros++; }
+        }
       } else return false;
       sumarVistas(libro, [especieDe(sOpc || fuenteS())]);
       guardarCasa(libro);
@@ -362,8 +373,13 @@
         ? `<div class="rec-grande">${medalla(mb, '★')}<div><b class="rec-num">${b.mejor} <small>${esc(tx('puntos'))}</small></b><small>${esc(tx('mejorPuntos'))}${mb ? ' · ' + esc(medallaTxt(mb)) : ''}</small></div></div>
            <dl>${b.frutos ? dato(tx('frutos'), b.frutos) : ''}${dato(tx('jugadas'), b.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${b.jugadas ? `<dl>${dato(tx('jugadas'), b.jugadas)}</dl>` : ''}`;
+      const z = d.rescate; // src/game/rescate.js
+      const rescate = z && z.mejor
+        ? `<div class="rec-grande">${medalla(z.medalla, z.medalla ? '★' : null)}<div><b class="rec-num">${reloj(z.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}${z.medalla ? ' · ' + esc(tx(z.medalla)) : ''}</small></div></div>
+           <dl>${dato(tx('jugadas'), z.jugadas)}</dl>`
+        : `<p>${esc(tx('sinRecord'))}</p>${z && z.jugadas ? `<dl>${dato(tx('jugadas'), z.jugadas)}</dl>` : ''}`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article></div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article></div></section>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;

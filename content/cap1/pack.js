@@ -73,11 +73,12 @@
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
       // marcador: cronómetro, puntuación y final del capítulo (src/game/marcador.js); null en las partidas viejas.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador'],
+      // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null,
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [],
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
           inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
@@ -130,6 +131,9 @@
     // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Iguaca (es un
     // personaje), las paradas de aprendizaje y los grupos de la escena de Kelvin (nombres internos de assets/data/mapa_cap1.js).
     descubrir: { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] },
+    // Fauna que reacciona (src/game/fauna.js, BOSQUE_VIVO_DISENO ficha 2): datos y álbum en este archivo, que se baja al cargar la fauna.
+    // S.fauna: ids de los animales ya observados (claves del guardado).
+    faunaDatos: 'content/cap1/fauna.js',
     // Diálogos del guion (dialogos_cap1.js, generado desde dialogos_cap1.json)
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,
@@ -171,6 +175,15 @@
         }, opciones: ['Volé tan rápido que el viento me pidió que esperara.', 'Récord nuevo. Mañana lo rompo otra vez.', 'Mis plumas todavía van a toda velocidad.'] },
         { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
           opciones: ['Esta es mi mejor pose. Sin discusión.', 'Lista para la foto: plumas peinadas y todo.', '¡Digan «coquí»!'] },
+        // Fauna que reacciona (src/game/fauna.js): la foto es la del momento (Vittata con el animal al lado)
+        { id: 'flexiones', img: 'fauna_flexiones', needs: 'AnoleContest', texto: 'Concurso de flexiones: saludé a un lagartijo y me contestó con flexiones.',
+          opciones: ['El lagartijo ganó. Yo solo tengo alas, no brazos.', 'Le dije hola y me enseñó su abanico amarillo.', 'Mañana entreno y vuelvo a retarlo.'] },
+        { id: 'mariposa', img: 'fauna_mariposa', needs: 'ButterflyOnBeak', texto: 'Me quedé quieta junto a las flores y una mariposa se posó en mi pico.',
+          opciones: ['No me moví ni un poquito. Bueno, un poquito.', 'Mi pico es la mejor percha del bosque.', 'Me dio cosquillas y no estornudé.'] },
+        { id: 'coro_coquies', img: 'fauna_coro', needs: 'CoquiChorusWild', texto: 'Canté con los coquíes y el coro se descontroló.',
+          opciones: ['Co-quí, co-quí… y yo desafinando.', 'Los coquíes cantan mejor que yo, pero yo canto más alto.', 'El concierto más ruidoso del bosque.'] },
+        { id: 'boa', img: 'fauna_boa', needs: 'BoaMet', texto: 'Una boa dormía en la rama. Me miró un momento y siguió durmiendo.',
+          opciones: ['Le dije buenas tardes, muy bajito.', 'Ella en su rama y yo en la mía. Respeto.', 'La siesta de la boa es muy seria.'] },
       ],
       // Viñeta final: el símbolo de los 36 arriba a la derecha y el plano del bote abajo a la derecha (el medallón del jugador va abajo a la izquierda)
       decorar: (x, p, b, ih, G) => {

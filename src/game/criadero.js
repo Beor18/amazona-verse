@@ -100,6 +100,7 @@ AVE.module('criadero', function (G) {
     if (c.fichas) return otorgados('ficha').length >= c.fichas;
     if (c.preguntas) return otorgados('pregunta').length >= c.preguntas;
     if (c.liberadas) return st.liberadas >= c.liberadas;
+    if (c.rescates) return ((G.S && G.S.rescates) || 0) >= c.rescates; // src/game/rescate.js
     if (c.xpAprender) return st.fuentes.aprender + st.fuentes.explorar >= c.xpAprender;
     if (c.todas) return c.todas.every(cumple);
     return false;
@@ -151,6 +152,7 @@ AVE.module('criadero', function (G) {
   // (src/game/lugares.js) da poca XP de «explorar»; si huevos.js define la fuente, manda la suya.
   const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } },
     fruta: { xp: 5, grupo: 'cuidar', nombre: { es: 'Fruto llevado al nido', en: 'Fruit brought to the nest' } } }; // src/game/banquete.js
+  FUENTES_EXTRA.rescate = { xp: 20, grupo: 'cuidar', nombre: { es: 'Pichón devuelto al nido', en: 'Chick returned to the nest' } }; // src/game/rescate.js (solo los 3 primeros)
   const fuenteDe = tipo => (D() && D().xp.fuentes[tipo]) || FUENTES_EXTRA[tipo] || null;
   // Evento de aprendizaje del juego (también lo usan los botones del prototipo)
   function dar(tipo, id, intento) {
@@ -171,6 +173,7 @@ AVE.module('criadero', function (G) {
   }
   // Durante las baterías automáticas (G.quiet) el criadero no registra nada: las pruebas no ensucian la cría del niño
   G.on('aprendizaje', d => { if (!G.quiet && d && d.tipo && d.id != null) dar(d.tipo, d.id, d.intento); });
+  G.on('rescates', () => { if (!D()) return; const n = Object.keys(st.capsulas).length; revisarCapsulas(); if (Object.keys(st.capsulas).length !== n) { guardar(); if (abierto()) { pintar(); procesarAvisos(); } } }); // src/game/rescate.js
 
   // Cuidado: gasta una carga, da poca XP y una animación. Sin cargas: no castiga, invita a aprender.
   function cuidar(accion) {
@@ -1566,7 +1569,7 @@ AVE.module('criadero', function (G) {
     try {
       await datos();
       const H = D();
-      check('Datos: 8 cápsulas y 4 etapas', H && H.huevos.length === 8 && H.etapas.length === 4, H && H.huevos.map(h => h.id).join(','));
+      check('Datos: 9 cápsulas y 4 etapas', H && H.huevos.length === 9 && H.etapas.length === 4, H && H.huevos.map(h => h.id).join(','));
       check('Datos: niveles crecientes', H.xp.niveles.every((v, i, a) => i === 0 || v > a[i - 1]));
       check('Curva: bebé 1–5, juvenil 6–15, adulto 16+', etapaDeNivel(nivelDe(0)) === 'bebe' && nivelDe(274) === 5 && etapaDeNivel(nivelDe(275)) === 'juvenil' && nivelDe(1574) === 15 && etapaDeNivel(nivelDe(1575)) === 'adulto', [nivelDe(274), nivelDe(275), nivelDe(1574), nivelDe(1575)].join(','));
       const sinAzar = H.huevos.every(h => h.obtener && (h.obtener.defecto || h.obtener.cap1) && !JSON.stringify(h).match(/precio|probabilidad|azar|aleatori|random|price/i));
