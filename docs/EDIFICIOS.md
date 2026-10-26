@@ -229,6 +229,33 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 - No hay otra ciudad dentro del `.max`. Releerlo no añade edificios. El `.max` de 2,4 GB no se abre: no hay 3ds Max.
 - Palmeras, Archmodels, hierba y losas pintadas vienen de carpetas `Torrents/` o del plugin. No son el kit y la licencia no está confirmada. No se copiaron.
 - `canoa.jpg` sigue en 512. La foto de Drive es la misma fuente, y la licencia sigue sin verificar.
-- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal.
+- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal. No se fuerzan.
+
+## Lectura del .max sin 3ds Max (26-oct-2026, noche)
+
+No hay 3ds Max ni Blender en esta máquina (el `python3.11` de Blender es un enlace al Python del sistema). El `.max` tampoco lo abre Assimp. Se releyó con el lector OLE que ya está en el repo (`tools/blender/edificios_maxscene.py` y `edificios_maxindex.py`): el flujo `Scene` (2,4 GB), 27 885 objetos, 1 828 nodos, 1 516 Editable Poly, 293 Dummy, 17 Box, 2 Editable Mesh y 15 778 860 caras de malla base. Son las mismas 377 raíces. No aparece un edificio que no esté ya en el catálogo. `LargeJ_SculptMd` sigue siendo una caja de 12 caras y se deja fuera. Las losas, bloques y plataformas son primitivas Box del propio archivo: no hay una losa labrada que copiar. La canoa es un Editable Poly de 54 caras con TurboSmooth; el juego ya tiene las 432 de esa suavidad y no se rehizo (hace falta Blender para el modificador). `canoa.jpg` no se tocó.
+
+Los `_hd` que ya estaban usan las 16 celdas Ancient y las 10 Savage (UV2 decodificada con el meshopt del repo). El ligero sigue en la paleta corta, sin normales.
+
+Lo que el ligero no dibujaba y el `.max` sí tiene, y ahora entra como `_hd` (misma escala y pivote que el modelo ligero; la lona o el muro que el ligero conservó encaja a menos de 5 cm):
+
+| modelo | tris del ligero → `_hd` | qué vuelve |
+|---|---|---|
+| ruina_torre_b | 948 → 1086 (antes el `_hd` tenía 417) | las 543 caras del `.max`: stoneM, wallL, pillarsM, decoM |
+| campamento_a | 702 → 34 036 | sogas (Rope), picos y corteza |
+| campamento_c | 1375 → 3 282 | lona y corteza quemada |
+| campamento_f | 921 → 66 500 | sogas |
+| toldo_pequeno | 1176 → 3 282 | la lona entera (el ligero había quedado en una lámina de unos 7 cm) |
+| tienda_pequena | 942 → 47 196 | sogas |
+| muro_roca | 871 → 34 140 | sogas |
+| corral | 4017 → 253 910 | sogas, barro y lona. Siete caras de `BuildingMesh` no tenían bitmap del kit y no se copiaron |
+| monumento_b | 1588 → 136 457 | sogas y RockSmooth. La malla entera (355 733 tris) pasa de 16 MB; se agrupó a 8,5 cm para caber |
+| monumento_d | 1905 → 322 423 | sogas y RockSmooth |
+| monumento_e | 3198 → 140 900 | sogas y tablas |
+| monumento_g | 2864 → 203 558 | sogas |
+| carpa_a, _c, _d, _e, _f | ver catálogo | la lona del `.max`, con sogas donde la pieza las trae |
+| carpa_b | 925 → 188 504 | sogas |
+
+No entró `carpa_g`: la única pieza que quedaba en el `.max` mide unas 2,5 veces el modelo del juego y no encaja en su sitio. El muelle no tiene instancias; es la misma malla que `empalizada`, que ya tiene `_hd`. Los gloss de Savage siguen fuera. Palmeras, Archmodels y el scatter del terreno no se copiaron (licencia no confirmada). El `.max` del terreno no trae edificios ni píxeles nuevos.
 - Rope (3600×1375) y la difusa de WoodHewn (3572) se estiran a la celda cuadrada, como ya hacía el pipeline.
 - El `.max` del terreno no trae píxeles nuevos. No se integró.
