@@ -444,7 +444,11 @@ window.AVBanquete = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
     const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-    const comparable = d => { const o = {}; for (const k of SV.KEYS) o[k] = d && d[k]; return JSON.stringify(o); };
+    // Otros módulos (minimapa, marcador, rareza…) escriben en G.S por su cuenta mientras pasan cuadros: una pasada de calibración con el
+    // Banquete apagado descubre qué claves cambian solas; esas se guardan, se excluyen de la comparación estricta y se restauran al final
+    const volatiles = new Set(), copiaVol = {};
+    const comparable = d => { const o = {}; for (const k of SV.KEYS) if (!volatiles.has(k)) o[k] = d && d[k]; return JSON.stringify(o); };
+    const restaurarVol = () => { for (const k of volatiles) { const v = JSON.parse(copiaVol[k]); if (Array.isArray(S[k]) && Array.isArray(v)) S[k].splice(0, S[k].length, ...v); else if (S[k] && typeof S[k] === 'object' && v && typeof v === 'object') { for (const q of Object.keys(S[k])) delete S[k][q]; Object.assign(S[k], v); } else S[k] = v; } };
     const realAntes = claves.map(leer); let sAntes = comparable(S); const propioAntes = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
     const guard = { quiet: G.quiet, pos: Object.assign({}, S.pos), flying: M.flying, grounded: M.grounded, swimming: M.swimming, llevo: B.llevo, dato: B.datoVisto, recogidos: B.recogidos, entregados: B.entregados, comidos: B.comidos, pausa: G.pausa.activa() };
     const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
@@ -458,6 +462,11 @@ window.AVBanquete = function (G) {
       G.quiet = true;
       await preparado;
       if (!window.AVRetos) await AVE.assets.script('src/game/retos.js'); // antes de la instantánea: mientras llega pasan cuadros y S.clock avanza
+      { // calibración: los mismos disparadores de la prueba (cuadros de simulación y ganchos) con el Banquete apagado
+        const listo0 = B.listo, a0 = {}; for (const k of SV.KEYS) a0[k] = JSON.stringify(S[k]);
+        B.listo = false; tick(0.5); G.emit('update', 0.016, false, true); G.emit('render', 0.016); B.listo = listo0;
+        for (const k of SV.KEYS) if (JSON.stringify(S[k]) !== a0[k] && k !== 'pos' && k !== 'facing') { volatiles.add(k); copiaVol[k] = JSON.stringify(S[k]); }
+      }
       for (let i = 0; i < claves.length; i++) realAntes[i] = leer(claves[i]);
       sAntes = comparable(S);
       // ----- Frutos en el mundo -----
@@ -575,10 +584,11 @@ window.AVBanquete = function (G) {
       B.datoVisto = guard.dato; B.llevo = guard.llevo; B.recogidos = guard.recogidos; B.entregados = guard.entregados; B.comidos = guard.comidos; B.reaccion = 0; if (G.actores && G.actores.stopEmote) G.actores.stopEmote(); pintarChip();
       for (const fr of mundo.lista) { fr.activo = true; fr.regen = 0; }
       Object.assign(S.pos, guard.pos); M.flying = guard.flying; M.grounded = guard.grounded; M.swimming = guard.swimming;
+      restaurarVol();
       G.quiet = guard.quiet; console.error = ce;
       apartados.forEach(id => { $(id).hidden = false; });
     }
-    check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
+    check('La partida de la historia (G.S) queda intacta (el Banquete no escribe en ella)', comparable(S) === sAntes, volatiles.size ? 'otros módulos escriben solos en: ' + [...volatiles].join(', ') + ' (guardadas y restauradas)' : 'ninguna clave cambia sola');
     check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
     check('El mundo no queda en pausa', G.pausa.activa() === guard.pausa);
     const nuevos = (window.__aveErrores || []).slice(errores0);
