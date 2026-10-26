@@ -277,11 +277,14 @@ window.AVBanquete = function (G) {
   G.interaccion.add(itAccion);
 
   G.on('update', (dt, busy) => {
-    if (!B.listo || enRetos()) { itAccion.fr = null; return; }
+    if (!B.listo || enRetos()) { itAccion.fr = null; itAccion.r = ALCANCE; return; }
     // Regeneración
     for (const fr of mundo.lista) if (!fr.activo && fr.regen && S.clock >= fr.regen) { fr.activo = true; fr.pop = 1; fr.regen = 0; }
     if (busy) { itAccion.fr = null; return; }
-    const fr = mundo.cerca(S.pos.x, S.pos.y + 0.7, S.pos.z, ALCANCE, ALCANCE_Y);
+    // Vista de la cría (rareza.js): ver y recoger frutos un poco más lejos. En Retos y duelos mult() es 1.
+    const mVista = G.rareza ? G.rareza.mult('vista') : 1;
+    itAccion.r = ALCANCE * mVista;
+    const fr = mundo.cerca(S.pos.x, S.pos.y + 0.7, S.pos.z, itAccion.r, ALCANCE_Y * mVista);
     if (fr && M.flying) { recogerMundo(fr, false); itAccion.fr = null; }
     else { itAccion.fr = fr; if (fr) { itAccion.x = fr.x; itAccion.z = fr.z; } }
     if (B.llevo > 0) { const d = destino(); if (d && Math.hypot(S.pos.x - d.x, S.pos.z - d.z) < 4.2 && S.pos.y - H(d.x, d.z) < 7) entregar(d); }
@@ -537,6 +540,45 @@ window.AVBanquete = function (G) {
       const frP2 = mundo.lista.find(fr => fr.activo && fr.tipo === 'palma');
       if (frP2) { S.pos.x = frP2.x + 0.4; S.pos.z = frP2.z; S.pos.y = frP2.y - 0.7; G.emit('update', 0.016, false, true); }
       check('El dato no se repite', !G.ui.cardOpen);
+      // Vista de la cría: el radio crece; con Retos (clase retos-on) mult() es 1 y no se recoge de más lejos
+      if (G.rareza && G.rareza.mult) {
+        const frV = mundo.lista.find(f => f.tipo === 'tabonuco' && f.activo) || mundo.lista.find(f => f.activo);
+        if (!frV) check('La vista ve frutos un poco más lejos', false, 'sin fruto');
+        else {
+          const snapF = mundo.lista.map(f => ({ f, activo: f.activo, regen: f.regen }));
+          const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fly0 = M.flying, gr0 = M.grounded, sw0 = M.swimming, ll0 = B.llevo, rec0 = B.recogidos, ent0 = B.entregados;
+          const forz0 = G.rareza.forzada, retos0 = document.body.classList.contains('retos-on');
+          const lejos = ALCANCE + 0.3;
+          const aislar = () => { for (const f of mundo.lista) if (f !== frV) f.activo = false; frV.activo = true; frV.regen = 0; };
+          const poner = (d, vuela) => {
+            aislar();
+            S.pos.x = frV.x + d; S.pos.z = frV.z; S.pos.y = frV.y - 0.7;
+            M.flying = vuela; M.grounded = !vuela; M.swimming = false; B.llevo = 0;
+          };
+          let noComun = false, siRara = false, noReto = false, vePosada = false;
+          try {
+            document.body.classList.remove('retos-on');
+            G.rareza.forzada = 'comun'; poner(lejos, true); G.emit('update', 0.016, false, true);
+            noComun = frV.activo;
+            G.rareza.forzada = 'rara'; poner(lejos, true); G.emit('update', 0.016, false, true);
+            siRara = !frV.activo && Math.abs(G.rareza.mult('vista') - 1.2) < 1e-6;
+            document.body.classList.add('retos-on');
+            G.rareza.forzada = 'legendaria'; poner(lejos, true); G.emit('update', 0.016, false, true);
+            noReto = frV.activo && G.rareza.mult('vista') === 1;
+            document.body.classList.remove('retos-on');
+            G.rareza.forzada = 'legendaria'; poner(ALCANCE * 1.5 - 0.25, false); G.emit('update', 0.016, false, true);
+            vePosada = frV.activo && itAccion.fr === frV && Math.abs(itAccion.r - ALCANCE * 1.5) < 1e-6;
+          } finally {
+            for (const s of snapF) { s.f.activo = s.activo; s.f.regen = s.regen; }
+            S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z;
+            M.flying = fly0; M.grounded = gr0; M.swimming = sw0; B.llevo = ll0; B.recogidos = rec0; B.entregados = ent0;
+            G.rareza.forzada = forz0;
+            document.body.classList.toggle('retos-on', retos0);
+            itAccion.fr = null; itAccion.r = ALCANCE;
+          }
+          check('La vista ve frutos un poco más lejos (rara ×1,2); en Retos el radio no crece', noComun && siRara && noReto && vePosada, `comun ${noComun} rara ${siRara} reto ${noReto} posada ${vePosada}`);
+        }
+      } else check('Rareza disponible para la vista de frutos', false, 'sin G.rareza');
       // ----- Minijuego «¡Banquete!» -----
       api = window.AVRetos(G);
       api.pruebas.prueba(true);
