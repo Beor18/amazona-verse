@@ -65,6 +65,7 @@
     let marcador = null;
     const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
     AV.marcadorTest = o => cargarMarcador().then(m => m.test(o));
+    if (G.idioma && G.idioma.test) AV.idiomaTest = o => G.idioma.test(o); // src/game/idioma.js
     alPrimerGesto(cargarMarcador); // cuenta desde que el jugador empieza (Jugar), no desde la portada
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());

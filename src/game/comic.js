@@ -227,7 +227,7 @@ AVE.module('comic', function (G) {
     ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
   }
   function wrapLines(ctx, text, maxW) {
-    const words = String(text).split(/\s+/); const lines = []; let line = '';
+    const words = String(G.idioma ? G.idioma.tr(text) : text).split(/\s+/); const lines = []; let line = ''; // U1: el pie de viñeta sale en el idioma elegido
     for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
     if (line) lines.push(line);
     return lines;

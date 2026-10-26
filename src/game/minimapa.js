@@ -336,11 +336,12 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       }
       const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'obj' ? rM * 1.15 : rM;
       marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo]);
-      if (grande && tipo === 'lugar' && m.nombre) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
+      const nomLugar = G.idioma ? G.idioma.tr(m.nombre) : m.nombre; // U1: nombre del lugar en el idioma elegido
+      if (grande && tipo === 'lugar' && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
         const fs = Math.round(11 * fsk() * k); ctx.font = '700 ' + fs + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineWidth = 3.5 * k; ctx.lineJoin = 'round';
-        const tw = ctx.measureText(m.nombre).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
+        const tw = ctx.measureText(nomLugar).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
         if (!rotulos.some(c => caja[0] < c[2] && caja[2] > c[0] && caja[1] < c[3] && caja[3] > c[1])) {
-          rotulos.push(caja); ctx.strokeStyle = 'rgba(10,20,30,.9)'; ctx.strokeText(m.nombre, lx, y + rM); ctx.fillStyle = '#fff'; ctx.fillText(m.nombre, lx, y + rM);
+          rotulos.push(caja); ctx.strokeStyle = 'rgba(10,20,30,.9)'; ctx.strokeText(nomLugar, lx, y + rM); ctx.fillStyle = '#fff'; ctx.fillText(nomLugar, lx, y + rM);
         }
       }
     }
