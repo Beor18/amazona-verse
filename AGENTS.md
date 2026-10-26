@@ -2,14 +2,31 @@
 
 Las reglas completas están en `CLAUDE.md` y valen igual para todos los agentes, no solo para Claude. Léelo antes de tocar nada. Aquí va lo mínimo para trabajar **a la vez** que otros agentes sin pisarse.
 
+## Modo continuo (coordinación sin intermediarios)
+Los agentes se coordinan solos por dos archivos: `docs/equipo/TRABAJO_SIMULTANEO.md` (el tablero) y `docs/equipo/PEDIDOS.md` (los mensajes). Kelvin no hace de puente. Repite este ciclo hasta que no te queden tareas:
+1. Lee `PEDIDOS.md`. Contesta o haz lo que vaya dirigido a ti, sobre todo los errores que la revisión te devuelva.
+2. En el tablero, toma la **siguiente tarea libre de tu columna «Para»**: Grok, las G; Claude, las C. Apúntate (quién, hora, «en curso») y haz commit solo de esa línea.
+3. Hazla con todas las pruebas en verde y haz commit solo de tus archivos.
+4. Márcala «hecha» con el commit y una línea de resultado, y vuelve al paso 1.
+
+La sesión coordinadora de Claude vigila los commits nuevos, prueba y publica sola. Si algo falla, te lo deja en `PEDIDOS.md`.
+
 ## Antes de empezar
-1. Abre `docs/equipo/TRABAJO_SIMULTANEO.md`, elige una tarea libre y **apúntate**: tu nombre de agente, la hora y los archivos que vas a tocar. Haz un commit solo de esa línea antes de programar.
-2. Si un archivo ya está apuntado por otro agente, **no lo edites**. Pídelo en `docs/equipo/PEDIDOS.md` o elige otra tarea.
-3. `git status` debe salir limpio en tus archivos. Si ves cambios de otro, no los toques (nada de `checkout`, `reset`, `stash` ni `restore` sobre archivos ajenos).
+1. Si un archivo ya está apuntado por otro agente en una tarea «en curso», **no lo edites**. Pídelo en `PEDIDOS.md` y sigue con otra parte.
+2. Si ves cambios de otro en `git status`, no los toques: nada de `checkout`, `reset`, `stash` ni `restore`.
 
 ## Mientras trabajas
 - **Rama:** solo `main`. Sin ramas, worktrees ni PR.
-- **Commits pequeños** y solo de tus rutas: `git add <ruta> <ruta>` y después `git commit`. Nunca `git add -A` ni `git add .`.
+- **Commits con índice temporal (obligatorio).** Otros agentes hacen commit a la vez y el índice normal de git puede ir atrasado. Un `git commit` normal puede deshacer sin querer el trabajo de otros.
+  ```bash
+  T=$(mktemp)
+  GIT_INDEX_FILE=$T git read-tree HEAD
+  GIT_INDEX_FILE=$T git add <tus rutas>
+  GIT_INDEX_FILE=$T git diff --cached --stat   # comprueba que solo salen tus archivos
+  GIT_INDEX_FILE=$T git commit -m "…"
+  rm -f $T
+  ```
+  - Nunca `git add -A` ni `git add .`.
   - Firma el mensaje con tu modelo, por ejemplo: `Co-Authored-By: Grok <noreply@x.ai>`.
 - **Pruebas antes de cada commit de código** (Mac): `tools/build/build.sh HEAD tools/build/salida/<tu-tarea>-<sha>` (carpeta propia) y `tools/build/test.sh tools/build/salida/<tu-tarea>-<sha>/ --extra`. Todas las baterías en verde y 0 errores de consola.
 - **Si trabajas desde otra computadora:** `git pull --rebase` antes de empezar y `git push` solo cuando las pruebas pasen.
