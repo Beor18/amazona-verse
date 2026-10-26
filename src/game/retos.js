@@ -1644,7 +1644,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('Ranking: una partida de prueba nunca publica (ni abre el panel ni llama a la red)', r1 === 'prueba' && llamadas === 0 && !rk.abrirRank());
           check('Ranking: el botón no sale en las pruebas', P.datosRanking('tormenta', { modo: 'tormenta', puntos: 900 }, { tormenta: { mejor: 900 } }) === null);
           const envios = []; const falso = (url, o) => { envios.push({ url, o }); return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true, puesto: 2, top: [{ puesto: 1, alias: 'Coquí Veloz 7', valor: 1200 }, { puesto: 2, alias: 'Cotorra Feliz 12', valor: 900 }, { puesto: 3, alias: 'Iguaca Sabio 3', valor: 800 }, { puesto: 4, alias: 'Manatí Ágil 9', valor: 100 }] }) }); };
-          const p1 = rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true, fetch: falso }), panel = document.getElementById('rec-rank');
+          let panel; const p1 = rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true, fetch: falso }); panel = document.getElementById('rec-rank');
           check('Ranking: el panel abre con tres desplegables (sin texto libre) y «otro al azar»', rk.abrirRank() && !panel.hidden && panel.querySelectorAll('select').length === 3 && !panel.querySelector('input, textarea') && !!panel.querySelector('#rk-azar'));
           const alias0 = panel.querySelector('#rk-alias').textContent; panel.querySelector('#rk-azar').click();
           check('Ranking: el apodo es «Animal Adjetivo NN» de las listas exactas', new RegExp('^(' + rk.ANIMALES.join('|') + ') (Veloz|Valiente|Curioso|Brillante|Alegre|Audaz|Sabio|Feliz|Ágil|Sereno) ([1-9]\\d?)$').test(panel.querySelector('#rk-alias').textContent) && alias0.length > 5);
@@ -1653,7 +1653,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('Ranking: envía reto, valor, dur_ms, alias y un dispositivo aleatorio (nada personal)', envios.length === 1 && /amazona-records$/.test(envios[0].url) && cuerpo.reto === 'tormenta' && cuerpo.valor === 900 && cuerpo.dur_ms === 60000 && /^[a-f0-9]{32}$/.test(cuerpo.dispositivo) && cuerpo.alias === panel.querySelector('#rk-alias').textContent && Object.keys(cuerpo).sort().join() === 'alias,dispositivo,dur_ms,reto,valor', JSON.stringify(cuerpo));
           check('Ranking: muestra el puesto y solo el top 3, y el enlace «Ver el top»', /2/.test(panel.querySelector('#rk-res').textContent) && panel.querySelectorAll('.rk-top li').length === 3 && panel.querySelector('#rk-ver').href === 'https://amazonaverse.com/#top-records');
           panel.querySelector('#rk-no').click(); check('Ranking: cierra y devuelve «publicado»', (await p1) === 'publicado' && !rk.abrirRank());
-          const p2 = rk.publicarRanking({ reto: 'flight', valor: 30, dur_ms: 40000, prueba: true, fetch: () => Promise.reject(new Error('sin red')) });
+          const p2 = rk.publicarRanking({ reto: 'flight', valor: 30, dur_ms: 40000, prueba: true, fetch: () => Promise.reject(new Error('sin red')) }); panel = document.getElementById('rec-rank');
           check('Ranking: el apodo se recuerda en el dispositivo', panel.querySelector('#rk-alias').textContent === cuerpo.alias);
           panel.querySelector('#rk-pub').click(); await esperar(60);
           check('Ranking: sin red, mensaje amable y el juego sigue (se puede reintentar)', /no hay conexión/i.test(panel.querySelector('#rk-res').textContent) && !panel.querySelector('#rk-pub').disabled);

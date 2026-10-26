@@ -350,6 +350,7 @@
 #records .rec-pie .btn[aria-disabled="true"] { filter: grayscale(.6); opacity: .6; }
 #rec-puerta { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: var(--sp-3); background: rgba(6, 16, 12, .78); touch-action: none; }
 #rec-puerta .rp-box { width: min(420px, 100%); max-height: 100%; overflow: auto; padding: var(--sp-5); text-align: center; animation: pop-in var(--dur-3) var(--ease-pop); }
+#rec-rank[hidden] { display: none; }
 #rec-rank { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; padding: var(--sp-3); background: rgba(6, 16, 12, .78); }
 #rec-rank .rk-box { width: min(440px, 100%); max-height: 100%; overflow: auto; padding: var(--sp-5); text-align: center; animation: pop-in var(--dur-3) var(--ease-pop); } #rec-rank .rk-box:focus { outline: none; }
 #rec-rank h2 { margin: 0 0 var(--sp-2); font: 700 var(--fs-xl)/1.2 var(--font-display); color: var(--c-ink); } #rec-rank p { margin: 0 0 var(--sp-3); color: var(--c-ink-muted); }
@@ -633,8 +634,8 @@
       p = document.createElement('div'); p.id = 'rec-rank'; p.hidden = true;
       p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'rk-t');
       p.innerHTML = `<div class="rk-box paper" tabindex="-1"><h2 id="rk-t"></h2><p id="rk-texto"></p>
-        <div class="rk-sel" id="rk-sel"><label><span id="rk-la"></span><select id="rk-a"></select></label><label><span id="rk-lj"></span><select id="rk-j"></select></label><label><span id="rk-ln"></span><select id="rk-n"></select></label></div>
-        <p class="rk-alias" id="rk-alias" aria-live="polite"></p>
+        <div class="rk-sel" id="rk-sel"><label><span id="rk-la"></span><select id="rk-a" data-no-tr></select></label><label><span id="rk-lj"></span><select id="rk-j" data-no-tr></select></label><label><span id="rk-ln"></span><select id="rk-n"></select></label></div>
+        <p class="rk-alias" id="rk-alias" aria-live="polite" data-no-tr></p>
         <div class="rk-fila" id="rk-fila"><button class="btn secondary" type="button" id="rk-azar"></button><button class="btn" type="button" id="rk-pub"></button></div>
         <div class="rk-res" id="rk-res" role="status" aria-live="polite" hidden></div>
         <div class="rk-fila"><a id="rk-ver" target="_blank" rel="noopener noreferrer"></a><button class="btn ghost" type="button" id="rk-no"></button></div></div>`;
@@ -660,7 +661,7 @@
     }
     function cerrarRank() {
       if (!rankAbierto) return;
-      rankAbierto = false; $('rec-rank').hidden = true;
+      rankAbierto = false; $('rec-rank').hidden = true; $('rec-rank').remove(); // se vuelve a montar al abrir (con el idioma de ese momento)
       const f = rankFin, ok = rankOk; rankFin = null; const foco = rankFoco; rankFoco = null;
       if (foco && foco.focus && document.contains(foco)) foco.focus({ preventScroll: true });
       if (f) f(ok ? 'publicado' : 'cerrado');
