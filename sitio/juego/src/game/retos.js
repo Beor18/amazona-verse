@@ -1172,6 +1172,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         Object.assign(G.camara.CAM, { distFly: 11.5, heightFly: 8.5, follow: 7 });
         G.camara.place(true);
         G.fx.rain.visible = true;
+        if (G.agua && G.agua.tormenta) G.agua.tormenta(true); // el mar de la arena es la tormenta, no la laguna calma
         ui.hud.hidden = false; ui.flecha.hidden = true;
         ui.chipPos.hidden = ui.chipPts.hidden = true; ui.chipVidas.hidden = ui.chipPuntos.hidden = ui.chipTiempo.hidden = false;
         pintarVidas(); ui.puntos.textContent = '0'; ui.combo.textContent = '';
@@ -1184,6 +1185,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         for (const k in pool) pool[k].forEach(soltar);
         TM.peligros = []; TM.semillas = []; TM.fase = 'nada';
         G.fx.rain.visible = false;
+        if (G.agua && G.agua.tormenta) G.agua.tormenta(false);
         const pj = G.actores.player3D; if (pj) pj.root.visible = true;
       },
       update(dt) { actualizarTormenta(dt); },
@@ -1561,6 +1563,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         abrir();
         check('«Otro reto» vuelve al menú', !ui.menu.hidden && ui.fin.hidden);
         check('La tormenta arranca', jugar('tormenta') && modo === TORMENTA && TM.fase === 'cuenta' && C.fase === 'nada');
+        check('El agua de la tormenta es un solo cuerpo', G.agua.uniforms.uTormenta && G.agua.uniforms.uTormenta.value === 1);
         check('Las cosas de la carrera se esconden', !C.grupo.visible && !C.rivales.length);
         tick(3);
         check('Tras 3-2-1 empieza la tormenta', TM.fase === 'juego');
@@ -1604,6 +1607,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // ---------- Salir ----------
         salir();
         check('Al salir se quitan las envolturas', G.ui.busy === busy0 && F.step === step0 && !document.body.classList.contains('retos-on'));
+        check('Al salir el mar vuelve a su agua', G.agua.uniforms.uTormenta.value === 0);
         check('Al salir G.quiet vuelve a como estaba', G.quiet === quiet0);
         check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
         check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
