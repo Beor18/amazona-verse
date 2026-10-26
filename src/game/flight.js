@@ -19,7 +19,7 @@
    - Generación procedural JUSTA con un set pequeño de módulos (puerta, suelo, techo, túnel, escalera) y object pooling: cada módulo
      se comprueba con los parámetros reales del impulso y la gravedad (subidaMax y bajadaMax en el tiempo que hay entre huecos) y se
      recoloca si no es superable. Las InstancedMesh se crean una vez (al entrar) y solo cambia instanceMatrix; nada se crea ni se
-     destruye por cuadro ni por reinicio (geometrías y texturas constantes: lo comprueba la prueba de 50 reinicios).
+     destruye por cuadro ni por reinicio (geometrías y texturas constantes: lo comprueba la prueba de 50 reinicios); al salir se libera todo.
    - Dificultad progresiva: velocidad 9 → 14 m/s, hueco 5 → 3,4 m y paso 13 → 9 m a lo largo de los primeros 60 obstáculos.
    - Récord: «Mis récords» de siempre (src/game/records.js) por el gancho retosResultado { modo: 'flight', puntos } y el mismo
      almacén `<almacen>.retos` (clave flight: { mejor, jugadas }). «Nuevo estudiante» lo borra con los demás (boot.js).
@@ -509,14 +509,15 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       G.camara.place(true);
       if (st.ui) st.ui.el.hidden = true;
       st.activo = false; st.env = null; st.A = null;
+      liberarPool(); // al salir se libera todo (geometrías, materiales y texturas propias); al volver a entrar se vuelve a cargar el kit
     }
-    // Al liberar el módulo del todo (pruebas): geometrías y materiales propios fuera de la GPU
-    function liberar() {
-      if (st.activo) salir();
+    // Geometrías, materiales y texturas propias fuera de la GPU; el grupo sale de la escena
+    function liberarPool() {
       for (const t in pool) { for (const im of pool[t].mallas) { raiz.remove(im); im.geometry.dispose(); for (const k of ['map', 'normalMap']) if (im.material[k]) im.material[k].dispose(); im.material.dispose(); im.dispose(); } delete pool[t]; }
       if (raiz.parent) scene.remove(raiz);
       st.listo = null;
     }
+    function liberar() { if (st.activo) salir(); else liberarPool(); }
 
     // ---------- Pruebas: AV.flightTest() ----------
     function test(o) {
@@ -527,7 +528,6 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       const recReal = leer(ALMACEN);
       if (st.activo) salir(); // la prueba entra y sale ella misma (con ?mini=flight ya estaba dentro)
       const busy0 = G.ui.busy, step0 = F.step, follow0 = G.camara.follow, draw0 = G.camara.draw, quiet0 = G.quiet, pausa0 = G.pausa.activa(), fov0 = R.camera.fov;
-      const sAntes = comparable(S);
       const mem = () => ({ g: R.renderer.info.memory.geometries, t: R.renderer.info.memory.textures });
       claveRec = ALMACEN + '.prueba';
       try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ }
@@ -553,8 +553,10 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
         }
         return { pasados: J.n - nAntes, fase: st.fase, choque: J.choque, y: J.y };
       };
+      let sAntes = null;
       return (async () => {
         try {
+          await crearPool(); sAntes = comparable(S); // el kit ya cargado: lo que escriban otros módulos perezosos mientras tanto no cuenta como cambio
           check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, derrota, puntuación, música, resultados, récords)',
             ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'derrota', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === true);
           // ---------- Entrar ----------
@@ -642,8 +644,10 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Al salir G.quiet vuelve y el mundo no queda en pausa', G.quiet === quiet0 && G.pausa.activa() === pausa0);
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
           check('Récords reales intactos', leer(ALMACEN) === recReal);
-          check('Nada del vuelo queda en la escena ni instancias vivas', raiz.visible === false && vivas() === 0 && obst.length === 0 && decor.length === 0, vivas() + ' vivas · ' + obst.length + ' obst · ' + decor.length + ' decor · ' + Object.keys(pool).map(t => t + ':' + pool[t].libres.length + '/' + CAP[t]).join(' '));
-          if (o.liberar) { liberar(); const m2 = mem(); check('liberar(): geometrías y texturas por debajo de las de entrada', m2.g <= m0.g && m2.t <= m0.t, JSON.stringify(m2)); }
+          check('Nada del vuelo queda en la escena: pool liberado, sin instancias vivas', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && vivas() === 0 && obst.length === 0 && decor.length === 0, vivas() + ' vivas · ' + obst.length + ' obst · ' + decor.length + ' decor · ' + Object.keys(pool).map(t => t + ':' + pool[t].libres.length + '/' + CAP[t]).join(' '));
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m2 = mem();
+          check('Al salir las geometrías y texturas del renderer bajan de las de la partida (el kit del vuelo se libera)', m2.g < m0.g && m2.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }
