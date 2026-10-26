@@ -1,0 +1,199 @@
+{
+ "_nota": "Vistas de la auditoría del mapa (docs/equipo/MAPA_PLAN_COMPLETO.md § 2.3). Uso: tools/build/look_capturas.py --vistas-json tools/build/mapa_vistas.json --looks fabrica [--movil]",
+ "aerea": {
+  "x": 0,
+  "y": 420,
+  "z": 40,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   0,
+   560,
+   90
+  ],
+  "mirar": [
+   0,
+   0,
+   0
+  ],
+  "nota": "Toda la isla desde arriba"
+ },
+ "aerea_sur": {
+  "x": 60,
+  "y": 180,
+  "z": 240,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   60,
+   200,
+   300
+  ],
+  "mirar": [
+   -20,
+   30,
+   0
+  ],
+  "nota": "Desde el sur, sobre Villa Raíz, hacia El Yunque"
+ },
+ "aerea_media": {
+  "x": 0,
+  "y": 240,
+  "z": 300,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   0,
+   250,
+   330
+  ],
+  "mirar": [
+   0,
+   20,
+   -40
+  ],
+  "nota": "Isla entera desde el sur a 250 m"
+ },
+ "v_villa": {
+  "x": 150,
+  "y": 40,
+  "z": 250,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   150,
+   48,
+   255
+  ],
+  "mirar": [
+   150,
+   5,
+   175
+  ],
+  "nota": "Villa Raíz y la aldea del río del este desde el aire"
+ },
+ "v_rio_oeste": {
+  "x": -134,
+  "y": 50,
+  "z": 110,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   -134,
+   58,
+   115
+  ],
+  "mirar": [
+   -134,
+   15,
+   27
+  ],
+  "nota": "Aldea del río del oeste"
+ },
+ "v_lomas": {
+  "x": -87,
+  "y": 50,
+  "z": 170,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   -87,
+   58,
+   175
+  ],
+  "mirar": [
+   -87,
+   17,
+   91
+  ],
+  "nota": "Lomas del Oeste"
+ },
+ "v_mina": {
+  "x": 90,
+  "y": 55,
+  "z": 40,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   90,
+   63,
+   45
+  ],
+  "mirar": [
+   85,
+   15,
+   -70
+  ],
+  "nota": "La Mina y la aldea del río del este 2"
+ },
+ "v_este": {
+  "x": 136,
+  "y": 60,
+  "z": 100,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   136,
+   68,
+   105
+  ],
+  "mirar": [
+   136,
+   19,
+   13
+  ],
+  "nota": "Ruinas del este (Mesa del Este)"
+ },
+ "v_meandros": {
+  "x": -14,
+  "y": 50,
+  "z": 100,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   -14,
+   58,
+   105
+  ],
+  "mirar": [
+   -14,
+   13,
+   17
+  ],
+  "nota": "Los meandros"
+ },
+ "v_yunque": {
+  "x": -40,
+  "y": 120,
+  "z": -40,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   -40,
+   128,
+   -35
+  ],
+  "mirar": [
+   -40,
+   97,
+   -131
+  ],
+  "nota": "Ruinas de El Yunque"
+ },
+ "s_villa": {
+  "x": 140,
+  "alt": 0,
+  "z": 200,
+  "vuelo": false,
+  "yaw": 0,
+  "nota": "Villa Raíz a pie, mirando al norte"
+ },
+ "s_meandros": {
+  "x": -14,
+  "alt": 0,
+  "z": 60,
+  "vuelo": false,
+  "yaw": 0,
+  "nota": "Meandros a pie"
+ }
+}
