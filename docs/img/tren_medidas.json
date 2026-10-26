@@ -1,0 +1,130 @@
+{
+ "escritorio": {
+  "juego": {
+   "look": "vibrant_toon",
+   "fps": 14,
+   "calls": 63,
+   "triangulos": 122225,
+   "calidad": "bajo",
+   "dpr": 1,
+   "post": false,
+   "programas": 73,
+   "heapMB": 54,
+   "geometrias": 222,
+   "texturasGPU": 94,
+   "texturas": 97,
+   "texturasGrandes": 5,
+   "atlasGrandes": 2,
+   "texturasMB": 268.8,
+   "sombraMB": 0,
+   "postMB": 0,
+   "ms": 111.46,
+   "fpsMedidos": 9,
+   "msP90": 233.3,
+   "peor": 1233,
+   "cuadros": 109,
+   "estado": {
+    "fase": "juego",
+    "puntos": 0,
+    "entregas": 0,
+    "perdidas": 0,
+    "v": 10.512956381397077,
+    "seg": "oeste",
+    "s": 120.11658753427223,
+    "resta": 146.11620000000002,
+    "carga": [
+     "cartas>faro"
+    ],
+    "semilla": 1373895013
+   }
+  },
+  "fin": {
+   "fase": "fin",
+   "panel": true,
+   "estado": {
+    "fase": "fin",
+    "puntos": 0,
+    "entregas": 0,
+    "perdidas": 0,
+    "v": 7.275047128074022,
+    "seg": "costa",
+    "s": 4.865521344564068,
+    "resta": 0,
+    "carga": [
+     "cartas>faro"
+    ],
+    "semilla": 1373895013
+   }
+  },
+  "salir": {
+   "activo": false,
+   "busy": false,
+   "clases": []
+  },
+  "errores": []
+ },
+ "movil": {
+  "juego": {
+   "look": "vibrant_toon",
+   "fps": 8,
+   "calls": 77,
+   "triangulos": 172338,
+   "calidad": "medio",
+   "dpr": 1,
+   "post": true,
+   "programas": 47,
+   "heapMB": 64,
+   "geometrias": 219,
+   "texturasGPU": 94,
+   "texturas": 98,
+   "texturasGrandes": 5,
+   "atlasGrandes": 2,
+   "texturasMB": 268.9,
+   "sombraMB": 4,
+   "postMB": 5.8,
+   "ms": 98.34,
+   "fpsMedidos": 10,
+   "msP90": 233.2,
+   "peor": 267,
+   "cuadros": 121,
+   "estado": {
+    "fase": "juego",
+    "puntos": 0,
+    "entregas": 0,
+    "perdidas": 0,
+    "v": 7.183878497231978,
+    "seg": "poza",
+    "s": 4.433600332158639,
+    "resta": 145.48329999999999,
+    "carga": [
+     "caña>central"
+    ],
+    "semilla": 1801701813
+   }
+  },
+  "fin": {
+   "fase": "fin",
+   "panel": true,
+   "estado": {
+    "fase": "fin",
+    "puntos": 0,
+    "entregas": 0,
+    "perdidas": 0,
+    "v": 1.1447544977807498,
+    "seg": "poza",
+    "s": 10.771071199927396,
+    "resta": 0,
+    "carga": [
+     "caña>central"
+    ],
+    "semilla": 1801701813
+   }
+  },
+  "salir": {
+   "activo": false,
+   "busy": false,
+   "clases": []
+  },
+  "errores": []
+ }
+}
