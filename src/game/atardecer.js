@@ -173,12 +173,13 @@
       const clima = G.clima, climaEst = clima && clima.F ? clima.F.estado : null;
       try {
         forzar(null); G.quiet = true; S.chorus = true; S.complete = false;
+        const m3T = S.missions ? S.missions.m3 : undefined; if (S.missions) S.missions.m3 = false; // las baterías ya terminaron M3: aquí se prueba el coro en marcha
         check('En las baterías (G.quiet) no se enciende solo aunque el coro esté en marcha', !deseado());
         G.quiet = false;
         check('Con el coro en marcha (S.chorus) y el capítulo sin terminar, pide atardecer', deseado());
         { const nuevo = !S.missions, ms = S.missions || (S.missions = {}), m30 = ms.m3; ms.m3 = true; check('Al terminar la misión del coquí (M3) vuelve el día', !deseado()); if (nuevo) delete S.missions; else if (m30 === undefined) delete ms.m3; else ms.m3 = m30; }
         S.complete = true; check('Al terminar el capítulo vuelve el día', !deseado()); if (tieneComplete) S.complete = complete0; else delete S.complete;
-        G.quiet = quiet0; S.chorus = chorus0;
+        G.quiet = quiet0; S.chorus = chorus0; if (S.missions) { if (m3T === undefined) delete S.missions.m3; else S.missions.m3 = m3T; }
         forzar(true); const k1 = avanzar(DUR + 1);
         check('El fundido llega a 1 en ' + DUR + ' s', k1 === 1, k1);
         if (sky) {

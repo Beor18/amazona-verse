@@ -21,7 +21,7 @@ Capítulo 1 completo, con:
 - **Publicar:** aprobado por Kelvin cada versión que pase **todas** las baterías (`test.sh --extra`).
   - Flujo: `build.sh HEAD tools/build/salida/pub-<sha>`, después `test.sh`, después `sitio.sh <build>/site`, commit de `sitio/` con un índice temporal y `git push`.
 - **Ramas:** una sola, `main`. Antes de publicar, comprobar que Fernando (Beor18) no tenga ramas ni PR.
-- **Tope semanal del plan Max: 75 %** (iba por el 54 % el 25-oct a las 22:35). Al llegarle: guardar y parar una semana. Usar Fable (17 %) para planificar y para el trabajo grande.
+- **Tope semanal del plan Max: 80 %** (subido del 75 % el 26-oct) (iba por el 54 % el 25-oct a las 22:35). Al llegarle: guardar y parar una semana. Usar Fable (17 %) para planificar y para el trabajo grande.
 - **Máquina:** como mucho unos 8–10 agentes; la Mac se apagó una vez por la carga.
 
 ## Siguiente en la fila
