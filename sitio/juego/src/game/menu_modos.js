@@ -25,7 +25,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'carreras', 'tormenta', 'banquete', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'carreras', 'tormenta', 'banquete', 'flight', 'libre', 'nido', 'records'];
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const TX = () => ({
       titulo: L('¿Cómo quieres jugar?', 'How do you want to play?'), ultimo: L('Lo último que jugaste', 'Last played'),
@@ -34,6 +34,7 @@
       carreras: [L('Carreras', 'Races'), L('El Yunque, el río y tu fantasma', 'El Yunque, the river and your ghost')],
       tormenta: [L('¡Escapa de la tormenta!', 'Escape the storm!'), L('90 segundos sobre el mar', '90 seconds over the sea')],
       banquete: [L('¡Banquete!', 'Feast!'), L('Frutos en vuelo y combos', 'Fruit on the wing and combos')],
+      flight: [L('Amazona Flight', 'Amazona Flight'), L('Vuela sin parar entre los troncos', 'Fly non-stop between the logs')],
       libre: [L('Vuelo libre', 'Free flight'), L('Explora sin misiones', 'Explore with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
@@ -99,6 +100,7 @@
         p = Promise.resolve(true);
       } else if (modo === 'carreras') p = listo().then(() => cargar.retos()).then(r => r.abrir());
       else if (modo === 'tormenta' || modo === 'banquete') p = listo().then(() => cargar.retos()).then(r => r.jugar(modo));
+      else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
       else if (modo === 'records') p = cargar.records().then(r => r.abrir({ desde: 'portada' }));
@@ -144,6 +146,7 @@
     // Volver al menú desde el juego (pausa → «Cambiar de juego»)
     function volver() {
       const r = G.retosApi; if (r) { try { r.salir(); } catch (e) { /* ya fuera */ } }
+      const fv = G.flightApi; if (fv) { try { fv.salir(); } catch (e) { /* ya fuera */ } }
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salirLibre();
       const pausa = $('pause'); try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ }
@@ -217,7 +220,7 @@
       try {
         // 1. Markup y contrato de la portada (config.json preparar_js y e2e.js tocan el primer botón del formulario)
         const ts = tarjetas();
-        check('Siete tarjetas, una por modo', ts.length === 7 && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
+        check('Ocho tarjetas, una por modo (con Amazona Flight)', ts.length === 8 && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido y récords no cierran la portada (type=button)', ['nido', 'records'].every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
@@ -236,6 +239,10 @@
         const okB = await hasta(() => retos.activo && retos.reto === 'banquete', 15000);
         check('Banquete: el reto arranca (carga perezosa)', okB && !portada.open, retos.reto);
         volver(); check('Vuelve al menú desde el banquete', portada.open && !retos.activo);
+        await elegir('flight');
+        const okF = await hasta(() => G.flightApi && G.flightApi._dev.st.activo, 15000);
+        check('Amazona Flight: la tarjeta abre el vuelo y cierra la portada', okF && !portada.open);
+        volver(); check('Vuelve al menú desde Amazona Flight', portada.open && !G.flightApi._dev.st.activo && !document.body.classList.contains('flight-on'));
         await elegir('libre');
         check('Vuelo libre: sin panel de misiones ni guía, y la partida sigue siendo la misma', !portada.open && raiz.classList.contains('modo-libre') && getComputedStyle($('quest')).display === 'none' && libre);
         G.emit('render'); check('Vuelo libre: la flecha de guía no se ve', G.fx && G.fx.guideBeam ? !G.fx.guideBeam.visible : true);

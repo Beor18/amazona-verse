@@ -338,6 +338,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
 #retos .rt-dato { background: #fff8e8; border-radius: var(--r-sm); padding: 8px; font: 700 22px/1.1 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
 #retos .rt-dato small { display: block; font: 600 12px/1.2 var(--font-body); color: var(--c-ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+#retos .rt-meta { margin: 0 0 12px; display: grid; gap: 4px; font: 700 var(--fs-md)/1.25 var(--font-display); color: #8a5208; }
+#retos .rt-descanso { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--r-sm); background: #e8f3ff; color: var(--c-ink); font-size: var(--fs-sm); }
+#retos .rt-hoy { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; justify-content: center; margin: 10px 0 0; padding: 10px 14px; border-radius: var(--r-md); background: #fff1c2; border: 2px solid var(--c-paper-edge); font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink); }
+#retos .rt-hoy small { font: 600 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-muted); }
+#retos .rt-reto.es-hoy { border-color: #e0a526; }
+#retos .rt-med { font: 600 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); }
+#retos .rt-rank { margin: 0 0 12px; }
 #retos .rt-nuevo { display: inline-block; background: var(--crest); color: #fff; padding: 3px 12px; border-radius: var(--r-pill); font: 700 14px/1.3 var(--font-display); margin: 0 0 10px; animation: rt-latido 1s ease-in-out infinite; }
 #retos .rt-tecla { font: 600 12px/1 var(--font-body); opacity: .75; margin-left: 6px; }
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
@@ -378,6 +385,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 <div class="rt-menu" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-menu-t">
   <h2 id="rt-menu-t">Retos</h2>
   <p>Partidas cortas para volar con Vittata. Tu partida de la historia queda tal como está.</p>
+  <div class="rt-hoy" hidden></div>
   <div class="rt-retos">
     <div class="rt-reto"><h3>Carrera en El Yunque</h3><p>Cuatro cotorras, seis banderines y la meta en el Mirador Yokahú. Atraviesa las corrientes de aire para ir más rápido.</p>
       <span class="rt-rec" data-rec="carrera"></span><button class="btn" type="button" data-jugar="carrera" data-icon="flag">Jugar</button></div>
@@ -387,6 +395,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>¡Banquete!</h3><p>75 segundos en la colina: recoge los frutos de las palmas y los tabonucos en vuelo. Seguidos, sin tocar el suelo, suben el combo. Los de las copas valen más.</p>
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>Amazona Flight</h3><p>Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.</p>
+      <span class="rt-rec" data-rec="flight"></span><button class="btn" type="button" data-jugar="flight" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -396,6 +406,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   <h2 id="rt-fin-t"></h2>
   <div class="rt-nuevo" hidden>¡Nuevo récord!</div>
   <div class="rt-datos"></div>
+  <p class="rt-meta" hidden></p>
+  <div class="rt-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
+  <p class="rt-descanso" hidden>Llevas un buen rato jugando. ¿Un descanso para estirar las alas? Aquí te esperamos cuando quieras.</p>
   <div class="rt-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rt-tecla">${TACTIL ? '' : 'Enter'}</span></button>
     <button class="btn ghost secondary" type="button" data-menu data-icon="trophy">Otro reto</button>
@@ -407,12 +420,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui = { el, fx, hud: q('.rt-hud'), pos: q('.rt-pos b'), posN: q('.rt-pos small'), tiempo: q('.rt-tiempo span:last-child'), pts: q('.rt-pts span:last-child'),
         vidas: q('.rt-vidas'), puntos: q('.rt-puntos span:nth-of-type(2)'), combo: q('.rt-combo'), flecha: q('.rt-flecha'), flechaSvg: q('.rt-flecha svg'), flechaTxt: q('.rt-flecha span'),
         tags: q('.rt-tags'), cuenta: q('.rt-cuenta'), aviso: q('.rt-aviso'), menu: q('.rt-menu'), fin: q('.rt-fin'), medalla: q('.rt-medalla'), finT: q('#rt-fin-t'),
-        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
+        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), meta: q('.rt-meta'), rank: q('.rt-rank'), descanso: q('.rt-descanso'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
         lineas: fx.querySelector('.rt-lineas'), destello: fx.querySelector('.rt-destello'), oscuro: fx.querySelector('.rt-oscuro'), moja: fx.querySelector('.rt-moja') };
       el.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.jugar) jugar(b.dataset.jugar);
         else if (b.hasAttribute('data-otra')) otraVez();
+        else if (b.hasAttribute('data-ranking')) publicarMarca(b);
         else if (b.hasAttribute('data-menu')) abrir();
         else if (b.hasAttribute('data-fantasma')) alternarFantasma();
         else if (b.hasAttribute('data-salir')) salir();
@@ -514,6 +528,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
+      const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
+      const hoy = retoDelDia();
+      for (const k of Object.keys(NOMBRE_RETO)) {
+        const rr = ui.menu.querySelector('[data-rec="' + k + '"]'); if (!rr) continue;
+        let md = rr.nextElementSibling; if (!md || !md.classList.contains('rt-med')) { md = document.createElement('span'); md.className = 'rt-med'; rr.after(md); }
+        const m = medallaDeReto(k, rec); md.textContent = m ? 'Medalla de ' + m : ''; md.hidden = !m;
+        rr.closest('.rt-reto').classList.toggle('es-hoy', k === hoy);
+      }
+      const hb = ui.menu.querySelector('.rt-hoy'); hb.hidden = false;
+      hb.innerHTML = '<small>Reto del día</small><b>' + NOMBRE_RETO[hoy] + '</b><button class="btn" type="button" data-jugar="' + hoy + '" data-icon="flag">Jugar</button>';
       ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
@@ -525,7 +549,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       leerRec, guardarRec, esPrueba: () => claveRec !== ALMACEN };
     const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
-      montarUI();
+      montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
+      if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
@@ -537,11 +562,89 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       return true;
     }
     function otraVez() { if (st.reto) jugar(st.reto); }
+    // ---------- Ganas de seguir (decisión de Kelvin, 26-oct): el «casi», la siguiente meta, sellos y reto del día ----------
+    // Sano y para niños: solo habilidad (nada de monedas, cajas ni azar), sin rachas, sin cuentas atrás para volver y sin culpa.
+    const ORDEN = ['bronce', 'plata', 'oro'], ART = { oro: 'el oro', plata: 'la plata', bronce: 'el bronce' };
+    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]] };
+    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'] };
+    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight' };
+    const RETOS_DIA = ['banquete', 'flight', 'rio', 'tormenta', 'carrera'];
+    const DESCANSO_MS = 30 * 60 * 1000;
+    const ingles = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+    const dec = x => (Math.round(x * 10) / 10).toString().replace('.', ingles() ? '.' : ',');
+    // Medalla de un reto según los récords guardados (la de «Mis récords»: 1.º oro, 2.º plata, 3.º bronce; el río guarda la suya)
+    function medallaDeReto(reto, rec) {
+      const r = (rec && rec[reto]) || {};
+      if (reto === 'carrera') return !r.puesto ? null : r.puesto === 1 ? 'oro' : r.puesto === 2 ? 'plata' : r.puesto === 3 ? 'bronce' : null;
+      if (reto === 'rio') return ORDEN.includes(r.medalla) ? r.medalla : null;
+      let m = null; for (const [n, v] of UMBRAL[reto] || []) if (r.mejor >= v) m = n; return m;
+    }
+    // El mismo reto para todos ese día, sin servidor: sale de la fecha local
+    function retoDelDia(f) { f = f || new Date(); const n = Math.floor(Date.UTC(f.getFullYear(), f.getMonth(), f.getDate()) / 864e5); return RETOS_DIA[((n % RETOS_DIA.length) + RETOS_DIA.length) % RETOS_DIA.length]; }
+    // Líneas de ánimo tras una partida: el «casi» y la siguiente meta (u = lo emitido por retosResultado; rec = récords ya guardados)
+    function metaLineas(reto, u, rec) {
+      if (!u || u.modo !== reto) return [];
+      const L = [], r = (rec && rec[reto]) || {};
+      if (UMBRAL[reto]) {
+        const best = r.mejor || 0, v = u.puntos || 0, tope = Math.max(v, best), un = UNIDAD[reto], nom = n => n + ' ' + un[n === 1 ? 0 : 1];
+        if (v > 0 && v < best && best - v <= Math.max(3, Math.round(best * 0.2))) L.push('¡A solo ' + nom(best - v) + ' del récord!');
+        const sig = UMBRAL[reto].find(([, t]) => t > tope);
+        L.push(sig ? 'Te faltan ' + nom(sig[1] - tope) + ' para ' + ART[sig[0]] : '¡Tienes todas las medallas! Intenta superar tu récord.');
+      } else if (reto === 'rio') {
+        const R = ruta && ruta.R && ruta.R.medallas;
+        if (!u.llego) L.push('Siguiente meta: llegar a la desembocadura.');
+        else if (R) {
+          const t = u.ms / 1000, tb = r.mejor ? Math.min(r.mejor / 1000, t) : t;
+          if (t > tb && t - tb <= 2) L.push('¡A solo ' + dec(t - tb) + ' s de tu récord!');
+          let i = -1; for (let k = R.length - 1; k >= 0; k--) if (R[k] < tb) { i = k; break; }
+          L.push(i < 0 ? '¡Tienes el oro! Intenta superar tu récord.' : 'Te faltan ' + dec(tb - R[i]) + ' s para ' + ART[MEDALLAS[i]]);
+        }
+      } else if (reto === 'carrera') {
+        const p = u.puesto;
+        if (!u.llego) L.push('Siguiente meta: cruzar la meta.');
+        else if (p === 1) L.push(u.ms && r.mejor && u.ms > r.mejor && u.ms - r.mejor <= 2000 ? '¡A solo ' + dec((u.ms - r.mejor) / 1000) + ' s de tu récord!' : '¡Ahora supera tu mejor tiempo!');
+        else L.push(p === 2 ? 'Siguiente meta: ¡ganar la carrera!' : p === 3 ? 'Siguiente meta: la medalla de plata.' : 'Siguiente meta: la medalla de bronce.');
+      }
+      return L;
+    }
+    // Sello nuevo en «Mis récords»: la medalla de este reto subió respecto a antes de la partida
+    function selloNuevo(reto, antes, ahora) {
+      const a = ORDEN.indexOf(medallaDeReto(reto, antes)), b = ORDEN.indexOf(medallaDeReto(reto, ahora));
+      return b > a ? ORDEN[b] : null;
+    }
+    // Aviso amable de descanso tras unos 30 min seguidos (una sola vez por tramo; se olvida tras 10 min sin jugar)
+    const sesion = { t0: 0, ult: 0 };
+    function tocarSesion(ahora) { if (!sesion.t0 || ahora - sesion.ult > 10 * 60 * 1000) sesion.t0 = ahora; sesion.ult = ahora; }
+    function tocaDescanso(ahora, limite) { if (sesion.t0 && ahora - sesion.t0 >= (limite || DESCANSO_MS)) { sesion.t0 = ahora; return true; } return false; }
+    // Ranking global: solo si la marca es tu mejor y la partida no es de prueba; el panel y el envío viven en records.js
+    function datosRanking(reto, u, rec) {
+      if (!u || u.modo !== reto || claveRec !== ALMACEN) return null;
+      const r = (rec && rec[reto]) || {};
+      if (reto === 'carrera' || reto === 'rio') return u.llego && u.ms > 0 && r.mejor && u.ms <= r.mejor ? { reto, valor: u.ms } : null;
+      if (UMBRAL[reto]) return u.puntos > 0 && u.puntos >= (r.mejor || 0) ? { reto, valor: u.puntos } : null;
+      return null;
+    }
+    function publicarMarca(btn, fetchSim) {
+      const d = st.rankDatos; if (!d) return Promise.resolve('invalido');
+      const ir = G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+      return ir.then(rk => rk.publicarRanking({ reto: d.reto, valor: d.valor, dur_ms: d.dur_ms, prueba: claveRec !== ALMACEN, fetch: fetchSim }), () => { G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000); return 'error'; })
+        .then(r => { if (r === 'publicado' && btn) btn.parentNode.hidden = true; return r; });
+    }
+    function pintarGanchos() {
+      if (!ui || !ui.meta) return;
+      const reto = st.reto, rec = leerRec(), ls = metaLineas(reto, st.ultimo, rec);
+      const s = selloNuevo(reto, st.antes || {}, rec);
+      if (s) ls.unshift('¡Nuevo sello de ' + s + ' en Mis récords!');
+      ui.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join('');
+      ui.meta.hidden = !ls.length;
+      ui.descanso.hidden = !tocaDescanso(Date.now());
+      const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !dr;
+    }
     function resultados(html) {
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
       ui.fin.hidden = false; st.fase = 'fin';
       G.pausa.set('retos', true);
-      html();
+      html(); pintarGanchos();
       const b = ui.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
     // Enter, Espacio o la tecla de Acción: «Otra vez» en los resultados (un botón con el foco ya hace su propio clic)
@@ -1393,6 +1496,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // Ganchos (se registran una vez; solo actúan con el modo activo)
     // =================================================================================================================
     G.on('update', dt => { if (st.activo && modo) modo.update(dt); }, 46);
+    G.on('retosResultado', d => { st.ultimo = d; });
     G.on('render', dt => {
       if (!st.activo) return;
       const comp = G.actores.companion3D; if (comp) comp.root.visible = false;
@@ -1422,7 +1526,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 4);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 6);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
@@ -1514,6 +1618,46 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // ---------- Contrarreloj del río ----------
         const ghCarrera = leer(claveFantasmaDe('carrera'));
         abrir();
+        check('El menú de Retos tiene la tarjeta de Amazona Flight con su récord', !!ui.menu.querySelector('[data-jugar="flight"]') && /sin récord|Récord: \d+ obstáculo/.test(ui.menu.querySelector('[data-rec="flight"]').textContent));
+        // ---------- Ganas de seguir: el «casi», la siguiente meta, sellos, reto del día y descanso ----------
+        { const P = api.pruebas, rec0 = { tormenta: { mejor: 700 }, banquete: { mejor: 0 }, flight: { mejor: 22 }, carrera: { puesto: 2 }, rio: { medalla: 'plata' } };
+          check('Reto del día: el mismo para la misma fecha y cambia con los días (sin servidor)', P.retoDelDia(new Date(2026, 9, 26)) === P.retoDelDia(new Date(2026, 9, 26, 23, 59)) && new Set([0, 1, 2, 3, 4].map(i => P.retoDelDia(new Date(2026, 9, 26 + i)))).size === 5);
+          check('Medallas por reto desde los récords (puntos, puesto y río)', P.medallaDeReto('tormenta', rec0) === 'bronce' && P.medallaDeReto('flight', rec0) === 'bronce' && P.medallaDeReto('carrera', rec0) === 'plata' && P.medallaDeReto('rio', rec0) === 'plata' && P.medallaDeReto('banquete', rec0) === null);
+          const t1 = P.metaLineas('tormenta', { modo: 'tormenta', puntos: 650 }, rec0), t2 = P.metaLineas('flight', { modo: 'flight', puntos: 20 }, rec0);
+          check('El «casi»: «¡A solo 50 puntos del récord!» y la siguiente meta con lo que falta', t1[0] === '¡A solo 50 puntos del récord!' && t1[1] === 'Te faltan 100 puntos para la plata', t1.join(' | '));
+          check('El «casi» y la meta de Flight (obstáculos)', t2[0] === '¡A solo 2 obstáculos del récord!' && t2[1] === 'Te faltan 3 obstáculos para la plata', t2.join(' | '));
+          check('Con todas las medallas: ánimo de superar el récord, sin presión', /todas las medallas/.test(P.metaLineas('tormenta', { modo: 'tormenta', puntos: 1600 }, { tormenta: { mejor: 1600 } }).join('')));
+          const rr = ruta.R && ruta.R.medallas, tr = P.metaLineas('rio', { modo: 'rio', llego: true, ms: 15300 }, { rio: { mejor: 15300 } });
+          check('Río: «Te faltan x s para la plata» con la tabla de medallas', !rr || (tr.length === 1 && /^Te faltan \d+,\d s para (la plata|el oro|el bronce)$/.test(tr[0])), tr.join(' | '));
+          check('Un sello nuevo solo si la medalla sube (nada de azar)', P.selloNuevo('tormenta', { tormenta: { mejor: 700 } }, { tormenta: { mejor: 900 } }) === 'plata' && P.selloNuevo('tormenta', { tormenta: { mejor: 900 } }, { tormenta: { mejor: 900 } }) === null && P.selloNuevo('flight', {}, { flight: { mejor: 12 } }) === 'bronce');
+          P.sesion.t0 = 0; const h = 1e9; P.tocarSesion(h);
+          check('Descanso: nada antes de 30 min; después, un aviso amable una sola vez', P.tocaDescanso(h + 29 * 60e3) === false && P.tocaDescanso(h + 31 * 60e3) === true && P.tocaDescanso(h + 32 * 60e3) === false);
+          check('Tras 10 min sin jugar la sesión se reinicia (sin castigos ni rachas)', (P.tocarSesion(h), P.tocarSesion(h + 11 * 60e3), P.sesion.t0 === h + 11 * 60e3));
+          abrir(); const hoyB = ui.menu.querySelector('.rt-hoy'), nom = hoyB.querySelector('b').textContent;
+          check('El menú de Retos muestra el reto del día y lo marca en su tarjeta', !hoyB.hidden && hoyB.querySelector('[data-jugar="' + P.retoDelDia() + '"]') && ui.menu.querySelectorAll('.rt-reto.es-hoy').length === 1 && nom.length > 3, nom);
+          check('Cada reto con récord enseña su medalla en el menú', [...ui.menu.querySelectorAll('.rt-reto')].every(c => c.querySelector('.rt-med')));
+          check('Sin rachas ni cuentas atrás: no hay contadores de días en el menú', !/racha|mañana|vuelve|perder/i.test(ui.menu.textContent)); }
+        // ---------- Ranking global: nunca publica en pruebas; con fetch simulado, apodo de listas fijas y top 3 ----------
+        { const P = api.pruebas, rk = G.recordsApi || await G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+          let llamadas = 0; const fetch0 = window.fetch; window.fetch = function () { llamadas++; return Promise.reject(new Error('sin red en pruebas')); };
+          let r1; try { r1 = await rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true }); } finally { window.fetch = fetch0; }
+          check('Ranking: una partida de prueba nunca publica (ni abre el panel ni llama a la red)', r1 === 'prueba' && llamadas === 0 && !rk.abrirRank());
+          check('Ranking: el botón no sale en las pruebas', P.datosRanking('tormenta', { modo: 'tormenta', puntos: 900 }, { tormenta: { mejor: 900 } }) === null);
+          const envios = []; const falso = (url, o) => { envios.push({ url, o }); return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true, puesto: 2, top: [{ puesto: 1, alias: 'Coquí Veloz 7', valor: 1200 }, { puesto: 2, alias: 'Cotorra Feliz 12', valor: 900 }, { puesto: 3, alias: 'Iguaca Sabio 3', valor: 800 }, { puesto: 4, alias: 'Manatí Ágil 9', valor: 100 }] }) }); };
+          let panel; const p1 = rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true, fetch: falso }); panel = document.getElementById('rec-rank');
+          check('Ranking: el panel abre con tres desplegables (sin texto libre) y «otro al azar»', rk.abrirRank() && !panel.hidden && panel.querySelectorAll('select').length === 3 && !panel.querySelector('input, textarea') && !!panel.querySelector('#rk-azar'));
+          const alias0 = panel.querySelector('#rk-alias').textContent; panel.querySelector('#rk-azar').click();
+          check('Ranking: el apodo es «Animal Adjetivo NN» de las listas exactas', new RegExp('^(' + rk.ANIMALES.join('|') + ') (Veloz|Valiente|Curioso|Brillante|Alegre|Audaz|Sabio|Feliz|Ágil|Sereno) ([1-9]\\d?)$').test(panel.querySelector('#rk-alias').textContent) && alias0.length > 5);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          const cuerpo = envios[0] && JSON.parse(envios[0].o.body);
+          check('Ranking: envía reto, valor, dur_ms, alias y un dispositivo aleatorio (nada personal)', envios.length === 1 && /amazona-records$/.test(envios[0].url) && cuerpo.reto === 'tormenta' && cuerpo.valor === 900 && cuerpo.dur_ms === 60000 && /^[a-f0-9]{32}$/.test(cuerpo.dispositivo) && cuerpo.alias === panel.querySelector('#rk-alias').textContent && Object.keys(cuerpo).sort().join() === 'alias,dispositivo,dur_ms,reto,valor', JSON.stringify(cuerpo));
+          check('Ranking: muestra el puesto y solo el top 3, y el enlace «Ver el top»', /2/.test(panel.querySelector('#rk-res').textContent) && panel.querySelectorAll('.rk-top li').length === 3 && panel.querySelector('#rk-ver').href === 'https://amazonaverse.com/#top-records');
+          panel.querySelector('#rk-no').click(); check('Ranking: cierra y devuelve «publicado»', (await p1) === 'publicado' && !rk.abrirRank());
+          const p2 = rk.publicarRanking({ reto: 'flight', valor: 30, dur_ms: 40000, prueba: true, fetch: () => Promise.reject(new Error('sin red')) }); panel = document.getElementById('rec-rank');
+          check('Ranking: el apodo se recuerda en el dispositivo', panel.querySelector('#rk-alias').textContent === cuerpo.alias);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          check('Ranking: sin red, mensaje amable y el juego sigue (se puede reintentar)', /no hay conexión/i.test(panel.querySelector('#rk-res').textContent) && !panel.querySelector('#rk-pub').disabled);
+          panel.querySelector('#rk-no').click(); check('Ranking: cerrar sin publicar devuelve «cerrado»', (await p2) === 'cerrado'); }
         check('El menú muestra la contrarreloj del río, sin récord aún', !!ui.menu.querySelector('[data-jugar="rio"]') && ui.menu.querySelector('[data-rec="rio"]').textContent === 'Aún sin récord');
         let emitido = null; emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
         check('La contrarreloj arranca', jugar('rio') && modo === CARRERA && C.rio === true && C.fase === 'cuenta');
@@ -1628,7 +1772,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
-      pruebas: { prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
+      pruebas: { datosRanking, publicarMarca, medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
       alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
   };

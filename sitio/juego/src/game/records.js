@@ -76,6 +76,14 @@
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
+      rankTitulo: ['Publicar en el ranking', 'Post to the leaderboard'], rankTexto: ['Elige tu apodo de animal. No se guarda nada personal: solo el apodo y tu marca.', 'Pick your animal nickname. Nothing personal is saved: just the nickname and your score.'],
+      rankAnimal: ['Animal', 'Animal'], rankAdj: ['Cualidad', 'Quality'], rankNum: ['Número', 'Number'], rankAzar: ['Otro al azar', 'Another at random'], rankPub: ['Publicar', 'Post'],
+      rankEnviando: ['Enviando…', 'Sending…'], rankPuesto: ['¡Quedaste en el puesto {}!', 'You are number {}!'], rankListo: ['¡Marca publicada!', 'Score posted!'], rankVer: ['Ver el top', 'See the top'],
+      rankMal: ['No se pudo publicar ahora. Tu marca sigue guardada; prueba más tarde.', 'Could not post right now. Your score is still saved; try again later.'],
+      rankSinRed: ['Parece que no hay conexión. Tu marca sigue guardada; prueba más tarde.', 'There seems to be no connection. Your score is still saved; try again later.'],
+      rankInverosimil: ['Esa marca no se pudo validar. ¡Prueba otra partida!', 'That score could not be checked. Try another round!'], rankMucho: ['Has publicado muchas veces. Vuelve un poco más tarde.', 'You have posted a lot. Come back a little later.'], cerrar: ['Cerrar', 'Close'],
+      sellos: ['Mis sellos', 'My stickers'], sellosNota: ['uno por cada medalla que consigas', 'one for every medal you earn'], sinSello: ['aún sin conseguir', 'not earned yet'],
+      sinVuelo: ['Pasa un obstáculo en Amazona Flight para compartir tu récord.', 'Pass an obstacle in Amazona Flight to share your record.'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
       puertaTitulo: ['Pide ayuda a un adulto', 'Ask an adult for help'], puertaTexto: ['Para compartir hace falta un adulto. Resuelve esta suma:', 'Sharing needs a grown-up. Solve this sum:'],
       puertaMal: ['Esa no es. Prueba con esta otra suma.', 'Not that one. Try this new sum.'],
@@ -319,6 +327,10 @@
 #records .rec-card dd { margin: 0; font: 700 var(--fs-sm)/1.3 var(--font-display); color: var(--c-ink); text-align: right; font-variant-numeric: tabular-nums; }
 #records .rec-m { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; font: 700 var(--fs-xl)/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 3px #fff, 0 3px 0 3px rgba(0, 0, 0, .18); }
+#records .rec-sellos-t { margin: var(--sp-4) 0 var(--sp-2); font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink); } #records .rec-sellos-t small { font: 500 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); }
+#records .rec-sellos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: var(--sp-2); }
+#records .rec-sellos li { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm); background: rgba(255, 255, 255, .55); }
+#records .rec-sellos .rs-m { display: inline-flex; gap: 6px; } #records .rec-sellos .rec-m { width: 30px; height: 30px; font-size: var(--fs-sm); box-shadow: 0 0 0 2px #fff; } #records .rec-sellos .rec-m.falta { --m1: #e6e0d2; --m2: #cfc7b4; box-shadow: none; opacity: .6; }
 #records .rec-m.oro { --m1: #ffd24a; --m2: #c98a10; } #records .rec-m.plata { --m1: #e4ecf2; --m2: #8a9aa8; } #records .rec-m.bronce { --m1: #f0a86a; --m2: #9a5a24; } #records .rec-m.meta { --m1: #bfe7c8; --m2: #3f9a55; }
 #records .progress { margin: var(--sp-2) 0; background: rgba(107, 82, 54, .18); }
 #records .rec-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); margin: var(--sp-2) 0 0; padding: 0; list-style: none; }
@@ -338,6 +350,13 @@
 #records .rec-pie .btn[aria-disabled="true"] { filter: grayscale(.6); opacity: .6; }
 #rec-puerta { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: var(--sp-3); background: rgba(6, 16, 12, .78); touch-action: none; }
 #rec-puerta .rp-box { width: min(420px, 100%); max-height: 100%; overflow: auto; padding: var(--sp-5); text-align: center; animation: pop-in var(--dur-3) var(--ease-pop); }
+#rec-rank[hidden] { display: none; }
+#rec-rank { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; padding: var(--sp-3); background: rgba(6, 16, 12, .78); }
+#rec-rank .rk-box { width: min(440px, 100%); max-height: 100%; overflow: auto; padding: var(--sp-5); text-align: center; animation: pop-in var(--dur-3) var(--ease-pop); } #rec-rank .rk-box:focus { outline: none; }
+#rec-rank h2 { margin: 0 0 var(--sp-2); font: 700 var(--fs-xl)/1.2 var(--font-display); color: var(--c-ink); } #rec-rank p { margin: 0 0 var(--sp-3); color: var(--c-ink-muted); }
+#rec-rank .rk-sel { display: grid; grid-template-columns: 1fr 1fr 70px; gap: var(--sp-2); margin-bottom: var(--sp-2); } #rec-rank .rk-sel label { display: grid; gap: 4px; text-align: left; font: 600 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); } #rec-rank select { min-height: 44px; font: 600 var(--fs-md)/1 var(--font-body); }
+#rec-rank .rk-alias { font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--c-ink); } #rec-rank .rk-fila { display: flex; flex-wrap: wrap; gap: var(--sp-2); justify-content: center; align-items: center; margin-bottom: var(--sp-3); }
+#rec-rank .rk-res { margin-bottom: var(--sp-3); color: var(--c-ink); } #rec-rank .rk-top { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: 4px; text-align: left; }
 #rec-puerta .rp-box:focus { outline: none; }
 #rec-puerta h2 { margin: 0 0 var(--sp-2); font: 700 var(--fs-xl)/1.2 var(--font-display); color: var(--c-ink); }
 #rec-puerta p { margin: 0 0 var(--sp-3); color: var(--c-ink-muted); }
@@ -386,12 +405,24 @@
         ? `<div class="rec-grande">${medalla(z.medalla, z.medalla ? '★' : null)}<div><b class="rec-num">${reloj(z.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}${z.medalla ? ' · ' + esc(tx(z.medalla)) : ''}</small></div></div>
            <dl>${dato(tx('jugadas'), z.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${z && z.jugadas ? `<dl>${dato(tx('jugadas'), z.jugadas)}</dl>` : ''}`;
-      const f = d.retos.flight; // src/game/flight.js: la tarjeta solo sale si se ha jugado (modo oculto hasta la fase 3)
+      const f = d.retos.flight || { mejor: null, jugadas: 0 }; // src/game/flight.js (publicado: la tarjeta sale siempre)
       const flight = !f ? '' : `<article class="rec-card"><h4>${esc(tx('flight'))}</h4>${f.mejor
         ? `<div class="rec-grande">${medalla(f.mejor >= 60 ? 'oro' : f.mejor >= 25 ? 'plata' : 'bronce', '★')}<div><b class="rec-num">${f.mejor}</b><small>${esc(tx('obstaculos'))}</small></div></div><dl>${dato(tx('jugadas'), f.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${f.jugadas ? `<dl>${dato(tx('jugadas'), f.jugadas)}</dl>` : ''}`}</article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}</div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}</div>${sellos(d)}</section>`;
+    }
+    // Sellos (pegatinas cosméticas): uno por medalla lograda en cada reto, sacados de los récords guardados. Solo habilidad: sin compras, cajas ni azar.
+    function sellos(d) {
+      const R = d.retos, ord = ['bronce', 'plata', 'oro'], por = (v, a, b) => (!v ? -1 : v >= b ? 2 : v >= a ? 1 : v > 0 ? 0 : -1);
+      const nivel = {
+        carrera: R.carrera.puesto ? (R.carrera.puesto === 1 ? 2 : R.carrera.puesto === 2 ? 1 : R.carrera.puesto === 3 ? 0 : -1) : -1,
+        tormenta: R.tormenta.mejor ? (R.tormenta.mejor >= 1500 ? 2 : R.tormenta.mejor >= 800 ? 1 : 0) : -1,
+        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1,
+      };
+      if (R.flight && R.flight.mejor && R.flight.mejor < 10 && nivel.flight === 0) nivel.flight = -1;
+      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
+      return `<h4 class="rec-sellos-t">${esc(tx('sellos'))} <small>${esc(tx('sellosNota'))}</small></h4><ul class="rec-sellos">${filas}</ul>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;
@@ -573,6 +604,113 @@
     }
 
     // =================================================================================================================
+    // Ranking global (tools/supabase, función amazona-records): apodo «Animal Adjetivo NN» de listas fijas (sin texto libre),
+    // id de dispositivo aleatorio y nada personal. Las partidas de prueba nunca publican (salvo con o.fetch simulado).
+    // =================================================================================================================
+    const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/#top-records';
+    const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
+    const ADJETIVOS = ['Veloz', 'Valiente', 'Curioso', 'Brillante', 'Alegre', 'Audaz', 'Sabio', 'Feliz', 'Ágil', 'Sereno'];
+    const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight'];
+    const claveAlias = ALM + '.rankalias', claveDisp = ALM + '.rankdisp';
+    const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* sin almacén: el apodo no se recuerda */ } };
+    function dispositivo() {
+      let d = lsGet(claveDisp);
+      if (!d || !/^[a-f0-9]{32}$/.test(d)) {
+        const a = new Uint8Array(16); try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256); }
+        d = Array.from(a, b => b.toString(16).padStart(2, '0')).join(''); lsSet(claveDisp, d);
+      }
+      return d;
+    }
+    const aliasDe = x => ANIMALES[x.a] + ' ' + ADJETIVOS[x.j] + ' ' + x.n;
+    const aliasAzar = () => ({ a: Math.floor(Math.random() * ANIMALES.length), j: Math.floor(Math.random() * ADJETIVOS.length), n: 1 + Math.floor(Math.random() * 99) });
+    function aliasGuardado() {
+      try { const x = JSON.parse(lsGet(claveAlias) || 'null'); if (x && Number.isInteger(x.a) && ANIMALES[x.a] && Number.isInteger(x.j) && ADJETIVOS[x.j] && Number.isInteger(x.n) && x.n >= 1 && x.n <= 99) return x; } catch (e) { /* dañado */ }
+      return aliasAzar();
+    }
+    let rankAbierto = false, rankFin = null, rankFoco = null, rankDatos = null, rankFetch = null, rankOk = false;
+    function montarRank() {
+      let p = $('rec-rank'); if (p) return p;
+      p = document.createElement('div'); p.id = 'rec-rank'; p.hidden = true;
+      p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'rk-t');
+      p.innerHTML = `<div class="rk-box paper" tabindex="-1"><h2 id="rk-t"></h2><p id="rk-texto"></p>
+        <div class="rk-sel" id="rk-sel"><label><span id="rk-la"></span><select id="rk-a" data-no-tr></select></label><label><span id="rk-lj"></span><select id="rk-j" data-no-tr></select></label><label><span id="rk-ln"></span><select id="rk-n"></select></label></div>
+        <p class="rk-alias" id="rk-alias" aria-live="polite" data-no-tr></p>
+        <div class="rk-fila" id="rk-fila"><button class="btn secondary" type="button" id="rk-azar"></button><button class="btn" type="button" id="rk-pub"></button></div>
+        <div class="rk-res" id="rk-res" role="status" aria-live="polite" hidden></div>
+        <div class="rk-fila"><a id="rk-ver" target="_blank" rel="noopener noreferrer"></a><button class="btn ghost" type="button" id="rk-no"></button></div></div>`;
+      document.body.appendChild(p);
+      const sa = p.querySelector('#rk-a'), sj = p.querySelector('#rk-j'), sn = p.querySelector('#rk-n');
+      sa.innerHTML = ANIMALES.map((x, i) => `<option value="${i}">${esc(x)}</option>`).join('');
+      sj.innerHTML = ADJETIVOS.map((x, i) => `<option value="${i}">${esc(x)}</option>`).join('');
+      sn.innerHTML = Array.from({ length: 99 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+      const pintar = () => { p.querySelector('#rk-alias').textContent = aliasDe(elegido()); };
+      p.addEventListener('change', e => { if (e.target.closest('select')) { lsSet(claveAlias, JSON.stringify(elegido())); pintar(); } });
+      p.addEventListener('click', e => {
+        if (e.target === p || e.target.closest('#rk-no')) { cerrarRank(); return; }
+        if (e.target.closest('#rk-azar')) { ponerAlias(aliasAzar()); return; }
+        if (e.target.closest('#rk-pub')) enviarRank();
+      });
+      p.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cerrarRank(); } }, true);
+      return p;
+    }
+    const elegido = () => ({ a: +$('rk-a').value, j: +$('rk-j').value, n: +$('rk-n').value });
+    function ponerAlias(x) {
+      $('rk-a').value = String(x.a); $('rk-j').value = String(x.j); $('rk-n').value = String(x.n);
+      lsSet(claveAlias, JSON.stringify(x)); $('rk-alias').textContent = aliasDe(x);
+    }
+    function cerrarRank() {
+      if (!rankAbierto) return;
+      rankAbierto = false; $('rec-rank').hidden = true; $('rec-rank').remove(); // se vuelve a montar al abrir (con el idioma de ese momento)
+      const f = rankFin, ok = rankOk; rankFin = null; const foco = rankFoco; rankFoco = null;
+      if (foco && foco.focus && document.contains(foco)) foco.focus({ preventScroll: true });
+      if (f) f(ok ? 'publicado' : 'cerrado');
+    }
+    const valorRank = (reto, v) => (reto === 'carrera' || reto === 'rio' ? reloj(v / 1000) : String(v));
+    async function enviarRank() {
+      const p = $('rec-rank'), D = rankDatos, res = p.querySelector('#rk-res'), bt = p.querySelector('#rk-pub');
+      if (!D || bt.disabled) return;
+      bt.disabled = true; res.hidden = false; res.textContent = tx('rankEnviando');
+      const x = elegido(); lsSet(claveAlias, JSON.stringify(x));
+      let ok = false, msg = tx('rankMal'), cuerpo = null;
+      try {
+        const ctl = typeof AbortController === 'function' ? new AbortController() : null, t = setTimeout(() => { if (ctl) ctl.abort(); }, 8000);
+        try {
+          const r = await (rankFetch || window.fetch.bind(window))(RANK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl ? ctl.signal : undefined,
+            body: JSON.stringify({ reto: D.reto, valor: Math.round(D.valor), dur_ms: Math.round(D.dur_ms), alias: aliasDe(x), dispositivo: dispositivo() }) });
+          cuerpo = await r.json().catch(() => null);
+          if (r.ok && cuerpo && cuerpo.ok) ok = true;
+          else if (cuerpo && cuerpo.error === 'inverosimil') msg = tx('rankInverosimil');
+          else if (r.status === 429) msg = tx('rankMucho');
+        } finally { clearTimeout(t); }
+      } catch (e) { msg = tx('rankSinRed'); }
+      if (!ok) { res.textContent = msg; bt.disabled = false; return; }
+      rankOk = true;
+      const top = (Array.isArray(cuerpo.top) ? cuerpo.top : []).slice(0, 3);
+      res.innerHTML = `<b>${esc(cuerpo.puesto ? tx('rankPuesto').replace('{}', cuerpo.puesto) : tx('rankListo'))}</b>` +
+        (top.length ? `<ol class="rk-top">${top.map(f => `<li><span>${esc(f.puesto)}.</span> ${esc(f.alias)} · <b>${esc(valorRank(D.reto, f.valor))}</b></li>`).join('')}</ol>` : '');
+      p.querySelector('#rk-fila').hidden = true;
+      p.querySelector('#rk-no').textContent = tx('cerrar');
+    }
+    // o: { reto, valor, dur_ms, prueba, fetch } → Promise<'publicado'|'cerrado'|'prueba'|'invalido'>. Una partida de prueba nunca publica (salvo con fetch simulado)
+    function publicarRanking(o) {
+      o = o || {};
+      if (o.prueba && typeof o.fetch !== 'function') return Promise.resolve('prueba');
+      if (!RANK_RETOS.includes(o.reto) || !(o.valor > 0) || !(o.dur_ms >= 0)) return Promise.resolve('invalido');
+      if (rankAbierto) return Promise.resolve('cerrado');
+      const p = montarRank();
+      rankDatos = { reto: o.reto, valor: o.valor, dur_ms: o.dur_ms }; rankFetch = typeof o.fetch === 'function' ? o.fetch : null; rankOk = false;
+      const T = (id, k) => { p.querySelector(id).textContent = tx(k); };
+      T('#rk-t', 'rankTitulo'); T('#rk-texto', 'rankTexto'); T('#rk-la', 'rankAnimal'); T('#rk-lj', 'rankAdj'); T('#rk-ln', 'rankNum'); T('#rk-azar', 'rankAzar'); T('#rk-pub', 'rankPub'); T('#rk-no', 'ahoraNo');
+      const ver = p.querySelector('#rk-ver'); ver.textContent = tx('rankVer'); ver.href = RANK_VER;
+      p.querySelector('#rk-res').hidden = true; p.querySelector('#rk-res').textContent = ''; p.querySelector('#rk-fila').hidden = false; p.querySelector('#rk-pub').disabled = false;
+      ponerAlias(aliasGuardado());
+      rankAbierto = true; rankFoco = document.activeElement; p.hidden = false;
+      p.querySelector('#rk-pub').focus({ preventScroll: true });
+      return new Promise(res => { rankFin = res; });
+    }
+
+    // =================================================================================================================
     // Compartir: menú del sistema en el móvil, descarga en la computadora
     // =================================================================================================================
     const esMovil = () => {
@@ -647,8 +785,8 @@
         try { const m = /^data:([^;,]*);base64,(.*)$/.exec(cv.toDataURL('image/png')); const bin = atob(m[2]), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: 'image/png' }); } catch (e) { return null; }
       });
     }
-    async function tarjetaPNG(d) {
-      d = d || leer();
+    async function tarjetaPNG(d, modo) {
+      d = d || leer(); const vuelo = modo === 'flight', fv = d.retos.flight || { mejor: null }; // Amazona Flight: misma tarjeta con sus puntos
       const W = TARJETA.w, H = TARJETA.h, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const x = cv.getContext('2d'), c = d.retos.carrera, q = d.retos.tormenta;
       try { await Promise.all([document.fonts.load('700 100px Fredoka'), document.fonts.load('700 30px "Atkinson Hyperlegible"')]); } catch (e) { /* fuentes del sistema */ }
@@ -667,12 +805,12 @@
       x.font = F(700, 116); x.lineWidth = 22; x.strokeStyle = '#2b1405'; x.strokeText('AMAZONA VERSE', W / 2, 168);
       g = x.createLinearGradient(0, 70, 0, 170); g.addColorStop(0, '#fff8cf'); g.addColorStop(0.5, '#ffcb3d'); g.addColorStop(1, '#ee7a12'); x.fillStyle = g; x.fillText('AMAZONA VERSE', W / 2, 168);
       // Rótulo de la carrera
-      const rotulo = tx('carrera');
+      const rotulo = vuelo ? tx('flight') : tx('carrera');
       x.font = F(600, 44); const rw = Math.min(x.measureText(rotulo).width + 80, W - 120);
       x.fillStyle = 'rgba(20,12,60,.6)'; x.beginPath(); x.roundRect ? x.roundRect(W / 2 - rw / 2, 206, rw, 70, 35) : x.rect(W / 2 - rw / 2, 206, rw, 70); x.fill();
       x.fillStyle = '#fff'; x.fillText(rotulo, W / 2, 256);
       // Medalla
-      const m = medallaCarrera(c.puesto) || 'meta', col = COLOR_MEDALLA[m], cx = W / 2, cy = 582, r = 185;
+      const m = vuelo ? (fv.mejor >= 60 ? 'oro' : fv.mejor >= 25 ? 'plata' : 'bronce') : medallaCarrera(c.puesto) || 'meta', col = COLOR_MEDALLA[m], cx = W / 2, cy = 582, r = 185;
       x.save(); x.translate(cx, cy - r + 20);
       for (const [dx, ang, color] of [[-70, -0.32, '#d6403a'], [70, 0.32, '#3d8fb0']]) { x.save(); x.translate(dx, -30); x.rotate(ang); x.fillStyle = color; x.fillRect(-42, -90, 84, 190); x.restore(); }
       x.restore();
@@ -681,23 +819,23 @@
       x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill();
       x.lineWidth = 10; x.strokeStyle = 'rgba(74,42,5,.25)'; x.beginPath(); x.arc(cx, cy, r - 30, 0, 7); x.stroke();
       x.fillStyle = '#4a2a05'; x.font = F(700, m === 'meta' ? 150 : 230); x.textBaseline = 'middle';
-      x.fillText(m === 'meta' ? '★' : String(c.puesto), cx, cy + 12); x.textBaseline = 'alphabetic';
+      x.fillText(vuelo || m === 'meta' ? '★' : String(c.puesto), cx, cy + 12); x.textBaseline = 'alphabetic';
       // Tiempo
       x.font = B(700, 36); x.fillStyle = '#ffe9a8'; x.lineWidth = 8; x.strokeStyle = 'rgba(27,21,80,.8)';
-      const miMejor = tx('miMejor').split('').join(String.fromCharCode(8202)); x.strokeText(miMejor, cx, 832); x.fillText(miMejor, cx, 832);
-      const tiempo = c.mejor ? reloj(c.mejor / 1000) : '—';
+      const miMejor = (vuelo ? tx('mejorPuntos').toUpperCase() : tx('miMejor')).split('').join(String.fromCharCode(8202)); x.strokeText(miMejor, cx, 832); x.fillText(miMejor, cx, 832);
+      const tiempo = vuelo ? String(fv.mejor || '—') : c.mejor ? reloj(c.mejor / 1000) : '—';
       x.font = F(700, 190); x.lineWidth = 26; x.strokeStyle = '#1b1550'; x.strokeText(tiempo, cx, 992); x.fillStyle = '#fff'; x.fillText(tiempo, cx, 992);
       x.font = F(600, 46); x.lineWidth = 12;
-      const linea = `${tx('mejorPuesto')}: ${ordinal(c.puesto || 1)} · ${medallaTxt(m)}`;
+      const linea = vuelo ? `${tx('obstaculos')} · ${medallaTxt(m)}` : `${tx('mejorPuesto')}: ${ordinal(c.puesto || 1)} · ${medallaTxt(m)}`;
       x.strokeText(linea, cx, 1056); x.fillStyle = '#ffe9a8'; x.fillText(linea, cx, 1056);
-      if (q.mejor) { const l2 = `${tx('tormentaCorta')}: ${q.mejor} ${tx('puntos')}`; x.font = F(600, 40); x.lineWidth = 10; x.strokeText(l2, cx, 1110); x.fillStyle = '#fff'; x.fillText(l2, cx, 1110); }
+      if (!vuelo && q.mejor) { const l2 = `${tx('tormentaCorta')}: ${q.mejor} ${tx('puntos')}`; x.font = F(600, 40); x.lineWidth = 10; x.strokeText(l2, cx, 1110); x.fillStyle = '#fff'; x.fillText(l2, cx, 1110); }
       // Vittata, la cotorra de la casa y el lema
       try { const im = await G.AVE.assets.image('assets/vittata.png'); if (im) { const s = 330; x.drawImage(im, W - s - 30, H - s - 8, s, s); } } catch (e) { /* sin imagen */ }
       x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = B(700, 34);
       const cot = d.nombre && G.creador && G.creador.esNombreDeLista && G.creador.esNombreDeLista(d.nombre) ? d.nombre : null;
       if (cot) { x.font = F(600, 42); x.fillStyle = '#ffe9a8'; x.fillText(cot, 56, 1236); }
       x.font = B(700, 28); x.fillStyle = '#fff'; x.fillText(tx('lema'), 56, 1288, 640);
-      x.font = F(600, 34); x.fillStyle = '#ffd27a'; x.fillText('amazona-verse.vercel.app', 56, 1328);
+      x.font = F(600, 34); x.fillStyle = '#ffd27a'; x.fillText(vuelo ? 'amazonaverse.com' : 'amazona-verse.vercel.app', 56, 1328);
       return aBlobPNG(cv);
     }
     // Récord: la misma puerta; la tarjeta se prepara mientras se resuelve la suma
@@ -705,15 +843,16 @@
       o = o || {};
       if (compartiendo) return 'ocupado';
       const d = leer();
-      if (!d.retos.carrera.mejor) { avisar(tx('sinCarrera'), 4000); return 'sin-record'; }
+      const vuelo = o.modo === 'flight'; // Amazona Flight (src/game/flight.js): misma puerta y misma tarjeta, con sus puntos
+      if (vuelo ? !(d.retos.flight && d.retos.flight.mejor) : !d.retos.carrera.mejor) { avisar(vuelo ? tx('sinVuelo') : tx('sinCarrera'), 4000); return 'sin-record'; }
       compartiendo = true;
       try {
-        const preparar = Promise.resolve().then(() => (o.preparar ? o.preparar(d) : tarjetaPNG(d))); preparar.catch(() => {});
+        const preparar = Promise.resolve().then(() => (o.preparar ? o.preparar(d) : tarjetaPNG(d, o.modo))); preparar.catch(() => {});
         if (!(await puerta(o))) return 'puerta';
         avisar(tx('preparando'), 6000);
         const blob = await preparar.catch(() => null);
         if (!blob) { avisar(tx('errImagen'), 4000); return 'error'; }
-        const r = await compartirArchivo(blob, 'amazona-verse-mi-record.png', { title: tx('tituloRecord'), text: tx('tituloRecord') + ' · ' + reloj(d.retos.carrera.mejor / 1000) + ' · amazona-verse.vercel.app' }, o);
+        const r = await compartirArchivo(blob, vuelo ? 'amazona-flight-mi-record.png' : 'amazona-verse-mi-record.png', { title: tx('tituloRecord'), text: vuelo ? 'Amazona Verse · Amazona Flight · ' + d.retos.flight.mejor + ' ' + tx('obstaculos') + ' · amazonaverse.com' : tx('tituloRecord') + ' · ' + reloj(d.retos.carrera.mejor / 1000) + ' · amazona-verse.vercel.app' }, o);
         resultado(r);
         return r;
       } finally { compartiendo = false; }
@@ -896,7 +1035,7 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = { abrir, cerrar, abierto: () => abierto, leer, sincronizar, anotar, puerta, compartirComic, compartirRecord, compartirArchivo, descargar, tarjetaPNG, etiquetas, test, CLAVE, reloj };
+    const api = { publicarRanking, abrirRank: () => rankAbierto, cerrarRank, aliasDe, ANIMALES, ADJETIVOS, abrir, cerrar, abierto: () => abierto, leer, sincronizar, anotar, puerta, compartirComic, compartirRecord, compartirArchivo, descargar, tarjetaPNG, etiquetas, test, CLAVE, reloj };
     G.recordsApi = api;
     return api;
   };

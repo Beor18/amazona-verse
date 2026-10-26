@@ -752,7 +752,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <a href="#aprender"><span data-l="es">Aprender</span><span data-l="en">Learning</span></a>
       <a href="#maestros"><span data-l="es">Maestros</span><span data-l="en">Teachers</span></a>
       <a href="#ropero"><span data-l="es">Ropero</span><span data-l="en">Wardrobe</span></a>
-      <a href="#retos"><span data-l="es">Retos</span><span data-l="en">Challenges</span></a>
+      <a href="#retos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
       <a href="#conservacion"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></a>
       <a href="#escuelas"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
       <a href="#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
@@ -1171,10 +1171,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 <!-- ================= MODO RETOS ================= -->
 <section class="section" id="retos" aria-labelledby="h-retos">
   <div class="wrap">
-    <span class="eyebrow"><span data-l="es">Modo Retos</span><span data-l="en">Challenge Mode</span></span>
-    <h2 class="h2" id="h-retos"><span data-l="es">Vuela, explora y salva tu isla</span><span data-l="en">Fly, explore and save your island</span></h2>
-    <p class="lead" data-l="es">Cuando termines la historia, o cuando quieras un rato de acción, el Modo Retos te espera: carreras en el aire y misiones contra reloj, para todas las edades.</p>
-    <p class="lead" data-l="en">After the story, or whenever you want a burst of action, Challenge Mode is waiting: races through the air and missions against the clock, for all ages.</p>
+    <span class="eyebrow"><span data-l="es">Retos y minijuegos</span><span data-l="en">Challenges and minigames</span></span>
+    <h2 class="h2" id="h-retos"><span data-l="es">Una partida rápida, otra más y a superar tu récord</span><span data-l="en">One quick round, then another, and beat your record</span></h2>
+    <p class="lead" data-l="es">Además de la aventura, Amazona Verse tiene minijuegos de un minuto en el mismo mundo: carreras en el aire, una tormenta que te persigue, un banquete de frutas y vuelo sin fin entre los troncos. Fáciles de entender, difíciles de soltar y para todas las edades.</p>
+    <p class="lead" data-l="en">Besides the adventure, Amazona Verse has one-minute minigames in the same world: races through the air, a storm on your tail, a fruit feast and endless flight between the trunks. Easy to pick up, hard to put down, for all ages.</p>
     <div class="ns-grid" style="margin-top:32px;align-items:start">
       <figure class="loop-fig">
         <div class="screen loop">
@@ -1192,7 +1192,68 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         </div>
         <figcaption><b><span data-l="es">¡Escapa de la tormenta!</span><span data-l="en">Escape the storm!</span></b> <span data-l="es">Corre y vuela antes de que te alcancen las nubes.</span><span data-l="en">Run and fly before the clouds catch up with you.</span></figcaption>
       </figure>
+      <figure class="loop-fig">
+        <div class="screen loop">
+          <img src="assets/img/minijuego-flight.jpg" width="800" height="445" loading="lazy"
+               alt="Amazona Flight: Vittata vuela de lado entre columnas de tronco, con la isla al fondo."
+               data-en-alt="Amazona Flight: Vittata flies sideways between trunk pillars, with the island in the background.">
+        </div>
+        <figcaption><b><span data-l="es">Amazona Flight (nuevo).</span><span data-l="en">Amazona Flight (new).</span></b> <span data-l="es">Un toque para aletear. Pasa entre los troncos sin parar y supera tu récord.</span><span data-l="en">One tap to flap. Keep flying between the trunks and beat your record.</span></figcaption>
+      </figure>
+      <figure class="loop-fig">
+        <div class="screen loop">
+          <img src="assets/img/minijuego-banquete.jpg" width="800" height="500" loading="lazy"
+               alt="¡Banquete!: Vittata recoge frutos en vuelo sobre la colina y suma un combo de puntos."
+               data-en-alt="Feast!: Vittata grabs fruit in flight over the hill and builds a points combo.">
+        </div>
+        <figcaption><b><span data-l="es">¡Banquete!</span><span data-l="en">Feast!</span></b> <span data-l="es">75 segundos para recoger frutos de las palmas sin tocar el suelo.</span><span data-l="en">75 seconds to grab fruit from the palms without touching the ground.</span></figcaption>
+      </figure>
     </div>
+    <p style="margin-top:24px" data-l="es">También: <b>contrarreloj del río</b>, <b>carrera contra tu fantasma</b> y <b>Save the Parrot</b>, el rescate de un pichón. Muy pronto: <b>Amazona Maze</b> y <b>River Rush</b>.</p>
+    <p style="margin-top:24px" data-l="en">Also: <b>river time trial</b>, <b>race your ghost</b> and <b>Save the Parrot</b>, a chick rescue. Coming soon: <b>Amazona Maze</b> and <b>River Rush</b>.</p>
+    <div class="top-records" id="top-records" aria-labelledby="h-top">
+      <h3 class="h3" id="h-top"><span data-l="es">Top récords de Amazona Verse</span><span data-l="en">Amazona Verse top records</span></h3>
+      <div class="tr-tabs" role="tablist"></div>
+      <ol class="tr-lista" aria-live="polite"></ol>
+      <p class="tr-nota"><span data-l="es">Los jugadores salen con un apodo de cotorra o de animal de la isla, nunca con su nombre. Juega, supera tu marca y publícala desde la pantalla de resultados.</span><span data-l="en">Players appear under a parrot or island-animal nickname, never their name. Play, beat your mark and publish it from the results screen.</span></p>
+    </div>
+    <style>
+      .top-records { margin-top: 32px; padding: 20px; border-radius: 18px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 2px rgba(255,210,122,.35); }
+      .top-records .h3 { margin: 0 0 12px; font-family: var(--font-display); color: var(--gold); }
+      .tr-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+      .tr-tabs button { font: 700 var(--fs-xs, 14px)/1 var(--font-display); padding: 8px 14px; border-radius: 999px; border: 0; cursor: pointer; background: rgba(255,255,255,.1); color: var(--paper); }
+      .tr-tabs button[aria-selected="true"] { background: var(--gold); color: var(--ink); }
+      .tr-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; min-height: 2em; }
+      .tr-lista li { display: flex; gap: 12px; align-items: baseline; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.06); }
+      .tr-lista li b { min-width: 2.2em; color: var(--gold); }
+      .tr-lista li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .tr-lista li em { font-style: normal; font-weight: 700; }
+      .tr-nota { margin: 12px 0 0; color: var(--muted); font-size: .92em; }
+    </style>
+    <script>
+    (function () {
+      var API = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records';
+      var RETOS = [['flight', 'Amazona Flight', 'Amazona Flight', 'obstáculos', 'obstacles'], ['banquete', '¡Banquete!', 'Feast!', 'puntos', 'points'], ['tormenta', '¡Escapa de la tormenta!', 'Escape the storm!', 'puntos', 'points'], ['carrera', 'Carrera', 'Race', '', ''], ['rio', 'Contrarreloj del río', 'River time trial', '', '']];
+      var caja = document.getElementById('top-records'); if (!caja) return;
+      var tabs = caja.querySelector('.tr-tabs'), lista = caja.querySelector('.tr-lista'), datos = null, actual = 'flight';
+      var en = function () { return document.documentElement.lang === 'en'; };
+      var reloj = function (ms) { var s = ms / 1000, m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
+      function pintar() {
+        tabs.innerHTML = ''; RETOS.forEach(function (r) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(r[0] === actual)); b.textContent = en() ? r[2] : r[1]; b.onclick = function () { actual = r[0]; pintar(); }; tabs.appendChild(b); });
+        lista.innerHTML = '';
+        var r = RETOS.filter(function (x) { return x[0] === actual; })[0], t = datos && datos[actual] ? datos[actual].top : null;
+        var vacio = function (txt) { var li = document.createElement('li'); li.textContent = txt; lista.appendChild(li); };
+        if (!datos) return vacio(en() ? 'Loading records…' : 'Cargando récords…');
+        if (!t || !t.length) return vacio(en() ? 'No records yet. Be the first!' : 'Todavía no hay récords. ¡Sé el primero!');
+        t.forEach(function (f) { var li = document.createElement('li'), b = document.createElement('b'), s = document.createElement('span'), e = document.createElement('em');
+          b.textContent = f.puesto + '.'; s.textContent = f.alias; e.textContent = r[3] ? f.valor + ' ' + (en() ? r[4] : r[3]) : reloj(f.valor);
+          li.appendChild(b); li.appendChild(s); li.appendChild(e); lista.appendChild(li); });
+      }
+      pintar();
+      fetch(API + '?n=10').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { datos = j || {}; pintar(); }).catch(function () { datos = {}; pintar(); });
+      new MutationObserver(pintar).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    })();
+    </script>
     <ul class="ns-promises" style="margin-top:28px">
       <li data-icon="check"><span data-l="es"><b>Récords de la casa:</b> el juego guarda tus mejores marcas en «Mis récords», en este dispositivo, para que intentes superarte.</span><span data-l="en"><b>House records:</b> the game keeps your best marks in “My records”, on this device, so you can try to beat yourself.</span></li>
       <li data-icon="check"><span data-l="es"><b>Cómic para compartir:</b> tus momentos y tus récords se vuelven viñetas con humor que puedes compartir.</span><span data-l="en"><b>A comic to share:</b> your moments and records become funny panels you can share.</span></li>
