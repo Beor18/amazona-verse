@@ -513,7 +513,7 @@
         // 10. Compartir pasa por la puerta para adultos
         base(); M().t = 100; S.complete = true; S.events.push({ key: 'ChapterCompleted', t: 1 }); paso(0.016);
         let blob = null;
-        const pr = compartir({ preparar: () => new Blob(['x'], { type: 'image/png' }), azar: () => 0.5, descargar: async b => { blob = b; return 'descargado'; }, movil: false });
+        const pr = compartir({ preparar: () => new Blob(['x'], { type: 'image/png' }), descargar: async b => { blob = b; return 'descargado'; }, movil: false });
         for (let i = 0; i < 200 && !($('rec-puerta') && !$('rec-puerta').hidden); i++) await new Promise(r => setTimeout(r, 25));
         const pu = $('rec-puerta');
         check('Compartir abre la puerta para adultos antes de compartir nada', !!pu && !pu.hidden && blob === null);
