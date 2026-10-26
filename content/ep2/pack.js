@@ -21,7 +21,7 @@
 
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Otra tormenta en tres días. El refugio no aguanta.', 'Ya sé dónde pondré la casa… ¿o no? [KELVIN: lo que dice la Voz y la luz de la niebla]'] },
-    { id: 'e_luma', disparador: 'interact:luma', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
+    { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
     { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Falta escuchar a quienes van a vivir ahí… pero eso es otra misión. [KELVIN: quiénes son los dos residentes]'] },
   ] };
 
@@ -49,17 +49,17 @@
       arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#3f8f4a', evitar: [LUMA, NIDO].concat(IDS.map(i => SITIOS[i])) },
       oceano: { color: '#4a9ab8', y: -2.6 },
     },
-    // id histórico 'luma': el personaje se llama Iguaca
-    npcs: [{ id: 'luma', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true }],
+    // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
+    npcs: [{ id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true }],
     objetos: {}, recursos: [],
 
     // ---------- Historia: hablar, leer la tierra (misión 1) y cerrar con Iguaca ----------
     historia: {
       pasos: [
-        { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('luma') },
+        { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
         { id: 'tierra', texto: 'Lee la tierra: observa los 3 sitios y elige uno', progreso: S => ` (${IDS.filter(i => S.collected.includes(lee(i))).length}/3)`,
           hasta: { mision: 'lee_tierra' }, guia: G => { const S = G.S, i = IDS.find(k => !S.collected.includes(lee(k))); return G.misiones.at('sitio_' + (i || IDS[0])); } },
-        { id: 'volver', texto: 'Cuéntale a Iguaca lo que elegiste', guia: G => G.misiones.at('luma') },
+        { id: 'volver', texto: 'Cuéntale a Iguaca lo que elegiste', guia: G => G.misiones.at('iguaca') },
       ],
       fin: () => 'Leíste la tierra y elegiste con evidencia. Siguen «Escuchar primero» y «Casa que aguanta» (prototipo: aún no jugables).',
     },
@@ -75,9 +75,9 @@
     ],
     eventos: { defs: {
       PlayerCharacterCreated: { type: 'CharacterCreated', loc: 'villa', chars: ['player'], scene: 'portrait' },
-      StormWarning: { type: 'QuestAccepted', loc: 'villa', chars: ['vittata', 'luma'], scene: 'dialogue' },
+      StormWarning: { type: 'QuestAccepted', loc: 'villa', chars: ['vittata', 'iguaca'], scene: 'dialogue' },
       TerrainRead: { type: 'LocationDiscovered', loc: 'villa', chars: ['vittata'], scene: null },
-      SiteChosen: { type: 'LandDecisionMade', loc: 'villa', chars: ['vittata', 'luma'], scene: 'final' },
+      SiteChosen: { type: 'LandDecisionMade', loc: 'villa', chars: ['vittata', 'iguaca'], scene: 'final' },
     } },
     dialogos: { datos: () => DIALOGOS, retratos: { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png' }, retratoDefecto: 'assets/vittata.png' },
     comic: {
@@ -97,7 +97,7 @@
       const elegido = () => IDS.find(i => S.collected.includes(elige(i)));
 
       function hablar() {
-        if (S.step === 0) { G.dialogo.say(L('interact:luma'), () => G.misiones.advanceTo(1)); return; }
+        if (S.step === 0) { G.dialogo.say(L('interact:iguaca'), () => G.misiones.advanceTo(1)); return; }
         if (S.step === 1) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
         if (S.step === 2 && !S.complete) {
           S.complete = true; G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock');
@@ -107,7 +107,7 @@
         }
         G.dialogo.say([Lu('Ya tienes el sitio. La próxima misión es escuchar a quienes vivirán ahí.')]);
       }
-      G.interaccion.add({ id: 'luma', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 && !S.complete ? 'Contarle a Iguaca' : 'Hablar con Iguaca', use: hablar });
+      G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 && !S.complete ? 'Contarle a Iguaca' : 'Hablar con Iguaca', use: hablar });
 
       // Cada sitio: primero se observa (pendiente, suelo, viento); con los 3 leídos, se puede elegir
       for (const id of IDS) {
@@ -121,12 +121,12 @@
           label: () => leidos().length === 3 ? 'Elegir ' + s.nombre : 'Observar ' + s.nombre,
           use: () => {
             if (!S.collected.includes(lee(id))) {
-              S.collected.push(lee(id)); G.eventos.log('TerrainRead'); G.audio.play('pickup');
+              S.collected.push(lee(id)); G.eventos.log('TerrainRead'); G.misiones.check(); G.audio.play('pickup');
               G.dialogo.say([{ who: 'Vittata', img: 'assets/vittata.png', text: `En ${s.nombre}: pendiente ${s.pendiente}; ${s.suelo}; viento ${s.viento}.` }]);
               return;
             }
             if (leidos().length < 3) { G.ui.toast('Observa los 3 sitios antes de elegir', 2500); return; }
-            S.collected.push(elige(id)); G.audio.play('unlock');
+            S.collected.push(elige(id)); G.misiones.check(); G.audio.play('unlock');
             G.dialogo.say([{ who: 'Vittata', img: 'assets/vittata.png', text: `Elijo ${s.nombre}. [KELVIN: aquí iría la consecuencia en la prueba de tormenta, misión 3]` }]);
             G.fx.burst(s.x, y + 1.5, s.z, 'gold', 20);
           } });
@@ -151,7 +151,7 @@
         check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
         check('Empieza en el paso 1 de 3', S.step === 0 && $('steps').children.length === 3);
         check('Los marcadores [KELVIN] no son canon: están en los diálogos', JSON.stringify(G.pack.dialogos.datos()).includes('[KELVIN') );
-        useAt('luma'); drain();
+        useAt('iguaca'); drain();
         check('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
         check('Antes de leer los 3 sitios no se puede elegir', (useAt('sitio_a'), drain(), useAt('sitio_a'), drain(), !S.collected.includes('sitio_a')) && S.collected.includes('lee_a'));
         useAt('sitio_b'); drain(); useAt('sitio_c'); drain();
@@ -160,7 +160,7 @@
         check('Elige un sitio: la misión se completa y llegan los lentes', S.missions.lee_tierra && S.step === 2 && S.unlocked.includes('lentes:#2b2b2b:binoculares'), JSON.stringify(S.missions));
         useAt('parada_nido'); drain();
         check('Parada del nido: dato con su fuente y evento', G.eventos.had('DatoNido'));
-        useAt('luma'); drain();
+        useAt('iguaca'); drain();
         check('Final: sitio elegido, pantalla de fin', S.complete && S.step === G.misiones.DONE && !$('end').hidden);
         check('El cómic sale de los eventos', G.comic.comicPanels().length === 2);
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
