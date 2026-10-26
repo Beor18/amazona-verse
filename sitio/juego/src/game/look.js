@@ -314,17 +314,20 @@ window.AVLook = function (G) {
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
   function medir() {
     const s = R.stats(), vistas = new Set(); let bytes = 0, n = 0, grandes = 0;
+    let atlas = 0;
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, t => {
       if (vistas.has(t)) return; vistas.add(t);
       const img = t.image, w = img && (img.width || (img.data && img.width)) || 0, h = img && img.height || 0;
-      if (!w) return; n++; if (w > 512) grandes++;
+      if (!w) return; n++;
+      const esAtlas = /\/tex_hd\/hd_/.test((img && (img.src || img.currentSrc)) || '');
+      if (w > 512) { grandes++; if (esAtlas) atlas++; }
       bytes += w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1);
     }); });
     const C = R.calidad, sombra = C.sombras ? C.sombras * C.sombras * 4 : 0;
     const dbs = R.renderer.getDrawingBufferSize(new THREE.Vector2()), post = R.post.activo ? dbs.x * dbs.y * 8 * 2.5 : 0;
     const pm = performance.memory, heapMB = pm && pm.usedJSHeapSize ? Math.round(pm.usedJSHeapSize / 1048576) : null;
     return { look: actual || 'fabrica', fps: s.fps, calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, post: s.post,
-      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
+      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, atlasGrandes: atlas, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
       sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10 };
   }
 
@@ -404,7 +407,8 @@ window.AVLook = function (G) {
             /CustomToneMapping\( vec3 color \) \{ return ACESFilmicToneMapping\( color \); \}/.test(SC.tonemapping_pars_fragment) && (!pg || (pg.uSat.value === 1 && pg.uCon.value === 1 && pg.uTint.value.x === 1 && pg.uVig.value === (R.post.grade.uniforms.uVig.value))), pg ? 'composer' : 'sin composer'); }
         if (L.toon) {
           check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
-          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, m1.texturasGrandes < m0.texturasGrandes || m0.texturasGrandes === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' texturas de más de 512 px · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          const g0 = m0.texturasGrandes - (m0.atlasGrandes || 0), g1 = m1.texturasGrandes - (m1.atlasGrandes || 0);
+          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, g1 < g0 || g0 === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' (el atlas HD no se encoge: ' + (m1.atlasGrandes || 0) + ') · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
         }
         if (L.refinado) {
           const hojas = new Set(), tintes = new Set(), rim = [], sinRim = [];

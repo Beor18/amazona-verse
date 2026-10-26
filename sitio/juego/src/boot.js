@@ -41,6 +41,7 @@
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
+    if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
@@ -115,6 +116,8 @@
     const cargarAtardecer = aDemanda('src/game/atardecer.js', 'AVAtardecer');
     AV.atardecer = cargarAtardecer; AV.atardecerTest = o => cargarAtardecer().then(a => a.test(o));
     if (/[?&]atardecer=/.test(location.search)) cargarAtardecer().catch(() => {});
+    // Amazona Flight (C14, src/game/flight.js): prototipo oculto (fase 3 la deciden Kelvin y Fernando); ?mini=flight (al cerrar la portada) o AV.flight() lo abren; AV.flightTest()
+    const cargarFlight = aDemanda('src/game/flight.js', 'AVFlight'); AV.flight = () => cargarFlight().then(f => f.abrir()); AV.flightTest = o => cargarFlight().then(f => f.test(o)); if (/[?&]mini=flight\b/.test(location.search)) { const ir = () => setTimeout(() => AV.flight().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color

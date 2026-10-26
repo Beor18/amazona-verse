@@ -74,6 +74,7 @@
       carreraCorta: ['Carrera', 'Race'], tormentaCorta: ['Tormenta', 'Storm'],
       rescate: ['¡Salva al pichón!', 'Save the Parrot'], // src/game/rescate.js
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
+      flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
       puertaTitulo: ['Pide ayuda a un adulto', 'Ask an adult for help'], puertaTexto: ['Para compartir hace falta un adulto. Resuelve esta suma:', 'Sharing needs a grown-up. Solve this sum:'],
@@ -110,7 +111,9 @@
     const rescateLimpio = z => ({ mejor: num(z.mejor), medalla: MEDALLAS_RIO.includes(z.medalla) ? z.medalla : null, oros: ent(z.oros), jugadas: ent(z.jugadas) }); // src/game/rescate.js
     function retosDe(d) {
       const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {}, b = ok && esObj(d.banquete) ? d.banquete : {};
+      const f = ok && esObj(d.flight) ? d.flight : null; // src/game/flight.js: solo si se jugó
       return {
+        flight: f ? { mejor: num(f.mejor), jugadas: ent(f.jugadas) } : null,
         banquete: { mejor: num(b.mejor), frutos: ent(b.frutos), jugadas: ent(b.jugadas) }, // src/game/banquete.js
         carrera: { mejor: num(c.mejor), puesto: Number.isInteger(c.puesto) && c.puesto >= 1 && c.puesto <= PARTICIPANTES_MAX ? c.puesto : null, oros: ent(c.oros), jugadas: ent(c.jugadas) },
         tormenta: { mejor: num(q.mejor), tiempo: num(q.tiempo), jugadas: ent(q.jugadas) },
@@ -170,6 +173,7 @@
         const r = retosDe({ v: 1, carrera: e.carrera, tormenta: e.tormenta, rio: e.rio, banquete: e.banquete });
         out.jugadores[nombre] = { banquete: r.banquete, carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
         if (esObj(e.rescate)) out.jugadores[nombre].rescate = rescateLimpio(e.rescate); // src/game/rescate.js
+        if (esObj(e.flight)) out.jugadores[nombre].flight = { mejor: num(e.flight.mejor), jugadas: ent(e.flight.jugadas) }; // src/game/flight.js
       }
       return out;
     }
@@ -271,6 +275,10 @@
           if (!z.mejor || ms < z.mejor) z.mejor = ms;
           if (MEDALLAS_RIO.includes(r.medalla)) { if (!z.medalla || MEDALLAS_RIO.indexOf(r.medalla) < MEDALLAS_RIO.indexOf(z.medalla)) z.medalla = r.medalla; if (r.medalla === 'oro') z.oros++; }
         }
+      } else if (r.modo === 'flight') { // src/game/flight.js (C14): mejor cuenta de obstáculos superados
+        const f = e.flight || (e.flight = { mejor: null, jugadas: 0 }); f.jugadas++;
+        const pts = Number.isInteger(r.puntos) && r.puntos > 0 && r.puntos <= 1e5 ? r.puntos : null;
+        if (pts && (!f.mejor || pts > f.mejor)) f.mejor = pts;
       } else return false;
       sumarVistas(libro, [especieDe(sOpc || fuenteS())]);
       guardarCasa(libro);
@@ -378,8 +386,12 @@
         ? `<div class="rec-grande">${medalla(z.medalla, z.medalla ? '★' : null)}<div><b class="rec-num">${reloj(z.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}${z.medalla ? ' · ' + esc(tx(z.medalla)) : ''}</small></div></div>
            <dl>${dato(tx('jugadas'), z.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${z && z.jugadas ? `<dl>${dato(tx('jugadas'), z.jugadas)}</dl>` : ''}`;
+      const f = d.retos.flight; // src/game/flight.js: la tarjeta solo sale si se ha jugado (modo oculto hasta la fase 3)
+      const flight = !f ? '' : `<article class="rec-card"><h4>${esc(tx('flight'))}</h4>${f.mejor
+        ? `<div class="rec-grande">${medalla(f.mejor >= 60 ? 'oro' : f.mejor >= 25 ? 'plata' : 'bronce', '★')}<div><b class="rec-num">${f.mejor}</b><small>${esc(tx('obstaculos'))}</small></div></div><dl>${dato(tx('jugadas'), f.jugadas)}</dl>`
+        : `<p>${esc(tx('sinRecord'))}</p>${f.jugadas ? `<dl>${dato(tx('jugadas'), f.jugadas)}</dl>` : ''}`}</article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article></div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}</div></section>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;

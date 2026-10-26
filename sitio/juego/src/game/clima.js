@@ -315,8 +315,9 @@ window.AVClima = function (G) {
       ok('En 13 s la niebla llega a ≤ 270 m y llueve', scene.fog.far <= 270 && G.fx.rain.visible, Math.round(scene.fog.far) + ' m');
       ok('El sol baja a ×0,45 y el cielo se agrisa', Math.abs(R.sun.intensity - orig.sol * 0.45) < 0.02 && vis.mezcla > 0.99, R.sun.intensity.toFixed(2));
       let mus = null; try { mus = window.AV && AV.musica ? await AV.musica() : G.musicaApi; } catch (e) { mus = null; }
-      if (mus) for (let i = 0; i < 20 && mus.estado().pista !== 'tension'; i++) await espera(500); // 5 s de lluvia + 0,7 s de calma de musica.js
-      ok('Con el aguacero, la música pasa a «tension» tras 5 s', mus && mus.estado().pista === 'tension', mus ? mus.estado().pista : 'sin musica.js');
+      const lluviaMus = () => !!mus && (mus.banda ? mus.estado().momento === 'lluvia' && mus.estado().pista === mus.banda.momentos.lluvia : mus.estado().pista === 'tension'); // C13: la pista de la lluvia sale de la tabla BANDA_SONORA
+      if (mus) for (let i = 0; i < 20 && !lluviaMus(); i++) await espera(500); // 5 s de lluvia + 0,7 s de calma de musica.js
+      ok('Con el aguacero, la música pasa al momento «lluvia» tras 5 s (su pista, de la tabla de musica.js)', lluviaMus(), mus ? mus.estado().momento + ' → ' + mus.estado().pista : 'sin musica.js');
       // 2. Crecida: S.event congela el aguacero y el clima no toca el agua
       let llamadas = 0; if (G.agua) G.agua.setLevel = function () { llamadas++; return g.setLevel.apply(this, arguments); };
       const nivel0 = G.agua ? G.agua.levelAt(S.pos.x, S.pos.z) : 0;
