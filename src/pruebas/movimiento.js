@@ -75,7 +75,12 @@ window.AVMovimientoTest = function (G) {
       met.sitio = { x: r2(L.x), z: r2(L.z) };
       // 1. Latencia y arranque: la tecla se lee en el primer paso tras pulsarla
       reset(L.x, L.z);
+      // El arranque se mide sin el freno de la cuesta (uphillSlow = 0): en un sitio inclinado la pendiente solo aparece tras el
+      // primer cuadro (grade = subida / paso) y la meta baja a media rampa, lo que alarga el 90 % sin que el arranque sea peor.
+      // La cuesta se prueba aparte, en 'Pendientes'.
+      const uphill = T.uphillSlow; T.uphillSlow = 0;
       let r = frame(i => { if (i === 0) K.add('w'); }, 45);
+      T.uphillSlow = uphill;
       const lat = r.findIndex(o => o.sp > 0.05);
       met.latenciaCuadros = lat + 1;
       const top = Math.max(...r.map(o => o.sp)); // velocidad de crucero real (en cuesta arriba es algo menor que walk); el máximo, no el último cuadro: un tope no lo falsea
