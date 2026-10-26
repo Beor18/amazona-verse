@@ -258,6 +258,8 @@
         // 4b. Posada junto a otro fruto la Acción dice «Comer» (atajo dicho: se coloca la cotorra en la rama)
         const fr2 = d.mundo.lista.find(f => f.activo && f !== fr);
         if (!fr2) { nota('no hay un segundo fruto activo para comer'); return; }
+        // La primera palma abre la tarjeta del dato. El niño pulsa «¡A comer!» y después Acción.
+        if (G.ui.cardOpen) { const okb = W.document.getElementById('bq-ok'); if (okb) okb.click(); else G.ui.hideCard(); nota('tarjeta del dato: el niño pulsa «¡A comer!»'); }
         G.fisica.endFlight(); G.fisica.MOVE.grounded = true;
         S.pos.x = fr2.x + 0.5; S.pos.z = fr2.z; S.pos.y = fr2.y - 0.7; G.emit('update', 0.016, false, false);
         const cerca = G.interaccion.nearest(), c0 = B.estado().comidos;
