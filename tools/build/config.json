@@ -117,7 +117,8 @@
     ],
     "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso).",
     "inyectar": [
-      "tests/qa/e2e.js"
+      "tests/qa/e2e.js",
+      "tests/qa/ep2_e2e.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar. Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
