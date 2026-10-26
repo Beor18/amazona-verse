@@ -1,0 +1,627 @@
+{
+ "fabrica": {
+  "aldea": {
+   "look": "fabrica",
+   "fps": 34,
+   "calls": 103,
+   "triangulos": 645635,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 44,
+   "heapMB": 77,
+   "geometrias": 209,
+   "texturasGPU": 86,
+   "texturas": 102,
+   "texturasGrandes": 15,
+   "texturasMB": 225.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 27.41,
+   "fpsMedidos": 36,
+   "msMediana": 16.7,
+   "msP90": 33.3,
+   "cuadros": 180,
+   "cam": [
+    126,
+    14,
+    170
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "yunque": {
+   "look": "fabrica",
+   "fps": 56,
+   "calls": 107,
+   "triangulos": 727876,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 44,
+   "heapMB": 75,
+   "geometrias": 224,
+   "texturasGPU": 87,
+   "texturas": 103,
+   "texturasGrandes": 15,
+   "texturasMB": 227.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 21.57,
+   "fpsMedidos": 46,
+   "msMediana": 16.7,
+   "msP90": 16.8,
+   "cuadros": 180,
+   "cam": [
+    85,
+    36,
+    16
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "rio": {
+   "look": "fabrica",
+   "fps": 56,
+   "calls": 121,
+   "triangulos": 330951,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 71,
+   "heapMB": 85,
+   "geometrias": 228,
+   "texturasGPU": 89,
+   "texturas": 103,
+   "texturasGrandes": 15,
+   "texturasMB": 227.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 32.59,
+   "fpsMedidos": 31,
+   "msMediana": 16.7,
+   "msP90": 49.9,
+   "cuadros": 180,
+   "cam": [
+    194,
+    6,
+    116
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "ciudad": {
+   "look": "fabrica",
+   "fps": 56,
+   "calls": 106,
+   "triangulos": 688036,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 71,
+   "heapMB": 100,
+   "geometrias": 247,
+   "texturasGPU": 91,
+   "texturas": 102,
+   "texturasGrandes": 15,
+   "texturasMB": 225.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 62.78,
+   "fpsMedidos": 16,
+   "msMediana": 16.7,
+   "msP90": 200,
+   "cuadros": 180,
+   "cam": [
+    59,
+    116,
+    -78
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "criadero": {
+   "look": "fabrica",
+   "fps": 41,
+   "calls": 98,
+   "triangulos": 609129,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 71,
+   "heapMB": 97,
+   "geometrias": 248,
+   "texturasGPU": 91,
+   "texturas": 102,
+   "texturasGrandes": 15,
+   "texturasMB": 225.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 77.5,
+   "fpsMedidos": 13,
+   "msMediana": 16.7,
+   "msP90": 216.6,
+   "cuadros": 180,
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  }
+ },
+ "series": {
+  "fabrica": {
+   "aldea": [
+    {
+     "ms": 121.94,
+     "msMediana": 200,
+     "msP90": 216.7,
+     "fps": 5,
+     "calls": 103,
+     "programas": 44,
+     "heapMB": 77,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 27.41,
+     "msMediana": 16.7,
+     "msP90": 33.3,
+     "fps": 34,
+     "calls": 103,
+     "programas": 44,
+     "heapMB": 77,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    }
+   ],
+   "yunque": [
+    {
+     "ms": 44.63,
+     "msMediana": 16.7,
+     "msP90": 199.9,
+     "fps": 5,
+     "calls": 107,
+     "programas": 44,
+     "heapMB": 73,
+     "texturasMB": 227.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 21.57,
+     "msMediana": 16.7,
+     "msP90": 16.8,
+     "fps": 56,
+     "calls": 107,
+     "programas": 44,
+     "heapMB": 75,
+     "texturasMB": 227.1,
+     "calidad": "alto"
+    }
+   ],
+   "rio": [
+    {
+     "ms": 66.02,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 7,
+     "calls": 121,
+     "programas": 71,
+     "heapMB": 65,
+     "texturasMB": 227.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 32.59,
+     "msMediana": 16.7,
+     "msP90": 49.9,
+     "fps": 56,
+     "calls": 121,
+     "programas": 71,
+     "heapMB": 85,
+     "texturasMB": 227.1,
+     "calidad": "alto"
+    }
+   ],
+   "ciudad": [
+    {
+     "ms": 27.78,
+     "msMediana": 16.7,
+     "msP90": 33.4,
+     "fps": 4,
+     "calls": 106,
+     "programas": 71,
+     "heapMB": 89,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 62.78,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 56,
+     "calls": 106,
+     "programas": 71,
+     "heapMB": 100,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    }
+   ],
+   "criadero": [
+    {
+     "ms": 33.24,
+     "msMediana": 16.7,
+     "msP90": 33.4,
+     "fps": 11,
+     "calls": 98,
+     "programas": 71,
+     "heapMB": 97,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 77.5,
+     "msMediana": 16.7,
+     "msP90": 216.6,
+     "fps": 41,
+     "calls": 98,
+     "programas": 71,
+     "heapMB": 97,
+     "texturasMB": 225.8,
+     "calidad": "alto"
+    }
+   ]
+  },
+  "vibrant_toon": {
+   "aldea": [
+    {
+     "ms": 106.29,
+     "msMediana": 50,
+     "msP90": 200,
+     "fps": 5,
+     "calls": 103,
+     "programas": 43,
+     "heapMB": 77,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 47.22,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 15,
+     "calls": 103,
+     "programas": 43,
+     "heapMB": 83,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 96.48,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 6,
+     "calls": 103,
+     "programas": 43,
+     "heapMB": 61,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    }
+   ],
+   "yunque": [
+    {
+     "ms": 40.92,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 31,
+     "calls": 107,
+     "programas": 43,
+     "heapMB": 73,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 151.48,
+     "msMediana": 200,
+     "msP90": 200.1,
+     "fps": 5,
+     "calls": 107,
+     "programas": 43,
+     "heapMB": 77,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 122.03,
+     "msMediana": 183.3,
+     "msP90": 200,
+     "fps": 5,
+     "calls": 107,
+     "programas": 43,
+     "heapMB": 73,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    }
+   ],
+   "rio": [
+    {
+     "ms": 37.13,
+     "msMediana": 16.7,
+     "msP90": 199.9,
+     "fps": 5,
+     "calls": 121,
+     "programas": 45,
+     "heapMB": 79,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 139.25,
+     "msMediana": 200,
+     "msP90": 200,
+     "fps": 37,
+     "calls": 87,
+     "programas": 44,
+     "heapMB": 71,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    },
+    {
+     "ms": 105.74,
+     "msMediana": 50,
+     "msP90": 200.1,
+     "fps": 5,
+     "calls": 121,
+     "programas": 45,
+     "heapMB": 72,
+     "texturasMB": 195.1,
+     "calidad": "alto"
+    }
+   ],
+   "ciudad": [
+    {
+     "ms": 74.53,
+     "msMediana": 16.8,
+     "msP90": 200,
+     "fps": 7,
+     "calls": 106,
+     "programas": 45,
+     "heapMB": 91,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 112.59,
+     "msMediana": 199.9,
+     "msP90": 200,
+     "fps": 6,
+     "calls": 106,
+     "programas": 44,
+     "heapMB": 90,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 40.55,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 17,
+     "calls": 106,
+     "programas": 45,
+     "heapMB": 92,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    }
+   ],
+   "criadero": [
+    {
+     "ms": 26.76,
+     "msMediana": 16.7,
+     "msP90": 33.4,
+     "fps": 58,
+     "calls": 98,
+     "programas": 45,
+     "heapMB": 76,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 89.81,
+     "msMediana": 16.7,
+     "msP90": 200,
+     "fps": 21,
+     "calls": 98,
+     "programas": 44,
+     "heapMB": 77,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    },
+    {
+     "ms": 27.31,
+     "msMediana": 16.7,
+     "msP90": 16.8,
+     "fps": 39,
+     "calls": 98,
+     "programas": 45,
+     "heapMB": 80,
+     "texturasMB": 193.8,
+     "calidad": "alto"
+    }
+   ]
+  }
+ },
+ "vibrant_toon": {
+  "aldea": {
+   "look": "vibrant_toon",
+   "fps": 6,
+   "calls": 103,
+   "triangulos": 647261,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 43,
+   "heapMB": 61,
+   "geometrias": 208,
+   "texturasGPU": 86,
+   "texturas": 102,
+   "texturasGrandes": 7,
+   "texturasMB": 193.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 96.48,
+   "fpsMedidos": 10,
+   "msMediana": 16.7,
+   "msP90": 200,
+   "cuadros": 180,
+   "cam": [
+    125,
+    14,
+    170
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "yunque": {
+   "look": "vibrant_toon",
+   "fps": 5,
+   "calls": 107,
+   "triangulos": 727876,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 43,
+   "heapMB": 73,
+   "geometrias": 223,
+   "texturasGPU": 87,
+   "texturas": 103,
+   "texturasGrandes": 7,
+   "texturasMB": 195.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 122.03,
+   "fpsMedidos": 8,
+   "msMediana": 183.3,
+   "msP90": 200,
+   "cuadros": 180,
+   "cam": [
+    85,
+    36,
+    16
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "rio": {
+   "look": "vibrant_toon",
+   "fps": 5,
+   "calls": 121,
+   "triangulos": 330951,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 45,
+   "heapMB": 72,
+   "geometrias": 228,
+   "texturasGPU": 89,
+   "texturas": 103,
+   "texturasGrandes": 7,
+   "texturasMB": 195.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 105.74,
+   "fpsMedidos": 9,
+   "msMediana": 50,
+   "msP90": 200.1,
+   "cuadros": 180,
+   "cam": [
+    194,
+    6,
+    116
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "ciudad": {
+   "look": "vibrant_toon",
+   "fps": 17,
+   "calls": 106,
+   "triangulos": 688036,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 45,
+   "heapMB": 92,
+   "geometrias": 247,
+   "texturasGPU": 91,
+   "texturas": 102,
+   "texturasGrandes": 7,
+   "texturasMB": 193.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 40.55,
+   "fpsMedidos": 25,
+   "msMediana": 16.7,
+   "msP90": 200,
+   "cuadros": 180,
+   "cam": [
+    59,
+    116,
+    -78
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "criadero": {
+   "look": "vibrant_toon",
+   "fps": 39,
+   "calls": 98,
+   "triangulos": 609129,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 45,
+   "heapMB": 80,
+   "geometrias": 248,
+   "texturasGPU": 91,
+   "texturas": 102,
+   "texturasGrandes": 7,
+   "texturasMB": 193.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 27.31,
+   "fpsMedidos": 37,
+   "msMediana": 16.7,
+   "msP90": 16.8,
+   "cuadros": 180,
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  }
+ }
+}

@@ -63,6 +63,23 @@ aplana las rocas y la ciudad antigua (pierde relieve) y conviene mirarlo en un c
 Pendiente de Kelvin: elegir look (una línea, `DEFECTO`); si elige vibrante o toon, conviene revisar los colores de las paradas
 educativas y del cómic (las fotos del cómic van sin post, pero sí con la gradación).
 
+## Vibrant Toon Refinado (26-oct, prototipo; decisión y regresiones en `DECISION_VISUAL_2026.md`)
+Preset `vibrant_toon` (`?look=vibrant_toon`, chip «Vibrant Toon» en la sección oculta de la pausa; `DEFECTO` sigue en `null`).
+Toon como base, refinado:
+- Gradación con rodilla: sat 1,24 · con 1,07 · cálida, pero la saturación cae a 1 en las altas luces (l > 0,78) y un hombro
+  suave recorta lo que pasa de 0,9: no quema cielo, agua ni plumas claras. Exposición 0,78.
+- Rampa toon a medias: `mix(smoothstep(-0,08; 0,5), saturate, 0,4)` en Phong, Lambert y en la hoja: rocas y ruinas conservan relieve.
+- Bosque con variación: tinte por especie (5 paletas por material de hoja, elegidas por el nombre de su textura, dentro de ±20 %
+  por canal) y por altura (copas más cálidas y claras, bajos más fríos; `vAvAlt` = altura local × escala de la instancia).
+- Paleta unificada: rocas frías (0,9 · 0,93 · 1,0), corteza cálida, ruinas (atlas HD) piedra cálida; cielo, niebla y agua con el
+  mismo azul; relleno hemisférico azul (sombras azuladas); suelo ×1,10.
+- Borde de luz en los personajes: `#define AV_RIM` en los materiales Standard de las mallas con esqueleto (Vittata, cotorras,
+  bandada), inyectado en `tonemapping_fragment` bajo `#if defined(STANDARD) && defined(AV_RIM)`: un Fresnel azul claro (0,55),
+  ponderado por la luminancia de la pluma. Ni geometría, ni rig, ni texturas: al quitar el look el define desaparece.
+- Texturas del mundo a 512 px, como toon.
+- Capturas: `docs/img/vtr_<look>_<vista>.png` (aldea, yunque, rio, ciudad, criadero) y `docs/img/vtr_comparacion.png`; medidas en
+  `docs/img/vtr_medidas.json` (`look_capturas.py --prefijo vtr_ --repetir 2`; `--movil` emula un celular).
+
 ## Pruebas
 `AV.lookTest()`: de fábrica los ShaderChunks, la exposición, las luces y la clave de programas son los de three y del pack; cada
 look se aplica (chunk, exposición, sol, cielo, niebla, clave de programas, chip de la pausa) y sube el croma medio de la imagen;
