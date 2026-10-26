@@ -26,6 +26,7 @@ Los que quedan del pacto empiezan a llegar, pero no se conocen, vienen de islas 
 | Los visitantes | Llegan con algo que saben hacer y algo que necesitan. [KELVIN: quiénes y cuántos] | De extraños a compañeros de obra |
 | Los dos grupos | No se ponen de acuerdo en algo sencillo; los dos tienen razón en algo | De «nosotros y ellos» a «lo que queremos todos» |
 | Las dos voces | Acompañan desde el transmisor. [KELVIN: cómo se presentan y si tienen asiento] | De llamar a ser escuchadas por todos |
+| Los de casa: la abuela, el papá (con el pichón, si ya nació), la navegante y la Vecina | Reciben con Vittata; son el modelo de «sabe hacer / necesita» que aprendieron en los eps. 2 a 4 | De vecinos de Villa Raíz a anfitriones del pacto [KELVIN: si todos tienen asiento] |
 
 ## Misiones (detalle en `EP6_MISIONES.md`)
 

@@ -7,10 +7,10 @@ Estado: **PROPUESTA** (tarea AI1) sobre canon PROVISIONAL (`docs/STORY_BIBLE.md`
 **Canon CONFIRMADO que manda aquí:** la Voz del transmisor son los dos guardianes extintos (inspirados en *Amazona martinicana* y *Amazona violacea*); hablan «desde ahora» y el porqué se revela más adelante. En este episodio se revela **quiénes** son. **Cómo se presentan** queda marcado `[KELVIN]` en cada línea donde importa.
 
 ## Gancho (30 s, antes del control)
-Noche en el taller. Tras el ep. 4, Villa Raíz tiene más gente y más ruido; el transmisor, olvidado en su banco con la antena doblada, se enciende solo. Esta vez no hay una voz, sino dos que se pisan, como dos radios en la misma frecuencia. Iguaca se despierta: «¿Eso es eco?». Vittata, con el destornillador ya en la mano: «No. Esa voz es de ahora… y la otra también». Primera acción: acercarse al transmisor.
+Noche en el taller. Tras el ep. 4, Villa Raíz tiene más gente y más ruido; el transmisor, que desde el ep. 4 solo daba estática y sigue con la antena doblada desde la Ruptura, se enciende solo. Esta vez no hay una voz, sino dos que se pisan, como dos radios en la misma frecuencia. Iguaca se despierta: «¿Eso es eco?». Vittata, con el destornillador ya en la mano: «No. Esa voz es de ahora… y la otra también». Primera acción: acercarse al transmisor.
 
 ## Conflicto
-Las voces llevan cinco episodios llamando y nadie ha podido contestar entero. El Guardián, que sabe más que nadie, no recuerda: reconoce las ruinas del monte, pero cuando intenta explicar se le van las palabras. Vittata quiere resolverlo como siempre: sola, de noche y rápido. Pero un mensaje que cruza la niebla no lo lleva una sola cotorra: lo lleva una cadena.
+Las voces llaman desde el día que se rompió el cielo (cap. 1: «el pacto», ep. 2: «tenemos», ep. 3: «¿nos oyen?») y nadie ha podido contestar entero. El Guardián, que sabe más que nadie, no recuerda: lo que en el cap. 1 parecía prudencia (reconoció el símbolo y calló) eran huecos, y el ep. 4 ya lo dejó ver («antes también se cruzaba este río… pero no recuerdo cómo»). Reconoce las ruinas del monte, pero cuando intenta explicar se le van las palabras. Vittata quiere resolverlo como siempre: sola, de noche y rápido. Pero un mensaje que cruza la niebla no lo lleva una sola cotorra: lo lleva una cadena.
 
 **Esperanza:** lo que se perdió no está borrado del todo; queda en piedras, en relatos y en quien todavía escucha.
 
@@ -23,7 +23,7 @@ Las voces llevan cinco episodios llamando y nadie ha podido contestar entero. El
 | Iguaca | Lleva el Diario; pregunta «¿cómo lo sabes?» | Su curiosidad pasa a ser método: distinguir lo que se sabe de lo que se supone |
 | El Guardián | Recuerda a pedazos. [KELVIN: qué forma tiene; conflicto abierto del registro] | De la vergüenza de olvidar («antes yo sabía esto») a dejar que otros le ayuden a recordar |
 | Las dos voces | Llaman; al final responden enteras. [KELVIN: una voz o dos, aspecto, nombres] | De fragmentos a presencia |
-| Ayudantes del relevo | Atienden las estaciones. [KELVIN: residentes del ep. 2, quien navega del ep. 3, el aprendiz del jugador] | Nadie sobra: cada estación es una persona |
+| Ayudantes del relevo | Atienden las estaciones. Por defecto: la abuela y el papá (ep. 2), la navegante y la Vecina (ep. 3) y el aprendiz del jugador. [KELVIN: quiénes; y si el papá ya tiene al pichón, que nacería hacia este episodio] | Nadie sobra: cada estación es una persona |
 
 ## Misiones (detalle en `EP5_MISIONES.md`)
 
