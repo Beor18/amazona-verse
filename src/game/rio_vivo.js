@@ -213,7 +213,7 @@ window.AVRioVivo = function (G) {
       const db = Math.hypot(b.x - S.pos.x, b.z - S.pos.z);
       if (db > ACTIVO + 6) continue;
       // nadando cerca, el banco se aparta de Vittata; si no, vuelve a su sitio
-      if (nadando && db < HUYE_R + b.ra) { const h = db || 1; b.huye.x += (b.x - S.pos.x) / h * dt * 3; b.huye.z += (b.z - S.pos.z) / h * dt * 3; }
+      if (nadando && db < HUYE_R + b.ra) { const h = db || 1, enc = db < 0.3; b.huye.x += (enc ? b.dx : (b.x - S.pos.x) / h) * dt * 3; b.huye.z += (enc ? b.dz : (b.z - S.pos.z) / h) * dt * 3; } // encima del banco: se apartan a lo largo del cauce
       else { b.huye.x *= Math.max(0, 1 - dt * 0.8); b.huye.z *= Math.max(0, 1 - dt * 0.8); }
       const hh = Math.hypot(b.huye.x, b.huye.z), lim = b.ra + 2; if (hh > lim) { b.huye.x *= lim / hh; b.huye.z *= lim / hh; }
       const e = espDe(b.id), im = mallas[b.id]; if (!e || !im) continue;

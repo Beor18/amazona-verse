@@ -169,7 +169,8 @@ AVE.module('camara', function (G) {
   function fovExtra() {
     const M = G.fisica.MOVE, F = G.fisica;
     if (quieta() || !(M.flying || M.dashT > 0)) return 0;
-    const k = M.dashT > 0 ? 1 : Math.max(0, Math.min(1, ((M.speed || 0) - F.SPEED) / (F.DASH_SPEED - F.SPEED)));
+    const base = M.flying ? F.FLY_SPEED : F.SPEED; // volando, el crucero da fovMin; solo el impulso lo sube
+    const k = M.dashT > 0 ? 1 : Math.max(0, Math.min(1, ((M.speed || 0) - base) / Math.max(0.1, F.DASH_SPEED - base)));
     return CAM.fovMin + (CAM.fovMax - CAM.fovMin) * k;
   }
   function fov(dt) {

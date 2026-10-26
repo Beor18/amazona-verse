@@ -148,7 +148,7 @@ AVE.module('fx', function (G) {
     capa.querySelector('.fx-d2').textContent = nombre || '';
     capa.style.display = 'flex';
     if (capa.getAnimations) capa.getAnimations().forEach(a => a.cancel());
-    clearTimeout(capa._t); capa._t = setTimeout(() => { capa.style.display = 'none'; }, 1500);
+    clearTimeout(capa._t); capa._t = setTimeout(() => { capa.style.display = 'none'; capa.querySelector('.fx-d2').textContent = ''; }, 1500);
     if (!reducido() && capa.animate) {
       capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration: 1500, easing: 'ease-out' });
       capa.firstChild.animate([{ transform: 'translateY(12px) scale(.92)' }, { transform: 'translateY(0) scale(1)', offset: 0.2 }, { transform: 'translateY(0) scale(1)' }], { duration: 1500, easing: 'cubic-bezier(.34,1.56,.64,1)' });

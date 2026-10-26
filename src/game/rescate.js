@@ -266,7 +266,7 @@ window.AVRescate = function (G) {
     if (!R.activo) return false; // salió mientras cargaba el modelo
     ponerPichon(sitio.x, sitio.y, sitio.z);
     if (!o.sinCuenta) G.ui.toast(TXT.inicio, 3600);
-    R.fase = R.cuenta > 0 ? 'cuenta' : 'buscar';
+    R.fase = R.cuenta > 0 ? 'cuenta' : 'buscar'; pintarHud();
     return true;
   }
   function limpiar() {
@@ -403,6 +403,12 @@ window.AVRescate = function (G) {
     if (disponible() && !cartel.g) construirCartel();
     if (cartel.g) cartel.g.visible = disponible();
     if (pichon.root && pichon.root.visible && !llevaPichon()) { const p = posPichon(); itPichon.x = p.x; itPichon.z = p.z; }
+    const s = pichon.saltando; // el saltito del giro 1 va con el tiempo del juego (0,5 s), no con el cuadro
+    if (s && pichon.root) {
+      s.t += dt / 0.5; const k = Math.min(1, s.t), r = pichon.root.position;
+      r.set(s.de.x + (s.a.x - s.de.x) * k, s.de.y + (s.a.y - s.de.y) * k + Math.sin(k * Math.PI) * 1.1, s.de.z + (s.a.z - s.de.z) * k);
+      if (k >= 1) pichon.saltando = null;
+    }
     if (!R.activo || busy || R.fase === 'carga') return;
     if (R.fase === 'cuenta') {
       const antes = Math.ceil(R.cuenta - 0.2); R.cuenta -= dt; const ahora = Math.ceil(R.cuenta - 0.2);
@@ -423,12 +429,7 @@ window.AVRescate = function (G) {
   });
   G.on('render', dt => {
     if (R.activo && R.fase !== 'cuenta' && R.fase !== 'carga') G.fx.guide(llevaPichon() ? cartel.nido : (pichon.root ? posPichon() : null), performance.now() / 1000);
-    const s = pichon.saltando;
-    if (s && pichon.root) {
-      s.t += dt / 0.5; const k = Math.min(1, s.t), r = pichon.root.position;
-      r.set(s.de.x + (s.a.x - s.de.x) * k, s.de.y + (s.a.y - s.de.y) * k + Math.sin(k * Math.PI) * 1.1, s.de.z + (s.a.z - s.de.z) * k);
-      if (k >= 1) pichon.saltando = null;
-    } else if (pichon.root && pichon.root.visible && !llevaPichon() && R.activo) {
+    if (pichon.saltando) { /* el saltito lo mueve el update */ } else if (pichon.root && pichon.root.visible && !llevaPichon() && R.activo) {
       pichon.root.position.y = pichon.base.y + Math.abs(Math.sin(performance.now() / 1000 * 5)) * 0.06; // saltitos de espera
       pichon.root.rotation.y = Math.atan2(S.pos.x - pichon.root.position.x, S.pos.z - pichon.root.position.z);
     }

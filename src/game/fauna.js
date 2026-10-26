@@ -348,7 +348,7 @@
       // La rama y el tronco sí son suelo (para posarse): una malla aparte, fuera de la escena, solo para G.solidos
       const solida = new THREE.Group(); solida.position.copy(m.position); solida.rotation.copy(m.rotation);
       solida.add(new THREE.Mesh(tronco.translate(-LARGO * 0.4, (ALTO + 0.2) / 2 - 0.2, 0), new THREE.MeshLambertMaterial()));
-      const r2 = new THREE.Mesh(rama, new THREE.MeshLambertMaterial()); r2.rotation.z = Math.PI / 2; r2.position.y = ALTO; solida.add(r2);
+      const r2 = new THREE.Mesh(new THREE.BoxGeometry(LARGO, 0.2, 0.6), new THREE.MeshLambertMaterial()); r2.position.y = ALTO; solida.add(r2); // caja ancha: la rejilla de sólidos no pierde una rama fina
       BOA.rama = solida;
       try { if (G.solidos && G.solidos.agregar) G.solidos.agregar(solida); } catch (e) { /* sin sólidos: se mira igual */ }
       m.updateMatrixWorld(true); BOA.centro = new THREE.Vector3(0, ALTO, 0).applyMatrix4(m.matrixWorld);

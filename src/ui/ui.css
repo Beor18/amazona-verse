@@ -444,7 +444,7 @@ kbd {
 }
 #toast b { font: 700 var(--fs-md)/1.25 var(--font-display); }
 /* Logro: el toast trae un título en <b> (Diario de Campo) */
-#toast:has(b) { color: var(--c-ink); background: linear-gradient(135deg, #fff6d6, var(--gold)); border-color: #e0a93a; overflow: hidden; }
+#toast:has(b) { color: var(--c-ink); background: linear-gradient(135deg, #fff6d6, var(--gold)) #fff6d6; border-color: #e0a93a; overflow: hidden; } /* el color de fondo explícito: el contraste se mide contra background-color */
 #toast:has(b)::before { background: var(--i-star) center / 22px no-repeat, #fff; box-shadow: 0 0 0 3px #e0a93a, 0 0 18px rgba(255, 255, 255, 0.9); animation: badge-pop 600ms var(--ease-pop) both; }
 #toast:has(b)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.7) 50%, transparent 70%); transform: translateX(-100%); animation: shine-x 1.4s ease-out 300ms both; pointer-events: none; }
 /* Modo construcción: trae un botón */
