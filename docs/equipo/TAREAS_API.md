@@ -261,6 +261,17 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 - **AJ2:** los 2 errores intermitentes «THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN» que a veces frenan la publicación con la Mac cargada. Encuentra el módulo con `console.trace` en una build bajo carga, arréglalo y añade una prueba.
 - **AJ3:** una ronda de QA de jugador nuevo en escritorio y en móvil a 375×812: aventura, capítulos, Retos, Flight, criadero y menú. Arregla lo roto y anota el resto en `BUGS.md`.
 
+**Carril AL, capítulo 6 jugable** (después del 3 y el 4):
+- **AL1:** implementación jugable de «El pacto de los 36» en `content/ep6/` según `EP6_GDD.md`, `EP6_MISIONES.md` y `EP6_NARRATIVA.md`, con `ep6Test` E2E, ES y EN, capturas y entrada en el menú. Las decisiones `[KELVIN]` quedan con la opción por defecto del GDD y marcadas en el texto.
+
+**Carril AM, la historia de la temporada 1 de punta a punta:**
+- **AM1:** une los 6 capítulos en una sola historia. En `docs/equipo/TEMPORADA1_HILO.md`:
+  - el final de cada capítulo y cómo abre el siguiente;
+  - qué sabe Vittata en cada punto del misterio de las dos voces;
+  - qué personaje aparece dónde.
+  Corrige en los `EP*_NARRATIVA.md` lo que no cuadre (sin tocar el canon confirmado; lo dudoso con `[KELVIN]`). Añade al menú una pantalla «Capítulos» con los 6 (los no jugables, «Próximamente») si no existe, con prueba.
+- La implementación del capítulo 5 la hace Grok (G14). No la empieces aquí.
+
 ## Ronda del 26-oct (tarde): minijuegos y episodio 2
 **Antes de empezar, obligatorio:**
 - **Lee y sigue `AGENTS.md`.** Los commits se hacen con índice temporal: Grok, en Cursor, y Claude hacen commits a la vez.
@@ -386,5 +397,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AI1 | hecha | 19a4a1c (+ 38d38f7) | `EP5_GDD.md`, `EP5_MISIONES.md` y `EP5_NARRATIVA.md` con el formato del ep. 2: M1 «Mensajes en pedazos» (dos voces en el transmisor, patrones de la luz de la niebla), M2 «Lo que recuerdan las piedras» (las 8 ruinas que ya están en el mapa llenan los huecos de la memoria del Guardián; «sé o supongo»; fichas de martinicana y violacea con las fuentes de `especies.js`), M3 «El relevo» (luz, sonido o tela, ninguno lo maximiza todo; línea de vista determinista; Vittata tiene que pedir ayuda) y formativa q1–q6. NGSS 4-PS4-3, 1-PS4-4, 3-LS4-1, 3-5-ETS1-2 (DEPR por verificar). Se revela quiénes son las voces; 10 decisiones `[KELVIN]` (cómo se presentan, por qué hablan desde ahora, nombres, memoria del Guardián, ruinas…). Solo documentos, sin baterías. 38d38f7 repara 19a4a1c, que se llevó por error cosas que otro carril tenía en el índice (fila C15, 5 filas del tablero y 5 capturas c15): ahora HEAD es igual que cc76d68 más los 3 documentos. |
 | AI2 | hecha | dfabd3f | `EP6_GDD.md`, `EP6_MISIONES.md` y `EP6_NARRATIVA.md` con el formato de los eps. 2 y 5: M1 «Cada quien con lo suyo» (visitantes con tarjetas «sabe hacer / necesita», parejas que se cubren), M2 «Nadie lo levanta solo» (tablero del plan con simulación determinista: si Vittata se asigna todo, la tabla queda a medio levantar sin castigo; puestos simultáneos y carga entre dos; planes rápido, que enseña o que descansa, ninguno lo maximiza todo), M3 «El círculo» (mediación en 3 pasos y 36 asientos en 6×6, 4×9, 3×12 o anillo) y formativa q1–q6. NGSS 3-LS2-1, 3-5-ETS1-1, 3-5-ETS1-3, MS-ETS1-4; CCSS 3.OA.A.1, 4.OA.B.4 (DEPR por verificar; conducta en bandada por verificar). 11 decisiones `[KELVIN]` (quiénes llegan, qué es el pacto, asientos de las dos voces, título de Vittata, gancho a la temporada 2…). Solo documentos, sin baterías. |
 | AJ1 | pendiente | | |
+| AL1 | pendiente | | |
+| AM1 | pendiente | | |
 | AJ2 | pendiente | | |
 | AJ3 | pendiente | | |
