@@ -8,7 +8,8 @@
    API: G.idioma = { actual(), activo(), poner('es'|'en'), tr(texto), listo (Promise), faltan(), test }. Prueba: AV.idiomaTest(). */
 AVE.module('idioma', function (G) {
   'use strict';
-  const RUTA = (G.pack && G.pack.idioma) || 'content/cap1/en.js';
+  // pack.idioma: una ruta o una lista (se cargan en orden; p. ej. el ep. 2 suma content/ep2/en.js al de cap1)
+  const RUTAS = [].concat((G.pack && G.pack.idioma) || 'content/cap1/en.js');
   const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
   const ACENTO = /[áéíóúñüÁÉÍÓÚÑ¿¡]/;
   const PALABRA = /(?:^|[\s«"(¡¿])(el|la|los|las|de|del|que|con|para|por|una?|tu|tus|te|se|es|al|su|mi|no|hay|más|muy|ya|vamos|hola|pulsa|toca|usa|elige|sigue|busca|ve|cierra|abre|aún|sin|ahora|otra|otro|cerca|hasta|desde|todo|todos|esta|este|eso|aquí|allí|qué|cómo|dónde)(?=$|[\s.,;:!?»")])/i;
@@ -162,7 +163,7 @@ AVE.module('idioma', function (G) {
   function cargarDic() {
     if (dic) return Promise.resolve(dic);
     if (!cargando) {
-      cargando = (window.AV_EN ? Promise.resolve() : AVE.assets.script(RUTA)).then(() => { dic = window.AV_EN || {}; compilar(dic); return dic; },
+      cargando = (window.AV_EN ? Promise.resolve() : RUTAS.reduce((p, r) => p.then(() => AVE.assets.script(r)), Promise.resolve())).then(() => { dic = window.AV_EN || {}; compilar(dic); return dic; },
         e => { cargando = null; throw e; });
     }
     return cargando;
