@@ -20,6 +20,7 @@
       exportComic: (f, u) => G.comic.exportComic(f, u), portraitCanvasFor: (n, bg) => G.creador.portraitCanvasFor(n, bg),
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
       ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
+      ep5Test: o => T.templateTest(Object.assign({ pack: 'ep5' }, o)), // content/ep5: capítulo 5 de principio a fin
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
@@ -99,6 +100,23 @@
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
     if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); }
+    // Capítulo 5 (G14): entrada en el menú de pausa. El texto lleva data-no-tr; aquí solo el idioma.
+    const bEp5 = document.getElementById('b-ep5');
+    if (bEp5) {
+      const rotuloEp5 = () => {
+        const en = G.aula && G.aula.aj && G.aula.aj.idioma === 'en';
+        if (P.id === 'ep5') return en ? 'Chapter 1' : 'Capítulo 1';
+        return en ? 'Chapter 5' : 'Capítulo 5';
+      };
+      const pintarEp5 = () => { bEp5.textContent = rotuloEp5(); };
+      pintarEp5();
+      bEp5.addEventListener('click', () => {
+        const u = new URL(location.href);
+        if (P.id === 'ep5') u.searchParams.delete('pack'); else u.searchParams.set('pack', 'ep5');
+        location.href = u.pathname + u.search + u.hash;
+      });
+      G.on('aula', k => { if (k === 'idioma') pintarEp5(); });
+    }
     const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
     G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
