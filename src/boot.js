@@ -93,6 +93,10 @@
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
+    // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
+    const cargarLook = aDemanda('src/game/look.js', 'AVLook');
+    AV.lookTest = o => cargarLook().then(l => l.test(o));
+    if (/[?&]look=/.test(location.search)) cargarLook().catch(() => {}); else setTimeout(() => cargarLook().catch(() => {}), 7000);
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }
