@@ -19,7 +19,7 @@ Nivel 2 añade MS-ETS1-1 y MS-ETS1-3 (precisar criterios y combinar las mejores 
 
 ## 2. M1 · «Lee la tierra» (volar, posarse, observar) · ~5 min
 
-**Encaje:** Vittata eligió sitio a ojo; Luma le pide mirarlo como en «La ruta de la gota». Reutiliza las perchas y el botón Observar de `educativa.js`.
+**Encaje:** Vittata eligió sitio a ojo; Iguaca le pide mirarlo como en «La ruta de la gota». Reutiliza las perchas y el botón Observar de `educativa.js`.
 
 | Paso | Habilidad | Qué pasa |
 |---|---|---|
@@ -65,7 +65,7 @@ Recompensa: `casco_constructor` y `botas_constructor`. Eventos: `HomeBuilt`, `St
 
 **Ciencia verificada que se puede usar:** la cotorra anida en cavidades naturales y artificiales; hoy hay más de 900 en tres bosques y dos aviarios; María acabó con la población silvestre de El Yunque (USFWS 2026, ya citado en `EDUCATIVO.md` y `content/comun/huevos.js`). **Por verificar:** medidas y orientación de las cajas nido usadas en PR; no se dan medidas hasta tener la cita.
 
-## 5. «Luma te pregunta» (formativa, ~3 min, sin puntaje visible)
+## 5. «Iguaca te pregunta» (formativa, ~3 min, sin puntaje visible)
 | Ítem | Objetivo | Pregunta |
 |---|---|---|
 | q1 | E1 | ¿Qué sitio se encharca? (imagen de los tres hoyos) |

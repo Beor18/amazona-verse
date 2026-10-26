@@ -7,7 +7,7 @@
 | Presentación | PlayerCharacterCreated | retrato del personaje creado | "Soy {nombre}, aprendiz de Vittata en Villa Raíz." |
 | Taller | WorkshopExplored | captura al explorar el taller | "La Gran Ruptura dañó el taller…" |
 | Decisión | ShelterConstructed | captura tras la lluvia | según la ruta real: colina directa / corrección río→colina / se quedó en el río |
-| Resultado | ChapterCompleted | captura final + símbolo de los 36 | "Ayudamos a la familia de Luma…" |
+| Resultado | ChapterCompleted | captura final + símbolo de los 36 | "Ayudamos a la familia de Iguaca…" |
 
 **Editor (MVP):** título, portada (Vittata, mi personaje, taller, refugio), diseño (cuadrícula 2×2 o tira vertical), reordenar viñetas (↑↓), editar el texto de cada viñeta (máx. 120 caracteres).
 

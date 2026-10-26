@@ -16,7 +16,7 @@ La meta es que niños, jóvenes y familias jueguen el capítulo 1 completo, se d
 | 9 | Accesibilidad: texto, contraste, subtítulos, modo relajado y modo zurdo | **Hecho** · falta: los Retos no leen el modo relajado; a 320 px no caben joystick y botones (de antes) | accesibilidadTest 36/36 |
 | 10 | Diario: datos validados con fuente; especies y 5 paradas | **Hecho** | eduTest 79/79, DIARIO_VALIDACION.md |
 | 11 | Pruebas estables (contextTest y retosTest) | **Hecho** · el E2E tras recargar va en F1 | 3 corridas seguidas de 16/16 y 17/17 |
-| 12 | Mejoras de diversión de Fable (las 5 ★ de `DIVERSION_CAP1.md`) | **Hecho**: Luma llama desde arriba (primer vuelo a los 3 s), diálogo libre (de 222 s a 103 s bloqueado), crecida jugable, lo que gano se ve, cómic con humor y foto | missionTest 62/62, e2eTest 44/44, lugaresTest, momentosTest |
+| 12 | Mejoras de diversión de Fable (las 5 ★ de `DIVERSION_CAP1.md`) | **Hecho**: Iguaca llama desde arriba (primer vuelo a los 3 s), diálogo libre (de 222 s a 103 s bloqueado), crecida jugable, lo que gano se ve, cómic con humor y foto | missionTest 62/62, e2eTest 44/44, lugaresTest, momentosTest |
 | 13 | Jugarlo con 2–3 niños de verdad: duración, dónde se traban, qué les divierte | **Kelvin** (Android y niños) | notas en `BUGS.md` |
 | 14 | Canon pendiente (Guardián, Voz, máquina, medalla) | sale con marcadores neutros; decide Kelvin | `[KELVIN-n]` en `historia.js` |
 

@@ -228,7 +228,7 @@
    "id": "ui_whoosh",
    "t": 48.15,
    "gain_db": -18,
-   "_nota": "Luma abre el diálogo"
+   "_nota": "Iguaca abre el diálogo"
   },
   {
    "id": "ui_click",
@@ -314,7 +314,7 @@
    "id": "ui_whoosh",
    "t": 81.75,
    "gain_db": -18,
-   "_nota": "diálogo de Luma"
+   "_nota": "diálogo de Iguaca"
   },
   {
    "id": "ui_tick",

@@ -13,7 +13,7 @@ La XP llega por el evento `aprendizaje` que emiten aula, Diario y misiones. Cada
 | Fuente | XP | Grupo |
 |---|---|---|
 | Ficha de ciencia verificada | 40 | aprender |
-| "Luma te pregunta" (intento 1, 2 o 3) | 20 / 15 / 10 | aprender: el esfuerzo siempre suma |
+| "Iguaca te pregunta" (intento 1, 2 o 3) | 20 / 15 / 10 | aprender: el esfuerzo siempre suma |
 | Paso de la misión educativa | 15 | aprender |
 | Lección de la liberación | 80 | aprender |
 | Hallazgo del Diario | 25 | explorar |
@@ -64,7 +64,7 @@ La rareza es la dificultad del reto, nunca una probabilidad ni un precio:
 | Playa | Exploración | Misión del fondo del río · 150 XP |
 | Bosque | Diario | "La ruta de la gota" · 3 fichas |
 | Boricua (PR) | Cultura | 4 hallazgos de cultura. Estrellas en la cáscara y **bandera fiel en asta** junto al nido |
-| Espacial | Reto de preguntas | Responder las 7 preguntas de Luma (cualquier intento) |
+| Espacial | Reto de preguntas | Responder las 7 preguntas de Iguaca (cualquier intento) |
 | Dorada | Reto del Diario completo | Diario 12/12 y 3 misiones |
 | Cristal | Reto de conservación | Criar una cotorra hasta adulta y completar la lección de la liberación |
 
@@ -88,7 +88,7 @@ La rareza es la dificultad del reto, nunca una probabilidad ni un precio:
 - **Movimiento reducido:** la eclosión dura la mitad y no hay temblores.
 
 ## 6. Encaje con el capítulo 1 y los futuros
-- **Capítulo 1:** las cápsulas premian las misiones existentes (m1, educativa y m3) y los hitos del Diario, sin tocar el guion. Al terminar la primera misión aparece un nido junto a la Estación de Conservación y el botón «Nido» del HUD; Luma lo presenta una vez.
+- **Capítulo 1:** las cápsulas premian las misiones existentes (m1, educativa y m3) y los hitos del Diario, sin tocar el guion. Al terminar la primera misión aparece un nido junto a la Estación de Conservación y el botón «Nido» del HUD; Iguaca lo presenta una vez.
 - **Compañero:** la cría nacida sigue a Vittata en el mundo (`companero()` y `vestir()` aquí; seguimiento en actores.js).
 - **Capítulos futuros:**
   - Comparten el criadero (`<almacen>.criadero`), porque la clave es del juego y no del pack.

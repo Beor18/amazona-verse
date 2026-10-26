@@ -123,17 +123,17 @@
     },
     // Aula (src/game/aula.js): progreso del aula en el dispositivo, separado de la partida; lecciones en lecciones.js
     aula: { clave: 'amazonaverse.aula.cap1', estado: 'edu', archivo: 'amazonaverse_cap1', lecciones: () => window.AV_LECCIONES_CAP1 },
-    // Criadero (src/game/criadero.js): el nido entra en el mundo desde la charla con Luma (evento LumaHelped, minuto 2), no al
-    // terminar la primera misión (DIVERSION_CAP1 mejora 2). Luma lo presenta en cuanto el jugador queda libre.
+    // Criadero (src/game/criadero.js): el nido entra en el mundo desde la charla con Iguaca (evento LumaHelped, minuto 2), no al
+    // terminar la primera misión (DIVERSION_CAP1 mejora 2). Iguaca lo presenta en cuanto el jugador queda libre.
     criadero: { desde: 'LumaHelped' },
-    // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Luma (es un
+    // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Iguaca (es un
     // personaje), las paradas de aprendizaje y los grupos de la escena de Kelvin (nombres internos de assets/data/mapa_cap1.js).
     descubrir: { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] },
     // Diálogos del guion (dialogos_cap1.js, generado desde dialogos_cap1.json)
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,
       // La Voz y el Narrador llevan retratos neutros (arriba): ya no comparten la cara del Guardián ni la de Vittata
-      retratos: { Vittata: 'assets/vittata.png', Luma: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
+      retratos: { Vittata: 'assets/vittata.png', Iguaca: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
       retratoDefecto: 'assets/vittata.png',
       emociones: { feliz: 'happy', triste: 'sad', sorpresa: 'surprised', idea: 'idea', enojo: 'angry' },
     },

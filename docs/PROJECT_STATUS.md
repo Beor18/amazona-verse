@@ -8,7 +8,7 @@
 | 1 Vittata | TESTED (sustituto) | Movimiento, cámara, colisiones, joystick táctil; Vittata como sprite del render |
 | 2 Interacción | TESTED | Objetos, NPC, diálogos, recursos, inventario |
 | 3 Construcción | TESTED | Plano, colocación con validación, costo, estructura persistente |
-| 4 Capítulo 1 | TESTED | Luma, dos terrenos, crecida, corrección, Guardián, transmisor, mirador (pág. 12), final |
+| 4 Capítulo 1 | TESTED | Iguaca, dos terrenos, crecida, corrección, Guardián, transmisor, mirador (pág. 12), final |
 | 5 Personaje del jugador | TESTED | Modelo 3D original con esqueleto, 8 plumajes, 6 accesorios 3D con colores, Taller de los Guardianes, retrato 3D, guardado. Expresión facial: NOT STARTED (el rig no tiene huesos de pico ni párpados) |
 | 6 Motor de cómic | TESTED | Eventos con esquema, selección por eventos reales, editor, PNG y PDF inspeccionados |
 | 7 Cómic oficial | NOT STARTED | Necesita aprobar el diseño de Vittata |

@@ -28,8 +28,8 @@ Ninguno sobra: sus necesidades **chocan** (entrada baja frente a nido alto). La 
 
 ## Misiones (detalle en `EP2_MISIONES.md`)
 
-**1. Lee la tierra** (Luma, tres terrenos)
-- Beat: Vittata ya eligió el sitio "a ojo". Luma la reta: "¿Y si lo miras como la gota?" Recorren tres características: pendiente, suelo (drenaje) y viento.
+**1. Lee la tierra** (Iguaca, tres terrenos)
+- Beat: Vittata ya eligió el sitio "a ojo". Iguaca la reta: "¿Y si lo miras como la gota?" Recorren tres características: pendiente, suelo (drenaje) y viento.
 - Cierre: el sitio que eligió a ojo falla en una de las tres. Vittata: "Ay, bendito. Bueno… lo miro otra vez."
 
 **2. Escuchar primero** (los dos residentes)
@@ -41,7 +41,7 @@ Ninguno sobra: sus necesidades **chocan** (entrada baja frente a nido alto). La 
 - Cierre: mejoran, la segunda prueba aguanta. El papá coloca el huevo en el hueco del nido. La abuela entra sin trepar.
 
 ## Giro
-Tras la tormenta, el transmisor capta la Voz con más claridad: "…Villa Raíz… ¿siguen ahí? …tenemos…" y una palabra nueva que nadie entiende (decisión de canon 4). El Guardián, al ver la casa, saca la medalla del ep. 1 y la cuelga en la puerta, sin explicar por qué. Luma lo nota.
+Tras la tormenta, el transmisor capta la Voz con más claridad: "…Villa Raíz… ¿siguen ahí? …tenemos…" y una palabra nueva que nadie entiende (decisión de canon 4). El Guardián, al ver la casa, saca la medalla del ep. 1 y la cuelga en la puerta, sin explicar por qué. Iguaca lo nota.
 
 ## Final y gancho al ep. 3
 Fiesta de techado (costumbre boricua: se celebra al poner el techo; dato cultural **por verificar** antes de usarlo como ficha). La abuela le enseña al aprendiz del jugador una décima corta (texto original, no tradicional). Vittata vuelve al plano del bote, y esta vez lo pone en la mesa para todos: "¿Qué le falta?" El papá: "Alguien que sepa navegar." Corte a la luz de la niebla. Ep. 3, *Más allá de la bahía*.

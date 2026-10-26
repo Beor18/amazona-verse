@@ -21,18 +21,18 @@ Para el ciclo del agua del Nivel 2, el DEPR 2022 no trae indicador propio: se us
 
 ## 2. Misión M2 · «La ruta de la gota» (hecha)
 
-**Encaje:** en «Tierra firme», Luma lee las marcas de agua y Vittata no escucha. En esta misión Vittata aprende a observar: sigue el agua y vuelve con evidencia. La crecida ocurre siempre, como en el canon; la ciencia informa la elección del terreno, pero no la impone. Desbloquea la `pava`. Duración: sin medir con jugadores (el E2E la recorre en ≈2 minutos sin leer).
+**Encaje:** en «Tierra firme», Iguaca lee las marcas de agua y Vittata no escucha. En esta misión Vittata aprende a observar: sigue el agua y vuelve con evidencia. La crecida ocurre siempre, como en el canon; la ciencia informa la elección del terreno, pero no la impone. Desbloquea la `pava`. Duración: sin medir con jugadores (el E2E la recorre en ≈2 minutos sin leer).
 
 | Paso | Habilidad | Qué pasa |
 |---|---|---|
-| p1 Predecir | hablar | Luma: «¿De dónde salió tanta agua?» Se elige mar, lluvia en la montaña o subsuelo, sin juicio. |
+| p1 Predecir | hablar | Iguaca: «¿De dónde salió tanta agua?» Se elige mar, lluvia en la montaña o subsuelo, sin juicio. |
 | p2 Capas | volar | Cuatro perchas en flora real: suelo (hojarasca junto al **tabonuco**), sotobosque (**helecho gigante**, **heliconia**), dosel (**yagrumo**, **palma de sierra**, **bromelias**) y emergente (**ceiba**). Posarse, Observar y elegir lo que se ve. |
 | p3 Cadena | hablar | En la palma se ordena Sol → palma → cotorra. En el Nivel 2 se añaden los descomponedores. |
 | p4 Ojos de cotorra | volar | Compara los dos terrenos desde arriba. Mantiene `S.evaluated`. |
 | p5 Nace la gota | volar | Sigue el vapor desde la poza hasta la nube de la cumbre y hace una segunda predicción. |
 | p6 Sigue la gota | volar | La gota cae en una bromelia, se infiltra en la colina o corre por la quebrada hasta el río, que crece. |
 | p7 La poza | nadar | Bucea hasta la gota y la marca de crecida en la roca. El ciclo se cierra. |
-| p8 Explícale a Luma | hablar | Cuenta el ciclo eligiendo frases en orden. Luma compara la predicción con lo visto y luego se elige el terreno. |
+| p8 Explícale a Iguaca | hablar | Cuenta el ciclo eligiendo frases en orden. Iguaca compara la predicción con lo visto y luego se elige el terreno. |
 
 Hallazgos opcionales: **flamboyán** y **bambú** (nativas frente a introducidas). Mejora de diseño propuesta, no hecha: que p5–p8 se vuelen en vez de acompañar una partícula (`DIVERSION_CAP1.md`, mejora 8); la lección y las fichas no cambiarían.
 
@@ -43,7 +43,7 @@ Hallazgos opcionales: **flamboyán** y **bambú** (nativas frente a introducidas
 - **Diario de Campo · Ciencia:** cada ficha trae un dato de una línea y la etiqueta de la fuente («Fuente: USFWS»). Las URL solo aparecen en el Modo Maestro, para que el jugador no tenga enlaces externos. Solo se publican las fichas con `verificacion: "verificado"`.
 - **Paradas de aprendizaje** (`paradas.js`): 3 de repaso en la aldea (el agua corre cuesta abajo, dónde construir, el claro del bosque) y 5 de ciencia de Puerto Rico (cotorra, palma de sierra, nido, María, flamboyán), en ES/EN, cada una con una pregunta corta, su fuente y una ficha que desbloquea.
 - **Diario de Campo Boricua:** los 12 hallazgos (6 fauna, 6 cultura) tienen texto validado con fuente (`DIARIO_VALIDACION.md`), y el Diario trae «Amazonas del mundo» con las especies verificadas.
-- **Formativa final:** «Luma te pregunta», de 5 a 7 ítems (≈3 min), con retroalimentación inmediata, pista en el segundo intento y sin puntaje visible.
+- **Formativa final:** «Iguaca te pregunta», de 5 a 7 ítems (≈3 min), con retroalimentación inmediata, pista en el segundo intento y sin puntaje visible.
 
 ## 4. Modo Maestro (hecho) y guía de uso (propuesta)
 

@@ -15,13 +15,14 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Mundo con tierra, agua, botes, aviones y exploración avanzada | CONFIRMADO | V4 §1.2 |
 | Family Quest opcional | CONFIRMADO | V4 §1.2 |
 | Temas: conservación, vivienda y desplazamiento | CONFIRMADO | V4 §1.2 |
-| La Gran Ruptura · Villa Raíz · el Guardián Constructor · Luma · el pacto de los 36 · el sistema de comunicación perdido · las 6 temporadas · la causa de la catástrofe | PROVISIONAL | V4 §1.3 y guion cap. 1 |
+| La Gran Ruptura · Villa Raíz · el Guardián Constructor · Iguaca · el pacto de los 36 · el sistema de comunicación perdido · las 6 temporadas · la causa de la catástrofe | PROVISIONAL | V4 §1.3 y guion cap. 1 |
+| El personaje «Luma» pasa a llamarse **«Iguaca»** (nombre taíno de la cotorra puertorriqueña; «Luma» recuerda a la empresa de electricidad LUMA Energy). Los ids internos (`luma`, `LumaHelped`, `c1_luma_*`) no cambian: las partidas viejas siguen cargando | CONFIRMADO | Kelvin, 25 oct |
 | Martinicana y violacea como consejeras | PROVISIONAL (idea de Kelvin) | Chat 24 oct |
 | El aprendiz del jugador acompaña a Vittata (no la reemplaza) | PROVISIONAL | V4 §3.2, implementado así |
-| Apariencia del Guardián = render de imperialis; de Luma = render de leucocephala | PROVISIONAL (sustitutos) | Prototipo |
+| Apariencia del Guardián = render de imperialis; de Iguaca = render de leucocephala | PROVISIONAL (sustitutos) | Prototipo |
 | Banco de trabajo como mejora del taller | PROVISIONAL | Prototipo |
 | Terrenos "Junto al río" y "La colina" | PROVISIONAL | Guion pág. 6 y prototipo |
-| Agilis como aliada de la primera versión del prototipo | HISTÓRICO (reemplazada por Luma) | Prototipo v1 |
+| Agilis como aliada de la primera versión del prototipo | HISTÓRICO (reemplazada por Iguaca) | Prototipo v1 |
 | Mapa de 3ds Max, paquetes KitBash3D y Archmodels: creados y pagados por Kelvin | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Guion de cómic de Gustavo Soria (2021) | HISTÓRICO, no reutilizar | Material anterior |
 | Saga de Solana Forest y todo lo cripto/NFT | RECHAZADO | Kelvin |

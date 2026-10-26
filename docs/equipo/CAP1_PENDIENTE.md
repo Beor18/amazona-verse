@@ -22,15 +22,15 @@ Estados: **Hecho** (localizado en código y cubierto por prueba), **Parcial** (e
 | 1 | Crear personaje: nombre de listas, plumaje, pañuelo, accesorio; aprendiz que acompaña (GAMEPLAY 0) | Hecho | `src/game/creador.js`; `pruebas.js:36-41`; E2E pasos 1-2 (`tests/qa/e2e.js`) |
 | 2 | Gancho y Ruptura: negro con viento, taller con luz, ZZZT, onda en el cielo (SCRIPT p.1-3; NARRATIVA «Gancho») | **Parcial** | `historia.js:54` `inicio(G)`: 3 escenas de Narrador y Vittata, sacudida de cámara y sonido `zzzt`; prueba `pruebas.js:207-209`. No hay pantalla negra, viento, brillo de nubes ni onda: el juego abre sobre el taller ya roto |
 | 3 | Despertar y examinar la máquina y el transmisor (SCRIPT p.3-4) | Hecho | `historia.js:89` `examine()`; `pruebas.js:59`. El taller solo se ve por fuera (el bohío no tiene interior; GAMEPLAY lo anota) |
-| 4 | Luma pide ayuda; Vittata cede: «¿me ayudas?» (SCRIPT p.4; NARRATIVA M1) | Hecho | `historia.js:103` `talkLuma()`; escenas `c1_luma_llama` y `c1_acepta_ayuda`; `pruebas.js:61`; la familia da 3 tablas (`historia.js:13`) |
+| 4 | Iguaca pide ayuda; Vittata cede: «¿me ayudas?» (SCRIPT p.4; NARRATIVA M1) | Hecho | `historia.js:103` `talkLuma()`; escenas `c1_luma_llama` y `c1_acepta_ayuda`; `pruebas.js:61`; la familia da 3 tablas (`historia.js:13`) |
 | 5 | M1 «Fondo del río» (nadar a por la pieza de metal; botas) (GDD §3) | Hecho | `content/cap1/misiones.js:19` (`m1`); pieza `c1` con `fondo: true` en `mundo.js`; `pruebas.js:221-225` |
 | 6 | Recolectar madera, piedra y metal; «restos son posibilidades» (SCRIPT p.5) | Hecho | paso `recolectar` en `historia.js`; evento `ResourcesCollected`; `pruebas.js:64` |
 | 7 | Dos terrenos y «La ruta de la gota» (SCRIPT p.6; GDD §3 M2, que ahora es la misión educativa) | Hecho, con desvío | `misiones.js:25` (`educativa`, pasos p1-p8), `content/cap1/educativa.js` (942 líneas), `lecciones.js`; eduTest. Los anillos de vuelo del GDD los rechazó el fundador y ya no existen (`pruebas.js:234`) |
 | 8 | Construir el refugio con fantasma verde/rojo (SCRIPT p.8) | Hecho | `historia.js:174` `placeRefuge()`; `pruebas.js:73-77` |
 | 9 | Crecida: río sube, daña el refugio en el terreno A, se puede desarmar y mover a la colina (NARRATIVA M2; GDD wow 5) | Hecho | `historia.js:205` `finishRainEvent()`, `:230` `dismantle()`; cámara que tiembla; `pruebas.js:78-87`. Sin sonido de lluvia (ver P1-4) |
 | 10 | Techo con el engranaje de la máquina rota: Vittata sacrifica lo suyo (NARRATIVA M2 cierre) | **Parcial** | Solo la línea `c1_engranaje`. La máquina del taller (`mundo.js:279`) no cambia y el refugio no muestra ningún engranaje |
-| 11 | El Guardián llega y presenta el refugio; regala el banco (SCRIPT p.7-9) | **Parcial** | `historia.js:240` `talkGuardian()`; banco visible (`mundo.js:301`); `pruebas.js:89`. Difiere del guion: aparece después de la crecida (no antes), no ayuda a construir (p.8) y no hay familia de Luma entrando al refugio (p.9) |
-| 12 | M3 «Co-quí»: Simon de 3 coquíes con opción «Pasar» tras 2 fallos; elección con Luma (GDD §3) | Hecho | `misiones.js:30`, `:71` `startChorus`, `:84` `startSimon`; `pruebas.js:260-273`. El coro «al atardecer con luciérnagas» no existe (ver 20) |
+| 11 | El Guardián llega y presenta el refugio; regala el banco (SCRIPT p.7-9) | **Parcial** | `historia.js:240` `talkGuardian()`; banco visible (`mundo.js:301`); `pruebas.js:89`. Difiere del guion: aparece después de la crecida (no antes), no ayuda a construir (p.8) y no hay familia de Iguaca entrando al refugio (p.9) |
+| 12 | M3 «Co-quí»: Simon de 3 coquíes con opción «Pasar» tras 2 fallos; elección con Iguaca (GDD §3) | Hecho | `misiones.js:30`, `:71` `startChorus`, `:84` `startSimon`; `pruebas.js:260-273`. El coro «al atardecer con luciérnagas» no existe (ver 20) |
 | 13 | Reparar el transmisor, símbolo de 36 fragmentos y la Voz (SCRIPT p.10) | Hecho, con un fallo de canon | `historia.js:265` `useTransmitter()`, `showSymbol/drawSymbol`; escena `c1_voz` («viene otra tormenta»); `pruebas.js:94`. **La Voz usa el retrato del Guardián** (`pack.js:95-96` y `historia.js:278`) |
 | 14 | El Guardián reconoce el emblema (SCRIPT p.11; NARRATIVA «Giro»: la pieza igual a su medalla) | **Parcial** | Escena `c1_guardian_calla`: reconoce el símbolo y calla. No hay medalla en diálogo ni en su sprite (`grep medalla` solo da accesorios del creador) |
 | 15 | Mirador: islas en la niebla, plano de embarcación, luz que parpadea tres veces, cliffhanger al cap. 2 (SCRIPT p.12; NARRATIVA «Final») | **Parcial** | `historia.js:287` `useMirador()`; 3 islas en `terreno.js:528-559` y `ISLANDS` del mapa; escenas `c1_plano_bote`, `c1_mirador`, `c1_cliffhanger`; `pruebas.js:98-99`. La luz y el plano son solo texto: `S.boatPlan` es una bandera (`historia.js:298`) que ninguna pantalla muestra |
@@ -46,7 +46,7 @@ Estados: **Hecho** (localizado en código y cubierto por prueba), **Parcial** (e
 | 25 | Idioma | **Parcial** | La misión educativa y el Aula son ES/EN (33 líneas con `en:` en `educativa.js`); historia, HUD y diálogos (`historia.js`, `misiones.js`, `dialogos_cap1.json`) solo en español |
 | 26 | Duración 10-15 min (GDD) / 20-30 min (GAMEPLAY) / 45 min de clase (EDUCATIVO) | **Falta (sin medir)** | No hay ninguna sesión con jugadores. El Aula ya registra `minutos_mision` (`educativa.js:390`), pero nadie lo ha leído de un niño. **Piso medido por el E2E (QA): 5 min 42 s a 5 min 55 s** de recorrido mínimo automático, que no mide a ningún jugador (ver P0-3) |
 | 27 | Rendimiento en equipos de escuela | **Falta (sin medir)** | `ROADMAP.md` Fase 0 y `BUGS.md`: FPS no medibles; el único valor válido es de un M4. Descarga inicial 7,98 MB (cumple) |
-| 28 | Calidad visual de los objetos de la historia | **Parcial** | Máquina, transmisor, banco y coquíes son primitivas (`mundo.js:279-301`, `misiones.js` `preparar`). Luma y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY), junto a una Vittata 3D |
+| 28 | Calidad visual de los objetos de la historia | **Parcial** | Máquina, transmisor, banco y coquíes son primitivas (`mundo.js:279-301`, `misiones.js` `preparar`). Iguaca y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY), junto a una Vittata 3D |
 
 ## 2. Lo que falta para cerrar el capítulo
 
@@ -76,7 +76,7 @@ Tamaños: S = menos de medio día, M = 1 a 2 días, L = más. «Choque» se refi
   | Rama B (colina directa) | **5 min 42 s** | 8 min 18 s | 2 min 13 s | 2 min 5 s (937 m a pie + 435 m en vuelo) | 64 (3109 caracteres) | 40 |
   | Rama A (río, crecida y corrección) | **5 min 55 s** | 8 min 41 s | 2 min 19 s | 2 min 7 s (949 m + 435 m) | 70 (3330 caracteres) | 41 |
 
-  Por tramo (rama B, segundos): inicio 6 · taller 6 · Luma 8 · recolección y M1 30 · **la ruta de la gota 185** · construir y crecida 32 · Guardián 12 · transmisor y coquíes 44 · mirador y final 20. La ruta de la gota es el 54 % del mínimo, y 114 s son esperas del propio juego (vapor, gota y crecida del río).
+  Por tramo (rama B, segundos): inicio 6 · taller 6 · Iguaca 8 · recolección y M1 30 · **la ruta de la gota 185** · construir y crecida 32 · Guardián 12 · transmisor y coquíes 44 · mirador y final 20. La ruta de la gota es el 54 % del mínimo, y 114 s son esperas del propio juego (vapor, gota y crecida del río).
   - **Qué es y qué no.** Es un piso, no una estimación: un jugador real también lee, se equivoca, explora, esquiva obstáculos y repite el Simon. «Leyendo» solo cuenta los diálogos, a la velocidad de un adulto (~180 palabras por minuto); el texto de las tarjetas no se cuenta. No incluye el creador, el nido ni el cómic.
   - **No reemplaza medir con jugadores reales** (la sesión de arriba): con este piso no se puede decir que el capítulo cumpla 10-15, 20-30 ni 45 minutos. Sirve para vigilar, versión a versión, si el recorrido mínimo se alarga o se acorta (la prueba lo repite y lo anota en su paso «T»), y como cota inferior cuando Kelvin decida la meta de duración (decisión 7 de la sección 3).
   - Cómo repetirla: `tools/build/test.sh <build>` y leer el paso «T · Duración simulada» de `AV.e2eTest` en `reporte-test.json`.
@@ -98,8 +98,8 @@ Tamaños: S = menos de medio día, M = 1 a 2 días, L = más. «Choque» se refi
 - El plano de la embarcación: tarjeta o lienzo como el símbolo de 36 (`drawSymbol`), visible al desbloquearlo y en la viñeta final del cómic.
 - Archivos: `content/cap1/historia.js` (`useMirador`), `content/cap1/mundo.js`, `content/cap1/pack.js` (`decorar`). Sin choque.
 
-**P1-2 · Beats del guion que el juego omitió (p.8 y p.9): el Guardián ayudando y la familia de Luma entrando.** (M)
-- Es la recompensa emocional del refugio («Pensé que hoy lo habíamos perdido todo»). Hoy solo habla Luma. Depende de las decisiones 2 y 5 de la sección 3.
+**P1-2 · Beats del guion que el juego omitió (p.8 y p.9): el Guardián ayudando y la familia de Iguaca entrando.** (M)
+- Es la recompensa emocional del refugio («Pensé que hoy lo habíamos perdido todo»). Hoy solo habla Iguaca. Depende de las decisiones 2 y 5 de la sección 3.
 - Archivos: `content/cap1/mundo.js` (`npcs`), `historia.js`, `pack.js`. Sin choque.
 
 **P1-3 · Apertura con pantalla negra, viento y la onda.** (M)
@@ -136,17 +136,17 @@ Tamaños: S = menos de medio día, M = 1 a 2 días, L = más. «Choque» se refi
 
 **P2-4 · Cómic con más viñetas.** Guardián y banco, y coro de coquíes; más la viñeta de Diario 12/12 que el GDD §10 deja en P2. (M) `pack.js`, `comic.js`, `pruebas.js` (la prueba afirma 4 viñetas en `pruebas.js:109`).
 
-**P2-5 · Modelos 3D de Luma y el Guardián** (BACKLOG 3e). (L) Depende de archivos de Kelvin y de la decisión 5.
+**P2-5 · Modelos 3D de Iguaca y el Guardián** (BACKLOG 3e). (L) Depende de archivos de Kelvin y de la decisión 5.
 
 **P2-6 · Bugs conocidos de `BUGS.md` que no bloquean:** QA-30 (contextTest intermitente; es **A1**), QA-33 (`renderer.js:529`; esperar a A), QA-32 (foto de la viñeta de rama sin Vittata; Save & Cómic con Movimiento) y la pieza con hueco `complejo_ruinas@kelvin_aldea_colina#0` (QA-28).
 
 ## 3. Decisiones que solo Kelvin puede tomar
 
-1. **Aprobar el guion del cap. 1.** `CHAPTER_01_SCRIPT.md` sigue «PROPUESTO… pendiente de aprobación final» y Luma y el Guardián son PROVISIONALES (`CANON_REGISTRY.md`). Conflicto abierto: ¿el Guardián es cotorra, humano u otra forma? De eso depende su retrato y su modelo.
+1. **Aprobar el guion del cap. 1.** `CHAPTER_01_SCRIPT.md` sigue «PROPUESTO… pendiente de aprobación final» y Iguaca y el Guardián son PROVISIONALES (`CANON_REGISTRY.md`). Conflicto abierto: ¿el Guardián es cotorra, humano u otra forma? De eso depende su retrato y su modelo.
 2. **Orden del Guardián.** El guion lo hace llegar antes de construir y ayudar (p.7-8); el juego y NARRATIVA lo hacen llegar tras la crecida. ¿Se queda como está o se cambia?
 3. **La medalla del Guardián** (NARRATIVA «Giro»: una pieza del emblema es igual a su medalla). ¿Es canon? Si sí: una línea más y un detalle visible en su figura. Si no, solo calla.
 4. **La Voz.** ¿Qué cara lleva (silueta, onda o ninguna) y se confirma que es alguien del pacto de los 36 sin nombrarlo? Tapa el P0-2 definitivo.
-5. **Luma y el Guardián como sprites 2D de renders sustitutos** junto a una Vittata 3D: ¿se publica así el piloto o se espera a los modelos 3D? ¿Tiene Kelvin los archivos?
+5. **Iguaca y el Guardián como sprites 2D de renders sustitutos** junto a una Vittata 3D: ¿se publica así el piloto o se espera a los modelos 3D? ¿Tiene Kelvin los archivos?
 6. **Diseño de la máquina experimental y del transmisor antiguo** (los objetos canónicos del taller): ¿cómo son? Bloquea P1-6.
 7. **Alcance de «capítulo completo»:** duración meta (10-15 min del GDD, 20-30 de GAMEPLAY o la clase de 45 min) y si los «wow» de bahía y luciérnagas son obligatorios o pasan al episodio 2.
 8. **Idioma.** ¿El capítulo es bilingüe en historia y HUD (hoy solo la misión educativa y el Aula lo son) o español con inglés solo en el Aula?

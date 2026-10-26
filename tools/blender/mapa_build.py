@@ -467,7 +467,7 @@ LUG['mirador'] = {'x': mp[0], 'y': round(mp[2], 2), 'z': -mp[1], 'r': 2.5, 'yPla
                   'nota': 'torre de 12.9 m: el jugador sube volando o por la escalera interior (puerta al este)'}
 spawn = pt(tal[0] + 1, tal[1] - 4.5)
 NOMBRES = {'estacion': 'Estación de Conservación (Villa Raíz)', 'plaza': 'Plaza de Villa Raíz', 'taller': 'Taller de Vittata',
-           'luma': 'Luma', 'terrenoA': 'Terreno A · Junto al río', 'terrenoB': 'Terreno B · La colina', 'mirador': 'Mirador Yokahú',
+           'luma': 'Iguaca', 'terrenoA': 'Terreno A · Junto al río', 'terrenoB': 'Terreno B · La colina', 'mirador': 'Mirador Yokahú',
            'muelle': 'Muelle', 'casita': 'Casita jíbara del Guardián', 'ruinas': 'Ruinas de la hacienda', 'cumbre': 'Cumbre de El Yunque',
            'picachos': 'Los Picachos', 'cueva_rio': 'Cueva del Río (nacimiento)', 'gruta_mina': 'Gruta de La Mina', 'cueva_mar': 'Cueva del Mar',
            'bahia_bio': 'Bahía Bioluminiscente', 'aldea': 'Yucayeque taíno (aldea con batey)',
@@ -480,7 +480,7 @@ POIS += [{'id': 'puente', 'nombre': 'Puente colgante', 'pos': G(mid[0], mid[1], 
          {'id': 'charca_nubes', 'nombre': 'Charca de las Nubes (nace la quebrada)', 'pos': G(pc['x'], pc['y'], pc['nivel'])},
          {'id': 'playa', 'nombre': 'Playa y arrecife', 'pos': pt(170, -205)}]
 for p in POIS:
-    if p['id'] == 'luma': p['nombre'] = 'Luma (NPC)'
+    if p['id'] == 'luma': p['nombre'] = 'Iguaca (NPC)'
 WATER = {
     'mar': {'nivel': 0.0, 'nota': 'plano infinito a y=0; laguna y arrecife al sur, caída a -9 m'},
     'rio': {'nota': 'polilínea [x, z, nivel, medioAncho]; nivel constante por tramos con saltos de 1 m', 'puntos':

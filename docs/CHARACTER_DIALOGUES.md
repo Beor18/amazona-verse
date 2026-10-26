@@ -6,21 +6,21 @@ Generado desde `game.js` (fuente única). Estado: PROVISIONAL, adaptado del guio
 |---|---|---|
 | 1 | Vittata | Mi máquina… Si consigo repararla, todavía podemos… |
 | 2 | Vittata | Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada. |
-| 3 | Luma | ¡Vittata! ¡Necesitamos ayuda! |
-| 4 | Luma | ¿Estás bien? Revisa tu taller y después ven, por favor. |
-| 5 | Luma | Mi familia no tiene dónde quedarse. Nuestro árbol se partió. |
+| 3 | Iguaca | ¡Vittata! ¡Necesitamos ayuda! |
+| 4 | Iguaca | ¿Estás bien? Revisa tu taller y después ven, por favor. |
+| 5 | Iguaca | Mi familia no tiene dónde quedarse. Nuestro árbol se partió. |
 | 6 | Vittata | Entonces tendremos que construir algo nuevo. |
-| 7 | Luma | No tenemos suficientes materiales. |
+| 7 | Iguaca | No tenemos suficientes materiales. |
 | 8 | Vittata | Tenemos más de lo que parece. Busquemos madera, piedras y piezas de metal. |
-| 9 | Luma | Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos. |
-| 10 | Luma | El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina. |
+| 9 | Iguaca | Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos. |
+| 10 | Iguaca | El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina. |
 | 11 | Vittata | Aquí construiríamos mucho más rápido. |
-| 12 | Luma | Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta. |
-| 13 | Luma | Allá arriba parece más seguro. |
-| 14 | Luma | ¡Lo logramos! …¿Oyes eso? Viene más lluvia. |
-| 15 | Luma | El río subió y el refugio se inundó… |
+| 12 | Iguaca | Pero mira esas marcas en los árboles: el río llegó hasta aquí durante la tormenta. |
+| 13 | Iguaca | Allá arriba parece más seguro. |
+| 14 | Iguaca | ¡Lo logramos! …¿Oyes eso? Viene más lluvia. |
+| 15 | Iguaca | El río subió y el refugio se inundó… |
 | 16 | Vittata | Quise construir rápido y no escuché lo de las marcas de agua. Si lo desarmo, recupero los materiales. |
-| 17 | Luma | La colina aguantó la crecida. Mi familia está a salvo. |
+| 17 | Iguaca | La colina aguantó la crecida. Mi familia está a salvo. |
 | 18 | Vittata | Construir rápido no sirve de mucho si después tenemos que empezar otra vez. |
 | 19 | Guardián | Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos. |
 | 20 | Guardián | Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña. |
@@ -36,6 +36,6 @@ Generado desde `game.js` (fuente única). Estado: PROVISIONAL, adaptado del guio
 | 30 | Vittata | Si los caminos desaparecieron, construiremos otros. |
 | 31 | Vittata | Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas. |
 | 32 | Vittata | Allá están las otras islas, separadas por esa niebla luminosa. |
-| 33 | Luma | ¿Y cómo vamos a llegar si los caminos desaparecieron? |
+| 33 | Iguaca | ¿Y cómo vamos a llegar si los caminos desaparecieron? |
 | 34 | Vittata | Si los caminos desaparecieron, construiremos otros. Empezando por una embarcación. |
 | 35 | Narrador | Y así comenzó la aventura que volvería a conectar los mundos. Continuará… |

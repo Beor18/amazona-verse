@@ -4,7 +4,7 @@
 
 ## La meta
 
-Eres **Vittata**, una cotorra puertorriqueña que vive en un taller de inventos en El Yunque. Una noche, el cielo se rompe: una onda extraña apaga la máquina del taller y deja mudo un viejo transmisor. Tu amiga **Luma** perdió su casa en la tormenta. Tu misión es volar, nadar y explorar la isla para **construir un refugio que aguante la próxima crecida y encender el transmisor** para saber quién habla desde el otro lado del mar. El capítulo termina en un mirador, con islas nuevas en la niebla y una luz que parpadea tres veces: ahí empieza el capítulo 2.
+Eres **Vittata**, una cotorra puertorriqueña que vive en un taller de inventos en El Yunque. Una noche, el cielo se rompe: una onda extraña apaga la máquina del taller y deja mudo un viejo transmisor. Tu amiga **Iguaca** perdió su casa en la tormenta. Tu misión es volar, nadar y explorar la isla para **construir un refugio que aguante la próxima crecida y encender el transmisor** para saber quién habla desde el otro lado del mar. El capítulo termina en un mirador, con islas nuevas en la niebla y una luz que parpadea tres veces: ahí empieza el capítulo 2.
 
 Es un juego de aventura, no una clase: se aprende de la isla jugando, porque todo lo que ves en el Diario, en las paradas y en la ruta de la gota es real y tiene fuente. No hay cuentas, chat, compras ni textos libres; todo se guarda en tu dispositivo.
 
@@ -12,9 +12,9 @@ Es un juego de aventura, no una clase: se aprende de la isla jugando, porque tod
 
 1. **Crea tu cotorra.** Eliges nombre (de dos listas), plumaje, pañuelo y accesorio. Esa cotorra es tu aprendiz y te sigue a todas partes.
 2. **La noche en que el cielo se rompió.** Pantalla negra, viento, un ZZZT y una onda que cruza el cielo. Despiertas junto al taller: examina la máquina y el transmisor.
-3. **Luma pide ayuda.** Recoge madera y piedras por el camino. La pieza de metal cayó al fondo de la poza: nada hasta las burbujas, bucea y agárrala. Primer premio: las botas azules.
+3. **Iguaca pide ayuda.** Recoge madera y piedras por el camino. La pieza de metal cayó al fondo de la poza: nada hasta las burbujas, bucea y agárrala. Primer premio: las botas azules.
 4. **El nido.** Junto a la Estación aparece un nido con un huevo. Crece con lo que haces en el mundo; entra a verlo desde el botón **Nido** y, cuando esté listo, verás nacer a tu cotorrita, que después te acompaña.
-5. **La ruta de la gota.** Luma pregunta de dónde salió tanta agua. Vuela a cuatro perchas del bosque (suelo, sotobosque, dosel y copa), sigue el vapor hasta la nube de la cumbre, baja con la gota por la quebrada y bucea hasta la marca de la crecida. Explícaselo a Luma y gana la pava jíbara.
+5. **La ruta de la gota.** Iguaca pregunta de dónde salió tanta agua. Vuela a cuatro perchas del bosque (suelo, sotobosque, dosel y copa), sigue el vapor hasta la nube de la cumbre, baja con la gota por la quebrada y bucea hasta la marca de la crecida. Explícaselo a Iguaca y gana la pava jíbara.
 6. **Construye el refugio.** Elige el terreno (junto al río o en la colina) y coloca el refugio con el fantasma verde o rojo.
 7. **La crecida.** Llueve, truena y el río sube. Si construiste junto al río, el refugio se daña: desármalo, recupera los materiales y muévelo a la colina. Nunca pierdes nada por equivocarte.
 8. **El Guardián.** Llega a conocer el refugio y te regala un banco de trabajo.

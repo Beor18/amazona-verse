@@ -15,7 +15,7 @@ Estado: **PROPUESTA** para producir en la fase 1 (`ROADMAP.md`). Historia: `EP2_
 | 6–10 | M2 Escuchar primero | hablar |
 | 10–16 | M3 Casa que aguanta, tormenta | construir, volar |
 | 16–18 | Giro, fiesta de techado, gancho al ep. 3 | — |
-| +3 | «Luma te pregunta» | hablar |
+| +3 | «Iguaca te pregunta» | hablar |
 
 ## 3. Qué se reutiliza (sin código de motor nuevo salvo §4)
 | Sistema | Archivo | Uso en el ep. 2 |
@@ -39,7 +39,7 @@ Estado: **PROPUESTA** para producir en la fase 1 (`ROADMAP.md`). Historia: `EP2_
 | Construcción por piezas (base, paredes, techo, anclaje) y casa de dos niveles | P0 | `content/cap2/construccion.js` (pack); usa los sólidos de `solidos.js` para que Vittata se pose y entre |
 | Prueba de tormenta con «parte débil» determinista (sin azar) | P0 | `content/cap2/construccion.js` |
 | Tabla 3×3 del terreno y tarjetas de necesidades en el Diario | P0 | Extensión de `src/game/diario.js` por datos del pack |
-| Dos residentes (renders oficiales en billboard, como Luma y el Guardián) | P0 | `content/cap2/historia.js` |
+| Dos residentes (renders oficiales en billboard, como Iguaca y el Guardián) | P0 | `content/cap2/historia.js` |
 | Importar la partida del ep. 1 | P1 | `pack.guardado.importar` (lee `amazonaverse` del ep. 1; si no hay, valores por defecto) |
 | Fiesta de techado: bandada pequeña y música | P2 | Reutiliza la bandada de P2-1 de `CAP1_PENDIENTE.md` si se hace |
 
@@ -87,7 +87,7 @@ Sin modelos nuevos de ropa ni de personajes. 1–3 semanas según el ROADMAP.
 ## 10. Decisiones de canon para Kelvin (no decididas aquí)
 1. **Los dos residentes:** especie (¿del género *Amazona*, de los 36?), nombre, edad y relación con Villa Raíz. Propuesta en `EP2_NARRATIVA.md` solo como placeholder.
 2. **Dónde está el hogar permanente:** la colina del ep. 1, otro punto de Villa Raíz o una zona nueva del mapa.
-3. **Para quién es la casa:** ¿de Vittata, de Luma, de los residentes o comunitaria?
+3. **Para quién es la casa:** ¿de Vittata, de Iguaca, de los residentes o comunitaria?
 4. **La Voz y la luz de la niebla:** qué dice en el ep. 2 y si se revela algo (o nada) sobre quién es.
 5. **La medalla del Guardián:** ¿la muestra en el ep. 2 o se guarda hasta el ep. 5? Y el conflicto abierto: ¿el Guardián es cotorra, humano u otra forma?
 6. **Martinicana y violacea como consejeras:** ¿aparecen ya en el ep. 2 o más tarde?

@@ -22,8 +22,8 @@
     };
   }
 
-  // Mejora 1 (DIVERSION_CAP1): Luma espera en la copa del flamboyán; para hablarle hay que volar y posarse a su lado.
-  // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Luma.
+  // Mejora 1 (DIVERSION_CAP1): Iguaca espera en la copa del flamboyán; para hablarle hay que volar y posarse a su lado.
+  // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Iguaca.
   function posarseLuma(G, T) {
     const S = G.S, p = G.c.luma.percha;
     S.pos.x = p.x + 0.6; S.pos.y = p.y + 1.6; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true; T.tick(0.1);
@@ -64,20 +64,20 @@
       G.emit('companero', G.criadero.companero()); // vuelve la cría real del niño (o ninguna)
     } else check('El aprendiz aparece en el mundo', G.actores.companion.visible || !!(G.actores.companion3D && G.actores.companion3D.root.visible));
     check('Vittata despierta junto al taller', Math.hypot(S.pos.x - SV.spawn.x, S.pos.z - SV.spawn.z) < 0.1);
-    // Mejora 1: Luma llama desde la copa; el primer objetivo es volar hasta ella y desde el suelo, bajo la copa, no se le habla
-    check('Al despertar, Luma está arriba y el primer objetivo es volar hasta ella', C.luma.arriba() && S.step === 0 && /Luma/.test($('steps').querySelector('li.now').textContent) && C.luma.percha.y > G.terreno.height(C.luma.percha.x, C.luma.percha.z) + 3, C.luma.percha.y.toFixed(1) + ' m');
-    check('Desde el suelo, bajo la copa, no se le puede hablar a Luma', !useAt('luma'));
+    // Mejora 1: Iguaca llama desde la copa; el primer objetivo es volar hasta ella y desde el suelo, bajo la copa, no se le habla
+    check('Al despertar, Iguaca está arriba y el primer objetivo es volar hasta ella', C.luma.arriba() && S.step === 0 && /Iguaca/.test($('steps').querySelector('li.now').textContent) && C.luma.percha.y > G.terreno.height(C.luma.percha.x, C.luma.percha.z) + 3, C.luma.percha.y.toFixed(1) + ' m');
+    check('Desde el suelo, bajo la copa, no se le puede hablar a Iguaca', !useAt('luma'));
     const posada = posarseLuma(G, T);
-    check('Posada a su lado: Luma llamó desde arriba (bocadillo libre, el juego no se para) y se le puede hablar', posada && !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && !G.ui.busy() && !!G.interaccion.nearest() && G.interaccion.nearest().id === 'luma', JSON.stringify(G.dialogo.actual()));
+    check('Posada a su lado: Iguaca llamó desde arriba (bocadillo libre, el juego no se para) y se le puede hablar', posada && !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && !G.ui.busy() && !!G.interaccion.nearest() && G.interaccion.nearest().id === 'luma', JSON.stringify(G.dialogo.actual()));
     action();
-    check('La charla de la misión sí bloquea y sigue el orden del guion (interact:luma_inicio primero)', G.dialogo.open() && $('d-who').textContent === 'Luma' && $('d-text').textContent.startsWith('¡Vittata!'), $('d-text').textContent);
+    check('La charla de la misión sí bloquea y sigue el orden del guion (interact:luma_inicio primero)', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && $('d-text').textContent.startsWith('¡Vittata!'), $('d-text').textContent);
     drain();
-    check('Luma da la misión, regala 3 tablas y baja a la plaza', S.step === 1 && had('LumaHelped') && S.inv.madera === 3 && !C.luma.arriba(), 'paso ' + S.step);
+    check('Iguaca da la misión, regala 3 tablas y baja a la plaza', S.step === 1 && had('LumaHelped') && S.inv.madera === 3 && !C.luma.arriba(), 'paso ' + S.step);
     useAt('maquina');
     check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
     drain(); useAt('transmisor'); drain();
     check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
-    // Luma aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
+    // Iguaca aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && had('ResourcesCollected'), JSON.stringify(S.inv));
     drain(); // escena evento:ResourcesCollected
@@ -95,10 +95,10 @@
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
     // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
     const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
-    check('La crecida empieza al construir y no bloquea (la escena de Luma va en bocadillos)', !!S.event && S.event.dur === 20 && !G.ui.busy());
+    check('La crecida empieza al construir y no bloquea (la escena de Iguaca va en bocadillos)', !!S.event && S.event.dur === 20 && !G.ui.busy());
     tick(4); check('La crecida sube el agua', S.water > G.terreno.waterBase + 0.5);
     const aFlote = o => { const lv = G.agua.levelAt(o.obj.position.x, o.obj.position.z); return lv > -Infinity && o.obj.position.y >= lv - 0.01; };
-    check('El río arrastra las tablas de Luma, el coquí y un hallazgo, a flote y cerca del terreno de la crecida', flotando().length === 3 && flotando().every(o => aFlote(o) && Math.hypot(o.obj.position.x - CRE.ZONA.x, o.obj.position.z - CRE.ZONA.z) < 45), flotando().map(o => o.id + '@' + o.obj.position.y.toFixed(1) + (aFlote(o) ? '' : ' EN SECO')).join());
+    check('El río arrastra las tablas de Iguaca, el coquí y un hallazgo, a flote y cerca del terreno de la crecida', flotando().length === 3 && flotando().every(o => aFlote(o) && Math.hypot(o.obj.position.x - CRE.ZONA.x, o.obj.position.z - CRE.ZONA.z) < 45), flotando().map(o => o.id + '@' + o.obj.position.y.toFixed(1) + (aFlote(o) ? '' : ' EN SECO')).join());
     check('Durante la crecida la guía apunta a lo que flota y el objetivo lo dice', !!G.misiones.guideTarget() && /Crecida/.test($('steps').querySelector('li.now').textContent), $('steps').querySelector('li.now').textContent);
     tick(2); const p0 = flotando()[0].obj.position.clone(); tick(3);   // el agua llega a la orilla hacia el segundo 6 y entonces los arrastra
     check('Lo que flota se mueve con la corriente', flotando()[0].obj.position.distanceTo(p0) > 0.5, flotando()[0].obj.position.distanceTo(p0).toFixed(2) + ' m');
@@ -106,7 +106,7 @@
     const coq = flotando().find(o => o.id === 'coqui'); coq.fase = 'llevado'; G.emit('soltado', coq.id, coq.obj, { x: PLACES.B.x, y: PLACES.B.base, z: PLACES.B.z });
     check('Soltar algo en tierra seca lo salva y queda en el registro (FloodRescue)', coq.fase === 'salvado' && CRE.salvados.includes('coqui') && had('FloodRescue'));
     tick(15); drain();
-    check('Al bajar el agua, lo no salvado se da por perdido sin castigo y Luma lo cuenta', !S.event && CRE.perdidos.length === 2 && !CRE.objetos().some(o => o.fase === 'flota' && o.obj.parent) && S.events.filter(e => e.key === 'FloodRescue').length === 1, CRE.perdidos.join());
+    check('Al bajar el agua, lo no salvado se da por perdido sin castigo y Iguaca lo cuenta', !S.event && CRE.perdidos.length === 2 && !CRE.objetos().some(o => o.fase === 'flota' && o.obj.parent) && S.events.filter(e => e.key === 'FloodRescue').length === 1, CRE.perdidos.join());
     check('Consecuencia visible: refugio inundado', S.refuge.damaged && C.refugeMesh().rotation.z > 0.1 && had('ShelterFlooded'));
     check('Aparece el Guardián', G.actores.npc('guardian').sp.visible && S.step === 5);
     C.syncRefugeInteractable(); useAt('refuge', 1.6, 0); drain(); // escena evento:ShelterDismantled
@@ -144,7 +144,7 @@
     $('b-seguir').click();
     check('«Seguir explorando» cierra el panel y deja la partida terminada', $('end').hidden && !enConfirm() && S.explorando && S.complete && S.step === G.misiones.DONE && had('ChapterCompleted'));
     check('Tras el final el mundo está libre: Vittata se mueve', !G.ui.busy() && avanza() > 0.5);
-    check('Tras el final se puede hablar con Luma', useAt('luma') && G.dialogo.activo());
+    check('Tras el final se puede hablar con Iguaca', useAt('luma') && G.dialogo.activo());
     drain();
     check('Seguir explorando no repite el final ni el evento ChapterCompleted', $('end').hidden && S.events.filter(e => e.key === 'ChapterCompleted').length === 1);
     check('Guardar y cargar con la partida terminada no reabre el panel final', SV.save(true) && SV.load(true) && S.complete && S.explorando && $('end').hidden && !G.ui.busy());
@@ -322,13 +322,13 @@
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
-    check('Revisar el taller antes de subir con Luma también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
+    check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
-    check('interact:luma_inicio: Luma llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Luma' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
+    check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
     G.interaccion.action();
-    check('La charla con Luma es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Luma' && !G.dialogo.libre());
+    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre());
     drain();
-    check('Con el taller ya revisado, tras Luma el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
+    check('Con el taller ya revisado, tras Iguaca el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
     check('c2 espera al paso 3 (la pieza del paso 2 sale del río)', !O.available(O.find('c2')));
     const c1 = O.find('c1');
@@ -372,9 +372,9 @@
     // M3: coro de coquíes
     S.step = 6; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
     useAt('transmisor'); drain();
-    check('M3: el transmisor pide voz y ofrece una elección con Luma', S.chorus && !S.transmitterOn && !!$('ch-0'));
+    check('M3: el transmisor pide voz y ofrece una elección con Iguaca', S.chorus && !S.transmitterOn && !!$('ch-0'));
     $('ch-0').click();
-    check('La elección cambia la frase de Luma', $('d-text').textContent.startsWith('¡Eso, nena!') && had('LumaChoice'));
+    check('La elección cambia la frase de Iguaca', $('d-text').textContent.startsWith('¡Eso, nena!') && had('LumaChoice'));
     drain();
     const b0 = C.BUSHES[0];
     useAt(b0.id, 1.3, 0);
@@ -495,7 +495,7 @@
 
   // ---------- La ruta de la gota ----------
   // Juega la misión educativa como un jugador: Acción en las marcas, vuelo hasta las perchas, toques en las tarjetas, seguir el
-  // vapor y la gota, bucear en la poza y explicarle el ciclo a Luma. o = { check, pred1 (índice), errores (equivocarse una vez en
+  // vapor y la gota, bucear en la poza y explicarle el ciclo a Iguaca. o = { check, pred1 (índice), errores (equivocarse una vez en
   // cada actividad), fallarPregunta (id que se falla dos veces), trasP4() }.
   function jugarRutaGota(G, T, o) {
     o = o || {};
@@ -509,7 +509,7 @@
     const volarA = (x, y, z) => { S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; F.MOVE.flying = true; };
     // p1 Predecir
     useAt('marcas_agua', 0.5, 0);
-    ok('p1: en las marcas Luma pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
+    ok('p1: en las marcas Iguaca pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
     drain();
     ok('p1: predicción con 3 opciones, sin juicio', opts() === 3 && /predicción|prediction/i.test(card()));
     click('ch-' + (o.pred1 != null ? o.pred1 : 1)); drain();
@@ -571,7 +571,7 @@
     ok('p7: y la marca de la crecida en la roca', S.edu.poza.marca && G.dialogo.open());
     drain(); tick(6);
     ok('p7 hecho: el ciclo se cierra y el río vuelve a su nivel', S.edu.hecho.p7 && Math.abs(S.water - G.agua.base) < 0.05, (S.water - G.agua.base).toFixed(3));
-    // p8 Explícale a Luma
+    // p8 Explícale a Iguaca
     useAt('marcas_agua', 0.5, 0);
     ok('p8: en las marcas se explica el ciclo eligiendo frases', opts() === 5);
     if (o.errores) { click('ch-4'); click('ch-3'); ok('Tras 2 fallos brilla la frase que sigue', !!$('card').querySelector('.edu-opt.brilla')); }
@@ -579,7 +579,7 @@
     const pred = AU.t(paso('p1').interaccion.opciones[S.edu.pred1i]);
     ok('Predije y vi: la predicción frente a la evidencia', /Predije|I predicted/.test(card()) && card().includes(pred), pred);
     click('edu-seguir'); drain();
-    // Luma te pregunta (formativa)
+    // Iguaca te pregunta (formativa)
     const ids = E.idsFormativa(), vistas = [];
     for (let k = 0; k < 12; k++) {
       const cur = AU.enCurso(); if (!cur) break;
@@ -594,7 +594,7 @@
       click('edu-seguir');
     }
     drain();
-    ok(`Luma te pregunta: ${ids.join(', ')}`, vistas.join() === ids.join() && ids.every(id => S.edu.formativa[id]), vistas.join());
+    ok(`Iguaca te pregunta: ${ids.join(', ')}`, vistas.join() === ids.join() && ids.every(id => S.edu.formativa[id]), vistas.join());
     ok('Misión completa: pava y paso de elegir terreno', S.missions.educativa && S.unlocked.includes('pava') && S.step === 4, 'paso ' + S.step);
     return { ids, vistas };
   }
@@ -630,7 +630,7 @@
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
       useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
-      check('Recolección -1 min: Luma aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
+      check('Recolección -1 min: Iguaca aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
       check('4 recogidas en vez de 7 completan la recolección', S.step === 3 && S.collected.length === 4, S.collected.join(','));
@@ -703,7 +703,7 @@
       // Lectura en voz alta: nunca rompe, aunque no haya voces
       let voz = null; try { voz = AU.leer('La gota cae en la montaña.', 'es'); AU.callar(); } catch (e) { voz = e; }
       check('Lectura en voz alta tolera que falle (speechSynthesis ' + (AU.vozDisponible() ? 'disponible' : 'no disponible') + ')', typeof voz === 'boolean');
-      AU.setAjuste('voz', true); G.dialogo.say([{ who: 'Luma', img: 'assets/luma.png', text: 'Prueba de voz.', lang: 'es' }]);
+      AU.setAjuste('voz', true); G.dialogo.say([{ who: 'Iguaca', img: 'assets/luma.png', text: 'Prueba de voz.', lang: 'es' }]);
       await new Promise(r => setTimeout(r, 0));
       check('Con la voz activada se leen las líneas del diálogo en su idioma', AU.vozLog.some(v => v.texto === 'Prueba de voz.' && v.lang === 'es'));
       drain(); AU.setAjuste('voz', false);
@@ -722,7 +722,7 @@
         check('Guardar y cargar a mitad de la misión conserva el avance', SV.load(true) && S.edu.hecho.p4 && !S.edu.hecho.p5 && S.step === 3);
       } });
       check('5.º–6.º: formativa con q7 (abierta por el flamboyán), sin q3 ni q4', r2.ids.join() === 'q1,q2,q5,q6,q7', r2.ids.join());
-      check('Predicción acertada: Luma lo reconoce', S.edu.pred1 === 'lluvia_montana' && AU.partida().prediccion_coincidio === true);
+      check('Predicción acertada: Iguaca lo reconoce', S.edu.pred1 === 'lluvia_montana' && AU.partida().prediccion_coincidio === true);
       check('Dos partidas en el registro del dispositivo', AU.partidas.length === 2 && AU.partidas[1].grado === '5-6');
       check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
     } catch (e) {
@@ -805,6 +805,11 @@
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
       $('maestro').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       check('Esc cierra el Modo Maestro y el juego sigue', !AU.maestroAbierto() && !G.pausa.activa() && G.camara.juice.hitStop === 0);
+      // Nombre del personaje (decisión de Kelvin): «Iguaca». «Luma» recuerda a la empresa de electricidad, así que no puede verse ni leerse en ningún texto
+      // del juego (los ids internos luma/LumaHelped, que guardan las partidas, no cuentan: solo se mira el texto)
+      const npcLuma = (G.actores.npc('luma') || {}).def || {};
+      const textoJuego = [JSON.stringify(window.AV_DIALOGOS_CAP1 || {}), JSON.stringify(window.AV_LECCIONES_CAP1 || {}), document.body.innerText, npcLuma.nombre].join(' ');
+      check('Ningún texto visible dice «Luma»: el personaje se llama Iguaca (diálogos, lecciones, pantalla y nombre del NPC)', !/\bLuma\b/.test(textoJuego) && /Iguaca/.test(textoJuego) && npcLuma.nombre === 'Iguaca', (textoJuego.match(/.{0,20}\bLuma\b.{0,20}/) || [])[0]);
       check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));

@@ -22,7 +22,7 @@
                 texto corto, voz, grado, estación y registro del Modo Maestro). Su clave propia manda: la copia solo se
                 restaura al arrancar si esa clave está CORRUPTA (si falta porque se borró a propósito, no se resucita).
      resumen    solo lectura, derivado al escribir: { idioma, criadero: { huevos, activa, etapa, nivel, xp },
-                nido: { activo (hay una misión hecha), presentado (Luma ya lo presentó), visitado } }.
+                nido: { activo (hay una misión hecha), presentado (Iguaca ya lo presentó), visitado } }.
    MIGRACIONES: primero las del pack (v), después las del motor (formato). cap1 v4 → v5 = mapa nuevo (pack) + formato 1 → 2
      (motor: perfil saneado y look modular, misiones completas, Diario y ropa sin duplicados, cómic completo y satélites).
      Una partida de una versión FUTURA no se carga: se aparta en una copia de rescate con fecha (ver COPIAS DE RESCATE).
@@ -191,7 +191,7 @@ AVE.module('guardado', function (G) {
   function resumenDe(sat, missions) {
     const r = { idioma: sat.aula && sat.aula.ajustes && sat.aula.ajustes.idioma === 'en' ? 'en' : 'es', criadero: null, nido: null };
     const c = sat.criadero;
-    // Nido del mundo (criadero.js): aparece con la primera misión; Luma lo presenta una sola vez (st.presentado)
+    // Nido del mundo (criadero.js): aparece con la primera misión; Iguaca lo presenta una sola vez (st.presentado)
     r.nido = { activo: Object.values(esObj(missions) ? missions : {}).some(v => v === true), presentado: !!(c && c.presentado), visitado: !!(c && c.vistos && c.vistos.abierto) };
     if (c) {
       const caps = c.capsulas || {}, a = c.activa && caps[c.activa], CR = G.criadero;
@@ -492,11 +492,11 @@ AVE.module('guardado', function (G) {
         `paso ${S.step} · ${S.profile.name} · fuente ${C2.fuente}`);
       check('Persisten misiones y Diario', (!mision || S.missions[mision] === true) && (!hallazgo || S.field[0] === hallazgo.id));
       check('Persiste la viñeta del motor con la apariencia de su momento', S.comic.vinetas.techo && JSON.stringify(S.comic.vinetas.techo.look) === JSON.stringify(lookTecho));
-      // Nido y presentación de Luma: viajan en la copia del criadero y en el resumen
+      // Nido y presentación de Iguaca: viajan en la copia del criadero y en el resumen
       const FN = almacenFalso();
       FN.set(sat.criadero, JSON.stringify({ v: 1, activa: 'h1', capsulas: { h1: { estado: 'incubando', xp: 40 } }, presentado: true, vistos: { abierto: 1 } }));
       guardarEn(ctx(FN, KT)); const dN = leerJSON(FN.get(KT));
-      check('Se guardan el nido y la presentación de Luma', dN && dN.satelites.criadero && dN.satelites.criadero.presentado === true && dN.resumen.nido &&
+      check('Se guardan el nido y la presentación de Iguaca', dN && dN.satelites.criadero && dN.satelites.criadero.presentado === true && dN.resumen.nido &&
         dN.resumen.nido.presentado && dN.resumen.nido.visitado && dN.resumen.nido.activo === Object.values(S.missions).some(v => v === true), dN ? JSON.stringify(dN.resumen.nido) : '');
       // 4. Corrupción: principal truncada → se recupera .prev y lo dañado se aparta
       NATIVO.set(KT, rawPaso4.slice(0, Math.floor(rawPaso4.length / 2)));
@@ -567,7 +567,7 @@ AVE.module('guardado', function (G) {
         const cr = m.satelites.criadero, rc = m.resumen && m.resumen.criadero;
         check('Migra el criadero (huevos, etapa y XP)', cr && cr.capsulas.h1.xp === 300 && rc && rc.huevos === 1 && rc.xp === 300 && (!G.criadero || !!rc.etapa), rc ? `${rc.huevos} huevo · ${rc.etapa} · nivel ${rc.nivel} · ${rc.xp} XP` : 'sin criadero');
         const nm = m.resumen && m.resumen.nido;
-        check('Migra el nido y la presentación de Luma (no se repite)', cr && cr.presentado === true && cr.vistos.abierto === 1 && nm && nm.presentado && nm.visitado && nm.activo === conMision,
+        check('Migra el nido y la presentación de Iguaca (no se repite)', cr && cr.presentado === true && cr.vistos.abierto === 1 && nm && nm.presentado && nm.visitado && nm.activo === conMision,
           nm ? JSON.stringify(nm) : 'sin nido');
         if (sat.aula) check('Migra aula/Modo Maestro y ajustes ES/EN', m.satelites.aula && m.satelites.aula.ajustes.idioma === 'en' && m.satelites.aula.partidas.length === 1 && m.resumen.idioma === 'en');
         const js = JSON.stringify(m);
@@ -579,7 +579,7 @@ AVE.module('guardado', function (G) {
       const RF = almacenFalso(); RF.set(sat.criadero, '{roto');
       const copia = { satelites: { criadero: capViejo } };
       const rep1 = repararSatelites(RF, copia);
-      check('Criadero corrupto: se restaura desde la copia (con XP y la presentación de Luma hecha)', rep1.includes('criadero') && leerJSON(RF.get(sat.criadero)).capsulas.h1.xp === 300 &&
+      check('Criadero corrupto: se restaura desde la copia (con XP y la presentación de Iguaca hecha)', rep1.includes('criadero') && leerJSON(RF.get(sat.criadero)).capsulas.h1.xp === 300 &&
         leerJSON(RF.get(sat.criadero)).presentado === true && copiasIlegibles(RF, sat.criadero).some(c => c.raw === '{roto'));
       const RB = almacenFalso(); const rep2 = repararSatelites(RB, copia);
       check('Criadero borrado a propósito: no se resucita', rep2.length === 0 && RB.get(sat.criadero) === null);

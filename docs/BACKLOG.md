@@ -9,7 +9,7 @@
 | 3b | Vittata 3D jugable desde el original `cotorrofiver.blend` (montajes + 5 animaciones) | — | GLB < 3 MB con animaciones, fiel a la referencia | Alta | TESTED |
 | 3c | Creador en el Taller de los Guardianes: modelo 3D animado, mira al jugador, personalización en tiempo real | 3b | Capturas revisadas sin T-pose | Alta | TESTED (escritorio; falta iPhone real) |
 | 3d | Catálogo de accesorios (ver ACCESSORY_CATALOG.md) | 3b | Cada accesorio colocado en el modelo y visible en tiempo real | Alta | IN PROGRESS: 6 de ~50 hechos; mochila es sustituto simple |
-| 3e | Modelos 3D de Luma, el Guardián y las demás especies | Archivos de Kelvin | Cada uno con rasgos propios | Alta | NOT STARTED |
+| 3e | Modelos 3D de Iguaca, el Guardián y las demás especies | Archivos de Kelvin | Cada uno con rasgos propios | Alta | NOT STARTED |
 | 3f | Huesos de pico y párpados para expresiones | Modelado | Abrir pico, parpadear | Media | NOT STARTED |
 | 4 | Terminar descarga del mapa y revisar licencias KitBash3D/Archmodels | Safari / Kelvin | Decidir si se usa, se recompra la licencia o se rehace | Media | BLOCKED |
 | 5 | Episodio 1: mirador y niebla entre islas (pág. 12) | — | Zona elevada visitable con vista a islas | Media | TESTED |

@@ -7,7 +7,7 @@
      sistemas que se vuelven eventos narrativos una vez por partida y nunca en las baterías (G.quiet):
        G.emit('posado', { tipo, que, altura }) (movimiento): techo o cumbrera → FirstRoofPerch; rama a 2,5 m o más →
          FirstHighBranchPerch.
-       G.emit('criadero', 'nido') (Luma presenta el nido) → NestAppeared; G.emit('criadero', 'eclosion', { id, imagen? })
+       G.emit('criadero', 'nido') (Iguaca presenta el nido) → NestAppeared; G.emit('criadero', 'eclosion', { id, imagen? })
          → ChickHatched (con la foto de la escena del criadero; sin foto, el nido y la eclosión se ilustran).
      Las viñetas van en el orden en que pasaron.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida

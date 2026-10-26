@@ -6,8 +6,8 @@
      2. Equipar un accesorio, guardar y ver la escena de inicio del capítulo (el gancho se juega, no se salta).
      3. Obtener un huevo en el criadero y ver la animación de patitas en la eclosión (BLOQUEADO si no hay criadero).
      4. Las 8 etapas de la historia con las acciones del jugador (Acción, botones de tarjetas y diálogos, buceo con C):
-        4.2 Luma llama desde la copa (el primer vuelo del capítulo: se mide cuándo llega) · 4.1 taller · 4.3 recolección y M1 (bucear) ·
-        4.4 «La ruta de la gota» p1–p8 y «Luma te pregunta» · 4.5 construir y la crecida (se agarra al vuelo algo que arrastra el río
+        4.2 Iguaca llama desde la copa (el primer vuelo del capítulo: se mide cuándo llega) · 4.1 taller · 4.3 recolección y M1 (bucear) ·
+        4.4 «La ruta de la gota» p1–p8 y «Iguaca te pregunta» · 4.5 construir y la crecida (se agarra al vuelo algo que arrastra el río
         y se suelta en seco) · 4.6 corregir (rama A) o reubicar · 4.7 Guardián · 4.8 transmisor y M3 (Simon de coquíes) ·
         4.9 mirador y pantalla final (con «Seguir explorando» si el pack lo ofrece) · 4.10 objetivo y guía en cada paso.
         Los bocadillos libres (G.dialogo.say(..., { libre: true }), DIVERSION_CAP1 mejora 3) se cuentan aparte: no paran el juego.
@@ -97,7 +97,7 @@
     const click = id => { const b = $(id); if (b && !b.disabled && !(b.closest && b.closest('[hidden]'))) { b.click(); reloj.clics++; return true; } return false; };
     const ir = (x, z, fx, fz) => { reloj.suelo += Math.hypot(x - S.pos.x, z - S.pos.z); T.teleport(x, z, fx, fz); };
     const volar = (x, y, z, seguir) => { if (!seguir) reloj.aire += Math.hypot(x - S.pos.x, y - S.pos.y, z - S.pos.z); S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; G.fisica.MOVE.flying = true; };
-    // Un diálogo o una tarjeta suelta (p. ej. Luma presenta el nido) taparía la acción: se cierra y se anota
+    // Un diálogo o una tarjeta suelta (p. ej. Iguaca presenta el nido) taparía la acción: se cierra y se anota
     const despejar = quien => {
       if (G.dialogo.open()) { const t = ($('d-who').textContent || '?') + ': ' + ($('d-text').textContent || '').slice(0, 50); drain(); intrusos.push((quien || '') + ' → ' + t); }
       if (!$('card').hidden) { intrusos.push((quien || '') + ' → tarjeta: ' + ($('card').textContent || '').slice(0, 40)); G.ui.hideCard(); }
@@ -158,7 +158,7 @@
       const accs = Object.values(look.accessories || {}).map(a => a.id);
       check('2', 'Equipar un accesorio y guardar (creador cerrado, perfil con la pieza)', S.profile.created && $('creator').hidden && !!pieza && accs.includes(pieza.dataset.id),
         { pieza: pieza && pieza.dataset.id, especie: look.species, accesorios: accs, nombre: S.profile.name });
-      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (Narrador y Vittata, en bocadillos que no paran el juego) y queda el objetivo «Vuela hasta Luma»', !!hayInicio && inicioLibre && nInicio >= 3 && S.step === 0 && !S.complete && /Luma/i.test(hudAhora()),
+      check('4.0', 'Inicio del capítulo: al empezar se juega el gancho (Narrador y Vittata, en bocadillos que no paran el juego) y queda el objetivo «Vuela hasta Iguaca»', !!hayInicio && inicioLibre && nInicio >= 3 && S.step === 0 && !S.complete && /Iguaca/i.test(hudAhora()),
         { lineas: nInicio, libre: inicioLibre, primera: quien0 + ': ' + texto0.slice(0, 60), aviso: toastInicio.slice(0, 60), paso: S.step, hud: hudAhora() });
       // El jugador nunca cambia de modelo: misma firma que el modelo base (solo plumaje y accesorios)
       const comp = G.actores.companion3D, prota = G.actores.player3D;
@@ -187,8 +187,8 @@
       // ====================================================================================================================
       despejar('inicio'); muestraGuia();                                        // paso 0
 
-      // ---------- 4.2 Luma llama desde la copa del flamboyán: el primer vuelo del capítulo (DIVERSION_CAP1, mejora 1) ----------
-      fase('Luma');
+      // ---------- 4.2 Iguaca llama desde la copa del flamboyán: el primer vuelo del capítulo (DIVERSION_CAP1, mejora 1) ----------
+      fase('Iguaca');
       const LU = G.c.luma, perchaL = LU ? LU.percha : null, H0 = G.terreno.height;
       const desdeSuelo = LU ? useAt('luma') : null;                              // bajo la copa, desde el suelo, no se le puede hablar
       const guiaLuma = G.misiones.guideTarget();
@@ -197,13 +197,13 @@
       if (perchaL) {
         volar(perchaL.x + 0.6, perchaL.y + 1.6, perchaL.z); G.fisica.MOVE.flying = false; tick(1.2);   // despegar, llegar y posarse a su lado
         posada = LU.junto() && !G.fisica.MOVE.flying;
-        llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Luma llamó desde arriba al acercarse (bocadillo)
+        llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Iguaca llamó desde arriba al acercarse (bocadillo)
         const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma';
         if (lumaOk) { G.interaccion.action(); reloj.acciones++; }
         charla = G.dialogo.open(); drain();
       }
-      check('4.2', 'Luma llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
-        !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Luma' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
+      check('4.2', 'Iguaca llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
+        !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Iguaca' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
         { desdeSuelo, guia: guiaLuma && { y: +guiaLuma.y.toFixed(1) }, posada, llamada: llamada && llamada.text.slice(0, 30), charla, lumaOk, paso: S.step, madera: S.inv.madera, arriba: LU && LU.arriba(), cercano: lumaOk ? null : ultimoCercano, atajo: 'vuelo directo a la percha de la copa' }, 700);
       check('4.2', 'El primer vuelo del capítulo llega antes de 90 s (medida de DIVERSION_CAP1, mejora 1)', !!primerVuelo && primerVuelo.seg < 90 && primerVuelo.segLeyendo < 90, primerVuelo);
       if (corte('4.2', S.step >= 1)) return fin();
@@ -245,7 +245,7 @@
           { antes: nidoAntes, despues: { nido: !!(n && n.visible), boton: !$('b-nido').hidden, donde: n && n.userData.donde, metrosEstacion: dEst }, presentacionDeLuma: intrusos.filter(x => /nido/i.test(x)).length });
       }
 
-      // ---------- 4.4 «La ruta de la gota» (paso «terrenos»): p1–p8 y «Luma te pregunta» ----------
+      // ---------- 4.4 «La ruta de la gota» (paso «terrenos»): p1–p8 y «Iguaca te pregunta» ----------
       fase('La ruta de la gota'); muestraGuia();
       const ruta = await rutaGota();
       for (const [nombreP, ok, ev] of ruta.pasos) check('4.4', nombreP, ok === true, ev);
@@ -281,7 +281,7 @@
         const o = flotan[0];
         rescate.guiaAlgoFlota = G.misiones.guideTarget();
         volar(o.it.x + 0.8, o.obj.position.y + 1.4, o.it.z); tick(0.3);          // hasta lo que flota, en vuelo
-        despejar('crecida');                                                      // p. ej. Luma presenta el nido (criadero) justo ahora: Acción la pasaría en vez de agarrar
+        despejar('crecida');                                                      // p. ej. Iguaca presenta el nido (criadero) justo ahora: Acción la pasaría en vez de agarrar
         const nbF = G.interaccion.nearest();
         if (nbF && nbF.id === o.it.id) { G.interaccion.action(); reloj.acciones++; }
         // Los gestos de agarrar y soltar corren en los cuadros de dibujo (gancho render), no en update: en el iframe oculto no hay
@@ -402,10 +402,10 @@
       const costoRep = (G.pack.costos && G.pack.costos.REPAIR_COST) || { madera: 1, componente: 1 };
       const tienePiezas = G.objetos.has(costoRep);
       const invFinal = {}; for (const k of Object.keys(S.inv)) invFinal[k] = S.inv[k] - (costoRep[k] || 0);
-      const t1 = useAt('transmisor'); const cercX = ultimoCercano; drain();     // Vittata y Luma: el transmisor no tiene voz
+      const t1 = useAt('transmisor'); const cercX = ultimoCercano; drain();     // Vittata y Iguaca: el transmisor no tiene voz
       const opcionesCoro = $('card').hidden ? 0 : $('card').querySelectorAll('button[id^="ch-"]').length;
-      click('ch-1'); drain();                                                   // elección con Luma («Escuchando con paciencia»)
-      check('4.8', 'Transmisor sin voz: Luma propone los coquíes y se elige cómo convencerlos (2 opciones)', tienePiezas && t1 && S.chorus && opcionesCoro === 2 && had('LumaChoice'), { piezas: tienePiezas, inv: S.inv, opciones: opcionesCoro, coro: S.chorus, cercano: t1 ? null : cercX });
+      click('ch-1'); drain();                                                   // elección con Iguaca («Escuchando con paciencia»)
+      check('4.8', 'Transmisor sin voz: Iguaca propone los coquíes y se elige cómo convencerlos (2 opciones)', tienePiezas && t1 && S.chorus && opcionesCoro === 2 && had('LumaChoice'), { piezas: tienePiezas, inv: S.inv, opciones: opcionesCoro, coro: S.chorus, cercano: t1 ? null : cercX });
       const BUSHES = G.c.BUSHES, detalle = [];
       for (const [i, b] of BUSHES.entries()) {
         const abre = useAt(b.id, 1.3, 0), tarjeta = !$('card').hidden && /Coquí escondido/.test($('card').textContent);
@@ -541,7 +541,7 @@
       return fin();
     }
 
-    // «La ruta de la gota» p1–p8 y las preguntas de Luma, con las acciones del jugador (misma ruta que AV.eduTest, sin sus asertos de texto)
+    // «La ruta de la gota» p1–p8 y las preguntas de Iguaca, con las acciones del jugador (misma ruta que AV.eduTest, sin sus asertos de texto)
     async function rutaGota() {
       const r = { pasos: [], error: '' };
       const add = (nombreP, ok, ev) => r.pasos.push([nombreP, !!ok, ev]);
@@ -554,7 +554,7 @@
         // p1 Predecir
         const usa1 = useAt('marcas_agua', 0.5, 0); const habla = G.dialogo.open(); drain();
         const pregunta = nopc(); click('ch-1'); drain();
-        add('Ruta de la gota p1: en las marcas Luma pregunta de dónde salió el agua y se elige una predicción (3 opciones, sin juicio)', usa1 && habla && pregunta === 3 && S.edu.hecho.p1 && !!S.edu.pred1, { opciones: pregunta, pred: S.edu.pred1, cercano: usa1 ? null : ultimoCercano });
+        add('Ruta de la gota p1: en las marcas Iguaca pregunta de dónde salió el agua y se elige una predicción (3 opciones, sin juicio)', usa1 && habla && pregunta === 3 && S.edu.hecho.p1 && !!S.edu.pred1, { opciones: pregunta, pred: S.edu.pred1, cercano: usa1 ? null : ultimoCercano });
         // p2 capas (perchas) y p3 cadena alimentaria en el dosel
         const capas = [];
         for (const p of E.PERCHAS) {
@@ -601,13 +601,13 @@
         const marca = !!S.edu.poza.marca;
         drain(); tick(6);
         add('Ruta de la gota p7: en el fondo de la poza se encuentra la gota y la marca de la crecida; el ciclo se cierra y el río vuelve a su nivel', gotaFondo && marca && S.edu.hecho.p7 && Math.abs(S.water - G.agua.base) < 0.05, { gota: gotaFondo, marca, rio: +(S.water - G.agua.base).toFixed(3), atajo: 'teleport al fondo (el buceo ya se probó en M1)' });
-        // p8 Explícale a Luma
+        // p8 Explícale a Iguaca
         const usa8 = useAt('marcas_agua', 0.5, 0); const op8 = nopc();
         for (let i = 0; i < 5; i++) click('ch-' + i);
         const contraste = /Predije|I predicted/.test(card());
         click('edu-seguir'); drain();
-        add('Ruta de la gota p8: explicarle el ciclo a Luma ordenando 5 frases y ver la predicción frente a la evidencia', usa8 && op8 === 5 && contraste, { opciones: op8, contraste });
-        // Luma te pregunta (formativa)
+        add('Ruta de la gota p8: explicarle el ciclo a Iguaca ordenando 5 frases y ver la predicción frente a la evidencia', usa8 && op8 === 5 && contraste, { opciones: op8, contraste });
+        // Iguaca te pregunta (formativa)
         const ids = E.idsFormativa(), vistas = [];
         for (let i = 0; i < 12; i++) {
           const cur = AU.enCurso(); if (!cur) break;
@@ -616,7 +616,7 @@
           click('edu-seguir');
         }
         drain();
-        add('Ruta de la gota: «Luma te pregunta» (' + ids.length + ' preguntas) con retroalimentación inmediata; con la última se cierra p8 y la misión', vistas.join() === ids.join() && ids.every(id => S.edu.formativa[id]) && S.edu.hecho.p8, { esperadas: ids, vistas, p8: S.edu.hecho.p8 });
+        add('Ruta de la gota: «Iguaca te pregunta» (' + ids.length + ' preguntas) con retroalimentación inmediata; con la última se cierra p8 y la misión', vistas.join() === ids.join() && ids.every(id => S.edu.formativa[id]) && S.edu.hecho.p8, { esperadas: ids, vistas, p8: S.edu.hecho.p8 });
       } catch (e) { r.error = (e && e.stack) || String(e); add('La ruta de la gota se recorre sin excepciones', false, r.error.slice(0, 300)); }
       return r;
     }

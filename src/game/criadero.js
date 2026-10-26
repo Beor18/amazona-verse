@@ -1272,8 +1272,8 @@ AVE.module('criadero', function (G) {
 
   // =====================================================================================================================
   // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión o, antes, cuando se cumple
-  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Luma, minuto 2; DIVERSION_CAP1 mejora 2);
-  // Luma lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
+  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Iguaca, minuto 2; DIVERSION_CAP1 mejora 2);
+  // Iguaca lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
   // la plaza o el inicio.
   // =====================================================================================================================
   function desdeCumplido() {
@@ -1344,7 +1344,7 @@ AVE.module('criadero', function (G) {
     const sp = (G.pack.jugador && G.pack.jugador.aparicion) || { x: 0, z: 0 };
     return { x: sp.x + 3, z: sp.z + 2 };
   }
-  // Sitio libre: a 5 m o más de cualquier otro interactuable (si no, nearest() podría quedarse con Luma o el flamboyán),
+  // Sitio libre: a 5 m o más de cualquier otro interactuable (si no, nearest() podría quedarse con Iguaca o el flamboyán),
   // fuera de los colliders fijos (edificios, NPC, objetos; los árboles de vegetacion.js se recrean y no cuentan) y en tierra firme.
   // El mundo carga sus edificios después: pasoMundo vuelve a comprobarlo cada 2 s y lo mueve si quedó dentro de algo.
   function libreNido(q) {
@@ -1446,7 +1446,7 @@ AVE.module('criadero', function (G) {
     const b = botonNido();
     if (b && nidoBtnHidden !== !on) { nidoBtnHidden = !on; b.hidden = !on; if (on) b.setAttribute('aria-label', 'Nido: mi cotorrita'); }
     if (b && on) pintarHuevoHUD(b);
-    // Presentación (una vez): Luma cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
+    // Presentación (una vez): Iguaca cuenta que hay un nido. Nunca encima de otro diálogo, tarjeta u overlay, ni en pruebas.
     // Tampoco en medio de una lección (las tarjetas de la misión educativa se reabren con retraso)
     // y solo tras 1,5 s seguidos de juego libre (entre baterías automáticas G.quiet cambia muy rápido)
     presentarT = on && !st.presentado && puedePresentar() ? presentarT + dt : 0;
@@ -1456,10 +1456,10 @@ AVE.module('criadero', function (G) {
       if (!silencio) G.emit('criadero', 'nido'); // cómic: viñeta de la aparición del nido (src/game/comic.js)
       const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
       G.dialogo.say([
-        { who: 'Luma', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
+        { who: 'Iguaca', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
           ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
           : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
-        { who: 'Luma', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
+        { who: 'Iguaca', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
       ]);
     }
   }
@@ -1536,7 +1536,7 @@ AVE.module('criadero', function (G) {
     cria: () => scene3d.chick,
     hatch: () => Object.assign({}, hatch),
     paso: dt => paso(dt),
-    // Un paso del nido del mundo (revisión del sitio, botón del HUD y presentación de Luma)
+    // Un paso del nido del mundo (revisión del sitio, botón del HUD y presentación de Iguaca)
     mundo: dt => pasoMundo(dt || 0),
     // Lleva la eclosión en curso al segundo t (0–9,4) para capturas
     irA: tt => { if (hatch.on) { hatch.t = tt; pasoEclosion(0); } return hatch.on; },
@@ -1646,10 +1646,10 @@ AVE.module('criadero', function (G) {
         pasoMundo(0);
         const btn = document.getElementById('b-nido');
         check('Sin misión ni disparador del pack: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
-        // Disparador del pack (criadero.desde; cap1: la charla con Luma, minuto 2): el nido entra antes de la primera misión
+        // Disparador del pack (criadero.desde; cap1: la charla con Iguaca, minuto 2): el nido entra antes de la primera misión
         G.pack.criadero.desde = () => true; pasoMundo(0); pasoMundo(2.1);
         check('Con el disparador del pack y sin misión: nido visible y botón «Nido» en el HUD', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden && !!nidoIt && nidoIt.visible());
-        check('El pack cap1 engancha el nido a la charla con Luma (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
+        check('El pack cap1 engancha el nido a la charla con Iguaca (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
         // Huevo del HUD y «+XP al nido»: la XP ya no sube en silencio
         const xpLugar = dar('lugar', 'prueba-lugar'), mas = btn && btn.querySelector('.nido-mas');
         check('Descubrir un lugar da XP de explorar (fuente extra, 8 XP) y el botón muestra «+8 XP al nido»', xpLugar === 8 && st.fuentes.explorar >= 8 && !!mas && /\+8 XP/.test(mas.textContent), mas ? mas.textContent : 'sin aviso');
@@ -1674,7 +1674,7 @@ AVE.module('criadero', function (G) {
           check('Se abre desde el botón Nido del HUD', open); cerrar();
           st.presentado = false; if (G.dialogo.open()) G.dialogo.clear();
           const puede = puedePresentar(); pasoMundo(2);
-          check('Luma presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
+          check('Iguaca presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
           if (G.dialogo.open()) G.dialogo.clear();
           pasoMundo(2);
           check('La presentación no se repite', !G.dialogo.open());

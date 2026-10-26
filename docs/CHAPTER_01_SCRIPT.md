@@ -11,7 +11,7 @@ Estado: PROPUESTO por Kelvin, pendiente de aprobación final e integración con 
 ## Personajes
 - **Vittata:** joven cotorra puertorriqueña, inventora brillante y protagonista. Ingeniosa, atrevida, creativa y protectora; impaciente, le cuesta aceptar ayuda. Su defecto inicial es querer resolverlo todo sola.
 - **El Guardián Constructor** (provisional): fue un constructor reconocido y perdió gran parte de lo que creó. No tiene todas las respuestas. Su identidad y diseño necesitan aprobación.
-- **Luma** (provisional): joven de la comunidad cuyo hogar quedó dañado. Curiosa, valiente, nota los detalles que otros pasan por alto.
+- **Iguaca** (provisional): joven de la comunidad cuyo hogar quedó dañado. Curiosa, valiente, nota los detalles que otros pasan por alto.
 - **La Voz Desconocida:** señal ligada al antiguo pacto de los 36 guardianes. Su identidad no se revela en este capítulo.
 
 ## Escenario: Villa Raíz (zona inicial)
@@ -41,7 +41,7 @@ Comunidad tropical de casas elevadas, árboles gigantes, senderos, talleres y un
 
 **Página 4: La primera decisión.**
 1. Vittata encuentra su máquina experimental dañada. VITTATA: "Si consigo repararla, todavía podemos…"
-2. Luma en la entrada. LUMA: "Mi familia no tiene dónde quedarse. Nuestro árbol se partió."
+2. Iguaca en la entrada. LUMA: "Mi familia no tiene dónde quedarse. Nuestro árbol se partió."
 3. Vittata mira su invento.
 4. Mira hacia la comunidad. VITTATA: "Entonces tendremos que construir algo nuevo."
 
@@ -53,7 +53,7 @@ Comunidad tropical de casas elevadas, árboles gigantes, senderos, talleres y un
 
 **Página 6: Dos terrenos.**
 1. Un terreno junto al río. VITTATA: "Aquí construiríamos mucho más rápido."
-2. Luma señala marcas de agua en un árbol. LUMA: "Pero el río llegó hasta aquí durante la tormenta."
+2. Iguaca señala marcas de agua en un árbol. LUMA: "Pero el río llegó hasta aquí durante la tormenta."
 3. A lo lejos, una colina. LUMA: "Allá arriba parece más seguro."
 4. VITTATA: "Construir rápido no sirve de mucho si después tenemos que empezar otra vez."
 
@@ -65,12 +65,12 @@ Comunidad tropical de casas elevadas, árboles gigantes, senderos, talleres y un
 
 **Página 8: El primer refugio.**
 1. Vittata organiza materiales.
-2. Luma ayuda a colocar los soportes.
+2. Iguaca ayuda a colocar los soportes.
 3. El Guardián sostiene una pieza mientras Vittata ajusta el mecanismo. GUARDIÁN: "¿Segura de que funcionará?" VITTATA: "No completamente." GUARDIÁN: "Bien. Entonces vamos a comprobarlo."
 4. (Grande) El refugio terminado. LUMA: "¡Lo logramos!"
 
 **Página 9: Algo más que una casa.**
-1. La familia de Luma entra al refugio.
+1. La familia de Iguaca entra al refugio.
 2. LUMA: "Pensé que hoy lo habíamos perdido todo."
 3. Vittata mira las herramientas recuperadas. VITTATA: "Yo también."
 4. GUARDIÁN: "Un hogar no es solamente lo que construimos. También es lo que cuidamos."
@@ -91,4 +91,4 @@ Comunidad tropical de casas elevadas, árboles gigantes, senderos, talleres y un
 1. Vittata mira la comunidad desde el mirador.
 2. A lo lejos, otras islas separadas por una niebla luminosa.
 3. Vittata abre un plano nuevo. VITTATA: "Si los caminos desaparecieron, construiremos otros."
-4. (Final) Vittata sostiene el plano de una embarcación; el Guardián y Luma miran el horizonte. NARRADOR: "Y así comenzó la aventura que volvería a conectar los mundos." CONTINUARÁ…
+4. (Final) Vittata sostiene el plano de una embarcación; el Guardián y Iguaca miran el horizonte. NARRADOR: "Y así comenzó la aventura que volvería a conectar los mundos." CONTINUARÁ…

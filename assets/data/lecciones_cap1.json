@@ -47,7 +47,7 @@
       "tema": "ciclo_del_agua",
       "grados": "3-6",
       "enunciado": { "es": "Ordena 5 procesos del ciclo del agua y usa ese modelo para explicar por qué crece el río.", "en": "Orders 5 water cycle processes and uses that model to explain why the river rises." },
-      "evidencia": "Explicación a Luma (paso p8) y preguntas q1 y q2 correctas.",
+      "evidencia": "Explicación a Iguaca (paso p8) y preguntas q1 y q2 correctas.",
       "criterio_logro": "Secuencia completa y q2 correcta en 2 intentos o menos.",
       "depr_2022": ["3.CT1.2", "5.CT2.2", "5.CT2.9", "5.CT2.10"],
       "ngss": ["5-ESS2-1", "MS-ESS2-4"],
@@ -91,7 +91,7 @@
     "titulo": { "es": "M2 · La ruta de la gota", "en": "M2 · The Raindrop's Path" },
     "pregunta_guia": { "es": "¿De dónde salió el agua que inundó el río?", "en": "Where did the water that flooded the river come from?" },
     "habilidades": ["hablar", "volar", "nadar"],
-    "encaje_narrativo": "Misión 2 'Tierra firme': Luma lee las marcas de agua y Vittata no escucha. Vittata aprende a observar: sigue el agua y vuelve con evidencia. La crecida ocurre siempre (canon); la ciencia informa la elección de terreno, no la impone.",
+    "encaje_narrativo": "Misión 2 'Tierra firme': Iguaca lee las marcas de agua y Vittata no escucha. Vittata aprende a observar: sigue el agua y vuelve con evidencia. La crecida ocurre siempre (canon); la ciencia informa la elección de terreno, no la impone.",
     "desbloquea": "pava",
     "evento_final": "MissionCompleted",
     "sin_castigo": "Sin tiempo, sin oxígeno, sin fallar. La gota espera si el jugador se aleja.",
@@ -102,7 +102,7 @@
         "habilidad": "hablar",
         "lugar": "marcas_agua (terreno A, junto al río)",
         "disparador": "interact:marcas_agua",
-        "linea": { "personaje": "Luma", "es": "Mira esas marcas, nena. El río llegó hasta aquí. ¿De dónde salió tanta agua?", "en": "Look at those marks. The river reached this high. Where did all that water come from?" },
+        "linea": { "personaje": "Iguaca", "es": "Mira esas marcas, nena. El río llegó hasta aquí. ¿De dónde salió tanta agua?", "en": "Look at those marks. The river reached this high. Where did all that water come from?" },
         "interaccion": {
           "tipo": "eleccion_dialogo",
           "guarda": "prediccion_agua",
@@ -271,13 +271,13 @@
       },
       {
         "id": "p8",
-        "nombre": "Explícale a Luma",
+        "nombre": "Explícale a Iguaca",
         "habilidad": "hablar",
         "lugar": "marcas_agua",
         "disparador": "interact:marcas_agua (segunda visita)",
         "interaccion": {
           "tipo": "explicar_en_orden",
-          "instruccion": { "es": "Cuéntale a Luma el viaje de la gota. Elige la frase que sigue.", "en": "Tell Luma about the raindrop's trip. Choose the next sentence." },
+          "instruccion": { "es": "Cuéntale a Iguaca el viaje de la gota. Elige la frase que sigue.", "en": "Tell Iguaca about the raindrop's trip. Choose the next sentence." },
           "frases": [
             { "es": "El Sol calentó el agua y subió como vapor.", "en": "The Sun warmed the water and it rose as vapor." },
             { "es": "Arriba, en el frío, el vapor formó una nube.", "en": "Up in the cold, the vapor formed a cloud." },
@@ -287,13 +287,13 @@
           ],
           "correcta": [0, 1, 2, 3, 4],
           "contraste_prediccion": {
-            "si_acerto": { "personaje": "Luma", "es": "¡Lo predijiste! Y ahora tienes la evidencia.", "en": "You predicted it! And now you have the evidence." },
-            "si_no": { "personaje": "Luma", "es": "Pensaste otra cosa, y está bien. La gota nos dio la evidencia. Así trabajan los científicos.", "en": "You thought something else, and that's okay. The raindrop gave us the evidence. That's how scientists work." }
+            "si_acerto": { "personaje": "Iguaca", "es": "¡Lo predijiste! Y ahora tienes la evidencia.", "en": "You predicted it! And now you have the evidence." },
+            "si_no": { "personaje": "Iguaca", "es": "Pensaste otra cosa, y está bien. La gota nos dio la evidencia. Así trabajan los científicos.", "en": "You thought something else, and that's okay. The raindrop gave us the evidence. That's how scientists work." }
           }
         },
-        "cierre": { "personaje": "Luma", "es": "Si llueve fuerte en la montaña, el río crece aquí abajo. Entonces… ¿dónde construimos?", "en": "If it rains hard on the mountain, the river rises down here. So… where do we build?" },
+        "cierre": { "personaje": "Iguaca", "es": "Si llueve fuerte en la montaña, el río crece aquí abajo. Entonces… ¿dónde construimos?", "en": "If it rains hard on the mountain, the river rises down here. So… where do we build?" },
         "siguiente": "Paso existente 'Elige un terreno y construye el refugio' (LandSelected). La elección sigue libre.",
-        "corto": { "es": "Explica el ciclo a Luma.", "en": "Explain the cycle to Luma." },
+        "corto": { "es": "Explica el ciclo a Iguaca.", "en": "Explain the cycle to Iguaca." },
         "objetivos": ["O3", "O6"],
         "criterio_exito": "5 frases en orden (con pista tras 2 fallos)."
       }
@@ -429,7 +429,7 @@
     }
   ],
   "formativa": {
-    "momento": "Al terminar M2, antes de elegir terreno: 'Luma te pregunta'.",
+    "momento": "Al terminar M2, antes de elegir terreno: 'Iguaca te pregunta'.",
     "duracion_min": 3,
     "seleccion": { "3-4": ["q1", "q2", "q4", "q5", "q6"], "5-6": ["q1", "q2", "q3", "q4", "q5", "q6", "q7"] },
     "reglas": "Retro inmediata. Segundo intento con pista. Al tercero se muestra la respuesta y se explica. Sin puntaje visible ni castigo. Se registra si acertó en el intento 1, 2 o 3."
@@ -457,7 +457,7 @@
         "pasos": [
           "20 min: las parejas juegan M2 'La ruta de la gota'.",
           "Circula con 3 preguntas: ¿Qué capa tiene menos luz y cómo lo sabes? ¿A dónde va el agua que cae en la colina? ¿Cambió tu predicción? ¿Qué evidencia viste?",
-          "5 min: evaluación formativa dentro del juego (Luma pregunta)."
+          "5 min: evaluación formativa dentro del juego (Iguaca pregunta)."
         ]
       },
       "despues": {

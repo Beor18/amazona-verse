@@ -14,7 +14,7 @@ Los minutos son estimaciones; no hay medida con jugadores (P0-3). Piso automáti
 |---|---|---|
 | Apertura (`inicio`) | ver | Negro con viento → taller con luz → ZZZT, sacudida y onda en el cielo → fundido |
 | 1 `taller` | caminar, examinar | Máquina experimental y transmisor (E) |
-| 2 `luma` | hablar | Luma pide ayuda y da 3 tablas |
+| 2 `luma` | hablar | Iguaca pide ayuda y da 3 tablas |
 | 3 `recolectar` · M1 | nadar, bucear | Madera y piedras al pasar; la pieza de metal en el fondo de la poza. Nace el nido |
 | 4 `terrenos` · M2 | volar, nadar, hablar | «La ruta de la gota» (p1–p8) y los dos terrenos desde el aire |
 | 5 `refugio` | construir | Fantasma verde/rojo; crecida con lluvia y trueno; desarmar y mover a la colina |
@@ -24,8 +24,8 @@ Los minutos son estimaciones; no hay medida con jugadores (P0-3). Piso automáti
 
 ## 3. Tres misiones (`content/cap1/misiones.js`)
 **M1 · «Fondo del río» (nadar).** La pieza `c1` está sumergida; burbujas guían; bucear con C. Sin oxígeno ni enemigos. Premio: botas azules.
-**M2 · «La ruta de la gota» (volar, nadar, hablar; `educativa.js`, `lecciones.js`).** Predecir con Luma, 4 perchas en flora real (suelo, sotobosque, dosel, emergente), cadena alimentaria, comparar terrenos desde el aire, seguir el vapor y la gota, bucear a la marca de crecida y explicarlo. Sustituye a la M2 de anillos, que el fundador rechazó. Premio: pava jíbara. Mejora propuesta: que p5–p8 se vuelen (`DIVERSION_CAP1.md` mejora 8).
-**M3 · «Co-quí» (escuchar y repetir).** Tres coquíes en arbustos que brillan; Simon de 2–3 notas («co» grave, «quí» agudo); «Pasar» tras 2 fallos; elección de diálogo con Luma que cambia la frase, no el desenlace. Premio: camisa guayabera.
+**M2 · «La ruta de la gota» (volar, nadar, hablar; `educativa.js`, `lecciones.js`).** Predecir con Iguaca, 4 perchas en flora real (suelo, sotobosque, dosel, emergente), cadena alimentaria, comparar terrenos desde el aire, seguir el vapor y la gota, bucear a la marca de crecida y explicarlo. Sustituye a la M2 de anillos, que el fundador rechazó. Premio: pava jíbara. Mejora propuesta: que p5–p8 se vuelen (`DIVERSION_CAP1.md` mejora 8).
+**M3 · «Co-quí» (escuchar y repetir).** Tres coquíes en arbustos que brillan; Simon de 2–3 notas («co» grave, «quí» agudo); «Pasar» tras 2 fallos; elección de diálogo con Iguaca que cambia la frase, no el desenlace. Premio: camisa guayabera.
 
 ## 4. Diario de Campo Boricua (`content/cap1/coleccionables.js`)
 12 hallazgos por proximidad, con tarjeta de una línea y silueta de primitivas. **Fauna (6):** coquí común, San Pedrito, reinita mariposera, dajao, jicotea, manatí. **Cultura (6):** maraca, güiro, cuatro, petroglifo taíno, máscara de vejigante, pava jíbara. Los 12 textos están **validados con fuente** (`DIARIO_VALIDACION.md`: DRNA, USFWS, USGS, ICP, Smithsonian, UICN, Cornell Lab, Ley 154-2003 y publicaciones académicas). El Diario trae además la sección «Amazonas del mundo» (`src/game/diario.js`, especies con datos verificados; 13 estados UICN esperan a Kelvin) y el Diario de ciencia de la ruta de la gota.
@@ -90,9 +90,9 @@ Arcade de habilidad sobre el mismo mundo, desde la portada o la pausa, con «Otr
 | Texto grande y alto contraste | En curso (D2) | `src/game/accesibilidad.js`, `src/ui/ui.css` |
 | Subtítulos generales, relajado, zurdo | Pendiente (D4) | mismos archivos e `input.js` |
 | Bandada, luciérnagas, bahía, engranaje visible | Pendiente (P2-1, P2-2) | `content/cap1/mundo.js`, `historia.js`, `fx` |
-| Modelos 3D de Luma y el Guardián; máquina y transmisor con calidad comercial | Pendiente (P1-6, P2-5; decisiones 5 y 6) | `tools/blender/`, `assets/models/` |
+| Modelos 3D de Iguaca y el Guardián; máquina y transmisor con calidad comercial | Pendiente (P1-6, P2-5; decisiones 5 y 6) | `tools/blender/`, `assets/models/` |
 
 ## 12. Riesgos y decisiones abiertas
 - **Duración y FPS sin medir** en jugadores y equipos reales (P0-3, P0-4). Límites del motor: partículas a 200, bandada a 20.
 - **Canon:** aprobación del guion, forma del Guardián, orden de su llegada, medalla, cara definitiva de la Voz, diseño de la máquina y el transmisor, duración meta, idioma, taller con interior (`CAP1_PENDIENTE.md` §3). Son de Kelvin.
-- **Diversión:** el capítulo pide leer y caminar el 65 % del tiempo y volar con habilidad menos del 10 %. Las cinco mejoras ★ de `DIVERSION_CAP1.md` (Luma llama desde arriba, lo que gano se ve, diálogo que no bloquea, la crecida se juega, cómic con humor y foto) son el siguiente trabajo de diseño del capítulo.
+- **Diversión:** el capítulo pide leer y caminar el 65 % del tiempo y volar con habilidad menos del 10 %. Las cinco mejoras ★ de `DIVERSION_CAP1.md` (Iguaca llama desde arriba, lo que gano se ve, diálogo que no bloquea, la crecida se juega, cómic con humor y foto) son el siguiente trabajo de diseño del capítulo.

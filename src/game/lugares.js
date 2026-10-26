@@ -7,7 +7,7 @@
    - El aviso usa el toast de logro del HUD (con <b>, como el Diario) y espera a que el jugador esté libre (sin diálogo ni
      tarjeta) y a que el toast anterior termine; varios lugares seguidos salen uno tras otro.
    - El nombre que se muestra quita el paréntesis técnico del mapa («Poza Honda (misión de buceo)» → «Poza Honda»).
-   Datos del pack: descubrir { omitir: [id | RegExp], radio?, alto?, xp?: false } (cap1: Luma, las paradas y los grupos de
+   Datos del pack: descubrir { omitir: [id | RegExp], radio?, alto?, xp?: false } (cap1: Iguaca, las paradas y los grupos de
    la escena de Kelvin no son lugares para el jugador). G.emit('lugar', { id, nombre }) al descubrir.
    Pruebas: AV.lugaresTest(). */
 AVE.module('lugares', function (G) {

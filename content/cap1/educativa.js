@@ -1,8 +1,8 @@
 /* Content pack cap1 · misión educativa M2 "La ruta de la gota" (docs/equipo/EDUCATIVO.md §2, datos en lecciones.js)
-   p1 predecir con Luma en las marcas de agua · p2 subir volando por las 4 capas del bosque posándose en perchas ·
+   p1 predecir con Iguaca en las marcas de agua · p2 subir volando por las 4 capas del bosque posándose en perchas ·
    p3 cadena alimentaria en el dosel · p4 ver los dos terrenos desde arriba (S.evaluated) · p5 seguir el vapor de la poza
    a la nube · p6 seguir la gota (precipitación, infiltración, escorrentía) · p7 bucear en la poza hasta la gota y la marca
-   de la crecida · p8 explicarle el ciclo a Luma, comparar predicción y evidencia, y "Luma te pregunta" (formativa).
+   de la crecida · p8 explicarle el ciclo a Iguaca, comparar predicción y evidencia, y "Iguaca te pregunta" (formativa).
    Al terminar se desbloquea la pava y la historia pasa a elegir terreno (la elección sigue libre).
    Sin tiempo, sin oxígeno y sin fallar: la gota y el vapor esperan si el jugador se aleja.
 
@@ -77,7 +77,7 @@
   const TX = {
     hud: { es: 'Ruta de la gota', en: "Raindrop's path" },
     mirar: { es: 'Mirar las marcas de agua', en: 'Look at the water marks' },
-    explicar: { es: 'Explicarle a Luma el viaje de la gota', en: "Tell Luma the raindrop's trip" },
+    explicar: { es: 'Explicarle a Iguaca el viaje de la gota', en: "Tell Iguaca the raindrop's trip" },
     observar: { es: 'Observar', en: 'Observe' }, capa: { es: 'Capa del bosque', en: 'Forest layer' }, de: { es: 'de', en: 'of' },
     predice: { es: 'Predice', en: 'Predict' }, sinMala: { es: 'No hay respuesta mala: es tu predicción.', en: "There's no wrong answer: it's your prediction." },
     otraVez: { es: 'Mira otra vez a tu alrededor.', en: 'Look around again.' },
@@ -89,13 +89,13 @@
     vistaPista: { es: 'Mira otra vez desde arriba: ¿cuál está junto al río?', en: 'Look again from above: which one is next to the river?' },
     nace: { es: 'Nace la gota', en: 'A raindrop is born' }, sigue: { es: 'Sigue la gota', en: 'Follow the raindrop' },
     gotaHallada: { es: '¡Encontraste la gota!', en: 'You found the raindrop!' }, marcaHallada: { es: '¡Encontraste la marca de la crecida en la roca!', en: 'You found the flood mark on the rock!' },
-    explicale: { es: 'Explícale a Luma', en: 'Explain it to Luma' }, tuExplicacion: { es: 'Tu explicación', en: 'Your explanation' },
+    explicale: { es: 'Explícale a Iguaca', en: 'Explain it to Iguaca' }, tuExplicacion: { es: 'Tu explicación', en: 'Your explanation' },
     despues: { es: 'Esa frase va más adelante. ¿Qué pasó antes?', en: 'That sentence comes later. What happened before?' },
     brilla: { es: 'Pista: la frase que sigue brilla.', en: 'Hint: the next sentence is glowing.' },
     predijeVi: { es: 'Predije y vi', en: 'I predicted, I saw' }, predije: { es: 'Predije', en: 'I predicted' }, vi: { es: 'Vi', en: 'I saw' },
     agua: { es: '¿De dónde salió el agua?', en: 'Where did the water come from?' }, vapor: { es: '¿Qué pasa con el vapor?', en: 'What happens to the vapor?' },
     sinPred: { es: '(sin predicción)', en: '(no prediction)' },
-    lumaPregunta: { es: 'Luma te pregunta', en: 'Luma asks you' },
+    lumaPregunta: { es: 'Iguaca te pregunta', en: 'Iguaca asks you' },
     introFormativa: { es: 'Antes de elegir dónde construir, quiero estar segura de que lo entendimos bien. ¿Me ayudas con unas preguntas?', en: 'Before we choose where to build, I want to be sure we understood it. Will you help me with a few questions?' },
     finFormativa: { es: '¡Eso es pensar con ciencia! Ahora sí sabemos lo que dice el agua.', en: "That's thinking like a scientist! Now we know what the water is telling us." },
     lumaVe: { es: 'Antes de construir, ve a las marcas de agua junto al río. Quiero mostrarte algo.', en: 'Before we build, go to the water marks by the river. I want to show you something.' },
@@ -353,7 +353,7 @@
         tarjeta = null;
       });
       const say = (lineas, fin) => G.dialogo.say(lineas.map(l => Object.assign({ lang: AU.aj.idioma }, l)), fin);
-      const linea = (l, extra) => Object.assign({ who: l.personaje, img: l.personaje === 'Luma' ? IMG.L : IMG.V, text: t(l), lang: AU.aj.idioma }, extra || {});
+      const linea = (l, extra) => Object.assign({ who: l.personaje, img: l.personaje === 'Iguaca' ? IMG.L : IMG.V, text: t(l), lang: AU.aj.idioma }, extra || {});
       const aviso = (txt, ms) => { G.ui.toast(txt, ms || 4500); AU.auto(txt); };
       const opcionesHTML = (ops, orden) => `<div class="row edu-opts">${orden.map(i => `<button class="btn secondary edu-opt" id="ch-${i}" type="button" data-i="${i}">${esc(t(ops[i]))}</button>`).join('')}</div>`;
       const cabecera = (eyebrow, titulo, cara) => `<div class="edu-head">${cara ? `<img class="edu-cara" src="${cara}" alt="">` : ''}<div><span class="eyebrow">${esc(eyebrow)}</span><h2>${esc(titulo)}</h2></div></div>`;
@@ -442,7 +442,7 @@
           return;
         }
         if (e.hecho.p7 && !e.hecho.p8) { explicar(); return; }
-        say([{ who: 'Luma', img: IMG.L, text: u('lumaSigue'), mood: 'idea' }]);
+        say([{ who: 'Iguaca', img: IMG.L, text: u('lumaSigue'), mood: 'idea' }]);
       }
       G.interaccion.add({ id: 'marcas_agua', x: L.marcas.x, z: L.marcas.z, r: 2.4,
         visible: () => enMision() && (!E().hecho.p1 || (E().hecho.p7 && !E().hecho.p8)),
@@ -690,7 +690,7 @@
         }
       }
 
-      // ---------- p8 Explícale a Luma, Predije / Vi y "Luma te pregunta" ----------
+      // ---------- p8 Explícale a Iguaca, Predije / Vi y "Iguaca te pregunta" ----------
       const expl = { puestas: [], fallos: 0 };
       function explicar() {
         const e = E();
@@ -698,7 +698,7 @@
         const I = paso('p8').interaccion, fr = I.frases, orden = AU.mezclar(fr.length, 23, I.correcta[0]);
         const pintar = msg => {
           const sig = I.correcta[expl.puestas.length];
-          abrir(`<div class="edu" lang="${AU.aj.idioma}">${cabecera(u('explicale'), 'Luma', IMG.L)}
+          abrir(`<div class="edu" lang="${AU.aj.idioma}">${cabecera(u('explicale'), 'Iguaca', IMG.L)}
             <p>${esc(t(I.instruccion))}</p>
             <ol class="edu-seq" aria-label="${esc(u('tuExplicacion'))}">${expl.puestas.map(i => `<li class="ok">${esc(t(fr[i]))}</li>`).join('')}</ol>
             <div class="row edu-opts">${orden.filter(i => !expl.puestas.includes(i)).map(i => `<button class="btn secondary edu-opt${expl.fallos >= 2 && i === sig ? ' brilla' : ''}" id="ch-${i}" type="button" data-i="${i}">${esc(t(fr[i]))}</button>`).join('')}</div>
@@ -754,10 +754,10 @@
         const cab = (i, n) => `${cabecera(t(LEC.meta.titulo), u('lumaPregunta'), IMG.L)}<div class="edu-dots" aria-hidden="true">${Array.from({ length: n }, (_, k) => `<span class="${k < i ? 'ok' : k === i ? 'now' : ''}"></span>`).join('')}</div>`;
         const correr = () => AU.serie(ids, { cabecera: cab, alResponder: () => registrar(), alTerminar: () => {
           G.ui.hideCard();
-          say([{ who: 'Luma', img: IMG.L, text: u('finFormativa'), mood: 'happy' }, linea(paso('p8').cierre, { mood: 'idea' })], terminarMision);
+          say([{ who: 'Iguaca', img: IMG.L, text: u('finFormativa'), mood: 'happy' }, linea(paso('p8').cierre, { mood: 'idea' })], terminarMision);
         } });
         if (todas) { correr(); return; }
-        say([{ who: 'Luma', img: IMG.L, text: u('introFormativa'), mood: 'curious' }], correr);
+        say([{ who: 'Iguaca', img: IMG.L, text: u('introFormativa'), mood: 'curious' }], correr);
       }
       function terminarMision() {
         const e = E();
@@ -921,7 +921,7 @@
       }
       function lineaLuma() {
         const e = E();
-        return { who: 'Luma', img: IMG.L, lang: AU.aj.idioma, mood: 'idea', text: !e.hecho.p1 ? u('lumaVe') : e.hecho.p7 ? u('lumaCuenta') : u('lumaSigue') };
+        return { who: 'Iguaca', img: IMG.L, lang: AU.aj.idioma, mood: 'idea', text: !e.hecho.p1 ? u('lumaVe') : e.hecho.p7 ? u('lumaCuenta') : u('lumaSigue') };
       }
 
       C.edu = {

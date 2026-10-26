@@ -26,7 +26,7 @@
       // Puntos por cada evento 'aprendizaje' (src/game/aula.js, diario.js, misiones.js). Cada tipo:id cuenta una sola vez.
       fuentes: {
         ficha: { xp: 40, grupo: 'aprender', nombre: { es: 'Ficha de ciencia', en: 'Science card' } },
-        pregunta: { xp: [20, 15, 10], grupo: 'aprender', nombre: { es: 'Luma te pregunta', en: 'Luma asks' } }, // por intento: el esfuerzo siempre suma
+        pregunta: { xp: [20, 15, 10], grupo: 'aprender', nombre: { es: 'Iguaca te pregunta', en: 'Iguaca asks' } }, // por intento: el esfuerzo siempre suma
         paso: { xp: 15, grupo: 'aprender', nombre: { es: 'Paso de la misión educativa', en: 'Learning mission step' } },
         hallazgo: { xp: 25, grupo: 'explorar', nombre: { es: 'Hallazgo del Diario', en: 'Field journal find' } },
         mision: { xp: 60, grupo: 'explorar', nombre: { es: 'Misión', en: 'Mission' } },
@@ -145,7 +145,7 @@
       { id: 'espacial', cria: { es: 'Estrella', en: 'Star' }, rareza: 'preguntas', nombre: { es: 'Cápsula espacial', en: 'Space capsule' },
         lema: { es: 'Un cielo de estrellas y nebulosas.', en: 'A sky of stars and nebulae.' },
         aspecto: { patron: 'cosmos', a: '#141a3c', b: '#7cc6ff', brillo: 0.2 },
-        obtener: { texto: { es: 'Responde las 7 preguntas de «Luma te pregunta» (cualquier intento cuenta).', en: 'Answer all 7 "Luma asks" questions (any attempt counts).' }, cap1: { preguntas: 7 }, defecto: { preguntas: 5 } },
+        obtener: { texto: { es: 'Responde las 7 preguntas de «Iguaca te pregunta» (cualquier intento cuenta).', en: 'Answer all 7 "Iguaca asks" questions (any attempt counts).' }, cap1: { preguntas: 7 }, defecto: { preguntas: 5 } },
         traits: {
           bebe: [{ nuevo: 'cascaron_gorro' }, { nuevo: 'casco_espacial', respaldo: { slot: 'eyes', id: 'lentes', color: '#f4f4f0', style: 'deportivas' } }],
           juvenil: [{ slot: 'feet', id: 'botas', color: '#3d8fb0', style: 'espacial' }],
