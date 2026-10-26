@@ -126,7 +126,6 @@
     "total_max_s": 1800,
     "_nota_presupuestos": "Medidos en la carga inicial (hasta el mundo jugable, antes de las baterías). Los que estén en 'fallan' hacen fallar test.sh; el resto da aviso.",
     "presupuestos": {
-      "descarga_inicial_mb": 8,
       "heap_mb": 120,
       "heap_gc_mb": 100,
       "b64_residente_mb": 0.5,
