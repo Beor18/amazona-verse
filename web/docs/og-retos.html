@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- Plantilla de web/assets/og-retos.jpg (1200×630), la imagen para compartir los minijuegos. Se rehace con:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars --window-size=1200,630 \
+       --screenshot=/tmp/og-retos.png web/docs/og-retos.html && sips -s format jpeg -s formatOptions 85 /tmp/og-retos.png --out web/assets/og-retos.jpg -->
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #0e2a22; font-family: "Fredoka", "Trebuchet MS", sans-serif; }
+  .grid { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; }
+  .grid div { background-size: cover; background-position: center; }
+  .velo { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,28,22,.92) 0%, rgba(8,28,22,.78) 38%, rgba(8,28,22,0) 66%); }
+  .texto { position: absolute; left: 64px; top: 0; bottom: 0; width: 560px; display: flex; flex-direction: column; justify-content: center; color: #fff8ec; }
+  .marca { font-size: 30px; font-weight: 600; color: #ffd27a; letter-spacing: .5px; }
+  h1 { margin: 10px 0 18px; font-size: 76px; line-height: 1; font-weight: 700; }
+  p { margin: 0; font-size: 30px; line-height: 1.25; font-weight: 600; }
+  .lista { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .lista span { padding: 8px 16px; border-radius: 999px; background: #ffd27a; color: #1c2a22; font-size: 22px; font-weight: 700; }
+</style></head><body>
+  <div class="grid">
+    <div style="background-image:url(../assets/img/minijuego-flight.jpg)"></div>
+    <div style="background-image:url(../assets/img/retos-carrera.jpg)"></div>
+    <div style="background-image:url(../assets/img/minijuego-banquete.jpg)"></div>
+    <div style="background-image:url(../assets/img/retos-tormenta.jpg)"></div>
+  </div>
+  <div class="velo"></div>
+  <div class="texto">
+    <div class="marca">Amazona Verse</div>
+    <h1>Minijuegos con Vittata</h1>
+    <p>Partidas de un minuto en el bosque de Puerto Rico. ¿Superas mi récord?</p>
+    <div class="lista"><span>Flight</span><span>¡Banquete!</span><span>Tormenta</span><span>Carrera</span></div>
+  </div>
+</body></html>
