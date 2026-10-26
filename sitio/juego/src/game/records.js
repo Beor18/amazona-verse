@@ -75,6 +75,7 @@
       rescate: ['¡Salva al pichón!', 'Save the Parrot'], // src/game/rescate.js
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
+      tren: ['El tren de Vittata', "Vittata's Train"], // src/game/tren.js (C16, publicado)
       rio_rush: ['River Rush', 'River Rush'], contrarreloj: ['Contrarreloj hasta el mar', 'Time trial to the sea'], // src/game/river_rush.js (AC2, publicado)
       maze: ['Amazona Maze', 'Amazona Maze'], // src/game/maze.js (AB1, oculto)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
@@ -122,10 +123,12 @@
     function retosDe(d) {
       const ok = esObj(d) && d.v === 1, c = ok && esObj(d.carrera) ? d.carrera : {}, q = ok && esObj(d.tormenta) ? d.tormenta : {}, w = ok && esObj(d.rio) ? d.rio : {}, b = ok && esObj(d.banquete) ? d.banquete : {};
       const f = ok && esObj(d.flight) ? d.flight : null; // src/game/flight.js: solo si se jugó
+      const tn = ok && esObj(d.tren) ? d.tren : null; // src/game/tren.js (C16): solo si se jugó
       const rr = ok && esObj(d.rio_rush) ? d.rio_rush : null; // src/game/river_rush.js (AC1): solo si se jugó
       const mz = ok && esObj(d.maze) ? d.maze : null; // src/game/maze.js: solo si se jugó
       return {
         flight: f ? { mejor: num(f.mejor), jugadas: ent(f.jugadas) } : null,
+        tren: tn ? { mejor: num(tn.mejor), jugadas: ent(tn.jugadas) } : null,
         rio_rush: rr ? { mejor: num(rr.mejor), jugadas: ent(rr.jugadas), reloj: num(rr.reloj), medallaReloj: ['bronce', 'plata', 'oro'].includes(rr.medallaReloj) ? rr.medallaReloj : null, jugadasReloj: ent(rr.jugadasReloj) } : null, // AC2: + contrarreloj (ms y medalla)
         maze: mz ? { mejor: num(mz.mejor), jugadas: ent(mz.jugadas) } : null,
         banquete: { mejor: num(b.mejor), frutos: ent(b.frutos), jugadas: ent(b.jugadas) }, // src/game/banquete.js
@@ -188,6 +191,7 @@
         out.jugadores[nombre] = { banquete: r.banquete, carrera: { mejor: r.carrera.mejor, puesto: r.carrera.puesto, oros: r.carrera.oros, jugadas: r.carrera.jugadas }, tormenta: { mejor: r.tormenta.mejor, jugadas: r.tormenta.jugadas }, rio: { mejor: r.rio.mejor, medalla: r.rio.medalla, oros: r.rio.oros, jugadas: r.rio.jugadas } };
         if (esObj(e.rescate)) out.jugadores[nombre].rescate = rescateLimpio(e.rescate); // src/game/rescate.js
         if (esObj(e.flight)) out.jugadores[nombre].flight = { mejor: num(e.flight.mejor), jugadas: ent(e.flight.jugadas) }; // src/game/flight.js
+        if (esObj(e.tren)) out.jugadores[nombre].tren = { mejor: num(e.tren.mejor), jugadas: ent(e.tren.jugadas) }; // src/game/tren.js (C16)
         if (esObj(e.rio_rush)) out.jugadores[nombre].rio_rush = retosDe({ v: 1, rio_rush: e.rio_rush }).rio_rush; // src/game/river_rush.js (AC2)
         if (esObj(e.maze)) out.jugadores[nombre].maze = { mejor: num(e.maze.mejor), jugadas: ent(e.maze.jugadas) }; // src/game/maze.js
       }
@@ -295,6 +299,10 @@
         const f = e.flight || (e.flight = { mejor: null, jugadas: 0 }); f.jugadas++;
         const pts = Number.isInteger(r.puntos) && r.puntos > 0 && r.puntos <= 1e5 ? r.puntos : null;
         if (pts && (!f.mejor || pts > f.mejor)) f.mejor = pts;
+      } else if (r.modo === 'tren') { // src/game/tren.js (C16): mejor puntuación de un turno
+        const z = e.tren || (e.tren = { mejor: null, jugadas: 0 }); z.jugadas++;
+        const pts = Number.isInteger(r.puntos) && r.puntos > 0 && r.puntos <= 1e5 ? r.puntos : null;
+        if (pts && (!z.mejor || pts > z.mejor)) z.mejor = pts;
       } else if (r.modo === 'rio_rush') { // src/game/river_rush.js (AC1): mejor puntuación
         const z = e.rio_rush || (e.rio_rush = { mejor: null, jugadas: 0 });
         if (r.reloj) { // AC2: contrarreloj (y contra tu fantasma): mejor tiempo en ms y la mejor medalla
@@ -433,12 +441,14 @@
       const flight = !f ? '' : `<article class="rec-card"><h4>${esc(tx('flight'))}</h4>${f.mejor
         ? `<div class="rec-grande">${medalla(f.mejor >= 60 ? 'oro' : f.mejor >= 25 ? 'plata' : 'bronce', '★')}<div><b class="rec-num">${f.mejor}</b><small>${esc(tx('obstaculos'))}</small></div></div><dl>${dato(tx('jugadas'), f.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${f.jugadas ? `<dl>${dato(tx('jugadas'), f.jugadas)}</dl>` : ''}`}</article>`;
+      const tn = d.retos.tren || { mejor: null, jugadas: 0 }; // src/game/tren.js (C16, publicado: la tarjeta sale siempre)
+      const tren = `<article class="rec-card"><h4>${esc(tx('tren'))}</h4>${tn.mejor ? `<div class="rec-grande">${medalla(tn.mejor >= 650 ? 'oro' : tn.mejor >= 450 ? 'plata' : tn.mejor >= 250 ? 'bronce' : '', '★')}<div><b class="rec-num">${tn.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), tn.jugadas)}</dl></article>`;
       const rr = d.retos.rio_rush || { mejor: null, jugadas: 0, reloj: null, medallaReloj: null, jugadasReloj: 0 }; // src/game/river_rush.js (AC2, publicado: la tarjeta sale siempre)
       const rioRush = `<article class="rec-card"><h4>${esc(tx('rio_rush'))}</h4>${rr.mejor ? `<div class="rec-grande">${medalla(rr.mejor >= 250 ? 'oro' : rr.mejor >= 120 ? 'plata' : rr.mejor >= 40 ? 'bronce' : '', '★')}<div><b class="rec-num">${rr.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), rr.jugadas)}${rr.reloj ? dato(tx('contrarreloj'), `${rr.medallaReloj ? medalla(rr.medallaReloj, '★') + ' ' : ''}${esc(reloj(rr.reloj / 1000))}`) : ''}</dl></article>`;
       const mz = d.retos.maze; // src/game/maze.js (AB1, oculto): la tarjeta sale solo si se jugó
       const maze = !mz ? '' : `<article class="rec-card"><h4>${esc(tx('maze'))}</h4>${mz.mejor ? `<div class="rec-grande"><div><b class="rec-num">${mz.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), mz.jugadas)}</dl></article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}${rioRush}${maze}</div>${sellos(d)}</section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}${tren}${rioRush}${maze}</div>${sellos(d)}</section>`;
     }
     // Sellos (pegatinas cosméticas): uno por medalla lograda en cada reto, sacados de los récords guardados. Solo habilidad: sin compras, cajas ni azar.
     function sellos(d) {
@@ -446,11 +456,12 @@
       const nivel = {
         carrera: R.carrera.puesto ? (R.carrera.puesto === 1 ? 2 : R.carrera.puesto === 2 ? 1 : R.carrera.puesto === 3 ? 0 : -1) : -1,
         tormenta: R.tormenta.mejor ? (R.tormenta.mejor >= 1500 ? 2 : R.tormenta.mejor >= 800 ? 1 : 0) : -1,
-        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1,
+        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1, tren: R.tren ? por(R.tren.mejor, 450, 650) : -1, // tren (C16): bronce 250
       };
       if (R.flight && R.flight.mejor && R.flight.mejor < 10 && nivel.flight === 0) nivel.flight = -1;
+      if (R.tren && R.tren.mejor && R.tren.mejor < 250 && nivel.tren === 0) nivel.tren = -1; // src/game/tren.js (C16)
       { const z = R.rio_rush || {}, p = z.mejor >= 250 ? 2 : z.mejor >= 120 ? 1 : z.mejor >= 40 ? 0 : -1; nivel.rio_rush = Math.max(p, ord.indexOf(z.medallaReloj)); } // River Rush (AC2): la mejor de puntos y contrarreloj
-      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight', 'rio_rush'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
+      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight', 'tren', 'rio_rush'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
       return `<h4 class="rec-sellos-t">${esc(tx('sellos'))} <small>${esc(tx('sellosNota'))}</small></h4><ul class="rec-sellos">${filas}</ul>`;
     }
     function htmlHistoria(d) {
@@ -639,7 +650,7 @@
     const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/#top-records';
     const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
     const ADJETIVOS = ['Veloz', 'Valiente', 'Curioso', 'Brillante', 'Alegre', 'Audaz', 'Sabio', 'Feliz', 'Ágil', 'Sereno'];
-    const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush']; // rio_rush: River Rush clásico, por puntos (AC2)
+    const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush', 'tren']; // rio_rush: River Rush clásico, por puntos (AC2)
     const claveAlias = ALM + '.rankalias', claveDisp = ALM + '.rankdisp';
     const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* sin almacén: el apodo no se recuerda */ } };

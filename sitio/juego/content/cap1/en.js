@@ -1323,4 +1323,10 @@ window.AV_EN = {
  "★ Medalla de oro": "★ Gold medal",
  "★ Medalla de plata": "★ Silver medal",
  "★ Medalla de bronce": "★ Bronze medal",
+ // El tren de Vittata (src/game/tren.js, C16): tarjetas del menú y de Retos; el juego traduce lo suyo con su diccionario
+ "El tren de Vittata": "Vittata's Train",
+ "Carga, desvíos y curvas por la costa": "Cargo, switches and curves along the coast",
+ "Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.": "Drive the sugar-cane train along the coast and the forest. Pick the track at the switches, slow down on the curves and deliver each load to its station.",
+ "Termina lo que estás haciendo y vuelve a probar el tren.": "Finish what you are doing and try the train again.",
+ "No se pudo abrir el tren. Prueba otra vez.": "The train could not open. Try again.",
 };
