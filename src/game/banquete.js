@@ -129,21 +129,24 @@ window.AVBanquete = function (G) {
     const V = G.vegetacion, inst = V && V.instancias, info = V && V.info;
     if (!inst) return [];
     const an = anclas(), out = [];
-    for (const [m, tipo] of [['palma_sierra', 'palma'], ['tabonuco', 'tabonuco'], ['tabonuco_enano', 'tabonuco']]) {
+    for (const [m, tipo] of [['palma_sierra', 'palma'], ['palma_sierra_joven', 'palma'], ['tabonuco', 'tabonuco'], ['tabonuco_enano', 'tabonuco']]) {
       const P = inst[m], inf = info && info[m]; if (!P || !inf) continue;
       for (let i = 0; i < P.n; i++) {
         const x = P.pos[i * 4], z = P.pos[i * 4 + 2], s = P.pos[i * 4 + 3], alto = inf.alto * s;
         if (alto < 3) continue;
         let d = Infinity; for (const a of an) d = Math.min(d, Math.hypot(x - a.x, z - a.z));
-        if (d > 150) continue;
+        if (d > (tipo === 'palma' ? 220 : 150)) continue; // las palmas viven más lejos del pueblo (terrazas): se buscan más allá
         out.push({ x, z, s, alto, tipo, d, y0: P.pos[i * 4 + 1] });
       }
     }
     out.sort((a, b) => a.d - b.d);
     const sel = [];
-    for (const c of out) { if (sel.some(o => Math.hypot(o.x - c.x, o.z - c.z) < 6)) continue; sel.push(c); if (sel.length >= ARBOLES_N.alto) break; }
-    // Que haya de los dos: si todo es de un tipo, se queda igual (es lo que hay en el mapa)
-    return sel;
+    for (const c of out) { if (sel.some(o => Math.hypot(o.x - c.x, o.z - c.z) < 6)) continue; sel.push(c); }
+    // Que haya de los dos en todas las calidades: se intercalan (una palma cada tres árboles mientras queden), así los 16 de «bajo»
+    // ya llevan palmas aunque las más cercanas al pueblo sean tabonucos. Si solo hay de un tipo, se queda lo que hay en el mapa
+    const pal = sel.filter(a => a.tipo === 'palma'), tab = sel.filter(a => a.tipo !== 'palma'), mezcla = [];
+    while (mezcla.length < ARBOLES_N.alto && (pal.length || tab.length)) { const quierePalma = mezcla.length % 3 === 0; const de = quierePalma ? (pal.length ? pal : tab) : (tab.length ? tab : pal); mezcla.push(de.shift()); }
+    return mezcla;
   }
   function frutosDe(arbol, ruta) {
     const l = [], base = superficie(arbol.x, arbol.z), suelo = H(arbol.x, arbol.z);
@@ -472,7 +475,8 @@ window.AVBanquete = function (G) {
       // ----- Frutos en el mundo -----
       const nAlto = poblar(ARBOLES_N.alto), nMedio = poblar(ARBOLES_N.medio), nBajo = poblar(ARBOLES_N.bajo);
       check('Hay árboles con frutos en el mapa (palma de sierra y tabonuco reales)', B.arboles.length >= 12, B.arboles.length + ' árboles, ' + nAlto + ' frutos en alto');
-      check('Los dos tipos de árbol llevan fruto', new Set(B.arboles.slice(0, ARBOLES_N.bajo).map(a => a.tipo)).size === 2 || new Set(B.arboles.map(a => a.tipo)).size < 2, B.arboles.slice(0, 16).map(a => a.tipo).join(','));
+      const palmasEn = n => B.arboles.slice(0, n).filter(a => a.tipo === 'palma').length, hayPalmas = B.arboles.some(a => a.tipo === 'palma');
+      check('Hay palmas de sierra con racimos en todas las calidades (4 o más en «bajo», o no hay palmas a menos de 220 m)', !hayPalmas || (palmasEn(ARBOLES_N.bajo) >= 4 && palmasEn(ARBOLES_N.medio) >= 8), palmasEn(16) + ' / ' + palmasEn(36) + ' / ' + palmasEn(60) + ' palmas de ' + B.arboles.length);
       check('La cantidad sigue la calidad (bajo < medio < alto)', nBajo < nMedio && nMedio < nAlto, nBajo + ' / ' + nMedio + ' / ' + nAlto);
       poblar();
       check('Todos los frutos quedan sobre el suelo y a altura de vuelo (1,5 a 30 m)', mundo.lista.every(fr => isFinite(fr.x + fr.y + fr.z) && fr.y - superficie(fr.x, fr.z) >= 1.5 && fr.y - superficie(fr.x, fr.z) <= 30));
@@ -498,9 +502,11 @@ window.AVBanquete = function (G) {
       check('«Comer»: el fruto se consume, da +5 XP al nido y lo avisa', !fr1.activo && B.llevo === 1 && B.comidos === comidos0 + 1 && (!estCri || (estCri.fuentes.cuidar || 0) - cuidarA === XP_FRUTO) && /Ñam/.test($('toast').textContent), $('toast').textContent);
       check('El fruto comido vuelve a salir a los 2–3 min', fr1.regen > S.clock + 100 && fr1.regen <= S.clock + 181);
       // Rama para posarse: una percha por árbol bajo la fruta
-      const ar0 = B.arboles.find(a => perchas.some(p => p.x === a.x && p.z === a.z)), pr0 = ar0 && perchas.find(p => p.x === ar0.x && p.z === ar0.z);
+      // Por consulta: un árbol con rama que aún tenga un fruto al alcance (los de antes pudieron comerse en los pasos anteriores)
+      const alAlcance = p => mundo.lista.find(f => f.activo && Math.hypot(f.x - p.x, f.z - p.z) < 2.4 && Math.abs(f.y - (p.y + 0.7)) < ALCANCE_Y);
+      const pr0 = perchas.find(p => alAlcance(p)) || perchas[0], ar0 = pr0 && B.arboles.find(a => a.x === pr0.x && a.z === pr0.z);
       check('Cada árbol con fruta tiene una rama donde posarse (percha de fisica.js)', perchas.length >= Math.min(B.nivel, B.arboles.length) - 4 && !!pr0 && Math.abs(F.suelo(pr0.x, pr0.z, pr0.y + 0.1) - pr0.y) < 0.01, perchas.length + ' ramas de ' + B.nivel + ' árboles');
-      const frR = pr0 && mundo.lista.find(f => f.activo && Math.hypot(f.x - pr0.x, f.z - pr0.z) < 2.4 && Math.abs(f.y - (pr0.y + 0.7)) < ALCANCE_Y);
+      const frR = pr0 && alAlcance(pr0);
       check('Posada en la rama, el fruto queda al alcance del pico', !!frR, frR ? Math.round((frR.y - pr0.y) * 10) / 10 + ' m sobre la rama' : 'sin fruto al alcance');
       if (frR) { S.pos.x = pr0.x; S.pos.z = pr0.z; S.pos.y = pr0.y; M.flying = false; M.grounded = true; G.emit('update', 0.016, false, false); const c2 = G.interaccion.nearest(), f2 = itAccion.fr; check('Desde la rama, Acción dice «Comer» y Vittata hace su gesto (Celebrate)', c2 && c2.id === 'bq_fruto' && f2 && (c2.use(), !f2.activo && B.gesto === true), 'gesto ' + B.gesto); }
       // Recoger con Acción ya no existe: en vuelo se recoge, posada se come
@@ -521,10 +527,11 @@ window.AVBanquete = function (G) {
       check('El destino de la entrega es el nido o el refugio (o nada, antes de construir)', !d0 || d0.que === 'nido' || d0.que === 'refugio', d0 && d0.que);
       // ----- Dato real -----
       B.datoVisto = false; G.quiet = false;
+      for (const fr of mundo.lista) if (fr.tipo === 'palma') { fr.activo = true; fr.regen = 0; } // por consulta: una palma con racimo, la haya comido antes o no
       const frP = mundo.lista.find(fr => fr.activo && fr.tipo === 'palma');
       if (frP) { S.pos.x = frP.x + 0.4; S.pos.z = frP.z; S.pos.y = frP.y - 0.7; M.flying = true; G.emit('update', 0.016, false, true); }
       const card = $('card');
-      check('La primera palma de sierra abre el dato real con su fuente (USFWS)', !!frP && G.ui.cardOpen && /fws\.gov/.test(card.innerHTML) && /palma de sierra/.test(card.textContent) && B.datoVisto && leerPropio().dato === true, 'palma ' + !!frP + ', tarjeta ' + G.ui.cardOpen + ', busy ' + G.ui.busy() + ', overlay ' + G.ui.overlayOpen() + ', visto ' + B.datoVisto);
+      check('La primera palma de sierra abre el dato real con su fuente (USFWS)', (!hayPalmas && !frP) || (!!frP && G.ui.cardOpen && /fws\.gov/.test(card.innerHTML) && /palma de sierra/.test(card.textContent) && B.datoVisto && leerPropio().dato === true), 'palma ' + !!frP + ', tarjeta ' + G.ui.cardOpen + ', busy ' + G.ui.busy() + ', overlay ' + G.ui.overlayOpen() + ', visto ' + B.datoVisto);
       check('La tarjeta se cierra con «¡A comer!»', (() => { const b = $('bq-ok'); if (b) b.click(); return !G.ui.cardOpen; })());
       G.quiet = true; B.datoVisto = true;
       const frP2 = mundo.lista.find(fr => fr.activo && fr.tipo === 'palma');
