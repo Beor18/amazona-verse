@@ -298,10 +298,14 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const px = x => (x - v.cx) / v.mpp * k + w / 2, pz = z => (z - v.cz) / v.mpp * k + h / 2;
     ctx.save(); ctx.fillStyle = '#245f86'; ctx.fillRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'low';
-    if (B.listo) {
-      const dx = px(T.x0), dz = pz(T.z0), dw = T.ancho / v.mpp * k, dh = T.largo / v.mpp * k;
-      ctx.drawImage(base, dx, dz, dw, dh);
-      if (B.florado) ctx.drawImage(flora, dx, dz, dw, dh);
+    if (B.listo) { // solo se recorta de la imagen la parte visible (el compacto ve 110 m de 528)
+      const ex = w / k * v.mpp / 2, ez = h / k * v.mpp / 2;
+      const u0 = clamp((v.cx - ex - T.x0) / T.ancho, 0, 1), u1 = clamp((v.cx + ex - T.x0) / T.ancho, 0, 1), v0 = clamp((v.cz - ez - T.z0) / T.largo, 0, 1), v1 = clamp((v.cz + ez - T.z0) / T.largo, 0, 1);
+      if (u1 > u0 && v1 > v0) {
+        const dx = px(T.x0 + u0 * T.ancho), dz = pz(T.z0 + v0 * T.largo), dw = (u1 - u0) * T.ancho / v.mpp * k, dh = (v1 - v0) * T.largo / v.mpp * k;
+        ctx.drawImage(base, u0 * N, v0 * N, (u1 - u0) * N, (v1 - v0) * N, dx, dz, dw, dh);
+        if (B.florado) ctx.drawImage(flora, u0 * NF, v0 * NF, (u1 - u0) * NF, (v1 - v0) * NF, dx, dz, dw, dh);
+      }
     }
     const hc = contraste();
     if (hc) { ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, 0, w, h); }
