@@ -19,6 +19,7 @@
       save: s => G.guardado.save(s), load: s => G.guardado.load(s), reset: s => G.guardado.reset(s),
       exportComic: (f, u) => G.comic.exportComic(f, u), portraitCanvasFor: (n, bg) => G.creador.portraitCanvasFor(n, bg),
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
+      ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
