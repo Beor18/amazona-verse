@@ -366,10 +366,17 @@
       }
 
       // ---------- 5. Guardar a mitad del capítulo, recargar y verificar persistencia ----------
+      // Eventos tras recargar: los de antes de guardar siguen todos, en el mismo orden y con su seq. La ventana vieja sigue
+      // jugando en tiempo real hasta que la recarga la descarga (con la máquina cargada, segundos): un evento con reloj (p. ej.
+      // la presentación del nido tras 1,5 s de juego libre → NestAppeared) puede registrarse en ese hueco y el guardado de
+      // pagehide lo escribe, como haría con un niño que cierra la pestaña. Eso no pierde ni duplica nada: se acepta solo como
+      // cola nueva (seq consecutivos), nunca como un cambio de lo que ya había.
+      const firmaEv = () => S.events.map(e => e.key + '#' + e.seq);
+      const colaEv = (a, b) => b.length >= a.length && a.every((k, i) => k === b[i]) && b.slice(a.length).every((k, i) => +k.split('#').pop() === a.length + i + 1) ? b.slice(a.length) : null;
       const instantanea = () => ({ nombre: S.profile.name, especie: S.profile.look && S.profile.look.species, accs: Object.values((S.profile.look || {}).accessories || {}).map(a => a.id),
         paso: S.step, misiones: s(S.missions), edu: s(S.edu.hecho), refugio: s(S.refuge), construcciones: s(S.builds), inv: s(S.inv), eventos: S.events.length, ropa: s(S.unlocked.slice().sort()), guardian: S.guardianMet, banco: S.benchUnlocked,
         criadero: G.criadero ? s((G.criadero.estado().capsulas || {})[G.criadero.estado().activa || 'clasico']) : null });
-      const antes = instantanea();
+      const antes = instantanea(), ev0 = firmaEv();
       const guardo = G.guardado.save(true);
       cerrarVentana();
       fr.contentWindow.__avViejo = true;   // marca la ventana vieja: la nueva no la tiene
@@ -378,8 +385,9 @@
       if (!W) { check('5', 'Recargar la build', false, 'no volvió a arrancar'); return fin(); }
       enlazar();
       const despues = instantanea();
-      const iguales = Object.keys(antes).filter(k => s(antes[k]) !== s(despues[k]));
-      check('5', 'Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero)', guardo !== false && !iguales.length && $('creator').hidden && S.profile.created && $('end').hidden, { distintos: iguales, antes, despues });
+      const nuevos5 = colaEv(ev0, firmaEv());
+      const iguales = Object.keys(antes).filter(k => k === 'eventos' ? !nuevos5 : s(antes[k]) !== s(despues[k]));
+      check('5', 'Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero)', guardo !== false && !iguales.length && $('creator').hidden && S.profile.created && $('end').hidden, { distintos: iguales, eventosNuevos: nuevos5, antes, despues });
       despejar('recarga');
 
       // ---------- 4.7 El Guardián presenta el refugio y regala el banco ----------
@@ -492,7 +500,7 @@
 
       // ---------- 7. Guardar al final, recargar y verificar que el capítulo sigue completo ----------
       const resumenFin = () => ({ paso: S.step, complete: S.complete, misiones: s(S.missions), refugio: s(S.refuge), explorando: !!S.explorando, eventos: S.events.length, ropa: s(S.unlocked.slice().sort()), plano: S.boatPlan, transmisor: S.transmitterOn });
-      const fin0 = resumenFin();
+      const fin0 = resumenFin(), evFin0 = firmaEv();
       const guardo2 = G.guardado.save(true);
       cerrarVentana();
       fr.contentWindow.__avViejo = true;   // marca la ventana vieja: la nueva no la tiene
@@ -501,8 +509,9 @@
       if (!W) { check('7', 'Recargar la build al final', false, 'no volvió a arrancar'); return fin(); }
       enlazar();
       const fin1 = resumenFin();
-      const distintos = Object.keys(fin0).filter(x => s(fin0[x]) !== s(fin1[x]));
-      check('7', 'Guardar al final, recargar y el capítulo sigue completo (paso final, misiones, refugio, plano, transmisor, ropa y eventos)', guardo2 !== false && !distintos.length && S.complete && S.step === G.misiones.DONE, { distintos, antes: fin0, despues: fin1 });
+      const nuevos7 = colaEv(evFin0, firmaEv());
+      const distintos = Object.keys(fin0).filter(x => x === 'eventos' ? !nuevos7 : s(fin0[x]) !== s(fin1[x]));
+      check('7', 'Guardar al final, recargar y el capítulo sigue completo (paso final, misiones, refugio, plano, transmisor, ropa y eventos)', guardo2 !== false && !distintos.length && S.complete && S.step === G.misiones.DONE, { distintos, eventosNuevos: nuevos7, antes: fin0, despues: fin1 });
       // Tras recargar: con «Seguir explorando» el panel no vuelve a tapar el mundo; sin él, se reabre (y bloquea)
       const panel = !$('end').hidden;
       if (bs) check('7', 'Tras recargar con el capítulo terminado y «Seguir explorando» elegido, el panel final no vuelve a abrirse y se puede jugar', !panel && !G.ui.busy() && !!S.explorando, { panel, ocupado: G.ui.busy(), explorando: S.explorando });
