@@ -1,7 +1,8 @@
 /* Juego · Bandada de cotorras (carril M, M1: «un mundo con vida»)
-   12 a 20 cotorras de pieles de distintas especies (AVE.pieles) que cruzan el cielo de El Yunque en bandada. Salen en tres momentos:
+   12 a 20 cotorras de pieles de distintas especies (AVE.pieles) que cruzan el cielo de El Yunque en bandada. Salen en estos momentos:
    al despertar (la partida empieza o se carga: pasan a lo lejos), al terminar una misión (G.emit('aprendizaje', { tipo: 'mision' }),
-   pasan más cerca) y de vez en cuando por la tarde (cada 2,5 a 5 min de juego). Si Vittata se acerca (menos de 30 m), la bandada
+   pasan más cerca), de vez en cuando por la tarde (cada 2,5 a 5 min de juego) y cuando la cría legendaria canta
+   (G.on('canto') → pedir('canto', { en: 1 })). Si Vittata se acerca (menos de 30 m), la bandada
    la acompaña unos 18 s dando vueltas a su alrededor y luego se va. Nunca en las baterías (G.quiet) ni antes de crear el personaje.
    - Se carga al pedirlo (boot.js la trae tras 'listo'): no suma a la descarga inicial. window.AVBandada(G) → { pedir, estado, test }.
    - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): cotorra de ~110 triángulos de cerca
@@ -190,6 +191,7 @@ window.AVBandada = function (G) {
   const pedir = (motivo, o) => { if (!(o && o.forzar) && !permitido()) return false; pend = { motivo, en: o && o.en != null ? o.en : 0, o, espera: 0 }; return true; };
   G.on('apply', () => { terminar(); pend = null; proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR); if (permitido()) pedir('despertar', { en: 6 }); }, 90);
   G.on('aprendizaje', d => { if (d && d.tipo === 'mision') pedir('mision', { en: 3 }); });
+  G.on('canto', () => pedir('canto', { en: 1 })); // rareza.js: la cría legendaria llama a la bandada al despegar
   const alCalidad = C => { const n = cuentaPara(C.nivel); if (n === 0 || (F.estado !== 'off' && F.n > n)) terminar(); };
   G.on('calidad', alCalidad);
   G.on('update', (dt, busy) => {
@@ -259,8 +261,12 @@ window.AVBandada = function (G) {
       G.quiet = false; const creado = S.profile.created; S.profile.created = true;
       G.emit('aprendizaje', { tipo: 'mision', id: 'x' }); const trasMision = pend && pend.motivo; pend = null;
       G.emit('aprendizaje', { tipo: 'hallazgo', id: 'x' }); const trasOtra = pend; pend = null;
+      G.emit('canto', { poder: 'canto', rareza: 'legendaria' });
+      const trasCanto = !!(pend && pend.motivo === 'canto' && pend.en <= 1 && pend.en > 0); pend = null;
+      G.quiet = true; G.emit('canto', { poder: 'canto' }); const cantoQuieto = !pend;
       S.profile.created = creado; G.quiet = true;
       ok('Terminar una misión la pide; otros aprendizajes no', trasMision === 'mision' && !trasOtra);
+      ok('El canto de la cría pide la bandada (1 s) y en las baterías no', trasCanto && cantoQuieto, `${trasCanto}/${cantoQuieto}`);
     } finally {
       terminar(); G.quiet = guardado.quiet; Object.assign(S.pos, guardado.pos); pend = guardado.pend; proxTarde = guardado.prox;
     }
