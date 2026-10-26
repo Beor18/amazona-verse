@@ -538,6 +538,7 @@ window.AV_EN = {
  "Lo que otros ven como restos, yo lo veo como posibilidades.": "What others see as scraps, I see as possibilities.",
  "Lo último que jugaste": "What you played last",
  "Los aviarios también atienden a pichones silvestres heridos y les dan refugio de emergencia.": "The aviaries also care for injured wild chicks and give them emergency shelter.",
+ "Los coquíes cantan cuando cae la tarde, del atardecer al amanecer. Mira: el sol ya baja.": "Coquís sing when evening falls, from dusk to dawn. Look: the sun is already going down.",
  "Los coquíes cantan mejor que yo, pero yo canto más alto.": "The coquís sing better than me, but I sing louder.",
  "Los frutos están dentro de los banderines. ¡Da la vuelta!": "The fruits are inside the little flags. Turn around!",
  "Los frutos siguen ahí": "The fruits are still there",

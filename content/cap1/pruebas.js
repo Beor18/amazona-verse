@@ -371,8 +371,13 @@
     check('Bloqueos por pieza, estilo y color', !lockOf('botas') && !!lockOf('camisa', 'guayabera') && !lockOf('camisa', 'liso') && !lockOf('lentes', 'sol', '#c9a227'));
     // M3: coro de coquíes
     S.step = 6; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
-    useAt('transmisor'); drain();
+    useAt('transmisor');
+    const lineasCoro = []; while (G.dialogo.activo() && lineasCoro.length < 40) { lineasCoro.push(G.dialogo.actual().text); G.dialogo.next(); }
     check('M3: el transmisor pide voz y ofrece una elección con Iguaca', S.chorus && !S.transmitterOn && !!$('ch-0'));
+    // C9: el coquí canta al atardecer. Iguaca lo explica aquí; el atardecer se comprueba más abajo (en las baterías, G.quiet,
+    // el fundido no arranca solo: se fuerza para medirlo y se apaga al final)
+    const FRASE_TARDE = 'Los coquíes cantan cuando cae la tarde, del atardecer al amanecer. Mira: el sol ya baja.';
+    check('Iguaca explica que los coquíes cantan al caer la tarde', lineasCoro.includes(FRASE_TARDE), lineasCoro.join(' | ').slice(0, 200));
     $('ch-0').click();
     check('La elección cambia la frase de Iguaca', $('d-text').textContent.startsWith('¡Eso, nena!') && had('LumaChoice'));
     drain();
@@ -410,6 +415,22 @@
     const tmACES = R.toneMapping === THREE.ACESFilmicToneMapping || (R.toneMapping === THREE.CustomToneMapping && /CustomToneMapping[^}]*ACESFilmicToneMapping/.test(THREE.ShaderChunk.tonemapping_pars_fragment));
     check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && tmACES, 'toneMapping ' + R.toneMapping + (G.renderer.post && G.renderer.post.activo ? ' · composer' : ' · sin composer'));
     check('Pixel ratio limitado', R.getPixelRatio() <= (G.renderer.MOBILE ? 1.5 : 2), String(R.getPixelRatio()));
+    // C9 (sigue): las comprobaciones con await van después de las del color (el post se carga perezoso y cambia el tone mapping)
+    const enTarde = await fetch((G.pack.idioma || 'content/cap1/en.js') + '?c9').then(r => r.text()).catch(() => '');
+    check('La frase tiene su versión en inglés (en.js)', enTarde.includes(JSON.stringify(FRASE_TARDE) + ':'));
+    const AT = window.AV && window.AV.atardecer ? await window.AV.atardecer() : null;
+    check('Con el coro en marcha el mundo pide atardecer (se queda hasta terminar el capítulo)', AT && (() => { const q = G.quiet; G.quiet = false; const d = AT.deseado(); G.quiet = q; return d && S.chorus && !S.complete; })(), AT ? JSON.stringify(AT.estado()) : 'sin atardecer.js');
+    if (AT) {
+      const R0 = G.renderer, sky0 = R0.sky && R0.sky.material.uniforms, dia = sky0 ? sky0.uHorizonte.value.clone() : null, solY = R0.sunDir ? R0.sunDir.y : 1;
+      AT.forzar(true); AT.avanzar(AT.DUR + 1);
+      const h = sky0 && sky0.uHorizonte.value;
+      check('Durante M3 el cielo es de atardecer: horizonte naranja, sol bajo y S.hora casi de noche', AT.k() === 1 && (!h || (h.r > h.b * 1.8 && !h.equals(dia))) && (!R0.sunDir || R0.sunDir.y < solY - 0.2) && S.hora > 18.5 && S.hora < 19, `hora ${S.hora} · solY ${R0.sunDir ? R0.sunDir.y.toFixed(2) : '-'}`);
+      const amb = G.musicaApi ? G.musicaApi.calcularAmbiente({ hora: S.hora }) : null;
+      check('Y el ambiente suena a coquíes, no a aves de día', !amb || (amb.coquies > 0.85 && amb.aves < 0.15), amb ? `coquíes ${amb.coquies.toFixed(2)} · aves ${amb.aves.toFixed(2)}` : 'musica.js sin cargar: solo la hora');
+      AT.forzar(false); AT.avanzar(AT.DUR + 1);
+      check('Al apagar el atardecer vuelve el día exacto', AT.k() === 0 && (!h || h.equals(dia)) && S.hora === undefined);
+      AT.forzar(null);
+    }
     // Fugas: cambiar de ropa muchas veces no aumenta geometrías ni texturas en la GPU
     if (window.AVCharacter) {
       try {
