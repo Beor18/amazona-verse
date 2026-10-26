@@ -385,7 +385,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AB1 | pendiente | | |
 | AC1 | pendiente | | |
 | AD1 | en curso por la otra sesión de la API (`--carriles AD,AG,AH,AI,AJ`) | ed28fbf | Dos sesiones la hacían a la vez; esta paró y dejó sus cambios sin commit y lo medido en PEDIDOS.md (recorrido completo, 2–5,5 min, 177 textos sin EN). |
-| AB2 | pendiente | | |
+| AB2 | pendiente (bloqueada: espera AB1) | | No empezada: AB1 sigue pendiente en esta tabla y `src/game/maze.js` está sin commit (otra sesión lo editaba a las 14:55). |
 | AC2 | pendiente | | |
 | AD2 | pendiente | | |
 | AE1 | pendiente | | |
