@@ -343,6 +343,36 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 
 **Pruebas de cada tarea:** `taskpolicy -b nice -n 15 tools/build/build.sh HEAD tools/build/salida/<tarea>-<sha>`, y después `tools/build/test.sh <esa carpeta>/ --extra`. Todo en verde, con 0 errores de consola.
 
+## Ronda del 26-oct (noche): pulido, datos y QA de la temporada
+**Regla extra de esta ronda:** los capítulos 3 y 4 (`content/ep3`, `content/ep4`) los está guardando ahora Claude Fable. Mientras sigan sin commit (`git status`), no los toques.
+
+**Carril AO, pulido de minijuegos:**
+- **AO1, el tren** (`src/game/tren.js`, nada más).
+  - Animar ruedas, bielas y humo.
+  - Quitar las sombras-mancha de los árboles apartados sobre la vía.
+  - Hacer que el túnel y el puente se sientan especiales (sonido, luz, cámara).
+  - Un «Otra vez» rápido en el resultado.
+  - Añadir el tren a `docs/equipo/MINIJUEGOS.md`.
+  - `AV.trenTest` en verde y capturas antes y después.
+- **AO2, Maze** (`src/game/maze.js`, nada más).
+  - Que sea más divertido y den ganas de volver: tutorial de 10 s, pistas suaves si te pierdes, frutas o coleccionables en los pasillos y un mapa que se va revelando.
+  - `AV.mazeTest` en verde y capturas.
+
+**Carril AQ, datos educativos con fuente:**
+- **AQ1:** busca todos los «por verificar» del juego (`grep -rn "por verificar" content src`).
+  - Para cada uno, busca una fuente verificable: USFWS, DRNA de Puerto Rico, IUCN, eBird o Cornell Birds of the World, artículos científicos o el Archivo General de PR para la historia del tren.
+  - Si la encuentras, cambia el texto a «verificado» con la cita en el formato que ya usa el archivo. Si no, déjalo como está y anótalo.
+  - Resultado en `docs/equipo/DATOS_VERIFICADOS.md` (tabla: dato, archivo, fuente, estado).
+  - No inventes nada. Si no hay acceso a la web, deja la tabla con lo que se pueda confirmar desde `content/comun/especies.js` y las fuentes que ya estén en el repo.
+  - Ni `content/ep3` ni `content/ep4` mientras estén sin commit.
+
+**Carril AT, QA de la temporada:**
+- **AT1:** juega la temporada como un jugador nuevo, en escritorio y en móvil a 375×812: capítulo 1 (el arranque), 2, 5 y 6 (y 3 y 4 si ya tienen commit), más el menú, Retos, el tren, Maze y River Rush.
+  - Anota cada problema en `docs/equipo/BUGS.md` con pasos, captura y gravedad.
+  - Arregla los graves y los fáciles (un commit por bug).
+  - Lo de contenido de los capítulos solo si el capítulo ya tiene commit.
+  - Al final, un resumen en `docs/equipo/QA_TEMPORADA1.md`: qué se siente bien, qué aburre y qué confunde, desde los ojos de un niño de 9 años y de un adulto.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -403,4 +433,8 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AL1 | hecha | e6840ab | Capítulo 6 «El pacto de los 36» jugable en `content/ep6/` (pack.js, lecciones.js, en.js): M1 tarjetas «sabe hacer / necesita», observar a dos y 3 parejas que se cubren, ficha de especie desde `especies.js`; M2 objetivo y límites, tablero del plan con simulación determinista paso a paso (el plan «solo Vittata» se atasca sin castigo y Roca se ofrece), planes rápido / que enseña / que descansa (ninguno lo maximiza todo), tabla grande entre tres y tabla larga entre dos; M3 mediación en 3 pasos (repetir, «todavía no», lo que comparten), 3 propuestas sin villanos, 36 asientos en 6×6, 4×9, 3×12 o anillo, 22 encendidos y 14 esperando, pacto renovado y gancho «la tripulación». Aula ep6 (q1–q6, Modo Maestro, reporte local), Diario de 6 hallazgos (solo la aritmética de 36 verificada; lo demás por verificar), criadero desde `CardsFilled`. `ep6Test` 70/70 en `src/boot.js`; EN completo (`content/ep6/en.js` + 1 línea en `cap1/en.js` para el enlace del menú). Capturas `docs/img/al1_ep6_*.jpg` (escritorio, 375×812 y EN). Build al1-ep6: PASA, todas las baterías en verde, 0 errores de consola. Las 11 decisiones `[KELVIN]` quedan con la opción por defecto (marcadas en `pack.js` y anotadas en `EP6_GDD.md` §10). Menú: el enlace `?pack=ep6` está en el `<nav class="title-episodios">` de la copia de trabajo (markup de AG2, sin commit en HEAD): sale con el commit de AG2; mientras, se abre con `index.html?pack=ep6`. |
 | AM1 | hecha (historia; falta la pantalla Capítulos) | 95a0142 | `docs/equipo/TEMPORADA1_HILO.md`: final y gancho de los 6 capítulos, qué sabe Vittata de las dos voces en cada punto, quién aparece dónde, sistemas y lugares, 15 incoherencias (con corrección hecha o pedida) y 39 decisiones `[KELVIN]` en una sola lista con opción por defecto y alternativa. Corregidos `EP2/EP3/EP5/EP6_NARRATIVA.md` (medalla, la otra comunidad en la otra orilla del río, navegante de Villa Raíz, Iguaca en el ep. 3, transmisor del ep. 5, los de casa en el ep. 6). Pedidos a `content/ep4` (tres `[KELVIN]` en texto del jugador; la Voz solo por el transmisor). La pantalla «Capítulos» del menú queda pendiente: otro agente está en `index.html` y el menú. |
 | AJ2 | hecha | 289fa81 | Origen: `G.emit('render')` sin dt en menuModosTest (justo después de cerrar Flight) → `fx.update(undefined)` ponía en NaN las 1-2 ráfagas de plumas de Flight aún sin dibujar y THREE avisaba al primer cuadro (bounding sphere perezoso de `Points`). Localizado con `console.error` instrumentado en una build propia (pila + dueño); reproducido a voluntad: 2 errores idénticos a los del reporte («En» = BufferGeometry minificado) antes, 0 después. Arreglo: `fx.update` ignora dt ausente/NaN (tope 0,1 s) y el test pasa dt; caso nuevo en missionTest. test.sh --extra en verde (40 baterías, 0 errores de consola) |
+| AO1 | pendiente | | |
+| AO2 | pendiente | | |
+| AQ1 | pendiente | | |
+| AT1 | pendiente | | |
 | AJ3 | pendiente | | |
