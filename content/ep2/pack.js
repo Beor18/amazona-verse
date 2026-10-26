@@ -619,6 +619,8 @@
         check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
         check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
         check('Antes de contestar, el reporte no lleva preguntas ni E4', AU.partida() && !AU.partida().preguntas.q1 && !AU.partida().objetivos_logrados.includes('E4'), JSON.stringify(AU.partida() && AU.partida().objetivos_logrados));
+        G.misiones.seguirExplorando(); // «Seguir explorando»: cierra la pantalla de fin y deja el mundo libre (como el jugador)
+        check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
         useAt('iguaca'); drain();
         check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join());
         pick('Ahora no');
@@ -641,7 +643,7 @@
         check('CSV del Modo Maestro con el sitio elegido y lo que falló', csv.includes('sitio_elegido') && csv.includes('el claro') && csv.includes('techo'));
         check('Modo Maestro: pestaña del ep. 2 y guía con el vocabulario', AU.pestanas().includes('ep2') && (AU.abrirMaestro(), AU.maestroAbierto()) && /criterio/i.test($('maestro').textContent) && /restricci/i.test($('maestro').textContent) && (AU.cerrarMaestro(), !AU.maestroAbierto()));
         useAt('iguaca'); drain();
-        check('Iguaca no repite las preguntas', !G.ui.cardOpen && opciones().length === 0);
+        check('Iguaca no repite las preguntas', !G.ui.cardOpen && $('card').hidden && !G.dialogo.open());
         // §7 Diario
         for (const f of G.diario.entries) { teleport(f.x + 0.3, f.z); tick(0.1); }
         check('Diario: 6 hallazgos (3 del terreno, 3 de casas de aquí) y el mapa del terreno', S.field.length === 6 && G.diario.count('terreno') === 3 && G.diario.count('cultura') === 3 && S.unlocked.includes('mano:mapa'), S.field.join(','));
