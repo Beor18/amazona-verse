@@ -1,11 +1,11 @@
 # Pipeline de edificios de Kelvin: atlas de la versión cercana de alta fidelidad (HD). Ver docs/EDIFICIOS.md § Ciudad completa.
 """Atlas 4x4 de las texturas originales de KitBash3D (difusa y normales) para los modelos _hd: uno por kit.
 
-python3.11 -I edificios_hd_atlas.py <ancient|savage> <assets/models/edificios/tex_hd> [celda=1024] [margen=32]   → hd_<kit>.jpg, hd_<kit>_n.jpg
-python3.11 -I edificios_hd_atlas.py paleta <assets/models/edificios/tex> [lado=1024]   → kb3d_*.jpg y kb3d_*_n.jpg del kit ligero
+python3.11 -I edificios_hd_atlas.py <ancient|savage> <assets/models/edificios/tex_hd> [celda=512] [margen=16]   → hd_<kit>.jpg, hd_<kit>_n.jpg
+python3.11 -I edificios_hd_atlas.py paleta <assets/models/edificios/tex> [lado=512]   → kb3d_*.jpg y kb3d_*_n.jpg del kit ligero
 (tex_hd y no tex/: la build pasa tex/ a WebP y no reescribe las uris de un glTF ya comprimido con meshopt)
-La fracción margen/atlas se queda en 16/2048 = 32/4096: el shader de streaming.js encuadra igual. El lado por defecto
-sube de 512 a 1024 (atlas 4096) porque la fuente de Drive es 4096 y a 512 la piedra se ve blanda de cerca.
+El juego publica celda 512 (atlas 2048). El atlas 4096 sale de la misma 4K y la build pasa de 60,6 a 75 MB (tope 64).
+La piedra blanda era el look de fábrica, que bajaba el atlas a 512 y dejaba la celda en 128. Eso se corrige en look.js.
 
 Cada celda guarda la textura de repetición (celda - 2·margen px) con un margen que repite su propio borde (envolvente):
 así el filtrado y los mipmaps cercanos no mezclan celdas vecinas. El shader (streaming.js, AV_HD) envuelve la UV original
@@ -196,15 +196,15 @@ def parche(carpeta):
 def main():
     cmd = sys.argv[1]
     if cmd == 'paleta':
-        paleta(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 1024)
+        paleta(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 512)
         return
     if cmd == 'parche':
         parche(sys.argv[2])
         return
     if cmd not in KITS:
         raise SystemExit('uso: edificios_hd_atlas.py <ancient|savage|paleta> <salida> [celda|lado] [margen]')
-    cel = int(sys.argv[3]) if len(sys.argv) > 3 else 1024
-    mar = int(sys.argv[4]) if len(sys.argv) > 4 else 32
+    cel = int(sys.argv[3]) if len(sys.argv) > 3 else 512
+    mar = int(sys.argv[4]) if len(sys.argv) > 4 else 16
     atlas(cmd, sys.argv[2], cel, mar)
 
 

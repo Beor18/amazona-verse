@@ -317,7 +317,7 @@ def escribir_glb(path, P, Nn, UV, UV2, I, nombre, kit):
         'materials': [{'name': 'AV_HD_' + kit.capitalize(), 'doubleSided': True, 'pbrMetallicRoughness': {'baseColorTexture': {'index': 0}, 'metallicFactor': 0.0, 'roughnessFactor': 1.0},
                        'normalTexture': {'index': 1}}],
         'textures': [{'sampler': 0, 'source': 0}, {'sampler': 0, 'source': 1}],
-        'images': [{'uri': 'tex_hd/hd_%s.webp' % kit, 'mimeType': 'image/webp'}, {'uri': 'tex_hd/hd_%s_n.webp' % kit, 'mimeType': 'image/webp'}],
+        'images': [{'uri': 'tex_hd/hd_%s.jpg' % kit, 'mimeType': 'image/jpeg'}, {'uri': 'tex_hd/hd_%s_n.jpg' % kit, 'mimeType': 'image/jpeg'}],
         'samplers': [{'magFilter': 9729, 'minFilter': 9987, 'wrapS': 33071, 'wrapT': 33071}],
         'accessors': accs, 'bufferViews': vistas, 'buffers': [{'byteLength': len(binc)}],
     }

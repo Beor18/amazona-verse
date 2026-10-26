@@ -220,15 +220,15 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 | `AV3DMaxTerrainExport.max` | El mismo terreno, suelto | Igual que la fila de arriba. |
 
 **Qué cambió en el kit.**
-- Atlas HD de 2048 (celda 512) a **4096 (celda 1024, margen 32)**. La fracción margen/atlas es la misma (16/2048), así que la UV2 de los `_hd` no se rehizo. Van en WebP (`tex_hd/hd_ancient.webp`, `hd_ancient_n.webp`, `hd_savage.webp`, `hd_savage_n.webp`): el JPEG de las normales a 4096 pesaba 14 MB y el tope por archivo es 16 MB.
-- Paleta ligera de 512 a **1024**, desde las mismas 4K. Las normales de esa paleta se generaron y no se publican: en la aldea del inicio subían la descarga inicial por encima de 8 MB. El relieve queda en el atlas, solo en alta.
-- El atlas 4K se pide solo en calidad **alta**, y solo después de que Vittata se mueve (no entra en la descarga inicial ni en el móvil, que se queda en la paleta de 1024). Pedido de la coordinadora en `PEDIDOS.md`.
+- El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB (tope 64): no se publica. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
+- Lo que sí se ve, en calidad alta: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. El `_hd` solo se pide en alta (90 m) y después de moverse. Bajo, medio y el móvil se quedan en la paleta de 512, que ya entra en el arranque. En el móvil el atlas no se descarga, así que no suma memoria de texturas.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
-- `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` vuelve a enganchar la normal al regenerar.
+- `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
 
 **Qué no entró, y por qué.**
-- No hay otra ciudad dentro del `.max`. Releerlo no añade edificios.
+- No hay otra ciudad dentro del `.max`. Releerlo no añade edificios. El `.max` de 2,4 GB no se abre: no hay 3ds Max.
 - Palmeras, Archmodels, hierba y losas pintadas vienen de carpetas `Torrents/` o del plugin. No son el kit y la licencia no está confirmada. No se copiaron.
 - `canoa.jpg` sigue en 512. La foto de Drive es la misma fuente, y la licencia sigue sin verificar.
-- Los mapas de brillo (gloss) de Savage no tienen canal en el sombreador. Quedan fuera hasta que se decida si el relieve extra vale otro atlas.
+- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal.
 - Rope (3600×1375) y la difusa de WoodHewn (3572) se estiran a la celda cuadrada, como ya hacía el pipeline.
+- El `.max` del terreno no trae píxeles nuevos. No se integró.
