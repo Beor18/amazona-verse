@@ -127,11 +127,17 @@ AVE.module('streaming', function (G) {
   // El lod usa el eje corto cuando el otro es mucho mayor (relieve de lado, sin pasar el margen de la celda).
   const HD = { celdas: 4, celda: 1024, margen: 32, lodMax: 5 };
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
+  // three r128: Texture no trae userData (el Material sí). Crearlo aquí evita que procesar() del _hd lance
+  // «Cannot set properties of undefined (setting 'avAtlas')» y deje el modelo en «bajando».
+  function marcarAtlas(t) {
+    if (!t || !t.isTexture) return;
+    if (!t.userData) t.userData = {};
+    t.userData.avAtlas = true;
+  }
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
     // El look no debe bajar este atlas: la celda de 1024 es el detalle del kit. La URL a veces queda en blob.
-    if (m.map) m.map.userData.avAtlas = true;
-    if (m.normalMap) m.normalMap.userData.avAtlas = true;
+    marcarAtlas(m.map); marcarAtlas(m.normalMap);
     afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
     m.onBeforeCompile = sh => {
