@@ -328,13 +328,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-reto p { margin: 0; font-size: var(--fs-sm); }
 #retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #8a5208; }
 #retos .rt-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-#retos .rt-medalla { width: 96px; height: 96px; margin: -70px auto 8px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
+#retos .rt-medalla { width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 5px #fff, 0 6px 0 5px rgba(0,0,0,.18), 0 0 40px var(--m1); position: relative; }
 #retos .rt-medalla::before, #retos .rt-medalla::after { content: ""; position: absolute; top: -30px; width: 22px; height: 44px; background: var(--crest); z-index: -1; }
 #retos .rt-medalla::before { left: 22px; transform: rotate(18deg); } #retos .rt-medalla::after { right: 22px; transform: rotate(-18deg); background: var(--sky); }
 #retos .rt-medalla.oro { --m1: #ffd24a; --m2: #c98a10; } #retos .rt-medalla.plata { --m1: #e4ecf2; --m2: #8a9aa8; } #retos .rt-medalla.bronce { --m1: #f0a86a; --m2: #9a5a24; }
-#retos .rt-medalla.sin { --m1: #bfe7c8; --m2: #3f9a55; font-size: 30px; }
-#retos .rt-fin .rt-panel { padding-top: 54px; }
+#retos .rt-medalla.sin { --m1: #bfe7c8; --m2: #3f9a55; font-size: 24px; }
+#retos .rt-fin .rt-panel { padding-top: 48px; } /* la medalla y sus cintas caben dentro del panel (tiene overflow: auto y las cortaba) */
 #retos .rt-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
 #retos .rt-dato { background: #fff8e8; border-radius: var(--r-sm); padding: 8px; font: 700 22px/1.1 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
 #retos .rt-dato small { display: block; font: 600 12px/1.2 var(--font-body); color: var(--c-ink-muted); text-transform: uppercase; letter-spacing: .05em; }
@@ -1003,7 +1003,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function mostrarResultadosRio() {
       resultados(() => {
         const md = ui.medalla, m = C.medalla, Mr = ruta.R.medallas;
-        md.className = 'rt-medalla ' + (m || 'sin'); md.textContent = m ? String(MEDALLAS.indexOf(m) + 1) : C.llego ? '¡Bien!' : '…';
+        md.className = 'rt-medalla ' + (m || 'sin'); md.textContent = m ? String(MEDALLAS.indexOf(m) + 1) : C.llego ? '¡Bien!' : '¡Casi!';
         ui.finT.textContent = !C.llego ? 'Casi llegas a la desembocadura' : m === 'oro' ? '¡Medalla de oro!' : m === 'plata' ? '¡Medalla de plata!' : m === 'bronce' ? '¡Medalla de bronce!' : '¡Llegaste a la desembocadura!';
         ui.nuevo.hidden = !C.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Tu tiempo</small>${C.llego ? reloj(C.tiempo) : '—'}</div>` +
@@ -1017,7 +1017,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       resultados(() => {
         const p = C.puesto, md = ui.medalla;
         md.className = 'rt-medalla ' + (!C.llego ? 'sin' : p === 1 ? 'oro' : p === 2 ? 'plata' : p === 3 ? 'bronce' : 'sin');
-        md.textContent = C.llego && p <= 3 ? String(p) : C.llego ? '¡Bien!' : '…';
+        md.textContent = C.llego && p <= 3 ? String(p) : C.llego ? '¡Bien!' : '¡Casi!';
         ui.finT.textContent = !C.llego ? 'Casi llegas a la meta' : p === 1 ? '¡Ganaste la carrera!' : p === 2 ? '¡Segundo lugar!' : p === 3 ? '¡Tercer lugar!' : '¡Llegaste a la meta!';
         ui.nuevo.hidden = !C.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Tu tiempo</small>${C.llego ? reloj(C.tiempo) : '—'}</div>` +
@@ -1349,7 +1349,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       resultados(() => {
         const md = ui.medalla, tot = TM.total;
         const medalla = !TM.sobrevivio ? 'sin' : tot >= 1500 ? 'oro' : tot >= 800 ? 'plata' : 'bronce';
-        md.className = 'rt-medalla ' + medalla; md.textContent = TM.sobrevivio ? '' + Math.round(TM.t) + 's' : '…';
+        md.className = 'rt-medalla ' + medalla; md.textContent = TM.sobrevivio ? '' + Math.round(TM.t) + 's' : '¡Casi!';
         ui.finT.textContent = TM.sobrevivio ? '¡Escapaste de la tormenta!' : 'La tormenta te alcanzó';
         ui.nuevo.hidden = !TM.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Puntos</small>${tot}</div><div class="rt-dato"><small>Récord</small>${TM.rec.mejor || 0}</div>` +
