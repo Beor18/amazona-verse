@@ -374,7 +374,7 @@
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlRetos(d)}${htmlHistoria(d)}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
