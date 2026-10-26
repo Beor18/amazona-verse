@@ -1,5 +1,5 @@
 /* Juego · Amazona Flight (prototipo C14, fase 2 de la directiva de minijuegos de Kelvin, 26-oct-2026)
-   Vuelo infinito de un toque, en vista lateral un poco 3D: Vittata (la original, modelo y rig intactos) avanza sola sobre el mar
+   Vuelo infinito de un toque, en vista 3/4 frontal (C15: se le ve la cara a Vittata; ?flightcam=lado = la lateral de antes): Vittata (la original, modelo y rig intactos) avanza sola sobre el mar
    frente a la playa; cada toque, clic, Espacio o tecla es un impulso vertical; entre toques manda la gravedad. Los obstáculos son
    instancias de piezas que YA existen en el kit de entorno (tronco_caido, roca_musgo_a/b, bambu) y la decoración de la orilla
    palma_sierra_joven: nada de modelos ni bosques nuevos. Se pasa entre las columnas; chocar es un «¡Uy!» amable (nunca daño) y se
@@ -53,7 +53,7 @@
       id: 'flight', nombre: 'Amazona Flight', nombreEn: 'Amazona Flight',
       descripcion: 'Un toque para subir, la gravedad para bajar. Pasa entre los troncos y las ramas sin chocar. ¿Hasta dónde llegas?',
       recursos: { kit: ['tronco_caido', 'roca_musgo_a', 'roca_musgo_b', 'bambu', 'palma_sierra_joven'], personaje: 'vittata (original)', zona: 'mar frente a la playa' },
-      camara: 'lateral, un poco 3D (fija al jugador; el mundo avanza)',
+      camara: '3/4 frontal (por delante y a un lado, se le ve la cara; ?flightcam=lado = lateral); fija al jugador, el mundo avanza',
       controles: { pc: 'Espacio, flecha arriba, W o cualquier letra: impulso', movil: 'un toque en cualquier sitio: impulso', resultados: 'Enter, Espacio o un toque: otra vez' },
       inicio: 'el primer toque arranca', victoria: null, derrota: 'tocar un tronco, una rama o el agua («¡Uy!», sin daño)',
       puntuacion: 'obstáculos superados', musica: 'retos/carreras (sin reiniciar por obstáculo)',
@@ -150,8 +150,28 @@
         }
         for (let i = CAP[tipo] - 1; i >= 0; i--) p.libres.push(i);
         pool[tipo] = p;
-      }))).then(() => { if (!raiz.parent) scene.add(raiz); return pool; }, e => { st.listo = null; throw e; });
+      }))).then(() => { crearAyudas(); if (!raiz.parent) scene.add(raiz); return pool; }, e => { st.listo = null; throw e; });
       return st.listo;
+    }
+    // Ayudas para juzgar la altura (C15): sombra de Vittata en el mar (más pequeña y clara cuanto más alta) y una «ventana» suave
+    // en el hueco del siguiente obstáculo (marca el alto exacto por donde pasar). Dos mallas, creadas una vez; no hay anillos.
+    const ayuda = { sombra: null, ventana: null };
+    function crearAyudas() {
+      if (ayuda.sombra) return;
+      const mat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide, fog: false });
+      ayuda.sombra = new THREE.Mesh(new THREE.CircleGeometry(1, 20), mat(0x04202a, 0.4)); ayuda.sombra.rotation.x = -Math.PI / 2; ayuda.sombra.renderOrder = 6;
+      ayuda.ventana = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat(0xffe27a, 0.32)); ayuda.ventana.renderOrder = 6;
+      for (const m of [ayuda.sombra, ayuda.ventana]) { m.frustumCulled = false; m.visible = false; m.castShadow = false; m.receiveShadow = false; m.name = 'flight:ayuda'; raiz.add(m); }
+    }
+    function colocarAyudas(base) {
+      const a = ayuda; if (!a.sombra || !st.A) return;
+      const A = st.A, h = Math.max(0, J.y);
+      a.sombra.visible = st.fase !== 'fin' || J.y > P.yMin; a.sombra.position.set(S.pos.x, base + 0.14, S.pos.z);
+      const e = 1.1 + h * 0.05; a.sombra.scale.set(e, e * 0.8, 1); a.sombra.material.opacity = clamp(0.42 - h * 0.022, 0.1, 0.42);
+      const o = obst.find(q => !q.pasado), v = a.ventana;
+      if (!o || st.fase === 'fin') { v.visible = false; return; }
+      const b0 = o.bajo != null ? o.bajo : P.yMin, b1 = o.alto != null ? o.alto : P.yMax, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
+      v.visible = true; v.position.set(xw, base + (b0 + b1) / 2, zw); v.rotation.y = Math.atan2(A.dx, A.dz); v.scale.set(4.5, Math.max(0.1, b1 - b0), 1);
     }
     const tomar = tipo => (pool[tipo] && pool[tipo].libres.length ? pool[tipo].libres.pop() : -1);
     const soltar = (tipo, i) => { if (i >= 0 && pool[tipo]) pool[tipo].libres.push(i); };
@@ -268,6 +288,7 @@
         const xw = A.x + (d.x - J.dist) * A.dx, zw = A.orilla + d.dz + (d.x - J.dist) * A.dz;
         poner('palma', d.i, xw, Math.max(base - 0.3, H(xw, zw) - 0.2), zw, 0, d.giro, 0, d.s, d.s, d.s);
       }
+      colocarAyudas(base);
       subirMatrices();
     }
 
@@ -330,10 +351,11 @@
     function sincronizar() {
       const A = st.A; if (!A) return;
       S.pos.x = A.x; S.pos.z = A.z; S.pos.y = superficie(A.x, A.z) + J.y; S.vy = J.vy;
-      S.facing = { x: A.dx, z: A.dz };
+      const g = CAMS[cam.modo].giro, cg = Math.cos(g), sg = Math.sin(g); // gira hacia la cámara (el mar): mira a cámara en diagonal
+      S.facing = { x: A.dx * cg - A.dz * sg, z: A.dz * cg + A.dx * sg };
       M.flying = true; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = false; M.dashT = 0; M.posado = '';
       const v = st.fase === 'juego' ? J.v : st.fase === 'fin' ? 1 : 3;
-      M.vx = A.dx * v; M.vz = A.dz * v; M.speed = v;
+      M.vx = S.facing.x * v; M.vz = S.facing.z * v; M.speed = v;
       M.fase = J.flapT > 0 ? 'despegue' : st.fase === 'listo' ? 'cernido' : '';
       M.groundY = superficie(A.x, A.z);
     }
@@ -345,17 +367,36 @@
     }
     G.on('update', dt => update(dt), 46);
 
-    // ---------- Cámara lateral (un poco 3D): a un lado del carril, algo adelantada, mirando a Vittata ----------
-    const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), lado: 20, atrasC: 3, alto: 2.4, adelante: 8, fov: 56 }; // Vittata queda a la izquierda del centro: se ve lo que viene
+    // ---------- Cámara (C15): 3/4 frontal de fábrica; la lateral de antes con ?flightcam=lado ----------
+    // 3/4: la cámara va por delante y a un lado de Vittata (~40° de guiñada respecto al carril), algo por encima, y la mira a ella:
+    // se le ve la cara y el pico, y los obstáculos entran por el fondo del carril, en diagonal. Vittata gira ~20° hacia la cámara (solo su
+    // orientación en el mundo; el rig no se toca). Vittata queda fija en pantalla; el mundo se mueve.
+    const CAMS = {
+      diagonal: { lado: 14, ad: 17, alto: 3, kY: 0.7, mAd: 7, mY: 0.4, mK: 0.9, fov: 42, giro: 0.42 }, // lado/ad = tan 40°; giro: rad que gira hacia la cámara (~24°); alto: sobre Vittata; mY/mK: a dónde mira
+      lado: { lado: 20, ad: -3, alto: 2.4 + 6.5, kY: 0.35, base: true, mAd: 8, mY: 3.6, mK: 0.5, fov: 56, giro: 0 }
+    };
+    let camModo = 'diagonal'; try { if (/[?&]flightcam=(lado|side)\b/.test(location.search)) camModo = 'lado'; } catch (e) { /* sin url */ }
+    const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), modo: camModo, fov: CAMS[camModo].fov, k: 1 };
+    // En vertical (móvil) el ancho de imagen es corto: la cámara se aleja un poco para que quepan Vittata y el siguiente hueco
+    function aspecto() { if (cam.asp) return cam.asp; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? w / h : 1.6; }
+    // FOV vertical según el aspecto: el ancho de imagen que se ve (FOV horizontal) no baja de ~el de una pantalla 16:9 + 20 %: en vertical
+    // (390×844) sube el FOV vertical para que quepan Vittata y los 2 siguientes obstáculos; en horizontal queda el de la cámara
+    function fovPara(modo, a) { const f = CAMS[modo].fov, h0 = 2 * Math.atan(Math.tan(f * Math.PI / 360) * 16 / 9); if (a >= 16 / 9) return f; return Math.min(88, 2 * Math.atan(Math.tan(h0 * 1.6 / 2) / a) * 180 / Math.PI); }
+    function camPar() { cam.k = 1; return CAMS[cam.modo]; }
+    // Recalcula el encuadre (resize y orientationchange): el FOV sigue al aspecto de la pantalla
+    function reencuadrar() { if (!st.activo) return; const f = fovPara(cam.modo, aspecto()); if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
+    addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
     function camObjetivo(out) {
-      const A = st.A, nx = -A.dz, nz = A.dx; // normal al carril (hacia el mar)
-      out.set(S.pos.x + nx * cam.lado - A.dx * cam.atrasC, superficie(A.x, A.z) + 6.5 + cam.alto + J.y * 0.35, S.pos.z + nz * cam.lado - A.dz * cam.atrasC);
+      const A = st.A, c = camPar(), nx = -A.dz, nz = A.dx; // normal al carril (hacia el mar)
+      const y0 = c.base ? superficie(A.x, A.z) + c.alto : S.pos.y + c.alto * cam.k; // lateral: desde el mar; 3/4: desde la altura de Vittata
+      out.set(S.pos.x + nx * c.lado * cam.k + A.dx * c.ad * cam.k, y0 + (c.base ? J.y * c.kY : 0), S.pos.z + nz * c.lado * cam.k + A.dz * c.ad * cam.k);
     }
     function camFollow(dt) { camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(6, dt)); }
+    function camMira() { const A = st.A, c = CAMS[cam.modo], m = cam.modo === 'diagonal' && aspecto() < 1 ? 1.15 : 1; // en vertical se mira más adelante: Vittata hacia la izquierda y el hueco en pantalla
+       return cam.mira.set(S.pos.x + A.dx * c.mAd * m, superficie(A.x, A.z) + c.mY + J.y * c.mK, S.pos.z + A.dz * c.mAd * m); }
     function camDraw(dt) {
-      const A = st.A;
-      cam.mira.set(S.pos.x + A.dx * cam.adelante, superficie(A.x, A.z) + 3.6 + J.y * 0.5, S.pos.z + A.dz * cam.adelante);
-      R.camera.lookAt(cam.mira);
+      reencuadrar();
+      R.camera.lookAt(camMira());
       const j = G.camara.juice; let sx = 0, sy = 0, sz = 0;
       if (j && j.shake > 0) { j.shake -= dt; const a = j.amp * Math.min(1, Math.max(0, j.shake) / 0.2); sx = (Math.random() - 0.5) * a; sy = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a; R.camera.position.x += sx; R.camera.position.y += sy; R.camera.position.z += sz; if (j.shake <= 0) j.amp = 0; }
       if (R.drawScene) R.drawScene(R.camera); else R.renderer.render(scene, R.camera);
@@ -481,7 +522,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       for (const k of ['tryJump', 'releaseJump', 'tryDash', 'toggleFly', 'land', 'startFlying']) F[k] = () => {};
       G.interaccion.action = () => {};
       C.follow = dt => camFollow(dt); C.fov = () => {}; C.draw = dt => camDraw(dt); C.manual = () => {};
-      cam3.fov = cam.fov; cam3.updateProjectionMatrix();
+      cam.modo = camModo; cam3.fov = cam.fov = fovPara(camModo, aspecto()); cam3.updateProjectionMatrix();
       if (G.actores.companion3D) G.actores.companion3D.root.visible = false;
       document.body.classList.add('flight-on', 'retos-on'); // retos-on: musica.js elige la pista de Retos/carreras
       st.A = arena();
@@ -543,6 +584,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
     // Geometrías, materiales y texturas propias fuera de la GPU; el grupo sale de la escena
     function liberarPool() {
       for (const t in pool) { for (const im of pool[t].mallas) { raiz.remove(im); im.geometry.dispose(); for (const k of ['map', 'normalMap']) if (im.material[k]) im.material[k].dispose(); im.material.dispose(); im.dispose(); } delete pool[t]; }
+      for (const k of ['sombra', 'ventana']) { const m = ayuda[k]; if (m) { raiz.remove(m); m.geometry.dispose(); m.material.dispose(); ayuda[k] = null; } }
       if (raiz.parent) scene.remove(raiz);
       st.listo = null;
     }
@@ -591,11 +633,35 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           // ---------- Entrar ----------
           const ok = await abrir();
           check('Entra con el mundo libre y el pool cargado', ok === true && st.activo && raiz.parent === scene && Object.keys(pool).length === 4, Object.keys(pool).join(','));
-          check('Envolturas: la historia ve el mundo ocupado, fisica no manda y la cámara es la lateral', G.ui.busy() === true && F.step !== step0 && G.camara.follow !== follow0 && G.camara.draw !== draw0);
+          check('Envolturas: la historia ve el mundo ocupado, fisica no manda y la cámara es la de vuelo', G.ui.busy() === true && F.step !== step0 && G.camara.follow !== follow0 && G.camara.draw !== draw0);
           check('Clase flight-on y retos-on (música de retos), HUD visible, pista «Toca para volar»', document.body.classList.contains('flight-on') && document.body.classList.contains('retos-on') && !st.ui.el.hidden && !st.ui.pista.hidden);
           const vivas0 = vivas();
           check('Obstáculos generados delante (≥ 5) con instancias del pool', obst.length >= 5 && vivas0 > 0 && obst[obst.length - 1].x >= P.adelante - 1, obst.length + ' obst · ' + vivas0 + ' instancias');
-          check('Vittata vuela (MOVE.flying, mirando por el carril) y está sobre el mar', M.flying === true && S.facing.x === st.A.dx && superficie(S.pos.x, S.pos.z) <= nivelAgua(S.pos.x, S.pos.z) + 0.01, S.pos.x.toFixed(0) + ',' + S.pos.z.toFixed(0));
+          check('Vittata vuela (MOVE.flying, mirando por el carril o un poco hacia la cámara) y está sobre el mar', M.flying === true && S.facing.x * st.A.dx + S.facing.z * st.A.dz > 0.85 && superficie(S.pos.x, S.pos.z) <= nivelAgua(S.pos.x, S.pos.z) + 0.01, S.pos.x.toFixed(0) + ',' + S.pos.z.toFixed(0));
+          // ---------- Cámara 3/4 frontal (C15) ----------
+          // Vista de prueba: cámara + lookAt reales (los de camObjetivo/camMira) con el aspecto pedido; proyecta Vittata y el siguiente hueco
+          const vista = (modo, asp) => {
+            const m0 = cam.modo, a0 = cam.asp; cam.modo = modo; cam.asp = asp;
+            const c = new THREE.PerspectiveCamera(fovPara(modo, asp), asp, 0.1, 500); camObjetivo(c.position); c.lookAt(camMira()); c.updateMatrixWorld(true);
+            const pr = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(c); return { x: v.x, y: v.y, z: v.z }; };
+            const o = obst.find(q => !q.pasado), [b0, b1] = huecoDe(o), base = superficie(st.A.x, st.A.z);
+            const dv = { x: c.position.x - S.pos.x, z: c.position.z - S.pos.z }, dl = Math.hypot(dv.x, dv.z);
+            const r = { modo, V: pr(S.pos.x, S.pos.y, S.pos.z), O: pr(st.A.x + (o.x - J.dist) * st.A.dx, base + (b0 + b1) / 2, st.A.z + (o.x - J.dist) * st.A.dz),
+              cara: Math.acos(clamp((dv.x * S.facing.x + dv.z * S.facing.z) / dl, -1, 1)) * 180 / Math.PI, guinada: Math.acos(clamp((dv.x * st.A.dx + dv.z * st.A.dz) / dl, -1, 1)) * 180 / Math.PI, alto: c.position.y - S.pos.y };
+            cam.modo = m0; cam.asp = a0; return r;
+          };
+          const enVista = p => p.z > 0 && p.z < 1 && Math.abs(p.x) < 0.95 && Math.abs(p.y) < 0.95;
+          const dist0 = J.dist; J.dist = Math.max(dist0, obst[0].x - 12); // el siguiente hueco a 12 m, como en pleno vuelo (al empezar el primero está más lejos)
+          const vd = vista('diagonal', 16 / 9), vm = vista('diagonal', 390 / 844), vh = vista('diagonal', 844 / 390), vl = vista('lado', 16 / 9);
+          check('Cámara diagonal por defecto (3/4 frontal; ?flightcam=lado es la opción)', camModo === (/[?&]flightcam=(lado|side)\b/.test(location.search) ? 'lado' : 'diagonal') && CAMS.diagonal.ad > 0 && CAMS.diagonal.lado > 0, cam.modo);
+          check('Vittata de cara: el vector de la cámara a ella forma <90° con su frente (cámara delante-al-lado, ~40° del carril)', vd.cara < 60 && vd.guinada > 30 && vd.guinada < 50, 'cara ' + vd.cara.toFixed(0) + '° · guiñada ' + vd.guinada.toFixed(0) + '°');
+          check('Escritorio: Vittata visible en pantalla y el siguiente hueco también', enVista(vd.V) && enVista(vd.O), 'V ' + vd.V.x.toFixed(2) + ',' + vd.V.y.toFixed(2) + ' · hueco ' + vd.O.x.toFixed(2) + ',' + vd.O.y.toFixed(2));
+          const o2 = obst.filter(q => !q.pasado)[1], vm2 = o2 && o2.x - J.dist < CAMS.diagonal.ad - 1 ? (() => { const b = superficie(st.A.x, st.A.z), [c0, c1] = huecoDe(o2), m0 = cam.modo, a0 = cam.asp; cam.asp = 390 / 844; const c = new THREE.PerspectiveCamera(fovPara('diagonal', 390 / 844), 390 / 844, 0.1, 500); camObjetivo(c.position); c.lookAt(camMira()); c.updateMatrixWorld(true); cam.asp = a0; return new THREE.Vector3(st.A.x + (o2.x - J.dist) * st.A.dx, b + (c0 + c1) / 2, st.A.z + (o2.x - J.dist) * st.A.dz).project(c); })() : null;
+          check('Horizontal 844×390: Vittata y el siguiente hueco caen dentro de la pantalla', enVista(vh.V) && enVista(vh.O), 'V ' + vh.V.x.toFixed(2) + ',' + vh.V.y.toFixed(2) + ' · hueco ' + vh.O.x.toFixed(2) + ',' + vh.O.y.toFixed(2));
+          check('Móvil vertical (390×844): Vittata (hacia la izquierda), el siguiente hueco (y el 2.º si está delante de la cámara) caen dentro', enVista(vm.V) && vm.V.x < 0 && enVista(vm.O) && (!vm2 || enVista(vm2)), 'V ' + vm.V.x.toFixed(2) + ',' + vm.V.y.toFixed(2) + ' · hueco ' + vm.O.x.toFixed(2) + ',' + vm.O.y.toFixed(2));
+          check('Vista lateral (opción): cámara a ~90° del carril y todo a la vista', vl.guinada > 80 && enVista(vl.V) && enVista(vl.O), 'guiñada ' + vl.guinada.toFixed(0) + '°');
+          check('Ayudas de altura: sombra de Vittata en el mar y ventana en el hueco del siguiente obstáculo', ayuda.sombra && ayuda.sombra.visible && ayuda.ventana && ayuda.ventana.visible && ayuda.ventana.scale.y > 2, ayuda.ventana && ayuda.ventana.scale.y.toFixed(1) + ' m de hueco');
+          J.dist = dist0;
           // ---------- Impulso y gravedad ----------
           check('Antes del primer toque Vittata se queda cernida (fase listo)', st.fase === 'listo' && (tick(1), st.fase === 'listo' && Math.abs(J.y - 6) < 0.3));
           toque();
@@ -704,7 +770,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       })();
     }
 
-    G.flightApi = { DECL, P, abrir, salir, otraVez, toque, liberar, _dev: { J, st, obst, decor, pool, paso, generar, vaciar, huecoDe, alcanzable, bajadaMax, subidaMax, velocidadEn, get rnd() { return rnd; }, set rnd(f) { rnd = f; } }, get activo() { return st.activo; }, get fase() { return st.fase; }, estado: () => ({ fase: st.fase, puntos: J.puntos, mejor: J.mejor, y: J.y, vy: J.vy, v: J.v, dist: J.dist, obstaculos: obst.length, instancias: vivas(), semilla: J.semilla }), test };
+    G.flightApi = { DECL, P, camara: m => { if (CAMS[m]) { camModo = m; cam.modo = m; if (st.activo) { reencuadrar(); camFollow(null); G.camara.place(true); } } return cam.modo; }, abrir, salir, otraVez, toque, liberar, _dev: { J, st, cam, CAMS, ayuda, obst, decor, pool, paso, generar, vaciar, huecoDe, alcanzable, bajadaMax, subidaMax, velocidadEn, get rnd() { return rnd; }, set rnd(f) { rnd = f; } }, get activo() { return st.activo; }, get fase() { return st.fase; }, estado: () => ({ fase: st.fase, puntos: J.puntos, mejor: J.mejor, y: J.y, vy: J.vy, v: J.v, dist: J.dist, obstaculos: obst.length, instancias: vivas(), semilla: J.semilla }), test };
     return G.flightApi;
   };
 })();
