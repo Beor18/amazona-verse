@@ -61,10 +61,11 @@ AVE.module('renderer', function (G) {
 
   // ── Desde aquí: programador gráfico ──
   // ---------- Calidad: presets y elección inicial ----------
-  // sombras: tamaño del mapa (0 = sin sombras); post: 0 nada, 2 bloom + gradación; flora: densidad; floraDist: distancia relativa
+  // sombras: tamaño del mapa (0 = sin sombras); post: 0 solo gradación (en el tone mapping), 1 bloom a 1/4 + gradación + viñeta,
+  // 2 bloom a 1/2 + gradación + viñeta; flora: densidad; floraDist: distancia relativa
   const PRESETS = {
     bajo: { nivel: 'bajo', sombras: 0, sombraRadio: 0, sombraTerreno: false, post: 0, normalesSuelo: false, dosEscalas: false, texMax: 512, flora: 0.5, floraDist: 0.55, pasto: 0, sombraFlora: false, agua: 0, particulas: 0.4 },
-    medio: { nivel: 'medio', sombras: 1024, sombraRadio: 22, sombraTerreno: false, post: 0, normalesSuelo: true, dosEscalas: false, texMax: 1024, flora: 0.8, floraDist: 0.8, pasto: 0.6, sombraFlora: true, agua: 1, particulas: 0.7 },
+    medio: { nivel: 'medio', sombras: 1024, sombraRadio: 22, sombraTerreno: false, post: 1, normalesSuelo: true, dosEscalas: false, texMax: 1024, flora: 0.8, floraDist: 0.8, pasto: 0.6, sombraFlora: true, agua: 1, particulas: 0.7 },
     alto: { nivel: 'alto', sombras: 2048, sombraRadio: 30, sombraTerreno: true, post: 2, normalesSuelo: true, dosEscalas: true, texMax: 0, flora: 1, floraDist: 1, pasto: 1, sombraFlora: true, agua: 2, particulas: 1 },
   };
   const NIVELES = ['bajo', 'medio', 'alto'];
@@ -266,17 +267,38 @@ AVE.module('renderer', function (G) {
   }
   addEventListener('resize', resize);
 
-  // ---------- Post-proceso opcional (alto): bloom suave + gradación, con EffectComposer de r128 ----------
+  // ---------- Post-proceso por niveles (ficha 26-A): bloom suave + gradación + viñeta, con EffectComposer de r128 ----------
   // El render target es multisample (WebGL2) y de media precisión: guarda el color ya con ACES (r128 lo aplica en cada material)
-  // en lineal; el último pase gradúa y codifica a sRGB, así el color final es el mismo que sin post.
+  // en lineal; el último pase gradúa y codifica a sRGB, así el color final es el mismo que sin post. Alto: bloom a 1/2 de la
+  // resolución; medio: a 1/4 (umbral 0,9, fuerza 0,18). Bajo, o si el post no puede cargar: sin composer, la misma gradación
+  // va gratis en el tone mapping de cada material (CustomToneMapping = ACES + gradación, sin viñeta).
   const PP = W.post || {};
+  const GRADO = { sat: PP.saturacion != null ? PP.saturacion : 1.08, con: PP.contraste != null ? PP.contraste : 1.04, tint: [1.0, 0.995, 0.985] };
+  const BLOOM = { 2: { escala: 1 / 2, fuerza: PP.bloom != null ? PP.bloom : 0.22 }, 1: { escala: 1 / 4, fuerza: PP.bloomMedio != null ? PP.bloomMedio : 0.18 } };
+  const CUSTOM_TM = 'vec3 CustomToneMapping( vec3 color ) { return color; }';
+  {
+    const g = GRADO, n = v => (Math.round(v * 1000) / 1000).toFixed(3);
+    if (THREE.ShaderChunk.tonemapping_pars_fragment.includes(CUSTOM_TM)) THREE.ShaderChunk.tonemapping_pars_fragment = THREE.ShaderChunk.tonemapping_pars_fragment.replace(CUSTOM_TM, [
+      'vec3 CustomToneMapping( vec3 color ) {',
+      '\tvec3 c = sqrt( max( ACESFilmicToneMapping( color ), 0.0 ) ); float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );',
+      `\tc = mix( vec3( l ), c, ${n(g.sat)} ); c = ( c - 0.5 ) * ${n(g.con)} + 0.5;`,
+      `\tc = clamp( c * vec3( ${n(g.tint[0])}, ${n(g.tint[1])}, ${n(g.tint[2])} ), 0.0, 1.0 ); return c * c;`,
+      '}'].join('\n'));
+  }
+  // El tone mapping entra en la clave del programa, pero r128 no recompila solo al cambiarlo: needsUpdate en lo que hay en escena
+  function gradoEnTono(on) {
+    const tm = on ? THREE.CustomToneMapping : THREE.ACESFilmicToneMapping;
+    if (renderer.toneMapping === tm) return;
+    renderer.toneMapping = tm;
+    scene.traverse(o => { const m = o.material; if (m) for (const x of Array.isArray(m) ? m : [m]) x.needsUpdate = true; });
+  }
   // Scripts del post (three r128 examples/js): primero la copia local del repo (assets/vendor/three/examples/js/, sin
   // peticiones a terceros; ver docs/equipo/SEGURIDAD_INFANTIL.md); si no está, jsDelivr con versión exacta, salvo que
   // AVE.config.sinTerceros esté activo (entonces no hay post).
   const LOCAL = 'assets/vendor/three/examples/js/', CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/';
   const POST_JS = ['shaders/CopyShader.js', 'shaders/LuminosityHighPassShader.js', 'postprocessing/EffectComposer.js',
     'postprocessing/RenderPass.js', 'postprocessing/ShaderPass.js', 'postprocessing/UnrealBloomPass.js'];
-  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, origen: null };
+  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, origen: null, escala: 1 / 2, GRADO, BLOOM };
   const fogLin = fogSRGB.clone().convertSRGBToLinear();
   function fogColorFor(rt) { if (scene.fog && ATMOS) scene.fog.color.copy(rt ? fogLin : fogSRGB); }
   function cargarDesde(base) { return POST_JS.reduce((p, f) => p.then(() => AVE.assets.script(base + f)), Promise.resolve()).then(() => { post.origen = base; }); }
@@ -290,11 +312,14 @@ AVE.module('renderer', function (G) {
         const rt = new THREE.WebGLMultisampleRenderTarget(size.x, size.y, opts); rt.samples = 4;
         const comp = new THREE.EffectComposer(renderer, rt);
         comp.addPass(new THREE.RenderPass(scene, camera));
-        const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), PP.bloom != null ? PP.bloom : 0.22, 0.45, 0.9);
+        const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), BLOOM[2].fuerza, 0.45, 0.9);
+        // UnrealBloomPass trabaja a la mitad de lo que recibe: con 2 × escala, su primera cadena queda a 1/2 (alto) o 1/4 (medio)
+        const tamBloom = bloom.setSize.bind(bloom);
+        bloom.setSize = (w, h) => tamBloom(Math.max(2, Math.round(w * post.escala * 2)), Math.max(2, Math.round(h * post.escala * 2)));
         comp.addPass(bloom);
         const grade = new THREE.ShaderPass({
-          uniforms: { tDiffuse: { value: null }, uSat: { value: PP.saturacion != null ? PP.saturacion : 1.08 }, uCon: { value: PP.contraste != null ? PP.contraste : 1.04 },
-            uTint: { value: new THREE.Vector3(1.0, 0.995, 0.985) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 } },
+          uniforms: { tDiffuse: { value: null }, uSat: { value: GRADO.sat }, uCon: { value: GRADO.con },
+            uTint: { value: new THREE.Vector3(...GRADO.tint) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 } },
           vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
           fragmentShader: [
             'uniform sampler2D tDiffuse; uniform float uSat, uCon, uVig; uniform vec3 uTint; varying vec2 vUv;',
@@ -317,10 +342,17 @@ AVE.module('renderer', function (G) {
     return post.cargando;
   }
   G.on('dpr', () => { if (post.composer) post.resize(); });
+  // Mientras el composer carga, el tone mapping queda en ACES (sin compilar dos veces al arrancar); si falla, gradúa ahí
   function aplicarPost(C) {
     const want = C.post > 0 && renderer.capabilities.isWebGL2 && ATMOS;
-    if (!want) { post.activo = false; fogColorFor(false); return; }
-    cargarPost().then(() => { post.activo = calidad.post > 0; fogColorFor(post.activo); }).catch(e => { console.warn('AVE post:', e && e.message || e); post.activo = false; fogColorFor(false); });
+    if (!want) { post.activo = false; fogColorFor(false); gradoEnTono(true); return; }
+    gradoEnTono(false);
+    cargarPost().then(() => {
+      const B = BLOOM[calidad.post >= 2 ? 2 : 1];
+      post.activo = calidad.post > 0; fogColorFor(post.activo); gradoEnTono(!post.activo);
+      if (post.escala !== B.escala) { post.escala = B.escala; post.resize(); }
+      post.bloom.strength = B.fuerza;
+    }).catch(e => { console.warn('AVE post:', e && e.message || e); post.activo = false; fogColorFor(false); gradoEnTono(true); });
   }
   aplicarPost(calidad);
 
@@ -664,6 +696,17 @@ AVE.module('renderer', function (G) {
     check('Este equipo: perfil coherente con la calidad inicial', calidad.manual || PRESETS[PERFIL.nivel] && inicial === PERFIL.nivel,
       PERFIL.nivel + ' · ' + (EQUIPO.nucleos || '?') + ' núcleos · ' + (EQUIPO.memoria || '?') + ' GB · ' + (GPU || 'GPU sin nombre').slice(0, 60) +
       (fpsM.arranque.hecho ? ' · arranque ' + Math.round(fpsM.arranque.fps) + ' FPS' : ''));
+    // Post por niveles (26-A)
+    check('Post por niveles: bajo sin composer, medio bloom a 1/4, alto bloom a 1/2', PRESETS.bajo.post === 0 && PRESETS.medio.post === 1 && PRESETS.alto.post === 2 &&
+      BLOOM[1].escala === 0.25 && BLOOM[1].fuerza <= BLOOM[2].fuerza && BLOOM[2].escala === 0.5);
+    check('Gradación en el tone mapping (sin composer): ACES + saturación y contraste', !THREE.ShaderChunk.tonemapping_pars_fragment.includes(CUSTOM_TM) &&
+      /CustomToneMapping[^}]*ACESFilmicToneMapping/.test(THREE.ShaderChunk.tonemapping_pars_fragment));
+    const quiere = calidad.post > 0 && renderer.capabilities.isWebGL2 && ATMOS;
+    if (post.activo) {
+      const bw = post.bloom.renderTargetBright.width, dw = renderer.getDrawingBufferSize(new THREE.Vector2()).x, B = BLOOM[calidad.post >= 2 ? 2 : 1];
+      check(`Este equipo (${calidad.nivel}): composer con bloom a ${B.escala === 0.25 ? '1/4' : '1/2'}, viñeta y ACES sin gradar dos veces`,
+        renderer.toneMapping === THREE.ACESFilmicToneMapping && Math.abs(bw - dw * B.escala) <= 2 && post.bloom.strength === B.fuerza && post.grade.uniforms.uVig.value > 0, bw + ' de ' + dw + ' px');
+    } else if (!quiere || !post.cargando) check(`Este equipo (${calidad.nivel}): sin composer, gradación en el tone mapping`, renderer.toneMapping === THREE.CustomToneMapping);
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
@@ -792,6 +835,6 @@ AVE.module('renderer', function (G) {
   }
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
-    sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, get t() { return t; },
+    sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });
