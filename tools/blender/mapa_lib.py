@@ -449,7 +449,7 @@ def build(verbose=True):
         k = int(np.argmin(np.hypot(P_[:, 0] - p['x'], P_[:, 1] - p['y']))); p['nivel'] = float(L_[k])
     M.pools = pools
     nR = len(R)
-    wr = 3.4 + 1.6 * (sR / sR[-1])
+    wr = 4.7 + 1.9 * (sR / sR[-1])   # Río Amazonas: unos 11 m de ancho medio, como el río del terreno de Kelvin (R1)
     dr = np.full(nR, 1.5)
     Br = np.full(nR, 8.0)
     near_b = np.abs(sR - sR[ib]) < 22
@@ -571,6 +571,7 @@ def build(verbose=True):
         prof = np.interp(Tt, sr_, Rp[:, 2]); wgt = np.where(np.isfinite(D), 1 - ss(2.2, 4.5, D), 0)
         H = H * (1 - wgt) + prof * wgt
     M.trailD = np.minimum(TD, M.rampD)   # las rampas cuentan como sendero (tierra, sin plantas, más vértices)
+    M.sendaD = sendas_kelvin(X, Y, water_d)
     # suaviza los escalones entre tramos cercanos (curvas en zigzag) solo sobre los senderos
     Hb = H.copy()
     for _ in range(3):
@@ -595,12 +596,25 @@ def build(verbose=True):
     M.H = H
     return M, H
 
+def sendas_kelvin(X, Y, water_d):
+    """Distancia a las sendas originales de Kelvin entre sus aldeas (mapa_sendas_kelvin.json, R1). Se pintan de tierra y quedan
+    sin flora, pero no se tallan ni apartan edificios: siguen el relieve del juego y se cortan junto al agua."""
+    import json as _json
+    f = os.path.join(HERE, 'mapa_sendas_kelvin.json')
+    D = np.full(X.shape, np.inf)
+    if not os.path.exists(f): return D
+    for s in _json.load(open(f))['sendas']:
+        d, _, _ = polyline_field(X, Y, resample(chaikin(np.array(s, float), 2), 1.0), 4.0)
+        D = np.minimum(D, d)
+    return np.where(water_d > 1.5, np.maximum(D - 0.5, 0), np.inf)   # algo más anchas que los senderos del juego, como en su máscara
+
 def splat(M, H):
     """Pesos RGBA por celda: R pasto/musgo, G tierra, B roca, A arena (suman 1)."""
     X, Y = M.X, M.Y
     gy, gx = np.gradient(H, RES)
     slope = np.degrees(np.arctan(np.hypot(gx, gy)))
     M.slope = slope
+    M.sendaD = np.where(slope < 33, getattr(M, 'sendaD', np.inf), np.inf)   # en las paredes de las terrazas no hay senda
     n1 = fbm(X, Y, 14, 3, 71); n2 = fbm(X, Y, 5, 2, 72)
     rock = ss(46, 60, slope + 5 * n1)
     rock = rock * (1 - 0.6 * ss(30, 55, H) * ss(-0.3, 0.3, n1))                # paredes húmedas con musgo en la montaña
@@ -608,7 +622,7 @@ def splat(M, H):
     rock = np.maximum(rock, (1 - ss(0.0, 1.6, M.water_d)) * ss(0.1, 0.5, n2))  # piedras de río
     sand = np.maximum(ss(3.0, 1.5, H) * M.beach * ss(-0.2, 0.3, M.sd + 6), ss(0.2, -0.6, H))
     sand = np.maximum(sand, (1 - ss(-1.0, 0.4, M.water_d)) * 0.8)              # lecho del río
-    dirt = 1 - ss(1.1, 2.7, M.trailD + 0.6 * n2)
+    dirt = 1 - ss(1.1, 2.7, np.minimum(M.trailD, M.sendaD) + 0.6 * n2)
     for pid, z in M.padz.items():
         cx, cy = POI[pid]; r = dict((p[0], p[1]) for p in PADS)[pid]
         dirt = np.maximum(dirt, (1 - ss(r * 0.45, r * 0.9, np.hypot(X - cx, Y - cy) + 2 * n2)) * 0.85)
@@ -662,7 +676,7 @@ def flora(M, H, step=2):
     """Densidad por especie (instancias por 100 m2) en rejilla de `step` m y máscara de suelo libre."""
     sl = slice(None, None, step)
     h = H[sl, sl]; X = M.X[sl, sl]; Y = M.Y[sl, sl]
-    slope = M.slope[sl, sl]; wd = M.water_d[sl, sl]; td = M.trailD[sl, sl]; sd = M.sd[sl, sl]; be = M.beach[sl, sl]
+    slope = M.slope[sl, sl]; wd = M.water_d[sl, sl]; td = np.minimum(M.trailD, M.sendaD)[sl, sl]; sd = M.sd[sl, sl]; be = M.beach[sl, sl]
     n1 = fbm(X, Y, 30, 3, 91); n2 = fbm(X, Y, 11, 2, 92)
     patch = np.clip(0.55 + 0.9 * n1, 0, 1.4)
     free = (td > 2.6) & (wd > 1.2) & (sd > 2.5) & (h > 0.8)
@@ -693,5 +707,7 @@ def flora(M, H, step=2):
     for cx, cy, cr in CLAROS:   # claro: sin árboles ni arbustos altos, con helechos y bromelias
         m = np.hypot(X - cx, Y - cy) < cr
         for k in ('tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'helecho_gigante', 'ceiba', 'flamboyan', 'bambu', 'troncos'): D[k][m] = 0
+    copa = getattr(M, 'sendaD', np.full(M.X.shape, np.inf))[sl, sl] < 3.5   # sendas de Kelvin: sin copas encima (R1)
+    for k in ('tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'ceiba', 'flamboyan', 'bambu'): D[k][copa] = 0
     D['rocas'] = np.where((td > 2.2), rocks, 0)
     return D, free, X, Y

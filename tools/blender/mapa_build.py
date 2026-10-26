@@ -76,8 +76,8 @@ ob = bpy.data.objects.new('terreno_full', me); bpy.context.scene.collection.obje
 # grupo de detalle: senderos, explanadas, orillas y costa conservan más vértices (el splat necesita bordes nítidos)
 VG_FACTOR = float(os.environ.get('MAPA_VGF', '1'))
 TBAND = float(os.environ.get('MAPA_TBAND', '1.6'))
-IJ = np.indices(M.trailD.shape)
-wdet = (((M.trailD < TBAND) & (M.trailD > TBAND - 1.0)) | ((M.trailD < 0.8) & (M.slope > 12))) & (IJ[0] % 2 == 0) & (IJ[1] % 2 == 0)
+IJ = np.indices(M.trailD.shape); TDV = np.minimum(M.trailD, M.sendaD)   # senderos del juego y sendas de Kelvin (R1)
+wdet = (((TDV < TBAND) & (TDV > TBAND - 1.0)) | ((TDV < 0.8) & (M.slope > 12))) & (IJ[0] % 2 == 0) & (IJ[1] % 2 == 0)
 wdet = wdet.astype(float).ravel()   # borde de los senderos y su eje en las cuestas (1 de cada 4)
 vg = ob.vertex_groups.new(name='detalle')
 for lo, hi_, val in ((0.25, 0.6, 0.4), (0.6, 0.85, 0.75), (0.85, 1.01, 1.0)):
@@ -100,7 +100,7 @@ def bil(A, x, y, step=ML.RES):
     x0 = np.clip(fx.astype(int), 0, A.shape[1] - 2); y0 = np.clip(fy.astype(int), 0, A.shape[0] - 2)
     tx = (fx - x0)[..., None] if A.ndim == 3 else fx - x0; ty = (fy - y0)[..., None] if A.ndim == 3 else fy - y0
     return A[y0, x0] * (1 - tx) * (1 - ty) + A[y0, x0 + 1] * tx * (1 - ty) + A[y0 + 1, x0] * (1 - tx) * ty + A[y0 + 1, x0 + 1] * tx * ty
-near = bil(M.trailD.clip(0, 50), V[:, 0], V[:, 1]) < 3
+near = bil(TDV.clip(0, 50), V[:, 0], V[:, 1]) < 3
 log('vértices junto a senderos: %.1f%%' % (100 * near.mean()))
 
 # normales suaves de la malla completa (sin costuras entre trozos)
@@ -439,6 +439,13 @@ log('flora (instancias aprox.)', tot)
 
 # ------------------------------------------------------------------ datos del juego
 def pt(x, y, dz=0.0): return G(x, y, hz(x, y) + dz)
+def seco(x, y, m=1.5):   # lo que va en tierra se aparta de la orilla si el río ensanchado lo alcanza (R1)
+    wd_ = lambda a, b: float(bil(M.water_d, np.array([a]), np.array([b]))[0])
+    for _ in range(40):
+        if wd_(x, y) >= m: break
+        gx_, gy_ = wd_(x + 0.5, y) - wd_(x - 0.5, y), wd_(x, y + 0.5) - wd_(x, y - 0.5); n_ = math.hypot(gx_, gy_) or 1.0
+        x, y = x + 0.5 * gx_ / n_, y + 0.5 * gy_ / n_
+    return x, y
 pools = {p['id']: p for p in M.pools}
 ph = pools['poza_honda']; pd_ = pools['poza_dajao']; pm = pools['poza_la_mina']; pc = pools['charca_nubes']
 cav = {g['id']: g for g in GR}
@@ -449,7 +456,7 @@ for fid, x, y, r, wat in ML.FIELD:
     if fid in fieldpos: x, y = fieldpos[fid]
     if fid == 'guiro': pos = G(x, y, PL['mirador'][2] + MIRADOR_TOP)
     elif wat: pos = G(x, y, (pools['poza_dajao']['nivel'] if fid == 'dajao' else 0.0) - 0.35)
-    else: pos = pt(x, y)
+    else: pos = pt(*seco(x, y))
     o = {'id': fid, 'x': pos[0], 'y': pos[1], 'z': pos[2]}
     if r: o['r'] = r
     if wat: o['water'] = True
@@ -457,7 +464,7 @@ for fid, x, y, r, wat in ML.FIELD:
 RES = []
 for rid, typ, x, y in ML.RESOURCES:
     if rid == 'c1': x, y = ph['x'], ph['y']; p_ = G(x, y, ph['nivel'] - ph['prof'] + 0.3); RES.append({'id': rid, 'type': typ, 'x': p_[0], 'y': p_[1], 'z': p_[2], 'under': True}); continue
-    p_ = pt(x, y); RES.append({'id': rid, 'type': typ, 'x': p_[0], 'y': p_[1], 'z': p_[2]})
+    p_ = pt(*seco(x, y)); RES.append({'id': rid, 'type': typ, 'x': p_[0], 'y': p_[1], 'z': p_[2]})
 tal = ML.POI['taller']
 LUG = {k: dict(zip(('x', 'y', 'z'), pt(*ML.POI[v]))) for k, v in {'taller': 'taller', 'villa': 'plaza', 'A': 'terrenoA', 'B': 'terrenoB'}.items()}
 for k, r in {'taller': 7, 'villa': 10, 'A': 7, 'B': 8}.items(): LUG[k]['r'] = r
@@ -483,7 +490,7 @@ for p in POIS:
     if p['id'] == 'luma': p['nombre'] = 'Iguaca (NPC)'
 WATER = {
     'mar': {'nivel': 0.0, 'nota': 'plano infinito a y=0; laguna y arrecife al sur, caída a -9 m'},
-    'rio': {'nota': 'polilínea [x, z, nivel, medioAncho]; nivel constante por tramos con saltos de 1 m', 'puntos':
+    'rio': {'nombre': 'Río Amazonas', 'nota': 'polilínea [x, z, nivel, medioAncho]; nivel constante por tramos con saltos de 1 m', 'puntos':
             [[round(float(p[0]), 1), round(float(-p[1]), 1), round(float(l), 2), round(float(w), 2)] for p, l, w in zip(M.river[::2], M.river_L[::2], M.river_w[::2])]},
     'quebrada': {'nota': 'Quebrada de La Mina, misma forma', 'puntos':
                  [[round(float(p[0]), 1), round(float(-p[1]), 1), round(float(l), 2), round(float(w), 2)] for p, l, w in zip(M.creek, M.creek_L, M.creek_w)]},
@@ -505,7 +512,7 @@ UPDRAFT = [{'x': x, 'z': -y, 'r': r, 'fuerza': f, 'nota': n} for x, y, r, f, n i
 ZONES = [
     {'id': 'costa', 'nombre': 'Playa, arrecife y muelle', 'bioma': 'costa', 'centro': G(150, -212), 'r': 70},
     {'id': 'villa', 'nombre': 'Villa Raíz y la Estación', 'bioma': 'llano costero', 'centro': G(155, -172), 'r': 40},
-    {'id': 'meandros', 'nombre': 'Río de los Meandros (bosque de tabonuco)', 'bioma': 'tabonuco', 'centro': G(-60, 10), 'r': 170},
+    {'id': 'meandros', 'nombre': 'Río Amazonas (bosque de tabonuco)', 'bioma': 'tabonuco', 'centro': G(-60, 10), 'r': 170},
     {'id': 'colina', 'nombre': 'Colina del Mirador', 'bioma': 'tabonuco', 'centro': G(40, -178), 'r': 60},
     {'id': 'lomas', 'nombre': 'Lomas del Oeste y casita jíbara', 'bioma': 'tabonuco', 'centro': G(-110, -105), 'r': 80},
     {'id': 'terrazas', 'nombre': 'Terrazas de palma de sierra', 'bioma': 'palma de sierra', 'centro': G(80, 120), 'r': 90},
@@ -552,6 +559,7 @@ for k, (dx, dy, sc_, kit) in enumerate(((-3.2, -0.5, 1.3, 'roca_musgo_a'), (3.0,
 # ruta de la gota: vapor desde la Poza Honda a la nube de la cumbre, lluvia en las bromelias, escorrentía por la quebrada y el río
 cum = ML.POI['cumbre']; jr_ = int(np.argmin(np.hypot(M.river[:, 0] - M.creek[-1, 0], M.river[:, 1] - M.creek[-1, 1])))
 ih_ = int(np.argmin(np.hypot(M.river[:, 0] - ph['x'], M.river[:, 1] - ph['y'])))
+MC_ = seco(ph['x'] + ph['r'] + 0.8, ph['y'], 0.4)   # la roca sigue en la orilla con el río ancho
 riv = [G(*M.river[i], float(M.river_L[i]) + 0.6) for i in range(jr_, ih_, 14)]
 RUTA = {
     'nota': 'p5 vapor (volar), p6 lluvia + escorrentía (volar siguiendo el agua), p7 bucear en la poza; y = altura absoluta',
@@ -560,7 +568,7 @@ RUTA = {
     'lluvia': [pt(-10, 170, 1.0), pt(8, 196, 0.6)],
     'escorrentia': [G(pc['x'], pc['y'], pc['nivel'] + 0.6)] + [G(*M.creek[i], float(M.creek_L[i]) + 0.6) for i in range(0, len(M.creek), 10)] + riv + [G(ph['x'], ph['y'], ph['nivel'] + 0.6)],
     'infiltracion': [pt(cum[0], cum[1], 0.5), G(-200, -60, 30), G(*M.river[2], float(M.river_L[2]) + 0.5)],
-    'marcaCrecida': {'x': round(ph['x'] + ph['r'] + 0.8, 2), 'z': round(-ph['y'], 2), 'y': round(LUG['A']['y'] + 1.1, 2), 'nota': 'roca con la marca de crecida en la orilla de la Poza Honda'},
+    'marcaCrecida': {'x': round(MC_[0], 2), 'z': round(-MC_[1], 2), 'y': round(LUG['A']['y'] + 1.1, 2), 'nota': 'roca con la marca de crecida en la orilla de la Poza Honda'},
 }
 DATA = {
     'version': 1, 'nombre': 'Capítulo 1 · El Yunque', 'unidades': 'metros',

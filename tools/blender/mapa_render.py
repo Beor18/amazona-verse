@@ -488,7 +488,7 @@ if 'cenital' in VIEWS:
            ('Mirador Yokahú', 14, -172), ('Casita jíbara', -104, -138), ('Cueva del Río', -226, -80), ('Bahía Bio', -160, -207),
            ('Poza Honda', 187, -112), ('Poza del Dajao', 77, 12), ('Cascada La Mina', 72, 100), ('Charca de las Nubes', -6, 186),
            ('El Yunque', -32, 150), ('Los Picachos', 60, 231), ('Ruinas de la Mesa', 192, 4), ('Cueva del Mar', 226, -14), ('Arrecife', 150, -246),
-           ('Río de los Meandros', -110, 30), ('Terrazas de palma', 140, 128), ('Lomas del Oeste', -110, -100)]
+           ('Río Amazonas', -110, 30), ('Terrazas de palma', 140, 128), ('Lomas del Oeste', -110, -100)]
     for t, x, y in LBL:
         for dx, dy, m_, z in ((0.9, -0.9, sh, 199), (0, 0, lab, 200)):
             bpy.ops.object.text_add(location=(x + dx, y + 7 + dy, z)); o = bpy.context.object
