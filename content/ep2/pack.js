@@ -110,9 +110,9 @@
     aula: { clave: 'amazonaverse.aula.cap2', estado: 'edu', archivo: 'amazonaverse_cap2', lecciones: () => window.AV_LECCIONES_EP2 },
     // Criadero (src/game/criadero.js, content/comun/huevos.js): el nido entra en el mundo al cerrar M1 con Iguaca (SiteChosen).
     // Las cápsulas se ganan con lo de siempre (condiciones 'defecto' de huevos.js: preguntas, hallazgos, XP); ninguna se compra.
-    // Pedido fuera de este pack (huevos.js y criadero.js no son de C7): obtener.ep2 para la cápsula del bosque = { mision: 'casa' }
-    // (el nido de M3 es el hito de las cavidades) y un almacén compartido con el ep. 1 para que la cría siga a Vittata.
-    criadero: { desde: 'SiteChosen' },
+    // La cápsula del bosque llega con el nido de M3 (obtener.ep2 en huevos.js) y el criadero es el mismo del cap. 1
+    // (almacen 'amazonaverse': la cría del ep. 1 sigue a Vittata). La partida del ep. 2 sigue aparte (ep2.save).
+    criadero: { desde: 'SiteChosen', almacen: 'amazonaverse' },
 
     mundo: {
       tamano: 40, segmentos: 80,
@@ -546,6 +546,7 @@
       async selfTest(G, T) {
         const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
+        const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })(); // el criadero es el del cap. 1: se devuelve intacto
         // Pulsa la opción de la tarjeta de elección cuyo texto contiene `txt`; luego pasa los diálogos
         const pick = txt => { const b = [...document.querySelectorAll('[id^="ch-"]')].find(x => x.textContent.includes(txt)); if (b) b.click(); drain(); return !!b; };
         const opciones = () => [...document.querySelectorAll('[id^="ch-"]')].map(b => b.textContent);
@@ -652,6 +653,9 @@
         const H = (window.AV_HUEVOS && window.AV_HUEVOS.huevos) || [], cond = id => { const h = H.find(x => x.id === id); return (h && h.obtener && h.obtener.defecto) || {}; };
         check('Criadero del juego: el nido entra al elegir sitio (SiteChosen) y ninguna cápsula se compra', !!G.criadero && G.pack.criadero.desde === 'SiteChosen' && G.eventos.had('SiteChosen') && H.length > 0 && H.every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))));
         check('Cápsulas alcanzables en el ep. 2: la espacial con las preguntas y la boricua con el Diario', cond('espacial').preguntas <= 6 && cond('pr').hallazgos && cond('pr').hallazgos.min <= 6);
+        const bosque = H.find(h => h.id === 'bosque');
+        check('La cápsula del bosque llega con el nido de M3 y el criadero es el mismo del cap. 1 (la cría sigue a Vittata)', bosque && bosque.obtener.ep2 && bosque.obtener.ep2.mision === 'casa' && G.criadero.KEY === 'amazonaverse.criadero' && G.guardado.KEY.startsWith('ep2.'), G.criadero.KEY + ' · ' + G.guardado.KEY);
+        try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
         try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
