@@ -387,7 +387,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | Y1 | hecha (integrada 26-oct) | f5c1f99 | Fichas 26-E y 26-F: `src/engine/ambiente.js` (mapa de zonas 64×64 y partículas en 1 draw call), identidad de color por zona y musgo en el suelo (`terreno.js`), rim suave en NPC y fauna (`actores.rim`). |
 | AB1 | pendiente | | |
 | AC1 | pendiente | | |
-| AD1 | en curso por la otra sesión de la API (`--carriles AD,AG,AH,AI,AJ`) | ed28fbf | Dos sesiones la hacían a la vez; esta paró y dejó sus cambios sin commit y lo medido en PEDIDOS.md (recorrido completo, 2–5,5 min, 177 textos sin EN). |
+| AD1 | hecha | 5103a38 (+ dc2b25e, 34cb531, 633d2c4) | `AV.ep2e2eTest` (`tests/qa/ep2_e2e.js`, extra en `test.sh`) juega el ep. 2 entero en ES y EN caminando con la guía: sin atascos, 1,8 min pulsando y 9,2 min leyendo (+4 min de «Iguaca te pregunta»), frente a 25 min de la guía del aula. Arreglos: inglés completo (`content/ep2/en.js`; `idioma.js` carga una lista, commit aparte), la guía ya no empuja al llano, pista para elegir sitio, la mesa no repite la definición 9 veces y «al papá»; se conserva lo que dejó la otra sesión ([KELVIN] fuera del texto y el techo con sus dos arreglos). Informe y prioridades para AD2 en `EP2_PLAYTEST.md` (tormenta que no se ve, obra sin encuadre, mucho texto, sin entrada en el menú); capturas `docs/img/ad1_ep2_*.jpg`. Baterías: 13 obligatorias en verde (maestroTest 25/26 bajo carga, 26/26 sola en la misma build); ep2Test 59/59. |
 | AB2 | pendiente (bloqueada: espera AB1) | | No empezada: AB1 sigue pendiente en esta tabla y `src/game/maze.js` está sin commit (otra sesión lo editaba a las 14:55). |
 | AC2 | pendiente | | |
 | AD2 | pendiente | | |
