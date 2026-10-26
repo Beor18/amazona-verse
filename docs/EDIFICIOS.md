@@ -259,3 +259,23 @@ Lo que el ligero no dibujaba y el `.max` sí tiene, y ahora entra como `_hd` (mi
 No entró `carpa_g`: la única pieza que quedaba en el `.max` mide unas 2,5 veces el modelo del juego y no encaja en su sitio. El muelle no tiene instancias; es la misma malla que `empalizada`, que ya tiene `_hd`. Los gloss de Savage siguen fuera. Palmeras, Archmodels y el scatter del terreno no se copiaron (licencia no confirmada). El `.max` del terreno no trae edificios ni píxeles nuevos.
 - Rope (3600×1375) y la difusa de WoodHewn (3572) se estiran a la celda cuadrada, como ya hacía el pipeline.
 - El `.max` del terreno no trae píxeles nuevos. No se integró.
+
+## Torres de las ruinas, malla completa (26-oct-2026)
+
+De cerca, en `kelvin_ruinas_yunque`, el atlas de piedra ya se veía y la geometría no: cilindros sin suelo, aros, muros abiertos y la base recortada. No era el lod mezclado con el `_hd` (cada instancia dibuja una sola malla). El `_hd` de esas piezas venía del migrado ya reducido y le faltaban caras que el `.max` sí tiene. El ligero no se toca: sigue dando colisiones y pisos de juego.
+
+Se reescribieron desde el Editable Poly del `.max` (lector OLE, misma escala y el mismo pivote que el `_hd` anterior), sin decimar:
+
+| modelo | tris del `_hd` anterior → ahora | qué vuelve |
+|---|---|---|
+| ruina_torre | 5622 → 7250 | peldaños de la base, suelo, muro y pilares enteros |
+| ruina_torre_c | 7516 → 9006 | el suelo del pie (el cilindro ya no queda abierto abajo) |
+| ruina_torre_e | 2388 → 4632 | la base ancha y el muro (antes quedaba en un cuarto) |
+| ruina_torre_f | 7265 → 10020 | el disco del suelo: antes solo quedaba el aro |
+| ruina_mirador | 1202 → 1916 | los muros curvos de los lados |
+| ruina_portal | 2566 → 4032 | vigas y barro que el colapso había quitado |
+| ruina_pilar | 588 → 740 | las vigas alrededor del fuste |
+| ruina_altar | 2562 → 4108 | el barro y la piedra |
+| muro_templo | 11900 → 84288 | el muro entero (84 288 tris del `.max`; el `_hd` anterior dejaba el 67 % de las aristas sueltas) |
+
+`ruina_torre_b` ya era la malla completa (1086 tris) y no se rehizo. Los templos grandes siguen en su `_hd` anterior. Las losas y plataformas siguen siendo las cajas del archivo.
