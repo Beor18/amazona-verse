@@ -29,7 +29,7 @@
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
      originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las texturas
-     originales (difusa y normales) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
+     originales (difusa y normales, atlas 4096) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
      con la zona en nivel cerca, en calidad media o alta y con WebGL2 (CFG.hd), cuando el jugador ya se movió; mientras no
      está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
 
@@ -63,7 +63,7 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 0, medio: 40, alto: 90 },          // m de la cámara a la mitad cercana de la instancia con el modelo de alta fidelidad (_hd); 0 = solo el ligero
+    hd: { bajo: 0, medio: 0, alto: 90 },          // m: el atlas 4K solo en calidad alta y cuando el jugador ya se movió (pedido de la coordinadora a G6). 0 = paleta de 1024.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
@@ -100,10 +100,21 @@ AVE.module('streaming', function (G) {
 
   // ---------- Materiales compartidos por nombre, con conteo de referencias ----------
   const mats = {}; // nombre → { mat, refs, fijo }
+  function afilar(t) {
+    if (!t || !R.renderer || !R.renderer.capabilities) return;
+    const max = R.renderer.capabilities.getMaxAnisotropy();
+    if (max > 1) t.anisotropy = Math.min(8, max);
+  }
   function crearMaterial(src, k) {
     const m = new THREE.MeshPhongMaterial({ map: src.map || null, color: src.map ? 0xffffff : src.color, side: src.side, shininess: 8,
       specular: new THREE.Color(0x101010), alphaTest: src.alphaTest || 0, transparent: false, vertexColors: !!src.vertexColors });
     if (!src.map && src.color) m.color.copy(src.color);
+    // La paleta ligera trae el mapa de normales en el glTF (tex/kb3d_*_n.jpg). El _hd lo pone atlasHD.
+    if (src.normalMap && !/^AV_HD_/.test(k)) {
+      m.normalMap = src.normalMap;
+      if (src.normalScale) m.normalScale.copy(src.normalScale);
+    }
+    afilar(m.map); afilar(m.normalMap);
     m.name = k;
     if (/^AV_HD_/.test(k)) atlasHD(m, src);
     return m;
@@ -111,10 +122,13 @@ AVE.module('streaming', function (G) {
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
   // dentro de la celda, que tiene un margen que repite su borde, y el nivel de mipmap sale de la UV sin envolver (sin costuras).
-  const HD = { celdas: 4, celda: 512, margen: 16, lodMax: 4 };
+  // celda 1024 y margen 32 (atlas 4096): la fracción margen/atlas es la misma que 16/2048, así que la UV2 ya horneada encaja.
+  // El lod usa el eje corto cuando el otro es mucho mayor (relieve de lado, sin pasar el margen de la celda).
+  const HD = { celdas: 4, celda: 1024, margen: 32, lodMax: 5 };
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
+    afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
     m.onBeforeCompile = sh => {
       sh.vertexShader = sh.vertexShader
@@ -124,12 +138,13 @@ AVE.module('streaming', function (G) {
         .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
           '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ', dy = dFdy( uv ) * ' + f(dentro) + ';\n' +
-          '  float lod = clamp( 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1e-8 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
+          '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
+          '  float lod = clamp( log2( max( max( menor, mayor / 4.0 ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
           '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace('texture2D( map, vUv )', 'avAtlas( map, vUv )'))
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vUv )', 'avAtlas( normalMap, vUv )'));
     };
-    m.customProgramCacheKey = () => 'av-hd-atlas';
+    m.customProgramCacheKey = () => 'av-hd-atlas-1024';
   }
   function material(src, fijo) {
     const k = src.name || src.uuid;
