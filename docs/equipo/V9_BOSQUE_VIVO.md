@@ -23,6 +23,19 @@ Fuente: «Directiva maestra ilustrada V8 + V9 + V9.1», un PDF de 12 páginas. S
 4. **«Save the Parrot»:** rescatar un pichón o proteger un nido, sin violencia. Reto repetible con resultado.
 5. **Ríos vivos (P1):** 3 peces nativos (sirajo, dajao y guabina) que se observan con un visor o una cámara desde el vuelo, y se registran con fuente (USGS, DRNA). Las especies introducidas, solo con datos verificados por cuenca.
 
+## Estado del punto 1, «Banquete en la selva» (25-oct-2026, Fable)
+Código en `src/game/banquete.js` (carga perezosa; prueba `AV.banqueteTest`, 43 comprobaciones). Capturas en `docs/img/banquete_*.png`.
+| Pieza | Estado | Dónde |
+|---|---|---|
+| Árboles con frutos: racimos en las palmas de sierra y frutos en los tabonucos reales del mapa (60 árboles en alto, 36 en medio, 16 en bajo), con brillo, instanciados | **EXISTE** | `banquete.js` (`poblar`, `capa`) |
+| Recoger en vuelo al pasar (sonido, chispas), llevar hasta 5 al nido o al refugio: saltitos del pichón y +5 XP por fruto por la API del criadero | **EXISTE** | `banquete.js` (`recogerMundo`, `entregar`), `criadero.js` (fuente `fruta`) |
+| Comer del árbol (P1 de Kelvin): rama (percha) por árbol, posarse, botón «Comer», gesto Celebrate del rig de Vittata, +5 XP al nido, HUD «+5 XP al nido», el fruto vuelve a los 2–3 min | **EXISTE** | `banquete.js` (`comer`, `percharArbol`) |
+| Energía o salud del pichón al comer | **PENDIENTE** (decisión de Kelvin): hoy no hay sistema de energía; se eligió XP al nido, sin castigos | — |
+| Detectar el árbol con fruta desde lejos (brújula o brillo a distancia) | **PARCIAL**: los frutos brillan, pero no hay indicador en el HUD ni en el mapa | — |
+| Minijuego «¡Banquete!» (75 s, combos sin tocar el suelo, ruta de abajo 10 y copas 25, pista graciosa al tocar el suelo, récord y «Mis récords») | **EXISTE** | `banquete.js` (`MODO`), `retos.js` (entrada), `records.js` (tarjeta) |
+| Dato real con fuente (USFWS, ficha de *Amazona vittata*) al comer o recoger la primera palma | **EXISTE** (la ficha `cotorra_alimento` de `lecciones.js` sigue «por verificar»: la URL de arriba sirve para cerrarla, carril de contenido) | `banquete.js` (`DATO`) |
+| Huerto de guayaba y guineo junto a las casas | **PENDIENTE** (opcional; modelos nuevos) | — |
+
 ## Choques con reglas de Kelvin (no se aplican tal cual)
 - **«Vuelo salvaje: carreras, anillos»:** Kelvin prohibió los anillos de vuelo. Los Retos usan banderines y flores.
 - **«Usar ramas aisladas»:** la regla es una sola rama, `main`.

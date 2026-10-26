@@ -61,8 +61,8 @@
     // Récords (aparte de la partida)
     // =================================================================================================================
     function leerRec() {
-      try { const d = JSON.parse(localStorage.getItem(claveRec) || 'null'); if (d && d.v === 1) return Object.assign({ carrera: {}, tormenta: {}, rio: {} }, d); } catch (e) { /* sin almacén o dañado */ }
-      return { v: 1, carrera: {}, tormenta: {}, rio: {} };
+      try { const d = JSON.parse(localStorage.getItem(claveRec) || 'null'); if (d && d.v === 1) return Object.assign({ carrera: {}, tormenta: {}, rio: {}, banquete: {} }, d); } catch (e) { /* sin almacén o dañado */ }
+      return { v: 1, carrera: {}, tormenta: {}, rio: {}, banquete: {} };
     }
     function guardarRec(d) { try { localStorage.setItem(claveRec, JSON.stringify(d)); return true; } catch (e) { return false; } }
     const relajado = () => !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
@@ -343,6 +343,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="tormenta"></span><button class="btn" type="button" data-jugar="tormenta" data-icon="bolt">Jugar</button></div>
     <div class="rt-reto"><h3>Contrarreloj del río</h3><p>Vuela bajo, siguiendo el cauce, por las flores y los banderines hasta la desembocadura. Sin rivales: solo tú, el reloj y tu fantasma.</p>
       <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>¡Banquete!</h3><p>75 segundos en la colina: recoge los frutos de las palmas y los tabonucos en vuelo. Seguidos, sin tocar el suelo, suben el combo. Los de las copas valen más.</p>
+      <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -469,19 +471,25 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.menu.querySelector('[data-rec="carrera"]').textContent = rec.carrera.mejor ? 'Récord: ' + reloj(rec.carrera.mejor / 1000) + (rec.carrera.puesto ? ' · mejor puesto ' + ordinal(rec.carrera.puesto) : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
+      ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
       ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
       const b = ui.menu.querySelector('[data-jugar]'); if (b) b.focus({ preventScroll: true });
       return true;
     }
+    // «¡Banquete!» vive en src/game/banquete.js (carga perezosa): recibe lo que comparte este módulo y devuelve su modo
+    const compartido = { get ui() { return ui; }, get st() { return st; }, raiz, efectos, REDUCED, colocarJugador, mirarHacia, seguirCamara, resultados, aviso, mostrarCuenta, sonar, chispasFx, reloj, superficie,
+      leerRec, guardarRec, esPrueba: () => claveRec !== ALMACEN };
+    const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
       montarUI();
+      if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
       ui.el.hidden = false;
       if (modo) modo.terminar();
-      st.reto = reto; C.rio = reto === 'rio'; modo = reto === 'tormenta' ? TORMENTA : CARRERA;
+      st.reto = reto; C.rio = reto === 'rio'; modo = reto === 'tormenta' ? TORMENTA : reto === 'banquete' ? G.banquete.modoRetos(compartido) : CARRERA;
       G.pausa.set('retos', false);
       modo.iniciar();
       return true;
@@ -1367,7 +1375,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 3);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 4);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
@@ -1571,6 +1579,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
+      pruebas: { prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
       alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
   };

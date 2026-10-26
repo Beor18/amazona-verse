@@ -146,7 +146,8 @@ AVE.module('criadero', function (G) {
 
   // Fuentes de XP del juego que no están en huevos.js (DIVERSION_CAP1 mejora 2): descubrir un lugar con nombre del mapa
   // (src/game/lugares.js) da poca XP de «explorar»; si huevos.js define la fuente, manda la suya.
-  const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } } };
+  const FUENTES_EXTRA = { lugar: { xp: 8, grupo: 'explorar', nombre: { es: 'Lugar descubierto', en: 'Place discovered' } },
+    fruta: { xp: 5, grupo: 'cuidar', nombre: { es: 'Fruto llevado al nido', en: 'Fruit brought to the nest' } } }; // src/game/banquete.js
   const fuenteDe = tipo => (D() && D().xp.fuentes[tipo]) || FUENTES_EXTRA[tipo] || null;
   // Evento de aprendizaje del juego (también lo usan los botones del prototipo)
   function dar(tipo, id, intento) {

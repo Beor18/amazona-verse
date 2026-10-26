@@ -69,6 +69,11 @@
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
     if (G.renderer.calidad.nivel !== 'bajo') setTimeout(() => cargarBandada().catch(() => {}), 4000);
+    // Banquete en la selva (src/game/banquete.js): frutos en los árboles y el reto «¡Banquete!»; se carga sola tras el arranque y al pedir su prueba
+    let banquete = null;
+    const cargarBanquete = () => banquete || (banquete = AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G), e => { banquete = null; throw e; }));
+    AV.banqueteTest = o => cargarBanquete().then(b => b.test(o));
+    setTimeout(() => cargarBanquete().catch(() => {}), 5000);
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
