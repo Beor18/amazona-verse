@@ -401,6 +401,11 @@
     // Sonido y feedback
     check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));
     check('Partículas dentro del límite de 200', G.fx.live <= G.fx.MAX_PARTICLES, G.fx.live + ' vivas');
+    // AJ2: un 'render' sin dt o con NaN no deja partículas en NaN (THREE «Computed radius is NaN» al dibujarlas)
+    { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 3);   // si hay 200 vivas no crea más: se prueba con las que haya
+      const ps = G.fx.list.filter(f => f.m && f.m.isPoints && f.vel);
+      G.fx.update(); G.fx.update(NaN); G.fx.update(0.016);
+      check('Un render sin dt no deja partículas en NaN', ps.length > 0 && ps.every(f => Number.isFinite(f.t) && Array.from(f.m.geometry.attributes.position.array).every(Number.isFinite)), ps.length + ' ráfagas'); }
     // Guardado del progreso del sprint
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }

@@ -245,7 +245,7 @@
         volver(); check('Vuelve al menú desde Amazona Flight', portada.open && !G.flightApi._dev.st.activo && !document.body.classList.contains('flight-on'));
         await elegir('libre');
         check('Vuelo libre: sin panel de misiones ni guía, y la partida sigue siendo la misma', !portada.open && raiz.classList.contains('modo-libre') && getComputedStyle($('quest')).display === 'none' && libre);
-        G.emit('render'); check('Vuelo libre: la flecha de guía no se ve', G.fx && G.fx.guideBeam ? !G.fx.guideBeam.visible : true);
+        G.emit('render', 0.016); check('Vuelo libre: la flecha de guía no se ve', G.fx && G.fx.guideBeam ? !G.fx.guideBeam.visible : true);
         volver(); check('Vuelve al menú desde el vuelo libre', portada.open && !raiz.classList.contains('modo-libre') && getComputedStyle($('quest')).display !== 'none');
         if (G.criadero && G.criadero.abrir) {
           const okN = await elegir('nido');
