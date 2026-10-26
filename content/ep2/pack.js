@@ -3,7 +3,8 @@
    el Modo Maestro (misma puerta y esquema que el ep. 1: src/game/aula.js con lecciones.js) y el Diario y el criadero del ep. 2.
    Sale de content/plantilla y reutiliza el motor tal cual (nada de src/ tocado). Diseño: docs/equipo/EP2_GDD.md,
    EP2_NARRATIVA.md y EP2_MISIONES.md §2–7. Ábrelo con index.html?pack=ep2 (boot.js lo carga solo, con lecciones.js).
-   Lo que depende del canon de Kelvin (EP2_GDD.md §10) va con el marcador neutro [KELVIN] y no es canon.
+   Lo que depende del canon de Kelvin (EP2_GDD.md §10) va con el marcador neutro [KELVIN] y no es canon: en la nota de la escena o en
+   un comentario, nunca en el texto que lee el jugador (AD1). El inglés va en content/ep2/en.js (pack.idioma, después del de cap1).
    Lo que el jugador observa en cada sitio (pendiente, suelo, viento) y lo que falla en la tormenta son valores del juego, no datos
    del mundo real: la ciencia de suelos y de cajas nido sigue «por verificar» (EP2_MISIONES.md §2 y §4). El único dato real es el de
    la parada del nido, con su fuente. Todo el estado va en S.collected (se guarda solo): tarjetas, decisiones y lo que falló. */
@@ -12,9 +13,9 @@
   const LUMA = { x: -2, z: 2 };
   // Tres sitios para la casa: lo que se observa en cada uno (valores del juego). Ninguno es «el malo»: se elige con evidencia
   const SITIOS = {
-    a: { id: 'a', nombre: 'el llano', x: -12, z: 10, pendiente: 'plano', suelo: 'se hace charco: el agua tarda mucho en bajar', viento: 'poco' },
-    b: { id: 'b', nombre: 'la loma', x: 16, z: -6, pendiente: 'empinado', suelo: 'el agua baja rápido', viento: 'mucho' },
-    c: { id: 'c', nombre: 'el claro', x: 0, z: -16, pendiente: 'suave', suelo: 'el agua baja a ritmo medio', viento: 'medio' },
+    a: { id: 'a', nombre: 'el llano', x: -12, z: 10, pendiente: 'plana', suelo: 'se hace charco: el agua tarda mucho en bajar', viento: 'poco viento' },
+    b: { id: 'b', nombre: 'la loma', x: 16, z: -6, pendiente: 'empinada', suelo: 'el agua baja rápido', viento: 'mucho viento' },
+    c: { id: 'c', nombre: 'el claro', x: 0, z: -16, pendiente: 'suave', suelo: 'el agua baja a ritmo medio', viento: 'algo de viento' },
   };
   const IDS = Object.keys(SITIOS);
   const NIDO = { x: -20, z: -4 };
@@ -78,24 +79,25 @@
   };
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Otra tormenta en tres días. El refugio no aguanta.', 'Ya sé dónde pondré la casa… ¿o no? [KELVIN: lo que dice la Voz y la luz de la niebla]'] },
+    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Otra tormenta en tres días. El refugio no aguanta.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: '[KELVIN: lo que dice la Voz y la luz de la niebla]' },
     { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
-    { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. La abuela y el papá. [KELVIN: quiénes son los dos residentes]', 'Ve a enseñarle tu plano a la abuela.'] },
+    { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. La abuela y el papá.', 'Ve a enseñarle tu plano a la abuela.'], nota: '[KELVIN: quiénes son los dos residentes]' },
     { id: 'e_plano_v', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'feliz', lineas: ['¡Miren mi plano! Una casa grande, de una planta, con la puerta aquí y el nido aquí al lado.'] },
     { id: 'e_plano_a', disparador: 'evento:ResidentsMet', personaje: 'Abuela', emocion: 'triste', lineas: ['…'] },
     { id: 'e_plano_p', disparador: 'evento:ResidentsMet', personaje: 'Papá', emocion: 'triste', lineas: ['(El papá mira el plano, no dice nada y se va volando a su rama.)'] },
-    { id: 'e_plano_g', disparador: 'evento:ResidentsMet', personaje: 'Guardián', emocion: 'idea', lineas: ['¿Les preguntaste… o les contaste? [KELVIN: si el Guardián habla aquí y con qué voz]'] },
+    { id: 'e_plano_g', disparador: 'evento:ResidentsMet', personaje: 'Guardián', emocion: 'idea', lineas: ['¿Les preguntaste… o les contaste?'], nota: '[KELVIN: si el Guardián habla aquí y con qué voz]' },
     { id: 'e_plano_v2', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'pensando', lineas: ['Les conté. Esta vez voy a preguntar primero.'] },
     { id: 'e_choque', disparador: 'evento:NeedsListed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Mira estas dos: «entrada baja» para la abuela y «nido alto» para el papá. Parece que chocan.'] },
     { id: 'e_escucha', disparador: 'evento:ListenChoice', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es escuchar primero: ahora sabes lo que la casa tiene que lograr y lo que no puedes saltarte.', 'Ve a tu sitio y dibuja la casa.'] },
     { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.'] },
-    { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo. [KELVIN: si hay huevo en escena]'] },
+    { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: '[KELVIN: si hay huevo en escena]' },
     { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
   ] };
 
   AVE.registerPack({
     id: 'ep2',
     archivos: ['lecciones.js'], // la lección del Aula (window.AV_LECCIONES_EP2); boot.js la carga después de este archivo
+    idioma: ['content/cap1/en.js', 'content/ep2/en.js'], // inglés: el diccionario común y el del episodio (solo si el idioma es EN)
     meta: {
       titulo: 'Un lugar para todos', capitulo: 2, almacen: 'ep2',
       hud: { capitulo: 'Episodio 2 · Prototipo', titulo: 'Un lugar para todos', portada: 'Episodio 2 · Un lugar para todos',
@@ -141,7 +143,9 @@
       pasos: [
         { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
         { id: 'tierra', texto: 'Lee la tierra: observa los 3 sitios y elige uno', progreso: S => ` (${IDS.filter(i => S.collected.includes(lee(i))).length}/3)`,
-          hasta: { mision: 'lee_tierra' }, guia: G => { const S = G.S, i = IDS.find(k => !S.collected.includes(lee(k))); return G.misiones.at('sitio_' + (i || IDS[0])); } },
+          hasta: { mision: 'lee_tierra' }, guia: G => { // con los 3 leídos, la flecha va al sitio más cercano: no empuja hacia ninguno (se elige con evidencia)
+            const S = G.S, i = IDS.find(k => !S.collected.includes(lee(k))), d = k => Math.hypot(SITIOS[k].x - S.pos.x, SITIOS[k].z - S.pos.z);
+            return G.misiones.at('sitio_' + (i || IDS.slice().sort((a, b) => d(a) - d(b))[0])); } },
         { id: 'volver', texto: 'Cuéntale a Iguaca lo que elegiste', guia: G => G.misiones.at('iguaca') },
         { id: 'plano', texto: 'Enséñale tu plano a la abuela', hasta: { evento: 'ResidentsMet' }, guia: G => G.misiones.at('abuela') },
         { id: 'preguntar', texto: 'Pregunta a la abuela y al papá qué necesitan', progreso: S => ` (${NEC.filter(k => S.collected.includes(k)).length}/${NEC.length})`,
@@ -323,7 +327,9 @@
           use: () => {
             if (!tiene(lee(id))) {
               S.collected.push(lee(id)); G.eventos.log('TerrainRead'); G.misiones.check(); G.audio.play('pickup');
-              G.dialogo.say([di('Vittata', `En ${s.nombre}: pendiente ${s.pendiente}; ${s.suelo}; viento ${s.viento}.`)]);
+              const lineas = [di('Vittata', `En ${s.nombre}: pendiente ${s.pendiente}; ${s.suelo}; ${s.viento}.`)];
+              if (leidos().length === 3) lineas.push(di('Vittata', 'Ya miré los tres sitios. Ahora elijo uno: voy al que me convenza y pulso Acción.'));
+              G.dialogo.say(lineas);
               return;
             }
             if (leidos().length < 3) { G.ui.toast('Observa los 3 sitios antes de elegir', 2500); return; }
@@ -341,7 +347,7 @@
         const faltan = () => lista.filter(p => p.tarjeta && !tiene('nec_' + p.tarjeta));
         if (!faltan().length) { G.dialogo.say([di(nombre, quien === 'abuela' ? 'Ya te dije lo que necesito, mi niña.' : 'Ya sabes lo que pide el nido.')]); return; }
         const abiertas = lista.filter(p => p.tarjeta ? !tiene('nec_' + p.tarjeta) : !cerradas.has(p.q));
-        elegir('Vittata', 'Le pregunto a ' + (quien === 'abuela' ? 'la abuela' : 'el papá') + '…', abiertas.map(p => ({ label: p.q, p })), o => {
+        elegir('Vittata', quien === 'abuela' ? 'Le pregunto a la abuela…' : 'Le pregunto al papá…', abiertas.map(p => ({ label: p.q, p })), o => {
           const p = o.p, nueva = p.tarjeta && !tiene('nec_' + p.tarjeta);
           if (!p.tarjeta) cerradas.add(p.q);
           if (nueva) { poner('nec_' + p.tarjeta); G.audio.play('pickup'); }
@@ -375,7 +381,8 @@
         const k = ORDEN.find(t => !tiene('ord_' + t));
         if (!k) { choque(); return; }
         const t = TARJETAS[k], quien = t.tipo === 'restriccion' ? 'Iguaca te da' : 'Tarjeta';
-        elegir('Iguaca', `${quien}: «${t.texto}». ¿Es un criterio (lo que la casa debe lograr) o una restricción (un límite que no se puede saltar)?`,
+        elegir('Iguaca', // la definición completa en las 2 primeras tarjetas; luego, la pregunta corta (9 tarjetas: no se repite lo mismo 9 veces)
+          ORDEN.filter(x => tiene('ord_' + x)).length < 2 ? `${quien}: «${t.texto}». ¿Es un criterio (lo que la casa debe lograr) o una restricción (un límite que no se puede saltar)?` : `${quien}: «${t.texto}». ¿Criterio o restricción?`,
           [{ label: 'Criterio', v: 'criterio' }, { label: 'Restricción', v: 'restriccion' }], o => {
             if (o.v !== t.tipo) {
               G.audio.play('wrong');
@@ -431,7 +438,7 @@
         if (!boceto) {
           elegir('Vittata', 'Dos bocetos de dos niveles. ¿Cuál cumple más tarjetas?', Object.keys(BOCETOS).map(k => ({ label: BOCETOS[k].label, k })), o => {
             poner('boceto_' + o.k); G.audio.play('tick'); dibujarCasa();
-            G.dialogo.say([di('Vittata', 'Voy con ' + BOCETOS[o.k].corto + '. Uso la madera y la paja que tenemos y el banco de trabajo. [KELVIN: qué materiales pasan del ep. 1]')], construir);
+            G.dialogo.say([di('Vittata', 'Voy con ' + BOCETOS[o.k].corto + '. Uso la madera y la paja que tenemos y el banco de trabajo.')], construir); // [KELVIN: qué materiales pasan del ep. 1]
           });
           return;
         }
@@ -466,10 +473,13 @@
           G.eventos.log('StormTested', { outcome: 'falla:' + f.parte }); G.misiones.check(); registrar();
         });
       }
+      // Si falló el techo, sirven las dos opciones del techo (más amarras o amarrarlo a los postes): el niño lee «techo» en las dos
+      const arregla = (f, k) => k === f.arreglo || (f.parte === 'techo' && (k === 'techo' || k === 'anclaje'));
+      const mejorado = () => Object.keys(ARREGLOS).some(k => tiene('mejora_' + k) && arregla(falla(), k));
       function mejorar() {
         const f = falla();
         elegir('Iguaca', 'Cambia solo una parte. ¿Cuál?', Object.keys(ARREGLOS).map(k => ({ label: ARREGLOS[k], k })), o => {
-          if (o.k !== f.arreglo) {
+          if (!arregla(f, o.k)) {
             G.audio.play('wrong');
             G.dialogo.say([Lu('Eso no fue lo que falló. Mira lo que marcó la tormenta: ' + f.que)], mejorar);
             return;
@@ -503,7 +513,7 @@
         const boceto = valor('boceto_', Object.keys(BOCETOS));
         casa.position.set(obra.x, H(obra.x, obra.z), obra.z);
         if (!boceto) return;
-        const fallo = ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p) && !tiene('mejora_' + falla().arreglo));
+        const fallo = ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p) && !mejorado());
         const rojo = p => fallo === p ? '#d6403a' : null;
         const torre = boceto === 'torre', w = torre ? 2 : 3.2, h = torre ? 3.2 : 1.8;
         const base = valor('dec_base_', ['pilotes', 'piedra']), paredes = valor('dec_paredes_', ['tablas', 'trenzado']);
@@ -553,7 +563,7 @@
         G.quiet = true; G.guardado.reset(true);
         check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
         check('Empieza en el paso 1 de 11', S.step === 0 && $('steps').children.length === 11);
-        check('Los marcadores [KELVIN] no son canon: están en los diálogos', JSON.stringify(G.pack.dialogos.datos()).includes('[KELVIN') );
+        check('Los marcadores [KELVIN] no son canon: van en la nota de la escena, nunca en lo que lee el jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.nota)) && !G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.lineas.join(' '))));
         useAt('iguaca'); drain();
         check('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
         check('Antes de leer los 3 sitios no se puede elegir', (useAt('sitio_a'), drain(), useAt('sitio_a'), drain(), !S.collected.includes('sitio_a')) && S.collected.includes('lee_a'));
@@ -599,9 +609,10 @@
         useAt('obra'); drain();
         check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 9 && !G.fx.rain.visible, 'paso ' + S.step);
         useAt('obra'); drain();
-        pick('Reforzar el techo');
+        pick('Subir la base');
         check('M3 · Mejorar otra parte no vale: pista y se repite', !G.eventos.had('HomeImproved') && opciones().length === 4);
-        pick('Amarrar el techo');
+        pick('Reforzar el techo');
+        check('M3 · Si falló el techo, reforzarlo también vale (las dos opciones dicen «techo»)', G.eventos.had('HomeImproved') && S.collected.includes('mejora_techo'));
         check('M3 · Cambia solo lo que falló', G.eventos.had('HomeImproved') && S.step === 10, 'paso ' + S.step);
         useAt('obra'); drain();
         check('M3 · Prueba 2: aguanta, nido, casco y botas', G.eventos.had('NestPlaced') && S.missions.casa && ['casco:constructor', 'botas:constructor'].every(k => S.unlocked.includes(k)));
@@ -659,7 +670,7 @@
         try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-        check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_anclaje') && S.edu && S.edu.formativa.q1 === 2 && S.field.length === 6, JSON.stringify(S.edu));
+        check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_techo') && S.edu && S.edu.formativa.q1 === 2 && S.field.length === 6, JSON.stringify(S.edu));
         G.guardado.reset(true);
         if (AU.recargar) AU.recargar();
         T.restoreSave(keep);
