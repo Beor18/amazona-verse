@@ -212,6 +212,21 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - Que escriba `docs/equipo/PLAYTEST10.md` con dónde se atasca o se aburre (segundos sin acción) y 5 mejoras concretas.
 - Si algo del juego está roto, lo anota en `BUGS.md` con el archivo y la línea, sin arreglarlo.
 
+## Modernización 2026 (`docs/equipo/MODERNIZACION_2026.md`; implementar cada ficha tal cual, con capturas de antes y después)
+**Carril W, renderizado (en orden, porque comparten `renderer.js`)**
+- **W1 · Ficha 26-A:** posproceso por niveles: bloom a 1/4 y viñeta en calidad media, gradación en todas.
+  - **NO cambies `DEFECTO` en `look.js`:** el look lo decide Kelvin.
+- **W2 · Ficha 26-B:** cielo vivo, con degradado, disco solar, nubes en 2 capas y rayos en calidad alta.
+
+**Carril Z, sensación de juego (en orden)**
+- **Z1 · Fichas 26-G y 26-I:** cámara con vida (inclinación en vuelo, FOV según la velocidad, plano de descubrimiento) y efectos al recoger o descubrir algo (sprites con brillo, hit-stop, contador que salta), en `camara.js` y `fx.js`.
+- **Z2 · Ficha 26-H:** UI 2026, con tipografía y micro-animaciones, sin romper la accesibilidad (`accesibilidadTest`).
+  - Fuente: solo una de licencia libre (OFL), autoalojada, con su licencia en `assets/`. Si hay que descargar algo, NO lo hagas: déjalo preparado y anótalo.
+
+**Carriles X e Y: solo cuando R1 (caminos y río) esté «hecha»**, porque tocan `terreno.js`, `vegetacion.js` y `agua.js`.
+- **X1 · Fichas 26-C y 26-D:** agua estilizada y vegetación.
+- **Y1 · Fichas 26-E y 26-F:** zonas con identidad de color y ambiente (`ambiente.js`).
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -248,3 +263,9 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | T1 | pendiente | | |
 | U1 | pendiente | | |
 | V1 | pendiente | | |
+| W1 | pendiente | | |
+| W2 | pendiente | | |
+| Z1 | pendiente | | |
+| Z2 | pendiente | | |
+| X1 | pendiente | | |
+| Y1 | pendiente | | |
