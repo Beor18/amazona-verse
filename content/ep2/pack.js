@@ -350,11 +350,10 @@
         elegir('Vittata', quien === 'abuela' ? 'Le pregunto a la abuela…' : 'Le pregunto al papá…', abiertas.map(p => ({ label: p.q, p })), o => {
           const p = o.p, nueva = p.tarjeta && !tiene('nec_' + p.tarjeta);
           if (!p.tarjeta) cerradas.add(p.q);
-          if (nueva) { poner('nec_' + p.tarjeta); G.audio.play('pickup'); }
+          if (nueva) { poner('nec_' + p.tarjeta); G.audio.play('pickup'); G.ui.toast('Nueva tarjeta: «' + TARJETAS[p.tarjeta].texto + '»', 2500); } // la tarjeta va en un aviso: una línea menos que leer por respuesta
           G.misiones.check();
           const lineas = [di(nombre, p.r)];
-          if (nueva) lineas.push(di('Vittata', 'Lo anoto en una tarjeta: «' + TARJETAS[p.tarjeta].texto + '».'));
-          else if (!p.tarjeta) lineas.push(di('Vittata', 'Mmm… a esa solo se puede contestar sí o no. Pruebo con otra.'));
+          if (!p.tarjeta) lineas.push(di('Vittata', 'Mmm… a esa solo se puede contestar sí o no. Pruebo con otra.'));
           G.dialogo.say(lineas, () => { if (faltan().length) preguntar(quien); else G.ui.toast(NEC.every(tiene) ? 'Tarjetas completas: ve a la mesa' : 'Pregunta también ' + (quien === 'abuela' ? 'al papá' : 'a la abuela'), 3000); });
         });
       }
@@ -434,10 +433,11 @@
           else G.dialogo.say([di('Vittata', S.complete ? 'Mi casa. La probé dos veces.' : 'Aquí va la casa.')]);
         } });
       function construir() {
+        encuadrar();
         const boceto = valor('boceto_', Object.keys(BOCETOS));
         if (!boceto) {
           elegir('Vittata', 'Dos bocetos de dos niveles. ¿Cuál cumple más tarjetas?', Object.keys(BOCETOS).map(k => ({ label: BOCETOS[k].label, k })), o => {
-            poner('boceto_' + o.k); G.audio.play('tick'); dibujarCasa();
+            poner('boceto_' + o.k); G.audio.play('tick'); dibujarCasa(true);
             G.dialogo.say([di('Vittata', 'Voy con ' + BOCETOS[o.k].corto + '. Uso la madera y la paja que tenemos y el banco de trabajo.')], construir); // [KELVIN: qué materiales pasan del ep. 1]
           });
           return;
@@ -445,13 +445,14 @@
         const d = DECISIONES.find(x => !valor('dec_' + x.parte + '_', x.opciones.map(o => o[0])));
         if (!d) { poner('dec_base'); poner('dec_paredes'); poner('dec_techo'); poner('dec_anclaje'); G.misiones.check(); G.ui.toast('Falta el nido del papá', 3000); return; }
         elegir('Vittata', d.pregunta, d.opciones.map(o => ({ label: o[1], v: o[0] })), o => {
-          poner('dec_' + d.parte + '_' + o.v); G.audio.play('tick'); G.fx.burst(obra.x, H(obra.x, obra.z) + 1, obra.z, 'feathers', 10); dibujarCasa(); construir();
+          poner('dec_' + d.parte + '_' + o.v); G.audio.play('tick'); G.fx.burst(obra.x, H(obra.x, obra.z) + 1, obra.z, 'feathers', 10); dibujarCasa(true); construir();
         });
       }
       function armarNido(i) {
         i = i || 0; const p = NIDO_PASOS[i];
+        encuadrar();
         if (!p) {
-          poner('nido_listo'); G.eventos.log('HomeBuilt'); G.audio.play('unlock'); dibujarCasa(); G.misiones.check(); registrar();
+          poner('nido_listo'); G.eventos.log('HomeBuilt'); G.audio.play('unlock'); dibujarCasa(true); G.misiones.check(); registrar();
           G.dialogo.say([di('Papá', 'Alto, oscuro y seco. Así sí.'), Lu('La casa está hecha. ¿Aguantará? Solo hay una forma de saberlo.')]);
           return;
         }
@@ -461,22 +462,87 @@
           G.audio.play('tick'); armarNido(i + 1);
         });
       }
-      function tormenta(lineas, done) {
-        G.fx.rain.visible = true;
-        G.dialogo.say(lineas, () => { G.fx.rain.visible = false; done(); });
+      // ---------- Plano de la obra: Vittata se pone delante de la puerta y la cámara encuadra la casa entera ----------
+      // (al construir, armar el nido, en la tormenta y al mejorar). Se suelta solo al cerrar el diálogo (ver 'update').
+      // En escritorio la casa queda a la derecha de Vittata, fuera de la tarjeta de elección (que va centrada)
+      const CAM = G.camara.CAM;
+      let plano = null, libreT = 0; // lo de la cámara de antes
+      function encuadrar() {
+        if (!elegido()) return;
+        const movil = G.renderer.camera.aspect < 1, vx = obra.x + (movil ? 0.9 : -4.2), vz = obra.z + (movil ? 6 : 5.5);
+        S.pos.x = vx; S.pos.z = vz; S.pos.y = H(vx, vz); S.vy = 0; S.facing = { x: 0, z: -1 }; G.fisica.MOVE.flying = false;
+        if (!plano) plano = { dist: CAM.dist, height: CAM.height, look: CAM.look };
+        Object.assign(CAM, { dist: movil ? 9 : 7, height: 3, look: 2.4 });
+        G.camara.yaw = 0; G.camara.place(true); libreT = 0;
       }
+      function soltarPlano() { if (plano) Object.assign(CAM, plano); plano = null; }
+
+      // ---------- La tormenta: el cielo se cierra, llueve de lado con viento, truena y la parte débil se sacude ----------
+      const NUBLADO = new THREE.Color('#46525e');
+      let temporal = null; // lo de antes (luces, cielo, niebla, lluvia), k de 0 a 1 y la parte que falla
+      function tormenta(lineas, done, parte) {
+        encuadrar();
+        if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true }); // el clima de El Yunque no pisa la prueba
+        const sc = G.renderer.scene, rain = G.fx.rain, luces = [];
+        sc.traverse(o => { if (o.isHemisphereLight || o.isDirectionalLight) luces.push([o, o.intensity]); });
+        temporal = { k: 0, on: true, t: 0, parte, mostrado: !parte, luces, rafagaT: 0.4, truenoT: 1,
+          fondo: sc.background && sc.background.isColor ? sc.background.clone() : null,
+          niebla: sc.fog ? [sc.fog.color.clone(), sc.fog.near, sc.fog.far] : null,
+          lluvia: [rain.material.opacity, rain.material.size, rain.rotation.z] };
+        rain.visible = true; rain.material.opacity = 1; rain.material.size = 0.18; rain.rotation.z = 0.35;
+        if (G.audio.has('lluvia')) G.audio.play('lluvia');
+        G.dialogo.say(lineas, () => { if (!temporal.mostrado) mostrarFallo(); calma(); done(); });
+      }
+      function calma() {
+        const T = temporal; if (!T) return;
+        const sc = G.renderer.scene, rain = G.fx.rain;
+        for (const [l, i] of T.luces) l.intensity = i;
+        if (T.fondo) sc.background.copy(T.fondo);
+        if (T.niebla) { sc.fog.color.copy(T.niebla[0]); sc.fog.near = T.niebla[1]; sc.fog.far = T.niebla[2]; }
+        rain.visible = false; [rain.material.opacity, rain.material.size, rain.rotation.z] = T.lluvia;
+        casa.rotation.set(0, 0, 0); for (const m of casa.children) if (m.userData.parte) m.rotation.z = m.userData.rz || 0;
+        temporal = null;
+        if (G.clima && G.clima.fijar) G.clima.fijar(null);
+      }
+      // A 1,2 s de empezar, cede la parte débil: se pinta de rojo, salen astillas y la cámara se sacude
+      function mostrarFallo() {
+        temporal.mostrado = true; dibujarCasa();
+        const y = H(obra.x, obra.z);
+        G.fx.burst(obra.x, y + (temporal.parte === 'base' ? 0.5 : temporal.parte === 'paredes' ? 1.8 : 3.5), obra.z, 'feathers', 24);
+        G.camara.shake(0.12, 0.4); G.audio.play('wrong');
+      }
+      G.on('update', (dt, busy) => {
+        if (plano) { libreT = busy ? 0 : libreT + dt; if (libreT > 0.4) soltarPlano(); }
+        const T = temporal; if (!T || !dt) return;
+        T.t += dt; T.k = Math.min(1, T.k + dt / 1.2);
+        const k = T.k * (1 - 0.3 * Math.max(0, Math.sin(T.t * 1.7)) ** 8), sc = G.renderer.scene; // con rachas de más oscuridad
+        let flash = 0;
+        if ((T.truenoT -= dt) <= 0) { T.truenoT = 3.5 + Math.random() * 2; if (!G.renderer.REDUCED) T.flashT = 0.15; if (G.audio.has('trueno')) G.audio.play('trueno'); }
+        if (T.flashT > 0) { T.flashT -= dt; flash = 1.4; }
+        for (const [l, i] of T.luces) l.intensity = i * (1 - 0.55 * k + flash);
+        if (T.fondo) sc.background.copy(T.fondo).lerp(NUBLADO, 0.8 * k);
+        if (T.niebla) { sc.fog.color.copy(T.niebla[0]).lerp(NUBLADO, 0.8 * k); sc.fog.near = T.niebla[1] * (1 - 0.6 * k); sc.fog.far = T.niebla[2] * (1 - 0.55 * k); }
+        G.fx.rain.rotation.z = 0.35 + 0.12 * Math.sin(T.t * 2.3);
+        if ((T.rafagaT -= dt) <= 0) { T.rafagaT = 1.3 + Math.random(); G.camara.shake(0.035, 0.3); }
+        if (!T.mostrado && T.t > 1.2) mostrarFallo();
+        // el viento empuja la casa entera un poco y mucho más la parte que cede
+        const v = Math.sin(T.t * 9) * 0.5 + Math.sin(T.t * 23) * 0.5;
+        casa.rotation.z = 0.012 * v * k;
+        for (const m of casa.children) if (m.userData.parte && m.userData.parte === T.parte && T.mostrado) m.rotation.z = (m.userData.rz || 0) + 0.06 * v;
+      });
       function prueba1() {
         const f = falla();
-        poner('falla_' + f.parte); dibujarCasa();
+        poner('falla_' + f.parte);
         tormenta([di('Guardián', '¡Llega la tormenta! Viento, lluvia… y la casa nueva en medio.'), di('Vittata', '¡Algo cede! ' + f.que),
           Lu('Lo marqué en rojo. No pasa nada: para eso se prueba. Ahora sabes cuál es la parte más débil.')], () => {
           G.eventos.log('StormTested', { outcome: 'falla:' + f.parte }); G.misiones.check(); registrar();
-        });
+        }, f.parte);
       }
       // Si falló el techo, sirven las dos opciones del techo (más amarras o amarrarlo a los postes): el niño lee «techo» en las dos
       const arregla = (f, k) => k === f.arreglo || (f.parte === 'techo' && (k === 'techo' || k === 'anclaje'));
       const mejorado = () => Object.keys(ARREGLOS).some(k => tiene('mejora_' + k) && arregla(falla(), k));
       function mejorar() {
+        encuadrar();
         const f = falla();
         elegir('Iguaca', 'Cambia solo una parte. ¿Cuál?', Object.keys(ARREGLOS).map(k => ({ label: ARREGLOS[k], k })), o => {
           if (!arregla(f, o.k)) {
@@ -484,7 +550,7 @@
             G.dialogo.say([Lu('Eso no fue lo que falló. Mira lo que marcó la tormenta: ' + f.que)], mejorar);
             return;
           }
-          poner('mejora_' + o.k); G.audio.play('unlock'); dibujarCasa();
+          poner('mejora_' + o.k); G.audio.play('unlock'); dibujarCasa(true);
           G.eventos.log('HomeImproved', { choice: o.k }); registrar();
           G.dialogo.say([di('Vittata', ARREGLOS[o.k] + '. Listo. ¿Y ahora?'), Lu('Ahora se vuelve a probar. Una sola prueba no basta.')], () => G.misiones.check());
         });
@@ -492,7 +558,7 @@
       function prueba2() {
         tormenta([di('Guardián', 'Otra vez el viento y la lluvia…'), di('Vittata', '¡Aguanta! Ni una gota en el nido.')], () => {
           G.eventos.log('StormTested', { outcome: 'aguanta' });
-          G.eventos.log('NestPlaced'); poner('fiesta'); dibujarCasa(); G.comic.capture('casa'); G.misiones.check();
+          G.eventos.log('NestPlaced'); poner('fiesta'); dibujarCasa(true); G.comic.capture('casa'); G.misiones.check();
           const y = H(obra.x, obra.z);
           G.fx.burst(obra.x, y + 3, obra.z, 'gold', 40); G.fx.burst(obra.x, y + 3, obra.z, 'feathers', 30); G.audio.play('unlock');
           S.complete = true; G.eventos.log('Chapter2Completed'); E().fin = S.clock;
@@ -501,44 +567,79 @@
         });
       }
 
-      // La casa se dibuja con lo que hay en S.collected (se rehace al cargar la partida): boceto, base, paredes, techo, nido y fallo
+      // La casa se dibuja con lo que hay en S.collected (se rehace al cargar la partida): boceto, base, paredes, techo, nido y fallo.
+      // Con anim (cada decisión del jugador), lo nuevo se monta a la vista: crece desde el suelo, una pieza tras otra, y el techo baja.
       const casa = new THREE.Group(); G.renderer.scene.add(casa);
       const mat = c => new THREE.MeshLambertMaterial({ color: c });
-      const caja = (w, h, d, c, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); casa.add(m); return m; };
-      function dibujarCasa() {
+      let parteAct = null;
+      const caja = (w, h, d, c, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); m.userData.parte = parteAct; casa.add(m); return m; };
+      const clave = m => [m.geometry.type, ...Object.values(m.geometry.parameters).map(v => typeof v === 'number' ? +v.toFixed(2) : v), ...m.position.toArray().map(v => +v.toFixed(2))].join(':');
+      let vistas = new Set();
+      function dibujarCasa(anim) {
         while (casa.children.length) { const m = casa.children.pop(); m.geometry.dispose(); m.material.dispose(); }
+        dibujarPiezas();
+        const nuevas = new Set(casa.children.map(clave));
+        if (anim) { let i = 0; for (const m of casa.children) if (!vistas.has(clave(m))) { m.userData.crece = -0.12 * i++; m.userData.y0 = m.position.y; m.userData.h = m.geometry.parameters.height || 0; m.userData.cae = m.userData.parte === 'techo' || m.userData.parte === 'fiesta'; } }
+        vistas = nuevas;
+        for (const m of casa.children) if (m.userData.crece != null) montar(m, 0);
+      }
+      function montar(m, dt) {
+        const u = m.userData; u.crece = Math.min(1, u.crece + dt / 0.45);
+        const s = Math.max(0, u.crece), e = 1 - (1 - s) ** 3;
+        m.visible = u.crece > 0;
+        if (u.cae) m.position.y = u.y0 + 1.6 * (1 - e);
+        else { m.scale.y = Math.max(0.001, e); m.position.y = u.y0 - u.h * (1 - e) / 2; }
+        if (u.crece >= 1) { m.scale.y = 1; m.position.y = u.y0; u.crece = null; }
+      }
+      G.on('update', dt => { if (dt) for (const m of casa.children) if (m.userData.crece != null) montar(m, dt); });
+      function dibujarPiezas() {
         const s = SITIOS[elegido()];
         if (!s) return;
         obra.x = s.x - 3; obra.z = s.z;
         const boceto = valor('boceto_', Object.keys(BOCETOS));
         casa.position.set(obra.x, H(obra.x, obra.z), obra.z);
         if (!boceto) return;
-        const fallo = ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p) && !mejorado());
+        // la parte que falla no se ve hasta que la tormenta la encuentra (mostrarFallo)
+        const fallo = temporal && !temporal.mostrado ? null : ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p) && !mejorado());
         const rojo = p => fallo === p ? '#d6403a' : null;
         const torre = boceto === 'torre', w = torre ? 2 : 3.2, h = torre ? 3.2 : 1.8;
         const base = valor('dec_base_', ['pilotes', 'piedra']), paredes = valor('dec_paredes_', ['tablas', 'trenzado']);
         const techo = valor('dec_techo_', ['dos', 'una']);
+        // el boceto, marcado en el suelo con estacas y cuerda: el contorno de la casa (y del anexo de la torre)
+        parteAct = 'boceto';
+        for (const [a, b, ex] of torre ? [[w, w, 0], [1.6, 1.6, w / 2 + 0.8]] : [[w, w, 0]]) {
+          for (const sg of [-1, 1]) { caja(a, 0.05, 0.05, '#efe4c8', ex, 0.04, sg * b / 2); caja(0.05, 0.05, b, '#efe4c8', ex + sg * a / 2, 0.04, 0); }
+          for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) caja(0.07, 0.4, 0.07, '#8a6a3a', ex + dx * a / 2, 0.2, dz * b / 2);
+        }
         let y = 0;
+        parteAct = 'base';
         if (base === 'pilotes') { const alto = tiene('mejora_base') ? 1.2 : 0.7; for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) caja(0.18, alto, 0.18, rojo('base') || '#6b4a2a', dx * (w / 2 - 0.2), alto / 2, dz * (w / 2 - 0.2)); y = alto; }
         else if (base === 'piedra') { caja(w + 0.3, tiene('mejora_base') ? 0.9 : 0.4, w + 0.3, rojo('base') || '#8d8a82', 0, tiene('mejora_base') ? 0.45 : 0.2, 0); y = tiene('mejora_base') ? 0.9 : 0.4; }
         if (!paredes) return;
+        parteAct = 'paredes';
         caja(w, h, w, rojo('paredes') || (paredes === 'tablas' ? '#a87c4f' : '#c9a86a'), 0, y + h / 2, 0);
         if (torre) caja(1.6, 1.4, 1.6, paredes === 'tablas' ? '#a87c4f' : '#c9a86a', w / 2 + 0.8, y + 0.7, 0); // el anexo con la entrada baja
         else caja(1.4, 1.1, 1.4, paredes === 'tablas' ? '#a87c4f' : '#c9a86a', 0, y + h + 0.55, -0.4); // el altillo del nido
         caja(0.7, 0.9, 0.05, '#3b2a1a', torre ? w / 2 + 0.8 : 0, y + 0.45, (torre ? 0.8 : w / 2) + 0.03); // la puerta baja
         const top = y + h + (torre ? 0 : 1.1);
         if (techo) {
+          parteAct = 'techo';
           const levantado = fallo === 'techo', c = rojo('techo') || '#7a5a2a';
           const t = techo === 'dos' ? new THREE.Mesh(new THREE.ConeGeometry(w * 0.85, 1.2, 4), mat(c)) : new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, 0.15, w + 0.4), mat(c));
           if (techo === 'dos') t.rotation.y = Math.PI / 4; else t.rotation.x = 0.25;
           t.position.set(0, top + (techo === 'dos' ? 0.6 : 0.2) + (levantado ? 0.8 : 0), 0); if (levantado) t.rotation.z = 0.35;
+          t.userData.parte = 'techo'; t.userData.rz = t.rotation.z;
           casa.add(t);
+          parteAct = 'anclaje';
           if (tiene('dec_anclaje_si') || tiene('mejora_anclaje') || tiene('mejora_techo')) for (const dx of [-1, 1]) caja(0.05, top - y, 0.05, '#d9c79a', dx * (w / 2 + 0.03), y + (top - y) / 2, w / 2 + 0.03);
         }
+        parteAct = 'nido';
         if (tiene('nido_listo')) caja(0.45, 0.55, 0.45, '#5a3d22', torre ? 0 : 0.3, top - 0.6, torre ? -w / 2 - 0.2 : -0.4 - 0.75);
+        parteAct = 'fiesta';
         if (tiene('fiesta')) for (let i = 0; i < 6; i++) caja(0.3, 0.2, 0.02, ['#d6403a', '#ffffff', '#0a50a1'][i % 3], -w / 2 + i * w / 5, top + 0.1, w / 2 + 0.25);
+        parteAct = null;
       }
-      G.on('apply', dibujarCasa, 75);
+      G.on('apply', () => { calma(); soltarPlano(); vistas = new Set(); dibujarCasa(); }, 75);
       dibujarCasa();
 
       // Parada de aprendizaje: dato real con fuente (opcional)
