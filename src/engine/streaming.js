@@ -29,7 +29,7 @@
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
      originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las texturas
-     originales (difusa y normales, atlas 4096) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
+     originales (difusa y normales, atlas 2048) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
      con la zona en nivel cerca, en calidad media o alta y con WebGL2 (CFG.hd), cuando el jugador ya se movió; mientras no
      está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
 
@@ -63,7 +63,7 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 0, medio: 0, alto: 90 },          // m: el atlas 4K solo en calidad alta y cuando el jugador ya se movió (pedido de la coordinadora a G6). 0 = paleta de 1024.
+    hd: { bajo: 0, medio: 40, alto: 90 },          // m: el _hd (atlas 2048) en media y alta, tras moverse. Bajo se queda en la paleta de 512. El 4K no se publica: la build no cabe.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
@@ -122,9 +122,9 @@ AVE.module('streaming', function (G) {
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
   // dentro de la celda, que tiene un margen que repite su borde, y el nivel de mipmap sale de la UV sin envolver (sin costuras).
-  // celda 1024 y margen 32 (atlas 4096): la fracción margen/atlas es la misma que 16/2048, así que la UV2 ya horneada encaja.
+  // Celda 512 y margen 16 (atlas 2048). La UV2 ya horneada es el origen de la celda; el margen entra en el shader.
   // El lod usa el eje corto cuando el otro es mucho mayor (relieve de lado, sin pasar el margen de la celda).
-  const HD = { celdas: 4, celda: 1024, margen: 32, lodMax: 5 };
+  const HD = { celdas: 4, celda: 512, margen: 16, lodMax: 4 };
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
@@ -144,7 +144,7 @@ AVE.module('streaming', function (G) {
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace('texture2D( map, vUv )', 'avAtlas( map, vUv )'))
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vUv )', 'avAtlas( normalMap, vUv )'));
     };
-    m.customProgramCacheKey = () => 'av-hd-atlas-1024';
+    m.customProgramCacheKey = () => 'av-hd-atlas';
   }
   function material(src, fijo) {
     const k = src.name || src.uuid;
