@@ -420,9 +420,9 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AD1 | hecha | 5103a38 (+ dc2b25e, 34cb531, 633d2c4) | `AV.ep2e2eTest` (`tests/qa/ep2_e2e.js`, extra en `test.sh`) juega el ep. 2 entero en ES y EN caminando con la guía: sin atascos, 1,8 min pulsando y 9,2 min leyendo (+4 min de «Iguaca te pregunta»), frente a 25 min de la guía del aula. Arreglos: inglés completo (`content/ep2/en.js`; `idioma.js` carga una lista, commit aparte), la guía ya no empuja al llano, pista para elegir sitio, la mesa no repite la definición 9 veces y «al papá»; se conserva lo que dejó la otra sesión ([KELVIN] fuera del texto y el techo con sus dos arreglos). Informe y prioridades para AD2 en `EP2_PLAYTEST.md` (tormenta que no se ve, obra sin encuadre, mucho texto, sin entrada en el menú); capturas `docs/img/ad1_ep2_*.jpg`. Baterías: 13 obligatorias en verde (maestroTest 25/26 bajo carga, 26/26 sola en la misma build); ep2Test 59/59. |
 | AB2 | hecha | c4c9739 | Maze: tarjeta, récords, Retos y textos EN; mazeTest 38/38. |
 | AC2 | hecha | c4c9739 | River Rush: contrarreloj, fantasma, medallas, tarjeta y textos EN; riverTest 67/67, idiomaTest, menuModosTest, flightTest y ep2e2eTest en verde. |
-| AD2 | pendiente | | |
-| AE1 | pendiente | | |
-| AF1 | pendiente | | |
+| AD2 | hecha | 6da8bc7 | plano de la obra, casa que se monta, tormenta con viento; ep2e2eTest 71/71 |
+| AE1 | hecha | 77974f9 | fichas de los 7 minijuegos, compartir y top records; revisado a 375 px y escritorio |
+| AF1 | hecha | 1848edc | reflujos fuera en flight, banquete, minimapa y criadero; sin informe de medidas (RENDIMIENTO_MOVIL.md no se escribió) |
 | AG1 | hecha | f178156 | `EP3_GDD.md`, `EP3_MISIONES.md` y `EP3_NARRATIVA.md` (mismo formato que el ep. 2): M1 «¿Qué flota?» (prueba de 6 materiales y botadura con parte débil), M2 «Leer el agua» (viento, nubes, corriente, código de señales y quién lleva el timón), M3 «Más allá de la bahía» (travesía por la ruta de datos del muelle a una aldea existente, chubasco y bajío) y formativa q1–q6; reutiliza `canoa`, río, mar, aldeas, agarre, construcción del ep. 2 y ropero; 10 decisiones `[KELVIN]`. Solo documentos (sin build). Otra sesión escribió a la vez un GDD propio; quedó integrado en el commit |
 | AG2 | pendiente | | |
 | AH1 | pendiente | | |
@@ -437,4 +437,4 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AO2 | pendiente | | |
 | AQ1 | pendiente | | |
 | AT1 | pendiente | | |
-| AJ3 | pendiente | | |
+| AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
