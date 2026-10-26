@@ -390,6 +390,34 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
   - Que cada capítulo se sienta terminado. Capturas antes y después en `docs/img/av2_*`.
   - No toques los minijuegos, la web (`web/`), `src/game/flight.js` ni los módulos de edificios y ruinas de Grok.
 
+## Carriles AW y AY: el mapa completo y lleno (plan en `docs/equipo/MAPA_PLAN_COMPLETO.md`; prioridad 1 de Kelvin)
+Lee primero todo `MAPA_PLAN_COMPLETO.md`: el diagnóstico, el presupuesto por dispositivo (§ 3) y las 12 vistas de medida (`tools/build/look_capturas.py --vistas-json tools/build/mapa_vistas.json`, en escritorio y con `--movil`).
+
+**Reglas de estos carriles:**
+- Cada tarea mide las 12 vistas antes y después: tris, draw calls y MB de texturas, en los presets bajo, medio y alto. Guarda las capturas en `docs/img/<tarea>_*`.
+- **Nada puede pasar del presupuesto del móvil.**
+- La descarga inicial no crece.
+- Lo de Grok no se toca: los edificios Ancient y Savage, sus `_hd` y `_lejos`, los atlas y `streaming.js` de edificios.
+- Otro agente (Sonnet) trabaja en el rendimiento móvil (`docs/equipo/RENDIMIENTO_MOVIL.md`, quizá `look.js` y `renderer.js`). Si esos archivos tienen cambios ajenos sin commit, mete solo tus hunks.
+
+**Carril AW, flora y suelo, en orden:**
+- **AW1 (F0.2, F0.3, F0.4 y F0.6):**
+  - suelo más oscuro con hojarasca bajo el bosque;
+  - impostores a 520 m en todas las calidades y la mancha de copa más densa;
+  - cumbre de 97 m con flora;
+  - medir qué suma los ~447 MB de texturas en medio y arreglar lo que no sea de Grok (`texMax` que recorte de verdad). Lo de los atlas de Grok va como pedido en `PEDIDOS.md`.
+- **AW2 (F1, puntos 1 y 3–6):** bosque lleno de 6 000 a 8 000 árboles con la máscara `trees.psd`; tope de instancias por calidad, sombras solo a menos de 30 m, colisión solo a menos de 40 m, y `floraTest`.
+- **AW3 (F1, punto 2):** tercer LOD, «dosel por celda de 32 m», horneado con Blender (`~/Applications/Blender.app/Contents/MacOS/Blender -b`); unos 50 k tris para toda la isla.
+
+**Carril AY, las 14 ciudades y aldeas con cara:**
+- **AY1 (F0.1, F2.4 y F2.5):**
+  - 14 nombres propios según § 5 del plan (marcados `[KELVIN]` K2), en ES y EN;
+  - un rótulo «Bienvenido a …» al llegar y una línea en el Diario por asentamiento;
+  - las 14 zonas en el mapa grande y en el minimapa, con glifo y aviso de «lugar descubierto».
+- **AY2 (F2.3):** plaza y suelo de tierra en cada asentamiento, y 2–4 props del kit donde el layout dejó hueco. No muevas las piezas del layout de Kelvin.
+
+F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 de Kelvin. No las empieces.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -456,4 +484,9 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AT1 | pendiente | | |
 | AV1 | pendiente | | |
 | AV2 | pendiente | | |
+| AW1 | pendiente | | |
+| AW2 | pendiente | | |
+| AW3 | pendiente | | |
+| AY1 | pendiente | | |
+| AY2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
