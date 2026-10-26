@@ -1,7 +1,7 @@
 /* Juego · Maravillas de la costa (tablero G5, GDD §6)
    Dos momentos baratos, un draw call cada uno. Con calidad baja no hay luciérnagas y las chispas son pocas.
    - Atardecer, en un ciclo de 10 min de juego: luciérnagas y un coquí junto a la caleta.
-   - Noche: la caleta del suroeste (mapa lugares.bahiaBio) enciende una estela azul si Vittata está cerca.
+   - Noche: la caleta del suroeste (mapa agua.bahiaBio; el mapa no la guarda en lugares) enciende una estela azul si Vittata está cerca.
      El brillo lo producen dinoflagelados, Pyrodinium bahamense, como en Puerto Mosquito (Vieques).
      Fuente: NOAA Office for Coastal Management, «Mangrove, Seagrass, and Coral Restoration in the
      Vieques Bioluminescent Bay Natural Reserve»,
@@ -13,8 +13,8 @@ window.AVMaravillas = function (G) {
   'use strict';
   if (G.maravillas) return G.maravillas;
   const S = G.S, scene = G.renderer.scene;
-  const mapa = (G.terreno.mapa && G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio) || { x: -160, z: 207, r: 24 };
-  const B = { x: mapa.x, z: mapa.z, r: mapa.r || 24 };
+  const mapa = (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) || null;
+  const B = mapa ? { x: mapa.x, z: mapa.z, r: mapa.r || 24 } : { x: -160, z: 207, r: 24 };
   const CICLO = 600, ATARDECER = 360, NOCHE = 420, AMANECER = 520;
   const NCHI = { bajo: 24, medio: 80, alto: 140 };
   const NLUC = { bajo: 0, medio: 8, alto: 16 };
@@ -72,8 +72,8 @@ window.AVMaravillas = function (G) {
     scene.add(pts);
     return pts;
   }
-  const chispas = puntos('bahia_bio', 0x3ec6ff, 0.55);
-  const luces = puntos('luciernagas', 0xd6ff6a, 0.28);
+  const chispas = puntos('bahia_bio', 0x7af6ff, 1.6);
+  const luces = puntos('luciernagas', 0xeeff66, 0.85);
   let mallaChi = null, mallaLuc = null, baseY = null, vistos = { noche: false, atardecer: false }, canto = 0, ultima = '';
 
   function poner(pts, src, n) {
@@ -129,7 +129,7 @@ window.AVMaravillas = function (G) {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const guardado = { quiet: G.quiet, pos: Object.assign({}, S.pos), clock: S.clock, nivel: nivel() };
     try {
-      ok('La caleta está en el mapa (suroeste)', isFinite(B.x + B.z) && B.r >= 8, Math.round(B.x) + ',' + Math.round(B.z));
+      ok('La caleta está en el mapa (agua.bahiaBio, suroeste)', !!mapa && mapa.x < -40 && mapa.z > 40 && B.r >= 8, mapa ? Math.round(mapa.x) + ',' + Math.round(mapa.z) : 'no está');
       ok('El ciclo separa día, atardecer y noche', faseDe(0) === 'dia' && faseDe(380) === 'atardecer' && faseDe(450) === 'noche' && faseDe(560) === 'dia');
       ok('El dato nombra a Pyrodinium bahamense y cita a NOAA', /Pyrodinium bahamense/.test(DATO.texto) && /coast\.noaa\.gov/.test(DATO.url) && /NOAA/.test(DATO.fuente));
       G.renderer.calidad.nivel = 'bajo';
