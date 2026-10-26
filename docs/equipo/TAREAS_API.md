@@ -373,6 +373,23 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
   - Lo de contenido de los capítulos solo si el capítulo ya tiene commit.
   - Al final, un resumen en `docs/equipo/QA_TEMPORADA1.md`: qué se siente bien, qué aburre y qué confunde, desde los ojos de un niño de 9 años y de un adulto.
 
+## Carril AV: la temporada 1 como una sola aventura (prioridad de Kelvin, 26-oct noche: terminar y pulir; sin minijuegos nuevos)
+- **AV1, flujo entre capítulos.**
+  - Al terminar un capítulo, la pantalla final ofrece «Siguiente capítulo» y abre el siguiente pack (`?pack=epN`).
+  - El progreso de la temporada se guarda: qué capítulos están terminados y la decisión del cap. 4, que se recuerda en el 5 y el 6 si el GDD lo pide.
+  - Pantalla «Capítulos» desde el menú y la pausa, con los 6, su estado (nuevo / en curso / terminado), portada y botón jugar.
+  - Rótulo unificado «Capítulo N» en todos los packs, menús, pausa y EN («Chapter N»). Hoy el 3 dice «Episodio 3».
+  - Pruebas: un `temporadaTest` que encadena el final del cap. N con el arranque del N+1, más guardar/cargar y la pantalla Capítulos, en ES y EN, a 375×812.
+  - Archivos: `src/game/menu_modos.js`, `index.html`, `src/ui/menu_modos.css`, `src/boot.js` (solo tus hunks) y el final de cada `content/epN/pack.js`.
+- **AV2, pulido visual de los capítulos 2 a 6** (después de AV1).
+  - Recorre cada capítulo con capturas en escritorio y móvil. Arregla:
+    - escenas vacías o «huecas» alrededor de las misiones (flora, props del kit, personajes bien colocados);
+    - encuadres de cámara en los momentos clave;
+    - textos que tapan;
+    - personajes que flotan o atraviesan cosas.
+  - Que cada capítulo se sienta terminado. Capturas antes y después en `docs/img/av2_*`.
+  - No toques los minijuegos, la web (`web/`), `src/game/flight.js` ni los módulos de edificios y ruinas de Grok.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -437,4 +454,6 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AO2 | pendiente | | |
 | AQ1 | pendiente | | |
 | AT1 | pendiente | | |
+| AV1 | pendiente | | |
+| AV2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
