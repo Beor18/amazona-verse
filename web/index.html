@@ -334,13 +334,13 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   background: radial-gradient(circle at 50% 35%, #a7dcff, #4d8fd1); box-shadow: 0 0 0 5px var(--card), 0 0 0 7px var(--paper-edge), 0 10px 18px rgba(0, 0, 0, 0.25);
 }
 .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform: scale(1.75); transform-origin: 54% 22%; }
-.talk.luma .portrait { background: radial-gradient(circle at 50% 35%, #ffe1a8, #f08a5d); }
+.talk.iguaca .portrait { background: radial-gradient(circle at 50% 35%, #ffe1a8, #f08a5d); }
 .talk.guardian .portrait { background: radial-gradient(circle at 50% 35%, #e5dcff, #8a73d6); }
 .name-tab {
   display: inline-block; margin-top: -34px; margin-bottom: 8px; padding: 6px 14px; border-radius: var(--r-pill);
   background: var(--beak); color: var(--primary-ink); font: 700 var(--fs-sm)/1 var(--font-display); box-shadow: 0 3px 0 var(--beak-lo);
 }
-.talk.luma .name-tab { background: var(--crest); color: #fff; box-shadow: 0 3px 0 #8e2420; }
+.talk.iguaca .name-tab { background: var(--crest); color: #fff; box-shadow: 0 3px 0 #8e2420; }
 .talk.guardian .name-tab { background: #6a52c4; color: #fff; box-shadow: 0 3px 0 #4a3796; }
 .talk blockquote { margin: 0; font: 600 var(--fs-lg)/1.35 var(--font-display); color: var(--ink); }
 .talk p.role { margin-top: 8px; font-size: var(--fs-sm); color: var(--ink-muted); }
@@ -683,6 +683,17 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 @media (max-width: 800px) { .contact-card { grid-template-columns: minmax(0, 1fr); } .form { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---------- Pie ---------- */
+.team { background: var(--night-2); border-top: 1px solid var(--line); }
+.team-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
+.team-fig { margin: 0; justify-self: center; width: min(100%, 380px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 38%, var(--night-3), var(--night-4)); box-shadow: inset 0 0 0 3px var(--line), 0 18px 40px rgba(0, 0, 0, 0.35); display: grid; place-items: center; overflow: hidden; }
+.team-fig img { width: 92%; height: auto; display: block; }
+.team-list { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 12px; }
+.team-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--night-4); }
+.team-list b { font: 700 var(--fs-xl)/1.2 var(--font-display); color: #fff; }
+.team-list span { color: var(--gold); font-weight: 700; font-size: var(--fs-sm); }
+.team-collab { margin-top: 24px; }
+.team-collab[hidden] { display: none; }
+@media (max-width: 760px) { .team-grid { grid-template-columns: minmax(0, 1fr); } .team-fig { width: min(78%, 300px); } }
 .site-footer { background: var(--night-4); padding-block: 48px calc(32px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
 .foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 40px; align-items: start; }
 .foot-brand svg { width: 170px; height: auto; overflow: visible; }
@@ -741,6 +752,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <a href="#aprender"><span data-l="es">Aprender</span><span data-l="en">Learning</span></a>
       <a href="#maestros"><span data-l="es">Maestros</span><span data-l="en">Teachers</span></a>
       <a href="#ropero"><span data-l="es">Ropero</span><span data-l="en">Wardrobe</span></a>
+      <a href="#retos"><span data-l="es">Retos</span><span data-l="en">Challenges</span></a>
       <a href="#conservacion"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></a>
       <a href="#escuelas"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
       <a href="#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
@@ -818,8 +830,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <div class="story-copy">
         <span class="eyebrow"><span data-l="es">La historia</span><span data-l="en">The story</span></span>
         <h2 class="h2" id="h-historia"><span data-l="es">El día que el cielo se rompió</span><span data-l="en">The Day the Sky Broke</span></h2>
-        <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Un día su máquina se descontrola, una onda cruza el cielo y las tormentas empiezan a llegar una tras otra. Luma necesita un techo para su familia hoy.</p>
-        <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. One day her machine spins out of control, a shockwave crosses the sky, and storms start arriving one after another. Luma needs a roof for her family today.</p>
+        <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Un día su máquina se descontrola, una onda cruza el cielo y las tormentas empiezan a llegar una tras otra. Iguaca necesita un techo para su familia hoy.</p>
+        <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. One day her machine spins out of control, a shockwave crosses the sky, and storms start arriving one after another. Iguaca needs a roof for her family today.</p>
         <p class="muted" data-l="es">No hay villanos. Los errores enseñan y siempre tienen salida. Para una cotorra, un árbol partido es un nido perdido: proteger el hogar es proteger la especie.</p>
         <p class="muted" data-l="en">There are no villains. Mistakes teach, and there is always a way out. For a parrot, a broken tree is a lost nest: protecting the home means protecting the species.</p>
         <p class="question"><small><span data-l="es">La pregunta del capítulo</span><span data-l="en">The chapter's question</span></small><span data-l="es">¿Salvar lo que construiste, o usar lo que sabes para ayudar?</span><span data-l="en">Save what you built, or use what you know to help?</span></p>
@@ -844,10 +856,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
             <p class="role" data-l="en">A quick, confident inventor with a sense of humor. In this chapter she learns to ask for help.</p>
           </div>
         </article>
-        <article class="talk luma">
-          <div class="portrait"><img src="assets/img/luma.png" width="320" height="320" alt="Retrato de Luma" data-en-alt="Portrait of Luma" loading="lazy"></div>
+        <article class="talk iguaca">
+          <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="Retrato de Iguaca" data-en-alt="Portrait of Iguaca" loading="lazy"></div>
           <div>
-            <span class="name-tab">Luma</span>
+            <span class="name-tab">Iguaca</span>
             <blockquote><p data-l="es">«Mira esas marcas en el árbol. El río llegó hasta aquí.»</p><p data-l="en">“Look at those marks on the tree. The river came up this high.”</p></blockquote>
             <p class="role" data-l="es">Observadora y directa. Lee las señales del agua y no se rinde.</p>
             <p class="role" data-l="en">Observant and direct. She reads the signs of the water and never gives up.</p>
@@ -874,8 +886,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       </li>
       <li>
         <h3><span data-l="es">Tierra firme</span><span data-l="en">Solid Ground</span></h3>
-        <p data-l="es">Dos terrenos: el río y la colina. Luma lee las marcas del agua. El estudiante decide dónde va el refugio.</p>
-        <p data-l="en">Two sites: the river and the hill. Luma reads the water marks. The student decides where the shelter goes.</p>
+        <p data-l="es">Dos terrenos: el río y la colina. Iguaca lee las marcas del agua. El estudiante decide dónde va el refugio.</p>
+        <p data-l="en">Two sites: the river and the hill. Iguaca reads the water marks. The student decides where the shelter goes.</p>
         <span class="skill" data-icon="wing"><span data-l="es">Volar y observar</span><span data-l="en">Fly and observe</span></span>
       </li>
       <li>
@@ -922,7 +934,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <div class="decide-head">
         <div>
           <span class="eyebrow"><span data-l="es">Pruébalo</span><span data-l="en">Try it</span></span>
-          <h3><span data-l="es">¿Dónde construirías el refugio de Luma?</span><span data-l="en">Where would you build Luma's shelter?</span></h3>
+          <h3><span data-l="es">¿Dónde construirías el refugio de Iguaca?</span><span data-l="en">Where would you build Iguaca's shelter?</span></h3>
           <p><span data-l="es">Son los dos terrenos del capítulo 1, con los mismos datos que ve el estudiante en el juego.</span><span data-l="en">These are the two Chapter 1 sites, with the same data students see in the game.</span></p>
         </div>
       </div>
@@ -951,9 +963,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         </article>
       </div>
       <div class="result" id="res-A" hidden tabindex="-1">
-        <div class="portrait"><img src="assets/img/luma.png" width="320" height="320" alt="" loading="lazy"></div>
+        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
         <div>
-          <span class="who"><span data-l="es">Luma · después de la crecida</span><span data-l="en">Luma · after the flood</span></span>
+          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
           <blockquote><p data-l="es">«El río subió y el refugio se inundó… Tranquila. Todavía podemos moverlo.»</p><p data-l="en">“The river rose and the shelter flooded… Don't worry. We can still move it.”</p></blockquote>
           <p class="teach" data-l="es">En el juego, el error tiene salida: Vittata desarma el refugio, recupera los materiales y lo lleva a la colina. La evidencia estaba en las marcas de agua a 1 m.</p>
           <p class="teach" data-l="en">In the game, mistakes have a way out: Vittata takes the shelter apart, keeps the materials and moves it to the hill. The evidence was in the water marks 1 m up the trees.</p>
@@ -961,9 +973,9 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         </div>
       </div>
       <div class="result" id="res-B" hidden tabindex="-1">
-        <div class="portrait"><img src="assets/img/luma.png" width="320" height="320" alt="" loading="lazy"></div>
+        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
         <div>
-          <span class="who"><span data-l="es">Luma · después de la crecida</span><span data-l="en">Luma · after the flood</span></span>
+          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
           <blockquote><p data-l="es">«La colina aguantó la crecida. Mi familia está a salvo. ¡Gracias, Vittata!»</p><p data-l="en">“The hill held up against the flood. My family is safe. Thank you, Vittata!”</p></blockquote>
           <p class="teach" data-l="es">Elegiste con evidencia: terreno alto y sin marcas de agua. Es el objetivo O6: describir el efecto de un huracán y escoger dónde construir.</p>
           <p class="teach" data-l="en">You chose with evidence: high ground and no water marks. That is goal O6: describe the effect of a hurricane and choose where to build.</p>
@@ -1025,18 +1037,18 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <span class="chip paper-chip"><span data-l="es">En desarrollo · unos 5 minutos</span><span data-l="en">In development · about 5 minutes</span></span>
     </div>
     <ol class="route">
-      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Predecir</span><span data-l="en">Predict</span></h4><p data-l="es">Luma pregunta de dónde salió tanta agua. Ninguna respuesta se castiga.</p><p data-l="en">Luma asks where all that water came from. No answer is punished.</p></li>
+      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Predecir</span><span data-l="en">Predict</span></h4><p data-l="es">Iguaca pregunta de dónde salió tanta agua. Ninguna respuesta se castiga.</p><p data-l="en">Iguaca asks where all that water came from. No answer is punished.</p></li>
       <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Capas</span><span data-l="en">Layers</span></h4><p data-l="es">Cuatro perchas en flora real: suelo, sotobosque, dosel y emergente.</p><p data-l="en">Four perches on real plants: forest floor, understory, canopy and emergent layer.</p></li>
       <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Cadena</span><span data-l="en">Chain</span></h4><p data-l="es">Ordena Sol, palma y cotorra. En 5.º y 6.º se añaden los descomponedores.</p><p data-l="en">Order Sun, palm and parrot. Grades 5 and 6 add decomposers.</p></li>
       <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Ojos de cotorra</span><span data-l="en">Parrot's eye view</span></h4><p data-l="es">Compara los dos terrenos desde el aire.</p><p data-l="en">Compare the two sites from the air.</p></li>
       <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Nace la gota</span><span data-l="en">A drop is born</span></h4><p data-l="es">Sigue el vapor desde la poza hasta la nube de la cumbre.</p><p data-l="en">Follow the vapor from the pool up to the cloud on the peak.</p></li>
       <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Sigue la gota</span><span data-l="en">Follow the drop</span></h4><p data-l="es">La lluvia se infiltra en la colina o corre por la quebrada hasta el río, que crece.</p><p data-l="en">Rain soaks into the hill or runs down the stream to the river, which rises.</p></li>
       <li><div class="step"><span class="skill swim" data-icon="dive"><span data-l="es">Nadar</span><span data-l="en">Swim</span></span></div><h4><span data-l="es">La poza</span><span data-l="en">The pool</span></h4><p data-l="es">Bucea hasta la marca de crecida en la roca. El ciclo se cierra.</p><p data-l="en">Dive down to the flood mark on the rock. The cycle closes.</p></li>
-      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Explícale a Luma</span><span data-l="en">Explain it to Luma</span></h4><p data-l="es">Cuenta el ciclo en orden y compara lo que predijo con lo que vio.</p><p data-l="en">Tell the cycle in order and compare the prediction with what was seen.</p></li>
+      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Explícale a Iguaca</span><span data-l="en">Explain it to Iguaca</span></h4><p data-l="es">Cuenta el ciclo en orden y compara lo que predijo con lo que vio.</p><p data-l="en">Tell the cycle in order and compare the prediction with what was seen.</p></li>
     </ol>
     <div class="extras">
       <div data-icon="book"><div><h4><span data-l="es">Diario de Campo</span><span data-l="en">Field Journal</span></h4><p data-l="es">Cada ficha trae un dato de una línea y su fuente. Solo se publica lo verificado.</p><p data-l="en">Each card has a one-line fact and its source. Only verified facts are published.</p></div></div>
-      <div data-icon="question"><div><h4><span data-l="es">Luma te pregunta</span><span data-l="en">Luma asks you</span></h4><p data-l="es">De 5 a 7 preguntas al final, con pista en el segundo intento y sin puntaje visible.</p><p data-l="en">Five to seven questions at the end, with a hint on the second try and no visible score.</p></div></div>
+      <div data-icon="question"><div><h4><span data-l="es">Iguaca te pregunta</span><span data-l="en">Iguaca asks you</span></h4><p data-l="es">De 5 a 7 preguntas al final, con pista en el segundo intento y sin puntaje visible.</p><p data-l="en">Five to seven questions at the end, with a hint on the second try and no visible score.</p></div></div>
     </div>
   </div>
 </section>
@@ -1153,6 +1165,39 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ================= MODO RETOS ================= -->
+<section class="section" id="retos" aria-labelledby="h-retos">
+  <div class="wrap">
+    <span class="eyebrow"><span data-l="es">Modo Retos</span><span data-l="en">Challenge Mode</span></span>
+    <h2 class="h2" id="h-retos"><span data-l="es">Vuela, explora y salva tu isla</span><span data-l="en">Fly, explore and save your island</span></h2>
+    <p class="lead" data-l="es">Cuando termines la historia, o cuando quieras un rato de acción, el Modo Retos te espera: carreras en el aire y misiones contra reloj, para todas las edades.</p>
+    <p class="lead" data-l="en">After the story, or whenever you want a burst of action, Challenge Mode is waiting: races through the air and missions against the clock, for all ages.</p>
+    <div class="ns-grid" style="margin-top:32px;align-items:start">
+      <figure class="loop-fig">
+        <div class="screen loop">
+          <img src="assets/img/retos-carrera.jpg" width="800" height="450" loading="lazy"
+               alt="Vittata planea con un impulso sobre El Yunque, con el puesto, el tiempo y los puntos de la carrera arriba."
+               data-en-alt="Vittata glides with a boost over El Yunque, with the race position, time and checkpoints at the top.">
+        </div>
+        <figcaption><b><span data-l="es">Carrera en El Yunque.</span><span data-l="en">Race in El Yunque.</span></b> <span data-l="es">Pasa por los puntos de control, aprovecha los impulsos y llega primero.</span><span data-l="en">Fly through the checkpoints, grab the boosts and finish first.</span></figcaption>
+      </figure>
+      <figure class="loop-fig">
+        <div class="screen loop">
+          <img src="assets/img/retos-tormenta.jpg" width="800" height="450" loading="lazy"
+               alt="Una escena del reto «¡Escapa de la tormenta!»: lluvia fuerte, mar agitado y Vittata con un combo de puntos."
+               data-en-alt="A scene from the “Escape the storm!” challenge: heavy rain, a rough sea and Vittata with a points combo.">
+        </div>
+        <figcaption><b><span data-l="es">¡Escapa de la tormenta!</span><span data-l="en">Escape the storm!</span></b> <span data-l="es">Corre y vuela antes de que te alcancen las nubes.</span><span data-l="en">Run and fly before the clouds catch up with you.</span></figcaption>
+      </figure>
+    </div>
+    <ul class="ns-promises" style="margin-top:28px">
+      <li data-icon="check"><span data-l="es"><b>Récords de la casa:</b> el juego guarda tus mejores marcas en «Mis récords», en este dispositivo, para que intentes superarte.</span><span data-l="en"><b>House records:</b> the game keeps your best marks in “My records”, on this device, so you can try to beat yourself.</span></li>
+      <li data-icon="check"><span data-l="es"><b>Cómic para compartir:</b> tus momentos y tus récords se vuelven viñetas con humor que puedes compartir.</span><span data-l="en"><b>A comic to share:</b> your moments and records become funny panels you can share.</span></li>
+    </ul>
+    <p style="margin-top:24px"><a class="btn leaf" href="juego/" data-icon="play"><span data-l="es">Jugar ahora</span><span data-l="en">Play now</span></a></p>
   </div>
 </section>
 
@@ -1476,6 +1521,33 @@ Thank you.</p>
   </div>
 </section>
 
+<!-- ================= EL EQUIPO ================= -->
+<section class="section team" id="equipo" aria-labelledby="h-equipo">
+  <div class="wrap team-grid">
+    <figure class="team-fig">
+      <img src="assets/img/vittata.png" width="320" height="320" loading="lazy"
+           alt="Vittata, la cotorra puertorriqueña de plumaje verde y frente roja, de frente y con una sonrisa."
+           data-en-alt="Vittata, the green Puerto Rican parrot with a red forehead, facing forward with a smile.">
+    </figure>
+    <div>
+      <span class="eyebrow"><span data-l="es">El equipo</span><span data-l="en">The team</span></span>
+      <h2 class="h2" id="h-equipo"><span data-l="es">Una aventura hecha en familia</span><span data-l="en">An adventure made as a family</span></h2>
+      <p class="lead" data-l="es">Hecho en Puerto Rico, con amor por la isla y sus cotorras, desde 2012.</p>
+      <p class="lead" data-l="en">Made in Puerto Rico, with love for the island and its parrots, since 2012.</p>
+      <ul class="team-list">
+        <li><b>Kelvin García</b><span data-l="es">Fundador y director creativo</span><span data-l="en">Founder &amp; creative director</span></li>
+        <li><b>Analeah García</b><span data-l="es">Cofundadora</span><span data-l="en">Co-founder</span></li>
+        <li><b>Nathanael García</b><span data-l="es">Cofundador</span><span data-l="en">Co-founder</span></li>
+      </ul>
+      <!-- Creativos y colaboradores: añadir nombres cuando Kelvin los confirme. No inventar nombres. -->
+      <div class="team-collab" hidden>
+        <h3><span data-l="es">Creativos y colaboradores</span><span data-l="en">Creatives &amp; collaborators</span></h3>
+        <ul></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer class="site-footer">
@@ -1491,6 +1563,7 @@ Thank you.</p>
       <a href="#criadero"><span data-l="es">Criadero</span><span data-l="en">Nursery</span></a>
       <a href="#conservacion"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></a>
       <a href="#tecnologia"><span data-l="es">Tecnología</span><span data-l="en">Technology</span></a>
+      <a href="#equipo"><span data-l="es">El equipo</span><span data-l="en">The team</span></a>
       <a href="#escuelas"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
       <a href="#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
       <a href="#contacto"><span data-l="es">Contacto</span><span data-l="en">Contact</span></a>
@@ -1498,8 +1571,6 @@ Thank you.</p>
     <div class="foot-legal">
       <p data-l="es">Este sitio no usa cookies ni analítica. Las tipografías se cargan desde Google Fonts.</p>
       <p data-l="en">This site uses no cookies or analytics. Fonts are loaded from Google Fonts.</p>
-      <p data-l="es">Creado por Kelvin García, fundador y director creativo, junto a Analeah García y Nathanael García, cofundadores.</p>
-      <p data-l="en">Created by Kelvin García, founder and creative director, with Analeah García and Nathanael García, co-founders.</p>
       <p data-l="es">© 2026 Equipo Amazona Verse · Puerto Rico. Prototipo en desarrollo; el contenido puede cambiar.</p>
       <p data-l="en">© 2026 Amazona Verse team · Puerto Rico. Prototype in development; content may change.</p>
     </div>
