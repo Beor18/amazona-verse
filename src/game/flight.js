@@ -4,8 +4,8 @@
    instancias de piezas que YA existen en el kit de entorno (tronco_caido, roca_musgo_a/b, bambu) y la decoración de la orilla
    palma_sierra_joven: nada de modelos ni bosques nuevos. Se pasa entre las columnas; chocar es un «¡Uy!» amable (nunca daño) y se
    vuelve a empezar con un toque. Puntuación = obstáculos superados.
-   OCULTO (fase 3, pruebas reales, la deciden Kelvin y Fernando): no está en el menú ni en Retos. Se entra con ?mini=flight o con
-   AV.flight() desde la consola. Pruebas: AV.flightTest().
+   Publicado (26-oct, Kelvin lo autorizó): tarjeta en «¿Cómo quieres jugar?» (menu_modos.js) y en Retos (retos.js); también ?mini=flight o
+   AV.flight() desde la consola. Pruebas: AV.flightTest(). Medallas (records.js): plata 25, oro 60. Inglés: content/cap1/en.js.
 
    Cómo encaja con lo que hay (sin arquitectura paralela; es el patrón de src/game/retos.js):
    - Entrar: instantánea de G.S, guardado suspendido, G.quiet; envolturas reversibles de G.ui.busy (la historia ve el mundo ocupado),
@@ -58,7 +58,7 @@
       inicio: 'el primer toque arranca', victoria: null, derrota: 'tocar un tronco, una rama o el agua («¡Uy!», sin daño)',
       puntuacion: 'obstáculos superados', musica: 'retos/carreras (sin reiniciar por obstáculo)',
       resultados: ['puntos', 'mejor', 'nuevoRecord'], records: { clave: 'flight', campos: ['mejor', 'jugadas'], gancho: 'retosResultado' },
-      oculto: true, // fase 3 (Kelvin y Fernando): hasta entonces solo ?mini=flight y AV.flight()
+      oculto: false, // publicado (Kelvin lo autorizó el 26-oct): menú «¿Cómo quieres jugar?» y Retos; también ?mini=flight y AV.flight()
     };
 
     // ---------- Parámetros de juego (todos en metros y segundos; los lee también el generador para que cada hueco sea superable) ----------
@@ -413,6 +413,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
   <p class="fl-rec"></p>
   <div class="fl-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="fl-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary" type="button" data-compartir data-icon="share" hidden>Compartir</button>
     <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
   </div>
 </div></div>`;
@@ -420,7 +421,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       const q = s => el.querySelector(s);
       st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec') };
       st.ui.toque.addEventListener('pointerdown', e => { e.preventDefault(); toque(); });
-      el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-salir')) salir(); });
+      el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-compartir')) compartir(); else if (b.hasAttribute('data-salir')) salir(); });
       // Teclado: Espacio, flecha arriba, W o cualquier letra = impulso (antes de input.js, que no ve el salto porque fisica no vuela aquí)
       addEventListener('keydown', e => {
         if (!st.activo || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -440,7 +441,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       u.num.textContent = String(J.puntos);
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
-      u.fin.hidden = false;
+      u.fin.hidden = false; u.fin.querySelector('[data-compartir]').hidden = !J.mejor;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
 
@@ -483,6 +484,11 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       decorar(); colocar();
       camFollow(null); G.camara.place(true);
       if (G.actores.player3D) G.actores.player3D.root.visible = true;
+    }
+    // Compartir el récord: la tarjeta y la puerta para adultos de «Mis récords» (records.js), sin datos personales
+    function compartir() {
+      const ir = () => (G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G)));
+      return ir().then(r => r.compartirRecord({ modo: 'flight' }), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000));
     }
     function otraVez() { if (!st.activo) return false; iniciar(); return true; }
     function abrir() {
@@ -558,7 +564,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
         try {
           await crearPool(); sAntes = comparable(S); // el kit ya cargado: lo que escriban otros módulos perezosos mientras tanto no cuenta como cambio
           check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, derrota, puntuación, música, resultados, récords)',
-            ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'derrota', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === true);
+            ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'derrota', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === false);
           // ---------- Entrar ----------
           const ok = await abrir();
           check('Entra con el mundo libre y el pool cargado', ok === true && st.activo && raiz.parent === scene && Object.keys(pool).length === 4, Object.keys(pool).join(','));
@@ -624,6 +630,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('«Mis récords» recibe retosResultado { modo: flight, puntos, prueba }', emitido && emitido.modo === 'flight' && emitido.puntos === J.puntos && emitido.prueba === true, JSON.stringify(emitido));
           await new Promise(r => setTimeout(r, 420));
           check('Resultados a la vista con «Otra vez»', !st.ui.fin.hidden && st.ui.num.textContent === String(J.puntos));
+          check('Resultados: botón «Compartir» a la vista con récord', !st.ui.fin.querySelector('[data-compartir]').hidden);
           check('Un toque reflejo justo tras el choque no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'listo'));
           check('Reinicio inmediato: puntos 0, fase listo, obstáculos nuevos delante', J.puntos === 0 && st.fase === 'listo' && obst.length >= 5 && st.ui.fin.hidden);
           // ---------- 50 reinicios con partidas de robot: sin fugas (geometrías y texturas constantes) y pool sin desbordar ----------
@@ -644,6 +651,16 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Al salir G.quiet vuelve y el mundo no queda en pausa', G.quiet === quiet0 && G.pausa.activa() === pausa0);
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
           check('Récords reales intactos', leer(ALMACEN) === recReal);
+          // ---------- Inglés, tarjeta del menú y de Retos (publicado) ----------
+          { const id = G.idioma, lang0 = id && id.actual();
+            if (id) { await id.poner('en'); await id.listo; }
+            const t = id ? id.tr : s => s;
+            const okEn = id && ['¡Toca para volar!', 'Cada toque es un aleteo; sin tocar, Vittata baja.', '¡Un chapuzón! Vittata se sacude las plumas.', 'Una rama en el camino. ¡Vittata se ríe y lo intenta otra vez!', 'Un tronco en el camino. ¡Vittata se ríe y lo intenta otra vez!', 'Pasa un obstáculo para tener tu primer récord.', 'Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.', 'Vuela sin parar entre los troncos', 'Salir de Amazona Flight', '1 obstáculo · tu mejor: 4', '7 obstáculos · tu mejor: 12', 'Récord: 30 obstáculos', 'mejor 9'].every(s => t(s) !== s && !/[¡¿áéíóú]/i.test(t(s)));
+            check('Inglés: los textos visibles de Amazona Flight y de su tarjeta se traducen', !!okEn, id ? t('7 obstáculos · tu mejor: 12') : 'sin idioma');
+            if (id) { await id.poner(lang0 || 'es'); await id.listo; } }
+          { const tm = G.menuModos, tarj = document.querySelector('#modos [data-modo="flight"]');
+            check('Menú «¿Cómo quieres jugar?»: tarjeta Amazona Flight con subtítulo y es submit', !!tarj && tarj.type === 'submit' && tarj.value === 'flight'&&!!tarj.querySelector('svg.modo-img') && /troncos/.test(tarj.querySelector('small').textContent) && !!tm);
+            check('DECL publicado (oculto: false)', DECL.oculto === false); }
           check('Nada del vuelo queda en la escena: pool liberado, sin instancias vivas', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && vivas() === 0 && obst.length === 0 && decor.length === 0, vivas() + ' vivas · ' + obst.length + ' obst · ' + decor.length + ' decor · ' + Object.keys(pool).map(t => t + ':' + pool[t].libres.length + '/' + CAP[t]).join(' '));
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();

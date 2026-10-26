@@ -387,6 +387,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>¡Banquete!</h3><p>75 segundos en la colina: recoge los frutos de las palmas y los tabonucos en vuelo. Seguidos, sin tocar el suelo, suben el combo. Los de las copas valen más.</p>
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>Amazona Flight</h3><p>Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.</p>
+      <span class="rt-rec" data-rec="flight"></span><button class="btn" type="button" data-jugar="flight" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -514,6 +516,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
+      const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
       ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
@@ -526,6 +529,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
       montarUI();
+      if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
@@ -1422,7 +1426,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 4);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 5);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
@@ -1514,6 +1518,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // ---------- Contrarreloj del río ----------
         const ghCarrera = leer(claveFantasmaDe('carrera'));
         abrir();
+        check('El menú de Retos tiene la tarjeta de Amazona Flight con su récord', !!ui.menu.querySelector('[data-jugar="flight"]') && /sin récord|Récord: \d+ obstáculo/.test(ui.menu.querySelector('[data-rec="flight"]').textContent));
         check('El menú muestra la contrarreloj del río, sin récord aún', !!ui.menu.querySelector('[data-jugar="rio"]') && ui.menu.querySelector('[data-rec="rio"]').textContent === 'Aún sin récord');
         let emitido = null; emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
         check('La contrarreloj arranca', jugar('rio') && modo === CARRERA && C.rio === true && C.fase === 'cuenta');

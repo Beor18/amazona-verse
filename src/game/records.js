@@ -76,6 +76,7 @@
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
+      sinVuelo: ['Pasa un obstáculo en Amazona Flight para compartir tu récord.', 'Pass an obstacle in Amazona Flight to share your record.'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
       puertaTitulo: ['Pide ayuda a un adulto', 'Ask an adult for help'], puertaTexto: ['Para compartir hace falta un adulto. Resuelve esta suma:', 'Sharing needs a grown-up. Solve this sum:'],
       puertaMal: ['Esa no es. Prueba con esta otra suma.', 'Not that one. Try this new sum.'],
@@ -386,7 +387,7 @@
         ? `<div class="rec-grande">${medalla(z.medalla, z.medalla ? '★' : null)}<div><b class="rec-num">${reloj(z.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}${z.medalla ? ' · ' + esc(tx(z.medalla)) : ''}</small></div></div>
            <dl>${dato(tx('jugadas'), z.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${z && z.jugadas ? `<dl>${dato(tx('jugadas'), z.jugadas)}</dl>` : ''}`;
-      const f = d.retos.flight; // src/game/flight.js: la tarjeta solo sale si se ha jugado (modo oculto hasta la fase 3)
+      const f = d.retos.flight || { mejor: null, jugadas: 0 }; // src/game/flight.js (publicado: la tarjeta sale siempre)
       const flight = !f ? '' : `<article class="rec-card"><h4>${esc(tx('flight'))}</h4>${f.mejor
         ? `<div class="rec-grande">${medalla(f.mejor >= 60 ? 'oro' : f.mejor >= 25 ? 'plata' : 'bronce', '★')}<div><b class="rec-num">${f.mejor}</b><small>${esc(tx('obstaculos'))}</small></div></div><dl>${dato(tx('jugadas'), f.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${f.jugadas ? `<dl>${dato(tx('jugadas'), f.jugadas)}</dl>` : ''}`}</article>`;
@@ -647,8 +648,8 @@
         try { const m = /^data:([^;,]*);base64,(.*)$/.exec(cv.toDataURL('image/png')); const bin = atob(m[2]), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: 'image/png' }); } catch (e) { return null; }
       });
     }
-    async function tarjetaPNG(d) {
-      d = d || leer();
+    async function tarjetaPNG(d, modo) {
+      d = d || leer(); const vuelo = modo === 'flight', fv = d.retos.flight || { mejor: null }; // Amazona Flight: misma tarjeta con sus puntos
       const W = TARJETA.w, H = TARJETA.h, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const x = cv.getContext('2d'), c = d.retos.carrera, q = d.retos.tormenta;
       try { await Promise.all([document.fonts.load('700 100px Fredoka'), document.fonts.load('700 30px "Atkinson Hyperlegible"')]); } catch (e) { /* fuentes del sistema */ }
@@ -667,12 +668,12 @@
       x.font = F(700, 116); x.lineWidth = 22; x.strokeStyle = '#2b1405'; x.strokeText('AMAZONA VERSE', W / 2, 168);
       g = x.createLinearGradient(0, 70, 0, 170); g.addColorStop(0, '#fff8cf'); g.addColorStop(0.5, '#ffcb3d'); g.addColorStop(1, '#ee7a12'); x.fillStyle = g; x.fillText('AMAZONA VERSE', W / 2, 168);
       // Rótulo de la carrera
-      const rotulo = tx('carrera');
+      const rotulo = vuelo ? tx('flight') : tx('carrera');
       x.font = F(600, 44); const rw = Math.min(x.measureText(rotulo).width + 80, W - 120);
       x.fillStyle = 'rgba(20,12,60,.6)'; x.beginPath(); x.roundRect ? x.roundRect(W / 2 - rw / 2, 206, rw, 70, 35) : x.rect(W / 2 - rw / 2, 206, rw, 70); x.fill();
       x.fillStyle = '#fff'; x.fillText(rotulo, W / 2, 256);
       // Medalla
-      const m = medallaCarrera(c.puesto) || 'meta', col = COLOR_MEDALLA[m], cx = W / 2, cy = 582, r = 185;
+      const m = vuelo ? (fv.mejor >= 60 ? 'oro' : fv.mejor >= 25 ? 'plata' : 'bronce') : medallaCarrera(c.puesto) || 'meta', col = COLOR_MEDALLA[m], cx = W / 2, cy = 582, r = 185;
       x.save(); x.translate(cx, cy - r + 20);
       for (const [dx, ang, color] of [[-70, -0.32, '#d6403a'], [70, 0.32, '#3d8fb0']]) { x.save(); x.translate(dx, -30); x.rotate(ang); x.fillStyle = color; x.fillRect(-42, -90, 84, 190); x.restore(); }
       x.restore();
@@ -681,23 +682,23 @@
       x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill();
       x.lineWidth = 10; x.strokeStyle = 'rgba(74,42,5,.25)'; x.beginPath(); x.arc(cx, cy, r - 30, 0, 7); x.stroke();
       x.fillStyle = '#4a2a05'; x.font = F(700, m === 'meta' ? 150 : 230); x.textBaseline = 'middle';
-      x.fillText(m === 'meta' ? '★' : String(c.puesto), cx, cy + 12); x.textBaseline = 'alphabetic';
+      x.fillText(vuelo || m === 'meta' ? '★' : String(c.puesto), cx, cy + 12); x.textBaseline = 'alphabetic';
       // Tiempo
       x.font = B(700, 36); x.fillStyle = '#ffe9a8'; x.lineWidth = 8; x.strokeStyle = 'rgba(27,21,80,.8)';
-      const miMejor = tx('miMejor').split('').join(String.fromCharCode(8202)); x.strokeText(miMejor, cx, 832); x.fillText(miMejor, cx, 832);
-      const tiempo = c.mejor ? reloj(c.mejor / 1000) : '—';
+      const miMejor = (vuelo ? tx('mejorPuntos').toUpperCase() : tx('miMejor')).split('').join(String.fromCharCode(8202)); x.strokeText(miMejor, cx, 832); x.fillText(miMejor, cx, 832);
+      const tiempo = vuelo ? String(fv.mejor || '—') : c.mejor ? reloj(c.mejor / 1000) : '—';
       x.font = F(700, 190); x.lineWidth = 26; x.strokeStyle = '#1b1550'; x.strokeText(tiempo, cx, 992); x.fillStyle = '#fff'; x.fillText(tiempo, cx, 992);
       x.font = F(600, 46); x.lineWidth = 12;
-      const linea = `${tx('mejorPuesto')}: ${ordinal(c.puesto || 1)} · ${medallaTxt(m)}`;
+      const linea = vuelo ? `${tx('obstaculos')} · ${medallaTxt(m)}` : `${tx('mejorPuesto')}: ${ordinal(c.puesto || 1)} · ${medallaTxt(m)}`;
       x.strokeText(linea, cx, 1056); x.fillStyle = '#ffe9a8'; x.fillText(linea, cx, 1056);
-      if (q.mejor) { const l2 = `${tx('tormentaCorta')}: ${q.mejor} ${tx('puntos')}`; x.font = F(600, 40); x.lineWidth = 10; x.strokeText(l2, cx, 1110); x.fillStyle = '#fff'; x.fillText(l2, cx, 1110); }
+      if (!vuelo && q.mejor) { const l2 = `${tx('tormentaCorta')}: ${q.mejor} ${tx('puntos')}`; x.font = F(600, 40); x.lineWidth = 10; x.strokeText(l2, cx, 1110); x.fillStyle = '#fff'; x.fillText(l2, cx, 1110); }
       // Vittata, la cotorra de la casa y el lema
       try { const im = await G.AVE.assets.image('assets/vittata.png'); if (im) { const s = 330; x.drawImage(im, W - s - 30, H - s - 8, s, s); } } catch (e) { /* sin imagen */ }
       x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = B(700, 34);
       const cot = d.nombre && G.creador && G.creador.esNombreDeLista && G.creador.esNombreDeLista(d.nombre) ? d.nombre : null;
       if (cot) { x.font = F(600, 42); x.fillStyle = '#ffe9a8'; x.fillText(cot, 56, 1236); }
       x.font = B(700, 28); x.fillStyle = '#fff'; x.fillText(tx('lema'), 56, 1288, 640);
-      x.font = F(600, 34); x.fillStyle = '#ffd27a'; x.fillText('amazona-verse.vercel.app', 56, 1328);
+      x.font = F(600, 34); x.fillStyle = '#ffd27a'; x.fillText(vuelo ? 'amazonaverse.com' : 'amazona-verse.vercel.app', 56, 1328);
       return aBlobPNG(cv);
     }
     // Récord: la misma puerta; la tarjeta se prepara mientras se resuelve la suma
@@ -705,15 +706,16 @@
       o = o || {};
       if (compartiendo) return 'ocupado';
       const d = leer();
-      if (!d.retos.carrera.mejor) { avisar(tx('sinCarrera'), 4000); return 'sin-record'; }
+      const vuelo = o.modo === 'flight'; // Amazona Flight (src/game/flight.js): misma puerta y misma tarjeta, con sus puntos
+      if (vuelo ? !(d.retos.flight && d.retos.flight.mejor) : !d.retos.carrera.mejor) { avisar(vuelo ? tx('sinVuelo') : tx('sinCarrera'), 4000); return 'sin-record'; }
       compartiendo = true;
       try {
-        const preparar = Promise.resolve().then(() => (o.preparar ? o.preparar(d) : tarjetaPNG(d))); preparar.catch(() => {});
+        const preparar = Promise.resolve().then(() => (o.preparar ? o.preparar(d) : tarjetaPNG(d, o.modo))); preparar.catch(() => {});
         if (!(await puerta(o))) return 'puerta';
         avisar(tx('preparando'), 6000);
         const blob = await preparar.catch(() => null);
         if (!blob) { avisar(tx('errImagen'), 4000); return 'error'; }
-        const r = await compartirArchivo(blob, 'amazona-verse-mi-record.png', { title: tx('tituloRecord'), text: tx('tituloRecord') + ' · ' + reloj(d.retos.carrera.mejor / 1000) + ' · amazona-verse.vercel.app' }, o);
+        const r = await compartirArchivo(blob, vuelo ? 'amazona-flight-mi-record.png' : 'amazona-verse-mi-record.png', { title: tx('tituloRecord'), text: vuelo ? 'Amazona Verse · Amazona Flight · ' + d.retos.flight.mejor + ' ' + tx('obstaculos') + ' · amazonaverse.com' : tx('tituloRecord') + ' · ' + reloj(d.retos.carrera.mejor / 1000) + ' · amazona-verse.vercel.app' }, o);
         resultado(r);
         return r;
       } finally { compartiendo = false; }
