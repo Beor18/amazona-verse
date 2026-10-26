@@ -93,6 +93,20 @@ AVE.module('camara', function (G) {
     if (dentro) { const k = Math.min(1, CAM.copaDentro / L); camPos.set(cabeza.x + dirCam.x * k, S.pos.y - 0.3, cabeza.z + dirCam.z * k); }
     else if (tMin < 1) { const k = Math.max(CAM.copaMin / L, tMin - 0.4 / L); camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
   }
+  // ¿Se ve «mira» desde q sin copas en medio? (fotos del cómic, QA-32). Si mira o q están dentro de una copa, no: posada en
+  // la rama de un flamboyán, las hojas la tapan desde cualquier ángulo (medido) y el cómic usa su ilustración
+  function copaLibre(q, mira) {
+    copasCerca();
+    const dx = q.x - mira.x, dy = q.y - mira.y, dz = q.z - mira.z, L2 = dx * dx + dy * dy + dz * dz;
+    for (let i = 0; i < copas.length; i += 4) {
+      const cx = copas[i], cy = copas[i + 1], cz = copas[i + 2], r2 = copas[i + 3] * copas[i + 3];
+      const ox = mira.x - cx, oy = mira.y - cy, oz = mira.z - cz, c = ox * ox + oy * oy + oz * oz - r2;
+      if (c < 0 || (q.x - cx) ** 2 + (q.y - cy) ** 2 + (q.z - cz) ** 2 < r2) return false;
+      const b = ox * dx + oy * dy + oz * dz, disc = b * b - L2 * c; if (b >= 0 || disc < 0) continue;
+      if (-b - Math.sqrt(disc) < L2) return false; // la recta entra en la copa antes de llegar a q
+    }
+    return true;
+  }
   function target() {
     const M = G.fisica.MOVE, fly = M.flying, ay = anchorY == null ? S.pos.y : anchorY, ag = fly ? 0 : M.agachada || 0;
     let h = fly ? CAM.heightFly : CAM.height, d = dist();
@@ -194,6 +208,6 @@ AVE.module('camara', function (G) {
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre,
     get anchorY() { return anchorY; } };
 });

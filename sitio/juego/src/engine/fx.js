@@ -97,6 +97,8 @@ AVE.module('fx', function (G) {
     } });
   }
   function update(dt) {
+    // Un 'render' sin dt (o NaN) dejaba las partículas en NaN y THREE avisaba «Computed radius is NaN» al dibujarlas (AJ2)
+    dt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.1) : 0;
     for (let i = fx.length - 1; i >= 0; i--) {
       const f = fx[i]; f.t += dt; const k = f.t / f.life;
       if (f.anim) f.anim(f, Math.min(1, k));
