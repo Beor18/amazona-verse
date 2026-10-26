@@ -10,6 +10,8 @@
    - Pasto en tarjetas (pasto.glb) alrededor del jugador, donde el splat es pasto, fuera de senderos y agua.
    - Sombras: en 'alto' los árboles cercanos proyectan sombra real; en todos, una mancha suave bajo cada árbol los asienta.
    - Colisiones: troncos cercanos al jugador como colliders (se actualizan al moverse).
+   - Fundido entre la cámara y Vittata: lo que queda dentro del cono cámara→Vittata (radio que crece hasta FUNDIDO.radio
+     junto a ella) se vuelve translúcido por tramado, sin ordenar transparencias ni tocar las sombras.
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
    API: G.vegetacion.listo (promesa), stats(), instancias, especies, atlas (render target de los impostores; se repinta si se
    pierde el contexto WebGL). */
@@ -21,7 +23,8 @@ AVE.module('vegetacion', function (G) {
   const W = G.pack.mundo || {}, FL = W.flora || {};
   const KIT = Object.assign({ base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' }, FL.kit);
   const VI = Object.assign({ dir: [0.8, 0.35], fuerza: 1 }, FL.viento);
-  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 19 }, FL.distancias);
+  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34 }, FL.distancias);
+  const PASTO_NIVEL = { bajo: { rad: 0.4, dens: 0.3 }, medio: { rad: 0.765 }, alto: { rad: 1 } }; // 26-D: 14 / 26 / 34 m; en bajo, poco
   const { rng } = G.util;
   const C = R.calidad;
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -91,9 +94,11 @@ AVE.module('vegetacion', function (G) {
   }
 
   // ---------- Materiales con viento, AO, tinte y fundido ----------
-  const U = { uTime: { value: 0 }, uSolDir: { value: R.sunDir }, uSolCol: { value: R.sun.color.clone().multiplyScalar(R.sun.intensity) } };
+  const U = { uTime: { value: 0 }, uSolDir: { value: R.sunDir }, uSolCol: { value: R.sun.color.clone().multiplyScalar(R.sun.intensity) },
+    uOcluA: { value: new THREE.Vector4() }, uOcluB: { value: new THREE.Vector4() } }; // cámara (xyz, opacidad que se quita) / Vittata (xyz, radio)
+  const FUNDIDO = Object.assign({ fuerza: 0.7, radio: 1.15, alto: 0.45 }, FL.fundido);
   const VIENTO_DIR = new THREE.Vector2(VI.dir[0], VI.dir[1]).normalize();
-  const WIND_PARS = 'uniform float uTime; uniform vec4 uViento; uniform vec2 uFade; uniform vec3 uSolDir;\nattribute vec4 aViento;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n';
+  const WIND_PARS = 'uniform float uTime; uniform vec4 uViento; uniform vec2 uFade; uniform vec3 uSolDir;\nattribute vec4 aViento;\nvarying float vAO; varying float vFadeD; varying float vTrans; varying vec3 vWPos;\n';
   const WIND_PROJECT = `
     vec4 mvPosition = vec4( transformed, 1.0 );
     vec3 ipos = vec3( 0.0 ); float iesc = 1.0;
@@ -105,9 +110,10 @@ AVE.module('vegetacion', function (G) {
     float ph = aViento.b * 6.2832 + dot( ipos.xz, vec2( 0.31, 0.23 ) );
     float gust = 0.6 + 0.4 * sin( uTime * 0.37 + ipos.x * 0.019 + ipos.z * 0.013 );
     float sw = sin( uTime * uViento.w + ph ) * 0.7 + sin( uTime * uViento.w * 2.3 + ph * 1.7 ) * 0.3;
-    mvPosition.xz += uViento.xy * ( sw * gust + 0.35 * gust ) * uViento.z * wg * iesc;
+    gust *= 1.0 + uRafaga * 1.6; // ráfagas del clima
+    mvPosition.xz += uViento.xy * ( sw * gust + ( 0.35 + uRafaga * 0.6 ) * gust ) * uViento.z * wg * iesc;
     mvPosition.y -= abs( sw ) * uViento.z * wg * iesc * 0.15;
-    vAO = aViento.r;
+    vAO = aViento.r; vWPos = mvPosition.xyz; // las mallas de flora están en el origen: esto ya es mundo
     vec3 camW = - ( vec4( viewMatrix[ 3 ].xyz, 0.0 ) * viewMatrix ).xyz; // r128 no sube cameraPosition a Lambert
     vFadeD = distance( ipos, camW );
     vTrans = pow( max( dot( normalize( mvPosition.xyz - camW ), uSolDir ), 0.0 ), 3.0 );
@@ -117,28 +123,40 @@ AVE.module('vegetacion', function (G) {
   const DITHER = 'float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }\n';
   const FADE_FRAG = `
     if ( uFade.y > 0.0 ) { float fd = smoothstep( uFade.x, uFade.y, vFadeD ); if ( fd > 0.0 && ign( gl_FragCoord.xy ) < fd ) discard; }
+    if ( uOcluA.w > 0.0 ) {
+      vec3 ab = uOcluB.xyz - uOcluA.xyz; float t = dot( vWPos - uOcluA.xyz, ab ) / max( dot( ab, ab ), 1e-4 );
+      if ( t > 0.0 && t < 1.0 ) {
+        float r = uOcluB.w * mix( 0.25, 1.0, t ), dl = distance( vWPos, uOcluA.xyz + ab * t );
+        float k = ( 1.0 - smoothstep( r * 0.6, r, dl ) ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w;
+        if ( k > 0.0 && ign( gl_FragCoord.xy + 17.0 ) < k ) discard;
+      }
+    }
   `;
+  const OCLU_PARS = 'uniform vec4 uOcluA; uniform vec4 uOcluB; varying vec3 vWPos;\n';
   const LAMBERT_WRAP = THREE.ShaderChunk.lights_lambert_vertex.replace(/dotNL = dot\( geometry\.normal, directLight\.direction \);/g, 'dotNL = dot( geometry.normal, directLight.direction ) * 0.72 + 0.28;');
   const mats = [];
+  const RAFAGA = { value: 0 }; // 0–1: fuerza de la ráfaga del clima (aguacero), suavizada
   function windUniforms(nombre) {
     const v = VIENTO[nombre] || VIENTO[baseDe(nombre)] || [0.1, 1];
     return { uViento: { value: new THREE.Vector4(VIENTO_DIR.x, VIENTO_DIR.y, v[0] * VI.fuerza, v[1]) }, uFade: { value: new THREE.Vector2(0, 0) } };
   }
   function injectWind(sh, own) {
-    Object.assign(sh.uniforms, U, own);
-    sh.vertexShader = WIND_PARS + sh.vertexShader.replace('#include <project_vertex>', WIND_PROJECT);
+    Object.assign(sh.uniforms, U, own, { uRafaga: RAFAGA });
+    sh.vertexShader = WIND_PARS + 'uniform float uRafaga;\n' + sh.vertexShader.replace('#include <project_vertex>', WIND_PROJECT);
   }
   function hojaMaterial(src, nombre, own) {
     const m = new THREE.MeshLambertMaterial({ map: src.map, alphaTest: 0.5, side: src.side, color: new THREE.Color(0.86, 0.88, 0.8) });
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
-      sh.vertexShader = sh.vertexShader.replace('#include <lights_lambert_vertex>', LAMBERT_WRAP);
-      sh.fragmentShader = 'uniform vec2 uFade; uniform vec3 uSolCol;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + DITHER + sh.fragmentShader
+      sh.vertexShader = 'varying float vPunta;\n' + sh.vertexShader.replace('#include <lights_lambert_vertex>', LAMBERT_WRAP)
+        .replace('#include <fog_vertex>', '#include <fog_vertex>\n  vPunta = aViento.g;'); // peso del viento: 0 en la base, 1 en la punta
+      sh.fragmentShader = 'uniform vec2 uFade; uniform vec3 uSolCol;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
-        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.22, 1.0, vAO );')
+        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.22, 1.0, vAO ) * mix( vec3( 0.86, 0.9, 0.84 ), vec3( 1.1, 1.12, 0.92 ), vPunta );')
         .replace(/\( gl_FrontFacing \) \? vIndirectFront : vIndirectBack/g, 'vIndirectFront')
         .replace(/\( gl_FrontFacing \) \? vLightFront : vLightBack/g, 'vLightFront')
-        .replace('#include <envmap_fragment>', '#include <envmap_fragment>\n  outgoingLight += diffuseColor.rgb * uSolCol * vTrans * vAO * 0.45;');
+        .replace('#include <envmap_fragment>', '#include <envmap_fragment>\n  outgoingLight += mix( diffuseColor.rgb, vec3( 0.42, 0.62, 0.16 ), 0.45 ) * uSolCol * vTrans * vAO * mix( 0.4, 0.62, vPunta );');
+      sh.fragmentShader = 'varying float vPunta;\n' + sh.fragmentShader;
     };
     m.customProgramCacheKey = () => 'hoja';
     return m;
@@ -148,7 +166,7 @@ AVE.module('vegetacion', function (G) {
     if (m.normalMap) m.normalScale = new THREE.Vector2(1, roca ? 1 : -1).multiplyScalar(roca ? 1.0 : 0.9);
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
-      sh.fragmentShader = 'uniform vec2 uFade;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + DITHER + sh.fragmentShader
+      sh.fragmentShader = 'uniform vec2 uFade;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
         .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.3, 1.0, vAO );');
     };
@@ -456,12 +474,13 @@ AVE.module('vegetacion', function (G) {
   const pastoUlt = { x: 1e9, z: 1e9, nivel: '' };
   function actualizarPasto(force) {
     const im = PASTO.mesh; if (!im) return;
-    const rad = DIST.pasto * (C.pasto > 0 ? 0.55 + C.pasto * 0.45 : 0);
+    const PN = PASTO_NIVEL[C.nivel] || PASTO_NIVEL.medio, dens = C.pasto || PN.dens || 0;
+    const rad = dens > 0 ? DIST.pasto * PN.rad : 0;
     if (rad <= 0 || !T.exacto) { im.count = 0; im.visible = false; return; }
     const px = S.pos.x, pz = S.pos.z;
     if (!force && Math.hypot(px - pastoUlt.x, pz - pastoUlt.z) < 1.6 && pastoUlt.nivel === C.nivel) return;
     pastoUlt.x = px; pastoUlt.z = pz; pastoUlt.nivel = C.nivel;
-    const dens = C.pasto, m = im.instanceMatrix.array, col = im.instanceColor.array;
+    const m = im.instanceMatrix.array, col = im.instanceColor.array, borde = rad * 0.35;
     let n = 0;
     const B = 8.06; // 13 × 0,62 m
     const b0x = Math.floor((px - rad) / B), b1x = Math.floor((px + rad) / B), b0z = Math.floor((pz - rad) / B), b1z = Math.floor((pz + rad) / B);
@@ -471,7 +490,9 @@ AVE.module('vegetacion', function (G) {
         if (b[j + 5] > dens) continue;
         const dx = b[j] - px, dz = b[j + 2] - pz, d = Math.sqrt(dx * dx + dz * dz);
         if (d > rad) continue;
-        const s = b[j + 3] * Math.min(1, (rad - d) / (rad * 0.3)); // se encoge al borde: sin saltos
+        const e = Math.min(1, (rad - d) / borde); // en el último 35 % del radio: tramado (se van quitando) y se encogen un poco
+        if (e < 1 && hash2(j, b[j + 4] * 977) > e) continue;
+        const s = b[j + 3] * (0.55 + 0.45 * e);
         if (s < 0.05) continue;
         const cr = Math.cos(b[j + 4]) * s, sr = Math.sin(b[j + 4]) * s, o = n * 16;
         m[o] = cr; m[o + 1] = 0; m[o + 2] = -sr; m[o + 3] = 0;
@@ -618,9 +639,23 @@ AVE.module('vegetacion', function (G) {
       listoRes();
     }).catch(e => { console.warn('AVE vegetación:', e && e.message || e); listoRes(); });
 
+  // Fundido: se apaga si no hay cámara de seguimiento normal (FUNDIDO.fuerza = 0 lo desactiva)
+  function actualizarFundido() {
+    const c = R.camera.position, a = U.uOcluA.value, b = U.uOcluB.value;
+    b.set(S.pos.x, S.pos.y + FUNDIDO.alto, S.pos.z, FUNDIDO.radio);
+    a.set(c.x, c.y, c.z, c.distanceTo(b) > FUNDIDO.radio * 1.5 ? FUNDIDO.fuerza : 0);
+  }
+  let rafagaObj = 0, rafagaT = 0;
+  function actualizarRafaga(dt, t) {
+    const cl = G.clima;
+    if (t - rafagaT > 0.25) { rafagaT = t; const v = cl && cl.viento ? cl.viento(S.pos.x, S.pos.z, -1e4) : null; rafagaObj = v ? Math.min(1, Math.hypot(v.x, v.z) / 2.2) : 0; }
+    RAFAGA.value += (rafagaObj - RAFAGA.value) * Math.min(1, (dt || 0) * 0.8);
+  }
   G.on('render', (dt, t) => {
     U.uTime.value = t;
+    actualizarRafaga(dt, t);
     if (!activo) return;
+    actualizarFundido();
     actualizar(false);
     actualizarPasto(false);
   }, 22);
@@ -631,9 +666,9 @@ AVE.module('vegetacion', function (G) {
   G.on('contexto', ok => { if (ok && IMP.pintar) try { IMP.pintar(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); } });
 
   function stats() {
-    const out = { total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
+    const out = { fundido: U.uOcluA.value.w, total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     return out;
   }
-  return { listo, stats, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+  return { listo, stats, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
 });

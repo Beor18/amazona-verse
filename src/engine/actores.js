@@ -413,6 +413,28 @@ AVE.module('actores', function (G) {
 
   for (const def of G.pack.npcs || []) spawnNpc(def);
 
+  // Luz de borde suave (ficha 26-F de docs/equipo/MODERNIZACION_2026.md) para NPC y fauna en 3D: rim(obj[, color, fuerza]).
+  // Solo materiales con luz por píxel (Standard, Physical, Phong, Toon); Vittata y el aprendiz no la llevan (src/personaje es intocable).
+  function rim(obj, color, fuerza) {
+    const c = new THREE.Color(color || '#dff0ff').convertSRGBToLinear().multiplyScalar(fuerza != null ? fuerza : 0.28);
+    obj.traverse(o => {
+      for (const m of o.isMesh ? (Array.isArray(o.material) ? o.material : [o.material]) : []) {
+        if (!m || m.userData.rim || !(m.isMeshStandardMaterial || m.isMeshPhongMaterial || m.isMeshToonMaterial)) continue;
+        const previo = m.onBeforeCompile, clave = m.customProgramCacheKey;
+        m.userData.rim = { value: c };
+        m.onBeforeCompile = (sh, r) => {
+          if (previo) previo.call(m, sh, r);
+          sh.uniforms.uRim = m.userData.rim;
+          sh.fragmentShader = 'uniform vec3 uRim;\n' + sh.fragmentShader.replace('#include <tonemapping_fragment>',
+            'gl_FragColor.rgb += uRim * pow(1.0 - max(dot(normalize(normal), normalize(vViewPosition)), 0.0), 3.0);\n#include <tonemapping_fragment>');
+        };
+        m.customProgramCacheKey = () => (clave ? clave.call(m) : '') + '|rim';
+        m.needsUpdate = true;
+      }
+    });
+    return obj;
+  }
+
   G.on('render', (dt, t, moving) => {
     const bob = moving && S.pos.y <= G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01 ? Math.abs(Math.sin(t * 12)) * 0.12 : 0;
     player.position.set(S.pos.x, S.pos.y + 1.05 + bob, S.pos.z);
@@ -437,6 +459,6 @@ AVE.module('actores', function (G) {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
     init3D, applyWear, refreshCompanion, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
-    placePlayerSprite, snapCompanionSprite, flipSprite, nombre: J.nombre, sprite: J.sprite, especie: J.especie,
+    placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie,
   };
 });
