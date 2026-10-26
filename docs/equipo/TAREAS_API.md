@@ -271,6 +271,28 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
   - Deja un informe breve en `docs/equipo/EP2_PLAYTEST.md`.
   - Archivos: `content/ep2/*` y `tests/qa/` (prueba nueva).
 
+**Más tareas complejas para gastar el crédito hoy** (decisión de Kelvin del 26-oct; cada carril, en orden)
+- **AB2 · Amazona Maze completo, solo después de AB1:**
+  - Tarjeta en «¿Cómo quieres jugar?» y en Retos, siguiendo el patrón de Flight (`menu_modos.js`, `retos.js`: relee antes de editar, porque AC2 también toca esos archivos; cambios mínimos y en tu sección).
+  - Inglés, medallas, el «casi» y la siguiente meta (G12b).
+  - Publicar en el ranking con `reto: 'maze'` (el servidor ya lo acepta) y su pestaña en el top de la web (`web/index.html`, solo el array `RETOS` del bloque `top-records`).
+  - Música de carreras.
+  - `mazeTest` ampliado.
+- **AC2 · River Rush completo, solo después de AC1:** lo mismo que AB2, para River Rush (`reto: 'rio_rush'`), más dos modalidades:
+  - contrarreloj;
+  - contra tu fantasma (reutiliza el fantasma de Retos).
+- **AD2 · Episodio 2, lo prioritario del informe de AD1:** arregla y pule lo que `EP2_PLAYTEST.md` marque como más importante: encuadres, escenas, ritmo y textos. Si el episodio 2 no se puede abrir desde el menú, añade su entrada (cambios mínimos en el menú). Con capturas.
+- **AE1 · Web de minijuegos y para compartir:**
+  - En `web/index.html` (solo la sección `#retos`; no toques el bloque `top-records` salvo su array `RETOS`), una ficha por minijuego con captura real del juego actual: Flight, Banquete, tormenta, carrera, Maze y River Rush cuando existan.
+  - Una imagen `og:image` y una tarjeta para compartir el minijuego.
+  - Textos en ES y EN, para todas las edades.
+  - Revísalo a 375 px y a escritorio.
+- **AF1 · Rendimiento en el móvil de cada modo:**
+  - Mide FPS y el peor cuadro de aventura, Flight, Banquete, tormenta, carrera y criadero a 375×812, con CPU ×4 más lenta (`tools/build/look_capturas.py --movil` o `avtest`).
+  - Optimiza lo peor de los módulos de `src/game/*` (instancias, materiales compartidos, menos partículas en «bajo», calidad automática).
+  - No toques `src/engine/streaming.js`, `terreno.js` ni `mundo.js` (son de G9 de Grok).
+  - Informe en `docs/equipo/RENDIMIENTO_MOVIL.md`, con las medidas de antes y después.
+
 **Pruebas de cada tarea:** `taskpolicy -b nice -n 15 tools/build/build.sh HEAD tools/build/salida/<tarea>-<sha>`, y después `tools/build/test.sh <esa carpeta>/ --extra`. Todo en verde, con 0 errores de consola.
 
 ## Estado
@@ -318,3 +340,8 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | AB1 | pendiente | | |
 | AC1 | pendiente | | |
 | AD1 | pendiente | | |
+| AB2 | pendiente | | |
+| AC2 | pendiente | | |
+| AD2 | pendiente | | |
+| AE1 | pendiente | | |
+| AF1 | pendiente | | |
