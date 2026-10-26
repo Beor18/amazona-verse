@@ -105,3 +105,37 @@ Nota de coordinación: el carril W cambia `renderer.js` (gradación de fábrica 
 del look se suman); si W fija su gradación en `CustomToneMapping` para «bajo» y «medio», el look seguirá aplicando la suya encima.
 Conviene que, al integrar, el look sustituya la de fábrica en vez de sumarse (una línea en `chunkTone`: usar `ACESFilmicToneMapping`
 directamente cuando haya look). Anotado para W; no se tocó `renderer.js`.
+
+
+---
+
+# Integración (26-oct, C11): Vibrant Toon Refinado es el look de fábrica
+Kelvin decidió por escrito («aquí mando yo, autorízalo») que el Vibrant Toon Refinado pasa a ser el look de fábrica para todos; la
+aprobación de Fernando ya no hace falta (`docs/DECISION_LOG.md`).
+- `DEFECTO = 'vibrant_toon'` en `src/game/look.js`. `?look=fabrica` (o el chip «Fábrica» de la pausa, que se recuerda en la sesión)
+  muestra el original para comparar; `vibrante`, `soleado` y `toon` siguen. Un nombre desconocido cae en el de fábrica actual.
+- `boot.js` (commit mínimo, solo mis dos líneas): look.js se carga al arrancar, no a los 7 s. Se aplica mientras la portada sigue
+  abierta (comprobado: `AV.look.actual === 'vibrant_toon'` con `#title` abierto), así que el jugador nunca ve el cambio de color;
+  el mundo no se dibuja con la portada o el creador delante (`renderer.js`, `worldHidden`). Descarga inicial: +34 KB (look.js).
+- La gradación del look **sustituye** a la de fábrica (W1) en vez de sumarse: con un look activo `tonemapping_pars_fragment` deja
+  `CustomToneMapping = ACES puro` y los uniformes `uSat/uCon/uTint` del pase de gradación del composer se ponen a 1 (viñeta y rayos
+  intactos); al quitar el look vuelven `post.GRADO` y el chunk original. `renderer.js` no se tocó; el cielo vivo (C1), el clima y el
+  atardecer (C9) siguen mandando sobre `uCenit/uHorizonte/uSolCol` (el look solo los repone con el cielo quieto).
+- Criadero: tiene renderer propio (ACES, exposición 1,0) y comparte los ShaderChunks, así que recibe la gradación del look y no
+  desentona (captura `docs/img/vtr_defecto_criadero.jpg`: polluelo, nido y cápsulas legibles); el polluelo no lleva rim (su escena
+  no se recorre), como Vittata en el creador. Si se quiere el rim también ahí, es una línea en `criadero.js`/`showcase.js` (zonas ajenas).
+- Pruebas: `lookTest` 42/42 (nuevas: DEFECTO, chip «Fábrica», sustitución de la gradación y vuelta de `post.GRADO`); `missionTest`
+  68/68 con la comprobación «Juego y creador con el mismo color (sRGB + ACES)» hecha robusta: espera a que el post se asiente
+  (`post.cargando`) y acepta ACES o CustomToneMapping-con-ACES (W1), que es lo que hay mientras el composer carga o en «bajo»;
+  otro encoding u otro tone mapping sigue fallando (fallaba intermitente con la Mac cargada, 61/62, y bloqueó la publicación de 5b40323).
+- Medidas (misma pestaña, misma cámara de ciudad, medida síncrona `drawScene` + `readPixels`, dos series), antes = `?look=fabrica`
+  (lo que se publicaba) y después = el nuevo defecto:
+
+| Equipo | Antes (fábrica) mediana · p90 | Después (vibrant_toon) mediana · p90 |
+|---|---|---|
+| Escritorio, alto, 2560×1440 (dpr 2), post | 28,0 · 29,8 ms / 26,7 · 28,4 ms | **23,2 · 26,0 ms / 20,1 · 24,2 ms** (−20 %) |
+| Móvil emulado (375×812 táctil, dpr 1,5 → 562×1218), medio, post | 6,2 · 7,9 ms / 9,9 · 13,3 ms | **4,9 · 6,5 ms / 4,9 · 6,3 ms** |
+
+  Draw calls iguales (105); texturas estimadas 227 → 195 MB; heap JS igual (116–121 MB). Capturas del nuevo defecto (5 cámaras):
+  `docs/img/vtr_defecto_{aldea,yunque,rio,ciudad,criadero}.jpg`; la mejor para enseñar: `vtr_defecto_ciudad.jpg` (ruinas cálidas con
+  relieve, mar azul, cielo sin quemar).
