@@ -82,6 +82,7 @@
       frenado: 0.25,       // …y que su último toque fue al menos 0,25 s antes de cruzar (llega subiendo a ≤ 2 m/s, no en pleno aleteo)
       adelante: 90, atras: 24, // obstáculos vivos: desde 24 m detrás de Vittata hasta 90 m delante
       finEspera: 0.45,     // s tras el choque antes de aceptar «otra vez» (que un toque reflejo no reinicie sin ver el resultado)
+      cercaCamara: 6.5,    // m: lo que queda a menos de esto de la cámara (y a > 8 m de Vittata) se esconde para no tapar
       primero: 14,         // m hasta el primer obstáculo al empezar (a la vista en el móvil vertical)
       flap: 0.22,          // s de aleteo de despegue tras cada toque
     };
@@ -189,10 +190,11 @@
       a.marco.visible = false;
       if (!o || st.fase === 'fin') { v.visible = false; return; }
       const b0 = o.bajo != null ? o.bajo : P.yMin, b1 = o.alto != null ? o.alto : P.yMax, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
-      v.visible = true; v.position.set(xw, base + (b0 + b1) / 2, zw); v.rotation.y = Math.atan2(A.dx, A.dz); v.scale.set(4.5, Math.max(0.1, b1 - b0), 1);
+      const dc = Math.hypot(xw - R.camera.position.x, zw - R.camera.position.z), cerca = clamp((dc - 7) / 7, 0, 1); // la ventana se apaga al acercarse a la cámara (no vela la pantalla)
+      v.visible = cerca > 0.02; v.position.set(xw, base + (b0 + b1) / 2, zw); v.rotation.y = Math.atan2(A.dx, A.dz); v.scale.set(3, Math.max(0.1, b1 - b0), 1);
       // Guía de las primeras 3 partidas: contorno del hueco y la ventana más viva; después, solo la ventana suave
-      v.material.opacity = J.guia ? 0.34 : 0.14;
-      if (J.guia) { const f = a.marco; f.visible = true; f.position.copy(v.position); f.rotation.y = v.rotation.y; f.scale.copy(v.scale); }
+      v.material.opacity = (J.guia ? 0.34 : 0.14) * cerca;
+      if (J.guia && cerca > 0.02) { const f = a.marco; f.visible = true; f.position.copy(v.position); f.rotation.y = v.rotation.y; f.scale.copy(v.scale); }
     }
     const tomar = tipo => (pool[tipo] && pool[tipo].libres.length ? pool[tipo].libres.pop() : -1);
     const soltar = (tipo, i) => { if (i >= 0 && pool[tipo]) pool[tipo].libres.push(i); };
@@ -295,8 +297,11 @@
     function colocar() {
       const A = st.A; if (!A) return;
       const base = superficie(A.x, A.z); // el mar (y = 0 en cap1)
+      const cx = R.camera.position.x, cz = R.camera.position.z;
       for (const o of obst) {
         const xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
+        // Lo que pasa pegado a la cámara (en vertical va casi sobre el carril) no se dibuja: no tapa, y está lejos de Vittata (no cuenta para chocar)
+        if (Math.hypot(xw - cx, zw - cz) < P.cercaCamara && Math.abs(o.x - J.dist) > 8) { for (const t in o.inst) for (const i of o.inst[t]) esconder(t, i); continue; }
         let k = 0;
         if (o.bajo != null) {
           columna('tronco', o.inst.tronco[k++], xw, zw, base - 0.6, base + o.bajo, o.giro);
@@ -437,7 +442,8 @@
       const y0 = c.base ? superficie(A.x, A.z) + c.alto : S.pos.y + c.alto * cam.k; // lateral: desde el mar; 3/4: desde la altura de Vittata
       out.set(S.pos.x + nx * c.lado * cam.k + A.dx * c.ad * cam.k, y0 + (c.base ? J.y * c.kY : 0), S.pos.z + nz * c.lado * cam.k + A.dz * c.ad * cam.k);
     }
-    function camFollow(dt) { camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(6, dt)); }
+    function camFollow(dt) { const me = modoEf() + Math.round(aspecto() * 10); if (me !== cam.prev) { cam.prev = me; dt = null; } // al cambiar de encuadre (aspecto, giro de pantalla) la cámara salta al sitio, sin viaje
+      camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(6, dt)); }
     function camMira() { const A = st.A, c = CAMS[modoEf()], m = 1; return cam.mira.set(S.pos.x + A.dx * c.mAd * m, superficie(A.x, A.z) + c.mY + J.y * c.mK, S.pos.z + A.dz * c.mAd * m); }
     function camDraw(dt) {
       reencuadrar();
@@ -608,6 +614,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       montarUI();
       if (!st.activo && !libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a probar Amazona Flight.', 3200); return Promise.resolve(false); }
       if (!$('creator').hidden) { st.creador = true; G.creador.close(); } // jugador nuevo: el creador vuelve al salir
+      if (!st.listo) G.ui.toast('Cargando Amazona Flight…', 5000);
       return crearPool().then(() => { entrar(); iniciar(); return true; }, e => { G.ui.toast('No se pudo cargar Amazona Flight. Prueba otra vez.', 3000); console.error('flight:', e); return false; });
     }
     function salir() {

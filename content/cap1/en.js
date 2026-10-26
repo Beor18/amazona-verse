@@ -1229,6 +1229,7 @@ window.AV_EN = {
  "Rozaste el tronco de arriba: sube menos.": "You brushed the log above: go up less.",
  "Rozaste el tronco de abajo: sube un poco antes.": "You brushed the log below: go up a little sooner.",
  "Chocaste con la roca de abajo: sube un poco antes.": "You bumped the rock below: go up a little sooner.",
+ "Cargando Amazona Flight…": "Loading Amazona Flight…",
  "Bajaste demasiado: el agua te frenó.": "You dropped too low: the water stopped you.",
  "Una rama en el camino. ¡Vittata se ríe y lo intenta otra vez!": "A branch in the way. Vittata laughs and tries again!",
  "Un tronco en el camino. ¡Vittata se ríe y lo intenta otra vez!": "A log in the way. Vittata laughs and tries again!",
