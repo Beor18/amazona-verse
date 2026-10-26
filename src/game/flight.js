@@ -636,7 +636,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           }
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer constantes (sin fugas)', m1.g === m0.g && m1.t === m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas; el streaming del mundo puede liberar las suyas mientras tanto)', m1.g <= m0.g && m1.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- Salir ----------
           salir();
