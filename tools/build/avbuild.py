@@ -858,7 +858,7 @@ def analizar(sitio, cfg):
 def clasificar_externas(an, cfg):
     H = cfg['hosts_permitidos']
     ok_scripts, ok_estilos, ok_fuentes = set(H['scripts']), set(H['estilos']), set(H['fuentes'])
-    todos = ok_scripts | ok_estilos | ok_fuentes
+    todos = ok_scripts | ok_estilos | ok_fuentes | set(H.get('conexiones', []))  # conexiones: solo fetch a la función de récords (ranking global)
     errores, permitidas, enlaces = [], [], []
     for x in an['externas']:
         h, t, u = host_de(x['url']), x['tipo'], x['url']

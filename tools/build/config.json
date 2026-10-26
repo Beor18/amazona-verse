@@ -29,6 +29,9 @@
     ],
     "fuentes": [
       "fonts.gstatic.com"
+    ],
+    "conexiones": [
+      "muxxdjyxwjxaoziczkcz.supabase.co"
     ]
   },
   "espacios_xml": [

@@ -393,6 +393,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 #flight .fl-panel h2 { margin: 0 0 6px; font-size: 30px; } #flight .fl-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
 #flight .fl-num { font: 800 64px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
 #flight .fl-meta { margin: 0 0 10px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
+#flight .fl-rank { margin: 0 0 10px; }
 #flight .fl-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #flight .fl-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #flight .fl-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
@@ -413,6 +414,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
   <div class="fl-nuevo" hidden>¡Nuevo récord!</div>
   <p class="fl-rec"></p>
   <p class="fl-meta" hidden></p>
+  <div class="fl-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
   <div class="fl-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="fl-tecla">${TACTIL ? '' : 'Enter'}</span></button>
     <button class="btn ghost secondary" type="button" data-compartir data-icon="share" hidden>Compartir</button>
@@ -421,9 +423,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 </div></div>`;
       document.body.appendChild(el);
       const q = s => el.querySelector(s);
-      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec'), meta: q('.fl-meta') };
+      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec'), meta: q('.fl-meta'), rank: q('.fl-rank') };
       st.ui.toque.addEventListener('pointerdown', e => { e.preventDefault(); toque(); });
-      el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-compartir')) compartir(); else if (b.hasAttribute('data-salir')) salir(); });
+      el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-ranking')) publicar(b); else if (b.hasAttribute('data-compartir')) compartir(); else if (b.hasAttribute('data-salir')) salir(); });
       // Teclado: Espacio, flecha arriba, W o cualquier letra = impulso (antes de input.js, que no ve el salto porque fisica no vuela aquí)
       addEventListener('keydown', e => {
         if (!st.activo || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -454,7 +456,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       u.num.textContent = String(J.puntos);
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
-      const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
+      const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; u.rank.hidden = !(J.nuevo && claveRec === ALMACEN && J.puntos > 0); // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
       u.fin.hidden = false; u.fin.querySelector('[data-compartir]').hidden = !J.mejor;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
@@ -503,6 +505,13 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
     function compartir() {
       const ir = () => (G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G)));
       return ir().then(r => r.compartirRecord({ modo: 'flight' }), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000));
+    }
+    // Ranking global (panel y envío en records.js). Una partida de prueba nunca publica
+    function publicar(btn, fetchSim) {
+      if (!(J.puntos > 0)) return Promise.resolve('invalido');
+      const ir = G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+      return ir.then(rk => rk.publicarRanking({ reto: 'flight', valor: J.puntos, dur_ms: Math.round(J.t * 1000), prueba: claveRec !== ALMACEN, fetch: fetchSim }), () => { G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000); return 'error'; })
+        .then(r => { if (r === 'publicado' && btn) btn.parentNode.hidden = true; return r; });
     }
     function otraVez() { if (!st.activo) return false; iniciar(); return true; }
     function abrir() {
@@ -645,6 +654,8 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           await new Promise(r => setTimeout(r, 420));
           check('Resultados a la vista con «Otra vez»', !st.ui.fin.hidden && st.ui.num.textContent === String(J.puntos));
           check('Resultados: botón «Compartir» a la vista con récord', !st.ui.fin.querySelector('[data-compartir]').hidden);
+          { const f0 = window.fetch; let net = 0; window.fetch = function () { net++; return f0.apply(this, arguments); }; let rp; try { rp = await publicar(null); } finally { window.fetch = f0; }
+            check('Ranking: en partida de prueba el botÃ³n no sale y publicar() nunca llama a la red', st.ui.fin.querySelector('.fl-rank').hidden === true && rp === 'prueba' && net === 0, rp + '/' + net); }
           check('Un toque reflejo justo tras el choque no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'listo'));
           check('Reinicio inmediato: puntos 0, fase listo, obstáculos nuevos delante', J.puntos === 0 && st.fase === 'listo' && obst.length >= 5 && st.ui.fin.hidden);
           // ---------- 50 reinicios con partidas de robot: sin fugas (geometrías y texturas constantes) y pool sin desbordar ----------

@@ -485,7 +485,7 @@ def correr(a, cfg):
     R['inyectados'] = inyectados
 
     H = cfg['hosts_permitidos']
-    permitidos = set(H['scripts']) | set(H['estilos']) | set(H['fuentes'])
+    permitidos = set(H['scripts']) | set(H['estilos']) | set(H['fuentes']) | set(H.get('conexiones', []))
     estado = {'ses': None, 'reqs': {}, 'excepciones': [], 'consola': [], 'log': [], 'avisos_consola': 0, 'muestras_aviso': [], 'caida': False,
               'fase': 'arranque', 'ultima_red': time.monotonic()}
 

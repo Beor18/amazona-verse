@@ -344,6 +344,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-hoy small { font: 600 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-muted); }
 #retos .rt-reto.es-hoy { border-color: #e0a526; }
 #retos .rt-med { font: 600 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); }
+#retos .rt-rank { margin: 0 0 12px; }
 #retos .rt-nuevo { display: inline-block; background: var(--crest); color: #fff; padding: 3px 12px; border-radius: var(--r-pill); font: 700 14px/1.3 var(--font-display); margin: 0 0 10px; animation: rt-latido 1s ease-in-out infinite; }
 #retos .rt-tecla { font: 600 12px/1 var(--font-body); opacity: .75; margin-left: 6px; }
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
@@ -406,6 +407,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   <div class="rt-nuevo" hidden>¡Nuevo récord!</div>
   <div class="rt-datos"></div>
   <p class="rt-meta" hidden></p>
+  <div class="rt-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
   <p class="rt-descanso" hidden>Llevas un buen rato jugando. ¿Un descanso para estirar las alas? Aquí te esperamos cuando quieras.</p>
   <div class="rt-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rt-tecla">${TACTIL ? '' : 'Enter'}</span></button>
@@ -418,12 +420,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui = { el, fx, hud: q('.rt-hud'), pos: q('.rt-pos b'), posN: q('.rt-pos small'), tiempo: q('.rt-tiempo span:last-child'), pts: q('.rt-pts span:last-child'),
         vidas: q('.rt-vidas'), puntos: q('.rt-puntos span:nth-of-type(2)'), combo: q('.rt-combo'), flecha: q('.rt-flecha'), flechaSvg: q('.rt-flecha svg'), flechaTxt: q('.rt-flecha span'),
         tags: q('.rt-tags'), cuenta: q('.rt-cuenta'), aviso: q('.rt-aviso'), menu: q('.rt-menu'), fin: q('.rt-fin'), medalla: q('.rt-medalla'), finT: q('#rt-fin-t'),
-        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), meta: q('.rt-meta'), descanso: q('.rt-descanso'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
+        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), meta: q('.rt-meta'), rank: q('.rt-rank'), descanso: q('.rt-descanso'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
         lineas: fx.querySelector('.rt-lineas'), destello: fx.querySelector('.rt-destello'), oscuro: fx.querySelector('.rt-oscuro'), moja: fx.querySelector('.rt-moja') };
       el.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.jugar) jugar(b.dataset.jugar);
         else if (b.hasAttribute('data-otra')) otraVez();
+        else if (b.hasAttribute('data-ranking')) publicarMarca(b);
         else if (b.hasAttribute('data-menu')) abrir();
         else if (b.hasAttribute('data-fantasma')) alternarFantasma();
         else if (b.hasAttribute('data-salir')) salir();
@@ -546,7 +549,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       leerRec, guardarRec, esPrueba: () => claveRec !== ALMACEN };
     const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
-      montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now());
+      montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
       if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
@@ -613,6 +616,20 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const sesion = { t0: 0, ult: 0 };
     function tocarSesion(ahora) { if (!sesion.t0 || ahora - sesion.ult > 10 * 60 * 1000) sesion.t0 = ahora; sesion.ult = ahora; }
     function tocaDescanso(ahora, limite) { if (sesion.t0 && ahora - sesion.t0 >= (limite || DESCANSO_MS)) { sesion.t0 = ahora; return true; } return false; }
+    // Ranking global: solo si la marca es tu mejor y la partida no es de prueba; el panel y el envío viven en records.js
+    function datosRanking(reto, u, rec) {
+      if (!u || u.modo !== reto || claveRec !== ALMACEN) return null;
+      const r = (rec && rec[reto]) || {};
+      if (reto === 'carrera' || reto === 'rio') return u.llego && u.ms > 0 && r.mejor && u.ms <= r.mejor ? { reto, valor: u.ms } : null;
+      if (UMBRAL[reto]) return u.puntos > 0 && u.puntos >= (r.mejor || 0) ? { reto, valor: u.puntos } : null;
+      return null;
+    }
+    function publicarMarca(btn, fetchSim) {
+      const d = st.rankDatos; if (!d) return Promise.resolve('invalido');
+      const ir = G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+      return ir.then(rk => rk.publicarRanking({ reto: d.reto, valor: d.valor, dur_ms: d.dur_ms, prueba: claveRec !== ALMACEN, fetch: fetchSim }), () => { G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000); return 'error'; })
+        .then(r => { if (r === 'publicado' && btn) btn.parentNode.hidden = true; return r; });
+    }
     function pintarGanchos() {
       if (!ui || !ui.meta) return;
       const reto = st.reto, rec = leerRec(), ls = metaLineas(reto, st.ultimo, rec);
@@ -621,6 +638,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join('');
       ui.meta.hidden = !ls.length;
       ui.descanso.hidden = !tocaDescanso(Date.now());
+      const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !dr;
     }
     function resultados(html) {
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
@@ -1619,6 +1637,27 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('El menú de Retos muestra el reto del día y lo marca en su tarjeta', !hoyB.hidden && hoyB.querySelector('[data-jugar="' + P.retoDelDia() + '"]') && ui.menu.querySelectorAll('.rt-reto.es-hoy').length === 1 && nom.length > 3, nom);
           check('Cada reto con récord enseña su medalla en el menú', [...ui.menu.querySelectorAll('.rt-reto')].every(c => c.querySelector('.rt-med')));
           check('Sin rachas ni cuentas atrás: no hay contadores de días en el menú', !/racha|mañana|vuelve|perder/i.test(ui.menu.textContent)); }
+        // ---------- Ranking global: nunca publica en pruebas; con fetch simulado, apodo de listas fijas y top 3 ----------
+        { const P = api.pruebas, rk = G.recordsApi || await G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+          let llamadas = 0; const fetch0 = window.fetch; window.fetch = function () { llamadas++; return Promise.reject(new Error('sin red en pruebas')); };
+          let r1; try { r1 = await rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true }); } finally { window.fetch = fetch0; }
+          check('Ranking: una partida de prueba nunca publica (ni abre el panel ni llama a la red)', r1 === 'prueba' && llamadas === 0 && !rk.abrirRank());
+          check('Ranking: el botón no sale en las pruebas', P.datosRanking('tormenta', { modo: 'tormenta', puntos: 900 }, { tormenta: { mejor: 900 } }) === null);
+          const envios = []; const falso = (url, o) => { envios.push({ url, o }); return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true, puesto: 2, top: [{ puesto: 1, alias: 'Coquí Veloz 7', valor: 1200 }, { puesto: 2, alias: 'Cotorra Feliz 12', valor: 900 }, { puesto: 3, alias: 'Iguaca Sabio 3', valor: 800 }, { puesto: 4, alias: 'Manatí Ágil 9', valor: 100 }] }) }); };
+          const p1 = rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true, fetch: falso }), panel = document.getElementById('rec-rank');
+          check('Ranking: el panel abre con tres desplegables (sin texto libre) y «otro al azar»', rk.abrirRank() && !panel.hidden && panel.querySelectorAll('select').length === 3 && !panel.querySelector('input, textarea') && !!panel.querySelector('#rk-azar'));
+          const alias0 = panel.querySelector('#rk-alias').textContent; panel.querySelector('#rk-azar').click();
+          check('Ranking: el apodo es «Animal Adjetivo NN» de las listas exactas', new RegExp('^(' + rk.ANIMALES.join('|') + ') (Veloz|Valiente|Curioso|Brillante|Alegre|Audaz|Sabio|Feliz|Ágil|Sereno) ([1-9]\\d?)$').test(panel.querySelector('#rk-alias').textContent) && alias0.length > 5);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          const cuerpo = envios[0] && JSON.parse(envios[0].o.body);
+          check('Ranking: envía reto, valor, dur_ms, alias y un dispositivo aleatorio (nada personal)', envios.length === 1 && /amazona-records$/.test(envios[0].url) && cuerpo.reto === 'tormenta' && cuerpo.valor === 900 && cuerpo.dur_ms === 60000 && /^[a-f0-9]{32}$/.test(cuerpo.dispositivo) && cuerpo.alias === panel.querySelector('#rk-alias').textContent && Object.keys(cuerpo).sort().join() === 'alias,dispositivo,dur_ms,reto,valor', JSON.stringify(cuerpo));
+          check('Ranking: muestra el puesto y solo el top 3, y el enlace «Ver el top»', /2/.test(panel.querySelector('#rk-res').textContent) && panel.querySelectorAll('.rk-top li').length === 3 && panel.querySelector('#rk-ver').href === 'https://amazonaverse.com/#top-records');
+          panel.querySelector('#rk-no').click(); check('Ranking: cierra y devuelve «publicado»', (await p1) === 'publicado' && !rk.abrirRank());
+          const p2 = rk.publicarRanking({ reto: 'flight', valor: 30, dur_ms: 40000, prueba: true, fetch: () => Promise.reject(new Error('sin red')) });
+          check('Ranking: el apodo se recuerda en el dispositivo', panel.querySelector('#rk-alias').textContent === cuerpo.alias);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          check('Ranking: sin red, mensaje amable y el juego sigue (se puede reintentar)', /no hay conexión/i.test(panel.querySelector('#rk-res').textContent) && !panel.querySelector('#rk-pub').disabled);
+          panel.querySelector('#rk-no').click(); check('Ranking: cerrar sin publicar devuelve «cerrado»', (await p2) === 'cerrado'); }
         check('El menú muestra la contrarreloj del río, sin récord aún', !!ui.menu.querySelector('[data-jugar="rio"]') && ui.menu.querySelector('[data-rec="rio"]').textContent === 'Aún sin récord');
         let emitido = null; emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
         check('La contrarreloj arranca', jugar('rio') && modo === CARRERA && C.rio === true && C.fase === 'cuenta');
@@ -1733,7 +1772,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
-      pruebas: { medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
+      pruebas: { datosRanking, publicarMarca, medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
       alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
   };

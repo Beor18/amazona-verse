@@ -1269,6 +1269,7 @@ window.AV_EN = {
  "Siguiente meta: la medalla de plata.": "Next goal: the silver medal.",
  "Siguiente meta: la medalla de bronce.": "Next goal: the bronze medal.",
  "Llevas un buen rato jugando. ¿Un descanso para estirar las alas? Aquí te esperamos cuando quieras.": "You've been playing a while. How about a break to stretch your wings? We'll be here whenever you like.",
+ "Publicar en el ranking": "Post to the leaderboard",
  "Reto del día": "Challenge of the day",
  "Mis sellos": "My stickers",
  "uno por cada medalla que consigas": "one for every medal you earn",
