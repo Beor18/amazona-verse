@@ -206,12 +206,31 @@
         x.strokeStyle = col; x.lineWidth = lw; x.lineJoin = 'round'; x.beginPath(); pts.forEach(([a, b], i) => (i ? x.lineTo(a, b) : x.moveTo(a, b))); x.stroke();
       }
     });
-    // Cortina de lluvia del frente: gris azulado casi opaco hasta el agua, con trazos de lluvia (la textura se desplaza)
-    const texCortina = () => lienzo('cortina', 256, 256, (x, w, h) => {
-      const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(34,40,62,.96)'); g.addColorStop(0.55, 'rgba(52,62,90,.86)'); g.addColorStop(1, 'rgba(70,84,112,.72)');
+    // Cortina: trazos de lluvia sobre una bruma pareja. El tile se repite, así que el desvanecido
+    // (agua, cielo y lados) no va aquí: lo pone bordeSuave con el UV del plano, no el de la textura.
+    const texCortina = () => lienzo('cortina', 512, 512, (x, w, h) => {
+      x.fillStyle = 'rgba(32, 40, 62, 0.62)'; x.fillRect(0, 0, w, h);
+      x.lineCap = 'round';
+      for (let i = 0; i < 340; i++) {
+        const a = Math.random() * (w + 40) - 20, b = Math.random() * h, largo = 48 + Math.random() * 86, al = 0.16 + Math.random() * 0.5;
+        x.strokeStyle = 'rgba(214, 226, 242, ' + (al * 0.35).toFixed(3) + ')'; x.lineWidth = 5 + Math.random() * 3;
+        x.beginPath(); x.moveTo(a, b); x.lineTo(a - largo * 0.18, b + largo); x.stroke();
+        x.strokeStyle = 'rgba(236, 244, 252, ' + al.toFixed(3) + ')'; x.lineWidth = 1.4 + Math.random() * 1.3;
+        x.beginPath(); x.moveTo(a, b); x.lineTo(a - largo * 0.18, b + largo); x.stroke();
+      }
+    });
+    // Techo de la tormenta: mancha de nube que ya nace transparente en el borde del lienzo
+    const texTecho = () => lienzo('techo-tormenta', 512, 512, (x, w, h) => {
+      const g = x.createRadialGradient(w / 2, h / 2, w * 0.04, w / 2, h / 2, w * 0.5);
+      g.addColorStop(0, 'rgba(28, 34, 54, 0.92)'); g.addColorStop(0.42, 'rgba(36, 44, 68, 0.55)');
+      g.addColorStop(0.72, 'rgba(44, 54, 82, 0.16)'); g.addColorStop(1, 'rgba(44, 54, 82, 0)');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
-      x.strokeStyle = 'rgba(205,220,245,.35)'; x.lineWidth = 1.6;
-      for (let i = 0; i < 220; i++) { const a = Math.random() * w, b = Math.random() * h; x.beginPath(); x.moveTo(a, b); x.lineTo(a - 5, b + 22); x.stroke(); }
+      for (let i = 0; i < 7; i++) {
+        const cx = w * (0.22 + Math.random() * 0.56), cy = h * (0.22 + Math.random() * 0.56), r = w * (0.1 + Math.random() * 0.16);
+        const b = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+        b.addColorStop(0, 'rgba(20, 26, 44, 0.4)'); b.addColorStop(1, 'rgba(20, 26, 44, 0)');
+        x.fillStyle = b; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+      }
     });
     // Banderín con número (o META): triángulo de tela con el borde cosido
     function texBanderin(txt) {
@@ -235,6 +254,29 @@
       return MAT;
     }
     const aditivo = (map, color, op) => lm(new THREE.MeshBasicMaterial({ map, color: color || '#ffffff', transparent: true, opacity: op == null ? 1 : op, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+    // Apaga la alfa hacia el borde del plano (el UV de la geometría, no el de la textura que se desplaza).
+    // cortina: se disuelve en el agua, en el cielo y en los lados. techo: óvalo, sin arista contra el cielo.
+    function bordeSuave(mat, modo) {
+      // La clave por defecto es el texto de onBeforeCompile, igual para los dos modos: sin esto compartirían programa
+      mat.customProgramCacheKey = function () { return 'avBorde:' + modo; };
+      mat.onBeforeCompile = sh => {
+        sh.vertexShader = 'varying vec2 vAvUv;\n' + sh.vertexShader.replace(
+          '#include <uv_vertex>',
+          'vAvUv = vec2(0.5);\n\t#ifdef USE_UV\n\tvAvUv = uv;\n\t#endif\n\t#include <uv_vertex>'
+        );
+        const fade = modo === 'techo'
+          ? 'vec2 avQ = vAvUv - vec2(0.5); float avBorde = 1.0 - smoothstep(0.10, 0.50, length(avQ));'
+          : 'float avLado = smoothstep(0.0, 0.18, vAvUv.x) * (1.0 - smoothstep(0.82, 1.0, vAvUv.x));'
+            + 'float avAgua = smoothstep(0.20, 0.50, vAvUv.y);'
+            + 'float avCielo = 1.0 - smoothstep(0.58, 0.98, vAvUv.y);'
+            + 'float avBorde = avLado * avAgua * avCielo;';
+        sh.fragmentShader = 'varying vec2 vAvUv;\n' + sh.fragmentShader.replace(
+          'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+          fade + '\n\tdiffuseColor.a *= avBorde;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );'
+        );
+      };
+      return mat;
+    }
     const spriteMat = (map, color, add, op) => lm(new THREE.SpriteMaterial({ map, color: color || '#ffffff', transparent: true, opacity: op == null ? 1 : op, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, fog: false }));
     if (G.fx.PALETTE && !G.fx.PALETTE.petalos) G.fx.PALETTE.petalos = ['#e8365a', '#ff8fa8', '#ffd84a', '#ffffff', '#c41e3a'];
 
@@ -1104,11 +1146,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const tela = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1), lm(new THREE.MeshLambertMaterial({ map: texBanderin(' '), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: i % 2 ? '#ffcf5a' : '#7fd3ff' })));
         tela.position.set(x + 0.8 * Math.cos(t + 1.57), y0 + 8.3, z + 0.8 * Math.sin(t + 1.57)); tela.rotation.y = -t; TM.grupo.add(tela);
       }
-      // Frente: cortina de lluvia vertical (se mueve) y techo de nubes sobre lo que ya cubrió
+      // Frente: cortina alta (entra en el agua y en el cielo) y techo de nube. El plano es más grande que
+      // lo que se ve: bordeSuave deja la arista en alfa 0, así no hay un rectángulo contra el mar ni el cielo.
       const mc = texCortina().clone(); mc.needsUpdate = true; mc.wrapS = mc.wrapT = THREE.RepeatWrapping; mc.repeat.set(6, 2); TM.mapaCortina = mc;
-      const cort = new THREE.Mesh(new THREE.PlaneGeometry(140, 36), lm(new THREE.MeshBasicMaterial({ map: mc, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 0.92 })));
+      const cort = new THREE.Mesh(new THREE.PlaneGeometry(220, 120), bordeSuave(lm(new THREE.MeshBasicMaterial({ map: mc, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 1 })), 'cortina'));
       cort.rotation.y = Math.atan2(a.dx, a.dz); TM.cortina = cort; TM.grupo.add(cort);
-      const techo = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), lm(new THREE.MeshBasicMaterial({ color: '#262d44', transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, fog: false })));
+      const mt = texTecho(); mt.wrapS = mt.wrapT = THREE.ClampToEdgeWrapping;
+      const techo = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), bordeSuave(lm(new THREE.MeshBasicMaterial({ map: mt, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 0.9 })), 'techo'));
       techo.rotation.x = -Math.PI / 2; TM.techo = techo; TM.grupo.add(techo);
       sobreAgua(TM.grupo); TM.cortina.renderOrder = TM.techo.renderOrder = 8;
       raiz.add(TM.grupo);
@@ -1317,8 +1361,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const a = TM.arena, now = performance.now() / 1000;
       // Frente (cortina) y techo de nubes sobre la parte cubierta
       const fx = a.x + a.dx * TM.frente, fz = a.z + a.dz * TM.frente, y0 = superficie(a.x, a.z);
-      TM.cortina.position.set(fx, y0 + 17, fz);
-      TM.techo.position.set(fx - a.dx * 80, y0 + 15, fz - a.dz * 80);
+      // Centro de la cortina (alto 120): el borde de abajo queda bajo el agua y el de arriba, en el cielo
+      TM.cortina.position.set(fx, y0 + 36, fz);
+      TM.techo.position.set(fx - a.dx * 90, y0 + 22, fz - a.dz * 90);
       TM.mapaCortina.offset.y += dt * 1.8; TM.mapaCortina.offset.x += dt * 0.05;
       for (const z of TM.peligros) {
         if (z.tipo === 'rama') {
