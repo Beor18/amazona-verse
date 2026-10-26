@@ -1,9 +1,11 @@
-/* Juego · Looks de color (A/B para Kelvin): «vibrante», «soleado» y «toon» frente al look de fábrica.
-   Carga perezosa desde boot.js (window.AVLook(G)). El look de fábrica no se toca: sin look activo este módulo no cambia ni
-   un byte de los shaders ni de los valores del pack; cada look guarda lo que pisa y lo devuelve al quitarse.
-   Cómo se elige: ?look=vibrante en la URL (manda sobre todo), sessionStorage 'ave.look' (lo que se eligió en la pausa) o la
-   sección oculta «Look» del menú de pausa (se ve con ?look=… o con localStorage 'ave.look.dev' = '1').
-   Para fijar uno de fábrica el día que Kelvin decida: cambiar DEFECTO abajo (una línea).
+/* Juego · Looks de color: «vibrant_toon» (Vibrant Toon Refinado, el look de fábrica desde el 26-oct por decisión de Kelvin),
+   y las variantes de la prueba A/B («vibrante», «soleado», «toon») y el original («fabrica»: lo que había antes, para comparar).
+   Lo carga boot.js al arrancar (window.AVLook(G)), antes del primer cuadro del mundo (la portada lo tapa). Sin look activo este
+   módulo no cambia ni un byte de los shaders ni de los valores del pack; cada look guarda lo que pisa y lo devuelve al quitarse.
+   Cómo se elige: ?look=vibrant_toon|fabrica|… en la URL (manda sobre todo), sessionStorage 'ave.look' (lo que se eligió en la
+   pausa) o DEFECTO. La sección «Look» del menú de pausa está oculta (se ve con ?look=… o con localStorage 'ave.look.dev' = '1').
+   Con un look activo la gradación de fábrica de renderer.js (W1: uSat/uCon/uTint del composer, o CustomToneMapping en bajo) se
+   sustituye por la del look (no se suman); el cielo vivo (C1), el clima y el atardecer siguen mandando sobre sus uniformes.
    Qué toca cada look (todo en vivo, sin recargar):
    - Gradación global barata: saturación, contraste y calidez después del ACES, en el ShaderChunk tonemapping_fragment (afecta a
      todos los materiales con tone mapping, también al cielo y a las nubes; los sprites toneMapped = false quedan fuera). Son
@@ -20,8 +22,8 @@ window.AVLook = function (G) {
   'use strict';
   const R = G.renderer, W = G.pack.mundo || {}, $ = G.util.$;
   const SC = THREE.ShaderChunk;
-  const ORIG = { tone: SC.tonemapping_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex };
-  const DEFECTO = null; // ← el look de fábrica. Cuando Kelvin elija: 'vibrante', 'soleado' o 'toon'.
+  const ORIG = { tone: SC.tonemapping_fragment, pars: SC.tonemapping_pars_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex };
+  const DEFECTO = 'vibrant_toon'; // ← el look de fábrica (decisión de Kelvin, 26-oct: docs/DECISION_LOG.md). ?look=fabrica muestra el original.
   const LOOKS = {
     vibrante: {
       titulo: 'Vibrante', exposicion: 0.82,
@@ -127,8 +129,20 @@ window.AVLook = function (G) {
     ? (x => { const [a, b, k] = L.refinado.rampa; return `mix( smoothstep( ${f(a)}, ${f(b)}, ${x} ), saturate( ${x} ), ${f(k)} )`; })
     : (x => `smoothstep( -0.05, 0.45, ${x} )`);
   const rampaLambert = (src, L) => { const r = rampaDe(L); return src.split('saturate( dotNL )').join(r('dotNL')).split('saturate( -dotNL )').join(r('-dotNL')); };
+  // Gradación de fábrica de renderer.js (W1). Sin composer va dentro de CustomToneMapping (ACES + saturación y contraste): con un
+  // look se deja en ACES puro, para que la del look la sustituya. Con composer, el pase de gradación tiene uSat/uCon/uTint: se
+  // ponen a 1 (la viñeta y los rayos siguen). Al quitar el look vuelven los valores de fábrica (post.GRADO).
+  const RE_CUSTOM = /vec3 CustomToneMapping\( vec3 color \) \{[^}]*\}/;
+  const NEUTRO_PARS = ORIG.pars.replace(RE_CUSTOM, 'vec3 CustomToneMapping( vec3 color ) { return ACESFilmicToneMapping( color ); }');
+  function gradoFabrica(L) {
+    const g = R.post && R.post.grade, G0 = R.post && R.post.GRADO; if (!g || !g.uniforms || !g.uniforms.uSat || !G0) return;
+    const u = g.uniforms;
+    if (L) { u.uSat.value = 1; u.uCon.value = 1; u.uTint.value.set(1, 1, 1); }
+    else { u.uSat.value = G0.sat; u.uCon.value = G0.con; u.uTint.value.set(G0.tint[0], G0.tint[1], G0.tint[2]); }
+  }
   function aplicarChunks(L) {
     SC.tonemapping_fragment = L ? chunkTone(L) : ORIG.tone;
+    SC.tonemapping_pars_fragment = L ? NEUTRO_PARS : ORIG.pars;
     SC.lights_phong_pars_fragment = L && L.toon ? ORIG.phong.replace('float dotNL = saturate( dot( geometry.normal, directLight.direction ) );', 'float dotNL = ' + rampaDe(L)('dot( geometry.normal, directLight.direction )') + ';') : ORIG.phong;
     SC.lights_lambert_vertex = L && L.toon ? rampaLambert(ORIG.lambert, L) : ORIG.lambert;
   }
@@ -236,7 +250,7 @@ window.AVLook = function (G) {
     base.niebla.lin = base.niebla.srgb.clone().convertSRGBToLinear();
   }
   function aplicarAmbiente(L) {
-    guardarBase();
+    guardarBase(); gradoFabrica(L);
     const B = base, sky = R.sky && R.sky.material.uniforms, A = G.agua && G.agua.uniforms, fog = R.scene.fog;
     R.renderer.toneMappingExposure = L ? L.exposicion : B.exposicion;
     if (L) { R.hemi.color.set(L.luces.cielo); R.hemi.groundColor.set(L.luces.suelo); R.hemi.intensity = L.luces.hemi; R.sun.color.set(L.luces.sol); R.sun.intensity = L.luces.solInt; }
@@ -260,7 +274,7 @@ window.AVLook = function (G) {
   let barridoN = 0;
   function aplicar(nombre) {
     const L = LOOKS[nombre] || null;
-    if (!L) return quitar();
+    if (!L) { quitar(); try { sessionStorage.setItem('ave.look', 'fabrica'); } catch (e) { /* sin almacén */ } return null; } // «Fábrica» elegido a propósito: no vuelve el DEFECTO
     actual = nombre;
     aplicarChunks(L); aplicarAmbiente(L); barrer(L, true);
     G.emit('contexto', true); // el atlas de impostores de la flora se repinta con el look
@@ -289,7 +303,7 @@ window.AVLook = function (G) {
   G.on('render', () => {
     if (!actual) return;
     const h = huellaDe(), nuevo = h !== huella; huella = h;
-    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
+    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
   }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
 
@@ -331,7 +345,8 @@ window.AVLook = function (G) {
 
   // ---------- Arranque: URL > sesión > DEFECTO ----------
   const pedido = q.get('look') || (() => { try { return sessionStorage.getItem('ave.look'); } catch (e) { return null; } })() || DEFECTO;
-  if (pedido && LOOKS[pedido]) aplicar(pedido);
+  if (LOOKS[pedido]) aplicar(pedido);
+  else if (pedido !== 'fabrica' && LOOKS[DEFECTO]) aplicar(DEFECTO); // un nombre desconocido cae en el de fábrica actual
 
   // ---------- Prueba: AV.lookTest() ----------
   async function test() {
@@ -350,7 +365,9 @@ window.AVLook = function (G) {
     const firma = () => {
       const u = R.sky && R.sky.material.uniforms, fog = R.scene.fog;
       let sat = ''; R.scene.traverse(o => { const m = o.material; if (m && m.userData && m.userData.splat) sat += m.userData.uniforms.uSat.value.toArray().map(v => v.toFixed(3)).join(',') + ';'; });
-      return JSON.stringify({ tone: SC.tonemapping_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex,
+      const pg = R.post && R.post.grade && R.post.grade.uniforms;
+      return JSON.stringify({ tone: SC.tonemapping_fragment, pars: SC.tonemapping_pars_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex,
+        grado: pg && [pg.uSat.value, pg.uCon.value, pg.uTint.value.toArray()],
         exp: R.renderer.toneMappingExposure, hemi: [hex(R.hemi.color), hex(R.hemi.groundColor), R.hemi.intensity], sol: [hex(R.sun.color), R.sun.intensity],
         sky: u && [hex(u.uCenit.value), hex(u.uHorizonte.value)], fog: fog && [hex(fog.color), fog.near, fog.far], sat, key: new THREE.MeshBasicMaterial().customProgramCacheKey() });
     };
@@ -360,7 +377,9 @@ window.AVLook = function (G) {
       if (actual) quitar();
       await cuadro();
       const F0 = firma(), f0 = foto(), c0 = f0.croma, m0 = medir();
-      check('De fábrica: los ShaderChunks de three son los originales', SC.tonemapping_fragment === ORIG.tone && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
+      check('Sin look («fabrica»): los ShaderChunks son los originales (los de three y la gradación W1 de renderer.js)', SC.tonemapping_fragment === ORIG.tone && SC.tonemapping_pars_fragment === ORIG.pars && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
+      check('DEFECTO es «vibrant_toon» (decisión de Kelvin) y existe; ?look=fabrica o el chip «Fábrica» dejan ver el original', DEFECTO === 'vibrant_toon' && !!LOOKS[DEFECTO] && (q.get('look') === 'fabrica' ? antes === null : antes === (sessionStorage.getItem('ave.look') === 'fabrica' ? null : antes)), 'al entrar: ' + (antes || 'fabrica'));
+      check('La gradación de fábrica (W1) se encuentra para sustituirla (CustomToneMapping en tonemapping_pars_fragment)', RE_CUSTOM.test(ORIG.pars) && NEUTRO_PARS !== ORIG.pars || !/CustomToneMapping[^}]*ACESFilmicToneMapping/.test(ORIG.pars), /ACESFilmicToneMapping/.test(ORIG.pars) ? 'W1 presente' : 'sin W1 (three a secas)');
       check('De fábrica: exposición y luces del pack', R.renderer.toneMappingExposure === (W.exposicion != null ? W.exposicion : 0.7) && (!W.luces || R.sun.intensity === W.luces.solInt),
         'exposición ' + R.renderer.toneMappingExposure + ' · sol ' + R.sun.intensity);
       check('De fábrica: la clave de los programas es la de three', new THREE.MeshBasicMaterial().customProgramCacheKey() === keyProto.call(new THREE.MeshBasicMaterial()));
@@ -376,6 +395,9 @@ window.AVLook = function (G) {
           new THREE.MeshBasicMaterial().customProgramCacheKey().endsWith('|look:' + n), Math.round(tApl) + ' ms en aplicar');
         check(`Look «${n}»: la imagen tiene más color que la de fábrica`, c1 > c0 * 1.03, 'croma medio ' + c0.toFixed(1) + ' → ' + c1.toFixed(1));
         check(`Look «${n}»: el chip de la pausa lo marca`, !!sec && sec.querySelector(`button[data-look="${n}"]`).getAttribute('aria-pressed') === 'true');
+        { const pg = R.post && R.post.grade && R.post.grade.uniforms;
+          check(`Look «${n}»: sustituye la gradación de fábrica en vez de sumarse (CustomToneMapping = ACES puro; uSat/uCon del composer = 1; viñeta intacta)`,
+            /CustomToneMapping\( vec3 color \) \{ return ACESFilmicToneMapping\( color \); \}/.test(SC.tonemapping_pars_fragment) && (!pg || (pg.uSat.value === 1 && pg.uCon.value === 1 && pg.uTint.value.x === 1 && pg.uVig.value === (R.post.grade.uniforms.uVig.value))), pg ? 'composer' : 'sin composer'); }
         if (L.toon) {
           check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
           check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, m1.texturasGrandes < m0.texturasGrandes || m0.texturasGrandes === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' texturas de más de 512 px · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
@@ -399,7 +421,7 @@ window.AVLook = function (G) {
       const F1 = firma(), c2 = foto().croma, m2 = medir();
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
-      check('Al quitar el look las texturas vuelven a su tamaño', m2.texturasGrandes === m0.texturasGrandes && Math.abs(m2.texturasMB - m0.texturasMB) < 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
+      check('Al quitar el look las texturas vuelven a su tamaño (no quedan reducidas; si otros módulos cargan texturas durante la prueba, el total puede crecer)', m2.texturasGrandes >= m0.texturasGrandes && m2.texturasMB > m0.texturasMB - 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
       { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
           if (m.defines && m.defines.AV_RIM) rim++;
           if (guardado.has(m) && m.color && hex(m.color) !== hex(guardado.get(m))) colores++;

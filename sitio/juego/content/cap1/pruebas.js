@@ -403,7 +403,12 @@
     check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
-    check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && R.toneMapping === THREE.ACESFilmicToneMapping);
+    // El post se carga perezoso: hasta que termina (o si el equipo cae a «bajo») el tone mapping es CustomToneMapping (W1: ACES con
+    // la gradación de fábrica dentro). Se espera a que el post se asiente y se acepta ACES o CustomToneMapping-con-ACES; otro
+    // encoding u otro tone mapping (lineal, Reinhard, ninguno) sigue fallando: eso sí sería un color distinto del creador.
+    if (G.renderer.post && G.renderer.post.cargando) await G.renderer.post.cargando.catch(() => {});
+    const tmACES = R.toneMapping === THREE.ACESFilmicToneMapping || (R.toneMapping === THREE.CustomToneMapping && /CustomToneMapping[^}]*ACESFilmicToneMapping/.test(THREE.ShaderChunk.tonemapping_pars_fragment));
+    check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && tmACES, 'toneMapping ' + R.toneMapping + (G.renderer.post && G.renderer.post.activo ? ' · composer' : ' · sin composer'));
     check('Pixel ratio limitado', R.getPixelRatio() <= (G.renderer.MOBILE ? 1.5 : 2), String(R.getPixelRatio()));
     // Fugas: cambiar de ropa muchas veces no aumenta geometrías ni texturas en la GPU
     if (window.AVCharacter) {

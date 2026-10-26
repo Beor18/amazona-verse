@@ -40,6 +40,7 @@
     AV.movementTest = o => movimiento().then(m => m.test(o));
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
+    if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
@@ -109,10 +110,10 @@
     AV.climaTest = o => cargarClima().then(c => c.test(o));
     alPrimerGesto(cargarClima);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
-    // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
+    // Look de color (src/game/look.js): «vibrant_toon» es el de fábrica (DEFECTO); ?look=fabrica|vibrante|soleado|toon y sección oculta en la pausa
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
-    if (/[?&]look=/.test(location.search)) cargarLook().catch(() => {}); else setTimeout(() => cargarLook().catch(() => {}), 7000);
+    cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }
