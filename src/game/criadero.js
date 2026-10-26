@@ -20,7 +20,8 @@ AVE.module('criadero', function (G) {
   const DATA_SRC = 'content/comun/huevos.js', CSS_SRC = 'src/ui/criadero.css';
   const D = () => window.AV_HUEVOS;
   const RZ = () => G.rareza || null; // src/game/rareza.js (se carga abajo; sin él, todo sigue igual que antes)
-  const KEY = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
+  // pack.criadero.almacen: otro episodio puede leer el mismo criadero que el cap. 1 (la cría sigue a Vittata); sin él, el almacén del pack
+  const KEY = ((G.pack.criadero && G.pack.criadero.almacen) || (G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   // Botones para simular XP: solo en el prototipo con ?demo=1 (en clase la XP sale del juego)
   const DEMO = /^(1|true)$/i.test(new URLSearchParams(location.search).get('demo') || '');
