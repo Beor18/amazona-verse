@@ -167,7 +167,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
   "Que nadie pase por al lado ni lo moleste.": "That nobody walks right by it or bothers it.",
   "¿Te gusta mi plano?": "Do you like my plan?",
   "No.": "No.",
-  "Lo anoto en una tarjeta: «{}».": "I'll write it on a card: “{}”.",
+  "Nueva tarjeta: «{}»": "New card: “{}”",
   "Mmm… a esa solo se puede contestar sí o no. Pruebo con otra.": "Hmm… that one can only be answered yes or no. I'll try another.",
   "Entrada baja": "Low entrance",
   "Sin viento frío": "No cold wind",

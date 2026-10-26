@@ -230,7 +230,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
     '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-dest"></i>Destino</li></ul></div>';
-  let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0;
+  let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
     elC = doc.createElement('div'); elC.id = 'minimapa'; elC.className = 'hud'; elC.hidden = true; elC.setAttribute('role', 'group'); elC.setAttribute('aria-label', 'Minimapa'); elC.innerHTML = HTML_COMPACTO;
@@ -238,6 +238,13 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const ancla = $('toast'); (ancla && ancla.parentNode ? ancla.parentNode : doc.body).insertBefore(elC, ancla || null); doc.body.appendChild(elG);
     cvC = elC.querySelector('canvas'); cvG = elG.querySelector('.mg-c'); ctxC = cvC.getContext('2d'); ctxG = cvG.getContext('2d');
     txtD = elC.querySelector('.mm-d'); txtDot = elC.querySelector('.mm-dot');
+    // Tamaños por ResizeObserver (AF1): ni visible() ni clientWidth ni colocar() fuerzan un reflujo en cada tick (en el móvil lento,
+    // del 4 al 18 % de la CPU). Oculto (el minimapa o un padre con display:none), el lienzo mide 0. Sin ResizeObserver, lo de antes.
+    if (window.ResizeObserver) {
+      // colocar() va dentro del observador, que corre con la maqueta recién hecha (medir ahí no fuerza otro reflujo)
+      const ro = new ResizeObserver(es => { let otro = false; for (const e of es) { if (e.target === cvC) anchoC = e.contentRect.width; else otro = true; } if (otro) { porColocar = false; colocar(); } });
+      ro.observe(cvC); for (const id of ['quest', 'inv', 'sys']) { const e = $(id); if (e) ro.observe(e); }
+    }
     elC.querySelector('.mm-btn').addEventListener('click', () => abrir());
     elG.querySelector('.mg-cerrar').addEventListener('click', () => cerrar());
     elG.querySelector('.mg-ruta').addEventListener('click', e => { pref.ruta = !pref.ruta; guardarPref(); e.currentTarget.setAttribute('aria-pressed', String(pref.ruta)); dirty = true; });
@@ -267,8 +274,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   const visible = e => e.getClientRects().length > 0;
   const contraste = () => raiz.classList.contains('a11y-contraste');
   const fsk = () => { const v = parseFloat(getComputedStyle(raiz).getPropertyValue('--fs-k')); return v > 0 ? v : 1; };
-  function ajustar(cv, ctx, previo) {
-    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round(cv.clientWidth * dpr);
+  function ajustar(cv, ctx, previo, ancho) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.round((ancho >= 0 ? ancho : cv.clientWidth) * dpr);
     if (w > 0 && (cv.width !== w || previo !== dpr)) { cv.width = cv.height = w; return dpr; }
     return previo || dpr;
   }
@@ -351,7 +358,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     return { marcas: ms.length, bordes, ang: anguloFlecha() };
   }
   let radio = R_ANDANDO, ultimo = null;
-  const vistaCompacta = () => ({ cx: S.pos.x, cz: S.pos.z, mpp: 2 * radio / (cvC.clientWidth || 124) });
+  const vistaCompacta = () => ({ cx: S.pos.x, cz: S.pos.z, mpp: 2 * radio / ((anchoC >= 0 ? anchoC : cvC.clientWidth) || 124) });
   const vistaGrande = lado => ({ cx: T.x0 + T.ancho / 2, cz: T.z0 + T.largo / 2, mpp: Math.max(T.ancho, T.largo) / lado });
   function textoCompacto() {
     const ob = objetivo(), de = destino;
@@ -375,8 +382,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   }
   function pintar() {
     if (abierto) { refrescarGrande(); return; }
-    if (!elC || elC.hidden || !visible(elC)) return;
-    dprC = ajustar(cvC, ctxC, dprC);
+    if (!elC || elC.hidden || !(anchoC >= 0 ? anchoC > 0 : visible(elC))) return;
+    dprC = ajustar(cvC, ctxC, dprC, anchoC);
     const objR = M.flying ? R_VOLANDO : R_ANDANDO; radio += (objR - radio) * 0.3; // el zoom se suaviza al despegar y aterrizar
     ultimo = dibujar(ctxC, cvC.width, cvC.height, vistaCompacta(), dprC, false);
     textoCompacto();
@@ -389,8 +396,9 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     if (!S.pos) return false;
     if (!B.empezo && S.profile && S.profile.created) empezarBase();
     const juego = !!(S.profile && S.profile.created) && !(doc.getElementById('title') || {}).open && !(G.ui.worldHidden && G.ui.worldHidden());
-    if (elC) elC.hidden = !juego;
-    if (juego && ahora - tColoca > 700) { tColoca = ahora; colocar(); }
+    if (elC && elC.hidden !== !juego) elC.hidden = !juego;
+    // Con observador se recoloca cuando el objetivo o el inventario cambian de tamaño y, por si acaso, cada 5 s; sin él, cada 0,7 s
+    if (juego && (porColocar || ahora - tColoca > (anchoC >= 0 ? 5000 : 700))) { porColocar = false; tColoca = ahora; colocar(); }
     if (!juego || (G.quiet && !tick.forzar && !hayRetos())) return false;
     pintar(); return true;
   }

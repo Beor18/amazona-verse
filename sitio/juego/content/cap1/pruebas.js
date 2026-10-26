@@ -312,6 +312,8 @@
     G.c.apertura.fin(); G.audio.log.length = 0; G.pack.inicio(G);
     const fade = () => document.getElementById('c1-fade'), obs = () => [G.dialogo.actual().who, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
     const ap = [obs()], retratoApertura = G.dialogo.actual().img || '';
+    const zDe = id => parseInt(getComputedStyle(document.getElementById(id)).zIndex, 10) || 0;
+    check('Apertura: con el negro puesto, el bocadillo del Narrador queda encima y se lee (AJ3)', !!fade() && !!document.getElementById('bocadillos') && zDe('bocadillos') > zDe('c1-fade'), zDe('bocadillos') + ' > ' + zDe('c1-fade'));
     while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) ap.push(obs()); }
     check('Apertura: negro con viento hasta el corte al taller, brillo y onda en la Ruptura, negro de nuevo y fundido al despertar',
       ap.length === 6 && ap[0][1] === '1' && ap[1][1] === '1' && ap[2][1] === '0' && ap[3][1] === '0' && !ap[3][2] && ap[4][2] && ap[5][1] === '1' && fade() && fade().style.opacity === '0' && ['viento', 'vmmm', 'zzzt', 'onda'].every(n => G.audio.log.includes(n)), JSON.stringify(ap) + ' ' + G.audio.log.join());

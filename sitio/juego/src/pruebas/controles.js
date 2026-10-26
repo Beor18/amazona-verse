@@ -22,7 +22,7 @@ window.AVControlesTest = function (G) {
     try {
       // 1. Teclado: jugador nuevo → el panel sale solo, con las teclas reales y dejar de volar destacado
       X.forzado = 'teclado'; X.est = { hecho: {}, vistas: {} }; limpiarSesion(); X.cerrar(); X.leyenda(false); X.ocultarPista(); X.reiniciar();
-      const jugable = X.enJuego();
+      const jugable = X.enJuego() && !(G.dialogo.libre && G.dialogo.libre()); // con bocadillos libres el panel espera
       ciclo(60);
       ok('Teclado: el panel de controles sale solo al empezar a jugar', !jugable || mostrado(E.panel), jugable ? '' : 'el juego no está jugable ahora (ventana o diálogo abiertos): se abre a mano');
       if (!jugable) X.mostrar(false);

@@ -213,8 +213,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (M.flying && G.input.jumpHeld && (subirT += dt) > 0.4) hecho('subir');
     if (M.flying && M.landing) hecho('aterrizar');
     if (!M.flying && M.speed > 1 && (movT += dt) > 0.5) hecho('mover');
-    // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse
-    if (jugando) listoT += dt; else listoT = 0;
+    // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse.
+    // Espera a que acaben los bocadillos libres: si no, tapa el gancho del capítulo (la apertura en negro va en bocadillos)
+    if (jugando && !(G.dialogo.libre && G.dialogo.libre())) listoT += dt; else listoT = 0;
     if (!panelAbierto && !tactil() && listoT > AJ.listo && !enSesion.panel && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
     if (panelAbierto) {
       panelT += dt;
