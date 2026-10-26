@@ -119,6 +119,8 @@
         const st = document.createElement('style'); st.id = 'c1-escenas-css';
         st.textContent =
           '#c1-fade{position:fixed;inset:0;z-index:9;background:#000;pointer-events:none;opacity:0}' +
+          // El gancho va en bocadillos libres (z del HUD, 5): mientras está el negro suben por encima, o el narrador no se lee
+          'body:has(#c1-fade) #bocadillos{z-index:var(--z-card,10)}' +
           '#c1-ruptura{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden}' +
           '#c1-ruptura .brillo{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(176,255,228,.72),rgba(176,255,228,0) 62%);mix-blend-mode:screen;opacity:0;animation:c1-brillo 3.4s ease-out forwards}' +
           '#c1-ruptura .onda{position:absolute;left:50%;top:36%;width:30vmax;height:30vmax;margin:-15vmax 0 0 -15vmax;border-radius:50%;border:.8vmax solid rgba(214,255,242,.85);' +
