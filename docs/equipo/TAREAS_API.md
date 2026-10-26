@@ -180,6 +180,22 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - En `index.html` y `boot.js`, solo enganches mínimos releyendo antes.
 - Build en carpeta propia y `test.sh --extra` en verde antes de cada commit.
 
+## Carril R: mapa, fase A (`docs/equipo/MAPA_COMPLETO.md`)
+**R1 · Caminos originales y el río Amazonas.**
+- Recupera los caminos entre aldeas del mapa original (máscara `trees.psd` del terreno de Kelvin; el diagnóstico está en `MAPA_COMPLETO.md`) como senderos visibles, sin flora encima.
+- Ensancha el «Río de los Meandros» hacia los 11 m del original y renómbralo en los textos visibles **«Río Amazonas»**.
+- Sin romper el capítulo 1: misiones, la crecida, la ruta de la gota y las paradas tienen que seguir funcionando; ajusta sus posiciones si el río las toca.
+- Archivos: `tools/blender/mapa_build.py`, `assets/data/mapa_cap1.js` (regenerado), `src/engine/terreno.js` y `vegetacion.js` con hunks mínimos.
+- Capturas de antes y después.
+
+## Carril T: ríos vivos (V9.1, `docs/equipo/V9_BOSQUE_VIVO.md`, punto 5)
+**T1 · Peces nativos con visor.**
+- 3 peces nativos (sirajo *Sicydium*, dajao *Agonostomus monticola* y guabina *Gobiomorus dormitor*) nadando en el río y las pozas, con instancias.
+- Un «visor» que se usa al volar bajo o posada junto al agua: Vittata no bucea como un pez, aunque el buceo del capítulo 1 se queda.
+- Cada pez observado entra al álbum con un dato verificado y su fuente (USGS o DRNA, con URL). Lo no verificable queda «por verificar».
+- Nada de pesca. Para todas las edades.
+- Código en `src/game/rio_vivo.js`, `rioVivoTest` y capturas.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -212,3 +228,5 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | O1 | pendiente | | |
 | P1 | pendiente | | |
 | Q1 | pendiente | | |
+| R1 | pendiente | | |
+| T1 | pendiente | | |
