@@ -44,8 +44,9 @@
   async function e2eTest(opts) {
     opts = opts || {};
     const rama = String(opts.rama || 'A').toUpperCase() === 'B' ? 'B' : 'A';
-    const out = [], t0 = performance.now();
-    const check = (paso, nombre, estado, evidencia, max) => out.push({ paso, name: paso + ' · ' + nombre, ok: estado === true, estado: estado === true ? 'ok' : estado === 'bloqueado' ? 'BLOQUEADO' : 'falla', extra: s(evidencia).slice(0, max || 400) });
+    const out = [], t0 = performance.now(); let tUlt = t0;
+    // ms: tiempo real (de pared) desde el resultado anterior; tAcum: segundos desde el inicio. Dicen cuánto tarda cada paso y dónde se corta
+    const check = (paso, nombre, estado, evidencia, max) => { const ahora = performance.now(); out.push({ paso, name: paso + ' · ' + nombre, ok: estado === true, estado: estado === true ? 'ok' : estado === 'bloqueado' ? 'BLOQUEADO' : 'falla', extra: s(evidencia).slice(0, max || 400), ms: Math.round(ahora - tUlt), tAcum: Math.round((ahora - t0) / 100) / 10 }); tUlt = ahora; };
     const pack = (window.AV && window.AV.G && window.AV.G.pack) || {};
     const prefijo = (pack.meta && pack.meta.almacen) || 'amazonaverse';
     // Respaldo de todo lo del juego en localStorage (partida, criadero, aula, sonido…)
@@ -626,8 +627,15 @@
       if (!opts.keep) fr.remove();
       limpiar();
       try { for (const [k, v] of Object.entries(respaldo)) localStorage.setItem(k, v); } catch (e) { /* */ }
+      // Informe por paso: tiempo real de cada tramo (suma de sus comprobaciones) y primer paso que falla. Va como una comprobación
+      // más (informativa, siempre ok) para que salga en el informe de test.sh; el fallo en sí lo dan las comprobaciones rojas
+      const porPaso = [], vistos = {};
+      for (const o of out) { const k = o.paso; if (!vistos[k]) { vistos[k] = { paso: k, seg: 0, n: 0, falla: 0 }; porPaso.push(vistos[k]); } vistos[k].seg += o.ms / 1000; vistos[k].n++; if (o.estado === 'falla') vistos[k].falla++; }
+      const primera = out.find(o => o.estado === 'falla');
+      out.push({ paso: 'R', name: 'R · Resumen por paso: ' + (primera ? 'FALLA EN EL PASO ' + primera.paso + ' («' + primera.name.slice(0, 60) + '»)' : 'sin fallos'), ok: true, estado: 'ok',
+        extra: s(porPaso.map(p => p.paso + ': ' + p.seg.toFixed(1) + ' s' + (p.falla ? ' [' + p.falla + ' fallan]' : '')).join(' · ') + ' · total ' + Math.round((performance.now() - t0) / 1000) + ' s').slice(0, 600), ms: 0, tAcum: Math.round((performance.now() - t0) / 100) / 10 });
       const bloqueados = out.filter(o => o.estado === 'BLOQUEADO').length;
-      return { passed: out.filter(o => o.ok).length, total: out.length, bloqueados, segundos: Math.round((performance.now() - t0) / 1000), build: location.origin, rama, duracion, results: out };
+      return { porPaso: porPaso.map(p => ({ paso: p.paso, seg: Math.round(p.seg * 10) / 10, comprobaciones: p.n, fallan: p.falla })), primerFallo: primera ? primera.name : null, passed: out.filter(o => o.ok).length, total: out.length, bloqueados, segundos: Math.round((performance.now() - t0) / 1000), build: location.origin, rama, duracion, results: out };
     }
   }
 
