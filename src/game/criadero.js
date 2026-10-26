@@ -11,12 +11,15 @@
      en pausa (G.pausa.set('criadero')). Estilos: src/ui/criadero.css (index.html lo enlaza; si falta, se inyecta al abrir).
    - Guardado propio en localStorage `${pack.meta.almacen}.criadero`: sin datos personales ni texto libre.
    - Modo Maestro: pestaña 'criadero' en G.aula.pestana (misma puerta de suma del menú de pausa).
+   - Rareza de la cría (src/game/rareza.js, se carga desde aquí): se asigna al tocar «Ver la eclosión» y se guarda al instante;
+     marco en la cápsula, etiqueta y aura (extras) sin tocar el modelo. docs/equipo/HUEVOS_RAREZA.md.
    API: G.criadero = { abrir, cerrar, abierto, estado, dar, test, debug }.
    Diseño: docs/equipo/HUEVOS_GDD.md. Bandera: docs/BANDERA_PR_GUIA.md. */
 AVE.module('criadero', function (G) {
   'use strict';
   const DATA_SRC = 'content/comun/huevos.js', CSS_SRC = 'src/ui/criadero.css';
   const D = () => window.AV_HUEVOS;
+  const RZ = () => G.rareza || null; // src/game/rareza.js (se carga abajo; sin él, todo sigue igual que antes)
   const KEY = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   // Botones para simular XP: solo en el prototipo con ?demo=1 (en clase la XP sale del juego)
@@ -278,7 +281,8 @@ AVE.module('criadero', function (G) {
           <p class="cr-hint">${L < D().xp.nivelMax ? `${hi - c.xp} XP ${esc(u('xpSig'))} ${L + 1}` : esc(u('max'))}${sig ? ` · ${esc(u('proxima'))}: ${esc(t(sig.nombre))} (${esc(u('nivel'))} ${sig.niveles[0]})` : ''}</p>
           ${c.estado === 'liberada' ? `<p class="cr-free">${esc(u('libre'))}</p>` : et === 'adulto' ? `<button class="btn magic sm" type="button" data-cr="liberar" data-icon="feather">${esc(u('liberar'))}</button>` : ''}`;
       }
-      pet.innerHTML = `<p class="cr-eyebrow">${esc(t(D().rarezas[h.rareza]))}</p><h2>${esc(t(h.nombre))}</h2><p class="cr-lema">${esc(t(h.lema))}</p>
+      const rzP = RZ() && et !== 'huevo' ? RZ().def(RZ().de(c)) : null; // rareza de la cría (solo nacida o libre)
+      pet.innerHTML = `<p class="cr-eyebrow">${esc(t(D().rarezas[h.rareza]))}${rzP ? ` <span class="cr-rz" style="--rz:${rzP.color}">${esc(t(rzP.nombre))}</span>` : ''}</p><h2>${esc(t(h.nombre))}</h2><p class="cr-lema">${esc(rzP ? t(rzP.lema) : t(h.lema))}</p>
         <ol class="cr-stages" aria-label="Etapas">${chips}</ol>${cuerpo}`;
     }
     // --- Capa real ---
@@ -290,8 +294,8 @@ AVE.module('criadero', function (G) {
       const cc = st.capsulas[hh.id], est = cc ? cc.estado : 'bloqueada', e2 = etapaDe(cc);
       const sel = st.vista === hh.id;
       const sub = !cc ? u('bloqueada') : est === 'liberada' ? u('libre') : est === 'disponible' ? t(D().rarezas[hh.rareza]) : t(etapaDef(e2).nombre) + (e2 !== 'huevo' ? ' · ' + nivelDe(cc.xp) : '');
-      const a = hh.aspecto;
-      return `<li><button type="button" class="cr-cap ${est}${sel ? ' sel' : ''}" data-cr="capsula" data-v="${hh.id}" aria-pressed="${sel}" style="--a:${a.a};--b:${a.b}" aria-label="${esc(t(hh.nombre))}: ${esc(sub)}${!cc ? '. ' + esc(t(hh.obtener.texto)) : ''}">
+      const a = hh.aspecto, rzC = RZ() && e2 !== 'huevo' ? RZ().def(RZ().de(cc)) : null; // marco del color de la rareza (cría nacida o libre)
+      return `<li><button type="button" class="cr-cap ${est}${sel ? ' sel' : ''}" data-cr="capsula" data-v="${hh.id}" aria-pressed="${sel}" style="--a:${a.a};--b:${a.b}${rzC ? `;--rz:${rzC.color}` : ''}"${rzC ? ` data-rz="${rzC.id}"` : ''} aria-label="${esc(t(hh.nombre))}: ${esc(sub)}${rzC ? ' · ' + esc(t(rzC.nombre)) : ''}${!cc ? '. ' + esc(t(hh.obtener.texto)) : ''}">
         <span class="cr-cap-egg" aria-hidden="true"></span><b>${esc(t(hh.nombre))}</b><small>${esc(sub)}</small></button></li>`;
     }).join('');
     const selH = st.vista && huevoDef(st.vista), selC = st.vista && st.capsulas[st.vista];
@@ -887,6 +891,8 @@ AVE.module('criadero', function (G) {
       wrap.rotation.set(0, 0.25, 0.3);
       B.mount_head_top.add(wrap); k.extras.cascaron = wrap;
     }
+    // Aura de la rareza (rareza.js): sprite bajo la cría, en el criadero y en el mundo; el modelo no cambia
+    if (RZ()) { const au = RZ().aura(RZ().de(st.capsulas[k.capId]), (k.holder === k.ch.root ? 1.1 : 1.25) * (etapa === 'adulto' ? 1 : etapa === 'juvenil' ? 0.85 : 0.7)); if (au) { k.holder.add(au); k.extras.aura = au; } }
     if (etapa === 'adulto' && tieneNuevo(k.capId, etapa, 'anillo_cientifico') && B.pieL3) {
       const ring = new THREE.Group();
       const band = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.03, 20, 1, true), MS({ color: '#c9d1d6', metalness: 0.85, roughness: 0.3, side: THREE.DoubleSide }));
@@ -985,6 +991,7 @@ AVE.module('criadero', function (G) {
     const c = st.vista && st.capsulas[st.vista];
     if (!c || c.estado !== 'lista' || hatch.on || !scene3d.capsule) return false;
     hatch.on = true; hatch.t = 0; hatch.capId = st.vista; hatch.speed = REDUCED ? 2.2 : 1; hatch.fase = 'abrir'; hatch.done = {};
+    if (RZ()) { RZ().asignar(c, st); guardar(); } // la rareza se decide aquí y queda guardada: recargar no vuelve a tirar
     root.querySelector('.cr-hatch').hidden = true; root.querySelector('.cr-skip').hidden = false;
     // la cría se prepara oculta (el modelo tarda en cargar la primera vez)
     ponerCria(hatch.capId, 'bebe', false).then(k => { if (k) { k.holder.visible = false; } });
@@ -1024,7 +1031,10 @@ AVE.module('criadero', function (G) {
       if (once('pop')) {
         scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.12, 0)), 60, ['#ffe08a', '#ffffff', '#9fe3a0', '#ffb347'], 1.8, 2.2);
         const k = scene3d.chick; if (k) { k.holder.visible = true; k.popT = 0; k.popS = 0.25; postura('aleteando', 2); }
-        banner(u('nacio'), t(huevoDef(hatch.capId).nombre));
+        // Rareza: chispas del color del nivel (más cuanto más rara) y la etiqueta en el cartel. Sin tragamonedas: un solo momento
+        const rz = RZ() && RZ().de(st.capsulas[hatch.capId]), rzDef = rz && RZ().def(rz);
+        if (rzDef && rz !== 'comun') scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.3, 0)), 20 + 20 * RZ().niveles().indexOf(rz), [rzDef.color, '#ffffff'], 2.2, 2.6);
+        banner(u('nacio'), t(huevoDef(hatch.capId).nombre) + (rzDef ? ' · ' + t(rzDef.nombre) : ''));
       }
       const x = Math.min(1, (T - 7.6) / 1.4);
       E.top.position.set(Math.sin(x * 2.4) * 0.25, 0.25 * Math.sin(x * Math.PI) + x * 0.15, 0.05);
@@ -1511,6 +1521,8 @@ AVE.module('criadero', function (G) {
     if (/^(1|true|si|sí)$/i.test(new URLSearchParams(location.search).get('criadero') || '')) setTimeout(() => abrir(), 0);
   });
   if (!D()) datos().catch(() => { /* se reintenta al abrir */ });
+  // Rareza de las crías (perezosa, no va en index.html): si no carga, el criadero funciona como antes (todas comunes)
+  if (!RZ()) AVE.assets.script('src/game/rareza.js').then(() => { if (window.AVRareza) { window.AVRareza(G); if (open) pintar(); } }).catch(() => { /* sin rareza */ });
 
   // =====================================================================================================================
   // Depuración (video del pitch y pruebas)

@@ -133,7 +133,9 @@
     function huevoDef(id) { const H = window.AV_HUEVOS; return H && (H.huevos || []).find(h => h.id === id) || null; }
     function criaderoDe(d) {
       const caps = esObj(d) && esObj(d.capsulas) ? d.capsulas : {}, H = window.AV_HUEVOS;
-      const r = { huevos: 0, crias: 0, libres: 0, lista: [], total: 0 };
+      // Rareza de la cría (src/game/rareza.js; crías de partidas viejas = común): colección por rareza en el panel
+      const RZ = G.rareza, RC = H && H.rarezaCria, rzDe = c => (RZ ? RZ.de(c) : 'comun');
+      const r = { huevos: 0, crias: 0, libres: 0, lista: [], total: 0, rarezas: Object.fromEntries(((RC && RC.niveles) || [{ id: 'comun' }]).map(n => [n.id, 0])) };
       for (const [id, c] of Object.entries(caps)) {
         if (!esObj(c) || !huevoDef(id)) continue;
         r.total++;
@@ -143,7 +145,9 @@
         if (c.estado === 'nacida' || c.estado === 'liberada') {
           let nivel = 0, etapa = null;
           try { nivel = G.criadero.nivelDe(c.xp || 0); const e = G.criadero.etapaDe(c); etapa = (H.etapas.find(x => x.id === e) || {}).nombre || null; } catch (e) { /* sin criadero */ }
-          r.lista.push({ id, cria: huevoDef(id).cria, libre: c.estado === 'liberada', nivel, etapa });
+          const rareza = rzDe(c), rzD = RC && (RC.niveles || []).find(n => n.id === rareza);
+          if (rareza in r.rarezas) r.rarezas[rareza]++;
+          r.lista.push({ id, cria: huevoDef(id).cria, libre: c.estado === 'liberada', nivel, etapa, rareza, rarezaNombre: rzD ? rzD.nombre : null, rarezaColor: rzD ? rzD.color : null });
         }
       }
       return r;
@@ -301,6 +305,9 @@
 #records .rec-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); margin: var(--sp-2) 0 0; padding: 0; list-style: none; }
 #records .rec-chips li { padding: 3px var(--sp-3); font: 600 var(--fs-xs)/1.3 var(--font-body); color: var(--c-ink); background: #e3f6e6; border: 1px solid #9fd8aa; border-radius: var(--r-pill); }
 #records .rec-chips li.libre { background: #fff0cf; border-color: #e0bd78; }
+#records .rec-chips li.rz { border-color: var(--rz, #9fd8aa); box-shadow: 0 0 0 1px color-mix(in srgb, var(--rz, #9fd8aa) 50%, transparent), 0 0 8px color-mix(in srgb, var(--rz, #9fd8aa) 45%, transparent); }
+#records .rec-coleccion { margin: var(--sp-2) 0 0; font: 600 var(--fs-xs)/1.5 var(--font-body); color: var(--c-ink-muted); }
+#records .rec-coleccion span { display: inline-block; padding: 0 var(--sp-2); border-radius: var(--r-pill); border: 1px solid var(--rz, #9fd8aa); color: var(--c-ink); background: color-mix(in srgb, var(--rz, #9fd8aa) 22%, #fff); }
 #records .rec-casa { display: grid; gap: var(--sp-2); margin: 0; padding: 0; list-style: none; }
 #records .rec-casa li { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)); gap: var(--sp-1) var(--sp-3); align-items: center; padding: var(--sp-2) var(--sp-3); background: #fffaf0; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); font-size: var(--fs-sm); overflow-wrap: anywhere; }
 #records .rec-casa li[aria-current] { background: #e3f6e6; border-color: #9fd8aa; }
@@ -367,9 +374,12 @@
       const diario = `<div class="rec-grande"><b class="rec-num">${di.n}/${di.total}</b><small>${esc(tx('hallazgos'))}</small></div><div class="progress" style="--value:${di.total ? di.n / di.total : 0}" role="progressbar" aria-valuemin="0" aria-valuemax="${di.total}" aria-valuenow="${di.n}" aria-label="${esc(tx('diario'))}"></div>${cats ? `<p>${cats}</p>` : ''}`;
       const especies = `<div class="rec-grande"><b class="rec-num">${es.vistas.length} <small>${esc(tx('de'))} ${es.total}</small></b></div>${es.vistas.length
         ? `<ul class="rec-chips">${es.vistas.map(e => `<li>${esc(e.nombre)}</li>`).join('')}</ul>` : `<p>${esc(tx('sinEspecies'))}</p>`}`;
-      const crias = cr.lista.length ? `<ul class="rec-chips">${cr.lista.map(c => `<li class="${c.libre ? 'libre' : ''}">${esc(L(c.cria.es, c.cria.en))}${c.libre ? ' · ' + esc(tx('libres').toLowerCase()) : c.etapa ? ' · ' + esc(L(c.etapa.es, c.etapa.en)) : ''}</li>`).join('')}</ul>` : '';
+      // Cada cría lleva el color de su rareza (rareza.js); debajo, la colección por rareza
+      const crias = cr.lista.length ? `<ul class="rec-chips">${cr.lista.map(c => `<li class="${c.libre ? 'libre' : ''}${c.rareza ? ' rz' : ''}"${c.rarezaColor ? ` style="--rz:${esc(c.rarezaColor)}"` : ''}>${esc(L(c.cria.es, c.cria.en))}${c.rarezaNombre ? ' · ' + esc(L(c.rarezaNombre.es, c.rarezaNombre.en)) : ''}${c.libre ? ' · ' + esc(tx('libres').toLowerCase()) : c.etapa ? ' · ' + esc(L(c.etapa.es, c.etapa.en)) : ''}</li>`).join('')}</ul>` : '';
+      const RC = window.AV_HUEVOS && window.AV_HUEVOS.rarezaCria, nivelesRz = (RC && RC.niveles) || [];
+      const coleccion = cr.lista.length && cr.rarezas && nivelesRz.length ? `<p class="rec-coleccion">${esc(L('Colección', 'Collection'))}: ${nivelesRz.map(n => `<span style="--rz:${esc(n.color)}">${esc(L(n.nombre.es, n.nombre.en))} ${cr.rarezas[n.id] || 0}</span>`).join(' · ')}</p>` : '';
       const criadero = cr.total
-        ? `<dl>${dato(tx('huevos'), cr.huevos)}${dato(tx('crias'), cr.crias)}${dato(tx('libres'), cr.libres)}</dl>${crias}` : `<p>${esc(tx('sinCriadero'))}</p>`;
+        ? `<dl>${dato(tx('huevos'), cr.huevos)}${dato(tx('crias'), cr.crias)}${dato(tx('libres'), cr.libres)}</dl>${crias}${coleccion}` : `<p>${esc(tx('sinCriadero'))}</p>`;
       const t = h.titulo ? `${esc(L('Capítulo', 'Chapter'))} ${h.capitulo} · ${esc(h.titulo)}` : esc(tx('historia'));
       return `<section class="rec-sec" aria-labelledby="rec-h-juego"><h3 id="rec-h-juego">${esc(tx('historia'))}</h3><div class="rec-grid rec-dos">
         <article class="rec-card"><h4>${t}</h4>${hist}</article><article class="rec-card"><h4>${esc(tx('diario'))}</h4>${diario}</article>

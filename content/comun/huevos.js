@@ -177,6 +177,33 @@
       coleccion: { es: 'Reto del Diario completo', en: 'Full journal challenge' }, conservacion: { es: 'Reto de conservación', en: 'Conservation challenge' },
     },
 
+    // ---------- Rareza de la cría (src/game/rareza.js; directiva P2) ----------
+    // Eje aparte de la cápsula: al tocar «Ver la eclosión» la cría recibe una rareza y se guarda al instante (recargar no vuelve
+    // a tirar; no hay botón de repetir). Se gana jugando: nada se compra. La suerte no castiga (garantias): tras 2 comunes seguidas
+    // la siguiente es rara o mejor; tras 5 crías sin épica, épica o mejor; tras 7 sin legendaria, legendaria. Mismo modelo
+    // siempre: la rareza solo cambia el marco, el aura y poderes suaves (mult) que no cuentan en el Modo Retos ni en los retos
+    // del mundo (rescate, banquete). pesos: propuesta inicial de P2, por balancear. [KELVIN] nombres (opción neutra: Nido, Bosque,
+    // Cielo, Leyenda) y si la legendaria es una especie concreta. Diseño: docs/equipo/HUEVOS_RAREZA.md.
+    rarezaCria: {
+      pesos: { comun: 60, rara: 29, epica: 10, legendaria: 1 },
+      garantias: { comunesSeguidas: 2, sinEpica: 5, sinLegendaria: 7 },
+      niveles: [
+        { id: 'comun', nombre: { es: 'Común', en: 'Common' }, color: '#9fcf8a', aura: 0.3, poderes: ['aura'], mult: { vuelo: 1, impulso: 1, vista: 1 },
+          lema: { es: 'Habilidades básicas y un brillo suave.', en: 'Basic skills and a soft glow.' } },
+        { id: 'rara', nombre: { es: 'Rara', en: 'Rare' }, color: '#5ec8ff', aura: 0.45, poderes: ['aura', 'vista'], mult: { vuelo: 1, impulso: 1, vista: 1.2 },
+          lema: { es: 'Ve los frutos y hallazgos desde más lejos.', en: 'Spots fruit and finds from farther away.' } },
+        { id: 'epica', nombre: { es: 'Épica', en: 'Epic' }, color: '#c77dff', aura: 0.6, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela'], mult: { vuelo: 1.08, impulso: 1.08, vista: 1.3 },
+          lema: { es: 'Vuela un poco más rápido y deja una estela de chispas.', en: 'Flies a bit faster and leaves a trail of sparks.' } },
+        { id: 'legendaria', nombre: { es: 'Legendaria', en: 'Legendary' }, color: '#ffd166', aura: 0.8, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela', 'canto'], mult: { vuelo: 1.12, impulso: 1.12, vista: 1.5 },
+          lema: { es: 'La máxima potencia y un canto que llama a la bandada.', en: 'Top power and a song that calls the flock.' } },
+      ],
+      poderes: {
+        aura: { nombre: { es: 'Aura', en: 'Aura' } }, vista: { nombre: { es: 'Vista de frutos', en: 'Fruit sight' } },
+        vuelo: { nombre: { es: 'Vuelo veloz', en: 'Swift flight' } }, impulso: { nombre: { es: 'Impulso extra', en: 'Extra boost' } },
+        estela: { nombre: { es: 'Estela', en: 'Trail' } }, canto: { nombre: { es: 'Canto de la bandada', en: 'Flock song' }, cadaS: 90 },
+      },
+    },
+
     // ---------- Capa real: programa de recuperación de la cotorra puertorriqueña ----------
     // momento: cuándo se muestra en el criadero (abrir cápsula, incubar, nacer, juvenil, adulto, liberar).
     real: [
