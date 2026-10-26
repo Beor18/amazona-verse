@@ -227,6 +227,52 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 - **X1 · Fichas 26-C y 26-D:** agua estilizada y vegetación.
 - **Y1 · Fichas 26-E y 26-F:** zonas con identidad de color y ambiente (`ambiente.js`).
 
+## Ronda del 26-oct (tarde): minijuegos y episodio 2
+**Antes de empezar, obligatorio:**
+- **Lee y sigue `AGENTS.md`.** Los commits se hacen con índice temporal: Grok, en Cursor, y Claude hacen commits a la vez.
+- **Apúntate.** Añade tu fila en `docs/equipo/TRABAJO_SIMULTANEO.md` (Para «API», quién y hora, en curso) y haz commit solo de esa fila.
+- **No toques archivos apuntados por otros.** En concreto:
+  - `src/game/flight.js`, de C15;
+  - `src/engine/streaming.js` y `terreno.js`, de G9;
+  - `content/cap1/en.js`, solo con cambios mínimos y aparte.
+- **Una tarea no está hecha si queda trabajo sin commit.**
+- **Para todas las edades:** sin violencia, armas, chat ni compras. Nada de Pac-Man ni de otras marcas.
+- **Lee `docs/equipo/MINIJUEGOS.md`.** Tiene la auditoría y la «declaración de minijuego» (`DECL`, en `src/game/flight.js`) que debes reutilizar.
+
+**Carril AB, Amazona Maze (prototipo; era la G13 de Grok)**
+- **AB1:** laberinto de recolección de frutas con una persecución amable de «guardianes» ficticios.
+  - Si te alcanzan, «¡te encontraron!» y pierdes el combo. Nunca hay daño.
+  - Cámara superior o isométrica.
+  - Reutiliza las frutas de `banquete.js` (solo lee su API, no edites el archivo), a Vittata, raíces, rocas, árboles y estructuras existentes.
+  - Recorridos válidos garantizados.
+  - Puntuación con récord en «Mis récords», mediante el gancho `retosResultado` (modo `maze`).
+  - Oculto en `?mini=maze`, con `AV.maze()`.
+  - Batería `mazeTest`: recorridos, frutas, persecución, puntuación, récord y sin fugas tras 50 reinicios.
+  - Mide en escritorio y en móvil a 375×812: Vittata y el laberinto tienen que verse bien en vertical.
+  - Archivos: `src/game/maze.js` (nuevo) y una línea en `src/boot.js`, en un commit mínimo aparte.
+
+**Carril AC, River Rush (prototipo)**
+- **AC1:** descenso por el río Amazonas del mapa. Usa `mapa.agua.rio.puntos` como spline (`MINIJUEGOS.md` explica cómo) y el modelo `canoa` del kit de edificios.
+  - Esquivas troncos y rocas existentes y recoges objetos para sumar puntos.
+  - La dificultad sube con la velocidad.
+  - Control de un dedo: izquierda y derecha arrastrando, o teclas.
+  - Cámara detrás y por encima, encuadrada bien en vertical: Vittata y la canoa grandes y visibles desde el primer cuadro.
+  - Récord en «Mis récords» (modo `rio_rush`).
+  - Oculto en `?mini=river`, con `AV.riverRush()`.
+  - Batería `riverTest`: sigue el cauce, colisiones, puntuación, récord y sin fugas.
+  - Archivos: `src/game/river_rush.js` (nuevo) y una línea en `src/boot.js`, en un commit aparte.
+
+**Carril AD, episodio 2 de punta a punta**
+- **AD1:** juega el episodio 2 completo con una prueba automática, desde la entrada hasta el final.
+  - Mide cuánto dura y dónde se atasca.
+  - Arregla lo que esté roto o confuso en `content/ep2/*`.
+  - Completa el inglés de sus textos.
+  - Añade capturas en `docs/img/ad1_ep2_*.jpg`.
+  - Deja un informe breve en `docs/equipo/EP2_PLAYTEST.md`.
+  - Archivos: `content/ep2/*` y `tests/qa/` (prueba nueva).
+
+**Pruebas de cada tarea:** `taskpolicy -b nice -n 15 tools/build/build.sh HEAD tools/build/salida/<tarea>-<sha>`, y después `tools/build/test.sh <esa carpeta>/ --extra`. Todo en verde, con 0 errores de consola.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -269,3 +315,6 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | Z2 | hecha | 00d67bf | Fredoka (títulos, botones y cifras) y Atkinson ya estaban autoalojadas en `assets/vendor/fonts/` con `font-display: swap`; nada que descargar. Se añade su licencia (`OFL.txt`, texto SIL OFL 1.1; las líneas de copyright vienen de los metadatos publicados y quedan «por verificar» contra la tabla name de los .woff2). `tokens.css`: `--c-line` más luminoso, `--c-highlight`, `--c-shine`, `--r-panel` 18 px, `--glow-k`, `--dur-shine`. `ui.css`: paneles con borde de 2 px y filo de luz, botones con sombra de su color (`color-mix`, con respaldo) que crece al pasar el ratón, brillo que recorre `.progress` y el segmento del objetivo, icono que salta en todos los avisos y destello dorado que sube del contador del inventario al cambiar (en `::after` sin texto: no lo leen los lectores ni cambia la cifra). No cambia colores de texto (AA intacto); con «reducir movimiento» se apaga todo. `docs/UI_SYSTEM.md` al día. `index.html` sin tocar. 31/31 baterías (`accesibilidadTest` 36/36, con 375, 320 y otras maquetas) y 0 errores de consola. Ojo: Z1 sigue pendiente; Z2 no depende de sus archivos. Las líneas de G2 en `ui.css` siguen sin commit. |
 | X1 | hecha (integrada 26-oct) | f5c1f99 | Fichas 26-C y 26-D: agua con turquesa más puro, espuma de borde duro y destellos (medio y alto); pasto a 14/26/34 m con tramado al borde y tinte base→punta en las hojas. |
 | Y1 | hecha (integrada 26-oct) | f5c1f99 | Fichas 26-E y 26-F: `src/engine/ambiente.js` (mapa de zonas 64×64 y partículas en 1 draw call), identidad de color por zona y musgo en el suelo (`terreno.js`), rim suave en NPC y fauna (`actores.rim`). |
+| AB1 | pendiente | | |
+| AC1 | pendiente | | |
+| AD1 | pendiente | | |
