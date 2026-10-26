@@ -170,6 +170,10 @@ window.AVLook = function (G) {
   function encoger(t, max) {
     const img = t.image;
     if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isCanvasTexture || t.isVideoTexture || Array.isArray(img)) return;
+    // El atlas HD (4096, celda 1024) no se encoge: a 512 la celda quedaría en 128 y la piedra se ve blanda.
+    // ?tex= sigue pudiendo medirlo. La flora y el suelo sí bajan.
+    const src = img.src || img.currentSrc || '';
+    if (!TEX_URL && /\/tex_hd\/hd_/.test(src)) return;
     if (!imagenes.has(t)) { if (!(img.width > max && img.height > max)) return; imagenes.set(t, img); }
     const o = imagenes.get(t);
     if (!max) { if (t.image !== o) { t.image = o; t.needsUpdate = true; } return; }
