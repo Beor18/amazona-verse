@@ -159,15 +159,32 @@ AVE.module('fx', function (G) {
   G.on('lugar', d => { if (!G.quiet) descubrimiento(d && d.nombre); });
 
   // ---------- Lluvia (la enciende un pack con G.fx.rain.visible = true) ----------
-  const RAIN_N = 900, rainGeo = new THREE.BufferGeometry(), rainPos = new Float32Array(RAIN_N * 3);
-  for (let i = 0; i < RAIN_N; i++) { rainPos[i * 3] = (Math.random() - 0.5) * 60; rainPos[i * 3 + 1] = Math.random() * 25; rainPos[i * 3 + 2] = (Math.random() - 0.5) * 60; }
+  // Caja local ±30 en XZ y 0–25 en Y. La gota nace y muere con alfa (no aparece de golpe en la tapa)
+  // y el punto es un trazo, no el quad de gl_PointCoord.
+  const RAIN_N = 900, RAIN_R = 30, RAIN_H = 25, rainGeo = new THREE.BufferGeometry(), rainPos = new Float32Array(RAIN_N * 3);
+  for (let i = 0; i < RAIN_N; i++) { rainPos[i * 3] = (Math.random() - 0.5) * RAIN_R * 2; rainPos[i * 3 + 1] = Math.random() * RAIN_H; rainPos[i * 3 + 2] = (Math.random() - 0.5) * RAIN_R * 2; }
   rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
-  const rain = new THREE.Points(rainGeo, new THREE.PointsMaterial({ color: '#cfe6f0', size: 0.15, transparent: true, opacity: 0.7 }));
+  const rainMat = new THREE.PointsMaterial({ color: '#cfe6f0', size: 0.15, transparent: true, opacity: 0.7, depthWrite: false });
+  rainMat.onBeforeCompile = sh => {
+    sh.vertexShader = 'varying float vAvF;\n' + sh.vertexShader.replace(
+      '#include <project_vertex>',
+      'vAvF = smoothstep(0.0, 6.0, position.y) * (1.0 - smoothstep(' + (RAIN_H * 0.62).toFixed(1) + ', ' + RAIN_H + '.0, position.y))'
+        + ' * (1.0 - smoothstep(' + (RAIN_R * 0.42).toFixed(1) + ', ' + RAIN_R + '.0, abs(position.x)))'
+        + ' * (1.0 - smoothstep(' + (RAIN_R * 0.42).toFixed(1) + ', ' + RAIN_R + '.0, abs(position.z)));\n\t#include <project_vertex>'
+    );
+    sh.fragmentShader = 'varying float vAvF;\n' + sh.fragmentShader.replace(
+      'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+      'vec2 avP = gl_PointCoord; float avGx = smoothstep(0.0, 0.34, avP.x) * (1.0 - smoothstep(0.66, 1.0, avP.x));'
+        + 'float avGy = smoothstep(0.0, 0.08, avP.y) * (1.0 - smoothstep(0.92, 1.0, avP.y));'
+        + 'diffuseColor.a *= avGx * avGy * vAvF;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );'
+    );
+  };
+  const rain = new THREE.Points(rainGeo, rainMat);
   rain.visible = false; scene.add(rain);
   function updateRain(dt) {
     if (!rain.visible) return;
     const a = rain.geometry.attributes.position;
-    for (let i = 0, n = Math.min(RAIN_N, rain.geometry.drawRange.count); i < n; i++) { let y = a.getY(i) - 28 * dt; if (y < 0) y += 25; a.setY(i, y); }
+    for (let i = 0, n = Math.min(RAIN_N, rain.geometry.drawRange.count); i < n; i++) { let y = a.getY(i) - 28 * dt; if (y < 0) y += RAIN_H; a.setY(i, y); }
     a.needsUpdate = true;
     rain.position.set(S.pos.x, G.terreno.height(S.pos.x, S.pos.z), S.pos.z);
   }

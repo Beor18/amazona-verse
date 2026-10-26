@@ -111,6 +111,10 @@
     alPrimerGesto(cargarClima);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
     // Look de color (src/game/look.js): «vibrant_toon» es el de fábrica (DEFECTO); ?look=fabrica|vibrante|soleado|toon y sección oculta en la pausa
+    // Atardecer del coquí (C9, src/game/atardecer.js): lo carga el pack cuando empieza el coro (AV.atardecer); ?atardecer=1 lo fuerza
+    const cargarAtardecer = aDemanda('src/game/atardecer.js', 'AVAtardecer');
+    AV.atardecer = cargarAtardecer; AV.atardecerTest = o => cargarAtardecer().then(a => a.test(o));
+    if (/[?&]atardecer=/.test(location.search)) cargarAtardecer().catch(() => {});
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color

@@ -301,10 +301,13 @@
       const c = G.clima; if (!c || typeof c.estado !== 'function') return null;
       try { const e = c.estado(); return typeof e === 'string' ? { nombre: e } : e || null; } catch (err) { return null; }
     }
+    // C9: el coquí es nocturno (canta del atardecer al amanecer): con M3 terminada solo sale al atardecer (src/game/atardecer.js
+    // o S.hora de tarde o de noche), nunca a pleno sol; con neblina o llovizna sale a cualquier hora
+    const tarde = () => !!(G.atardecer && G.atardecer.activo()) || (Number.isFinite(S.hora) && (S.hora >= 17.5 || S.hora < 6.5));
     function coquiVisible() {
       const e = climaNombre();
       if (e) { const nom = e.nombre || e.estado || e.actual || e.objetivo; if (nom === 'neblina' || nom === 'llovizna' || e.niebla > 0.5 || e.llovizna > 0.5) return true; }
-      return !!(S.missions && S.missions.m3);
+      return !!(S.missions && S.missions.m3) && tarde();
     }
     const cantar = (c, primero) => { c.canta = 1.1; if (!G.quiet) { G.audio.play(primero ? 'qui' : 'co'); setTimeout(() => G.audio.play(primero ? 'co' : 'qui'), 260); } };
     function pasoCoquies(dt, libre) {
@@ -479,6 +482,7 @@
     async function test() {
       const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
       const cuadros = n => new Promise(r => { const f = () => (--n <= 0 ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); });
+      const hora0 = S.hora; // C9: el bloque 4 pone S.hora de tarde
       const g0 = { pos: Object.assign({}, S.pos), vy: S.vy, fauna: vistos().slice(), m3: S.missions && S.missions.m3, posado: M.posado, speed: M.speed, flying: M.flying,
         nivel: nivel(), clima: null };
       const simular = (seg, antes) => { for (let t = 0; t < seg - 1e-6; t += 0.1) { if (antes) antes(); paso(0.1, false); } };
@@ -519,8 +523,13 @@
         const ave = nb.aves[0]; picoMundo(_v);
         ok('Quieta junto a las flores, una mariposa se le posa en el pico (observada)', vistos().includes('mariposa') && nb.pico && nb.pico.llego && Math.hypot(ave.x - _v.x, ave.y - _v.y - 0.06, ave.z - _v.z) < 0.15);
         nb.pico = null;
-        // 4. Coquíes: ocultos con sol, visibles con neblina (o con M3 si no hay clima)
+        // 4. Coquíes: ocultos con sol, visibles con neblina (o con M3 si no hay clima, y solo al atardecer: C9)
         const C = G.clima && typeof G.clima.fijar === 'function' ? G.clima : null;
+        const at0 = G.atardecer && G.atardecer.activo();
+        S.missions = S.missions || {}; const m3b = S.missions.m3; S.missions.m3 = true; delete S.hora;
+        if (C) C.fijar('sol');
+        const conSol = coquiVisible(); S.hora = 18.5; const alAtardecer = coquiVisible(); if (C) C.fijar(null); S.missions.m3 = m3b;
+        ok('C9: con M3 terminada y sol de mediodía el coquí no sale ni canta; al atardecer (S.hora 18,5) sí', (at0 || !conSol) && alAtardecer, `sol ${conSol} · tarde ${alAtardecer}`);
         if (C) {
           C.fijar('sol'); const oculto = !coquiVisible(); C.fijar('neblina'); const visto = coquiVisible(); C.fijar(null);
           ok('Coquíes: ocultos con sol y visibles con neblina (G.clima)', oculto && visto);
@@ -600,7 +609,7 @@
         ok('En las baterías (G.quiet) no se ve ningún animal', (() => { const q = G.quiet; G.quiet = true; F.prueba = false; paso(0.05, false); const n = [lagMesh, marCerca, marLejos, coqMesh].every(m => !m.visible) && !(BOA.mesh && BOA.mesh.visible); F.prueba = true; G.quiet = q; return n; })());
       } finally {
         oyenteTest = null;
-        F.prueba = false; Object.assign(S.pos, g0.pos); S.vy = g0.vy; S.fauna = g0.fauna; if (S.missions) S.missions.m3 = g0.m3;
+        F.prueba = false; Object.assign(S.pos, g0.pos); S.vy = g0.vy; S.fauna = g0.fauna; if (S.missions) S.missions.m3 = g0.m3; if (hora0 === undefined) delete S.hora; else S.hora = hora0;
         M.posado = g0.posado; M.speed = g0.speed; M.flying = g0.flying; F.quieta = 0; BOA.t = -1; BOA.visto = false;
         for (const nb of MAR.nubes) { nb.pico = null; nb.disp = 0; nb.dispT = 0; }
         recolocarLagartijos();
