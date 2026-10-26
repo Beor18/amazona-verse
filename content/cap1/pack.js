@@ -65,6 +65,7 @@
 
   AVE.registerPack({
     id: 'cap1',
+    pruebasDiferidas: { archivo: 'content/cap1/pruebas.js', nombres: ['selfTest', 'missionTest', 'eduTest', 'maestroTest'] }, // se cargan al pedirlas
     meta: { titulo: 'El día que el cielo se rompió', capitulo: 1, almacen: 'amazonaverse' },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
