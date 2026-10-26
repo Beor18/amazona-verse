@@ -76,6 +76,7 @@
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
       flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
+      sellos: ['Mis sellos', 'My stickers'], sellosNota: ['uno por cada medalla que consigas', 'one for every medal you earn'], sinSello: ['aún sin conseguir', 'not earned yet'],
       sinVuelo: ['Pasa un obstáculo en Amazona Flight para compartir tu récord.', 'Pass an obstacle in Amazona Flight to share your record.'],
       sinCarrera: ['Termina una carrera para compartir tu récord.', 'Finish a race to share your record.'],
       puertaTitulo: ['Pide ayuda a un adulto', 'Ask an adult for help'], puertaTexto: ['Para compartir hace falta un adulto. Resuelve esta suma:', 'Sharing needs a grown-up. Solve this sum:'],
@@ -320,6 +321,10 @@
 #records .rec-card dd { margin: 0; font: 700 var(--fs-sm)/1.3 var(--font-display); color: var(--c-ink); text-align: right; font-variant-numeric: tabular-nums; }
 #records .rec-m { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; font: 700 var(--fs-xl)/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 3px #fff, 0 3px 0 3px rgba(0, 0, 0, .18); }
+#records .rec-sellos-t { margin: var(--sp-4) 0 var(--sp-2); font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink); } #records .rec-sellos-t small { font: 500 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); }
+#records .rec-sellos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: var(--sp-2); }
+#records .rec-sellos li { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm); background: rgba(255, 255, 255, .55); }
+#records .rec-sellos .rs-m { display: inline-flex; gap: 6px; } #records .rec-sellos .rec-m { width: 30px; height: 30px; font-size: var(--fs-sm); box-shadow: 0 0 0 2px #fff; } #records .rec-sellos .rec-m.falta { --m1: #e6e0d2; --m2: #cfc7b4; box-shadow: none; opacity: .6; }
 #records .rec-m.oro { --m1: #ffd24a; --m2: #c98a10; } #records .rec-m.plata { --m1: #e4ecf2; --m2: #8a9aa8; } #records .rec-m.bronce { --m1: #f0a86a; --m2: #9a5a24; } #records .rec-m.meta { --m1: #bfe7c8; --m2: #3f9a55; }
 #records .progress { margin: var(--sp-2) 0; background: rgba(107, 82, 54, .18); }
 #records .rec-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); margin: var(--sp-2) 0 0; padding: 0; list-style: none; }
@@ -392,7 +397,19 @@
         ? `<div class="rec-grande">${medalla(f.mejor >= 60 ? 'oro' : f.mejor >= 25 ? 'plata' : 'bronce', '★')}<div><b class="rec-num">${f.mejor}</b><small>${esc(tx('obstaculos'))}</small></div></div><dl>${dato(tx('jugadas'), f.jugadas)}</dl>`
         : `<p>${esc(tx('sinRecord'))}</p>${f.jugadas ? `<dl>${dato(tx('jugadas'), f.jugadas)}</dl>` : ''}`}</article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}</div></section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}</div>${sellos(d)}</section>`;
+    }
+    // Sellos (pegatinas cosméticas): uno por medalla lograda en cada reto, sacados de los récords guardados. Solo habilidad: sin compras, cajas ni azar.
+    function sellos(d) {
+      const R = d.retos, ord = ['bronce', 'plata', 'oro'], por = (v, a, b) => (!v ? -1 : v >= b ? 2 : v >= a ? 1 : v > 0 ? 0 : -1);
+      const nivel = {
+        carrera: R.carrera.puesto ? (R.carrera.puesto === 1 ? 2 : R.carrera.puesto === 2 ? 1 : R.carrera.puesto === 3 ? 0 : -1) : -1,
+        tormenta: R.tormenta.mejor ? (R.tormenta.mejor >= 1500 ? 2 : R.tormenta.mejor >= 800 ? 1 : 0) : -1,
+        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1,
+      };
+      if (R.flight && R.flight.mejor && R.flight.mejor < 10 && nivel.flight === 0) nivel.flight = -1;
+      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
+      return `<h4 class="rec-sellos-t">${esc(tx('sellos'))} <small>${esc(tx('sellosNota'))}</small></h4><ul class="rec-sellos">${filas}</ul>`;
     }
     function htmlHistoria(d) {
       const h = d.historia, di = d.diario, es = d.especies, cr = d.criadero;

@@ -316,7 +316,7 @@
       if (como === 'agua' && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
       if (!REDUCED) G.camara.shake && G.camara.shake(0.08, 0.2);
       // Récord (almacén de Retos) y «Mis récords» por el gancho de siempre
-      const rec = leerRec(), f = rec.flight;
+      const rec = leerRec(), f = rec.flight; J.antes = f.mejor || 0;
       f.jugadas = (f.jugadas || 0) + 1;
       J.nuevo = J.puntos > 0 && (!f.mejor || J.puntos > f.mejor);
       if (J.nuevo) f.mejor = J.puntos;
@@ -392,6 +392,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 #flight .fl-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
 #flight .fl-panel h2 { margin: 0 0 6px; font-size: 30px; } #flight .fl-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
 #flight .fl-num { font: 800 64px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+#flight .fl-meta { margin: 0 0 10px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
 #flight .fl-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #flight .fl-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #flight .fl-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
@@ -411,6 +412,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
   <div class="fl-num">0</div>
   <div class="fl-nuevo" hidden>¡Nuevo récord!</div>
   <p class="fl-rec"></p>
+  <p class="fl-meta" hidden></p>
   <div class="fl-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="fl-tecla">${TACTIL ? '' : 'Enter'}</span></button>
     <button class="btn ghost secondary" type="button" data-compartir data-icon="share" hidden>Compartir</button>
@@ -419,7 +421,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 </div></div>`;
       document.body.appendChild(el);
       const q = s => el.querySelector(s);
-      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec') };
+      st.ui = { el, toque: q('.fl-toque'), chip: q('.fl-chip'), puntos: q('.fl-puntos'), mejor: q('.fl-mejor'), pista: q('.fl-pista'), fin: q('.fl-fin'), como: q('.fl-como'), num: q('.fl-num'), nuevo: q('.fl-nuevo'), rec: q('.fl-rec'), meta: q('.fl-meta') };
       st.ui.toque.addEventListener('pointerdown', e => { e.preventDefault(); toque(); });
       el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.hasAttribute('data-otra')) otraVez(); else if (b.hasAttribute('data-compartir')) compartir(); else if (b.hasAttribute('data-salir')) salir(); });
       // Teclado: Espacio, flecha arriba, W o cualquier letra = impulso (antes de input.js, que no ve el salto porque fisica no vuela aquí)
@@ -435,12 +437,24 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
     }
     function pintarPuntos() { const u = st.ui; if (!u) return; u.puntos.textContent = String(J.puntos); u.mejor.textContent = J.mejor ? 'mejor ' + J.mejor : ''; u.chip.classList.remove('pop'); void u.chip.offsetWidth; u.chip.classList.add('pop'); }
     function ocultarPista() { if (st.ui) st.ui.pista.hidden = true; }
+    // Medallas de Flight: bronce 10, plata 25, oro 60 (records.js)
+    const MEDALLAS_F = [['bronce', 10], ['plata', 25], ['oro', 60]], ART_F = { oro: 'el oro', plata: 'la plata', bronce: 'el bronce' };
+    function metaLineas() {
+      const L = [], v = J.puntos, best = J.mejor || 0, tope = Math.max(v, best), nom = n => n + (n === 1 ? ' obstáculo' : ' obstáculos');
+      const nivel = x => MEDALLAS_F.filter(m => x >= m[1]).length;
+      if (v > 0 && v < best && best - v <= Math.max(3, Math.round(best * 0.2))) L.push('¡A solo ' + nom(best - v) + ' del récord!');
+      if (nivel(J.mejor) > nivel(J.antes || 0)) L.unshift('¡Nuevo sello de ' + MEDALLAS_F[nivel(J.mejor) - 1][0] + ' en Mis récords!');
+      const sig = MEDALLAS_F.find(m => m[1] > tope);
+      L.push(sig ? 'Te faltan ' + nom(sig[1] - tope) + ' para ' + ART_F[sig[0]] : '¡Tienes todas las medallas! Intenta superar tu récord.');
+      return L;
+    }
     function resultados() {
       const u = st.ui; if (!u) return;
       u.como.textContent = J.choque === 'agua' ? '¡Un chapuzón! Vittata se sacude las plumas.' : J.choque === 'rama' ? 'Una rama en el camino. ¡Vittata se ríe y lo intenta otra vez!' : 'Un tronco en el camino. ¡Vittata se ríe y lo intenta otra vez!';
       u.num.textContent = String(J.puntos);
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
+      const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
       u.fin.hidden = false; u.fin.querySelector('[data-compartir]').hidden = !J.mejor;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
