@@ -169,7 +169,7 @@
         const b = e.target.closest('[data-modo]'); if (!b) return;
         if (!G.quiet && G.audio && G.audio.play) try { G.audio.play('pickup', 2); } catch (e2) { /* sin audio */ }
         if (b.type === 'button' && b.dataset.modo === 'nido') elegir('nido');
-        // Mis récords los abre boot.js con #b-records-title (records.js vuelve el foco a esa tarjeta al cerrar)
+        else if (b.type === 'button' && b.dataset.modo === 'records') elegir('records'); // la tarjeta es #b-records-menu; #b-records-title es su etiqueta <b> (records.js la traduce con textContent)
       });
       form.addEventListener('keydown', e => {
         if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
