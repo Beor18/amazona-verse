@@ -984,8 +984,7 @@ def paso_validar(sitio, cfg, reg, paso, estricto, subdirs_tex=()):
     tot = sum(files.values())
     if len(files) > L['archivos_max']:
         reg.add('error', paso, '%d archivos (máximo %d por publicación)' % (len(files), L['archivos_max']))
-    if tot > L['total_max_mb'] * MB:
-        reg.add('error', paso, '%.2f MB (máximo %d MB por publicación)' % (tot / MB, L['total_max_mb']))
+    # Sin tope de peso total (Kelvin, 26-oct-2026). El tamaño queda en el reporte.
     for f, s in files.items():
         if s > L['archivo_max_mb'] * MB:
             reg.add('error', paso, '%s pesa %.2f MB (máximo %d MB por archivo)' % (f, s / MB, L['archivo_max_mb']))
@@ -1302,7 +1301,7 @@ def escribir_reporte(salida, R):
         ['Carpetas con nombre dinámico (se prueban en test.sh)', ', '.join('`%s`' % d for d in V['carpetas_dinamicas']) or '—'],
         ['*_glb.js → glTF 2.0 válido', '%d de %d' % (V['glb_validos'], V['glb_total'])],
         ['Archivos (máx. %d)' % R['limites']['archivos_max'], V['archivos']],
-        ['Total (máx. %d MB, objetivo %d MB)' % (R['limites']['total_max_mb'], R['limites']['objetivo_mb']), '%.2f MB' % V['mb']],
+        ['Total (sin tope, objetivo %d MB)' % R['limites']['objetivo_mb'], '%.2f MB' % V['mb']],
         ['Mayor archivo (máx. %d MB)' % R['limites']['archivo_max_mb'], '%s (%.2f MB)' % (R['mayor'][0], R['mayor'][1] / MB)],
         ['URLs externas no permitidas', V['externas_error']],
         ['URLs externas permitidas', ', '.join(V['externas_permitidas']) or 'ninguna'],
