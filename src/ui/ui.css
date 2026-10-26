@@ -786,6 +786,15 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
   right: auto; left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px);
   grid-template-columns: var(--tap-xl) 78px; grid-template-areas: "dash fly" "act jump";
 }
+/* Teléfonos de 360 px o menos (320×568): joystick y botones más compactos para que quepan lado a lado, con o sin modo zurdo (botones ≥ 44 px) */
+@media (max-width: 360px) {
+  :root { --stick: 104px; --tap-lg: 56px; --tap-xl: 68px; }
+  #acts { grid-template-columns: 60px var(--tap-xl); grid-template-rows: 56px var(--tap-xl); gap: 8px; }
+  #acts #b-jump { --sz: 60px; --icon-size: 26px; }
+  #acts #b-act { --icon-size: 28px; font-size: 12px; padding: 0 4px; }
+  #knob { left: calc(50% - 26px); top: calc(50% - 26px); width: 52px; height: 52px; }
+  :root.a11y-zurdo #acts { grid-template-columns: var(--tap-xl) 60px; }
+}
 @media (hover: hover) and (pointer: fine) { .a11y-solo-tactil { display: none; } }
 .pause-a11y .note { margin: var(--sp-2) 0 0; }
 
