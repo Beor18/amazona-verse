@@ -57,6 +57,7 @@ Meter otra región exige reestructurar el mundo. Por eso se deja como propuesta.
 - A2. Ensanchar el río hacia sus 11 m originales donde no haya puentes ni misiones.
 - Se toca `mapa_lib.py` y se regeneran los datos del mapa. La descarga no crece.
 - Antes hay que coordinarlo con el dueño de `vegetacion.js`.
+- **Hecha (R1, 26-oct-2026):** 1,9 km de sendas de Kelvin (`mapa_sendas_kelvin.py` → `.json`) pintadas de tierra y fuera de la máscara `libre`, sin copas encima; el río, rebautizado «Río Amazonas», pasa de 8,3 a 11,1 m de ancho medio (el cañón del puente queda igual). No hizo falta tocar `terreno.js` ni `vegetacion.js`. Capturas: `img/r1_sendas_antes.jpg`/`_despues.jpg` y `img/r1_rio_antes.jpg`/`_despues.jpg`.
 
 **Fase B: región «Río Amazonas», a la que se llega volando (requiere aprobar la arquitectura).**
 - **Qué es:** el terreno original **sin retocar**: sus tepuyes y su río de borde a borde.

@@ -10,7 +10,7 @@ El relieve sale del terreno original de Kelvin (`AV3DMaxTerrainExport.max`, a 0,
 ## Zonas
 - **Costa:** playa, laguna, arrecife, muelle y Bahía Bio.
 - **Villa Raíz:** Estación, taller, plaza y puente colgante sobre un cañón.
-- **Tabonuco:** Río de los Meandros, pozas y aldeas de Kelvin.
+- **Tabonuco:** el Río Amazonas (unos 11 m de ancho, como el río del terreno de Kelvin), pozas y aldeas de Kelvin unidas por sus sendas originales (`tools/blender/mapa_sendas_kelvin.json`, sacadas de su máscara del bosque; tierra sin flora encima).
 - **Lomas del Oeste:** casita y Cueva del Río, donde nace el río.
 - **Palma de sierra:** tres terrazas con pasos en rampa y la cascada La Mina (9 m), con gruta y poza.
 - **Enano y nublado:** Charca de las Nubes, el yunque (98 m) con las ruinas de Kelvin y Los Picachos.

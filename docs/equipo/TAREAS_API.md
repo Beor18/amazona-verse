@@ -259,7 +259,7 @@ Añade casos a `movementTest` (`src/pruebas/movimiento.js`).
 | O1 | pendiente | | |
 | P1 | pendiente | | |
 | Q1 | pendiente | | |
-| R1 | pendiente | | |
+| R1 | hecha | 2afade5 (+ docs) | Sendas: `tools/blender/mapa_sendas_kelvin.py` saca de `trees.psd` el esqueleto de los tramos estrechos (cruza los claros pequeños de las aldeas, no las mesetas): 1,9 km en `mapa_sendas_kelvin.json`. `mapa_lib.py` las pinta de tierra, las saca de la máscara `libre` (sin plantas ni pasto) y sin copas encima; no se tallan ni mueven edificios, se cortan junto al agua y en paredes de más de 33°. Río: de 8,3 a 11,1 m de ancho medio (el cañón del puente igual), «Río Amazonas» en la zona y en `agua.rio.nombre`; jicotea, madera m5 y la marca de crecida se apartan solas de la orilla. Datos regenerados sobre un HEAD limpio; en la escena de Kelvin solo cambian las piezas junto al río (los templos y el complejo, que ya derivan al regenerar HEAD, quedan como estaban). `terreno.js` y `vegetacion.js` sin tocar. Capturas `docs/img/r1_sendas_*.jpg` y `r1_rio_*.jpg`. Build ee9ac8a: 13/13 obligatorias, 0 errores de consola; banqueteTest (extra) 42/43, oscila 42–43 en el mismo build. Una variante con palmas de sierra sobre las sendas daba movementTest 32/38 (una palma joven sobre el sitio de prueba bloquea el salto): la prueba elige el sitio sin mirar la flora cercana. |
 | T1 | pendiente | | |
 | U1 | pendiente | | |
 | V1 | pendiente | | |
