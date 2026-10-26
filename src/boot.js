@@ -74,6 +74,11 @@
     const cargarBanquete = () => banquete || (banquete = AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G), e => { banquete = null; throw e; }));
     AV.banqueteTest = o => cargarBanquete().then(b => b.test(o));
     setTimeout(() => cargarBanquete().catch(() => {}), 5000);
+    // Minimapa (src/game/minimapa.js): se carga solo tras el arranque (no va en la descarga inicial) y al pedir su prueba; M o un toque lo amplía
+    let minimapa = null;
+    const cargarMinimapa = () => minimapa || (minimapa = AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G), e => { minimapa = null; throw e; }));
+    AV.minimapaTest = o => cargarMinimapa().then(m => m.test(o));
+    setTimeout(() => cargarMinimapa().catch(() => {}), 3000);
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
