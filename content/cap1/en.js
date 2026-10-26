@@ -1105,6 +1105,7 @@ window.AV_EN = {
  "¡Banquete terminado!": "Feast over!",
  "¡Banquete!": "Feast!",
  "¡Bien!": "Good!",
+ "¡Casi!": "So close!",
  "¡Bien! Sigue…": "Good! Keep going…",
  "¡Buen picoteo!": "Nice pecking!",
  "¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.": "Splash! Vittata found out the river is wet. Very wet.",
