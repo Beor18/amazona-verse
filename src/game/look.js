@@ -173,7 +173,7 @@ window.AVLook = function (G) {
     // El atlas HD (4096, celda 1024) no se encoge: a 512 la celda quedaría en 128 y la piedra se ve blanda.
     // ?tex= sigue pudiendo medirlo. La flora y el suelo sí bajan.
     const src = img.src || img.currentSrc || '';
-    if (!TEX_URL && /\/tex_hd\/hd_/.test(src)) return;
+    if (!TEX_URL && (t.userData && t.userData.avAtlas || /\/tex_hd\/hd_/.test(src))) return;
     if (!imagenes.has(t)) { if (!(img.width > max && img.height > max)) return; imagenes.set(t, img); }
     const o = imagenes.get(t);
     if (!max) { if (t.image !== o) { t.image = o; t.needsUpdate = true; } return; }
@@ -319,7 +319,7 @@ window.AVLook = function (G) {
       if (vistas.has(t)) return; vistas.add(t);
       const img = t.image, w = img && (img.width || (img.data && img.width)) || 0, h = img && img.height || 0;
       if (!w) return; n++;
-      const esAtlas = /\/tex_hd\/hd_/.test((img && (img.src || img.currentSrc)) || '');
+      const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test((img && (img.src || img.currentSrc)) || '');
       if (w > 512) { grandes++; if (esAtlas) atlas++; }
       bytes += w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1);
     }); });

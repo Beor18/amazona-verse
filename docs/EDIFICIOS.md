@@ -160,7 +160,7 @@ En total, el _hd suma 6,5 MB de js (streaming, nada en la descarga inicial) más
 
 La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw calls (≤ 150). La build pasa de 17,6 a 28,6 MB, de los que unos 10 MB son de los _hd y del atlas. Suma 42 archivos (390 de 511). La descarga inicial no cambia (8,2 MB, igual que HEAD).
 
-**Calidad.** Bajo lo usa hasta 50 m, medio hasta 80 m y alto hasta 120 m, chico o grande. Hace falta WebGL2. Se pide también antes de moverse si ya estás en la zona.
+**Calidad.** Bajo lo usa hasta 45 m, medio hasta 70 m y alto hasta 90 m, cuando el edificio está en el LOD cercano (los grandes, también más allá). Hace falta WebGL2. Se pide también antes de moverse si ya estás en la zona.
 
 **Pendiente.**
 - Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
@@ -221,7 +221,7 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 
 **Qué cambió en el kit.**
 - El atlas que se publica es el de **4096 (celda 1024, margen 32)**, JPG, las 16 de Ancient y las 10 de Savage, desde las 4K del Drive. Kelvin, 26-oct-2026: en el juego tiene que estar el kit completo; no se recorta por calidad ni por el tope de peso (ese tope ya no está). La paleta ligera del arranque sigue en 512: es el respaldo mientras llega el `_hd`, no lo que se ve junto al edificio.
-- El look de fábrica no encoge `tex_hd/`. `?tex=512` sigue pudiendo medirlo chico. El `_hd` se pide en bajo (50 m), medio (80 m) y alto (120 m), también antes de moverse si ya estás en la zona.
+- El look de fábrica no encoge `tex_hd/`. `?tex=512` sigue pudiendo medirlo chico. El `_hd` se pide en bajo (45 m), medio (70 m) y alto (90 m), también antes de moverse si ya estás en la zona. De lejos, la torre chica sigue en silueta; el templo grande no.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
 

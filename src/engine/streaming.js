@@ -64,7 +64,7 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 50, medio: 80, alto: 120 },       // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
+    hd: { bajo: 45, medio: 70, alto: 90 },        // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
@@ -129,6 +129,9 @@ AVE.module('streaming', function (G) {
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
+    // El look no debe bajar este atlas: la celda de 1024 es el detalle del kit. La URL a veces queda en blob.
+    if (m.map) m.map.userData.avAtlas = true;
+    if (m.normalMap) m.normalMap.userData.avAtlas = true;
     afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
     m.onBeforeCompile = sh => {
@@ -607,8 +610,9 @@ AVE.module('streaming', function (G) {
         // de radio no se ve su lejano. Dentro de hdD se dibuja el modelo completo, chico o grande.
         const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
         if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
-        // Dentro del alcance HD se dibuja la malla completa, también la torre chica: el lejano es la silueta, no el edificio.
-        I.hd = hdD > 0 && dl < hdD + (I.hd ? H : -H);
+        // Junto al edificio (LOD cerca) se dibuja la malla completa en cualquier calidad. Los grandes siguen en HD
+        // más allá del LOD, hasta hdD. La torre chica, de lejos, queda en la silueta.
+        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
         if (!L) continue;
         const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
@@ -733,12 +737,12 @@ AVE.module('streaming', function (G) {
       G.camara.yaw = yaw0;
       // Versión cercana de alta fidelidad (_hd): cargada y dibujada en calidad alta con WebGL2. Media y baja también la piden.
       const conHD = [...ZM.modelos].filter(n => ST.tieneHD(n));
-      if (hdGL2()) {
-        if (R.setCalidad) R.setCalidad('medio', true);
-        check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && hdActivo(), 'medio ' + (CFG.hd.medio || 0) + ' m');
-        if (R.setCalidad) R.setCalidad('bajo', true);
-        check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && hdActivo(), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
-        if (R.setCalidad) R.setCalidad('alto', true);
+      if (hdGL2() && R.setCalidad) {
+        R.setCalidad('medio', true); ST.revisar();
+        check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'medio ' + (CFG.hd.medio || 0) + ' m');
+        R.setCalidad('bajo', true); ST.revisar();
+        check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
+        R.setCalidad('alto', true); ST.revisar();
       }
       if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
         const listosHD = conHD.filter(n => ST.recursos[n].hd && ST.recursos[n].hd.estado === 'listo');
