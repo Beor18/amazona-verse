@@ -65,6 +65,7 @@
     let marcador = null;
     const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
     AV.marcadorTest = o => cargarMarcador().then(m => m.test(o));
+    if (G.idioma && G.idioma.test) AV.idiomaTest = o => G.idioma.test(o); // src/game/idioma.js
     alPrimerGesto(cargarMarcador); // cuenta desde que el jugador empieza (Jugar), no desde la portada
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
@@ -93,6 +94,10 @@
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
+    // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
+    const cargarLook = aDemanda('src/game/look.js', 'AVLook');
+    AV.lookTest = o => cargarLook().then(l => l.test(o));
+    if (/[?&]look=/.test(location.search)) cargarLook().catch(() => {}); else setTimeout(() => cargarLook().catch(() => {}), 7000);
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }
