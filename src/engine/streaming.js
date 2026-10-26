@@ -63,7 +63,7 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 0, medio: 40, alto: 90 },          // m: el _hd (atlas 2048) en media y alta, tras moverse. Bajo se queda en la paleta de 512. El 4K no se publica: la build no cabe.
+    hd: { bajo: 0, medio: 0, alto: 90 },          // m: el atlas HD solo en alta y tras moverse (pedido de la coordinadora). Bajo y medio usan la paleta de 512; el móvil no lo baja.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)

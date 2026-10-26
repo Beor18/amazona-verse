@@ -221,7 +221,7 @@ Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el 
 
 **Qué cambió en el kit.**
 - El atlas se queda en **2048 (celda 512, margen 16)**, JPG. El de 4096 es la misma 4K y la build pasa de 60,6 a 75 MB (tope 64): no se publica. La paleta ligera sigue en 512. Sus normales no se publican: en la aldea del inicio suben la descarga.
-- Lo que sí se ve: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. Calidad media (40 m) y alta (90 m) piden el `_hd` después de moverse. Bajo sigue con la paleta.
+- Lo que sí se ve, en calidad alta: el look de fábrica ya no encoge `tex_hd/`. Antes bajaba el atlas a 512 y la celda quedaba en 128 px (piedra blanda). Ahora la celda se queda en 512. `?tex=512` sigue pudiendo medirla chica. El `_hd` solo se pide en alta (90 m) y después de moverse. Bajo, medio y el móvil se quedan en la paleta de 512, que ya entra en el arranque. En el móvil el atlas no se descarga, así que no suma memoria de texturas.
 - El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
 - `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
 
