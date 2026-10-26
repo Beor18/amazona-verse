@@ -1213,4 +1213,6 @@ window.AV_EN = {
  "Ñam: fruto de {}${xp ?": "Yum: fruit of {}",
  "…el pacto… viene otra tormenta…": "…the pact… another storm is coming…",
  "…¿Oyes eso? Viene más lluvia.": "…Do you hear that? More rain is coming.",
+ "U.S. Fish & Wildlife Service: ficha de Amazona vittata (consultada el 25 de octubre de 2026)": "U.S. Fish & Wildlife Service: Amazona vittata species profile (accessed 25 October 2026)",
+ "Wikipedia (en): Puerto Rican amazon, consultada el 25 de octubre de 2026 (por verificar en USFWS/DRNA)": "Wikipedia (en): Puerto Rican amazon, accessed 25 October 2026 (to be verified against USFWS/DRNA)",
 };

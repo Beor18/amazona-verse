@@ -449,7 +449,7 @@ window.AVRescate = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
     const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-    const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates') o[k] = d && d[k]; return JSON.stringify(o); };
+    const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates' && k !== 'clock') o[k] = d && d[k]; return JSON.stringify(o); }; // clock avanza con cada tick de la prueba
     const realAntes = claves.map(leer), sAntes = comparable(S), propioAntes = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
     const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), flying: M.flying, grounded: M.grounded, swimming: M.swimming, pausa: G.pausa.activa(), banq: G.banqueteApi, sbanq: S.banquete };
     const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };

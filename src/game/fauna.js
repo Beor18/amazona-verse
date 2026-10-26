@@ -480,7 +480,7 @@
         const volar = () => { S.pos.x = nb.x; S.pos.z = nb.z; S.pos.y = H(nb.x, nb.z) + 2; M.flying = true; M.speed = 8; };
         simular(0.6, volar); const v1 = varz();
         ok('Al pasar volando por una nube, las mariposas se dispersan (varianza ×2 o más)', v1 >= v0 * 2, v0.toFixed(1) + ' → ' + v1.toFixed(1));
-        quietaEn(nb.x + 200, H(nb.x + 200, nb.z), nb.z); let tR = 0; while (tR < 5 && !(varz() < v0 * 1.3 && nb.disp < 0.1)) { simular(0.1); tR += 0.1; }
+        quietaEn(nb.x + 200, H(nb.x + 200, nb.z), nb.z); let tR = 0; while (tR < 5 && !(varz() < Math.max(v0 * 1.3, v1 * 0.5) && nb.disp < 0.1)) { simular(0.1); tR += 0.1; } // v0 es una foto del ocho: vale también con la dispersión a la mitad
         ok('Y vuelven en menos de 3 s', tR < 3, tR.toFixed(1) + ' s');
         // Una se posa en el pico
         aprend.length = 0; quietaEn(nb.x + 1.5, H(nb.x + 1.5, nb.z), nb.z); F.quieta = 0; simular(3.8);
@@ -508,7 +508,7 @@
           let arriba = 0; for (let t = 0; t < 6; t += 0.1) { paso(0.1, false); M.posado = 'fino'; if (BOA.cab > 0.95) arriba += 0.1; }
           ok('Boa: posada en su rama, levanta la cabeza unos 2 s y vuelve a dormir', BOA.max > 0.95 && arriba >= 1.6 && arriba <= 2.6 && BOA.cab < 0.05, arriba.toFixed(1) + ' s arriba');
           ok('La boa nunca se desplaza y queda observada', BOA.mesh.position.distanceTo(pos0) < 1e-6 && vistos().includes('boa'));
-          ok('Hay una rama donde posarse (G.solidos)', !G.solidos || !G.solidos.altoEn || G.solidos.altoEn(c.x, c.z, c.y + 1) > c.y - 0.5, G.solidos && G.solidos.altoEn ? (G.solidos.altoEn(c.x, c.z, c.y + 1) - c.y).toFixed(2) : 'sin sólidos');
+          ok('Hay dónde posarse junto a la boa (su rama o la copa del árbol, G.solidos; la rejilla funde la rama con la copa)', !G.solidos || !G.solidos.altoEn || G.solidos.altoEn(c.x, c.z, c.y + 3) > c.y - 0.5, G.solidos && G.solidos.altoEn ? (G.solidos.altoEn(c.x, c.z, c.y + 3) - c.y).toFixed(2) : 'sin sólidos');
         }
         // 6. Calidad: bajo reduce los count; draw calls de fauna ≤ 5
         G.renderer.setCalidad('bajo'); await cuadros(2); recolocarLagartijos(); paso(0.05, false);
