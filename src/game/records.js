@@ -650,7 +650,7 @@
     const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/#top-records';
     const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
     const ADJETIVOS = ['Veloz', 'Valiente', 'Curioso', 'Brillante', 'Alegre', 'Audaz', 'Sabio', 'Feliz', 'Ágil', 'Sereno'];
-    const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush']; // rio_rush: River Rush clásico, por puntos (AC2)
+    const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush', 'tren']; // rio_rush: River Rush clásico, por puntos (AC2)
     const claveAlias = ALM + '.rankalias', claveDisp = ALM + '.rankdisp';
     const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* sin almacén: el apodo no se recuerda */ } };

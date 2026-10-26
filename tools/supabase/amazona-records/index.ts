@@ -17,6 +17,7 @@ const RETOS: Record<string, { menor: boolean; min: number; max: number; ok?: (v:
   flight: { menor: false, min: 0, max: 2000, ok: (v, d) => v <= d / 1000 * 1.3 + 2 },
   maze: { menor: false, min: 0, max: 5000, ok: (v, d) => d <= 600000 && v <= Math.max(50, d / 1000 * 60) },
   rio_rush: { menor: false, min: 0, max: 5000, ok: (v, d) => d <= 600000 && v <= Math.max(50, d / 1000 * 60) },
+  tren: { menor: false, min: 0, max: 1200, ok: (v, d) => d >= 140000 && d <= 160000 && v <= d / 1000 * 8 },
 };
 // Alias: «Animal Adjetivo NN» de listas fijas (sin texto libre: nada de nombres reales).
 const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
