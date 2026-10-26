@@ -140,7 +140,7 @@ AVE.module('fisica', function (G) {
     const fromGround = onGroundNow() || MOVE.swimming;
     if (MOVE.swimming) { MOVE.swimming = false; G.agua.splash(S.pos.x, S.water, S.pos.z, 1.1); }
     MOVE.flying = true; MOVE.landing = false; MOVE.jumping = false; MOVE.grounded = false;
-    if (fromGround) { S.vy = T.takeoffV; MOVE.takeoff = T.takeoffTime; G.audio.play('despegar'); }
+    if (fromGround) { S.vy = T.takeoffV * (G.rareza ? G.rareza.mult('impulso') : 1); MOVE.takeoff = T.takeoffTime; G.audio.play('despegar'); }
     else { S.vy = Math.max(S.vy, 2); MOVE.takeoff = 0.15; }
     G.emit('vuelo', true);
   }
@@ -327,6 +327,7 @@ AVE.module('fisica', function (G) {
       // Shift (o el joystick a fondo) corre
       const run = keys.has('shift') || Math.hypot(stick.x, stick.y) > 0.92;
       let sp = MOVE.flying ? FLY_SPEED * (MOVE.landing ? T.landSpeed : 1) : MOVE.swimming ? SWIM_SPEED * (run ? T.swimRunFactor : 1) : run ? RUN_SPEED : SPEED;
+      if (MOVE.flying) sp *= G.rareza ? G.rareza.mult('vuelo') : 1; // cría épica o legendaria; en Retos y duelos mult() es 1
       // Cuesta arriba se frena (según la subida del cuadro anterior)
       if (MOVE.grounded && MOVE.grade > 0) sp /= 1 + T.uphillSlow * Math.min(1.2, MOVE.grade);
       if (MOVE.agachada && !MOVE.flying) sp *= 1 - 0.4 * MOVE.agachada; // agachada camina más despacio
@@ -451,7 +452,7 @@ AVE.module('fisica', function (G) {
       // Altura sobre el suelo, mirando también 0,35 s adelante: al aterrizar sobre un tejado o un borde frena a tiempo
       const above = S.pos.y - Math.max(ground, MOVE.perchY, suelo(S.pos.x + MOVE.vx * 0.35, S.pos.z + MOVE.vz * 0.35, S.pos.y));
       let want, k = T.vAccel;
-      if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6; k = 2; }
+      if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6 * (G.rareza ? G.rareza.mult('impulso') : 1); k = 2; }
       else if (MOVE.landing) { want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6); k = T.vAccelLand; }
       else if (jumpHeld && !busy) want = T.climbV;
       else if (dive) want = above < T.flareHeight ? -Math.max(T.flareV, T.diveV * above / T.flareHeight) : -T.diveV;

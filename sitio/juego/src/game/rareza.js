@@ -8,8 +8,8 @@
    - Mismo modelo siempre: solo un marco en la cápsula, una etiqueta y un aura (sprite aditivo que late) bajo la cría; nunca se
      tocan pico, ojos, proporciones ni animaciones. Poderes suaves del compañero (la cría que sigue a Vittata): vista, vuelo e
      impulso como multiplicadores (mult) que leen fisica.js y banquete.js; estela de chispas al volar; canto que llama a la
-     bandada (G.emit('canto')) al despegar, cada 90 s. En el Modo Retos y en los retos del mundo (rescate, banquete) mult() es 1
-     y tiene() es false.
+     bandada (G.emit('canto'); bandada.js pide con en: 1) al despegar, cada 90 s. En el Modo Retos, en un duelo y en los retos
+     del mundo (rescate, banquete) mult() es 1 y tiene() es false.
    - Carga perezosa: criadero.js lo trae al arrancar (no va en index.html). window.AVRareza(G) → G.rareza.
    API: G.rareza = { de, def, niveles, asignar, tirar, contar, mult, tiene, actual, enReto, aura, coleccion, canto, paso, test }.
    Prueba: AV.rarezaTest(). */
@@ -68,7 +68,9 @@
 
     // ---------- Poderes del compañero (fuera de los Retos) ----------
     let forzada = null; // pruebas: rareza del compañero sin tocar el criadero
-    const enReto = () => document.body.classList.contains('retos-on') || !!(G.retosApi && G.retosApi.activo)
+    const enReto = () => document.body.classList.contains('retos-on') || document.body.classList.contains('duelo-on')
+      || !!(G.retosApi && G.retosApi.activo)
+      || !!(G.duelo && (typeof G.duelo.activo === 'function' ? G.duelo.activo() : G.duelo.activo))
       || !!(G.rescate && G.rescate.activo && G.rescate.activo()) || !!(G.banqueteApi && G.banqueteApi.activo && G.banqueteApi.activo());
     function actual() {
       if (forzada) return forzada;
@@ -121,7 +123,7 @@
       cantoEn = reloj;
       try { if (G.fx && G.S && G.S.pos) G.fx.burst(G.S.pos.x, G.S.pos.y + 0.8, G.S.pos.z, 'stars', 18); } catch (e) { /* sin fx */ }
       try { if (G.audio && G.audio.play) G.audio.play('chorus'); } catch (e) { /* sin audio */ }
-      G.emit('canto', { rareza: actual(), poder: 'canto' }); // bandada.js: pedir('canto', { en: 1 }) (pedido en HUEVOS_RAREZA.md)
+      G.emit('canto', { rareza: actual(), poder: 'canto' }); // bandada.js: pedir('canto', { en: 1 })
       if (!G.quiet && G.ui && G.ui.toast) { try { G.ui.toast(t({ es: '¡Tu cotorrita canta y llama a la bandada!', en: 'Your chick sings and calls the flock!' }), 2600); } catch (e) { /* sin HUD */ } }
       return true;
     }
@@ -180,6 +182,54 @@
         document.body.classList.add('retos-on');
         check('En el Modo Retos los poderes no cuentan', mult('vuelo') === 1 && mult('vista') === 1 && !tiene('estela') && !tiene('canto') && !canto({ forzar: true }) && !paso(0.5, { volando: true }));
         if (!clase0) document.body.classList.remove('retos-on');
+        const dueloPrev = G.duelo, dueloClase = document.body.classList.contains('duelo-on');
+        try {
+          forzada = 'legendaria';
+          G.duelo = { activo: () => true };
+          check('En un duelo los poderes no cuentan', mult('vuelo') === 1 && mult('vista') === 1 && mult('impulso') === 1 && !tiene('canto') && !canto({ forzar: true }));
+          G.duelo = null;
+          document.body.classList.add('duelo-on');
+          check('Con la clase duelo-on los poderes no cuentan', mult('vuelo') === 1 && !tiene('estela') && !paso(0.5, { volando: true }));
+        } finally {
+          if (dueloPrev === undefined) delete G.duelo; else G.duelo = dueloPrev;
+          document.body.classList.toggle('duelo-on', dueloClase);
+        }
+        // Ganchos en el motor: un paso de impulso y uno de crucero (fisica.js). Se restaura la posición.
+        if (G.fisica && G.fisica.step && G.input && G.terreno) {
+          const F = G.fisica, M = F.MOVE, Sf = G.S;
+          const mImp = def('legendaria').mult.impulso, mVue = def('legendaria').mult.vuelo;
+          const snap = { x: Sf.pos.x, y: Sf.pos.y, z: Sf.pos.z, vy: Sf.vy, flying: M.flying, landing: M.landing, takeoff: M.takeoff, swimming: M.swimming, grounded: M.grounded, vx: M.vx, vz: M.vz, speed: M.speed, jumping: M.jumping };
+          const teniaW = G.input.keys.has('w'), sx = G.input.stick.x, sy = G.input.stick.y;
+          const retosAhora = document.body.classList.contains('retos-on'), dueloAhora = document.body.classList.contains('duelo-on');
+          const restaurar = () => {
+            Sf.pos.x = snap.x; Sf.pos.y = snap.y; Sf.pos.z = snap.z; Sf.vy = snap.vy;
+            Object.assign(M, { flying: snap.flying, landing: snap.landing, takeoff: snap.takeoff, swimming: snap.swimming, grounded: snap.grounded, vx: snap.vx, vz: snap.vz, speed: snap.speed, jumping: snap.jumping });
+            if (teniaW) G.input.keys.add('w'); else G.input.keys.delete('w');
+            G.input.stick.x = sx; G.input.stick.y = sy;
+            document.body.classList.toggle('retos-on', retosAhora);
+            document.body.classList.toggle('duelo-on', dueloAhora);
+          };
+          try {
+            document.body.classList.remove('retos-on');
+            document.body.classList.remove('duelo-on');
+            if (enReto()) check('Física: hay un reto activo, los ganchos quedan en 1', mult('vuelo') === 1 && mult('impulso') === 1);
+            else {
+              const preparar = (id, yExtra) => {
+                forzada = id;
+                const spn = G.guardado && G.guardado.spawn;
+                if (spn) { Sf.pos.x = spn.x; Sf.pos.z = spn.z; }
+                Sf.pos.y = G.terreno.height(Sf.pos.x, Sf.pos.z) + yExtra; Sf.vy = 0;
+                Object.assign(M, { flying: true, landing: false, takeoff: 0, swimming: false, grounded: false, vx: 0, vz: 0, jumping: false });
+              };
+              const impulso = id => { preparar(id, 8); M.takeoff = 0.3; F.step(1 / 60, true); return Sf.vy; };
+              const vyC = impulso('comun'), vyL = impulso('legendaria');
+              check('El impulso de despegue usa mult (legendaria sobre común)', vyC > 0.05 && Math.abs(vyL / vyC - mImp) < 1e-3, `${vyC.toFixed(3)} / ${vyL.toFixed(3)}`);
+              const crucero = id => { preparar(id, 12); G.input.stick.x = G.input.stick.y = 0; G.input.keys.add('w'); F.step(1 / 60, false); return M.speed; };
+              const spC = crucero('comun'), spL = crucero('legendaria');
+              check('El crucero de vuelo usa mult (legendaria sobre común)', spC > 0.05 && Math.abs(spL / spC - mVue) < 1e-3, `${spC.toFixed(3)} / ${spL.toFixed(3)}`);
+            }
+          } finally { restaurar(); }
+        } else check('Física disponible para los ganchos de rareza', false, 'sin fisica.step');
         forzada = null;
         // Aura: sprite por rareza, nunca el modelo
         const au = aura('epica', 1), ac = aura('comun', 1);
