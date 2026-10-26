@@ -53,6 +53,9 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const superficie = (x, z) => Math.max(H(x, z), nivelAgua(x, z));
     // m:ss.d con aritmética entera (el tiempo y el récord de la misma carrera se ven iguales)
+    // HUD de cada cuadro (AF1): solo se escribe en el DOM lo que cambia; un texto o estilo igual también invalida estilo y maqueta
+    const pon = (el, v) => { if (el.textContent !== v) el.textContent = v; };
+    const estilo = (el, k, v) => { v = k === 'opacity' ? String(+v) : v; if (el.style[k] !== v) el.style[k] = v; };
     const reloj = t => { const d = Math.max(0, Math.round(t * 10)); return Math.floor(d / 600) + ':' + String(Math.floor(d / 10) % 60).padStart(2, '0') + '.' + (d % 10); };
     const ordinal = n => n + (n === 1 || n === 3 ? '.er' : '.º');
     const MAPA = window.AV_MAPA_CAP1 || null;
@@ -397,6 +400,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>Amazona Flight</h3><p>Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.</p>
       <span class="rt-rec" data-rec="flight"></span><button class="btn" type="button" data-jugar="flight" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>River Rush</h3><p>Baja el río Amazonas en canoa. Esquiva troncos y rocas, recoge racimos y llega al mar. Clásico, contrarreloj o contra tu fantasma.</p>
+      <span class="rt-rec" data-rec="rio_rush"></span><button class="btn" type="button" data-jugar="rio_rush" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -529,6 +534,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
       const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
+      { const z = rec.rio_rush || {}, t = [z.mejor ? 'Récord: ' + z.mejor + ' puntos' : '', z.reloj ? 'Contrarreloj: ' + reloj(z.reloj / 1000) : ''].filter(Boolean); ui.menu.querySelector('[data-rec="rio_rush"]').textContent = t.length ? t.join(' · ') : 'Aún sin récord'; } // src/game/river_rush.js (AC2)
       const hoy = retoDelDia();
       for (const k of Object.keys(NOMBRE_RETO)) {
         const rr = ui.menu.querySelector('[data-rec="' + k + '"]'); if (!rr) continue;
@@ -551,6 +557,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function jugar(reto) {
       montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
       if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
+      if (reto === 'rio_rush') { salir(); const f = window.AV && window.AV.riverRush; if (f) f().catch(() => {}); return true; } // River Rush (src/game/river_rush.js, AC2): igual que Flight
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
@@ -565,9 +572,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // ---------- Ganas de seguir (decisión de Kelvin, 26-oct): el «casi», la siguiente meta, sellos y reto del día ----------
     // Sano y para niños: solo habilidad (nada de monedas, cajas ni azar), sin rachas, sin cuentas atrás para volver y sin culpa.
     const ORDEN = ['bronce', 'plata', 'oro'], ART = { oro: 'el oro', plata: 'la plata', bronce: 'el bronce' };
-    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]] };
-    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'] };
-    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight' };
+    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]], rio_rush: [['bronce', 40], ['plata', 120], ['oro', 250]] };
+    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'], rio_rush: ['punto', 'puntos'] };
+    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight', rio_rush: 'River Rush' };
     const RETOS_DIA = ['banquete', 'flight', 'rio', 'tormenta', 'carrera'];
     const DESCANSO_MS = 30 * 60 * 1000;
     const ingles = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -577,7 +584,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const r = (rec && rec[reto]) || {};
       if (reto === 'carrera') return !r.puesto ? null : r.puesto === 1 ? 'oro' : r.puesto === 2 ? 'plata' : r.puesto === 3 ? 'bronce' : null;
       if (reto === 'rio') return ORDEN.includes(r.medalla) ? r.medalla : null;
-      let m = null; for (const [n, v] of UMBRAL[reto] || []) if (r.mejor >= v) m = n; return m;
+      let m = null; for (const [n, v] of UMBRAL[reto] || []) if (r.mejor >= v) m = n;
+      if (reto === 'rio_rush' && ORDEN.indexOf(r.medallaReloj) > ORDEN.indexOf(m)) m = r.medallaReloj; // River Rush: también la de su contrarreloj
+      return m;
     }
     // El mismo reto para todos ese día, sin servidor: sale de la fecha local
     function retoDelDia(f) { f = f || new Date(); const n = Math.floor(Date.UTC(f.getFullYear(), f.getMonth(), f.getDate()) / 864e5); return RETOS_DIA[((n % RETOS_DIA.length) + RETOS_DIA.length) % RETOS_DIA.length]; }
@@ -678,10 +687,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function chispasFx(dt) {
       const k = rate(5, dt);
       efectos.destello = Math.max(0, efectos.destello - dt * 3.2);
-      ui.lineas.style.opacity = REDUCED ? 0 : efectos.lineas.toFixed(3);
-      ui.destello.style.opacity = (efectos.destello * (REDUCED ? 0.25 : 0.75)).toFixed(3);
-      ui.oscuro.style.opacity = efectos.oscuro.toFixed(3);
-      ui.moja.style.opacity = efectos.moja.toFixed(3);
+      estilo(ui.lineas, 'opacity', REDUCED ? 0 : efectos.lineas.toFixed(3));
+      estilo(ui.destello, 'opacity', (efectos.destello * (REDUCED ? 0.25 : 0.75)).toFixed(3));
+      estilo(ui.oscuro, 'opacity', efectos.oscuro.toFixed(3));
+      estilo(ui.moja, 'opacity', efectos.moja.toFixed(3));
       return k;
     }
 
@@ -1195,22 +1204,22 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (tag) {
           v3.set(x, y + 2.3, z).project(cam);
           const d = Math.hypot(x - S.pos.x, y - S.pos.y, z - S.pos.z), ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
-          tag.style.display = ver ? '' : 'none';
-          if (ver) tag.style.transform = `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`;
+          estilo(tag, 'display', ver ? '' : 'none');
+          if (ver) estilo(tag, 'transform', `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`);
         }
       });
       // HUD
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
-        ui.pos.textContent = p + (p === 1 || p === 3 ? '.er' : '.º');
-        ui.tiempo.textContent = reloj(C.fase === 'fin' ? C.tiempo : C.t);
-        ui.pts.textContent = Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1);
+        pon(ui.pos, p + (p === 1 || p === 3 ? '.er' : '.º'));
+        pon(ui.tiempo, reloj(C.fase === 'fin' ? C.tiempo : C.t));
+        pon(ui.pts, Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1));
         const o = C.objetos[Math.min(C.sig, C.objetos.length - 1)].userData;
         const dx = o.x - S.pos.x, dz = o.z - S.pos.z, yaw = G.camara.yaw;
         const ang = Math.atan2(dx * Math.cos(yaw) - dz * Math.sin(yaw), -dx * Math.sin(yaw) - dz * Math.cos(yaw));
-        ui.flechaSvg.style.transform = 'rotate(' + ang.toFixed(3) + 'rad)';
+        estilo(ui.flechaSvg, 'transform', 'rotate(' + ang.toFixed(2) + 'rad)');
         const pt = Rr.puntos[Math.min(C.sig, Rr.puntos.length - 1)];
-        ui.flechaTxt.textContent = C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + Math.round(Math.hypot(dx, dz)) + ' m';
+        pon(ui.flechaTxt, C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + Math.round(Math.hypot(dx, dz)) + ' m');
       }
       chispasFx(dt);
     }
@@ -1486,9 +1495,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (const s of TM.semillas) { s.t += dt; s.sp.position.y = s.y + Math.sin(s.t * 2.4) * 0.25; s.sp.material.rotation = Math.sin(s.t * 1.7) * 0.3; }
       // Parpadeo de Vittata tras un golpe
       const pj = G.actores.player3D; if (pj) pj.root.visible = TM.invul <= 0 || Math.floor(now * 12) % 2 === 0;
-      ui.tiempo.textContent = reloj(Math.max(0, T_TORMENTA.dur - TM.t));
-      ui.puntos.textContent = String(TM.puntos);
-      ui.combo.textContent = TM.combo >= 2 ? ' x' + TM.combo : '';
+      pon(ui.tiempo, reloj(Math.max(0, T_TORMENTA.dur - TM.t)));
+      pon(ui.puntos, String(TM.puntos));
+      pon(ui.combo, TM.combo >= 2 ? ' x' + TM.combo : '');
       chispasFx(dt);
     }
 
@@ -1526,7 +1535,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 6);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 7);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
@@ -1619,6 +1628,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const ghCarrera = leer(claveFantasmaDe('carrera'));
         abrir();
         check('El menú de Retos tiene la tarjeta de Amazona Flight con su récord', !!ui.menu.querySelector('[data-jugar="flight"]') && /sin récord|Récord: \d+ obstáculo/.test(ui.menu.querySelector('[data-rec="flight"]').textContent));
+        check('El menú de Retos tiene la tarjeta de River Rush con su récord (AC2)', !!ui.menu.querySelector('[data-jugar="rio_rush"]') && /sin récord|Récord: \d+ puntos|Contrarreloj: \d+:\d\d\.\d/.test(ui.menu.querySelector('[data-rec="rio_rush"]').textContent) && medallaDeReto('rio_rush', { rio_rush: { mejor: 130 } }) === 'plata' && medallaDeReto('rio_rush', { rio_rush: { mejor: 50, medallaReloj: 'oro' } }) === 'oro');
         // ---------- Ganas de seguir: el «casi», la siguiente meta, sellos, reto del día y descanso ----------
         { const P = api.pruebas, rec0 = { tormenta: { mejor: 700 }, banquete: { mejor: 0 }, flight: { mejor: 22 }, carrera: { puesto: 2 }, rio: { medalla: 'plata' } };
           check('Reto del día: el mismo para la misma fecha y cambia con los días (sin servidor)', P.retoDelDia(new Date(2026, 9, 26)) === P.retoDelDia(new Date(2026, 9, 26, 23, 59)) && new Set([0, 1, 2, 3, 4].map(i => P.retoDelDia(new Date(2026, 9, 26 + i)))).size === 5);
