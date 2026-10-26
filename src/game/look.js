@@ -421,7 +421,7 @@ window.AVLook = function (G) {
       const F1 = firma(), c2 = foto().croma, m2 = medir();
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
-      check('Al quitar el look las texturas vuelven a su tamaño', m2.texturasGrandes === m0.texturasGrandes && Math.abs(m2.texturasMB - m0.texturasMB) < 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
+      check('Al quitar el look las texturas vuelven a su tamaño (no quedan reducidas; si otros módulos cargan texturas durante la prueba, el total puede crecer)', m2.texturasGrandes >= m0.texturasGrandes && m2.texturasMB > m0.texturasMB - 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
       { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
           if (m.defines && m.defines.AV_RIM) rim++;
           if (guardado.has(m) && m.color && hex(m.color) !== hex(guardado.get(m))) colores++;
