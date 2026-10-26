@@ -66,7 +66,7 @@
     let rescate = null;
     const cargarRescate = () => rescate || (rescate = AVE.assets.script('src/game/rescate.js').then(() => window.AVRescate(G), e => { rescate = null; throw e; }));
     AV.rescateTest = o => cargarRescate().then(r => r.test(o));
-    setTimeout(() => cargarRescate().catch(() => {}), 6000);
+    alPrimerGesto(cargarRescate);
     // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar si la calidad no es «bajo», y al pedir su prueba
     let bandada = null;
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
@@ -104,10 +104,10 @@
     const cargarMusica = () => musica || (musica = AVE.assets.script('src/game/musica.js').then(() => window.AVMusica(G), e => { musica = null; throw e; }));
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
-    // Clima de El Yunque (src/game/clima.js): sol, llovizna, aguacero y neblina; se carga solo tras el arranque y al pedir su prueba
+    // Clima de El Yunque (src/game/clima.js): sol, llovizna, aguacero y neblina; se carga en el primer gesto y al pedir su prueba
     const cargarClima = aDemanda('src/game/clima.js', 'AVClima');
     AV.climaTest = o => cargarClima().then(c => c.test(o));
-    setTimeout(() => cargarClima().catch(() => {}), 6000);
+    alPrimerGesto(cargarClima);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
     // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
