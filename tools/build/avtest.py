@@ -711,7 +711,7 @@ def correr(a, cfg):
     ini['mb'] = round(ini['bytes'] / MB, 2)
     ini['mb_peticiones'] = round(ini.get('bytes_peticiones', 0) / MB, 2)
     ini['por_tipo'] = {k: round(v / MB, 2) for k, v in sorted(ini['por_tipo'].items(), key=lambda kv: -kv[1])}
-    ini['mayores'] = [[k, round(v / 1024)] for k, v in sorted(ini['archivos'].items(), key=lambda kv: -kv[1])[:15]]
+    ini['mayores'] = [[k, round(v / 1024)] for k, v in sorted(ini['archivos'].items(), key=lambda kv: -kv[1])[:90]]
     del ini['archivos']
     R['carga_inicial'] = ini
     med = R.get('medidas') or {}
