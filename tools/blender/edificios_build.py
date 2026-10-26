@@ -1150,6 +1150,13 @@ def inject_web_textures(path):
                 idx[tf] = len(textures) - 1
             pbr['baseColorTexture'] = {'index': idx[tf]}
             pbr['baseColorFactor'] = [1, 1, 1, 1]
+            nf = os.path.splitext(tf)[0] + '_n.jpg'
+            if os.path.exists(os.path.join(WEB_TEXDIR, nf)):
+                if nf not in idx:
+                    images.append({'uri': 'tex/' + nf, 'name': os.path.splitext(nf)[0]})
+                    textures.append({'source': len(images) - 1, 'sampler': 0})
+                    idx[nf] = len(textures) - 1
+                mat['normalTexture'] = {'index': idx[nf]}
         mat.pop('extensions', None)
     js.pop('extensionsUsed', None)
     if images:

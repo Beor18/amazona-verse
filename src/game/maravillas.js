@@ -1,12 +1,13 @@
 /* Juego · Maravillas de la costa (tablero G5, GDD §6)
    Dos momentos baratos, un draw call cada uno. Con calidad baja no hay luciérnagas y las chispas son pocas.
-   - Atardecer, en un ciclo de 10 min de juego: luciérnagas y un coquí junto a la caleta.
+   - Atardecer: luciérnagas y un coquí junto a la caleta.
    - Noche: la caleta del suroeste (mapa agua.bahiaBio; el mapa no la guarda en lugares) enciende una estela azul si Vittata está cerca.
      El brillo lo producen dinoflagelados, Pyrodinium bahamense, como en Puerto Mosquito (Vieques).
      Fuente: NOAA Office for Coastal Management, «Mangrove, Seagrass, and Coral Restoration in the
      Vieques Bioluminescent Bay Natural Reserve»,
      https://coast.noaa.gov/states/stories/vieques-bioluminescent-bay.html (consultada el 26-oct-2026).
-   El cielo global sigue de día (lo lleva el clima). Aquí solo cambia la caleta, y solo de cerca.
+   La fase sigue S.hora si el mundo la tiene (C9: 17,5–19 atardecer, desde las 19 o antes de las 5 noche).
+   Sin S.hora queda el ciclo de 10 min, solo en la caleta y solo de cerca. El coquí no canta a pleno sol.
    Carga perezosa desde boot.js. window.AVMaravillas(G) → { fase, bahia, dato, test }.
    Prueba: AV.maravillasTest(). */
 window.AVMaravillas = function (G) {
@@ -25,6 +26,12 @@ window.AVMaravillas = function (G) {
   };
   const nivel = () => (G.renderer.calidad && G.renderer.calidad.nivel) || 'medio';
   function faseDe(t) {
+    const h = Number.isFinite(S.hora) ? S.hora : null;
+    if (h != null) {
+      if (h >= 19 || h < 5) return 'noche';
+      if (h >= 17.5 && h < 19) return 'atardecer';
+      return 'dia';
+    }
     const x = ((t % CICLO) + CICLO) % CICLO;
     if (x >= NOCHE && x < AMANECER) return 'noche';
     if (x >= ATARDECER && x < NOCHE) return 'atardecer';
@@ -101,6 +108,19 @@ window.AVMaravillas = function (G) {
     }
   }
   const cercaDe = () => Math.hypot(S.pos.x - B.x, S.pos.z - B.z) < B.r + 36;
+  // El «co» de esta fase solo con atardecer de verdad: el global activo, o S.hora entre 17,5 y 19.
+  function coquiConTarde() {
+    const h = Number.isFinite(S.hora) ? S.hora : null;
+    if (h != null && h >= 17.5 && h < 19) return true;
+    return !!(G.atardecer && typeof G.atardecer.activo === 'function' && G.atardecer.activo());
+  }
+  function intentarCanto(fase, dt) {
+    canto -= dt || 0;
+    if (fase === 'atardecer' && coquiConTarde() && cercaDe() && canto <= 0 && !G.quiet && G.audio && G.audio.has && G.audio.has('co')) {
+      canto = 3.2; G.audio.play('co'); return true;
+    }
+    return false;
+  }
   function aviso(fase) {
     if (G.quiet || !cercaDe() || vistos[fase]) return;
     vistos[fase] = true;
@@ -116,10 +136,7 @@ window.AVMaravillas = function (G) {
       for (let i = 0; i < baseY.length; i++) a.setY(i, baseY[i] + Math.sin(t * 1.7 + i) * 0.06);
       a.needsUpdate = true;
     }
-    canto -= dt;
-    if (fase === 'atardecer' && cercaDe() && canto <= 0 && !G.quiet && G.audio && G.audio.has && G.audio.has('co')) {
-      canto = 3.2; G.audio.play('co');
-    }
+    intentarCanto(fase, dt);
     if (ver) aviso(fase);
   }, 48);
   G.on('calidad', () => { ultima = ''; }, 40);
@@ -127,10 +144,29 @@ window.AVMaravillas = function (G) {
 
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
-    const guardado = { quiet: G.quiet, pos: Object.assign({}, S.pos), clock: S.clock, nivel: nivel() };
+    const guardado = {
+      quiet: G.quiet, pos: Object.assign({}, S.pos), clock: S.clock, nivel: nivel(),
+      hora: S.hora, teniaHora: Object.prototype.hasOwnProperty.call(S, 'hora'),
+      atardecer: G.atardecer, audio: G.audio,
+    };
     try {
       ok('La caleta está en el mapa (agua.bahiaBio, suroeste)', !!mapa && mapa.x < -40 && mapa.z > 40 && B.r >= 8, mapa ? Math.round(mapa.x) + ',' + Math.round(mapa.z) : 'no está');
-      ok('El ciclo separa día, atardecer y noche', faseDe(0) === 'dia' && faseDe(380) === 'atardecer' && faseDe(450) === 'noche' && faseDe(560) === 'dia');
+      delete S.hora;
+      ok('Sin S.hora el ciclo separa día, atardecer y noche', faseDe(0) === 'dia' && faseDe(380) === 'atardecer' && faseDe(450) === 'noche' && faseDe(560) === 'dia');
+      S.hora = 18;
+      ok('S.hora de tarde es atardecer aunque el ciclo sea de día', faseDe(0) === 'atardecer' && faseDe(450) === 'atardecer');
+      S.hora = 12;
+      ok('Con sol (S.hora 12) es de día aunque el ciclo sea atardecer o noche', faseDe(380) === 'dia' && faseDe(450) === 'dia');
+      S.hora = 17.4;
+      ok('A las 17,4, antes del umbral, sigue siendo de día', faseDe(380) === 'dia');
+      S.hora = 17.5;
+      ok('Desde las 17,5 es atardecer', faseDe(0) === 'atardecer');
+      S.hora = 19;
+      ok('Desde las 19 es noche', faseDe(0) === 'noche');
+      S.hora = 3;
+      ok('Antes de las 5 es noche', faseDe(560) === 'noche');
+      S.hora = 5;
+      ok('A las 5 vuelve el día', faseDe(380) === 'dia');
       ok('El dato nombra a Pyrodinium bahamense y cita a NOAA', /Pyrodinium bahamense/.test(DATO.texto) && /coast\.noaa\.gov/.test(DATO.url) && /NOAA/.test(DATO.fuente));
       G.renderer.calidad.nivel = 'bajo';
       aplicar('noche');
@@ -153,8 +189,24 @@ window.AVMaravillas = function (G) {
       G.quiet = false; vistos.noche = false; aviso('noche');
       const toast = document.getElementById('toast');
       ok('Cerca y de noche, el aviso cuenta el dato y la fuente', !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent)));
+      delete S.hora;
+      G.atardecer = { activo: () => false };
+      let cantos = 0;
+      G.audio = { has: n => n === 'co', play: n => { if (n === 'co') cantos++; } };
+      G.quiet = false; S.pos.x = B.x; S.pos.z = B.z; S.clock = 380;
+      ok('Sin atardecer global y sin S.hora, el ciclo de atardecer no hace cantar al coquí', intentarCanto(faseDe(S.clock), 10) === false && cantos === 0);
+      S.hora = 18;
+      ok('Con S.hora de tarde el coquí de la caleta canta', intentarCanto(faseDe(S.clock), 10) === true && cantos === 1);
+      delete S.hora;
+      G.atardecer = { activo: () => true };
+      ok('Con el atardecer global activo el coquí canta en la fase del ciclo', intentarCanto(faseDe(380), 10) === true && cantos === 2);
+      S.hora = 12;
+      ok('A pleno sol no canta aunque el atardecer global esté activo', faseDe(380) === 'dia' && intentarCanto(faseDe(380), 10) === false && cantos === 2);
     } finally {
       G.quiet = guardado.quiet;
+      G.audio = guardado.audio;
+      G.atardecer = guardado.atardecer;
+      if (guardado.teniaHora) S.hora = guardado.hora; else delete S.hora;
       if (G.renderer.calidad) G.renderer.calidad.nivel = guardado.nivel;
       Object.assign(S.pos, guardado.pos); S.clock = guardado.clock;
       chispas.visible = false; luces.visible = false; ultima = '';
