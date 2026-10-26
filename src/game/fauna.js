@@ -518,10 +518,13 @@
         const mallas = [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(Boolean);
         quietaEn(MAR.nubes[0].x + 3, H(MAR.nubes[0].x + 3, MAR.nubes[0].z), MAR.nubes[0].z); paso(0.05, false);
         let dif = Infinity, nota = '';
-        for (let i = 0; i < 3; i++) {
+        await cuadros(20); // la flora y las partículas se asientan tras el cambio de calidad
+        for (let i = 0; i < 3; i++) { // en los dos órdenes: lo que cambie en la escena entre medidas (flora, partículas, bandada) no cuenta
           for (const m of mallas) m.material.visible = true; await cuadros(2); const con = G.renderer.stats().calls;
           for (const m of mallas) m.material.visible = false; await cuadros(2); const base = G.renderer.stats().calls;
-          if (con - base < dif) { dif = con - base; nota = base + ' → ' + con; }
+          await cuadros(2); const base2 = G.renderer.stats().calls;
+          for (const m of mallas) m.material.visible = true; await cuadros(2); const con2 = G.renderer.stats().calls;
+          for (const [c, b] of [[con, base], [con2, base2]]) if (c - b < dif) { dif = c - b; nota = b + ' → ' + c; }
         }
         for (const m of mallas) m.material.visible = true;
         ok('La fauna suma 5 draw calls o menos', dif <= 5 && mallas.length <= 5, nota);

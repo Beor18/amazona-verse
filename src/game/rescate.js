@@ -449,7 +449,7 @@ window.AVRescate = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
     const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-    const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates' && k !== 'clock') o[k] = d && d[k]; return JSON.stringify(o); }; // clock avanza con cada tick de la prueba
+    const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates' && k !== 'clock' && k !== 'marcador') o[k] = d && d[k]; return JSON.stringify(o); }; // clock y el cronómetro del marcador avanzan con cada tick de la prueba
     const realAntes = claves.map(leer), sAntes = comparable(S), propioAntes = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
     const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), flying: M.flying, grounded: M.grounded, swimming: M.swimming, pausa: G.pausa.activa(), banq: G.banqueteApi, sbanq: S.banquete };
     const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
@@ -461,7 +461,7 @@ window.AVRescate = function (G) {
     const espera = ms => new Promise(r => setTimeout(r, ms));
     const ir = (x, z, y, vuela) => { S.pos.x = x; S.pos.z = z; S.pos.y = y != null ? y : H(x, z); M.flying = !!vuela; M.grounded = !vuela; M.swimming = false; };
     try {
-      G.quiet = true;
+      G.quiet = true; if (SV.suspender) SV.suspender(true); // sin autoguardado durante la prueba (el marcador guarda cada tanto)
       if (!window.AVRecords) await AVE.assets.script('src/game/records.js');
       if (!window.AV_HUEVOS) await AVE.assets.script('content/comun/huevos.js');
       const REC = window.AVRecords(G); casaKey = REC.CLAVE.casa; casaLS = leer(casaKey);
@@ -558,7 +558,7 @@ window.AVRescate = function (G) {
       S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; G.banqueteApi = guard.banq;
       Object.assign(S.pos, guard.pos); S.facing = guard.facing; M.flying = guard.flying; M.grounded = guard.grounded; M.swimming = guard.swimming;
       R.fase = ''; R.resultado = null; tick(0.05);
-      G.quiet = guard.quiet; console.error = ce;
+      if (SV.suspender) SV.suspender(false); G.quiet = guard.quiet; console.error = ce;
       apartados.forEach(id => { $(id).hidden = false; });
     }
     check('La partida (G.S) queda intacta salvo S.rescates', comparable(S) === sAntes && S.rescates === guard.rescates);
