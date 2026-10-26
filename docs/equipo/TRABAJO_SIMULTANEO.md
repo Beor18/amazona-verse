@@ -30,7 +30,7 @@ Kelvin no hace de puente. Las reglas están en `AGENTS.md` y `CLAUDE.md`.
 | C4 | Claude | **Mejoras 1, 2 y 4 de `PLAYTEST10.md`.**<br>• Pista del coquí con neblina.<br>• Pista del visor de peces la primera vez.<br>• Precarga de la zona del río y del coquí a unos 120 m, para quitar el tirón: peor cuadro por debajo de 100 ms. | `src/game/fauna.js`, `src/game/rio_vivo.js` | | libre | |
 | C5 | Claude | **Clima y rescate.**<br>• Arrancan con `alPrimerGesto` en vez de `setTimeout(6 s)`.<br>• QA-39: `rescateTest` cambia `G.S.edu`.<br>• «Save the Parrot» se puede jugar con frutos en las patas (mejora 3 de `PLAYTEST10.md`). | `src/game/clima.js`, `src/game/rescate.js` | | libre | |
 | C6 | Claude | **Ganchos de rareza de los huevos** (`HUEVOS_RAREZA.md`): vuelo e impulso, vista en el Banquete y canto de la bandada. Efectos pequeños, nunca ventaja de pago. | `src/engine/fisica.js` (solo el gancho), `src/game/banquete.js`, `src/game/bandada.js`, `src/game/rareza.js` | | libre | |
-| C7 | Claude | **Episodio 2, secciones 5, 6 y 7 de `EP2_MISIONES.md`:** «Iguaca te pregunta», el Modo Maestro y el Diario y el criadero del episodio 2. Lleva marcadores `[KELVIN]` para el canon. | `content/ep2/*` | | libre | |
+| C7 | Claude | **Episodio 2, secciones 5, 6 y 7 de `EP2_MISIONES.md`:** «Iguaca te pregunta», el Modo Maestro y el Diario y el criadero del episodio 2. Lleva marcadores `[KELVIN]` para el canon. | `content/ep2/*` | Claude Fable · 08:38 | en curso | |
 | C8 | Claude | Bajar la descarga inicial de 8,24 MB a menos de 8 MB, sin perder calidad visible. | `tools/build/*` | | libre | |
 
 ## Zonas que no se tocan sin pedirlas
