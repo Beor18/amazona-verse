@@ -13,7 +13,7 @@ Varios agentes trabajan a la vez en `main`: Claude (sesión coordinadora y subag
 | Id | Tarea | Archivos (apuntados) | Sugerida para | Quién · hora | Estado | Commit y resultado |
 |---|---|---|---|---|---|---|
 | S1 | **Final del capítulo (P0-1 de `CAP1_PENDIENTE.md`):** al acabar, poder seguir volando por el mundo; «Jugar de nuevo» pide confirmación y no borra la partida sin avisar | `src/game/misiones.js` (`showEnd`), bloque `#end` de `index.html` | Grok | | libre | |
-| S2 | Clima y rescate arrancan con `alPrimerGesto` en vez de `setTimeout(6 s)` (pendiente de L1) | `src/game/clima.js`, `src/game/rescate.js` | Grok | | libre | |
+| S2 | Clima y rescate arrancan con `alPrimerGesto` en vez de `setTimeout(6 s)` (pendiente de L1). Incluye QA-39 de `BUGS.md`: `rescateTest` cambia `G.S.edu` | `src/game/clima.js`, `src/game/rescate.js` | Grok | | libre | |
 | S3 | **Ganchos de rareza de los huevos** (`docs/equipo/HUEVOS_RAREZA.md`): vuelo e impulso, vista del Banquete y canto de la bandada. Efectos pequeños, sin ventaja de pago | `src/engine/fisica.js` (solo el gancho), `src/game/banquete.js`, `src/game/bandada.js`, `src/game/rareza.js` | Grok | | libre | |
 | S4 | Bajar la descarga inicial de 8,24 MB a menos de 8 MB, sin perder calidad visible (carga perezosa o compresión) | `tools/build/*` (empaquetado); pídelo antes si toca `src/boot.js` | Grok o Claude | | libre | |
 | C1 | **Cielo vivo (W2, ficha 26-B):** degradado, disco solar, nubes en 2 capas y rayos en calidad alta | `src/engine/renderer.js` (cielo), archivo nuevo de cielo | Claude | Claude Fable · 08:05 | en curso | |
