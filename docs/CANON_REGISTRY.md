@@ -6,6 +6,7 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 |---|---|---|
 | Amazona Verse es un universo original de Kelvin García | CONFIRMADO | Directivo V4 §1.2 |
 | 36 inspiraciones de personaje del género Amazona (34 vivas + martinicana y violacea extintas) | CONFIRMADO | Kelvin, 24 oct 2026 |
+| La Voz del transmisor son los dos guardianes extintos (inspirados en *Amazona martinicana* y *Amazona violacea*). En el cap. 1 no se revela: sale con un retrato neutro. Pendiente: cómo se presentan (una voz o dos), su aspecto, y cómo encaja con «esa voz es de ahora» | CONFIRMADO | Kelvin, 26 oct 2026 |
 | Vittata: protagonista, mujer, inventora y líder | CONFIRMADO | Prompt maestro v3.1 y V4 |
 | Apariencia de Vittata: la cotorra verde de los renders oficiales | CONFIRMADO | Kelvin, 24 oct 2026 |
 | Uniformes y vestuario de Vittata | PENDIENTE (se diseñarán después) | Kelvin, 24 oct 2026 |
