@@ -55,7 +55,7 @@ mkdir -p "$OUT/site"
 
 # Rutas de la export (las que existan en ese commit); index.html es obligatorio.
 RUTAS=()
-for p in index.html src content assets; do
+for p in index.html sw.js src content assets; do
   if git -C "$AVB_REPO" cat-file -e "$SHA:$p" 2>/dev/null; then RUTAS+=("$p"); fi
 done
 [ "${RUTAS[0]:-}" = index.html ] || { avb_err "$REF no tiene index.html en la raíz"; exit 1; }
