@@ -21,7 +21,6 @@
 <link rel="stylesheet" href="src/ui/ui.css">
 <link rel="stylesheet" href="src/ui/criadero.css" data-criadero>
 <link rel="stylesheet" href="src/ui/menu_modos.css">
-<link rel="stylesheet" href="src/ui/menu_modos.css">
 
 <canvas id="game" aria-label="Mundo de Amazona Verse"></canvas>
 
@@ -100,7 +99,7 @@
         <button class="btn tile modo" type="submit" value="banquete" data-modo="banquete"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 20q24-6 52 10" stroke="var(--wood)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M30 12q8 2 6 12-8-2-6-12z" fill="var(--leaf-hi)"/><circle cx="22" cy="40" r="8" fill="var(--crest)"/><circle cx="40" cy="44" r="8" fill="var(--beak)"/><circle cx="52" cy="36" r="6" fill="var(--crest)"/><circle cx="20" cy="37" r="2" fill="#fff" opacity=".7"/><circle cx="38" cy="41" r="2" fill="#fff" opacity=".7"/></svg><b>¡Banquete!</b><small>Frutos en vuelo y combos</small></button>
         <button class="btn tile modo" type="submit" value="libre" data-modo="libre"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 46a8 8 0 0 1 2-15.7A10 10 0 0 1 29 28a7 7 0 0 1 1 18z" fill="#fff" opacity=".85"/><path d="M38 54a6 6 0 0 1 1-11.8 8 8 0 0 1 15-1 5 5 0 0 1 1 12.8z" fill="#fff" opacity=".7"/><path d="M24 16q8-10 16 0M28 16q4-5 8 0" stroke="var(--leaf)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M44 30q6-7 12 0" stroke="var(--crest)" stroke-width="3" fill="none" stroke-linecap="round"/></svg><b>Vuelo libre</b><small>Explora sin misiones</small></button>
         <button class="btn tile modo" type="button" id="b-nido-title" data-modo="nido"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="26" cy="38" rx="9" ry="12" fill="var(--parchment)"/><ellipse cx="38" cy="38" rx="9" ry="12" fill="var(--gold)"/><circle cx="36" cy="34" r="2" fill="var(--crest)"/><circle cx="41" cy="40" r="1.6" fill="var(--crest)"/><path d="M6 40q26-6 52 0-4 16-26 18T6 40z" fill="var(--wood)"/><path d="M10 42q22-4 44 0" stroke="var(--wood-lo)" stroke-width="2.5" fill="none"/></svg><b>Mi nido</b><small>Tus huevos y crías</small></button>
-        <button class="btn tile modo" type="button" id="b-records-title" data-modo="records"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5L32 39.2 19 46l2.5-14.5L11 21.3l14.5-2.1z" fill="var(--gold)"/><path d="M6 50h16v10H6zm18-6h16v16H24zm18 10h16v6H42z" fill="var(--sky)"/></svg><b>Mis récords</b><small>Medallas y tiempos</small></button>
+        <button class="btn tile modo" type="button" id="b-records-menu" data-modo="records"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5L32 39.2 19 46l2.5-14.5L11 21.3l14.5-2.1z" fill="var(--gold)"/><path d="M6 50h16v10H6zm18-6h16v16H24zm18 10h16v6H42z" fill="var(--sky)"/></svg><b id="b-records-title">Mis récords</b><small>Medallas y tiempos</small></button>
       </div>
     </form>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
@@ -143,7 +142,6 @@
       <button class="btn tile" id="b-load" type="button" data-icon="load" popovertarget="pause" popovertargetaction="hide">Cargar</button>
       <button class="btn tile" id="b-retos" type="button" data-icon="trophy" popovertarget="pause" popovertargetaction="hide">Retos</button>
       <button class="btn tile" id="b-records" type="button" data-icon="star" popovertarget="pause" popovertargetaction="hide">Mis récords</button>
-      <button class="btn tile" id="b-menu-modos" type="button" data-icon="rotate" popovertarget="pause" popovertargetaction="hide">Cambiar de juego</button>
       <button class="btn tile" id="b-menu-modos" type="button" data-icon="rotate" popovertarget="pause" popovertargetaction="hide">Cambiar de juego</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
       <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
@@ -350,7 +348,6 @@
 <script src="content/comun/especies.js" charset="utf-8"></script>
 <script src="src/game/criadero.js" charset="utf-8"></script>
 <script src="src/game/guia_controles.js" charset="utf-8"></script>
-<script src="src/game/menu_modos.js" charset="utf-8"></script>
 <script src="src/game/menu_modos.js" charset="utf-8"></script>
 <script src="src/pruebas/motor.js" charset="utf-8"></script>
 <script src="content/cap1/dialogos_cap1.js" charset="utf-8"></script>
