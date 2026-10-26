@@ -383,7 +383,7 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
 | AG2 | pendiente | | |
 | AH1 | pendiente | | |
 | AH2 | pendiente | | |
-| AI1 | pendiente | | |
+| AI1 | hecha | 19a4a1c (+ 38d38f7) | `EP5_GDD.md`, `EP5_MISIONES.md` y `EP5_NARRATIVA.md` con el formato del ep. 2: M1 «Mensajes en pedazos» (dos voces en el transmisor, patrones de la luz de la niebla), M2 «Lo que recuerdan las piedras» (las 8 ruinas que ya están en el mapa llenan los huecos de la memoria del Guardián; «sé o supongo»; fichas de martinicana y violacea con las fuentes de `especies.js`), M3 «El relevo» (luz, sonido o tela, ninguno lo maximiza todo; línea de vista determinista; Vittata tiene que pedir ayuda) y formativa q1–q6. NGSS 4-PS4-3, 1-PS4-4, 3-LS4-1, 3-5-ETS1-2 (DEPR por verificar). Se revela quiénes son las voces; 10 decisiones `[KELVIN]` (cómo se presentan, por qué hablan desde ahora, nombres, memoria del Guardián, ruinas…). Solo documentos, sin baterías. 38d38f7 repara 19a4a1c, que se llevó por error cosas que otro carril tenía en el índice (fila C15, 5 filas del tablero y 5 capturas c15): ahora HEAD es igual que cc76d68 más los 3 documentos. |
 | AI2 | pendiente | | |
 | AJ1 | pendiente | | |
 | AJ2 | pendiente | | |
