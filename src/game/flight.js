@@ -428,7 +428,9 @@
     let camModo = 'diagonal'; try { if (/[?&]flightcam=(lado|side)\b/.test(location.search)) camModo = 'lado'; } catch (e) { /* sin url */ }
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), modo: camModo, fov: CAMS[camModo].fov, k: 1 };
     // En vertical (móvil) el ancho de imagen es corto: la cámara se aleja un poco para que quepan Vittata y el siguiente hueco
-    function aspecto() { if (cam.asp) return cam.asp; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? w / h : 1.6; }
+    // El aspecto se mide una vez y se guarda hasta el siguiente resize o giro (AF1: clientWidth en cada cuadro forzaba un reflujo, ~5 % de la CPU del móvil)
+    let aspMedido = 0;
+    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     // FOV vertical según el aspecto: el ancho de imagen que se ve (FOV horizontal) no baja de ~el de una pantalla 16:9 + 20 %: en vertical
     // (390×844) sube el FOV vertical para que quepan Vittata y los 2 siguientes obstáculos; en horizontal queda el de la cámara
     const modoEf = () => (cam.modo === 'diagonal' && aspecto() < 1 ? 'vertical' : cam.modo); // el encuadre vertical del móvil
@@ -436,7 +438,7 @@
     function camPar() { cam.k = 1; return CAMS[modoEf()]; }
     // Recalcula el encuadre (resize y orientationchange): el FOV sigue al aspecto de la pantalla
     function reencuadrar() { if (!st.activo) return; const f = fovPara(cam.modo, aspecto()); if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
-    addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
+    addEventListener('resize', () => { aspMedido = 0; reencuadrar(); }); addEventListener('orientationchange', () => { aspMedido = 0; reencuadrar(); setTimeout(() => { aspMedido = 0; reencuadrar(); }, 350); });
     function camObjetivo(out) {
       const A = st.A, c = camPar(), nx = -A.dz, nz = A.dx; // normal al carril (hacia el mar)
       const y0 = c.base ? superficie(A.x, A.z) + c.alto : S.pos.y + c.alto * cam.k; // lateral: desde el mar; 3/4: desde la altura de Vittata
@@ -611,7 +613,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
     }
     function otraVez() { if (!st.activo) return false; iniciar(); return true; }
     function abrir() {
-      montarUI();
+      montarUI(); aspMedido = 0;
       if (!st.activo && !libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a probar Amazona Flight.', 3200); return Promise.resolve(false); }
       if (!$('creator').hidden) { st.creador = true; G.creador.close(); } // jugador nuevo: el creador vuelve al salir
       if (!st.listo) G.ui.toast('Cargando Amazona Flight…', 5000);

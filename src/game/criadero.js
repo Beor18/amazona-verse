@@ -531,9 +531,11 @@ AVE.module('criadero', function (G) {
   function initScene() {
     if (scene3d.renderer) return;
     const r = scene3d.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Móvil (AF1): el mismo tope de píxeles que el mundo (1,5 con pantalla táctil) y, con la calidad baja del mundo, sombra más barata
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches), bajo = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.nivel === 'bajo');
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, tactil ? 1.5 : 2));
     r.outputEncoding = THREE.sRGBEncoding; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.0;
-    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.shadowMap.enabled = true; r.shadowMap.type = bajo ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; scene3d.sombraBaja = bajo;
     if (C().setMaxAnisotropy) C().setMaxAnisotropy(r.capabilities.getMaxAnisotropy());
     const s = scene3d.scene = new THREE.Scene();
     s.fog = new THREE.Fog(C().lin('#bfdcc0').getHex(), 4.5, 16);
@@ -549,7 +551,7 @@ AVE.module('criadero', function (G) {
     s.add(sky);
     s.add(new THREE.HemisphereLight(C().lin('#fff1d6'), C().lin('#2f5a3a'), 0.75));
     const key = new THREE.DirectionalLight(C().lin('#ffe2b0'), 1.35); key.position.set(2.5, 5, 3.2); key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024); key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5; key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5; key.shadow.bias = -0.0006;
+    key.shadow.mapSize.set(scene3d.sombraBaja ? 512 : 1024, scene3d.sombraBaja ? 512 : 1024); key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5; key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5; key.shadow.bias = -0.0006;
     s.add(key);
     const rim = new THREE.DirectionalLight(C().lin('#a8e1ff'), 0.55); rim.position.set(-3, 2.2, -2.5); s.add(rim);
     // Suelo de musgo
@@ -1214,6 +1216,8 @@ AVE.module('criadero', function (G) {
     focoPrevio = document.activeElement;
     root.hidden = false; open = true;
     G.pausa && G.pausa.set('criadero', true);
+    // El overlay es opaco: mientras está abierto, el mundo no se dibuja debajo (AF1; el bucle del renderer salta el render con worldHidden)
+    if (G.ui && G.ui.worldHidden && !G.ui.worldHidden.criadero) { const previo = G.ui.worldHidden; G.ui.worldHidden = () => open || previo(); G.ui.worldHidden.criadero = true; }
     try {
       st.vistos.abierto = 1; revisarCapsulas(); guardar();
       if (!st.vista) st.vista = st.activa;

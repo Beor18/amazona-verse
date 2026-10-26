@@ -415,10 +415,10 @@ window.AVBanquete = function (G) {
   function dibujarJuego(dt) {
     if (J.fase === 'nada') return;
     juego.dibujar(dt);
-    const ui = ctx.ui;
-    ui.tiempo.textContent = ctx.reloj(Math.max(0, T.dur - (J.fase === 'cuenta' ? 0 : J.t)));
-    ui.puntos.textContent = String(J.puntos);
-    ui.combo.textContent = J.combo >= 2 ? ' x' + J.combo : '';
+    const ui = ctx.ui, pon = (el, v) => { if (el.textContent !== v) el.textContent = v; }; // AF1: solo lo que cambia (un texto igual también invalida la maqueta)
+    pon(ui.tiempo, ctx.reloj(Math.max(0, T.dur - (J.fase === 'cuenta' ? 0 : J.t))));
+    pon(ui.puntos, String(J.puntos));
+    pon(ui.combo, J.combo >= 2 ? ' x' + J.combo : '');
     ctx.chispasFx(dt);
   }
   const MODO = {
