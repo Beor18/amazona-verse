@@ -52,6 +52,8 @@ window.AVLook = function (G) {
   const q = new URLSearchParams(location.search);
   const TEX_URL = +q.get('tex') || 0;
   let actual = null;   // look activo (null = fábrica)
+  // renderer.js expone niebla { srgb, lin } (los colores que repone fogColorFor); si una versión no lo trae, se usan propios
+  const NB = R.niebla || { srgb: new THREE.Color((W.cielo && W.cielo.color) || '#bfe1d6'), lin: new THREE.Color((W.cielo && W.cielo.color) || '#bfe1d6').convertSRGBToLinear() };
   let base = null;     // lo que había antes del primer look (se guarda una vez, se devuelve al quitar)
 
   // ---------- Clave de caché de los programas: lleva el look (sin look, idéntica a la de three) ----------
@@ -150,9 +152,9 @@ window.AVLook = function (G) {
       else { sky.uCenit.value.copy(B.sky.cenit); sky.uHorizonte.value.copy(B.sky.horizonte); sky.uSolCol.value.copy(B.sky.sol); }
     }
     if (fog) {
-      if (L) { R.niebla.srgb.set(L.niebla.color); R.niebla.lin.copy(R.niebla.srgb).convertSRGBToLinear(); if (R.ATMOS) { fog.near = -L.niebla.inicio; fog.far = L.niebla.fin; } }
-      else { R.niebla.srgb.copy(B.niebla.srgb); R.niebla.lin.copy(B.niebla.lin); fog.near = B.niebla.near; fog.far = B.niebla.far; }
-      fog.color.copy(R.ATMOS && R.post.activo ? R.niebla.lin : R.niebla.srgb);
+      if (L) { NB.srgb.set(L.niebla.color); NB.lin.copy(NB.srgb).convertSRGBToLinear(); if (R.ATMOS) { fog.near = -L.niebla.inicio; fog.far = L.niebla.fin; } }
+      else { NB.srgb.copy(B.niebla.srgb); NB.lin.copy(B.niebla.lin); fog.near = B.niebla.near; fog.far = B.niebla.far; }
+      fog.color.copy(R.ATMOS && R.post.activo ? NB.lin : NB.srgb);
     }
     if (A) {
       if (L) { A.uCielo.value.copy(lin(L.cielo.cenit)); A.uHorizonte.value.copy(lin(L.cielo.horizonte)); A.uHemiCielo.value.copy(R.hemi.color).multiplyScalar(R.hemi.intensity); A.uHemiSuelo.value.copy(R.hemi.groundColor); A.uSolCol.value.copy(R.sun.color).multiplyScalar(R.sun.intensity); }
