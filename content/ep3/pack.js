@@ -130,7 +130,8 @@
       agua: { x: RIO_X, ancho: 8, color: '#5fe3d6', nivel: { x: RIO_X, z: -24, sobre: 1.6 } },
       arboles: { cantidad: 46, semilla: 11, copaCada: 2, margenRio: 6, copaColor: '#2f7d43',
         evitar: [BAHIA, IGUACA, ABUELA, PAPA, MESA, ASTILLERO, MUELLE, NAVEGANTE, SEMILLA, PRACTICA, VECINA, ALDEA, MIRADOR, POSTES.poste_muelle, POSTES.poste_punta,
-          { x: -12, z: 12, r: 3 }, { x: -33, z: 26, r: 3 }, { x: -30, z: 25, r: 3 }, { x: 13, z: 12, r: 3 }] },
+          { x: -12, z: 12, r: 3 }, { x: -33, z: 26, r: 3 }, { x: -30, z: 25, r: 3 }, { x: 13, z: 12, r: 3 },
+          { x: 11.2, z: 6.1, r: 2.6 }, { x: -31.6, z: 34.6, r: 2.6 }, { x: -35, z: 30, r: 2.4 }, { x: -34, z: 33.5, r: 2.4 }] }, // ramada, tendedero y casas
       oceano: { color: '#0b4f86', y: MAR },
     },
     npcs: [
@@ -156,9 +157,9 @@
         { id: 'leer', texto: 'Lee el agua: los 2 postes, las nubes y la corriente', progreso: S => ` (${OBS.filter(k => S.collected.includes(k)).length}/4)`,
           hasta: { recogido: OBS }, guia: G => { const k = OBS.find(x => !G.S.collected.includes(x)); return G.misiones.at({ obs_poste_muelle: 'poste_muelle', obs_poste_punta: 'poste_punta', obs_nubes: 'mirador', obs_semilla: 'semilla' }[k] || 'navegante'); } },
         { id: 'senales', texto: 'Acuerda 3 señales con la navegante', hasta: { evento: 'SignalsAgreed' }, guia: G => G.misiones.at('navegante') },
-        { id: 'practica', texto: 'Practica río abajo en la canoa', hasta: { evento: 'PracticeDone' }, guia: G => G.misiones.at('practica') },
+        { id: 'practica', texto: 'Practica río abajo en la canoa', hasta: { evento: 'PracticeDone' }, guia: G => (G.ep3 && G.ep3.destino()) || G.misiones.at('practica') },
         { id: 'timon', texto: 'Decide quién lleva el timón', hasta: { evento: 'HelmChosen' }, guia: G => G.misiones.at('navegante') },
-        { id: 'travesia', texto: 'Cruza la bahía desde el muelle', hasta: { evento: 'BayCrossed' }, guia: G => G.misiones.at('muelle') },
+        { id: 'travesia', texto: 'Cruza la bahía desde el muelle', hasta: { evento: 'BayCrossed' }, guia: G => (G.ep3 && G.ep3.destino()) || G.misiones.at('muelle') },
         { id: 'llegada', texto: 'Saluda a la gente de la otra orilla', guia: G => G.misiones.at('vecina') },
       ],
       fin: () => 'Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras.',
@@ -358,6 +359,9 @@
 
       // ---------- Navegar sobre raíles: la canoa sigue la polilínea; Vittata va posada en ella (una percha que se mueve) ----------
       let viaje = null, lastOk = { x: S.pos.x, z: S.pos.z }, avisoOrilla = 0;
+      let rumbo = null; // adónde va la salida en canoa, también entre tramos (la flecha de guía apunta ahí y no al muelle)
+      // Encuadre de los momentos clave: la cámara detrás de Vittata, un poco de lado, mirando a (x, z)
+      const encuadrar = (x, z) => { G.camara.yaw = Math.atan2(S.pos.x - x, S.pos.z - z) + 0.4; G.camara.manual(); };
       const percha = G.fisica.addPercha({ x: 0, z: 0, y: -99, r: 0.9, when: () => !!viaje });
       const nav = () => G.actores.npc('navegante');
       function ponerNpc(n, x, z, y) { if (!n) return; n.def.x = x; n.def.z = z; n.sp.position.set(x, (y != null ? y : H(x, z)) + 1.0, z); n.sh.position.set(x, (y != null ? y : H(x, z)) + 0.03, z); n.collider.x = x; n.collider.z = z; }
@@ -393,6 +397,7 @@
         percha.x = x + fx * 0.5; percha.z = z + fz * 0.5; percha.y = v.y + 0.35 + ola;
         S.pos.x = percha.x; S.pos.z = percha.z; S.pos.y = percha.y; S.vy = 0; G.fisica.MOVE.vx = G.fisica.MOVE.vz = 0; S.facing = { x: fx, z: fz };
         ponerNpc(nav(), x - fx * 1.2, z - fz * 1.2, v.y + 0.1 + ola);
+        if (dt) { const cam = G.camara, d = Math.atan2(Math.sin(Math.atan2(-fx, -fz) - cam.yaw), Math.cos(Math.atan2(-fx, -fz) - cam.yaw)); cam.yaw += d * Math.min(1, dt * 1.6); } // la cámara se pone detrás de la canoa
         if (dt && !quieto && Math.random() < dt * 2 && G.agua.ripple) G.agua.ripple(x - fx * 2, v.y, z - fz * 2);
       }
       function lanzarEspera() { const v = viaje, f = v.espera; v.esperaT = 0; f(() => { if (viaje === v) { v.espera = null; if (v.seg >= v.pts.length - 1) terminarViaje(); } }); }
@@ -433,7 +438,38 @@
       for (const k of Object.keys(POSTES)) { const p = POSTES[k], y = H(p.x, p.z); pieza(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), '#8a6a3a', p.x, y + 1.1, p.z); const c = pieza(new THREE.PlaneGeometry(0.9, 0.28), '#d6403a', p.x, y + 2, p.z - 0.5); c.rotation.y = Math.PI / 2; c.material.side = THREE.DoubleSide; }
       for (const [x, z, r] of [[-3, 30.2, 1.3], [3, 30.6, 1.1]]) pieza(new THREE.IcosahedronGeometry(r, 1), '#7a7266', x, MAR + r * 0.35, z).scale.set(1.2, 0.8, 1); // las dos rocas de la boca
       { const b = pieza(new THREE.CylinderGeometry(2.2, 2.6, 0.1, 18), '#e6d29a', -18.5, MAR - 0.12, 38.5); b.material.transparent = true; b.material.opacity = 0.55; } // el bajío
-      for (const [x, z] of [[-35, 30], [-34, 33.5]]) { const y = H(x, z); pieza(new THREE.CylinderGeometry(1.4, 1.4, 1.8, 8), '#c9a86a', x, y + 0.9, z); pieza(new THREE.ConeGeometry(1.8, 1.4, 8), '#a8903a', x, y + 2.5, z); }
+      // Las casas de la otra orilla: primitivas hasta que llega el modelo del kit (bohío y casa de paja), y no se atraviesan
+      const casas = [[-35, 30, 'bohio_redondo', 3.6, 0.4], [-34, 33.5, 'casa_paja_a', 3.8, 2.2]].map(([x, z, nombre, largo, ry]) => {
+        const y = H(x, z), g = [pieza(new THREE.CylinderGeometry(1.4, 1.4, 1.8, 8), '#c9a86a', x, y + 0.9, z), pieza(new THREE.ConeGeometry(1.8, 1.4, 8), '#a8903a', x, y + 2.5, z)];
+        G.fisica.colliders.push({ x, z, r: 1.6, h: 3.2, kind: 'obj' });
+        return { x, z, nombre, largo, ry, g };
+      });
+      // Piezas del kit de edificios (assets/models/edificios, propio), con su lado largo medido a `largo` y apoyadas en el suelo
+      function kit(nombre, largo) {
+        return G.assets.loadGLB(KIT + nombre + '.glb', { b64: () => (window.AV_EDIFICIOS_B64 || {})[nombre], script: KIT + nombre + '_glb.js', base: KIT, error: nombre + ' no disponible' }).then(g => {
+          const m = g.scene || (g.scenes && g.scenes[0]); if (!m) throw new Error(nombre);
+          const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3()), k = largo / (Math.max(sz.x, sz.z) || 1);
+          const w = new THREE.Group(); w.add(m); m.scale.setScalar(k); m.position.set(-c.x * k, -b.min.y * k, -c.z * k);
+          m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.castShadow = true; } });
+          return w;
+        });
+      }
+      const ponerKit = (nombre, largo, x, z, ry) => kit(nombre, largo).then(w => { w.position.set(x, H(x, z) - 0.05, z); w.rotation.y = ry || 0; scene.add(w); return w; });
+      for (const c of casas) ponerKit(c.nombre, c.largo, c.x, c.z, c.ry).then(() => c.g.forEach(m => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); })).catch(() => { /* quedan las primitivas */ });
+      // La ramada del astillero (4 horcones y techo de palma) sobre la pila de troncos y cañas de bambú con que se arma el casco
+      { const x0 = 11.2, z0 = 6.1, y0 = H(x0, z0);
+        for (const [dx, dz] of [[-1.1, -1.3], [1.1, -1.3], [-1.1, 1.3], [1.1, 1.3]]) pieza(new THREE.CylinderGeometry(0.07, 0.09, 2.5, 6), '#6b4a2a', x0 + dx, H(x0 + dx, z0 + dz) + 1.25, z0 + dz);
+        pieza(new THREE.BoxGeometry(2.8, 0.18, 3.2), '#b8955a', x0, y0 + 2.5, z0).rotation.x = 0.06; }
+      // El tendedero de la otra orilla: dos horcones, una vara y la red tendida al sol
+      { const x0 = -31.6, z0 = 34.6, y0 = H(x0, z0);
+        for (const d of [-1.3, 1.3]) pieza(new THREE.CylinderGeometry(0.06, 0.08, 1.9, 6), '#6b4a2a', x0 + d * Math.cos(0.5), y0 + 0.95, z0 - d * Math.sin(0.5));
+        pieza(new THREE.CylinderGeometry(0.04, 0.04, 2.8, 6), '#8a6a3a', x0, y0 + 1.85, z0).rotation.set(0, 0.5, Math.PI / 2);
+        const red = pieza(new THREE.PlaneGeometry(2.4, 1.1), '#d8c9a0', x0, y0 + 1.3, z0); red.rotation.y = 0.5; red.material.side = THREE.DoubleSide; red.material.transparent = true; red.material.opacity = 0.7; }
+      for (const [i, col, r] of [[0, '#6b4a2a', 0.22], [1, '#6b4a2a', 0.22], [2, '#7a5634', 0.2], [3, '#c9b26a', 0.08], [4, '#c9b26a', 0.08]]) {
+        const x = 11.2, z = 5.6 + (i < 2 ? i * 0.46 : i === 2 ? 0.23 : 1.2 + (i - 3) * 0.2), y = H(x, z) + (i === 2 ? 0.58 : r);
+        pieza(new THREE.CylinderGeometry(r, r, i < 3 ? 2.2 : 2.6, 8), col, x, y, z).rotation.z = Math.PI / 2;
+      }
+      G.fisica.colliders.push({ x: 11.2, z: 6.1, r: 0.9, h: 0.8, kind: 'obj' });
       // La semilla de la corriente (se ve bajar por el río)
       const semilla = pieza(new THREE.SphereGeometry(0.14, 8, 6), '#7a5230', SEMILLA_RUTA[0][0], -50, SEMILLA_RUTA[0][1]);
       let semillaT = -1;
@@ -499,6 +535,7 @@
           label: () => m.soltar,
           use: () => {
             if (S.step < 2) return;
+            encuadrar(AGUA_X, m.z);
             poner('probado_' + m.id); const P = piezas[m.id]; P.y0 = P.mesh.position.y + 1; P.t = 0; dibujarMateriales();
             if (G.agua.splash) G.agua.splash(AGUA_X, nivelRio(), m.z, 0.7);
             G.audio.play('pickup'); G.misiones.check();
@@ -532,6 +569,7 @@
       }
       function botadura1() {
         const f = falla();
+        encuadrar(BOTADURA.x, BOTADURA.z);
         G.eventos.log('LaunchTested', { outcome: 'falla:' + f.parte }); poner('falla_' + f.parte); dibujarCanoa();
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
         G.dialogo.say([Vi('¡Al agua!'), Vi('¡Uy!'), Vi(f.que), di('Abuela', 'No pasa nada, mi niña: para eso se prueba. Ya sabes cuál es la parte más débil.')], () => { G.misiones.check(); registrar(); });
@@ -545,6 +583,7 @@
         });
       }
       function botadura2() {
+        encuadrar(BOTADURA.x, BOTADURA.z);
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
         G.eventos.log('BoatLaunched'); G.comic.capture('bote'); G.audio.play('unlock'); dibujarCanoa(); colocarNavegante(); registrar();
         const y = nivelRio(); G.fx.burst(BOTADURA.x, y + 1.5, BOTADURA.z, 'gold', 30);
@@ -565,12 +604,13 @@
       for (const k of Object.keys(POSTES)) G.interaccion.add({ id: k, x: POSTES[k].x, z: POSTES[k].z, r: 2, visible: () => S.step >= 8,
         label: () => 'Mirar la cinta del poste', use: () => observar('obs_' + k, [Vi(OBS_TXT[k][0])]) });
       G.interaccion.add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 2.4, visible: () => S.step >= 8,
-        label: () => 'Mirar las nubes desde el mirador', use: () => observar('obs_nubes', [Vi('Sobre la bahía hay nubes bajas y oscuras, y van creciendo.')]) });
+        label: () => 'Mirar las nubes desde el mirador', use: () => { encuadrar(BAHIA.x, BAHIA.z); observar('obs_nubes', [Vi('Sobre la bahía hay nubes bajas y oscuras, y van creciendo.')]); } });
       G.interaccion.add({ id: 'semilla', x: SEMILLA.x, z: SEMILLA.z, r: 2.2, visible: () => S.step >= 8,
         label: () => 'Soltar una semilla en el río', use: () => { semillaT = 0; observar('obs_semilla', [Vi('La semilla se va río abajo, rápido. Así de fuerte va la corriente.')]); } });
 
       function navegante() {
         if (S.step < 7) { G.dialogo.say([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
+        if (S.step === 7) encuadrar(NAVEGANTE.x, NAVEGANTE.z);
         if (S.step === 7) { G.eventos.log('NavigatorMet'); registrar(); G.dialogo.say(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
         if (S.step === 8) { G.dialogo.say([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
         if (S.step === 9) { acordar(); return; }
@@ -641,6 +681,7 @@
       // ---------- Misión 3 · «Más allá de la bahía» ----------
       function travesia() {
         if (S.step !== 12) { G.dialogo.say([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
+        rumbo = { x: ALDEA.x, z: ALDEA.z };
         G.dialogo.say([di('Abuela', 'Cargadas van: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
           () => navegar(RUTAS.boca, MAR, rutaElegir, { paradas: { 1: s => senal('izquierda', s, 'En la boca de la bahía las olas cruzan entre dos rocas.'), 2: s => senal('derecha', s) } }));
       }
@@ -671,8 +712,10 @@
         }));
       }
       function llegar() {
+        rumbo = null;
         poner('llegada'); G.eventos.log('BayCrossed', { outcome: valor('ruta_', ['atajo', 'costa']) }); G.audio.play('unlock');
         S.pos.x = ALDEA.x; S.pos.z = ALDEA.z; S.pos.y = H(ALDEA.x, ALDEA.z); lastOk = { x: S.pos.x, z: S.pos.z };
+        encuadrar(VECINA.x, VECINA.z);
         dibujarCanoa(); colocarNavegante(); registrar(); G.misiones.check();
         G.dialogo.say([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
       }
@@ -735,7 +778,7 @@
       G.on('apply', redibujar, 75);
       redibujar();
       // Para la prueba: rutas, nivel del agua y si hay un viaje en marcha
-      G.ep3 = { RUTAS, MAR, nivelRio, enViaje: () => !!viaje, canoa, conModelo: () => !!modelo, falla };
+      G.ep3 = { RUTAS, MAR, nivelRio, enViaje: () => !!viaje, canoa, conModelo: () => !!modelo, falla, destino: () => rumbo || (viaje ? { x: viaje.pts[viaje.pts.length - 1][0], z: viaje.pts[viaje.pts.length - 1][1] } : null) };
     },
 
     pruebas: {
