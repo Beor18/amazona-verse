@@ -622,7 +622,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BG2 | hecha (Grok, G17) | 05ddc88 | Prototipo `?manga=demo` en `src/game/manga.js`. `mangaTest` 19/19. No reemplaza `comic.js`. |
 | BG3 | hecha (Grok, G17) | 05ddc88 | Encuadre con Vittata en cuadro, tinta y comparación `docs/img/bg2_vs_referencia_*.jpg`. |
 | BH1 | hecha, sin baterías (Mac saturada) | 0ca29a8 | Fallaba «Draw calls de la vista más cargada ≤ 150» (kelvin_ruinas_yunque: 151, viene de sumar edificios y bosque de hoy); arreglado en el código, no en la prueba: los props de radio < 4 m solo dan sombra a medio radio de sombras (`streaming.js`, `CFG.sombraChica`). No pude probarlo: con ~45 Chrome de pruebas huérfanos (cerré 32 con `test.sh --limpiar`) y load 20-45, Chrome no arranca a tiempo y `streamingTest` aislado se cuelga también sin mi cambio (control sobre pub-dcf4352). Falta correr la batería entera con `--extra` (build en `tools/build/salida/bh1-b`). `mangaTest` 18/19 salió una sola vez y en pub-dcf4352 da 19/19: no se repite. |
-| BI1 | pendiente | | |
+| BI1 | hecha | 724f7ae | Medido main frente a 512ca50 (antes de RN1), 375×812, CPU 4× y 6×, calidad medio: arranque, bosque, ciudad, cap. 2 y Flight a 58–60 FPS, p95 ≤ 16,8 ms y 0–1 tirones de > 50 ms; nada pasa de 33 ms, sin arreglos. Tabla en RENDIMIENTO_MOVIL.md (Mac a carga 11–22: es un techo). Medidas sin taskpolicy -b para no falsear los ms. Ojo: el índice real tiene restos de commits ajenos (PEDIDOS, TAREAS_API, look.js en MM); no lo toqué |
 | BI2 | pendiente | | |
 | BJ1 | pendiente | | |
 | BK1 | pendiente | | |
