@@ -1,10 +1,11 @@
-/* Juego · Manga Toon Story Creator (G17d, prototipo de Kelvin)
+/* Juego · Manga Toon Story Creator (G17f, prototipo de Kelvin)
    Aparte de src/game/comic.js: no lo reemplaza. Se abre con ?manga=demo o AV.manga(), sin entrada en el menú.
-   La interfaz sigue docs/img/referencia_manga_toon.webp. Las viñetas componen láminas de Blender
-   (tools/blender/manga_laminas.py) del modelo oficial assets/models/vittata.glb: cel shading, contorno,
-   poses de vuelo y fondos del mapa (selva, ruinas, cascada, mar y río). Globos, onomatopeyas,
-   estela y líneas de velocidad se dibujan en este lienzo.
-   renderer.js no se toca. No pide el nombre real, no inventa cotorras y no genera imágenes con IA.
+   La interfaz sigue docs/img/referencia_manga_toon.webp. Cada viñeta pone una pose oficial
+   (assets/manga/poses/vittata/, momentos.json) encima de una captura del mapa: en el demo, un sitio
+   real; en la partida, el momento guardado en memoria o en IndexedDB (eventos.js). Contorno y sombra
+   al recortar. Globos, onomatopeyas, estela y líneas de velocidad se dibujan en este lienzo.
+   El clip recorder no se implementa. renderer.js no se toca. No pide el nombre real, no inventa cotorras
+   y no genera imágenes con IA.
    Prueba: AV.mangaTest(). */
 window.AVManga = function (G) {
   'use strict';
@@ -39,29 +40,118 @@ window.AVManga = function (G) {
     };
   }
 
-  const LAMINAS = [
-    'assets/manga/laminas/01_comienzo.jpg',
-    'assets/manga/laminas/02_camino.jpg',
-    'assets/manga/laminas/03_confusion.jpg',
-    'assets/manga/laminas/04_intento.jpg',
-    'assets/manga/laminas/05_velocidad.jpg',
-    'assets/manga/laminas/06_meta.jpg',
-  ];
-  const HERO = 'assets/manga/laminas/07_hero.jpg';
+  const CATALOGO = 'assets/manga/poses/vittata/momentos.json';
+  const MOMENTO_BEAT = { comienzo: 'inicio', camino: 'ruta', confusion: 'choque', intento: 'intento', velocidad: 'record', meta: 'meta' };
+  const SITIO = ['ruinas', 'selva', 'cascada', 'caleta', 'rio', 'mirador'];
   let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, hero = null, enPrueba = false, tomando = false, camDelta = null;
+  let catalogo = null, posesUsadas = [], fondosOrigen = [];
 
-  function cargarLamina(url) {
+  function cargarImagen(url) {
     return new Promise(resolve => {
       const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = () => resolve(null);
+      im.src = url;
+    });
+  }
+  function cargarCatalogo() {
+    if (catalogo) return Promise.resolve(catalogo);
+    return fetch(CATALOGO).then(r => r.json()).then(j => { catalogo = j; return j; }).catch(() => null);
+  }
+  function esDemo() { return enPrueba || /[?&]manga=demo\b/.test(location.search); }
+  function poseVineta(beatId) {
+    const lista = catalogo && catalogo.poses;
+    if (!lista) return null;
+    return lista.find(p => p.vineta === beatId) || null;
+  }
+  function tratar(canvas) {
+    const x = canvas.getContext('2d', { willReadFrequently: true });
+    let img;
+    try { img = x.getImageData(0, 0, canvas.width, canvas.height); }
+    catch (e) { return canvas; }
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i], g = d[i + 1], b = d[i + 2];
+      const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      r = y + (r - y) * 1.55; g = y + (g - y) * 1.45; b = y + (b - y) * 1.35;
+      r = (r - 128) * 1.28 + 138; g = (g - 128) * 1.22 + 128; b = (b - 128) * 1.18 + 118;
+      d[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+      d[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+      d[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+    }
+    x.putImageData(img, 0, 0);
+    return canvas;
+  }
+  function poseManga(im) {
+    const w = 512, h = 512;
+    const sil = document.createElement('canvas'); sil.width = w; sil.height = h;
+    const sx = sil.getContext('2d');
+    sx.drawImage(im, 0, 0, w, h);
+    sx.globalCompositeOperation = 'source-in';
+    sx.fillStyle = '#14100c';
+    sx.fillRect(0, 0, w, h);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    x.globalAlpha = 0.42;
+    x.drawImage(sil, 16, 20);
+    x.globalAlpha = 1;
+    const o = 5;
+    [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, o], [o, -o], [-o, -o]].forEach(d => x.drawImage(sil, d[0], d[1]));
+    x.drawImage(im, 0, 0, w, h);
+    return c;
+  }
+  function componer(fondo, pose, b) {
+    const c = document.createElement('canvas'); c.width = 640; c.height = 400;
+    const x = c.getContext('2d');
+    if (fondo) x.drawImage(fondo, 0, 0, 640, 400);
+    else {
+      const g = x.createLinearGradient(0, 0, 0, 400);
+      g.addColorStop(0, '#1a6fe0'); g.addColorStop(0.55, '#19a8c4'); g.addColorStop(1, '#0e7a38');
+      x.fillStyle = g; x.fillRect(0, 0, 640, 400);
+    }
+    if (pose) {
+      const alto = b && b.id === 'confusion' ? 370 : 308;
+      const ancho = alto * (pose.width / pose.height);
+      x.drawImage(pose, 12, 400 - alto + 4, ancho, alto);
+    }
+    return c;
+  }
+  function desdeJpeg(url) {
+    return new Promise(resolve => {
+      if (!url || String(url).indexOf('data:image/') !== 0) { resolve(null); return; }
+      const im = new Image();
       im.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = 960; c.height = 600;
-        const x = c.getContext('2d', { willReadFrequently: true });
-        x.drawImage(im, 0, 0, 960, 600);
-        resolve(c);
+        const c = document.createElement('canvas'); c.width = 640; c.height = 400;
+        c.getContext('2d').drawImage(im, 0, 0, 640, 400);
+        resolve(tratar(c));
       };
       im.onerror = () => resolve(null);
       im.src = url;
+    });
+  }
+  function leerFondos() {
+    const mem = Object.assign({}, G.mangaFondos || {});
+    return new Promise(resolve => {
+      try {
+        const req = indexedDB.open('amazonaverse.manga', 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('fondos')) db.createObjectStore('fondos', { keyPath: 'momento' });
+        };
+        req.onsuccess = () => {
+          try {
+            const db = req.result;
+            if (!db.objectStoreNames.contains('fondos')) { db.close(); resolve(mem); return; }
+            const q = db.transaction('fondos', 'readonly').objectStore('fondos').getAll();
+            q.onsuccess = () => {
+              (q.result || []).forEach(row => { if (row && row.momento && row.jpeg) mem[row.momento] = row; });
+              db.close(); resolve(mem);
+            };
+            q.onerror = () => { db.close(); resolve(mem); };
+          } catch (e) { resolve(mem); }
+        };
+        req.onerror = () => resolve(mem);
+      } catch (e) { resolve(mem); }
     });
   }
 
@@ -252,41 +342,91 @@ window.AVManga = function (G) {
     }
     return mejor;
   }
+  function altura(x, z, extra) {
+    let y = 24 + extra;
+    try { if (G.terreno && G.terreno.height) y = G.terreno.height(x, z) + extra; }
+    catch (e) { /* cielo */ }
+    return y;
+  }
+  function sitioDemo(nombre) {
+    const agua = (G.terreno && G.terreno.mapa && G.terreno.mapa.agua) || {};
+    const places = (G.terreno && G.terreno.places) || {};
+    if (nombre === 'cascada' && agua.cascadas && agua.cascadas[0]) {
+      const c = agua.cascadas[0];
+      const x = c.abajo[0] + (c.ancho || 6), z = c.abajo[2] + 14;
+      return { x: x, y: altura(x, z, 12), z: z, mx: c.abajo[0], my: c.abajo[1] + (c.caida || 6) * 0.45, mz: c.abajo[2] };
+    }
+    if (nombre === 'caleta') {
+      const b = agua.bahiaBio || { x: -160, z: 207 };
+      const x = b.x + 28, z = b.z - 16;
+      return { x: x, y: altura(x, z, 10), z: z, mx: b.x, my: altura(b.x, b.z, 1), mz: b.z };
+    }
+    if (nombre === 'rio' && agua.rio && agua.rio.puntos && agua.rio.puntos.length > 8) {
+      const p = agua.rio.puntos[Math.floor(agua.rio.puntos.length * 0.42)];
+      const x = p[0] + 26, z = p[1] - 8;
+      return { x: x, y: altura(x, z, 16), z: z, mx: p[0], my: (p[2] || 0) + 2, mz: p[1] };
+    }
+    if (nombre === 'mirador' && places.mirador) {
+      const m = places.mirador;
+      const x = m.x + 16, z = m.z + 22;
+      return { x: x, y: altura(x, z, 14), z: z, mx: m.x, my: altura(m.x, m.z, 4), mz: m.z };
+    }
+    if (nombre === 'selva') {
+      const m = places.A || { x: S.pos.x, z: S.pos.z };
+      const x = m.x + 18, z = m.z - 24;
+      return { x: x, y: altura(x, z, 8), z: z, mx: m.x - 6, my: altura(m.x, m.z, 3), mz: m.z + 10 };
+    }
+    const x = -18, z = -128;
+    return { x: x, y: altura(x, z, 24), z: z, mx: -33.9, my: altura(-33.9, -144.5, 8), mz: -144.5 };
+  }
   function fotografiar() {
-    const R = G.renderer, cam = R && R.camera, P = G.actores && G.actores.player3D;
-    if (!cam || !window.THREE || !R.canvas || R.canvas.width < 2) return BEATS.map(() => null);
+    const R = G.renderer, cam = R && R.camera;
+    if (!cam || !window.THREE || !R.canvas || R.canvas.width < 2) {
+      fondosOrigen = BEATS.map(() => 'vacio');
+      return BEATS.map(() => null);
+    }
     const pos = cam.position.clone(), quat = cam.quaternion.clone(), fov = cam.fov;
-    const pose0 = P ? guardarPose(P) : null;
+    const P = G.actores && G.actores.player3D;
+    const root = P && P.root;
+    const vis = root ? root.visible : true;
     const quiet0 = G.quiet;
     G.quiet = true;
+    if (root) root.visible = false;
     const out = [];
+    fondosOrigen = [];
     try {
-      for (const toma of BEATS) {
-        let foto = null;
+      BEATS.forEach((toma, i) => {
+        let foto = null, origen = 'vacio';
         try {
-          if (P) aplicarPose(P, toma.modo);
-          const b = baseJugador();
-          const sitio = elegirToma(cam, b, toma);
-          const pechoY = b.y + 1.15;
-          if (sitio) {
-            cam.fov = toma.fov;
-            cam.updateProjectionMatrix();
-            cam.position.set(sitio.x, sitio.y, sitio.z);
-            cam.lookAt(b.x, pechoY, b.z);
-            cam.updateMatrixWorld(true);
-          }
+          const s = sitioDemo(SITIO[i]);
+          cam.fov = toma.fov;
+          cam.updateProjectionMatrix();
+          cam.position.set(s.x, s.y, s.z);
+          cam.lookAt(s.mx, s.my, s.mz);
+          cam.updateMatrixWorld(true);
           if (typeof R.drawScene === 'function') R.drawScene();
           else R.renderer.render(R.scene, cam);
-          foto = leerLienzo();
-        } catch (e) { foto = null; }
+          foto = tratar(leerLienzo());
+          if (desvio(foto, 32).desv < 6) {
+            const b = baseJugador();
+            const cerca = mundo(b, [10, 7, -12]);
+            cam.position.set(cerca.x, cerca.y, cerca.z);
+            cam.lookAt(b.x, b.y + 2, b.z);
+            cam.updateMatrixWorld(true);
+            if (typeof R.drawScene === 'function') R.drawScene();
+            else R.renderer.render(R.scene, cam);
+            foto = tratar(leerLienzo());
+          }
+          origen = 'mapa';
+        } catch (e) { foto = null; origen = 'vacio'; }
         out.push(foto);
-        if (P && pose0) restaurarPose(P, pose0);
-      }
+        fondosOrigen.push(origen);
+      });
     } finally {
       G.quiet = quiet0;
+      if (root) root.visible = vis;
       cam.fov = fov; cam.updateProjectionMatrix();
       cam.position.copy(pos); cam.quaternion.copy(quat); cam.updateMatrixWorld(true);
-      if (P && pose0) restaurarPose(P, pose0);
       camDelta = cam.position.distanceTo(pos);
     }
     return out;
@@ -507,17 +647,41 @@ window.AVManga = function (G) {
     const src = hero || retrato || fotos[5] || fotos[0];
     if (src) x.drawImage(src, 0, 0, c.width, c.height);
     const mini = raiz.querySelector('#mg-mini');
-    const miniSrc = retrato || src;
+    const miniSrc = hero || retrato || src;
     if (mini && miniSrc) mini.getContext('2d').drawImage(miniSrc, 0, 0, mini.width, mini.height);
+  }
+  async function fondosDe() {
+    const tomadas = fotografiar();
+    if (esDemo()) return tomadas;
+    const guardados = await leerFondos();
+    const out = [];
+    for (let i = 0; i < BEATS.length; i++) {
+      const row = guardados[MOMENTO_BEAT[BEATS[i].id]];
+      const dePartida = row && await desdeJpeg(row.jpeg);
+      if (dePartida) { out.push(dePartida); fondosOrigen[i] = 'partida'; }
+      else out.push(tomadas[i]);
+    }
+    return out;
   }
   async function refrescar() {
     if (tomando) return;
     tomando = true;
     try {
-      const tomadas = fotografiar();
-      const plates = await Promise.all(LAMINAS.map(cargarLamina));
-      fotos = plates.map((p, i) => p || tomadas[i]);
-      hero = await cargarLamina(HERO);
+      await cargarCatalogo();
+      const fondos = await fondosDe();
+      const usados = [];
+      const placas = [];
+      for (let i = 0; i < BEATS.length; i++) {
+        const ficha = poseVineta(BEATS[i].id);
+        const im = ficha ? await cargarImagen(ficha.archivo) : null;
+        usados.push(ficha ? ficha.id : '');
+        placas.push(componer(fondos[i], im ? poseManga(im) : null, BEATS[i]));
+      }
+      posesUsadas = usados;
+      fotos = placas;
+      const centro = poseVineta('ensenanzas');
+      const him = centro ? await cargarImagen(centro.archivo) : null;
+      hero = him ? poseManga(him) : null;
     } finally { tomando = false; }
     if (!raiz) return;
     BEATS.forEach((_, i) => pintarVineta(raiz.querySelector(`.mg-vin[data-i="${i}"] canvas`), i));
@@ -646,7 +810,7 @@ window.AVManga = function (G) {
     x.fillText((estado.cierre || '') + '  ·  ' + (estado.nombre || 'Vittata'), W / 2, y + pie - 8);
     x.textAlign = 'left';
     x.font = '700 16px Trebuchet MS, Segoe UI, sans-serif'; x.fillStyle = '#5c3b16';
-    x.fillText(L('Láminas del modelo oficial. El nombre es el de tu cotorra.', 'Plates of the official model. The name is your parrot\'s.'), 48, H - 40);
+    x.fillText(L('Poses oficiales de Vittata sobre la partida. El nombre es el de tu cotorra.', 'Official Vittata poses over the play. The name is your parrot\'s.'), 48, H - 40);
     return c;
   }
   function blobDe(canvas) {
@@ -724,6 +888,11 @@ window.AVManga = function (G) {
         await abrir();
         check('La página de muestra está abierta y no está en el menú de modos', !!raiz && !!document.getElementById('av-manga') && !document.querySelector('#title [data-manga], .modo-manga, [data-modo="manga"]'));
         check('Hay 6 viñetas', raiz.querySelectorAll('.mg-vin').length === 6 && fotos.length === 6);
+        const momentosOk = ['comienzo', 'error', 'confusion', 'intento', 'velocidad', 'meta', 'celebracion', 'ensenanzas'];
+        check('El catálogo trae las 21 poses oficiales', !!(catalogo && catalogo.poses && catalogo.poses.length === 21 && catalogo.poses.every(p => p.id && momentosOk.indexOf(p.momento) >= 0 && /poses\/vittata\/\d+\.png$/.test(p.archivo))));
+        check('Cada viñeta usa una pose oficial distinta', posesUsadas.length === 6 && posesUsadas.every(Boolean) && new Set(posesUsadas).size === 6, posesUsadas.join(','));
+        check('Los fondos salen del mapa o de la partida', fondosOrigen.length === 6 && fondosOrigen.every(o => o === 'mapa' || o === 'partida'), fondosOrigen.join(','));
+        check('El clip recorder no graba', !G.mangaClip);
         const reales = fotos.filter(f => f && desvio(f, 24).desv >= 8);
         check('Las 6 láminas tienen color (no un lienzo plano)', reales.length === 6, reales.length + '/6');
         BEATS.forEach((_, i) => {
