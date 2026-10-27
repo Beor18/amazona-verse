@@ -92,11 +92,11 @@ def autorizar(presupuesto, marca=''):
     return True
 
 
-def registrar(tarea, costo, turnos, estado):
+def registrar(tarea, costo, turnos, estado, texto=''):
     GASTOS.parent.mkdir(parents=True, exist_ok=True)
     with GASTOS.open('a', encoding='utf-8') as f:
         f.write(json.dumps({'fecha': time.strftime('%Y-%m-%dT%H:%M:%S'), 'tarea': tarea, 'modelo': MODELO,
-                            'costo': round(costo, 4), 'turnos': turnos, 'estado': estado}) + '\n')
+                            'costo': round(costo, 4), 'turnos': turnos, 'estado': estado, 'resultado': (texto or '')[:3000]}) + '\n')
 
 
 def resumen():
@@ -138,7 +138,7 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
         raise
     finally:
         reservado -= presupuesto
-        registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'])
+        registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'], resultado.get('texto', ''))
     return resultado['costo']
 
 
@@ -155,7 +155,7 @@ async def _sesion(opciones, mensajes, marca, presupuesto, resultado):
                         print(f'{marca}  [{b.name}] {str(detalle)[:140]}', flush=True)
             elif isinstance(m, ResultMessage):
                 costo = m.total_cost_usd if m.total_cost_usd is not None else 0
-                resultado.update(costo=costo, turnos=m.num_turns, estado=m.subtype)
+                resultado.update(costo=costo, turnos=m.num_turns, estado=m.subtype, texto=m.result or '')
                 print(f'\n{marca}== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
                 if m.result:
                     print(m.result[:1500])
