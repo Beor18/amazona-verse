@@ -1196,7 +1196,20 @@ def paso_geometria(sitio, cfg, reg, hilos, cache):
         raw = base64.b64decode(b64)
         j, binc = partir_glb(raw)
         if 'EXT_meshopt_compression' in (j.get('extensionsUsed') or []):
-            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido'}
+            # Ya viene comprimido (p. ej. un _glb.js subido desde Cursor): igual hay que apuntar sus uris a las texturas
+            # convertidas a WebP; si no, piden un .jpg que el sitio ya no tiene (Amazona Flight no abría, 27-oct).
+            cambio = False
+            for im in j.get('images') or []:
+                if 'uri' in im:
+                    destino = posixpath.normpath(posixpath.join(posixpath.dirname(f), im['uri']))
+                    if destino in renombre:
+                        im['uri'] = posixpath.relpath(renombre[destino], posixpath.dirname(f))
+                        im['mimeType'] = 'image/webp'
+                        cambio = True
+            if cambio:
+                raw = armar_glb(j, binc)
+                escribir(p, (pre + base64.b64encode(raw).decode('ascii') + post).encode('utf-8'))
+            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido' + (' (uris a WebP)' if cambio else '')}
         # WebP: uris de texturas externas convertidas, y las embebidas en las carpetas configuradas
         cambio = False
         base_f = posixpath.dirname(f)

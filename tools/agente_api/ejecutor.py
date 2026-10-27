@@ -120,7 +120,7 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     config = Path.home() / '.claude-sdk'
     config.mkdir(exist_ok=True)
     opciones = ClaudeAgentOptions(
-        model=MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos,
+        model=MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos, max_buffer_size=32 * 1024 * 1024,
         system_prompt={'type': 'preset', 'preset': 'claude_code', 'append': REGLAS},
         setting_sources=[], permission_mode='acceptEdits', can_use_tool=permiso,
         allowed_tools=['Read', 'Glob', 'Grep', 'Write', 'Edit', 'MultiEdit', 'TodoWrite'],
