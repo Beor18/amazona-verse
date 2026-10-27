@@ -55,6 +55,37 @@
     }
     return out;
   }
+  // Plaza y props de cada asentamiento (AY2, MAPA_PLAN_COMPLETO F2.3). Generado por tools/build/plazas_asentamientos.py: el
+  // hueco que dejó el layout de Kelvin (ninguna pieza suya se mueve), plano, en seco y lejos de lo jugable. props =
+  // [modelo del kit, x, y, z, rotY]; entran en la escena como piezas de su zona (reubicar) y el suelo pasa a tierra bajo la
+  // plaza y alrededor de cada pieza (sueloPlazas → mundo.suelo.plazas de terreno.js).
+  const PLAZAS = [
+    { id: 'kelvin_ruinas_yunque', plaza: { x: -33.9, z: -144.5, r: 8.7 }, props: [['losa_piedra', -36.9, 97.3, -141.5, 2.36], ['toldo_pequeno', -42.9, 97.5, -146.0, 1.4], ['losa_piedra', -38.4, 97.4, -132.5, 2.78], ['toldo_pequeno', -44.4, 97.2, -138.5, 2.09]] },
+    { id: 'kelvin_aldea_rio_este', plaza: { x: 108.9, z: 94.7, r: 11.2 }, props: [['toldo_pequeno', 99.9, 8.9, 99.2, 2.04], ['losa_piedra', 108.9, 8.5, 94.7, 2.73], ['toldo_pequeno', 99.9, 9.2, 90.2, 1.11], ['toldo_pequeno', 104.4, 8.4, 103.7, 2.68]] },
+    { id: 'kelvin_aldea_rio_oeste', plaza: { x: -128.4, z: 7.7, r: 8.9 }, props: [['canoa', -120.9, 14.1, 6.2, 4.69], ['toldo_pequeno', -135.9, 16.1, 4.7, 1.19], ['losa_piedra', -128.4, 16.0, 7.7, 3.93], ['toldo_pequeno', -131.4, 16.3, 0.2, 0.38]] },
+    { id: 'kelvin_aldea_lomas', plaza: { x: -69.2, z: 68.4, r: 6.2 }, props: [['toldo_pequeno', -64.7, 16.6, 65.4, 5.3], ['losa_piedra', -85.7, 17.2, 56.4, 0.94], ['toldo_pequeno', -72.2, 17.1, 63.9, 0.59], ['toldo_pequeno', -78.2, 18.8, 60.9, 0.88]] },
+    { id: 'kelvin_aldea_rio_este_2', plaza: { x: 123.9, z: 6.9, r: 12 }, props: [['toldo_pequeno', 114.9, 23.9, 12.9, 2.16], ['losa_piedra', 123.9, 21.9, 2.4, 0.0], ['toldo_pequeno', 114.9, 23.1, 0.9, 0.98]] },
+    { id: 'kelvin_aldea_mina', plaza: { x: 73.6, z: -75.2, r: 6.2 }, props: [['canoa', 75.1, 5.7, -69.2, 2.23], ['toldo_pequeno', 75.1, 4.6, -76.7, 5.52], ['losa_piedra', 88.6, 12.5, -70.7, 4.42]] },
+    { id: 'kelvin_aldea_meandros', plaza: { x: -14.3, z: 16.7, r: 6.6 }, props: [['canoa', -8.3, 11.6, 3.2, 2.25], ['toldo_pequeno', -12.8, 12.3, 10.7, 6.04], ['losa_piedra', -15.8, 13.0, 18.2, 2.36]] },
+    { id: 'kelvin_ruinas_yunque_2', plaza: { x: -60.6, z: -146.9, r: 6 }, props: [['losa_piedra', -51.6, 96.4, -146.9, 4.72], ['toldo_pequeno', -57.6, 93.5, -151.4, 5.7], ['losa_piedra', -45.6, 97.4, -127.4, 3.8]] },
+    { id: 'kelvin_aldea_colina', plaza: { x: 5.0, z: 103.8, r: 6.2 }, props: [['toldo_pequeno', 5.0, 25.3, 97.8, 0.0], ['losa_piedra', 14.0, 22.3, 93.3, 5.58], ['toldo_pequeno', 2.0, 23.4, 91.8, 0.25]] },
+    { id: 'kelvin_aldea_mina_2', plaza: { x: 98.1, z: -56.8, r: 9.1 }, props: [['canoa', 80.1, 7.0, -65.8, 2.16], ['toldo_pequeno', 105.6, 11.3, -59.8, 5.09], ['losa_piedra', 98.1, 10.4, -56.8, 3.26]] },
+    { id: 'kelvin_aldea_rio_este_3', plaza: { x: 37.8, z: 52.3, r: 12 }, props: [['toldo_pequeno', 28.8, 21.8, 58.3, 2.16], ['losa_piedra', 37.8, 20.6, 52.3, 4.07], ['toldo_pequeno', 43.8, 21.7, 43.3, 5.69]] },
+    { id: 'kelvin_aldea_rio_oeste_2', plaza: { x: -141.6, z: -31.5, r: 6.3 }, props: [['canoa', -149.1, 15.6, -36.0, 1.3], ['toldo_pequeno', -144.6, 16.6, -27.0, 2.56], ['losa_piedra', -137.1, 18.7, -24.0, 3.68]] },
+    { id: 'kelvin_aldea_yunque', plaza: { x: -15.0, z: -77.8, r: 11.2 }, props: [['toldo_pequeno', -6.0, 25.1, -73.3, 4.25], ['losa_piedra', -13.5, 23.4, -79.3, 5.48]] },
+    { id: 'kelvin_aldea_meandros_2', plaza: { x: -77.3, z: -72.9, r: 6.4 }, props: [['toldo_pequeno', -77.3, 32.7, -78.9, 6.28], ['losa_piedra', -83.3, 33.4, -74.4, 1.32]] },
+  ];
+  function sueloPlazas(MD) {
+    const out = [], EK = MD.escenaKelvin;
+    for (const P of PLAZAS) if (P.plaza) out.push({ x: P.plaza.x, z: P.plaza.z, r: P.plaza.r, f: 0.9 });
+    // tierra pisada alrededor de cada pieza (menos en las ruinas de piedra, y sin canoas ni puentes, que van sobre el agua)
+    for (const e of (EK && EK.compacto) || []) {
+      if (/^(canoa|puente_madera)$/.test(e.modelo)) continue;
+      const piedra = /^(templo|ruina|muro_templo|plataforma|bloque|losa|complejo)/.test(e.modelo);
+      for (const v of e.inst) out.push({ x: v.length >= 16 ? v[12] : v[0], z: v.length >= 16 ? v[14] : v[2], r: piedra ? 3 : 4.5, f: piedra ? 0.45 : 0.75 });
+    }
+    return out;
+  }
   // Mueve el contenido de los otros archivos del pack a las coordenadas del mapa (por id; lo que no está en el mapa no se toca)
   function reubicar(pack, MD) {
     const MS = MD.misiones || {};
@@ -85,6 +116,12 @@
     for (const f of (pack.diario && pack.diario.entradas) || []) { const n = FI[f.id]; if (n) { f.x = n.x; f.z = n.z; if (n.r) f.r = n.r; if (!f.agua) afuera(f); } }
     for (const b of pack.coquies || []) { const n = BU[b.id]; if (n) { b.x = n.x; b.z = n.z; afuera(b); } }
     if (MD.spawn && pack.jugador) pack.jugador.aparicion = { x: MD.spawn.x, z: MD.spawn.z };
+    // AY2: los props de las plazas, como piezas más de la escena de Kelvin en su zona (una vez: el mapa es global)
+    const EK = MD.escenaKelvin;
+    if (EK && EK.compacto && !EK.plazasAY2) {
+      EK.plazasAY2 = true;
+      for (const P of PLAZAS) for (const [modelo, x, y, z, rotY] of P.props) EK.compacto.push({ grupo: P.id, modelo, inst: [[x, y, z, rotY, 0.8366]], orientar: false, yExacta: false, escalaPack: false });
+    }
   }
 
   // Materiales compartidos de los objetos (se crean al primer uso, cuando THREE ya está)
@@ -94,6 +131,7 @@
   const MUNDO_MAPA = D && {
     mapa: { datos: () => window.AV_MAPA_CAP1, alturas: () => window.AV_MAPA_CAP1_ALTURA, b64: 'AV_MAPA_B64' },
     lugares: LUGARES, pois: poisExtra, reubicar,
+    suelo: { plazas: sueloPlazas }, // AY2: tierra en las plazas y bajo las piezas de los asentamientos
     nivelBase: M.POOL ? M.POOL.nivel : 3,
     // Ambiente de El Yunque a media mañana: cielo tropical, sol cálido alto desde el sudoeste, niebla ligera que sube del valle
     exposicion: 0.74,

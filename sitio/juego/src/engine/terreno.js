@@ -15,7 +15,7 @@
      plataformas [{ lugar | x, z, r, alto }], rio { x }, agua { x, ancho, nivel: { x, z, sobre } },
      arboles { cantidad, semilla, copaCada, margenRio, extra: [{ x, z, s, copa }], evitar: [{ x, z, r }] },
      islas { lista: [{ x, z, r }], modelo: { url, b64, script, base } }, bruma { dentro, fuera, color, opacidad, y }, texturas {}.
-   Esquema mapa: mapa { datos: () => AV_MAPA_*, alturas: () => AV_MAPA_*_ALTURA, b64: 'AV_MAPA_B64' }, suelo { capas: [4 × { tex, normal, escala, tinte }] },
+   Esquema mapa: mapa { datos: () => AV_MAPA_*, alturas: () => AV_MAPA_*_ALTURA, b64: 'AV_MAPA_B64' }, suelo { capas: [4 × { tex, normal, escala, tinte }], plazas?: (mapa) => [{ x, z, r, f }] (tierra, ver pintarPlazas) },
      reubicar(pack, datos) (mueve en sitio las posiciones del contenido al mapa), pois [{ id, x, y, z, nombre }], nivelBase, islas. */
 AVE.module('terreno', function (G) {
   'use strict';
@@ -543,6 +543,28 @@ AVE.module('terreno', function (G) {
       { tex: 'assets/tex/entorno/suelo_arena_rio.jpg', normal: 'assets/tex/entorno/suelo_arena_rio_n.jpg', escala: 1 / 3, tinte: '#fff8ec', saturacion: 0.9 },
     ];
     const sueloMat = splatMaterial(capas, { mar: 0, texMax: R.calidad.texMax });
+    // F2.3 (AY2): plaza y suelo de los asentamientos. mundo.suelo.plazas(MAPA) → [{ x, z, r, f }]: discos donde el pasto pasa
+    // a tierra (f = fuerza 0–1, con 4 m de borde suave y algo de ruido); la roca y la arena no cambian. Se pinta en el splat
+    // de cada trozo al cargarlo, antes de la rejilla exacta (splatAt lo ve igual). Sin coste de descarga ni de GPU.
+    const PLAZAS = (typeof SU.plazas === 'function' ? SU.plazas(MAPA) : SU.plazas) || [];
+    function pintarPlazas(geo) {
+      if (!PLAZAS.length) return;
+      if (!geo.boundingBox) geo.computeBoundingBox();
+      const s = geo.getAttribute('splat'), p = geo.attributes.position, bb = geo.boundingBox, B = 4;
+      const ds = PLAZAS.filter(d => d.x + d.r + B > bb.min.x && d.x - d.r - B < bb.max.x && d.z + d.r + B > bb.min.z && d.z - d.r - B < bb.max.z);
+      if (!ds.length) return;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), z = p.getZ(i), ru = 1.5 * Math.sin(x * 0.37 + Math.sin(z * 0.23) * 2) * Math.cos(z * 0.31 - x * 0.11);
+        let t = 0;
+        for (const d of ds) {
+          const dx = x - d.x, dz = z - d.z, e = d.r + B;
+          if (dx > e || dx < -e || dz > e || dz < -e) continue;
+          const u = clamp01((d.r + B * 0.5 + ru - Math.hypot(dx, dz)) / B);
+          t = Math.max(t, u * u * (3 - 2 * u) * (d.f || 1));
+        }
+        if (t > 0) { const r = s.getX(i) * t; s.setX(i, s.getX(i) - r); s.setY(i, s.getY(i) + r); }
+      }
+    }
     const B64 = (W.mapa && W.mapa.b64) || 'AV_MAPA_B64';
     const trozos = (MAPA.terreno && MAPA.terreno.trozos) || [];
     listo = Promise.all(trozos.map(t => G.assets.loadGLB(t.glb, {
@@ -555,6 +577,7 @@ AVE.module('terreno', function (G) {
       const c = geo.getAttribute('color');
       if (c) { geo.setAttribute('splat', c); geo.deleteAttribute('color'); }
       else geo.setAttribute('splat', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 4).fill(0.25), 4));
+      pintarPlazas(geo);
       if (!geo.getAttribute('normal')) geo.computeVertexNormals();
       geo.computeBoundingSphere();
       const mesh = new THREE.Mesh(geo, sueloMat);

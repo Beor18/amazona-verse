@@ -130,7 +130,8 @@
         planos: ['inicio', 'nido'],
       },
       arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#2f7d43',
-        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
+        // { x: -1.5, z: 11 }: donde arranca la cámara detrás de Vittata (una palma ahí tapaba la pantalla al empezar)
+        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA, { x: -1.5, z: 11, r: 4.5 }].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
       oceano: { color: '#0b4f86', y: -2.6 },
     },
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
