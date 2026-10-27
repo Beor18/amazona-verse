@@ -78,3 +78,17 @@ El prototipo usa solo a Vittata (especie `vittata`), con los accesorios oficiale
 4. Última franja con las dos enseñanzas y un retrato oficial (`renderPortrait`).
 5. Marco de 375×812 para la vista móvil. PNG de la página (firma comprobada), sin pedir permiso de adulto para descargar. Compartir pasa por la puerta que ya existe en `records.js`, si ese módulo carga.
 6. Segunda pasada (BG3), en el mismo prototipo: color más saturado, viñetas de distinta altura, globos con cola, rótulos de madera, tipografía grande y las enseñanzas como fichas, no como un pie escolar. Si una toma sale vacía, se repite desde más arriba una vez.
+
+## 6. Clip recorder (G17f) — solo evaluación, sin implementarlo
+
+Kelvin lo está contemplando: unos segundos de video alrededor de cada momento de acción, además de la foto. No entra en este prototipo.
+
+Qué haría. `canvas.captureStream()` y `MediaRecorder` sobre el lienzo del juego (sin micrófono y sin la cámara del dispositivo). Para tener 3–5 s *alrededor* del momento hace falta un anillo que ya esté grabando unos 2 s antes: `MediaRecorder` no mira hacia atrás. Eso implica grabar mientras dura la carrera o el capítulo, no solo al dispararse el evento, y quedarse con el recorte.
+
+Peso. A 480 px de ancho y unos 2,5 Mb/s, 5 s pesan cerca de 1,5 MB. Seis momentos, unos 9 MB, en memoria o en IndexedDB. En el móvil el coste no es solo el archivo: copiar el lienzo WebGL a un stream baja los cuadros en el mismo equipo que ya va justo.
+
+Privacidad. Solo local, igual que las fotos de G17f: nada se sube, no hay nombre real, y se borra con la partida. Un video de todo el vuelo enseña el recorrido, así que tendría que ser opcional y no un anillo siempre encendido.
+
+Hueco que el video no tapa. Sigue sin existir el evento de «nuevo intento». Un clip no lo inventa.
+
+Decisión. Las poses oficiales y la captura fija cubren el pedido de ahora. El clip queda anotado para cuando Kelvin lo pida. `G.mangaClip` no existe y no hay `MediaRecorder` en `manga.js`.

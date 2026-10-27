@@ -1,0 +1,28 @@
+{
+  "especie": "vittata",
+  "px": 1024,
+  "nota": "PNG oficiales de Kelvin (0002–0023, sin 0001 ni 0012). Cada pose tiene un momento. La viñeta usa la que trae vineta.",
+  "poses": [
+    {"id": "0002", "archivo": "assets/manga/poses/vittata/0002.png", "momento": "comienzo", "nota": "Saluda con una mano. Sirve al empezar."},
+    {"id": "0003", "archivo": "assets/manga/poses/vittata/0003.png", "momento": "comienzo", "nota": "Saluda con la otra mano."},
+    {"id": "0004", "archivo": "assets/manga/poses/vittata/0004.png", "momento": "comienzo", "vineta": "comienzo", "nota": "Vuela con las alas abiertas."},
+    {"id": "0005", "archivo": "assets/manga/poses/vittata/0005.png", "momento": "meta", "vineta": "meta", "nota": "Llega volando, de frente."},
+    {"id": "0006", "archivo": "assets/manga/poses/vittata/0006.png", "momento": "velocidad", "vineta": "velocidad", "nota": "Vuela con las alas bien abiertas."},
+    {"id": "0007", "archivo": "assets/manga/poses/vittata/0007.png", "momento": "intento", "nota": "Vuelve a despegar."},
+    {"id": "0008", "archivo": "assets/manga/poses/vittata/0008.png", "momento": "error", "nota": "Mira hacia un lado, parada."},
+    {"id": "0009", "archivo": "assets/manga/poses/vittata/0009.png", "momento": "confusion", "vineta": "confusion", "nota": "Se lleva una mano a la cara."},
+    {"id": "0010", "archivo": "assets/manga/poses/vittata/0010.png", "momento": "ensenanzas", "nota": "Saluda, quieta."},
+    {"id": "0011", "archivo": "assets/manga/poses/vittata/0011.png", "momento": "intento", "vineta": "intento", "nota": "Señala el camino y sigue."},
+    {"id": "0013", "archivo": "assets/manga/poses/vittata/0013.png", "momento": "ensenanzas", "vineta": "ensenanzas", "nota": "Saluda en grande, para el centro de las enseñanzas."},
+    {"id": "0014", "archivo": "assets/manga/poses/vittata/0014.png", "momento": "celebracion", "nota": "Saluda celebrando."},
+    {"id": "0015", "archivo": "assets/manga/poses/vittata/0015.png", "momento": "velocidad", "nota": "Otra toma de vuelo con las alas abiertas."},
+    {"id": "0016", "archivo": "assets/manga/poses/vittata/0016.png", "momento": "meta", "nota": "Otra llegada en vuelo."},
+    {"id": "0017", "archivo": "assets/manga/poses/vittata/0017.png", "momento": "confusion", "nota": "Se toca la cara, dudando."},
+    {"id": "0018", "archivo": "assets/manga/poses/vittata/0018.png", "momento": "ensenanzas", "nota": "Saluda con calma."},
+    {"id": "0019", "archivo": "assets/manga/poses/vittata/0019.png", "momento": "confusion", "nota": "Se rasca la cabeza."},
+    {"id": "0020", "archivo": "assets/manga/poses/vittata/0020.png", "momento": "confusion", "nota": "Se rasca la cabeza, inclinada."},
+    {"id": "0021", "archivo": "assets/manga/poses/vittata/0021.png", "momento": "error", "vineta": "camino", "nota": "Mira hacia atrás, con un ala abierta."},
+    {"id": "0022", "archivo": "assets/manga/poses/vittata/0022.png", "momento": "velocidad", "nota": "Va hacia delante, con las alas atrás."},
+    {"id": "0023", "archivo": "assets/manga/poses/vittata/0023.png", "momento": "celebracion", "nota": "Vuela de frente, con las dos alas abiertas."}
+  ]
+}
