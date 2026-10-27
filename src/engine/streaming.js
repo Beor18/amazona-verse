@@ -75,6 +75,7 @@ AVE.module('streaming', function (G) {
     descargas: 1, descargasArranque: 3,            // descargas a la vez
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
+    sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras
   };
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
   function alcanceNiebla() {
@@ -712,7 +713,9 @@ AVE.module('streaming', function (G) {
         const base = (I.lod === 0 || junto) ? 'cerca' : 'lejos';
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + ':' + base] || lotes[I.modelo + ':' + (base === 'cerca' ? 'lejos' : 'cerca')];
         if (!L) continue;
-        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < rS + I.r;
+        // Los props chicos (losas, toldos, canoas: BH1) solo dan sombra junto a Vittata: más allá son unos pocos texels
+        // del mapa de sombras y cada modelo con sombra es un draw call más en la pasada de sombras.
+        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
         L.lista.push(I); if (sombra) L.sombra = true;
