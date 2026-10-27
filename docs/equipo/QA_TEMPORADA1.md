@@ -32,3 +32,35 @@ Ronda de jugador nuevo en escritorio (1366×768, DPR 1, Chrome 156 sin interfaz 
 
 ## Para BC2 (móvil)
 `--ancho 375 --alto 812` solo cambia el tamaño: hay que añadir al guion la emulación táctil y la CPU 4× de `movil_modos.py`. Mirar QA-42 (salida de Retos al final de la lista) y si la fila de capítulos de la portada se desborda.
+
+# QA de la temporada 1 · móvil (BC2, 27-oct-2026)
+
+Misma ronda de jugador nuevo, emulando un iPhone: 375×812, DPR 3, táctil (`pointer: coarse`), UA de iPhone y **CPU frenada ×4**, en Chrome 156 sin interfaz con GPU Metal. Builds de `HEAD` d4596d5 (`salida/bc2-head`) y de los arreglos (`bc2-a8bdab8`, `bc2-a834183`). La Mac tenía carga 8–16 por otros carriles: los tiempos valen para comparar escenas, no como FPS de un teléfono.
+
+## Cómo se jugó
+- `tools/build/qa_movil.py <build>/site [--modos]` (nuevo, aparte de `qa_temporada1.py`): por capítulo, portada, «Empezar», apertura a los 6 y 30 s, **paseo de 12 s** con el streaming, pausa y el capítulo de punta a punta con su prueba; en el cap. 1 con `--modos`, Diario, Retos y la carrera, Flight, Maze, River Rush, Tren, criadero, récords y la pausa en inglés.
+- Por escena, además de la auditoría de BC1: **botones de menos de 44 px**, **textos tapados** por un botón o el HUD (sin contar lo que queda detrás de un panel modal), **tirones** (p50, p95 y peor cuadro, cuadros de más de 100 ms, tareas largas) y **memoria** (heap JS tras recoger basura, MB de texturas en GPU, draw calls, calidad elegida). Informe en `qa_movil.json`.
+- Capturas revisadas a mano. Evidencia en `docs/img/bc2_*.jpg`.
+
+## Resultado
+- **Se juega de principio a fin en el móvil**: los 6 capítulos arrancan y llegan al final (missionTest 70/70; ep2–ep6Test con un solo caso rojo, «Guarda aparte de cap1», que es el artefacto de la prueba ya descrito arriba). Todos los modos abren y se cierran.
+- **Consola**: con los arreglos, 0 errores en toda la ronda (antes, 4 por capítulo de `navigator.vibrate`, QA-56).
+- **Calidad automática**: arranca en «medio» y baja sola a «bajo» a los ~10 s en todos los capítulos (A3 funciona).
+- **Memoria**: heap JS de 14 a 78 MB (presupuesto 150). Texturas: caps. 2–6, 13–24 MB; **cap. 1, 264 MB en «bajo»** (presupuesto 160) y hasta 440 MB tras recorrer el mapa (QA-52).
+- **Tirones** (CPU 4×, con la Mac cargada): ya en marcha, p50 de 17 a 150 ms; el peor momento es al pulsar «Empezar» (congelado intermitente de hasta 3,7 s, QA-53). Draw calls de 16 a 80, dentro del presupuesto.
+- **Textos y botones**: el HUD a 375 px no se pisa (objetivo, chips, minimapa, joystick y botones de acción). Botones de 40 px en River Rush (arreglado), Tren y mapa grande (QA-54).
+
+## Bugs (detalle en `BUGS.md`)
+| id | sev. | qué | estado |
+|---|---|---|---|
+| QA-42 | baja | Retos en móvil: la única salida está bajo 7 tarjetas | **arreglado** (✕ fija arriba, `retos.js`) |
+| QA-52 | alta | Cap. 1 en móvil: 264–440 MB de texturas en «bajo» (presupuesto 160) | abierto (AW1; `look.js`/`renderer.js` con cambios ajenos) |
+| QA-53 | media | Congelado intermitente (hasta 3,7 s) al pulsar «Empezar» (CPU 4×) | abierto (`renderer.js` con cambios ajenos) |
+| QA-54 | baja | Botones de 40 px en el desvío del Tren y en el mapa grande | abierto (`tren.js` y `minimapa.js` con cambios ajenos) |
+| QA-55 | baja | Botones de 40 px en las modalidades de River Rush | **arreglado** (44 px) |
+| QA-56 | baja | `navigator.vibrate` sin gesto previo: error de consola en móvil | **arreglado** (`misiones.js`) |
+
+## No son bugs (móvil)
+- En la portada a 375 px, el pie «Prototipo · Villa Raíz» queda detrás de las tarjetas: está puesto así a propósito (`menu_modos.css:13`, `z-index: 0`).
+- La pausa del cap. 1 trae un botón «Capítulo 5» (G14, `index.html:151`). Es la entrada provisional; lo sustituye la pantalla «Capítulos» de AV1.
+- La fila de capítulos de la portada a 375 px: la auditoría no marca scroll horizontal ni enlaces fuera de la portada (queda bajo las tarjetas y se llega desplazando).
