@@ -33,3 +33,26 @@ Arreglados en el terreno y el agua los puntos **2, 5, 6, 7 y 9** (detalle en la 
 
 ## Medidas (móvil, calidad automática, Mac muy cargada: carga de 16 a 33)
 Calls de 33 a 95, triángulos de 180 k a 560 k (`s_meandros`), de 47 a 77 programas y texturas de 264 a 447 MB. Los ms no sirven: había 6 agentes probando a la vez. 0 errores de consola en las 26 capturas.
+
+## BE7: segunda pasada (27-oct, build b83331d)
+Mismas 13 vistas, en escritorio y en móvil, con el mismo método que BE1. Láminas: `docs/img/be7_<vista>.jpg` y `be7_movil_<vista>.jpg`, en orden **BE1 (a766950)** · **render 2022** · **ahora (b83331d)**. 0 errores de consola en las 26 capturas. El móvil emulado ahora elige «alto», no «bajo» como en BE1, así que se parece al escritorio.
+
+**Qué mejoró desde BE1:** (1) **ya hay dosel** (AW3): desde 250 m la isla se lee como selva y no como pradera, y es el salto más grande; (2) las paredes de pendiente media están cubiertas de selva colgante (BE2); (5) el río es azul cobalto con borde fino (BE2); (6, 7, 9) más sombra en las gargantas, sin muaré en la cenital y sin rastro de senda roja.
+
+**Pendientes, de lo que más se nota a lo que menos:**
+
+| # | Qué falta | Dónde se ve | Dueño propuesto |
+|---|---|---|---|
+| 11 | **Troncos blancos («palitos»).** A media distancia, los troncos claros del kit (con el tinte de corteza 0,74) forman un enrejado blanco bajo las copas; en el render no se ven troncos. | `be7_v_meandros`, `be7_v_lomas`, `be7_aerea_sur` | API, flora. **Arreglado en BE7.** |
+| 12 | **El dosel parece plástico liso.** La manta de AW3 es lima, lisa y sin copas individuales; en el render es una alfombra oscura de copas con huecos sombreados. | `be7_aerea_sur`, `be7_render2022`, `be7_v_lomas` (al fondo) | API, flora. **Arreglado en BE7** (copas y oclusión en el shader). |
+| 13 | **Impostores con tronco claro.** Entre 110 y 250 m los impostores conservan el tronco pálido del atlas (el mismo problema que el 11, de lejos). | `be7_aerea_sur`, `be7_render2022` | API, flora. **Arreglado en BE7** (mismo tinte al hornear el atlas). |
+| 3 | Ciudades de un amarillo arena plano, sin la base de roca gris. Ahora es lo que más se nota. | `be7_v_yunque`, `be7_aerea_sur` | **Grok** |
+| 4 | Aldeas poco legibles desde el aire. Las plazas de AY2 ayudan, pero los tejados siguen siendo motas. | `be7_render2022`, `be7_aerea_sur` | **Grok** |
+| 14 | **La pared del Yunque** sigue siendo un acantilado pardo de 100 m con bandas; en el render la roca bajo las ciudades es gris claro y más corta. | `be7_v_yunque`, `be7_aerea_sur` | API, terreno (color de la roca alta), media prioridad. |
+| 8 | Texturas: 443–447 MB estimados en todas las vistas, en escritorio y en móvil. | `be7_movil_*` | API: **BE5** |
+| 10 | Curvatura del horizonte en las aéreas del sur. | `be7_aerea_sur` | API, cámara; opcional |
+
+**Lo que arregló BE7 (11, 12 y 13)**, en `src/engine/vegetacion.js` y `src/engine/dosel.js`, solo en tintes y shaders, sin cambios en la descarga ni en los triángulos. Láminas en orden antes · 2022 · después: `docs/img/be7_antes_despues_{render2022,aerea_sur,v_meandros,v_lomas}.jpg`.
+- 11: la corteza pasa a un tinte pardo (0,5; 0,45; 0,39).
+- 12: el dosel lleva copas de ~5 m con ruido de valor de dos octavas (×0,68 a ×1,1) y huecos más oscuros según la altura sobre el suelo (×0,5 a 0,5 m, ×1 a 7,5 m).
+- 13: los impostores se hornean con el mismo tinte de corteza.
