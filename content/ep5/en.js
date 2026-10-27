@@ -8,6 +8,7 @@
     'Capítulo 5 · Las voces olvidadas': 'Chapter 5 · The forgotten voices',
     'Capítulo 5. No uses tu nombre real.': 'Chapter 5. Do not use your real name.',
     'Las dos voces se oyeron': 'The two voices were heard',
+    'Las dos voces se oyeron enteras. Iguaca tiene unas preguntas, cuando quieras. Y el capítulo 6 espera: el pacto de los 36.': 'Both voices were heard in full. Iguaca has some questions, whenever you like. And chapter 6 is waiting: the pact of the 36.',
     'Habla con Iguaca': 'Talk to Iguaca',
     'Sintoniza el transmisor': 'Tune the transmitter',
     'Separa las dos ondas': 'Separate the two waves',

@@ -46,7 +46,6 @@
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
-    if (G.vegetacion && G.vegetacion.listo && G.terreno.mapa && G.terreno.mapa.flora) { const dosel = aDemanda('src/engine/dosel.js', 'AVDosel'); AV.dosel = () => dosel().then(d => d.listo.then(() => d)); AV.doselTest = o => dosel().then(d => d.test(o)); alPrimerGesto(() => G.vegetacion.listo.then(dosel)); } // src/engine/dosel.js (dosel por celdas, AW3)
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
@@ -103,24 +102,8 @@
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
-    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); }
-    // Capítulo 5 (G14): entrada en el menú de pausa. El texto lleva data-no-tr; aquí solo el idioma.
-    const bEp5 = document.getElementById('b-ep5');
-    if (bEp5) {
-      const rotuloEp5 = () => {
-        const en = G.aula && G.aula.aj && G.aula.aj.idioma === 'en';
-        if (P.id === 'ep5') return en ? 'Chapter 1' : 'Capítulo 1';
-        return en ? 'Chapter 5' : 'Capítulo 5';
-      };
-      const pintarEp5 = () => { bEp5.textContent = rotuloEp5(); };
-      pintarEp5();
-      bEp5.addEventListener('click', () => {
-        const u = new URL(location.href);
-        if (P.id === 'ep5') u.searchParams.delete('pack'); else u.searchParams.set('pack', 'ep5');
-        location.href = u.pathname + u.search + u.hash;
-      });
-      G.on('aula', k => { if (k === 'idioma') pintarEp5(); });
-    }
+    // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
     const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
     const cargarMaze = aDemanda('src/game/maze.js', 'AVMaze'); AV.maze = () => cargarMaze().then(m => m.abrir()); AV.mazeTest = o => cargarMaze().then(m => m.test(o)); if (/[?&]mini=maze\b/.test(location.search)) { const ir = () => setTimeout(() => AV.maze().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // Amazona Maze (AB1, src/game/maze.js): prototipo oculto; ?mini=maze o AV.maze(); AV.mazeTest()
     const cargarRiver = aDemanda('src/game/river_rush.js', 'AVRiverRush'); AV.riverRush = () => cargarRiver().then(r => r.abrir()); AV.riverTest = o => cargarRiver().then(r => r.test(o)); if (/[?&]mini=river\b/.test(location.search)) { const ir = () => setTimeout(() => AV.riverRush().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // River Rush (AC1, src/game/river_rush.js): prototipo oculto; ?mini=river o AV.riverRush(); AV.riverTest()
@@ -143,8 +126,6 @@
     // Amazona Flight (C14, src/game/flight.js): prototipo oculto (fase 3 la deciden Kelvin y Fernando); ?mini=flight (al cerrar la portada) o AV.flight() lo abren; AV.flightTest()
     const cargarFlight = aDemanda('src/game/flight.js', 'AVFlight'); AV.flight = () => cargarFlight().then(f => f.abrir()); AV.flightTest = o => cargarFlight().then(f => f.test(o)); if (/[?&]mini=flight\b/.test(location.search)) { const ir = () => setTimeout(() => AV.flight().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
     const cargarTren = aDemanda('src/game/tren.js', 'AVTren'); AV.tren = () => cargarTren().then(t => t.abrir()); AV.trenTest = o => cargarTren().then(t => t.test(o)); if (/[?&]mini=tren\b/.test(location.search)) { const ir = () => setTimeout(() => AV.tren().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // El tren de Vittata (C16, src/game/tren.js): ?mini=tren o AV.tren(); AV.trenTest()
-    // Manga Toon (G17, src/game/manga.js): prototipo aparte del cómic; ?manga=demo o AV.manga(); AV.mangaTest(). No está en el menú.
-    const cargarManga = aDemanda('src/game/manga.js', 'AVManga'); AV.manga = () => cargarManga().then(m => m.abrir()); AV.mangaTest = o => cargarManga().then(m => m.test(o)); if (/[?&]manga=demo\b/.test(location.search)) { const ir = () => setTimeout(() => AV.manga().catch(() => {}), 600); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color

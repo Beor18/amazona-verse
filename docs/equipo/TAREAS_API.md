@@ -492,25 +492,6 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 - `epNTest` en verde, en ES y EN, con capturas antes y después en `docs/img/bfN_*`.
 - Esto sustituye a AV2.
 
-## Carril BG: Manga Toon Story Creator (directiva de Kelvin, 27-oct; todo en `docs/equipo/COMIC_MANGA_DIRECTIVA.md`)
-**La meta visual es `docs/img/referencia_manga_toon.webp`.** No se reemplaza el cómic actual (`src/game/comic.js`) hasta que Kelvin apruebe el prototipo: todo lo nuevo va aparte (por ejemplo `src/game/manga.js`, que se abre con `?manga=demo`). Tampoco se inventan cotorras: solo modelos, skins y especies oficiales.
-- **BG1, auditoría y plan.** Escribe `docs/equipo/COMIC_MANGA_AUDITORIA.md` con:
-  - el generador actual (`comic.js`: qué captura, cómo exporta y cómo guarda);
-  - los eventos que ya se registran en carreras, retos, Flight, River, el tren, Maze y los capítulos, y cuáles sirven para la línea de tiempo (§ 6), sin datos personales;
-  - las cotorras oficiales utilizables (especies, skins, rigs, animaciones, poses y expresiones), qué hay de bebés y juveniles en el criadero, y qué especies se pueden ofrecer;
-  - las cámaras, los materiales toon y el contorno o cel shading que se pueden usar;
-  - el plan técnico del acabado manga: cámaras por viñeta, contorno, fondos estilizados, viñetas en canvas o SVG, globos editables y exportación en PNG.
-  No se cambia código del juego.
-- **BG2, el prototipo de § 13.** Una página de demostración, aparte del juego, con:
-  - portada manga toon con título;
-  - una cotorra oficial (Vittata);
-  - 6 viñetas dinámicas con marcos negros, diagonales, globos, onomatopeyas y líneas de velocidad, hechas con escenas reales del juego renderizadas con cámaras de viñeta y post-proceso manga, sin imágenes de IA;
-  - diálogos editables;
-  - la última página con el desenlace, «¿Qué aprendí?» y «Mi enseñanza de vida» como en § 9;
-  - vista móvil a 375×812 y una exportación PNG de muestra.
-  Saca capturas lado a lado con la referencia en `docs/img/bg2_vs_referencia_*.jpg`. Si se ve como el cómic viejo, no está terminada: mejórala antes de cerrar.
-- **BG3, segunda pasada.** Compara otra vez con la referencia y sube el nivel: color, composición, expresiones y tipografía. Prepara la página de demostración para que Kelvin la vea en la web con `?manga=demo`, sin enlazarla desde el menú.
-
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -589,7 +570,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BC2 | hecha | ac442fb, 3f95824, 2394d2d (+ docs) | Ronda de jugador nuevo en móvil (375×812, dpr 3, táctil, CPU 4×) con `tools/build/qa_movil.py` (nuevo: tirones, heap y texturas, botones < 44 px, textos tapados): los 6 capítulos y los modos se juegan de punta a punta; resumen en `QA_TEMPORADA1.md` (sección móvil), capturas `docs/img/bc2_*.jpg`. Arreglados QA-56 (`navigator.vibrate` sin gesto: errores de consola), QA-55 (River Rush 40→44 px) y QA-42 (✕ fija en Retos). Abiertos: **QA-52** (cap. 1: 264–440 MB de texturas en «bajo», presupuesto 160; AW1), QA-53 (congelado intermitente de hasta 3,7 s al pulsar «Empezar») y QA-54 (40 px en Tren y mapa grande; archivos con cambios ajenos). Heap 14–78 MB. Build a834183 (los 3 arreglos): obligatorias en verde, 0 errores de consola; extra `lookTest` 38/42 (draw calls del mundo 100→78, ajeno). El margen de la ✕ (12 px) se ajustó después y se comprobó en la copia de trabajo. |
 | BD1 | hecha (Grok, G16) | 9aae623 | `ESTANDAR_VISUAL.md`, capturas `docs/img/bd1_lado_escritorio.jpg` y `lookCapitulosTest` 11/11 en la build `g16-9aae623` (batería obligatoria). |
 | BD2 | hecha (Grok, G16) | 9aae623 | Capítulos 2, 3, 4 y 6 con el día del capítulo 1. Capítulo 5 en noche atmosférica (`permiso: 'noche'`). Tormenta del 2 con `pausarAmbiente`. Mundo analítico y plantilla iguales. F2.2 no. |
-| BE1 | hecha | ef8cb03 | Sin código. Build a766950, las 13 vistas en escritorio y en móvil: `docs/img/be1_<vista>.jpg` y `be1_movil_<vista>.jpg` (antes · 2022 · ahora). `VISUAL_PENDIENTES.md` con 10 puntos. Los que más se notan: (1) no hay dosel, de AW3, en curso; (2) paredes de roca desnudas por toda la isla, de la API; (3) ciudades de un amarillo plano, de Grok; (4) aldeas que no se leen desde el aire, de Grok y AY2; (5) el agua más clara que el cobalto del render, de la API. El agua y las sendas mejoraron claramente. En móvil, de 443 a 447 MB de texturas en las aéreas (BE5). 0 errores de consola. |
+| BE1 | pendiente | | |
 | BE2 | pendiente | | |
 | BE3 | pendiente | | |
 | BE4 | pendiente | | |
@@ -601,7 +582,4 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BF4 | pendiente | | |
 | BF5 | pendiente | | |
 | BF6 | pendiente | | |
-| BG1 | lo hace Grok (G17), no la API | | |
-| BG2 | lo hace Grok (G17), no la API | | |
-| BG3 | lo hace Grok (G17), no la API | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |

@@ -132,9 +132,6 @@
     // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Iguaca (es un
     // personaje), las paradas de aprendizaje y los grupos de la escena de Kelvin (nombres internos de assets/data/mapa_cap1.js).
     descubrir: { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] },
-    // Los 14 asentamientos de la escena de Kelvin con nombre propio, rótulo «Bienvenido a …», línea del Diario y glifo en el mapa
-    // (AY1; nombres de MAPA_PLAN_COMPLETO § 5, [KELVIN] K2). Cuentan como lugares aunque omitir quite /^kelvin_/; se baja en el primer gesto.
-    asentamientos: 'content/cap1/asentamientos.js',
     // Fauna que reacciona (src/game/fauna.js, BOSQUE_VIVO_DISENO ficha 2): datos y álbum en este archivo, que se baja al cargar la fauna.
     // S.fauna: ids de los animales ya observados (claves del guardado).
     faunaDatos: 'content/cap1/fauna.js',

@@ -44,7 +44,7 @@
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
       if (!(S.profile && S.profile.created)) return L('Empezar la historia', 'Start the story');
-      if (S.complete) return L('Capítulo 1 completado · seguir explorando', 'Chapter 1 complete · keep exploring');
+      if (S.complete) { const n = (P.meta && P.meta.capitulo) || 1; return L(`Capítulo ${n} completado · seguir explorando`, `Chapter ${n} complete · keep exploring`); }
       if (S.step > 0 || (S.events && S.events.length)) return L('Continuar · paso ', 'Continue · step ') + Math.min(S.step + 1, pasos.length || S.step + 1) + (pasos.length ? '/' + pasos.length : '');
       return L('Empezar la historia', 'Start the story');
     }
@@ -332,6 +332,263 @@
     }
 
     const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, get libre() { return libre; }, get pendiente() { return pendiente; } };
+    api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
     return api;
   };
+
+  // =================================================================================================================
+  // La temporada 1 como una sola aventura (AV1)
+  //   - Progreso en localStorage `amazonaverse.temporada` = { v: 1, terminados: { n: ms }, decisiones: { n: {…} } }, común a los 6
+  //     packs (cada capítulo guarda su partida en `<almacen>.save`; de ahí sale «en curso»). «Nuevo estudiante» lo borra;
+  //     «Comenzar de cero» de un capítulo no (lo terminado sigue terminado).
+  //   - Al terminar (S.complete con el panel #end a la vista) se marca el capítulo y, si el pack trae temporada.decision(S),
+  //     se guarda lo que decidió el jugador (cap. 4: opción y cuidado). G.temporada.decision(4) lo devuelve en los caps. 5 y 6.
+  //   - #b-siguiente en el panel final abre el siguiente pack (?pack=epN; el 1 es sin pack).
+  //   - Pantalla «Capítulos» (#capitulos): los 6 con portada, estado (nuevo / en curso / terminado) y Jugar. Se abre desde la
+  //     portada (#b-capitulos-title) y la pausa (#b-capitulos). Estilos en src/ui/menu_modos.css.
+  //   Prueba: AV.temporadaTest() (encadena el final de este capítulo con el arranque del siguiente en un iframe a 375×812).
+  // =================================================================================================================
+  const CAPS = [
+    { n: 1, id: 'cap1', almacen: 'amazonaverse', es: 'El día que el cielo se rompió', en: 'The Day the Sky Broke', c: ['#4b6fd8', '#1d1a5c'],
+      img: '<path d="M14 34a10 10 0 0 1 4-19 13 13 0 0 1 25 2 9 9 0 0 1 3 17z" fill="#dfe8ff"/><path d="M33 30l-7 13h7l-4 13 13-18h-8l5-8z" fill="var(--gold)"/>' },
+    { n: 2, id: 'ep2', almacen: 'ep2', es: 'Un lugar para todos', en: 'A Place for Everyone', c: ['#3f9b58', '#164a2a'],
+      img: '<path d="M8 32L32 12l24 20z" fill="#c9733b"/><path d="M14 30h36v24H14z" fill="#f2d7a6"/><path d="M28 40h8v14h-8z" fill="#7a4a24"/>' },
+    { n: 3, id: 'ep3', almacen: 'ep3', es: 'Más allá de la bahía', en: 'Beyond the Bay', c: ['#2c9bc4', '#0f3d63'],
+      img: '<path d="M33 8v30H14z" fill="#fff"/><path d="M36 14v24h14z" fill="#ffe7a8"/><path d="M8 42h48l-7 10H15z" fill="#8a5a2e"/><path d="M4 56q7-4 14 0t14 0 14 0 14 0" stroke="#bfe9ff" stroke-width="3" fill="none"/>' },
+    { n: 4, id: 'ep4', almacen: 'ep4', es: 'El precio del progreso', en: 'The Price of Progress', c: ['#c98a2b', '#5b3510'],
+      img: '<path d="M4 40h56v6H4z" fill="#8a5a2e"/><path d="M8 46q24-26 48 0" stroke="#f2d7a6" stroke-width="5" fill="none"/><path d="M12 46v10m40-10v10" stroke="#8a5a2e" stroke-width="5"/><path d="M4 58q7-3 14 0t14 0 14 0 14 0" stroke="#9fe3ff" stroke-width="3" fill="none"/>' },
+    { n: 5, id: 'ep5', almacen: 'ep5', es: 'Las voces olvidadas', en: 'The Forgotten Voices', c: ['#6b4fc9', '#211552'],
+      img: '<path d="M26 56l6-30 6 30z" fill="#cfd4ff"/><circle cx="32" cy="22" r="5" fill="var(--gold)"/><path d="M20 12a17 17 0 0 0 0 20M44 12a17 17 0 0 1 0 20M14 6a25 25 0 0 0 0 32M50 6a25 25 0 0 1 0 32" stroke="#e7dcff" stroke-width="3" fill="none" stroke-linecap="round"/>' },
+    { n: 6, id: 'ep6', almacen: 'ep6', es: 'El pacto de los 36', en: 'The Pact of the 36', c: ['#d4507a', '#4f1630'],
+      img: Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2; return `<circle cx="${(32 + 21 * Math.cos(a)).toFixed(1)}" cy="${(32 + 21 * Math.sin(a)).toFixed(1)}" r="4" fill="${i % 3 ? '#ffe2ec' : 'var(--gold)'}"/>`; }).join('') + '<circle cx="32" cy="32" r="8" fill="var(--gold)"/>' },
+  ];
+  const TEMP = 'amazonaverse.temporada';
+
+  function temporada(G, h) {
+    const S = G.S, P = G.pack, $ = G.util.$, L = h.L;
+    const actual = (P.meta && P.meta.capitulo) || (CAPS.find(c => c.id === P.id) || CAPS[0]).n;
+    const cap = n => CAPS[n - 1];
+    const dlg = $('capitulos'), lista = $('capitulos-lista'), bSig = $('b-siguiente');
+
+    // ---------- Progreso ----------
+    const leer = () => { try { const d = JSON.parse(localStorage.getItem(TEMP) || 'null'); if (d && d.v === 1) return Object.assign({ terminados: {}, decisiones: {} }, d); } catch (e) { /* corrupto: se empieza de nuevo */ } return { v: 1, terminados: {}, decisiones: {} }; };
+    const escribir = d => { try { localStorage.setItem(TEMP, JSON.stringify(d)); } catch (e) { /* sin almacén */ } };
+    G.on('nuevoEstudiante', () => { try { localStorage.removeItem(TEMP); } catch (e) { /* sin almacén */ } });
+    function partida(n) {
+      if (n === actual) return S;
+      try { return JSON.parse(localStorage.getItem(cap(n).almacen + '.save') || 'null'); } catch (e) { return null; }
+    }
+    function estado(n) {
+      const d = partida(n);
+      if (leer().terminados[n] || (d && d.complete)) return 'terminado';
+      if (d && d.profile && d.profile.created && (d.step > 0 || (d.events && d.events.length))) return 'en curso';
+      return 'nuevo';
+    }
+    function terminar(n, decision) {
+      const d = leer(); if (!d.terminados[n]) d.terminados[n] = Date.now();
+      if (decision) d.decisiones[n] = decision;
+      escribir(d);
+    }
+    const decision = n => leer().decisiones[n] || null;
+    function alTerminar() {
+      if (!S.complete) return;
+      let dec = null;
+      try { dec = P.temporada && P.temporada.decision ? P.temporada.decision(S, G) : null; } catch (e) { console.warn('temporada: decisión', e); }
+      terminar(actual, dec);
+    }
+
+    // ---------- Navegación ----------
+    let navegar = url => { location.href = url; }; // la prueba lo cambia para no salir de la página
+    function urlDe(n) {
+      const u = new URL(location.href);
+      if (n === 1) u.searchParams.delete('pack'); else u.searchParams.set('pack', cap(n).id);
+      u.searchParams.delete('mini');
+      return u.pathname + u.search;
+    }
+    function jugar(n) {
+      if (n === actual) { cerrar(); const t = $('title'); if (t && t.open) h.elegir('aventura'); return null; }
+      const url = urlDe(n); G.guardado.autosave && G.guardado.autosave(); navegar(url); return url;
+    }
+
+    // ---------- Panel final: «Siguiente capítulo» ----------
+    function pintarFin() {
+      if (!bSig) return;
+      const hay = actual < CAPS.length && S.complete;
+      bSig.hidden = !hay;
+      if (hay) { bSig.textContent = L('Siguiente capítulo', 'Next chapter'); bSig.setAttribute('aria-label', L(`Siguiente capítulo: Capítulo ${actual + 1}, ${cap(actual + 1).es}`, `Next chapter: Chapter ${actual + 1}, ${cap(actual + 1).en}`)); }
+    }
+    if (bSig) bSig.addEventListener('click', () => jugar(actual + 1));
+    const fin = $('end');
+    if (fin) new MutationObserver(() => { if (!fin.hidden && S.complete) { alTerminar(); pintarFin(); } }).observe(fin, { attributes: true, attributeFilter: ['hidden'] });
+    G.on('apply', () => { if (S.complete) alTerminar(); pintarFin(); }, 95);
+
+    // ---------- Pantalla «Capítulos» ----------
+    const ESTADO_TX = { nuevo: ['Nuevo', 'New'], 'en curso': ['En curso', 'In progress'], terminado: ['Terminado', 'Finished'] };
+    function pintar() {
+      const t = $('capitulos-t'); if (t) t.textContent = L('Capítulos', 'Chapters');
+      const x = $('b-capitulos-cerrar'); if (x) x.setAttribute('aria-label', L('Cerrar', 'Close'));
+      for (const id of ['b-capitulos', 'b-capitulos-title']) { const b = $(id); if (b) b.textContent = L('Capítulos', 'Chapters'); }
+      if (!lista) return;
+      lista.innerHTML = '';
+      for (const c of CAPS) {
+        const e = estado(c.n), aqui = c.n === actual, rot = L('Capítulo ', 'Chapter ') + c.n, tit = L(c.es, c.en);
+        const li = document.createElement('li');
+        li.className = 'cap-item' + (aqui ? ' es-actual' : ''); li.dataset.cap = c.n; li.dataset.estado = e;
+        li.style.setProperty('--cap-a', c.c[0]); li.style.setProperty('--cap-b', c.c[1]);
+        const boton = aqui ? L('Seguir aquí', 'Keep playing') : e === 'terminado' ? L('Volver a jugar', 'Play again') : e === 'en curso' ? L('Continuar', 'Continue') : L('Jugar', 'Play');
+        li.innerHTML = `<div class="cap-portada" aria-hidden="true"><svg viewBox="0 0 64 64">${c.img}</svg><span>${c.n}</span></div>` +
+          `<div class="cap-info"><small>${rot}${aqui ? ' · ' + L('estás aquí', 'you are here') : ''}</small><b></b><span class="cap-estado"></span></div>` +
+          `<button class="btn cap-jugar" type="button" data-icon="play"></button>`;
+        li.querySelector('b').textContent = tit;
+        li.querySelector('.cap-estado').textContent = L(...ESTADO_TX[e]);
+        const b = li.querySelector('.cap-jugar'); b.textContent = boton; b.setAttribute('aria-label', `${boton}: ${rot}, ${tit}`);
+        b.addEventListener('click', () => jugar(c.n));
+        lista.appendChild(li);
+      }
+    }
+    function abrir() {
+      if (!dlg) return false;
+      pintar();
+      if (!dlg.open) { try { dlg.showModal(); } catch (e) { dlg.show(); } }
+      const f = lista && (lista.querySelector('.es-actual .cap-jugar') || lista.querySelector('.cap-jugar'));
+      if (f) f.focus({ preventScroll: true });
+      return true;
+    }
+    function cerrar() { if (dlg && dlg.open) dlg.close(); }
+    for (const id of ['b-capitulos', 'b-capitulos-title']) { const b = $(id); if (b) b.addEventListener('click', abrir); }
+    const bx = $('b-capitulos-cerrar'); if (bx) bx.addEventListener('click', cerrar);
+    if (dlg) dlg.addEventListener('click', e => { if (e.target === dlg) cerrar(); }); // clic en el fondo
+    G.on('aula', k => { if (k === 'idioma') { pintar(); pintarFin(); } });
+    pintar(); pintarFin();
+
+    // =================================================================================================================
+    // Prueba: AV.temporadaTest()
+    // =================================================================================================================
+    async function test(opts) {
+      opts = opts || {};
+      const out = [], errores = [];
+      const check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det }); if (!ok) console.warn('temporadaTest ✗', n, det || ''); };
+      const ce = console.error; console.error = (...a) => { errores.push(a.map(String).join(' ')); ce.apply(console, a); };
+      const errores0 = (window.__aveErrores || []).length;
+      const quiet0 = G.quiet; G.quiet = true;
+      const snap = G.guardado.instantanea(); G.guardado.suspender(true);
+      const claves = [TEMP].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
+      const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); localStorage.removeItem(k); } catch (e) { /* sin almacén */ } }
+      const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
+      const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
+      const pausa = $('pause'), fin0 = fin ? fin.hidden : true, finTxt = $('end-text'), finTxt0 = finTxt ? finTxt.textContent : '', portada = $('title'), portada0 = !!(portada && portada.open);
+      let fr = null;
+      try {
+        // 1. Markup y rótulos
+        check('Markup: #capitulos, «Capítulos» en portada y pausa, «Siguiente capítulo» en el panel final', dlg && lista && $('b-capitulos') && $('b-capitulos-title') && bSig && bSig.closest('#end'));
+        check('Seis capítulos y este pack es el ' + actual, CAPS.length === 6 && cap(actual).id === P.id);
+        const hud = (P.meta && P.meta.hud) || {};
+        check('Rótulo «Capítulo N» en el HUD del pack (sin «Episodio»)', !/Episodio|Prototipo/.test(JSON.stringify(hud)) && (!hud.capitulo || hud.capitulo.startsWith('Capítulo ' + actual)), hud.capitulo);
+        check('La portada ya no tiene enlaces «Episodio»', !/Episodio/.test(($('title') || document.body).textContent));
+        // 2. Guardar y cargar
+        check('Sin progreso: todo nuevo menos lo que se juega aquí', CAPS.filter(c => c.n !== actual).every(c => estado(c.n) === 'nuevo'));
+        const otro = actual === 3 ? 2 : 3;
+        localStorage.setItem(cap(otro).almacen + '.save', JSON.stringify({ v: 1, profile: { created: true, name: 'Prueba' }, step: 2, events: [] }));
+        check('Una partida empezada en otro capítulo cuenta como «en curso»', estado(otro) === 'en curso', estado(otro));
+        terminar(4, { opcion: 'puente', cuidado: 'nidos' });
+        const crudo = JSON.parse(localStorage.getItem(TEMP));
+        check('Terminar se guarda en amazonaverse.temporada con la decisión del cap. 4', crudo.v === 1 && crudo.terminados[4] > 0 && crudo.decisiones[4].opcion === 'puente');
+        check('Al leer otra vez: cap. 4 terminado y su decisión a mano (G.temporada.decision)', estado(4) === 'terminado' && G.temporada.decision(4).cuidado === 'nidos');
+        // 3. Final del capítulo → «Siguiente capítulo»
+        if (aj) aj.idioma = 'es';
+        S.complete = true; S.explorando = false; G.misiones.showEnd(); await h.espera(30);
+        const hay = actual < 6;
+        check('Al terminar se marca este capítulo', estado(actual) === 'terminado' && leer().terminados[actual] > 0);
+        check('El panel final ofrece «Siguiente capítulo»' + (hay ? '' : ' (no en el 6)'), hay ? !bSig.hidden && bSig.textContent === 'Siguiente capítulo' && bSig.getBoundingClientRect().height >= 44 : bSig.hidden);
+        if (hay) { bSig.click(); check('«Siguiente capítulo» abre el pack ' + cap(actual + 1).id, fueA && new URL(fueA, location.href).searchParams.get('pack') === cap(actual + 1).id, fueA); }
+        if (aj) { aj.idioma = 'en'; pintarFin(); check('EN: «Next chapter»', !hay || bSig.textContent === 'Next chapter'); aj.idioma = 'es'; pintarFin(); }
+        fin.hidden = true; S.complete = snap.complete;
+        // 4. Pantalla «Capítulos»
+        if (pausa) { try { pausa.showPopover(); } catch (e) { /* sin popover */ } }
+        $('b-capitulos').click();
+        const items = [...lista.querySelectorAll('.cap-item')];
+        check('Desde la pausa: se abre con los 6, portada, estado y botón', dlg.open && items.length === 6 && items.every(li => li.querySelector('.cap-portada svg') && li.querySelector('.cap-estado').textContent && li.querySelector('.cap-jugar')));
+        check('Los estados se ven: terminado, en curso y nuevo', items[3].dataset.estado === 'terminado' && items[3].querySelector('.cap-estado').textContent === 'Terminado' && items[otro - 1].querySelector('.cap-estado').textContent === 'En curso' && items.some(li => li.querySelector('.cap-estado').textContent === 'Nuevo'));
+        check('Rótulos «Capítulo N» en orden y el actual marcado', items.every((li, i) => li.querySelector('small').textContent.startsWith('Capítulo ' + (i + 1))) && lista.querySelectorAll('.es-actual').length === 1 && items[actual - 1].classList.contains('es-actual'));
+        fueA = null; items[otro - 1].querySelector('.cap-jugar').click();
+        check('Jugar abre el pack de ese capítulo', fueA && (otro === 1 ? !new URL(fueA, location.href).searchParams.get('pack') : new URL(fueA, location.href).searchParams.get('pack') === cap(otro).id), fueA);
+        fueA = null; items[actual - 1].querySelector('.cap-jugar').click();
+        check('En el capítulo actual el botón cierra la pantalla y no recarga', !dlg.open && fueA === null);
+        const bt = $('b-capitulos-title'); const t = $('title'), tAbierta = t && t.open;
+        if (t && !tAbierta) t.show();
+        bt.click(); check('Desde la portada también se abre', dlg.open); cerrar();
+        if (t && !tAbierta) { t.returnValue = ''; t.close(); }
+        if (aj) {
+          aj.idioma = 'en'; abrir();
+          const it = [...lista.querySelectorAll('.cap-item')];
+          check('EN: «Chapters», «Chapter N» y estados en inglés', $('capitulos-t').textContent === 'Chapters' && it[1].querySelector('small').textContent.startsWith('Chapter 2') && it[3].querySelector('.cap-estado').textContent === 'Finished' && $('b-capitulos').textContent === 'Chapters');
+          cerrar(); aj.idioma = 'es'; pintar();
+        }
+        // 5. Maqueta 375×812 (ES y EN): nada se sale, botones de 44 px o más y la lista se desplaza si no cabe
+        for (const idi of ['es', 'en']) {
+          if (aj) aj.idioma = idi; pintar();
+          const f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+          f.style.cssText = 'position:fixed;left:-10000px;top:0;width:375px;height:812px;border:0;';
+          const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+          const copia = dlg.cloneNode(true); copia.setAttribute('open', '');
+          f.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}<style>*{animation:none!important;transition:none!important}</style></head><body>${copia.outerHTML}</body></html>`;
+          document.body.appendChild(f);
+          await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+          try {
+            const d = f.contentDocument, malos = [];
+            try { await Promise.race([d.fonts.ready, h.espera(2500)]); } catch (e) { /* sin fuentes */ }
+            const caja = d.querySelector('dialog').getBoundingClientRect();
+            if (caja.left < -1 || caja.right > 376) malos.push(`panel ${Math.round(caja.left)}…${Math.round(caja.right)}`);
+            if (caja.bottom > 813 && d.defaultView.getComputedStyle(d.querySelector('dialog')).overflowY === 'visible') malos.push('el panel no cabe y no se desplaza');
+            d.querySelectorAll('.cap-jugar, #b-capitulos-cerrar').forEach((b, i) => { const r = b.getBoundingClientRect(); if (r.height < 44 || r.width < 44) malos.push(`botón ${i} ${Math.round(r.width)}×${Math.round(r.height)}`); if (r.right > caja.right + 1) malos.push(`botón ${i} se sale`); });
+            d.querySelectorAll('.cap-info b').forEach((b, i) => { if (b.scrollWidth > b.clientWidth + 1) malos.push(`título ${i + 1} desborda`); });
+            check(`Maqueta 375×812 (${idi.toUpperCase()}): nada se sale y botones ≥ 44 px`, !malos.length, malos.join('; '));
+          } finally { f.remove(); }
+        }
+        if (aj) aj.idioma = 'es';
+        // 6. Encadenar: el siguiente capítulo arranca (iframe a 375×812) y ve el progreso guardado aquí
+        const sig = actual < 6 ? actual + 1 : actual - 1;
+        if (opts.encadenar !== false) {
+          fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:375px;height:812px;border:0;';
+          fr.src = new URL(urlDe(sig), location.href).href; document.body.appendChild(fr);
+          const ok = await h.hasta(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === cap(sig).id && x.AV.temporada && x.AV.G; }, opts.timeout || 180000);
+          check(`El capítulo ${sig} arranca con ?pack=${cap(sig).id}`, ok);
+          if (ok) {
+            const W = fr.contentWindow, T2 = W.AV.temporada, G2 = W.AV.G;
+            G2.quiet = true; G2.guardado.suspender(true);
+            const hud2 = (G2.pack.meta && G2.pack.meta.hud) || {};
+            check(`Capítulo ${sig}: rótulo «Capítulo ${sig}»`, (G2.pack.meta.capitulo === sig) && (!hud2.capitulo || hud2.capitulo.startsWith('Capítulo ' + sig)), hud2.capitulo);
+            check(`Capítulo ${sig}: ve terminados el ${actual} y el 4 (progreso común)`, T2.estado(actual) === 'terminado' && T2.estado(4) === 'terminado' && T2.decision(4).opcion === 'puente');
+            T2.abrir();
+            const d2 = W.document, it2 = [...d2.querySelectorAll('#capitulos-lista .cap-item')];
+            check(`Capítulo ${sig}: la pantalla Capítulos marca el ${sig} como actual`, it2.length === 6 && it2[sig - 1].classList.contains('es-actual') && it2[actual - 1].dataset.estado === 'terminado');
+            const de = d2.getElementById('capitulos').getBoundingClientRect();
+            check(`Capítulo ${sig}: la pantalla Capítulos cabe a 375 px`, de.left >= -1 && de.right <= W.innerWidth + 1, `${de.left}…${de.right} de ${W.innerWidth}`);
+            T2.cerrar();
+            const e2 = (W.__aveErrores || []);
+            check(`Capítulo ${sig}: sin errores de consola al arrancar`, !e2.length, e2.slice(0, 3).join(' | '));
+          }
+        }
+        const nuevos = (window.__aveErrores || []).slice(errores0);
+        check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
+      } catch (e) {
+        check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
+      } finally {
+        if (fr) fr.remove();
+        console.error = ce; navegar = nav0; cerrar();
+        if (aj) aj.idioma = idioma0;
+        try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ }
+        for (const k of claves) { try { if (antes[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, antes[k]); } catch (e) { /* sin almacén */ } }
+        G.guardado.restaurar(snap); G.guardado.suspender(false); G.quiet = quiet0;
+        if (fin) fin.hidden = fin0;
+        if (finTxt) finTxt.textContent = finTxt0;
+        if (portada && portada.open !== portada0) { portada.returnValue = ''; if (portada0) portada.show(); else portada.close(); }
+        pintar(); pintarFin();
+      }
+      return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+    }
+
+    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test };
+  }
 })();
