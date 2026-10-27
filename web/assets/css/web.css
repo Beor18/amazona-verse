@@ -709,6 +709,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 .sponsor b { font: 700 var(--fs-2xl)/1.15 var(--font-display); overflow-wrap: anywhere; }
 .sponsor p { color: var(--ink-muted); font-size: var(--fs-sm); }
 .sponsor a { color: var(--focus-paper); font-weight: 700; overflow-wrap: anywhere; }
+.sponsor-logo { display: flex; align-items: center; justify-content: center; height: 120px; padding: 14px 20px; box-sizing: border-box; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08); }
+.sponsor-logo img { display: block; max-width: 100%; max-height: 92px; width: auto; height: auto; object-fit: contain; }
+.sponsor-texto { font: 700 var(--fs-2xl)/1 var(--font-display); color: var(--ink); letter-spacing: 0.02em; }
+@media (min-width: 1000px) { .sponsors { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .sponsor-ask { margin-top: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 18px 22px; border-radius: var(--r-lg); background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px var(--line); }
 .sponsor-ask p { color: var(--paper); }
 @media (max-width: 760px) { .founders, .sponsors { grid-template-columns: minmax(0, 1fr); } }
