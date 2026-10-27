@@ -478,6 +478,20 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 - **BE6, textos de los capítulos 2 a 6.** Revisa el español y el inglés (`content/epN/en.js`): erratas, frases largas, el tono para niños y adultos, y que nada se corte con letra «Grande» y «Muy grande» a 375 px. Arréglalo.
 - **BE7, segunda pasada visual.** Repite BE1 tras BE2 y actualiza `VISUAL_PENDIENTES.md`. Arregla los 3 siguientes.
 
+## Pulido por capítulo, en paralelo (Kelvin, 27-oct: «quiero terminar antes, aunque se gaste un poco»)
+**BF2, BF3, BF4, BF5 y BF6: pulido completo del capítulo N** (2 a 6). Cada uno toca solo su `content/epN/` (y sus hunks en `content/cap1/en.js` si hace falta), así que pueden correr a la vez.
+- Juega el capítulo de principio a fin en escritorio y móvil, como un jugador nuevo.
+- Arregla:
+  - escenas vacías alrededor de las misiones (props del kit, flora y personajes bien colocados);
+  - encuadres de cámara en los momentos clave;
+  - personajes que flotan o atraviesan cosas;
+  - textos que tapan o se cortan;
+  - pasos confusos (que la flecha de guía lleve siempre al objetivo);
+  - el ritmo: ningún paso de más de 2–3 minutos sin novedad.
+- **No cambies el look global** (colores, cielo, luz, post-proceso): eso es G16 de Grok y `ESTANDAR_VISUAL.md`.
+- `epNTest` en verde, en ES y EN, con capturas antes y después en `docs/img/bfN_*`.
+- Esto sustituye a AV2.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -543,7 +557,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | AQ1 | pendiente | | |
 | AT1 | pendiente | | |
 | AV1 | pendiente | | |
-| AV2 | pendiente | | |
+| AV2 | sustituida por BF2–BF6 | | |
 | AW1 | hecha | 61ed3e8 | F0.2: el splat pasa a hojarasca marrón verdosa más oscura bajo el bosque (textura de 66×66 desde `flora.densidad`, sin descarga, todas las calidades; `terreno.js`). F0.3: impostores a 520 m en todas las calidades, que desde el aire se recuestan hacia la cámara, y mancha de copa más ancha, densa y verde oscuro (`vegetacion.js`). F0.4: hasta 220 palmas de sierra y tabonucos enanos por encima de 82 m, con semilla propia (`mundo.flora.cumbre`). F0.6: `AV.look.medir()` trae `texturasPor`/`texturasTop`; de los 447 MB, 341 son los 4 atlas `_hd` de 4096 (Savage y Ancient, color y normales), en bajo, medio, alto y móvil, también a 426 m de altura. Pedido a Grok en `PEDIDOS.md` (soltar el atlas fuera de radio; 2048/1024 en medio y bajo, choca con «no se recorta lo gráfico» de Kelvin). El `texMax` de la calidad ahora recorta también sin look (con `vibrant_toon` ya era 512, así que el total no baja). 12 vistas antes y después (escritorio bajo/medio/alto): ±3 calls; tris +0–13 k (aérea +32 k en medio y alto por los impostores lejanos); MB iguales. El presupuesto ya se pasaba antes (bajo: tris en 9/12 vistas y calls en 4/12; medio: calls en 5/12; texturas en todas por el atlas) y AW1 no lo agrava. El móvil «auto» eligió bajo antes y medio después por la carga de la Mac: no es comparable. Capturas `docs/img/aw1_{antes,despues}_*.jpg`. Build aw1-p2 (ee32a1e + AW1): las obligatorias en verde, 0 errores de consola; mazeTest (extra) 37/38, igual que en HEAD (`pub-ee32a1e`). Hecho en tiempo de ejecución y no en `mapa_lib.py`, para no regenerar el mapa. |
 | AW2 | pendiente | | |
 | AW3 | pendiente | | |
@@ -563,4 +577,9 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BE5 | pendiente | | |
 | BE6 | pendiente | | |
 | BE7 | pendiente | | |
+| BF2 | pendiente | | |
+| BF3 | pendiente | | |
+| BF4 | pendiente | | |
+| BF5 | pendiente | | |
+| BF6 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
