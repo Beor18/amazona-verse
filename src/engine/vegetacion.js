@@ -176,8 +176,10 @@ AVE.module('vegetacion', function (G) {
     m.customProgramCacheKey = () => 'hoja';
     return m;
   }
+  // BE7: tinte pardo de la corteza; con el de antes (0,74) los troncos claros del kit se leían como «palitos» blancos a media distancia
+  const CORTEZA_TINTE = new THREE.Color(0.5, 0.45, 0.39);
   function solidoMaterial(src, own, roca) {
-    const m = new THREE.MeshPhongMaterial({ map: src.map, normalMap: src.normalMap || null, shininess: roca ? 10 : 6, specular: new THREE.Color(0x0c0c0c), side: THREE.FrontSide, color: roca ? new THREE.Color(0.9, 0.9, 0.88) : new THREE.Color(0.74, 0.72, 0.7) });
+    const m = new THREE.MeshPhongMaterial({ map: src.map, normalMap: src.normalMap || null, shininess: roca ? 10 : 6, specular: new THREE.Color(0x0c0c0c), side: THREE.FrontSide, color: roca ? new THREE.Color(0.9, 0.9, 0.88) : CORTEZA_TINTE.clone() });
     if (m.normalMap) m.normalScale = new THREE.Vector2(1, roca ? 1 : -1).multiplyScalar(roca ? 1.0 : 0.9);
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
@@ -401,7 +403,7 @@ AVE.module('vegetacion', function (G) {
       lista.forEach((m, k) => {
         const holder = new THREE.Group();
         for (const p of geos[m]) {
-          const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map });
+          const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map, color: CORTEZA_TINTE });
           holder.add(new THREE.Mesh(p.geo, mat));
         }
         sc.add(holder);
