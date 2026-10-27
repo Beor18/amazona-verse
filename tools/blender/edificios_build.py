@@ -1294,6 +1294,8 @@ def make_lejos(o, name, tris0):
     js.pop('extensionsUsed', None)
     write_glb(path, js, rest)
     kb, jskb = write_js(path, name + '_lejos')
+    from edificios_lejos_tono import aplicar_si_ancient
+    aplicar_si_ancient(path, name)
     t = tri_count([lo])
     bpy.data.objects.remove(lo, do_unlink=True)
     return dict(tris_lejos=t, kb_lejos=round(kb / 1024, 1), js_kb_lejos=round(jskb / 1024, 1))

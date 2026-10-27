@@ -234,7 +234,9 @@ def lejos(ob):
     np.add.at(nrm, v, E['cn'][lt])
     nrm = nrm[usados] / np.maximum(1e-8, np.linalg.norm(nrm[usados], axis=1))[:, None]
     I = mapa[v].reshape(-1, 3)
-    mats = [{'name': 'AV_Lejos', 'doubleSided': True, 'pbrMetallicRoughness': {'baseColorFactor': [0.8, 0.8, 0.8, 1], 'metallicFactor': 0.0, 'roughnessFactor': 0.95}}]
+    from edificios_lejos_tono import tono
+    col = tono(E['co'][usados], nrm, col, I.ravel())
+    mats = [{'name': 'AV_Lejos', 'doubleSided': True, 'extras': {'avTono': 1}, 'pbrMetallicRoughness': {'baseColorFactor': [0.8, 0.8, 0.8, 1], 'metallicFactor': 0.0, 'roughnessFactor': 0.95}}]
     kb = glb(os.path.join(ED, NOMBRE + '_lejos.glb'), NOMBRE + '_lejos', [({'POSITION': E['co'][usados], 'NORMAL': nrm, 'COLOR_0': col}, I, 0)], mats, [])
     return dict(tris=int(len(I)), kb=kb)
 

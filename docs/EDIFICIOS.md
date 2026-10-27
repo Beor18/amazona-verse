@@ -189,6 +189,8 @@ Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero m
 
 **Lejanos de los templos** (`tools/blender/edificios_lejos.py`). Salen de la geometría original (la misma del `_hd`), con grosor y remallado por vóxeles a diagonal/110. Tienen entre 1070 y 2000 tris y color de vértice del atlas. Antes salían del vóxel del ligero: las torres «derretidas» medían 33 m en lugar de 42 y les faltaban las coronas.
 
+El color medio del atlas es arena plana a más de 90 m. `tools/blender/edificios_lejos_tono.py` deja dos tonos en ese COLOR_0: piedra en la cara que mira al cielo y sombra en la que mira al suelo y en los huecos (oclusión por la posición de los vecinos). Solo usa la normal vertical, así el rotY de la pieza no gira la luz. La malla lejana recibe la sombra del sol y no la proyecta.
+
 **Lote 3, aldeas Savage** (`edificios_hd.py`, atlas `tex_hd/hd_savage*.jpg`). Llevan `_hd` 21 modelos con sogas y escombros:
 - torres, murallas con atalaya, monumentos A, C y F, puente, portales, mirador escalonado, casa con plataforma, bohíos, caney, casas de paja, cercado y empalizada.
 - Las sogas reciben casi un tercio del presupuesto y no se quitan como escombro.

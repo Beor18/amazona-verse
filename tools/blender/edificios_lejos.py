@@ -80,8 +80,10 @@ def lejos(nombre, ob, kit, meta):
     np.add.at(nrm, v, E['cn'][E['lt']])
     nrm = nrm[usados] / np.maximum(1e-8, np.linalg.norm(nrm[usados], axis=1))[:, None]
     I = mapa[v].reshape(-1, 3)
-    mats = [{'name': 'AV_Lejos', 'doubleSided': True, 'pbrMetallicRoughness': {'baseColorFactor': [0.8, 0.8, 0.8, 1], 'metallicFactor': 0.0, 'roughnessFactor': 0.95}}]
-    kb = C.glb(os.path.join(H.OUT, nombre + '_lejos.glb'), nombre + '_lejos', [({'POSITION': E['co'][usados], 'NORMAL': nrm, 'COLOR_0': col[usados]}, I, 0)], mats, [])
+    from edificios_lejos_tono import tono
+    col_u = tono(E['co'][usados], nrm, col[usados], I.ravel())
+    mats = [{'name': 'AV_Lejos', 'doubleSided': True, 'extras': {'avTono': 1}, 'pbrMetallicRoughness': {'baseColorFactor': [0.8, 0.8, 0.8, 1], 'metallicFactor': 0.0, 'roughnessFactor': 0.95}}]
+    kb = C.glb(os.path.join(H.OUT, nombre + '_lejos.glb'), nombre + '_lejos', [({'POSITION': E['co'][usados], 'NORMAL': nrm, 'COLOR_0': col_u}, I, 0)], mats, [])
     bpy.data.objects.remove(lo, do_unlink=True)
     return dict(id=nombre, trisLejos=int(len(I)), kbLejos=round(kb[1] / 1024, 1))
 

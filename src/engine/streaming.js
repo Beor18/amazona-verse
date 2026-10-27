@@ -7,7 +7,8 @@
      aquí se le ponen sus colisiones (las de mundo.js y G.solidos.agregar) y ya no se quitan: siguen activas aunque la zona
      se libere (son pocas y pesan poco).
    - lejos (d < CFG.zonaLejos, 650 m, o la niebla si llega antes): solo el LOD lejano, fundido por zona; los edificios
-     sueltos se dibujan hasta CFG.dibujo del preset.
+     sueltos se dibujan hasta CFG.dibujo del preset. El lejano no proyecta sombra (está fuera del mapa) pero sí la
+     recibe: la del sol cae encima cuando entra en el radio. El volumen, a 100 m, va en el color de vértice.
    - fuera: nada en memoria.
    Histéresis: una zona baja de nivel con H m de más (40) y los modelos se sueltan tras 3 s sin uso (no hay vaivén en el borde).
    Por instancia, cerca/lejos se elige por la distancia a la cámara (CFG.lod ± CFG.lodH) y cada cuadro se descarta lo que
@@ -411,7 +412,8 @@ AVE.module('streaming', function (G) {
       for (const p of partes) {
         const m = new THREE.InstancedMesh(p.geo, p.mat, cap);
         m.instanceMatrix = attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
-        m.castShadow = m.receiveShadow = r.tipo !== 'lejos';
+        m.castShadow = r.tipo !== 'lejos';
+        m.receiveShadow = true;
         m.name = 'edificiosInst:' + r.n + ':' + r.tipo + ':' + p.mat.name; m.userData.sinSolido = true;
         scene.add(m); L.mallas.push(m);
       }
@@ -618,6 +620,7 @@ AVE.module('streaming', function (G) {
       const m = new THREE.Mesh(fundir(F.geos, true), matLejos);
       for (const g of F.geos) g.dispose();
       m.name = 'edificiosZona:' + Z.id + ':lejos'; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
+      m.receiveShadow = true; m.castShadow = false;
       scene.add(m); Z.malla = m;
     }
     function quitarZona(Z) {
@@ -845,6 +848,10 @@ AVE.module('streaming', function (G) {
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
+      const lejosM = [];
+      scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
+      check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
+        lejosM.length + ' mallas');
       const g0 = M.geometries, t0 = M.textures;
       // Entrar en Z por el borde sur, mirando al centro
       const bx = Z.cx, bz = Z.cz + Math.min(Z.r, 40) + 6;
