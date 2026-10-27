@@ -88,7 +88,7 @@
         { id: 'ondas', texto: 'Separa las dos ondas', hasta: { recogido: VOZ }, guia: G => G.misiones.at('trx') },
         { id: 'patron', texto: 'Copia el patrón de la luz', hasta: { recogido: 'patron_ok' }, guia: G => G.misiones.at('trx') },
         { id: 'ordenar', texto: 'Ordena el mensaje', hasta: { evento: 'FragmentsOrdered' }, guia: G => G.misiones.at('trx') },
-        { id: 'ruinas', texto: 'Lee las cinco ruinas', hasta: { recogido: RUIN.concat(CLS) }, guia: G => { const r = (window.AV_EP5.ruinas || []).find(x => !G.S.collected.includes('cls_' + x.id)); return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
+        { id: 'ruinas', texto: 'Lee las cinco ruinas', hasta: { recogido: RUIN.concat(CLS) }, guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
         { id: 'fichas', texto: 'Pregunta por las dos que faltan', hasta: { evento: 'GuardianRemembered' }, guia: G => G.misiones.at('guardian') },
         { id: 'antena', texto: 'Endereza la antena', hasta: { recogido: 'antena' }, guia: G => G.misiones.at('trx') },
         { id: 'codigo', texto: 'Elige cómo enviar la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
@@ -289,21 +289,32 @@
       function limpiarRayos() {
         while (rayos.children.length) { const m = rayos.children.pop(); m.geometry.dispose(); m.material.dispose(); }
       }
+      // El tramo es un tubo fino y no una línea de 1 px, para que se vea también en el móvil y desde lejos (BF5)
       function segmento(a, b, ok) {
-        const g = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(a.x, H(a.x, a.z) + 2.2, a.z),
-          new THREE.Vector3(b.x, H(b.x, b.z) + 2.2, b.z),
-        ]);
-        rayos.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: ok ? 0x3dcc7a : 0xd6403a })));
+        const pa = new THREE.Vector3(a.x, H(a.x, a.z) + 2.2, a.z), pb = new THREE.Vector3(b.x, H(b.x, b.z) + 2.2, b.z);
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, pa.distanceTo(pb), 6, 1, true), new THREE.MeshBasicMaterial({ color: ok ? 0x3dcc7a : 0xd6403a }));
+        m.position.copy(pa).add(pb).multiplyScalar(0.5);
+        m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pb.clone().sub(pa).normalize());
+        rayos.add(m);
+      }
+      // Cada estación puesta se ve: un mástil con la pieza del código (espejo, tambor o bandera) a la altura del rayo
+      function mastil(e, cod) {
+        const x = e.x + (D.ruinas.some(r => r.id === e.id) ? 1.6 : 0), z = e.z, y = H(x, z);
+        const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 2.3, 6), new THREE.MeshLambertMaterial({ color: '#6b4a2a' }));
+        palo.position.set(x, y + 1.15, z); rayos.add(palo);
+        const pieza = cod === 'sonido' ? new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.36, 12), new THREE.MeshLambertMaterial({ color: '#a0703c' }))
+          : cod === 'tela' ? new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.5), new THREE.MeshLambertMaterial({ color: '#d6403a', side: THREE.DoubleSide }))
+            : new THREE.Mesh(new THREE.CircleGeometry(0.26, 16), new THREE.MeshBasicMaterial({ color: '#f6e7b2', side: THREE.DoubleSide }));
+        pieza.position.set(x + (cod === 'tela' ? 0.42 : 0), y + 2.2, z); pieza.rotation.y = Math.atan2(D.taller.x - x, D.taller.z - z); rayos.add(pieza);
       }
       function pintar() {
         const rel = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
         nota.hidden = !rel || S.step < 9 || S.complete;
         if (!nota.hidden) nota.textContent = 'Con luz, la niebla se cruza desde el mirador. El sonido llega corto. La tela, de noche, necesita la linterna.';
         limpiarRayos();
-        const lista = puestos();
+        const lista = puestos(), cod = codigo() || 'luz';
+        for (const e of lista) mastil(e, cod);
         if (lista.length < 2 && !(rel && S.step >= 9)) return;
-        const cod = codigo() || 'luz';
         const cadena = [D.taller].concat(lista.slice().sort((a, b) => Math.hypot(a.x - D.taller.x, a.z - D.taller.z) - Math.hypot(b.x - D.taller.x, b.z - D.taller.z)), [D.niebla]);
         if (lista.length >= 1) for (let i = 0; i < cadena.length - 1; i++) {
           const r = cod === 'tela' ? { ok: tiene('linternas') } : D.lineaVista(H, cadena[i], cadena[i + 1], cod);
@@ -319,14 +330,56 @@
         G.fisica.colliders.push({ x, z, r: 0.7, h: alto || 3.2, kind: 'obj' });
       }
       poste(D.niebla.x, D.niebla.z, '#d9d3c5', 1.2);
-      for (const r of D.ruinas) poste(r.x, r.z, '#8a8178', r.id === 'torre' || r.id === 'mirador' ? 4.2 : 2.4);
-      poste(-14, -8, '#6b8f71', 1.4);
+
+      // ---------- Piezas del kit de edificios (assets/models/edificios, propio): las cinco ruinas son las del kit con su
+      // mismo nombre y el taller lleva un toldo. Mientras cargan (o sin el modelo) queda el poste de piedra de siempre (BF5) ----------
+      const KIT = 'assets/models/edificios/', scene = G.renderer.scene;
+      // El modelo con su lado largo medido a `largo`, centrado y apoyado en y = 0
+      function kit(nombre, largo) {
+        return G.assets.loadGLB(KIT + nombre + '.glb', { b64: () => (window.AV_EDIFICIOS_B64 || {})[nombre], script: KIT + nombre + '_glb.js', base: KIT, error: nombre + ' no disponible' }).then(g => {
+          const m = g.scene || (g.scenes && g.scenes[0]); if (!m) throw new Error(nombre);
+          const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3()), k = largo / (Math.max(sz.x, sz.z) || 1);
+          const w = new THREE.Group(); w.add(m);
+          m.scale.setScalar(k); m.position.set(-c.x * k, -b.min.y * k, -c.z * k);
+          m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.castShadow = true; } });
+          return w;
+        });
+      }
+      // Ancho de cada ruina y hacia dónde mira (la marca, hacia el taller)
+      const RUINA_KIT = { torre: 2.8, mirador: 3.4, pilar: 1.8, portal: 3.4, altar: 2.6 };
+      for (const r of D.ruinas) {
+        const alto = r.id === 'torre' || r.id === 'mirador' ? 4.2 : 2.4;
+        const p = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, alto, 6), new THREE.MeshLambertMaterial({ color: '#8a8178' }));
+        p.position.set(r.x, H(r.x, r.z) + alto / 2, r.z); scene.add(p);
+        G.fisica.colliders.push({ x: r.x, z: r.z, r: 0.7, h: alto, kind: 'obj' });
+        kit('ruina_' + r.id, RUINA_KIT[r.id]).then(w => {
+          // Se hunde un poco para que no quede un borde al aire en la ladera
+          w.position.set(r.x, H(r.x, r.z) - 0.25, r.z); w.rotation.y = Math.atan2(D.taller.x - r.x, D.taller.z - r.z);
+          scene.add(w); scene.remove(p); p.geometry.dispose(); p.material.dispose();
+        }).catch(() => {});
+      }
+
+      // La otra loma: un bloque de piedra del kit (mientras carga, un poste bajo de piedra)
+      { const x = -14, z = -8, p = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 1.4, 6), new THREE.MeshLambertMaterial({ color: '#8a8178' }));
+        p.position.set(x, H(x, z) + 0.7, z); G.renderer.scene.add(p); G.fisica.colliders.push({ x, z, r: 0.7, h: 1.4, kind: 'obj' });
+        kit('bloque_piedra', 1.6).then(w => { w.position.set(x, H(x, z) - 0.1, z); w.rotation.y = 0.6; G.renderer.scene.add(w); G.renderer.scene.remove(p); }).catch(() => {}); }
+
+      // El taller: una mesa con patas que bajan hasta el suelo (está en la ladera), el transmisor encima y un toldo
+      const mat = c => new THREE.MeshLambertMaterial({ color: c });
+      const yMesa = Math.max(H(TRX.x - 0.5, TRX.z), H(TRX.x + 0.5, TRX.z), H(TRX.x, TRX.z - 0.3), H(TRX.x, TRX.z + 0.3)) + 0.72;
+      { const tab = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.08, 0.7), mat('#7a5634')); tab.position.set(TRX.x, yMesa, TRX.z); scene.add(tab);
+        for (const [dx, dz] of [[-0.55, -0.27], [0.55, -0.27], [-0.55, 0.27], [0.55, 0.27]]) {
+          const x = TRX.x + dx, z = TRX.z + dz, l = yMesa - H(x, z) + 0.1, pata = new THREE.Mesh(new THREE.BoxGeometry(0.08, l, 0.08), mat('#5a3d22'));
+          pata.position.set(x, yMesa - l / 2, z); scene.add(pata);
+        }
+        const caja = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.36, 0.4), mat('#3c4654')); caja.position.set(TRX.x - 0.1, yMesa + 0.22, TRX.z); scene.add(caja);
+        const rueda = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.05, 14), mat('#c9a227'));
+        rueda.position.set(TRX.x - 0.1, yMesa + 0.22, TRX.z + 0.21); rueda.rotation.set(Math.PI / 2, 0, 0); scene.add(rueda);
+        G.fisica.colliders.push({ x: TRX.x, z: TRX.z, r: 0.7, h: yMesa + 0.4 - H(TRX.x, TRX.z), kind: 'obj' }); }
+      kit('toldo_pequeno', 3.4).then(w => { const x = TRX.x + 1.7, z = TRX.z - 0.9; w.position.set(x, H(x, z) - 0.15, z); w.rotation.y = -0.5; scene.add(w); }).catch(() => {});
       const antena = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.6, 6), new THREE.MeshLambertMaterial({ color: '#c5ccd6' }));
-      antena.position.set(TRX.x + 0.4, H(TRX.x, TRX.z) + 1.3, TRX.z);
-      antena.rotation.z = tiene('antena') ? 0 : 1.05;
-      G.renderer.scene.add(antena);
-      const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.6), new THREE.MeshLambertMaterial({ color: '#6b4a2a' }));
-      mesa.position.set(TRX.x, H(TRX.x, TRX.z) + 0.35, TRX.z); G.renderer.scene.add(mesa);
+      const ponerAntena = () => { antena.rotation.z = tiene('antena') ? 0 : 1.05; antena.position.set(TRX.x + 0.4, yMesa + (tiene('antena') ? 0.85 : 0.35), TRX.z); };
+      ponerAntena(); scene.add(antena);
 
       // ---------- M1 · transmisor ----------
       function sintonizar() {
@@ -458,7 +511,7 @@
 
       // ---------- M3 · relevo ----------
       function enderezar() {
-        antena.rotation.z = 0; antena.position.y = H(TRX.x, TRX.z) + 1.7;
+        poner('antena'); ponerAntena();
         if (!G.quiet && G.agarre) {
           try {
             if (G.agarre.agarrar(antena, { id: 'antena', enganche: 'mano' })) {
@@ -491,12 +544,7 @@
           return true;
         }
         if (puestos().length >= 3) { G.ui.toast('Ya hay tres. Quita una si quieres moverla.', 2500); return true; }
-        poner(id);
-        if (!G.quiet && G.agarre) {
-          const pieza = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.28), new THREE.MeshLambertMaterial({ color: '#d9c79a' }));
-          pieza.position.set(est.x, H(est.x, est.z) + 1, est.z); G.renderer.scene.add(pieza);
-          try { G.agarre.agarrar(pieza, { id: 'pieza_' + est.id, enganche: 'pico' }); G.agarre.soltar({ instantaneo: true, en: { x: est.x, z: est.z } }); } catch (e) { /* sin modelo */ }
-        }
+        poner(id); // el mástil con la pieza lo dibuja pintar()
         if (puestos().length === 3) {
           poner('tres_estaciones');
           if (!G.eventos.had('RelayBuilt')) { G.eventos.log('RelayBuilt'); G.comic.capture('relevo'); }
@@ -516,7 +564,7 @@
         if (!codigo()) { G.ui.toast('Primero elige luz, sonido o tela.', 2500); return; }
         if (lista.length < 3) { G.ui.toast('Faltan estaciones: hacen falta tres.', 2500); return; }
         const corte = D.corte(H, codigo(), lista, { linternas: tiene('linternas') });
-        pintar();
+        pintar(); encuadrar();
         if (corte.motivo !== 'vacia') {
           poner('corte_' + corte.motivo);
           G.dialogo.say([di('Vittata', motivoTexto(corte.motivo)), Lu('No pasa nada: por eso se prueba. Mueve una estación, o cambia lo que haga falta.')]);
@@ -550,6 +598,7 @@
         G.misiones.advanceTo(G.misiones.DONE); registrar();
         G.dialogo.say(G.dialogo.L('evento:VoicesRevealed').concat(G.dialogo.L('evento:Chapter5Completed')), () => G.misiones.showEnd());
       }
+      const ordenTaller = () => puestos().slice().sort((a, b) => Math.hypot(a.x - D.taller.x, a.z - D.taller.z) - Math.hypot(b.x - D.taller.x, b.z - D.taller.z));
       function pedirAyuda() {
         elegir('Vittata', 'No puedo sostener las tres. ¿Qué hago?', [
           { label: 'Lo hago yo', v: 'sola' },
@@ -557,7 +606,8 @@
         ], o => {
           if (o.v === 'sola') { G.dialogo.say([Lu('No lo hagas sola. El último fragmento lo decía.')], pedirAyuda); return; }
           G.eventos.log('HelpAsked', { choice: 'iguaca-aprendiz' }); G.misiones.check(); registrar();
-          G.dialogo.say([di('Vittata', '¿Me ayudas a sostener esta?'), Lu('Yo me quedo en la loma.'), di('Aprendiz', 'Yo, en la torre. Tú, en el mirador.')]);
+          colocarAyudantes();
+          G.dialogo.say([di('Vittata', '¿Me ayudas a sostener esta?'), Lu('Yo me quedo en ' + ordenTaller()[0].nombre + '.'), di('Aprendiz', 'Yo, en ' + ordenTaller()[1].nombre + '. Tú, en ' + ordenTaller()[2].nombre + '.')]);
         });
       }
       function hablarIguaca() {
@@ -609,9 +659,9 @@
         G.dialogo.say([di('Vittata', S.complete ? 'El transmisor quedó en silencio. Las voces ya se oyeron.' : 'El transmisor espera.')]);
       }
 
-      G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => S.step === 11 ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
+      const itIguaca = G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => S.step === 11 ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.4, label: () => S.step === 6 ? 'Escuchar al Guardián' : 'Hablar con el Guardián', use: fichas });
-      G.interaccion.add({ id: 'aprendiz', x: APRENDIZ.x, z: APRENDIZ.z, r: 2.2, label: () => 'Hablar con el aprendiz', use: () => G.dialogo.say([di('Aprendiz', G.eventos.had('HelpAsked') ? 'Yo sostengo la torre. Tú sigue.' : 'Si hace falta otra persona, aquí estoy.')]) });
+      const itAprendiz = G.interaccion.add({ id: 'aprendiz', x: APRENDIZ.x, z: APRENDIZ.z, r: 2.2, label: () => 'Hablar con el aprendiz', use: () => G.dialogo.say([di('Aprendiz', G.eventos.had('HelpAsked') ? 'Yo sostengo mi estación. Tú sigue.' : 'Si hace falta otra persona, aquí estoy.')]) });
       G.interaccion.add({ id: 'trx', x: TRX.x, z: TRX.z, r: 2.4, label: () => ({ 1: 'Sintonizar', 2: 'Separar las ondas', 3: 'Copiar el patrón', 4: 'Ordenar el mensaje', 7: 'Enderezar la antena', 8: 'Elegir el código' })[S.step] || 'Mirar el transmisor', use: usarTrx });
       G.interaccion.add({ id: 'prueba', x: PRUEBA.x, z: PRUEBA.z, r: 2.4, visible: () => S.step >= 9, label: () => S.complete ? 'Mirar la cadena' : 'Probar el relevo', use: () => { if (S.complete) G.dialogo.say([di('Vittata', 'La cadena sigue encendida, hasta la niebla.')]); else probar(); } });
       for (const est of D.estaciones) {
@@ -624,7 +674,26 @@
         G.interaccion.add({ id: r.id, x: r.x, z: r.z, r: 2.3, label: () => 'Leer ' + r.nombre, use: () => leerRuina(r) });
       }
 
-      const api = { pintar, pararPulso, nivel2, exigeNivel2: nivel2 };
+      // Tras pedir ayuda, Iguaca y el aprendiz sostienen las dos estaciones más cercanas al taller (como lo dicen) y Vittata la
+      // última; antes, cada quien en su sitio. Se rehace al cargar la partida (BF5)
+      function colocarAyudantes() {
+        const orden = ordenTaller(), ayuda = G.eventos.had('HelpAsked') && orden.length === 3;
+        [['iguaca', IGUACA, itIguaca, 0], ['aprendiz', APRENDIZ, itAprendiz, 1]].forEach(([id, casa, it, i]) => {
+          const n = G.actores && G.actores.npc(id); if (!n) return;
+          const e = ayuda ? orden[i] : null, x = e ? e.x - 1.4 : casa.x, z = e ? e.z + 1.2 : casa.z;
+          n.def.x = x; n.def.z = z; n.sp.position.set(x, H(x, z) + 1.0, z); n.sh.position.set(x, H(x, z) + 0.03, z); n.collider.x = x; n.collider.z = z;
+          if (it) { it.x = x; it.z = z; }
+        });
+      }
+      G.on('apply', colocarAyudantes, 81);
+      G.on('apply', ponerAntena, 81);
+      // Encuadre de la prueba: la cámara detrás de Vittata, mirando la cadena hacia la niebla (al sur)
+      function encuadrar() {
+        if (!G.camara) return;
+        G.camara.yaw = Math.atan2(S.pos.x - D.niebla.x, S.pos.z - D.niebla.z); G.camara.manual();
+      }
+
+      const api = { pintar, pararPulso, nivel2, exigeNivel2: nivel2, colocarAyudantes };
       G.c.ep5 = api;
       pintar();
     },
@@ -709,6 +778,8 @@
           check('M3 · Hacerlo sola no castiga y recuerda el fragmento', !G.eventos.had('HelpAsked') && opciones().some(t => t.includes('Pide ayuda')));
           pick('Pide ayuda'); drain();
           check('M3 · Iguaca y el aprendiz toman estaciones', G.eventos.had('HelpAsked') && S.step === 12, 'paso ' + S.step);
+          const cerca = (id, e) => { const n = G.actores.npc(id); return n && Math.hypot(n.def.x - e.x, n.def.z - e.z) < 3 && Math.hypot(G.interaccion.find(id).x - e.x, G.interaccion.find(id).z - e.z) < 3; };
+          check('M3 · Se van a su estación: Iguaca a la loma y el aprendiz a la torre', cerca('iguaca', est('loma')) && cerca('aprendiz', est('torre')));
           useAt('prueba'); drain();
           check('Final: las voces, la bandera y la pantalla', S.complete && S.step === G.misiones.DONE && G.eventos.had('VoicesRevealed') && G.eventos.had('Chapter5Completed') && S.missions.relevo && S.unlocked.includes('mano:bandera') && !$('end').hidden);
           check('El cómic sale de los eventos', G.comic.comicPanels().length === 6, G.comic.comicPanels().length);
@@ -750,6 +821,11 @@
           await G.idioma.poner('en');
           const sin = G.idioma.faltan((G.dialogo.escenas || []).flatMap(s => s.lineas || []));
           check('Las escenas del episodio tienen inglés', sin.length === 0, sin.slice(0, 4).join(' | '));
+          const leidos = [D.mensaje, ...Object.values(D.tarjeta), ...D.fragmentos.map(f => f.texto), ...D.ruinas.flatMap(r => [r.nombre, r.marca, r.se]),
+            ...D.estaciones.map(e => e.nombre), ...G.diario.entries.flatMap(f => [f.nombre, f.texto]), 'Onda dorada', 'Lo sé: lo veo en la marca',
+            'Pide ayuda a Iguaca y al aprendiz', 'Probar el relevo', 'La línea choca con una loma. El trazo rojo marca dónde.'];
+          const sinEn = G.idioma.faltan(leidos);
+          check('Lo que se lee en el capítulo tiene inglés', sinEn.length === 0, sinEn.slice(0, 4).join(' | '));
           check('El título pasa a inglés', $('quest').querySelector('h1').textContent === 'The forgotten voices', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
 
