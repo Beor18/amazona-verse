@@ -1,6 +1,6 @@
 {
-  "nota": "Topes de gasto del ejecutor de la API en USD. Solo Kelvin los cambia. 27-oct-2026: Kelvin pidió darle prioridad a gastar el crédito de la API para terminar el juego (consola: $250 el 26-oct por la noche: $30 vencen 29-oct, $200 vencen 29-nov, $20 comprados). El tope total sube de 184 a 375 (172,86 ya registrados + lo que queda); el diario sigue en 150. Si la consola se queda en $0, la API se para sola (sin recarga automática).",
+  "nota": "Topes de gasto del ejecutor de la API en USD. Solo Kelvin los cambia. 27-oct-2026: Kelvin pidió darle prioridad a gastar el crédito de la API para terminar el juego (consola: $250 el 26-oct por la noche: $30 vencen 29-oct, $200 vencen 29-nov, $20 comprados). El tope total sube de 184 a 375 (172,86 ya registrados + lo que queda); el diario sigue en 150. Si la consola se queda en $0, la API se para sola (sin recarga automática). 27-oct: tope diario de 150 a 210 para que las ventanas no se paren a media mañana (Kelvin fuera 6 h; «no quiero que nada se detenga»).",
   "tope_total_usd": 375,
-  "tope_dia_usd": 150,
+  "tope_dia_usd": 210,
   "alerta_pct": 80
 }

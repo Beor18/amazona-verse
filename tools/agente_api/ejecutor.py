@@ -241,6 +241,41 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
     return gasto
 
 
+COLA = JUEGO / 'tools/agente_api/cola.txt'
+
+
+async def trabajador(n, por_tarea, total, turnos):
+    """Modo continuo: toma la primera tarea de tools/agente_api/cola.txt que no esté hecha ni tomada; si no hay,
+    espera 3 min y vuelve a mirar. La sesión coordinadora va añadiendo tareas a la cola; así la ventana no se cierra."""
+    marca, gasto, vacia = f'[cola {n}] ', 0.0, 0
+    while total - gasto >= 0.5:
+        try:
+            ids = [l.split('#')[0].strip().upper() for l in COLA.read_text(encoding='utf-8').splitlines()]
+        except FileNotFoundError:
+            ids = []
+        t = next((i for i in ids if i and not hecha(i) and tomar(i)), None)
+        if not t:
+            if vacia % 10 == 0:
+                print(f'{marca}== cola sin tareas libres; espero ==', flush=True)
+            vacia += 1
+            await asyncio.sleep(180)
+            continue
+        vacia = 0
+        print(f'\n{marca}######## {t} · tope ${min(por_tarea, total - gasto):.2f} · gastado ${gasto:.2f} ########', flush=True)
+        try:
+            costo = await correr(prompt_tarea(t), min(por_tarea, total - gasto), turnos, marca, t)
+        except Exception as e:
+            print(f'\n{marca}== {t} falló ({type(e).__name__}: {str(e)[:200]}); sigo. ==', flush=True)
+            costo = 0.0
+        finally:
+            soltar(t)
+        if costo is None:   # tope de gasto (limites.json): no hay más que hacer
+            return gasto
+        gasto += costo
+    print(f'\n{marca}== tope de la ventana alcanzado: ${gasto:.2f} ==')
+    return gasto
+
+
 async def varios(letras, por_tarea, total, turnos):
     """Varios carriles a la vez en un solo proceso (una sola clave); --total es el tope de cada carril."""
     gastos = await asyncio.gather(*(carril(CARRILES[l], por_tarea, total, turnos, f'[{l}] ') for l in letras),
@@ -259,6 +294,7 @@ def main():
     g.add_argument('--prueba', action='store_true', help='tarea mínima para verificar el cobro (tope $0,50)')
     g.add_argument('--tarea', help='una tarea de docs/equipo/TAREAS_API.md, por ejemplo A1')
     g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A a E)')
+    g.add_argument('--cola', type=int, help='modo continuo: N trabajadores toman tareas de tools/agente_api/cola.txt sin cerrarse')
     g.add_argument('--carriles', help='varios carriles a la vez con una sola clave, por ejemplo A,C,D,E')
     ap.add_argument('--modelo', choices=sorted(MODELOS), default='sonnet', help='sonnet (por defecto) u opus')
     ap.add_argument('--presupuesto', type=float, help='tope en USD por tarea (por defecto 6 con sonnet, 15 con opus)')
@@ -275,6 +311,10 @@ def main():
         asyncio.run(correr(prompt, a.presupuesto or 0.5, 6, tarea='prueba'))
     elif a.carril:
         asyncio.run(carril(CARRILES[a.carril], por_tarea, a.total, a.turnos))
+    elif a.cola:
+        async def _cola():
+            await asyncio.gather(*(trabajador(i + 1, por_tarea, a.total, a.turnos) for i in range(a.cola)))
+        asyncio.run(_cola())
     elif a.carriles:
         letras = [l.strip().upper() for l in a.carriles.split(',') if l.strip()]
         malas = [l for l in letras if l not in CARRILES]

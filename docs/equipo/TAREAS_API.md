@@ -467,6 +467,16 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
   - No toques los minijuegos, `web/` ni los edificios de Grok.
   - Si `content/epN` tiene cambios sin commit de otro carril, mete solo tus hunks.
 
+## Cola continua (modo `--cola`): tareas que va añadiendo la sesión coordinadora
+Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/cola.txt` la primera tarea libre y, si no hay ninguna, espera. Mientras corren, AW, AY, AZ y AV tienen sus propias ventanas: no toques sus archivos si tienen cambios sin commit de ellos.
+- **BE1, verificación visual después de los cambios de hoy.** Saca las 12 vistas de `tools/build/mapa_vistas.json` más `render2022`, en escritorio y móvil, y ponlas lado a lado con `docs/img/mapa_audit_*` (el antes) y con el render de 2022. Escribe `docs/equipo/VISUAL_PENDIENTES.md`: lo que todavía no se parece al render, ordenado por cuánto se nota, con el dueño que propones (Grok para los edificios; la API para el terreno, el agua, la luz y la flora). En esta tarea no se cambia código.
+- **BE2:** arregla los 5 primeros puntos de `VISUAL_PENDIENTES.md` que no sean de Grok ni de un carril en curso. Capturas del antes y el después.
+- **BE3, QA móvil, ronda 2.** Usa `tools/build/qa_movil.py` (de BC2) sobre HEAD, con todo lo de hoy. Arregla lo grave y anota el resto en `BUGS.md`.
+- **BE4, QA de escritorio, ronda 2.** Los 6 capítulos de seguido, el menú, Retos y los minijuegos. Arregla lo grave.
+- **BE5, texturas en el móvil.** Lleva la calidad «medio» a ≤ 260 MB de texturas en GPU (medida de AW1 y `MAPA_PLAN_COMPLETO.md` § 3) en lo que no es de Grok: terreno, flora, agua y cielo. Lo de los atlas de edificios va como pedido a Grok en `PEDIDOS.md`.
+- **BE6, textos de los capítulos 2 a 6.** Revisa el español y el inglés (`content/epN/en.js`): erratas, frases largas, el tono para niños y adultos, y que nada se corte con letra «Grande» y «Muy grande» a 375 px. Arréglalo.
+- **BE7, segunda pasada visual.** Repite BE1 tras BE2 y actualiza `VISUAL_PENDIENTES.md`. Arregla los 3 siguientes.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -545,4 +555,11 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 | BC2 | hecha | ac442fb, 3f95824, 2394d2d (+ docs) | Ronda de jugador nuevo en móvil (375×812, dpr 3, táctil, CPU 4×) con `tools/build/qa_movil.py` (nuevo: tirones, heap y texturas, botones < 44 px, textos tapados): los 6 capítulos y los modos se juegan de punta a punta; resumen en `QA_TEMPORADA1.md` (sección móvil), capturas `docs/img/bc2_*.jpg`. Arreglados QA-56 (`navigator.vibrate` sin gesto: errores de consola), QA-55 (River Rush 40→44 px) y QA-42 (✕ fija en Retos). Abiertos: **QA-52** (cap. 1: 264–440 MB de texturas en «bajo», presupuesto 160; AW1), QA-53 (congelado intermitente de hasta 3,7 s al pulsar «Empezar») y QA-54 (40 px en Tren y mapa grande; archivos con cambios ajenos). Heap 14–78 MB. Build a834183 (los 3 arreglos): obligatorias en verde, 0 errores de consola; extra `lookTest` 38/42 (draw calls del mundo 100→78, ajeno). El margen de la ✕ (12 px) se ajustó después y se comprobó en la copia de trabajo. |
 | BD1 | hecha (Grok, G16) | 9aae623 | `ESTANDAR_VISUAL.md`, capturas `docs/img/bd1_lado_escritorio.jpg` y `lookCapitulosTest` 11/11 en la build `g16-9aae623` (batería obligatoria). |
 | BD2 | hecha (Grok, G16) | 9aae623 | Capítulos 2, 3, 4 y 6 con el día del capítulo 1. Capítulo 5 en noche atmosférica (`permiso: 'noche'`). Tormenta del 2 con `pausarAmbiente`. Mundo analítico y plantilla iguales. F2.2 no. |
+| BE1 | pendiente | | |
+| BE2 | pendiente | | |
+| BE3 | pendiente | | |
+| BE4 | pendiente | | |
+| BE5 | pendiente | | |
+| BE6 | pendiente | | |
+| BE7 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
