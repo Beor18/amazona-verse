@@ -600,7 +600,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
 #riverrush .rr-modos { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; pointer-events: auto; }
 #riverrush .rr-modos-hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 74px); left: 50%; transform: translateX(-50%); width: min(94vw, 520px); }
-#riverrush .rr-modos button { min-height: 40px; padding: 6px 12px; font-size: 15px; }
+#riverrush .rr-modos button { min-height: 44px; padding: 6px 12px; font-size: 15px; }
 #riverrush .rr-modos button[aria-pressed="true"] { background: var(--gold, #ffd84a); color: var(--ink, #10241a); border-color: var(--gold, #ffd84a); }
 #riverrush .rr-modos button:disabled { opacity: .5; cursor: not-allowed; }
 #riverrush .rr-dif { font-size: 16px; }
