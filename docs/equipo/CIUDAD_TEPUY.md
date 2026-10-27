@@ -36,4 +36,4 @@ No se colocó flora. En el render de 2022 el tepuy va cubierto y la ciudad queda
 
 ## Captura
 
-`docs/img/ciudad_tepuy_vs_2022.jpg`: el render de 2022 al lado de la vista aérea con el kit. Falta el visto de Kelvin.
+`docs/img/ciudad_tepuy_vs_2022.jpg`: el render de 2022 al lado de la vista `ciudad_tepuy` (desde el sureste). En esa toma el juego contó 55 instancias `_hd` y 6 del ligero con textura; la silueta beige de la zona no se dibujó. `streamingTest` 16/16 en `g18-5425820`, con el caso «desde el aire» (hd 21, silueta apagada) y la suelta al volver al inicio. Falta el visto de Kelvin.
