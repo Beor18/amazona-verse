@@ -321,7 +321,7 @@ AVE.module('agua', function (G) {
     while (pies.length < 8) pies.push(new THREE.Vector4(0, 0, 0, 0));
     const AG = (W.aguaRio || {});
     rioMat = waterMaterial(RIO_VERT, RIO_FRAG, {
-      uClaro: { value: lin(AG.claro || '#5fe3d6') }, uHondo: { value: lin(AG.hondo || '#2b8fdc') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
+      uClaro: { value: lin(AG.claro || '#56c8f0') }, uHondo: { value: lin(AG.hondo || '#1c62d6') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
       uTurbidez: { value: 0 }, uPies: { value: pies },
     }, hTex ? { HAY_ALTURA: '' } : {});
     const url = MAPA.terreno && MAPA.terreno.agua;
