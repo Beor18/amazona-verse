@@ -80,7 +80,7 @@ AVE.module('dialogo', function (G) {
         'box-shadow:0 4px 0 var(--c-paper-edge,#d9c7a3),0 8px 24px rgba(0,0,0,.28);font:400 17px/1.3 var(--font-body,sans-serif);cursor:pointer;animation:bl-in .25s ease-out both;text-wrap:pretty}' +
         '.bocadillo img{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#e9dcc2;flex:none}' +
         '.bocadillo img[hidden]{display:none}' +
-        '.bocadillo b{display:block;font:700 12px/1.2 var(--font-display,sans-serif);text-transform:uppercase;letter-spacing:.06em;color:var(--c-eyebrow,#7a5634)}' +
+        '.bocadillo b{display:block;font:700 12px/1.2 var(--font-display,sans-serif);text-transform:uppercase;letter-spacing:.06em;color:#7a5634}' + // marrón sobre papel (5,7:1); --c-eyebrow es dorado, para paneles oscuros (1,2:1 aquí)
         'body:has(#dialog:not([hidden])) #bocadillos,body:has(#card:not([hidden])) #bocadillos{visibility:hidden}' +
         '@keyframes bl-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}' +
         '@media (prefers-reduced-motion:reduce){.bocadillo{animation:none}}' +
