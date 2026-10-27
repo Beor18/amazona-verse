@@ -528,6 +528,9 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
   - Saca capturas de escritorio y de 375×812, a mitad de partida, en `docs/img/bk1_flight_*.jpg`, junto a la de hoy y a la de la primera versión (haz una build de `9504464^` para capturarla). `flightTest` en verde.
   - Si el resultado no se ve claro y bonito, no la marques hecha.
 
+## La gran ciudad del tepuy: el entorno (Kelvin, 27-oct: «esto es lo que hablo de la ciudad»)
+- **BL1, la selva alrededor de la gran ciudad**, como en `docs/img/ciudad_tepuy_render2022.jpg`. En el render, el tepuy está cubierto de selva densa hasta el borde de la ciudad, con roca solo en unos pocos afloramientos. En el juego (`docs/img/ciudad_tepuy_mejor_angulo.jpg`, vista `ciudad_tepuy` de `tools/build/mapa_vistas.json`) hay paredes de roca gris desnudas y verticales y poca selva arriba. Cubre de selva las laderas y la cima del tepuy alrededor de la ciudad (flora, el dosel por celdas de AW3 y el splat del suelo), y deja roca solo donde el render la muestra. No toques los edificios (eso es de Grok). Captura desde la vista `ciudad_tepuy` antes y después, junto al render.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -626,4 +629,5 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BI2 | pendiente | | |
 | BJ1 | pendiente | | |
 | BK1 | pendiente | | |
+| BL1 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
