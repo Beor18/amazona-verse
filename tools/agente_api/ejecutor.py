@@ -186,9 +186,15 @@ def hecha(t):
 BLOQUEOS = Path.home() / 'AmazonaVerse/_herramientas/agent-sdk/bloqueos'
 
 
+EN_CURSO = set()   # tareas tomadas por los trabajadores de este mismo proceso (--cola N comparte el pid)
+
+
 def tomar(t):
     """Bloqueo por tarea entre ventanas de Terminal: si otra corrida viva ya tiene la tarea, no se repite
-    (26-oct: varias ventanas hicieron la misma tarea a la vez)."""
+    (26-oct: varias ventanas hicieron la misma tarea a la vez). Dentro del mismo proceso manda EN_CURSO
+    (27-oct: los 4 trabajadores de --cola 4 tomaron AZ1 a la vez porque el pid era el suyo)."""
+    if t in EN_CURSO:
+        return False
     BLOQUEOS.mkdir(parents=True, exist_ok=True)
     f = BLOQUEOS / f'{t}.pid'
     try:
@@ -201,10 +207,12 @@ def tomar(t):
     except PermissionError:
         return False
     f.write_text(str(os.getpid()))
+    EN_CURSO.add(t)
     return True
 
 
 def soltar(t):
+    EN_CURSO.discard(t)
     f = BLOQUEOS / f'{t}.pid'
     try:
         if f.read_text().strip() == str(os.getpid()):
