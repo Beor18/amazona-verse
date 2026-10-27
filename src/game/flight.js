@@ -1,5 +1,5 @@
 /* Juego · Amazona Flight (prototipo C14, fase 2 de la directiva de minijuegos de Kelvin, 26-oct-2026)
-   Vuelo infinito de un toque, en vista lateral como el Flappy clásico (los troncos pasan como columnas con el hueco claro) y Vittata de 3/4 hacia la cámara (se le ve la cara; ?flightcam=diagonal = la cámara 3/4 frontal de C15): Vittata (la original, modelo y rig intactos) avanza sola sobre el mar
+   Vuelo infinito de un toque, en vista 3/4 frontal (C15: se le ve la cara a Vittata; ?flightcam=lado = la lateral de antes): Vittata (la original, modelo y rig intactos) avanza sola sobre el mar
    frente a la playa; cada toque, clic, Espacio o tecla es un impulso vertical; entre toques manda la gravedad. Los obstáculos son
    instancias de piezas que YA existen en el kit de entorno (tronco_caido, roca_musgo_a/b, bambu) y la decoración de la orilla
    palma_sierra_joven: nada de modelos ni bosques nuevos. Se pasa entre las columnas; chocar es un «¡Uy!» amable (nunca daño) y se
@@ -16,7 +16,8 @@
      rig anima el aleteo del impulso (fase 'despegue' → alas de despegue) y el planeo; no se toca ni un hueso.
    - El mundo se mueve y Vittata se queda: los obstáculos avanzan hacia ella a la velocidad de vuelo (la cámara y el streaming de
      edificios no se mueven: draw calls estables y sin cargar la isla entera). La orilla con palmas que pasa vende el avance.
-   - Generación procedural JUSTA con un set pequeño de módulos (puerta, suelo, techo, túnel, escalera) y object pooling: cada módulo
+   - Generación procedural JUSTA con un set pequeño de módulos (puerta, túnel, escalera: siempre un par de troncos, abajo y arriba, verticales
+     y a paso regular; BK1) y object pooling: cada módulo
      se comprueba con los parámetros reales del impulso y la gravedad (subidaMax y bajadaMax en el tiempo que hay entre huecos) y se
      recoloca si no es superable. Las InstancedMesh se crean una vez (al entrar) y solo cambia instanceMatrix; nada se crea ni se
      destruye por cuadro ni por reinicio (geometrías y texturas constantes: lo comprueba la prueba de 50 reinicios); al salir se libera todo.
@@ -53,7 +54,7 @@
       id: 'flight', nombre: 'Amazona Flight', nombreEn: 'Amazona Flight',
       descripcion: 'Un toque para subir, la gravedad para bajar. Pasa entre los troncos y las ramas sin chocar. ¿Hasta dónde llegas?',
       recursos: { kit: ['tronco_caido', 'roca_musgo_a', 'roca_musgo_b', 'bambu', 'palma_sierra_joven'], personaje: 'vittata (original)', zona: 'mar frente a la playa' },
-      camara: 'lateral, desde el mar (Vittata de 3/4 hacia la cámara, se le ve la cara; ?flightcam=diagonal = cámara 3/4 frontal); fija al jugador, el mundo avanza',
+      camara: '3/4 frontal (por delante y a un lado, se le ve la cara; ?flightcam=lado = lateral); fija al jugador, el mundo avanza',
       controles: { pc: 'Espacio, flecha arriba, W o cualquier letra: impulso', movil: 'un toque en cualquier sitio: impulso', resultados: 'Enter, Espacio o un toque: otra vez' },
       inicio: 'el primer toque arranca', victoria: null, derrota: 'tocar un tronco, una rama o el agua («¡Uy!», sin daño)',
       puntuacion: 'obstáculos superados', musica: 'retos/carreras (sin reiniciar por obstáculo)',
@@ -73,7 +74,8 @@
       yMin: 1.0,           // altura mínima del vuelo sobre el mar (por debajo: chapuzón = fin)
       yMax: 14,            // techo del carril (la subida se frena ahí)
       radio: 0.55,         // radio del cuerpo de Vittata para chocar (el de fisica.js)
-      anchoColumna: 0.5,   // radio del tronco para chocar: al cargar el modelo pasa a ser el visible (medio grosor real)
+      anchoColumna: 0.5,   // radio del tronco para chocar: al cargar el modelo pasa a ser el visible (P.grosor)
+      grosor: 0.6,         // radio visible de cada tronco (BK1: troncos gruesos que se leen; el modelo se ensancha a esto, solo en su sección)
       toqueMin: 0.3,       // s entre toques que el generador supone a un niño (no un robot): subida sostenida = impulso − g·toqueMin/2
       seguridad: 0.8,      // el generador solo usa esta fracción de lo que el vuelo puede subir o bajar
       margenHueco: 0.35,   // margen por encima y por debajo del cuerpo al pasar por un hueco
@@ -145,7 +147,8 @@
         const p = { mallas: [], libres: [], box: m.box, largo: size[eje], eje, alto: size.y };
         // Tamaño visible para chocar (C15): radio real del tronco = medio grosor del modelo (solo se estira el eje largo); la roca, a su escala
         p.rt = (eje === 'y' ? size.x + size.z : eje === 'x' ? size.y + size.z : size.x + size.y) / 4;
-        if (tipo === 'tronco') P.anchoColumna = Math.max(0.25, p.rt);
+        p.kg = tipo === 'tronco' ? P.grosor / Math.max(0.05, p.rt) : 1; // ensanche de la sección (el eje largo se estira aparte, en columna())
+        if (tipo === 'tronco') P.anchoColumna = p.rt * p.kg;
         if (tipo === 'roca') { p.rr = (size.x + size.z) / 4 * 1.7; p.ry = size.y / 2 * 1.4; p.yc = -0.25 + 1.4 * (m.box.min.y + m.box.max.y) / 2; }
         for (const pr of m.prims) {
           const im = new THREE.InstancedMesh(pr.geo, materialDe(pr.src), CAP[tipo]);
@@ -191,8 +194,7 @@
       if (!o || st.fase === 'fin') { v.visible = false; return; }
       const b0 = o.bajo != null ? o.bajo : P.yMin, b1 = o.alto != null ? o.alto : P.yMax, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
       const dc = Math.hypot(xw - R.camera.position.x, zw - R.camera.position.z), cerca = clamp((dc - 7) / 7, 0, 1); // la ventana se apaga al acercarse a la cámara (no vela la pantalla)
-      v.visible = cerca > 0.02; v.position.set(xw, base + (b0 + b1) / 2, zw); const lat = cam.modo !== 'diagonal'; // lateral: la ventana mira a la cámara (de canto no se vería) y tan ancha como el tronco + el cuerpo de Vittata
-      v.rotation.y = lat ? Math.atan2(R.camera.position.x - xw, R.camera.position.z - zw) : Math.atan2(A.dx, A.dz); v.scale.set(lat ? 2.2 : 3, Math.max(0.1, b1 - b0), 1);
+      v.visible = cerca > 0.02; v.position.set(xw, base + (b0 + b1) / 2, zw); v.rotation.y = Math.atan2(A.dx, A.dz); v.scale.set(3, Math.max(0.1, b1 - b0), 1);
       // Guía de las primeras 3 partidas: contorno del hueco y la ventana más viva; después, solo la ventana suave
       v.material.opacity = (J.guia ? 0.34 : 0.14) * cerca;
       if (J.guia && cerca > 0.02) { const f = a.marco; f.visible = true; f.position.copy(v.position); f.rotation.y = v.rotation.y; f.scale.copy(v.scale); }
@@ -217,9 +219,9 @@
       const largo = Math.max(0.5, p.largo), h = Math.max(0.3, y1 - y0), k = h / largo, centro = (p.box.min[p.eje] + p.box.max[p.eje]) / 2;
       // Rotar el eje largo a Y: x → rz = 90°, z → rx = −90°; luego el giro sobre Y para variar
       const rx = p.eje === 'z' ? -Math.PI / 2 : 0, rz = p.eje === 'x' ? Math.PI / 2 : 0;
-      // El centro del modelo queda en (y0 + y1) / 2; escala solo en el eje largo (grosor fijo)
+      // El centro del modelo queda en (y0 + y1) / 2; el eje largo se estira al alto y la sección al grosor (P.grosor)
       _e.set(rx, giro, rz); _q.setFromEuler(_e);
-      _s.set(p.eje === 'x' ? k : 1, p.eje === 'y' ? k : 1, p.eje === 'z' ? k : 1);
+      const g = p.kg || 1; _s.set(p.eje === 'x' ? k : g, p.eje === 'y' ? k : g, p.eje === 'z' ? k : g);
       // Desplazar el centro del eje largo al origen antes de girar: se corrige con la posición
       _o.set(0, 0, 0); _o[p.eje] = -centro * k; _o.applyQuaternion(_q);
       _p.set(xw + _o.x, (y0 + y1) / 2 + _o.y, zw + _o.z); _m.compose(_p, _q, _s);
@@ -261,14 +263,13 @@
       const k = dificultad(n), h = huecoEn(n), paso = pasoEn(n);
       const centro = () => lerp(P.yMin + h / 2 + 0.6, P.yMax - h / 2 - 0.6, rnd());
       const puerta = (dx, c, hh) => ({ dx, bajo: c - (hh || h) / 2, alto: c + (hh || h) / 2 });
-      const tipos = ['puerta', 'puerta', 'suelo', 'techo'];
+      // BK1 (como pidió Kelvin): siempre un par, tronco abajo y tronco arriba con el hueco entre los dos, y a paso regular (sin columnas sueltas)
+      const tipos = ['puerta', 'puerta', 'puerta'];
       if (k > 0.3) tipos.push('tunel'); if (k > 0.5) tipos.push('escalera');
       const tipo = tipos[Math.floor(rnd() * tipos.length)];
       modulos++;
-      if (tipo === 'suelo') { const top = lerp(P.yMin + 1.5, P.yMax - h - 0.8, rnd()); return [{ dx: paso, bajo: top, alto: null }]; }
-      if (tipo === 'techo') { const bot = lerp(P.yMin + h + 0.8, P.yMax - 1.5, rnd()); return [{ dx: paso, bajo: null, alto: bot }]; }
-      if (tipo === 'tunel') { const c = centro(), hh = Math.max(h + 0.6, 5.2); return [puerta(paso, c, hh), puerta(paso * 0.85, c, hh), puerta(paso * 0.85, c, hh)]; }
-      if (tipo === 'escalera') { const c = centro(), d = (rnd() < 0.5 ? 1 : -1) * 1.3; return [puerta(paso, c), puerta(paso * 0.85, c + d), puerta(paso * 0.85, c + 2 * d)]; }
+      if (tipo === 'tunel') { const c = centro(), hh = Math.max(h + 0.6, 5.2); return [puerta(paso, c, hh), puerta(paso, c, hh), puerta(paso, c, hh)]; }
+      if (tipo === 'escalera') { const c = centro(), d = (rnd() < 0.5 ? 1 : -1) * 1.3; return [puerta(paso, c), puerta(paso, c + d), puerta(paso, c + 2 * d)]; }
       return [puerta(paso, centro())];
     }
     // Añade un módulo al final del carril, ajustando cada obstáculo al anterior
@@ -405,7 +406,6 @@
       M.fase = J.flapT > 0 ? 'despegue' : st.fase === 'listo' ? 'cernido' : '';
       M.groundY = superficie(A.x, A.z);
     }
-    const primero = () => CAMS[modoEf()].primero || P.primero; // m hasta el primer obstáculo: en el móvil vertical (lateral, ancho corto) más cerca, para que entre en pantalla
     function update(dt) {
       if (!st.activo || G.pausa.activa()) return;
       if (st.hitStop > 0) { st.hitStop -= dt; sincronizar(); colocar(); return; } // hit-stop: el mundo se detiene un instante al chocar
@@ -416,7 +416,7 @@
     }
     G.on('update', dt => update(dt), 46);
 
-    // ---------- Cámara (C15b): lateral de fábrica (como antes del 3/4); el 3/4 frontal con ?flightcam=diagonal ----------
+    // ---------- Cámara (C15): 3/4 frontal de fábrica; la lateral de antes con ?flightcam=lado ----------
     // 3/4: la cámara va por delante y a un lado de Vittata (~40° de guiñada respecto al carril), algo por encima, y la mira a ella:
     // se le ve la cara y el pico, y los obstáculos entran por el fondo del carril, en diagonal. Vittata gira ~20° hacia la cámara (solo su
     // orientación en el mundo; el rig no se toca). Vittata queda fija en pantalla; el mundo se mueve.
@@ -425,13 +425,9 @@
       // Móvil vertical (aspecto < 1): casi de frente (~4°) y más lejos, con FOV estrecho: el ancho es corto, así que el carril tiene que ir
       // casi a lo largo de la mirada para que se vean el siguiente tronco y su hueco (a ≤ 14 m, buscado con una cuadrícula de encuadres); Vittata ≥ 12 % del alto, hacia el tercio izquierdo
       vertical: { lado: 1.5, ad: 21.9, alto: 2, kY: 0.7, mAd: 6, mY: 0, mK: 1, fov: 34, giro: 0.12 },
-      // Vista del recorrido como en el Flappy clásico (la de antes del 3/4): lateral, desde el mar; los troncos pasan como columnas con el hueco claro.
-      // Vittata sigue de 3/4 hacia la cámara (giro): cambia solo su orientación en el mundo, no la vista
-      lado: { lado: 20, ad: -3, alto: 2.4 + 6.5, kY: 0.35, base: true, mAd: 8, mY: 3.6, mK: 0.5, fov: 56, giro: 0.7 },
-      // Lateral en el móvil vertical: más cerca y con FOV estrecho, para que Vittata sea grande y entren el siguiente tronco y su hueco
-      ladoV: { lado: 15, ad: 0, alto: 2.4 + 3.2, kY: 0.35, base: true, mAd: 2.6, mY: 3.2, mK: 0.5, fov: 60, giro: 0.7, primero: 6.2 }
+      lado: { lado: 20, ad: -3, alto: 2.4 + 6.5, kY: 0.35, base: true, mAd: 8, mY: 3.6, mK: 0.5, fov: 56, giro: 0 }
     };
-    let camModo = 'lado'; try { if (/[?&]flightcam=(diagonal|3-?4)\b/.test(location.search)) camModo = 'diagonal'; } catch (e) { /* sin url */ }
+    let camModo = 'diagonal'; try { if (/[?&]flightcam=(lado|side)\b/.test(location.search)) camModo = 'lado'; } catch (e) { /* sin url */ }
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), modo: camModo, fov: CAMS[camModo].fov, k: 1 };
     // En vertical (móvil) el ancho de imagen es corto: la cámara se aleja un poco para que quepan Vittata y el siguiente hueco
     // El aspecto se mide una vez y se guarda hasta el siguiente resize o giro (AF1: clientWidth en cada cuadro forzaba un reflujo, ~5 % de la CPU del móvil)
@@ -439,8 +435,8 @@
     function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     // FOV vertical según el aspecto: el ancho de imagen que se ve (FOV horizontal) no baja de ~el de una pantalla 16:9 + 20 %: en vertical
     // (390×844) sube el FOV vertical para que quepan Vittata y los 2 siguientes obstáculos; en horizontal queda el de la cámara
-    const modoEf = () => (aspecto() < 1 ? (cam.modo === 'diagonal' ? 'vertical' : cam.modo === 'lado' ? 'ladoV' : cam.modo) : cam.modo); // el encuadre vertical del móvil
-    function fovPara(modo, a) { if (modo === 'diagonal' && a < 1) return CAMS.vertical.fov; if (modo === 'lado' && a < 1) return CAMS.ladoV.fov; const f = CAMS[modo].fov, h0 = 2 * Math.atan(Math.tan(f * Math.PI / 360) * 16 / 9); if (a >= 16 / 9) return f; return Math.min(88, 2 * Math.atan(Math.tan(h0 * 1.6 / 2) / a) * 180 / Math.PI); }
+    const modoEf = () => (cam.modo === 'diagonal' && aspecto() < 1 ? 'vertical' : cam.modo); // el encuadre vertical del móvil
+    function fovPara(modo, a) { if (modo === 'diagonal' && a < 1) return CAMS.vertical.fov; const f = CAMS[modo].fov, h0 = 2 * Math.atan(Math.tan(f * Math.PI / 360) * 16 / 9); if (a >= 16 / 9) return f; return Math.min(88, 2 * Math.atan(Math.tan(h0 * 1.6 / 2) / a) * 180 / Math.PI); }
     function camPar() { cam.k = 1; return CAMS[modoEf()]; }
     // Recalcula el encuadre (resize y orientationchange): el FOV sigue al aspecto de la pantalla
     function reencuadrar() { if (!st.activo) return; const f = fovPara(cam.modo, aspecto()); if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
@@ -600,7 +596,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; pintarPuntos(); u.chip.classList.remove('pop'); }
       sincronizar();
       while (!obst.length || obst[obst.length - 1].x < J.dist + P.adelante) { const n0 = obst.length; generar(); if (obst.length === n0) break; }
-      if (obst.length > 1 && obst[0].x > J.dist + primero()) obst[0].x = J.dist + primero(); // el primer obstáculo ya a la vista en la pantalla «¡Toca para volar!» (el resto no se mueve; con más tiempo hasta el 2.º, solo es más fácil)
+      if (obst.length > 1 && obst[0].x > J.dist + P.primero) obst[0].x = J.dist + P.primero; // el primer obstáculo ya a la vista en la pantalla «¡Toca para volar!» (el resto no se mueve; con más tiempo hasta el 2.º, solo es más fácil)
       decorar(); colocar();
       camFollow(null); G.camara.place(true);
       if (G.actores.player3D) G.actores.player3D.root.visible = true;
@@ -701,7 +697,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Clase flight-on y retos-on (música de retos), HUD visible, pista «Toca para volar»', document.body.classList.contains('flight-on') && document.body.classList.contains('retos-on') && !st.ui.el.hidden && !st.ui.pista.hidden);
           const vivas0 = vivas();
           check('Obstáculos generados delante (≥ 5) con instancias del pool', obst.length >= 5 && vivas0 > 0 && obst[obst.length - 1].x >= P.adelante - 1, obst.length + ' obst · ' + vivas0 + ' instancias');
-          check('Vittata vuela (MOVE.flying, mirando 3/4 hacia la cámara, ≤ ~45° del carril) y está sobre el mar', M.flying === true && S.facing.x * st.A.dx + S.facing.z * st.A.dz > 0.7 && superficie(S.pos.x, S.pos.z) <= nivelAgua(S.pos.x, S.pos.z) + 0.01, S.pos.x.toFixed(0) + ',' + S.pos.z.toFixed(0));
+          check('Vittata vuela (MOVE.flying, mirando por el carril o un poco hacia la cámara) y está sobre el mar', M.flying === true && S.facing.x * st.A.dx + S.facing.z * st.A.dz > 0.85 && superficie(S.pos.x, S.pos.z) <= nivelAgua(S.pos.x, S.pos.z) + 0.01, S.pos.x.toFixed(0) + ',' + S.pos.z.toFixed(0));
           // ---------- Cámara 3/4 frontal (C15) ----------
           // Vista de prueba: cámara + lookAt reales (los de camObjetivo/camMira) con el aspecto pedido; proyecta Vittata y el siguiente hueco
           const vista = (modo, asp) => {
@@ -711,25 +707,23 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
             const o = obst.find(q => !q.pasado), [b0, b1] = huecoDe(o), base = superficie(st.A.x, st.A.z);
             const dv = { x: c.position.x - S.pos.x, z: c.position.z - S.pos.z }, dl = Math.hypot(dv.x, dv.z);
             const root = G.actores.player3D && G.actores.player3D.root, bb = root ? new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()) : null, hv = bb && bb.y > 0.5 && bb.y < 6 ? bb.y : 2.4, t1 = pr(S.pos.x, S.pos.y + hv / 2, S.pos.z), t0 = pr(S.pos.x, S.pos.y - hv / 2, S.pos.z);
-            const ptO = pr(st.A.x + 14 * st.A.dx, S.pos.y, st.A.z + 14 * st.A.dz), pp = primero(), ptP = pr(st.A.x + pp * st.A.dx, S.pos.y, st.A.z + pp * st.A.dz);
-            const r = { modo, P14: ptO, Pp: ptP, tam: Math.abs(t1.y - t0.y) / 2, V: pr(S.pos.x, S.pos.y, S.pos.z), O: pr(st.A.x + (o.x - J.dist) * st.A.dx, base + (b0 + b1) / 2, st.A.z + (o.x - J.dist) * st.A.dz),
+            const ptO = pr(st.A.x + 14 * st.A.dx, S.pos.y, st.A.z + 14 * st.A.dz);
+            const r = { modo, P14: ptO, tam: Math.abs(t1.y - t0.y) / 2, V: pr(S.pos.x, S.pos.y, S.pos.z), O: pr(st.A.x + (o.x - J.dist) * st.A.dx, base + (b0 + b1) / 2, st.A.z + (o.x - J.dist) * st.A.dz),
               cara: Math.acos(clamp((dv.x * S.facing.x + dv.z * S.facing.z) / dl, -1, 1)) * 180 / Math.PI, guinada: Math.acos(clamp((dv.x * st.A.dx + dv.z * st.A.dz) / dl, -1, 1)) * 180 / Math.PI, alto: c.position.y - S.pos.y };
             cam.modo = m0; cam.asp = a0; return r;
           };
           const enVista = p => p.z > 0 && p.z < 1 && Math.abs(p.x) < 0.95 && Math.abs(p.y) < 0.95;
           const dist0 = J.dist; const lejos = obst[0].x - dist0; // al empezar (pantalla «¡Toca para volar!») y en pleno vuelo (siguiente hueco a ≤ 13 m)
           const vini = vista('diagonal', 390 / 844); J.dist = Math.max(dist0, obst[0].x - 12);
-          const vd = vista('diagonal', 16 / 9), vm = vista('diagonal', 390 / 844), vh = vista('diagonal', 844 / 390), vl = vista('lado', 16 / 9), lm = vista('lado', 390 / 844), lh = vista('lado', 844 / 390);
-          check('Vista lateral por defecto, como el Flappy clásico (?flightcam=diagonal es la opción 3/4 frontal)', camModo === (/[?&]flightcam=(diagonal|3-?4)\b/.test(location.search) ? 'diagonal' : 'lado') && CAMS.lado.ad <= 0 && CAMS.ladoV.ad <= 0 && CAMS.diagonal.ad > 0 && CAMS.diagonal.lado > 0, cam.modo);
-          check('Lateral en el móvil vertical (390×844): Vittata grande (≥ 7 % del alto) hacia la izquierda, de 3/4, y el primer tronco (a ' + CAMS.ladoV.primero + ' m) ya a la vista antes del primer toque', lm.V.x > -0.85 && lm.V.x < -0.3 && lm.tam >= 0.07 && lm.cara < 60 && enVista(lm.V) && enVista(lm.Pp), 'V ' + lm.V.x.toFixed(2) + ',' + lm.V.y.toFixed(2) + ' tam ' + (lm.tam * 100).toFixed(1) + '% · primero ' + lm.Pp.x.toFixed(2));
-          check('Lateral horizontal (844×390): Vittata y el hueco a 14 m caen dentro de la pantalla', enVista(lh.V) && enVista(lh.P14), 'V ' + lh.V.x.toFixed(2) + ',' + lh.V.y.toFixed(2) + ' · 14 m ' + lh.P14.x.toFixed(2));
+          const vd = vista('diagonal', 16 / 9), vm = vista('diagonal', 390 / 844), vh = vista('diagonal', 844 / 390), vl = vista('lado', 16 / 9);
+          check('Cámara diagonal por defecto (3/4 frontal; ?flightcam=lado es la opción)', camModo === (/[?&]flightcam=(lado|side)\b/.test(location.search) ? 'lado' : 'diagonal') && CAMS.diagonal.ad > 0 && CAMS.diagonal.lado > 0, cam.modo);
           check('Vittata de cara: el vector de la cámara a ella forma <90° con su frente (cámara delante-al-lado, ~40° del carril)', vd.cara < 60 && vd.guinada > 30 && vd.guinada < 50, 'cara ' + vd.cara.toFixed(0) + '° · guiñada ' + vd.guinada.toFixed(0) + '°');
           check('Escritorio: Vittata visible en pantalla y el siguiente hueco también', enVista(vd.V) && enVista(vd.O), 'V ' + vd.V.x.toFixed(2) + ',' + vd.V.y.toFixed(2) + ' · hueco ' + vd.O.x.toFixed(2) + ',' + vd.O.y.toFixed(2));
           const o2 = obst.filter(q => !q.pasado)[1], vm2 = o2 && o2.x - J.dist < CAMS.diagonal.ad - 1 ? (() => { const b = superficie(st.A.x, st.A.z), [c0, c1] = huecoDe(o2), m0 = cam.modo, a0 = cam.asp; cam.asp = 390 / 844; const c = new THREE.PerspectiveCamera(fovPara('diagonal', 390 / 844), 390 / 844, 0.1, 500); camObjetivo(c.position); c.lookAt(camMira()); c.updateMatrixWorld(true); cam.asp = a0; return new THREE.Vector3(st.A.x + (o2.x - J.dist) * st.A.dx, b + (c0 + c1) / 2, st.A.z + (o2.x - J.dist) * st.A.dz).project(c); })() : null;
           check('Horizontal 844×390: Vittata y el siguiente hueco caen dentro de la pantalla', enVista(vh.V) && enVista(vh.P14) && Math.abs(vh.O.x) < 0.95, 'V ' + vh.V.x.toFixed(2) + ',' + vh.V.y.toFixed(2) + ' · hueco ' + vh.O.x.toFixed(2) + ',' + vh.O.y.toFixed(2));
           check('Móvil vertical (390×844) en el navegador real: Vittata a x −0,3…−0,05 y ≥ 12 % del alto de pantalla, y el siguiente tronco+hueco ya a la vista ANTES del primer toque (' + lejos.toFixed(0) + ' m)', vini.V.x > -0.32 && vini.V.x < -0.05 && vini.tam >= 0.12 && enVista(vini.P14) && vini.O.z > 0 && Math.abs(vini.O.x) < 0.95 && vm.tam >= 0.12 && vm.V.x > -0.32 && vm.V.x < -0.05, 'listo: V ' + vini.V.x.toFixed(2) + ',' + vini.V.y.toFixed(2) + ' tam ' + (vini.tam * 100).toFixed(0) + '% hueco ' + vini.O.x.toFixed(2) + ',' + vini.O.y.toFixed(2) + ' · vuelo: V ' + vm.V.x.toFixed(2) + ' tam ' + (vm.tam * 100).toFixed(0) + '%');
           check('Móvil vertical (390×844): Vittata (hacia la izquierda), el siguiente hueco (y el 2.º si está delante de la cámara) caen dentro', enVista(vm.V) && vm.V.x < 0 && enVista(vm.P14) && Math.abs(vm.O.x) < 0.95 && (!vm2 || Math.abs(vm2.x) < 0.95), 'V ' + vm.V.x.toFixed(2) + ',' + vm.V.y.toFixed(2) + ' · hueco ' + vm.O.x.toFixed(2) + ',' + vm.O.y.toFixed(2));
-          check('Vista lateral (por defecto): cámara a ~90° del carril, Vittata de 3/4 (cara a la vista, <60°) y todo a la vista', vl.cara < 60 && vl.guinada > 80 && enVista(vl.V) && enVista(vl.O), 'guiñada ' + vl.guinada.toFixed(0) + '°');
+          check('Vista lateral (opción): cámara a ~90° del carril y todo a la vista', vl.guinada > 80 && enVista(vl.V) && enVista(vl.O), 'guiñada ' + vl.guinada.toFixed(0) + '°');
           check('Ayudas de altura: sombra de Vittata en el mar y ventana en el hueco del siguiente obstáculo', ayuda.sombra && ayuda.sombra.visible && ayuda.ventana && ayuda.ventana.visible && ayuda.ventana.scale.y > 2, ayuda.ventana && ayuda.ventana.scale.y.toFixed(1) + ' m de hueco');
           J.dist = dist0;
           // ---------- Impulso y gravedad ----------
@@ -759,7 +753,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('300 obstáculos a dificultad máxima: todos los huecos ≥ ' + P.hueco1 + ' m y dentro del carril', lista.length === 300 && huecosOk === 300 && dentro === 300, huecosOk + '/' + dentro);
           check('Cada paso ≥ 60 % del paso mínimo y cada par consecutivo superable con el impulso y la gravedad reales', pasosOk === 299 && superables === 299, pasosOk + '/' + superables);
           check('Al máximo caben ' + P.holgura + ' m de holgura: en ' + (P.paso1 / velocidadEn(P.rampa)).toFixed(2) + ' s se puede subir ' + subidaMax(P.paso1 / velocidadEn(P.rampa)).toFixed(1) + ' m y bajar ' + bajadaMax(P.paso1 / velocidadEn(P.rampa)).toFixed(1) + ' m', subidaMax(P.paso1 / velocidadEn(P.rampa)) + bajadaMax(P.paso1 / velocidadEn(P.rampa)) - 2 * P.bandaHueco >= P.holgura);
-          check('Hay variedad de módulos (puerta, suelo, techo, túnel, escalera)', lista.some(q => q.bajo == null) && lista.some(q => q.alto == null) && lista.some(q => q.bajo != null && q.alto != null), modulos);
+          check('BK1: todos los obstáculos son un par (tronco abajo y arriba) y van a paso regular (el de su dificultad)', lista.every(q => q.bajo != null && q.alto != null) && lista.every((q, i) => !i || Math.abs(q.x - lista[i - 1].x - P.paso1) < 1e-6), modulos + ' módulos');
           // Fairness con los parámetros reales: un robot que toca como mucho cada 0,12 s pasa 300 obstáculos sin chocar, con 3 semillas
           const robots = [];
           for (const semilla of [11, 23, 42]) {
@@ -787,12 +781,12 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Por el hueco se pasa sin chocar', st.fase === 'juego' && !J.choque);
           // Precisión: lo que se ve es lo que choca (tronco = cilindro de su radio real, punta redonda; sin margen invisible), con la cámara diagonal
           { const ob = { x: 60, bajo: 5, alto: 9, inst: { tronco: [], roca: [], bambu: [] } }, rt = P.anchoColumna, r = P.radio, dx = d => golpe(ob, d, 3), dy = (y, d) => golpe(ob, d || 0, y);
-            check('El radio del tronco es el visible del modelo (no el 0,5 de reserva)', pool.tronco && Math.abs(rt - pool.tronco.rt) < 1e-6 && rt >= 0.25, rt.toFixed(3) + ' m');
+            check('El radio del tronco para chocar es el visible (sección del modelo ensanchada a P.grosor)', pool.tronco && Math.abs(rt - pool.tronco.rt * pool.tronco.kg) < 1e-6 && Math.abs(rt - P.grosor) < 1e-6, rt.toFixed(3) + ' m (modelo ' + pool.tronco.rt.toFixed(3) + ' × ' + pool.tronco.kg.toFixed(2) + ')');
             check('Rozando por fuera del tronco (a 1 cm) NO choca; 5 cm dentro, sí', dx(rt + r + 0.01) === '' && dx(rt + r - 0.05) === 'tronco' && dx(-(rt + r + 0.01)) === '' && dx(-(rt + r - 0.05)) === 'tronco');
             check('Rozando por encima del tronco de abajo (1 cm) NO choca; 5 cm dentro, sí', dy(ob.bajo + r + 0.01) === '' && dy(ob.bajo + r - 0.05) === 'tronco');
             check('Rama de arriba: a 1 cm por debajo NO choca; 5 cm dentro, sí', dy(ob.alto - r - 0.01) === '' && dy(ob.alto - r + 0.05) === 'rama');
             check('La punta del tronco es redonda: pasar por la esquina (sin tocar la forma) no choca', dy(ob.bajo + r * 0.8, rt + r * 0.8) === '' && dy(ob.bajo + r * 0.6, rt + r * 0.6) === 'tronco' ? true : dy(ob.bajo + r * 0.8, rt + r * 0.8) === '');
-            check('Con la cámara de la partida Vittata sigue a la vista al rozar el tronco (se ve el roce)', enVista(vista(cam.modo, aspecto()).V)); }
+            check('Con la cámara diagonal Vittata sigue a la vista al rozar el tronco (se ve el roce)', cam.modo === 'diagonal' && enVista(vd.V)); }
           try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ } // el chapuzón es la primera partida con récord
           vaciar(); J.dist = 30; J.y = P.yMin - 0.1; J.vy = -1; paso(1 / 60);
           check('El agua también termina (chapuzón)', st.fase === 'fin' && J.choque === 'agua');
@@ -808,7 +802,10 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Un toque reflejo justo tras el choque no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'listo'));
           check('Reinicio inmediato: puntos 0, fase listo, obstáculos nuevos delante', J.puntos === 0 && st.fase === 'listo' && obst.length >= 5 && st.ui.fin.hidden);
           // ---------- 50 reinicios con partidas de robot: sin fugas (geometrías y texturas constantes) y pool sin desbordar ----------
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // dos cuadros dibujados: lo del pool, los fx y el agua ya están en la GPU
+          // Calentamiento: una partida con choque y dos cuadros dibujados, así lo del pool, los fx, el agua y el destello del choque (se crea una
+          // vez y solo se sube a la GPU la primera vez que se ve) ya están en la GPU antes de medir
+          otraVez(); toque({ sinFx: true }); robot(5, 1 / 30); if (st.fase === 'juego') fin('tronco');
+          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m0 = mem(), capOk = [];
           for (let i = 0; i < 50; i++) {
             otraVez(); toque({ sinFx: true }); robot(20 + (i % 7), 1 / 30); // partidas de 20 a 26 obstáculos (sin plumas de fx: viven 1 s y no son del pool)
