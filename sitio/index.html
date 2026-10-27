@@ -3,717 +3,94 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Amazona Verse</title>
+<title>Amazona Verse · Juego 3D gratis en el navegador con la cotorra puertorriqueña · Hecho en Puerto Rico</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Amazona Verse: aventura 3D en el navegador para todas las edades, con Vittata, la cotorra puertorriqueña. Ciencia, naturaleza y cultura de Puerto Rico. Hecho en Puerto Rico.">
+<meta name="description" content="Amazona Verse es un juego educativo 3D gratis que se juega en el navegador, hecho en Puerto Rico. Vuela con Vittata, la cotorra puertorriqueña (Amazona vittata), por 6 capítulos y minijuegos. Para todas las edades, en español e inglés, sin instalar ni anuncios.">
+<meta name="keywords" content="juego en Puerto Rico, juego educativo, juego 3D gratis, cotorra puertorriqueña, Amazona vittata, juego en el navegador, Vittata, El Yunque, para todas las edades">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#10241c">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible+Mono:wght@500&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/web.css">
+<link rel="canonical" href="https://www.amazonaverse.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Amazona Verse · Vuela, explora y salva tu isla con Vittata">
-<meta property="og:description" content="Aventura 3D en el navegador para todas las edades. Ciencia y naturaleza de Puerto Rico con Vittata. Sin instalar, sin anuncios, sin cuentas.">
-<meta property="og:url" content="https://amazona-verse.vercel.app/">
+<meta property="og:title" content="Amazona Verse · Juego 3D gratis con Vittata, la cotorra puertorriqueña">
+<meta property="og:description" content="Juega gratis en el navegador: 6 capítulos y minijuegos en un bosque de Puerto Rico. Para todas las edades. Sin instalar, sin anuncios, sin cuentas. Hecho en Puerto Rico.">
+<meta property="og:url" content="https://www.amazonaverse.com/">
 <meta property="og:site_name" content="Amazona Verse">
-<meta property="og:image" content="https://amazona-verse.vercel.app/assets/og.jpg">
+<meta property="og:image" content="https://www.amazonaverse.com/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Amazona Verse: Vittata, la cotorra puertorriqueña, en un bosque de El Yunque. Una aventura para volar y explorar.">
 <meta property="og:locale" content="es_PR">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Amazona Verse · Vuela, explora y salva tu isla con Vittata">
-<meta name="twitter:description" content="Aventura 3D en el navegador para todas las edades. Ciencia y naturaleza de Puerto Rico con Vittata. Sin instalar, sin anuncios, sin cuentas.">
-<meta name="twitter:image" content="https://amazona-verse.vercel.app/assets/og.jpg">
-<link rel="canonical" href="https://amazona-verse.vercel.app/">
-<link rel="icon" href="favicon.ico" sizes="32x32">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible+Mono:wght@500&family=Fredoka:wght@500;600;700&display=swap">
-<style>
-/* Layout: cielo de amanecer del juego arriba, noche de selva como fondo, y hojas de "Diario de Campo"
-   (papel rayado) para lo que se lee con calma. Contenedor de 1180 px; un solo look oscuro de marca.
-   Tokens tomados de Juego/src/ui/tokens.css para que la web y el juego sean de la misma familia. */
-:root {
-  color-scheme: dark;
-  /* Paleta de marca (idéntica al juego) */
-  --night: #10241c; --night-2: #163226; --night-3: #21463a; --night-4: #0c1e16;
-  --leaf: #2f8f4e; --leaf-hi: #7fd38f;
-  --beak: #f2a03d; --beak-hi: #ffc46b; --beak-lo: #b8620e;
-  --crest: #d6403a; --crest-lo: #b52f2a;
-  --gold: #ffd27a; --sky: #7cc6ff; --violet: #c9b6ff;
-  --paper: #f4f7f1; --muted: #a9c2b1;
-  --parchment: #fbf1dc; --parchment-2: #f1e0bb; --card: #fffaf0; --paper-edge: #d9bf8a;
-  --ink: #2a1d10; --ink-muted: #6b5236;
-  --wood: #8a5a2b; --wood-lo: #5a3818;
-  --sky-1: #1b1550; --sky-2: #3b2c8f; --sky-3: #7a55c9; --sky-4: #f08a5d; --sky-5: #ffc46b;
-  --jungle-1: #2c6b45; --jungle-2: #1b4a30; --jungle-3: #0f2e1e;
-  /* Semánticos */
-  --line: rgba(127, 211, 143, 0.24);
-  --line-strong: rgba(244, 247, 241, 0.42);
-  --glass: rgba(12, 30, 22, 0.88);
-  --ruled: rgba(61, 143, 176, 0.13);
-  --margin-red: rgba(214, 64, 58, 0.42);
-  --focus: #ffe066; --focus-paper: #1f5fbf;
-  --primary-ink: #2b1a05;
-  /* Tipo */
-  --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
-  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --fs-xs: 13px; --fs-sm: 15px; --fs-md: 17px; --fs-lg: 19px; --fs-xl: 23px;
-  --fs-2xl: clamp(26px, 3vw, 32px); --fs-3xl: clamp(32px, 4.6vw, 54px); --fs-hero: clamp(40px, 4.7vw, 68px);
-  /* Espacio, radios, movimiento */
-  --gutter: max(clamp(16px, 4vw, 32px), env(safe-area-inset-left, 0px));
-  --gutter-r: max(clamp(16px, 4vw, 32px), env(safe-area-inset-right, 0px));
-  --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
-  --lip: 4px;
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* Iconos del juego (src/ui/ui.css, 24×24, trazo 2.4) */
-  --i-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M8 5.2v13.6L19 12z'/%3E%3C/svg%3E");
-  --i-pause: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='%23000' x='6' y='4.5' width='4.2' height='15' rx='1.6'/%3E%3Crect fill='%23000' x='13.8' y='4.5' width='4.2' height='15' rx='1.6'/%3E%3C/svg%3E");
-  --i-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M4.5 12.5l5 5L19.5 7'/%3E%3C/svg%3E");
-  --i-wing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M21 4.5c-5.5 0-11 1.5-15.2 5.6C3.6 12.3 3 15 3.4 18.6c1.6-1.5 3.4-2.4 5.6-2.6-1.2-.4-2.3-.4-3.3-.1 2.6-2 5.8-3 9.3-3.3-1.6-.4-3.2-.4-4.7-.1 3.3-1.8 6.6-3.6 8.7-8z'/%3E%3C/svg%3E");
-  --i-dive: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 3v8M8.5 7.5 12 11l3.5-3.5M3 16c1.5 0 1.5-1.2 3-1.2s1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2M3 20.5c1.5 0 1.5-1.2 3-1.2s1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2'/%3E%3C/svg%3E");
-  --i-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5zM12 6.5v13'/%3E%3C/svg%3E");
-  --i-shirt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M8.5 3.5 4 5.5 2.5 10.5l3.5 1.4L7 10.5v10h10v-10l1 1.4 3.5-1.4L20 5.5l-4.5-2c-.7 1.6-2 2.5-3.5 2.5s-2.8-.9-3.5-2.5z'/%3E%3C/svg%3E");
-  --i-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z'/%3E%3C/svg%3E");
-  --i-feather: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M20 4c-7.5 0-13 5.5-13 13 7.5 0 13-5.5 13-13zM4 20l11-11M9.5 14.5h5'/%3E%3C/svg%3E");
-  --i-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M7.5 12.5V7a1.5 1.5 0 0 1 3 0v4.5M10.5 11V4.8a1.5 1.5 0 0 1 3 0V11M13.5 11V5.8a1.5 1.5 0 0 1 3 0V12M16.5 12V9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-.6a6.5 6.5 0 0 1-5.3-2.8L3.8 14.4a1.6 1.6 0 0 1 2.6-1.9l1.1 1.4'/%3E%3C/svg%3E");
-  --i-music: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M9 18V5.5l11-2V16'/%3E%3Ccircle fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' cx='6.5' cy='18' r='2.3'/%3E%3Ccircle fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' cx='17.5' cy='16' r='2.3'/%3E%3C/svg%3E");
-  --i-bulb: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M9.5 18h5M10.5 21h3M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.1v.1h5v-.1c0-.8.4-1.6 1.1-2.1A6 6 0 0 0 12 3z'/%3E%3C/svg%3E");
-  --i-paw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23000'%3E%3Ccircle cx='5.8' cy='10.2' r='2.1'/%3E%3Ccircle cx='9.4' cy='5.8' r='2.1'/%3E%3Ccircle cx='14.6' cy='5.8' r='2.1'/%3E%3Ccircle cx='18.2' cy='10.2' r='2.1'/%3E%3Cpath d='M12 11c-3 0-6.2 4-6.2 6.6 0 1.7 1.3 2.6 3 2.6 1.3 0 2.1-.6 3.2-.6s1.9.6 3.2.6c1.7 0 3-.9 3-2.6C18.2 15 15 11 12 11z'/%3E%3C/g%3E%3C/svg%3E");
-  --i-sun: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle fill='none' stroke='%23000' stroke-width='2.4' cx='12' cy='12' r='4'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8'/%3E%3C/svg%3E");
-  --i-question: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle fill='none' stroke='%23000' stroke-width='2.4' cx='12' cy='12' r='9'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6'/%3E%3Ccircle fill='%23000' cx='12' cy='17' r='1.3'/%3E%3C/svg%3E");
-  --i-trophy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5v1.5A3.5 3.5 0 0 0 8 11M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11M12 13v4M8.5 20.5h7M9.5 17h5v3.5h-5z'/%3E%3C/svg%3E");
-  --i-keyboard: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' x='2.5' y='6' width='19' height='12' rx='2.5'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8'/%3E%3C/svg%3E");
-  --i-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M11 2.5c.7 4.6 2.8 6.8 7.5 7.5-4.7.7-6.8 2.9-7.5 7.5-.7-4.6-2.8-6.8-7.5-7.5 4.7-.7 6.8-2.9 7.5-7.5zM18.5 14.5c.3 1.9 1.1 2.7 3 3-1.9.3-2.7 1.1-3 3-.3-1.9-1.1-2.7-3-3 1.9-.3 2.7-1.1 3-3z'/%3E%3C/svg%3E");
-  --i-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5'/%3E%3C/svg%3E");
-  /* Iconos nuevos de la web, mismo trazo */
-  --i-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' x='8.5' y='8.5' width='12' height='12' rx='2.5'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M15.5 8.5V6A2.5 2.5 0 0 0 13 3.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
-  --i-laptop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' x='4.5' y='5' width='15' height='10.5' rx='1.8'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M2.5 19h19'/%3E%3C/svg%3E");
-  --i-shield: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' d='M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6z'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M8.8 12l2.3 2.3 4.3-4.6'/%3E%3C/svg%3E");
-  --i-globe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle fill='none' stroke='%23000' stroke-width='2.4' cx='12' cy='12' r='9'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' d='M3 12h18M12 3c2.5 2.6 3.6 5.6 3.6 9s-1.1 6.4-3.6 9c-2.5-2.6-3.6-5.6-3.6-9S9.5 5.6 12 3z'/%3E%3C/svg%3E");
-  --i-mail: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' x='3' y='5.5' width='18' height='13' rx='2.5'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M4 7.5l8 6 8-6'/%3E%3C/svg%3E");
-  --i-menu: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E");
-  --i-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M6.5 6.5l11 11M17.5 6.5l-11 11'/%3E%3C/svg%3E");
-  --i-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E");
-  --i-egg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linejoin='round' d='M12 3c3.6 0 6.5 6 6.5 10a6.5 6.5 0 0 1-13 0C5.5 9 8.4 3 12 3z'/%3E%3C/svg%3E");
-  --i-reset: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4h4'/%3E%3C/svg%3E");
+<meta name="twitter:title" content="Amazona Verse · Juego 3D gratis con Vittata, la cotorra puertorriqueña">
+<meta name="twitter:description" content="Juega gratis en el navegador: 6 capítulos y minijuegos en un bosque de Puerto Rico. Para todas las edades. Hecho en Puerto Rico.">
+<meta name="twitter:image" content="https://www.amazonaverse.com/assets/og.jpg">
+<link rel="preload" as="image" href="assets/img/hero-900.jpg" imagesrcset="assets/img/hero-900.jpg 900w, assets/img/hero-1600.jpg 1600w" imagesizes="(min-width: 900px) 52vw, 100vw">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "VideoGame",
+      "@id": "https://www.amazonaverse.com/#juego",
+      "name": "Amazona Verse",
+      "alternateName": "Amazona Verse · Vuela con Vittata",
+      "url": "https://www.amazonaverse.com/",
+      "image": "https://www.amazonaverse.com/assets/og.jpg",
+      "description": "Juego educativo 3D gratis que se juega en el navegador, hecho en Puerto Rico. Vuela con Vittata, la cotorra puertorriqueña (Amazona vittata), por 6 capítulos y minijuegos. Para todas las edades, en español e inglés.",
+      "inLanguage": ["es", "en"],
+      "genre": ["Educational", "Adventure", "Casual"],
+      "gamePlatform": "Web browser",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any",
+      "playMode": "SinglePlayer",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://www.amazonaverse.com/juego/" },
+      "countryOfOrigin": { "@type": "Country", "name": "Puerto Rico" },
+      "character": { "@type": "Person", "name": "Vittata", "description": "Cotorra puertorriqueña (Amazona vittata) inventora" },
+      "author": { "@id": "https://www.amazonaverse.com/#org" },
+      "publisher": { "@id": "https://www.amazonaverse.com/#org" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.amazonaverse.com/#org",
+      "name": "Amazona Verse",
+      "url": "https://www.amazonaverse.com/",
+      "logo": "https://www.amazonaverse.com/assets/og.jpg",
+      "foundingDate": "2012",
+      "foundingLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressRegion": "Puerto Rico", "addressCountry": "PR" } },
+      "founder": [
+        { "@type": "Person", "name": "Kelvin García" },
+        { "@type": "Person", "name": "Analeah García" },
+        { "@type": "Person", "name": "Nathanael García" }
+      ],
+      "sponsor": [
+        { "@type": "Person", "name": "Kelvin García", "url": "https://www.kelvingarciapr.com/", "worksFor": { "@type": "Organization", "name": "Smart Real Estate" } },
+        { "@type": "Organization", "name": "Seguros en General", "url": "https://segurosengeneral.com/" },
+        { "@type": "Organization", "name": "Smarlin", "url": "https://smarlin.com/" }
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "url": "https://www.amazonaverse.com/",
+      "name": "Amazona Verse",
+      "inLanguage": ["es", "en"],
+      "publisher": { "@id": "https://www.amazonaverse.com/#org" }
+    }
+  ]
 }
-
-/* ---------- Base ---------- */
-*, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 84px); }
-body {
-  margin: 0; background: var(--night); color: var(--paper);
-  font: 400 var(--fs-md)/1.6 var(--font-body); overflow-x: clip;
-  -webkit-font-smoothing: antialiased;
-}
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--night-4); }
-img, video, svg { display: block; max-width: 100%; }
-img { height: auto; }
-a { color: var(--leaf-hi); text-underline-offset: 3px; }
-a:hover { color: var(--beak-hi); }
-p { margin: 0; }
-h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; margin: 0; text-wrap: balance; }
-:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
-.paper :focus-visible, .on-paper :focus-visible { outline-color: var(--focus-paper); }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.skip { position: absolute; left: var(--gutter); top: -100px; z-index: 100; background: var(--beak); color: var(--primary-ink); padding: 12px 18px; border-radius: var(--r-pill); font: 600 var(--fs-md) var(--font-display); text-decoration: none; }
-.skip:focus { top: calc(env(safe-area-inset-top, 0px) + 12px); }
-/* Idioma: el HTML trae ES y EN; se muestra uno */
-:root:not([lang="en"]) [data-l="en"], :root[lang="en"] [data-l="es"] { display: none !important; }
-[hidden] { display: none !important; }
-
-.wrap { width: 100%; max-width: 1240px; margin-inline: auto; padding-left: var(--gutter); padding-right: var(--gutter-r); }
-.section { padding-block: clamp(64px, 9vw, 116px); position: relative; }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 700 var(--fs-xs)/1.2 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
-.h2 { font-size: var(--fs-3xl); margin-top: 12px; }
-.lead { font-size: clamp(18px, 1.5vw, 20px); color: var(--muted); max-width: 62ch; margin-top: 16px; }
-.section-head { max-width: 760px; }
-.section .section-head + * { margin-top: clamp(32px, 5vw, 56px); }
-.muted { color: var(--muted); }
-.small { font-size: var(--fs-sm); }
-.mono { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; }
-
-[data-icon]::before {
-  content: ""; flex: none; display: inline-block; width: var(--icon-size, 1.2em); height: var(--icon-size, 1.2em);
-  background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
-}
-[data-icon="play"] { --icon: var(--i-play); } [data-icon="pause"] { --icon: var(--i-pause); } [data-icon="check"] { --icon: var(--i-check); }
-[data-icon="wing"] { --icon: var(--i-wing); } [data-icon="dive"] { --icon: var(--i-dive); } [data-icon="book"] { --icon: var(--i-book); }
-[data-icon="shirt"] { --icon: var(--i-shirt); } [data-icon="star"] { --icon: var(--i-star); } [data-icon="feather"] { --icon: var(--i-feather); }
-[data-icon="hand"] { --icon: var(--i-hand); } [data-icon="music"] { --icon: var(--i-music); } [data-icon="bulb"] { --icon: var(--i-bulb); }
-[data-icon="paw"] { --icon: var(--i-paw); } [data-icon="sun"] { --icon: var(--i-sun); } [data-icon="question"] { --icon: var(--i-question); }
-[data-icon="trophy"] { --icon: var(--i-trophy); } [data-icon="keyboard"] { --icon: var(--i-keyboard); } [data-icon="sparkle"] { --icon: var(--i-sparkle); }
-[data-icon="lock"] { --icon: var(--i-lock); } [data-icon="copy"] { --icon: var(--i-copy); } [data-icon="laptop"] { --icon: var(--i-laptop); }
-[data-icon="shield"] { --icon: var(--i-shield); } [data-icon="globe"] { --icon: var(--i-globe); } [data-icon="mail"] { --icon: var(--i-mail); }
-[data-icon="menu"] { --icon: var(--i-menu); } [data-icon="close"] { --icon: var(--i-close); } [data-icon="arrow"] { --icon: var(--i-arrow); }
-[data-icon="egg"] { --icon: var(--i-egg); } [data-icon="reset"] { --icon: var(--i-reset); }
-
-/* ---------- Botón caramelo (mismo componente que el juego) ---------- */
-.btn {
-  --btn-bg: var(--beak); --btn-ink: var(--primary-ink); --btn-lip: var(--beak-lo);
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-height: 52px; padding: 0 26px; border: 0; border-radius: var(--r-pill);
-  background: var(--btn-bg); color: var(--btn-ink); text-decoration: none; cursor: pointer;
-  font: 600 18px/1.1 var(--font-display); text-align: center;
-  box-shadow: 0 var(--lip) 0 var(--btn-lip), 0 12px 22px rgba(0, 0, 0, 0.22);
-  transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), filter 120ms;
-}
-.btn:hover { filter: brightness(1.07); color: var(--btn-ink); }
-.btn:active { transform: translateY(var(--lip)); box-shadow: 0 0 0 var(--btn-lip), 0 4px 10px rgba(0, 0, 0, 0.2); }
-.btn.ghost { --btn-bg: rgba(255, 255, 255, 0.1); --btn-ink: #fff; --btn-lip: rgba(0, 0, 0, 0.32); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 var(--lip) 0 var(--btn-lip); }
-.btn.paperish { --btn-bg: var(--card); --btn-ink: var(--ink); --btn-lip: var(--paper-edge); box-shadow: inset 0 0 0 2px var(--paper-edge), 0 var(--lip) 0 var(--btn-lip); }
-.btn.leaf { --btn-bg: var(--leaf-hi); --btn-ink: #0e2a18; --btn-lip: #3f9a55; }
-.btn.sm { min-height: 44px; padding: 0 18px; font-size: 16px; }
-.btn[disabled] { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.4); }
-
-.chip {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 6px 14px;
-  border-radius: var(--r-pill); font: 600 var(--fs-sm)/1.2 var(--font-display);
-  background: rgba(20, 12, 60, 0.55); color: #fff; --icon-size: 16px;
-}
-.chip.gold { background: var(--gold); color: var(--primary-ink); }
-.chip.soon { background: rgba(201, 182, 255, 0.16); color: var(--violet); box-shadow: inset 0 0 0 2px rgba(201, 182, 255, 0.45); }
-.chip.paper-chip { background: var(--parchment-2); color: var(--ink); }
-
-/* ---------- Cabecera ---------- */
-.site-header {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
-  background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
-}
-.nav-wrap { display: flex; align-items: center; gap: 12px; min-height: 72px; }
-.brand { display: inline-flex; align-items: center; flex: none; border-radius: 12px; }
-.brand svg { width: 132px; height: auto; overflow: visible; }
-.nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
-.nav a {
-  display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--r-pill);
-  color: var(--paper); text-decoration: none; font: 600 16px/1 var(--font-display);
-}
-.nav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-.header-tools { display: flex; align-items: center; gap: 10px; flex: none; }
-.lang { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 2px var(--line-strong); }
-.lang button {
-  min-width: 44px; min-height: 38px; padding: 0 10px; border: 0; border-radius: var(--r-pill); cursor: pointer;
-  background: transparent; color: var(--paper); font: 700 14px/1 var(--font-display); letter-spacing: 0.06em;
-}
-.lang button[aria-pressed="true"] { background: var(--gold); color: var(--primary-ink); }
-.menu-btn { display: none; width: 48px; height: 48px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.08); color: var(--paper); cursor: pointer; align-items: center; justify-content: center; --icon-size: 24px; }
-.header-cta { white-space: nowrap; }
-@media (max-width: 1120px) {
-  .menu-btn { display: inline-flex; }
-  .nav {
-    position: absolute; left: 0; right: 0; top: 100%; display: none; flex-direction: column; align-items: stretch; gap: 4px;
-    padding: 12px var(--gutter-r) 20px var(--gutter); background: var(--night-4); border-bottom: 1px solid var(--line);
-    box-shadow: 0 24px 40px rgba(0, 0, 0, 0.4);
-  }
-  .nav.open { display: flex; }
-  .nav a { min-height: 52px; font-size: 19px; padding: 0 16px; }
-  .header-tools { margin-left: auto; }
-}
-@media (max-width: 560px) {
-  .header-cta { display: none; }
-  .brand svg { width: 116px; }
-}
-
-/* ---------- Hero ---------- */
-.hero {
-  position: relative; overflow: hidden; isolation: isolate;
-  background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 34%, #5a3fb0 58%, var(--sky-3) 76%, #c0708a 90%, var(--sky-4) 100%);
-  padding-block: clamp(40px, 6vw, 84px) clamp(120px, 14vw, 190px);
-}
-.hero::before {
-  content: ""; position: absolute; inset: 0 0 40% 0; z-index: -1; opacity: 0.85;
-  background-image:
-    radial-gradient(1.6px 1.6px at 8% 14%, #fff 50%, transparent 52%), radial-gradient(1.2px 1.2px at 21% 32%, #fff 50%, transparent 52%),
-    radial-gradient(1.8px 1.8px at 37% 9%, #fff 50%, transparent 52%), radial-gradient(1.2px 1.2px at 49% 26%, #fff 50%, transparent 52%),
-    radial-gradient(1.6px 1.6px at 63% 12%, #fff 50%, transparent 52%), radial-gradient(1.2px 1.2px at 74% 35%, #fff 50%, transparent 52%),
-    radial-gradient(1.8px 1.8px at 86% 8%, #fff 50%, transparent 52%), radial-gradient(1.2px 1.2px at 94% 28%, #fff 50%, transparent 52%),
-    radial-gradient(1.2px 1.2px at 30% 52%, #fff 50%, transparent 52%), radial-gradient(1.4px 1.4px at 57% 46%, #fff 50%, transparent 52%);
-  animation: twinkle 6s ease-in-out infinite alternate;
-}
-@keyframes twinkle { from { opacity: 0.45; } }
-.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr); gap: clamp(28px, 4.5vw, 64px); align-items: center; }
-.hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; animation: rise-in 700ms var(--ease-out) both; }
-.hero h1 { font-size: var(--fs-hero); line-height: 1.02; letter-spacing: -0.012em; color: #fff; text-shadow: 0 4px 0 rgba(27, 21, 80, 0.55); }
-.hero h1 .gold {
-  color: var(--gold);
-  background: linear-gradient(180deg, #fff8cf 0%, #ffcb3d 48%, #f39a2a 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 3px 0 #4a2408);
-  text-shadow: none;
-}
-.hero-lead { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.55; color: #fff; max-width: 40ch; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }
-.hero-note { display: flex; align-items: flex-start; gap: 10px; font-size: var(--fs-sm); color: #fff; background: rgba(20, 12, 60, 0.5); border-radius: var(--r-md); padding: 10px 14px; max-width: 44ch; --icon-size: 18px; }
-.hero-note::before { margin-top: 2px; color: var(--gold); }
-.hero-media { margin: 0; animation: pop-in 800ms var(--ease-pop) 120ms both; }
-@keyframes rise-in { from { transform: translateY(18px); } }
-@keyframes pop-in { from { transform: scale(0.96) translateY(14px); } }
-.screen {
-  position: relative; aspect-ratio: 16 / 10; max-width: 100%; border-radius: var(--r-xl); overflow: hidden; background: var(--night-2);
-  box-shadow: 0 0 0 6px var(--night), 0 0 0 9px rgba(255, 210, 122, 0.7), 0 34px 70px rgba(10, 6, 40, 0.6);
-}
-.screen > img, .screen > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.screen > video { opacity: 0; transition: opacity 500ms ease; }
-.screen.is-playing > video { opacity: 1; }
-.hud-pill {
-  position: absolute; left: 14px; top: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border-radius: var(--r-pill); background: var(--glass); color: var(--paper);
-  font: 700 12px/1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; --icon-size: 14px;
-}
-.hud-pill::before { color: var(--gold); }
-.vid-btn {
-  position: absolute; right: 14px; bottom: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
-  min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--r-pill); cursor: pointer;
-  background: var(--glass); color: var(--paper); font: 600 15px/1 var(--font-display); --icon-size: 16px;
-}
-.vid-btn:hover { background: rgba(12, 30, 22, 0.96); }
-@media (max-width: 560px) {
-  .vid-btn { width: 44px; padding: 0; justify-content: center; right: 10px; bottom: 10px; --icon-size: 18px; }
-  .vid-btn .vid-lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-}
-.hero-media figcaption { margin-top: 18px; text-align: right; }
-.hero-media figcaption span { display: inline-block; padding: 4px 12px; border-radius: var(--r-pill); background: rgba(20, 12, 60, 0.55); font-size: var(--fs-sm); color: #fff; }
-.hills { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: clamp(90px, 12vw, 170px); z-index: -1; }
-@media (max-width: 900px) {
-  .hero { padding-bottom: clamp(84px, 22vw, 130px); }
-  .hero-grid { grid-template-columns: minmax(0, 1fr); }
-  .hero-lead { max-width: 40ch; }
-  .hero-media figcaption { text-align: left; }
-}
-
-/* Loops secundarios */
-.loop-fig { margin: 0; min-width: 0; }
-.screen.loop { aspect-ratio: 16 / 9; border-radius: var(--r-lg); box-shadow: 0 0 0 4px var(--night), 0 0 0 6px rgba(255, 210, 122, 0.55), 0 24px 48px rgba(0, 0, 0, 0.45); }
-.paper .screen.loop { box-shadow: 0 0 0 4px var(--card), 0 0 0 6px var(--paper-edge), 0 20px 36px rgba(90, 56, 24, 0.2); }
-.loop-fig figcaption { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
-.paper .loop-fig figcaption { color: var(--ink-muted); }
-.head-media { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
-.section .head-media > .section-head + * { margin-top: 0; }
-.head-media + * { margin-top: clamp(32px, 5vw, 56px); }
-.story-copy .loop-fig { margin-top: 32px; }
-.ns-media { display: grid; gap: 24px; min-width: 0; }
-@media (max-width: 900px) { .head-media { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Franja de hechos ---------- */
-.facts { background: var(--night); padding-block: 8px 24px; }
-.facts-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.facts-list li {
-  display: flex; flex-direction: column; gap: 10px; padding: 18px 16px; border-radius: var(--r-lg);
-  background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0;
-}
-.facts-list .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--leaf-hi); color: #0e2a18; --icon-size: 22px; }
-.facts-list li:nth-child(2) .ic { background: var(--beak); color: var(--primary-ink); }
-.facts-list li:nth-child(3) .ic { background: var(--sky); color: #0b2236; }
-.facts-list li:nth-child(4) .ic { background: var(--violet); color: #241446; }
-.facts-list li:nth-child(5) .ic { background: var(--gold); color: var(--primary-ink); }
-.facts-list li:nth-child(6) .ic { background: #fff; padding: 9px 7px; }
-.facts-list strong { font: 600 var(--fs-md)/1.25 var(--font-display); color: #fff; }
-.facts-list span.t { font-size: var(--fs-sm); color: var(--muted); line-height: 1.4; }
-@media (max-width: 1060px) { .facts-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .facts-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .facts-list li { padding: 14px; } }
-
-/* ---------- Historia ---------- */
-.story-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
-.story-copy p + p { margin-top: 16px; }
-.story-copy .lead { margin-top: 20px; }
-.question {
-  margin-top: 28px; padding: 22px 24px; border-radius: var(--r-lg); background: var(--night-2); box-shadow: inset 0 0 0 2px rgba(255, 210, 122, 0.4);
-  font: 600 var(--fs-xl)/1.35 var(--font-display); color: var(--gold); text-wrap: balance;
-}
-.question small { display: block; font: 700 var(--fs-xs)/1.2 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-.cast { display: grid; gap: 34px; padding-top: 22px; }
-.talk {
-  position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 18px; align-items: start;
-  padding: 18px 22px 20px 18px; border-radius: var(--r-lg); background: var(--parchment); color: var(--ink);
-  box-shadow: 0 0 0 2px var(--paper-edge), 0 18px 32px rgba(0, 0, 0, 0.3);
-}
-.portrait {
-  width: 112px; height: 112px; border-radius: 50%; overflow: hidden; margin-top: -40px;
-  background: radial-gradient(circle at 50% 35%, #a7dcff, #4d8fd1); box-shadow: 0 0 0 5px var(--card), 0 0 0 7px var(--paper-edge), 0 10px 18px rgba(0, 0, 0, 0.25);
-}
-.portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform: scale(1.75); transform-origin: 54% 22%; }
-.talk.iguaca .portrait { background: radial-gradient(circle at 50% 35%, #ffe1a8, #f08a5d); }
-.talk.guardian .portrait { background: radial-gradient(circle at 50% 35%, #e5dcff, #8a73d6); }
-.name-tab {
-  display: inline-block; margin-top: -34px; margin-bottom: 8px; padding: 6px 14px; border-radius: var(--r-pill);
-  background: var(--beak); color: var(--primary-ink); font: 700 var(--fs-sm)/1 var(--font-display); box-shadow: 0 3px 0 var(--beak-lo);
-}
-.talk.iguaca .name-tab { background: var(--crest); color: #fff; box-shadow: 0 3px 0 #8e2420; }
-.talk.guardian .name-tab { background: #6a52c4; color: #fff; box-shadow: 0 3px 0 #4a3796; }
-.talk blockquote { margin: 0; font: 600 var(--fs-lg)/1.35 var(--font-display); color: var(--ink); }
-.talk p.role { margin-top: 8px; font-size: var(--fs-sm); color: var(--ink-muted); }
-.missions { list-style: none; margin: clamp(40px, 6vw, 64px) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: m; }
-.missions li { counter-increment: m; padding: 22px; border-radius: var(--r-lg); background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
-.missions li::before {
-  content: counter(m); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
-  background: var(--gold); color: var(--primary-ink); font: 700 20px/1 var(--font-display); margin-bottom: 14px;
-}
-.missions h3 { font-size: var(--fs-xl); }
-.missions p { margin-top: 8px; color: var(--muted); }
-.missions .skill { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font: 600 var(--fs-sm)/1 var(--font-display); color: var(--leaf-hi); --icon-size: 16px; }
-.world { margin: clamp(40px, 6vw, 64px) 0 0; position: relative; }
-.world img { width: 100%; aspect-ratio: 16 / 7; object-fit: cover; object-position: 50% 45%; border-radius: var(--r-xl); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45); }
-.world figcaption { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
-@media (max-width: 900px) {
-  .story-grid { grid-template-columns: minmax(0, 1fr); }
-  .missions { grid-template-columns: minmax(0, 1fr); }
-  .world img { aspect-ratio: 4 / 3; }
-}
-@media (max-width: 480px) {
-  .talk { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; padding: 16px; }
-  .portrait { width: 84px; height: 84px; margin-top: -32px; }
-}
-
-/* ---------- Papel (Diario de Campo) ---------- */
-.paper {
-  background-color: var(--parchment); color: var(--ink);
-  background-image: repeating-linear-gradient(180deg, transparent 0 31px, var(--ruled) 31px 32px);
-}
-.paper::before {
-  content: ""; position: absolute; left: 0; right: 0; top: -15px; height: 16px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 16' preserveAspectRatio='none'%3E%3Cpath d='M0 16V9c10-6 20 2 30-2s20-7 30-1 20 4 30-1 20-5 30 1v10z' fill='%23fbf1dc'/%3E%3C/svg%3E") repeat-x 0 0 / 120px 16px;
-}
-.paper::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: -15px; height: 16px; z-index: 1;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 16' preserveAspectRatio='none'%3E%3Cpath d='M0 0v7c10 6 20-2 30 2s20 7 30 1 20-4 30 1 20 5 30-1V0z' fill='%23fbf1dc'/%3E%3C/svg%3E") repeat-x 0 0 / 120px 16px;
-}
-.paper .eyebrow { color: var(--crest-lo); }
-.paper .lead, .paper .muted { color: var(--ink-muted); }
-.paper a:not(.btn) { color: #1f5fbf; }
-.paper a:not(.btn):hover { color: var(--crest-lo); }
-.on-paper .muted { color: var(--ink-muted); }
-.margin-line { position: absolute; top: 0; bottom: 0; left: max(10px, calc(50% - 640px)); width: 2px; background: var(--margin-red); }
-@media (max-width: 700px) { .margin-line { display: none; } }
-
-/* Tarjetas de evidencia (copia de la tarjeta de terreno del juego) */
-.decide { margin-top: clamp(32px, 5vw, 56px); padding: clamp(20px, 3vw, 36px); border-radius: var(--r-xl); background: var(--parchment-2); box-shadow: inset 0 0 0 2px var(--paper-edge); }
-.decide-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
-.decide-head h3 { font-size: var(--fs-2xl); }
-.decide-head p { color: var(--ink-muted); max-width: 52ch; margin-top: 8px; }
-.decide-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
-.evcard { display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 2px var(--paper-edge), 0 14px 26px rgba(90, 56, 24, 0.16); min-width: 0; }
-.evcard h4 { display: flex; align-items: center; gap: 10px; font-size: var(--fs-xl); --icon-size: 20px; }
-.evcard h4::before { color: var(--leaf); }
-.evcard dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); border-radius: var(--r-md); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(107, 82, 54, 0.22); }
-.evcard dt, .evcard dd { margin: 0; padding: 10px 14px; border-top: 1px solid rgba(107, 82, 54, 0.14); }
-.evcard dt:first-of-type, .evcard dd:first-of-type { border-top: 0; }
-.evcard dt { font: 600 var(--fs-sm)/1.35 var(--font-display); color: var(--ink-muted); background: rgba(241, 224, 187, 0.55); }
-.evcard dd { font-size: var(--fs-sm); line-height: 1.4; }
-.evcard dd.risk { font-weight: 700; color: var(--crest-lo); }
-.evcard dd.safe { font-weight: 700; color: #1f6b38; }
-.evcard .btn { align-self: flex-start; margin-top: auto; }
-.evcard.picked { box-shadow: 0 0 0 4px var(--beak), 0 14px 26px rgba(90, 56, 24, 0.2); }
-.result { margin-top: 24px; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 18px; align-items: start; padding: 20px 22px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 2px var(--paper-edge); animation: rise-in 400ms var(--ease-out) both; }
-.result .portrait { width: 96px; height: 96px; margin-top: 0; background: radial-gradient(circle at 50% 35%, #ffe1a8, #f08a5d); }
-.result .who { font: 700 var(--fs-sm)/1 var(--font-display); color: var(--crest-lo); letter-spacing: 0.06em; text-transform: uppercase; }
-.result blockquote { margin: 8px 0 0; font: 600 var(--fs-xl)/1.3 var(--font-display); }
-.result .teach { margin-top: 12px; color: var(--ink-muted); max-width: 64ch; }
-.result .btn { margin-top: 16px; }
-.decide-foot { margin-top: 16px; font-size: var(--fs-sm); color: var(--ink-muted); }
-@media (max-width: 720px) { .decide-cards { grid-template-columns: minmax(0, 1fr); } .result { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 480px) {
-  .evcard dl { grid-template-columns: minmax(0, 1fr); }
-  .evcard dt { padding-bottom: 0; background: transparent; font-size: 13px; }
-  .evcard dd { border-top: 0; padding-top: 2px; }
-}
-
-/* Objetivos */
-.goals-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px 24px; margin-top: clamp(48px, 7vw, 80px); }
-.goals-head h3 { font-size: var(--fs-2xl); }
-.goals { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
-.goals > li { display: grid; grid-template-columns: 64px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr); gap: 8px 24px; padding: 18px 0; border-bottom: 1px solid rgba(107, 82, 54, 0.3); align-items: start; }
-.goals .code { font: 700 var(--fs-lg)/1 var(--font-display); color: var(--crest-lo); padding-top: 4px; }
-.goals h4 { font-size: var(--fs-lg); }
-.goals .does { margin-top: 4px; color: var(--ink-muted); font-size: var(--fs-sm); line-height: 1.5; }
-.std { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.std > span:first-child { font: 700 11px/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
-.tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag { display: inline-block; padding: 3px 8px; border-radius: 6px; background: var(--card); box-shadow: inset 0 0 0 1px var(--paper-edge); font: 500 13px/1.4 var(--font-mono); color: var(--ink); white-space: nowrap; }
-.goals-cols { display: grid; grid-template-columns: 64px minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr); gap: 24px; margin-top: 28px; padding: 0 0 10px; font: 700 12px/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
-.goals-note { margin-top: 14px; font-size: var(--fs-sm); color: var(--ink-muted); max-width: 90ch; }
-@media (max-width: 860px) {
-  .goals-cols { display: none; }
-  .goals { margin-top: 20px; }
-  .goals > li { grid-template-columns: 52px minmax(0, 1fr); }
-  .goals > li > .std { grid-column: 2; }
-}
-@media (min-width: 861px) { .std > span:first-child { display: none; } }
-
-/* La ruta de la gota */
-.route-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: clamp(48px, 7vw, 80px); }
-.route-head h3 { font-size: var(--fs-2xl); }
-.route { list-style: none; margin: 20px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; counter-reset: r; }
-.route li { counter-increment: r; position: relative; padding: 18px 18px 20px; border-radius: var(--r-lg); background: var(--card); box-shadow: 0 0 0 2px var(--paper-edge); min-width: 0; }
-.route .step { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.route .step::before { content: counter(r); font: 700 var(--fs-xl)/1 var(--font-display); color: var(--crest-lo); }
-.route .skill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--r-pill); font: 600 12px/1.2 var(--font-display); --icon-size: 14px; }
-.skill.talk-s { background: #ffe8c2; color: #7a3d00; }
-.skill.fly { background: #d9efff; color: #0b3a66; }
-.skill.swim { background: #d4f3e6; color: #0d4a33; }
-.route h4 { margin-top: 12px; font-size: var(--fs-lg); }
-.route p { margin-top: 6px; font-size: var(--fs-sm); color: var(--ink-muted); line-height: 1.5; }
-.extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
-.extras > div { display: flex; gap: 14px; padding: 18px 20px; border-radius: var(--r-lg); background: rgba(255, 250, 240, 0.7); box-shadow: inset 0 0 0 1px var(--paper-edge); --icon-size: 24px; min-width: 0; }
-.extras > div::before { color: var(--leaf); margin-top: 2px; }
-.extras h4 { font-size: var(--fs-lg); }
-.extras p { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink-muted); }
-@media (max-width: 960px) { .route { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .extras { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 420px) { .route { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Modo Maestro ---------- */
-.teacher { background: radial-gradient(1200px 500px at 85% 0%, rgba(124, 198, 255, 0.08), transparent 60%), var(--night); }
-.timeline { margin-top: clamp(32px, 5vw, 56px); }
-.tl-bar { display: flex; gap: 6px; height: 64px; }
-.tl-bar > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px; border-radius: var(--r-md); font: 700 var(--fs-md)/1.1 var(--font-display); min-width: 0; overflow: hidden; }
-.tl-bar .b1 { flex: 10 1 0; background: var(--sky); color: #0b2236; }
-.tl-bar .b2 { flex: 25 1 0; background: var(--leaf-hi); color: #0e2a18; }
-.tl-bar .b3 { flex: 10 1 0; background: var(--gold); color: var(--primary-ink); }
-.tl-bar .min { font: 500 var(--fs-sm)/1 var(--font-mono); white-space: nowrap; }
-.tl-scale { display: flex; justify-content: space-between; margin-top: 8px; font: 500 12px/1 var(--font-mono); color: var(--muted); }
-.tl-cols { display: grid; grid-template-columns: 10fr 25fr 10fr; gap: 6px; margin-top: 18px; }
-.tl-cols > div { padding: 0 16px 0 0; min-width: 0; }
-.tl-cols h3 { font-size: var(--fs-lg); color: #fff; }
-.tl-cols p { margin-top: 6px; font-size: var(--fs-sm); color: var(--muted); }
-.tl-cols q { color: var(--gold); quotes: "«" "»"; }
-@media (max-width: 760px) {
-  .tl-bar .lbl { display: none; }
-  .tl-bar > div { justify-content: center; padding: 0 6px; }
-  .tl-cols { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .tl-cols > div { padding: 0 0 0 14px; border-left: 4px solid var(--sky); }
-  .tl-cols > div:nth-child(2) { border-color: var(--leaf-hi); }
-  .tl-cols > div:nth-child(3) { border-color: var(--gold); }
-}
-.panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: clamp(32px, 5vw, 56px); }
-.panel { padding: 24px; border-radius: var(--r-lg); background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
-.panel h3 { display: flex; align-items: center; gap: 12px; font-size: var(--fs-xl); color: #fff; --icon-size: 22px; }
-.panel h3::before { color: var(--gold); }
-.panel p { margin-top: 10px; color: var(--muted); }
-.panel ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.panel li { display: flex; gap: 10px; color: var(--paper); --icon-size: 18px; }
-.panel li::before { margin-top: 3px; color: var(--leaf-hi); }
-.panel.wide { grid-column: 1 / -1; }
-.status-note { margin-top: 18px; font-size: var(--fs-sm); color: var(--muted); }
-@media (max-width: 760px) { .panels { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Ropero ---------- */
-.wardrobe { background: linear-gradient(180deg, var(--night) 0%, #1a2d1f 100%); }
-.wr-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 64px); align-items: start; }
-.unlocks { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 10px; }
-.unlocks li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 16px 12px 12px; border-radius: var(--r-md); background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); }
-.unlocks .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(180deg, #a8743c, var(--wood)); color: #fff6e0; box-shadow: inset 0 -3px 0 var(--wood-lo); --icon-size: 22px; }
-.unlocks strong { font: 600 var(--fs-md)/1.25 var(--font-display); color: #fff; }
-.unlocks .how { font-size: var(--fs-sm); color: var(--muted); text-align: right; }
-.promise { display: flex; align-items: flex-start; gap: 12px; margin-top: 20px; padding: 16px 18px; border-radius: var(--r-md); background: rgba(127, 211, 143, 0.1); box-shadow: inset 0 0 0 2px rgba(127, 211, 143, 0.4); color: #fff; --icon-size: 22px; }
-.promise::before { color: var(--leaf-hi); margin-top: 1px; }
-.showcase { display: grid; gap: 18px; }
-.vitrina { margin: 0; border-radius: var(--r-xl); overflow: hidden; background: #e8f0e0; box-shadow: 0 0 0 6px var(--wood), 0 0 0 9px var(--wood-lo), 0 26px 50px rgba(0, 0, 0, 0.45); }
-.vitrina img { width: 100%; aspect-ratio: 10 / 3; object-fit: cover; }
-.vitrina figcaption { padding: 10px 16px; background: var(--wood); color: #fff6e0; font: 600 var(--fs-sm)/1.3 var(--font-display); }
-.duo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
-.shot { margin: 0; }
-.shot img { width: 100%; border-radius: var(--r-lg); box-shadow: 0 0 0 2px var(--line-strong), 0 18px 36px rgba(0, 0, 0, 0.4); }
-.shot figcaption { margin-top: 10px; font-size: var(--fs-sm); color: var(--muted); }
-.comic { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 18px; align-items: center; padding: 22px; border-radius: var(--r-lg); background: var(--parchment); color: var(--ink); box-shadow: 0 0 0 2px var(--paper-edge); }
-.comic h3 { display: flex; align-items: center; gap: 10px; font-size: var(--fs-xl); --icon-size: 22px; }
-.comic h3::before { color: var(--crest-lo); }
-.comic p { margin-top: 8px; color: var(--ink-muted); font-size: var(--fs-sm); }
-.comic .panels-mini { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 44px 44px; gap: 6px; }
-.comic .panels-mini span { border-radius: 6px; box-shadow: inset 0 0 0 2px var(--ink); background: var(--parchment-2); }
-.comic .panels-mini span:first-child { grid-row: span 2; background: #d9efff; }
-.comic .panels-mini span:last-child { background: #ffe8c2; }
-@media (max-width: 960px) { .wr-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 560px) { .comic { grid-template-columns: minmax(0, 1fr); } .unlocks li { grid-template-columns: 44px minmax(0, 1fr); } .unlocks .how { grid-column: 2; text-align: left; } }
-
-/* ---------- Criadero ---------- */
-.nursery { background: radial-gradient(900px 480px at 15% 20%, rgba(201, 182, 255, 0.14), transparent 65%), #141c2e; }
-.nursery .eyebrow { color: var(--violet); }
-.ns-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
-.stages { list-style: none; margin: 0; padding: clamp(24px, 4vw, 40px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; border-radius: var(--r-xl); background: rgba(201, 182, 255, 0.08); box-shadow: inset 0 0 0 2px rgba(201, 182, 255, 0.3); }
-.stages li { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; min-width: 0; }
-.stages .dot { display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--leaf-hi), var(--leaf)); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12); color: #0e2a18; }
-.stages li:nth-child(1) .dot { width: 54px; height: 66px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: radial-gradient(circle at 40% 30%, #fffdf6, #efe2c4); --icon-size: 0; }
-.stages li:nth-child(2) .dot { width: 58px; height: 58px; }
-.stages li:nth-child(3) .dot { width: 76px; height: 76px; }
-.stages li:nth-child(4) .dot { width: 96px; height: 96px; }
-.stages .dot::before { --icon-size: 26px; }
-.stages li:nth-child(4) .dot::before { --icon-size: 34px; }
-.stages b { font: 600 var(--fs-md)/1.1 var(--font-display); color: #fff; }
-.ns-promises { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
-.ns-promises li { display: flex; gap: 12px; align-items: flex-start; color: #fff; --icon-size: 20px; }
-.ns-promises li::before { color: var(--violet); margin-top: 3px; }
-.real-layer { margin-top: 18px; padding: 16px 18px; border-radius: var(--r-md); background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(201, 182, 255, 0.3); color: var(--muted); font-size: var(--fs-sm); }
-.real-layer b { color: #fff; }
-@media (max-width: 900px) { .ns-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 420px) { .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 24px; } }
-
-/* ---------- Conservación + Hecho en PR ---------- */
-.conserve { background: linear-gradient(180deg, #0e2a1f 0%, var(--night) 100%); }
-.years { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--line-strong); }
-.years li { position: relative; padding: 26px 22px 0 0; min-width: 0; }
-.years li::before { content: ""; position: absolute; top: -8px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px var(--night); }
-.years li:nth-child(2)::before { background: var(--crest); }
-.years li:last-child::before { background: var(--leaf-hi); }
-.years .yr { font: 700 clamp(40px, 5vw, 64px)/1 var(--font-display); color: var(--gold); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.years li:nth-child(2) .yr { color: #ff8a7a; }
-.years li:last-child .yr { color: var(--leaf-hi); }
-.years p { margin-top: 10px; color: var(--paper); }
-.source { margin-top: 24px; font-size: var(--fs-sm); color: var(--muted); }
-.cons-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: clamp(36px, 5vw, 56px); }
-.cons-card { padding: 24px; border-radius: var(--r-lg); background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
-.cons-card h3 { font-size: var(--fs-xl); color: #fff; }
-.cons-card p { margin-top: 10px; color: var(--muted); }
-.cons-card .btn { margin-top: 18px; }
-.motto { margin: clamp(56px, 8vw, 96px) auto 0; max-width: 22ch; text-align: center; font: 700 clamp(30px, 4.4vw, 54px)/1.15 var(--font-display); color: #fff; text-wrap: balance; }
-.motto .gold { color: var(--gold); }
-.motto-sign { margin-top: 16px; text-align: center; font-size: var(--fs-sm); color: var(--muted); }
-.made { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vw, 44px); align-items: start; margin-top: clamp(64px, 9vw, 110px); padding-top: clamp(48px, 7vw, 80px); border-top: 1px solid var(--line); }
-.made-flag { display: flex; align-items: center; gap: 16px; }
-.made-flag img { width: 72px; height: 48px; flex: none; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35); }
-.made h2 { font-size: var(--fs-3xl); }
-.made p { margin-top: 14px; color: var(--muted); }
-.made .voice { color: var(--gold); font-family: var(--font-display); font-weight: 600; }
-.made-text { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px clamp(28px, 5vw, 64px); align-items: end; }
-.made-text .h2 { margin-top: 16px; }
-.made-text p:first-child { margin-top: 0; }
-.flora { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.flora li { position: relative; margin: 0; border-radius: var(--r-lg); overflow: hidden; background: #f3eadb; color: var(--ink); min-width: 0; }
-.flora img { width: 100%; aspect-ratio: 274 / 512; object-fit: cover; }
-.flora .lbl { padding: 10px 12px 12px; }
-.flora b { display: block; font: 600 var(--fs-md)/1.2 var(--font-display); }
-.flora i { display: block; font-size: 13px; color: var(--ink-muted); }
-.flora .badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: var(--r-pill); background: var(--crest-lo); color: #fff; font: 600 12px/1.2 var(--font-display); }
-.flora-note { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
-@media (max-width: 900px) { .years { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; border-top: 0; } .years li { border-top: 2px solid var(--line-strong); } .made-text { grid-template-columns: minmax(0, 1fr); } .flora { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .cons-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 480px) { .years { grid-template-columns: minmax(0, 1fr); } .flora { gap: 8px; } .flora .lbl { padding: 8px; } .flora b { font-size: 14px; } .flora i { font-size: 11.5px; } .flora .badge { top: 6px; left: 6px; font-size: 11px; padding: 3px 7px; } }
-
-/* ---------- Tecnología ---------- */
-.tech-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
-.laptop { margin: 0; }
-.laptop .lid { padding: 12px; border-radius: 22px 22px 8px 8px; background: #1d2622; box-shadow: inset 0 0 0 2px #34433b, 0 30px 60px rgba(0, 0, 0, 0.5); }
-.laptop .lid img { width: 100%; border-radius: 8px; aspect-ratio: 4 / 3; object-fit: cover; }
-.laptop .base { height: 16px; margin: 0 -5%; border-radius: 0 0 16px 16px; background: linear-gradient(180deg, #3a4a41, #222c27); position: relative; }
-.laptop .base::after { content: ""; position: absolute; left: 50%; top: 0; width: 18%; height: 6px; transform: translateX(-50%); border-radius: 0 0 8px 8px; background: #161d19; }
-.laptop figcaption { margin-top: 18px; font-size: var(--fs-sm); color: var(--muted); text-align: center; }
-.specs { margin: 28px 0 0; display: grid; gap: 0; }
-.specs > div { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
-.specs > div:last-child { border-bottom: 1px solid var(--line); }
-.specs dt { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--night-3); color: var(--leaf-hi); --icon-size: 22px; }
-.specs dd { margin: 0; }
-.specs dd b { display: block; font: 600 var(--fs-md)/1.3 var(--font-display); color: #fff; }
-.specs dd span { color: var(--muted); font-size: var(--fs-sm); }
-@media (max-width: 900px) { .tech-grid { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Escuelas (papel) ---------- */
-.offer { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 20px; margin-top: clamp(32px, 5vw, 56px); align-items: stretch; }
-.plan { display: flex; flex-direction: column; gap: 16px; padding: clamp(22px, 3vw, 34px); border-radius: var(--r-xl); background: var(--card); box-shadow: 0 0 0 2px var(--paper-edge), 0 20px 36px rgba(90, 56, 24, 0.14); min-width: 0; }
-.plan.featured { box-shadow: 0 0 0 4px var(--beak), 0 20px 36px rgba(90, 56, 24, 0.18); }
-.plan h3 { font-size: var(--fs-2xl); }
-.plan .price { font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--crest-lo); }
-.plan h4 { font: 700 12px/1 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); margin-top: 6px; }
-.plan ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
-.plan li { display: flex; gap: 10px; --icon-size: 18px; }
-.plan li::before { margin-top: 3px; color: var(--leaf); }
-.plan ul.ask li::before { color: var(--beak-lo); }
-.plan .btn { align-self: flex-start; margin-top: auto; }
-.model { margin-top: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.model > div { padding: 14px 16px; border-radius: var(--r-md); background: rgba(255, 250, 240, 0.75); box-shadow: inset 0 0 0 1px var(--paper-edge); min-width: 0; }
-.model b { display: block; font: 600 var(--fs-md)/1.25 var(--font-display); }
-.model span { display: block; margin-top: 4px; font-size: var(--fs-sm); color: var(--ink-muted); line-height: 1.4; }
-.word { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; padding: 20px 24px; border-radius: var(--r-lg); background: var(--ink); color: var(--parchment); }
-.word strong { font: 700 var(--fs-xl)/1.2 var(--font-display); color: var(--gold); }
-.word span { color: #e8dcc2; }
-@media (max-width: 960px) { .offer { grid-template-columns: minmax(0, 1fr); } .model { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 420px) { .model { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Audiencias ---------- */
-.aud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.aud article { display: flex; flex-direction: column; gap: 12px; padding: 26px; border-radius: var(--r-lg); background: var(--night-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
-.aud .ic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; --icon-size: 26px; }
-.aud article:nth-child(1) .ic { background: var(--beak); color: var(--primary-ink); }
-.aud article:nth-child(2) .ic { background: var(--leaf-hi); color: #0e2a18; }
-.aud article:nth-child(3) .ic { background: var(--sky); color: #0b2236; }
-.aud h3 { font-size: var(--fs-xl); color: #fff; }
-.aud p { color: var(--muted); }
-.aud .btn { align-self: flex-start; margin-top: auto; }
-.stat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line); }
-.stat b { font: 700 var(--fs-2xl)/1 var(--font-display); color: var(--sky); font-variant-numeric: tabular-nums; }
-.stat span { color: var(--paper); font-size: var(--fs-sm); }
-.stat small { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
-.stat small a { color: var(--muted); }
-@media (max-width: 960px) { .aud { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Prensa ---------- */
-.press-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
-.factsheet { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); border-top: 1px solid var(--line); }
-.factsheet dt, .factsheet dd { margin: 0; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.factsheet dt { padding-right: 20px; font: 600 var(--fs-sm)/1.4 var(--font-display); color: var(--gold); }
-.factsheet dd { color: var(--paper); }
-.pitch { margin: 0 0 clamp(32px, 5vw, 48px); }
-.pitch video { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r-xl); background: #000; box-shadow: 0 0 0 2px var(--line-strong), 0 26px 50px rgba(0, 0, 0, 0.45); }
-.pitch figcaption { margin-top: 12px; font-size: var(--fs-sm); color: var(--muted); }
-.copybox { padding: 22px; border-radius: var(--r-lg); background: var(--parchment); color: var(--ink); box-shadow: 0 0 0 2px var(--paper-edge); }
-.copybox h3 { font-size: var(--fs-lg); }
-.copybox .text { margin-top: 10px; padding: 14px 16px; border-radius: var(--r-md); background: var(--card); box-shadow: inset 0 0 0 1px var(--paper-edge); line-height: 1.6; }
-.copy-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
-.copied { font: 600 var(--fs-sm)/1.2 var(--font-display); color: #1f6b38; min-height: 1.2em; }
-.on-dark .copied { color: var(--leaf-hi); }
-.copied[data-state="fail"] { color: var(--crest-lo); }
-@media (max-width: 900px) { .press-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 480px) { .factsheet { grid-template-columns: minmax(0, 1fr); } .factsheet dt { padding-bottom: 0; border-bottom: 0; } }
-
-/* ---------- Contacto ---------- */
-.contact { background: radial-gradient(900px 420px at 50% 0%, rgba(242, 160, 61, 0.14), transparent 70%), var(--night); }
-.contact-card { margin-top: clamp(28px, 4vw, 44px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 32px); padding: clamp(22px, 4vw, 44px); border-radius: var(--r-xl); background: var(--parchment); color: var(--ink); box-shadow: 0 0 0 2px var(--paper-edge), 0 30px 60px rgba(0, 0, 0, 0.4); }
-.contact-card h3 { font-size: var(--fs-xl); }
-.email-box { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--r-md); background: var(--card); box-shadow: inset 0 0 0 2px var(--paper-edge); }
-.email { font: 600 clamp(18px, 2vw, 22px)/1.3 var(--font-display); color: var(--ink); word-break: break-all; user-select: all; }
-.email.pending { color: var(--ink-muted); font-style: italic; user-select: text; }
-.contact-card .muted { margin-top: 10px; font-size: var(--fs-sm); }
-.template { margin-top: 12px; padding: 14px 16px; border-radius: var(--r-md); background: var(--card); box-shadow: inset 0 0 0 1px var(--paper-edge); font-size: var(--fs-sm); line-height: 1.6; white-space: pre-line; }
-.form { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding-top: 22px; border-top: 1px solid rgba(107, 82, 54, 0.3); }
-.form .full { grid-column: 1 / -1; }
-.form label { display: block; font: 600 var(--fs-sm)/1.3 var(--font-display); margin-bottom: 6px; }
-.form input, .form select, .form textarea { width: 100%; min-height: 48px; padding: 10px 14px; border-radius: var(--r-sm); border: 2px solid var(--paper-edge); background: var(--card); color: var(--ink); font: 400 var(--fs-md)/1.4 var(--font-body); color-scheme: light; }
-.form textarea { min-height: 120px; resize: vertical; }
-.form .status { font: 600 var(--fs-sm)/1.4 var(--font-display); }
-@media (max-width: 800px) { .contact-card { grid-template-columns: minmax(0, 1fr); } .form { grid-template-columns: minmax(0, 1fr); } }
-
-/* ---------- Pie ---------- */
-.team { background: var(--night-2); border-top: 1px solid var(--line); }
-.team-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
-.team-fig { margin: 0; justify-self: center; width: min(100%, 380px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 38%, var(--night-3), var(--night-4)); box-shadow: inset 0 0 0 3px var(--line), 0 18px 40px rgba(0, 0, 0, 0.35); display: grid; place-items: center; overflow: hidden; }
-.team-fig img { width: 92%; height: auto; display: block; }
-.team-list { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 12px; }
-.team-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--night-4); }
-.team-list b { font: 700 var(--fs-xl)/1.2 var(--font-display); color: #fff; }
-.team-list span { color: var(--gold); font-weight: 700; font-size: var(--fs-sm); }
-.team-collab { margin-top: 24px; }
-.team-collab[hidden] { display: none; }
-@media (max-width: 760px) { .team-grid { grid-template-columns: minmax(0, 1fr); } .team-fig { width: min(78%, 300px); } }
-.site-footer { background: var(--night-4); padding-block: 48px calc(32px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
-.foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 40px; align-items: start; }
-.foot-brand svg { width: 170px; height: auto; overflow: visible; }
-.foot-made { display: inline-flex; align-items: center; gap: 10px; margin-top: 16px; font: 600 var(--fs-md)/1 var(--font-display); color: #fff; }
-.foot-made img { width: 36px; height: 24px; }
-.foot-nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
-.foot-nav a { color: var(--paper); text-decoration: none; font: 600 var(--fs-sm)/2.6 var(--font-display); }
-.foot-nav a:hover { color: var(--gold); }
-.foot-legal { grid-column: 1 / -1; display: grid; gap: 6px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
-@media (max-width: 720px) { .foot-grid { grid-template-columns: minmax(0, 1fr); } }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-}
-</style>
+</script>
 </head>
 <body>
 <a class="skip" href="#main"><span data-l="es">Saltar al contenido</span><span data-l="en">Skip to content</span></a>
 
+<!-- Logo del juego (src del título en Juego/index.html), definido una vez y reutilizado -->
 <!-- Logo del juego (src del título en Juego/index.html), definido una vez y reutilizado -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
@@ -748,14 +125,11 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <svg viewBox="0 0 640 260" aria-hidden="true"><use href="#av-logo"/></svg>
     </a>
     <nav class="nav" id="nav" aria-label="Secciones" data-en-aria-label="Sections">
-      <a href="#historia"><span data-l="es">Historia</span><span data-l="en">Story</span></a>
-      <a href="#aprender"><span data-l="es">Aprender</span><span data-l="en">Learning</span></a>
-      <a href="#maestros"><span data-l="es">Maestros</span><span data-l="en">Teachers</span></a>
-      <a href="#ropero"><span data-l="es">Ropero</span><span data-l="en">Wardrobe</span></a>
-      <a href="#retos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
-      <a href="#conservacion"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></a>
-      <a href="#escuelas"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
-      <a href="#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
+      <a href="#capitulos"><span data-l="es">Capítulos</span><span data-l="en">Chapters</span></a>
+      <a href="#minijuegos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
+      <a href="cotorra.html"><span data-l="es">La cotorra</span><span data-l="en">The parrot</span></a>
+      <a href="escuelas.html"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
+      <a href="#sponsors"><span data-l="es">Sponsors</span><span data-l="en">Sponsors</span></a>
       <a href="#contacto"><span data-l="es">Contacto</span><span data-l="en">Contact</span></a>
     </nav>
     <div class="header-tools">
@@ -763,8 +137,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         <button type="button" data-lang="es" aria-pressed="true" lang="es" title="Español">ES</button>
         <button type="button" data-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
       </div>
-      <a class="btn sm leaf header-cta" href="juego/" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
-      <a class="btn sm header-cta" href="#escuelas"><span data-l="es">Piloto gratis</span><span data-l="en">Free pilot</span></a>
+      <a class="btn sm leaf header-cta" href="juego/" data-icon="play"><span data-l="es">Jugar gratis</span><span data-l="en">Play free</span></a>
       <button class="menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" data-icon="menu" aria-label="Abrir menú" data-en-aria-label="Open menu"></button>
     </div>
   </div>
@@ -772,34 +145,38 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
 
 <main id="main">
 
-<!-- ================= HERO ================= -->
+<!-- ================= HERO: una propuesta y un botón ================= -->
 <section class="hero" id="inicio" aria-labelledby="hero-title">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <span class="chip" data-icon="book"><span data-l="es">Capítulo 1 · El día que el cielo se rompió</span><span data-l="en">Chapter 1 · The Day the Sky Broke</span></span>
-      <h1 id="hero-title">
-        <span data-l="es"><span class="gold">Vuela</span>, explora y salva tu isla con Vittata</span>
-        <span data-l="en"><span class="gold">Fly</span>, explore and save your island with Vittata</span>
-      </h1>
-      <p class="hero-lead" data-l="es">Una aventura 3D en el navegador para todas las edades. Explora un bosque lleno de flora de Puerto Rico, sigue el camino del agua y decide con evidencia dónde construir un refugio.</p>
-      <p class="hero-lead" data-l="en">A 3D browser adventure for all ages. Explore a forest full of Puerto Rican plants, follow the path of water and use evidence to decide where to build a shelter.</p>
-      <div class="hero-actions">
-        <a class="btn" href="juego/" data-icon="play"><span data-l="es">Jugar ahora</span><span data-l="en">Play now</span></a>
-        <a class="btn ghost" href="#escuelas" data-icon="arrow"><span data-l="es">Pedir piloto gratis</span><span data-l="en">Request a free pilot</span></a>
+      <div class="hero-chips">
+        <span class="chip" data-icon="star"><span data-l="es">Gratis</span><span data-l="en">Free</span></span>
+        <span class="chip" data-icon="laptop"><span data-l="es">En el navegador</span><span data-l="en">In the browser</span></span>
+        <span class="chip" data-icon="globe"><span data-l="es">Todas las edades</span><span data-l="en">All ages</span></span>
       </div>
-      <p class="hero-note" data-icon="sparkle"><span><span data-l="es">Prototipo jugable en desarrollo. Buscamos escuelas piloto para el capítulo 1.</span><span data-l="en">Playable prototype in development. We are looking for pilot schools for Chapter 1.</span></span></p>
+      <h1 id="hero-title">
+        <span data-l="es"><span class="gold">Vuela</span> con Vittata, la cotorra puertorriqueña</span>
+        <span data-l="en"><span class="gold">Fly</span> with Vittata, the Puerto Rican parrot</span>
+      </h1>
+      <p class="hero-lead" data-l="es">Un juego 3D gratis que se abre en el navegador. Seis capítulos y minijuegos en un bosque de Puerto Rico. Hecho en Puerto Rico.</p>
+      <p class="hero-lead" data-l="en">A free 3D game that opens in your browser. Six chapters and minigames in a Puerto Rican forest. Made in Puerto Rico.</p>
+      <div class="hero-actions">
+        <a class="btn" href="juego/" data-icon="play"><span data-l="es">Jugar gratis</span><span data-l="en">Play free</span></a>
+        <a class="btn ghost" href="#capitulos" data-icon="arrow"><span data-l="es">Ver los capítulos</span><span data-l="en">See the chapters</span></a>
+      </div>
+      <p class="hero-note" data-icon="shield"><span><span data-l="es">Sin instalar, sin anuncios, sin cuentas ni chat. En español e inglés.</span><span data-l="en">Nothing to install, no ads, no accounts, no chat. In Spanish and English.</span></span></p>
     </div>
     <figure class="hero-media">
-      <div class="screen" data-video="hero">
-        <img src="assets/img/hero-900.jpg" srcset="assets/img/hero-900.jpg 900w, assets/img/hero-1600.jpg 1600w" sizes="(min-width: 900px) 52vw, 100vw" width="1600" height="674" fetchpriority="high"
+      <div class="screen" data-video="hero" data-solo-escritorio>
+        <img src="assets/img/hero-900.jpg" srcset="assets/img/hero-900.jpg 900w, assets/img/hero-1600.jpg 1600w" sizes="(min-width: 900px) 52vw, 100vw" width="1600" height="674" fetchpriority="high" decoding="async"
              style="object-position: 46% 60%"
-             alt="Vittata, la cotorra verde de frente roja, junto a un río en un bosque con una ceiba, palmas de sierra, heliconias y un flamboyán en flor."
-             data-en-alt="Vittata, the green parrot with a red forehead, by a river in a forest with a ceiba tree, sierra palms, heliconias and a flowering flamboyant tree.">
+             alt="Vittata, la cotorra puertorriqueña verde de frente roja, junto a un río en un bosque de Puerto Rico con una ceiba, palmas de sierra, heliconias y un flamboyán en flor. Imagen del juego Amazona Verse."
+             data-en-alt="Vittata, the green Puerto Rican parrot with a red forehead, by a river in a Puerto Rican forest with a ceiba tree, sierra palms, heliconias and a flowering flamboyant tree. In-game image from Amazona Verse.">
         <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="hero"></video>
-        <span class="hud-pill" data-icon="wing"><span data-l="es">Capítulo 1 · Villa Raíz</span><span data-l="en">Chapter 1 · Villa Raíz</span></span>
+        <span class="hud-pill" data-icon="wing"><span data-l="es">Villa Raíz · El Yunque</span><span data-l="en">Villa Raíz · El Yunque</span></span>
         <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
       </div>
-      <figcaption><span data-l="es">Villa Raíz, el mundo del capítulo 1.</span><span data-l="en">Villa Raíz, the world of Chapter 1.</span></figcaption>
+      <figcaption><span data-l="es">Imágenes reales del juego.</span><span data-l="en">Real in-game footage.</span></figcaption>
     </figure>
   </div>
   <svg class="hills" viewBox="0 0 1440 170" preserveAspectRatio="none" aria-hidden="true">
@@ -809,23 +186,89 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   </svg>
 </section>
 
-<!-- ================= HECHOS ================= -->
+<!-- ================= LO ESENCIAL ================= -->
 <section class="facts" aria-label="Lo esencial" data-en-aria-label="At a glance">
   <div class="wrap">
     <ul class="facts-list">
-      <li><span class="ic" data-icon="star"></span><strong><span data-l="es">Para todas las edades</span><span data-l="en">For all ages</span></strong><span class="t"><span data-l="es">Ciencia para aprender jugando</span><span data-l="en">Science you learn by playing</span></span></li>
-      <li><span class="ic" data-icon="book"></span><strong><span data-l="es">Ciencias DEPR 2022 y NGSS</span><span data-l="en">PR DE 2022 and NGSS science</span></strong><span class="t"><span data-l="es">Objetivos con evidencia en el juego</span><span data-l="en">Goals with in-game evidence</span></span></li>
-      <li><span class="ic" data-icon="globe"></span><strong><span data-l="es">Español e inglés</span><span data-l="en">Spanish and English</span></strong><span class="t"><span data-l="es">O bilingüe, como tu salón</span><span data-l="en">Or bilingual, like your class</span></span></li>
-      <li><span class="ic" data-icon="laptop"></span><strong><span data-l="es">Sin instalar</span><span data-l="en">Nothing to install</span></strong><span class="t"><span data-l="es">Corre en el navegador</span><span data-l="en">Runs in the browser</span></span></li>
+      <li><span class="ic" data-icon="star"></span><strong><span data-l="es">Gratis y sin instalar</span><span data-l="en">Free, nothing to install</span></strong><span class="t"><span data-l="es">Abre el enlace y juega</span><span data-l="en">Open the link and play</span></span></li>
+      <li><span class="ic" data-icon="book"></span><strong><span data-l="es">Aprendes jugando</span><span data-l="en">Learn by playing</span></strong><span class="t"><span data-l="es">Ciencia y naturaleza de Puerto Rico</span><span data-l="en">Puerto Rico science and nature</span></span></li>
+      <li><span class="ic" data-icon="globe"></span><strong><span data-l="es">Español e inglés</span><span data-l="en">Spanish and English</span></strong><span class="t"><span data-l="es">Cambia cuando quieras</span><span data-l="en">Switch any time</span></span></li>
+      <li><span class="ic" data-icon="wing"></span><strong><span data-l="es">Para todas las edades</span><span data-l="en">For all ages</span></strong><span class="t"><span data-l="es">Familias, escuelas y curiosos</span><span data-l="en">Families, schools and the curious</span></span></li>
       <li><span class="ic" data-icon="shield"></span><strong><span data-l="es">Sin anuncios ni chat</span><span data-l="en">No ads, no chat</span></strong><span class="t"><span data-l="es">Ni cajas sorpresa ni datos personales</span><span data-l="en">No loot boxes, no personal data</span></span></li>
-      <li><span class="ic"><img src="assets/img/bandera-pr.svg" width="27" height="18" alt=""></span><strong><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></strong><span class="t"><span data-l="es">Con español boricua suave</span><span data-l="en">With gentle Boricua Spanish</span></span></li>
+      <li><span class="ic"><img src="assets/img/bandera-pr.svg" width="27" height="18" alt=""></span><strong><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></strong><span class="t"><span data-l="es">Con la cotorra puertorriqueña de protagonista</span><span data-l="en">Starring the Puerto Rican parrot</span></span></li>
     </ul>
   </div>
 </section>
 
-<!-- ================= HISTORIA ================= -->
-<section class="section" id="historia" aria-labelledby="h-historia">
+<!-- ================= CAPÍTULOS ================= -->
+<section class="section" id="capitulos" aria-labelledby="h-capitulos">
   <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Temporada 1 · 6 capítulos jugables</span><span data-l="en">Season 1 · 6 playable chapters</span></span>
+      <h2 class="h2" id="h-capitulos"><span data-l="es">La aventura de Vittata, capítulo a capítulo</span><span data-l="en">Vittata’s adventure, chapter by chapter</span></h2>
+      <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Cuando las tormentas llegan una tras otra, ella y sus amigos tienen que observar, decidir con evidencia y construir juntos. Empieza por el 1 o salta al que quieras.</p>
+      <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. When storms arrive one after another, she and her friends must observe, decide with evidence and build together. Start with 1 or jump to any chapter.</p>
+    </div>
+    <ol class="caps">
+      <li class="cap">
+        <img src="assets/img/capitulo-1.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 1 de Amazona Verse: Vittata frente a la portada del juego, en el navegador." data-en-alt="Chapter 1 of Amazona Verse: Vittata on the game title screen, in the browser.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 1</span><span data-l="en">Chapter 1</span></span>
+          <h3><span data-l="es">El día que el cielo se rompió</span><span data-l="en">The Day the Sky Broke</span></h3>
+          <p><span data-l="es">Una tormenta, un refugio y tu primera decisión con evidencia. Nada, vuela y escucha.</span><span data-l="en">A storm, a shelter and your first evidence-based decision. Swim, fly and listen.</span></p>
+          <a class="btn sm leaf" href="juego/" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+      <li class="cap">
+        <img src="assets/img/capitulo-2.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 2: Vittata en Villa Raíz, al pie de las colinas donde se decide dónde construir." data-en-alt="Chapter 2: Vittata in Villa Raíz, at the foot of the hills where you decide where to build.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 2</span><span data-l="en">Chapter 2</span></span>
+          <h3><span data-l="es">Un lugar para todos</span><span data-l="en">A Place for Everyone</span></h3>
+          <p><span data-l="es">Lee la tierra, escucha a todos y construye una casa que aguante.</span><span data-l="en">Read the land, listen to everyone and build a house that holds.</span></p>
+          <a class="btn sm leaf" href="juego/?pack=ep2" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+      <li class="cap">
+        <img src="assets/img/capitulo-3.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 3: la bahía de Villa Raíz con la balsa lista para zarpar." data-en-alt="Chapter 3: the Villa Raíz bay with the raft ready to set sail.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 3</span><span data-l="en">Chapter 3</span></span>
+          <h3><span data-l="es">Más allá de la bahía</span><span data-l="en">Beyond the Bay</span></h3>
+          <p><span data-l="es">¿Qué flota? Lee el viento y el agua y rema hasta donde nadie ha llegado.</span><span data-l="en">What floats? Read the wind and the water and paddle where no one has gone.</span></p>
+          <a class="btn sm leaf" href="juego/?pack=ep3" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+      <li class="cap">
+        <img src="assets/img/capitulo-4.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 4: Vittata y sus amigos en la obra junto al río, con el cuaderno de la misión." data-en-alt="Chapter 4: Vittata and her friends at the worksite by the river, with the mission notebook.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 4</span><span data-l="en">Chapter 4</span></span>
+          <h3><span data-l="es">El precio del progreso</span><span data-l="en">The Price of Progress</span></h3>
+          <p><span data-l="es">Observa la orilla, escucha todas las voces y decide con una maqueta qué se construye.</span><span data-l="en">Observe the shore, hear every voice and decide with a model what gets built.</span></p>
+          <a class="btn sm leaf" href="juego/?pack=ep4" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+      <li class="cap">
+        <img src="assets/img/capitulo-5.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 5: Vittata en el taller con el transmisor, entre ruinas y señales." data-en-alt="Chapter 5: Vittata in the workshop with the transmitter, among ruins and signals.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 5</span><span data-l="en">Chapter 5</span></span>
+          <h3><span data-l="es">Las voces olvidadas</span><span data-l="en">The Forgotten Voices</span></h3>
+          <p><span data-l="es">Mensajes en pedazos, ruinas que recuerdan y un relevo que no puede fallar.</span><span data-l="en">Messages in pieces, ruins that remember and a relay that cannot fail.</span></p>
+          <a class="btn sm leaf" href="juego/?pack=ep5" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+      <li class="cap">
+        <img src="assets/img/capitulo-6.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 6: la portada del juego con «¿Cómo quieres jugar?» y Vittata a la derecha." data-en-alt="Chapter 6: the game title screen with “How do you want to play?” and Vittata on the right.">
+        <div class="cap-body">
+          <span class="num"><span data-l="es">Capítulo 6</span><span data-l="en">Chapter 6</span></span>
+          <h3><span data-l="es">El pacto de los 36</span><span data-l="en">The Pact of the 36</span></h3>
+          <p><span data-l="es">Cada quien con lo suyo: nadie levanta una obra solo. Escucha, acuerda y siéntate en el círculo.</span><span data-l="en">Each one with their own: no one raises a work alone. Listen, agree and sit in the circle.</span></p>
+          <a class="btn sm leaf" href="juego/?pack=ep6" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
+        </div>
+      </li>
+    </ol>
+    <div class="more" id="mas-sobre-el-juego">
+      <details>
+        <summary data-icon="book"><span data-l="es">La historia y los personajes</span><span data-l="en">The story and the characters</span></summary>
+        <div class="more-body">
     <div class="story-grid">
       <div class="story-copy">
         <span class="eyebrow"><span data-l="es">La historia</span><span data-l="en">The story</span></span>
@@ -836,7 +279,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         <p class="muted" data-l="en">There are no villains. Mistakes teach, and there is always a way out. For a parrot, a broken tree is a lost nest: protecting the home means protecting the species.</p>
         <p class="question"><small><span data-l="es">La pregunta del capítulo</span><span data-l="en">The chapter's question</span></small><span data-l="es">¿Salvar lo que construiste, o usar lo que sabes para ayudar?</span><span data-l="en">Save what you built, or use what you know to help?</span></p>
       <figure class="loop-fig">
-        <div class="screen loop" data-video="historia">
+        <div class="screen loop" data-solo-escritorio data-video="historia">
           <img src="assets/video/historia.jpg" width="1280" height="720" loading="lazy"
                alt="Vittata, con lentes de aviador y pañuelo, saluda desde el techo de un bohío en Villa Raíz, entre flamboyanes y bambú."
                data-en-alt="Vittata, wearing aviator goggles and a scarf, waves from the roof of a hut in Villa Raíz, among flamboyant trees and bamboo.">
@@ -904,220 +347,11 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
            data-en-alt="Aerial view of the game island: mountains, a winding river, dense forest and a beach.">
       <figcaption><span data-l="es">La isla del capítulo 1: cumbre con niebla, río, bosque y costa. Cada lugar enseña algo del bosque real.</span><span data-l="en">The Chapter 1 island: a misty peak, a river, forest and coast. Every place teaches something about the real forest.</span></figcaption>
     </figure>
-  </div>
-</section>
-
-<!-- ================= APRENDER (papel) ================= -->
-<section class="section paper" id="aprender" aria-labelledby="h-aprender">
-  <span class="margin-line" aria-hidden="true"></span>
-  <div class="wrap">
-    <div class="head-media">
-    <div class="section-head">
-      <span class="eyebrow"><span data-l="es">Aprender jugando</span><span data-l="en">Learning through play</span></span>
-      <h2 class="h2" id="h-aprender"><span data-l="es">Cada misión pide una habilidad y deja evidencia</span><span data-l="en">Every mission asks for a skill and leaves evidence</span></h2>
-      <p class="lead" data-l="es">El estudiante predice, observa y explica. El juego registra lo que hizo y lo que aprendió, no un puntaje.</p>
-      <p class="lead" data-l="en">Students predict, observe and explain. The game records what they did and what they learned, not a score.</p>
-    </div>
-      <figure class="loop-fig">
-        <div class="screen loop" data-video="aprender">
-          <img src="assets/video/aprender.jpg" width="1280" height="720" loading="lazy"
-               alt="Vittata se posa en la percha del dosel, junto a un flamboyán, para observar la capa más alta del bosque."
-               data-en-alt="Vittata lands on the canopy perch, next to a flamboyant tree, to observe the upper layer of the forest.">
-          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="aprender"></video>
-          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
         </div>
-        <figcaption><span data-l="es">La percha del dosel en la misión «La ruta de la gota».</span><span data-l="en">The canopy perch in the “Path of the Drop” mission.</span></figcaption>
-      </figure>
-    </div>
-
-    <div class="decide on-paper" id="decide">
-      <div class="decide-head">
-        <div>
-          <span class="eyebrow"><span data-l="es">Pruébalo</span><span data-l="en">Try it</span></span>
-          <h3><span data-l="es">¿Dónde construirías el refugio de Iguaca?</span><span data-l="en">Where would you build Iguaca's shelter?</span></h3>
-          <p><span data-l="es">Son los dos terrenos del capítulo 1, con los mismos datos que ve el estudiante en el juego.</span><span data-l="en">These are the two Chapter 1 sites, with the same data students see in the game.</span></p>
-        </div>
-      </div>
-      <div class="decide-cards">
-        <article class="evcard" id="card-A" aria-labelledby="t-a">
-          <h4 id="t-a" data-icon="sparkle"><span data-l="es">Junto al río</span><span data-l="en">By the river</span></h4>
-          <dl>
-            <dt><span data-l="es">Área</span><span data-l="en">Area</span></dt><dd>64 m²</dd>
-            <dt><span data-l="es">Elevación</span><span data-l="en">Elevation</span></dt><dd><span data-l="es">baja, a la orilla del río</span><span data-l="en">low, on the riverbank</span></dd>
-            <dt><span data-l="es">Acceso</span><span data-l="en">Access</span></dt><dd><span data-l="es">corto, cerca de Villa Raíz</span><span data-l="en">short, close to Villa Raíz</span></dd>
-            <dt><span data-l="es">Señal de riesgo</span><span data-l="en">Risk sign</span></dt><dd class="risk"><span data-l="es">marcas de agua a 1 m en los árboles</span><span data-l="en">water marks 1 m up the trees</span></dd>
-            <dt><span data-l="es">Hábitat</span><span data-l="en">Habitat</span></dt><dd><span data-l="es">nidos de ribera cerca</span><span data-l="en">riverside nests nearby</span></dd>
-          </dl>
-          <button class="btn sm" type="button" data-pick="A"><span data-l="es">Construir aquí</span><span data-l="en">Build here</span></button>
-        </article>
-        <article class="evcard" id="card-B" aria-labelledby="t-b">
-          <h4 id="t-b" data-icon="sparkle"><span data-l="es">La colina</span><span data-l="en">The hill</span></h4>
-          <dl>
-            <dt><span data-l="es">Área</span><span data-l="en">Area</span></dt><dd>64 m²</dd>
-            <dt><span data-l="es">Elevación</span><span data-l="en">Elevation</span></dt><dd><span data-l="es">alta, sobre la colina</span><span data-l="en">high, on top of the hill</span></dd>
-            <dt><span data-l="es">Acceso</span><span data-l="en">Access</span></dt><dd><span data-l="es">largo, cuesta arriba</span><span data-l="en">long, uphill</span></dd>
-            <dt><span data-l="es">Señal de riesgo</span><span data-l="en">Risk sign</span></dt><dd class="safe"><span data-l="es">ninguna visible</span><span data-l="en">none visible</span></dd>
-            <dt><span data-l="es">Hábitat</span><span data-l="en">Habitat</span></dt><dd><span data-l="es">bosque seco, sin nidos</span><span data-l="en">dry forest, no nests</span></dd>
-          </dl>
-          <button class="btn sm" type="button" data-pick="B"><span data-l="es">Construir aquí</span><span data-l="en">Build here</span></button>
-        </article>
-      </div>
-      <div class="result" id="res-A" hidden tabindex="-1">
-        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
-        <div>
-          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
-          <blockquote><p data-l="es">«El río subió y el refugio se inundó… Tranquila. Todavía podemos moverlo.»</p><p data-l="en">“The river rose and the shelter flooded… Don't worry. We can still move it.”</p></blockquote>
-          <p class="teach" data-l="es">En el juego, el error tiene salida: Vittata desarma el refugio, recupera los materiales y lo lleva a la colina. La evidencia estaba en las marcas de agua a 1 m.</p>
-          <p class="teach" data-l="en">In the game, mistakes have a way out: Vittata takes the shelter apart, keeps the materials and moves it to the hill. The evidence was in the water marks 1 m up the trees.</p>
-          <button class="btn sm paperish" type="button" data-reset data-icon="reset"><span data-l="es">Probar otra vez</span><span data-l="en">Try again</span></button>
-        </div>
-      </div>
-      <div class="result" id="res-B" hidden tabindex="-1">
-        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
-        <div>
-          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
-          <blockquote><p data-l="es">«La colina aguantó la crecida. Mi familia está a salvo. ¡Gracias, Vittata!»</p><p data-l="en">“The hill held up against the flood. My family is safe. Thank you, Vittata!”</p></blockquote>
-          <p class="teach" data-l="es">Elegiste con evidencia: terreno alto y sin marcas de agua. Es el objetivo O6: describir el efecto de un huracán y escoger dónde construir.</p>
-          <p class="teach" data-l="en">You chose with evidence: high ground and no water marks. That is goal O6: describe the effect of a hurricane and choose where to build.</p>
-          <button class="btn sm paperish" type="button" data-reset data-icon="reset"><span data-l="es">Probar otra vez</span><span data-l="en">Try again</span></button>
-        </div>
-      </div>
-    </div>
-
-    <div class="goals-head">
-      <h3><span data-l="es">Seis objetivos alineados a los estándares</span><span data-l="en">Six goals aligned to standards</span></h3>
-      <span class="chip paper-chip"><span data-l="es">Para todas las edades</span><span data-l="en">For all ages</span></span>
-    </div>
-    <div class="goals-cols" aria-hidden="true"><span></span><span data-l="es">El estudiante…</span><span data-l="en">The student…</span><span>DEPR 2022</span><span>NGSS</span></div>
-    <ol class="goals">
-      <li>
-        <span class="code">O1</span>
-        <div><h4><span data-l="es">Capas del bosque</span><span data-l="en">Forest layers</span></h4><p class="does" data-l="es">nombra las cuatro capas del bosque y ubica en cada una un organismo que observó.</p><p class="does" data-l="en">names the four forest layers and places an observed organism in each one.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CB2.3</span><span class="tag">3.CB2.6</span><span class="tag">4.CT2.5</span><span class="tag">6.CB2.5</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-LS4-3</span></div></div>
-      </li>
-      <li>
-        <span class="code">O2</span>
-        <div><h4><span data-l="es">Cadena alimentaria</span><span data-l="en">Food chain</span></h4><p class="does" data-l="es">ordena una cadena alimentaria desde el Sol y explica de dónde viene la energía.</p><p class="does" data-l="en">orders a food chain starting from the Sun and explains where the energy comes from.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">5.CB2.3</span><span class="tag">5.CB2.4</span><span class="tag">6.CB2.7–10</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">5-LS2-1</span><span class="tag">5-PS3-1</span><span class="tag">MS-LS2-3</span></div></div>
-      </li>
-      <li>
-        <span class="code">O3</span>
-        <div><h4><span data-l="es">Ciclo del agua</span><span data-l="en">Water cycle</span></h4><p class="does" data-l="es">ordena cinco procesos del ciclo del agua y los usa para explicar la crecida.</p><p class="does" data-l="en">orders five water-cycle processes and uses them to explain the flood.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CT1.2</span><span class="tag">5.CT2.2</span><span class="tag">5.CT2.9</span><span class="tag">5.CT2.10</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">5-ESS2-1</span><span class="tag">MS-ESS2-4</span></div></div>
-      </li>
-      <li>
-        <span class="code">O4</span>
-        <div><h4><span data-l="es">Adaptaciones</span><span data-l="en">Adaptations</span></h4><p class="does" data-l="es">explica cómo dos rasgos o conductas ayudan a un ser vivo a sobrevivir.</p><p class="does" data-l="en">explains how two traits or behaviors help a living thing survive.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CB2.5</span><span class="tag">4.CB2.1–3</span><span class="tag">6.CB2.13</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">4-LS1-1</span></div></div>
-      </li>
-      <li>
-        <span class="code">O5</span>
-        <div><h4><span data-l="es">Conservación</span><span data-l="en">Conservation</span></h4><p class="does" data-l="es">usa datos de población para explicar por qué la cotorra sigue en peligro y nombra dos acciones para protegerla.</p><p class="does" data-l="en">uses population data to explain why the parrot is still endangered and names two actions to protect it.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CA1.4</span><span class="tag">5.CB4.4</span><span class="tag">6.CB2.16</span><span class="tag">6.CB2.19</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-LS4-4</span><span class="tag">5-ESS3-1</span><span class="tag">MS-LS2-5</span></div></div>
-      </li>
-      <li>
-        <span class="code">O6</span>
-        <div><h4><span data-l="es">Huracanes</span><span data-l="en">Hurricanes</span></h4><p class="does" data-l="es">describe el efecto de un huracán y escoge con evidencia dónde construir.</p><p class="does" data-l="en">describes the effect of a hurricane and uses evidence to choose where to build.</p></div>
-        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CT2.4</span><span class="tag">3.CA1.2</span><span class="tag">4.CA1.6</span><span class="tag">6.CB2.20</span></div></div>
-        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-ESS3-1</span><span class="tag">4-ESS3-2</span><span class="tag">MS-LS2-4</span></div></div>
-      </li>
-    </ol>
-    <p class="goals-note">
-      <span data-l="es">Fuentes: <a href="https://dedigital.dde.pr/mod/resource/view.php?id=2854" target="_blank" rel="noopener">DEPR, Estándares de Contenido y Expectativas de Grado: Ciencias (2022)</a> y <a href="https://www.nextgenscience.org/" target="_blank" rel="noopener">NGSS</a>. En 6.º grado el ciclo del agua se cubre con MS-ESS2-4. Alineación propuesta por el equipo; la revisamos con maestros durante el piloto.</span>
-      <span data-l="en">Sources: <a href="https://dedigital.dde.pr/mod/resource/view.php?id=2854" target="_blank" rel="noopener">Puerto Rico Department of Education, Science Content Standards and Grade Expectations (2022)</a> and <a href="https://www.nextgenscience.org/" target="_blank" rel="noopener">NGSS</a>. In 6th grade the water cycle is covered by MS-ESS2-4. Alignment proposed by our team; we review it with teachers during the pilot.</span>
-    </p>
-
-    <div class="route-head">
-      <h3><span data-l="es">Misión «La ruta de la gota»</span><span data-l="en">Mission: “The Path of the Drop”</span></h3>
-      <span class="chip paper-chip"><span data-l="es">En desarrollo · unos 5 minutos</span><span data-l="en">In development · about 5 minutes</span></span>
-    </div>
-    <ol class="route">
-      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Predecir</span><span data-l="en">Predict</span></h4><p data-l="es">Iguaca pregunta de dónde salió tanta agua. Ninguna respuesta se castiga.</p><p data-l="en">Iguaca asks where all that water came from. No answer is punished.</p></li>
-      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Capas</span><span data-l="en">Layers</span></h4><p data-l="es">Cuatro perchas en flora real: suelo, sotobosque, dosel y emergente.</p><p data-l="en">Four perches on real plants: forest floor, understory, canopy and emergent layer.</p></li>
-      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Cadena</span><span data-l="en">Chain</span></h4><p data-l="es">Ordena Sol, palma y cotorra. En 5.º y 6.º se añaden los descomponedores.</p><p data-l="en">Order Sun, palm and parrot. Grades 5 and 6 add decomposers.</p></li>
-      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Ojos de cotorra</span><span data-l="en">Parrot's eye view</span></h4><p data-l="es">Compara los dos terrenos desde el aire.</p><p data-l="en">Compare the two sites from the air.</p></li>
-      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Nace la gota</span><span data-l="en">A drop is born</span></h4><p data-l="es">Sigue el vapor desde la poza hasta la nube de la cumbre.</p><p data-l="en">Follow the vapor from the pool up to the cloud on the peak.</p></li>
-      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Sigue la gota</span><span data-l="en">Follow the drop</span></h4><p data-l="es">La lluvia se infiltra en la colina o corre por la quebrada hasta el río, que crece.</p><p data-l="en">Rain soaks into the hill or runs down the stream to the river, which rises.</p></li>
-      <li><div class="step"><span class="skill swim" data-icon="dive"><span data-l="es">Nadar</span><span data-l="en">Swim</span></span></div><h4><span data-l="es">La poza</span><span data-l="en">The pool</span></h4><p data-l="es">Bucea hasta la marca de crecida en la roca. El ciclo se cierra.</p><p data-l="en">Dive down to the flood mark on the rock. The cycle closes.</p></li>
-      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Explícale a Iguaca</span><span data-l="en">Explain it to Iguaca</span></h4><p data-l="es">Cuenta el ciclo en orden y compara lo que predijo con lo que vio.</p><p data-l="en">Tell the cycle in order and compare the prediction with what was seen.</p></li>
-    </ol>
-    <div class="extras">
-      <div data-icon="book"><div><h4><span data-l="es">Diario de Campo</span><span data-l="en">Field Journal</span></h4><p data-l="es">Cada ficha trae un dato de una línea y su fuente. Solo se publica lo verificado.</p><p data-l="en">Each card has a one-line fact and its source. Only verified facts are published.</p></div></div>
-      <div data-icon="question"><div><h4><span data-l="es">Iguaca te pregunta</span><span data-l="en">Iguaca asks you</span></h4><p data-l="es">De 5 a 7 preguntas al final, con pista en el segundo intento y sin puntaje visible.</p><p data-l="en">Five to seven questions at the end, with a hint on the second try and no visible score.</p></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= MODO MAESTRO ================= -->
-<section class="section teacher" id="maestros" aria-labelledby="h-maestros">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow"><span data-l="es">Modo Maestro</span><span data-l="en">Teacher Mode</span></span>
-      <h2 class="h2" id="h-maestros"><span data-l="es">Una clase de 45 minutos, lista para usar</span><span data-l="en">A ready-to-teach 45-minute lesson</span></h2>
-      <p class="lead" data-l="es">La guía trae qué hacer antes, durante y después de jugar, en parejas de piloto y científico que cambian de rol a mitad de la misión.</p>
-      <p class="lead" data-l="en">The guide covers what to do before, during and after playing, with pilot and scientist pairs who swap roles halfway through the mission.</p>
-    </div>
-    <div class="timeline">
-      <div class="tl-bar" role="img" aria-label="Antes 10 minutos, durante 25 minutos, después 10 minutos" data-en-aria-label="Before 10 minutes, during 25 minutes, after 10 minutes">
-        <div class="b1"><span class="lbl"><span data-l="es">Antes</span><span data-l="en">Before</span></span><span class="min">10 min</span></div>
-        <div class="b2"><span class="lbl"><span data-l="es">Durante</span><span data-l="en">During</span></span><span class="min">25 min</span></div>
-        <div class="b3"><span class="lbl"><span data-l="es">Después</span><span data-l="en">After</span></span><span class="min">10 min</span></div>
-      </div>
-      <div class="tl-scale mono" aria-hidden="true"><span>0</span><span>45 min</span></div>
-      <div class="tl-cols">
-        <div><h3><span data-l="es">Antes</span><span data-l="en">Before</span></h3><p data-l="es">Pregunta guía, predicción en el Diario impreso y vocabulario con imágenes.</p><p data-l="en">Guiding question, a prediction in the printed Journal and picture vocabulary.</p></div>
-        <div><h3><span data-l="es">Durante</span><span data-l="en">During</span></h3><p data-l="es">20 minutos de misión mientras circulas con tres preguntas de sondeo, y 5 minutos de preguntas dentro del juego.</p><p data-l="en">20 minutes of mission while you circulate with three probing questions, then 5 minutes of in-game questions.</p></div>
-        <div><h3><span data-l="es">Después</span><span data-l="en">After</span></h3><p data-l="es">El ciclo en la pizarra y un boleto de salida: <q>Construiría en ___ porque ___</q>.</p><p data-l="en">The cycle on the board and an exit ticket: <q>I would build at ___ because ___</q>.</p></div>
-      </div>
-    </div>
-    <div class="panels">
-      <div class="panel">
-        <h3 data-icon="lock"><span data-l="es">Reporte sin datos personales</span><span data-l="en">Reports without personal data</span></h3>
-        <p data-l="es">El progreso se guarda solo en el dispositivo. Pones una etiqueta, como «Estación 4», y bajas un CSV o JSON con pasos, intentos por pregunta y objetivos logrados. Un botón lo borra todo.</p>
-        <p data-l="en">Progress is saved only on the device. You add a label like “Station 4” and export a CSV or JSON file with steps, attempts per question and goals reached. One button erases everything.</p>
-      </div>
-      <div class="panel">
-        <h3 data-icon="hand"><span data-l="es">Actividades sin pantalla</span><span data-l="en">Screen-free activities</span></h3>
-        <ul>
-          <li data-icon="check"><span data-l="es">Mural del bosque en cuatro pisos</span><span data-l="en">A four-story forest mural</span></li>
-          <li data-icon="check"><span data-l="es">El ciclo del agua en una bolsa</span><span data-l="en">The water cycle in a bag</span></li>
-          <li data-icon="check"><span data-l="es">Red de estambre con un «huracán»</span><span data-l="en">A yarn food web hit by a “hurricane”</span></li>
-          <li data-icon="check"><span data-l="es">Nido a prueba de tormenta, con abanico y regadera</span><span data-l="en">A storm-proof nest, tested with a fan and a watering can</span></li>
-          <li data-icon="check"><span data-l="es">Gráfica de cotorras con datos de USFWS</span><span data-l="en">A parrot population graph with USFWS data</span></li>
-        </ul>
-      </div>
-      <div class="panel">
-        <h3 data-icon="trophy"><span data-l="es">Rúbrica de cuatro niveles</span><span data-l="en">Four-level rubric</span></h3>
-        <ul>
-          <li data-icon="check"><span data-l="es">Observación y registro</span><span data-l="en">Observation and record-keeping</span></li>
-          <li data-icon="check"><span data-l="es">Modelo del ciclo del agua</span><span data-l="en">Water-cycle model</span></li>
-          <li data-icon="check"><span data-l="es">Cadena alimentaria</span><span data-l="en">Food chain</span></li>
-          <li data-icon="check"><span data-l="es">Argumento con evidencia y conservación</span><span data-l="en">Evidence-based argument and conservation</span></li>
-        </ul>
-      </div>
-      <div class="panel">
-        <h3 data-icon="bulb"><span data-l="es">Para toda la clase</span><span data-l="en">For the whole class</span></h3>
-        <ul>
-          <li data-icon="check"><span data-l="es">Lectura en voz alta</span><span data-l="en">Read-aloud</span></li>
-          <li data-icon="check"><span data-l="es">Modo de texto corto con iconos</span><span data-l="en">Short-text mode with icons</span></li>
-          <li data-icon="check"><span data-l="es">Español, inglés o bilingüe</span><span data-l="en">Spanish, English or bilingual</span></li>
-          <li data-icon="check"><span data-l="es">Modo escuela sin tienda y pausa rápida</span><span data-l="en">School mode with no store, and quick pause</span></li>
-        </ul>
-      </div>
-    </div>
-    <p class="status-note" data-l="es">El Modo Maestro forma parte del prototipo. Validamos la guía y la rúbrica con maestros durante el piloto.</p>
-    <p class="status-note" data-l="en">Teacher Mode is part of the prototype. We validate the guide and rubric with teachers during the pilot.</p>
-  </div>
-</section>
-
-<!-- ================= ROPERO ================= -->
-<section class="section wardrobe" id="ropero" aria-labelledby="h-ropero">
-  <div class="wrap wr-grid">
+      </details>
+      <details>
+        <summary data-icon="shirt"><span data-l="es">El ropero boricua: ropa que se gana jugando</span><span data-l="en">The Boricua wardrobe: clothes you earn by playing</span></summary>
+        <div class="more-body"><div class="wr-grid">
     <div>
       <span class="eyebrow"><span data-l="es">El ropero boricua</span><span data-l="en">The Boricua wardrobe</span></span>
       <h2 class="h2" id="h-ropero"><span data-l="es">Ropa que se gana aprendiendo</span><span data-l="en">Clothes you earn by learning</span></h2>
@@ -1135,7 +369,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
     </div>
     <div class="showcase">
       <figure class="loop-fig">
-        <div class="screen loop" data-video="ropero">
+        <div class="screen loop" data-solo-escritorio data-video="ropero">
           <img src="assets/video/ropero.jpg" width="1280" height="720" loading="lazy"
                alt="Vittata con pava jíbara, camisa blanca y maracas, en un sendero del bosque."
                data-en-alt="Vittata wearing a jíbaro straw hat, a white shirt and maracas, on a forest trail.">
@@ -1165,16 +399,115 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
         </div>
       </div>
     </div>
+        </div></div>
+      </details>
+      <details>
+        <summary data-icon="feather"><span data-l="es">El criadero: tu cotorra crece con lo que aprendes (pronto)</span><span data-l="en">The nursery: your parrot grows with what you learn (soon)</span></summary>
+        <div class="more-body"><div class="ns-grid">
+    <div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+        <span class="eyebrow"><span data-l="es">El criadero</span><span data-l="en">The nursery</span></span>
+        <span class="chip soon"><span data-l="es">Próximamente</span><span data-l="en">Coming soon</span></span>
+      </div>
+      <h2 class="h2" id="h-criadero"><span data-l="es">Tu cotorra crece con lo que aprendes</span><span data-l="en">Your parrot grows with what you learn</span></h2>
+      <p class="lead" data-l="es">Huevo, bebé, juvenil, adulta. Cada estudiante cuida su cotorrita, y esta crece con lo que aprende y explora en el juego: fichas del Diario, misiones y preguntas.</p>
+      <p class="lead" data-l="en">Egg, baby, juvenile, adult. Each student cares for a little parrot that grows with what they learn and explore in the game: Journal cards, missions and questions.</p>
+      <ul class="ns-promises">
+        <li data-icon="check"><span data-l="es">El cuidado es cariño, nunca castigo: la cotorrita nunca enferma ni muere.</span><span data-l="en">Care is about love, never punishment: the little parrot never gets sick or dies.</span></li>
+        <li data-icon="check"><span data-l="es">Las cápsulas especiales se ganan jugando y aprendiendo.</span><span data-l="en">Special capsules are earned by playing and learning.</span></li>
+        <li data-icon="check"><span data-l="es">Sin azar y sin compras.</span><span data-l="en">No randomness and no purchases.</span></li>
+      </ul>
+      <p class="real-layer"><span data-l="es"><b>La capa real:</b> al lado del juego, el estudiante ve cómo los aviarios de Iguaca, en El Yunque, y José L. Vivaldi, en Río Abajo, incuban, crían y liberan cotorras.</span><span data-l="en"><b>The real-world layer:</b> next to the game, students see how the Iguaca Aviary in El Yunque and the José L. Vivaldi Aviary in Río Abajo incubate, raise and release parrots.</span></p>
+    </div>
+    <div class="ns-media">
+      <figure class="loop-fig">
+        <div class="screen loop" data-solo-escritorio data-video="criadero">
+          <img src="assets/video/criadero.jpg" width="1280" height="720" loading="lazy"
+               alt="Una cotorrita verde de frente roja sale del cascarón en un nido sobre un tronco."
+               data-en-alt="A little green parrot with a red forehead hatches from its shell in a nest on a tree stump.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="criadero"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">La eclosión en el criadero, en desarrollo.</span><span data-l="en">Hatching in the nursery, in development.</span></figcaption>
+      </figure>
+    <ol class="stages" aria-label="Etapas de la cotorrita" data-en-aria-label="Growth stages">
+      <li><span class="dot" aria-hidden="true"></span><b><span data-l="es">Huevo</span><span data-l="en">Egg</span></b></li>
+      <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Bebé</span><span data-l="en">Baby</span></b></li>
+      <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Juvenil</span><span data-l="en">Juvenile</span></b></li>
+      <li><span class="dot" data-icon="wing" aria-hidden="true"></span><b><span data-l="es">Adulta</span><span data-l="en">Adult</span></b></li>
+    </ol>
+    </div>
+        </div></div>
+      </details>
+      <details>
+        <summary data-icon="paw"><span data-l="es">Nuestro bosque en 3D: flora real de El Yunque</span><span data-l="en">Our forest in 3D: real El Yunque flora</span></summary>
+        <div class="more-body">
+    <div class="made" id="hecho-en-pr">
+      <div class="made-text">
+        <div>
+        <div class="made-flag">
+          <img src="assets/img/bandera-pr.svg" width="72" height="48" alt="Bandera de Puerto Rico" data-en-alt="Flag of Puerto Rico" loading="lazy">
+          <span class="eyebrow"><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></span>
+        </div>
+        <h2 class="h2"><span data-l="es">Nuestro bosque, en 3D</span><span data-l="en">Our forest, in 3D</span></h2>
+        </div>
+        <div>
+        <p data-l="es">El mundo del juego está sembrado con flora de El Yunque, y los personajes hablan un español boricua suave que los niños entienden: <span class="voice">«¡Wepa!», «¡Dale!», «Más vale paso firme que carrera ciega».</span></p>
+        <p data-l="en">The game world is planted with El Yunque flora, and the characters speak a gentle Boricua Spanish that kids understand: <span class="voice">“¡Wepa!”, “¡Dale!”, “Más vale paso firme que carrera ciega.”</span></p>
+        <p data-l="es">También enseña lo que no es de aquí: el flamboyán, tan nuestro en el paisaje, llegó de Madagascar.</p>
+        <p data-l="en">It also teaches what is not from here: the flamboyant tree, so familiar in our landscape, came from Madagascar.</p>
+        </div>
+      </div>
+      <div>
+        <ul class="flora">
+          <li><img src="assets/img/flora-ceiba.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Ceiba</b><i>Ceiba pentandra</i></div></li>
+          <li><img src="assets/img/flora-tabonuco.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Tabonuco</b><i>Dacryodes excelsa</i></div></li>
+          <li><img src="assets/img/flora-yagrumo.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Yagrumo</b><i>Cecropia schreberiana</i></div></li>
+          <li><img src="assets/img/flora-palma-sierra.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Palma de sierra</span><span data-l="en">Sierra palm</span></b><i>Prestoea montana</i></div></li>
+          <li><img src="assets/img/flora-helecho-gigante.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Helecho gigante</span><span data-l="en">Giant tree fern</span></b><i>Cyathea arborea</i></div></li>
+          <li><span class="badge"><span data-l="es">De Madagascar</span><span data-l="en">From Madagascar</span></span><img src="assets/img/flora-flamboyan.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Flamboyán</span><span data-l="en">Flamboyant tree</span></b><i>Delonix regia</i></div></li>
+        </ul>
+        <p class="flora-note"><span data-l="es">Modelos 3D del juego. Origen del flamboyán: <a href="https://www.fs.usda.gov/nsl/Wpsm/Delonix.pdf" target="_blank" rel="noopener">USDA Forest Service</a>.</span><span data-l="en">In-game 3D models. Flamboyant origin: <a href="https://www.fs.usda.gov/nsl/Wpsm/Delonix.pdf" target="_blank" rel="noopener">USDA Forest Service</a>.</span></p>
+      </div>
+    </div>
+        </div>
+      </details>
+      <details>
+        <summary data-icon="laptop"><span data-l="es">Tecnología: abre un enlace y a jugar</span><span data-l="en">Technology: open a link and play</span></summary>
+        <div class="more-body"><div class="tech-grid">
+    <figure class="laptop">
+      <div class="lid"><img src="assets/img/portada-juego.jpg" width="800" height="600" loading="lazy"
+           alt="Portada del juego en el navegador: el logo de Amazona Verse, el capítulo 1 y el botón Jugar, con Vittata a la derecha."
+           data-en-alt="The game's title screen in the browser: the Amazona Verse logo, Chapter 1 and the Play button, with Vittata on the right."></div>
+      <div class="base" aria-hidden="true"></div>
+      <figcaption><span data-l="es">Portada real del prototipo, en el navegador.</span><span data-l="en">The prototype's real title screen, in the browser.</span></figcaption>
+    </figure>
+    <div>
+      <span class="eyebrow"><span data-l="es">Tecnología</span><span data-l="en">Technology</span></span>
+      <h2 class="h2" id="h-tecnologia"><span data-l="es">Abre un enlace y a jugar</span><span data-l="en">Open a link and play</span></h2>
+      <p class="lead" data-l="es">Corre en el navegador, sin instalar. Pensado para Chromebooks; pruebas en dispositivos reales en curso.</p>
+      <p class="lead" data-l="en">Runs in the browser, nothing to install. Designed for Chromebooks; testing on real devices is underway.</p>
+      <dl class="specs">
+        <div><dt data-icon="laptop"><span class="sr-only"><span data-l="es">Dispositivos</span><span data-l="en">Devices</span></span></dt><dd><b><span data-l="es">Navegador con WebGL2</span><span data-l="en">A browser with WebGL2</span></b><span data-l="es">Sin tiendas de apps ni permisos de instalación.</span><span data-l="en">No app stores and no install permissions.</span></dd></div>
+        <div><dt data-icon="keyboard"><span class="sr-only"><span data-l="es">Controles</span><span data-l="en">Controls</span></span></dt><dd><b><span data-l="es">Teclado, ratón o pantalla táctil</span><span data-l="en">Keyboard, mouse or touchscreen</span></b><span data-l="es">Botones grandes, de 48 píxeles como mínimo.</span><span data-l="en">Large buttons, at least 48 pixels.</span></dd></div>
+        <div><dt data-icon="lock"><span class="sr-only"><span data-l="es">Privacidad</span><span data-l="en">Privacy</span></span></dt><dd><b><span data-l="es">Sin cuentas ni datos personales</span><span data-l="en">No accounts, no personal data</span></b><span data-l="es">El progreso se guarda en el dispositivo. Sin anuncios ni rastreo.</span><span data-l="en">Progress stays on the device. No ads and no tracking.</span></dd></div>
+        <div><dt data-icon="sparkle"><span class="sr-only"><span data-l="es">Rendimiento</span><span data-l="en">Performance</span></span></dt><dd><b><span data-l="es">Ligero por diseño</span><span data-l="en">Light by design</span></b><span data-l="es">WebAssembly solo donde aporta.</span><span data-l="en">WebAssembly only where it helps.</span></dd></div>
+        <div><dt data-icon="hand"><span class="sr-only"><span data-l="es">Accesibilidad</span><span data-l="en">Accessibility</span></span></dt><dd><b><span data-l="es">Hecho para leerse fácil</span><span data-l="en">Built to be easy to read</span></b><span data-l="es">Letra Atkinson Hyperlegible y respeto por el movimiento reducido.</span><span data-l="en">Atkinson Hyperlegible type and support for reduced motion.</span></dd></div>
+      </dl>
+    </div>
+        </div></div>
+      </details>
+    </div>
   </div>
 </section>
 
-<!-- ================= MODO RETOS ================= -->
-<section class="section" id="retos" aria-labelledby="h-retos">
+<!-- ================= MINIJUEGOS Y TOP RÉCORDS (se conservan) ================= -->
+<section class="section" id="minijuegos" aria-labelledby="h-retos">
   <div class="wrap">
-    <span class="eyebrow"><span data-l="es">Retos y minijuegos</span><span data-l="en">Challenges and minigames</span></span>
+    <span class="eyebrow"><span data-l="es">Minijuegos y récords</span><span data-l="en">Minigames and records</span></span>
     <h2 class="h2" id="h-retos"><span data-l="es">Una partida rápida, otra más y a superar tu récord</span><span data-l="en">One quick round, then another, and beat your record</span></h2>
-    <p class="lead" data-l="es">Además de la aventura, Amazona Verse tiene minijuegos de un minuto en el mismo mundo: carreras en el aire, una tormenta que te persigue, un banquete de frutas y vuelo sin fin entre los troncos, el río en canoa y un tren de carga. Fáciles de entender, difíciles de soltar y para todas las edades.</p>
-    <p class="lead" data-l="en">Besides the adventure, Amazona Verse has one-minute minigames in the same world: races through the air, a storm on your tail, a fruit feast and endless flight between the trunks, a canoe down the river and a freight train. Easy to pick up, hard to put down, for all ages.</p>
+    <p class="lead" data-l="es">Partidas de un minuto en el mismo bosque: vuelo entre troncos, una tormenta que te persigue, un banquete de frutas, carreras, el río en canoa y un tren de carga. Fáciles de entender, difíciles de soltar.</p>
+    <p class="lead" data-l="en">One-minute rounds in the same forest: flight between the trunks, a storm on your tail, a fruit feast, races, a canoe down the river and a freight train. Easy to pick up, hard to put down.</p>
     <div class="mj-grid">
       <article class="mj-ficha">
         <div class="screen loop">
@@ -1273,7 +606,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
     <script>
     (function () {
       var b = document.getElementById('mj-share'); if (!b) return;
-      var URL_RETOS = 'https://amazona-verse.vercel.app/retos.html';
+      var URL_RETOS = 'https://www.amazonaverse.com/retos.html';
       function en() { return document.documentElement.lang === 'en'; }
       function aviso(es, eng) { var s = b.parentElement.querySelector('.mj-estado'); if (!s) return; s.textContent = en() ? eng : es; setTimeout(function () { s.textContent = ''; }, 3000); }
       b.addEventListener('click', function () {
@@ -1336,53 +669,22 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   </div>
 </section>
 
-<!-- ================= CRIADERO ================= -->
-<section class="section nursery" id="criadero" aria-labelledby="h-criadero">
-  <div class="wrap ns-grid">
-    <div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
-        <span class="eyebrow"><span data-l="es">El criadero</span><span data-l="en">The nursery</span></span>
-        <span class="chip soon"><span data-l="es">Próximamente</span><span data-l="en">Coming soon</span></span>
-      </div>
-      <h2 class="h2" id="h-criadero"><span data-l="es">Tu cotorra crece con lo que aprendes</span><span data-l="en">Your parrot grows with what you learn</span></h2>
-      <p class="lead" data-l="es">Huevo, bebé, juvenil, adulta. Cada estudiante cuida su cotorrita, y esta crece con lo que aprende y explora en el juego: fichas del Diario, misiones y preguntas.</p>
-      <p class="lead" data-l="en">Egg, baby, juvenile, adult. Each student cares for a little parrot that grows with what they learn and explore in the game: Journal cards, missions and questions.</p>
-      <ul class="ns-promises">
-        <li data-icon="check"><span data-l="es">El cuidado es cariño, nunca castigo: la cotorrita nunca enferma ni muere.</span><span data-l="en">Care is about love, never punishment: the little parrot never gets sick or dies.</span></li>
-        <li data-icon="check"><span data-l="es">Las cápsulas especiales se ganan jugando y aprendiendo.</span><span data-l="en">Special capsules are earned by playing and learning.</span></li>
-        <li data-icon="check"><span data-l="es">Sin azar y sin compras.</span><span data-l="en">No randomness and no purchases.</span></li>
-      </ul>
-      <p class="real-layer"><span data-l="es"><b>La capa real:</b> al lado del juego, el estudiante ve cómo los aviarios de Iguaca, en El Yunque, y José L. Vivaldi, en Río Abajo, incuban, crían y liberan cotorras.</span><span data-l="en"><b>The real-world layer:</b> next to the game, students see how the Iguaca Aviary in El Yunque and the José L. Vivaldi Aviary in Río Abajo incubate, raise and release parrots.</span></p>
-    </div>
-    <div class="ns-media">
-      <figure class="loop-fig">
-        <div class="screen loop" data-video="criadero">
-          <img src="assets/video/criadero.jpg" width="1280" height="720" loading="lazy"
-               alt="Una cotorrita verde de frente roja sale del cascarón en un nido sobre un tronco."
-               data-en-alt="A little green parrot with a red forehead hatches from its shell in a nest on a tree stump.">
-          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="criadero"></video>
-          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
-        </div>
-        <figcaption><span data-l="es">La eclosión en el criadero, en desarrollo.</span><span data-l="en">Hatching in the nursery, in development.</span></figcaption>
-      </figure>
-    <ol class="stages" aria-label="Etapas de la cotorrita" data-en-aria-label="Growth stages">
-      <li><span class="dot" aria-hidden="true"></span><b><span data-l="es">Huevo</span><span data-l="en">Egg</span></b></li>
-      <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Bebé</span><span data-l="en">Baby</span></b></li>
-      <li><span class="dot" data-icon="feather" aria-hidden="true"></span><b><span data-l="es">Juvenil</span><span data-l="en">Juvenile</span></b></li>
-      <li><span class="dot" data-icon="wing" aria-hidden="true"></span><b><span data-l="es">Adulta</span><span data-l="en">Adult</span></b></li>
-    </ol>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CONSERVACIÓN + HECHO EN PR ================= -->
+<!-- ================= CONSERVACIÓN (corta; la página completa es cotorra.html) ================= -->
 <section class="section conserve" id="conservacion" aria-labelledby="h-conservacion">
   <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow"><span data-l="es">La cotorra real</span><span data-l="en">The real parrot</span></span>
-      <h2 class="h2" id="h-conservacion"><span data-l="es">La especie de Vittata existe de verdad</span><span data-l="en">Vittata's species is real</span></h2>
-      <p class="lead" data-l="es">Vittata es una cotorra puertorriqueña (<i>Amazona vittata</i>), el único loro nativo de Estados Unidos. Todo lo que el juego dice de ella viene de fuentes oficiales.</p>
-      <p class="lead" data-l="en">Vittata is a Puerto Rican parrot (<i>Amazona vittata</i>), the only parrot native to the United States. Everything the game says about her comes from official sources.</p>
+    <div class="cons-short">
+      <div>
+        <span class="eyebrow"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></span>
+        <h2 class="h2" id="h-conservacion"><span data-l="es">La cotorra de Vittata existe de verdad y está en peligro</span><span data-l="en">Vittata’s parrot is real and it is endangered</span></h2>
+        <p class="lead" data-l="es">La cotorra puertorriqueña (<i>Amazona vittata</i>) es el único loro nativo de Estados Unidos y vive solo en Puerto Rico. Dos aviarios, en El Yunque y Río Abajo, crían y liberan cotorras para que vuelva a llenar el bosque.</p>
+        <p class="lead" data-l="en">The Puerto Rican parrot (<i>Amazona vittata</i>) is the only parrot native to the United States and lives only in Puerto Rico. Two aviaries, in El Yunque and Río Abajo, raise and release parrots so it can fill the forest again.</p>
+        <div class="cta-row">
+          <a class="btn leaf" href="cotorra.html" data-icon="arrow"><span data-l="es">Conoce a la cotorra y cómo ayudar</span><span data-l="en">Meet the parrot and how to help</span></a>
+        </div>
+      </div>
+      <figure>
+        <img src="assets/img/vittata.png" width="320" height="320" loading="lazy" decoding="async" alt="Vittata, la cotorra puertorriqueña del juego: plumaje verde, frente roja y anillo blanco alrededor del ojo." data-en-alt="Vittata, the game’s Puerto Rican parrot: green plumage, red forehead and a white ring around the eye." style="width:min(100%,320px);margin-inline:auto;border-radius:50%">
+      </figure>
     </div>
     <ol class="years">
       <li><span class="yr">1967</span><p data-l="es">Queda protegida como especie en peligro.</p><p data-l="en">Protected as an endangered species.</p></li>
@@ -1394,291 +696,108 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
       <span data-l="es">Fuente: <a href="https://www.fws.gov/sites/default/files/documents/2026-02/20240402_puerto-rican-parrot-inter-agency-program-english.pdf" target="_blank" rel="noopener">U.S. Fish and Wildlife Service, Puerto Rican Parrot Inter-Agency Program (2026, PDF en inglés)</a>.</span>
       <span data-l="en">Source: <a href="https://www.fws.gov/sites/default/files/documents/2026-02/20240402_puerto-rican-parrot-inter-agency-program-english.pdf" target="_blank" rel="noopener">U.S. Fish and Wildlife Service, Puerto Rican Parrot Inter-Agency Program (2026, PDF)</a>.</span>
     </p>
-    <div class="cons-grid">
-      <div class="cons-card">
-        <h3><span data-l="es">Dos aviarios, tres bosques</span><span data-l="en">Two aviaries, three forests</span></h3>
-        <p data-l="es">El USFWS maneja el aviario Iguaca en El Yunque y el DRNA, el aviario José L. Vivaldi en Río Abajo. Allí crían cotorras para liberarlas. Tenerlas en tres lugares las protege de enfermedades y desastres.</p>
-        <p data-l="en">USFWS runs the Iguaca Aviary in El Yunque, and Puerto Rico's DNER runs the José L. Vivaldi Aviary in Río Abajo. They raise parrots there for release. Keeping them in three places protects them from disease and disasters.</p>
-      </div>
-      <div class="cons-card">
-        <h3><span data-l="es">Solo datos con fuente</span><span data-l="en">Only sourced facts</span></h3>
-        <p data-l="es">Lo que no está verificado no entra al juego. ¿Trabajas en conservación o en cultura? Queremos que quienes cuidan a la cotorra revisen nuestras fichas.</p>
-        <p data-l="en">If a fact is not verified, it does not go into the game. Do you work in conservation or culture? We want the people who care for the parrot to review our cards.</p>
-        <a class="btn sm leaf" href="#contacto"><span data-l="es">Revisar las fichas con nosotros</span><span data-l="en">Review the cards with us</span></a>
-      </div>
-    </div>
-
-    <p class="motto"><span data-l="es">Cuando nuestros niños aprenden a cuidar su isla, <span class="gold">la cotorra vuelve a volar.</span></span><span data-l="en">When our children learn to care for their island, <span class="gold">the parrot flies again.</span></span></p>
-
-    <div class="made" id="hecho-en-pr">
-      <div class="made-text">
-        <div>
-        <div class="made-flag">
-          <img src="assets/img/bandera-pr.svg" width="72" height="48" alt="Bandera de Puerto Rico" data-en-alt="Flag of Puerto Rico" loading="lazy">
-          <span class="eyebrow"><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></span>
-        </div>
-        <h2 class="h2"><span data-l="es">Nuestro bosque, en 3D</span><span data-l="en">Our forest, in 3D</span></h2>
-        </div>
-        <div>
-        <p data-l="es">El mundo del juego está sembrado con flora de El Yunque, y los personajes hablan un español boricua suave que los niños entienden: <span class="voice">«¡Wepa!», «¡Dale!», «Más vale paso firme que carrera ciega».</span></p>
-        <p data-l="en">The game world is planted with El Yunque flora, and the characters speak a gentle Boricua Spanish that kids understand: <span class="voice">“¡Wepa!”, “¡Dale!”, “Más vale paso firme que carrera ciega.”</span></p>
-        <p data-l="es">También enseña lo que no es de aquí: el flamboyán, tan nuestro en el paisaje, llegó de Madagascar.</p>
-        <p data-l="en">It also teaches what is not from here: the flamboyant tree, so familiar in our landscape, came from Madagascar.</p>
-        </div>
-      </div>
-      <div>
-        <ul class="flora">
-          <li><img src="assets/img/flora-ceiba.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Ceiba</b><i>Ceiba pentandra</i></div></li>
-          <li><img src="assets/img/flora-tabonuco.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Tabonuco</b><i>Dacryodes excelsa</i></div></li>
-          <li><img src="assets/img/flora-yagrumo.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b>Yagrumo</b><i>Cecropia schreberiana</i></div></li>
-          <li><img src="assets/img/flora-palma-sierra.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Palma de sierra</span><span data-l="en">Sierra palm</span></b><i>Prestoea montana</i></div></li>
-          <li><img src="assets/img/flora-helecho-gigante.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Helecho gigante</span><span data-l="en">Giant tree fern</span></b><i>Cyathea arborea</i></div></li>
-          <li><span class="badge"><span data-l="es">De Madagascar</span><span data-l="en">From Madagascar</span></span><img src="assets/img/flora-flamboyan.jpg" width="274" height="512" alt="" loading="lazy"><div class="lbl"><b><span data-l="es">Flamboyán</span><span data-l="en">Flamboyant tree</span></b><i>Delonix regia</i></div></li>
-        </ul>
-        <p class="flora-note"><span data-l="es">Modelos 3D del juego. Origen del flamboyán: <a href="https://www.fs.usda.gov/nsl/Wpsm/Delonix.pdf" target="_blank" rel="noopener">USDA Forest Service</a>.</span><span data-l="en">In-game 3D models. Flamboyant origin: <a href="https://www.fs.usda.gov/nsl/Wpsm/Delonix.pdf" target="_blank" rel="noopener">USDA Forest Service</a>.</span></p>
-      </div>
-    </div>
   </div>
 </section>
 
-<!-- ================= TECNOLOGÍA ================= -->
-<section class="section" id="tecnologia" aria-labelledby="h-tecnologia">
-  <div class="wrap tech-grid">
-    <figure class="laptop">
-      <div class="lid"><img src="assets/img/portada-juego.jpg" width="800" height="600" loading="lazy"
-           alt="Portada del juego en el navegador: el logo de Amazona Verse, el capítulo 1 y el botón Jugar, con Vittata a la derecha."
-           data-en-alt="The game's title screen in the browser: the Amazona Verse logo, Chapter 1 and the Play button, with Vittata on the right."></div>
-      <div class="base" aria-hidden="true"></div>
-      <figcaption><span data-l="es">Portada real del prototipo, en el navegador.</span><span data-l="en">The prototype's real title screen, in the browser.</span></figcaption>
-    </figure>
-    <div>
-      <span class="eyebrow"><span data-l="es">Tecnología</span><span data-l="en">Technology</span></span>
-      <h2 class="h2" id="h-tecnologia"><span data-l="es">Abre un enlace y a jugar</span><span data-l="en">Open a link and play</span></h2>
-      <p class="lead" data-l="es">Corre en el navegador, sin instalar. Pensado para Chromebooks; pruebas en dispositivos reales en curso.</p>
-      <p class="lead" data-l="en">Runs in the browser, nothing to install. Designed for Chromebooks; testing on real devices is underway.</p>
-      <dl class="specs">
-        <div><dt data-icon="laptop"><span class="sr-only"><span data-l="es">Dispositivos</span><span data-l="en">Devices</span></span></dt><dd><b><span data-l="es">Navegador con WebGL2</span><span data-l="en">A browser with WebGL2</span></b><span data-l="es">Sin tiendas de apps ni permisos de instalación.</span><span data-l="en">No app stores and no install permissions.</span></dd></div>
-        <div><dt data-icon="keyboard"><span class="sr-only"><span data-l="es">Controles</span><span data-l="en">Controls</span></span></dt><dd><b><span data-l="es">Teclado, ratón o pantalla táctil</span><span data-l="en">Keyboard, mouse or touchscreen</span></b><span data-l="es">Botones grandes, de 48 píxeles como mínimo.</span><span data-l="en">Large buttons, at least 48 pixels.</span></dd></div>
-        <div><dt data-icon="lock"><span class="sr-only"><span data-l="es">Privacidad</span><span data-l="en">Privacy</span></span></dt><dd><b><span data-l="es">Sin cuentas ni datos personales</span><span data-l="en">No accounts, no personal data</span></b><span data-l="es">El progreso se guarda en el dispositivo. Sin anuncios ni rastreo.</span><span data-l="en">Progress stays on the device. No ads and no tracking.</span></dd></div>
-        <div><dt data-icon="sparkle"><span class="sr-only"><span data-l="es">Rendimiento</span><span data-l="en">Performance</span></span></dt><dd><b><span data-l="es">Ligero por diseño</span><span data-l="en">Light by design</span></b><span data-l="es">WebAssembly solo donde aporta.</span><span data-l="en">WebAssembly only where it helps.</span></dd></div>
-        <div><dt data-icon="hand"><span class="sr-only"><span data-l="es">Accesibilidad</span><span data-l="en">Accessibility</span></span></dt><dd><b><span data-l="es">Hecho para leerse fácil</span><span data-l="en">Built to be easy to read</span></b><span data-l="es">Letra Atkinson Hyperlegible y respeto por el movimiento reducido.</span><span data-l="en">Atkinson Hyperlegible type and support for reduced motion.</span></dd></div>
-      </dl>
-    </div>
-  </div>
-</section>
-
-<!-- ================= ESCUELAS (papel) ================= -->
+<!-- ================= ESCUELAS (resumen; página completa en escuelas.html) ================= -->
 <section class="section paper" id="escuelas" aria-labelledby="h-escuelas">
   <span class="margin-line" aria-hidden="true"></span>
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow"><span data-l="es">Para escuelas</span><span data-l="en">For schools</span></span>
-      <h2 class="h2" id="h-escuelas"><span data-l="es">Lleva Amazona Verse a tu salón</span><span data-l="en">Bring Amazona Verse to your classroom</span></h2>
-      <p class="lead" data-l="es">Empieza con un piloto gratis. Si funciona en tu salón, sigue con una licencia anual.</p>
-      <p class="lead" data-l="en">Start with a free pilot. If it works in your classroom, continue with an annual license.</p>
+      <span class="eyebrow"><span data-l="es">Para escuelas y familias</span><span data-l="en">For schools and families</span></span>
+      <h2 class="h2" id="h-escuelas"><span data-l="es">Una clase de 45 minutos, lista para usar</span><span data-l="en">A ready-to-teach 45-minute lesson</span></h2>
+      <p class="lead" data-l="es">Cada capítulo trae objetivos de ciencias alineados a los estándares de Puerto Rico (DEPR 2022) y NGSS, un Modo Maestro con guía, rúbrica y actividades sin pantalla, y reportes sin datos personales. Las escuelas empiezan con un piloto gratis.</p>
+      <p class="lead" data-l="en">Each chapter comes with science goals aligned to Puerto Rico (DEPR 2022) and NGSS standards, a Teacher Mode with a guide, rubric and screen-free activities, and reports without personal data. Schools start with a free pilot.</p>
     </div>
-    <div class="offer on-paper">
-      <article class="plan featured">
-        <span class="chip gold" style="align-self:flex-start"><span data-l="es">Empieza aquí</span><span data-l="en">Start here</span></span>
-        <h3><span data-l="es">Piloto gratis</span><span data-l="en">Free pilot</span></h3>
-        <p class="price"><span data-l="es">$0 para tu escuela</span><span data-l="en">$0 for your school</span></p>
-        <h4><span data-l="es">Incluye</span><span data-l="en">Includes</span></h4>
-        <ul>
-          <li data-icon="check"><span data-l="es">El capítulo 1 jugable, en el navegador</span><span data-l="en">Playable Chapter 1, in the browser</span></li>
-          <li data-icon="check"><span data-l="es">Guía de 45 minutos y actividades sin pantalla</span><span data-l="en">A 45-minute guide and screen-free activities</span></li>
-          <li data-icon="check"><span data-l="es">Modo escuela sin tienda</span><span data-l="en">School mode with no store</span></li>
-          <li data-icon="check"><span data-l="es">Reporte de progreso sin datos personales</span><span data-l="en">Progress reports without personal data</span></li>
-          <li data-icon="check"><span data-l="es">Acompañamiento del equipo</span><span data-l="en">Support from our team</span></li>
-        </ul>
-        <h4><span data-l="es">Te pedimos</span><span data-l="en">We ask you to</span></h4>
-        <ul class="ask">
-          <li data-icon="arrow"><span data-l="es">Usarlo con tu grupo o tu clase</span><span data-l="en">Use it with your group or class</span></li>
-          <li data-icon="arrow"><span data-l="es">Contarnos qué funcionó y qué no</span><span data-l="en">Tell us what worked and what didn't</span></li>
-        </ul>
-        <a class="btn" href="#contacto" data-icon="arrow"><span data-l="es">Pedir piloto gratis</span><span data-l="en">Request a free pilot</span></a>
-      </article>
-      <article class="plan">
-        <h3><span data-l="es">Licencia escolar</span><span data-l="en">School license</span></h3>
-        <p class="price"><span data-l="es">Precio tras el piloto</span><span data-l="en">Pricing after the pilot</span></p>
-        <p data-l="es">Para escuelas que quieran seguir después del piloto. Es anual y por estudiante; publicaremos el precio al terminar los pilotos.</p>
-        <p data-l="en">For schools that want to continue after the pilot. It is annual and per student; we will publish pricing when the pilots end.</p>
-        <h4><span data-l="es">Incluye</span><span data-l="en">Includes</span></h4>
-        <ul>
-          <li data-icon="check"><span data-l="es">Todo lo del piloto</span><span data-l="en">Everything in the pilot</span></li>
-          <li data-icon="check"><span data-l="es">Las mejoras del juego y de la guía</span><span data-l="en">Updates to the game and the guide</span></li>
-        </ul>
-        <a class="btn paperish" href="#contacto"><span data-l="es">Quiero información</span><span data-l="en">Tell me more</span></a>
-      </article>
+    <div class="cta-row">
+      <a class="btn" href="escuelas.html" data-icon="arrow"><span data-l="es">Ver la guía para maestros y el piloto gratis</span><span data-l="en">See the teacher guide and the free pilot</span></a>
+      <a class="btn paperish" href="escuelas.html#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
     </div>
-    <div class="model on-paper" role="list" aria-label="Cómo funciona" data-en-aria-label="How it works">
-      <div role="listitem"><b><span data-l="es">Capítulo 1 gratis</span><span data-l="en">Chapter 1 is free</span></b><span data-l="es">Para todos.</span><span data-l="en">For everyone.</span></div>
-      <div role="listitem"><b><span data-l="es">Escuelas</span><span data-l="en">Schools</span></b><span data-l="es">Piloto gratis y luego licencia anual.</span><span data-l="en">Free pilot, then an annual license.</span></div>
-      <div role="listitem"><b><span data-l="es">Familias</span><span data-l="en">Families</span></b><span data-l="es">Extras opcionales más adelante.</span><span data-l="en">Optional extras later on.</span></div>
-      <div role="listitem"><b><span data-l="es">Sin anuncios</span><span data-l="en">No ads</span></b><span data-l="es">Ni cajas sorpresa.</span><span data-l="en">And no loot boxes.</span></div>
-      <div role="listitem"><b><span data-l="es">Lo cultural</span><span data-l="en">Cultural items</span></b><span data-l="es">Pava, guayabera y maracas se ganan jugando.</span><span data-l="en">Pava, guayabera and maracas are earned by playing.</span></div>
-    </div>
-    <p class="word"><strong><span data-l="es">Crecemos de maestro a maestro.</span><span data-l="en">We grow teacher to teacher.</span></strong><span data-l="es">Si te funciona en el salón, cuéntaselo a un colega.</span><span data-l="en">If it works in your classroom, tell a colleague.</span></p>
   </div>
 </section>
 
-<!-- ================= FAMILIAS · ALIADOS · INVERSIONISTAS ================= -->
-<section class="section" id="aliados" aria-labelledby="h-aliados">
+<!-- ================= FUNDADORES ================= -->
+<section class="section team" id="fundadores" aria-labelledby="h-fundadores">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow"><span data-l="es">Únete</span><span data-l="en">Join us</span></span>
-      <h2 class="h2" id="h-aliados"><span data-l="es">Familias, aliados e inversionistas</span><span data-l="en">Families, partners and investors</span></h2>
-      <p class="lead" data-l="es">Buscamos escuelas piloto, aliados de conservación y capital.</p>
-      <p class="lead" data-l="en">We are looking for pilot schools, conservation partners and capital.</p>
+      <span class="eyebrow"><span data-l="es">Los fundadores</span><span data-l="en">The founders</span></span>
+      <h2 class="h2" id="h-fundadores"><span data-l="es">Una aventura hecha en familia</span><span data-l="en">An adventure made as a family</span></h2>
+      <p class="lead" data-l="es">Hecho en Puerto Rico, con amor por la isla y sus cotorras, desde 2012.</p>
+      <p class="lead" data-l="en">Made in Puerto Rico, with love for the island and its parrots, since 2012.</p>
     </div>
-    <div class="aud">
-      <article>
-        <span class="ic" data-icon="shield"></span>
-        <h3><span data-l="es">Familias</span><span data-l="en">Families</span></h3>
-        <p data-l="es">Seguro por diseño: sin anuncios, sin chat abierto y sin cajas sorpresa. Tu hijo usa un nombre inventado y el progreso se queda en tu dispositivo.</p>
-        <p data-l="en">Safe by design: no ads, no open chat and no loot boxes. Your child uses a made-up name and progress stays on your device.</p>
-        <a class="btn sm" href="#contacto"><span data-l="es">Avísenme de la beta</span><span data-l="en">Tell me about the beta</span></a>
-      </article>
-      <article>
-        <span class="ic" data-icon="paw"></span>
-        <h3><span data-l="es">Aliados de conservación y cultura</span><span data-l="en">Conservation and culture partners</span></h3>
-        <p data-l="es">Buscamos quien valide las fichas de fauna y cultura, y quiera llevar la historia de la cotorra a más salones.</p>
-        <p data-l="en">We are looking for people who can validate our wildlife and culture cards and want to bring the parrot's story to more classrooms.</p>
-        <a class="btn sm leaf" href="#contacto"><span data-l="es">Hablemos</span><span data-l="en">Let's talk</span></a>
-      </article>
-      <article>
-        <span class="ic" data-icon="trophy"></span>
-        <h3><span data-l="es">Inversionistas</span><span data-l="en">Investors</span></h3>
-        <p data-l="es">Un estudio pequeño de Puerto Rico, en etapa de prototipo. El mercado escolar es grande:</p>
-        <p data-l="en">A small studio from Puerto Rico, at the prototype stage. The school market is large:</p>
-        <div>
-          <div class="stat"><b>98,577</b><span data-l="es">escuelas públicas en EE. UU.</span><span data-l="en">public schools in the U.S.</span><small><a href="https://nces.ed.gov/fastfacts/display.asp?id=84" target="_blank" rel="noopener">NCES Fast Facts, 2020-21</a></small></div>
-          <div class="stat"><b>29 %</b><span data-l="es">de sus estudiantes son hispanos</span><span data-l="en">of their students are Hispanic</span><small><a href="https://nces.ed.gov/programs/coe/indicator/cge" target="_blank" rel="noopener"><span data-l="es">NCES, Condition of Education, otoño 2022</span><span data-l="en">NCES, Condition of Education, fall 2022</span></a></small></div>
-        </div>
-        <a class="btn sm ghost" href="#contacto"><span data-l="es">Pedir una reunión</span><span data-l="en">Request a meeting</span></a>
-      </article>
-    </div>
+    <ul class="founders">
+      <li><b>Kelvin García</b><span data-l="es">Fundador y director creativo</span><span data-l="en">Founder &amp; creative director</span></li>
+      <li><b>Analeah García</b><span data-l="es">Cofundadora</span><span data-l="en">Co-founder</span></li>
+      <li><b>Nathanael García</b><span data-l="es">Cofundador</span><span data-l="en">Co-founder</span></li>
+    </ul>
   </div>
 </section>
 
-<!-- ================= PRENSA ================= -->
-<section class="section" id="prensa" aria-labelledby="h-prensa" style="padding-top:0">
+<!-- ================= SPONSORS ================= -->
+<section class="section" id="sponsors" aria-labelledby="h-sponsors">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow"><span data-l="es">Prensa</span><span data-l="en">Press</span></span>
-      <h2 class="h2" id="h-prensa"><span data-l="es">Amazona Verse en pocas líneas</span><span data-l="en">Amazona Verse in a few lines</span></h2>
+      <span class="eyebrow"><span data-l="es">Sponsors</span><span data-l="en">Sponsors</span></span>
+      <h2 class="h2" id="h-sponsors"><span data-l="es">Quienes hacen posible que el juego sea gratis</span><span data-l="en">The people who keep the game free</span></h2>
+      <p class="lead" data-l="es">Amazona Verse no tiene anuncios ni compras dentro del juego. Estos sponsors apoyan el proyecto.</p>
+      <p class="lead" data-l="en">Amazona Verse has no ads and no in-game purchases. These sponsors support the project.</p>
     </div>
-    <figure class="pitch" id="pitch" hidden>
-      <video controls playsinline preload="none" data-key="pitch" aria-label="Video pitch de Amazona Verse" data-en-aria-label="Amazona Verse pitch video"></video>
-      <figcaption><span data-l="es">Video pitch · 2:45 · con subtítulos en español e inglés. Todas las imágenes son del juego.</span><span data-l="en">Pitch video · 2:45 · with Spanish and English subtitles. All footage is from the game.</span></figcaption>
-    </figure>
-    <div class="press-grid">
-      <dl class="factsheet">
-        <dt><span data-l="es">Qué es</span><span data-l="en">What</span></dt><dd><span data-l="es">Juego educativo 3D que se juega en el navegador</span><span data-l="en">An educational 3D game played in the browser</span></dd>
-        <dt><span data-l="es">Para quién</span><span data-l="en">For</span></dt><dd><span data-l="es">Jugadores de todas las edades, sus maestros y sus familias</span><span data-l="en">Players of all ages, their teachers and families</span></dd>
-        <dt><span data-l="es">Protagonista</span><span data-l="en">Hero</span></dt><dd><span data-l="es">Vittata, una cotorra puertorriqueña inventora</span><span data-l="en">Vittata, a Puerto Rican parrot and inventor</span></dd>
-        <dt><span data-l="es">Estado</span><span data-l="en">Status</span></dt><dd><span data-l="es">Prototipo jugable del capítulo 1 (octubre de 2026)</span><span data-l="en">Playable prototype of Chapter 1 (October 2026)</span></dd>
-        <dt><span data-l="es">Idiomas</span><span data-l="en">Languages</span></dt><dd><span data-l="es">Español e inglés</span><span data-l="en">Spanish and English</span></dd>
-        <dt><span data-l="es">Origen</span><span data-l="en">Origin</span></dt><dd><span data-l="es">Equipo Amazona Verse · Puerto Rico</span><span data-l="en">Amazona Verse team · Puerto Rico</span></dd>
-      </dl>
-      <div class="copybox on-paper">
-        <h3><span data-l="es">Texto para medios</span><span data-l="en">Boilerplate</span></h3>
-        <p class="text" id="bp-es" data-l="es">Amazona Verse es un juego educativo 3D que se juega en el navegador, creado en Puerto Rico. Jugadores de todas las edades acompañan a Vittata, una cotorra puertorriqueña inventora, a proteger su comunidad después de una tormenta, mientras aprenden ciencias alineadas a los estándares del Departamento de Educación de Puerto Rico (2022) y NGSS. Sin anuncios, sin chat y sin datos personales del estudiante. Equipo Amazona Verse · Puerto Rico.</p>
-        <p class="text" id="bp-en" data-l="en">Amazona Verse is an educational 3D game played in the browser, made in Puerto Rico. Players of all ages join Vittata, a Puerto Rican parrot and inventor, to protect her community after a storm while they learn science aligned to the Puerto Rico Department of Education (2022) standards and NGSS. No ads, no chat and no student personal data. Amazona Verse team · Puerto Rico.</p>
-        <div class="copy-row">
-          <button class="btn sm paperish" type="button" data-copy-es="bp-es" data-copy-en="bp-en" data-icon="copy"><span data-l="es">Copiar texto</span><span data-l="en">Copy text</span></button>
-          <span class="copied" aria-live="polite"></span>
-        </div>
-        <p class="muted small" style="margin-top:14px" data-l="es">Logo, capturas y video en alta resolución: pídelos en la sección de contacto.</p>
-        <p class="muted small" style="margin-top:14px" data-l="en">High-resolution logo, screenshots and video: request them through the contact section.</p>
-      </div>
+    <ul class="sponsors">
+      <li class="sponsor">
+        <span class="kind"><span data-l="es">Sponsor fundador</span><span data-l="en">Founding sponsor</span></span>
+        <span class="sponsor-logo"><img src="assets/img/sponsors/kg-smart-real-estate.jpg" width="600" height="176" loading="lazy" decoding="async" alt="Logo de Kelvin García · Smart Real Estate" data-en-alt="Kelvin García · Smart Real Estate logo"></span>
+        <b>Kelvin García · Smart Real Estate</b>
+        <p data-l="es">Fundador de Amazona Verse. Corredor de bienes raíces en Puerto Rico.</p>
+        <p data-l="en">Founder of Amazona Verse. Real estate broker in Puerto Rico.</p>
+        <a href="https://www.kelvingarciapr.com/" target="_blank" rel="noopener sponsored">kelvingarciapr.com</a>
+      </li>
+      <li class="sponsor">
+        <span class="kind"><span data-l="es">Sponsor</span><span data-l="en">Sponsor</span></span>
+        <span class="sponsor-logo"><img src="assets/img/sponsors/seguros-jorge-garcia.png" width="356" height="150" loading="lazy" decoding="async" alt="Logo de Seguros en General, de Jorge L. García" data-en-alt="Seguros en General logo, by Jorge L. García"></span>
+        <b>Seguros · Jorge L. García</b>
+        <p data-l="es">Seguros de auto, hogar, vida, comerciales y de viaje en Puerto Rico. Un sponsor de Jorge.</p>
+        <p data-l="en">Auto, home, life, commercial and travel insurance in Puerto Rico. Sponsored by Jorge.</p>
+        <a href="https://segurosengeneral.com/" target="_blank" rel="noopener sponsored">segurosengeneral.com</a>
+      </li>
+      <li class="sponsor">
+        <span class="kind"><span data-l="es">Sponsor</span><span data-l="en">Sponsor</span></span>
+        <!-- Tarjeta de texto (sin logo): el nombre en el recuadro del logo para que las tres tarjetas alineen -->
+        <span class="sponsor-logo sponsor-texto" aria-hidden="true">Smarlin</span>
+        <b>Smarlin</b>
+        <p data-l="es">Red de servicios para bienes raíces en Puerto Rico.</p>
+        <p data-l="en">A network of real estate services in Puerto Rico.</p>
+        <a href="https://smarlin.com/" target="_blank" rel="noopener sponsored">smarlin.com</a>
+      </li>
+    </ul>
+    <div class="sponsor-ask">
+      <p><b data-l="es">¿Quieres apoyar el proyecto?</b><b data-l="en">Want to support the project?</b> <span data-l="es">Escríbenos y te contamos cómo.</span><span data-l="en">Write to us and we will tell you how.</span></p>
+      <a class="btn sm leaf" href="#contacto" data-icon="mail"><span data-l="es">Escríbenos</span><span data-l="en">Write to us</span></a>
     </div>
   </div>
 </section>
 
-<!-- ================= CONTACTO ================= -->
+<!-- ================= CONTACTO (corto) ================= -->
 <section class="section contact" id="contacto" aria-labelledby="h-contacto">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow"><span data-l="es">Contacto</span><span data-l="en">Contact</span></span>
       <h2 class="h2" id="h-contacto"><span data-l="es">Escríbenos</span><span data-l="en">Get in touch</span></h2>
-      <p class="lead" data-l="es">Pilotos, prensa, alianzas o inversión. Te contestamos en español o en inglés.</p>
-      <p class="lead" data-l="en">Pilots, press, partnerships or investment. We reply in Spanish or English.</p>
+      <p class="lead" data-l="es">Escuelas, familias, prensa, sponsors o conservación. Te contestamos en español o en inglés.</p>
+      <p class="lead" data-l="en">Schools, families, press, sponsors or conservation. We reply in Spanish or English.</p>
     </div>
-    <div class="contact-card on-paper">
+    <div class="contact-short on-paper">
       <div>
         <h3><span data-l="es">Nuestro correo</span><span data-l="en">Our email</span></h3>
+        <!-- [KELVIN] confirmar el correo público: se configura en window.AV_WEB.correo (al final de esta página) y se muestra aquí solo. -->
         <div class="email-box">
-          <span class="email pending" id="email-text"><span data-l="es">Correo por confirmar</span><span data-l="en">Email to be confirmed</span></span>
+          <span class="email pending" id="email-text" data-correo><span data-l="es">Correo por confirmar</span><span data-l="en">Email to be confirmed</span></span>
           <button class="btn sm paperish" type="button" id="email-copy" data-icon="copy" hidden><span data-l="es">Copiar correo</span><span data-l="en">Copy email</span></button>
           <span class="copied" aria-live="polite"></span>
         </div>
-        <p class="muted" data-l="es">Copia el correo y escríbenos desde tu cuenta. Escribe solo datos de adultos; no envíes nombres de estudiantes.</p>
-        <p class="muted" data-l="en">Copy the address and write to us from your own account. Share adult contact details only; please do not send student names.</p>
+        <p class="muted" data-l="es">Escribe solo datos de adultos; no envíes nombres de estudiantes.</p>
+        <p class="muted" data-l="en">Share adult contact details only; please do not send student names.</p>
       </div>
-      <div>
-        <h3><span data-l="es">Mensaje modelo para pedir un piloto</span><span data-l="en">Sample message to request a pilot</span></h3>
-        <p class="template" id="tpl-es" data-l="es">Hola, equipo de Amazona Verse:
-Soy maestra/o de ___ grado en la escuela ___, en ___.
-Me interesa un piloto gratis con ___ estudiantes.
-En el salón usamos: Chromebooks / computadoras / tabletas.
-Gracias.</p>
-        <p class="template" id="tpl-en" data-l="en">Hello, Amazona Verse team:
-I teach grade ___ at ___ school, in ___.
-I'm interested in a free pilot with ___ students.
-In class we use: Chromebooks / computers / tablets.
-Thank you.</p>
-        <div class="copy-row">
-          <button class="btn sm paperish" type="button" data-copy-es="tpl-es" data-copy-en="tpl-en" data-icon="copy"><span data-l="es">Copiar mensaje</span><span data-l="en">Copy message</span></button>
-          <span class="copied" aria-live="polite"></span>
-        </div>
-      </div>
-
-      <!-- Variante de hosting: formulario real. Oculto por defecto; se activa con AV_WEB.formulario (ver README). -->
-      <form class="form" id="form-contacto" name="contacto" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="contacto">
-        <p hidden><label>No llenar <input name="bot-field"></label></p>
-        <div><label for="f-nombre"><span data-l="es">Nombre</span><span data-l="en">Name</span></label><input id="f-nombre" name="nombre" autocomplete="name" required></div>
-        <div><label for="f-correo"><span data-l="es">Correo</span><span data-l="en">Email</span></label><input id="f-correo" name="correo" type="email" autocomplete="email" required></div>
-        <div><label for="f-rol"><span data-l="es">Soy</span><span data-l="en">I am</span></label>
-          <select id="f-rol" name="rol">
-            <option value="maestro" data-en="A teacher">Maestra/o</option>
-            <option value="escuela" data-en="School leadership">Dirección escolar</option>
-            <option value="familia" data-en="A parent or family member">Familia</option>
-            <option value="aliado" data-en="A conservation or culture partner">Aliado de conservación o cultura</option>
-            <option value="inversion" data-en="An investor">Inversionista</option>
-            <option value="prensa" data-en="Press">Prensa</option>
-          </select></div>
-        <div><label for="f-escuela"><span data-l="es">Escuela u organización (opcional)</span><span data-l="en">School or organization (optional)</span></label><input id="f-escuela" name="escuela" autocomplete="organization"></div>
-        <div class="full"><label for="f-mensaje"><span data-l="es">Mensaje</span><span data-l="en">Message</span></label><textarea id="f-mensaje" name="mensaje" required></textarea></div>
-        <div class="full copy-row"><button class="btn" type="submit"><span data-l="es">Enviar mensaje</span><span data-l="en">Send message</span></button><span class="status" id="form-status" role="status"></span></div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ================= EL EQUIPO ================= -->
-<section class="section team" id="equipo" aria-labelledby="h-equipo">
-  <div class="wrap team-grid">
-    <figure class="team-fig">
-      <img src="assets/img/vittata.png" width="320" height="320" loading="lazy"
-           alt="Vittata, la cotorra puertorriqueña de plumaje verde y frente roja, de frente y con una sonrisa."
-           data-en-alt="Vittata, the green Puerto Rican parrot with a red forehead, facing forward with a smile.">
-    </figure>
-    <div>
-      <span class="eyebrow"><span data-l="es">El equipo</span><span data-l="en">The team</span></span>
-      <h2 class="h2" id="h-equipo"><span data-l="es">Una aventura hecha en familia</span><span data-l="en">An adventure made as a family</span></h2>
-      <p class="lead" data-l="es">Hecho en Puerto Rico, con amor por la isla y sus cotorras, desde 2012.</p>
-      <p class="lead" data-l="en">Made in Puerto Rico, with love for the island and its parrots, since 2012.</p>
-      <ul class="team-list">
-        <li><b>Kelvin García</b><span data-l="es">Fundador y director creativo</span><span data-l="en">Founder &amp; creative director</span></li>
-        <li><b>Analeah García</b><span data-l="es">Cofundadora</span><span data-l="en">Co-founder</span></li>
-        <li><b>Nathanael García</b><span data-l="es">Cofundador</span><span data-l="en">Co-founder</span></li>
-      </ul>
-      <!-- Creativos y colaboradores: añadir nombres cuando Kelvin los confirme. No inventar nombres. -->
-      <div class="team-collab" hidden>
-        <h3><span data-l="es">Creativos y colaboradores</span><span data-l="en">Creatives &amp; collaborators</span></h3>
-        <ul></ul>
-      </div>
+      <a class="btn" href="escuelas.html#contacto" data-icon="arrow"><span data-l="es">Pedir un piloto para mi escuela</span><span data-l="en">Request a pilot for my school</span></a>
     </div>
   </div>
 </section>
@@ -1692,224 +811,29 @@ Thank you.</p>
       <span class="foot-made"><img src="assets/img/bandera-pr.svg" width="36" height="24" alt="" loading="lazy"><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></span>
     </div>
     <nav class="foot-nav" aria-label="Pie de página" data-en-aria-label="Footer">
-      <a href="#historia"><span data-l="es">Historia</span><span data-l="en">Story</span></a>
-      <a href="#aprender"><span data-l="es">Aprender</span><span data-l="en">Learning</span></a>
-      <a href="#maestros"><span data-l="es">Modo Maestro</span><span data-l="en">Teacher Mode</span></a>
-      <a href="#criadero"><span data-l="es">Criadero</span><span data-l="en">Nursery</span></a>
-      <a href="#conservacion"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></a>
-      <a href="#tecnologia"><span data-l="es">Tecnología</span><span data-l="en">Technology</span></a>
-      <a href="#equipo"><span data-l="es">El equipo</span><span data-l="en">The team</span></a>
-      <a href="#escuelas"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
-      <a href="#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
+      <a href="#capitulos"><span data-l="es">Capítulos</span><span data-l="en">Chapters</span></a>
+      <a href="#minijuegos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
+      <a href="#top-records"><span data-l="es">Top récords</span><span data-l="en">Top records</span></a>
+      <a href="cotorra.html"><span data-l="es">La cotorra</span><span data-l="en">The parrot</span></a>
+      <a href="escuelas.html"><span data-l="es">Escuelas y maestros</span><span data-l="en">Schools and teachers</span></a>
+      <a href="escuelas.html#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
+      <a href="#fundadores"><span data-l="es">Fundadores</span><span data-l="en">Founders</span></a>
+      <a href="#sponsors"><span data-l="es">Sponsors</span><span data-l="en">Sponsors</span></a>
       <a href="#contacto"><span data-l="es">Contacto</span><span data-l="en">Contact</span></a>
     </nav>
     <div class="foot-legal">
       <p data-l="es">Este sitio no usa cookies ni analítica. Las tipografías se cargan desde Google Fonts.</p>
       <p data-l="en">This site uses no cookies or analytics. Fonts are loaded from Google Fonts.</p>
-      <p data-l="es">© 2026 Equipo Amazona Verse · Puerto Rico. Prototipo en desarrollo; el contenido puede cambiar.</p>
-      <p data-l="en">© 2026 Amazona Verse team · Puerto Rico. Prototype in development; content may change.</p>
+      <p data-l="es">© 2026 Equipo Amazona Verse · Puerto Rico. Juego en desarrollo; el contenido puede cambiar.</p>
+      <p data-l="en">© 2026 Amazona Verse team · Puerto Rico. Game in development; content may change.</p>
     </div>
   </div>
 </footer>
 
 <script>
-/* Configuración del sitio. Lo único que se edita para publicar (ver README.md).
-   correo:     dirección pública de contacto. POR CONFIRMAR: la decide Kelvin. Vacío = "por confirmar".
-   formulario: '' en el artifact (los formularios no envían). En hosting: 'netlify' o la URL de Formspree. */
+/* Configuración del sitio (ver README.md). correo: dirección pública de contacto, la decide Kelvin; vacío = «por confirmar». */
 window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
 </script>
-<script>
-(function () {
-  'use strict';
-  var root = document.documentElement;
-  var CFG = window.AV_WEB || {};
-  var reduceMQ = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
-  var T = {
-    es: { pause: 'Pausar video', play: 'Reproducir video', copied: 'Copiado', copyFail: 'No se pudo copiar: el texto quedó seleccionado; usa Ctrl+C o ⌘C.', menuOpen: 'Abrir menú', menuClose: 'Cerrar menú', sending: 'Enviando…', sent: 'Recibimos tu mensaje. Te contestamos pronto.', sendFail: 'No se pudo enviar. Copia el correo y escríbenos desde tu cuenta.' },
-    en: { pause: 'Pause video', play: 'Play video', copied: 'Copied', copyFail: 'Could not copy: the text is selected; press Ctrl+C or ⌘C.', menuOpen: 'Open menu', menuClose: 'Close menu', sending: 'Sending…', sent: 'We got your message. We will reply soon.', sendFail: 'Could not send. Copy the email address and write to us from your account.' }
-  };
-  function lang() { return root.lang === 'en' ? 'en' : 'es'; }
-  function t(k) { return T[lang()][k]; }
-  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
-
-  /* ---------- Idioma ---------- */
-  var ATTRS = ['alt', 'aria-label', 'title'];
-  function setLang(l) {
-    root.lang = l;
-    document.querySelectorAll('[data-lang]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.lang === l)); });
-    ATTRS.forEach(function (a) {
-      document.querySelectorAll('[data-en-' + a + ']').forEach(function (el) {
-        var keyEs = 'data-es-' + a;
-        if (!el.hasAttribute(keyEs)) el.setAttribute(keyEs, el.getAttribute(a) || '');
-        el.setAttribute(a, l === 'en' ? el.getAttribute('data-en-' + a) : el.getAttribute(keyEs));
-      });
-    });
-    document.querySelectorAll('option[data-en]').forEach(function (o) {
-      if (!o.dataset.es) o.dataset.es = o.textContent;
-      o.textContent = l === 'en' ? o.dataset.en : o.dataset.es;
-    });
-    var og = document.querySelector('meta[property="og:locale"]'); if (og) og.content = l === 'en' ? 'en_US' : 'es_PR';
-    updateMenuLabel(); updateVideoLabels();
-    var pv = document.querySelector('#pitch video');
-    if (pv && pv.textTracks) [].forEach.call(pv.textTracks, function (tt) { tt.mode = tt.language === l ? 'showing' : 'disabled'; });
-    store('av-web-lang', l);
-  }
-  document.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
-
-  /* ---------- Menú móvil ---------- */
-  var nav = document.getElementById('nav'), menuBtn = document.getElementById('menu-btn');
-  function updateMenuLabel() {
-    if (!menuBtn) return;
-    var open = menuBtn.getAttribute('aria-expanded') === 'true';
-    menuBtn.setAttribute('aria-label', t(open ? 'menuClose' : 'menuOpen'));
-    menuBtn.dataset.icon = open ? 'close' : 'menu';
-  }
-  function setMenu(open) { nav.classList.toggle('open', open); menuBtn.setAttribute('aria-expanded', String(open)); updateMenuLabel(); }
-  menuBtn.addEventListener('click', function () { setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'); });
-  nav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) { setMenu(false); menuBtn.focus(); } });
-
-  /* ---------- Video: carga diferida, solo si el archivo existe; sin autoplay con movimiento reducido ---------- */
-  var screens = [].slice.call(document.querySelectorAll('[data-video]'));
-  function updateVideoLabels() {
-    screens.forEach(function (s) {
-      var btn = s.querySelector('.vid-btn'), v = s.querySelector('video'); if (!btn || !v) return;
-      var playing = !v.paused;
-      btn.querySelector('.vid-lbl').textContent = t(playing ? 'pause' : 'play');
-      btn.dataset.icon = playing ? 'pause' : 'play';
-    });
-  }
-  /* Los videos disponibles se listan en assets/video/videos.json (así no hay peticiones 404 mientras no existan). */
-  var manifest = null;
-  function getManifest() {
-    if (!manifest) manifest = fetch('assets/video/videos.json', { cache: 'no-cache' })
-      .then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
-    return manifest;
-  }
-  function prepare(s) {
-    if (s.dataset.ready) return; s.dataset.ready = '1';
-    var v = s.querySelector('video'), btn = s.querySelector('.vid-btn');
-    getManifest().then(function (m) {
-      var entry = m && m[v.dataset.key];
-      if (!entry) return; // sin video todavía: queda el póster
-      var src = (entry.webm && v.canPlayType('video/webm; codecs="vp9"')) ? entry.webm : entry.mp4;
-      if (!src) return;
-      v.src = src; v.load();
-      v.addEventListener('playing', function () { s.classList.add('is-playing'); updateVideoLabels(); });
-      v.addEventListener('pause', updateVideoLabels);
-      v.addEventListener('error', function () { s.classList.remove('is-playing'); btn.hidden = true; });
-      btn.hidden = false;
-      btn.addEventListener('click', function () {
-        if (v.paused) { s.dataset.userPaused = ''; v.play().catch(function () {}); }
-        else { s.dataset.userPaused = '1'; v.pause(); }
-      });
-      if (!reduceMQ.matches && s.dataset.visible === '1') v.play().catch(function () {});
-      updateVideoLabels();
-    });
-  }
-  /* Video pitch en Prensa: aparece solo cuando videos.json trae "pitch" (mp4, poster y subtítulos). */
-  getManifest().then(function (m) {
-    var e = m && m.pitch, fig = document.getElementById('pitch');
-    if (!e || !e.mp4 || !fig) return;
-    var v = fig.querySelector('video');
-    if (e.poster) v.poster = e.poster;
-    v.src = e.mp4;
-    Object.keys(e.vtt || {}).forEach(function (l) {
-      var tr = document.createElement('track');
-      tr.kind = 'subtitles'; tr.srclang = l; tr.src = e.vtt[l];
-      tr.label = l === 'en' ? 'English' : 'Español';
-      if (l === lang()) tr.default = true;
-      v.appendChild(tr);
-    });
-    fig.hidden = false;
-  });
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        var s = en.target, v = s.querySelector('video');
-        s.dataset.visible = en.isIntersecting ? '1' : '';
-        if (en.isIntersecting) {
-          prepare(s);
-          if (v.src && v.paused && !s.dataset.userPaused && !reduceMQ.matches) v.play().catch(function () {});
-        } else if (v && v.src && !v.paused) { v.pause(); }
-      });
-    }, { rootMargin: '200px 0px' });
-    screens.forEach(function (s) { io.observe(s); });
-  } else { screens.forEach(function (s) { s.dataset.visible = '1'; prepare(s); }); }
-
-  /* ---------- ¿Dónde construirías? ---------- */
-  var decide = document.getElementById('decide');
-  if (decide) {
-    decide.addEventListener('click', function (e) {
-      var pick = e.target.closest('[data-pick]'), reset = e.target.closest('[data-reset]');
-      if (pick) {
-        var id = pick.dataset.pick;
-        ['A', 'B'].forEach(function (k) {
-          document.getElementById('res-' + k).hidden = k !== id;
-          document.getElementById('card-' + k).classList.toggle('picked', k === id);
-        });
-        var res = document.getElementById('res-' + id);
-        res.focus({ preventScroll: true });
-        res.scrollIntoView({ behavior: reduceMQ.matches ? 'auto' : 'smooth', block: 'nearest' });
-      }
-      if (reset) {
-        ['A', 'B'].forEach(function (k) { document.getElementById('res-' + k).hidden = true; document.getElementById('card-' + k).classList.remove('picked'); });
-        var first = decide.querySelector('[data-pick="A"]'); if (first) first.focus();
-      }
-    });
-  }
-
-  /* ---------- Copiar (portapapeles con selección como respaldo) ---------- */
-  function selectText(el) {
-    try { var r = document.createRange(); r.selectNodeContents(el); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (e) {}
-  }
-  function copyFrom(el, statusEl) {
-    var text = el.innerText.trim();
-    function ok() { if (statusEl) { statusEl.dataset.state = 'ok'; statusEl.textContent = t('copied'); setTimeout(function () { statusEl.textContent = ''; }, 2500); } }
-    function fail() { selectText(el); if (statusEl) { statusEl.dataset.state = 'fail'; statusEl.textContent = t('copyFail'); } }
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fail);
-      else fail();
-    } catch (e) { fail(); }
-  }
-  document.querySelectorAll('[data-copy-es]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var el = document.getElementById(lang() === 'en' ? btn.dataset.copyEn : btn.dataset.copyEs);
-      copyFrom(el, btn.parentElement.querySelector('.copied'));
-    });
-  });
-
-  /* ---------- Contacto ---------- */
-  var emailText = document.getElementById('email-text'), emailCopy = document.getElementById('email-copy');
-  if (CFG.correo) {
-    emailText.classList.remove('pending');
-    emailText.textContent = CFG.correo;
-    emailCopy.hidden = false;
-    emailCopy.addEventListener('click', function () { copyFrom(emailText, emailCopy.parentElement.querySelector('.copied')); });
-  }
-  var form = document.getElementById('form-contacto'), formStatus = document.getElementById('form-status');
-  if (form && CFG.formulario) {
-    form.hidden = false;
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      formStatus.textContent = t('sending');
-      var data = new FormData(form), req;
-      if (CFG.formulario === 'netlify') {
-        req = fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(data).toString() });
-      } else {
-        req = fetch(CFG.formulario, { method: 'POST', headers: { Accept: 'application/json' }, body: data });
-      }
-      req.then(function (r) {
-        if (!r.ok) throw new Error(r.status);
-        formStatus.textContent = t('sent'); form.reset();
-      }).catch(function () { formStatus.textContent = t('sendFail'); });
-    });
-  }
-
-  /* ---------- Arranque ---------- */
-  var saved = store('av-web-lang');
-  setLang(saved === 'en' ? 'en' : 'es');
-})();
-</script>
+<script src="assets/js/web.js"></script>
 </body>
 </html>
