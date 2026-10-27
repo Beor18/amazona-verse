@@ -432,6 +432,28 @@ Lee primero todo `MAPA_PLAN_COMPLETO.md`: el diagnóstico, el presupuesto por di
 
 F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 de Kelvin. No las empieces.
 
+## Carriles BB y BC: que el mapa se parezca al render original de 2022 y cazar bugs (Kelvin, 27-oct: «las gráficas y el mapa malísimo»)
+**La meta visual es `docs/img/mapa_audit_original_2022.jpg`, el render de 3ds Max de Kelvin.** Hoy, en `docs/img/mapa_audit_aerea_sur.jpg`:
+- el río es gris, y en el render es azul turquesa brillante;
+- las sendas se ven como manchas rojo sangre;
+- hay pocos árboles, como palitos blancos;
+- las aldeas se ven como manchas oscuras diminutas, cuando en el render se leen como aldeas de tejados rojos.
+- Cada tarea **reproduce el mismo ángulo de cámara del render** (añádelo a `tools/build/mapa_vistas.json` como vista `render2022`) y entrega una comparación lado a lado en `docs/img/<tarea>_vs_2022_*.jpg`.
+- Mide en móvil con las 12 vistas: el presupuesto de `MAPA_PLAN_COMPLETO.md` § 3 manda.
+- No toques los edificios ni sus texturas (eso es de Grok), ni la flora (carril AW), ni los nombres o lugares (carril AY).
+
+**Carril BB, look del mapa:**
+- **BB1, agua y orillas:** el río y las pozas con el color, el brillo y el borde claro del render. Busca el shader del agua y `G.agua`. El mar se queda como está. Orillas con arena o barro, no con un corte gris.
+- **BB2, sendas y suelo abierto:**
+  - las sendas (la máscara `trees.psd` y el splat), de tierra marrón con borde suave, no de rojo saturado;
+  - los claros alrededor de las aldeas, de tierra y hierba como en el render;
+  - los acantilados con roca menos «cartón», usando las texturas que ya hay en el repo.
+
+**Carril BC, bugs (repite AT1, que se quedó sin turnos; partido en dos):**
+- **BC1, escritorio:** juega como un jugador nuevo los capítulos 1 a 6 de seguido, el menú, Retos y los minijuegos. Cada bug va a `BUGS.md` con pasos y captura. Arregla los graves y los fáciles (un commit por bug), y deja un resumen en `docs/equipo/QA_TEMPORADA1.md`.
+- **BC2, móvil a 375×812 con CPU 4×:** lo mismo, más los tirones, la memoria, los textos que tapan y los botones pequeños.
+- Si un archivo tiene cambios sin commit de otro carril (por ejemplo AZ1), deja el bug anotado y no lo toques.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -504,4 +526,8 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 | AY1 | pendiente | | |
 | AY2 | pendiente | | |
 | AZ1 | pendiente | | |
+| BB1 | pendiente | | |
+| BB2 | pendiente | | |
+| BC1 | pendiente | | |
+| BC2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
