@@ -30,7 +30,7 @@ window.AVMinimapa = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || (G.pack && G.pack.id) || 'amazonaverse') + '.minimapa';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const H = (x, z) => G.terreno.height(x, z);
-  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b' };
+  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b' };
 
   // ---------- Preferencia (solo este dispositivo; si no hay almacén, valores por defecto) ----------
   const pref = { ruta: true };
@@ -156,7 +156,12 @@ window.AVMinimapa = function (G) {
       vistos.add(clave); out.push({ tipo, x: it.x, z: it.z, id: it.id });
     }
     const L = G.lugares;
-    if (L && L.lista) for (const p of L.lista()) if (L.descubiertos().includes(p.id)) out.push({ tipo: 'lugar', x: p.x, z: p.z, nombre: L.nombreDe(p), id: p.id });
+    if (L && L.lista) for (const p of L.lista()) {
+      const vis = L.descubiertos().includes(p.id);
+      // Asentamientos (AY1): los 14 siempre, con glifo de madera o de piedra; el nombre solo cuando ya se descubrió
+      if (p.asentamiento) out.push({ tipo: 'pueblo', x: p.x, z: p.z, nombre: vis ? L.nombreDe(p) : '', id: p.id, piedra: p.asentamiento.glifo === 'piedra', oculto: !vis });
+      else if (vis) out.push({ tipo: 'lugar', x: p.x, z: p.z, nombre: L.nombreDe(p), id: p.id });
+    }
     const bq = G.banquete && G.banquete._dev && G.banquete._dev.mundo && G.banquete._dev.mundo.lista;
     // Frutos: solo los 14 más cercanos (sin ruido; el Banquete tiene cientos y el mapa debe poder leerse)
     const fr = rt && rt.frutos ? rt.frutos : bq && !hayRetos() ? bq.filter(f => f.activo) : [];
@@ -212,7 +217,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-ley i{display:inline-block;width:13px;height:13px;flex:none;box-sizing:border-box;border:2px solid #14202b;background:#fff}
 #mapa-grande .mg-ley .l-mision{background:${COL.mision};border-radius:50%}#mapa-grande .mg-ley .l-parada{background:${COL.parada};border-radius:50%}
 #mapa-grande .mg-ley .l-reto{background:${COL.reto};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-fruto{background:${COL.fruto};border-radius:50%;width:9px;height:9px}
-#mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
+#mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-pueblo{background:${COL.pueblo};clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%);border:0}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
 @media (max-height:480px){#mapa-grande .mg-panel{--lado:calc(100dvh - 120px)}#mapa-grande .mg-ley{display:none}}
 :root.a11y-zurdo #mapa-grande .mg-head{flex-direction:row-reverse}:root.a11y-zurdo #mapa-grande h2{margin:0 4px 0 auto}
 :root.a11y-contraste #minimapa .mm-btn{background:#000;border-color:#fff;border-width:4px;box-shadow:none}
@@ -229,7 +234,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   const HTML_GRANDE = '<div class="mg-panel"><div class="mg-head"><h2 id="mg-titulo">Mapa</h2>' +
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
-    '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-dest"></i>Destino</li></ul></div>';
+    '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li></ul></div>';
   let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
@@ -279,10 +284,16 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     if (w > 0 && (cv.width !== w || previo !== dpr)) { cv.width = cv.height = w; return dpr; }
     return previo || dpr;
   }
-  function marca(ctx, tipo, x, y, r, k, glifo) {
+  function marca(ctx, tipo, x, y, r, k, glifo, m) {
     ctx.save(); ctx.translate(x, y); ctx.lineWidth = 2 * k; ctx.strokeStyle = COL.tinta; ctx.fillStyle = COL[tipo] || '#fff'; ctx.lineJoin = 'round';
     ctx.beginPath();
-    if (tipo === 'reto') { ctx.moveTo(0, -r * 1.15); ctx.lineTo(r * 1.1, 0); ctx.lineTo(0, r * 1.15); ctx.lineTo(-r * 1.1, 0); ctx.closePath(); }
+    if (tipo === 'pueblo') { // madera: casa con techo a dos aguas; piedra: templo escalonado. Sin descubrir, más tenue y con «?»
+      if (m && m.oculto) ctx.globalAlpha = 0.6;
+      if (m && m.piedra) { ctx.fillStyle = COL.piedra; ctx.moveTo(-r, r * 0.8); ctx.lineTo(-r, r * 0.25); ctx.lineTo(-r * 0.6, r * 0.25); ctx.lineTo(-r * 0.6, -r * 0.3); ctx.lineTo(-r * 0.25, -r * 0.3); ctx.lineTo(-r * 0.25, -r * 0.9); ctx.lineTo(r * 0.25, -r * 0.9); ctx.lineTo(r * 0.25, -r * 0.3); ctx.lineTo(r * 0.6, -r * 0.3); ctx.lineTo(r * 0.6, r * 0.25); ctx.lineTo(r, r * 0.25); ctx.lineTo(r, r * 0.8); ctx.closePath(); }
+      else { ctx.moveTo(-r * 0.85, r * 0.8); ctx.lineTo(-r * 0.85, -r * 0.1); ctx.lineTo(0, -r * 0.95); ctx.lineTo(r * 0.85, -r * 0.1); ctx.lineTo(r * 0.85, r * 0.8); ctx.closePath(); }
+      if (m && m.oculto) glifo = '?';
+    }
+    else if (tipo === 'reto') { ctx.moveTo(0, -r * 1.15); ctx.lineTo(r * 1.1, 0); ctx.lineTo(0, r * 1.15); ctx.lineTo(-r * 1.1, 0); ctx.closePath(); }
     else if (tipo === 'lugar') { ctx.rect(-r * 0.75, -r * 0.75, r * 1.5, r * 1.5); }
     else if (tipo === 'fruto') { ctx.arc(0, 0, r * 0.62, 0, 6.2832); }
     else if (tipo === 'dest') { ctx.moveTo(-r * 0.55, r); ctx.lineTo(-r * 0.55, -r); ctx.lineTo(r * 0.95, -r * 0.45); ctx.lineTo(-r * 0.55, 0.1 * r); }
@@ -327,7 +338,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.lineWidth = 2.2 * gk; ctx.strokeStyle = de ? COL.dest : COL.obj; ctx.stroke(); ctx.restore();
     }
     // Marcadores en orden de importancia (los de arriba se dibujan al final)
-    const orden = ['fruto', 'lugar', 'reto', 'parada', 'mision', 'dest', 'obj'], inset = rM + 3 * k;
+    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
     for (const tipo of orden) for (const m of ms) {
@@ -341,10 +352,10 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
         ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(ddx, -ddy)); ctx.beginPath(); ctx.moveTo(0, -rM * 1.9); ctx.lineTo(rM * 0.8, -rM * 0.8); ctx.lineTo(-rM * 0.8, -rM * 0.8); ctx.closePath();
         ctx.fillStyle = COL[tipo]; ctx.strokeStyle = COL.tinta; ctx.lineWidth = 2 * gk; ctx.lineJoin = 'round'; ctx.stroke(); ctx.fill(); ctx.restore();
       }
-      const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'obj' ? rM * 1.15 : rM;
-      marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo]);
+      const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'pueblo' ? rM * (grande ? 0.95 : 0.8) : tipo === 'obj' ? rM * 1.15 : rM;
+      marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo], m);
       const nomLugar = G.idioma ? G.idioma.tr(m.nombre) : m.nombre; // U1: nombre del lugar en el idioma elegido
-      if (grande && tipo === 'lugar' && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
+      if (grande && (tipo === 'lugar' || tipo === 'pueblo') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
         const fs = Math.round(11 * fsk() * k); ctx.font = '700 ' + fs + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineWidth = 3.5 * k; ctx.lineJoin = 'round';
         const tw = ctx.measureText(nomLugar).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
         if (!rotulos.some(c => caja[0] < c[2] && caja[2] > c[0] && caja[1] < c[3] && caja[3] > c[1])) {
@@ -476,7 +487,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       // 3. Marcadores por tipo
       const fakes = [{ id: 'mmtest_mision', x: S.pos.x + 10, z: S.pos.z, r: 2, visible: () => true, label: () => 'x', use() {} }, { id: 'parada_mmtest', x: S.pos.x - 10, z: S.pos.z, r: 2, visible: () => true, label: () => 'x', use() {} }];
       for (const f of fakes) G.interaccion.list.push(f);
-      const L = G.lugares, pl = L && L.lista().find(p => !L.descubiertos().includes(p.id));
+      const L = G.lugares, pl = L && L.lista().find(p => !p.asentamiento && !L.descubiertos().includes(p.id));
       if (pl) { if (!Array.isArray(S.lugares)) S.lugares = []; S.lugares.push(pl.id); }
       ext.reto = { puntos: [{ x: S.pos.x + 20, z: S.pos.z + 5 }, { x: S.pos.x + 40, z: S.pos.z + 5 }, { x: S.pos.x + 60, z: S.pos.z + 5 }], sig: 0 };
       ext.frutos = [{ x: S.pos.x + 5, z: S.pos.z - 5 }];
@@ -484,6 +495,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const tipos = new Set(marcadores().map(m => m.tipo));
       const quiero = ['obj', 'mision', 'parada', 'reto', 'fruto', 'dest'].concat(pl ? ['lugar'] : []);
       check('Aparecen marcadores de cada tipo: objetivo, misión, parada, reto, fruto, destino y lugar', quiero.every(t => tipos.has(t)), [...tipos].join(','));
+      const pu = marcadores().filter(m => m.tipo === 'pueblo');
+      check('Los asentamientos salen con su glifo (todos; el nombre solo si ya se descubrió)', !(L && L.lista().some(p => p.asentamiento)) || (pu.length === L.lista().filter(p => p.asentamiento).length && pu.every(m => m.oculto === !m.nombre)), pu.length + ' asentamientos');
       const ms2 = marcadores();
       check('La misión es «!», la parada «?» y cada tipo tiene forma propia', GLIFO.mision === '!' && GLIFO.parada === '?' && ms2.filter(m => m.tipo === 'reto').length === 2);
       tUlt = -1e9; tick(performance.now());
