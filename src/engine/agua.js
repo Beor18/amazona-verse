@@ -269,14 +269,17 @@ AVE.module('agua', function (G) {
       vec3 n1 = texture2D(tNormal, fl).xzy * 2.0 - 1.0, n2 = texture2D(tNormal, fl2).xzy * 2.0 - 1.0;
       vec3 N = normalize(vec3((n1.x + n2.x) * 0.38, 1.0, (n1.z + n2.z) * 0.38));
       if (cae > 0.5) N = normalize(vN + vec3(n1.x, 0.0, n1.z) * 0.2);
+      // BB1: azul turquesa brillante como el render de 2022, con un borde claro (cian) donde el agua es somera
       float k = 1.0 - exp(-max(prof, 0.0) * 0.6);
-      vec3 col = mix(uClaro, uHondo, k);
+      vec3 col = mix(uClaro, uHondo, smoothstep(0.08, 0.75, k));
       col = mix(col, uTurbio, uTurbidez);
-      col = saturar(col, 1.18);
+      col = saturar(col, 1.3);
       float ndl = max(dot(N, uSolDir), 0.0);
-      col *= uHemiCielo * 0.6 + uSolCol * ndl * 0.3 + 0.08;
-      float fres = 0.03 + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
-      col = mix(col, skyRefl(reflect(-V, N)), fres * (1.0 - cae));
+      col *= uHemiCielo * 0.75 + uSolCol * ndl * 0.32 + 0.22;
+      float fres = 0.03 + 0.45 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+      col = mix(col, mix(skyRefl(reflect(-V, N)), col, 0.35), fres * (1.0 - cae)); // el cielo se refleja teñido: no agrisa el río
+      float borde = (1.0 - smoothstep(0.0, 0.55, prof)) * (1.0 - cae) * (1.0 - uTurbidez);
+      col = mix(col, uClaro * (uHemiCielo * 0.9 + uSolCol * 0.35 + 0.25), borde * 0.75);
       col += uSolCol * pow(max(dot(N, normalize(uSolDir + V)), 0.0), 220.0) * 2.0 * (1.0 - cae);
       col += uSolCol * destello(N, normalize(uSolDir + V), vW.xz) * (1.0 - cae) * (1.0 - smoothstep(40.0, 160.0, dist));
       col = mix(col, uClaro * 0.75 * (uHemiCielo * 0.8 + 0.2), cae * 0.6); // la lámina que cae: verde claro translúcido
@@ -299,8 +302,8 @@ AVE.module('agua', function (G) {
       }
       esp = clamp(esp, 0.0, 1.0) * (1.0 - smoothstep(120.0, 260.0, dist));
       col = mix(col, uHemiCielo * 0.9 + uSolCol * 0.4, esp * 0.9);
-      float a = mix(0.62, 0.9, k);
-      a = max(a, esp * 0.95);
+      float a = mix(0.8, 0.97, k); // BB1: casi opaca, para que el fondo de roca no agrise el color
+      a = max(a, max(esp * 0.95, borde * 0.85));
       a = mix(a, 0.5 + esp * 0.45, cae);
       a *= smoothstep(-0.25, 0.05, prof + cae);
       // Boca del río a nivel del mar: en la tormenta no es un segundo plano encima del mar
@@ -318,7 +321,7 @@ AVE.module('agua', function (G) {
     while (pies.length < 8) pies.push(new THREE.Vector4(0, 0, 0, 0));
     const AG = (W.aguaRio || {});
     rioMat = waterMaterial(RIO_VERT, RIO_FRAG, {
-      uClaro: { value: lin(AG.claro || '#3fb6a8') }, uHondo: { value: lin(AG.hondo || '#14566b') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
+      uClaro: { value: lin(AG.claro || '#5fe3d6') }, uHondo: { value: lin(AG.hondo || '#2b8fdc') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
       uTurbidez: { value: 0 }, uPies: { value: pies },
     }, hTex ? { HAY_ALTURA: '' } : {});
     const url = MAPA.terreno && MAPA.terreno.agua;

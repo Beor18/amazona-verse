@@ -195,5 +195,23 @@
   "vuelo": false,
   "yaw": 0,
   "nota": "Meandros a pie"
+ },
+ "render2022": {
+  "x": 50,
+  "y": 150,
+  "z": 150,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   50,
+   150,
+   150
+  ],
+  "mirar": [
+   -25,
+   15,
+   -5
+  ],
+  "nota": "Mismo encuadre que el render de 3ds Max de 2022 (docs/img/mapa_audit_original_2022.jpg): los meandros desde el sureste, con El Yunque arriba a la izquierda"
  }
 }
