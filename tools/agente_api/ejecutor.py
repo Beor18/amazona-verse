@@ -27,6 +27,7 @@ from claude_agent_sdk import (AssistantMessage, ClaudeAgentOptions, ClaudeSDKCli
 JUEGO = Path(__file__).resolve().parents[2]
 MODELO = 'claude-sonnet-5-5'
 REGLAS = """
+NUNCA corras nada en segundo plano (run_in_background, &, «aviso cuando termine»): aquí no llegan avisos y la tarea se cierra sin commit. Build y pruebas en primer plano con timeout largo; espera, haz commit y luego termina.
 Trabajas en el repo de Amazona Verse (~/AmazonaVerse/Juego) como agente de la sesión de terminal con créditos de la API.
 Sigue al pie de la letra docs/equipo/TAREAS_API.md y docs/equipo/COORDINACION.md. En resumen:
 - Una sola rama, main. Commits pequeños solo de tus archivos o líneas; termina cada mensaje de commit con la línea
