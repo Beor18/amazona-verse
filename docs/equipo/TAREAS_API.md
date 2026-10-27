@@ -601,7 +601,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BF4 | pendiente | | |
 | BF5 | pendiente | | |
 | BF6 | pendiente | | |
-| BG1 | pendiente | | |
-| BG2 | pendiente | | |
-| BG3 | pendiente | | |
+| BG1 | lo hace Grok (G17), no la API | | |
+| BG2 | lo hace Grok (G17), no la API | | |
+| BG3 | lo hace Grok (G17), no la API | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
