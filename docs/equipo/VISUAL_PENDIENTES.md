@@ -28,5 +28,8 @@ Verificación tras los cambios del día (BB1 agua, BB2 sendas y roca, AY1 nombre
 
 A pie (`be1_s_villa`, `be1_s_meandros`) el juego ya se ve bien y coherente; los pendientes son casi todos de la lectura aérea y de media distancia.
 
+## BE2 (27-oct, 6cc717c)
+Arreglados en el terreno y el agua los puntos **2, 5, 6, 7 y 9** (detalle en la fila BE2 de `TAREAS_API.md`; antes · después en `docs/img/be2_*`). Siguen: el 1 (AW3), el 3 y el 4 (Grok y AY2), el 8 (BE5) y el 10 (opcional). Lo vuelve a revisar BE7.
+
 ## Medidas (móvil, calidad automática, Mac muy cargada: carga de 16 a 33)
 Calls de 33 a 95, triángulos de 180 k a 560 k (`s_meandros`), de 47 a 77 programas y texturas de 264 a 447 MB. Los ms no sirven: había 6 agentes probando a la vez. 0 errores de consola en las 26 capturas.
