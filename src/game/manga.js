@@ -298,7 +298,7 @@ window.AVManga = function (G) {
       g.addColorStop(0, '#7ec8ff'); g.addColorStop(1, '#1f8a4d');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
     }
-    if (b.lineas) lineas(x, w, h, Math.max(b.lineas, 0.85));
+    if (b.lineas) lineas(x, w, h, b.id === 'velocidad' ? 1 : b.lineas * 0.35);
     props(x, w, h, b.prop);
   }
 
