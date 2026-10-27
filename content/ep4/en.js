@@ -142,6 +142,7 @@
     'Piedras de paso': 'Stepping stones', 'Piedras planas en fila, como para cruzar un arroyo sin mojarse.': 'Flat stones in a row, as if to cross a stream without getting wet.',
     'mirar la orilla': 'looking at the bank', 'escuchar todas las voces': 'listening to every voice', 'construir lo acordado': 'building what was agreed',
     'Mapa del río': 'River map', 'el Cuaderno completo': 'the complete Notebook',
+    'Lentes binoculares': 'Binocular glasses', 'Casco de constructor': 'Builder\'s helmet', 'Cuaderno de campo': 'Field notebook',
     'Mi capítulo 4': 'My chapter 4', 'EL PRECIO DEL PROGRESO': 'THE PRICE OF PROGRESS',
     'Soy {} y quería unir las dos orillas del río.': 'I\'m {} and I wanted to join the two banks of the river.',
     'Antes de dibujar el puente, miré lo que ya vivía en la orilla.': 'Before drawing the bridge, I looked at what already lived on the bank.',

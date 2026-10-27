@@ -9,7 +9,7 @@
    fuente. Todo el estado va en S.collected (se guarda solo): observaciones, voces, pruebas de la maqueta, acuerdo y cuidado. */
 (function () {
   'use strict';
-  const LUMA = { x: -4, z: 2 }, ABUELA = { x: -1, z: -5 }, PAPA = { x: -6, z: -13 }, NAVEGA = { x: 17, z: 3 }, MESA = { x: -5, z: -2 };
+  const LUMA = { x: -4, z: 2 }, ABUELA = { x: -1, z: -5 }, PAPA = { x: -6, z: -13 }, NAVEGA = { x: 1.2, z: 4.8 }, MESA = { x: -5, z: -2 };
   const RIO = 8; // el río corre de norte a sur por x = 8; Villa Raíz queda al oeste y la otra comunidad al este
   // Los tres tramos del río (M1) y lo que se observa en cada uno (valores del juego)
   const TRAMOS = {
@@ -354,7 +354,7 @@
         // Quien navega es de Villa Raíz (ep. 3): mira la otra orilla desde este lado. [KELVIN: la otra comunidad]
         G.dialogo.say([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
       }
-      G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 8 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
+      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 8 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
       G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_papa') ? 'Escuchar al papá' : 'Hablar con el papá', use: papa });
       G.interaccion.add({ id: 'navegante', x: NAVEGA.x, z: NAVEGA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_navegante') ? 'Escuchar a quien navega' : 'Hablar con quien navega', use: navegante });
 
@@ -446,8 +446,33 @@
           if (S.step === 4) balanza(); else if (S.step === 5) maqueta(); else if (S.step === 6) asamblea();
           else G.dialogo.say(OIDS.map(o => di('Vittata', `${OPCIONES[o].nombre}: ${fila(o === opcion() ? hojasCon(o, cuidado()) : OPCIONES[o].hojas)}`)));
         } });
-      const mesa = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.8, 1.4), mat('#8a6a3a'));
-      mesa.position.set(MESA.x, H(MESA.x, MESA.z) + 0.4, MESA.z); scene.add(mesa);
+      // La mesa de la asamblea: tablero con patas y troncos para sentarse alrededor (BF4: antes era una caja sola)
+      { const y = H(MESA.x, MESA.z), tab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.12, 1.4), mat('#8a6a3a')); tab.position.set(MESA.x, y + 0.74, MESA.z); scene.add(tab);
+        for (const [dx, dz] of [[-0.95, -0.55], [0.95, -0.55], [-0.95, 0.55], [0.95, 0.55]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.12), mat('#6b4a2a')); p.position.set(MESA.x + dx, y + 0.35, MESA.z + dz); scene.add(p); }
+        for (const [dx, dz] of [[-2.1, -0.4], [-1.6, 1.6], [2.1, -0.4], [0.2, -2.1]]) { const x = MESA.x + dx, z = MESA.z + dz, t = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.36, 0.42, 9), mat('#7a5634')); t.position.set(x, H(x, z) + 0.21, z); scene.add(t);
+          G.fisica.colliders.push({ x, z, r: 0.38, h: 0.42, kind: 'obj' }); }
+        G.fisica.colliders.push({ x: MESA.x, z: MESA.z, r: 1.0, h: 0.8, kind: 'obj' }); }
+
+      // ---------- Piezas del kit de edificios (assets/models/edificios, propio): el muelle de quien navega con su canoa en el
+      // remanso y el toldo de la asamblea junto a la mesa. Sin el modelo, el sitio queda como estaba (nada depende de ellas) ----------
+      const KIT = 'assets/models/edificios/';
+      const nivelRio = z => { const n = G.agua && G.agua.levelAt ? G.agua.levelAt(RIO, z) : -Infinity; return isFinite(n) ? n : H(RIO, z); };
+      // El modelo con su lado largo en x, centrado y apoyado en y = 0, medido a `largo`
+      function kit(nombre, largo) {
+        return G.assets.loadGLB(KIT + nombre + '.glb', { b64: () => (window.AV_EDIFICIOS_B64 || {})[nombre], script: KIT + nombre + '_glb.js', base: KIT, error: nombre + ' no disponible' }).then(g => {
+          const m = g.scene || (g.scenes && g.scenes[0]); if (!m) throw new Error(nombre);
+          const b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3()), k = largo / (Math.max(sz.x, sz.z) || 1);
+          const w = new THREE.Group(), giro = new THREE.Group(); w.add(giro); giro.add(m);
+          m.scale.setScalar(k); m.position.set(-c.x * k, -b.min.y * k, -c.z * k); if (sz.z > sz.x) giro.rotation.y = Math.PI / 2;
+          m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.castShadow = true; } });
+          w.userData.alto = sz.y * k; return w;
+        });
+      }
+      const MUELLE = { x: 3.4, z: NAVEGA.z + 0.6 };
+      let muelleKit = null, canoaKit = null; // también los muelles y la canoa de la opción C (dibujarObra)
+      kit('muelle_troncos', 4.4).then(w => { w.position.set(MUELLE.x, nivelRio(MUELLE.z) + 0.3 - w.userData.alto, MUELLE.z); scene.add(w); muelleKit = w; dibujarObra();
+        return kit('canoa', 3.6); }).then(w => { canoaKit = w; dibujarObra(); w.position.set(MUELLE.x + 0.6, nivelRio(MUELLE.z + 1.4) - 0.15, MUELLE.z + 1.4); w.rotation.y = 0.12; scene.add(w); }).catch(() => {});
+      kit('toldo_pequeno', 3.6).then(w => { const x = MESA.x - 3.6, z = MESA.z + 0.2; w.position.set(x, H(x, z), z); w.rotation.y = Math.PI / 2; scene.add(w); }).catch(() => {});
       // La maqueta sobre la mesa: un río de juguete y la opción que se está mirando, a escala
       const maq = new THREE.Group(); maq.position.set(MESA.x, H(MESA.x, MESA.z) + 0.81, MESA.z); scene.add(maq);
       const rioMaq = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 1.3), mat('#4a8ab8')); maq.add(rioMaq);
@@ -467,7 +492,7 @@
         label: () => S.step === 7 ? 'Construir lo acordado' : 'Mirar lo construido',
         use: () => {
           if (S.step !== 7) { G.dialogo.say([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
-          poner('construido'); dibujarObra(); G.eventos.log('ProjectBuilt', { choice: opcion() }); G.audio.play('unlock'); registrar();
+          poner('construido'); dibujarObra(); colocarAbuela(); encuadrar(); G.eventos.log('ProjectBuilt', { choice: opcion() }); G.audio.play('unlock'); registrar();
           const y = H(obra.x, obra.z);
           G.fx.burst(obra.x, y + 2, obra.z, 'gold', 30);
           G.dialogo.say([di('Vittata', '¡Entre todos, ' + OPCIONES[opcion()].corto + ' está listo!'), di('Vittata', 'Y el cuidado también: «' + CUIDADOS[cuidado()].nombre + '».'),
@@ -480,10 +505,26 @@
           c: [di('Navegante', 'Súbase, abuela: hoy remamos juntos.'), di('Abuela', 'Cuando crezca el río esperaré, pero hoy cruzo en buena compañía.')],
         }[o] || [];
         G.fx.burst(RIO, H(RIO - 5, TRAMOS[OPCIONES[o].tramo].z) + 2, TRAMOS[OPCIONES[o].tramo].z, 'feathers', 30);
-        G.audio.play('unlock'); G.comic.capture('cruce');
+        encuadrar(); G.audio.play('unlock'); G.comic.capture('cruce');
         S.complete = true; G.eventos.log('Chapter4Completed', { choice: o }); E().fin = S.clock;
         G.misiones.advanceTo(G.misiones.DONE); registrar();
-        G.dialogo.say(lineas.concat(L('evento:Chapter4Completed')), () => G.misiones.showEnd());
+        G.dialogo.say(lineas.concat(L('evento:Chapter4Completed')), () => { colocarAbuela(); G.misiones.showEnd(); });
+      }
+      // La abuela espera en la cabecera de lo construido (la flecha del paso 8 lleva allí y el cruce se ve) y, tras cruzar, queda
+      // en la otra orilla; antes de la obra, en su sitio de siempre
+      function colocarAbuela() {
+        const n = G.actores.npc('abuela'), o = opcion(); if (!n) return;
+        let x = ABUELA.x, z = ABUELA.z;
+        if (o && tiene('construido')) { z = TRAMOS[OPCIONES[o].tramo].z - 1.8; x = S.complete ? RIO + 6 : RIO - 6; }
+        n.def.x = x; n.def.z = z; n.sp.position.set(x, H(x, z) + 1.0, z); n.sh.position.set(x, H(x, z) + 0.03, z); n.collider.x = x; n.collider.z = z;
+        itAbuela.x = x; itAbuela.z = z;
+      }
+      // Encuadre de la obra y del cruce: la cámara se abre a un lado del tramo para que lo construido se vea entero, en diagonal
+      // (del lado sin el bosquecillo ni el borde del mundo)
+      function encuadrar() {
+        const o = opcion(); if (!o || !G.camara) return;
+        const lado = OPCIONES[o].tramo === 'b' ? -1 : 1;
+        G.camara.yaw = Math.atan2(-0.55, 0.85 * lado); G.camara.manual();
       }
       // Lo construido a escala real, por lo que hay en S.collected (se rehace al cargar la partida); los árboles del bosquecillo se
       // quedan, se vuelven tocones (opción A) o tocones con yagrumos replantados
@@ -518,19 +559,21 @@
           if (c === 'descansos') for (let i = 0; i < 3; i++) add(1.2, 0.4, 0.4, '#8a6a3a', x0 - 2 - i * 3, H(x0 - 2 - i * 3, zt - 2) + 0.2, zt - 2 - i * 4);
           if (c === 'minga') for (const dx of [-1, 1]) add(0.15, 1.6, 0.15, '#d6403a', x0 - 1, H(x0 - 1, zt + dx) + 0.8, zt + dx);
         } else if (o === 'c') {
-          for (const [xa, xb] of [[x0 - 1, RIO - 3.2], [RIO + 3.2, x1 + 1]]) add(xb - xa, 0.15, 1.2, '#8a5a2a', (xa + xb) / 2, H(xa, zt) + 0.35, zt);
-          const ca = add(2.4, 0.4, 0.8, '#c9a86a', RIO - 2.2, (G.agua && G.agua.levelAt ? G.agua.levelAt(RIO, zt) : H(RIO, zt)) + 0.2, zt + 1.4); ca.rotation.y = 0.1;
+          for (const [xa, xb, giro] of [[x0 - 1, RIO - 3.2, 0], [RIO + 3.2, x1 + 1, Math.PI]]) {
+            if (!muelleKit) { add(xb - xa, 0.15, 1.2, '#8a5a2a', (xa + xb) / 2, H(xa, zt) + 0.35, zt); continue; }
+            const d = muelleKit.clone(), k = (xb - xa) / 4.4; d.scale.setScalar(k); d.rotation.y = giro; d.position.set((xa + xb) / 2, nivelRio(zt) + 0.3 - muelleKit.userData.alto * k, zt); obraG.add(d);
+          }
+          if (canoaKit) { const ca = canoaKit.clone(); ca.position.set(RIO - 2.2, nivelRio(zt) - 0.15, zt + 1.4); ca.rotation.y = 0.1; obraG.add(ca); }
+          else { const ca = add(2.4, 0.4, 0.8, '#c9a86a', RIO - 2.2, nivelRio(zt) + 0.2, zt + 1.4); ca.rotation.y = 0.1; }
           if (c === 'turnos') { add(0.12, 2.2, 0.12, '#6b4a2a', x0 - 1.5, H(x0 - 1.5, zt) + 1.1, zt + 1); add(0.4, 0.4, 0.4, '#c9a227', x0 - 1.5, H(x0 - 1.5, zt) + 2.1, zt + 1); }
         }
       }
       G.on('apply', dibujarObra, 75);
+      G.on('apply', colocarAbuela, 77);
       G.on('apply', () => { const o = opcion() || OIDS.filter(k => tiene('prueba_' + k)).pop(); vaciar(piezaMaq); if (o) maquetaVer(o); }, 76);
       dibujarObra();
     },
 
-    // Temporada (AV1, src/game/menu_modos.js): al terminar se guarda en el progreso de la temporada qué se acordó y qué se cuidó.
-    // Los GDD de los caps. 5 y 6 no lo usan todavía; queda a mano en G.temporada.decision(4).
-    temporada: { decision: S => { const t = k => S.collected.includes(k); return { opcion: OIDS.find(o => t('opcion_' + o)) || null, cuidado: CIDS.find(c => t('cuidado_' + c)) || null }; } },
 
     pruebas: {
       async selfTest(G, T, opts) {
@@ -592,10 +635,12 @@
           ck('M3 · Cuidado elegido y acuerdo', tiene('cuidado_' + cu) && G.eventos.had('CareChosen') && S.step === 7, 'paso ' + S.step);
           useAt('obra'); drain();
           ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 8 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
+          ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', G.interaccion.find('abuela').x === RIO - 6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
           useAt('abuela'); drain();
           return S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter4Completed') && !$('end').hidden;
         }
 
+        check('Quien navega está en esta orilla, junto al remanso (Villa Raíz)', NAVEGA.x < RIO - 5 && G.interaccion.find('navegante').x === NAVEGA.x);
         const okEsquema = OIDS.every(o => CIDS.filter(c => CUIDADOS[c].para.includes(o)).length > 0);
         check('Cada opción tiene al menos un cuidado', okEsquema);
         check('Ninguna opción lo maximiza todo, con ningún cuidado', OIDS.every(o => [null].concat(CIDS).every(c => !EJES.every(e => hojasCon(o, c)[e.id] === 3))));
@@ -608,6 +653,7 @@
           check(`Opción ${op.toUpperCase()} con «${CUIDADOS[cu].nombre}» llega al final`, fin, 'paso ' + S.step);
         }
         check('Final completo con la opción A, sus chequeos y cajas nido', partida('a', 'cajas', true));
+        check('Tras el cruce, la abuela queda en la otra orilla', G.actores.npc('abuela').def.x === RIO + 6);
         check('El cómic sale de los eventos (5 viñetas)', G.comic.comicPanels().length === 5, G.comic.comicPanels().length);
 
         // ---------- «Iguaca te pregunta» · Modo Maestro · Diario y criadero ----------
@@ -644,7 +690,7 @@
         const EN = window.AV_EN_EP4 || {};
         const textos = [].concat(G.pack.historia.pasos.map(s => s.texto), G.pack.misiones.map(m => m.titulo), DIALOGOS.escenas.flatMap(e => e.lineas),
           Object.values(TRAMOS).map(t => t.ve), Object.values(VOCES).map(v => v.dice), Object.values(OPCIONES).flatMap(o => o.prueba.concat(o.nombre)),
-          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]));
+          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
         const faltan = textos.filter(t => !EN[t]);
         check('Inglés: todos los textos del capítulo tienen traducción', !faltan.length, faltan.slice(0, 3).join(' | '));
         if (G.idioma) {
