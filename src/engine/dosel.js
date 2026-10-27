@@ -1,6 +1,6 @@
 /* Amazona Verse · dosel por celdas (AW3, MAPA_PLAN_COMPLETO.md F1.2): el tercer nivel de los árboles.
    Malla horneada en Blender (tools/blender/entorno_dosel.py → assets/data/dosel_cap1.js): una manta de copas fundidas con color
-   de vértice sobre el bosque, ~200–400 triángulos por celda de 32 m, ~47 k para toda la isla. Se dibuja de DOSEL.cerca (90 m)
+   de vértice sobre el bosque, ~200–400 triángulos por celda de 32 m, ~47 k para toda la isla (en «bajo», dosel_cap1_bajo.js: ~14 k). Se dibuja de DOSEL.cerca (90 m)
    en adelante, con tramado en la banda y hundido hacia el suelo en los 60 m siguientes, y los impostores sueltos de vegetacion.js se cortan a DOSEL.impostor (250 m) mientras
    está activa: lo lejano del bosque lo pone el dosel.
    Una sola llamada: los índices van ordenados por celda y cada vez que cambia el conjunto de celdas a la vista (frustum y fuera
@@ -14,7 +14,9 @@ window.AVDosel = function (G) {
   const R = G.renderer, scene = R.scene, T = G.terreno, MAPA = T.mapa || {};
   const FL = (G.pack.mundo || {}).flora || {};
   const CAP1 = window.AV_MAPA_CAP1;
-  const DOSEL = FL.dosel === false ? null : Object.assign({ src: 'assets/data/dosel_cap1.js', global: 'AV_DOSEL_CAP1', cerca: 90, banda: 14, hundir: 60, impostor: 250 }, FL.dosel);
+  // en «bajo», la versión más simplificada (~14 k tris): esa calidad ya va justa de triángulos (se elige al cargar)
+  const BAJO = R.calidad.nivel === 'bajo';
+  const DOSEL = FL.dosel === false ? null : Object.assign({ src: BAJO ? 'assets/data/dosel_cap1_bajo.js' : 'assets/data/dosel_cap1.js', global: BAJO ? 'AV_DOSEL_CAP1_BAJO' : 'AV_DOSEL_CAP1', cerca: 90, banda: 14, hundir: 60, impostor: 250 }, FL.dosel);
   const api = G.dosel = { listo: Promise.resolve(), activo: false, impostorMax: DOSEL ? DOSEL.impostor : Infinity, stats: () => ({ activo: false }), test: () => Promise.resolve({ passed: 0, total: 0, results: [], omitido: 'sin dosel' }) };
   // solo para el mapa del que se horneó (el del cap. 1, que comparten los packs) o si el pack lo pide
   if (!DOSEL || !(FL.dosel || (CAP1 && MAPA.nombre === CAP1.nombre))) return api;
@@ -105,7 +107,7 @@ window.AVDosel = function (G) {
     const results = [], ok = (name, pasa, extra) => results.push({ name, ok: !!pasa, extra: extra == null ? undefined : typeof extra === 'object' ? JSON.stringify(extra) : String(extra) });
     const s = stats();
     ok('dosel activo', s.activo, s);
-    ok('≈ 50 k triángulos para la isla (≤ 60 k)', s.triangulos > 20e3 && s.triangulos <= 60e3, s.triangulos);
+    ok('≈ 50 k triángulos para la isla (≈ 14 k en bajo; ≤ 60 k)', s.triangulos > (BAJO ? 8e3 : 20e3) && s.triangulos <= (BAJO ? 20e3 : 60e3), s.triangulos);
     ok('≤ 500 triángulos por celda de 32 m', s.maxCelda <= 500, s.maxCelda);
     ok('una sola malla (una llamada)', scene.children.filter(o => o.name === 'flora:dosel').length === 1);
     const cam = R.camera, guard = cam.position.clone(), q = cam.quaternion.clone();

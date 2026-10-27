@@ -6,7 +6,7 @@
 # Entradas: las alturas (assets/data/mapa_cap1_altura.js), la flora del mapa (assets/data/mapa_cap1.js: densidad de árboles y
 # máscara «libre», sin sendas, agua ni edificios) y la máscara de MultiScatter de Kelvin ($AV_MAX_WORK_TERRENO/trees.bmp, ver
 # mapa_original_diag.py; la misma que usa el bosque lleno de AW2). Si falta trees.bmp, solo la densidad del mapa.
-# Salida: assets/data/dosel_cap1.js (AV_DOSEL_CAP1): vértices Uint16 (1/64 m), color sRGB Uint8, índices Uint16 ordenados por
+# Salida: assets/data/dosel_cap1.js (AV_DOSEL_CAP1; y dosel_cap1_bajo.js, más simplificado, para «bajo»): vértices Uint16 (1/64 m), color sRGB Uint8, índices Uint16 ordenados por
 # celda, la altura de cada vértice sobre el suelo (Uint8, dm) y la tabla de celdas [ix, iz, primer índice, nº de índices, y mín, y máx]. Blender pone la malla y la simplifica
 # (Decimate) hasta el objetivo de triángulos; el color se recalcula después a partir de la posición.
 import os, sys, re, json, base64
@@ -17,7 +17,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from mapa_original_diag import bmp, bilin, WORK, ROOT
 
 CELDA = 32.0            # m por celda del dosel (16 cuadros de la rejilla de alturas, 2 m)
-OBJ_TRIS = 50000        # triángulos para toda la isla tras simplificar
+OBJ_TRIS = 50000        # triángulos para toda la isla tras simplificar (medio y alto)
+OBJ_TRIS_BAJO = 16000   # y para la calidad «bajo» (assets/data/dosel_cap1_bajo.js, AV_DOSEL_CAP1_BAJO): ya va justa de triángulos
 ALTO = ((24, 9.5), (64, 7.0), (999, 4.5))   # altura del dosel sobre el suelo por cota (copas algo por debajo de los árboles reales)
 S_K, HALF = 0.255, 264.0
 
@@ -104,7 +105,7 @@ def color(x, z, y, Hs, hc, borde, cota):
     t = np.clip((cota - 55) / 30, 0, 1)[:, None]                                   # bosque enano de la niebla: gris verdoso
     return np.clip(c * (1 - t * 0.55) + niebla * t * 0.55, 0, 255)
 
-def main():
+def main(objetivo=OBJ_TRIS, nombre='dosel_cap1', glob='AV_DOSEL_CAP1'):
     H, x0, z0, paso = leer_altura(); M = leer_mapa()
     nz, nx = H.shape
     m = mascara(H, x0, z0, paso, M)
@@ -135,7 +136,7 @@ def main():
     bpy.context.view_layer.objects.active = ob; ob.select_set(True)
     tri = ob.modifiers.new('tri', 'TRIANGULATE')
     bpy.ops.object.modifier_apply(modifier=tri.name)
-    dec = ob.modifiers.new('dec', 'DECIMATE'); dec.decimate_type = 'COLLAPSE'; dec.ratio = min(1.0, OBJ_TRIS / (2 * len(caras)))
+    dec = ob.modifiers.new('dec', 'DECIMATE'); dec.decimate_type = 'COLLAPSE'; dec.ratio = min(1.0, objetivo / (2 * len(caras)))
     dec.use_collapse_triangulate = True
     bpy.ops.object.modifier_apply(modifier=dec.name)
     me = ob.data
@@ -172,14 +173,15 @@ def main():
     b64 = lambda a: base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
     porCelda = [c[3] // 3 for c in celdas]
     js = ('// Generado por tools/blender/entorno_dosel.py (AW3, dosel por celdas de 32 m). No editar a mano.\n'
-          'window.AV_DOSEL_CAP1 = %s;\n' % json.dumps({
+          'window.%s = %s;\n' % (glob, json.dumps({
               'celda': CELDA, 'x0': -HALF, 'z0': -HALF, 'ncx': ncx, 'origen': q0.tolist(), 'escala': 1 / 64,
               'vertices': len(P), 'triangulos': len(F),
               'nota': 'pos: Uint16 x,y,z (origen + v*escala); col: Uint8 sRGB; alt: Uint8 altura sobre el suelo en dm; idx: Uint16; celdas: [ix, iz, primer índice, nº índices, y mín, y máx]',
-              'celdas': celdas, 'pos': b64(Q), 'col': b64(col.round().astype(np.uint8)), 'alt': b64(alt), 'idx': b64(F.astype('<u2'))}, separators=(',', ':')))
-    out = os.path.join(ROOT, 'assets', 'data', 'dosel_cap1.js')
+              'celdas': celdas, 'pos': b64(Q), 'col': b64(col.round().astype(np.uint8)), 'alt': b64(alt), 'idx': b64(F.astype('<u2'))}, separators=(',', ':'))))
+    out = os.path.join(ROOT, 'assets', 'data', nombre + '.js')
     open(out, 'w', encoding='utf-8').write(js)
     print('dosel: %d vértices, %d tris, %d celdas (%d–%d tris por celda, mediana %d), %d KB -> %s' % (
         len(P), len(F), len(celdas), min(porCelda), max(porCelda), int(np.median(porCelda)), len(js) // 1024, out))
 
 main()
+main(OBJ_TRIS_BAJO, 'dosel_cap1_bajo', 'AV_DOSEL_CAP1_BAJO')
