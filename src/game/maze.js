@@ -17,6 +17,10 @@
    - Puntuación: cada fruto da 10 (palma) o 25 (tabonuco, en los callejones) por el combo (x1 → x5, sube con cada fruto seguido sin que
      te encuentren); al recoger todos, un premio de rapidez. Récord en `<almacen>.retos` (clave maze: { mejor, jugadas }) y gancho
      retosResultado { modo: 'maze', puntos, frutos, ms } para «Mis récords».
+   - Para volver (AO2): tutorial de 10 s en la primera partida (3 pasos con barra; los guardianes esperan), 3 plumas doradas en los
+     pasillos (+50, no hacen falta para terminar; se suman a tu colección), pista suave si llevas 12 s sin recoger nada (huellas que
+     laten por el camino más corto al fruto más cercano), mapa en el HUD que se descubre al caminar (lo que se ve en línea recta;
+     +50 si lo descubres entero) y una «próxima meta» en los resultados. Textos nuevos en ES y EN (tx).
    - Controles: flechas o WASD (PC); deslizar el dedo en cualquier dirección (móvil). La dirección se guarda y Vittata gira en el siguiente
      cruce que lo permita. Enter, Espacio o un toque en los resultados = «Otra vez».
    - Rendimiento: InstancedMesh creadas una vez al entrar (troncos, rocas, bambú, palmas, guardianes y ojos; frutos con la malla de
@@ -41,6 +45,8 @@
       A_.define('mz_encontrada', (t, n, X) => { X.tone(660, t, 0.12, { type: 'sine', to: 520, gain: 0.1 }); X.tone(440, t + 0.13, 0.22, { type: 'triangle', to: 330, gain: 0.09 }); });
       A_.define('mz_fin', (t, n, X) => { for (let i = 0; i < 5; i++) X.tone(X.pent(i * 2 + 2, 523.25), t + i * 0.08, 0.26, { type: 'sine', gain: 0.1 }); });
     }
+    const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
+    const tx = (es, en) => (ingles() ? en : es); // textos nuevos de AO2 en ES y EN
     const sonar = (n, a) => { try { if (A_ && (!A_.has || A_.has(n) || /^(tick|land|unlock|splash|jump)$/.test(n))) A_.play(n, a); else A_.play('tick', a); } catch (e) { /* sin audio */ } };
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
@@ -52,7 +58,7 @@
       controles: { pc: 'flechas o WASD: dirección (se guarda hasta el siguiente cruce)', movil: 'deslizar el dedo: dirección', resultados: 'Enter, Espacio o un toque: otra vez' },
       inicio: 'la primera dirección arranca', victoria: 'recoger todos los frutos', derrota: null,
       persecucion: 'tres guardianes del musgo; si te alcanzan, «¡Te encontraron!» y el combo vuelve a x1 (sin daño, sin vidas)',
-      puntuacion: 'frutos × combo + premio de rapidez', musica: 'retos/carreras (sin reiniciar)',
+      puntuacion: 'frutos × combo + plumas doradas (50) + premio de rapidez + mapa entero (50)', tutorial: '10 s en la primera partida', pistas: 'huellas al fruto más cercano tras 12 s sin recoger nada', musica: 'retos/carreras (sin reiniciar)',
       resultados: ['puntos', 'mejor', 'nuevoRecord', 'tiempo', 'encontrada'], records: { clave: 'maze', campos: ['mejor', 'jugadas'], gancho: 'retosResultado' },
       oculto: true,
     };
@@ -72,6 +78,11 @@
       rapidez: 150,         // s: premio de rapidez = 3 × (rapidez − s) si se acaba antes
       abrir: 0.45,          // fracción de callejones que se abren (bucles)
       finEspera: 0.6,       // s antes de aceptar «otra vez» en los resultados
+      tuto: 10,             // s de tutorial en la primera partida (los guardianes salen después)
+      plumas: 3, puntosPluma: 50, // plumas doradas escondidas en los pasillos (no hacen falta para terminar)
+      pistaTras: 12,        // s sin recoger nada → pista suave (huellas hasta el fruto más cercano)
+      pistaDura: 5,         // s que se ven las huellas
+      puntosMapa: 50,       // premio por descubrir todo el mapa
     };
     const DX = [0, 1, 0, -1], DZ = [-1, 0, 1, 0], BIT = [1, 2, 4, 8]; // 0 norte (−z), 1 este, 2 sur (+z, hacia la cámara), 3 oeste
     const opuesto = d => (d + 2) % 4;
@@ -90,14 +101,15 @@
 
     // ---------- Estado ----------
     const st = { activo: false, fase: 'nada', snap: null, quiet: false, creador: false, env: null, ui: null, listo: null, A: null, msgT: 0 };
-    const J = { gx: 0, gz: 0, d: -1, quiere: -1, t: 0, puntos: 0, combo: 1, racha: 0, recogidos: 0, encontrada: 0, gracia: 0, finT: 0, mejor: 0, nuevo: false, antes: 0, bono: 0, semilla: 1 };
-    const lab = { paredes: null, frutos: [], casa: 0, inicio: 0, abiertos: 0 };
+    const J = { gx: 0, gz: 0, d: -1, quiere: -1, t: 0, puntos: 0, combo: 1, racha: 0, recogidos: 0, encontrada: 0, gracia: 0, finT: 0, mejor: 0, nuevo: false, antes: 0, bono: 0, semilla: 1,
+      plumas: 0, tuto: false, ultFruto: 0, pistaT: 0, pistas: 0, celda: -1, mapaPct: 0, explora: 0 };
+    const lab = { paredes: null, frutos: [], plumas: [], casa: 0, inicio: 0, abiertos: 0, visto: new Uint8Array(P.n * P.n), ruta: [] };
     const guard = [];   // { gx, gz, d, v, salida, fuera, vuelta, modo, tinte, hop }
     let rnd = G.util.rng(1);
 
     // ---------- Pool de instancias (al entrar; solo cambia instanceMatrix) ----------
     const KIT = { base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' };
-    const CAP = { tronco: 2 * P.n * (P.n + 1), roca: (P.n + 1) * (P.n + 1), bambu: 24, palma: 20, guardian: 3, ojo: 6, pupila: 6, fpalma: 24, ftabonuco: 24 };
+    const CAP = { tronco: 2 * P.n * (P.n + 1), roca: (P.n + 1) * (P.n + 1), bambu: 24, palma: 20, guardian: 3, ojo: 6, pupila: 6, fpalma: 24, ftabonuco: 24, pluma: P.plumas, huella: 12 };
     const MODELO = { tronco: 'tronco_caido', roca: 'roca_musgo_a', bambu: 'bambu', palma: 'palma_sierra_joven', guardian: 'roca_musgo_b' };
     const pool = {};
     const propios = []; // geometrías y materiales propios (se liberan al salir; los de banquete.js no)
@@ -165,6 +177,13 @@
         const ojoM = new THREE.MeshLambertMaterial({ color: '#fbfbf2', emissive: '#3a3a30' }), pupM = new THREE.MeshBasicMaterial({ color: '#1d2a22' });
         propios.push(ojoG, pupG, ojoM, pupM);
         nuevoPool('ojo', [{ geo: ojoG, mat: ojoM }], new THREE.Box3(), false); nuevoPool('pupila', [{ geo: pupG, mat: pupM }], new THREE.Box3(), false);
+        // Plumas doradas (rombo alargado que gira) y huellas de la pista (bolitas claras que laten)
+        const plumaG = new THREE.OctahedronGeometry(0.2, 0); plumaG.scale(0.75, 1.7, 0.3);
+        const plumaM = new THREE.MeshLambertMaterial({ color: lin('#ffd84a'), emissive: lin('#7a5a08') });
+        const huellaG = new THREE.SphereGeometry(0.12, 10, 6); huellaG.scale(1, 0.45, 1);
+        const huellaM = new THREE.MeshBasicMaterial({ color: '#d6ffb8' });
+        propios.push(plumaG, plumaM, huellaG, huellaM);
+        nuevoPool('pluma', [{ geo: plumaG, mat: plumaM }], new THREE.Box3(), false); nuevoPool('huella', [{ geo: huellaG, mat: huellaM }], new THREE.Box3(), false);
         const lado = P.n * P.celda + 3.2, pisoG = new THREE.BoxGeometry(lado, 0.8, lado), pisoM = new THREE.MeshLambertMaterial({ color: lin('#d8c79a') });
         const bordeG = new THREE.BoxGeometry(lado + 2.4, 0.5, lado + 2.4), bordeM = new THREE.MeshLambertMaterial({ color: lin('#e8dcb4') });
         propios.push(pisoG, pisoM, bordeG, bordeM);
@@ -255,6 +274,34 @@
       const lejos = (c, k) => lab.frutos.every(f => Math.abs(f.c % P.n - c % P.n) + Math.abs(((f.c / P.n) | 0) - ((c / P.n) | 0)) >= k);
       for (const k of [2, 1]) for (const c of cand) { if (lab.frutos.length >= P.frutos) break; if (!lab.frutos.some(f => f.c === c) && lejos(c, k)) lab.frutos.push({ c, tipo: paredesDe(c) === 3 && lab.frutos.filter(f => f.tipo === 'tabonuco').length < 5 ? 'tabonuco' : 'palma', activo: true, i: -1, fase: rnd() * 6 }); }
       for (const f of lab.frutos) f.i = tomar('f' + f.tipo);
+      // Plumas doradas: en pasillos (no callejones) lejos de la salida, separadas entre sí y sin pisar frutos ni el claro
+      lab.plumas = [];
+      const ocup = new Set(lab.frutos.map(f => f.c)), pc = [];
+      for (let c = 0; c < P.n * P.n; c++) if (D[c] >= 4 && !casa.has(c) && !ocup.has(c) && paredesDe(c) <= 2) pc.push(c);
+      for (let i = pc.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = pc[i]; pc[i] = pc[j]; pc[j] = t; }
+      const separada = (c, k) => lab.plumas.every(p => Math.abs(p.c % P.n - c % P.n) + Math.abs(((p.c / P.n) | 0) - ((c / P.n) | 0)) >= k);
+      for (const k of [4, 2, 1]) for (const c of pc) { if (lab.plumas.length >= P.plumas) break; if (!lab.plumas.some(p => p.c === c) && separada(c, k)) lab.plumas.push({ c, activo: true, i: -1, fase: rnd() * 6 }); }
+      for (const p of lab.plumas) p.i = tomar('pluma');
+    }
+    // Mapa que se va revelando: la casilla donde está Vittata y lo que se ve en línea recta por los pasillos abiertos
+    function revelar(c) {
+      lab.visto[c] = 1;
+      for (let d = 0; d < 4; d++) { let k = c; while (abierto(k, d)) { k = idx(k % P.n + DX[d], ((k / P.n) | 0) + DZ[d]); lab.visto[k] = 1; } }
+    }
+    const pctMapa = () => { let v = 0; for (let c = 0; c < P.n * P.n; c++) v += lab.visto[c]; return Math.round(100 * v / (P.n * P.n)); };
+    // Pista suave: casillas del camino más corto desde Vittata hasta el fruto vivo más cercano (sin la suya; como mucho CAP.huella)
+    function trazarRuta() {
+      lab.ruta.length = 0;
+      const c0 = celdaDe(J), vivos = lab.frutos.filter(f => f.activo); if (!vivos.length) return;
+      const D0 = distancias(c0); let obj = -1, md = 1e9;
+      for (const f of vivos) if (D0[f.c] >= 0 && D0[f.c] < md) { md = D0[f.c]; obj = f.c; }
+      if (obj < 0) return;
+      const D = distancias(obj); let c = c0;
+      while (c !== obj && lab.ruta.length < CAP.huella) {
+        const x = c % P.n, z = (c / P.n) | 0; let sig = -1;
+        for (let d = 0; d < 4; d++) if (abierto(c, d) && D[idx(x + DX[d], z + DZ[d])] === D[c] - 1) { sig = idx(x + DX[d], z + DZ[d]); break; }
+        if (sig < 0) break; lab.ruta.push(sig); c = sig;
+      }
     }
     // Paredes, postes, bambú y palmas del cayo (se colocan una vez por partida)
     function construir() {
@@ -327,12 +374,19 @@
       J.t += dt; J.gracia = Math.max(0, J.gracia - dt); st.msgT = Math.max(0, st.msgT - dt);
       if (J.quiere >= 0 && J.d >= 0 && J.quiere === opuesto(J.d)) J.d = J.quiere; // media vuelta en el pasillo: siempre se puede
       mover(J, P.vel * dt / P.celda, elegirVittata);
-      // Frutos: se recogen al pasar por su casilla
+      const cJ = celdaDe(J); if (cJ !== J.celda) { J.celda = cJ; revelar(cJ); if (J.pistaT > 0) trazarRuta(); }
+      // Frutos y plumas: se recogen al pasar por su casilla
       for (const f of lab.frutos) {
         if (!f.activo) continue;
         const fx = f.c % P.n, fz = (f.c / P.n) | 0;
         if (Math.abs(J.gx - fx) + Math.abs(J.gz - fz) < 0.4) recoger(f);
       }
+      for (const p of lab.plumas) if (p.activo && Math.abs(J.gx - p.c % P.n) + Math.abs(J.gz - ((p.c / P.n) | 0)) < 0.4) recogerPluma(p);
+      // Tutorial (primera partida): al acabar se recuerda en el almacén de récords
+      if (J.tuto && J.t >= P.tuto) { J.tuto = false; J.ultFruto = J.t; const r = leerRec(); r.maze.tuto = true; guardarRec(r); }
+      // Pista suave si lleva un rato sin recoger nada: huellas hasta el fruto más cercano unos segundos
+      if (J.pistaT > 0) { J.pistaT -= dt; if (J.pistaT <= 0) { J.pistaT = 0; lab.ruta.length = 0; } }
+      else if (!J.tuto && J.t - J.ultFruto >= P.pistaTras) { J.pistaT = P.pistaDura; J.pistas++; J.ultFruto = J.t + P.pistaDura; trazarRuta(); }
       // Guardianes
       for (const g of guard) {
         g.hop += dt;
@@ -348,8 +402,17 @@
       J.racha++; J.combo = Math.min(P.comboMax, 1 + Math.floor(J.racha / 2));
       const base = f.tipo === 'tabonuco' ? P.puntosTabonuco : P.puntosPalma, pts = base * J.combo;
       J.puntos += pts; J.recogidos++;
+      J.ultFruto = J.t; J.pistaT = 0; lab.ruta.length = 0;
       sonar(f.tipo === 'tabonuco' ? 'bq_copa' : 'bq_fruto', J.combo);
       if (!REDUCED && !st.sinFx && G.fx) { try { (G.fx.recoger || G.fx.burst)(mundoX(f.c % P.n), st.A.piso + 1, mundoZ((f.c / P.n) | 0), 'gold', 8, st.A.piso + 3); } catch (e) { /* sin fx */ } }
+      pintar(true);
+    }
+    // Pluma dorada: 50 puntos sin tocar el combo; no hace falta para terminar, pero se guardan en tu colección
+    function recogerPluma(p) {
+      p.activo = false; esconder('pluma', p.i);
+      J.plumas++; J.puntos += P.puntosPluma; J.ultFruto = J.t;
+      sonar('unlock');
+      if (!REDUCED && !st.sinFx && G.fx && G.fx.burst) { try { G.fx.burst(mundoX(p.c % P.n), st.A.piso + 1.1, mundoZ((p.c / P.n) | 0), 'stars', 10, st.A.piso + 3); } catch (e) { /* sin fx */ } }
       pintar(true);
     }
     // «¡Te encontraron!»: sin daño; el combo vuelve a x1, el guardián vuelve a su claro y hay unos segundos de gracia
@@ -364,13 +427,16 @@
     function fin() {
       st.fase = 'fin'; J.finT = 0;
       J.bono = Math.max(0, Math.round(3 * (P.rapidez - J.t))); J.puntos += J.bono;
+      J.mapaPct = pctMapa(); J.explora = J.mapaPct === 100 ? P.puntosMapa : 0; J.puntos += J.explora;
       const rec = leerRec(), m = rec.maze; J.antes = m.mejor || 0;
-      m.jugadas = (m.jugadas || 0) + 1;
+      m.jugadas = (m.jugadas || 0) + 1; m.tuto = true;
+      m.plumasTot = (m.plumasTot || 0) + J.plumas; m.plumasMejor = Math.max(m.plumasMejor || 0, J.plumas);
       J.nuevo = J.puntos > 0 && (!m.mejor || J.puntos > m.mejor);
       if (J.nuevo) m.mejor = J.puntos;
+      J.plumasTot = m.plumasTot;
       J.mejor = m.mejor || 0;
       guardarRec(rec);
-      G.emit('retosResultado', { modo: 'maze', puntos: J.puntos, frutos: J.recogidos, ms: Math.round(J.t * 1000), prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', { modo: 'maze', puntos: J.puntos, frutos: J.recogidos, plumas: J.plumas, ms: Math.round(J.t * 1000), prueba: claveRec !== ALMACEN });
       sonar(J.nuevo ? 'unlock' : 'mz_fin');
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 500);
     }
@@ -395,6 +461,17 @@
         const x = mundoX(f.c % P.n), z = mundoZ((f.c / P.n) | 0), s = 1.7, cuelga = f.tipo === 'palma' ? 0.8 * s : 0.15 * s;
         poner('f' + f.tipo, f.i, x, piso + 0.55 + cuelga + Math.sin(f.fase * 2) * 0.1, z, 0, f.fase * 0.8, 0, s, s, s);
       }
+      for (const p of lab.plumas) {
+        if (!p.activo) continue;
+        p.fase += dt;
+        poner('pluma', p.i, mundoX(p.c % P.n), piso + 1.0 + Math.sin(p.fase * 2.4) * 0.12, mundoZ((p.c / P.n) | 0), 0.35, p.fase * 2.2, 0, 1, 1, 1);
+      }
+      for (let k = 0; k < CAP.huella; k++) { // huellas de la pista: laten en ola hacia el fruto
+        const c = J.pistaT > 0 ? lab.ruta[k] : undefined;
+        if (c == null) { esconder('huella', k); continue; }
+        const s = REDUCED ? 1 : 0.8 + 0.35 * Math.max(0, Math.sin(J.t * 6 - k * 0.9)), apaga = Math.min(1, J.pistaT / 0.6);
+        poner('huella', k, mundoX(c % P.n), piso + 0.1, mundoZ((c / P.n) | 0), 0, 0, 0, s * apaga, s * apaga, s * apaga);
+      }
       const pg = pool.guardian, anchoG = pg ? (pg.size.x + pg.size.z) / 2 : 1, altoG = pg ? pg.size.y : 1;
       guard.forEach((g, k) => {
         const oculto = g.vuelta > 0;
@@ -409,13 +486,15 @@
           poner('pupila', 2 * k + o, ex + ux * 0.09, hy, ez + uz * 0.09, 0, 0, 0, 1, 1, 1);
         }
       });
-      subir(['fpalma', 'ftabonuco', 'guardian', 'ojo', 'pupila']);
+      subir(['fpalma', 'ftabonuco', 'guardian', 'ojo', 'pupila', 'pluma', 'huella']);
     }
     function update(dt) {
       if (!st.activo || G.pausa.activa()) return;
       paso(Math.min(dt, 0.05));
       sincronizar(); colocar(dt);
       if (st.ui && st.msgT <= 0 && !st.ui.msg.hidden) mensaje(false);
+      avisos();
+      st.mapaT = (st.mapaT || 0) + dt; if (st.mapaT >= 0.1) { st.mapaT = 0; dibujarMapa(); }
     }
     G.on('update', dt => update(dt), 46);
 
@@ -462,8 +541,15 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
 #maze .mz-combo { color: var(--gold, #ffd84a); }
 #maze .mz-salir { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); pointer-events: auto; }
 #maze .mz-pista, #maze .mz-msg { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; font: 700 clamp(20px, 4.5vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.65); width: min(92vw, 560px); }
-#maze .mz-pista { bottom: 16%; } #maze .mz-pista small, #maze .mz-msg small { display: block; font-size: .58em; font-weight: 600; opacity: .92; margin-top: 4px; }
+#maze .mz-pista { bottom: 16%; box-sizing: border-box; padding: 10px 16px; border-radius: 18px; background: rgba(18, 38, 28, .78); } #maze .mz-pista small, #maze .mz-msg small { display: block; font-size: .58em; font-weight: 600; opacity: .92; margin-top: 4px; }
 #maze .mz-msg { top: 26%; color: var(--gold, #ffd84a); animation: mz-pop .3s ease-out; }
+#maze .mz-barra { display: block; height: 4px; margin: 8px auto 0; width: 70%; border-radius: 2px; background: var(--gold, #ffd84a); transform-origin: left center; }
+#maze .mz-ayuda { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); width: max-content; max-width: min(92vw, 520px); box-sizing: border-box; padding: 8px 16px; border-radius: var(--r-pill, 999px);
+  background: rgba(18, 38, 28, .82); color: #d6ffb8; font: 700 clamp(15px, 3.6vw, 20px)/1.25 var(--font-display, system-ui); text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+#maze .mz-mapa { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 64px); right: calc(env(safe-area-inset-right, 0px) + 12px); width: 112px; height: 112px; border-radius: 12px;
+  background: rgba(10, 30, 20, .72); border: 1px solid var(--c-line, rgba(255,255,255,.2)); box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+@media (max-width: 480px) { #maze .mz-mapa { width: 88px; height: 88px; top: calc(env(safe-area-inset-top, 0px) + 112px); } }
+#maze .mz-extra { color: var(--c-text, #f4f7f1) !important; } #maze .mz-meta { color: var(--gold, #ffd84a) !important; font-weight: 700; }
 #maze .mz-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #maze .mz-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
 #maze .mz-panel h2 { margin: 0 0 6px; font-size: 28px; } #maze .mz-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
@@ -477,25 +563,30 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       const css = document.createElement('style'); css.id = 'maze-css'; css.textContent = CSS; document.head.appendChild(css);
       const el = document.createElement('div'); el.id = 'maze'; el.hidden = true;
       el.innerHTML = `
-<div class="mz-toque" aria-label="Desliza para guiar a Vittata"></div>
-<div class="mz-hud"><div class="mz-chip mz-c-frutos"><span class="mz-frutos">0/0</span><small>frutos</small></div><div class="mz-chip mz-c-puntos"><span class="mz-puntos">0</span><small class="mz-mejor"></small></div><div class="mz-chip"><span class="mz-combo">x1</span><small>combo</small></div></div>
-<button class="btn ghost secondary mz-salir" type="button" data-salir data-icon="close" aria-label="Salir de Amazona Maze">Salir</button>
-<div class="mz-pista">${TACTIL ? '¡Desliza para caminar!' : '¡Flechas o WASD para caminar!'}<small>Recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo vuelve a x1.</small></div>
-<div class="mz-msg" role="status" hidden>¡Te encontraron!<small>El combo vuelve a x1. ¡Sigue buscando frutos!</small></div>
+<div class="mz-toque" aria-label="${tx('Desliza para guiar a Vittata', 'Swipe to guide Vittata')}"></div>
+<div class="mz-hud"><div class="mz-chip mz-c-frutos"><span class="mz-frutos">0/0</span><small>${tx('frutos', 'fruit')}</small></div><div class="mz-chip mz-c-puntos"><span class="mz-puntos">0</span><small class="mz-mejor"></small></div><div class="mz-chip"><span class="mz-combo">x1</span><small>combo</small></div><div class="mz-chip"><span class="mz-plumas">0/0</span><small>${tx('plumas', 'feathers')}</small></div></div>
+<button class="btn ghost secondary mz-salir" type="button" data-salir data-icon="close" aria-label="${tx('Salir de Amazona Maze', 'Leave Amazona Maze')}">${tx('Salir', 'Exit')}</button>
+<canvas class="mz-mapa" aria-label="${tx('Mapa del laberinto: se descubre al recorrerlo', 'Maze map: it fills in as you explore')}" role="img"></canvas>
+<div class="mz-pista" aria-live="polite"><span class="mz-pt"></span><small class="mz-ps"></small><i class="mz-barra" hidden></i></div>
+<div class="mz-ayuda" aria-live="polite" hidden>${tx('Pista: sigue las huellas brillantes hasta un fruto', 'Hint: follow the glowing tracks to a fruit')}</div>
+<div class="mz-msg" role="status" hidden>${tx('¡Te encontraron!', 'They found you!')}<small>${tx('El combo vuelve a x1. ¡Sigue buscando frutos!', 'Your combo goes back to x1. Keep looking for fruit!')}</small></div>
 <div class="mz-fin" hidden><div class="mz-panel" role="dialog" aria-labelledby="mz-fin-t">
-  <h2 id="mz-fin-t">¡Laberinto completo!</h2>
+  <h2 id="mz-fin-t">${tx('¡Laberinto completo!', 'Maze complete!')}</h2>
   <p class="mz-resumen"></p>
   <div class="mz-num">0</div>
-  <div class="mz-nuevo" hidden>¡Nuevo récord!</div>
+  <div class="mz-nuevo" hidden>${tx('¡Nuevo récord!', 'New record!')}</div>
   <p class="mz-rec"></p>
+  <p class="mz-extra"></p>
+  <p class="mz-meta"></p>
   <div class="mz-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="mz-tecla">${TACTIL ? '' : 'Enter'}</span></button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
+    <button class="btn xl" type="button" data-otra data-icon="reset">${tx('Otra vez', 'Play again')}<span class="mz-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary" type="button" data-salir data-icon="close">${tx('Volver a la historia', 'Back to the story')}</button>
   </div>
 </div></div>`;
       document.body.appendChild(el);
       const q = s => el.querySelector(s);
-      st.ui = { el, toque: q('.mz-toque'), frutos: q('.mz-frutos'), puntos: q('.mz-puntos'), mejor: q('.mz-mejor'), combo: q('.mz-combo'), cPuntos: q('.mz-c-puntos'), pista: q('.mz-pista'), msg: q('.mz-msg'), fin: q('.mz-fin'), resumen: q('.mz-resumen'), num: q('.mz-num'), nuevo: q('.mz-nuevo'), rec: q('.mz-rec') };
+      st.ui = { el, toque: q('.mz-toque'), frutos: q('.mz-frutos'), puntos: q('.mz-puntos'), mejor: q('.mz-mejor'), combo: q('.mz-combo'), cPuntos: q('.mz-c-puntos'), pista: q('.mz-pista'), msg: q('.mz-msg'), fin: q('.mz-fin'), resumen: q('.mz-resumen'), num: q('.mz-num'), nuevo: q('.mz-nuevo'), rec: q('.mz-rec'),
+        plumas: q('.mz-plumas'), mapa: q('.mz-mapa'), pt: q('.mz-pt'), ps: q('.mz-ps'), barra: q('.mz-barra'), ayuda: q('.mz-ayuda'), extra: q('.mz-extra'), meta: q('.mz-meta') };
       // Deslizar el dedo: cada 22 px de recorrido fija la dirección (se puede ir girando sin levantar el dedo); un toque en los resultados = otra vez
       let ini = null;
       st.ui.toque.addEventListener('pointerdown', e => { e.preventDefault(); ini = { x: e.clientX, y: e.clientY }; if (st.fase === 'fin' && J.finT >= P.finEspera) otraVez(); });
@@ -521,22 +612,78 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
     function dirigir(d) {
       if (!st.activo || st.fase === 'fin') return false;
       J.quiere = d;
-      if (st.fase === 'listo') { st.fase = 'juego'; J.t = 0; if (st.ui) st.ui.pista.hidden = true; }
+      if (st.fase === 'listo') { st.fase = 'juego'; J.t = 0; if (st.ui && !J.tuto) st.ui.pista.hidden = true; }
       return true;
+    }
+    // Pista de abajo: fuera del tutorial, cómo se juega; en el tutorial (primera partida), 3 pasos en P.tuto segundos con su barra
+    function textoPista() {
+      const mover = TACTIL ? tx('¡Desliza para caminar!', 'Swipe to walk!') : tx('¡Flechas o WASD para caminar!', 'Arrows or WASD to walk!');
+      if (!J.tuto) return { paso: -1, t: mover, s: tx('Recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo vuelve a x1.', 'Collect all the fruit. The moss guardians are looking for you: if they find you, your combo goes back to x1.') };
+      const k = st.fase === 'juego' ? Math.min(2, Math.floor(J.t / (P.tuto / 3))) : 0;
+      return [
+        { paso: 0, t: mover, s: tx('Vittata sigue andando y gira en el próximo cruce. (1/3)', 'Vittata keeps walking and turns at the next crossing. (1/3)') },
+        { paso: 1, t: tx('¡Recoge los frutos!', 'Collect the fruit!'), s: tx('El tabonuco de los callejones vale 25 y cada pluma dorada, 50. El mapa se descubre al caminar. (2/3)', 'Tabonuco in the dead ends is worth 25 and each golden feather 50. The map fills in as you walk. (2/3)') },
+        { paso: 2, t: tx('¡Ojo con los guardianes del musgo!', 'Watch out for the moss guardians!'), s: tx('Si te encuentran, el combo vuelve a x1. Esquívalos por los pasillos. (3/3)', 'If they find you, your combo goes back to x1. Dodge them through the corridors. (3/3)') },
+      ][k];
+    }
+    function ponerPista(tp) { const u = st.ui; if (!u) return; u.pt.textContent = tp.t; u.ps.textContent = tp.s; u.barra.hidden = tp.paso < 0; st.tutoPaso = tp.paso; }
+    function avisos() {
+      const u = st.ui; if (!u) return;
+      if (st.fase === 'juego') {
+        if (J.tuto) { const tp = textoPista(); if (tp.paso !== st.tutoPaso) ponerPista(tp); u.barra.style.transform = 'scaleX(' + clamp(1 - J.t / P.tuto, 0, 1).toFixed(3) + ')'; }
+        else if (!u.pista.hidden) u.pista.hidden = true;
+      }
+      const ay = st.fase === 'juego' && J.pistaT > 0; if (u.ayuda.hidden === ay) u.ayuda.hidden = !ay;
+    }
+    // Mapa que se revela (canvas 2D del HUD): arena y paredes de lo descubierto, frutos, plumas, guardianes a la vista y Vittata
+    function dibujarMapa() {
+      const u = st.ui; if (!u || !u.mapa || u.el.hidden || !lab.paredes) return;
+      const cv = u.mapa, dpr = Math.min(2, window.devicePixelRatio || 1), W = Math.round((cv.clientWidth || 100) * dpr);
+      if (cv.width !== W) { cv.width = W; cv.height = W; }
+      const g = cv.getContext('2d'); if (!g) return;
+      const m = W * 0.07, s = (W - 2 * m) / P.n, X = c => m + (c % P.n) * s, Z = c => m + ((c / P.n) | 0) * s;
+      g.clearRect(0, 0, W, W);
+      g.fillStyle = 'rgba(232, 214, 160, .92)';
+      for (let c = 0; c < P.n * P.n; c++) if (lab.visto[c]) g.fillRect(X(c) - 0.5, Z(c) - 0.5, s + 1, s + 1);
+      g.strokeStyle = '#4a3218'; g.lineWidth = Math.max(1.5, s * 0.17); g.lineCap = 'round'; g.beginPath();
+      for (let c = 0; c < P.n * P.n; c++) {
+        if (!lab.visto[c]) continue; const x = X(c), z = Z(c);
+        if (!abierto(c, 0)) { g.moveTo(x, z); g.lineTo(x + s, z); }
+        if (!abierto(c, 1)) { g.moveTo(x + s, z); g.lineTo(x + s, z + s); }
+        if (!abierto(c, 2)) { g.moveTo(x, z + s); g.lineTo(x + s, z + s); }
+        if (!abierto(c, 3)) { g.moveTo(x, z); g.lineTo(x, z + s); }
+      }
+      g.stroke();
+      const punto = (c, r, col, borde) => { g.beginPath(); g.arc(X(c) + s / 2, Z(c) + s / 2, r * s, 0, 6.2832); g.fillStyle = col; g.fill(); if (borde) { g.lineWidth = Math.max(1, s * 0.1); g.strokeStyle = borde; g.stroke(); } };
+      for (const f of lab.frutos) if (f.activo && lab.visto[f.c]) punto(f.c, f.tipo === 'tabonuco' ? 0.24 : 0.18, f.tipo === 'tabonuco' ? '#8fae22' : '#a3346e');
+      for (const p of lab.plumas) if (p.activo && lab.visto[p.c]) punto(p.c, 0.24, '#ffd84a', '#7a5a08');
+      for (const k of guard) { if (!k.fuera || k.vuelta > 0) continue; const c = celdaDe(k); if (lab.visto[c]) punto(c, 0.3, '#5f8f4a', '#1d2a22'); }
+      g.beginPath(); g.arc(m + J.gx * s + s / 2, m + J.gz * s + s / 2, 0.34 * s, 0, 6.2832); g.fillStyle = '#39e07a'; g.fill(); g.lineWidth = Math.max(1.5, s * 0.12); g.strokeStyle = '#fff'; g.stroke();
     }
     function pintar(pop) {
       const u = st.ui; if (!u) return;
       u.frutos.textContent = J.recogidos + '/' + lab.frutos.length; u.puntos.textContent = String(J.puntos); u.combo.textContent = 'x' + J.combo;
-      u.mejor.textContent = J.mejor ? 'mejor ' + J.mejor : '';
+      u.plumas.textContent = J.plumas + '/' + lab.plumas.length;
+      u.mejor.textContent = J.mejor ? tx('mejor ', 'best ') + J.mejor : '';
       if (pop) { u.cPuntos.classList.remove('pop'); void u.cPuntos.offsetWidth; u.cPuntos.classList.add('pop'); }
     }
     function mensaje(si) { if (st.ui) st.ui.msg.hidden = !si; }
+    // Una meta concreta para la próxima partida (lo primero que falte)
+    function siguienteMeta() {
+      const n = lab.plumas.length;
+      if (J.plumas < n) return tx('Próxima meta: encuentra las ' + n + ' plumas doradas.', 'Next goal: find all ' + n + ' golden feathers.');
+      if (J.mapaPct < 100) return tx('Próxima meta: descubre todo el mapa (+' + P.puntosMapa + ').', 'Next goal: uncover the whole map (+' + P.puntosMapa + ').');
+      if (J.encontrada) return tx('Próxima meta: que no te encuentre ningún guardián.', 'Next goal: don\'t let any guardian find you.');
+      return tx('Próxima meta: supera tus ' + J.mejor + ' puntos.', 'Next goal: beat your ' + J.mejor + ' points.');
+    }
     const reloj = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
     function resultados() {
       const u = st.ui; if (!u) return;
-      u.resumen.textContent = 'Todos los frutos en ' + reloj(J.t) + (J.bono ? ' · premio de rapidez +' + J.bono : '') + (J.encontrada ? ' · te encontraron ' + (J.encontrada === 1 ? '1 vez' : J.encontrada + ' veces') : ' · ¡nadie te encontró!');
+      u.resumen.textContent = tx('Todos los frutos en ', 'All the fruit in ') + reloj(J.t) + (J.bono ? tx(' · premio de rapidez +', ' · speed bonus +') + J.bono : '') + (J.encontrada ? tx(' · te encontraron ', ' · found ') + (J.encontrada === 1 ? tx('1 vez', 'once') : J.encontrada + tx(' veces', ' times')) : tx(' · ¡nadie te encontró!', ' · nobody found you!'));
       u.num.textContent = String(J.puntos); u.nuevo.hidden = !J.nuevo;
-      u.rec.textContent = 'Tu mejor: ' + J.mejor;
+      u.rec.textContent = tx('Tu mejor: ', 'Your best: ') + J.mejor;
+      u.extra.textContent = tx('Plumas doradas ', 'Golden feathers ') + J.plumas + '/' + lab.plumas.length + tx(' · mapa ', ' · map ') + J.mapaPct + ' %' + (J.explora ? tx(' · ¡exploradora! +', ' · explorer! +') + J.explora : '') + tx(' · plumas en tu colección: ', ' · feathers in your collection: ') + (J.plumasTot || 0);
+      u.meta.textContent = siguienteMeta();
       u.fin.hidden = false;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
@@ -576,16 +723,19 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       rnd = G.util.rng(J.semilla = semilla || ((Date.now() ^ (Math.random() * 1e9)) >>> 0) || 1);
       generarLab(); construir(); ponerFrutos();
       const x0 = lab.inicio % P.n, z0 = (lab.inicio / P.n) | 0, cc = (P.n - 1) / 2;
-      Object.assign(J, { gx: x0, gz: z0, d: -1, quiere: -1, ultima: 2, t: 0, puntos: 0, combo: 1, racha: 0, recogidos: 0, encontrada: 0, gracia: 0, finT: 0, nuevo: false, bono: 0, mejor: leerRec().maze.mejor || 0 });
+      const rec = leerRec().maze;
+      Object.assign(J, { gx: x0, gz: z0, d: -1, quiere: -1, ultima: 2, t: 0, puntos: 0, combo: 1, racha: 0, recogidos: 0, encontrada: 0, gracia: 0, finT: 0, nuevo: false, bono: 0, mejor: rec.mejor || 0,
+        plumas: 0, tuto: !rec.tuto, ultFruto: 0, pistaT: 0, pistas: 0, celda: lab.inicio, mapaPct: 0, explora: 0 });
+      lab.visto.fill(0); lab.ruta.length = 0; revelar(lab.inicio);
       guard.length = 0;
       const modos = ['directo', 'adelante', 'paseo'], tintes = [[0.75, 1, 0.75], [0.7, 0.95, 1], [1, 0.92, 0.65]], sal = [[cc, cc], [cc - 1, cc], [cc + 1, cc]];
       for (let k = 0; k < 3; k++) {
-        guard.push({ gx: sal[k][0], gz: sal[k][1], gx0: sal[k][0], gz0: sal[k][1], d: -1, v: P.velG[k], salida: P.salidaG[k], fuera: false, vuelta: 0, modo: modos[k], hop: k * 0.7 });
+        guard.push({ gx: sal[k][0], gz: sal[k][1], gx0: sal[k][0], gz0: sal[k][1], d: -1, v: P.velG[k], salida: P.salidaG[k] + (J.tuto ? P.tuto : 0), fuera: false, vuelta: 0, modo: modos[k], hop: k * 0.7 });
         if (pool.guardian) for (const im of pool.guardian.mallas) im.setColorAt(k, _c.setRGB(tintes[k][0], tintes[k][1], tintes[k][2]));
       }
       st.fase = 'listo'; st.msgT = 0;
-      const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; u.msg.hidden = true; pintar(false); }
-      sincronizar(); colocar(0); subir();
+      const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; u.msg.hidden = true; u.ayuda.hidden = true; ponerPista(textoPista()); pintar(false); }
+      sincronizar(); colocar(0); subir(); dibujarMapa();
       camFollow(null); G.camara.place(true);
     }
     const _c = new THREE.Color();
@@ -662,7 +812,7 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
           }
           paso(dt); t += dt;
         }
-        return { t, fase: st.fase, recogidos: J.recogidos, encontrada: J.encontrada, puntos: J.puntos };
+        return { t, fase: st.fase, recogidos: J.recogidos, encontrada: J.encontrada, puntos: J.puntos, plumas: J.plumas };
       };
       let sAntes = null;
       return (async () => {
@@ -715,6 +865,39 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
             const ft = lab.frutos.find(f => f.activo && f.tipo === 'tabonuco');
             if (ft) { const p1 = J.puntos; J.gx = ft.c % P.n; J.gz = (ft.c / P.n) | 0; paso(1 / 60); check('El tabonuco (en los callejones) vale 25 × combo', J.puntos - p1 === P.puntosTabonuco * J.combo, J.puntos - p1); }
             else check('El tabonuco (en los callejones) vale 25 × combo', false, 'sin tabonuco'); }
+          // ---------- AO2: plumas, pista suave, mapa que se revela y tutorial ----------
+          { const D = distancias(lab.inicio), fr = new Set(lab.frutos.map(f => f.c));
+            check(P.plumas + ' plumas doradas en pasillos (no callejones), alcanzables, lejos de la salida y sin pisar frutos ni el claro', lab.plumas.length === P.plumas && lab.plumas.every(p => p.i >= 0 && D[p.c] >= 4 && !fr.has(p.c) && p.c !== lab.casa && paredesDe(p.c) <= 2), lab.plumas.map(p => p.c).join(','));
+            const p = lab.plumas[0], p0 = J.puntos, c0 = J.combo; J.gx = p.c % P.n; J.gz = (p.c / P.n) | 0; J.d = -1; paso(1 / 60);
+            check('Recoger una pluma: +' + P.puntosPluma + ' sin tocar el combo, el contador sube y no hace falta para terminar', !p.activo && J.plumas === 1 && J.puntos === p0 + P.puntosPluma && J.combo === c0 && st.ui.plumas.textContent === '1/' + P.plumas && st.fase === 'juego', st.ui.plumas.textContent); }
+          { iniciar(4242); st.fase = 'juego'; J.tuto = false; for (const g of guard) g.salida = 1e9;
+            const v0 = pctMapa();
+            check('Mapa: al empezar solo se ve la salida y sus pasillos en línea recta (' + v0 + ' %)', lab.visto[lab.inicio] === 1 && v0 > 0 && v0 < 40 && st.ui.mapa.width > 0);
+            J.t = P.pistaTras - 0.01; J.ultFruto = 0; paso(1 / 30);
+            const r = lab.ruta.slice(), c0 = celdaDe(J); let ok = r.length > 0, c = c0;
+            for (const k of r) { const d = [0, 1, 2, 3].find(q => abierto(c, q) && idx(c % P.n + DX[q], ((c / P.n) | 0) + DZ[q]) === k); if (d == null) ok = false; c = k; }
+            const llega = lab.frutos.some(f => f.activo && f.c === r[r.length - 1]) || r.length === CAP.huella;
+            colocar(0); const e = new THREE.Matrix4(); pool.huella.mallas[0].getMatrixAt(0, e);
+            check('Pista suave: tras ' + P.pistaTras + ' s sin recoger nada salen huellas por los pasillos hasta el fruto más cercano', J.pistaT > 0 && J.pistas === 1 && ok && llega && e.elements[0] > 0.1, r.length + ' huellas');
+            avisos(); check('La pista se anuncia con un texto corto', !st.ui.ayuda.hidden && /huellas/.test(st.ui.ayuda.textContent));
+            const f = lab.frutos.find(q => q.activo); J.gx = f.c % P.n; J.gz = (f.c / P.n) | 0; J.d = -1; paso(1 / 60); avisos();
+            check('Al recoger un fruto las huellas se van y el reloj de la pista vuelve a empezar', J.pistaT === 0 && lab.ruta.length === 0 && st.ui.ayuda.hidden && J.ultFruto === J.t);
+            // recorre los pasillos casilla a casilla, de la más cercana a la más lejana (un paseo al azar cambiaba de rumbo cada cuadro y casi no se movía)
+            { const c0 = celdaDe(J), D0 = distancias(c0), orden = []; for (let c = 0; c < P.n * P.n; c++) if (D0[c] >= 0 && !lab.frutos.some(f => f.activo && f.c === c)) orden.push(c); orden.sort((a, b) => D0[a] - D0[b]);
+              for (const c of orden.slice(0, Math.ceil(orden.length * 0.6))) { J.gx = c % P.n; J.gz = (c / P.n) | 0; J.d = -1; paso(1 / 60); } }
+            check('Mapa: al recorrer el laberinto se va descubriendo', pctMapa() > v0 + 20, v0 + ' % → ' + pctMapa() + ' %'); }
+          { try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ }
+            iniciar(5);
+            check('Tutorial en la primera partida: los guardianes esperan ' + P.tuto + ' s más y la pista enseña el paso 1', J.tuto && guard.every((g, k) => g.salida === P.salidaG[k] + P.tuto) && !st.ui.pista.hidden && /1\/3/.test(st.ui.ps.textContent));
+            dirigir(1); J.t = P.tuto * 0.45; avisos();
+            check('Tutorial: no se cierra al primer gesto y avanza al paso 2 (frutos y plumas) con su barra', !st.ui.pista.hidden && /2\/3/.test(st.ui.ps.textContent) && !st.ui.barra.hidden);
+            J.t = P.tuto * 0.8; avisos(); const p3 = /3\/3/.test(st.ui.ps.textContent);
+            J.t = P.tuto; paso(1 / 60); avisos();
+            check('Tutorial: paso 3 (guardianes) y a los ' + P.tuto + ' s se cierra y se recuerda', p3 && !J.tuto && st.ui.pista.hidden && leerRec().maze.tuto === true);
+            iniciar(6); dirigir(1);
+            check('La segunda partida ya no repite el tutorial', !J.tuto && guard.every((g, k) => g.salida === P.salidaG[k]) && st.ui.pista.hidden && st.ui.barra.hidden);
+            const id0 = G.idioma; G.idioma = { actual: () => 'en' }; const en = textoPista(), meta = siguienteMeta(); G.idioma = id0;
+            check('Textos nuevos en inglés', /fruit/.test(en.s) && /^Next goal/.test(meta), en.s.slice(0, 40) + ' · ' + meta); }
           // ---------- Persecución ----------
           { iniciar(4242); st.fase = 'juego'; J.racha = 4; J.combo = 3; const g = guard[0]; g.salida = 0; g.fuera = true;
             const pista = (st.ui.pista.hidden = true);
@@ -743,6 +926,8 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Premio de rapidez: 3 × (' + P.rapidez + ' − s)', J.bono === Math.max(0, Math.round(3 * (P.rapidez - J.t))), J.bono);
           await new Promise(r => setTimeout(r, 600));
           check('Resultados a la vista con «Otra vez»', !st.ui.fin.hidden && st.ui.num.textContent === String(J.puntos) && /Todos los frutos/.test(st.ui.resumen.textContent));
+          const rec2 = leerRec().maze;
+          check('Resultados: plumas, % del mapa, colección y la próxima meta; la colección suma las plumas de todas las partidas', /Plumas doradas \d\/\d · mapa \d+ %/.test(st.ui.extra.textContent) && /^Próxima meta/.test(st.ui.meta.textContent) && rec2.plumasTot === partidas.reduce((a, r) => a + r.plumas, 0) && J.explora === (J.mapaPct === 100 ? P.puntosMapa : 0), st.ui.extra.textContent + ' | ' + st.ui.meta.textContent);
           check('Enter justo al terminar no reinicia; pasado finEspera sí', (J.finT = 0, document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })), st.fase === 'fin') && (J.finT = P.finEspera, document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })), st.fase === 'listo' && J.puntos === 0 && st.ui.fin.hidden));
           // ---------- Cámara: escritorio y móvil vertical (375×812) ----------
           const vista = asp => {
