@@ -1,9 +1,11 @@
-/* Juego · Manga Toon Story Creator (G17c, prototipo de Kelvin)
+/* Juego · Manga Toon Story Creator (G17f, prototipo de Kelvin)
    Aparte de src/game/comic.js: no lo reemplaza. Se abre con ?manga=demo o AV.manga(), sin entrada en el menú.
-   La interfaz sigue docs/img/referencia_manga_toon.webp. Las viñetas componen láminas de Blender
-   (tools/blender/manga_laminas.py) del modelo oficial assets/models/vittata.glb: cel shading, contorno
-   y sitios del mapa. Globos, onomatopeyas y líneas de velocidad se dibujan en este lienzo.
-   renderer.js no se toca. No pide el nombre real, no inventa cotorras y no genera imágenes con IA.
+   La interfaz sigue docs/img/referencia_manga_toon.webp. Cada viñeta pone una pose oficial
+   (assets/manga/poses/vittata/, momentos.json) encima de una captura del mapa: en el demo, un sitio
+   real; en la partida, el momento guardado en memoria o en IndexedDB (eventos.js). Contorno y sombra
+   al recortar. Globos, onomatopeyas, estela y líneas de velocidad se dibujan en este lienzo.
+   El clip recorder no se implementa. renderer.js no se toca. No pide el nombre real, no inventa cotorras
+   y no genera imágenes con IA.
    Prueba: AV.mangaTest(). */
 window.AVManga = function (G) {
   'use strict';
@@ -11,11 +13,11 @@ window.AVManga = function (G) {
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const BEATS = [
-    { id: 'comienzo', es: 'EL COMIENZO', en: 'THE START', lado: 'der', modo: 'vuelo', fov: 42, quiere: 0.36, lineas: 0.45, prop: 'salida', alto: 1 },
+    { id: 'comienzo', es: 'EL COMIENZO', en: 'THE START', lado: 'der', modo: 'vuelo', fov: 42, quiere: 0.36, lineas: 0, radial: 1, prop: 'salida', alto: 1 },
     { id: 'camino', es: 'EL CAMINO EQUIVOCADO', en: 'THE WRONG PATH', lado: 'der', modo: 'planeo', fov: 48, quiere: 0.26, lineas: 0.1, prop: 'cruce', alto: 1, pensar: 1 },
     { id: 'confusion', es: 'LA CONFUSIÓN', en: 'THE MIX-UP', lado: 'aba', modo: 'sorpresa', fov: 26, quiere: 0.62, lineas: 0, prop: 'dudas', alto: 0 },
     { id: 'intento', es: 'EL NUEVO INTENTO', en: 'TRYING AGAIN', lado: 'der', modo: 'vuelo', fov: 52, quiere: 0.18, lineas: 0.3, prop: null, alto: 0 },
-    { id: 'velocidad', es: 'MÁS VELOCIDAD', en: 'MORE SPEED', lado: 'der', modo: 'vuelo', fov: 38, quiere: 0.42, lineas: 0.65, prop: 'viento', alto: 1 },
+    { id: 'velocidad', es: 'MÁS VELOCIDAD', en: 'MORE SPEED', lado: 'der', modo: 'vuelo', fov: 38, quiere: 0.42, lineas: 0, radial: 1, prop: 'viento', alto: 1 },
     { id: 'meta', es: '¡LA META!', en: 'THE FINISH!', lado: 'der', modo: 'celeb', fov: 36, quiere: 0.4, lineas: 0.2, prop: 'meta', alto: 1, calido: 1 },
   ];
   function muestra() {
@@ -38,28 +40,118 @@ window.AVManga = function (G) {
     };
   }
 
-  const LAMINAS = [
-    'assets/manga/laminas/01_comienzo.jpg',
-    'assets/manga/laminas/02_camino.jpg',
-    'assets/manga/laminas/03_confusion.jpg',
-    'assets/manga/laminas/04_intento.jpg',
-    'assets/manga/laminas/05_velocidad.jpg',
-    'assets/manga/laminas/06_meta.jpg',
-  ];
-  let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, enPrueba = false, tomando = false, camDelta = null;
+  const CATALOGO = 'assets/manga/poses/vittata/momentos.json';
+  const MOMENTO_BEAT = { comienzo: 'inicio', camino: 'ruta', confusion: 'choque', intento: 'intento', velocidad: 'record', meta: 'meta' };
+  const SITIO = ['ruinas', 'selva', 'cascada', 'caleta', 'rio', 'mirador'];
+  let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, hero = null, enPrueba = false, tomando = false, camDelta = null;
+  let catalogo = null, posesUsadas = [], fondosOrigen = [];
 
-  function cargarLamina(url) {
+  function cargarImagen(url) {
     return new Promise(resolve => {
       const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = () => resolve(null);
+      im.src = url;
+    });
+  }
+  function cargarCatalogo() {
+    if (catalogo) return Promise.resolve(catalogo);
+    return fetch(CATALOGO).then(r => r.json()).then(j => { catalogo = j; return j; }).catch(() => null);
+  }
+  function esDemo() { return enPrueba || /[?&]manga=demo\b/.test(location.search); }
+  function poseVineta(beatId) {
+    const lista = catalogo && catalogo.poses;
+    if (!lista) return null;
+    return lista.find(p => p.vineta === beatId) || null;
+  }
+  function tratar(canvas) {
+    const x = canvas.getContext('2d', { willReadFrequently: true });
+    let img;
+    try { img = x.getImageData(0, 0, canvas.width, canvas.height); }
+    catch (e) { return canvas; }
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i], g = d[i + 1], b = d[i + 2];
+      const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      r = y + (r - y) * 1.55; g = y + (g - y) * 1.45; b = y + (b - y) * 1.35;
+      r = (r - 128) * 1.28 + 138; g = (g - 128) * 1.22 + 128; b = (b - 128) * 1.18 + 118;
+      d[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+      d[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+      d[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+    }
+    x.putImageData(img, 0, 0);
+    return canvas;
+  }
+  function poseManga(im) {
+    const w = 512, h = 512;
+    const sil = document.createElement('canvas'); sil.width = w; sil.height = h;
+    const sx = sil.getContext('2d');
+    sx.drawImage(im, 0, 0, w, h);
+    sx.globalCompositeOperation = 'source-in';
+    sx.fillStyle = '#14100c';
+    sx.fillRect(0, 0, w, h);
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    x.globalAlpha = 0.42;
+    x.drawImage(sil, 16, 20);
+    x.globalAlpha = 1;
+    const o = 5;
+    [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, o], [o, -o], [-o, -o]].forEach(d => x.drawImage(sil, d[0], d[1]));
+    x.drawImage(im, 0, 0, w, h);
+    return c;
+  }
+  function componer(fondo, pose, b) {
+    const c = document.createElement('canvas'); c.width = 640; c.height = 400;
+    const x = c.getContext('2d');
+    if (fondo) x.drawImage(fondo, 0, 0, 640, 400);
+    else {
+      const g = x.createLinearGradient(0, 0, 0, 400);
+      g.addColorStop(0, '#1a6fe0'); g.addColorStop(0.55, '#19a8c4'); g.addColorStop(1, '#0e7a38');
+      x.fillStyle = g; x.fillRect(0, 0, 640, 400);
+    }
+    if (pose) {
+      const alto = b && b.id === 'confusion' ? 370 : 308;
+      const ancho = alto * (pose.width / pose.height);
+      x.drawImage(pose, 12, 400 - alto + 4, ancho, alto);
+    }
+    return c;
+  }
+  function desdeJpeg(url) {
+    return new Promise(resolve => {
+      if (!url || String(url).indexOf('data:image/') !== 0) { resolve(null); return; }
+      const im = new Image();
       im.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = 960; c.height = 600;
-        const x = c.getContext('2d', { willReadFrequently: true });
-        x.drawImage(im, 0, 0, 960, 600);
-        resolve(c);
+        const c = document.createElement('canvas'); c.width = 640; c.height = 400;
+        c.getContext('2d').drawImage(im, 0, 0, 640, 400);
+        resolve(tratar(c));
       };
       im.onerror = () => resolve(null);
       im.src = url;
+    });
+  }
+  function leerFondos() {
+    const mem = Object.assign({}, G.mangaFondos || {});
+    return new Promise(resolve => {
+      try {
+        const req = indexedDB.open('amazonaverse.manga', 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('fondos')) db.createObjectStore('fondos', { keyPath: 'momento' });
+        };
+        req.onsuccess = () => {
+          try {
+            const db = req.result;
+            if (!db.objectStoreNames.contains('fondos')) { db.close(); resolve(mem); return; }
+            const q = db.transaction('fondos', 'readonly').objectStore('fondos').getAll();
+            q.onsuccess = () => {
+              (q.result || []).forEach(row => { if (row && row.momento && row.jpeg) mem[row.momento] = row; });
+              db.close(); resolve(mem);
+            };
+            q.onerror = () => { db.close(); resolve(mem); };
+          } catch (e) { resolve(mem); }
+        };
+        req.onerror = () => resolve(mem);
+      } catch (e) { resolve(mem); }
     });
   }
 
@@ -80,16 +172,36 @@ window.AVManga = function (G) {
     return { desv: Math.sqrt(Math.max(0, s2 / n - m * m)), colores: colores.size, media: m };
   }
 
-  function lineas(x, w, h, k) {
+  function lineasRadiales(x, w, h) {
     x.save();
-    x.globalAlpha = 0.28 * k;
-    x.strokeStyle = '#f7fbff';
-    x.lineWidth = 3;
-    x.translate(w * 0.15, h * 0.55);
-    for (let i = -8; i <= 8; i++) {
+    x.translate(w * 0.5, h * 0.46);
+    x.lineCap = 'round';
+    const n = 20;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + 0.08;
+      const hueco = Math.min(w, h) * (0.24 + (i % 3) * 0.025);
+      const largo = Math.max(w, h);
+      x.strokeStyle = i % 2 ? '#ffffff' : '#e7f7ff';
+      x.globalAlpha = 0.92;
+      x.lineWidth = i % 4 === 0 ? 7 : 3;
       x.beginPath();
-      x.moveTo(-w, i * 18);
-      x.lineTo(w * 1.2, i * 7);
+      x.moveTo(Math.cos(a) * hueco, Math.sin(a) * hueco);
+      x.lineTo(Math.cos(a) * largo, Math.sin(a) * largo);
+      x.stroke();
+    }
+    x.restore();
+  }
+  function estela(x, w, h, fuerte) {
+    x.save();
+    x.translate(w * 0.16, h * 0.64);
+    x.strokeStyle = '#ffe14a';
+    x.lineWidth = fuerte ? 9 : 6;
+    x.lineCap = 'round';
+    x.globalAlpha = 0.95;
+    const n = fuerte ? 4 : 3;
+    for (let i = 0; i < n; i++) {
+      x.beginPath();
+      x.arc(i * 44, -i * 5, 13 + i * 8, -0.15, 1.2);
       x.stroke();
     }
     x.restore();
@@ -230,41 +342,91 @@ window.AVManga = function (G) {
     }
     return mejor;
   }
+  function altura(x, z, extra) {
+    let y = 24 + extra;
+    try { if (G.terreno && G.terreno.height) y = G.terreno.height(x, z) + extra; }
+    catch (e) { /* cielo */ }
+    return y;
+  }
+  function sitioDemo(nombre) {
+    const agua = (G.terreno && G.terreno.mapa && G.terreno.mapa.agua) || {};
+    const places = (G.terreno && G.terreno.places) || {};
+    if (nombre === 'cascada' && agua.cascadas && agua.cascadas[0]) {
+      const c = agua.cascadas[0];
+      const x = c.abajo[0] + (c.ancho || 6), z = c.abajo[2] + 14;
+      return { x: x, y: altura(x, z, 12), z: z, mx: c.abajo[0], my: c.abajo[1] + (c.caida || 6) * 0.45, mz: c.abajo[2] };
+    }
+    if (nombre === 'caleta') {
+      const b = agua.bahiaBio || { x: -160, z: 207 };
+      const x = b.x + 28, z = b.z - 16;
+      return { x: x, y: altura(x, z, 10), z: z, mx: b.x, my: altura(b.x, b.z, 1), mz: b.z };
+    }
+    if (nombre === 'rio' && agua.rio && agua.rio.puntos && agua.rio.puntos.length > 8) {
+      const p = agua.rio.puntos[Math.floor(agua.rio.puntos.length * 0.42)];
+      const x = p[0] + 26, z = p[1] - 8;
+      return { x: x, y: altura(x, z, 16), z: z, mx: p[0], my: (p[2] || 0) + 2, mz: p[1] };
+    }
+    if (nombre === 'mirador' && places.mirador) {
+      const m = places.mirador;
+      const x = m.x + 16, z = m.z + 22;
+      return { x: x, y: altura(x, z, 14), z: z, mx: m.x, my: altura(m.x, m.z, 4), mz: m.z };
+    }
+    if (nombre === 'selva') {
+      const m = places.A || { x: S.pos.x, z: S.pos.z };
+      const x = m.x + 18, z = m.z - 24;
+      return { x: x, y: altura(x, z, 8), z: z, mx: m.x - 6, my: altura(m.x, m.z, 3), mz: m.z + 10 };
+    }
+    const x = -18, z = -128;
+    return { x: x, y: altura(x, z, 24), z: z, mx: -33.9, my: altura(-33.9, -144.5, 8), mz: -144.5 };
+  }
   function fotografiar() {
-    const R = G.renderer, cam = R && R.camera, P = G.actores && G.actores.player3D;
-    if (!cam || !window.THREE || !R.canvas || R.canvas.width < 2) return BEATS.map(() => null);
+    const R = G.renderer, cam = R && R.camera;
+    if (!cam || !window.THREE || !R.canvas || R.canvas.width < 2) {
+      fondosOrigen = BEATS.map(() => 'vacio');
+      return BEATS.map(() => null);
+    }
     const pos = cam.position.clone(), quat = cam.quaternion.clone(), fov = cam.fov;
-    const pose0 = P ? guardarPose(P) : null;
+    const P = G.actores && G.actores.player3D;
+    const root = P && P.root;
+    const vis = root ? root.visible : true;
     const quiet0 = G.quiet;
     G.quiet = true;
+    if (root) root.visible = false;
     const out = [];
+    fondosOrigen = [];
     try {
-      for (const toma of BEATS) {
-        let foto = null;
+      BEATS.forEach((toma, i) => {
+        let foto = null, origen = 'vacio';
         try {
-          if (P) aplicarPose(P, toma.modo);
-          const b = baseJugador();
-          const sitio = elegirToma(cam, b, toma);
-          const pechoY = b.y + 1.15;
-          if (sitio) {
-            cam.fov = toma.fov;
-            cam.updateProjectionMatrix();
-            cam.position.set(sitio.x, sitio.y, sitio.z);
-            cam.lookAt(b.x, pechoY, b.z);
-            cam.updateMatrixWorld(true);
-          }
+          const s = sitioDemo(SITIO[i]);
+          cam.fov = toma.fov;
+          cam.updateProjectionMatrix();
+          cam.position.set(s.x, s.y, s.z);
+          cam.lookAt(s.mx, s.my, s.mz);
+          cam.updateMatrixWorld(true);
           if (typeof R.drawScene === 'function') R.drawScene();
           else R.renderer.render(R.scene, cam);
-          foto = leerLienzo();
-        } catch (e) { foto = null; }
+          foto = tratar(leerLienzo());
+          if (desvio(foto, 32).desv < 6) {
+            const b = baseJugador();
+            const cerca = mundo(b, [10, 7, -12]);
+            cam.position.set(cerca.x, cerca.y, cerca.z);
+            cam.lookAt(b.x, b.y + 2, b.z);
+            cam.updateMatrixWorld(true);
+            if (typeof R.drawScene === 'function') R.drawScene();
+            else R.renderer.render(R.scene, cam);
+            foto = tratar(leerLienzo());
+          }
+          origen = 'mapa';
+        } catch (e) { foto = null; origen = 'vacio'; }
         out.push(foto);
-        if (P && pose0) restaurarPose(P, pose0);
-      }
+        fondosOrigen.push(origen);
+      });
     } finally {
       G.quiet = quiet0;
+      if (root) root.visible = vis;
       cam.fov = fov; cam.updateProjectionMatrix();
       cam.position.copy(pos); cam.quaternion.copy(quat); cam.updateMatrixWorld(true);
-      if (P && pose0) restaurarPose(P, pose0);
       camDelta = cam.position.distanceTo(pos);
     }
     return out;
@@ -295,28 +457,34 @@ window.AVManga = function (G) {
     if (foto) x.drawImage(foto, 0, 0, w, h);
     else {
       const g = x.createLinearGradient(0, 0, 0, h);
-      g.addColorStop(0, '#7ec8ff'); g.addColorStop(1, '#1f8a4d');
+      g.addColorStop(0, '#1a6fe0'); g.addColorStop(0.55, '#19a8c4'); g.addColorStop(1, '#0e7a38');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
     }
-    if (b.lineas) lineas(x, w, h, b.id === 'velocidad' ? 1 : b.lineas * 0.35);
+    if (b.radial) {
+      lineasRadiales(x, w, h);
+      estela(x, w, h, b.id === 'velocidad');
+    }
     props(x, w, h, b.prop);
   }
 
   // ---------- Página ----------
   const CSS = `
 #av-manga{position:fixed;inset:0;z-index:10050;overflow:auto;background:
-  radial-gradient(circle at 6% 18%, #2ea85a 0 70px, transparent 72px),
-  radial-gradient(circle at 94% 12%, #1d8a48 0 90px, transparent 92px),
-  radial-gradient(circle at 0 80%, #146b3a 0 120px, transparent 122px),
-  radial-gradient(circle at 100% 70%, #0e6e55 0 100px, transparent 102px),
-  linear-gradient(#39b86a 0%, #168a9a 38%, #0c4e78 100%);color:#1c140c;font-family:Trebuchet MS,Segoe UI,sans-serif}
+  radial-gradient(ellipse at 12% 0%, #ffe56a 0 28px, transparent 70px),
+  radial-gradient(circle at 2% 18%, #146b32 0 110px, transparent 112px),
+  radial-gradient(circle at 0 48%, #0c4e28 0 160px, transparent 162px),
+  radial-gradient(circle at 100% 8%, #1a7a3a 0 140px, transparent 142px),
+  radial-gradient(circle at 98% 42%, #0d5c40 0 120px, transparent 122px),
+  radial-gradient(circle at 8% 92%, #084428 0 90px, transparent 92px),
+  radial-gradient(circle at 92% 88%, #0a3d32 0 100px, transparent 102px),
+  linear-gradient(180deg, #1f9a48 0%, #0e7a62 28%, #0c628c 58%, #0a3d66 100%);color:#1c140c;font-family:Trebuchet MS,Segoe UI,sans-serif}
 #av-manga *{box-sizing:border-box}
 #av-manga .mg-marco{min-height:100%}
 #av-manga .mg-hoja{width:min(980px,calc(100% - 20px));margin:14px auto 28px;background:linear-gradient(#fff8ea,#f3e2c2 55%,#f7edd4);border:6px solid #1a120c;border-radius:22px;padding:12px 12px 16px;box-shadow:0 18px 50px rgba(0,0,0,.38)}
 #av-manga .mg-top{display:flex;gap:10px;align-items:center;background:linear-gradient(#1486b8,#0c5f92);border:4px solid #08324a;border-radius:16px;padding:8px 10px;color:#fff}
-#av-manga .mg-logo{display:flex;flex-direction:column;font-weight:900;letter-spacing:.02em;line-height:.9;font-size:18px;text-shadow:0 3px 0 #08324a}
-#av-manga .mg-logo span{color:#ff9a1a}
-#av-manga .mg-logo b{color:#3ec2ff;font-size:20px}
+#av-manga .mg-logo{display:flex;flex-direction:column;font-family:Impact,"Arial Black",sans-serif;letter-spacing:.04em;line-height:.82;font-size:16px;text-shadow:2px 3px 0 #06283c}
+#av-manga .mg-logo span{color:#ffb020}
+#av-manga .mg-logo b{color:#3ec8ff;font-size:28px;letter-spacing:.02em}
 #av-manga .mg-placa{position:relative;flex:1;background:linear-gradient(#e8b56a,#c4843a 55%,#a86a28);color:#3a240d;border:4px solid #5a3412;border-radius:14px;padding:6px 36px 6px 12px;box-shadow:inset 0 2px 0 rgba(255,255,255,.45), 0 3px 0 #6a3e12}
 #av-manga .mg-placa strong{display:block;font-size:22px;letter-spacing:.06em}
 #av-manga .mg-placa small{font-weight:700}
@@ -335,15 +503,18 @@ window.AVManga = function (G) {
 #av-manga label{font-size:12px;font-weight:800;color:#5c3b16}
 #av-manga input,#av-manga .mg-globo,#av-manga .mg-sfx,#av-manga .mg-caja p{font:700 16px/1.25 Trebuchet MS,Segoe UI,sans-serif;color:#1a120c}
 #av-manga input{width:100%;border:0;border-radius:8px;padding:6px 4px;background:transparent}
-#av-manga .mg-vinetas{display:grid;grid-template-columns:1.15fr .85fr;gap:10px;background:#fffdf8;border:4px solid #1a120c;border-radius:8px;padding:8px}
-#av-manga .mg-vin{position:relative;background:#111;border:5px solid #14110e;border-radius:4px;overflow:hidden;min-height:0}
-#av-manga .mg-vin[data-i="0"]{clip-path:polygon(0 0,100% 0,96% 100%,0 100%)}
-#av-manga .mg-vin[data-i="1"]{clip-path:polygon(4% 0,100% 0,100% 100%,0 100%)}
-#av-manga .mg-vin[data-i="4"]{clip-path:polygon(0 0,100% 4%,100% 100%,0 100%)}
-#av-manga .mg-vin[data-i="5"]{clip-path:polygon(0 0,100% 0,100% 100%,6% 96%)}
-#av-manga .mg-vin canvas{width:100%;height:100%;display:block;aspect-ratio:16/10}
+#av-manga .mg-vinetas{display:grid;grid-template-columns:1.22fr .78fr;gap:8px;background:#fffdf6;border:7px solid #0c0906;border-radius:6px;padding:8px}
+#av-manga .mg-vin{position:relative;background:#111;border:8px solid #0c0906;border-radius:2px;overflow:hidden;min-height:0}
+#av-manga .mg-vin[data-i="0"]{clip-path:polygon(0 0,100% 0,86% 100%,0 100%)}
+#av-manga .mg-vin[data-i="1"]{clip-path:polygon(14% 0,100% 0,100% 100%,0 100%)}
+#av-manga .mg-vin[data-i="2"]{clip-path:polygon(0 0,100% 7%,100% 100%,0 93%)}
+#av-manga .mg-vin[data-i="3"]{clip-path:polygon(0 8%,100% 0,100% 92%,0 100%)}
+#av-manga .mg-vin[data-i="4"]{clip-path:polygon(0 0,100% 10%,100% 100%,0 100%)}
+#av-manga .mg-vin[data-i="5"]{clip-path:polygon(0 0,100% 0,100% 100%,12% 88%)}
+#av-manga .mg-vin canvas{width:100%;height:100%;display:block;aspect-ratio:16/10;filter:saturate(1.18) contrast(1.05)}
 #av-manga .mg-vin[data-alto="1"] canvas{aspect-ratio:16/11}
-#av-manga .mg-rotulo{position:absolute;left:8px;top:8px;z-index:2;background:linear-gradient(#f0c27a,#c4843a);color:#3a240d;border:3px solid #2a1a0c;border-radius:8px;padding:2px 8px;font-size:13px;font-weight:900;box-shadow:2px 2px 0 #1a1008}
+#av-manga .mg-rotulo{position:absolute;left:8px;top:8px;z-index:2;display:inline-flex;align-items:center;gap:6px;background:#ffe14a;color:#3a2208;border:3px solid #1a120c;border-radius:8px;padding:3px 10px 3px 4px;font-size:14px;font-weight:900;box-shadow:3px 3px 0 #1a1008;letter-spacing:.02em}
+#av-manga .mg-rotulo span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#f08a12;color:#fff;border:2px solid #1a120c;font-size:13px}
 #av-manga .mg-globo{position:absolute;z-index:2;max-width:62%;margin:0;background:#fff;border:3px solid #1a120c;border-radius:18px;padding:8px 10px;box-shadow:3px 3px 0 rgba(0,0,0,.25)}
 #av-manga .mg-globo:after{content:"";position:absolute;left:22px;bottom:-12px;border:8px solid transparent;border-top-color:#1a120c}
 #av-manga .mg-pensar{border-radius:46%;min-width:42%}
@@ -351,18 +522,23 @@ window.AVManga = function (G) {
 #av-manga .mg-globo:focus,#av-manga input:focus,#av-manga .mg-caja p:focus,#av-manga .mg-sfx:focus{outline:3px solid #ffd15c;outline-offset:1px}
 #av-manga .mg-vin[data-lado="der"] .mg-globo{right:8px;top:22%}
 #av-manga .mg-vin[data-lado="aba"] .mg-globo{left:8px;bottom:10px;top:auto}
-#av-manga .mg-sfx{position:absolute;left:10px;bottom:12px;z-index:2;margin:0;color:#163a8a;font:900 28px/1 Trebuchet MS,Segoe UI,sans-serif;-webkit-text-stroke:2px #fff;text-shadow:3px 3px 0 #0b1e4a}
-#av-manga .mg-cierre{display:grid;grid-template-columns:1fr 150px 1fr;gap:8px;margin-top:8px;align-items:stretch}
-#av-manga .mg-caja{position:relative;background:linear-gradient(#f3c98a,#e0a85a 40%,#c9843a);border:4px solid #6a3e12;border-radius:16px;padding:8px 10px;box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 3px 3px 0 rgba(90,50,10,.25)}
-#av-manga .mg-caja h3{margin:0 0 4px;font-size:15px;color:#4a2808;letter-spacing:.03em;text-transform:uppercase}
-#av-manga .mg-libro,#av-manga .mg-sol{display:inline-block;width:18px;height:16px;margin-right:4px;vertical-align:-2px;border:2px solid #4a2808;background:#fff6d8}
-#av-manga .mg-libro{border-radius:2px 4px 4px 2px}
-#av-manga .mg-sol{border-radius:50%;background:#ffe56a}
-#av-manga .mg-caja-vida p:before{content:"“ ";font-weight:900}
-#av-manga .mg-cora{position:absolute;right:10px;bottom:8px;width:14px;height:14px;background:#e23b4a;border-radius:50% 50% 4px 4px;transform:rotate(45deg)}
-#av-manga .mg-caja p{margin:0;min-height:72px;background:transparent}
-#av-manga .mg-hero{background:radial-gradient(circle at 50% 40%,#b7e38a,#2f8f4e 70%,#1c5c38);border:4px solid #1a120c;border-radius:16px;display:grid;place-items:center;min-height:140px}
-#av-manga .mg-hero canvas{width:130px;height:130px}
+#av-manga .mg-sfx{position:absolute;left:6px;bottom:10px;z-index:2;margin:0;color:#123a9a;font:900 52px/1 Impact,"Arial Black",Trebuchet MS,sans-serif;-webkit-text-stroke:7px #fff;paint-order:stroke fill;text-shadow:4px 5px 0 #07183f;transform:rotate(-16deg);transform-origin:left bottom;letter-spacing:.02em}
+#av-manga .mg-cierre{display:grid;grid-template-columns:1fr 220px 1fr;gap:8px;margin-top:8px;align-items:stretch}
+#av-manga .mg-caja{position:relative;background:
+  radial-gradient(circle at 0 18%, #2f9e44 0 9px, transparent 11px),
+  radial-gradient(circle at 100% 78%, #248a38 0 11px, transparent 13px),
+  linear-gradient(#f6d7a4,#e4ac5e 42%,#c47a32);border:6px solid #5c320e;border-radius:16px;padding:10px 12px 12px;box-shadow:inset 0 2px 0 rgba(255,255,255,.45), 4px 4px 0 rgba(70,36,8,.35)}
+#av-manga .mg-caja h3{margin:0 0 6px;font-size:18px;color:#4a2808;letter-spacing:.04em;text-transform:uppercase}
+#av-manga .mg-libro,#av-manga .mg-sol{display:inline-block;width:28px;height:24px;margin-right:6px;vertical-align:-4px;border:3px solid #4a2808;background:#fff6d8}
+#av-manga .mg-libro{border-radius:2px 6px 6px 2px}
+#av-manga .mg-sol{border-radius:50%;background:#ffe14a;box-shadow:0 0 0 3px #f08a12}
+#av-manga .mg-caja-vida p:before{content:"“ ";font-weight:900;font-size:1.3em}
+#av-manga .mg-cora{position:absolute;right:12px;bottom:10px;width:22px;height:22px;background:#e23b4a;border:2px solid #6a1020;border-radius:50% 50% 4px 4px;transform:rotate(45deg)}
+#av-manga .mg-folia{position:absolute;width:26px;height:16px;background:#2f9e44;border:2px solid #145c28;border-radius:0 80% 0 80%;left:-6px;top:14px;transform:rotate(-28deg)}
+#av-manga .mg-folia-b{left:auto;top:auto;right:-4px;bottom:12px;transform:rotate(36deg);background:#3cb054}
+#av-manga .mg-caja p{margin:0;min-height:88px;background:transparent;font:700 22px/1.3 "Segoe Print","Comic Sans MS",cursive}
+#av-manga .mg-hero{background:radial-gradient(circle at 50% 42%,#d2f0a4,#2f9e44 62%,#145c32);border:5px solid #1a120c;border-radius:18px;display:grid;place-items:center;min-height:200px}
+#av-manga .mg-hero canvas{width:200px;height:200px}
 #av-manga .mg-cierre-txt{grid-column:1 / -1;margin:0;font-weight:800;text-align:center}
 #av-manga .mg-botones{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 #av-manga .mg-botones button,#av-manga .mg-volver{border:0;border-radius:12px;color:#fff;font:800 14px/1.2 Trebuchet MS,Segoe UI,sans-serif;min-height:48px;padding:8px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25)}
@@ -371,13 +547,15 @@ window.AVManga = function (G) {
 #av-manga.mg-movil{background:#041018}
 #av-manga.mg-movil .mg-marco{width:375px;height:812px;min-height:0;max-height:812px;margin:10px auto;overflow:hidden;display:flex;flex-direction:column;background:#083048;box-shadow:0 0 0 10px #111;border-radius:28px}
 #av-manga.mg-movil .mg-volver,#av-manga.mg-movil .mg-vista{float:none;align-self:flex-end;flex:none}
-#av-manga.mg-movil .mg-vin{clip-path:none}
 #av-manga.mg-movil .mg-hoja{width:auto;max-width:none;flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-width:4px;padding:8px}
 #av-manga.mg-movil .mg-top{flex-wrap:wrap}
 #av-manga.mg-movil .mg-pasos{width:100%;justify-content:space-between}
 #av-manga.mg-movil .mg-pasos div{width:58px;font-size:10px}
 #av-manga.mg-movil .mg-datos,#av-manga.mg-movil .mg-vinetas,#av-manga.mg-movil .mg-cierre{grid-template-columns:1fr}
-#av-manga.mg-movil .mg-hero{min-height:120px}
+#av-manga.mg-movil .mg-hero{min-height:150px}
+#av-manga.mg-movil .mg-hero canvas{width:140px;height:140px}
+#av-manga.mg-movil .mg-caja p{font-size:18px}
+#av-manga.mg-movil .mg-sfx{font-size:36px;-webkit-text-stroke-width:4px}
 #av-manga.mg-movil .mg-botones{grid-template-columns:1fr 1fr}
 @media(max-width:420px){
 #av-manga .mg-pasos div span{display:none}
@@ -426,9 +604,9 @@ window.AVManga = function (G) {
         </div>
         <div class="mg-vinetas">${vinetas}</div>
         <section class="mg-cierre">
-          <article class="mg-caja"><h3><i class="mg-libro" aria-hidden="true"></i> ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
+          <article class="mg-caja"><i class="mg-folia" aria-hidden="true"></i><i class="mg-folia mg-folia-b" aria-hidden="true"></i><h3><i class="mg-libro" aria-hidden="true"></i> ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
           <div class="mg-hero"><canvas id="mg-hero" width="512" height="512"></canvas></div>
-          <article class="mg-caja mg-caja-vida"><h3><i class="mg-sol" aria-hidden="true"></i> ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p><i class="mg-cora" aria-hidden="true"></i></article>
+          <article class="mg-caja mg-caja-vida"><i class="mg-folia" aria-hidden="true"></i><i class="mg-folia mg-folia-b" aria-hidden="true"></i><h3><i class="mg-sol" aria-hidden="true"></i> ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p><i class="mg-cora" aria-hidden="true"></i></article>
           <p class="mg-cierre-txt" id="mg-cierre" contenteditable="true" role="textbox" aria-label="${esc(L('Cierre', 'Ending'))}"></p>
         </section>
         <div class="mg-botones">
@@ -466,18 +644,44 @@ window.AVManga = function (G) {
     const c = raiz && raiz.querySelector('#mg-hero'); if (!c) return;
     const x = c.getContext('2d');
     x.clearRect(0, 0, c.width, c.height);
-    const src = retrato || fotos[0] || fotos[5];
+    const src = hero || retrato || fotos[5] || fotos[0];
     if (src) x.drawImage(src, 0, 0, c.width, c.height);
     const mini = raiz.querySelector('#mg-mini');
-    if (mini && src) mini.getContext('2d').drawImage(src, 0, 0, mini.width, mini.height);
+    const miniSrc = hero || retrato || src;
+    if (mini && miniSrc) mini.getContext('2d').drawImage(miniSrc, 0, 0, mini.width, mini.height);
+  }
+  async function fondosDe() {
+    const tomadas = fotografiar();
+    if (esDemo()) return tomadas;
+    const guardados = await leerFondos();
+    const out = [];
+    for (let i = 0; i < BEATS.length; i++) {
+      const row = guardados[MOMENTO_BEAT[BEATS[i].id]];
+      const dePartida = row && await desdeJpeg(row.jpeg);
+      if (dePartida) { out.push(dePartida); fondosOrigen[i] = 'partida'; }
+      else out.push(tomadas[i]);
+    }
+    return out;
   }
   async function refrescar() {
     if (tomando) return;
     tomando = true;
     try {
-      const tomadas = fotografiar();
-      const plates = await Promise.all(LAMINAS.map(cargarLamina));
-      fotos = plates.map((p, i) => p || tomadas[i]);
+      await cargarCatalogo();
+      const fondos = await fondosDe();
+      const usados = [];
+      const placas = [];
+      for (let i = 0; i < BEATS.length; i++) {
+        const ficha = poseVineta(BEATS[i].id);
+        const im = ficha ? await cargarImagen(ficha.archivo) : null;
+        usados.push(ficha ? ficha.id : '');
+        placas.push(componer(fondos[i], im ? poseManga(im) : null, BEATS[i]));
+      }
+      posesUsadas = usados;
+      fotos = placas;
+      const centro = poseVineta('ensenanzas');
+      const him = centro ? await cargarImagen(centro.archivo) : null;
+      hero = him ? poseManga(him) : null;
     } finally { tomando = false; }
     if (!raiz) return;
     BEATS.forEach((_, i) => pintarVineta(raiz.querySelector(`.mg-vin[data-i="${i}"] canvas`), i));
@@ -494,7 +698,7 @@ window.AVManga = function (G) {
   function cerrar() {
     if (raiz) { raiz.remove(); raiz = null; }
     if (estilo) { estilo.remove(); estilo = null; }
-    fotos = []; retrato = null;
+    fotos = []; retrato = null; hero = null;
   }
   function movil(on) { if (raiz) raiz.classList.toggle('mg-movil', !!on); return !!(raiz && raiz.classList.contains('mg-movil')); }
 
@@ -560,39 +764,53 @@ window.AVManga = function (G) {
       x.save(); round(x, px, py, pw, ph, 8); x.clip();
       if (cv) x.drawImage(cv, px, py, pw, ph);
       x.restore();
-      x.strokeStyle = '#14110e'; x.lineWidth = 6; round(x, px, py, pw, ph, 8); x.stroke();
-      x.fillStyle = '#e7b86a'; round(x, px + 10, py + 10, Math.min(280, pw - 24), 32, 8); x.fill();
-      x.fillStyle = '#3a240d'; x.font = '800 16px Trebuchet MS, Segoe UI, sans-serif';
-      x.fillText((i + 1) + '  ' + L(BEATS[i].es, BEATS[i].en), px + 18, py + 32);
+      x.strokeStyle = '#0c0906'; x.lineWidth = 8; round(x, px, py, pw, ph, 8); x.stroke();
+      x.fillStyle = '#ffe14a'; round(x, px + 10, py + 10, Math.min(300, pw - 24), 36, 8); x.fill();
+      x.strokeStyle = '#1a120c'; x.lineWidth = 3; x.stroke();
+      x.fillStyle = '#f08a12'; x.beginPath(); x.arc(px + 28, py + 28, 12, 0, Math.PI * 2); x.fill();
+      x.strokeStyle = '#1a120c'; x.lineWidth = 2; x.stroke();
+      x.fillStyle = '#fff'; x.font = '900 14px Trebuchet MS, Segoe UI, sans-serif'; x.textAlign = 'center';
+      x.fillText(String(i + 1), px + 28, py + 33);
+      x.textAlign = 'left';
+      x.fillStyle = '#3a2208'; x.font = '900 15px Trebuchet MS, Segoe UI, sans-serif';
+      x.fillText(L(BEATS[i].es, BEATS[i].en), px + 46, py + 33);
       const gw = Math.min(300, pw - 24);
       globo(x, estado.globos[i], px + pw - gw - 12, py + 52, gw);
       if (i === 4 && estado.sfx) {
-        x.font = '900 42px Trebuchet MS, Segoe UI, sans-serif'; x.lineWidth = 6;
-        x.strokeStyle = '#fff'; x.strokeText(estado.sfx, px + 16, py + ph - 28);
-        x.fillStyle = '#163a8a'; x.fillText(estado.sfx, px + 16, py + ph - 28);
+        x.save();
+        x.translate(px + 18, py + ph - 30);
+        x.rotate(-0.28);
+        x.font = '900 58px Impact, Arial Black, Trebuchet MS, sans-serif';
+        x.lineWidth = 10; x.lineJoin = 'round';
+        x.strokeStyle = '#fff'; x.strokeText(estado.sfx, 0, 0);
+        x.fillStyle = '#123a9a'; x.fillText(estado.sfx, 0, 0);
+        x.restore();
       }
     }
     y += fila[0] + fila[1] + fila[2] + gap * 2 + 16;
     function ficha(px, titulo, texto) {
-      x.fillStyle = '#fff8ec'; x.strokeStyle = '#8a5a28'; x.lineWidth = 5;
+      x.fillStyle = '#e8b15a'; x.strokeStyle = '#5c320e'; x.lineWidth = 7;
       round(x, px, y, 420, pie - 20, 14); x.fill(); x.stroke();
-      x.fillStyle = '#6a3e12'; x.font = '900 22px Trebuchet MS, Segoe UI, sans-serif';
-      x.fillText(titulo, px + 16, y + 36);
-      x.fillStyle = '#1a120c'; x.font = '700 20px Trebuchet MS, Segoe UI, sans-serif';
-      envolver(x, texto, 388, x.font).forEach((ln, i) => x.fillText(ln, px + 16, y + 72 + i * 28));
+      x.fillStyle = '#2f9e44'; x.beginPath(); x.ellipse(px + 18, y + 22, 14, 8, -0.5, 0, 7); x.fill();
+      x.beginPath(); x.ellipse(px + 400, y + pie - 48, 14, 8, 0.6, 0, 7); x.fill();
+      x.fillStyle = '#4a2808'; x.font = '900 22px Trebuchet MS, Segoe UI, sans-serif';
+      x.fillText(titulo, px + 16, y + 40);
+      x.fillStyle = '#1a120c'; x.font = '700 22px "Segoe Print", "Comic Sans MS", cursive';
+      envolver(x, texto, 388, x.font).forEach((ln, i) => x.fillText(ln, px + 16, y + 78 + i * 30));
     }
     ficha(48, L('¿Qué aprendí?', 'What did I learn?'), estado.aprendi);
     ficha(612, L('Mi enseñanza de vida', 'My life lesson'), estado.ensenanza);
     const hero = raiz && raiz.querySelector('#mg-hero');
     if (hero) {
-      x.fillStyle = '#2f8f4e'; round(x, 480, y + 40, 120, 160, 16); x.fill();
-      x.drawImage(hero, 490, y + 50, 100, 100);
+      x.fillStyle = '#1f8a3c'; round(x, 468, y + 28, 144, 190, 16); x.fill();
+      x.strokeStyle = '#1a120c'; x.lineWidth = 5; x.stroke();
+      x.drawImage(hero, 476, y + 36, 128, 128);
     }
     x.fillStyle = '#1a120c'; x.font = '800 20px Trebuchet MS, Segoe UI, sans-serif'; x.textAlign = 'center';
     x.fillText((estado.cierre || '') + '  ·  ' + (estado.nombre || 'Vittata'), W / 2, y + pie - 8);
     x.textAlign = 'left';
     x.font = '700 16px Trebuchet MS, Segoe UI, sans-serif'; x.fillStyle = '#5c3b16';
-    x.fillText(L('Láminas del modelo oficial. El nombre es el de tu cotorra.', 'Plates of the official model. The name is your parrot\'s.'), 48, H - 40);
+    x.fillText(L('Poses oficiales de Vittata sobre la partida. El nombre es el de tu cotorra.', 'Official Vittata poses over the play. The name is your parrot\'s.'), 48, H - 40);
     return c;
   }
   function blobDe(canvas) {
@@ -670,6 +888,11 @@ window.AVManga = function (G) {
         await abrir();
         check('La página de muestra está abierta y no está en el menú de modos', !!raiz && !!document.getElementById('av-manga') && !document.querySelector('#title [data-manga], .modo-manga, [data-modo="manga"]'));
         check('Hay 6 viñetas', raiz.querySelectorAll('.mg-vin').length === 6 && fotos.length === 6);
+        const momentosOk = ['comienzo', 'error', 'confusion', 'intento', 'velocidad', 'meta', 'celebracion', 'ensenanzas'];
+        check('El catálogo trae las 21 poses oficiales', !!(catalogo && catalogo.poses && catalogo.poses.length === 21 && catalogo.poses.every(p => p.id && momentosOk.indexOf(p.momento) >= 0 && /poses\/vittata\/\d+\.png$/.test(p.archivo))));
+        check('Cada viñeta usa una pose oficial distinta', posesUsadas.length === 6 && posesUsadas.every(Boolean) && new Set(posesUsadas).size === 6, posesUsadas.join(','));
+        check('Los fondos salen del mapa o de la partida', fondosOrigen.length === 6 && fondosOrigen.every(o => o === 'mapa' || o === 'partida'), fondosOrigen.join(','));
+        check('El clip recorder no graba', !G.mangaClip);
         const reales = fotos.filter(f => f && desvio(f, 24).desv >= 8);
         check('Las 6 láminas tienen color (no un lienzo plano)', reales.length === 6, reales.length + '/6');
         BEATS.forEach((_, i) => {

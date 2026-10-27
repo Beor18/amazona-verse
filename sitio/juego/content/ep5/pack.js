@@ -826,7 +826,7 @@
             'Pide ayuda a Iguaca y al aprendiz', 'Probar el relevo', 'La línea choca con una loma. El trazo rojo marca dónde.'];
           const sinEn = G.idioma.faltan(leidos);
           check('Lo que se lee en el capítulo tiene inglés', sinEn.length === 0, sinEn.slice(0, 4).join(' | '));
-          check('El título pasa a inglés', $('quest').querySelector('h1').textContent === 'The forgotten voices', $('quest').querySelector('h1').textContent);
+          check('El título pasa a inglés', $('quest').querySelector('h1').textContent === 'The Forgotten Voices', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
 
           G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);

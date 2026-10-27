@@ -272,7 +272,7 @@ AVE.module('terreno', function (G) {
     'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
     'uniform sampler2D tBosque; uniform vec4 uBosque;', // F0.2: cuánto bosque hay encima (densidad de árboles del mapa en celdas de 8 m)
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
-    'uniform sampler2D tOrilla; uniform vec4 uOrilla;', // BB1: orilla del río y las pozas (1 = borde del agua, 0 = a 4,5 m o más)
+    'uniform sampler2D tOrilla; uniform vec4 uOrilla;', // BB1: orilla del río y las pozas (1 = borde del agua, 0 = a 3 m o más)
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
     'vec2 rotUv(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }',
   ].join('\n');
@@ -283,6 +283,9 @@ AVE.module('terreno', function (G) {
   vec3 nG = normalize(vWNor);
   vec4 mac = texture2D(tMacro, wp * 0.0071);
   vec4 mac2 = texture2D(tMacro, wp * 0.043 + 0.37);
+  // BE2: desde muy alto el moteado fino (manchas de ~23 m) forma un muaré; se apaga con la distancia
+  float lejos = smoothstep(160.0, 420.0, camD);
+  mac2 = mix(mac2, vec4(0.5), lejos * 0.75);
   vec4 w = clamp(vSplat, 0.0, 1.0);
   float steep = smoothstep(0.80, 0.56, nG.y + (mac2.g - 0.5) * 0.12);
   w.z = max(w.z, steep);
@@ -337,6 +340,8 @@ AVE.module('terreno', function (G) {
   // pardo medio (se queda su luminancia), más clara y seca a manchas, y el pasto del borde amarillea un poco
   float l1 = dot(c1, LUM);
   c1 = mix(c1, vec3(l1) * vec3(1.42, 0.98, 0.62), 0.7) * mix(1.12, 1.38, smoothstep(0.3, 0.75, mac2.g));
+  // BE2: de lejos las sendas finas quedaban como hilos rojizos; se vuelven tierra parda apagada que se funde con el verde
+  c1 = mix(c1, mix(vec3(dot(c1, LUM)) * vec3(1.16, 1.0, 0.8), c0, 0.3), lejos * 0.7);
   c0 *= mix(vec3(1.0), vec3(1.07, 1.0, 0.78), bordeT * 0.6);
   c2 *= mix(vec3(0.9, 0.92, 0.95), vec3(1.08, 1.03, 0.95), mac.r);
   // acantilados: oclusión en las grietas (la luminancia de la roca hace de altura) y musgo en las repisas que miran arriba
@@ -346,8 +351,8 @@ AVE.module('terreno', function (G) {
   float hc = (vWPos.x + vWPos.z) * 0.7071;
   float estr = texture2D(tMacro, vec2(hc * 0.002 + 0.21, vWPos.y * 0.02 + (mac.g - 0.5) * 0.05)).g;
   float chor = texture2D(tMacro, vec2(hc * 0.012 + 0.63, vWPos.y * 0.003)).b;
-  vec3 rocaT = mix(vec3(0.78, 0.8, 0.82), vec3(1.08, 0.99, 0.86), smoothstep(0.3, 0.7, estr)) * mix(0.74, 1.1, smoothstep(0.2, 0.8, estr));
-  rocaT *= mix(1.0, 0.62, smoothstep(0.5, 0.78, chor)) * mix(1.0, 0.78, smoothstep(0.6, 0.15, nG.y));
+  vec3 rocaT = mix(vec3(0.84, 0.86, 0.88), vec3(1.04, 0.98, 0.9), smoothstep(0.3, 0.7, estr)) * mix(0.86, 1.04, smoothstep(0.2, 0.8, estr)); // BE2: bandas más suaves (el Yunque)
+  rocaT *= mix(1.0, 0.74, smoothstep(0.5, 0.78, chor)) * mix(1.0, 0.78, smoothstep(0.6, 0.15, nG.y));
   c2 = mix(c2, c2 * rocaT, steep);
   // gris pardo más frío en la pared (no beige) y matas de musgo que cuelgan de las cornisas de los estratos
   c2 = mix(c2, vec3(dot(c2, LUM)) * vec3(0.94, 0.98, 1.02), steep * 0.45);
@@ -355,6 +360,12 @@ AVE.module('terreno', function (G) {
   c2 = mix(c2, c0 * 0.6, mataR * steep * 0.65);
   float musgoRoca = smoothstep(0.42, 0.78, nG.y + (mac2.r - 0.5) * 0.45) * smoothstep(0.35, 0.65, mac.g + mac2.b * 0.3);
   c2 = mix(c2, c0 * 0.78, musgoRoca * 0.75);
+  // BE2: selva colgante. En el render las gargantas están cubiertas de verde hasta el borde y la roca solo asoma en lo
+  // más vertical: las pendientes medias se cubren casi del todo y las paredes, a parches grandes de enredadera y helecho
+  float parche = texture2D(tMacro, vec2(hc * 0.0045 + 0.11, vWPos.y * 0.012 + mac.r * 0.15)).g * 0.6 + mac.g * 0.4;
+  float cubre = mix(0.42, 0.9, smoothstep(0.22, 0.6, nG.y)) * smoothstep(0.32, 0.55, parche + (mac2.b - 0.5) * 0.25);
+  vec3 selva = c0 * vec3(0.5, 0.66, 0.46) * (0.8 + mac2.r * 0.35);
+  c2 = mix(c2, selva, cubre * steep);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
   #ifdef SPLAT_ORILLA
     alb = mix(alb, c3 * vec3(0.62, 0.52, 0.4), smoothstep(0.55, 0.95, ori) * bw.w * 0.6); // barro húmedo junto al agua
@@ -367,7 +378,15 @@ AVE.module('terreno', function (G) {
     vec3 hoja = mix(vec3(dot(c1, LUM)), c1, 0.45) * vec3(0.92, 0.9, 0.6);
     hoja = mix(hoja, c0 * 0.8, 0.3 + (mac2.g - 0.5) * 0.4) * (0.55 + mac.g * 0.2);
     alb = mix(alb, hoja, bq * 0.9);
+    // BE2: sombra del dosel. El bosque de alrededor (4 muestras a 12 m) oscurece el suelo cercano y el de debajo: claros
+    // con borde en penumbra y masas de selva hondas, en lugar de una luz plana y uniforme
+    vec2 ub = (wp - uBosque.xy) * uBosque.zw, ob = 12.0 * uBosque.zw;
+    float bqA = (texture2D(tBosque, ub + vec2(ob.x, 0.0)).r + texture2D(tBosque, ub - vec2(ob.x, 0.0)).r
+      + texture2D(tBosque, ub + vec2(0.0, ob.y)).r + texture2D(tBosque, ub - vec2(0.0, ob.y)).r) * 0.25;
+    alb *= 1.0 - 0.32 * clamp(bqA * 0.6 + bq * 0.6, 0.0, 1.0) * (1.0 - bw.w);
   #endif
+  // BE2: las paredes de las gargantas, algo más hondas que las mesetas (oclusión aproximada por la pendiente)
+  alb *= 1.0 - 0.18 * steep * smoothstep(0.7, 0.2, nG.y);
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
     vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
@@ -404,11 +423,11 @@ AVE.module('terreno', function (G) {
   #endif
 `;
   // BB1: textura de orilla (1 canal, 1 texel cada 2 m) con la distancia al borde del río, la quebrada y las pozas de
-  // mapa.agua: 1 en el borde del agua y 0 a 4,5 m o más. El shader pone ahí arena y barro en vez de roca o pasto.
+  // mapa.agua: 1 en el borde del agua y 0 a 3 m o más (BE2; antes 4,5). El shader pone ahí arena y barro en vez de roca o pasto.
   const ORILLA = (() => {
     const DA = MAPA && MAPA.agua, TM = MAPA && MAPA.tamano;
     if (!DA || !TM || (W.suelo && W.suelo.orilla === false)) return null;
-    const paso = 2, BANDA = 4.5, nx = Math.ceil(TM.ancho / paso) + 1, nz = Math.ceil(TM.largo / paso) + 1;
+    const paso = 2, BANDA = 3, /* BE2: franja más estrecha (la selva llega casi al agua) */ nx = Math.ceil(TM.ancho / paso) + 1, nz = Math.ceil(TM.largo / paso) + 1;
     const dist = new Float32Array(nx * nz).fill(BANDA);
     const marca = (x0, x1, z0, z1, f) => {
       const i0 = Math.max(0, Math.floor((x0 - TM.x0) / paso)), i1 = Math.min(nx - 1, Math.ceil((x1 - TM.x0) / paso));

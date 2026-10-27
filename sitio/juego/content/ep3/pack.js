@@ -81,7 +81,7 @@
     { id: 'e_papa', disparador: 'interact:papa', personaje: 'Papá', emocion: 'pensando', lineas: ['¿El tronco más grande? ¿Y eso flota cargado?', 'Antes de cortar nada, probemos qué flota. Ahí está la poza.'] },
     { id: 'e_papa_v', disparador: 'interact:papa', personaje: 'Vittata', emocion: 'idea', lineas: ['Primero predigo, luego pruebo. Como con la casa.'] },
     { id: 'e_flota', disparador: 'evento:BoatLaunched', personaje: 'Abuela', emocion: 'feliz', lineas: ['¡Derechita! Ahora falta quién la lleve.'] },
-    { id: 'e_flota_n', disparador: 'evento:BoatLaunched', personaje: 'Navegante', emocion: 'pensando', nota: '[KELVIN: especie, nombre y de dónde viene la navegante]', lineas: ['(En el muelle, una cotorra mira la canoa de brazos cruzados.)'] },
+    { id: 'e_flota_n', disparador: 'evento:BoatLaunched', personaje: 'Navegante', emocion: 'pensando', nota: '[KELVIN: especie, nombre y de dónde viene la navegante]', lineas: ['(En el muelle, una cotorra mira la canoa con las alas cruzadas.)'] },
     { id: 'e_nav', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'pensando', lineas: ['Ese bote flota, sí. Pero hoy no sale.'] },
     { id: 'e_nav_v', disparador: 'evento:NavigatorMet', personaje: 'Vittata', emocion: 'triste', lineas: ['¡Pero si está listo! Lo hice yo.'] },
     { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si el Guardián va en el bote o despide desde el muelle]', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
@@ -520,7 +520,7 @@
             });
             return;
           }
-          G.dialogo.say([Vi(G.eventos.had('MaterialsTested') ? 'En la tabla: flotan el tronco, el bambú, la tabla y el coco; se hunden la piedra y el clavo.' : 'El plano: casco, amarre doble y que no se vire.')]);
+          G.dialogo.say([Vi(G.eventos.had('MaterialsTested') ? 'En el plano: flotan el tronco, el bambú, la tabla y el coco; se hunden la piedra y el clavo.' : 'El plano: casco, amarre doble y que no se vire.')]);
         } });
       function terminarPrueba() {
         if (G.eventos.had('MaterialsTested') || probados().length < 6 || HUNDEN.some(m => !tiene('recuperado_' + m.id))) return;
@@ -682,7 +682,7 @@
       function travesia() {
         if (S.step !== 12) { G.dialogo.say([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
         rumbo = { x: ALDEA.x, z: ALDEA.z };
-        G.dialogo.say([di('Abuela', 'Cargadas van: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
+        G.dialogo.say([di('Abuela', 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
           () => navegar(RUTAS.boca, MAR, rutaElegir, { paradas: { 1: s => senal('izquierda', s, 'En la boca de la bahía las olas cruzan entre dos rocas.'), 2: s => senal('derecha', s) } }));
       }
       G.interaccion.add({ id: 'muelle', x: MUELLE.x, z: MUELLE.z, r: 2.4, visible: () => !viaje,
@@ -768,7 +768,7 @@
           4: 'Ya está armada. Ahora, la prueba de verdad: el agua.', 5: 'La botadura te enseñó la parte más débil. Cambia solo esa.',
           6: 'Vuelve a botarla. Si flota derecha, ¡fiesta!', 7: 'Alguien mira la canoa desde el muelle.',
           8: 'Mira las dos cintas, las nubes desde el mirador y la corriente del río.', 9: 'Acuerda las señales con la navegante.',
-          10: 'La canoa te espera río arriba.', 11: '¿Quién lleva el timón? Las dos respuestas llegan.', 12: 'Sube a la canoa en el muelle.', 13: 'Saluda a la gente de la otra orilla.',
+          10: 'La canoa te espera río arriba.', 11: '¿Quién lleva el timón? Con las dos respuestas se llega.', 12: 'Sube a la canoa en el muelle.', 13: 'Saluda a la gente de la otra orilla.',
         };
         G.dialogo.say([Lu(S.complete ? '¡Cruzaste la bahía! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }

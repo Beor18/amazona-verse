@@ -165,7 +165,9 @@ AVE.module('pruebas', function (G) {
     try {
       check('La plantilla arranca con su propio content pack', A.pack === packId && P.id === packId, A.pack);
       check('Mismo motor: todos los módulos instanciados', W.AVE.modules().every(m => !!G2[m]), W.AVE.modules().length + ' módulos');
-      check('Guarda aparte de cap1 (otra clave de localStorage)', G2.guardado.KEY !== G.guardado.KEY, G2.guardado.KEY);
+      // contra la clave del cap. 1 aunque la prueba corra desde la pestaña del propio pack (?pack=epN, la ronda de QA BE4)
+      const K1 = G.pack.id === 'cap1' ? G.guardado.KEY : 'amazonaverse.save';
+      check('Guarda aparte de cap1 (otra clave de localStorage)', G2.guardado.KEY !== K1, G2.guardado.KEY);
       check('Nada del capítulo 1 en la plantilla', !G2.interaccion.find('maquina') && !G2.interaccion.find('transmisor') && !G2.actores.npc('luma'));
       check('Su historia en el HUD', doc.querySelectorAll('#steps li').length === G2.misiones.steps.length && G2.misiones.steps.length > 0 &&
         doc.querySelector('#steps li').textContent.startsWith(G2.misiones.steps[0].texto), G2.misiones.steps.length + ' pasos');

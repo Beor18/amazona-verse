@@ -70,11 +70,15 @@ AVE.module('streaming', function (G) {
     lodH: 8,                                       // histéresis del LOD (m)
     hd: { bajo: 45, medio: 70, alto: 90 },        // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
+    // Solo kelvin_ruinas_yunque. Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
+    ciudadVista: 220,                              // m al borde de la zona: carga el kit (el spawn, a ~290 m, no entra)
+    ciudadMalla: 340,                              // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
     descargas: 1, descargasArranque: 3,            // descargas a la vez
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
+    sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras
   };
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
   function alcanceNiebla() {
@@ -385,7 +389,7 @@ AVE.module('streaming', function (G) {
         I.r = rad * I.escala; I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
-        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, d: Infinity });
+        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
         Z.inst.push(I); Z.modelos.add(c.n);
       }
       for (const id in zonas) {
@@ -645,7 +649,19 @@ AVE.module('streaming', function (G) {
         const cerca = Z.forzada || (Z.nivel === 2 ? Z.d < Rc + H : Z.d < Rc);
         const lejos = Z.nivel >= 1 ? Z.d < Rl + H : Z.d < Rl;
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
-        ajustarHD(Z, Z.nivel === 2 && hdActivo() && Z.d < Rc + (Z.hd ? H : 0)); // forzada de lejos (cargarTodo): sin _hd
+        // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
+        // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
+        if (Z.id === 'kelvin_ruinas_yunque') {
+          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista + (Z.ciudad ? H : 0);
+          if (Z.ciudad !== quiere) {
+            Z.ciudad = quiere;
+            for (const n of Z.modelos) {
+              if (quiere) pedir(res(n, 'cerca'), Z.d).catch(err => respaldo(Z, n, err));
+              else soltar(res(n, 'cerca'));
+            }
+          }
+        }
+        ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd
         if (Z.hd) for (const n of Z.modelos) {
           const rh = recursos[n] && recursos[n].hd;
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
@@ -690,7 +706,8 @@ AVE.module('streaming', function (G) {
         const dj = Math.hypot(px - Z.cx, pz - Z.cz) - Z.r;
         const umbral = lodD + (Z.usaMalla ? -H : H);
         // La silueta fundida solo si la cámara y Vittata están lejos del borde. Junto a las ruinas se dibujan las mallas.
-        Z.usaMalla = Z.nivel === 1 || (dz > umbral && dj > umbral);
+        // En la ciudad del tepuy, nunca: la silueta beige tapa el kit justo en la vista aérea.
+        Z.usaMalla = !Z.ciudad && (Z.nivel === 1 || (dz > umbral && dj > umbral));
         const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
@@ -698,21 +715,28 @@ AVE.module('streaming', function (G) {
         const I = activas[i];
         if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
         const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
-        if (dCam - I.r > max) continue;
+        const vista = zonas[I.zona].ciudad;
+        const maxI = vista ? Math.max(max, CFG.ciudadMalla) : max;
+        if (dCam - I.r > maxI) continue;
         // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
         // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
         const dPla = Math.hypot(I.cx - px, I.cy - py, I.cz - pz);
         const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
         const grande = I.r > CFG.hdGrande;
-        if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
+        const lodLim = vista ? Math.max(lodD, CFG.ciudadMalla) : lodD;
+        const hdLim = vista ? Math.max(hdD, CFG.ciudadMalla) : hdD;
+        if (I.lod === 0 && dl > lodLim + H) I.lod = 1; else if (I.lod === 1 && dl < lodLim - H) I.lod = 0;
         // Junto a la pared, la malla completa en cualquier calidad. Los grandes siguen en HD más allá del LOD, hasta hdD.
         // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.
-        const junto = hdD > 0 && dl < hdD + (I.hd ? H : -H);
+        // En la ciudad del tepuy el límite es el de la vista aérea: si no, a 100 m ya es la silueta beige.
+        const junto = hdLim > 0 && dl < hdLim + (I.hd ? H : -H);
         I.hd = junto && (I.lod === 0 || grande);
         const base = (I.lod === 0 || junto) ? 'cerca' : 'lejos';
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + ':' + base] || lotes[I.modelo + ':' + (base === 'cerca' ? 'lejos' : 'cerca')];
         if (!L) continue;
-        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < rS + I.r;
+        // Los props chicos (losas, toldos, canoas: BH1) solo dan sombra junto a Vittata: más allá son unos pocos texels
+        // del mapa de sombras y cada modelo con sombra es un draw call más en la pasada de sombras.
+        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
         L.lista.push(I); if (sombra) L.sombra = true;
@@ -897,6 +921,17 @@ AVE.module('streaming', function (G) {
       const m2 = foto();
       check('Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB)', m2.kb <= m1.kb * 1.02 + 16 && m2.mats <= m1.mats && m2.mod <= m1.mod && !(gc && m2.heap - m1.heap > tolHeap),
         'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc: no se exige)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t);
+      // La ciudad del tepuy, desde el aire (150 m al borde, más lejos que el _hd general): el kit, no la silueta beige.
+      const ZC = ST.zonas.kelvin_ruinas_yunque;
+      if (ZC && hdGL2()) {
+        await ir(ZC.cx, ZC.cz + ZC.r + 150, 0, -1);
+        const seC = ST.stats();
+        const beige = ZC.malla && ZC.malla.visible;
+        check('La ciudad del tepuy, desde el aire, usa el kit con textura y no la silueta beige', ZC.ciudad && ZC.nivel >= 1 && seC.visiblesHD > 0 && !beige,
+          'hd ' + seC.visiblesHD + ' · cerca ' + seC.visiblesCerca + ' · lejos ' + seC.visiblesLejos + ' · ciudad ' + !!ZC.ciudad + ' · silueta ' + !!beige);
+        await ir(x0, z0); ST.liberarYa(); dibujar();
+        check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
+      }
     } catch (e) {
       check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {

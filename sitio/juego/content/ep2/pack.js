@@ -308,7 +308,7 @@
         }
         const pistas = {
           3: 'La abuela está junto al agua. Enséñale tu plano.',
-          4: 'Pregunta con preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.',
+          4: 'Haz preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.',
           5: 'Las tarjetas te esperan en la mesa.',
           6: 'Ve a tu sitio, ' + (SITIOS[elegido()] || SITIOS.a).nombre + ', y dibuja la casa.',
           7: 'Falta el nido del papá: alto, oscuro y seco.',

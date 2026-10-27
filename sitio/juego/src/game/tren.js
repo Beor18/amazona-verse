@@ -578,7 +578,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
 #tren .tr-btn { pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; min-width: 108px; min-height: 56px; font: 800 20px/1 var(--font-display, system-ui); }
 #tren .tr-btn.on { filter: brightness(1.25); transform: scale(.96); }
 #tren .tr-desvio { display: flex; gap: 6px; align-items: center; background: var(--c-surface, rgba(10,30,20,.85)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-pill, 999px); padding: 4px 6px; font: 700 14px/1.1 var(--font-display, system-ui); }
-#tren .tr-desvio button { pointer-events: auto; min-width: 44px; min-height: 40px; }
+#tren .tr-desvio button { pointer-events: auto; min-width: 44px; min-height: 44px; }
 #tren .tr-desvio button.on { outline: 3px solid var(--gold, #ffd84a); }
 #tren .tr-desvio .pista { color: var(--gold, #ffd84a); }
 #tren .tr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); overflow: auto; }
