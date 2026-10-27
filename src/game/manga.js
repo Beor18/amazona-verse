@@ -1,19 +1,18 @@
-/* Juego · Manga Toon Story Creator (G17, prototipo de Kelvin)
+/* Juego · Manga Toon Story Creator (G17c, prototipo de Kelvin)
    Aparte de src/game/comic.js: no lo reemplaza. Se abre con ?manga=demo o AV.manga(), sin entrada en el menú.
-   Seis viñetas salen de cámaras sobre la escena real (Vittata oficial, assets/models/vittata.glb). El post manga
-   (color, tinta, líneas de velocidad) se hace en este lienzo: renderer.js no se toca.
-   La historia de muestra es la de COMIC_MANGA_DIRECTIVA.md § 10. Quien juega reescribe título, globos y enseñanzas.
-   No pide el nombre real, no inventa cotorras y no genera imágenes con IA.
+   La interfaz sigue docs/img/referencia_manga_toon.webp. Las viñetas componen láminas de Blender
+   (tools/blender/manga_laminas.py) del modelo oficial assets/models/vittata.glb: cel shading, contorno
+   y sitios del mapa. Globos, onomatopeyas y líneas de velocidad se dibujan en este lienzo.
+   renderer.js no se toca. No pide el nombre real, no inventa cotorras y no genera imágenes con IA.
    Prueba: AV.mangaTest(). */
 window.AVManga = function (G) {
   'use strict';
   const S = G.S;
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const BEATS = [
     { id: 'comienzo', es: 'EL COMIENZO', en: 'THE START', lado: 'der', modo: 'vuelo', fov: 42, quiere: 0.36, lineas: 0.45, prop: 'salida', alto: 1 },
-    { id: 'camino', es: 'EL CAMINO EQUIVOCADO', en: 'THE WRONG PATH', lado: 'der', modo: 'planeo', fov: 48, quiere: 0.26, lineas: 0.1, prop: 'cruce', alto: 1 },
+    { id: 'camino', es: 'EL CAMINO EQUIVOCADO', en: 'THE WRONG PATH', lado: 'der', modo: 'planeo', fov: 48, quiere: 0.26, lineas: 0.1, prop: 'cruce', alto: 1, pensar: 1 },
     { id: 'confusion', es: 'LA CONFUSIÓN', en: 'THE MIX-UP', lado: 'aba', modo: 'sorpresa', fov: 26, quiere: 0.62, lineas: 0, prop: 'dudas', alto: 0 },
     { id: 'intento', es: 'EL NUEVO INTENTO', en: 'TRYING AGAIN', lado: 'der', modo: 'vuelo', fov: 52, quiere: 0.18, lineas: 0.3, prop: null, alto: 0 },
     { id: 'velocidad', es: 'MÁS VELOCIDAD', en: 'MORE SPEED', lado: 'der', modo: 'vuelo', fov: 38, quiere: 0.42, lineas: 0.65, prop: 'viento', alto: 1 },
@@ -39,7 +38,30 @@ window.AVManga = function (G) {
     };
   }
 
+  const LAMINAS = [
+    'assets/manga/laminas/01_comienzo.jpg',
+    'assets/manga/laminas/02_camino.jpg',
+    'assets/manga/laminas/03_confusion.jpg',
+    'assets/manga/laminas/04_intento.jpg',
+    'assets/manga/laminas/05_velocidad.jpg',
+    'assets/manga/laminas/06_meta.jpg',
+  ];
   let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, enPrueba = false, tomando = false, camDelta = null;
+
+  function cargarLamina(url) {
+    return new Promise(resolve => {
+      const im = new Image();
+      im.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = 960; c.height = 600;
+        const x = c.getContext('2d', { willReadFrequently: true });
+        x.drawImage(im, 0, 0, 960, 600);
+        resolve(c);
+      };
+      im.onerror = () => resolve(null);
+      im.src = url;
+    });
+  }
 
   function desvio(canvas, paso) {
     const x = canvas.getContext('2d', { willReadFrequently: true });
@@ -58,48 +80,6 @@ window.AVManga = function (G) {
     return { desv: Math.sqrt(Math.max(0, s2 / n - m * m)), colores: colores.size, media: m };
   }
 
-  // ---------- Post manga (BG3): color tropical, posterizado leve y tinta. No es un pase de renderer.js ----------
-  function tratar(origen, w, h, opt) {
-    opt = opt || {};
-    const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const x = c.getContext('2d', { willReadFrequently: true });
-    x.drawImage(origen, 0, 0, w, h);
-    let img;
-    try { img = x.getImageData(0, 0, w, h); }
-    catch (e) { return c; }
-    const d = img.data, luma = new Float32Array(w * h);
-    const sat = 1.38, con = 1.14, poster = 0.38, pasos = 6;
-    for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-      let r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
-      const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      r = y + (r - y) * sat; g = y + (g - y) * sat; b = y + (b - y) * sat;
-      r = (r - 0.5) * con + 0.5; g = (g - 0.5) * con + 0.5; b = (b - 0.5) * con + 0.5;
-      const pr = Math.round(clamp(r, 0, 1) * pasos) / pasos;
-      const pg = Math.round(clamp(g, 0, 1) * pasos) / pasos;
-      const pb = Math.round(clamp(b, 0, 1) * pasos) / pasos;
-      r = r * (1 - poster) + pr * poster; g = g * (1 - poster) + pg * poster; b = b * (1 - poster) + pb * poster;
-      if (opt.calido) { r = Math.min(1, r * 1.08 + 0.03); g = Math.min(1, g * 1.02); b *= 0.9; }
-      d[i] = clamp(r, 0, 1) * 255; d[i + 1] = clamp(g, 0, 1) * 255; d[i + 2] = clamp(b, 0, 1) * 255;
-      luma[p] = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-    }
-    const umbral = 36, fuerza = 0.82;
-    for (let y = 1; y < h - 1; y++) {
-      for (let xx = 1; xx < w - 1; xx++) {
-        const i = y * w + xx;
-        const gx = -luma[i - w - 1] + luma[i - w + 1] - 2 * luma[i - 1] + 2 * luma[i + 1] - luma[i + w - 1] + luma[i + w + 1];
-        const gy = -luma[i - w - 1] - 2 * luma[i - w] - luma[i - w + 1] + luma[i + w - 1] + 2 * luma[i + w] + luma[i + w + 1];
-        const mag = Math.hypot(gx, gy);
-        if (mag > umbral) {
-          const k = Math.min(1, (mag - umbral) / 70) * fuerza;
-          const o = i * 4;
-          d[o] *= 1 - k; d[o + 1] *= 1 - k * 0.92; d[o + 2] *= 1 - k * 0.8;
-        }
-      }
-    }
-    x.putImageData(img, 0, 0);
-    if (opt.lineas) lineas(x, w, h, opt.lineas);
-    return c;
-  }
   function lineas(x, w, h, k) {
     x.save();
     x.globalAlpha = 0.28 * k;
@@ -311,52 +291,75 @@ window.AVManga = function (G) {
     const b = BEATS[i], x = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
     const foto = fotos[i];
-    if (foto) {
-      const t = tratar(foto, w, h, { lineas: b.lineas, calido: b.calido });
-      x.clearRect(0, 0, w, h);
-      x.drawImage(t, 0, 0);
-    } else {
+    x.clearRect(0, 0, w, h);
+    if (foto) x.drawImage(foto, 0, 0, w, h);
+    else {
       const g = x.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, '#7ec8ff'); g.addColorStop(1, '#1f8a4d');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
     }
+    if (b.lineas) lineas(x, w, h, Math.max(b.lineas, 0.85));
     props(x, w, h, b.prop);
   }
 
   // ---------- Página ----------
   const CSS = `
-#av-manga{position:fixed;inset:0;z-index:10050;overflow:auto;background:radial-gradient(120% 70% at 50% -10%,#1d8a58,#0c4a62 42%,#071826);color:#1c140c;font-family:Trebuchet MS,Segoe UI,sans-serif}
+#av-manga{position:fixed;inset:0;z-index:10050;overflow:auto;background:
+  radial-gradient(circle at 6% 18%, #2ea85a 0 70px, transparent 72px),
+  radial-gradient(circle at 94% 12%, #1d8a48 0 90px, transparent 92px),
+  radial-gradient(circle at 0 80%, #146b3a 0 120px, transparent 122px),
+  radial-gradient(circle at 100% 70%, #0e6e55 0 100px, transparent 102px),
+  linear-gradient(#39b86a 0%, #168a9a 38%, #0c4e78 100%);color:#1c140c;font-family:Trebuchet MS,Segoe UI,sans-serif}
 #av-manga *{box-sizing:border-box}
 #av-manga .mg-marco{min-height:100%}
-#av-manga .mg-hoja{width:min(960px,calc(100% - 20px));margin:14px auto 28px;background:linear-gradient(#f6e6c4,#e7d2a2 40%,#f3e0b8);border:6px solid #1a120c;border-radius:22px;padding:12px 12px 16px;box-shadow:0 18px 50px rgba(0,0,0,.38)}
-#av-manga .mg-top{display:flex;gap:10px;align-items:center;background:linear-gradient(#0e5f86,#0a3e5c);border:4px solid #082433;border-radius:16px;padding:8px 10px;color:#fff}
-#av-manga .mg-logo{font-weight:900;letter-spacing:.04em;line-height:1;font-size:18px;text-shadow:0 2px 0 #062033}
-#av-manga .mg-logo b{color:#ffd15c}
-#av-manga .mg-placa{flex:1;background:linear-gradient(#e7b86a,#b47a34);color:#3a240d;border:3px solid #4a2c10;border-radius:12px;padding:6px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
-#av-manga .mg-placa strong{display:block;font-size:20px;letter-spacing:.04em}
+#av-manga .mg-hoja{width:min(980px,calc(100% - 20px));margin:14px auto 28px;background:linear-gradient(#fff8ea,#f3e2c2 55%,#f7edd4);border:6px solid #1a120c;border-radius:22px;padding:12px 12px 16px;box-shadow:0 18px 50px rgba(0,0,0,.38)}
+#av-manga .mg-top{display:flex;gap:10px;align-items:center;background:linear-gradient(#1486b8,#0c5f92);border:4px solid #08324a;border-radius:16px;padding:8px 10px;color:#fff}
+#av-manga .mg-logo{display:flex;flex-direction:column;font-weight:900;letter-spacing:.02em;line-height:.9;font-size:18px;text-shadow:0 3px 0 #08324a}
+#av-manga .mg-logo span{color:#ff9a1a}
+#av-manga .mg-logo b{color:#3ec2ff;font-size:20px}
+#av-manga .mg-placa{position:relative;flex:1;background:linear-gradient(#e8b56a,#c4843a 55%,#a86a28);color:#3a240d;border:4px solid #5a3412;border-radius:14px;padding:6px 36px 6px 12px;box-shadow:inset 0 2px 0 rgba(255,255,255,.45), 0 3px 0 #6a3e12}
+#av-manga .mg-placa strong{display:block;font-size:22px;letter-spacing:.06em}
 #av-manga .mg-placa small{font-weight:700}
+#av-manga .mg-lapiz{display:inline-block;width:16px;height:16px;margin-left:6px;background:linear-gradient(#f2d15a,#e0a020);border:2px solid #3a240d;border-radius:2px 2px 8px 2px;transform:rotate(-35deg);vertical-align:middle}
+#av-manga .mg-placa>.mg-lapiz{position:absolute;right:12px;top:14px}
 #av-manga .mg-pasos{display:flex;gap:6px}
-#av-manga .mg-pasos div{width:74px;text-align:center;font-size:11px;font-weight:800;line-height:1.15}
-#av-manga .mg-pasos i{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;color:#fff;font-style:normal;border:2px solid #fff}
-#av-manga .mg-pasos div:nth-child(1) i{background:#e23b32}#av-manga .mg-pasos div:nth-child(2) i{background:#f0a202}#av-manga .mg-pasos div:nth-child(3) i{background:#2f9e44}#av-manga .mg-pasos div:nth-child(4) i{background:#7c3aed}
-#av-manga .mg-datos{display:grid;grid-template-columns:1.4fr .8fr;gap:8px;margin:8px 0}
+#av-manga .mg-pasos div{width:78px;text-align:center;font-size:11px;font-weight:800;line-height:1.15}
+#av-manga .mg-pasos i{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;color:#fff;font-style:normal;border:2px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+#av-manga .mg-pasos div:nth-child(1) i{background:#f08a12}#av-manga .mg-pasos div:nth-child(2) i{background:#2f6fe0}#av-manga .mg-pasos div:nth-child(3) i{background:#2f9e44}#av-manga .mg-pasos div:nth-child(4) i{background:#7c3aed}
+#av-manga .mg-datos{display:grid;grid-template-columns:1.4fr .9fr;gap:8px;margin:8px 0}
+#av-manga .mg-ficha{display:flex;flex-direction:column;gap:4px;background:#fffdf8;border:3px solid #1a120c;border-radius:14px;padding:6px 8px;font-size:12px;font-weight:800;color:#5c3b16;box-shadow:0 3px 0 rgba(90,50,10,.18)}
+#av-manga .mg-ficha-ave{flex-direction:row;align-items:center;gap:8px}
+#av-manga .mg-ficha-ave canvas{width:54px;height:54px;border-radius:10px;background:#dff3ff;border:2px solid #1a120c;flex:none}
+#av-manga .mg-ave-txt{flex:1;min-width:0}
+#av-manga .mg-fila{display:flex;align-items:center}
 #av-manga label{font-size:12px;font-weight:800;color:#5c3b16}
 #av-manga input,#av-manga .mg-globo,#av-manga .mg-sfx,#av-manga .mg-caja p{font:700 16px/1.25 Trebuchet MS,Segoe UI,sans-serif;color:#1a120c}
-#av-manga input{width:100%;border:3px solid #1a120c;border-radius:12px;padding:8px 10px;background:#fff}
-#av-manga .mg-nota{margin:0 0 8px;font-size:13px;font-weight:800;color:#6a4518}
-#av-manga .mg-vinetas{display:grid;grid-template-columns:1.12fr .88fr;gap:8px}
-#av-manga .mg-vin{position:relative;background:#111;border:4px solid #14110e;border-radius:8px;overflow:hidden;min-height:0}
+#av-manga input{width:100%;border:0;border-radius:8px;padding:6px 4px;background:transparent}
+#av-manga .mg-vinetas{display:grid;grid-template-columns:1.15fr .85fr;gap:10px;background:#fffdf8;border:4px solid #1a120c;border-radius:8px;padding:8px}
+#av-manga .mg-vin{position:relative;background:#111;border:5px solid #14110e;border-radius:4px;overflow:hidden;min-height:0}
+#av-manga .mg-vin[data-i="0"]{clip-path:polygon(0 0,100% 0,96% 100%,0 100%)}
+#av-manga .mg-vin[data-i="1"]{clip-path:polygon(4% 0,100% 0,100% 100%,0 100%)}
+#av-manga .mg-vin[data-i="4"]{clip-path:polygon(0 0,100% 4%,100% 100%,0 100%)}
+#av-manga .mg-vin[data-i="5"]{clip-path:polygon(0 0,100% 0,100% 100%,6% 96%)}
 #av-manga .mg-vin canvas{width:100%;height:100%;display:block;aspect-ratio:16/10}
 #av-manga .mg-vin[data-alto="1"] canvas{aspect-ratio:16/11}
 #av-manga .mg-rotulo{position:absolute;left:8px;top:8px;z-index:2;background:linear-gradient(#f0c27a,#c4843a);color:#3a240d;border:3px solid #2a1a0c;border-radius:8px;padding:2px 8px;font-size:13px;font-weight:900;box-shadow:2px 2px 0 #1a1008}
-#av-manga .mg-globo{position:absolute;z-index:2;max-width:62%;margin:0;background:#fff;border:3px solid #1a120c;border-radius:16px;padding:8px 10px;box-shadow:3px 3px 0 rgba(0,0,0,.25)}
+#av-manga .mg-globo{position:absolute;z-index:2;max-width:62%;margin:0;background:#fff;border:3px solid #1a120c;border-radius:18px;padding:8px 10px;box-shadow:3px 3px 0 rgba(0,0,0,.25)}
+#av-manga .mg-globo:after{content:"";position:absolute;left:22px;bottom:-12px;border:8px solid transparent;border-top-color:#1a120c}
+#av-manga .mg-pensar{border-radius:46%;min-width:42%}
+#av-manga .mg-pensar:after{left:18px;bottom:-18px;width:14px;height:14px;border:3px solid #1a120c;border-radius:50%;background:#fff}
 #av-manga .mg-globo:focus,#av-manga input:focus,#av-manga .mg-caja p:focus,#av-manga .mg-sfx:focus{outline:3px solid #ffd15c;outline-offset:1px}
 #av-manga .mg-vin[data-lado="der"] .mg-globo{right:8px;top:22%}
 #av-manga .mg-vin[data-lado="aba"] .mg-globo{left:8px;bottom:10px;top:auto}
 #av-manga .mg-sfx{position:absolute;left:10px;bottom:12px;z-index:2;margin:0;color:#163a8a;font:900 28px/1 Trebuchet MS,Segoe UI,sans-serif;-webkit-text-stroke:2px #fff;text-shadow:3px 3px 0 #0b1e4a}
 #av-manga .mg-cierre{display:grid;grid-template-columns:1fr 150px 1fr;gap:8px;margin-top:8px;align-items:stretch}
-#av-manga .mg-caja{background:linear-gradient(#fffaf0,#f3e2c0);border:4px solid #8a5a28;border-radius:14px;padding:8px 10px;box-shadow:3px 3px 0 rgba(90,50,10,.25)}
-#av-manga .mg-caja h3{margin:0 0 4px;font-size:16px;color:#6a3e12}
+#av-manga .mg-caja{position:relative;background:linear-gradient(#f3c98a,#e0a85a 40%,#c9843a);border:4px solid #6a3e12;border-radius:16px;padding:8px 10px;box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 3px 3px 0 rgba(90,50,10,.25)}
+#av-manga .mg-caja h3{margin:0 0 4px;font-size:15px;color:#4a2808;letter-spacing:.03em;text-transform:uppercase}
+#av-manga .mg-libro,#av-manga .mg-sol{display:inline-block;width:18px;height:16px;margin-right:4px;vertical-align:-2px;border:2px solid #4a2808;background:#fff6d8}
+#av-manga .mg-libro{border-radius:2px 4px 4px 2px}
+#av-manga .mg-sol{border-radius:50%;background:#ffe56a}
+#av-manga .mg-caja-vida p:before{content:"“ ";font-weight:900}
+#av-manga .mg-cora{position:absolute;right:10px;bottom:8px;width:14px;height:14px;background:#e23b4a;border-radius:50% 50% 4px 4px;transform:rotate(45deg)}
 #av-manga .mg-caja p{margin:0;min-height:72px;background:transparent}
 #av-manga .mg-hero{background:radial-gradient(circle at 50% 40%,#b7e38a,#2f8f4e 70%,#1c5c38);border:4px solid #1a120c;border-radius:16px;display:grid;place-items:center;min-height:140px}
 #av-manga .mg-hero canvas{width:130px;height:130px}
@@ -364,10 +367,11 @@ window.AVManga = function (G) {
 #av-manga .mg-botones{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 #av-manga .mg-botones button,#av-manga .mg-volver{border:0;border-radius:12px;color:#fff;font:800 14px/1.2 Trebuchet MS,Segoe UI,sans-serif;min-height:48px;padding:8px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25)}
 #av-manga .mg-b1,#av-manga .mg-b2{background:#2f6fe0}#av-manga .mg-b3{background:#1faa4a}#av-manga .mg-b4{background:#7c3aed}
-#av-manga .mg-volver{position:sticky;top:8px;float:right;background:#123;margin:0 0 8px 8px;min-height:40px;padding:8px 12px}
+#av-manga .mg-volver,#av-manga .mg-vista{position:sticky;top:8px;float:right;background:#123;margin:0 0 8px 8px;min-height:40px;padding:8px 12px;border-radius:12px;color:#fff;font:800 14px/1.2 Trebuchet MS,Segoe UI,sans-serif;border:0;cursor:pointer}
 #av-manga.mg-movil{background:#041018}
 #av-manga.mg-movil .mg-marco{width:375px;height:812px;min-height:0;max-height:812px;margin:10px auto;overflow:hidden;display:flex;flex-direction:column;background:#083048;box-shadow:0 0 0 10px #111;border-radius:28px}
-#av-manga.mg-movil .mg-volver{float:none;align-self:flex-end;flex:none}
+#av-manga.mg-movil .mg-volver,#av-manga.mg-movil .mg-vista{float:none;align-self:flex-end;flex:none}
+#av-manga.mg-movil .mg-vin{clip-path:none}
 #av-manga.mg-movil .mg-hoja{width:auto;max-width:none;flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-width:4px;padding:8px}
 #av-manga.mg-movil .mg-top{flex-wrap:wrap}
 #av-manga.mg-movil .mg-pasos{width:100%;justify-content:space-between}
@@ -406,34 +410,32 @@ window.AVManga = function (G) {
     const vinetas = BEATS.map((b, i) => `<article class="mg-vin" data-i="${i}" data-lado="${b.lado}" data-alto="${b.alto}">
       <canvas width="640" height="400"></canvas>
       <b class="mg-rotulo"><span>${i + 1}</span> ${esc(L(b.es, b.en))}</b>
-      <p class="mg-globo" contenteditable="true" role="textbox" aria-label="${esc(L('Globo de la viñeta ' + (i + 1), 'Balloon of panel ' + (i + 1)))}"></p>
+      <p class="mg-globo${b.pensar ? ' mg-pensar' : ''}" contenteditable="true" role="textbox" aria-label="${esc(L('Globo de la viñeta ' + (i + 1), 'Balloon of panel ' + (i + 1)))}"></p>
       ${b.prop === 'viento' ? `<p class="mg-sfx" contenteditable="true" role="textbox" aria-label="${esc(L('Onomatopeya', 'Sound effect'))}"></p>` : ''}
     </article>`).join('');
-    raiz.innerHTML = `<div class="mg-marco"><button type="button" class="mg-volver">${esc(L('Volver al juego', 'Back to the game'))}</button>
+    raiz.innerHTML = `<div class="mg-marco"><button type="button" class="mg-volver">${esc(L('Volver al juego', 'Back to the game'))}</button><button type="button" class="mg-vista">${esc(L('Vista móvil', 'Phone view'))}</button>
       <div class="mg-hoja">
         <header class="mg-top">
-          <div class="mg-logo">AMAZONA<br><b>VERSE</b></div>
-          <div class="mg-placa"><strong>${esc(L('CREA TU CÓMIC', 'MAKE YOUR COMIC'))}</strong><small>${esc(L('Cuenta tu aventura con tus propias palabras', 'Tell your adventure in your own words'))}</small></div>
+          <div class="mg-logo"><span>AMAZONA</span><b>VERSE</b></div>
+          <div class="mg-placa"><strong>${esc(L('CREA TU CÓMIC', 'MAKE YOUR COMIC'))}</strong><i class="mg-lapiz" aria-hidden="true"></i><small>${esc(L('Cuenta tu aventura con tus propias palabras', 'Tell your adventure in your own words'))}</small></div>
           <div class="mg-pasos">${pasos.map((t, i) => `<div><i>${i + 1}</i><span>${esc(t)}</span></div>`).join('')}</div>
         </header>
         <div class="mg-datos">
-          <label>${esc(L('Título de mi aventura', 'Title of my adventure'))}<input id="mg-titulo" maxlength="60" autocomplete="off"></label>
-          <label>${esc(L('Nombre de tu cotorra', 'Your parrot\'s name'))}<input id="mg-cotorra" maxlength="24" autocomplete="off" aria-label="${esc(L('Nombre de tu cotorra', 'Your parrot\'s name'))}"></label>
+          <label class="mg-ficha"><span>${esc(L('Título de mi aventura:', 'Title of my adventure:'))}</span><span class="mg-fila"><input id="mg-titulo" maxlength="60" autocomplete="off"><i class="mg-lapiz" aria-hidden="true"></i></span></label>
+          <label class="mg-ficha mg-ficha-ave"><canvas id="mg-mini" width="96" height="96"></canvas><span class="mg-ave-txt"><span>${esc(L('Mi cotorra:', 'My parrot:'))}</span><span class="mg-fila"><input id="mg-cotorra" maxlength="24" autocomplete="off" aria-label="${esc(L('Nombre de tu cotorra', 'Your parrot\'s name'))}"><i class="mg-lapiz" aria-hidden="true"></i></span></span></label>
         </div>
-        <p class="mg-nota">${esc(L('Muestra con escenas del juego. Tú escribes lo que pasó. Cotorra oficial: Vittata.', 'A sample made from game scenes. You write what happened. Official parrot: Vittata.'))}</p>
         <div class="mg-vinetas">${vinetas}</div>
         <section class="mg-cierre">
-          <article class="mg-caja"><h3>📖 ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
+          <article class="mg-caja"><h3><i class="mg-libro" aria-hidden="true"></i> ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
           <div class="mg-hero"><canvas id="mg-hero" width="512" height="512"></canvas></div>
-          <article class="mg-caja"><h3>☀ ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p></article>
+          <article class="mg-caja mg-caja-vida"><h3><i class="mg-sol" aria-hidden="true"></i> ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p><i class="mg-cora" aria-hidden="true"></i></article>
           <p class="mg-cierre-txt" id="mg-cierre" contenteditable="true" role="textbox" aria-label="${esc(L('Cierre', 'Ending'))}"></p>
         </section>
         <div class="mg-botones">
           <button type="button" class="mg-b1">${esc(L('Ver mis escenas', 'See my scenes'))}</button>
           <button type="button" class="mg-b2">${esc(L('Editar mi cómic', 'Edit my comic'))}</button>
-          <button type="button" class="mg-b3">${esc(L('Descargar PNG', 'Download PNG'))}</button>
+          <button type="button" class="mg-b3">${esc(L('Descargar PNG / PDF', 'Download PNG / PDF'))}</button>
           <button type="button" class="mg-b4">${esc(L('Compartir (con permisos)', 'Share (with permission)'))}</button>
-          <button type="button" class="mg-b2 mg-vista">${esc(L('Vista móvil', 'Phone view'))}</button>
         </div>
       </div></div>`;
     document.body.appendChild(raiz);
@@ -464,14 +466,19 @@ window.AVManga = function (G) {
     const c = raiz && raiz.querySelector('#mg-hero'); if (!c) return;
     const x = c.getContext('2d');
     x.clearRect(0, 0, c.width, c.height);
-    if (retrato) x.drawImage(retrato, 0, 0, c.width, c.height);
-    else if (fotos[5]) x.drawImage(fotos[5], 80, 40, 360, 280, 0, 0, c.width, c.height);
+    const src = retrato || fotos[0] || fotos[5];
+    if (src) x.drawImage(src, 0, 0, c.width, c.height);
+    const mini = raiz.querySelector('#mg-mini');
+    if (mini && src) mini.getContext('2d').drawImage(src, 0, 0, mini.width, mini.height);
   }
   async function refrescar() {
     if (tomando) return;
     tomando = true;
-    try { fotos = fotografiar(); }
-    finally { tomando = false; }
+    try {
+      const tomadas = fotografiar();
+      const plates = await Promise.all(LAMINAS.map(cargarLamina));
+      fotos = plates.map((p, i) => p || tomadas[i]);
+    } finally { tomando = false; }
     if (!raiz) return;
     BEATS.forEach((_, i) => pintarVineta(raiz.querySelector(`.mg-vin[data-i="${i}"] canvas`), i));
     volcarRetrato();
@@ -585,7 +592,7 @@ window.AVManga = function (G) {
     x.fillText((estado.cierre || '') + '  ·  ' + (estado.nombre || 'Vittata'), W / 2, y + pie - 8);
     x.textAlign = 'left';
     x.font = '700 16px Trebuchet MS, Segoe UI, sans-serif'; x.fillStyle = '#5c3b16';
-    x.fillText(L('Muestra con escenas del juego. El nombre es el de tu cotorra.', 'Sample from game scenes. The name is your parrot\'s.'), 48, H - 40);
+    x.fillText(L('Láminas del modelo oficial. El nombre es el de tu cotorra.', 'Plates of the official model. The name is your parrot\'s.'), 48, H - 40);
     return c;
   }
   function blobDe(canvas) {
@@ -664,7 +671,7 @@ window.AVManga = function (G) {
         check('La página de muestra está abierta y no está en el menú de modos', !!raiz && !!document.getElementById('av-manga') && !document.querySelector('#title [data-manga], .modo-manga, [data-modo="manga"]'));
         check('Hay 6 viñetas', raiz.querySelectorAll('.mg-vin').length === 6 && fotos.length === 6);
         const reales = fotos.filter(f => f && desvio(f, 24).desv >= 8);
-        check('Las 6 tomas son escenas del juego (no un lienzo plano)', reales.length === 6, reales.length + '/6');
+        check('Las 6 láminas tienen color (no un lienzo plano)', reales.length === 6, reales.length + '/6');
         BEATS.forEach((_, i) => {
           const cv = raiz.querySelector(`.mg-vin[data-i="${i}"] canvas`);
           const d = cv && desvio(cv, 20);
