@@ -38,11 +38,19 @@ Hoy hay cinco loops: hero, historia, aprender, ropero y criadero. Para añadir o
 - Vittata y los personajes se usan tal cual vienen del juego; no se retocan.
 - Bandera de PR: solo `assets/img/bandera-pr.svg`, copia exacta de `Juego/docs/img/bandera_pr_referencia.svg` (ver `Juego/docs/BANDERA_PR_GUIA.md`), escalada sin deformar y nunca junto a algo que se venda.
 - Nada de cripto, NFT ni cajas sorpresa. Sin cifras ni testimonios inventados: cada dato lleva su fuente.
-- Decisiones de la web: `docs/DECISION_LOG.md`. Capturas de revisión: `docs/*.png`.
+- Decisiones de la web: `docs/DECISION_LOG.md`. Capturas de revisión: `docs/*.png` y, con `tools/build/web_capturas.py` (375 px y escritorio, comprueba desborde horizontal), `Juego/docs/img/web_*.jpg`.
 
 ## Estructura
 ```
-index.html            página (ES/EN con el selector; el texto de cada idioma está en el HTML)
+index.html            homepage enfocado (ES/EN con el selector; el texto de cada idioma está en el HTML): una propuesta,
+                      «Jugar gratis», los 6 capítulos, minijuegos y top récords, conservación corta, escuelas (resumen),
+                      fundadores, sponsors y contacto corto. Historia, ropero, criadero, flora y tecnología van en desplegables.
+cotorra.html          conservación: la cotorra puertorriqueña, por qué está en peligro, el programa y cómo ayudar (con fuentes)
+escuelas.html         aprender (objetivos y misión), Modo Maestro, piloto gratis, aliados, prensa y contacto completo
+retos.html            tarjeta para compartir los minijuegos (redirige a index.html#minijuegos)
+sitemap.xml, robots.txt  SEO; sitio.sh los copia a la raíz del sitio publicado
+assets/css/web.css    estilos compartidos por las tres páginas
+assets/js/web.js      idioma, menú móvil, videos diferidos (en móvil no se descargan los loops), copiar, contacto
 assets/img/           imágenes optimizadas (JPEG/PNG) y bandera SVG
 assets/video/         loops del juego y videos.json (pendientes del editor de video)
 assets/og.jpg         imagen para redes (1200×630)

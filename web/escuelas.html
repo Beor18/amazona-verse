@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Para escuelas y maestros: guía de 45 minutos, piloto gratis y prensa · Amazona Verse</title>
+<meta name="description" content="Amazona Verse en el salón: objetivos de ciencias alineados a DEPR 2022 y NGSS, Modo Maestro con guía de 45 minutos, rúbrica y actividades sin pantalla, piloto gratis para escuelas de Puerto Rico, y texto para prensa.">
+<meta name="theme-color" content="#10241c">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible+Mono:wght@500&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/web.css">
+<link rel="canonical" href="https://www.amazonaverse.com/escuelas.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Amazona Verse para escuelas y maestros">
+<meta property="og:description" content="Juego educativo 3D gratis en el navegador, hecho en Puerto Rico. Guía de 45 minutos, rúbrica, actividades sin pantalla y piloto gratis.">
+<meta property="og:url" content="https://www.amazonaverse.com/escuelas.html">
+<meta property="og:site_name" content="Amazona Verse">
+<meta property="og:image" content="https://www.amazonaverse.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_PR">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Amazona Verse para escuelas y maestros">
+<meta name="twitter:description" content="Guía de 45 minutos, rúbrica, actividades sin pantalla y piloto gratis. Juego educativo 3D en el navegador, hecho en Puerto Rico.">
+<meta name="twitter:image" content="https://www.amazonaverse.com/assets/og.jpg">
+</head>
+<body>
+<a class="skip" href="#main"><span data-l="es">Saltar al contenido</span><span data-l="en">Skip to content</span></a>
+
+<!-- Logo del juego (src del título en Juego/index.html), definido una vez y reutilizado -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="lg-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8cf"/><stop offset=".45" stop-color="#ffcb3d"/><stop offset="1" stop-color="#ee7a12"/></linearGradient>
+    <linearGradient id="lg-leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a6ea72"/><stop offset="1" stop-color="#23824a"/></linearGradient>
+    <linearGradient id="lg-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0604f"/><stop offset="1" stop-color="#b52f2a"/></linearGradient>
+    <symbol id="av-logo" viewBox="0 0 640 260">
+      <path d="M70 120C40 80 50 30 96 6c6 44-4 84-26 114z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M70 120C78 80 84 44 96 6" fill="none" stroke="#1d5e33" stroke-width="4" stroke-linecap="round"/>
+      <path d="M84 126C58 104 30 98 4 108c26 26 56 30 80 18z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M568 112c34-34 34-82-4-112-14 40-12 80 4 112z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M568 112C566 74 566 38 564 0" fill="none" stroke="#1d5e33" stroke-width="4" stroke-linecap="round"/>
+      <path d="M556 124c28-24 58-28 82-14-28 24-58 26-82 14z" fill="url(#lg-leaf)" stroke="#1d5e33" stroke-width="5" stroke-linejoin="round"/>
+      <g font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="700" font-size="128" text-anchor="middle">
+        <text x="320" y="168" fill="#2b1405" stroke="#2b1405" stroke-width="26" stroke-linejoin="round" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+        <text x="320" y="160" fill="#4a2408" stroke="#4a2408" stroke-width="18" stroke-linejoin="round" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+        <text x="320" y="160" fill="url(#lg-gold)" textLength="570" lengthAdjust="spacingAndGlyphs">AMAZONA</text>
+      </g>
+      <path d="M206 196h-48l16 22-16 22h62z" fill="#8e2420"/>
+      <path d="M434 196h48l-16 22 16 22h-62z" fill="#8e2420"/>
+      <path d="M200 180q120-18 240 0v50q-120-18-240 0z" fill="url(#lg-ribbon)" stroke="#5e1512" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="158" cy="240" r="8" fill="#ffd27a" stroke="#8a5a2b" stroke-width="3"/>
+      <circle cx="482" cy="240" r="8" fill="#ffd27a" stroke="#8a5a2b" stroke-width="3"/>
+      <text x="320" y="219" text-anchor="middle" font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="700" font-size="38" letter-spacing="12" fill="#fff6e0" stroke="#5e1512" stroke-width="6" stroke-linejoin="round" paint-order="stroke">VERSE</text>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="site-header">
+  <div class="wrap nav-wrap">
+    <a class="brand" href="./" aria-label="Amazona Verse, inicio" data-en-aria-label="Amazona Verse, home">
+      <svg viewBox="0 0 640 260" aria-hidden="true"><use href="#av-logo"/></svg>
+    </a>
+    <nav class="nav" id="nav" aria-label="Secciones" data-en-aria-label="Sections">
+      <a href="./#capitulos"><span data-l="es">Capítulos</span><span data-l="en">Chapters</span></a>
+      <a href="./#minijuegos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
+      <a href="cotorra.html"><span data-l="es">La cotorra</span><span data-l="en">The parrot</span></a>
+      <a href="escuelas.html" aria-current="page"><span data-l="es">Escuelas</span><span data-l="en">Schools</span></a>
+      <a href="./#sponsors"><span data-l="es">Sponsors</span><span data-l="en">Sponsors</span></a>
+      <a href="./#contacto"><span data-l="es">Contacto</span><span data-l="en">Contact</span></a>
+    </nav>
+    <div class="header-tools">
+      <div class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="es" aria-pressed="true" lang="es" title="Español">ES</button>
+        <button type="button" data-lang="en" aria-pressed="false" lang="en" title="English">EN</button>
+      </div>
+      <a class="btn sm leaf header-cta" href="juego/" data-icon="play"><span data-l="es">Jugar gratis</span><span data-l="en">Play free</span></a>
+      <button class="menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" data-icon="menu" aria-label="Abrir menú" data-en-aria-label="Open menu"></button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="./"><span data-l="es">Inicio</span><span data-l="en">Home</span></a> · <span data-l="es">Escuelas y maestros</span><span data-l="en">Schools and teachers</span></p>
+    <span class="eyebrow" style="margin-top:16px"><span data-l="es">Para escuelas, maestros y familias</span><span data-l="en">For schools, teachers and families</span></span>
+    <h1 class="h1"><span data-l="es">Lleva Amazona Verse a tu salón</span><span data-l="en">Bring Amazona Verse to your classroom</span></h1>
+    <p class="lead" data-l="es">Un juego 3D gratis en el navegador, hecho en Puerto Rico, con objetivos de ciencias, Modo Maestro y piloto gratis para escuelas. Todo lo que hay en esta página también está dentro del juego.</p>
+    <p class="lead" data-l="en">A free 3D browser game made in Puerto Rico, with science goals, a Teacher Mode and a free pilot for schools. Everything on this page is also inside the game.</p>
+    <div class="cta-row">
+      <a class="btn" href="#escuelas-piloto" data-icon="arrow"><span data-l="es">Pedir piloto gratis</span><span data-l="en">Request a free pilot</span></a>
+      <a class="btn ghost" href="juego/" data-icon="play"><span data-l="es">Jugar gratis</span><span data-l="en">Play free</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="section paper" id="aprender" aria-labelledby="h-aprender">
+  <span class="margin-line" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="head-media">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Aprender jugando</span><span data-l="en">Learning through play</span></span>
+      <h2 class="h2" id="h-aprender"><span data-l="es">Cada misión pide una habilidad y deja evidencia</span><span data-l="en">Every mission asks for a skill and leaves evidence</span></h2>
+      <p class="lead" data-l="es">El estudiante predice, observa y explica. El juego registra lo que hizo y lo que aprendió, no un puntaje.</p>
+      <p class="lead" data-l="en">Students predict, observe and explain. The game records what they did and what they learned, not a score.</p>
+    </div>
+      <figure class="loop-fig">
+        <div class="screen loop" data-video="aprender">
+          <img src="assets/video/aprender.jpg" width="1280" height="720" loading="lazy"
+               alt="Vittata se posa en la percha del dosel, junto a un flamboyán, para observar la capa más alta del bosque."
+               data-en-alt="Vittata lands on the canopy perch, next to a flamboyant tree, to observe the upper layer of the forest.">
+          <video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-key="aprender"></video>
+          <button class="vid-btn" type="button" hidden data-icon="pause"><span class="vid-lbl">Pausar video</span></button>
+        </div>
+        <figcaption><span data-l="es">La percha del dosel en la misión «La ruta de la gota».</span><span data-l="en">The canopy perch in the “Path of the Drop” mission.</span></figcaption>
+      </figure>
+    </div>
+
+    <div class="decide on-paper" id="decide">
+      <div class="decide-head">
+        <div>
+          <span class="eyebrow"><span data-l="es">Pruébalo</span><span data-l="en">Try it</span></span>
+          <h3><span data-l="es">¿Dónde construirías el refugio de Iguaca?</span><span data-l="en">Where would you build Iguaca's shelter?</span></h3>
+          <p><span data-l="es">Son los dos terrenos del capítulo 1, con los mismos datos que ve el estudiante en el juego.</span><span data-l="en">These are the two Chapter 1 sites, with the same data students see in the game.</span></p>
+        </div>
+      </div>
+      <div class="decide-cards">
+        <article class="evcard" id="card-A" aria-labelledby="t-a">
+          <h4 id="t-a" data-icon="sparkle"><span data-l="es">Junto al río</span><span data-l="en">By the river</span></h4>
+          <dl>
+            <dt><span data-l="es">Área</span><span data-l="en">Area</span></dt><dd>64 m²</dd>
+            <dt><span data-l="es">Elevación</span><span data-l="en">Elevation</span></dt><dd><span data-l="es">baja, a la orilla del río</span><span data-l="en">low, on the riverbank</span></dd>
+            <dt><span data-l="es">Acceso</span><span data-l="en">Access</span></dt><dd><span data-l="es">corto, cerca de Villa Raíz</span><span data-l="en">short, close to Villa Raíz</span></dd>
+            <dt><span data-l="es">Señal de riesgo</span><span data-l="en">Risk sign</span></dt><dd class="risk"><span data-l="es">marcas de agua a 1 m en los árboles</span><span data-l="en">water marks 1 m up the trees</span></dd>
+            <dt><span data-l="es">Hábitat</span><span data-l="en">Habitat</span></dt><dd><span data-l="es">nidos de ribera cerca</span><span data-l="en">riverside nests nearby</span></dd>
+          </dl>
+          <button class="btn sm" type="button" data-pick="A"><span data-l="es">Construir aquí</span><span data-l="en">Build here</span></button>
+        </article>
+        <article class="evcard" id="card-B" aria-labelledby="t-b">
+          <h4 id="t-b" data-icon="sparkle"><span data-l="es">La colina</span><span data-l="en">The hill</span></h4>
+          <dl>
+            <dt><span data-l="es">Área</span><span data-l="en">Area</span></dt><dd>64 m²</dd>
+            <dt><span data-l="es">Elevación</span><span data-l="en">Elevation</span></dt><dd><span data-l="es">alta, sobre la colina</span><span data-l="en">high, on top of the hill</span></dd>
+            <dt><span data-l="es">Acceso</span><span data-l="en">Access</span></dt><dd><span data-l="es">largo, cuesta arriba</span><span data-l="en">long, uphill</span></dd>
+            <dt><span data-l="es">Señal de riesgo</span><span data-l="en">Risk sign</span></dt><dd class="safe"><span data-l="es">ninguna visible</span><span data-l="en">none visible</span></dd>
+            <dt><span data-l="es">Hábitat</span><span data-l="en">Habitat</span></dt><dd><span data-l="es">bosque seco, sin nidos</span><span data-l="en">dry forest, no nests</span></dd>
+          </dl>
+          <button class="btn sm" type="button" data-pick="B"><span data-l="es">Construir aquí</span><span data-l="en">Build here</span></button>
+        </article>
+      </div>
+      <div class="result" id="res-A" hidden tabindex="-1">
+        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
+        <div>
+          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
+          <blockquote><p data-l="es">«El río subió y el refugio se inundó… Tranquila. Todavía podemos moverlo.»</p><p data-l="en">“The river rose and the shelter flooded… Don't worry. We can still move it.”</p></blockquote>
+          <p class="teach" data-l="es">En el juego, el error tiene salida: Vittata desarma el refugio, recupera los materiales y lo lleva a la colina. La evidencia estaba en las marcas de agua a 1 m.</p>
+          <p class="teach" data-l="en">In the game, mistakes have a way out: Vittata takes the shelter apart, keeps the materials and moves it to the hill. The evidence was in the water marks 1 m up the trees.</p>
+          <button class="btn sm paperish" type="button" data-reset data-icon="reset"><span data-l="es">Probar otra vez</span><span data-l="en">Try again</span></button>
+        </div>
+      </div>
+      <div class="result" id="res-B" hidden tabindex="-1">
+        <div class="portrait"><img src="assets/img/iguaca.png" width="320" height="320" alt="" loading="lazy"></div>
+        <div>
+          <span class="who"><span data-l="es">Iguaca · después de la crecida</span><span data-l="en">Iguaca · after the flood</span></span>
+          <blockquote><p data-l="es">«La colina aguantó la crecida. Mi familia está a salvo. ¡Gracias, Vittata!»</p><p data-l="en">“The hill held up against the flood. My family is safe. Thank you, Vittata!”</p></blockquote>
+          <p class="teach" data-l="es">Elegiste con evidencia: terreno alto y sin marcas de agua. Es el objetivo O6: describir el efecto de un huracán y escoger dónde construir.</p>
+          <p class="teach" data-l="en">You chose with evidence: high ground and no water marks. That is goal O6: describe the effect of a hurricane and choose where to build.</p>
+          <button class="btn sm paperish" type="button" data-reset data-icon="reset"><span data-l="es">Probar otra vez</span><span data-l="en">Try again</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="goals-head">
+      <h3><span data-l="es">Seis objetivos alineados a los estándares</span><span data-l="en">Six goals aligned to standards</span></h3>
+      <span class="chip paper-chip"><span data-l="es">Para todas las edades</span><span data-l="en">For all ages</span></span>
+    </div>
+    <div class="goals-cols" aria-hidden="true"><span></span><span data-l="es">El estudiante…</span><span data-l="en">The student…</span><span>DEPR 2022</span><span>NGSS</span></div>
+    <ol class="goals">
+      <li>
+        <span class="code">O1</span>
+        <div><h4><span data-l="es">Capas del bosque</span><span data-l="en">Forest layers</span></h4><p class="does" data-l="es">nombra las cuatro capas del bosque y ubica en cada una un organismo que observó.</p><p class="does" data-l="en">names the four forest layers and places an observed organism in each one.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CB2.3</span><span class="tag">3.CB2.6</span><span class="tag">4.CT2.5</span><span class="tag">6.CB2.5</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-LS4-3</span></div></div>
+      </li>
+      <li>
+        <span class="code">O2</span>
+        <div><h4><span data-l="es">Cadena alimentaria</span><span data-l="en">Food chain</span></h4><p class="does" data-l="es">ordena una cadena alimentaria desde el Sol y explica de dónde viene la energía.</p><p class="does" data-l="en">orders a food chain starting from the Sun and explains where the energy comes from.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">5.CB2.3</span><span class="tag">5.CB2.4</span><span class="tag">6.CB2.7–10</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">5-LS2-1</span><span class="tag">5-PS3-1</span><span class="tag">MS-LS2-3</span></div></div>
+      </li>
+      <li>
+        <span class="code">O3</span>
+        <div><h4><span data-l="es">Ciclo del agua</span><span data-l="en">Water cycle</span></h4><p class="does" data-l="es">ordena cinco procesos del ciclo del agua y los usa para explicar la crecida.</p><p class="does" data-l="en">orders five water-cycle processes and uses them to explain the flood.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CT1.2</span><span class="tag">5.CT2.2</span><span class="tag">5.CT2.9</span><span class="tag">5.CT2.10</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">5-ESS2-1</span><span class="tag">MS-ESS2-4</span></div></div>
+      </li>
+      <li>
+        <span class="code">O4</span>
+        <div><h4><span data-l="es">Adaptaciones</span><span data-l="en">Adaptations</span></h4><p class="does" data-l="es">explica cómo dos rasgos o conductas ayudan a un ser vivo a sobrevivir.</p><p class="does" data-l="en">explains how two traits or behaviors help a living thing survive.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CB2.5</span><span class="tag">4.CB2.1–3</span><span class="tag">6.CB2.13</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">4-LS1-1</span></div></div>
+      </li>
+      <li>
+        <span class="code">O5</span>
+        <div><h4><span data-l="es">Conservación</span><span data-l="en">Conservation</span></h4><p class="does" data-l="es">usa datos de población para explicar por qué la cotorra sigue en peligro y nombra dos acciones para protegerla.</p><p class="does" data-l="en">uses population data to explain why the parrot is still endangered and names two actions to protect it.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CA1.4</span><span class="tag">5.CB4.4</span><span class="tag">6.CB2.16</span><span class="tag">6.CB2.19</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-LS4-4</span><span class="tag">5-ESS3-1</span><span class="tag">MS-LS2-5</span></div></div>
+      </li>
+      <li>
+        <span class="code">O6</span>
+        <div><h4><span data-l="es">Huracanes</span><span data-l="en">Hurricanes</span></h4><p class="does" data-l="es">describe el efecto de un huracán y escoge con evidencia dónde construir.</p><p class="does" data-l="en">describes the effect of a hurricane and uses evidence to choose where to build.</p></div>
+        <div class="std"><span>DEPR 2022</span><div class="tags"><span class="tag">3.CT2.4</span><span class="tag">3.CA1.2</span><span class="tag">4.CA1.6</span><span class="tag">6.CB2.20</span></div></div>
+        <div class="std"><span>NGSS</span><div class="tags"><span class="tag">3-ESS3-1</span><span class="tag">4-ESS3-2</span><span class="tag">MS-LS2-4</span></div></div>
+      </li>
+    </ol>
+    <p class="goals-note">
+      <span data-l="es">Fuentes: <a href="https://dedigital.dde.pr/mod/resource/view.php?id=2854" target="_blank" rel="noopener">DEPR, Estándares de Contenido y Expectativas de Grado: Ciencias (2022)</a> y <a href="https://www.nextgenscience.org/" target="_blank" rel="noopener">NGSS</a>. En 6.º grado el ciclo del agua se cubre con MS-ESS2-4. Alineación propuesta por el equipo; la revisamos con maestros durante el piloto.</span>
+      <span data-l="en">Sources: <a href="https://dedigital.dde.pr/mod/resource/view.php?id=2854" target="_blank" rel="noopener">Puerto Rico Department of Education, Science Content Standards and Grade Expectations (2022)</a> and <a href="https://www.nextgenscience.org/" target="_blank" rel="noopener">NGSS</a>. In 6th grade the water cycle is covered by MS-ESS2-4. Alignment proposed by our team; we review it with teachers during the pilot.</span>
+    </p>
+
+    <div class="route-head">
+      <h3><span data-l="es">Misión «La ruta de la gota»</span><span data-l="en">Mission: “The Path of the Drop”</span></h3>
+      <span class="chip paper-chip"><span data-l="es">En desarrollo · unos 5 minutos</span><span data-l="en">In development · about 5 minutes</span></span>
+    </div>
+    <ol class="route">
+      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Predecir</span><span data-l="en">Predict</span></h4><p data-l="es">Iguaca pregunta de dónde salió tanta agua. Ninguna respuesta se castiga.</p><p data-l="en">Iguaca asks where all that water came from. No answer is punished.</p></li>
+      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Capas</span><span data-l="en">Layers</span></h4><p data-l="es">Cuatro perchas en flora real: suelo, sotobosque, dosel y emergente.</p><p data-l="en">Four perches on real plants: forest floor, understory, canopy and emergent layer.</p></li>
+      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Cadena</span><span data-l="en">Chain</span></h4><p data-l="es">Ordena Sol, palma y cotorra. En 5.º y 6.º se añaden los descomponedores.</p><p data-l="en">Order Sun, palm and parrot. Grades 5 and 6 add decomposers.</p></li>
+      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Ojos de cotorra</span><span data-l="en">Parrot's eye view</span></h4><p data-l="es">Compara los dos terrenos desde el aire.</p><p data-l="en">Compare the two sites from the air.</p></li>
+      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Nace la gota</span><span data-l="en">A drop is born</span></h4><p data-l="es">Sigue el vapor desde la poza hasta la nube de la cumbre.</p><p data-l="en">Follow the vapor from the pool up to the cloud on the peak.</p></li>
+      <li><div class="step"><span class="skill fly" data-icon="wing"><span data-l="es">Volar</span><span data-l="en">Fly</span></span></div><h4><span data-l="es">Sigue la gota</span><span data-l="en">Follow the drop</span></h4><p data-l="es">La lluvia se infiltra en la colina o corre por la quebrada hasta el río, que crece.</p><p data-l="en">Rain soaks into the hill or runs down the stream to the river, which rises.</p></li>
+      <li><div class="step"><span class="skill swim" data-icon="dive"><span data-l="es">Nadar</span><span data-l="en">Swim</span></span></div><h4><span data-l="es">La poza</span><span data-l="en">The pool</span></h4><p data-l="es">Bucea hasta la marca de crecida en la roca. El ciclo se cierra.</p><p data-l="en">Dive down to the flood mark on the rock. The cycle closes.</p></li>
+      <li><div class="step"><span class="skill talk-s" data-icon="question"><span data-l="es">Hablar</span><span data-l="en">Talk</span></span></div><h4><span data-l="es">Explícale a Iguaca</span><span data-l="en">Explain it to Iguaca</span></h4><p data-l="es">Cuenta el ciclo en orden y compara lo que predijo con lo que vio.</p><p data-l="en">Tell the cycle in order and compare the prediction with what was seen.</p></li>
+    </ol>
+    <div class="extras">
+      <div data-icon="book"><div><h4><span data-l="es">Diario de Campo</span><span data-l="en">Field Journal</span></h4><p data-l="es">Cada ficha trae un dato de una línea y su fuente. Solo se publica lo verificado.</p><p data-l="en">Each card has a one-line fact and its source. Only verified facts are published.</p></div></div>
+      <div data-icon="question"><div><h4><span data-l="es">Iguaca te pregunta</span><span data-l="en">Iguaca asks you</span></h4><p data-l="es">De 5 a 7 preguntas al final, con pista en el segundo intento y sin puntaje visible.</p><p data-l="en">Five to seven questions at the end, with a hint on the second try and no visible score.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section teacher" id="maestros" aria-labelledby="h-maestros">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Modo Maestro</span><span data-l="en">Teacher Mode</span></span>
+      <h2 class="h2" id="h-maestros"><span data-l="es">Una clase de 45 minutos, lista para usar</span><span data-l="en">A ready-to-teach 45-minute lesson</span></h2>
+      <p class="lead" data-l="es">La guía trae qué hacer antes, durante y después de jugar, en parejas de piloto y científico que cambian de rol a mitad de la misión.</p>
+      <p class="lead" data-l="en">The guide covers what to do before, during and after playing, with pilot and scientist pairs who swap roles halfway through the mission.</p>
+    </div>
+    <div class="timeline">
+      <div class="tl-bar" role="img" aria-label="Antes 10 minutos, durante 25 minutos, después 10 minutos" data-en-aria-label="Before 10 minutes, during 25 minutes, after 10 minutes">
+        <div class="b1"><span class="lbl"><span data-l="es">Antes</span><span data-l="en">Before</span></span><span class="min">10 min</span></div>
+        <div class="b2"><span class="lbl"><span data-l="es">Durante</span><span data-l="en">During</span></span><span class="min">25 min</span></div>
+        <div class="b3"><span class="lbl"><span data-l="es">Después</span><span data-l="en">After</span></span><span class="min">10 min</span></div>
+      </div>
+      <div class="tl-scale mono" aria-hidden="true"><span>0</span><span>45 min</span></div>
+      <div class="tl-cols">
+        <div><h3><span data-l="es">Antes</span><span data-l="en">Before</span></h3><p data-l="es">Pregunta guía, predicción en el Diario impreso y vocabulario con imágenes.</p><p data-l="en">Guiding question, a prediction in the printed Journal and picture vocabulary.</p></div>
+        <div><h3><span data-l="es">Durante</span><span data-l="en">During</span></h3><p data-l="es">20 minutos de misión mientras circulas con tres preguntas de sondeo, y 5 minutos de preguntas dentro del juego.</p><p data-l="en">20 minutes of mission while you circulate with three probing questions, then 5 minutes of in-game questions.</p></div>
+        <div><h3><span data-l="es">Después</span><span data-l="en">After</span></h3><p data-l="es">El ciclo en la pizarra y un boleto de salida: <q>Construiría en ___ porque ___</q>.</p><p data-l="en">The cycle on the board and an exit ticket: <q>I would build at ___ because ___</q>.</p></div>
+      </div>
+    </div>
+    <div class="panels">
+      <div class="panel">
+        <h3 data-icon="lock"><span data-l="es">Reporte sin datos personales</span><span data-l="en">Reports without personal data</span></h3>
+        <p data-l="es">El progreso se guarda solo en el dispositivo. Pones una etiqueta, como «Estación 4», y bajas un CSV o JSON con pasos, intentos por pregunta y objetivos logrados. Un botón lo borra todo.</p>
+        <p data-l="en">Progress is saved only on the device. You add a label like “Station 4” and export a CSV or JSON file with steps, attempts per question and goals reached. One button erases everything.</p>
+      </div>
+      <div class="panel">
+        <h3 data-icon="hand"><span data-l="es">Actividades sin pantalla</span><span data-l="en">Screen-free activities</span></h3>
+        <ul>
+          <li data-icon="check"><span data-l="es">Mural del bosque en cuatro pisos</span><span data-l="en">A four-story forest mural</span></li>
+          <li data-icon="check"><span data-l="es">El ciclo del agua en una bolsa</span><span data-l="en">The water cycle in a bag</span></li>
+          <li data-icon="check"><span data-l="es">Red de estambre con un «huracán»</span><span data-l="en">A yarn food web hit by a “hurricane”</span></li>
+          <li data-icon="check"><span data-l="es">Nido a prueba de tormenta, con abanico y regadera</span><span data-l="en">A storm-proof nest, tested with a fan and a watering can</span></li>
+          <li data-icon="check"><span data-l="es">Gráfica de cotorras con datos de USFWS</span><span data-l="en">A parrot population graph with USFWS data</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 data-icon="trophy"><span data-l="es">Rúbrica de cuatro niveles</span><span data-l="en">Four-level rubric</span></h3>
+        <ul>
+          <li data-icon="check"><span data-l="es">Observación y registro</span><span data-l="en">Observation and record-keeping</span></li>
+          <li data-icon="check"><span data-l="es">Modelo del ciclo del agua</span><span data-l="en">Water-cycle model</span></li>
+          <li data-icon="check"><span data-l="es">Cadena alimentaria</span><span data-l="en">Food chain</span></li>
+          <li data-icon="check"><span data-l="es">Argumento con evidencia y conservación</span><span data-l="en">Evidence-based argument and conservation</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 data-icon="bulb"><span data-l="es">Para toda la clase</span><span data-l="en">For the whole class</span></h3>
+        <ul>
+          <li data-icon="check"><span data-l="es">Lectura en voz alta</span><span data-l="en">Read-aloud</span></li>
+          <li data-icon="check"><span data-l="es">Modo de texto corto con iconos</span><span data-l="en">Short-text mode with icons</span></li>
+          <li data-icon="check"><span data-l="es">Español, inglés o bilingüe</span><span data-l="en">Spanish, English or bilingual</span></li>
+          <li data-icon="check"><span data-l="es">Modo escuela sin tienda y pausa rápida</span><span data-l="en">School mode with no store, and quick pause</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="status-note" data-l="es">El Modo Maestro forma parte del prototipo. Validamos la guía y la rúbrica con maestros durante el piloto.</p>
+    <p class="status-note" data-l="en">Teacher Mode is part of the prototype. We validate the guide and rubric with teachers during the pilot.</p>
+  </div>
+</section>
+
+<section class="section paper" id="escuelas-piloto" aria-labelledby="h-escuelas">
+  <span class="margin-line" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Para escuelas</span><span data-l="en">For schools</span></span>
+      <h2 class="h2" id="h-escuelas"><span data-l="es">Lleva Amazona Verse a tu salón</span><span data-l="en">Bring Amazona Verse to your classroom</span></h2>
+      <p class="lead" data-l="es">Empieza con un piloto gratis. Si funciona en tu salón, sigue con una licencia anual.</p>
+      <p class="lead" data-l="en">Start with a free pilot. If it works in your classroom, continue with an annual license.</p>
+    </div>
+    <div class="offer on-paper">
+      <article class="plan featured">
+        <span class="chip gold" style="align-self:flex-start"><span data-l="es">Empieza aquí</span><span data-l="en">Start here</span></span>
+        <h3><span data-l="es">Piloto gratis</span><span data-l="en">Free pilot</span></h3>
+        <p class="price"><span data-l="es">$0 para tu escuela</span><span data-l="en">$0 for your school</span></p>
+        <h4><span data-l="es">Incluye</span><span data-l="en">Includes</span></h4>
+        <ul>
+          <li data-icon="check"><span data-l="es">El capítulo 1 jugable, en el navegador</span><span data-l="en">Playable Chapter 1, in the browser</span></li>
+          <li data-icon="check"><span data-l="es">Guía de 45 minutos y actividades sin pantalla</span><span data-l="en">A 45-minute guide and screen-free activities</span></li>
+          <li data-icon="check"><span data-l="es">Modo escuela sin tienda</span><span data-l="en">School mode with no store</span></li>
+          <li data-icon="check"><span data-l="es">Reporte de progreso sin datos personales</span><span data-l="en">Progress reports without personal data</span></li>
+          <li data-icon="check"><span data-l="es">Acompañamiento del equipo</span><span data-l="en">Support from our team</span></li>
+        </ul>
+        <h4><span data-l="es">Te pedimos</span><span data-l="en">We ask you to</span></h4>
+        <ul class="ask">
+          <li data-icon="arrow"><span data-l="es">Usarlo con tu grupo o tu clase</span><span data-l="en">Use it with your group or class</span></li>
+          <li data-icon="arrow"><span data-l="es">Contarnos qué funcionó y qué no</span><span data-l="en">Tell us what worked and what didn't</span></li>
+        </ul>
+        <a class="btn" href="#contacto" data-icon="arrow"><span data-l="es">Pedir piloto gratis</span><span data-l="en">Request a free pilot</span></a>
+      </article>
+      <article class="plan">
+        <h3><span data-l="es">Licencia escolar</span><span data-l="en">School license</span></h3>
+        <p class="price"><span data-l="es">Precio tras el piloto</span><span data-l="en">Pricing after the pilot</span></p>
+        <p data-l="es">Para escuelas que quieran seguir después del piloto. Es anual y por estudiante; publicaremos el precio al terminar los pilotos.</p>
+        <p data-l="en">For schools that want to continue after the pilot. It is annual and per student; we will publish pricing when the pilots end.</p>
+        <h4><span data-l="es">Incluye</span><span data-l="en">Includes</span></h4>
+        <ul>
+          <li data-icon="check"><span data-l="es">Todo lo del piloto</span><span data-l="en">Everything in the pilot</span></li>
+          <li data-icon="check"><span data-l="es">Las mejoras del juego y de la guía</span><span data-l="en">Updates to the game and the guide</span></li>
+        </ul>
+        <a class="btn paperish" href="#contacto"><span data-l="es">Quiero información</span><span data-l="en">Tell me more</span></a>
+      </article>
+    </div>
+    <div class="model on-paper" role="list" aria-label="Cómo funciona" data-en-aria-label="How it works">
+      <div role="listitem"><b><span data-l="es">Capítulo 1 gratis</span><span data-l="en">Chapter 1 is free</span></b><span data-l="es">Para todos.</span><span data-l="en">For everyone.</span></div>
+      <div role="listitem"><b><span data-l="es">Escuelas</span><span data-l="en">Schools</span></b><span data-l="es">Piloto gratis y luego licencia anual.</span><span data-l="en">Free pilot, then an annual license.</span></div>
+      <div role="listitem"><b><span data-l="es">Familias</span><span data-l="en">Families</span></b><span data-l="es">Extras opcionales más adelante.</span><span data-l="en">Optional extras later on.</span></div>
+      <div role="listitem"><b><span data-l="es">Sin anuncios</span><span data-l="en">No ads</span></b><span data-l="es">Ni cajas sorpresa.</span><span data-l="en">And no loot boxes.</span></div>
+      <div role="listitem"><b><span data-l="es">Lo cultural</span><span data-l="en">Cultural items</span></b><span data-l="es">Pava, guayabera y maracas se ganan jugando.</span><span data-l="en">Pava, guayabera and maracas are earned by playing.</span></div>
+    </div>
+    <p class="word"><strong><span data-l="es">Crecemos de maestro a maestro.</span><span data-l="en">We grow teacher to teacher.</span></strong><span data-l="es">Si te funciona en el salón, cuéntaselo a un colega.</span><span data-l="en">If it works in your classroom, tell a colleague.</span></p>
+  </div>
+</section>
+
+<section class="section" id="aliados" aria-labelledby="h-aliados">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Únete</span><span data-l="en">Join us</span></span>
+      <h2 class="h2" id="h-aliados"><span data-l="es">Familias, aliados e inversionistas</span><span data-l="en">Families, partners and investors</span></h2>
+      <p class="lead" data-l="es">Buscamos escuelas piloto, aliados de conservación y capital.</p>
+      <p class="lead" data-l="en">We are looking for pilot schools, conservation partners and capital.</p>
+    </div>
+    <div class="aud">
+      <article>
+        <span class="ic" data-icon="shield"></span>
+        <h3><span data-l="es">Familias</span><span data-l="en">Families</span></h3>
+        <p data-l="es">Seguro por diseño: sin anuncios, sin chat abierto y sin cajas sorpresa. Tu hijo usa un nombre inventado y el progreso se queda en tu dispositivo.</p>
+        <p data-l="en">Safe by design: no ads, no open chat and no loot boxes. Your child uses a made-up name and progress stays on your device.</p>
+        <a class="btn sm" href="#contacto"><span data-l="es">Avísenme de la beta</span><span data-l="en">Tell me about the beta</span></a>
+      </article>
+      <article>
+        <span class="ic" data-icon="paw"></span>
+        <h3><span data-l="es">Aliados de conservación y cultura</span><span data-l="en">Conservation and culture partners</span></h3>
+        <p data-l="es">Buscamos quien valide las fichas de fauna y cultura, y quiera llevar la historia de la cotorra a más salones.</p>
+        <p data-l="en">We are looking for people who can validate our wildlife and culture cards and want to bring the parrot's story to more classrooms.</p>
+        <a class="btn sm leaf" href="#contacto"><span data-l="es">Hablemos</span><span data-l="en">Let's talk</span></a>
+      </article>
+      <article>
+        <span class="ic" data-icon="trophy"></span>
+        <h3><span data-l="es">Inversionistas</span><span data-l="en">Investors</span></h3>
+        <p data-l="es">Un estudio pequeño de Puerto Rico, en etapa de prototipo. El mercado escolar es grande:</p>
+        <p data-l="en">A small studio from Puerto Rico, at the prototype stage. The school market is large:</p>
+        <div>
+          <div class="stat"><b>98,577</b><span data-l="es">escuelas públicas en EE. UU.</span><span data-l="en">public schools in the U.S.</span><small><a href="https://nces.ed.gov/fastfacts/display.asp?id=84" target="_blank" rel="noopener">NCES Fast Facts, 2020-21</a></small></div>
+          <div class="stat"><b>29 %</b><span data-l="es">de sus estudiantes son hispanos</span><span data-l="en">of their students are Hispanic</span><small><a href="https://nces.ed.gov/programs/coe/indicator/cge" target="_blank" rel="noopener"><span data-l="es">NCES, Condition of Education, otoño 2022</span><span data-l="en">NCES, Condition of Education, fall 2022</span></a></small></div>
+        </div>
+        <a class="btn sm ghost" href="#contacto"><span data-l="es">Pedir una reunión</span><span data-l="en">Request a meeting</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="prensa" aria-labelledby="h-prensa" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Prensa</span><span data-l="en">Press</span></span>
+      <h2 class="h2" id="h-prensa"><span data-l="es">Amazona Verse en pocas líneas</span><span data-l="en">Amazona Verse in a few lines</span></h2>
+    </div>
+    <figure class="pitch" id="pitch" hidden>
+      <video controls playsinline preload="none" data-key="pitch" aria-label="Video pitch de Amazona Verse" data-en-aria-label="Amazona Verse pitch video"></video>
+      <figcaption><span data-l="es">Video pitch · 2:45 · con subtítulos en español e inglés. Todas las imágenes son del juego.</span><span data-l="en">Pitch video · 2:45 · with Spanish and English subtitles. All footage is from the game.</span></figcaption>
+    </figure>
+    <div class="press-grid">
+      <dl class="factsheet">
+        <dt><span data-l="es">Qué es</span><span data-l="en">What</span></dt><dd><span data-l="es">Juego educativo 3D que se juega en el navegador</span><span data-l="en">An educational 3D game played in the browser</span></dd>
+        <dt><span data-l="es">Para quién</span><span data-l="en">For</span></dt><dd><span data-l="es">Jugadores de todas las edades, sus maestros y sus familias</span><span data-l="en">Players of all ages, their teachers and families</span></dd>
+        <dt><span data-l="es">Protagonista</span><span data-l="en">Hero</span></dt><dd><span data-l="es">Vittata, una cotorra puertorriqueña inventora</span><span data-l="en">Vittata, a Puerto Rican parrot and inventor</span></dd>
+        <dt><span data-l="es">Estado</span><span data-l="en">Status</span></dt><dd><span data-l="es">Prototipo jugable del capítulo 1 (octubre de 2026)</span><span data-l="en">Playable prototype of Chapter 1 (October 2026)</span></dd>
+        <dt><span data-l="es">Idiomas</span><span data-l="en">Languages</span></dt><dd><span data-l="es">Español e inglés</span><span data-l="en">Spanish and English</span></dd>
+        <dt><span data-l="es">Origen</span><span data-l="en">Origin</span></dt><dd><span data-l="es">Equipo Amazona Verse · Puerto Rico</span><span data-l="en">Amazona Verse team · Puerto Rico</span></dd>
+      </dl>
+      <div class="copybox on-paper">
+        <h3><span data-l="es">Texto para medios</span><span data-l="en">Boilerplate</span></h3>
+        <p class="text" id="bp-es" data-l="es">Amazona Verse es un juego educativo 3D que se juega en el navegador, creado en Puerto Rico. Jugadores de todas las edades acompañan a Vittata, una cotorra puertorriqueña inventora, a proteger su comunidad después de una tormenta, mientras aprenden ciencias alineadas a los estándares del Departamento de Educación de Puerto Rico (2022) y NGSS. Sin anuncios, sin chat y sin datos personales del estudiante. Equipo Amazona Verse · Puerto Rico.</p>
+        <p class="text" id="bp-en" data-l="en">Amazona Verse is an educational 3D game played in the browser, made in Puerto Rico. Players of all ages join Vittata, a Puerto Rican parrot and inventor, to protect her community after a storm while they learn science aligned to the Puerto Rico Department of Education (2022) standards and NGSS. No ads, no chat and no student personal data. Amazona Verse team · Puerto Rico.</p>
+        <div class="copy-row">
+          <button class="btn sm paperish" type="button" data-copy-es="bp-es" data-copy-en="bp-en" data-icon="copy"><span data-l="es">Copiar texto</span><span data-l="en">Copy text</span></button>
+          <span class="copied" aria-live="polite"></span>
+        </div>
+        <p class="muted small" style="margin-top:14px" data-l="es">Logo, capturas y video en alta resolución: pídelos en la sección de contacto.</p>
+        <p class="muted small" style="margin-top:14px" data-l="en">High-resolution logo, screenshots and video: request them through the contact section.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section contact" id="contacto" aria-labelledby="h-contacto">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span data-l="es">Contacto</span><span data-l="en">Contact</span></span>
+      <h2 class="h2" id="h-contacto"><span data-l="es">Escríbenos</span><span data-l="en">Get in touch</span></h2>
+      <p class="lead" data-l="es">Pilotos, prensa, alianzas o inversión. Te contestamos en español o en inglés.</p>
+      <p class="lead" data-l="en">Pilots, press, partnerships or investment. We reply in Spanish or English.</p>
+    </div>
+    <div class="contact-card on-paper">
+      <div>
+        <h3><span data-l="es">Nuestro correo</span><span data-l="en">Our email</span></h3>
+        <div class="email-box">
+          <span class="email pending" id="email-text"><span data-l="es">Correo por confirmar</span><span data-l="en">Email to be confirmed</span></span>
+          <button class="btn sm paperish" type="button" id="email-copy" data-icon="copy" hidden><span data-l="es">Copiar correo</span><span data-l="en">Copy email</span></button>
+          <span class="copied" aria-live="polite"></span>
+        </div>
+        <p class="muted" data-l="es">Copia el correo y escríbenos desde tu cuenta. Escribe solo datos de adultos; no envíes nombres de estudiantes.</p>
+        <p class="muted" data-l="en">Copy the address and write to us from your own account. Share adult contact details only; please do not send student names.</p>
+      </div>
+      <div>
+        <h3><span data-l="es">Mensaje modelo para pedir un piloto</span><span data-l="en">Sample message to request a pilot</span></h3>
+        <p class="template" id="tpl-es" data-l="es">Hola, equipo de Amazona Verse:
+Soy maestra/o de ___ grado en la escuela ___, en ___.
+Me interesa un piloto gratis con ___ estudiantes.
+En el salón usamos: Chromebooks / computadoras / tabletas.
+Gracias.</p>
+        <p class="template" id="tpl-en" data-l="en">Hello, Amazona Verse team:
+I teach grade ___ at ___ school, in ___.
+I'm interested in a free pilot with ___ students.
+In class we use: Chromebooks / computers / tablets.
+Thank you.</p>
+        <div class="copy-row">
+          <button class="btn sm paperish" type="button" data-copy-es="tpl-es" data-copy-en="tpl-en" data-icon="copy"><span data-l="es">Copiar mensaje</span><span data-l="en">Copy message</span></button>
+          <span class="copied" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <!-- Variante de hosting: formulario real. Oculto por defecto; se activa con AV_WEB.formulario (ver README). -->
+      <form class="form" id="form-contacto" name="contacto" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="contacto">
+        <p hidden><label>No llenar <input name="bot-field"></label></p>
+        <div><label for="f-nombre"><span data-l="es">Nombre</span><span data-l="en">Name</span></label><input id="f-nombre" name="nombre" autocomplete="name" required></div>
+        <div><label for="f-correo"><span data-l="es">Correo</span><span data-l="en">Email</span></label><input id="f-correo" name="correo" type="email" autocomplete="email" required></div>
+        <div><label for="f-rol"><span data-l="es">Soy</span><span data-l="en">I am</span></label>
+          <select id="f-rol" name="rol">
+            <option value="maestro" data-en="A teacher">Maestra/o</option>
+            <option value="escuela" data-en="School leadership">Dirección escolar</option>
+            <option value="familia" data-en="A parent or family member">Familia</option>
+            <option value="aliado" data-en="A conservation or culture partner">Aliado de conservación o cultura</option>
+            <option value="inversion" data-en="An investor">Inversionista</option>
+            <option value="prensa" data-en="Press">Prensa</option>
+          </select></div>
+        <div><label for="f-escuela"><span data-l="es">Escuela u organización (opcional)</span><span data-l="en">School or organization (optional)</span></label><input id="f-escuela" name="escuela" autocomplete="organization"></div>
+        <div class="full"><label for="f-mensaje"><span data-l="es">Mensaje</span><span data-l="en">Message</span></label><textarea id="f-mensaje" name="mensaje" required></textarea></div>
+        <div class="full copy-row"><button class="btn" type="submit"><span data-l="es">Enviar mensaje</span><span data-l="en">Send message</span></button><span class="status" id="form-status" role="status"></span></div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <svg viewBox="0 0 640 260" role="img" aria-label="Amazona Verse"><use href="#av-logo"/></svg>
+      <span class="foot-made"><img src="assets/img/bandera-pr.svg" width="36" height="24" alt="" loading="lazy"><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></span>
+    </div>
+    <nav class="foot-nav" aria-label="Pie de página" data-en-aria-label="Footer">
+      <a href="./#capitulos"><span data-l="es">Capítulos</span><span data-l="en">Chapters</span></a>
+      <a href="./#minijuegos"><span data-l="es">Minijuegos</span><span data-l="en">Minigames</span></a>
+      <a href="./#top-records"><span data-l="es">Top récords</span><span data-l="en">Top records</span></a>
+      <a href="cotorra.html"><span data-l="es">La cotorra</span><span data-l="en">The parrot</span></a>
+      <a href="escuelas.html"><span data-l="es">Escuelas y maestros</span><span data-l="en">Schools and teachers</span></a>
+      <a href="escuelas.html#prensa"><span data-l="es">Prensa</span><span data-l="en">Press</span></a>
+      <a href="./#fundadores"><span data-l="es">Fundadores</span><span data-l="en">Founders</span></a>
+      <a href="./#sponsors"><span data-l="es">Sponsors</span><span data-l="en">Sponsors</span></a>
+      <a href="./#contacto"><span data-l="es">Contacto</span><span data-l="en">Contact</span></a>
+    </nav>
+    <div class="foot-legal">
+      <p data-l="es">Este sitio no usa cookies ni analítica. Las tipografías se cargan desde Google Fonts.</p>
+      <p data-l="en">This site uses no cookies or analytics. Fonts are loaded from Google Fonts.</p>
+      <p data-l="es">© 2026 Equipo Amazona Verse · Puerto Rico. Juego en desarrollo; el contenido puede cambiar.</p>
+      <p data-l="en">© 2026 Amazona Verse team · Puerto Rico. Game in development; content may change.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* Configuración del sitio (ver README.md). correo: dirección pública de contacto, la decide Kelvin; vacío = «por confirmar». */
+window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
+</script>
+<script src="assets/js/web.js"></script>
+</body>
+</html>
