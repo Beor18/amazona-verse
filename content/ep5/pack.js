@@ -352,6 +352,18 @@
           }
           poner('voz_' + f.id); G.audio.play('tick'); G.misiones.check(); separar();
         });
+        ondaEnCarta(f);
+      }
+      // La onda del fragmento en la tarjeta (EP5_MISIONES t3: otro color y otro ritmo): dorada lenta y redonda, violeta corta y en
+      // pico, para que «mira el color» se pueda mirar y se distinga también sin ver colores
+      function ondaEnCarta(f) {
+        const b = document.querySelector('#card [id^="ch-"]'); if (!b) return;
+        const lenta = f.voz !== 'b', paso = lenta ? 40 : 14, alto = lenta ? 9 : 11; let d = 'M0 16';
+        for (let x = 0; x < 240; x += paso) d += lenta ? ` q${paso / 4} ${-alto} ${paso / 2} 0 t${paso / 2} 0` : ` l${paso / 2} ${-alto} l${paso / 2} ${alto}`;
+        const fig = document.createElement('div'); fig.className = 'ep5-onda'; fig.setAttribute('aria-hidden', 'true');
+        fig.innerHTML = `<svg viewBox="0 0 240 32" width="240" height="32"><path d="${d}" fill="none" stroke="${lenta ? '#d9a21b' : '#8b5bd6'}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        fig.style.cssText = 'display:flex;justify-content:center;margin:2px 0 10px';
+        b.parentNode.parentNode.insertBefore(fig, b.parentNode);
       }
       function copiar(tocados) {
         if (!pulso && !tiene('patron_ok')) arrancarPulso();

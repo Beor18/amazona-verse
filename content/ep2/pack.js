@@ -100,9 +100,9 @@
     idioma: ['content/cap1/en.js', 'content/ep2/en.js'], // inglés: el diccionario común y el del episodio (solo si el idioma es EN)
     meta: {
       titulo: 'Un lugar para todos', capitulo: 2, almacen: 'ep2',
-      hud: { capitulo: 'Episodio 2 · Prototipo', titulo: 'Un lugar para todos', portada: 'Episodio 2 · Un lugar para todos',
-        etiqueta: 'Prototipo del episodio 2 · content/ep2/pack.js', fin: '¡La casa aguanta!',
-        nota: 'Prototipo: las tres misiones del episodio 2. No uses tu nombre real.', inventario: {} },
+      hud: { capitulo: 'Capítulo 2 · Un lugar nuevo', titulo: 'Un lugar para todos', portada: 'Capítulo 2 · Un lugar para todos',
+        etiqueta: 'Capítulo 2 · Un lugar para todos', fin: '¡La casa aguanta!',
+        nota: 'Capítulo 2: elige dónde vivir, escucha a todos y construye una casa que aguante. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -4, z: 6 }, camara: 0.6 },
     // edu: aula del episodio (fichas, respuestas de «Iguaca te pregunta» y el registro local). Las partidas del prototipo sin la
@@ -127,7 +127,8 @@
         planos: ['inicio', 'nido'],
       },
       arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#3f8f4a',
-        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
+        // { x: -1.5, z: 11 }: donde arranca la cámara detrás de Vittata (una palma ahí tapaba la pantalla al empezar)
+        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA, { x: -1.5, z: 11, r: 4.5 }].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
       oceano: { color: '#4a9ab8', y: -2.6 },
     },
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)

@@ -4,12 +4,12 @@
    base de piedra, el trenzado…). Las preguntas y fichas del Aula ya traen su EN en lecciones.js. Iguaca y Vittata no se traducen. */
 window.AV_EN = Object.assign(window.AV_EN || {}, {
   // ---------- HUD, portada y nombres ----------
-  "Episodio 2 · Prototipo": "Episode 2 · Prototype",
+  "Capítulo 2 · Un lugar nuevo": "Chapter 2 · A New Place",
   "Un lugar para todos": "A Place for Everyone",
   "Episodio 2 · Un lugar para todos": "Episode 2 · A Place for Everyone",
-  "Prototipo del episodio 2 · content/ep2/pack.js": "Episode 2 prototype · content/ep2/pack.js",
+  "Capítulo 2 · Un lugar para todos": "Chapter 2 · A Place for Everyone",
   "¡La casa aguanta!": "The house holds!",
-  "Prototipo: las tres misiones del episodio 2. No uses tu nombre real.": "Prototype: the three missions of episode 2. Don't use your real name.",
+  "Capítulo 2: elige dónde vivir, escucha a todos y construye una casa que aguante. No uses tu nombre real.": "Chapter 2: choose where to live, listen to everyone and build a house that holds. Don't use your real name.",
   "Abuela": "Grandma",
   "Papá": "Dad",
   "Guardián": "Guardian",

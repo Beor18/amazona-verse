@@ -30,17 +30,30 @@ AVE.module('renderer', function (G) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
   const DPR_MAX = Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2), DPR_MIN = Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
-  const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0 };
+  const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
+  // RN1: en móviles y Chromebooks (objetivo 30 FPS) la media no ve los tirones: se vigila también el p95 de los últimos 120
+  // cuadros. Por encima de 42 ms (cuadros de ~24 FPS cada 20) baja la resolución igual que con la media lenta; y si la media
+  // está por debajo de 22 FPS (ms > 45), baja de a 0,5 y sin esperar al segundo conteo (antes tardaba ~6 s en llegar al mínimo).
+  const P95_LENTO = 42, MS_GRAVE = 45;
+  function p95Ventana() {
+    if (dyn.n < 40) return 0;
+    const a = Array.prototype.slice.call(dyn.v, 0, dyn.n).sort((x, y) => x - y);
+    return a[Math.min(a.length - 1, Math.floor(0.95 * a.length))];
+  }
   function adaptDPR(raw) {
     if (!(raw > 0 && raw < 100)) return;                     // pestaña oculta o pausa larga: no cuenta
     dyn.ms += (raw - dyn.ms) * 0.05; dyn.t += raw; dyn.lock = Math.max(0, dyn.lock - raw);
+    dyn.v[dyn.i] = raw; dyn.i = (dyn.i + 1) % dyn.v.length; dyn.n = Math.min(dyn.v.length, dyn.n + 1);
     if (dyn.t < 1000) return;
     dyn.t = 0;
-    dyn.slow = dyn.ms > 20.5 ? dyn.slow + 1 : 0;               // < ~49 FPS sostenido
-    dyn.fast = dyn.ms < 17.6 ? dyn.fast + 1 : 0;               // a tope de refresco
+    dyn.p95 = p95Ventana();
+    const lento = dyn.ms > 20.5 || (OBJETIVO <= 30 && dyn.p95 > P95_LENTO);   // < ~49 FPS sostenido, o tirones en el móvil
+    const grave = dyn.ms > MS_GRAVE;
+    dyn.slow = lento ? dyn.slow + 1 : 0;
+    dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
-    if (dyn.slow >= 2 && pr > DPR_MIN) { renderer.setPixelRatio(Math.max(DPR_MIN, pr - 0.25)); dyn.slow = 0; dyn.lock = 20000; }
-    else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; }
+    if ((dyn.slow >= 2 || grave) && pr > DPR_MIN) { renderer.setPixelRatio(Math.max(DPR_MIN, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
+    else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
     G.emit('dpr', renderer.getPixelRatio());
   }
@@ -555,7 +568,8 @@ AVE.module('renderer', function (G) {
     const fps = 1000 / fpsM.ms, i = NIVELES.indexOf(calidad.nivel);
     const dprAlMinimo = renderer.getPixelRatio() <= DPR_MIN + 0.01;
     // Baja solo si no llega al objetivo y la resolución dinámica del TA ya está en su mínimo (primero actúa ella)
-    fpsM.bajo = fps < OBJETIVO * 0.85 && dprAlMinimo ? fpsM.bajo + 1 : 0;
+    const tirones = OBJETIVO <= 30 && dyn.p95 > P95_LENTO * 1.25;      // RN1: móvil con la media aceptable pero p95 > ~52 ms
+    fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }

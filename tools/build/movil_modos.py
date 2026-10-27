@@ -30,6 +30,7 @@ import flight_medidas  # noqa: E402  (PILOTO_JS)
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(AQUI, '..', '..'))
 MODOS = ['aventura', 'flight', 'banquete', 'tormenta', 'carrera', 'criadero']
+MODOS_RN = ['arranque', 'bosque', 'ciudad', 'caleta', 'river', 'tren']   # RN1: escenarios del informe RENDIMIENTO_MOVIL.md
 
 # Abre el modo y deja lo que haga falta en marcha; devuelve un texto que empieza por 'ok' si abrió
 ABRIR_JS = {
@@ -64,6 +65,38 @@ SALIR_JS = {
 for _r in ('banquete', 'tormenta', 'carrera'):
     SALIR_JS[_r] = "window.__parar && window.__parar(); window.AV.G.retosApi.salir(); 'ok'"
 
+# RN1: vuelo en un lugar (teleport + W + cámara girando); el lugar sale del mapa (villa = ciudad, agua.bahiaBio = caleta)
+def _lugar_js(expr, alto, shift):
+    return r"""(async () => { const G = window.AV.G, S = G.S, M = G.terreno.mapa || {}, L = M.lugares || {}, A = M.agua || {}; const lug = %s;
+      if (!lug) return 'sin lugar';
+      if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true, forzar: true });
+      G.fisica.MOVE.flying = true; G.pruebas.teleport(lug.x, lug.z, 0, -1); G.pruebas.tick(0.1);
+      if (G.streaming && G.streaming.gestor) { try { await G.streaming.gestor.alrededor(lug.x, lug.z); } catch (e) {} }
+      S.pos.y = Math.max(S.pos.y, G.terreno.height(S.pos.x, S.pos.z) + %d);
+      await new Promise(r => setTimeout(r, 2500));
+      dispatchEvent(new KeyboardEvent('keydown', { key: 'w', code: 'KeyW' })); %s
+      let vivo = true; window.__parar = () => { vivo = false; dispatchEvent(new KeyboardEvent('keyup', { key: 'w', code: 'KeyW' })); %s };
+      const giro = () => { if (!vivo) return; G.camara.yaw += 0.004; requestAnimationFrame(giro); }; requestAnimationFrame(giro);
+      return 'ok lugar'; })()""" % (expr, alto, "dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift', code: 'ShiftLeft', shiftKey: true }));" if shift else '', "dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift', code: 'ShiftLeft' }));" if shift else '')
+ABRIR_JS['bosque'] = ABRIR_JS['aventura']
+ABRIR_JS['ciudad'] = _lugar_js("L.villa", 8, False)
+ABRIR_JS['caleta'] = _lugar_js("A.bahiaBio || L.bahiaBio", 6, False)
+ABRIR_JS['arranque'] = r"""(async () => { window.__parar = () => {}; return 'ok arranque'; })()"""
+ABRIR_JS['river'] = r"""(async () => { const AV = window.AV, G = AV.G; const ok = await AV.riverRush(); const R = G.riverRushApi; if (!R) return 'sin river';
+  let vivo = true, lado = 0; window.__parar = () => { vivo = false; };
+  const k = (t, c) => dispatchEvent(new KeyboardEvent(t, { key: c, code: c }));
+  const bucle = () => { if (!vivo) return; if (R.fase !== 'juego') { try { R.otraVez(); } catch (e) {} k('keydown', 'w'); k('keyup', 'w'); } requestAnimationFrame(bucle); }; requestAnimationFrame(bucle);
+  const zig = setInterval(() => { if (!vivo) return clearInterval(zig); lado = !lado; k('keydown', lado ? 'ArrowLeft' : 'ArrowRight'); setTimeout(() => k('keyup', lado ? 'ArrowLeft' : 'ArrowRight'), 250); }, 900);
+  k('keydown', 'w'); k('keyup', 'w'); return 'ok river (' + R.fase + ')'; })()"""
+ABRIR_JS['tren'] = r"""(async () => { const AV = window.AV, G = AV.G; const ok = await AV.tren(); const T = G.trenApi; if (!T) return 'sin tren';
+  let vivo = true; window.__parar = () => { vivo = false; T.held.gas = false; };
+  const bucle = () => { if (!vivo) return; if (T.fase === 'listo' || T.fase === 'fin') { try { T.toque(); } catch (e) {} } T.held.gas = true; requestAnimationFrame(bucle); }; requestAnimationFrame(bucle);
+  return 'ok tren (' + T.fase + ')'; })()"""
+SALIR_JS['bosque'] = SALIR_JS['aventura']; SALIR_JS['ciudad'] = SALIR_JS['aventura']; SALIR_JS['caleta'] = SALIR_JS['aventura']
+SALIR_JS['arranque'] = "window.__parar && window.__parar(); 'ok'"
+SALIR_JS['river'] = "window.__parar && window.__parar(); window.AV.G.riverRushApi.salir(); 'ok'"
+SALIR_JS['tren'] = "window.__parar && window.__parar(); window.AV.G.trenApi.salir(); 'ok'"
+
 # Tiempo de JS dentro de los callbacks de requestAnimationFrame (el bucle del juego y lo que cuelga de él), sumado por cuadro
 RAF_JS = r'''
 ;(() => { const raf = window.requestAnimationFrame.bind(window); window.__raf = { ms: 0, n: 0, max: 0, cuadro: 0, t: -1 };
@@ -73,12 +106,13 @@ RAF_JS = r'''
 
 # Todos los cuadros de seg segundos (rAF) y el estado del renderer al final
 MEDIR_JS = r'''(async () => { const G = window.AV.G, R = G.renderer, seg = %f;
-  const dts = []; let pv = 0; const J = window.__raf; J.ms = 0; J.n = 0; J.max = 0; window.__largas.length = 0;
-  await new Promise(r => { const t1 = performance.now(); const f = t => { if (pv) dts.push(t - pv); pv = t; if (t - t1 >= seg * 1000) return r(); requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  const dts = [], tr = [], tt = []; let pv = 0, tp = performance.now(); const tri = setInterval(() => { const st = R.stats(); tr.push(st.dpr + '/' + st.calidad[0]); }, 1000); const J = window.__raf; J.ms = 0; J.n = 0; J.max = 0; window.__largas.length = 0;
+  await new Promise(r => { const t1 = performance.now(); const f = t => { if (pv) { dts.push(t - pv); tt.push(t); } pv = t; if (t - t1 >= seg * 1000) return r(); requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  clearInterval(tri); const fin = dts.slice(Math.floor(dts.length * 0.6)).sort((a, b) => a - b), pFin = fin.length ? fin[Math.min(fin.length - 1, Math.floor(0.95 * fin.length))] : 0, mFin = fin.length ? fin.reduce((a, b) => a + b, 0) / fin.length : 0;
   const o = dts.slice().sort((a, b) => a - b), q = p => o[Math.min(o.length - 1, Math.floor(p * o.length))], ms = dts.reduce((a, b) => a + b, 0) / Math.max(1, dts.length), d = x => Math.round(x * 10) / 10;
   const s = R.stats();
   return JSON.stringify({ fps: Math.round(1000 / ms), ms: d(ms), mediana: d(q(0.5)), p95: d(q(0.95)), p99: d(q(0.99)), peor: d(o[o.length - 1] || 0), mas50: dts.filter(x => x > 50).length,
-    cuadros: dts.length, jsMs: d(J.ms / Math.max(1, J.n)), jsPeor: d(J.max), largas: window.__largas.length, largasMs: Math.round(window.__largas.reduce((a, b) => a + b, 0)), calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null });
+    cuadros: dts.length, p95Fin: d(pFin), msFin: d(mFin), traza: tr.join(' '), jsMs: d(J.ms / Math.max(1, J.n)), jsPeor: d(J.max), largas: window.__largas.length, largasMs: Math.round(window.__largas.reduce((a, b) => a + b, 0)), calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, geoms: R.renderer.info.memory.geometries, texs: R.renderer.info.memory.textures, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null });
 })()'''
 
 
@@ -124,6 +158,9 @@ def main():
     ap.add_argument('--calidad', default='')
     ap.add_argument('--nucleos', type=int, default=6)
     ap.add_argument('--dpr', type=float, default=3)
+    ap.add_argument('--js', default='', help='archivo JS: se evalua tras el flujo de jugador nuevo y se imprime (diagnostico)')
+    ap.add_argument('--pack', default='', help='content pack (ep3…)')
+    ap.add_argument('--carga', action='store_true', help='CPU lenta tambien durante la carga: mide el tiempo hasta poder jugar')
     ap.add_argument('--escritorio', action='store_true', help='sin emular el móvil (referencia)')
     ap.add_argument('--nombre', default='medida')
     ap.add_argument('--perfil', action='store_true', help='perfil de CPU de cada modo: las 12 funciones con más tiempo propio')
@@ -163,7 +200,9 @@ def main():
         except avtest.CDPError:
             pass
         cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': 'try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}' + RAF_JS}, ses)
-        cdp.call('Page.navigate', {'url': '%s/index.html?clima=sol' % origen + ('&calidad=' + a.calidad if a.calidad else '')}, ses)
+        if a.carga:
+            cdp.call('Emulation.setCPUThrottlingRate', {'rate': a.cpu}, ses)
+        cdp.call('Page.navigate', {'url': '%s/index.html?clima=sol' % origen + ('&calidad=' + a.calidad if a.calidad else '') + ('&pack=' + a.pack if a.pack else '')}, ses)
         t0 = time.monotonic()
         while time.monotonic() - t0 < P['espera_listo_s']:
             try:
@@ -174,12 +213,19 @@ def main():
             cdp.bombear(0.5)
         else:
             raise avtest.Infra('el juego no arrancó en %d s' % P['espera_listo_s'])
+        t_listo = time.monotonic() - t0
         cdp.bombear(1.0)
         prep = avtest.evaluar(cdp, ses, P['preparar_js'], 120)
         print('· juego listo en %.0f s · %s' % (time.monotonic() - t0, prep), flush=True)
         if not str(prep).startswith('ok'):
             raise avtest.Infra('flujo de jugador nuevo: %s' % prep)
         avtest.evaluar(cdp, ses, '(async () => { const G = window.AV.G; await (G.mundo && G.mundo.listo); await new Promise(r => setTimeout(r, 3000)); return true; })()', 120)
+        res['tListoS'] = round(t_listo, 1); res['tJugarS'] = round(time.monotonic() - t0, 1)
+        print('· hasta poder jugar: %.1f s (modelo del jugador %.1f s)' % (res['tJugarS'], t_listo), flush=True)
+        if a.carga:
+            cdp.call('Emulation.setCPUThrottlingRate', {'rate': 1}, ses)
+        if a.js:
+            print('· js:', avtest.evaluar(cdp, ses, open(a.js).read(), 120), flush=True)
         res['perfil'] = avtest.evaluar(cdp, ses, 'JSON.stringify(window.AV.G.renderer.stats())', 10, promesa=False)
         for modo in [x for x in a.modos.split(',') if x]:
             n0 = len(errores)
@@ -208,11 +254,12 @@ def main():
             avtest.evaluar(cdp, ses, SALIR_JS[modo], 30, promesa=False)
             cdp.bombear(2.0)
             m['errores'] = errores[n0:][:3]
+            print('    traza dpr/calidad por segundo: %s · fin: media %s ms, p95 %s ms' % (m['traza'], m['msFin'], m['p95Fin']), flush=True)
             for linea in m.get('perfil', []):
                 print('    %5.1f %%  %s' % (linea[0], linea[1]), flush=True)
             res['modos'][modo] = m
-            print('· %-9s %3d FPS · %5.1f ms media · mediana %5.1f · p95 %5.1f · p99 %5.1f · peor %6.1f · >50 ms %3d/%d · JS %5.1f ms/cuadro (peor %6.1f) · %3d tareas largas · por cuadro: %4.2f reflujos (%4.1f ms), %4.2f estilos (%4.1f ms), script %5.1f ms · %4s calls · %7s tris · %s dpr %s%s' % (
-                modo, m['fps'], m['ms'], m['mediana'], m['p95'], m['p99'], m['peor'], m['mas50'], m['cuadros'], m['jsMs'], m['jsPeor'], m['largas'], m['reflujos'], m['reflujoMs'], m['estilos'], m['estiloMs'], m['scriptMs'], m['calls'], m['triangulos'], m['calidad'], m['dpr'],
+            print('· %-9s %3d FPS · %5.1f ms media · mediana %5.1f · p95 %5.1f · p99 %5.1f · peor %6.1f · >50 ms %3d/%d · JS %5.1f ms/cuadro (peor %6.1f) · %3d tareas largas · por cuadro: %4.2f reflujos (%4.1f ms), %4.2f estilos (%4.1f ms), script %5.1f ms · %4s calls · %7s tris · %s dpr %s · geom %s tex %s heap %s MB%s' % (
+                modo, m['fps'], m['ms'], m['mediana'], m['p95'], m['p99'], m['peor'], m['mas50'], m['cuadros'], m['jsMs'], m['jsPeor'], m['largas'], m['reflujos'], m['reflujoMs'], m['estilos'], m['estiloMs'], m['scriptMs'], m['calls'], m['triangulos'], m['calidad'], m['dpr'], m['geoms'], m['texs'], m['heapMB'],
                 (' · ERRORES ' + str(m['errores'])) if m['errores'] else ''), flush=True)
         try:
             cdp.call('Browser.close', {}, None, 5)
