@@ -8,7 +8,7 @@
   const EP4 = window.AV_EN_EP4 = {
     // HUD, historia y misiones
     'Capítulo 4': 'Chapter 4', 'El precio del progreso': 'The Price of Progress', 'Capítulo 4 · El precio del progreso': 'Chapter 4 · The Price of Progress',
-    'Capítulo 4 · content/ep4/pack.js': 'Chapter 4 · content/ep4/pack.js', '¡El primer cruce!': 'The first crossing!',
+    '¡El primer cruce!': 'The first crossing!',
     'Capítulo 4: una forma de cruzar el río, con todos. No uses tu nombre real.': 'Chapter 4: a way to cross the river, together. Don\'t use your real name.',
     '¡Capítulo completado!': 'Chapter complete!', 'Habla con Iguaca': 'Talk to Iguaca',
     'Mira los 3 tramos del río y el bosquecillo': 'Look at the 3 stretches of the river and the grove',

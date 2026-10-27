@@ -11,12 +11,11 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Guardián": "Guardian",
  "Más allá de la bahía": "Beyond the Bay",
  "MÁS ALLÁ DE LA BAHÍA": "BEYOND THE BAY",
- "Mi episodio 3": "My episode 3",
- "Episodio 3 · Villa Raíz": "Episode 3 · Villa Raíz",
- "Episodio 3 · Más allá de la bahía": "Episode 3 · Beyond the Bay",
- "Episodio 3 · content/ep3/pack.js": "Episode 3 · content/ep3/pack.js",
+ "Mi capítulo 3": "My chapter 3",
+ "Capítulo 3 · Villa Raíz": "Chapter 3 · Villa Raíz",
+ "Capítulo 3 · Más allá de la bahía": "Chapter 3 · Beyond the Bay",
  "¡Llegamos a la otra orilla!": "We reached the other shore!",
- "Episodio 3: construye el primer bote y cruza la bahía. No uses tu nombre real.": "Episode 3: build the first boat and cross the bay. Don't use your real name.",
+ "Capítulo 3: construye el primer bote y cruza la bahía. No uses tu nombre real.": "Chapter 3: build the first boat and cross the bay. Don't use your real name.",
 
  // Pasos de la historia
  "Baja al astillero y habla con el papá": "Go down to the boatyard and talk to Dad",

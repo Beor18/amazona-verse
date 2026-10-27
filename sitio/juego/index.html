@@ -2,7 +2,7 @@
 <html lang="es">
 <meta charset="utf-8">
 <meta name="ave:sin-glb" content="1">
-<meta name="ave:build" content="HEAD 5aff12520f74">
+<meta name="ave:build" content="HEAD 3b043be293c1">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amazona Verse</title>
 <link rel="icon" type="image/png" href="assets/vittata.png">
@@ -108,8 +108,8 @@
         <button class="btn tile modo" type="button" id="b-records-menu" data-modo="records"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5L32 39.2 19 46l2.5-14.5L11 21.3l14.5-2.1z" fill="var(--gold)"/><path d="M6 50h16v10H6zm18-6h16v16H24zm18 10h16v6H42z" fill="var(--sky)"/></svg><b id="b-records-title">Mis récords</b><small>Medallas y tiempos</small></button>
       </div>
     </form>
-    <!-- Episodios (AG2): cada uno es un content pack que se abre con ?pack=<id>; boot.js lo carga solo -->
-    <nav class="title-episodios" aria-label="Episodios"><a href="./">Capítulo 1</a><a href="?pack=ep2">Episodio 2 · Un lugar para todos</a><a href="?pack=ep3">Episodio 3 · Más allá de la bahía</a><a href="?pack=ep4">Capítulo 4 · El precio del progreso</a><a href="?pack=ep5">Capítulo 5 · Las voces olvidadas</a><a href="?pack=ep6">Capítulo 6 · El pacto de los 36</a></nav>
+    <!-- Capítulos de la temporada (AV1): cada uno es un content pack (?pack=<id>, boot.js lo carga solo); el botón abre #capitulos -->
+    <nav class="title-episodios" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button></nav>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
   </div>
   <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
@@ -151,7 +151,7 @@
       <button class="btn tile" id="b-retos" type="button" data-icon="trophy" popovertarget="pause" popovertargetaction="hide">Retos</button>
       <button class="btn tile" id="b-records" type="button" data-icon="star" popovertarget="pause" popovertargetaction="hide">Mis récords</button>
       <button class="btn tile" id="b-menu-modos" type="button" data-icon="rotate" popovertarget="pause" popovertargetaction="hide">Cambiar de juego</button>
-      <button class="btn tile" id="b-ep5" type="button" data-no-tr data-icon="book">Capítulo 5</button>
+      <button class="btn tile" id="b-capitulos" type="button" data-no-tr data-icon="book" popovertarget="pause" popovertargetaction="hide">Capítulos</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
       <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
     </div>
@@ -217,6 +217,7 @@
     <h2 id="end-title">Capítulo 1 completado</h2>
     <p id="end-text"></p>
     <div class="row center" id="end-acciones">
+      <button class="btn xl" id="b-siguiente" type="button" data-no-tr data-icon="play" hidden>Siguiente capítulo</button>
       <button class="btn xl" id="b-comic" type="button" data-icon="book">Crear mi cómic</button>
       <button class="btn" id="b-seguir" type="button" data-icon="play">Seguir explorando</button>
       <button class="btn ghost" id="b-again" type="button" data-icon="reset">Comenzar de cero</button>
@@ -232,6 +233,16 @@
     </div>
   </div>
 </div>
+
+<!-- Capítulos de la temporada 1 (AV1, src/game/menu_modos.js + src/ui/menu_modos.css): los 6 con portada, estado y Jugar.
+     Se abre desde la portada (#b-capitulos-title) y la pausa (#b-capitulos); los textos los pone menu_modos.js en ES o EN. -->
+<dialog id="capitulos" class="panel capitulos" aria-labelledby="capitulos-t" data-no-tr>
+  <div class="capitulos-head">
+    <h2 id="capitulos-t">Capítulos</h2>
+    <button class="btn ghost icon" id="b-capitulos-cerrar" type="button" data-icon="close" aria-label="Cerrar"></button>
+  </div>
+  <ol class="capitulos-lista" id="capitulos-lista"></ol>
+</dialog>
 
 <div id="symbol" class="hud" hidden aria-label="Símbolo de los 36 fragmentos">
   <canvas id="symbol-canvas" width="360" height="360"></canvas>

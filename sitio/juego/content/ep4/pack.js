@@ -99,7 +99,7 @@
     meta: {
       titulo: 'El precio del progreso', capitulo: 4, almacen: 'ep4',
       hud: { capitulo: 'Capítulo 4', titulo: 'El precio del progreso', portada: 'Capítulo 4 · El precio del progreso',
-        etiqueta: 'Capítulo 4 · content/ep4/pack.js', fin: '¡El primer cruce!',
+        etiqueta: 'Capítulo 4 · El precio del progreso', fin: '¡El primer cruce!',
         nota: 'Capítulo 4: una forma de cruzar el río, con todos. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -6, z: 5 }, camara: 0.6 },
@@ -527,6 +527,10 @@
       G.on('apply', () => { const o = opcion() || OIDS.filter(k => tiene('prueba_' + k)).pop(); vaciar(piezaMaq); if (o) maquetaVer(o); }, 76);
       dibujarObra();
     },
+
+    // Temporada (AV1, src/game/menu_modos.js): al terminar se guarda en el progreso de la temporada qué se acordó y qué se cuidó.
+    // Los GDD de los caps. 5 y 6 no lo usan todavía; queda a mano en G.temporada.decision(4).
+    temporada: { decision: S => { const t = k => S.collected.includes(k); return { opcion: OIDS.find(o => t('opcion_' + o)) || null, cuidado: CIDS.find(c => t('cuidado_' + c)) || null }; } },
 
     pruebas: {
       async selfTest(G, T, opts) {

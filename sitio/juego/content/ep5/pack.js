@@ -97,7 +97,7 @@
         { id: 'ayuda', texto: 'Pide ayuda para las estaciones', hasta: { evento: 'HelpAsked' }, guia: G => G.misiones.at('iguaca') },
         { id: 'prueba2', texto: 'Vuelve a probar hasta la niebla', guia: G => G.misiones.at('prueba') },
       ],
-      fin: () => 'Las dos voces se oyeron enteras. Iguaca tiene unas preguntas, cuando quieras. Y el episodio 6 espera: el pacto de los 36.',
+      fin: () => 'Las dos voces se oyeron enteras. Iguaca tiene unas preguntas, cuando quieras. Y el capítulo 6 espera: el pacto de los 36.',
     },
     misiones: [
       { id: 'mensajes', titulo: 'Mensajes en pedazos', hud: 'Transmisor',

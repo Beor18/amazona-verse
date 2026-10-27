@@ -96,9 +96,9 @@
     idioma: ['content/cap1/en.js', 'content/ep3/en.js'], // inglés: el diccionario común y el del episodio (solo si el idioma es EN)
     meta: {
       titulo: 'Más allá de la bahía', capitulo: 3, almacen: 'ep3',
-      hud: { capitulo: 'Episodio 3 · Villa Raíz', titulo: 'Más allá de la bahía', portada: 'Episodio 3 · Más allá de la bahía',
-        etiqueta: 'Episodio 3 · content/ep3/pack.js', fin: '¡Llegamos a la otra orilla!',
-        nota: 'Episodio 3: construye el primer bote y cruza la bahía. No uses tu nombre real.', inventario: {} },
+      hud: { capitulo: 'Capítulo 3 · Villa Raíz', titulo: 'Más allá de la bahía', portada: 'Capítulo 3 · Más allá de la bahía',
+        etiqueta: 'Capítulo 3 · Más allá de la bahía', fin: '¡Llegamos a la otra orilla!',
+        nota: 'Capítulo 3: construye el primer bote y cruza la bahía. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -6, z: -10 }, camara: 0.6 },
     guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
@@ -223,7 +223,7 @@
     } },
     dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
     comic: {
-      marca: 'MÁS ALLÁ DE LA BAHÍA', tituloDefecto: 'Mi episodio 3', archivo: 'ep3-mi-comic', pdfTitulo: 'Más allá de la bahía',
+      marca: 'MÁS ALLÁ DE LA BAHÍA', tituloDefecto: 'Mi capítulo 3', archivo: 'ep3-mi-comic', pdfTitulo: 'Más allá de la bahía',
       capturas: ['bote', 'senales', 'llegada'], portadas: {},
       vinetas: [
         { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}. El plano del bote estaba en la mesa de todos.` },

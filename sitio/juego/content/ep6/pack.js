@@ -120,7 +120,7 @@
     meta: {
       titulo: 'El pacto de los 36', capitulo: 6, almacen: 'ep6',
       hud: { capitulo: 'Capítulo 6 · Villa Raíz', titulo: 'El pacto de los 36', portada: 'Capítulo 6 · El pacto de los 36',
-        etiqueta: 'Capítulo 6 · content/ep6/pack.js', fin: '¡El pacto, renovado!',
+        etiqueta: 'Capítulo 6 · El pacto de los 36', fin: '¡El pacto, renovado!',
         nota: 'Capítulo 6: recibe a los guardianes que llegan y ayúdalos a trabajar juntos. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -16, z: -16 }, camara: 0.6 },
