@@ -270,6 +270,7 @@ AVE.module('terreno', function (G) {
     'uniform sampler2D tA0, tA1, tA2, tA3, tN0, tN1, tN2, tN3, tMacro;',
     'uniform vec4 uEsc, uSat; uniform vec3 uTint0, uTint1, uTint2, uTint3; uniform float uMar;',
     'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
+    'uniform sampler2D tBosque; uniform vec4 uBosque;', // F0.2: cuánto bosque hay encima (densidad de árboles del mapa en celdas de 8 m)
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
     'vec2 rotUv(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }',
@@ -325,6 +326,14 @@ AVE.module('terreno', function (G) {
   c2 = mix(c2, c0 * 0.78, musgoRoca * 0.75);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
   alb *= 1.0 - 0.25 * (1.0 - smoothstep(uMar + 0.05, uMar + 0.6, vWPos.y)) * (1.0 - steep);
+  #ifdef SPLAT_BOSQUE
+    // F0.2, sotobosque: bajo los árboles el pasto y la tierra pasan a hojarasca marrón verdosa más oscura (no rojo), para
+    // que desde el aire lea como selva y no como césped; la roca y la arena no cambian
+    float bq = texture2D(tBosque, (wp - uBosque.xy) * uBosque.zw).r * (1.0 - bw.z) * (1.0 - bw.w);
+    vec3 hoja = mix(vec3(dot(c1, LUM)), c1, 0.45) * vec3(0.92, 0.9, 0.6);
+    hoja = mix(hoja, c0 * 0.8, 0.3 + (mac2.g - 0.5) * 0.4) * (0.55 + mac.g * 0.2);
+    alb = mix(alb, hoja, bq * 0.9);
+  #endif
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
     vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
@@ -362,6 +371,30 @@ AVE.module('terreno', function (G) {
 `;
   const splatMats = [];
   const ZONAS = G.ambiente && G.ambiente.zonas; // src/engine/ambiente.js (va antes en index.html); null sin mapa
+  // F0.2: textura de bosque (1 canal, una celda por texel) con la suma de las densidades de árboles de mapa.flora, suavizada
+  // con un 3×3; 0 = claro, 1 = bosque cerrado. Sin coste de descarga; mundo.suelo.bosque = false la apaga.
+  const BOSQUE = (() => {
+    const FD = MAPA && MAPA.flora;
+    if (!FD || !FD.densidad || (W.suelo && W.suelo.bosque === false)) return null;
+    const nx = FD.nx, nz = FD.nz, suma = new Float32Array(nx * nz);
+    for (const k of ['tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'helecho_gigante', 'ceiba', 'bambu', 'flamboyan']) {
+      if (!FD.densidad[k]) continue;
+      const b = atob(FD.densidad[k]);
+      for (let i = 0; i < b.length && i < suma.length; i++) suma[i] += b.charCodeAt(i);
+    }
+    const u8 = new Uint8Array(nx * nz);
+    for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+      let s = 0, n = 0;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) {
+        const xx = x + a, zz = z + b; if (xx < 0 || zz < 0 || xx >= nx || zz >= nz) continue;
+        s += suma[xx + zz * nx] * (a || b ? 1 : 2); n += a || b ? 1 : 2;
+      }
+      const v = s / n; u8[x + z * nx] = Math.round(255 * Math.min(1, Math.max(0, (v - 2) / 14)));
+    }
+    const tex = new THREE.DataTexture(u8, nx, nz, THREE.LuminanceFormat, THREE.UnsignedByteType);
+    tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+    return { tex, v: new THREE.Vector4(FD.x0, FD.z0, 1 / (nx * FD.celda), 1 / (nz * FD.celda)) };
+  })();
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
@@ -374,6 +407,7 @@ AVE.module('terreno', function (G) {
       uTint0: { value: L[0].t }, uTint1: { value: L[1].t }, uTint2: { value: L[2].t }, uTint3: { value: L[3].t },
       uMar: { value: q.mar || 0 }, uSat: { value: new THREE.Vector4(L[0].s, L[1].s, L[2].s, L[3].s) },
       tZona: { value: ZONAS ? ZONAS.tex : null }, uZona: { value: ZONAS ? new THREE.Vector4(ZONAS.x0, ZONAS.z0, 1 / ZONAS.ancho, 1 / ZONAS.largo) : new THREE.Vector4() },
+      tBosque: { value: BOSQUE ? BOSQUE.tex : null }, uBosque: { value: BOSQUE ? BOSQUE.v : new THREE.Vector4() },
     };
     m.defines = {};
     m.userData.splat = true; m.userData.uniforms = U;
@@ -401,6 +435,7 @@ AVE.module('terreno', function (G) {
     if (C.normalesSuelo) { d.SPLAT_NORMALES = ''; d.SPLAT_TRIPLANAR = ''; }
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
     if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
+    if (BOSQUE) d.SPLAT_BOSQUE = '';
     if (Object.keys(d).join() !== Object.keys(m.defines).join()) { m.defines = d; m.needsUpdate = true; }
   }
   G.on('calidad', C => { for (const m of splatMats) calidadSplat(m, C); });
