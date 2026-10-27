@@ -270,6 +270,7 @@ AVE.module('terreno', function (G) {
     'uniform sampler2D tA0, tA1, tA2, tA3, tN0, tN1, tN2, tN3, tMacro;',
     'uniform vec4 uEsc, uSat; uniform vec3 uTint0, uTint1, uTint2, uTint3; uniform float uMar;',
     'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
+    'uniform sampler2D tBosque; uniform vec4 uBosque;', // F0.2: cuánto bosque hay encima (densidad de árboles del mapa en celdas de 8 m)
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
     'uniform sampler2D tOrilla; uniform vec4 uOrilla;', // BB1: orilla del río y las pozas (1 = borde del agua, 0 = a 4,5 m o más)
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
@@ -296,6 +297,9 @@ AVE.module('terreno', function (G) {
     w.w = max(w.w, ori);
   #endif
   w.y += (mac.r - 0.5) * 0.25 * (w.x + w.y);
+  // BB2: el borde entre pasto y tierra se deshilacha (matas de hierba en la tierra y calvas en el pasto), no es una línea
+  float bordeT = clamp(min(w.x, w.y) * 4.0, 0.0, 1.0);
+  w.y += (mac2.b - 0.5) * 0.45 * bordeT;
   vec2 uv0 = wp * uEsc.x, uv1 = wp * uEsc.y, uv2 = wp * uEsc.z, uv3 = wp * uEsc.w;
   vec4 a0 = texture2D(tA0, uv0), a1 = texture2D(tA1, uv1), a2 = texture2D(tA2, uv2), a3 = texture2D(tA3, uv3);
   #ifdef SPLAT_TRIPLANAR
@@ -318,6 +322,9 @@ AVE.module('terreno', function (G) {
   float hm = max(max(hw.x, hw.y), max(hw.z, hw.w)) - 0.22;
   vec4 bw = max(hw - hm, 0.0) * on;
   bw /= max(dot(bw, vec4(1.0)), 1e-4);
+  // BB2: entre pasto y tierra (sendas, plazas y claros) la mezcla por altura se suaviza con los pesos lineales: borde suave
+  vec4 wl = w * on / max(dot(w * on, vec4(1.0)), 1e-4);
+  bw = mix(bw, wl, 0.45 * clamp(min(wl.x, wl.y) * 5.0, 0.0, 1.0) * (1.0 - steep));
   vec3 c0 = lin3(a0.rgb) * uTint0, c1 = lin3(a1.rgb) * uTint1, c2 = lin3(a2.rgb) * uTint2, c3 = lin3(a3.rgb) * uTint3;
   const vec3 LUM = vec3(0.2126, 0.7152, 0.0722);
   c0 = mix(vec3(dot(c0, LUM)), c0, uSat.x); c1 = mix(vec3(dot(c1, LUM)), c1, uSat.y);
@@ -326,9 +333,26 @@ AVE.module('terreno', function (G) {
   c0 *= mix(vec3(0.72, 0.86, 0.7), vec3(1.18, 1.08, 0.72), smoothstep(0.25, 0.75, mac.b)) * (0.8 + mac2.r * 0.36);
   c0 = mix(c0, c1 * vec3(1.1, 1.0, 0.8), smoothstep(0.62, 0.85, mac.a * 0.6 + mac2.g * 0.5) * 0.35);
   c1 *= 0.86 + mac.g * 0.3;
+  // BB2: la tierra de las sendas y los claros es marrón de tierra pisada, no rojo saturado: la hojarasca rojiza pasa a un
+  // pardo medio (se queda su luminancia), más clara y seca a manchas, y el pasto del borde amarillea un poco
+  float l1 = dot(c1, LUM);
+  c1 = mix(c1, vec3(l1) * vec3(1.42, 0.98, 0.62), 0.7) * mix(1.12, 1.38, smoothstep(0.3, 0.75, mac2.g));
+  c0 *= mix(vec3(1.0), vec3(1.07, 1.0, 0.78), bordeT * 0.6);
   c2 *= mix(vec3(0.9, 0.92, 0.95), vec3(1.08, 1.03, 0.95), mac.r);
   // acantilados: oclusión en las grietas (la luminancia de la roca hace de altura) y musgo en las repisas que miran arriba
   c2 *= mix(0.55, 1.08, smoothstep(0.15, 0.6, hgt.z));
+  // BB2: y para que no sean de cartón, estratos horizontales que ondulan (bandas frías y cálidas de unos 6 m), chorreones
+  // verticales de humedad y la cara más honda cuanto más vertical; a escala de decenas de metros, se lee desde el aire
+  float hc = (vWPos.x + vWPos.z) * 0.7071;
+  float estr = texture2D(tMacro, vec2(hc * 0.002 + 0.21, vWPos.y * 0.02 + (mac.g - 0.5) * 0.05)).g;
+  float chor = texture2D(tMacro, vec2(hc * 0.012 + 0.63, vWPos.y * 0.003)).b;
+  vec3 rocaT = mix(vec3(0.78, 0.8, 0.82), vec3(1.08, 0.99, 0.86), smoothstep(0.3, 0.7, estr)) * mix(0.74, 1.1, smoothstep(0.2, 0.8, estr));
+  rocaT *= mix(1.0, 0.62, smoothstep(0.5, 0.78, chor)) * mix(1.0, 0.78, smoothstep(0.6, 0.15, nG.y));
+  c2 = mix(c2, c2 * rocaT, steep);
+  // gris pardo más frío en la pared (no beige) y matas de musgo que cuelgan de las cornisas de los estratos
+  c2 = mix(c2, vec3(dot(c2, LUM)) * vec3(0.94, 0.98, 1.02), steep * 0.45);
+  float mataR = smoothstep(0.6, 0.78, texture2D(tMacro, vec2(hc * 0.006 + 0.47, vWPos.y * 0.008)).r) * smoothstep(0.3, 0.6, estr);
+  c2 = mix(c2, c0 * 0.6, mataR * steep * 0.65);
   float musgoRoca = smoothstep(0.42, 0.78, nG.y + (mac2.r - 0.5) * 0.45) * smoothstep(0.35, 0.65, mac.g + mac2.b * 0.3);
   c2 = mix(c2, c0 * 0.78, musgoRoca * 0.75);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
@@ -336,10 +360,18 @@ AVE.module('terreno', function (G) {
     alb = mix(alb, c3 * vec3(0.62, 0.52, 0.4), smoothstep(0.55, 0.95, ori) * bw.w * 0.6); // barro húmedo junto al agua
   #endif
   alb *= 1.0 - 0.25 * (1.0 - smoothstep(uMar + 0.05, uMar + 0.6, vWPos.y)) * (1.0 - steep);
+  #ifdef SPLAT_BOSQUE
+    // F0.2, sotobosque: bajo los árboles el pasto y la tierra pasan a hojarasca marrón verdosa más oscura (no rojo), para
+    // que desde el aire lea como selva y no como césped; la roca y la arena no cambian
+    float bq = texture2D(tBosque, (wp - uBosque.xy) * uBosque.zw).r * (1.0 - bw.z) * (1.0 - bw.w);
+    vec3 hoja = mix(vec3(dot(c1, LUM)), c1, 0.45) * vec3(0.92, 0.9, 0.6);
+    hoja = mix(hoja, c0 * 0.8, 0.3 + (mac2.g - 0.5) * 0.4) * (0.55 + mac.g * 0.2);
+    alb = mix(alb, hoja, bq * 0.9);
+  #endif
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
     vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
-    alb *= mix(vec3(1.0), zn.rgb + 0.5, 1.0 - bw.z * 0.5);
+    alb *= mix(vec3(1.0), zn.rgb + 0.5, 1.0 - bw.z * 0.5 - bw.y * 0.5); // BB2: la tierra, a medias (la villa la enrojecía)
     #ifdef SPLAT_MUSGO
       // musgo húmedo en los llanos altos (pendiente < 15°, más de 60 m) de las zonas húmedas
       float musgo = zn.a * smoothstep(0.955, 0.975, nG.y) * smoothstep(56.0, 64.0, vWPos.y) * smoothstep(0.3, 0.6, mac.g + mac2.r * 0.4);
@@ -405,6 +437,30 @@ AVE.module('terreno', function (G) {
   })();
   const splatMats = [];
   const ZONAS = G.ambiente && G.ambiente.zonas; // src/engine/ambiente.js (va antes en index.html); null sin mapa
+  // F0.2: textura de bosque (1 canal, una celda por texel) con la suma de las densidades de árboles de mapa.flora, suavizada
+  // con un 3×3; 0 = claro, 1 = bosque cerrado. Sin coste de descarga; mundo.suelo.bosque = false la apaga.
+  const BOSQUE = (() => {
+    const FD = MAPA && MAPA.flora;
+    if (!FD || !FD.densidad || (W.suelo && W.suelo.bosque === false)) return null;
+    const nx = FD.nx, nz = FD.nz, suma = new Float32Array(nx * nz);
+    for (const k of ['tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'helecho_gigante', 'ceiba', 'bambu', 'flamboyan']) {
+      if (!FD.densidad[k]) continue;
+      const b = atob(FD.densidad[k]);
+      for (let i = 0; i < b.length && i < suma.length; i++) suma[i] += b.charCodeAt(i);
+    }
+    const u8 = new Uint8Array(nx * nz);
+    for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+      let s = 0, n = 0;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) {
+        const xx = x + a, zz = z + b; if (xx < 0 || zz < 0 || xx >= nx || zz >= nz) continue;
+        s += suma[xx + zz * nx] * (a || b ? 1 : 2); n += a || b ? 1 : 2;
+      }
+      const v = s / n; u8[x + z * nx] = Math.round(255 * Math.min(1, Math.max(0, (v - 2) / 14)));
+    }
+    const tex = new THREE.DataTexture(u8, nx, nz, THREE.LuminanceFormat, THREE.UnsignedByteType);
+    tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+    return { tex, v: new THREE.Vector4(FD.x0, FD.z0, 1 / (nx * FD.celda), 1 / (nz * FD.celda)) };
+  })();
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
@@ -418,6 +474,7 @@ AVE.module('terreno', function (G) {
       uMar: { value: q.mar || 0 }, uSat: { value: new THREE.Vector4(L[0].s, L[1].s, L[2].s, L[3].s) },
       tOrilla: { value: ORILLA ? ORILLA.tex : null }, uOrilla: { value: ORILLA ? ORILLA.v : new THREE.Vector4() },
       tZona: { value: ZONAS ? ZONAS.tex : null }, uZona: { value: ZONAS ? new THREE.Vector4(ZONAS.x0, ZONAS.z0, 1 / ZONAS.ancho, 1 / ZONAS.largo) : new THREE.Vector4() },
+      tBosque: { value: BOSQUE ? BOSQUE.tex : null }, uBosque: { value: BOSQUE ? BOSQUE.v : new THREE.Vector4() },
     };
     m.defines = {};
     m.userData.splat = true; m.userData.uniforms = U;
@@ -443,9 +500,11 @@ AVE.module('terreno', function (G) {
   function calidadSplat(m, C) {
     const d = {};
     if (ORILLA) d.SPLAT_ORILLA = '';
-    if (C.normalesSuelo) { d.SPLAT_NORMALES = ''; d.SPLAT_TRIPLANAR = ''; }
+    d.SPLAT_TRIPLANAR = ''; // BB2: la roca triplanar en todas las calidades (sin ella, en bajo y en el móvil la pared se estira)
+    if (C.normalesSuelo) d.SPLAT_NORMALES = '';
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
     if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
+    if (BOSQUE) d.SPLAT_BOSQUE = '';
     if (Object.keys(d).join() !== Object.keys(m.defines).join()) { m.defines = d; m.needsUpdate = true; }
   }
   G.on('calidad', C => { for (const m of splatMats) calidadSplat(m, C); });
