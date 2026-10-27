@@ -42,4 +42,4 @@ Minijuegos, `web/`, edificios y el compile de shaders. F2.2 (tejados por aldea) 
 
 ## Capturas
 
-Arranque de cada capítulo, HUD oculto, escritorio 1280×800 y móvil 375×812. `bd1_antes_*` es el publicado anterior (cielo plano). `bd1_despues_*` es este estándar. Medidas en `docs/img/bd1_antes_medidas.json` y `docs/img/bd1_despues_medidas.json`.
+Arranque de cada capítulo, escritorio 1280×800 y móvil 375×812. `docs/img/bd1_lado_escritorio.jpg` pone el publicado anterior a la izquierda y este estándar a la derecha. El capítulo 1 sale en negro: es la apertura. Medidas en `docs/img/bd1_antes_medidas.json` y `docs/img/bd1_despues_medidas.json`. Antes, los capítulos 2 a 6 no tenían cielo atmosférico (niebla de 90 a 130 m). Después, el día llega a 1000 m y la noche del 5 a 720 m.
