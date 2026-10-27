@@ -21,6 +21,8 @@
   const NIDO = { x: -20, z: -4 };
   // Misión 2: los dos residentes y la mesa de las tarjetas. [KELVIN: quiénes son la abuela y el papá y su aspecto]
   const ABUELA = { x: 8, z: 9 }, PAPA = { x: -10, z: -7 }, MESA = { x: 5, z: 1 };
+  // Lo que rodea a los residentes: la charca junto a la abuela, su refugio viejo y la rama del papá
+  const CHARCA = { x: 10.6, z: 11.2, r: 1.5 }, REFUGIO = { x: 10.6, z: 6.4, r: 2 }, RAMA = { x: -11.8, z: -8.4, r: 1.6 };
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
   const lee = id => 'lee_' + id, elige = id => 'sitio_' + id;
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', 'Guardián': 'assets/guardian.png' };
@@ -131,7 +133,7 @@
       },
       arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#2f7d43',
         // { x: -1.5, z: 11 }: donde arranca la cámara detrás de Vittata (una palma ahí tapaba la pantalla al empezar)
-        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA, { x: -1.5, z: 11, r: 4.5 }].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
+        evitar: [LUMA, NIDO, ABUELA, PAPA, MESA, CHARCA, REFUGIO, RAMA, { x: -1.5, z: 11, r: 4.5 }].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
       oceano: { color: '#0b4f86', y: -2.6 },
     },
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
@@ -319,12 +321,14 @@
       G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 ? 'Contarle a Iguaca' : 'Hablar con Iguaca', use: hablar });
 
       // Cada sitio: primero se observa (pendiente, suelo, viento); con los 3 leídos, se puede elegir
+      const cintas = [];
       for (const id of IDS) {
         const s = SITIOS[id], y = H(s.x, s.z);
         const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), new THREE.MeshLambertMaterial({ color: '#8a6a3a' }));
         poste.position.set(s.x, y + 1.1, s.z); G.renderer.scene.add(poste);
-        const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3), new THREE.MeshLambertMaterial({ color: '#d6403a', side: THREE.DoubleSide }));
-        cinta.position.set(s.x + 0.5, y + 2, s.z); G.renderer.scene.add(cinta);
+        const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3).translate(0.45, 0, 0), new THREE.MeshLambertMaterial({ color: '#d6403a', side: THREE.DoubleSide }));
+        cinta.position.set(s.x + 0.06, y + 2, s.z); G.renderer.scene.add(cinta);
+        cintas.push([cinta, s.x, { a: 0.12, b: 0.75, c: 0.35 }[id]]); // la cinta se agita con el viento de cada sitio: se lee a la vista
         G.interaccion.add({ id: 'sitio_' + id, x: s.x, z: s.z, r: 2.4,
           visible: () => S.step === 1 && !elegido(),
           label: () => leidos().length === 3 ? 'Elegir ' + s.nombre : 'Observar ' + s.nombre,
@@ -376,8 +380,8 @@
         if (S.step === 4) { preguntar('papa'); return; }
         G.dialogo.say([di('Papá', S.complete ? 'El nido está seco y en alto. Gracias.' : 'Alto, oscuro y seco. No se te olvide.')]);
       }
-      G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 ? 'Enseñar el plano a la abuela' : S.step === 4 ? 'Preguntar a la abuela' : 'Hablar con la abuela', use: abuela });
-      G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 4 ? 'Preguntar al papá' : 'Hablar con el papá', use: papa });
+      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 ? 'Enseñar el plano a la abuela' : S.step === 4 ? 'Preguntar a la abuela' : 'Hablar con la abuela', use: abuela });
+      const itPapa = G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 4 ? 'Preguntar al papá' : 'Hablar con el papá', use: papa });
 
       // La mesa: cada tarjeta, ¿criterio o restricción? Si no acierta, una pista y se vuelve a preguntar (sin castigo)
       function ordenar() {
@@ -412,12 +416,71 @@
       G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => S.step >= 5,
         label: () => S.step === 5 ? 'Ordenar las tarjetas' : 'Mirar las tarjetas',
         use: () => {
-          if (S.step === 5) { ordenar(); return; }
+          if (S.step === 5) { encuadrar(MESA.x, MESA.z, PLANO_MESA); ordenar(); return; }
           const c = ORDEN.filter(k => TARJETAS[k].tipo === 'criterio').map(k => TARJETAS[k].texto), r = ORDEN.filter(k => TARJETAS[k].tipo === 'restriccion').map(k => TARJETAS[k].texto);
           G.dialogo.say([di('Vittata', 'Criterios: ' + c.join(', ') + '.'), di('Vittata', 'Restricciones: ' + r.join(', ') + '.')]);
         } });
       const mesa = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.8, 1), new THREE.MeshLambertMaterial({ color: '#8a6a3a' }));
       mesa.position.set(MESA.x, H(MESA.x, MESA.z) + 0.4, MESA.z); G.renderer.scene.add(mesa);
+
+      // ---------- Escenario alrededor de las misiones (primitivas en el estilo del resto del capítulo) ----------
+      const pieza = (geo, c, x, y, z) => { const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, y, z); m.castShadow = true; G.renderer.scene.add(m); return m; };
+      const alto = (x, z, r) => Math.max(...[[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].map(([dx, dz]) => H(x + dx, z + dz))); // lo más alto bajo un disco
+      // Un charco o charca: agua translúcida sobre el suelo, con piedras en el borde para que no se vea flotar
+      function charca(x, z, r, piedras) {
+        const a = pieza(new THREE.CylinderGeometry(r, r * 0.92, 0.06, 20), '#3d7e9e', x, (H(x, z) + alto(x, z, r)) / 2 + 0.01, z);
+        a.material.transparent = true; a.material.opacity = 0.78; a.castShadow = false; a.receiveShadow = true;
+        for (let i = 0; i < piedras; i++) { const t = i / piedras * Math.PI * 2 + 0.3, px = x + Math.cos(t) * r, pz = z + Math.sin(t) * r; pieza(new THREE.DodecahedronGeometry(0.16 + 0.07 * (i % 3), 0), '#8d8a82', px, H(px, pz) + 0.08, pz).scale.y = 0.6; }
+      }
+      charca(CHARCA.x, CHARCA.z, CHARCA.r, 11); // «La abuela está junto al agua»
+      charca(SITIOS.a.x + 1.6, SITIOS.a.z + 1.4, 1.1, 7); // el llano se encharca: se ve antes de leerlo
+      for (const [dx, dz, r] of [[1.4, 1.2, 0.35], [-1.2, 1.8, 0.25], [2, -0.6, 0.3]]) { const x = SITIOS.b.x + dx, z = SITIOS.b.z + dz; pieza(new THREE.DodecahedronGeometry(r, 0), '#8d8a82', x, H(x, z) + r * 0.4, z); } // piedras sueltas de la loma
+      // El refugio de ahora, el que no aguanta: cuatro horcones torcidos y un techo de palma que se cae de un lado
+      { const { x, z } = REFUGIO, y = H(x, z);
+        for (const [dx, dz, h] of [[-0.9, -0.7, 1.6], [0.9, -0.7, 1.5], [-0.9, 0.7, 1.1], [0.9, 0.7, 0.9]]) pieza(new THREE.CylinderGeometry(0.06, 0.08, h, 6), '#6b4a2a', x + dx, H(x + dx, z + dz) + h / 2, z + dz).rotation.z = dx * 0.06;
+        const t = pieza(new THREE.BoxGeometry(2.2, 0.12, 1.9), '#8f7a3e', x, y + 1.3, z); t.rotation.set(0.32, 0.6, 0.1);
+        pieza(new THREE.BoxGeometry(0.9, 0.08, 0.7), '#8f7a3e', x + 1.1, y + 0.05, z + 1).rotation.y = 0.9; // un trozo de techo ya caído
+        G.fisica.colliders.push({ x, z, r: 1, h: 1.4, kind: 'obj' }); }
+      // La rama del papá: un tronco seco con una rama larga, donde se va volando al ver el plano
+      { const { x, z } = RAMA, y = H(x, z);
+        pieza(new THREE.CylinderGeometry(0.22, 0.32, 3.4, 8), '#6b4a2a', x, y + 1.7, z);
+        const r = pieza(new THREE.CylinderGeometry(0.07, 0.11, 1.8, 6), '#6b4a2a', x + 0.75, y + 2.75, z + 0.2); r.rotation.z = -1.1;
+        pieza(new THREE.CylinderGeometry(0.05, 0.07, 0.9, 6), '#6b4a2a', x - 0.35, y + 3.1, z - 0.1).rotation.z = 0.7;
+        G.fisica.colliders.push({ x, z, r: 0.4, h: 3.4, kind: 'obj' }); }
+      // Dos banquitos junto a la mesa y las tarjetas encima: salen al conseguirlas y van a su columna al ordenarlas
+      for (const dx of [-1.3, 1.3]) pieza(new THREE.CylinderGeometry(0.25, 0.28, 0.45, 10), '#7a5634', MESA.x + dx, H(MESA.x + dx, MESA.z + 0.2) + 0.22, MESA.z + 0.2);
+      const yMesa = H(MESA.x, MESA.z) + 0.81;
+      const fichas = ORDEN.map((k, i) => { const m = pieza(new THREE.BoxGeometry(0.26, 0.012, 0.18), TARJETAS[k].tipo === 'criterio' ? '#f4ecd2' : '#f2c9b0', MESA.x, yMesa, MESA.z); m.castShadow = false; m.userData = { k, i }; return m; });
+      function mesaFichas() {
+        let nc = 0, nr = 0;
+        for (const m of fichas) {
+          const { k, i } = m.userData, t = TARJETAS[k];
+          m.visible = tiene('nec_' + k) || (t.tipo === 'restriccion' && S.step >= 5);
+          if (tiene('ord_' + k)) { const c = t.tipo === 'criterio' ? nc++ : nr++; m.position.set(MESA.x + (t.tipo === 'criterio' ? -0.5 + (c % 2) * 0.3 : 0.6), yMesa, MESA.z - 0.36 + Math.floor(c / (t.tipo === 'criterio' ? 2 : 1)) * 0.2); m.rotation.y = 0; }
+          else { m.position.set(MESA.x - 0.55 + (i % 5) * 0.27, yMesa, MESA.z - 0.1 + Math.floor(i / 5) * 0.24); m.rotation.y = ((i * 37) % 9 - 4) * 0.06; }
+        }
+      }
+      // El taller de la obra (el banco de trabajo y los materiales que ya tenemos): se pone junto a la casa en el sitio elegido
+      const taller = new THREE.Group(); G.renderer.scene.add(taller); taller.visible = false;
+      { const tp = (geo, c, x, y, z) => { const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, y, z); m.castShadow = true; taller.add(m); return m; };
+        tp(new THREE.BoxGeometry(1.5, 0.1, 0.7), '#8a6a3a', 0, 0.75, 0);
+        for (const [dx, dz] of [[-0.65, -0.28], [0.65, -0.28], [-0.65, 0.28], [0.65, 0.28]]) tp(new THREE.BoxGeometry(0.08, 0.72, 0.08), '#6b4a2a', dx, 0.36, dz);
+        for (let i = 0; i < 4; i++) tp(new THREE.BoxGeometry(1.8, 0.07, 0.22), '#a87c4f', 0.1, 0.04 + i * 0.075, 0.95 + (i % 2) * 0.05);
+        for (const dx of [-1.25, -1.6]) tp(new THREE.CylinderGeometry(0.28, 0.3, 0.6, 10), '#d8bb5e', dx, 0.3, 0.2 + (dx + 1.25) * 1.2);
+        tp(new THREE.BoxGeometry(0.3, 0.06, 0.12), '#5a5f66', 0.3, 0.83, 0.05); }
+      G.fisica.colliders.push(Object.assign(taller.userData, { x: 0, z: -99, r: 0.9, h: 0.9, kind: 'obj' }));
+      // Desde «Dibuja la casa», la abuela y el papá van a mirar la obra: a los lados de la casa, dentro del plano y nunca entre la
+      // cámara y la casa (antes el papá se quedaba en su sitio, justo al lado de la cámara de la obra en el claro)
+      const npc = id => G.actores.npc && G.actores.npc(id);
+      function ponerNpc(n, it, x, z) { if (!n) return; n.def.x = x; n.def.z = z; n.sp.position.set(x, H(x, z) + 1.0, z); n.sh.position.set(x, H(x, z) + 0.03, z); if (n.collider) { n.collider.x = x; n.collider.z = z; } if (it) { it.x = x; it.z = z; } }
+      let enObra = null;
+      function residentes() {
+        const k = S.step >= 6 && elegido() ? elegido() : '';
+        if (k === enObra) return; enObra = k;
+        const s = SITIOS[k];
+        ponerNpc(npc('abuela'), itAbuela, s ? s.x - 3 - 2.3 : ABUELA.x, s ? s.z + 2.8 : ABUELA.z);
+        ponerNpc(npc('papa'), itPapa, s ? s.x - 3 + 2.7 : PAPA.x, s ? s.z + 2.4 : PAPA.z);
+      }
 
       // ---------- Misión 3 · «Casa que aguanta» ----------
       // La parte más débil según las decisiones y el sitio de la M1 (valores del juego): siempre falla una, con salida
@@ -471,12 +534,16 @@
       // En escritorio la casa queda a la derecha de Vittata, fuera de la tarjeta de elección (que va centrada)
       const CAM = G.camara.CAM;
       let plano = null, libreT = 0; // lo de la cámara de antes
-      function encuadrar() {
-        if (!elegido()) return;
-        const movil = G.renderer.camera.aspect < 1, vx = obra.x + (movil ? 0.9 : -4.2), vz = obra.z + (movil ? 6 : 5.5);
+      // En el móvil la tarjeta va en el centro: la cámara sube y mira más abajo para que la casa quede en la franja de arriba.
+      // encuadrar(x, z, v) sirve también para la mesa: v = { escritorio, movil } con [dx, dz de Vittata, dist, alto, mira]
+      const PLANO_OBRA = { escritorio: [-4.2, 5.5, 7, 3, 2.4], movil: [0.9, 6.5, 10, 6.5, 0.4] };
+      const PLANO_MESA = { escritorio: [-2.4, 2.6, 5, 3.5, 0.8], movil: [0.5, 3.2, 6, 5, 0.3] };
+      function encuadrar(x, z, v) {
+        if (x == null) { if (!elegido()) return; x = obra.x; z = obra.z; }
+        const movil = G.renderer.camera.aspect < 1, [dx, dz, dist, height, look] = (v || PLANO_OBRA)[movil ? 'movil' : 'escritorio'], vx = x + dx, vz = z + dz;
         S.pos.x = vx; S.pos.z = vz; S.pos.y = H(vx, vz); S.vy = 0; S.facing = { x: 0, z: -1 }; G.fisica.MOVE.flying = false;
         if (!plano) plano = { dist: CAM.dist, height: CAM.height, look: CAM.look };
-        Object.assign(CAM, { dist: movil ? 9 : 7, height: 3, look: 2.4 });
+        Object.assign(CAM, { dist, height, look });
         G.camara.yaw = 0; G.camara.place(true); libreT = 0;
       }
       function soltarPlano() { if (plano) Object.assign(CAM, plano); plano = null; }
@@ -525,6 +592,9 @@
       }
       G.on('update', (dt, busy) => {
         if (plano) { libreT = busy ? 0 : libreT + dt; if (libreT > 0.4) soltarPlano(); }
+        residentes(); mesaFichas();
+        const tt = performance.now() / 1000;
+        for (const [c, x0, a] of cintas) { c.rotation.y = a * Math.sin(tt * (2 + a * 7) + x0) - a * 0.4; c.rotation.x = a * 0.5 * Math.sin(tt * (5 + a * 9)); }
         const T = temporal; if (!T || !dt) return;
         T.t += dt; T.k = Math.min(1, T.k + dt / 1.2);
         const k = T.k * (1 - 0.3 * Math.max(0, Math.sin(T.t * 1.7)) ** 8), sc = G.renderer.scene; // con rachas de más oscuridad
@@ -616,6 +686,7 @@
         obra.x = s.x - 3; obra.z = s.z;
         const boceto = valor('boceto_', Object.keys(BOCETOS));
         casa.position.set(obra.x, H(obra.x, obra.z), obra.z);
+        { const tx = obra.x - 3.1, tz = obra.z - 1.3; taller.position.set(tx, H(tx, tz), tz); taller.rotation.y = 0.35; taller.visible = true; Object.assign(taller.userData, { x: tx, z: tz }); }
         if (!boceto) return;
         // la parte que falla no se ve hasta que la tormenta la encuentra (mostrarFallo)
         const fallo = temporal && !temporal.mostrado ? null : ['base', 'paredes', 'techo'].find(p => tiene('falla_' + p) && !mejorado());
