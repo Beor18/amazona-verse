@@ -21,7 +21,11 @@
    - Récord en `<almacen>.retos` (clave tren: { mejor, jugadas }) y gancho retosResultado { modo: 'tren', puntos } → «Mis récords»
      (src/game/records.js, fase 2). Textos ES y EN aquí mismo (TX; la raíz lleva data-no-tr para que idioma.js no los toque).
    - Controles: ↑/W o botón «¡Dale!» = acelerar; ↓/S o «Freno» = frenar; ←/→ o A/D o los botones del desvío = elegir vía. Enter,
-     Espacio o un toque en los resultados = «Otra vez». Esc abre la pausa.
+     Espacio, R o un toque en los resultados = «Otra vez» (arranca ya, sin la pantalla de «Toca para arrancar»). Esc abre la pausa.
+   - Pulido (AO1): ruedas con radios y bielas que giran con la distancia recorrida (InstancedMesh aparte del vehículo), humo que sale a
+     golpes con cada vuelta de rueda (más al acelerar), sube, se abre y se deshace; las manchas de sombra de los árboles apartados de
+     la vía también se apartan; en el túnel el farol se enciende (haz y faroles en las paredes), la cámara se acerca y retumba y suena
+     el silbato con eco; en el puente largo la cámara sube y se aleja en grúa para verlo entero y suena el traqueteo del hierro.
    window.AVTren(G) → { DECL, P, abrir, salir, otraVez, activo, fase, estado, test }. */
 (function () {
   'use strict';
@@ -39,13 +43,19 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
+    // Sonidos propios (sintéticos, por G.audio.define): silbato de dos notas, retumbe con eco del túnel y traqueteo del puente de hierro
+    if (G.audio && G.audio.define && !G.audio.has('tren_silbato')) {
+      G.audio.define('tren_silbato', (t0, a, A) => { for (const [f, d0, d] of [[587, 0, 0.3], [740, 0.34, 0.62]]) { A.tone(f, t0 + d0, d, { type: 'sawtooth', gain: 0.035 }); A.tone(f * 1.26, t0 + d0, d, { type: 'triangle', gain: 0.05 }); } A.noise(t0, 0.95, { freq: 2600, q: 2, gain: 0.035 }); });
+      G.audio.define('tren_tunel', (t0, a, A) => { A.noise(t0, 0.5, { type: 'lowpass', freq: 230, gain: 0.24 }); A.noise(t0 + 0.14, 0.42, { type: 'lowpass', freq: 190, gain: 0.11 }); });
+      G.audio.define('tren_puente', (t0, a, A) => { for (let k = 0; k < 4; k++) A.noise(t0 + k * 0.1, 0.07, { freq: 950 + k * 60, q: 3, gain: 0.07 }); });
+    }
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
     const DECL = {
       id: 'tren', nombre: 'El tren de Vittata', nombreEn: "Vittata's Train",
       descripcion: 'Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.',
       recursos: { kit: [], personaje: 'vittata (original)', zona: 'llano del sureste (playa, costa este, la Central junto a las ruinas, bosque y lomas)', propio: 'tren, vía, estaciones y túneles con primitivas (Vibrant Toon)' },
-      camara: 'detrás y por encima de la locomotora, siguiendo la vía (más cerca dentro de los túneles; encuadre propio en vertical)',
+      camara: 'detrás y por encima de la locomotora, siguiendo la vía (más cerca y con retumbe dentro de los túneles; plano grúa en el puente largo; encuadre propio en vertical)',
       controles: { pc: '↑/W acelera, ↓/S frena, ←/→ o A/D eligen la vía en el desvío', movil: 'botones ¡Dale! y Freno; ◀ ▶ para el desvío', resultados: 'Enter, Espacio o un toque: otra vez' },
       inicio: 'el primer toque o tecla arranca el turno', victoria: null, derrota: 'ninguna: el turno dura 2 min 30 s; en las curvas rápidas se cae una caja (sin daño)',
       puntuacion: '100 por entrega + hasta 50 si llega a tiempo; 60 si llega tarde', musica: 'retos (clase retos-on)',
@@ -71,7 +81,8 @@
       grado: 0.15, suavizado: 6, // perfil de la vía: pendiente máxima y medio ancho (m) de la media móvil
       puenteMin: 0.8, tunelMin: 1.2, tunelLargo: 4, // umbrales del perfil (m sobre/bajo el terreno) y largo mínimo de un túnel
       largoLoco: 4.4, largoVagon: 3.2, enganche: 0.5, // tamaños del tren
-      finEspera: 0.45,
+      finEspera: 0.45, finPanel: 0.35, // s hasta que se puede pedir «Otra vez» y hasta que salen los resultados
+      rRueda: 0.42, manivela: 0.22, humoVuelta: 1.32, humoMax: 32, // radio de rueda, radio de la biela, m entre bocanadas (media vuelta: chu-chu), bocanadas a la vez
     };
     const MEDALLAS = [['bronce', 250], ['plata', 450], ['oro', 650]]; // calibradas con el robot de trenTest (turnos perfectos: 470–710 puntos, 6–8 entregas)
 
@@ -100,7 +111,7 @@
       'La caña va a la Central.': 'Sugar cane goes to the Sugar Mill.', 'Las tortuguitas van a la Playa.': 'Baby turtles go to the Beach.',
       'Los coquíes van al Bosque.': 'Coquís go to the Forest.', 'Las cartas van al Faro.': 'Letters go to the Lighthouse.',
       'Las frutas van al Mercado.': 'Fruit goes to the Market.', 'Las semillas van al Cafetal.': 'Seeds go to the Coffee Farm.',
-      'izquierda': 'left', 'derecha': 'right', 'por aquí': 'this way',
+      'izquierda': 'left', 'derecha': 'right', 'por aquí': 'this way', '¡Vámonos!': "Let's go!",
     };
     const SABIAS = [
       ['A principios del siglo XX un tren de vía estrecha rodeaba casi toda la isla de Puerto Rico y llevaba la caña a las centrales azucareras. Fuente: American Railroad Company of Porto Rico (por verificar).',
@@ -136,7 +147,7 @@
 
     // ---------- Estado ----------
     const st = { activo: false, fase: 'nada', snap: null, quiet: false, creador: false, env: null, ui: null, via: null, listo: false, hitStop: 0 };
-    const J = { seg: 0, s: 0, v: 0, t: 0, resta: P.duracion, puntos: 0, entregas: 0, aTiempo: 0, perdidas: 0, carga: [], hist: [], desvio: {}, roll: 0, aLat: 0, sobreT: 0, perdioT: -1e9, parada: '', finT: 0, mejor: 0, antes: 0, nuevo: false, semilla: 1, humoT: 0, aviso: '', avisoT: 0 };
+    const J = { seg: 0, s: 0, v: 0, t: 0, resta: P.duracion, puntos: 0, entregas: 0, aTiempo: 0, perdidas: 0, carga: [], hist: [], desvio: {}, roll: 0, aLat: 0, sobreT: 0, perdioT: -1e9, parada: '', finT: 0, mejor: 0, antes: 0, nuevo: false, semilla: 1, humoT: 0, humoD: 0, dist: 0, zona: 0, ecoT: 0, aviso: '', avisoT: 0 };
     const held = { gas: false, freno: false };
     let rnd = G.util.rng(1);
 
@@ -198,6 +209,9 @@
         sg.tuneles = []; sg.puentes = [];
         for (let i = 0; i < sg.n;) { if (sg.tipo[i] !== 2) { i++; continue; } let j = i; while (j < sg.n && sg.tipo[j] === 2) j++; if (j - i >= P.tunelLargo) sg.tuneles.push([i, j - 1]); else for (let k = i; k < j; k++) sg.tipo[k] = 0; i = j; }
         for (let i = 0; i < sg.n;) { if (sg.tipo[i] !== 1) { i++; continue; } let j = i; while (j < sg.n && sg.tipo[j] === 1) j++; sg.puentes.push([i, j - 1]); i = j; }
+        sg.esp = new Uint8Array(sg.n); // los momentos especiales: 2 = túnel, 1 = puente largo (≥ 20 m)
+        for (const [i0, i1] of sg.tuneles) sg.esp.fill(2, i0, i1 + 1);
+        for (const [i0, i1] of sg.puentes) if (i1 - i0 >= 20) sg.esp.fill(1, i0, i1 + 1);
       }
       // Desvíos: en cada nodo con dos salidas, cuál es la de la izquierda y cuál la de la derecha (vista desde el tren que llega)
       for (const k in nodos) {
@@ -236,8 +250,9 @@
     const lin = c => new THREE.Color(c).convertSRGBToLinear();
     const MAT = {};
     const mat = (k, c, o) => MAT[k] || (MAT[k] = Object.assign(new THREE.MeshLambertMaterial(Object.assign({ color: lin(c) }, o || {})), { name: 'tren:' + k }));
-    const E = { inst: {}, tuneles: [], carteles: [], tren: null, coches: [], vehiculos: [], cajas: [], cajasEst: [], caida: null, humo: null, humos: [], texturas: [] };
-    const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _e = new THREE.Euler(), _up = new THREE.Vector3(0, 1, 0), _fw = new THREE.Vector3(), _rt = new THREE.Vector3(), _m3 = new THREE.Matrix4();
+    const E0 = () => ({ inst: {}, tuneles: [], carteles: [], tren: null, coches: [], vehiculos: [], cajas: [], cajasEst: [], caida: null, humo: null, humos: [], texturas: [], ruedas: null, ruedasDe: [], bielas: null, haz: null });
+    const E = E0();
+    const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _e = new THREE.Euler(), _up = new THREE.Vector3(0, 1, 0), _fw = new THREE.Vector3(), _rt = new THREE.Vector3(), _m3 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _c = new THREE.Color();
     // Matriz con el eje Z local apuntando por (tx, ty, tz) y giro (roll) sobre ese eje
     function orientar(tx, ty, tz, roll) {
       _fw.set(tx, ty, tz).normalize(); _rt.crossVectors(_up, _fw).normalize(); const up = _p.crossVectors(_fw, _rt).normalize();
@@ -252,7 +267,8 @@
     function colorear(g, c) { const col = lin(c), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { a[i * 3] = col.r; a[i * 3 + 1] = col.g; a[i * 3 + 2] = col.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; }
     function unir(geos) { const g = G.util.mergeGeos(geos); const col = []; for (const q of geos) col.push(...q.attributes.color.array); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); for (const q of geos) q.dispose(); return g; }
     function vehiculo(geos, nombre) { const m = new THREE.Mesh(unir(geos), mat('vehiculo', '#ffffff', { vertexColors: true })); m.name = 'tren:' + nombre; m.frustumCulled = false; m.castShadow = false; raiz.add(m); E.vehiculos.push(m); return m; }
-    function ruedas(geos, largo, c) { for (const sx of [-0.85, 0.85]) for (const z of [-largo * 0.3, largo * 0.3]) geos.push(cil(0.42, 0.42, 0.24, c, sx, 0.42, z, 0, Math.PI / 2)); }
+    // Las ruedas no van en la malla del vehículo: se apuntan (coche, x, z) y giran en una InstancedMesh propia (colocar)
+    function ruedas(k, largo) { for (const sx of [-0.85, 0.85]) for (const z of [-largo * 0.3, largo * 0.3]) E.ruedasDe.push([k, sx, z]); }
     function construirEscena() {
       const V = st.via, nT = V.largo + 8;
       // Vía: balasto, traviesas, rieles (instancias por metro), pilares, portales y señales
@@ -263,7 +279,10 @@
       const iPor = instancia('portal', new THREE.RingGeometry(2.6, 4.0, 14), mat('portal', '#8d8a7c', { side: THREE.DoubleSide }), 24);
       const iSen = instancia('senal', new THREE.PlaneGeometry(0.7, 0.7), mat('senal', '#ffd23a', { side: THREE.DoubleSide }), 40);
       const iPos = instancia('poste', new THREE.BoxGeometry(0.1, 2.2, 0.1), mat('poste', '#4b4b4b'), 40);
-      const tubo = mat('tunel', '#3a2d26', { side: THREE.BackSide });
+      const tubo = mat('tunel', '#2a201b', { side: THREE.BackSide });
+      const nFar = V.segs.reduce((a, sg) => a + sg.tuneles.reduce((b, tn) => b + Math.floor((tn[1] - tn[0]) / 6) + 1, 0), 0);
+      const luz = MAT.luz || (MAT.luz = Object.assign(new THREE.MeshBasicMaterial({ color: lin('#ffd27a'), fog: false }), { name: 'tren:luz' }));
+      const iFar = instancia('farol', new THREE.SphereGeometry(0.17, 8, 6), luz, Math.max(1, nFar));
       for (const sg of V.segs) {
         for (let i = 0; i < sg.n; i++) {
           const q = orientar(sg.tx[i], sg.ty[i], sg.tz[i], 0);
@@ -276,6 +295,7 @@
           const pts = []; for (let i = Math.max(0, i0 - 3); i <= Math.min(sg.n - 1, i1 + 3); i++) pts.push(new THREE.Vector3(sg.x[i], sg.y[i] + 2.3, sg.z[i]));
           const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.max(2, pts.length), 3.1, 10, false), m = new THREE.Mesh(g, tubo); m.frustumCulled = false; m.name = 'tren:tunel'; raiz.add(m); E.tuneles.push(m);
           for (const i of [Math.max(0, i0 - 3), Math.min(sg.n - 1, i1 + 3)]) if (iPor.count < iPor.instanceMatrix.count) ponerInst(iPor, sg.x[i], sg.y[i] + 2.3, sg.z[i], orientar(sg.tx[i], 0, sg.tz[i], 0), 1, 1, 1);
+          for (let i = i0, k = 0; i <= i1 && iFar.count < iFar.instanceMatrix.count; i += 6, k++) { orientar(sg.tx[i], 0, sg.tz[i], 0); const o = k % 2 ? 2.6 : -2.6; ponerInst(iFar, sg.x[i] + _rt.x * o, sg.y[i] + 3.0, sg.z[i] + _rt.z * o, _q, 1, 1, 1); } // faroles en las paredes, a un lado y al otro
         }
         for (const c of sg.curvas) { const i = Math.max(0, c.i0 - 22); if (iSen.count >= iSen.instanceMatrix.count) break; const q = orientar(sg.tx[i], 0, sg.tz[i], 0); const x = sg.x[i] + _rt.x * 2.4, z = sg.z[i] + _rt.z * 2.4; ponerInst(iPos, x, sg.y[i] + 1.1, z, q, 1, 1, 1); _e.set(0, 0, Math.PI / 4); ponerInst(iSen, x, sg.y[i] + 2.5, z, _q2.copy(q).multiply(new THREE.Quaternion().setFromEuler(_e)), 1, 1, 1); }
       }
@@ -293,29 +313,48 @@
       // El tren: locomotora roja con caldera, cabina y chimenea; tres vagones de plataforma con su caja
       const L = P.largoLoco, g = [caja(1.9, 0.5, L, '#4b3a30', 0, 0.75, 0), cil(0.75, 0.75, 2.4, '#d9342b', 0, 1.65, 0.7, Math.PI / 2), caja(1.7, 1.6, 1.3, '#d9342b', 0, 1.6, -1.2), caja(1.9, 0.18, 1.6, '#2b2b2b', 0, 2.45, -1.2),
         cil(0.22, 0.3, 0.9, '#2b2b2b', 0, 2.75, 1.5), cil(0.3, 0.3, 0.5, '#f2c14e', 0, 2.5, 0.4), caja(1.3, 0.4, 0.3, '#ffe9a8', 0, 1.9, -0.55), caja(1.6, 0.35, 0.5, '#8a2219', 0, 1.0, 2.05)];
-      ruedas(g, L, '#2b2b2b'); E.tren = vehiculo(g, 'locomotora'); E.coches.push(E.tren);
-      for (let k = 0; k < P.capacidad; k++) { const w = P.largoVagon, gv = [caja(1.9, 0.3, w, '#5a7f3b', 0, 0.85, 0), caja(2.0, 0.25, 0.3, '#3f5c2a', 0, 1.12, w / 2 - 0.15), caja(2.0, 0.25, 0.3, '#3f5c2a', 0, 1.12, -w / 2 + 0.15)]; ruedas(gv, w, '#2b2b2b'); E.coches.push(vehiculo(gv, 'vagon' + k));
+      ruedas(0, L); E.tren = vehiculo(g, 'locomotora'); E.coches.push(E.tren);
+      for (let k = 0; k < P.capacidad; k++) { const w = P.largoVagon, gv = [caja(1.9, 0.3, w, '#5a7f3b', 0, 0.85, 0), caja(2.0, 0.25, 0.3, '#3f5c2a', 0, 1.12, w / 2 - 0.15), caja(2.0, 0.25, 0.3, '#3f5c2a', 0, 1.12, -w / 2 + 0.15)]; ruedas(k + 1, w); E.coches.push(vehiculo(gv, 'vagon' + k));
         const cj = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.4), new THREE.MeshLambertMaterial({ color: lin('#ffffff') })); cj.name = 'tren:caja'; cj.visible = false; cj.frustumCulled = false; raiz.add(cj); E.cajas.push(cj); }
       E.caida = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.4), new THREE.MeshLambertMaterial({ color: lin('#ffffff') })); E.caida.name = 'tren:caida'; E.caida.visible = false; raiz.add(E.caida);
-      E.humo = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 8, 6), mat('humo', '#e9eef0'), 12); E.humo.count = 0; E.humo.frustumCulled = false; E.humo.name = 'tren:humo'; raiz.add(E.humo); E.humos = [];
+      // Ruedas con radios (se ve que giran) y las dos bielas de la locomotora, que dan vueltas con ellas (desfasadas un cuarto de vuelta)
+      const r = P.rRueda, gR = unir([cil(r, r, 0.24, '#2b2b2b', 0, 0, 0, 0, Math.PI / 2), caja(0.27, r * 1.7, 0.11, '#e0b23c', 0, 0, 0), caja(0.27, 0.11, r * 1.7, '#e0b23c', 0, 0, 0), cil(0.1, 0.1, 0.3, '#e0b23c', 0, 0, 0, 0, Math.PI / 2)]);
+      E.ruedas = instancia('rueda', gR, mat('vehiculo', '#ffffff', { vertexColors: true }), E.ruedasDe.length); E.ruedas.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      E.bielas = instancia('biela', new THREE.BoxGeometry(0.08, 0.1, L * 0.6 + 0.3), mat('biela', '#c9d0d6'), 2); E.bielas.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      // Farol de la locomotora y su haz (aditivo; solo se ve en los túneles)
+      const farol = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 12).rotateX(Math.PI / 2), luz); farol.position.set(0, 1.65, 1.92); farol.name = 'tren:farol'; E.tren.add(farol);
+      const hazMat = MAT.haz = Object.assign(new THREE.MeshBasicMaterial({ color: lin('#fff1c2'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }), { name: 'tren:haz' });
+      E.haz = new THREE.Mesh(new THREE.ConeGeometry(2.4, 15, 16, 1, true).rotateX(-Math.PI / 2).translate(0, 0, 7.5), hazMat); E.haz.position.set(0, 1.65, 1.95); E.haz.visible = false; E.haz.name = 'tren:haz'; E.haz.frustumCulled = false; E.tren.add(E.haz);
+      E.humo = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 8, 6), mat('humo', '#ffffff'), P.humoMax); E.humo.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(P.humoMax * 3), 3);
+      E.humo.count = 0; E.humo.frustumCulled = false; E.humo.name = 'tren:humo'; raiz.add(E.humo); E.humos = [];
       if (!raiz.parent) scene.add(raiz);
     }
     // Los árboles y matas que caen sobre la vía no se dibujan mientras dura el tren (vegetacion.js salta las instancias con rank > densidad);
-    // al salir recuperan su rank. Solo se toca el rank: ni las mallas ni las InstancedMesh del mapa.
-    const flora = [];
+    // al salir recuperan su rank. Solo se toca el rank: ni las mallas ni las InstancedMesh del mapa. Las manchas de sombra de esos árboles
+    // (flora:manchas, una InstancedMesh fija de vegetacion.js) se encogen a 0 con el mismo criterio de celdas y se reponen al salir.
+    const flora = [], manchas = [];
     function despejarFlora() {
       const V = st.via, veg = G.vegetacion && G.vegetacion.instancias; if (!V || !veg || flora.length) return;
       const celdas = new Set(), C = 4, k = (x, z) => Math.floor(x / C) + ',' + Math.floor(z / C);
       for (const sg of V.segs) for (let i = 0; i < sg.n; i++) for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) celdas.add(k(sg.x[i] + dx * C, sg.z[i] + dz * C));
       for (const m in veg) { const Pm = veg[m]; if (!Pm || !Pm.pos || !Pm.rank) continue; for (let i = 0; i < Pm.n; i++) if (celdas.has(k(Pm.pos[i * 4], Pm.pos[i * 4 + 2]))) { flora.push([Pm, i, Pm.rank[i]]); Pm.rank[i] = 99; } }
+      const mm = scene.getObjectByName('flora:manchas');
+      if (mm && mm.isInstancedMesh) {
+        const a = mm.instanceMatrix.array; _m.makeScale(0, 0, 0);
+        for (let i = 0; i < mm.count; i++) if (celdas.has(k(a[i * 16 + 12], a[i * 16 + 14]))) { manchas.push([mm, i, a.slice(i * 16, i * 16 + 16)]); mm.setMatrixAt(i, _m); }
+        if (manchas.length) mm.instanceMatrix.needsUpdate = true;
+      }
     }
-    function reponerFlora() { for (const [Pm, i, r] of flora) Pm.rank[i] = r; flora.length = 0; }
+    function reponerFlora() {
+      for (const [Pm, i, r] of flora) Pm.rank[i] = r; flora.length = 0;
+      for (const [mm, i, a] of manchas) { mm.instanceMatrix.array.set(a, i * 16); mm.instanceMatrix.needsUpdate = true; } manchas.length = 0;
+    }
     function liberarEscena() {
       raiz.traverse(o => { if (o.isMesh) { o.geometry.dispose(); if (o.material && o.material.map) o.material.map.dispose(); if (!(o.material && o.material.name && o.material.name.indexOf('tren:') === 0)) o.material.dispose(); if (o.isInstancedMesh) o.dispose(); } });
       for (const k in MAT) { MAT[k].dispose(); delete MAT[k]; }
       for (const tx of E.texturas) tx.dispose();
       while (raiz.children.length) raiz.remove(raiz.children[0]);
-      Object.assign(E, { inst: {}, tuneles: [], carteles: [], tren: null, coches: [], vehiculos: [], cajas: [], cajasEst: [], caida: null, humo: null, humos: [], texturas: [] });
+      Object.assign(E, E0());
       if (raiz.parent) scene.remove(raiz);
       st.via = null; st.listo = false;
     }
@@ -335,12 +374,31 @@
       const V = st.via;
       for (let i = 0; i < V.ests.length; i++) { const e = V.ests[i], cj = E.cajasEst[i]; cj.visible = !!e.espera; if (e.espera) cj.material.color.copy(lin(CARGAS[e.espera.tipo].color)); }
       if (E.caida.visible) { const c = E.caida.userData; c.t += dt || 0; c.vy -= 12 * (dt || 0); E.caida.position.x += c.vx * (dt || 0); E.caida.position.z += c.vz * (dt || 0); E.caida.position.y = Math.max(c.suelo, E.caida.position.y + c.vy * (dt || 0)); E.caida.rotation.x += 2 * (dt || 0); if (c.t > 2.5) E.caida.visible = false; }
-      // Humo: bocanadas que suben y se abren (solo escala: una InstancedMesh)
-      const hm = E.humo; hm.count = 0;
-      for (let i = E.humos.length - 1; i >= 0; i--) { const h = E.humos[i]; h.t += dt || 0; if (h.t > 1.4) { E.humos.splice(i, 1); continue; } h.y += 2.4 * (dt || 0); const e = 0.4 + h.t * 0.5; _p.set(h.x, h.y, h.z); _s.set(e, e, e); _m.compose(_p, _q.set(0, 0, 0, 1), _s); hm.setMatrixAt(hm.count++, _m); }
-      hm.instanceMatrix.needsUpdate = true;
+      // Ruedas: giran lo que el tren avanzó (ángulo = distancia / radio); bielas: barra horizontal que sigue la manivela de las ruedas
+      const ang = J.dist / P.rRueda, rw = E.ruedas; rw.count = 0; _s.set(1, 1, 1);
+      for (const [k, x, z] of E.ruedasDe) { const m = E.coches[k]; _m.compose(m.position, m.quaternion, _s); _m2.makeRotationX(ang).setPosition(x, P.rRueda, z); rw.setMatrixAt(rw.count++, _m.multiply(_m2)); }
+      rw.instanceMatrix.needsUpdate = true;
+      const bl = E.bielas, lo = E.tren; bl.count = 0;
+      for (const [sx, fase] of [[-1.03, 0], [1.03, Math.PI / 2]]) { const a = ang + fase; _m.compose(lo.position, lo.quaternion, _s); _m2.makeTranslation(sx, P.rRueda + P.manivela * Math.cos(a), P.manivela * Math.sin(a)); bl.setMatrixAt(bl.count++, _m.multiply(_m2)); }
+      bl.instanceMatrix.needsUpdate = true;
+      // Haz del farol: se enciende al entrar en el túnel (lo que la cámara ya sabe: cam.tun) y parpadea un poco con el traqueteo
+      const luzT = cam.tun; E.haz.visible = luzT > 0.02; if (E.haz.visible) E.haz.material.opacity = luzT * (0.15 + 0.02 * Math.sin(J.dist * 2.1));
+      // Humo: bocanadas que salen de la chimenea, suben frenando, se abren y se deshacen (escala y color por instancia: una InstancedMesh)
+      const hm = E.humo, dd = dt || 0; hm.count = 0;
+      for (let i = E.humos.length - 1; i >= 0; i--) {
+        const h = E.humos[i]; h.t += dd; if (h.t > 1.8) { E.humos.splice(i, 1); continue; }
+        const u = h.t / 1.8; h.y += (2.8 - 2.0 * u) * dd; h.x += h.vx * dd; h.z += h.vz * dd;
+        const e = h.s * (0.45 + 1.6 * Math.sqrt(u)) * (u > 0.7 ? 1 - (u - 0.7) / 0.3 : 1);
+        _p.set(h.x, h.y, h.z); _s.set(e, e * 0.85, e); _m.compose(_p, _q.set(0, 0, 0, 1), _s); hm.setMatrixAt(hm.count, _m);
+        hm.setColorAt(hm.count++, _c.setScalar(lerp(0.55, 1, Math.min(1, u * 2.2))));
+      }
+      hm.instanceMatrix.needsUpdate = true; hm.instanceColor.needsUpdate = true; _s.set(1, 1, 1);
     }
-    function humear() { if (REDUCED || !E.tren || E.humos.length >= 12) return; const m = E.tren; _p.set(0, 3.3, 1.5).applyQuaternion(m.quaternion).add(m.position); E.humos.push({ x: _p.x, y: _p.y, z: _p.z, t: 0 }); }
+    function humear(fuerte) {
+      if (REDUCED || !E.tren || E.humos.length >= P.humoMax) return;
+      const m = E.tren; _p.set(0, 3.2, 1.5).applyQuaternion(m.quaternion).add(m.position);
+      E.humos.push({ x: _p.x, y: _p.y, z: _p.z, t: 0, s: fuerte ? 1.25 : 0.85, vx: 0.5 + (Math.random() - 0.5) * 0.6, vz: (Math.random() - 0.5) * 0.6 }); // Math.random: el humo no gasta la semilla de las cargas
+    }
 
     // ---------- Carga y estaciones ----------
     function nuevaCarga(est) { const tipos = Object.keys(CARGAS).filter(k => destinoDe(k).id !== est.id); const tipo = tipos[Math.floor(rnd() * tipos.length)]; est.espera = { tipo, destino: destinoDe(tipo).id, t0: J.t }; }
@@ -382,12 +440,17 @@
       const e = estacionCerca();
       if (e && J.v <= P.vParada) { if (J.parada !== e.id) { J.parada = e.id; parada(e); } } else if (!e || J.v > 1) J.parada = '';
       for (const es of V.ests) if (!es.espera && es.proxima && J.t >= es.proxima) { nuevaCarga(es); es.proxima = 0; }
-      J.humoT += dt; if (J.humoT > (J.v > 0.5 ? 0.22 : 0.9)) { J.humoT = 0; humear(); }
+      // Humo a golpes: una bocanada por media vuelta de rueda en marcha (más gorda al acelerar) y una tranquila cada 0,9 s parado
+      J.humoT += dt; if (J.v > 0.5 ? J.humoD >= P.humoVuelta : J.humoT > 0.9) { J.humoT = 0; J.humoD = J.humoD >= P.humoVuelta ? Math.min(J.humoD - P.humoVuelta, P.humoVuelta / 2) : 0; humear(held.gas); }
+      // Túnel y puente largo: silbato al entrar y, dentro, retumbe con eco (túnel) o traqueteo de hierro (puente) al ritmo de la marcha
+      const sgZ = V.segs[J.seg], zona = sgZ.esp[enVia(sgZ, J.s).i];
+      if (zona !== J.zona) { if (zona) sonar('tren_silbato'); J.zona = zona; J.ecoT = 0; }
+      if (zona && J.v > 2) { J.ecoT += dt; if (J.ecoT > clamp(7 / J.v, 0.45, 1.6)) { J.ecoT = 0; sonar(zona === 2 ? 'tren_tunel' : 'tren_puente'); } }
       if (J.avisoT > 0) { J.avisoT -= dt; if (J.avisoT <= 0 && st.ui) st.ui.aviso.hidden = true; }
       if (J.resta <= 0) fin();
     }
     function avanzar(dt) {
-      const V = st.via; J.s += J.v * dt;
+      const V = st.via; J.s += J.v * dt; J.dist += J.v * dt; J.humoD += J.v * dt;
       let sg = V.segs[J.seg];
       while (J.s >= sg.largo) { J.s -= sg.largo; J.hist.push(J.seg); if (J.hist.length > 4) J.hist.shift(); J.seg = siguienteSeg(V, sg); sg = V.segs[J.seg]; }
     }
@@ -415,7 +478,7 @@
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'tren', puntos: J.puntos, prueba: claveRec !== ALMACEN });
       sonar(J.nuevo ? 'unlock' : 'tick');
-      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 700);
+      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : P.finPanel * 1000);
     }
     // Lo que actores.js lee para animar a Vittata (posada en el techo de la locomotora; el rig no se toca)
     function sincronizar() {
@@ -435,27 +498,45 @@
     G.on('update', dt => update(dt), 46);
 
     // ---------- Cámara: detrás y por encima, siguiendo la vía (más cerca en los túneles; más alta y lejos en vertical) ----------
-    const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), fov: 50, asp: 0, k: 0 };
+    // cam.tun y cam.pte (0 a 1) mezclan sin saltos el plano normal con el del túnel (cerca y bajo) y el lateral del puente largo
+    const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), fov: 50, asp: 0, k: 0, tun: 0, pte: 0, lado: 1 };
     let aspMedido = 0;
     function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : innerWidth, h = el ? el.clientHeight : innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     const vertical = () => aspecto() < 1;
     function fovPara(a) { return a < 1 ? 62 : a < 1.4 ? 56 : 50; }
     function camObjetivo(out) {
       if (st.aerea) return out.set(150, 190, 125);
-      const sg = st.via && st.via.segs[J.seg], q0 = sg && enVia(sg, J.s), q1 = sg && atras(vertical() ? 16 : 14, _b);
-      const tun = !!sg && (sg.tipo[q0.i] === 2 || q1.sg.tipo[q1.i] === 2);
-      const d = tun ? 6.5 : vertical() ? 16 : 14, h = tun ? 1.9 : vertical() ? 8.5 : 6;
-      atras(d, _b); out.set(_b.x, _b.y + h, _b.z); return out;
+      if (!st.via) return out.set(S.pos.x, S.pos.y + 6, S.pos.z);
+      const dN = vertical() ? 16 : 14, hN = vertical() ? 8.5 : 6, d = lerp(dN, 6.5, cam.tun), h = lerp(hN, 1.9, cam.tun);
+      atras(lerp(d, PTE.d, cam.pte), _b);
+      const lat = cam.pte * PTE.lat * cam.lado; // plano grúa del puente: más atrás, más alto y algo hacia el lado abierto (z crece hacia el sur: la derecha es (-tz, tx))
+      out.set(_b.x - _b.tz * lat, _b.y + lerp(h, PTE.h, cam.pte), _b.z + _b.tx * lat); return out;
     }
-    function camMira() { if (st.aerea) return cam.mira.set(150, 0, 124); const m = E.tren; if (!m) return cam.mira.set(S.pos.x, S.pos.y, S.pos.z); _fw.set(0, 0, 1).applyQuaternion(m.quaternion); const ad = vertical() ? 5 : 9; return cam.mira.set(m.position.x + _fw.x * ad, m.position.y + 1.4, m.position.z + _fw.z * ad); }
-    function camFollow(dt) { camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(5, dt)); }
-    function reencuadrar() { if (!st.activo) return; const f = fovPara(aspecto()); if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
+    // Plano del puente largo: no se abre de lado sobre el mar (en la costa hay sitios donde el mundo se dibuja en negro, también en HEAD), sino en grúa
+    const PTE = { d: 21, h: 10, lat: 5, fov: 6 };
+    // A qué plano tiende la cámara: túnel si la locomotora o la cámara están dentro; puente si la locomotora va por un puente largo
+    function camZonas(dt) {
+      const sg = st.via && st.via.segs[J.seg]; if (!sg) return;
+      const q0 = enVia(sg, J.s), i0 = q0.i, q1 = atras(vertical() ? 16 : 14, _b), tun = sg.tipo[i0] === 2 || q1.sg.tipo[q1.i] === 2 ? 1 : 0;
+      let pte = sg.esp[i0] === 1 && st.fase !== 'listo' ? 1 : 0;
+      if (pte) { // del lado más abierto (el más bajo) y solo si ese sitio está libre: sobre el suelo y fuera de rocas y edificios (solidos.js)
+        const b = atras(PTE.d, _b), L = PTE.lat, sitio = s => { const x = b.x - b.tz * L * s, z = b.z + b.tx * L * s, y = b.y + PTE.h, suelo = H(x, z); return y > suelo + 1 && !(G.solidos && G.solidos.activo && G.solidos.dentro(x, z, y) > -Infinity) ? suelo : null; };
+        if (cam.pte < 0.02) { const a = sitio(1), c = sitio(-1); cam.lado = a == null ? -1 : c == null ? 1 : a <= c ? 1 : -1; }
+        if (sitio(cam.lado) == null) pte = 0; // sin sitio libre: el plano normal
+      }
+      if (dt == null) { cam.tun = tun; cam.pte = pte; return; }
+      cam.tun += (tun - cam.tun) * rate(4, dt); cam.pte += (pte - cam.pte) * rate(1.4, dt);
+    }
+    function camMira() { if (st.aerea) return cam.mira.set(150, 0, 124); const m = E.tren; if (!m) return cam.mira.set(S.pos.x, S.pos.y, S.pos.z); _fw.set(0, 0, 1).applyQuaternion(m.quaternion); const ad = lerp(vertical() ? 5 : 9, 12, cam.pte); return cam.mira.set(m.position.x + _fw.x * ad, m.position.y + 1.4, m.position.z + _fw.z * ad); }
+    function camFollow(dt) { camZonas(dt); camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(5, dt)); }
+    function reencuadrar() { if (!st.activo) return; const f = fovPara(aspecto()) + PTE.fov * cam.pte; if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = cam.fov = f; R.camera.updateProjectionMatrix(); } }
     addEventListener('resize', () => { aspMedido = 0; reencuadrar(); }); addEventListener('orientationchange', () => { aspMedido = 0; reencuadrar(); setTimeout(() => { aspMedido = 0; reencuadrar(); }, 350); });
     function camDraw(dt) {
       reencuadrar();
       R.camera.lookAt(camMira());
       const j = G.camara.juice; let sx = 0, sy = 0, sz = 0;
       if (j && j.shake > 0) { j.shake -= dt; const a = j.amp * Math.min(1, Math.max(0, j.shake) / 0.2); sx = (Math.random() - 0.5) * a; sy = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a; R.camera.position.x += sx; R.camera.position.y += sy; R.camera.position.z += sz; if (j.shake <= 0) j.amp = 0; }
+      else if (!REDUCED && cam.tun > 0.5 && J.v > 3 && st.fase === 'juego') { const a = 0.035 * cam.tun * J.v / P.vMax; sx = Math.sin(J.dist * 7.3) * a; sy = Math.sin(J.dist * 11.1) * a; R.camera.position.x += sx; R.camera.position.y += sy; } // retumbe del túnel
       if (R.drawScene) R.drawScene(R.camera); else R.renderer.render(scene, R.camera);
       R.camera.position.x -= sx; R.camera.position.y -= sy; R.camera.position.z -= sz;
     }
@@ -559,7 +640,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
         if (e.target && e.target.closest && e.target.closest('#tren button, input, select, textarea, #pause')) return;
         if (G.pausa.activa()) return;
         const k = e.key, K = k.length === 1 ? k.toLowerCase() : k;
-        if (st.fase === 'fin') { if (abajo && (k === 'Enter' || k === ' ')) { e.preventDefault(); toque(); } return; }
+        if (st.fase === 'fin') { if (abajo && !e.repeat && (k === 'Enter' || k === ' ' || K === 'r')) { e.preventDefault(); toque(); } return; }
         if (K === 'ArrowUp' || K === 'w' || k === ' ') { e.preventDefault(); if (abajo && st.fase === 'listo') toque(); held.gas = abajo; }
         else if (K === 'ArrowDown' || K === 's') { e.preventDefault(); if (abajo && st.fase === 'listo') toque(); held.freno = abajo; }
         else if (abajo && !e.repeat && (K === 'ArrowLeft' || K === 'a')) { e.preventDefault(); elegir(0); }
@@ -610,7 +691,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       let txt = '';
       for (const e of V.ests) if (e.segIdx === J.seg && e.s - J.s > -P.paradaR && e.s - J.s < P.avisoEstacion) { const lleva = J.carga.some(c => c.destino === e.id), hay = !!e.espera && J.carga.length < P.capacidad; txt = t('Estación') + ': ' + t(e.nombre) + (lleva || hay ? ' · ' + t('Frena y para') : ''); break; }
       if (!txt) for (const c of sg.curvas) if (c.i0 - J.s > -2 && c.i0 - J.s < P.avisoCurva && J.v > c.v) { txt = t('Curva: baja a') + ' ' + Math.round(c.v * 3.6) + ' km/h'; break; }
-      if (!txt) { const q = enVia(sg, J.s); if (sg.tipo[q.i] === 2) txt = t('Túnel'); else if (sg.tipo[q.i] === 1 && sg.puentes.some(p => p[1] - p[0] >= 20 && q.i >= p[0] && q.i <= p[1])) txt = t('Puente'); }
+      if (!txt) { const q = enVia(sg, J.s); if (sg.esp[q.i] === 2) txt = t('Túnel'); else if (sg.esp[q.i] === 1) txt = t('Puente'); }
       if (txt !== u.aviso.textContent || u.aviso.hidden === !!txt) { u.aviso.textContent = txt; u.aviso.hidden = !txt; }
     }
     function elegir(i) { const V = st.via; if (!V || !st.activo) return; const nd = V.nodos[V.segs[J.seg].a]; if (nd.sal.length < 2) return; J.desvio[nd.id] = i ? 1 : 0; sonar('tick'); pintarVivo(); }
@@ -675,7 +756,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       const V = st.via;
       rnd = G.util.rng(J.semilla = semilla || ((Date.now() ^ (Math.random() * 1e9)) >>> 0 || 1));
       const e0 = V.ests.find(e => e.id === 'playa'), sg0 = V.segs[e0.segIdx];
-      Object.assign(J, { seg: e0.segIdx, s: e0.s, v: 0, t: 0, resta: P.duracion, puntos: 0, entregas: 0, aTiempo: 0, perdidas: 0, carga: [], hist: [V.nodos[sg0.de].ent[0]], desvio: {}, roll: 0, aLat: 0, sobreT: 0, perdioT: -1e9, parada: '', finT: 0, nuevo: false, humoT: 0, aviso: '', avisoT: 0, mejor: leerRec().tren.mejor || 0 });
+      Object.assign(J, { seg: e0.segIdx, s: e0.s, v: 0, t: 0, resta: P.duracion, puntos: 0, entregas: 0, aTiempo: 0, perdidas: 0, carga: [], hist: [V.nodos[sg0.de].ent[0]], desvio: {}, roll: 0, aLat: 0, sobreT: 0, perdioT: -1e9, parada: '', finT: 0, nuevo: false, humoT: 0, humoD: 0, zona: 0, ecoT: 0, aviso: '', avisoT: 0, mejor: leerRec().tren.mejor || 0 });
       held.gas = held.freno = false; st.fase = 'listo'; st.hitStop = 0; E.humos.length = 0; if (E.caida) E.caida.visible = false;
       repartirCargas();
       const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; u.aviso.hidden = true; u.desvio.hidden = true; pintar(); u.chip.classList.remove('pop'); pintarVivo(); }
@@ -683,7 +764,13 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       camFollow(null); G.camara.place(true);
       if (G.actores.player3D) G.actores.player3D.root.visible = true;
     }
-    function otraVez() { if (!st.activo) return false; iniciar(); return true; }
+    // «Otra vez» rápido: el turno nuevo arranca ya (sin la pantalla de «Toca para arrancar»), con el silbato
+    function otraVez() {
+      if (!st.activo) return false;
+      iniciar(); st.fase = 'juego'; J.t = 0; if (st.ui) st.ui.pista.hidden = true;
+      avisar(t('¡Vámonos!'), 1.2); sonar('tren_silbato');
+      return true;
+    }
     function abrir() {
       montarUI(); aspMedido = 0;
       if (!st.activo && !libre()) { G.ui.toast(ingles() ? "Finish what you're doing and try the train again." : 'Termina lo que estás haciendo y vuelve a probar el tren.', 3200); return Promise.resolve(false); }
@@ -782,6 +869,12 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Frenar: se detiene en menos de 3 s y nunca va hacia atrás', J.v === 0 && J.s >= s1);
           held.gas = true; tick(12); const vTope = J.v; held.gas = false;
           check('Tope de velocidad ' + P.vMax + ' m/s', vTope <= P.vMax + 1e-6 && vTope > P.vMax * 0.7, vTope.toFixed(1));
+          // ---------- Ruedas, bielas y humo animados ----------
+          { colocar(0); const r0 = E.ruedas.instanceMatrix.array.slice(0, 16), b0 = E.bielas.instanceMatrix.array.slice(0, 16), d0 = J.dist; E.humos.length = 0; J.humoD = 0;
+            held.gas = true; tick(1); held.gas = false; colocar(1 / 30);
+            const r1 = E.ruedas.instanceMatrix.array, b1 = E.bielas.instanceMatrix.array, dif = (a, b) => a.some((v, i) => Math.abs(v - b[i]) > 1e-3);
+            check('Las ruedas (' + E.ruedasDe.length + ', con radios) giran y las bielas se mueven con la distancia recorrida', E.ruedas.count === 4 * E.coches.length && E.bielas.count === 2 && J.dist > d0 + 5 && dif(r0, r1) && dif(b0, b1), (J.dist - d0).toFixed(1) + ' m');
+            check('El humo sale a golpes de la chimenea al ritmo de las ruedas (una bocanada por media vuelta) y se dibuja con su escala y color', REDUCED || (E.humos.length >= Math.floor((J.dist - d0) / P.humoVuelta) - 2 && E.humos.length >= 3 && E.humo.count === E.humos.length && E.humo.instanceColor.array[0] > 0), E.humos.length + ' bocanadas'); }
           // ---------- Estación: parar, cargar, llevar y entregar ----------
           const nRec = J.t; irA('oeste', V.ests.find(e => e.id === 'playa').s - 2); J.carga = []; J.t = nRec;
           const esp = V.ests.find(e => e.id === 'playa'); if (!esp.espera) nuevaCarga(esp); const tipo0 = esp.espera.tipo, dest0 = destinoDe(tipo0);
@@ -802,6 +895,18 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
             check('Los vagones siguen por donde vino el tren (historial de tramos) y el tren queda entero', J.hist.length >= 1 && V.segs[J.hist[J.hist.length - 1]].id === 'oeste' && (colocar(0), E.coches.every((m, i) => i === 0 || m.position.distanceTo(E.coches[i - 1].position) < P.largoLoco + P.largoVagon)), J.hist.map(i => V.segs[i].id).join('>')); }
           { pintarVivo(); irA('oeste', V.segs[0].largo - 30); J.carga = [{ tipo: 'cartas', destino: 'faro', t0: J.t }]; st.fase = 'juego'; pintarVivo();
             check('A 45 m del desvío el HUD enseña las dos vías con su estación y marca «por aquí» la del destino de la carga', !st.ui.desvio.hidden && st.ui.izq.textContent === 'Mercado' && st.ui.der.textContent === 'Faro' && st.ui.desvio.querySelector('[data-via="1"]').classList.contains('pista'), st.ui.izq.textContent + '|' + st.ui.der.textContent); }
+          // ---------- Túnel y puente: silbato, eco, farol y cámara ----------
+          { const oidos = [], play0 = G.audio.play; G.audio.play = function (n) { oidos.push(n); return play0.apply(this, arguments); };
+            const cuadros = (s, v) => { for (let k = 0; k < s * 30 && st.fase === 'juego'; k++) { J.v = Math.max(J.v, v); paso(1 / 30); camFollow(1 / 30); colocar(1 / 30); } };
+            try {
+              const sgT = V.segs.find(sg => sg.tuneles.length), tn = sgT.tuneles[0]; irA(sgT.id, Math.max(0, tn[0] - 12)); J.carga = []; J.zona = 0; camFollow(null);
+              cuadros(Math.min(4, (12 + (tn[1] - tn[0]) / 2) / 8), 8); const dCam = R.camera.position.distanceTo(E.tren.position);
+              check('Túnel: silbato al entrar, retumbe con eco dentro, farol encendido (haz a la vista) y cámara cerca y baja', J.zona === 2 && oidos.includes('tren_silbato') && oidos.includes('tren_tunel') && cam.tun > 0.6 && E.haz.visible && E.haz.material.opacity > 0.05 && dCam < 10 && E.inst.farol.count >= 1, 'cámara a ' + dCam.toFixed(1) + ' m · ' + E.inst.farol.count + ' faroles · ' + oidos.join(','));
+              let sgP = null, pt = null; for (const sg of V.segs) for (const p of sg.puentes) if (p[1] - p[0] >= 20 && (!pt || p[1] - p[0] > pt[1] - pt[0])) { sgP = sg; pt = p; }
+              oidos.length = 0; irA(sgP.id, Math.max(0, pt[0] - 6)); J.zona = 0; camFollow(null); cuadros(Math.min(3, (pt[1] - pt[0]) / 8), 8);
+              const lat = (() => { const q = enVia(sgP, J.s); return Math.abs((R.camera.position.x - q.x) * -q.tz + (R.camera.position.z - q.z) * q.tx); })(), vp = vista(16 / 9);
+              check('Puente largo: silbato, traqueteo de hierro y plano grúa (la cámara sube, se aleja y se abre hacia el lado libre; el tren sigue a la vista)', J.zona === 1 && oidos.includes('tren_silbato') && oidos.includes('tren_puente') && cam.pte > 0.6 && lat > 2.5 && R.camera.position.y - E.tren.position.y > 6 && enVista(vp.T), 'lateral ' + lat.toFixed(1) + ' m · alto ' + (R.camera.position.y - E.tren.position.y).toFixed(1) + ' m · pte ' + cam.pte.toFixed(2) + ' · ' + sgP.id + '@' + pt[0] + '-' + pt[1]);
+            } finally { G.audio.play = play0; J.v = 0; camFollow(null); } }
           // ---------- Curva con exceso de velocidad: tambaleo, una caja al suelo, sin descarrilar ----------
           { let sgC = null, cv = null; for (const sg of V.segs) for (const c of sg.curvas) if (!cv || c.v < cv.v) { sgC = sg; cv = c; }
             irA(sgC.id, Math.max(0, cv.i0 - 3)); J.carga = [{ tipo: 'frutas', destino: 'mercado', t0: J.t }]; J.perdidas = 0; J.perdioT = -1e9; J.sobreT = 0; J.roll = 0; st.sinFx = true;
@@ -823,8 +928,8 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Resultados a la vista: puntos, medalla de bronce, entregas y la siguiente meta («Te faltan…»)', !st.ui.fin.hidden && st.ui.num.textContent === '330' && st.ui.medalla.classList.contains('bronce') && /3 entregas/.test(st.ui.rec.textContent) && new RegExp('Te faltan ' + (MEDALLAS[1][1] - 330) + ' puntos para la plata').test(st.ui.meta.textContent), st.ui.meta.textContent);
           check('Medallas: bronce ' + MEDALLAS[0][1] + ', plata ' + MEDALLAS[1][1] + ', oro ' + MEDALLAS[2][1], medallaDe(MEDALLAS[0][1] - 1) === '' && medallaDe(MEDALLAS[0][1]) === 'bronce' && medallaDe(MEDALLAS[1][1]) === 'plata' && medallaDe(MEDALLAS[2][1]) === 'oro');
           check('El «¿Sabías que…?» lleva fuente o «por verificar»', SABIAS.every(s => /verificar|Fuente/.test(s[0]) && /verified|Source/.test(s[1])));
-          check('Un toque reflejo justo al acabar no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'listo'));
-          check('Reinicio: puntos 0, tren en la Playa, 6 cargas esperando, resultados ocultos', J.puntos === 0 && st.fase === 'listo' && V.segs[J.seg].id === 'oeste' && V.ests.every(e => e.espera) && st.ui.fin.hidden);
+          check('Un toque reflejo justo al acabar no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'juego'));
+          check('«Otra vez» rápido: resultados a los ' + P.finPanel + ' s y el turno nuevo arranca ya (sin «Toca para arrancar»): puntos 0, tren en la Playa, 6 cargas esperando, resultados ocultos', P.finPanel <= 0.4 && J.puntos === 0 && st.fase === 'juego' && st.ui.pista.hidden && V.segs[J.seg].id === 'oeste' && V.ests.every(e => e.espera) && st.ui.fin.hidden);
           // ---------- Robot: turnos enteros con 3 semillas (calibración de medallas y estabilidad) ----------
           const rob = [];
           for (const sem of [11, 23, 42]) { iniciar(sem); toque(); rob.push(robot(P.duracion + 1)); if (st.fase === 'juego') fin(); }
@@ -835,8 +940,10 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           for (let i = 0; i < 30; i++) { otraVez(); toque(); held.gas = true; tick(2 + (i % 3)); held.gas = false; if (st.fase === 'juego') fin(); }
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m1 = mem();
-          check('30 reinicios: nada nuevo en la escena del tren y las geometrías del renderer no crecen (±4: el streaming del mundo carga y libera las suyas)', raiz.children.length === nHijos && E.humos.length <= 12 && m1.g <= m0.g + 4 && m1.t <= m0.t + 1, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos');
+          check('30 reinicios: nada nuevo en la escena del tren y las geometrías del renderer no crecen (±4: el streaming del mundo carga y libera las suyas)', raiz.children.length === nHijos && E.humos.length <= P.humoMax && m1.g <= m0.g + 4 && m1.t <= m0.t + 1, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos');
           check('La flora que caía sobre la vía está apartada (rank) y se repone al salir', flora.length > 0 && flora.every(f => f[0].rank[f[1]] === 99), flora.length + ' instancias');
+          const mmEsc = scene.getObjectByName('flora:manchas'), muestra = manchas[0] && [manchas[0][0], manchas[0][1], manchas[0][2][0]];
+          check('Las manchas de sombra de los árboles apartados también se apartan (escala 0) y se reponen al salir', !mmEsc || (manchas.length > 0 && manchas.every(([mm, i]) => mm.instanceMatrix.array[i * 16] === 0 && mm.instanceMatrix.array[i * 16 + 5] === 0)), mmEsc ? manchas.length + ' manchas' : 'sin flora:manchas en la escena');
           // ---------- Inglés ----------
           { const id = G.idioma, lang0 = id && id.actual();
             if (id) { await id.poner('en'); await id.listo; }
@@ -847,7 +954,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           // ---------- Salir ----------
           salir();
           check('Al salir se quitan las envolturas y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('tren-on') && !document.body.classList.contains('retos-on'));
-          check('Al salir G.quiet vuelve, el mundo no queda en pausa, Vittata ya no está posada y la flora recupera su rank', G.quiet === quiet0 && G.pausa.activa() === pausa0 && M.posado === '' && flora.length === 0);
+          check('Al salir G.quiet vuelve, el mundo no queda en pausa, Vittata ya no está posada y la flora recupera su rank', G.quiet === quiet0 && G.pausa.activa() === pausa0 && M.posado === '' && flora.length === 0 && manchas.length === 0 && (!muestra || muestra[0].instanceMatrix.array[muestra[1] * 16] === muestra[2]));
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
           check('Récords reales intactos', leer(ALMACEN) === recReal);
           { const tarj = document.querySelector('#modos [data-modo="tren"]');

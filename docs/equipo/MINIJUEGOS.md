@@ -111,3 +111,15 @@ Con eso, lo genérico sale de la declaración y no se repite: **retos.js** monta
 - Pulido: dosel o liana para las «ramas» (decisión 1), chispas al superar un obstáculo, inglés.
 - `RETO_MOMENTO.flight` en `musica.js` cuando C13 cierre (hoy suena la de Retos por la clase `retos-on`).
 - Corrida final de test.sh (build `c14-4a23967`): 38 de 39 baterías en verde, 0 errores de consola, flightTest 35/35, recordsTest 47/47; movementTest 42/43 por un collider de edificio (`portal_madera_b@kelvin_aldea_rio_este_3#1 se mete 8`, zona G6), ajeno al vuelo: en la corrida anterior (`c14-74b518b`, mismo código salvo la liberación del pool) salió 43/43.
+
+## 8. El tren de Vittata (C16; pulido AO1)
+
+`src/game/tren.js` (`?mini=tren`, `AV.tren()`, tarjeta en «¿Cómo quieres jugar?» y en Retos; prueba `AV.trenTest`; capturas y medidas con `tools/build/tren_capturas.py`). Sigue la declaración del §4 (`DECL` en el módulo).
+
+- **Qué es:** un tren corto de carga da la vuelta al llano del sureste (playa, costa, la Central junto a las ruinas, bosque y lomas). Se acelera y se frena; en los dos desvíos se elige la vía; se para en seis estaciones para cargar y entregar antes de que acabe el turno (2 min 30 s). En las curvas rápidas el tren se tambalea y cae una caja (nunca descarrila). Puntos, medallas 250/450/650, mejor marca y «¡Casi!». Récord en `<almacen>.retos` (clave `tren`) y gancho `retosResultado { modo: 'tren' }` → «Mis récords».
+- **Reutiliza:** terreno, mar y vegetación del mundo; la entrada y salida reversibles de Flight; la música de Retos (`retos-on`); `records.js`; `G.audio.define` para sus sonidos. Lo propio (tren, vía, estaciones, túneles) son primitivas Vibrant Toon: un draw call por vehículo e `InstancedMesh` para la vía, las ruedas, las bielas, los faroles y el humo.
+- **Pulido AO1:** ruedas con radios y bielas que giran con la distancia recorrida; humo a golpes, una bocanada por media vuelta de rueda (más gorda al acelerar), que sube, se abre y se deshace; las manchas de sombra (`flora:manchas`) de los árboles apartados de la vía también se apartan y vuelven al salir. Túnel: farol con haz, faroles en las paredes, cámara más cerca y baja con retumbe, silbato al entrar y eco al ritmo de la marcha. Puente largo: plano grúa (más atrás, más alto, hacia el lado libre y con +6° de FOV), silbato y traqueteo de hierro. «Otra vez» rápido: los resultados salen a los 0,35 s y Enter, Espacio, R o el botón arrancan el turno nuevo sin la pantalla de «Toca para arrancar».
+- **Capturas antes/después:** `docs/img/ao1_tren_{antes,despues}_{juego,tunel,puente}.jpg` y `ao1_tren_despues_fin.jpg`.
+- **Pendiente:**
+  - El nodo C (oeste del llano) está a ras de suelo y el tramo `oeste` se mete en el túnel con una bajada muy fuerte en sus primeros 25 m (el empalme del nodo; la prueba de pendiente lo exime).
+  - Hallazgo ajeno: en la costa, con la cámara sobre el mar cerca del acantilado del puente (p. ej. en (231; 9,3; 75) y (230,5; 11,9; 71,5)), el lienzo se dibuja entero en negro, también en HEAD. Por eso el puente usa el plano grúa y no uno lateral sobre el mar.
