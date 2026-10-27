@@ -12,12 +12,12 @@ window.AVManga = function (G) {
   const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const BEATS = [
-    { id: 'comienzo', es: 'EL COMIENZO', en: 'THE START', lado: 'der', modo: 'vuelo', fov: 46, cam: [-3.4, 2.2, -6.8], mira: [0.4, 1.2, 1.4], lineas: 0.9, prop: 'salida', alto: 1 },
-    { id: 'camino', es: 'EL CAMINO EQUIVOCADO', en: 'THE WRONG PATH', lado: 'der', modo: 'planeo', fov: 42, cam: [5.2, 1.35, -0.4], mira: [-0.3, 1.05, 1.4], lineas: 0.15, prop: 'cruce', alto: 1 },
-    { id: 'confusion', es: 'LA CONFUSIÓN', en: 'THE MIX-UP', lado: 'aba', modo: 'sorpresa', fov: 28, cam: [1.45, 1.5, 3.05], mira: [0, 1.42, 0.15], lineas: 0, prop: 'dudas', alto: 0 },
-    { id: 'intento', es: 'EL NUEVO INTENTO', en: 'TRYING AGAIN', lado: 'der', modo: 'vuelo', fov: 50, cam: [-2.2, 6.2, -9.2], mira: [1.6, 1.4, 7], lineas: 0.55, prop: null, alto: 0 },
-    { id: 'velocidad', es: 'MÁS VELOCIDAD', en: 'MORE SPEED', lado: 'der', modo: 'vuelo', fov: 36, cam: [3.1, 1.2, 5.2], mira: [-0.3, 1.15, -2.2], lineas: 1, prop: 'viento', alto: 1 },
-    { id: 'meta', es: '¡LA META!', en: 'THE FINISH!', lado: 'der', modo: 'celeb', fov: 34, cam: [2.3, 1.65, 4.6], mira: [0, 1.2, 0.2], lineas: 0.4, prop: 'meta', alto: 1, calido: 1 },
+    { id: 'comienzo', es: 'EL COMIENZO', en: 'THE START', lado: 'der', modo: 'vuelo', fov: 42, quiere: 0.36, lineas: 0.45, prop: 'salida', alto: 1 },
+    { id: 'camino', es: 'EL CAMINO EQUIVOCADO', en: 'THE WRONG PATH', lado: 'der', modo: 'planeo', fov: 48, quiere: 0.26, lineas: 0.1, prop: 'cruce', alto: 1 },
+    { id: 'confusion', es: 'LA CONFUSIÓN', en: 'THE MIX-UP', lado: 'aba', modo: 'sorpresa', fov: 26, quiere: 0.62, lineas: 0, prop: 'dudas', alto: 0 },
+    { id: 'intento', es: 'EL NUEVO INTENTO', en: 'TRYING AGAIN', lado: 'der', modo: 'vuelo', fov: 52, quiere: 0.18, lineas: 0.3, prop: null, alto: 0 },
+    { id: 'velocidad', es: 'MÁS VELOCIDAD', en: 'MORE SPEED', lado: 'der', modo: 'vuelo', fov: 38, quiere: 0.42, lineas: 0.65, prop: 'viento', alto: 1 },
+    { id: 'meta', es: '¡LA META!', en: 'THE FINISH!', lado: 'der', modo: 'celeb', fov: 36, quiere: 0.4, lineas: 0.2, prop: 'meta', alto: 1, calido: 1 },
   ];
   function muestra() {
     return {
@@ -39,7 +39,7 @@ window.AVManga = function (G) {
     };
   }
 
-  let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, enPrueba = false, tomando = false;
+  let raiz = null, estilo = null, estado = null, fotos = [], retrato = null, enPrueba = false, tomando = false, camDelta = null;
 
   function desvio(canvas, paso) {
     const x = canvas.getContext('2d', { willReadFrequently: true });
@@ -201,32 +201,58 @@ window.AVManga = function (G) {
     ctx.drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 640, 400);
     return out;
   }
-  function disparar(toma, extraY) {
-    const R = G.renderer, cam = R && R.camera;
-    if (!R || !cam || !R.canvas || R.canvas.width < 2 || !window.THREE) return null;
-    const b = baseJugador();
-    const c = mundo(b, toma.cam), m = mundo(b, toma.mira);
-    c.y += extraY || 0;
-    if (G.terreno && G.terreno.height) {
-      const suelo = G.terreno.height(c.x, c.z);
-      if (c.y < suelo + 1.35) c.y = suelo + 1.35;
+  function solido(x, y, z) {
+    const SO = G.solidos;
+    if (!SO || !SO.dentro || !SO.activo) return false;
+    try { return SO.dentro(x, z, y) > -Infinity; } catch (e) { return false; }
+  }
+  function tapa(c, px, py, pz) {
+    const dx = px - c.x, dy = py - c.y, dz = pz - c.z;
+    for (let i = 1; i <= 8; i++) {
+      const t = i / 10;
+      if (solido(c.x + dx * t, c.y + dy * t, c.z + dz * t)) return true;
     }
-    const fov = cam.fov;
+    return false;
+  }
+  // Elige un punto libre, con Vittata en cuadro y sin un techo entre la lente y ella. Una sola foto por viñeta.
+  function elegirToma(cam, b, toma) {
+    const quiere = toma.quiere || 0.32;
+    const pecho = { x: b.x, y: b.y + 1.15, z: b.z };
+    const radios = toma.modo === 'sorpresa' ? [2.2, 3, 4] : [5.5, 8, 11];
+    const altos = toma.modo === 'sorpresa' ? [1.25, 1.6, 2.1] : [2.4, 4.2, 6.5];
+    const angs = [0.4, -0.5, 1.1, -1.2, 2.2, 3.14, 0];
+    let mejor = null, nota = -1e9;
     cam.fov = toma.fov;
     cam.updateProjectionMatrix();
-    cam.position.set(c.x, c.y, c.z);
-    cam.lookAt(m.x, m.y, m.z);
-    cam.updateMatrixWorld(true);
-    if (typeof R.drawScene === 'function') R.drawScene();
-    else R.renderer.render(R.scene, cam);
-    const out = leerLienzo();
-    cam.fov = fov;
-    cam.updateProjectionMatrix();
-    return out;
+    for (const r of radios) for (const alt of altos) for (const a of angs) {
+      const off = [Math.sin(a) * r, alt, Math.cos(a) * r];
+      const c = mundo(b, off);
+      if (G.terreno && G.terreno.height) {
+        const suelo = G.terreno.height(c.x, c.z);
+        if (c.y < suelo + 1.4) c.y = suelo + 1.4;
+      }
+      if (solido(c.x, c.y, c.z) || tapa(c, pecho.x, pecho.y, pecho.z)) continue;
+      cam.position.set(c.x, c.y, c.z);
+      cam.lookAt(pecho.x, pecho.y, pecho.z);
+      cam.updateMatrixWorld(true);
+      const pies = new THREE.Vector3(b.x, b.y + 0.15, b.z).project(cam);
+      const cabeza = new THREE.Vector3(b.x, b.y + 1.7, b.z).project(cam);
+      if (pies.z <= 0 || pies.z >= 1 || cabeza.z <= 0 || cabeza.z >= 1) continue;
+      const cx = (pies.x + cabeza.x) / 2, cy = (pies.y + cabeza.y) / 2;
+      if (Math.abs(cx) > 0.72 || Math.abs(cy) > 0.72) continue;
+      const alto = Math.abs(cabeza.y - pies.y);
+      if (alto < 0.08) continue;
+      const dx = c.x - b.x, dz = c.z - b.z;
+      const frente = (dx * b.fx + dz * b.fz) / (Math.hypot(dx, dz) || 1);
+      const cara = toma.modo === 'sorpresa' || toma.modo === 'celeb' ? 0.55 : 0.18;
+      const p = 1 - Math.abs(alto - quiere) - Math.abs(cx) * 0.15 - Math.abs(cy) * 0.1 + frente * cara;
+      if (p > nota) { nota = p; mejor = { x: c.x, y: c.y, z: c.z }; }
+    }
+    return mejor;
   }
   function fotografiar() {
     const R = G.renderer, cam = R && R.camera, P = G.actores && G.actores.player3D;
-    if (!cam) return BEATS.map(() => null);
+    if (!cam || !window.THREE || !R.canvas || R.canvas.width < 2) return BEATS.map(() => null);
     const pos = cam.position.clone(), quat = cam.quaternion.clone(), fov = cam.fov;
     const pose0 = P ? guardarPose(P) : null;
     const quiet0 = G.quiet;
@@ -237,11 +263,19 @@ window.AVManga = function (G) {
         let foto = null;
         try {
           if (P) aplicarPose(P, toma.modo);
-          foto = disparar(toma, 0);
-          if (!foto || desvio(foto, 32).desv < 8) {
-            const otra = disparar(toma, 6);
-            if (otra && (!foto || desvio(otra, 32).desv > desvio(foto, 32).desv)) foto = otra;
+          const b = baseJugador();
+          const sitio = elegirToma(cam, b, toma);
+          const pechoY = b.y + 1.15;
+          if (sitio) {
+            cam.fov = toma.fov;
+            cam.updateProjectionMatrix();
+            cam.position.set(sitio.x, sitio.y, sitio.z);
+            cam.lookAt(b.x, pechoY, b.z);
+            cam.updateMatrixWorld(true);
           }
+          if (typeof R.drawScene === 'function') R.drawScene();
+          else R.renderer.render(R.scene, cam);
+          foto = leerLienzo();
         } catch (e) { foto = null; }
         out.push(foto);
         if (P && pose0) restaurarPose(P, pose0);
@@ -251,6 +285,7 @@ window.AVManga = function (G) {
       cam.fov = fov; cam.updateProjectionMatrix();
       cam.position.copy(pos); cam.quaternion.copy(quat); cam.updateMatrixWorld(true);
       if (P && pose0) restaurarPose(P, pose0);
+      camDelta = cam.position.distanceTo(pos);
     }
     return out;
   }
@@ -663,7 +698,7 @@ window.AVManga = function (G) {
         const puerta = await compartir({ puerta: () => Promise.resolve(false) });
         check('Sin la puerta de adultos no se comparte', puerta === 'puerta');
         check('Fotografiar no inventa eventos ni mueve a Vittata', (S.events ? S.events.length : 0) === nEv && posJ && Math.abs(S.pos.x - posJ.x) < 0.001 && Math.abs(S.pos.z - posJ.z) < 0.001);
-        check('La cámara del juego vuelve a su sitio', pos0 && cam.position.distanceTo(pos0) < 0.05, cam && pos0 ? cam.position.distanceTo(pos0).toFixed(3) : 'sin');
+        check('La cámara del juego vuelve a su sitio', camDelta != null && camDelta < 0.05, camDelta == null ? 'sin' : camDelta.toFixed(3));
         if (o.dejarAbierto) check('Se dejó abierto para la captura', true);
       } catch (e) {
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
@@ -676,6 +711,6 @@ window.AVManga = function (G) {
     })();
   }
 
-  const api = { abrir, cerrar, movil, png, compartir, fotografiar, test, get estado() { return estado; }, get fotos() { return fotos; } };
+  const api = { abrir, cerrar, movil, png, compartir, fotografiar, test, get estado() { return estado; }, get fotos() { return fotos; }, get camDelta() { return camDelta; } };
   return api;
 };
