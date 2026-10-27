@@ -170,13 +170,20 @@ window.AVLook = function (G) {
   const tocados = new Set(), guardado = new WeakMap(), imagenes = new WeakMap();
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
   function texturasDe(m, fn) {
-    for (const k of ['map', 'normalMap', 'alphaMap', 'emissiveMap', 'specularMap', 'aoMap', 'roughnessMap', 'metalnessMap']) if (m[k] && m[k].isTexture) fn(m[k]);
+    for (const k of ['map', 'normalMap', 'alphaMap', 'emissiveMap', 'specularMap', 'aoMap', 'roughnessMap', 'metalnessMap']) if (m[k] && m[k].isTexture) fn(m[k], k);
     const uu = m.uniforms || (m.userData && m.userData.uniforms); // ShaderMaterial o el splat del suelo (userData.uniforms)
-    if (uu) for (const u in uu) { const v = uu[u] && uu[u].value; if (v && v.isTexture) fn(v); }
+    if (uu) for (const u in uu) { const v = uu[u] && uu[u].value; if (v && v.isTexture) fn(v, u); }
   }
-  function encoger(t, max) {
+  // BE5: el GLTFLoader sube las imágenes de la flora como CanvasTexture sobre un ImageBitmap, y antes se saltaban (el tope no
+  // les llegaba). Las de la flora sí se encogen; los lienzos dibujados y las de edificios y personajes, no. En medio y bajo la
+  // normal de la flora (corteza y roca) va a la mitad del tope: se nota poco y ahorra ~18 MB en el móvil.
+  const esBitmap = img => typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap;
+  function topeK(max, k, flora) { return flora && max && k === 'normalMap' && R.calidad.nivel !== 'alto' ? max >> 1 : max; }
+  function encoger(t, max, k, flora) {
     const img = t.image;
-    if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isCanvasTexture || t.isVideoTexture || Array.isArray(img)) return;
+    if (t.isCanvasTexture && !imagenes.has(t) && !(flora && esBitmap(img))) return;
+    max = topeK(max, k, flora);
+    if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isVideoTexture || Array.isArray(img)) return;
     // El atlas HD (4096, celda 1024) no se encoge: a 512 la celda quedaría en 128 y la piedra se ve blanda.
     // ?tex= sigue pudiendo medirlo. La flora y el suelo sí bajan.
     const src = img.src || img.currentSrc || '';
@@ -199,7 +206,7 @@ window.AVLook = function (G) {
     return especieDe.get(m);
   }
   const obcOriginal = new WeakMap(); // onBeforeCompile de la hoja antes de envolverlo (se repone al quitar)
-  function tocar(m, L, esqueleto, forzar) {
+  function tocar(m, L, esqueleto, forzar, flora) {
     envolverClave(m);
     const Rf = L && L.refinado, clave = claveOriginal(m);
     let recompilar = !!forzar; // al aplicar o quitar (cambia el chunk global) siempre; en el barrido, solo si cambia el programa
@@ -230,7 +237,7 @@ window.AVLook = function (G) {
       if (tenia !== !!(m.defines && m.defines.AV_RIM)) recompilar = true;
     }
     const max = topeTex(L);
-    texturasDe(m, t => encoger(t, max));
+    texturasDe(m, (t, k) => encoger(t, max, k, flora));
     if (recompilar) m.needsUpdate = true;
     if (L) tocados.add(m); else tocados.delete(m);
   }
@@ -241,12 +248,13 @@ window.AVLook = function (G) {
     const a = (L && L.texMax) || 0, b = R.calidad.texMax || 0;
     return a && b ? Math.min(a, b) : a || b;
   }
-  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, t => encoger(t, topeTex(null))); }); }
+  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => encoger(t, topeTex(null), k, /^flora:/.test(o.name))); }); }
   function barrer(L, todos) {
     const max = topeTex(L);
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos);
-      else if (max) texturasDe(m, t => encoger(t, max)); // las imágenes llegan después del primer toque: se encogen al verlas
+      const flora = /^flora:/.test(o.name);
+      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora);
+      else if (max) texturasDe(m, (t, k) => encoger(t, max, k, flora)); // las imágenes llegan después del primer toque: se encogen al verlas
     } });
     if (!L) { for (const m of tocados) tocar(m, null, false, true); tocados.clear(); }
   }
@@ -450,6 +458,10 @@ window.AVLook = function (G) {
           check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
           const g0 = m0.texturasGrandes - (m0.atlasGrandes || 0), g1 = m1.texturasGrandes - (m1.atlasGrandes || 0);
           check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, g1 < g0 || g0 === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' (el atlas HD no se encoge: ' + (m1.atlasGrandes || 0) + ') · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          { let cuantas = 0, mal = 0, maxW = 0; R.scene.traverse(o => { if (!o.material || !/^flora:/.test(o.name)) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => {
+              if (!t.isCanvasTexture || !(imagenes.has(t) || esBitmap(t.image))) return; cuantas++; const tope = topeK(topeTex(L), k, true), w = t.image.width;
+              if (k === 'normalMap') maxW = Math.max(maxW, w); if (tope && w > tope && t.image.height > tope) mal++; }); });
+            check(`Look «${n}»: la flora del GLB respeta el tope de texturas (BE5; la normal, a la mitad en medio y bajo)`, !mal, cuantas + ' texturas de flora · ' + mal + ' por encima · normal más grande ' + maxW + ' px · calidad ' + R.calidad.nivel); }
         }
         if (L.refinado) {
           const hojas = new Set(), tintes = new Set(), rim = [], sinRim = [];
