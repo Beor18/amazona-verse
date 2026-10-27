@@ -389,13 +389,13 @@ window.AVRescate = function (G) {
   function estilo() {
     if (estiloListo) return; estiloListo = true;
     const st = document.createElement('style'); st.id = 'rs-estilo';
-    st.textContent = `#rs-hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:center;
-      background:var(--c-panel,#fff8ec);color:var(--c-ink,#2b2116);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 16px Fredoka,system-ui,sans-serif}
-      #rs-hud .rs-reloj{font-size:22px;min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums}
-      #rs-hud .rs-salir{border:0;border-radius:999px;padding:6px 12px;background:var(--c-accent-soft,#f2e2c4);color:inherit;font:inherit;cursor:pointer;min-height:36px}
+    st.textContent = `#rs-hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center;max-width:calc(100vw - 24px);box-sizing:border-box;
+      background:var(--c-panel,#fff8ec);color:var(--c-ink,#2b2116);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 var(--fs-md,16px)/1.2 Fredoka,system-ui,sans-serif}
+      #rs-hud .rs-reloj{font-size:var(--fs-xl,22px);min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums}
+      #rs-hud .rs-salir{border:0;border-radius:999px;padding:6px 12px;background:var(--c-accent-soft,#f2e2c4);color:inherit;font:inherit;cursor:pointer;min-height:44px}
       .rs-card h2{margin-top:0}.rs-card .rs-dato{background:rgba(63,174,74,.12);border-radius:10px;padding:8px 10px}
-      .rs-res{display:flex;gap:14px;align-items:center;margin:8px 0}.rs-res b{font-size:34px;display:block;font-variant-numeric:tabular-nums}
-      .rs-med{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;font-size:28px;color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+      .rs-res{display:flex;gap:14px;align-items:center;margin:8px 0;flex-wrap:wrap}.rs-res b{font-size:calc(34px * var(--fs-k,1));display:block;font-variant-numeric:tabular-nums}
+      .rs-med{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;font-size:calc(28px * var(--fs-k,1));color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
       .rs-med.oro{background:#e6b422}.rs-med.plata{background:#9aa6ad}.rs-med.bronce{background:#b87333}`;
     document.head.appendChild(st);
   }

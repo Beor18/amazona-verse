@@ -189,6 +189,8 @@ Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero m
 
 **Lejanos de los templos** (`tools/blender/edificios_lejos.py`). Salen de la geometría original (la misma del `_hd`), con grosor y remallado por vóxeles a diagonal/110. Tienen entre 1070 y 2000 tris y color de vértice del atlas. Antes salían del vóxel del ligero: las torres «derretidas» medían 33 m en lugar de 42 y les faltaban las coronas.
 
+El color medio del atlas es arena plana a más de 90 m. `tools/blender/edificios_lejos_tono.py` deja dos tonos en ese COLOR_0: piedra en la cara que mira al cielo y sombra en la que mira al suelo y en los huecos (oclusión por la posición de los vecinos). Solo usa la normal vertical, así el rotY de la pieza no gira la luz. La malla lejana recibe la sombra del sol y no la proyecta.
+
 **Lote 3, aldeas Savage** (`edificios_hd.py`, atlas `tex_hd/hd_savage*.jpg`). Llevan `_hd` 21 modelos con sogas y escombros:
 - torres, murallas con atalaya, monumentos A, C y F, puente, portales, mirador escalonado, casa con plataforma, bohíos, caney, casas de paja, cercado y empalizada.
 - Las sogas reciben casi un tercio del presupuesto y no se quitan como escombro.
@@ -279,3 +281,49 @@ Se reescribieron desde el Editable Poly del `.max` (lector OLE, misma escala y e
 | muro_templo | 11900 → 84288 | el muro entero (84 288 tris del `.max`; el `_hd` anterior dejaba el 67 % de las aristas sueltas) |
 
 `ruina_torre_b` ya era la malla completa (1086 tris) y no se rehizo. Los templos grandes siguen en su `_hd` anterior. Las losas y plataformas siguen siendo las cajas del archivo.
+
+## Verificación contra el .max (27-oct-2026)
+
+Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lector OLE que ya está en el repo. No hay 3ds Max en esta máquina. Las capturas de la izquierda son el `_hd` (la malla del `.max`) y las de la derecha el ligero: `docs/img/edificios_max_torre_a.jpg`, `edificios_max_torre_f.jpg`, `edificios_max_mirador.jpg`, `edificios_max_campamento_a.jpg`, `edificios_max_corral.jpg`.
+
+**Qué estaba mal armado, con números.**
+
+| modelo | qué medía el archivo | qué se corrigió |
+|---|---|---|
+| corral `_hd` | el sólido visible mide 16,61 × 4,39 × 6,45 m, pero el centro Z quedaba en −1,44 m. Siete caras sin bitmap, en un punto (x −4,5, z 4,5), estiraban la caja hasta Z 4,66 y el recentrado las contaba | centro XZ en 0, base en y = 0. 253 910 tris, igual que antes |
+| campamento_a `_hd` | 34 036 tris, 8,94 × 3,43 × 8,11 m, base en y = 0,60. El alineado a la lona del ligero subió los postes | postes en y = 0. La lona sigue en el XZ del ligero (4,39 × 3,42 m). Las sogas del `.max` sí llegan a 8,94 m de ancho |
+| campamento_c `_hd` | hundido 0,17 m (3 282 tris, 5,53 × 2,37 × 5,86 m) | base en y = 0 |
+| campamento_f `_hd` | corrido 7 cm en X y 19 cm en Z | centrado, base en y = 0. 66 500 tris |
+| tienda_pequena `_hd` | corrido 4 / 7 / 7 cm | centrado, base en y = 0 |
+| ruina_torre_b `_hd` | corrido 3 cm en X y 9 cm en Z | centrado. 1 086 tris, la malla entera del `.max` |
+| ruina_torre `_hd` | 7 250 tris, misma caja que el `.max` (6,46 × 14,11 × 6,46). El disco del centro (r < 1,5 m) tenía la normal hacia abajo; el aro de piedra (r 1,94–2,70, y = 0,22) miraba hacia arriba | el disco mira hacia arriba. No se añadieron caras. La torre sigue abierta por arriba: así está el Editable Poly |
+| ruina_torre_f `_hd` | 10 020 tris. 430 caras del disco (y = 0,19, normal −1) | esas caras miran hacia arriba. El aro de arriba es el borde, no un disco que faltara |
+| ruina_torre_c, _e y ruina_mirador | el mismo caso: lámina de la base con la normal hacia abajo | dadas vuelta solo esas caras, sin cambiar el número de tris |
+
+`ruina_torre` del `.max` y el `_hd` tienen los mismos 7 250 tris y la misma caja. El ligero tiene 1 924 y la misma caja: es la retopología, no otra pieza.
+
+**Qué no es un error de armado.**
+
+- Losas, bloques y plataformas son primitivas Box del propio `.max` (12 tris). No hay una losa labrada que copiar.
+- `carpa_g` no entra. La malla del `.max` mide 13,0 × 5,0 × 11,8 m (34 036 tris, casi todas sogas) y el ligero 7,73 × 4,20 × 7,02 m. No es 2,5 veces el modelo entero: ese número salía de un solo primitivo de 5,14 m.
+- `canoa`: Editable Poly de 54 caras con TurboSmooth. El juego ya tiene las 432 de esa suavidad. Sin Blender no se rehace el modificador. `canoa.jpg` sigue sin licencia verificada.
+- Los 9 mapas de brillo de Savage no entran: con el toon de fábrica el tejado queda plástico. Palmeras, Archmodels y el scatter del terreno tampoco (licencia no confirmada).
+- `LargeJ_SculptMd` sigue siendo una caja de 12 caras, fuera de la escena.
+
+**Templos, leídos del mismo `.max` y no reescritos.** La altura coincide con el `_hd` (misma escala). Lo que falta es profundidad, porque el `_hd` ya venía decimado:
+
+| modelo | tris del `.max` | caja del `.max` (m) | tris del `_hd` | caja del `_hd` |
+|---|---|---|---|---|
+| templo_grande | 184 792 | 38,0 × 22,7 × 33,3 | 21 363 | 38,0 × 22,7 × 29,1 |
+| templo_grande_a | 89 477 | 26,7 × 42,5 × 20,6 | 23 117 | 31,2 × 42,5 × 16,8 |
+| templo_grande_d | 212 822 | 19,7 × 20,6 × 28,3 | 20 493 | 21,3 × 20,5 × 23,8 |
+| templo_grande_e | 128 423 | 27,6 × 25,2 × 38,5 | 33 016 | 29,8 × 24,8 × 32,1, centro Z −2,1 m |
+| templo_grande_f | 144 286 | 18,5 × 29,6 × 20,8 | 34 252 | 18,8 × 28,9 × 18,8 |
+| templo_mediano | 57 875 | 10,0 × 9,8 × 15,4 | 14 101 | 10,7 × 9,8 × 13,4 |
+| templo_mediano_f | 67 090 | 11,4 × 14,4 × 20,4 | 13 639 | 12,7 × 14,4 × 15,7, 30 cm bajo tierra |
+| templo_mediano_g | 64 495 | 8,9 × 9,7 × 8,6 | 13 857 | 8,9 × 9,7 × 7,6 |
+| templo_mediano_h | 462 218 | 7,8 × 9,0 × 10,1 | 23 360 | 8,2 × 9,0 × 9,6 |
+
+`templo_mediano_h` no cabe entero en 16 MB (a razón del muro, 84 288 tris ocupan 4,3 MB). No se inventó una malla intermedia.
+
+**Qué se ve cuando el `_hd` no está.** En `streaming.js`, la torre chica (radio < 10 m) usa el `_hd` solo dentro de la distancia de LOD. Entre esa distancia y la del `_hd` (45 / 70 / 90 m) se dibuja el ligero, que es la retopología. Más lejos, el lejano de color de vértice, sin textura. No se tocó `streaming.js` (lo tiene la otra sesión). El lejano no se regeneró: el script pide Blender y aquí no está.
