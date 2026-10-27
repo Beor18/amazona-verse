@@ -373,6 +373,20 @@ La temporada 1 tiene 6 capítulos (`docs/STORY_BIBLE.md`, «Temporada 1, episodi
   - Lo de contenido de los capítulos solo si el capítulo ya tiene commit.
   - Al final, un resumen en `docs/equipo/QA_TEMPORADA1.md`: qué se siente bien, qué aburre y qué confunde, desde los ojos de un niño de 9 años y de un adulto.
 
+## Carril AZ: rescate tras el apagón del 27-oct (va PRIMERO)
+- **AZ1:** la Mac se apagó con trabajo a medias y sin commit. Está en la copia de trabajo (`git status`) y también en `refs/respaldo/20261027-0555`, en GitHub. Hay que atribuir cada cambio a su tarea, revisarlo, terminarlo si falta poco, probarlo y hacer commit, una tarea por commit:
+  - `src/game/flight.js`: pedido de Kelvin. Vittata se queda como está, en 3/4, pero los árboles y troncos vuelven a la posición de antes de 9504464, de lado como en el Flappy clásico y con el hueco claro, y hay que arreglar el «malfunction». Compara con `git show 9504464^:src/game/flight.js`.
+  - `src/engine/renderer.js` y `tools/build/movil_modos.py`: rendimiento en el móvil. Si no existe, escribe `docs/equipo/RENDIMIENTO_MOVIL.md` con lo medido.
+  - `src/game/maze.js` (AO2), `src/game/tren.js` (AO1 pulido) y `docs/equipo/MINIJUEGOS.md`.
+  - `content/ep2`, `content/ep5` y `content/ep6`: probablemente arreglos de la QA AT1, que se quedó sin turnos. Mira `docs/equipo/BUGS.md` y `QA_TEMPORADA1.md` si existe.
+  - `web/index.html`, `web/assets/css/web.css`, `web/sitemap.xml` y `web/assets/img/sponsors/`: los logos de los sponsors y un sitemap completo. Los sponsors son tres:
+    - «Kelvin García · Smart Real Estate», con enlace a https://www.kelvingarciapr.com/;
+    - «Seguros · Jorge L. García», con enlace a https://segurosengeneral.com/;
+    - «Smarlin», con enlace a https://smarlin.com/: tarjeta de texto, «Red de servicios para bienes raíces en Puerto Rico».
+  - `src/boot.js`: mete solo los hunks que correspondan a lo anterior.
+- No toques `REGISTRO_TAREAS.md` ni `TRABAJO_SIMULTANEO.md` salvo tus filas.
+- Lo que no sirva déjalo sin commit y anótalo en el resultado.
+
 ## Carril AV: la temporada 1 como una sola aventura (prioridad de Kelvin, 26-oct noche: terminar y pulir; sin minijuegos nuevos)
 - **AV1, flujo entre capítulos.**
   - Al terminar un capítulo, la pantalla final ofrece «Siguiente capítulo» y abre el siguiente pack (`?pack=epN`).
@@ -489,4 +503,5 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 | AW3 | pendiente | | |
 | AY1 | pendiente | | |
 | AY2 | pendiente | | |
+| AZ1 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
