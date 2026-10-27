@@ -514,6 +514,10 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 ## Pruebas extra en rojo
 - **BH1:** `AV.streamingTest` da 13/14 en las dos últimas publicaciones (27-oct, HEAD 756baa1). Mira cuál es el check que falla y si viene de cambios de hoy: el bosque (AW2/AW3), los edificios de Grok o el agua y el suelo (BB). Arréglalo en el código o, si el check ya no aplica, ajústalo justificándolo. Haz lo mismo con cualquier otra extra de `~/AmazonaVerse/_herramientas/coordinacion/logs/extras_rojas.txt` que se repita.
 
+## Últimas tareas con el crédito de hoy (27-oct)
+- **BI1, medidas reales del móvil.** AZ1 dejó pendientes las medidas de `RENDIMIENTO_MOVIL.md` porque la Mac estaba muy cargada. Mide con `tools/build/movil_modos.py` sobre HEAD, a 375×812 con CPU 4× y 6×, en estos escenarios: el arranque, el bosque nuevo (AW2), la ciudad, un capítulo y Flight. Completa la tabla del antes y el después. Si algún escenario pasa de 33 ms en p95 en calidad «medio», arregla la causa más grande (sin tocar los edificios de Grok). Un commit.
+- **BI2, Maze en el menú y los minijuegos completos.** Maze sigue fuera del menú («Pronto» en la web). Ponle su tarjeta en «¿Cómo quieres jugar?», en Retos y en Mis récords, igual que el tren y River Rush, y cambia «Pronto» por «Nuevo» en web/index.html. Comprueba que los 7 minijuegos abren y cierran bien desde el menú, en escritorio y en móvil. Un commit.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -608,4 +612,6 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BG2 | hecha (Grok, G17) | 05ddc88 | Prototipo `?manga=demo` en `src/game/manga.js`. `mangaTest` 19/19. No reemplaza `comic.js`. |
 | BG3 | hecha (Grok, G17) | 05ddc88 | Encuadre con Vittata en cuadro, tinta y comparación `docs/img/bg2_vs_referencia_*.jpg`. |
 | BH1 | hecha, sin baterías (Mac saturada) | 0ca29a8 | Fallaba «Draw calls de la vista más cargada ≤ 150» (kelvin_ruinas_yunque: 151, viene de sumar edificios y bosque de hoy); arreglado en el código, no en la prueba: los props de radio < 4 m solo dan sombra a medio radio de sombras (`streaming.js`, `CFG.sombraChica`). No pude probarlo: con ~45 Chrome de pruebas huérfanos (cerré 32 con `test.sh --limpiar`) y load 20-45, Chrome no arranca a tiempo y `streamingTest` aislado se cuelga también sin mi cambio (control sobre pub-dcf4352). Falta correr la batería entera con `--extra` (build en `tools/build/salida/bh1-b`). `mangaTest` 18/19 salió una sola vez y en pub-dcf4352 da 19/19: no se repite. |
+| BI1 | pendiente | | |
+| BI2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
