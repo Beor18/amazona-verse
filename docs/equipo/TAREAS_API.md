@@ -521,6 +521,13 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 ## Bloqueadores de lanzamiento
 - **BJ1:** arregla **QA-52** (alta: en el móvil, el capítulo 1 con jugador nuevo puede hacer que el navegador cierre la pestaña por memoria) y **QA-53** (en el móvil, la pantalla se congela al pulsar «Empezar» después del creador), según `docs/equipo/BUGS.md`. Reprodúcelos con `tools/build/qa_movil.py` (CPU 4×, dpr 3), arregla la causa, mide antes y después, y ciérralos en BUGS.md. Si BE5 (texturas del móvil) está en curso, coordina: tú la memoria del arranque del capítulo 1, BE5 las texturas.
 
+## Amazona Flight: lo que pidió Kelvin, al fin (27-oct, tarde)
+- **BK1.** A Kelvin **no le gusta cómo quedó Flight** (captura: `docs/img/flight_hoy_no_gusta.jpg`). AZ1 lo dejó así: Vittata diminuta vista de lado, y troncos finos inclinados en diagonal que no se leen. Su pedido, dicho dos veces: **«la cotorra se queda así»**, es decir, **Vittata como en la versión 3/4 frontal y grande (la cámara y el encuadre de `c434f16`, con el móvil vertical de `9b2a65f`)**, **«pero los árboles como la primera versión»**, es decir, **los obstáculos de la primera versión (`git show 9504464^:src/game/flight.js`)**: troncos gruesos en pares arriba y abajo, verticales, perpendiculares al camino, con el hueco bien claro, espaciado regular y sin inclinarse.
+  - Combina las dos cosas en `src/game/flight.js`: la cámara y la presentación de Vittata de `c434f16`, y la generación, forma, tamaño y color de los obstáculos de `9504464^`. La colisión debe cuadrar con lo que se ve.
+  - Mantén los choques de verdad, el hit-stop, la causa del choque en el resultado, la guía de las primeras 3 partidas, el ranking y el rendimiento móvil.
+  - Saca capturas de escritorio y de 375×812, a mitad de partida, en `docs/img/bk1_flight_*.jpg`, junto a la de hoy y a la de la primera versión (haz una build de `9504464^` para capturarla). `flightTest` en verde.
+  - Si el resultado no se ve claro y bonito, no la marques hecha.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -618,4 +625,5 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BI1 | pendiente | | |
 | BI2 | pendiente | | |
 | BJ1 | pendiente | | |
+| BK1 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
