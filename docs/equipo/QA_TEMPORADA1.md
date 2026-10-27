@@ -64,3 +64,28 @@ Misma ronda de jugador nuevo, emulando un iPhone: 375×812, DPR 3, táctil (`poi
 - En la portada a 375 px, el pie «Prototipo · Villa Raíz» queda detrás de las tarjetas: está puesto así a propósito (`menu_modos.css:13`, `z-index: 0`).
 - La pausa del cap. 1 trae un botón «Capítulo 5» (G14, `index.html:151`). Es la entrada provisional; lo sustituye la pantalla «Capítulos» de AV1.
 - La fila de capítulos de la portada a 375 px: la auditoría no marca scroll horizontal ni enlaces fuera de la portada (queda bajo las tarjetas y se llega desplazando).
+
+# Ronda 2 · escritorio (BE4, 27-oct-2026)
+
+Misma ronda de jugador nuevo que BC1 (1366×768, Chrome 156 sin interfaz) sobre la build de `HEAD` **5a027d4** (`tools/build/salida/be4-head`), con todo lo de hoy (BD2, BF2–BF6, AQ1…).
+
+## Cómo se jugó
+- `tools/build/qa_temporada1.py <build>/site --packs cap1 --modos` y `--packs ep2,ep3,ep4,ep5,ep6`: portada, creador, apertura (6 s y 40 s), pausa y cada capítulo hasta el final con su prueba; en el cap. 1, además, Diario, Retos y sus 4 retos, Flight, Maze, River Rush, Tren, criadero, récords, «Cambiar de juego» e inglés.
+- Capturas revisadas a mano (aperturas de los 6 capítulos, River Rush, final del cap. 6) y una sonda aparte de River Rush (entrada directa, rayo hacia arriba desde la cámara cada segundo).
+
+## Resultado
+- **Los 6 capítulos se juegan hasta el final**: missionTest 70/70; ep2–ep6Test en verde salvo un caso que fallaba en falso (QA-58, abajo). Todos los modos abren y se cierran.
+- **Consola y DOM**: 0 errores de JS y 0 problemas de la auditoría del DOM (nada fuera de pantalla, cortado, pisado ni sin traducir) en las 51 escenas.
+- De la ronda 1 ya no se reproducen QA-45 (arreglado aquí), QA-46, QA-47 y QA-48. Sigue QA-49 (losa sobre la cámara en River Rush), solo en la ronda larga.
+
+## Bugs de la ronda 2
+| id | sev. | qué | estado |
+|---|---|---|---|
+| QA-57 | media | El bocadillo libre del capítulo (p. ej. «¡Lo sabía! ¡Solo era ajustar el equilibrio!») se queda sobre River Rush, Flight, Maze y los Retos | **arreglado** (los 4 esconden `#bocadillos`, como el Tren). Antes: `docs/img/be4_river_bocadillo_antes.jpg` |
+| QA-58 | baja | `AV.epNTest()` corrido desde la pestaña del propio capítulo da N-1/N por «Guarda aparte de cap1» (comparaba la clave consigo misma) | **arreglado** (`src/pruebas/motor.js` compara con la clave del cap. 1) |
+| QA-45 | media | Pausa en inglés con «Seguir jugando», «Guardar» y «Cargar» en español | **arreglado** (`content/cap1/en.js`) |
+| QA-49 | baja | Losa oscura sobre la cámara en River Rush | abierto: no sale al entrar directo; hace falta la pieza exacta |
+
+## Para después (no grave)
+- En los diálogos de los caps. 2–5 el retrato de «Vittata» es una cotorra verde de pico naranja, distinta del modelo 3D (que tiene la cabeza roja). Es arte del retrato: lo decide el dueño de los retratos.
+- En el cap. 6, el «Próximo: Mapa de las tarjetas» parte el nombre en dos líneas en el panel de misión.
