@@ -91,7 +91,10 @@
   // Quién se sienta: 6 visitantes, 2 voceros (cada uno con 5 más de su isla), Vittata, Iguaca, el Guardián y el aprendiz = 22 [KELVIN-8]
   const ASIENTOS = { mira: 1, roca: 1, marea: 1, nudo: 1, eco: 1, brote: 1, alta: 6, baja: 6 };
   const SENTABLES = Object.keys(ASIENTOS), FIJOS = 4;
+  const ACOMPANAN = [['alta_1', 'alta', -5.6, 10.6, 'assets/vittata.png'], ['alta_2', 'alta', -2.6, 10.8, 'assets/agilis.png'], ['baja_1', 'baja', 2.6, 10.8, 'assets/agilis.png'], ['baja_2', 'baja', 5.6, 10.6, 'assets/vittata.png']];
 
+  // La flecha de guía lleva al pendiente más cercano a Vittata (los muelles están a 21 m uno del otro: en orden fijo se iba y volvía)
+  const cercano = (G, ids) => G.misiones.closest(ids.map(G.misiones.at));
   const svgURI = cuerpo => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + cuerpo + '</svg>');
   // Retrato neutro de las dos voces (como el del cap. 1): hablan desde el transmisor [KELVIN-3]
   const RETRATO_VOCES = svgURI('<circle cx="55" cy="30" r="27" fill="#10241c"/><circle cx="55" cy="30" r="27" fill="none" stroke="#7fd3c8" stroke-width="1.2" opacity=".6"/><circle cx="47" cy="30" r="5" fill="#ffd27a"/><circle cx="63" cy="30" r="5" fill="#ffd27a"/><circle cx="55" cy="30" r="20" fill="none" stroke="#ffd27a" stroke-width="1.5" opacity=".5"/>');
@@ -159,16 +162,17 @@
       { id: 'guardian', nombre: 'Guardián', sprite: IMG['Guardián'], x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.4 }, // [KELVIN-6: qué forma tiene]
       { id: 'alta', nombre: 'Vocera de la isla alta', sprite: IMG['Vocera de la isla alta'], x: -4, z: 9, escala: 1.8 },
       { id: 'baja', nombre: 'Vocero de la isla baja', sprite: IMG['Vocero de la isla baja'], x: 4, z: 9, escala: 1.8 },
-    ].concat(VISITANTES.map(v => ({ id: v.id, nombre: v.nombre, sprite: v.sprite, x: v.x, z: v.z, escala: 1.8 }))),
+    ].concat(VISITANTES.map(v => ({ id: v.id, nombre: v.nombre, sprite: v.sprite, x: v.x, z: v.z, escala: 1.8 })),
+      ACOMPANAN.map(([id, g, x, z, sprite]) => ({ id, nombre: g === 'alta' ? 'Isla alta' : 'Isla baja', sprite, x, z, escala: 1.5 }))),
     objetos: {}, recursos: [],
 
     historia: {
       pasos: [
         { id: 'muelles', texto: 'Baja a los muelles y recibe a quien llega', guia: G => G.misiones.at('v_mira') },
         { id: 'conocer', texto: 'Conoce a los 6 visitantes', progreso: S => ` (${VISITANTES.filter(v => S.collected.includes('conocido_' + v.id)).length}/6)`,
-          hasta: { recogido: VISITANTES.map(v => 'conocido_' + v.id) }, guia: G => { const v = VISITANTES.find(x => !G.S.collected.includes('conocido_' + x.id)); return G.misiones.at('v_' + (v ? v.id : 'mira')); } },
+          hasta: { recogido: VISITANTES.map(v => 'conocido_' + v.id) }, guia: G => cercano(G, VISITANTES.filter(x => !G.S.collected.includes('conocido_' + x.id)).map(x => 'v_' + x.id)) },
         { id: 'observar', texto: 'Dos no dijeron qué necesitan: obsérvalos', progreso: S => ` (${Object.values(OBSERVAR).filter(k => S.collected.includes(k)).length}/2)`,
-          hasta: { recogido: Object.values(OBSERVAR) }, guia: G => G.misiones.at(G.S.collected.includes('obs_sombra') ? 'o_marea' : 'o_mira') },
+          hasta: { recogido: Object.values(OBSERVAR) }, guia: G => cercano(G, [['obs_sombra', 'o_mira'], ['obs_rio', 'o_marea']].filter(o => !G.S.collected.includes(o[0])).map(o => o[1])) },
         { id: 'parejas', texto: 'Presenta en la mesa a los que se cubren uno al otro', progreso: S => ` (${PAREJAS.filter(p => S.collected.includes('pareja_' + p.join('+'))).length}/3)`,
           hasta: { evento: 'CardsFilled' }, guia: G => G.misiones.at('mesa') },
         { id: 'criterios', texto: 'Ve al puente: Iguaca escribe el objetivo y los límites', hasta: { recogido: 'criterios' }, guia: G => G.misiones.at('cuaderno') },
@@ -178,7 +182,7 @@
         { id: 'grupos', texto: 'Llegan dos grupos: escucha a los dos antes de proponer', hasta: { evento: 'GroupsListened' }, guia: G => G.misiones.at('grupos') },
         { id: 'forma', texto: 'Elige cómo sentar a los 36 en la plaza', hasta: { evento: 'CircleFormed' }, guia: G => G.misiones.at('marcas') },
         { id: 'sentar', texto: 'Invita a cada uno a su asiento', progreso: S => ` (${SENTABLES.filter(k => S.collected.includes('sentado_' + k)).length}/8)`,
-          hasta: { recogido: SENTABLES.map(k => 'sentado_' + k) }, guia: G => { const k = SENTABLES.find(x => !G.S.collected.includes('sentado_' + x)); return G.misiones.at(k === 'alta' || k === 'baja' ? 's_' + k : 'v_' + (k || 'mira')); } },
+          hasta: { recogido: SENTABLES.map(k => 'sentado_' + k) }, guia: G => cercano(G, SENTABLES.filter(x => !G.S.collected.includes('sentado_' + x)).map(k => k === 'alta' || k === 'baja' ? 's_' + k : 'v_' + k)) },
         { id: 'pacto', texto: 'Habla con el Guardián en el centro', guia: G => G.misiones.at('guardian') },
       ],
       fin: () => 'Conociste a cada uno, armaste un plan que funcionó, escuchaste antes de proponer y sentaste a los 36. Iguaca tiene unas preguntas para ti, cuando quieras.',
@@ -315,7 +319,9 @@
 
       // ---------- Escenario: taller y mesa, muelles con canoas, puente, perchas, tabla larga, transmisor, mirador ----------
       const pieza = (geo, col, x, y, z) => { const m = new THREE.Mesh(geo, mat(col)); m.position.set(x, y, z); scene.add(m); return m; };
-      pieza(new THREE.BoxGeometry(2, 0.8, 1.1), '#8a6a3a', MESA.x, H(MESA.x, MESA.z) + 0.4, MESA.z);
+      pieza(new THREE.BoxGeometry(2.1, 0.1, 1.2), '#8a6a3a', MESA.x, H(MESA.x, MESA.z) + 0.75, MESA.z);
+      for (const sx of [-0.9, 0.9]) for (const sz of [-0.45, 0.45]) pieza(new THREE.CylinderGeometry(0.06, 0.07, 0.72, 6), '#6b4a2a', MESA.x + sx, H(MESA.x + sx, MESA.z + sz) + 0.36, MESA.z + sz);
+      for (const sz of [-1.05, 1.05]) pieza(new THREE.BoxGeometry(1.6, 0.08, 0.32), '#9a7448', MESA.x, H(MESA.x, MESA.z + sz) + 0.42, MESA.z + sz);
       const tarjetasMesa = new THREE.Group(); scene.add(tarjetasMesa);
       for (let i = 0; i < 6; i++) { const c = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.28), mat('#f1e6c8')); c.rotation.x = -Math.PI / 2; c.position.set(MESA.x - 0.75 + (i % 3) * 0.55, H(MESA.x, MESA.z) + 0.82, MESA.z - 0.25 + Math.floor(i / 3) * 0.4); c.visible = false; tarjetasMesa.add(c); }
       for (const [dx, dz] of [[-1.6, -1.2], [1.6, -1.2], [0, 1.6]]) pieza(new THREE.CylinderGeometry(0.12, 0.14, 2.6, 6), '#6b4a2a', TALLER.x + dx, H(TALLER.x, TALLER.z) + 1.3, TALLER.z + dz);
@@ -333,7 +339,8 @@
       tramo(13.5, 18, '#9a7448');
       const tablaGrande = tramo(18, 22, '#b8864f'), tablaLargaPuente = tramo(22, 26.5, '#a87c4f');
       for (const x of [14, 18, 22, 26]) for (const s of [-1, 1]) pieza(new THREE.CylinderGeometry(0.1, 0.12, 3, 6), '#6b4a2a', x, topPuente - 1.5, s * 0.95);
-      G.terreno.addPlatform({ tipo: 'rect', x: 20, z: 0, hx: 6.5, hz: 1.1, top: topPuente, unaVia: true, when: () => tiene('levantada') && G.eventos.had('RaisedTogether') });
+      G.terreno.addPlatform({ tipo: 'rect', x: 20, z: 0, hx: 2, hz: 1.1, top: topPuente, unaVia: true, when: () => tiene('levantada') });
+      G.terreno.addPlatform({ tipo: 'rect', x: 24.25, z: 0, hx: 2.25, hz: 1.1, top: topPuente, unaVia: true, when: () => G.eventos.had('RaisedTogether') });
       G.terreno.addPlatform({ tipo: 'rect', x: 15.75, z: 0, hx: 2.25, hz: 1.1, top: topPuente, unaVia: true });
       // Las tres perchas de la obra (postes): dos ayudantes y la de Vittata, que da la señal
       const PERCHAS = { a: { x: 18.2, z: -1.6 }, b: { x: 18.2, z: 1.6 }, v: { x: 21.8, z: 0 } };
@@ -362,35 +369,47 @@
       // Las 36 marcas de asiento en la plaza: se dibujan con la forma elegida; se encienden al sentarse
       const asientos = new THREE.Group(); scene.add(asientos);
       const geoAsiento = new THREE.CylinderGeometry(0.34, 0.34, 0.08, 16);
-      const COL_ESPERA = new THREE.Color('#9c8a5a'), COL_ON = new THREE.Color('#ffd27a');
+      const COL_ESPERA = new THREE.Color('#7a6a48'), COL_ON = new THREE.Color('#ffc94a'); // la que espera, apagada pero visible; la ocupada, dorada
+      const formaElegida = () => FORMAS.map(f => f[0]).find(k => tiene('forma_' + k));
+      // Las 36 marcas, de la del centro (o la de delante, en el anillo) hacia fuera: así los primeros en sentarse quedan juntos
+      function puntosAsientos() {
+        const forma = formaElegida(), pts = [];
+        if (!forma) return pts;
+        if (forma === 'anillo') for (let i = 0; i < 36; i++) { const k = (i % 2 ? 1 : -1) * Math.ceil(i / 2), a = -Math.PI / 2 + k / 36 * Math.PI * 2; pts.push([PLAZA.x + Math.cos(a) * 8.5, PLAZA.z + Math.sin(a) * 8.5]); }
+        else { const [f, c] = forma.split('x').map(Number), sx = c > 6 ? 1.3 : 1.6; for (let i = 0; i < f; i++) for (let j = 0; j < c; j++) pts.push([PLAZA.x + (j - (c - 1) / 2) * sx, PLAZA.z + (i - (f - 1) / 2) * 1.8]); }
+        if (forma !== 'anillo') pts.sort((a, b) => Math.hypot(a[0] - PLAZA.x, a[1] - PLAZA.z) - Math.hypot(b[0] - PLAZA.x, b[1] - PLAZA.z) || a[1] - b[1] || a[0] - b[0]);
+        return pts;
+      }
+      // Qué marcas son de quién: 0–3 los fijos (Vittata, Iguaca, el Guardián y el aprendiz), luego cada visitante y cada grupo
+      const MARCA = {}; { let i = FIJOS; for (const k of SENTABLES) { MARCA[k] = i; i += ASIENTOS[k]; } }
       function dibujarAsientos() {
         while (asientos.children.length) { const m = asientos.children.pop(); m.material.dispose(); }
-        const forma = FORMAS.map(f => f[0]).find(k => tiene('forma_' + k));
-        if (!forma) return;
-        const pts = [];
-        if (forma === 'anillo') for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; pts.push([PLAZA.x + Math.cos(a) * 8.5, PLAZA.z + Math.sin(a) * 8.5]); }
-        else { const [f, c] = forma.split('x').map(Number), sx = c > 6 ? 1.3 : 1.6; for (let i = 0; i < f; i++) for (let j = 0; j < c; j++) pts.push([PLAZA.x + (j - (c - 1) / 2) * sx, PLAZA.z + (i - (f - 1) / 2) * 1.8]); }
-        const ocupados = sentados();
-        pts.forEach((p, i) => { const m = new THREE.Mesh(geoAsiento, new THREE.MeshLambertMaterial({ color: i < ocupados ? COL_ON : COL_ESPERA, emissive: i < ocupados ? COL_ON : COL_ESPERA, emissiveIntensity: i < ocupados ? 0.6 : 0.12 })); m.position.set(p[0], H(p[0], p[1]) + 0.05, p[1]); asientos.add(m); });
+        const pts = puntosAsientos(), on = new Set([0, 1, 2, 3]);
+        for (const k of SENTABLES) if (tiene('sentado_' + k)) for (let j = 0; j < ASIENTOS[k]; j++) on.add(MARCA[k] + j);
+        pts.forEach((p, i) => { const l = on.has(i); const m = new THREE.Mesh(geoAsiento, new THREE.MeshLambertMaterial({ color: l ? COL_ON : COL_ESPERA, emissive: l ? COL_ON : COL_ESPERA, emissiveIntensity: l ? 0.8 : 0.04 })); m.position.set(p[0], H(p[0], p[1]) + 0.05, p[1]); asientos.add(m); });
       }
       const sentados = () => FIJOS + SENTABLES.reduce((n, k) => n + (tiene('sentado_' + k) ? ASIENTOS[k] : 0), 0);
 
+      const encuadrar = (x, z) => { if (!G.camara) return; G.camara.yaw = Math.atan2(S.pos.x - x, S.pos.z - z) + 0.4; G.camara.manual(); };
       // ---------- NPC: dónde está cada uno según la partida ----------
       const npc = id => G.actores.npc(id);
       function ponerNpc(n, x, z, y) { if (!n) return; n.def.x = x; n.def.z = z; n.sp.position.set(x, (y != null ? y : H(x, z)) + 1.0, z); n.sh.position.set(x, (y != null ? y : H(x, z)) + 0.03, z); n.collider.x = x; n.collider.z = z; }
       const PUESTO_NPC = { cargar: { x: 12.5, z: -2 }, sostener: PERCHAS.a, atar: PERCHAS.b, revisar: { x: 20, z: -3.5 }, avisar: { x: 16, z: -5 } };
       const ASIENTO_NPC = { mira: [-5, -2], roca: [-3, -2], marea: [-1, -2], nudo: [1, -2], eco: [3, -2], brote: [5, -2], alta: [-4, 2], baja: [4, 2] };
+      // De pie sobre su marca (j: cuál de las marcas de su grupo); sin forma elegida, el sitio de antes
+      function enSuMarca(n, k, j) { const p = puntosAsientos()[MARCA[k] + j]; if (p) ponerNpc(n, p[0], p[1]); else ponerNpc(n, PLAZA.x + ASIENTO_NPC[k][0] + j * 1.2, PLAZA.z + ASIENTO_NPC[k][1] + 1); }
       function colocarNpcs() {
         for (const v of VISITANTES) {
           const n = npc(v.id); if (!n) continue;
-          if (tiene('sentado_' + v.id)) ponerNpc(n, PLAZA.x + ASIENTO_NPC[v.id][0], PLAZA.z + ASIENTO_NPC[v.id][1]);
+          if (tiene('sentado_' + v.id)) enSuMarca(n, v.id, 0);
           else if (G.eventos.had('PlanMade') && !G.eventos.had('RaisedTogether') && S.plan && S.plan.asig) { const t = TAREAS.find(x => S.plan.asig[x.id] === v.id); if (t) { const p = PUESTO_NPC[t.id]; ponerNpc(n, p.x, p.z, t.id === 'sostener' || t.id === 'atar' ? topPuente + 1.6 : null); } else ponerNpc(n, v.x, v.z); }
           else if (G.eventos.had('CardsFilled')) { const i = VISITANTES.indexOf(v); ponerNpc(n, -8 + i * 3, 12); } // tras las tarjetas, todos cerca de la plaza
           else ponerNpc(n, v.x, v.z);
         }
-        for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + k)) ponerNpc(n, PLAZA.x + ASIENTO_NPC[k][0], PLAZA.z + ASIENTO_NPC[k][1]); }
+        for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + k)) enSuMarca(n, k, 0); }
+        for (const [id, g, x, z] of ACOMPANAN) { const n = npc(id); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + g)) enSuMarca(n, g, id.endsWith('1') ? 1 : 2); else ponerNpc(n, x, z); }
         const ig = npc('iguaca'); if (ig) { if (S.step >= 4 && S.step <= 7) ponerNpc(ig, PUENTE_W.x - 4.5, PUENTE_W.z - 2.5); else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else ponerNpc(ig, IGUACA.x, IGUACA.z); }
-        const gu = npc('guardian'); if (gu) { if (S.step >= 11 && !S.complete) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
+        const gu = npc('guardian'); if (gu) { if (S.step >= 11 && !S.complete) { if (formaElegida() === 'anillo' || !puntosAsientos().length) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else { const p = puntosAsientos()[2]; ponerNpc(gu, p[0], p[1]); } } else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
         for (let i = 0; i < 6; i++) tarjetasMesa.children[i].visible = i < conocidos().length;
         tablaGrande.visible = tiene('levantada'); tablaLargaPuente.visible = G.eventos.had('RaisedTogether');
         tablaLarga.visible = !G.eventos.had('RaisedTogether');
@@ -545,7 +564,7 @@
       G.interaccion.add({ id: 'percha_v', x: PERCHAS.v.x, z: PERCHAS.v.z, r: 1.6, visible: () => S.step === 6, label: () => 'Dar la señal desde la percha',
         use: () => {
           if (Math.abs(S.pos.y - perchaV.y) > 0.5) { G.ui.toast('Pósate en la percha vacía (vuela hasta el poste) y da la señal', 2600); return; }
-          poner('levantada'); subiendo = 0; G.audio.play('unlock'); G.misiones.check(); registrar();
+          poner('levantada'); subiendo = 0; encuadrar(20, 0); G.audio.play('unlock'); G.misiones.check(); registrar();
           G.dialogo.say([Vi('¡Ahora!'), Vi('Sube. Entre tres, sube.')], () => G.ui.toast('Lleva la tabla larga al puente entre dos', 3000));
         } });
       // La tabla larga: solo se mueve si hay alguien en cada punta (Vittata y quien carga fuerte por el plan)
@@ -561,7 +580,7 @@
         } });
       G.interaccion.add({ id: 'colocar', x: 24.2, z: 0, r: 2.6, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
         use: () => {
-          llevando = false; G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
+          llevando = false; encuadrar(24, 0); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
           G.fx.burst(24, topPuente + 1.5, 0, 'gold', 30); G.misiones.check(); colocarNpcs(); registrar();
           const ultimo = tiene('plan_ensena') ? [di('Brote', 'El último nudo lo ato yo. Me lo enseñó Nudo.')] : [di('Brote', '¡Bravo! Desde aquí se ve bien.')];
           G.dialogo.say(ultimo.concat(L('evento:RaisedTogether')), () => G.ui.toast('Llegan dos grupos a la plaza', 3000));
@@ -579,7 +598,7 @@
       function grupos() {
         if (S.step < 8) { G.dialogo.say([Lu('La plaza. Aquí cabremos todos… de alguna forma.')]); return; }
         if (G.eventos.had('GroupsListened')) { G.dialogo.say([Lu('Ya se escucharon. Ahora, los asientos.')]); return; }
-        if (!tiene('grupos_intro')) { poner('grupos_intro'); G.dialogo.say([di(GRUPOS.alta.who, 'Nosotros decimos el mirador.'), di(GRUPOS.baja.who, 'Y nosotros la plaza. Y no es lo mismo.'), Vi('Yo decido: lo mejor es…'), Lu('(Le toca el ala.) Todavía no. Escucha a uno, luego al otro, y repite lo que oíste.')], escucharA); return; }
+        if (!tiene('grupos_intro')) { poner('grupos_intro'); encuadrar(0, 9.5); G.dialogo.say([di(GRUPOS.alta.who, 'Nosotros decimos el mirador.'), di(GRUPOS.baja.who, 'Y nosotros la plaza. Y no es lo mismo.'), Vi('Yo decido: lo mejor es…'), Lu('(Le toca el ala.) Todavía no. Escucha a uno, luego al otro, y repite lo que oíste.')], escucharA); return; }
         if (!tiene('escucha_alta')) return escucharA();
         if (!tiene('escucha_baja')) return escucharB();
         comparten();
@@ -613,11 +632,11 @@
         if (G.eventos.had('CircleFormed')) { const f = FORMAS.find(x => tiene('forma_' + x[0])); G.dialogo.say([Lu(f[2]), Lu(f[3])]); return; }
         elegir('Iguaca', 'Somos 36 asientos. ¿Cómo los pongo? Todas las formas suman 36.', FORMAS.map(f => ({ label: f[1], v: f[0] })), o => {
           const f = FORMAS.find(x => x[0] === o.v);
-          poner('forma_' + o.v); G.eventos.log('CircleFormed', { choice: o.v }); G.comic.capture('circulo'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+          poner('forma_' + o.v); G.eventos.log('CircleFormed', { choice: o.v }); dibujarAsientos(); colocarNpcs(); encuadrar(PLAZA.x, PLAZA.z); G.comic.capture('circulo'); G.audio.play('unlock'); registrar(); G.misiones.check();
           G.dialogo.say([Lu(f[2]), Lu(f[3]), Vi('Vale. Y yo no me siento primera: voy a invitar a cada uno a su sitio.')], () => G.ui.toast('Invita a cada uno a su asiento', 3000));
         });
       }
-      G.interaccion.add({ id: 'marcas', x: PLAZA.x, z: PLAZA.z - 4, r: 3, visible: () => S.step >= 9, label: () => S.step === 9 ? 'Elegir la forma del círculo' : 'Mirar las marcas', use: marcas });
+      G.interaccion.add({ id: 'marcas', x: PLAZA.x, z: PLAZA.z - 4, r: 3, visible: () => S.step === 9, label: () => 'Elegir la forma del círculo', use: marcas });
       function sentar(k) {
         if (tiene('sentado_' + k)) return;
         poner('sentado_' + k); G.audio.play('pickup'); dibujarAsientos(); colocarNpcs(); G.misiones.check();
@@ -630,7 +649,7 @@
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
         if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola.')]); return; }
-        G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+        encuadrar(PLAZA.x, PLAZA.z); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
           Gu('El pacto antiguo decía… Lo recuerdo a pedazos. Mejor así: ahora lo recordamos entre todos.'),
@@ -716,6 +735,8 @@
           // M1 · Cada quien con lo suyo
           useAt('v_mira'); drain();
           check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 1 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
+          { const g = G.misiones.guideTarget && G.misiones.guideTarget(), it = G.interaccion.find('v_roca');
+            check('Guía · la flecha va al visitante pendiente más cercano (Roca, en el mismo muelle), no en orden fijo', !g || (Math.abs(g.x - it.x) < 0.5 && Math.abs(g.z - it.z) < 0.5), g && [g.x, g.z].join()); }
           for (const v of ['roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + v); drain(); }
           check('M1 · Los 6 conocidos: 6 tarjetas; hay que observar a dos', S.step === 2 && G.interaccion.find('o_mira').visible() && G.interaccion.find('o_marea').visible(), 'paso ' + S.step);
           useAt('v_roca'); drain();
@@ -774,6 +795,7 @@
           check('M2 · Sin posarse en la percha no hay señal (aviso, sin castigo)', !S.collected.includes('levantada'));
           S.pos.y = p.y; tick(0.1); G.interaccion.action(); drain();
           check('M2 · Posada en la tercera percha: la tabla grande sube', S.collected.includes('levantada') && S.step === 7, 'paso ' + S.step);
+          check('M2 · La tabla grande ya se pisa (para llevar la larga andando); el tramo de la larga todavía no', Math.abs(G.fisica.suelo(20, 0, G.ep6.topPuente + 0.3) - G.ep6.topPuente) < 0.05 && G.fisica.suelo(24.5, 0, G.ep6.topPuente + 0.3) < G.ep6.topPuente - 0.1, [G.fisica.suelo(20, 0, G.ep6.topPuente + 0.3), G.fisica.suelo(24.5, 0, G.ep6.topPuente + 0.3), G.ep6.topPuente].map(x => x.toFixed(2)).join());
           useAt('tabla_larga'); drain(); pick('Yo sola');
           check('M2 · La tabla larga no se mueve con una sola punta', !G.ep6.llevando());
           useAt('tabla_larga'); drain(); pick('agarre la otra punta');
@@ -801,6 +823,7 @@
           pick('4 filas de 9');
           check('M3 · Forma 4×9: 36 marcas en la plaza, 4 encendidas (Vittata, Iguaca, el Guardián y el aprendiz)', G.eventos.had('CircleFormed') && G.ep6.asientos.children.length === 36 && G.ep6.sentados() === 4 && S.step === 10, 'paso ' + S.step);
           for (const k of ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + k); drain(); } useAt('s_alta'); drain(); useAt('s_baja'); drain();
+          check('M3 · Cada invitado queda de pie sobre una marca encendida; las marcas ya no tapan al Guardián', ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote', 'alta', 'baja', 'alta_1', 'baja_2'].every(id => { const n = G.actores.npc(id); return G.ep6.asientos.children.some(m => m.material.emissiveIntensity > 0.5 && Math.hypot(m.position.x - n.def.x, m.position.z - n.def.z) < 0.05); }) && !G.interaccion.find('marcas').visible());
           check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 11 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);

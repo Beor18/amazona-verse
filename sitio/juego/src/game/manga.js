@@ -298,7 +298,7 @@ window.AVManga = function (G) {
       g.addColorStop(0, '#7ec8ff'); g.addColorStop(1, '#1f8a4d');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
     }
-    if (b.lineas) lineas(x, w, h, Math.max(b.lineas, 0.85));
+    if (b.lineas) lineas(x, w, h, b.id === 'velocidad' ? 1 : b.lineas * 0.35);
     props(x, w, h, b.prop);
   }
 
@@ -689,7 +689,7 @@ window.AVManga = function (G) {
         const g0 = raiz.querySelector('.mg-globo');
         g0.textContent = 'Yo decido el globo'; g0.dispatchEvent(new Event('input', { bubbles: true }));
         check('El globo se edita', estado.globos[0] === 'Yo decido el globo');
-        check('Están las dos enseñanzas', !!raiz.querySelector('#mg-aprendi') && !!raiz.querySelector('#mg-vida') && /Qué aprendí|What did I learn/.test(texto) && /enseñanza de vida|life lesson/i.test(texto));
+        check('Están las dos enseñanzas', !!raiz.querySelector('#mg-aprendi') && !!raiz.querySelector('#mg-vida') && /qu[eé] aprend[ií]|what did i learn/i.test(texto) && /ense[nñ]anza de vida|life lesson/i.test(texto));
         movil(true);
         const marco = raiz.querySelector('.mg-marco');
         const caja = marco.getBoundingClientRect();
