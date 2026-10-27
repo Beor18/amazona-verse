@@ -1,4 +1,5 @@
 # Cola del modo continuo (ejecutar.sh --cola N). Una tarea por línea, en orden. La sesión coordinadora la mantiene.
+BH1
 AY1
 AZ1
 AY2

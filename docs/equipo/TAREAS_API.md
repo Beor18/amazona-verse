@@ -511,6 +511,9 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
   Saca capturas lado a lado con la referencia en `docs/img/bg2_vs_referencia_*.jpg`. Si se ve como el cómic viejo, no está terminada: mejórala antes de cerrar.
 - **BG3, segunda pasada.** Compara otra vez con la referencia y sube el nivel: color, composición, expresiones y tipografía. Prepara la página de demostración para que Kelvin la vea en la web con `?manga=demo`, sin enlazarla desde el menú.
 
+## Pruebas extra en rojo
+- **BH1:** `AV.streamingTest` da 13/14 en las dos últimas publicaciones (27-oct, HEAD 756baa1). Mira cuál es el check que falla y si viene de cambios de hoy: el bosque (AW2/AW3), los edificios de Grok o el agua y el suelo (BB). Arréglalo en el código o, si el check ya no aplica, ajústalo justificándolo. Haz lo mismo con cualquier otra extra de `~/AmazonaVerse/_herramientas/coordinacion/logs/extras_rojas.txt` que se repita.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -604,4 +607,5 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BG1 | hecha (Grok, G17) | fff8363 | Auditoría en `COMIC_MANGA_AUDITORIA.md`. Sin cambio de código del juego. |
 | BG2 | hecha (Grok, G17) | 05ddc88 | Prototipo `?manga=demo` en `src/game/manga.js`. `mangaTest` 19/19. No reemplaza `comic.js`. |
 | BG3 | hecha (Grok, G17) | 05ddc88 | Encuadre con Vittata en cuadro, tinta y comparación `docs/img/bg2_vs_referencia_*.jpg`. |
+| BH1 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
