@@ -474,7 +474,7 @@
     // ---------- Interfaz (estilos propios, tokens de tokens.css; no se toca ui.css) ----------
     const CSS = `
 body.flight-on #top, body.flight-on #b-diary, body.flight-on #b-emotes, body.flight-on #b-nido, body.flight-on #prompt, body.flight-on #toast, body.flight-on #keyhint,
-body.flight-on #tag, body.flight-on #emotes, body.flight-on #acts, body.flight-on #stick, body.flight-on #quest-toggle, body.flight-on #guia-hud, body.flight-on #minimapa, body.flight-on #retos { display: none !important; }
+body.flight-on #tag, body.flight-on #bocadillos, body.flight-on #emotes, body.flight-on #acts, body.flight-on #stick, body.flight-on #quest-toggle, body.flight-on #guia-hud, body.flight-on #minimapa, body.flight-on #retos { display: none !important; }
 html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !important; }
 #flight { position: fixed; inset: 0; z-index: var(--z-card, 30); font-family: var(--font-display, system-ui, sans-serif); color: var(--c-text, #f4f7f1); pointer-events: none; }
 #flight [hidden] { display: none !important; }

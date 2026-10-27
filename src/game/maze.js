@@ -528,7 +528,7 @@
     // ---------- Interfaz (estilos propios con los tokens de tokens.css; ui.css no se toca) ----------
     const CSS = `
 body.maze-on #top, body.maze-on #b-diary, body.maze-on #b-emotes, body.maze-on #b-nido, body.maze-on #prompt, body.maze-on #toast, body.maze-on #keyhint,
-body.maze-on #tag, body.maze-on #emotes, body.maze-on #acts, body.maze-on #stick, body.maze-on #quest-toggle, body.maze-on #guia-hud, body.maze-on #minimapa, body.maze-on #retos { display: none !important; }
+body.maze-on #tag, body.maze-on #bocadillos, body.maze-on #emotes, body.maze-on #acts, body.maze-on #stick, body.maze-on #quest-toggle, body.maze-on #guia-hud, body.maze-on #minimapa, body.maze-on #retos { display: none !important; }
 html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important; }
 #maze { position: fixed; inset: 0; z-index: var(--z-card, 30); font-family: var(--font-display, system-ui, sans-serif); color: var(--c-text, #f4f7f1); pointer-events: none; }
 #maze [hidden] { display: none !important; }

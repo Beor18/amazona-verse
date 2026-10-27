@@ -575,7 +575,7 @@
     // ---------- Interfaz (estilos propios con los tokens de tokens.css; no se toca ui.css) ----------
     const CSS = `
 body.river-on #top, body.river-on #b-diary, body.river-on #b-emotes, body.river-on #b-nido, body.river-on #prompt, body.river-on #toast, body.river-on #keyhint,
-body.river-on #tag, body.river-on #emotes, body.river-on #acts, body.river-on #stick, body.river-on #quest-toggle, body.river-on #guia-hud, body.river-on #minimapa, body.river-on #retos { display: none !important; }
+body.river-on #tag, body.river-on #bocadillos, body.river-on #emotes, body.river-on #acts, body.river-on #stick, body.river-on #quest-toggle, body.river-on #guia-hud, body.river-on #minimapa, body.river-on #retos { display: none !important; }
 html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !important; }
 #riverrush { position: fixed; inset: 0; z-index: var(--z-card, 30); font-family: var(--font-display, system-ui, sans-serif); color: var(--c-text, #f4f7f1); pointer-events: none; }
 #riverrush [hidden] { display: none !important; }
