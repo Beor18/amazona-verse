@@ -27,7 +27,9 @@ self.addEventListener('fetch', e => {
     const cache = await caches.open(CACHE);
     const hit = await cache.match(req);
     if (hit) return hit;
-    const res = await fetch(req);
+    // Fuera de la caché de este sha se revalida con el servidor: la caché HTTP del navegador (max-age 1 h) podía
+    // devolver modelos de una publicación anterior rota (27-oct, Amazona Flight sin texturas).
+    const res = await fetch(new Request(req, { cache: 'no-cache' }));
     if (res && res.ok) { try { await cache.put(req, res.clone()); } catch (err) { /* cuota: se sigue en red */ } }
     return res;
   })());
