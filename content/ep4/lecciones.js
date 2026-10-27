@@ -74,7 +74,7 @@ window.AV_LECCIONES_EP4 = {
         "incorrecta": { "es": "Pista: el agua iba tranquila y había gente remando.", "en": "Hint: the water was calm and people were paddling." } },
       "verificacion": "juego (lo que el jugador observó)" },
     { "id": "q3", "tipo": "opcion_multiple", "objetivo": "E2", "grado": "3-6",
-      "enunciado": { "es": "¿Qué opción le daba más a la abuela, que quería cruzar a pie todo el año?", "en": "Which option gave the most to grandma, who wanted to cross on foot all year?" },
+      "enunciado": { "es": "¿Qué opción le daba más a la abuela, que quería cruzar a pie todo el año?", "en": "Which option gave the most to Grandma, who wanted to cross on foot all year?" },
       "opciones": [{ "es": "El puente en el estrecho", "en": "The bridge at the narrows" }, { "es": "Los muelles y las canoas", "en": "The docks and canoes" }, { "es": "Ninguna", "en": "None" }],
       "correcta": 0,
       "retro": { "correcta": { "es": "Sí. Tenía tres hojas de Conexión. Pero costaba el bosquecillo.", "en": "Yes. It had three Connection leaves. But it cost the grove." },

@@ -630,7 +630,7 @@
       function marcas() {
         if (S.step < 9) { G.dialogo.say([Lu('Treinta y seis marcas de cal. Caben de varias formas.')]); return; }
         if (G.eventos.had('CircleFormed')) { const f = FORMAS.find(x => tiene('forma_' + x[0])); G.dialogo.say([Lu(f[2]), Lu(f[3])]); return; }
-        elegir('Iguaca', 'Somos 36 asientos. ¿Cómo los pongo? Todas las formas suman 36.', FORMAS.map(f => ({ label: f[1], v: f[0] })), o => {
+        elegir('Iguaca', 'Son 36 asientos. ¿Cómo los pongo? Todas las formas suman 36.', FORMAS.map(f => ({ label: f[1], v: f[0] })), o => {
           const f = FORMAS.find(x => x[0] === o.v);
           poner('forma_' + o.v); G.eventos.log('CircleFormed', { choice: o.v }); dibujarAsientos(); colocarNpcs(); encuadrar(PLAZA.x, PLAZA.z); G.comic.capture('circulo'); G.audio.play('unlock'); registrar(); G.misiones.check();
           G.dialogo.say([Lu(f[2]), Lu(f[3]), Vi('Vale. Y yo no me siento primera: voy a invitar a cada uno a su sitio.')], () => G.ui.toast('Invita a cada uno a su asiento', 3000));
