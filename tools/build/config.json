@@ -113,7 +113,8 @@
       "movementTest",
       "saveTest",
       "comicTest",
-      "e2eTest"
+      "e2eTest",
+      "lookCapitulosTest"
     ],
     "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso).",
     "inyectar": [

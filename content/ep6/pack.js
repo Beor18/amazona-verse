@@ -132,8 +132,11 @@
 
     mundo: {
       tamano: 46, segmentos: 92,
-      cielo: { color: '#f3cfae', niebla: [40, 130] }, // amanecer
-      luces: { cielo: '#ffe3c4', suelo: '#3a4a2a', hemi: 0.9, sol: '#ffc98a', solInt: 0.8, solPos: [30, 36, -24] },
+      exposicion: 0.74,
+      cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+      luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+      mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
       lugares: { inicio: { x: -16, z: -16, r: 5 }, plaza: { x: PLAZA.x, z: PLAZA.z, r: 11 }, taller: { x: TALLER.x, z: TALLER.z, r: 4 }, mirador: { x: MIRADOR.x, z: MIRADOR.z, r: 2.5 },
         muelleN: { x: 14.5, z: -9.5, r: 3.5 }, muelleS: { x: 14.5, z: 9.5, r: 3.5 }, orillaE: { x: 27, z: 0, r: 3 } },
       terreno: {
@@ -146,10 +149,10 @@
         planos: ['inicio', 'plaza', 'taller', 'mirador', 'muelleN', 'muelleS', 'orillaE'],
       },
       rio: { x: RIO_X },
-      agua: { x: RIO_X, ancho: 8, nivel: { x: RIO_X, z: -24, sobre: 1.6 } },
-      arboles: { cantidad: 44, semilla: 23, copaCada: 2, margenRio: 6, copaColor: '#3f8f4a',
+      agua: { x: RIO_X, ancho: 8, color: '#5fe3d6', nivel: { x: RIO_X, z: -24, sobre: 1.6 } },
+      arboles: { cantidad: 44, semilla: 23, copaCada: 2, margenRio: 6, copaColor: '#2f7d43',
         evitar: [{ x: PLAZA.x, z: PLAZA.z, r: 12 }, TALLER, MESA, IGUACA, GUARDIAN, MIRADOR, TRANSMISOR, MUELLE_N, MUELLE_S, PUENTE_W, TABLA_LARGA, { x: 27, z: 0, r: 4 }].concat(VISITANTES.map(v => ({ x: v.x, z: v.z, r: 3 }))) },
-      oceano: { color: '#2f86b0', y: MAR },
+      oceano: { color: '#0b4f86', y: MAR },
     },
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },

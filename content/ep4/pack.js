@@ -111,8 +111,11 @@
 
     mundo: {
       tamano: 40, segmentos: 80,
-      cielo: { color: '#cfe0e8', niebla: [35, 110] },
-      luces: { cielo: '#e6eef0', suelo: '#3a4a2a', hemi: 0.9, sol: '#ffe0b0', solInt: 0.75, solPos: [30, 40, -20] },
+      exposicion: 0.74,
+      cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+      luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+      mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
       lugares: { inicio: { x: -6, z: 4, r: 5 }, mesa: { x: MESA.x, z: MESA.z, r: 3 } },
       terreno: {
         ondas: [{ fn: 'sin', x: 0.08, amp: 0.4 }, { fn: 'cos', z: 0.06, amp: 0.35 }],
@@ -120,10 +123,10 @@
         planos: ['inicio', 'mesa'],
       },
       rio: { x: RIO },
-      agua: { x: RIO, ancho: 10, nivel: { x: RIO, z: 2, sobre: 2.6 } },
-      arboles: { cantidad: 34, semilla: 9, copaCada: 2, margenRio: 6, copaColor: '#3f8f4a',
+      agua: { x: RIO, ancho: 10, color: '#5fe3d6', nivel: { x: RIO, z: 2, sobre: 2.6 } },
+      arboles: { cantidad: 34, semilla: 9, copaCada: 2, margenRio: 6, copaColor: '#2f7d43',
         evitar: [LUMA, ABUELA, PAPA, NAVEGA, MESA, { x: BOSQUE.x, z: BOSQUE.z, r: 5 }].concat(TIDS.map(i => ({ x: RIO - 6, z: TRAMOS[i].z }))) },
-      oceano: { color: '#4a9ab8', y: -2.6 },
+      oceano: { color: '#0b4f86', y: -2.6 },
     },
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true },

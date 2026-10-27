@@ -72,6 +72,13 @@ window.AVLook = function (G) {
         tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.06, 1.0, 0.9] },
         rim: { color: [0.75, 0.88, 1.0], int: 0.55, borde: [0.55, 1.0] }, // color (lineal), fuerza y rango del borde
       },
+      // Noche permitida (cap. 5, mundo.cielo.permiso = 'noche'): misma gradación y mismo toon; cielo atmosférico, no un fondo plano.
+      noche: {
+        exposicion: 0.72,
+        cielo: { cenit: '#24366e', horizonte: '#6d84b0', sol: '#ffd7a8' },
+        niebla: { color: '#8aa4c8', inicio: 48, fin: 720 },
+        luces: { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35 },
+      },
     },
   };
   const NOMBRES = Object.keys(LOOKS);
@@ -261,6 +268,22 @@ window.AVLook = function (G) {
     };
     base.niebla.lin = base.niebla.srgb.clone().convertSRGBToLinear();
   }
+  // Un capítulo con permiso «noche» usa la noche del look (misma calidad). El día usa el look tal cual.
+  function ambienteDe(L) {
+    if (!L) return null;
+    const p = W.cielo && W.cielo.permiso;
+    if (p === 'noche' && L.noche) {
+      const n = L.noche;
+      return { exposicion: n.exposicion, luces: n.luces, cielo: { cenit: n.cielo.cenit, horizonte: n.cielo.horizonte, sol: n.cielo.sol }, niebla: n.niebla };
+    }
+    return L;
+  }
+  let pausaAmbiente = false; // la tormenta del cap. 2 pide el cielo un rato; el barrido no se lo pisa
+  function pausarAmbiente(v) {
+    pausaAmbiente = !!v;
+    if (!pausaAmbiente && actual) aplicarAmbiente(ambienteDe(LOOKS[actual]));
+    return pausaAmbiente;
+  }
   function aplicarAmbiente(L) {
     guardarBase(); gradoFabrica(L);
     const B = base, sky = R.sky && R.sky.material.uniforms, A = G.agua && G.agua.uniforms, fog = R.scene.fog;
@@ -288,7 +311,7 @@ window.AVLook = function (G) {
     const L = LOOKS[nombre] || null;
     if (!L) { quitar(); try { sessionStorage.setItem('ave.look', 'fabrica'); } catch (e) { /* sin almacén */ } return null; } // «Fábrica» elegido a propósito: no vuelve el DEFECTO
     actual = nombre;
-    aplicarChunks(L); aplicarAmbiente(L); barrer(L, true);
+    aplicarChunks(L); aplicarAmbiente(ambienteDe(L)); barrer(L, true);
     G.emit('contexto', true); // el atlas de impostores de la flora se repinta con el look
     try { sessionStorage.setItem('ave.look', nombre); } catch (e) { /* sin almacén */ }
     sincronizarMenu();
@@ -315,7 +338,7 @@ window.AVLook = function (G) {
   G.on('render', () => {
     if (!actual) { const h = huellaDe(); if (h !== huella) { huella = h; recortar(); } return; } // fábrica: solo el tope de la calidad
     const h = huellaDe(), nuevo = h !== huella; huella = h;
-    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
+    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && !pausaAmbiente && climaQuieto()) aplicarAmbiente(ambienteDe(LOOKS[actual])); }
   }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
   G.on('calidad', () => { if (actual) barrer(LOOKS[actual], false); else recortar(); });
@@ -467,7 +490,72 @@ window.AVLook = function (G) {
     return result();
   }
 
-  const api = { aplicar, quitar, get actual() { return actual; }, LOOKS, DEFECTO, medir, test, ORIG };
-  if (window.AV) window.AV.look = api;
+  // ---------- Prueba: AV.lookCapitulosTest() — frena la publicación si un pack se sale del estándar (BD1) ----------
+  const DIA = {
+    cielo: "cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] }",
+    luces: "luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] }",
+    post: 'post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 }',
+    mar: "mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' }",
+    exp: 'exposicion: 0.74',
+  };
+  const PACKS_DIA = [['cap1', 'content/cap1/mundo.js'], ['ep2', 'content/ep2/pack.js'], ['ep3', 'content/ep3/pack.js'], ['ep4', 'content/ep4/pack.js'], ['ep6', 'content/ep6/pack.js'], ['plantilla', 'content/plantilla/pack.js']];
+  function revisarDia(id, src) {
+    const falta = [];
+    for (const k of Object.keys(DIA)) if (!src.includes(DIA[k])) falta.push(k);
+    if (src.includes("permiso: 'noche'")) falta.push('noche-no-permitida');
+    const rios = (src.match(/agua:\s*\{[^}]*\}/g) || []).filter(b => /\bancho:/.test(b));
+    if (rios.some(b => !b.includes("color: '#5fe3d6'"))) falta.push('agua');
+    return { ok: !falta.length, porque: falta.join(', ') };
+  }
+  function revisarNoche(src) {
+    const n = LOOKS.vibrant_toon.noche, falta = [];
+    if (!src.includes("permiso: 'noche'")) falta.push('permiso');
+    if (!src.includes("cenit: '" + n.cielo.cenit + "'")) falta.push('cenit');
+    if (!src.includes("color: '" + n.cielo.horizonte + "'")) falta.push('horizonte');
+    if (!src.includes('niebla: [' + n.niebla.inicio + ', ' + n.niebla.fin + ']')) falta.push('niebla');
+    if (!src.includes('solInt: ' + n.luces.solInt)) falta.push('sol');
+    if (!src.includes('exposicion: ' + n.exposicion)) falta.push('exposicion');
+    if (!src.includes('saturacion: 1.08')) falta.push('post');
+    if (!src.includes("somero: '#1a7a86'")) falta.push('mar');
+    if (src.includes(DIA.cielo)) falta.push('dia-de-mas');
+    return { ok: !falta.length, porque: falta.join(', ') };
+  }
+  async function testCapitulos() {
+    const P = G.pruebas, { check, result } = P.runner();
+    const traer = async ruta => {
+      const r = await fetch(ruta, { cache: 'no-store' });
+      if (!r.ok) throw new Error(ruta + ' ' + r.status);
+      return r.text();
+    };
+    try {
+      for (const [id, ruta] of PACKS_DIA) {
+        let src = '', mal = null;
+        try { src = await traer(ruta); } catch (e) { mal = String(e && e.message || e); }
+        const rev = mal ? { ok: false, porque: mal } : revisarDia(id, src);
+        check('Pack «' + id + '» hereda el día del capítulo 1 (cielo atmosférico, luces, post, mar y agua)', rev.ok, rev.porque);
+      }
+      let ep5 = '', mal5 = null;
+      try { ep5 = await traer('content/ep5/pack.js'); } catch (e) { mal5 = String(e && e.message || e); }
+      const rn = mal5 ? { ok: false, porque: mal5 } : revisarNoche(ep5);
+      check('El capítulo 5 es noche atmosférica del estándar (permiso «noche», misma saturación)', rn.ok, rn.porque);
+      let ep2 = '';
+      try { ep2 = await traer('content/ep2/pack.js'); } catch (e) { ep2 = ''; }
+      check('La tormenta del capítulo 2 pide el cielo y lo devuelve (pausarAmbiente)', ep2.includes('pausarAmbiente(true)') && ep2.includes('pausarAmbiente(false)'));
+      const falso = "mundo: { cielo: { color: '#ff66aa', niebla: [12, 40] }, luces: { solInt: 0.2 }, permisos: '' }";
+      check('Un cielo rosa con niebla corta no pasa el estándar', !revisarDia('falso', falso).ok, revisarDia('falso', falso).porque);
+      if (actual && !pausaAmbiente) aplicarAmbiente(ambienteDe(LOOKS[actual]));
+      const esp = ambienteDe(LOOKS[DEFECTO]);
+      const u = R.sky && R.sky.material.uniforms;
+      check('En vivo el look de fábrica es vibrant_toon y el cielo es atmosférico', DEFECTO === 'vibrant_toon' && actual === 'vibrant_toon' && !!R.ATMOS && !!esp, 'look ' + (actual || 'fabrica'));
+      check('En vivo la exposición, la niebla y el cenit son los del estándar de este capítulo', !!esp && R.renderer.toneMappingExposure === esp.exposicion && R.scene.fog && R.scene.fog.far === esp.niebla.fin && (!u || hex(u.uCenit.value) === hex(lin(esp.cielo.cenit))),
+        'exposición ' + R.renderer.toneMappingExposure + ' · niebla ' + (R.scene.fog && R.scene.fog.far) + ' · cenit ' + (u ? hex(u.uCenit.value) : 'sin cielo'));
+    } catch (e) {
+      check('La prueba de capítulos terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
+    }
+    return result();
+  }
+
+  const api = { aplicar, quitar, get actual() { return actual; }, LOOKS, DEFECTO, medir, test, pausarAmbiente, ORIG };
+  if (window.AV) { window.AV.look = api; window.AV.lookCapitulosTest = () => testCapitulos(); }
   return api;
 };

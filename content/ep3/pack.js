@@ -109,8 +109,11 @@
 
     mundo: {
       tamano: 46, segmentos: 92,
-      cielo: { color: '#bcd6e6', niebla: [40, 130] },
-      luces: { cielo: '#e4eef4', suelo: '#3a4a2a', hemi: 0.85, sol: '#ffe2b0', solInt: 0.75, solPos: [30, 40, -20] },
+      exposicion: 0.74,
+      cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+      luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+      mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
       lugares: { inicio: { x: -6, z: -10, r: 6 }, astillero: { x: 12, z: 2, r: 4 }, mirador: { x: MIRADOR.x, z: MIRADOR.z, r: 2.5 }, aldea: { x: -32, z: 29, r: 4 } },
       terreno: {
         ondas: [{ fn: 'sin', x: 0.09, amp: 0.25 }, { fn: 'cos', z: 0.07, amp: 0.2 }],
@@ -124,11 +127,11 @@
         planos: ['inicio', 'astillero', 'mirador', 'aldea'],
       },
       rio: { x: RIO_X },
-      agua: { x: RIO_X, ancho: 8, nivel: { x: RIO_X, z: -24, sobre: 1.6 } },
-      arboles: { cantidad: 46, semilla: 11, copaCada: 2, margenRio: 6, copaColor: '#3f8f4a',
+      agua: { x: RIO_X, ancho: 8, color: '#5fe3d6', nivel: { x: RIO_X, z: -24, sobre: 1.6 } },
+      arboles: { cantidad: 46, semilla: 11, copaCada: 2, margenRio: 6, copaColor: '#2f7d43',
         evitar: [BAHIA, IGUACA, ABUELA, PAPA, MESA, ASTILLERO, MUELLE, NAVEGANTE, SEMILLA, PRACTICA, VECINA, ALDEA, MIRADOR, POSTES.poste_muelle, POSTES.poste_punta,
           { x: -12, z: 12, r: 3 }, { x: -33, z: 26, r: 3 }, { x: -30, z: 25, r: 3 }, { x: 13, z: 12, r: 3 }] },
-      oceano: { color: '#2f86b0', y: MAR },
+      oceano: { color: '#0b4f86', y: MAR },
     },
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
