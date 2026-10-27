@@ -11,6 +11,8 @@
 #title:has(#modos) .logo svg { width: min(520px, 78vw); }
 #title:has(#modos) .title-hero { z-index: 0; width: min(34vh, 26vw); opacity: 0.95; }
 #title:has(#modos) .title-foot { z-index: 0; }
+/* En el móvil la rejilla se desplaza por encima del pie y su texto asoma entre las tarjetas (BE3): se oculta */
+@media (max-width: 600px) { #title:has(#modos) .title-foot { display: none; } }
 
 .modos { margin: 0; width: 100%; max-width: 780px; }
 .modos-t { margin: 0 0 var(--sp-3); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: #fff; text-shadow: 0 2px 0 rgba(27, 21, 80, 0.6), 0 6px 18px rgba(27, 21, 80, 0.5); }

@@ -206,7 +206,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-panel{--lado:min(calc(100vw - 32px),calc(100dvh - 190px),560px);width:calc(var(--lado) + 16px);max-width:100%;box-sizing:border-box;padding:8px;border-radius:18px;background:rgba(18,30,42,.96);border:2px solid rgba(255,255,255,.85);color:#fff;font:600 calc(13px * var(--fs-k,1))/1.3 var(--font-body,sans-serif)}
 #mapa-grande .mg-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 #mapa-grande h2{margin:0 auto 0 4px;font:700 calc(16px * var(--fs-k,1))/1.2 var(--font-display,inherit)}
-#mapa-grande .mg-head button{min-height:40px;padding:0 12px;border-radius:999px;border:2px solid rgba(255,255,255,.7);background:#243a50;color:#fff;font:700 calc(13px * var(--fs-k,1))/1 var(--font-body,sans-serif);cursor:pointer}
+#mapa-grande .mg-head button{min-height:44px;padding:0 12px;border-radius:999px;border:2px solid rgba(255,255,255,.7);background:#243a50;color:#fff;font:700 calc(13px * var(--fs-k,1))/1 var(--font-body,sans-serif);cursor:pointer}
 #mapa-grande .mg-head button[aria-pressed="true"]{background:#2fc15a;border-color:#fff;color:#08210f}
 #mapa-grande .mg-head button[hidden]{display:none}
 #mapa-grande .mg-head button:focus-visible{outline:3px solid var(--c-focus,#ffd23f);outline-offset:2px}

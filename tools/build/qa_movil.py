@@ -197,8 +197,13 @@ def main():
                     pass
                 cdp.bombear(0.5)
             else:
-                res['escenas'].append({'escena': pack + '_carga', 'resultado': 'el juego no arrancó'})
-                print('· %s: el juego no arrancó' % pack, flush=True)
+                try:
+                    pantalla = avtest.evaluar(cdp, ses, "(document.body && document.body.innerText || '').replace(/\\s+/g, ' ').slice(0, 300)", 10, promesa=False)
+                except Exception as e:  # noqa: BLE001
+                    pantalla = 'sin respuesta: %s' % e
+                res['escenas'].append({'escena': pack + '_carga', 'resultado': 'el juego no arrancó', 'errores': errores[-10:], 'pantalla': pantalla})
+                print('· %s: pantalla «%s»' % (pack, pantalla), flush=True)
+                print('· %s: el juego no arrancó · %s' % (pack, ' | '.join(errores[-3:]) or 'sin errores de consola'), flush=True)
                 continue
             res.setdefault('carga_s', {})[pack] = round(time.monotonic() - t_nav, 1)
             cdp.bombear(2.0)
