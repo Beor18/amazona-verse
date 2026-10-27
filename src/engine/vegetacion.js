@@ -557,7 +557,8 @@ AVE.module('vegetacion', function (G) {
     frustum.setFromProjectionMatrix(pv);
     const cx = cam.position.x, cz = cam.position.z;
     const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? C.sombraRadio + 12 : 0;
-    const impMax = DIST.impostor; // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio
+    // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio. Con el dosel por celdas (AW3, dosel.js), 250 m
+    const impMax = G.dosel && G.dosel.activo ? Math.min(DIST.impostor, G.dosel.impostorMax) : DIST.impostor;
     let ni = 0;
     for (const m in grupos) {
       const g = grupos[m], P = porModelo[m], maxD = distancias(g.cat);
