@@ -601,7 +601,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BF4 | pendiente | | |
 | BF5 | pendiente | | |
 | BF6 | pendiente | | |
-| BG1 | lo hace Grok (G17), no la API | | |
-| BG2 | lo hace Grok (G17), no la API | | |
-| BG3 | lo hace Grok (G17), no la API | | |
+| BG1 | hecha (Grok, G17) | fff8363 | Auditoría en `COMIC_MANGA_AUDITORIA.md`. Sin cambio de código del juego. |
+| BG2 | hecha (Grok, G17) | 05ddc88 | Prototipo `?manga=demo` en `src/game/manga.js`. `mangaTest` 19/19. No reemplaza `comic.js`. |
+| BG3 | hecha (Grok, G17) | 05ddc88 | Encuadre con Vittata en cuadro, tinta y comparación `docs/img/bg2_vs_referencia_*.jpg`. |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
