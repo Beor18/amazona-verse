@@ -213,5 +213,23 @@
    -5
   ],
   "nota": "Mismo encuadre que el render de 3ds Max de 2022 (docs/img/mapa_audit_original_2022.jpg): los meandros desde el sureste, con El Yunque arriba a la izquierda"
+ },
+ "ciudad_tepuy": {
+  "x": 26,
+  "y": 140,
+  "z": -183,
+  "vuelo": true,
+  "yaw": 0,
+  "cam": [
+   81.0,
+   160,
+   -278.2
+  ],
+  "mirar": [
+   -4,
+   95,
+   -131
+  ],
+  "nota": "Mejor ángulo de la gran ciudad del tepuy (elegido 27-oct para Kelvin): desde el sureste, con el río turquesa, la selva y el mar detrás"
  }
 }
