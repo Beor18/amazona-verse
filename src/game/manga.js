@@ -394,8 +394,8 @@ window.AVManga = function (G) {
 #av-manga .mg-sol{border-radius:50%;background:#ffe14a;box-shadow:0 0 0 3px #f08a12}
 #av-manga .mg-caja-vida p:before{content:"“ ";font-weight:900;font-size:1.3em}
 #av-manga .mg-cora{position:absolute;right:12px;bottom:10px;width:22px;height:22px;background:#e23b4a;border:2px solid #6a1020;border-radius:50% 50% 4px 4px;transform:rotate(45deg)}
-#av-manga .mg-hoja{position:absolute;width:26px;height:16px;background:#2f9e44;border:2px solid #145c28;border-radius:0 80% 0 80%;left:-6px;top:14px;transform:rotate(-28deg)}
-#av-manga .mg-hoja-b{left:auto;top:auto;right:-4px;bottom:12px;transform:rotate(36deg);background:#3cb054}
+#av-manga .mg-folia{position:absolute;width:26px;height:16px;background:#2f9e44;border:2px solid #145c28;border-radius:0 80% 0 80%;left:-6px;top:14px;transform:rotate(-28deg)}
+#av-manga .mg-folia-b{left:auto;top:auto;right:-4px;bottom:12px;transform:rotate(36deg);background:#3cb054}
 #av-manga .mg-caja p{margin:0;min-height:88px;background:transparent;font:700 22px/1.3 "Segoe Print","Comic Sans MS",cursive}
 #av-manga .mg-hero{background:radial-gradient(circle at 50% 42%,#d2f0a4,#2f9e44 62%,#145c32);border:5px solid #1a120c;border-radius:18px;display:grid;place-items:center;min-height:200px}
 #av-manga .mg-hero canvas{width:200px;height:200px}
@@ -464,9 +464,9 @@ window.AVManga = function (G) {
         </div>
         <div class="mg-vinetas">${vinetas}</div>
         <section class="mg-cierre">
-          <article class="mg-caja"><i class="mg-hoja" aria-hidden="true"></i><i class="mg-hoja mg-hoja-b" aria-hidden="true"></i><h3><i class="mg-libro" aria-hidden="true"></i> ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
+          <article class="mg-caja"><i class="mg-folia" aria-hidden="true"></i><i class="mg-folia mg-folia-b" aria-hidden="true"></i><h3><i class="mg-libro" aria-hidden="true"></i> ${esc(L('¿Qué aprendí?', 'What did I learn?'))}</h3><p id="mg-aprendi" contenteditable="true" role="textbox" aria-label="${esc(L('¿Qué aprendí?', 'What did I learn?'))}"></p></article>
           <div class="mg-hero"><canvas id="mg-hero" width="512" height="512"></canvas></div>
-          <article class="mg-caja mg-caja-vida"><i class="mg-hoja" aria-hidden="true"></i><i class="mg-hoja mg-hoja-b" aria-hidden="true"></i><h3><i class="mg-sol" aria-hidden="true"></i> ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p><i class="mg-cora" aria-hidden="true"></i></article>
+          <article class="mg-caja mg-caja-vida"><i class="mg-folia" aria-hidden="true"></i><i class="mg-folia mg-folia-b" aria-hidden="true"></i><h3><i class="mg-sol" aria-hidden="true"></i> ${esc(L('Mi enseñanza de vida', 'My life lesson'))}</h3><p id="mg-vida" contenteditable="true" role="textbox" aria-label="${esc(L('Mi enseñanza de vida', 'My life lesson'))}"></p><i class="mg-cora" aria-hidden="true"></i></article>
           <p class="mg-cierre-txt" id="mg-cierre" contenteditable="true" role="textbox" aria-label="${esc(L('Cierre', 'Ending'))}"></p>
         </section>
         <div class="mg-botones">
