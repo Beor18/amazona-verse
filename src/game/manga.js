@@ -331,8 +331,9 @@ window.AVManga = function (G) {
 #av-manga .mg-b1,#av-manga .mg-b2{background:#2f6fe0}#av-manga .mg-b3{background:#1faa4a}#av-manga .mg-b4{background:#7c3aed}
 #av-manga .mg-volver{position:sticky;top:8px;float:right;background:#123;margin:0 0 8px 8px;min-height:40px;padding:8px 12px}
 #av-manga.mg-movil{background:#041018}
-#av-manga.mg-movil .mg-marco{width:375px;height:812px;min-height:0;max-height:812px;margin:10px auto;overflow:auto;background:#083048;box-shadow:0 0 0 10px #111;border-radius:28px}
-#av-manga.mg-movil .mg-hoja{width:auto;max-width:100%;margin:8px;border-width:4px;padding:8px}
+#av-manga.mg-movil .mg-marco{width:375px;height:812px;min-height:0;max-height:812px;margin:10px auto;overflow:hidden;display:flex;flex-direction:column;background:#083048;box-shadow:0 0 0 10px #111;border-radius:28px}
+#av-manga.mg-movil .mg-volver{float:none;align-self:flex-end;flex:none}
+#av-manga.mg-movil .mg-hoja{width:auto;max-width:none;flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-width:4px;padding:8px}
 #av-manga.mg-movil .mg-top{flex-wrap:wrap}
 #av-manga.mg-movil .mg-pasos{width:100%;justify-content:space-between}
 #av-manga.mg-movil .mg-pasos div{width:58px;font-size:10px}
@@ -649,8 +650,10 @@ window.AVManga = function (G) {
         check('Están las dos enseñanzas', !!raiz.querySelector('#mg-aprendi') && !!raiz.querySelector('#mg-vida') && /Qué aprendí|What did I learn/.test(texto) && /enseñanza de vida|life lesson/i.test(texto));
         movil(true);
         const marco = raiz.querySelector('.mg-marco');
-        check('La vista móvil mide 375×812', marco.clientWidth === 375 && marco.clientHeight === 812, marco.clientWidth + '×' + marco.clientHeight);
-        check('La hoja cabe en el ancho del móvil', marco.scrollWidth <= marco.clientWidth + 2, 'scroll ' + marco.scrollWidth);
+        const caja = marco.getBoundingClientRect();
+        const hoja = raiz.querySelector('.mg-hoja');
+        check('La vista móvil mide 375×812', Math.round(caja.width) === 375 && Math.round(caja.height) === 812, Math.round(caja.width) + '×' + Math.round(caja.height));
+        check('La hoja cabe en el ancho del móvil', hoja.scrollWidth <= hoja.clientWidth + 2, 'scroll ' + hoja.scrollWidth + '/' + hoja.clientWidth);
         movil(false);
         const img = await png();
         const ver = await verificarPNG(img.blob, img.w, img.h);
