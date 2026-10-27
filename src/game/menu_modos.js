@@ -25,7 +25,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const TX = () => ({
       titulo: L('¿Cómo quieres jugar?', 'How do you want to play?'), ultimo: L('Lo último que jugaste', 'Last played'),
@@ -37,6 +37,7 @@
       flight: [L('Amazona Flight', 'Amazona Flight'), L('Vuela sin parar entre los troncos', 'Fly non-stop between the logs')],
       tren: [L('El tren de Vittata', "Vittata's Train"), L('Carga, desvíos y curvas por la costa', 'Cargo, switches and curves along the coast')], // src/game/tren.js (C16)
       river: [L('River Rush', 'River Rush'), L('Baja el río en canoa: contrarreloj y fantasma', 'Paddle down the river: time trial and ghost')], // src/game/river_rush.js (AC2)
+      maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
       libre: [L('Vuelo libre', 'Free flight'), L('Explora sin misiones', 'Explore with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
@@ -105,6 +106,7 @@
       else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
       else if (modo === 'tren') p = listo().then(() => (window.AV && window.AV.tren ? window.AV.tren() : false)); // El tren de Vittata (src/game/tren.js, C16)
       else if (modo === 'river') p = listo().then(() => (window.AV && window.AV.riverRush ? window.AV.riverRush() : false));
+      else if (modo === 'maze') p = listo().then(() => (window.AV && window.AV.maze ? window.AV.maze() : false)); // Amazona Maze (src/game/maze.js, BI2)
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
       else if (modo === 'records') p = cargar.records().then(r => r.abrir({ desde: 'portada' }));
@@ -153,6 +155,7 @@
       const fv = G.flightApi; if (fv) { try { fv.salir(); } catch (e) { /* ya fuera */ } }
       const tv = G.trenApi; if (tv) { try { tv.salir(); } catch (e) { /* ya fuera */ } } // src/game/tren.js (C16)
       const rv = G.riverRushApi; if (rv) { try { rv.salir(); } catch (e) { /* ya fuera */ } }
+      const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salirLibre();
       const pausa = $('pause'); try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ }
@@ -226,7 +229,7 @@
       try {
         // 1. Markup y contrato de la portada (config.json preparar_js y e2e.js tocan el primer botón del formulario)
         const ts = tarjetas();
-        check('Una tarjeta por modo (con Amazona Flight y River Rush)', ts.length === MODOS.length && !!form.querySelector('[data-modo="river"]') && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
+        check('Una tarjeta por modo (con Amazona Flight, el tren, River Rush y Amazona Maze)', ts.length === MODOS.length && ['tren', 'river', 'maze'].every(m => !!form.querySelector(`[data-modo="${m}"]`)) && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido y récords no cierran la portada (type=button)', ['nido', 'records'].every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
@@ -253,6 +256,14 @@
         const okR = await hasta(() => G.riverRushApi && G.riverRushApi.activo, 15000);
         check('River Rush: la tarjeta abre el río y cierra la portada', okR && !portada.open);
         volver(); check('Vuelve al menú desde River Rush', portada.open && !G.riverRushApi.activo && !document.body.classList.contains('river-on'));
+        await elegir('tren');
+        const okTren = await hasta(() => G.trenApi && G.trenApi.activo, 15000);
+        check('El tren de Vittata: la tarjeta abre el tren y cierra la portada', okTren && !portada.open);
+        volver(); check('Vuelve al menú desde el tren', portada.open && !G.trenApi.activo && !document.body.classList.contains('tren-on'));
+        await elegir('maze');
+        const okMaze = await hasta(() => G.mazeApi && G.mazeApi.activo, 15000);
+        check('Amazona Maze: la tarjeta abre el laberinto y cierra la portada', okMaze && !portada.open);
+        volver(); check('Vuelve al menú desde Amazona Maze', portada.open && !G.mazeApi.activo && !document.body.classList.contains('maze-on'));
         await elegir('libre');
         check('Vuelo libre: sin panel de misiones ni guía, y la partida sigue siendo la misma', !portada.open && raiz.classList.contains('modo-libre') && getComputedStyle($('quest')).display === 'none' && libre);
         G.emit('render', 0.016); check('Vuelo libre: la flecha de guía no se ve', G.fx && G.fx.guideBeam ? !G.fx.guideBeam.visible : true);

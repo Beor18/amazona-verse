@@ -406,6 +406,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="tren"></span><button class="btn" type="button" data-jugar="tren" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>River Rush</h3><p>Baja el río Amazonas en canoa. Esquiva troncos y rocas, recoge racimos y llega al mar. Clásico, contrarreloj o contra tu fantasma.</p>
       <span class="rt-rec" data-rec="rio_rush"></span><button class="btn" type="button" data-jugar="rio_rush" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>Amazona Maze</h3><p>Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.</p>
+      <span class="rt-rec" data-rec="maze"></span><button class="btn" type="button" data-jugar="maze" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -540,6 +542,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
       { const z = rec.tren || {}; ui.menu.querySelector('[data-rec="tren"]').textContent = z.mejor ? 'Récord: ' + z.mejor + ' puntos' : 'Aún sin récord'; } // src/game/tren.js (C16)
       { const z = rec.rio_rush || {}, t = [z.mejor ? 'Récord: ' + z.mejor + ' puntos' : '', z.reloj ? 'Contrarreloj: ' + reloj(z.reloj / 1000) : ''].filter(Boolean); ui.menu.querySelector('[data-rec="rio_rush"]').textContent = t.length ? t.join(' · ') : 'Aún sin récord'; } // src/game/river_rush.js (AC2)
+      { const z = rec.maze || {}; ui.menu.querySelector('[data-rec="maze"]').textContent = z.mejor ? 'Récord: ' + z.mejor + ' puntos' : 'Aún sin récord'; } // src/game/maze.js (BI2)
       const hoy = retoDelDia();
       for (const k of Object.keys(NOMBRE_RETO)) {
         const rr = ui.menu.querySelector('[data-rec="' + k + '"]'); if (!rr) continue;
@@ -564,6 +567,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
       if (reto === 'tren') { salir(); const f = window.AV && window.AV.tren; if (f) f().catch(() => {}); return true; } // El tren de Vittata (src/game/tren.js, C16): igual que Flight
       if (reto === 'rio_rush') { salir(); const f = window.AV && window.AV.riverRush; if (f) f().catch(() => {}); return true; } // River Rush (src/game/river_rush.js, AC2): igual que Flight
+      if (reto === 'maze') { salir(); const f = window.AV && window.AV.maze; if (f) f().catch(() => {}); return true; } // Amazona Maze (src/game/maze.js, BI2): igual que Flight
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
@@ -578,9 +582,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // ---------- Ganas de seguir (decisión de Kelvin, 26-oct): el «casi», la siguiente meta, sellos y reto del día ----------
     // Sano y para niños: solo habilidad (nada de monedas, cajas ni azar), sin rachas, sin cuentas atrás para volver y sin culpa.
     const ORDEN = ['bronce', 'plata', 'oro'], ART = { oro: 'el oro', plata: 'la plata', bronce: 'el bronce' };
-    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]], tren: [['bronce', 250], ['plata', 450], ['oro', 650]], rio_rush: [['bronce', 40], ['plata', 120], ['oro', 250]] };
-    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'], tren: ['punto', 'puntos'], rio_rush: ['punto', 'puntos'] };
-    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight', tren: 'El tren de Vittata', rio_rush: 'River Rush' };
+    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]], tren: [['bronce', 250], ['plata', 450], ['oro', 650]], rio_rush: [['bronce', 40], ['plata', 120], ['oro', 250]], maze: [['bronce', 200], ['plata', 500], ['oro', 900]] };
+    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'], tren: ['punto', 'puntos'], rio_rush: ['punto', 'puntos'], maze: ['punto', 'puntos'] };
+    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight', tren: 'El tren de Vittata', rio_rush: 'River Rush', maze: 'Amazona Maze' };
     const RETOS_DIA = ['banquete', 'flight', 'rio', 'tormenta', 'carrera'];
     const DESCANSO_MS = 30 * 60 * 1000;
     const ingles = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -1541,7 +1545,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 8);
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 9);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
