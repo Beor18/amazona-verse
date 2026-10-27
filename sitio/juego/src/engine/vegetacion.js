@@ -262,6 +262,26 @@ AVE.module('vegetacion', function (G) {
         }
       }
     }
+    // F0.4, cumbre verde: la meseta de El Yunque (97 m) y las terrazas altas quedaban casi peladas (en el mapa la palma de
+    // sierra llega a 80 m y el tabonuco enano sale ralo). Palma de sierra y tabonuco enano en el suelo libre por encima de
+    // `desde`, con su propia semilla para no mover el resto de la flora; mundo.flora.cumbre { desde, n, palma } (n: 0 la apaga).
+    const CU = Object.assign({ desde: 82, n: 220, palma: 0.6 }, FL.cumbre);
+    const altas = [];
+    if (CU.n > 0) for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
+      if (T.height(FD.x0 + (ix + 0.5) * cel, FD.z0 + (iz + 0.5) * cel) > CU.desde - 4) altas.push(ix + iz * FD.nx);
+    }
+    const r2 = rng(5821);
+    for (let t = 0, n = 0; altas.length && n < CU.n && t < CU.n * 12; t++) {
+      const c = altas[Math.floor(r2() * altas.length)];
+      const x = FD.x0 + (c % FD.nx + r2()) * cel, z = FD.z0 + (Math.floor(c / FD.nx) + r2()) * cel;
+      const palma = r2() < CU.palma, md = MODELOS[palma ? 'palma_sierra' : 'tabonuco_enano'];
+      const s = (md.escala || 1) * (0.8 + r2() * 0.4), r = (palma ? 1.8 : 3.2) * s;
+      const y = T.height(x, z);
+      if (y < CU.desde || !libre(x, z) || enAgua(x, z, y) || tapado(x, z, 3) || T.normalAt(x, z).y < 0.72 || !libreDe(x, z, r)) continue;
+      marcar(x, z, r);
+      add(md.kit[0], x, z, s, { rank: r2() });
+      n++;
+    }
     return lista;
   }
   function empaquetar(lista) {
@@ -378,10 +398,13 @@ AVE.module('vegetacion', function (G) {
         #include <fog_pars_vertex>
         void main() {
           vec3 c = iPos.xyz; float lado = iPos.w;
-          vec3 toCam = cameraPosition - c; toCam.y = 0.0; toCam = normalize(toCam);
+          vec3 d3 = cameraPosition - c, toCam = normalize(vec3(d3.x, 0.0, d3.z));
           vec3 right = vec3(toCam.z, 0.0, -toCam.x);
+          // F0.3: desde el aire el cuadro se recuesta hacia atrás (hasta ~63°) y la copa se ve; a pie y en vuelo bajo sigue de pie
+          float inc = clamp(atan(d3.y, length(d3.xz)) - 0.3, 0.0, 1.1);
+          vec3 up = vec3(0.0, cos(inc), 0.0) - toCam * sin(inc);
           float sway = sin(uTime * 0.9 + c.x * 0.3 + c.z * 0.2) * 0.012 * position.y * position.y * lado;
-          vec3 w = c + right * (position.x * lado + sway) + vec3(0.0, position.y * lado, 0.0) - toCam * lado * 0.15;
+          vec3 w = c + right * (position.x * lado + sway) + up * (position.y * lado) - toCam * lado * 0.15;
           vUv = iTile.xy + uv * iTile.zw; vCol = iCol; vD = distance(c, cameraPosition);
           vec4 mvPosition = viewMatrix * vec4(w, 1.0);
           gl_Position = projectionMatrix * mvPosition;
@@ -412,14 +435,15 @@ AVE.module('vegetacion', function (G) {
   let manchas = null;
   function crearManchas() {
     const lista = [];
-    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(7, info[m].ancho * 0.42) * P.pos[i * 4 + 3]]); }
+    // F0.3: mancha de copa más ancha y densa, verde muy oscuro en vez de negro: desde el aire el bosque se lee como dosel
+    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(8.5, info[m].ancho * 0.52) * P.pos[i * 4 + 3]]); }
     if (!lista.length) return;
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.45)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    gr.addColorStop(0, 'rgba(0,0,0,0.95)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.7)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
     const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.32, color: 0x000000,
+    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.58, color: 0x0a1c0d,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     manchas = new THREE.InstancedMesh(geo, mat, lista.length);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), n = new THREE.Vector3(), s = new THREE.Vector3(), p = new THREE.Vector3();
@@ -533,7 +557,7 @@ AVE.module('vegetacion', function (G) {
     frustum.setFromProjectionMatrix(pv);
     const cx = cam.position.x, cz = cam.position.z;
     const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? C.sombraRadio + 12 : 0;
-    const impMax = DIST.impostor * Math.max(0.6, C.floraDist);
+    const impMax = DIST.impostor; // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio
     let ni = 0;
     for (const m in grupos) {
       const g = grupos[m], P = porModelo[m], maxD = distancias(g.cat);

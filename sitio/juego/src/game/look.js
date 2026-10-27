@@ -222,13 +222,21 @@ window.AVLook = function (G) {
       else if (m.defines) delete m.defines.AV_RIM;
       if (tenia !== !!(m.defines && m.defines.AV_RIM)) recompilar = true;
     }
-    const max = L ? TEX_URL || L.texMax || 0 : 0;
+    const max = topeTex(L);
     texturasDe(m, t => encoger(t, max));
     if (recompilar) m.needsUpdate = true;
     if (L) tocados.add(m); else tocados.delete(m);
   }
+  // F0.6: el tope de la calidad (renderer: bajo 512, medio 1024) también recorta, con look y sin él (antes solo el suelo lo
+  // respetaba); con look manda el menor de los dos y ?tex= manda sobre todo. Los atlas _hd siguen sin encogerse (encoger()).
+  function topeTex(L) {
+    if (TEX_URL) return TEX_URL;
+    const a = (L && L.texMax) || 0, b = R.calidad.texMax || 0;
+    return a && b ? Math.min(a, b) : a || b;
+  }
+  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, t => encoger(t, topeTex(null))); }); }
   function barrer(L, todos) {
-    const max = L ? TEX_URL || L.texMax || 0 : 0;
+    const max = topeTex(L);
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
       if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos);
       else if (max) texturasDe(m, t => encoger(t, max)); // las imágenes llegan después del primer toque: se encogen al verlas
@@ -305,30 +313,40 @@ window.AVLook = function (G) {
   let huella = -1;
   const huellaDe = () => { const m = R.renderer.info.memory; return m.geometries * 4096 + m.textures; };
   G.on('render', () => {
-    if (!actual) return;
+    if (!actual) { const h = huellaDe(); if (h !== huella) { huella = h; recortar(); } return; } // fábrica: solo el tope de la calidad
     const h = huellaDe(), nuevo = h !== huella; huella = h;
     if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
   }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
+  G.on('calidad', () => { if (actual) barrer(LOOKS[actual], false); else recortar(); });
 
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
   function medir() {
     const s = R.stats(), vistas = new Set(); let bytes = 0, n = 0, grandes = 0;
     let atlas = 0;
+    // F0.6: desglose por origen (la URL de la imagen o el nombre de la malla) y las 10 texturas más pesadas
+    const por = {}, top = [];
+    const origen = (src, o) => /\/tex_hd\//.test(src) ? 'atlas_hd' : /\/tex\/entorno\/suelo/.test(src) ? 'suelo' : /\/models\/entorno\//.test(src) || /^flora:/.test(o.name) ? 'flora'
+      : /^terreno/.test(o.name) ? 'suelo' : o.isSkinnedMesh ? 'personajes' : /\/(edificios|kelvin|ruinas|aldea)/i.test(src) ? 'edificios' : src ? 'otros' : 'generadas';
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, t => {
       if (vistas.has(t)) return; vistas.add(t);
       const img = t.image, w = img && (img.width || (img.data && img.width)) || 0, h = img && img.height || 0;
       if (!w) return; n++;
-      const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test((img && (img.src || img.currentSrc)) || '');
+      const src = (img && (img.src || img.currentSrc)) || (imagenes.has(t) && imagenes.get(t).src) || '';
+      const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test(src);
       if (w > 512) { grandes++; if (esAtlas) atlas++; }
-      bytes += w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1);
+      const b = w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1), k = esAtlas ? 'atlas_hd' : origen(src, o);
+      bytes += b; por[k] = (por[k] || 0) + b;
+      top.push([(src.split('/').pop() || t.name || o.name || '?').slice(0, 48), w + '×' + h, Math.round(b / 104857.6) / 10]);
     }); });
+    for (const k in por) por[k] = Math.round(por[k] / 104857.6) / 10;
+    top.sort((a, b) => b[2] - a[2]); top.length = Math.min(10, top.length);
     const C = R.calidad, sombra = C.sombras ? C.sombras * C.sombras * 4 : 0;
     const dbs = R.renderer.getDrawingBufferSize(new THREE.Vector2()), post = R.post.activo ? dbs.x * dbs.y * 8 * 2.5 : 0;
     const pm = performance.memory, heapMB = pm && pm.usedJSHeapSize ? Math.round(pm.usedJSHeapSize / 1048576) : null;
     return { look: actual || 'fabrica', fps: s.fps, calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, post: s.post,
       programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, atlasGrandes: atlas, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
-      sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10 };
+      sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10, texturasPor: por, texturasTop: top };
   }
 
   // ---------- Sección oculta «Look» en el menú de pausa ----------

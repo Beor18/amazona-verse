@@ -101,7 +101,7 @@
     luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
     post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
     mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
-    aguaRio: { claro: '#47b9a6', hondo: '#155a68', turbio: '#8c6c3e' },
+    aguaRio: { claro: '#5fe3d6', hondo: '#2b8fdc', turbio: '#8c6c3e' }, // BB1: turquesa brillante del render de 2022
     flora: { viento: { dir: [0.85, 0.35], fuerza: 1 }, evitar: pack => [POOL, ...(pack.coquies || []), ...(pack.recursos || []), ...((pack.diario || {}).entradas || [])] },
     // Edificios de Kelvin a escala con la cotorra (1,75 m de alto en el juego): el kit está hecho para una persona de 1,8 m,
     // así que las casas van a 0,95 (puertas de ~1,95 m) y lo monumental (templos, ruinas) a 1. Factor uniforme, sin deformar.

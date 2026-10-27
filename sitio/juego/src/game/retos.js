@@ -325,6 +325,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-panel h2 { margin: 0 0 6px; font: 700 var(--fs-2xl)/1.15 var(--font-display); }
 #retos .rt-panel p { margin: 0 0 14px; font: 400 var(--fs-md)/1.4 var(--font-body); color: var(--c-ink-muted); }
 #retos .rt-menu .rt-panel { width: min(780px, calc(100vw - 32px)); }
+#retos .rt-menu .rt-x { position: sticky; top: 0; float: right; z-index: 1; margin: -10px -10px 12px 8px; } /* QA-42: salida siempre a la vista; en el móvil «Volver a la historia» queda bajo 7 tarjetas */
 #retos .rt-retos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 10px 0 16px; text-align: left; }
 #retos .rt-reto { background: #fff8e8; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); padding: 14px; display: grid; gap: 8px; align-content: start; }
 #retos .rt-reto h3 { margin: 0; font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--c-ink); }
@@ -386,6 +387,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 <div class="rt-cuenta" aria-live="assertive"></div>
 <div class="rt-aviso" aria-live="polite"></div>
 <div class="rt-menu" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-menu-t">
+  <button class="btn ghost icon rt-x" type="button" data-salir data-icon="close" aria-label="Volver a la historia"></button>
   <h2 id="rt-menu-t">Retos</h2>
   <p>Partidas cortas para volar con Vittata. Tu partida de la historia queda tal como está.</p>
   <div class="rt-hoy" hidden></div>
