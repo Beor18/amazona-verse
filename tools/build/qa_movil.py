@@ -40,7 +40,7 @@ MEDIR_JS = r'''(() => { const Q = window.__qaM || { dt: [], largas: [] }; const 
   const out = { cuadros: n, p50: q(0.5), p95: q(0.95), peor: n ? Math.round(d[n - 1]) : 0, mas50: d.filter(x => x > 50).length, mas100: d.filter(x => x > 100).length,
     largas: Q.largas.length, largaPeor: Q.largas.length ? Math.max(...Q.largas) : 0,
     heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
-    texMB: st.texturasMB != null ? st.texturasMB : null, calls: st.calls != null ? st.calls : null, calidad: st.calidad || (window.AV && AV.G && AV.G.renderer && AV.G.renderer.calidad) || null };
+    texMB: st.texturasMB != null ? st.texturasMB : null, texPor: st.texturasPor || null, texTop: (st.texturasTop || []).slice(0, 5), calls: st.calls != null ? st.calls : null, calidad: st.calidad || (window.AV && AV.G && AV.G.renderer && AV.G.renderer.calidad) || null };
   Q.dt = []; Q.largas = []; return JSON.stringify(out); })()'''
 
 AUDITA_JS = r'''(() => { const W = innerWidth, H = innerHeight, out = [];
@@ -103,6 +103,36 @@ MODOS = [
 ]
 
 
+def _perfil(pr):
+    """Tiempo propio por función (ms) de un perfil de CPU de CDP; imprime las 25 mayores."""
+    nodos = {n['id']: n for n in pr['nodes']}
+    dt, propio = pr.get('timeDeltas') or [], {}
+    for i, sid in enumerate(pr.get('samples') or []):
+        cf = nodos[sid]['callFrame']
+        k = '%s %s:%s' % (cf.get('functionName') or '(anónima)', (cf.get('url') or '').split('/')[-1], cf.get('lineNumber', -1) + 1)
+        propio[k] = propio.get(k, 0) + (dt[i] if i < len(dt) else 0) / 1000.0
+    for k, ms in sorted(propio.items(), key=lambda x: -x[1])[:25]:
+        print('·   perfil %8.0f ms  %s' % (ms, k), flush=True)
+    # Quién llama a lo nativo de WebGL (compilar, subir texturas): el primer marco del juego (src/ o content/) en la pila
+    padre = {c: n['id'] for n in pr['nodes'] for c in n.get('children') or []}
+    quien = {}
+    for i, sid in enumerate(pr.get('samples') or []):
+        cf = nodos[sid]['callFrame']
+        if cf.get('url') or cf.get('functionName') not in ('getProgramInfoLog', 'getShaderInfoLog', 'getProgramParameter', 'texImage2D', 'linkProgram', 'getUniformLocation'):
+            continue
+        n, pila = sid, []
+        while n in padre:
+            n = padre[n]; f = nodos[n]['callFrame']; u = f.get('url') or ''
+            if '/src/' in u or '/content/' in u:
+                pila.append('%s %s:%s' % (f.get('functionName') or '(anónima)', u.split('/')[-1], f.get('lineNumber', -1) + 1))
+                if len(pila) == 3:
+                    break
+        k = '%s ← %s' % (cf['functionName'], ' ← '.join(pila) or '?')
+        quien[k] = quien.get(k, 0) + (dt[i] if i < len(dt) else 0) / 1000.0
+    for k, ms in sorted(quien.items(), key=lambda x: -x[1])[:12]:
+        print('·   webgl %8.0f ms  %s' % (ms, k), flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('raiz')
@@ -110,6 +140,8 @@ def main():
     ap.add_argument('--modos', action='store_true')
     ap.add_argument('--solo', default='', help='solo estas escenas de --modos (coma)')
     ap.add_argument('--sin-fin', action='store_true', help='no juega el capítulo entero (solo portada, apertura, paseo y pausa)')
+    ap.add_argument('--sonda', default='', help='expresión JS que se evalúa e imprime tras la pausa (diagnóstico)')
+    ap.add_argument('--perfil', action='store_true', help='perfil de CPU de «Jugar» y la apertura: las 25 funciones con más tiempo propio')
     ap.add_argument('--cpu', type=float, default=4)
     ap.add_argument('--ancho', type=int, default=375)
     ap.add_argument('--alto', type=int, default=812)
@@ -208,11 +240,22 @@ def main():
             res.setdefault('carga_s', {})[pack] = round(time.monotonic() - t_nav, 1)
             cdp.bombear(2.0)
             escena(ses, pack + '_portada', None)
+            if a.perfil:
+                cdp.call('Profiler.enable', {}, ses)
+                cdp.call('Profiler.setSamplingInterval', {'interval': 1000}, ses)
+                cdp.call('Profiler.start', {}, ses)
             escena(ses, pack + '_jugar', P['preparar_js'], timeout=300)
             escena(ses, pack + '_apertura6s', INICIO_JS % (ESPERA, 6000))
+            if a.perfil:
+                _perfil(cdp.call('Profiler.stop', {}, ses, 120)['profile'])
             escena(ses, pack + '_apertura30s', INICIO_JS % (ESPERA, 24000))
             escena(ses, pack + '_paseo', PASEO_JS)
             escena(ses, pack + '_pausa', PAUSA_JS, CERRAR_PAUSA_JS)
+            if a.sonda:
+                try:
+                    print('· sonda: %s' % avtest.evaluar(cdp, ses, a.sonda, 120), flush=True)
+                except Exception as e:  # noqa: BLE001
+                    print('· sonda: %s' % e, flush=True)
             if pack == 'cap1' and a.modos:
                 for m in MODOS:
                     if not a.solo or m[0] in a.solo.split(','):
