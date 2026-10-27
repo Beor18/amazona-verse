@@ -492,6 +492,25 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 - `epNTest` en verde, en ES y EN, con capturas antes y después en `docs/img/bfN_*`.
 - Esto sustituye a AV2.
 
+## Carril BG: Manga Toon Story Creator (directiva de Kelvin, 27-oct; todo en `docs/equipo/COMIC_MANGA_DIRECTIVA.md`)
+**La meta visual es `docs/img/referencia_manga_toon.webp`.** No se reemplaza el cómic actual (`src/game/comic.js`) hasta que Kelvin apruebe el prototipo: todo lo nuevo va aparte (por ejemplo `src/game/manga.js`, que se abre con `?manga=demo`). Tampoco se inventan cotorras: solo modelos, skins y especies oficiales.
+- **BG1, auditoría y plan.** Escribe `docs/equipo/COMIC_MANGA_AUDITORIA.md` con:
+  - el generador actual (`comic.js`: qué captura, cómo exporta y cómo guarda);
+  - los eventos que ya se registran en carreras, retos, Flight, River, el tren, Maze y los capítulos, y cuáles sirven para la línea de tiempo (§ 6), sin datos personales;
+  - las cotorras oficiales utilizables (especies, skins, rigs, animaciones, poses y expresiones), qué hay de bebés y juveniles en el criadero, y qué especies se pueden ofrecer;
+  - las cámaras, los materiales toon y el contorno o cel shading que se pueden usar;
+  - el plan técnico del acabado manga: cámaras por viñeta, contorno, fondos estilizados, viñetas en canvas o SVG, globos editables y exportación en PNG.
+  No se cambia código del juego.
+- **BG2, el prototipo de § 13.** Una página de demostración, aparte del juego, con:
+  - portada manga toon con título;
+  - una cotorra oficial (Vittata);
+  - 6 viñetas dinámicas con marcos negros, diagonales, globos, onomatopeyas y líneas de velocidad, hechas con escenas reales del juego renderizadas con cámaras de viñeta y post-proceso manga, sin imágenes de IA;
+  - diálogos editables;
+  - la última página con el desenlace, «¿Qué aprendí?» y «Mi enseñanza de vida» como en § 9;
+  - vista móvil a 375×812 y una exportación PNG de muestra.
+  Saca capturas lado a lado con la referencia en `docs/img/bg2_vs_referencia_*.jpg`. Si se ve como el cómic viejo, no está terminada: mejórala antes de cerrar.
+- **BG3, segunda pasada.** Compara otra vez con la referencia y sube el nivel: color, composición, expresiones y tipografía. Prepara la página de demostración para que Kelvin la vea en la web con `?manga=demo`, sin enlazarla desde el menú.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -582,4 +601,7 @@ Una ventana con `ejecutar.sh --cola 2` no se cierra: toma de `tools/agente_api/c
 | BF4 | pendiente | | |
 | BF5 | pendiente | | |
 | BF6 | pendiente | | |
+| BG1 | pendiente | | |
+| BG2 | pendiente | | |
+| BG3 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
