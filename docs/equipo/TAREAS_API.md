@@ -528,6 +528,6 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 | AZ1 | pendiente | | |
 | BB1 | pendiente | | |
 | BB2 | pendiente | | |
-| BC1 | pendiente | | |
+| BC1 | hecha | 42cdb37, 8427b0d (+ docs) | Ronda de jugador nuevo en escritorio (1366×768) sobre 2fdfb60 con `tools/build/qa_temporada1.py` (nuevo: portada, creador, apertura, pausa y cada capítulo hasta el final, más Diario, Retos y sus 4 retos, Flight, Maze, River Rush, Tren, criadero, récords, «Cambiar de juego» e inglés; captura, auditoría del DOM y consola por escena). Los 6 capítulos se juegan hasta el final y hay 0 errores de JS. Arreglados QA-44 (nombre del bocadillo dorado sobre papel, 1,2:1 → 5,7:1) y QA-43 (404 del favicon). Anotados sin tocar (archivos con cambios ajenos o decisión de Kelvin): QA-45 pausa en inglés con 3 textos en español, QA-46 el cap. 2 empieza con la cámara dentro de una palma, QA-47 «Episodio» frente a «Capítulo» y «Prototipo», QA-48 «Capítulo 6» bajo el pliegue de la portada, QA-49 losa sobre la cámara en River Rush, QA-50 desvío del tren ilegible, QA-51 extras que oscilan. Resumen en `QA_TEMPORADA1.md`; capturas `docs/img/bc1_*.jpg`. Build bc1-arreglos: obligatorias en verde, 0 errores, 0 avisos y 0 recursos 404; ep2e2eTest (extra) 70/71 por un caso de inglés que pasa en HEAD y no toca estos archivos. Las pruebas se corrieron sobre 2fdfb60; luego main avanzó con 6 commits de build y sitio que no tocan estos archivos. |
 | BC2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
