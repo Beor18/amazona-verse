@@ -64,13 +64,16 @@
     notasKelvin: [], // se rellenan al preparar, desde historia.js
     mundo: {
       tamano: 46, segmentos: 64,
-      cielo: { color: '#1e2740', niebla: [28, 90] },
-      luces: { cielo: '#c9d4ee', suelo: '#2a241c', hemi: 0.62, sol: '#f0c9a0', solInt: 0.45, solPos: [-20, 18, 30] },
+      exposicion: 0.72,
+      cielo: { color: '#6d84b0', cenit: '#24366e', sol: '#ffd7a8', niebla: [48, 720], nieblaAltura: [6, 48], permiso: 'noche' },
+      luces: { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35, solPos: [-20, 28, 30] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
+      mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
       lugares: { inicio: { x: -4, z: 8, r: 6 } },
       terreno: { ondas: [], relieves: [], planos: [] },
-      arboles: { cantidad: 28, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#2f6a45',
+      arboles: { cantidad: 28, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#2f7d43',
         evitar: [IGUACA, GUARDIAN, APRENDIZ, TRX, PRUEBA, { x: 0, z: 6 }, { x: 0, z: -6 }, { x: -14, z: -8 }, { x: 0, z: -18 }, { x: 0, z: -28 }, { x: 18, z: -6 }, { x: -18, z: -14 }, { x: 12, z: 12 }, { x: 0, z: -34 }] },
-      oceano: { color: '#1a3a4a', y: -2.6 },
+      oceano: { color: '#0b3a62', y: -2.6 },
     },
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },

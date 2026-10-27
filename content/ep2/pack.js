@@ -118,17 +118,20 @@
 
     mundo: {
       tamano: 40, segmentos: 80,
-      cielo: { color: '#d9c4a8', niebla: [30, 100] },
-      luces: { cielo: '#e6dccb', suelo: '#3a4a2a', hemi: 0.85, sol: '#ffcf9a', solInt: 0.7, solPos: [30, 40, -20] },
+      exposicion: 0.74,
+      cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+      luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+      mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
       lugares: { inicio: { x: -4, z: 4, r: 5 }, nido: { x: NIDO.x, z: NIDO.z, r: 3 } },
       terreno: {
         ondas: [{ fn: 'sin', x: 0.09, amp: 0.5 }, { fn: 'cos', z: 0.07, amp: 0.4 }],
         relieves: [{ tipo: 'colina', x: 16, z: -6, alto: 6, ancho: 40 }], // la loma: el sitio empinado
         planos: ['inicio', 'nido'],
       },
-      arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#3f8f4a',
+      arboles: { cantidad: 36, semilla: 5, copaCada: 2, margenRio: 5, copaColor: '#2f7d43',
         evitar: [LUMA, NIDO, ABUELA, PAPA, MESA].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
-      oceano: { color: '#4a9ab8', y: -2.6 },
+      oceano: { color: '#0b4f86', y: -2.6 },
     },
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
     npcs: [
@@ -485,10 +488,13 @@
         if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true }); // el clima de El Yunque no pisa la prueba
         const sc = G.renderer.scene, rain = G.fx.rain, luces = [];
         sc.traverse(o => { if (o.isHemisphereLight || o.isDirectionalLight) luces.push([o, o.intensity]); });
+        const skyU = G.renderer.sky && G.renderer.sky.material.uniforms;
         temporal = { k: 0, on: true, t: 0, parte, mostrado: !parte, luces, rafagaT: 0.4, truenoT: 1,
           fondo: sc.background && sc.background.isColor ? sc.background.clone() : null,
+          sky: skyU ? { cenit: skyU.uCenit.value.clone(), hor: skyU.uHorizonte.value.clone(), sol: skyU.uSolCol.value.clone() } : null,
           niebla: sc.fog ? [sc.fog.color.clone(), sc.fog.near, sc.fog.far] : null,
           lluvia: [rain.material.opacity, rain.material.size, rain.rotation.z] };
+        if (G.look && G.look.pausarAmbiente) G.look.pausarAmbiente(true);
         rain.visible = true; rain.material.opacity = 1; rain.material.size = 0.18; rain.rotation.z = 0.35;
         if (G.audio.has('lluvia')) G.audio.play('lluvia');
         G.dialogo.say(lineas, () => { if (!temporal.mostrado) mostrarFallo(); calma(); done(); });
@@ -498,7 +504,12 @@
         const sc = G.renderer.scene, rain = G.fx.rain;
         for (const [l, i] of T.luces) l.intensity = i;
         if (T.fondo) sc.background.copy(T.fondo);
+        if (T.sky && G.renderer.sky) {
+          const u = G.renderer.sky.material.uniforms;
+          u.uCenit.value.copy(T.sky.cenit); u.uHorizonte.value.copy(T.sky.hor); u.uSolCol.value.copy(T.sky.sol);
+        }
         if (T.niebla) { sc.fog.color.copy(T.niebla[0]); sc.fog.near = T.niebla[1]; sc.fog.far = T.niebla[2]; }
+        if (G.look && G.look.pausarAmbiente) G.look.pausarAmbiente(false);
         rain.visible = false; [rain.material.opacity, rain.material.size, rain.rotation.z] = T.lluvia;
         casa.rotation.set(0, 0, 0); for (const m of casa.children) if (m.userData.parte) m.rotation.z = m.userData.rz || 0;
         temporal = null;
@@ -521,6 +532,12 @@
         if (T.flashT > 0) { T.flashT -= dt; flash = 1.4; }
         for (const [l, i] of T.luces) l.intensity = i * (1 - 0.55 * k + flash);
         if (T.fondo) sc.background.copy(T.fondo).lerp(NUBLADO, 0.8 * k);
+        if (T.sky && G.renderer.sky) {
+          const u = G.renderer.sky.material.uniforms, n = NUBLADO.clone().convertSRGBToLinear();
+          u.uCenit.value.copy(T.sky.cenit).lerp(n, 0.55 * k);
+          u.uHorizonte.value.copy(T.sky.hor).lerp(n, 0.75 * k);
+          u.uSolCol.value.copy(T.sky.sol).lerp(n, 0.45 * k);
+        }
         if (T.niebla) { sc.fog.color.copy(T.niebla[0]).lerp(NUBLADO, 0.8 * k); sc.fog.near = T.niebla[1] * (1 - 0.6 * k); sc.fog.far = T.niebla[2] * (1 - 0.55 * k); }
         G.fx.rain.rotation.z = 0.35 + 0.12 * Math.sin(T.t * 2.3);
         if ((T.rafagaT -= dt) <= 0) { T.rafagaT = 1.3 + Math.random(); G.camara.shake(0.035, 0.3); }

@@ -117,7 +117,11 @@
   };
   const MUNDO_ANALITICO = {
     tamano: 70, segmentos: 110,
-    cielo: { color: '#bfe1d6', niebla: [55, 165] },
+    exposicion: 0.74,
+    cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+    luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+    post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+    mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
     lugares: LUGARES,
     terreno: {
       ondas: [{ fn: 'sin', x: 0.06, amp: 1.2 }, { fn: 'cos', z: 0.05, amp: 1.0 }, { fn: 'sin', xz: 0.03, amp: 1.5 }],
@@ -129,7 +133,7 @@
     },
     plataformas: [{ lugar: 'mirador', r: 2.3, alto: 0.4 }],
     rio: { x: 30 },
-    agua: { x: 28, ancho: 32, nivel: { x: 30, z: 0, sobre: 1.2 } },
+    agua: { x: 28, ancho: 32, color: '#5fe3d6', nivel: { x: 30, z: 0, sobre: 1.2 } },
     arboles: {
       cantidad: 110, semilla: 7, copaCada: 3, margenRio: 7, extra: MARK_TREES,
       evitar: pack => [POOL, ...(pack.coquies || []), ...((pack.diario || {}).entradas || []).filter(f => !f.agua), { x: 0, z: -11, r: 4 }, { x: -30, z: 33, r: 5 }],
