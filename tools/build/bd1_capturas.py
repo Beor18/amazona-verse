@@ -24,7 +24,10 @@ ESPERA = 'const sleep = ms => new Promise(r => setTimeout(r, ms));'
 
 FOTO_JS = r'''(async () => { %s
   const G = window.AV.G, R = G.renderer, CAM = G.camara;
-  for (const id of ['hud', 'quest', 'toast', 'keys']) { const e = document.getElementById(id); if (e) e.style.visibility = 'hidden'; }
+  const fade = document.getElementById('c1-fade'); if (fade) fade.remove();
+  const rup = document.getElementById('c1-ruptura'); if (rup) rup.remove();
+  for (const id of ['hud', 'quest', 'toast', 'keys', 'bocadillos']) { const e = document.getElementById(id); if (e) e.style.visibility = 'hidden'; }
+  const dlg = document.getElementById('dialog'); if (dlg && dlg.close) dlg.close();
   if (CAM) { CAM.dist = 22; CAM.height = 9; CAM.look = 1.6; CAM.yaw = 0.7; CAM.place(true); }
   await sleep(700);
   if (R.drawScene) R.drawScene(R.camera);
