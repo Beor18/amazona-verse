@@ -454,6 +454,19 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 - **BC2, móvil a 375×812 con CPU 4×:** lo mismo, más los tirones, la memoria, los textos que tapan y los botones pequeños.
 - Si un archivo tiene cambios sin commit de otro carril (por ejemplo AZ1), deja el bug anotado y no lo toques.
 
+## Carril BD: estándar visual intachable en los 6 capítulos (Kelvin, 27-oct: «los colores en esos otros capítulos están mal; hay que mantener un estándar de calidad y gráficas intachable»)
+- **BD1, auditoría y estándar.**
+  - Saca capturas de cada capítulo (1 a 6) en 4 momentos (arranque, misión 1, la escena clave y el final), en escritorio y en móvil, más el ángulo del render (`render2022`).
+  - Compara con el capítulo 1 y con el look Vibrant Toon por defecto (`src/game/look.js`): paleta, cielo, luz, niebla, post-proceso, saturación, sombras, color del agua y del suelo, materiales de los personajes y UI.
+  - Escribe `docs/equipo/ESTANDAR_VISUAL.md`: la regla que todo capítulo, minijuego y agente debe cumplir, con valores concretos y capturas de referencia, y una prueba automática `lookCapitulosTest` que falle si un pack se sale del estándar (por ejemplo, look distinto de `vibrant_toon`, exposición o saturación fuera de rango, o niebla y cielo distintos sin permiso).
+  - Pon las capturas lado a lado en `docs/img/bd1_*`.
+- **BD2, arreglar los capítulos 2 a 6.**
+  - Cada pack hereda el look estándar. Quita los colores, luces y cielos propios que no estén justificados por la historia (una tormenta o la noche sí se justifican, pero con la misma calidad).
+  - Mundos «analíticos» o vacíos: que se vean del mismo juego (terreno, flora y agua del estándar).
+  - Capturas antes y después por capítulo.
+  - No toques los minijuegos, `web/` ni los edificios de Grok.
+  - Si `content/epN` tiene cambios sin commit de otro carril, mete solo tus hunks.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -530,4 +543,6 @@ F3 (motor por regiones) y F4 (mundo más grande) esperan las decisiones K4–K6 
 | BB2 | pendiente | | |
 | BC1 | hecha | 42cdb37, 8427b0d (+ docs) | Ronda de jugador nuevo en escritorio (1366×768) sobre 2fdfb60 con `tools/build/qa_temporada1.py` (nuevo: portada, creador, apertura, pausa y cada capítulo hasta el final, más Diario, Retos y sus 4 retos, Flight, Maze, River Rush, Tren, criadero, récords, «Cambiar de juego» e inglés; captura, auditoría del DOM y consola por escena). Los 6 capítulos se juegan hasta el final y hay 0 errores de JS. Arreglados QA-44 (nombre del bocadillo dorado sobre papel, 1,2:1 → 5,7:1) y QA-43 (404 del favicon). Anotados sin tocar (archivos con cambios ajenos o decisión de Kelvin): QA-45 pausa en inglés con 3 textos en español, QA-46 el cap. 2 empieza con la cámara dentro de una palma, QA-47 «Episodio» frente a «Capítulo» y «Prototipo», QA-48 «Capítulo 6» bajo el pliegue de la portada, QA-49 losa sobre la cámara en River Rush, QA-50 desvío del tren ilegible, QA-51 extras que oscilan. Resumen en `QA_TEMPORADA1.md`; capturas `docs/img/bc1_*.jpg`. Build bc1-arreglos: obligatorias en verde, 0 errores, 0 avisos y 0 recursos 404; ep2e2eTest (extra) 70/71 por un caso de inglés que pasa en HEAD y no toca estos archivos. Las pruebas se corrieron sobre 2fdfb60; luego main avanzó con 6 commits de build y sitio que no tocan estos archivos. |
 | BC2 | hecha | ac442fb, 3f95824, 2394d2d (+ docs) | Ronda de jugador nuevo en móvil (375×812, dpr 3, táctil, CPU 4×) con `tools/build/qa_movil.py` (nuevo: tirones, heap y texturas, botones < 44 px, textos tapados): los 6 capítulos y los modos se juegan de punta a punta; resumen en `QA_TEMPORADA1.md` (sección móvil), capturas `docs/img/bc2_*.jpg`. Arreglados QA-56 (`navigator.vibrate` sin gesto: errores de consola), QA-55 (River Rush 40→44 px) y QA-42 (✕ fija en Retos). Abiertos: **QA-52** (cap. 1: 264–440 MB de texturas en «bajo», presupuesto 160; AW1), QA-53 (congelado intermitente de hasta 3,7 s al pulsar «Empezar») y QA-54 (40 px en Tren y mapa grande; archivos con cambios ajenos). Heap 14–78 MB. Build a834183 (los 3 arreglos): obligatorias en verde, 0 errores de consola; extra `lookTest` 38/42 (draw calls del mundo 100→78, ajeno). El margen de la ✕ (12 px) se ajustó después y se comprobó en la copia de trabajo. |
+| BD1 | pendiente | | |
+| BD2 | pendiente | | |
 | AJ3 | hecha | 5b6f9b7 | QA-40 arreglado; QA-41, 42 y 43 abiertos en BUGS.md |
