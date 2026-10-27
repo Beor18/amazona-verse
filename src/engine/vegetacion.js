@@ -9,7 +9,9 @@
      por tramado entre los dos. Plantas y rocas se apagan por distancia.
    - Pasto en tarjetas (pasto.glb) alrededor del jugador, donde el splat es pasto, fuera de senderos y agua.
    - Sombras: en 'alto' los árboles cercanos proyectan sombra real; en todos, una mancha suave bajo cada árbol los asienta.
-   - Colisiones: troncos cercanos al jugador como colliders (se actualizan al moverse).
+   - Bosque lleno (AW2): relleno hasta ~7 000 árboles con la máscara de Kelvin (assets/data/bosque_cap1.js), con tope de
+     árboles en malla por calidad (300/600/1 200, los más cercanos) y sombra real solo a menos de 30 m.
+   - Colisiones: troncos a menos de 40 m del jugador como colliders (se actualizan al moverse).
    - Fundido entre la cámara y Vittata: lo que queda dentro del cono cámara→Vittata (radio que crece hasta FUNDIDO.radio
      junto a ella) se vuelve translúcido por tramado, sin ordenar transparencias ni tocar las sombras.
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
@@ -25,6 +27,19 @@ AVE.module('vegetacion', function (G) {
   const VI = Object.assign({ dir: [0.8, 0.35], fuerza: 1 }, FL.viento);
   const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34 }, FL.distancias);
   const PASTO_NIVEL = { bajo: { rad: 0.4, dens: 0.3 }, medio: { rad: 0.765 }, alto: { rad: 1 } }; // 26-D: 14 / 26 / 34 m; en bajo, poco
+  // F1 (AW2, MAPA_PLAN_COMPLETO.md): bosque lleno. Se rellena con árboles hasta `objetivo` donde la máscara de MultiScatter de
+  // Kelvin (trees.psd → assets/data/bosque_cap1.js, tools/blender/bosque_mascara.py) tenía bosque, en el suelo libre del mapa.
+  // De cerca, como mucho TOPE_ARBOLES árboles visibles en malla (los más cercanos); el resto, impostor. Sombra real solo a
+  // menos de SOMBRA_MAX y troncos sólidos solo a menos de COL_RAD. mundo.flora.bosque: false lo apaga.
+  const MAPA_CAP1 = window.AV_MAPA_CAP1;
+  const BOSQUE = FL.bosque === false ? null : Object.assign({ src: 'assets/data/bosque_cap1.js', global: 'AV_BOSQUE_CAP1', objetivo: 7000, semilla: 7351 }, FL.bosque);
+  const usarBosque = !!(BOSQUE && (FL.bosque || (MAPA_CAP1 && MAPA.nombre === MAPA_CAP1.nombre)));
+  const TOPE_ARBOLES = Object.assign({ bajo: 300, medio: 600, alto: 1200 }, FL.topeArboles);
+  // y como mucho estos triángulos de árboles en malla (los del kit tienen 1 000–5 700): con 300/600/1 200 árboles no cabría
+  // en el presupuesto de MAPA_PLAN_COMPLETO.md § 3 (250 k / 450 k / 1,2 M el cuadro entero). Medido en las 12 vistas: con
+  // 110/200/550 k el móvil (medio) pasaba de 450 k en aerea_sur y s_villa; con esto no crece respecto a antes de AW2.
+  const TOPE_TRIS = Object.assign({ bajo: 60e3, medio: 120e3, alto: 300e3 }, FL.topeTris);
+  const SOMBRA_MAX = 30, COL_RAD = 40;
   const { rng } = G.util;
   const C = R.calidad;
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -221,11 +236,11 @@ AVE.module('vegetacion', function (G) {
     const despejar = (typeof FL.evitar === 'function' ? FL.evitar(G.pack) : FL.evitar || []).concat(G.pack.npcs || []).filter(e => e && e.x != null);
     const tapado = (x, z, r) => despejar.some(e => Math.hypot(e.x - x, e.z - z) < (e.r || 0) + r);
     const cel = FD.celda, area = cel * cel / 100;
+    const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
     for (const esp of FD.especies || []) {
       const d = dens[esp], md = MODELOS[esp];
       if (!d || !md) continue;
       const esArb = md.kit.some(k => esArbol(k));
-      const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
       for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
         const v = d[ix + iz * FD.nx]; if (!v) continue;
         const exp = v / 10 * area;
@@ -282,8 +297,37 @@ AVE.module('vegetacion', function (G) {
       add(md.kit[0], x, z, s, { rank: r2() });
       n++;
     }
+    // F1.1 (AW2), bosque lleno: de ~1 900 árboles a BOSQUE.objetivo, en las celdas de 4 m con bosque en la máscara de Kelvin
+    // y fuera de sendas, agua, edificios y sitios despejados (libre/tapado), sin encimarse (libreDe). Tres especies por
+    // ambiente según la altura: tabonuco en el llano y los meandros, palma de sierra en las terrazas, bosque enano en lo
+    // nublado. Semilla propia: el resto de la flora no se mueve.
+    const MB = usarBosque && window[BOSQUE.global];
+    bosquePos.length = 0;
+    if (MB && MB.bits) {
+      const mb = b64u8(MB.bits), r3 = rng(BOSQUE.semilla), celdas = [];
+      for (let i = 0; i < MB.nx * MB.nz; i++) if ((mb[i >> 3] >> (i & 7)) & 1) celdas.push(i);
+      for (let i = celdas.length - 1; i > 0; i--) { const j = Math.floor(r3() * (i + 1)), t = celdas[i]; celdas[i] = celdas[j]; celdas[j] = t; }
+      const especie = (h, u) => h > 64 ? (u < 0.55 ? 'tabonuco_enano' : u < 0.9 ? 'palma_sierra' : 'helecho_gigante')
+        : h > 24 ? (u < 0.55 ? 'palma_sierra' : u < 0.85 ? 'tabonuco' : 'yagrumo')
+        : (u < 0.6 ? 'tabonuco' : u < 0.8 ? 'yagrumo' : 'palma_sierra');
+      let n = lista.reduce((a, it) => a + (CAT(it.m) === 'arbol' ? 1 : 0), 0);
+      for (let pasada = 0; pasada < 10 && n < BOSQUE.objetivo; pasada++) for (const c of celdas) {
+        if (n >= BOSQUE.objetivo) break;
+        const x = MB.x0 + (c % MB.nx + r3()) * MB.celda, z = MB.z0 + (Math.floor(c / MB.nx) + r3()) * MB.celda;
+        const md = MODELOS[especie(T.height(x, z), r3())], u = r3(), s0 = r3(), rk = r3();
+        if (!md || !libre(x, z)) continue;
+        const y = T.height(x, z);
+        if (y < 0.8 || enAgua(x, z, y) || T.normalAt(x, z).y < 0.72 || tapado(x, z, 3)) continue;
+        const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.8 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.8; // dosel cerrado: las copas del relleno se tocan algo más
+        if (!libreDe(x, z, r)) continue;
+        marcar(x, z, r);
+        add(m, x, z, s, { rank: rk, bosque: true });
+        n++; bosquePos.push(x, z);
+      }
+    }
     return lista;
   }
+  const bosquePos = []; // x, z de los árboles de relleno (floraTest)
   function empaquetar(lista) {
     const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), m4 = new THREE.Matrix4(), c = new THREE.Color();
     const cuenta = {};
@@ -316,7 +360,8 @@ AVE.module('vegetacion', function (G) {
   function crearMallas(m) {
     const P = porModelo[m], prims = geos[m]; if (!P || !prims) return;
     const own = windUniforms(m), cat = CAT(m);
-    const g = { prims: [], cat, own };
+    const g = { prims: [], cat, own, tris: 0 };
+    for (const p of prims) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
     for (const p of prims) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
       const mk = (sombra) => {
@@ -556,12 +601,13 @@ AVE.module('vegetacion', function (G) {
     pv.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
     frustum.setFromProjectionMatrix(pv);
     const cx = cam.position.x, cz = cam.position.z;
-    const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? C.sombraRadio + 12 : 0;
+    const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? Math.min(SOMBRA_MAX, C.sombraRadio + 12) : 0;
     // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio. Con el dosel por celdas (AW3, dosel.js), 250 m
     const impMax = G.dosel && G.dosel.activo ? Math.min(DIST.impostor, G.dosel.impostorMax) : DIST.impostor;
-    let ni = 0;
+    const maxArb = topeArbol(cx, cz, distancias('arbol'));
+    let ni = 0, nMalla = 0, trisMalla = 0, dSombra = 0;
     for (const m in grupos) {
-      const g = grupos[m], P = porModelo[m], maxD = distancias(g.cat);
+      const g = grupos[m], P = porModelo[m], maxD = g.cat === 'arbol' ? maxArb : distancias(g.cat);
       const lejosMax = g.cat === 'arbol' && IMP.mesh ? impMax : maxD;
       const banda = Math.min(12, maxD * 0.15); // fundido entre malla e impostor
       const dens = g.cat === 'arbol' || g.cat === 'roca' ? 1 : C.flora;
@@ -576,10 +622,11 @@ AVE.module('vegetacion', function (G) {
           if (P.rank[i] > dens) continue;
           const dx = P.pos[i * 4] - cx, dz = P.pos[i * 4 + 2] - cz, d = Math.sqrt(dx * dx + dz * dz);
           if (d > lejosMax) continue;
-          if (d <= maxD) { if (d < sombraR) cerca.push(i); else lejos.push(i); }
+          if (d <= maxD) { if (d < sombraR) { cerca.push(i); if (d > dSombra) dSombra = d; } else lejos.push(i); }
           if (g.cat === 'arbol' && IMP.tile[m] && d > maxD - banda) imp.push(i);
         }
       }
+      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; }
       for (const pr of g.prims) {
         llenar(pr.cerca, P, sombraR ? cerca : []);
         llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
@@ -602,6 +649,35 @@ AVE.module('vegetacion', function (G) {
       IMP.mesh.geometry.instanceCount = ni; IMP.mesh.visible = ni > 0;
       IMP.aP.needsUpdate = IMP.aT.needsUpdate = IMP.aC.needsUpdate = true;
     }
+    Object.assign(ULT, { arbolesMalla: nMalla, trisArboles: trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: maxArb, dSombra, sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
+  }
+  // F1.3 (AW2): distancia hasta la que van en malla los árboles para que no pasen de TOPE_ARBOLES[nivel] ni de TOPE_TRIS[nivel]
+  // en pantalla (los más cercanos; el resto pasa al impostor con el mismo fundido). Si caben todos, la distancia de la calidad.
+  const ULT = {};
+  let dTope = new Float32Array(0), tTope = new Float32Array(0), iTope = new Uint32Array(0);
+  function topeArbol(cx, cz, maxD) {
+    const tope = TOPE_ARBOLES[C.nivel], topeT = TOPE_TRIS[C.nivel] || Infinity;
+    if (!(tope > 0)) return maxD;
+    if (dTope.length < total) { dTope = new Float32Array(total); tTope = new Float32Array(total); iTope = new Uint32Array(total); }
+    let n = 0, tris = 0;
+    const c0x = Math.max(0, Math.floor((cx - maxD - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((cx + maxD - X0) / CELL));
+    const c0z = Math.max(0, Math.floor((cz - maxD - Z0) / CELL)), c1z = Math.min(NCZ - 1, Math.floor((cz + maxD - Z0) / CELL));
+    for (const m in grupos) {
+      if (grupos[m].cat !== 'arbol') continue;
+      const P = porModelo[m], tm = grupos[m].tris;
+      for (let iz = c0z; iz <= c1z; iz++) for (let ix = c0x; ix <= c1x; ix++) {
+        const l = P.celdas.get(ix + iz * NCX); if (!l) continue;
+        cbox.min.set(X0 + ix * CELL - 8, -20, Z0 + iz * CELL - 8); cbox.max.set(X0 + (ix + 1) * CELL + 8, 140, Z0 + (iz + 1) * CELL + 8);
+        if (!frustum.intersectsBox(cbox)) continue;
+        for (const i of l) { const d = Math.hypot(P.pos[i * 4] - cx, P.pos[i * 4 + 2] - cz); if (d <= maxD) { dTope[n] = d; tTope[n] = tm; iTope[n] = n; n++; tris += tm; } }
+      }
+    }
+    if (n <= tope && tris <= topeT) return maxD;
+    const idx = iTope.subarray(0, n).sort((a, b) => dTope[a] - dTope[b]);
+    let k = 0, t = 0;
+    while (k < n && k < tope && t + tTope[idx[k]] <= topeT) t += tTope[idx[k++]];
+    // corte a medio camino entre el último que entra y el primero que no (los que empatan en distancia no se cuelan)
+    return k ? Math.max(4, (dTope[idx[k - 1]] + dTope[idx[k]]) / 2) : 4;
   }
   function llenar(im, P, idx) {
     if (!im) return;
@@ -626,7 +702,7 @@ AVE.module('vegetacion', function (G) {
     const cols = G.fisica.colliders;
     for (const c of misColliders) { const i = cols.indexOf(c); if (i >= 0) cols.splice(i, 1); }
     misColliders.length = 0;
-    const RAD = 40;
+    const RAD = COL_RAD; // F1.5: solo troncos a menos de 40 m (en círculo)
     for (const m of ARBOLES) {
       const P = porModelo[m], inf = info[m]; if (!P || !inf || inf.tronco < 0.08) continue;
       const c0x = Math.max(0, Math.floor((px - RAD - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((px + RAD - X0) / CELL));
@@ -635,7 +711,7 @@ AVE.module('vegetacion', function (G) {
         const l = P.celdas.get(ix + iz * NCX); if (!l) continue;
         for (const i of l) {
           const x = P.pos[i * 4], z = P.pos[i * 4 + 2], s = P.pos[i * 4 + 3];
-          if (Math.abs(x - px) > RAD || Math.abs(z - pz) > RAD) continue;
+          if ((x - px) * (x - px) + (z - pz) * (z - pz) > RAD * RAD) continue;
           const c = { x, z, r: Math.max(0.2, inf.tronco * s * 0.95), h: inf.alto * s * 0.85, kind: 'arbol' };
           cols.push(c); misColliders.push(c);
         }
@@ -651,7 +727,8 @@ AVE.module('vegetacion', function (G) {
   let listoRes = null;
   const listo = new Promise(res => { listoRes = res; });
   let activo = false;
-  T.listo.then(() => Promise.all([...necesarios].map(n => cargar(n).catch(e => { console.warn('AVE flora:', e && e.message || e); return null; }))))
+  const mascara = () => usarBosque && !window[BOSQUE.global] ? G.assets.script(BOSQUE.src).catch(e => console.warn('AVE bosque:', e && e.message || e)) : null;
+  T.listo.then(() => Promise.all([mascara(), ...[...necesarios].map(n => cargar(n).catch(e => { console.warn('AVE flora:', e && e.message || e); return null; }))]))
     .then(() => {
       const lista = generar().filter(it => geos[it.m]);
       empaquetar(lista);
@@ -693,7 +770,70 @@ AVE.module('vegetacion', function (G) {
   function stats() {
     const out = { fundido: U.uOcluA.value.w, total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
-    return out;
+    let arboles = 0;
+    for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2 }, ULT);
   }
-  return { listo, stats, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+
+  // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
+  const PRESUPUESTO_TRIS = { bajo: 250e3, medio: 450e3, alto: 1.2e6 }; // MAPA_PLAN_COMPLETO.md § 3, el cuadro entero
+  function trisFlora() {
+    let t = 0;
+    for (const m in grupos) for (const p of grupos[m].prims) {
+      const g = p.lejos.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3;
+      for (const im of [p.cerca, p.lejos]) if (im && im.visible) t += im.count * n;
+    }
+    if (IMP.mesh && IMP.mesh.visible) t += IMP.mesh.geometry.instanceCount * 2;
+    if (manchas) t += manchas.count * 2;
+    return t;
+  }
+  async function test() {
+    const P = G.pruebas, { check, result } = P.runner();
+    await listo;
+    if (!activo) { check('Flora del mapa cargada', !FD, 'sin flora'); return result(); }
+    const st = stats(), cam = R.camera, c0 = cam.position.clone(), q0 = cam.quaternion.clone();
+    const cal0 = { nivel: C.nivel, manual: !!C.manual }, xo = S.pos.x, zo = S.pos.z;
+    const r1 = v => Math.round(v * 10) / 10;
+    try {
+      // 1. Cuántos árboles y dónde (F1.1)
+      check('Bosque lleno: entre 6 000 y 8 000 árboles', !usarBosque || (st.arboles >= 6000 && st.arboles <= 8000), st.arboles + ' árboles (' + st.bosque + ' de relleno), ' + total + ' instancias');
+      const MB = usarBosque && window[BOSQUE.global];
+      if (MB) {
+        const mb = b64u8(MB.bits);
+        let fuera = 0, noLibre = 0;
+        for (let i = 0; i < bosquePos.length; i += 2) {
+          const x = bosquePos[i], z = bosquePos[i + 1], k = Math.floor((x - MB.x0) / MB.celda) + Math.floor((z - MB.z0) / MB.celda) * MB.nx;
+          if (!((mb[k >> 3] >> (k & 7)) & 1)) fuera++;
+          if (!libre(x, z)) noLibre++;
+        }
+        check('El relleno cae en el bosque de Kelvin (trees.psd) y en suelo libre (sin sendas, agua ni edificios)', st.bosque > 0 && !fuera && !noLibre, st.bosque + ' árboles, ' + fuera + ' fuera de la máscara, ' + noLibre + ' en suelo no libre');
+      }
+      // 2. Por calidad, a pie en el inicio y desde el aire: tope de árboles en malla, sombras a < 30 m, tris de la flora
+      const sp = MAPA.spawn || { x: xo, z: zo }, yS = T.height(sp.x, sp.z);
+      const vistas = [['a pie', [sp.x, yS + 2.2, sp.z + 6], [sp.x, yS + 1.5, sp.z - 30]], ['aire 250 m', [0, 250, 230], [0, 0, 0]], ['aire 90 m', [sp.x, yS + 90, sp.z + 90], [sp.x, yS, sp.z - 40]]];
+      for (const nivel of ['bajo', 'medio', 'alto']) {
+        if (R.setCalidad) R.setCalidad(nivel, true);
+        for (const [nom, p, mira] of vistas) {
+          cam.position.set(p[0], p[1], p[2]); cam.lookAt(mira[0], mira[1], mira[2]); cam.updateMatrixWorld();
+          actualizar(true);
+          const tr = trisFlora(), s = stats();
+          check(nivel + ', ' + nom + ': árboles en malla ≤ ' + s.tope + ' y ≤ ' + (s.topeTris / 1e3) + ' k tris, sombras < ' + SOMBRA_MAX + ' m, flora ≤ ' + (PRESUPUESTO_TRIS[nivel] / 1e3) + ' k tris',
+            s.arbolesMalla <= s.tope && s.trisArboles <= s.topeTris && s.dSombra < SOMBRA_MAX && (nivel === 'alto' || !s.sombraR) && tr <= PRESUPUESTO_TRIS[nivel],
+            s.arbolesMalla + ' en malla (' + Math.round(s.trisArboles / 1e3) + ' k tris) hasta ' + r1(s.dArbol) + ' m, ' + s.impostores + ' impostores, sombra hasta ' + r1(s.dSombra) + ' m, ' + Math.round(tr / 1e3) + ' k tris de flora');
+        }
+      }
+      // 3. Colisión: solo troncos a menos de 40 m, y todos los de ese radio (F1.5)
+      P.teleport(sp.x, sp.z); actualizarColliders(true);
+      const lejos = misColliders.filter(c => Math.hypot(c.x - S.pos.x, c.z - S.pos.z) > COL_RAD).length;
+      let cerca = 0;
+      for (const m of ARBOLES) { const PM = porModelo[m], inf = info[m]; if (!PM || !inf || inf.tronco < 0.08) continue; for (let i = 0; i < PM.n; i++) if (Math.hypot(PM.pos[i * 4] - S.pos.x, PM.pos[i * 4 + 2] - S.pos.z) <= COL_RAD) cerca++; }
+      check('Colisión: solo los troncos a menos de ' + COL_RAD + ' m, y todos ellos', !lejos && misColliders.length === cerca, misColliders.length + ' troncos sólidos de ' + cerca + ' a < ' + COL_RAD + ' m, ' + lejos + ' más lejos; ' + st.arboles + ' árboles en total');
+    } finally {
+      if (R.setCalidad) { R.setCalidad(cal0.nivel); C.manual = cal0.manual; }
+      cam.position.copy(c0); cam.quaternion.copy(q0); cam.updateMatrixWorld();
+      P.teleport(xo, zo); actualizarColliders(true); actualizar(true);
+    }
+    return result();
+  }
+  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
 });
