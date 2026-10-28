@@ -38,7 +38,7 @@ El cielo de partida es el del día. Durante la prueba de la casa el pack pide `G
 
 ## Qué no entra
 
-Minijuegos, `web/`, edificios y el compile de shaders. F2.2 (tejados por aldea) no se retoma: es paleta de arte.
+Minijuegos, `web/`, edificios y el compile de shaders. F2.2 (tejados por aldea): Kelvin decidió el 28-oct que son rojos, como en el render de 2022, dentro de la paleta `vibrant_toon` (DECISION_LOG).
 
 ## Capturas
 
