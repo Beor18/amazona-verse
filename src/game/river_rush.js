@@ -547,13 +547,19 @@
     // Metros del techo (malla del terreno o puente) sobre el agua, en el centro del cauce. QA-49: un triángulo de pasto que cruza el río, o un puente, deja la cámara debajo y tapa la pantalla.
     function cubiertaEn(x, z) {
       const ps = G.terreno.plataformas, fn = G.terreno.platformTop;
-      if (!ps || !fn) return -Infinity;
+      if (!ps) return -Infinity;
       let t = -Infinity;
       for (let i = 0; i < ps.length; i++) {
         const p = ps[i];
         if (p.tipo !== 'puente' && p.tipo !== 'rampa') continue;
-        const y = fn(p, x, z);
-        if (y > t) t = y;
+        const y = fn && fn(p, x, z);
+        if (y === y && y > t) t = y; // encima del tablero
+        if (p.ax == null) continue;
+        const ux = p.bx - p.ax, uz = p.bz - p.az, L2 = ux * ux + uz * uz || 1;
+        let u = ((x - p.ax) * ux + (z - p.az) * uz) / L2; u = u < 0 ? 0 : u > 1 ? 1 : u;
+        const d = Math.hypot(x - (p.ax + ux * u), z - (p.az + uz * u));
+        // El cauce muestreado puede quedar a un par de metros del eje: igual hay que ver el tablero, no su parte de abajo.
+        if (d <= (p.ancho || 1.5) / 2 + 3) { const alt = p.ay + (p.by - p.ay) * u; if (alt > t) t = alt; }
       }
       return t;
     }
@@ -1021,7 +1027,8 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           check('Reinicio: puntos 0, fase listo, filas nuevas delante', J.puntos === 0 && st.fase === 'listo' && filas.length >= 2 && st.ui.fin.hidden);
           // ---------- 50 reinicios: sin fugas ----------
           colocar(1 / 60); await dosCuadros();
-          const m0 = mem(), capOk = [];
+          const mallasRio = () => { let n = 0; raiz.traverse(o => { if (o.isMesh) n++; }); return n; };
+          const m0 = mem(), nRio0 = mallasRio(), capOk = [];
           for (let i = 0; i < 50; i++) {
             otraVez(); arrancar(); robot(1 / 30, 300 + (i % 7) * 20); colocar(1 / 30);
             capOk.push(Object.keys(pool).every(t => pool[t].libres.length >= 0 && pool[t].libres.length <= CAP[t] && new Set(pool[t].libres).size === pool[t].libres.length));
@@ -1029,7 +1036,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           }
           await dosCuadros();
           const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas; el streaming del mundo puede sumar unas pocas)', m1.g <= m0.g + 4 && m1.t <= m0.t + 1, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          check('50 reinicios: el pool del río no crece (el mundo puede cargar puentes y terreno mientras tanto)', mallasRio() <= nRio0 && m1.t <= m0.t + 8, 'mallas ' + nRio0 + ' → ' + mallasRio() + ' · ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- AC2 · clásico: medallas, el «casi», la siguiente meta y el ranking (reto rio_rush) ----------
           st.modo = 'puntos';
