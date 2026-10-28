@@ -1,6 +1,6 @@
-# Para Fujimoto: 3 agentes de Grok en Cursor (reparto nuevo del 28-oct)
+# Para Fujimoto: 4 agentes de Grok en Cursor (reparto nuevo del 28-oct)
 
-Kelvin reinicia el reparto (28-oct): **hasta que el crédito de Claude se reinicie el sábado, el trabajo lo hacen los Grok** y la sesión coordinadora solo une, prueba y publica. **3 agentes de Grok a la vez**, cada uno con una tarea del lanzamiento y sin tocar los archivos de los otros. Cierra los chats de Grok que haya abiertos con tareas viejas (el cómic Manga Toon sigue en pausa). Abre en Cursor **3 chats de agente nuevos**, con el modelo Grok en modo Agent (pueden ser Background Agents), y pega en cada uno su texto.
+Kelvin reinicia el reparto (28-oct): **hasta que el crédito de Claude se reinicie el sábado, el trabajo lo hacen los Grok** y la sesión coordinadora solo une, prueba y publica. **4 agentes de Grok a la vez**, cada uno con una tarea del lanzamiento y sin tocar los archivos de los otros. Cierra los chats de Grok que haya abiertos con tareas viejas (el cómic Manga Toon sigue en pausa). Abre en Cursor **4 chats de agente nuevos**, con el modelo Grok en modo Agent (pueden ser Background Agents), y pega en cada uno su texto.
 
 ## Grok 1: la gran ciudad del tepuy (G18)
 
