@@ -1,5 +1,13 @@
 # Grok en Cursor: una sola fila de tareas (28-oct)
 
+## ⚠️ MODO AHORRO (28-oct, 14:15 AST): Grok está al ~90 % de su uso
+Kelvin: «estamos en crisis». Hasta nuevo aviso de la coordinadora:
+1. **Solo 3 carriles siguen:** **C** (Ciudad de los 36), **D** (copas a escala en todo el mapa y dosel continuo) y **J** (sombra de la piedra crema y piezas en el aire). Es lo que falta para cerrar el mapa.
+2. **Pausados:** A, B, E, F, G, H, I, K, L, M, N y todo el audiovisual (G29–G32). Si eres uno de ellos, deja tu trabajo con commit y **para**.
+3. **Nada de papeleo:** no más `ESTADO_CARRILES.md` cada 20 minutos ni commits solo de tablero. Un commit por cambio real, con su captura, y una línea en el tablero al terminar.
+4. **Menos vueltas:** antes de subir, compara tu captura con la meta de Kelvin; sube solo si mejora de verdad.
+5. **Grok Imagine** gasta del mismo uso: las pruebas de video esperan a que se reinicie el uso.
+
 **El tablero (`TRABAJO_SIMULTANEO.md`) manda, y la coordinadora lo mantiene al día.** Si un pedido de la coordinadora en `PEDIDOS.md` es más nuevo que el estado del tablero, vale el pedido: actualiza la fila y sigue. «Lista para Kelvin» con una revisión pendiente no es «bloqueado»: se hace la revisión.
 
 **Nadie sustituye las tareas de otro ni se detiene.** Los agentes se reparten el trabajo entre ellos y siguen sin parar hasta terminar el proyecto con la calidad que merece.
