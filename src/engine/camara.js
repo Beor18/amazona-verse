@@ -112,21 +112,37 @@ AVE.module('camara', function (G) {
     else if (tMin < 1 || dentro) { const k = Math.min(1, Math.max(piso / L, dentro ? piso / L : tMin - 0.4 / L)); if (k < 0.995) camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
   }
   // Si el encuadre cae dentro de un muro, un tejado o una cúpula, retrocede por la línea hasta quedar fuera.
-  // Subir del todo (el comportamiento anterior) plantaba la cámara encima del edificio y la pared llenaba la vista.
+  // Si eso la dejaría a menos de 3,2 m (la vista se agrandaba al chocar), prueba a rodear el obstáculo.
   function evitarMuros() {
     if (!G.solidos || !G.solidos.activo) return;
-    cabeza.set(S.pos.x, S.pos.y + CAM.look, S.pos.z); dirCam.subVectors(camPos, cabeza);
-    const L = dirCam.length(); if (L < 0.9) return;
-    const n = Math.max(1, Math.ceil(L / 0.3)); let corte = -1;
-    for (let i = 1; i <= n; i++) {
-      const t = i / n;
-      if (G.solidos.dentro(cabeza.x + dirCam.x * t, cabeza.z + dirCam.z * t, cabeza.y + dirCam.y * t) > -Infinity) { corte = i - 1; break; }
+    const qx = camPos.x, qy = camPos.y, qz = camPos.z, hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z;
+    const libre = (dx, dy, dz) => {
+      const L = Math.hypot(dx, dy, dz);
+      if (L < 1.6) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
+      const n = Math.max(1, Math.ceil(L / 0.3)); let corte = -1;
+      for (let i = 1; i <= n; i++) {
+        const t = i / n;
+        if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { corte = i - 1; break; }
+      }
+      if (corte < 0) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
+      const k = Math.max(1.6 / L, corte / n);
+      let x = hx + dx * k, y = hy + dy * k, z = hz + dz * k;
+      const top = G.solidos.dentro(x, z, y);
+      if (top > -Infinity) y = top + 0.6;
+      return { x, y, z, d: Math.hypot(x - hx, y - hy, z - hz) };
+    };
+    const dx0 = qx - hx, dy0 = qy - hy, dz0 = qz - hz;
+    let best = libre(dx0, dy0, dz0);
+    if (best.d < 3.2) {
+      const dh = Math.hypot(dx0, dz0) || CAM.dist, ang0 = Math.atan2(dx0, dz0);
+      for (let s = 1; s <= 6 && best.d < 3.2; s++) for (const sig of [1, -1]) {
+        const a = ang0 + s * 0.4 * sig, r = libre(Math.sin(a) * dh, dy0, Math.cos(a) * dh);
+        if (r.d > best.d + 0.05) best = r;
+      }
     }
-    if (corte < 0) return;
-    const k = Math.max(0.9 / L, corte / n);
-    camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k);
-    const top = G.solidos.dentro(camPos.x, camPos.z, camPos.y);
-    if (top > -Infinity) camPos.y = top + 0.6;
+    camPos.set(best.x, best.y, best.z);
+    const suelo = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
+    if (camPos.y < suelo) camPos.y = suelo;
   }
   // ¿Se ve «mira» desde q sin copas en medio? (fotos del cómic, QA-32). Si mira o q están dentro de una copa, no: posada en
   // la rama de un flamboyán, las hojas la tapan desde cualquier ángulo (medido) y el cómic usa su ilustración

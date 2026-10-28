@@ -275,9 +275,9 @@ window.AVMovimientoTest = function (G) {
           // La cámara, mirando hacia el edificio, no puede quedarse dentro del muro (la pared llenaba la vista).
           const angCam = Math.atan2(bx - S.pos.x, bz - S.pos.z);
           G.camara.yaw = angCam; G.camara.place(true);
-          const cp = G.renderer.camera.position, den = SO.dentro(cp.x, cp.z, cp.y);
-          met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z)) };
-          check('La cámara no se mete en la pared del edificio', !(den > -Infinity), JSON.stringify(met.camPared));
+          const cp = G.renderer.camera.position, den = SO.dentro(cp.x, cp.z, cp.y), distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
+          met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(distH) };
+          check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m)', !(den > -Infinity) && distH >= 2.5, JSON.stringify(met.camPared));
         }
         // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
         // (un tabonuco alto puede no tener ramas bajas: se prueba el siguiente)
