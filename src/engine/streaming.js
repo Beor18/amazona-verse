@@ -189,13 +189,17 @@ AVE.module('streaming', function (G) {
     afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
     const esc = m.userData.avAtlasEsc = { value: 1 }; // tamaño del atlas / 4096 (reducirAtlas): corrige el lod sin recompilar
+    // F2.2: en el atlas Savage, RoofThatched es la celda 4 (columna 0, fila 1). Rojo teja cálido y mate,
+    // el del render de 2022, sin tocar la piedra Ancient (mismo programa, el uniforme lo apaga).
+    const teja = { value: m.name === 'AV_HD_Savage' ? 1 : 0 };
     m.onBeforeCompile = sh => {
       sh.uniforms.avAtlasEsc = esc;
+      sh.uniforms.avTeja = teja;
       sh.vertexShader = sh.vertexShader
         .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
         .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\n' +
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\nuniform float avTeja;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
           '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ' * avAtlasEsc, dy = dFdy( uv ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
           '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
@@ -203,7 +207,8 @@ AVE.module('streaming', function (G) {
           '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
         // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
         // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
-        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )'))
+        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
+          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.58, 0.22, 0.14), 0.84);\n')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
@@ -307,6 +312,19 @@ AVE.module('streaming', function (G) {
       const n = d.length / 4; c.multiply(new THREE.Color(r / n, g / n, b / n));
     } catch (e) { /* lienzo no disponible: color del material */ }
     return c;
+  }
+  // F2.2: las caras de arriba del tejado (normal hacia el cielo, en la mitad alta) pasan a rojo teja
+  // cálido. El color de vértice del _lejos estaba en ~0,11 y desde el aire no se leía. No se toca la geometría.
+  function techar(geo) {
+    const pos = geo.attributes.position, nor = geo.attributes.normal, col = geo.attributes.color;
+    if (!pos || !nor || !col) return;
+    let y1 = -1e9;
+    for (let i = 0; i < pos.count; i++) y1 = Math.max(y1, pos.getY(i));
+    const corte = y1 * 0.42;
+    for (let i = 0; i < pos.count; i++) {
+      if (nor.getY(i) > 0.32 && pos.getY(i) > corte) col.setXYZ(i, 0.70, 0.28, 0.18);
+    }
+    col.needsUpdate = true;
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
@@ -492,6 +510,10 @@ AVE.module('streaming', function (G) {
           .then(() => { enVuelo--; siguiente(); });
       }
     }
+    function tieneTeja(n) {
+      const k = KIT(), mats = k && k[n] && k[n].mats;
+      return !!(mats && mats.some(m => /RoofThatched/i.test(m)));
+    }
     function procesar(r, root) {
       root.updateMatrixWorld(true);
       const grupos = new Map(), usados = new Set();
@@ -510,6 +532,7 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
+        if (tieneTeja(r.n)) techar(r.geo);
       } else {
         r.partes = [];
         for (const [, gr] of grupos) {
