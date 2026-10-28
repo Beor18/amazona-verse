@@ -145,7 +145,7 @@ def main():
             plaza = {'x': round(best[1], 1), 'z': round(best[2], 1), 'r': round(max(6, min(12, best[3] + 2)), 1), 'laxo': laxo}
 
         # props: 2 a 4, en el borde de la plaza y en los huecos más cercanos al centro
-        tipos = (['losa_piedra', 'toldo_pequeno', 'losa_piedra'] if piedra else ['toldo_pequeno', 'losa_piedra', 'toldo_pequeno'])
+        tipos = (['losa_piedra', 'toldo_pequeno', 'losa_piedra'] if piedra else ['toldo_pequeno', 'toldo_pequeno', 'toldo_pequeno'])  # la losa (Ancient) no va en aldeas de madera
         canoas = [p for p in P if p[3] == 'canoa']
         if canoas: tipos = ['canoa'] + tipos
         else: tipos = tipos + ['toldo_pequeno']

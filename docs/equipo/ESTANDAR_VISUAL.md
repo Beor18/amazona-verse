@@ -6,7 +6,7 @@ Regla para todo capítulo: se ve el mismo juego que el capítulo 1 con el look d
 
 ## Día (capítulos 1, 2, 3, 4 y 6, mundo analítico y plantilla)
 
-Lo declara el pack. Con `vibrant_toon` activo, el look pinta encima el cielo, la niebla y las luces de fábrica (exposición 0,78, cenit `#1e78e8`, niebla hasta 1500). Sin `cenit` ese look no tenía cielo atmosférico y el capítulo se veía de otro color.
+Lo declara el pack. Con `vibrant_toon` activo, el look pinta encima el cielo, la niebla y las luces de fábrica (exposición 0,76, cenit `#1e78e8`, niebla hasta 1500). Sin `cenit` ese look no tenía cielo atmosférico y el capítulo se veía de otro color.
 
 | Campo | Valor |
 |---|---|

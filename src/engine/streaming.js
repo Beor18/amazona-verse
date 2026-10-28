@@ -217,12 +217,18 @@ AVE.module('streaming', function (G) {
         // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
           '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.58, 0.22, 0.14), 0.84);\n' +
+          // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
+          // (6, 7) a media fuerza; beams (13, madera) y rockM (14, roca) conservan su textura. Albedo máximo ~0,85 (antes 1,11:
+          // se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
           'if (avCrema > 0.5) {\n' +
+          '  vec2 cc = floor( vAvCelda * 4.0 + 0.5 );\n' +
+          '  float k = cc.y * 4.0 + cc.x;\n' +
+          '  float fuerza = ( abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
           '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
           '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-          '  vec3 piedra = mix( vec3( 0.58, 0.46, 0.32 ), vec3( 0.96, 0.86, 0.68 ), t );\n' +
-          '  float detalle = clamp( y / max( mix( 0.52, 0.86, t ), 0.2 ), 0.78, 1.16 );\n' +
-          '  diffuseColor.rgb = piedra * detalle;\n' +
+          '  vec3 piedra = mix( vec3( 0.42, 0.34, 0.24 ), vec3( 0.80, 0.71, 0.55 ), t );\n' +
+          '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+          '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
           '}\n')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
     };
@@ -343,7 +349,8 @@ AVE.module('streaming', function (G) {
   }
   // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
   // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
-  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|losa_piedra|complejo_ruinas)/.test(n);
+  // muro_roca no entra: es roca y madera del kit Savage, no piedra labrada (se veía crema y perdía caras).
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|plataforma_piedra|bloque_piedra|losa_piedra|complejo_ruinas)/.test(n);
   function cremar(geo) {
     const col = geo.attributes.color;
     if (!col) return;
@@ -355,8 +362,9 @@ AVE.module('streaming', function (G) {
     }
     col.needsUpdate = true;
   }
-  // El _lejos de ruina_torre trae agujas (arista larga / arista corta > 12). En render2022,
-  // varias juntas se leen como una masa beige de triángulos en punta. Se quitan esas astillas.
+  // Solo se quitan los triángulos degenerados (altura sobre la arista larga < 2 cm). La regla de antes
+  // (arista larga > 12 × la corta) borraba caras reales de torres, pilastras y cornisas: 18–38 % de los
+  // triángulos de ruina_torre* y muro_roca, y desde lejos las ciudades se veían como esqueletos con huecos.
   function podarAstillas(geo) {
     const pos = geo.attributes.position, index = geo.index;
     if (!pos || !index) return;
@@ -365,18 +373,20 @@ AVE.module('streaming', function (G) {
     for (let t = 0; t < nt; t++) {
       const a = src[t * 3], b = src[t * 3 + 1], c = src[t * 3 + 2];
       const ab = dist(a, b), bc = dist(b, c), ca = dist(c, a);
-      const corto = Math.min(ab, bc, ca), largo = Math.max(ab, bc, ca);
-      if (corto < 1e-4 || largo > corto * 12) continue;
+      const corto = Math.min(ab, bc, ca), largo = Math.max(ab, bc, ca), sp = (ab + bc + ca) / 2;
+      const area = Math.sqrt(Math.max(0, sp * (sp - ab) * (sp - bc) * (sp - ca)));
+      if (corto < 1e-4 || 2 * area / largo < 0.02) continue;
       keep.push(a, b, c);
     }
     if (!keep.length || keep.length === index.count) return;
     geo.setIndex(new THREE.BufferAttribute(new (pos.count > 65535 ? Uint32Array : Uint16Array)(keep), 1));
     geo.computeBoundingSphere();
   }
-  function piedraLejos(n, geo) {
+  // horneado: el _lejos ya trae la crema en COLOR_0 (77d79ca, extras.avCremaLejos). Cremarlo otra vez lo llevaba a blanco.
+  function piedraLejos(n, geo, horneado) {
     if (!esPiedra(n) || !geo) return;
     podarAstillas(geo);
-    cremar(geo);
+    if (!horneado) cremar(geo);
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
@@ -607,7 +617,7 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
-        piedraLejos(r.n, r.geo);
+        piedraLejos(r.n, r.geo, [...grupos.values()].some(g => g.src && g.src.userData && g.src.userData.avCremaLejos === 1));
         if (tieneTeja(r.n)) techar(r.geo);
       } else {
         r.partes = [];
