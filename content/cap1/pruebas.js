@@ -29,7 +29,7 @@
     // La copa puede crecer cuando llega la vegetación (el alto real llega en una promesa). Si la percha
     // sube durante el tick, Vittata se queda debajo y Acción no ve a Iguaca (QA-64, solo con la máquina rápida).
     const sentar = () => { S.pos.x = p.x + 0.6; S.pos.y = p.y + 0.3; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = false; };
-    sentar(); T.tick(0.2); sentar();
+    sentar(); T.tick(0.7); sentar();
     return G.c.luma.junto() && !G.fisica.MOVE.flying;
   }
 
