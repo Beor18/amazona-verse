@@ -555,28 +555,28 @@ AVE.module('renderer', function (G) {
   // Una familia de material por objeto. La clave incluye el tone mapping y customProgramCacheKey:
   // look.js puede cambiarla en el gancho 'render', justo antes del dibujo, y entonces hay que enlazar otra vez.
   let genCalor = 1, rtCalor = null, postCalor = false;
-  const calorGen = new WeakMap();
+  const calorHecho = new Set();
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
   function claveDe(m) {
     let k = '';
     try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
     return genCalor + '|' + renderer.toneMapping + '|' + k;
   }
-  function pendiente(m) { return !!m && calorGen.get(m) !== claveDe(m); }
+  // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph.
+  function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
+  function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
+  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
   function siguienteCalor() {
     let hallado = null;
-    scene.traverse(o => {
-      if (hallado || !dibujable(o)) return;
-      if (matsDe(o).some(pendiente)) hallado = o;
-    });
+    scene.traverse(o => { if (!hallado && dibujable(o) && objPendiente(o)) hallado = o; });
     return hallado;
   }
-  function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorGen.set(m, claveDe(m)); }
+  function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
   function ocultarPendientes() {
     const guard = [];
     scene.traverse(o => {
-      if (!dibujable(o) || !matsDe(o).some(pendiente)) return;
+      if (!dibujable(o) || !objPendiente(o)) return;
       guard.push([o, o.visible]); o.visible = false;
     });
     return guard;
@@ -693,7 +693,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
-    rtCalor = null; postCalor = false; genCalor++;
+    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear();
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
