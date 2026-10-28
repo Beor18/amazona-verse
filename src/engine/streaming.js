@@ -473,8 +473,7 @@ AVE.module('streaming', function (G) {
       I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = s; I.erguido = true;
       const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
     }
-    // Ciudad de los 36 y Los Miradores (carril C) y Templos de la Colina (carril J): desde el aire se ve el kit, no la silueta beige.
-    const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2' || id === 'kelvin_aldea_colina';
+    const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
 
     function construir() {
       const kit = KIT();
@@ -973,6 +972,11 @@ AVE.module('streaming', function (G) {
     const heap = () => (performance.memory ? performance.memory.usedJSHeapSize / 1048576 : NaN);
     const r2 = v => Math.round(v * 10) / 10;
     try {
+      const gCrema = new THREE.BufferGeometry();
+      gCrema.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.04, 0.03, 0.02, 0.22, 0.16, 0.08]), 3));
+      cremar(gCrema);
+      const cc = gCrema.attributes.color;
+      check('El lejano de piedra es marfil mate y guarda la sombra (no ocre)', esPiedra('templo_grande') && esPiedra('complejo_ruinas') && esPiedra('losa_piedra') && !esPiedra('bohio_redondo') && !esPiedra('casa_paja_a') && cc.getX(1) > 0.9 && cc.getY(1) > 0.8 && cc.getX(0) < cc.getX(1) && cc.getZ(0) < cc.getY(0), cc.getX(1).toFixed(2) + ' ' + cc.getY(1).toFixed(2) + ' ' + cc.getZ(1).toFixed(2));
       await ST.listo; await ST.terminar();
       if (R.setCalidad) R.setCalidad('alto', true);
       ST.soltarTodo(); await ir(x0, z0, 0, -1); ST.liberarYa(); await ST.terminar();
@@ -1083,12 +1087,6 @@ AVE.module('streaming', function (G) {
         scene.traverse(o => { const m = o.material; if (m && m.name === 'AV_HD_Ancient') matCrema = m; });
         const claveCrema = matCrema && matCrema.customProgramCacheKey ? String(matCrema.customProgramCacheKey()) : '';
         check('La piedra Ancient del kit es crema mate (sin brillo especular)', !!(matCrema && matCrema.shininess === 1 && matCrema.specular && matCrema.specular.r === 0 && matCrema.userData && matCrema.userData.avAtlasEsc), claveCrema || 'sin material');
-        const gCrema = new THREE.BufferGeometry();
-        gCrema.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.04, 0.03, 0.02, 0.22, 0.16, 0.08]), 3));
-        cremar(gCrema);
-        const cc = gCrema.attributes.color;
-        check('El lejano de piedra es marfil mate y guarda la sombra (no ocre)', esPiedra('templo_grande') && esPiedra('complejo_ruinas') && esPiedra('losa_piedra') && !esPiedra('bohio_redondo') && !esPiedra('casa_paja_a') && cc.getX(1) > 0.9 && cc.getY(1) > 0.8 && cc.getX(0) < cc.getX(1) && cc.getZ(0) < cc.getY(0), cc.getX(1).toFixed(2) + ' ' + cc.getY(1).toFixed(2) + ' ' + cc.getZ(1).toFixed(2));
-        check('Templos de la Colina se ve con el kit desde el aire; Villa Raíz no', esCiudad('kelvin_aldea_colina') && !esCiudad('kelvin_aldea_rio_este'));
         await ir(x0, z0); ST.liberarYa(); dibujar();
         check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
       }
