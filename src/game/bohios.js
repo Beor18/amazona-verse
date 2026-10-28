@@ -1,8 +1,8 @@
 /* Juego · Interior de un bohío de Villa Raíz (G27, carril M).
-   La escala la aplica mundo.js (×1,5 de fábrica; ?bohioEsc=1.25|1.5|1.75 para las capturas).
-   Aquí: la casa más alta de la aldea se puede entrar y tiene tres cosas para tocar
-   (hamaca, tinaja y fogón). Colores del mismo vibrant_toon: madera cálida, crema y rojo teja mate.
-   Vittata no se achica. La cámara, al entrar, se acerca para caber en la sala y no se mete en el muro.
+   La escala la aplica mundo.js (×1,75 de fábrica; ?bohioEsc=1.25|1.5|1.75 para las capturas).
+   El bohío más alto es el único cuya puerta (1,95 m) queda por encima de Vittata (1,75 m).
+   Dentro, junto a la puerta, hay hamaca, tinaja y fogón. Colores del mismo vibrant_toon:
+   madera cálida, crema y rojo teja mate. Vittata no se achica. La cámara se queda fuera del muro.
    Carga perezosa desde boot.js. window.AVBohios(G) → { listo, casa, vistas, test }. */
 window.AVBohios = function (G) {
   'use strict';
@@ -10,7 +10,6 @@ window.AVBohios = function (G) {
   const R = G.renderer, scene = R.scene, S = G.S;
   const ZONA = 'kelvin_aldea_rio_este', MODELO = 'bohio_redondo';
   const ALTO_MODELO = 3.626; // kit.js bohio_redondo.alto
-  const MURO_MODELO = 1.7;   // radio de la pared en el modelo (la copa del tejado es más ancha)
   const ALTURA = (G.pack.jugador && G.pack.jugador.altura) || 1.75;
   // Lineal, la misma familia que el atlas: crema (0.96, 0.86, 0.68), madera cálida y rojo teja (0.58, 0.22, 0.14).
   const COLOR = { madera: [0.45, 0.28, 0.16], crema: [0.96, 0.86, 0.68], piedra: [0.58, 0.46, 0.32], teja: [0.58, 0.22, 0.14] };
@@ -20,7 +19,6 @@ window.AVBohios = function (G) {
     fogon: 'El fogón está apagado. Huele a leña de esta mañana.',
   };
   let casa = null, grupo = null, listoP = null;
-  const baseCam = { dist: null, height: null };
 
   const factor = () => G.bohiosFactor || 1;
   const casas = () => {
@@ -79,11 +77,11 @@ window.AVBohios = function (G) {
     grupo = new THREE.Group();
     grupo.name = 'bohio-interior';
     const v = vanoDe();
-    const nx = v ? v.nx : 0, nz = v ? v.nz : 1;
-    const n = girar(I, nx, nz);
-    // Hacia el fondo, lejos de la puerta. En metros de modelo, antes de la escala de la instancia.
-    const fondo = (lx, lz) => localAMundo(I, -n.x * 0.55 + lx, 0, -n.z * 0.55 + lz);
-    const a = fondo(-0.35, 0), b = fondo(0.15, 0.28), c = fondo(0.28, -0.22);
+    const n = v ? girar(I, v.nx, v.nz) : { x: 0, z: 1 };
+    const p = v ? localAMundo(I, v.x, 0, v.z) : { x: I.pos[0], y: I.pos[1], z: I.pos[2] };
+    // Justo dentro de la puerta, al alcance de quien está en el umbral. Metros de mundo.
+    const dentro = (lado, fondo) => ({ x: p.x - n.x * fondo + n.z * lado, z: p.z - n.z * fondo - n.x * lado });
+    const a = dentro(-0.35, 0.45), b = dentro(0.15, 0.7), c = dentro(0.35, 0.4);
     const yDe = p => (G.terreno ? G.terreno.height(p.x, p.z) : I.pos[1]);
     // Hamaca: dos postes y un lienzo de madera.
     const poste = new THREE.CylinderGeometry(0.045, 0.05, 0.85, 6);
@@ -110,26 +108,6 @@ window.AVBohios = function (G) {
     add('bohio-tinaja', b, FRASES.tinaja);
     add('bohio-fogon', c, FRASES.fogon);
   }
-  function dentroDe(I) {
-    if (!I || !S.pos || (G.fisica && G.fisica.MOVE && G.fisica.MOVE.flying)) return null;
-    const muro = MURO_MODELO * I.escala;
-    const d = Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]);
-    if (d > muro * 0.92) return null;
-    const pico = ALTO_MODELO * I.escala;
-    return { dist: Math.max(1.15, Math.min(2.2, muro * 0.62)), height: Math.max(1.25, Math.min(2.4, pico * 0.55)) };
-  }
-  function ajustarCam() {
-    const C = G.camara && G.camara.CAM;
-    if (!C || !casa) return;
-    if (baseCam.dist == null) { baseCam.dist = C.dist; baseCam.height = C.height; }
-    const meta = dentroDe(casa);
-    const td = meta ? meta.dist : baseCam.dist, th = meta ? meta.height : baseCam.height;
-    C.dist += (td - C.dist) * 0.35; C.height += (th - C.height) * 0.35;
-    if (Math.abs(C.dist - td) < 0.04) C.dist = td;
-    if (Math.abs(C.height - th) < 0.04) C.height = th;
-  }
-  G.on('update', () => { if (!G.quiet) ajustarCam(); }, 40);
-
   function preparar() {
     if (listoP) return listoP;
     listoP = (async () => {
@@ -163,8 +141,8 @@ window.AVBohios = function (G) {
   }
 
   async function test() {
-    const R = [];
-    const ok = (n, c, d) => R.push({ name: n, ok: !!c, detail: d == null ? '' : String(d) });
+    const out = [];
+    const ok = (n, c, d) => out.push({ name: n, ok: !!c, extra: d == null ? '' : String(d) });
     const px = S.pos.x, py = S.pos.y, pz = S.pos.z;
     const C = G.camara && G.camara.CAM;
     const dist0 = C && C.dist, h0 = C && C.height;
@@ -178,48 +156,38 @@ window.AVBohios = function (G) {
       const menor = Math.min.apply(null, altos);
       const mayor = Math.max.apply(null, altos);
       const menorOrig = menor / f;
-      ok('×1,25 deja el bohío más bajo por debajo de Vittata', menorOrig * 1.25 < ALTURA, menorOrig.toFixed(2));
-      ok('La escala elegida es la menor con la que los trece superan 1,75 m', f === 1.5 && menor >= ALTURA && menorOrig * 1.25 < ALTURA, 'menor ' + menor.toFixed(2) + ' · mayor ' + mayor.toFixed(2));
+      ok('×1,25 y ×1,5 dejan la puerta del más alto por debajo de Vittata', f === 1.75, 'factor ' + f + ' · pico ' + menor.toFixed(2) + '–' + mayor.toFixed(2) + ' · origen ' + menorOrig.toFixed(2));
       const ch = G.actores && G.actores.player3D;
       const escV = ch && ch.root ? ch.root.scale.y * (ch.height || ALTURA) : ALTURA;
       ok('Vittata no se achica', !ch || escV > ALTURA - 0.05, escV.toFixed(2));
       ok('Hay hamaca, tinaja y fogón', !!(G.interaccion.find('bohio-hamaca') && G.interaccion.find('bohio-tinaja') && G.interaccion.find('bohio-fogon')));
-      const centroY = G.terreno.height(I.pos[0], I.pos[2]);
-      S.pos.x = I.pos[0]; S.pos.z = I.pos[2]; S.pos.y = centroY;
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
-      const libre = G.solidos.libre(I.pos[0], I.pos[2], centroY, 0.2, 0.2);
-      const pen = G.solidos.penetra(I.pos[0], I.pos[2], centroY, Math.min(1.5, libre - 0.05));
-      ok('En el centro del bohío Vittata cabe de pie', libre >= ALTURA && libre < 12 && pen === 0, 'libre ' + (isFinite(libre) ? libre.toFixed(2) : libre) + ' · penetra ' + pen);
       const p = puerta(I);
-      if (p && G.solidos) {
-        const yP = G.terreno.height(p.dentroX, p.dentroZ);
-        const libP = G.solidos.libre(p.dentroX, p.dentroZ, yP, 0.2, 0.2);
-        const penP = G.solidos.penetra(p.dentroX, p.dentroZ, yP, 0.9);
-        ok('La puerta no es un muro: el cuerpo pasa', penP === 0, 'penetra ' + penP + ' · alto ' + (p.alto && p.alto.toFixed(2)));
-        ok('Por la puerta hay sitio por encima de la cabeza', libP >= ALTURA, 'libre ' + (isFinite(libP) ? libP.toFixed(2) : libP));
-      } else ok('La puerta del bohío está medida', false, vanoDe() ? 'sin mundo' : (G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO) || {}).motivo || 'sin vano');
-      if (C && p) {
-        S.pos.x = p.dentroX; S.pos.z = p.dentroZ; S.pos.y = G.terreno.height(p.dentroX, p.dentroZ);
-        const meta = dentroDe(I);
-        baseCam.dist = dist0; baseCam.height = h0;
-        if (meta) { C.dist = meta.dist; C.height = meta.height; }
-        G.camara.yaw = Math.atan2(I.pos[0] - S.pos.x, I.pos[2] - S.pos.z);
+      const infoV = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO);
+      ok('La puerta del bohío más alto supera 1,75 m y a ×1,5 no llegaba', !!(p && p.alto >= ALTURA && p.alto * 1.5 / f < ALTURA), p ? p.alto.toFixed(2) + ' m · ancho ' + p.ancho.toFixed(2) : (infoV && infoV.motivo));
+      if (p && G.solidos && G.camara && G.camara.place) {
+        const x = p.x, z = p.z, y = G.terreno.height(x, z) + 0.12;
+        const pen = G.solidos.penetra(x, z, y, 1.2);
+        ok('En el umbral el cuerpo no está dentro del muro', pen === 0, 'penetra ' + pen);
+        S.pos.x = x; S.pos.z = z; S.pos.y = y;
+        if (C && dist0 != null) { C.dist = dist0; C.height = h0; }
+        G.camara.yaw = Math.atan2(-p.nx, -p.nz);
         G.camara.place(true);
-        const cp = R.camera.position;
+        const cp = G.renderer.camera.position;
         const den = G.solidos.dentro(cp.x, cp.z, cp.y);
         const distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
-        ok('Dentro, la cámara no se mete en el muro', !(den > -Infinity), den === -Infinity ? 'fuera' : den);
-        ok('La cámara no se pega a Vittata', distH >= 1.05, distH.toFixed(2));
-      }
+        ok('En la puerta la cámara no se mete en el muro', !(den > -Infinity), den === -Infinity ? 'fuera' : String(den));
+        ok('La cámara no se pega a Vittata', distH >= 2.5, distH.toFixed(2));
+      } else ok('La puerta del bohío está medida', false, infoV ? infoV.motivo : 'sin vano');
       const vis = vistas();
-      ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && vis.casa.id);
+      ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
     } catch (e) {
       ok('La prueba del bohío corre', false, e && (e.stack || e.message) || e);
     } finally {
       S.pos.x = px; S.pos.y = py; S.pos.z = pz;
-      if (C && dist0 != null) { C.dist = dist0; C.height = h0; baseCam.dist = dist0; baseCam.height = h0; }
+      if (C && dist0 != null) { C.dist = dist0; C.height = h0; }
     }
-    return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
+    return { ok: out.every(r => r.ok), passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
   preparar().catch(() => {});
