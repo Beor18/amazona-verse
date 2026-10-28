@@ -4,13 +4,22 @@
 
 **Regla nueva (28-oct, tras perder la noche):** no hay tareas a nombre de un Grok concreto. Hay **una fila en orden**. Cualquier agente de Grok que esté abierto toma la **primera tarea libre**, se apunta en `docs/equipo/TRABAJO_SIMULTANEO.md` (quién, hora, «en curso») y la hace. Si hay dos Grok, cada uno toma una distinta y no tocan los mismos archivos. **Nunca se queda parado:** si no queda nada libre, caza bugs (tarea 6). Las secciones de abajo (Grok 1 a 4) son el detalle de cada tarea, no dueños.
 
-## La fila, en orden
-1. **QA-53:** que la pantalla no se congele en el móvil al pulsar «Empezar» (detalle: «Grok 3»).
-2. **Piezas beige que flotan** en la pared del tepuy, vista `render2022` (detalle: «Grok 3»).
-3. **F2.2:** las 10 aldeas con tejados **rojos** (decisión de Kelvin del 28-oct), dentro de `vibrant_toon` (detalle: «Grok 3»).
-4. **G18:** la gran ciudad del tepuy como `docs/img/ciudad_tepuy_meta_kelvin.jpg` (detalle: «Grok 1»).
-5. **G19, segunda vuelta:** la revisión del 28-oct en `PEDIDOS.md` (pared de roca gris, copas entre los edificios y bosque continuo; detalle: «Grok 2»).
-6. **Cazar bugs sin parar:** QA-61 (el zoom que se agranda solo), Vittata contra los edificios y los mini bugs de los juegos (detalle: «Grok 4»).
+## Carriles: uno por agente, todos a la vez
+Para que trabajen **muchos agentes a la vez sin pisarse**, el trabajo va en carriles con sus propios archivos. Cada agente nuevo toma el **primer carril libre** (nadie apuntado «en curso» en `TRABAJO_SIMULTANEO.md` en la última hora), se apunta como «Grok · carril X» y hace sus tareas en orden. Al terminar su carril, toma el siguiente libre; si no queda ninguno, el carril H (cazar bugs) admite a varios.
+
+| Carril | Tareas, en orden | Sus archivos (los demás no los tocan) |
+|---|---|---|
+| **A · Móvil y arranque** | QA-53 (el congelón al pulsar «Empezar»: repartir la compilación de shaders y trocear terreno y sólidos); QA-41 (la capa negra `#c1-fade` encima de los Retos) | `src/engine/renderer.js`, `src/boot.js` (cambio mínimo), `src/game/retos.js` |
+| **B · Aldeas** | F2.2 tejados **rojos** (decisión de Kelvin, `vibrant_toon`); luego F2.1, el `_hd` a más distancia (90 m en medio, 120 m en alto) | edificios Savage, `src/engine/streaming.js`, `tools/blender/` de edificios Savage |
+| **C · Ciudad del tepuy** | G18 como `docs/img/ciudad_tepuy_meta_kelvin.jpg` (detalle: «Grok 1»); luego las piezas beige que flotan en la pared del tepuy (vista `render2022`) | edificios Ancient de `kelvin_ruinas_yunque` y sus herramientas |
+| **D · Selva y bosque** | G19, segunda vuelta (detalle: «Grok 2» y la revisión del 28-oct en `PEDIDOS.md`) | `src/engine/vegetacion.js`, `src/engine/terreno.js`, `assets/data/dosel_cap1*`, `tools/blender/entorno_dosel.py` |
+| **E · Cámara y choques** | QA-61 (la vista que se agranda sola, como un zoom); Vittata contra paredes, tejados, puertas y cúpulas: que no atraviese, no se atasque y que la cámara no se meta en las paredes | `src/engine/camara.js`, la física y los sólidos (`src/engine/`) salvo terreno |
+| **F · Minijuegos** | QA-49 (River Rush: la losa oscura que tapa la pantalla a los ~8 s); QA-51 (riverTest y bandadaTest en rojo); QA-50 (el Tren: el botón del desvío no se lee); luego jugar Flight, Maze, el Tren, River Rush y Mis récords en escritorio y móvil, y arreglar lo que salga | `src/game/river_rush.js`, `flight.js`, `maze.js`, `tren.js`, `bandada.js`, `records.js`, `menu_modos.js` |
+| **G · Peso y carga** | QA-10: bajar la descarga inicial (hoy 15 MB, meta 8) cargando la ropa y los edificios lejanos solo cuando hacen falta, sin quitar nada gráfico | `src/personaje/` **solo la carga** (el modelo y el rig de Vittata no se tocan), `tools/build/` |
+| **H · Cazar bugs (admite a varios)** | Jugar el capítulo 1 y los capítulos 2 a 6 de punta a punta, en escritorio y en móvil 375×812: textos tapados, botones pequeños, diálogos, misiones, Diario, ropero, criadero, pausa, guardado. Cada bug: apuntarlo en `BUGS.md`; si es de un carril con dueño, dejarlo en `PEDIDOS.md` para ese carril; si no, arreglarlo | `src/game/` y `src/ui/` que no sean de otro carril |
+| **I · Pruebas** | QA-60 (falso rojo de templateTest y ep2Test); que `movementTest` y `streamingTest` den resultados fiables también sin GPU (en la nube), sin aflojar lo que miden en la Mac | `src/pruebas/`, `tools/build/test.sh`, `tools/build/avtest.py` |
+
+Reglas de todos los carriles: las 13 baterías en verde antes de cada commit; commit solo de tus archivos con índice temporal y `git pull --rebase` antes de cada push; captura en `docs/img/` con cada cambio visual; no publicar `sitio/`; nada visual se da por hecho sin Kelvin; Vittata no se cambia. **Nunca te quedes parado.**
 
 ## Grok 1: la gran ciudad del tepuy (G18)
 
