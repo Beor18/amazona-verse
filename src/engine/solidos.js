@@ -636,7 +636,10 @@ AVE.module('solidos', function (G) {
       catch (e) { R.motivo = 'error: ' + (e && e.message || e); R.vanos = []; R.listo = true; R.fundido = true; hecho = true; }
       if (!hecho) break;
       vanoCola.shift();
-      if (R.listo && !R.fundido) aplicarPaneles(R);
+      if (R.listo && !R.fundido) {
+        if (R.abierta) R.fundido = true; // G27: el vano queda medido y la puerta no se tapa
+        else aplicarPaneles(R);
+      }
     }
   }
   // Panel de un vano: caja fina que entra un poco en las jambas, el dintel y el suelo; uv a escala (1 m de textura ≈ 1 m)
@@ -655,20 +658,21 @@ AVE.module('solidos', function (G) {
   const PREFERIDO = [/WoodPlanks/i, /Tarp|Fabric/i, /WoodHewn/i, /Bark/i];
   function cerrarVanos(nombre, partes, fundir) {
     if (!partes || !partes.length || typeof fundir !== 'function') return 0;
-    // G27: el bohío redondo se queda con la puerta abierta (el vano ya está medido). La malla es compartida,
-    // así que vale para todas las instancias de ese modelo.
-    if (G.bohiosAbiertos && G.bohiosAbiertos[nombre]) return 0;
+    // G27: el bohío redondo se queda con la puerta abierta. El vano sí se mide (bohios.js lee vanos);
+    // la malla es compartida, así que no se funde el panel en ninguna instancia.
+    const abierta = !!(G.bohiosAbiertos && G.bohiosAbiertos[nombre]);
     let R = vanosHechos.get(nombre);
-    if (R && R.listo && R.fundido) return R.vanos.length;
+    if (R && R.listo && (R.fundido || abierta)) return abierta ? 0 : R.vanos.length;
     if (!R) {
       try { R = prepararVanos(partes); }
       catch (e) { R = { motivo: 'error: ' + (e && e.message || e), vanos: [], listo: true, fundido: true, ms: 0 }; }
+      R.nombre = nombre;
       vanosHechos.set(nombre, R);
       if (!R.listo) vanoCola.push(R);
     }
-    R.partesRef = partes; R.fundir = fundir;
-    if (R.listo && !R.fundido) return aplicarPaneles(R);
-    bombearVanos(msSolidos());
+    R.nombre = nombre; R.abierta = abierta; R.partesRef = partes; R.fundir = fundir;
+    if (!R.listo) bombearVanos(msSolidos());
+    if (abierta) { if (R.listo) R.fundido = true; return 0; }
     if (R.listo && !R.fundido) return aplicarPaneles(R);
     return R.listo ? R.vanos.length : 0;
   }
