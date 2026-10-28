@@ -18,9 +18,9 @@ AVE.module('creador', function (G) {
     { id: 'azul', name: 'Pañuelo azul', color: '#3d8fb0' }, { id: 'morado', name: 'Pañuelo morado', color: '#7a4fb3' },
     { id: 'amarillo', name: 'Pañuelo amarillo', color: '#e8c32a' },
   ];
-  // Nombre de aventurero: el niño lo ELIGE de dos listas (seguridad infantil: sin texto libre). Un pack puede dar las suyas
-  // en pack.nombres { a: [...], b: [...] }; si las da, al cargar una partida un nombre que no salga de ellas se cambia por uno
-  // de la lista (partidas viejas con nombre escrito a mano). saveCharacter(draft) por código sigue aceptando letras sueltas.
+  // Nombre de aventurero: dos listas, un dado («🎲 Nombre al azar») y un nombre propio de 3 a 14 letras.
+  // Un pack puede dar las suyas en pack.nombres { a: [...], b: [...] }. Al cargar, un nombre que no es de la lista
+  // se conserva si pasó el filtro; si no, se cambia por uno de la lista. El nombre libre no sale en récords públicos.
   const NOMBRES = Object.assign({
     a: ['Nube', 'Pluma', 'Brisa', 'Rayo', 'Trueno', 'Lluvia', 'Semilla', 'Hoja', 'Coral', 'Estrella', 'Luna', 'Sol', 'Ola', 'Flor', 'Viento', 'Cielo', 'Ceiba', 'Palma'],
     b: ['Azul', 'Verde', 'Veloz', 'Valiente', 'Feliz', 'Alegre', 'Brillante', 'Gentil', 'Tropical', 'Solar', 'del Río', 'del Monte', 'del Yunque', 'de la Bahía', 'del Mar'],
@@ -31,8 +31,61 @@ AVE.module('creador', function (G) {
     const R = semilla != null ? G.util.rng(semilla) : Math.random;
     return nombreDe(NOMBRES.a[Math.floor(R() * NOMBRES.a.length)], NOMBRES.b[Math.floor(R() * NOMBRES.b.length)]);
   };
-  // Solo letras (sin números, @ ni frases como "me llamo"): para nombres que llegan por código
+  // Filtro del nombre propio (DECISION_LOG 28-oct): malas palabras ES/EN aunque vengan con números o símbolos,
+  // marcas, y datos personales. El mensaje propone uno de la lista. Las dos palabras de la lista no pasan por aquí.
+  const MALAS = ['pendejo', 'pendeja', 'puto', 'puta', 'mierda', 'cabron', 'cabrona', 'joder', 'cono', 'maricon', 'marica', 'gilipollas', 'verga', 'pinga', 'chingar', 'chingada', 'culero', 'fuck', 'shit', 'bitch', 'asshole', 'bastard', 'dick', 'pussy', 'whore', 'slut', 'nigger', 'faggot', 'retard'];
+  const MARCAS = ['nintendo', 'roblox', 'fortnite', 'pokemon', 'disney', 'minecraft', 'youtube', 'tiktok', 'instagram', 'barbie', 'marvel', 'nike', 'adidas', 'playstation', 'xbox', 'google', 'netflix'];
+  function letrasDe(t) {
+    const leet = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', '$': 's', '!': 'i', '|': 'i' };
+    let s = String(t || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+    s = s.replace(/[013457@$!|]/g, c => leet[c] || '');
+    return s.replace(/[^a-z]/g, '');
+  }
+  function contiene(norm, lista) {
+    return lista.some(w => {
+      if (norm === w) return true;
+      if (w.length < 5 || norm.indexOf(w) < 0) return false;
+      return norm.length - w.length <= 2;
+    });
+  }
+  const propuesta = () => 'Prueba «' + nombreAzar() + '».';
+  function filtroNombreLibre(raw) {
+    const t = String(raw || '').trim();
+    if (/\b(me llamo|mi nombre|my name is|my name|i am called)\b/i.test(t)) return 'No escribas «me llamo». ' + propuesta();
+    const palabras = t.split(/[\s'-]+/).filter(p => /\p{L}/u.test(p));
+    if (palabras.length >= 2) return 'Un solo nombre, sin apellido. ' + propuesta();
+    const norm = letrasDe(t);
+    if (contiene(norm, MALAS)) return 'Ese nombre no suena bien por aquí. ' + propuesta();
+    if (contiene(norm, MARCAS)) return 'Ese nombre es de una marca. ' + propuesta();
+    if (!/^[\p{L}]{3,14}$/u.test(t)) return 'De 3 a 14 letras, sin números. ' + propuesta();
+    return null;
+  }
+  function debeReemplazarNombre(p) {
+    return !!(p && p.created && p.name && !esNombreDeLista(p.name) && filtroNombreLibre(p.name));
+  }
+  // Solo letras (sin números, @ ni frases como "me llamo"): para los nombres de las dos listas
   const NAME_OK = /^[\p{L} '\-]{1,24}$/u;
+  const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function especieConPiel(id) { return !!(id && window.AVE && AVE.pieles && AVE.pieles.tiene && AVE.pieles.tiene(id)); }
+  function especieEnCreador(id) { return !!(id && ((C3.SPECIES && C3.SPECIES[id]) || especieConPiel(id))); }
+  function nombreDeEspecie(e) { return (e.catalogo && e.catalogo.nombre) || (e.comun && e.comun.es) || e.id; }
+  function opcionesEspecie() {
+    const ES = window.AV_ESPECIES;
+    const vistos = new Set(), out = [];
+    const add = (id, nombre) => { if (!id || vistos.has(id) || !especieEnCreador(id)) return; vistos.add(id); out.push({ id, nombre }); };
+    add('vittata', (C3.SPECIES.vittata && C3.SPECIES.vittata.name) || 'Vittata');
+    for (const e of (ES ? ES.especies.concat(ES.extintas || []) : [])) if (e.piel) add(e.id, nombreDeEspecie(e));
+    for (const [id, sp] of Object.entries(C3.SPECIES)) add(id, sp.name);
+    return out.filter(o => o.id === 'vittata').concat(out.filter(o => o.id !== 'vittata').sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')));
+  }
+  // Las especies con piel no están en SPECIES (eso es el tinte). Sin este puente, normalizeLook las devuelve a vittata.
+  const norm0 = C3.normalizeLook;
+  C3.normalizeLook = function (look) {
+    const out = norm0(look);
+    const id = look && look.species;
+    if (id && especieEnCreador(id)) out.species = id;
+    return out;
+  };
   // Texto libre del niño (nombre, título y viñetas del cómic): rechaza números, contactos, enlaces y frases de datos personales.
   // Devuelve el motivo o null si es seguro.
   function textoSeguro(t) {
@@ -181,21 +234,62 @@ AVE.module('creador', function (G) {
   $('p-species').addEventListener('change', () => changeLook(l => { l.species = $('p-species').value; }));
   // El error del creador se anuncia en lectores de pantalla (QA-08)
   $('p-error').setAttribute('role', 'alert');
-  // ---------- Nombre de aventurero (dos listas) ----------
+  // ---------- Nombre de aventurero (dos listas, dado y nombre propio) ----------
   const opciones = lista => lista.map(x => `<option>${x.replace(/[<>&"]/g, '')}</option>`).join('');
   $('p-name-a').innerHTML = opciones(NOMBRES.a); $('p-name-b').innerHTML = opciones(NOMBRES.b);
+  function montarNombreLibre() {
+    if (!document.getElementById('creador-nombre-css')) {
+      const st = document.createElement('style');
+      st.id = 'creador-nombre-css';
+      st.textContent = '#creator .name-pick{grid-template-columns:1fr 1fr}'
+        + '#creator .name-pick select+select{grid-column:auto}'
+        + '#creator #p-name-azar{grid-column:1 / -1;width:100%;min-height:var(--tap);height:auto;padding:0 var(--sp-4);border-radius:var(--r-md);white-space:nowrap}'
+        + '#creator #p-name-libre{width:100%;margin-top:var(--sp-2)}';
+      document.head.appendChild(st);
+    }
+    const btn = $('p-name-azar');
+    if (btn && btn.textContent.indexOf('Nombre al azar') < 0) {
+      btn.classList.remove('icon');
+      btn.removeAttribute('data-icon');
+      btn.textContent = '🎲 Nombre al azar';
+      btn.setAttribute('aria-label', '🎲 Nombre al azar');
+      btn.title = 'Nombre al azar';
+    }
+    if ($('p-name-libre') || !$('p-name')) return;
+    const libre = document.createElement('input');
+    libre.id = 'p-name-libre';
+    libre.type = 'text';
+    libre.maxLength = 40;
+    libre.autocomplete = 'off';
+    libre.spellcheck = false;
+    libre.placeholder = 'O escribe el tuyo';
+    libre.setAttribute('aria-label', 'Tu nombre, de 3 a 14 letras');
+    $('p-name').insertAdjacentElement('beforebegin', libre);
+  }
+  montarNombreLibre();
   function nombreElegido() { return nombreDe($('p-name-a').value, $('p-name-b').value); }
+  function nombreEnPantalla() {
+    const libre = $('p-name-libre') && $('p-name-libre').value.trim();
+    return libre || nombreElegido();
+  }
   function pintarNombre(n) {
     const a = NOMBRES.a.find(x => n.startsWith(x + ' ')) || NOMBRES.a[0];
     $('p-name-a').value = a; $('p-name-b').value = NOMBRES.b.includes(n.slice(a.length + 1)) ? n.slice(a.length + 1) : NOMBRES.b[0];
     $('p-name').textContent = nombreElegido();
   }
-  for (const id of ['p-name-a', 'p-name-b']) $(id).addEventListener('change', () => { $('p-name').textContent = nombreElegido(); });
-  $('p-name-azar').addEventListener('click', () => { let n = nombreElegido(); for (let k = 0; k < 5 && n === nombreElegido(); k++) n = nombreAzar(); pintarNombre(n); });
-  // Partidas viejas: un nombre escrito a mano (que podría ser real) se cambia por uno de la lista, estable por partida
+  function pintarLoQueSeLee() { $('p-name').textContent = nombreEnPantalla(); }
+  for (const id of ['p-name-a', 'p-name-b']) $(id).addEventListener('change', pintarLoQueSeLee);
+  if ($('p-name-libre')) $('p-name-libre').addEventListener('input', pintarLoQueSeLee);
+  $('p-name-azar').addEventListener('click', () => {
+    if ($('p-name-libre')) $('p-name-libre').value = '';
+    let n = nombreElegido();
+    for (let k = 0; k < 5 && n === nombreElegido(); k++) n = nombreAzar();
+    pintarNombre(n);
+  });
+  // Al cargar: un nombre libre que ya pasó el filtro se queda. Uno que no, pasa a la lista (estable por partida).
   if (G.pack.nombres) G.on('apply', () => {
     const p = S.profile;
-    if (p && p.created && !esNombreDeLista(p.name)) {
+    if (debeReemplazarNombre(p)) {
       let h = 7; for (const c of String(S.saveId || p.name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
       p.name = nombreAzar(h); G.guardado.autosave();
     }
@@ -203,9 +297,22 @@ AVE.module('creador', function (G) {
   async function open(first) {
     const p = S.profile;
     draftLook = profileLook(p);
-    pintarNombre(p.created && esNombreDeLista(p.name) ? p.name : nombreAzar());
-    $('p-species').innerHTML = Object.entries(C3.SPECIES).map(([id, sp]) => `<option value="${id}">${sp.name}</option>`).join('');
-    $('p-species').value = draftLook.species;
+    const libre = $('p-name-libre');
+    if (p.created && p.name && esNombreDeLista(p.name)) {
+      if (libre) libre.value = '';
+      pintarNombre(p.name);
+    } else if (p.created && p.name && !filtroNombreLibre(p.name)) {
+      pintarNombre(nombreAzar());
+      if (libre) libre.value = p.name;
+      $('p-name').textContent = p.name;
+    } else {
+      if (libre) libre.value = '';
+      pintarNombre(nombreAzar());
+    }
+    const ops = opcionesEspecie();
+    $('p-species').innerHTML = ops.map(o => `<option value="${escHtml(o.id)}">${escHtml(o.nombre)}</option>`).join('');
+    $('p-species').value = ops.some(o => o.id === draftLook.species) ? draftLook.species : 'vittata';
+    if ($('p-species').value !== draftLook.species) draftLook = C3.normalizeLook(Object.assign({}, draftLook, { species: $('p-species').value }));
     $('p-error').hidden = true;
     $('p-cancel').hidden = !!first;
     // Foco al primer campo (si la portada está encima, src/ui/ui.js lo pone al cerrarla)
@@ -225,8 +332,13 @@ AVE.module('creador', function (G) {
   function close() { $('creator').hidden = true; if (window.AVShowcase) window.AVShowcase.unmount(); }
   // Devuelve null si se guardó, o el texto del error
   function saveCharacter(draft) {
-    const d = draft || { name: nombreElegido(), look: draftLook };
-    if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Elige un nombre de aventurero de las listas.';
+    const d = draft || { name: nombreEnPantalla(), look: draftLook };
+    if (esNombreDeLista(d.name)) {
+      if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Elige un nombre de aventurero de las listas.';
+    } else {
+      const mot = filtroNombreLibre(d.name);
+      if (mot) return mot;
+    }
     if (d.preset && !PRESETS.some(o => o.id === d.preset)) return 'Opción no válida.';
     const look = d.look ? C3.normalizeLook(d.look) : profileLook(d);
     const firstTime = !S.profile.created;
@@ -263,5 +375,51 @@ AVE.module('creador', function (G) {
   }
   G.on('apply', () => { $('creator').hidden = true; }, 60);
 
-  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre };
+  function test() {
+    const R = [], ok = (name, c, extra) => R.push({ name, ok: !!c, extra: extra == null ? '' : String(extra) });
+    const antes = JSON.parse(JSON.stringify(S.profile || {}));
+    const quiet = G.quiet, abierto = $('creator') && !$('creator').hidden;
+    G.quiet = true;
+    try {
+      ok('Coralito se acepta', saveCharacter({ name: 'Coralito', look: C3.defaultLook() }) === null && S.profile.name === 'Coralito');
+      const mala = saveCharacter({ name: 'p3ndej0', look: C3.defaultLook() });
+      ok('Una mala palabra con números se rechaza', typeof mala === 'string' && /no suena bien/.test(mala) && S.profile.name !== 'p3ndej0', mala);
+      const marca = saveCharacter({ name: 'Nintendo', look: C3.defaultLook() });
+      ok('Una marca se rechaza', typeof marca === 'string' && /marca/.test(marca) && S.profile.name !== 'Nintendo', marca);
+      const frase = saveCharacter({ name: 'me llamo Ana Pérez', look: C3.defaultLook() });
+      ok('«me llamo Ana Pérez» se rechaza', typeof frase === 'string' && /me llamo/.test(frase), frase);
+      ok('Un nombre libre que pasó el filtro no se reemplaza al cargar', debeReemplazarNombre({ created: true, name: 'Coralito' }) === false);
+      ok('Un nombre de la lista tampoco se reemplaza', debeReemplazarNombre({ created: true, name: nombreAzar(1) }) === false);
+      ok('Un apellido suelto sí se reemplazaría', debeReemplazarNombre({ created: true, name: 'Ana Pérez' }) === true);
+      const ops = opcionesEspecie(), ids = new Set(ops.map(o => o.id));
+      const ES = window.AV_ESPECIES;
+      const conPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => e.piel && AVE.pieles.tiene(e.id)) : [];
+      const faltan = conPiel.filter(e => !ids.has(e.id)).map(e => e.id);
+      ok('Las 21 especies con piel de Kelvin salen en el creador', conPiel.length === 21 && !faltan.length, (faltan.join(',') || String(conPiel.length)));
+      ok('Vittata sigue la primera', ops[0] && ops[0].id === 'vittata');
+      const sinPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => !e.piel && e.id !== 'vittata' && !C3.SPECIES[e.id]) : [];
+      const coladas = sinPiel.filter(e => ids.has(e.id)).map(e => e.id);
+      ok('Sin piel de Kelvin no se inventa un color', sinPiel.length === 11 && !coladas.length, coladas.join(',') || String(sinPiel.length));
+      ok('Una especie con piel se queda en el look', C3.normalizeLook({ species: 'aestiva', accessories: {} }).species === 'aestiva');
+      ok('El botón es «🎲 Nombre al azar»', !!$('p-name-azar') && $('p-name-azar').textContent.indexOf('Nombre al azar') >= 0, $('p-name-azar') && $('p-name-azar').textContent);
+      ok('Hay un campo para escribir el nombre', !!$('p-name-libre'));
+      if ($('p-name-libre')) {
+        $('p-name-libre').value = 'Coralito';
+        $('p-name-libre').dispatchEvent(new Event('input', { bubbles: true }));
+        ok('El nombre escrito se lee junto a las listas', $('p-name').textContent === 'Coralito', $('p-name').textContent);
+        $('p-name-azar').click();
+        ok('El dado vacía el campo y vuelve a la lista', !$('p-name-libre').value && esNombreDeLista($('p-name').textContent), $('p-name').textContent);
+      }
+    } finally {
+      S.profile = antes;
+      G.quiet = quiet;
+      try { G.actores.refreshCompanion(); } catch (e) { /* sin personaje todavía */ }
+      try { G.guardado.autosave(); } catch (e2) { /* la prueba no deja el nombre de ensayo */ }
+      if ($('creator')) $('creator').hidden = !abierto;
+      if ($('p-name-libre')) $('p-name-libre').value = '';
+    }
+    return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
+  }
+
+  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre, filtroNombreLibre, debeReemplazarNombre, opcionesEspecie, test };
 });
