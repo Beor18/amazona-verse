@@ -57,7 +57,7 @@ if [ $RC -ne 0 ]; then
   FALLAS=$(sed -n '/^## Fallas/,/^## /p' "$REP" | grep '^- ' || true)
   OTRAS=$(printf '%s\n' "$FALLAS" | grep -v 'movementTest 4[0-9]/[0-9]* · falla: Arranque: 90 % de la velocidad en menos de' | grep . || true)
   if [ -n "$OTRAS" ] || [ -z "$FALLAS" ]; then
-    echo "NO SE PUBLICA $HEAD_SHA. Fallas:"; printf '%s\n' "${OTRAS:-$(cat "$REP" | head -40)}"; exit 1
+    echo "NO SE PUBLICA $HEAD_SHA. Fallas:"; grep -E 'FALLA|ERROR|errores' "$REP" | head -20; exit 1
   fi
   echo "solo falla el tiempo de arranque de movementTest (GPU por software): se publica"
 fi
