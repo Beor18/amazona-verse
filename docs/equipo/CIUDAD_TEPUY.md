@@ -36,6 +36,16 @@ G18 no colocó flora. En el render de 2022 el tepuy va cubierto y la ciudad qued
 
 G19 (`8dcf5fb`) colocó la selva con el respaldo `20261027-2108`: elipse (−25, −160), radios 135 y 105 m. El splat cubre el risco vertical y los árboles quedan fuera de las piezas (margen 8 m). El horneado del dosel a pendiente 0.55 no se publicó: tendía una sábana de unos 60 m en el borde sur. La máscara horneable está en `tools/blender/entorno_dosel.py` (misma pendiente que el resto) y todavía no está horneada. No se movieron edificios ni las 67 apartadas.
 
+## Segunda vuelta (carril C, 28-oct)
+
+La revisión en vivo seguía viendo lingotes dorados, torres con ganchos y el conjunto de la izquierda apagado. No se tocó la gradación de `vibrant_toon` ni la vegetación.
+
+- **Piedra crema mate.** El atlas `AV_HD_Ancient` es ocre. En el shader de esa piedra (no en el de Savage) el albedo pasa a blanco roto, un poco frío para que la gradación cálida lo deje en crema, y el especular queda en cero. La normal sigue dando el relieve de cornisas y almenas. La clave del programa es `av-hd-atlas-crema`, así el tinte cálido del look no se le suma otra vez.
+- **Torres F.** `ruina_torre_f` mide 6,6 m en Y. Las tres de `kelvin_ruinas_yunque` (`k169`, `k170`, `k171`) traían un cabeceo de −90° y quedaban acostadas. Se enderezan conservando rumbo, escala y origen. Los ocho `muro_templo` no: su eje largo es Z y esa misma matriz ya los deja en vertical; girarlos los convertiría en losas.
+- **Conjunto de la izquierda.** `kelvin_ruinas_yunque_2` (23 piezas, todas erguidas, centro −74, −132) es ese grupo sobre la roca. Desde la vista aérea caía en la silueta beige (a unos 80 m del borde, fuera de los 75 m de «cerca»). Ahora entra en la misma vista de ciudad que la cumbre (220 m / 340 m).
+
+Kelvin la aprueba. No está hecha.
+
 ## Captura
 
 `docs/img/ciudad_tepuy_vs_2022.jpg`: el render de 2022 al lado de la vista `ciudad_tepuy` (desde el sureste). En esa toma el juego contó 55 instancias `_hd` y 6 del ligero con textura; la silueta beige de la zona no se dibujó. `streamingTest` 16/16 en `g18-5425820`, con el caso «desde el aire» (hd 21, silueta apagada) y la suelta al volver al inicio. Falta el visto de Kelvin.
