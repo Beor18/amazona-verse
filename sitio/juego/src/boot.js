@@ -35,6 +35,7 @@
       for (const name of dif.nombres) if (!AV[name]) AV[name] = opts => cargarPruebas().then(ps => ps[name](G, T, opts));
     }
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
+    if (G.creador && G.creador.test) AV.creadorTest = o => G.creador.test(o); // src/game/creador.js (carril N)
     // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
     // Módulos que no van en la descarga inicial: se piden en el primer gesto del jugador (Jugar en la portada, una tecla o un toque)
     const alPrimerGesto = fn => { let hecho = false; const ir = () => { if (hecho) return; hecho = true; setTimeout(() => fn().catch(() => {}), 300); };
@@ -46,6 +47,7 @@
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
+    if (G.bohiosFactor > 1) { const bohios = aDemanda('src/game/bohios.js', 'AVBohios'); AV.bohios = bohios; AV.bohiosTest = o => bohios().then(b => b.test(o)); alPrimerGesto(bohios); } // src/game/bohios.js (G27: interior del bohío de Villa Raíz)
     if (G.vegetacion && G.vegetacion.listo && G.terreno.mapa && G.terreno.mapa.flora) { const dosel = aDemanda('src/engine/dosel.js', 'AVDosel'); AV.dosel = () => dosel().then(d => d.listo.then(() => d)); AV.doselTest = o => dosel().then(d => d.test(o)); alPrimerGesto(() => G.vegetacion.listo.then(dosel)); } // src/engine/dosel.js (dosel por celdas, AW3)
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js

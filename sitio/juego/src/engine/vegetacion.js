@@ -350,16 +350,17 @@ AVE.module('vegetacion', function (G) {
         it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
         n++; tepuyPos.push(x, z);
       }
-      // Segunda vuelta: copas entre los edificios de la cima, donde el tronco no cabe (la ciudad deja 8 m)
-      // y el pasto se veía pelado. No van en el risco (ny bajo): esa pared es roca. Tres planos cruzados, en crearCopasCima.
+      // Revisión 11:10: las copas de 8–11 m se leían como nenúfares y solo caían en el borde
+      // (el centro de la meseta no es «libre»: lo ocupan las piezas). Aquí son copas chicas, también
+      // entre los edificios. El risco vertical no lleva copa.
       copasCima.length = 0;
-      const pasoC = 4.6, rC = rng(9051);
+      const pasoC = 3.3, rC = rng(9051);
       for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
-        const jx = x + (rC() - 0.5) * pasoC * 0.7, jz = z + (rC() - 0.5) * pasoC * 0.7;
-        if (T.selvaTepuy(jx, jz) < 0.45 || !libre(jx, jz)) continue;
+        const jx = x + (rC() - 0.5) * pasoC * 0.65, jz = z + (rC() - 0.5) * pasoC * 0.65;
+        if (T.selvaTepuy(jx, jz) < 0.55) continue;
         const y = T.height(jx, jz), nyC = T.normalAt(jx, jz).y;
-        if (y < 60 || nyC < 0.62 || enAgua(jx, jz, y) || tapado(jx, jz, 2) || enCiudad(jx, jz, -2.4)) continue;
-        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 8.2 + rC() * 3.4, h: 5.4 + rC() * 2.6, tono: rC() });
+        if (y < 78 || nyC < 0.78 || enAgua(jx, jz, y) || tapado(jx, jz, 1.4) || enCiudad(jx, jz, -2)) continue;
+        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 2.6 + rC() * 1.5, h: 2.8 + rC() * 1.3, tono: rC() });
       }
     }
     return lista;
@@ -487,12 +488,13 @@ AVE.module('vegetacion', function (G) {
           // F0.3: desde el aire el cuadro se recuesta hacia atrás (hasta ~63°) y la copa se ve; a pie y en vuelo bajo sigue de pie
           float elev = atan(d3.y, length(d3.xz));
           float inc = clamp(elev - 0.3, 0.0, 1.1);
-          // G19: la vista ciudad_tepuy mira unos 22° hacia abajo. Ahí el árbol suelto (tronco claro y pasto entre copas)
-          // pasa a una copa ancha. A pie, elev queda por debajo de ~6° y el cuadro no cambia.
-          float aereo = smoothstep(0.10, 0.38, elev);
+          // G19: no agrandar el cuadro. A 1,7× la altura del árbol la copa era una hoja de varios metros
+          // y, en render2022, tapaba la cámara. El tinte de copa solo entra lejos.
+          float distC = length(d3);
+          float aereo = smoothstep(0.28, 0.62, elev) * smoothstep(36.0, 72.0, distC);
           vec3 up = vec3(0.0, cos(inc), 0.0) - toCam * sin(inc);
-          float ladoX = lado * mix(1.0, 1.7, aereo);
-          float ladoY = lado * mix(1.0, 0.9, aereo);
+          float ladoX = lado;
+          float ladoY = lado;
           float sway = sin(uTime * 0.9 + c.x * 0.3 + c.z * 0.2) * 0.012 * position.y * position.y * lado;
           vec3 w = c + right * (position.x * ladoX + sway) + up * (position.y * ladoY) - toCam * lado * 0.15;
           vUv = iTile.xy + uv * iTile.zw; vLoc = uv; vCol = iCol; vD = distance(c, cameraPosition); vAereo = aereo;
@@ -507,12 +509,12 @@ AVE.module('vegetacion', function (G) {
         void main() {
           vec4 t = texture2D(tAtlas, vUv);
           float a = vAereo;
-          if (a > 0.15) {
-            // mancha de copa, no el tronco del atlas: las copas vecinas se tocan y el suelo deja de verse como césped
-            vec2 q = (vLoc - vec2(0.5, 0.58)) * vec2(0.9, 1.12);
+          if (a > 0.2) {
+            // copa chica en lo alto del cuadro (unos 4 m), no un disco del tamaño del árbol entero
+            vec2 q = (vLoc - vec2(0.5, 0.72)) * vec2(2.15, 2.4);
             float rad = length(q);
-            float mascara = smoothstep(0.52, 0.28, rad);
-            if (a > 0.6 && mascara < 0.04) discard;
+            float mascara = smoothstep(0.58, 0.26, rad);
+            if (a > 0.8 && mascara < 0.06) discard;
             float n = fract(sin(dot(vLoc * vec2(19.0, 13.0) + vCol.xy, vec2(12.9898, 78.233))) * 43758.5453);
             float n2 = fract(sin(dot(floor(vLoc * 6.0) + vCol.yz, vec2(39.3, 11.7))) * 24634.634);
             vec3 osc = vec3(0.045, 0.09, 0.03);
@@ -544,7 +546,7 @@ AVE.module('vegetacion', function (G) {
     const lista = [];
     // F0.3: mancha de copa más ancha y densa, verde muy oscuro en vez de negro: desde el aire el bosque se lee como dosel
     // G19: la mancha cubre el hueco entre copas (antes una palma dejaba un círculo chico y el pasto se veía desde el aire)
-    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.max(5.6, Math.min(10.5, (info[m].ancho || 4) * 0.9)) * P.pos[i * 4 + 3]]); }
+    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(6.2, Math.max(2.6, (info[m].ancho || 3) * 0.5)) * P.pos[i * 4 + 3]]); }
     if (!lista.length) return;
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -925,9 +927,12 @@ AVE.module('vegetacion', function (G) {
           if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
         }
         check('Selva del tepuy (BL1): más de 800 árboles alrededor de la ciudad, en su elipse y en suelo libre', st.tepuy > 800 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
-        let malC = 0;
-        for (const c of copasCima) if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.62 || c.y < 60 || !libre(c.x, c.z)) malC++;
-        check('Copas de la cima (G19): en la meseta libre, no sobre el risco', copasCima.length >= 40 && !malC, copasCima.length + ' copas, ' + malC + ' fuera de sitio');
+        let malC = 0, grandes = 0;
+        for (const c of copasCima) {
+          if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.75 || c.y < 74 || c.s > 4.6) malC++;
+          if (c.s > 4.6) grandes++;
+        }
+        check('Copas de la cima (G19): chicas, en la meseta, no en el risco', copasCima.length >= 50 && !malC && !grandes, copasCima.length + ' copas, ' + malC + ' fuera de sitio, ' + grandes + ' de más de 4,6 m');
       }
       const MB = usarBosque && window[BOSQUE.global];
       if (MB) {

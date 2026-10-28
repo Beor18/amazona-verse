@@ -68,7 +68,9 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 45, medio: 70, alto: 90 },        // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
+    // F2.1: 45/70/90 m eran el mínimo (Kelvin, 26-oct: no se recorta el kit), no el tope.
+    // Media 90 m y alta 120 m. Baja se queda en 45 m: el móvil modesto no carga más mallas.
+    hd: { bajo: 45, medio: 90, alto: 120 },
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
     // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
@@ -339,6 +341,43 @@ AVE.module('streaming', function (G) {
     }
     col.needsUpdate = true;
   }
+  // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
+  // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|complejo_ruinas)/.test(n);
+  function cremar(geo) {
+    const col = geo.attributes.color;
+    if (!col) return;
+    for (let i = 0; i < col.count; i++) {
+      const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i);
+      const t = Math.min(1, Math.pow(Math.max(y, 0) / 0.22, 0.55));
+      const d = Math.min(1.12, Math.max(0.84, y / 0.28));
+      col.setXYZ(i, (0.55 + 0.41 * t) * d, (0.48 + 0.40 * t) * d, (0.38 + 0.36 * t) * d);
+    }
+    col.needsUpdate = true;
+  }
+  // El _lejos de ruina_torre trae agujas (arista larga / arista corta > 12). En render2022,
+  // varias juntas se leen como una masa beige de triángulos en punta. Se quitan esas astillas.
+  function podarAstillas(geo) {
+    const pos = geo.attributes.position, index = geo.index;
+    if (!pos || !index) return;
+    const src = index.array, nt = index.count / 3, keep = [];
+    const dist = (a, b) => Math.hypot(pos.getX(a) - pos.getX(b), pos.getY(a) - pos.getY(b), pos.getZ(a) - pos.getZ(b));
+    for (let t = 0; t < nt; t++) {
+      const a = src[t * 3], b = src[t * 3 + 1], c = src[t * 3 + 2];
+      const ab = dist(a, b), bc = dist(b, c), ca = dist(c, a);
+      const corto = Math.min(ab, bc, ca), largo = Math.max(ab, bc, ca);
+      if (corto < 1e-4 || largo > corto * 12) continue;
+      keep.push(a, b, c);
+    }
+    if (!keep.length || keep.length === index.count) return;
+    geo.setIndex(new THREE.BufferAttribute(new (pos.count > 65535 ? Uint32Array : Uint16Array)(keep), 1));
+    geo.computeBoundingSphere();
+  }
+  function piedraLejos(n, geo) {
+    if (!esPiedra(n) || !geo) return;
+    podarAstillas(geo);
+    cremar(geo);
+  }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
     const p = g.attributes.position, n = p.count, I = g.index, nt = I ? I.count / 3 : n / 3;
@@ -564,6 +603,7 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
+        piedraLejos(r.n, r.geo);
         if (tieneTeja(r.n)) techar(r.geo);
       } else {
         r.partes = [];
@@ -608,7 +648,7 @@ AVE.module('streaming', function (G) {
       r.estado = 'bajando';
       const rc = res(r.n, 'cerca');
       pedir(rc, prio + 1000).then(() => encolar(() => {
-        try { r.geo = generarLejos(rc.partes); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
+        try { r.geo = generarLejos(rc.partes); piedraLejos(r.n, r.geo); if (tieneTeja(r.n)) techar(r.geo); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
         catch (e) { r.estado = 'error'; r.mal(e); }
         soltar(rc);
       }), err => { r.estado = 'error'; r.mal(err); soltar(rc); });
@@ -942,6 +982,8 @@ AVE.module('streaming', function (G) {
         check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'medio ' + (CFG.hd.medio || 0) + ' m');
         R.setCalidad('bajo', true); ST.revisar();
         check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
+        check('F2.1: el detalle llega a 90 m en media y a 120 m en alta; en baja el kit sigue a 45 m', CFG.hd.medio === 90 && CFG.hd.alto === 120 && CFG.hd.bajo === 45,
+          'bajo ' + CFG.hd.bajo + ' · medio ' + CFG.hd.medio + ' · alto ' + CFG.hd.alto);
         R.setCalidad('alto', true); ST.revisar();
       }
       if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
