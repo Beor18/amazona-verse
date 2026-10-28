@@ -186,6 +186,7 @@ def main():
     ap.add_argument('--movil', action='store_true', help='emula un celular (390×844, dpr 2, táctil)')
     ap.add_argument('--repetir', type=int, default=1, help='repite cada look N veces (series independientes)')
     ap.add_argument('--titulo', help='título de la lámina')
+    ap.add_argument('--espera', type=int, default=240, help='segundos máximos por vista (sin GPU, en la nube, hacen falta ~1500)')
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(AQUI, 'config.json')))
     P = cfg['pruebas']
@@ -248,7 +249,7 @@ def main():
             avtest.evaluar(cdp, ses, '(async () => { const G = window.AV.G; await (G.mundo && G.mundo.listo); if (window.AV.look === undefined) await new Promise(r => setTimeout(r, 8000)); return (window.AV.look && window.AV.look.actual) || "fabrica"; })()', 120)
             for v in vistas:
                 js = CRIADERO_JS if VISTAS[v].get('criadero') else VISTA_JS % json.dumps(VISTAS[v])
-                r = json.loads(avtest.evaluar(cdp, ses, js, 240))
+                r = json.loads(avtest.evaluar(cdp, ses, js, a.espera))
                 if r.get('error'):
                     print('  · %s/%s: %s' % (lk, v, r['error']), flush=True)
                     continue
