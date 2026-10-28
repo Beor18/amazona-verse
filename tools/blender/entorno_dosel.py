@@ -21,6 +21,7 @@ OBJ_TRIS = 50000        # triángulos para toda la isla tras simplificar (medio 
 OBJ_TRIS_BAJO = 16000   # y para la calidad «bajo» (assets/data/dosel_cap1_bajo.js, AV_DOSEL_CAP1_BAJO): ya va justa de triángulos
 ALTO = ((24, 9.5), (64, 7.0), (999, 4.5))   # altura del dosel sobre el suelo por cota (copas algo por debajo de los árboles reales)
 S_K, HALF = 0.255, 264.0
+TEPUY = dict(x=-25.0, z=-160.0, rx=135.0, rz=105.0, borde=0.3, ciudad=8.0)   # BL1: como TEPUY en src/engine/terreno.js
 
 def leer_altura():
     t = open(os.path.join(ROOT, 'assets', 'data', 'mapa_cap1_altura.js'), encoding='utf-8').read()
@@ -75,6 +76,16 @@ def mascara(H, x0, z0, paso, M):
         print('AVISO: sin %s; dosel solo con la densidad del mapa' % p)
     gy, gxx = np.gradient(H, paso); ny = 1 / np.sqrt(1 + gy ** 2 + gxx ** 2)
     m = bosque & libre & (H >= 0.8) & (ny >= 0.72)
+    # BL1: selva del tepuy (misma elipse que src/engine/terreno.js): bosque en la cima y las laderas alrededor de la gran ciudad,
+    # hasta ~57° de pendiente, fuera de las piezas de las ruinas (escenaKelvin) con su margen y de sendas y agua (libre)
+    T = TEPUY; d = np.hypot((gx - T['x']) / T['rx'], (gz - T['z']) / T['rz'])
+    zona = np.clip((1 - d) / T['borde'], 0, 1) > 0.35
+    for g in M.get('escenaKelvin', {}).get('compacto', []):
+        if 'ruinas' not in g.get('grupo', ''): continue
+        for t in g['inst']:
+            px, pz = (t[12], t[14]) if len(t) >= 16 else (t[0], t[2])
+            zona &= np.hypot(gx - px, gz - pz) >= T['ciudad'] + 3
+    m |= zona & libre & (H >= 4) & (ny >= 0.55)
     # sin motas sueltas: el vértice queda si al menos 5 de sus 9 vecinos son bosque
     return m & (caja(m, 1) >= 5 / 9 - 1e-3)
 
