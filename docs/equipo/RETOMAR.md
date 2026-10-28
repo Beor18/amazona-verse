@@ -35,6 +35,7 @@ Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claud
 **En pausa por orden de Kelvin:** el cómic Manga Toon (no gastar más ahí) y los minijuegos nuevos.
 
 ## Cómo se publica
+- **Desde el 28-oct se publica sin pedir permiso a Kelvin** (DECISION_LOG) en cuanto las pruebas obligatorias pasan. **En la nube:** `tools/build/publicar_nube.sh` hace todo (pull, build de HEAD, pruebas con SwiftShader y tiempos máximos de nube, `sitio.sh`, commit de `sitio/` con índice temporal y push). Con `--probar` no publica. Solo tolera el fallo de tiempo de arranque de `movementTest`; cualquier otra falla, tiempo agotado o error de consola no publica. Si no publica, deja la falla en `PEDIDOS.md` para el carril que corresponda. La Mac de Kelvin está apagada desde el corte de luz del 27-oct.
 - `tools/build/build.sh HEAD <carpeta>`, luego `tools/build/test.sh <carpeta>/ --extra` y luego `tools/build/sitio.sh <carpeta>/site`.
 - Haz commit de `sitio/` con un índice temporal y push a `main`. Vercel publica amazonaverse.com en 1–2 minutos.
 - Solo publica si las pruebas obligatorias están en verde.
