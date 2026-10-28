@@ -328,7 +328,7 @@ AVE.module('vegetacion', function (G) {
       }
     }
     // BL1, selva del tepuy (T.selvaTepuy, como en el render de 2022): árboles en la cima y en las laderas alrededor de la gran
-    // ciudad (hasta ~57°; más vertical lo cubre el splat, porque el tronco hundido hacía una sierra negra en el labio), con la probabilidad de la
+    // ciudad, también en las paredes que el relleno evita (hasta ~72°, hundidos en la ladera: de lejos, selva colgada del risco), con la probabilidad de la
     // elipse. Fuera de las piezas de la ciudad (escenaKelvin de las ruinas), de sendas, agua y sitios despejados. Semilla
     // propia y después del relleno: lo demás no se mueve. Cuentan aparte (tepuyPos).
     tepuyPos.length = 0;
@@ -342,13 +342,12 @@ AVE.module('vegetacion', function (G) {
         const x = ST.x + (r4() * 2 - 1) * ST.rx, z = ST.z + (r4() * 2 - 1) * ST.rz, w = T.selvaTepuy(x, z);
         if (r4() >= w || !libre(x, z)) continue;
         const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
-        // ny 0.55 (~57°): más empinado, el tronco hundido se leía como una sierra negra en el labio (vista ciudad_tepuy)
-        if (!md || y < 4 || ny < 0.55 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        if (!md || y < 4 || ny < 0.3 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
         const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
         if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
         marcar(x, z, r);
         const it = add(m, x, z, s, { rank: r4(), bosque: true });
-        it.y -= (1 - ny) * 1.5; // en la ladera, el pie del lado de abajo no queda en el aire
+        it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
         n++; tepuyPos.push(x, z);
       }
     }
