@@ -941,6 +941,7 @@ AVE.module('streaming', function (G) {
           materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos, visiblesHD: vis.hd, hd: hdActivo(),
           drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
       },
+      esPiedra, cremar,
     };
     const tam = g => { let b = 0; if (!g) return 0; for (const k in g.attributes) b += g.attributes[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
     G.on('update', dt => {
@@ -974,9 +975,9 @@ AVE.module('streaming', function (G) {
     try {
       const gCrema = new THREE.BufferGeometry();
       gCrema.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.04, 0.03, 0.02, 0.22, 0.16, 0.08]), 3));
-      cremar(gCrema);
+      ST.cremar(gCrema);
       const cc = gCrema.attributes.color;
-      check('El lejano de piedra es marfil mate y guarda la sombra (no ocre)', esPiedra('templo_grande') && esPiedra('complejo_ruinas') && esPiedra('losa_piedra') && !esPiedra('bohio_redondo') && !esPiedra('casa_paja_a') && cc.getX(1) > 0.9 && cc.getY(1) > 0.8 && cc.getX(0) < cc.getX(1) && cc.getZ(0) < cc.getY(0), cc.getX(1).toFixed(2) + ' ' + cc.getY(1).toFixed(2) + ' ' + cc.getZ(1).toFixed(2));
+      check('El lejano de piedra es marfil mate y guarda la sombra (no ocre)', ST.esPiedra('templo_grande') && ST.esPiedra('complejo_ruinas') && ST.esPiedra('losa_piedra') && !ST.esPiedra('bohio_redondo') && !ST.esPiedra('casa_paja_a') && cc.getX(1) > 0.9 && cc.getY(1) > 0.8 && cc.getX(0) < cc.getX(1) && cc.getZ(0) < cc.getY(0), cc.getX(1).toFixed(2) + ' ' + cc.getY(1).toFixed(2) + ' ' + cc.getZ(1).toFixed(2));
       await ST.listo; await ST.terminar();
       if (R.setCalidad) R.setCalidad('alto', true);
       ST.soltarTodo(); await ir(x0, z0, 0, -1); ST.liberarYa(); await ST.terminar();
