@@ -40,11 +40,18 @@ EOF
 
 OUT="$TMPD/build-$HEAD_SHA"; rm -rf "$OUT"
 tools/build/build.sh HEAD "$OUT"
-set +e
-"$AV_PYTHON" tools/build/avtest.py "$OUT" --config "$CFG"
-RC=$?
-set -e
 REP="$OUT/reporte-test.md"
+set +e
+for INTENTO in 1 2 3; do
+  rm -f "$REP"
+  "$AV_PYTHON" tools/build/avtest.py "$OUT" --config "$CFG"
+  RC=$?
+  # Sin reporte = la página no respondió (sin GPU el primer cuadro a veces bloquea >10 s): se reintenta
+  [ -f "$REP" ] && break
+  echo "intento $INTENTO sin reporte (rc=$RC): reintento"
+done
+set -e
+[ -f "$REP" ] || { echo "NO SE PUBLICA $HEAD_SHA: las pruebas no llegaron a correr en 3 intentos"; exit 1; }
 if [ $RC -ne 0 ]; then
   # Solo se tolera el tiempo de arranque de movementTest; todo lo demás bloquea.
   FALLAS=$(sed -n '/^## Fallas/,/^## /p' "$REP" | grep '^- ' || true)
