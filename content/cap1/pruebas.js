@@ -31,6 +31,13 @@
     return G.c.luma.junto() && !G.fisica.MOVE.flying;
   }
 
+  // QA-64: un choose del coro (o su «¡Eso, nena!») no puede quedar abierto para la prueba siguiente.
+  async function limpiarDialogo(G) {
+    await new Promise(r => setTimeout(r, 0));
+    if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
+    if (G.S) G.S.chorus = false;
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -40,6 +47,7 @@
     const action = () => G.interaccion.action();
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true);
     // Creador de personaje
     check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
@@ -293,6 +301,7 @@
     const { teleport, tick, drain, useAt } = T;
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
@@ -652,7 +661,7 @@
     try {
       // Datos de la lección
       const M = LEC.mision_educativa || {};
-      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes
+      await limpiarDialogo(G); // deja pasar un clic pendiente del coro y lo anula (QA-64)
       check('lecciones.js carga la lección (8 pasos, 4 perchas, 7 preguntas, 23 fichas)', window.AV_LECCIONES_CAP1 === LEC && M.pasos.length === 8 && M.pasos[1].perchas.length === 4 && LEC.preguntas.length === 7 && LEC.diario.length === 23);
       const sinEn = [];
       const bil = (o, path) => { if (!o || typeof o !== 'object') return; if ('es' in o && !('en' in o)) sinEn.push(path); for (const k of Object.keys(o)) bil(o[k], path + '.' + k); };

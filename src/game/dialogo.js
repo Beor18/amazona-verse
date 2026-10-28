@@ -30,7 +30,7 @@ AVE.module('dialogo', function (G) {
   // Líneas de un disparador (copia); si los datos faltan, se usan las líneas de respaldo del pack
   function L(trigger, fallback) { const l = DIALOG[trigger]; return l && l.length ? l.map(x => Object.assign({}, x)) : (fallback || []); }
 
-  let queue = [], onDone = null;
+  let queue = [], onDone = null, epoca = 0;
   const talk = { who: '', until: 0, mood: 'neutral' };
   function moodOf(text) {
     if (/…\s*$|perdido|inund|no tenemos/i.test(text)) return 'sad';
@@ -50,7 +50,11 @@ AVE.module('dialogo', function (G) {
   }
   function say(lines, done, opts) {
     if (opts && opts.libre) { sayLibre(lines, done); return; }
-    queue = lines.slice(); onDone = done || null; nextCaja();
+    const e = ++epoca;
+    queue = lines.slice();
+    // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
+    onDone = done ? () => { if (e === epoca) done(); } : null;
+    nextCaja();
   }
   function nextCaja() {
     const l = queue.shift();
@@ -132,11 +136,18 @@ AVE.module('dialogo', function (G) {
     if (libreCur) return { who: libreCur.who, text: libreCur.text, img: libreCur.img || img(libreCur.who), libre: true };
     return null;
   }
-  function clear() { $('dialog').hidden = true; queue = []; onDone = null; cancelarLibre(); }
+  function clear() {
+    epoca++;
+    $('dialog').hidden = true; queue = []; onDone = null; cancelarLibre();
+    // Una elección a medias (ch-0 del coro) no puede pulsarse después y tapar la charla siguiente
+    const card = document.getElementById('card');
+    if (card && !card.hidden && card.querySelector('#ch-0, #s-co') && G.ui && G.ui.hideCard) G.ui.hideCard();
+  }
   // Elección de diálogo: cambia la frase de respuesta, no el desenlace
   function choose(line, options, done) {
+    const e = epoca;
     G.ui.showCard(`<h2>${line.who}</h2><p>${line.text}</p><div class="row">${options.map((o, i) => `<button class="btn" id="ch-${i}" type="button">${o.label}</button>`).join('')}</div>`);
-    options.forEach((o, i) => { $('ch-' + i).onclick = () => { G.ui.hideCard(); done(o); }; });
+    options.forEach((o, i) => { $('ch-' + i).onclick = () => { if (e !== epoca) return; G.ui.hideCard(); done(o); }; });
     const b = $('ch-0'); if (b) b.focus();
   }
   G.on('apply', () => { G.ui.hideCard(); clear(); }, 45);
