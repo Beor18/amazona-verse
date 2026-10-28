@@ -1,6 +1,14 @@
-# Para Fujimoto: 4 agentes de Grok en Cursor (reparto nuevo del 28-oct)
+# Grok en Cursor: una sola fila de tareas (28-oct)
 
-Kelvin reinicia el reparto (28-oct): **hasta que el crédito de Claude se reinicie el sábado, el trabajo lo hacen los Grok** y la sesión coordinadora solo une, prueba y publica. **4 agentes de Grok a la vez**, cada uno con una tarea del lanzamiento y sin tocar los archivos de los otros. Cierra los chats de Grok que haya abiertos con tareas viejas (el cómic Manga Toon sigue en pausa). Abre en Cursor **4 chats de agente nuevos**, con el modelo Grok en modo Agent (pueden ser Background Agents), y pega en cada uno su texto.
+**Regla nueva (28-oct, tras perder la noche):** no hay tareas a nombre de un Grok concreto. Hay **una fila en orden**. Cualquier agente de Grok que esté abierto toma la **primera tarea libre**, se apunta en `docs/equipo/TRABAJO_SIMULTANEO.md` (quién, hora, «en curso») y la hace. Si hay dos Grok, cada uno toma una distinta y no tocan los mismos archivos. **Nunca se queda parado:** si no queda nada libre, caza bugs (tarea 6). Las secciones de abajo (Grok 1 a 4) son el detalle de cada tarea, no dueños.
+
+## La fila, en orden
+1. **QA-53:** que la pantalla no se congele en el móvil al pulsar «Empezar» (detalle: «Grok 3»).
+2. **Piezas beige que flotan** en la pared del tepuy, vista `render2022` (detalle: «Grok 3»).
+3. **F2.2:** las 10 aldeas con tejados **rojos** (decisión de Kelvin del 28-oct), dentro de `vibrant_toon` (detalle: «Grok 3»).
+4. **G18:** la gran ciudad del tepuy como `docs/img/ciudad_tepuy_meta_kelvin.jpg` (detalle: «Grok 1»).
+5. **G19, segunda vuelta:** la revisión del 28-oct en `PEDIDOS.md` (pared de roca gris, copas entre los edificios y bosque continuo; detalle: «Grok 2»).
+6. **Cazar bugs sin parar:** QA-61 (el zoom que se agranda solo), Vittata contra los edificios y los mini bugs de los juegos (detalle: «Grok 4»).
 
 ## Grok 1: la gran ciudad del tepuy (G18)
 
