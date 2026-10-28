@@ -555,7 +555,7 @@ AVE.module('renderer', function (G) {
   // Una familia de material por objeto. La clave incluye el tone mapping y customProgramCacheKey:
   // look.js puede cambiarla en el gancho 'render', justo antes del dibujo, y entonces hay que enlazar otra vez.
   let genCalor = 1, rtCalor = null, postCalor = false;
-  const calorHecho = new Set(), calorSalto = new Set();
+  const calorHecho = new Set();
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
   function claveDe(m) {
     let k = '';
@@ -566,7 +566,7 @@ AVE.module('renderer', function (G) {
   function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
   function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
-  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m)) && !calorSalto.has(idCalor(o, m))); }
+  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
   function siguienteCalor() {
     let hallado = null;
     scene.traverse(o => { if (!hallado && dibujable(o) && objPendiente(o)) hallado = o; });
@@ -591,9 +591,7 @@ AVE.module('renderer', function (G) {
       if (!capa31) camera.layers.disable(31);
     }
   }
-  const camCalor = new THREE.PerspectiveCamera(40, 1, 0.05, 500), cajaCalor = new THREE.Box3(), esfCalor = new THREE.Sphere();
-  // Dibuja solo este objeto (32×32, con las luces de verdad) mirándolo de frente: si se queda
-  // fuera de la cámara de juego, three no enlaza el programa y el primer dibujo lo hace igual.
+  // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
   function warmUno(o) {
     const objs = [];
     scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
@@ -603,22 +601,15 @@ AVE.module('renderer', function (G) {
     for (const obj of objs) obj.visible = false;
     o.visible = true; o.frustumCulled = false;
     if (o.isInstancedMesh && o.count === 0) o.count = 1;
-    o.updateMatrixWorld(true);
-    cajaCalor.setFromObject(o); cajaCalor.getBoundingSphere(esfCalor);
-    const r = Math.max(0.4, esfCalor.radius);
-    camCalor.position.copy(esfCalor.center).add(new THREE.Vector3(0, r * 0.4, r * 2.4));
-    camCalor.lookAt(esfCalor.center); camCalor.updateMatrixWorld();
     if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
-    let dibujo = false;
     try {
-      conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camCalor); dibujo = renderer.info.render.calls > 0; });
+      conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); });
     } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally {
       for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
       for (const [p, vis] of padres) p.visible = vis;
     }
-    if (dibujo) marcarCalor(o);
-    else for (const m of matsDe(o)) if (m) calorSalto.add(idCalor(o, m)); // no se pudo dibujar: no reintentar cada cuadro
+    marcarCalor(o);
   }
   function warmPost() {
     if (!post.composer) return;
@@ -702,7 +693,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
-    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear(); calorSalto.clear();
+    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear();
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
