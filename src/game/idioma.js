@@ -239,8 +239,37 @@ AVE.module('idioma', function (G) {
       ok('El texto en inglés se lee con voz inglesa (lang="en")', document.getElementById('d-text').lang === 'en');
       G.dialogo.clear();
     }
+    const rotuloHud = modo => {
+      const ol = document.getElementById('steps');
+      const quest = document.getElementById('quest');
+      if (!ol) return '';
+      const abierto = quest && quest.classList.contains('abierto');
+      if (quest) quest.classList.add('abierto');
+      const ahora = [...ol.querySelectorAll('li.now')];
+      const li = document.createElement('li');
+      let c = '';
+      if (modo === 'fin') {
+        ahora.forEach(n => n.classList.remove('now'));
+        li.className = 'done';
+        ol.appendChild(li);
+        c = getComputedStyle(ol, '::after').content;
+      } else {
+        li.className = 'now';
+        ol.appendChild(li);
+        c = getComputedStyle(li, '::after').content;
+      }
+      li.remove();
+      ahora.forEach(n => n.classList.add('now'));
+      if (quest && !abierto) quest.classList.remove('abierto');
+      return c;
+    };
+    const enObj = rotuloHud('ahora'), enFin = rotuloHud('fin');
+    ok('El rótulo del objetivo sale en inglés (Goal, no Objetivo)', /Goal/.test(enObj) && !/Objetivo/.test(enObj), enObj);
+    ok('Al terminar los pasos el rótulo sale en inglés', /Chapter complete/.test(enFin) && !/Capítulo/.test(enFin), enFin);
     if (aula) aula.setAjuste('idioma', 'es'); else poner('es');
     await tmp.listo; await new Promise(r => setTimeout(r, 60));
+    const esObj = rotuloHud('ahora');
+    ok('El rótulo del objetivo vuelve a español', /Objetivo/.test(esObj) && !/Goal/.test(esObj), esObj);
     ok('Al volver a ES, el texto original se restaura', !document.querySelector('#d-text[lang="en"]') && (document.getElementById('b-menu').getAttribute('aria-label') === 'Pausa y opciones'));
     ok('El idioma por defecto sigue en español', lang === 'es' && document.documentElement.lang === 'es');
     if (aula && idAntes) aula.setAjuste('idioma', idAntes); else if (antes === 'en') poner('en');
