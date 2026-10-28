@@ -371,8 +371,11 @@ AVE.module('terreno', function (G) {
     // BL1: en la selva del tepuy la pared va cubierta casi entera, de un verde de copas con bulto y sin la veta de la
     // roca (de lejos se leía como rayas); la roca asoma solo en afloramientos sueltos de lo más vertical
     tep = 1.0 - smoothstep(1.0 - uTepuyB, 1.0, length((wp - uTepuy.xy) * uTepuy.zw));
+    // Solo el risco vertical. En el labio (triángulos a medias) el verde fijo se leía como una sierra negra
+    // en la vista ciudad_tepuy. Ahí se queda la selva colgante de BE2.
+    float pared = smoothstep(0.58, 0.34, nG.y);
     float aflora = smoothstep(0.7, 0.82, parche + (mac.b - 0.5) * 0.3) * smoothstep(0.45, 0.12, nG.y);
-    cubre = mix(cubre, 1.0 - aflora, tep);
+    cubre = mix(cubre, 1.0 - aflora, tep * pared);
     // copas con el hueco oscuro entre ellas, proyectadas sobre la pared (o el suelo, en lo llano)
     // (ruido de ~3 y ~1 m por los tres ejes, como la roca triplanar: sin rayas en las paredes)
     vec3 pcB = pow(abs(nG), vec3(4.0)); pcB /= dot(pcB, vec3(1.0));
@@ -383,7 +386,7 @@ AVE.module('terreno', function (G) {
     copa = smoothstep(0.25, 0.75, copa);
     // verde fijo (lineal) y no el musgo: su textura va proyectada desde arriba y en la pared se estiraba en rayas
     vec3 copasT = mix(vec3(0.022, 0.05, 0.015), mix(vec3(0.07, 0.145, 0.032), vec3(0.11, 0.175, 0.038), smoothstep(0.35, 0.7, mancha)), copa) * (0.85 + mancha * 0.3);
-    selva = mix(selva, copasT, tep);
+    selva = mix(selva, copasT, tep * pared);
   #endif
   c2 = mix(c2, selva, cubre * steep);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
@@ -448,7 +451,7 @@ AVE.module('terreno', function (G) {
   #ifdef SPLAT_TEPUY
     // BL1: la selva colgada del risco mira al cielo; sin esto, en la cara en sombra se apagaba como la roca desnuda
     // (y sin el relieve vertical de la roca ni el facetado de la malla del risco, que de lejos se leían como rayas)
-    float kT = tep * cubre * steep;
+    float kT = tep * cubre * steep * smoothstep(0.58, 0.34, nG.y);
     normal = normalize(mix(normal, normalize((viewMatrix * vec4(nG, 0.0)).xyz), kT * 0.7));
     normal = normalize(mix(normal, (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz, kT * 0.5));
   #endif
