@@ -68,7 +68,9 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 45, medio: 70, alto: 90 },        // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
+    // F2.1: 45/70/90 m eran el mínimo (Kelvin, 26-oct: no se recorta el kit), no el tope.
+    // Media 90 m y alta 120 m. Baja se queda en 45 m: el móvil modesto no carga más mallas.
+    hd: { bajo: 45, medio: 90, alto: 120 },
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
     // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
@@ -942,6 +944,8 @@ AVE.module('streaming', function (G) {
         check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'medio ' + (CFG.hd.medio || 0) + ' m');
         R.setCalidad('bajo', true); ST.revisar();
         check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
+        check('F2.1: el detalle llega a 90 m en media y a 120 m en alta; en baja el kit sigue a 45 m', CFG.hd.medio === 90 && CFG.hd.alto === 120 && CFG.hd.bajo === 45,
+          'bajo ' + CFG.hd.bajo + ' · medio ' + CFG.hd.medio + ' · alto ' + CFG.hd.alto);
         R.setCalidad('alto', true); ST.revisar();
       }
       if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
@@ -951,6 +955,23 @@ AVE.module('streaming', function (G) {
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
+      if (hdGL2() && R.setCalidad && ZM.inst && ZM.inst.length) {
+        const pieza = ZM.inst.slice().sort((a, b) => b.r - a.r)[0];
+        const dx = pieza.cx - ZM.cx, dz = pieza.cz - ZM.cz, len = Math.hypot(dx, dz);
+        const ux = len > 1 ? dx / len : 0, uz = len > 1 ? dz / len : 1;
+        R.setCalidad('medio', true);
+        await ir(pieza.cx + ux * (82 + pieza.r), pieza.cz + uz * (82 + pieza.r), -ux, -uz);
+        G.camara.yaw = Math.atan2(ux, uz); dibujar(4);
+        const camP = R.camera.position, Sp = S.pos;
+        const dCam = Math.hypot(pieza.cx - camP.x, pieza.cy - camP.y, pieza.cz - camP.z);
+        const dPla = Math.hypot(pieza.cx - Sp.x, pieza.cy - Sp.y, pieza.cz - Sp.z);
+        const dl = Math.max(0, Math.min(dCam, dPla) - pieza.r);
+        let tipo = 'fuera';
+        for (const k in ST.lotes) { const L = ST.lotes[k]; if (L.lista && L.lista.indexOf(pieza) >= 0) tipo = L.tipo; }
+        check('F2.1: a unos 80 m en calidad media se ve el kit, no la silueta lejana', dl >= 68 && dl <= 105 && (tipo === 'hd' || tipo === 'cerca'),
+          (pieza.id || pieza.modelo) + ' · dl ' + r2(dl) + ' m · ' + tipo);
+        R.setCalidad('alto', true); ST.revisar(); await ST.terminar();
+      }
       const lejosM = [];
       scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
       check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
