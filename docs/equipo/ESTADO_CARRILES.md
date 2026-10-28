@@ -49,3 +49,7 @@ El P2 de E, la ronda de diez partidas de F, el `--extra` en la nube de G, el top
 - `streaming.js` lo escribieron B (`2d197f6`, `71c3ae9`) y C (`11dade4`). Los tres commits están en origin y `avCrema` sigue. J avisó que el kit lejano de la piedra es el mismo de la Ciudad de los 36 y que no tocó `streaming.js`. M avisó que no toca `streaming.js`; la escala va en `mundo.js`. En `solidos.js` de origin el corte de los bohíos es de M (`bb95e79`).
 - G12 sigue escrita «en curso» desde el 26-oct (Claude Sonnet · ahora, duplicada). No es un carril de `GROK_AGENTES.md`. No se toca.
 - Esta sesión no toma B, C, D, E, F, G, H, I, J, K, L, M ni N, y no publica `sitio/`. La publicación que está en origin es `b07f540` (el árbol de `d471475`); no es de esta lectura. El código local de G22 se queda en la punta `644099f`.
+
+## Actualización 13:51 AST
+
+El código de G22 ya está en origin. A las 13:51 AST (UTC−4) `origin/main` y HEAD son `d87a495`. `d49b978` reemplaza a `c28de56` (mismo parche de `solidos.js` y `terreno.js`), `036f18e` reemplaza a `644099f` (los paneles de puerta siguen la matriz del edificio) y `d87a495` mide el bohío abierto y no le pone puerta. `083bba2` no se resucitó. El rebase quedó encima de `13d092b` (carril J) sin conflicto en `solidos.js` ni `terreno.js`. Esta nota no cambia el reparto de los otros carriles ni publica `sitio/`.
