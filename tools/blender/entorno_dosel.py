@@ -76,8 +76,11 @@ def mascara(H, x0, z0, paso, M):
         print('AVISO: sin %s; dosel solo con la densidad del mapa' % p)
     gy, gxx = np.gradient(H, paso); ny = 1 / np.sqrt(1 + gy ** 2 + gxx ** 2)
     m = bosque & libre & (H >= 0.8) & (ny >= 0.72)
-    # BL1: selva del tepuy (misma elipse que src/engine/terreno.js): bosque en la cima y las laderas alrededor de la gran ciudad,
-    # hasta ~57° de pendiente, fuera de las piezas de las ruinas (escenaKelvin) con su margen y de sendas y agua (libre)
+    # BL1: selva del tepuy (misma elipse que src/engine/terreno.js): dosel en la cima y las laderas suaves alrededor
+    # de la gran ciudad, fuera de las piezas de las ruinas (escenaKelvin) y de sendas y agua (libre).
+    # Misma pendiente que el resto (ny >= 0.72). El horneado del respaldo 20261027-2108 bajaba a 0.55 y tendía una
+    # sábana de ~60 m en el borde sur (celdas 7,0 y 8,0): sierra negra en la vista ciudad_tepuy. No se publicó.
+    # Las paredes empinadas las cubre el splat de terreno.js. Falta hornear esta máscara en Blender.
     T = TEPUY; d = np.hypot((gx - T['x']) / T['rx'], (gz - T['z']) / T['rz'])
     zona = np.clip((1 - d) / T['borde'], 0, 1) > 0.35
     for g in M.get('escenaKelvin', {}).get('compacto', []):
@@ -85,7 +88,7 @@ def mascara(H, x0, z0, paso, M):
         for t in g['inst']:
             px, pz = (t[12], t[14]) if len(t) >= 16 else (t[0], t[2])
             zona &= np.hypot(gx - px, gz - pz) >= T['ciudad'] + 3
-    m |= zona & libre & (H >= 4) & (ny >= 0.55)
+    m |= zona & libre & (H >= 4) & (ny >= 0.72)
     # sin motas sueltas: el vértice queda si al menos 5 de sus 9 vecinos son bosque
     return m & (caja(m, 1) >= 5 / 9 - 1e-3)
 
