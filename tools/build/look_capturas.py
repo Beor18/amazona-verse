@@ -191,8 +191,11 @@ def main():
     P = cfg['pruebas']
     looks, vistas = a.looks.split(','), a.vistas.split(',')
     if a.vistas_json:
-        VISTAS.update(json.load(open(a.vistas_json)))
-        vistas = list(json.load(open(a.vistas_json)))
+        extra = {k: v for k, v in json.load(open(a.vistas_json)).items() if isinstance(v, dict)}  # sin «_nota»
+        VISTAS.update(extra)
+        # --vistas elige entre las del JSON; sin --vistas explícito, todas las del JSON
+        pedidas = [v for v in vistas if v in extra]
+        vistas = pedidas or list(extra)
     os.makedirs(a.salida, exist_ok=True)
     ruta_med = os.path.join(a.salida, a.prefijo + ('movil_' if a.movil else '') + 'medidas.json')
     medidas = json.load(open(ruta_med)) if os.path.exists(ruta_med) else {}
