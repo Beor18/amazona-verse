@@ -345,10 +345,12 @@
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
-    const tapa = [G.ui.overlayOpen() ? 'overlay' : '', G.ui.cardOpen ? 'tarjeta' : '', G.dialogo.open() ? 'caja' : ''].filter(Boolean).join(',');
     soltarCapas(G);
-    G.interaccion.action();
-    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre(), tapa);
+    if (!G.c.luma.junto()) posarseLuma(G, T);
+    const nb0 = G.interaccion.nearest();
+    if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre(),
+      'junto ' + G.c.luma.junto() + ' cerca ' + (nb0 && nb0.id) + ' y ' + S.pos.y.toFixed(2) + '/' + G.c.luma.percha.y.toFixed(2) + ' ' + ($('d-who').textContent || '') + ' ' + ($('d-text').textContent || '').slice(0, 40));
     drain();
     check('Con el taller ya revisado, tras Iguaca el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
@@ -683,7 +685,9 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); soltarCapas(G); G.interaccion.action(); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); soltarCapas(G);
+      if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+      drain();
       check('Recolección -1 min: Iguaca aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
