@@ -124,15 +124,72 @@ AVE.module('terreno', function (G) {
       paso();
     });
   }
-  // Triángulo bajo (x, z): devuelve la altura (el más alto si hay varios) o NaN; deja vértices y pesos en hit
+  // Triángulo bajo (x, z): devuelve la altura (el más alto si hay varios) o NaN; deja vértices y pesos en hit.
+  // QA-53 / G22: la celda de 4 m junta muchos triángulos (el índice grande es de la malla, carril D).
+  // La primera consulta de una celda densa la parte en 4×4 (1 m) y las siguientes solo miran ese metro.
+  // La altura es la misma: entra todo triángulo cuya caja toca el metro, con 2 mm de margen.
   const hit = { a: 0, b: 0, c: 0, wa: 0, wb: 0, wc: 0 };
+  const SUB = 4;
+  let subBase = null, ultX = Infinity, ultZ = Infinity, ultY = NaN;
+  const subCeldas = new Map();
+  function indexarSub(ci, n0, n1) {
+    const pos = TG.pos, tri = TG.tri, list = TG.list, cell = TG.cell, inv = SUB / cell, EPS = 0.002;
+    const ix = ci % TG.nx, iz = (ci / TG.nx) | 0, x0 = TG.x0 + ix * cell, z0 = TG.z0 + iz * cell;
+    const clamp = v => v < 0 ? 0 : v >= SUB ? SUB - 1 : v;
+    const caja = t => {
+      const a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
+      const ax = pos[a * 3], az = pos[a * 3 + 2], bx = pos[b * 3], bz = pos[b * 3 + 2], cx = pos[c * 3], cz = pos[c * 3 + 2];
+      let minX = ax, maxX = ax, minZ = az, maxZ = az;
+      if (bx < minX) minX = bx; else if (bx > maxX) maxX = bx;
+      if (cx < minX) minX = cx; else if (cx > maxX) maxX = cx;
+      if (bz < minZ) minZ = bz; else if (bz > maxZ) maxZ = bz;
+      if (cz < minZ) minZ = cz; else if (cz > maxZ) maxZ = cz;
+      return [
+        clamp(Math.floor((minX - x0 - EPS) * inv)), clamp(Math.floor((maxX - x0 + EPS) * inv)),
+        clamp(Math.floor((minZ - z0 - EPS) * inv)), clamp(Math.floor((maxZ - z0 + EPS) * inv)),
+      ];
+    };
+    const cnt = new Uint32Array(SUB * SUB);
+    for (let n = n0; n < n1; n++) {
+      const bb = caja(list[n]);
+      for (let k = bb[2]; k <= bb[3]; k++) for (let i = bb[0]; i <= bb[1]; i++) cnt[k * SUB + i]++;
+    }
+    const off = new Uint32Array(SUB * SUB + 1), fill = new Uint32Array(SUB * SUB);
+    for (let i = 0; i < SUB * SUB; i++) off[i + 1] = off[i] + cnt[i];
+    for (let i = 0; i < SUB * SUB; i++) fill[i] = off[i];
+    const flat = new Uint32Array(off[SUB * SUB]);
+    for (let n = n0; n < n1; n++) {
+      const t = list[n], bb = caja(t);
+      for (let k = bb[2]; k <= bb[3]; k++) for (let i = bb[0]; i <= bb[1]; i++) flat[fill[k * SUB + i]++] = t;
+    }
+    return { off, flat };
+  }
+  function subDe(ci, x, z) {
+    if (subBase !== TG.list) { subCeldas.clear(); subBase = TG.list; ultX = Infinity; }
+    let P = subCeldas.get(ci);
+    if (P === undefined) {
+      const n0 = TG.start[ci], n1 = TG.start[ci + 1];
+      P = n1 - n0 > 8 ? indexarSub(ci, n0, n1) : null;
+      subCeldas.set(ci, P);
+    }
+    if (!P) return null;
+    const cell = TG.cell, ix = ci % TG.nx, iz = (ci / TG.nx) | 0;
+    let sx = Math.floor((x - (TG.x0 + ix * cell)) * (SUB / cell)), sz = Math.floor((z - (TG.z0 + iz * cell)) * (SUB / cell));
+    if (sx < 0) sx = 0; else if (sx >= SUB) sx = SUB - 1;
+    if (sz < 0) sz = 0; else if (sz >= SUB) sz = SUB - 1;
+    const s = sz * SUB + sx;
+    return { flat: P.flat, a: P.off[s], b: P.off[s + 1] };
+  }
   function triQuery(x, z) {
     const ix = Math.floor((x - TG.x0) / TG.cell), iz = Math.floor((z - TG.z0) / TG.cell);
     if (ix < 0 || iz < 0 || ix >= TG.nx || iz >= TG.nz) return NaN;
-    const ci = iz * TG.nx + ix, pos = TG.pos, tri = TG.tri;
+    if (subBase !== TG.list) { subCeldas.clear(); subBase = TG.list; ultX = Infinity; }
+    if (x === ultX && z === ultZ) return ultY;
+    const ci = iz * TG.nx + ix, pos = TG.pos, tri = TG.tri, rango = subDe(ci, x, z);
+    const list = rango ? rango.flat : TG.list, n0 = rango ? rango.a : TG.start[ci], n1 = rango ? rango.b : TG.start[ci + 1];
     let best = NaN;
-    for (let n = TG.start[ci], e = TG.start[ci + 1]; n < e; n++) {
-      const t = TG.list[n], a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
+    for (let n = n0; n < n1; n++) {
+      const t = list[n], a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
       const x0 = pos[a * 3], z0 = pos[a * 3 + 2], x1 = pos[b * 3], z1 = pos[b * 3 + 2], x2 = pos[c * 3], z2 = pos[c * 3 + 2];
       const d = (z1 - z2) * (x0 - x2) + (x2 - x1) * (z0 - z2);
       if (Math.abs(d) < 1e-9) continue;
@@ -141,6 +198,7 @@ AVE.module('terreno', function (G) {
       const y = wa * pos[a * 3 + 1] + wb * pos[b * 3 + 1] + wc * pos[c * 3 + 1];
       if (!(y <= best)) { best = y; hit.a = a; hit.b = b; hit.c = c; hit.wa = wa; hit.wb = wb; hit.wc = wc; }
     }
+    ultX = x; ultZ = z; ultY = best;
     return best;
   }
   function height(x, z) {
