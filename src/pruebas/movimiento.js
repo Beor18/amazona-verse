@@ -51,6 +51,8 @@ window.AVMovimientoTest = function (G) {
         if ([10, 20, 30].some(d => [0, 1, 2, 3, 4, 5, 6, 7].some(b => { const ax = x + Math.cos(b * Math.PI / 4) * d, az = z + Math.sin(b * Math.PI / 4) * d; return G.agua.levelAt(ax, az) > H(ax, az) - 0.3; }))) continue;
         if (F.colliders.some(k => k.r > 0 && (!k.when || k.when()) && Math.hypot(k.x - x, k.z - z) < 12 + (k.r || 0) + Math.max(k.hx || 0, k.hz || 0))) continue;
         if (F.perchas.some(p => Math.hypot(p.x - x, p.z - z) < 12 + p.r)) continue;
+        // nada encima en 14 m (un toldo o un alero sobre el sitio frenaría la prueba de subir): se mira el centro y un anillo de 3 m
+        if (G.solidos && G.solidos.activo && G.solidos.libre(x, z, H(x, z) + 0.5, 3) < 14) continue;
         if (rechazados && rechazados.some(q => q.x === x && q.z === z)) continue;
         if (!best || mx - mn < best.d) best = { x, z, d: mx - mn };
         if (best.d < 0.6) return best;
@@ -67,7 +69,8 @@ window.AVMovimientoTest = function (G) {
           reset(L.x, L.z);
           const w = frame(i => { if (i === 0) K.add('w'); }, 45); K.clear();
           const pico = Math.max(...w.map(o => o.sp)), fin = w.slice(30).map(o => o.sp);
-          if (Math.min(...fin) > Math.min(pico, T.walk) * 0.7) break; // llegó a crucero y se mantiene (la cuesta ya lo frena un poco)
+          const techoLibre = !(G.solidos && G.solidos.activo) || G.solidos.libre(L.x, L.z, H(L.x, L.z) + 0.5, 3) >= 14;
+          if (techoLibre && Math.min(...fin) > Math.min(pico, T.walk) * 0.7) break; // llegó a crucero y se mantiene, y no hay nada encima
           malos.push(L); L = sitio(malos);
         }
         met.sitiosDescartados = malos.length;
