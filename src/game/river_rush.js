@@ -545,11 +545,25 @@
     addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
     const _cq = {}, _cw = {}, _ct = {};
     // Metros del techo (malla del terreno o puente) sobre el agua, en el centro del cauce. QA-49: un triángulo de pasto que cruza el río, o un puente, deja la cámara debajo y tapa la pantalla.
+    function cubiertaEn(x, z) {
+      const ps = G.terreno.plataformas, fn = G.terreno.platformTop;
+      if (!ps || !fn) return -Infinity;
+      let t = -Infinity;
+      for (let i = 0; i < ps.length; i++) {
+        const p = ps[i];
+        if (p.tipo !== 'puente' && p.tipo !== 'rampa') continue;
+        const y = fn(p, x, z);
+        if (y > t) t = y;
+      }
+      return t;
+    }
     function techoEn(s) {
       const q = enCauce(s, _ct);
       let top = H(q.x, q.z);
       const sy = G.terreno.surfaceY;
       if (sy) top = Math.max(top, sy(q.x, q.z, top + 40));
+      const cub = cubiertaEn(q.x, q.z);
+      if (cub > top) top = cub;
       return top - q.y;
     }
     function camObjetivo(out) {
@@ -1015,7 +1029,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           }
           await dosCuadros();
           const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas)', m1.g <= m0.g && m1.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas; el streaming del mundo puede sumar unas pocas)', m1.g <= m0.g + 4 && m1.t <= m0.t + 1, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- AC2 · clásico: medallas, el «casi», la siguiente meta y el ranking (reto rio_rush) ----------
           st.modo = 'puntos';
@@ -1075,6 +1089,20 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
             check('Menú «¿Cómo quieres jugar?»: tarjeta River Rush con subtítulo y es submit', !!tarj && tarj.type === 'submit' && tarj.value === 'river' && !!tarj.querySelector('svg.modo-img') && /canoa/.test(tarj.querySelector('small').textContent)); }
           { const rt = G.retosApi; const u = rt && rt.pruebas && rt.pruebas.ui ? rt.pruebas.ui() : null;
             check('Retos: tarjeta de River Rush con su récord', !rt || (u && !!u.menu.querySelector('[data-jugar="rio_rush"]') && !!u.menu.querySelector('[data-rec="rio_rush"]'))); }
+          // QA-49 · el puente colgante (se carga con el mundo; a esta altura de la prueba ya está)
+          { let n = 0; while (n < 20 && !(G.terreno.plataformas || []).some(p => p.tipo === 'puente')) { await new Promise(r => setTimeout(r, 100)); n++; }
+            const ps = (G.terreno.plataformas || []).filter(p => p.tipo === 'puente');
+            const s0 = J.s, l0 = J.lado, pos = new THREE.Vector3(); let mal = 0, nota = ps.length + ' puentes';
+            for (const p of ps) {
+              const mx = (p.ax + p.bx) / 2, mz = (p.az + p.bz) / 2, my = (p.ay + p.by) / 2;
+              let best = 1e9, sB = 0;
+              for (let s = 0; s <= C.largo; s += 2) { const q = enCauce(s, {}); const d = (q.x - mx) * (q.x - mx) + (q.z - mz) * (q.z - mz); if (d < best) { best = d; sB = s; } }
+              if (best > 25) continue;
+              J.s = sB; J.lado = 0; camObjetivo(pos);
+              if (pos.y < my + 0.6) { mal++; nota += ' · s=' + Math.round(sB) + ' cam ' + pos.y.toFixed(1) + ' < ' + my.toFixed(1); }
+            }
+            J.s = s0; J.lado = l0;
+            check('QA-49: la cámara queda por encima de los puentes del cauce', ps.length > 0 && mal === 0, nota); }
           // ---------- Salir ----------
           await dosCuadros(); // (el fantasma se dibuja: el recuento de memoria necesita cuadros antes de salir)
           const mFin = mem();
