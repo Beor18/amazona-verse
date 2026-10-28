@@ -76,11 +76,11 @@ def mascara(H, x0, z0, paso, M):
         print('AVISO: sin %s; dosel solo con la densidad del mapa' % p)
     gy, gxx = np.gradient(H, paso); ny = 1 / np.sqrt(1 + gy ** 2 + gxx ** 2)
     m = bosque & libre & (H >= 0.8) & (ny >= 0.72)
-    # BL1: selva del tepuy (misma elipse que src/engine/terreno.js): dosel en la cima y las laderas suaves alrededor
-    # de la gran ciudad, fuera de las piezas de las ruinas (escenaKelvin) y de sendas y agua (libre).
-    # Misma pendiente que el resto (ny >= 0.72). El horneado del respaldo 20261027-2108 bajaba a 0.55 y tendía una
-    # sábana de ~60 m en el borde sur (celdas 7,0 y 8,0): sierra negra en la vista ciudad_tepuy. No se publicó.
-    # Las paredes empinadas las cubre el splat de terreno.js. Falta hornear esta máscara en Blender.
+    # BL1 / G19: selva del tepuy (misma elipse que src/engine/terreno.js): dosel en la cima y las laderas suaves
+    # alrededor de la gran ciudad, fuera de las piezas de las ruinas (escenaKelvin) y de sendas y agua (libre).
+    # Misma pendiente que el resto (ny >= 0.72). No bajar de ahí: el horneado del respaldo 20261027-2108 a 0.55
+    # tendió una sábana de ~60 m en el borde sur (celdas 7,0 y 8,0), una sierra negra en la vista ciudad_tepuy.
+    # El risco vertical no se pinta de verde (terreno.js, segunda vuelta): es roca gris, y las copas van en vegetacion.js.
     T = TEPUY; d = np.hypot((gx - T['x']) / T['rx'], (gz - T['z']) / T['rz'])
     zona = np.clip((1 - d) / T['borde'], 0, 1) > 0.35
     for g in M.get('escenaKelvin', {}).get('compacto', []):

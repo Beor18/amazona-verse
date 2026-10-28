@@ -350,11 +350,23 @@ AVE.module('vegetacion', function (G) {
         it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
         n++; tepuyPos.push(x, z);
       }
+      // Segunda vuelta: copas entre los edificios de la cima, donde el tronco no cabe (la ciudad deja 8 m)
+      // y el pasto se veía pelado. No van en el risco (ny bajo): esa pared es roca. Tres planos cruzados, en crearCopasCima.
+      copasCima.length = 0;
+      const pasoC = 6.4, rC = rng(9051);
+      for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
+        const jx = x + (rC() - 0.5) * pasoC * 0.55, jz = z + (rC() - 0.5) * pasoC * 0.55;
+        if (T.selvaTepuy(jx, jz) < 0.5 || !libre(jx, jz)) continue;
+        const y = T.height(jx, jz), nyC = T.normalAt(jx, jz).y;
+        if (y < 68 || nyC < 0.68 || enAgua(jx, jz, y) || tapado(jx, jz, 2) || enCiudad(jx, jz, -3.2)) continue;
+        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 6.2 + rC() * 2.4, h: 5.2 + rC() * 2.2, tono: rC() });
+      }
     }
     return lista;
   }
   const bosquePos = []; // x, z de los árboles de relleno (floraTest)
   const tepuyPos = []; // y los de la selva del tepuy (BL1)
+  const copasCima = []; // copas sueltas de la meseta (G19), entre los edificios
   function empaquetar(lista) {
     const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), m4 = new THREE.Matrix4(), c = new THREE.Color();
     const cuenta = {};
@@ -466,32 +478,55 @@ AVE.module('vegetacion', function (G) {
       fog: true, transparent: false,
       vertexShader: `
         attribute vec4 iPos; attribute vec4 iTile; attribute vec3 iCol;
-        uniform float uTime; varying vec2 vUv; varying vec3 vCol; varying float vD;
+        uniform float uTime; varying vec2 vUv; varying vec2 vLoc; varying vec3 vCol; varying float vD; varying float vAereo;
         #include <fog_pars_vertex>
         void main() {
           vec3 c = iPos.xyz; float lado = iPos.w;
           vec3 d3 = cameraPosition - c, toCam = normalize(vec3(d3.x, 0.0, d3.z));
           vec3 right = vec3(toCam.z, 0.0, -toCam.x);
           // F0.3: desde el aire el cuadro se recuesta hacia atrás (hasta ~63°) y la copa se ve; a pie y en vuelo bajo sigue de pie
-          float inc = clamp(atan(d3.y, length(d3.xz)) - 0.3, 0.0, 1.1);
+          float elev = atan(d3.y, length(d3.xz));
+          float inc = clamp(elev - 0.3, 0.0, 1.1);
+          // G19: la vista ciudad_tepuy mira unos 22° hacia abajo. Ahí el árbol suelto (tronco claro y pasto entre copas)
+          // pasa a una copa ancha. A pie, elev queda por debajo de ~6° y el cuadro no cambia.
+          float aereo = smoothstep(0.10, 0.38, elev);
           vec3 up = vec3(0.0, cos(inc), 0.0) - toCam * sin(inc);
+          float ladoX = lado * mix(1.0, 1.7, aereo);
+          float ladoY = lado * mix(1.0, 0.9, aereo);
           float sway = sin(uTime * 0.9 + c.x * 0.3 + c.z * 0.2) * 0.012 * position.y * position.y * lado;
-          vec3 w = c + right * (position.x * lado + sway) + up * (position.y * lado) - toCam * lado * 0.15;
-          vUv = iTile.xy + uv * iTile.zw; vCol = iCol; vD = distance(c, cameraPosition);
+          vec3 w = c + right * (position.x * ladoX + sway) + up * (position.y * ladoY) - toCam * lado * 0.15;
+          vUv = iTile.xy + uv * iTile.zw; vLoc = uv; vCol = iCol; vD = distance(c, cameraPosition); vAereo = aereo;
           vec4 mvPosition = viewMatrix * vec4(w, 1.0);
           gl_Position = projectionMatrix * mvPosition;
           #include <fog_vertex>
         }`,
       fragmentShader: `
-        uniform sampler2D tAtlas; uniform vec2 uFade; varying vec2 vUv; varying vec3 vCol; varying float vD;
+        uniform sampler2D tAtlas; uniform vec2 uFade; varying vec2 vUv; varying vec2 vLoc; varying vec3 vCol; varying float vD; varying float vAereo;
         #include <fog_pars_fragment>
         float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
         void main() {
           vec4 t = texture2D(tAtlas, vUv);
+          float a = vAereo;
+          if (a > 0.15) {
+            // mancha de copa, no el tronco del atlas: las copas vecinas se tocan y el suelo deja de verse como césped
+            vec2 q = (vLoc - vec2(0.5, 0.58)) * vec2(0.9, 1.12);
+            float rad = length(q);
+            float mascara = smoothstep(0.52, 0.28, rad);
+            if (a > 0.6 && mascara < 0.04) discard;
+            float n = fract(sin(dot(vLoc * vec2(19.0, 13.0) + vCol.xy, vec2(12.9898, 78.233))) * 43758.5453);
+            float n2 = fract(sin(dot(floor(vLoc * 6.0) + vCol.yz, vec2(39.3, 11.7))) * 24634.634);
+            vec3 osc = vec3(0.045, 0.09, 0.03);
+            vec3 med = vec3(0.10, 0.18, 0.05);
+            vec3 cla = vec3(0.18, 0.28, 0.07);
+            vec3 copa = mix(osc, mix(med, cla, n2), 0.3 + 0.7 * mascara) * (0.8 + n * 0.4);
+            float tronco = smoothstep(0.58, 0.2, vLoc.y);
+            t.rgb = mix(t.rgb, copa, a * mix(0.78, 1.0, tronco));
+            t.a = max(t.a, mascara * a);
+          }
           if (t.a < 0.5) discard;
           float fd = smoothstep(uFade.x, uFade.y, vD);
           if (ign(gl_FragCoord.xy) >= fd) discard;
-          gl_FragColor = vec4(t.rgb * vCol, 1.0);
+          gl_FragColor = vec4(t.rgb * mix(vCol, vec3(1.0), a * 0.7), 1.0);
           #include <encodings_fragment>
           #include <fog_fragment>
         }`,
@@ -508,14 +543,15 @@ AVE.module('vegetacion', function (G) {
   function crearManchas() {
     const lista = [];
     // F0.3: mancha de copa más ancha y densa, verde muy oscuro en vez de negro: desde el aire el bosque se lee como dosel
-    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(8.5, info[m].ancho * 0.52) * P.pos[i * 4 + 3]]); }
+    // G19: la mancha cubre el hueco entre copas (antes una palma dejaba un círculo chico y el pasto se veía desde el aire)
+    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.max(5.6, Math.min(10.5, (info[m].ancho || 4) * 0.9)) * P.pos[i * 4 + 3]]); }
     if (!lista.length) return;
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, 'rgba(0,0,0,0.95)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.7)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
     const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.58, color: 0x0a1c0d,
+    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.66, color: 0x122616,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     manchas = new THREE.InstancedMesh(geo, mat, lista.length);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), n = new THREE.Vector3(), s = new THREE.Vector3(), p = new THREE.Vector3();
@@ -525,6 +561,58 @@ AVE.module('vegetacion', function (G) {
     });
     manchas.frustumCulled = false; manchas.renderOrder = 1; manchas.name = 'flora:manchas';
     scene.add(manchas);
+  }
+
+  // ---------- Copas de la cima (G19): entre los edificios, donde no cabe un tronco ----------
+  // Tres planos cruzados, no un disco horizontal: la vista ciudad_tepuy mira unos 22° hacia abajo y un disco se vería de canto.
+  let copasMesh = null;
+  function crearCopasCima() {
+    if (!copasCima.length) return;
+    const partes = [];
+    for (let i = 0; i < 3; i++) {
+      const p = new THREE.PlaneGeometry(1, 1);
+      p.translate(0, 0.42, 0);
+      p.rotateY(i * Math.PI / 3);
+      partes.push(p);
+    }
+    let nv = 0, ni = 0;
+    for (const p of partes) { nv += p.attributes.position.count; ni += p.index.count; }
+    const pos = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), idx = new Uint16Array(ni);
+    let vo = 0, io = 0;
+    for (const p of partes) {
+      pos.set(p.attributes.position.array, vo * 3);
+      uv.set(p.attributes.uv.array, vo * 2);
+      const ix = p.index.array;
+      for (let k = 0; k < ix.length; k++) idx[io + k] = ix[k] + vo;
+      vo += p.attributes.position.count; io += ix.length;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    geo.computeVertexNormals();
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const g = cv.getContext('2d');
+    const gr = g.createRadialGradient(32, 28, 2, 32, 32, 30);
+    gr.addColorStop(0, '#6ea04a'); gr.addColorStop(0.5, '#2f6230'); gr.addColorStop(0.82, '#17381c'); gr.addColorStop(1, 'rgba(8,20,10,0)');
+    g.fillStyle = gr; g.beginPath(); g.ellipse(32, 32, 30, 24, 0, 0, Math.PI * 2); g.fill();
+    for (let i = 0; i < 12; i++) {
+      g.fillStyle = i % 2 ? 'rgba(150, 190, 70, 0.3)' : 'rgba(6, 18, 8, 0.45)';
+      g.beginPath(); g.arc(14 + (i * 19) % 36, 14 + (i * 11) % 34, 3 + (i % 3), 0, 6.3); g.fill();
+    }
+    const tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding;
+    const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.3, side: THREE.DoubleSide, color: 0xffffff });
+    copasMesh = new THREE.InstancedMesh(geo, mat, copasCima.length);
+    const cols = new Float32Array(copasCima.length * 3);
+    copasMesh.instanceColor = new THREE.InstancedBufferAttribute(cols, 3);
+    const m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), eje = new THREE.Vector3(0, 1, 0), scv = new THREE.Vector3(), pv = new THREE.Vector3();
+    copasCima.forEach((k, i) => {
+      m4.compose(pv.set(k.x, k.y, k.z), qq.setFromAxisAngle(eje, k.tono * Math.PI * 2), scv.set(k.s, k.h, k.s));
+      copasMesh.setMatrixAt(i, m4);
+      cols[i * 3] = 0.78 + k.tono * 0.28; cols[i * 3 + 1] = 0.86 + (1 - k.tono) * 0.16; cols[i * 3 + 2] = 0.72;
+    });
+    copasMesh.frustumCulled = false; copasMesh.castShadow = false; copasMesh.receiveShadow = true; copasMesh.name = 'flora:copas-cima';
+    scene.add(copasMesh);
   }
 
   // ---------- Pasto en tarjetas alrededor del jugador ----------
@@ -762,6 +850,7 @@ AVE.module('vegetacion', function (G) {
       for (const m in porModelo) crearMallas(m);
       try { hornearImpostores(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); }
       crearManchas();
+      crearCopasCima();
       crearPasto();
       activo = true;
       actualizar(true); actualizarPasto(true); actualizarColliders(true);
@@ -799,7 +888,7 @@ AVE.module('vegetacion', function (G) {
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     let arboles = 0;
     for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
-    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2 }, ULT);
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2, copasCima: copasCima.length }, ULT);
   }
 
   // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
@@ -812,6 +901,7 @@ AVE.module('vegetacion', function (G) {
     }
     if (IMP.mesh && IMP.mesh.visible) t += IMP.mesh.geometry.instanceCount * 2;
     if (manchas) t += manchas.count * 2;
+    if (copasMesh && copasMesh.visible) t += copasMesh.count * (copasMesh.geometry.index.count / 3);
     return t;
   }
   async function test() {
@@ -835,6 +925,9 @@ AVE.module('vegetacion', function (G) {
           if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
         }
         check('Selva del tepuy (BL1): más de 800 árboles alrededor de la ciudad, en su elipse y en suelo libre', st.tepuy > 800 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
+        let malC = 0;
+        for (const c of copasCima) if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.62 || c.y < 60 || !libre(c.x, c.z)) malC++;
+        check('Copas de la cima (G19): en la meseta libre, no sobre el risco', copasCima.length >= 40 && !malC, copasCima.length + ' copas, ' + malC + ' fuera de sitio');
       }
       const MB = usarBosque && window[BOSQUE.global];
       if (MB) {
