@@ -22,7 +22,7 @@ La fila G21 del tablero es la misma tanda, con el nombre viejo «Grok 3». No se
 
 | Carril | Quién | Qué hace | Último commit | Situación |
 |---|---|---|---|---|
-| **A** | Grok · carril A (Cursor), 28-oct 06:05 AST. Misma tanda que G21 (Grok 3, tablero «28-oct 06:40 ART» = 05:40 AST; el alta es `3a2a0a3`, 05:43 AST). | QA-53: que «Empezar» no congele. QA-41 queda en cola (capa negra `#c1-fade`). | En esta copia, solo `src/engine/renderer.js`, todavía no estaban en `origin/main` al escribir esto: `cbe5258` (05:52 AST), `c76bd31` (05:57), `f41e26b` (06:01), `a1870de` (06:05, el último). | **En curso.** QA-53 sigue abierto en `BUGS.md`. No está hecha. |
+| **A** | Grok · carril A (Cursor), 28-oct 06:05 AST. Misma tanda que G21 (Grok 3, tablero «28-oct 06:40 ART» = 05:40 AST; el alta es `3a2a0a3`, 05:43 AST). | QA-53: que «Empezar» no congele. QA-41 queda en cola (capa negra `#c1-fade`). | En `main`, solo `src/engine/renderer.js`: `6ef3ea2` (autor 05:52 AST), `3e06028` (05:57), `39ac52a` (06:01), `c0e020a` (06:05, el último). | **En curso.** QA-53 sigue abierto en `BUGS.md`. No está hecha. |
 | **B** | La misma sesión. | F2.2: tejados rojos teja, cálidos y mates, dentro de `vibrant_toon`. Luego F2.1 (`_hd` a 90 m en medio y 120 m en alto). | Sin commit de tejados. Decisión de Kelvin: `992cd77`, 28-oct 05:34 AST. Último toque de `src/engine/streaming.js`: `96ebd0f`, 27-oct 17:07 AST (atlas en el móvil, no tejados). | **En curso, sin commit de tejados.** No está hecha. |
 | **C** | La misma sesión, por las piezas. G18 no se reabre. | Primero la ciudad (G18). Después, las 3 o 4 piezas beige que flotan en la pared del tepuy (vista `render2022`). | G18: `5425820`, 27-oct 15:34 AST. Piezas: sin commit. | **En curso las piezas, sin commit.** G18 sigue «lista para Kelvin», no hecha. |
 | **D** | Nadie en la última hora. | G19, segunda vuelta (selva del tepuy). | `8dcf5fb`, 27-oct 23:00 AST (03:00 UTC del 28). Revisión de la coordinadora: `de3ae0f`, 28-oct 05:29 AST. | **Libre.** El tablero dice G19 «hecha». `PEDIDOS.md` (28-oct por la mañana) pide «lista para Kelvin», no hecha. No se cambia esa fila aquí. |
@@ -42,7 +42,8 @@ La fila G21 del tablero es la misma tanda, con el nombre viejo «Grok 3». No se
 
 ## Desfases vistos (no se reescriben filas ajenas)
 
-- `origin/main` tiene `107cf14` (28-oct 05:56 AST): deja libres AB1, AC1, AH1, AH2, AJ1, C12 y C13. Esta copia aún no lo tenía al redactar; entra con el rebase. G21 sigue diciendo que AJ1 tiene `renderer.js` «en curso». Tras `107cf14`, AJ1 ya no lo bloquea.
+- `107cf14` (28-oct 05:56 AST) ya está en esta rama: deja libres AB1, AC1, AH1, AH2, AJ1, C12 y C13. G21 sigue diciendo que AJ1 tiene `renderer.js` «en curso». Tras `107cf14`, AJ1 ya no lo bloquea.
 - G19 está «hecha» en el tablero y la coordinadora pidió volver a «lista para Kelvin». Se anota; no se cambia la fila.
 - G12 sigue «en curso» desde el 26-oct, duplicada. No cuenta como carril tomado hoy.
-- Los commits de QA-53 estaban solo en esta copia de `main`, no en `origin`, al escribir este archivo: cuatro, el último `a1870de` (06:05 AST). Si el rebase les cambia el SHA, el que queda en `main` es el que vale.
+- El rebase reescribió los cuatro commits de QA-53. En `main` quedan `6ef3ea2`, `3e06028`, `39ac52a` y `c0e020a` (el último, autor 06:05 AST). `cbe5258`, `c76bd31`, `f41e26b` y `a1870de` ya no están en `main`.
+- Al rebasar, `origin` ya traía `3354007` (06:02 AST) y `24efee2` (06:05 AST): publicar desde la nube. No cambian los carriles.
