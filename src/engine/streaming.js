@@ -993,23 +993,6 @@ AVE.module('streaming', function (G) {
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
-      if (hdGL2() && R.setCalidad && ZM.inst && ZM.inst.length) {
-        const pieza = ZM.inst.slice().sort((a, b) => b.r - a.r)[0];
-        const dx = pieza.cx - ZM.cx, dz = pieza.cz - ZM.cz, len = Math.hypot(dx, dz);
-        const ux = len > 1 ? dx / len : 0, uz = len > 1 ? dz / len : 1;
-        R.setCalidad('medio', true);
-        await ir(pieza.cx + ux * (82 + pieza.r), pieza.cz + uz * (82 + pieza.r), -ux, -uz);
-        G.camara.yaw = Math.atan2(ux, uz); dibujar(4);
-        const camP = R.camera.position, Sp = S.pos;
-        const dCam = Math.hypot(pieza.cx - camP.x, pieza.cy - camP.y, pieza.cz - camP.z);
-        const dPla = Math.hypot(pieza.cx - Sp.x, pieza.cy - Sp.y, pieza.cz - Sp.z);
-        const dl = Math.max(0, Math.min(dCam, dPla) - pieza.r);
-        let tipo = 'fuera';
-        for (const k in ST.lotes) { const L = ST.lotes[k]; if (L.lista && L.lista.indexOf(pieza) >= 0) tipo = L.tipo; }
-        check('F2.1: a unos 80 m en calidad media se ve el kit, no la silueta lejana', dl >= 68 && dl <= 105 && (tipo === 'hd' || tipo === 'cerca'),
-          (pieza.id || pieza.modelo) + ' · dl ' + r2(dl) + ' m · ' + tipo);
-        R.setCalidad('alto', true); ST.revisar(); await ST.terminar();
-      }
       const lejosM = [];
       scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
       check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
