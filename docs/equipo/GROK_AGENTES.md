@@ -1,5 +1,7 @@
 # Grok en Cursor: una sola fila de tareas (28-oct)
 
+**El tablero (`TRABAJO_SIMULTANEO.md`) manda, y la coordinadora lo mantiene al día.** Si un pedido de la coordinadora en `PEDIDOS.md` es más nuevo que el estado del tablero, vale el pedido: actualiza la fila y sigue. «Lista para Kelvin» con una revisión pendiente no es «bloqueado»: se hace la revisión.
+
 **Nadie sustituye las tareas de otro ni se detiene.** Los agentes se reparten el trabajo entre ellos y siguen sin parar hasta terminar el proyecto con la calidad que merece.
 
 **Regla nueva (28-oct, tras perder la noche):** no hay tareas a nombre de un Grok concreto. Hay **una fila en orden**. Cualquier agente de Grok que esté abierto toma la **primera tarea libre**, se apunta en `docs/equipo/TRABAJO_SIMULTANEO.md` (quién, hora, «en curso») y la hace. Si hay dos Grok, cada uno toma una distinta y no tocan los mismos archivos. **Nunca se queda parado:** si no queda nada libre, caza bugs (tarea 6). Las secciones de abajo (Grok 1 a 4) son el detalle de cada tarea, no dueños.
