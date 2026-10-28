@@ -28,11 +28,13 @@ El `.max` no está en esta máquina. La comparación es `escena_kelvin_cap1.json
 
 ## Selva (para la API, carril AW)
 
-No se colocó flora. En el render de 2022 el tepuy va cubierto y la ciudad queda en un claro.
+G18 no colocó flora. En el render de 2022 el tepuy va cubierto y la ciudad queda en un claro.
 
 - Anillo en la ladera, centro (−4, −131), radio unos 80 m, desde la costa hasta la cota 90. Copa densa, sin tapar las fachadas de la cumbre.
 - Claro de la cumbre: (−4, −131), radio unos 35 m, cota 95–97. Solo matas bajas entre las piezas, no árboles sobre los templos.
 - Espolón oeste (torres `k113`, `k117`, `k118`, `k128`, alrededor de −20, −145): en el render hay roca y dosel debajo. Hoy el terreno cae y esas piezas quedan al aire. La roca es del terreno (BB); el dosel, de AW.
+
+G19 (`8dcf5fb`) colocó la selva con el respaldo `20261027-2108`: elipse (−25, −160), radios 135 y 105 m. El splat cubre el risco vertical y los árboles quedan fuera de las piezas (margen 8 m). El horneado del dosel a pendiente 0.55 no se publicó: tendía una sábana de unos 60 m en el borde sur. La máscara horneable está en `tools/blender/entorno_dosel.py` (misma pendiente que el resto) y todavía no está horneada. No se movieron edificios ni las 67 apartadas.
 
 ## Captura
 
