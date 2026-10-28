@@ -116,7 +116,7 @@ El motor actual (Three.js) se queda: pasa las pruebas, carga 5 MB y corre en el 
 |---|---|---|---|
 | A | Mapa completo en `vibrant_toon` (en curso) | Oct–nov 2026 | Incluido (Grok + API) |
 | B | Modelos 3D propios del Guardián, Iguaca, las dos voces y los 6 primeros guardianes (hoy usan el render de su especie) | Dic 2026–ene 2027 | $400–1.200 por personaje: ~$4.000–10.000 |
-| C | Tráiler profesional, música original del tema principal y voces de los personajes clave | Ene–feb 2027 | $3.000–8.000 |
+| C | Tráiler y piezas para redes: **primero con Grok Imagine y la suscripción actual** (directiva V11; plan y costos en `docs/equipo/AUDIOVISUAL_GROK.md`); voces y especialistas solo si hace falta | Nov 2026 | $0–45 (estimado sin medir); un editor externo $300–800 solo si Kelvin lo aprueba |
 | D | Escenas clave animadas (la revelación de las voces, el final en la Ciudad de los 36) | Feb–mar 2027 | $2.000–6.000 |
 | E | App para tiendas (Capacitor; iOS y Android) con el mismo juego | Mar 2027 | $500–2.000 (cuentas, revisión, ajustes) |
 
