@@ -218,8 +218,8 @@ AVE.module('streaming', function (G) {
           'if (avCrema > 0.5) {\n' +
           '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
           '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-          '  vec3 piedra = mix( vec3( 0.50, 0.46, 0.40 ), vec3( 0.90, 0.88, 0.84 ), t );\n' +
-          '  float detalle = clamp( y / max( mix( 0.50, 0.88, t ), 0.2 ), 0.78, 1.16 );\n' +
+          '  vec3 piedra = mix( vec3( 0.58, 0.46, 0.32 ), vec3( 0.96, 0.86, 0.68 ), t );\n' +
+          '  float detalle = clamp( y / max( mix( 0.52, 0.86, t ), 0.2 ), 0.78, 1.16 );\n' +
           '  diffuseColor.rgb = piedra * detalle;\n' +
           '}\n')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));

@@ -40,7 +40,7 @@ G19 (`8dcf5fb`) colocó la selva con el respaldo `20261027-2108`: elipse (−25,
 
 La revisión en vivo seguía viendo lingotes dorados, torres con ganchos y el conjunto de la izquierda apagado. No se tocó la gradación de `vibrant_toon` ni la vegetación.
 
-- **Piedra crema mate.** El atlas `AV_HD_Ancient` es ocre. En el shader de esa piedra (no en el de Savage) el albedo pasa a blanco roto, un poco frío para que la gradación cálida lo deje en crema, y el especular queda en cero. La normal sigue dando el relieve de cornisas y almenas. La clave del programa es `av-hd-atlas-crema`, así el tinte cálido del look no se le suma otra vez.
+- **Piedra crema mate.** El atlas `AV_HD_Ancient` es ocre. En el mismo programa que el tejado Savage (`av-hd-atlas`, uniforme `avCrema`) el albedo de esa piedra pasa a marfil `(0,96 · 0,86 · 0,68)` en la luz y sombra cálida, con el grano de la textura, y el especular queda en cero. La gradación de `vibrant_toon` no se toca: el sol deja la cara en crema y el relleno azul del look sigue en la sombra. La normal conserva cornisas y almenas. El uniforme `avTeja` del carril B no se apaga.
 - **Torres F.** `ruina_torre_f` mide 6,6 m en Y. Las tres de `kelvin_ruinas_yunque` (`k169`, `k170`, `k171`) traían un cabeceo de −90° y quedaban acostadas. Se enderezan conservando rumbo, escala y origen. Los ocho `muro_templo` no: su eje largo es Z y esa misma matriz ya los deja en vertical; girarlos los convertiría en losas.
 - **Conjunto de la izquierda.** `kelvin_ruinas_yunque_2` (23 piezas, todas erguidas, centro −74, −132) es ese grupo sobre la roca. Desde la vista aérea caía en la silueta beige (a unos 80 m del borde, fuera de los 75 m de «cerca»). Ahora entra en la misma vista de ciudad que la cumbre (220 m / 340 m).
 
