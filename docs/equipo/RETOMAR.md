@@ -4,6 +4,8 @@ Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claud
 
 **28-oct: Kelvin pasó el control a la sesión coordinadora de la web.** Desde aquí se revisa lo de Grok, se capturan las vistas en vivo y se dejan los pedidos. El build ya corre en la nube (comprobado: 6f45cda en 24 s) y las 13 baterías se están probando ahí, con `AV_PYTHON` = el python3 del contenedor y `AV_CHROME` = un envoltorio del Chromium de Playwright, que cambia `--use-angle=metal` por SwiftShader. Sin GPU, cada captura tarda unos 15 minutos. La Mac (supervisor) puede seguir uniendo y publicando; si las dos publican, gana el último push y nadie hace `--force`.
 
+**Pruebas en la nube (comprobado el 28-oct sobre 6f45cda/2905a27, sesión «Organizar archivos Amazona Verse»):** `AV_PYTHON=/usr/bin/python3` y `AV_CHROME` = un envoltorio de `/opt/pw-browsers/chromium` con `--no-sandbox --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`. Resultado: 28 baterías en verde (selfTest, missionTest, e2eTest, ep2–ep6, accesibilidad, récords…); `movementTest` 42/43 solo por el tiempo de arranque (467 ms frente a 180 ms, por el render por software), y `streamingTest` agota los 600 s y corta las extra que van detrás. O sea: la nube sirve para ver si algo se rompe en la lógica, pero las medidas de tiempo y de streaming hay que mirarlas en la Mac o en un teléfono real.
+
 ## Quién hace qué
 - **Grok (Cursor)** hace todo el trabajo pendiente: la API ya no se usa (queda poco crédito). Sus pedidos están en `docs/equipo/PEDIDOS.md` (el último manda).
 - **La sesión coordinadora de Claude** une el trabajo de Grok, revisa la calidad visual (en vivo, contra las referencias de Kelvin) y publica.
