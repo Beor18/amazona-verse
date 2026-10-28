@@ -1,6 +1,8 @@
 # Cómo retomar Amazona Verse desde cualquier sesión (web o Mac)
 
-Actualizado: 27-oct-2026, por la noche, por la sesión coordinadora de Claude.
+Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claude.ai/code).
+
+**28-oct: Kelvin pasó el control a la sesión coordinadora de la web.** Desde aquí se revisa lo de Grok, se capturan las vistas en vivo y se dejan los pedidos. El build ya corre en la nube (comprobado: 6f45cda en 24 s) y las 13 baterías se están probando ahí, con `AV_PYTHON` = el python3 del contenedor y `AV_CHROME` = un envoltorio del Chromium de Playwright, que cambia `--use-angle=metal` por SwiftShader. Sin GPU, cada captura tarda unos 15 minutos. La Mac (supervisor) puede seguir uniendo y publicando; si las dos publican, gana el último push y nadie hace `--force`.
 
 ## Quién hace qué
 - **Grok (Cursor)** hace todo el trabajo pendiente: la API ya no se usa (queda poco crédito). Sus pedidos están en `docs/equipo/PEDIDOS.md` (el último manda).
