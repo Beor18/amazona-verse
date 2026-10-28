@@ -343,7 +343,7 @@ AVE.module('streaming', function (G) {
   }
   // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
   // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
-  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|complejo_ruinas)/.test(n);
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|losa_piedra|complejo_ruinas)/.test(n);
   function cremar(geo) {
     const col = geo.attributes.color;
     if (!col) return;
@@ -556,21 +556,25 @@ AVE.module('streaming', function (G) {
         r.promesa.catch(() => {});
         if (r.tipo === 'lejos' && !tieneLejos(r.n)) generarDesdeCerca(r, prio);
         else { cola.push(r); siguiente(); }
-      } else if (r.estado === 'cola') r.prio = Math.min(r.prio, prio);
+      } else if (r.estado === 'cola' && prio < r.prio) { r.prio = prio; siguiente(); }
       return r.promesa;
     }
     function soltar(r) {
       if (--r.refs > 0 || r.fijo) return;
       r.refs = 0; r.soltarEn = performance.now() + CFG.gracia * 1000;
     }
+    // Con el jugador quieto solo arrancan el lejano cercano y el modelo completo de la precarga.
+    // El resto espera en cola, con referencia, hasta que Vittata se mueve.
+    function puedeAhora(r) {
+      if (!(arrancando || quieto)) return true;
+      const pre = CFG.precarga[nivelCal()] || 50, lq = CFG.lejosQuieto[nivelCal()] || 150;
+      return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
+    }
     function siguiente() {
-      const max = arrancando ? CFG.descargasArranque : CFG.descargas, pre = CFG.precarga[nivelCal()] || 50;
+      const max = arrancando ? CFG.descargasArranque : CFG.descargas;
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
-        // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
-        // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
-        const lq = CFG.lejosQuieto[nivelCal()] || 150;
-        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || ((q.tipo === 'cerca' || q.tipo === 'hd') && q.prio < pre)) : 0;
+        const i = cola.findIndex(puedeAhora);
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
@@ -791,14 +795,18 @@ AVE.module('streaming', function (G) {
     // Promesa: las zonas en nivel cerca que pasan el filtro, cargadas y colocadas (y los lejanos con archivo propio)
     function listasCerca(filtro) {
       const ps = [];
+      // Quien espera esta promesa tiene que poder bajarla: en quieto, un cerca a 30,5 m
+      // (justo por encima de la precarga) se quedaba en cola y la prueba no salía del spawn.
+      const exigir = r => { if (r && r.estado === 'cola') r.prio = -1; return r && r.promesa; };
       for (const id in zonas) {
         const Z = zonas[id]; if (!filtro(Z)) continue;
         for (const n of Z.modelos) {
-          if (Z.nivel === 2) ps.push(res(n, 'cerca').promesa);
+          if (Z.nivel === 2) ps.push(exigir(res(n, 'cerca')));
         }
       }
       const lq = quieto ? CFG.lejosQuieto[nivelCal()] || 150 : Infinity;
-      for (const id in zonas) if (zonas[id].nivel >= 1 && zonas[id].d < lq) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(res(n, 'lejos').promesa);
+      for (const id in zonas) if (zonas[id].nivel >= 1 && zonas[id].d < lq) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(exigir(res(n, 'lejos')));
+      siguiente();
       return Promise.all(ps.filter(Boolean).map(p => p.catch(() => null))).then(() => new Promise(ok => {
         const hecho = () => { for (const id in zonas) { const Z = zonas[id]; if (filtro(Z) && Z.nivel === 2 && Z.inst.some(I => !I.colocado && res(I.modelo, 'cerca').estado === 'listo')) return false; } return true; };
         const mirar = () => { if (hecho()) ok(); else { if (arrancando || !programado) drenarColocar(); setTimeout(mirar, 30); } };
@@ -895,9 +903,14 @@ AVE.module('streaming', function (G) {
       soltarTodo() { for (const id in zonas) zonas[id].forzada = false; revisar(); },
       liberarYa() { for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },
       terminar() {
-        // todo lo pendiente ya (pruebas y capturas): descargas en curso, trabajos y colocación
+        // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto
+        // todavía no deja bajar (el mapa entero, a 650 m) no cuenta: si no, la prueba no arranca.
         const espera = () => new Promise(ok => {
-          const mirar = () => { drenar(); if (!enVuelo && !cola.some(r => r.estado === 'cola' && (r.refs || r.fijo)) && !trabajos.length) ok(); else setTimeout(mirar, 25); };
+          const mirar = () => {
+            drenar(); siguiente();
+            const esperaCola = cola.some(r => r.estado === 'cola' && (r.refs || r.fijo) && puedeAhora(r));
+            if (!enVuelo && !esperaCola && !trabajos.length) ok(); else setTimeout(mirar, 25);
+          };
           mirar();
         });
         return espera().then(() => { drenarColocar(); drenar(); });
