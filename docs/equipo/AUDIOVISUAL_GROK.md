@@ -11,7 +11,7 @@ Carril **AV** dentro del sistema de siempre: el tablero es `docs/equipo/TRABAJO_
 
 | Punto | Lo que dicen las fuentes (28-oct) | Estado |
 |---|---|---|
-| Nombre del plan | Las fuentes públicas hablan de SuperGrok (~$30/mes), SuperGrok Plus (~$100/mes) y Heavy; **no encontré un plan llamado «Grok Ultra»** | **Kelvin confirma** en grok.com → Ajustes → Suscripción |
+| Nombre del plan | Las fuentes públicas hablan de SuperGrok (~$30/mes), SuperGrok Plus (~$100/mes) y Heavy; **no encontré un plan llamado «Grok Ultra»** | **Kelvin confirma (28-oct): tiene el plan Ultra de Grok**, el más alto de su cuenta. Sus límites exactos (1080p, duración, clips por día) se anotan en la prueba 0 |
 | Duración por clip | 6 s (planes bajos), 10 s (SuperGrok y más), hasta 15 s según fuente; la API acepta 1–15 s | Por medir en la cuenta |
 | Resolución | 480p/720p en los planes normales; **1080p en un plan superior o con Imagine 1.5** (fuentes en desacuerdo) | Por medir: es la prueba 0 |
 | Desde imagen | Sí (imagen → video). Imagine 1.5 admitiría hasta 7 referencias (sin confirmar oficialmente) | Por medir |
