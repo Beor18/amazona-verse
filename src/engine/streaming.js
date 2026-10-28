@@ -343,7 +343,7 @@ AVE.module('streaming', function (G) {
   }
   // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
   // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
-  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|complejo_ruinas)/.test(n);
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|losa_piedra|complejo_ruinas)/.test(n);
   function cremar(geo) {
     const col = geo.attributes.color;
     if (!col) return;
@@ -589,29 +589,6 @@ AVE.module('streaming', function (G) {
       const k = KIT(), mats = k && k[n] && k[n].mats;
       return !!(mats && mats.some(m => /RoofThatched/i.test(m)));
     }
-    // Carril J: el _lejos de la piedra Ancient sale ocre. La misma crema mate que avCrema del _hd, guardando la sombra del modelo.
-    function esPiedra(n) {
-      const k = KIT() && KIT()[n];
-      if (!k || tieneTeja(n)) return false;
-      if (/^ancient_/.test(k.src || '')) return true;
-      return /^(ruina_|templo_|plataforma_piedra|losa_piedra|bloque_piedra|muro_templo|complejo_ruinas)/.test(n);
-    }
-    function cremar(geo) {
-      const col = geo.attributes.color;
-      if (!col) return;
-      let yMax = 0;
-      for (let i = 0; i < col.count; i++) {
-        const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i);
-        if (y > yMax) yMax = y;
-      }
-      const ref = yMax > 0.02 ? yMax : 1;
-      for (let i = 0; i < col.count; i++) {
-        const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i);
-        const t = Math.min(1, Math.max(0, y / ref));
-        col.setXYZ(i, 0.58 + 0.38 * t, 0.46 + 0.40 * t, 0.32 + 0.36 * t);
-      }
-      col.needsUpdate = true;
-    }
     function procesar(r, root) {
       root.updateMatrixWorld(true);
       const grupos = new Map(), usados = new Set();
@@ -632,7 +609,6 @@ AVE.module('streaming', function (G) {
         r.geo = fundir(geos, true);
         piedraLejos(r.n, r.geo);
         if (tieneTeja(r.n)) techar(r.geo);
-        else if (esPiedra(r.n)) cremar(r.geo);
       } else {
         r.partes = [];
         for (const [, gr] of grupos) {
@@ -954,7 +930,6 @@ AVE.module('streaming', function (G) {
           materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos, visiblesHD: vis.hd, hd: hdActivo(),
           drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
       },
-      esPiedra, cremar,
     };
     const tam = g => { let b = 0; if (!g) return 0; for (const k in g.attributes) b += g.attributes[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
     G.on('update', dt => {
@@ -986,11 +961,6 @@ AVE.module('streaming', function (G) {
     const heap = () => (performance.memory ? performance.memory.usedJSHeapSize / 1048576 : NaN);
     const r2 = v => Math.round(v * 10) / 10;
     try {
-      const gCrema = new THREE.BufferGeometry();
-      gCrema.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.04, 0.03, 0.02, 0.22, 0.16, 0.08]), 3));
-      ST.cremar(gCrema);
-      const cc = gCrema.attributes.color;
-      check('El lejano de piedra es marfil mate y guarda la sombra (no ocre)', ST.esPiedra('templo_grande') && ST.esPiedra('complejo_ruinas') && ST.esPiedra('losa_piedra') && !ST.esPiedra('bohio_redondo') && !ST.esPiedra('casa_paja_a') && cc.getX(1) > 0.9 && cc.getY(1) > 0.8 && cc.getX(0) < cc.getX(1) && cc.getZ(0) < cc.getY(0), cc.getX(1).toFixed(2) + ' ' + cc.getY(1).toFixed(2) + ' ' + cc.getZ(1).toFixed(2));
       await ST.listo; await ST.terminar();
       if (R.setCalidad) R.setCalidad('alto', true);
       ST.soltarTodo(); await ir(x0, z0, 0, -1); ST.liberarYa(); await ST.terminar();
