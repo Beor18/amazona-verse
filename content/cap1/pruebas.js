@@ -31,11 +31,18 @@
     return G.c.luma.junto() && !G.fisica.MOVE.flying;
   }
 
-  // QA-64: un choose del coro (o su «¡Eso, nena!») no puede quedar abierto para la prueba siguiente.
+  // QA-64: un choose del coro no puede quedar abierto, y una capa (final, cómic, creador o tarjeta)
+  // no puede tragarse la Acción: si hay una, action() no habla con Iguaca y el paso se queda en 0.
   async function limpiarDialogo(G) {
     await new Promise(r => setTimeout(r, 0));
-    if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
+    soltarCapas(G);
     if (G.S) G.S.chorus = false;
+  }
+  function soltarCapas(G) {
+    const $ = G.util.$;
+    for (const id of ['end', 'comic', 'creator']) { const n = $(id); if (n) n.hidden = true; }
+    if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+    if (G.dialogo && G.dialogo.open && G.dialogo.open()) G.dialogo.clear();
   }
 
   async function selfTest(G, T, opts) {
@@ -336,8 +343,10 @@
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
+    const tapa = [G.ui.overlayOpen() ? 'overlay' : '', G.ui.cardOpen ? 'tarjeta' : '', G.dialogo.open() ? 'caja' : ''].filter(Boolean).join(',');
+    soltarCapas(G);
     G.interaccion.action();
-    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre());
+    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre(), tapa);
     drain();
     check('Con el taller ya revisado, tras Iguaca el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
@@ -550,6 +559,7 @@
     const opts = () => ($('card').hidden ? 0 : $('card').querySelectorAll('.edu-opt').length);
     const volarA = (x, y, z) => { S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; F.MOVE.flying = true; };
     // p1 Predecir
+    soltarCapas(G);
     useAt('marcas_agua', 0.5, 0);
     ok('p1: en las marcas Iguaca pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
     drain();
@@ -671,7 +681,7 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); soltarCapas(G); G.interaccion.action(); drain();
       check('Recolección -1 min: Iguaca aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
