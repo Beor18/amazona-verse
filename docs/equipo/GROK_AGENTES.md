@@ -2,7 +2,7 @@
 
 ## ⚠️ MODO AHORRO (28-oct, 14:15 AST): Grok está al ~90 % de su uso
 Kelvin: «estamos en crisis». Hasta nuevo aviso de la coordinadora:
-1. **Solo 3 carriles siguen:** **C** (Ciudad de los 36), **D** (copas a escala en todo el mapa y dosel continuo) y **J** (sombra de la piedra crema y piezas en el aire). Es lo que falta para cerrar el mapa.
+1. **El uso de Grok se reinicia en 5 días (~2 de noviembre) y queda ~10 %.** Solo siguen **2 carriles**: **D** (copas a escala en todo el mapa: es un ajuste de código que vale para todo) y **J** (sombra de la piedra crema y piezas en el aire). **C para también**: los lejanos de la Ciudad de los 36 los rehace la API en la Mac (BM2) y C los integra cuando vuelva el uso. Cada agente: cambios pequeños y seguros, sin repetir pruebas que ya pasaron.
 2. **Pausados:** A, B, E, F, G, H, I, K, L, M, N y todo el audiovisual (G29–G32). Si eres uno de ellos, deja tu trabajo con commit y **para**.
 3. **Nada de papeleo:** no más `ESTADO_CARRILES.md` cada 20 minutos ni commits solo de tablero. Un commit por cambio real, con su captura, y una línea en el tablero al terminar.
 4. **Menos vueltas:** antes de subir, compara tu captura con la meta de Kelvin; sube solo si mejora de verdad.
