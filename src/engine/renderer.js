@@ -513,8 +513,12 @@ AVE.module('renderer', function (G) {
     cullPequenos(cam || camera);
     seguirSombra();
     if (sky) sky.position.copy((cam || camera).position);
-    if (post.activo && post.composer) { situarRayos(cam || camera); post.composer.render(); }
-    else renderer.render(scene, cam || camera);
+    // Lo que todavía no se enlazó no entra en este dibujo: si no, el cuadro de «Empezar» compila el resto de golpe.
+    const guard = ocultarPendientes();
+    try {
+      if (post.activo && post.composer) { situarRayos(cam || camera); post.composer.render(); }
+      else renderer.render(scene, cam || camera);
+    } finally { restaurarVis(guard); }
   }
 
   // ---------- Calidad adaptativa por FPS ----------
@@ -524,8 +528,8 @@ AVE.module('renderer', function (G) {
   // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo y la
   // vegetación están, cada cuadro (con el creador todavía delante) enlaza unas pocas familias
   // de material. El dibujo de verdad espera a que no quede ninguna pendiente.
-  let puedeCalentar = false, alDia = false, saltosCalor = 0;
-  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { puedeCalentar = true; alDia = false; fpsM.warm = 3000; }); });
+  let puedeCalentar = false;
+  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { puedeCalentar = true; fpsM.warm = 3000; }); });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
@@ -545,27 +549,39 @@ AVE.module('renderer', function (G) {
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     renderer.setRenderTarget(null);
     if (!capa31) camera.layers.disable(31);
-    for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; }
+    for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; marcarCalor(o); }
     rt.dispose();
-    alDia = true; // este pase ya enlazó lo que había; el bucle solo retoma si entra algo nuevo
   }
-  // Una familia de material por objeto (el mismo programa vale para todas las mallas que lo comparten).
-  const calorVistos = new WeakSet();
-  let rtCalor = null, postCalor = false;
+  // Una familia de material por objeto. La clave incluye el tone mapping y customProgramCacheKey:
+  // look.js puede cambiarla en el gancho 'render', justo antes del dibujo, y entonces hay que enlazar otra vez.
+  let genCalor = 1, rtCalor = null, postCalor = false;
+  const calorGen = new WeakMap();
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
+  function claveDe(m) {
+    let k = '';
+    try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
+    return genCalor + '|' + renderer.toneMapping + '|' + k;
+  }
+  function pendiente(m) { return !!m && calorGen.get(m) !== claveDe(m); }
+  function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
   function siguienteCalor() {
     let hallado = null;
     scene.traverse(o => {
       if (hallado || !dibujable(o)) return;
-      const mats = Array.isArray(o.material) ? o.material : [o.material];
-      if (mats.some(m => m && !calorVistos.has(m))) hallado = o;
+      if (matsDe(o).some(pendiente)) hallado = o;
     });
     return hallado;
   }
-  function marcarCalor(o) {
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    for (const m of mats) if (m) calorVistos.add(m);
+  function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorGen.set(m, claveDe(m)); }
+  function ocultarPendientes() {
+    const guard = [];
+    scene.traverse(o => {
+      if (!dibujable(o) || !matsDe(o).some(pendiente)) return;
+      guard.push([o, o.visible]); o.visible = false;
+    });
+    return guard;
   }
+  function restaurarVis(guard) { if (guard) for (const [o, vis] of guard) o.visible = vis; }
   function conCapa31(fn) {
     const capa31 = (camera.layers.mask & (1 << 31)) !== 0;
     camera.layers.enable(31);
@@ -677,7 +693,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
-    rtCalor = null; postCalor = false; alDia = false;
+    rtCalor = null; postCalor = false; genCalor++;
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
@@ -816,8 +832,14 @@ AVE.module('renderer', function (G) {
   function render(dt, moving) {
     t += dt;
     G.camara.follow(dt);
-    G.emit('render', dt, t, moving);
+    G.emit('render', dt, t, moving); // look.js puede cambiar la clave del programa aquí
     G.camara.fov(dt);
+    // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Una familia que tarde
+    // más de 12 ms corta la tanda: el cuadro no acumula los ~65 programas.
+    if (puedeCalentar && siguienteCalor()) {
+      calentarPresupuesto();
+      fpsM.warm = Math.max(fpsM.warm, 2000);
+    }
     G.camara.draw(dt);
   }
   let last = performance.now();
@@ -841,18 +863,11 @@ AVE.module('renderer', function (G) {
     const juice = G.camara.juice;
     if (juice.hitStop > 0) { juice.hitStop -= dt; dt = 0; } // hit-stop de 60 ms al capturar
     const moving = update(dt);
-    // El creador es opaco: el mundo no se dibuja. QA-53: hasta que la partida empieza se enlazan
-    // los programas por tandas (también los que entran mientras el creador está abierto). El
-    // primer dibujo tras «Empezar» ya no compila los ~65 de golpe. En la portada, si no queda
-    // ninguno pendiente, sí se dibuja, y se sigue mirando por si el streaming añade materiales.
+    // El creador es opaco: el mundo no se dibuja. Mientras tanto se enlazan programas por tandas
+    // (QA-53). Al dibujar, render() vuelve a enlazar lo que el look cambió en ese cuadro.
     const oculto = G.ui.worldHidden && G.ui.worldHidden();
-    const empezo = !!(G.S && G.S.profile && G.S.profile.created);
-    if (puedeCalentar && !alDia) {
-      const n = calentarPresupuesto();
-      if (n > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
-      if (empezo && !oculto && n === 0) { alDia = true; saltosCalor = 0; render(dt, moving); }
-      else if (empezo && !oculto) { saltosCalor++; if (saltosCalor > 180) { alDia = true; render(dt, moving); } }
-      else if (!oculto && n === 0) render(dt, moving);
+    if (oculto && puedeCalentar) {
+      if (calentarPresupuesto() > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
     } else if (!oculto) render(dt, moving);
     requestAnimationFrame(frame);
   }
