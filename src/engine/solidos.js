@@ -535,6 +535,9 @@ AVE.module('solidos', function (G) {
     let R = vanosHechos.get(nombre);
     if (!R) { const t0 = performance.now(); try { R = buscarVanos(partes); } catch (e) { R = { motivo: 'error: ' + e.message, vanos: [] }; } R.ms = Math.round(performance.now() - t0); vanosHechos.set(nombre, R); }
     if (!R.vanos.length) return 0;
+    // G27: el bohío redondo se queda con la puerta abierta (el vano ya está medido). La malla es compartida,
+    // así que vale para todas las instancias de ese modelo. El carril A, si trocea cerrarVanos, tiene que dejar este corte.
+    if (G.bohiosAbiertos && G.bohiosAbiertos[nombre]) return 0;
     // la parte que recibe los paneles: con uv y sin color de vértice (fundir solo conserva posición, normal y uv)
     const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
     let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }

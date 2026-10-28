@@ -145,6 +145,10 @@
     // así que las casas van a 0,95 (puertas de ~1,95 m) y lo monumental (templos, ruinas) a 1. Factor uniforme, sin deformar.
     edificios: {
       escala: { defecto: 0.95, templo_grande: 1, templo_mediano: 1, ruina_torre: 1, ruina_mirador: 1, ruina_pilar: 1, ruina_portal: 1, ruina_altar: 1, muelle_troncos: 1, puente_madera: 1, canoa: 1 },
+      // G27: los 13 bohíos redondos de Villa Raíz salen del export a 1,3–1,7 m (más bajos que Vittata, 1,75 m).
+      // ×1,5 es la menor de ×1,25, ×1,5 y ×1,75 con la que el pico de los trece queda por encima de ella.
+      // ?bohioEsc=1.25|1.5|1.75 solo para las capturas. Vittata no se achica.
+      escalaVilla: { zona: 'kelvin_aldea_rio_este', modelo: 'bohio_redondo', factor: 1.5 },
       frente: {}, orientar: true, noOrientar: ['empalizada', 'canoa', 'ruina_pilar', 'ruina_altar', 'muelle_troncos', 'puente_madera'], propias: ['puente'],
       kit: 'assets/models/edificios/kit.js', // manifiesto del kit web (64 modelos, ver docs/EDIFICIOS.md)
     },

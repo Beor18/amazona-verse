@@ -272,6 +272,25 @@ AVE.module('mundo', function (G) {
   }
   // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material.
   // streaming.js carga antes de mundoListo lo cercano al inicio y el resto por zonas al acercarse (y lo libera al alejarse).
+  // G27: agranda solo los bohíos redondos de Villa Raíz antes de que streaming lea la escala.
+  // No toca streaming.js (lo tienen en curso los carriles B y C). escalaPack de esos bohíos es false:
+  // el 5.º número de la instancia es la escala del mundo. ?bohioEsc= solo admite las tres pruebas.
+  const VILLA = ED.escalaVilla;
+  let factorVilla = VILLA && VILLA.factor > 1 ? VILLA.factor : 0;
+  try {
+    const qv = /[?&]bohioEsc=(1\.25|1\.5|1\.75)(?:&|$)/.exec(location.search);
+    if (qv && VILLA) factorVilla = parseFloat(qv[1]);
+  } catch (e) { /* sin location */ }
+  if (factorVilla > 1 && VILLA && MAPA.escenaKelvin && MAPA.escenaKelvin.compacto) {
+    for (const e of MAPA.escenaKelvin.compacto) {
+      if (!e || e._bohioEsc || e.grupo !== VILLA.zona || e.modelo !== VILLA.modelo || !Array.isArray(e.inst)) continue;
+      for (const v of e.inst) if (v.length >= 5 && v.length < 16 && v[4] > 0) v[4] *= factorVilla;
+      e._bohioEsc = factorVilla;
+    }
+    G.bohiosAbiertos = G.bohiosAbiertos || {};
+    G.bohiosAbiertos[VILLA.modelo] = true;
+  }
+  G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
   const listo = T.listo.then(() => {
     const tareas = [ST.arrancar()];
