@@ -18,7 +18,8 @@ AVE.module('creador', function (G) {
     { id: 'azul', name: 'Pañuelo azul', color: '#3d8fb0' }, { id: 'morado', name: 'Pañuelo morado', color: '#7a4fb3' },
     { id: 'amarillo', name: 'Pañuelo amarillo', color: '#e8c32a' },
   ];
-  // Nombre de aventurero: dos listas, un dado («🎲 Nombre al azar») y un nombre propio de 3 a 14 letras.
+  // Nombre de aventurero: un solo campo (3 a 14 letras) y un dado («🎲 Nombre al azar») que lo rellena
+  // con un nombre de las dos listas. Los desplegables se quedan en el DOM, ocultos, para no romper pruebas viejas.
   // Un pack puede dar las suyas en pack.nombres { a: [...], b: [...] }. Al cargar, un nombre que no es de la lista
   // se conserva si pasó el filtro; si no, se cambia por uno de la lista. El nombre libre no sale en récords públicos.
   const NOMBRES = Object.assign({
@@ -241,11 +242,16 @@ AVE.module('creador', function (G) {
     if (!document.getElementById('creador-nombre-css')) {
       const st = document.createElement('style');
       st.id = 'creador-nombre-css';
-      st.textContent = '#creator .name-pick{grid-template-columns:1fr 1fr}'
-        + '#creator .name-pick select+select{grid-column:auto}'
-        + '#creator #p-name-azar{grid-column:1 / -1;width:100%;min-height:var(--tap);height:auto;padding:0 var(--sp-4);border-radius:var(--r-md);white-space:nowrap}'
-        + '#creator #p-name-libre{width:100%;margin-top:var(--sp-2)}';
+      st.textContent = '#creator .name-pick{grid-template-columns:1fr}'
+        + '#creator .name-pick select{display:none !important}'
+        + '#creator #p-name{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}'
+        + '#creator #p-name-azar{grid-column:1;width:100%;min-height:var(--tap);height:auto;padding:0 var(--sp-4);border-radius:var(--r-md);white-space:nowrap}'
+        + '#creator #p-name-libre{width:100%;min-height:var(--tap);margin-top:0;font:700 var(--fs-xl)/1.2 var(--font-display)}';
       document.head.appendChild(st);
+    }
+    for (const id of ['p-name-a', 'p-name-b']) {
+      const s = $(id); if (!s) continue;
+      s.hidden = true; s.tabIndex = -1; s.setAttribute('aria-hidden', 'true');
     }
     const btn = $('p-name-azar');
     if (btn && btn.textContent.indexOf('Nombre al azar') < 0) {
@@ -262,7 +268,7 @@ AVE.module('creador', function (G) {
     libre.maxLength = 40;
     libre.autocomplete = 'off';
     libre.spellcheck = false;
-    libre.placeholder = 'O escribe el tuyo';
+    libre.placeholder = (document.documentElement.lang || '').toLowerCase().indexOf('en') === 0 ? 'Your name' : 'Tu nombre';
     libre.setAttribute('aria-label', 'Tu nombre, de 3 a 14 letras');
     $('p-name').insertAdjacentElement('beforebegin', libre);
   }
@@ -270,20 +276,21 @@ AVE.module('creador', function (G) {
   function nombreElegido() { return nombreDe($('p-name-a').value, $('p-name-b').value); }
   function nombreEnPantalla() {
     const libre = $('p-name-libre') && $('p-name-libre').value.trim();
-    return libre || nombreElegido();
+    return libre || (($('p-name') && $('p-name').textContent) || '').trim() || nombreElegido();
   }
   function pintarNombre(n) {
     const a = NOMBRES.a.find(x => n.startsWith(x + ' ')) || NOMBRES.a[0];
     $('p-name-a').value = a; $('p-name-b').value = NOMBRES.b.includes(n.slice(a.length + 1)) ? n.slice(a.length + 1) : NOMBRES.b[0];
-    $('p-name').textContent = nombreElegido();
+    const libre = $('p-name-libre');
+    if (libre) libre.value = n;
+    $('p-name').textContent = n;
   }
   function pintarLoQueSeLee() { $('p-name').textContent = nombreEnPantalla(); }
-  for (const id of ['p-name-a', 'p-name-b']) $(id).addEventListener('change', pintarLoQueSeLee);
   if ($('p-name-libre')) $('p-name-libre').addEventListener('input', pintarLoQueSeLee);
   $('p-name-azar').addEventListener('click', () => {
-    if ($('p-name-libre')) $('p-name-libre').value = '';
-    let n = nombreElegido();
-    for (let k = 0; k < 5 && n === nombreElegido(); k++) n = nombreAzar();
+    const actual = $('p-name-libre') && $('p-name-libre').value.trim();
+    let n = nombreAzar();
+    for (let k = 0; k < 6 && n === actual; k++) n = nombreAzar();
     pintarNombre(n);
   });
   // Al cargar: un nombre libre que ya pasó el filtro se queda. Uno que no, pasa a la lista (estable por partida).
@@ -297,18 +304,8 @@ AVE.module('creador', function (G) {
   async function open(first) {
     const p = S.profile;
     draftLook = profileLook(p);
-    const libre = $('p-name-libre');
-    if (p.created && p.name && esNombreDeLista(p.name)) {
-      if (libre) libre.value = '';
-      pintarNombre(p.name);
-    } else if (p.created && p.name && !filtroNombreLibre(p.name)) {
-      pintarNombre(nombreAzar());
-      if (libre) libre.value = p.name;
-      $('p-name').textContent = p.name;
-    } else {
-      if (libre) libre.value = '';
-      pintarNombre(nombreAzar());
-    }
+    if (p.created && p.name && !filtroNombreLibre(p.name)) pintarNombre(p.name);
+    else pintarNombre(nombreAzar());
     const ops = opcionesEspecie();
     $('p-species').innerHTML = ops.map(o => `<option value="${escHtml(o.id)}">${escHtml(o.nombre)}</option>`).join('');
     $('p-species').value = ops.some(o => o.id === draftLook.species) ? draftLook.species : 'vittata';
@@ -317,7 +314,7 @@ AVE.module('creador', function (G) {
     $('p-cancel').hidden = !!first;
     // Foco al primer campo (si la portada está encima, src/ui/ui.js lo pone al cerrarla)
     const portada = $('title');
-    if (!portada || !portada.open) setTimeout(() => { const f = $('p-name-a'); if (f && !$('creator').hidden) f.focus(); }, 0);
+    if (!portada || !portada.open) setTimeout(() => { const f = $('p-name-libre') || $('p-name-a'); if (f && !$('creator').hidden) f.focus(); }, 0);
     $('creator').hidden = false;
     renderSlots();
     if (window.AVShowcase) {
@@ -406,9 +403,10 @@ AVE.module('creador', function (G) {
       if ($('p-name-libre')) {
         $('p-name-libre').value = 'Coralito';
         $('p-name-libre').dispatchEvent(new Event('input', { bubbles: true }));
-        ok('El nombre escrito se lee junto a las listas', $('p-name').textContent === 'Coralito', $('p-name').textContent);
+        ok('El nombre escrito se lee en el único campo', $('p-name').textContent === 'Coralito', $('p-name').textContent);
+        ok('Los desplegables no se ven', $('p-name-a').hidden && $('p-name-b').hidden);
         $('p-name-azar').click();
-        ok('El dado vacía el campo y vuelve a la lista', !$('p-name-libre').value && esNombreDeLista($('p-name').textContent), $('p-name').textContent);
+        ok('El dado escribe un nombre de la lista en el campo', esNombreDeLista($('p-name-libre').value) && $('p-name').textContent === $('p-name-libre').value, $('p-name-libre').value);
       }
     } finally {
       S.profile = antes;
