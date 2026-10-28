@@ -59,17 +59,19 @@ window.AVLook = function (G) {
     // - borde de luz (rim) en los personajes (mallas con esqueleto: Vittata, cotorras, bandada): un define AV_RIM en su material
     //   Standard; ni geometría, ni rig, ni texturas se tocan y al quitar el look el define desaparece.
     vibrant_toon: {
-      titulo: 'Vibrant Toon', exposicion: 0.78,
-      grade: { sat: 1.24, con: 1.07, tint: [1.02, 1.0, 0.96], rodilla: true },
+      // 28-oct (Kelvin: «muy saturado, con mucho brillo; equilibra la iluminación»): sat 1.24 → 1.12, contraste 1.07 → 1.05,
+      // exposición 0.78 → 0.76, sol 2.05 → 1.95, terreno 1.1 → 1.05, hojas y tintes de especie con menos recorte de azul.
+      titulo: 'Vibrant Toon', exposicion: 0.76,
+      grade: { sat: 1.12, con: 1.05, tint: [1.01, 1.0, 0.975], rodilla: true },
       cielo: { cenit: '#1e78e8', horizonte: '#b4e4ff', sol: '#fff4d6' },
       niebla: { color: '#b8e4ff', inicio: 80, fin: 1500 },
-      luces: { cielo: '#a8d4ff', suelo: '#4a7a34', hemi: 0.84, sol: '#ffe4b0', solInt: 2.05 },
-      terrenoSat: 1.1, hoja: [0.96, 1.08, 0.84], toon: true, texMax: 512,
+      luces: { cielo: '#a8d4ff', suelo: '#4a7a34', hemi: 0.84, sol: '#ffe8c0', solInt: 1.95 },
+      terrenoSat: 1.05, hoja: [0.97, 1.04, 0.9], toon: true, texMax: 512,
       refinado: {
-        rampa: [-0.08, 0.5, 0.4],                                      // smoothstep(a, b) mezclado con saturate() al 40 %
-        especies: [[1.0, 1.0, 1.0], [1.12, 1.04, 0.72], [0.8, 1.02, 1.0], [0.98, 1.1, 0.84], [1.14, 0.96, 0.8]], // por material de hoja (±20 % por canal)
-        altura: { bajo: [0.72, 0.9, 0.92], alto: [1.12, 1.06, 0.8], h0: 0.5, h1: 9 }, // tinte por altura local (m)
-        tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.06, 1.0, 0.9] },
+        rampa: [-0.05, 0.6, 0.55],                                     // smoothstep(a, b) mezclado con saturate() al 55 %
+        especies: [[1.0, 1.0, 1.0], [1.08, 1.03, 0.82], [0.86, 1.01, 1.0], [0.98, 1.06, 0.9], [1.1, 0.97, 0.86]], // por material de hoja
+        altura: { bajo: [0.72, 0.9, 0.92], alto: [1.08, 1.04, 0.88], h0: 0.5, h1: 9 }, // tinte por altura local (m)
+        tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.02, 1.0, 0.94] },
         rim: { color: [0.75, 0.88, 1.0], int: 0.55, borde: [0.55, 1.0] }, // color (lineal), fuerza y rango del borde
       },
       // Noche permitida (cap. 5, mundo.cielo.permiso = 'noche'): misma gradación y mismo toon; cielo atmosférico, no un fondo plano.

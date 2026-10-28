@@ -11,8 +11,8 @@ window.AVBohios = function (G) {
   const ZONA = 'kelvin_aldea_rio_este', MODELO = 'bohio_redondo';
   const ALTO_MODELO = 3.626; // kit.js bohio_redondo.alto
   const ALTURA = (G.pack.jugador && G.pack.jugador.altura) || 1.75;
-  // Lineal, la misma familia que el atlas: crema (0.96, 0.86, 0.68), madera cálida y rojo teja (0.58, 0.22, 0.14).
-  const COLOR = { madera: [0.45, 0.28, 0.16], crema: [0.96, 0.86, 0.68], piedra: [0.58, 0.46, 0.32], teja: [0.58, 0.22, 0.14] };
+  // Lineal, la misma familia que el atlas: crema (0.80, 0.71, 0.55), madera cálida y rojo teja (0.58, 0.22, 0.14).
+  const COLOR = { madera: [0.45, 0.28, 0.16], crema: [0.80, 0.71, 0.55], piedra: [0.42, 0.34, 0.24], teja: [0.58, 0.22, 0.14] };
   const FRASES = {
     hamaca: 'La hamaca está fresca. Un buen sitio para descansar un momento.',
     tinaja: 'La tinaja guarda agua de lluvia. Fría, y alcanza para todos.',
