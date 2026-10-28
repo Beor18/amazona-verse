@@ -2,6 +2,15 @@
 
 Carril **AV** dentro del sistema de siempre: el tablero es `docs/equipo/TRABAJO_SIMULTANEO.md`, los pedidos van en `docs/equipo/PEDIDOS.md`, las decisiones en `docs/DECISION_LOG.md` y la identidad en `docs/GAME_FIRST.md`. Este archivo solo guarda lo propio del audiovisual: capacidades, biblia visual, storyboard, prompts, pruebas y costos. **El mapa sigue primero**: mientras no esté aprobado, aquí solo hay trabajo preparatorio.
 
+## 0. Aclaraciones de Kelvin (28-oct, tarde) · mandan sobre lo demás
+- **Kelvin tiene Grok Ultra** y ya lo usa en Cursor. No se le vuelve a preguntar por el plan. Él ya probó Grok Imagine: **1080p, 15 s por video, varias imágenes de referencia, buen resultado**.
+- **Kelvin aprueba; no opera.** Los agentes preparan referencias, prompts, ajustes, archivos y procedimientos. Cada prueba es un **paquete listo** (`docs/equipo/av/paquetes.json` → `tools/av/armar_paquetes.py` → un `.zip` por prueba con las referencias numeradas, `PROMPT.txt` y `ACEPTACION.txt`).
+- **No se usa el mapa sin terminar** en los videos: hasta que Kelvin lo apruebe, las referencias del mundo son sus imágenes meta (`ciudad_tepuy_meta_kelvin.jpg`, `ciudad_tepuy_render2022.jpg`) y los renders oficiales.
+- **El logo no bloquea nada:** provisional, el de la web (`web/assets/favicon.svg` y la marca de `web/assets/og.jpg`); el vectorial se resuelve después, igual al aprobado.
+- **Vittata:** el modelo oficial manda. Grok puede generarla en cinemáticas si mantiene la identidad (prueba A); si no lo hace de forma constante, se usan renders del modelo oficial.
+- **Producción híbrida:** gameplay real + Blender + Grok Imagine; la mejor calidad, no la mayor cantidad de clips.
+- **Sin compras nuevas** hasta demostrar que hacen falta.
+
 ## 1. Capacidades reales de Grok (investigado el 28-oct; confirmar en la cuenta de Kelvin)
 
 **Primero, una distinción que cambia todo:**
@@ -149,6 +158,10 @@ Supuestos: el tráiler son ~55 s; ~60 % gameplay y Blender (sin costo de generac
 | 8 | Storyboard | Coordinadora → Kelvin aprueba | Media | — | §4 aprobado | Propuesta |
 | 9 | Prompts reutilizables | Coordinadora | Media | — | §5 | **Hecho** (v1) |
 | 10 | Plan de pruebas | Coordinadora; ejecutan Kelvin o Fujimoto en grok.com | Media | Prueba B: ciudad aprobada | §6 | Plan listo |
+| — | Paquetes de producción A (Vittata en vuelo), B (ciudad desde la meta de Kelvin), C (tormenta y señal) y D (guardianes) | Coordinadora | Alta | — | `docs/equipo/av/paquetes.json` y sus `.zip` | **Hecho** |
+| G30 | Captura de gameplay de cine (cuadro a cuadro determinista, 1080p60, sin interfaz, desde las vistas de `mapa_vistas.json` y recorridos de vuelo) | Carril I | Media | — (la herramienta no depende del mapa; las tomas definitivas, sí) | Un clip de prueba de 10 s de Villa Raíz en 1080p60 sin tirones | Libre |
+| G31 | Montaje por código con `ffmpeg` desde una lista de planos JSON, con versiones 16:9, 9:16 y 4:5 | Carril I o el que quede libre | Media | G30 para probar | Un montaje de prueba de 20 s con 3 planos, música de Kelvin y títulos | Libre |
+| G32 | Render del modelo oficial de Vittata con `bpy` (Cycles por CPU) en la nube: despegue de 5 s con su rig | Carril M al terminar G27 | Media | — | Render fiel, 1080p, fondo transparente | Libre |
 | — | Banco de capturas de referencia (cada vista de `mapa_vistas.json` en 16:9 y 9:16, y Vittata en el creador) | Carril L | Media | Mapa en curso (se repite al aprobarse) | `docs/img/av_ref_<vista>_<fecha>.jpg` | Pendiente |
 | — | Clips de gameplay para el tráiler (vuelo, River Rush, Flight, Maze, criadero, ropero) | Agente AV | Media | **Mapa aprobado** | 1080p, 60 fps si se puede, sin interfaz | Fase 1 |
 | — | Renders de Vittata en Blender (despegue, mirada) | API en la Mac (Blender) | Media | Mapa aprobado | Fiel al rig oficial | Fase 1 |
@@ -195,3 +208,22 @@ Cada pieza con un objetivo: **curiosidad**, **mostrar diversión** o **invitar a
 ## 13. Reservado para Kelvin
 
 Canon y personajes; biblia visual y storyboard; cualquier gasto (créditos de la API, servicios externos, compras); los términos de uso y licencias; los materiales promocionales definitivos y su publicación; la portada nueva de la web; el logo.
+
+## 14. Automatización y herramientas (investigado el 28-oct)
+
+**Lo que no se puede automatizar sin gastar:** la generación en Grok Imagine **con la suscripción** se hace en grok.com o en la app; no hay una vía oficial para que Cursor la dispare. Automatizar el navegador de grok.com iría contra el uso permitido del servicio: **no se hace**. La vía oficial para automatizar es la **API de xAI**, que se cobra aparte por segundo y no viene incluida en la suscripción (una fuente habla de un fondo de uso semanal compartido entre los productos de Grok, sin confirmar que cubra la API). Por eso **alguien tiene que pulsar «generar»** con cada paquete: es la única tarea manual que queda (ver la decisión K1 en §15).
+
+**Lo que sí se automatiza sin costo:**
+- **Gameplay de cine, sin GPU:** captura **cuadro a cuadro determinista** del juego (se controla el reloj del bucle de render y se guarda cada cuadro), a 1080p y 60 fps, aunque la nube no tenga GPU: tarda más, pero sale perfecto. Es el mismo principio de herramientas como timecut/timesnap o puppeteer-capture con Chrome sin pantalla. Tarea **G30**.
+- **Montaje por código:** `ffmpeg` (ya instalado en la nube) monta el tráiler desde una lista de planos en JSON (clip, entrada, salida, transición, música, títulos), saca las versiones 16:9, 9:16 y 4:5 con reencuadre por zona segura y comprueba duración y medidas. Tarea **G31**.
+- **Renders de Vittata con su modelo oficial:** Blender en la Mac (API, BM) o Blender como módulo de Python (`bpy`) con Cycles por CPU en la nube, sin GPU: lento pero gratis. Tarea **G32** (investigar y probar un render de 5 s del despegue).
+- **Paquetes de producción:** `tools/av/armar_paquetes.py`.
+- **Registro:** cada generación se anota en §9 (prompt, referencias, ajustes, resultado).
+
+**Herramientas descartadas por ahora:** editores de pago o en la nube con marca de agua; plantillas de video con licencia comercial dudosa; música o efectos de bancos sin licencia clara.
+
+## 15. Decisiones que solo puede tomar Kelvin
+- **K1 · Quién pulsa «generar» en Grok Imagine.** (a) Fujimoto o alguien del equipo con acceso a la cuenta de Kelvin, siguiendo los paquetes (recomendado: cero gasto, Kelvin solo aprueba); (b) Kelvin, en tandas (unos 2 minutos por paquete); (c) la API de xAI con un tope que fije Kelvin (automatizado, pero es un gasto nuevo).
+- **K2 · Aprobar la biblia visual (§3) y el storyboard (§4).**
+- **K3 · Aprobar o rechazar cada resultado** de las pruebas A, B, C y D con sus criterios.
+- **K4 · Los términos de uso de xAI** (licencia sobre lo que se genera y opción de no usar los datos para entrenar), con su abogado si quiere.
