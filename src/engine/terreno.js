@@ -271,6 +271,7 @@ AVE.module('terreno', function (G) {
     'uniform vec4 uEsc, uSat; uniform vec3 uTint0, uTint1, uTint2, uTint3; uniform float uMar;',
     'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
     'uniform sampler2D tBosque; uniform vec4 uBosque;', // F0.2: cuánto bosque hay encima (densidad de árboles del mapa en celdas de 8 m)
+    'uniform vec4 uTepuy; uniform float uTepuyB;', // BL1: elipse de la selva del tepuy (x, z, 1/rx, 1/rz) y su borde suave
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
     'uniform sampler2D tOrilla; uniform vec4 uOrilla;', // BB1: orilla del río y las pozas (1 = borde del agua, 0 = a 3 m o más)
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
@@ -365,6 +366,25 @@ AVE.module('terreno', function (G) {
   float parche = texture2D(tMacro, vec2(hc * 0.0045 + 0.11, vWPos.y * 0.012 + mac.r * 0.15)).g * 0.6 + mac.g * 0.4;
   float cubre = mix(0.42, 0.9, smoothstep(0.22, 0.6, nG.y)) * smoothstep(0.32, 0.55, parche + (mac2.b - 0.5) * 0.25);
   vec3 selva = c0 * vec3(0.5, 0.66, 0.46) * (0.8 + mac2.r * 0.35);
+  float tep = 0.0;
+  #ifdef SPLAT_TEPUY
+    // BL1: en la selva del tepuy la pared va cubierta casi entera, de un verde de copas con bulto y sin la veta de la
+    // roca (de lejos se leía como rayas); la roca asoma solo en afloramientos sueltos de lo más vertical
+    tep = 1.0 - smoothstep(1.0 - uTepuyB, 1.0, length((wp - uTepuy.xy) * uTepuy.zw));
+    float aflora = smoothstep(0.7, 0.82, parche + (mac.b - 0.5) * 0.3) * smoothstep(0.45, 0.12, nG.y);
+    cubre = mix(cubre, 1.0 - aflora, tep);
+    // copas con el hueco oscuro entre ellas, proyectadas sobre la pared (o el suelo, en lo llano)
+    // (ruido de ~3 y ~1 m por los tres ejes, como la roca triplanar: sin rayas en las paredes)
+    vec3 pcB = pow(abs(nG), vec3(4.0)); pcB /= dot(pcB, vec3(1.0));
+    #define COPA_T(p) (texture2D(tMacro, (p) * 0.1 + 0.3).r * 0.6 + texture2D(tMacro, (p) * 0.09 + 0.7).g * 0.4)
+    #define MANCHA_T(p) texture2D(tMacro, (p) * 0.006 + 0.55).b
+    float copa = COPA_T(vWPos.zy) * pcB.x + COPA_T(wp) * pcB.y + COPA_T(vWPos.xy) * pcB.z;
+    float mancha = MANCHA_T(vWPos.zy) * pcB.x + MANCHA_T(wp) * pcB.y + MANCHA_T(vWPos.xy) * pcB.z; // especies, a ~40 m
+    copa = smoothstep(0.25, 0.75, copa);
+    // verde fijo (lineal) y no el musgo: su textura va proyectada desde arriba y en la pared se estiraba en rayas
+    vec3 copasT = mix(vec3(0.022, 0.05, 0.015), mix(vec3(0.07, 0.145, 0.032), vec3(0.11, 0.175, 0.038), smoothstep(0.35, 0.7, mancha)), copa) * (0.85 + mancha * 0.3);
+    selva = mix(selva, copasT, tep);
+  #endif
   c2 = mix(c2, selva, cubre * steep);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
   #ifdef SPLAT_ORILLA
@@ -386,7 +406,11 @@ AVE.module('terreno', function (G) {
     alb *= 1.0 - 0.32 * clamp(bqA * 0.6 + bq * 0.6, 0.0, 1.0) * (1.0 - bw.w);
   #endif
   // BE2: las paredes de las gargantas, algo más hondas que las mesetas (oclusión aproximada por la pendiente)
-  alb *= 1.0 - 0.18 * steep * smoothstep(0.7, 0.2, nG.y);
+  alb *= 1.0 - 0.18 * steep * smoothstep(0.7, 0.2, nG.y) * (1.0 - tep * 0.5);
+  #ifdef SPLAT_TEPUY
+    // BL1: y en la cima y las repisas el pasto pasa a suelo de selva (verde hondo a manchas) bajo los árboles nuevos
+    alb = mix(alb, copasT * 0.92, tep * bw.x * 0.75);
+  #endif
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
     vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
@@ -420,6 +444,13 @@ AVE.module('terreno', function (G) {
     #endif
     normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);
   }
+  #endif
+  #ifdef SPLAT_TEPUY
+    // BL1: la selva colgada del risco mira al cielo; sin esto, en la cara en sombra se apagaba como la roca desnuda
+    // (y sin el relieve vertical de la roca ni el facetado de la malla del risco, que de lejos se leían como rayas)
+    float kT = tep * cubre * steep;
+    normal = normalize(mix(normal, normalize((viewMatrix * vec4(nG, 0.0)).xyz), kT * 0.7));
+    normal = normalize(mix(normal, (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz, kT * 0.5));
   #endif
 `;
   // BB1: textura de orilla (1 canal, 1 texel cada 2 m) con la distancia al borde del río, la quebrada y las pozas de
@@ -480,6 +511,22 @@ AVE.module('terreno', function (G) {
     tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
     return { tex, v: new THREE.Vector4(FD.x0, FD.z0, 1 / (nx * FD.celda), 1 / (nz * FD.celda)) };
   })();
+  // BL1: selva del tepuy. En el render de 2022 (docs/img/ciudad_tepuy_render2022.jpg) la gran ciudad está rodeada de selva densa
+  // hasta su borde, laderas incluidas, y la roca solo asoma en unos pocos afloramientos. Elipse con borde suave alrededor de la
+  // ciudad: el suelo cubre ahí las paredes de verde, vegetacion.js siembra árboles también en las laderas y el dosel
+  // (tools/blender/entorno_dosel.py, misma elipse) llega hasta el borde. mundo.suelo.selvaTepuy: false la apaga; { x, z, rx, rz, borde, arboles, ciudad }.
+  const TEPUY = (() => {
+    const c = W.suelo && W.suelo.selvaTepuy, CAP1 = window.AV_MAPA_CAP1;
+    if (!MAPA || c === false || !(c || (CAP1 && MAPA.nombre === CAP1.nombre))) return null;
+    return Object.assign({ x: -25, z: -160, rx: 135, rz: 105, borde: 0.3, arboles: 1800, ciudad: 8 }, c); // ciudad: m libres alrededor de cada pieza de las ruinas
+  })();
+  // 0..1: cuánto de la selva del tepuy hay en (x, z)
+  function selvaTepuy(x, z) {
+    if (!TEPUY) return 0;
+    const t = clamp01((1 - Math.hypot((x - TEPUY.x) / TEPUY.rx, (z - TEPUY.z) / TEPUY.rz)) / TEPUY.borde);
+    return t * t * (3 - 2 * t);
+  }
+  if (TEPUY) selvaTepuy.zona = TEPUY;
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
@@ -494,6 +541,7 @@ AVE.module('terreno', function (G) {
       tOrilla: { value: ORILLA ? ORILLA.tex : null }, uOrilla: { value: ORILLA ? ORILLA.v : new THREE.Vector4() },
       tZona: { value: ZONAS ? ZONAS.tex : null }, uZona: { value: ZONAS ? new THREE.Vector4(ZONAS.x0, ZONAS.z0, 1 / ZONAS.ancho, 1 / ZONAS.largo) : new THREE.Vector4() },
       tBosque: { value: BOSQUE ? BOSQUE.tex : null }, uBosque: { value: BOSQUE ? BOSQUE.v : new THREE.Vector4() },
+      uTepuy: { value: TEPUY ? new THREE.Vector4(TEPUY.x, TEPUY.z, 1 / TEPUY.rx, 1 / TEPUY.rz) : new THREE.Vector4() }, uTepuyB: { value: TEPUY ? TEPUY.borde : 1 },
     };
     m.defines = {};
     m.userData.splat = true; m.userData.uniforms = U;
@@ -524,6 +572,7 @@ AVE.module('terreno', function (G) {
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
     if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
     if (BOSQUE) d.SPLAT_BOSQUE = '';
+    if (TEPUY) d.SPLAT_TEPUY = '';
     if (Object.keys(d).join() !== Object.keys(m.defines).join()) { m.defines = d; m.needsUpdate = true; }
   }
   G.on('calidad', C => { for (const m of splatMats) calidadSplat(m, C); });
@@ -756,7 +805,7 @@ AVE.module('terreno', function (G) {
 
   return {
     WORLD, places, pois, poi, rawHeight, height, surfaceY, normalAt, splatAt, addPlatform, removePlatform, plataformas, platformTop,
-    flats: FLATS, waterBase, riverX, islas, trees: allTrees, groundMaterial, splatMaterial, macroNoise, texRep,
+    flats: FLATS, waterBase, riverX, islas, selvaTepuy, trees: allTrees, groundMaterial, splatMaterial, macroNoise, texRep,
     mapa: MAPA, chunks, get listo() { return listo; }, get exacto() { return TG.ready; }, hmHeight: HM ? hmHeight : null,
   };
 });

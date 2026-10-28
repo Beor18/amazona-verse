@@ -29,11 +29,14 @@ ROTULO_JS = '''(async () => { %s const AV = window.AV, G = AV.G, S = AV.state; a
   const libre = () => !G.quiet && !G.ui.busy() && !(G.ui.worldHidden && G.ui.worldHidden());
   for (let i = 0; i < 60 && !libre(); i++) { for (const k of ['Enter', ' ', 'Escape']) dispatchEvent(new KeyboardEvent('keydown', { key: k, code: k === ' ' ? 'Space' : k, bubbles: true })); await sleep(1000); }
   if (!libre()) return 'el jugador no quedó libre';
-  if (!await espera(() => G.lugares.lista().some(p => p.asentamiento), 15000)) return 'sin asentamientos';
+  if (!await espera(() => G.lugares.lista().some(p => p.asentamiento), 60000)) return 'sin asentamientos';
   const A = G.lugares.lista().filter(p => p.asentamiento), ir = p => { S.pos.x = p.x + p.r * 0.4; S.pos.z = p.z; S.pos.y = G.terreno.height(S.pos.x, S.pos.z) + 0.2; };
   for (const id of ['kelvin_aldea_rio_este', 'kelvin_ruinas_yunque']) { const p = A.find(q => q.id === id); if (p) G.lugares.descubrir(p, true); }
-  ir(A.find(q => q.id === 'kelvin_aldea_meandros'));
-  if (!await espera(() => { const r = document.getElementById('rotulo-lugar'); return r && !r.hidden; }, 15000)) return 'no salió el rótulo';
+  const nuevo = q => !G.lugares.descubiertos().includes(q.id); // la salida puede caer cerca de alguno y descubrirlo en la intro
+  const m = [A.find(q => q.id === 'kelvin_aldea_meandros')].concat(A).find(q => q && nuevo(q));
+  ir(m);
+  if (!await espera(() => { const r = document.getElementById('rotulo-lugar'); return r && !r.hidden; }, 15000))
+    return 'no salió el rótulo: pos ' + [S.pos.x, S.pos.y, S.pos.z].map(Math.round) + ' poi ' + [m.x, m.y, m.z, m.r].map(Math.round) + ' cerca ' + G.lugares.cerca(m) + ' visto ' + G.lugares.descubiertos().includes(m.id) + ' busy ' + G.ui.busy() + ' quiet ' + G.quiet;
   await sleep(700); return 'ok ' + document.getElementById('rotulo-lugar').textContent; })()'''
 MAPA_JS = '''(async () => { %s const G = window.AV.G; G.minimapa.abrir(); await sleep(1200); return 'ok ' + G.minimapa.marcadores().filter(m => m.tipo === 'pueblo').length + ' asentamientos'; })()''' % ESPERA
 CERRAR_MAPA_JS = '(() => { window.AV.G.minimapa.cerrar(); return "ok"; })()'
@@ -88,7 +91,7 @@ def main():
         print('· jugar:', avtest.evaluar(cdp, ses, P['preparar_js'], 180), flush=True)
 
         def foto(nombre, js, salir=None):
-            r = avtest.evaluar(cdp, ses, js, 120)
+            r = avtest.evaluar(cdp, ses, js, 200)
             img = cdp.call('Page.captureScreenshot', {'format': 'jpeg', 'quality': 72}, ses, 60)['data']
             ruta = os.path.join(a.salida, 'ay1_%s_%s.jpg' % (tipo, nombre))
             open(ruta, 'wb').write(base64.b64decode(img))

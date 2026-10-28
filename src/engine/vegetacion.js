@@ -305,13 +305,13 @@ AVE.module('vegetacion', function (G) {
     // nublado. Semilla propia: el resto de la flora no se mueve.
     const MB = usarBosque && window[BOSQUE.global];
     bosquePos.length = 0;
+    const especie = (h, u) => h > 64 ? (u < 0.55 ? 'tabonuco_enano' : u < 0.9 ? 'palma_sierra' : 'helecho_gigante')
+      : h > 24 ? (u < 0.55 ? 'palma_sierra' : u < 0.85 ? 'tabonuco' : 'yagrumo')
+      : (u < 0.6 ? 'tabonuco' : u < 0.8 ? 'yagrumo' : 'palma_sierra');
     if (MB && MB.bits) {
       const mb = b64u8(MB.bits), r3 = rng(BOSQUE.semilla), celdas = [];
       for (let i = 0; i < MB.nx * MB.nz; i++) if ((mb[i >> 3] >> (i & 7)) & 1) celdas.push(i);
       for (let i = celdas.length - 1; i > 0; i--) { const j = Math.floor(r3() * (i + 1)), t = celdas[i]; celdas[i] = celdas[j]; celdas[j] = t; }
-      const especie = (h, u) => h > 64 ? (u < 0.55 ? 'tabonuco_enano' : u < 0.9 ? 'palma_sierra' : 'helecho_gigante')
-        : h > 24 ? (u < 0.55 ? 'palma_sierra' : u < 0.85 ? 'tabonuco' : 'yagrumo')
-        : (u < 0.6 ? 'tabonuco' : u < 0.8 ? 'yagrumo' : 'palma_sierra');
       let n = lista.reduce((a, it) => a + (CAT(it.m) === 'arbol' ? 1 : 0), 0);
       for (let pasada = 0; pasada < 10 && n < BOSQUE.objetivo; pasada++) for (const c of celdas) {
         if (n >= BOSQUE.objetivo) break;
@@ -327,9 +327,34 @@ AVE.module('vegetacion', function (G) {
         n++; bosquePos.push(x, z);
       }
     }
+    // BL1, selva del tepuy (T.selvaTepuy, como en el render de 2022): árboles en la cima y en las laderas alrededor de la gran
+    // ciudad, también en las paredes que el relleno evita (hasta ~72°, hundidos en la ladera: de lejos, selva colgada del risco), con la probabilidad de la
+    // elipse. Fuera de las piezas de la ciudad (escenaKelvin de las ruinas), de sendas, agua y sitios despejados. Semilla
+    // propia y después del relleno: lo demás no se mueve. Cuentan aparte (tepuyPos).
+    tepuyPos.length = 0;
+    const ST = T.selvaTepuy && T.selvaTepuy.zona;
+    if (ST) {
+      const r4 = rng(4127), piezas = [], EK = MAPA.escenaKelvin || {};
+      for (const g of EK.compacto || []) if (/ruinas/.test(g.grupo || '')) for (const t of g.inst || []) piezas.push(t.length >= 16 ? [t[12], t[14]] : [t[0], t[2]]);
+      const enCiudad = (x, z, r) => piezas.some(p => Math.hypot(p[0] - x, p[1] - z) < ST.ciudad + r);
+      const objetivo = ST.arboles || 1800;
+      for (let t = 0, n = 0; n < objetivo && t < objetivo * 12; t++) {
+        const x = ST.x + (r4() * 2 - 1) * ST.rx, z = ST.z + (r4() * 2 - 1) * ST.rz, w = T.selvaTepuy(x, z);
+        if (r4() >= w || !libre(x, z)) continue;
+        const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
+        if (!md || y < 4 || ny < 0.3 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
+        if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
+        marcar(x, z, r);
+        const it = add(m, x, z, s, { rank: r4(), bosque: true });
+        it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
+        n++; tepuyPos.push(x, z);
+      }
+    }
     return lista;
   }
   const bosquePos = []; // x, z de los árboles de relleno (floraTest)
+  const tepuyPos = []; // y los de la selva del tepuy (BL1)
   function empaquetar(lista) {
     const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), m4 = new THREE.Matrix4(), c = new THREE.Color();
     const cuenta = {};
@@ -774,7 +799,7 @@ AVE.module('vegetacion', function (G) {
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     let arboles = 0;
     for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
-    return Object.assign(out, { arboles, bosque: bosquePos.length / 2 }, ULT);
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2 }, ULT);
   }
 
   // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
@@ -798,7 +823,19 @@ AVE.module('vegetacion', function (G) {
     const r1 = v => Math.round(v * 10) / 10;
     try {
       // 1. Cuántos árboles y dónde (F1.1)
-      check('Bosque lleno: entre 6 000 y 8 000 árboles', !usarBosque || (st.arboles >= 6000 && st.arboles <= 8000), st.arboles + ' árboles (' + st.bosque + ' de relleno), ' + total + ' instancias');
+      // (sin contar la selva del tepuy de BL1, que va aparte y se comprueba abajo)
+      const nArb = st.arboles - st.tepuy;
+      check('Bosque lleno: entre 6 000 y 8 000 árboles', !usarBosque || (nArb >= 6000 && nArb <= 8000), nArb + ' árboles (' + st.bosque + ' de relleno), ' + total + ' instancias');
+      // BL1: la selva del tepuy cae en su elipse, en suelo libre y fuera de la ciudad
+      const ST = T.selvaTepuy && T.selvaTepuy.zona;
+      if (ST) {
+        let fueraT = 0, noLibreT = 0;
+        for (let i = 0; i < tepuyPos.length; i += 2) {
+          if (!(T.selvaTepuy(tepuyPos[i], tepuyPos[i + 1]) > 0)) fueraT++;
+          if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
+        }
+        check('Selva del tepuy (BL1): más de 800 árboles alrededor de la ciudad, en su elipse y en suelo libre', st.tepuy > 800 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
+      }
       const MB = usarBosque && window[BOSQUE.global];
       if (MB) {
         const mb = b64u8(MB.bits);
