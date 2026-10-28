@@ -278,7 +278,7 @@ AVE.module('mundo', function (G) {
   const VILLA = ED.escalaVilla;
   let factorVilla = VILLA && VILLA.factor > 1 ? VILLA.factor : 0;
   try {
-    const qv = /[?&]bohioEsc=(1\.25|1\.5|1\.75)(?:&|$)/.exec(location.search);
+    const qv = /[?&]bohioEsc=(1|1\.25|1\.5|1\.75)(?:&|$)/.exec(location.search);
     if (qv && VILLA) factorVilla = parseFloat(qv[1]);
   } catch (e) { /* sin location */ }
   if (factorVilla > 1 && VILLA && MAPA.escenaKelvin && MAPA.escenaKelvin.compacto) {

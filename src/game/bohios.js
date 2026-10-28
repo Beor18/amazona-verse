@@ -166,18 +166,23 @@ window.AVBohios = function (G) {
       const infoV = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO);
       ok('La puerta del bohío más alto supera 1,75 m y a ×1,5 no llegaba', !!(p && p.alto >= ALTURA && p.alto * 1.5 / f < ALTURA), p ? p.alto.toFixed(2) + ' m · ancho ' + p.ancho.toFixed(2) : (infoV && infoV.motivo));
       if (p && G.solidos && G.camara && G.camara.place) {
-        const x = p.x, z = p.z, y = G.terreno.height(x, z) + 0.12;
-        const pen = G.solidos.penetra(x, z, y, 1.2);
-        ok('En el umbral el cuerpo no está dentro del muro', pen === 0, 'penetra ' + pen);
-        S.pos.x = x; S.pos.z = z; S.pos.y = y;
-        if (C && dist0 != null) { C.dist = dist0; C.height = h0; }
-        G.camara.yaw = Math.atan2(-p.nx, -p.nz);
-        G.camara.place(true);
-        const cp = G.renderer.camera.position;
-        const den = G.solidos.dentro(cp.x, cp.z, cp.y);
-        const distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
-        ok('En la puerta la cámara no se mete en el muro', !(den > -Infinity), den === -Infinity ? 'fuera' : String(den));
-        ok('La cámara no se pega a Vittata', distH >= 2.5, distH.toFixed(2));
+        let sitio = null;
+        for (let d = 0.4; d <= 3.2 && !sitio; d += 0.2) {
+          const x = p.x + p.nx * d, z = p.z + p.nz * d, y = G.terreno.height(x, z) + 0.12;
+          if (G.solidos.penetra(x, z, y, 1.2) === 0) sitio = { x, z, y, d };
+        }
+        ok('Frente a la puerta hay sitio para estar de pie', !!sitio, sitio ? 'a ' + sitio.d.toFixed(1) + ' m' : 'sin hueco');
+        if (sitio) {
+          S.pos.x = sitio.x; S.pos.z = sitio.z; S.pos.y = sitio.y;
+          if (C && dist0 != null) { C.dist = dist0; C.height = h0; }
+          G.camara.yaw = Math.atan2(-p.nx, -p.nz);
+          G.camara.place(true);
+          const cp = G.renderer.camera.position;
+          const den = G.solidos.dentro(cp.x, cp.z, cp.y);
+          const distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
+          ok('En la puerta la cámara no se mete en el muro', !(den > -Infinity), den === -Infinity ? 'fuera' : String(den));
+          ok('La cámara no se pega a Vittata', distH >= 2.5, distH.toFixed(2));
+        }
       } else ok('La puerta del bohío está medida', false, infoV ? infoV.motivo : 'sin vano');
       const vis = vistas();
       ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
