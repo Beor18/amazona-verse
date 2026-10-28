@@ -54,8 +54,8 @@
 .diary.ciencia li .fuente { margin-top: var(--sp-1); font-weight: 700; color: var(--leaf) !important; }
 .diary .ico.ciencia { border: 0; background: #3d8fb0; }
 .diary .ico.ciencia::before { background: #fff; -webkit-mask-image: var(--i-bulb); mask-image: var(--i-bulb); }
-.diary.ciencia li .edu-leer { position: absolute; right: 8px; bottom: 8px; min-height: 36px; min-width: 36px; width: 36px; --icon-size: 18px; }
-.diary.ciencia li.found { padding-bottom: 48px; }
+.diary.ciencia li .edu-leer { position: absolute; right: 8px; bottom: 8px; min-height: var(--tap-sm); min-width: var(--tap-sm); width: var(--tap-sm); --icon-size: 22px; }
+.diary.ciencia li.found { padding-bottom: 64px; }
 
 /* ---------- Menú de pausa: sección Aula y acceso discreto de docentes ---------- */
 .pause-aula { padding: var(--sp-4); border-radius: var(--r-lg); background: rgba(244, 247, 241, 0.05); border: 1px solid rgba(244, 247, 241, 0.1); }
