@@ -153,7 +153,8 @@ AVE.module('pruebas', function (G) {
     document.body.appendChild(fr);
     const t0 = performance.now();
     let W = null;
-    while (performance.now() - t0 < (opts.timeout || 30000)) {
+    // QA-60: con la máquina cargada el iframe tarda más de 30 s y la prueba salía en falso rojo
+    while (performance.now() - t0 < (opts.timeout || 90000)) {
       await new Promise(r => setTimeout(r, 150));
       try { W = fr.contentWindow; if (W && W.AV && W.AV.pack) break; } catch (e) { /* aún cargando */ }
       W = null;
