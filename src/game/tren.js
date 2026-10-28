@@ -578,9 +578,9 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
 #tren .tr-btn { pointer-events: auto; touch-action: none; -webkit-user-select: none; user-select: none; min-width: 108px; min-height: 56px; font: 800 20px/1 var(--font-display, system-ui); }
 #tren .tr-btn.on { filter: brightness(1.25); transform: scale(.96); }
 #tren .tr-desvio { display: flex; gap: 6px; align-items: center; background: var(--c-surface, rgba(10,30,20,.85)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-pill, 999px); padding: 4px 6px; font: 700 14px/1.1 var(--font-display, system-ui); }
-#tren .tr-desvio button { pointer-events: auto; min-width: 44px; min-height: 44px; }
+#tren .tr-desvio button { pointer-events: auto; min-width: 44px; min-height: 44px; color: var(--c-ink, #2a1d10); }
 #tren .tr-desvio button.on { outline: 3px solid var(--gold, #ffd84a); }
-#tren .tr-desvio .pista { color: var(--gold, #ffd84a); }
+#tren .tr-desvio button.pista { --btn-ink: #2a1d10; --btn-bg: #ffe08a; color: #2a1d10; background: #ffe08a; border-color: #8a5a12; }
 #tren .tr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); overflow: auto; }
 #tren .tr-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 18px 22px; width: min(92vw, 440px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
 #tren .tr-panel h2 { margin: 0 0 4px; font-size: 28px; } #tren .tr-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
@@ -894,7 +894,11 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
             check('En el desvío de la playa, ◀ lleva a la poza (por defecto) y ▶ a la costa', tomada0 === 'poza' && tomada1 === 'costa' && J.desvio.A === 1, tomada0 + ' / ' + tomada1);
             check('Los vagones siguen por donde vino el tren (historial de tramos) y el tren queda entero', J.hist.length >= 1 && V.segs[J.hist[J.hist.length - 1]].id === 'oeste' && (colocar(0), E.coches.every((m, i) => i === 0 || m.position.distanceTo(E.coches[i - 1].position) < P.largoLoco + P.largoVagon)), J.hist.map(i => V.segs[i].id).join('>')); }
           { pintarVivo(); irA('oeste', V.segs[0].largo - 30); J.carga = [{ tipo: 'cartas', destino: 'faro', t0: J.t }]; st.fase = 'juego'; pintarVivo();
-            check('A 45 m del desvío el HUD enseña las dos vías con su estación y marca «por aquí» la del destino de la carga', !st.ui.desvio.hidden && st.ui.izq.textContent === 'Mercado' && st.ui.der.textContent === 'Faro' && st.ui.desvio.querySelector('[data-via="1"]').classList.contains('pista'), st.ui.izq.textContent + '|' + st.ui.der.textContent); }
+            check('A 45 m del desvío el HUD enseña las dos vías con su estación y marca «por aquí» la del destino de la carga', !st.ui.desvio.hidden && st.ui.izq.textContent === 'Mercado' && st.ui.der.textContent === 'Faro' && st.ui.desvio.querySelector('[data-via="1"]').classList.contains('pista'), st.ui.izq.textContent + '|' + st.ui.der.textContent);
+            const btnP = st.ui.desvio.querySelector('[data-via="1"]'), cst = getComputedStyle(btnP);
+            const lin = c => { const m = String(c).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/); if (!m) return null; const f = v => { const x = v / 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }; return 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]); };
+            const L1 = lin(cst.color), L2 = lin(cst.backgroundColor), ratio = L1 != null && L2 != null ? (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05) : 0;
+            check('QA-50: el botón del desvío que marca el destino se lee (texto oscuro sobre amarillo, contraste ≥ 4,5)', ratio >= 4.5 && /2a1d10|42,\s*29,\s*16/i.test(cst.color), ratio.toFixed(1) + ' · ' + cst.color + ' / ' + cst.backgroundColor); }
           // ---------- Túnel y puente: silbato, eco, farol y cámara ----------
           { const oidos = [], play0 = G.audio.play; G.audio.play = function (n) { oidos.push(n); return play0.apply(this, arguments); };
             const cuadros = (s, v) => { for (let k = 0; k < s * 30 && st.fase === 'juego'; k++) { J.v = Math.max(J.v, v); paso(1 / 30); camFollow(1 / 30); colocar(1 / 30); } };
