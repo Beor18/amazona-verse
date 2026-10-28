@@ -28,6 +28,11 @@ AVE.module('renderer', function (G) {
   const DEVICE_DPR = window.devicePixelRatio || 1;
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
+  // QA-53: three r128, justo después de linkProgram, lee getShaderInfoLog y getProgramInfoLog
+  // en el mismo hilo (debug.checkShaderErrors). En SwiftShader eso congelaba el primer dibujo
+  // al pulsar «Empezar» (~65 programas, un cuadro de unos 6 s). Sin el chequeo el enlace no
+  // espera ese registro. ?shaders=1 lo vuelve a encender para ver un shader roto.
+  if (!/[?&]shaders=1(?:&|$)/.test(location.search)) renderer.debug.checkShaderErrors = false;
   const DPR_MAX = Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2), DPR_MIN = Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
   const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
@@ -516,7 +521,11 @@ AVE.module('renderer', function (G) {
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
   // quieta: contextTest la congela mientras compara fotos (con la máquina cargada bajaba un nivel entre una foto y otra; QA-30)
   const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
-  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => requestAnimationFrame(() => { precalentar(); fpsM.warm = 3000; })); });
+  // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo y la
+  // vegetación están, cada cuadro (con el creador todavía delante) enlaza unas pocas familias
+  // de material. El dibujo de verdad espera a que no quede ninguna pendiente.
+  let puedeCalentar = false, alDia = false, saltosCalor = 0;
+  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { puedeCalentar = true; alDia = false; fpsM.warm = 3000; }); });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
@@ -526,11 +535,11 @@ AVE.module('renderer', function (G) {
     const rt = new THREE.WebGLRenderTarget(32, 32), guardado = [], capa31 = (camera.layers.mask & (1 << 31)) !== 0;
     camera.layers.enable(31);
     scene.traverse(o => {
-      if (!(o.isMesh || o.isPoints || o.isSprite)) return;
-      const propio = /^(terreno|flora|edificios|estructura)/.test(o.name || '');
+      if (!(o.isMesh || o.isPoints || o.isSprite || o.isLine)) return;
       guardado.push([o, o.frustumCulled, o.visible, o.isInstancedMesh ? o.count : null]);
       o.frustumCulled = false;
-      if (propio) { o.visible = true; if (o.isInstancedMesh && o.count === 0) o.count = 1; }
+      o.visible = true;
+      if (o.isInstancedMesh && o.count === 0) o.count = 1;
     });
     try { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
@@ -538,6 +547,76 @@ AVE.module('renderer', function (G) {
     if (!capa31) camera.layers.disable(31);
     for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; }
     rt.dispose();
+    alDia = true; // este pase ya enlazó lo que había; el bucle solo retoma si entra algo nuevo
+  }
+  // Una familia de material por objeto (el mismo programa vale para todas las mallas que lo comparten).
+  const calorVistos = new WeakSet();
+  let rtCalor = null, postCalor = false;
+  function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
+  function siguienteCalor() {
+    let hallado = null;
+    scene.traverse(o => {
+      if (hallado || !dibujable(o)) return;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      if (mats.some(m => m && !calorVistos.has(m))) hallado = o;
+    });
+    return hallado;
+  }
+  function marcarCalor(o) {
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) if (m) calorVistos.add(m);
+  }
+  function conCapa31(fn) {
+    const capa31 = (camera.layers.mask & (1 << 31)) !== 0;
+    camera.layers.enable(31);
+    try { fn(); }
+    finally {
+      renderer.setRenderTarget(null);
+      if (!capa31) camera.layers.disable(31);
+    }
+  }
+  // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
+  function warmUno(o) {
+    const objs = [];
+    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
+    const padres = [];
+    for (let p = o.parent; p && p !== scene; p = p.parent) { padres.push([p, p.visible]); p.visible = true; }
+    for (const obj of objs) obj.visible = false;
+    o.visible = true; o.frustumCulled = false;
+    if (o.isInstancedMesh && o.count === 0) o.count = 1;
+    if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
+    try {
+      conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); });
+    } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
+    finally {
+      for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
+      for (const [p, vis] of padres) p.visible = vis;
+    }
+    marcarCalor(o);
+  }
+  function warmPost() {
+    if (!post.composer) return;
+    const objs = [];
+    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const guard = objs.map(obj => [obj, obj.visible]);
+    for (const obj of objs) obj.visible = false;
+    try { post.composer.render(); }
+    catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
+    finally { for (const [obj, vis] of guard) obj.visible = vis; }
+  }
+  // Unos pocos programas por cuadro (tope ~12 ms) para que ni el creador ni «Empezar» se queden congelados.
+  function calentarPresupuesto() {
+    const t0 = performance.now();
+    let n = 0;
+    while (n < 8 && performance.now() - t0 < 12) {
+      const o = siguienteCalor();
+      if (!o) break;
+      warmUno(o); n++;
+    }
+    if (n === 0 && post.composer && !postCalor) { warmPost(); postCalor = true; n = 1; }
+    if (!post.composer) postCalor = false;
+    return n;
   }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
@@ -598,6 +677,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
+    rtCalor = null; postCalor = false; alDia = false;
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
@@ -761,8 +841,19 @@ AVE.module('renderer', function (G) {
     const juice = G.camara.juice;
     if (juice.hitStop > 0) { juice.hitStop -= dt; dt = 0; } // hit-stop de 60 ms al capturar
     const moving = update(dt);
-    // Con un overlay opaco (el creador) el mundo no se dibuja: una sola escena por cuadro
-    if (!G.ui.worldHidden()) render(dt, moving);
+    // El creador es opaco: el mundo no se dibuja. QA-53: hasta que la partida empieza se enlazan
+    // los programas por tandas (también los que entran mientras el creador está abierto). El
+    // primer dibujo tras «Empezar» ya no compila los ~65 de golpe. En la portada, si no queda
+    // ninguno pendiente, sí se dibuja, y se sigue mirando por si el streaming añade materiales.
+    const oculto = G.ui.worldHidden && G.ui.worldHidden();
+    const empezo = !!(G.S && G.S.profile && G.S.profile.created);
+    if (puedeCalentar && !alDia) {
+      const n = calentarPresupuesto();
+      if (n > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
+      if (empezo && !oculto && n === 0) { alDia = true; saltosCalor = 0; render(dt, moving); }
+      else if (empezo && !oculto) { saltosCalor++; if (saltosCalor > 180) { alDia = true; render(dt, moving); } }
+      else if (!oculto && n === 0) render(dt, moving);
+    } else if (!oculto) render(dt, moving);
     requestAnimationFrame(frame);
   }
   // Un solo bucle: llamar a start() con el bucle vivo no hace nada; al reanudar, el primer cuadro tiene dt = 0
