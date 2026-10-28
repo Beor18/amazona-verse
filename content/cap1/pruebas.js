@@ -64,7 +64,7 @@
     check('Nombre con números, correo o "me llamo" se rechaza (seguridad infantil)', ['Ana123', 'yo@correo', 'me llamo Ana'].every(n => saveCharacter({ name: n, preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null));
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && had('PlayerCharacterCreated'));
     await G.creador.open(false); G.creador.pintarNombre('Luna del Mar'); $('p-save').click();
-    check('El creador da el nombre de dos listas (sin texto libre)', S.profile.name === 'Luna del Mar' && $('p-name-a').tagName === 'SELECT' && !document.querySelector('#creator input[type=text]'), S.profile.name);
+    check('El creador guarda el nombre de las listas y deja escribir el propio', S.profile.name === 'Luna del Mar' && $('p-name-a').tagName === 'SELECT' && !!$('p-name-libre'), S.profile.name);
     saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' });
     await G.actores.refreshCompanion();
     if (G.criadero && G.criadero.companero) {
@@ -235,9 +235,9 @@
     SV.reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
     try { localStorage.setItem(KEY, snap); } catch (e) { /* sin almacenamiento */ }
     check('Cargar restaura progreso, personaje, cómic y eventos', SV.load(true) && S.complete && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && S.events.length > 15 && !!S.captures.final, S.events.length + ' eventos');
-    const vieja = JSON.parse(snap); vieja.profile.name = 'Ana'; vieja.comic.title = 'La casa de Ana';
+    const vieja = JSON.parse(snap); vieja.profile.name = 'Ana Pérez'; vieja.comic.title = 'La casa de Ana';
     try { localStorage.setItem(KEY, JSON.stringify(vieja)); } catch (e) { /* sin almacenamiento */ }
-    check('Partida vieja: el nombre escrito a mano se cambia por uno de la lista', SV.load(true) && S.profile.name !== 'Ana' && G.creador.esNombreDeLista(S.profile.name), S.profile.name);
+    check('Partida vieja: un nombre con apellido se cambia por uno de la lista', SV.load(true) && S.profile.name !== 'Ana Pérez' && G.creador.esNombreDeLista(S.profile.name), S.profile.name);
     const v2 = { v: 2, pos: { x: 1, z: 2, y: 0 }, facing: { x: 0, z: 1 }, step: 2, inv: { madera: 1, piedra: 0, componente: 0 }, examined: { maquina: true, transmisor: true },
       collected: ['m1'], evaluated: { A: false, B: false }, refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, complete: false,
       indicators: { seguridad: '—', acceso: '—', habitat: '—' }, events: [{ type: 'PlayerCharacterCreated', t: 0, data: {} }, { type: 'WorkshopExplored', t: 5, data: {} }, { type: 'LumaHelped', t: 9, data: {} }], captures: {}, clock: 12 };
