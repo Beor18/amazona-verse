@@ -45,7 +45,7 @@ AVE.module('lugares', function (G) {
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, ir, { once: true, passive: true });
   }
   function asentamientos() {
-    if (ASENT_LISTA) return ASENT_LISTA;
+    if (ASENT_LISTA && ASENT_LISTA.length) return ASENT_LISTA; // vacía si los datos llegaron antes que los POIs: se rehace
     const P = (G.terreno && G.terreno.pois) || {}, Z = (G.terreno && G.terreno.mapa && G.terreno.mapa.zonasEdificios) || {};
     ASENT_LISTA = Object.keys(ASENT).filter(id => P[id] && typeof P[id].x === 'number').map(id => {
       const z = Z[id], rz = z && z.radio > 0 ? z.radio : 30;
