@@ -46,6 +46,10 @@ La revisión en vivo seguía viendo lingotes dorados, torres con ganchos y el co
 
 Kelvin la aprueba. No está hecha.
 
+## Segunda vuelta (carril C, 28-oct 15:55 UTC)
+
+Desde el aire se dibuja el `_lejos`, no el `_hd`. El ocre seguía en el color de vértice y el grupo de la izquierda quedaba oscuro. `piedraLejos` pasa ese color a marfil (el mismo rango que el `_hd`) en los modelos Ancient. Las astillas del `_lejos` de `ruina_torre` (arista larga más de 12 veces la corta) se quitan: en `render2022` varias torres juntas se leían como cristales beige. `avTeja` y `techar` no se tocan. No está hecha.
+
 ## Captura
 
 `docs/img/ciudad_tepuy_vs_2022.jpg`: el render de 2022 al lado de la vista `ciudad_tepuy` (desde el sureste). En esa toma el juego contó 55 instancias `_hd` y 6 del ligero con textura; la silueta beige de la zona no se dibujó. `streamingTest` 16/16 en `g18-5425820`, con el caso «desde el aire» (hd 21, silueta apagada) y la suelta al volver al inicio. Falta el visto de Kelvin.

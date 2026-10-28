@@ -341,6 +341,43 @@ AVE.module('streaming', function (G) {
     }
     col.needsUpdate = true;
   }
+  // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
+  // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|muro_roca|plataforma_piedra|bloque_piedra|complejo_ruinas)/.test(n);
+  function cremar(geo) {
+    const col = geo.attributes.color;
+    if (!col) return;
+    for (let i = 0; i < col.count; i++) {
+      const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i);
+      const t = Math.min(1, Math.pow(Math.max(y, 0) / 0.22, 0.55));
+      const d = Math.min(1.12, Math.max(0.84, y / 0.28));
+      col.setXYZ(i, (0.55 + 0.41 * t) * d, (0.48 + 0.40 * t) * d, (0.38 + 0.36 * t) * d);
+    }
+    col.needsUpdate = true;
+  }
+  // El _lejos de ruina_torre trae agujas (arista larga / arista corta > 12). En render2022,
+  // varias juntas se leen como una masa beige de triángulos en punta. Se quitan esas astillas.
+  function podarAstillas(geo) {
+    const pos = geo.attributes.position, index = geo.index;
+    if (!pos || !index) return;
+    const src = index.array, nt = index.count / 3, keep = [];
+    const dist = (a, b) => Math.hypot(pos.getX(a) - pos.getX(b), pos.getY(a) - pos.getY(b), pos.getZ(a) - pos.getZ(b));
+    for (let t = 0; t < nt; t++) {
+      const a = src[t * 3], b = src[t * 3 + 1], c = src[t * 3 + 2];
+      const ab = dist(a, b), bc = dist(b, c), ca = dist(c, a);
+      const corto = Math.min(ab, bc, ca), largo = Math.max(ab, bc, ca);
+      if (corto < 1e-4 || largo > corto * 12) continue;
+      keep.push(a, b, c);
+    }
+    if (!keep.length || keep.length === index.count) return;
+    geo.setIndex(new THREE.BufferAttribute(new (pos.count > 65535 ? Uint32Array : Uint16Array)(keep), 1));
+    geo.computeBoundingSphere();
+  }
+  function piedraLejos(n, geo) {
+    if (!esPiedra(n) || !geo) return;
+    podarAstillas(geo);
+    cremar(geo);
+  }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
     const p = g.attributes.position, n = p.count, I = g.index, nt = I ? I.count / 3 : n / 3;
@@ -566,6 +603,7 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
+        piedraLejos(r.n, r.geo);
         if (tieneTeja(r.n)) techar(r.geo);
       } else {
         r.partes = [];
@@ -610,7 +648,7 @@ AVE.module('streaming', function (G) {
       r.estado = 'bajando';
       const rc = res(r.n, 'cerca');
       pedir(rc, prio + 1000).then(() => encolar(() => {
-        try { r.geo = generarLejos(rc.partes); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
+        try { r.geo = generarLejos(rc.partes); piedraLejos(r.n, r.geo); if (tieneTeja(r.n)) techar(r.geo); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
         catch (e) { r.estado = 'error'; r.mal(e); }
         soltar(rc);
       }), err => { r.estado = 'error'; r.mal(err); soltar(rc); });
