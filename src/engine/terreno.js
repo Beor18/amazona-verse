@@ -399,8 +399,8 @@ AVE.module('terreno', function (G) {
   alb *= 1.0 - 0.18 * steep * smoothstep(0.7, 0.2, nG.y) * (1.0 - tep * 0.5);
   #ifdef SPLAT_TEPUY
     // La cima deja el pasto brillante: hojarasca más oscura bajo las copas. La textura se queda (no es un verde plano).
-    float cima = smoothstep(0.68, 0.9, nG.y) * smoothstep(52.0, 76.0, vWPos.y);
-    alb = mix(alb, alb * vec3(0.52, 0.6, 0.4), tep * cima * bw.x * 0.88);
+    float cima = smoothstep(0.58, 0.84, nG.y) * smoothstep(46.0, 68.0, vWPos.y);
+    alb = mix(alb, alb * vec3(0.36, 0.44, 0.28), tep * cima * bw.x * 0.94);
   #endif
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias

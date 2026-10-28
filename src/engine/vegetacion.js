@@ -353,13 +353,13 @@ AVE.module('vegetacion', function (G) {
       // Segunda vuelta: copas entre los edificios de la cima, donde el tronco no cabe (la ciudad deja 8 m)
       // y el pasto se veía pelado. No van en el risco (ny bajo): esa pared es roca. Tres planos cruzados, en crearCopasCima.
       copasCima.length = 0;
-      const pasoC = 6.4, rC = rng(9051);
+      const pasoC = 4.6, rC = rng(9051);
       for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
-        const jx = x + (rC() - 0.5) * pasoC * 0.55, jz = z + (rC() - 0.5) * pasoC * 0.55;
-        if (T.selvaTepuy(jx, jz) < 0.5 || !libre(jx, jz)) continue;
+        const jx = x + (rC() - 0.5) * pasoC * 0.7, jz = z + (rC() - 0.5) * pasoC * 0.7;
+        if (T.selvaTepuy(jx, jz) < 0.45 || !libre(jx, jz)) continue;
         const y = T.height(jx, jz), nyC = T.normalAt(jx, jz).y;
-        if (y < 68 || nyC < 0.68 || enAgua(jx, jz, y) || tapado(jx, jz, 2) || enCiudad(jx, jz, -3.2)) continue;
-        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 6.2 + rC() * 2.4, h: 5.2 + rC() * 2.2, tono: rC() });
+        if (y < 60 || nyC < 0.62 || enAgua(jx, jz, y) || tapado(jx, jz, 2) || enCiudad(jx, jz, -2.4)) continue;
+        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 8.2 + rC() * 3.4, h: 5.4 + rC() * 2.6, tono: rC() });
       }
     }
     return lista;
@@ -594,7 +594,7 @@ AVE.module('vegetacion', function (G) {
     const cv = document.createElement('canvas'); cv.width = cv.height = 64;
     const g = cv.getContext('2d');
     const gr = g.createRadialGradient(32, 28, 2, 32, 32, 30);
-    gr.addColorStop(0, '#6ea04a'); gr.addColorStop(0.5, '#2f6230'); gr.addColorStop(0.82, '#17381c'); gr.addColorStop(1, 'rgba(8,20,10,0)');
+    gr.addColorStop(0, '#8fbc5c'); gr.addColorStop(0.42, '#3f7a38'); gr.addColorStop(0.78, '#1c4622'); gr.addColorStop(1, 'rgba(8,20,10,0)');
     g.fillStyle = gr; g.beginPath(); g.ellipse(32, 32, 30, 24, 0, 0, Math.PI * 2); g.fill();
     for (let i = 0; i < 12; i++) {
       g.fillStyle = i % 2 ? 'rgba(150, 190, 70, 0.3)' : 'rgba(6, 18, 8, 0.45)';
