@@ -272,6 +272,12 @@ window.AVMovimientoTest = function (G) {
           }
           met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
           check('No atraviesa una pared: choca y se desliza sin meterse', probadas > 0 && peor <= 2, JSON.stringify(met.pared));
+          // La cámara, mirando hacia el edificio, no puede quedarse dentro del muro (la pared llenaba la vista).
+          const angCam = Math.atan2(bx - S.pos.x, bz - S.pos.z);
+          G.camara.yaw = angCam; G.camara.place(true);
+          const cp = G.renderer.camera.position, den = SO.dentro(cp.x, cp.z, cp.y);
+          met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z)) };
+          check('La cámara no se mete en la pared del edificio', !(den > -Infinity), JSON.stringify(met.camPared));
         }
         // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
         // (un tabonuco alto puede no tener ramas bajas: se prueba el siguiente)
@@ -456,8 +462,27 @@ window.AVMovimientoTest = function (G) {
           check('Con prefers-reduced-motion la cámara no se inclina, no cambia el FOV, no baja al aterrizar ni hace el plano', q.rollGiro === 0 && q.fovVuelo === 0 && q.fovImpulso === 0 && q.caida === 0 && q.plano === false, JSON.stringify(q));
         } finally {
           CAM.sinVida = sinVida0; V.plano = 0; V.roll = 0; M.flying = false; M.dashT = 0; M.land = 0;
-          reset(L.x, L.z); cam.fov = 55; cam.updateProjectionMatrix();
+          reset(L.x, L.z); cam.fov = 55; cam.zoom = 1; cam.updateProjectionMatrix();
         }
+        // QA-61: volando, una copa pegada a la línea no acerca la cámara (antes bajaba a ~2,4 m y la vista se agrandaba).
+        // Posada dentro de la copa, sí se acerca (QA-27). El pellizco del trackpad no hace zoom de la página.
+        const ev = new WheelEvent('wheel', { ctrlKey: true, deltaY: -80, cancelable: true, bubbles: true });
+        window.dispatchEvent(ev);
+        check('QA-61: el pellizco del trackpad (rueda con Ctrl) no hace zoom de la página', ev.defaultPrevented);
+        reset(L.x, L.z); S.pos.y = H(L.x, L.z) + 8; M.flying = true; M.grounded = false; M.posado = '';
+        const yw = C.yaw, dx = Math.sin(yw), dz = Math.cos(yw);
+        C.probarCopas([[S.pos.x + dx * 1.6, S.pos.y + 1.2, S.pos.z + dz * 1.6, 1.5]]);
+        C.place(true);
+        const dVuelo = Math.hypot(cam.position.x - S.pos.x, cam.position.y - (S.pos.y + 1.2), cam.position.z - S.pos.z);
+        met.qa61vuelo = { dist: r2(dVuelo), piso: r2(CAM.distFly * 0.82), fov: r2(cam.fov), zoom: cam.zoom };
+        check('QA-61: volando, una copa no acerca la cámara por debajo del 82 % de la distancia de vuelo', dVuelo >= CAM.distFly * 0.82 - 0.2 && cam.zoom === 1 && cam.fov >= 50 && cam.fov <= 70, JSON.stringify(met.qa61vuelo));
+        M.flying = false; M.posado = 'fino'; S.pos.y = H(L.x, L.z) + 4;
+        C.probarCopas([[S.pos.x + dx * 1.0, S.pos.y + 1.2, S.pos.z + dz * 1.0, 2.2]]);
+        C.place(true);
+        const dPosada = Math.hypot(cam.position.x - S.pos.x, cam.position.z - S.pos.z);
+        met.qa61posada = { dist: r2(dPosada) };
+        check('QA-27: posada dentro de una copa, la cámara se acerca para verla', dPosada < CAM.dist * 0.7 && dPosada > 1, JSON.stringify(met.qa61posada));
+        C.probarCopas(null); M.posado = ''; reset(L.x, L.z); cam.fov = 55; cam.zoom = 1; cam.updateProjectionMatrix();
       }
       // 9. Subir siempre sube y nunca encajada (rol Movimiento y controles). Lo que contó Kelvin: «a veces la cotorra no eleva
       // más» y Vittata metida en la pared de una torre de las ruinas, con la cabeza atravesando la plataforma de arriba.
