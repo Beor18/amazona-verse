@@ -1,0 +1,52 @@
+{
+ "hamaca": {
+  "centro": [
+   0.0,
+   1.12,
+   1.1
+  ],
+  "radio": 0.9
+ },
+ "fogon": {
+  "centro": [
+   0.0,
+   -0.1,
+   0.1
+  ],
+  "radio": 0.7
+ },
+ "tinaja": {
+  "centro": [
+   1.35,
+   1.55,
+   0.4
+  ],
+  "radio": 0.6
+ },
+ "cesto": {
+  "centro": [
+   -1.7,
+   -0.25,
+   0.2
+  ],
+  "radio": 0.5
+ },
+ "banco": {
+  "centro": [
+   1.45,
+   -0.55,
+   0.4
+  ],
+  "radio": 0.6
+ },
+ "puerta": {
+  "centro": [
+   0.0,
+   -2.4,
+   1.0
+  ],
+  "ancho": 1.2,
+  "alto": 2.0
+ },
+ "nota": "coordenadas en el marco de Blender (x, y, z arriba); en glTF (x, z, -y). Metros, a \u00d71,75."
+}
