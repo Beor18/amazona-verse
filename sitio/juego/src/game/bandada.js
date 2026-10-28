@@ -225,15 +225,13 @@ window.AVBandada = function (G) {
       const dist = Math.hypot(F.lider.x - S.pos.x, F.lider.z - S.pos.z);
       ok('Sale a lo lejos (más de 150 m)', dist > 150, Math.round(dist) + ' m');
       ok('Usan 3 o más especies (colores distintos)', new Set(F.aves.map(a => colores[a.sp % colores.length].id)).size >= 3 || colores.length < 3, colores.length + ' colores');
-      // El streaming de edificios puede cambiar los draw calls entre cuadros: 3 pares con y sin bandada, se queda la menor diferencia
-      await cuadros(8); let dif = Infinity, nota = '';
-      for (let i = 0; i < 3; i++) {
-        mat.visible = true; await cuadros(2); const con = G.renderer.stats().calls;
-        mat.visible = false; await cuadros(2); const base = G.renderer.stats().calls;
-        if (con - base < dif) { dif = con - base; nota = base + ' → ' + con; }
-      }
-      mat.visible = true;
-      ok('Suma 2 draw calls o menos', dif <= 2, nota);
+      // QA-51: el material no tiene «visible». stats() mezcla el streaming de otros cuadros, así que se dibuja la escena dos veces seguidas, con las mallas apagadas y encendidas.
+      const ver = on => { cerca.visible = !!on && cerca.count > 0; lejos.visible = !!on && lejos.count > 0; };
+      const info = G.renderer.renderer.info, cam3 = G.renderer.camera, sc = G.renderer.scene;
+      const una = () => { G.renderer.renderer.render(sc, cam3); return info.render.calls; };
+      ver(false); const base = una();
+      ver(true); const con = una();
+      ok('Suma 2 draw calls o menos', con - base >= 1 && con - base <= 2, base + ' → ' + con + ' · cerca ' + cerca.count + ' · lejos ' + lejos.count);
       let minD = 1e9, bien = true, pasos = 0, acompano = false;
       for (; F.estado !== 'off' && pasos < 3000; pasos++) {
         mover(0.1);

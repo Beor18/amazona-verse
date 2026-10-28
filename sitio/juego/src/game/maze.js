@@ -60,7 +60,7 @@
       persecucion: 'tres guardianes del musgo; si te alcanzan, «¡Te encontraron!» y el combo vuelve a x1 (sin daño, sin vidas)',
       puntuacion: 'frutos × combo + plumas doradas (50) + premio de rapidez + mapa entero (50)', tutorial: '10 s en la primera partida', pistas: 'huellas al fruto más cercano tras 12 s sin recoger nada', musica: 'retos/carreras (sin reiniciar)',
       resultados: ['puntos', 'mejor', 'nuevoRecord', 'tiempo', 'encontrada'], records: { clave: 'maze', campos: ['mejor', 'jugadas'], gancho: 'retosResultado' },
-      oculto: true,
+      oculto: false, // BI2: tarjeta en «¿Cómo quieres jugar?» y en Retos; también ?mini=maze y AV.maze()
     };
 
     // ---------- Parámetros (metros, segundos, casillas) ----------
@@ -818,7 +818,7 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       return (async () => {
         try {
           await crearPool(); sAntes = comparable(S);
-          check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, victoria, persecución, puntuación, música, resultados, récords) y oculto', ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'victoria', 'persecucion', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === true);
+          check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, victoria, persecución, puntuación, música, resultados, récords) y publicado (BI2)', ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'victoria', 'persecucion', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === false);
           const ok = await abrir();
           check('Entra con el mundo libre y el pool cargado (kit, frutos de banquete.js, guardianes)', ok === true && st.activo && raiz.parent === scene && ['tronco', 'roca', 'bambu', 'palma', 'guardian', 'fpalma', 'ftabonuco', 'ojo', 'pupila'].every(t => pool[t]), Object.keys(pool).join(','));
           const bqM = G.banquete && G.banquete._dev && G.banquete._dev.mundo && G.banquete._dev.mundo.mallas;

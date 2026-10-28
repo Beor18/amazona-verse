@@ -70,7 +70,8 @@ AVE.module('streaming', function (G) {
     lodH: 8,                                       // histéresis del LOD (m)
     hd: { bajo: 45, medio: 70, alto: 90 },        // m: la malla completa (16 materiales, atlas 4K) en todas las calidades. Kelvin, 26-oct: no se recorta lo gráfico.
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
-    // Solo kelvin_ruinas_yunque. Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
+    // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
+    // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
     ciudadVista: 220,                              // m al borde de la zona: carga el kit (el spawn, a ~290 m, no entra)
     ciudadMalla: 340,                              // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
     gracia: 3,                                     // s sin uso antes de soltar un modelo
@@ -188,24 +189,65 @@ AVE.module('streaming', function (G) {
     marcarAtlas(m.map); marcarAtlas(m.normalMap);
     afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
+    const esc = m.userData.avAtlasEsc = { value: 1 }; // tamaño del atlas / 4096 (reducirAtlas): corrige el lod sin recompilar
+    // F2.2 (carril B): en el atlas Savage, RoofThatched es la celda 4. Rojo teja, el uniforme lo apaga en Ancient.
+    // G18 (carril C): el atlas Ancient es ocre; con vibrant_toon se ve dorado. La piedra pasa a crema mate.
+    // Un solo programa (av-hd-atlas): cada uniforme actúa solo en su kit.
+    const teja = { value: m.name === 'AV_HD_Savage' ? 1 : 0 };
+    const esCrema = m.name === 'AV_HD_Ancient';
+    const uCrema = { value: esCrema ? 1 : 0 };
+    if (esCrema) { m.specular.setHex(0x000000); m.shininess = 1; }
     m.onBeforeCompile = sh => {
+      sh.uniforms.avAtlasEsc = esc;
+      sh.uniforms.avTeja = teja;
+      sh.uniforms.avCrema = uCrema;
       sh.vertexShader = sh.vertexShader
         .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
         .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\n' +
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
-          '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ', dy = dFdy( uv ) * ' + f(dentro) + ';\n' +
+          '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ' * avAtlasEsc, dy = dFdy( uv ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
           '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
-          '  float lod = clamp( log2( max( max( menor, mayor / 4.0 ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
+          '  float lod = clamp( log2( max( max( menor, mayor / 4.0 ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' + log2( avAtlasEsc ) );\n' +
           '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
         // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
         // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
-        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )'))
+        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
+          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.58, 0.22, 0.14), 0.84);\n' +
+          'if (avCrema > 0.5) {\n' +
+          '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+          '  vec3 piedra = mix( vec3( 0.58, 0.46, 0.32 ), vec3( 0.96, 0.86, 0.68 ), t );\n' +
+          '  float detalle = clamp( y / max( mix( 0.52, 0.86, t ), 0.2 ), 0.78, 1.16 );\n' +
+          '  diffuseColor.rgb = piedra * detalle;\n' +
+          '}\n')
         .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
+    reducirAtlas(m);
   }
+  // BJ1 (QA-52, QA-53): cada atlas de 4096 (difusa y normales) ocupa 85 MB en la GPU; en el móvil, el de la casa junto al punto
+  // de aparición llevaba el cap. 1 a 250 MB y subirlo al pulsar «Empezar» congelaba la pantalla. En calidad baja, y en el móvil
+  // fuera de alta, se queda en 2048 (celda 512, 21 MB): se dibuja una vez en un lienzo y se suelta el original. Al volver a una
+  // calidad mayor sigue en 2048 hasta que la zona se descarga y el modelo vuelve a bajar.
+  const MOVIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const atlasMax = () => nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+  function reducirAtlas(m) {
+    const max = atlasMax();
+    if (!max || !m.userData.avAtlasEsc) return;
+    for (const t of [m.map, m.normalMap]) {
+      const img = t && t.image;
+      if (!img || !(img.width > max)) continue;
+      const c = document.createElement('canvas');
+      c.width = max; c.height = Math.round(img.height * max / img.width);
+      try { c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); } catch (e) { continue; } // imagen sin leer: se queda
+      t.image = c; t.needsUpdate = true;
+      if (img.close) img.close(); // ImageBitmap del GLTFLoader: libera la copia de 64 MB en memoria
+    }
+    if (m.map && m.map.image) m.userData.avAtlasEsc.value = m.map.image.width / (HD.celdas * HD.celda);
+  }
+  G.on('calidad', () => { for (const k in mats) if (/^AV_HD_/.test(k)) reducirAtlas(mats[k].mat); });
   function material(src, fijo) {
     const k = src.name || src.uuid;
     let it = mats[k];
@@ -283,6 +325,19 @@ AVE.module('streaming', function (G) {
       const n = d.length / 4; c.multiply(new THREE.Color(r / n, g / n, b / n));
     } catch (e) { /* lienzo no disponible: color del material */ }
     return c;
+  }
+  // F2.2: las caras de arriba del tejado (normal hacia el cielo, en la mitad alta) pasan a rojo teja
+  // cálido. El color de vértice del _lejos estaba en ~0,11 y desde el aire no se leía. No se toca la geometría.
+  function techar(geo) {
+    const pos = geo.attributes.position, nor = geo.attributes.normal, col = geo.attributes.color;
+    if (!pos || !nor || !col) return;
+    let y1 = -1e9;
+    for (let i = 0; i < pos.count; i++) y1 = Math.max(y1, pos.getY(i));
+    const corte = y1 * 0.42;
+    for (let i = 0; i < pos.count; i++) {
+      if (nor.getY(i) > 0.32 && pos.getY(i) > corte) col.setXYZ(i, 0.70, 0.28, 0.18);
+    }
+    col.needsUpdate = true;
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
@@ -362,6 +417,24 @@ AVE.module('streaming', function (G) {
     const res = (n, tipo) => { const r = recursos[n] || (recursos[n] = {}); return r[tipo] || (r[tipo] = { n, tipo, refs: 0, estado: 'nada', promesa: null, partes: null, geo: null, mallas: [], soltarEn: 0, fijo: false }); };
     const analisis = {}; // modelo|escala → resultado de cfg.analizar
     const vecA = new THREE.Vector3(), quatA = new THREE.Quaternion(), escA = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    // ruina_torre_f mide 6,6 m en Y y 2,3 m en planta. En la ciudad la matriz del export le aplica
+    // un cabeceo de −90° y la torre queda acostada: desde el sureste se lee como un gancho.
+    // El modelo ya es Y-arriba. Se conservan el rumbo, la escala uniforme y el origen.
+    const ejeT = new THREE.Vector3(), ejeYT = new THREE.Vector3(0, 1, 0), ejeZT = new THREE.Vector3();
+    function enderezarTorreY(I) {
+      I.m.decompose(vecA, quatA, escA);
+      ejeT.set(1, 0, 0).applyQuaternion(quatA); ejeT.y = 0;
+      if (ejeT.lengthSq() < 1e-8) ejeT.set(1, 0, 0);
+      ejeT.normalize();
+      ejeZT.crossVectors(ejeT, ejeYT).normalize();
+      const s = (escA.x + escA.y + escA.z) / 3;
+      I.m.makeBasis(ejeT, ejeYT, ejeZT);
+      I.m.scale(escA.set(s, s, s));
+      I.m.setPosition(vecA);
+      I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = s; I.erguido = true;
+      const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
+    }
+    const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
 
     function construir() {
       const kit = KIT();
@@ -377,6 +450,7 @@ AVE.module('streaming', function (G) {
           I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = (escA.x + escA.y + escA.z) / 3;
           const ey = new THREE.Vector3(0, 1, 0).applyQuaternion(quatA); I.erguido = ey.y > 0.95;
           const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
+          if (c.zona === 'kelvin_ruinas_yunque' && c.n === 'ruina_torre_f' && !I.erguido) enderezarTorreY(I);
         } else {
           const x = c.pos[0], z = c.pos[2], suelo = T.height(x, z);
           const y = c.op.yExacta && c.pos[1] != null ? c.pos[1] : c.pos[1] != null ? Math.min(c.pos[1], suelo) : suelo;
@@ -468,6 +542,10 @@ AVE.module('streaming', function (G) {
           .then(() => { enVuelo--; siguiente(); });
       }
     }
+    function tieneTeja(n) {
+      const k = KIT(), mats = k && k[n] && k[n].mats;
+      return !!(mats && mats.some(m => /RoofThatched/i.test(m)));
+    }
     function procesar(r, root) {
       root.updateMatrixWorld(true);
       const grupos = new Map(), usados = new Set();
@@ -486,6 +564,7 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
+        if (tieneTeja(r.n)) techar(r.geo);
       } else {
         r.partes = [];
         for (const [, gr] of grupos) {
@@ -651,7 +730,7 @@ AVE.module('streaming', function (G) {
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
         // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
         // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
-        if (Z.id === 'kelvin_ruinas_yunque') {
+        if (esCiudad(Z.id)) {
           const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista + (Z.ciudad ? H : 0);
           if (Z.ciudad !== quiere) {
             Z.ciudad = quiere;
@@ -929,6 +1008,14 @@ AVE.module('streaming', function (G) {
         const beige = ZC.malla && ZC.malla.visible;
         check('La ciudad del tepuy, desde el aire, usa el kit con textura y no la silueta beige', ZC.ciudad && ZC.nivel >= 1 && seC.visiblesHD > 0 && !beige,
           'hd ' + seC.visiblesHD + ' · cerca ' + seC.visiblesCerca + ' · lejos ' + seC.visiblesLejos + ' · ciudad ' + !!ZC.ciudad + ' · silueta ' + !!beige);
+        const torresF = (ST.instancias || []).filter(I => I.zona === 'kelvin_ruinas_yunque' && I.modelo === 'ruina_torre_f');
+        check('Las torres F de la ciudad están erguidas (el export las tumbaba y se leían como ganchos)', torresF.length === 3 && torresF.every(I => I.erguido), torresF.map(I => I.id + (I.erguido ? '' : ' tumbada')).join(', '));
+        const Z2 = ST.zonas.kelvin_ruinas_yunque_2;
+        check('El conjunto de torres de la izquierda usa el kit en la vista aérea', !!(Z2 && Z2.ciudad && Z2.nivel >= 1), Z2 ? 'ciudad ' + !!Z2.ciudad + ' · nivel ' + Z2.nivel + ' · d ' + Math.round(Z2.d) : 'sin zona');
+        let matCrema = null;
+        scene.traverse(o => { const m = o.material; if (m && m.name === 'AV_HD_Ancient') matCrema = m; });
+        const claveCrema = matCrema && matCrema.customProgramCacheKey ? String(matCrema.customProgramCacheKey()) : '';
+        check('La piedra Ancient del kit es crema mate (sin brillo especular)', !!(matCrema && matCrema.shininess === 1 && matCrema.specular && matCrema.specular.r === 0 && matCrema.userData && matCrema.userData.avAtlasEsc), claveCrema || 'sin material');
         await ir(x0, z0); ST.liberarYa(); dibujar();
         check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
       }

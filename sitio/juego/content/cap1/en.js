@@ -1364,4 +1364,7 @@ window.AV_EN = {
  "Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.": "Drive the sugar-cane train along the coast and the forest. Pick the track at the switches, slow down on the curves and deliver each load to its station.",
  "Termina lo que estás haciendo y vuelve a probar el tren.": "Finish what you are doing and try the train again.",
  "No se pudo abrir el tren. Prueba otra vez.": "The train could not open. Try again.",
+ // Amazona Maze (src/game/maze.js, BI2): tarjetas del menú y de Retos; el juego traduce lo suyo con su diccionario
+ "Frutos en el laberinto y guardianes": "Fruit in the maze and guardians",
+ "Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.": "Walk the cay's maze and gather all the fruit. The moss guardians are looking for you: if they find you, the combo drops back to x1.",
 };

@@ -543,11 +543,47 @@
     const modoCam = () => (aspecto() < 1 ? 'vertical' : 'ancho');
     function reencuadrar() { if (!st.activo) return; const f = CAMS[modoCam()].fov; if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = f; R.camera.updateProjectionMatrix(); } }
     addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
-    const _cq = {}, _cw = {};
+    const _cq = {}, _cw = {}, _ct = {};
+    // Metros del techo (malla del terreno o puente) sobre el agua, en el centro del cauce. QA-49: un triángulo de pasto que cruza el río, o un puente, deja la cámara debajo y tapa la pantalla.
+    function cubiertaEn(x, z) {
+      const ps = G.terreno.plataformas, fn = G.terreno.platformTop;
+      if (!ps) return -Infinity;
+      let t = -Infinity;
+      for (let i = 0; i < ps.length; i++) {
+        const p = ps[i];
+        if (p.tipo !== 'puente' && p.tipo !== 'rampa') continue;
+        const y = fn && fn(p, x, z);
+        if (y === y && y > t) t = y; // encima del tablero
+        if (p.ax == null) continue;
+        const ux = p.bx - p.ax, uz = p.bz - p.az, L2 = ux * ux + uz * uz || 1;
+        let u = ((x - p.ax) * ux + (z - p.az) * uz) / L2; u = u < 0 ? 0 : u > 1 ? 1 : u;
+        const d = Math.hypot(x - (p.ax + ux * u), z - (p.az + uz * u));
+        // El cauce muestreado puede quedar a un par de metros del eje: igual hay que ver el tablero, no su parte de abajo.
+        if (d <= (p.ancho || 1.5) / 2 + 3) { const alt = p.ay + (p.by - p.ay) * u; if (alt > t) t = alt; }
+      }
+      return t;
+    }
+    function techoEn(s) {
+      const q = enCauce(s, _ct);
+      let top = H(q.x, q.z);
+      const sy = G.terreno.surfaceY;
+      if (sy) top = Math.max(top, sy(q.x, q.z, top + 40));
+      const cub = cubiertaEn(q.x, q.z);
+      if (cub > top) top = cub;
+      return top - q.y;
+    }
     function camObjetivo(out) {
       const c = CAMS[modoCam()], q = enCauce(J.s - c.atras, _cq), l = clamp(J.lado * 0.7, q.lo + 0.3, q.hi - 0.3), w = mundo(q, l, _cw);
-      const y = Math.max(q.y, enCauce(J.s, _qq).y) + c.alto;
-      return out.set(w.x, Math.max(y, H(w.x, w.z) + 1.2), w.z);
+      const agua = enCauce(J.s, _qq).y;
+      let y = Math.max(q.y, agua) + c.alto;
+      y = Math.max(y, H(w.x, w.z) + 1.2);
+      let techo = -Infinity;
+      for (let ds = -c.atras; ds <= c.adelante + 4; ds += 3) {
+        const sobre = techoEn(J.s + ds);
+        if (sobre > 2.5) techo = Math.max(techo, agua + sobre);
+      }
+      if (techo > -Infinity) y = Math.min(Math.max(y, techo + 1.35), y + 14);
+      return out.set(w.x, y, w.z);
     }
     function camMira(out) { const c = CAMS[modoCam()], q = enCauce(J.s + c.adelante, _cq), w = mundo(q, J.lado * 0.85, _cw); return out.set(w.x, enCauce(J.s, _qq).y + c.mY, w.z); }
     function camFollow(dt) {
@@ -911,6 +947,17 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           check('Cámara detrás (río arriba) y por encima de la canoa', vm.detras > 0.8 && vd.detras > 0.8 && vm.alto > 2 && vd.alto > 2, 'detrás ' + vd.detras.toFixed(2) + ' · alto ' + vd.alto.toFixed(1) + ' m');
           check('Móvil vertical (390×844), primer cuadro: Vittata ≥ 12 % del alto, la canoa entera a la vista y ≥ 25 % del ancho', enV(vm.V) && vm.tam >= 0.12 && canoaEnV(vm) && (vm.canoa.x1 - vm.canoa.x0) / 2 >= 0.25, 'Vittata ' + (vm.tam * 100).toFixed(0) + '% (' + vm.hv.toFixed(2) + ' m) · canoa ' + ((vm.canoa.x1 - vm.canoa.x0) * 50).toFixed(0) + '% del ancho');
           check('Escritorio (16:9): Vittata ≥ 8 % del alto y la canoa entera a la vista', enV(vd.V) && vd.tam >= 0.08 && canoaEnV(vd), 'Vittata ' + (vd.tam * 100).toFixed(0) + '%');
+          // QA-49: donde el centro del cauce tiene un techo (pasto o puente), la cámara queda por encima y no se ve la losa
+          { const s0 = J.s, l0 = J.lado, pos = new THREE.Vector3(); let mal = 0, peor = 0, en = 0, techos = 0;
+            for (let s = 0; s <= C.largo; s += 4) {
+              const q = enCauce(s, {});
+              let top = H(q.x, q.z); if (G.terreno.surfaceY) top = Math.max(top, G.terreno.surfaceY(q.x, q.z, top + 40));
+              if (!(top > q.y + 2.5)) continue;
+              techos++; J.s = s; J.lado = 0; camObjetivo(pos);
+              if (pos.y < top + 0.8) { mal++; peor = Math.max(peor, top - pos.y); en = s; }
+            }
+            J.s = s0; J.lado = l0;
+            check('QA-49: donde el cauce tiene techo, la cámara queda por encima (no pasa bajo la losa)', mal === 0, techos + ' techos · ' + mal + ' sin despejar · peor ' + peor.toFixed(1) + ' m en s=' + Math.round(en)); }
           // ---------- Control: teclas y un dedo ----------
           st.sinFx = true;
           check('Antes de mover nada la canoa espera (fase listo)', st.fase === 'listo' && (paso(0.5), st.fase === 'listo' && J.s === P.inicio));
@@ -980,7 +1027,8 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           check('Reinicio: puntos 0, fase listo, filas nuevas delante', J.puntos === 0 && st.fase === 'listo' && filas.length >= 2 && st.ui.fin.hidden);
           // ---------- 50 reinicios: sin fugas ----------
           colocar(1 / 60); await dosCuadros();
-          const m0 = mem(), capOk = [];
+          const mallasRio = () => { let n = 0; raiz.traverse(o => { if (o.isMesh) n++; }); return n; };
+          const m0 = mem(), nRio0 = mallasRio(), capOk = [];
           for (let i = 0; i < 50; i++) {
             otraVez(); arrancar(); robot(1 / 30, 300 + (i % 7) * 20); colocar(1 / 30);
             capOk.push(Object.keys(pool).every(t => pool[t].libres.length >= 0 && pool[t].libres.length <= CAP[t] && new Set(pool[t].libres).size === pool[t].libres.length));
@@ -988,7 +1036,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           }
           await dosCuadros();
           const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas)', m1.g <= m0.g && m1.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          check('50 reinicios: el pool del río no crece (el mundo puede cargar puentes y terreno mientras tanto)', mallasRio() <= nRio0 && m1.t <= m0.t + 8, 'mallas ' + nRio0 + ' → ' + mallasRio() + ' · ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- AC2 · clásico: medallas, el «casi», la siguiente meta y el ranking (reto rio_rush) ----------
           st.modo = 'puntos';
@@ -1048,17 +1096,32 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
             check('Menú «¿Cómo quieres jugar?»: tarjeta River Rush con subtítulo y es submit', !!tarj && tarj.type === 'submit' && tarj.value === 'river' && !!tarj.querySelector('svg.modo-img') && /canoa/.test(tarj.querySelector('small').textContent)); }
           { const rt = G.retosApi; const u = rt && rt.pruebas && rt.pruebas.ui ? rt.pruebas.ui() : null;
             check('Retos: tarjeta de River Rush con su récord', !rt || (u && !!u.menu.querySelector('[data-jugar="rio_rush"]') && !!u.menu.querySelector('[data-rec="rio_rush"]'))); }
+          // QA-49 · el puente colgante (se carga con el mundo; a esta altura de la prueba ya está)
+          { let n = 0; while (n < 20 && !(G.terreno.plataformas || []).some(p => p.tipo === 'puente')) { await new Promise(r => setTimeout(r, 100)); n++; }
+            const ps = (G.terreno.plataformas || []).filter(p => p.tipo === 'puente');
+            const s0 = J.s, l0 = J.lado, pos = new THREE.Vector3(); let mal = 0, nota = ps.length + ' puentes';
+            for (const p of ps) {
+              const mx = (p.ax + p.bx) / 2, mz = (p.az + p.bz) / 2, my = (p.ay + p.by) / 2;
+              let best = 1e9, sB = 0;
+              for (let s = 0; s <= C.largo; s += 2) { const q = enCauce(s, {}); const d = (q.x - mx) * (q.x - mx) + (q.z - mz) * (q.z - mz); if (d < best) { best = d; sB = s; } }
+              if (best > 25) continue;
+              J.s = sB; J.lado = 0; camObjetivo(pos);
+              if (pos.y < my + 0.6) { mal++; nota += ' · s=' + Math.round(sB) + ' cam ' + pos.y.toFixed(1) + ' < ' + my.toFixed(1); }
+            }
+            J.s = s0; J.lado = l0;
+            check('QA-49: la cámara queda por encima de los puentes del cauce', ps.length > 0 && mal === 0, nota); }
           // ---------- Salir ----------
-          await dosCuadros(); // (el fantasma se dibuja y se libera de forma asíncrona: el recuento de memoria necesita cuadros)
+          await dosCuadros(); // (el fantasma se dibuja: el recuento de memoria necesita cuadros antes de salir)
+          const mFin = mem();
           salir();
           check('Al salir se quitan las envolturas y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('river-on') && !document.body.classList.contains('retos-on'));
           check('Al salir G.quiet vuelve y el mundo no queda en pausa', G.quiet === quiet0 && G.pausa.activa() === pausa0);
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
           check('Récords reales intactos', leer(ALMACEN) === recReal);
           check('Nada del río queda en la escena: pool y canoa liberados', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && !canoa && filas.length === 0 && racimos.length === 0);
-          await dosCuadros();
           const m2 = mem();
-          check('Al salir las geometrías y texturas bajan de las de la partida', m2.g < m0.g && m2.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
+          // QA-51: se compara con el momento de salir, no con el principio de la prueba. El streaming del mundo suma geometrías mientras el robot baja el río y un «m2 < m0» sale en rojo aunque el río sí se libere.
+          check('Al salir las geometrías y texturas bajan de las de la partida', m2.g < mFin.g && m2.t <= mFin.t, JSON.stringify(mFin) + ' → ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }

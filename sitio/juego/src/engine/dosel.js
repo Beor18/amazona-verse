@@ -53,12 +53,18 @@ window.AVDosel = function (G) {
     mat.onBeforeCompile = sh => {
       sh.uniforms.uCerca = uCerca; sh.uniforms.uHundir = uHundir;
       // en el anillo cercano el dosel se hunde hasta el suelo (aAlt: altura sobre el suelo) en vez de cortarse en seco: sin «cáscara»
-      sh.vertexShader = 'attribute float aAlt; uniform vec2 uHundir; varying float vDoselD;\n' + sh.vertexShader.replace('#include <begin_vertex>',
+      sh.vertexShader = 'attribute float aAlt; uniform vec2 uHundir; varying float vDoselD; varying float vDoselAlt; varying vec2 vDoselXZ;\n' + sh.vertexShader.replace('#include <begin_vertex>',
         '#include <begin_vertex>\n  transformed.y -= aAlt * (1.0 - smoothstep(uHundir.x, uHundir.y, length(transformed.xz - cameraPosition.xz)));').replace('#include <project_vertex>',
-        '#include <project_vertex>\n  vec4 dW = modelMatrix * vec4(transformed, 1.0); vDoselD = length(dW.xz - cameraPosition.xz);');
+        '#include <project_vertex>\n  vec4 dW = modelMatrix * vec4(transformed, 1.0); vDoselD = length(dW.xz - cameraPosition.xz); vDoselAlt = aAlt; vDoselXZ = dW.xz;');
       // de cerca no hay dosel: los árboles en malla e impostor; en la banda, tramado (sin ordenar transparencias)
-      sh.fragmentShader = 'uniform vec2 uCerca; varying float vDoselD;\nfloat doselIgn(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }\n' +
-        sh.fragmentShader.replace('void main() {', 'void main() {\n  if (doselIgn(gl_FragCoord.xy) >= smoothstep(uCerca.x, uCerca.y, vDoselD)) discard;');
+      // BE7: sin esto la manta se ve lisa y lima, como plástico. Copas de ~5 m con ruido de valor (dos octavas) y los huecos
+      // entre copas más oscuros (aAlt bajo), como la oclusión del render de 2022
+      sh.fragmentShader = 'uniform vec2 uCerca; varying float vDoselD; varying float vDoselAlt; varying vec2 vDoselXZ;\nfloat doselIgn(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }\n' +
+        'float doselH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n' +
+        'float doselRuido(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(doselH(i), doselH(i + vec2(1.0, 0.0)), f.x), mix(doselH(i + vec2(0.0, 1.0)), doselH(i + 1.0), f.x), f.y); }\n' +
+        sh.fragmentShader.replace('void main() {', 'void main() {\n  if (doselIgn(gl_FragCoord.xy) >= smoothstep(uCerca.x, uCerca.y, vDoselD)) discard;')
+          .replace('#include <color_fragment>', '#include <color_fragment>\n  float dCopa = doselRuido(vDoselXZ / 5.0) * 0.65 + doselRuido(vDoselXZ / 2.1 + 17.0) * 0.35;\n' +
+            '  diffuseColor.rgb *= mix(0.5, 1.0, smoothstep(0.5, 7.5, vDoselAlt)) * mix(0.68, 1.1, dCopa);');
     };
     mesh = new THREE.Mesh(geo, mat);
     mesh.name = 'flora:dosel'; mesh.frustumCulled = false; mesh.castShadow = mesh.receiveShadow = false;

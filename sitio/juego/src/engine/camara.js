@@ -8,8 +8,11 @@
      plataformas 3D); sigue al jugador si sube mucho, si cae por debajo, al volar y al nadar.
    - Seguimiento perezoso: si el jugador no toca la cámara en CAM.lazyDelay s y se mueve, se coloca poco a poco detrás de él
      (no cuando corre hacia la cámara). G.camara.manual() lo pausa (input.js lo llama al arrastrar y con Q/R).
-   - En laderas y barrancos no se mete bajo el terreno.
+   - En laderas y barrancos no se mete bajo el terreno, ni dentro de un muro (retrocede por la línea hasta Vittata).
    - Agachada bajo un toldo o un alero (MOVE.agachada), baja y se acerca para que la lona no la tape.
+   - QA-61: volando, una copa no acerca la cámara por debajo del 82 % de distFly (antes bajaba a 2,4 m y la vista
+     se agrandaba como un zoom). Posada, sigue acercándose para verla (QA-27). El pellizco (rueda con Ctrl
+     o gesto) no hace zoom de página, y el FOV de exploración no se queda en el de un minijuego.
    Dato del pack: jugador.camara (giro inicial, 0,35 por defecto) y jugador.camaraAjuste = { clave: valor } sobre CAM. */
 AVE.module('camara', function (G) {
   'use strict';
@@ -43,6 +46,9 @@ AVE.module('camara', function (G) {
   const vida = { roll: 0, caida: 0, fase: 0, plano: 0, planoDir: 1, rumbo: null, giro: 0, land: 0 };
   const quieta = () => R.REDUCED || CAM.sinVida;
   const rate = (k, dt) => 1 - Math.exp(-dt * k);
+  // QA-61: el pellizco del trackpad (rueda + Ctrl) y el gesto del móvil no agrandan la página.
+  addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) e.preventDefault(); }, { passive: false });
+  for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) addEventListener(ev, e => e.preventDefault(), { passive: false });
 
   function manual() { lastManual = now(); }
   function dist() { return G.fisica.MOVE.flying ? CAM.distFly : CAM.dist; }
@@ -57,12 +63,12 @@ AVE.module('camara', function (G) {
     anchorY += (want - anchorY) * rate(k, dt);
   }
   // Copas de árbol entre la cámara y Vittata (QA-27): esferas de copa de los árboles cercanos (se rehacen cada 0,5 s)
-  const copas = []; let copasT = -1;
+  const copas = []; let copasT = -1, copasExtra = null;
   const cabeza = new THREE.Vector3(), dirCam = new THREE.Vector3();
   function copasCerca() {
-    const V = G.vegetacion, now = performance.now();
-    if (!V || !V.instancias || !V.info || now - copasT < 500) return;
-    copasT = now; copas.length = 0;
+    const V = G.vegetacion, ahora = performance.now();
+    if (!V || !V.instancias || !V.info || ahora - copasT < 500) return;
+    copasT = ahora; copas.length = 0;
     for (const m in V.instancias) {
       const inf = V.info[m], P = V.instancias[m]; if (!inf || !inf.alto || inf.alto < 3 || !(inf.tronco > 0.08)) continue;
       for (let i = 0; i < P.n; i++) {
@@ -72,17 +78,26 @@ AVE.module('camara', function (G) {
       }
     }
   }
+  // Lista de este cuadro: las copas reales y, en la prueba, esferas de más. probarCopas(null) las quita.
+  function copasAhora() {
+    copasCerca();
+    if (!copasExtra || !copasExtra.length) return copas;
+    const out = copas.slice();
+    for (let i = 0; i < copasExtra.length; i++) { const c = copasExtra[i]; out.push(c[0], c[1], c[2], c[3]); }
+    return out;
+  }
+  function probarCopas(lista) { copasExtra = lista && lista.length ? lista : null; copasT = -1; }
   // Acerca la cámara si la línea cabeza→cámara cruza una copa; si Vittata está dentro de una (posada en una rama),
   // la cámara baja bajo la copa, cerca de ella, mirando hacia arriba
   function evitarCopas() {
     // solo posada o en alto (rama, techo, vuelo bajo copas): a ras de suelo la cámara no salta al pasar junto a los árboles
     const M = G.fisica.MOVE; if (!M.posado && S.pos.y - G.terreno.height(S.pos.x, S.pos.z) < 1.5) return;
-    copasCerca(); if (!copas.length) return;
+    const lista = copasAhora(); if (!lista.length) return;
     cabeza.set(S.pos.x, S.pos.y + 1.2, S.pos.z); dirCam.subVectors(camPos, cabeza);
     const L2 = dirCam.lengthSq(); if (L2 < 1e-6) return;
     let tMin = 1, dentro = false;
-    for (let i = 0; i < copas.length; i += 4) {
-      const ox = cabeza.x - copas[i], oy = cabeza.y - copas[i + 1], oz = cabeza.z - copas[i + 2], r = copas[i + 3];
+    for (let i = 0; i < lista.length; i += 4) {
+      const ox = cabeza.x - lista[i], oy = cabeza.y - lista[i + 1], oz = cabeza.z - lista[i + 2], r = lista[i + 3];
       const c = ox * ox + oy * oy + oz * oz - r * r;
       if (c < 0) { dentro = true; continue; }
       const b = ox * dirCam.x + oy * dirCam.y + oz * dirCam.z; if (b >= 0) continue;
@@ -90,8 +105,45 @@ AVE.module('camara', function (G) {
       const t = (-b - Math.sqrt(disc)) / L2; if (t > 0 && t < tMin) tMin = t;
     }
     const L = Math.sqrt(L2);
-    if (dentro) { const k = Math.min(1, CAM.copaDentro / L); camPos.set(cabeza.x + dirCam.x * k, S.pos.y - 0.3, cabeza.z + dirCam.z * k); }
-    else if (tMin < 1) { const k = Math.max(CAM.copaMin / L, tMin - 0.4 / L); camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
+    // Posada: se acerca para verla (QA-27). Volando, el piso es el 82 % de distFly: bajar a copaMin (2,4 m)
+    // agrandaba la vista como un zoom cada vez que una copa cruzaba la línea (QA-61).
+    const piso = M.posado ? CAM.copaMin : Math.max(CAM.copaMin, CAM.distFly * 0.82);
+    if (dentro && M.posado) { const k = Math.min(1, CAM.copaDentro / L); camPos.set(cabeza.x + dirCam.x * k, S.pos.y - 0.3, cabeza.z + dirCam.z * k); }
+    else if (tMin < 1 || dentro) { const k = Math.min(1, Math.max(piso / L, dentro ? piso / L : tMin - 0.4 / L)); if (k < 0.995) camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
+  }
+  // Si el encuadre cae dentro de un muro, un tejado o una cúpula, retrocede por la línea hasta quedar fuera.
+  // Si eso la dejaría a menos de 3,2 m (la vista se agrandaba al chocar), prueba a rodear el obstáculo.
+  function evitarMuros() {
+    if (!G.solidos || !G.solidos.activo) return;
+    const qx = camPos.x, qy = camPos.y, qz = camPos.z, hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z;
+    const libre = (dx, dy, dz) => {
+      const L = Math.hypot(dx, dy, dz);
+      if (L < 1.6) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
+      const n = Math.max(1, Math.ceil(L / 0.3)); let corte = -1;
+      for (let i = 1; i <= n; i++) {
+        const t = i / n;
+        if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { corte = i - 1; break; }
+      }
+      if (corte < 0) return { x: hx + dx, y: hy + dy, z: hz + dz, d: Math.hypot(dx, dz) };
+      const k = Math.max(1.6 / L, corte / n);
+      let x = hx + dx * k, y = hy + dy * k, z = hz + dz * k;
+      const top = G.solidos.dentro(x, z, y);
+      if (top > -Infinity) y = top + 0.6;
+      return { x, y, z, d: Math.hypot(x - hx, z - hz) };
+    };
+    const dx0 = qx - hx, dy0 = qy - hy, dz0 = qz - hz;
+    let best = libre(dx0, dy0, dz0);
+    // Vuelta completa: un tejado ancho tapa los lados, y el hueco libre queda detrás de Vittata.
+    if (best.d < 3.2) {
+      const dh = Math.hypot(dx0, dz0) || CAM.dist, ang0 = Math.atan2(dx0, dz0);
+      for (let s = 1; s <= 8 && best.d < 3.2; s++) for (const sig of [1, -1]) for (const dy of [dy0, 0.35]) {
+        const a = ang0 + s * 0.4 * sig, r = libre(Math.sin(a) * dh, dy, Math.cos(a) * dh);
+        if (r.d > best.d + 0.05) best = r;
+      }
+    }
+    camPos.set(best.x, best.y, best.z);
+    const suelo = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
+    if (camPos.y < suelo) camPos.y = suelo;
   }
   // ¿Se ve «mira» desde q sin copas en medio? (fotos del cómic, QA-32). Si mira o q están dentro de una copa, no: posada en
   // la rama de un flamboyán, las hojas la tapan desde cualquier ángulo (medido) y el cómic usa su ilustración
@@ -119,8 +171,7 @@ AVE.module('camara', function (G) {
     // En laderas y barrancos la cámara no se mete bajo el terreno
     const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
     if (camPos.y < gy) camPos.y = gy;
-    // Tampoco dentro de un edificio, una roca o un árbol (solidos.js): sube por encima
-    if (G.solidos && G.solidos.activo) { const t = G.solidos.dentro(camPos.x, camPos.z, camPos.y); if (t > -Infinity) camPos.y = t + 0.6; }
+    evitarMuros();
   }
   const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look - 0.5 * (G.fisica.MOVE.flying ? 0 : G.fisica.MOVE.agachada || 0);
   // Coloca la cámara: snap = al instante (cargar, capturas); también deja al jugador y al aprendiz en su sitio
@@ -189,7 +240,12 @@ AVE.module('camara', function (G) {
   }
   function fov(dt) {
     const wantFov = 55 + fovExtra();
-    if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov += (wantFov - camera.fov) * Math.min(1, dt * 5); camera.updateProjectionMatrix(); }
+    let dirty = false;
+    // Un minijuego puede dejar el FOV en 34 o el zoom de la cámara en otro valor: aquí vuelve al de exploración.
+    if (!(camera.fov > 30 && camera.fov < 100)) { camera.fov = wantFov; dirty = true; }
+    if (camera.zoom !== 1) { camera.zoom = 1; dirty = true; }
+    if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov += (wantFov - camera.fov) * Math.min(1, (dt || 0) * 5); dirty = true; }
+    if (dirty) camera.updateProjectionMatrix();
   }
   // Dibuja: la sacudida se suma solo durante el dibujo para no ensuciar el seguimiento de la cámara
   function draw(dt) {
@@ -208,6 +264,6 @@ AVE.module('camara', function (G) {
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas,
     get anchorY() { return anchorY; } };
 });

@@ -77,7 +77,7 @@
       flight: ['Amazona Flight', 'Amazona Flight'], obstaculos: ['Obstáculos superados', 'Obstacles passed'], // src/game/flight.js (C14, oculto hasta la fase 3)
       tren: ['El tren de Vittata', "Vittata's Train"], // src/game/tren.js (C16, publicado)
       rio_rush: ['River Rush', 'River Rush'], contrarreloj: ['Contrarreloj hasta el mar', 'Time trial to the sea'], // src/game/river_rush.js (AC2, publicado)
-      maze: ['Amazona Maze', 'Amazona Maze'], // src/game/maze.js (AB1, oculto)
+      maze: ['Amazona Maze', 'Amazona Maze'], // src/game/maze.js (AB1, publicado en BI2)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
       rankTitulo: ['Publicar en el ranking', 'Post to the leaderboard'], rankTexto: ['Elige tu apodo de animal. No se guarda nada personal: solo el apodo y tu marca.', 'Pick your animal nickname. Nothing personal is saved: just the nickname and your score.'],
       rankAnimal: ['Animal', 'Animal'], rankAdj: ['Cualidad', 'Quality'], rankNum: ['Número', 'Number'], rankAzar: ['Otro al azar', 'Another at random'], rankPub: ['Publicar', 'Post'],
@@ -445,8 +445,8 @@
       const tren = `<article class="rec-card"><h4>${esc(tx('tren'))}</h4>${tn.mejor ? `<div class="rec-grande">${medalla(tn.mejor >= 650 ? 'oro' : tn.mejor >= 450 ? 'plata' : tn.mejor >= 250 ? 'bronce' : '', '★')}<div><b class="rec-num">${tn.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), tn.jugadas)}</dl></article>`;
       const rr = d.retos.rio_rush || { mejor: null, jugadas: 0, reloj: null, medallaReloj: null, jugadasReloj: 0 }; // src/game/river_rush.js (AC2, publicado: la tarjeta sale siempre)
       const rioRush = `<article class="rec-card"><h4>${esc(tx('rio_rush'))}</h4>${rr.mejor ? `<div class="rec-grande">${medalla(rr.mejor >= 250 ? 'oro' : rr.mejor >= 120 ? 'plata' : rr.mejor >= 40 ? 'bronce' : '', '★')}<div><b class="rec-num">${rr.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), rr.jugadas)}${rr.reloj ? dato(tx('contrarreloj'), `${rr.medallaReloj ? medalla(rr.medallaReloj, '★') + ' ' : ''}${esc(reloj(rr.reloj / 1000))}`) : ''}</dl></article>`;
-      const mz = d.retos.maze; // src/game/maze.js (AB1, oculto): la tarjeta sale solo si se jugó
-      const maze = !mz ? '' : `<article class="rec-card"><h4>${esc(tx('maze'))}</h4>${mz.mejor ? `<div class="rec-grande"><div><b class="rec-num">${mz.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), mz.jugadas)}</dl></article>`;
+      const mz = d.retos.maze || { mejor: null, jugadas: 0 }; // src/game/maze.js (BI2, publicado: la tarjeta sale siempre)
+      const maze = `<article class="rec-card"><h4>${esc(tx('maze'))}</h4>${mz.mejor ? `<div class="rec-grande">${medalla(mz.mejor >= 900 ? 'oro' : mz.mejor >= 500 ? 'plata' : mz.mejor >= 200 ? 'bronce' : '', '★')}<div><b class="rec-num">${mz.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), mz.jugadas)}</dl></article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
         <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}${tren}${rioRush}${maze}</div>${sellos(d)}</section>`;
     }
@@ -456,12 +456,13 @@
       const nivel = {
         carrera: R.carrera.puesto ? (R.carrera.puesto === 1 ? 2 : R.carrera.puesto === 2 ? 1 : R.carrera.puesto === 3 ? 0 : -1) : -1,
         tormenta: R.tormenta.mejor ? (R.tormenta.mejor >= 1500 ? 2 : R.tormenta.mejor >= 800 ? 1 : 0) : -1,
-        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1, tren: R.tren ? por(R.tren.mejor, 450, 650) : -1, // tren (C16): bronce 250
+        rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1, tren: R.tren ? por(R.tren.mejor, 450, 650) : -1, maze: R.maze ? por(R.maze.mejor, 500, 900) : -1, // tren (C16): bronce 250; maze (BI2): bronce 200
       };
       if (R.flight && R.flight.mejor && R.flight.mejor < 10 && nivel.flight === 0) nivel.flight = -1;
       if (R.tren && R.tren.mejor && R.tren.mejor < 250 && nivel.tren === 0) nivel.tren = -1; // src/game/tren.js (C16)
+      if (R.maze && R.maze.mejor && R.maze.mejor < 200 && nivel.maze === 0) nivel.maze = -1; // src/game/maze.js (BI2)
       { const z = R.rio_rush || {}, p = z.mejor >= 250 ? 2 : z.mejor >= 120 ? 1 : z.mejor >= 40 ? 0 : -1; nivel.rio_rush = Math.max(p, ord.indexOf(z.medallaReloj)); } // River Rush (AC2): la mejor de puntos y contrarreloj
-      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight', 'tren', 'rio_rush'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
+      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight', 'tren', 'rio_rush', 'maze'].map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
       return `<h4 class="rec-sellos-t">${esc(tx('sellos'))} <small>${esc(tx('sellosNota'))}</small></h4><ul class="rec-sellos">${filas}</ul>`;
     }
     function htmlHistoria(d) {

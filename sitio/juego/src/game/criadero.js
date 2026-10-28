@@ -1289,10 +1289,11 @@ AVE.module('criadero', function (G) {
 
 
   // =====================================================================================================================
-  // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión o, antes, cuando se cumple
-  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Iguaca, minuto 2; DIVERSION_CAP1 mejora 2);
-  // Iguaca lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
-  // la plaza o el inicio.
+  // El nido en el mundo y el botón «Nido» del HUD. Si el pack trae `criadero.desde` como evento (cap. 1: LumaHelped;
+  // ep. 2: SiteChosen), esa puerta manda sola: la primera misión no lo abre antes (QA-62, el aviso cortaba
+  // «cuéntale a Iguaca»). Sin esa puerta, o si `desde` es una función de prueba, sigue el atajo de la primera misión.
+  // `soloDesde: true` obliga la puerta aunque `desde` sea una función. Iguaca lo presenta una vez.
+  // Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'), la plaza o el inicio.
   // =====================================================================================================================
   function desdeCumplido() {
     const d = (G.pack.criadero || {}).desde;
@@ -1300,7 +1301,13 @@ AVE.module('criadero', function (G) {
     if (typeof d === 'function') { try { return !!d(G); } catch (e) { return false; } }
     return !!(G.eventos && G.eventos.had && G.eventos.had(d));
   }
-  const nidoActivo = () => !!D() && (misionesHechas().size > 0 || desdeCumplido());
+  // Un nombre de evento es la puerta del capítulo. Una función no: las pruebas la usan para encender y apagar el nido.
+  function desdeEsPuerta() {
+    const c = (G.pack && G.pack.criadero) || {};
+    if (c.soloDesde) return true;
+    return typeof c.desde === 'string' && c.desde.length > 0;
+  }
+  const nidoActivo = () => !!D() && (desdeEsPuerta() ? desdeCumplido() : (misionesHechas().size > 0 || desdeCumplido()));
   let nidoMundo = null, nidoIt = null, nidoBtnHidden = null, presentarT = 0, revisarT = 0;
   // ---------- «+XP al nido» y el huevo en el HUD (mejora 2: la XP ya no sube en silencio) ----------
   // Dentro del botón «Nido»: un huevo que se va llenando con los días de incubación (o la cría cuando ya nació) y, con cada
@@ -1667,6 +1674,22 @@ AVE.module('criadero', function (G) {
         pasoMundo(0);
         const btn = document.getElementById('b-nido');
         check('Sin misión ni disparador del pack: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
+        // QA-62: `desde` con nombre de evento manda solo. La primera misión no abre el nido antes de ese evento
+        // (en el ep. 2, lee_tierra se cumple al elegir sitio y SiteChosen al contárselo a Iguaca).
+        const evBk = Array.isArray(G.S.events) ? G.S.events.slice() : [];
+        const mis0 = Object.keys(G.S.missions || {})[0];
+        G.S.events = evBk.filter(e => !e || e.key !== 'SiteChosen');
+        G.pack.criadero = Object.assign({}, cfgBk || {}, { desde: 'SiteChosen' });
+        if (mis0) G.S.missions[mis0] = true;
+        pasoMundo(0);
+        check('Si desde es un evento que aún no pasó, la primera misión no abre el nido', !nidoActivo() && !(nidoMundo && nidoMundo.visible) && !(btn && !btn.hidden));
+        G.S.events = G.S.events.concat([{ key: 'SiteChosen' }]);
+        pasoMundo(0); pasoMundo(2.1);
+        check('Cuando ese evento ya pasó, el nido entra sin otra misión', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden);
+        G.S.events = evBk;
+        if (mis0) G.S.missions[mis0] = false;
+        G.pack.criadero = Object.assign({}, cfgBk || {}, { desde: () => false });
+        pasoMundo(0);
         // Disparador del pack (criadero.desde; cap1: la charla con Iguaca, minuto 2): el nido entra antes de la primera misión
         G.pack.criadero.desde = () => true; pasoMundo(0); pasoMundo(2.1);
         check('Con el disparador del pack y sin misión: nido visible y botón «Nido» en el HUD', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden && !!nidoIt && nidoIt.visible());

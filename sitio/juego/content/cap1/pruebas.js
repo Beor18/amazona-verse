@@ -26,9 +26,25 @@
   // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Iguaca.
   function posarseLuma(G, T) {
     const S = G.S, p = G.c.luma.percha;
-    S.pos.x = p.x + 0.6; S.pos.y = p.y + 1.6; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true; T.tick(0.1);
-    G.fisica.MOVE.flying = false; T.tick(1.2);
+    // La copa puede crecer cuando llega la vegetación (el alto real llega en una promesa). Si la percha
+    // sube durante el tick, Vittata se queda debajo y Acción no ve a Iguaca (QA-64, solo con la máquina rápida).
+    const sentar = () => { S.pos.x = p.x + 0.6; S.pos.y = p.y + 0.3; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = false; };
+    sentar(); T.tick(0.7); sentar();
     return G.c.luma.junto() && !G.fisica.MOVE.flying;
+  }
+
+  // QA-64: un choose del coro no puede quedar abierto, y una capa (final, cómic, creador o tarjeta)
+  // no puede tragarse la Acción: si hay una, action() no habla con Iguaca y el paso se queda en 0.
+  async function limpiarDialogo(G) {
+    await new Promise(r => setTimeout(r, 0));
+    soltarCapas(G);
+    if (G.S) G.S.chorus = false;
+  }
+  function soltarCapas(G) {
+    const $ = G.util.$;
+    for (const id of ['end', 'comic', 'creator']) { const n = $(id); if (n) n.hidden = true; }
+    if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+    if (G.dialogo && G.dialogo.open && G.dialogo.open()) G.dialogo.clear();
   }
 
   async function selfTest(G, T, opts) {
@@ -40,6 +56,7 @@
     const action = () => G.interaccion.action();
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true);
     // Creador de personaje
     check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
@@ -293,6 +310,7 @@
     const { teleport, tick, drain, useAt } = T;
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
@@ -327,8 +345,12 @@
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
-    G.interaccion.action();
-    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre());
+    soltarCapas(G);
+    if (!G.c.luma.junto()) posarseLuma(G, T);
+    const nb0 = G.interaccion.nearest();
+    if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre(),
+      'junto ' + G.c.luma.junto() + ' cerca ' + (nb0 && nb0.id) + ' y ' + S.pos.y.toFixed(2) + '/' + G.c.luma.percha.y.toFixed(2) + ' ' + ($('d-who').textContent || '') + ' ' + ($('d-text').textContent || '').slice(0, 40));
     drain();
     check('Con el taller ya revisado, tras Iguaca el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
@@ -541,6 +563,7 @@
     const opts = () => ($('card').hidden ? 0 : $('card').querySelectorAll('.edu-opt').length);
     const volarA = (x, y, z) => { S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; F.MOVE.flying = true; };
     // p1 Predecir
+    soltarCapas(G);
     useAt('marcas_agua', 0.5, 0);
     ok('p1: en las marcas Iguaca pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
     drain();
@@ -652,7 +675,7 @@
     try {
       // Datos de la lección
       const M = LEC.mision_educativa || {};
-      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes
+      await limpiarDialogo(G); // deja pasar un clic pendiente del coro y lo anula (QA-64)
       check('lecciones.js carga la lección (8 pasos, 4 perchas, 7 preguntas, 23 fichas)', window.AV_LECCIONES_CAP1 === LEC && M.pasos.length === 8 && M.pasos[1].perchas.length === 4 && LEC.preguntas.length === 7 && LEC.diario.length === 23);
       const sinEn = [];
       const bil = (o, path) => { if (!o || typeof o !== 'object') return; if ('es' in o && !('en' in o)) sinEn.push(path); for (const k of Object.keys(o)) bil(o[k], path + '.' + k); };
@@ -662,7 +685,9 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); soltarCapas(G);
+      if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+      drain();
       check('Recolección -1 min: Iguaca aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();
