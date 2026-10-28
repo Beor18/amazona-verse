@@ -130,11 +130,14 @@ AVE.module('solidos', function (G) {
   }
   // Geometría con matriz de mundo (y matriz de instancia, si la hay) → triángulos, por tandas.
   // Primero lo estático (edificios, estructuras, contenido); al terminarlo se tapan los huecos (rellenar); luego la flora.
-  const cola = [], colaFlora = [], geosHechos = new WeakSet();
+  const cola = [], colaFlora = [], geosHechos = new WeakSet(), matricesDe = new WeakMap();
   function encolar(geo, matriz, etiqueta, region) {
     const pos = geo.attributes.position, idx = geo.index, nt = idx ? idx.count / 3 : pos.count / 3;
+    const m = matriz.clone();
     geosHechos.add(geo);
-    (region ? colaFlora : cola).push({ pos, idx, nt, t: 0, m: matriz.clone(), etiqueta, region });
+    // La puerta se funde después: si el edificio ya se encoló, los paneles salen con la misma matriz.
+    if (!region) { let arr = matricesDe.get(geo); if (!arr) matricesDe.set(geo, arr = []); arr.push(m); }
+    (region ? colaFlora : cola).push({ pos, idx, nt, t: 0, m, etiqueta, region });
   }
   // Huecos de la malla vistos desde arriba (el vértice abierto de un techo cónico, juntas entre piezas): una celda vacía
   // rodeada de celdas con sólido (las 4 de los lados o 6 de las 8) recibe un tramo con el alto medio de sus vecinas.
@@ -614,15 +617,13 @@ AVE.module('solidos', function (G) {
     const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
     let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }
     p = p || partes.find(sirve); if (!p) { R.fundido = true; return 0; }
-    const paneles = R.vanos.map(panelVano), viejo = p.geo, ya = geosHechos.has(viejo);
+    const paneles = R.vanos.map(panelVano), viejo = p.geo, mats = matricesDe.get(viejo) || [];
     p.geo = fundir([viejo, ...paneles], false);
     const sc = G.renderer.scene;
     sc.traverse(o => { if (o.isMesh && o.geometry === viejo) o.geometry = p.geo; });
-    if (ya) {
-      const g = new THREE.Group();
-      for (const geo of paneles) g.add(new THREE.Mesh(geo));
-      agregar(g);
-    } else for (const geo of paneles) geo.dispose();
+    // Ya estaba rasterizado sin la puerta: se añaden solo los paneles, con la matriz de cada instancia.
+    if (mats.length) { for (const geo of paneles) for (const mat of mats) encolar(geo, mat, 'vano'); }
+    else for (const geo of paneles) geo.dispose();
     R.fundido = true;
     return R.vanos.length;
   }
