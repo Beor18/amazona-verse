@@ -124,19 +124,20 @@ AVE.module('camara', function (G) {
         const t = i / n;
         if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { corte = i - 1; break; }
       }
-      if (corte < 0) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
+      if (corte < 0) return { x: hx + dx, y: hy + dy, z: hz + dz, d: Math.hypot(dx, dz) };
       const k = Math.max(1.6 / L, corte / n);
       let x = hx + dx * k, y = hy + dy * k, z = hz + dz * k;
       const top = G.solidos.dentro(x, z, y);
       if (top > -Infinity) y = top + 0.6;
-      return { x, y, z, d: Math.hypot(x - hx, y - hy, z - hz) };
+      return { x, y, z, d: Math.hypot(x - hx, z - hz) };
     };
     const dx0 = qx - hx, dy0 = qy - hy, dz0 = qz - hz;
     let best = libre(dx0, dy0, dz0);
+    // Vuelta completa: un tejado ancho tapa los lados, y el hueco libre queda detrás de Vittata.
     if (best.d < 3.2) {
       const dh = Math.hypot(dx0, dz0) || CAM.dist, ang0 = Math.atan2(dx0, dz0);
-      for (let s = 1; s <= 6 && best.d < 3.2; s++) for (const sig of [1, -1]) {
-        const a = ang0 + s * 0.4 * sig, r = libre(Math.sin(a) * dh, dy0, Math.cos(a) * dh);
+      for (let s = 1; s <= 8 && best.d < 3.2; s++) for (const sig of [1, -1]) for (const dy of [dy0, 0.35]) {
+        const a = ang0 + s * 0.4 * sig, r = libre(Math.sin(a) * dh, dy, Math.cos(a) * dh);
         if (r.d > best.d + 0.05) best = r;
       }
     }
