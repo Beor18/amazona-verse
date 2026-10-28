@@ -94,29 +94,35 @@ def mascara(H, x0, z0, paso, M):
 
 COPA = 7.0              # m entre copas: patrón de copas sueltas (celdas con un punto al azar) que se funden en la manta
 
-def copas(x, z):
-    """0..1: lo alto de la copa más cercana en (x, z) (1 en su centro, 0 en el hueco entre copas)"""
+def copas(x, z, COPA=COPA, solape=1.0, sem=0.0):
+    """0..1: lo alto de la copa más cercana en (x, z) (1 en su centro, 0 en el hueco entre copas). solape > 1 agranda
+    las copas hasta que se tocan (BM3: dosel continuo, sin suelo a la vista)"""
     gx, gz = np.floor(x / COPA), np.floor(z / COPA); d = np.full(x.shape, 9e9)
     for ox in (-1, 0, 1):
         for oz in (-1, 0, 1):
             cx, cz = gx + ox, gz + oz
-            h = np.sin(cx * 127.1 + cz * 311.7) * 43758.5453; jx = h - np.floor(h)
+            h = np.sin(cx * 127.1 + cz * 311.7 + sem) * 43758.5453; jx = h - np.floor(h)
             h = np.sin(cx * 269.5 + cz * 183.3) * 43758.5453; jz = h - np.floor(h)
-            h = np.sin(cx * 419.2 + cz * 371.9) * 43758.5453; r = 0.55 + 0.35 * (h - np.floor(h))   # radio relativo de cada copa
+            h = np.sin(cx * 419.2 + cz * 371.9) * 43758.5453; r = (0.55 + 0.35 * (h - np.floor(h))) * solape   # radio relativo de cada copa
             d = np.minimum(d, np.hypot(x - (cx + 0.15 + 0.7 * jx) * COPA, z - (cz + 0.15 + 0.7 * jz) * COPA) / (r * COPA))
     return np.sqrt(np.clip(1 - d * d, 0, 1))
 
 def color(x, z, y, Hs, hc, borde, cota):
-    """color sRGB 0..255 a partir de la posición (se recalcula tras simplificar)"""
-    hueco = np.array([20, 40, 22.]); medio = np.array([44, 80, 36.]); claro = np.array([88, 122, 50.]); niebla = np.array([58, 80, 64.])
-    b = copas(x, z)[:, None]                                                       # hueco oscuro, copa clara
-    n = (np.sin(x * 0.071 + z * 0.043) * np.sin(z * 0.057 - x * 0.029) * 0.5 + 0.5)[:, None]   # manchas de especies, a gran escala
-    k = (np.sin(x * 1.7 + z * 2.3) * 0.5 + 0.5)[:, None]                           # una copa clara o rojiza de vez en cuando
-    top = medio * (1 - n) + claro * n
-    c = hueco * (1 - b) + top * b
-    c = np.where(k > 0.97, c * np.array([1.25, 1.05, 0.8]), c)
-    c = c * (1 - np.clip(borde, 0, 1)[:, None] * 0.35)                           # la falda del borde, en sombra
-    t = np.clip((cota - 55) / 30, 0, 1)[:, None]                                   # bosque enano de la niebla: gris verdoso
+    """color sRGB 0..255 a partir de la posición (se recalcula tras simplificar). BM3: copas de varios tonos (cuatro
+    paletas de especie por manchas, más claras las altas) y sombra suave entre copas, nunca un hueco negro"""
+    sombra = np.array([34, 62, 30.]); niebla = np.array([58, 80, 64.])
+    pal = np.array([[46, 84, 36.], [62, 104, 40.], [38, 74, 44.], [86, 118, 48.], [70, 96, 34.]])   # tabonuco, yagrumo claro, palma, flamboyán/joven, cecropia
+    b = copas(x, z, 7.0, 1.35)[:, None]; b2 = copas(x, z, 15.0, 1.2, 5.0)[:, None]            # copas medias y copas grandes emergentes
+    n = (np.sin(x * 0.071 + z * 0.043) * np.sin(z * 0.057 - x * 0.029) * 0.5 + 0.5)             # manchas de especies, a gran escala
+    m = (np.sin(x * 0.19 + z * 0.13 + 1.7) * np.sin(z * 0.23 - x * 0.11) * 0.5 + 0.5)           # y a escala de árbol
+    q = np.clip(n * 3.2 + m * 1.8, 0, 4.99); i0 = q.astype(int); fq = (q - i0)[:, None]
+    top = pal[i0] * (1 - fq) + pal[np.minimum(i0 + 1, 4)] * fq
+    k = (np.sin(x * 1.7 + z * 2.3) * 0.5 + 0.5)[:, None]                                     # una copa clara o rojiza de vez en cuando
+    top = np.where(k > 0.96, top * np.array([1.3, 1.08, 0.78]), top)
+    top = top * (0.9 + 0.22 * b2)                                                           # las emergentes, más claras
+    c = sombra * (1 - b) + top * b
+    c = c * (1 - np.clip(borde, 0, 1)[:, None] * 0.3)                                      # la falda del borde, en sombra
+    t = np.clip((cota - 55) / 30, 0, 1)[:, None]                                            # bosque enano de la niebla: gris verdoso
     return np.clip(c * (1 - t * 0.55) + niebla * t * 0.55, 0, 255)
 
 def main(objetivo=OBJ_TRIS, nombre='dosel_cap1', glob='AV_DOSEL_CAP1'):
@@ -128,8 +134,14 @@ def main(objetivo=OBJ_TRIS, nombre='dosel_cap1', glob='AV_DOSEL_CAP1'):
     rr = ruido(nz, nx, 3, 11) * 0.6 + ruido(nz, nx, 9, 12) * 0.4
     gx, gz = np.meshgrid(x0 + np.arange(nx) * paso, z0 + np.arange(nz) * paso)
     borde = np.clip((f - 0.35) / 0.6, 0, 1); borde = borde * borde * (3 - 2 * borde)
-    hc = alto * (0.8 + 0.35 * rr) * (0.25 + 0.75 * borde)
-    Yc = H + hc * (0.62 + 0.38 * copas(gx, gz))                     # copas con bulto: los huecos entre copas, más bajos
+    # BM3: la cima del tepuy (misma elipse) lleva copas de altura propia, no las del bosque enano de la cota
+    T = TEPUY; dT = np.hypot((gx - T['x']) / T['rx'], (gz - T['z']) / T['rz']); cima = np.clip((1 - dT) / T['borde'], 0, 1)
+    alto = alto * (1 - cima) + 8.0 * cima
+    # BM3: varias alturas: manchas de rodal (bajo / medio / alto) y copas emergentes que sobresalen de la manta
+    rodal = 0.7 + 0.6 * ruido(nz, nx, 6, 21)
+    emerge = copas(gx, gz, 15.0, 1.2, 5.0)
+    hc = alto * (0.8 + 0.35 * rr) * rodal * (0.25 + 0.75 * borde)
+    Yc = H + hc * (0.8 + 0.2 * copas(gx, gz, 7.0, 1.35)) + 3.5 * emerge * emerge * borde                     # copas con bulto: los huecos entre copas, más bajos
     # el borde baja al suelo del bosque vecino (no al pie del risco: sin cortinas colgando)
     nm = caja(m, 1); Hf = np.where(nm > 0, caja(np.where(m, H, 0), 1) / np.maximum(nm, 1e-6), H)
     Y = np.where(m, Yc, np.where(nm > 0, np.minimum(H, Hf) - 0.6, H - 1.5))
