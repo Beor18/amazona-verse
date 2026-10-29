@@ -93,6 +93,7 @@ AVE.module('audio', function (G) {
     ring: (t, i) => { tone(pent(i + 2, 392), t, 0.4, { type: 'sine', gain: 0.22 }); tone(pent(i + 4, 392), t + 0.08, 0.35, { type: 'sine', gain: 0.1 }); },
     dash: t => noise(t, 0.25, { freq: 600, to: 2600, q: 0.8, gain: 0.22 }),
     splash: t => noise(t, 0.45, { type: 'lowpass', freq: 1800, to: 280, gain: 0.3 }),
+    aleteo: (t, v) => noise(t, 0.12, { type: 'bandpass', freq: 380 + Math.min(1, (v || 0) / 20) * 420, to: 160, q: 0.7, gain: 0.07 }), // BM22: golpe de alas; el ritmo lo marca fisica.js según la velocidad
     jump: t => tone(330, t, 0.12, { type: 'square', to: 540, gain: 0.05 }),
     land: t => noise(t, 0.14, { type: 'lowpass', freq: 520, gain: 0.25 }),
     unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },

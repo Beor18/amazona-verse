@@ -402,6 +402,7 @@
         } else {
           S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
           if (S.builds.includes('A')) log('ShelterRelocated', { from: 'A', to: 'B' });
+          S.gearRoof = true; C.placeRefugeMesh(); C.aplicarEngranaje(); // Vittata sube el engranaje de su máquina al techo
           capture('shelter');
           say([...L('evento:ShelterRelocated', [
             { who: 'Iguaca', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
@@ -469,11 +470,14 @@
         if (voz[0]) voz[0].onShow = () => G.audio.play('estatica');
         // La Voz y el Guardián narran (mejora 3): bocadillos con el símbolo en pantalla; al terminar se retira el símbolo.
         // La historia pasa al mirador en el acto (el aviso de hacia dónde ir sale cuando se retira el símbolo).
+        const medalla = L('interact:medalla_guardian', [{ who: 'Guardián', img: IMG.G, text: 'Una de esas piezas es igual a la medalla que guardo. Todavía no puedo contarte todo.' }]);
+        medalla.forEach((l, k) => { Object.defineProperty(l, 'img', { get: () => C.retratoMedalla(), configurable: true }); if (!k) l.onShow = () => showSymbol(true, true); });
         say([
           { who: 'Vittata', img: IMG.V, text: '¡Ese transmisor llevaba años sin funcionar!' },
           ...voz,
           ...L('interact:simbolo', [{ who: 'Vittata', img: IMG.V, text: '¿Qué pacto? Mira: un símbolo dividido en 36 fragmentos.' }]),
-          // [KELVIN-3] Aquí iría la medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»), si es canon: hoy solo reconoce el símbolo y calla.
+          // Medalla del Guardián (NARRATIVA «Giro»; el guion no da la línea exacta: texto propio, anotado en DECISION_LOG): el retrato la lleva puesta
+          ...medalla,
           ...L('interact:simbolo_guardian', [{ who: 'Guardián', img: IMG.G, text: 'No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.' }]),
         ], () => {
           showSymbol(false);
@@ -728,10 +732,36 @@
         ctx.fillText('36', cx, cy + r * 0.02);
         ctx.restore();
       }
-      function showSymbol(on) {
+      function showSymbol(on, medalla) {
         $('symbol').hidden = !on;
-        if (on) { const c = $('symbol-canvas'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); drawSymbol(x, c.width / 2, c.height / 2, c.width * 0.45); }
+        if (on) {
+          const c = $('symbol-canvas'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); drawSymbol(x, c.width / 2, c.height / 2, c.width * 0.45);
+          if (medalla) { // la pieza que coincide con la medalla del Guardián, resaltada con un halo
+            const cx = c.width / 2, cy = c.height / 2, r = c.width * 0.45, a0 = -Math.PI / 2 + 0.012, a1 = -Math.PI / 2 + Math.PI / 18 - 0.012;
+            x.save(); x.beginPath(); x.arc(cx, cy, r * 1.04, a0, a1); x.arc(cx, cy, r * 0.58, a1, a0, true); x.closePath();
+            x.strokeStyle = '#fff6d6'; x.lineWidth = Math.max(3, r * 0.05); x.shadowColor = '#ffd27a'; x.shadowBlur = r * 0.2; x.stroke(); x.restore();
+          }
+        }
       }
+      // Retrato del Guardián con la medalla al pecho (una pieza del emblema: la del primer fragmento, FRAG_COLORS[0]). Se compone una vez
+      // sobre assets/guardian.png; mientras carga (o si falla) se usa el retrato normal.
+      let medallaURL = '';
+      (() => {
+        const im = new Image();
+        im.onload = () => {
+          try {
+            const c = document.createElement('canvas'); c.width = im.naturalWidth || 512; c.height = im.naturalHeight || 512;
+            const x = c.getContext('2d'), w = c.width; x.drawImage(im, 0, 0, w, c.height);
+            const cx = w * 0.5, cy = c.height * 0.8, r = w * 0.085;
+            x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fillStyle = '#10241c'; x.fill(); x.lineWidth = r * 0.16; x.strokeStyle = '#ffd27a'; x.stroke();
+            x.beginPath(); x.arc(cx, cy, r * 0.8, -Math.PI / 2 + 0.012, -Math.PI / 2 + Math.PI / 18 * 3); x.arc(cx, cy, r * 0.4, -Math.PI / 2 + Math.PI / 18 * 3, -Math.PI / 2 + 0.012, true);
+            x.closePath(); x.fillStyle = FRAG_COLORS[0]; x.fill();
+            medallaURL = c.toDataURL('image/png');
+          } catch (e) { /* retrato normal */ }
+        };
+        im.src = IMG.G;
+      })();
+      C.retratoMedalla = () => medallaURL || IMG.G;
 
       // ---------- Al cargar o reiniciar ----------
       G.on('apply', () => { C.placeRefugeMesh(); syncRefugeInteractable(); C.applyTallerLook(); applyGuardianLook(); }, 35);

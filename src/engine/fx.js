@@ -12,7 +12,7 @@ AVE.module('fx', function (G) {
   const fx = [];
   let liveParticles = 0;
   const MAX_PARTICLES = 200;
-  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'], leaves: ['#3f8f3a', '#6fb84a', '#2f6f35', '#a3c94a'] }; // leaves: BM20, despegue del mirador
+  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'], dust: ['#c9b48a', '#b09a72', '#d9c9a3'], leaves: ['#3f8f3a', '#6fb84a', '#2f6f35', '#a3c94a'] }; // leaves: BM20, despegue del mirador
 
   // Atlas de 256 px (2×2 celdas de 128): estrella de 4 puntas con halo, pluma, burbuja y punto suave
   const ATLAS = (function () {
@@ -220,6 +220,10 @@ AVE.module('fx', function (G) {
   G.on('render', dt => updateRain(dt), 40);
   G.on('apply', () => { rain.visible = false; }, 40);
 
-  return { list: fx, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
+  // BM22, feedback «juicy»: polvo al aterrizar en tierra y hojas al atravesar una copa. juicy cuenta cada disparo (para pruebas)
+  const juicy = { polvo: 0, hojas: 0, salpicadura: 0, sacudida: 0, aleteo: 0 };
+  function polvo(x, y, z, fuerza) { juicy.polvo++; burst(x, y + 0.1, z, 'dust', Math.round(6 + 8 * Math.min(1, fuerza || 0.5))); }
+  function hojas(x, y, z) { juicy.hojas++; burst(x, y, z, 'leaves', 6); }
+  return { list: fx, juicy, polvo, hojas, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
     ATLAS, sprite, luzSube, recoger, saltar, descubrimiento };
 });

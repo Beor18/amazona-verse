@@ -619,6 +619,28 @@ window.AVMovimientoTest = function (G) {
         check('Fundido de la flora: activo con la cámara a distancia normal y apagado con la cámara pegada a Vittata', FU.fuerza > 0 && lejos === FU.fuerza && cerca === 0 && dist > FU.radio * 1.5, JSON.stringify(met.fundido));
       }
       lap('fundido');
+      // BM22, feedback «juicy»: cada efecto se dispara y, con «Reducir movimiento», no hay sacudida de cámara
+      if (G.fx && G.fx.juicy) {
+        const J = G.fx.juicy, j0 = Object.assign({}, J), CJ = G.camara.juice;
+        let tx = L.x, tz = L.z; // un sitio de tierra pelada (sin techo ni tejado debajo)
+        for (let k = 0; k < 40 && Math.abs(F.suelo(tx, tz, H(tx, tz) + 6) - H(tx, tz)) > 0.05; k++) { tx = L.x + 6 * (k + 1) * (k % 2 ? 1 : -1); tz = L.z + 3 * k; }
+        reset(tx, tz, H(tx, tz) + 6); M.grounded = false; M.wasAir = true; frame(null, 90); // caída al suelo: polvo
+        const dPolvo = J.polvo - j0.polvo;
+        if (hondo) { reset(hondo.x, hondo.z, hondo.w + 3); M.flying = true; M.grounded = false; frame(() => { if (M.flying) K.add('c'); else K.delete('c'); }, 150); K.clear(); }
+        const dSalp = J.salpicadura - j0.salpicadura;
+        reset(L.x, L.z); M.flying = true; M.grounded = false; S.pos.y += 8; frame(() => { I.jumpHeld = true; }, 90); I.jumpHeld = false; // volando: aleteo
+        const dAla = J.aleteo - j0.aleteo, logAla = G.audio.log.includes('aleteo');
+        F.endFlight(); reset(L.x, L.z);
+        const hojas0 = J.hojas; G.camara.probarCopas([[L.x, S.pos.y + 1, L.z, 3]]); M.vx = 3; frame(() => { M.vx = 3; }, 5); G.camara.probarCopas(null);
+        const dHojas = J.hojas - hojas0;
+        const rd = G.renderer.REDUCED; CJ.amp = 0; CJ.shake = 0; const s0 = J.sacudida;
+        G.camara.shake(0.12, 0.2); const sacude = CJ.amp > 0 && CJ.amp <= 0.15;
+        met.juicy = { polvo: dPolvo, suelo: [r2(tx), r2(tz), M.onTerrain], salpicadura: hondo ? dSalp : 'sin agua', aleteo: dAla, hojas: dHojas, sacudidaAmp: r2(CJ.amp), reducido: rd };
+        check('Feedback juicy: polvo al aterrizar, salpicadura al posarse en agua, aleteo, hojas en la copa y sacudida ≤ 0,15 (sin sacudida con «Reducir movimiento»)',
+          dPolvo >= 1 && (!hondo || dSalp >= 1) && dAla >= 2 && logAla && dHojas >= 1 && (rd ? CJ.amp === 0 : sacude) && s0 === J.sacudida, JSON.stringify(met.juicy));
+        CJ.amp = 0; CJ.shake = 0;
+      }
+      lap('juicy');
       check('Duración de cada tramo de la prueba (ms)', true, JSON.stringify(dur));
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
     } finally {

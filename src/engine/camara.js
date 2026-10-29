@@ -270,6 +270,6 @@ AVE.module('camara', function (G) {
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });
