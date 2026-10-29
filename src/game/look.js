@@ -566,6 +566,18 @@ window.AVLook = function (G) {
       check('En vivo el look de fábrica es vibrant_toon y el cielo es atmosférico', DEFECTO === 'vibrant_toon' && actual === 'vibrant_toon' && !!R.ATMOS && !!esp, 'look ' + (actual || 'fabrica'));
       check('En vivo la exposición, la niebla y el cenit son los del estándar de este capítulo', !!esp && R.renderer.toneMappingExposure === esp.exposicion && R.scene.fog && R.scene.fog.far === esp.niebla.fin && (!u || hex(u.uCenit.value) === hex(lin(esp.cielo.cenit))),
         'exposición ' + R.renderer.toneMappingExposure + ' · niebla ' + (R.scene.fog && R.scene.fog.far) + ' · cenit ' + (u ? hex(u.uCenit.value) : 'sin cielo'));
+      // BM23: nada de vegetación ni de «pirámides» sobre el mar: ni conos de isla visibles con mapa, ni vértices del dosel bajo el nivel del mar
+      if (G.terreno && G.terreno.mapa) {
+        const conos = []; R.scene.traverse(o => { if (o.isMesh && o.visible && o.geometry && o.geometry.type === 'ConeGeometry' && o.geometry.parameters.radius >= 20) conos.push(o.position.toArray().map(Math.round).join(',')); });
+        check('Sobre el mar no hay conos verdes de isla (BM23)', !conos.length, conos.join(' | '));
+        const D = window.AV_DOSEL_CAP1;
+        if (D && G.dosel && G.dosel.activo) {
+          const u8 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+          const q = new Uint16Array(u8(D.pos).buffer), o = D.origen, e = D.escala; let mar = 0;
+          for (let i = 0; i < q.length; i += 3) { const x = o[0] + q[i] * e, z = o[2] + q[i + 2] * e; if (G.terreno.height(x, z) < -2) mar++; }
+          check('El dosel no tiene vértices sobre el mar abierto (BM23)', mar === 0, mar + ' vértices');
+        }
+      }
     } catch (e) {
       check('La prueba de capítulos terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     }

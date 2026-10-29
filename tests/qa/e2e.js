@@ -66,7 +66,7 @@
     fr.src = url.href;
     document.body.appendChild(fr);
 
-    let W = null, G, S, T, $, errores0 = 0, duracion = null, ultimoCercano = null;
+    let W = null, G, S, T, $, errores0 = 0, duracion = null, ultimoCercano = null, diagL = null;
     const erroresAcum = [];
     const enlazar = () => { G = W.AV.G; S = G.S; T = G.pruebas; $ = id => W.document.getElementById(id); };
     const cerrarVentana = () => { erroresAcum.push(...(W.__aveErrores || []).slice(errores0)); errores0 = 0; };
@@ -199,13 +199,13 @@
         volar(perchaL.x + 0.6, perchaL.y + 1.6, perchaL.z); G.fisica.MOVE.flying = false; tick(1.2);   // despegar, llegar y posarse a su lado
         posada = LU.junto() && !G.fisica.MOVE.flying;
         llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Iguaca llamó desde arriba al acercarse (bocadillo)
-        const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma';
+        const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma'; ultimoCercano = nbL ? nbL.id : 'ninguno'; diagL = { pos: [+S.pos.x.toFixed(1), +S.pos.y.toFixed(1), +S.pos.z.toFixed(1)], perY: +perchaL.y.toFixed(1), lista: G.interaccion.list.map(i => ({ id: i.id, d: +Math.hypot(S.pos.x - i.x, S.pos.z - i.z).toFixed(1), r: i.r, v: i.visible ? !!i.visible() : true })).filter(o => o.d < 6) };
         if (lumaOk) { G.interaccion.action(); reloj.acciones++; }
         charla = G.dialogo.open(); drain();
       }
       check('4.2', 'Iguaca llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
         !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Iguaca' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
-        { desdeSuelo, guia: guiaLuma && { y: +guiaLuma.y.toFixed(1) }, posada, llamada: llamada && llamada.text.slice(0, 30), charla, lumaOk, paso: S.step, madera: S.inv.madera, arriba: LU && LU.arriba(), cercano: lumaOk ? null : ultimoCercano, atajo: 'vuelo directo a la percha de la copa' }, 700);
+        { desdeSuelo, guia: guiaLuma && { y: +guiaLuma.y.toFixed(1) }, posada, llamada: llamada && llamada.text.slice(0, 30), charla, lumaOk, paso: S.step, madera: S.inv.madera, arriba: LU && LU.arriba(), cercano: lumaOk ? null : ultimoCercano, diagL: lumaOk ? null : diagL, atajo: 'vuelo directo a la percha de la copa' }, 700);
       check('4.2', 'El primer vuelo del capítulo llega antes de 90 s (medida de DIVERSION_CAP1, mejora 1)', !!primerVuelo && primerVuelo.seg < 90 && primerVuelo.segLeyendo < 90, primerVuelo);
       if (corte('4.2', S.step >= 1)) return fin();
 
@@ -494,10 +494,16 @@
         const idAntes = G.idioma.actual();
         G.idioma.poner('en'); await (G.idioma.listo || sleep(50)); await sleep(60);
         const rotulo = () => { try { return W.getComputedStyle($('steps'), '::after').content.replace(/^"|"$/g, ''); } catch (e) { return ''; } };
-        const hudEN = rotulo(), textosFin = [$('end-text'), ...W.document.querySelectorAll('#end h1,#end h2,#end button,#end p')].filter(Boolean).map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(t => /\p{L}{2}/u.test(t));
+        const hudEN = rotulo(), textosFin = [$('end-text'), ...W.document.querySelectorAll('#end h1,#end h2,#end button,#end p')].filter(n => n && !n.closest('[hidden]')).map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(t => /\p{L}{2}/u.test(t));
         const sinTr = G.idioma.faltan(textosFin);
         check('4.10', 'En inglés el HUD y el panel final no dicen nada en español (rótulo del objetivo «Chapter complete!», panel final traducido)', /^Chapter complete!?$|^Goal /.test(hudEN) && !sinTr.length, { rotulo: hudEN, sinTraducir: sinTr.slice(0, 8) });
         G.idioma.poner(idAntes || 'es'); await (G.idioma.listo || sleep(50));
+      }
+
+      // ---------- Momentos «wow» (BM20): despegue, bandada de 20 y luciérnagas ocurren y no bloquean la misión ----------
+      if (W.AV && W.AV.wowTest) {
+        const wt = await W.AV.wowTest().catch(e => ({ passed: 0, total: 1, results: [{ name: String(e), ok: false }] }));
+        check('4.11', 'Momentos wow del cap. 1 (despegue del mirador, 20 cotorras en dos pasadas, luciérnagas del coro): ocurren, se saltan y no bloquean', wt.passed === wt.total, wt.results.filter(x => !x.ok).slice(0, 3));
       }
 
       // ---------- Orden de los eventos del capítulo y materiales ----------

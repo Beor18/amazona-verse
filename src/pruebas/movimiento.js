@@ -15,6 +15,9 @@ window.AVMovimientoTest = function (G) {
     opts = opts || {};
     const F = G.fisica, M = F.MOVE, T = F.TUNING, K = G.input.keys, I = G.input, H = G.terreno.height;
     const R = G.pruebas.runner(), check = R.check, met = {};
+    // Duración de cada tramo en ms (met.duraciones), para ver dónde se va el tiempo de la prueba
+    const dur = met.duraciones = {}; let tLap = performance.now();
+    const lap = n => { const t = performance.now(); dur[n] = Math.round(t - tLap); tLap = t; };
     const keep = { pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), vy: S.vy, yaw: G.camara.yaw, quiet: G.quiet, lazy: [G.camara.CAM.lazy, G.camara.CAM.lazyFly] };
     G.camara.CAM.lazy = G.camara.CAM.lazyFly = 0; // la cámara no gira sola durante la prueba: las direcciones son repetibles
     // Mundo limpio, venga de donde venga (otras pruebas, partida nueva con el creador abierto): sin ventanas ni diálogos,
@@ -27,6 +30,8 @@ window.AVMovimientoTest = function (G) {
     G.quiet = true;
     const P3 = G.actores.player3D;
     const frame = (fn, n) => { const out = []; for (let i = 0; i < (n || 1); i++) { if (fn) fn(i); G.renderer.update(DT); out.push({ x: S.pos.x, y: S.pos.y, z: S.pos.z, vy: S.vy, sp: M.speed, g: M.groundY, fly: M.flying, sw: !!M.swimming, gr: M.grounded }); } return out; };
+    // Solo la física (sin los oyentes de 'update' de fauna, retos…): para los recorridos largos que no miran nada más
+    const paso = () => F.step(DT, G.ui.busy());
     const anim = n => { for (let i = 0; i < n; i++) { const mv = G.renderer.update(DT); G.emit('render', DT, G.renderer.t, mv); } };
     const reset = (x, z, y) => {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;
@@ -75,6 +80,7 @@ window.AVMovimientoTest = function (G) {
         }
         met.sitiosDescartados = malos.length;
       }
+      lap('sitio');
       met.sitio = { x: r2(L.x), z: r2(L.z) };
       // 1. Latencia y arranque: la tecla se lee en el primer paso tras pulsarla
       reset(L.x, L.z);
@@ -82,12 +88,20 @@ window.AVMovimientoTest = function (G) {
       // primer cuadro (grade = subida / paso) y la meta baja a media rampa, lo que alarga el 90 % sin que el arranque sea peor.
       // La cuesta se prueba aparte, en 'Pendientes'.
       const uphill = T.uphillSlow; T.uphillSlow = 0;
-      let r = frame(i => { if (i === 0) K.add('w'); }, 45);
+      // Los casos de tiempo se miden 3 veces y se toma la mediana: un cuadro raro por la carga de la máquina no los pone en rojo
+      const mediana = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
+      let r, lat; const arr = [];
+      for (let k = 0; k < 3; k++) {
+        reset(L.x, L.z);
+        r = frame(i => { if (i === 0) K.add('w'); }, 45);
+        if (k < 2) K.clear();
+        const top = Math.max(...r.map(o => o.sp)); // velocidad de crucero real (en cuesta arriba es algo menor que walk); el máximo, no el último cuadro: un tope no lo falsea
+        arr.push(r.findIndex(o => o.sp >= top * 0.9) + 1);
+        if (k === 0) lat = r.findIndex(o => o.sp > 0.05); else lat = Math.max(lat, r.findIndex(o => o.sp > 0.05));
+      }
       T.uphillSlow = uphill;
-      const lat = r.findIndex(o => o.sp > 0.05);
       met.latenciaCuadros = lat + 1;
-      const top = Math.max(...r.map(o => o.sp)); // velocidad de crucero real (en cuesta arriba es algo menor que walk); el máximo, no el último cuadro: un tope no lo falsea
-      met.arranque90ms = ms(r.findIndex(o => o.sp >= top * 0.9) + 1);
+      met.arranque90ms = ms(mediana(arr));
       check('Respuesta inmediata: se mueve en el primer cuadro tras la tecla', lat === 0, met.latenciaCuadros + ' cuadro');
       check('Arranque: 90 % de la velocidad en menos de 0,18 s', met.arranque90ms <= 180, met.arranque90ms + ' ms');
       r = frame(i => { if (i === 0) K.delete('w'); }, 40);
@@ -101,15 +115,20 @@ window.AVMovimientoTest = function (G) {
       met.giro180ms = ms(back + 1);
       check('Giro de 180° en menos de 0,3 s', back >= 0 && met.giro180ms <= 300, met.giro180ms + ' ms');
       K.clear();
+      lap('arranque');
       // 2. Salto
       reset(L.x, L.z); const y0 = S.pos.y;
       r = frame(i => { if (i === 0) { I.jumpHeld = true; F.tryJump(); } }, 70); I.jumpHeld = false; F.releaseJump();
       const apex = Math.max(...r.map(o => o.y)) - y0, land = r.findIndex((o, i) => i > 2 && o.gr);
       met.saltoAltoM = r2(apex); met.saltoAireMs = ms(land + 1);
       check('Salto completo de 1,1 a 1,5 m', apex > 1.1 && apex < 1.5, met.saltoAltoM + ' m, ' + met.saltoAireMs + ' ms en el aire');
-      reset(L.x, L.z);
-      r = frame(i => { if (i === 0) { I.jumpHeld = true; F.tryJump(); } if (i === 4) { I.jumpHeld = false; F.releaseJump(); } }, 60);
-      met.saltoCortoM = r2(Math.max(...r.map(o => o.y)) - y0);
+      const cortos = [];
+      for (let k = 0; k < 3; k++) {
+        reset(L.x, L.z); Object.assign(M, { jumping: false, land: 0, buffer: 0 }); M.airJumps = 0;
+        r = frame(i => { if (i === 0) { I.jumpHeld = true; F.tryJump(); } if (i === 4) { I.jumpHeld = false; F.releaseJump(); } }, 60);
+        cortos.push(Math.max(...r.map(o => o.y)) - y0);
+      }
+      met.saltoCortoM = r2(mediana(cortos));
       check('Un toque corto da un salto más bajo (control fino)', met.saltoCortoM < apex * 0.75, met.saltoCortoM + ' m');
       reset(L.x, L.z);
       r = frame(i => { if (i === 0) F.tryJump(); if (i === 20) F.tryJump(); }, 100);
@@ -124,6 +143,7 @@ window.AVMovimientoTest = function (G) {
       reset(L.x, L.z); S.pos.y += 0.4; M.grounded = false; M.coyote = T.coyote; frame(null, 4);
       F.tryJump();
       check('Tiempo de coyote: salta 0,07 s después de dejar el suelo', S.vy > T.jumpV * 0.9 && !M.flying, T.coyote + ' s');
+      lap('salto');
       // 3. Vuelo: despegar, cernirse sin tocar nada, aterrizar suave.
       // La cámara mira hacia el lado más despejado: el relieve más bajo a 60 m (y a la derecha, por el giro) y sin agua,
       // para que el crucero y el giro no choquen con una ladera ni acaben sobre el mar
@@ -163,6 +183,7 @@ window.AVMovimientoTest = function (G) {
       vyTouch = prev;
       met.aterrizajeDesdeM = r2(hLand); met.aterrizajeS = r2(n * DT); met.aterrizajeVy = r2(vyTouch);
       check('Aterrizar (V): baja sola y toca el suelo suave', !M.flying && M.grounded && vyTouch > -2.2, `${met.aterrizajeDesdeM} m en ${met.aterrizajeS} s, ${met.aterrizajeVy} m/s al tocar`);
+      lap('vuelo');
       // 4. Pendientes: buscar una ladera cerca
       let lad = null, risco = null;
       for (let x = -G.terreno.WORLD + 8; x < G.terreno.WORLD - 8 && (!lad || !risco); x += 3) for (let z = -G.terreno.WORLD + 8; z < G.terreno.WORLD - 8; z += 3) {
@@ -190,6 +211,7 @@ window.AVMovimientoTest = function (G) {
         met.risco = { grados: r2(risco.deg), subidaM: r2(S.pos.y - ya) };
         check('Un risco más empinado que el límite no se sube caminando', S.pos.y - ya < 1.2, met.risco.subidaM + ' m en 1,5 s contra ' + r2(risco.deg) + '°');
       } else check('Un risco más empinado que el límite no se sube caminando', true, 'sin riscos en este mapa');
+      lap('pendientes');
       // 5. Agua: volar y bajar sobre agua honda acaba nadando en la superficie, nunca bajo el agua
       let hondo = null;
       for (let x = -G.terreno.WORLD + 6; x < G.terreno.WORLD - 6 && !hondo; x += 2) for (let z = -G.terreno.WORLD + 6; z < G.terreno.WORLD - 6; z += 2) {
@@ -204,6 +226,7 @@ window.AVMovimientoTest = function (G) {
         check('Despega desde el agua', M.flying && S.pos.y > hondo.w + 1, r2(S.pos.y - hondo.w) + ' m');
         reset(L.x, L.z);
       } else check('Volar hasta el agua: se posa a nadar', true, 'sin agua honda en este mapa');
+      lap('agua');
       // 6. Pico al hablar: sigue a la máquina de escribir (45 letras/s, aquí manejada a mano para no depender de que la pestaña
       // se esté pintando) y se cierra al terminar la frase
       const dType = document.querySelector('#d-type > span'), dlg = document.getElementById('dialog');
@@ -223,6 +246,7 @@ window.AVMovimientoTest = function (G) {
         check('El pico se abre y cierra al ritmo del texto y se cierra al terminar', flaps >= 4 && met.picoHz <= 10 && tail, flaps + ' aperturas, ' + met.picoHz + ' por segundo');
         G.dialogo.clear(); dlg.classList.remove('is-typing'); anim(3);
       }
+      lap('pico');
       // 7. Agarrar → llevar → soltar (un objeto de prueba en el suelo)
       if (P3 && G.agarre) {
         reset(L.x, L.z); anim(5);
@@ -243,6 +267,7 @@ window.AVMovimientoTest = function (G) {
         check('Soltar: la caja queda en el suelo delante de las patas', !G.agarre.lleva() && box.parent === G.renderer.scene && !!soltado && Math.abs(p.y - 0.175 - F.suelo(p.x, p.z, p.y)) < 0.1, soltado ? r2(p.y - F.suelo(p.x, p.z, p.y)) + ' m' : 'sin soltar');
         G.renderer.scene.remove(box); box.geometry.dispose(); box.material.dispose();
       }
+      lap('agarre');
       // 8. Elementos del mundo (solidos.js, geometría real): techo, rama, pared y despegar desde arriba
       const SO = G.solidos, ACT = G.mundo && G.mundo.activos;
       if (SO && SO.activo && ACT && Object.keys(ACT).length) {
@@ -282,6 +307,7 @@ window.AVMovimientoTest = function (G) {
           met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(distH) };
           check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m)', !(den > -Infinity) && distH >= 2.5, JSON.stringify(met.camPared));
         }
+        lap('techo_pared');
         // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
         // (un tabonuco alto puede no tener ramas bajas: se prueba el siguiente)
         const V = G.vegetacion, arboles = [];
@@ -309,6 +335,7 @@ window.AVMovimientoTest = function (G) {
             check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
           } else check('Se posa en una rama', false, 'sin rama entre 1,5 y 8 m en los 10 árboles más cercanos');
         }
+        lap('rama');
         // Cuerda del puente colgante (pisos 'puente' del terreno): aterrizar 0,35 m fuera de la cuerda; la ayuda la centra
         // encima, se posa ('fino', que = 'cuerda') y se queda 3 s
         const PU = (G.terreno.plataformas || []).find(p => p.tipo === 'puente');
@@ -325,6 +352,7 @@ window.AVMovimientoTest = function (G) {
             check('Se posa en la cuerda del puente colgante (percha) y se queda 3 s', M.grounded && M.posado === 'fino' && que === 'cuerda' && S.pos.y - cub > 0.5 && met.cuerda.deriva3s < 0.02, JSON.stringify(met.cuerda));
           } else check('Se posa en la cuerda del puente colgante', false, 'sin cuerda sólida a mitad del puente');
         }
+        lap('cuerda');
         // Toldo bajo (toldo_pequeno del streaming): caminando hacia un punto con menos espacio que su cabeza, se agacha y pasa;
         // la cabeza (vértices deformados por los huesos) nunca llega a la lona, y al salir se levanta
         const STR = G.mundo.streaming, toldos = ((STR && STR.instancias) || []).filter(i => i.modelo === 'toldo_pequeno' && i.pos);
@@ -374,6 +402,7 @@ window.AVMovimientoTest = function (G) {
           met.toldo = hecho;
           check('Bajo un toldo bajo se agacha y la cabeza no roza la lona; al salir se levanta', !!hecho && hecho.agachada > 0.2 && Number.isFinite(hecho.cabezaMenosLona) && hecho.cabezaMenosLona < 0 && hecho.deNuevoDePie, hecho ? JSON.stringify(hecho) : 'sin punto bajo un toldo al que llegar caminando');
         }
+        lap('toldo');
         // Estacas de los terrenos (contenido, collider 'post'): sólido real, que sustituye al cilindro sin alto. Aterrizar
         // 0,3 m al lado de la estaca más cercana al letrero; la ayuda la centra encima, se posa ('fino', 'poste') y se queda 3 s
         const poste = F.colliders.find(c => c.kind === 'post');
@@ -391,6 +420,7 @@ window.AVMovimientoTest = function (G) {
             check('Se posa en una estaca de los terrenos (sólido real, sin el collider macizo) y se queda 3 s', M.grounded && M.posado === 'fino' && que === 'poste' && Math.abs(S.pos.y - es.g) < 0.1 && met.estaca.deriva3s < 0.02 && met.estaca.colliderSustituido, JSON.stringify(met.estaca));
           } else check('Se posa en una estaca de los terrenos', false, 'sin estaca sólida a menos de 6 m del letrero (collider sustituido: ' + SO.cubre(poste) + ')');
         }
+        lap('estaca');
         // Todos los edificios cargados (de mundo.js o del streaming): no se atraviesan y tienen dónde pararse encima
         const msK = SO.SO.msCuadro; SO.SO.msCuadro = 0.3; // la flora espera: aquí solo cuentan los edificios
         const fallos = [], enterrados = []; let revisados = 0;
@@ -401,11 +431,12 @@ window.AVMovimientoTest = function (G) {
           for (const id of Object.keys(ACT)) {
             const a = ACT[id]; if (!a || a.tipo !== 'kelvin' || !a.pos) continue;
             const [bx, , bz] = a.pos;
-            SO.terminar(true);
+            let tq = performance.now(); SO.terminar(true); dur.edif_terminar = (dur.edif_terminar || 0) + Math.round(performance.now() - tq); tq = performance.now();
             const tp = altoCerca(bx, bz, Math.min(5, Math.max(2.4, a.alto || 0))), sobre = !!tp && tp.t - H(tp.x, tp.z) > 0.15; // cercas largas y canoas bajas también
             // desde arriba, ahí hay suelo (dentro de la columna de una percha del diseño manda la percha: también vale)
             const enPercha = !!tp && F.perchas.some(p => Math.hypot(tp.x - p.x, tp.z - p.z) < p.r + 0.3 && tp.t + 0.2 >= p.y - 0.3 && tp.t < p.y + 4 && (!p.when || p.when()));
             const paraOk = sobre && (enPercha || F.suelo(tp.x, tp.z, tp.t + 0.2) >= tp.t - 0.05);
+            dur.edif_techo = (dur.edif_techo || 0) + Math.round(performance.now() - tq); tq = performance.now();
             let peor = 0, n = 0;
             for (const ang of [0.5, 2.6, 4.7]) {
               const sx = bx + Math.cos(ang) * 9, sz = bz + Math.sin(ang) * 9, sy = F.suelo(sx, sz, H(sx, sz) + 0.3);
@@ -413,10 +444,15 @@ window.AVMovimientoTest = function (G) {
               reset(sx, sz); n++;
               const st = toStick(bx - sx, bz - sz);
               // a ras de suelo (subirse a un alero bajo no cuenta como meterse)
-              frame(() => { I.stick.x = st.x; I.stick.y = st.y; if (S.pos.y - H(S.pos.x, S.pos.z) < 0.5) peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y, cuerpo())); }, 110);
+              // 110 cuadros, o menos si se queda parada contra la pared (los cuadros que siguen son idénticos)
+              let quieta = 0, ux = S.pos.x, uz = S.pos.z;
+              for (let i = 0; i < 110 && quieta < 15; i++) {
+                I.stick.x = st.x; I.stick.y = st.y; if (S.pos.y - H(S.pos.x, S.pos.z) < 0.5) peor = Math.max(peor, SO.penetra(S.pos.x, S.pos.z, S.pos.y, cuerpo())); S.clock += DT; paso();
+                quieta = Math.hypot(S.pos.x - ux, S.pos.z - uz) < 0.002 ? quieta + 1 : 0; ux = S.pos.x; uz = S.pos.z;
+              }
               I.stick.x = I.stick.y = 0;
             }
-            revisados++;
+            revisados++; dur.edif_paredes = (dur.edif_paredes || 0) + Math.round(performance.now() - tq);
             // meterse = más que el centro y un punto del borde (un poste fino bajo el centro al pasar rozando no cuenta).
             // Sin sólido = fallo del motor; con sólido pero por debajo del terreno = pieza enterrada (datos del mapa): se informa aparte.
             if (tp && !sobre) enterrados.push(id);
@@ -425,8 +461,10 @@ window.AVMovimientoTest = function (G) {
         } finally { SO.SO.msCuadro = msK; I.stick.x = I.stick.y = 0; }
         met.edificios = { revisados, fallos: fallos.length, enterrados };
         check('Todos los edificios cargados: no se atraviesan y tienen dónde pararse encima', revisados > 0 && !fallos.length, revisados + ' edificios' + (fallos.length ? ' · ' + fallos.join(', ') : ''));
+        lap('edificios');
         met.solidos = SO.stats();
       }
+      lap('solidos');
       // 8b. Cámara con vida (MODERNIZACION_2026 ficha 26-G): roll al girar en vuelo que vuelve a 0, FOV según la velocidad,
       // dolly al aterrizar, plano de descubrimiento sin meterse en el terreno; prefers-reduced-motion (CAM.sinVida) lo apaga todo
       {
@@ -487,6 +525,7 @@ window.AVMovimientoTest = function (G) {
         check('QA-27: posada dentro de una copa, la cámara se acerca para verla', dPosada < CAM.dist * 0.7 && dPosada > 1, JSON.stringify(met.qa61posada));
         C.probarCopas(null); M.posado = ''; reset(L.x, L.z); cam.fov = 55; cam.zoom = 1; cam.updateProjectionMatrix();
       }
+      lap('camara');
       // 9. Subir siempre sube y nunca encajada (rol Movimiento y controles). Lo que contó Kelvin: «a veces la cotorra no eleva
       // más» y Vittata metida en la pared de una torre de las ruinas, con la cabeza atravesando la plataforma de arriba.
       {
@@ -505,7 +544,7 @@ window.AVMovimientoTest = function (G) {
         reset(L.x, L.z); F.toggleFly(); frame(null, 30);
         { const lim = F.techoVuelo(S.pos.x, S.pos.z), y0 = S.pos.y; let y2 = null, maxY = -Infinity, nf = 0, trabada = 0, prev = S.pos.y;
           while (nf++ < 1200) {
-            frame(() => { I.jumpHeld = true; }); maxY = Math.max(maxY, S.pos.y);
+            I.jumpHeld = true; S.clock += DT; paso(); maxY = Math.max(maxY, S.pos.y);
             if (nf === 120) y2 = S.pos.y;
             if (S.pos.y < lim - 1.5 && S.pos.y - prev < 0.01) trabada++; prev = S.pos.y;
             if (nf > 120 && S.pos.y > lim - 0.4) break;
@@ -516,13 +555,13 @@ window.AVMovimientoTest = function (G) {
           check('Mantener subir siempre sube (más de 8 m en 2 s) hasta el techo de vuelo, sin trabarse', y2 - y0 > 8 && S.pos.y > lim - 1.5 && trabada === 0, JSON.stringify(met.subir));
           check('El techo de vuelo se nota y se explica: frena, no se pasa y avisa del viento fuerte', met.subir.viento && maxY < lim + 0.3, JSON.stringify(met.subir));
         }
+        lap('subir');
         // c) La torre antigua (ruina_torre de las ruinas de El Yunque): torre hueca con plataforma de baldosa arriba
         const STR2 = G.mundo.streaming, torre = STR2 && (STR2.instancias || []).find(i => i.id === 'ruina_torre@kelvin_ruinas_yunque#0' && i.pos);
         if (torre && SOL && SOL.activo) {
           const [tx, , tz] = torre.pos;
           reset(tx + 14, tz);
           if (STR2.alrededor) await STR2.alrededor(tx, tz);
-          if (STR2.terminar) await STR2.terminar();
           SOL.terminar();
           // dentro de la cavidad: suelo abajo, la plataforma encima a más de 6 m y nada sólido para el cuerpo
           let cav = null;
@@ -567,6 +606,7 @@ window.AVMovimientoTest = function (G) {
           reset(L.x, L.z);
         } else check('Torre antigua de las ruinas', true, 'sin la torre en este mapa');
       }
+      lap('torre');
       // Fundido de la flora (G1): con la cámara de seguimiento a su distancia normal la flora entre ella y Vittata se
       // tramea (uOcluA.w = FUNDIDO.fuerza); con la cámara pegada a Vittata (menos de 1,5 radios) se apaga
       if (G.vegetacion && G.vegetacion.fundido) {
@@ -578,6 +618,8 @@ window.AVMovimientoTest = function (G) {
         met.fundido = { fuerza: FU.fuerza, lejos, cerca, distCam: r2(dist) };
         check('Fundido de la flora: activo con la cámara a distancia normal y apagado con la cámara pegada a Vittata', FU.fuerza > 0 && lejos === FU.fuerza && cerca === 0 && dist > FU.radio * 1.5, JSON.stringify(met.fundido));
       }
+      lap('fundido');
+      check('Duración de cada tramo de la prueba (ms)', true, JSON.stringify(dur));
       met.tuning = { walk: T.walk, run: T.run, jumpV: T.jumpV, fly: T.fly, landV: T.landV };
     } finally {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;

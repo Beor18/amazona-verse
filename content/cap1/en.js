@@ -217,6 +217,7 @@ window.AV_EN = {
  "Copiar imagen": "Copy image",
  "Coquí": "Coquí",
  "Coquí común": "Common coquí",
+ "Dinoflagelados de la caleta": "Dinoflagellates of the cove",
  "Coquí de peluche": "Plush coquí",
  "Coquí escondido": "Hidden coquí",
  "Coquíes {}/{}": "Coquís {}/{}",
