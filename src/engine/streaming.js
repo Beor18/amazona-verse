@@ -906,7 +906,10 @@ AVE.module('streaming', function (G) {
             }
           }
         }
-        if (L.panel && G.esBohioAbierto) { const j = li.findIndex(I => G.esBohioAbierto(I)); if (j >= 0 && j < li.length - 1) { const t = li[j]; li[j] = li[li.length - 1]; li[li.length - 1] = t; } }
+        if (L.panel && G.esBohioAbierto && li.some(I => G.esBohioAbierto(I))) { // BM13: varias abiertas (una por aldea), todas al final
+          const cerr = li.filter(I => !G.esBohioAbierto(I)), abi = li.filter(I => G.esBohioAbierto(I));
+          for (let j = 0; j < li.length; j++) li[j] = j < cerr.length ? cerr[j] : abi[j - cerr.length];
+        }
         let igual = li.length === pr.length;
         for (let j = 0; igual && j < li.length; j++) if (li[j] !== pr[j]) igual = false;
         if (!igual) {
@@ -915,7 +918,8 @@ AVE.module('streaming', function (G) {
           L.attr.needsUpdate = true;
           L.prev = li.slice();
         }
-        const nPanel = L.panel ? li.length - (li.length && G.esBohioAbierto && G.esBohioAbierto(li[li.length - 1]) ? 1 : 0) : 0;
+        let nPanel = L.panel ? li.length : 0;
+        while (nPanel > 0 && G.esBohioAbierto && G.esBohioAbierto(li[nPanel - 1])) nPanel--;
         for (const m of L.mallas) { m.count = m === L.panel ? nPanel : li.length; m.visible = m.count > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
         if (li.length) { vis[L.tipo] += li.length; vis.mallas += L.mallas.length; }
       }

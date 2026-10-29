@@ -19,11 +19,16 @@ window.AVBohios = function (G) {
     fogon: 'El fogón está apagado. Huele a leña de esta mañana.',
   };
   let casa = null, grupo = null, listoP = null;
+  const montadas = {}; // BM13: id de instancia → grupo de muebles (Villa Raíz y una casa por aldea)
 
   const factor = () => G.bohiosFactor || 1;
   const casas = () => {
     const st = G.mundo && G.mundo.streaming;
     return (st && st.instancias || []).filter(I => I.zona === ZONA && I.modelo === MODELO && I.pos);
+  };
+  const otras = () => { // BM13: las casas amuebladas de las demás aldeas (mundo.js las marca en G.bohiosAmueblados)
+    const st = G.mundo && G.mundo.streaming;
+    return (st && st.instancias || []).filter(I => I.zona !== ZONA && I.modelo === MODELO && I.pos && G.esBohioAbierto && G.esBohioAbierto(I));
   };
   function elegir(lista) {
     const sp = (G.terreno.mapa && G.terreno.mapa.spawn) || { x: 134, z: 182.5 };
@@ -73,10 +78,12 @@ window.AVBohios = function (G) {
     G.ui.toast(frase, 2800);
   }
   function montar(I) {
-    if (grupo || !I) return;
-    casa = I;
+    if (!I || montadas[I.id]) return;
+    const suf = I.zona === ZONA ? '' : '@' + I.zona; // BM13: las de otras aldeas llevan la zona en el id
+    if (!suf) casa = I;
     grupo = new THREE.Group();
-    grupo.name = 'bohio-interior';
+    grupo.name = 'bohio-interior' + suf;
+    montadas[I.id] = grupo;
     const v = vanoDe();
     const n = v ? girar(I, v.nx, v.nz) : { x: 0, z: 1 };
     const p = v ? localAMundo(I, v.x, 0, v.z) : { x: I.pos[0], y: I.pos[1], z: I.pos[2] };
@@ -104,9 +111,9 @@ window.AVBohios = function (G) {
     scene.add(grupo);
     grupo.updateMatrixWorld(true);
     if (G.solidos && G.solidos.agregar) G.solidos.agregar(grupo); // BM6-8: los muebles son sólidos
-    const add = (id, p, frase) => G.interaccion.add({
-      id, x: p.x, z: p.z, r: 1.35,
-      label: () => (id === 'bohio-hamaca' ? 'Tocar la hamaca' : id === 'bohio-tinaja' ? 'Tocar la tinaja' : 'Tocar el fogón'),
+    const add = (id0, p, frase) => G.interaccion.add({
+      id: id0 + suf, x: p.x, z: p.z, r: 1.35,
+      label: () => (id0 === 'bohio-hamaca' ? 'Tocar la hamaca' : id0 === 'bohio-tinaja' ? 'Tocar la tinaja' : 'Tocar el fogón'),
       use: () => tocar(frase),
     });
     add('bohio-hamaca', a, FRASES.hamaca);
@@ -128,6 +135,38 @@ window.AVBohios = function (G) {
       return I;
     })();
     return listoP;
+  }
+  // BM13: cuando Vittata se acerca (<110 m) a una casa amueblada de otra aldea, se cargan sus alrededores y se monta. Una comprobación por segundo.
+  let vigilando = null;
+  function vigilar() {
+    if (vigilando) return;
+    vigilando = setInterval(() => {
+      const st = G.mundo && G.mundo.streaming; if (!st || !G.bohiosAmueblados) return;
+      for (const A of G.bohiosAmueblados) {
+        if (A.hecho || A.cargando || Math.hypot(S.pos.x - A.x, S.pos.z - A.z) > 110) continue;
+        A.cargando = true;
+        (async () => {
+          if (st.alrededor) await st.alrededor(A.x, A.z);
+          if (st.terminar) await st.terminar();
+          if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+          const I = otras().find(J => Math.hypot(J.pos[0] - A.x, J.pos[2] - A.z) < 0.5);
+          if (I) { montar(I); A.hecho = true; }
+        })().catch(() => {}).then(() => { A.cargando = false; });
+      }
+    }, 1000);
+  }
+  // Para las pruebas: monta ya las casas de las otras aldeas (sin esperar a que Vittata se acerque).
+  async function montarOtras() {
+    await preparar();
+    const st = G.mundo.streaming, res = [];
+    for (const A of (G.bohiosAmueblados || [])) {
+      if (st.alrededor) await st.alrededor(A.x, A.z);
+      if (st.terminar) await st.terminar();
+      if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+      const I = otras().find(J => Math.hypot(J.pos[0] - A.x, J.pos[2] - A.z) < 0.5);
+      if (I) { montar(I); A.hecho = true; res.push(I); }
+    }
+    return res;
   }
   // Tres encuadres para las capturas: aire, camino y puerta (Vittata en el umbral).
   function vistas() {
@@ -204,6 +243,28 @@ window.AVBohios = function (G) {
         const pd = enPunto(p.dentroX, p.dentroZ);
         ok('BM6-8: dentro del umbral no hay muebles que estorben (el centro queda libre)', pd < 3, pd.toFixed(2) + ' · de fuera a dentro: ' + [0, 0.25, 0.5, 0.7, 0.95, 1.2, 1.5, 2].map(d => enPunto(p.x - p.nx * d, p.z - p.nz * d)).join(' '));
       }
+      // BM13: una casa amueblada más en Caney del Meandro, Embarcadero y Puerto de La Mina
+      const A = G.bohiosAmueblados || [];
+      ok('BM13: hay una casa amueblada en cada una de las 3 aldeas', A.length === 3, A.map(a => a.zona.replace('kelvin_aldea_', '') + ' ' + a.escala.toFixed(2)).join(' · '));
+      const montOtras = await montarOtras();
+      ok('BM13: las 3 casas se montan con sus muebles', montOtras.length === 3 && montOtras.every(J => montadas[J.id] && G.interaccion.find('bohio-hamaca@' + J.zona) && G.interaccion.find('bohio-tinaja@' + J.zona) && G.interaccion.find('bohio-fogon@' + J.zona)), montOtras.length);
+      if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+      for (const J of montOtras) {
+        const q = puerta(J), nom = J.zona.replace('kelvin_aldea_', '');
+        ok('BM13 ' + nom + ': la puerta supera 1,75 m', !!(q && q.alto >= ALTURA), q ? q.alto.toFixed(2) + ' m · ancho ' + q.ancho.toFixed(2) : 'sin vano');
+        if (!q || !G.solidos || !G.solidos.penetra) continue;
+        const pie = (x, z) => { const t = G.terreno.height(x, z), g = G.solidos.altoEn ? G.solidos.altoEn(x, z, t + 0.9) : -Infinity; return (g > t ? g : t) + 0.05; };
+        const enPunto = (x, z) => G.solidos.penetra(x, z, pie(x, z), 1.2);
+        const enVano = r => enPunto(r.x - r.nx * 0.7, r.z - r.nz * 0.7);
+        const cerr = (G.mundo.streaming.instancias || []).filter(B => B.zona === J.zona && B.modelo === MODELO && B !== J && B.colocado && B.pos);
+        const cc = cerr.filter(B => { const r = puerta(B); return r && enVano(r) > enVano(q); });
+        ok('BM13 ' + nom + ': solo su puerta está abierta', enVano(q) <= 3 && cc.length === cerr.length, 'abierta ' + enVano(q).toFixed(2) + ' · cerradas ' + cc.length + '/' + cerr.length);
+        const pd = enPunto(q.dentroX, q.dentroZ);
+        ok('BM13 ' + nom + ': dentro del umbral el centro queda libre', pd < 3, pd.toFixed(2));
+        let sitio = false;
+        for (let d = 0.4; d <= 3.2 && !sitio; d += 0.2) { const x = q.x + q.nx * d, z = q.z + q.nz * d; if (G.solidos.penetra(x, z, G.terreno.height(x, z) + 0.12, 1.2) === 0) sitio = true; }
+        ok('BM13 ' + nom + ': frente a la puerta hay sitio para estar de pie', sitio);
+      }
       const vis = vistas();
       ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
     } catch (e) {
@@ -216,7 +277,8 @@ window.AVBohios = function (G) {
   }
 
   preparar().catch(() => {});
-  const api = { get listo() { return preparar(); }, get casa() { return casa; }, vistas, preparar, test, factor };
+  vigilar();
+  const api = { get listo() { return preparar(); }, get casa() { return casa; }, montadas, otras, montarOtras, puertaDe: puerta, vistas, preparar, test, factor };
   G.bohios = api;
   return api;
 };

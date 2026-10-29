@@ -300,6 +300,31 @@ AVE.module('mundo', function (G) {
       }
     }
     G.esBohioAbierto = I => !!(amb && I && I.modelo === VILLA.modelo && I.pos && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5);
+    // BM13: una casa más por aldea (Caney del Meandro, Embarcadero, Puerto de La Mina), con la misma puerta abierta y mobiliario.
+    // Se elige la que ya está más cerca de la escala de la amueblada de Villa Raíz y, si es menor, se sube ×1,75 (la matriz de 16 números, por columnas).
+    const AL = ED.aldeasBohio, abiertas = [];
+    if (AL && amb) {
+      const escDe = v => v.length >= 16 ? (Math.hypot(v[0], v[1], v[2]) + Math.hypot(v[4], v[5], v[6]) + Math.hypot(v[8], v[9], v[10])) / 3 : v[4];
+      for (const zona of AL.zonas) {
+        let mejor = null;
+        for (const e of MAPA.escenaKelvin.compacto) {
+          if (!e || e.grupo !== zona || e.modelo !== AL.modelo || !Array.isArray(e.inst)) continue;
+          for (const v of e.inst) {
+            const s = escDe(v), d = Math.abs(s - amb.s);
+            if (s > 0 && s <= 1 && (!mejor || d < mejor.d - 1e-6)) mejor = { v, s, d, zona };
+          }
+        }
+        if (!mejor) continue;
+        const f = mejor.s < amb.s * 0.8 ? AL.factor : 1;
+        if (f !== 1) {
+          if (mejor.v.length >= 16) for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) mejor.v[i] *= f; else mejor.v[4] *= f;
+        }
+        const p = mejor.v.length >= 16 ? [mejor.v[12], mejor.v[14]] : [mejor.v[0], mejor.v[2]];
+        abiertas.push({ x: p[0], z: p[1], zona, escala: mejor.s * f });
+      }
+    }
+    G.bohiosAmueblados = abiertas;
+    G.esBohioAbierto = I => !!(I && I.modelo === VILLA.modelo && I.pos && ((amb && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5) || abiertas.some(a => Math.hypot(I.pos[0] - a.x, I.pos[2] - a.z) < 0.5)));
   }
   G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
