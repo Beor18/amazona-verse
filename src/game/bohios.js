@@ -252,7 +252,7 @@ window.AVBohios = function (G) {
         const pie = (x, z) => { const t = G.terreno.height(x, z), g = G.solidos.altoEn ? G.solidos.altoEn(x, z, t + 0.9) : -Infinity; return (g > t ? g : t) + 0.05; };
         const enPunto = (x, z) => G.solidos.penetra(x, z, pie(x, z), 1.2);
         const enVano = r => enPunto(r.x - r.nx * 0.7, r.z - r.nz * 0.7);
-        const cerr = (G.mundo.streaming.instancias || []).filter(B => B.zona === J.zona && B.modelo === MODELO && B !== J && B.colocado && B.pos && uniforme(B));
+        const cerr = (G.mundo.streaming.instancias || []).filter(B => B.zona === J.zona && B.modelo === MODELO && B !== J && B.colocado && B.pos && B.escala >= 0.6 && uniforme(B)); // con escala menor la puerta (<0,45 m) es más estrecha que el cuerpo y no se puede comparar
         const cc = cerr.filter(B => { const r = puerta(B); return r && enVano(r) > enVano(q); });
         ok('BM13 ' + nom + ': solo su puerta está abierta', enVano(q) <= 3 && cc.length === cerr.length, 'abierta ' + enVano(q).toFixed(2) + ' · cerradas ' + cc.length + '/' + cerr.length);
         const pd = enPunto(q.dentroX, q.dentroZ);
