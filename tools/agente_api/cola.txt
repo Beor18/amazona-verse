@@ -1,4 +1,10 @@
 # Cola de la API en la Mac (ejecutar.sh --cola N). Una tarea por línea, en orden; la coordinadora la mantiene. 29-oct: la PC con Windows queda en pausa (sin acceso a GitHub); todo vuelve a la Mac.
+BM28
+BM29
+BM30
+BM31
+BM32
+BM33
 BM26
 BM27
 BM23
