@@ -395,6 +395,18 @@ AVE.module('streaming', function (G) {
     if (!esPiedra(n) || !geo) return;
     podarAstillas(geo);
     if (!horneado) cremar(geo);
+    marfilar(geo);
+  }
+  // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
+  // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  function marfilar(geo) {
+    const col = geo.attributes.color;
+    if (!col || geo.userData.marfil) return;
+    for (let i = 0; i < col.count; i++) {
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.55, k = 1.14;
+      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k), Math.min(1, (y + (b - y) * s * 1.1) * k));
+    }
+    col.needsUpdate = true; geo.userData.marfil = 1;
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
