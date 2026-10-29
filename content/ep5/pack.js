@@ -799,13 +799,16 @@
           check('Iguaca ofrece las preguntas', opciones().some(x => x.includes('Ahora no')));
           pick('Ahora no');
           check('«Ahora no» no anota nada', !Object.keys(S.edu.formativa).length);
-          useAt('iguaca'); pick('Sí, pregúntame');
+          drain(); useAt('iguaca'); pick('Sí, pregúntame');
           const card = $('card'), opt = i => card.querySelector(`.edu-opt[data-i="${i}"]`), correcta = id => AU.pregunta(id).correcta;
           check('Tarjeta formativa, sin puntaje', G.ui.cardOpen && card.querySelector('.edu-cara') && !/punt|score|\d+\s*\/\s*\d+|%/i.test(card.textContent));
+          // QA-76: con la máquina cargada la tarjeta tarda en pintar; se espera hasta 5 s a que exista el botón
+          const hasta5 = async f => { const t0 = performance.now(); while (!f() && performance.now() - t0 < 5000) { drain(); await new Promise(r => setTimeout(r, 100)); } return f(); };
+          await hasta5(() => opt(0));
           opt(correcta('q1') === 0 ? 1 : 0).click();
           check('Fallo en q1: pista, sin registro', card.querySelector('.edu-retro.pista') && S.edu.formativa.q1 == null);
-          opt(correcta('q1')).click(); $('edu-seguir').click();
-          for (const id of QS.slice(1)) { opt(correcta(id)).click(); const sg = $('edu-seguir'); if (sg) sg.click(); }
+          await hasta5(() => opt(correcta('q1'))); opt(correcta('q1')).click(); await hasta5(() => $('edu-seguir')); $('edu-seguir').click();
+          for (const id of QS.slice(1)) { await hasta5(() => opt(correcta(id))); opt(correcta(id)).click(); const sg = $('edu-seguir'); if (sg) sg.click(); }
           drain();
           check('Las 6 respondidas', QS.every(id => S.edu.formativa[id]) && !G.ui.cardOpen, JSON.stringify(S.edu.formativa));
           const p = AU.partida();

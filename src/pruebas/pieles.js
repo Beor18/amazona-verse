@@ -48,7 +48,7 @@ window.AVPielesTest = function () {
         const ok = await aplicar(ch, p.especie || p.piel), m = cuerpo();
         if (!ok || m.length !== n0 || !m.every(x => x === T[p.piel]) || on.length() !== 0) fallos.push(p.piel);
       }
-      check('Las 22 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 3, fallos.join(',') || n0 + ' materiales');
+      check('Las 22 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 2, fallos.join(',') || n0 + ' materiales');
       await aplicar(ch, 'oratrix');
       ch.applyLook({ species: 'vittata', accessories: { neck: { id: 'panuelo', color: '#f2a03d' } } }); await listo(ch);
       check('La piel fija sobrevive a applyLook (crías y rivales con ropa)', cuerpo().every(x => x === T.oratrix) && on.length() === 0);

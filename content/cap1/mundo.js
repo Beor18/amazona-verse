@@ -151,6 +151,8 @@
       // la puerta mide 1,39 m a ×1,25 y 1,67 m a ×1,5: las dos quedan bajo Vittata (1,75 m). A ×1,75 la puerta
       // llega a 1,95 m. ?bohioEsc=1.25|1.5|1.75 solo para las capturas. Vittata no se achica.
       escalaVilla: { zona: 'kelvin_aldea_rio_este', modelo: 'bohio_redondo', factor: 1.75 },
+      // BM13: una casa más por aldea con puerta abierta y mobiliario (bohios.js), a la escala de la amueblada de Villa Raíz
+      aldeasBohio: { modelo: 'bohio_redondo', factor: 1.75, zonas: ['kelvin_aldea_meandros', 'kelvin_aldea_rio_oeste', 'kelvin_aldea_mina'] },
       frente: {}, orientar: true, noOrientar: ['empalizada', 'canoa', 'ruina_pilar', 'ruina_altar', 'muelle_troncos', 'puente_madera'], propias: ['puente'],
       kit: 'assets/models/edificios/kit.js', // manifiesto del kit web (64 modelos, ver docs/EDIFICIOS.md)
     },
