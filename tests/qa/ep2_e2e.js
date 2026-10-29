@@ -89,7 +89,7 @@
         if (!G.idioma.faltan([t]).length || MOTOR.has(t)) continue;
         // Ya en inglés (un valor del diccionario, o su final mientras el diálogo se escribe letra a letra) aunque diga «no» o «El Yunque»
         if (!valores) valores = Object.values(W.AV_EN || {});
-        if (valores.some(v => v === t || (t.length > 20 && v.endsWith(t)))) continue;
+        if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)))) continue;
         faltanEN.add(t.slice(0, 200));
       }
     }
