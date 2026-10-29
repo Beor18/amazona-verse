@@ -136,22 +136,17 @@ window.AVBohios = function (G) {
     })();
     return listoP;
   }
-  // BM13: cuando Vittata se acerca (<110 m) a una casa amueblada de otra aldea, se cargan sus alrededores y se monta. Una comprobación por segundo.
+  // BM13: las casas amuebladas de otras aldeas se montan solas cuando el streaming ya las ha colocado (sin forzar cargas): una comprobación por segundo.
   let vigilando = null;
   function vigilar() {
     if (vigilando) return;
     vigilando = setInterval(() => {
-      const st = G.mundo && G.mundo.streaming; if (!st || !G.bohiosAmueblados) return;
+      if (!G.bohiosAmueblados || !G.bohiosAmueblados.some(A => !A.hecho)) { clearInterval(vigilando); return; }
+      const lista = otras();
       for (const A of G.bohiosAmueblados) {
-        if (A.hecho || A.cargando || Math.hypot(S.pos.x - A.x, S.pos.z - A.z) > 110) continue;
-        A.cargando = true;
-        (async () => {
-          if (st.alrededor) await st.alrededor(A.x, A.z);
-          if (st.terminar) await st.terminar();
-          if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
-          const I = otras().find(J => Math.hypot(J.pos[0] - A.x, J.pos[2] - A.z) < 0.5);
-          if (I) { montar(I); A.hecho = true; }
-        })().catch(() => {}).then(() => { A.cargando = false; });
+        if (A.hecho || Math.hypot(S.pos.x - A.x, S.pos.z - A.z) > 140) continue;
+        const I = lista.find(J => J.colocado && Math.hypot(J.pos[0] - A.x, J.pos[2] - A.z) < 0.5);
+        if (I) { montar(I); A.hecho = true; }
       }
     }, 1000);
   }
@@ -160,8 +155,8 @@ window.AVBohios = function (G) {
     await preparar();
     const st = G.mundo.streaming, res = [];
     for (const A of (G.bohiosAmueblados || [])) {
-      if (st.alrededor) await st.alrededor(A.x, A.z);
-      if (st.terminar) await st.terminar();
+      if (st.alrededor) await Promise.race([st.alrededor(A.x, A.z), new Promise(r => setTimeout(r, 60000))]);
+      if (st.terminar) await Promise.race([st.terminar(), new Promise(r => setTimeout(r, 60000))]);
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
       const I = otras().find(J => Math.hypot(J.pos[0] - A.x, J.pos[2] - A.z) < 0.5);
       if (I) { montar(I); A.hecho = true; res.push(I); }

@@ -137,6 +137,27 @@
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color
+    // BM15: precalienta los programas de shader durante la portada (QA-53). Un material por trozo, ≤ 8 ms de compilación por cuadro:
+    // se ocultan los demás objetos con material y renderer.compile() solo ve el del trozo. Dos pasadas por si el mundo añade objetos después.
+    const precalentar = () => {
+      const R = G.renderer, th = R && R.renderer;
+      if (!th || typeof th.compile !== 'function') return;
+      const porMat = new Map();
+      R.scene.traverse(o => { const m = o.material; if (!m || !o.visible) return; for (const mm of (Array.isArray(m) ? m : [m])) { if (!porMat.has(mm)) porMat.set(mm, []); porMat.get(mm).push(o); } });
+      const cola = Array.from(porMat.entries()), todos = Array.from(new Set([].concat(...cola.map(c => c[1]))));
+      const paso = () => {
+        const t0 = performance.now();
+        while (cola.length && performance.now() - t0 < 8) {
+          const [, objs] = cola.shift(), mios = new Set(objs);
+          for (const o of todos) if (!mios.has(o)) o.visible = false;
+          try { th.compile(R.scene, R.camera); } catch (e) { /* un material raro no frena el resto */ }
+          for (const o of todos) o.visible = true;
+        }
+        if (cola.length) requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    };
+    for (const ms of [1000, 5000]) setTimeout(() => { try { precalentar(); } catch (e) { /* solo optimiza */ } }, ms);
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }
