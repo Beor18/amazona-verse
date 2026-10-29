@@ -289,8 +289,18 @@ AVE.module('mundo', function (G) {
     }
     G.bohiosAbiertos = G.bohiosAbiertos || {};
     G.bohiosAbiertos[VILLA.modelo] = true; // malla abierta: solo la amueblada (bohios.js) conserva la puerta; las demás llevan su panel (BM6-1)
-    // la única instancia con la puerta abierta: el bohío amueblado (89,74 · 128,67; el id depende del grupo, la posición no)
-    G.esBohioAbierto = I => !!(I && I.modelo === VILLA.modelo && I.pos && Math.hypot(I.pos[0] - 89.74, I.pos[2] - 128.67) < 0.6);
+    // la única instancia con la puerta abierta: la amueblada (la misma que elige bohios.js: mayor escala y más cerca del spawn)
+    let elegida = null;
+    G.esBohioAbierto = I => {
+      if (!I || I.modelo !== VILLA.modelo || !I.pos) return false;
+      if (!elegida) {
+        const sp = (MAPA.spawn) || { x: 134, z: 182.5 };
+        const l = (ST.instancias || []).filter(B => B.zona === VILLA.zona && B.modelo === VILLA.modelo && B.pos);
+        if (!l.length) return false;
+        elegida = l.slice().sort((a, b) => (b.escala - a.escala) || (Math.hypot(a.pos[0] - sp.x, a.pos[2] - sp.z) - Math.hypot(b.pos[0] - sp.x, b.pos[2] - sp.z)))[0];
+      }
+      return I === elegida;
+    };
   }
   G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
