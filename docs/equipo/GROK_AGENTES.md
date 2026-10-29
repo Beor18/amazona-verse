@@ -1,6 +1,8 @@
 # Grok en Cursor: una sola fila de tareas (28-oct)
 
-## ✅ 29-oct 04:30 UTC: Grok recargado y SIN NADA A MEDIAS (C, D, J, K y A lo confirmaron). Reparto nuevo, sin duplicar con la API
+## ⛔ 29-oct 04:50 UTC: Grok SIN CRÉDITO otra vez (Kelvin). No se le manda nada. TODO lo pendiente lo hace la API en la Mac (cola en tools/agente_api/cola.txt: BM14, BM6, BM2, BM3, BM8, BM4, BM5, BM1, BM9, BM10, BM11, BM12, BM13). La tabla de abajo vuelve a valer cuando Grok tenga crédito.
+
+## (histórico) 29-oct 04:30 UTC: Grok recargado y SIN NADA A MEDIAS (C, D, J, K y A lo confirmaron). Reparto nuevo, sin duplicar con la API
 La API de la Mac se queda solo con lo que necesita **Blender o GPU real**: BM2 (lejanos Ancient en Blender), BM3 (dosel horneado), BM4 (interior del bohío), BM5 (pieles), BM1 (QA con GPU) y BM11 (gameplay grabado). **Todo lo demás vuelve a Grok**, por carriles, con el detalle en `docs/equipo/TAREAS_API.md` (la sección «Carriles de la API en la Mac» describe cada BM: Grok la hace igual, con sus pruebas, y marca la fila en el tablero como G-nueva):
 
 | Carril de Grok | Tarea (detalle en TAREAS_API.md) | Archivos |
