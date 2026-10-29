@@ -150,7 +150,7 @@ AVE.module('misiones', function (G) {
     $('indicators').innerHTML = HIST.indicadores ? HIST.indicadores(S, G) : '';
   }
   // ---------- Pantalla final ----------
-  // «Crear mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
+  // «Ver mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
   // (S.explorando, que se guarda: al recargar el panel no vuelve a abrirse solo); «Comenzar de cero» borra la partida y el
   // cómic, así que primero pregunta DENTRO del juego (#end-confirm; nunca confirm()). Esc cancela la pregunta o, sin
   // pregunta, cierra el panel como «Seguir explorando».

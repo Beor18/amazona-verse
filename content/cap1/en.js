@@ -179,6 +179,8 @@ window.AV_EN = {
  "Colocar": "Place",
  "Come polen, no solo néctar, y de noche duerme en grupo en la misma rama: hasta 60 juntas.": "It eats pollen, not just nectar, and sleeps at night in groups on the same branch: up to 60 together.",
  "Comenzar de cero": "Start from scratch",
+ "Seguir explorando": "Keep exploring",
+ "Ver mi cómic": "View my comic",
  "Comer": "Eat",
  "Comida": "Food",
  "Comiendo": "Eating",
