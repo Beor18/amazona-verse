@@ -20,7 +20,13 @@ while true; do
       echo "$(date '+%H:%M') hay $n commit(s) pero un trabajador está editando; espero"
     fi
   else
-    echo "$(date '+%H:%M') nada que subir"
+    # Sin nada que subir y sin ediciones a medias: trae lo nuevo de main (la cola y las tareas que añade la coordinadora).
+    if git diff --quiet && git diff --cached --quiet; then
+      git pull -q --ff-only origin main 2>/dev/null && echo "$(date '+%H:%M') al día con main ($(git rev-parse --short HEAD))" \
+        || echo "$(date '+%H:%M') nada que subir"
+    else
+      echo "$(date '+%H:%M') nada que subir; un trabajador está editando"
+    fi
   fi
   sleep 300
 done
