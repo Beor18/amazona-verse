@@ -57,7 +57,8 @@ AVE.module('renderer', function (G) {
     dyn.slow = lento ? dyn.slow + 1 : 0;
     dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
-    if ((dyn.slow >= 2 || grave) && pr > DPR_MIN) { renderer.setPixelRatio(Math.max(DPR_MIN, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
+    const piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
+    if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
     else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
     G.emit('dpr', renderer.getPixelRatio());
