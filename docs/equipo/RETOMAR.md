@@ -2,6 +2,13 @@
 
 Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claude.ai/code).
 
+## Foto del 29-oct, 00:40 AST (Kelvin se va a dormir; todo en marcha continua)
+
+- **Grok volvió con crédito (29-oct)** y confirmó que **nada quedó a medias** (C, D, J, K y A: «nada pendiente»). Reparto vigente, tabla al principio de `docs/equipo/GROK_AGENTES.md`: E = BM6 colisiones y cámara; D = BM14 gráficos pixelados + copas a escala; J = BM8 piezas en el aire y aldeas; H = BM9 capítulos 2–6 en móvil; F = BM10 minijuegos; A = BM12 (tras BM6); M = BM13 (tras BM4). El detalle de cada BM está en `docs/equipo/TAREAS_API.md`. Carril L: G29 (capturas para el tráiler) en `respaldo/grok-g29-29oct`, pendiente de repetir `movementTest` sola y pasar a `main`.
+- **La API de la Mac** (`~/AmazonaVerse/juego_api`, una ventana por trabajador: `tools/agente_api/ejecutar.sh --cola 1 --total 60`) se queda solo con lo de Blender/GPU: BM2, BM3, BM4, BM5, BM1, BM11 (cola en `tools/agente_api/cola.txt`). Crédito ~$141 (Kelvin recargó $100; tope total 461). Al cerrar esta foto no había subido nada; si las ventanas no imprimen nada tras `######## BMn`, probar `--prueba` (tope $0,50) para ver si la API contesta.
+- **La coordinadora (esta sesión)** corre una **ronda cada 2 horas** (`trig_01FUhw3GkY99gH6xEoMViTJ5`): une, prueba, publica, revisa capturas y rellena la cola. Publicado hoy hasta `857a941` (edificios y luz). Teaser v6 montado (`docs/equipo/AUDIOVISUAL_GROK.md` §9); Kelvin le pone voz en CapCut.
+- **Pendiente de Kelvin:** aprobar lo visual en el juego; decidir si las empalizadas y toldos tumbados de su escena se enderezan; subir el teaser a la portada («súbelo»); las decisiones C de `GAME_FIRST.md` §5; Remote Control de la Mac (la carpeta `juego_api` no aparece todavía en la lista).
+
 ## Foto del 28-oct por la tarde (se retoma el sábado 31-oct)
 
 **Por qué se para:** el uso de Grok (los agentes de Cursor) llegó al 100 % el 28-oct y se reinicia en ~5 días (**~2-nov**). Kelvin: «seguimos el sábado». La coordinación automática está **pausada** (`trig_01BKiinrvnVh6Brsi6g9MSFF`) y hay **una sola ronda programada el sábado 31-oct a las 8:23 a.m. de Puerto Rico** (`trig_01FNFzXEUUQpXpc9mR1KkzvM`).
