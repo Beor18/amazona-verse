@@ -402,7 +402,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>Amazona Flight</h3><p>Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.</p>
       <span class="rt-rec" data-rec="flight"></span><button class="btn" type="button" data-jugar="flight" data-icon="flag">Jugar</button></div>
-    <div class="rt-reto"><h3>El tren de Vittata</h3><p>Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.</p>
+    <div class="rt-reto" hidden style="display:none"><h3>El tren de Vittata</h3><p>Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.</p>
       <span class="rt-rec" data-rec="tren"></span><button class="btn" type="button" data-jugar="tren" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>River Rush</h3><p>Baja el río Amazonas en canoa. Esquiva troncos y rocas, recoge racimos y llega al mar. Clásico, contrarreloj o contra tu fantasma.</p>
       <span class="rt-rec" data-rec="rio_rush"></span><button class="btn" type="button" data-jugar="rio_rush" data-icon="flag">Jugar</button></div>
