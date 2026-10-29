@@ -489,6 +489,17 @@
       const porPaso = {}; for (const g of guias) porPaso[g.paso] = g;
       check('4.10', 'En cada paso de la historia (0–7) el HUD muestra el objetivo y hay una guía hacia él', [0, 1, 2, 3, 4, 5, 6, 7].every(p => porPaso[p] && porPaso[p].hud && porPaso[p].guia), Object.values(porPaso).map(g => g.paso + ':' + (g.guia ? 'guía' : 'SIN GUÍA') + ':' + (g.hud || 'SIN HUD')));
 
+      // ---------- Inglés del HUD y del panel final (QA-65) ----------
+      if (G.idioma && G.idioma.poner && G.idioma.faltan) {
+        const idAntes = G.idioma.actual();
+        G.idioma.poner('en'); await (G.idioma.listo || sleep(50)); await sleep(60);
+        const rotulo = () => { try { return W.getComputedStyle($('steps'), '::after').content.replace(/^"|"$/g, ''); } catch (e) { return ''; } };
+        const hudEN = rotulo(), textosFin = [$('end-text'), ...W.document.querySelectorAll('#end h1,#end h2,#end button,#end p')].filter(Boolean).map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(t => /\p{L}{2}/u.test(t));
+        const sinTr = G.idioma.faltan(textosFin);
+        check('4.10', 'En inglés el HUD y el panel final no dicen nada en español (rótulo del objetivo «Chapter complete!», panel final traducido)', /^Chapter complete!?$|^Goal /.test(hudEN) && !sinTr.length, { rotulo: hudEN, sinTraducir: sinTr.slice(0, 8) });
+        G.idioma.poner(idAntes || 'es'); await (G.idioma.listo || sleep(50));
+      }
+
       // ---------- Orden de los eventos del capítulo y materiales ----------
       const clave = S.events.map(e => e.key);
       const esperados = ['PlayerCharacterCreated', 'LumaHelped', 'WorkshopExplored', 'ResourcesCollected', 'LandInspected', 'LandInspected', 'LandSelected', 'ShelterConstructed']
