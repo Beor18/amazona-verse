@@ -79,7 +79,8 @@ def gastado():
 def autorizar(presupuesto, marca=''):
     """Antes de cada tarea: la niega si su tope rebasaría el tope total o el del día; avisa al pasar alerta_pct."""
     try:
-        L = json.loads(LIMITES.read_text(encoding='utf-8'))
+        # 29-oct: los topes se leen de origin/main (la Mac no puede hacer pull con ventanas editando): subirlos desde GitHub basta
+        L = json.loads(remoto('tools/agente_api/limites.json') or LIMITES.read_text(encoding='utf-8'))
     except FileNotFoundError:
         print(f'{marca}== PARO: falta tools/agente_api/limites.json. ==', flush=True)
         return False
@@ -299,8 +300,12 @@ async def trabajador(n, por_tarea, total, turnos):
             costo = 0.0
         finally:
             soltar(t)
-        if costo is None:   # tope de gasto (limites.json): no hay más que hacer
-            return gasto
+        if costo is None:   # tope de gasto (limites.json)
+            # 29-oct: antes la ventana se cerraba y Kelvin la veía parada con crédito en la consola. Ahora espera 10 min y
+            # vuelve a mirar (los topes se leen de GitHub): cuando se suban, sigue sola. Solo se cierra con el tope de la ventana.
+            print(f'{marca}== frenada por un tope de limites.json; espero 10 min y reviso otra vez (no cierres la ventana) ==', flush=True)
+            await asyncio.sleep(600)
+            continue
         gasto += costo
         if not hecha(t):
             # 29-oct: BM12 se tomó 44 veces seguidas en 10 min solo para anotar «sigue bloqueada». Una corrida barata que
