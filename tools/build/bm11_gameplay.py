@@ -65,17 +65,17 @@ VUELO_JS = r'''(async () => {
   const paso = t => { if (!vivo) return; const dt = Math.min(0.05, (t - prev) / 1000); prev = t;
     yaw += V.giro * dt; G.camara.yaw = yaw; const d = { x: -Math.sin(yaw), z: -Math.cos(yaw) };
     S.facing = d; S.pos.x += d.x * V.vel * dt; S.pos.z += d.z * V.vel * dt; S.vy = 0;
-    const suelo = G.terreno.height(S.pos.x, S.pos.z) + 6; S.pos.y += (Math.max(V.y != null ? V.y : suelo, suelo) - S.pos.y) * Math.min(1, dt * 1.5);
+    const suelo = G.terreno.height(S.pos.x, S.pos.z) + (V.y != null ? 20 : V.alt); S.pos.y += ((V.y != null ? Math.max(V.y, suelo) : suelo) - S.pos.y) * Math.min(1, dt * 1.5);
     requestAnimationFrame(paso); };
   requestAnimationFrame(paso); return 'ok vuelo';
 })()'''
 
 ESCENAS = {
     'vuelo': {'desc': 'Vuelo sobre Villa Raíz y el río', 'canvas': '#game',
-              'abrir': VUELO_JS % {'v': json.dumps({'x': 120, 'z': 162, 'alt': 22, 'y': None, 'yaw': 0.63, 'vel': 14, 'giro': 0.05})},
+              'abrir': VUELO_JS % {'v': json.dumps({'x': 120, 'z': 162, 'alt': 34, 'y': None, 'yaw': 0.63, 'vel': 14, 'giro': 0.05})},
               'cerrar': "window.AV.__rutaFin && window.AV.__rutaFin(); 'ok'"},
     'ciudad': {'desc': 'Llegada a la Ciudad de los 36 (vista ciudad_tepuy)', 'canvas': '#game',
-               'abrir': VUELO_JS % {'v': json.dumps({'x': 81, 'z': -278, 'alt': 0, 'y': 150, 'yaw': 0.34, 'vel': 9, 'giro': 0.0})},
+               'abrir': VUELO_JS % {'v': json.dumps({'x': 81, 'z': -278, 'alt': 0, 'y': 150, 'yaw': 2.62, 'vel': 9, 'giro': 0.0})},
                'cerrar': "window.AV.__rutaFin && window.AV.__rutaFin(); 'ok'"},
     'river': {'desc': 'River Rush', 'canvas': '#game', 'abrir': ABRIR_MODOS['river'], 'cerrar': "window.__parar && window.__parar(); window.AV.G.riverRushApi.salir(); 'ok'"},
     'flight': {'desc': 'Amazona Flight', 'canvas': '#game',
@@ -83,7 +83,7 @@ ESCENAS = {
                         ' api.toque(); let vivo = true; window.__parar = () => { vivo = false; }; const bucle = () => { if (!vivo) return; decide(); requestAnimationFrame(bucle); }; requestAnimationFrame(bucle); return "ok flight"; })()',
                'cerrar': "window.__parar && window.__parar(); window.AV.G.flightApi.salir && window.AV.G.flightApi.salir(); 'ok'"},
     'maze': {'desc': 'Amazona Maze', 'canvas': '#game',
-             'abrir': '(async () => { const AV = window.AV; await AV.maze(); await new Promise(r => setTimeout(r, 1500));' + PILOTO_MAZE + ' const api = AV.G.mazeApi; api.otraVez(); api.dirigir(0); requestAnimationFrame(bucle); return "ok maze"; })()',
+             'abrir': '(async () => { const AV = window.AV; await AV.maze(); await new Promise(r => setTimeout(r, 1500));' + PILOTO_MAZE + ' api.otraVez(); api.dirigir(0); requestAnimationFrame(bucle); return "ok maze"; })()',
              'cerrar': "window.__paraPiloto && window.__paraPiloto(); window.AV.G.mazeApi.salir(); 'ok'"},
     'ropero': {'desc': 'El ropero (creador de personaje)', 'canvas': '#p-stage',
                'abrir': "(async () => { const G = window.AV.G; await G.creador.open(false); await new Promise(r => setTimeout(r, 2500));"
