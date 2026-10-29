@@ -301,19 +301,23 @@ AVE.module('mundo', function (G) {
     }
     G.esBohioAbierto = I => !!(amb && I && I.modelo === VILLA.modelo && I.pos && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5);
     // BM13: una casa más por aldea (Caney del Meandro, Embarcadero, Puerto de La Mina), con la misma puerta abierta y mobiliario.
-    // Se elige la que ya está más cerca de la escala de la amueblada de Villa Raíz y, si es menor, se sube ×1,75 (la matriz de 16 números, por columnas).
+    // Se elige la de escala uniforme con más sitio alrededor que pueda llegar a la escala de la amueblada de Villa Raíz (sube hasta ×1,75; la matriz de 16 números, por columnas).
     const AL = ED.aldeasBohio, abiertas = [];
     if (AL && amb) {
       const escDe = v => v.length >= 16 ? (Math.hypot(v[0], v[1], v[2]) + Math.hypot(v[4], v[5], v[6]) + Math.hypot(v[8], v[9], v[10])) / 3 : v[4];
+      const posDe = v => v.length >= 16 ? [v[12], v[14]] : [v[0], v[2]];
       for (const zona of AL.zonas) {
         let mejor = null;
+        const todas = []; // todo lo colocado a mano en la aldea (casas y props): la elegida es la que tiene más sitio alrededor
+        for (const e of MAPA.escenaKelvin.compacto) if (e && e.grupo === zona && Array.isArray(e.inst)) for (const v of e.inst) todas.push(posDe(v));
         for (const e of MAPA.escenaKelvin.compacto) {
           if (!e || e.grupo !== zona || e.modelo !== AL.modelo || !Array.isArray(e.inst)) continue;
           for (const v of e.inst) {
-            const s = escDe(v), d = Math.abs(s - amb.s);
-            if (!(s > 0 && s <= 1)) continue;
-            const u = v.length < 16 ? 0 : 1; // primero las de escala uniforme (5 números); las matrices solo si no hay otra
-            if (!mejor || u < mejor.u || (u === mejor.u && d < mejor.d - 1e-6)) mejor = { v, s, d, zona, u };
+            const s = escDe(v);
+            if (!(s > 0 && s <= 1) || s * AL.factor < amb.s * 0.99) continue; // que llegue a la escala de la amueblada
+            const u = v.length < 16 ? 0 : 1, p = posDe(v); // primero las de escala uniforme (5 números); las matrices solo si no hay otra
+            let libre = 99; for (const q of todas) { const d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d > 0.5 && d < libre) libre = d; }
+            if (!mejor || u < mejor.u || (u === mejor.u && libre > mejor.libre)) mejor = { v, s, u, libre, zona };
           }
         }
         if (!mejor) continue;
