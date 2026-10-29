@@ -1,0 +1,5 @@
+{
+ "_nota": "BM8: empalizada de Villa Raíz y torres de Puerto de La Mina. Uso: tools/build/look_capturas.py --vistas-json tools/build/bm8_vistas.json --looks fabrica --raiz <salida> --prefijo bm8_antes_",
+ "empalizada": {"x": 118, "y": 40, "z": 110, "vuelo": true, "yaw": 0, "cam": [118, 36, 112], "mirar": [126, 11, 80], "nota": "Empalizada de Villa Raíz"},
+ "torres_mina": {"x": 20, "y": 80, "z": -80, "vuelo": true, "yaw": 0, "cam": [18, 80, -80], "mirar": [47, 56, -115], "nota": "Tres torres de Puerto de La Mina"}
+}

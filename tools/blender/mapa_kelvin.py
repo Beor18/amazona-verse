@@ -192,7 +192,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             # a menos de 2,5 m de su suelo es ruido del muestreo: se asienta en el terreno; más alto es una pieza apilada
             acostada = abs(L[1, 1]) / max(1e-9, np.linalg.norm(L[:, 1])) < 0.5   # estacas acostadas (muelle): sobre el punto más alto
             base = (float(g.max()) + 0.05) if acostada else \
-                max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (off * S if off * S > 2.5 else min(0.0, off * S))
+                max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (0.0 if ins['asset'] in ASENTADAS else off * S if off * S > 2.5 else min(0.0, off * S))
         dy = base - Wn[:, 1].min()
         Mn[0, 3] += dx; Mn[1, 3] += dy; Mn[2, 3] += dz
         e = {'id': 'k%03d' % idx, 'asset': ins['asset'], 'nodo': ins.get('nodo_max'),
@@ -201,7 +201,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
                         'y0': round(float(Wn[:, 1].min() + dy), 2), 'y1': round(float(Wn[:, 1].max() + dy), 2)},
              'ajuste': {'dx': round(dx, 2), 'dy': round(float(dy), 2), 'dz': round(dz, 2)}}
         e['_his'] = (float(base_his), float(Wh[:, 1].max()), float(Wh[:, 0].min()), float(Wh[:, 0].max()), float(Wh[:, 2].min()), float(Wh[:, 2].max()), float(cx), float(cz))
-        e['_apilada'] = (not canoa) and off * S > 2.5
+        e['_apilada'] = (not canoa) and ins['asset'] not in ASENTADAS and off * S > 2.5
         e['_d'] = (dx, float(dy), dz)
         if not ok: e['oculto'] = 'choca con agua o sendero'
         if a['web']:
@@ -251,7 +251,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
     for e in sorted(out, key=lambda e: e['huella']['y0']):
         if e['asset'] == 'canoa' and e['huella']['y0'] > ground(e['huella']['x'], -e['huella']['z']) - 0.2 and water_level(e['huella']['x'], -e['huella']['z']) is not None:
             continue   # canoa sobre el agua
-        f = apoyo(e)
+        f = None if e['asset'] in ASENTADAS else apoyo(e)
         if f is not None and f['id'] in corr:
             d = corr[f['id']]
             if e['asset'].startswith('losa'):
@@ -305,6 +305,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
         Z.append({'id': zid, 'nombre': nm, 'centro': [cx, round(ground(cx, -cz), 1), cz], 'r': round(r, 1), 'instancias': lst})
     return {'Z': Z, 'S': S, 'aj': aj, 'saltados': skipped, 'conv': bool(conv)}
 
+ASENTADAS = ('savage_wall_pikessm', 'savage_wall_pikessm_v2', 'savage_entrance_spiked')   # empalizada: nunca apilada en el aire, siempre en el suelo (BM8)
 DECORATIVOS = ('canoa', 'empalizada', 'muelle_troncos')
 
 def compacto(Z):
