@@ -1,0 +1,6 @@
+# Cola de la API en la PC con Windows (Ubuntu en WSL, ejecutar_pc.sh): código y pruebas sin GPU real ni Blender. La Mac tiene la suya (cola.txt); no se repiten tareas. La coordinadora la mantiene.
+BM18
+BM20
+BM22
+BM24
+BM25
