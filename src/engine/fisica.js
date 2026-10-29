@@ -388,9 +388,9 @@ AVE.module('fisica', function (G) {
           // En el aire, contra un borde bajo (hasta un escalón sobre los pies): se sube encima, como caminando
           const borde = aire ? bordeBajo(SOL, S.pos.x, S.pos.z, S.pos.y) : -Infinity;
           if (borde > S.pos.y && pen(S.pos.x, S.pos.z, borde + 0.02) <= p0) { S.pos.y = borde + 0.02; S.vy = Math.max(S.vy, 0); }
-          else if (pen(S.pos.x, pz, S.pos.y) <= p0) { S.pos.z = pz; MOVE.vz = 0; }
-          else if (pen(px, S.pos.z, S.pos.y) <= p0) { S.pos.x = px; MOVE.vx = 0; }
-          else { S.pos.x = px; S.pos.z = pz; MOVE.vx = MOVE.vz = 0; }
+          else if (pen(S.pos.x, pz, S.pos.y) <= p0) { S.pos.z = pz; choque(Math.abs(MOVE.vz)); MOVE.vz = 0; }
+          else if (pen(px, S.pos.z, S.pos.y) <= p0) { S.pos.x = px; choque(Math.abs(MOVE.vx)); MOVE.vx = 0; }
+          else { S.pos.x = px; S.pos.z = pz; choque(Math.hypot(MOVE.vx, MOVE.vz)); MOVE.vx = MOVE.vz = 0; }
         }
       }
     }
@@ -431,7 +431,7 @@ AVE.module('fisica', function (G) {
     // Volando, tocar el agua honda termina el vuelo y se posa a nadar (nunca vuela bajo el agua)
     if (MOVE.flying && deep && S.pos.y <= wY - SWIM_DEPTH + 0.05 && S.vy <= 0.5) { endFlight(); S.vy = Math.min(S.vy, 0); }
     MOVE.swimming = deep && !MOVE.flying && S.pos.y <= wY - SWIM_DEPTH + 0.15;
-    if (MOVE.swimming && !wasSwim) G.agua.splash(S.pos.x, wY, S.pos.z, Math.min(1.6, 0.6 + Math.abs(S.vy) * 0.12));
+    if (MOVE.swimming && !wasSwim) { if (G.fx) G.fx.juicy.salpicadura++; G.agua.splash(S.pos.x, wY, S.pos.z, Math.min(1.6, 0.6 + Math.abs(S.vy) * 0.12)); }
     const jumpHeld = G.input.jumpHeld;
     if (MOVE.swimming) {
       // Flota en la superficie; mantener C bucea hasta el fondo; al soltar sube
@@ -565,13 +565,38 @@ AVE.module('fisica', function (G) {
       G.audio.play(que === 'techo' || que === 'cumbrera' ? 'aterrizar_techo' : que === 'rama' || MOVE.posado === 'fino' ? 'posarse_rama' : 'aterrizar_techo');
       MOVE.sonarLand = false;
     }
-    if (MOVE.sonarLand) { MOVE.sonarLand = false; G.audio.play('land'); }
+    if (MOVE.sonarLand) {
+      MOVE.sonarLand = false; G.audio.play('land');
+      if (!MOVE.swimming && G.fx && G.fx.polvo) G.fx.polvo(S.pos.x, S.pos.y, S.pos.z, MOVE.impact); // polvo al aterrizar en tierra
+    }
+    juicy(dt, hSpeed);
     MOVE.wasAirPosado = !MOVE.grounded; // en el aire hasta este cuadro: el próximo contacto es un aterrizaje
     MOVE.fase = MOVE.swimming ? 'nado' : MOVE.flying ? (MOVE.takeoff > 0 ? 'despegue' : MOVE.landing ? 'aterrizaje' : hSpeed < 2.5 ? 'cernido' : 'vuelo')
       : MOVE.grounded ? 'suelo' : jumpHeld && S.vy < 0 ? 'planeo' : 'aire';
     return moving;
   }
 
+  // BM22, feedback «juicy»: sacudida suave (≤ 0,15) al chocar con un muro, hojas al atravesar una copa y aleteo con ritmo
+  // según la velocidad. La sacudida respeta «Reducir movimiento» (camara.shake); lo demás no mueve la cámara.
+  const JU = { muro: 0, hojas: 0, ala: 0 };
+  function choque(v) {
+    if (v < 3 || JU.muro > 0 || !G.camara || !G.fx) return;
+    JU.muro = 0.4; G.camara.shake(Math.min(0.15, 0.02 + v * 0.01), 0.18);
+    if (!G.renderer.REDUCED) G.fx.juicy.sacudida++;
+  }
+  function juicy(dt, v) {
+    JU.muro = Math.max(0, JU.muro - dt); JU.hojas = Math.max(0, JU.hojas - dt);
+    if (MOVE.flying && MOVE.takeoff <= 0 && !MOVE.landing) {
+      if ((JU.ala -= dt) <= 0) { JU.ala = Math.max(0.2, 0.55 - v * 0.02); G.audio.play('aleteo', v); if (G.fx) G.fx.juicy.aleteo++; }
+    } else JU.ala = 0;
+    if (JU.hojas <= 0 && v > 1.5 && G.camara && G.camara.copasAhora && G.fx && G.fx.hojas) {
+      const c = G.camara.copasAhora(), cy = S.pos.y + 1;
+      for (let i = 0; i < c.length; i += 4) {
+        const dx = S.pos.x - c[i], dy = cy - c[i + 1], dz = S.pos.z - c[i + 2];
+        if (dx * dx + dy * dy + dz * dz < c[i + 3] * c[i + 3]) { JU.hojas = 0.5; G.fx.hojas(S.pos.x, cy + 0.5, S.pos.z); break; }
+      }
+    }
+  }
   return { MOVE, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders,
     tryJump, releaseJump, startFlying, land, toggleFly, endFlight, tryDash, step, slopeAt,
     techoVuelo: (x, z) => techoVuelo(x, z, suelo(x, z, S.pos.y)),
