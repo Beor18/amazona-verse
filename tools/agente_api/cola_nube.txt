@@ -1,7 +1,8 @@
-# Cola de la API en la nube (ejecutar_nube.sh): solo tareas sin Blender ni teléfono. La Mac usa cola.txt.
-BM14
-BM6
-BM8
+# Cola de la API en la nube (ejecutar_nube.sh): código y pruebas sin GPU real. La Mac tiene la suya (cola.txt); no se repiten tareas.
 BM12
 BM13
-BM11
+BM16
+BM17
+BM18
+BM20
+BM22
