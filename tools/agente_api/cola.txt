@@ -1,8 +1,14 @@
-# Cola de la API en la Mac (ejecutar.sh --cola N): GPU real, Blender y teléfonos. La nube tiene la suya (cola_nube.txt); no se repiten tareas.
+# Cola de la API en la Mac (ejecutar.sh --cola N). Una tarea por línea, en orden; la coordinadora la mantiene. 29-oct: la nube no corre la API (decisión de Kelvin).
 BM6
 BM8
+BM13
+BM16
+BM17
+BM18
+BM15
+BM20
+BM22
 BM9
 BM10
-BM15
 BM19
 BM21
