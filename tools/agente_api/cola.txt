@@ -1,4 +1,4 @@
-# Cola de la API en la Mac (ejecutar.sh --cola N): GPU real, Blender y pantalla de Kelvin. La PC con Windows tiene la suya (cola_pc.txt); no se repiten tareas. La coordinadora la mantiene.
+# Cola de la API en la Mac (ejecutar.sh --cola N). Una tarea por línea, en orden; la coordinadora la mantiene. 29-oct: la PC con Windows queda en pausa (sin acceso a GitHub); todo vuelve a la Mac.
 BM26
 BM27
 BM23
@@ -8,3 +8,8 @@ BM15
 BM19
 BM21
 BM12
+BM18
+BM20
+BM22
+BM24
+BM25
