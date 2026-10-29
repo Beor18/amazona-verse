@@ -1,4 +1,5 @@
 # Cola de la API en la Mac (ejecutar.sh --cola N): GPU real, Blender y pantalla de Kelvin. La PC con Windows tiene la suya (cola_pc.txt); no se repiten tareas. La coordinadora la mantiene.
+BM26
 BM23
 BM8
 BM13
