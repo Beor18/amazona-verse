@@ -8,6 +8,8 @@
   const cfg = AVE.config || {};
   const fromUrl = new URLSearchParams(location.search).get('pack');
   const want = fromUrl && /^[a-z0-9_-]+$/.test(fromUrl) ? fromUrl : cfg.pack || Object.keys(AVE.packs)[0];
+  // ?hud=0: sin interfaz (capturas de video del tráiler, BM11). Solo oculta el HUD del mundo; no cambia el juego.
+  if (/[?&]hud=0\b/.test(location.search)) { const st = document.createElement('style'); st.textContent = '#top, #acts, #stick, #keyhint, #tag, #toast, #prompt, #emotes, .guia-hud, .hud-btn, #minimap, #minimapa, .fl-hud, .fl-salir, .fl-pista, .mz-hud, .mz-salir, .mz-pista, .mz-ayuda, .mz-mapa, .rr-hud, .rr-barra, .rr-modos, .rr-salir, .rr-pista { display: none !important; }'; document.head.appendChild(st); }
 
   function expose(G) {
     const P = G.pack, T = G.pruebas;

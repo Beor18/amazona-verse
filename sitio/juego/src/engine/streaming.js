@@ -230,7 +230,15 @@ AVE.module('streaming', function (G) {
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
           '}\n')
-        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
+        // BM2: la crema se veía plana. Con la normal ya perturbada, las caras que miran al suelo (cornisas por debajo, techos
+        // de huecos, dinteles) y las verticales pierden hasta un 38 % de albedo; la que mira al cielo se queda como estaba.
+        // Solo cambia el albedo: no toca el specular 0 ni el shininess 1 de la piedra.
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )') +
+          '\nif (avCrema > 0.5) {\n' +
+          '  float ny = inverseTransformDirection( normal, viewMatrix ).y;\n' +
+          '  float u = clamp( ( ny + 0.15 ) / 1.05, 0.0, 1.0 );\n' +
+          '  diffuseColor.rgb *= mix( 0.62, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
+          '}\n');
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
     reducirAtlas(m);
@@ -549,6 +557,7 @@ AVE.module('streaming', function (G) {
     function quitarLote(r) {
       const k = r.n + ':' + r.tipo, L = lotes[k]; if (!L) return;
       for (const m of L.mallas) scene.remove(m);
+      if (L.panel) L.panel.geometry.dispose();
       delete lotes[k]; r.mallas = [];
     }
 
@@ -692,9 +701,12 @@ AVE.module('streaming', function (G) {
         analisis[kA] = cfg.analizar(g, I.escala);
       }
       if (cfg.colocar) cfg.colocar(I, analisis[kA] || { sol: null, pisos: [], alto: r.alto * I.escala });
+      // BM6-1: bohío de puerta abierta compartida: salvo la instancia amueblada, cada una pone su panel (sólido)
+      if (G.bohiosAbiertos && G.bohiosAbiertos[I.modelo] && !(G.esBohioAbierto && G.esBohioAbierto(I)) && G.solidos && G.solidos.panelInstancia) G.solidos.panelInstancia(I.modelo, I.m);
       if (G.solidos && G.solidos.agregar) {
         const g = new THREE.Group();
         for (const p of r.partes) { const m = new THREE.Mesh(p.geo, p.mat); m.matrixAutoUpdate = false; m.matrix.copy(I.m); g.add(m); }
+        g.userData.modelo = I.modelo; // BM6-3: solidos.js guarda las matrices por nombre de modelo
         G.solidos.agregar(g);
       }
     }
@@ -725,7 +737,7 @@ AVE.module('streaming', function (G) {
     function ajustarHD(Z, quiere) {
       if (!!Z.hd === quiere) return;
       Z.hd = quiere;
-      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), distModelo(Z, n)).catch(() => {}); else soltar(res(n, 'hd')); }
+      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
@@ -867,7 +879,7 @@ AVE.module('streaming', function (G) {
         // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.
         // En la ciudad del tepuy el límite es el de la vista aérea: si no, a 100 m ya es la silueta beige.
         const junto = hdLim > 0 && dl < hdLim + (I.hd ? H : -H);
-        I.hd = junto && (I.lod === 0 || grande);
+        I.hd = junto && (I.lod === 0 || grande) && I.colocado; // BM6-6: el _hd no sustituye al ligero hasta que el sólido esté colocado
         const base = (I.lod === 0 || junto) ? 'cerca' : 'lejos';
         let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + ':' + base] || lotes[I.modelo + ':' + (base === 'cerca' ? 'lejos' : 'cerca')];
         if (!L) continue;
@@ -881,6 +893,20 @@ AVE.module('streaming', function (G) {
       vis.cerca = vis.lejos = vis.hd = vis.mallas = 0;
       for (const k in lotes) {
         const L = lotes[k], li = L.lista, pr = L.prev;
+        // BM6-1: panel de la puerta abierta compartida, como una malla más del lote; la instancia amueblada va la última y no lo lleva
+        if (L.tipo === 'cerca' && !L.panelHecho && G.bohiosAbiertos && G.bohiosAbiertos[L.n] && G.solidos && G.solidos.panelAbierto) {
+          const rc = recursos[L.n] && recursos[L.n].cerca, pa = rc && rc.partes && G.solidos.panelAbierto(L.n, rc.partes);
+          if (pa !== undefined && rc && rc.partes) {
+            L.panelHecho = true;
+            if (pa) {
+              const m = new THREE.InstancedMesh(pa.geo, pa.mat, L.attr.count);
+              m.instanceMatrix = L.attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
+              m.castShadow = m.receiveShadow = true; m.name = 'edificiosInst:' + L.n + ':panel'; m.userData.sinSolido = true;
+              scene.add(m); L.mallas.push(m); L.panel = m;
+            }
+          }
+        }
+        if (L.panel && G.esBohioAbierto) { const j = li.findIndex(I => G.esBohioAbierto(I)); if (j >= 0 && j < li.length - 1) { const t = li[j]; li[j] = li[li.length - 1]; li[li.length - 1] = t; } }
         let igual = li.length === pr.length;
         for (let j = 0; igual && j < li.length; j++) if (li[j] !== pr[j]) igual = false;
         if (!igual) {
@@ -889,7 +915,8 @@ AVE.module('streaming', function (G) {
           L.attr.needsUpdate = true;
           L.prev = li.slice();
         }
-        for (const m of L.mallas) { m.count = li.length; m.visible = li.length > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
+        const nPanel = L.panel ? li.length - (li.length && G.esBohioAbierto && G.esBohioAbierto(li[li.length - 1]) ? 1 : 0) : 0;
+        for (const m of L.mallas) { m.count = m === L.panel ? nPanel : li.length; m.visible = m.count > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
         if (li.length) { vis[L.tipo] += li.length; vis.mallas += L.mallas.length; }
       }
     }
@@ -1013,6 +1040,13 @@ AVE.module('streaming', function (G) {
         const listosHD = conHD.filter(n => ST.recursos[n].hd && ST.recursos[n].hd.estado === 'listo');
         check('Cerca, los edificios con versión de alta fidelidad la cargan y la dibujan', listosHD.length === conHD.length && hdMax > 0,
           ZM.id + ': ' + listosHD.length + '/' + conHD.length + ' modelos _hd, hasta ' + hdMax + ' instancias _hd a la vista');
+      if (listosHD.length) { // BM6-5: las colisiones salen del ligero; el _hd debe medir lo mismo (cajas a 0,3 m)
+        const caja = r => { const b = new THREE.Box3(); for (const p of r.partes) b.union(p.geo.boundingBox); return b; };
+        const dif = n => { const rc = ST.recursos[n]; if (!(rc.cerca.partes && rc.hd.partes)) return 0; const a = caja(rc.cerca), b = caja(rc.hd); return Math.max(...[a.min.x - b.min.x, a.min.y - b.min.y, a.min.z - b.min.z, a.max.x - b.max.x, a.max.y - b.max.y, a.max.z - b.max.z].map(Math.abs)); };
+        const PENDIENTE_HD = ['templo_grande', 'templo_grande_f', 'ruina_mirador']; // BM6-5: desfase medido, a reexportar en Blender (BUGS.md)
+        const malos = listosHD.filter(n => dif(n) > 0.3 && !PENDIENTE_HD.includes(n));
+        check('El _hd mide lo mismo que el ligero (de donde salen las colisiones)', malos.length === 0, malos.map(n => n + ' ' + dif(n).toFixed(2)).join(', ') || listosHD.length + ' modelos; pendientes: ' + listosHD.filter(n => PENDIENTE_HD.includes(n)).map(n => n + ' ' + dif(n).toFixed(2)).join(', '));
+      }
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());

@@ -247,7 +247,8 @@ window.AVLook = function (G) {
   // respetaba); con look manda el menor de los dos y ?tex= manda sobre todo. Los atlas _hd siguen sin encogerse (encoger()).
   function topeTex(L) {
     if (TEX_URL) return TEX_URL;
-    const a = (L && L.texMax) || 0, b = R.calidad.texMax || 0;
+    let a = (L && L.texMax) || 0; const b = R.calidad.texMax || 0;
+    if (a && a < 1024 && R.calidad.nivel === "alto" && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) a = 1024;   // BM14: en alto de escritorio el look no encoge flora ni suelo por debajo de 1024
     return a && b ? Math.min(a, b) : a || b;
   }
   function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => encoger(t, topeTex(null), k, /^flora:/.test(o.name))); }); }

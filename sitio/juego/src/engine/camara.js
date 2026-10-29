@@ -119,14 +119,19 @@ AVE.module('camara', function (G) {
     const libre = (dx, dy, dz) => {
       const L = Math.hypot(dx, dy, dz);
       if (L < 1.6) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
-      const n = Math.max(1, Math.ceil(L / 0.3)); let corte = -1;
+      const n = Math.max(1, Math.ceil(L / 0.15)); let corte = -1; // BM6-7: cada 0,15 m (los muros finos se saltaban)
       for (let i = 1; i <= n; i++) {
         const t = i / n;
         if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { corte = i - 1; break; }
       }
       if (corte < 0) return { x: hx + dx, y: hy + dy, z: hz + dz, d: Math.hypot(dx, dz) };
-      const k = Math.max(1.6 / L, corte / n);
+      const k = Math.max(0.35 / L, corte / n); // BM6-7: no se estira a 1,6 m (metía la cámara detrás del muro)
       let x = hx + dx * k, y = hy + dy * k, z = hz + dz * k;
+      if (k * L < 1.6) { // muy cerca del muro: sobre el hombro, si todo el segmento cabeza-cámara está libre
+        const yy = hy + 1.2; let ok = true;
+        for (let i = 1; i <= 8 && ok; i++) if (G.solidos.dentro(hx + (x - hx) * i / 8, hz + (z - hz) * i / 8, hy + (yy - hy) * i / 8) > -Infinity) ok = false;
+        if (ok) y = yy;
+      }
       const top = G.solidos.dentro(x, z, y);
       if (top > -Infinity) y = top + 0.6;
       return { x, y, z, d: Math.hypot(x - hx, z - hz) };

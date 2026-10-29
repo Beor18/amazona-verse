@@ -27,6 +27,7 @@ window.AVBohios = function (G) {
   };
   function elegir(lista) {
     const sp = (G.terreno.mapa && G.terreno.mapa.spawn) || { x: 134, z: 182.5 };
+    const fija = G.esBohioAbierto && lista.find(I => G.esBohioAbierto(I)); if (fija) return fija;
     return lista.slice().sort((a, b) => (b.escala - a.escala) ||
       (Math.hypot(a.pos[0] - sp.x, a.pos[2] - sp.z) - Math.hypot(b.pos[0] - sp.x, b.pos[2] - sp.z)))[0] || null;
   }
@@ -81,14 +82,16 @@ window.AVBohios = function (G) {
     const p = v ? localAMundo(I, v.x, 0, v.z) : { x: I.pos[0], y: I.pos[1], z: I.pos[2] };
     // Justo dentro de la puerta, al alcance de quien está en el umbral. Metros de mundo.
     const dentro = (lado, fondo) => ({ x: p.x - n.x * fondo + n.z * lado, z: p.z - n.z * fondo - n.x * lado });
-    const a = dentro(-0.35, 0.45), b = dentro(0.15, 0.7), c = dentro(0.35, 0.4);
+    // BM6-8: a 1,0-1,4 m del umbral (Vittata mide 0,32 de radio): antes estaban a 0,4-0,7 m y tapaban la puerta
+    const a = dentro(-0.6, 1.0), b = dentro(0.1, 1.4), c = dentro(0.65, 1.2);
     const yDe = p => (G.terreno ? G.terreno.height(p.x, p.z) : I.pos[1]);
     // Hamaca: dos postes y un lienzo de madera.
     const poste = new THREE.CylinderGeometry(0.045, 0.05, 0.85, 6);
-    const pa = pieza(poste, COLOR.madera, 0, 0, 0); pa.position.set(a.x - 0.42, yDe(a) + 0.42, a.z);
-    const pb = pieza(poste, COLOR.madera, 0, 0, 0); pb.position.set(a.x + 0.42, yDe(a) + 0.42, a.z);
+    const pa = pieza(poste, COLOR.madera, 0, 0, 0); pa.position.set(a.x - n.z * 0.42, yDe(a) + 0.42, a.z + n.x * 0.42); // la hamaca gira con la normal de la puerta
+    const pb = pieza(poste, COLOR.madera, 0, 0, 0); pb.position.set(a.x + n.z * 0.42, yDe(a) + 0.42, a.z - n.x * 0.42);
     const tela = pieza(new THREE.BoxGeometry(0.9, 0.06, 0.38), COLOR.crema, 0, 0, 0);
     tela.position.set(a.x, yDe(a) + 0.48, a.z);
+    tela.rotation.y = Math.atan2(n.x, n.z);
     // Tinaja crema.
     const tin = pieza(new THREE.SphereGeometry(0.22, 12, 8), COLOR.crema, 0, 0, 0);
     tin.scale.set(1, 0.85, 1);
@@ -99,6 +102,8 @@ window.AVBohios = function (G) {
     const brasa = pieza(new THREE.SphereGeometry(0.07, 8, 6), COLOR.teja, 0, 0, 0);
     brasa.position.set(c.x, yDe(c) + 0.1, c.z);
     scene.add(grupo);
+    grupo.updateMatrixWorld(true);
+    if (G.solidos && G.solidos.agregar) G.solidos.agregar(grupo); // BM6-8: los muebles son sólidos
     const add = (id, p, frase) => G.interaccion.add({
       id, x: p.x, z: p.z, r: 1.35,
       label: () => (id === 'bohio-hamaca' ? 'Tocar la hamaca' : id === 'bohio-tinaja' ? 'Tocar la tinaja' : 'Tocar el fogón'),
@@ -181,9 +186,22 @@ window.AVBohios = function (G) {
           const den = G.solidos.dentro(cp.x, cp.z, cp.y);
           const distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
           ok('En la puerta la cámara no se mete en el muro', !(den > -Infinity), den === -Infinity ? 'fuera' : String(den));
+          // BM6-7: todo el segmento cabeza-cámara, cada 0,15 m, sin tocar un muro
+          const hy = S.pos.y + (C && C.look || 1.4), nSeg = Math.max(2, Math.ceil(Math.hypot(cp.x - S.pos.x, cp.y - hy, cp.z - S.pos.z) / 0.15));
+          let tocado = 0; for (let i = 1; i <= nSeg; i++) { const t = i / nSeg; if (G.solidos.dentro(S.pos.x + (cp.x - S.pos.x) * t, S.pos.z + (cp.z - S.pos.z) * t, hy + (cp.y - hy) * t) > -Infinity) tocado++; }
+          ok('Entre la cabeza y la cámara no hay muro (segmento entero)', tocado === 0, tocado + ' de ' + nSeg + ' puntos');
           ok('La cámara no se pega a Vittata', distH >= 2.5, distH.toFixed(2));
         }
       } else ok('La puerta del bohío está medida', false, infoV ? infoV.motivo : 'sin vano');
+      // BM6-1: solo la amueblada tiene la puerta abierta; las otras, con panel (sólido) aunque la malla sea compartida
+      if (p && G.solidos && G.solidos.penetra) {
+        const enVano = (q, B) => G.solidos.penetra(q.x - q.nx * 0.7, q.z - q.nz * 0.7, G.terreno.height(q.x, q.z) + 0.12, 1.2);
+        const otras = lista.filter(B => B !== I && B.colocado && B.pos);
+        const cerradas = otras.filter(B => { const q = puerta(B); return q && enVano(q, B) > 0; });
+        ok('Solo la puerta del bohío amueblado está abierta', enVano(p, I) === 0 && otras.length > 0 && cerradas.length === otras.length, 'abierta ' + enVano(p, I).toFixed(2) + ' · cerradas ' + cerradas.length + '/' + otras.length);
+        const pd = G.solidos.penetra(p.dentroX, p.dentroZ, G.terreno.height(p.dentroX, p.dentroZ) + 0.12, 1.2);
+        ok('BM6-8: dentro del umbral no hay muebles que estorben (penetra = 0)', pd === 0, pd.toFixed(2));
+      }
       const vis = vistas();
       ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
     } catch (e) {

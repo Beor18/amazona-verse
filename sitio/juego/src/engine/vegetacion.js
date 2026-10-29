@@ -34,7 +34,8 @@ AVE.module('vegetacion', function (G) {
   const MAPA_CAP1 = window.AV_MAPA_CAP1;
   const BOSQUE = FL.bosque === false ? null : Object.assign({ src: 'assets/data/bosque_cap1.js', global: 'AV_BOSQUE_CAP1', objetivo: 7000, semilla: 7351 }, FL.bosque);
   const usarBosque = !!(BOSQUE && (FL.bosque || (MAPA_CAP1 && MAPA.nombre === MAPA_CAP1.nombre)));
-  const TOPE_ARBOLES = Object.assign({ bajo: 300, medio: 600, alto: 1200 }, FL.topeArboles);
+  const MOBILE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const TOPE_ARBOLES =Object.assign({ bajo: 300, medio: 600, alto: MOBILE ? 1200 : 2000 }, FL.topeArboles);
   // y como mucho estos triángulos de árboles en malla (los del kit tienen 1 000–5 700): con 300/600/1 200 árboles no cabría
   // en el presupuesto de MAPA_PLAN_COMPLETO.md § 3 (250 k / 450 k / 1,2 M el cuadro entero). Medido en las 12 vistas: con
   // 110/200/550 k el móvil (medio) pasaba de 450 k en aerea_sur y s_villa; con esto no crece respecto a antes de AW2.
@@ -427,8 +428,10 @@ AVE.module('vegetacion', function (G) {
   function hornearImpostores() {
     const lista = [...ARBOLES].filter(m => geos[m] && porModelo[m]);
     if (!lista.length) return;
-    const TS = 256, cols = 4, rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
+    const TS = (!MOBILE && C.nivel !== "bajo") ? 512 : 256, cols = 4,   // BM14: impostores de 512 px en medio y alto (escritorio)
+       rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
     const rt = new THREE.WebGLRenderTarget(TS * cols, TS * rows, { minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, generateMipmaps: true });
+    rt.texture.anisotropy = Math.min(8, R.renderer.capabilities.getMaxAnisotropy ? R.renderer.capabilities.getMaxAnisotropy() : 1);
     // El atlas solo vive en la GPU: si se pierde el contexto WebGL, se repinta al volver (gancho 'contexto', más abajo)
     const pintar = () => {
       const sc = new THREE.Scene();
