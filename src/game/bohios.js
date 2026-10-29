@@ -27,7 +27,7 @@ window.AVBohios = function (G) {
   };
   function elegir(lista) {
     const sp = (G.terreno.mapa && G.terreno.mapa.spawn) || { x: 134, z: 182.5 };
-    const fija = lista.find(I => I.id === G.bohioAbierto); if (fija) return fija;
+    const fija = G.esBohioAbierto && lista.find(I => G.esBohioAbierto(I)); if (fija) return fija;
     return lista.slice().sort((a, b) => (b.escala - a.escala) ||
       (Math.hypot(a.pos[0] - sp.x, a.pos[2] - sp.z) - Math.hypot(b.pos[0] - sp.x, b.pos[2] - sp.z)))[0] || null;
   }
