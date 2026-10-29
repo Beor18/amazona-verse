@@ -92,28 +92,42 @@ def mascara(H, x0, z0, paso, M):
     # sin motas sueltas: el vértice queda si al menos 5 de sus 9 vecinos son bosque
     return m & (caja(m, 1) >= 5 / 9 - 1e-3)
 
-COPA = 7.0              # m entre copas: patrón de copas sueltas (celdas con un punto al azar) que se funden en la manta
+COPA = 7.0              # m entre copas del nivel bajo; el alto va a 1,9× (BM3: dosel continuo de varias alturas y tonos)
 
-def copas(x, z):
-    """0..1: lo alto de la copa más cercana en (x, z) (1 en su centro, 0 en el hueco entre copas)"""
-    gx, gz = np.floor(x / COPA), np.floor(z / COPA); d = np.full(x.shape, 9e9)
+def _h(cx, cz, k):
+    h = np.sin(cx * (127.1 + k) + cz * (311.7 - 3 * k)) * 43758.5453
+    return h - np.floor(h)
+
+def capa(x, z, paso, sem, solape):
+    """copas de una capa: (0..1 lo alto de la más cercana, tono 0..1 propio de esa copa). Radios > 1 celda: se solapan, sin huecos"""
+    gx, gz = np.floor(x / paso), np.floor(z / paso); d = np.full(x.shape, 9e9); tono = np.zeros(x.shape)
     for ox in (-1, 0, 1):
         for oz in (-1, 0, 1):
             cx, cz = gx + ox, gz + oz
-            h = np.sin(cx * 127.1 + cz * 311.7) * 43758.5453; jx = h - np.floor(h)
-            h = np.sin(cx * 269.5 + cz * 183.3) * 43758.5453; jz = h - np.floor(h)
-            h = np.sin(cx * 419.2 + cz * 371.9) * 43758.5453; r = 0.55 + 0.35 * (h - np.floor(h))   # radio relativo de cada copa
-            d = np.minimum(d, np.hypot(x - (cx + 0.15 + 0.7 * jx) * COPA, z - (cz + 0.15 + 0.7 * jz) * COPA) / (r * COPA))
-    return np.sqrt(np.clip(1 - d * d, 0, 1))
+            jx, jz, r, t = _h(cx, cz, sem), _h(cx, cz, sem + 41.3), solape + 0.35 * _h(cx, cz, sem + 97.1), _h(cx, cz, sem + 7.7)
+            dd = np.hypot(x - (cx + 0.15 + 0.7 * jx) * paso, z - (cz + 0.15 + 0.7 * jz) * paso) / (r * paso)
+            m = dd < d; d = np.where(m, dd, d); tono = np.where(m, t, tono)
+    return np.sqrt(np.clip(1 - d * d * 0.8, 0, 1)), tono
+
+def copas(x, z):
+    """(0..1 relieve del dosel, 0..1 tono, 0..1 emergente): dos capas, la baja de copas muy solapadas y la alta de copas grandes y sueltas"""
+    b, tb = capa(x, z, COPA, 0.0, 0.75)
+    a, ta = capa(x, z, COPA * 1.9, 19.0, 0.55)
+    em = np.clip((a - 0.45) / 0.4, 0, 1)
+    return np.clip(0.55 + 0.45 * b, 0, 1) * (1 - 0.35 * em) + 0.35 * em * a, tb * 0.6 + ta * 0.4, em
 
 def color(x, z, y, Hs, hc, borde, cota):
     """color sRGB 0..255 a partir de la posición (se recalcula tras simplificar)"""
-    hueco = np.array([20, 40, 22.]); medio = np.array([44, 80, 36.]); claro = np.array([88, 122, 50.]); niebla = np.array([58, 80, 64.])
-    b = copas(x, z)[:, None]                                                       # hueco oscuro, copa clara
+    sombra = np.array([30, 56, 28.]); medio = np.array([48, 88, 38.]); claro = np.array([92, 128, 52.]); seco = np.array([112, 126, 54.])
+    niebla = np.array([58, 80, 64.])
+    b, tono, em = copas(x, z); b = b[:, None]; tono = tono[:, None]; em = em[:, None]
     n = (np.sin(x * 0.071 + z * 0.043) * np.sin(z * 0.057 - x * 0.029) * 0.5 + 0.5)[:, None]   # manchas de especies, a gran escala
-    k = (np.sin(x * 1.7 + z * 2.3) * 0.5 + 0.5)[:, None]                           # una copa clara o rojiza de vez en cuando
+    k = (np.sin(x * 1.7 + z * 2.3) * 0.5 + 0.5)[:, None]
     top = medio * (1 - n) + claro * n
-    c = hueco * (1 - b) + top * b
+    top = top * (1 - tono) + (seco * 0.5 + top * 0.5) * tono * (0.4 + 0.6 * n) + (sombra * 0.5 + top * 0.5) * 0 * tono   # un tono propio por copa
+    top = top * (0.82 + 0.3 * tono)
+    c = sombra * (1 - b) + top * b                                                    # entre copas, sombra verde (no un hueco negro)
+    c = c * (1 + 0.12 * em)                                                           # las emergentes, un punto más claras
     c = np.where(k > 0.97, c * np.array([1.25, 1.05, 0.8]), c)
     c = c * (1 - np.clip(borde, 0, 1)[:, None] * 0.35)                           # la falda del borde, en sombra
     t = np.clip((cota - 55) / 30, 0, 1)[:, None]                                   # bosque enano de la niebla: gris verdoso
@@ -129,7 +143,8 @@ def main(objetivo=OBJ_TRIS, nombre='dosel_cap1', glob='AV_DOSEL_CAP1'):
     gx, gz = np.meshgrid(x0 + np.arange(nx) * paso, z0 + np.arange(nz) * paso)
     borde = np.clip((f - 0.35) / 0.6, 0, 1); borde = borde * borde * (3 - 2 * borde)
     hc = alto * (0.8 + 0.35 * rr) * (0.25 + 0.75 * borde)
-    Yc = H + hc * (0.62 + 0.38 * copas(gx, gz))                     # copas con bulto: los huecos entre copas, más bajos
+    cp, _, em = copas(gx, gz)
+    Yc = H + hc * (0.6 + 0.4 * cp) * (1 + 0.28 * em)                 # copas con bulto, de varias alturas: las emergentes sobresalen
     # el borde baja al suelo del bosque vecino (no al pie del risco: sin cortinas colgando)
     nm = caja(m, 1); Hf = np.where(nm > 0, caja(np.where(m, H, 0), 1) / np.maximum(nm, 1e-6), H)
     Y = np.where(m, Yc, np.where(nm > 0, np.minimum(H, Hf) - 0.6, H - 1.5))
