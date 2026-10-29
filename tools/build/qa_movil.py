@@ -103,6 +103,28 @@ MODOS = [
 ]
 
 
+def _ciclos(n, nombre, abrir, api, espera=1800):
+    """BM10: entra y sale n veces seguidas de un minijuego; en cada vuelta pausa, toca, sale y comprueba que nada queda abierto ni activo."""
+    return ('ciclos_' + nombre, '''(async () => { %s const AV = window.AV, G = AV.G, N = %d, malas = [], tex = [], heap = [], calls = [];
+  const medir = () => { let m = {}; try { m = Object.assign({}, (G.renderer && G.renderer.stats && G.renderer.stats()) || {}, (AV.look && AV.look.medir && AV.look.medir()) || {}); } catch (e) {} return m; };
+  const toque = () => { const c = document.querySelector('canvas'); if (c) { const o = { bubbles: true, pointerType: 'touch', clientX: 187, clientY: 500, isPrimary: true }; c.dispatchEvent(new PointerEvent('pointerdown', o)); c.dispatchEvent(new PointerEvent('pointerup', o)); } };
+  for (let i = 1; i <= N; i++) {
+    try { %s } catch (e) { malas.push(i + ': no abrió ' + e.message); break; }
+    await sleep(%d); const a = G.%s;
+    if (!a || !a.activo) malas.push(i + ': no quedó activo');
+    toque(); await sleep(300);
+    const p = document.getElementById('pause'); p.showPopover(); await sleep(400); if (!p.matches(':popover-open')) malas.push(i + ': la pausa no abrió'); p.hidePopover(); await sleep(300);
+    try { a.salir(); } catch (e) { malas.push(i + ': salir falló ' + e.message); }
+    await sleep(900);
+    if (a && a.activo) malas.push(i + ': sigue activo tras salir');
+    if (p.matches(':popover-open')) malas.push(i + ': pausa abierta tras salir');
+    const m = medir(); tex.push(m.texMB); calls.push(m.calls); heap.push(m.heapMB != null ? m.heapMB : Math.round((performance.memory || {}).usedJSHeapSize / 1048576));
+  }
+  const crece = v => v.length > 2 && v[v.length - 1] != null && v[2] != null ? Math.round((v[v.length - 1] - v[2]) * 10) / 10 : 0;
+  return (malas.length ? 'FALLA ' + malas.slice(0, 6).join(' | ') : 'ok') + ' · %s ×' + tex.length + ' · tex ' + tex.join(',') + ' · calls ' + calls.join(',') + ' · heap ' + heap.join(',') + ' · crece (3.ª→última) tex ' + crece(tex) + ' heap ' + crece(heap);
+})()''' % (ESPERA, n, abrir, espera, api, nombre), "(() => 'ok')")
+
+
 def _perfil(pr):
     """Tiempo propio por función (ms) de un perfil de CPU de CDP; imprime las 25 mayores."""
     nodos = {n['id']: n for n in pr['nodes']}
@@ -138,6 +160,7 @@ def main():
     ap.add_argument('raiz')
     ap.add_argument('--packs', default='cap1,ep2,ep3,ep4,ep5,ep6')
     ap.add_argument('--modos', action='store_true')
+    ap.add_argument('--ciclos', type=int, default=0, help='BM10: entrar y salir N veces de cada minijuego (en cap1)')
     ap.add_argument('--solo', default='', help='solo estas escenas de --modos (coma)')
     ap.add_argument('--sin-fin', action='store_true', help='no juega el capítulo entero (solo portada, apertura, paseo y pausa)')
     ap.add_argument('--sonda', default='', help='expresión JS que se evalúa e imprime tras la pausa (diagnóstico)')
@@ -260,6 +283,12 @@ def main():
                 for m in MODOS:
                     if not a.solo or m[0] in a.solo.split(','):
                         escena(ses, 'cap1_' + m[0], m[1], m[2])
+            if pack == 'cap1' and a.ciclos:
+                for m in [_ciclos(a.ciclos, 'flight', 'await AV.flight();', 'flightApi'), _ciclos(a.ciclos, 'maze', 'await AV.maze();', 'mazeApi'),
+                          _ciclos(a.ciclos, 'river', 'await AV.riverRush();', 'riverRushApi'), _ciclos(a.ciclos, 'tren', 'await AV.tren();', 'trenApi'),
+                          _ciclos(a.ciclos, 'retos', 'await AV.retos(); G.retosApi.jugar("carrera");', 'retosApi', 3500)]:
+                    if not a.solo or m[0][7:] in a.solo.split(','):
+                        escena(ses, m[0], m[1], m[2], timeout=900)
             if not a.sin_fin:
                 escena(ses, pack + '_fin', FIN_JS[pack], timeout=1500)
             try:
