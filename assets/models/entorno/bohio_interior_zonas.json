@@ -1,0 +1,66 @@
+{
+ "_nota": "Coordenadas en metros en el sistema del glTF (Y arriba; z_gltf = -y_blender). Bohío a x1,75: radio 2.40 m, puerta 1,2x2,0 hacia +Z del glTF.",
+ "radio": 2.4,
+ "escala": 1.75,
+ "puerta": {
+  "ancho": 1.2,
+  "alto": 2.0,
+  "direccion": [
+   0,
+   0,
+   1
+  ]
+ },
+ "zonas": [
+  {
+   "id": "hamaca",
+   "centro": [
+    0.0,
+    0.9,
+    -1.45
+   ],
+   "radio": 1.3,
+   "accion": "descansar"
+  },
+  {
+   "id": "fogon",
+   "centro": [
+    0.0,
+    0.0,
+    0.1
+   ],
+   "radio": 0.7,
+   "accion": "calentar"
+  },
+  {
+   "id": "vasijas",
+   "centro": [
+    -1.7,
+    0.3,
+    -0.85
+   ],
+   "radio": 0.7,
+   "accion": "mirar"
+  },
+  {
+   "id": "cesto",
+   "centro": [
+    1.75,
+    0.2,
+    -0.55
+   ],
+   "radio": 0.45,
+   "accion": "mirar"
+  },
+  {
+   "id": "banco",
+   "centro": [
+    1.45,
+    0.2,
+    1.25
+   ],
+   "radio": 0.7,
+   "accion": "sentarse"
+  }
+ ]
+}
