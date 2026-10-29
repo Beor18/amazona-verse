@@ -799,7 +799,7 @@
           check('Iguaca ofrece las preguntas', opciones().some(x => x.includes('Ahora no')));
           pick('Ahora no');
           check('«Ahora no» no anota nada', !Object.keys(S.edu.formativa).length);
-          useAt('iguaca'); pick('Sí, pregúntame');
+          drain(); useAt('iguaca'); pick('Sí, pregúntame');
           const card = $('card'), opt = i => card.querySelector(`.edu-opt[data-i="${i}"]`), correcta = id => AU.pregunta(id).correcta;
           check('Tarjeta formativa, sin puntaje', G.ui.cardOpen && card.querySelector('.edu-cara') && !/punt|score|\d+\s*\/\s*\d+|%/i.test(card.textContent));
           opt(correcta('q1') === 0 ? 1 : 0).click();
