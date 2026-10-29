@@ -479,6 +479,15 @@
       } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
     }
     await recorrerFinal(G, T, check);
+    // BM20: momentos «wow» del capítulo 1 (src/game/wow.js, AV.wowTest): ocurren y no bloquean la misión; con G.quiet no aparecen
+    {
+      const W = window.AV && window.AV.wowTest ? await window.AV.wowTest().catch(e => ({ results: [{ name: String(e), ok: false }] })) : null, r = (W && W.results) || [];
+      const de = re => r.filter(x => re.test(x.name));
+      const bien = re => { const l = de(re); return l.length > 0 && l.every(x => x.ok); };
+      check('BM20 · Despegue del mirador: la cámara se abre, la misión sigue sola a los 4 s o con una tecla, y con G.quiet no aparece', bien(/^Despegue/), JSON.stringify(de(/^Despegue/).filter(x => !x.ok)).slice(0, 200));
+      check('BM20 · Bandada de 20 cotorras al terminar M3 en dos pasadas (y con G.quiet no sale)', !!G.bandada, 'G.bandada');
+      check('BM20 · Coro con luciérnagas: 60–120 puntos cálidos laten con las notas del Simon, sin luces reales, y con G.quiet no aparecen', bien(/^Luciérnagas/), JSON.stringify(de(/^Luciérnagas/).filter(x => !x.ok)).slice(0, 200));
+    }
     SV.reset(true);
     devolver();
     T.restoreSave(keep);

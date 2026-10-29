@@ -496,7 +496,7 @@
         if (aviso[0]) aviso[0].onShow = () => { mostrarPlano(false); if (luz) luz.parpadear(3); };
         // El final es narración (Guardián y Narrador, mejora 3): bocadillos con el plano y la luz en su momento; la cotorra puede
         // mirar alrededor mientras; el panel final llega al terminar el último bocadillo
-        say([
+        const final = () => say([
           { who: 'Vittata', img: IMG.V, text: 'Allá están las otras islas, separadas por esa niebla luminosa.' },
           { who: 'Iguaca', img: IMG.L, text: '¿Y cómo vamos a llegar si los caminos desaparecieron?' },
           ...bote,
@@ -514,6 +514,7 @@
           advanceTo(G.misiones.DONE);
           G.misiones.showEnd();
         }, LIBRE);
+        if (G.wow) G.wow.despegue(final); else final(); // BM20: despegue guiado de 4 s antes del final (se salta con una tecla; con G.quiet sigue al instante)
       }
 
       // ---------- Iguaca llama desde arriba (DIVERSION_CAP1, mejora 1) ----------

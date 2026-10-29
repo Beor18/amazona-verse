@@ -12,7 +12,7 @@ AVE.module('fx', function (G) {
   const fx = [];
   let liveParticles = 0;
   const MAX_PARTICLES = 200;
-  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'] };
+  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'], leaves: ['#3f8f3a', '#6fb84a', '#2f6f35', '#a3c94a'] }; // leaves: BM20, despegue del mirador
 
   // Atlas de 256 px (2×2 celdas de 128): estrella de 4 puntas con halo, pluma, burbuja y punto suave
   const ATLAS = (function () {
@@ -35,7 +35,7 @@ AVE.module('fx', function (G) {
   })();
   const SPRITE = {}; // celda del atlas por tipo de ráfaga (texturas que comparten la misma imagen)
   function sprite(kind) {
-    const celda = kind === 'bubbles' ? [0, 0] : kind === 'feathers' ? [1, 1] : kind === 'gold' ? [1, 0] : [0, 1];
+    const celda = kind === 'bubbles' ? [0, 0] : (kind === 'feathers' || kind === 'leaves') ? [1, 1] : kind === 'gold' ? [1, 0] : [0, 1];
     const k = celda.join();
     if (!SPRITE[k]) { const t = new THREE.CanvasTexture(ATLAS); t.repeat.set(0.5, 0.5); t.offset.set(celda[0] * 0.5, celda[1] * 0.5); SPRITE[k] = t; }
     return SPRITE[k];
@@ -71,12 +71,12 @@ AVE.module('fx', function (G) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     // Sprites del atlas: estrellas y oro suman luz (brillan); plumas y burbujas, mezcla normal para no perder el color
-    const brilla = kind !== 'feathers' && kind !== 'bubbles';
+    const brilla = kind !== 'feathers' && kind !== 'bubbles' && kind !== 'leaves';
     const p = new THREE.Points(g, new THREE.PointsMaterial({ size: kind === 'bubbles' ? 0.22 : 0.42, map: sprite(kind), vertexColors: true, transparent: true, opacity: 1, depthWrite: false,
       blending: brilla ? THREE.AdditiveBlending : THREE.NormalBlending }));
     scene.add(p); liveParticles += n;
     fx.push({ m: p, t: 0, n, life: kind === 'bubbles' ? 1.8 : 1.3, vel, y0: -Infinity, ceil: ceil != null ? ceil : null, op: 1,
-      grav: kind === 'bubbles' ? -0.6 : kind === 'feathers' ? 4 : 9, drag: kind === 'feathers' ? 2.2 : 0 });
+      grav: kind === 'bubbles' ? -0.6 : (kind === 'feathers' || kind === 'leaves') ? 4 : 9, drag: (kind === 'feathers' || kind === 'leaves') ? 2.2 : 0 });
   }
   // Cofre de recompensa: aparece frente al jugador, abre la tapa y suelta plumas y estrellas
   function rewardChest() {

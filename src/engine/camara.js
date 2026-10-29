@@ -243,8 +243,9 @@ AVE.module('camara', function (G) {
     const k = M.dashT > 0 ? 1 : Math.max(0, Math.min(1, ((M.speed || 0) - base) / Math.max(0.1, F.DASH_SPEED - base)));
     return CAM.fovMin + (CAM.fovMax - CAM.fovMin) * k;
   }
+  let fovBonus = 0; // BM20: el despegue del mirador abre el campo de visión (G.wow); 0 el resto del tiempo
   function fov(dt) {
-    const wantFov = 55 + fovExtra();
+    const wantFov = 55 + fovExtra() + fovBonus;
     let dirty = false;
     // Un minijuego puede dejar el FOV en 34 o el zoom de la cámara en otro valor: aquí vuelve al de exploración.
     if (!(camera.fov > 30 && camera.fov < 100)) { camera.fov = wantFov; dirty = true; }
@@ -269,6 +270,6 @@ AVE.module('camara', function (G) {
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas,
     get anchorY() { return anchorY; } };
 });
