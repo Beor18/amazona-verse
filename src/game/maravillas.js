@@ -107,6 +107,31 @@ window.AVMaravillas = function (G) {
       for (let i = 0; i < nC; i++) baseY[i] = a.getY(i);
     }
   }
+  // BM21: destellos donde Vittata toca el agua de la caleta o vuela a ras (< 1,5 m). Cada toque tiñe 6 m de agua (agua.uniforms.uBio) y se apaga en 2 s.
+  if (G.fx && G.fx.PALETTE && !G.fx.PALETTE.bio) G.fx.PALETTE.bio = ['#5ff3ff', '#2fe0c0', '#9fffe8', '#3aa8ff'];
+  const TOQUES = [], APAGA = 2, RASO = 1.5; let ultToque = -9, ultX = 1e9, ultZ = 1e9, tToque = 0;
+  function toca(x, z, n) {
+    const U = G.agua && G.agua.uniforms && G.agua.uniforms.uBio; if (!U) return false;
+    let k = TOQUES.length < 4 ? TOQUES.length : TOQUES.indexOf(TOQUES.reduce((a, b) => (b.t > a.t ? b : a)));
+    if (k === TOQUES.length) TOQUES.push({ x: 0, z: 0, t: 0 });
+    TOQUES[k].x = x; TOQUES[k].z = z; TOQUES[k].t = 0;
+    if (G.fx) G.fx.burst(x, aguaEn(x, z).w + 0.1, z, 'bio', n || 10);
+    return true;
+  }
+  function pasoToques(dt, noche) {
+    const U = G.agua && G.agua.uniforms && G.agua.uniforms.uBio; if (!U) return;
+    tToque += dt;
+    if (noche && !G.quiet && Math.hypot(S.pos.x - B.x, S.pos.z - B.z) < B.r) {
+      const a = aguaEn(S.pos.x, S.pos.z);
+      if (a.w > a.h && S.pos.y - a.w < RASO && (tToque - ultToque > 0.45 || Math.hypot(S.pos.x - ultX, S.pos.z - ultZ) > 1.2)) {
+        ultToque = tToque; ultX = S.pos.x; ultZ = S.pos.z; toca(ultX, ultZ, nivel() === 'bajo' ? 5 : 10);
+      }
+    }
+    for (let i = 0; i < 4; i++) {
+      const T = TOQUES[i]; if (T) T.t += dt;
+      U.value[i].set(T ? T.x : 0, T ? T.z : 0, T ? Math.max(0, 1 - T.t / APAGA) : 0, 0);
+    }
+  }
   const cercaDe = () => Math.hypot(S.pos.x - B.x, S.pos.z - B.z) < B.r + 36;
   // El «co» de esta fase solo con atardecer de verdad: el global activo, o S.hora entre 17,5 y 19.
   function coquiConTarde() {
@@ -137,6 +162,7 @@ window.AVMaravillas = function (G) {
       a.needsUpdate = true;
     }
     intentarCanto(fase, dt);
+    pasoToques(dt, fase === 'noche');
     if (ver) aviso(fase);
   }, 48);
   G.on('calidad', () => { ultima = ''; }, 40);
@@ -189,6 +215,33 @@ window.AVMaravillas = function (G) {
       G.quiet = false; vistos.noche = false; aviso('noche');
       const toast = document.getElementById('toast');
       ok('Cerca y de noche, el aviso cuenta el dato y la fuente', !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent)));
+      // BM21: toques en el agua
+      const Ub = G.agua && G.agua.uniforms && G.agua.uniforms.uBio;
+      ok('El agua tiene el tinte de la caleta (uBio, 4 toques)', !!Ub && Ub.value.length === 4);
+      if (Ub) {
+        const px = B.x, pz = B.z, w = aguaEn(px, pz).w;
+        TOQUES.length = 0; pasoToques(0, false);
+        S.pos.x = px; S.pos.z = pz; S.pos.y = w + 0.8; G.quiet = false; tToque = 100; ultToque = -9; ultX = ultZ = 1e9;
+        const vivas0 = G.fx ? G.fx.live : 0;
+        pasoToques(0.016, false);
+        ok('De día el agua no destella', TOQUES.length === 0);
+        pasoToques(0.016, true);
+        const aguaOk = aguaEn(px, pz).w > aguaEn(px, pz).h;
+        ok('De noche, a ras del agua (< 1,5 m) destella: tinte y partículas', !aguaOk || (TOQUES.length === 1 && Ub.value[0].z > 0.9 && (!G.fx || G.fx.live > vivas0)), TOQUES.length + ' toque, intensidad ' + Ub.value[0].z.toFixed(2));
+        if (!aguaOk) { toca(px, pz, 10); pasoToques(0, false); }
+        for (let i = 0; i < 60; i++) pasoToques(1 / 60, false);
+        ok('El tinte se apaga en 2 s (a 1 s sigue a media luz)', Ub.value[0].z > 0.4 && Ub.value[0].z < 0.6, Ub.value[0].z.toFixed(2));
+        for (let i = 0; i < 70; i++) pasoToques(1 / 60, false);
+        ok('A los 2 s el tinte está apagado', Ub.value[0].z === 0);
+        S.pos.y = w + 3; TOQUES.length = 0; ultToque = -9; ultX = ultZ = 1e9; pasoToques(0.016, true);
+        ok('Volando alto (3 m) no destella', TOQUES.length === 0);
+        // coste en CPU del paso (la parte del shader son 4 muestras por píxel del mar, solo con toques vivos)
+        S.pos.y = w + 0.8; const t0 = performance.now(); let N = 2000;
+        for (let i = 0; i < N; i++) { ultToque = -9; pasoToques(0.016, true); }
+        const ms = (performance.now() - t0) / N;
+        ok('El paso de los toques cuesta menos de 0,3 ms por cuadro', ms < 0.3, ms.toFixed(4) + ' ms');
+        TOQUES.length = 0; pasoToques(0, false);
+      }
       delete S.hora;
       G.atardecer = { activo: () => false };
       let cantos = 0;
@@ -214,5 +267,5 @@ window.AVMaravillas = function (G) {
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  return (G.maravillas = { fase: faseDe, bahia: B, dato: DATO, aplicar, test });
+  return (G.maravillas = { fase: faseDe, bahia: B, dato: DATO, aplicar, toca, pasoToques, test });
 };

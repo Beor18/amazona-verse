@@ -385,9 +385,9 @@
     for (const f of cult.slice(0, 4)) { teleport(f.x + 0.4, f.z); tick(0.1); }
     check('Diario: 4 objetos de cultura dan las maracas', S.unlocked.includes('mano:maracas'));
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
-    check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
+    check('Diario 13/13 da la Deportiva 787 y los lentes dorados', S.field.length === FIELD.length && FIELD.length === 13 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 12);
+    check('El Diario muestra los 13 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 13);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -434,7 +434,7 @@
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
     // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa)
-    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
+    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 13 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
     // El post se carga perezoso: hasta que termina (o si el equipo cae a «bajo») el tone mapping es CustomToneMapping (W1: ACES con
