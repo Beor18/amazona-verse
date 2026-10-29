@@ -494,10 +494,16 @@
         const idAntes = G.idioma.actual();
         G.idioma.poner('en'); await (G.idioma.listo || sleep(50)); await sleep(60);
         const rotulo = () => { try { return W.getComputedStyle($('steps'), '::after').content.replace(/^"|"$/g, ''); } catch (e) { return ''; } };
-        const hudEN = rotulo(), textosFin = [$('end-text'), ...W.document.querySelectorAll('#end h1,#end h2,#end button,#end p')].filter(Boolean).map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(t => /\p{L}{2}/u.test(t));
+        const hudEN = rotulo(), textosFin = [$('end-text'), ...W.document.querySelectorAll('#end h1,#end h2,#end button,#end p')].filter(n => n && !n.closest('[hidden]')).map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(t => /\p{L}{2}/u.test(t));
         const sinTr = G.idioma.faltan(textosFin);
         check('4.10', 'En inglés el HUD y el panel final no dicen nada en español (rótulo del objetivo «Chapter complete!», panel final traducido)', /^Chapter complete!?$|^Goal /.test(hudEN) && !sinTr.length, { rotulo: hudEN, sinTraducir: sinTr.slice(0, 8) });
         G.idioma.poner(idAntes || 'es'); await (G.idioma.listo || sleep(50));
+      }
+
+      // ---------- Momentos «wow» (BM20): despegue, bandada de 20 y luciérnagas ocurren y no bloquean la misión ----------
+      if (W.AV && W.AV.wowTest) {
+        const wt = await W.AV.wowTest().catch(e => ({ passed: 0, total: 1, results: [{ name: String(e), ok: false }] }));
+        check('4.11', 'Momentos wow del cap. 1 (despegue del mirador, 20 cotorras en dos pasadas, luciérnagas del coro): ocurren, se saltan y no bloquean', wt.passed === wt.total, wt.results.filter(x => !x.ok).slice(0, 3));
       }
 
       // ---------- Orden de los eventos del capítulo y materiales ----------
