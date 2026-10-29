@@ -244,7 +244,7 @@ window.AVBohios = function (G) {
       const montOtras = await montarOtras();
       ok('BM13: las 3 casas se montan con sus muebles', montOtras.length === 3 && montOtras.every(J => montadas[J.id] && G.interaccion.find('bohio-hamaca@' + J.zona) && G.interaccion.find('bohio-tinaja@' + J.zona) && G.interaccion.find('bohio-fogon@' + J.zona)), montOtras.length);
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
-      const uniforme = B => { const e = B.m && B.m.elements; return !e || (Math.abs(Math.hypot(e[0], e[1], e[2]) / Math.hypot(e[4], e[5], e[6]) - 1) < 0.05); }; // las matrices con escala desigual no sirven para medir la puerta
+      const uniforme = B => { const e = B.m && B.m.elements; return !e || (Math.abs(Math.hypot(e[0], e[1], e[2]) / Math.hypot(e[4], e[5], e[6]) - 1) < 0.05 && Math.abs(e[5]) > 0.98 * Math.hypot(e[4], e[5], e[6])); }; // las matrices con escala desigual o inclinadas no sirven para medir la puerta
       for (const J of montOtras) {
         const q = puerta(J), nom = J.zona.replace('kelvin_aldea_', '');
         ok('BM13 ' + nom + ': la puerta supera 1,75 m', !!(q && q.alto >= ALTURA), q ? q.alto.toFixed(2) + ' m · ancho ' + q.ancho.toFixed(2) : 'sin vano');

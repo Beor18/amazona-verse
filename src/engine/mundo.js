@@ -317,7 +317,8 @@ AVE.module('mundo', function (G) {
             if (!(s > 0 && s <= 1) || s * AL.factor < amb.s * 0.99) continue; // que llegue a la escala de la amueblada
             const u = v.length < 16 ? 0 : 1, p = posDe(v); // primero las de escala uniforme (5 números); las matrices solo si no hay otra
             let libre = 99; for (const q of todas) { const d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d > 0.5 && d < libre) libre = d; }
-            if (!mejor || u < mejor.u || (u === mejor.u && libre > mejor.libre)) mejor = { v, s, u, libre, zona };
+            const g = s >= amb.s ? 1 : 0; // si ya llega sin escalar, mejor: se queda como la exportó Kelvin
+            if (!mejor || u < mejor.u || (u === mejor.u && (g > mejor.g || (g === mejor.g && libre > mejor.libre)))) mejor = { v, s, u, g, libre, zona };
           }
         }
         if (!mejor) continue;
