@@ -26,6 +26,15 @@ Extras que no pasan (no obligatorias):
 
 dpr final: escritorio 1,5 → 1,25 → 1 (aventura) y móvil 1,25 → 1. Es decir, **la resolución dinámica baja a 1 en escritorio**, lo que BM14 punto 1 quiere evitar. Calidad «m» (media) elegida sola. Draw calls 75–93. 0 errores de consola.
 
+## 2b. Ronda 2 (BM19) · 29-oct · HEAD `c0091a3` · sin `taskpolicy -b` (solo `nice -n 15`)
+Mac con carga 10–14 por las otras ventanas de la API (no se pararon): las cifras son un suelo.
+| Escena | FPS | p95 ms | DPR | texturas |
+|---|---|---|---|---|
+| Villa Raíz (alto, 1440×900 a DPR 2) | **55** (meta ≥ 50: cumple) | 33 | 1,5 | 499 MB |
+| ciudad_tepuy (alto) | **50** (cumple, justo) | 33 | 1,5 | 494 MB |
+| Móvil emulado (375×812, dpr 3, CPU ×4, aventura, calidad auto «m») | **60** (meta ≥ 30: cumple) | 16,8 | 1,5 | 92 tex / 67 calls / 351 k tris |
+`test.sh --extra`: red limpia (3.065 locales, 0 404), 0 errores de consola, carga 6,28 MB, heap 73 MB. **movementTest 44/47 (obligatoria roja, QA-80)**; extras: contextTest 29/30, streamingTest 20/21, lookTest 42/44 (QA-81). El resto en verde. movementTest ya tarda 81 s (BM18). Solo se midieron vuelo/ciudad y aventura móvil, no los otros modos de `movil_modos.py`.
+
 ## 3. `qa_movil.py --perfil` (QA-53, cap. 1, 375×812, dpr 3, CPU ×4)
 | Escena | p50 / p95 / peor (ms) | cuadros > 100 ms | tex (MB) |
 |---|---|---|---|
