@@ -132,6 +132,7 @@
     const bb = document.getElementById('c-build'); if (bb) bb.click();
     teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
+    check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
     useAt('guardian', 1.4, 0); drain();
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
@@ -139,6 +140,9 @@
     for (const b of C.BUSHES) { useAt(b.id, 1.3, 0); for (const n of b.song) C.simonPress(n); }
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
+    const medL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); medL.push({ who: a.who, txt: a.text, img: a.img || '', sim: !$('symbol').hidden }); G.dialogo.next(); }
+    const med = medL.find(e => /medalla/.test(e.txt));
+    check('Medalla del Guardián · su línea sale con el retrato de la medalla y el emblema a la vista', !!med && med.who === 'Guardián' && /^(data:image\/png|assets\/guardian)/.test(med.img) && med.sim, med && med.img.slice(0, 24));
     drain();
     check('Después del transmisor toca subir al mirador', S.step === 7 && !S.complete && $('symbol').hidden, 'paso ' + S.step);
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
@@ -149,7 +153,7 @@
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
     const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
     teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
-    check('Panel final: «Ver mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-comic').textContent.trim() === 'Ver mi cómic' && ['b-comic', 'b-seguir', 'b-again'].every(id => $(id).offsetHeight >= 44) && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm());
+    check('Panel final: «Ver mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-comic').textContent.trim() === 'Ver mi cómic' && ['b-comic', 'b-seguir', 'b-again'].every(id => $(id).offsetHeight >= 44) && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm(), ['b-comic', 'b-seguir', 'b-again'].map(id => $(id) ? $(id).hidden + '/' + $(id).offsetHeight + '/' + $(id).textContent.trim() : 'x').join(' | ') + ' conf ' + enConfirm());
     check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
     $('b-again').click();
     check('«Comenzar de cero» pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero», y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Comenzar de cero?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-again-no').textContent.trim() === 'No, volver' && $('b-again-si').textContent.trim() === 'Sí, comenzar de cero' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
@@ -314,7 +318,7 @@
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
-    check('dialogos_cap1.js carga las 27 escenas', scenes.length === 27, scenes.length + ' escenas');
+    check('dialogos_cap1.js carga las 28 escenas', scenes.length === 28, scenes.length + ' escenas');
     const unknown = scenes.filter(sc => { const [k, v] = sc.disparador.split(':'); return k === 'evento' ? !G.eventos.defs[v] : !['inicio', 'interact'].includes(k); });
     check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
@@ -420,7 +424,7 @@
     check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
     const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
     check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
-    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
+    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1]) || /^data:image\/png/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
     check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
     check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));
