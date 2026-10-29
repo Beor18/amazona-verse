@@ -1,5 +1,13 @@
 # Grok en Cursor: una sola fila de tareas (28-oct)
 
+## 🔁 29-oct: Kelvin recargó Grok. Una sola orden: SUBIR LO QUE QUEDÓ A MEDIAS
+Cada agente de Grok que se abra hace esto y nada más:
+1. Mira qué tienes sin subir en tu carril (cambios sin commit, ramas o trabajo local de Cursor). Si no tienes nada, dilo en `PEDIDOS.md` («carril X: nada pendiente») y para.
+2. Haz `git pull --rebase origin main` y sube lo tuyo **solo si pasa las 13 baterías** (build en carpeta propia + `test.sh --extra`). Si algo no pasa, súbelo igual a una rama `respaldo/grok-<carril>-29oct` (sin tocar `main`) y anota en `PEDIDOS.md` qué falla.
+3. Una línea en `TRABAJO_SIMULTANEO.md` con el commit y lo que falta. Captura si es visual.
+4. **No empieces trabajo nuevo**: desde el 28-oct lo pendiente lo hace la API en la Mac (BM2, BM3, BM6, BM8, BM14…; `docs/equipo/TAREAS_API.md`). Si tocas los mismos archivos que una BM en curso (streaming.js, vegetacion.js, terreno.js, solidos.js, camara.js, fisica.js), sube a la rama de respaldo, no a `main`, y avisa en `PEDIDOS.md`.
+Prioridad de lo que puede haber a medias: C (G18, la ciudad), D (G19, copas y dosel), J (G24, piedra), K (G25, aldeas), A (G22, medición de QA-53), I, H.
+
 ## ⚠️ MODO AHORRO (28-oct, 14:15 AST): Grok está al ~90 % de su uso
 Kelvin: «estamos en crisis». Hasta nuevo aviso de la coordinadora:
 1. **El uso de Grok se reinicia en 5 días (~2 de noviembre) y queda ~10 %.** Solo siguen **2 carriles**: **D** (copas a escala en todo el mapa: es un ajuste de código que vale para todo) y **J** (sombra de la piedra crema y piezas en el aire). **C para también**: los lejanos de la Ciudad de los 36 los rehace la API en la Mac (BM2) y C los integra cuando vuelva el uso. Cada agente: cambios pequeños y seguros, sin repetir pruebas que ya pasaron.
