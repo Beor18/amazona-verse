@@ -38,3 +38,14 @@ dpr final: escritorio 1,5 → 1,25 → 1 (aventura) y móvil 1,25 → 1. Es deci
 
 Congelón de «Empezar»: **750 ms** en esta ronda (antes 2,4–3,7 s en BC2), 0 errores. Perfil de CPU de «Jugar»+apertura (ms propios, sin contar idle 5.074): `program` 821, **`getProgramParameter` 594** (compilación de shaders; 207+198+189 ms en tres `renderer.render`, uno de ellos dentro de `capturarManga`, eventos.js:42), GC 322, `triSeguir` 181 y `trabajar` 167 (solidos.js), `vegetacion.actualizar` 166, `drawImage` 149, `block` 143, `texImage2D` 81.
 Conclusión: lo que más pesa al pulsar «Empezar» es la compilación de programas de shader (~0,6 s) más el horneado de sólidos; precalentar (`renderer.compile`) o diferir `capturarManga` quita lo primero. Sin tocar código aquí.
+
+## BM14 (29-oct): gráficos pixelados y árboles, medido con GPU real (Mac, Chrome Metal, 1440×900 a DPR 2, calidad alto, `tools/build/bm14_medir.py`)
+| escena | | FPS | p95 ms | DPR efectivo | texturas (look.medir) |
+|---|---|---|---|---|---|
+| Villa Raíz (vuelo) | antes | 59 | 17 | 1,5 | 451 MB |
+| Villa Raíz (vuelo) | después | 58 | 17 | 1,5 | 499 MB |
+| ciudad_tepuy | antes | 51 | 33 | 1,5 | 446 MB |
+| ciudad_tepuy | después | 47 | 33 | 1,5 | 494 MB |
+
+Cambios: el DPR en «alto» de escritorio no baja de 1,5 (`renderer.js`, `piso`); impostores de árboles de 512 px (atlas 2048²) en medio y alto de escritorio con anisotropía 8 y mipmaps (`vegetacion.js`); `TOPE_ARBOLES.alto` de 1200 a 2000 en escritorio (móvil sigue en 1200); el tope `texMax: 512` del look sube a 1024 en «alto» de escritorio (`look.js` `topeTex`). Móvil sin cambios. Capturas: `docs/img/bm14_{vuelo,ciudad}_{antes,despues}.jpg`.
+Notas: con `taskpolicy -b` Chrome da 6–9 FPS (la GPU queda estrangulada): las medidas de FPS se toman sin él. El DPR ya estaba en 1,5 antes (no bajaba a 1 en esta Mac), así que el punto 1 quedó como suelo de seguridad. Coste: +48 MB de texturas y −1 a −4 FPS en ciudad_tepuy (dentro del ruido). No se tocó `alphaTest`/`alphaToCoverage` de las hojas ni la rampa toon (punto 4) ni la regla de copas a menos de 60 m: queda pendiente para BM3. Baterías: PASA; fallan solo `lookTest` 40/44, `pielesTest` 12/13 y `ep5Test`, extras que ya fallaban antes.
