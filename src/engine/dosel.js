@@ -16,7 +16,7 @@ window.AVDosel = function (G) {
   const CAP1 = window.AV_MAPA_CAP1;
   // en «bajo», la versión más simplificada (~14 k tris): esa calidad ya va justa de triángulos (se elige al cargar)
   const BAJO = R.calidad.nivel === 'bajo';
-  const DOSEL = FL.dosel === false ? null : Object.assign({ src: BAJO ? 'assets/data/dosel_cap1_bajo.js' : 'assets/data/dosel_cap1.js', global: BAJO ? 'AV_DOSEL_CAP1_BAJO' : 'AV_DOSEL_CAP1', cerca: 90, banda: 14, hundir: 60, impostor: 250 }, FL.dosel);
+  const DOSEL = FL.dosel === false ? null : Object.assign({ src: BAJO ? 'assets/data/dosel_cap1_bajo.js' : 'assets/data/dosel_cap1.js', global: BAJO ? 'AV_DOSEL_CAP1_BAJO' : 'AV_DOSEL_CAP1', cerca: 190, banda: 60, hundir: 50, impostor: 250 }, FL.dosel);
   const api = G.dosel = { listo: Promise.resolve(), activo: false, impostorMax: DOSEL ? DOSEL.impostor : Infinity, stats: () => ({ activo: false }), test: () => Promise.resolve({ passed: 0, total: 0, results: [], omitido: 'sin dosel' }) };
   // solo para el mapa del que se horneó (el del cap. 1, que comparten los packs) o si el pack lo pide
   if (!DOSEL || !(FL.dosel || (CAP1 && MAPA.nombre === CAP1.nombre))) return api;
