@@ -169,7 +169,22 @@ AVE.module('streaming', function (G) {
     afilar(m.map); afilar(m.normalMap);
     m.name = k;
     if (/^AV_HD_/.test(k)) atlasHD(m, src);
+    else if (/^KB3D_mud(Dark)?M$/.test(k)) cremaPlana(m, /Dark/.test(k) ? 0.5 : 0.85);
     return m;
+  }
+  // BM23: los modelos Ancient que llegan sin _hd (templo_grande_a y otras torres de la ciudad del tepuy) pintaban el ocre del kit
+  // (KB3D_mudM) y desde el aire la ciudad era amarilla. Misma crema que el atlas (piedra mate, albedo máx. ~0,85), conservando el detalle.
+  function cremaPlana(m, fuerza) {
+    m.specular.setHex(0x000000); m.shininess = 1;
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
+        '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+        '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+        '  vec3 piedra = mix( vec3( 0.46, 0.40, 0.31 ), vec3( 0.84, 0.78, 0.65 ), t );\n' +
+        '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, ' + fuerza.toFixed(2) + ' ); }');
+    };
+    m.customProgramCacheKey = () => 'av-crema-plana-' + fuerza;
   }
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
