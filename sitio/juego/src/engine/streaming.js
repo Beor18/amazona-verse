@@ -169,7 +169,22 @@ AVE.module('streaming', function (G) {
     afilar(m.map); afilar(m.normalMap);
     m.name = k;
     if (/^AV_HD_/.test(k)) atlasHD(m, src);
+    else if (/^KB3D_mud(Dark)?M$/.test(k)) cremaPlana(m, /Dark/.test(k) ? 0.5 : 0.85);
     return m;
+  }
+  // BM23: los modelos Ancient que llegan sin _hd (templo_grande_a y otras torres de la ciudad del tepuy) pintaban el ocre del kit
+  // (KB3D_mudM) y desde el aire la ciudad era amarilla. Misma crema que el atlas (piedra mate, albedo máx. ~0,85), conservando el detalle.
+  function cremaPlana(m, fuerza) {
+    m.specular.setHex(0x000000); m.shininess = 1;
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
+        '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+        '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+        '  vec3 piedra = mix( vec3( 0.46, 0.40, 0.31 ), vec3( 0.84, 0.78, 0.65 ), t );\n' +
+        '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, ' + fuerza.toFixed(2) + ' ); }');
+    };
+    m.customProgramCacheKey = () => 'av-crema-plana-' + fuerza;
   }
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
@@ -395,6 +410,18 @@ AVE.module('streaming', function (G) {
     if (!esPiedra(n) || !geo) return;
     podarAstillas(geo);
     if (!horneado) cremar(geo);
+    marfilar(geo);
+  }
+  // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
+  // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  function marfilar(geo) {
+    const col = geo.attributes.color;
+    if (!col || geo.userData.marfil) return;
+    for (let i = 0; i < col.count; i++) {
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.55, k = 1.14;
+      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k), Math.min(1, (y + (b - y) * s * 1.1) * k));
+    }
+    col.needsUpdate = true; geo.userData.marfil = 1;
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
@@ -906,7 +933,10 @@ AVE.module('streaming', function (G) {
             }
           }
         }
-        if (L.panel && G.esBohioAbierto) { const j = li.findIndex(I => G.esBohioAbierto(I)); if (j >= 0 && j < li.length - 1) { const t = li[j]; li[j] = li[li.length - 1]; li[li.length - 1] = t; } }
+        if (L.panel && G.esBohioAbierto && li.some(I => G.esBohioAbierto(I))) { // BM13: varias abiertas (una por aldea), todas al final
+          const cerr = li.filter(I => !G.esBohioAbierto(I)), abi = li.filter(I => G.esBohioAbierto(I));
+          for (let j = 0; j < li.length; j++) li[j] = j < cerr.length ? cerr[j] : abi[j - cerr.length];
+        }
         let igual = li.length === pr.length;
         for (let j = 0; igual && j < li.length; j++) if (li[j] !== pr[j]) igual = false;
         if (!igual) {
@@ -915,7 +945,8 @@ AVE.module('streaming', function (G) {
           L.attr.needsUpdate = true;
           L.prev = li.slice();
         }
-        const nPanel = L.panel ? li.length - (li.length && G.esBohioAbierto && G.esBohioAbierto(li[li.length - 1]) ? 1 : 0) : 0;
+        let nPanel = L.panel ? li.length : 0;
+        while (nPanel > 0 && G.esBohioAbierto && G.esBohioAbierto(li[nPanel - 1])) nPanel--;
         for (const m of L.mallas) { m.count = m === L.panel ? nPanel : li.length; m.visible = m.count > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
         if (li.length) { vis[L.tipo] += li.length; vis.mallas += L.mallas.length; }
       }

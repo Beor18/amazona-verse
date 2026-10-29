@@ -494,7 +494,8 @@ AVE.module('vegetacion', function (G) {
           // G19: no agrandar el cuadro. A 1,7× la altura del árbol la copa era una hoja de varios metros
           // y, en render2022, tapaba la cámara. El tinte de copa solo entra lejos.
           float distC = length(d3);
-          float aereo = smoothstep(0.28, 0.62, elev) * smoothstep(36.0, 72.0, distC);
+          // BM27: sin repintar la copa (el disco de 4 m con palo parecía una piruleta y no el árbol cercano): el impostor es el mismo render del modelo
+          float aereo = 0.0;
           vec3 up = vec3(0.0, cos(inc), 0.0) - toCam * sin(inc);
           float ladoX = lado;
           float ladoY = lado;

@@ -936,7 +936,7 @@
         localStorage.setItem(pruebas.casa, JSON.stringify({ v: 1, adoptado: true, vistas: [], jugadores: {} }));
         const d = leer();
         check('Lee los récords de Retos de la clave aparte', d.retos.carrera.mejor === 65300 && d.retos.carrera.puesto === 1 && d.retos.carrera.oros === 2 && d.retos.tormenta.mejor === 1620 && d.retos.tormenta.jugadas === 3);
-        check('Historia terminada con su tiempo, Diario n/12 y criadero', d.historia.terminada && d.historia.tiempo === 3125.4 && d.diario.n === 7 && d.diario.total === 12 && d.criadero.huevos === 2 && d.criadero.crias === 1 && d.criadero.libres === 1,
+        check('Historia terminada con su tiempo, Diario n/13 y criadero', d.historia.terminada && d.historia.tiempo === 3125.4 && d.diario.n === 7 && d.diario.total === 13 && d.criadero.huevos === 2 && d.criadero.crias === 1 && d.criadero.libres === 1,
           `${d.historia.tiempo} s · ${d.diario.n}/${d.diario.total} · ${d.criadero.huevos}/${d.criadero.crias}/${d.criadero.libres}`);
         check('Las claves del libro y de Retos no son la de la partida', CLAVE.casa !== G.guardado.KEY && orig.casa === ALM + '.records' && orig.casa !== orig.retos, orig.casa);
         const malo = retosDe({ v: 1, carrera: { mejor: -5, puesto: 99, oros: 'x', jugadas: 2.5 }, tormenta: null });
@@ -946,7 +946,7 @@
         check('El panel abre', abrir({ desde: 'portada' }) && abierto && !root.hidden && root.getAttribute('aria-modal') === 'true');
         const txt = root.textContent;
         check('Muestra mejor tiempo, medalla, puntos y veces jugadas', /1:05\.3/.test(txt) && /Oro/.test(txt) && /1620/.test(txt) && /Veces jugado/.test(txt) && root.querySelector('.rec-m.oro'), '1:05.3 · 1620');
-        check('Muestra historia (terminada, 52 min), Diario 7/12, criadero y especies', /Terminado/.test(txt) && /52 min/.test(txt) && /7\/12/.test(txt) && /Huevos/.test(txt) && /Iguaca/.test(txt) && root.querySelectorAll('.rec-chips li').length >= 2);
+        check('Muestra historia (terminada, 52 min), Diario 7/13, criadero y especies', /Terminado/.test(txt) && /52 min/.test(txt) && /7\/13/.test(txt) && /Huevos/.test(txt) && /Iguaca/.test(txt) && root.querySelectorAll('.rec-chips li').length >= 2);
         check('El mundo queda en pausa y el foco entra al panel', (!G.pausa || enPausa()) && root.contains(document.activeElement));
         const grande = [...root.querySelectorAll('button')].filter(b => b.getClientRects().length && b.offsetHeight < 44);
         check('Los botones del panel miden 44 px o más', grande.length === 0, grande.length + ' pequeños');

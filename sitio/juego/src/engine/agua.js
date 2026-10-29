@@ -97,6 +97,7 @@ AVE.module('agua', function (G) {
     uHemiSuelo: { value: R.hemi.groundColor.clone() }, uHemiCielo: { value: R.hemi.color.clone().multiplyScalar(R.hemi.intensity) },
     uEstilo: { value: C.agua > 0 ? 1 : 0 }, // 26-C: espuma en bandas de borde duro y destellos del sol (medio y alto)
     uTormenta: { value: 0 }, // 1 mientras se juega «¡Escapa de la tormenta!»: un solo cuerpo de agua
+    uBio: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, // BM21: x, z, intensidad (0 apagado) de 4 toques de la caleta
   };
   const COMMON_FRAG = `
     uniform float uTime, uTormenta; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec;
@@ -152,7 +153,7 @@ AVE.module('agua', function (G) {
       #include <fog_vertex>
     }`;
   const MAR_FRAG = COMMON_FRAG + `
-    uniform vec3 uSomero, uHondo, uLaguna;
+    uniform vec3 uSomero, uHondo, uLaguna; uniform vec4 uBio[4];
     varying vec3 vW; varying float vOla;
     #include <fog_pars_fragment>
     void main() {
@@ -208,6 +209,10 @@ AVE.module('agua', function (G) {
       // Casi opaca: si el fondo se viera, la arena y la caída del arrecife volverían a ser un corte
       float aMar = max(mix(0.95, 0.99, nB), espuma * 0.95) * smoothstep(-0.05, 0.55, profReal);
       a = mix(a, aMar, uTormenta);
+      // BM21: tinte emisivo azul-verde de la caleta alrededor de cada toque (6 m), sin luces
+      float bio = 0.0;
+      for (int i = 0; i < 4; i++) if (uBio[i].z > 0.0) bio += uBio[i].z * (1.0 - smoothstep(1.0, 6.0, length(xz - uBio[i].xy)));
+      col += vec3(0.04, 0.8, 0.95) * min(bio, 1.0) * (0.75 + 0.5 * vnoise(xz * 2.5 + uTime * 0.8));
       gl_FragColor = vec4(col, a);
       #include <tonemapping_fragment>
       #include <encodings_fragment>

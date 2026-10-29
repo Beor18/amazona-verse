@@ -413,6 +413,8 @@ window.AVLook = function (G) {
     const antes = actual, errores = [], ce = console.error, e0 = (window.__aveErrores || []).length;
     console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
     const cuadro = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // QA-78: con la Mac cargada la fauna, los peces y la bandada entran entre medidas; se espera a 3 cuadros seguidos con los mismos draw calls (tope 10 s)
+    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls; n = c === ult ? n + 1 : 1; ult = c; } };
     const foto = () => {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
@@ -434,7 +436,7 @@ window.AVLook = function (G) {
     if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true }); // sin transición de clima a mitad de la prueba
     try {
       if (actual) quitar();
-      await cuadro();
+      await cuadro(); await asentar();
       const F0 = firma(), f0 = foto(), c0 = f0.croma, m0 = medir();
       check('Sin look («fabrica»): los ShaderChunks son los originales (los de three y la gradación W1 de renderer.js)', SC.tonemapping_fragment === ORIG.tone && SC.tonemapping_pars_fragment === ORIG.pars && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
       check('DEFECTO es «vibrant_toon» (decisión de Kelvin) y existe; ?look=fabrica o el chip «Fábrica» dejan ver el original', DEFECTO === 'vibrant_toon' && !!LOOKS[DEFECTO] && (q.get('look') === 'fabrica' ? antes === null : antes === (sessionStorage.getItem('ave.look') === 'fabrica' ? null : antes)), 'al entrar: ' + (antes || 'fabrica'));
@@ -447,7 +449,7 @@ window.AVLook = function (G) {
       check('Sección «Look» en la pausa, oculta salvo en modo prueba, con un chip por look', !!sec && menu.contains(sec) && sec.hidden === !DEV && sec.querySelectorAll('button[data-look]').length === NOMBRES.length + 1);
       for (const n of NOMBRES) {
         const t0 = performance.now(); aplicar(n); const tApl = performance.now() - t0;
-        await cuadro(); await cuadro();
+        await cuadro(); await cuadro(); await asentar();
         const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n];
         check(`Look «${n}»: se aplica (chunk, exposición, sol, cielo, niebla y clave de programas)`, actual === n && SC.tonemapping_fragment !== ORIG.tone && R.renderer.toneMappingExposure === L.exposicion &&
           R.sun.intensity === L.luces.solInt && (!R.sky || hex(R.sky.material.uniforms.uCenit.value) === hex(lin(L.cielo.cenit))) && (!R.ATMOS || R.scene.fog.far === L.niebla.fin) &&
@@ -481,7 +483,7 @@ window.AVLook = function (G) {
         }
         check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
       }
-      quitar(); await cuadro(); await cuadro();
+      quitar(); await cuadro(); await cuadro(); await asentar();
       const F1 = firma(), c2 = foto().croma, m2 = medir();
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
@@ -564,6 +566,18 @@ window.AVLook = function (G) {
       check('En vivo el look de fábrica es vibrant_toon y el cielo es atmosférico', DEFECTO === 'vibrant_toon' && actual === 'vibrant_toon' && !!R.ATMOS && !!esp, 'look ' + (actual || 'fabrica'));
       check('En vivo la exposición, la niebla y el cenit son los del estándar de este capítulo', !!esp && R.renderer.toneMappingExposure === esp.exposicion && R.scene.fog && R.scene.fog.far === esp.niebla.fin && (!u || hex(u.uCenit.value) === hex(lin(esp.cielo.cenit))),
         'exposición ' + R.renderer.toneMappingExposure + ' · niebla ' + (R.scene.fog && R.scene.fog.far) + ' · cenit ' + (u ? hex(u.uCenit.value) : 'sin cielo'));
+      // BM23: nada de vegetación ni de «pirámides» sobre el mar: ni conos de isla visibles con mapa, ni vértices del dosel bajo el nivel del mar
+      if (G.terreno && G.terreno.mapa) {
+        const conos = []; R.scene.traverse(o => { if (o.isMesh && o.visible && o.geometry && o.geometry.type === 'ConeGeometry' && o.geometry.parameters.radius >= 20) conos.push(o.position.toArray().map(Math.round).join(',')); });
+        check('Sobre el mar no hay conos verdes de isla (BM23)', !conos.length, conos.join(' | '));
+        const D = window.AV_DOSEL_CAP1;
+        if (D && G.dosel && G.dosel.activo) {
+          const u8 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+          const q = new Uint16Array(u8(D.pos).buffer), o = D.origen, e = D.escala; let mar = 0;
+          for (let i = 0; i < q.length; i += 3) { const x = o[0] + q[i] * e, z = o[2] + q[i + 2] * e; if (G.terreno.height(x, z) < -2) mar++; }
+          check('El dosel no tiene vértices sobre el mar abierto (BM23)', mar === 0, mar + ' vértices');
+        }
+      }
     } catch (e) {
       check('La prueba de capítulos terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     }

@@ -797,8 +797,11 @@ AVE.module('terreno', function (G) {
   const O = W.oceano || {};
   const seaY = MAPA ? 0 : O.y != null ? O.y : -2.6;
   const islandCones = islas.map(I => {
-    const isl = new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
-    isl.position.set(I.x, seaY + I.r * (MAPA ? 0.12 : 0.3), I.z); scene.add(isl);
+    // BM23: con mapa, la isla de respaldo es una loma baja y redonda con el tono neblinoso del horizonte, no una pirámide verde saturada
+    const isl = MAPA ? new THREE.Mesh(new THREE.SphereGeometry(I.r, 24, 6, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#5d8a6c' }))
+      : new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
+    if (MAPA) isl.scale.y = 0.3;
+    isl.position.set(I.x, seaY + (MAPA ? -0.5 : I.r * 0.3), I.z); scene.add(isl);
     return isl;
   });
   // El relieve de las islas se pide cuando la cotorra se acerca a una (a menos de ISLA_VER m de su orilla): hasta entonces

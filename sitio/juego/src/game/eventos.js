@@ -23,7 +23,8 @@ AVE.module('eventos', function (G) {
   }
   function log(key, data) {
     S.events.push(make(key, data, S.events.length + 1, Math.round(S.clock * 10) / 10));
-    if (CAPTURA[key]) capturarManga(CAPTURA[key], key);
+    // BM15: la captura (un render extra) espera a un cuadro tranquilo, no se cuela en el cuadro del evento
+    if (CAPTURA[key]) { const m = CAPTURA[key]; if (window.requestIdleCallback) requestIdleCallback(() => capturarManga(m, key), { timeout: 2000 }); else setTimeout(() => capturarManga(m, key), 2000); }
   }
   function had(key) { return S.events.some(e => e.key === key); }
   // Fondo del cómic nuevo (G17f). Solo estos momentos, en baja, en memoria y en IndexedDB.

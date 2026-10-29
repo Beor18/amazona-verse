@@ -385,9 +385,9 @@
     for (const f of cult.slice(0, 4)) { teleport(f.x + 0.4, f.z); tick(0.1); }
     check('Diario: 4 objetos de cultura dan las maracas', S.unlocked.includes('mano:maracas'));
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
-    check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
+    check('Diario 13/13 da la Deportiva 787 y los lentes dorados', S.field.length === FIELD.length && FIELD.length === 13 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 12);
+    check('El Diario muestra los 13 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 13);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -434,7 +434,7 @@
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
     // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa)
-    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
+    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 13 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
     // El post se carga perezoso: hasta que termina (o si el equipo cae a «bajo») el tone mapping es CustomToneMapping (W1: ACES con
@@ -479,6 +479,15 @@
       } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
     }
     await recorrerFinal(G, T, check);
+    // BM20: momentos «wow» del capítulo 1 (src/game/wow.js, AV.wowTest): ocurren y no bloquean la misión; con G.quiet no aparecen
+    {
+      const W = window.AV && window.AV.wowTest ? await window.AV.wowTest().catch(e => ({ results: [{ name: String(e), ok: false }] })) : null, r = (W && W.results) || [];
+      const de = re => r.filter(x => re.test(x.name));
+      const bien = re => { const l = de(re); return l.length > 0 && l.every(x => x.ok); };
+      check('BM20 · Despegue del mirador: la cámara se abre, la misión sigue sola a los 4 s o con una tecla, y con G.quiet no aparece', bien(/^Despegue/), JSON.stringify(de(/^Despegue/).filter(x => !x.ok)).slice(0, 200));
+      check('BM20 · Bandada de 20 cotorras al terminar M3 en dos pasadas (y con G.quiet no sale)', !!G.bandada, 'G.bandada');
+      check('BM20 · Coro con luciérnagas: 60–120 puntos cálidos laten con las notas del Simon, sin luces reales, y con G.quiet no aparecen', bien(/^Luciérnagas/), JSON.stringify(de(/^Luciérnagas/).filter(x => !x.ok)).slice(0, 200));
+    }
     SV.reset(true);
     devolver();
     T.restoreSave(keep);

@@ -1,5 +1,5 @@
 /* Content pack cap1 · Diario de Campo Boricua (GDD_CAP1 §4) y ropa desbloqueable (§5)
-   12 hallazgos por proximidad. Textos validados con fuente (DRNA, USFWS, USGS, ICP, Smithsonian, UICN, Cornell Lab, Ley 154-2003 y
+   13 hallazgos por proximidad (el 13.º, los dinoflagelados de la caleta: NOAA, coast.noaa.gov/states/stories/vieques-bioluminescent-bay.html, BM21). Textos validados con fuente (DRNA, USFWS, USGS, ICP, Smithsonian, UICN, Cornell Lab, Ley 154-2003 y
    publicaciones académicas): la tabla con cada dato, su URL y el veredicto está en docs/equipo/DIARIO_VALIDACION.md.
    Cada entrada trae su silueta hecha con primitivas: modelo(add, S1), donde add(geo, color, x, y, z, sx?, sy?, sz?) y S1 es una esfera unitaria. */
 (function () {
@@ -38,6 +38,8 @@
           modelo: (add, S1) => { add(S1, '#d6403a', 0, 0.45, 0, 0.26, 0.28, 0.2); for (const [x, rz] of [[-0.14, 0.5], [0, 0], [0.14, -0.5]]) add(new THREE.ConeGeometry(0.05, 0.28, 6), '#ffd84a', x, 0.78, 0).rotation.z = rz; add(S1, '#1b1b1b', 0.08, 0.5, 0.17, 0.04, 0.04, 0.03); add(S1, '#1b1b1b', -0.08, 0.5, 0.17, 0.04, 0.04, 0.03); } },
         { id: 'pava', cat: 'cultura', nombre: 'Pava jíbara', x: -25, z: 29, texto: 'Sombrero de paja del jíbaro, el campesino de Puerto Rico que cortaba caña o recogía café.',
           modelo: add => { add(new THREE.CylinderGeometry(0.42, 0.42, 0.03, 24), '#d9b56a', 0, 0.3, 0); add(new THREE.ConeGeometry(0.2, 0.22, 16), '#d9b56a', 0, 0.42, 0); add(new THREE.CylinderGeometry(0.19, 0.2, 0.05, 16, 1, true), '#d6403a', 0, 0.35, 0); } },
+        { id: 'dinoflagelado', cat: 'fauna', nombre: 'Dinoflagelados de la caleta', x: -160, z: 207, r: 6, agua: true, hundir: 0.1, chispa: 1.6, texto: 'De noche esta caleta brilla azul. Lo hacen unos seres diminutos del agua, los dinoflagelados Pyrodinium bahamense, los mismos de la bahía Puerto Mosquito, en Vieques.',
+          modelo: (add, S1) => { add(S1, '#5ff3ff', 0, 0, 0, 0.16, 0.1, 0.16); add(S1, '#2fe0c0', 0.3, 0, 0.1, 0.1, 0.07, 0.1); add(S1, '#9fffe8', -0.25, 0, -0.15, 0.12, 0.08, 0.12); } },
       ],
       // Hitos del Diario (en este orden): dan la ropa de pack.ropa con el mismo hito
       hitos: [{ id: 'fauna4', cat: 'fauna', min: 4 }, { id: 'cultura4', cat: 'cultura', min: 4 }, { id: 'all12', todos: true }],

@@ -84,6 +84,11 @@
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
     if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    // Momentos «wow» del capítulo 1 (src/game/wow.js, BM20): despegue del mirador y luciérnagas del coro; se carga tras el primer gesto y al pedir su prueba
+    let wow = null;
+    const cargarWow = () => wow || (wow = cargarBandada().catch(() => {}).then(() => AVE.assets.script('src/game/wow.js')).then(() => window.AVWow(G), e => { wow = null; throw e; }));
+    AV.wowTest = o => cargarWow().then(w => w.test(o));
+    alPrimerGesto(cargarWow);
     // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
     let rioVivo = null;
     const cargarRioVivo = () => rioVivo || (rioVivo = AVE.assets.script('src/game/rio_vivo.js').then(() => window.AVRioVivo(G), e => { rioVivo = null; throw e; }));
