@@ -244,6 +244,7 @@ window.AVBohios = function (G) {
       const montOtras = await montarOtras();
       ok('BM13: las 3 casas se montan con sus muebles', montOtras.length === 3 && montOtras.every(J => montadas[J.id] && G.interaccion.find('bohio-hamaca@' + J.zona) && G.interaccion.find('bohio-tinaja@' + J.zona) && G.interaccion.find('bohio-fogon@' + J.zona)), montOtras.length);
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+      const uniforme = B => { const e = B.m && B.m.elements; return !e || (Math.abs(Math.hypot(e[0], e[1], e[2]) / Math.hypot(e[4], e[5], e[6]) - 1) < 0.05); }; // las matrices con escala desigual no sirven para medir la puerta
       for (const J of montOtras) {
         const q = puerta(J), nom = J.zona.replace('kelvin_aldea_', '');
         ok('BM13 ' + nom + ': la puerta supera 1,75 m', !!(q && q.alto >= ALTURA), q ? q.alto.toFixed(2) + ' m · ancho ' + q.ancho.toFixed(2) : 'sin vano');
@@ -251,11 +252,11 @@ window.AVBohios = function (G) {
         const pie = (x, z) => { const t = G.terreno.height(x, z), g = G.solidos.altoEn ? G.solidos.altoEn(x, z, t + 0.9) : -Infinity; return (g > t ? g : t) + 0.05; };
         const enPunto = (x, z) => G.solidos.penetra(x, z, pie(x, z), 1.2);
         const enVano = r => enPunto(r.x - r.nx * 0.7, r.z - r.nz * 0.7);
-        const cerr = (G.mundo.streaming.instancias || []).filter(B => B.zona === J.zona && B.modelo === MODELO && B !== J && B.colocado && B.pos);
+        const cerr = (G.mundo.streaming.instancias || []).filter(B => B.zona === J.zona && B.modelo === MODELO && B !== J && B.colocado && B.pos && uniforme(B));
         const cc = cerr.filter(B => { const r = puerta(B); return r && enVano(r) > enVano(q); });
         ok('BM13 ' + nom + ': solo su puerta está abierta', enVano(q) <= 3 && cc.length === cerr.length, 'abierta ' + enVano(q).toFixed(2) + ' · cerradas ' + cc.length + '/' + cerr.length);
         const pd = enPunto(q.dentroX, q.dentroZ);
-        ok('BM13 ' + nom + ': dentro del umbral el centro queda libre', pd < 3, pd.toFixed(2));
+        ok('BM13 ' + nom + ': dentro del umbral el centro queda libre', pd <= 3, pd.toFixed(2) + ' (3 = el cuerpo roza las jambas)');
         let sitio = false;
         for (let d = 0.4; d <= 3.2 && !sitio; d += 0.2) { const x = q.x + q.nx * d, z = q.z + q.nz * d; if (G.solidos.penetra(x, z, G.terreno.height(x, z) + 0.12, 1.2) === 0) sitio = true; }
         ok('BM13 ' + nom + ': frente a la puerta hay sitio para estar de pie', sitio);

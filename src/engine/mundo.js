@@ -311,11 +311,13 @@ AVE.module('mundo', function (G) {
           if (!e || e.grupo !== zona || e.modelo !== AL.modelo || !Array.isArray(e.inst)) continue;
           for (const v of e.inst) {
             const s = escDe(v), d = Math.abs(s - amb.s);
-            if (s > 0 && s <= 1 && (!mejor || d < mejor.d - 1e-6)) mejor = { v, s, d, zona };
+            if (!(s > 0 && s <= 1)) continue;
+            const u = v.length < 16 ? 0 : 1; // primero las de escala uniforme (5 números); las matrices solo si no hay otra
+            if (!mejor || u < mejor.u || (u === mejor.u && d < mejor.d - 1e-6)) mejor = { v, s, d, zona, u };
           }
         }
         if (!mejor) continue;
-        const f = mejor.s < amb.s * 0.8 ? AL.factor : 1;
+        const f = mejor.s < amb.s ? Math.min(AL.factor, amb.s / mejor.s) : 1; // hasta la escala de la amueblada de Villa (puerta de ~1,95 m)
         if (f !== 1) {
           if (mejor.v.length >= 16) for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) mejor.v[i] *= f; else mejor.v[4] *= f;
         }
