@@ -290,17 +290,16 @@ AVE.module('mundo', function (G) {
     G.bohiosAbiertos = G.bohiosAbiertos || {};
     G.bohiosAbiertos[VILLA.modelo] = true; // malla abierta: solo la amueblada (bohios.js) conserva la puerta; las demás llevan su panel (BM6-1)
     // la única instancia con la puerta abierta: la amueblada (la misma que elige bohios.js: mayor escala y más cerca del spawn)
-    let elegida = null;
-    G.esBohioAbierto = I => {
-      if (!I || I.modelo !== VILLA.modelo || !I.pos) return false;
-      if (!elegida) {
-        const sp = (MAPA.spawn) || { x: 134, z: 182.5 };
-        const l = (ST.instancias || []).filter(B => B.zona === VILLA.zona && B.modelo === VILLA.modelo && B.pos);
-        if (!l.length) return false;
-        elegida = l.slice().sort((a, b) => (b.escala - a.escala) || (Math.hypot(a.pos[0] - sp.x, a.pos[2] - sp.z) - Math.hypot(b.pos[0] - sp.x, b.pos[2] - sp.z)))[0];
+    const sp = MAPA.spawn || { x: 134, z: 182.5 };
+    let amb = null; // mayor escala y, a igualdad, más cerca del spawn (lo mismo que elige bohios.js)
+    for (const e of MAPA.escenaKelvin.compacto) {
+      if (!e || e.grupo !== VILLA.zona || e.modelo !== VILLA.modelo || !Array.isArray(e.inst)) continue;
+      for (const v of e.inst) if (v.length >= 5 && v.length < 16) {
+        const d = Math.hypot(v[0] - sp.x, v[2] - sp.z);
+        if (!amb || v[4] > amb.s + 1e-6 || (Math.abs(v[4] - amb.s) <= 1e-6 && d < amb.d)) amb = { x: v[0], z: v[2], s: v[4], d };
       }
-      return I === elegida;
-    };
+    }
+    G.esBohioAbierto = I => !!(amb && I && I.modelo === VILLA.modelo && I.pos && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5);
   }
   G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
