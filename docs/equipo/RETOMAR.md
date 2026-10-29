@@ -2,6 +2,15 @@
 
 Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claude.ai/code).
 
+## Foto del 29-oct, 20:00 UTC (parada hasta el sábado 31-oct; Kelvin: «solo hay 20 dólares tuyos»)
+
+- **Web:** amazonaverse.com sirve `09b62ed` (sitio `d6ab871`, 29-oct 16:40 UTC), 13 baterías en verde en la nube. Incluye: BM14 (árboles sin pixelar), BM2/BM3 (ciudad y dosel; el dosel ya **apagado** por BM27 salvo `?dosel=1`), BM4 (interior del bohío), BM6 (colisiones), BM8 parcial, BM9/BM10 (móvil), BM11 (`?hud=0`), BM12, BM13 (casas amuebladas), BM17 (inglés del HUD), BM18 (`movementTest` 248 s), BM19 (QA GPU ronda 2), BM20 (momentos wow), BM21 (bahía bioluminiscente), BM23 parcial, el tren oculto del menú y de la web.
+- **Sin publicar:** `2e70328` (BM22 feedback juicy, BM24 historia del cap. 1: engranaje, medalla, mirador; BM25 el final del capítulo). En la nube `e2eTest` da 8/10 en 4.2 (la charla con Iguaca desde la copa) desde `de0ca41`; en la Mac con GPU pasa 47/47 (BM26). Es lo primero que hay que resolver el sábado: o se arregla la causa (ver BM26 en `TAREAS_API.md`) o se publica desde la Mac con `test.sh --extra` en verde allí.
+- **La Mac:** 5 ventanas (`subir.sh` + 4 × `ejecutar.sh --cola 1 --total 140`). La cola (`tools/agente_api/cola.txt`) tiene solo tareas ya «hechas» o «hechas (parcial)», así que los trabajadores esperan sin gastar. Pendiente de rellenar el sábado con lo parcial: BM8 (portales y risco), BM14 (puntos 3 y 4), BM15 (medida final), BM16, BM20 (capturas), BM23 (punto 2: ciudad), BM27 (puntos 3, 4 y 5: aldea asentada y toldos, costuras, risco).
+- **La PC con Windows (32 GB, GPU gaming):** Ubuntu (WSL) instalado; falta la contraseña de GitHub de Kelvin para `tools/agente_api/instalar_pc.sh`. Se retoma el sábado.
+- **Decisiones de Kelvin:** el mapa **no está aprobado** (sus 5 capturas en `docs/img/kelvin_29oct/`); el tren queda fuera del menú hasta que decida (6 propuestas en `DECISION_LOG.md` 29-oct); toldos y empalizadas tumbados: se enderezan salvo que diga lo contrario; GAME_FIRST C, K1–K4, logo, correo, UICN.
+- **Coordinación:** la ronda cada 3 h (`trig_01FUhw3GkY99gH6xEoMViTJ5`) está **desactivada**; el sábado 31-oct a las 8:23 a.m. de Puerto Rico dispara `trig_01FNFzXEUUQpXpc9mR1KkzvM`, que une, publica y pregunta a Kelvin si seguimos. Grok sin crédito hasta ~2-nov; la API no corre en la nube.
+
 ## Foto del 29-oct, 00:40 AST (Kelvin se va a dormir; todo en marcha continua)
 
 - **Grok volvió con crédito (29-oct)** y confirmó que **nada quedó a medias** (C, D, J, K y A: «nada pendiente»). Reparto vigente, tabla al principio de `docs/equipo/GROK_AGENTES.md`: E = BM6 colisiones y cámara; D = BM14 gráficos pixelados + copas a escala; J = BM8 piezas en el aire y aldeas; H = BM9 capítulos 2–6 en móvil; F = BM10 minijuegos; A = BM12 (tras BM6); M = BM13 (tras BM4). El detalle de cada BM está en `docs/equipo/TAREAS_API.md`. Carril L: G29 (capturas para el tráiler) en `respaldo/grok-g29-29oct`, pendiente de repetir `movementTest` sola y pasar a `main`.
