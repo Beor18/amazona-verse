@@ -195,12 +195,14 @@ window.AVBohios = function (G) {
       } else ok('La puerta del bohío está medida', false, infoV ? infoV.motivo : 'sin vano');
       // BM6-1: solo la amueblada tiene la puerta abierta; las otras, con panel (sólido) aunque la malla sea compartida
       if (p && G.solidos && G.solidos.penetra) {
-        const enVano = (q, B) => G.solidos.penetra(q.x - q.nx * 0.7, q.z - q.nz * 0.7, G.terreno.height(q.x, q.z) + 0.12, 1.2);
+        const pie = (x, z) => { const t = G.terreno.height(x, z), g = G.solidos.altoEn ? G.solidos.altoEn(x, z, t + 0.9) : -Infinity; return (g > t ? g : t) + 0.05; };
+        const enPunto = (x, z) => G.solidos.penetra(x, z, pie(x, z), 1.2);
+        const enVano = q => enPunto(q.x - q.nx * 0.7, q.z - q.nz * 0.7);
         const otras = lista.filter(B => B !== I && B.colocado && B.pos);
         const cerradas = otras.filter(B => { const q = puerta(B); return q && enVano(q, B) > 0; });
         ok('Solo la puerta del bohío amueblado está abierta', enVano(p, I) === 0 && otras.length > 0 && cerradas.length === otras.length, 'abierta ' + enVano(p, I).toFixed(2) + ' · cerradas ' + cerradas.length + '/' + otras.length);
-        const pd = G.solidos.penetra(p.dentroX, p.dentroZ, G.terreno.height(p.dentroX, p.dentroZ) + 0.12, 1.2);
-        ok('BM6-8: dentro del umbral no hay muebles que estorben (penetra = 0)', pd === 0, pd.toFixed(2));
+        const pd = enPunto(p.dentroX, p.dentroZ);
+        ok('BM6-8: dentro del umbral no hay muebles que estorben (penetra = 0)', pd === 0, pd.toFixed(2) + ' · de fuera a dentro: ' + [0, 0.25, 0.5, 0.7, 0.95, 1.2, 1.5, 2].map(d => enPunto(p.x - p.nx * d, p.z - p.nz * d)).join(' '));
       }
       const vis = vistas();
       ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
