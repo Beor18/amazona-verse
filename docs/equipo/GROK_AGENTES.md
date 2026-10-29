@@ -1,20 +1,19 @@
 # Grok en Cursor: una sola fila de tareas (28-oct)
 
-## 🔁 29-oct: Kelvin recargó Grok. Una sola orden: SUBIR LO QUE QUEDÓ A MEDIAS
-Cada agente de Grok que se abra hace esto y nada más:
-1. Mira qué tienes sin subir en tu carril (cambios sin commit, ramas o trabajo local de Cursor). Si no tienes nada, dilo en `PEDIDOS.md` («carril X: nada pendiente») y para.
-2. Haz `git pull --rebase origin main` y sube lo tuyo **solo si pasa las 13 baterías** (build en carpeta propia + `test.sh --extra`). Si algo no pasa, súbelo igual a una rama `respaldo/grok-<carril>-29oct` (sin tocar `main`) y anota en `PEDIDOS.md` qué falla.
-3. Una línea en `TRABAJO_SIMULTANEO.md` con el commit y lo que falta. Captura si es visual.
-4. **No empieces trabajo nuevo**: desde el 28-oct lo pendiente lo hace la API en la Mac (BM2, BM3, BM6, BM8, BM14…; `docs/equipo/TAREAS_API.md`). Si tocas los mismos archivos que una BM en curso (streaming.js, vegetacion.js, terreno.js, solidos.js, camara.js, fisica.js), sube a la rama de respaldo, no a `main`, y avisa en `PEDIDOS.md`.
-Prioridad de lo que puede haber a medias: C (G18, la ciudad), D (G19, copas y dosel), J (G24, piedra), K (G25, aldeas), A (G22, medición de QA-53), I, H.
+## ✅ 29-oct 04:30 UTC: Grok recargado y SIN NADA A MEDIAS (C, D, J, K y A lo confirmaron). Reparto nuevo, sin duplicar con la API
+La API de la Mac se queda solo con lo que necesita **Blender o GPU real**: BM2 (lejanos Ancient en Blender), BM3 (dosel horneado), BM4 (interior del bohío), BM5 (pieles), BM1 (QA con GPU) y BM11 (gameplay grabado). **Todo lo demás vuelve a Grok**, por carriles, con el detalle en `docs/equipo/TAREAS_API.md` (la sección «Carriles de la API en la Mac» describe cada BM: Grok la hace igual, con sus pruebas, y marca la fila en el tablero como G-nueva):
 
-## ⚠️ MODO AHORRO (28-oct, 14:15 AST): Grok está al ~90 % de su uso
-Kelvin: «estamos en crisis». Hasta nuevo aviso de la coordinadora:
-1. **El uso de Grok se reinicia en 5 días (~2 de noviembre) y queda ~10 %.** Solo siguen **2 carriles**: **D** (copas a escala en todo el mapa: es un ajuste de código que vale para todo) y **J** (sombra de la piedra crema y piezas en el aire). **C para también**: los lejanos de la Ciudad de los 36 los rehace la API en la Mac (BM2) y C los integra cuando vuelva el uso. Cada agente: cambios pequeños y seguros, sin repetir pruebas que ya pasaron.
-2. **Pausados:** A, B, E, F, G, H, I, K, L, M, N y todo el audiovisual (G29–G32). Si eres uno de ellos, deja tu trabajo con commit y **para**.
-3. **Nada de papeleo:** no más `ESTADO_CARRILES.md` cada 20 minutos ni commits solo de tablero. Un commit por cambio real, con su captura, y una línea en el tablero al terminar.
-4. **Menos vueltas:** antes de subir, compara tu captura con la meta de Kelvin; sube solo si mejora de verdad.
-5. **Grok Imagine** gasta del mismo uso: las pruebas de video esperan a que se reinicie el uso.
+| Carril de Grok | Tarea (detalle en TAREAS_API.md) | Archivos |
+|---|---|---|
+| **E · Cámara y choques** | **BM6**: los 9 arreglos de colisiones y cámara (prioridad 1) | `solidos.js`, `fisica.js`, `camara.js`, `src/game/bohios.js`, `mundo.js:291` |
+| **D · Selva y gráficos** | **BM14**: gráficos pixelados (resolución dinámica, impostores de 256 px, texMax, hojas) y copas a escala en todo el mapa | `vegetacion.js`, `renderer.js` (solo adaptDPR), `look.js` (solo texMax) |
+| **J · Piedra** | **BM8**: piezas en el aire, la empalizada que flota, Los Portales, las torres de La Mina | `tools/blender/mapa_kelvin.py`, `mapa_lib.py`, datos del mapa |
+| **H · Bugs** | **BM9**: capítulos 2 a 6 en móvil, uno por uno | `src/game/`, `src/ui/` |
+| **F · Minijuegos** | **BM10**: cada minijuego 10 veces en móvil | `river_rush.js`, `flight.js`, `maze.js`, `tren.js`, `retos.js` |
+| **A · Móvil** | **BM12** (después de que E termine BM6): movimiento P2 | coordinar con E |
+| **M · Bohíos** | **BM13** (después de BM4 de la API): interiores en 3 aldeas más | `bohios.js`, `mundo.js` |
+
+Reglas: una tarea por agente, apúntate en `TRABAJO_SIMULTANEO.md` como «Grok · carril X · BMn», commit por punto con las 13 baterías en verde, captura con cada cambio visual, `git pull --rebase` antes de cada push, nada en `sitio/`. Si terminas, toma la siguiente libre de esta tabla. **No toques** lo que hace la API (lejanos Ancient, dosel horneado, interior del bohío, pieles).
 
 **El tablero (`TRABAJO_SIMULTANEO.md`) manda, y la coordinadora lo mantiene al día.** Si un pedido de la coordinadora en `PEDIDOS.md` es más nuevo que el estado del tablero, vale el pedido: actualiza la fila y sigue. «Lista para Kelvin» con una revisión pendiente no es «bloqueado»: se hace la revisión.
 
