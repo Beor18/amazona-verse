@@ -1,5 +1,4 @@
 # Cola de la API en la nube (ejecutar_nube.sh): código y pruebas sin GPU real. La Mac tiene la suya (cola.txt); no se repiten tareas.
-BM12
 BM13
 BM16
 BM17
