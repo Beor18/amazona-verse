@@ -288,7 +288,8 @@ AVE.module('mundo', function (G) {
       e._bohioEsc = factorVilla;
     }
     G.bohiosAbiertos = G.bohiosAbiertos || {};
-    G.bohiosAbiertos[VILLA.modelo] = true;
+    G.bohiosAbiertos[VILLA.modelo] = true; // malla abierta: solo la amueblada (bohios.js) conserva la puerta; las demás llevan su panel (BM6-1)
+    G.bohioAbierto = VILLA.modelo + '@' + VILLA.zona + '#1';
   }
   G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });

@@ -131,12 +131,14 @@ AVE.module('solidos', function (G) {
   // Geometría con matriz de mundo (y matriz de instancia, si la hay) → triángulos, por tandas.
   // Primero lo estático (edificios, estructuras, contenido); al terminarlo se tapan los huecos (rellenar); luego la flora.
   const cola = [], colaFlora = [], geosHechos = new WeakSet(), matricesDe = new WeakMap();
+  const matricesPorModelo = {}; let modeloActual = null; // BM6-3: las matrices por NOMBRE de modelo (la geometría se libera y se recrea)
   function encolar(geo, matriz, etiqueta, region) {
     const pos = geo.attributes.position, idx = geo.index, nt = idx ? idx.count / 3 : pos.count / 3;
     const m = matriz.clone();
     geosHechos.add(geo);
     // La puerta se funde después: si el edificio ya se encoló, los paneles salen con la misma matriz.
     if (!region) { let arr = matricesDe.get(geo); if (!arr) matricesDe.set(geo, arr = []); arr.push(m); }
+    if (!region && modeloActual) (matricesPorModelo[modeloActual] = matricesPorModelo[modeloActual] || []).push(m);
     (region ? colaFlora : cola).push({ pos, idx, nt, t: 0, m, etiqueta, region });
   }
   // Huecos de la malla vistos desde arriba (el vértice abierto de un techo cónico, juntas entre piezas): una celda vacía
@@ -177,7 +179,10 @@ AVE.module('solidos', function (G) {
       J.ki++; J.c = 0;
     }
     if (J.ki < J.keys.length) return false;
+    // BM6-9: los rellenos van siempre al mapa estático (si no, un triángulo degenerado los dejaba en flora y se borraban con la región)
+    const dAnt = destino, rAnt = regionActual; destino = blocks; regionActual = null;
     for (const [ix, iz, lo, top] of J.nuevos) { insert(ix, iz, lo, top, 0, 0); insert(ix, iz, top, top, 0, 0); }
+    destino = dAnt; regionActual = rAnt;
     sucios.clear();
     rellenas += J.nuevos.length;
     rellenoJob = null;
@@ -215,11 +220,13 @@ AVE.module('solidos', function (G) {
   const mPieza = new THREE.Matrix4();
   function agregar(obj) {
     obj.updateMatrixWorld(true);
+    modeloActual = obj.userData && obj.userData.modelo || null;
     obj.traverse(o => {
       if (!valida(o) || !o.geometry || !o.geometry.attributes.position) return;
       if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mPieza); encolar(o.geometry, mPieza.premultiply(o.matrixWorld), o.name); }
       else encolar(o.geometry, o.matrixWorld, o.name);
     });
+    modeloActual = null;
   }
 
   // ---------- Qué se rasteriza ----------
@@ -326,7 +333,7 @@ AVE.module('solidos', function (G) {
   }
   G.on('update', () => {
     const ms = msSolidos(), t0 = performance.now();
-    bombearVanos(ms);
+    bombearVanos(ms * 0.4); // BM6-4: la búsqueda de puertas no se come todo el presupuesto; el resto rasteriza triángulos
     const queda = ms - (performance.now() - t0);
     if (!cola.length && !colaFlora.length && !estaticosListos && blocks.size && porRegion) { estaticosListos = true; resolver(); }
     floraCerca();
@@ -438,6 +445,7 @@ AVE.module('solidos', function (G) {
   }
   // ¿Hay sólido donde está el collider a mano? (entonces sobra)
   function cubre(c) {
+    if (cola.length > 0 && c.kind !== 'arbol') return false; // BM6-4: el sólido aún se está rasterizando: el collider a mano sigue activo hasta que esté completo
     if (c.kind === 'arbol' && !regionHecha(c.x, c.z)) return false;
     // el centro y, en los grandes, puntos a 0,3 y 0,6 del radio (el centro de un techo de paja puede estar hueco)
     const r = c.hx ? Math.max(c.hx, c.hz) : c.r || 0, pts = [[0, 0]];
@@ -611,13 +619,13 @@ AVE.module('solidos', function (G) {
     if (job.ms == null) job.ms = Math.round(performance.now() - job.tInicio);
     return true;
   }
-  function aplicarPaneles(R) {
+  function aplicarPaneles(R, sinSolido) {
     if (!R || R.fundido || !R.vanos || !R.vanos.length || typeof R.fundir !== 'function') { if (R) R.fundido = true; return R && R.vanos ? R.vanos.length : 0; }
     const partes = R.partesRef, fundir = R.fundir;
     const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
     let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }
     p = p || partes.find(sirve); if (!p) { R.fundido = true; return 0; }
-    const paneles = R.vanos.map(panelVano), viejo = p.geo, mats = matricesDe.get(viejo) || [];
+    const paneles = R.vanos.map(panelVano), viejo = p.geo, mats = sinSolido ? [] : (matricesPorModelo[R.nombre] || matricesDe.get(viejo) || []);
     p.geo = fundir([viejo, ...paneles], false);
     const sc = G.renderer.scene;
     sc.traverse(o => { if (o.isMesh && o.geometry === viejo) o.geometry = p.geo; });
@@ -626,6 +634,34 @@ AVE.module('solidos', function (G) {
     else for (const geo of paneles) geo.dispose();
     R.fundido = true;
     return R.vanos.length;
+  }
+  // BM6-1: el modelo con puerta abierta (G.bohiosAbiertos) comparte malla; todas las instancias menos G.bohioAbierto (id)
+  // llevan su panel aparte: malla instanciada (streaming.js) y sólido propio por instancia.
+  function parteDePanel(partes) {
+    const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
+    let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }
+    return p || partes.find(sirve) || null;
+  }
+  // undefined = la búsqueda de vanos sigue; null = no hay panel que poner; {geo, mat} = panel para la malla instanciada
+  function panelAbierto(nombre, partes) {
+    const R = vanosHechos.get(nombre);
+    if (!R || !R.listo) return undefined;
+    if (!R.vanos.length) return null;
+    const p = parteDePanel(partes); if (!p) return null;
+    const gs = R.vanos.map(panelVano), geo = gs.length > 1 && R.fundir ? R.fundir(gs, false) : gs[0];
+    if (gs.length > 1) for (const g of gs) g.dispose();
+    return { geo, mat: p.mat };
+  }
+  function drenarPend(R) {
+    if (!R.pend || !R.listo) return;
+    const pend = R.pend; R.pend = null;
+    if (R.vanos && R.vanos.length) { R.panelesSol = R.panelesSol || R.vanos.map(panelVano); for (const m of pend) for (const g of R.panelesSol) encolar(g, m, 'vano'); }
+  }
+  function panelInstancia(nombre, matriz) {
+    const R = vanosHechos.get(nombre); if (!R) return false;
+    (R.pend = R.pend || []).push(matriz.clone());
+    drenarPend(R);
+    return true;
   }
   function bombearVanos(ms) {
     const t0 = performance.now();
@@ -637,7 +673,7 @@ AVE.module('solidos', function (G) {
       if (!hecho) break;
       vanoCola.shift();
       if (R.listo && !R.fundido) {
-        if (R.abierta) R.fundido = true; // G27: el vano queda medido y la puerta no se tapa
+        if (R.abierta) { R.fundido = true; drenarPend(R); } // G27: el vano queda medido y la puerta no se tapa
         else aplicarPaneles(R);
       }
     }
@@ -662,6 +698,8 @@ AVE.module('solidos', function (G) {
     // la malla es compartida, así que no se funde el panel en ninguna instancia.
     const abierta = !!(G.bohiosAbiertos && G.bohiosAbiertos[nombre]);
     let R = vanosHechos.get(nombre);
+    // BM6-2: la zona se descargó y volvió: la geometría es nueva y no lleva el panel (el sólido ya está rasterizado)
+    if (R && R.listo && !abierta && R.vanos.length && R.partesRef !== partes) { R.partesRef = partes; R.fundir = fundir; R.fundido = false; return aplicarPaneles(R, true); }
     if (R && R.listo && (R.fundido || abierta)) return abierta ? 0 : R.vanos.length;
     if (!R) {
       try { R = prepararVanos(partes); }
@@ -672,7 +710,7 @@ AVE.module('solidos', function (G) {
     }
     R.nombre = nombre; R.abierta = abierta; R.partesRef = partes; R.fundir = fundir;
     if (!R.listo) bombearVanos(msSolidos());
-    if (abierta) { if (R.listo) R.fundido = true; return 0; }
+    if (abierta) { if (R.listo) { R.fundido = true; drenarPend(R); } return 0; }
     if (R.listo && !R.fundido) return aplicarPaneles(R);
     return R.listo ? R.vanos.length : 0;
   }
@@ -681,5 +719,5 @@ AVE.module('solidos', function (G) {
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
   return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn,
-    cerrarVanos, vanos: vanosHechos };
+    cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
 });
