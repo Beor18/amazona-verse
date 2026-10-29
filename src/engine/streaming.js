@@ -230,7 +230,15 @@ AVE.module('streaming', function (G) {
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
           '}\n')
-        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )'));
+        // BM2: la crema se veía plana. Con la normal ya perturbada, las caras que miran al suelo (cornisas por debajo, techos
+        // de huecos, dinteles) y las verticales pierden hasta un 38 % de albedo; la que mira al cielo se queda como estaba.
+        // Solo cambia el albedo: no toca el specular 0 ni el shininess 1 de la piedra.
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )') +
+          '\nif (avCrema > 0.5) {\n' +
+          '  float ny = inverseTransformDirection( normal, viewMatrix ).y;\n' +
+          '  float u = clamp( ( ny + 0.15 ) / 1.05, 0.0, 1.0 );\n' +
+          '  diffuseColor.rgb *= mix( 0.62, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
+          '}\n');
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
     reducirAtlas(m);

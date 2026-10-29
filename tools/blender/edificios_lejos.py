@@ -6,6 +6,8 @@ tex_hd/hd_<kit>.jpg, en lineal). Un material AV_Lejos, mismo pivote (conversion.
 
 Blender -b --python edificios_lejos.py -- --ids templo_grande_a,ruina_torre [--out DIR] [--kit]
   --kit: actualiza trisLejos y kbLejos en kit.js.
+  --forma decimado: vóxel 2,2 veces más fino y colapso a 2 × el trisLejos del kit (--factor N lo cambia; --finura N, el vóxel, 2,2 por defecto) (BM2: conserva cúpulas, cornisas
+                    y almenas de las piezas Ancient). Sin --kit no toca kit.js; el presupuesto se lee del kit.js de entrada.
 """
 import bpy, sys, os, json, math
 import numpy as np
@@ -40,6 +42,12 @@ def objetivo(tris_hd):
     return int(min(2000, max(300, tris_hd * 0.08)))
 
 
+def presupuesto_kit(n):
+    """trisLejos del kit.js de entrada (el presupuesto del lejano que se reemplaza)."""
+    s = open(os.path.join(HERE, '../../assets/models/edificios/kit.js')).read()
+    return json.loads(s[s.index('=') + 1:s.rindex(';')])[n]['trisLejos']
+
+
 def lejos(nombre, ob, kit, meta):
     from mathutils.bvhtree import BVHTree
     lo = ob.copy()
@@ -49,8 +57,9 @@ def lejos(nombre, ob, kit, meta):
     co = np.array([v.co[:] for v in ob.data.vertices])
     diag = float(np.linalg.norm(co.max(0) - co.min(0)))
     bpy.context.view_layer.objects.active = lo
-    vox = diag / VOXEL
-    for tipo, aj in (('SOLIDIFY', dict(thickness=vox * 1.6, offset=0.0)), ('REMESH', dict(mode='VOXEL', voxel_size=vox))):
+    vox = diag / (VOXEL * float(H.A.get('finura', 2.2)) if H.A.get('forma') == 'decimado' else VOXEL)  # decimado: vóxel más fino, cúpulas y cornisas sobreviven
+    pasos = (('SOLIDIFY', dict(thickness=vox * 1.6, offset=0.0)), ('REMESH', dict(mode='VOXEL', voxel_size=vox)))
+    for tipo, aj in pasos:
         md = lo.modifiers.new(tipo.lower(), tipo)
         for k, v in aj.items():
             setattr(md, k, v)
@@ -99,7 +108,10 @@ def main():
             obs, _, _ = H.reducir(n, ps, H.PRESUPUESTO.get(n, H.DEFECTO))
             ob = C.unir(list(obs.values()))
             ob.data.calc_loop_triangles()
-            r = lejos(n, ob, H.kit_de(asset), objetivo(len(ob.data.loop_triangles)))
+            meta = objetivo(len(ob.data.loop_triangles))
+            if H.A.get('forma') == 'decimado':
+                meta = int(float(H.A.get('factor', 2)) * presupuesto_kit(n))
+            r = lejos(n, ob, H.kit_de(asset), meta)
             recs.append(r)
             H.log('LEJOS', json.dumps(r))
         except Exception as e:
