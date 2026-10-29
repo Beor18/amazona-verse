@@ -250,7 +250,7 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
     return gasto
 
 
-COLA = JUEGO / 'tools/agente_api/cola.txt'
+COLA = JUEGO / os.environ.get('AV_COLA', 'tools/agente_api/cola.txt')   # AV_COLA: otra cola (la nube usa cola_nube.txt)
 
 
 async def trabajador(n, por_tarea, total, turnos):
