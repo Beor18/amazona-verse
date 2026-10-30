@@ -15,6 +15,8 @@ Lee primero `CLAUDE.md` y `docs/equipo/COLABORACION_DOS_EQUIPOS.md` (zonas de ar
 - **AP9, el Guardián como dice el guion (decisión de Kelvin, 30-oct, KELVIN-2 en `DECISION_LOG.md`).** El Guardián llega **antes de construir** el refugio, escucha la idea de Vittata y sostiene una pieza mientras ella ajusta el mecanismo (SCRIPT p.7-9; usa la propuesta concreta que dejaste en `DECISION_LOG.md`); después sigue presentando el refugio y regalando el banco. Archivos: `content/cap1/historia.js`, `mundo.js`, `pack.js`, diálogos y `en.js` del capítulo 1. Ajusta `missionTest`, `e2eTest` y las pruebas de `pruebas.js` al nuevo orden, y comprueba que la partida de alguien que ya pasó por el orden antiguo se recarga bien (migración de guardado en `saveTest`). Un solo commit «Sobre el main real <sha>: AP9 …». No lo corras en paralelo con otra tarea que toque `historia.js`.
 - **AP10, resolver las decisiones de historia pendientes (Kelvin delegó el 30-oct; criterios en `docs/equipo/CRITERIOS_HISTORIA.md`).** Las 39 decisiones [KELVIN] de `docs/equipo/TEMPORADA1_HILO.md` (al final) y las de historia marcadas «C» en `docs/GAME_FIRST.md` §5. Para cada una: elige con los criterios, escribe en `docs/DECISION_LOG.md` «[DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]» con la elegida, la descartada y el porqué, y marca la decisión como resuelta en su documento. No decidas Vittata, bandera, dinero, legal ni arte; esas se dejan. Entrega por lotes de 10 decisiones, un commit «Sobre el main real <sha>: AP10 lote N». Después, lo que cambie contenido del juego se vuelve tarea AP nueva (no lo implementes en AP10). Documentos solamente.
 
+**30-oct: AP6 a AP10 las hace la API de la Mac (BM44 a BM48). El equipo Apoyo no las toma.**
+
 ## Estado
 | ID | Estado | Commit | Resultado |
 |---|---|---|---|
@@ -23,8 +25,8 @@ Lee primero `CLAUDE.md` y `docs/equipo/COLABORACION_DOS_EQUIPOS.md` (zonas de ar
 | AP3 | hecha (ya existía: G2) | (este commit, solo estado) | El modo zurdo ya está: chip «Modo zurdo» en Accesibilidad del menú de pausa (solo en táctil), se guarda en `S.profile.a11y.zurdo`, el CSS espeja joystick y botones (el joystick es por elemento en `input.js`, así que funciona de verdad), botones ≥ 44 px. avtest (SwiftShader): accesibilidadTest 39/39 con 375×812, 412×915, 812×375 y 320×568, 0 errores. Solo faltaba poner al día el hito 22. Pendiente fuera de alcance: probarlo en un teléfono real. |
 | AP4 | hecha | (este commit) | `tests/qa/duracion_cap1.js` (AV.duracionCap1) + `duracion_cap1_correr.js` corren el recorrido completo de e2e.js (45/45) y escriben `docs/equipo/DURACION_CAP1.md`: rápido 5 min 28 s, normal 6 min 37 s (diálogos a 15 car/s), explorador 10 min 39 s (más los 13 hallazgos del Diario que faltan); Aula `minutos_mision` 2 min (con atajos). Cotas inferiores: el hito 26 solo se cierra con jugadores reales. |
 | AP5 | hecha (primer paso de §6) | (este commit) | `web/index.html`: título «Amazona Verse · Aventura en Puerto Rico con Vittata y los 36 guardianes», titular «Vuela, explora y salva tu isla con Vittata» (EN «Fly, explore and save your island with Vittata»), entradilla de aventura, descripción y JSON-LD «juego de aventuras» (antes «educativo»), og/twitter con la frase; «aprendes jugando / ropa que se gana aprendiendo / crece con lo que aprendes» pasan a «naturaleza de verdad, con fuentes / jugando / mientras exploras». Sin «grados» ni «aprende ciencia»; el tren sigue oculto. Revisado a 375×812 y 1366×768, ES y EN: sin desborde, titular dentro. Queda para cuando el mapa esté listo (§6): tráiler a pantalla completa y el nuevo orden de secciones con Escuelas al pie. |
-| AP6 | pendiente | | |
-| AP7 | pendiente | | |
-| AP8 | pendiente | | |
-| AP9 | pendiente | | |
-| AP10 | pendiente | | |
+| AP6 | pasada a la API (BM44): no la hagas | | |
+| AP7 | pasada a la API (BM45): no la hagas | | |
+| AP8 | pasada a la API (BM46): no la hagas | | |
+| AP9 | pasada a la API (BM47): no la hagas | | |
+| AP10 | pasada a la API (BM48): no la hagas | | |
