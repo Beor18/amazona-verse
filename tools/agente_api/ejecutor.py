@@ -189,6 +189,8 @@ def prompt_tarea(t):
             '(y lo mismo para PEDIDOS.md); no hagas pull ni rebase, otras ventanas están editando. '
             'Puede haber cambios tuyos a medias sin commit de una corrida anterior: revísalos y continúa desde ahí. '
             'Si la tarea depende de otra que no está hecha, anótalo UNA vez en la tabla y termina sin más. '
+            'Solo tareas BM: las AP son de otro equipo; no toques content/, src/ui/ ni web/ (zonas en docs/equipo/COLABORACION_DOS_EQUIPOS.md); '
+            'si descubres un fallo de esa zona, anótalo al final de PEDIDOS.md («para Apoyo») y sigue. '
             'Al terminar marca su estado en la tabla y resume en 3 líneas.')
 
 
