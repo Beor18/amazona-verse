@@ -220,12 +220,9 @@ AVE.module('streaming', function (G) {
       sh.uniforms.avCrema = uCrema;
       sh.vertexShader = sh.vertexShader
         .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
-        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;')
-        // BM40: posición de mundo para la textura triplanar de la piedra
-        .replace('#include <project_vertex>', '#include <project_vertex>\n{ mat4 mw = modelMatrix;\n#ifdef USE_INSTANCING\n mw = mw * instanceMatrix;\n#endif\n vAvMundo = ( mw * vec4( transformed, 1.0 ) ).xyz; }')
-        .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nvarying vec3 vAvMundo;');
+        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nvarying vec3 vAvMundo;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
           '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ' * avAtlasEsc, dy = dFdy( uv ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
           '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
@@ -234,7 +231,12 @@ AVE.module('streaming', function (G) {
         // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
         // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
-          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.58, 0.22, 0.14), 0.84);\n' +
+          // BM43: la tela roja sacaba el entramado de la paja como malla de colores; ahora casi plana (0,97) con el detalle de luz
+          // comprimido a ±8 % alrededor de la media de la celda, como lona
+          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) {\n' +
+          '  float yt = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), ym = dot( textureLod( map, vAvCelda + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  float lona = clamp( yt / max( ym, 0.05 ), 0.92, 1.08 );\n' +
+          '  diffuseColor.rgb = vec3(0.58, 0.22, 0.14) * lona;\n}\n' +
           // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
           // (6, 7) a media fuerza; beams (13, madera) y rockM (14, roca) conservan su textura. Albedo máximo ~0,85 (antes 1,11:
           // se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
@@ -247,25 +249,6 @@ AVE.module('streaming', function (G) {
           '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
-          // BM40: las losas y paredes grandes del interior estiraban la UV original (borrosas, de un solo color y con costuras).
-          // Textura de la piedra (celda 6 del atlas) proyectada en triplanar con tamaño fijo en el mundo (1 repetición = 2,5 m),
-          // como variación de luminosidad alrededor de su media, más una veta suave de gran escala para romper las caras lisas.
-          '  if ( fuerza > 0.0 ) {\n' +
-          '    vec3 pw = vAvMundo, gn = normalize( cross( dFdx( pw ), dFdy( pw ) ) );\n' +
-          '    vec3 wt = pow( abs( gn ), vec3( 4.0 ) ); wt /= ( wt.x + wt.y + wt.z + 1e-4 );\n' +
-          '    vec2 org = vec2( 0.5, 0.25 );\n' +
-          '    float avg = dot( textureLod( map, org + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
-          '    float dt = 0.0;\n' +
-          '    for ( int i = 0; i < 3; i ++ ) {\n' +
-          '      vec2 q = ( i == 0 ? pw.zy : ( i == 1 ? pw.xz : pw.xy ) ) / 2.5;\n' +
-          '      vec2 ddx = dFdx( q ) * ' + f(dentro) + ' * avAtlasEsc, ddy = dFdy( q ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
-          '      float lodq = clamp( log2( max( max( length( ddx ), length( ddy ) ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' + log2( avAtlasEsc ) );\n' +
-          '      float w = i == 0 ? wt.x : ( i == 1 ? wt.y : wt.z );\n' +
-          '      dt += w * dot( textureLod( map, org + ' + f(HD.margen / A) + ' + fract( q ) * ' + f(dentro / A) + ', lodq ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
-          '    }\n' +
-          '    float veta = 0.5 + 0.25 * sin( dot( pw, vec3( 0.37, 0.61, 0.29 ) ) ) + 0.25 * sin( dot( pw, vec3( -0.23, 0.17, 0.53 ) ) + 1.7 );\n' +
-          '    diffuseColor.rgb *= clamp( mix( 1.0, dt / max( avg, 0.05 ), 0.6 * fuerza ), 0.65, 1.3 ) * mix( 0.9, 1.08, veta );\n' +
-          '  }\n' +
           '}\n')
         // BM2: la crema se veía plana. Con la normal ya perturbada, las caras que miran al suelo (cornisas por debajo, techos
         // de huecos, dinteles) y las verticales pierden hasta un 38 % de albedo; la que mira al cielo se queda como estaba.
@@ -436,15 +419,12 @@ AVE.module('streaming', function (G) {
   }
   // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
-  // BM38: el ×1,38 llevaba a 1,0 los canales de las caras claras y el _lejos salía blanco puro frente al crema del cercano
-  // (cremaPlana/atlas: 0,94 / 0,85 / 0,70 como máximo). Tope por canal = el techo de la piedra cercana.
-  const TOPE_LEJOS = [0.94, 0.85, 0.72];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
       const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.32, k = 1.38;
-      col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k));
+      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k * 0.97), Math.min(1, (y + (b - y) * s * 1.15) * k));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
   }
