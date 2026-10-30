@@ -74,3 +74,6 @@ Build `HEAD-be8a52f`, `qa_movil.py --solo cap1` (375×812, dpr 3, CPU ×4, GPU M
 | apertura 30 s | | 350 | 433 | 267 |
 | paseo 12 s | | 933 | 1.700 | 733 |
 La compilación ya está repartida (BJ1 y el 28-oct: `checkShaderErrors` apagado, variantes enlazadas por cuadro antes de empezar); lo que queda del perfil de «Empezar»+6 s es `getProgramParameter` 735 ms (dos `renderer.render`: 432 y 303 ms), GC 349, `triSeguir`/`insert`/`trabajar` de `solidos.js` ~550 y `vegetacion.actualizar` 157. No se cambió código en esta pasada. Resultado: «Empezar» ya queda por debajo de 1 s en las 3 corridas, pero con la Mac cargada aparecen cuadros de 1,0–1,7 s en la apertura y el paseo (streaming de zona nueva), así que la meta «ningún cuadro > 1 s» se cumple en una de tres corridas y **QA-53 sigue abierto** (hay que medirlo con la Mac libre o trocear `solidos.js`, que no es de esta tarea). La escena `cap1_fin` falla por `C.aplicarEngranaje` (ajeno).
+
+### BM62 (30-oct): árboles y terreno, FPS tras restaurar BM29/BM31
+Alto, escritorio 1440×900 @2x, `bm14_medir.py`: Villa Raíz 53 FPS (p95 33 ms, DPR 1,5, 499 MB de texturas); ciudad_tepuy 52 FPS (p95 33 ms, DPR 1,5, 494 MB). Capturas `docs/img/bm14_{vuelo,ciudad}_bm62.jpg`. Móvil emulado sin medir en esta tarea.
