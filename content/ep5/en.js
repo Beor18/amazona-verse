@@ -236,6 +236,10 @@
     "Dice que ya no existen.": "Says they no longer exist.",
     "Dice que ya no existen y que lo sabemos por relatos.": "Says they no longer exist and that we know them through stories.",
     "Dice que se conocen por relatos, que hoy no existen y que no sabemos la causa.": "Says they are known through stories, that they no longer exist today and that we do not know why.",
+    // D11: lo que se construyó en el ep. 4 (registro de temporada)
+    'Desde que está el puente del estrecho, la abuela cruza a ver a su familia cada día.': 'Now that the bridge at the narrows is there, Grandma crosses to see her family every day.',
+    'Desde que está el puente alto, las canoas pasan por debajo y la abuela cruza a ver a su familia.': 'Now that the high bridge is there, canoes pass underneath and Grandma crosses to see her family.',
+    'Desde que están los muelles, las dos orillas reman juntas cada mañana.': 'Now that the docks are there, both banks paddle together every morning.',
   };
   function publicar(base) {
     window.AV_EN = Object.assign({}, base || {}, extra);

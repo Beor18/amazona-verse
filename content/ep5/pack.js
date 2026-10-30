@@ -25,6 +25,12 @@
   IMG.Voz = onda();
   const di = (who, text) => ({ who, img: IMG[who] || IMG.Vittata, text });
   const Lu = t => di('Iguaca', t);
+  // D11 (DECISION_LOG, AP10 lote 2): lo que se construyó en el ep. 4 (puente o muelles) sigue ahí (registro de temporada, src/game/temporada.js).
+  // Sin dato (empieza por este capítulo), no se añade nada: el arranque de siempre.
+  const CRUCE_EP4 = { a: 'Desde que está el puente del estrecho, la abuela cruza a ver a su familia cada día.',
+    b: 'Desde que está el puente alto, las canoas pasan por debajo y la abuela cruza a ver a su familia.',
+    c: 'Desde que están los muelles, las dos orillas reman juntas cada mañana.' };
+  const continuidad = () => { const T = window.AVTemporada, o = T && T.dato(4, 'opcion'); return CRUCE_EP4[o] ? [di('Vittata', CRUCE_EP4[o])] : []; };
 
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep5', personaje: 'Vittata', emocion: 'sorpresa', lineas: ['Dos voces a la vez. No es eco.', 'Esa voz es de ahora… y la otra también.'] },
@@ -174,8 +180,9 @@
       ],
     },
 
+    continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
     inicio(G) {
-      G.dialogo.say(G.dialogo.L('inicio:ep5'), () => G.ui.toast('Habla con Iguaca', 3000));
+      G.dialogo.say(G.dialogo.L('inicio:ep5').concat(continuidad()), () => G.ui.toast('Habla con Iguaca', 3000));
     },
 
     preparar(G) {
@@ -503,7 +510,7 @@
           di('Vittata', 'Entonces lo que sabemos de ellas también está a pedazos.'),
         ], () => {
           poner('ficha_especies');
-          G.eventos.log('GuardianRemembered'); G.misiones.check(); registrar();
+          G.eventos.log('GuardianRemembered'); G.misiones.check(); registrar(); if (window.AVTemporada) window.AVTemporada.encontrar(5, 'guardian'); // D32
           if (nivel2() && !tiene('n2_evidencia')) {
             elegir('Iguaca', '¿Qué evidencia nueva haría falta para pasar un supongo a sé?', [
               { label: 'Un hueso', v: 'hueso' }, { label: 'Un dibujo de la época', v: 'dibujo' }, { label: 'Una pluma en un museo', v: 'pluma' },
@@ -706,6 +713,7 @@
         const S = G.S, $ = G.util.$, D = window.AV_EP5, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })();
+        const TP = window.AVTemporada, tempRaw = (() => { try { return localStorage.getItem(TP.KEY); } catch (e) { return null; } })(); // registro de temporada (D11): se devuelve intacto
         const aulaKey = G.aula && G.aula.KEY;
         const aulaRaw = (() => { try { return aulaKey ? localStorage.getItem(aulaKey) : null; } catch (e) { return null; } })();
         const pick = txt => { const b = [...document.querySelectorAll('#card [id^="ch-"]')].find(x => x.textContent.includes(txt)); if (b) b.click(); return !!b; };
@@ -824,7 +832,13 @@
           check('Criadero compartido con el cap. 1, desde el mensaje ordenado', G.pack.criadero.desde === 'FragmentsOrdered' && G.pack.criadero.almacen === 'amazonaverse' && G.criadero.KEY === 'amazonaverse.criadero' && G.guardado.KEY.startsWith('ep5.'));
           check('Ninguna cápsula se compra', ((window.AV_HUEVOS && window.AV_HUEVOS.huevos) || []).every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))));
 
+          // D11 · Sin dato del ep. 4, el arranque de siempre; con dato, Vittata nombra el puente o los muelles
+          try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ }
+          const sinCruce = continuidad(); TP.apuntar(4, { opcion: 'c' }); const conCruce = continuidad();
+          check('D11 · Registro vacío: arranque de siempre; con los muelles del ep. 4, Vittata los nombra', sinCruce.length === 0 && conCruce.length === 1 && /los muelles/.test(conCruce[0].text), JSON.stringify(conCruce));
           await G.idioma.poner('en');
+          const sinD11 = G.idioma.faltan(Object.values(CRUCE_EP4));
+          check('D11 · Las líneas del puente y los muelles tienen inglés', sinD11.length === 0, sinD11.join(' | '));
           const sin = G.idioma.faltan((G.dialogo.escenas || []).flatMap(s => s.lineas || []));
           check('Las escenas del episodio tienen inglés', sin.length === 0, sin.slice(0, 4).join(' | '));
           const leidos = [D.mensaje, ...Object.values(D.tarjeta), ...D.fragmentos.map(f => f.texto), ...D.ruinas.flatMap(r => [r.nombre, r.marca, r.se]),
@@ -842,6 +856,7 @@
           if (G.c.ep5) G.c.ep5.pararPulso();
           G.aula.aj.grado = grado0;
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
+          try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (aulaKey) { if (aulaRaw == null) localStorage.removeItem(aulaKey); else localStorage.setItem(aulaKey, aulaRaw); } } catch (e) { /* sin almacenamiento */ }
           G.guardado.reset(true);
           if (G.aula.recargar) G.aula.recargar();

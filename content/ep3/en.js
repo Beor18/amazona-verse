@@ -416,4 +416,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Elige sin explicar.": "Chooses without explaining.",
  "Explica por qué eligió quién lleva el timón.": "Explains why they chose who steers.",
  "Explica cuándo conviene ceder el timón y cómo se arregla un error entre dos.": "Explains when it makes sense to hand over the helm and how two people fix a mistake.",
+ // D11: la casa del ep. 2 en el sitio elegido (registro de temporada)
+ "La casa de la abuela y el papá sigue en pie allá en el llano. Ahora toca un bote.": "Grandma and Dad's house is still standing down on the lowland. Now it's time for a boat.",
+ "La casa de la abuela y el papá sigue en pie allá en la loma. Ahora toca un bote.": "Grandma and Dad's house is still standing up on the hill. Now it's time for a boat.",
+ "La casa de la abuela y el papá sigue en pie allá en el claro. Ahora toca un bote.": "Grandma and Dad's house is still standing over in the clearing. Now it's time for a boat.",
 });

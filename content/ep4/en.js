@@ -211,6 +211,8 @@
     "Nombra el problema o el cuidado.": "Names the problem or the care measure.",
     "Explica el problema y nombra un cuidado.": "Explains the problem and names a care measure.",
     "Explica por qué la cotorra necesita huecos de árbol y nombra un cuidado, con la fuente.": "Explains why the parrot needs tree hollows and names a care measure, with the source.",
+    // D11: la canoa del ep. 3 con su nombre (registro de temporada)
+    'Nuestra canoa, «{}», ya cruza la bahía. Ahora toca cruzar el río.': 'Our canoe, «{}», already sails the bay. Now it\'s time to cross the river.',
   };
   const unir = d => Object.assign(d, EP4);
   if (window.AV_EN) unir(window.AV_EN);

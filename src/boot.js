@@ -37,6 +37,7 @@
       for (const name of dif.nombres) if (!AV[name]) AV[name] = opts => cargarPruebas().then(ps => ps[name](G, T, opts));
     }
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
+    if (window.AVTemporada) AV.registroTemporadaTest = () => Promise.resolve(window.AVTemporada.test()); // src/game/temporada.js (D11, D32)
     if (G.creador && G.creador.test) AV.creadorTest = o => G.creador.test(o); // src/game/creador.js (carril N)
     // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
     // Módulos que no van en la descarga inicial: se piden en el primer gesto del jugador (Jugar en la portada, una tecla o un toque)

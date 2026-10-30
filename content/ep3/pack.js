@@ -75,6 +75,13 @@
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);
 
+  // D11 (DECISION_LOG, AP10 lote 2): la casa del ep. 2 sigue en el sitio que eligió el jugador (registro de temporada, src/game/temporada.js).
+  // Sin dato (empieza por este capítulo), no se añade nada: el arranque de siempre.
+  const CASA_EP2 = { a: 'La casa de la abuela y el papá sigue en pie allá en el llano. Ahora toca un bote.',
+    b: 'La casa de la abuela y el papá sigue en pie allá en la loma. Ahora toca un bote.',
+    c: 'La casa de la abuela y el papá sigue en pie allá en el claro. Ahora toca un bote.' };
+  const continuidad = () => { const T = window.AVTemporada, s = T && T.dato(2, 'sitio'); return CASA_EP2[s] ? [Vi(CASA_EP2[s])] : []; };
+
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep3', personaje: 'Vittata', emocion: 'pensando', nota: '[KELVIN: lo que dice la Voz y si la luz de la niebla se ve desde el mar]',
       lineas: ['El plano del bote está en la mesa de todos. La abuela escribió «que no se vire»; el papá, «amarre doble».', 'Y anoche la luz de la niebla parpadeó sobre el agua, más allá de la bahía. Pues vamos a contestar en persona.'] },
@@ -235,7 +242,8 @@
       ],
     },
 
-    inicio(G) { G.eventos.log('BlueprintShared'); G.dialogo.say(G.dialogo.L('inicio:ep3'), () => G.ui.toast('Baja al astillero y habla con el papá', 3000)); },
+    continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
+    inicio(G) { G.eventos.log('BlueprintShared'); G.dialogo.say(G.dialogo.L('inicio:ep3').concat(continuidad()), () => G.ui.toast('Baja al astillero y habla con el papá', 3000)); },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -604,6 +612,7 @@
             '<div class="row"><button class="btn" id="ch-' + NOMBRES_CANOA.length + '" type="button">' + 'Sin nombre, por ahora' + '</button></div>');
           const $ = G.util.$, fin = n => {
             G.ui.hideCard(); S.canoa = n; G.audio.play(n ? 'unlock' : 'tick');
+            if (n && window.AVTemporada) window.AVTemporada.apuntar(3, { canoa: n }); // D11: el ep. 4 la nombra
             G.dialogo.say(n ? [Vi('¡Se llamará «' + n + '»!'), di('Abuela', '«' + n + '». Suena a casa.')] : [Vi('Por ahora, sin nombre. Ya se lo ganará.')], hecho);
           };
           NOMBRES_CANOA.forEach((n, i) => { $('ch-' + i).onclick = () => fin(n); });
@@ -641,7 +650,8 @@
       function navegante() {
         if (S.step < 7) { G.dialogo.say([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
         if (S.step === 7) encuadrar(NAVEGANTE.x, NAVEGANTE.z);
-        if (S.step === 7) { G.eventos.log('NavigatorMet'); registrar(); G.dialogo.say(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
+        if (S.step === 7) { G.eventos.log('NavigatorMet'); registrar(); if (window.AVTemporada) window.AVTemporada.encontrar(3, 'navegante'); // D32: llega al ep. 6
+          G.dialogo.say(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
         if (S.step === 8) { G.dialogo.say([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
         if (S.step === 9) { acordar(); return; }
         if (S.step === 10) { G.dialogo.say([Na('Te espero río arriba, junto a la canoa.')]); return; }
@@ -816,6 +826,8 @@
         const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })();
+        const TP = window.AVTemporada, tempRaw = (() => { try { return localStorage.getItem(TP.KEY); } catch (e) { return null; } })(); // registro de temporada (D11): se devuelve intacto
+        try { localStorage.removeItem(TP.KEY); } catch (e) { /* sin almacenamiento */ }
         // Todo texto que el jugador ve (diálogos, tarjetas, avisos) se apunta para comprobar luego que tiene inglés
         const vistos = new Set(), ver = t => { if (t != null && /\p{L}/u.test(String(t))) vistos.add(String(t).replace(/\s+/g, ' ').trim()); };
         const D = G.dialogo, say0 = D.say, choose0 = D.choose, toast0 = G.ui.toast;
@@ -870,12 +882,20 @@
           leerTarjeta();
           $('canoa-nombre').value = 'coralito'; $('canoa-ok').click(); drain();
           check('D21 · Nombre escrito: la canoa se llama «Coralito»', !G.ui.cardOpen && S.canoa === 'Coralito', String(S.canoa));
+          check('D11 · El nombre de la canoa queda en el registro de temporada (el ep. 4 lo nombra)', TP.dato(3, 'canoa') === 'Coralito', JSON.stringify(TP.decision(3)));
           check('D21 · El nombre sale en el astillero', (() => { let txt = ''; const s0 = G.dialogo.say; G.dialogo.say = (l) => { txt = (l || []).map(x => x.text).join(' '); }; try { useAt('astillero'); } finally { G.dialogo.say = s0; } return txt.includes('«Coralito»'); })());
           check('Otras combinaciones también fallan en una sola parte y tienen arreglo', (() => { const c0 = S.collected.slice(), out = []; for (const [cas, car, bat] of [['tronco', 'centro', 'no'], ['tronco', 'centro', 'si'], ['tablas', 'centro', 'si'], ['bambu', 'lado', 'si']]) { S.collected = c0.filter(k => !/^dec_(casco|carga|batanga|amarre)_/.test(k)).concat(['dec_casco_' + cas, 'dec_carga_' + car, 'dec_batanga_' + bat, 'dec_amarre_fibra']); out.push(G.ep3.falla().parte); } S.collected = c0; return out.join(',') === 'batanga,peso,juntas,carga'; })());
 
           // M2 · Leer el agua
           useAt('navegante'); drain();
           check('M2 · La navegante: «hoy no» y el Guardián pone paz', G.eventos.had('NavigatorMet') && S.step === 8, 'paso ' + S.step);
+          check('D32 · La navegante queda entre los guardianes encontrados (llega al ep. 6)', TP.guardianes().includes('navegante'), TP.guardianes().join());
+          { // D11 · Sin dato del ep. 2, el arranque de siempre; con dato, Vittata nombra la casa en su sitio
+            try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ }
+            const sin = G.pack.continuidad();
+            TP.apuntar(2, { sitio: 'b' }); const con = G.pack.continuidad(); con.forEach(l => ver(l.text));
+            check('D11 · Registro vacío: arranque de siempre; con el sitio del ep. 2: «… allá en la loma»', sin.length === 0 && con.length === 1 && /en la loma/.test(con[0].text), JSON.stringify(con));
+          }
           useAt('poste_muelle'); drain(); useAt('poste_punta'); drain(); useAt('mirador'); drain(); useAt('semilla'); drain();
           check('M2 · Viento (2 postes), nubes y corriente observados', ['obs_poste_muelle', 'obs_poste_punta', 'obs_nubes', 'obs_semilla'].every(k => S.collected.includes(k)) && S.step === 9, 'paso ' + S.step);
           useAt('navegante'); drain();
@@ -972,6 +992,7 @@
           await G.idioma.poner('es');
           G.guardado.reset(true);
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
+          try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
           if (AU.recargar) AU.recargar();
         } catch (e) {
           check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));
