@@ -384,4 +384,11 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Escucha a una parte y propone.": "Listens to one side and proposes.",
  "Repite lo que quiere cada parte antes de proponer.": "Repeats what each side wants before proposing.",
  "Repite lo que quiere cada parte, encuentra lo que comparten y propone algo que nadie rechaza.": "Repeats what each side wants, finds what they share and proposes something no one rejects.",
+ // D32: quién llega según el registro de temporada
+ "Vienen los guardianes que fuimos encontrando: quien navega ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the navigator is already paddling downriver. And new ones too: at least six arrive today; the rest are still distant lights.",
+ "Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the one from the grove at the narrows left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
+ "Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the navigator is paddling downriver and the one from the grove left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
+ "Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».": "I saw the chain of signals and paddled over. This time I'm not here to say «not today».",
+ "Hablar con quien navega": "Talk to the navigator",
+ "Navegante": "Navigator",
 });
