@@ -12,7 +12,7 @@ Lee primero `CLAUDE.md` y `docs/equipo/COLABORACION_DOS_EQUIPOS.md` (zonas de ar
 | ID | Estado | Commit | Resultado |
 |---|---|---|---|
 | AP1 | hecha | (este commit) | La apertura ya tenía negro con viento, taller con luz y VMMMM, ZZZT con brillo, onda y negro (sonidos del pack; la cámara y la onda respetan «Reducir movimiento»; con `G.quiet` no se lanza). Faltaba poder saltarla: cualquier tecla o el botón «Saltar» (≥ 44 px, EN «Skip») la corta y deja el mismo aviso de Iguaca. missionTest 75/75 (2 casos nuevos). Antes, missionTest reventaba en el main real por `539923b` (ver el commit de restauración y PEDIDOS). |
-| AP2 | pendiente | | |
+| AP2 | hecha (parcial: el orden es KELVIN-2) | (este commit) | p.7: Vittata pregunta «¿Y usted quién es?»; p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» / «Yo también» (EN añadido). Llegada antes de construir y ayuda en p.8 cambian el orden de la historia: propuesta concreta en DECISION_LOG (30-oct) a la espera de Kelvin; la familia (p.9) espera arte (KELVIN-5). avtest (SwiftShader): selfTest 98/98 (2 casos nuevos), missionTest 75/75, 0 errores de consola. |
 | AP3 | pendiente | | |
 | AP4 | pendiente | | |
 | AP5 | pendiente | | |

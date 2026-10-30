@@ -305,7 +305,7 @@
         if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()], null, LIBRE); return; }
         if (S.step <= 3) { say([{ who: 'Iguaca', img: IMG.L, text: 'Hay dos terrenos: junto al río (estacas naranja) y en la colina (estacas rojas). Mira bien los dos.' }], null, LIBRE); return; }
         if (S.refuge && S.refuge.damaged) { say([{ who: 'Iguaca', img: IMG.L, text: 'El agua llegó otra vez… Si desarmas el refugio recuperas los materiales y podemos llevarlo a la colina.' }], null, LIBRE); return; }
-        say([{ who: 'Iguaca', img: IMG.L, text: S.complete ? 'Pensé que hoy lo habíamos perdido todo.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }], null, LIBRE);
+        say([{ who: 'Iguaca', img: IMG.L, text: S.complete ? 'Mi familia duerme tranquila en la colina. Gracias, Vittata.' : '¡Gracias, Vittata! Mi familia ya tiene un techo.' }], null, LIBRE);
       }
       function openParcelCard(k) {
         const p = PLACES[k];
@@ -421,13 +421,17 @@
           say([...L('evento:ShelterRelocated', [
             { who: 'Iguaca', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
             { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
-          ]), ...gracias, ...rio], null, LIBRE);
+          ]), ...P9(), ...gracias, ...rio], null, LIBRE);
           afterRain();
         }
       }
+      // AP2 · SCRIPT p.9 «Algo más que una casa»: las dos líneas del guion cuando la colina aguanta. [KELVIN-5] La familia de Iguaca
+      // entrando al refugio no se ve (sin arte ni diseño de la familia); solo se oye a Iguaca y a Vittata.
+      function P9() {
+        return [{ who: 'Iguaca', img: IMG.L, text: 'Pensé que hoy lo habíamos perdido todo.' }, { who: 'Vittata', img: IMG.V, text: 'Yo también.' }];
+      }
       function afterRain() {
-        // [KELVIN-5] SCRIPT p.9: aquí entraría la familia de Iguaca al refugio («Pensé que hoy lo habíamos perdido todo»). Sin arte ni
-        // diseño de la familia no se puede hacer; hoy solo habla Iguaca (ver PENDIENTES_KELVIN).
+        // [KELVIN-5] SCRIPT p.9: la familia de Iguaca entrando al refugio necesita arte (ver PENDIENTES_KELVIN); las líneas ya van en P9().
         applyGuardianLook();
         if (S.step === 4) { advanceTo(5); toast('Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
@@ -449,11 +453,14 @@
             ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
             : [{ who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' }];
           // El Guardián narra (mejora 3): sus líneas van en bocadillos y el banco se desbloquea en el acto
-          say([
-            ...L('evento:GuardianMet', [
+          // AP2 · SCRIPT p.7: entre las dos líneas del Guardián, Vittata pregunta «¿Y usted quién es?»
+          const conocer = L('evento:GuardianMet', [
               { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
               { who: 'Guardián', img: IMG.G, text: 'Alguien que construyó muchas cosas… y perdió algunas de las más importantes.' },
-            ]),
+          ]);
+          if (conocer.length >= 2 && !conocer.some(l => l.who === 'Vittata')) conocer.splice(1, 0, { who: 'Vittata', img: IMG.V, text: '¿Y usted quién es?' });
+          say([
+            ...conocer,
             { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Este es nuestro refugio.' },
             ...present,
             ...L('evento:WorkshopUpgradeUnlocked', [{ who: 'Guardián', img: IMG.G, text: 'Te dejo mi viejo banco de trabajo en tu taller. Con él podrás reparar ese transmisor.' }]),

@@ -1412,4 +1412,7 @@ window.AV_EN = {
  // Amazona Maze (src/game/maze.js, BI2): tarjetas del menú y de Retos; el juego traduce lo suyo con su diccionario
  "Frutos en el laberinto y guardianes": "Fruit in the maze and guardians",
  "Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.": "Walk the cay's maze and gather all the fruit. The moss guardians are looking for you: if they find you, the combo drops back to x1.",
+ "¿Y usted quién es?": "And who are you?",
+ "Yo también.": "Me too.",
+ "Mi familia duerme tranquila en la colina. Gracias, Vittata.": "My family sleeps soundly on the hill. Thank you, Vittata.",
 };

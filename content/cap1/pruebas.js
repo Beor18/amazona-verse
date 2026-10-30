@@ -130,10 +130,14 @@
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
-    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
+    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21);
+    const oidos = () => { const v = []; for (let k = 0; k < 40 && G.dialogo.activo(); k++) { v.push(G.dialogo.actual().text); G.dialogo.next(); } drain(); return v; };
+    const p9 = oidos();
+    check('AP2 · guion p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» y «Yo también»', p9.includes('Pensé que hoy lo habíamos perdido todo.') && p9.includes('Yo también.'), p9.join(' | ').slice(0, 160));
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
     check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
-    useAt('guardian', 1.4, 0); drain();
+    useAt('guardian', 1.4, 0); const p7 = oidos();
+    check('AP2 · guion p.7: Vittata pregunta «¿Y usted quién es?» entre las dos líneas del Guardián', p7.indexOf('¿Y usted quién es?') === 1, p7.slice(0, 3).join(' | '));
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
     useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
