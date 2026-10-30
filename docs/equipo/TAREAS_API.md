@@ -648,6 +648,15 @@ Reglas de estas tareas: trabaja el backlog ya documentado, no inventes problemas
 - **BM68, backlog visual lote 7.** Los siguientes 2-3 problemas abiertos.
 - **BM69, backlog visual lote 8.** Los siguientes 2-3. Si ya no quedan problemas reales en los docs, no inventes: marca en el resultado «backlog visual agotado» y para.
 
+### Carril del agente web — ronda 2 (30-oct tarde, sin GPU; NO van en la cola de la Mac)
+Trabajo real de calidad. En cada tarea: verifica primero que el problema EXISTE (no inventes), arréglalo con su prueba en verde, un commit por arreglo. No toques el motor de render ni `tools/blender/*`. Sube a `main` o a `api-web`.
+- **BM70, playtest e2e de los 6 capítulos tras los merges de hoy.** Recorre cada capítulo completo con `e2eTest`, `ep2e2eTest` y las de misión: que cada uno se complete de principio a fin, que el guardado cargue bien entre capítulos (`saveTest`) y 0 errores de consola. Arregla los fallos REALES que encuentres en contenido/lógica (`content/*`, `src/game/*`), no en el motor. Resultado por capítulo en `docs/equipo/PLAYTEST_30OCT.md`.
+- **BM71, datos educativos de ep2–ep6 con fuente (como BM44 hizo con el cap. 1).** Cada dato educativo de `content/ep2..ep6` (lecciones, diario, tarjetas): fuente verificable (USFWS, DRNA, IUCN, eBird/Cornell, Archivo General, publicaciones científicas) con enlace; lo que no se verifique se marca «por verificar»; nada inventado. Tabla en `docs/equipo/EDUCATIVO_EP2_EP6.md` y textos corregidos solo donde haga falta.
+- **BM72, sección «Amazonas del mundo» en el Diario.** En `src/game/diario.js` (lee `content/comun/especies.js`): lista las especies con datos verificados — común (ES/EN), científico, distribución, estado UICN y fuente. Las 13 de `docs/equipo/ESPECIES_DISCREPANCIAS.md` van SIN estado UICN hasta que Kelvin decida. Casos de prueba. No inventes color ni datos.
+- **BM73, accesibilidad de las pantallas que faltan** (menú principal, Aula, cómic, criadero, records; las que BM37 no cubrió) a 375×812 y 320×568: botones ≥44 px, 3 tamaños de texto, alto contraste ≥7:1, sin desbordes. Añádelas a `accesibilidadTest`.
+- **BM74, inglés completo de la INTERFAZ** (no de los capítulos, que ya hizo BM46): menús, HUD, Aula, cómic, criadero, creador, records, créditos. Con la interfaz en EN, que no quede nada en español. Arregla en `en.js`/`idioma.js` y la batería `idiomaTest` en verde.
+- **BM75, barrido de los bugs que queden abiertos en BUGS.md** (media/alta, no gráficos): reprodúcelos, arréglalos con prueba, ciérralos con el commit. Si no queda ninguno, dilo y para.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
