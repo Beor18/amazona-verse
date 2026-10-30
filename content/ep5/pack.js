@@ -495,8 +495,9 @@
         if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', G.eventos.had('VoicesRevealed') ? 'Alba y Violeta. Esta vez no se me olvidan.' : 'Eran dos. Las de las islas del sur.')]); return; }
         G.dialogo.say([
           di('Guardián', 'Antes éramos treinta y seis. Las torres hablaban de isla en isla con luz, con voz o con tela.'),
+          di('Vittata', 'Me poso a su lado. El Guardián toca la medalla.'),
+          di('Guardián', 'Es una de las treinta y seis piezas del emblema. Cada vez que la toco, me devuelve un recuerdo.'), // D5 y D6
           di('Guardián', 'Eran dos. Las de las islas del sur. Hace mucho que no…'),
-          di('Vittata', 'Me poso a su lado. El Guardián toca la medalla y no dice más.'),
           Lu('Son ellas. El loro de Martinica, Amazona martinicana, y la amazona de Guadalupe, Amazona violacea.'),
           Lu('La UICN las tiene por extintas. De la de Guadalupe escribió Du Tertre en 1654. De la de Martinica, Labat en 1742. No hay restos: solo esos relatos. No decimos cuándo ni por qué dejaron de existir.'),
           di('Vittata', 'Entonces lo que sabemos de ellas también está a pedazos.'),

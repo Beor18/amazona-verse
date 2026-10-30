@@ -71,6 +71,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
   "Ve a tu sitio y dibuja la casa.": "Go to your site and draw the house.",
   "Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.": "A low entrance, no cold wind, and the water close by, but not on top of us. This house listened to me.",
   "Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.": "High, dark and dry. The egg will be safe and calm here.",
+  "(Se toca la medalla.) Una casa que escucha… Esto ya lo vi antes. No recuerdo dónde.": "(He touches his medal.) A house that listens… I've seen this before. I don't remember where.",
   "Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!": "You tested, saw what failed, changed it and tested again. Roof party!",
   "Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.": "Whenever you like, come and I'll ask you a few questions about what we did. No rush and no grades.",
   // ---------- Avisos ----------

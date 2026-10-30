@@ -15,7 +15,7 @@
     '[KELVIN] §10.2 Por qué hablan desde ahora: aquí no se explica; D4 (DECIDIDO-EQUIPO 30-oct) deja una insinuación al final del ep. 6 y la explicación sigue guardada.',
     '[KELVIN] §10.3 D3 (DECIDIDO-EQUIPO 30-oct, provisional): se llaman Alba (martinicana) y Violeta (violacea); lo dicen ellas al final. Iguaca las nombra por la especie, con las fichas de especies.js.',
     '[KELVIN] §10.4 El Guardián recuerda a pedazos y, al final, un recuerdo: «Eran dos. Las de las islas del sur.» No se explica por qué olvida ni qué forma tiene.',
-    '[KELVIN] §10.5 Toca la medalla y no se explica.',
+    '[KELVIN] §10.5 D5 (DECIDIDO-EQUIPO 30-oct): la medalla es una de las 36 piezas del emblema y cada vez que la toca le devuelve un recuerdo (D6). Sale en el cap. 1 y el ep. 2; se explica aquí.',
     '[KELVIN] §10.6 Las marcas son las cinco del diseño (36, dos cotorras, camino, fuego, mano). No se dice quién construyó las ruinas.',
     '[KELVIN] §10.7 La luz de más allá de la niebla se enciende y no se explica.',
     '[KELVIN] §10.8 No empiezan de consejeras: solo piden reunir a los que quedan.',
