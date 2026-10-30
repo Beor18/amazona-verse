@@ -414,12 +414,15 @@ AVE.module('streaming', function (G) {
   }
   // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  // BM38: el ×1,38 llevaba a 1,0 los canales de las caras claras y el _lejos salía blanco puro frente al crema del cercano
+  // (cremaPlana/atlas: 0,94 / 0,85 / 0,70 como máximo). Tope por canal = el techo de la piedra cercana.
+  const TOPE_LEJOS = [0.94, 0.85, 0.72];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
       const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.32, k = 1.38;
-      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k * 0.97), Math.min(1, (y + (b - y) * s * 1.15) * k));
+      col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
   }
