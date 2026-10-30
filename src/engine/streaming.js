@@ -520,34 +520,6 @@ AVE.module('streaming', function (G) {
     }
     const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
 
-    // BM28: aldeas asentadas. Las piezas de apoyo bajan su base al terreno (mínimo bajo su huella) y se enderezan si
-    // vienen inclinadas; solo queda el giro en Y. Un único sitio para modelos y umbrales (los usa también streamingTest).
-    const ASIENTO = {
-      modelos: /^(toldo|casa_plataforma|muralla_atalaya|empalizada|portal_madera|savage_)/, // piezas de apoyo
-      inclinMax: 8 * Math.PI / 180,  // rad: pitch/roll mayor que esto se endereza
-      huella: 0.5,                   // semilado de la huella = radio de la pieza × huella, girada con la pieza
-      huellaMax: 6,                  // m: semilado máximo de la huella
-      sinBajar: /^toldo/,            // la lona solo se endereza: bajarla (mínimo o media) deja su borde cuesta arriba a ~1 m y el jugador no se levanta al salir (movementTest)
-      sueloMax: 0.3                  // m: tolerancia de la base sobre el suelo (prueba)
-    };
-    function sueloHuella(I) {
-      const h = Math.min((I.rAsiento || I.r) * ASIENTO.huella, ASIENTO.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);
-      let y = Infinity;
-      for (const [u, v] of [[-h, -h], [h, -h], [-h, h], [h, h], [0, 0]]) y = Math.min(y, T.height(I.pos[0] + u * c + v * s, I.pos[2] - u * s + v * c));
-      return y;
-    }
-    function asentar(I) {
-      if (!ASIENTO.modelos.test(I.modelo)) return;
-      I.rAsiento = I.r; // el radio se recalcula al cargar el modelo; la huella se queda con el del manifiesto
-      const eu = new THREE.Euler().setFromQuaternion(quatA.setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ");
-      if (Math.abs(eu.x) > ASIENTO.inclinMax || Math.abs(eu.z) > ASIENTO.inclinMax) {
-        I.rotY = eu.y; I.erguido = true;
-        I.m.compose(vecA.set(I.pos[0], I.pos[1], I.pos[2]), quatA.setFromAxisAngle(up, I.rotY), escA.set(I.escala, I.escala, I.escala));
-      }
-      if (ASIENTO.sinBajar.test(I.modelo)) return;
-      const y = sueloHuella(I);
-      if (isFinite(y) && Math.abs(I.pos[1] - y) > 0.02) { I.pos[1] = y; I.m.elements[13] = y; }
-    }
     function construir() {
       const kit = KIT();
       for (const c of crudas) {
@@ -572,7 +544,7 @@ AVE.module('streaming', function (G) {
           I.m.compose(vecA.set(x, y, z), quatA.setFromAxisAngle(up, rot), escA.set(I.escala, I.escala, I.escala));
         }
         const k = kit && kit[c.n], rad = k && k.radio ? k.radio : c.e.dim ? Math.hypot(c.e.dim[0], c.e.dim[1], c.e.dim[2]) / 2 : 10;
-        I.r = rad * I.escala; asentar(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
+        I.r = rad * I.escala; I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
         const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
@@ -983,7 +955,7 @@ AVE.module('streaming', function (G) {
     // --- arranque, bucle y API ---
     let iniciado = false, revisionT = 0;
     const gestor = {
-      zonas, instancias: inst, recursos, lotes, CFG, ASIENTO, sueloHuella,
+      zonas, instancias: inst, recursos, lotes, CFG,
       arrancar() {
         return Promise.resolve(ED.kit && !KIT() ? AVE.assets.script(ED.kit).catch(() => null) : null).then(() => {
           construir(); iniciado = true;
@@ -1126,14 +1098,6 @@ AVE.module('streaming', function (G) {
         return !hay && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 1.5;
       });
       check('Las colisiones de sus edificios están activas al cargar', sinSolido.length === 0, sinSolido.map(I => I.id).slice(0, 5).join(', '));
-      // BM28: aldeas asentadas: ninguna pieza de apoyo con la base a más de 0,3 m del suelo ni inclinada más de 8°
-      const malAsentadas = (ST.instancias || []).filter(I => {
-        if (!ST.ASIENTO.modelos.test(I.modelo)) return false;
-        const eu = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ");
-        return (!ST.ASIENTO.sinBajar.test(I.modelo) && Math.abs(I.pos[1] - ST.sueloHuella(I)) > ST.ASIENTO.sueloMax) || Math.abs(eu.x) > ST.ASIENTO.inclinMax || Math.abs(eu.z) > ST.ASIENTO.inclinMax;
-      });
-      check('Las piezas de apoyo de las aldeas están asentadas (base ≤ 0,3 m del suelo, sin inclinar más de 8°)', malAsentadas.length === 0,
-        malAsentadas.length + ' mal: ' + malAsentadas.slice(0, 4).map(I => { const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ"); return I.id + " dy=" + (I.pos[1] - ST.sueloHuella(I)).toFixed(2) + " x=" + (e.x * 57.3).toFixed(0) + " z=" + (e.z * 57.3).toFixed(0) + " my=" + I.m.elements[13].toFixed(2) + " py=" + I.pos[1].toFixed(2) + " r=" + I.r.toFixed(1); }).join(', '));
       const idsZ = new Set(Z.inst.map(I => I.id)), colZ = () => G.fisica.colliders.filter(c => idsZ.has(c.id)).length;
       const I0 = Z.inst.find(I => I.erguido && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 2), alto0 = () => I0 && G.solidos && G.solidos.altoEn ? G.solidos.altoEn(I0.pos[0], I0.pos[2], 1e4) : 0;
       const c1 = colZ(), s1 = alto0();

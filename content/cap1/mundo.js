@@ -331,7 +331,7 @@
 
       // Objetos del taller: máquina experimental, transmisor y banco de trabajo (mejora), al frente del taller
       // [KELVIN-6] Diseño de la máquina experimental y del transmisor antiguo: hoy son primitivas (cilindro con aspa, caja con antena).
-      // El engranaje ya se ve en el techo del refugio y la máquina queda con el hueco (S.gearRoof, BM24).
+      // Tampoco hay engranaje visible en el techo del refugio (NARRATIVA M2) ni la máquina cambia al sacrificarlo (CAP1_PENDIENTE P2-2).
       const fx = Math.sin(facing), fz = Math.cos(facing), rx = Math.cos(facing), rz = -Math.sin(facing);
       const MAQ = MAPA ? { x: T.x + fx * 4.4 - rx * 2.4, z: T.z + fz * 4.4 - rz * 2.4 } : { x: T.x - 2.6, z: T.z + 3.4 };
       const TRX = MAPA ? { x: T.x + fx * 4.2 + rx * 3.0, z: T.z + fz * 4.2 + rz * 3.0 } : { x: T.x + 3.4, z: T.z + 2.6 };
@@ -340,25 +340,7 @@
       mBody.position.y = 0.45; mBody.castShadow = true;
       const mProp = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.18), new THREE.MeshLambertMaterial({ color: lin('#f2a03d') }));
       mProp.position.y = 1.0; mProp.rotation.z = 0.35; mProp.castShadow = true;
-      // Engranaje de la máquina (NARRATIVA «Cierre»): Vittata lo sacrifica para el techo del refugio (S.gearRoof); entonces queda el hueco
-      const hacerEngranaje = (r) => {
-        const g = new THREE.Group(), mat = new THREE.MeshLambertMaterial({ color: lin('#c8a24a') });
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 0.28, 16), mat));
-        for (let i = 0; i < 8; i++) {
-          const a = i / 8 * Math.PI * 2, d = new THREE.Mesh(new THREE.BoxGeometry(r * 0.38, r * 0.28, r * 0.38), mat);
-          d.position.set(Math.cos(a) * r * 1.08, 0, Math.sin(a) * r * 1.08); d.rotation.y = -a; g.add(d);
-        }
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r * 0.3, r * 0.3, r * 0.4, 10), new THREE.MeshLambertMaterial({ color: lin('#5a4a3a') })));
-        g.traverse(o => { if (o.isMesh) o.castShadow = true; });
-        return g;
-      };
-      const engMaquina = hacerEngranaje(0.26);
-      engMaquina.rotation.z = Math.PI / 2; engMaquina.position.set(0.58, 0.55, 0);
-      const huecoMaquina = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.1, 10), new THREE.MeshLambertMaterial({ color: lin('#2b2b2b') }));
-      huecoMaquina.rotation.z = Math.PI / 2; huecoMaquina.position.set(0.57, 0.55, 0);
-      maquina.add(mBody, mProp, engMaquina, huecoMaquina);
-      const aplicarEngranaje = () => { engMaquina.visible = !S.gearRoof; huecoMaquina.visible = !!S.gearRoof; };
-      aplicarEngranaje(); G.on('apply', aplicarEngranaje, 37);
+      maquina.add(mBody, mProp);
       maquina.position.set(MAQ.x, H(MAQ.x, MAQ.z), MAQ.z);
       scene.add(maquina);
       colliders.push({ x: MAQ.x, z: MAQ.z, r: 0.6, kind: 'obj' });
@@ -431,10 +413,6 @@
           // dañado: barro y humedad oscurecen la madera y la paja
           refugeMesh.traverse(o => { if (o.isMesh && o.material && o.material.color) o.material.color.multiply(new THREE.Color(0.55, 0.5, 0.42)); });
         }
-        if (S.gearRoof) { // el engranaje de la máquina, sobre el techo
-          const cj = new THREE.Box3().setFromObject(refugeMesh), eng = hacerEngranaje(0.3);
-          eng.position.set(0, cj.max.y - refugeMesh.position.y + 0.12, 0); eng.name = 'engranaje_techo'; refugeMesh.add(eng);
-        }
         scene.add(refugeMesh);
         colliders.push({ x: S.refuge.x, z: S.refuge.z, r: modeloRefugio ? 1.9 : 1.4, kind: 'refuge' }); // bohío de 4,4 m (pared de 1,6 m: a escala con la cotorra)
       }
@@ -488,7 +466,7 @@
         return L;
       })();
 
-      Object.assign(G.c, { aplicarEngranaje, engMaquina, PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
+      Object.assign(G.c, { PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
     },
   });
 })();

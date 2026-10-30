@@ -1,7 +1,1 @@
-# Cola de la API en la nube (ejecutar_nube.sh): solo tareas sin Blender ni teléfono. La Mac usa cola.txt.
-BM14
-BM6
-BM8
-BM12
-BM13
-BM11
+# Sin uso: Kelvin (29-oct) decidió que la API corre solo en la Mac. La cola es tools/agente_api/cola.txt.

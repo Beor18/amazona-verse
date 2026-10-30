@@ -695,8 +695,6 @@ window.AV_EN = {
  "No se pudo tomar la foto aquí. Prueba en otro sitio.": "Couldn't take the photo here. Try somewhere else.",
  "No tenemos suficientes materiales.": "We don't have enough materials.",
  "No veía ese símbolo desde hace mucho tiempo. Significa que esta historia es mucho más grande de lo que imaginamos.": "I haven't seen that symbol in a very long time. It means this story is much bigger than we imagined.",
- "Una de esas piezas es igual a la medalla que guardo.": "One of those pieces is the same as the medal I keep.",
- "Todavía no puedo contarte todo.": "I can't tell you everything yet.",
  "No veía ese símbolo desde hace mucho.": "I haven't seen that symbol in a long time.",
  "No, hay millones": "No, there are millions",
  "No, volver": "No, go back",

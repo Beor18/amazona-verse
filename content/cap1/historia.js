@@ -347,7 +347,6 @@
         pay(REFUGE_COST);
         S.refuge = { parcel: build.parcel, x: build.gx, z: build.gz, damaged: false };
         S.builds.push(build.parcel);
-        if (G.audio && G.audio.martillar) G.audio.martillar(4); // BM34
         log('LandSelected', { parcel: build.parcel, attempt: S.builds.length });
         log('ShelterConstructed', { parcel: build.parcel, attempt: S.builds.length });
         build = null; ghost.visible = false; hideToast();
