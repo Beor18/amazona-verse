@@ -77,3 +77,15 @@ La compilación ya está repartida (BJ1 y el 28-oct: `checkShaderErrors` apagado
 
 ### BM62 (30-oct): árboles y terreno, FPS tras restaurar BM29/BM31
 Alto, escritorio 1440×900 @2x, `bm14_medir.py`: Villa Raíz 53 FPS (p95 33 ms, DPR 1,5, 499 MB de texturas); ciudad_tepuy 52 FPS (p95 33 ms, DPR 1,5, 494 MB). Capturas `docs/img/bm14_{vuelo,ciudad}_bm62.jpg`. Móvil emulado sin medir en esta tarea.
+
+## BM61 · rendimiento en los 6 capítulos (30-oct-2026)
+Build `HEAD-290fd44` (`bm61-base`), Mac con GPU real (Chrome 156, Metal), carga ~3, solo `nice -n 15` (sin `taskpolicy -b`, que estrangula la GPU). Escritorio: `bm14_medir.py` (1440×900, DPR 2, calidad «alto»). Móvil: `qa_movil.py --sin-fin` (375×812, dpr 3, CPU ×4, calidad automática), apertura de cada capítulo.
+| Escena | FPS / cuadros | p95 | Meta | |
+|---|---|---|---|---|
+| Villa Raíz (escritorio alto, vuelo) | **60** (DPR 1,5, 499 MB tex) | 17 ms | ≥ 50 | cumple |
+| `ciudad_tepuy` (escritorio alto) | **56** (DPR 1,5, 494 MB tex) | 33 ms | ≥ 50 | cumple |
+| Móvil cap. 1: apertura 6 s y 30 s | p50 17 ms (60 FPS) | 17 | ≥ 30 | cumple, 0 cuadros > 100 ms |
+| Móvil ep2–ep6: apertura 6 s y 30 s | p50 17 ms, peor 17 ms | 17 | ≥ 30 | cumple, 0 cuadros > 100 ms; 35–40 draw calls, 19–40 MB de texturas |
+Tirón de «Empezar» (QA-53), peor cuadro: cap. 1 150 ms · ep2 117 · ep3 100 · ep4 117 · ep5 117 · ep6 83 (antes 2.400–6.600 ms en BC2/BE3 y 517–633 en BM52): **no reaparece en ningún capítulo**; los caps. 2–6 tienen la mitad de programas y texturas que el 1.
+Peor cuello que queda: el paseo de 12 s del cap. 1 (streaming de zonas nuevas: sólidos, terreno, vegetación; 92–99 draw calls, 180 MB tex), con 3 cuadros de más de 100 ms y un peor de 267 ms; los caps. 2–6 no pasan de 50 ms al pasear. Es lo que BM52 ya señalaba (`solidos.js`, `triSeguir`/`insert`).
+No se cambió código: con la Mac libre todas las metas se cumplen y el único cuello (267 ms, una vez cada ~4 s de paseo) está en `streaming.js`/`terreno.js`/`vegetacion.js`, que en esta copia tienen cambios sin commit de otras ventanas (BM56–BM60); tocarlos ahora los pisaría. Pendiente para después de esas tareas: repartir el horneado de sólidos del cap. 1 en trozos por cuadro y volver a medir `cap1_paseo`.
