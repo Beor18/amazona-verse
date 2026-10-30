@@ -31,11 +31,13 @@
     { id: 'e_fin_a', disparador: 'evento:VoicesRevealed', personaje: 'Voz', emocion: 'idea', lineas: [
       'Villa Raíz. Por fin.',
       'Nos conocían por otros nombres, en dos islas del sur.',
+      'Yo soy Alba.',
+      'Y yo, Violeta.',
       'Ya no estamos donde estábamos. Pero hablamos desde ahora, igual que ustedes.',
       'El pacto no se rompió con el cielo. Se rompió cuando dejamos de hablarnos.',
       'Busquen a los que quedan. Los treinta y seis no eran treinta y seis por separado.',
     ] },
-    { id: 'e_fin_g', disparador: 'evento:Chapter5Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['Eran dos. Las de las islas del sur.'] },
+    { id: 'e_fin_g', disparador: 'evento:Chapter5Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['Alba y Violeta… Esos nombres los había perdido.'] }, // D3 y D6 (DECISION_LOG 30-oct): los nombres vuelven al oírlas
     { id: 'e_fin_i', disparador: 'evento:Chapter5Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Mira: otra luz, más allá. Y otra.', 'No los vas a poder juntar tú sola.'] },
     { id: 'e_fin_v', disparador: 'evento:Chapter5Completed', personaje: 'Vittata', emocion: 'feliz', lineas: ['No. Pero sí puedo ayudar a que se junten.'] },
   ] };
@@ -490,7 +492,7 @@
       }
       function fichas() {
         if (S.step < 6) { G.dialogo.say([di('Guardián', 'Antes éramos treinta y… Las torres hablaban de isla en isla con…')]); return; }
-        if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', 'Eran dos. Las de las islas del sur.')]); return; }
+        if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', G.eventos.had('VoicesRevealed') ? 'Alba y Violeta. Esta vez no se me olvidan.' : 'Eran dos. Las de las islas del sur.')]); return; }
         G.dialogo.say([
           di('Guardián', 'Antes éramos treinta y seis. Las torres hablaban de isla en isla con luz, con voz o con tela.'),
           di('Guardián', 'Eran dos. Las de las islas del sur. Hace mucho que no…'),
