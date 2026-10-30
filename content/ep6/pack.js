@@ -664,6 +664,7 @@
           di('Voces', 'Treinta y seis no es un número. Es una forma de sentarse.'),
           di('Eco', '¿Y quién manda?'),
           Vi('Nadie lo hace todo. Yo ayudo a que nos encontremos.'),
+          di('Aprendiz', 'Yo vine a aprender. Hoy aprendí mirando… y mañana me toca a mí.'), // D8: una línea por asamblea, solo por sí mismo
           Lu(`Veintidós asientos encendidos. ${36 - sentados()} esperan: no están apagados.`),
           Gu('Cada isla guardó su pieza. Hoy el emblema de los 36 está completo.'),
           Vi('Tiene algo grabado alrededor…'),

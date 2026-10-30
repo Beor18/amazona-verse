@@ -292,6 +292,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Treinta y seis no es un número. Es una forma de sentarse.": "Thirty-six is not a number. It's a way of sitting.",
  "¿Y quién manda?": "And who's in charge?",
  "Nadie lo hace todo. Yo ayudo a que nos encontremos.": "No one does everything. I help us find each other.",
+ "Yo vine a aprender. Hoy aprendí mirando… y mañana me toca a mí.": "I came to learn. Today I learned by watching… and tomorrow it's my turn.",
  "Veintidós asientos encendidos. {} esperan: no están apagados.": "Twenty-two seats lit. {} are waiting: they aren't out.",
  "Cada isla guardó su pieza. Hoy el emblema de los 36 está completo.": "Each island kept its piece. Today the emblem of the 36 is whole.",
  "Tiene algo grabado alrededor…": "There's something carved around it…",
