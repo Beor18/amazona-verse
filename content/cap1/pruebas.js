@@ -342,6 +342,12 @@
     check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
     G.c.apertura.fin();
     check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
+    // AP1: se salta con cualquier tecla (o el botón «Saltar», ≥ 44 px) y queda igual que al verla entera
+    G.quiet = false; G.audio.log.length = 0; const ap1 = G.pack.inicio(G), bS = document.getElementById('c1-saltar'), rS = bS && bS.getBoundingClientRect();
+    check('Apertura: botón «Saltar» de 44 px o más mientras dura', !!bS && rS.width >= 44 && rS.height >= 44, bS ? Math.round(rS.width) + '×' + Math.round(rS.height) : 'no hay');
+    dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+    check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
+    G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));

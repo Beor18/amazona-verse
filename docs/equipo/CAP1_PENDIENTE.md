@@ -20,7 +20,7 @@ Estados: **Hecho** (localizado en código y cubierto por prueba), **Parcial** (e
 | # | Hito (fuente) | Estado | Evidencia |
 |---|---|---|---|
 | 1 | Crear personaje: nombre de listas, plumaje, pañuelo, accesorio; aprendiz que acompaña (GAMEPLAY 0) | Hecho | `src/game/creador.js`; `pruebas.js:36-41`; E2E pasos 1-2 (`tests/qa/e2e.js`) |
-| 2 | Gancho y Ruptura: negro con viento, taller con luz, ZZZT, onda en el cielo (SCRIPT p.1-3; NARRATIVA «Gancho») | **Parcial** | `historia.js:54` `inicio(G)`: 3 escenas de Narrador y Vittata, sacudida de cámara y sonido `zzzt`; prueba `pruebas.js:207-209`. No hay pantalla negra, viento, brillo de nubes ni onda: el juego abre sobre el taller ya roto |
+| 2 | Gancho y Ruptura: negro con viento, taller con luz, ZZZT, onda en el cielo (SCRIPT p.1-3; NARRATIVA «Gancho») | Hecho | AP1 (30-oct): apertura completa del guion y se puede saltar (cualquier tecla o «Saltar»); missionTest 75/75 (antes: `historia.js:54` `inicio(G)`: 3 escenas de Narrador y Vittata, sacudida de cámara y sonido `zzzt`; prueba `pruebas.js:20…) |
 | 3 | Despertar y examinar la máquina y el transmisor (SCRIPT p.3-4) | Hecho | `historia.js:89` `examine()`; `pruebas.js:59`. El taller solo se ve por fuera (el bohío no tiene interior; GAMEPLAY lo anota) |
 | 4 | Iguaca pide ayuda; Vittata cede: «¿me ayudas?» (SCRIPT p.4; NARRATIVA M1) | Hecho | `historia.js:103` `talkLuma()`; escenas `c1_luma_llama` y `c1_acepta_ayuda`; `pruebas.js:61`; la familia da 3 tablas (`historia.js:13`) |
 | 5 | M1 «Fondo del río» (nadar a por la pieza de metal; botas) (GDD §3) | Hecho | `content/cap1/misiones.js:19` (`m1`); pieza `c1` con `fondo: true` en `mundo.js`; `pruebas.js:221-225` |

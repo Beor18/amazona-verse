@@ -90,10 +90,23 @@
       al(tal[0], () => { if (A) A.claro(2400); G.audio.play('vmmm'); });
       al(rupt[0], () => { G.camara.shake(0.6, 1.2); G.audio.play('zzzt'); if (A) A.ruptura(); });
       al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
-      G.dialogo.say([...cap, ...tal, ...rupt], () => {
-        if (A) A.claro(2200);
+      // AP1: la apertura se salta con cualquier tecla o con el botón «Saltar» (táctil, 44 px); el final es el mismo en los dos casos
+      let hecho = false, btn = null;
+      const soltar = () => { removeEventListener('keydown', alTeclear, true); if (btn) btn.remove(); btn = null; };
+      const terminar = (saltada) => {
+        if (hecho) return; hecho = true; soltar();
+        if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
         G.ui.toast('La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.', 5000);
-      }, { libre: true });
+      };
+      function alTeclear(e) { if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
+      if (!G.quiet) {
+        addEventListener('keydown', alTeclear, true);
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar';
+        btn.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto';
+        btn.onclick = () => terminar(true); document.body.appendChild(btn);
+      }
+      G.dialogo.say([...cap, ...tal, ...rupt], () => terminar(false), { libre: true });
+      return { saltar: () => terminar(true) }; // para las pruebas
     },
 
     preparar(G) {
@@ -162,7 +175,7 @@
           document.body.appendChild(r);
           tRupt = setTimeout(() => quitar('c1-ruptura'), 4300);
         },
-        fin() { clearTimeout(tFade); clearTimeout(tRupt); quitar('c1-fade'); quitar('c1-ruptura'); },
+        fin() { clearTimeout(tFade); clearTimeout(tRupt); quitar('c1-fade'); quitar('c1-ruptura'); quitar('c1-saltar'); },
       };
 
       // Plano del bote (SCRIPT p.12): lo dibuja Vittata en el mirador. Canvas como el símbolo de los 36; cuadro de 100×70 unidades.
