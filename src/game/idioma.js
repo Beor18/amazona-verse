@@ -202,11 +202,12 @@ AVE.module('idioma', function (G) {
 
 
   // Recorre las pantallas de la interfaz (abre cada una, también las que se arman al abrirse) y junta lo que sigue en español
-  async function pantallas() {
+  async function pantallas(solo) {
     const esp = ms => new Promise(r => setTimeout(r, ms));
     const $ = id => document.getElementById(id);
     const sal = {}, uni = a => a.filter((t, i) => a.indexOf(t) === i);
     const toma = async (nombre, abrir, cerrar, extra) => {
+      if (solo && solo.indexOf(nombre) < 0) return;
       try {
         await abrir(); await esp(250);
         let v = textosVisibles();
@@ -235,6 +236,30 @@ AVE.module('idioma', function (G) {
     await toma('fin del capitulo', () => { const e = $('end'); if (e) e.hidden = false; }, () => { const e = $('end'); if (e) e.hidden = true; });
     popCerrar();
     return sal;
+  }
+
+  // Modo Maestro de otro capítulo: arranca el pack (?pack=epN) en un iframe oculto, pone EN y recorre sus pestañas
+  async function maestroPack(id) {
+    const fr = document.createElement('iframe');
+    fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+    fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:700px;border:0;';
+    const u = new URL(location.href); u.searchParams.set('pack', id); fr.src = u.href;
+    document.body.appendChild(fr);
+    try {
+      let W = null; const t0 = performance.now();
+      while (performance.now() - t0 < 90000) {
+        await new Promise(r => setTimeout(r, 200));
+        try { W = fr.contentWindow; if (W && W.AV && W.AV.pack === id && W.AV.G && W.AV.G.idioma && W.AV.G.aula) break; } catch (e) { /* cargando */ }
+        W = null;
+      }
+      if (!W) return ['(el pack ' + id + ' no arrancó)'];
+      const Gp = W.AV.G, antes = Gp.aula.aj ? Gp.aula.aj.idioma : null;
+      if (Gp.aula.setAjuste) Gp.aula.setAjuste('idioma', 'en'); else Gp.idioma.poner('en');
+      await Gp.idioma.listo; await new Promise(r => setTimeout(r, 300));
+      const r = await Gp.idioma.pantallas(['modo maestro']);
+      if (Gp.aula.setAjuste && antes) Gp.aula.setAjuste('idioma', antes); // el ajuste se guarda en localStorage: que el pack no quede en EN
+      return r['modo maestro'] || [];
+    } finally { fr.remove(); }
   }
 
   async function test(o) {
@@ -269,6 +294,13 @@ AVE.module('idioma', function (G) {
     ok('Con EN puesto, no queda texto en español en la interfaz (' + vis.length + ')', !visFalta.length, visFalta.slice(0, 60).join(' | '));
     const pan = await pantallas();
     for (const k of Object.keys(pan)) { const f = pan[k]; ok('Pantalla «' + k + '» sin texto en español (' + f.length + ')', !f.length, f.slice(0, 200).join(' | ')); }
+    // Modo Maestro de los otros capítulos (cada pack trae su propia guía de 45 min, actividades sin pantalla, rúbrica y vocabulario)
+    if (G.pack && G.pack.id === 'cap1') {
+      for (const id of (o.packs || ['ep2', 'ep3', 'ep4', 'ep5', 'ep6'])) {
+        const f = await maestroPack(id);
+        ok('Modo Maestro de ' + id + ' sin texto en español (' + f.length + ')', !f.length, f.join(' ¦ '));
+      }
+    }
     // Diálogo en pantalla
     if (G.dialogo && ts.length) {
       const l = { who: 'Vittata', text: ts[0] };
@@ -315,6 +347,6 @@ AVE.module('idioma', function (G) {
     return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
   }
 
-  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, pantallas, test };
+  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, pantallas, maestroPack, test };
   return G.idioma;
 });
