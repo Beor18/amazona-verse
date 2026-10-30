@@ -102,7 +102,7 @@
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
         btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar';
-        btn.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto';
+        btn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto'; // arriba al centro: abajo a la derecha pisaba «Acción» (BM55)
         btn.onclick = () => terminar(true); document.body.appendChild(btn);
       }
       G.dialogo.say([...cap, ...tal, ...rupt], () => terminar(false), { libre: true });

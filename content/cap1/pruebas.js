@@ -354,6 +354,9 @@
     // AP1: se salta con cualquier tecla (o el botón «Saltar», ≥ 44 px) y queda igual que al verla entera
     G.quiet = false; G.audio.log.length = 0; const ap1 = G.pack.inicio(G), bS = document.getElementById('c1-saltar'), rS = bS && bS.getBoundingClientRect();
     check('Apertura: botón «Saltar» de 44 px o más mientras dura', !!bS && rS.width >= 44 && rS.height >= 44, bS ? Math.round(rS.width) + '×' + Math.round(rS.height) : 'no hay');
+    const pisa = bS && ['acts', 'sys', 'stick', 'top'].map(id => document.getElementById(id)).filter(e => e && e.offsetParent).flatMap(e => [...e.querySelectorAll('button')].concat(e.tagName === 'BUTTON' ? [e] : []))
+      .filter(b => b.offsetParent).map(b => b.getBoundingClientRect()).some(r => r.width && r.left < rS.right && rS.left < r.right && r.top < rS.bottom && rS.top < r.bottom);
+    check('Apertura: «Saltar» no pisa ningún botón del HUD (Acción, sistema, joystick)', bS && !pisa);
     dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
     check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
     G.quiet = true; G.c.apertura.fin();
