@@ -114,8 +114,43 @@
   }
   function elegir(e, previa) { return BANDA_SONORA.momentos[momentoDe(e, previa)] || 'explora'; }
 
+  // BM66: ambiente por zona de los capítulos 2 a 6 (círculos en el mundo de cada pack; x, z, r en metros). `mul` multiplica una capa y
+  // `sum` le suma nivel; el efecto baja de lleno en el centro a nada en el borde, así que cruzar una zona es un fundido y no un corte.
+  // `murmullo` (voces lejanas) y `eco` (hueco de piedra) solo existen aquí.
+  const ZONAS_CAP = {
+    2: [{ x: -20, z: -4, r: 14, mul: { bosque: 1.25, aves: 1.2 } },                    // el nido: hojas y pájaros
+        { x: 10.6, z: 8, r: 10, mul: { bosque: 0.6 }, sum: { viento: 0.12 } }],        // charca y refugio: claro abierto
+    3: [{ x: 13, z: 12, r: 16, sum: { mar: 0.4, viento: 0.15 } },                      // astillero, botadura y muelle: se huele la bahía
+        { x: -31, z: 29, r: 12, sum: { murmullo: 0.6 } }],                             // la aldea vecina
+    4: [{ x: -1, z: -17, r: 10, mul: { bosque: 1.3, aves: 1.2 } },                     // el bosquecillo del estrecho
+        { x: 1, z: 5, r: 12, sum: { mar: 0.3, murmullo: 0.3 } }],                      // la orilla con la obra
+    5: [{ x: 0, z: 5, r: 25, mul: { bosque: 0.5, aves: 0.5 }, sum: { eco: 0.8, viento: 0.1 } }], // las ruinas: piedra y silencio
+    6: [{ x: 0, z: 0, r: 16, sum: { murmullo: 0.7 } },                                 // la plaza de Villa Raíz
+        { x: 18, z: 0, r: 10, sum: { rio: 0.3 } },                                     // el puente y los muelles
+        { x: -20, z: -20, r: 12, sum: { viento: 0.4 } }],                              // el mirador
+  };
+  function zonaCap(cap, x, z) {
+    const mul = {}, sum = {};
+    for (const q of ZONAS_CAP[cap] || []) {
+      const w = clamp(1 - Math.hypot((x || 0) - q.x, (z || 0) - q.z) / q.r, 0, 1);
+      if (!w) continue;
+      for (const k in q.mul || {}) mul[k] = (mul[k] || 1) * (1 + (q.mul[k] - 1) * w);
+      for (const k in q.sum || {}) sum[k] = (sum[k] || 0) + q.sum[k] * w;
+    }
+    return { mul, sum };
+  }
+
   // Niveles 0 a 1 de cada capa del ambiente a partir de dónde está la cotorra y qué hora es
   function calcularAmbiente(e) {
+    const r = calcularBase(e), zc = e.cap > 1 ? zonaCap(e.cap, e.x, e.z) : null;
+    r.murmullo = 0; r.eco = 0;
+    if (zc) {
+      const f = e.portada || e.creador ? 0.35 : e.retos ? 0.7 : 1;
+      for (const k of ['rio', 'mar', 'viento', 'bosque', 'aves', 'murmullo', 'eco']) r[k] = clamp(((r[k] || 0) / f * (zc.mul[k] || 1) + (zc.sum[k] || 0)) * f, 0, 1);
+    }
+    return r;
+  }
+  function calcularBase(e) {
     const n = noche(e.hora == null ? 12 : e.hora), dia = 1 - n;
     const tormenta = !!(e.evento || e.lluvia);
     const f = e.portada || e.creador ? 0.35 : e.retos ? 0.7 : 1; // detrás de la portada o en una carrera, más bajito
@@ -560,8 +595,11 @@
       capas.grillos = cap(); const f = filtro('bandpass', 4700, 14), am = c.createGain(); am.gain.value = 0.5; nodos.push(am);
       lfo(31, 0.5, am.gain); lazo().connect(f); f.connect(am); am.connect(capas.grillos);
     }
+    const quieto = !!(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches); // BM66: con «Reducir movimiento» las capas de zona no ondulan
+    capas.murmullo = cap(); { const f = filtro('bandpass', 420, 0.9); lazo().connect(f); if (simple || quieto) f.connect(capas.murmullo); else { const am = c.createGain(); am.gain.value = 0.55; nodos.push(am); lfo(0.23, 0.4, am.gain); f.connect(am); am.connect(capas.murmullo); } } // voces lejanas
+    capas.eco = cap(); { const f = filtro('lowpass', 240, 1.4); lazo().connect(f); if (simple || quieto) f.connect(capas.eco); else { const am = c.createGain(); am.gain.value = 0.6; nodos.push(am); lfo(0.09, 0.4, am.gain); f.connect(am); am.connect(capas.eco); } } // hueco de piedra
     capas.aves = cap(); capas.coquies = cap();
-    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, bosque: 0.14, lluvia: 0.2, aves: 2.2, coquies: 1 }; // ganancia interna de cada capa (se calibra con renderizar)
+    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, bosque: 0.14, lluvia: 0.2, aves: 2.2, coquies: 1, murmullo: 0.2, eco: 0.5 }; // ganancia interna de cada capa (se calibra con renderizar)
     const pan = d => { if (simple || !c.createStereoPanner) return d; const p = c.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; p.connect(d); return p; };
     function pio(d, t, f0, f1, dur, vol, tipo) {
       const s = c.createOscillator(), g = c.createGain(); s.type = tipo || 'sine';
@@ -734,7 +772,7 @@
     }
     function entradasAmbiente(e) {
       const a = entornoAgua(), M = G.fisica && G.fisica.MOVE;
-      return { hora: horaActual(), rio: a.rio, mar: a.mar, sobreSuelo: Math.max(0, S.pos.y - G.terreno.height(S.pos.x, S.pos.z)), y: S.pos.y, volando: !!(M && M.flying),
+      return { hora: horaActual(), rio: a.rio, mar: a.mar, sobreSuelo: Math.max(0, S.pos.y - G.terreno.height(S.pos.x, S.pos.z)), y: S.pos.y, x: S.pos.x, z: S.pos.z, cap: (G.pack && G.pack.meta && G.pack.meta.capitulo) || 1, volando: !!(M && M.flying),
         evento: e.evento, lluvia: e.lluvia, retos: e.retos, portada: e.portada, creador: e.creador };
     }
 
@@ -1088,6 +1126,15 @@
             G.quiet = false; const conSonido = A.martillar(4);
             check('El martillo da 4 golpes, 1 con «Reducir movimiento» y ninguno con G.quiet', sinSonido === 0 && (conSonido === 4 || (G.renderer.REDUCED && conSonido === 1)) && A.has('martillo'), `${sinSonido}/${conSonido}`);
           } finally { G.quiet = q0; }
+        }
+        { // BM66: ambiente por zona de los caps. 2 a 6 (fundido por distancia; el cap. 1 no cambia)
+          const base = calcularAmbiente({ hora: 12, sobreSuelo: 1 }), lej = c => calcularAmbiente({ cap: c, x: 500, z: 500, hora: 12, sobreSuelo: 1 });
+          const z2 = calcularAmbiente({ cap: 2, x: -20, z: -4, hora: 12, sobreSuelo: 1 }), z3 = calcularAmbiente({ cap: 3, x: 13, z: 12, hora: 12, sobreSuelo: 1 }), z4 = calcularAmbiente({ cap: 4, x: -1, z: -17, hora: 12, sobreSuelo: 1 });
+          const z5 = calcularAmbiente({ cap: 5, x: 0, z: 5, hora: 12, sobreSuelo: 1 }), z6 = calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, sobreSuelo: 1 }), z6m = calcularAmbiente({ cap: 6, x: 0, z: 8, hora: 12, sobreSuelo: 1 });
+          check('Cap. 2: el nido sube aves; lejos de toda zona y en el cap. 1 no cambia nada', calcularAmbiente({ cap: 2, x: -20, z: -4, hora: 12, evento: true }).aves > calcularAmbiente({ cap: 2, x: 500, z: 500, hora: 12, evento: true }).aves && z2.bosque === 1 && [2, 3, 4, 5, 6].every(c => JSON.stringify(lej(c)) === JSON.stringify(Object.assign({}, base, { murmullo: 0, eco: 0 }))), [z2.aves, z2.bosque].join());
+          check('Cap. 3: la bahía suma mar; cap. 4: el bosquecillo suma aves y la orilla murmullo', z3.mar > 0.39 && z4.aves >= 1 && calcularAmbiente({ cap: 4, x: 1, z: 5, hora: 12 }).murmullo > 0.29, [z3.mar, z4.aves].join());
+          check('Cap. 5: las ruinas dan eco y menos hojas; cap. 6: la plaza da murmullo que se funde al alejarse', z5.eco > 0.79 && z5.bosque < 0.6 && z6.murmullo > 0.69 && z6m.murmullo > 0.2 && z6m.murmullo < z6.murmullo && lej(6).murmullo === 0, [z5.eco, z6.murmullo, z6m.murmullo].map(v => v.toFixed(2)).join(' · '));
+          check('Las zonas respetan el volumen de portada y retos, y la tormenta no las apaga a cero', calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, portada: true }).murmullo < 0.3 && calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, evento: true }).lluvia > 0.9);
         }
         check('En la tormenta casi no hay aves; detrás de la portada todo baja', tormenta0.aves < 0.2 && calcularAmbiente({ hora: 12, portada: true }).aves < 0.4 && calcularAmbiente({ hora: 12, rio: 1, retos: true }).rio < 0.8);
         check('La hora sale de S.hora si existe; sin ella, de día como el cielo', (() => { const h = S.hora; S.hora = 21.5; const a = horaActual(); S.hora = 3; const b = horaActual(); if (h === undefined) delete S.hora; else S.hora = h; const r = horaActual(); return a === 21.5 && b === 3 && (h !== undefined || r === 12); })());

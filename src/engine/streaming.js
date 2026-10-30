@@ -527,7 +527,7 @@ AVE.module('streaming', function (G) {
 
     // BM39: piedra de ruinas (miradores, ciudad y colina) que flota sobre el escalón. Solo baja: si el origen queda más de
     // `sobre` por encima del mínimo del terreno bajo su huella, se lleva a ese mínimo; las hundidas a propósito (zócalo) no se tocan.
-    const RUINA = { modelos: /^(ruina_|templo_|bloque_piedra|complejo_ruinas|monolito)/, zonas: /^kelvin_ruinas_yunque/, huella: 0.5, huellaMax: 6, sobre: 0.3 };
+    const RUINA = { modelos: /^(ruina_(?!torre)|templo_|bloque_piedra|complejo_ruinas|monolito)/, zonas: /^kelvin_ruinas_yunque/, huella: 0.5, huellaMax: 6, sobre: 0.3 };
     function bajarRuina(I) {
       if (!RUINA.modelos.test(I.modelo) || !RUINA.zonas.test(I.zona)) return;
       const h = Math.min(I.r * RUINA.huella, RUINA.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);

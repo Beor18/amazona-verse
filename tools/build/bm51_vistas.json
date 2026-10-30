@@ -1,0 +1,9 @@
+{
+"mir_a_k1_r0":{"x":-84,"z":-110,"alt":15,"vuelo":true,"yaw":0.0},
+"mir_a_k1_r1":{"x":-100,"z":-124,"alt":15,"vuelo":true,"yaw":1.571},
+"mir_a_k0_r0":{"x":-60,"z":-98,"alt":15,"vuelo":true,"yaw":0.0},
+"mir_a_k0_r1":{"x":-45,"z":-115,"alt":15,"vuelo":true,"yaw":4.712},
+"mir_a_cen_r0":{"x":-72,"z":-110,"alt":30,"vuelo":true,"yaw":0.0},
+"col_a_r0":{"x":-5,"z":195,"alt":10,"vuelo":true,"yaw":3.1416},
+"col_a_r1":{"x":30,"z":160,"alt":10,"vuelo":true,"yaw":1.571}
+}

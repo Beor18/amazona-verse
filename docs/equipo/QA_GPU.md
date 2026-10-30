@@ -64,3 +64,28 @@ Antes: 580,3 s de 600 (sin margen). Después: **248,6 s** (48/48, Mac con GPU, `
 Cambios (`src/pruebas/movimiento.js`): los casos de tiempo (arranque al 90 %, salto corto) se miden 3 veces y se toma la mediana (la latencia, el peor de los 3); el recorrido contra las paredes de cada edificio corta cuando Vittata lleva 15 cuadros quieta contra el muro (los cuadros siguientes son idénticos) y avanza solo la física (`F.step`) en vez de todos los oyentes de `update`; el ascenso «mantener subir» también va solo con física; se quitó una espera redundante de streaming en la torre. No se quitó ninguna comprobación (48 antes y después). La prueba añade un caso informativo con la duración de cada tramo.
 Duración por caso (ms): sitio 1651 · arranque (3 medidas) 4293 · salto (salto corto ×3) 6261 · vuelo 1577 · pendientes 1556 · agua 2268 · pico 1915 · agarre 1578 · techo y pared 2569 · rama 1375 · cuerda 1673 · **toldo 39474** · estaca 4171 · **edificios 71855** (paredes 71674, techo 124) · sólidos 23 · cámara 3192 · subir 8760 · **torre 93840** · fundido 542.
 Pendiente (si hace falta más margen): toldo (39 s) y torre (94 s) siguen esperando a que el streaming cargue y entre ellos suman más de la mitad del total.
+
+## BM52 · tirón al pulsar «Empezar» en móvil (30-oct-2026, QA-53)
+Build `HEAD-be8a52f`, `qa_movil.py --solo cap1` (375×812, dpr 3, CPU ×4, GPU Metal, con `taskpolicy -b nice -n 15` y la Mac a carga ~10 de otras ventanas: son techos). Peor cuadro en ms, 3 corridas, cap. 1:
+| Escena | Antes (BC2/BE3) | Corrida 1 | Corrida 2 | Corrida 3 (`--perfil`) |
+|---|---|---|---|---|
+| «Empezar» | 2.400–6.600 | 633 | 617 | 517 |
+| apertura 6 s | 1.200–1.900 | 1.033 | 950 | 217 |
+| apertura 30 s | | 350 | 433 | 267 |
+| paseo 12 s | | 933 | 1.700 | 733 |
+La compilación ya está repartida (BJ1 y el 28-oct: `checkShaderErrors` apagado, variantes enlazadas por cuadro antes de empezar); lo que queda del perfil de «Empezar»+6 s es `getProgramParameter` 735 ms (dos `renderer.render`: 432 y 303 ms), GC 349, `triSeguir`/`insert`/`trabajar` de `solidos.js` ~550 y `vegetacion.actualizar` 157. No se cambió código en esta pasada. Resultado: «Empezar» ya queda por debajo de 1 s en las 3 corridas, pero con la Mac cargada aparecen cuadros de 1,0–1,7 s en la apertura y el paseo (streaming de zona nueva), así que la meta «ningún cuadro > 1 s» se cumple en una de tres corridas y **QA-53 sigue abierto** (hay que medirlo con la Mac libre o trocear `solidos.js`, que no es de esta tarea). La escena `cap1_fin` falla por `C.aplicarEngranaje` (ajeno).
+
+### BM62 (30-oct): árboles y terreno, FPS tras restaurar BM29/BM31
+Alto, escritorio 1440×900 @2x, `bm14_medir.py`: Villa Raíz 53 FPS (p95 33 ms, DPR 1,5, 499 MB de texturas); ciudad_tepuy 52 FPS (p95 33 ms, DPR 1,5, 494 MB). Capturas `docs/img/bm14_{vuelo,ciudad}_bm62.jpg`. Móvil emulado sin medir en esta tarea.
+
+## BM61 · rendimiento en los 6 capítulos (30-oct-2026)
+Build `HEAD-290fd44` (`bm61-base`), Mac con GPU real (Chrome 156, Metal), carga ~3, solo `nice -n 15` (sin `taskpolicy -b`, que estrangula la GPU). Escritorio: `bm14_medir.py` (1440×900, DPR 2, calidad «alto»). Móvil: `qa_movil.py --sin-fin` (375×812, dpr 3, CPU ×4, calidad automática), apertura de cada capítulo.
+| Escena | FPS / cuadros | p95 | Meta | |
+|---|---|---|---|---|
+| Villa Raíz (escritorio alto, vuelo) | **60** (DPR 1,5, 499 MB tex) | 17 ms | ≥ 50 | cumple |
+| `ciudad_tepuy` (escritorio alto) | **56** (DPR 1,5, 494 MB tex) | 33 ms | ≥ 50 | cumple |
+| Móvil cap. 1: apertura 6 s y 30 s | p50 17 ms (60 FPS) | 17 | ≥ 30 | cumple, 0 cuadros > 100 ms |
+| Móvil ep2–ep6: apertura 6 s y 30 s | p50 17 ms, peor 17 ms | 17 | ≥ 30 | cumple, 0 cuadros > 100 ms; 35–40 draw calls, 19–40 MB de texturas |
+Tirón de «Empezar» (QA-53), peor cuadro: cap. 1 150 ms · ep2 117 · ep3 100 · ep4 117 · ep5 117 · ep6 83 (antes 2.400–6.600 ms en BC2/BE3 y 517–633 en BM52): **no reaparece en ningún capítulo**; los caps. 2–6 tienen la mitad de programas y texturas que el 1.
+Peor cuello que queda: el paseo de 12 s del cap. 1 (streaming de zonas nuevas: sólidos, terreno, vegetación; 92–99 draw calls, 180 MB tex), con 3 cuadros de más de 100 ms y un peor de 267 ms; los caps. 2–6 no pasan de 50 ms al pasear. Es lo que BM52 ya señalaba (`solidos.js`, `triSeguir`/`insert`).
+No se cambió código: con la Mac libre todas las metas se cumplen y el único cuello (267 ms, una vez cada ~4 s de paseo) está en `streaming.js`/`terreno.js`/`vegetacion.js`, que en esta copia tienen cambios sin commit de otras ventanas (BM56–BM60); tocarlos ahora los pisaría. Pendiente para después de esas tareas: repartir el horneado de sólidos del cap. 1 en trozos por cuadro y volver a medir `cap1_paseo`.
