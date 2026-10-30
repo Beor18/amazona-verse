@@ -1,0 +1,29 @@
+# Une con main, sin pedir aprobación, cada pull request que llega a amazona-verse (decisión de Kelvin, 30-oct).
+# Solo de las cuentas del equipo: un PR de un desconocido se publicaría en la web que ven los niños.
+# No ejecuta el código del PR (pull_request_target sin checkout); solo pide a GitHub que lo una.
+name: Unir PR con main
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  unir:
+    if: contains(fromJSON('["Beor18","KelvinGarciaPR","cryptochefpr"]'), github.event.pull_request.user.login)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unir con main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr ready "$PR" -R "$REPO" 2>/dev/null || true
+          for i in 1 2 3 4 5; do
+            if gh pr merge "$PR" -R "$REPO" --merge; then exit 0; fi
+            sleep 20
+          done
+          gh pr comment "$PR" -R "$REPO" --body "No se pudo unir con main automáticamente (probablemente choca con cambios recientes). Pon la rama al día con main y vuelve a subirla."
+          exit 1
