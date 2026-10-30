@@ -213,3 +213,4 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 2026-10-30 · Kelvin delega las decisiones de HISTORIA en el equipo («complétenlas ustedes, no me pregunten; yo reviso todo al final»). Criterios en docs/equipo/CRITERIOS_HISTORIA.md. Cada decisión se anota aquí como [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin] con opción elegida, descartada y motivo. No se delegan: Vittata, bandera, dinero, legal, identidad del arte y del equipo, ni lo ya establecido en STORY_BIBLE y el guion del cap. 1.
 
 - **30-oct · PR automáticos.** Kelvin: todo PR que entre a amazona-verse se une con main sin esperar revisión. Lo hace `.github/workflows/auto_merge.yml`, solo para PR de Beor18, KelvinGarciaPR y cryptochefpr.
+- **30-oct · Ramas api-\*.** Cada subida de la Mac a su rama api-\* se une con main sola (`.github/workflows/unir_api.yml`), sin abrir PR. Si choca con main, la une publicar_mac.sh.
