@@ -24,8 +24,10 @@
   // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
   const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', Navegante: 'assets/agilis.png', 'Guardián': 'assets/guardian.png' };
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', Navegante: 'assets/agilis.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/vittata.png' };
   const di = (who, text) => ({ who, img: IMG[who], text });
+  // D8 (DECISION_LOG, AP10 lote 1): el aprendiz acompaña y dice una línea corta por asamblea, solo por sí mismo (no habla por nadie)
+  const APRENDIZ_ASAMBLEA = 'Yo no hablo por nadie. Miro cómo se decide… para saber hacerlo cuando me toque.';
   const Lu = t => di('Iguaca', t);
 
   // ---------- La Balanza (EP4_GDD.md §5): 3 opciones × 4 ejes, de 1 a 3 hojas; sin suma ni ganador ----------
@@ -418,7 +420,7 @@
             poner('opcion_' + x.o); G.eventos.log('AgreementMade', { choice: x.o }); G.audio.play('unlock'); maquetaVer(x.o); dibujarObra();
             const gana = VIDS.filter(v => OPCIONES[x.o].hojas[VOCES[v].eje] === 3), pierde = VOCES[PIERDE[x.o]];
             G.dialogo.say(gana.map(v => di(VOCES[v].quien, 'Esto me da lo que pedía. ¡Gracias!')).concat(
-              di(pierde.quien, RECLAMO[x.o]), Lu('Nadie lo tiene todo. Elige un cuidado para lo que cuesta.')), asamblea);
+              di(pierde.quien, RECLAMO[x.o]), di('Aprendiz', APRENDIZ_ASAMBLEA), Lu('Nadie lo tiene todo. Elige un cuidado para lo que cuesta.')), asamblea);
           });
           return;
         }
@@ -628,7 +630,9 @@
           ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 6, 'paso ' + S.step);
           useAt('mesa'); drain();
           ck('D26 · Asamblea tras oír las 4 voces: el jugador elige entre las 3 opciones, sin una correcta', VOC.every(tiene) && opciones().length === 3 && OIDS.every(o => opciones().some(x => x.startsWith(OPCIONES[o].nombre + ':'))), opciones().join(' | '));
-          pick(OPCIONES[op].nombre + ':');
+          let dichoAsamblea = [];
+          { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoAsamblea = dichoAsamblea.concat((l || []).map(x => x.who + ': ' + x.text)); return s0.apply(this, arguments); }; try { pick(OPCIONES[op].nombre + ':'); } finally { G.dialogo.say = s0; } }
+          ck('D8 · En la asamblea el aprendiz dice una línea corta, solo por sí mismo', dichoAsamblea.includes('Aprendiz: ' + APRENDIZ_ASAMBLEA) && APRENDIZ_ASAMBLEA.length < 90, dichoAsamblea.join(' | ').slice(0, 160));
           ck('M3 · Asamblea: la opción propuesta y quien pierde lo dice', tiene('opcion_' + op) && G.eventos.had('AgreementMade') && opciones().length === CIDS.length, opciones().length);
           if (conChequeos) {
             const mal = CIDS.find(c => !CUIDADOS[c].para.includes(op));
@@ -701,7 +705,7 @@
         const EN = window.AV_EN_EP4 || {};
         const textos = [].concat(G.pack.historia.pasos.map(s => s.texto), G.pack.misiones.map(m => m.titulo), DIALOGOS.escenas.flatMap(e => e.lineas),
           Object.values(TRAMOS).map(t => t.ve), Object.values(VOCES).map(v => v.dice), Object.values(OPCIONES).flatMap(o => o.prueba.concat(o.nombre)),
-          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), [NIDO_36], G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
+          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), [NIDO_36, APRENDIZ_ASAMBLEA], G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
         const faltan = textos.filter(t => !EN[t]);
         check('Inglés: todos los textos del capítulo tienen traducción', !faltan.length, faltan.slice(0, 3).join(' | '));
         if (G.idioma) {

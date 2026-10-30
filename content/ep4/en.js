@@ -34,6 +34,8 @@
     'Posarse y mirar el bosquecillo': 'Perch and look at the grove',
     'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.': 'From the branch I count three nest holes in the old trunks, and little fish in the shade of the water.',
     'En el hueco más alto anida uno de los 36: un guardián que ya conoces.': 'In the highest hole nests one of the 36: a guardian you already know.',
+    'Yo no hablo por nadie. Miro cómo se decide… para saber hacerlo cuando me toque.': 'I don\'t speak for anyone. I watch how it\'s decided… so I know how when it\'s my turn.',
+    'Aprendiz': 'Apprentice',
     'La cotorra puertorriqueña anida en huecos de los árboles. Fuente: USFWS, Programa interagencial de la cotorra puertorriqueña (2026).': 'The Puerto Rican parrot nests in tree cavities. Source: USFWS, Puerto Rican Parrot Interagency Program (2026).',
     'Abuela': 'Grandma', 'Papá': 'Dad', 'Navegante': 'Navigator',
     'Conexión': 'Connection', 'Bosque': 'Forest', 'Esfuerzo': 'Effort', 'Río': 'River',
