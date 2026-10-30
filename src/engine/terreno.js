@@ -675,6 +675,34 @@ AVE.module('terreno', function (G) {
         if (t > 0) { const r = s.getX(i) * t; s.setX(i, s.getX(i) - r); s.setY(i, s.getY(i) + r); }
       }
     }
+    // BM29: normales suavizadas entre trozos. Cada GLB trae normales calculadas solo con sus triángulos, así que en los bordes
+    // entre trozos (y donde la malla trae vértices sin soldar) la ladera se ve en facetas. Se recalculan acumulando la normal de
+    // cada cara (ponderada por área) en una tabla por posición de mundo común a todos los trozos; solo se paga al cargar.
+    function soldarNormales(geos) {
+      const acc = new Map(), clave = (x, y, z) => Math.round(x * 100) + ',' + Math.round(y * 100) + ',' + Math.round(z * 100);
+      for (const g of geos) {
+        const p = g.getAttribute('position'), ix = g.index, n = ix ? ix.count : p.count;
+        for (let i = 0; i < n; i += 3) {
+          const a = ix ? ix.getX(i) : i, b = ix ? ix.getX(i + 1) : i + 1, c = ix ? ix.getX(i + 2) : i + 2;
+          const ux = p.getX(b) - p.getX(a), uy = p.getY(b) - p.getY(a), uz = p.getZ(b) - p.getZ(a);
+          const vx = p.getX(c) - p.getX(a), vy = p.getY(c) - p.getY(a), vz = p.getZ(c) - p.getZ(a);
+          const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; // sin normalizar = ponderada por área
+          for (const v of [a, b, c]) {
+            const k = clave(p.getX(v), p.getY(v), p.getZ(v));
+            let t = acc.get(k); if (!t) acc.set(k, t = [0, 0, 0]);
+            t[0] += nx; t[1] += ny; t[2] += nz;
+          }
+        }
+      }
+      for (const g of geos) {
+        const p = g.getAttribute('position'), nor = g.getAttribute('normal');
+        for (let v = 0; v < p.count; v++) {
+          const t = acc.get(clave(p.getX(v), p.getY(v), p.getZ(v))), l = t ? Math.hypot(t[0], t[1], t[2]) : 0;
+          if (l > 1e-9) nor.setXYZ(v, t[0] / l, t[1] / l, t[2] / l);
+        }
+        nor.needsUpdate = true;
+      }
+    }
     const B64 = (W.mapa && W.mapa.b64) || 'AV_MAPA_B64';
     const trozos = (MAPA.terreno && MAPA.terreno.trozos) || [];
     listo = Promise.all(trozos.map(t => G.assets.loadGLB(t.glb, {
@@ -698,6 +726,7 @@ AVE.module('terreno', function (G) {
     }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })))
       .then(geos => {
         const ok = geos.filter(Boolean);
+        soldarNormales(ok);
         const fin = () => G.emit('terrenoListo');
         if (!ok.length) { fin(); return; }
         return buildTriGrid(ok).then(fin);
