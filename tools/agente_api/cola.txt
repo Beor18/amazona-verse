@@ -1,12 +1,5 @@
-# Cola de la API en la Mac (ejecutar.sh --cola N). Una tarea por línea; la coordinadora la mantiene. 30-oct: BM28–BM37 hechas; quedan las que dejó BM33 (detalle en docs/equipo/VISUAL_CAP1_29OCT.md y en TAREAS_API.md «BM38 a BM43»).
-BM38
-BM39
-BM40
-BM41
-BM42
-BM43
-BM44
-BM45
-BM46
-BM47
-BM48
+# Cola de la API en la Mac (ejecutar.sh --cola N). 30-oct: ronda gráfica. BM49 torre (frena publicar), BM50 capturas para que Kelvin apruebe, BM51 risco, BM52 tirón móvil. BM53/BM54 son del agente web, NO van aquí.
+BM49
+BM50
+BM51
+BM52
