@@ -69,7 +69,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Canoa vieja": "Old canoe",
  "Una canoa vieja de un solo tronco, boca abajo bajo un techito.": "An old single-log canoe, upside down under a little roof.",
  "Cayuco en la orilla": "Cayuco on the shore",
- "Un bote pequeñito de pesca, hecho de una sola pieza.": "A tiny fishing boat made from a single piece.",
+ "Un bote pequeñito, hecho de una sola pieza de madera.": "A tiny boat made from a single piece of wood.",
  "Nasa tejida": "Woven fish trap",
  "Una cesta tejida con una boca que entra hacia adentro.": "A woven basket with a mouth that turns inward.",
 

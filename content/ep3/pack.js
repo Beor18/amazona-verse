@@ -194,7 +194,7 @@
           modelo: (add) => { add(new THREE.SphereGeometry(0.22, 12, 10), '#7a5230', 0, 0.2, 0); add(new THREE.ConeGeometry(0.06, 0.4, 6), '#4f9a4a', 0, 0.5, 0); } },
         { id: 'canoa_taina', cat: 'mar', nombre: 'Canoa vieja', x: -33, z: 26, texto: 'Una canoa vieja de un solo tronco, boca abajo bajo un techito.',
           modelo: (add) => { const m = add(new THREE.CylinderGeometry(0.35, 0.35, 2.4, 10, 1, false, 0, Math.PI), '#5a3d22', 0, 0.3, 0); m.rotation.z = Math.PI / 2; } },
-        { id: 'cayuco', cat: 'mar', nombre: 'Cayuco en la orilla', x: 13, z: 12, texto: 'Un bote pequeñito de pesca, hecho de una sola pieza.',
+        { id: 'cayuco', cat: 'mar', nombre: 'Cayuco en la orilla', x: 13, z: 12, texto: 'Un bote pequeñito, hecho de una sola pieza de madera.',
           modelo: (add) => { const m = add(new THREE.CylinderGeometry(0.28, 0.28, 1.6, 10, 1, false, Math.PI, Math.PI), '#8a5a2a', 0, 0.28, 0); m.rotation.z = Math.PI / 2; } },
         { id: 'nasa', cat: 'mar', nombre: 'Nasa tejida', x: -30, z: 25, texto: 'Una cesta tejida con una boca que entra hacia adentro.',
           modelo: (add) => { const m = add(new THREE.ConeGeometry(0.35, 0.8, 10, 1, true), '#b8955a', 0, 0.35, 0); m.material.side = THREE.DoubleSide; m.rotation.z = Math.PI / 2; } },
