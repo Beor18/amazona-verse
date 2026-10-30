@@ -439,7 +439,7 @@ AVE.module('accesibilidad', function (G) {
                 const r = b.getBoundingClientRect();
                 if (r.width && (r.width < 43.5 || r.height < 43.5)) malosP.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
               }
-              if (cajaP.scrollWidth > cajaP.clientWidth + 1) malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth})`);
+              if (cajaP.scrollWidth > cajaP.clientWidth + 1) { const cr = cajaP.getBoundingClientRect(); const culpa = [...cajaP.querySelectorAll('*')].filter(e => visible(e) && e.getBoundingClientRect().right > cr.left + cajaP.clientWidth + 1).slice(0, 2).map(e => (e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className)).join(','); malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth}) por ${culpa}`); }
               if (m.d.documentElement.scrollWidth > W + 1) malosP.push(`${et}: la página mide ${m.d.documentElement.scrollWidth} px`);
               if (contr) {
                 let peor = 99, quien = '';
