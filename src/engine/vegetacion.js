@@ -25,7 +25,7 @@ AVE.module('vegetacion', function (G) {
   const W = G.pack.mundo || {}, FL = W.flora || {};
   const KIT = Object.assign({ base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' }, FL.kit);
   const VI = Object.assign({ dir: [0.8, 0.35], fuerza: 1 }, FL.viento);
-  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34 }, FL.distancias);
+  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34, lod: 135 }, FL.distancias);
   const PASTO_NIVEL = { bajo: { rad: 0.4, dens: 0.3 }, medio: { rad: 0.765 }, alto: { rad: 1 } }; // 26-D: 14 / 26 / 34 m; en bajo, poco
   // F1 (AW2, MAPA_PLAN_COMPLETO.md): bosque lleno. Se rellena con árboles hasta `objetivo` donde la máscara de MultiScatter de
   // Kelvin (trees.psd → assets/data/bosque_cap1.js, tools/blender/bosque_mascara.py) tenía bosque, en el suelo libre del mapa.
@@ -162,6 +162,7 @@ AVE.module('vegetacion', function (G) {
   }
   function hojaMaterial(src, nombre, own) {
     const m = new THREE.MeshLambertMaterial({ map: src.map, alphaTest: 0.5, side: src.side, color: new THREE.Color(0.86, 0.88, 0.8) });
+    m.alphaToCoverage = true; // BM31: bordes de hoja suaves con MSAA (sin él, el alphaTest duro serra los bordes)
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
       sh.vertexShader = 'varying float vPunta;\n' + sh.vertexShader.replace('#include <lights_lambert_vertex>', LAMBERT_WRAP)
@@ -396,7 +397,30 @@ AVE.module('vegetacion', function (G) {
   }
 
   // ---------- Mallas instanciadas por primitiva (cerca: con sombra real en 'alto'; medio: sin sombra) ----------
-  const grupos = {}; // modelo -> { prims: [{ cerca, lejos }], cap }
+  // BM31: LOD intermedio del árbol. Hojas: 1 de cada 4 triángulos, cada uno crecido ×2 desde su centro (misma cobertura, mismo
+  // atlas y tono, ≤ 25 % de triángulos); el tronco y las rocas se comparten. Entre la malla y el impostor (≥ DIST.lod con fundido).
+  const LOD_PASO = 4;
+  function geoLOD(geo) {
+    const g = geo.index ? geo.toNonIndexed() : geo, n = g.attributes.position.count / 3, k = Math.max(1, Math.floor(n / LOD_PASO));
+    const out = new THREE.BufferGeometry(), pos = g.attributes.position;
+    for (const nom in g.attributes) {
+      const a = g.attributes[nom], sz = a.itemSize, arr = new Float32Array(k * 3 * sz);
+      for (let t = 0; t < k; t++) {
+        const f = Math.min(n - 1, Math.floor(t * n / k));
+        for (let v = 0; v < 3; v++) for (let c = 0; c < sz; c++) arr[(t * 3 + v) * sz + c] = a.array[(f * 3 + v) * sz + c];
+        if (nom === 'position') {
+          const b = t * 9; let cx = 0, cy = 0, cz = 0;
+          for (let v = 0; v < 3; v++) { cx += arr[b + v * 3]; cy += arr[b + v * 3 + 1]; cz += arr[b + v * 3 + 2]; }
+          cx /= 3; cy /= 3; cz /= 3;
+          for (let v = 0; v < 3; v++) { arr[b + v * 3] = cx + (arr[b + v * 3] - cx) * 2; arr[b + v * 3 + 1] = cy + (arr[b + v * 3 + 1] - cy) * 2; arr[b + v * 3 + 2] = cz + (arr[b + v * 3 + 2] - cz) * 2; }
+        }
+      }
+      out.setAttribute(nom, new THREE.BufferAttribute(arr, sz));
+    }
+    out.computeBoundingBox(); out.computeBoundingSphere();
+    return out;
+  }
+  const grupos = {}; // modelo -> { prims: [{ cerca, lejos, lod }], cap }
   const BOXY = {}; // modelo -> alto para las celdas
   function crearMallas(m) {
     const P = porModelo[m], prims = geos[m]; if (!P || !prims) return;
@@ -405,18 +429,20 @@ AVE.module('vegetacion', function (G) {
     for (const p of prims) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
     for (const p of prims) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
-      const mk = (sombra) => {
-        const im = new THREE.InstancedMesh(p.geo, mat, P.n);
+      const geoL = cat === 'arbol' && p.tipo === 'hoja' ? geoLOD(p.geo) : p.geo;
+      const mk = (sombra, lod) => {
+        const im = new THREE.InstancedMesh(lod ? geoL : p.geo, mat, P.n);
         im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(P.n * 3), 3);
         im.instanceColor.setUsage(THREE.DynamicDrawUsage);
         im.count = 0; im.visible = false; im.frustumCulled = false; im.receiveShadow = true; im.castShadow = sombra;
         if (sombra) im.customDepthMaterial = depthMaterial(p.src, own, p.tipo === 'hoja');
-        im.name = 'flora:' + m + ':' + p.tipo + (sombra ? ':sombra' : '');
+        im.name = 'flora:' + m + ':' + p.tipo + (sombra ? ':sombra' : lod ? ':lod' : '');
         scene.add(im);
         return im;
       };
-      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false) });
+      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false), lod: cat === 'arbol' ? mk(false, true) : null, trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
+      g.trisLod = (g.trisLod || 0) + g.prims[g.prims.length - 1].trisLod;
       mats.push(mat);
     }
     BOXY[m] = info[m] ? info[m].alto : 5;
@@ -726,11 +752,16 @@ AVE.module('vegetacion', function (G) {
     // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio. Con el dosel por celdas (AW3, dosel.js), 250 m
     const impMax = G.dosel && G.dosel.activo ? Math.min(DIST.impostor, G.dosel.impostorMax) : DIST.impostor;
     const maxArb = topeArbol(cx, cz, distancias('arbol'));
-    let ni = 0, nMalla = 0, trisMalla = 0, dSombra = 0;
+    // BM31: la malla simplificada cubre de maxArb a lodMax y el impostor solo empieza en lodMax - banda (≥ 120 m en alto/medio).
+    const lodMax = TOPE_ARBOLES[C.nivel] > 0 && C.nivel !== 'bajo' && !FL.sinLod ? Math.max(maxArb, topeArbol(cx, cz, DIST.lod * C.floraDist, TOPE_ARBOLES[C.nivel] * 3, (TOPE_TRIS[C.nivel] || Infinity) * 0.5, 1 / LOD_PASO)) : maxArb;
+    ULT.dLod = lodMax;
+    let ni = 0, nMalla = 0, nLod = 0, trisMalla = 0, dSombra = 0;
     for (const m in grupos) {
       const g = grupos[m], P = porModelo[m], maxD = g.cat === 'arbol' ? maxArb : distancias(g.cat);
       const lejosMax = g.cat === 'arbol' && IMP.mesh ? impMax : maxD;
-      const banda = Math.min(12, maxD * 0.15); // fundido entre malla e impostor
+      const finMalla = g.cat === 'arbol' ? lodMax : maxD; // hasta aquí hay malla (completa o simplificada); luego, impostor
+      const banda = Math.min(12, finMalla * 0.15); // fundido entre malla e impostor
+      const medio = [];
       const dens = g.cat === 'arbol' || g.cat === 'roca' ? 1 : C.flora;
       const cerca = [], lejos = [], imp = [];
       const c0x = Math.max(0, Math.floor((cx - lejosMax - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((cx + lejosMax - X0) / CELL));
@@ -744,15 +775,17 @@ AVE.module('vegetacion', function (G) {
           const dx = P.pos[i * 4] - cx, dz = P.pos[i * 4 + 2] - cz, d = Math.sqrt(dx * dx + dz * dz);
           if (d > lejosMax) continue;
           if (d <= maxD) { if (d < sombraR) { cerca.push(i); if (d > dSombra) dSombra = d; } else lejos.push(i); }
-          if (g.cat === 'arbol' && IMP.tile[m] && d > maxD - banda) imp.push(i);
+          else if (d <= finMalla && g.cat === 'arbol') medio.push(i);
+          if (g.cat === 'arbol' && IMP.tile[m] && d > finMalla - banda) imp.push(i);
         }
       }
-      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; }
+      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; nLod += medio.length; }
       for (const pr of g.prims) {
         llenar(pr.cerca, P, sombraR ? cerca : []);
         llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
+        if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
-        g.own.uFade.value.set(g.cat === 'arbol' && IMP.mesh ? maxD - banda : 0, g.cat === 'arbol' && IMP.mesh ? maxD : 0);
+        g.own.uFade.value.set(g.cat === 'arbol' && IMP.mesh ? finMalla - banda : 0, g.cat === 'arbol' && IMP.mesh ? finMalla : 0);
         if (mt.userData.fade !== undefined) mt.userData.fade = g.own.uFade.value;
       }
       if (IMP.mesh && imp.length) {
@@ -763,21 +796,21 @@ AVE.module('vegetacion', function (G) {
           IMP.aC.setXYZ(ni, P.col[i * 3], P.col[i * 3 + 1], P.col[i * 3 + 2]);
           ni++;
         }
-        IMP.mat.uniforms.uFade.value.set(maxD - banda, maxD);
+        IMP.mat.uniforms.uFade.value.set(finMalla - banda, finMalla);
       }
     }
     if (IMP.mesh) {
       IMP.mesh.geometry.instanceCount = ni; IMP.mesh.visible = ni > 0;
       IMP.aP.needsUpdate = IMP.aT.needsUpdate = IMP.aC.needsUpdate = true;
     }
-    Object.assign(ULT, { arbolesMalla: nMalla, trisArboles: trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: maxArb, dSombra, sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
+    Object.assign(ULT, { arbolesLod: nLod, arbolesMalla: nMalla, trisArboles: trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: maxArb, dSombra, sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
   }
   // F1.3 (AW2): distancia hasta la que van en malla los árboles para que no pasen de TOPE_ARBOLES[nivel] ni de TOPE_TRIS[nivel]
   // en pantalla (los más cercanos; el resto pasa al impostor con el mismo fundido). Si caben todos, la distancia de la calidad.
   const ULT = {};
   let dTope = new Float32Array(0), tTope = new Float32Array(0), iTope = new Uint32Array(0);
-  function topeArbol(cx, cz, maxD) {
-    const tope = TOPE_ARBOLES[C.nivel], topeT = TOPE_TRIS[C.nivel] || Infinity;
+  function topeArbol(cx, cz, maxD, tope0, topeT0, fTris) {
+    const tope = tope0 || TOPE_ARBOLES[C.nivel], topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;
     if (!(tope > 0)) return maxD;
     if (dTope.length < total) { dTope = new Float32Array(total); tTope = new Float32Array(total); iTope = new Uint32Array(total); }
     let n = 0, tris = 0;
@@ -785,7 +818,7 @@ AVE.module('vegetacion', function (G) {
     const c0z = Math.max(0, Math.floor((cz - maxD - Z0) / CELL)), c1z = Math.min(NCZ - 1, Math.floor((cz + maxD - Z0) / CELL));
     for (const m in grupos) {
       if (grupos[m].cat !== 'arbol') continue;
-      const P = porModelo[m], tm = grupos[m].tris;
+      const P = porModelo[m], tm = grupos[m].tris * ft;
       for (let iz = c0z; iz <= c1z; iz++) for (let ix = c0x; ix <= c1x; ix++) {
         const l = P.celdas.get(ix + iz * NCX); if (!l) continue;
         cbox.min.set(X0 + ix * CELL - 8, -20, Z0 + iz * CELL - 8); cbox.max.set(X0 + (ix + 1) * CELL + 8, 140, Z0 + (iz + 1) * CELL + 8);
@@ -904,6 +937,7 @@ AVE.module('vegetacion', function (G) {
     for (const m in grupos) for (const p of grupos[m].prims) {
       const g = p.lejos.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3;
       for (const im of [p.cerca, p.lejos]) if (im && im.visible) t += im.count * n;
+      if (p.lod && p.lod.visible) t += p.lod.count * p.trisLod;
     }
     if (IMP.mesh && IMP.mesh.visible) t += IMP.mesh.geometry.instanceCount * 2;
     if (manchas) t += manchas.count * 2;
