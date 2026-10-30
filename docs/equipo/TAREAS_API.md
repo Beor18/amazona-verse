@@ -629,6 +629,8 @@ Trabaja directo sobre `amazona-verse` (clónalo limpio). Commits pequeños; sube
 - **BM54, pruebas extra frágiles (QA-77, QA-78, QA-79, QA-81 en `BUGS.md`; sin GPU).** Son falsos rojos por medir antes de que la escena se asiente o por conteo al borde: `pielesTest` (cuenta ≥2 materiales), `lookTest` (esperar cuadros estables), `bohiosTest` (esperar a que termine la búsqueda de puertas), `streamingTest` (tope de draw calls al borde en las ruinas). Hazlas estables sin bajar lo que comprueban; marca cada QA con el commit. Archivos de prueba en `tests/qa/` y `src/pruebas/`, nunca el motor.
 
 
+- **BM55, la escena final del capítulo 1 y el resto del contenido de historia decidido.** (a) worker-4 reportó que en `--solo cap1` la escena final `cap1_fin` falla; probablemente por el reordenado del Guardián (BM47) o el contenido de la medalla (BM53). Reprodúcelo (`AV.e2eTest`/`missionTest`/`selfTest` en la parte final del cap. 1), encuentra la causa en el contenido/lógica del capítulo (`content/cap1/*`, no el motor) y arréglalo con la prueba en verde. (b) Revisa en `docs/DECISION_LOG.md` las decisiones «[DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]» (D1–D30) que cambian texto o guion y que BM53 aún no haya aplicado; impleméntalas con su inglés, un commit por decisión. No toques Vittata, bandera, arte, dinero ni legal, ni los archivos gráficos. Baterías del cap. 1 en verde.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
