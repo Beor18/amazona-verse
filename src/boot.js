@@ -108,6 +108,7 @@
     let marcador = null;
     const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
     AV.marcadorTest = o => cargarMarcador().then(m => m.test(o));
+    if (G.diario && G.diario.test) AV.diarioTest = o => G.diario.test(o); // src/game/diario.js (BM72)
     if (G.idioma && G.idioma.test) AV.idiomaTest = o => G.idioma.test(o); // src/game/idioma.js
     alPrimerGesto(cargarMarcador); // cuenta desde que el jugador empieza (Jugar), no desde la portada
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
