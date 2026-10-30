@@ -13,6 +13,8 @@ rm -rf "$OUT" && mkdir -p "$OUT"
 git -C "$JUEGO" archive HEAD:web | tar -x -C "$OUT"
 rm -rf "$OUT/docs" "$OUT/README.md" "$OUT/netlify.toml" "$OUT/.nojekyll" "$OUT/.gitignore"
 cp -R "$SITE" "$OUT/juego" && rm -rf "$OUT/juego/tests"
+# Contador de avance de la esquina de la landing (web/index.html lo lee); si falla, la landing no lo enseña y el sitio sale igual
+"$JUEGO/tools/build/progreso.sh" "$JUEGO" > "$OUT/progreso.json" 2>/dev/null || rm -f "$OUT/progreso.json"
 cat > "$OUT/vercel.json" <<'EOF'
 {
   "trailingSlash": true,

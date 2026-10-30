@@ -2,6 +2,8 @@
 
 Actualizado: 28-oct-2026, por la sesión coordinadora de Claude en la web (claude.ai/code).
 
+**Pendiente al retomar (30-oct, Kelvin):** publicar el contador de avance de la esquina de amazonaverse.com (ver la línea del 30-oct en `PEDIDOS.md`).
+
 ## Foto del 29-oct, 20:00 UTC (parada hasta el sábado 31-oct; Kelvin: «solo hay 20 dólares tuyos»)
 
 - **Web:** amazonaverse.com sirve `09b62ed` (sitio `d6ab871`, 29-oct 16:40 UTC), 13 baterías en verde en la nube. Incluye: BM14 (árboles sin pixelar), BM2/BM3 (ciudad y dosel; el dosel ya **apagado** por BM27 salvo `?dosel=1`), BM4 (interior del bohío), BM6 (colisiones), BM8 parcial, BM9/BM10 (móvil), BM11 (`?hud=0`), BM12, BM13 (casas amuebladas), BM17 (inglés del HUD), BM18 (`movementTest` 248 s), BM19 (QA GPU ronda 2), BM20 (momentos wow), BM21 (bahía bioluminiscente), BM23 parcial, el tren oculto del menú y de la web.

@@ -835,5 +835,26 @@
 window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
 </script>
 <script src="assets/js/web.js"></script>
+<!-- Contador de avance (tools/build/progreso.sh lo escribe en /progreso.json al publicar). Discreto a propósito: un número en la esquina, sin explicar. -->
+<div id="av-progreso" hidden aria-hidden="true"></div>
+<style>
+#av-progreso{position:fixed;right:10px;bottom:10px;z-index:50;padding:3px 8px;border-radius:999px;font:600 11px/1.4 system-ui,sans-serif;letter-spacing:.04em;color:#f6f1e4;background:rgba(20,28,24,.55);opacity:.55;pointer-events:auto;user-select:none;font-variant-numeric:tabular-nums}
+#av-progreso:hover{opacity:1}
+</style>
+<script>
+(function () {
+  try {
+    fetch('progreso.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (p) {
+      if (!p || typeof p.total !== 'number') return;
+      var e = document.getElementById('av-progreso');
+      e.textContent = '\u25D4 ' + p.total + '%';
+      e.title = 'cap1 ' + p.cap1 + '% · tareas ' + p.tareas + '% · ' + (p.sha || '') + ' · ' + String(p.fecha || '').slice(0, 10);
+      e.hidden = false;
+    }).catch(function () {});
+  } catch (err) { /* sin fetch: no se enseña */ }
+})();
+</script>
 </body>
+</html>
+
 </html>
