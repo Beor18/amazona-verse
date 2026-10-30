@@ -33,6 +33,7 @@
     'El agua va tranquila. Pasan canoas de una orilla a otra: aquí ya se cruza remando.': 'The water is calm. Canoes go from bank to bank: people already cross here by paddling.',
     'Posarse y mirar el bosquecillo': 'Perch and look at the grove',
     'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.': 'From the branch I count three nest holes in the old trunks, and little fish in the shade of the water.',
+    'En el hueco más alto anida uno de los 36: un guardián que ya conoces.': 'In the highest hole nests one of the 36: a guardian you already know.',
     'La cotorra puertorriqueña anida en huecos de los árboles. Fuente: USFWS, Programa interagencial de la cotorra puertorriqueña (2026).': 'The Puerto Rican parrot nests in tree cavities. Source: USFWS, Puerto Rican Parrot Interagency Program (2026).',
     'Abuela': 'Grandma', 'Papá': 'Dad', 'Navegante': 'Navigator',
     'Conexión': 'Connection', 'Bosque': 'Forest', 'Esfuerzo': 'Effort', 'Río': 'River',
@@ -74,7 +75,7 @@
     'Cada tarjeta tiene su opción. Entonces, ¿cuál es la mejor para todos?': 'Each card has its option. So which one is best for everyone?',
     'Ninguna lo da todo: decidamos juntos qué cuidar.': 'None gives everything: let\'s decide together what to look after.',
     'Cada opción da algo y cuesta algo.': 'Each option gives something and costs something.',
-    '¿Y los huecos de nido del bosquecillo? Para el puente del estrecho hay que cortarlo.': 'What about the nest holes in the grove? The bridge at the narrows means cutting it down.',
+    '¿Y el nido del guardián que ya conoces? Para el puente del estrecho hay que cortar el bosquecillo.': 'What about the nest of the guardian you already know? The bridge at the narrows means cutting down the grove.',
     '¿Con qué manos y en cuántos días? El puente alto es mucho trabajo para tan pocos.': 'With whose hands, and in how many days? The tall bridge is a lot of work for so few of us.',
     '¿Y si hay crecida y nadie rema? Yo sola no puedo cruzar en canoa, mi niña.': 'And if the river floods and nobody paddles? I can\'t cross in a canoe on my own, dear.',
     // La maqueta

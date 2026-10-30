@@ -20,6 +20,9 @@
   const TIDS = Object.keys(TRAMOS);
   const OBS = TIDS.map(i => 'obs_' + i).concat('obs_bosque');
   const BOSQUE = { x: -1, z: -17 }; // el bosquecillo del estrecho: huecos de nido y sombra
+  // D27 (DECISION_LOG, AP10 lote 3): en el bosquecillo anida uno de los 36, un guardián que el jugador ya conoce.
+  // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
+  const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', Navegante: 'assets/agilis.png', 'Guardián': 'assets/guardian.png' };
   const di = (who, text) => ({ who, img: IMG[who], text });
@@ -71,7 +74,7 @@
   // Quién nombra el costo de cada opción cuando se dice «esta es la mejor para todos»
   const PIERDE = { a: 'papa', b: 'iguaca', c: 'abuela' };
   const RECLAMO = {
-    a: '¿Y los huecos de nido del bosquecillo? Para el puente del estrecho hay que cortarlo.',
+    a: '¿Y el nido del guardián que ya conoces? Para el puente del estrecho hay que cortar el bosquecillo.',
     b: '¿Con qué manos y en cuántos días? El puente alto es mucho trabajo para tan pocos.',
     c: '¿Y si hay crecida y nadie rema? Yo sola no puedo cruzar en canoa, mi niña.',
   };
@@ -323,7 +326,7 @@
         label: () => 'Posarse y mirar el bosquecillo',
         use: () => {
           poner('obs_bosque'); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
-          G.dialogo.say([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'),
+          G.dialogo.say([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'), di('Vittata', NIDO_36),
             Lu('La cotorra puertorriqueña anida en huecos de los árboles. Fuente: ' + FUENTE + '.')], () => G.misiones.check());
         } });
 
@@ -598,7 +601,9 @@
           ck('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
           for (const t of TIDS) { useAt('tramo_' + t); drain(); }
           ck('3 tramos observados; falta el bosquecillo', TIDS.every(t => tiene('obs_' + t)) && S.step === 1 && !S.missions.orilla);
-          useAt('bosque'); drain();
+          let dichoBosque = '';
+          { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoBosque = (l || []).map(x => x.text).join(' '); return s0.apply(this, arguments); }; try { useAt('bosque'); drain(); } finally { G.dialogo.say = s0; } }
+          ck('D27 · En el bosquecillo anida uno de los 36, un guardián que ya conoces (sin nombrar especie)', dichoBosque.includes(NIDO_36) && RECLAMO.a.includes('guardián que ya conoces'), dichoBosque.slice(0, 120));
           ck('M1 · El bosquecillo: huecos de nido con su fuente; misión y lentes', S.missions.orilla && S.step === 2 && S.unlocked.includes('lentes:#2b2b2b:binoculares'));
           useAt('iguaca'); drain();
           ck('M1 cerrada con Iguaca: sigue «Todas las voces», sin pantalla de fin', G.eventos.had('ShoreSurveyed') && S.step === 3 && !S.complete && $('end').hidden, 'paso ' + S.step);
@@ -696,7 +701,7 @@
         const EN = window.AV_EN_EP4 || {};
         const textos = [].concat(G.pack.historia.pasos.map(s => s.texto), G.pack.misiones.map(m => m.titulo), DIALOGOS.escenas.flatMap(e => e.lineas),
           Object.values(TRAMOS).map(t => t.ve), Object.values(VOCES).map(v => v.dice), Object.values(OPCIONES).flatMap(o => o.prueba.concat(o.nombre)),
-          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
+          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), [NIDO_36], G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
         const faltan = textos.filter(t => !EN[t]);
         check('Inglés: todos los textos del capítulo tienen traducción', !faltan.length, faltan.slice(0, 3).join(' | '));
         if (G.idioma) {
