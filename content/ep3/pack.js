@@ -101,7 +101,8 @@
         nota: 'Capítulo 3: construye el primer bote y cruza la bahía. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -6, z: -10 }, camara: 0.6 },
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    // canoa: el nombre que le pone el jugador (D21): null = aún no se le preguntó; '' = sin nombre
+    guardado: { version: 1, claves: ['edu', 'canoa'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
     aula: { clave: 'amazonaverse.aula.ep3', estado: 'edu', archivo: 'amazonaverse_ep3', lecciones: () => window.AV_LECCIONES_EP3 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata y va en el bote); el nido entra en el mundo con la segunda botadura.
     // Ninguna cápsula se compra. obtener.ep3 en content/comun/huevos.js queda como pedido aparte (EP3_MISIONES.md §7).
@@ -248,6 +249,7 @@
       const casco = () => valor('dec_casco_', ['tronco', 'bambu', 'tablas']);
       const senalDe = orden => valor('sen_' + orden + '_', ['remo', 'bandera', 'silbido', 'gesto']); // el remo primero: es el cambio del chubasco
       const timon = () => valor('timon_', ['vittata', 'navegante']);
+      const nombreCanoa = () => (typeof S.canoa === 'string' && S.canoa) || ''; // D21: '' si no tiene nombre
 
       // ---------- Aula del episodio (§5 y §6): «Iguaca te pregunta» y el registro local del Modo Maestro ----------
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
@@ -552,10 +554,11 @@
         if (S.step === 4) return botadura1();
         if (S.step === 5) return ajustar();
         if (S.step === 6) return botadura2();
-        G.dialogo.say([Vi(S.step < 3 ? 'Aquí se arma el bote. Primero, saber qué flota.' : 'La canoa que hicimos entre todos.')]);
+        if (S.step >= 7 && S.canoa == null) return bautizar();
+        G.dialogo.say([Vi(S.step < 3 ? 'Aquí se arma el bote. Primero, saber qué flota.' : nombreCanoa() ? '«' + nombreCanoa() + '», la canoa que hicimos entre todos.' : 'La canoa que hicimos entre todos.')]);
       }
       G.interaccion.add({ id: 'astillero', x: ASTILLERO.x, z: ASTILLERO.z, r: 2.6,
-        label: () => ({ 3: 'Armar el bote', 4: 'Botar la canoa', 5: 'Arreglar la canoa', 6: 'Botar otra vez' })[S.step] || 'Mirar el astillero', use: astillero });
+        label: () => ({ 3: 'Armar el bote', 4: 'Botar la canoa', 5: 'Arreglar la canoa', 6: 'Botar otra vez' })[S.step] || (S.step >= 7 && S.canoa == null ? 'Ponerle nombre a la canoa' : 'Mirar el astillero'), use: astillero });
       function construir() {
         const d = DECISIONES.find(x => !valor('dec_' + x.parte + '_', x.opciones.map(o => o[0])));
         if (!d) {
@@ -587,7 +590,34 @@
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
         G.eventos.log('BoatLaunched'); G.comic.capture('bote'); G.audio.play('unlock'); dibujarCanoa(); colocarNavegante(); registrar();
         const y = nivelRio(); G.fx.burst(BOTADURA.x, y + 1.5, BOTADURA.z, 'gold', 30);
-        G.dialogo.say([Vi('Flota… ¡flota derechita!')].concat(L('evento:BoatLaunched')), () => { G.misiones.check(); G.ui.toast('Habla con la navegante en el muelle', 3000); });
+        G.dialogo.say([Vi('Flota… ¡flota derechita!')].concat(L('evento:BoatLaunched')), () => { G.misiones.check(); bautizar(() => G.ui.toast('Habla con la navegante en el muelle', 3000)); });
+      }
+      // D21 · El nombre de la canoa: de una lista corta o escrito con el filtro del creador de personaje (G.creador.filtroNombreLibre).
+      // Si no escribe nada, queda sin nombre. Se guarda en S.canoa (partida del ep. 3). Si cierra la tarjeta, se pregunta en el astillero.
+      const NOMBRES_CANOA = ['Coquí', 'Ceiba', 'Yagrumo', 'Esperanza'];
+      function bautizar(hecho) {
+        G.dialogo.say([di('Abuela', 'Mi abuelo decía que un bote con nombre siempre encuentra el camino a casa.'), di('Abuela', 'Una canoa que flota merece un nombre. ¿Cómo la llamamos?')], () => {
+          G.ui.showCard('<h2>' + 'Abuela' + '</h2><p>' + 'Una canoa que flota merece un nombre. ¿Cómo la llamamos?' + '</p><div class="row">' +
+            NOMBRES_CANOA.map((n, i) => '<button class="btn" id="ch-' + i + '" type="button">' + n + '</button>').join('') + '</div>' +
+            '<p><label for="canoa-nombre">' + 'O escríbelo tú (de 3 a 14 letras):' + '</label></p><div class="row"><input id="canoa-nombre" maxlength="14" autocomplete="off" enterkeyhint="done">' +
+            '<button class="btn" id="canoa-ok" type="button">' + 'Ponerle este nombre' + '</button></div><p id="canoa-aviso" class="note" aria-live="polite"></p>' +
+            '<div class="row"><button class="btn" id="ch-' + NOMBRES_CANOA.length + '" type="button">' + 'Sin nombre, por ahora' + '</button></div>');
+          const $ = G.util.$, fin = n => {
+            G.ui.hideCard(); S.canoa = n; G.audio.play(n ? 'unlock' : 'tick');
+            G.dialogo.say(n ? [Vi('¡Se llamará «' + n + '»!'), di('Abuela', '«' + n + '». Suena a casa.')] : [Vi('Por ahora, sin nombre. Ya se lo ganará.')], hecho);
+          };
+          NOMBRES_CANOA.forEach((n, i) => { $('ch-' + i).onclick = () => fin(n); });
+          $('ch-' + NOMBRES_CANOA.length).onclick = () => fin('');
+          const escrito = () => {
+            const t = $('canoa-nombre').value.trim();
+            if (!t) { fin(''); return; }
+            if (G.creador.filtroNombreLibre(t)) { $('canoa-aviso').textContent = 'Ese nombre no sirve para la canoa. Prueba otro o elige uno de la lista.'; G.audio.play('wrong'); return; }
+            fin(t.charAt(0).toLocaleUpperCase('es') + t.slice(1));
+          };
+          $('canoa-ok').onclick = escrito;
+          $('canoa-nombre').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); escrito(); } };
+          const b = $('ch-0'); if (b) b.focus();
+        });
       }
 
       // ---------- Misión 2 · «Leer el agua» ----------
@@ -682,11 +712,11 @@
       function travesia() {
         if (S.step !== 12) { G.dialogo.say([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
         rumbo = { x: ALDEA.x, z: ALDEA.z };
-        G.dialogo.say([di('Abuela', 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
+        G.dialogo.say([di('Abuela', nombreCanoa() ? 'Van cargadas en «' + nombreCanoa() + '»: fibra trenzada, semillas y herramientas. ¡Buen viaje!' : 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
           () => navegar(RUTAS.boca, MAR, rutaElegir, { paradas: { 1: s => senal('izquierda', s, 'En la boca de la bahía las olas cruzan entre dos rocas.'), 2: s => senal('derecha', s) } }));
       }
       G.interaccion.add({ id: 'muelle', x: MUELLE.x, z: MUELLE.z, r: 2.4, visible: () => !viaje,
-        label: () => S.step === 12 ? 'Subir a la canoa y cruzar la bahía' : 'Mirar la bahía', use: travesia });
+        label: () => S.step === 12 ? (nombreCanoa() ? 'Subir a «' + nombreCanoa() + '» y cruzar la bahía' : 'Subir a la canoa y cruzar la bahía') : 'Mirar la bahía', use: travesia });
       function rutaElegir() {
         G.fx.rain.visible = true;
         elegir('Navegante', 'Viene un chubasco. ¿Por dónde vamos?', [{ label: 'El atajo: corto, con el viento de frente', v: 'atajo' }, { label: 'Por la costa: más largo y más seco', v: 'costa' }], o => {
@@ -831,6 +861,16 @@
           check('M1 · Cambia solo lo que falló', G.eventos.had('BoatImproved') && S.step === 6, 'paso ' + S.step);
           useAt('astillero'); drain();
           check('M1 · Botadura 2: flota derecha; casco marinero y la navegante en el muelle', G.eventos.had('BoatLaunched') && S.missions.flota && S.unlocked.includes('casco:marinero') && G.actores.npc('navegante').visible && S.step === 7, 'paso ' + S.step);
+          // D21 · Nombre de la canoa: lista corta o escrito con el filtro del creador; vacío = sin nombre
+          const leerTarjeta = () => [...$('card').querySelectorAll('h2,p,label,button')].forEach(e => ver(e.textContent));
+          check('D21 · Tras botarla, la abuela pide un nombre: 4 de la lista, escribirlo o sin nombre', G.ui.cardOpen && !!$('canoa-nombre') && opciones().length === 5 && S.canoa === null, opciones().join());
+          leerTarjeta();
+          $('canoa-nombre').value = 'Mierda'; $('canoa-ok').click(); drain();
+          check('D21 · Un nombre que no pasa el filtro del creador no se acepta', G.ui.cardOpen && /no sirve/.test($('canoa-aviso').textContent) && S.canoa === null);
+          leerTarjeta();
+          $('canoa-nombre').value = 'coralito'; $('canoa-ok').click(); drain();
+          check('D21 · Nombre escrito: la canoa se llama «Coralito»', !G.ui.cardOpen && S.canoa === 'Coralito', String(S.canoa));
+          check('D21 · El nombre sale en el astillero', (() => { let txt = ''; const s0 = G.dialogo.say; G.dialogo.say = (l) => { txt = (l || []).map(x => x.text).join(' '); }; try { useAt('astillero'); } finally { G.dialogo.say = s0; } return txt.includes('«Coralito»'); })());
           check('Otras combinaciones también fallan en una sola parte y tienen arreglo', (() => { const c0 = S.collected.slice(), out = []; for (const [cas, car, bat] of [['tronco', 'centro', 'no'], ['tronco', 'centro', 'si'], ['tablas', 'centro', 'si'], ['bambu', 'lado', 'si']]) { S.collected = c0.filter(k => !/^dec_(casco|carga|batanga|amarre)_/.test(k)).concat(['dec_casco_' + cas, 'dec_carga_' + car, 'dec_batanga_' + bat, 'dec_amarre_fibra']); out.push(G.ep3.falla().parte); } S.collected = c0; return out.join(',') === 'batanga,peso,juntas,carga'; })());
 
           // M2 · Leer el agua
@@ -920,7 +960,7 @@
           try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
           G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
           try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-          check('Guardar y cargar: la canoa vuelve a la otra orilla', G.guardado.load(true) && S.complete && S.collected.includes('timon_navegante') && S.edu.formativa.q1 === 2 && G.ep3.canoa.visible && Math.abs(G.ep3.canoa.position.x + 25) < 0.5);
+          check('Guardar y cargar: la canoa vuelve a la otra orilla (y con su nombre)', G.guardado.load(true) && S.canoa === 'Coralito' && S.complete && S.collected.includes('timon_navegante') && S.edu.formativa.q1 === 2 && G.ep3.canoa.visible && Math.abs(G.ep3.canoa.position.x + 25) < 0.5);
           // Inglés: cada texto que se vio tiene su EN (content/ep3/en.js o el común de cap1), igual que los pasos, misiones y Diario
           const datos = G.misiones.steps.map(s => s.texto).concat(G.pack.misiones.flatMap(m => [m.titulo, m.hud].concat(m.pasos.map(x => x.texto))),
             G.diario.entries.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]), [G.pack.historia.fin()], Object.values(G.pack.meta.hud).filter(v => typeof v === 'string'));
