@@ -317,7 +317,7 @@
           } });
       }
       // El bosquecillo: árboles propios (para poder quitarlos o replantarlos según el acuerdo) y una percha para mirar
-      const bosque = new THREE.Group(); scene.add(bosque);
+      const bosque = new THREE.Group(); bosque.name = 'ep4_bosque'; scene.add(bosque);
       const ARB = [[-2.5, -1.5], [0.5, -2.5], [2, 0.5], [-1, 1.8], [-3, 1.2], [1.2, 2.6]];
       G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 3, visible: () => S.step === 1 && !tiene('obs_bosque'),
         label: () => 'Posarse y mirar el bosquecillo',
@@ -406,6 +406,9 @@
           });
         });
       }
+      // D26 (DECISION_LOG, AP10 lote 3): decide el jugador entre las 3 opciones tras oír las 4 voces (la mesa solo abre la asamblea
+      // en el paso 6) y el mundo muestra las consecuencias (la obra en su tramo, el bosquecillo en tocones con la A, el cruce de la
+      // abuela). La asamblea es donde se oye a todos: no hay respuesta correcta ni examen (ep4Test lo comprueba).
       function asamblea() {
         if (!opcion()) {
           elegir('Vittata', 'Asamblea en la mesa. Todos escuchan. ¿Qué opción propones?', OIDS.map(o => ({ label: `${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`, o })), x => {
@@ -619,6 +622,7 @@
           pick(OPCIONES.a.nombre); pick(OPCIONES.b.nombre); pick(OPCIONES.c.nombre);
           ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 6, 'paso ' + S.step);
           useAt('mesa'); drain();
+          ck('D26 · Asamblea tras oír las 4 voces: el jugador elige entre las 3 opciones, sin una correcta', VOC.every(tiene) && opciones().length === 3 && OIDS.every(o => opciones().some(x => x.startsWith(OPCIONES[o].nombre + ':'))), opciones().join(' | '));
           pick(OPCIONES[op].nombre + ':');
           ck('M3 · Asamblea: la opción propuesta y quien pierde lo dice', tiene('opcion_' + op) && G.eventos.had('AgreementMade') && opciones().length === CIDS.length, opciones().length);
           if (conChequeos) {
@@ -636,6 +640,8 @@
           useAt('obra'); drain();
           ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 8 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
           ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', G.interaccion.find('abuela').x === RIO - 6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
+          const tocones = () => { const b = G.renderer.scene.getObjectByName('ep4_bosque'); return b ? b.children.filter(m => m.geometry && m.geometry.parameters && m.geometry.parameters.height === 0.4).length : -1; };
+          check('D26 · El mundo muestra lo decidido (opción ' + op.toUpperCase() + '): el bosquecillo queda en tocones solo con el puente del estrecho', tocones() === (op === 'a' ? 6 : 0), tocones());
           useAt('abuela'); drain();
           return S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter4Completed') && !$('end').hidden;
         }
