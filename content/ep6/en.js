@@ -94,6 +94,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Los asientos ocupados se encendieron. Los vacíos esperan. Anoté la tripulación.": "The taken seats lit up. The empty ones wait. I wrote down the crew.",
 
  // Gancho y diálogos de eventos
+ "Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming, and some new ones. At least six arrive today; the rest are still faraway lights.",
  "… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.": "… eleven, twelve… The chain of signals is still lit all the way to the fog, and there are new lights on the horizon.",
  "Una canoa asoma por el río. Y detrás, alguien volando bajo.": "A canoe appears on the river. And behind it, someone flying low.",
  "Llegan hoy. Yo preparo el puente, la comida, los sitios…": "They arrive today. I'll get the bridge ready, the food, the seats…",

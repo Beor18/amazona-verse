@@ -9,6 +9,8 @@
      [KELVIN-1] Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
                 Marea · arausiaca, Nudo · ventralis, Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
+                D32 (DECIDIDO-EQUIPO 30-oct), versión mínima: el texto dice que llegan los guardianes encontrados en la temporada,
+                mínimo 6, más luces lejanas. Elegir quién llega según las partidas de los eps. 1–5 queda pedido (PEDIDOS.md, BM55).
      [KELVIN-2] D33 (DECIDIDO-EQUIPO 30-oct): el pacto es un objeto, el emblema de los 36 completo, con la promesa grabada
                 («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
@@ -110,7 +112,7 @@
 
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1: cuántos llegan y de dónde]',
-      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.', 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
+      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.', 'Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.', 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
     { id: 'e_tarjetas_i', disparador: 'evento:CardsFilled', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Sí te necesitaron. Para presentarlos.', 'Ahora el puente. Te espero allí con el cuaderno.'] },
