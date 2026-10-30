@@ -15,7 +15,7 @@
   // Mientras tanto el juego usa lo neutro (retrato de señal, luz sin color de personaje, dibujo genérico de bote).
   const PENDIENTES_KELVIN = [
     { id: 'KELVIN-1', que: 'Identidad del Guardián (¿cotorra, humano u otra forma?): retrato, sprite y modelo 3D', donde: 'mundo.js (npcs), pack.js (retratos)', bloquea: 'arte del Guardián (P2-5)' },
-    { id: 'KELVIN-2', que: 'Orden del Guardián: el guion lo hace llegar antes de construir y ayudar (p.7-8); el juego lo hace llegar tras la crecida', donde: 'historia.js (talkGuardian, applyGuardianLook)', bloquea: 'p.8: el Guardián sostiene una pieza (P1-2)' },
+    { id: 'KELVIN-2', que: 'Orden del Guardián (decidido por el equipo el 30-oct: como el guion, llega al paso de construir y ayuda; Kelvin lo revisa al final)', donde: 'historia.js (talkGuardian, applyGuardianLook)', bloquea: 'p.8: el Guardián sostiene una pieza (P1-2)' },
     { id: 'KELVIN-3', que: 'Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): ¿es canon? Una línea más y un detalle en su figura', donde: 'historia.js (useTransmitter), mundo.js (npcs)', bloquea: 'giro de la escena p.11' },
     { id: 'KELVIN-4', que: 'Cara de la Voz del transmisor (silueta, onda o ninguna) y si es alguien del pacto de los 36 sin nombrarlo', donde: 'pack.js (RETRATO_VOZ)', bloquea: 'retrato definitivo' },
     { id: 'KELVIN-5', que: 'Familia de Iguaca entrando al refugio (SCRIPT p.9): ni arte ni diseño de los personajes', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
@@ -257,7 +257,28 @@
         add({ id: 'post' + k, x: p.post.x, z: p.post.z, r: 2.2, label: () => 'Inspeccionar terreno: ' + p.name, use: () => openParcelCard(k) });
       }
       function syncRefugeInteractable() { if (S.refuge) { refugeIt.x = S.refuge.x; refugeIt.z = S.refuge.z; } }
-      function applyGuardianLook() { guardian.setVisible(S.builds.length > 0 && !S.event); }
+      // KELVIN-2 (decidido por el equipo el 30-oct, Kelvin lo revisa al final): como en el guion (p.7-8), el Guardián aparece en el
+      // sendero al llegar al paso de construir, escucha la idea de Vittata y la ayuda a levantar el refugio; tras la crecida regala el banco.
+      function applyGuardianLook() { guardian.setVisible((S.step >= 4 || S.builds.length > 0) && !S.event); }
+      let pasoVisto = -1; // no hay aviso de cambio de paso: se mira en cada cuadro (una comparación)
+      G.on('update', () => {
+        if (S.step === pasoVisto) return; pasoVisto = S.step; applyGuardianLook();
+        if (S.step === 4 && !S.guardianIntro && !S.refuge && !G.quiet) toast('Alguien te observa desde el sendero del sur', 3500);
+      }, 60);
+      // SCRIPT p.7: la presentación. Se juega al hablarle antes de construir o, si no se le habló, al colocar el refugio (se acerca a ayudar).
+      function presentacionGuardian(conIdea) {
+        S.guardianIntro = true;
+        const p7 = L('evento:GuardianMet', [
+          { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
+          { who: 'Guardián', img: IMG.G, text: 'Alguien que construyó muchas cosas… y perdió algunas de las más importantes.' },
+        ]);
+        if (p7.length >= 2 && !p7.some(l => l.who === 'Vittata')) p7.splice(1, 0, { who: 'Vittata', img: IMG.V, text: '¿Y usted quién es?' });
+        return conIdea ? [...p7,
+          { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Mire mis planos.' },
+          { who: 'Guardián', img: IMG.G, text: 'Quizás. Pero primero quiero escuchar tu idea.' },
+          { who: 'Vittata', img: IMG.V, text: 'Un refugio para la familia de Iguaca, con lo que rescatamos del taller.' },
+          { who: 'Guardián', img: IMG.G, text: 'Elige bien dónde. Cuando lo levantes, te sostengo las piezas.' }] : p7;
+      }
 
       // ---------- Acciones de la historia ----------
       const LIBRE = { libre: true };
@@ -366,7 +387,11 @@
         build = null; ghost.visible = false; hideToast();
         C.placeRefugeMesh(); syncRefugeInteractable();
         G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
-        say(L('evento:ShelterConstructed', [{ who: 'Iguaca', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }]), null, LIBRE);
+        // SCRIPT p.8: el Guardián sostiene una pieza mientras Vittata ajusta el mecanismo (si no se había presentado, se presenta ahora)
+        const p8 = [...(S.guardianIntro ? [] : presentacionGuardian(false)),
+          { who: 'Guardián', img: IMG.G, text: '¿Segura de que funcionará?' }, { who: 'Vittata', img: IMG.V, text: 'No completamente.' },
+          { who: 'Guardián', img: IMG.G, text: 'Bien. Entonces vamos a comprobarlo.' }];
+        say([...p8, ...L('evento:ShelterConstructed', [{ who: 'Iguaca', img: IMG.L, text: '¡Lo logramos! …¿Oyes eso? Viene más lluvia.' }])], null, LIBRE);
         // La crecida dura 20 s (mejora 4): el río sube 12 s, se queda y baja; mientras, arrastra tres cosas que se pueden salvar
         S.event = { t: 0, dur: 20 };
         crecida.empezar();
@@ -433,7 +458,7 @@
       function afterRain() {
         // [KELVIN-5] SCRIPT p.9: la familia de Iguaca entrando al refugio necesita arte (ver PENDIENTES_KELVIN); las líneas ya van en P9().
         applyGuardianLook();
-        if (S.step === 4) { advanceTo(5); toast('Alguien te observa desde el sendero del sur', 3500); }
+        if (S.step === 4) { advanceTo(5); toast(S.guardianIntro ? 'El Guardián te espera en el sendero del sur' : 'Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
       }
       function dismantle() {
@@ -447,21 +472,17 @@
 
       // ---------- Guardián, transmisor y mirador ----------
       function talkGuardian() {
-        // [KELVIN-2] El guion (p.7-8) lo hace llegar antes de construir y sostener una pieza con Vittata; aquí llega tras la crecida.
+        // KELVIN-2 (equipo, 30-oct): se presenta en el paso de construir (presentacionGuardian); aquí, tras la crecida, regala el banco.
         if (S.step === 5) {
           const present = S.refuge && !S.refuge.damaged
             ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
             : [{ who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' }];
           // El Guardián narra (mejora 3): sus líneas van en bocadillos y el banco se desbloquea en el acto
-          // AP2 · SCRIPT p.7: entre las dos líneas del Guardián, Vittata pregunta «¿Y usted quién es?»
-          const conocer = L('evento:GuardianMet', [
-              { who: 'Guardián', img: IMG.G, text: 'Veo que todavía quedan constructores por aquí.' },
-              { who: 'Guardián', img: IMG.G, text: 'Alguien que construyó muchas cosas… y perdió algunas de las más importantes.' },
-          ]);
-          if (conocer.length >= 2 && !conocer.some(l => l.who === 'Vittata')) conocer.splice(1, 0, { who: 'Vittata', img: IMG.V, text: '¿Y usted quién es?' });
+          // Ya se presentó antes de construir (p.7-8): ahora mira cómo quedó tras la crecida
+          const conocer = S.guardianIntro ? [{ who: 'Guardián', img: IMG.G, text: 'Ya lo comprobamos: la crecida dijo la verdad.' }]
+            : [...presentacionGuardian(false), { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Este es nuestro refugio.' }];
           say([
             ...conocer,
-            { who: 'Vittata', img: IMG.V, text: 'Entonces quizás pueda ayudarnos. Este es nuestro refugio.' },
             ...present,
             ...L('evento:WorkshopUpgradeUnlocked', [{ who: 'Guardián', img: IMG.G, text: 'Te dejo mi viejo banco de trabajo en tu taller. Con él podrás reparar ese transmisor.' }]),
           ], null, LIBRE);
@@ -473,7 +494,8 @@
           advanceTo(6);
           return;
         }
-        say([{ who: 'Guardián', img: IMG.G, text: S.step > 5 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : '¿Segura de que funcionará? Bien. Entonces vamos a comprobarlo.' }], null, LIBRE);
+        if (S.step === 4 && !S.guardianIntro && !S.refuge) { say(presentacionGuardian(true), () => toast('Elige un terreno y construye: el Guardián te ayudará', 3500), LIBRE); return; }
+        say([{ who: 'Guardián', img: IMG.G, text: S.step > 5 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : S.step === 4 && !S.refuge ? 'Elige bien dónde. Cuando lo levantes, te sostengo las piezas.' : 'Bien. Entonces vamos a comprobarlo.' }], null, LIBRE);
       }
       function useTransmitter() {
         if (S.step !== 6) { examine('transmisor'); return; }

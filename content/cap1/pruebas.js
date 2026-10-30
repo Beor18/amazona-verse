@@ -100,15 +100,21 @@
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
+    const oidos = () => { const v = []; for (let k = 0; k < 40 && G.dialogo.activo(); k++) { v.push(G.dialogo.actual().text); G.dialogo.next(); } drain(); return v; };
     check('Sin la ruta de la gota todavía no se elige terreno', S.step === 3 && S.evaluated.A && S.evaluated.B, 'paso ' + S.step);
     jugarRutaGota(G, T);
     check('Dos terrenos inspeccionados y misión educativa hecha', S.step === 4 && S.missions.educativa && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
+    // KELVIN-2 (equipo, 30-oct): como el guion p.7, el Guardián aparece al llegar a construir y escucha la idea de Vittata
+    tick(0.1); check('Guardián · aparece en el sendero al llegar al paso de construir', G.actores.npc('guardian').sp.visible && !S.guardianIntro);
+    useAt('guardian', 1.4, 0); const p7a = oidos();
+    check('Guardián · p.7 antes de construir: «¿Y usted quién es?» y «primero quiero escuchar tu idea», sin adelantar el paso', S.guardianIntro && S.step === 4 && p7a.includes('¿Y usted quién es?') && p7a.includes('Quizás. Pero primero quiero escuchar tu idea.') && !had('GuardianMet'), p7a.join(' | ').slice(0, 160));
     C.startBuild('A'); teleport(PLACES.A.x + 50, PLACES.A.z, 0, 1); tick(0.1);
     const build = () => C.build();
     check('Construcción fuera del terreno rechazada', build() && !build().valid, build() && build().reason);
     teleport(PLACES.A.x, PLACES.A.z - 1.5, 0, 1); tick(0.1);
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
-    action(); drain();
+    action(); const p8 = oidos();
+    check('Guardián · p.8 al levantar el refugio: «¿Segura de que funcionará?» / «No completamente.» / «Bien. Entonces vamos a comprobarlo.»', ['¿Segura de que funcionará?', 'No completamente.', 'Bien. Entonces vamos a comprobarlo.'].every(t => p8.includes(t)), p8.slice(0, 4).join(' | '));
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
     // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
     const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
@@ -131,13 +137,12 @@
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
     teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21);
-    const oidos = () => { const v = []; for (let k = 0; k < 40 && G.dialogo.activo(); k++) { v.push(G.dialogo.actual().text); G.dialogo.next(); } drain(); return v; };
     const p9 = oidos();
     check('AP2 · guion p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» y «Yo también»', p9.includes('Pensé que hoy lo habíamos perdido todo.') && p9.includes('Yo también.'), p9.join(' | ').slice(0, 160));
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
     check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
     useAt('guardian', 1.4, 0); const p7 = oidos();
-    check('AP2 · guion p.7: Vittata pregunta «¿Y usted quién es?» entre las dos líneas del Guardián', p7.indexOf('¿Y usted quién es?') === 1, p7.slice(0, 3).join(' | '));
+    check('Guardián · tras la crecida ya lo conocemos: no se vuelve a presentar y regala el banco', p7[0] === 'Ya lo comprobamos: la crecida dijo la verdad.' && !p7.includes('¿Y usted quién es?'), p7.slice(0, 3).join(' | '));
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
     useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
