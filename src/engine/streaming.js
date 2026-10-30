@@ -525,6 +525,17 @@ AVE.module('streaming', function (G) {
     }
     const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
 
+    // BM39: piedra de ruinas (miradores, ciudad y colina) que flota sobre el escalón. Solo baja: si el origen queda más de
+    // `sobre` por encima del mínimo del terreno bajo su huella, se lleva a ese mínimo; las hundidas a propósito (zócalo) no se tocan.
+    const RUINA = { modelos: /^(ruina_|templo_|bloque_piedra|complejo_ruinas|monolito)/, zonas: /^kelvin_ruinas_yunque/, huella: 0.5, huellaMax: 6, sobre: 0.3 };
+    function bajarRuina(I) {
+      if (!RUINA.modelos.test(I.modelo) || !RUINA.zonas.test(I.zona)) return;
+      const h = Math.min(I.r * RUINA.huella, RUINA.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);
+      let y = Infinity;
+      for (const [u, v] of [[-h, -h], [h, -h], [-h, h], [h, h], [0, 0]]) y = Math.min(y, T.height(I.pos[0] + u * c + v * s, I.pos[2] - u * s + v * c));
+      if (isFinite(y) && I.pos[1] - y > RUINA.sobre) { I.pos[1] = y; I.m.elements[13] = y; }
+    }
+
     function construir() {
       const kit = KIT();
       for (const c of crudas) {
@@ -549,7 +560,7 @@ AVE.module('streaming', function (G) {
           I.m.compose(vecA.set(x, y, z), quatA.setFromAxisAngle(up, rot), escA.set(I.escala, I.escala, I.escala));
         }
         const k = kit && kit[c.n], rad = k && k.radio ? k.radio : c.e.dim ? Math.hypot(c.e.dim[0], c.e.dim[1], c.e.dim[2]) / 2 : 10;
-        I.r = rad * I.escala; I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
+        I.r = rad * I.escala; bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
         const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
