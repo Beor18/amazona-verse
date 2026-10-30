@@ -124,6 +124,9 @@
       rio: clamp(e.rio || 0, 0, 1) * f,
       mar: clamp(e.mar || 0, 0, 1) * f,
       viento: clamp(0.1 + alto + (e.volando ? 0.1 : 0) + (tormenta ? 0.35 : 0), 0, 1) * f,
+      // BM34: bosque (hojas) donde no hay agua ni altura; cede ante el río y el mar y se funde al cruzar la orilla. Lluvia continua en la crecida o el aguacero.
+      bosque: clamp(1 - clamp(e.rio || 0, 0, 1) * 1.25 - clamp(e.mar || 0, 0, 1) - alto * 0.8, 0, 1) * (tormenta ? 0.6 : 1) * f,
+      lluvia: tormenta ? f : 0,
       aves: dia * (tormenta ? 0.15 : 1) * f,
       coquies: n * (tormenta ? 0.5 : 1) * f,
       grillos: n * 0.8 * f,
@@ -551,12 +554,14 @@
       if (simple) f.connect(capas.mar); else { const am = c.createGain(); am.gain.value = 0.55; nodos.push(am); lfo(0.11, 0.45, am.gain); f.connect(am); am.connect(capas.mar); } // olas
     }
     capas.viento = cap(); { const f = filtro('bandpass', 520, 1.1); lazo().connect(f); f.connect(capas.viento); if (!simple) lfo(0.07, 260, f.frequency); }
+    capas.bosque = cap(); { const f = filtro('bandpass', simple ? 2600 : 3100, 0.8); lazo().connect(f); if (simple) f.connect(capas.bosque); else { const am = c.createGain(); am.gain.value = 0.6; nodos.push(am); lfo(0.17, 0.35, am.gain); lfo(0.05, 500, f.frequency); f.connect(am); am.connect(capas.bosque); } } // hojas movidas por la brisa
+    capas.lluvia = cap(); { const f = filtro('highpass', 2300, 0.4); lazo().connect(f); f.connect(capas.lluvia); }
     if (!simple) { // grillos: ruido agudo que pulsa unas 31 veces por segundo
       capas.grillos = cap(); const f = filtro('bandpass', 4700, 14), am = c.createGain(); am.gain.value = 0.5; nodos.push(am);
       lfo(31, 0.5, am.gain); lazo().connect(f); f.connect(am); am.connect(capas.grillos);
     }
     capas.aves = cap(); capas.coquies = cap();
-    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, aves: 2.2, coquies: 1 }; // ganancia interna de cada capa (se calibra con renderizar)
+    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, bosque: 0.14, lluvia: 0.2, aves: 2.2, coquies: 1 }; // ganancia interna de cada capa (se calibra con renderizar)
     const pan = d => { if (simple || !c.createStereoPanner) return d; const p = c.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; p.connect(d); return p; };
     function pio(d, t, f0, f1, dur, vol, tipo) {
       const s = c.createOscillator(), g = c.createGain(); s.type = tipo || 'sine';
@@ -753,7 +758,7 @@
         evaluar(e, ahora); eclosionAhora = !!e.eclosion;
         if (!preparar()) return; // sin AudioContext (aún no hubo gesto): no hay nada que sonar
         const c = eng.c, m = leer();
-        const sonable = c.state === 'running' && !A.vol.muted && !document.hidden;
+        const sonable = c.state === 'running' && !A.vol.muted && !document.hidden && !G.quiet; // G.quiet: en las baterías no suena nada
         const quiereMusica = sonable && m.musica > 0 && eng.modo !== 'simple', quiereAmb = sonable && m.ambiente > 0;
         conectar(eng.musicaBus, 'm', quiereMusica); conectar(eng.ambBus, 'a', quiereAmb);
         if (!quiereMusica) eng.rep.pausar(); // con el sonido apagado, la música a 0 o la pestaña oculta, los temas en archivo se pausan (no bajan datos)
@@ -1070,6 +1075,17 @@
         check('El río se oye cerca del agua y no lejos; el mar es otra capa', rio0.rio === 1 && dia0.rio === 0 && calcularAmbiente({ mar: 1 }).mar === 1 && calcularAmbiente({ mar: 1 }).rio === 0);
         check('El viento sube con la altura (en el suelo es una brisa)', alto0.viento > 0.9 && dia0.viento > 0.05 && dia0.viento < 0.2 && calcularAmbiente({ evento: true }).viento > dia0.viento + 0.3, `${dia0.viento.toFixed(2)} → ${alto0.viento.toFixed(2)}`);
         const tormenta0 = calcularAmbiente({ hora: 12, evento: true });
+        { // BM34: bosque lejos del agua, río cerca del agua, lluvia en la crecida, martillo al construir, nada con G.quiet
+          const bos0 = calcularAmbiente({ hora: 12, sobreSuelo: 1 }), orilla0 = calcularAmbiente({ hora: 12, rio: 1 }), cielo0 = calcularAmbiente({ hora: 12, sobreSuelo: 60, y: 90 });
+          check('Bosque donde no hay agua; el río lo desplaza y a 60 m de altura casi no se oye', bos0.bosque > 0.9 && orilla0.bosque === 0 && orilla0.rio === 1 && bos0.rio === 0 && cielo0.bosque < 0.1, [bos0.bosque, orilla0.bosque, cielo0.bosque].map(v => v.toFixed(2)).join(' · '));
+          check('La lluvia suena en la crecida y el aguacero, y no con sol', tormenta0.lluvia > 0.9 && calcularAmbiente({ lluvia: true }).lluvia > 0.9 && bos0.lluvia === 0);
+          const q0 = G.quiet;
+          try {
+            G.quiet = true; const sinSonido = A.martillar(4);
+            G.quiet = false; const conSonido = A.martillar(4);
+            check('El martillo da 4 golpes, 1 con «Reducir movimiento» y ninguno con G.quiet', sinSonido === 0 && (conSonido === 4 || (G.renderer.REDUCED && conSonido === 1)) && A.has('martillo'), `${sinSonido}/${conSonido}`);
+          } finally { G.quiet = q0; }
+        }
         check('En la tormenta casi no hay aves; detrás de la portada todo baja', tormenta0.aves < 0.2 && calcularAmbiente({ hora: 12, portada: true }).aves < 0.4 && calcularAmbiente({ hora: 12, rio: 1, retos: true }).rio < 0.8);
         check('La hora sale de S.hora si existe; sin ella, de día como el cielo', (() => { const h = S.hora; S.hora = 21.5; const a = horaActual(); S.hora = 3; const b = horaActual(); if (h === undefined) delete S.hora; else S.hora = h; const r = horaActual(); return a === 21.5 && b === 3 && (h !== undefined || r === 12); })());
         check('noche(): día de 6:30 a 17:30, noche de 19 a 5', noche(12) === 0 && noche(7) === 0 && noche(20) === 1 && noche(2) === 1 && noche(0) === 1 && noche(23.9) === 1);
