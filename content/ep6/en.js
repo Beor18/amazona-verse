@@ -298,6 +298,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)": "(She takes out the notebook and, for the first time, doesn't draw a plan for herself alone: she writes a column of names.)",
  "¿Y eso?": "What's that?",
  "La tripulación.": "The crew.",
+ "Violeta": "Violeta",
+ "Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.": "We speak from now because someone keeps saying our names. One day you'll know who.",
 
  // Iguaca: pistas y preguntas
  "¡Renovaron el pacto! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.": "You renewed the pact! Whenever you like, I'll ask you a few questions about what we did. No rush and no grades.",

@@ -12,7 +12,7 @@
   // Opción por defecto de EP5_GDD §10. El jugador no ve estos marcadores.
   EP.notasKelvin = [
     '[KELVIN] §10.1 Cómo se presentan: dos voces distintas, retrato neutro de dos ondas, sin verse (D2: que se vean es arte de Kelvin). Nombres en §10.3.',
-    '[KELVIN] §10.2 Por qué hablan desde ahora: no se explica; se guarda para más adelante.',
+    '[KELVIN] §10.2 Por qué hablan desde ahora: aquí no se explica; D4 (DECIDIDO-EQUIPO 30-oct) deja una insinuación al final del ep. 6 y la explicación sigue guardada.',
     '[KELVIN] §10.3 D3 (DECIDIDO-EQUIPO 30-oct, provisional): se llaman Alba (martinicana) y Violeta (violacea); lo dicen ellas al final. Iguaca las nombra por la especie, con las fichas de especies.js.',
     '[KELVIN] §10.4 El Guardián recuerda a pedazos y, al final, un recuerdo: «Eran dos. Las de las islas del sur.» No se explica por qué olvida ni qué forma tiene.',
     '[KELVIN] §10.5 Toca la medalla y no se explica.',

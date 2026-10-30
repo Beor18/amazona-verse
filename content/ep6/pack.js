@@ -11,6 +11,8 @@
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
      [KELVIN-2] El pacto no tiene objeto: es una promesa que se dice entre todos al final (frase provisional de EP6_NARRATIVA.md).
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
+                D3/D4 (DECIDIDO-EQUIPO 30-oct): se llaman Alba y Violeta, y al final Violeta insinúa por qué hablan «desde ahora»
+                (una frase sin explicar; la explicación sigue guardada).
      [KELVIN-4] El encuentro es en la plaza de Villa Raíz. [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
                 (plaza, volver hoy); nadie tiene la culpa. [KELVIN-6] El Guardián recuerda a medias y deja que lo cuenten entre todos.
      [KELVIN-7] Vittata no queda con título. [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
@@ -101,6 +103,7 @@
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Voces: RETRATO_VOCES, Aprendiz: 'assets/vittata.png',
     'Vocera de la isla alta': 'assets/agilis.png', 'Vocero de la isla baja': 'assets/vittata.png' };
   for (const v of VISITANTES) IMG[v.nombre] = v.sprite;
+  IMG.Violeta = RETRATO_VOCES; // D3: una de las dos voces, con el mismo retrato neutro
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Vi = t => di('Vittata', t), Gu = t => di('Guardián', t);
 
@@ -667,7 +670,8 @@
         G.fx.burst(MIRADOR.x, H(MIRADOR.x, MIRADOR.z) + 3, MIRADOR.z, 'feathers', 30);
         G.dialogo.say([Lu('De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.'),
           Gu('Las islas olvidadas no oyen el relevo.'), Vi('(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)'),
-          Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
+          Lu('¿Y eso?'), Vi('La tripulación.'),
+          di('Violeta', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
       }
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 11 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
 
