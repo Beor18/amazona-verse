@@ -200,6 +200,43 @@ AVE.module('idioma', function (G) {
   }
   function faltan(textos) { return textos.filter(t => { if (exactas.has(t)) return false; const d = lang; lang = 'en'; const r = tr(t); lang = d; return r === t && esEs(t); }); }
 
+
+  // Recorre las pantallas de la interfaz (abre cada una, también las que se arman al abrirse) y junta lo que sigue en español
+  async function pantallas() {
+    const esp = ms => new Promise(r => setTimeout(r, ms));
+    const $ = id => document.getElementById(id);
+    const sal = {}, uni = a => a.filter((t, i) => a.indexOf(t) === i);
+    const toma = async (nombre, abrir, cerrar, extra) => {
+      try {
+        await abrir(); await esp(250);
+        let v = textosVisibles();
+        if (extra) { for (const f of await extra()) { await esp(150); v = v.concat(textosVisibles()); } }
+        sal[nombre] = uni(v);
+      } catch (e) { sal[nombre] = ['(error: ' + e.message + ')']; }
+      try { if (cerrar) await cerrar(); } catch (e) { /* ya cerrada */ }
+      await esp(120);
+    };
+    const pausa = $('pause');
+    const popAbrir = () => { try { if (pausa && pausa.showPopover && !pausa.matches(':popover-open')) pausa.showPopover(); } catch (e) { /* sin popover */ } };
+    const popCerrar = () => { try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ } };
+    await toma('pausa', popAbrir, popCerrar);
+    await toma('menu de modos', () => G.menuModos && G.menuModos.mostrar(), () => { const d = $('modos'); if (d && d.open) d.close(); });
+    await toma('mis records', () => { popAbrir(); const b = $('b-records'); if (b) b.click(); }, () => { const r = $('records'); const c = r && r.querySelector('[data-cerrar],.rec-cerrar,button'); if (r && !r.hidden && c) c.click(); popCerrar(); });
+    await toma('retos', () => { const b = $('b-retos'); if (b) b.click(); }, () => { popCerrar(); });
+    await toma('criadero', () => G.criadero && G.criadero.abrir(), () => G.criadero && G.criadero.cerrar());
+    await toma('comic', () => { const b = $('b-comic-menu'); if (b) b.click(); }, () => { const c = $('c-close'); if (c) c.click(); });
+    await toma('creador', () => G.creador && G.creador.open(false), () => G.creador && G.creador.close());
+    await toma('capitulos', () => { const b = $('b-capitulos'); if (b) b.click(); }, () => { const c = $('b-capitulos-cerrar'); if (c) c.click(); });
+    await toma('modo maestro', () => G.aula && G.aula.abrirMaestro(), () => G.aula && G.aula.cerrarMaestro(), async () => {
+      const ts = [...document.querySelectorAll('#maestro [role="tab"], #maestro .m-tab, #maestro nav button')];
+      ts.forEach((b, i) => setTimeout(() => b.click(), 0));
+      return ts;
+    });
+    await toma('fin del capitulo', () => { const e = $('end'); if (e) e.hidden = false; }, () => { const e = $('end'); if (e) e.hidden = true; });
+    popCerrar();
+    return sal;
+  }
+
   async function test(o) {
     o = o || {};
     const R = [], ok = (name, c, extra) => R.push({ name, ok: !!c, extra: extra == null ? '' : String(extra) });
@@ -230,6 +267,8 @@ AVE.module('idioma', function (G) {
     const vis = textosVisibles();
     const visFalta = vis.filter((t, i) => vis.indexOf(t) === i);
     ok('Con EN puesto, no queda texto en español en la interfaz (' + vis.length + ')', !visFalta.length, visFalta.slice(0, 60).join(' | '));
+    const pan = await pantallas();
+    for (const k of Object.keys(pan)) { const f = pan[k]; ok('Pantalla «' + k + '» sin texto en español (' + f.length + ')', !f.length, f.slice(0, 200).join(' | ')); }
     // Diálogo en pantalla
     if (G.dialogo && ts.length) {
       const l = { who: 'Vittata', text: ts[0] };
@@ -276,6 +315,6 @@ AVE.module('idioma', function (G) {
     return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
   }
 
-  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, test };
+  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, pantallas, test };
   return G.idioma;
 });
