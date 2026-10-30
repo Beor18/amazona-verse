@@ -8,7 +8,7 @@
 #card:has(.edu) h2::before { display: none; }
 .edu-head { display: flex; align-items: center; gap: var(--sp-3); margin: 0 0 var(--sp-3); padding-bottom: var(--sp-3); border-bottom: 3px dotted var(--c-paper-edge); }
 .edu-head h2 { margin: 0 !important; padding: 0 !important; border: 0 !important; }
-.edu-head .eyebrow { display: block; margin-bottom: 2px; color: var(--leaf); }
+.edu-head .eyebrow { display: block; margin-bottom: 2px; color: #1f6f3a; }
 .edu-cara { width: 56px; height: 56px; flex: none; border-radius: 50%; object-fit: cover; object-position: 50% 18%; background: var(--c-paper-2); border: 3px solid var(--c-paper-edge); box-shadow: 0 3px 0 rgba(107, 82, 54, 0.35); }
 .edu-q { font: 600 var(--fs-lg)/1.4 var(--font-display) !important; color: var(--c-ink); }
 #card .edu-opts { flex-direction: column; align-items: stretch; gap: var(--sp-2); margin: 0 0 var(--sp-3); }
@@ -84,14 +84,16 @@
 .maestro-box { width: min(820px, 100%); max-height: calc(100dvh - 24px); overflow: auto; padding: var(--sp-6); animation: pop-in var(--dur-3) var(--ease-pop); user-select: text; -webkit-user-select: text; }
 .maestro-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
 .maestro-head h2 { margin: 2px 0 var(--sp-2); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: var(--c-ink); }
-.maestro-head .eyebrow { color: var(--leaf); }
+.maestro-head .eyebrow { color: #1f6f3a; }
 .maestro-tabs { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: 0 0 var(--sp-4); }
 .maestro-tabs .chip { color: var(--c-ink); background: #fffaf0; border-color: var(--c-paper-edge); }
-.maestro-tabs .chip[aria-selected="true"] { background: var(--leaf); border-color: var(--leaf); color: #fff; }
+.maestro-tabs .chip[aria-selected="true"] { background: #1f6f3a; border-color: #1f6f3a; color: #fff; }
+:root.a11y-contraste .maestro-tabs .chip, :root.a11y-contraste .maestro-chips .chip { background: #000; color: #fff; border-color: #fff; }
+:root.a11y-contraste .maestro-tabs .chip[aria-selected="true"], :root.a11y-contraste .maestro-chips .chip[aria-pressed="true"] { background: #fff; color: #000; border-color: #fff; }
 .maestro-body { font-size: var(--fs-sm); color: var(--c-ink); }
 .maestro-body h3 { margin: var(--sp-5) 0 var(--sp-2); font: 700 var(--fs-lg)/1.2 var(--font-display); }
 .maestro-body details { margin: 0 0 var(--sp-2); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); background: #fffaf0; border: 2px solid var(--c-paper-2); }
-.maestro-body summary { cursor: pointer; font: 600 var(--fs-md)/1.4 var(--font-display); }
+.maestro-body summary { cursor: pointer; font: 600 var(--fs-md)/1.4 var(--font-display); min-height: 44px; display: flex; align-items: center; }
 .maestro-body ol, .maestro-body ul { margin: var(--sp-2) 0; padding-left: 1.3em; }
 .maestro-body li { margin: 2px 0; }
 .maestro-body dl { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-1) var(--sp-3); margin: var(--sp-2) 0; }
@@ -101,14 +103,14 @@
 .maestro-body .lbl { color: var(--c-ink-muted); }
 .maestro-body input[type=text], .maestro-body select { width: min(320px, 100%); min-height: var(--tap-sm); padding: 0 var(--sp-3); font: inherit; font-size: var(--fs-md); border-radius: var(--r-sm); border: 2px solid var(--c-paper-edge); background: #fff; color: var(--c-ink); }
 .maestro-body textarea { width: 100%; font: 12px/1.4 ui-monospace, Menlo, monospace; border-radius: var(--r-sm); border: 2px solid var(--c-paper-edge); padding: var(--sp-2); }
-.maestro-body .note { color: var(--c-ink-muted); }
+.maestro-box .note { color: var(--c-ink-muted); }
 .maestro-chips .chip { color: var(--c-ink); background: #fffaf0; border-color: var(--c-paper-edge); }
 .maestro-chips .chip[aria-pressed="true"] { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-primary-ink); }
 .maestro-acciones { margin: var(--sp-4) 0 var(--sp-2); }
 .maestro-estado { min-height: 1.4em; margin: 0 0 var(--sp-2); font-weight: 700; color: var(--leaf); }
 .maestro-borrar { margin: var(--sp-3) 0; }
 .maestro-pregunta { margin: 0 0 var(--sp-3); padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md); background: var(--gold); font: 600 var(--fs-lg)/1.35 var(--font-display); color: var(--c-ink); }
-.maestro-pregunta .eyebrow { display: block; color: var(--c-ink); opacity: 0.75; }
+.maestro-pregunta .eyebrow { display: block; color: var(--c-ink); opacity: 0.85; }
 .maestro-obj small { display: block; color: var(--c-ink-muted); }
 .maestro-scroll { overflow-x: auto; margin: var(--sp-2) 0; }
 .maestro-body table { border-collapse: collapse; width: 100%; font-size: 13px; }

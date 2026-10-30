@@ -270,6 +270,52 @@ AVE.module('accesibilidad', function (G) {
     const menu = d.querySelector('#retos .rt-menu'); if (menu) { q('retos').hidden = false; menu.hidden = false; }
     return { f, d, w: f.contentWindow, q, cerrar: () => f.remove() };
   }
+  // BM53: maqueta de las demás pantallas (pausa, final del capítulo, cómic, criadero, Aula, mapa grande, menú de modos y minijuegos) con una
+  // copia de su DOM real y de todas las hojas de estilo; cada una se muestra entera (todo lo oculto a la vista) para medir el peor caso
+  const PANTALLAS = ['pause', 'end', 'comic', 'criadero', 'maestro', 'mapa-grande', 'modos', 'flight', 'maze', 'riverrush'];
+  // Los módulos que montan su pantalla al abrirla (mapa grande, Aula, criadero, minijuegos) se abren y se cierran una vez para tener su DOM
+  const copias = new Map(), sinPantalla = [];
+  async function prepararOtras() {
+    const AVg = window.AV || {}, cargaMini = () => (G.minimapa ? Promise.resolve(G.minimapa) : AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G)));
+    const abre = {
+      'mapa-grande': [async () => { const m = await cargaMini(); await espera(300); return m.abrir(); }, () => G.minimapa && G.minimapa.cerrar()],
+      criadero: [() => G.criadero && G.criadero.abrir(), () => G.criadero && G.criadero.cerrar()],
+      maestro: [() => G.aula && G.aula.abrirMaestro(), () => G.aula && G.aula.cerrarMaestro()],
+      flight: [() => AVg.flight && AVg.flight(), () => G.flightApi && G.flightApi.salir()],
+      maze: [() => AVg.maze && AVg.maze(), () => G.mazeApi && G.mazeApi.salir()],
+      riverrush: [() => AVg.riverRush && AVg.riverRush(), () => G.riverRushApi && G.riverRushApi.salir()],
+    };
+    for (const id of PANTALLAS) {
+      if ($(id) && !copias.has(id)) copias.set(id, $(id).outerHTML);
+      else if (!$(id) && abre[id]) {
+        try { await abre[id][0](); await espera(900); } catch (e) { sinPantalla.push(id + ': ' + e.message); }
+        if ($(id)) copias.set(id, $(id).outerHTML);
+        try { await abre[id][1](); await espera(200); } catch (e) { /* ya cerrada */ }
+      }
+    }
+  }
+  async function maquetaOtras(ancho, alto, clases) {
+    const f = document.createElement('iframe');
+    f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+    f.style.cssText = `position:fixed;left:-10000px;top:0;width:${ancho}px;height:${alto}px;border:0;`;
+    const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+    const estilos = [...document.querySelectorAll('style')].map(e => e.outerHTML).join('');
+    const hay = PANTALLAS.filter(id => copias.has(id));
+    f.srcdoc = `<!doctype html><html lang="es" class="${clases}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${estilos}` +
+      '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head>' +
+      `<body>${hay.map(id => copias.get(id)).join('')}</body></html>`;
+    document.body.appendChild(f);
+    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+    const d = f.contentDocument;
+    try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
+    for (const id of hay) {
+      const e = d.getElementById(id); if (!e) continue;
+      e.removeAttribute('popover'); e.hidden = false;
+      for (const h of e.querySelectorAll('[hidden]')) if (!h.closest('#end-confirm, #confirm-reset')) h.hidden = false;
+      if (id === 'pause') e.style.display = 'block';
+    }
+    return { f, d, w: f.contentWindow, hay, cerrar: () => f.remove() };
+  }
   // Contraste (WCAG) del texto de un elemento contra su fondo opaco más cercano
   function contrasteDe(e) {
     const w = e.ownerDocument.defaultView;
@@ -453,6 +499,40 @@ AVE.module('accesibilidad', function (G) {
           } finally { m.cerrar(); }
         }
         check(`Creador, Diario y Retos a ${W}×${H}: botones ≥ 44 px, sin desbordes en los 3 tamaños de texto y alto contraste ≥ 7:1`, !malosP.length, [...new Set(malosP)].slice(0, 5).join('; '));
+      }
+
+      // 1c. BM53: pausa, final, cómic, criadero, Aula, mapa grande, modos y minijuegos a 375×812: botones ≥ 44 px, sin desbordes en los 3 tamaños de
+      // texto, y con alto contraste el texto se lee (≥ 4.5:1)
+      {
+        const malosO = []; let vistas = []; await prepararOtras();
+        for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+          const m = await maquetaOtras(375, 812, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
+          try {
+            vistas = m.hay;
+            for (const pid of m.hay) {
+              const cajaP = m.d.getElementById(pid); const et = `nivel ${i}${contr ? ' contraste' : ''} #${pid}`;
+              for (const b of cajaP.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')) {
+                if (!visible(b)) continue;
+                const r = b.getBoundingClientRect();
+                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosO.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+              }
+              for (const e of [cajaP, ...cajaP.querySelectorAll('*')]) {
+                if (!visible(e) || e.closest('canvas') || e.tagName === 'CANVAS') continue;
+                const r = e.getBoundingClientRect();
+                if (r.width && (r.right > 376 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
+              }
+              if (contr) {
+                let peor = 99, quien = '';
+                for (const e of cajaP.querySelectorAll('h2, h3, p, b, small, label, button, li, summary, span, div')) {
+                  if (!visible(e) || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (e.className || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
+                }
+                if (peor < 4.5) malosO.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
+              }
+            }
+          } finally { m.cerrar(); }
+        }
+        check('Pausa, final, cómic, criadero, Aula, mapa grande, modos y minijuegos a 375×812: botones ≥ 44 px, sin desbordes en los 3 tamaños de texto y alto contraste ≥ 4.5:1', !malosO.length, [...new Set(malosO)].slice(0, 6).join('; ') || ('medidas: ' + vistas.join(',') + ' · sin: ' + sinPantalla.join(' | ')));
       }
 
       // 2. Modo zurdo: el joystick a la derecha y los botones de acción a la izquierda (teléfono vertical y horizontal)
