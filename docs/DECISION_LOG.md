@@ -238,3 +238,14 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - D28 Voz del ep. 4: elegida una frase corta por el transmisor sobre «lo que se construyó antes», con dos voces por primera vez; descartado callar · porqué: criterio 4.
 - D29 ruinas: elegidas torres del sistema de comunicación de antes de la Ruptura hechas por los guardianes; descartadas ruinas sin relación · porqué: son las mazmorras del ep. 5 y atan el pacto.
 - D30 relevo: elegidos abuela, papá, navegante, Vecina y el aprendiz atendiendo las torres, con Iguaca; descartado solo Iguaca y el aprendiz · porqué: criterio 3 y 5, los de casa devuelven lo que el jugador construyó.
+2026-10-30 · AP10 (BM48) lote 4, D31 a D39 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D31 qué piden las voces: elegido «Busquen a los que quedan»; descartado otra petición · porqué: gancho directo al ep. 6.
+- D32 quiénes llegan: elegidos los guardianes que el jugador encontró en la temporada, con mínimo de 6 (completa con los de la historia si faltan), más luces lejanas; descartado un número fijo · porqué: criterio 2 y 3.
+- D33 pacto: elegido un objeto, el emblema de 36 completo, con la promesa de tres partes grabada («nos conocemos, nos ayudamos y nos seguimos buscando»); descartado solo promesa · porqué: meta coleccionable visible; el emblema es el dibujo, el diseño final lo aprueba Kelvin.
+- D34 encuentro: elegida la Ciudad de los 36 (si el mapa lo permite; si no, la plaza de Villa Raíz); descartado el mirador o el altar · porqué: es la meta de toda la temporada.
+- D35 mediación: elegidos dos grupos de dos islas distintas que discuten dónde reunirse y cuándo volver, sin culpable; descartado otro desacuerdo · porqué: ya diseñado y más barato.
+- D36 título de Vittata: elegido «Guardiana del Pacto» como título que le dan en el ep. 6; descartado sin cargo · porqué: criterio 1 y 5, el cierre que el jugador espera; el cambio de Vittata sigue siendo suyo, no se toca su diseño.
+- D37 asientos vacíos: elegido que quedan vacíos los de las islas olvidadas, que no oyen el relevo; Vittata escribe «La tripulación»; descartado otro gancho · porqué: criterio 4.
+- D38 ropa y música: elegidas `pava` y la pista de exploración de la banda sonora; descartada música concreta de Puerto Rico · porqué: derechos (legal es de Kelvin).
+- D39 cómic de cierre: elegido sí, en el ep. 6, con las viñetas reales de las partidas; descartado dejarlo para la temporada 6 · porqué: es compartible y ya hay viñetas.
+- Lo que cambia contenido del juego (D2, D3, D4, D5, D8, D11, D21, D26, D27, D32, D33, D34, D36) se vuelve tarea AP nueva; en AP10 no se implementó nada. Sin decidir: D1, D13 (arte), D14 (ya resuelta).
