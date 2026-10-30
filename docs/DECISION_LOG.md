@@ -216,3 +216,14 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - D8 aprendiz: elegido que acompaña, ocupa un puesto activo y tiene líneas cortas (una por asamblea, sin hablar por nadie); descartado que sea mudo · porqué: criterio 2 y 3, y Vittata sigue siendo la protagonista.
 - D9 huevo del papá: elegido que es del papá, se queda en casa en el ep. 3, nace en el ep. 5 y el pichón tiene asiento en el ep. 6; descartado nacer en el ep. 2 · porqué: criterio 5, un momento tierno antes del final; la incubación de 24 a 28 días sigue por verificar (24-oct).
 - D10 luz de la niebla: elegidas las dos voces desde más allá de la niebla; en el ep. 5 otras luces responden; descartado que sea la otra comunidad · porqué: une el misterio de la Voz con el de la luz (criterio 4).
+2026-10-30 · AP10 (BM48) lote 2, D11 a D20 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D11 continuidad: elegido que lo elegido (sitio de la casa, puente o muelles) queda en el mundo de los capítulos siguientes y el desenlace es el mismo para todos; descartado arrancar todo igual · porqué: criterio 2, lo que el jugador hizo se ve; va como tarea AP nueva, no se implementa aquí.
+- D12 familia de Iguaca: elegido no se ve, Iguaca habla por ella; descartado diseñar personajes nuevos · porqué: más barato y no frena nada (criterio 8).
+- D13 máquina, transmisor y bote definitivos: NO SE DECIDE (modelos y arte, de Kelvin). Siguen los dibujos genéricos; lo de historia queda: el bote del plano lleva velas y el primero que se construye es una canoa a remo.
+- D14 llegada del Guardián: ya resuelta por Kelvin (30-oct, KELVIN-2 en este log y BM47): llega antes de construir, como el guion. No es de este lote.
+- D15 residentes: elegidos una abuela que vuela poco y un papá con huevo; las dos especies de los 36 las fija Kelvin (como ya se anotó) · porqué: no choca con el canon.
+- D16 hogar: elegido comunitario, en Villa Raíz, uno de tres sitios; descartado que sea de Vittata o Iguaca · porqué: criterio 3, el aliado participa y lo construido es de todos.
+- D17 Voz del ep. 2: elegido «Villa Raíz… ¿siguen ahí?… tenemos…» y el nombre de una isla del sur; descartado que no hable · porqué: criterio 1 y 4, siembra el misterio que se paga en el ep. 5.
+- D18 fiesta de techado y décima: elegidos, con costumbre «por verificar» y décima original; descartado quitarlos · porqué: criterio 7, capa cultural para adultos; no se afirma nada real sin verificar.
+- D19 navegante: elegida de Villa Raíz, pescaba en la bahía; especie y nombre de Kelvin; descartada de la otra comunidad · porqué: ya es lo que usa el ep. 3 y el ep. 4 (ítem 4 de la lista de incoherencias).
+- D20 otra comunidad: elegida en la otra orilla, representada por la Vecina, con nombre propio por poner; descartada la Colina del sur · porqué: da al ep. 4 el proyecto ya diseñado.
