@@ -16,7 +16,7 @@
                 (una frase sin explicar; la explicación sigue guardada).
      [KELVIN-4] El encuentro es en la plaza de Villa Raíz. [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
                 (plaza, volver hoy); nadie tiene la culpa. [KELVIN-6] El Guardián recuerda a medias y deja que lo cuenten entre todos.
-     [KELVIN-7] Vittata no queda con título. [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
+     [KELVIN-7] D36 (DECIDIDO-EQUIPO 30-oct): le dan el título «Guardiana del Pacto» (solo texto; su diseño no cambia). [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
      [KELVIN-9] Martinicana y violacea no se formalizan como consejeras aquí. [KELVIN-10] Recompensa final: la pava; sin música concreta.
      [KELVIN-11] El cómic de cierre de temporada no se hace aquí (se deja para la temporada 6).
    La simulación del plan es determinista (valores del juego, sin azar): cada tarea dura lo que dice su tarjeta. El inglés va en
@@ -652,7 +652,7 @@
       // El pacto renovado y el final de temporada [KELVIN-2, 3, 6, 7, 8]
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
-        if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola.')]); return; }
+        if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola, Guardiana.')]); return; }
         encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
@@ -664,6 +664,8 @@
           Gu('Cada isla guardó su pieza. Hoy el emblema de los 36 está completo.'),
           Vi('Tiene algo grabado alrededor…'),
           Gu('Entonces, entre todos: nos conocemos, nos ayudamos y nos seguimos buscando.'),
+          Gu('Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.'),
+          Vi('Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.'),
         ], terminar);
       }
       function terminar() {
