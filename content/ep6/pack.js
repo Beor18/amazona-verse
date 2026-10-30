@@ -16,7 +16,9 @@
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
                 D3/D4 (DECIDIDO-EQUIPO 30-oct): se llaman Alba y Violeta, y al final Violeta insinúa por qué hablan «desde ahora»
                 (una frase sin explicar; la explicación sigue guardada).
-     [KELVIN-4] El encuentro es en la plaza de Villa Raíz. [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
+     [KELVIN-4] D34 (DECIDIDO-EQUIPO 30-oct): la Ciudad de los 36 si el mapa lo permite; si no, la plaza de Villa Raíz.
+                Este pack tiene su propio mundo analítico (sin la Ciudad, que está en el mapa del cap. 1): queda la plaza; pedido en PEDIDOS.md.
+     [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
                 (plaza, volver hoy); nadie tiene la culpa. [KELVIN-6] El Guardián recuerda a medias y deja que lo cuenten entre todos.
      [KELVIN-7] D36 (DECIDIDO-EQUIPO 30-oct): le dan el título «Guardiana del Pacto» (solo texto; su diseño no cambia). [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
      [KELVIN-9] Martinicana y violacea no se formalizan como consejeras aquí. [KELVIN-10] Recompensa final: la pava; sin música concreta.
