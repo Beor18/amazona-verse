@@ -631,6 +631,17 @@ Trabaja directo sobre `amazona-verse` (clónalo limpio). Commits pequeños; sube
 
 - **BM55, la escena final del capítulo 1 y el resto del contenido de historia decidido.** (a) worker-4 reportó que en `--solo cap1` la escena final `cap1_fin` falla; probablemente por el reordenado del Guardián (BM47) o el contenido de la medalla (BM53). Reprodúcelo (`AV.e2eTest`/`missionTest`/`selfTest` en la parte final del cap. 1), encuentra la causa en el contenido/lógica del capítulo (`content/cap1/*`, no el motor) y arréglalo con la prueba en verde. (b) Revisa en `docs/DECISION_LOG.md` las decisiones «[DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]» (D1–D30) que cambian texto o guion y que BM53 aún no haya aplicado; impleméntalas con su inglés, un commit por decisión. No toques Vittata, bandera, arte, dinero ni legal, ni los archivos gráficos. Baterías del cap. 1 en verde.
 
+### Backlog gráfico continuo (Mac, GPU). 30-oct tarde — para que no paren mientras Kelvin está fuera.
+Reglas de estas tareas: trabaja el backlog ya documentado, no inventes problemas nuevos. Las listas con prioridad están en `docs/equipo/VISUAL_CAP1_29OCT.md`, `docs/equipo/VISUAL_30OCT.md` (cuando BM50 la cree) y los «**Falta**/**Sin hacer**» de las filas BM23, BM27, BM29, BM30, BM31, BM32 de la tabla Estado. **Para no chocar entre trabajadores:** al empezar, marca el problema que tomas con «· EN CURSO (BMxx)» en su línea del doc y haz un commit rápido solo de esa línea; elige problemas que no estén ya «EN CURSO». No toques `content/`, `src/ui/` ni `web/`. Cada tarea: 2-3 problemas, un commit por arreglo con captura antes/después en `docs/img/`, 13 baterías en verde con GPU real, y marca «· RESUELTO (BMxx, commit)» en el doc. Lo que necesite Blender o sea decisión de Kelvin (aldeas/toldos, geometría de la aguja) NO se toca: se deja anotado para Kelvin en `DECISION_LOG.md`.
+- **BM56, backlog visual lote 1.** Los 2-3 problemas abiertos de MAYOR prioridad de los docs/filas de arriba que sean de código.
+- **BM57, backlog visual lote 2.** Los siguientes 2-3.
+- **BM58, backlog visual lote 3.** Los siguientes 2-3.
+- **BM59, backlog visual lote 4.** Los siguientes 2-3.
+- **BM60, la ciudad del tepuy hacia la meta de Kelvin (resto de BM32/BM23).** Meta `docs/img/ciudad_tepuy_meta_kelvin.jpg`. Acerca crema/saturación/sombra y el cambio de LOD a esa foto; lo que sea geometría queda para Kelvin. Captura antes/después y compárala con la meta en una línea.
+- **BM61, rendimiento en los 6 capítulos.** Mide FPS con GPU real en Villa Raíz, `ciudad_tepuy` y la apertura de ep2–ep6 (escritorio «alto» y móvil emulado). Arregla el peor cuello que sea de código sin tocar el arte; metas y antes/después en `docs/equipo/QA_GPU.md`. Extiende QA-53 (tirón de «Empezar») si reaparece en otro capítulo.
+- **BM62, árboles y terreno, lo que quedó parcial (resto de BM31 y BM29).** Que el cambio malla→impostor sea ≥120 m con fundido (LOD intermedio) y sin bordes serrados en hojas; sin costura de terreno a 30 y 80 m. Mide FPS y haz capturas; anota en `QA_GPU.md`.
+- **BM63, recorrido de capturas FINAL para que Kelvin apruebe (tras BM49, BM51, BM56-BM62).** Como BM50 pero con todo lo arreglado hoy: los 6 sitios, 5 alturas, 3 rumbos, sin cambiar código. Actualiza `docs/equipo/VISUAL_30OCT.md` con una línea por sitio: qué se arregló respecto a las capturas de Kelvin del 29-oct y qué sigue flojo. Es lo que Kelvin revisa al volver.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|

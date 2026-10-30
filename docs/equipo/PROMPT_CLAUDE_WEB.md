@@ -16,3 +16,10 @@ TU TRABAJO (definido en `docs/equipo/TAREAS_API.md`, carril del agente web): **B
 PRUEBAS: antes de cada commit de código, corre solo la batería que toque; que quede en verde con 0 errores de consola.
 
 ENTREGA: sube a amazona-verse (main o `api-web`). Al terminar cada tarea, márcala en la tabla «Estado» de `TAREAS_API.md` con su commit y una línea de resultado, y termina tu respuesta con un resumen de 3 líneas. No publiques `sitio/`: eso lo hace la Mac/la coordinadora.
+
+TRABAJO CONTINUO (30-oct, Kelvin fuera hasta las 22:00): NO pares a preguntar. Encadena el backlog en este orden, un commit por arreglo, subiendo a `main` (o rama `api-web`) al terminar cada cosa:
+1. **BM55**: la escena final del cap. 1 (`cap1_fin`) y las decisiones de historia que falten.
+2. **Bugs no gráficos abiertos** en `docs/equipo/BUGS.md` (prioridad media/alta, que NO sean de GPU/render): uno por uno, reprodúcelo, arréglalo con una prueba, ciérralo con el commit. No toques `src/engine/*` de render ni `tools/blender/*`.
+3. **Textos e inglés de ep2–ep6**: erratas, frases que se cortan a 375 px con letra «Grande»/«Muy grande», y que ningún texto salga en español con la interfaz en inglés. Una batería por capítulo en verde.
+4. **Accesibilidad móvil** (375×812) en las pantallas que falten: botones ≥44 px, 3 tamaños de texto, alto contraste.
+Antes de cada tarea `git pull --rebase origin main` (la Mac y tú subís al mismo repo). Si algo choca con lo gráfico que toca la Mac, sáltalo y sigue con lo siguiente. Si se te acaba el backlog, para y deja un resumen; no inventes trabajo. Nunca `sitio/`, nunca spider-web.

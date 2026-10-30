@@ -1,5 +1,11 @@
-# Cola de la API en la Mac (ejecutar.sh --cola N). 30-oct: ronda gráfica. BM49 torre (frena publicar), BM50 capturas para que Kelvin apruebe, BM51 risco, BM52 tirón móvil. BM53/BM54 son del agente web, NO van aquí.
+# Cola de la API en la Mac. 30-oct tarde: BM49 (torre, frena publicar) y BM50 (capturas) en curso; luego backlog gráfico continuo BM56-BM63 (trabaja las listas de VISUAL_*; detalle en TAREAS_API.md). BM51/BM52 ya hechas. BM53/54/55 son del agente web, NO van aquí.
 BM49
 BM50
-BM51
-BM52
+BM56
+BM57
+BM58
+BM59
+BM60
+BM61
+BM62
+BM63
