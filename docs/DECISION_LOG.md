@@ -227,3 +227,14 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 - D18 fiesta de techado y décima: elegidos, con costumbre «por verificar» y décima original; descartado quitarlos · porqué: criterio 7, capa cultural para adultos; no se afirma nada real sin verificar.
 - D19 navegante: elegida de Villa Raíz, pescaba en la bahía; especie y nombre de Kelvin; descartada de la otra comunidad · porqué: ya es lo que usa el ep. 3 y el ep. 4 (ítem 4 de la lista de incoherencias).
 - D20 otra comunidad: elegida en la otra orilla, representada por la Vecina, con nombre propio por poner; descartada la Colina del sur · porqué: da al ep. 4 el proyecto ya diseñado.
+2026-10-30 · AP10 (BM48) lote 3, D21 a D30 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D21 nombre de la canoa: elegido que lo pone el jugador de una lista corta o escrito con el mismo filtro del creador de personaje; descartada sin nombre · porqué: criterio 2, es su canoa; si no escribe nada se queda sin nombre.
+- D22 Guardián y el mar: elegido despide desde el muelle y se queda; descartado que vaya en la canoa · porqué: la canoa es de Vittata y su gente (criterio 3, sin quitar protagonismo) y es más barato.
+- D23 qué se intercambia: elegida la casa que aguanta o la fibra del papá a cambio de una nasa; descartado otro saber · porqué: un trueque que se juega; canoa y nasa taínas por verificar.
+- D24 símbolo de 36 en la otra comunidad: elegido sí, y su mitad del mensaje encaja con la de Villa Raíz; descartado que no lo tengan · porqué: criterio 4, una pieza que se acopla es un pago visible.
+- D25 proyecto del ep. 4: elegido unir las dos orillas con tres opciones (puente en el estrecho, puente alto, muelles y canoas); descartado camino o represa · porqué: es el dilema ya diseñado y la abuela cruza al final.
+- D26 quién decide: elegido que decide el jugador entre las opciones tras oír a todos, y el mundo muestra las consecuencias; descartado consenso sin voto · porqué: criterio 2; la asamblea sigue como lugar donde se oye a todos, sin examen.
+- D27 bosquecillo: elegido que tiene el nido de uno de los 36 (un guardián que el jugador ya conoce); descartado nido de aves sin nombre · porqué: criterio 3 y 5, el dilema duele más; la especie la fija Kelvin.
+- D28 Voz del ep. 4: elegida una frase corta por el transmisor sobre «lo que se construyó antes», con dos voces por primera vez; descartado callar · porqué: criterio 4.
+- D29 ruinas: elegidas torres del sistema de comunicación de antes de la Ruptura hechas por los guardianes; descartadas ruinas sin relación · porqué: son las mazmorras del ep. 5 y atan el pacto.
+- D30 relevo: elegidos abuela, papá, navegante, Vecina y el aprendiz atendiendo las torres, con Iguaca; descartado solo Iguaca y el aprendiz · porqué: criterio 3 y 5, los de casa devuelven lo que el jugador construyó.

@@ -180,3 +180,5 @@ Total: **39 decisiones**. Si Kelvin no dice nada, el equipo produce con la opci�
 **Resueltas por el equipo (AP10/BM48, 30-oct, lote 1: )** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
 
 **Resueltas por el equipo (AP10/BM48, 30-oct, lote 2: D1 a D10)** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
+
+**Resueltas por el equipo (AP10/BM48, 30-oct, lote 3: D11 a D20)** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
