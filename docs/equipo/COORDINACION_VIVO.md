@@ -26,4 +26,4 @@ La hace la Mac con `tools/build/publicar_mac.sh` (GPU real) o Kelvin; publica `s
 - Mac: cuando haya crédito, retoma el protocolo; si la cola está vacía, abre lote nuevo de `VISUAL_*` solo si hay problema real.
 - Web: cuando haya cuota (se reinicia cada 5 h), retoma ronda 2 (BM70–75) o abre lo que quede real; si todo está hecho, para y deja nota aquí.
 - 30-oct 18:36 AST · **HECHA · web (este commit)** · cayuco del ep. 3: quitar «de pesca» del dato (DLE; propuesto por BM71), en `content/ep3/lecciones.js`, `pack.js` y `en.js`.
-- 30-oct 18:36 AST · **EN CURSO · web** · D11 (lo elegido en un capítulo se queda en los siguientes) y D32 completo (en el ep. 6 llegan los guardianes encontrados): resto de BM55, con un registro de temporada compartido entre capítulos (`src/game/` + `content/ep*`). La Mac no lo toma (es contenido).
+- 30-oct 18:36 AST · **HECHA · web · 93573c6 (D11), e61a8a6 (D32)** · D11 (lo elegido en un capítulo se queda en los siguientes) y D32 completo (en el ep. 6 llegan los guardianes encontrados): resto de BM55, con un registro de temporada compartido entre capítulos (`src/game/` + `content/ep*`). La Mac no lo toma (es contenido).
