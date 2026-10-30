@@ -214,3 +214,47 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 
 - **30-oct · PR automáticos.** Kelvin: todo PR que entre a amazona-verse se une con main sin esperar revisión. Lo hace `.github/workflows/auto_merge.yml`, solo para PR de Beor18, KelvinGarciaPR y cryptochefpr.
 - **30-oct · Ramas api-\*.** Cada subida de la Mac a su rama api-\* se une con main sola (`.github/workflows/unir_api.yml`), sin abrir PR. Si choca con main, la une publicar_mac.sh.
+2026-10-30 · AP10 (BM48) lote 1, D1 a D10 de TEMPORADA1_HILO · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D1 forma del Guardián: NO SE DECIDE (es diseño de personaje y arte, de Kelvin). Se sigue con la cotorra mayor *imperialis* como sustituto, ya en uso.
+- D2 dos voces: elegida «se ven» en la revelación del ep. 5 (solo ahí; antes, solo audio con dos ondas de color); descartada una voz a coro o nunca verse · porqué: criterio 1 y 4, la revelación necesita una imagen que pague el misterio sembrado · el arte concreto (render de especie o silueta) lo aprueba Kelvin.
+- D3 nombres de las extintas: elegidos nombres propios sencillos, Alba (martinicana) y Violeta (violacea); descartado dejarlas sin nombre · porqué: criterio 3, un personaje con nombre se recuerda; son provisionales y un cambio de nombre es una búsqueda y reemplazo.
+- D4 por qué hablan «desde ahora»: elegida una insinuación al final del ep. 6 (una frase sin explicar); descartado guardarlo todo para la temporada 5 · porqué: criterio 4, el gancho a la temporada 2 tira más con una pista y la explicación completa sigue guardada.
+- D5 medalla del Guardián: elegida existe, es una de las 36 piezas del emblema, aparece en el ep. 1 y 2 y se explica en el ep. 5; descartado quitarla · porqué: ya está en el cap. 1 (BM24) y es el coleccionable que da meta visible.
+- D6 qué recuerda el Guardián: elegida la memoria incompleta (recuerda las 36 y las torres; olvidó cómo se cruzaba el río y los nombres), y cada pieza del emblema le devuelve un recuerdo; descartado que lo sepa todo y calle · porqué: criterio 4, la memoria rota es un misterio que se paga por tramos y no obliga a rehacer el ep. 5.
+- D7 consejeras: elegido que empiezan en la revelación del ep. 5 y se formalizan en el ep. 6 con dos asientos de luz tenue; descartado que asomen en el ep. 2 · porqué: no rompe la revelación.
+- D8 aprendiz: elegido que acompaña, ocupa un puesto activo y tiene líneas cortas (una por asamblea, sin hablar por nadie); descartado que sea mudo · porqué: criterio 2 y 3, y Vittata sigue siendo la protagonista.
+- D9 huevo del papá: elegido que es del papá, se queda en casa en el ep. 3, nace en el ep. 5 y el pichón tiene asiento en el ep. 6; descartado nacer en el ep. 2 · porqué: criterio 5, un momento tierno antes del final; la incubación de 24 a 28 días sigue por verificar (24-oct).
+- D10 luz de la niebla: elegidas las dos voces desde más allá de la niebla; en el ep. 5 otras luces responden; descartado que sea la otra comunidad · porqué: une el misterio de la Voz con el de la luz (criterio 4).
+2026-10-30 · AP10 (BM48) lote 2, D11 a D20 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D11 continuidad: elegido que lo elegido (sitio de la casa, puente o muelles) queda en el mundo de los capítulos siguientes y el desenlace es el mismo para todos; descartado arrancar todo igual · porqué: criterio 2, lo que el jugador hizo se ve; va como tarea AP nueva, no se implementa aquí.
+- D12 familia de Iguaca: elegido no se ve, Iguaca habla por ella; descartado diseñar personajes nuevos · porqué: más barato y no frena nada (criterio 8).
+- D13 máquina, transmisor y bote definitivos: NO SE DECIDE (modelos y arte, de Kelvin). Siguen los dibujos genéricos; lo de historia queda: el bote del plano lleva velas y el primero que se construye es una canoa a remo.
+- D14 llegada del Guardián: ya resuelta por Kelvin (30-oct, KELVIN-2 en este log y BM47): llega antes de construir, como el guion. No es de este lote.
+- D15 residentes: elegidos una abuela que vuela poco y un papá con huevo; las dos especies de los 36 las fija Kelvin (como ya se anotó) · porqué: no choca con el canon.
+- D16 hogar: elegido comunitario, en Villa Raíz, uno de tres sitios; descartado que sea de Vittata o Iguaca · porqué: criterio 3, el aliado participa y lo construido es de todos.
+- D17 Voz del ep. 2: elegido «Villa Raíz… ¿siguen ahí?… tenemos…» y el nombre de una isla del sur; descartado que no hable · porqué: criterio 1 y 4, siembra el misterio que se paga en el ep. 5.
+- D18 fiesta de techado y décima: elegidos, con costumbre «por verificar» y décima original; descartado quitarlos · porqué: criterio 7, capa cultural para adultos; no se afirma nada real sin verificar.
+- D19 navegante: elegida de Villa Raíz, pescaba en la bahía; especie y nombre de Kelvin; descartada de la otra comunidad · porqué: ya es lo que usa el ep. 3 y el ep. 4 (ítem 4 de la lista de incoherencias).
+- D20 otra comunidad: elegida en la otra orilla, representada por la Vecina, con nombre propio por poner; descartada la Colina del sur · porqué: da al ep. 4 el proyecto ya diseñado.
+2026-10-30 · AP10 (BM48) lote 3, D21 a D30 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D21 nombre de la canoa: elegido que lo pone el jugador de una lista corta o escrito con el mismo filtro del creador de personaje; descartada sin nombre · porqué: criterio 2, es su canoa; si no escribe nada se queda sin nombre.
+- D22 Guardián y el mar: elegido despide desde el muelle y se queda; descartado que vaya en la canoa · porqué: la canoa es de Vittata y su gente (criterio 3, sin quitar protagonismo) y es más barato.
+- D23 qué se intercambia: elegida la casa que aguanta o la fibra del papá a cambio de una nasa; descartado otro saber · porqué: un trueque que se juega; canoa y nasa taínas por verificar.
+- D24 símbolo de 36 en la otra comunidad: elegido sí, y su mitad del mensaje encaja con la de Villa Raíz; descartado que no lo tengan · porqué: criterio 4, una pieza que se acopla es un pago visible.
+- D25 proyecto del ep. 4: elegido unir las dos orillas con tres opciones (puente en el estrecho, puente alto, muelles y canoas); descartado camino o represa · porqué: es el dilema ya diseñado y la abuela cruza al final.
+- D26 quién decide: elegido que decide el jugador entre las opciones tras oír a todos, y el mundo muestra las consecuencias; descartado consenso sin voto · porqué: criterio 2; la asamblea sigue como lugar donde se oye a todos, sin examen.
+- D27 bosquecillo: elegido que tiene el nido de uno de los 36 (un guardián que el jugador ya conoce); descartado nido de aves sin nombre · porqué: criterio 3 y 5, el dilema duele más; la especie la fija Kelvin.
+- D28 Voz del ep. 4: elegida una frase corta por el transmisor sobre «lo que se construyó antes», con dos voces por primera vez; descartado callar · porqué: criterio 4.
+- D29 ruinas: elegidas torres del sistema de comunicación de antes de la Ruptura hechas por los guardianes; descartadas ruinas sin relación · porqué: son las mazmorras del ep. 5 y atan el pacto.
+- D30 relevo: elegidos abuela, papá, navegante, Vecina y el aprendiz atendiendo las torres, con Iguaca; descartado solo Iguaca y el aprendiz · porqué: criterio 3 y 5, los de casa devuelven lo que el jugador construyó.
+2026-10-30 · AP10 (BM48) lote 4, D31 a D39 · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]
+- D31 qué piden las voces: elegido «Busquen a los que quedan»; descartado otra petición · porqué: gancho directo al ep. 6.
+- D32 quiénes llegan: elegidos los guardianes que el jugador encontró en la temporada, con mínimo de 6 (completa con los de la historia si faltan), más luces lejanas; descartado un número fijo · porqué: criterio 2 y 3.
+- D33 pacto: elegido un objeto, el emblema de 36 completo, con la promesa de tres partes grabada («nos conocemos, nos ayudamos y nos seguimos buscando»); descartado solo promesa · porqué: meta coleccionable visible; el emblema es el dibujo, el diseño final lo aprueba Kelvin.
+- D34 encuentro: elegida la Ciudad de los 36 (si el mapa lo permite; si no, la plaza de Villa Raíz); descartado el mirador o el altar · porqué: es la meta de toda la temporada.
+- D35 mediación: elegidos dos grupos de dos islas distintas que discuten dónde reunirse y cuándo volver, sin culpable; descartado otro desacuerdo · porqué: ya diseñado y más barato.
+- D36 título de Vittata: elegido «Guardiana del Pacto» como título que le dan en el ep. 6; descartado sin cargo · porqué: criterio 1 y 5, el cierre que el jugador espera; el cambio de Vittata sigue siendo suyo, no se toca su diseño.
+- D37 asientos vacíos: elegido que quedan vacíos los de las islas olvidadas, que no oyen el relevo; Vittata escribe «La tripulación»; descartado otro gancho · porqué: criterio 4.
+- D38 ropa y música: elegidas `pava` y la pista de exploración de la banda sonora; descartada música concreta de Puerto Rico · porqué: derechos (legal es de Kelvin).
+- D39 cómic de cierre: elegido sí, en el ep. 6, con las viñetas reales de las partidas; descartado dejarlo para la temporada 6 · porqué: es compartible y ya hay viñetas.
+- Lo que cambia contenido del juego (D2, D3, D4, D5, D8, D11, D21, D26, D27, D32, D33, D34, D36) se vuelve tarea AP nueva; en AP10 no se implementó nada. Sin decidir: D1, D13 (arte), D14 (ya resuelta).

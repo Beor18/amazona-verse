@@ -176,3 +176,11 @@ Cada línea: **decisión · opción por defecto (la que usan los documentos si n
 - **D39 · Cómic de cierre de temporada** (EP6 §10.11) · por defecto: sí, en el ep. 6, con las viñetas reales de los capítulos jugados · alternativa: se deja para la temporada 6.
 
 Total: **39 decisiones**. Si Kelvin no dice nada, el equipo produce con la opción por defecto y lo marca en el texto.
+
+**Resueltas por el equipo (AP10/BM48, 30-oct, lote 1: )** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
+
+**Resueltas por el equipo (AP10/BM48, 30-oct, lote 2: D1 a D10)** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
+
+**Resueltas por el equipo (AP10/BM48, 30-oct, lote 3: D11 a D20)** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).
+
+**Resueltas por el equipo (AP10/BM48, 30-oct, lote 4: D21 a D30)** · [DECIDIDO-EQUIPO · pendiente de revisión de Kelvin]; detalle en `docs/DECISION_LOG.md`. Ya no son preguntas abiertas para Kelvin (salvo D1 y D13, que son de arte y siguen suyas).

@@ -141,3 +141,5 @@ Regla: cada fase entra **detrás de las pruebas**: nada se publica si rompe el r
 6. Fase B de arte (personajes propios) en cuanto haya presupuesto.
 
 Todo esto reutiliza lo que hay: motor, mapa, ropero, criadero, cómic, guardado, minijuegos y Aula. No se tira nada.
+
+**Resuelta (BM48, 30-oct):** el equipo decidió las 39 con los criterios de `docs/equipo/CRITERIOS_HISTORIA.md`; la decisión vigente es la de `docs/DECISION_LOG.md` (no siempre coincide con la columna «Rec.»), pendiente de revisión de Kelvin. D1 y D13 siguen siendo de Kelvin (arte).

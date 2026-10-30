@@ -1,8 +1,8 @@
 # Amazona Verse
 
-Juego educativo 3D para el navegador, para todas las edades: familias, escuelas y curiosos de la naturaleza. Lo protagoniza Vittata, la cotorra puertorriqueña.
+Juego de aventuras 3D para el navegador, para todas las edades: familias, escuelas y curiosos de la naturaleza. Lo protagoniza Vittata, la cotorra puertorriqueña.
 
-Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion de Kelvin García). Ciencias alineadas al DEPR 2022 y NGSS, sin cuentas ni anuncios.
+Capítulo 1 jugable: **"El día que el cielo se rompió"** (guion original). Ciencias alineadas al DEPR 2022 y NGSS, sin cuentas ni anuncios.
 
 **Jugar:** https://amazona-verse.vercel.app (landing) · https://amazona-verse.vercel.app/juego/ (juego)
 
@@ -60,4 +60,4 @@ Al pie, **Docentes** abre el Modo Maestro, protegido con una suma (no hay cuenta
 - **Código y contenido:** © Kelvin García / Amazona Verse.
 - **Three.js** (MIT) y **meshoptimizer** (MIT).
 - **Fuentes:** Fredoka y Atkinson Hyperlegible (OFL).
-- **Edificios:** derivados de kits de KitBash3D, usados bajo la licencia de Kelvin. Cada recurso de terceros conserva su propia licencia.
+- **Edificios:** derivados de kits de KitBash3D, usados bajo la licencia del proyecto. Cada recurso de terceros conserva su propia licencia.

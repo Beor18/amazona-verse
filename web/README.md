@@ -7,7 +7,7 @@ Edita el bloque `window.AV_WEB` al final de `index.html`:
 
 | Clave | Qué es | Valor hoy |
 |---|---|---|
-| `correo` | Correo público de contacto | `''` · **por confirmar (lo decide Kelvin)**. Vacío muestra "Correo por confirmar". |
+| `correo` | Correo público de contacto | `''` · **por confirmar (lo decide el equipo)**. Vacío muestra "Correo por confirmar". |
 | `formulario` | Envío real del formulario de contacto | `''` en el artifact. En hosting: `'netlify'` o la URL de Formspree. |
 
 Con `formulario` vacío el formulario queda oculto y el contacto es el correo en texto con botón **Copiar** y un mensaje modelo copiable.
