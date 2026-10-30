@@ -3,6 +3,7 @@
 Las corre `tools/agente_api/ejecutar.sh` con los créditos promocionales de la API de Kelvin ($200, vencen el 29-oct-2026), y no con el plan Max. Hay **4 carriles que pueden correr en paralelo**, uno por pestaña de Terminal, porque cada carril toca archivos distintos. Dentro de un carril, las tareas van en orden.
 
 ## Reglas (obligatorias)
+- **Coordinación y reanudar:** antes y después de cada tarea lee y actualiza `docs/equipo/COORDINACION_VIVO.md` (carriles, regla de oro y protocolo de reanudar tras un corte o recarga). No te metas en el carril del otro equipo.
 - **NUNCA corras nada en segundo plano** (sin `run_in_background`, sin `&`, sin «aviso cuando termine»). En esta sesión no llegan avisos: si dejas la build o las pruebas en segundo plano y terminas el turno, la tarea se cierra **sin commit** y se pierde todo. Así se perdieron AY1, AZ1 y AW2 el 27-oct. Corre `build.sh` y `test.sh` en primer plano, con un timeout largo (por ejemplo 600000 ms) y, si tardan, por partes. Espera el resultado, haz commit y solo entonces termina.
 - **Repo y rama:** el repo es `~/AmazonaVerse/Juego` y hay **una sola rama, `main`**. Nada de ramas ni worktrees.
 - **Antes de empezar:** lee `docs/equipo/COORDINACION.md` y `ROADMAP.md`.

@@ -1,0 +1,27 @@
+# Coordinación viva — Mac (API) + agente web
+
+Esta hoja la leen y actualizan **los dos equipos** antes y después de cada tarea. Es la única fuente de verdad para no duplicar trabajo y para retomar después de un corte, una desconexión o una recarga de crédito.
+
+## Carriles (no se pisan)
+- **Mac (API, GPU real):** gráficos y motor. Archivos: `src/engine/*` de render (`terreno, streaming, vegetacion, dosel, mundo, renderer, solidos`), `src/game/look.js`, `tools/blender/*`, y las pruebas de movimiento/visual. Cola en `tools/agente_api/cola.txt`.
+- **Web (cryptochefpr, sin GPU):** todo lo demás — contenido (`content/*`), texto, inglés, datos educativos (con fuente), accesibilidad, bugs no gráficos, pruebas de esos. Tareas en `TAREAS_API.md` «Carril del agente web».
+
+## Regla de oro
+**Nadie espera al otro.** Si tu carril se queda sin trabajo real, para y deja nota aquí; NO te metas en el carril del otro. Si el crédito de uno se agota, el otro sigue con lo suyo.
+
+## Protocolo de reanudar (tras corte, reinicio, desconexión o recarga de crédito)
+1. `git pull --rebase origin main`.
+2. Lee esta hoja y la tabla **Estado** de `TAREAS_API.md`.
+3. Toma la primera tarea de TU carril que NO esté «hecha» ni marcada «EN CURSO» por otro aquí abajo.
+4. Márcala «EN CURSO · <equipo> · <hora>» en la sección de abajo y haz un commit rápido solo de esta hoja.
+5. Trabaja, prueba, haz commit de tu trabajo y súbelo (a `main` o a tu rama `api-*`, que se une sola).
+6. Marca la tarea «HECHA · commit» aquí y en la tabla Estado.
+Así un corte nunca duplica ni pierde trabajo: el que vuelva toma lo siguiente libre.
+
+## Publicación
+La hace la Mac con `tools/build/publicar_mac.sh` (GPU real) o Kelvin; publica `sitio/` cuando las 13 baterías están verdes en `main`. El publicador NO usa crédito de API (es build + git), así que debe seguir aunque la API se quede sin crédito.
+
+## Estado vivo (lo actualizan los equipos)
+- 30-oct: backlog BM49–BM75 HECHO y en `main`. Falta PUBLICAR (la web sigue en 09b62ed).
+- Mac: cuando haya crédito, retoma el protocolo; si la cola está vacía, abre lote nuevo de `VISUAL_*` solo si hay problema real.
+- Web: cuando haya cuota (se reinicia cada 5 h), retoma ronda 2 (BM70–75) o abre lo que quede real; si todo está hecho, para y deja nota aquí.
