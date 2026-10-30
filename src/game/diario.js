@@ -78,7 +78,7 @@ AVE.module('diario', function (G) {
   // Estilo propio de la sección (ui.css es de otro módulo): resumen plegable con la huella y una flecha que gira al abrir
   if (!document.getElementById('diario-especies-css')) {
     const st = document.createElement('style'); st.id = 'diario-especies-css';
-    st.textContent = '#card details.especies > summary.lbl { cursor: pointer; list-style: none; }'
+    st.textContent = '#card details.especies > summary.lbl { cursor: pointer; list-style: none; min-height: var(--tap-sm, 44px); box-sizing: border-box; flex-wrap: wrap; align-content: center; overflow-wrap: anywhere; }'
       + '#card details.especies > summary.lbl::-webkit-details-marker { display: none; }'
       + '#card:has(.diary) details.especies > summary.lbl::before { -webkit-mask-image: var(--i-paw); mask-image: var(--i-paw); }'
       + '#card details.especies > summary.lbl::after { content: ""; margin-left: auto; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }'

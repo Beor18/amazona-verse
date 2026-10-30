@@ -180,7 +180,7 @@ AVE.module('streaming', function (G) {
       sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
         '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
         '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-        '  vec3 piedra = mix( vec3( 0.46, 0.40, 0.31 ), vec3( 0.84, 0.78, 0.65 ), t );\n' +
+        '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
         '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
         '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, ' + fuerza.toFixed(2) + ' ); }');
     };
@@ -241,7 +241,7 @@ AVE.module('streaming', function (G) {
           '  float fuerza = ( abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
           '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
           '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-          '  vec3 piedra = mix( vec3( 0.42, 0.34, 0.24 ), vec3( 0.80, 0.71, 0.55 ), t );\n' +
+          '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
           '}\n')
@@ -252,7 +252,7 @@ AVE.module('streaming', function (G) {
           '\nif (avCrema > 0.5) {\n' +
           '  float ny = inverseTransformDirection( normal, viewMatrix ).y;\n' +
           '  float u = clamp( ( ny + 0.15 ) / 1.05, 0.0, 1.0 );\n' +
-          '  diffuseColor.rgb *= mix( 0.62, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
+          '  diffuseColor.rgb *= mix( 0.72, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
           '}\n');
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
@@ -418,8 +418,8 @@ AVE.module('streaming', function (G) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
-      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.55, k = 1.14;
-      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k), Math.min(1, (y + (b - y) * s * 1.1) * k));
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.32, k = 1.38;
+      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k * 0.97), Math.min(1, (y + (b - y) * s * 1.15) * k));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
   }

@@ -101,6 +101,7 @@ AVE.module('audio', function (G) {
     jump: t => tone(330, t, 0.12, { type: 'square', to: 540, gain: 0.05 }),
     land: t => noise(t, 0.14, { type: 'lowpass', freq: 520, gain: 0.25 }),
     unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },
+    martillo: (t, v) => { const k = 1 + 0.06 * ((v || 0) % 3); tone(210 * k, t, 0.09, { type: 'square', to: 130 * k, gain: 0.07 }); noise(t, 0.07, { type: 'bandpass', freq: 1500, q: 1.2, gain: 0.2 }); }, // BM34: golpe de martillo en madera
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
     descubrir: t => { [0, 4, 7, 12].forEach((n, k) => tone(392 * Math.pow(2, n / 12), t + k * 0.05, 0.9 - k * 0.1, { type: 'sine', gain: 0.1 })); noise(t + 0.1, 0.8, { freq: 7000, q: 0.6, gain: 0.04 }); }, // acorde corto al descubrir un lugar (fx.js)
@@ -117,6 +118,13 @@ AVE.module('audio', function (G) {
     reducido: null, // null: lo decide el sistema (G.renderer.REDUCED); true o false lo fuerza (pruebas o ajuste del menú)
     esSuave: name => FUERTES.has(name) && (api.reducido != null ? !!api.reducido : !!(G.renderer && G.renderer.REDUCED)),
     save() { try { localStorage.setItem(STORE, JSON.stringify(vol)); } catch (e) { /* sin almacenamiento */ } },
+    // BM34: martilleo al construir (n golpes cada 0,3 s). Con «Reducir movimiento» solo uno; con G.quiet no suena nada. Devuelve cuántos golpes programó.
+    martillar(n) {
+      if (G.quiet) return 0;
+      n = (G.renderer && G.renderer.REDUCED) ? 1 : Math.max(1, n || 4);
+      for (let i = 0; i < n; i++) setTimeout(() => { if (!G.quiet) api.play('martillo', i); }, i * 300);
+      return n;
+    },
     // Devuelve true si sonó; el registro sirve para probar sin altavoces
     play(name, arg) {
       if (!SOUNDS[name]) return false;

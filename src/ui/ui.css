@@ -425,7 +425,7 @@ kbd {
 .ico.cultura::before { background: var(--c-primary-ink); -webkit-mask-image: var(--i-sun); mask-image: var(--i-sun); }
 #card:has(.diary) .lbl { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-3); font: 700 var(--fs-lg)/1.2 var(--font-display); text-transform: none; letter-spacing: 0; color: var(--c-ink); }
 #card:has(.diary) .lbl::before { content: ""; width: 24px; height: 24px; background: var(--c-primary); -webkit-mask: var(--i-shirt) center / contain no-repeat; mask: var(--i-shirt) center / contain no-repeat; }
-.ropa { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-2); }
+.ropa { grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: var(--sp-2); }
 .ropa li { padding: var(--sp-2) var(--sp-3); font-weight: 700; color: var(--c-ink-muted); background: rgba(255, 255, 255, 0.55); border: 2px solid rgba(107, 82, 54, 0.2); border-radius: var(--r-sm); }
 .ropa li small { font-weight: 400; color: var(--c-ink-muted); }
 .ropa li.found { color: #17552c; background: #e3f6e6; border-color: #9fd8aa; }

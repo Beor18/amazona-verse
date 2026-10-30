@@ -11,6 +11,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Mira": "Mira", "Roca": "Roca", "Marea": "Marea", "Nudo": "Nudo", "Eco": "Eco", "Brote": "Brote",
  "Vocera de la isla alta": "Spokeswoman of the high island",
  "Vocero de la isla baja": "Spokesman of the low island",
+ "Isla alta": "High island",
+ "Isla baja": "Low island",
  "El pacto de los 36": "The Pact of the 36",
  "EL PACTO DE LOS 36": "THE PACT OF THE 36",
  "Mi capítulo 6": "My chapter 6",

@@ -125,8 +125,9 @@ window.AVMovimientoTest = function (G) {
       const cortos = [];
       for (let k = 0; k < 3; k++) {
         reset(L.x, L.z); Object.assign(M, { jumping: false, land: 0, buffer: 0 }); M.airJumps = 0;
+        const yk = S.pos.y; // el suelo puede haberse asentado desde el salto largo: cada salto mide desde su propio punto
         r = frame(i => { if (i === 0) { I.jumpHeld = true; F.tryJump(); } if (i === 4) { I.jumpHeld = false; F.releaseJump(); } }, 60);
-        cortos.push(Math.max(...r.map(o => o.y)) - y0);
+        cortos.push(Math.max(...r.map(o => o.y)) - yk);
       }
       met.saltoCortoM = r2(mediana(cortos));
       check('Un toque corto da un salto más bajo (control fino)', met.saltoCortoM < apex * 0.75, met.saltoCortoM + ' m');
@@ -624,7 +625,12 @@ window.AVMovimientoTest = function (G) {
         const J = G.fx.juicy, j0 = Object.assign({}, J), CJ = G.camara.juice;
         let tx = L.x, tz = L.z; // un sitio de tierra pelada (sin techo ni tejado debajo)
         for (let k = 0; k < 40 && Math.abs(F.suelo(tx, tz, H(tx, tz) + 6) - H(tx, tz)) > 0.05; k++) { tx = L.x + 6 * (k + 1) * (k % 2 ? 1 : -1); tz = L.z + 3 * k; }
-        reset(tx, tz, H(tx, tz) + 6); M.grounded = false; M.wasAir = true; frame(null, 90); // caída al suelo: polvo
+        // si cae sobre una cornisa o un tejado sin medir (posado, sin polvo) se prueba otro sitio de tierra
+        for (let k = 0; k < 6; k++) {
+          reset(tx, tz, H(tx, tz) + 6); M.grounded = false; M.wasAir = true; frame(null, 90); // caída al suelo: polvo
+          if (J.polvo > j0.polvo) break;
+          tx += 7; tz += 4;
+        }
         const dPolvo = J.polvo - j0.polvo;
         if (hondo) { reset(hondo.x, hondo.z, hondo.w + 3); M.flying = true; M.grounded = false; frame(() => { if (M.flying) K.add('c'); else K.delete('c'); }, 150); K.clear(); }
         const dSalp = J.salpicadura - j0.salpicadura;
