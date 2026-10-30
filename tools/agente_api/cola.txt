@@ -1,4 +1,4 @@
-# Cola de la API en la Mac. 30-oct tarde: BM49 (torre, frena publicar) y BM50 (capturas) en curso; luego backlog gráfico continuo BM56-BM63 (trabaja las listas de VISUAL_*; detalle en TAREAS_API.md). BM51/BM52 ya hechas. BM53/54/55 son del agente web, NO van aquí.
+# Cola de la API en la Mac. 30-oct tarde (Kelvin fuera hasta 22:00). Cola profunda para que no paren sin que la coordinadora tenga que rellenar. BM49 torre (frena publicar), BM50 capturas; BM56-69 backlog gráfico (listas VISUAL_*, ciudad tepuy, rendimiento, árboles/terreno, sonido ep2-6, capturas). BM51/52 hechas. BM53/54/55 son del agente web, NO van aquí.
 BM49
 BM50
 BM56
@@ -9,3 +9,9 @@ BM60
 BM61
 BM62
 BM63
+BM64
+BM65
+BM66
+BM67
+BM68
+BM69

@@ -641,6 +641,12 @@ Reglas de estas tareas: trabaja el backlog ya documentado, no inventes problemas
 - **BM61, rendimiento en los 6 capítulos.** Mide FPS con GPU real en Villa Raíz, `ciudad_tepuy` y la apertura de ep2–ep6 (escritorio «alto» y móvil emulado). Arregla el peor cuello que sea de código sin tocar el arte; metas y antes/después en `docs/equipo/QA_GPU.md`. Extiende QA-53 (tirón de «Empezar») si reaparece en otro capítulo.
 - **BM62, árboles y terreno, lo que quedó parcial (resto de BM31 y BM29).** Que el cambio malla→impostor sea ≥120 m con fundido (LOD intermedio) y sin bordes serrados en hojas; sin costura de terreno a 30 y 80 m. Mide FPS y haz capturas; anota en `QA_GPU.md`.
 - **BM63, recorrido de capturas FINAL para que Kelvin apruebe (tras BM49, BM51, BM56-BM62).** Como BM50 pero con todo lo arreglado hoy: los 6 sitios, 5 alturas, 3 rumbos, sin cambiar código. Actualiza `docs/equipo/VISUAL_30OCT.md` con una línea por sitio: qué se arregló respecto a las capturas de Kelvin del 29-oct y qué sigue flojo. Es lo que Kelvin revisa al volver.
+- **BM64, backlog visual lote 5.** Siguiente lote de 2-3 problemas abiertos de los docs VISUAL_* (mismas reglas que BM56).
+- **BM65, backlog visual lote 6.** Los siguientes 2-3.
+- **BM66, sonido y ambiente de ep2–ep6 (como BM34 hizo con el cap. 1).** En `src/engine/audio.js` y `src/game/musica.js`, sintético: ambiente por zona de cada capítulo, con fundido al cambiar, respetando «Reducir movimiento» y el volumen del menú; nada suena con `G.quiet`. No toques el render. Caso por capítulo en la batería de música; en verde.
+- **BM67, barrido de las capturas que faltaron (parciales de BM20, BM23, BM27, BM28, BM29, BM31, BM32).** Con GPU real y sin cambiar código salvo que una captura revele algo roto: genera las capturas antes/después que esas filas dejaron pendientes, verifica que el arreglo se sostiene y anótalo en `docs/equipo/VISUAL_30OCT.md`. Si algo volvió a romperse, arréglalo con prueba.
+- **BM68, backlog visual lote 7.** Los siguientes 2-3 problemas abiertos.
+- **BM69, backlog visual lote 8.** Los siguientes 2-3. Si ya no quedan problemas reales en los docs, no inventes: marca en el resultado «backlog visual agotado» y para.
 
 ## Estado
 | Tarea | Estado | Commit | Resultado |
