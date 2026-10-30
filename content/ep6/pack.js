@@ -9,7 +9,8 @@
      [KELVIN-1] Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
                 Marea · arausiaca, Nudo · ventralis, Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
-     [KELVIN-2] El pacto no tiene objeto: es una promesa que se dice entre todos al final (frase provisional de EP6_NARRATIVA.md).
+     [KELVIN-2] D33 (DECIDIDO-EQUIPO 30-oct): el pacto es un objeto, el emblema de los 36 completo, con la promesa grabada
+                («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
                 D3/D4 (DECIDIDO-EQUIPO 30-oct): se llaman Alba y Violeta, y al final Violeta insinúa por qué hablan «desde ahora»
                 (una frase sin explicar; la explicación sigue guardada).
@@ -652,7 +653,7 @@
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
         if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola.')]); return; }
-        encuadrar(PLAZA.x, PLAZA.z); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
           Gu('El pacto antiguo decía… Lo recuerdo a pedazos. Mejor así: ahora lo recordamos entre todos.'),
@@ -660,6 +661,8 @@
           di('Eco', '¿Y quién manda?'),
           Vi('Nadie lo hace todo. Yo ayudo a que nos encontremos.'),
           Lu(`Veintidós asientos encendidos. ${36 - sentados()} esperan: no están apagados.`),
+          Gu('Cada isla guardó su pieza. Hoy el emblema de los 36 está completo.'),
+          Vi('Tiene algo grabado alrededor…'),
           Gu('Entonces, entre todos: nos conocemos, nos ayudamos y nos seguimos buscando.'),
         ], terminar);
       }
@@ -831,6 +834,7 @@
           check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 11 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);
+          check('M3 · D33: el pacto es un objeto, el emblema de los 36 completo', S.collected.includes('emblema'));
           check('El cómic sale de los eventos (con la viñeta del atasco, que sí pasó)', G.comic.comicPanels().length === 6, G.comic.comicPanels().length);
 
           // ---------- §5 «Iguaca te pregunta» · §6 Modo Maestro · §7 Diario y criadero ----------
