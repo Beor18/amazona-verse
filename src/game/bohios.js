@@ -179,6 +179,12 @@ window.AVBohios = function (G) {
     };
   }
 
+  // QA-79: con la máquina cargada la búsqueda de puertas (solidos.cerrarVanos, por tramos) aún no acabó cuando la prueba mide
+  async function esperarVanos(ms) {
+    const t0 = performance.now(), listo = () => { const R = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO); return !!(R && R.listo); };
+    while (!listo() && performance.now() - t0 < (ms || 60000)) { if (G.solidos && G.solidos.terminar) G.solidos.terminar(true); await new Promise(r => setTimeout(r, 100)); }
+    return listo();
+  }
   async function test() {
     const out = [];
     const ok = (n, c, d) => out.push({ name: n, ok: !!c, extra: d == null ? '' : String(d) });
@@ -201,6 +207,7 @@ window.AVBohios = function (G) {
       ok('Vittata no se achica', !ch || escV > ALTURA - 0.05, escV.toFixed(2));
       ok('Hay hamaca, tinaja y fogón', !!(G.interaccion.find('bohio-hamaca') && G.interaccion.find('bohio-tinaja') && G.interaccion.find('bohio-fogon')));
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+      await esperarVanos();
       const p = puerta(I);
       const infoV = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO);
       ok('La puerta del bohío más alto supera 1,75 m y a ×1,5 no llegaba', !!(p && p.alto >= ALTURA && p.alto * 1.5 / f < ALTURA), p ? p.alto.toFixed(2) + ' m · ancho ' + p.ancho.toFixed(2) : (infoV && infoV.motivo));
@@ -244,6 +251,7 @@ window.AVBohios = function (G) {
       const montOtras = await montarOtras();
       ok('BM13: las 3 casas se montan con sus muebles', montOtras.length === 3 && montOtras.every(J => montadas[J.id] && G.interaccion.find('bohio-hamaca@' + J.zona) && G.interaccion.find('bohio-tinaja@' + J.zona) && G.interaccion.find('bohio-fogon@' + J.zona)), montOtras.length);
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
+      await esperarVanos();
       const uniforme = B => { const e = B.m && B.m.elements; return !e || (Math.abs(Math.hypot(e[0], e[1], e[2]) / Math.hypot(e[4], e[5], e[6]) - 1) < 0.05 && Math.abs(e[5]) > 0.98 * Math.hypot(e[4], e[5], e[6])); }; // las matrices con escala desigual o inclinadas no sirven para medir la puerta
       for (const J of montOtras) {
         const q = puerta(J), nom = J.zona.replace('kelvin_aldea_', '');
