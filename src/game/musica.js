@@ -33,7 +33,7 @@
    La hora sale de S.hora (0 a 24) si algún día el mundo tiene ciclo de día y noche (de día de 6:30 a 17:30, de noche de 19:00 a 5:00,
    con un atardecer y un amanecer suaves); mientras el cielo sea siempre de día, el ambiente es de día.
    Las ranas callan 9 s si suena el Simon de los coquíes (sonidos co, qui y chorus) para no confundir el juego. La música baja mientras habla la voz
-   del Aula (gancho 'voz').
+   del Aula (gancho 'voz') y, a 0,6, mientras haya un diálogo abierto (G.dialogo.activo()).
 
    CPU: tres modos según G.renderer.calidad y el equipo. completo (escritorio): 28 voces y eco; ligero (pantalla táctil o 4 núcleos o menos): 8 voces,
    rasgueos de 2 notas, sin eco, sin vibrato; simple (calidad «bajo»): sin música, solo ambiente con 3 capas y sin paneo. Volver de «simple» tarda 15 s
@@ -734,9 +734,12 @@
     }
 
     // ---------- Volumen ----------
+    const DIALOGO_DUCK = 0.6;
     const MBASE = 1.8, ABASE = 1.4; // con las pistas normalizadas a ~0,05 de nivel medio, el valor de fábrica (55 %) queda ~-33 dBFS
     // La voz del Aula tapa menos; mientras un huevo eclosiona, la música se aparta (el efecto de la eclosión va por el bus de efectos)
-    const duck = () => Math.min(hablaHasta > performance.now() ? 0.45 : 1, eclosionAhora ? BANDA_SONORA.eclosion : 1);
+    // Diálogo (caja o bocadillo de G.dialogo): la música baja a 0,6 para que se lea tranquilo; vuelve suave al cerrarlo
+    const enDialogo = () => { try { return !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()); } catch (e) { return false; } };
+    const duck = () => Math.min(hablaHasta > performance.now() ? 0.45 : 1, eclosionAhora ? BANDA_SONORA.eclosion : 1, enDialogo() ? DIALOGO_DUCK : 1);
     let gM = -1, gA = -1;
     function aplicarVolumen() { // solo escribe en el bus si el valor cambió: menos eventos de automatización
       if (!eng) return;
@@ -1152,6 +1155,10 @@
         ranasHasta = ranas0;
         G.emit('voz', { charIndex: 3 }); const baja = duck(); G.emit('voz', { fin: true, texto: '' });
         check('La música baja mientras habla la voz del Aula y vuelve al terminar', baja < 1 && duck() === 1);
+        const dlg0 = G.dialogo; G.dialogo = { activo: () => true }; const bajaDlg = duck(); G.dialogo = dlg0;
+        check('La música baja durante un diálogo y vuelve al cerrarlo', bajaDlg === DIALOGO_DUCK && duck() === 1, bajaDlg);
+        if (A.esSuave) { const r0 = A.reducido; A.reducido = true; const suaves = ['trueno', 'crecida', 'construir'].every(A.esSuave) && !A.esSuave('pickup'); A.reducido = false; const normal = !A.esSuave('trueno'); A.reducido = r0;
+          check('Con «Reducir movimiento» trueno, crecida y martillazos suenan a la mitad; sin él, normal', suaves && normal); }
         const ecl0 = eclosionAhora; eclosionAhora = true; const bajaHuevo = duck(); eclosionAhora = ecl0;
         check('Mientras un huevo eclosiona la música baja (el efecto de la eclosión no: va por el bus de efectos)', bajaHuevo === BANDA_SONORA.eclosion && bajaHuevo < 0.5 && duck() === 1, bajaHuevo);
         check('Ningún fallo interno y ningún error de JavaScript de la página', fallos === 0 && (window.__aveErrores || []).length === errores0, ultimoFallo);
