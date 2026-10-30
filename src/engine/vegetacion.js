@@ -139,11 +139,12 @@ AVE.module('vegetacion', function (G) {
   const DITHER = 'float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }\n';
   const FADE_FRAG = `
     if ( uFade.y > 0.0 ) { float fd = smoothstep( uFade.x, uFade.y, vFadeD ); if ( fd > 0.0 && ign( gl_FragCoord.xy ) < fd ) discard; }
+    { float dc = distance( vWPos, uOcluA.xyz ); if ( dc < 1.8 && ign( gl_FragCoord.xy + 5.0 ) < 1.0 - smoothstep( 0.4, 1.8, dc ) ) discard; } // BM43: copa pegada a la cámara
     if ( uOcluA.w > 0.0 ) {
       vec3 ab = uOcluB.xyz - uOcluA.xyz; float t = dot( vWPos - uOcluA.xyz, ab ) / max( dot( ab, ab ), 1e-4 );
       if ( t > 0.0 && t < 1.0 ) {
         float r = uOcluB.w * mix( 0.25, 1.0, t ), dl = distance( vWPos, uOcluA.xyz + ab * t );
-        float k = ( 1.0 - smoothstep( r * 0.6, r, dl ) ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w;
+        float k = pow( 1.0 - smoothstep( 0.0, r, dl ), 1.5 ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w; // BM43: borde más ancho, el círculo punteado no se marca
         if ( k > 0.0 && ign( gl_FragCoord.xy + 17.0 ) < k ) discard;
       }
     }
@@ -168,7 +169,7 @@ AVE.module('vegetacion', function (G) {
         .replace('#include <fog_vertex>', '#include <fog_vertex>\n  vPunta = aViento.g;'); // peso del viento: 0 en la base, 1 en la punta
       sh.fragmentShader = 'uniform vec2 uFade; uniform vec3 uSolCol;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
-        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.22, 1.0, vAO ) * mix( vec3( 0.86, 0.9, 0.84 ), vec3( 1.1, 1.12, 0.92 ), vPunta );')
+        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.38, 1.0, vAO ) * mix( vec3( 0.86, 0.9, 0.84 ), vec3( 1.1, 1.12, 0.92 ), vPunta );')
         .replace(/\( gl_FrontFacing \) \? vIndirectFront : vIndirectBack/g, 'vIndirectFront')
         .replace(/\( gl_FrontFacing \) \? vLightFront : vLightBack/g, 'vLightFront')
         .replace('#include <envmap_fragment>', '#include <envmap_fragment>\n  outgoingLight += mix( diffuseColor.rgb, vec3( 0.42, 0.62, 0.16 ), 0.45 ) * uSolCol * vTrans * vAO * mix( 0.4, 0.62, vPunta );');
@@ -186,7 +187,7 @@ AVE.module('vegetacion', function (G) {
       injectWind(sh, own);
       sh.fragmentShader = 'uniform vec2 uFade;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
-        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.3, 1.0, vAO );');
+        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.42, 1.0, vAO );');
     };
     m.customProgramCacheKey = () => roca ? 'roca' : 'corteza';
     return m;

@@ -187,6 +187,7 @@ AVE.module('renderer', function (G) {
       vertexShader: 'varying vec3 vDir;\nvoid main() { vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
       fragmentShader: [
         'uniform vec3 uCenit, uHorizonte, uSolCol, uSolDir; varying vec3 vDir;',
+        'float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }',
         'void main() {',
         '  vec3 d = normalize(vDir);',
         '  float h = d.y;',
@@ -206,6 +207,8 @@ AVE.module('renderer', function (G) {
         '  gl_FragColor = vec4(c, 1.0);',
         '  #include <tonemapping_fragment>',
         '  #include <encodings_fragment>',
+        // BM42: dither triangular de ±1/255 contra las franjas del degradado
+        '  gl_FragColor.rgb += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;',
         '}',
       ].join('\n'),
     }));
@@ -245,6 +248,7 @@ AVE.module('renderer', function (G) {
           gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
         }`,
       fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
+        float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
         void main() {
           vec2 uv = vUv + vec2(0.012 * sin(uTime * 0.33 + vUv.y * 7.0 + vFase), 0.01 * cos(uTime * 0.27 + vUv.x * 5.0 + vFase));
           vec4 t = texture2D(tNube, uv);
@@ -253,6 +257,7 @@ AVE.module('renderer', function (G) {
           gl_FragColor = vec4(c, t.a * mix(0.9, 0.62, vCapa));
           #include <tonemapping_fragment>
           #include <encodings_fragment>
+          gl_FragColor.rgb += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;
         }`,
     }));
     nubes.name = 'cielo-nubes'; nubes.frustumCulled = false; nubes.renderOrder = -90;
@@ -424,6 +429,7 @@ AVE.module('renderer', function (G) {
           vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
           fragmentShader: [
             'uniform sampler2D tDiffuse, tRayos; uniform float uSat, uCon, uVig, uRayos; uniform vec3 uTint; varying vec2 vUv;', MASCARA_GLSL,
+            'float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }',
             'void main() {',
             '  vec3 lin = max(texture2D(tDiffuse, vUv).rgb, 0.0);',
             '  vec3 rayo = texture2D(tRayos, vUv).rgb - lin * mascaraCielo(lin);',
@@ -434,6 +440,7 @@ AVE.module('renderer', function (G) {
             '  c = (c - 0.5) * uCon + 0.5;',
             '  c *= uTint;',
             '  vec2 q = vUv - 0.5; c *= 1.0 - uVig * smoothstep(0.25, 0.85, dot(q, q) * 2.2);',
+            '  c += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;', // BM42: sin franjas en cielo y nubes
             '  gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);',
             '}',
           ].join('\n'),

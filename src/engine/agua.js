@@ -65,7 +65,7 @@ AVE.module('agua', function (G) {
 
   // ---------- Altura del terreno como textura (profundidad del agua en el shader) ----------
   // WebGL2: media precisión en metros (R16F, filtrable). WebGL1: 8 bits normalizados (0,5 m de paso).
-  let hTex = null; const hInfo = new THREE.Vector4(0, 0, 1, 1), hDec = new THREE.Vector2(1, 0);
+  let hTex = null; const hInfo = new THREE.Vector4(0, 0, 1, 1), hDec = new THREE.Vector2(1, 0), hN = new THREE.Vector2(265, 265);
   if (MAPA && T.hmHeight) {
     const A = window.AV_MAPA_CAP1_ALTURA || null;
     const nx = A ? A.nx : 265, nz = A ? A.nz : 265, x0 = A ? A.x0 : MAPA.tamano.x0, z0 = A ? A.z0 : MAPA.tamano.z0, paso = A ? A.paso : 2;
@@ -86,12 +86,13 @@ AVE.module('agua', function (G) {
     hTex.magFilter = hTex.minFilter = THREE.LinearFilter; hTex.wrapS = hTex.wrapT = THREE.ClampToEdgeWrapping; hTex.needsUpdate = true;
     // uv = (xz - origen) / tamaño, con medio texel de margen
     hInfo.set(x0 - paso / 2, z0 - paso / 2, nx * paso, nz * paso);
+    hN.set(nx, nz);
   }
 
   // ---------- Uniformes compartidos ----------
   const sunCol = R.sun.color.clone().multiplyScalar(R.sun.intensity);
   const U = {
-    uTime: { value: 0 }, tNormal: { value: tNormal }, tAltura: { value: hTex }, uHInfo: { value: hInfo }, uHDec: { value: hDec },
+    uTime: { value: 0 }, tNormal: { value: tNormal }, tAltura: { value: hTex }, uHInfo: { value: hInfo }, uHDec: { value: hDec }, uHN: { value: hN },
     uSolDir: { value: R.sunDir }, uSolCol: { value: sunCol },
     uCielo: { value: lin((W.cielo && W.cielo.cenit) || '#3d8fd6') }, uHorizonte: { value: lin((W.cielo && W.cielo.color) || '#bfe1d6') },
     uHemiSuelo: { value: R.hemi.groundColor.clone() }, uHemiCielo: { value: R.hemi.color.clone().multiplyScalar(R.hemi.intensity) },
@@ -100,13 +101,19 @@ AVE.module('agua', function (G) {
     uBio: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, // BM21: x, z, intensidad (0 apagado) de 4 toques de la caleta
   };
   const COMMON_FRAG = `
-    uniform float uTime, uTormenta; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec;
+    uniform float uTime, uTormenta; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec, uHN;
     uniform vec3 uSolDir, uSolCol, uCielo, uHorizonte, uHemiSuelo, uHemiCielo; uniform float uEstilo;
     float alturaTerreno(vec2 xz) {
       #ifdef HAY_ALTURA
         vec2 uv = (xz - uHInfo.xy) / uHInfo.zw;
         if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -30.0;
-        return texture2D(tAltura, uv).r * uHDec.x + uHDec.y;
+        // BM41: la bilineal de una malla de 2 m deja la profundidad en facetas (rombos y bloques de azul y espuma dentada).
+        // Se interpola a mano con peso suavizado (continuo en la derivada) sobre los centros de texel.
+        vec2 tp = uv * uHN - 0.5, tf = fract(tp), ti = (floor(tp) + 0.5) / uHN, d1 = 1.0 / uHN;
+        tf = tf * tf * tf * (tf * (tf * 6.0 - 15.0) + 10.0);
+        float h00 = texture2D(tAltura, ti).r, h10 = texture2D(tAltura, ti + vec2(d1.x, 0.0)).r;
+        float h01 = texture2D(tAltura, ti + vec2(0.0, d1.y)).r, h11 = texture2D(tAltura, ti + d1).r;
+        return mix(mix(h00, h10, tf.x), mix(h01, h11, tf.x), tf.y) * uHDec.x + uHDec.y;
       #else
         return -30.0;
       #endif
@@ -294,10 +301,13 @@ AVE.module('agua', function (G) {
       float esp = (1.0 - smoothstep(mix(0.05, ori - 0.04, uEstilo), mix(0.45 + nz * 0.25, ori, uEstilo), prof)) * 0.8 * (1.0 - cae); // orillas (no en la lámina que cae)
       esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4) * (1.0 - cae * 0.7));
       // cascada: vetas finas y largas que caen (u = ancho de la cinta), sobre agua translúcida
-      float s1 = vnoise(vec2(vUv.x * 5.5, vW.y * 0.18 + uTime * 2.6));
-      float s2 = vnoise(vec2(vUv.x * 13.0 + 3.1, vW.y * 0.42 + uTime * 4.4));
-      float vetas = s1 * 0.6 + s2 * 0.4;
-      esp = max(esp, cae * smoothstep(0.44, 0.74, vetas));
+      // BM41: vetas sin celdas rectangulares: la coordenada se curva con un ruido lento y hay una tercera capa fina; umbral más suave
+      float cu = vUv.x + (vnoise(vec2(vUv.x * 2.3, vW.y * 0.11 + uTime * 0.5)) - 0.5) * 0.35;
+      float s1 = vnoise(vec2(cu * 9.0, vW.y * 0.26 + uTime * 2.6));
+      float s2 = vnoise(vec2(cu * 21.0 + 3.1, vW.y * 0.5 + uTime * 4.4));
+      float s3 = vnoise(vec2(cu * 41.0 + 7.7, vW.y * 0.9 + uTime * 6.1));
+      float vetas = s1 * 0.5 + s2 * 0.32 + s3 * 0.18;
+      esp = max(esp, cae * smoothstep(0.42, 0.78, vetas));
       for (int i = 0; i < 8; i++) {
         vec4 p = uPies[i];
         if (p.w <= 0.0) continue;

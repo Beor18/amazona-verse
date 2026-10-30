@@ -307,6 +307,9 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
 
 ASENTADAS = ('savage_wall_pikessm', 'savage_wall_pikessm_v2', 'savage_entrance_spiked')   # empalizada: nunca apilada en el aire, siempre en el suelo (BM8)
 DECORATIVOS = ('canoa', 'empalizada', 'muelle_troncos')
+# BM39: piezas que quedaban flotando (apiladas sin apoyo) o pegadas al risco: (modelo, x, z) -> y fija (suelo de la rejilla de 2 m)
+BAJAR_BM39 = {('ruina_mirador', -81.7, -136.8): 86.3, ('ruina_pilar', -82.3, -140.6): 85.2, ('templo_grande_a', -74.5, -130.1): 95.6,
+              ('templo_mediano', -61.0, -137.1): 96.3, ('complejo_ruinas', -18.5, 177.2): 35.7, ('ruina_torre_b', 43.7, -103.0): 51.7}
 
 def compacto(Z):
     """Forma compacta para streaming.js: una entrada por modelo y zona. inst = [x, y, z, rotY, escala] si es giro en Y con
@@ -325,6 +328,9 @@ def compacto(Z):
                 it = [round(float(Mw[0, 3]), 3), round(float(Mw[1, 3]), 3), round(float(Mw[2, 3]), 3), round(math.atan2(R[0, 2], R[0, 0]), 4), round(s_, 4)]
             else:
                 it = e['matriz']
+            for (bm, bx, bz), by in BAJAR_BM39.items():
+                if e['modelo'] == bm and abs(Mw[0, 3] - bx) < 0.06 and abs(Mw[2, 3] - bz) < 0.06:
+                    it = list(it); it[13 if len(it) == 16 else 1] = by
             per.setdefault(e['modelo'], []).append(it)
         for m, lst in per.items():
             ent = {'grupo': z['id'], 'modelo': m, 'inst': lst, 'orientar': False, 'yExacta': True, 'escalaPack': False}

@@ -796,9 +796,25 @@ AVE.module('terreno', function (G) {
   const islas = ISL.lista || [];
   const O = W.oceano || {};
   const seaY = MAPA ? 0 : O.y != null ? O.y : -2.6;
-  const islandCones = islas.map(I => {
+  const loma = (I, k) => {
+    const geo = new THREE.SphereGeometry(I.r, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), h = y / I.r;
+      const f = 1 + 0.16 * Math.sin(a * 3 + k) + 0.09 * Math.sin(a * 7 + 2 * k + 1) + 0.05 * Math.sin(a * 13 + k * 3);
+      p.setXYZ(i, x * f, y * (0.85 + 0.3 * Math.sin(a * 5 + k)), z * f);
+      const u = clamp01(h * 3.5);
+      col.push(0.78 - 0.58 * u, 0.72 - 0.32 * u, 0.52 - 0.30 * u);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    const aro = new THREE.Mesh(new THREE.RingGeometry(I.r * 0.95, I.r * 1.3, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35, depthWrite: false }));
+    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.3; m.add(aro); // la loma se aplasta (scale.y 0.3): el aro queda ~0,5 m sobre el mar
+    return m;
+  };
+  const islandCones = islas.map((I, k) => {
     // BM23: con mapa, la isla de respaldo es una loma baja y redonda con el tono neblinoso del horizonte, no una pirámide verde saturada
-    const isl = MAPA ? new THREE.Mesh(new THREE.SphereGeometry(I.r, 24, 6, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#5d8a6c' }))
+    // BM42: con mapa, loma de borde irregular con color de vértice (arena en la orilla, verde hondo arriba) y aro de espuma; no un disco liso menta
+    const isl = MAPA ? loma(I, k)
       : new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
     if (MAPA) isl.scale.y = 0.3;
     isl.position.set(I.x, seaY + (MAPA ? -0.5 : I.r * 0.3), I.z); scene.add(isl);
