@@ -244,6 +244,46 @@ AVE.module('accesibilidad', function (G) {
     return malos;
   }
 
+
+  // BM37: maqueta de las pantallas grandes (creador, Diario y Retos) con sus hojas de estilo y un contenido de ejemplo del peor caso
+  async function maquetaPantallas(ancho, alto, clases) {
+    const f = document.createElement('iframe');
+    f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+    f.style.cssText = `position:fixed;left:-10000px;top:0;width:${ancho}px;height:${alto}px;border:0;`;
+    const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+    const estilos = [...document.querySelectorAll('head style')].map(e => e.outerHTML).join('');
+    const creator = $('creator') ? $('creator').outerHTML : '';
+    const retos = $('retos') ? $('retos').outerHTML : '';
+    const slot = (n, nombre) => `<div class="slot" data-slot="${n}"><div class="sname">${nombre}<small>Sombrero de ala ancha</small></div><div class="opts"><div class="thumbs"><button class="thumb" type="button" data-act="none" aria-pressed="true">Nada</button><button class="thumb" type="button" aria-label="Gorra"><span></span></button><button class="thumb" type="button" aria-label="Sombrero"><span></span></button></div><div class="styles"><button class="chip" type="button" aria-pressed="true">Clásico</button><button class="chip" type="button" aria-pressed="false">Con cinta</button></div><div class="swatches"><button class="swatch" type="button" aria-label="Color rojo"></button><button class="swatch" type="button" aria-label="Color azul"></button></div></div></div>`;
+    const cardHtml = '<h2>Diario de campo</h2><p class="note">3/12 · Fauna 2/6 · Plantas 1/6</p><ul class="diary"><li class="found"><span class="ico fauna" aria-hidden="true"></span><div><b>Coquí común</b><small>Canta «co-quí» al anochecer y vive en las hojas del bosque lluvioso de El Yunque.</small></div></li><li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>Algo por descubrir</small></div></li></ul><details class="especies"><summary class="lbl lbl-especies">Especies <small>12 especies</small></summary></details><span class="lbl">Ropa desbloqueable</span><ul class="ropa"><li>· Sombrero <small>(pista)</small></li></ul><div class="row"><button class="btn ghost" id="d-close" type="button">Cerrar</button></div>';
+    f.srcdoc = `<!doctype html><html lang="es" class="${clases}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${estilos}` +
+      '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head>' +
+      `<body>${creator}<div id="card" class="hud paper"></div>${retos}</body></html>`;
+    document.body.appendChild(f);
+    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+    const d = f.contentDocument;
+    try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
+    const q = id => d.getElementById(id);
+    // Cada pantalla se pone una detrás de otra en su propia caja visible (no se tapan: se miden por separado con la caja a pantalla completa)
+    if (q('creator')) { q('creator').hidden = false; if (q('p-slots')) q('p-slots').innerHTML = slot('head', 'Cabeza') + slot('eyes', 'Ojos'); if (q('p-error')) q('p-error').hidden = true; }
+    q('card').innerHTML = cardHtml; q('card').hidden = false;
+    const menu = d.querySelector('#retos .rt-menu'); if (menu) { q('retos').hidden = false; menu.hidden = false; }
+    return { f, d, w: f.contentWindow, q, cerrar: () => f.remove() };
+  }
+  // Contraste (WCAG) del texto de un elemento contra su fondo opaco más cercano
+  function contrasteDe(e) {
+    const w = e.ownerDocument.defaultView;
+    const rgba = s => { const m = /rgba?\(([^)]+)\)/.exec(s); if (!m) return [0, 0, 0, 0]; const p = m[1].split(/[ ,\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+    const lum = ([r, g, b]) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    let fondo = [255, 255, 255];
+    const capas = [];
+    for (let n = e; n; n = n.parentElement) { const c = rgba(w.getComputedStyle(n).backgroundColor); if (c[3] > 0) capas.push(c); if (c[3] >= 1) break; }
+    for (let k = capas.length - 1; k >= 0; k--) { const c = capas[k]; fondo = fondo.map((v, j) => c[j] * c[3] + v * (1 - c[3])); }
+    const t = rgba(w.getComputedStyle(e).color), txt = [0, 1, 2].map(j => t[j] * t[3] + fondo[j] * (1 - t[3]));
+    const a = lum(txt), b = lum(fondo);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }
+
   async function test() {
     const out = [];
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
@@ -382,6 +422,37 @@ AVE.module('accesibilidad', function (G) {
           m.cerrar();
         }
         check(`Móvil ${W}×${H}: en los 3 niveles nada desborda ni se tapa (HUD, aviso, objetivo, botones, subtítulos, diálogo, gestos, menú)`, !malosM.length, malosM.slice(0, 4).join('; ') || notas2.join(' · '));
+      }
+
+      // 1b. BM37: creador, Diario y Retos a 375×812 (y 320×568): botones de 44 px como mínimo, nada desborda en los 3 tamaños de texto y,
+      // con alto contraste, el texto se lee (≥ 7:1 sobre su fondo)
+      for (const [W, H] of [[375, 812], [320, 568]]) {
+        const malosP = [];
+        for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+          const m = await maquetaPantallas(W, H, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
+          try {
+            for (const [pid, raizSel] of [['creator', '#creator'], ['card', '#card'], ['retos', '#retos .rt-menu']]) {
+              const cajaP = m.d.querySelector(raizSel); if (!cajaP) { if (pid === 'retos') continue; malosP.push(`${pid} no está en la maqueta`); continue; }
+              const et = `${W}px nivel ${i}${contr ? ' contraste' : ''} ${pid}`;
+              for (const b of cajaP.querySelectorAll('button, select, input, summary, a[href]')) {
+                if (!visible(b) || b.closest('.rt-fin')) continue;
+                const r = b.getBoundingClientRect();
+                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosP.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+              }
+              if (cajaP.scrollWidth > cajaP.clientWidth + 1) malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth})`);
+              if (m.d.documentElement.scrollWidth > W + 1) malosP.push(`${et}: la página mide ${m.d.documentElement.scrollWidth} px`);
+              if (contr) {
+                let peor = 99, quien = '';
+                for (const e of cajaP.querySelectorAll('h2, h3, p, b, small, label, .lbl, .chip, .btn, li, summary, .sname, span')) {
+                  if (!visible(e) || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (e.className || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
+                }
+                if (peor < 7) malosP.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
+              }
+            }
+          } finally { m.cerrar(); }
+        }
+        check(`Creador, Diario y Retos a ${W}×${H}: botones ≥ 44 px, sin desbordes en los 3 tamaños de texto y alto contraste ≥ 7:1`, !malosP.length, [...new Set(malosP)].slice(0, 5).join('; '));
       }
 
       // 2. Modo zurdo: el joystick a la derecha y los botones de acción a la izquierda (teléfono vertical y horizontal)
