@@ -4,7 +4,7 @@
   'use strict';
 
   let renderer, scene, camera, clock, ch = null, raf = 0, canvasEl, holder;
-  let look = { x: 0, y: 0 }, spin = 0, yaw = 0, dragging = false, dragX = 0, idleTimer = 0, state = 'loading';
+  let look = { x: 0, y: 0 }, spin = 0, yaw = 0, fijo = null, dragging = false, dragX = 0, idleTimer = 0, state = 'loading';
   let pendingLook = null;
   const listeners = [];
   function on(el, ev, fn, opt) { el.addEventListener(ev, fn, opt); listeners.push([el, ev, fn, opt]); }
@@ -71,9 +71,11 @@
     const dt = Math.min(0.05, clock.getDelta());
     if (ch) {
       ch.update(dt);
-      if (!dragging) spin *= 0.9;
-      yaw += spin * dt;
-      yaw += (0 - yaw) * (dragging ? 0 : Math.min(1, dt * 0.8)); // vuelve a mirar al frente
+      if (fijo == null) {
+        if (!dragging) spin *= 0.9;
+        yaw += spin * dt;
+        yaw += (0 - yaw) * (dragging ? 0 : Math.min(1, dt * 0.8)); // vuelve a mirar al frente
+      } else { yaw = fijo; spin = 0; }
       holder.rotation.y = yaw;
       const head = ch.bones.head || ch.bones.Head || ch.bones.cabeza;
       if (head) head.rotation.y += look.x * 0.45 - 0, head.rotation.x += look.y * 0.25;
@@ -136,5 +138,6 @@
     renderer = scene = camera = null; ch = null; state = 'loading';
   }
 
-  window.AVShowcase = { mount, unmount, setLook, status: () => state, character: () => ch };
+  function fijar(y) { fijo = y == null ? null : +y; }
+  window.AVShowcase = { mount, unmount, setLook, fijar, status: () => state, character: () => ch };
 })();
