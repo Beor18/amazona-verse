@@ -272,13 +272,14 @@ AVE.module('accesibilidad', function (G) {
   }
   // BM53: maqueta de las demás pantallas (pausa, final del capítulo, cómic, criadero, Aula, mapa grande, menú de modos y minijuegos) con una
   // copia de su DOM real y de todas las hojas de estilo; cada una se muestra entera (todo lo oculto a la vista) para medir el peor caso
-  const PANTALLAS = ['pause', 'end', 'comic', 'criadero', 'maestro', 'mapa-grande', 'modos', 'flight', 'maze', 'riverrush'];
+  const PANTALLAS = ['title', 'records', 'pause', 'end', 'comic', 'criadero', 'maestro', 'mapa-grande', 'modos', 'flight', 'maze', 'riverrush'];
   // Los módulos que montan su pantalla al abrirla (mapa grande, Aula, criadero, minijuegos) se abren y se cierran una vez para tener su DOM
   const copias = new Map(), sinPantalla = [];
   async function prepararOtras() {
     const AVg = window.AV || {}, cargaMini = () => (G.minimapa ? Promise.resolve(G.minimapa) : AVE.assets.script('src/game/minimapa.js').then(() => window.AVMinimapa(G)));
     const abre = {
       'mapa-grande': [async () => { const m = await cargaMini(); await espera(300); return m.abrir(); }, () => G.minimapa && G.minimapa.cerrar()],
+      records: [() => G.recordsApi && G.recordsApi.abrir({}), () => G.recordsApi && G.recordsApi.cerrar()],
       criadero: [() => G.criadero && G.criadero.abrir(), () => G.criadero && G.criadero.cerrar()],
       maestro: [() => G.aula && G.aula.abrirMaestro(), () => G.aula && G.aula.cerrarMaestro()],
       flight: [() => AVg.flight && AVg.flight(), () => G.flightApi && G.flightApi.salir()],
@@ -502,15 +503,15 @@ AVE.module('accesibilidad', function (G) {
       }
 
       // 1c. BM53: pausa, final, cómic, criadero, Aula, mapa grande, modos y minijuegos a 375×812: botones ≥ 44 px, sin desbordes en los 3 tamaños de
-      // texto, y con alto contraste el texto se lee (≥ 4.5:1)
+      // texto, y con alto contraste el texto se lee (≥ 7:1). BM73: añade la portada (#title) y «Mis récords», también a 320×568
       {
         const malosO = []; let vistas = []; await prepararOtras();
-        for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
-          const m = await maquetaOtras(375, 812, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
+        for (const [W, H] of [[375, 812], [320, 568]]) for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+          const m = await maquetaOtras(W, H, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
           try {
             vistas = m.hay;
             for (const pid of m.hay) {
-              const cajaP = m.d.getElementById(pid); const et = `nivel ${i}${contr ? ' contraste' : ''} #${pid}`;
+              const cajaP = m.d.getElementById(pid); const et = `${W}px nivel ${i}${contr ? ' contraste' : ''} #${pid}`;
               for (const b of cajaP.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')) {
                 if (!visible(b)) continue;
                 const r = b.getBoundingClientRect();
@@ -519,7 +520,7 @@ AVE.module('accesibilidad', function (G) {
               for (const e of [cajaP, ...cajaP.querySelectorAll('*')]) {
                 if (!visible(e) || e.closest('canvas') || e.tagName === 'CANVAS') continue;
                 const r = e.getBoundingClientRect();
-                if (r.width && (r.right > 376 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
+                if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
               }
               if (contr) {
                 let peor = 99, quien = '';
@@ -527,12 +528,12 @@ AVE.module('accesibilidad', function (G) {
                   if (!visible(e) || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
                   const c = contrasteDe(e); if (c < peor) { peor = c; quien = (e.className || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
                 }
-                if (peor < 4.5) malosO.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
+                if (peor < 7) malosO.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
               }
             }
           } finally { m.cerrar(); }
         }
-        check('Pausa, final, cómic, criadero, Aula, mapa grande, modos y minijuegos a 375×812: botones ≥ 44 px, sin desbordes en los 3 tamaños de texto y alto contraste ≥ 4.5:1', !malosO.length, [...new Set(malosO)].slice(0, 6).join('; ') || ('medidas: ' + vistas.join(',') + ' · sin: ' + sinPantalla.join(' | ')));
+        check('Portada, récords, pausa, final, cómic, criadero, Aula, mapa grande, modos y minijuegos a 375×812 y 320×568: botones ≥ 44 px, sin desbordes en los 3 tamaños de texto y alto contraste ≥ 7:1', !malosO.length, [...new Set(malosO.map(x => x.replace(/^\d+px nivel \d( contraste)? /, '')))].slice(0, 25).join('; ') || ('medidas: ' + vistas.join(',') + ' · sin: ' + sinPantalla.join(' | ')));
       }
 
       // 2. Modo zurdo: el joystick a la derecha y los botones de acción a la izquierda (teléfono vertical y horizontal)

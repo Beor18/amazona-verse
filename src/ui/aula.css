@@ -96,9 +96,12 @@
 .maestro-body summary { cursor: pointer; font: 600 var(--fs-md)/1.4 var(--font-display); min-height: 44px; display: flex; align-items: center; }
 .maestro-body ol, .maestro-body ul { margin: var(--sp-2) 0; padding-left: 1.3em; }
 .maestro-body li { margin: 2px 0; }
-.maestro-body dl { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-1) var(--sp-3); margin: var(--sp-2) 0; }
+.maestro-body dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-1) var(--sp-3); margin: var(--sp-2) 0; }
 .maestro-body dt { font-weight: 700; }
-.maestro-body dd { margin: 0; }
+.maestro-body dd { margin: 0; overflow-wrap: anywhere; }
+/* BM73: alto contraste ≥ 7:1 en el rótulo verde y en el botón de peligro */
+:root.a11y-contraste .edu-head .eyebrow, :root.a11y-contraste .maestro-head .eyebrow { color: #0f4a24; }
+:root.a11y-contraste .btn.danger { --btn-bg: #8a1410; }
 .maestro-body label, .maestro-body .lbl { display: block; margin: var(--sp-3) 0 var(--sp-1); font-weight: 700; }
 .maestro-body .lbl { color: var(--c-ink-muted); }
 .maestro-body input[type=text], .maestro-body select { width: min(320px, 100%); min-height: var(--tap-sm); padding: 0 var(--sp-3); font: inherit; font-size: var(--fs-md); border-radius: var(--r-sm); border: 2px solid var(--c-paper-edge); background: #fff; color: var(--c-ink); }
