@@ -37,3 +37,5 @@ La hace la Mac con `tools/build/publicar_mac.sh` (GPU real) o Kelvin; publica `s
 2. **Claude en la nube** (coordinador, esta sesión): el lado de GitHub — PRs, uniones a `main`, las Actions, esta hoja y la planificación. NO toca la Mac ni `cola.txt`. No puede abrir los GLB (están solo en la Mac).
 3. **Agente web** (cryptochefpr): contenido, historia, inglés, accesibilidad y web. Nada de motor, GPU ni Blender.
 Regla: antes de cada tarea, marca «EN CURSO» aquí; nadie espera al otro; si uno se queda sin cuota/crédito, los demás siguen.
+
+- 31-oct noche · EN CURSO · nube · e2eTest 4.2 (por qué G.interaccion.list sale vacía en la copa solo en la build de la nube).
