@@ -1,5 +1,5 @@
-# Cola de la API en la Mac. 31-oct (orden de prioridad de Kelvin): 1o EDIFICIOS Y MAPA, 2o VUELO, luego el resto de visuales.
-# CLAVE: exporta AV_PYTHON (Blender) antes de lanzar o BM78-81/58/59/63.. se marcan "bloqueada sin python de Blender".
+# Cola de la API en la Mac. 31-oct: BM77 PRIMERO (separar los GLB en piezas/, desbloquea edificios/mapa), luego BM78-81 (edificios/mapa, prioridad 1 de Kelvin), BM76 (vuelo), resto visuales. Exporta AV_PYTHON (Blender) al lanzar.
+BM77
 BM78
 BM79
 BM80
