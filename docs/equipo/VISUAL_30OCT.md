@@ -26,3 +26,12 @@ Revisé a ojo una muestra de 8 láminas por problema (no las 90 una a una); lo q
 5. Sandías verdes de la ciudad cortadas por las vigas, aristas demasiado rectas.
 
 Sin esto no está aprobado el mapa: Kelvin decide sobre las láminas.
+
+## BM67 · barrido de capturas pendientes (30 oct, Chrome/Metal real, build HEAD-40cee6c)
+
+Capturas `docs/img/bm67_fabrica_*.png` y `bm67_medidas.json` (vistas propias, look fábrica, calidad alto, 0 errores de consola):
+- **Ciudad (BM23/BM32)**: `ciudad_60` sostiene el marfil crema; ya no hay oliva ni ocre. Siguen las astillas de la aguja y las sandías verdes (geometría, arte de Kelvin). 43 FPS a 60 m; `ciudad_150` 20 FPS (1,9 M tris, 170 draw calls).
+- **Dosel/colina (BM23, BM31)**: `colina_vuelo_120` 46 FPS, sin sábana del dosel; `colina_vuelo_250` 9 FPS pero con solo 61 calls y 0,3 M tris (parece coste de postproceso/mar, no de árboles; sin analizar).
+- **Villa Raíz (BM31)**: `villa_bosque_60` 41 FPS, 0,83 M tris.
+- **Aldea (BM28)**: `aldea_toldos` 39 FPS; la cámara quedó dentro de una palma, no sirve para juzgar toldos.
+- **No hechas**: BM20 (despegue/bandada/luciérnagas), BM29 (`cap1_2` a 30/80 m) y BM27 (distancia del impostor): requieren guion de juego o coordenadas que no tengo; siguen pendientes. No se tocó código; nada se rompió en lo capturado.
