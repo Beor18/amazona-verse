@@ -421,12 +421,12 @@ AVE.module('streaming', function (G) {
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
   // BM56 (BM38 se había perdido): el ×1,38 llevaba a 1,0 las caras claras y el _lejos salía blanco puro frente al crema
   // del cercano. Tope por canal = el techo de la piedra cercana (cremaPlana/atlas: 0,94 / 0,85 / 0,72).
-  const TOPE_LEJOS = [0.94, 0.85, 0.72], TINTE_LEJOS = [1, 0.88, 0.66];
+  const TOPE_LEJOS = [0.94, 0.85, 0.72], TINTE_LEJOS = [1, 0.86, 0.60];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
-      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.32, k = 1.38;
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.5, k = 1.38;
       col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k * TINTE_LEJOS[0]), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97 * TINTE_LEJOS[1]), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k * TINTE_LEJOS[2]));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
