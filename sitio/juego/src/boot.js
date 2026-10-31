@@ -59,6 +59,7 @@
     if (G.vegetacion && G.vegetacion.test) AV.floraTest = o => G.vegetacion.test(o); // src/engine/vegetacion.js (AW2, bosque lleno)
     if (G.guiaControles) AV.controlesTest = o => controles().then(m => m.test(o)); // src/game/guia_controles.js
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
+    if (G.camara.test) AV.camaraTest = o => G.camara.test(o); // src/engine/camara.js (mirar arriba, 31-oct)
     if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
     // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca
