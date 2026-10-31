@@ -20,10 +20,19 @@
   const TIDS = Object.keys(TRAMOS);
   const OBS = TIDS.map(i => 'obs_' + i).concat('obs_bosque');
   const BOSQUE = { x: -1, z: -17 }; // el bosquecillo del estrecho: huecos de nido y sombra
+  // D27 (DECISION_LOG, AP10 lote 3): en el bosquecillo anida uno de los 36, un guardián que el jugador ya conoce.
+  // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
+  const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', Navegante: 'assets/agilis.png', 'Guardián': 'assets/guardian.png' };
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', Navegante: 'assets/agilis.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/vittata.png' };
   const di = (who, text) => ({ who, img: IMG[who], text });
+  // D8 (DECISION_LOG, AP10 lote 1): el aprendiz acompaña y dice una línea corta por asamblea, solo por sí mismo (no habla por nadie)
+  const APRENDIZ_ASAMBLEA = 'Yo no hablo por nadie. Miro cómo se decide… para saber hacerlo cuando me toque.';
   const Lu = t => di('Iguaca', t);
+  // D11 (DECISION_LOG, AP10 lote 2): la canoa del ep. 3 con el nombre que le puso el jugador (registro de temporada, src/game/temporada.js).
+  // Sin dato (empieza por este capítulo o la dejó sin nombre), no se añade nada: el arranque de siempre.
+  const TP = () => window.AVTemporada;
+  const continuidad = () => { const n = TP() && TP().dato(3, 'canoa'); return n ? [di('Vittata', 'Nuestra canoa, «' + n + '», ya cruza la bahía. Ahora toca cruzar el río.')] : []; };
 
   // ---------- La Balanza (EP4_GDD.md §5): 3 opciones × 4 ejes, de 1 a 3 hojas; sin suma ni ganador ----------
   const EJES = [
@@ -71,7 +80,7 @@
   // Quién nombra el costo de cada opción cuando se dice «esta es la mejor para todos»
   const PIERDE = { a: 'papa', b: 'iguaca', c: 'abuela' };
   const RECLAMO = {
-    a: '¿Y los huecos de nido del bosquecillo? Para el puente del estrecho hay que cortarlo.',
+    a: '¿Y el nido del guardián que ya conoces? Para el puente del estrecho hay que cortar el bosquecillo.',
     b: '¿Con qué manos y en cuántos días? El puente alto es mucho trabajo para tan pocos.',
     c: '¿Y si hay crecida y nadie rema? Yo sola no puedo cruzar en canoa, mi niña.',
   };
@@ -218,7 +227,8 @@
       ],
     },
 
-    inicio(G) { G.eventos.log('BridgeIdea'); G.dialogo.say(G.dialogo.L('inicio:ep4'), () => G.ui.toast('Habla con Iguaca', 3000)); },
+    continuidad, // D11: líneas que dependen de lo elegido en capítulos anteriores ([] sin dato)
+    inicio(G) { G.eventos.log('BridgeIdea'); G.dialogo.say(G.dialogo.L('inicio:ep4').concat(continuidad()), () => G.ui.toast('Habla con Iguaca', 3000)); },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -317,13 +327,14 @@
           } });
       }
       // El bosquecillo: árboles propios (para poder quitarlos o replantarlos según el acuerdo) y una percha para mirar
-      const bosque = new THREE.Group(); scene.add(bosque);
+      const bosque = new THREE.Group(); bosque.name = 'ep4_bosque'; scene.add(bosque);
       const ARB = [[-2.5, -1.5], [0.5, -2.5], [2, 0.5], [-1, 1.8], [-3, 1.2], [1.2, 2.6]];
       G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 3, visible: () => S.step === 1 && !tiene('obs_bosque'),
         label: () => 'Posarse y mirar el bosquecillo',
         use: () => {
           poner('obs_bosque'); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
-          G.dialogo.say([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'),
+          if (TP()) TP().encontrar(4, 'bosquecillo'); // D32: el guardián del bosquecillo llega al ep. 6
+          G.dialogo.say([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'), di('Vittata', NIDO_36),
             Lu('La cotorra puertorriqueña anida en huecos de los árboles. Fuente: ' + FUENTE + '.')], () => G.misiones.check());
         } });
 
@@ -350,6 +361,7 @@
         G.dialogo.say([di('Papá', S.complete ? 'Gracias por cuidar lo que costaba.' : S.step < 3 ? 'Este bosquecillo da buena sombra y buenos huecos.' : 'Que no se te olvide el bosquecillo.')]);
       }
       function navegante() {
+        if (TP()) TP().encontrar(4, 'navegante'); // D32: llega al ep. 6
         if (S.step === 3 && !tiene('voz_navegante')) { voz('navegante'); return; }
         // Quien navega es de Villa Raíz (ep. 3): mira la otra orilla desde este lado. [KELVIN: la otra comunidad]
         G.dialogo.say([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
@@ -406,13 +418,16 @@
           });
         });
       }
+      // D26 (DECISION_LOG, AP10 lote 3): decide el jugador entre las 3 opciones tras oír las 4 voces (la mesa solo abre la asamblea
+      // en el paso 6) y el mundo muestra las consecuencias (la obra en su tramo, el bosquecillo en tocones con la A, el cruce de la
+      // abuela). La asamblea es donde se oye a todos: no hay respuesta correcta ni examen (ep4Test lo comprueba).
       function asamblea() {
         if (!opcion()) {
           elegir('Vittata', 'Asamblea en la mesa. Todos escuchan. ¿Qué opción propones?', OIDS.map(o => ({ label: `${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`, o })), x => {
-            poner('opcion_' + x.o); G.eventos.log('AgreementMade', { choice: x.o }); G.audio.play('unlock'); maquetaVer(x.o); dibujarObra();
+            poner('opcion_' + x.o); G.eventos.log('AgreementMade', { choice: x.o }); if (TP()) TP().apuntar(4, { opcion: x.o }); /* D11: el ep. 5 lo nombra */ G.audio.play('unlock'); maquetaVer(x.o); dibujarObra();
             const gana = VIDS.filter(v => OPCIONES[x.o].hojas[VOCES[v].eje] === 3), pierde = VOCES[PIERDE[x.o]];
             G.dialogo.say(gana.map(v => di(VOCES[v].quien, 'Esto me da lo que pedía. ¡Gracias!')).concat(
-              di(pierde.quien, RECLAMO[x.o]), Lu('Nadie lo tiene todo. Elige un cuidado para lo que cuesta.')), asamblea);
+              di(pierde.quien, RECLAMO[x.o]), di('Aprendiz', APRENDIZ_ASAMBLEA), Lu('Nadie lo tiene todo. Elige un cuidado para lo que cuesta.')), asamblea);
           });
           return;
         }
@@ -436,7 +451,7 @@
           { label: PALABRAS[0], v: 0 }, { label: 'Es lo mejor para todos.', v: 'todos' }, { label: PALABRAS[1], v: 1 },
         ], o => {
           if (o.v === 'todos') { G.audio.play('wrong'); G.dialogo.say([Lu('¿Para todos? Mira la Balanza: a alguien le cuesta. Díselo con cariño.')], asamblea); return; }
-          poner('palabra_' + o.v); G.eventos.log('CareChosen', { choice: cuidado() }); G.comic.capture('acuerdo'); registrar();
+          poner('palabra_' + o.v); G.eventos.log('CareChosen', { choice: cuidado() }); if (TP()) TP().apuntar(4, { cuidado: cuidado() }); G.comic.capture('acuerdo'); registrar();
           G.dialogo.say([di('Vittata', PALABRAS[o.v]), di(pierde.quien, 'Gracias por decírmelo de frente. Así sí.'), Lu('¡Hay acuerdo! Ve a la orilla y constrúyelo.')], () => G.misiones.check());
         });
       }
@@ -581,6 +596,8 @@
         const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })();
+        const tempRaw = (() => { try { return localStorage.getItem(TP().KEY); } catch (e) { return null; } })(); // registro de temporada (D11): se devuelve intacto
+        try { localStorage.removeItem(TP().KEY); } catch (e) { /* sin almacenamiento */ }
         const pick = txt => { const b = [...document.querySelectorAll('[id^="ch-"]')].find(x => x.textContent.includes(txt)); if (b) b.click(); drain(); return !!b; };
         const opciones = () => [...document.querySelectorAll('[id^="ch-"]')].map(b => b.textContent);
         const tiene = k => S.collected.includes(k);
@@ -595,7 +612,9 @@
           ck('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
           for (const t of TIDS) { useAt('tramo_' + t); drain(); }
           ck('3 tramos observados; falta el bosquecillo', TIDS.every(t => tiene('obs_' + t)) && S.step === 1 && !S.missions.orilla);
-          useAt('bosque'); drain();
+          let dichoBosque = '';
+          { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoBosque = (l || []).map(x => x.text).join(' '); return s0.apply(this, arguments); }; try { useAt('bosque'); drain(); } finally { G.dialogo.say = s0; } }
+          ck('D27 · En el bosquecillo anida uno de los 36, un guardián que ya conoces (sin nombrar especie)', dichoBosque.includes(NIDO_36) && RECLAMO.a.includes('guardián que ya conoces'), dichoBosque.slice(0, 120));
           ck('M1 · El bosquecillo: huecos de nido con su fuente; misión y lentes', S.missions.orilla && S.step === 2 && S.unlocked.includes('lentes:#2b2b2b:binoculares'));
           useAt('iguaca'); drain();
           ck('M1 cerrada con Iguaca: sigue «Todas las voces», sin pantalla de fin', G.eventos.had('ShoreSurveyed') && S.step === 3 && !S.complete && $('end').hidden, 'paso ' + S.step);
@@ -619,7 +638,10 @@
           pick(OPCIONES.a.nombre); pick(OPCIONES.b.nombre); pick(OPCIONES.c.nombre);
           ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 6, 'paso ' + S.step);
           useAt('mesa'); drain();
-          pick(OPCIONES[op].nombre + ':');
+          ck('D26 · Asamblea tras oír las 4 voces: el jugador elige entre las 3 opciones, sin una correcta', VOC.every(tiene) && opciones().length === 3 && OIDS.every(o => opciones().some(x => x.startsWith(OPCIONES[o].nombre + ':'))), opciones().join(' | '));
+          let dichoAsamblea = [];
+          { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoAsamblea = dichoAsamblea.concat((l || []).map(x => x.who + ': ' + x.text)); return s0.apply(this, arguments); }; try { pick(OPCIONES[op].nombre + ':'); } finally { G.dialogo.say = s0; } }
+          ck('D8 · En la asamblea el aprendiz dice una línea corta, solo por sí mismo', dichoAsamblea.includes('Aprendiz: ' + APRENDIZ_ASAMBLEA) && APRENDIZ_ASAMBLEA.length < 90, dichoAsamblea.join(' | ').slice(0, 160));
           ck('M3 · Asamblea: la opción propuesta y quien pierde lo dice', tiene('opcion_' + op) && G.eventos.had('AgreementMade') && opciones().length === CIDS.length, opciones().length);
           if (conChequeos) {
             const mal = CIDS.find(c => !CUIDADOS[c].para.includes(op));
@@ -636,6 +658,8 @@
           useAt('obra'); drain();
           ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 8 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
           ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', G.interaccion.find('abuela').x === RIO - 6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
+          const tocones = () => { const b = G.renderer.scene.getObjectByName('ep4_bosque'); return b ? b.children.filter(m => m.geometry && m.geometry.parameters && m.geometry.parameters.height === 0.4).length : -1; };
+          check('D26 · El mundo muestra lo decidido (opción ' + op.toUpperCase() + '): el bosquecillo queda en tocones solo con el puente del estrecho', tocones() === (op === 'a' ? 6 : 0), tocones());
           useAt('abuela'); drain();
           return S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter4Completed') && !$('end').hidden;
         }
@@ -686,11 +710,17 @@
         for (const f of G.diario.entries) { teleport(f.x + 0.3, f.z); tick(0.1); }
         check('Diario: 6 hallazgos (3 de ribera, 3 de cruces) y el mapa del río', S.field.length === 6 && G.diario.count('ribera') === 3 && G.diario.count('cruces') === 3 && S.unlocked.includes('mano:mapa'), S.field.join(','));
         check('Cada hallazgo tiene su ficha en la lección', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)));
+        // D11 y D32: lo elegido queda en el registro de temporada; la canoa del ep. 3 se nombra solo si hay dato
+        const opFin = OIDS.find(o => tiene('opcion_' + o)), cuFin = CIDS.find(c => tiene('cuidado_' + c));
+        check('D11 · Opción y cuidado quedan en el registro de temporada (el ep. 5 los nombra)', TP().dato(4, 'opcion') === opFin && TP().dato(4, 'cuidado') === cuFin, JSON.stringify(TP().decision(4)));
+        check('D32 · Quien navega y el guardián del bosquecillo quedan entre los encontrados (llegan al ep. 6)', ['navegante', 'bosquecillo'].every(g => TP().guardianes().includes(g)), TP().guardianes().join());
+        const sinCanoa = continuidad(); TP().apuntar(3, { canoa: 'Ceiba' }); const conCanoa = continuidad();
+        check('D11 · Registro sin canoa: arranque de siempre; con la canoa del ep. 3: «Nuestra canoa, «Ceiba»…»', sinCanoa.length === 0 && conCanoa.length === 1 && conCanoa[0].text.includes('«Ceiba»'), JSON.stringify(conCanoa));
         // Inglés: todo texto del episodio que sale en pantalla tiene su entrada (en.js)
         const EN = window.AV_EN_EP4 || {};
         const textos = [].concat(G.pack.historia.pasos.map(s => s.texto), G.pack.misiones.map(m => m.titulo), DIALOGOS.escenas.flatMap(e => e.lineas),
           Object.values(TRAMOS).map(t => t.ve), Object.values(VOCES).map(v => v.dice), Object.values(OPCIONES).flatMap(o => o.prueba.concat(o.nombre)),
-          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
+          Object.values(CUIDADOS).map(c => c.nombre), FRASES, PALABRAS, Object.values(RECLAMO), [NIDO_36, APRENDIZ_ASAMBLEA], G.pack.diario.entradas.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]));
         const faltan = textos.filter(t => !EN[t]);
         check('Inglés: todos los textos del capítulo tienen traducción', !faltan.length, faltan.slice(0, 3).join(' | '));
         if (G.idioma) {
@@ -700,10 +730,12 @@
             tr('Lo anoto en una tarjeta de Bosque: «Cuidar el bosquecillo».') === 'I write it on a Forest card: “Look after the grove”.' &&
             tr('A · Puente en el estrecho: ' + fila(OPCIONES.a.hojas)) === 'A · Bridge at the narrows: ' + fila(OPCIONES.a.hojas).replace('Conexión', 'Connection').replace('Bosque', 'Forest').replace('Río', 'River').replace('Esfuerzo', 'Effort') &&
             Object.keys(window.AV_EN || {}).length > Object.keys(EN).length + 100, tr('A · Puente en el estrecho: ' + fila(OPCIONES.a.hojas)));
+          check('D11 · En inglés, la línea de la canoa sale traducida con su nombre', tr(conCanoa[0].text) === 'Our canoe, «Ceiba», already sails the bay. Now it\'s time to cross the river.', tr(conCanoa[0].text));
           await G.idioma.poner('es');
         }
         try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
         try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
+        try { if (tempRaw == null) localStorage.removeItem(TP().KEY); else localStorage.setItem(TP().KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
         check('Guardar y cargar', G.guardado.load(true) && S.complete && tiene('opcion_a') && tiene('cuidado_cajas') && S.edu && S.edu.formativa.q6 && S.field.length === 6);

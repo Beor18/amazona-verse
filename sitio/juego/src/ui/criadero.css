@@ -24,7 +24,8 @@
 .cr-brand h1 { margin: 0; font: 700 var(--fs-2xl)/var(--lh-tight) var(--font-display); text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
 .cr-eyebrow { margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-eyebrow); }
 .cr-eyebrow.ink { color: var(--c-ink-muted); }
-.cr-top-actions { display: flex; gap: var(--sp-2); }
+.cr-top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; min-width: 0; gap: var(--sp-2); }
+.cr-top { flex-wrap: wrap; }
 
 /* ---------- Columnas de tarjetas ---------- */
 .cr-col {

@@ -100,15 +100,21 @@
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
+    const oidos = () => { const v = []; for (let k = 0; k < 40 && G.dialogo.activo(); k++) { v.push(G.dialogo.actual().text); G.dialogo.next(); } drain(); return v; };
     check('Sin la ruta de la gota todavía no se elige terreno', S.step === 3 && S.evaluated.A && S.evaluated.B, 'paso ' + S.step);
     jugarRutaGota(G, T);
     check('Dos terrenos inspeccionados y misión educativa hecha', S.step === 4 && S.missions.educativa && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
+    // KELVIN-2 (equipo, 30-oct): como el guion p.7, el Guardián aparece al llegar a construir y escucha la idea de Vittata
+    tick(0.1); check('Guardián · aparece en el sendero al llegar al paso de construir', G.actores.npc('guardian').sp.visible && !S.guardianIntro);
+    useAt('guardian', 1.4, 0); const p7a = oidos();
+    check('Guardián · p.7 antes de construir: «¿Y usted quién es?» y «primero quiero escuchar tu idea», sin adelantar el paso', S.guardianIntro && S.step === 4 && p7a.includes('¿Y usted quién es?') && p7a.includes('Quizás. Pero primero quiero escuchar tu idea.') && !had('GuardianMet'), p7a.join(' | ').slice(0, 160));
     C.startBuild('A'); teleport(PLACES.A.x + 50, PLACES.A.z, 0, 1); tick(0.1);
     const build = () => C.build();
     check('Construcción fuera del terreno rechazada', build() && !build().valid, build() && build().reason);
     teleport(PLACES.A.x, PLACES.A.z - 1.5, 0, 1); tick(0.1);
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
-    action(); drain();
+    action(); const p8 = oidos();
+    check('Guardián · p.8 al levantar el refugio: «¿Segura de que funcionará?» / «No completamente.» / «Bien. Entonces vamos a comprobarlo.»', ['¿Segura de que funcionará?', 'No completamente.', 'Bien. Entonces vamos a comprobarlo.'].every(t => p8.includes(t)), p8.slice(0, 4).join(' | '));
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
     // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
     const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
@@ -130,15 +136,22 @@
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
-    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
+    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21);
+    const p9 = oidos();
+    check('AP2 · guion p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» y «Yo también»', p9.includes('Pensé que hoy lo habíamos perdido todo.') && p9.includes('Yo también.'), p9.join(' | ').slice(0, 160));
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
-    useAt('guardian', 1.4, 0); drain();
+    check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
+    useAt('guardian', 1.4, 0); const p7 = oidos();
+    check('Guardián · tras la crecida ya lo conocemos: no se vuelve a presentar y regala el banco', p7[0] === 'Ya lo comprobamos: la crecida dijo la verdad.' && !p7.includes('¿Y usted quién es?'), p7.slice(0, 3).join(' | '));
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
     useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
     for (const b of C.BUSHES) { useAt(b.id, 1.3, 0); for (const n of b.song) C.simonPress(n); }
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
+    const medL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); medL.push({ who: a.who, txt: a.text, img: a.img || '', sim: !$('symbol').hidden }); G.dialogo.next(); }
+    const med = medL.find(e => /medalla/.test(e.txt));
+    check('Medalla del Guardián · su línea sale con el retrato de la medalla y el emblema a la vista', !!med && med.who === 'Guardián' && /^(data:image\/png|assets\/guardian)/.test(med.img) && med.sim, med && med.img.slice(0, 24));
     drain();
     check('Después del transmisor toca subir al mirador', S.step === 7 && !S.complete && $('symbol').hidden, 'paso ' + S.step);
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
@@ -149,7 +162,7 @@
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
     const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
     teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
-    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm());
+    check('Panel final: «Ver mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-comic').textContent.trim() === 'Ver mi cómic' && ['b-comic', 'b-seguir', 'b-again'].every(id => $(id).offsetHeight >= 44) && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm(), ['b-comic', 'b-seguir', 'b-again'].map(id => $(id) ? $(id).hidden + '/' + $(id).offsetHeight + '/' + $(id).textContent.trim() : 'x').join(' | ') + ' conf ' + enConfirm());
     check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
     $('b-again').click();
     check('«Comenzar de cero» pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero», y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Comenzar de cero?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-again-no').textContent.trim() === 'No, volver' && $('b-again-si').textContent.trim() === 'Sí, comenzar de cero' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
@@ -314,7 +327,7 @@
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
-    check('dialogos_cap1.js carga las 27 escenas', scenes.length === 27, scenes.length + ' escenas');
+    check('dialogos_cap1.js carga las 28 escenas', scenes.length === 28, scenes.length + ' escenas');
     const unknown = scenes.filter(sc => { const [k, v] = sc.disparador.split(':'); return k === 'evento' ? !G.eventos.defs[v] : !['inicio', 'interact'].includes(k); });
     check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
@@ -338,6 +351,15 @@
     check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
     G.c.apertura.fin();
     check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
+    // AP1: se salta con cualquier tecla (o el botón «Saltar», ≥ 44 px) y queda igual que al verla entera
+    G.quiet = false; G.audio.log.length = 0; const ap1 = G.pack.inicio(G), bS = document.getElementById('c1-saltar'), rS = bS && bS.getBoundingClientRect();
+    check('Apertura: botón «Saltar» de 44 px o más mientras dura', !!bS && rS.width >= 44 && rS.height >= 44, bS ? Math.round(rS.width) + '×' + Math.round(rS.height) : 'no hay');
+    const pisa = bS && ['acts', 'sys', 'stick', 'top'].map(id => document.getElementById(id)).filter(e => e && e.offsetParent).flatMap(e => [...e.querySelectorAll('button')].concat(e.tagName === 'BUTTON' ? [e] : []))
+      .filter(b => b.offsetParent).map(b => b.getBoundingClientRect()).some(r => r.width && r.left < rS.right && rS.left < r.right && r.top < rS.bottom && rS.top < r.bottom);
+    check('Apertura: «Saltar» no pisa ningún botón del HUD (Acción, sistema, joystick)', bS && !pisa);
+    dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+    check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
+    G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
@@ -420,7 +442,7 @@
     check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
     const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
     check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
-    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
+    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1]) || /^data:image\/png/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
     check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
     check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));

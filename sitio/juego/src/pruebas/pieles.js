@@ -42,6 +42,8 @@ window.AVPielesTest = function () {
       const plumon = new THREE.SkinnedMesh(body.geometry, new THREE.MeshStandardMaterial({ map: base }));
       plumon.bind(body.skeleton, body.bindMatrix); body.parent.add(plumon);
       const cuerpo = () => { const m = []; cadaMaterial(ch, x => { if (x.map === base || x.userData.pielDe === ch.root.uuid) m.push(x.map); }); return m; };
+      // QA-77: el cuerpo y el pico pueden tardar unos cuadros en tener su material; se espera a ≥ 2 (tope 10 s)
+      for (let t0 = performance.now(); cuerpo().length < 2 && performance.now() - t0 < 10000;) await new Promise(r => setTimeout(r, 100));
       const n0 = cuerpo().length;
       const fallos = [];
       for (const p of PIELES) {

@@ -9,11 +9,19 @@
      [KELVIN-1] Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
                 Marea · arausiaca, Nudo · ventralis, Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
-     [KELVIN-2] El pacto no tiene objeto: es una promesa que se dice entre todos al final (frase provisional de EP6_NARRATIVA.md).
+                D32 (DECIDIDO-EQUIPO 30-oct): llegan los guardianes que el jugador encontró en la temporada (registro de temporada,
+                src/game/temporada.js: quien navega, eps. 3–4, y el guardián del bosquecillo, ep. 4), más los 6 de la historia (mínimo 6),
+                y los 14 asientos que esperan (36 − 22) se ven como luces lejanas sobre el mar. Sin arte nuevo: sprites que ya existen.
+     [KELVIN-2] D33 (DECIDIDO-EQUIPO 30-oct): el pacto es un objeto, el emblema de los 36 completo, con la promesa grabada
+                («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
-     [KELVIN-4] El encuentro es en la plaza de Villa Raíz. [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
+                D3/D4 (DECIDIDO-EQUIPO 30-oct): se llaman Alba y Violeta, y al final Violeta insinúa por qué hablan «desde ahora»
+                (una frase sin explicar; la explicación sigue guardada).
+     [KELVIN-4] D34 (DECIDIDO-EQUIPO 30-oct): la Ciudad de los 36 si el mapa lo permite; si no, la plaza de Villa Raíz.
+                Este pack tiene su propio mundo analítico (sin la Ciudad, que está en el mapa del cap. 1): queda la plaza; pedido en PEDIDOS.md.
+     [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
                 (plaza, volver hoy); nadie tiene la culpa. [KELVIN-6] El Guardián recuerda a medias y deja que lo cuenten entre todos.
-     [KELVIN-7] Vittata no queda con título. [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
+     [KELVIN-7] D36 (DECIDIDO-EQUIPO 30-oct): le dan el título «Guardiana del Pacto» (solo texto; su diseño no cambia). [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
      [KELVIN-9] Martinicana y violacea no se formalizan como consejeras aquí. [KELVIN-10] Recompensa final: la pava; sin música concreta.
      [KELVIN-11] El cómic de cierre de temporada no se hace aquí (se deja para la temporada 6).
    La simulación del plan es determinista (valores del juego, sin azar): cada tarea dura lo que dice su tarjeta. El inglés va en
@@ -101,12 +109,29 @@
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Voces: RETRATO_VOCES, Aprendiz: 'assets/vittata.png',
     'Vocera de la isla alta': 'assets/agilis.png', 'Vocero de la isla baja': 'assets/vittata.png' };
   for (const v of VISITANTES) IMG[v.nombre] = v.sprite;
+  IMG.Violeta = RETRATO_VOCES; // D3: una de las dos voces, con el mismo retrato neutro
+  IMG.Navegante = 'assets/agilis.png'; // la misma de los eps. 3 y 4 [KELVIN: especie y render de la navegante]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Vi = t => di('Vittata', t), Gu = t => di('Guardián', t);
 
+  // D32 · Quién llega: los guardianes encontrados en la temporada (registro de temporada) que no viven ya en Villa Raíz, más los 6
+  // visitantes de la historia (mínimo 6). Sin registro (capítulo suelto), la línea de siempre y solo los 6.
+  const LLEGAN_DEF = 'Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.';
+  const LLEGAN = {
+    navegante: 'Vienen los guardianes que fuimos encontrando: quien navega ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
+    bosquecillo: 'Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
+    'navegante+bosquecillo': 'Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
+  };
+  const NAVEGA_LLEGA = { x: 8.5, z: 8 }; // junto a la plaza, lejos de los muelles de los 6
+  const NAVEGA_DICE = 'Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».';
+  const LUCES_LEJANAS = 14; // los asientos que esperan (36 − 22) [KELVIN-8]
+  const llegan = () => { const T = window.AVTemporada, g = T ? T.guardianes() : []; return ['navegante', 'bosquecillo'].filter(k => g.includes(k)); };
+  const lineaLlegan = () => LLEGAN[llegan().join('+')] || LLEGAN_DEF;
+  const lineasInicio = G => G.dialogo.L('inicio:ep6').map(l => (l.text === LLEGAN_DEF ? Object.assign({}, l, { text: lineaLlegan() }) : l));
+
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1: cuántos llegan y de dónde]',
-      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.', 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
+      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
     { id: 'e_tarjetas_i', disparador: 'evento:CardsFilled', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Sí te necesitaron. Para presentarlos.', 'Ahora el puente. Te espero allí con el cuaderno.'] },
@@ -162,6 +187,7 @@
       { id: 'guardian', nombre: 'Guardián', sprite: IMG['Guardián'], x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.4 }, // [KELVIN-6: qué forma tiene]
       { id: 'alta', nombre: 'Vocera de la isla alta', sprite: IMG['Vocera de la isla alta'], x: -4, z: 9, escala: 1.8 },
       { id: 'baja', nombre: 'Vocero de la isla baja', sprite: IMG['Vocero de la isla baja'], x: 4, z: 9, escala: 1.8 },
+      { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGA_LLEGA.x, z: NAVEGA_LLEGA.z, escala: 1.8 }, // D32: solo si se encontró
     ].concat(VISITANTES.map(v => ({ id: v.id, nombre: v.nombre, sprite: v.sprite, x: v.x, z: v.z, escala: 1.8 })),
       ACOMPANAN.map(([id, g, x, z, sprite]) => ({ id, nombre: g === 'alta' ? 'Isla alta' : 'Isla baja', sprite, x, z, escala: 1.5 }))),
     objetos: {}, recursos: [],
@@ -254,7 +280,8 @@
       ],
     },
 
-    inicio(G) { G.eventos.log('GuestsArrived'); G.dialogo.say(G.dialogo.L('inicio:ep6'), () => G.ui.toast('Baja a los muelles y recibe a quien llega', 3000)); },
+    lineasInicio, llegan, // D32: la línea de quién llega según el registro de temporada (la de siempre sin dato)
+    inicio(G) { G.eventos.log('GuestsArrived'); G.dialogo.say(lineasInicio(G), () => G.ui.toast('Baja a los muelles y recibe a quien llega', 3000)); },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -398,6 +425,7 @@
       const ASIENTO_NPC = { mira: [-5, -2], roca: [-3, -2], marea: [-1, -2], nudo: [1, -2], eco: [3, -2], brote: [5, -2], alta: [-4, 2], baja: [4, 2] };
       // De pie sobre su marca (j: cuál de las marcas de su grupo); sin forma elegida, el sitio de antes
       function enSuMarca(n, k, j) { const p = puntosAsientos()[MARCA[k] + j]; if (p) ponerNpc(n, p[0], p[1]); else ponerNpc(n, PLAZA.x + ASIENTO_NPC[k][0] + j * 1.2, PLAZA.z + ASIENTO_NPC[k][1] + 1); }
+      let navLlega = false; // D32: quien navega llega si se encontró (se lee del registro al colocar, no en cada cuadro)
       function colocarNpcs() {
         for (const v of VISITANTES) {
           const n = npc(v.id); if (!n) continue;
@@ -409,6 +437,7 @@
         for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + k)) enSuMarca(n, k, 0); }
         for (const [id, g, x, z] of ACOMPANAN) { const n = npc(id); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + g)) enSuMarca(n, g, id.endsWith('1') ? 1 : 2); else ponerNpc(n, x, z); }
         const ig = npc('iguaca'); if (ig) { if (S.step >= 4 && S.step <= 7) ponerNpc(ig, PUENTE_W.x - 4.5, PUENTE_W.z - 2.5); else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else ponerNpc(ig, IGUACA.x, IGUACA.z); }
+        navLlega = llegan().includes('navegante'); const na = npc('navegante'); if (na) na.setVisible(navLlega); // D32
         const gu = npc('guardian'); if (gu) { if (S.step >= 11 && !S.complete) { if (formaElegida() === 'anillo' || !puntosAsientos().length) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else { const p = puntosAsientos()[2]; ponerNpc(gu, p[0], p[1]); } } else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
         for (let i = 0; i < 6; i++) tarjetasMesa.children[i].visible = i < conocidos().length;
         tablaGrande.visible = tiene('levantada'); tablaLargaPuente.visible = G.eventos.had('RaisedTogether');
@@ -648,16 +677,21 @@
       // El pacto renovado y el final de temporada [KELVIN-2, 3, 6, 7, 8]
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
-        if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola.')]); return; }
-        encuadrar(PLAZA.x, PLAZA.z); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+        if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola, Guardiana.')]); return; }
+        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
           Gu('El pacto antiguo decía… Lo recuerdo a pedazos. Mejor así: ahora lo recordamos entre todos.'),
           di('Voces', 'Treinta y seis no es un número. Es una forma de sentarse.'),
           di('Eco', '¿Y quién manda?'),
           Vi('Nadie lo hace todo. Yo ayudo a que nos encontremos.'),
+          di('Aprendiz', 'Yo vine a aprender. Hoy aprendí mirando… y mañana me toca a mí.'), // D8: una línea por asamblea, solo por sí mismo
           Lu(`Veintidós asientos encendidos. ${36 - sentados()} esperan: no están apagados.`),
+          Gu('Cada isla guardó su pieza. Hoy el emblema de los 36 está completo.'),
+          Vi('Tiene algo grabado alrededor…'),
           Gu('Entonces, entre todos: nos conocemos, nos ayudamos y nos seguimos buscando.'),
+          Gu('Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.'),
+          Vi('Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.'),
         ], terminar);
       }
       function terminar() {
@@ -667,7 +701,8 @@
         G.fx.burst(MIRADOR.x, H(MIRADOR.x, MIRADOR.z) + 3, MIRADOR.z, 'feathers', 30);
         G.dialogo.say([Lu('De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.'),
           Gu('Las islas olvidadas no oyen el relevo.'), Vi('(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)'),
-          Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
+          Lu('¿Y eso?'), Vi('La tripulación.'),
+          di('Violeta', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
       }
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 11 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
 
@@ -705,7 +740,16 @@
       G.on('apply', redibujar, 75);
       redibujar();
       // Para la prueba
-      G.ep6 = { VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar };
+      // D32 · Quien navega (si se encontró en los eps. 3–4) y las luces lejanas: los 14 que todavía no llegan, sobre el mar del este
+      G.interaccion.add({ id: 'navegante', x: NAVEGA_LLEGA.x, z: NAVEGA_LLEGA.z, r: 2.4, visible: () => navLlega,
+        label: () => 'Hablar con quien navega', use: () => G.dialogo.say([di('Navegante', NAVEGA_DICE)]) });
+      const lucesLejanas = new THREE.Group(); lucesLejanas.name = 'lucesLejanas'; scene.add(lucesLejanas);
+      const geoLuz = new THREE.SphereGeometry(0.7, 8, 6), matLuz = new THREE.MeshBasicMaterial({ color: '#ffe2a0', fog: false });
+      for (let i = 0; i < LUCES_LEJANAS; i++) {
+        const a = -0.7 + (i / (LUCES_LEJANAS - 1)) * 1.4 + Math.sin(i * 2.3) * 0.05, r = 110 + (i * 37 % 50);
+        const m = new THREE.Mesh(geoLuz, matLuz); m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r); lucesLejanas.add(m);
+      }
+      G.ep6 = { lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar };
     },
 
     pruebas: {
@@ -713,6 +757,7 @@
         const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })();
+        const TP = window.AVTemporada, tempRaw = (() => { try { return localStorage.getItem(TP.KEY); } catch (e) { return null; } })(); // registro de temporada (D32): se devuelve intacto
         // Todo texto que el jugador ve (diálogos, tarjetas, avisos) se apunta para comprobar luego que tiene inglés
         const vistos = new Set(), ver = t => { if (t != null && /\p{L}/u.test(String(t))) vistos.add(String(t).replace(/\s+/g, ' ').trim()); };
         const D = G.dialogo, say0 = D.say, choose0 = D.choose, toast0 = G.ui.toast, show0 = G.ui.showCard;
@@ -827,6 +872,7 @@
           check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 11 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);
+          check('M3 · D33: el pacto es un objeto, el emblema de los 36 completo', S.collected.includes('emblema'));
           check('El cómic sale de los eventos (con la viñeta del atasco, que sí pasó)', G.comic.comicPanels().length === 6, G.comic.comicPanels().length);
 
           // ---------- §5 «Iguaca te pregunta» · §6 Modo Maestro · §7 Diario y criadero ----------
@@ -869,6 +915,24 @@
           G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
           try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
           check('Guardar y cargar: el plan, la forma y los asientos vuelven', G.guardado.load(true) && S.complete && S.plan && S.plan.pruebas === 3 && S.collected.includes('forma_4x9') && G.ep6.asientos.children.length === 36 && G.ep6.sentados() === 22 && S.edu.formativa.q1 === 2);
+          { // D32 · Quién llega según el registro de temporada: vacío → la línea de siempre y solo los 6; con guardianes → se nombran y llegan
+            const lineas = () => G.pack.lineasInicio(G).map(l => l.text), textoLlegan = () => lineas().join(' '), navNpc = () => G.actores.npc('navegante'), navIt = () => G.interaccion.find('navegante');
+            try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ }
+            G.ep6.colocarNpcs();
+            check('D32 · Registro vacío: la línea de siempre («seis por lo menos»), los 6 visitantes y quien navega no está', textoLlegan().includes('Vienen los guardianes que fuimos encontrando, y otros nuevos.') && G.ep6.VISITANTES.length === 6 && !navNpc().visible && !navIt().visible(), textoLlegan());
+            TP.encontrar(3, 'navegante'); TP.encontrar(4, 'bosquecillo'); G.ep6.colocarNpcs();
+            const con = textoLlegan(); lineas().forEach(ver); ver(navIt().label());
+            check('D32 · Con quien navega y el guardián del bosquecillo encontrados: se nombran y quien navega está junto a la plaza', /quien navega viene remando/.test(con) && /bosquecillo dejó su nido/.test(con) && /seis por lo menos/.test(con) && navNpc().visible && navIt().visible(), con);
+            const navDijo = []; const say1 = D.say; D.say = function (lines) { (lines || []).forEach(l => navDijo.push(l.text)); return say1.apply(this, arguments); };
+            useAt('navegante'); drain(); D.say = say1;
+            check('D32 · Quien navega habla («Esta vez no vengo a decir «hoy no»»)', navDijo.some(t => /hoy no/.test(t)), navDijo.join(' | '));
+            try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ } TP.encontrar(4, 'bosquecillo'); lineas().forEach(ver);
+            check('D32 · Solo el guardián del bosquecillo: se nombra y quien navega no está', /bosquecillo del estrecho dejó su nido/.test(textoLlegan()) && (G.ep6.colocarNpcs(), !navNpc().visible), textoLlegan());
+            try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ } TP.encontrar(3, 'navegante'); lineas().forEach(ver);
+            check('D32 · Luces lejanas: 14 (los asientos que esperan, 36 − 22) sobre el mar, lejos de la isla', G.ep6.lucesLejanas.children.length === 14 && G.ep6.lucesLejanas.children.every(m => Math.hypot(m.position.x, m.position.z) > 100));
+            try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
+            G.ep6.colocarNpcs();
+          }
           // Inglés: cada texto que se vio tiene su EN (content/ep6/en.js o el común de cap1), igual que los pasos, misiones y Diario
           const datos = G.misiones.steps.map(s => s.texto).concat(G.pack.misiones.flatMap(m => [m.titulo, m.hud].concat(m.pasos.map(x => x.texto))),
             G.diario.entries.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]), [G.pack.historia.fin()], Object.values(G.pack.meta.hud).filter(v => typeof v === 'string'),

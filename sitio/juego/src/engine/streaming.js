@@ -180,7 +180,7 @@ AVE.module('streaming', function (G) {
       sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
         '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
         '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-        '  vec3 piedra = mix( vec3( 0.46, 0.40, 0.31 ), vec3( 0.84, 0.78, 0.65 ), t );\n' +
+        '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
         '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
         '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, ' + fuerza.toFixed(2) + ' ); }');
     };
@@ -231,7 +231,12 @@ AVE.module('streaming', function (G) {
         // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
         // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
-          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.58, 0.22, 0.14), 0.84);\n' +
+          // BM43: la tela roja sacaba el entramado de la paja como malla de colores; ahora casi plana (0,97) con el detalle de luz
+          // comprimido a ±8 % alrededor de la media de la celda, como lona
+          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) {\n' +
+          '  float yt = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), ym = dot( textureLod( map, vAvCelda + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  float lona = clamp( yt / max( ym, 0.05 ), 0.92, 1.08 );\n' +
+          '  diffuseColor.rgb = vec3(0.58, 0.22, 0.14) * lona;\n}\n' +
           // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
           // (6, 7) a media fuerza; beams (13, madera) y rockM (14, roca) conservan su textura. Albedo máximo ~0,85 (antes 1,11:
           // se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
@@ -241,7 +246,7 @@ AVE.module('streaming', function (G) {
           '  float fuerza = ( abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
           '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
           '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
-          '  vec3 piedra = mix( vec3( 0.42, 0.34, 0.24 ), vec3( 0.80, 0.71, 0.55 ), t );\n' +
+          '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
           '}\n')
@@ -252,7 +257,7 @@ AVE.module('streaming', function (G) {
           '\nif (avCrema > 0.5) {\n' +
           '  float ny = inverseTransformDirection( normal, viewMatrix ).y;\n' +
           '  float u = clamp( ( ny + 0.15 ) / 1.05, 0.0, 1.0 );\n' +
-          '  diffuseColor.rgb *= mix( 0.62, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
+          '  diffuseColor.rgb *= mix( 0.72, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
           '}\n');
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
@@ -414,12 +419,15 @@ AVE.module('streaming', function (G) {
   }
   // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  // BM56 (BM38 se había perdido): el ×1,38 llevaba a 1,0 las caras claras y el _lejos salía blanco puro frente al crema
+  // del cercano. Tope por canal = el techo de la piedra cercana (cremaPlana/atlas: 0,94 / 0,85 / 0,72).
+  const TOPE_LEJOS = [0.94, 0.85, 0.72], TINTE_LEJOS = [1, 0.86, 0.60];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
-      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.55, k = 1.14;
-      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k), Math.min(1, (y + (b - y) * s * 1.1) * k));
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.5, k = 1.38;
+      col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k * TINTE_LEJOS[0]), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97 * TINTE_LEJOS[1]), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k * TINTE_LEJOS[2]));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
   }
@@ -520,6 +528,17 @@ AVE.module('streaming', function (G) {
     }
     const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
 
+    // BM39: piedra de ruinas (miradores, ciudad y colina) que flota sobre el escalón. Solo baja: si el origen queda más de
+    // `sobre` por encima del mínimo del terreno bajo su huella, se lleva a ese mínimo; las hundidas a propósito (zócalo) no se tocan.
+    const RUINA = { modelos: /^(ruina_(?!torre)|templo_|bloque_piedra|complejo_ruinas|monolito)/, zonas: /^kelvin_ruinas_yunque/, huella: 0.5, huellaMax: 6, sobre: 0.3 };
+    function bajarRuina(I) {
+      if (!RUINA.modelos.test(I.modelo) || !RUINA.zonas.test(I.zona)) return;
+      const h = Math.min(I.r * RUINA.huella, RUINA.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);
+      let y = Infinity;
+      for (const [u, v] of [[-h, -h], [h, -h], [-h, h], [h, h], [0, 0]]) y = Math.min(y, T.height(I.pos[0] + u * c + v * s, I.pos[2] - u * s + v * c));
+      if (isFinite(y) && I.pos[1] - y > RUINA.sobre) { I.pos[1] = y; I.m.elements[13] = y; }
+    }
+
     function construir() {
       const kit = KIT();
       for (const c of crudas) {
@@ -544,7 +563,7 @@ AVE.module('streaming', function (G) {
           I.m.compose(vecA.set(x, y, z), quatA.setFromAxisAngle(up, rot), escA.set(I.escala, I.escala, I.escala));
         }
         const k = kit && kit[c.n], rad = k && k.radio ? k.radio : c.e.dim ? Math.hypot(c.e.dim[0], c.e.dim[1], c.e.dim[2]) / 2 : 10;
-        I.r = rad * I.escala; I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
+        I.r = rad * I.escala; bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
         const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });

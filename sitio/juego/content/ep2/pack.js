@@ -93,6 +93,7 @@
     { id: 'e_escucha', disparador: 'evento:ListenChoice', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es escuchar primero: ahora sabes lo que la casa tiene que lograr y lo que no puedes saltarte.', 'Ve a tu sitio y dibuja la casa.'] },
     { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.'] },
     { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: '[KELVIN: si hay huevo en escena]' },
+    { id: 'e_fiesta_g', disparador: 'evento:Chapter2Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['(Se toca la medalla.) Una casa que escucha… Esto ya lo vi antes. No recuerdo dónde.'], nota: 'D5 (DECIDIDO-EQUIPO 30-oct): la medalla del Guardián asoma en el ep. 2 y se explica en el ep. 5.' },
     { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
   ] };
 
@@ -298,6 +299,7 @@
         if (S.step === 1) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
         if (S.step === 2) {
           G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock'); registrar();
+          if (window.AVTemporada) window.AVTemporada.apuntar(2, { sitio: elegido() }); // D11: el ep. 3 nombra la casa en este sitio
           G.dialogo.say(L('evento:SiteChosen'), () => { G.misiones.advanceTo(3); G.ui.toast('Enséñale tu plano a la abuela', 3000); });
           return;
         }
@@ -747,6 +749,8 @@
         const S = G.S, $ = G.util.$, { check, result } = T.runner(), { tick, drain, useAt, teleport } = T;
         const keep = T.keepSave();
         const criaderoRaw = (() => { try { return localStorage.getItem(G.criadero.KEY); } catch (e) { return null; } })(); // el criadero es el del cap. 1: se devuelve intacto
+        const TP = window.AVTemporada, tempRaw = (() => { try { return localStorage.getItem(TP.KEY); } catch (e) { return null; } })(); // el registro de temporada (D11): se devuelve intacto
+        try { localStorage.removeItem(TP.KEY); } catch (e) { /* sin almacenamiento */ }
         // Pulsa la opción de la tarjeta de elección cuyo texto contiene `txt`; luego pasa los diálogos
         const pick = txt => { const b = [...document.querySelectorAll('[id^="ch-"]')].find(x => x.textContent.includes(txt)); if (b) b.click(); drain(); return !!b; };
         const opciones = () => [...document.querySelectorAll('[id^="ch-"]')].map(b => b.textContent);
@@ -765,6 +769,7 @@
         check('Parada del nido: dato con su fuente y evento', G.eventos.had('DatoNido'));
         useAt('iguaca'); drain();
         check('M1 cerrada con Iguaca: sigue «Escuchar primero», sin pantalla de fin', G.eventos.had('SiteChosen') && S.step === 3 && !S.complete && $('end').hidden, 'paso ' + S.step);
+        check('D11 · El sitio elegido queda en el registro de temporada (el ep. 3 lo nombra)', TP.dato(2, 'sitio') === 'c', JSON.stringify(TP.decision(2)));
 
         // M2 · Escuchar primero
         useAt('abuela'); drain();
@@ -858,6 +863,7 @@
         check('La cápsula del bosque llega con el nido de M3 y el criadero es el mismo del cap. 1 (la cría sigue a Vittata)', bosque && bosque.obtener.ep2 && bosque.obtener.ep2.mision === 'casa' && G.criadero.KEY === 'amazonaverse.criadero' && G.guardado.KEY.startsWith('ep2.'), G.criadero.KEY + ' · ' + G.guardado.KEY);
         try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
         try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
+        try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
         check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_techo') && S.edu && S.edu.formativa.q1 === 2 && S.field.length === 6, JSON.stringify(S.edu));

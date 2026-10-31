@@ -675,6 +675,34 @@ AVE.module('terreno', function (G) {
         if (t > 0) { const r = s.getX(i) * t; s.setX(i, s.getX(i) - r); s.setY(i, s.getY(i) + r); }
       }
     }
+    // BM29: normales suavizadas entre trozos. Cada GLB trae normales calculadas solo con sus triángulos, así que en los bordes
+    // entre trozos (y donde la malla trae vértices sin soldar) la ladera se ve en facetas. Se recalculan acumulando la normal de
+    // cada cara (ponderada por área) en una tabla por posición de mundo común a todos los trozos; solo se paga al cargar.
+    function soldarNormales(geos) {
+      const acc = new Map(), clave = (x, y, z) => Math.round(x * 100) + ',' + Math.round(y * 100) + ',' + Math.round(z * 100);
+      for (const g of geos) {
+        const p = g.getAttribute('position'), ix = g.index, n = ix ? ix.count : p.count;
+        for (let i = 0; i < n; i += 3) {
+          const a = ix ? ix.getX(i) : i, b = ix ? ix.getX(i + 1) : i + 1, c = ix ? ix.getX(i + 2) : i + 2;
+          const ux = p.getX(b) - p.getX(a), uy = p.getY(b) - p.getY(a), uz = p.getZ(b) - p.getZ(a);
+          const vx = p.getX(c) - p.getX(a), vy = p.getY(c) - p.getY(a), vz = p.getZ(c) - p.getZ(a);
+          const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; // sin normalizar = ponderada por área
+          for (const v of [a, b, c]) {
+            const k = clave(p.getX(v), p.getY(v), p.getZ(v));
+            let t = acc.get(k); if (!t) acc.set(k, t = [0, 0, 0]);
+            t[0] += nx; t[1] += ny; t[2] += nz;
+          }
+        }
+      }
+      for (const g of geos) {
+        const p = g.getAttribute('position'), nor = g.getAttribute('normal');
+        for (let v = 0; v < p.count; v++) {
+          const t = acc.get(clave(p.getX(v), p.getY(v), p.getZ(v))), l = t ? Math.hypot(t[0], t[1], t[2]) : 0;
+          if (l > 1e-9) nor.setXYZ(v, t[0] / l, t[1] / l, t[2] / l);
+        }
+        nor.needsUpdate = true;
+      }
+    }
     const B64 = (W.mapa && W.mapa.b64) || 'AV_MAPA_B64';
     const trozos = (MAPA.terreno && MAPA.terreno.trozos) || [];
     listo = Promise.all(trozos.map(t => G.assets.loadGLB(t.glb, {
@@ -698,6 +726,7 @@ AVE.module('terreno', function (G) {
     }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })))
       .then(geos => {
         const ok = geos.filter(Boolean);
+        soldarNormales(ok);
         const fin = () => G.emit('terrenoListo');
         if (!ok.length) { fin(); return; }
         return buildTriGrid(ok).then(fin);
@@ -796,9 +825,25 @@ AVE.module('terreno', function (G) {
   const islas = ISL.lista || [];
   const O = W.oceano || {};
   const seaY = MAPA ? 0 : O.y != null ? O.y : -2.6;
-  const islandCones = islas.map(I => {
+  const loma = (I, k) => {
+    const geo = new THREE.SphereGeometry(I.r, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), h = y / I.r;
+      const f = 1 + 0.16 * Math.sin(a * 3 + k) + 0.09 * Math.sin(a * 7 + 2 * k + 1) + 0.05 * Math.sin(a * 13 + k * 3);
+      p.setXYZ(i, x * f, y * (0.85 + 0.3 * Math.sin(a * 5 + k)), z * f);
+      const u = clamp01(h * 3.5);
+      col.push(0.78 - 0.58 * u, 0.72 - 0.32 * u, 0.52 - 0.30 * u);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    const aro = new THREE.Mesh(new THREE.RingGeometry(I.r * 0.95, I.r * 1.3, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35, depthWrite: false }));
+    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.3; m.add(aro); // la loma se aplasta (scale.y 0.3): el aro queda ~0,5 m sobre el mar
+    return m;
+  };
+  const islandCones = islas.map((I, k) => {
     // BM23: con mapa, la isla de respaldo es una loma baja y redonda con el tono neblinoso del horizonte, no una pirámide verde saturada
-    const isl = MAPA ? new THREE.Mesh(new THREE.SphereGeometry(I.r, 24, 6, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#5d8a6c' }))
+    // BM42: con mapa, loma de borde irregular con color de vértice (arena en la orilla, verde hondo arriba) y aro de espuma; no un disco liso menta
+    const isl = MAPA ? loma(I, k)
       : new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
     if (MAPA) isl.scale.y = 0.3;
     isl.position.set(I.x, seaY + (MAPA ? -0.5 : I.r * 0.3), I.z); scene.add(isl);

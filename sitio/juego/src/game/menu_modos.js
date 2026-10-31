@@ -397,7 +397,7 @@
     }
     function terminar(n, decision) {
       const d = leer(); if (!d.terminados[n]) d.terminados[n] = Date.now();
-      if (decision) d.decisiones[n] = decision;
+      if (decision) d.decisiones[n] = Object.assign({}, d.decisiones[n], decision); // se mezcla con lo apuntado al decidir (src/game/temporada.js)
       escribir(d);
     }
     const decision = n => leer().decisiones[n] || null;

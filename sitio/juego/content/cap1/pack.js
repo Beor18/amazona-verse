@@ -73,12 +73,13 @@
       version: 5,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
+      // guardianIntro: el Guardián ya se presentó antes de construir (KELVIN-2, decisión del equipo 30-oct); false en las partidas viejas.
       // marcador: cronómetro, puntuación y final del capítulo (src/game/marcador.js); null en las partidas viejas.
       // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces'],
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
-        refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
+        refuge: null, builds: [], guardianMet: false, guardianIntro: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, gearRoof: false,
         indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [],
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },

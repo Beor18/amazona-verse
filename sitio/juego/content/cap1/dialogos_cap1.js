@@ -233,6 +233,16 @@ window.AV_DIALOGOS_CAP1 = {
    ]
   },
   {
+   "id": "c1_guardian_medalla",
+   "disparador": "interact:medalla_guardian",
+   "personaje": "Guardián",
+   "emocion": "triste",
+   "lineas": [
+    "Una de esas piezas es igual a la medalla que guardo.",
+    "Todavía no puedo contarte todo."
+   ]
+  },
+  {
    "id": "c1_plano_bote",
    "disparador": "evento:BoatBlueprintUnlocked",
    "personaje": "Vittata",

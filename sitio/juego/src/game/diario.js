@@ -78,7 +78,7 @@ AVE.module('diario', function (G) {
   // Estilo propio de la sección (ui.css es de otro módulo): resumen plegable con la huella y una flecha que gira al abrir
   if (!document.getElementById('diario-especies-css')) {
     const st = document.createElement('style'); st.id = 'diario-especies-css';
-    st.textContent = '#card details.especies > summary.lbl { cursor: pointer; list-style: none; }'
+    st.textContent = '#card details.especies > summary.lbl { cursor: pointer; list-style: none; min-height: var(--tap-sm, 44px); box-sizing: border-box; flex-wrap: wrap; align-content: center; overflow-wrap: anywhere; }'
       + '#card details.especies > summary.lbl::-webkit-details-marker { display: none; }'
       + '#card:has(.diary) details.especies > summary.lbl::before { -webkit-mask-image: var(--i-paw); mask-image: var(--i-paw); }'
       + '#card details.especies > summary.lbl::after { content: ""; margin-left: auto; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }'
@@ -142,5 +142,49 @@ AVE.module('diario', function (G) {
   }, 52);
   G.on('apply', () => { for (const f of entries) meshes[f.id].visible = !S.field.includes(f.id); }, 12);
 
-  return { entries, meshes, total, found, open, seccion, especies, hud, renderButton, count, y: id => ys[id] };
+  // BM72: prueba de «Amazonas del mundo» (AV.diarioTest). Comprueba el HTML y la tarjeta real a 343 px de ancho.
+  async function test() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const E = window.AV_ESPECIES, todas = E ? (E.especies || []).concat(E.extintas || []) : [], L = especies();
+    check('Hay datos de especies (AV_ESPECIES)', !!E && todas.length > 0, todas.length);
+    check('Solo salen las especies con datos completos', L.length === todas.filter(conDatos).length && L.length > 0, L.length + '/' + todas.length);
+    const difiere = e => !(e.catalogo && e.uicn && e.catalogo.uicn === e.uicn.categoria), disc = todas.filter(e => conDatos(e) && difiere(e));
+    const sinUicn = L.filter(s => !s.uicn);
+    check('Las especies que no coinciden con el catálogo (ESPECIES_DISCREPANCIAS.md) van sin estado UICN', todas.filter(difiere).length >= 13 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
+    check('Las que coinciden sí traen estado UICN', L.filter(s => s.uicn).length === L.length - sinUicn.length && L.some(s => s.id === 'vittata' && s.uicn === 'CR'));
+    const aj = G.aula && G.aula.aj, ant = aj && aj.idioma;
+    try {
+      for (const l of ['es', 'en']) {
+        if (aj) aj.idioma = l;
+        const d = document.createElement('div'); d.innerHTML = htmlEspecies();
+        const li = d.querySelectorAll('li[data-especie]');
+        check(`[${l}] Una ficha por especie, con común, científico, distribución, UICN y fuente`, li.length === L.length && [...li].every(x => x.querySelectorAll('b').length === 1 && x.querySelector('i[lang=la]') && x.querySelector('.uicn') && x.querySelector('.fuente') && x.querySelectorAll('small').length === 4));
+        check(`[${l}] Sin «undefined» ni «null» en el texto`, !/undefined|null|\[object/.test(d.textContent));
+        const fila = d.querySelector('[data-especie=diadema]');
+        check(`[${l}] Una de las 13 dice «${TX.porVerificar[l]}» y no una categoría`, !!fila && fila.querySelector('.uicn').textContent.includes(TX.porVerificar[l]));
+        const v = d.querySelector('[data-especie=vittata]');
+        check(`[${l}] La cotorra muestra ${E.categorias.CR[l]} (CR) y la cita de BirdLife`, !!v && v.querySelector('.uicn').textContent.includes(E.categorias.CR[l] + ' (CR)') && /BirdLife/.test(v.querySelector('.fuente').textContent));
+      }
+    } finally { if (aj) aj.idioma = ant; }
+    // La tarjeta real, estrecha: la sección existe, se abre y no desborda
+    const card = $('card');
+    if (card && card.hidden !== false || !G.ui.overlayOpen()) {
+      try {
+        card.style.maxWidth = '343px'; card.style.boxSizing = 'border-box';
+        open();
+        const det = card.querySelector('details.especies');
+        check('El Diario muestra el desplegable «Amazonas del mundo»', !!det && det.querySelectorAll('li[data-especie]').length === L.length);
+        if (det) det.open = true;
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const cr = card.getBoundingClientRect();
+        const malos = [...card.querySelectorAll('details.especies *')].filter(n => n.getBoundingClientRect().right > cr.right + 1);
+        check('A 343 px de ancho la sección no desborda', card.scrollWidth <= card.clientWidth + 1 && !malos.length, `scrollW ${card.scrollWidth} / ${card.clientWidth}, ${malos.length} fuera`);
+        const sum = card.querySelector('details.especies > summary');
+        check('El resumen mide ≥ 44 px de alto', !!sum && sum.getBoundingClientRect().height >= 43.5, sum && sum.getBoundingClientRect().height);
+      } finally { G.ui.hideCard(); card.style.maxWidth = ''; card.style.boxSizing = ''; }
+    }
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+
+  return { entries, meshes, total, found, open, seccion, especies, htmlEspecies, test, hud, renderButton, count, y: id => ys[id] };
 });
