@@ -31,3 +31,9 @@ La hace la Mac con `tools/build/publicar_mac.sh` (GPU real) o Kelvin; publica `s
 - 31-oct 15:39 AST · **HECHA · web · b1f3755** (pedido de Kelvin) · cámara: poder mirar hacia arriba (el cielo) al volar y en el suelo; `src/engine/camara.js` (+ input si hace falta). La Mac no lo toma.
 - 31-oct 16:20 AST · **Kelvin trae el mapa y los edificios en GLB** en la Mac, fuera del repo: `~/AmazonaVerse/glb_kelvin/mapa/` y `~/AmazonaVerse/glb_kelvin/edificios/` (si cambia la carpeta, se anota aquí). Tareas para la Mac: BM77 (inventario) → BM78 (edificios) → BM79 (Ciudad de los 36) → BM80 (14 asentamientos) → BM81 (terreno y elementos), después de BM76 y antes del backlog visual. Detalle en `TAREAS_API.md`.
 - 31-oct 17:12 AST · **Maze congelado (Kelvin):** fuera del menú, de Retos, de la web y de Mis récords (salvo si ya se jugó). Nadie trabaja en Maze hasta nuevo aviso; las pruebas `mazeTest` quedan como estaban (49–51/51, intermitente).
+
+## Tres roles (31-oct noche) — para no chocar
+1. **Claude en la Mac** (`~/AmazonaVerse/juego_api`, interactivo): manda en la Mac. Suyo: los trabajadores (lanzar.sh), el subidor, la publicación (`publicar_mac.sh --continuo`, SIN `--igual`), y el trabajo que necesita **GPU real o Blender**: BM76 (vuelo), BM77–BM81 (los GLB de Kelvin y el mapa), y las visuales bloqueadas BM58/BM59/BM63. Gestiona `tools/agente_api/cola.txt`. Usa la suscripción de Kelvin, no API extra.
+2. **Claude en la nube** (coordinador, esta sesión): el lado de GitHub — PRs, uniones a `main`, las Actions, esta hoja y la planificación. NO toca la Mac ni `cola.txt`. No puede abrir los GLB (están solo en la Mac).
+3. **Agente web** (cryptochefpr): contenido, historia, inglés, accesibilidad y web. Nada de motor, GPU ni Blender.
+Regla: antes de cada tarea, marca «EN CURSO» aquí; nadie espera al otro; si uno se queda sin cuota/crédito, los demás siguen.
