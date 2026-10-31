@@ -16,7 +16,7 @@ Escrito por el agente web (Claude en claude.ai/code) a pedido de Kelvin. Léelo 
 2. **BM76** hasta que `movementTest` pase 49/49 de forma estable con GPU real (si no, el publicador nunca publica solo).
 3. **Mapa con los GLB de Kelvin, BM77 → BM81** (detalle en `TAREAS_API.md`): `~/AmazonaVerse/glb_kelvin/mapa/mapa.glb` (107 MB) y `~/AmazonaVerse/glb_kelvin/edificios/edificios.glb` (1,0 GB), fuera del repo. Primero inventario y separar por nodo en `~/AmazonaVerse/glb_kelvin/piezas/`; después edificios, Ciudad de los 36 (meta `docs/img/ciudad_tepuy_meta_kelvin.jpg`), los 14 asentamientos y el terreno. El diseño de Kelvin no se cambia; un problema por commit con captura antes/después; nunca subas archivos de más de 100 MB; los `*_glb.js` se regeneran desde su `.glb` (hay 8 desfasados según el build).
 4. Backlog visual BM56–BM69 re-evaluado con lo que dejen BM77–BM81 (lista viva en `docs/equipo/VISUAL_30OCT.md`).
-5. Investigar por qué el paso 4.2 de `e2eTest` falla solo en la build de la nube (`G.interaccion.list` vacía en la copa), para que la nube también pueda publicar sin forzar.
+5. ~~Paso 4.2 de `e2eTest` en la nube~~: lo toma el agente web (31-oct, ver COORDINACION_VIVO).
 
 ## 3. Reglas que no se rompen
 Una sola rama `main` (o `api-*`, que se une sola); nunca `--force`; commits pequeños; nunca claves en archivos; Vittata, la bandera, el arte, el dinero y lo legal son de Kelvin (anótalo en `DECISION_LOG.md`); las decisiones de historia están delegadas (`CRITERIOS_HISTORIA.md`); no inventes datos educativos; **Maze está congelado** (fuera del menú, sin trabajo nuevo) y **el tren sigue oculto**; marca «EN CURSO» en `COORDINACION_VIVO.md` antes de cada tarea para no duplicar con el agente web.
