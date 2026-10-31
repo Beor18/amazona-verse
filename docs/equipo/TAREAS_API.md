@@ -844,4 +844,4 @@ Los GLB están en la Mac **fuera del repo**: `~/AmazonaVerse/glb_kelvin/mapa/` y
 | BM78 | bloqueada | — | Depende de BM77 (falta `docs/equipo/GLB_KELVIN_31OCT.md`, no está en main ni en la copia). Sin hacer; reintentar tras BM77. |
 | BM79 | bloqueada | — | Depende de BM77 (parcial): `~/AmazonaVerse/glb_kelvin/` existe pero `edificios/` y `mapa/` están vacías (31 oct); faltan los GLB de la Ciudad de los 36. Sin hacer; reintentar cuando estén. |
 | BM80 | bloqueada | — | Depende de BM77 (falta `docs/equipo/GLB_KELVIN_31OCT.md`) y no existe `~/AmazonaVerse/glb_kelvin/` en la Mac. Sin hacer; reintentar tras BM77. |
-| BM81 | bloqueada | — | Depende de BM77 (falta `docs/equipo/GLB_KELVIN_31OCT.md`) y no hay GLB de mapa/terreno. Sin hacer; reintentar tras BM77. |
+| BM81 | bloqueada | — | BM77 parcial: `~/AmazonaVerse/glb_kelvin/mapa/` y `edificios/` siguen vacías (31 oct); solo existe `Downloads/mapa.glb` sin colocar. Sin hacer; reintentar cuando Kelvin deje los GLB del mapa/terreno. |
