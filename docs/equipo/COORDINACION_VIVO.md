@@ -39,3 +39,10 @@ La hace la Mac con `tools/build/publicar_mac.sh` (GPU real) o Kelvin; publica `s
 Regla: antes de cada tarea, marca «EN CURSO» aquí; nadie espera al otro; si uno se queda sin cuota/crédito, los demás siguen.
 
 - 31-oct noche · EN CURSO · nube · e2eTest 4.2 (por qué G.interaccion.list sale vacía en la copa solo en la build de la nube).
+
+## Hallazgo e2e 4.2 (nube) — pista para el Claude de la Mac (necesita GPU para verificar)
+Localizado en `content/cap1/historia.js` ~574-613. El fallo «G.interaccion.list vacía en la copa» en la build de la nube es de TIMING, no de lógica de juego:
+- La altura de la percha (`percha.y`) se fija dentro de `G.vegetacion.listo.then(...)` (línea ~585), es decir ASÍNCRONO, tras cargar la vegetación.
+- El interactuable `luma` se añade en x,z del NPC en el suelo (línea 251, r 2.4); la guía apunta a la percha cuando `lumaArriba()`, pero conviene confirmar que el propio interactuable queda alcanzable desde la percha.
+- Hipótesis: bajo SwiftShader la vegetación/streaming va lenta, así que cuando la prueba vuela a la percha y mide, el interactuable de `luma` aún no está colocado/alcanzable → lista < 6 m vacía. En la Mac (GPU rápida) llega a tiempo y pasa 47/47.
+- Arreglo a probar CON GPU (no desactivar casos): que el interactuable `luma` siga a la percha cuando `lumaArriba()` sin depender de `G.vegetacion.listo`, o que la prueba/juego garantice la percha lista antes de 4.2. Reproducir en la Mac retrasando `vegetacion.listo` a propósito.
