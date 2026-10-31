@@ -19,7 +19,7 @@ Revisé a ojo una muestra de 8 láminas por problema (no las 90 una a una); lo q
 
 ## Lo que sigue flojo (para aprobar o devolver)
 
-1. Ciudad lejana blanca (LOD `_lejos`), a 60–150 m.
+1. Ciudad lejana blanca (LOD `_lejos`), a 60–150 m. · RESUELTO (BM56): el tope de BM38 se había perdido en BM43; restaurado y con tinte cálido (`docs/img/bm56_ciudad_lejos_antes.png` / `_despues.png`): ahora marfil crema, algo caqui.
 2. Piezas flotantes y la cámara dentro de la losa en `colina_suelo_r0` (0, 170).
 3. Islotes menta lisos en el mar.
 4. Cascada en escalones y orillas en pico.
