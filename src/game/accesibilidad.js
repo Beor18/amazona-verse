@@ -317,6 +317,20 @@ AVE.module('accesibilidad', function (G) {
     }
     return { f, d, w: f.contentWindow, hay, cerrar: () => f.remove() };
   }
+  // BM83: dos controles visibles (botones, selectores, resúmenes) no se pisan entre sí; devuelve las parejas que se solapan más de 4 px
+  // Los pies «pegajosos» (Cerrar del Diario, Empezar del creador) se superponen al contenido que se desliza por debajo: eso es lo normal, no un solape
+  const enPegajoso = b => { for (let n = b; n && n.nodeType === 1; n = n.parentElement) if (/sticky|fixed/.test(n.ownerDocument.defaultView.getComputedStyle(n).position)) return true; return false; };
+  function solapes(raiz) {
+    const bs = [...raiz.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')].filter(b => visible(b) && b.getBoundingClientRect().width && !b.closest('.maestro-scroll, .cr-hatch, .cr-skip, .cr-globo, [aria-hidden="true"]') && !enPegajoso(b));
+    const mal = [];
+    for (let a = 0; a < bs.length; a++) for (let c = a + 1; c < bs.length; c++) {
+      if (bs[a].contains(bs[c]) || bs[c].contains(bs[a])) continue;
+      const A = bs[a].getBoundingClientRect(), B = bs[c].getBoundingClientRect();
+      if (Math.min(A.right, B.right) - Math.max(A.left, B.left) > 4 && Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top) > 4) mal.push([bs[a], bs[c]]);
+    }
+    return mal;
+  }
+  const nombreB = b => (b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 14);
   // Contraste (WCAG) del texto de un elemento contra su fondo opaco más cercano
   function contrasteDe(e) {
     const w = e.ownerDocument.defaultView;
@@ -487,6 +501,7 @@ AVE.module('accesibilidad', function (G) {
                 if (r.width && (r.width < 43.5 || r.height < 43.5)) malosP.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
               }
               if (cajaP.scrollWidth > cajaP.clientWidth + 1) { const cr = cajaP.getBoundingClientRect(); const culpa = [...cajaP.querySelectorAll('*')].filter(e => visible(e) && e.getBoundingClientRect().right > cr.left + cajaP.clientWidth + 1).slice(0, 2).map(e => (e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className)).join(','); malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth}) por ${culpa}`); }
+              for (const [x, y] of solapes(cajaP)) malosP.push(`${et}: «${nombreB(x)}» se solapa con «${nombreB(y)}»`);
               if (m.d.documentElement.scrollWidth > W + 1) malosP.push(`${et}: la página mide ${m.d.documentElement.scrollWidth} px`);
               if (contr) {
                 let peor = 99, quien = '';
@@ -517,6 +532,7 @@ AVE.module('accesibilidad', function (G) {
                 const r = b.getBoundingClientRect();
                 if (r.width && (r.width < 43.5 || r.height < 43.5)) malosO.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
               }
+              for (const [x, y] of solapes(cajaP)) malosO.push(`${et}: «${nombreB(x)}» se solapa con «${nombreB(y)}»`);
               for (const e of [cajaP, ...cajaP.querySelectorAll('*')]) {
                 if (!visible(e) || e.closest('canvas') || e.tagName === 'CANVAS') continue;
                 const r = e.getBoundingClientRect();
