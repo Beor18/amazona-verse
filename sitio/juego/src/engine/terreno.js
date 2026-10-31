@@ -832,7 +832,8 @@ AVE.module('terreno', function (G) {
       const f = 1 + 0.16 * Math.sin(a * 3 + k) + 0.09 * Math.sin(a * 7 + 2 * k + 1) + 0.05 * Math.sin(a * 13 + k * 3);
       p.setXYZ(i, x * f, y * (0.85 + 0.3 * Math.sin(a * 5 + k)), z * f);
       const u = clamp01(h * 3.5);
-      col.push(0.78 - 0.58 * u, 0.72 - 0.32 * u, 0.52 - 0.30 * u);
+      // BM57: el color de vértice se lee como lineal y la loma salía menta pálida; arena y verde hondos (sRGB → lineal)
+      col.push(Math.pow(0.72 - 0.52 * u, 2.2), Math.pow(0.66 - 0.26 * u, 2.2), Math.pow(0.46 - 0.30 * u, 2.2));
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));

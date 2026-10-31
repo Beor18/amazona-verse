@@ -593,12 +593,22 @@
       // Posada junto a Iguaca: a su altura y dentro de la percha (desde el suelo, bajo la copa, no se le puede hablar)
       const juntoALuma = () => Math.abs(S.pos.y - percha.y) < 1.6;
       lumaIt.visible = () => !lumaArriba() || juntoALuma();
-      G.on('render', (dt, t) => {
+      // BM26: dónde está Iguaca (punto de interacción y colisión) es simulación y va en 'update'; en 'render' solo se coloca el
+      // sprite. Antes todo iba en 'render' y, sin cuadros de dibujo (pestaña o iframe oculto: sin requestAnimationFrame), el punto
+      // de «Hablar con Iguaca» se quedaba en su sitio del suelo aunque ella estuviera en la copa.
+      const lumaPos = dt => {
         const want = lumaArriba() ? 0 : 1;
         lumaK = want > lumaK ? Math.min(1, lumaK + dt / 1.4) : want; // baja en 1,4 s; al cargar una partida se coloca de golpe
-        const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), e = lumaK * lumaK * (3 - 2 * lumaK);
-        const x = percha.x + (LUMA_SUELO.x - percha.x) * e, z = percha.z + (LUMA_SUELO.z - percha.z) * e, y = percha.y + (gy - percha.y) * e;
+        const e = lumaK * lumaK * (3 - 2 * lumaK);
+        const x = percha.x + (LUMA_SUELO.x - percha.x) * e, z = percha.z + (LUMA_SUELO.z - percha.z) * e;
         lumaIt.x = x; lumaIt.z = z; lumaN.collider.x = x; lumaN.collider.z = z; lumaN.collider.r = lumaK < 1 ? 0 : (lumaN.visible ? 0.6 : 0);
+        return e;
+      };
+      lumaPos(0);
+      G.on('update', dt => { lumaPos(dt); }, 12);
+      G.on('render', (dt, t) => {
+        const e = lumaPos(0), x = lumaIt.x, z = lumaIt.z;
+        const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), y = percha.y + (gy - percha.y) * e;
         if (lumaK >= 1) { lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
         lumaN.sp.position.set(x, y + 1.0 + Math.sin(t * 2) * 0.05, z); lumaN.sh.position.set(x, y + 0.03, z);
       }, 12);
@@ -607,7 +617,7 @@
         if (llamo || !lumaArriba() || busy || G.dialogo.activo() || S.clock < 0.5) return; // el gancho del capítulo arranca antes del medio segundo
         if (Math.hypot(S.pos.x - percha.x, S.pos.z - percha.z) < 18) { llamo = true; say(LLAMADA(), null, LIBRE); }
       }, 46);
-      G.on('apply', () => { llamo = false; lumaK = lumaArriba() ? 0 : 1; }, 36);
+      G.on('apply', () => { llamo = false; lumaK = lumaArriba() ? 0 : 1; lumaPos(0); }, 36);
       const lumaAPI = {
         percha, arriba: lumaArriba, junto: juntoALuma, llamo: () => llamo, llamado: () => { llamo = true; }, donde: () => percha.nombre,
         guia: () => (lumaArriba() ? { x: percha.x, z: percha.z, y: percha.y + 0.6 } : { x: lumaIt.x, z: lumaIt.z }),
