@@ -46,3 +46,10 @@ Localizado en `content/cap1/historia.js` ~574-613. El fallo «G.interaccion.list
 - El interactuable `luma` se añade en x,z del NPC en el suelo (línea 251, r 2.4); la guía apunta a la percha cuando `lumaArriba()`, pero conviene confirmar que el propio interactuable queda alcanzable desde la percha.
 - Hipótesis: bajo SwiftShader la vegetación/streaming va lenta, así que cuando la prueba vuela a la percha y mide, el interactuable de `luma` aún no está colocado/alcanzable → lista < 6 m vacía. En la Mac (GPU rápida) llega a tiempo y pasa 47/47.
 - Arreglo a probar CON GPU (no desactivar casos): que el interactuable `luma` siga a la percha cuando `lumaArriba()` sin depender de `G.vegetacion.listo`, o que la prueba/juego garantice la percha lista antes de 4.2. Reproducir en la Mac retrasando `vegetacion.listo` a propósito.
+
+## Prioridad y presupuesto (31-oct noche, decisión del coordinador; Kelvin: $46 de API)
+Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el movimiento), 2º VUELO Y CÁMARA.
+- **Claude de la Mac (Blender, suscripción de Kelvin):** PRIORIDAD 1 = BM78 (edificios por kit), BM79 (ciudad de los 36), BM80 (14 asentamientos), BM81 (terreno). Son los GLB de `~/AmazonaVerse/glb_kelvin/`. Después, las visuales bloqueadas (BM58/59/63/64/65/68/69). Requiere `export AV_PYTHON=~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11`.
+- **Trabajadores autónomos del API ($46):** solo BM76 (vuelo, movementTest 49/49 estable con GPU). `cola.txt` reducido a BM76 para no gastar API en tareas bloqueadas.
+- **Nube (coordinador):** unir a `main` lo que suban, publicar limpio cuando BM76 quede verde, revisar el inventario BM77 y los resultados de BM78-81.
+- Publicación limpia (sin `--igual`) depende de BM76 verde estable.

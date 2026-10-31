@@ -1,18 +1,4 @@
-# Cola de la API en la Mac. 31-oct: BM76 PRIMERO (regresion de movementTest que frena publicar). Luego el mapa con los GLB de Kelvin (BM77-BM81, en ~/AmazonaVerse/glb_kelvin/). Despues el backlog visual pendiente. BM49-55,61,62,66,70-75 ya hechas.
+# Cola de la API autónoma en la Mac. 31-oct noche (decisión del coordinador con $46 de API):
+# Solo BM76 (vuelo, GPU) para no malgastar API en tareas bloqueadas por Blender.
+# EDIFICIOS Y MAPA (BM78-81) y las visuales que necesitan Blender (BM58/59/63/64/65/68/69) las hace el CLAUDE DE LA MAC con Blender (tu suscripción, no el API). Ver COORDINACION_VIVO.md.
 BM76
-BM77
-BM78
-BM79
-BM80
-BM81
-BM56
-BM57
-BM58
-BM59
-BM60
-BM63
-BM64
-BM65
-BM67
-BM68
-BM69
