@@ -668,6 +668,14 @@ Los GLB están en la Mac **fuera del repo**: `~/AmazonaVerse/glb_kelvin/mapa/` y
 - **BM80, los 14 asentamientos.** Con `AUDITORIA_MAPA.md` y `VISUAL_30OCT.md`: los que el encargo pide en piedra con el kit de piedra si Kelvin trae sus GLB (Atalayas, Puerta, Ladera, Monumentos), las 3 torres de Puerto de La Mina, los bloques blancos sin textura, piezas flotantes y la cámara dentro de la losa en (0, 170). Una captura por asentamiento antes/después.
 - **BM81, mapa y elementos del terreno.** Si Kelvin trae el mapa o el terreno en GLB: compáralo con `mapa_cap1.js`/`mapa_cap1_altura.js` y cambia solo lo que mejore (pared del tepuy lisa y los rectángulos blancos pegados a la roca, cascada en escalones, orillas en pico, islotes menta). Los datos del mapa se regeneran con el mismo script de siempre, no a mano. Recorrido de capturas al final (como BM50) para que Kelvin apruebe.
 
+### Carril del agente web — ronda 3 (31-oct noche, sin GPU; NO en la cola de la Mac)
+Verifica que el problema existe antes de tocar; un commit por arreglo; sube a `main` o `api-web`. No toques motor/render ni `tools/blender/*`. Si una instancia agota su parte, sigue con la siguiente.
+- **BM82, terminar BM54 (pruebas frágiles que quedaron parciales).** Repasa QA-77/78/79/81 y cualquier `*Test` extra que siga intermitente; estabilízalas sin bajar lo que comprueban (esperar a que la escena se asiente, no contar al borde). Marca cada QA con el commit en `BUGS.md`.
+- **BM83, auditoría de accesibilidad de TODAS las pantallas** a 320×568 y 375×812 (menú, Aula, cómic, criadero, creador, Diario, Retos, records, pausa, final): botones ≥44 px, 3 tamaños de texto, contraste ≥7:1, sin desbordes ni solapes. Añade los casos que falten a `accesibilidadTest`.
+- **BM84, datos educativos de ep2–ep6 ampliados y con fuente** (sigue de BM71). Cada dato con fuente verificable y enlace (USFWS, DRNA, IUCN, eBird/Cornell, Archivo General, publicaciones); «por verificar» lo que no; nada inventado. Actualiza `docs/equipo/EDUCATIVO_EP2_EP6.md` y corrige textos solo donde haga falta.
+- **BM85, recorrido e2e de ep2–ep6 de principio a fin.** Que cada capítulo se complete (`ep2e2eTest` y las de misión), guardado entre capítulos (`saveTest`), 0 errores de consola. Arregla fallos REALES de contenido/lógica (`content/*`, `src/game/*`), no del motor. Resultado por capítulo en `docs/equipo/PLAYTEST_30OCT.md`.
+- Si de verdad agotas BM82–BM85, para y deja un resumen en `COORDINACION_VIVO.md`; no inventes trabajo.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
