@@ -53,4 +53,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - **Trabajadores autónomos del API ($46):** solo BM76 (vuelo, movementTest 49/49 estable con GPU). `cola.txt` reducido a BM76 para no gastar API en tareas bloqueadas.
 - **Nube (coordinador):** unir a `main` lo que suban, publicar limpio cuando BM76 quede verde, revisar el inventario BM77 y los resultados de BM78-81.
 - Publicación limpia (sin `--igual`) depende de BM76 verde estable.
-- 31-oct 18:41 AST · **HECHA · web · bf01e55** · e2eTest 4.2 falla solo en la build de la nube (`G.interaccion.list` vacía en la copa): lo toma el agente web (era el punto 5 del traspaso para la Mac: la Mac NO lo toma). También el guion de prueba manual (P3.1). Causa: la posición de Iguaca iba en 'render' y el iframe oculto no dibuja (QA-82).
+- 31-oct 18:41 AST · **HECHA · web · e9cf722** · e2eTest 4.2 falla solo en la build de la nube (`G.interaccion.list` vacía en la copa): lo toma el agente web (era el punto 5 del traspaso para la Mac: la Mac NO lo toma). También el guion de prueba manual (P3.1). Causa: la posición de Iguaca iba en 'render' y el iframe oculto no dibuja (QA-82).
