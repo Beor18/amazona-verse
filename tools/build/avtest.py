@@ -587,7 +587,7 @@ def correr(a, cfg):
                 aviso('no se pudo capturar la pantalla de arranque')
             disponibles = evaluar(cdp, ses, "Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && typeof window.AV[k] === 'function')", 10, promesa=False) or []
             R['baterias_disponibles'] = disponibles
-            req = [] if a.solo_medir else list(P['baterias'])
+            req = [] if a.solo_medir else (a.solo.split(',') if a.solo else list(P['baterias']))
             extra = [b for b in disponibles if b not in req] if a.extra else []
             R['baterias'] = {}
             # 3. Baterías
@@ -825,6 +825,7 @@ def main():
     ap.add_argument('--extra', action='store_true', help='corre también las AV.*Test que no están en config (informativas)')
     ap.add_argument('--puerto', type=int, default=0, help='puerto del servidor web (por defecto, uno libre)')
     ap.add_argument('--informe', help='carpeta para reporte-test.* (por defecto, la de la build)')
+    ap.add_argument('--solo', help='solo estas baterías (nombres separados por comas), en vez de las de config.json (para medir una sola)')
     ap.add_argument('--solo-medir', action='store_true', help='solo el flujo de jugador nuevo y las medidas de carga y heap, sin baterías')
     ap.add_argument('--reintentos', type=int, default=1, help='reintentos si Chrome o el servidor fallan (no si fallan las pruebas)')
     a = ap.parse_args()

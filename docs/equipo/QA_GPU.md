@@ -65,6 +65,10 @@ Cambios (`src/pruebas/movimiento.js`): los casos de tiempo (arranque al 90 %, sa
 Duración por caso (ms): sitio 1651 · arranque (3 medidas) 4293 · salto (salto corto ×3) 6261 · vuelo 1577 · pendientes 1556 · agua 2268 · pico 1915 · agarre 1578 · techo y pared 2569 · rama 1375 · cuerda 1673 · **toldo 39474** · estaca 4171 · **edificios 71855** (paredes 71674, techo 124) · sólidos 23 · cámara 3192 · subir 8760 · **torre 93840** · fundido 542.
 Pendiente (si hace falta más margen): toldo (39 s) y torre (94 s) siguen esperando a que el streaming cargue y entre ellos suman más de la mitad del total.
 
+## BM31 · LOD intermedio de árbol (29-oct-2026)
+`vegetacion.js`: entre la malla completa y el impostor hay ahora una malla simplificada (hojas: 1 de cada 4 triángulos, cada uno ×2 desde su centro; mismo atlas, color y escala; tronco compartido), hasta `distancias.lod` (135 m × calidad; en alto y medio, no en bajo). El impostor empieza en el final de ese tramo menos la banda de fundido (≤ 12 m), con presupuesto propio (3 × tope de árboles y 0,5 × tope de triángulos, en triángulos de LOD). Hojas con `alphaToCoverage` (bordes suaves con MSAA); `alphaTest` 0,5 y mipmaps del atlas sin cambios; las hojas usan Lambert con envoltura, no el degradado toon, así que no se cuantizan en dos tonos.
+Pruebas: 13 baterías en verde salvo `movementTest` 48/49 en una de dos corridas (caso de polvo al aterrizar, carga de la Mac; 49/49 en la otra); `floraTest` 14/14. **FPS no medidos**: esta sesión no tiene GPU real (Chrome sin cabeza), quedan por medir en Villa Raíz y la colina (objetivo ≥ 50 en alto de escritorio, ≥ 30 en móvil emulado). Tampoco hay capturas antes/después ni se verificó a vista el paso malla → LOD → impostor.
+
 ## BM52 · tirón al pulsar «Empezar» en móvil (30-oct-2026, QA-53)
 Build `HEAD-be8a52f`, `qa_movil.py --solo cap1` (375×812, dpr 3, CPU ×4, GPU Metal, con `taskpolicy -b nice -n 15` y la Mac a carga ~10 de otras ventanas: son techos). Peor cuadro en ms, 3 corridas, cap. 1:
 | Escena | Antes (BC2/BE3) | Corrida 1 | Corrida 2 | Corrida 3 (`--perfil`) |
@@ -74,9 +78,6 @@ Build `HEAD-be8a52f`, `qa_movil.py --solo cap1` (375×812, dpr 3, CPU ×4, GPU M
 | apertura 30 s | | 350 | 433 | 267 |
 | paseo 12 s | | 933 | 1.700 | 733 |
 La compilación ya está repartida (BJ1 y el 28-oct: `checkShaderErrors` apagado, variantes enlazadas por cuadro antes de empezar); lo que queda del perfil de «Empezar»+6 s es `getProgramParameter` 735 ms (dos `renderer.render`: 432 y 303 ms), GC 349, `triSeguir`/`insert`/`trabajar` de `solidos.js` ~550 y `vegetacion.actualizar` 157. No se cambió código en esta pasada. Resultado: «Empezar» ya queda por debajo de 1 s en las 3 corridas, pero con la Mac cargada aparecen cuadros de 1,0–1,7 s en la apertura y el paseo (streaming de zona nueva), así que la meta «ningún cuadro > 1 s» se cumple en una de tres corridas y **QA-53 sigue abierto** (hay que medirlo con la Mac libre o trocear `solidos.js`, que no es de esta tarea). La escena `cap1_fin` falla por `C.aplicarEngranaje` (ajeno).
-
-### BM62 (30-oct): árboles y terreno, FPS tras restaurar BM29/BM31
-Alto, escritorio 1440×900 @2x, `bm14_medir.py`: Villa Raíz 53 FPS (p95 33 ms, DPR 1,5, 499 MB de texturas); ciudad_tepuy 52 FPS (p95 33 ms, DPR 1,5, 494 MB). Capturas `docs/img/bm14_{vuelo,ciudad}_bm62.jpg`. Móvil emulado sin medir en esta tarea.
 
 ## BM61 · rendimiento en los 6 capítulos (30-oct-2026)
 Build `HEAD-290fd44` (`bm61-base`), Mac con GPU real (Chrome 156, Metal), carga ~3, solo `nice -n 15` (sin `taskpolicy -b`, que estrangula la GPU). Escritorio: `bm14_medir.py` (1440×900, DPR 2, calidad «alto»). Móvil: `qa_movil.py --sin-fin` (375×812, dpr 3, CPU ×4, calidad automática), apertura de cada capítulo.

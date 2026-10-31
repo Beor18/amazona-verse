@@ -220,9 +220,12 @@ AVE.module('streaming', function (G) {
       sh.uniforms.avCrema = uCrema;
       sh.vertexShader = sh.vertexShader
         .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
-        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
+        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;')
+        // BM40: posición de mundo para la textura triplanar de la piedra
+        .replace('#include <project_vertex>', '#include <project_vertex>\n{ mat4 mw = modelMatrix;\n#ifdef USE_INSTANCING\n mw = mw * instanceMatrix;\n#endif\n vAvMundo = ( mw * vec4( transformed, 1.0 ) ).xyz; }')
+        .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nvarying vec3 vAvMundo;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nvarying vec3 vAvMundo;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
           '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ' * avAtlasEsc, dy = dFdy( uv ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
           '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
@@ -249,6 +252,25 @@ AVE.module('streaming', function (G) {
           '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
           '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
           '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
+          // BM40: las losas y paredes grandes del interior estiraban la UV original (borrosas, de un solo color y con costuras).
+          // Textura de la piedra (celda 6 del atlas) proyectada en triplanar con tamaño fijo en el mundo (1 repetición = 2,5 m),
+          // como variación de luminosidad alrededor de su media, más una veta suave de gran escala para romper las caras lisas.
+          '  if ( fuerza > 0.0 ) {\n' +
+          '    vec3 pw = vAvMundo, gn = normalize( cross( dFdx( pw ), dFdy( pw ) ) );\n' +
+          '    vec3 wt = pow( abs( gn ), vec3( 4.0 ) ); wt /= ( wt.x + wt.y + wt.z + 1e-4 );\n' +
+          '    vec2 org = vec2( 0.5, 0.25 );\n' +
+          '    float avg = dot( textureLod( map, org + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '    float dt = 0.0;\n' +
+          '    for ( int i = 0; i < 3; i ++ ) {\n' +
+          '      vec2 q = ( i == 0 ? pw.zy : ( i == 1 ? pw.xz : pw.xy ) ) / 2.5;\n' +
+          '      vec2 ddx = dFdx( q ) * ' + f(dentro) + ' * avAtlasEsc, ddy = dFdy( q ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
+          '      float lodq = clamp( log2( max( max( length( ddx ), length( ddy ) ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' + log2( avAtlasEsc ) );\n' +
+          '      float w = i == 0 ? wt.x : ( i == 1 ? wt.y : wt.z );\n' +
+          '      dt += w * dot( textureLod( map, org + ' + f(HD.margen / A) + ' + fract( q ) * ' + f(dentro / A) + ', lodq ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '    }\n' +
+          '    float veta = 0.5 + 0.25 * sin( dot( pw, vec3( 0.37, 0.61, 0.29 ) ) ) + 0.25 * sin( dot( pw, vec3( -0.23, 0.17, 0.53 ) ) + 1.7 );\n' +
+          '    diffuseColor.rgb *= clamp( mix( 1.0, dt / max( avg, 0.05 ), 0.6 * fuerza ), 0.65, 1.3 ) * mix( 0.9, 1.08, veta );\n' +
+          '  }\n' +
           '}\n')
         // BM2: la crema se veía plana. Con la normal ya perturbada, las caras que miran al suelo (cornisas por debajo, techos
         // de huecos, dinteles) y las verticales pierden hasta un 38 % de albedo; la que mira al cielo se queda como estaba.
@@ -419,12 +441,15 @@ AVE.module('streaming', function (G) {
   }
   // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  // BM38: el ×1,38 llevaba a 1,0 los canales de las caras claras y el _lejos salía blanco puro frente al crema del cercano
+  // (cremaPlana/atlas: 0,94 / 0,85 / 0,70 como máximo). Tope por canal = el techo de la piedra cercana.
+  const TOPE_LEJOS = [0.94, 0.85, 0.72];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
     for (let i = 0; i < col.count; i++) {
       const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.32, k = 1.38;
-      col.setXYZ(i, Math.min(1, (y + (r - y) * s) * k), Math.min(1, (y + (g - y) * s) * k * 0.97), Math.min(1, (y + (b - y) * s * 1.15) * k));
+      col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k));
     }
     col.needsUpdate = true; geo.userData.marfil = 1;
   }
@@ -536,6 +561,34 @@ AVE.module('streaming', function (G) {
       if (isFinite(y) && I.pos[1] - y > RUINA.sobre) { I.pos[1] = y; I.m.elements[13] = y; }
     }
 
+    // BM28: aldeas asentadas. Las piezas de apoyo bajan su base al terreno (mínimo bajo su huella) y se enderezan si
+    // vienen inclinadas; solo queda el giro en Y. Un único sitio para modelos y umbrales (los usa también streamingTest).
+    const ASIENTO = {
+      modelos: /^(toldo|casa_plataforma|muralla_atalaya|empalizada|portal_madera|savage_)/, // piezas de apoyo
+      inclinMax: 8 * Math.PI / 180,  // rad: pitch/roll mayor que esto se endereza
+      huella: 0.5,                   // semilado de la huella = radio de la pieza × huella, girada con la pieza
+      huellaMax: 6,                  // m: semilado máximo de la huella
+      sinBajar: /^toldo/,            // la lona solo se endereza: bajarla (mínimo o media) deja su borde cuesta arriba a ~1 m y el jugador no se levanta al salir (movementTest)
+      sueloMax: 0.3                  // m: tolerancia de la base sobre el suelo (prueba)
+    };
+    function sueloHuella(I) {
+      const h = Math.min((I.rAsiento || I.r) * ASIENTO.huella, ASIENTO.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);
+      let y = Infinity;
+      for (const [u, v] of [[-h, -h], [h, -h], [-h, h], [h, h], [0, 0]]) y = Math.min(y, T.height(I.pos[0] + u * c + v * s, I.pos[2] - u * s + v * c));
+      return y;
+    }
+    function asentar(I) {
+      if (!ASIENTO.modelos.test(I.modelo)) return;
+      I.rAsiento = I.r; // el radio se recalcula al cargar el modelo; la huella se queda con el del manifiesto
+      const eu = new THREE.Euler().setFromQuaternion(quatA.setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ");
+      if (Math.abs(eu.x) > ASIENTO.inclinMax || Math.abs(eu.z) > ASIENTO.inclinMax) {
+        I.rotY = eu.y; I.erguido = true;
+        I.m.compose(vecA.set(I.pos[0], I.pos[1], I.pos[2]), quatA.setFromAxisAngle(up, I.rotY), escA.set(I.escala, I.escala, I.escala));
+      }
+      if (ASIENTO.sinBajar.test(I.modelo)) return;
+      const y = sueloHuella(I);
+      if (isFinite(y) && Math.abs(I.pos[1] - y) > 0.02) { I.pos[1] = y; I.m.elements[13] = y; }
+    }
     function construir() {
       const kit = KIT();
       for (const c of crudas) {
@@ -560,7 +613,7 @@ AVE.module('streaming', function (G) {
           I.m.compose(vecA.set(x, y, z), quatA.setFromAxisAngle(up, rot), escA.set(I.escala, I.escala, I.escala));
         }
         const k = kit && kit[c.n], rad = k && k.radio ? k.radio : c.e.dim ? Math.hypot(c.e.dim[0], c.e.dim[1], c.e.dim[2]) / 2 : 10;
-        I.r = rad * I.escala; bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
+        I.r = rad * I.escala; asentar(I); bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
         const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
@@ -971,7 +1024,7 @@ AVE.module('streaming', function (G) {
     // --- arranque, bucle y API ---
     let iniciado = false, revisionT = 0;
     const gestor = {
-      zonas, instancias: inst, recursos, lotes, CFG,
+      zonas, instancias: inst, recursos, lotes, CFG, ASIENTO, sueloHuella,
       arrancar() {
         return Promise.resolve(ED.kit && !KIT() ? AVE.assets.script(ED.kit).catch(() => null) : null).then(() => {
           construir(); iniciado = true;
@@ -1114,6 +1167,14 @@ AVE.module('streaming', function (G) {
         return !hay && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 1.5;
       });
       check('Las colisiones de sus edificios están activas al cargar', sinSolido.length === 0, sinSolido.map(I => I.id).slice(0, 5).join(', '));
+      // BM28: aldeas asentadas: ninguna pieza de apoyo con la base a más de 0,3 m del suelo ni inclinada más de 8°
+      const malAsentadas = (ST.instancias || []).filter(I => {
+        if (!ST.ASIENTO.modelos.test(I.modelo)) return false;
+        const eu = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ");
+        return (!ST.ASIENTO.sinBajar.test(I.modelo) && Math.abs(I.pos[1] - ST.sueloHuella(I)) > ST.ASIENTO.sueloMax) || Math.abs(eu.x) > ST.ASIENTO.inclinMax || Math.abs(eu.z) > ST.ASIENTO.inclinMax;
+      });
+      check('Las piezas de apoyo de las aldeas están asentadas (base ≤ 0,3 m del suelo, sin inclinar más de 8°)', malAsentadas.length === 0,
+        malAsentadas.length + ' mal: ' + malAsentadas.slice(0, 4).map(I => { const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().extractRotation(I.m)), "YXZ"); return I.id + " dy=" + (I.pos[1] - ST.sueloHuella(I)).toFixed(2) + " x=" + (e.x * 57.3).toFixed(0) + " z=" + (e.z * 57.3).toFixed(0) + " my=" + I.m.elements[13].toFixed(2) + " py=" + I.pos[1].toFixed(2) + " r=" + I.r.toFixed(1); }).join(', '));
       const idsZ = new Set(Z.inst.map(I => I.id)), colZ = () => G.fisica.colliders.filter(c => idsZ.has(c.id)).length;
       const I0 = Z.inst.find(I => I.erguido && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 2), alto0 = () => I0 && G.solidos && G.solidos.altoEn ? G.solidos.altoEn(I0.pos[0], I0.pos[2], 1e4) : 0;
       const c1 = colZ(), s1 = alto0();

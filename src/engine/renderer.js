@@ -86,7 +86,7 @@ AVE.module('renderer', function (G) {
   // 2 bloom a 1/2 + gradación + viñeta; flora: densidad; floraDist: distancia relativa
   const PRESETS = {
     bajo: { nivel: 'bajo', sombras: 0, sombraRadio: 0, sombraTerreno: false, post: 0, normalesSuelo: false, dosEscalas: false, texMax: 512, flora: 0.5, floraDist: 0.55, pasto: 0, sombraFlora: false, agua: 0, particulas: 0.4 },
-    medio: { nivel: 'medio', sombras: 1024, sombraRadio: 22, sombraTerreno: false, post: 1, normalesSuelo: true, dosEscalas: false, texMax: 1024, flora: 0.8, floraDist: 0.8, pasto: 0.6, sombraFlora: true, agua: 1, particulas: 0.7 },
+    medio: { nivel: 'medio', sombras: 1024, sombraRadio: 22, sombraTerreno: false, post: 1, normalesSuelo: true, dosEscalas: true, texMax: 1024, flora: 0.8, floraDist: 0.8, pasto: 0.6, sombraFlora: true, agua: 1, particulas: 0.7 },
     alto: { nivel: 'alto', sombras: 2048, sombraRadio: 30, sombraTerreno: true, post: 2, normalesSuelo: true, dosEscalas: true, texMax: 0, flora: 1, floraDist: 1, pasto: 1, sombraFlora: true, agua: 2, particulas: 1 },
   };
   const NIVELES = ['bajo', 'medio', 'alto'];

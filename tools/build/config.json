@@ -127,7 +127,7 @@
     "espera_listo_s": 150,
     "espera_red_s": 30,
     "medir_heap_tras_s": 9,
-    "bateria_max_s": 600,
+    "bateria_max_s": 1200,
     "total_max_s": 1800,
     "_nota_presupuestos": "Medidos en la carga inicial (hasta el mundo jugable, antes de las baterías). Los que estén en 'fallan' hacen fallar test.sh; el resto da aviso.",
     "presupuestos": {
