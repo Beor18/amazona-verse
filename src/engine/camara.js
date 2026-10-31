@@ -13,6 +13,13 @@
    - QA-61: volando, una copa no acerca la cámara por debajo del 82 % de distFly (antes bajaba a 2,4 m y la vista
      se agrandaba como un zoom). Posada, sigue acercándose para verla (QA-27). El pellizco (rueda con Ctrl
      o gesto) no hace zoom de página, y el FOV de exploración no se queda en el de un minijuego.
+   - Mirar arriba (pedido de Kelvin, 31-oct-2026; antes la cámara no tenía inclinación: siempre a height/heightFly sobre los
+     pies mirando a Vittata, ~25° hacia abajo, y el cielo no se veía). `inclina` (rad, + = arriba) orbita la cámara alrededor
+     de Vittata: al mirar arriba baja detrás/debajo de ella y apunta al cielo, hasta CAM.inclinaMax (70°) sobre el horizonte.
+     Si choca con el suelo o el agua se acerca a Vittata por la línea y, pegada al suelo, gira la vista hacia arriba sin
+     sacar a Vittata del cuadro (margenVittata). Se mueve arrastrando en vertical (ratón o dedo, input.js) y con T/G o
+     RePág/AvPág. Solo vuelve sola a la vista normal tras CAM.inclinaEspera s sin tocar la cámara y con Vittata en marcha.
+     PRUEBAS: G.camara.test() (AV.camaraTest).
    Dato del pack: jugador.camara (giro inicial, 0,35 por defecto) y jugador.camaraAjuste = { clave: valor } sobre CAM. */
 AVE.module('camara', function (G) {
   'use strict';
@@ -35,12 +42,19 @@ AVE.module('camara', function (G) {
     fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
     caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
     plano: 1.2, planoGiro: 0.55,   // plano de descubrimiento: duración (s) y giro de la órbita (rad)
+    inclinaMax: 70, inclinaMin: 25, // mirar arriba: ° del centro de la vista sobre el horizonte / ° extra hacia abajo
+    inclinaEspera: 4, inclinaVuelta: 0.6, // s sin tocar antes de volver sola (solo en marcha) y tasa de la vuelta (1/s)
+    margenVittata: 8, cercaMin: 2.6, // ° sobre el borde inferior del cuadro / m mínimos al acercarse por el suelo
+                 // ° sobre el borde inferior del cuadro: pegada al suelo, Vittata no sale de la vista
+    teclaInclina: 1.3,             // rad/s con T/G (o RePág/AvPág)
     sinVida: false,                // true: sin cámara con vida (como prefers-reduced-motion; lo usa movementTest)
   }, G.pack.jugador && G.pack.jugador.camaraAjuste);
   // combo/comboT: racha de capturas (la usan objetos y diario para subir la nota del arpegio)
   const juice = { shake: 0, amp: 0, hitStop: 0, combo: 0, comboT: 0 };
   const camPos = new THREE.Vector3();
   let anchorY = null, lastManual = -1e9;
+  let inclina = 0, vista = 0; // mirar arriba: inclinación pedida (rad) y ángulo de la vista que se busca este cuadro
+  const RAD = Math.PI / 180;
   const now = () => performance.now() / 1000;
   // Cámara con vida: roll (rad), caida (m, dolly al aterrizar), fase del balanceo, plano de descubrimiento en curso (s)
   const vida = { roll: 0, caida: 0, fase: 0, plano: 0, planoDir: 1, rumbo: null, giro: 0, land: 0 };
@@ -52,6 +66,16 @@ AVE.module('camara', function (G) {
 
   function manual() { lastManual = now(); }
   function dist() { return G.fisica.MOVE.flying ? CAM.distFly : CAM.dist; }
+  // Elevación de la cámara normal (rad) y rango de `inclina`: del tope hacia abajo a inclinaMax sobre el horizonte
+  const elev0 = () => { const f = G.fisica.MOVE.flying; return Math.atan2((f ? CAM.heightFly : CAM.height) - CAM.look, f ? CAM.distFly : CAM.dist); };
+  const fijaInclina = v => Math.max(-CAM.inclinaMin * RAD, Math.min(elev0() + CAM.inclinaMax * RAD, +v || 0));
+  function inclinar(d) { inclina = fijaInclina(inclina + d); manual(); }
+  // Lo más bajo que puede ir la cámara en (x, z): sobre el terreno y fuera del agua
+  function suelo(x, z) {
+    const t = G.terreno ? G.terreno.height(x, z) + CAM.groundClear : -Infinity;
+    const w = G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) + 0.4 : -Infinity;
+    return Math.max(t, w);
+  }
   // Altura de referencia: la del jugador, salvo al saltar (se queda en el último suelo dentro de una banda)
   function updateAnchor(dt, snap) {
     const M = G.fisica.MOVE, y = S.pos.y;
@@ -147,8 +171,8 @@ AVE.module('camara', function (G) {
       }
     }
     camPos.set(best.x, best.y, best.z);
-    const suelo = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
-    if (camPos.y < suelo) camPos.y = suelo;
+    const piso = suelo(camPos.x, camPos.z);
+    if (camPos.y < piso) camPos.y = piso;
   }
   // ¿Se ve «mira» desde q sin copas en medio? (fotos del cómic, QA-32). Si mira o q están dentro de una copa, no: posada en
   // la rama de un flamboyán, las hojas la tapan desde cualquier ángulo (medido) y el cómic usa su ilustración
@@ -172,13 +196,42 @@ AVE.module('camara', function (G) {
     let yw = yaw;
     if (vida.plano > 0) { const s = Math.sin(Math.PI * (1 - vida.plano / CAM.plano)); yw += vida.planoDir * CAM.planoGiro * s; d *= 1 - 0.18 * s; h *= 1 - 0.2 * s; }
     camPos.set(S.pos.x + Math.sin(yw) * d, ay + h - vida.caida, S.pos.z + Math.cos(yw) * d);
+    vista = 0;
+    if (inclina) {
+      // Órbita alrededor del punto al que mira: al subir la vista, la cámara baja detrás/debajo de Vittata (algo más cerca)
+      const ly = lookY(), e0 = Math.atan2(h - CAM.look, d), R0 = Math.hypot(d, h - CAM.look), eMax = CAM.inclinaMax * RAD;
+      const e = Math.max(-eMax, Math.min(Math.min(1.35, e0 + CAM.inclinaMin * RAD), e0 - inclina));
+      const r = R0 * (e < 0 ? 1 - 0.3 * (-e / eMax) : 1), rh = r * Math.cos(e);
+      camPos.set(S.pos.x + Math.sin(yw) * rh, ly + r * Math.sin(e) - vida.caida, S.pos.z + Math.cos(yw) * rh);
+      vista = -e;
+      // Si queda bajo el terreno o en el agua, se acerca a Vittata por la misma línea (no sube lejos mirando abajo)
+      if (camPos.y < suelo(camPos.x, camPos.z)) {
+        const ox = camPos.x - S.pos.x, oy = camPos.y - ly, oz = camPos.z - S.pos.z;
+        for (let k = 0.92; k > 0.2; k -= 0.08) {
+          camPos.set(S.pos.x + ox * k, ly + oy * k, S.pos.z + oz * k);
+          if (camPos.y >= suelo(camPos.x, camPos.z)) break;
+        }
+        // Pegada al suelo no se mete en Vittata: queda al menos a cercaMin m detrás (apuntar() sube la vista lo que falte)
+        const hz = Math.hypot(camPos.x - S.pos.x, camPos.z - S.pos.z);
+        if (hz < CAM.cercaMin) { camPos.x = S.pos.x + Math.sin(yw) * CAM.cercaMin; camPos.z = S.pos.z + Math.cos(yw) * CAM.cercaMin; }
+      }
+    }
     evitarCopas();
-    // En laderas y barrancos la cámara no se mete bajo el terreno
-    const gy = G.terreno ? G.terreno.height(camPos.x, camPos.z) + CAM.groundClear : -Infinity;
+    // En laderas y barrancos la cámara no se mete bajo el terreno (ni en el agua)
+    const gy = suelo(camPos.x, camPos.z);
     if (camPos.y < gy) camPos.y = gy;
     evitarMuros();
   }
   const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look - 0.5 * (G.fisica.MOVE.flying ? 0 : G.fisica.MOVE.agachada || 0);
+  // Apunta a Vittata y, si el jugador mira arriba y la cámara no pudo bajar lo bastante (suelo, agua), gira la vista
+  // hacia el cielo lo que falte, con Vittata aún en el cuadro (a margenVittata grados del borde inferior)
+  function apuntar() {
+    const ly = lookY(); camera.lookAt(S.pos.x, ly, S.pos.z);
+    if (!(vista > 0)) return;
+    const p = camera.position, a = Math.atan2(ly - p.y, Math.hypot(S.pos.x - p.x, S.pos.z - p.z));
+    const extra = Math.min(vista - a, (camera.fov / 2 - CAM.margenVittata) * RAD);
+    if (extra > 1e-3) camera.rotateX(extra);
+  }
   // Coloca la cámara: snap = al instante (cargar, capturas); también deja al jugador y al aprendiz en su sitio
   function place(snap) {
     if (snap) updateAnchor(0, true);
@@ -186,7 +239,7 @@ AVE.module('camara', function (G) {
     if (snap) { camera.position.copy(camPos); G.actores.snapCompanionSprite(); }
     G.actores.placePlayerSprite(0);
     if (snap) G.actores.sync3D(0, false, true);
-    camera.lookAt(S.pos.x, lookY(), S.pos.z);
+    apuntar();
   }
   // Seguimiento perezoso: con el jugador en movimiento y la cámara sin tocar, gira despacio hasta quedar detrás
   function lazyYaw(dt) {
@@ -227,9 +280,22 @@ AVE.module('camara', function (G) {
     vida.planoDir = l <= r ? 1 : -1; vida.plano = CAM.plano; return true;
   }
   G.on('lugar', () => descubrir());
+  // Mirar arriba con el teclado (T/G o RePág/AvPág) y vuelta suave a la vista normal: solo tras inclinaEspera s sin tocar
+  // la cámara y con Vittata en marcha (parada, la mirada del jugador se queda donde la dejó)
+  function inclinaPaso(dt) {
+    const K = G.input && G.input.keys, busy = G.ui.busy();
+    if (K && !busy) {
+      const t = (K.has('t') || K.has('pageup') ? 1 : 0) - (K.has('g') || K.has('pagedown') ? 1 : 0);
+      if (t) { inclinar(t * CAM.teclaInclina * dt); return; }
+    }
+    if (!inclina || busy || now() - lastManual < CAM.inclinaEspera || (G.fisica.MOVE.speed || 0) < 2) return;
+    inclina *= 1 - rate(CAM.inclinaVuelta, dt);
+    if (Math.abs(inclina) < 0.005) inclina = 0;
+  }
   function follow(dt) {
     vivir(dt);
     lazyYaw(dt);
+    inclinaPaso(dt);
     updateAnchor(dt, false);
     target(); camera.position.lerp(camPos, rate(CAM.follow, dt));
   }
@@ -255,7 +321,7 @@ AVE.module('camara', function (G) {
   }
   // Dibuja: la sacudida se suma solo durante el dibujo para no ensuciar el seguimiento de la cámara
   function draw(dt) {
-    camera.lookAt(S.pos.x, lookY(), S.pos.z);
+    apuntar();
     if (vida.roll) camera.rotateZ(vida.roll);
     let sx = 0, sy = quieta() ? 0 : Math.sin(vida.fase) * CAM.bob, sz = 0;
     camera.position.y += sy;
@@ -270,6 +336,79 @@ AVE.module('camara', function (G) {
     camera.position.x -= sx; camera.position.y -= sy; camera.position.z -= sz;
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  // ---------- Pruebas (AV.camaraTest): mirar arriba en vuelo y en el suelo, nunca bajo el terreno ni en el agua, y la
+  // vuelta automática que espera. Deja a Vittata, MOVE y la cámara como estaban.
+  function test() {
+    const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
+    const M = G.fisica.MOVE, CLAVES = ['flying', 'grounded', 'swimming', 'posado', 'agachada', 'speed', 'vx', 'vz', 'landing'];
+    const keep = { pos: Object.assign({}, S.pos), vy: S.vy, yaw, inclina, lastManual, anchorY, M: {}, plano: vida.plano };
+    for (const k of CLAVES) keep.M[k] = M[k];
+    const d = new THREE.Vector3(), v = new THREE.Vector3(), deg = r => Math.round(r / RAD * 10) / 10;
+    const pitch = () => { camera.updateMatrixWorld(); camera.getWorldDirection(d); return Math.asin(Math.max(-1, Math.min(1, d.y))); };
+    const enCuadro = () => { camera.updateMatrixWorld(); v.set(S.pos.x, lookY(), S.pos.z).project(camera); return Math.abs(v.x) <= 1 && v.y >= -1 && v.y <= 1 && v.z < 1; };
+    const modo = (vuela, alto) => {
+      Object.assign(M, { flying: vuela, grounded: !vuela, swimming: false, posado: false, agachada: 0, speed: 0, vx: 0, vz: 0, landing: false });
+      S.pos.y = G.terreno.height(S.pos.x, S.pos.z) + alto; S.vy = 0; vida.plano = 0;
+    };
+    const mira = (v0) => { inclina = fijaInclina(v0); place(true); return { pitch: pitch(), y: camera.position.y, piso: suelo(camera.position.x, camera.position.z), cuadro: enCuadro() }; };
+    try {
+      // 0. Antes del arreglo: sin inclinación la vista mira ~25° hacia abajo (el cielo casi no entra)
+      modo(true, 25); const base = mira(0);
+      ok('sin inclinar, la vista normal sigue mirando abajo a Vittata', base.pitch < 0 && base.cuadro, deg(base.pitch) + '°');
+      // 1. Se puede mirar por encima del horizonte, en vuelo y en el suelo, con Vittata en el cuadro
+      const vuelo = mira(9);
+      ok('en vuelo se inclina hasta ~70° sobre el horizonte', vuelo.pitch > 60 * RAD && vuelo.cuadro, deg(vuelo.pitch) + '°');
+      modo(false, 0); const tierra = mira(9), topeCuadro = tierra.pitch + camera.fov / 2 * RAD;
+      const dTierra = Math.hypot(camera.position.x - S.pos.x, camera.position.z - S.pos.z);
+      ok('en el suelo se mira por encima del horizonte (el cielo llena la parte de arriba)', tierra.pitch > 10 * RAD && topeCuadro > 40 * RAD && tierra.cuadro && dTierra > 2,
+        deg(tierra.pitch) + '° centro, ' + deg(topeCuadro) + '° arriba, a ' + Math.round(Math.hypot(camera.position.x - S.pos.x, camera.position.z - S.pos.z) * 10) / 10 + ' m');
+      const abajo = mira(-9);
+      ok('también se puede mirar algo más abajo, con tope', abajo.pitch < base.pitch && abajo.pitch > -80 * RAD && abajo.cuadro, deg(abajo.pitch) + '°');
+      // 2. Nunca bajo el terreno ni en el agua: en el suelo, en vuelo bajo y en 8 direcciones
+      let peor = Infinity, donde = '';
+      for (const [vuela, alto] of [[false, 0], [true, 2], [true, 6]]) for (let i = 0; i < 8; i++) {
+        modo(vuela, alto); yaw = i * Math.PI / 4; const r = mira(9), m = r.y - (r.piso - 0.01);
+        if (m < peor) { peor = m; donde = (vuela ? 'vuelo ' + alto + ' m' : 'suelo') + ' giro ' + i; }
+      }
+      ok('mirando arriba, la cámara nunca queda bajo el terreno', peor >= 0, Math.round(peor * 100) / 100 + ' m (' + donde + ')');
+      let agua = null;
+      if (G.agua && G.agua.levelAt) for (let r = 0; r <= 240 && !agua; r += 6) for (let a = 0; a < 16 && !agua; a++) {
+        const x = keep.pos.x + Math.sin(a * Math.PI / 8) * r, z = keep.pos.z + Math.cos(a * Math.PI / 8) * r, w = G.agua.levelAt(x, z);
+        if (w > G.terreno.height(x, z) + 1) agua = { x, z, w };
+      }
+      if (agua) {
+        let peorA = Infinity;
+        for (let i = 0; i < 8; i++) {
+          S.pos.x = agua.x; S.pos.z = agua.z; modo(true, 0); S.pos.y = agua.w + 1.2; yaw = i * Math.PI / 4;
+          const r = mira(9); peorA = Math.min(peorA, r.y - (G.agua.levelAt(camera.position.x, camera.position.z) + 0.39));
+        }
+        ok('volando a ras del agua y mirando arriba, la cámara no se mete en el agua', peorA >= 0, Math.round(peorA * 100) / 100 + ' m');
+        Object.assign(S.pos, keep.pos);
+      } else ok('volando a ras del agua (sin agua cerca: no aplica)', true, 'sin agua a 240 m');
+      // 3. La vuelta automática no deshace la mirada al instante; tras inclinaEspera s sin tocar y en marcha, vuelve poco a poco
+      modo(true, 25); yaw = keep.yaw; inclina = 0;
+      const c = G.renderer.canvas, ev = (t, y) => c.dispatchEvent(new PointerEvent(t, { pointerId: 91, clientX: 400, clientY: y, bubbles: true }));
+      ev('pointerdown', 500); for (let y = 500; y >= 200; y -= 30) ev('pointermove', y); ev('pointerup', 200);
+      const arrastre = inclina;
+      ok('arrastrar hacia arriba (ratón o dedo) inclina la vista hacia el cielo', arrastre > 0.5, deg(arrastre) + '°');
+      Object.assign(M, { speed: 6, vx: 0, vz: -6 });
+      for (let i = 0; i < 20; i++) follow(0.05); // 1 s en marcha justo después de tocar
+      ok('en marcha, 1 s después de tocar, la mirada sigue donde la dejó', Math.abs(inclina - arrastre) < 1e-6, deg(inclina) + '°');
+      Object.assign(M, { speed: 0, vx: 0, vz: 0 }); lastManual = now() - 30;
+      for (let i = 0; i < 20; i++) follow(0.05);
+      ok('parada, la mirada no vuelve sola aunque pase el rato', Math.abs(inclina - arrastre) < 1e-6, deg(inclina) + '°');
+      Object.assign(M, { speed: 6, vz: -6 });
+      for (let i = 0; i < 20; i++) follow(0.05);
+      ok('en marcha y sin tocar ' + CAM.inclinaEspera + ' s, vuelve poco a poco (no de golpe)', inclina < arrastre && inclina > arrastre * 0.3, deg(arrastre) + '° → ' + deg(inclina) + '°');
+      const K = G.input && G.input.keys;
+      if (K) { inclina = 0; K.add('t'); for (let i = 0; i < 10; i++) follow(0.05); K.delete('t'); ok('la tecla T inclina hacia arriba (G hacia abajo)', inclina > 0.3, deg(inclina) + '°'); }
+    } catch (e) { ok('sin excepciones', false, e && e.message); }
+    Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
+    for (const k of CLAVES) M[k] = keep.M[k];
+    place(true);
+    return { passed: results.filter(r => r.ok).length, total: results.length, results };
+  }
+
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });

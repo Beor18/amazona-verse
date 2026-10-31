@@ -1,5 +1,5 @@
 /* AVE · entrada
-   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
+   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, T/G mirar arriba/abajo (los lee camara.js), 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
    Solo traduce entrada a llamadas: G.fisica (saltar, soltar el salto, impulso, volar/aterrizar), G.actores (gestos), G.interaccion (acción).
    Volar y dejar de volar: V (o el botón Volar) despega; volando, V (o el botón, que pasa a decir "Aterrizar") baja suave hasta el
    suelo; otra vez V o Saltar sigue volando. Volando sin tocar nada se queda cernida en el sitio; Espacio sube y C baja.
@@ -202,11 +202,16 @@ AVE.module('input', function (G) {
     }
   }
 
-  // Arrastrar en el lienzo gira la cámara
+  // Arrastrar en el lienzo gira la cámara; en vertical inclina la vista (hacia arriba mira al cielo)
   const canvas = G.renderer.canvas;
-  let dragId = null, dragX = 0;
-  canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; });
-  canvas.addEventListener('pointermove', e => { if (e.pointerId !== dragId) return; G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX; if (G.camara.manual) G.camara.manual(); });
+  let dragId = null, dragX = 0, dragY = 0;
+  canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; });
+  canvas.addEventListener('pointermove', e => {
+    if (e.pointerId !== dragId) return;
+    G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX;
+    if (G.camara.inclinar) G.camara.inclinar((dragY - e.clientY) * 0.005); dragY = e.clientY;
+    if (G.camara.manual) G.camara.manual();
+  });
   const endDrag = e => { if (e.pointerId === dragId) dragId = null; };
   canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 
