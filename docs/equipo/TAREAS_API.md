@@ -647,3 +647,4 @@ Los Grok trabajan en la nube sin GPU ni Blender. La API, en la Mac, hace lo que 
 | BM57 | no encontrada | — | BM57 no existe en esta copia ni en origin/main (la última BM es BM5); no se hizo nada. Falta que la coordinadora la escriba. |
 | BM59 | bloqueada | — | Depende de BM56, BM57 y BM58 (lotes 1 a 3 del backlog visual): ninguna está hecha y BM59 toma «los siguientes». Reintentar cuando existan. Sin cambios de código. |
 | BM64 | bloqueada | — | Depende de los lotes previos del backlog visual (BM56-BM59 bloqueadas o sin hacer); hoy no hay «siguientes» problemas. Reintentar cuando existan. Sin cambios de código. |
+| BM68 | bloqueada | — | Depende de los lotes previos del backlog visual (BM56-BM67 bloqueadas o sin hacer) y toma «los siguientes 2-3»; hoy no hay cuáles. Reintentar cuando existan. Sin cambios de código. |
