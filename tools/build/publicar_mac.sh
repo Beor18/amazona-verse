@@ -6,8 +6,10 @@
 # Autorizado por Kelvin (publicar sin pedirle permiso si las pruebas pasan). Nunca usa --force.
 set -u
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
-PROBAR=0; CONT=0
-for a in "$@"; do case "$a" in --probar) PROBAR=1;; --continuo) CONT=1;; esac; done
+PROBAR=0; CONT=0; IGUAL=0
+for a in "$@"; do case "$a" in --probar) PROBAR=1;; --continuo) CONT=1;; --igual) IGUAL=1;; esac; done
+# --igual: publica aunque las pruebas estén en rojo (Kelvin lo pidió para ver los gráficos del día en vivo;
+# queda el ajuste de vuelo BM76 pendiente). Solo para una publicación puntual, no en --continuo.
 COAUTOR="${AV_COAUTOR:-Claude Sonnet 5.5 <noreply@anthropic.com>}"
 
 una_vuelta() {
@@ -40,13 +42,19 @@ PY
     if [ -n "$ULT" ] && git diff --quiet "$ULT" HEAD -- . ':!sitio' ':!docs' ':!*.md' 2>/dev/null; then echo "nada nuevo que publicar (sitio ya es $ULT)"; exit 0; fi
     OUT="$PWD/tools/build/salida/publicar-$SHA"; rm -rf "$OUT"
     echo "== build de $SHA =="; taskpolicy -b nice -n 15 tools/build/build.sh HEAD "$OUT" || { echo "NO SE PUBLICA: el build falló"; exit 1; }
-    echo "== pruebas (13 baterías + extras) =="; tools/build/test.sh "$OUT/" --extra || { echo "NO SE PUBLICA $SHA: pruebas en rojo (arriba está cuál)"; exit 1; }
+    NOTA="13 baterías en verde en la Mac con GPU real"
+    if [ $IGUAL -eq 1 ]; then
+      echo "== pruebas OMITIDAS (--igual): se publica con el vuelo pendiente (BM76) =="
+      NOTA="gráficos del día; vuelo con ajuste pendiente (BM76, movementTest 46/49)"
+    else
+      echo "== pruebas (13 baterías + extras) =="; tools/build/test.sh "$OUT/" --extra || { echo "NO SE PUBLICA $SHA: pruebas en rojo (arriba está cuál)"; exit 1; }
+    fi
     [ $PROBAR -eq 1 ] && { echo "pruebas en verde para $SHA (--probar: sin publicar)"; exit 0; }
     tools/build/sitio.sh "$OUT/site" || exit 1
     T=$(mktemp); GIT_INDEX_FILE=$T git read-tree HEAD; GIT_INDEX_FILE=$T git add -A sitio
     GIT_INDEX_FILE=$T git diff --cached --quiet && { echo "sitio/ sin cambios"; exit 0; }
     TREE=$(GIT_INDEX_FILE=$T git write-tree); rm -f "$T"
-    C=$(git commit-tree "$TREE" -p HEAD -m "Sitio: publica $SHA (13 baterías en verde en la Mac con GPU real)
+    C=$(git commit-tree "$TREE" -p HEAD -m "Sitio: publica $SHA ($NOTA)
 
 Co-Authored-By: $COAUTOR")
     for i in 1 2 3 4; do
