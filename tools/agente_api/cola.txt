@@ -1,5 +1,10 @@
-# Cola de la API en la Mac. 31-oct: BM76 PRIMERO (regresion de movementTest que frena publicar). Luego el backlog visual pendiente. BM49-55,61,62,66,70-75 ya hechas.
+# Cola de la API en la Mac. 31-oct: BM76 PRIMERO (regresion de movementTest que frena publicar). Luego el mapa con los GLB de Kelvin (BM77-BM81, en ~/AmazonaVerse/glb_kelvin/). Despues el backlog visual pendiente. BM49-55,61,62,66,70-75 ya hechas.
 BM76
+BM77
+BM78
+BM79
+BM80
+BM81
 BM56
 BM57
 BM58
