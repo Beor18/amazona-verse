@@ -406,7 +406,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="tren"></span><button class="btn" type="button" data-jugar="tren" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>River Rush</h3><p>Baja el río Amazonas en canoa. Esquiva troncos y rocas, recoge racimos y llega al mar. Clásico, contrarreloj o contra tu fantasma.</p>
       <span class="rt-rec" data-rec="rio_rush"></span><button class="btn" type="button" data-jugar="rio_rush" data-icon="flag">Jugar</button></div>
-    <div class="rt-reto"><h3>Amazona Maze</h3><p>Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.</p>
+    <div class="rt-reto" hidden style="display:none"><h3>Amazona Maze</h3><p>Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.</p>
       <span class="rt-rec" data-rec="maze"></span><button class="btn" type="button" data-jugar="maze" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>

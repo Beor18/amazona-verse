@@ -565,7 +565,7 @@
         <p><span data-l="es">Acelera, frena en las curvas, elige vía y lleva cada carga a su estación a tiempo, como el tren que rodeaba Puerto Rico.</span><span data-l="en">Speed up, brake in the curves, pick a track and bring each load to its station on time, like the train that once circled Puerto Rico.</span></p>
       </article>
       -->
-      <article class="mj-ficha">
+      <article class="mj-ficha" hidden style="display:none"><!-- 31-oct: Maze fuera del menú y congelado por Kelvin -->
         <div class="screen loop">
           <img src="assets/img/minijuego-maze.jpg" width="800" height="450" loading="lazy"
                alt="Amazona Maze: Vittata recorre un laberinto de setos junto al mar, con frutas por recoger y guardianes amables."
@@ -642,7 +642,7 @@
     <script>
     (function () {
       var API = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records';
-      var RETOS = [['flight', 'Amazona Flight', 'Amazona Flight', 'obstáculos', 'obstacles'], ['banquete', '¡Banquete!', 'Feast!', 'puntos', 'points'], ['tormenta', '¡Escapa de la tormenta!', 'Escape the storm!', 'puntos', 'points'], ['carrera', 'Carrera', 'Race', '', ''], ['rio', 'Contrarreloj del río', 'River time trial', '', ''], ['rio_rush', 'River Rush', 'River Rush', 'puntos', 'points'], ['maze', 'Amazona Maze', 'Amazona Maze', 'puntos', 'points']];;
+      var RETOS = [['flight', 'Amazona Flight', 'Amazona Flight', 'obstáculos', 'obstacles'], ['banquete', '¡Banquete!', 'Feast!', 'puntos', 'points'], ['tormenta', '¡Escapa de la tormenta!', 'Escape the storm!', 'puntos', 'points'], ['carrera', 'Carrera', 'Race', '', ''], ['rio', 'Contrarreloj del río', 'River time trial', '', ''], ['rio_rush', 'River Rush', 'River Rush', 'puntos', 'points']];;
       var caja = document.getElementById('top-records'); if (!caja) return;
       var tabs = caja.querySelector('.tr-tabs'), lista = caja.querySelector('.tr-lista'), datos = null, actual = 'flight';
       var en = function () { return document.documentElement.lang === 'en'; };
