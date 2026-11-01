@@ -4,6 +4,12 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+## Trabajo continuo (Kelvin, 1-nov: «que no pare»)
+**No pares a preguntar.** Al terminar una tarea, súbela y toma la siguiente libre, hasta que no quede ninguna. Orden recomendado:
+**009** (minutos) → **002** → **001** → **005** → **010** → **006 + 008** → **007** → **004** → **003**. Si una tarea se traba
+más de una hora, déjala `BLOQUEADA · <motivo>` y sigue con la siguiente. Si te cortan (crédito, cuota, desconexión), al volver:
+`git pull --rebase origin main`, lee esta tabla y toma la primera libre o la tuya `EN CURSO`.
+
 ## Cómo se trabaja
 1. Toma la primera tarea **libre** de la tabla de abajo (en orden) y cámbiala a `EN CURSO · Kimi · <fecha y hora>` en un commit
    pequeño de este archivo. Una tarea a la vez.
