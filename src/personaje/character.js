@@ -30,10 +30,19 @@
     wings: {
       idle: [0, 0.05, 2.2, 0], walk: [0.14, 0.05, 11, 0], hop: [0.55, 0.35, 0, 0],
       fly: [1.0, 0.55, 11, 0], flap: [0.95, 0.7, 18, 0], hover: [1.0, 0.62, 17, -0.15], takeoff: [0.95, 0.8, 15, -0.05],
-      glide: [1.25, 0.05, 9, 0], land: [1.15, 0.22, 20, -0.55],
+      glide: [1.25, 0.05, 9, 0],
       // Bajando (1-nov, Kelvin: «una cotorra no baja de esa manera»): alas levantadas en V (diedro), aleteo corto y lento
       descend: [1.75, 0.15, 7, 0.35],
+      // Aterrizaje por etapas (ver ANIM.land): pre-flare con las alas abiertas y algo adelantadas, casi quietas (frena planeando);
+      // flare con aletazos hondos y rápidos, alas adelante; al posarse, dos o tres aleteos cortos de equilibrio antes de plegarlas
+      preflare: [1.4, 0.06, 6, -0.2], land: [1.3, 0.42, 17, -0.22], settle: [0.7, 0.18, 24, -0.1],
     },
+    // Aterrizaje (rad; el juego pone landPre, landFlare, landReach y landSettle, 0..1). Cola (espalda1001, +X sube): baja un
+    // poco en el pre-flare, más en el flare y se abre en abanico (escala de su hueso); al posarse da un golpe arriba de equilibrio.
+    // Patas adelante en el último metro: muslo adelante, rodilla estirada, dedos abiertos para agarrar. Alas ahuecadas en el
+    // flare: codo y mano doblados. Al tocar: rodillas que amortiguan y bajan el cuerpo (modelo) y vuelven en landSettle.
+    land: { colaPre: -0.2, colaFlare: -0.45, colaAsentar: 0.35, abanico: 0.45, cadera: 0.25, rodilla: 0.35, tobillo: -0.2, dedos: 0.5,
+      codo: 0.15, mano: 0.2, cabeza: 0.3, amortigua: { cadera: 0.3, rodilla: 0.5, tobillo: 0.35, bajar: 0.05 } },
     mouthMax: 0.4,            // apertura máxima del pico al hablar (rad; 0,35 ≈ 5,5 cm): algo más para que se lea de lejos
     lookMax: [1.05, 0.45],    // giro máximo de la cabeza al mirar a alguien (lado, arriba/abajo)
     footIK: 0.32,             // corrección máxima de cada pata en pendiente (unidades del modelo)
@@ -591,6 +600,7 @@
         this.rot(L, "z", 0.35 * env); this.rot(R, "z", -0.35 * env);
       }
       this.locomotion(dt, k);
+      this.landPose(k);
       this.face(dt);
       this.emotePose(dt);
       this.actPose(dt);
@@ -784,10 +794,12 @@
       if (B.cabeza) {
         this.rot(B.cabeza, "x", -((run ? 0.14 : 0.05) + Math.cos(ph * 2) * 0.04) * w);
         this.rot(B.cabeza, "z", -s * 0.05 * w * (1 - rw));
-        // Volando, la cabeza se queda casi nivelada aunque el cuerpo se incline o se ladee (estabiliza la mirada, como las aves)
-        if (this.flying) {
+        // Volando, la cabeza se queda casi nivelada aunque el cuerpo se incline o se ladee (estabiliza la mirada, como las aves);
+        // al posarse sigue estabilizada mientras el cuerpo se endereza (sin salto de la cabeza al tocar el suelo)
+        this.hsW = (this.hsW || 0) + ((this.flying || this.landSettle > 0 ? 1 : 0) - (this.hsW || 0)) * k;
+        if (this.hsW > 0.01) {
           const r = this.root.rotation;
-          this.rot(B.cabeza, "x", -r.x * 0.55 * this.headSign.pitch); this.rot(B.cabeza, "z", -r.z * 0.5);
+          this.rot(B.cabeza, "x", -r.x * 0.55 * this.headSign.pitch * this.hsW); this.rot(B.cabeza, "z", -r.z * 0.5 * this.hsW);
         }
       }
       if (B.espalda1001) this.rot(B.espalda1001, "z", Math.sin(ph + 1) * 0.12 * w);
@@ -809,6 +821,37 @@
       // Rebote del cuerpo: caminando, dos subidas por ciclo (una por pie); corriendo, un saltito por ciclo con las patas recogidas
       const bob = (1 - Math.cos(ph * 2)) * 0.5 * ANIM.bobWalk * (1 - rw) + Math.max(0, c) * ANIM.bobRun * rw;
       this.root.position.y += bob * w * this.root.scale.y;
+    }
+    // Aterrizaje por etapas (ANIM.land; actores.js da los pesos según la altura y el tiempo desde que tocó el suelo).
+    // Ejes medidos en el rig: cola (espalda1001) +X sube; dedos de las patas +X cierran; muslo -X adelanta; rodilla -X dobla.
+    landPose(k) {
+      const B = this.bones, L = ANIM.land, air = this.airborne && !this.swimming;
+      const sm = (key, v) => (this[key] = (this[key] || 0) + ((v || 0) - (this[key] || 0)) * k);
+      const pre = sm('lpW', air ? this.landPre : 0), fl = sm('lfW', air ? this.landFlare : 0), re = sm('lrW', air ? this.landReach : 0);
+      const se = sm('lsW', !air ? this.landSettle : 0), golpe = Math.sin((1 - se) * Math.PI) * (se > 0.01 ? 1 : 0);
+      const cola = B.espalda1001;
+      if (cola) {
+        if (!this.colaS) this.colaS = cola.scale.clone();
+        this.rot(cola, 'x', L.colaPre * pre * (1 - fl) + L.colaFlare * fl + L.colaAsentar * golpe);
+        const ab = 1 + L.abanico * Math.max(pre * 0.6, fl, se * 0.5);
+        cola.scale.set(this.colaS.x * ab, this.colaS.y, this.colaS.z * ab);
+      }
+      if (re > 0.01 || se > 0.01) {
+        const A = L.amortigua;
+        for (const [hip, knee, ankle] of [['pieL1', 'pieL2', 'pieL3'], ['pieL1001', 'pieL2001', 'pieL3001']]) {
+          if (!B[hip]) continue;
+          this.rot(B[hip], 'x', -L.cadera * re - A.cadera * se); this.rot(B[knee], 'x', L.rodilla * re - A.rodilla * se);
+          this.rot(B[ankle], 'x', L.tobillo * re + A.tobillo * se);
+        }
+        if (!(this.fitAdj && this.fitAdj.toes)) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', -L.dedos * re);
+        this.root.position.y -= A.bajar * se * this.root.scale.y;
+      }
+      if (fl > 0.01) {
+        for (const n of ['armL2', 'armL2001']) if (B[n]) this.rot(B[n], 'x', L.codo * fl);
+        for (const n of ['armL3', 'armL3001']) if (B[n]) this.rot(B[n], 'x', L.mano * fl);
+        // La cabeza mira al sitio donde se va a posar aunque el cuerpo se eche atrás
+        if (B.cabeza) this.rot(B.cabeza, 'x', -this.root.rotation.x * L.cabeza * fl * this.headSign.pitch);
+      }
     }
     // Posada en algo fino (posado = 'fino': rama, baranda, poste, cumbrera): agachada, patas juntas y dedos cerrados agarrando,
     // con un leve balanceo para mantener el equilibrio. Con calzado los dedos no se tocan (siguen en su pose dentro del zapato).

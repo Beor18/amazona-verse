@@ -165,6 +165,14 @@ AVE.module('actores', function (G) {
   const turn = { yaw: null, rate: 0 };
   // Recoger algo: un saltito de alegría (sin tocar objetos.js: se nota en S.collected)
   const joy = { n: -1, t: 0 };
+  // Aterrizaje por etapas, como un loro de verdad (Kelvin, 1-nov: «muy específico»). Solo postura: la física no cambia.
+  // Alturas sobre el suelo en m, medidas desde flareHeight (fisica.js, donde empieza a frenar): pre-flare desde pre m más
+  // arriba (se nivela, patas y cola empiezan a bajar), flare en el metro siguiente (se echa atrás de pecho) y patas estiradas
+  // hacia adelante en el último metro (alcance: de alcance m a alcance - 1). Inclinación (rad, + de pico): nivelada en el
+  // pre-flare, echada atrás en el flare. Asentarse: s tras tocar el suelo (alas que se pliegan, reajuste de equilibrio).
+  const LAND = { pre: 2.4, flare: 1.0, alcance: 1.4, leanPre: 0, leanFlare: -0.6, asentar: 0.45, cabeceo: 0.12 };
+  const aterr = { vol: false, t: 9 };
+  const suave = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 
   function sync3D(dt, moving, snap) {
     const F = G.fisica, MOVE = F.MOVE, keys = G.input.keys, talk = G.dialogo.talk, jumpHeld = G.input.jumpHeld;
@@ -187,10 +195,19 @@ AVE.module('actores', function (G) {
       const swimLean = diving ? 1.35 : 1.1 + Math.min(1, sp / F.SWIM_SPEED) * 0.1;
       // Bajando, una cotorra no cae derecha como un paracaídas: se inclina de pico según lo rápido que baja (bajada = 0..1)
       const bajada = Math.min(1, Math.max(0, -S.vy - 1) / 4.5);
-      const flyLean = fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight ? -0.3 : 0.1 + bajada * 0.45)
+      // Etapas del aterrizaje (0..1 cada una): pre-flare, flare y patas adelante; asen va de 1 al tocar el suelo a 0
+      const alto = S.pos.y - MOVE.groundY, fh = F.TUNING.flareHeight, ate = fase === 'aterrizaje';
+      const pre = ate ? suave((fh + LAND.pre - alto) / LAND.pre) : 0, fl = ate ? suave((fh - alto) / LAND.flare) : 0;
+      const alc = ate ? suave(LAND.alcance - alto) : 0;
+      if (aterr.vol && !MOVE.flying && MOVE.grounded && !snap) aterr.t = 0; // acaba de posarse volando
+      aterr.vol = MOVE.flying; aterr.t = snap ? 9 : aterr.t + dt;
+      const asen = aterr.t < LAND.asentar ? 1 - aterr.t / LAND.asentar : 0;
+      const flyLean = ate ? (0.1 + bajada * 0.45) * (1 - pre) + LAND.leanPre * pre + (LAND.leanFlare - LAND.leanPre) * fl
         : fase === 'despegue' ? 0.05 : fase === 'cernido' ? 0.12 + Math.min(1, sp / 2.5) * 0.1 + bajada * 0.5
         : 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 + bajada * 0.25;
-      const lean = MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0));
+      // Al posarse, el cuerpo cabecea un poco hacia adelante y vuelve (recupera el equilibrio)
+      const lean = MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))
+        + LAND.cabeceo * Math.sin((1 - asen) * Math.PI);
       r.x += (lean - r.x) * Math.min(1, dt * 8);
       // Ladeo (roll): volando se inclina hacia dentro de la curva como un ave; corriendo, apenas; en el agua, meceo
       const bank = MOVE.flying ? Math.max(-0.65, Math.min(0.65, -turn.rate * Math.min(1, sp / F.FLY_SPEED) * 0.45))
@@ -212,9 +229,9 @@ AVE.module('actores', function (G) {
       P.speed = sp;
       P.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : run ? 2 : 1; // nadando patalea siempre
       P.airborne = air; P.flying = MOVE.flying; P.posado = MOVE.posado || ''; P.agachada = MOVE.agachada || 0;
-      // Las patas se bajan al final: bajando de alto van recogidas y salen al acercarse al suelo
-      const cerca = Math.min(1, Math.max(0, 1 - (S.pos.y - MOVE.groundY - F.TUNING.flareHeight) / 4));
-      P.legsDown = fase === 'aterrizaje' ? Math.max(cerca, 1 - bajada) : fase === 'cernido' ? 0.65 * (1 - bajada) : fase === 'despegue' ? 0.8 : 0;
+      // Las patas se bajan al final: bajando de alto van recogidas, empiezan a salir en el pre-flare y en el flare quedan abajo
+      P.legsDown = ate ? Math.max(1 - bajada, Math.min(1, pre * 0.6 + fl)) : fase === 'cernido' ? 0.65 * (1 - bajada) : fase === 'despegue' ? 0.8 : 0;
+      P.landPre = pre; P.landFlare = fl; P.landReach = alc; P.landSettle = asen;
       P.swimming = MOVE.swimming; P.diving = diving;
       P.swimRate = moving ? 1.3 : 0.55;
       // IK de patas: el suelo bajo cada pie (terreno, pisos y perchas)
@@ -240,9 +257,9 @@ AVE.module('actores', function (G) {
         : !inDialog ? (joy.t > 0 ? 'happy' : MOVE.land > 0 && MOVE.impact > 0.4 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral')
         : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
       P.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim')
-        : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight + 0.5 ? 'land' : bajada > 0.3 ? 'descend' : 'glide')
+        : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : ate ? (fl > 0.02 ? 'land' : pre > 0.3 ? 'preflare' : bajada > 0.3 ? 'descend' : 'glide')
           : jumpHeld ? 'flap' : bajada > 0.3 && sp < F.FLY_SPEED * 0.7 ? 'descend' : fase === 'cernido' ? 'hover' : S.vy < -0.2 && sp > F.FLY_SPEED * 0.7 ? 'glide' : 'fly')
-        : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+        : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (asen > 0.55 ? 'settle' : moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       ideaBulb.visible = emote.name === 'idea';
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
       P.update(dt);
