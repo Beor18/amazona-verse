@@ -12,8 +12,12 @@
    - Bosque lleno (AW2): relleno hasta ~7 000 árboles con la máscara de Kelvin (assets/data/bosque_cap1.js), con tope de
      árboles en malla por calidad (300/600/1 200, los más cercanos) y sombra real solo a menos de 30 m.
    - Colisiones: troncos a menos de 40 m del jugador como colliders (se actualizan al moverse).
-   - Fundido entre la cámara y Vittata: lo que queda dentro del cono cámara→Vittata (radio que crece hasta FUNDIDO.radio
-     junto a ella) se vuelve translúcido por tramado, sin ordenar transparencias ni tocar las sombras.
+   - Fundido entre la cámara y Vittata (G1, B1): lo que queda dentro del cono cámara→pecho de Vittata (S.pos + FUNDIDO.alto;
+     radio que crece del 25 % junto a la cámara a FUNDIDO.radio junto a ella) se vuelve translúcido por tramado (discard: sin
+     ordenar transparencias); hasta el 40 % del radio queda visible 1 − FUNDIDO.fuerza (~25 %) y luego un borde suave. Hojas, cortezas y rocas, en malla
+     cercana, lejana y LOD; la sombra (customDepthMaterial) no se funde. Dos uniformes compartidos (uOcluA: cámara + fuerza,
+     uOcluB: pecho + radio) que se ponen en el gancho 'render' (programas cacheados por tipo: no se recompila nada).
+     fundidoEn(x, y, z) hace la misma cuenta en JS (floraTest). Con la cámara a < 1,8 m de una copa también se funde (BM43).
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
    API: G.vegetacion.listo (promesa), stats(), instancias, especies, atlas (render target de los impostores; se repinta si se
    pierde el contexto WebGL). */
@@ -112,7 +116,8 @@ AVE.module('vegetacion', function (G) {
   // ---------- Materiales con viento, AO, tinte y fundido ----------
   const U = { uTime: { value: 0 }, uSolDir: { value: R.sunDir }, uSolCol: { value: R.sun.color.clone().multiplyScalar(R.sun.intensity) },
     uOcluA: { value: new THREE.Vector4() }, uOcluB: { value: new THREE.Vector4() } }; // cámara (xyz, opacidad que se quita) / Vittata (xyz, radio)
-  const FUNDIDO = Object.assign({ fuerza: 0.7, radio: 1.15, alto: 0.45 }, FL.fundido);
+  // B1: centro del cono en el pecho (Vittata mide 1,75 m: con 0,45 m la cabeza quedaba fuera del centro del cono) y ~25 % visible
+  const FUNDIDO = Object.assign({ fuerza: 0.75, radio: 1.2, alto: 0.8 }, FL.fundido);
   const VIENTO_DIR = new THREE.Vector2(VI.dir[0], VI.dir[1]).normalize();
   const WIND_PARS = 'uniform float uTime; uniform vec4 uViento; uniform vec2 uFade; uniform vec3 uSolDir;\nattribute vec4 aViento;\nvarying float vAO; varying float vFadeD; varying float vTrans; varying vec3 vWPos;\n';
   const WIND_PROJECT = `
@@ -144,7 +149,9 @@ AVE.module('vegetacion', function (G) {
       vec3 ab = uOcluB.xyz - uOcluA.xyz; float t = dot( vWPos - uOcluA.xyz, ab ) / max( dot( ab, ab ), 1e-4 );
       if ( t > 0.0 && t < 1.0 ) {
         float r = uOcluB.w * mix( 0.25, 1.0, t ), dl = distance( vWPos, uOcluA.xyz + ab * t );
-        float k = pow( 1.0 - smoothstep( 0.0, r, dl ), 1.5 ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w; // BM43: borde más ancho, el círculo punteado no se marca
+        // B1: meseta (fuerza entera) hasta el 40 % del radio y borde suave hasta el radio; antes (BM43) solo el eje llegaba a la
+        // fuerza y a media distancia quedaba ~1/3: la cabeza de Vittata seguía tapada. El borde ancho evita que se marque el círculo.
+        float k = ( 1.0 - smoothstep( r * 0.4, r, dl ) ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w;
         if ( k > 0.0 && ign( gl_FragCoord.xy + 17.0 ) < k ) discard;
       }
     }
@@ -933,6 +940,24 @@ AVE.module('vegetacion', function (G) {
   // en la CPU y se repinta aquí (el renderer emite 'contexto' antes de precalentar y de volver a dibujar)
   G.on('contexto', ok => { if (ok && IMP.pintar) try { IMP.pintar(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); } });
 
+  // B1: la misma cuenta que FADE_FRAG en JS, para la prueba. Fracción que se descarta en (x, y, z) (0 = entera, 1 = nada):
+  // cono = entre la cámara y Vittata, camara = copa pegada a la cámara (BM43). Sin el fundido por distancia (uFade).
+  const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  function fundidoEn(x, y, z) {
+    const a = U.uOcluA.value, b = U.uOcluB.value;
+    const dc = Math.hypot(x - a.x, y - a.y, z - a.z), camara = dc < 1.8 ? 1 - ss(0.4, 1.8, dc) : 0;
+    let cono = 0;
+    if (a.w > 0) {
+      const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+      const t = ((x - a.x) * abx + (y - a.y) * aby + (z - a.z) * abz) / Math.max(abx * abx + aby * aby + abz * abz, 1e-4);
+      if (t > 0 && t < 1) {
+        const r = b.w * (0.25 + 0.75 * t), dl = Math.hypot(x - a.x - abx * t, y - a.y - aby * t, z - a.z - abz * t);
+        cono = (1 - ss(r * 0.4, r, dl)) * ss(0, 0.08, 1 - t) * a.w;
+      }
+    }
+    return { cono, camara };
+  }
+
   function stats() {
     const out = { fundido: U.uOcluA.value.w, total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
@@ -954,6 +979,98 @@ AVE.module('vegetacion', function (G) {
     if (manchas) t += manchas.count * 2;
     if (copasMesh && copasMesh.visible) t += copasMesh.count * (copasMesh.geometry.index.count / 3);
     return t;
+  }
+  // B1: (a) uniformes y cuenta en JS (en el segmento se funde, lejos de él o detrás de Vittata no); (b) los shaders: hojas y
+  // cortezas llevan el fundido y la sombra no; (c) en la GPU, con una planta real entre la cámara y una esfera en el pecho de
+  // Vittata: la planta tapa la esfera sin fundido y con fundido se ve, y lo que no está en el cono no cambia ni un píxel.
+  function fundidoTest(check, sp) {
+    const cam = R.camera, FU = FUNDIDO, r2 = v => Math.round(v * 100) / 100;
+    G.pruebas.teleport(sp.x, sp.z);
+    const pecho = new THREE.Vector3(S.pos.x, S.pos.y + FU.alto, S.pos.z);
+    cam.position.set(sp.x, S.pos.y + 4.2, sp.z + 7.5); cam.lookAt(sp.x, S.pos.y + 1.2, sp.z); cam.updateMatrixWorld();
+    actualizarFundido();
+    const A = U.uOcluA.value, B = U.uOcluB.value;
+    check('B1: uniformes del fundido por cuadro (cámara, pecho de Vittata a ' + FU.alto + ' m, radio y fuerza)',
+      A.w === FU.fuerza && Math.hypot(A.x - cam.position.x, A.y - cam.position.y, A.z - cam.position.z) < 1e-6 && pecho.distanceTo(new THREE.Vector3(B.x, B.y, B.z)) < 1e-6 && B.w === FU.radio,
+      JSON.stringify({ camara: [A.x, A.y, A.z].map(r2), fuerza: A.w, pecho: [B.x, B.y, B.z].map(r2), radio: B.w }));
+    const en = (t, lado, alto) => { // punto del segmento cámara→pecho en t, desplazado `lado` m en horizontal y `alto` en vertical
+      const p = cam.position.clone().lerp(pecho, t); return fundidoEn(p.x + lado, p.y + alto, p.z).cono;
+    };
+    const m5 = en(0.5, 0, 0), m8 = en(0.8, 0.3, 0.2), lejos = en(0.5, 3, 0), arriba = en(0.6, 0, 2.5), detras = en(1.15, 0, 0), borde = en(0.9, FU.radio * 0.5, 0);
+    check('B1: una planta en el segmento cámara→Vittata se funde (~' + Math.round((1 - FU.fuerza) * 100) + ' % visible) y una lejos de él (3 m al lado, 2,5 m arriba) o detrás de Vittata no',
+      m5 >= FU.fuerza * 0.99 && m8 > FU.fuerza * 0.6 && lejos === 0 && arriba === 0 && detras === 0 && borde > 0 && borde < m8,
+      JSON.stringify({ centro: r2(m5), cerca_de_ella: r2(m8), borde: r2(borde), lejos_3m: lejos, arriba_2_5m: arriba, detras: detras }));
+    // (b) qué shaders llevan el fundido: se compila a texto cada material de la flora con un shader de juguete
+    const prog = m => { const sh = { uniforms: {}, vertexShader: '#include <project_vertex>\n#include <lights_lambert_vertex>\n#include <fog_vertex>', fragmentShader: '#include <clipping_planes_fragment>\n#include <color_fragment>\n#include <envmap_fragment>' }; m.onBeforeCompile(sh); return sh; };
+    let conF = 0, sinF = 0, sombras = 0, sombraF = 0, comp = 0;
+    for (const m in grupos) for (const pr of grupos[m].prims) {
+      for (const im of [pr.cerca, pr.lejos, pr.lod]) if (im) { const sh = prog(im.material); comp++; if (/uOcluA/.test(sh.fragmentShader) && sh.uniforms.uOcluA === U.uOcluA) conF++; else sinF++; }
+      if (pr.cerca && pr.cerca.customDepthMaterial) { sombras++; if (/uOcluA/.test(prog(pr.cerca.customDepthMaterial).fragmentShader)) sombraF++; }
+    }
+    check('B1: todas las mallas de flora (cerca, lejos, LOD) llevan el fundido con el uniforme compartido, y la sombra no se funde',
+      comp > 0 && !sinF && sombras > 0 && !sombraF, conF + ' de ' + comp + ' materiales con fundido; ' + sombras + ' materiales de sombra, ' + sombraF + ' con fundido');
+    // (c) en la GPU: la planta que tapa a Vittata se funde
+    const rr = R.renderer, W = 192, H = 120, rt = new THREE.WebGLRenderTarget(W, H), px = new Uint8Array(W * H * 4);
+    const bola = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), new THREE.MeshBasicMaterial({ color: 0xff00ff, fog: false, toneMapped: false }));
+    const AC = G.actores, ocultos = [AC && AC.player3D && AC.player3D.root, AC && AC.companion3D && AC.companion3D.root].filter(o => o && o.visible);
+    const fu0 = FU.fuerza, flora = [];
+    for (const m in grupos) for (const pr of grupos[m].prims) for (const im of [pr.cerca, pr.lejos, pr.lod]) if (im) flora.push(im);
+    const foto = (fuerza, sinFlora) => {
+      FU.fuerza = fuerza; actualizarFundido();
+      const vis = sinFlora ? flora.map(im => { const v = im.visible; im.visible = false; return v; }) : null;
+      rr.setRenderTarget(rt); rr.render(scene, cam); rr.readRenderTargetPixels(rt, 0, 0, W, H, px); rr.setRenderTarget(null);
+      if (vis) flora.forEach((im, k) => { im.visible = vis[k]; });
+      return px.slice();
+    };
+    const bolaPx = f => { let n = 0; for (let k = 0; k < f.length; k += 4) if (f[k] > 200 && f[k + 1] < 60 && f[k + 2] > 200) n++; return n; };
+    let mejor = null;
+    // el mapa de sombras no se redibuja en estas fotos (la sombra no se funde y es la misma en las tres): más barato
+    const sombraAuto = rr.shadowMap.autoUpdate; rr.shadowMap.autoUpdate = false;
+    scene.add(bola); ocultos.forEach(o => { o.visible = false; });
+    try {
+      // las plantas más cercanas al inicio (arbustos, helechos, palmas y árboles jóvenes): Vittata detrás, la cámara al otro lado
+      const cand = [];
+      for (const m in porModelo) {
+        if (!grupos[m] || !info[m] || CAT(m) === 'roca' || CAT(m) === 'tronco' || CAT(m) === 'hojarasca') continue;
+        const PM = porModelo[m];
+        for (let i = 0; i < PM.n; i++) { const d = Math.hypot(PM.pos[i * 4] - sp.x, PM.pos[i * 4 + 2] - sp.z); if (d > 3 && d < 80) cand.push({ m, i, d }); }
+      }
+      cand.sort((a, b) => a.d - b.d);
+      for (const c of cand.slice(0, 40)) {
+        const PM = porModelo[c.m], inf = info[c.m], x = PM.pos[c.i * 4], y = PM.pos[c.i * 4 + 1], z = PM.pos[c.i * 4 + 2], s = PM.pos[c.i * 4 + 3];
+        const hc = Math.min(inf.alto * s * 0.5, 2.2);
+        if (hc < 0.9) continue; // muy baja para tapar a Vittata
+        const atras = 1.2 + Math.min(4, inf.ancho * s * 0.25), vx = x + Math.sin(0.6) * atras, vz = z + Math.cos(0.6) * atras;
+        G.pruebas.teleport(vx, vz);
+        pecho.set(vx, S.pos.y + FU.alto, vz);
+        const dir = new THREE.Vector3(x, y + hc, z).sub(pecho).normalize();
+        cam.position.copy(pecho).addScaledVector(dir, 7.5);
+        if (cam.position.y < T.height(cam.position.x, cam.position.z) + 0.9) continue;
+        cam.lookAt(pecho); cam.updateMatrixWorld();
+        bola.position.copy(pecho); bola.updateMatrixWorld();
+        actualizar(true);
+        const total = bolaPx(foto(0, true)); if (total < 40) continue;
+        const f0 = foto(0, false), sin = bolaPx(f0); if (sin > total * 0.6) continue; // la planta no la tapa lo bastante
+        const f1 = foto(fu0, false), con = bolaPx(f1);
+        // lo que no está en el cono no cambia: píxeles distintos lejos de la esfera (fuera del 40 % central)
+        let fuera = 0, nFuera = 0;
+        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+          if (Math.abs(xx - W / 2) < W * 0.2 && Math.abs(yy - H / 2) < H * 0.2) continue;
+          nFuera++; const k = (yy * W + xx) * 4;
+          if (f0[k] !== f1[k] || f0[k + 1] !== f1[k + 1] || f0[k + 2] !== f1[k + 2]) fuera++;
+        }
+        mejor = { planta: c.m + ' #' + c.i, a: Math.round(c.d) + ' m', total, sin, con, fuera, nFuera };
+        break;
+      }
+    } finally {
+      FU.fuerza = fu0; actualizarFundido(); rr.shadowMap.autoUpdate = sombraAuto;
+      scene.remove(bola); bola.geometry.dispose(); bola.material.dispose(); rt.dispose();
+      ocultos.forEach(o => { o.visible = true; });
+    }
+    const M = mejor;
+    check('B1 (GPU): una planta real que tapa a Vittata se funde: sin fundido se ve < 60 % de ella, con fundido > 70 %; fuera del cono no cambia ningún píxel',
+      M && M.con >= M.total * 0.7 && M.con > M.sin + (M.total - M.sin) * 0.5 && M.fuera === 0,
+      M ? JSON.stringify({ planta: M.planta, a: M.a, visible_sin: r2(M.sin / M.total), visible_con: r2(M.con / M.total), px_esfera: M.total, cambian_fuera: M.fuera + '/' + M.nFuera }) : 'ninguna planta cerca del inicio la tapaba');
   }
   async function test() {
     const P = G.pruebas, { check, result } = P.runner();
@@ -1018,6 +1135,8 @@ AVE.module('vegetacion', function (G) {
       let cerca = 0;
       for (const m of ARBOLES) { const PM = porModelo[m], inf = info[m]; if (!PM || !inf || inf.tronco < 0.08) continue; for (let i = 0; i < PM.n; i++) if (Math.hypot(PM.pos[i * 4] - S.pos.x, PM.pos[i * 4 + 2] - S.pos.z) <= COL_RAD) cerca++; }
       check('Colisión: solo los troncos a menos de ' + COL_RAD + ' m, y todos ellos', !lejos && misColliders.length === cerca, misColliders.length + ' troncos sólidos de ' + cerca + ' a < ' + COL_RAD + ' m, ' + lejos + ' más lejos; ' + st.arboles + ' árboles en total');
+      // 4. B1: fundido de la flora entre la cámara y Vittata
+      fundidoTest(check, sp);
     } finally {
       if (R.setCalidad) { R.setCalidad(cal0.nivel); C.manual = cal0.manual; }
       cam.position.copy(c0); cam.quaternion.copy(q0); cam.updateMatrixWorld();
@@ -1025,5 +1144,5 @@ AVE.module('vegetacion', function (G) {
     }
     return result();
   }
-  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, fundidoEn, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
 });
