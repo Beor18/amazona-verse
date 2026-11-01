@@ -1540,6 +1540,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
       const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const comparable = d => { const o = {}; for (const k of SV.KEYS) o[k] = d && d[k]; return JSON.stringify(o); };
+      if (G.marcador && G.marcador.tiempo) G.marcador.tiempo(); // el marcador crea S.marcador al leerlo la primera vez (no es del reto): se materializa antes de la foto (QA-82)
       const realAntes = claves.map(leer), sAntes = comparable(S), recReal = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
       const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
       const tick = (s, dt) => { dt = dt || 0.05; for (let i = 0, n = Math.ceil(s / dt); i < n; i++) R.update(dt); };
@@ -1798,7 +1799,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         check('Al salir se quitan las envolturas', G.ui.busy === busy0 && F.step === step0 && !document.body.classList.contains('retos-on'));
         check('Al salir el mar vuelve a su agua', G.agua.uniforms.uTormenta.value === 0);
         check('Al salir G.quiet vuelve a como estaba', G.quiet === quiet0);
-        check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
+        check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes, (() => { try { const a = JSON.parse(sAntes), b = JSON.parse(comparable(S)); return Object.keys(a).filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])).map(k => k + ': ' + JSON.stringify(a[k]) + ' → ' + JSON.stringify(b[k])).join('; ').slice(0, 300); } catch (e) { return ''; } })());
         check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
         check('El mundo no queda en pausa', G.pausa.activa() === pausa0);
         check('Récords reales intactos', leer(ALMACEN) === recReal);

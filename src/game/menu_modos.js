@@ -224,6 +224,12 @@
       const snap = G.guardado.instantanea(); G.guardado.suspender(true);
       const menu0 = (() => { try { return localStorage.getItem(ALMACEN); } catch (e) { return null; } })();
       const abierta0 = !!portada.open, libre0 = libre, inicio0 = inicioReal;
+      // Tras selfTest en un perfil limpio queda el creador abierto y sin cotorra: sin una, elegir() abriría el creador en vez del modo (QA-82).
+      // Se crea una cotorra de prueba (la partida real se restaura al final con la instantánea) y se reabre el creador si estaba abierto.
+      const creador0 = !!(creador && !creador.hidden);
+      if (!(S.profile && S.profile.created) && G.creador) {
+        try { G.creador.saveCharacter({ name: G.creador.nombreAzar(), look: G.creador.profileLook(S.profile) }); await espera(50); } catch (e) { /* lo avisa la primera comprobación */ }
+      }
       let llamadas = 0; inicioReal = () => { llamadas++; };
       let retos = null;
       try {
@@ -239,10 +245,10 @@
         if (!portada.open) volver();
         check('El menú se muestra (portada abierta, mundo en pausa)', portada.open && G.pausa.activa());
         await elegir('tormenta');
-        check('Tormenta: la portada se cierra y el reto arranca', !portada.open && retos.activo && retos.reto === 'tormenta');
+        check('Tormenta: la portada se cierra y el reto arranca', !portada.open && retos.activo && retos.reto === 'tormenta', 'portada ' + portada.open + ', activo ' + retos.activo + ', reto ' + retos.reto + ', creador ' + !$('creator').hidden);
         check('Vuelve al menú y sale del reto', volver() && portada.open && !retos.activo && !document.body.classList.contains('retos-on'));
         await elegir('carreras');
-        check('Carreras: abre el menú de Retos', !portada.open && retos.fase === 'menu' && !retos.pruebas.ui().menu.hidden);
+        check('Carreras: abre el menú de Retos', !portada.open && retos.fase === 'menu' && !retos.pruebas.ui().menu.hidden, 'portada ' + portada.open + ', fase ' + retos.fase + ', creador ' + !$('creator').hidden);
         volver(); check('Vuelve al menú desde el menú de Retos', portada.open && retos.pruebas.ui().el.hidden);
         await elegir('banquete');
         const okB = await hasta(() => retos.activo && retos.reto === 'banquete', 15000);
@@ -250,7 +256,7 @@
         volver(); check('Vuelve al menú desde el banquete', portada.open && !retos.activo);
         await elegir('flight');
         const okF = await hasta(() => G.flightApi && G.flightApi._dev.st.activo, 15000);
-        check('Amazona Flight: la tarjeta abre el vuelo y cierra la portada', okF && !portada.open);
+        check('Amazona Flight: la tarjeta abre el vuelo y cierra la portada', okF && !portada.open, 'okF ' + okF + ', flight ' + typeof (window.AV && window.AV.flight) + ', api ' + typeof G.flightApi + ', mundo.listo ' + String(G.mundo && G.mundo.listo));
         volver(); check('Vuelve al menú desde Amazona Flight', portada.open && !G.flightApi._dev.st.activo && !document.body.classList.contains('flight-on'));
         await elegir('river');
         const okR = await hasta(() => G.riverRushApi && G.riverRushApi.activo, 15000);
@@ -315,7 +321,7 @@
           try {
             const d = m.d, malos = [];
             if (d.documentElement.scrollWidth > w + 1) malos.push('página ' + d.documentElement.scrollWidth + ' px');
-            const rs = [...d.querySelectorAll('.modo')].map(b => b.getBoundingClientRect());
+            const rs = [...d.querySelectorAll('.modo:not([hidden])')].map(b => b.getBoundingClientRect());
             rs.forEach((r, i) => { if (r.left < -1 || r.right > w + 1) malos.push(`tarjeta ${i} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); if (r.width < 44 || r.height < 44) malos.push(`tarjeta ${i} mide ${Math.round(r.width)}×${Math.round(r.height)}`); });
             for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) { const a = rs[i], b = rs[j]; if (a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1) malos.push(`tarjetas ${i} y ${j} se solapan`); }
             const main = d.querySelector('.title-main'), cs = main && d.defaultView.getComputedStyle(main);
@@ -335,6 +341,7 @@
         try { if (G.recordsApi) G.recordsApi.cerrar(); } catch (e) { /* cerrado */ }
         try { if (menu0 == null) localStorage.removeItem(ALMACEN); else localStorage.setItem(ALMACEN, menu0); } catch (e) { /* sin almacén */ }
         G.guardado.restaurar(snap); G.guardado.suspender(false); G.quiet = quiet0;
+        if (creador0 && creador && creador.hidden && !(S.profile && S.profile.created)) { try { G.creador.open(true); } catch (e) { /* sin creador */ } }
         if (libre0) entrarLibre();
         if (portada.open !== abierta0) { if (abierta0) { portada.returnValue = ''; portada.show(); } else portada.close(); }
         mostrar();
@@ -592,6 +599,7 @@
         try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ }
         for (const k of claves) { try { if (antes[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, antes[k]); } catch (e) { /* sin almacén */ } }
         G.guardado.restaurar(snap); G.guardado.suspender(false); G.quiet = quiet0;
+        if (creador0 && creador && creador.hidden && !(S.profile && S.profile.created)) { try { G.creador.open(true); } catch (e) { /* sin creador */ } }
         if (fin) fin.hidden = fin0;
         if (finTxt) finTxt.textContent = finTxt0;
         if (portada && portada.open !== portada0) { portada.returnValue = ''; if (portada0) portada.show(); else portada.close(); }

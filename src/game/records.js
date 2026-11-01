@@ -993,10 +993,13 @@
         cerrarTodo();
         check('Cerrar oculta el panel y quita su pausa', !abierto && root.hidden && enPausa() === pausaAntes);
         // Esc cierra el panel y no llega al juego
+        // Con un jugador nuevo la apertura del capítulo suena al entrar y su primera tecla la salta y se la queda (historia.js, alTeclear):
+        // se salta antes con una tecla cualquiera para que el Esc llegue al panel (QA-82)
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true, cancelable: true }));
         abrir({}); let llego = false; const sonda = () => { llego = true; }; window.addEventListener('keydown', sonda);
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
         window.removeEventListener('keydown', sonda);
-        check('Esc cierra el panel sin pasar al juego', !abierto && !llego);
+        check('Esc cierra el panel sin pasar al juego', !abierto && !llego, 'abierto ' + abierto + ', llego ' + llego);
         // ---------- Puerta para adultos ----------
         let sec = [0.1, 0.9, 0.2, 0.7, 0.3, 0.5, 0.8, 0.4, 0.6, 0.15, 0.95], si = 0; const azar = () => sec[si++ % sec.length];
         abrir({}); let resP = null; puerta({ azar }).then(v => { resP = v; });
