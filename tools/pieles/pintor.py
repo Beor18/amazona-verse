@@ -274,7 +274,28 @@ def tucumana(c):
     c.pintar(R['cola_base_lat'] * 0.75, hexc('#c0372c'))                                      # rojo en la base de la cola
     c.pico('#d9b9a2'); c.patas('#a4928e'); c.ojo('#e6801c', '#f1f0eb')                        # cuerno rosado; patas gris rosado; iris naranja
 
-ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria, 'pretrei': pretrei, 'tucumana': tucumana}
+# ---------- PROPUESTAS (extintas, canon de Kelvin: no entran en el juego) ----------
+def martinicana(c):
+    # Propuesta: tools/pieles/propuestas/README.md. Solo descripciones antiguas (Labat 1742, Buffon 1779), sin ejemplares.
+    c.tono()
+    c.tintar(cab * np.clip(np.maximum.reduce([R['mejilla'] * 1.2, R['auricular'], R['lores'], R['nuca'], R['lados_cuello']]) * 0.8, 0, 0.8), hexc('#7d7fc8'), keep=0.45)  # lavado azul y lila en cara, nuca y cuello
+    c.pintar(cab * np.clip(np.maximum(R['frente_ancha'], R['corona']) * 0.95, 0, 0.95), hexc('#d3261f'))  # corona roja
+    c.pintar(cab * R['anillo'], hexc('#d6d5d1'))
+    c.pintar(R['cola_base_lat'] * 0.85, hexc('#c0372c'))                                      # plumas externas de la cola rojas
+    c.pico('#6c7075'); c.patas('#6c7075'); c.ojo('#e07a1c', '#d6d5d1')                        # pico y patas gris pizarra
+
+def violacea(c):
+    # Propuesta: tools/pieles/propuestas/README.md. Du Tertre 1667, Labat 1742; las fuentes discrepan (violeta pizarra o negra).
+    c.tono(); c.oscurecer(0.18 * ss(-0.05, -0.25, zz) * body)                                  # dorso verde parduzco (aprox.: verde más apagado)
+    violeta = np.maximum(cab * 0.9, R['pecho'] * ss(0.40, 0.60, y) * 0.85)
+    c.tintar(np.clip(violeta, 0, 0.9), hexc('#5b4f8c'), keep=0.35)                            # cabeza, cuello y partes inferiores violeta pizarra
+    c.festoneado(cab * 1.0, 0.25)                                                              # mezcla con negro
+    c.pintar(R['carpo'] * 0.9, hexc('#d22b22'))                                               # rojo en el hombro
+    c.pintar(R['espejo'] * 0.6, hexc('#e0b020'))                                              # coberteras amarillo intenso (aprox.)
+    c.pintar(cab * R['anillo'], hexc('#b9b7b3'))
+    c.pico('#2c2c2e'); c.patas('#6c7075'); c.ojo('#c8281e', '#b9b7b3')                        # pico negro, ojos rojos
+
+ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria, 'pretrei': pretrei, 'tucumana': tucumana, 'martinicana': martinicana, 'violacea': violacea}
 if __name__ == '__main__':
     sp = sys.argv[1]; out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(AQUI, '..', sp, sp + '.jpg')
     c = Lienzo(); ESP[sp](c); c.guardar(out)
