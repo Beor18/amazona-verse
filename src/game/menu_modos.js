@@ -194,6 +194,8 @@
     }
     const bm = $('b-menu-modos'); if (bm) bm.addEventListener('click', volver);
     G.on('apply', () => { if (portada && portada.open) mostrar(); }, 90);
+    // Al cambiar el idioma en Opciones (portada cerrada), «Cambiar de juego» del menú de pausa y las tarjetas se quedaban en el idioma anterior
+    G.on('aula', k => { if (k === 'idioma') mostrar(); });
     mostrar();
 
     // =================================================================================================================
@@ -217,7 +219,7 @@
     }
     async function test() {
       const out = [], errores = [];
-      const check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det }); if (!ok) console.warn('menuModosTest ✗', n, det || ''); };
+      const check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det, extra: ok ? undefined : det }); if (!ok) console.warn('menuModosTest ✗', n, det || ''); };
       const ce = console.error; console.error = (...a) => { errores.push(a.map(String).join(' ')); ce.apply(console, a); };
       const errores0 = (window.__aveErrores || []).length;
       const quiet0 = G.quiet; G.quiet = true;
@@ -239,7 +241,7 @@
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido y récords no cierran la portada (type=button)', ['nido', 'records'].every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
-        check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre');
+        check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
         // 2. Cada tarjeta abre su modo y «Cambiar de juego» vuelve al menú
         retos = await cargar.retos(); retos.pruebas.prueba(true);
         if (!portada.open) volver();
@@ -485,11 +487,12 @@
     async function test(opts) {
       opts = opts || {};
       const out = [], errores = [];
-      const check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det }); if (!ok) console.warn('temporadaTest ✗', n, det || ''); };
+      const check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det, extra: ok ? undefined : det }); if (!ok) console.warn('temporadaTest ✗', n, det || ''); };
       const ce = console.error; console.error = (...a) => { errores.push(a.map(String).join(' ')); ce.apply(console, a); };
       const errores0 = (window.__aveErrores || []).length;
       const quiet0 = G.quiet; G.quiet = true;
       const snap = G.guardado.instantanea(); G.guardado.suspender(true);
+      const creador = $('creator'), creador0 = !!(creador && !creador.hidden); // para reabrir el creador al final si estaba abierto (antes no se definía: ReferenceError)
       const claves = [TEMP].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
       const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); localStorage.removeItem(k); } catch (e) { /* sin almacén */ } }
       const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
