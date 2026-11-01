@@ -1,14 +1,9 @@
-# Cola de la API en la Mac. 31-oct: BM77 PRIMERO (separar los GLB en piezas/, desbloquea edificios/mapa), luego BM78-81 (edificios/mapa, prioridad 1 de Kelvin), BM76 (vuelo), resto visuales. Exporta AV_PYTHON (Blender) al lanzar.
-BM77
-BM78
-BM79
-BM80
-BM81
-BM76
-BM58
-BM59
-BM63
-BM64
-BM65
-BM68
-BM69
+# Sprint final del API (1-nov): gastar ~$40 en <1 h. Graficos primero, luego vuelo y camara. Exporta AV_PYTHON (Blender) al lanzar.
+BM92
+BM86
+BM87
+BM93
+BM88
+BM89
+BM90
+BM91

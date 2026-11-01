@@ -676,6 +676,17 @@ Verifica que el problema existe antes de tocar; un commit por arreglo; sube a `m
 - **BM85, recorrido e2e de ep2–ep6 de principio a fin.** Que cada capítulo se complete (`ep2e2eTest` y las de misión), guardado entre capítulos (`saveTest`), 0 errores de consola. Arregla fallos REALES de contenido/lógica (`content/*`, `src/game/*`), no del motor. Resultado por capítulo en `docs/equipo/PLAYTEST_30OCT.md`.
 - Si de verdad agotas BM82–BM85, para y deja un resumen en `COORDINACION_VIVO.md`; no inventes trabajo.
 
+### Sprint final del API (1-nov, Kelvin: gastar los ~$40 que quedan en menos de 1 h). Mac con GPU real y Blender (AV_PYTHON).
+Reglas de siempre: el diseño de Kelvin no se cambia (solo adaptación técnica), un problema por commit con captura antes/después (vistas de `tools/build/bm33_vistas.json`), 13 baterías en verde con GPU real, nada de más de 100 MB al repo. Marca «EN CURSO» en `COORDINACION_VIVO.md`. No te quedes en «bloqueada» por notas viejas: verifica tú mismo si la dependencia ya está.
+- **BM92, materiales vibrant_toon y `_glb.js` al día (resto de BM78/BM79).** Con Blender: de las piezas de `glb_kelvin/piezas/` que el juego ya usa (ver `EDIFICIOS_INVENTARIO.md` y `conversion.json`), ajusta materiales a la paleta de `docs/equipo/ESTANDAR_VISUAL.md` (crema, teja roja mate, madera cálida) sin tocar formas, y regenera los 8 `*_glb.js` desfasados que avisa `build.sh` desde su `.glb`. Capturas antes/después de Villa Raíz y la ciudad.
+- **BM86, vuelo estable (BM76 de verdad).** `movementTest` 49/49 tres veces seguidas con GPU real en calidad «alto». Encuentra por qué es intermitente (cernido, rama, subir trabada): sólidos/ramas junto al sitio de prueba, dt, calidad. Arregla la causa en el juego, no rebajes ni quites casos.
+- **BM87, cámara (prioridad 2 de Kelvin).** Que la cámara no se meta en muros, copas ni losas (p. ej. (0,170)); transición suave suelo↔vuelo y al aterrizar; sin tirones al girar. Casos en `movementTest`/prueba de cámara y capturas antes/después.
+- **BM93, asentamientos que quedaron (resto de BM80).** Fuera los bloques blancos sin textura y las piezas flotantes que siguen en los 14 asentamientos; piedra donde el encargo lo pide. Una captura antes/después por asentamiento tocado.
+- **BM88, lo que BM63 dejó flojo en Villa Raíz y el embarcadero** (estado por sitio en `docs/equipo/VISUAL_30OCT.md` y capturas `docs/img/bm63_*`). Color, LOD, costuras, piezas mal asentadas; sin cambiar geometría.
+- **BM89, igual en la colina y los miradores.**
+- **BM90, igual en el tepuy y la Ciudad de los 36** (hacia `docs/img/ciudad_tepuy_meta_kelvin.jpg`; lo que sea geometría nueva va a `DECISION_LOG.md` para Kelvin).
+- **BM91, rendimiento.** Villa Raíz y `ciudad_tepuy` a ≥50 FPS en «alto» en escritorio y ≥30 en móvil emulado; mide antes/después en `docs/equipo/QA_GPU.md` y arregla el peor cuello de código.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|
