@@ -57,9 +57,17 @@ PY
     C=$(git commit-tree "$TREE" -p HEAD -m "Sitio: publica $SHA ($NOTA)
 
 Co-Authored-By: $COAUTOR")
-    for i in 1 2 3 4; do
+    for i in 1 2 3 4 5; do
       git push -q origin "$C:refs/heads/main" && { echo "PUBLICADO $SHA; Vercel lo sirve en 1-2 minutos"; exit 0; }
-      git fetch -q origin main; git rebase -q origin/main "$C" 2>/dev/null; C=$(git rev-parse HEAD); sleep $((2**i))
+      # main se movió mientras se probaba (otro agente subió algo): se rehace el commit de sitio/ ENCIMA del main nuevo,
+      # con el mismo sitio/ ya probado (antes se reintentaba con un commit viejo y GitHub lo rechazaba siempre; 1-nov)
+      sleep $((2**i)); git fetch -q origin main || continue
+      T2=$(mktemp); GIT_INDEX_FILE=$T2 git read-tree origin/main && GIT_INDEX_FILE=$T2 git rm -r -q --cached --ignore-unmatch sitio >/dev/null \
+        && GIT_INDEX_FILE=$T2 git read-tree --prefix=sitio/ "$C:sitio" && TREE2=$(GIT_INDEX_FILE=$T2 git write-tree) \
+        && C=$(git commit-tree "$TREE2" -p origin/main -m "Sitio: publica $SHA ($NOTA)
+
+Co-Authored-By: $COAUTOR"); rm -f "$T2"
+      echo "main se movió: reintento $i encima de $(git rev-parse --short origin/main)"
     done; echo "push falló"; exit 1 )
   RC=$?
   git worktree remove --force "$W" 2>/dev/null
