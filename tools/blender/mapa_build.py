@@ -155,8 +155,20 @@ for cid, (sx, sy) in {'terreno_no': (-1, 1), 'terreno_ne': (1, 1), 'terreno_so':
 log('trozos', [(c['id'], c['triangulos']) for c in CHUNKS])
 
 # ------------------------------------------------------------------ agua: río, quebrada, pozas y cascadas
-def ribbon(P, s, L, w, skip_pools, foam_drop=2.5):
+def suave(L, ventana):
+    # BM103: los escalones de nivel (1-1.5 m) se reparten en una rampa continua; solo sube el agua (<= la mitad del escalon), nunca la baja bajo el cauce
+    n = len(L); out = L.copy()
+    for i in range(n):
+        a = max(0, i - ventana); b = min(n, i + ventana + 1)
+        out[i] = max(L[i], float(np.mean(L[a:b])))
+    return np.minimum.accumulate(out)
+
+def ribbon(P, s, L, w, skip_pools, foam_drop=2.5, ventana=0):
     pos, uv, col, idx = [], [], [], []
+    L0 = L
+    if ventana:
+        L = suave(L0, ventana)
+        L = np.where(np.array([any(np.hypot(P[i][0] - q['x'], P[i][1] - q['y']) < q['r'] + 3 for q in skip_pools) for i in range(len(P))]), L0, L)
     tg = np.gradient(P, axis=0); tg /= np.linalg.norm(tg, axis=1, keepdims=True) + 1e-9
     nr = np.c_[-tg[:, 1], tg[:, 0]]
     def inpool(p):
@@ -170,7 +182,7 @@ def ribbon(P, s, L, w, skip_pools, foam_drop=2.5):
             rows.append((P[i], L[i - 1], ww, s[i], 1.0 if drop >= foam_drop else 0.25, i))
             rows.append((P[i] + off, L[i], ww, s[i] + 0.3, 1.0 if drop >= foam_drop else 0.35, i))
         else:
-            rows.append((P[i], L[i], ww, s[i], 0.0, i))
+            rows.append((P[i], L[i], ww, s[i], 0.3 if (ventana and i > 0 and L0[i] < L0[i - 1] - 0.05) else 0.0, i))
     base = 0
     for r, (p, lv, ww, v, fo, i) in enumerate(rows):
         for side in (-1, 1):
@@ -188,7 +200,7 @@ def disc(cx, cy, r, z, seg=28):
     return np.array(pos), np.array(uv), np.array([(0, 40, 0, 255)] * len(pos)), np.array(idx)
 
 parts = [ribbon(M.river, M.river_s, M.river_L, M.river_w, [p for p in M.pools if p['cauce'] == 'rio']),
-         ribbon(M.creek, M.creek_s, M.creek_L, M.creek_w, [p for p in M.pools if p['cauce'] == 'creek'])]
+         ribbon(M.creek, M.creek_s, M.creek_L, M.creek_w, [p for p in M.pools if p['cauce'] == 'creek'], ventana=3)]
 for p in M.pools: parts.append(disc(p['x'], p['y'], p['r'] + 0.6, p['nivel'] - 0.015))
 WP, WU, WC, WI = [], [], [], []; off = 0
 for pos, uv, col, idx in parts:
