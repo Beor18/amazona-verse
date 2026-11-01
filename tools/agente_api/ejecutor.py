@@ -115,7 +115,8 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     """Corre una tarea; devuelve su costo, o None si los topes no la dejan arrancar."""
     global reservado
     clave = os.environ.get('ANTHROPIC_API_KEY', '')
-    if not clave.startswith('sk-ant-'):
+    base = os.environ.get('AV_BASE_URL', '')   # 1-nov: otro proveedor compatible con la API de Anthropic (Kimi); ver lanzar_kimi.sh
+    if not clave or (not base and not clave.startswith('sk-ant-')):
         sys.exit('Falta la clave. En esta Terminal escribe primero:  export ANTHROPIC_API_KEY=\'tu clave\'')
     if not autorizar(presupuesto, marca):
         return None
@@ -123,11 +124,11 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     config = Path.home() / '.claude-sdk'
     config.mkdir(exist_ok=True)
     opciones = ClaudeAgentOptions(
-        model=MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos, max_buffer_size=32 * 1024 * 1024,
+        model=os.environ.get('AV_MODELO') or MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos, max_buffer_size=32 * 1024 * 1024,
         system_prompt={'type': 'preset', 'preset': 'claude_code', 'append': REGLAS},
         setting_sources=[], permission_mode='acceptEdits', can_use_tool=permiso,
         allowed_tools=['Read', 'Glob', 'Grep', 'Write', 'Edit', 'MultiEdit', 'TodoWrite'],
-        env={'ANTHROPIC_API_KEY': clave, 'CLAUDE_CONFIG_DIR': str(config)},
+        env={'ANTHROPIC_API_KEY': clave, 'CLAUDE_CONFIG_DIR': str(config), **({'ANTHROPIC_BASE_URL': base} if base else {})},
     )
 
     async def mensajes():
