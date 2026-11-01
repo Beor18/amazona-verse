@@ -80,3 +80,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
   - **Coordinadora (nube):** B1 (flora translúcida) e hito 28 (objetos de la historia), revisar e integrar lo de todos, vigilar la publicación de la Mac.
   - **Cursor + Grok (entra el 2-nov a las 6:40):** lee esta hoja y `MUNDO_UNICO.md`; su carril lo asigna el prompt de Kelvin del 2-nov. Propuesta: el modo creador o los caps. que el web no haya tomado. Nadie toma una tarea marcada EN CURSO por otro.
 
+- 01-Nov 19:02 AST · **EN CURSO · web** · ronda 7: BM111–BM113 (content/ep2–ep4 al mapa real), BM115 (retratos cap. 6 y Aprendiz), BM116 (pruebas extra que fallan en la Mac), BM117 (ROADMAP), BM118 (landing con Vittata v4).
