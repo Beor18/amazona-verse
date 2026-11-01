@@ -172,7 +172,27 @@ AVE.module('streaming', function (G) {
     else if (/^KB3D_mud(Dark)?M$/.test(k)) cremaPlana(m, /Dark/.test(k) ? 0.5 : 0.85);
     // BM79: losa, plataforma, bloque y templo_grande_e (sin _hd) traen KB3D_floorM/wallL/pillarsM, y el kit KB3D_stoneM: sin crema salían como losas blancas
     else if (/^KB3D_(floor|stone|pillars)M$|^KB3D_wallL$/.test(k)) cremaPlana(m, 0.85, 0.74);
+    // BM97: el kit Savage cercano pasa a la misma paleta que el _hd y el _lejos (madera cálida, teja roja, piedra crema)
+    else if (/^KB3D_(WoodPlanks|WoodHewn|BarkNew|beams)$/.test(k)) paletaPlana(m, 'madera');
+    else if (/^KB3D_(RoofThatched|TarpFabricDamaged)$/.test(k)) paletaPlana(m, 'teja');
+    else if (/^KB3D_(RockSharp|MudRocky)$/.test(k)) cremaPlana(m, 0.85, 0.74);
     return m;
+  }
+  // BM97: UNA paleta vibrant_toon por material, la misma en el modelo cercano, el _hd y el _lejos (albedo, antes de la luz).
+  // madera = la del _lejos (edificios_lejos_madera.py: sombra 0,20, cara clara 0,56, tono 0,62/0,36/0,16); teja = techar().
+  const PAL = { teja: [0.58, 0.22, 0.14], madera: [0.62, 0.36, 0.16] };
+  const glslMadera = (k) => 'vec3( ' + (PAL.madera[0] / 0.401).toFixed(4) + ', ' + (PAL.madera[1] / 0.401).toFixed(4) + ', ' + (PAL.madera[2] / 0.401).toFixed(4) + ' ) * ( 0.20 + 0.36 * smoothstep( 0.03, 0.35, ' + k + ' ) )';
+  function paletaPlana(m, clase) {
+    m.specular.setHex(0x000000); m.shininess = 1;
+    const c = PAL.teja, cuerpo = clase === 'teja'
+      ? 'vec3( ' + c.map(v => v.toFixed(2)).join(', ') + ' ) * clamp( y / 0.30, 0.92, 1.08 )'
+      : glslMadera('y');
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
+        '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, ' + cuerpo + ', 0.9 ); }');
+    };
+    m.customProgramCacheKey = () => 'av-paleta-' + clase;
   }
   // BM23: los modelos Ancient que llegan sin _hd (templo_grande_a y otras torres de la ciudad del tepuy) pintaban el ocre del kit
   // (KB3D_mudM) y desde el aire la ciudad era amarilla. Misma crema que el atlas (piedra mate, albedo máx. ~0,85), conservando el detalle.
@@ -237,10 +257,21 @@ AVE.module('streaming', function (G) {
         .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
           // BM43: la tela roja sacaba el entramado de la paja como malla de colores; ahora casi plana (0,97) con el detalle de luz
           // comprimido a ±8 % alrededor de la media de la celda, como lona
-          '\nif (avTeja > 0.5 && vAvCelda.x < 0.02 && abs(vAvCelda.y - 0.25) < 0.02) {\n' +
-          '  float yt = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), ym = dot( textureLod( map, vAvCelda + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
-          '  float lona = clamp( yt / max( ym, 0.05 ), 0.92, 1.08 );\n' +
-          '  diffuseColor.rgb = vec3(0.58, 0.22, 0.14) * lona;\n}\n' +
+          // BM97: paleta única en el atlas Savage (celdas: 0-3 madera, 4 paja y 5 lona = teja, 6 cuerda = madera, 7-9 roca = crema)
+          '\nif (avTeja > 0.5) {\n' +
+          '  vec2 cs = floor( vAvCelda * 4.0 + 0.5 );\n' +
+          '  float ks = cs.y * 4.0 + cs.x;\n' +
+          '  float ys = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  if ( ks < 3.5 || abs( ks - 6.0 ) < 0.5 ) diffuseColor.rgb = mix( diffuseColor.rgb, ' + glslMadera('ys') + ', 0.9 );\n' +
+          '  else if ( ks < 5.5 ) {\n' +
+          '    float ym = dot( textureLod( map, vAvCelda + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '    diffuseColor.rgb = vec3(0.58, 0.22, 0.14) * clamp( ys / max( ym, 0.05 ), 0.92, 1.08 );\n' +
+          '  } else if ( ks > 6.5 && ks < 9.5 ) {\n' +
+          '    float t = clamp( pow( max( ys, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+          '    vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
+          '    float detalle = clamp( ys / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+          '    diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle * 0.74, 0.85 );\n' +
+          '  }\n}\n' +
           // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
           // (6, 7) a media fuerza; beams (13, madera) y rockM (14, roca) conservan su textura. Albedo máximo ~0,85 (antes 1,11:
           // se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
@@ -375,9 +406,20 @@ AVE.module('streaming', function (G) {
     for (let i = 0; i < pos.count; i++) y1 = Math.max(y1, pos.getY(i));
     const corte = y1 * 0.42;
     for (let i = 0; i < pos.count; i++) {
-      if (nor.getY(i) > 0.32 && pos.getY(i) > corte) col.setXYZ(i, 0.70, 0.28, 0.18);
+      if (nor.getY(i) > 0.32 && pos.getY(i) > corte) col.setXYZ(i, PAL.teja[0], PAL.teja[1], PAL.teja[2]);
     }
     col.needsUpdate = true;
+  }
+  // BM97: la lona del _lejos era ocre (0,72/0,46/0,22) y la de cerca roja: pasa a la misma teja, conservando su sombreado
+  const esLona = n => /^(toldo_|tienda_|campamento_|carpa_)/.test(n);
+  function lonar(geo) {
+    const col = geo.attributes.color;
+    if (!col || geo.userData.lona) return;
+    for (let i = 0; i < col.count; i++) {
+      const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i), k = Math.min(1.2, Math.max(0.6, y / 0.40));
+      col.setXYZ(i, PAL.teja[0] * k, PAL.teja[1] * k, PAL.teja[2] * k);
+    }
+    col.needsUpdate = true; geo.userData.lona = 1;
   }
   // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
   // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
@@ -679,6 +721,7 @@ AVE.module('streaming', function (G) {
         r.geo = fundir(geos, true);
         piedraLejos(r.n, r.geo, [...grupos.values()].some(g => g.src && g.src.userData && g.src.userData.avCremaLejos === 1));
         if (tieneTeja(r.n)) techar(r.geo);
+        if (esLona(r.n)) lonar(r.geo);
       } else {
         r.partes = [];
         for (const [, gr] of grupos) {
@@ -722,7 +765,8 @@ AVE.module('streaming', function (G) {
       r.estado = 'bajando';
       const rc = res(r.n, 'cerca');
       pedir(rc, prio + 1000).then(() => encolar(() => {
-        try { r.geo = generarLejos(rc.partes); piedraLejos(r.n, r.geo); if (tieneTeja(r.n)) techar(r.geo); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
+        try { r.geo = generarLejos(rc.partes); piedraLejos(r.n, r.geo); if (tieneTeja(r.n)) techar(r.geo);
+        if (esLona(r.n)) lonar(r.geo); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
         catch (e) { r.estado = 'error'; r.mal(e); }
         soltar(rc);
       }), err => { r.estado = 'error'; r.mal(err); soltar(rc); });
