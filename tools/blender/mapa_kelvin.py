@@ -315,6 +315,10 @@ BAJAR_BM39 = {('ruina_mirador', -81.7, -136.8): 86.3, ('ruina_pilar', -82.3, -14
 # (modelo, x, z) -> (x, y, z) en el llano llano (pendiente < 2,3 m en 10 m, lejos del agua) al este de la poza de La Mina
 RELOCAR_BM80 = {('ruina_torre_b', 43.7, -103.0): (92.0, 11.2, -68.0), ('ruina_torre_b', 49.5, -117.3): (88.0, 10.0, -80.0),
                 ('ruina_torre_b', 51.8, -134.1): (102.0, 11.3, -74.0)}
+# BM102: la placa que quedó clavada en la pared del tepuy (torre_b a 47,6 m, rango de suelo 40 m en 3 m) baja al llano de La Mina; los 2 pilares
+# crema del borde de la meseta (suelo con 10-15 m de desnivel en 3 m) entran 4-6 m en la meseta, sobre suelo llano (rango < 1 m en 3 m)
+RELOCAR_BM80.update({('ruina_torre_b', 24.3, -91.3): (91.0, 9.7, -84.0), ('ruina_pilar', -18.3, -113.1): (-18.3, 97.0, -117.1),
+                     ('ruina_pilar', -0.7, -103.4): (-0.7, 94.4, -109.4)})
 
 def compacto(Z):
     """Forma compacta para streaming.js: una entrada por modelo y zona. inst = [x, y, z, rotY, escala] si es giro en Y con
