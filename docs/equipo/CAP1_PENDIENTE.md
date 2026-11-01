@@ -45,7 +45,7 @@ Estados: **Hecho** (localizado en código y cubierto por prueba), **Parcial** (e
 | 24 | Guardado, migraciones y recuperación | Hecho | `pack.js` guardado v5; saveTest 27/27 |
 | 25 | Idioma | Hecho | `content/cap1/en.js` y `ep2..ep6/en.js`; idiomaTest 16/16; QA-65 cerrado (30-oct, Claude web; antes: La misión educativa y el Aula son ES/EN (33 líneas con `en:` en `educativa.js`); historia, HUD y diálogos (`historia.js`, `misiones.js`, `di…) |
 | 26 | Duración 10-15 min (GDD) / 20-30 min (GAMEPLAY) / 45 min de clase (EDUCATIVO) | **Medido sin jugadores** | AP4 (30-oct, `DURACION_CAP1.md`): rápido 5:28, normal 6:37, explorador 10:39 (cotas inferiores del recorrido automático). Falta medir con niños reales |
-| 27 | Rendimiento en equipos de escuela | **Falta (sin medir)** | `ROADMAP.md` Fase 0 y `BUGS.md`: FPS no medibles; el único valor válido es de un M4. Descarga inicial 7,98 MB (cumple) |
+| 27 | Rendimiento en equipos de escuela | **Parcial** | Medido por Kelvin el 1-nov en su Android (Chrome, amazonaverse.com/juego/#fps, calidad «medio», DPR 1,5): **89 FPS, mínimo 40**, 186 draw calls, 1,1 M triángulos, JS 20 MB, volando sobre la selva. Falta un equipo de escuela (Chromebook o iPad) |
 | 28 | Calidad visual de los objetos de la historia | **Parcial** | Máquina, transmisor, banco y coquíes son primitivas (`mundo.js:279-301`, `misiones.js` `preparar`). Iguaca y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY), junto a una Vittata 3D |
 
 ## 2. Lo que falta para cerrar el capítulo

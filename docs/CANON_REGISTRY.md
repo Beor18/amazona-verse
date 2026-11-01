@@ -31,3 +31,5 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Cardboard Citizens | RECHAZADO | Kelvin |
 
 **Conflictos abiertos:** ¿el Guardián es cotorra, humano u otra forma?
+| **La familia de Iguaca = la Abuela y el Papá del cap. 2** (todos *A. vittata*): en el cap. 1 Vittata los salva de la crecida y se les ve entrar al refugio; en el cap. 2 viven en ese refugio, reconocen a Vittata como la que los salvó y ella les construye la casa permanente. Arte pendiente: retratos de la Abuela (mayor) y el Papá, distinguibles de Vittata e Iguaca | CONFIRMADO | Kelvin, 1 nov 2026 |
+| Retratos de diálogo de las cotorras = render del modelo 3D del juego con el color tal como se ve en el juego (vibrant_toon, verde claro); se retira el render 2D antiguo | CONFIRMADO | Kelvin, 1 nov 2026 |
