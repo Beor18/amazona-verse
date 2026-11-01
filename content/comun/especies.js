@@ -641,6 +641,7 @@
       },
       {
         "id": "collaria",
+        "piel": "collaria",
         "cientifico": "Amazona collaria",
         "comun": {
           "es": "amazona de pico amarillo",
