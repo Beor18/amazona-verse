@@ -12,9 +12,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bm11_gameplay as G  # noqa: E402
 import bm14_medir  # noqa: E402
 
-VISTAS = {'c20a': (81, -300, 0.2), 'c20b': (60, -270, 2.6), 'c20c': (100, -265, 4.4)}
+VISTAS = {'c20a': (81, -278, 2.62), 'c20b': (60, -270, 2.6), 'c20c': (100, -265, 4.4)}
 for k, (x, z, yaw) in VISTAS.items():
-    G.ESCENAS[k] = dict(G.ESCENAS['ciudad'], abrir=G.VUELO_JS % {'v': json.dumps({'x': x, 'z': z, 'alt': 20, 'yaw': yaw, 'vel': 0, 'giro': 0.0})})
+    G.ESCENAS[k] = dict(G.ESCENAS['ciudad'], abrir=G.VUELO_JS % {'v': json.dumps({'x': x, 'z': z, 'y': 155, 'yaw': yaw, 'vel': 0, 'giro': 0.0})})
 
 if __name__ == '__main__':
     sys.argv += ['--escenas', ','.join(VISTAS)]
