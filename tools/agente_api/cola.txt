@@ -1,7 +1,7 @@
-# 1-nov (decision del coordinador): la Mac solo lo que necesita Blender, en orden y sin pisarse: BM94 -> BM97 (mismos archivos) -> BM98 -> BM103. BM99/BM100/BM101 los hace la nube. Maximo 2 trabajadores.
+# 1-nov: la Mac solo lo que necesita Blender, en orden: BM94 (lejanos) -> BM98 (ciudad de cerca: causa encontrada, demasiada decimacion) -> BM97 (paleta, mismos archivos que BM94) -> BM103. Maximo 2 trabajadores.
 BM94
-BM97
 BM98
+BM97
 BM103
 BM90
 BM86
