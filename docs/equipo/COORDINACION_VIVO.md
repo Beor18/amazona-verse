@@ -61,3 +61,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - 31-Oct 22:37 AST · **BM96 cancelada (Kelvin):** no eran tres ríos, era la simulación del río Amazonas = River Rush, que ya existe. Fuera de la cola; no tocar los cauces.
 
 - 1-nov · EN CURSO · nube · BM99 (sandías), BM100 (escamas de la roca), BM101 (árboles en la roca y pop): código en `vegetacion.js`/flora y `terreno.js`. La Mac no los toma.
+- 01-Nov 06:26 AST · **EN CURSO · web** · BM104: una imagen propia por capítulo en la landing (web/assets/img/capitulo-{1..6}.jpg y sus alt).
