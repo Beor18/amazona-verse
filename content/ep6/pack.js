@@ -7,7 +7,7 @@
    Lo que depende del canon de Kelvin (EP6_GDD.md §10) queda con la opción por defecto del GDD y marcado [KELVIN] en un
    comentario o en «nota», nunca en el texto que lee el jugador:
      [KELVIN-1] Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
-                Marea · arausiaca, Nudo · ventralis, Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
+                Marea · arausiaca, Nudo · leucocephala (la cubana, Kelvin 1-nov), Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
                 D32 (DECIDIDO-EQUIPO 30-oct): llegan los guardianes que el jugador encontró en la temporada (registro de temporada,
                 src/game/temporada.js: quien navega, eps. 3–4, y el guardián del bosquecillo, ep. 4), más los 6 de la historia (mínimo 6),
@@ -42,7 +42,7 @@
       presenta: 'Roca. Cargo lo que haga falta y explico despacio. Pero no vuelo alto: necesito a alguien que mire desde arriba.' },
     { id: 'marea', nombre: 'Marea', especie: 'arausiaca', sprite: 'assets/agilis.png', x: 13.5, z: 10.5, sabe: ['conocer el agua', 'remar'], necesita: 'un nudo que aguante', dice: false, observa: 'Mira al río todo el tiempo y sujeta la soga de su canoa con el pico.',
       presenta: 'Me llaman Marea. Conozco el agua y remo contra la corriente. Lo demás… ya se verá.' },
-    { id: 'nudo', nombre: 'Nudo', especie: 'ventralis', sprite: 'assets/vittata.png', x: 16.5, z: 11, sabe: ['atar nudos', 'tejer redes'], necesita: 'saber cómo va el agua', dice: true,
+    { id: 'nudo', nombre: 'Nudo', especie: 'leucocephala', sprite: 'assets/vittata.png', x: 16.5, z: 11, sabe: ['atar nudos', 'tejer redes'], necesita: 'saber cómo va el agua', dice: true,
       presenta: 'Nudo. Ato y tejo. Pero para tejer una red buena necesito saber cómo va el agua, y de eso no sé.' },
     { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/agilis.png', x: 6, z: -9, sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
       presenta: '¿Tú eres Vittata? ¿Y ese puente? ¿Y la luz de allá? Soy Eco: aviso fuerte y vuelo alto. Pero necesito que me expliquen las cosas con calma.' },

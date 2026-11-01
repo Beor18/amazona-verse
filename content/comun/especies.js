@@ -793,6 +793,7 @@
       },
       {
         "id": "ventralis",
+        "piel": "ventralis",
         "cientifico": "Amazona ventralis",
         "comun": {
           "es": "cotorra de La Española",

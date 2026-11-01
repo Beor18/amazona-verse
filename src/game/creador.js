@@ -392,11 +392,11 @@ AVE.module('creador', function (G) {
       const ES = window.AV_ESPECIES;
       const conPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => e.piel && AVE.pieles.tiene(e.id)) : [];
       const faltan = conPiel.filter(e => !ids.has(e.id)).map(e => e.id);
-      ok('Las 21 especies con piel de Kelvin salen en el creador', conPiel.length === 21 && !faltan.length, (faltan.join(',') || String(conPiel.length)));
+      ok('Las 22 especies con piel salen en el creador (21 de Kelvin + ventralis)', conPiel.length === 22 && !faltan.length, (faltan.join(',') || String(conPiel.length)));
       ok('Vittata sigue la primera', ops[0] && ops[0].id === 'vittata');
       const sinPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => !e.piel && e.id !== 'vittata' && !C3.SPECIES[e.id]) : [];
       const coladas = sinPiel.filter(e => ids.has(e.id)).map(e => e.id);
-      ok('Sin piel de Kelvin no se inventa un color', sinPiel.length === 11 && !coladas.length, coladas.join(',') || String(sinPiel.length));
+      ok('Sin piel no se inventa un color', sinPiel.length === 10 && !coladas.length, coladas.join(',') || String(sinPiel.length));
       ok('Una especie con piel se queda en el look', C3.normalizeLook({ species: 'aestiva', accessories: {} }).species === 'aestiva');
       ok('El botón es «🎲 Nombre al azar»', !!$('p-name-azar') && $('p-name-azar').textContent.indexOf('Nombre al azar') >= 0, $('p-name-azar') && $('p-name-azar').textContent);
       ok('Hay un campo para escribir el nombre', !!$('p-name-libre'));
