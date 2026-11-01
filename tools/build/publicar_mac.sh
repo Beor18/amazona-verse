@@ -1,7 +1,7 @@
 #!/bin/bash
 # Publicar desde la Mac (GPU real, sin límites de nube). Une lo que dejan las computadoras, prueba las 13 baterías y publica sitio/.
 #   tools/build/publicar_mac.sh              # una vez
-#   tools/build/publicar_mac.sh --continuo   # cada 3 horas, sin parar (déjala en una ventana con caffeinate)
+#   tools/build/publicar_mac.sh --continuo   # cada 3 horas (AV_CADA=1200 para cada 20 min); sin cambios nuevos no construye nada
 #   tools/build/publicar_mac.sh --probar     # igual pero sin commit ni push
 # Autorizado por Kelvin (publicar sin pedirle permiso si las pruebas pasan). Nunca usa --force.
 set -u
@@ -72,5 +72,5 @@ while true; do
   echo "──── $(date '+%d/%m %H:%M') ────"
   una_vuelta
   [ $CONT -eq 1 ] || exit 0
-  echo "Próxima vuelta en 3 horas."; sleep 10800
+  CADA="${AV_CADA:-10800}"; echo "Próxima vuelta en $((CADA/60)) min."; sleep "$CADA"
 done
