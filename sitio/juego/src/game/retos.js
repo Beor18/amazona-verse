@@ -330,7 +330,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-reto { background: #fff8e8; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); padding: 14px; display: grid; gap: 8px; align-content: start; }
 #retos .rt-reto h3 { margin: 0; font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--c-ink); }
 #retos .rt-reto p { margin: 0; font-size: var(--fs-sm); }
-#retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #8a5208; }
+#retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #704205; } /* 8,0:1 sobre #fff8e8 (antes #8a5208, 6,0:1; alto contraste pide ≥ 7:1) */
 #retos .rt-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #retos .rt-medalla { width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 5px #fff, 0 6px 0 5px rgba(0,0,0,.18), 0 0 40px var(--m1); position: relative; }
