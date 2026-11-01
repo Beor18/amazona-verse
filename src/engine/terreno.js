@@ -833,7 +833,9 @@ AVE.module('terreno', function (G) {
       p.setXYZ(i, x * f, y * (0.85 + 0.3 * Math.sin(a * 5 + k)), z * f);
       const u = clamp01(h * 3.5);
       // BM57: el color de vértice se lee como lineal y la loma salía menta pálida; arena y verde hondos (sRGB → lineal)
-      col.push(Math.pow(0.72 - 0.52 * u, 2.2), Math.pow(0.66 - 0.26 * u, 2.2), Math.pow(0.46 - 0.30 * u, 2.2));
+      // BM88: manchas de selva (copas más oscuras y claras, por ángulo y altura) para que el islote no sea un disco liso; solo color
+      const m = 1 + u * (0.20 * Math.sin(a * 5 + k * 2 + h * 9) + 0.14 * Math.sin(a * 11 - k + h * 17));
+      col.push(Math.pow((0.72 - 0.52 * u) * m, 2.2), Math.pow((0.66 - 0.26 * u) * m, 2.2), Math.pow((0.46 - 0.30 * u) * m, 2.2));
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
