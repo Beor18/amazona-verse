@@ -1,13 +1,7 @@
-# 1-nov: PRIORIDAD lo que Kelvin ve roto (capturas en docs/img/kelvin_1nov/): una paleta vibrant_toon de cerca y de lejos (BM97), lejanos derretidos (BM94), ciudad de cerca rota (BM98), arboles en la roca y pop (BM101), pilares en la pared (BM102), sandias (BM99), pared del tepuy (BM100), cascada (BM103), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
-BM97
+# 1-nov (decision del coordinador): la Mac solo lo que necesita Blender, en orden y sin pisarse: BM94 -> BM97 (mismos archivos) -> BM98 -> BM103. BM99/BM100/BM101 los hace la nube. Maximo 2 trabajadores.
 BM94
+BM97
 BM98
-BM101
-BM102
-BM99
-BM100
 BM103
-BM95
 BM90
 BM86
-BM87
