@@ -24,6 +24,7 @@ HEIGHT = ROOT / 'assets/data/mapa_cap1_altura.js'
 MAP_JS = ROOT / 'assets/data/mapa_cap1.js'
 SCALE = 0.255
 TERRAIN_REF = '3019fcf'
+MODEL_REF = '48ab25e'
 STORY_HEIGHT = None
 
 
@@ -294,9 +295,9 @@ def reference_model(name):
     import tempfile
 
     with tempfile.NamedTemporaryFile(suffix='.glb') as reference_file:
-        reference = subprocess.run(['git', 'show', 'HEAD:assets/models/edificios/%s_hd.glb' % name], cwd=ROOT, capture_output=True)
+        reference = subprocess.run(['git', 'show', MODEL_REF + ':assets/models/edificios/%s_hd.glb' % name], cwd=ROOT, capture_output=True)
         if reference.returncode:
-            reference = subprocess.run(['git', 'show', 'HEAD:assets/models/edificios/%s.glb' % name], cwd=ROOT, capture_output=True, check=True)
+            reference = subprocess.run(['git', 'show', MODEL_REF + ':assets/models/edificios/%s.glb' % name], cwd=ROOT, capture_output=True, check=True)
         reference_file.write(reference.stdout)
         reference_file.flush()
         return GLB(Path(reference_file.name))
@@ -343,11 +344,14 @@ def update_buildings(glb):
         if tris > 20000:
             try:
                 for suffix in ('.glb', '_glb.js'):
-                    result = subprocess.run(['git', 'show', 'HEAD:assets/models/edificios/' + name + '_hd' + suffix], cwd=ROOT, capture_output=True)
+                    result = subprocess.run(['git', 'show', MODEL_REF + ':assets/models/edificios/' + name + '_hd' + suffix], cwd=ROOT, capture_output=True)
                     if result.returncode:
                         raise subprocess.CalledProcessError(result.returncode, result.args)
                     path.with_name(name + '_hd' + suffix).write_bytes(result.stdout)
-                kit[name].update(hd=False, original=False)
+                preserved = GLB(path)
+                preserved_tris = sum(preserved.doc['accessors'][p['indices']]['count'] // 3 for mesh in preserved.doc['meshes'] for p in mesh['primitives'])
+                preserved_kb = round(path.with_name(name + '_hd_glb.js').stat().st_size / 1024, 1)
+                kit[name].update(hd=True, original=False, trisHD=preserved_tris, kbHD=preserved_kb)
                 print('HD OPTIMIZADO CONSERVADO', name, tris, flush=True)
                 continue
             except subprocess.CalledProcessError:

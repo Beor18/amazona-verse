@@ -219,12 +219,12 @@ Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio 
 ## Integración del paquete TransferNow (01-nov-2026)
 
 - Fuente: `edificios.glb` y `mapa.glb` del enlace entregado por Kelvin. El conversor reproducible es `tools/blender/integrar_originales.py`; no necesita Blender ni añade dependencias.
-- Integración mixta: 18 recursos ligeros usan la geometría y los materiales originales (`original: true` en `kit.js`); los modelos pesados conservan el HD optimizado que ya funcionaba. Las texturas originales están en `tex_original/` y se cargan por URI externa.
+- Integración mixta: 18 recursos ligeros usan la geometría y los materiales originales (`original: true` en `kit.js`); los modelos pesados conservan el HD optimizado que ya funcionaba y lo mantienen activado (`hd: true`). Las texturas originales están en `tex_original/` y se cargan por URI externa.
 - Al dividir la escena se elimina la transformación completa de cada instancia, no solo su posición. Cada modelo se ajusta a la caja y al pivote del kit validado, de modo que conserva su escala, orientación, apoyo y colocación en el juego. Las losas se ajustan a sus cajas rectangulares existentes.
 - El terreno original se publica en cuatro trozos con 80 000 triángulos en total. Conserva su malla en planta, pero adapta la altura de sus vértices al heightmap validado del juego para mantener misiones, edificios y apoyos en su sitio. `mapa_cap1_altura.js` conserva exactamente esas alturas de referencia. Escala del terreno: 0,255.
 - Se exportan también seis árboles originales como recursos opcionales en `assets/models/entorno/*_original.glb`; el bosque activo sigue siendo la flora procedural para no multiplicar el coste de cada vista.
-- `python3 tools/blender/integrar_originales_test.py` comprueba los recursos originales, sus URI, el terreno, el heightmap y las dimensiones/pivotes frente al kit anterior. No hay límite de tamaño de archivo ni de descarga en la build; el presupuesto de 20 000 triángulos del conversor es únicamente el criterio para elegir entre el original ligero y el HD ya optimizado.
-- Capturas de la build real: `docs/img/integracion_original_ciudad_20261101.png`, `integracion_original_villa_20261101.png` e `integracion_original_mapa_20261101.png`.
+- `python3 tools/blender/integrar_originales_test.py` comprueba los recursos originales, sus URI, el HD conservado, el terreno, el heightmap y las dimensiones/pivotes frente al kit anterior. No hay límite de tamaño de archivo ni de descarga en la build; el presupuesto de 20 000 triángulos del conversor es únicamente el criterio para elegir entre el original ligero y el HD ya optimizado. Las referencias fijas hacen la conversión repetible.
+- Capturas de la build real: `docs/img/integracion_original_ciudad_20261101.png`, `integracion_original_villa_20261101.png` e `integracion_original_mapa_20261101.png`. La activación del HD de los templos se comprueba en `docs/img/hd_templos_corregido_20261101.png`.
 
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.

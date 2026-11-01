@@ -47,6 +47,20 @@ class OriginalAssetsTest(unittest.TestCase):
                 self.assertIn('uri', image, name)
                 self.assertTrue((MODELS / image['uri']).exists(), image['uri'])
 
+    def test_preserved_hd_stays_enabled_and_described(self):
+        kit = json.loads((MODELS / 'kit.js').read_text().split('window.AV_EDIFICIOS_KIT = ', 1)[1].rsplit(';', 1)[0])
+        checked = 0
+        for name, entry in kit.items():
+            path = MODELS / (name + '_hd.glb')
+            if entry.get('original') or not path.exists():
+                continue
+            checked += 1
+            self.assertTrue(entry.get('hd'), name + ' tiene HD pero está desactivado')
+            self.assertEqual(entry.get('trisHD'), triangles(glb_json(path)), name)
+            expected_kb = round(path.with_name(name + '_hd_glb.js').stat().st_size / 1024, 1)
+            self.assertAlmostEqual(entry.get('kbHD'), expected_kb, delta=0.1, msg=name)
+        self.assertGreater(checked, 10)
+
     def test_original_buildings_keep_validated_bounds(self):
         kit = json.loads((MODELS / 'kit.js').read_text().split('window.AV_EDIFICIOS_KIT = ', 1)[1].rsplit(';', 1)[0])
 
