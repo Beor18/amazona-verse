@@ -1396,6 +1396,7 @@ window.AV_EN = {
  "Loro lilacino": "Lilacine amazon",
  "Loro de pecho vináceo": "Vinaceous-breasted amazon",
  "Loro cachete amarillo": "Red-lored amazon",
+ "Loro de cuello rojo": "Red-necked amazon",
  "Cotorra de La Española": "Hispaniolan amazon",
  "Loro imperial": "Imperial amazon",
  "Loro de cabeza amarilla": "Yellow-headed amazon",
