@@ -17,6 +17,7 @@
   - Falla con cualquier 404, error de consola o base64 retenido. Con `--solo-medir`, no corre las baterías.
 - **Publicar (solo el coordinador):** `file_path` = `site/index.html`, `files` = `files_map` y la `url` del artifact. No se pasa `capabilities`, para conservar `downloads`.
 - **Entorno:** el Python de Blender (`lib.sh` lo busca; también sirve `AV_PYTHON`), nunca `python3` del sistema. Ajustes en `tools/build/config.json`. `salida/` no se versiona.
+- **Tamaño:** `total_max_mb`, `archivo_max_mb` y `objetivo_mb` en `0` desactivan todos los límites de tamaño de la build.
 
 ## Compresión de geometría y WebP (QA-10)
 - **Paso `geometria` de la build** (`avbuild.py`, `config.json` → `geometria`; se desactiva con `--sin-geometria`):

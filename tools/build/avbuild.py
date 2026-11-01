@@ -984,12 +984,12 @@ def paso_validar(sitio, cfg, reg, paso, estricto, subdirs_tex=()):
     tot = sum(files.values())
     if len(files) > L['archivos_max']:
         reg.add('error', paso, '%d archivos (máximo %d por publicación)' % (len(files), L['archivos_max']))
-    if tot > L['total_max_mb'] * MB:
+    if L.get('total_max_mb', 0) > 0 and tot > L['total_max_mb'] * MB:
         reg.add('error', paso, '%.2f MB (máximo %d MB por publicación)' % (tot / MB, L['total_max_mb']))
     for f, s in files.items():
-        if s > L['archivo_max_mb'] * MB:
+        if L.get('archivo_max_mb', 0) > 0 and s > L['archivo_max_mb'] * MB:
             reg.add('error', paso, '%s pesa %.2f MB (máximo %d MB por archivo)' % (f, s / MB, L['archivo_max_mb']))
-    if tot > L['objetivo_mb'] * MB:
+    if L.get('objetivo_mb', 0) > 0 and tot > L['objetivo_mb'] * MB:
         reg.add('error' if estricto else 'aviso', paso, '%.2f MB, por encima del objetivo de %d MB' % (tot / MB, L['objetivo_mb']))
     # URLs externas
     errores, permitidas, enlaces = clasificar_externas(an, cfg)
@@ -1292,8 +1292,9 @@ def escribir_reporte(salida, R):
         prev = et['mb']
     md.append(tabla(filas, ['Etapa', 'Archivos', 'MB', 'Cambio']))
     base, fin = R['etapas'][1], R['etapas'][-1]
-    md.append('\nAntes (proceso manual: export sin .glb/.blend): **%.2f MB, %d archivos**. Después: **%.2f MB, %d archivos** (%.1f %% menos). Objetivo: %d MB.\n'
-              % (base['mb'], base['archivos'], fin['mb'], fin['archivos'], 100 * (1 - fin['mb'] / base['mb']) if base['mb'] else 0, R['limites']['objetivo_mb']))
+    objetivo = R['limites']['objetivo_mb'] and '%d MB' % R['limites']['objetivo_mb'] or 'sin límite'
+    md.append('\nAntes (proceso manual: export sin .glb/.blend): **%.2f MB, %d archivos**. Después: **%.2f MB, %d archivos** (%.1f %% menos). Objetivo: %s.\n'
+              % (base['mb'], base['archivos'], fin['mb'], fin['archivos'], 100 * (1 - fin['mb'] / base['mb']) if base['mb'] else 0, objetivo))
     V = R['validacion_final']
     md.append('## Validación final\n')
     md.append(tabla([
@@ -1302,8 +1303,10 @@ def escribir_reporte(salida, R):
         ['Carpetas con nombre dinámico (se prueban en test.sh)', ', '.join('`%s`' % d for d in V['carpetas_dinamicas']) or '—'],
         ['*_glb.js → glTF 2.0 válido', '%d de %d' % (V['glb_validos'], V['glb_total'])],
         ['Archivos (máx. %d)' % R['limites']['archivos_max'], V['archivos']],
-        ['Total (máx. %d MB, objetivo %d MB)' % (R['limites']['total_max_mb'], R['limites']['objetivo_mb']), '%.2f MB' % V['mb']],
-        ['Mayor archivo (máx. %d MB)' % R['limites']['archivo_max_mb'], '%s (%.2f MB)' % (R['mayor'][0], R['mayor'][1] / MB)],
+        ['Total (sin límites de tamaño)' if not R['limites']['total_max_mb'] and not R['limites']['objetivo_mb'] else
+         'Total (máx. %d MB, objetivo %d MB)' % (R['limites']['total_max_mb'], R['limites']['objetivo_mb']), '%.2f MB' % V['mb']],
+        ['Mayor archivo (sin límite)' if not R['limites']['archivo_max_mb'] else
+         'Mayor archivo (máx. %d MB)' % R['limites']['archivo_max_mb'], '%s (%.2f MB)' % (R['mayor'][0], R['mayor'][1] / MB)],
         ['URLs externas no permitidas', V['externas_error']],
         ['URLs externas permitidas', ', '.join(V['externas_permitidas']) or 'ninguna'],
         ['Enlaces externos (citas; no se descargan)', '%d en %s' % (V['enlaces_n'], ', '.join(V['enlaces_externos'])) if V['enlaces_n'] else 'ninguno'],

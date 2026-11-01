@@ -15,9 +15,9 @@
   ],
   "limites": {
     "archivos_max": 511,
-    "total_max_mb": 64,
-    "archivo_max_mb": 16,
-    "objetivo_mb": 30
+    "total_max_mb": 0,
+    "archivo_max_mb": 0,
+    "objetivo_mb": 0
   },
   "hosts_permitidos": {
     "scripts": [
