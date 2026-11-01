@@ -209,12 +209,12 @@ El color medio del atlas es arena plana a más de 90 m. `tools/blender/edificios
 Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio en alta).
 
 ## Restauración paramétrica Ancient (31-oct-2026)
-- `tools/blender/edificios_restaurados.py` aplica el flujo paramétrico de Kimi 3D Make a los 19 modelos Ancient: templos grandes y medianos, muro, cinco torres, altar, mirador, pilar y portal. Sustituye las piezas de ruina desmontadas por edificios completos con escaleras, columnas, muros, cornisas biseladas, dentados, relieves y coronas.
-- Conserva exactamente la caja, el centro de la base, la orientación y las instancias del kit. No cambia Vittata, los modelos Savage ni el mapa original de 3ds Max.
+- `tools/blender/edificios_restaurados.py` aplica el flujo paramétrico de Kimi 3D Make a los 19 modelos Ancient: templos grandes y medianos, muro, cinco torres, altar, mirador, pilar y portal. El ligero usa edificios completos con escaleras, columnas, muros, cornisas biseladas, dentados, relieves y coronas; la fusión conserva también las mejoras posteriores de geometría, pivotes, HD y lejanos de `main`.
+- Conserva la caja, el centro de la base, la orientación y las instancias del kit. No cambia Vittata, los modelos Savage ni el mapa original de 3ds Max.
 - Los materiales reutilizan las texturas licenciadas del proyecto: sillares `wallM`, frisos `decoM`, `floorM` y `stoneM`, con mapas de normales. Las celdas originales se extraen del atlas `tex_hd/hd_ancient*.jpg`.
-- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–17958 tris y el lejano 88–2340 tris con color de vértice. `kit.js` lleva `restaurado: true` en estos modelos.
+- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–84288 tris y el lejano 88–3938 tris. `kit.js` lleva `restaurado: true` en los modelos paramétricos.
 - Colocación: `relocate()` calcula intersecciones verticales con triángulos reales y con el heightmap, no solo cajas envolventes. Corrige las bases sin apoyo y se integra también en `mapa_build.py`.
-- Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y apoyo real de todas las instancias Ancient. El generador es idempotente: al repetirlo no quedan ajustes de altura pendientes.
+- Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y apoyo real de todas las instancias Ancient.
 
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.
