@@ -78,6 +78,7 @@ VISTAS = {  # en las vistas de vuelo Vittata queda 8 m bajo la cámara (fuera de
     'aldea': {'x': 120, 'y': 8, 'z': 162, 'vuelo': True, 'yaw': 0.63, 'cam': [120, 16, 162], 'mirar': [88, 9, 118], 'nota': 'Aldea de Kelvin junto a Villa Raíz'},
     'yunque': {'x': 80, 'y': 30, 'z': 8, 'vuelo': True, 'yaw': 0.6, 'cam': [80, 38, 8], 'mirar': [-30, 95, -150], 'nota': 'El Yunque: paredes, cascadas y cumbre'},
     'rio': {'x': 190, 'alt': 0, 'z': 122, 'vuelo': False, 'yaw': 2.6, 'cam': [194.7, 5.5, 114.3], 'mirar': [179.6, 4, 139.2], 'nota': 'Río junto a Poza Honda'},
+    'kelvin_villa': {'x': 125, 'y': 150, 'z': 175, 'vuelo': True, 'yaw': 0.5, 'cam': [125, 165, 200], 'mirar': [-30, 95, -150], 'nota': 'La vista de la captura de Kelvin del 1-nov: sobre Villa Raíz, a ~300 m de la ciudad'},
     'ciudad': {'x': 52, 'y': 110, 'z': -84, 'vuelo': True, 'yaw': 0.885, 'cam': [52, 118, -84], 'mirar': [-10, 100, -140], 'nota': 'Ruinas de Kelvin (ciudad antigua)'},
     'criadero': {'criadero': True, 'nota': 'Criadero (nido, su propio lienzo)'},
 }
