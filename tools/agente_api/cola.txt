@@ -1,9 +1,4 @@
-# Sprint final del API (1-nov): gastar ~$40 en <1 h. Graficos primero, luego vuelo y camara. Exporta AV_PYTHON (Blender) al lanzar.
-BM92
+# 1-nov: BM90 primero (falló por sobrecarga de la Mac), luego vuelo y cámara. Correr con 1-2 trabajadores, no 5: con más, el publicador no pasa las pruebas.
+BM90
 BM86
 BM87
-BM93
-BM88
-BM89
-BM90
-BM91
