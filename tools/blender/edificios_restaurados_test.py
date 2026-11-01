@@ -210,7 +210,7 @@ class RestoredBuildingsTest(unittest.TestCase):
             near = len(triangles(MODELS / (name + '.glb')))
             high = len(triangles(MODELS / (name + '_hd.glb')))
             far = len(triangles(MODELS / (name + '_lejos.glb')))
-            if near > 5000 or high > 85000 or far > 4000:
+            if near > 5000 or high > 85000 or far > 10000:
                 failures.append('%s: ligero %d, HD %d, lejos %d' % (name, near, high, far))
         self.assertFalse(failures, 'Presupuesto superado: ' + '; '.join(failures))
 

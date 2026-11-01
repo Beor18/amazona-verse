@@ -212,7 +212,7 @@ Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio 
 - `tools/blender/edificios_restaurados.py` aplica el flujo paramétrico de Kimi 3D Make a 18 modelos Ancient: templos grandes y medianos, muro, cuatro torres, altar, mirador, pilar y portal. El ligero usa edificios completos con escaleras, columnas, muros, cornisas biseladas, dentados, relieves y coronas; `ruina_torre` conserva la geometría original con su cavidad interior validada. La fusión conserva también las mejoras posteriores de geometría, pivotes, HD y lejanos de `main`.
 - Conserva la caja, el centro de la base, la orientación y las instancias del kit. No cambia Vittata, los modelos Savage ni el mapa original de 3ds Max.
 - Los materiales reutilizan las texturas licenciadas del proyecto: sillares `wallM`, frisos `decoM`, `floorM` y `stoneM`, con mapas de normales. Las celdas originales se extraen del atlas `tex_hd/hd_ancient*.jpg`.
-- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–84288 tris y el lejano 88–3938 tris. `kit.js` lleva `restaurado: true` en los modelos paramétricos.
+- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–84288 tris y el lejano 88–9542 tris. `kit.js` lleva `restaurado: true` en los modelos paramétricos.
 - Colocación: se conservan las posiciones validadas de `main`, incluida la torre con su espacio interior y su plataforma. `relocate()` queda solo como utilidad de análisis; no se aplica globalmente porque podía cambiar apoyos funcionales.
 - Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y la posición validada de `ruina_torre`.
 
