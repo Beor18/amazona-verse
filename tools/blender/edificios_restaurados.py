@@ -304,14 +304,19 @@ def medium_temple(mesh, w, d, h, variant):
 
 def tower(mesh, w, d, h, variant):
     mesh.frustum(0, h * 0.08, w, d, w * 0.88, d * 0.88, 'floor')
-    mesh.box((0, h * 0.43, 0), (w * 0.72, h * 0.70, d * 0.72), 'wall')
+    for side in (-1, 1):
+        mesh.box((side * w * 0.30, h * 0.43, 0), (w * 0.12, h * 0.70, d * 0.72), 'wall')
+    mesh.box((0, h * 0.43, -d * 0.30), (w * 0.48, h * 0.70, d * 0.12), 'wall')
+    for side in (-1, 1):
+        mesh.box((side * w * 0.18, h * 0.20, d * 0.30), (w * 0.12, h * 0.24, d * 0.12), 'wall')
+    mesh.box((0, h * 0.55, d * 0.30), (w * 0.48, h * 0.46, d * 0.12), 'wall')
+    mesh.box((0, h * 0.75, 0), (w * 0.72, h * 0.03, d * 0.72), 'floor')
     for sx in (-1, 1):
         for sz in (-1, 1):
             mesh.column(sx * w * 0.32, sz * d * 0.32, h * 0.08, h * 0.66, min(w, d) * 0.065)
     for level in (0.24, 0.50, 0.75):
         mesh.cornice(w * 0.84, d * 0.84, h * level, h * 0.035)
     mesh.windows(w * 0.72, d * 0.72, h * 0.16, h * 0.70, rows=3)
-    mesh.box((0, h * 0.18, d * 0.365), (w * 0.22, h * 0.20, 0.04), 'dark')
     mesh.frustum(h * 0.775, h * 0.86, w * 0.88, d * 0.88, w * 0.72, d * 0.72, 'stone')
     mesh.box((0, h * 0.91, 0), (w * 0.54, h * 0.10, d * 0.54), 'wall')
     mesh.cornice(w * 0.66, d * 0.66, h * 0.96, h * 0.025)
