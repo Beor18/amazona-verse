@@ -6,6 +6,11 @@
 set -u
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 N="${1:-3}"; LOGS="$HOME/AmazonaVerse/logs_api"; mkdir -p "$LOGS"
+# 1-nov: tope de trabajadores vivos (con 9 la Mac se quedó sin memoria, los builds murieron con 143 y el publicador
+# no pasó las pruebas). Cuenta los que ya corren y solo arranca hasta AV_MAX (por defecto 3). Para más: AV_MAX=5.
+MAX="${AV_MAX:-3}"; VIVOS=$(pgrep -f 'ejecutor.py --cola' | wc -l | tr -d ' ')
+if [ "$VIVOS" -ge "$MAX" ]; then echo "Ya hay $VIVOS trabajadores vivos (tope $MAX); no arranco más. Para pararlos: pkill -f ejecutor.py"; exit 0; fi
+[ $((VIVOS + N)) -gt "$MAX" ] && { N=$((MAX - VIVOS)); echo "Hay $VIVOS vivos; arranco solo $N (tope $MAX)."; }
 # La clave se pide UNA vez aquí (o sale del Llavero) y los trabajadores la heredan; nunca se escribe en archivos.
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
   ANTHROPIC_API_KEY="$(security find-generic-password -a "$USER" -s amazonaverse-api -w 2>/dev/null || true)"

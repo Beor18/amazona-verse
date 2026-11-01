@@ -368,13 +368,25 @@ AVE.module('terreno', function (G) {
     // roca triplanar: en acantilados la proyección desde arriba se estira; aquí se proyecta por los tres ejes
     vec3 tpB = pow(abs(nG), vec3(4.0)); tpB /= dot(tpB, vec3(1.0));
     vec2 uvRX = vWPos.zy * uEsc.z, uvRZ = vWPos.xy * uEsc.z;
-    if (tpB.y < 0.98) a2 = texture2D(tA2, uvRX) * tpB.x + a2 * tpB.y + texture2D(tA2, uvRZ) * tpB.z;
+    bool paredTp = tpB.y < 0.98;
+    if (paredTp) {
+      a2 = texture2D(tA2, uvRX) * tpB.x + a2 * tpB.y + texture2D(tA2, uvRZ) * tpB.z;
+      // BM100: la pared repetía las mismas escamas; segunda escala (grande, girada) mezclada por ruido, más fuerte de lejos, y tinte por manchas
+      vec2 uvX2 = rotUv(vWPos.zy * uEsc.z, 0.7) * 0.27, uvZ2 = rotUv(vWPos.xy * uEsc.z, 1.9) * 0.23;
+      vec4 a2b = texture2D(tA2, uvX2) * tpB.x + texture2D(tA2, rotUv(uv2, 0.7) * 0.27) * tpB.y + texture2D(tA2, uvZ2) * tpB.z;
+      float k2p = clamp(0.4 + smoothstep(14.0, 70.0, camD) * 0.35 + (mac2.b - 0.5) * 0.9, 0.0, 1.0);
+      a2 = mix(a2, a2b, k2p);
+      a2.rgb *= 0.88 + 0.24 * mac.a + (mac2.r - 0.5) * 0.12;
+    }
   #endif
   #ifdef SPLAT_DOS_ESCALAS
     float far = smoothstep(14.0, 70.0, camD);
     float k2 = clamp(far * 0.75 + (mac2.b - 0.5) * 0.6, 0.0, 1.0);
     a0 = mix(a0, texture2D(tA0, rotUv(uv0, 1.1) * 0.29), k2);
     a1 = mix(a1, texture2D(tA1, rotUv(uv1, 2.3) * 0.31), k2);
+    #ifdef SPLAT_TRIPLANAR
+    if (!paredTp)
+    #endif
     a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2);
     a3 = mix(a3, texture2D(tA3, rotUv(uv3, 1.9) * 0.33), k2);
   #endif
