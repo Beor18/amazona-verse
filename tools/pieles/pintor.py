@@ -248,7 +248,33 @@ def collaria(c):
     c.pico('#e9c84a', color_punta='#d8b23a')                                                   # pico amarillo
     c.patas('#c9a39c'); c.ojo('#6b3a1e', '#f1f0eb')
 
-ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria}
+# muslos y borde de ataque del ala (bend of wing, borde carpal, álula y coberteras primarias)
+R['muslo'] = body * ss(0.20, 0.23, y) * gauss((0.16, 0.25, 0.0), (0.07, 0.06, 0.12))
+R['borde_ataque'] = brazo * ss(0.44, 0.49, x) * ss(0.64, 0.58, x) * ss(-0.005, 0.015, y - centro_brazo)
+
+def pretrei(c):
+    # Sin render de Kelvin: solo fuentes (docs/equipo/pieles_fuentes/pretrei.md). Macho adulto.
+    c.tono(); c.festoneado(R['festoneado_todo'], 0.28)                                        # «feathers edged with black»
+    cara = np.maximum.reduce([R['frente_ancha'], R['corona'] * 0.9, R['lores'], ss(0.14, 0.10, dE + 0.006 * n3)])
+    c.pintar(cab * np.clip(cara * 0.95, 0, 0.95), hexc('#d3261f'))                            # frente, corona hasta los lores y alrededor de los ojos
+    c.pintar(cab * R['anillo'], hexc('#f1f0eb'))                                              # anillo blanco
+    c.pintar(R['borde_ataque'] * 0.92, hexc('#d22b22'))                                       # curva del ala, borde carpal, álula y coberteras primarias
+    c.pintar(R['muslo'] * 0.9, hexc('#d22b22'))                                               # muslos rojos
+    c.pintar(R['cola_punta'] * 0.75, hexc('#c4d43c'))                                         # cola con punta ancha verde amarillenta
+    c.pico('#e2cf8a'); c.patas('#8f8580'); c.ojo('#e8901c', '#f1f0eb')                        # pico amarillo/cuerno, iris naranja/amarillo; patas gris neutro (sin fuente)
+
+def tucumana(c):
+    # Sin render de Kelvin: solo fuentes (docs/equipo/pieles_fuentes/tucumana.md).
+    c.tono(); c.festoneado(R['festoneado_todo'] * ((zz < 0.05) | (y > 0.95)), 0.30)          # plumas del dorso con margen negro (escamado)
+    c.festoneado(R['festoneado_todo'] * (zz >= 0.05) * (y <= 0.95), 0.16)
+    c.pintar(cab * np.clip(R['frente_ancha'] * 0.95, 0, 0.95), hexc('#d3261f'))              # frente y corona delantera rojas (no rodea el ojo)
+    c.pintar(cab * R['anillo'], hexc('#f1f0eb'))                                              # anillo blanco
+    c.pintar(R['borde_ataque'] * ss(0.50, 0.54, x) * 0.92, hexc('#d22b22'))                  # coberteras primarias rojas (sin rojo en la curva del ala)
+    c.pintar(R['muslo'] * 0.9, hexc('#e8761c'))                                               # muslos naranjas
+    c.pintar(R['cola_base_lat'] * 0.75, hexc('#c0372c'))                                      # rojo en la base de la cola
+    c.pico('#d9b9a2'); c.patas('#a4928e'); c.ojo('#e6801c', '#f1f0eb')                        # cuerno rosado; patas gris rosado; iris naranja
+
+ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria, 'pretrei': pretrei, 'tucumana': tucumana}
 if __name__ == '__main__':
     sp = sys.argv[1]; out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(AQUI, '..', sp, sp + '.jpg')
     c = Lienzo(); ESP[sp](c); c.guardar(out)

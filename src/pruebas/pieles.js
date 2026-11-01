@@ -1,5 +1,5 @@
 /* AVE · AV.pielesTest: pieles de especie (src/personaje/pieles.js)
-   Las 30 cargan (1024², sRGB, flipY falso) y se aplican a un personaje aparte (no el jugador): cuerpo, pico y plumón de cría
+   Las 31 cargan (1024², sRGB, flipY falso) y se aplican a un personaje aparte (no el jugador): cuerpo, pico y plumón de cría
    con la piel y el tinte apagado; la piel fija sobrevive a applyLook; quitar() vuelve al mapa original; las especies sin
    piel conservan el tinte; solo se descarga la piel que un personaje pide, una vez.
    Devuelve { passed, total, results }. Se carga al pedir la prueba (boot.js), no en la descarga inicial del juego. */
@@ -17,18 +17,18 @@ window.AVPielesTest = function () {
     const nombre = e => decodeURIComponent(e.name.split('/').pop().replace(/\.jpg.*$/, ''));
     const sueltas = recursos().filter(e => pedidas.indexOf(nombre(e)) < 0);
     check('Carga perezosa: solo se descarga la piel que un personaje pide', !sueltas.length, sueltas.map(nombre).join(',') || (pedidas.length + ' pedidas antes de la prueba: ' + pedidas.join(',')));
-    // 2. Catálogo: 30 pieles; 29 enlazadas desde especies.js, sin especies inventadas
+    // 2. Catálogo: 31 pieles; 30 enlazadas desde especies.js, sin especies inventadas
     if (!window.AV_ESPECIES && window.AVE.assets) { try { await AVE.assets.script('content/comun/especies.js'); } catch (e) { /* falla abajo */ } }
     const sp = window.AV_ESPECIES ? window.AV_ESPECIES.especies : [];
     const enlazadas = sp.filter(x => x.piel);
-    check('Catálogo: 30 pieles distintas', PIELES.length === 30 && new Set(PIELES.map(p => p.piel)).size === 30, PIELES.length);
-    check('especies.js: 29 especies con piel y cada piel existe', enlazadas.length === 29 && enlazadas.every(x => POR_PIEL[x.piel] && POR_PIEL[x.piel].especie === x.id), enlazadas.length);
+    check('Catálogo: 31 pieles distintas', PIELES.length === 31 && new Set(PIELES.map(p => p.piel)).size === 31, PIELES.length);
+    check('especies.js: 30 especies con piel y cada piel existe', enlazadas.length === 30 && enlazadas.every(x => POR_PIEL[x.piel] && POR_PIEL[x.piel].especie === x.id), enlazadas.length);
     check('Vittata tiene su piel verde v4 (Kelvin, 1-nov; mismo modelo y rig)', tiene('vittata'));
-    // 3. Las 30 cargan
+    // 3. Las 31 cargan
     const tex = await Promise.all(PIELES.map(p => cargar(p.piel)));
     const T = {}; PIELES.forEach((p, i) => { T[p.piel] = tex[i]; });
     const malas = PIELES.filter((p, i) => !(tex[i] && tex[i].image && tex[i].image.width >= 512 && tex[i].image.width === tex[i].image.height && tex[i].flipY === false && tex[i].encoding === THREE.sRGBEncoding));
-    check('Las 30 pieles cargan (1024², o 512 si el look las topa; sRGB, flipY falso)', !malas.length, malas.map(p => p.piel).join(','));
+    check('Las 31 pieles cargan (1024², o 512 si el look las topa; sRGB, flipY falso)', !malas.length, malas.map(p => p.piel).join(','));
     if (!window.AVCharacter) { check('Hay personaje para probar', false, 'sin AVCharacter'); return fin(); }
     // 4. Un personaje real aparte (no el jugador)
     const ch = await window.AVCharacter.create();
@@ -53,7 +53,7 @@ window.AVPielesTest = function () {
         const ok = await aplicar(ch, p.especie || p.piel), m = cuerpo();
         if (!ok || m.length !== n0 || !m.every(x => x === T[p.piel]) || on.length() !== 0) fallos.push(p.piel);
       }
-      check('Las 30 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 3, fallos.join(',') || n0 + ' materiales');
+      check('Las 31 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 3, fallos.join(',') || n0 + ' materiales');
       await aplicar(ch, 'oratrix');
       ch.applyLook({ species: 'vittata', accessories: { neck: { id: 'panuelo', color: '#f2a03d' } } }); await listo(ch);
       check('La piel fija sobrevive a applyLook (crías y rivales con ropa)', cuerpo().every(x => x === T.oratrix) && on.length() === 0);
@@ -71,7 +71,7 @@ window.AVPielesTest = function () {
     }
     // 5. Peso: cada piel se pidió una sola vez (caché compartida) y lo bajado sigue siendo solo lo pedido
     const kb = recursos().reduce((s, e) => s + (e.encodedBodySize || e.transferSize || 0), 0) / 1024;
-    check('Cada piel se descarga una vez y solo al usarla', pedidas.length === 30 && new Set(pedidas).size === 30 && recursos().every(e => pedidas.indexOf(nombre(e)) >= 0), pedidas.length + ' pedidas' + (kb ? ', ' + Math.round(kb) + ' KB' : ''));
+    check('Cada piel se descarga una vez y solo al usarla', pedidas.length === 31 && new Set(pedidas).size === 31 && recursos().every(e => pedidas.indexOf(nombre(e)) >= 0), pedidas.length + ' pedidas' + (kb ? ', ' + Math.round(kb) + ' KB' : ''));
     return fin();
   }
   return { test };

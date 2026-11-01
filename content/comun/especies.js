@@ -721,6 +721,7 @@
       },
       {
         "id": "pretrei",
+        "piel": "pretrei",
         "cientifico": "Amazona pretrei",
         "comun": {
           "es": "loro de anteojos rojos",

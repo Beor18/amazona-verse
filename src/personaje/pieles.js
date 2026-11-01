@@ -22,7 +22,7 @@
 (function () {
   'use strict';
   const DIR = 'assets/textures/pieles/';
-  // Las 30 pieles (22 cocidas de los .blend de Kelvin + vittata verde v4 + ventralis, finschi, lilacina, vinacea, autumnalis, arausiaca y collaria, pintada sobre el UV el 1-nov con fuentes: docs/equipo/pieles_fuentes/): archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
+  // Las 31 pieles (22 cocidas de los .blend de Kelvin + vittata verde v4 + ventralis, finschi, lilacina, vinacea, autumnalis, arausiaca, collaria y pretrei, pintada sobre el UV el 1-nov con fuentes: docs/equipo/pieles_fuentes/): archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
   // (lo mide pieles_cocer.py); lo usan los párpados. ochrocephala_panamensis es subespecie: el catálogo no le da id (Kelvin decide).
   const PIELES = [
     { piel: 'aestiva', especie: 'aestiva', archivo: 'Aestiva.blend', anillo: '#bcb496' },
@@ -55,6 +55,7 @@
     { piel: 'autumnalis', especie: 'autumnalis', archivo: null, anillo: '#efede6' }, // pintada sobre el UV (1-nov)
     { piel: 'arausiaca', especie: 'arausiaca', archivo: null, anillo: '#d6d5d1' }, // pintada sobre el UV (1-nov), según el render de Kelvin
     { piel: 'collaria', especie: 'collaria', archivo: null, anillo: '#f1f0eb' }, // pintada sobre el UV (1-nov), según el render de Kelvin
+    { piel: 'pretrei', especie: 'pretrei', archivo: null, anillo: '#f1f0eb' }, // pintada sobre el UV (1-nov), solo con fuentes (sin render de Kelvin)
   ];
   const POR_PIEL = {}; for (const p of PIELES) POR_PIEL[p.piel] = p;
 
