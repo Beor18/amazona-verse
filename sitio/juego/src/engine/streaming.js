@@ -358,6 +358,24 @@ AVE.module('streaming', function (G) {
   // Factor de un atributo entero normalizado (COLOR_0 Uint16 del _lejos, cuantización): en r128 getX no desnormaliza (QA-25)
   const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
     : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
+  // BM105: fusión de lejanos con atlas (posición, normal, uv y celda del atlas)
+  function fundirTex(geos) {
+    let nv = 0, ni = 0;
+    for (const g of geos) { nv += g.attributes.position.count; ni += g.index.count; }
+    const A = { position: [3, new Float32Array(nv * 3)], normal: [3, new Float32Array(nv * 3)], uv: [2, new Float32Array(nv * 2)], avCelda: [2, new Float32Array(nv * 2)] };
+    const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+    let vo = 0, io = 0;
+    for (const g of geos) {
+      for (const k in A) { const a = g.attributes[k], d = A[k][0], k1 = kNorm(a); for (let i = 0, n = a.count; i < n; i++) for (let c = 0; c < d; c++) A[k][1][(vo + i) * d + c] = a['get' + 'XYZ'[c]](i) * k1; }
+      for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
+      io += g.index.count; vo += g.attributes.position.count;
+    }
+    const out = new THREE.BufferGeometry();
+    for (const k in A) out.setAttribute(k, new THREE.BufferAttribute(A[k][1], A[k][0]));
+    out.setIndex(new THREE.BufferAttribute(idx, 1));
+    out.computeBoundingSphere(); out.computeBoundingBox();
+    return out;
+  }
   function fundir(geos, conColor) {
     let nv = 0, ni = 0;
     for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
@@ -639,7 +657,7 @@ AVE.module('streaming', function (G) {
       if (!cap || lotes[k]) return; // pieza solo del contenido (taller) o ya creado
       let attr = buffers[k];
       if (!attr || attr.count < cap) { attr = buffers[k] = new THREE.InstancedBufferAttribute(new Float32Array(cap * 16), 16); attr.setUsage(THREE.DynamicDrawUsage); }
-      const partes = r.tipo === 'lejos' ? [{ geo: r.geo, mat: matLejos }] : r.partes;
+      const partes = r.tipo === 'lejos' ? [{ geo: r.geo, mat: r.mat || matLejos }] : r.partes;
       const L = lotes[k] = { n: r.n, tipo: r.tipo, attr, mallas: [], lista: [], prev: [], sombra: false };
       for (const p of partes) {
         const m = new THREE.InstancedMesh(p.geo, p.mat, cap);
@@ -715,7 +733,15 @@ AVE.module('streaming', function (G) {
         let gr = grupos.get(k); if (!gr) grupos.set(k, gr = { src: o.material, geos: [] });
         gr.geos.push(geo);
       });
-      if (r.tipo === 'lejos') {
+      // BM105: el _lejos Ancient con UV y celda del atlas (TEXCOORD_1) se dibuja con AV_HD_Ancient, el mismo material y tono del cercano
+      const gt = r.tipo === 'lejos' && grupos.size === 1 && grupos.get('AV_Lejos').geos.length === 1 ? grupos.get('AV_Lejos') : null;
+      if (gt && gt.geos[0].attributes.uv && gt.geos[0].attributes.uv2 && gt.src && gt.src.map && /^AV_HD_/.test(gt.src.name)) {
+        const geo = gt.geos[0];
+        geo.setAttribute('avCelda', geo.attributes.uv2); geo.deleteAttribute('uv2'); geo.deleteAttribute('color');
+        if (!geo.boundingSphere) geo.computeBoundingSphere(); if (!geo.boundingBox) geo.computeBoundingBox();
+        r.mat = material(gt.src, r.fijo); usados.add(r.mat); if (r.mat.map) usados.add(r.mat.map); if (r.mat.normalMap) usados.add(r.mat.normalMap);
+        r.geo = geo;
+      } else if (r.tipo === 'lejos') {
         const geos = [...grupos.values()].flatMap(g => g.geos.map(geo => {
           if (geo.attributes.color) return geo;
           const c = g.src.color || new THREE.Color(1, 1, 1), n = geo.attributes.position.count, a = new Float32Array(n * 3);
@@ -778,7 +804,7 @@ AVE.module('streaming', function (G) {
     function liberar(r) {
       quitarLote(r);
       if (r.tipo !== 'lejos' && r.partes) { for (const p of r.partes) { p.geo.dispose(); soltarMaterial(p.mat); } r.partes = null; }
-      if (r.tipo === 'lejos' && r.geo) { r.geo.dispose(); r.geo = null; }
+      if (r.tipo === 'lejos' && r.geo) { r.geo.dispose(); r.geo = null; if (r.mat) { soltarMaterial(r.mat); r.mat = null; } }
       r.estado = 'nada'; r.promesa = null; r.soltarEn = 0;
     }
     function liberarVencidos(ahora) {
@@ -845,17 +871,19 @@ AVE.module('streaming', function (G) {
       if (Z.nivel < 1 || Z.malla || Z.fundir) return;
       const rs = [...Z.modelos].map(n => res(n, 'lejos'));
       if (!rs.every(r => r.estado === 'listo' && r.geo)) return;
-      Z.fundir = { i: 0, geos: [] };
+      Z.fundir = { i: 0, geos: [], tex: [], mat: null };
       encolar(() => fundirPaso(Z));
     }
     function fundirPaso(Z) {
       const F = Z.fundir;
-      if (!F || Z.malla || Z.nivel < 1) { if (F) { for (const g of F.geos) g.dispose(); Z.fundir = null; } return; }
+      const libF = () => { for (const g of F.geos.concat(F.tex)) g.dispose(); Z.fundir = null; };
+      if (!F || Z.malla || Z.nivel < 1) { if (F) libF(); return; }
       const t0 = performance.now();
       while (F.i < Z.inst.length && performance.now() - t0 < 6) {
-        const I = Z.inst[F.i++], geo = res(I.modelo, 'lejos').geo;
-        if (!geo) { for (const g of F.geos) g.dispose(); Z.fundir = null; return; }
-        F.geos.push(geo.clone().applyMatrix4(I.m));
+        const I = Z.inst[F.i++], rl = res(I.modelo, 'lejos'), geo = rl.geo;
+        if (!geo) { libF(); return; }
+        (rl.mat ? F.tex : F.geos).push(geo.clone().applyMatrix4(I.m));
+        if (rl.mat) F.mat = rl.mat;
       }
       if (F.i < Z.inst.length || performance.now() - t0 >= 6) { encolar(() => (Z.fundir && Z.fundir.i < Z.inst.length) ? fundirPaso(Z) : fundirCerrar(Z)); return; }
       fundirCerrar(Z);
@@ -863,17 +891,29 @@ AVE.module('streaming', function (G) {
     function fundirCerrar(Z) {
       const F = Z.fundir; if (!F) return;
       Z.fundir = null;
-      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos) g.dispose(); return; }
-      if (!F.geos.length) return;
-      const m = new THREE.Mesh(fundir(F.geos, true), matLejos);
-      for (const g of F.geos) g.dispose();
-      m.name = 'edificiosZona:' + Z.id + ':lejos'; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
-      m.receiveShadow = true; m.castShadow = false;
-      scene.add(m); Z.malla = m;
+      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos.concat(F.tex)) g.dispose(); return; }
+      if (!F.geos.length && !F.tex.length) return;
+      // BM105: los lejanos con atlas (Ancient) van en su propia malla, con AV_HD_Ancient; el resto, el color de vértice de siempre
+      const mk = (geo, mat, nom) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.name = 'edificiosZona:' + Z.id + ':' + nom; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
+        m.receiveShadow = true; m.castShadow = false;
+        scene.add(m); return m;
+      };
+      const ms = [];
+      if (F.geos.length) ms.push(mk(fundir(F.geos, true), matLejos, 'lejos'));
+      if (F.tex.length) {
+        const it = mats[F.mat.name]; if (it) it.refs++;
+        const m = mk(fundirTex(F.tex), F.mat, 'lejosTex'); m.userData.matTex = true; ms.push(m);
+      }
+      for (const g of F.geos.concat(F.tex)) g.dispose();
+      Z.malla = ms[0]; Z.mallaExtra = ms.slice(1);
     }
     function quitarZona(Z) {
       if (Z.fundir) { for (const g of Z.fundir.geos) g.dispose(); Z.fundir = null; }
-      if (!Z.malla) return; scene.remove(Z.malla); Z.malla.geometry.dispose(); Z.malla = null;
+      if (!Z.malla) return;
+      for (const m of [Z.malla].concat(Z.mallaExtra || [])) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
+      Z.malla = null; Z.mallaExtra = [];
     }
     function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
     const avisados = new Set();
@@ -957,6 +997,7 @@ AVE.module('streaming', function (G) {
         // En la ciudad del tepuy, nunca: la silueta beige tapa el kit justo en la vista aérea.
         Z.usaMalla = !Z.ciudad && (Z.nivel === 1 || (dz > umbral && dj > umbral));
         const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
+        if (Z.mallaExtra) for (const e of Z.mallaExtra) e.visible = m.visible;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
       for (let i = 0; i < activas.length; i++) {
