@@ -1,4 +1,8 @@
-# 1-nov: BM90 primero (falló por sobrecarga de la Mac), luego vuelo y cámara. Correr con 1-2 trabajadores, no 5: con más, el publicador no pasa las pruebas.
+# 1-nov: PRIORIDAD lo que Kelvin ve roto: lejanos derretidos (BM94), todo vibrant_toon (BM97), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
+BM94
+BM97
+BM95
+BM96
 BM90
 BM86
 BM87
