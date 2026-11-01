@@ -8,7 +8,7 @@
   'use strict';
   const EP = () => window.AV_EP5;
   const IGUACA = { x: -4, z: 8 }, GUARDIAN = { x: 8, z: 10 }, APRENDIZ = { x: -10, z: 6 }, TRX = { x: 4, z: 8 }, PRUEBA = { x: 0, z: 2 };
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/agilis.png' };
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
   function onda() {
     const c = document.createElement('canvas'); c.width = 128; c.height = 128;
     const g = c.getContext('2d');
@@ -86,7 +86,7 @@
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.2 },
-      { id: 'aprendiz', nombre: 'Aprendiz', sprite: 'assets/agilis.png', x: APRENDIZ.x, z: APRENDIZ.z, escala: 1.8 },
+      { id: 'aprendiz', nombre: 'Aprendiz', sprite: 'assets/aprendiz.png', x: APRENDIZ.x, z: APRENDIZ.z, escala: 1.8 },
     ],
     objetos: {}, recursos: [],
     historia: {

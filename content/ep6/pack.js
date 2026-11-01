@@ -36,17 +36,17 @@
   const TABLA_LARGA = { x: 11, z: -3 };
   // [KELVIN-1] Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
   const VISITANTES = [
-    { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/agilis.png', x: 13.5, z: -10.5, sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
+    { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', x: 13.5, z: -10.5, sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
       presenta: 'Soy Mira. Desde arriba veo las islas, una por una. Lo que necesito… ya lo verás.' },
-    { id: 'roca', nombre: 'Roca', especie: 'guildingii', sprite: 'assets/vittata.png', x: 16.5, z: -11, sabe: ['cargar fuerte', 'explicar con calma'], necesita: 'alguien que mire desde arriba', dice: true,
+    { id: 'roca', nombre: 'Roca', especie: 'guildingii', sprite: 'assets/roca.png', x: 16.5, z: -11, sabe: ['cargar fuerte', 'explicar con calma'], necesita: 'alguien que mire desde arriba', dice: true,
       presenta: 'Roca. Cargo lo que haga falta y explico despacio. Pero no vuelo alto: necesito a alguien que mire desde arriba.' },
-    { id: 'marea', nombre: 'Marea', especie: 'arausiaca', sprite: 'assets/agilis.png', x: 13.5, z: 10.5, sabe: ['conocer el agua', 'remar'], necesita: 'un nudo que aguante', dice: false, observa: 'Mira al río todo el tiempo y sujeta la soga de su canoa con el pico.',
+    { id: 'marea', nombre: 'Marea', especie: 'arausiaca', sprite: 'assets/marea.png', x: 13.5, z: 10.5, sabe: ['conocer el agua', 'remar'], necesita: 'un nudo que aguante', dice: false, observa: 'Mira al río todo el tiempo y sujeta la soga de su canoa con el pico.',
       presenta: 'Me llaman Marea. Conozco el agua y remo contra la corriente. Lo demás… ya se verá.' },
     { id: 'nudo', nombre: 'Nudo', especie: 'leucocephala', sprite: 'assets/nudo.png', x: 16.5, z: 11, sabe: ['atar nudos', 'tejer redes'], necesita: 'saber cómo va el agua', dice: true,
       presenta: 'Nudo. Ato y tejo. Pero para tejer una red buena necesito saber cómo va el agua, y de eso no sé.' },
-    { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/agilis.png', x: 6, z: -9, sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
+    { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/eco.png', x: 6, z: -9, sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
       presenta: '¿Tú eres Vittata? ¿Y ese puente? ¿Y la luz de allá? Soy Eco: aviso fuerte y vuelo alto. Pero necesito que me expliquen las cosas con calma.' },
-    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/vittata.png', x: -6, z: -9, sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
+    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/brote.png', x: -6, z: -9, sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
       presenta: 'Soy Brote, el más nuevo. Aprendo rápido y traigo una hoja grande que da sombra. Necesito que me enseñen.' },
   ];
   const PAREJAS = [['mira', 'brote'], ['roca', 'eco'], ['marea', 'nudo']]; // las tres parejas que se cubren una a la otra
@@ -106,11 +106,11 @@
   const svgURI = cuerpo => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + cuerpo + '</svg>');
   // Retrato neutro de las dos voces (como el del cap. 1): hablan desde el transmisor [KELVIN-3]
   const RETRATO_VOCES = svgURI('<circle cx="55" cy="30" r="27" fill="#10241c"/><circle cx="55" cy="30" r="27" fill="none" stroke="#7fd3c8" stroke-width="1.2" opacity=".6"/><circle cx="47" cy="30" r="5" fill="#ffd27a"/><circle cx="63" cy="30" r="5" fill="#ffd27a"/><circle cx="55" cy="30" r="20" fill="none" stroke="#ffd27a" stroke-width="1.5" opacity=".5"/>');
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Voces: RETRATO_VOCES, Aprendiz: 'assets/vittata.png',
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Voces: RETRATO_VOCES, Aprendiz: 'assets/aprendiz.png',
     'Vocera de la isla alta': 'assets/agilis.png', 'Vocero de la isla baja': 'assets/vittata.png' };
   for (const v of VISITANTES) IMG[v.nombre] = v.sprite;
   IMG.Violeta = RETRATO_VOCES; // D3: una de las dos voces, con el mismo retrato neutro
-  IMG.Navegante = 'assets/agilis.png'; // la misma de los eps. 3 y 4 [KELVIN: especie y render de la navegante]
+  IMG.Navegante = 'assets/navegante.png'; // la misma de los eps. 3 y 4 [KELVIN: especie y render de la navegante]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Vi = t => di('Vittata', t), Gu = t => di('Guardián', t);
 

@@ -24,7 +24,7 @@
   // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
   const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', Navegante: 'assets/navegante.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/vittata.png' };
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', Navegante: 'assets/navegante.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
   const di = (who, text) => ({ who, img: IMG[who], text });
   // D8 (DECISION_LOG, AP10 lote 1): el aprendiz acompaña y dice una línea corta por asamblea, solo por sí mismo (no habla por nadie)
   const APRENDIZ_ASAMBLEA = 'Yo no hablo por nadie. Miro cómo se decide… para saber hacerlo cuando me toque.';
