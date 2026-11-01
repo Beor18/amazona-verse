@@ -62,3 +62,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 
 - 1-nov · EN CURSO · nube · BM99 (sandías), BM100 (escamas de la roca), BM101 (árboles en la roca y pop): código en `vegetacion.js`/flora y `terreno.js`. La Mac no los toma.
 - 01-Nov 06:26 AST · **HECHA · web** · BM104: una imagen propia por capítulo en la landing (web/assets/img/capitulo-{1..6}.jpg y sus alt). Hecha: 6 capturas reales sin HUD (taller y máquina, Villa Raíz, canoa en la bahía, río, ruinas con la torre, lugar del pacto), alt ES/EN ajustados; landing ok a 375 y 1366 px.
+- 01-Nov 07:04 AST · **EN CURSO · web** · BM106 (capítulos 2–6 contra su historia: `content/ep2..ep6` y sus `en.js`) y BM107 (landing al día: `web/index.html`).
