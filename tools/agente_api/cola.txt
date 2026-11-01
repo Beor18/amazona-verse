@@ -1,6 +1,9 @@
-# 1-nov: PRIORIDAD lo que Kelvin ve roto: lejanos derretidos (BM94), todo vibrant_toon (BM97), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
+# 1-nov: PRIORIDAD lo que Kelvin ve roto: ciudad de cerca rota (BM98), lejanos derretidos (BM94), todo vibrant_toon (BM97), sandias (BM99), pared del tepuy (BM100), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
+BM98
 BM94
 BM97
+BM99
+BM100
 BM95
 BM96
 BM90
