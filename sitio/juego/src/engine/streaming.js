@@ -74,8 +74,10 @@ AVE.module('streaming', function (G) {
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
     // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
-    ciudadVista: 220,                              // m al borde de la zona: carga el kit (el spawn, a ~290 m, no entra)
-    ciudadMalla: 340,                              // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
+    // 1-nov (Kelvin: «de lejos se ve blanco y de cerca de otra forma»): en «alto» los templos se ven con su modelo texturizado
+    // desde casi toda la isla, no con el lejano crema sin textura (AV_Lejos). En «bajo» queda como antes (el spawn no carga la ciudad).
+    ciudadVista: { bajo: 220, medio: 420, alto: 650 }, // m al borde de la zona: carga el kit
+    ciudadMalla: { bajo: 340, medio: 450, alto: 700 }, // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
     descargas: 1, descargasArranque: 3,            // descargas a la vez
@@ -573,7 +575,9 @@ AVE.module('streaming', function (G) {
       I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = s; I.erguido = true;
       const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
     }
-    const esCiudad = id => id === 'kelvin_ruinas_yunque' || id === 'kelvin_ruinas_yunque_2';
+    // 1-nov: también las otras dos zonas con templos grandes (las ruinas del este y el complejo de la colina), que de lejos salían como bloques blancos
+    const CIUDADES = new Set(['kelvin_ruinas_yunque', 'kelvin_ruinas_yunque_2', 'kelvin_aldea_rio_este_2', 'kelvin_aldea_colina']);
+    const esCiudad = id => CIUDADES.has(id);
 
     // BM39: piedra de ruinas (miradores, ciudad y colina) que flota sobre el escalón. Solo baja: si el origen queda más de
     // `sobre` por encima del mínimo del terreno bajo su huella, se lleva a ese mínimo; las hundidas a propósito (zócalo) no se tocan.
@@ -892,7 +896,7 @@ AVE.module('streaming', function (G) {
         // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
         // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
         if (esCiudad(Z.id)) {
-          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista + (Z.ciudad ? H : 0);
+          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista[nivelCal()] + (Z.ciudad ? H : 0);
           if (Z.ciudad !== quiere) {
             Z.ciudad = quiere;
             for (const n of Z.modelos) {
@@ -960,15 +964,15 @@ AVE.module('streaming', function (G) {
         if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
         const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         const vista = zonas[I.zona].ciudad;
-        const maxI = vista ? Math.max(max, CFG.ciudadMalla) : max;
+        const cM = CFG.ciudadMalla[nivelCal()], maxI = vista ? Math.max(max, cM) : max;
         if (dCam - I.r > maxI) continue;
         // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
         // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
         const dPla = Math.hypot(I.cx - px, I.cy - py, I.cz - pz);
         const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
         const grande = I.r > CFG.hdGrande;
-        const lodLim = vista ? Math.max(lodD, CFG.ciudadMalla) : lodD;
-        const hdLim = vista ? Math.max(hdD, CFG.ciudadMalla) : hdD;
+        const lodLim = vista ? Math.max(lodD, cM) : lodD;
+        const hdLim = vista ? Math.max(hdD, cM) : hdD;
         if (I.lod === 0 && dl > lodLim + H) I.lod = 1; else if (I.lod === 1 && dl < lodLim - H) I.lod = 0;
         // Junto a la pared, la malla completa en cualquier calidad. Los grandes siguen en HD más allá del LOD, hasta hdD.
         // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.
