@@ -709,6 +709,8 @@ Kelvin: «de lejos se ve de una forma y cuando llego se ve de otra», «las estr
 - **BM106 (web), cada capítulo 2–6 contra su historia.** Recorre ep2–ep6 contra `docs/STORY_BIBLE.md` y el guion de cada capítulo: que el inicio, el conflicto y el final cuenten lo que dice la biblia, que cada misión se entienda (objetivo, pista, cierre) y que el final de cada capítulo enlace con el siguiente. Arregla textos y orden de pasos en `content/ep*/` (y `en.js`); lo que sea canon nuevo va a `DECISION_LOG.md` para Kelvin. Un commit por capítulo.
 - **BM107 (web), la landing al día.** Tras BM104, revisa `web/index.html` ES/EN: textos de capítulos y minijuegos coherentes con lo que hay hoy (tren oculto, Maze fuera del menú), enlaces que funcionan, a 375 px y escritorio. Un commit.
 
+- **BM108 (Mac), la cavidad de la torre otra vez rota.** El agente web publicó b120729 y avisó: `movementTest` 43/45 con «Torre antigua de las ruinas: no se encontró la cavidad de la torre». Probable causa: los 19 Ancient restaurados por Fernando (`7847993`, `ruina_torre*`) o el asiento de BM102. Reprodúcelo con GPU, arréglalo sin deshacer lo de Fernando ni el asiento, `movementTest` 49/49 dos veces. Va antes que BM98.
+
 ## Estado
 | Tarea | Estado | Commit | Resultado |
 |---|---|---|---|

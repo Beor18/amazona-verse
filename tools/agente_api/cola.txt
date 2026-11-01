@@ -1,3 +1,4 @@
-# 1-nov: BM98 (ciudad de cerca, partir de los modelos restaurados por Fernando) y BM105 (lejanos de templos con textura). UN solo trabajador.
+# 1-nov: BM108 (cavidad de la torre, regresion) -> BM98 (ciudad de cerca, sobre los modelos de Fernando) -> BM105 (lejanos con textura). UN solo trabajador.
+BM108
 BM98
 BM105
