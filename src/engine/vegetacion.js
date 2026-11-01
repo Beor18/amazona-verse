@@ -260,7 +260,7 @@ AVE.module('vegetacion', function (G) {
           const y = T.height(x, z);
           if (enAgua(x, z, y)) continue;
           if (tapado(x, z, esArb ? 3 : 1.6)) continue;
-          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.62) continue; // matas: no en paredes de roca
+          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
           if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
@@ -345,7 +345,7 @@ AVE.module('vegetacion', function (G) {
         const x = ST.x + (r4() * 2 - 1) * ST.rx, z = ST.z + (r4() * 2 - 1) * ST.rz, w = T.selvaTepuy(x, z);
         if (r4() >= w || !libre(x, z)) continue;
         const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
-        if (!md || y < 4 || ny < 0.3 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        if (!md || y < 4 || ny < 0.72 || enAgua(x, z, y) || tapado(x, z, 3)) continue; // BM101: ni árboles ni palmas en la pared de roca
         const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
         if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
         marcar(x, z, r);
@@ -786,7 +786,7 @@ AVE.module('vegetacion', function (G) {
         llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
         if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
-        g.own.uFade.value.set(g.cat === 'arbol' && IMP.mesh ? finMalla - banda : 0, g.cat === 'arbol' && IMP.mesh ? finMalla : 0);
+        g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»
         if (mt.userData.fade !== undefined) mt.userData.fade = g.own.uFade.value;
       }
       if (IMP.mesh && imp.length) {
