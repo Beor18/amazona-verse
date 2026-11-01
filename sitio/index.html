@@ -849,7 +849,10 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
     fetch('progreso.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (p) {
       if (!p || typeof p.total !== 'number') return;
       var e = document.getElementById('av-progreso');
-      e.textContent = '\u25D4 ' + p.total + '%';
+      // 1-nov (Kelvin): el % casi no se mueve porque entran tareas nuevas; la fecha de la publicación dice si hay algo nuevo
+      var f = p.fecha ? new Date(p.fecha) : null, cuando = '';
+      if (f && !isNaN(f)) cuando = ' · ' + f.toLocaleDateString('es-PR', { day: 'numeric', month: 'short', timeZone: 'America/Puerto_Rico' }) + ' ' + f.toLocaleTimeString('es-PR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Puerto_Rico' });
+      e.textContent = '\u25D4 ' + p.total + '%' + cuando;
       e.title = 'cap1 ' + p.cap1 + '% · tareas ' + p.tareas + '% · ' + (p.sha || '') + ' · ' + String(p.fecha || '').slice(0, 10);
       e.hidden = false;
     }).catch(function () {});
