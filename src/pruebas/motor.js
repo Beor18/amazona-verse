@@ -98,7 +98,7 @@ AVE.module('pruebas', function (G) {
     // El material puede guardar el color en sRGB o ya pasado a lineal (flujo de color del personaje): ambos son el color elegido
     const lin = '#' + new THREE.Color('#7a4fb3').convertSRGBToLinear().getHexString();
     check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && (col === '#7a4fb3' || col === lin), col);
-    ch.applyLook({ species: 'versicolor', accessories: {} });
+    ch.applyLook({ species: 'festiva', accessories: {} });
     check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
     // Ropero: cada pieza en cada estilo se monta en su hueso, y gorras/lentes no tocan ojos ni pico
     {
@@ -127,10 +127,10 @@ AVE.module('pruebas', function (G) {
       }
       check('El ropero monta todas sus piezas y estilos en sus huesos', failed.length === 0 && pieces > 0, failed.join(', ') || pieces + ' partes');
       check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
-      ch.applyLook({ species: 'versicolor', accessories: {} });
+      ch.applyLook({ species: 'festiva', accessories: {} }); // con máscara y sin piel (versicolor ya tiene piel, que apaga la máscara)
     }
     const pc = ch.tint ? hexOf(ch.tint.patchColor.value) : (ch.materials.Patch ? hexOf(ch.materials.Patch.color) : null);
-    check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.versicolor.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
+    check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.festiva.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;
     S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };

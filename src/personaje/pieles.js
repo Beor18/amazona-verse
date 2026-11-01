@@ -22,7 +22,7 @@
 (function () {
   'use strict';
   const DIR = 'assets/textures/pieles/';
-  // Las 27 pieles (22 cocidas de los .blend de Kelvin + ventralis, finschi, lilacina, vinacea y autumnalis, pintada sobre el UV el 1-nov con fuentes: docs/equipo/pieles_fuentes/): archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
+  // Las 28 pieles (22 cocidas de los .blend de Kelvin + vittata verde v4 + ventralis, finschi, lilacina, vinacea y autumnalis, pintada sobre el UV el 1-nov con fuentes: docs/equipo/pieles_fuentes/): archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
   // (lo mide pieles_cocer.py); lo usan los párpados. ochrocephala_panamensis es subespecie: el catálogo no le da id (Kelvin decide).
   const PIELES = [
     { piel: 'aestiva', especie: 'aestiva', archivo: 'Aestiva.blend', anillo: '#bcb496' },
@@ -47,6 +47,7 @@
     { piel: 'viridigenalis', especie: 'viridigenalis', archivo: 'Viridigenalis.blend', anillo: '#bcb496' },
     { piel: 'xantholora', especie: 'xantholora', archivo: 'Xantholora.blend', anillo: '#bcb496' },
     { piel: 'tresmariae', especie: 'tresmariae', archivo: 'tresmariae.blend', anillo: '#bcb496' },
+    { piel: 'vittata', especie: 'vittata', archivo: null, anillo: '#f4f4f0' }, // verde profundo v4 (Kelvin, 1-nov): su propia textura con el verde de las pieles de Kelvin
     { piel: 'ventralis', especie: 'ventralis', archivo: null, anillo: '#ece8dc' }, // pintada sobre el UV (1-nov), anillo ocular blanco
     { piel: 'finschi', especie: 'finschi', archivo: null, anillo: '#c9c7c2' }, // pintada sobre el UV (1-nov)
     { piel: 'lilacina', especie: 'lilacina', archivo: null, anillo: '#eadf9e' }, // pintada sobre el UV (1-nov)

@@ -44,6 +44,7 @@
     "especies": [
       {
         "id": "vittata",
+        "piel": "vittata",
         "cientifico": "Amazona vittata",
         "comun": {
           "es": "cotorra puertorriqueña",
