@@ -193,6 +193,316 @@
   };
   const LUMA = M.LUMA || { x: 4, z: -1 }, GUARD = M.GUARD || { x: 0, z: -11 };
 
+  // <objetos-historia> (hito 28: una página de render puede leer este bloque tal cual entre los dos marcadores; no los cambies)
+  // ---------- Objetos de la historia: máquina experimental, transmisor, banco y coquí, en geometría de three.js ----------
+  // Modelos hechos en código (sin .glb): torno (Lathe), extrusión con bisel (Extrude), tubos (Tube), aros (Torus) y grupos.
+  // Cada objeto funde sus piezas por material (una malla por material: pocos draw calls) y queda por debajo de ~3k triángulos.
+  // Materiales Phong como los edificios del kit (src/engine/mundo.js): el look vibrant_toon les pone la rampa toon; el brillo
+  // (shininess) hace de rugosidad: madera áspera 4-8, latón y cobre 26-40. Colores en sRGB; linMat (G.renderer.linMat) los pasa a
+  // lineal una sola vez y los marca, así el linearize() de la escena (core.js) no los vuelve a convertir; el engranaje que se crea
+  // después (techo del refugio) queda igual que el de la máquina.
+  // [KELVIN-6] Diseño provisional de la máquina y del transmisor (CAP1_PENDIENTE, decisión 6): se cambia aquí sin tocar la historia.
+  function objetosHistoria(linMat) {
+    const PI = Math.PI, cache = {};
+    const mat = (color, brillo, espec) => {
+      const k = color + '|' + brillo + '|' + espec;
+      return cache[k] || (cache[k] = linMat(new THREE.MeshPhongMaterial({ color: color, specular: espec || '#0d0a07', shininess: brillo || 5 })));
+    };
+    const MAT = {
+      madera: () => mat('#a8743f', 6, '#1c140c'),      // la madera del taller (mismo tono que las tablas)
+      maderaClara: () => mat('#c99a5b', 6, '#1c140c'),  // el banco de antes
+      maderaOsc: () => mat('#6e4728', 7, '#1a110a'),
+      barniz: () => mat('#7a4a26', 18, '#3a2614'),      // gabinete del radio: madera barnizada
+      cobre: () => mat('#c46e3e', 34, '#7a4a2e'),
+      cobreOsc: () => mat('#8e4a2a', 24, '#4a2a18'),
+      laton: () => mat('#c8a24a', 40, '#6a5424'),
+      hierro: () => mat('#4c4b4e', 22, '#2c2c30'),
+      tela: () => mat('#3b2c20', 3, '#000000'),
+      pintura: () => mat('#e8913a', 10, '#2a1a0a'),     // aspa pintada (el naranja del aspa de antes)
+      baquelita: () => mat('#2e2420', 30, '#3a3430'),
+    };
+    const v2 = (r, y) => new THREE.Vector2(r, y);
+    const torno = (pts, seg) => new THREE.LatheGeometry(pts.map(p => v2(p[0], p[1])), seg || 12);
+    const geos = {};
+    // Caja con los bordes biselados: un rectángulo extruido con bisel de 1 segmento (28 triángulos)
+    function caja(w, h, d, b) {
+      b = b == null ? Math.min(w, h, d) * 0.15 : b;
+      const k = 'c' + [w, h, d, b].join();
+      if (geos[k]) return geos[k];
+      const x = w / 2 - b, y = h / 2 - b, s = new THREE.Shape();
+      s.moveTo(-x, -y); s.lineTo(x, -y); s.lineTo(x, y); s.lineTo(-x, y);
+      const g = new THREE.ExtrudeGeometry(s, { depth: Math.max(1e-3, d - 2 * b), bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 1, curveSegments: 1 });
+      g.translate(0, 0, -(d - 2 * b) / 2);
+      return (geos[k] = g);
+    }
+    // Una figura 2D extruida con bisel, centrada en z
+    function extruir(shape, d, b, curvas) {
+      const g = new THREE.ExtrudeGeometry(shape, { depth: Math.max(1e-3, d - 2 * b), bevelEnabled: b > 0, bevelThickness: b, bevelSize: b, bevelSegments: 1, curveSegments: curvas || 6 });
+      g.translate(0, 0, -(d - 2 * b) / 2);
+      return g;
+    }
+    const _o = new THREE.Object3D();
+    const mx = (pos, rot, esc) => {
+      _o.position.set(...(pos || [0, 0, 0])); _o.rotation.set(...(rot || [0, 0, 0]));
+      if (esc == null) _o.scale.set(1, 1, 1); else if (typeof esc === 'number') _o.scale.setScalar(esc); else _o.scale.set(...esc);
+      _o.updateMatrix(); return _o.matrix.clone();
+    };
+    // Constructor: piezas (geometría, material, matriz) → una malla por material con las geometrías fundidas
+    function Piezas() {
+      const partes = [];
+      const api = {
+        add(geo, m, pos, rot, esc) { partes.push([geo, m, mx(pos, rot, esc)]); return api; },
+        addM(geo, m, M) { partes.push([geo, m, M]); return api; },
+        // pieza estirada entre dos puntos (patas, dedos): la geometría unitaria se alinea de a a b con grosor r
+        seg(geo, m, a, b, r) {
+          const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A), L = d.length();
+          const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+          partes.push([geo, m, new THREE.Matrix4().compose(A.add(B).multiplyScalar(0.5), q, new THREE.Vector3(r, L / 2, r))]); return api;
+        },
+        fin(nombre) {
+          const g = new THREE.Group(), porMat = new Map();
+          for (const [geo, m, M] of partes) { if (!porMat.has(m)) porMat.set(m, []); porMat.get(m).push([geo, M]); }
+          for (const [m, lista] of porMat) {
+            let n = 0;
+            const piezas = lista.map(([geo, M]) => { const p = (geo.index ? geo.toNonIndexed() : geo.clone()); p.applyMatrix4(M); n += p.attributes.position.count; return p; });
+            const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3);
+            let o = 0;
+            for (const p of piezas) { pos.set(p.attributes.position.array, o * 3); nor.set(p.attributes.normal.array, o * 3); o += p.attributes.position.count; p.dispose(); }
+            const bg = new THREE.BufferGeometry();
+            bg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); bg.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+            bg.computeBoundingSphere();
+            const mesh = new THREE.Mesh(bg, m); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh);
+          }
+          if (nombre) g.name = nombre;
+          return g;
+        },
+      };
+      return api;
+    }
+    const sombras = o => { o.traverse(m => { if (m.isMesh) m.castShadow = true; }); return o; };
+    // Esfera de un indicador: fondo crema con marcas (CanvasTexture de 128 px)
+    let texEsfera = null;
+    function esferaTex() {
+      if (texEsfera) return texEsfera;
+      const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+      const c = cv.getContext('2d');
+      c.fillStyle = '#f1e2bd'; c.beginPath(); c.arc(64, 64, 64, 0, PI * 2); c.fill();
+      c.strokeStyle = '#4a3020'; c.lineCap = 'round';
+      for (let i = 0; i <= 10; i++) {
+        const a = PI * (0.8 + i * 0.14), r0 = i % 5 ? 44 : 36;
+        c.lineWidth = i % 5 ? 4 : 7; c.beginPath(); c.moveTo(64 + Math.cos(a) * r0, 64 + Math.sin(a) * r0); c.lineTo(64 + Math.cos(a) * 56, 64 + Math.sin(a) * 56); c.stroke();
+      }
+      c.strokeStyle = '#c0442c'; c.lineWidth = 7; c.beginPath(); c.arc(64, 64, 52, PI * 2.0, PI * 2.2); c.stroke();
+      texEsfera = new THREE.CanvasTexture(cv); texEsfera.encoding = THREE.sRGBEncoding;
+      return texEsfera;
+    }
+    // Indicador redondo: aro de latón, esfera con marcas y aguja (la esfera es su propia malla para poder iluminarla)
+    function indicador(r) {
+      const g = new THREE.Group();
+      const cara = new THREE.Mesh(new THREE.CircleGeometry(r, 18), linMat(new THREE.MeshPhongMaterial({ map: esferaTex(), color: 0xffffff, specular: '#202020', shininess: 20, emissive: 0x000000, emissiveMap: esferaTex() })));
+      cara.name = 'esfera';
+      const p = Piezas()
+        .add(new THREE.TorusGeometry(r, r * 0.16, 4, 18), MAT.laton())
+        .add(caja(r * 0.1, r * 0.82, r * 0.06, r * 0.02), mat('#b8321e', 10), [r * 0.22, r * 0.28, r * 0.05], [0, 0, -0.62])
+        .add(new THREE.CylinderGeometry(r * 0.12, r * 0.12, r * 0.1, 8), MAT.laton(), [0, 0, r * 0.05], [PI / 2, 0, 0]);
+      g.add(cara, p.fin());
+      return g;
+    }
+
+    // Engranaje de latón: dientes, cubo y agujeros de aligerado (eje: Y). Es el que Vittata sube al techo del refugio.
+    function engranaje(r) {
+      const n = 10, ro = r * 1.17, ri = r * 0.97, d = PI * 2 / n, s = new THREE.Shape();
+      for (let i = 0; i < n; i++) {
+        const a = i * d, pts = [[ri, a], [ro, a + d * 0.2], [ro, a + d * 0.46], [ri, a + d * 0.66]];
+        pts.forEach(([rr, aa], k) => { const x = Math.cos(aa) * rr, y = Math.sin(aa) * rr; if (!i && !k) s.moveTo(x, y); else s.lineTo(x, y); });
+      }
+      const eje = new THREE.Path(); eje.absarc(0, 0, r * 0.2, 0, PI * 2, true); s.holes.push(eje);
+      for (let i = 0; i < 4; i++) { const a = i * PI / 2 + PI / 4, h = new THREE.Path(); h.absarc(Math.cos(a) * r * 0.58, Math.sin(a) * r * 0.58, r * 0.17, 0, PI * 2, true); s.holes.push(h); }
+      const geo = extruir(s, r * 0.24, 0, 4); geo.rotateX(-PI / 2); // sin bisel: a 3-6 m no se ve y cuesta 300 triángulos
+      const p = Piezas().add(geo, MAT.laton())
+        .add(torno([[r * 0.2, -r * 0.21], [r * 0.3, -r * 0.2], [r * 0.32, -r * 0.16], [r * 0.32, r * 0.16], [r * 0.3, r * 0.2], [r * 0.2, r * 0.21]], 10), MAT.hierro());
+      return sombras(p.fin('engranaje'));
+    }
+
+    // ---------- Máquina experimental de Vittata: caldera de cobre sobre una tarima de madera, aspa, manivela y luces ----------
+    // Hecha a mano y dañada por la Ruptura (SCRIPT p.4): una aspa doblada, un parche remachado y una luz fundida.
+    // Frente: +Z (indicador y luces). Engranaje a +X (pieza aparte: engMaquina) y manivela a -X.
+    function maquina() {
+      const g = new THREE.Group(), p = Piezas();
+      // tarima: dos tablones con patas cortas
+      p.add(caja(1.04, 0.09, 0.4, 0.02), MAT.madera(), [0, 0.135, -0.205]).add(caja(1.04, 0.09, 0.4, 0.02), MAT.madera(), [0, 0.135, 0.205], [0, 0.03, 0]);
+      for (const [x, z] of [[-0.42, -0.3], [0.42, -0.3], [-0.42, 0.3], [0.42, 0.3]]) p.add(caja(0.14, 0.1, 0.14, 0.02), MAT.maderaOsc(), [x, 0.05, z]);
+      // caldera de cobre (torno), con dos aros de latón y la tapa con su chimenea
+      p.add(torno([[0, 0.18], [0.3, 0.18], [0.35, 0.22], [0.37, 0.32], [0.37, 0.6], [0.35, 0.7], [0.28, 0.78], [0.14, 0.83], [0, 0.84]], 16), MAT.cobre());
+      p.add(new THREE.TorusGeometry(0.372, 0.022, 4, 16), MAT.laton(), [0, 0.27, 0], [PI / 2, 0, 0]).add(new THREE.TorusGeometry(0.372, 0.022, 4, 16), MAT.laton(), [0, 0.64, 0], [PI / 2, 0, 0]);
+      p.add(torno([[0.06, 0.8], [0.06, 0.96], [0.1, 1.02], [0.085, 1.04], [0.05, 1.0]], 10), MAT.laton(), [-0.12, 0, -0.08]);
+      // parche remachado (atrás a la izquierda) y caño de cobre con su llave
+      p.add(caja(0.17, 0.15, 0.03, 0.01), MAT.cobreOsc(), [-0.24, 0.47, -0.28], [0, Math.atan2(-0.24, -0.28), 0]);
+      const cano = new THREE.CatmullRomCurve3([[-0.2, 0.74, -0.24], [-0.36, 0.78, -0.3], [-0.48, 0.6, -0.3], [-0.46, 0.3, -0.26], [-0.4, 0.2, -0.2]].map(v => new THREE.Vector3(...v)));
+      p.add(new THREE.TubeGeometry(cano, 12, 0.026, 5, false), MAT.cobre());
+      p.add(new THREE.TorusGeometry(0.042, 0.014, 3, 10), MAT.laton(), [-0.475, 0.46, -0.29], [PI / 2, 0, 0]);
+      // mástil y aspa de tres palas (una doblada), mirando al frente
+      p.add(new THREE.CylinderGeometry(0.022, 0.03, 0.42, 6), MAT.hierro(), [0.06, 1.02, 0.02]);
+      p.add(torno([[0, -0.05], [0.05, -0.04], [0.06, 0], [0.04, 0.05], [0, 0.07]], 10), MAT.laton(), [0.06, 1.25, 0.06], [PI / 2, 0, 0]);
+      const pala = new THREE.Shape();
+      pala.moveTo(-0.03, 0.05); pala.quadraticCurveTo(-0.1, 0.25, -0.05, 0.42); pala.quadraticCurveTo(0, 0.46, 0.05, 0.42); pala.quadraticCurveTo(0.08, 0.22, 0.03, 0.05);
+      const palaGeo = extruir(pala, 0.03, 0.008, 4);
+      const centro = new THREE.Matrix4().makeTranslation(0.06, 1.25, 0.1);
+      [[0.2, 0.35, 0], [2.29, 0.35, 0], [4.38, 0.8, 0.45]].forEach(([a, giro, doblez]) => {
+        const M = centro.clone().multiply(new THREE.Matrix4().makeRotationZ(a)).multiply(new THREE.Matrix4().makeRotationX(doblez)).multiply(new THREE.Matrix4().makeRotationY(giro));
+        p.addM(palaGeo, MAT.pintura(), M);
+      });
+      // placa de madera al frente: indicador y tres luces con su aro
+      p.add(caja(0.46, 0.3, 0.1, 0.015), MAT.maderaOsc(), [0, 0.46, 0.345]);
+      for (const y of [0.37, 0.46, 0.55]) p.add(new THREE.TorusGeometry(0.034, 0.011, 4, 10), MAT.laton(), [0.14, y, 0.4]);
+      // eje del engranaje (a +X) con su soporte, y manivela (a -X)
+      p.add(new THREE.CylinderGeometry(0.035, 0.035, 0.3, 8), MAT.hierro(), [0.48, 0.55, 0], [0, 0, PI / 2]);
+      p.add(caja(0.04, 0.2, 0.16, 0.012), MAT.hierro(), [0.375, 0.55, 0]);
+      p.add(new THREE.CylinderGeometry(0.04, 0.04, 0.14, 8), MAT.hierro(), [-0.42, 0.46, 0.04], [0, 0, PI / 2]);
+      p.add(caja(0.035, 0.24, 0.055, 0.012), MAT.hierro(), [-0.5, 0.548, 0.088], [0.5, 0, 0]);
+      p.add(torno([[0, -0.08], [0.028, -0.075], [0.036, -0.03], [0.03, 0.03], [0.036, 0.07], [0, 0.085]], 8), MAT.maderaOsc(), [-0.6, 0.644, 0.14], [0, 0, PI / 2]);
+      g.add(p.fin('maquina_cuerpo'));
+      const ind = indicador(0.085); ind.position.set(-0.08, 0.46, 0.4); g.add(ind);
+      // luces: verde y ámbar encendidas, la de abajo fundida (dañada)
+      const luces = [['#46d866', 0.55], ['#ffab1f', 0.46], ['#4a2a22', 0.37]].map(([c, y]) => {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), linMat(new THREE.MeshBasicMaterial({ color: c })));
+        m.position.set(0.14, y, 0.405); g.add(m); return m;
+      });
+      g.userData.luces = luces;
+      return sombras(g);
+    }
+    // Hueco del engranaje: el eje queda pelado, con el aro oscuro donde iba el cubo
+    function huecoEngranaje() {
+      const p = Piezas()
+        .add(torno([[0.05, -0.03], [0.085, -0.03], [0.09, 0], [0.085, 0.03], [0.05, 0.03]], 12), mat('#2b2b2b', 8))
+        .add(new THREE.CylinderGeometry(0.04, 0.04, 0.07, 8), mat('#6a6058', 10));
+      return p.fin('hueco_engranaje');
+    }
+
+    // ---------- Transmisor antiguo: radio de mesa grande, de madera barnizada y metal ----------
+    // Gabinete de arco, altavoz con rejilla de listones, dial, dos perillas, piloto (luz) y antena telescópica que se endereza.
+    // Frente: +Z. La antena es un grupo con el pivote en su base (rotation.z: 0,5 caída, 0 derecha).
+    function transmisor() {
+      const g = new THREE.Group(), p = Piezas();
+      const W = 0.42, H0 = 0.12, HC = 0.84, RY = 0.28, D = 0.62;
+      const arco = (w, y0, yc, ry) => { const s = new THREE.Shape(); s.moveTo(-w, y0); s.lineTo(w, y0); s.lineTo(w, yc); s.absellipse(0, yc, w, ry, 0, PI, false); s.lineTo(-w, y0); return s; };
+      p.add(extruir(arco(W - 0.03, H0, HC, RY - 0.03), D, 0.03, 10), MAT.barniz());
+      // frente de madera clara (un poco salido) y base con patas torneadas
+      p.add(extruir(arco(W - 0.08, H0 + 0.06, HC, RY - 0.08), 0.03, 0.008, 10), MAT.madera(), [0, 0, D / 2 + 0.004]);
+      p.add(caja(0.9, 0.06, 0.66, 0.02), MAT.maderaOsc(), [0, H0 - 0.02, 0]);
+      for (const [x, z] of [[-0.36, -0.24], [0.36, -0.24], [-0.36, 0.24], [0.36, 0.24]]) p.add(torno([[0, 0], [0.04, 0], [0.05, 0.04], [0.035, 0.07], [0.045, 0.09], [0, 0.09]], 8), MAT.maderaOsc(), [x, 0, z]);
+      // altavoz: tela oscura, aro de latón y cinco listones
+      const yA = 0.7, zF = D / 2 + 0.022;
+      p.add(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20), MAT.tela(), [0, yA, zF - 0.004], [PI / 2, 0, 0]);
+      p.add(new THREE.TorusGeometry(0.205, 0.018, 4, 22), MAT.laton(), [0, yA, zF + 0.006]);
+      for (let i = -2; i <= 2; i++) { const hh = 2 * Math.sqrt(0.195 * 0.195 - (i * 0.07) ** 2); p.add(caja(0.028, hh, 0.02, 0.008), MAT.barniz(), [i * 0.07, yA, zF + 0.01]); }
+      // perillas (baquelita) y placa de metal bajo el dial
+      for (const x of [-0.25, 0.25]) p.add(torno([[0, 0], [0.05, 0], [0.052, 0.03], [0.04, 0.05], [0, 0.055]], 10), MAT.baquelita(), [x, 0.34, zF], [PI / 2, 0, 0]);
+      p.add(caja(0.3, 0.035, 0.015, 0.005), MAT.laton(), [0, 0.205, zF + 0.002]);
+      // esquineros de metal y la base de la antena
+      for (const x of [-W + 0.005, W - 0.005]) for (const y of [H0 + 0.06, HC - 0.04]) p.add(caja(0.03, 0.1, 0.1, 0.008), MAT.hierro(), [x, y, D / 2 - 0.04]);
+      const xA = 0.24, yTop = HC + RY * Math.sqrt(1 - (xA / W) ** 2) - 0.02;
+      p.add(torno([[0, 0], [0.06, 0], [0.055, 0.03], [0.03, 0.05], [0, 0.06]], 10), MAT.hierro(), [xA, yTop, -0.06]);
+      g.add(p.fin('transmisor_cuerpo'));
+      // dial (su esfera se ilumina al encender) y piloto
+      const dial = indicador(0.105); dial.position.set(0, 0.34, zF + 0.002); g.add(dial);
+      const luz = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), new THREE.MeshBasicMaterial({ color: '#4a4a4a' }));
+      luz.position.set(0, HC + RY - 0.12, zF - 0.01); g.add(luz);
+      const bisel = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.014, 4, 14), MAT.laton()); bisel.position.copy(luz.position); bisel.position.z += 0.01; g.add(bisel);
+      // antena telescópica: tres tramos de metal y una bolita en la punta
+      const ant = new THREE.Group(); ant.name = 'antena'; ant.position.set(xA, yTop + 0.05, -0.06);
+      const pa = Piezas();
+      [[0.022, 0.42, 0.21], [0.016, 0.42, 0.62], [0.011, 0.4, 1.02]].forEach(([r, l, y]) => pa.add(new THREE.CylinderGeometry(r, r, l, 6), mat('#a9afb2', 36, '#5a5e60'), [0, y, 0]).add(new THREE.CylinderGeometry(r * 1.4, r * 1.4, 0.03, 6), MAT.hierro(), [0, y - l / 2 + 0.015, 0]));
+      pa.add(new THREE.SphereGeometry(0.03, 8, 6), mat('#a9afb2', 36, '#5a5e60'), [0, 1.23, 0]);
+      ant.add(pa.fin());
+      g.add(ant);
+      g.userData = { antena: ant, luz, dial: dial.getObjectByName('esfera').material };
+      return sombras(g);
+    }
+
+    // ---------- Banco de trabajo tallado (regalo del Guardián) ----------
+    // 1,8 × 0,9 × 0,8 m como la caja de antes (su colisión no cambia). Tablero de dos tablones, patas torneadas, faldón tallado con
+    // festones y una roseta, entrepaño abajo, prensa de madera a la derecha y un mazo encima. Origen en el suelo.
+    function banco() {
+      const p = Piezas(), A = 0.9;
+      p.add(caja(1.8, 0.09, 0.395, 0.025), MAT.maderaClara(), [0, A - 0.045, -0.2]).add(caja(1.8, 0.09, 0.395, 0.025), MAT.maderaClara(), [0, A - 0.045, 0.2]);
+      const pata = torno([[0, 0], [0.06, 0], [0.065, 0.04], [0.045, 0.1], [0.05, 0.3], [0.065, 0.36], [0.045, 0.42], [0.052, 0.62], [0.068, 0.7], [0.06, 0.81], [0, 0.81]], 8);
+      for (const [x, z] of [[-0.78, -0.3], [0.78, -0.3], [-0.78, 0.3], [0.78, 0.3]]) p.add(pata, MAT.madera(), [x, 0, z]);
+      // faldón tallado: borde de abajo en festones (tres arcos) y una roseta en medio
+      const f = new THREE.Shape(), L = 0.72, h = 0.16;
+      f.moveTo(-L, h / 2); f.lineTo(L, h / 2); f.lineTo(L, -h / 2);
+      for (let i = 0; i < 3; i++) { const x0 = L - i * (2 * L / 3), x1 = x0 - 2 * L / 3; f.quadraticCurveTo((x0 + x1) / 2, -h / 2 + 0.09, x1, -h / 2); }
+      f.lineTo(-L, h / 2);
+      const faldon = extruir(f, 0.04, 0.008, 6);
+      p.add(faldon, MAT.madera(), [0, A - 0.17, 0.3]).add(faldon, MAT.madera(), [0, A - 0.17, -0.3]);
+      p.add(caja(0.04, 0.14, 0.56, 0.01), MAT.madera(), [-0.78, A - 0.16, 0]).add(caja(0.04, 0.14, 0.56, 0.01), MAT.madera(), [0.78, A - 0.16, 0]);
+      p.add(new THREE.TorusGeometry(0.045, 0.014, 4, 12), MAT.maderaOsc(), [0, A - 0.15, 0.325]).add(new THREE.CylinderGeometry(0.02, 0.025, 0.02, 8), MAT.maderaOsc(), [0, A - 0.15, 0.325], [PI / 2, 0, 0]);
+      for (const s of [-1, 1]) p.add(torno([[0, 0], [0.02, 0.003], [0.024, 0.012], [0, 0.016]], 6), MAT.maderaOsc(), [s * 0.3, A - 0.15, 0.32], [PI / 2, 0, 0]);
+      // entrepaño
+      p.add(caja(1.5, 0.04, 0.6, 0.012), MAT.maderaOsc(), [0, 0.2, 0]);
+      // prensa: quijada de madera, tornillo de hierro y su barra
+      p.add(caja(0.26, 0.2, 0.06, 0.015), MAT.maderaOsc(), [0.62, A - 0.12, 0.44]);
+      p.add(new THREE.CylinderGeometry(0.018, 0.018, 0.22, 8), MAT.hierro(), [0.62, A - 0.12, 0.48], [PI / 2, 0, 0]);
+      p.add(new THREE.CylinderGeometry(0.012, 0.012, 0.26, 6), MAT.hierro(), [0.62, A - 0.12, 0.58], [0, 0, PI / 2]);
+      for (const s of [-1, 1]) p.add(new THREE.SphereGeometry(0.022, 6, 4), MAT.maderaOsc(), [0.62 + s * 0.13, A - 0.12, 0.58]);
+      // mazo de madera y un tablón por cepillar encima
+      p.add(torno([[0, -0.1], [0.055, -0.095], [0.06, 0], [0.055, 0.095], [0, 0.1]], 10), MAT.maderaOsc(), [-0.45, A + 0.06, 0.1], [0, 0, PI / 2]);
+      p.add(new THREE.CylinderGeometry(0.016, 0.02, 0.3, 6), MAT.madera(), [-0.45, A + 0.03, -0.06], [PI / 2 - 0.2, 0, 0]);
+      p.add(caja(0.7, 0.04, 0.14, 0.01), MAT.madera(), [0.15, A + 0.02, -0.15], [0, 0.12, 0]);
+      return sombras(p.fin('banco'));
+    }
+
+    // ---------- Coquí (Eleutherodactylus coqui) ----------
+    // Ranita sentada, de frente a +Z: parda grisácea por encima (con dos franjas claras dorsolaterales, un patrón común en la
+    // especie) y crema por debajo; ojos grandes de iris bronce; dedos sin membrana con discos (almohadillas) en la punta.
+    // Fuente: USGS NAS, ficha de Eleutherodactylus coqui (coloración y discos digitales). Tamaño de juego (≈ 0,26 m) para leerse
+    // a 3-6 m; el animal real mide 3-6 cm (misma ficha).
+    function coqui() {
+      const p = Piezas(), piel = mat('#7d6248', 14, '#2a2018'), vientre = mat('#cdbf9f', 8, '#1a1610'), franja = mat('#a88a64', 12, '#2a2018'), disco = mat('#9a8064', 10, '#20180f');
+      const bola = (w, h) => new THREE.SphereGeometry(1, w, h);
+      const b10 = bola(12, 8), b8 = bola(8, 6), b6 = bola(6, 4), b5 = bola(5, 3);
+      p.add(b10, piel, [0, 0.07, -0.01], [-0.5, 0, 0], [0.062, 0.05, 0.085]);               // cuerpo, inclinado hacia arriba
+      p.add(b10, vientre, [0, 0.06, 0.0], [-0.5, 0, 0], [0.05, 0.036, 0.07]);           // vientre (asoma abajo)
+      p.add(b8, vientre, [0, 0.1, 0.075], [-0.2, 0, 0], [0.044, 0.026, 0.04]);              // garganta
+      p.add(b10, piel, [0, 0.122, 0.07], [-0.2, 0, 0], [0.058, 0.04, 0.056]);               // cabeza ancha y hocico redondo
+      const D = (x, y, z) => [x, y, z];
+      for (const s of [-1, 1]) {
+        p.add(b6, franja, [s * 0.036, 0.104, -0.02], [-0.5, s * 0.15, 0], [0.011, 0.008, 0.06]); // franja dorsolateral clara
+        p.add(b8, piel, [s * 0.031, 0.148, 0.076], 0, 0.027);                                // párpado (bulto del ojo)
+        // pata delantera: brazo y antebrazo; cuatro dedos sin membrana, cada uno con su disco
+        const mano = D(s * 0.058, 0.008, 0.092);
+        p.seg(b6, piel, [s * 0.04, 0.075, 0.045], [s * 0.06, 0.038, 0.06], 0.013).seg(b6, piel, [s * 0.06, 0.038, 0.06], mano, 0.01);
+        for (let k = 0; k < 4; k++) {
+          const a = s * 0.25 + (k - 1.5) * 0.5, tip = [mano[0] + Math.sin(a) * 0.024, 0.006, mano[2] + Math.cos(a) * 0.024];
+          p.seg(b5, piel, mano, tip, 0.0045).add(b5, disco, tip, 0, [0.0075, 0.004, 0.0075]);
+        }
+        // pata trasera plegada: muslo, pierna y pie; cinco dedos largos con disco
+        const rodilla = D(s * 0.092, 0.042, -0.002), tobillo = D(s * 0.072, 0.016, -0.072), pie = D(s * 0.095, 0.008, 0.008);
+        p.seg(b8, piel, [s * 0.045, 0.05, -0.07], rodilla, 0.022).seg(b6, piel, rodilla, tobillo, 0.016).seg(b6, piel, tobillo, pie, 0.01);
+        for (let k = 0; k < 5; k++) {
+          const a = s * (0.05 + k * 0.32), tip = [pie[0] + Math.sin(a) * 0.03, 0.006, pie[2] + Math.cos(a) * 0.03];
+          p.seg(b5, piel, pie, tip, 0.0045).add(b5, disco, tip, 0, [0.0075, 0.004, 0.0075]);
+        }
+      }
+      const g = p.fin('coqui');
+      // ojos: globo bronce, pupila negra horizontal y un brillo (piezas sueltas por el MeshBasic del brillo)
+      const brillo = linMat(new THREE.MeshBasicMaterial({ color: '#fffaf0' })), ojo = Piezas(), iris = mat('#8a5a26', 40, '#5a5048'), pupila = mat('#0e0a08', 60, '#8a8a8a');
+      for (const s of [-1, 1]) {
+        const c = new THREE.Vector3(s * 0.033, 0.152, 0.082), dir = new THREE.Vector3(s * 0.5, 0.25, 0.83).normalize();
+        ojo.add(b8, iris, c.toArray(), 0, 0.024);
+        ojo.add(b8, pupila, c.clone().addScaledVector(dir, 0.021).toArray(), [-0.25, s * 0.54, 0], [0.013, 0.0075, 0.006]);
+        ojo.add(b6, brillo, c.clone().addScaledVector(dir, 0.023).add(new THREE.Vector3(0, 0.007, 0)).toArray(), 0, 0.0045);
+      }
+      g.add(ojo.fin());
+      return sombras(g);
+    }
+
+    // Triángulos de un objeto (mallas visibles y no visibles)
+    function triangulos(o) { let n = 0; o.traverse(m => { if (m.isMesh) { const gg = m.geometry; n += (gg.index ? gg.index.count : gg.attributes.position.count) / 3; } }); return n; }
+    return { engranaje, maquina, huecoEngranaje, transmisor, banco, coqui, triangulos, MAT };
+  }
+  // </objetos-historia>
+
   AVE.registerPack({
     id: 'cap1',
     mundo: MUNDO_MAPA || MUNDO_ANALITICO,
@@ -333,53 +643,36 @@
       else colliders.push({ x: T.x, z: T.z, r: 2.6, hx: 2.55, hz: 2.05, kind: 'taller' });
 
       // Objetos del taller: máquina experimental, transmisor y banco de trabajo (mejora), al frente del taller
-      // [KELVIN-6] Diseño de la máquina experimental y del transmisor antiguo: hoy son primitivas (cilindro con aspa, caja con antena).
-      // El engranaje ya se ve en el techo del refugio y la máquina queda con el hueco (S.gearRoof, BM24).
+      // Modelos de objetosHistoria() (hito 28). El engranaje de la máquina se ve en el techo del refugio y la máquina queda con el
+      // hueco (S.gearRoof, BM24). Las posiciones, las colisiones y los nombres que usa la historia no cambian.
+      const OBJ = objetosHistoria(G.renderer.linMat);
+      G.c.objetos = OBJ; // misiones.js (coquíes del coro) y las pruebas
       const fx = Math.sin(facing), fz = Math.cos(facing), rx = Math.cos(facing), rz = -Math.sin(facing);
       const MAQ = MAPA ? { x: T.x + fx * 4.4 - rx * 2.4, z: T.z + fz * 4.4 - rz * 2.4 } : { x: T.x - 2.6, z: T.z + 3.4 };
       const TRX = MAPA ? { x: T.x + fx * 4.2 + rx * 3.0, z: T.z + fz * 4.2 + rz * 3.0 } : { x: T.x + 3.4, z: T.z + 2.6 };
-      const maquina = new THREE.Group();
-      const mBody = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.9, 14), new THREE.MeshLambertMaterial({ color: lin('#b9c4c9') }));
-      mBody.position.y = 0.45; mBody.castShadow = true;
-      const mProp = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.18), new THREE.MeshLambertMaterial({ color: lin('#f2a03d') }));
-      mProp.position.y = 1.0; mProp.rotation.z = 0.35; mProp.castShadow = true;
+      const maquina = OBJ.maquina();
       // Engranaje de la máquina (NARRATIVA «Cierre»): Vittata lo sacrifica para el techo del refugio (S.gearRoof); entonces queda el hueco
-      const hacerEngranaje = (r) => {
-        const g = new THREE.Group(), mat = new THREE.MeshLambertMaterial({ color: lin('#c8a24a') });
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 0.28, 16), mat));
-        for (let i = 0; i < 8; i++) {
-          const a = i / 8 * Math.PI * 2, d = new THREE.Mesh(new THREE.BoxGeometry(r * 0.38, r * 0.28, r * 0.38), mat);
-          d.position.set(Math.cos(a) * r * 1.08, 0, Math.sin(a) * r * 1.08); d.rotation.y = -a; g.add(d);
-        }
-        g.add(new THREE.Mesh(new THREE.CylinderGeometry(r * 0.3, r * 0.3, r * 0.4, 10), new THREE.MeshLambertMaterial({ color: lin('#5a4a3a') })));
-        g.traverse(o => { if (o.isMesh) o.castShadow = true; });
-        return g;
-      };
+      const hacerEngranaje = OBJ.engranaje;
       const engMaquina = hacerEngranaje(0.26);
       engMaquina.rotation.z = Math.PI / 2; engMaquina.position.set(0.58, 0.55, 0);
-      const huecoMaquina = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.1, 10), new THREE.MeshLambertMaterial({ color: lin('#2b2b2b') }));
+      const huecoMaquina = OBJ.huecoEngranaje();
       huecoMaquina.rotation.z = Math.PI / 2; huecoMaquina.position.set(0.57, 0.55, 0);
-      maquina.add(mBody, mProp, engMaquina, huecoMaquina);
+      maquina.add(engMaquina, huecoMaquina);
       const aplicarEngranaje = () => { engMaquina.visible = !S.gearRoof; huecoMaquina.visible = !!S.gearRoof; };
       aplicarEngranaje(); G.on('apply', aplicarEngranaje, 37);
       maquina.position.set(MAQ.x, H(MAQ.x, MAQ.z), MAQ.z);
+      if (MAPA) maquina.rotation.y = facing; // el indicador y las luces miran a la plaza, como el transmisor
       scene.add(maquina);
       colliders.push({ x: MAQ.x, z: MAQ.z, r: 0.6, kind: 'obj' });
-      const trx = new THREE.Group();
-      const trxBox = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.7), new THREE.MeshLambertMaterial({ color: lin('#5a4a3a') }));
-      trxBox.position.y = 0.55; trxBox.castShadow = true;
-      const trxAnt = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.4, 6), new THREE.MeshLambertMaterial({ color: lin('#9aa0a3') }));
-      trxAnt.position.set(0.25, 1.8, 0); trxAnt.rotation.z = 0.5;
-      const trxLight = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), new THREE.MeshBasicMaterial({ color: '#4a4a4a' }));
-      trxLight.position.set(0, 0.85, 0.36);
-      trx.add(trxBox, trxAnt, trxLight);
+      const trx = OBJ.transmisor();
+      const trxAnt = trx.userData.antena, trxLight = trx.userData.luz, trxDial = trx.userData.dial;
       trx.position.set(TRX.x, H(TRX.x, TRX.z), TRX.z);
       if (MAPA) trx.rotation.y = facing;
       scene.add(trx);
       colliders.push({ x: TRX.x, z: TRX.z, r: 0.6, kind: 'obj' });
       const BEN = MAPA ? { x: T.x - rx * 4.6 + fx * 1.2, z: T.z - rz * 4.6 + fz * 1.2 } : { x: T.x - 3.6, z: T.z + 0.2 };
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 0.8), new THREE.MeshLambertMaterial({ color: lin('#c99a5b') }));
-      bench.position.set(BEN.x, H(BEN.x, BEN.z) + 0.45, BEN.z); bench.castShadow = true;
+      const bench = OBJ.banco();
+      bench.position.set(BEN.x, H(BEN.x, BEN.z), BEN.z);
       if (MAPA) bench.rotation.y = facing;
       colliders.push({ x: BEN.x, z: BEN.z, r: 1, hx: 0.95, hz: 0.45, kind: 'bench', when: () => bench.visible });
       scene.add(bench);
@@ -389,12 +682,12 @@
           if (roofR) { roofR.rotation.set(-Math.PI / 2 - 0.55, 0, 0); roofR.position.set(0, 3.3, 1); }
           if (toldo) { toldo.rotation.set(0, 0.3, 0); toldo.position.y = 0; }
           debris.visible = false; windowGlow.material.color.set('#ffd27a').convertSRGBToLinear(); windowGlow.visible = true;
-          trxAnt.rotation.z = 0; trxLight.material.color.set('#7fd38f').convertSRGBToLinear();
+          trxAnt.rotation.z = 0; trxLight.material.color.set('#7fd38f').convertSRGBToLinear(); trxDial.emissive.set('#ffcf7a').convertSRGBToLinear().multiplyScalar(0.55);
         } else {
           if (roofR) { roofR.rotation.set(-0.3, 0.2, 0.9); roofR.position.set(2.6, 0.6, 1.8); }
           if (toldo) { toldo.rotation.set(0.15, 0.9, 1.25); toldo.position.y = 0.55; } // la Ruptura lo tumbó
           debris.visible = true; windowGlow.material.color.set('#3a2a1a').convertSRGBToLinear(); windowGlow.visible = !MAPA;
-          trxAnt.rotation.z = 0.5; trxLight.material.color.set('#4a4a4a').convertSRGBToLinear();
+          trxAnt.rotation.z = 0.5; trxLight.material.color.set('#4a4a4a').convertSRGBToLinear(); trxDial.emissive.setRGB(0, 0, 0); trxLight.scale.setScalar(1);
         }
         bench.visible = S.benchUnlocked;
       }
@@ -441,8 +734,18 @@
         scene.add(refugeMesh);
         colliders.push({ x: S.refuge.x, z: S.refuge.z, r: modeloRefugio ? 1.9 : 1.4, kind: 'refuge' }); // bohío de 4,4 m (pared de 1,6 m: a escala con la cotorra)
       }
-      // El transmisor encendido late
-      G.on('render', (dt, t) => { if (S.transmitterOn) trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25); }, 35);
+      // El transmisor encendido late; mientras habla la Voz, el piloto parpadea rápido y el dial titila con la estática.
+      // La luz ámbar de la máquina dañada falla de vez en cuando (la verde queda fija y la de abajo está fundida).
+      const vozHabla = () => { try { const a = G.dialogo && G.dialogo.actual && G.dialogo.actual(); return !!a && /^(Voz|Voice)$/.test(String(a.who).trim()); } catch (err) { return false; } };
+      const luzAmbar = maquina.userData.luces[1].material, ambar = luzAmbar.color.clone();
+      G.on('render', (dt, t) => {
+        luzAmbar.color.copy(ambar).multiplyScalar(Math.sin(t * 9.1) * Math.sin(t * 2.3) > 0.55 ? 0.25 : 1);
+        if (!S.transmitterOn) return;
+        if (vozHabla()) {
+          const on = Math.sin(t * 23) + Math.sin(t * 37) > -0.3;
+          trxLight.scale.setScalar(on ? 1.3 : 0.85); trxDial.emissiveIntensity = on ? 1.5 : 0.6;
+        } else { trxLight.scale.setScalar(1 + Math.sin(t * 6) * 0.25); trxDial.emissiveIntensity = 1; }
+      }, 35);
 
       // ---------- Luz en la niebla (SCRIPT p.12 · NARRATIVA «Final») ----------
       // Desde el mirador, una luz lejana parpadea tres veces, como respuesta a la señal. Es un sprite aditivo sin niebla puesto en la
@@ -491,7 +794,7 @@
         return L;
       })();
 
-      Object.assign(G.c, { aplicarEngranaje, engMaquina, PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
+      Object.assign(G.c, { aplicarEngranaje, engMaquina, maquina, trx, PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
     },
   });
 })();
