@@ -74,3 +74,9 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - 01-Nov 18:11 AST · **EN CURSO · web** · ronda 6: BM109 (pieles arausiaca, collaria, pretrei, tucumana; propuesta aparte martinicana y violacea) y BM110 (retrato de Nudo). Archivos: assets/textures/pieles/, tools/pieles/pintor.py, src/personaje/pieles.js, content/comun/especies.js, src/pruebas/pieles.js, src/game/creador.js, content/cap1/en.js, docs/equipo/pieles_fuentes/, assets/ (retrato), content/ep6/pack.js.
 - 1-nov 18:45 AST · **Carril Kimi/Fernando (3D):** edificios, ciudad, terreno y mapa. Sus tareas viven SOLO en `docs/equipo/TAREAS_KIMI.md` (KIMI-Task-001…). Kimi lee de ahí, marca EN CURSO y entrega con el ID en el commit.
 - 01-Nov 18:48 AST · **HECHA · web** · ronda 6: BM109 (pieles arausiaca, collaria, pretrei y tucumana en el juego; martinicana y violacea solo como propuesta en tools/pieles/propuestas/) y BM110 (retrato de Nudo). 12 obligatorias en verde en la nube con c1986f3. Publica la Mac.
+- 1-nov 19:10 AST · **Reparto (Kelvin: que no se malgasten créditos):**
+  - **Web (cryptochefpr):** ronda 7 de `TAREAS_API.md` (BM111–BM118): mundo único caps. 2–4, retratos del cap. 6, pruebas extra de la Mac, ROADMAP y landing.
+  - **Kimi/Fernando:** `TAREAS_KIMI.md` (KIMI-Task-001…010: rendimiento, texturas, Ciudad de los 36, color de ruinas, auditoría de 28 edificios rotos, flora en el mar y en la montaña).
+  - **Coordinadora (nube):** B1 (flora translúcida) e hito 28 (objetos de la historia), revisar e integrar lo de todos, vigilar la publicación de la Mac.
+  - **Cursor + Grok (entra el 2-nov a las 6:40):** lee esta hoja y `MUNDO_UNICO.md`; su carril lo asigna el prompt de Kelvin del 2-nov. Propuesta: el modo creador o los caps. que el web no haya tomado. Nadie toma una tarea marcada EN CURSO por otro.
+
