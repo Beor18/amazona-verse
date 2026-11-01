@@ -185,9 +185,11 @@ AVE.module('actores', function (G) {
       // bajar; cernida casi derecha; al aterrizar se echa atrás para frenar con las alas
       const diving = MOVE.swimming && keys.has('c');
       const swimLean = diving ? 1.35 : 1.1 + Math.min(1, sp / F.SWIM_SPEED) * 0.1;
-      const flyLean = fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight ? -0.3 : 0.1)
-        : fase === 'despegue' ? 0.05 : fase === 'cernido' ? 0.12 + Math.min(1, sp / 2.5) * 0.1
-        : 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 + Math.max(0, -S.vy) * 0.03;
+      // Bajando, una cotorra no cae derecha como un paracaídas: se inclina de pico según lo rápido que baja (bajada = 0..1)
+      const bajada = Math.min(1, Math.max(0, -S.vy - 1) / 4.5);
+      const flyLean = fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight ? -0.3 : 0.1 + bajada * 0.45)
+        : fase === 'despegue' ? 0.05 : fase === 'cernido' ? 0.12 + Math.min(1, sp / 2.5) * 0.1 + bajada * 0.5
+        : 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 + bajada * 0.25;
       const lean = MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0));
       r.x += (lean - r.x) * Math.min(1, dt * 8);
       // Ladeo (roll): volando se inclina hacia dentro de la curva como un ave; corriendo, apenas; en el agua, meceo
@@ -210,7 +212,9 @@ AVE.module('actores', function (G) {
       P.speed = sp;
       P.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : run ? 2 : 1; // nadando patalea siempre
       P.airborne = air; P.flying = MOVE.flying; P.posado = MOVE.posado || ''; P.agachada = MOVE.agachada || 0;
-      P.legsDown = fase === 'aterrizaje' ? 1 : fase === 'cernido' ? 0.65 : fase === 'despegue' ? 0.8 : 0;
+      // Las patas se bajan al final: bajando de alto van recogidas y salen al acercarse al suelo
+      const cerca = Math.min(1, Math.max(0, 1 - (S.pos.y - MOVE.groundY - F.TUNING.flareHeight) / 4));
+      P.legsDown = fase === 'aterrizaje' ? Math.max(cerca, 1 - bajada) : fase === 'cernido' ? 0.65 * (1 - bajada) : fase === 'despegue' ? 0.8 : 0;
       P.swimming = MOVE.swimming; P.diving = diving;
       P.swimRate = moving ? 1.3 : 0.55;
       // IK de patas: el suelo bajo cada pie (terreno, pisos y perchas)
@@ -236,8 +240,8 @@ AVE.module('actores', function (G) {
         : !inDialog ? (joy.t > 0 ? 'happy' : MOVE.land > 0 && MOVE.impact > 0.4 ? 'surprised' : MOVE.flying || MOVE.swimming ? 'happy' : 'neutral')
         : mine ? talk.mood : talk.mood === 'sad' ? 'sad' : 'curious';
       P.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim')
-        : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight + 0.5 ? 'land' : 'glide')
-          : jumpHeld ? 'flap' : fase === 'cernido' ? 'hover' : S.vy < -0.2 && sp > F.FLY_SPEED * 0.7 ? 'glide' : 'fly')
+        : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : fase === 'aterrizaje' ? (S.pos.y - MOVE.groundY < F.TUNING.flareHeight + 0.5 ? 'land' : bajada > 0.3 ? 'descend' : 'glide')
+          : jumpHeld ? 'flap' : bajada > 0.3 && sp < F.FLY_SPEED * 0.7 ? 'descend' : fase === 'cernido' ? 'hover' : S.vy < -0.2 && sp > F.FLY_SPEED * 0.7 ? 'glide' : 'fly')
         : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       ideaBulb.visible = emote.name === 'idea';
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);

@@ -31,6 +31,8 @@
       idle: [0, 0.05, 2.2, 0], walk: [0.14, 0.05, 11, 0], hop: [0.55, 0.35, 0, 0],
       fly: [1.0, 0.55, 11, 0], flap: [0.95, 0.7, 18, 0], hover: [1.0, 0.62, 17, -0.15], takeoff: [0.95, 0.8, 15, -0.05],
       glide: [1.25, 0.05, 9, 0], land: [1.15, 0.22, 20, -0.55],
+      // Bajando (1-nov, Kelvin: «una cotorra no baja de esa manera»): alas levantadas en V (diedro), aleteo corto y lento
+      descend: [1.75, 0.15, 7, 0.35],
     },
     mouthMax: 0.4,            // apertura máxima del pico al hablar (rad; 0,35 ≈ 5,5 cm): algo más para que se lea de lejos
     lookMax: [1.05, 0.45],    // giro máximo de la cabeza al mirar a alguien (lado, arriba/abajo)
