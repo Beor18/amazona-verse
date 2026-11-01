@@ -216,6 +216,16 @@ Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio 
 - Colocación: se conservan las posiciones validadas de `main`, incluida la torre con su espacio interior y su plataforma. `relocate()` queda solo como utilidad de análisis; no se aplica globalmente porque podía cambiar apoyos funcionales.
 - Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y la posición validada de `ruina_torre`.
 
+## Integración del paquete TransferNow (01-nov-2026)
+
+- Fuente: `edificios.glb` y `mapa.glb` del enlace entregado por Kelvin. El conversor reproducible es `tools/blender/integrar_originales.py`; no necesita Blender ni añade dependencias.
+- Integración mixta: 18 recursos ligeros usan la geometría y los materiales originales (`original: true` en `kit.js`); los modelos pesados conservan el HD optimizado que ya funcionaba. Las texturas originales están en `tex_original/` y se cargan por URI externa.
+- Al dividir la escena se elimina la transformación completa de cada instancia, no solo su posición. Cada modelo se ajusta a la caja y al pivote del kit validado, de modo que conserva su escala, orientación, apoyo y colocación en el juego. Las losas se ajustan a sus cajas rectangulares existentes.
+- El terreno original se publica en cuatro trozos con 80 000 triángulos en total. `mapa_cap1_altura.js` contiene su heightmap para que la física use la misma superficie. Escala del terreno: 0,255.
+- Se exportan también seis árboles originales como recursos opcionales en `assets/models/entorno/*_original.glb`; el bosque activo sigue siendo la flora procedural para no multiplicar el coste de cada vista.
+- `python3 tools/blender/integrar_originales_test.py` comprueba los recursos originales, sus URI, el terreno, el heightmap y las dimensiones/pivotes frente al kit anterior. No hay límite de tamaño de archivo ni de descarga en la build; el presupuesto de 20 000 triángulos del conversor es únicamente el criterio para elegir entre el original ligero y el HD ya optimizado.
+- Capturas de la build real: `docs/img/integracion_original_ciudad_20261101.png`, `integracion_original_villa_20261101.png` e `integracion_original_mapa_20261101.png`.
+
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.
 - `canoa` usa `canoa.jpg` (`WORK/Amazonas/references`), de origen desconocido: hay que verificarla o reemplazarla.
