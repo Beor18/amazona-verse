@@ -641,6 +641,7 @@
       },
       {
         "id": "collaria",
+        "piel": "collaria",
         "cientifico": "Amazona collaria",
         "comun": {
           "es": "amazona de pico amarillo",
@@ -720,6 +721,7 @@
       },
       {
         "id": "pretrei",
+        "piel": "pretrei",
         "cientifico": "Amazona pretrei",
         "comun": {
           "es": "loro de anteojos rojos",
@@ -759,6 +761,7 @@
       },
       {
         "id": "tucumana",
+        "piel": "tucumana",
         "cientifico": "Amazona tucumana",
         "comun": {
           "es": "loro alisero",
