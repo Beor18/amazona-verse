@@ -29,3 +29,5 @@ COORDINACIÓN (clave para no parar): antes y después de cada tarea lee y actual
 RONDA 3 (31-oct noche): cuando acabes la ronda 2, sigue SIN PARAR con la ronda 3 de `TAREAS_API.md` («Carril del agente web — ronda 3»): BM82 (terminar BM54/pruebas frágiles), BM83 (accesibilidad de TODAS las pantallas), BM84 (datos educativos ep2-6 con fuente), BM85 (recorrido e2e ep2-6). Verifica antes de tocar; no inventes. Si de verdad agotas todo, para y deja resumen en COORDINACION_VIVO.md.
 
 RONDA 4 (1-nov): BM104 en `TAREAS_API.md`: cambiar las imágenes de las tarjetas de capítulo de la landing (hoy son capturas del menú) por un momento real de la historia de cada capítulo. Marca EN CURSO en COORDINACION_VIVO.md.
+
+RONDA 5 (1-nov): BM106 (capítulos 2–6 contra su historia) y BM107 (landing al día), en `TAREAS_API.md`. Marca EN CURSO en COORDINACION_VIVO.md.

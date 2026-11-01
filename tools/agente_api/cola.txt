@@ -1,7 +1,3 @@
-# 1-nov: la Mac solo lo que necesita Blender, en orden: BM94 (lejanos) -> BM98 (ciudad de cerca: causa encontrada, demasiada decimacion) -> BM97 (paleta, mismos archivos que BM94) -> BM103. Maximo 2 trabajadores.
-BM94
+# 1-nov: BM98 (ciudad de cerca, partir de los modelos restaurados por Fernando) y BM105 (lejanos de templos con textura). UN solo trabajador.
 BM98
-BM97
-BM103
-BM90
-BM86
+BM105
