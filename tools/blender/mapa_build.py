@@ -582,8 +582,6 @@ RUTA = {
     'infiltracion': [pt(cum[0], cum[1], 0.5), G(-200, -60, 30), G(*M.river[2], float(M.river_L[2]) + 0.5)],
     'marcaCrecida': {'x': round(MC_[0], 2), 'z': round(-MC_[1], 2), 'y': round(LUG['A']['y'] + 1.1, 2), 'nota': 'roca con la marca de crecida en la orilla de la Poza Honda'},
 }
-from edificios_restaurados import relocate
-relocate(ESC['Z'], ground=lambda x, z: hz(x, -z))
 DATA = {
     'version': 1, 'nombre': 'Capítulo 1 · El Yunque', 'unidades': 'metros',
     'ejes': 'x = este, y = arriba, z = sur (como three.js). Origen en el centro de la isla. Mar a y = 0.',

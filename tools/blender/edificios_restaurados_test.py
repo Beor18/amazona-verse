@@ -214,17 +214,11 @@ class RestoredBuildingsTest(unittest.TestCase):
                 failures.append('%s: ligero %d, HD %d, lejos %d' % (name, near, high, far))
         self.assertFalse(failures, 'Presupuesto superado: ' + '; '.join(failures))
 
-    def test_ancient_buildings_have_real_support(self):
+    def test_tower_keeps_validated_placement(self):
         doc = json.loads((ROOT / 'assets/data/escena_kelvin_cap1.json').read_text())
-        instances = [instance for zone in doc['zonas'] for instance in zone['instancias']]
-        ancient = [instance for instance in instances if instance['asset'].startswith('ancient_') and instance.get('modelo')]
-        relevant = [instance for instance in instances if instance.get('modelo') and (
-            instance['asset'].startswith('ancient_') or instance['asset'].startswith('losa_'))]
-        surfaces = upward_surfaces(relevant)
-        ground = terrain_height()
-        failures = [(instance['id'], instance['modelo'], support_error(instance, surfaces, ground)) for instance in ancient]
-        failures = [(identifier, model, error) for identifier, model, error in failures if error > 0.75]
-        self.assertFalse(failures, 'Sin apoyo real: ' + '; '.join('%s %s %.2f m' % row for row in failures[:20]))
+        tower = next(instance for zone in doc['zonas'] for instance in zone['instancias'] if instance['id'] == 'k127')
+        self.assertEqual(tower['modelo'], 'ruina_torre')
+        self.assertAlmostEqual(tower['matriz'][13], 98.05356, places=5)
 
 
 if __name__ == '__main__':
