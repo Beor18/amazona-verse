@@ -829,16 +829,22 @@ AVE.module('terreno', function (G) {
     const geo = new THREE.SphereGeometry(I.r, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), p = geo.attributes.position, col = [];
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), h = y / I.r;
-      const f = 1 + 0.16 * Math.sin(a * 3 + k) + 0.09 * Math.sin(a * 7 + 2 * k + 1) + 0.05 * Math.sin(a * 13 + k * 3);
-      p.setXYZ(i, x * f, y * (0.85 + 0.3 * Math.sin(a * 5 + k)), z * f);
-      const u = clamp01(h * 3.5);
+      // BM95: contorno suave (sin picos de estrella) y cumbres desiguales: el islote se lee como isla y no como silueta plana
+      const f = 1 + 0.07 * Math.sin(a * 2 + k) + 0.05 * Math.sin(a * 3 + 2 * k + 1) + 0.025 * Math.sin(a * 5 + k * 3);
+      p.setXYZ(i, x * f, y * (0.95 + 0.35 * Math.sin(a * 2 + k) + 0.2 * Math.sin(a * 4 + 3 * k)) * (1 + 0.25 * Math.sin(h * 6 + a * 3 + k)), z * f);
+      const u = clamp01(h * 4.5);
       // BM57: el color de vértice se lee como lineal y la loma salía menta pálida; arena y verde hondos (sRGB → lineal)
-      col.push(Math.pow(0.72 - 0.52 * u, 2.2), Math.pow(0.66 - 0.26 * u, 2.2), Math.pow(0.46 - 0.30 * u, 2.2));
+      // BM88: manchas de selva (copas más oscuras y claras, por ángulo y altura) para que el islote no sea un disco liso; solo color
+      const m = 1 + u * (0.20 * Math.sin(a * 5 + k * 2 + h * 9) + 0.14 * Math.sin(a * 11 - k + h * 17));
+      col.push(Math.pow((0.72 - 0.52 * u) * m, 2.2), Math.pow((0.66 - 0.26 * u) * m, 2.2), Math.pow((0.46 - 0.30 * u) * m, 2.2));
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
     const aro = new THREE.Mesh(new THREE.RingGeometry(I.r * 0.95, I.r * 1.3, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35, depthWrite: false }));
-    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.3; m.add(aro); // la loma se aplasta (scale.y 0.3): el aro queda ~0,5 m sobre el mar
+    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.45; m.add(aro); // la loma se aplasta (scale.y 0.45): el aro queda ~0,5 m sobre el mar
+    // BM95: bajío turquesa alrededor de la orilla (aguas poco profundas)
+    const bajo = new THREE.Mesh(new THREE.RingGeometry(I.r * 1.0, I.r * 1.75, 32), new THREE.MeshBasicMaterial({ color: '#7fd6c8', transparent: true, opacity: 0.22, depthWrite: false }));
+    bajo.rotation.x = -Math.PI / 2; bajo.position.y = 0.3 / 0.45; m.add(bajo);
     return m;
   };
   const islandCones = islas.map((I, k) => {
@@ -846,7 +852,7 @@ AVE.module('terreno', function (G) {
     // BM42: con mapa, loma de borde irregular con color de vértice (arena en la orilla, verde hondo arriba) y aro de espuma; no un disco liso menta
     const isl = MAPA ? loma(I, k)
       : new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
-    if (MAPA) isl.scale.y = 0.3;
+    if (MAPA) isl.scale.y = 0.45;
     isl.position.set(I.x, seaY + (MAPA ? -0.5 : I.r * 0.3), I.z); scene.add(isl);
     return isl;
   });

@@ -236,7 +236,7 @@ AVE.module('camara', function (G) {
   function place(snap) {
     if (snap) updateAnchor(0, true);
     target();
-    if (snap) { camera.position.copy(camPos); G.actores.snapCompanionSprite(); }
+    if (snap) { camera.position.copy(camPos); muroEnMedio(); G.actores.snapCompanionSprite(); }
     G.actores.placePlayerSprite(0);
     if (snap) G.actores.sync3D(0, false, true);
     apuntar();
@@ -298,6 +298,21 @@ AVE.module('camara', function (G) {
     inclinaPaso(dt);
     updateAnchor(dt, false);
     target(); camera.position.lerp(camPos, rate(CAM.follow, dt));
+    muroEnMedio();
+  }
+  // BM87: el seguimiento suaviza (lerp) y, al girar o cambiar de modo, la cámara podía cruzar un muro, una losa o un tejado
+  // entre un cuadro y otro aunque el destino estuviera libre. Si el tramo cabeza→cámara toca un sólido, se acerca hasta
+  // justo antes del sólido (acercamiento, no teletransporte) en vez de ver por dentro del muro.
+  let cortes = 0;
+  function muroEnMedio() {
+    if (!G.solidos || !G.solidos.activo) return;
+    const hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z, p = camera.position;
+    const dx = p.x - hx, dy = p.y - hy, dz = p.z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return;
+    const n = Math.ceil(L / 0.3);
+    for (let i = 1; i <= n; i++) {
+      const t = i / n;
+      if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { const k = Math.max(0.35 / L, (i - 1) / n - 0.05); p.set(hx + dx * k, hy + dy * k, hz + dz * k); cortes++; return; }
+    }
   }
   function shake(amp, secs) { if (R.REDUCED) return; juice.amp = Math.max(juice.amp, amp); juice.shake = Math.max(juice.shake, secs || 0.3); }
   function hitStop(secs) { juice.hitStop = Math.max(juice.hitStop, secs || 0.06); }
@@ -340,7 +355,7 @@ AVE.module('camara', function (G) {
   // vuelta automática que espera. Deja a Vittata, MOVE y la cámara como estaban.
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
-    const M = G.fisica.MOVE, CLAVES = ['flying', 'grounded', 'swimming', 'posado', 'agachada', 'speed', 'vx', 'vz', 'landing'];
+    const M = G.fisica.MOVE, CLAVES = ['flying', 'grounded', 'swimming', 'posado', 'agachada', 'speed', 'vx', 'vz', 'landing', 'land', 'impact'];
     const keep = { pos: Object.assign({}, S.pos), vy: S.vy, yaw, inclina, lastManual, anchorY, M: {}, plano: vida.plano };
     for (const k of CLAVES) keep.M[k] = M[k];
     const d = new THREE.Vector3(), v = new THREE.Vector3(), deg = r => Math.round(r / RAD * 10) / 10;
@@ -402,6 +417,45 @@ AVE.module('camara', function (G) {
       ok('en marcha y sin tocar ' + CAM.inclinaEspera + ' s, vuelve poco a poco (no de golpe)', inclina < arrastre && inclina > arrastre * 0.3, deg(arrastre) + '° → ' + deg(inclina) + '°');
       const K = G.input && G.input.keys;
       if (K) { inclina = 0; K.add('t'); for (let i = 0; i < 10; i++) follow(0.05); K.delete('t'); ok('la tecla T inclina hacia arriba (G hacia abajo)', inclina > 0.3, deg(inclina) + '°'); }
+      // 4. BM87: ni muros ni losas ni tejados: girando alrededor de Vittata (suelo y vuelo, (0,170) incluido) la cámara nunca
+      // queda dentro de un sólido ni con uno en el tramo hasta la cabeza, y al girar no da saltos grandes
+      const SO = G.solidos;
+      if (SO && SO.activo) {
+        const libreSeg = () => {
+          const hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z, p = camera.position;
+          const dx = p.x - hx, dy = p.y - hy, dz = p.z - hz, n = Math.max(2, Math.ceil(Math.hypot(dx, dy, dz) / 0.3));
+          if (Math.hypot(dx, dy, dz) < 1.6) return true;
+          for (let i = 1; i <= n; i++) if (SO.dentro(hx + dx * i / n, hz + dz * i / n, hy + dy * i / n) > -Infinity) return false;
+          return true;
+        };
+        const sitios = [[0, 170], [keep.pos.x, keep.pos.z]];
+        let malPlaza = 0, malGiro = 0, saltoMax = 0, pasos = 0, dbg = '', dbg2 = '';
+        for (const [sx0, sz0] of sitios) for (const vuela of [false, true]) {
+          S.pos.x = sx0; S.pos.z = sz0; modo(vuela, vuela ? 4 : 0); inclina = 0;
+          const prev = new THREE.Vector3();
+          for (let i = 0; i < 48; i++) {
+            yaw = i * Math.PI / 24; place(true); pasos++;
+            if (!libreSeg()) { malPlaza++; dbg += ' P[' + sx0 + ',' + sz0 + ' v' + (vuela ? 1 : 0) + ' i' + i + ']'; }
+          }
+          // giro continuo a ~2 rad/s con seguimiento suave
+          yaw = 0; place(true); prev.copy(camera.position); const c0 = cortes;
+          for (let i = 0; i < 90; i++) {
+            const cc = cortes; yaw += 2 / 60; follow(1 / 60); const q = camera.position; if (!libreSeg()) malGiro++;
+            const paso = cortes > cc ? 0 : q.distanceTo(prev); if (paso > saltoMax) { saltoMax = paso; dbg2 = ' J[' + sx0 + ',' + sz0 + ' v' + (vuela ? 1 : 0) + ' i' + i + ' c' + (cortes - c0) + ']'; } prev.copy(q);
+          }
+          if (cortes - c0 > 6) malGiro += cortes - c0;
+        }
+        ok('(0,170) y el sitio actual: en ' + pasos + ' ángulos, la cámara no queda dentro de un muro ni tras uno', malPlaza === 0, malPlaza + ' malos' + dbg);
+        ok('girando a ~2 rad/s no cruza muros (≤6 cortes por vuelta) y sin saltos de más de 2,5 m por cuadro (salvo el corte contra el muro)', malGiro === 0 && saltoMax < 2.5, malGiro + ' malos, salto máx ' + Math.round(saltoMax * 100) / 100 + ' m' + dbg2);
+      } else ok('muros y losas (sin sólidos activos: no aplica)', true, '');
+      // 5. Transición suelo↔vuelo y aterrizaje: sin saltos de cámara mayores de 1 m por cuadro (a 60 fps)
+      modo(false, 0); yaw = keep.yaw; inclina = 0; place(true);
+      let salto = 0, prevP = camera.position.clone(), c1 = cortes;
+      const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); salto = Math.max(salto, camera.position.distanceTo(prevP)); prevP.copy(camera.position); } };
+      paso60(30);
+      Object.assign(M, { flying: true, grounded: false }); S.pos.y += 3; paso60(60);          // despegue
+      Object.assign(M, { flying: false, grounded: true }); S.pos.y = G.terreno.height(S.pos.x, S.pos.z); M.land = (M.land || 0) + 1; M.impact = 1; paso60(60); // aterriza
+      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m');
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
@@ -409,6 +463,6 @@ AVE.module('camara', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, get cortes() { return cortes; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });
