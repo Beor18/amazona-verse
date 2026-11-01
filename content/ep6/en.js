@@ -95,7 +95,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
 
  // Gancho y diálogos de eventos
  "Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming, and some new ones. At least six arrive today; the rest are still faraway lights.",
- "… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.": "… eleven, twelve… The chain of signals is still lit all the way to the fog, and there are new lights on the horizon.",
+ "… once, doce… La cadena de señales sigue encendida hasta la niebla. Alba y Violeta pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.": "… eleven, twelve… The chain of signals is still lit all the way to the fog. Alba and Violeta asked us to look for those who remain, and there are new lights on the horizon.",
  "Una canoa asoma por el río. Y detrás, alguien volando bajo.": "A canoe appears on the river. And behind it, someone flying low.",
  "Llegan hoy. Yo preparo el puente, la comida, los sitios…": "They arrive today. I'll get the bridge ready, the food, the seats…",
  "Es más rápido si lo hago yo. ¡A los muelles!": "It's faster if I do it myself. To the docks!",
@@ -389,6 +389,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the one from the grove at the narrows left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
  "Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the navigator is paddling downriver and the one from the grove left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
  "Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».": "I saw the chain of signals and paddled over. This time I'm not here to say «not today».",
+ "Ve al puente, donde está el cuaderno: primero se escribe qué queremos lograr y qué límites hay.": "Go to the bridge, where the notebook is: first write down what we want to achieve and what the limits are.",
+ "En el cuaderno del puente, arma el plan: cada tarea con su nombre. Luego pruébalo.": "In the notebook at the bridge, build the plan: every task with a name. Then test it.",
  "Hablar con quien navega": "Talk to the navigator",
  "Navegante": "Navigator",
 });
