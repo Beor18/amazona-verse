@@ -20,7 +20,8 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | El personaje «Luma» pasa a llamarse **«Iguaca»** (nombre taíno de la cotorra puertorriqueña; «Luma» recuerda a la empresa de electricidad LUMA Energy). Los ids internos (`luma`, `LumaHelped`, `c1_luma_*`) no cambian: las partidas viejas siguen cargando | CONFIRMADO | Kelvin, 25 oct |
 | Martinicana y violacea como consejeras | PROVISIONAL (idea de Kelvin) | Chat 24 oct |
 | El aprendiz del jugador acompaña a Vittata (no la reemplaza) | PROVISIONAL | V4 §3.2, implementado así |
-| Apariencia del Guardián = render de imperialis; de Iguaca = render de leucocephala | PROVISIONAL (sustitutos) | Prototipo |
+| Apariencia del Guardián = render de imperialis (sustituto) | PROVISIONAL (sustituto) | Prototipo |
+| **Iguaca es una *Amazona vittata*, de otra familia de cotorras puertorriqueñas**: más madura, quizás más adulta, la amiga serena. Vittata es la más joven e intensa (Kelvin: «Vittata puede ser como yo»). Pendiente de arte: hoy se ve con el render sustituto de *leucocephala*; hay que pasarla a vittata distinguible de Vittata (edad, porte, algún rasgo propio) sin tocar el modelo ni el rig de Vittata | CONFIRMADO | Kelvin, 1 nov 2026 |
 | Banco de trabajo como mejora del taller | PROVISIONAL | Prototipo |
 | Terrenos "Junto al río" y "La colina" | PROVISIONAL | Guion pág. 6 y prototipo |
 | Agilis como aliada de la primera versión del prototipo | HISTÓRICO (reemplazada por Iguaca) | Prototipo v1 |
