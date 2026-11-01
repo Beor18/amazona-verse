@@ -761,6 +761,7 @@
       },
       {
         "id": "tucumana",
+        "piel": "tucumana",
         "cientifico": "Amazona tucumana",
         "comun": {
           "es": "loro alisero",
