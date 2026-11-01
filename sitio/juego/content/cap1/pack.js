@@ -143,7 +143,7 @@
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,
       // La Voz y el Narrador llevan retratos neutros (arriba): ya no comparten la cara del Guardián ni la de Vittata
-      retratos: { Vittata: 'assets/vittata.png', Iguaca: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
+      retratos: { Vittata: 'assets/vittata.png', Iguaca: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
       retratoDefecto: 'assets/vittata.png',
       emociones: { feliz: 'happy', triste: 'sad', sorpresa: 'surprised', idea: 'idea', enojo: 'angry' },
     },

@@ -22,7 +22,7 @@
 (function () {
   'use strict';
   const DIR = 'assets/textures/pieles/';
-  // Las 22 pieles cocidas: archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
+  // Las 27 pieles (22 cocidas de los .blend de Kelvin + ventralis, finschi, lilacina, vinacea y autumnalis, pintada sobre el UV el 1-nov con fuentes: docs/equipo/pieles_fuentes/): archivo de Kelvin → piel → especie del catálogo. anillo: color medio de la piel alrededor del ojo
   // (lo mide pieles_cocer.py); lo usan los párpados. ochrocephala_panamensis es subespecie: el catálogo no le da id (Kelvin decide).
   const PIELES = [
     { piel: 'aestiva', especie: 'aestiva', archivo: 'Aestiva.blend', anillo: '#bcb496' },
@@ -47,6 +47,11 @@
     { piel: 'viridigenalis', especie: 'viridigenalis', archivo: 'Viridigenalis.blend', anillo: '#bcb496' },
     { piel: 'xantholora', especie: 'xantholora', archivo: 'Xantholora.blend', anillo: '#bcb496' },
     { piel: 'tresmariae', especie: 'tresmariae', archivo: 'tresmariae.blend', anillo: '#bcb496' },
+    { piel: 'ventralis', especie: 'ventralis', archivo: null, anillo: '#ece8dc' }, // pintada sobre el UV (1-nov), anillo ocular blanco
+    { piel: 'finschi', especie: 'finschi', archivo: null, anillo: '#c9c7c2' }, // pintada sobre el UV (1-nov)
+    { piel: 'lilacina', especie: 'lilacina', archivo: null, anillo: '#eadf9e' }, // pintada sobre el UV (1-nov)
+    { piel: 'vinacea', especie: 'vinacea', archivo: null, anillo: '#b9b7b3' }, // pintada sobre el UV (1-nov)
+    { piel: 'autumnalis', especie: 'autumnalis', archivo: null, anillo: '#efede6' }, // pintada sobre el UV (1-nov)
   ];
   const POR_PIEL = {}; for (const p of PIELES) POR_PIEL[p.piel] = p;
 
@@ -101,9 +106,18 @@
   }
   function ponerMapa(ch, tex) {
     const base = mapaBase(ch); if (!base) return false;
+    // vittata.glb tiene una sola imagen pero dos texturas (pico y cuerpo): GLTFLoader crea dos THREE.Texture con la misma imagen.
+    // Antes solo se cambiaba la del pico y el cuerpo se quedaba verde Vittata con cualquier especie (1-nov). Cada material guarda
+    // su mapa original para devolverlo al quitar la piel.
+    // Chrome carga cada textura del glTF en su propio ImageBitmap, así que la imagen no sirve para reconocerlas: se usan los mapas
+    // propios del personaje (los de sus materiales antes de cualquier piel)
+    const propios = ch._mapasPropios || (ch._mapasPropios = new Set(Object.values(ch.materials || {}).map(x => x && x.map).filter(x => x && !/^piel_/.test(x.name || ''))));
+    const deBase = t => !!t && (t === base || propios.has(t) || (!!base.image && t.image === base.image));
     cadaMaterial(ch, m => {
-      if (m.map === base || (m.userData.pielDe === ch.root.uuid)) {
-        if (m.map !== tex) { m.map = tex; m.needsUpdate = true; }
+      if (deBase(m.map) || m.userData.pielDe === ch.root.uuid) {
+        if (deBase(m.map) && !m.userData.mapaOrig) m.userData.mapaOrig = m.map;
+        const nuevo = tex === base ? (m.userData.mapaOrig || base) : tex;
+        if (m.map !== nuevo) { m.map = nuevo; m.needsUpdate = true; }
         m.userData.pielDe = tex === base ? undefined : ch.root.uuid;
       }
     });

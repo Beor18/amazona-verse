@@ -1,5 +1,5 @@
 /* AVE · AV.pielesTest: pieles de especie (src/personaje/pieles.js)
-   Las 22 cargan (1024², sRGB, flipY falso) y se aplican a un personaje aparte (no el jugador): cuerpo, pico y plumón de cría
+   Las 27 cargan (1024², sRGB, flipY falso) y se aplican a un personaje aparte (no el jugador): cuerpo, pico y plumón de cría
    con la piel y el tinte apagado; la piel fija sobrevive a applyLook; quitar() vuelve al mapa original; las especies sin
    piel conservan el tinte; solo se descarga la piel que un personaje pide, una vez.
    Devuelve { passed, total, results }. Se carga al pedir la prueba (boot.js), no en la descarga inicial del juego. */
@@ -17,18 +17,18 @@ window.AVPielesTest = function () {
     const nombre = e => decodeURIComponent(e.name.split('/').pop().replace(/\.jpg.*$/, ''));
     const sueltas = recursos().filter(e => pedidas.indexOf(nombre(e)) < 0);
     check('Carga perezosa: solo se descarga la piel que un personaje pide', !sueltas.length, sueltas.map(nombre).join(',') || (pedidas.length + ' pedidas antes de la prueba: ' + pedidas.join(',')));
-    // 2. Catálogo: 22 pieles; 21 enlazadas desde especies.js, sin especies inventadas
+    // 2. Catálogo: 27 pieles; 26 enlazadas desde especies.js, sin especies inventadas
     if (!window.AV_ESPECIES && window.AVE.assets) { try { await AVE.assets.script('content/comun/especies.js'); } catch (e) { /* falla abajo */ } }
     const sp = window.AV_ESPECIES ? window.AV_ESPECIES.especies : [];
     const enlazadas = sp.filter(x => x.piel);
-    check('Catálogo: 22 pieles distintas', PIELES.length === 22 && new Set(PIELES.map(p => p.piel)).size === 22, PIELES.length);
-    check('especies.js: 21 especies con piel y cada piel existe', enlazadas.length === 21 && enlazadas.every(x => POR_PIEL[x.piel] && POR_PIEL[x.piel].especie === x.id), enlazadas.length);
+    check('Catálogo: 27 pieles distintas', PIELES.length === 27 && new Set(PIELES.map(p => p.piel)).size === 27, PIELES.length);
+    check('especies.js: 26 especies con piel y cada piel existe', enlazadas.length === 26 && enlazadas.every(x => POR_PIEL[x.piel] && POR_PIEL[x.piel].especie === x.id), enlazadas.length);
     check('Vittata sigue sin piel (protagonista intacta)', !tiene('vittata'));
-    // 3. Las 22 cargan
+    // 3. Las 27 cargan
     const tex = await Promise.all(PIELES.map(p => cargar(p.piel)));
     const T = {}; PIELES.forEach((p, i) => { T[p.piel] = tex[i]; });
     const malas = PIELES.filter((p, i) => !(tex[i] && tex[i].image && tex[i].image.width === 1024 && tex[i].image.height === 1024 && tex[i].flipY === false && tex[i].encoding === THREE.sRGBEncoding));
-    check('Las 22 pieles cargan (1024², sRGB, flipY falso)', !malas.length, malas.map(p => p.piel).join(','));
+    check('Las 27 pieles cargan (1024², sRGB, flipY falso)', !malas.length, malas.map(p => p.piel).join(','));
     if (!window.AVCharacter) { check('Hay personaje para probar', false, 'sin AVCharacter'); return fin(); }
     // 4. Un personaje real aparte (no el jugador)
     const ch = await window.AVCharacter.create();
@@ -41,34 +41,37 @@ window.AVPielesTest = function () {
       let body = null; ch.root.traverse(x => { if (x.isSkinnedMesh && !x.userData.isAccessory && !body) body = x; });
       const plumon = new THREE.SkinnedMesh(body.geometry, new THREE.MeshStandardMaterial({ map: base }));
       plumon.bind(body.skeleton, body.bindMatrix); body.parent.add(plumon);
-      const cuerpo = () => { const m = []; cadaMaterial(ch, x => { if (x.map === base || x.userData.pielDe === ch.root.uuid) m.push(x.map); }); return m; };
-      // QA-77: el cuerpo y el pico pueden tardar unos cuadros en tener su material; se espera a ≥ 2 (tope 10 s)
-      for (let t0 = performance.now(); cuerpo().length < 2 && performance.now() - t0 < 10000;) await new Promise(r => setTimeout(r, 100));
+      // esBase: el cuerpo tiene su propia THREE.Texture con la misma imagen que el pico (vittata.glb); antes la prueba no lo contaba
+      // mapas propios del personaje (sin piel): el cuerpo tiene su propia THREE.Texture, distinta de la del pico (vittata.glb)
+      const esBase = x => !!x && !/^piel_/.test(x.name || '') && (x === base || Object.values(ch.materials || {}).some(m => m && (m.map === x || m.userData.mapaOrig === x)));
+      const cuerpo = () => { const m = []; cadaMaterial(ch, x => { if (esBase(x.map) || x.userData.pielDe === ch.root.uuid) m.push(x.map); }); return m; };
+      // QA-77: el cuerpo y el pico pueden tardar unos cuadros en tener su material; se espera a ≥ 3 (cuerpo, pico y plumón; tope 10 s)
+      for (let t0 = performance.now(); cuerpo().length < 3 && performance.now() - t0 < 10000;) await new Promise(r => setTimeout(r, 100));
       const n0 = cuerpo().length;
       const fallos = [];
       for (const p of PIELES) {
         const ok = await aplicar(ch, p.especie || p.piel), m = cuerpo();
         if (!ok || m.length !== n0 || !m.every(x => x === T[p.piel]) || on.length() !== 0) fallos.push(p.piel);
       }
-      check('Las 22 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 2, fallos.join(',') || n0 + ' materiales');
+      check('Las 27 se aplican (cuerpo, pico y plumón con la piel; tinte apagado)', !fallos.length && n0 >= 3, fallos.join(',') || n0 + ' materiales');
       await aplicar(ch, 'oratrix');
       ch.applyLook({ species: 'vittata', accessories: { neck: { id: 'panuelo', color: '#f2a03d' } } }); await listo(ch);
       check('La piel fija sobrevive a applyLook (crías y rivales con ropa)', cuerpo().every(x => x === T.oratrix) && on.length() === 0);
       quitar(ch); await listo(ch);
-      check('quitar() vuelve al mapa original', cuerpo().every(x => x === base));
+      check('quitar() vuelve al mapa original', cuerpo().every(esBase));
       ch.applyLook({ species: 'agilis', accessories: {} }); await listo(ch);
-      check('Especie sin piel (agilis): queda el tinte de hoy', cuerpo().every(x => x === base) && on.x === 1 && on.z === 1, [on.x, on.y, on.z].join(','));
+      check('Especie sin piel (agilis): queda el tinte de hoy', cuerpo().every(esBase) && on.x === 1 && on.z === 1, [on.x, on.y, on.z].join(','));
       ch.applyLook({ species: 'amazonica', accessories: {} }); await listo(ch);
       check('Look con especie con piel (amazonica): usa la piel', cuerpo().every(x => x === T.amazonica) && on.length() === 0);
       ch.applyLook({ species: 'vittata', accessories: {} }); await listo(ch);
-      check('Volver a vittata devuelve su textura', cuerpo().every(x => x === base) && on.length() === 0);
+      check('Volver a vittata devuelve su textura', cuerpo().every(esBase) && on.length() === 0);
       body.parent.remove(plumon); plumon.material.dispose();
     } finally {
       if (window.AVCharacter.disposeObject) window.AVCharacter.disposeObject(ch.root);
     }
     // 5. Peso: cada piel se pidió una sola vez (caché compartida) y lo bajado sigue siendo solo lo pedido
     const kb = recursos().reduce((s, e) => s + (e.encodedBodySize || e.transferSize || 0), 0) / 1024;
-    check('Cada piel se descarga una vez y solo al usarla', pedidas.length === 22 && new Set(pedidas).size === 22 && recursos().every(e => pedidas.indexOf(nombre(e)) >= 0), pedidas.length + ' pedidas' + (kb ? ', ' + Math.round(kb) + ' KB' : ''));
+    check('Cada piel se descarga una vez y solo al usarla', pedidas.length === 27 && new Set(pedidas).size === 27 && recursos().every(e => pedidas.indexOf(nombre(e)) >= 0), pedidas.length + ' pedidas' + (kb ? ', ' + Math.round(kb) + ' KB' : ''));
     return fin();
   }
   return { test };

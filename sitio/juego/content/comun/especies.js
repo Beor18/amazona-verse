@@ -123,6 +123,7 @@
       },
       {
         "id": "finschi",
+        "piel": "finschi",
         "cientifico": "Amazona finschi",
         "comun": {
           "es": "loro corona lila",
@@ -202,6 +203,7 @@
       },
       {
         "id": "lilacina",
+        "piel": "lilacina",
         "cientifico": "Amazona lilacina",
         "comun": {
           "es": "loro de lores rojas",
@@ -359,6 +361,7 @@
       },
       {
         "id": "vinacea",
+        "piel": "vinacea",
         "cientifico": "Amazona vinacea",
         "comun": {
           "es": "loro vináceo",
@@ -793,6 +796,7 @@
       },
       {
         "id": "ventralis",
+        "piel": "ventralis",
         "cientifico": "Amazona ventralis",
         "comun": {
           "es": "cotorra de La Española",
@@ -1228,6 +1232,7 @@
       },
       {
         "id": "autumnalis",
+        "piel": "autumnalis",
         "cientifico": "Amazona autumnalis",
         "comun": {
           "es": "loro de cachetes amarillos",

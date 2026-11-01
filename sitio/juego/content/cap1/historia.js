@@ -260,6 +260,23 @@
       // KELVIN-2 (decidido por el equipo el 30-oct, Kelvin lo revisa al final): como en el guion (p.7-8), el Guardián aparece en el
       // sendero al llegar al paso de construir, escucha la idea de Vittata y la ayuda a levantar el refugio; tras la crecida regala el banco.
       function applyGuardianLook() { guardian.setVisible((S.step >= 4 || S.builds.length > 0) && !S.event); }
+      // SCRIPT p.9 (Kelvin, 1-nov): la familia de Iguaca, la Abuela y el Papá (los del cap. 2), llega volando y se queda en la
+      // puerta del refugio de la colina cuando aguanta la crecida. Al cargar la partida ya están ahí.
+      const familia = ['abuela', 'papa'].map(id => G.actores.npc(id)).filter(Boolean);
+      const llegada = { t: -1 };
+      const puertaFamilia = i => ({ x: S.refuge.x + (i ? -1.5 : 1.5), z: S.refuge.z + 2.2 });
+      function ponerFamilia(n, x, z, alto) { const y = H(x, z); n.sp.position.set(x, y + 1 + alto, z); n.sh.position.set(x, y + 0.03, z); n.collider.x = x; n.collider.z = z; }
+      function applyFamiliaLook() {
+        const ok = !!(S.gearRoof && S.refuge && S.refuge.parcel === 'B' && !S.event);
+        familia.forEach((n, i) => { n.setVisible(ok); if (ok && llegada.t < 0) { const p = puertaFamilia(i); ponerFamilia(n, p.x, p.z, 0); } });
+      }
+      function familiaLlega() { if (!S.refuge) return; llegada.t = G.quiet ? 3 : 0; familia.forEach(n => n.setVisible(true)); }
+      G.on('render', dt => {
+        if (llegada.t < 0 || !S.refuge) return;
+        llegada.t += dt; const k = Math.min(1, llegada.t / 3), e = k * k * (3 - 2 * k);
+        familia.forEach((n, i) => { const p = puertaFamilia(i), x0 = p.x + (i ? -9 : 9), z0 = p.z + 7; ponerFamilia(n, x0 + (p.x - x0) * e, z0 + (p.z - z0) * e, 5 * (1 - e)); });
+        if (k >= 1) llegada.t = -1;
+      }, 12);
       let pasoVisto = -1; // no hay aviso de cambio de paso: se mira en cada cuadro (una comparación)
       G.on('update', () => {
         if (S.step === pasoVisto) return; pasoVisto = S.step; applyGuardianLook();
@@ -442,22 +459,25 @@
           S.indicators = { seguridad: 'alta', acceso: 'largo, cuesta arriba', habitat: 'nidos de ribera intactos' };
           if (S.builds.includes('A')) log('ShelterRelocated', { from: 'A', to: 'B' });
           S.gearRoof = true; C.placeRefugeMesh(); C.aplicarEngranaje(); // Vittata sube el engranaje de su máquina al techo
-          capture('shelter');
+          capture('shelter'); familiaLlega();
           say([...L('evento:ShelterRelocated', [
             { who: 'Iguaca', img: IMG.L, text: 'La colina aguantó la crecida. Mi familia está a salvo.' },
             { who: 'Vittata', img: IMG.V, text: 'Construir rápido no sirve de mucho si después tenemos que empezar otra vez.' },
-          ]), ...P9(), ...gracias, ...rio], null, LIBRE);
+          ]), ...P9(), ...FAMILIA(), ...gracias, ...rio], null, LIBRE);
           afterRain();
         }
       }
-      // AP2 · SCRIPT p.9 «Algo más que una casa»: las dos líneas del guion cuando la colina aguanta. [KELVIN-5] La familia de Iguaca
-      // entrando al refugio no se ve (sin arte ni diseño de la familia); solo se oye a Iguaca y a Vittata.
+      // AP2 · SCRIPT p.9 «Algo más que una casa»: las dos líneas del guion cuando la colina aguanta. La familia de Iguaca (la Abuela
+      // y el Papá) llega al refugio y da las gracias (Kelvin, 1-nov).
+      function FAMILIA() {
+        return [{ who: 'Abuela', img: 'assets/abuela.png', text: '¡Llegamos! Qué techo tan firme. Esta noche sí dormimos tranquilos.' },
+          { who: 'Papá', img: 'assets/papa.png', text: 'Gracias, Vittata. Sin ti, la crecida se lo llevaba todo.' }];
+      }
       function P9() {
         return [{ who: 'Iguaca', img: IMG.L, text: 'Pensé que hoy lo habíamos perdido todo.' }, { who: 'Vittata', img: IMG.V, text: 'Yo también.' }];
       }
       function afterRain() {
-        // [KELVIN-5] SCRIPT p.9: la familia de Iguaca entrando al refugio necesita arte (ver PENDIENTES_KELVIN); las líneas ya van en P9().
-        applyGuardianLook();
+        applyGuardianLook(); applyFamiliaLook();
         if (S.step === 4) { advanceTo(5); toast(S.guardianIntro ? 'El Guardián te espera en el sendero del sur' : 'Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
       }
@@ -817,7 +837,7 @@
       C.retratoMedalla = () => medallaURL || IMG.G;
 
       // ---------- Al cargar o reiniciar ----------
-      G.on('apply', () => { C.placeRefugeMesh(); syncRefugeInteractable(); C.applyTallerLook(); applyGuardianLook(); }, 35);
+      G.on('apply', () => { C.placeRefugeMesh(); syncRefugeInteractable(); C.applyTallerLook(); applyGuardianLook(); llegada.t = -1; applyFamiliaLook(); }, 35);
       G.on('apply', () => { build = null; ghost.visible = false; }, 42);
       G.on('apply', () => showSymbol(false), 50);
 

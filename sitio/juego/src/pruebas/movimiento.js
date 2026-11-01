@@ -583,7 +583,10 @@ window.AVMovimientoTest = function (G) {
             // c1) Volando hacia el borde de la plataforma con los pies algo por debajo: no se mete (antes quedaba dentro)
             let peor = 0, dentroN = 0;
             for (const dy of [0.15, 0.3, 0.42]) {
-              reset(tx + 7, tz); S.pos.y = cav.top - dy; M.flying = true; M.grounded = false;
+              // Arranca fuera de la torre: la restaurada tiene un parapeto (1,8 m sobre la plataforma) y a 7 m del centro Vittata
+              // quedaba ya dentro del muro; encajada, la física la deja moverse para salir y la prueba la contaba «metida» (1-nov)
+              let r0 = 7; while (r0 < 30 && SOL.penetra(tx + r0, tz, cav.top - dy) > 0) r0 += 0.5;
+              reset(tx + r0 + 1, tz); S.pos.y = cav.top - dy; M.flying = true; M.grounded = false;
               const st = toStick(tx - S.pos.x, tz - S.pos.z);
               frame(() => { I.stick.x = st.x; I.stick.y = st.y; peor = Math.max(peor, SOL.penetra(S.pos.x, S.pos.z, S.pos.y)); if (centroDentro()) dentroN++; }, 150);
               I.stick.x = I.stick.y = 0; frame(() => { if (centroDentro()) dentroN++; }, 60);

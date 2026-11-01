@@ -199,11 +199,14 @@
     // Iguaca y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY: PROVISIONALES), junto a una Vittata 3D.
     // [KELVIN-1] Identidad del Guardián (¿cotorra, humano u otra forma?): decide su retrato, su sprite y su modelo 3D.
     // [KELVIN-3] Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): si es canon, falta un detalle visible en su figura.
-    // [KELVIN-5] Familia de Iguaca (SCRIPT p.9: entra al refugio): no hay arte ni diseño, solo Iguaca. Ver historia.js, afterRain().
+    // Familia de Iguaca (SCRIPT p.9, decidido por Kelvin el 1-nov): la Abuela y el Papá entran al refugio de la colina. Ver historia.js, familiaLlega().
     npcs: [
       // id histórico 'luma' (partidas guardadas, escenas c1_luma_*, LumaHelped): el personaje se llama Iguaca
       { id: 'luma', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.0, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARD.x, z: GUARD.z, escala: 2.6 },
+      // La familia de Iguaca (Kelvin, 1-nov: la Abuela y el Papá del cap. 2): salen tras la crecida, si el refugio está en la colina
+      { id: 'abuela', nombre: 'Abuela', sprite: 'assets/abuela.png', x: LUGARES.B.x + 1.5, z: LUGARES.B.z + 2.2, escala: 1.8 },
+      { id: 'papa', nombre: 'Papá', sprite: 'assets/papa.png', x: LUGARES.B.x - 1.5, z: LUGARES.B.z + 2.2, escala: 1.8 },
     ],
     objetos: {
       madera: { nombre: 'madera', modelo: () => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.8, 7), mats().madera); m.rotation.z = Math.PI / 2; m.position.y = 0.3; return m; } },
