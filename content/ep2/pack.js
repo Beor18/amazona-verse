@@ -81,7 +81,7 @@
   };
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Otra tormenta en tres días. El refugio no aguanta.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: '[KELVIN: lo que dice la Voz y la luz de la niebla]' },
+    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Anoche el transmisor crujió: «…otra tormenta… tres días…». Y las ramas del refugio ya ceden.', 'El plano del bote puede esperar. Un techo de verdad, no.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: '[KELVIN: lo que dice la Voz y la luz de la niebla]' },
     { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
     { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. La abuela y el papá.', 'Ve a enseñarle tu plano a la abuela.'], nota: '[KELVIN: quiénes son los dos residentes]' },
     { id: 'e_plano_v', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'feliz', lineas: ['¡Miren mi plano! Una casa grande, de una planta, con la puerta aquí y el nido aquí al lado.'] },
@@ -95,6 +95,8 @@
     { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: '[KELVIN: si hay huevo en escena]' },
     { id: 'e_fiesta_g', disparador: 'evento:Chapter2Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['(Se toca la medalla.) Una casa que escucha… Esto ya lo vi antes. No recuerdo dónde.'], nota: 'D5 (DECIDIDO-EQUIPO 30-oct): la medalla del Guardián asoma en el ep. 2 y se explica en el ep. 5.' },
     { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
+    { id: 'e_fiesta_v2', disparador: 'evento:Chapter2Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Saca el plano del bote y lo extiende en la mesa, para todos.)', 'Ahora sí. Ya hay techo para todos. ¿Qué le falta a este bote?'] },
+    { id: 'e_fiesta_p2', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'idea', lineas: ['Alguien que sepa navegar.', '(Afuera, la luz de la niebla parpadea otra vez, tres veces.)'] },
   ] };
 
   AVE.registerPack({
@@ -164,7 +166,7 @@
         { id: 'mejorar', texto: 'Cambia solo lo que falló', hasta: { evento: 'HomeImproved' }, guia: G => G.misiones.at('obra') },
         { id: 'prueba2', texto: 'Prueba otra vez', guia: G => G.misiones.at('obra') },
       ],
-      fin: () => 'Leíste la tierra, escuchaste primero y probaste la casa hasta que aguantó. La abuela ya entró y el nido del papá está seco y en alto. Iguaca tiene unas preguntas para ti, cuando quieras.',
+      fin: () => 'Leíste la tierra, escuchaste primero y probaste la casa hasta que aguantó. La abuela ya entró y el nido del papá está seco y en alto. Iguaca tiene unas preguntas para ti, cuando quieras. Y el plano del bote ya está en la mesa: falta alguien que sepa navegar.',
     },
     misiones: [
       { id: 'lee_tierra', titulo: 'Lee la tierra', hud: 'Pendiente, suelo y viento',
