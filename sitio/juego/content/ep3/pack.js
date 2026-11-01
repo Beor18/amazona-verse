@@ -94,6 +94,7 @@
     { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si el Guardián va en el bote o despide desde el muelle]', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
     { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
     { id: 'e_fin', disparador: 'evento:Chapter3Completed', personaje: 'Navegante', emocion: 'feliz', lineas: ['Este bote ya no es tuyo ni mío. Es de las dos.'] },
+    { id: 'e_fin_v', disparador: 'evento:Chapter3Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Enrolla el plano de la Vecina y se lo lleva.)', 'Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.'] },
     { id: 'e_fin_i', disparador: 'evento:Chapter3Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste qué flota, leíste el agua y supiste cuándo dar el timón. Cuando vuelvas a Villa Raíz, ven y te hago unas preguntas. Sin prisa y sin nota.'] },
   ] };
 
@@ -170,7 +171,7 @@
         { id: 'travesia', texto: 'Cruza la bahía desde el muelle', hasta: { evento: 'BayCrossed' }, guia: G => (G.ep3 && G.ep3.destino()) || G.misiones.at('muelle') },
         { id: 'llegada', texto: 'Saluda a la gente de la otra orilla', guia: G => G.misiones.at('vecina') },
       ],
-      fin: () => 'Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras.',
+      fin: () => 'Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras. Y te llevas un plano: un camino que ayudaría a todos, pero costaría bosque. Habrá que pensarlo bien.',
     },
     misiones: [
       { id: 'flota', titulo: '¿Qué flota?', hud: 'Probar, construir y mejorar',

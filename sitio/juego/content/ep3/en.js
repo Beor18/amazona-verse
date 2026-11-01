@@ -34,7 +34,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Decide quién lleva el timón": "Decide who takes the helm",
  "Cruza la bahía desde el muelle": "Cross the bay from the dock",
  "Saluda a la gente de la otra orilla": "Greet the people on the other shore",
- "Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras.": "You tested what floats, built the canoe, read the water with the navigator and crossed the bay. Iguaca has some questions for you, whenever you like.",
+ "Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras. Y te llevas un plano: un camino que ayudaría a todos, pero costaría bosque. Habrá que pensarlo bien.": "You tested what floats, built the canoe, read the water with the navigator and crossed the bay. Iguaca has some questions for you, whenever you like. And you carry a plan home: a road that would help everyone but would cost forest. It will need careful thought.",
 
  // Misiones
  "¿Qué flota?": "What floats?",
@@ -100,6 +100,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "¡Pero si está listo! Lo hice yo.": "But it's ready! I made it.",
  "Mija, tú hiciste el bote; ella conoce el agua.": "Dear, you made the boat; she knows the water.",
  "Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.": "I sail them, I don't make them. See for yourself: the ribbons on the two posts, the clouds from the lookout and the river current. Then we'll talk.",
+ "(Enrolla el plano de la Vecina y se lo lleva.)": "(She rolls up the Neighbor's plan and takes it with her.)",
+ "Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.": "A road would help everyone, but it would cost forest. Before deciding, I'll ask everyone and look closely at what is gained and what is lost.",
  "Este bote ya no es tuyo ni mío. Es de las dos.": "This boat isn't yours or mine anymore. It's both of ours.",
  "Probaste qué flota, leíste el agua y supiste cuándo dar el timón. Cuando vuelvas a Villa Raíz, ven y te hago unas preguntas. Sin prisa y sin nota.": "You tested what floats, read the water and knew when to hand over the helm. When you're back in Villa Raíz, come and I'll ask you a few questions. No rush and no grades.",
 

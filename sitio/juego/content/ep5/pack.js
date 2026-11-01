@@ -33,7 +33,7 @@
   const continuidad = () => { const T = window.AVTemporada, o = T && T.dato(4, 'opcion'); return CRUCE_EP4[o] ? [di('Vittata', CRUCE_EP4[o])] : []; };
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep5', personaje: 'Vittata', emocion: 'sorpresa', lineas: ['Dos voces a la vez. No es eco.', 'Esa voz es de ahora… y la otra también.'] },
+    { id: 'e_inicio', disparador: 'inicio:ep5', personaje: 'Vittata', emocion: 'sorpresa', lineas: ['Dos voces a la vez, pisándose en la misma frecuencia.', 'Esa voz es de ahora… y la otra también.'] },
     { id: 'e_fin_a', disparador: 'evento:VoicesRevealed', personaje: 'Voz', emocion: 'idea', lineas: [
       'Villa Raíz. Por fin.',
       'Nos conocían por otros nombres, en dos islas del sur.',
@@ -97,7 +97,7 @@
         { id: 'patron', texto: 'Copia el patrón de la luz', hasta: { recogido: 'patron_ok' }, guia: G => G.misiones.at('trx') },
         { id: 'ordenar', texto: 'Ordena el mensaje', hasta: { evento: 'FragmentsOrdered' }, guia: G => G.misiones.at('trx') },
         { id: 'ruinas', texto: 'Lee las cinco ruinas', hasta: { recogido: RUIN.concat(CLS) }, guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
-        { id: 'fichas', texto: 'Pregunta por las dos que faltan', hasta: { evento: 'GuardianRemembered' }, guia: G => G.misiones.at('guardian') },
+        { id: 'fichas', texto: 'Escucha al Guardián: recuerda a pedazos', hasta: { evento: 'GuardianRemembered' }, guia: G => G.misiones.at('guardian') },
         { id: 'antena', texto: 'Endereza la antena', hasta: { recogido: 'antena' }, guia: G => G.misiones.at('trx') },
         { id: 'codigo', texto: 'Elige cómo enviar la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
         { id: 'estaciones', texto: 'Pon tres estaciones', hasta: { recogido: 'tres_estaciones' }, guia: G => G.misiones.at('loma') },
@@ -642,11 +642,11 @@
         const pistas = {
           1: 'Gira la rueda. Cada posición suelta un pedazo.',
           2: 'Dos fragmentos llevan la onda violeta.',
-          3: 'Tres cortos y uno largo.',
+          3: 'Mira la luz de la niebla y cópiala en el transmisor: tres cortos y uno largo.',
           4: 'Ordena las tarjetas hasta que la frase se entienda.',
           5: 'La torre que mira al mar es la primera marca.',
           6: 'El Guardián recuerda a pedazos. Escúchalo.',
-          7: 'La antena sigue doblada.',
+          7: 'La antena del transmisor sigue doblada. Acércate a la mesa y enderézala.',
           8: 'Elige luz, sonido o tela. Ninguno lo hace todo.',
           9: 'Hay cinco alturas. Usa tres.',
           10: 'Prueba el relevo. Si se corta, se ve dónde.',

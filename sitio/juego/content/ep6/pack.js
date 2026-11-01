@@ -131,7 +131,7 @@
 
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1: cuántos llegan y de dónde]',
-      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
+      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla. Alba y Violeta pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
     { id: 'e_tarjetas_i', disparador: 'evento:CardsFilled', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Sí te necesitaron. Para presentarlos.', 'Ahora el puente. Te espero allí con el cuaderno.'] },
@@ -700,9 +700,9 @@
         G.misiones.check(); G.misiones.advanceTo(G.misiones.DONE); colocarNpcs(); registrar();
         G.fx.burst(MIRADOR.x, H(MIRADOR.x, MIRADOR.z) + 3, MIRADOR.z, 'feathers', 30);
         G.dialogo.say([Lu('De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.'),
+          di('Violeta', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.'),
           Gu('Las islas olvidadas no oyen el relevo.'), Vi('(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)'),
-          Lu('¿Y eso?'), Vi('La tripulación.'),
-          di('Violeta', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
+          Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
       }
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 11 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
 
@@ -717,6 +717,7 @@
         const pistas = {
           0: 'Los muelles están junto al río. Recibe a quien llega.', 1: 'Habla con cada visitante: cuenta qué sabe hacer y qué necesita.',
           2: 'Mira se quedó en la sombra y Marea no deja de mirar el río. Obsérvalas.', 3: 'En la mesa del taller, presenta a dos que se cubran uno al otro.',
+          4: 'Ve al puente, donde está el cuaderno: primero se escribe qué queremos lograr y qué límites hay.', 5: 'En el cuaderno del puente, arma el plan: cada tarea con su nombre. Luego pruébalo.',
           6: 'Dos ayudantes ya están en sus perchas. Vuela a la percha vacía y da la señal.', 7: 'La tabla larga está en la orilla. Pídele a alguien que agarre la otra punta.',
           8: 'Escucha a un grupo, luego al otro, y repite lo que oíste antes de proponer.', 9: 'Elige una forma para los 36: todas suman 36 y cada una tiene su costo.',
           10: 'Invita a cada uno a su asiento. Tú te sientas al final.', 11: 'El Guardián espera en el centro.',
