@@ -260,7 +260,7 @@ AVE.module('vegetacion', function (G) {
           const y = T.height(x, z);
           if (enAgua(x, z, y)) continue;
           if (tapado(x, z, esArb ? 3 : 1.6)) continue;
-          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.62) continue; // matas: no en paredes de roca
+          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
           if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
@@ -362,7 +362,8 @@ AVE.module('vegetacion', function (G) {
       const pasoC = 3.3, rC = rng(9051), SIN_COPAS_CIMA = true;
       if (!SIN_COPAS_CIMA)
       for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
-        const jx = x + (rC() - 0.5) * pasoC * 0.65, jz = z + (rC() - 0.5) * pasoC * 0.65;
+        const jx = x + (rC() - 0.5) * pasoC * 1.1, jz = z + (rC() - 0.5) * pasoC * 1.1;
+        if (rC() < 0.2) continue; // BM99: sin rejilla de hileras
         if (T.selvaTepuy(jx, jz) < 0.55) continue;
         const y = T.height(jx, jz), nyC = T.normalAt(jx, jz).y;
         if (y < 78 || nyC < 0.78 || enAgua(jx, jz, y) || tapado(jx, jz, 1.4) || enCiudad(jx, jz, -2)) continue;
@@ -627,14 +628,20 @@ AVE.module('vegetacion', function (G) {
     geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     geo.setIndex(new THREE.BufferAttribute(idx, 1));
     geo.computeVertexNormals();
-    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    // BM99: antes era una elipse maciza con puntos oscuros (de cerca, una «sandía» a rayas). Ahora es un arbusto de hojas
+    // lanceoladas recortadas (alfa), en verdes vibrant_toon, con huecos entre hojas; semilla fija para que sea siempre igual.
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
     const g = cv.getContext('2d');
-    const gr = g.createRadialGradient(32, 28, 2, 32, 32, 30);
-    gr.addColorStop(0, '#8fbc5c'); gr.addColorStop(0.42, '#3f7a38'); gr.addColorStop(0.78, '#1c4622'); gr.addColorStop(1, 'rgba(8,20,10,0)');
-    g.fillStyle = gr; g.beginPath(); g.ellipse(32, 32, 30, 24, 0, 0, Math.PI * 2); g.fill();
-    for (let i = 0; i < 12; i++) {
-      g.fillStyle = i % 2 ? 'rgba(150, 190, 70, 0.3)' : 'rgba(6, 18, 8, 0.45)';
-      g.beginPath(); g.arc(14 + (i * 19) % 36, 14 + (i * 11) % 34, 3 + (i % 3), 0, 6.3); g.fill();
+    const rh = rng(3307), verdes = ['#4fb83a', '#3a9f3c', '#6fd04a', '#2f8a3e', '#86dc52'];
+    const hoja = (ang, len, ancho, col) => {
+      g.save(); g.translate(64, 100); g.rotate(ang);
+      g.fillStyle = col; g.beginPath();
+      g.moveTo(0, 0); g.quadraticCurveTo(ancho, -len * 0.45, 0, -len); g.quadraticCurveTo(-ancho, -len * 0.45, 0, 0); g.fill();
+      g.restore();
+    };
+    for (let capa = 0; capa < 3; capa++) for (let i = 0; i < 12; i++) {
+      const ang = (i / 12 + capa * 0.04) * Math.PI * 2 * 0.5 - Math.PI * 0.5 + (rh() - 0.5) * 0.35 + (i % 2 ? 0.1 : -0.1);
+      hoja(ang * 1.0, 48 + capa * 10 + rh() * 14, 8 + rh() * 4, verdes[Math.floor(rh() * verdes.length)]);
     }
     const tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding;
     const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.3, side: THREE.DoubleSide, color: 0xffffff });
@@ -789,7 +796,7 @@ AVE.module('vegetacion', function (G) {
         llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
         if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
-        g.own.uFade.value.set(g.cat === 'arbol' && IMP.mesh ? finMalla - banda : 0, g.cat === 'arbol' && IMP.mesh ? finMalla : 0);
+        g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»
         if (mt.userData.fade !== undefined) mt.userData.fade = g.own.uFade.value;
       }
       if (IMP.mesh && imp.length) {
