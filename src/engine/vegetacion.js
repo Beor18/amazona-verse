@@ -331,7 +331,7 @@ AVE.module('vegetacion', function (G) {
       }
     }
     // BL1, selva del tepuy (T.selvaTepuy, como en el render de 2022): árboles en la cima y en las laderas alrededor de la gran
-    // ciudad, también en las paredes que el relleno evita (hasta ~72°, hundidos en la ladera: de lejos, selva colgada del risco), con la probabilidad de la
+    // ciudad (BM101, 1-nov: ya no en las paredes de roca de más de ~44°; antes hasta ~72°, y Kelvin los veía metidos en la roca), con la probabilidad de la
     // elipse. Fuera de las piezas de la ciudad (escenaKelvin de las ruinas), de sendas, agua y sitios despejados. Semilla
     // propia y después del relleno: lo demás no se mueve. Cuentan aparte (tepuyPos).
     tepuyPos.length = 0;
@@ -345,7 +345,8 @@ AVE.module('vegetacion', function (G) {
         const x = ST.x + (r4() * 2 - 1) * ST.rx, z = ST.z + (r4() * 2 - 1) * ST.rz, w = T.selvaTepuy(x, z);
         if (r4() >= w || !libre(x, z)) continue;
         const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
-        if (!md || y < 4 || ny < 0.3 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        // BM101 (Kelvin, 1-nov: «árboles metidos en la roca»): nada en pendientes de más de ~44° (antes hasta ~72°, hundidos en el risco)
+        if (!md || y < 4 || ny < 0.72 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
         const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
         if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
         marcar(x, z, r);
@@ -357,7 +358,9 @@ AVE.module('vegetacion', function (G) {
       // (el centro de la meseta no es «libre»: lo ocupan las piezas). Aquí son copas chicas, también
       // entre los edificios. El risco vertical no lleva copa.
       copasCima.length = 0;
-      const pasoC = 3.3, rC = rng(9051);
+      // BM99 (Kelvin, 1-nov): estas copas de relleno se veían como «sandías» en hileras; la cima ya tiene los árboles reales de BL1.
+      const pasoC = 3.3, rC = rng(9051), SIN_COPAS_CIMA = true;
+      if (!SIN_COPAS_CIMA)
       for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
         const jx = x + (rC() - 0.5) * pasoC * 0.65, jz = z + (rC() - 0.5) * pasoC * 0.65;
         if (T.selvaTepuy(jx, jz) < 0.55) continue;
@@ -971,7 +974,10 @@ AVE.module('vegetacion', function (G) {
           if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.75 || c.y < 74 || c.s > 4.6) malC++;
           if (c.s > 4.6) grandes++;
         }
-        check('Copas de la cima (G19): chicas, en la meseta, no en el risco', copasCima.length >= 50 && !malC && !grandes, copasCima.length + ' copas, ' + malC + ' fuera de sitio, ' + grandes + ' de más de 4,6 m');
+        check('Sin las copas falsas de la cima (BM99: Kelvin las veía como «sandías» en hileras)', copasCima.length === 0 && !malC && !grandes, copasCima.length + ' copas');
+        let enPared = 0;
+        for (let i = 0; i < tepuyPos.length; i += 2) if (T.normalAt(tepuyPos[i], tepuyPos[i + 1]).y < 0.72) enPared++;
+        check('Ningún árbol del tepuy en la pared de roca (BM101: pendiente de más de ~44°)', enPared === 0, enPared + ' en pared de ' + st.tepuy);
       }
       const MB = usarBosque && window[BOSQUE.global];
       if (MB) {

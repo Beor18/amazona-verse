@@ -368,14 +368,26 @@ AVE.module('terreno', function (G) {
     // roca triplanar: en acantilados la proyección desde arriba se estira; aquí se proyecta por los tres ejes
     vec3 tpB = pow(abs(nG), vec3(4.0)); tpB /= dot(tpB, vec3(1.0));
     vec2 uvRX = vWPos.zy * uEsc.z, uvRZ = vWPos.xy * uEsc.z;
-    if (tpB.y < 0.98) a2 = texture2D(tA2, uvRX) * tpB.x + a2 * tpB.y + texture2D(tA2, uvRZ) * tpB.z;
+    if (tpB.y < 0.98) {
+      // BM100 (Kelvin, 1-nov: «escamas repetidas» en la pared del tepuy): la roca a 1/5 se repetía cada 5 m en 100 m de pared.
+      // Se mezcla con una segunda escala (×0,23 ≈ 22 m) girada, según el ruido macro, así el patrón deja de verse en mosaico.
+      vec4 rX = texture2D(tA2, uvRX), rZ = texture2D(tA2, uvRZ);
+      float kR = clamp(0.5 + (mac2.g - 0.5) * 1.1, 0.15, 0.85);
+      rX = mix(rX, texture2D(tA2, rotUv(uvRX, 0.9) * 0.23), kR);
+      rZ = mix(rZ, texture2D(tA2, rotUv(uvRZ, 2.1) * 0.23), kR);
+      a2 = rX * tpB.x + a2 * tpB.y + rZ * tpB.z;
+    }
   #endif
   #ifdef SPLAT_DOS_ESCALAS
     float far = smoothstep(14.0, 70.0, camD);
     float k2 = clamp(far * 0.75 + (mac2.b - 0.5) * 0.6, 0.0, 1.0);
     a0 = mix(a0, texture2D(tA0, rotUv(uv0, 1.1) * 0.29), k2);
     a1 = mix(a1, texture2D(tA1, rotUv(uv1, 2.3) * 0.31), k2);
-    a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2);
+    #ifdef SPLAT_TRIPLANAR
+      a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2 * tpB.y); // en la pared no: la proyección desde arriba se estira
+    #else
+      a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2);
+    #endif
     a3 = mix(a3, texture2D(tA3, rotUv(uv3, 1.9) * 0.33), k2);
   #endif
   vec4 hgt = vec4(dot(a0.rgb, vec3(0.33)), dot(a1.rgb, vec3(0.33)), dot(a2.rgb, vec3(0.33)), dot(a3.rgb, vec3(0.33)));
