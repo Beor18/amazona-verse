@@ -59,7 +59,8 @@ set -e
 if [ $RC -ne 0 ]; then
   # Solo se tolera el tiempo de arranque de movementTest; todo lo demás bloquea.
   FALLAS=$(sed -n '/^## Fallas/,/^## /p' "$REP" | grep '^- ' || true)
-  OTRAS=$(printf '%s\n' "$FALLAS" | grep -v 'movementTest 4[0-9]/[0-9]* · falla: Arranque: 90 % de la velocidad en menos de' | grep . || true)
+  OTRAS=$(printf '%s\n' "$FALLAS" | grep -v 'movementTest 4[0-9]/[0-9]* · falla: Arranque: 90 % de la velocidad en menos de [^|]*$' | grep . || true)
+  # (1-nov) «[^|]*$»: si la misma línea trae otra falla tras « | » (p. ej. la torre de b120729), ya no se tolera.
   NOTA="pruebas obligatorias en la nube en verde"
   if [ $MOVMAC -eq 1 ] && [ -n "$OTRAS" ]; then
     RESTO=$(printf '%s\n' "$OTRAS" | grep -v -E '^- AV\.movementTest( lanzó)?: tiempo agotado' | grep . || true)
