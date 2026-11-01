@@ -1,4 +1,2 @@
-# 1-nov: BM108 (cavidad de la torre, regresion) -> BM98 (ciudad de cerca, sobre los modelos de Fernando) -> BM105 (lejanos con textura). UN solo trabajador.
-BM108
-BM98
-BM105
+# 1-nov tarde (Kelvin): edificios, ciudad y lejanos son de Fernando/Kimi; la API NO los toca. BM98 y BM105 fuera de la cola.
+# Cola vacía a propósito: el trabajador espera sin gastar (quedan ~24 $ para el prompt grande del 2-nov).
