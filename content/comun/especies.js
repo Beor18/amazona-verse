@@ -481,6 +481,7 @@
       },
       {
         "id": "arausiaca",
+        "piel": "arausiaca",
         "cientifico": "Amazona arausiaca",
         "comun": {
           "es": "amazona gorgirroja",

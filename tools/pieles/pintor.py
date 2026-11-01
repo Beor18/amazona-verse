@@ -215,7 +215,40 @@ def vinacea(c):
     c.pico('#d87a80', color_punta='#d8c3a4', punta=(0.33, 0.42))                              # rosa/rojo con punta cuerno
     c.patas('#8e8d8c'); c.ojo('#c8401e', '#b9b7b3')
 
-ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea}
+def arausiaca(c):
+    # Render de Kelvin (docs/referencias/renders_especies/Arausiaca.jpg): cabeza azul y triángulo rojo en la garganta.
+    c.tono(); c.festoneado(R['nuca'] * cab, 0.30)                                              # márgenes oscuros en la corona trasera y la nuca
+    azul = cab * ss(0.86, 0.95, y + 0.01 * n1) * 0.93                                       # toda la cabeza azul (render de Kelvin)
+    c.tintar(azul, hexc('#3f63b4'), keep=0.25)                                                 # lores, frente, corona, zona orbital y mejillas azules
+    c.tintar(cab * R['nuca'] * 0.25, hexc('#35508f'), keep=0.6)                               # azul más oscuro hacia la nuca
+    frente_cuello = body & (x < 0.15) & (zz > 0.04)
+    barbilla = frente_cuello * ss(0.80, 0.83, y) * ss(0.88, 0.86, y)
+    c.tintar(barbilla * 0.85, hexc('#3f63b4'), keep=0.4)                                       # barbilla y garganta alta azules
+    roja = frente_cuello * ss(0.66, 0.72, y + 0.015 * n4) * ss(0.83, 0.80, y) * ss(0.15, 0.08, x + 0.25 * (0.83 - y))
+    c.pintar(roja * 0.92, hexc('#c9302a'))                                                     # parche rojo anaranjado en la garganta baja
+    c.pintar(cab * R['anillo'], hexc('#d6d5d1'))                                              # anillo gris muy pálido
+    c.pintar(R['espejo'] * ss(0.40, 0.37, x) * 0.95, hexc('#d22b22'))                        # espejo rojo (3 secundarias)
+    c.pintar(R['cola_base_lat'] * 0.75, hexc('#c0372c'))                                      # rojo en la base de la cola
+    c.pico('#c9b49a', color_punta='#6a6866', punta=(0.32, 0.42))                              # cuerno con punta gris
+    c.patas('#8e8c8a'); c.ojo('#e07a1c', '#d6d5d1')
+
+def collaria(c):
+    # Render de Kelvin (docs/referencias/renders_especies/Collaria.jpg): corona azul, frente blanca y garganta rosada.
+    c.tono(); c.festoneado(R['festoneado_todo'] * ((y > 0.95) & (zz < 0.1)), 0.30)           # plumas de la corona al manto con borde negro
+    c.tintar(cab * np.clip(R['corona'] * 1.0 + R['frente_ancha'] * 0.6, 0, 0.9), hexc('#4c74b0'), keep=0.4)  # corona delantera azul apagado
+    c.tintar(cab * np.clip(R['mejilla'] * 1.1, 0, 0.75), hexc('#a9c9de'), keep=0.45)         # mejillas altas azul pálido
+    c.tintar(cab * np.clip(R['auricular'] * 1.0, 0, 0.7), hexc('#6f9790'), keep=0.5)         # auriculares gris azulado con tinte verde
+    c.pintar(cab * np.clip(R['frente'] * 1.0, 0, 0.95), hexc('#f2f1ec'))                      # barra frontal blanca
+    c.pintar(cab * np.clip(R['lores'] * 0.9, 0, 0.9), hexc('#dde8ee'))                        # lores blancos (FWS) / azul pálido (parrots.org)
+    rosa = (body & (zz > 0.02)) * ss(0.19, 0.13, x) * ss(0.62, 0.70, y + 0.02 * n4) * ss(0.88, 0.84, y)
+    c.tintar(rosa * 0.92, hexc('#c24a63'), keep=0.3)                                           # garganta, lados del cuello y pecho alto rosados
+    c.pintar(cab * R['anillo'], hexc('#f1f0eb'))                                              # anillo blanco
+    c.pintar(R['primarias'] * 0.7, hexc('#2f56a8'))                                          # primarias azuladas
+    c.pintar(R['cola_base_lat'] * 0.7, hexc('#c8505e'))                                       # rojo rosado en la base de la cola
+    c.pico('#e9c84a', color_punta='#d8b23a')                                                   # pico amarillo
+    c.patas('#c9a39c'); c.ojo('#6b3a1e', '#f1f0eb')
+
+ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria}
 if __name__ == '__main__':
     sp = sys.argv[1]; out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(AQUI, '..', sp, sp + '.jpg')
     c = Lienzo(); ESP[sp](c); c.guardar(out)
