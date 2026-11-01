@@ -150,3 +150,5 @@ Pendiente de verdad: iPad (táctil a 768 px), Chromebook y Android con FPS reale
 
 ## Jugado sin hallazgos (sesión del 21:40, mundo viejo)
 Caminar, correr, salto doble, planeo, vuelo hasta el techo, impulso, nado y buceo; los gestos 1–7; el creador por teclado; el Diario; la pausa con Esc y P; y la historia hasta el paso 6 con «La ruta de la gota» completa. 0 errores de JS.
+
+BM82: pruebas extra `menuModosTest`, `recordsTest` y `retosTest` estabilizadas en 50f432b (causas en la fila BM82 de TAREAS_API.md); QA-78 y QA-81 siguen abiertos (look.js / streaming.js).
