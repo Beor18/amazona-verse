@@ -37,6 +37,8 @@ window.AVMovimientoTest = function (G) {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;
       F.endFlight(); M.flying = false; M.vx = M.vz = 0; M.dashT = M.dashCd = 0; M.buffer = 0; M.swimming = false;
       S.pos.x = x; S.pos.z = z; S.pos.y = y != null ? y : F.suelo(x, z, H(x, z) + 0.5); S.vy = 0; M.grounded = true; M.wasAir = false;
+      // La flora cerca del sitio se rasteriza por tandas mientras se juega: sin terminarla, una copa aparece sobre la cabeza a mitad de prueba (BM86)
+      if (G.solidos && G.solidos.activo) G.solidos.terminar();
       frame(null, 20);
     };
     // Dirección de cámara → tecla: 'w' avanza alejándose de la cámara
@@ -67,6 +69,8 @@ window.AVMovimientoTest = function (G) {
     try {
       // El sitio se comprueba andando de verdad: los colliders a mano no ven los sólidos de la geometría (edificios, flora por
       // regiones, que se rasteriza por tandas y cambia con la carga). Si a 6 m en línea recta algo frena el paso, se prueba otro.
+      // Se termina la rasterización de la flora ANTES de elegir: si no, el sitio cambia de una corrida a otra según la carga (BM86)
+      if (G.solidos && G.solidos.activo) G.solidos.terminar();
       let L = sitio();
       if (!opts.lugar) {
         const malos = [];
@@ -75,7 +79,9 @@ window.AVMovimientoTest = function (G) {
           const w = frame(i => { if (i === 0) K.add('w'); }, 45); K.clear();
           const pico = Math.max(...w.map(o => o.sp)), fin = w.slice(30).map(o => o.sp);
           const techoLibre = !(G.solidos && G.solidos.activo) || G.solidos.libre(L.x, L.z, H(L.x, L.z) + 0.5, 3) >= 14;
-          if (techoLibre && Math.min(...fin) > Math.min(pico, T.walk) * 0.7) break; // llegó a crucero y se mantiene, y no hay nada encima
+          // y nada macizo a menos de 8 m en ningún lado (un tronco o una copa recién rasterizados estorban el arranque, el giro y el cernido)
+          const despejado = !(G.solidos && G.solidos.activo) || [0, 2, 4, 6, 8].every(d => (d ? [0, 1, 2, 3, 4, 5, 6, 7] : [0]).every(b => G.solidos.penetra(L.x + Math.cos(b * Math.PI / 4) * d, L.z + Math.sin(b * Math.PI / 4) * d, H(L.x, L.z) + 0.1) === 0));
+          if (techoLibre && despejado && Math.min(...fin) > Math.min(pico, T.walk) * 0.7) break; // llegó a crucero y se mantiene, y no hay nada encima
           malos.push(L); L = sitio(malos);
         }
         met.sitiosDescartados = malos.length;
@@ -109,11 +115,13 @@ window.AVMovimientoTest = function (G) {
       met.frenadoM = r2(Math.hypot(r[r.length - 1].x - r[0].x, r[r.length - 1].z - r[0].z));
       check('Frenado: se para en menos de 0,15 s sin patinar', met.frenado10ms <= 150 && met.frenadoM < 0.5, met.frenado10ms + ' ms, ' + met.frenadoM + ' m');
       // Giro en seco: de avanzar a retroceder
-      frame(() => K.add('w'), 40);
+      const rw = frame(() => K.add('w'), 40);
+      // la meta es el 80 % de la velocidad de crucero real de este sitio (en cuesta o con viento no llega a walk), como en el arranque
+      const cruce = Math.min(T.walk, Math.max(...rw.map(o => o.sp)));
       r = frame(i => { if (i === 0) { K.delete('w'); K.add('s'); } }, 40);
-      const f = fwd(), back = r.findIndex(o => o.sp > T.walk * 0.8 && ((o.x - r[0].x) * f.x + (o.z - r[0].z) * f.z) < 0);
+      const f = fwd(), back = r.findIndex(o => o.sp > cruce * 0.8 && ((o.x - r[0].x) * f.x + (o.z - r[0].z) * f.z) < 0);
       met.giro180ms = ms(back + 1);
-      check('Giro de 180° en menos de 0,3 s', back >= 0 && met.giro180ms <= 300, met.giro180ms + ' ms');
+      check('Giro de 180° en menos de 0,3 s', back >= 0 && met.giro180ms <= 300, met.giro180ms + ' ms (crucero ' + r2(cruce) + ')');
       K.clear();
       lap('arranque');
       // 2. Salto
@@ -547,11 +555,11 @@ window.AVMovimientoTest = function (G) {
           while (nf++ < 1200) {
             I.jumpHeld = true; S.clock += DT; paso(); maxY = Math.max(maxY, S.pos.y);
             if (nf === 120) y2 = S.pos.y;
-            if (S.pos.y < lim - 1.5 && S.pos.y - prev < 0.01) trabada++; prev = S.pos.y;
+            if (S.pos.y < lim - 1.5 && S.pos.y - prev < 0.01) { trabada++; (met.trabadaEn = met.trabadaEn || []).length < 6 && met.trabadaEn.push([nf, r2(S.pos.y - y0), r2(S.vy), r2(lim - S.pos.y)]); } prev = S.pos.y;
             if (nf > 120 && S.pos.y > lim - 0.4) break;
           }
           const r = frame(() => { I.jumpHeld = true; }, 120); for (const o of r) maxY = Math.max(maxY, o.y);
-          met.subir = { sube2sM: r2(y2 - y0), techoM: r2(lim - G.terreno.height(S.pos.x, S.pos.z)), alTechoM: r2(S.pos.y - lim), sobreTechoMaxM: r2(maxY - lim), viento: !!M.viento, cuadrosTrabada: trabada, ms: ms(nf) };
+          met.subir = { sube2sM: r2(y2 - y0), techoM: r2(lim - G.terreno.height(S.pos.x, S.pos.z)), alTechoM: r2(S.pos.y - lim), sobreTechoMaxM: r2(maxY - lim), viento: !!M.viento, cuadrosTrabada: trabada, ms: ms(nf), trabadaEn: met.trabadaEn, sitio: [r2(L.x), r2(L.z)] };
           I.jumpHeld = false; frame(null, 2);
           check('Mantener subir siempre sube (más de 8 m en 2 s) hasta el techo de vuelo, sin trabarse', y2 - y0 > 8 && S.pos.y > lim - 1.5 && trabada === 0, JSON.stringify(met.subir));
           check('El techo de vuelo se nota y se explica: frena, no se pasa y avisa del viento fuerte', met.subir.viento && maxY < lim + 0.3, JSON.stringify(met.subir));
