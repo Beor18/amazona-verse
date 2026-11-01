@@ -70,7 +70,7 @@
   };
   const PREG_ORDEN = { izquierda: '¿Qué señal será «izquierda»?', derecha: '¿Qué señal será «derecha»?', para: '¿Qué señal será «parar»?' };
 
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', 'Guardián': 'assets/guardian.png',
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png',
     Navegante: 'assets/agilis.png', Vecina: 'assets/vittata.png' }; // [KELVIN: especie y render de la navegante y de la gente de la otra orilla]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);

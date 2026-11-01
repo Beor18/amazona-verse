@@ -496,6 +496,8 @@ window.AV_EN = {
  "La colina": "The hill",
  "La colina aguantó la crecida.": "The hill held up against the flood.",
  "La colina aguantó la crecida. Mi familia está a salvo.": "The hill held up against the flood. My family is safe.",
+ "¡Llegamos! Qué techo tan firme. Esta noche sí dormimos tranquilos.": "We made it! What a sturdy roof. Tonight we'll sleep soundly.",
+ "Gracias, Vittata. Sin ti, la crecida se lo llevaba todo.": "Thank you, Vittata. Without you, the flood would have taken everything.",
  "La cotorra crece con lo que el estudiante aprende y explora; cuidar da poco y nunca castiga. Nada baja con el tiempo y nada se compra. Solo se guarda en este dispositivo.": "The parrot grows with what the student learns and explores; care gives little and never punishes. Nothing decays over time and nothing is bought. Stored on this device only.",
  "La cotorra puertorriqueña anida en huecos de árboles, sobre todo de palo colorado, y también en cajas nido de madera del programa de recuperación. Los pichones salen del nido a los 60–65 días.": "The Puerto Rican parrot nests in tree holes, mostly in palo colorado trees, and also in wooden nest boxes from the recovery program. Chicks leave the nest at 60–65 days.",
  "La cotorra puertorriqueña se alimenta sobre todo de frutos silvestres, en especial de la palma de sierra. En octubre, cuando escasean otros frutos, el del tabonuco pasa a ser importante.": "The Puerto Rican parrot feeds mostly on wild fruits, especially from the sierra palm. In October, when other fruits are scarce, the tabonuco fruit becomes important.",

@@ -25,7 +25,7 @@
   const CHARCA = { x: 10.6, z: 11.2, r: 1.5 }, REFUGIO = { x: 10.6, z: 6.4, r: 2 }, RAMA = { x: -11.8, z: -8.4, r: 1.6 };
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
   const lee = id => 'lee_' + id, elige = id => 'sitio_' + id;
-  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/agilis.png', 'Papá': 'assets/vittata.png', 'Guardián': 'assets/guardian.png' };
+  const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png' };
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t);
 
@@ -83,7 +83,7 @@
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Anoche el transmisor crujió: «…otra tormenta… tres días…». Y las ramas del refugio ya ceden.', 'El plano del bote puede esperar. Un techo de verdad, no.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: '[KELVIN: lo que dice la Voz y la luz de la niebla]' },
     { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
-    { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. La abuela y el papá.', 'Ve a enseñarle tu plano a la abuela.'], nota: '[KELVIN: quiénes son los dos residentes]' },
+    { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. Mi abuela y mi papá.', 'Ve a enseñarle tu plano a la abuela.'], nota: '[KELVIN: quiénes son los dos residentes]' },
     { id: 'e_plano_v', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'feliz', lineas: ['¡Miren mi plano! Una casa grande, de una planta, con la puerta aquí y el nido aquí al lado.'] },
     { id: 'e_plano_a', disparador: 'evento:ResidentsMet', personaje: 'Abuela', emocion: 'triste', lineas: ['…'] },
     { id: 'e_plano_p', disparador: 'evento:ResidentsMet', personaje: 'Papá', emocion: 'triste', lineas: ['(El papá mira el plano, no dice nada y se va volando a su rama.)'] },
@@ -91,7 +91,7 @@
     { id: 'e_plano_v2', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'pensando', lineas: ['Les conté. Esta vez voy a preguntar primero.'] },
     { id: 'e_choque', disparador: 'evento:NeedsListed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Mira estas dos: «entrada baja» para la abuela y «nido alto» para el papá. Parece que chocan.'] },
     { id: 'e_escucha', disparador: 'evento:ListenChoice', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es escuchar primero: ahora sabes lo que la casa tiene que lograr y lo que no puedes saltarte.', 'Ve a tu sitio y dibuja la casa.'] },
-    { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.'] },
+    { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.', 'Primero nos salvaste de la crecida y ahora nos das casa. Gracias, Vittata.'] },
     { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: '[KELVIN: si hay huevo en escena]' },
     { id: 'e_fiesta_g', disparador: 'evento:Chapter2Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['(Se toca la medalla.) Una casa que escucha… Esto ya lo vi antes. No recuerdo dónde.'], nota: 'D5 (DECIDIDO-EQUIPO 30-oct): la medalla del Guardián asoma en el ep. 2 y se explica en el ep. 5.' },
     { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
