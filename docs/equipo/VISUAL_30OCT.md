@@ -35,3 +35,18 @@ Capturas `docs/img/bm67_fabrica_*.png` y `bm67_medidas.json` (vistas propias, lo
 - **Villa Raíz (BM31)**: `villa_bosque_60` 41 FPS, 0,83 M tris.
 - **Aldea (BM28)**: `aldea_toldos` 39 FPS; la cámara quedó dentro de una palma, no sirve para juzgar toldos.
 - **No hechas**: BM20 (despegue/bandada/luciérnagas), BM29 (`cap1_2` a 30/80 m) y BM27 (distancia del impostor): requieren guion de juego o coordenadas que no tengo; siguen pendientes. No se tocó código; nada se rompió en lo capturado.
+
+## BM63 · recorrido FINAL para que Kelvin apruebe (31 oct, build HEAD-e3e2e38, GPU real, sin cambiar código)
+
+90 capturas = 6 sitios × 5 alturas × 3 rumbos (mismas vistas de `tools/build/bm33_vistas.json`, look fábrica, calidad alto, 1280×800, 0 errores de consola): `docs/img/bm63_<sitio>_<suelo|a5|a20|a60|a150>_<r0|r1|r2>.jpg`, medidas en `docs/img/bm63_medidas.json`. Compárense con `bm50_*` (mismo nombre) y `kelvin_29oct/`. Revisé a ojo 6 láminas (una por sitio o problema), no las 90; lo demás es por extensión y puede fallar. El árbol tenía cambios ajenos sin commit (BM79 en `streaming.js`); el build usa solo HEAD, así que no están en estas capturas.
+
+| Sitio | Arreglado respecto al 29-oct | Sigue flojo |
+|---|---|---|
+| Villa Raíz (`villa_a150_r1`) | Bosque con volumen, sin piruletas; el islote lejano ya es verde hondo (no menta). | El islote sigue siendo un disco liso sin detalle. |
+| Embarcadero (`embarcadero_suelo_r2`) | Tiendas con tela, costuras y remiendos (ya no red); relleno de luz bajo el follaje; hojas y agua con orilla de arena. | Cuerdas muy finas que cruzan el suelo. |
+| Colina (`colina_suelo_r0`) | La cámara ya no queda dentro de la losa; la piedra sale crema con losas. | Piezas de piedra voladas sobre el césped (balcón que cuelga sin pilares) y bordes del césped en dientes de sierra. |
+| Miradores (`miradores_a5_r0`) | Piedra crema con losas y sombras claras. | Bloques y torre a la izquierda siguen sin apoyo; sandías verdes cortadas por vigas; columnas largas cruzadas. |
+| Tepuy (`tepuy_suelo_r1`) | Espuma, brillos y orilla de arena con guijarros. | Cascada aún en escalones de ángulos rectos y orillas en pico (geometría de `mapa_build.py`). |
+| Ciudad (`ciudad_a60_r0`, `ciudad_a150_*`) | De lejos ya no es blanca: marfil crema (BM56). | A 150 m solo 14-22 FPS (0,7-0,8 M tris, 100-140 calls); sandías y aristas rectas (arte de Kelvin). |
+
+Abiertos para Kelvin: cascada/orillas (Blender), sandías y piezas sin apoyo (arte), FPS de la ciudad a 150 m.
