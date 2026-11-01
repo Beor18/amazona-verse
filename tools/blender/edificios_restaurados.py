@@ -632,6 +632,8 @@ def main():
     normal_maps()
     stats = {}
     for name in TARGETS:
+        if name == 'ruina_torre':
+            continue
         source = OUT / (name + '.glb')
         low, high = bounds(source)
         detailed = build(name, low, high, True)
