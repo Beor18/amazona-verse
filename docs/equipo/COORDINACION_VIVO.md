@@ -64,3 +64,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - 01-Nov 06:26 AST · **HECHA · web** · BM104: una imagen propia por capítulo en la landing (web/assets/img/capitulo-{1..6}.jpg y sus alt). Hecha: 6 capturas reales sin HUD (taller y máquina, Villa Raíz, canoa en la bahía, río, ruinas con la torre, lugar del pacto), alt ES/EN ajustados; landing ok a 375 y 1366 px.
 - 01-Nov 07:04 AST · **EN CURSO · web** · BM106 (capítulos 2–6 contra su historia: `content/ep2..ep6` y sus `en.js`) y BM107 (landing al día: `web/index.html`).
 - 01-Nov 07:07 AST · **HECHA · web** · BM107 (landing al día: criadero «Mi nido» ya no sale como «pronto»; enlaces y 375/1366 px ok). BM106 sigue EN CURSO.
+- 01-Nov 07:14 AST · **HECHA · web** · BM106 (capítulos 2–6 contra su historia, un commit por capítulo; ver fila en TAREAS_API).
