@@ -33,7 +33,7 @@ IDS = [x for x in str(A.get('ids', '')).split(',') if x]
 
 # Presupuesto de triángulos por modelo (lo que no llega se deja entero)
 PRESUPUESTO = {
-    'complejo_ruinas': 40000, 'templo_grande': 20000, 'templo_grande_a': 18000, 'templo_grande_d': 20000,
+    'complejo_ruinas': 400000, 'templo_grande': 20000, 'templo_grande_a': 18000, 'templo_grande_d': 20000,
     'templo_grande_e': 20000, 'templo_grande_f': 20000, 'templo_mediano': 13000, 'templo_mediano_f': 13000,
     'templo_mediano_g': 13000, 'templo_mediano_h': 15000, 'muro_templo': 8000,
 }

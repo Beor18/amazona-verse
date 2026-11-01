@@ -58,7 +58,14 @@ def lejos(nombre, ob, kit, meta):
     diag = float(np.linalg.norm(co.max(0) - co.min(0)))
     bpy.context.view_layer.objects.active = lo
     vox = diag / (VOXEL * float(H.A.get('finura', 2.2)) if H.A.get('forma') == 'decimado' else VOXEL)  # decimado: vóxel más fino, cúpulas y cornisas sobreviven
-    pasos = (('SOLIDIFY', dict(thickness=vox * 1.6, offset=0.0)), ('REMESH', dict(mode='VOXEL', voxel_size=vox)))
+    arista = H.A.get('forma') == 'arista'   # BM94: sin vóxel; colapso por arista (planar + colapso) sobre la geometría del _hd
+    if arista:
+        pl = lo.modifiers.new('plano', 'DECIMATE')
+        pl.decimate_type = 'DISSOLVE'
+        pl.angle_limit = math.radians(float(H.A.get('angulo', 4)))
+        pl.delimit = {'MATERIAL', 'SHARP'}
+        bpy.ops.object.modifier_apply(modifier=pl.name)
+    pasos = () if arista else (('SOLIDIFY', dict(thickness=vox * 1.6, offset=0.0)), ('REMESH', dict(mode='VOXEL', voxel_size=vox)))
     for tipo, aj in pasos:
         md = lo.modifiers.new(tipo.lower(), tipo)
         for k, v in aj.items():
@@ -67,7 +74,8 @@ def lejos(nombre, ob, kit, meta):
     for _ in range(4):
         if H.colapsar(lo, meta) <= meta:
             break
-    H.quitar_islas(lo, int(meta * 0.97), protege=0.002)
+    if not arista:
+        H.quitar_islas(lo, int(meta * 0.97), protege=0.002)
     lo.data.shade_smooth()
     lo.data.materials.clear()
     bvh = BVHTree.FromObject(ob, bpy.context.evaluated_depsgraph_get())
@@ -109,7 +117,7 @@ def main():
             ob = C.unir(list(obs.values()))
             ob.data.calc_loop_triangles()
             meta = objetivo(len(ob.data.loop_triangles))
-            if H.A.get('forma') == 'decimado':
+            if H.A.get('forma') in ('decimado', 'arista'):
                 meta = int(float(H.A.get('factor', 2)) * presupuesto_kit(n))
             r = lejos(n, ob, H.kit_de(asset), meta)
             recs.append(r)
