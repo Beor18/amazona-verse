@@ -23,6 +23,34 @@ SCENE = ROOT / 'assets/data/escena_kelvin_cap1.json'
 HEIGHT = ROOT / 'assets/data/mapa_cap1_altura.js'
 MAP_JS = ROOT / 'assets/data/mapa_cap1.js'
 SCALE = 0.255
+TERRAIN_REF = '3019fcf'
+STORY_HEIGHT = None
+
+
+def story_elevations(points):
+    global STORY_HEIGHT
+    if STORY_HEIGHT is None:
+        text = subprocess.check_output(['git', 'show', TERRAIN_REF + ':assets/data/mapa_cap1_altura.js'], cwd=ROOT, text=True)
+        match = re.search(r'nx: (\d+), nz: (\d+), x0: ([-\d.]+), z0: ([-\d.]+), paso: ([\d.]+), min: ([-\d.]+), max: ([-\d.]+)', text)
+        nx, nz, x0, z0, step, low, high = match.groups()
+        nx, nz, x0, z0, step, low, high = int(nx), int(nz), float(x0), float(z0), float(step), float(low), float(high)
+        payload = re.search(r'datos: "([A-Za-z0-9+/=]+)"', text).group(1)
+        heights = np.frombuffer(base64.b64decode(payload), dtype='<u2').reshape(nz, nx).astype(float)
+        STORY_HEIGHT = nx, nz, x0, z0, step, low, high, heights
+    nx, nz, x0, z0, step, low, high, heights = STORY_HEIGHT
+    fx = np.clip((points[:, 0] - x0) / step, 0, nx - 1.001)
+    fz = np.clip((points[:, 2] - z0) / step, 0, nz - 1.001)
+    ix, iz = fx.astype(int), fz.astype(int)
+    tx, tz = fx - ix, fz - iz
+    top = heights[iz, ix] * (1 - tx) + heights[iz, ix + 1] * tx
+    bottom = heights[iz + 1, ix] * (1 - tx) + heights[iz + 1, ix + 1] * tx
+    return low + (top * (1 - tz) + bottom * tz) / 65535 * (high - low)
+
+
+def compatible_terrain(points):
+    result = points.copy()
+    result[:, 1] = story_elevations(result)
+    return result
 
 
 class GLB:
@@ -315,8 +343,10 @@ def update_buildings(glb):
         if tris > 20000:
             try:
                 for suffix in ('.glb', '_glb.js'):
-                    data = subprocess.check_output(['git', 'show', 'HEAD:assets/models/edificios/' + name + '_hd' + suffix], cwd=ROOT)
-                    path.with_name(name + '_hd' + suffix).write_bytes(data)
+                    result = subprocess.run(['git', 'show', 'HEAD:assets/models/edificios/' + name + '_hd' + suffix], cwd=ROOT, capture_output=True)
+                    if result.returncode:
+                        raise subprocess.CalledProcessError(result.returncode, result.args)
+                    path.with_name(name + '_hd' + suffix).write_bytes(result.stdout)
                 kit[name].update(hd=False, original=False)
                 print('HD OPTIMIZADO CONSERVADO', name, tris, flush=True)
                 continue
@@ -358,6 +388,7 @@ def terrain(glb):
         for primitive in mesh['primitives']:
             raw = read_accessor(doc, binary, primitive['attributes']['POSITION'])
             p = (np.c_[raw, np.ones(len(raw))] @ matrix(doc['nodes'][0]).T)[:, :3] * SCALE
+            p = compatible_terrain(p)
             idx = read_accessor(doc, binary, primitive['indices']).astype(np.uint32).reshape(-1, 3)
             tex = read_accessor(doc, binary, primitive['attributes']['TEXCOORD_0']) if 'TEXCOORD_0' in primitive['attributes'] else np.zeros((len(p), 2), np.float32)
             col = np.array([old_colors.get((math.floor(x / 2), math.floor(z / 2)), [160, 40, 40, 20]) for x, z in p[:, [0, 2]]], dtype=np.uint8)
@@ -413,79 +444,7 @@ def terrain(glb):
 
 
 def heightmap(glb):
-    root = next(i for i, node in enumerate(glb.doc['nodes']) if node.get('name') == 'TerrainBuilderSurface')
-    doc, binary = subset(glb, root)
-    triangles = []
-    for mesh in doc['meshes']:
-        for primitive in mesh['primitives']:
-            raw = read_accessor(doc, binary, primitive['attributes']['POSITION'])
-            p = (np.c_[raw, np.ones(len(raw))] @ matrix(doc['nodes'][0]).T)[:, :3] * SCALE
-            idx = read_accessor(doc, binary, primitive['indices']).astype(np.uint32).reshape(-1, 3)
-            triangles.append(p[idx])
-    triangles = np.concatenate(triangles)
-    grid = {}
-    for i, tri in enumerate(triangles):
-        min_x, min_z = np.floor(tri[:, [0, 2]].min(axis=0) / 4).astype(int)
-        max_x, max_z = np.floor(tri[:, [0, 2]].max(axis=0) / 4).astype(int)
-        for x in range(min_x, max_x + 1):
-            for z in range(min_z, max_z + 1):
-                grid.setdefault((x, z), []).append(i)
-    text = subprocess.check_output(['git', 'show', 'HEAD:assets/data/mapa_cap1_altura.js'], cwd=ROOT, text=True)
-    match = re.search(r'nx: (\d+), nz: (\d+), x0: ([-\d.]+), z0: ([-\d.]+), paso: ([\d.]+), min: ([-\d.]+), max: ([-\d.]+)', text)
-    nx, nz, x0, z0, step, _, _ = match.groups()
-    nx, nz, x0, z0, step = int(nx), int(nz), float(x0), float(z0), float(step)
-    heights = np.full((nz, nx), np.nan)
-    for (cx, cz), ids in grid.items():
-        xs = cx * 4 + np.array([1, 2, 3, 4])
-        zs = cz * 4 + np.array([1, 2, 3, 4])
-        for x in xs:
-            for z in zs:
-                ix, iz = round((x - x0) / step), round((z - z0) / step)
-                if not (0 <= ix < nx and 0 <= iz < nz) or not np.isnan(heights[iz, ix]):
-                    continue
-                tri = triangles[ids]
-                a, b, c = tri[:, 0], tri[:, 1], tri[:, 2]
-                v0, v1 = b - a, c - a
-                px, pz = x - a[:, 0], z - a[:, 2]
-                d00, d01, d11 = np.sum(v0 * v0, 1), np.sum(v0 * v1, 1), np.sum(v1 * v1, 1)
-                d20, d21 = px * v0[:, 0] + pz * v0[:, 2], px * v1[:, 0] + pz * v1[:, 2]
-                denominator = d00 * d11 - d01 * d01
-                valid = np.abs(denominator) > 1e-10
-                u, v = np.zeros(len(tri)), np.zeros(len(tri))
-                u[valid] = (d11[valid] * d20[valid] - d01[valid] * d21[valid]) / denominator[valid]
-                v[valid] = (d00[valid] * d21[valid] - d01[valid] * d20[valid]) / denominator[valid]
-                inside = valid & (u >= -1e-7) & (v >= -1e-7) & (u + v <= 1 + 1e-7)
-                if inside.any():
-                    heights[iz, ix] = np.max((a[:, 1] + u * v0[:, 1] + v * v1[:, 1])[inside])
-    old_match = re.search(r'datos: "([A-Za-z0-9+/=]+)"', text)
-    old = np.frombuffer(base64.b64decode(old_match.group(1)), dtype='<u2').reshape(nz, nx)
-    finite = np.isfinite(heights)
-    low, high = np.nanmin(heights), np.nanmax(heights)
-    quantized = np.zeros((nz, nx), dtype='<u2')
-    quantized[finite] = np.round((heights[finite] - low) / (high - low) * 65535).astype('<u2')
-    quantized[~finite] = old[~finite]
-    low -= 1
-    high += 1
-    quantized = np.clip(quantized, 0, 65535).astype('<u2')
-    payload = base64.b64encode(quantized.tobytes()).decode()
-    js = '''// Generado por tools/blender/integrar_originales.py. Alturas del terreno original.
-(function () {
-var A = window.AV_MAPA_CAP1_ALTURA = {nx: %d, nz: %d, x0: %.1f, z0: %.1f, paso: %.1f, min: %.1f, max: %.1f, formato: 'Uint16 little-endian, fila = z, columna = x; altura = min + v / 65535 * (max - min)',
-  error: {medio: 0, p95: 0, max: 0}, datos: "%s"};
-var bin = atob(A.datos), u8 = new Uint8Array(bin.length);
-for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-var u16 = new Uint16Array(u8.buffer), k = (A.max - A.min) / 65535, h = new Float32Array(u16.length);
-for (i = 0; i < u16.length; i++) h[i] = A.min + u16[i] * k;
-A.alturas = h; A.datos = null;
-A.alturaEn = function (x, z) {
-  var fx = (x - A.x0) / A.paso, fz = (z - A.z0) / A.paso;
-  fx = Math.max(0, Math.min(A.nx - 1.001, fx)); fz = Math.max(0, Math.min(A.nz - 1.001, fz));
-  var ix = fx | 0, iz = fz | 0, tx = fx - ix, tz = fz - iz, o = iz * A.nx + ix;
-  return (A.alturas[o] * (1 - tx) + A.alturas[o + 1] * tx) * (1 - tz) + (A.alturas[o + A.nx] * (1 - tx) + A.alturas[o + A.nx + 1] * tx) * tz;
-};
-})();
-''' % (nx, nz, x0, z0, step, low, high, payload)
-    HEIGHT.write_text(js)
+    HEIGHT.write_text(subprocess.check_output(['git', 'show', TERRAIN_REF + ':assets/data/mapa_cap1_altura.js'], cwd=ROOT, text=True))
 
 
 def trees(glb):

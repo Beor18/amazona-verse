@@ -83,6 +83,25 @@ class OriginalAssetsTest(unittest.TestCase):
                 self.assertAlmostEqual(actual[0][axis], expected[0][axis], delta=0.02, msg='%s, mínimo eje %d' % (name, axis))
                 self.assertAlmostEqual(actual[1][axis], expected[1][axis], delta=0.02, msg='%s, máximo eje %d' % (name, axis))
 
+    def test_heightmap_preserves_story_elevation(self):
+        def sample(text, x, z):
+            match = re.search(r'nx: (\d+), nz: (\d+), x0: ([-\d.]+), z0: ([-\d.]+), paso: ([\d.]+), min: ([-\d.]+), max: ([-\d.]+)', text)
+            nx, nz, x0, z0, step, low, high = match.groups()
+            nx, nz, x0, z0, step, low, high = int(nx), int(nz), float(x0), float(z0), float(step), float(low), float(high)
+            payload = re.search(r'datos: "([A-Za-z0-9+/=]+)"', text).group(1)
+            heights = np.frombuffer(base64.b64decode(payload), dtype='<u2').reshape(nz, nx).astype(float)
+            heights = low + heights / 65535 * (high - low)
+            fx = max(0, min(nx - 1.001, (x - x0) / step))
+            fz = max(0, min(nz - 1.001, (z - z0) / step))
+            ix, iz, tx, tz = int(fx), int(fz), fx % 1, fz % 1
+            return float((heights[iz, ix] * (1 - tx) + heights[iz, ix + 1] * tx) * (1 - tz)
+                         + (heights[iz + 1, ix] * (1 - tx) + heights[iz + 1, ix + 1] * tx) * tz)
+
+        reference = subprocess.check_output(['git', 'show', '3019fcf:assets/data/mapa_cap1_altura.js'], cwd=ROOT, text=True)
+        current = (ROOT / 'assets/data/mapa_cap1_altura.js').read_text()
+        for x, z in [(157, 100), (90, 124), (-17, -116), (120, 162)]:
+            self.assertAlmostEqual(sample(current, x, z), sample(reference, x, z), delta=0.03, msg='altura en %s,%s' % (x, z))
+
     def test_original_terrain_and_heightmap(self):
         paths = [MAP / ('terreno_%s.glb' % name) for name in ('no', 'ne', 'so', 'se')]
         total = sum(triangles(glb_json(path)) for path in paths)
