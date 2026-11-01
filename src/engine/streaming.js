@@ -170,11 +170,15 @@ AVE.module('streaming', function (G) {
     m.name = k;
     if (/^AV_HD_/.test(k)) atlasHD(m, src);
     else if (/^KB3D_mud(Dark)?M$/.test(k)) cremaPlana(m, /Dark/.test(k) ? 0.5 : 0.85);
+    // BM79: losa, plataforma, bloque y templo_grande_e (sin _hd) traen KB3D_floorM/wallL/pillarsM, y el kit KB3D_stoneM: sin crema salían como losas blancas
+    else if (/^KB3D_(floor|stone|pillars)M$|^KB3D_wallL$/.test(k)) cremaPlana(m, 0.85, 0.74);
     return m;
   }
   // BM23: los modelos Ancient que llegan sin _hd (templo_grande_a y otras torres de la ciudad del tepuy) pintaban el ocre del kit
   // (KB3D_mudM) y desde el aire la ciudad era amarilla. Misma crema que el atlas (piedra mate, albedo máx. ~0,85), conservando el detalle.
-  function cremaPlana(m, fuerza) {
+  // brillo (BM79): 1 por defecto; las losas llanas ven el sol y el cielo de frente y con 1 salen blancas desde el aire
+  function cremaPlana(m, fuerza, brillo) {
+    brillo = brillo || 1;
     m.specular.setHex(0x000000); m.shininess = 1;
     m.onBeforeCompile = sh => {
       sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
@@ -182,9 +186,9 @@ AVE.module('streaming', function (G) {
         '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
         '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
         '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
-        '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, ' + fuerza.toFixed(2) + ' ); }');
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle * ' + brillo.toFixed(2) + ', ' + fuerza.toFixed(2) + ' ); }');
     };
-    m.customProgramCacheKey = () => 'av-crema-plana-' + fuerza;
+    m.customProgramCacheKey = () => 'av-crema-plana-' + fuerza + '-' + brillo;
   }
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
@@ -421,7 +425,8 @@ AVE.module('streaming', function (G) {
   // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
   // BM56 (BM38 se había perdido): el ×1,38 llevaba a 1,0 las caras claras y el _lejos salía blanco puro frente al crema
   // del cercano. Tope por canal = el techo de la piedra cercana (cremaPlana/atlas: 0,94 / 0,85 / 0,72).
-  const TOPE_LEJOS = [0.94, 0.85, 0.72], TINTE_LEJOS = [1, 0.86, 0.60];
+  // BM79: con el sol y la luz del cielo el Lambert multiplicaba el 0,94 por más de 1 y las losas llanas salían blancas: tope más bajo.
+  const TOPE_LEJOS = [0.80, 0.68, 0.52], TINTE_LEJOS = [1, 0.86, 0.60];
   function marfilar(geo) {
     const col = geo.attributes.color;
     if (!col || geo.userData.marfil) return;
