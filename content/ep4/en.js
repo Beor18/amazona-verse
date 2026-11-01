@@ -19,8 +19,8 @@
     'Haz la asamblea y elige un cuidado': 'Hold the assembly and choose a care measure',
     'Construye lo acordado': 'Build what was agreed',
     'Acompaña a la abuela en el primer cruce': 'Go with Grandma on the first crossing',
-    'Miraste la orilla, escuchaste todas las voces y decidiste con todos qué ganar y qué cuidar. La abuela ya cruzó el río. Iguaca tiene unas preguntas para ti, cuando quieras.':
-      'You looked at the bank, listened to every voice and decided together what to gain and what to look after. Grandma has crossed the river. Iguaca has a few questions for you, whenever you like.',
+    'Miraste la orilla, escuchaste todas las voces y decidiste con todos qué ganar y qué cuidar. La abuela ya cruzó el río. El transmisor sigue dando solo estática, y el Guardián dice que recuerda algo de antes. Iguaca tiene unas preguntas para ti, cuando quieras.':
+      'You looked at the bank, listened to every voice and decided together what to gain and what to look after. Grandma has crossed the river. The transmitter is still just static, and the Guardian says he remembers something from before. Iguaca has a few questions for you, whenever you like.',
     'Lo que hay en la orilla': 'What\'s on the Bank', 'Observar antes de construir': 'Look before you build', 'Mira los 3 tramos y el bosquecillo': 'Look at the 3 stretches and the grove',
     'Todas las voces': 'Every Voice', 'Beneficios y costos': 'Benefits and costs', 'Escucha a los cuatro': 'Listen to all four', 'Mira la Balanza': 'Look at the Scale',
     'La maqueta y el acuerdo': 'The Model and the Agreement', 'Probar, decidir y cuidar': 'Test, decide and look after', 'Prueba las 3 opciones': 'Try the 3 options',
@@ -124,7 +124,7 @@
     'La abuela quiere visitar a su familia del otro lado del río. Y el plano que nos dio la Vecina… ¡ya lo redibujé como un puente!': 'Grandma wants to visit her family on the other side of the river. And the plan the Neighbor gave us… I already redrew it as a bridge!',
     'Lo pongo en el sitio más corto y listo… ¿no?': 'I\'ll put it at the shortest spot and that\'s it… right?',
     'Un puente es una gran idea. Pero antes de dibujarlo, mira lo que ya hay en la orilla.': 'A bridge is a great idea. But before you draw it, look at what\'s already on the bank.',
-    'Mira los tres tramos del río: el estrecho, el remanso y río abajo. Y posa la vista en el bosquecillo del estrecho.': 'Look at the three stretches of the river: the narrows, the still water and downriver. And take a good look at the grove by the narrows.',
+    'Mira los tres tramos del río: el estrecho, el remanso y río abajo. Busca los postes con cinta azul junto al agua. Y posa la vista en el bosquecillo del estrecho.': 'Look at the three stretches of the river: the narrows, the still water and downriver. Look for the posts with a blue ribbon by the water. And take a good look at the grove by the narrows.',
     'Ya sabes lo que hay en cada orilla. Ahora falta saber a quién le importa cada cosa.': 'Now you know what\'s on each bank. Next, find out who cares about each thing.',
     'Escucha a la abuela, al papá, a la navegante del muelle… y a mí. Cada voz te deja una tarjeta.': 'Listen to Grandma, to Dad, to the navigator at the dock… and to me. Each voice leaves you a card.',
     'Cuatro voces, cuatro tarjetas. Llévalas a la Balanza de la mesa y mira qué da y qué cuesta cada opción.': 'Four voices, four cards. Take them to the Scale at the table and see what each option gives and costs.',

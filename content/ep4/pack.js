@@ -91,7 +91,7 @@
     // Lo que depende del canon (EP4_GDD.md §10) va en «nota», nunca en «lineas» (regla de los packs; ep4Test lo comprueba)
     { id: 'e_inicio', disparador: 'inicio:ep4', personaje: 'Vittata', emocion: 'feliz', nota: '[KELVIN: quién es la otra comunidad y cómo se llama (EP4_GDD.md §10.1); el plano es el que dio la Vecina al final del ep. 3]',
       lineas: ['La abuela quiere visitar a su familia del otro lado del río. Y el plano que nos dio la Vecina… ¡ya lo redibujé como un puente!', 'Lo pongo en el sitio más corto y listo… ¿no?'] },
-    { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Un puente es una gran idea. Pero antes de dibujarlo, mira lo que ya hay en la orilla.', 'Mira los tres tramos del río: el estrecho, el remanso y río abajo. Y posa la vista en el bosquecillo del estrecho.'] },
+    { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Un puente es una gran idea. Pero antes de dibujarlo, mira lo que ya hay en la orilla.', 'Mira los tres tramos del río: el estrecho, el remanso y río abajo. Busca los postes con cinta azul junto al agua. Y posa la vista en el bosquecillo del estrecho.'] },
     { id: 'e_orilla', disparador: 'evento:ShoreSurveyed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Ya sabes lo que hay en cada orilla. Ahora falta saber a quién le importa cada cosa.', 'Escucha a la abuela, al papá, a la navegante del muelle… y a mí. Cada voz te deja una tarjeta.'] },
     { id: 'e_voces', disparador: 'evento:VoicesHeard', personaje: 'Iguaca', emocion: 'idea', lineas: ['Cuatro voces, cuatro tarjetas. Llévalas a la Balanza de la mesa y mira qué da y qué cuesta cada opción.'] },
     { id: 'e_balanza', disparador: 'evento:TradeoffSeen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es: aquí no hay una sola respuesta. Cada opción da algo a alguien y le cuesta algo a otro.', 'Pruébalas en la maqueta antes de decidir. Luego hacemos la asamblea.'] },
@@ -161,7 +161,7 @@
         { id: 'construir', texto: 'Construye lo acordado', hasta: { evento: 'ProjectBuilt' }, guia: G => G.misiones.at('obra') },
         { id: 'cruce', texto: 'Acompaña a la abuela en el primer cruce', guia: G => G.misiones.at('abuela') },
       ],
-      fin: () => 'Miraste la orilla, escuchaste todas las voces y decidiste con todos qué ganar y qué cuidar. La abuela ya cruzó el río. Iguaca tiene unas preguntas para ti, cuando quieras.',
+      fin: () => 'Miraste la orilla, escuchaste todas las voces y decidiste con todos qué ganar y qué cuidar. La abuela ya cruzó el río. El transmisor sigue dando solo estática, y el Guardián dice que recuerda algo de antes. Iguaca tiene unas preguntas para ti, cuando quieras.',
     },
     misiones: [
       { id: 'orilla', titulo: 'Lo que hay en la orilla', hud: 'Observar antes de construir',
