@@ -141,6 +141,10 @@
     check('AP2 · guion p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» y «Yo también»', p9.includes('Pensé que hoy lo habíamos perdido todo.') && p9.includes('Yo también.'), p9.join(' | ').slice(0, 160));
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
     check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
+    { // hito 28: modelos de varias piezas (no primitivas) y ligeros: menos de 3000 triángulos cada uno
+      const O = C.objetos, tri = O ? { maquina: O.triangulos(C.maquina), transmisor: O.triangulos(C.trx), banco: O.triangulos(C.bench), coqui: O.triangulos(O.coqui()) } : {};
+      check('Hito 28 · máquina, transmisor, banco y coquí son modelos con detalle y de menos de 3000 triángulos', !!O && Object.values(tri).every(n => n > 1000 && n < 3000), JSON.stringify(tri));
+    }
     useAt('guardian', 1.4, 0); const p7 = oidos();
     check('Guardián · tras la crecida ya lo conocemos: no se vuelve a presentar y regala el banco', p7[0] === 'Ya lo comprobamos: la crecida dijo la verdad.' && !p7.includes('¿Y usted quién es?'), p7.slice(0, 3).join(' | '));
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
