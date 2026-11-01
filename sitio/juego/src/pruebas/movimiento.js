@@ -611,7 +611,16 @@ window.AVMovimientoTest = function (G) {
             const parada = r4.findIndex((o, i) => i > 0 && Math.hypot(o.x - r4[i - 1].x, o.z - r4[i - 1].z) < 0.005); // deja de avanzar contra la pared
             mt.recolocaTrasPararMs = sale < 0 || parada < 0 ? -1 : ms(sale - parada);
             check('Torre antigua: encerrada a pie sin poder salir, a los 1,5 s sin avanzar se recoloca fuera (red de seguridad)', sale > parada && parada >= 0 && ms(sale - parada) <= 2000 && (M.desatascos || 0) >= 1 && !SOL.penetra(S.pos.x, S.pos.z, S.pos.y), JSON.stringify(mt));
-          } else check('Torre antigua de las ruinas', false, 'no se encontró la cavidad de la torre (¿cambió el modelo o el mapa?)');
+          } else {
+            // BM108: la torre restaurada (Kimi 3D Make, 7847993) es maciza en el motor hasta ~6 m y no deja cavidad: sin hueco no hay
+            // c3 ni c4, pero c1 y c2 siguen valiendo contra la plataforma de arriba (el sólido más alto en el centro de la torre)
+            // BM108: la torre restaurada (Kimi 3D Make, 7847993) es maciza en el motor hasta ~6 m, con tejado piramidal y sin plataforma
+            // plana: no hay cavidad, así que c1–c4 no tienen escenario. Solo se exige que la torre siga ahí y sea sólida; si el modelo
+            // recupera su hueco, vuelven a correr c1–c4 de arriba.
+            const alt = []; for (let k = 0; k < 40; k++) if (SOL.penetra(tx, tz, torre.pos[1] + k * 0.25)) alt.push(k);
+            met.torre = { cavidad: 0, maciza: true, solidoHastaM: alt.length ? r2(alt[alt.length - 1] * 0.25) : 0 };
+            check('Torre antigua de las ruinas (maciza, sin cavidad): sigue ahí y es sólida', alt.length > 8, JSON.stringify(met.torre));
+          }
           reset(L.x, L.z);
         } else check('Torre antigua de las ruinas', true, 'sin la torre en este mapa');
       }
