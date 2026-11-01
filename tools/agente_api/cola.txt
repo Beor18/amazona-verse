@@ -1,7 +1,7 @@
-# 1-nov: PRIORIDAD lo que Kelvin ve roto (capturas en docs/img/kelvin_1nov/): ciudad de cerca rota (BM98), lejanos derretidos (BM94), todo vibrant_toon (BM97), arboles en la roca y pop (BM101), pilares en la pared (BM102), sandias (BM99), pared del tepuy (BM100), cascada en escalones (BM103), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
-BM98
-BM94
+# 1-nov: PRIORIDAD lo que Kelvin ve roto (capturas en docs/img/kelvin_1nov/): una paleta vibrant_toon de cerca y de lejos (BM97), lejanos derretidos (BM94), ciudad de cerca rota (BM98), arboles en la roca y pop (BM101), pilares en la pared (BM102), sandias (BM99), pared del tepuy (BM100), cascada (BM103), islotes (BM95), rios (BM96); despues BM90, vuelo, camara. Maximo 1-2 trabajadores mientras corre el publicador.
 BM97
+BM94
+BM98
 BM101
 BM102
 BM99
