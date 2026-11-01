@@ -968,7 +968,8 @@ AVE.module('vegetacion', function (G) {
           if (!(T.selvaTepuy(tepuyPos[i], tepuyPos[i + 1]) > 0)) fueraT++;
           if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
         }
-        check('Selva del tepuy (BL1): más de 800 árboles alrededor de la ciudad, en su elipse y en suelo libre', st.tepuy > 800 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
+        // BM101 (1-nov): sin los árboles metidos en la pared de roca quedan ~390 en la meseta y las laderas; el mínimo de 800 contaba la pared
+        check('Selva del tepuy (BL1): más de 300 árboles alrededor de la ciudad (sin la pared de roca), en su elipse y en suelo libre', st.tepuy > 300 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
         let malC = 0, grandes = 0;
         for (const c of copasCima) {
           if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.75 || c.y < 74 || c.s > 4.6) malC++;
