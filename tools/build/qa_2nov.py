@@ -13,7 +13,6 @@ def main():
     ap.add_argument('--salida', default=os.path.join(lc.REPO, 'docs', 'img', 'qa_2nov'))
     ap.add_argument('--url', default='/index.html?clima=sol&calidad=alto')
     ap.add_argument('--espera', type=int, default=240)
-    ap.add_argument('--ipad', action='store_true', help='BM131: emulación táctil de iPad (1180x820, móvil, toque)')
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(lc.AQUI, 'config.json'))); P = cfg['pruebas']
     os.makedirs(a.salida, exist_ok=True)
@@ -35,9 +34,6 @@ def main():
         ses = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
         for me in ('Page.enable', 'Runtime.enable', 'Log.enable'): cdp.call(me, {}, ses)
         cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': 'try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}'}, ses)
-        if a.ipad:
-            cdp.call('Emulation.setDeviceMetricsOverride', {'width': 1180, 'height': 820, 'deviceScaleFactor': 2, 'mobile': True}, ses)
-            cdp.call('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints': 5}, ses)
         cdp.call('Page.navigate', {'url': origen + a.url}, ses)
         t0 = time.monotonic()
         while time.monotonic() - t0 < P['espera_listo_s']:
