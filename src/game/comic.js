@@ -80,10 +80,15 @@ AVE.module('comic', function (G) {
     const R = G.renderer, cam = R.camera, pos = cam.position.clone(), rot = cam.quaternion.clone();
     try {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
-      R.drawScene();
+      // Dibujo directo, como snapshot() (renderer.js): con el posproceso, drawScene() dentro del bucle dejaba la foto en negro
+      if (R.renderer && R.scene) R.renderer.render(R.scene, cam); else R.drawScene();
       const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = FW; c.height = FH;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
       c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, FW, FH);
+      // Una foto casi negra (lienzo sin dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
+      const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let luz = 0;
+      for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
+      if (luz < 40) return null;
       const url = c.toDataURL('image/jpeg', 0.72);
       return url.length > 2000 ? url : null;
     } catch (e) { return null; }
