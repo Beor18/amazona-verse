@@ -11,6 +11,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--pasos', required=True)
     ap.add_argument('--salida', default=os.path.join(lc.REPO, 'docs', 'img', 'qa_2nov'))
+    ap.add_argument('--url', default='/index.html?clima=sol&calidad=alto')
     ap.add_argument('--espera', type=int, default=240)
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(lc.AQUI, 'config.json'))); P = cfg['pruebas']
@@ -33,7 +34,7 @@ def main():
         ses = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
         for me in ('Page.enable', 'Runtime.enable', 'Log.enable'): cdp.call(me, {}, ses)
         cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': 'try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}'}, ses)
-        cdp.call('Page.navigate', {'url': origen + '/index.html?clima=sol&calidad=alto'}, ses)
+        cdp.call('Page.navigate', {'url': origen + a.url}, ses)
         t0 = time.monotonic()
         while time.monotonic() - t0 < P['espera_listo_s']:
             try:
