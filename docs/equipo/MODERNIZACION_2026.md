@@ -57,7 +57,7 @@ Costes: ms estimados por cuadro en móvil medio a DPR 1,5; «calls» = draw call
 
 ## 4. Plan en carriles (para agentes con créditos de la API)
 Ordenados por impacto visual entre coste. Archivos sin cruces entre carriles, salvo `renderer.js`, que lo tocan 26-A y 26-B:
-**esos dos van en orden (A antes que B), no en paralelo**. Todos: build en carpeta propia, 13 baterías en verde, 0 errores de
+**esos dos van en orden (A antes que B), no en paralelo**. Todos: build en carpeta propia, 12 baterías en verde, 0 errores de
 consola, FPS y calls medidos con `#fps` en las 4 vistas de `look_capturas.py` (aldea, yunque, rio, ciudad) y capturas de antes y
 después en `docs/img/m26_<carril>_<vista>_{antes,despues}.jpg` (reutilizar `tools/build/look_capturas.py`).
 | Carril | Qué (técnicas) | Archivos | Tamaño | Pruebas |

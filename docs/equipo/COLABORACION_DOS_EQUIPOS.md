@@ -16,7 +16,7 @@ Cada equipo toma **solo** sus tareas (BM el API, AP el Apoyo) y **solo** toca lo
 Vittata (modelo y rig), la bandera, el canon, el arte, el dinero y lo legal no se tocan: se anotan para Kelvin en `docs/DECISION_LOG.md`.
 
 ## Dónde trabaja cada uno
-- **API:** `~/AmazonaVerse/juego_api` en la Mac. Los commits los sube `subir.sh` a `Beor18/amazona-verse` (a `main` o a una rama `api-*`). **Publica solo el publicador** (`tools/build/publicar_mac.sh --continuo`), con las 13 baterías y GPU real.
+- **API:** `~/AmazonaVerse/juego_api` en la Mac. Los commits los sube `subir.sh` a `Beor18/amazona-verse` (a `main` o a una rama `api-*`). **Publica solo el publicador** (`tools/build/publicar_mac.sh --continuo`), con las 12 baterías y GPU real.
 - **Apoyo:** mientras su cuenta no tenga permiso de escritura en `Beor18/amazona-verse`, trabaja en su repo privado, carpeta `amazona-verse/`, siempre **sobre el main real**:
   1. Antes de cada punto: traer el main real (`git fetch https://github.com/Beor18/amazona-verse main`, repo público) y rebasar su carpeta sobre él.
   2. Un punto = **un solo commit** cuyo título empieza por «Sobre el main real <sha>: …» y que toca solo archivos de su zona.

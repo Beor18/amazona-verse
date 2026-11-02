@@ -30,7 +30,7 @@ Colina, Campamento de los Toldos.
 1. En `content/epN/pack.js`: `mundo` deja el terreno/árboles generados y usa el mapa real (como `content/cap1/pack.js`).
 2. Las coordenadas de misiones, personajes, hallazgos del Diario y objetos se trasladan a la zona (offset desde su centro) y
    se apoyan en el suelo real (`G.terreno.height`, sólidos).
-3. Sus pruebas (`epNTest`, `ep2e2eTest`, `temporadaE2eTest`) se ajustan a las coordenadas nuevas; las 13 baterías en verde.
+3. Sus pruebas (`epNTest`, `ep2e2eTest`, `temporadaE2eTest`) se ajustan a las coordenadas nuevas; las 12 baterías en verde.
 4. Capturas antes/después en `docs/img/mundo_unico/`.
 
 **Dependencia:** las zonas de piedra (caps. 5 y 6) son las más pesadas (222 draw calls en las ruinas). Antes de mudarlos:

@@ -16,7 +16,7 @@ más de una hora, déjala `BLOQUEADA · <motivo>` y sigue con la siguiente. Si t
 2. Trabaja en tus archivos: `assets/models/edificios/`, `assets/models/mapa/`, `assets/data/mapa_cap1_altura.js`, `tools/blender/`,
    `docs/EDIFICIOS.md`. Si una tarea exige tocar el motor (`src/engine/streaming.js`, `mundo.js`, `solidos.js`), dilo en la tarea.
 3. Antes de subir: `tools/blender/edificios_restaurados_test.py` y la build `tools/build/build.sh HEAD tools/build/salida/kimi-<sha>`
-   (debe decir PASA). Si puedes, `tools/build/test.sh <salida> --extra`. Las 13 baterías tienen que quedar en verde, sobre todo
+   (debe decir PASA). Si puedes, `tools/build/test.sh <salida> --extra`. Las 12 baterías tienen que quedar en verde, sobre todo
    **movementTest** (colisiones), **streamingTest** y **lookTest**.
 4. Entrega: commit en `main` con `KIMI-Task-00X` en el mensaje, capturas antes/después en `docs/img/kimi/`, y la tarea `HECHA ·
    <commit> · <una línea de resultado>`. Publica la Mac sola cada 20 min si las pruebas pasan: no hace falta publicar.
