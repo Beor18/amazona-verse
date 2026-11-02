@@ -6,9 +6,11 @@
      sale un aviso amable: «Esta zona se abre en el capítulo N» (o «más adelante» si no es de ningún capítulo). Nada de muros
      invisibles sin explicación.
    - Solo actúa en un pack de capítulo 2–6 que use el mapa real (pack.mundo con el mapa de AVE.mundoReal) y que tenga zona en
-     ZONAS. El cap. 1 es mundo abierto (no se toca). Los caps. 5 y 6 entran solos cuando su pack pase al mapa (interruptor de la
-     nube): sus zonas de abajo son las del plan y la nube las ajusta si cambian.
-   - Zonas: círculos (x, z, r) medidos sobre las coordenadas de cada capítulo (BM111–BM113) con margen para volar.
+     ZONAS. El cap. 1 es mundo abierto (no se toca). Los caps. 5 y 6 usan el mapa solo con su interruptor encendido
+     (const MAPA_REAL en content/ep5/pack.js y content/ep6/pack.js, o ?mapa=real): apagado, juegan en su mundo pequeño y aquí
+     no se activa nada.
+   - Zonas: círculos (x, z, r) medidos sobre las coordenadas de cada capítulo (BM111–BM113) con margen para volar. Una zona
+     puede tener más círculos en «mas» (caps. 5 y 6: dos sitios y el paso entre ellos); el primero es su centro.
    API: G.zonas = { activa, abiertas(), dentro(x, z), zonaEn(x, z), ZONAS, test }. Prueba: AV.zonasTest(). */
 AVE.module('zonas', function (G) {
   'use strict';
@@ -18,8 +20,10 @@ AVE.module('zonas', function (G) {
     2: { x: -15, z: 34, r: 45, nombre: 'Caney del Meandro', en: 'Caney del Meandro' },          // BM111
     3: { x: 187, z: 208, r: 62, nombre: 'la desembocadura y la laguna', en: 'the river mouth and the lagoon' }, // BM112
     4: { x: 200, z: 157, r: 38, nombre: 'el río de Villa Raíz', en: 'the Villa Raíz river' },     // BM113
-    5: { x: -45, z: -100, r: 60, nombre: 'Los Miradores', en: 'The Lookouts' },                  // plan (MUNDO_UNICO); la nube ajusta
-    6: { x: -4, z: -131, r: 55, nombre: 'la Ciudad de los 36', en: 'the City of the 36' },        // plan (MUNDO_UNICO); la nube ajusta
+    // cap. 5: Los Miradores y la meseta del tepuy (el relevo), y la Puerta del Yunque abajo (el Guardián); se tocan en el borde norte
+    5: { x: -52, z: -132, r: 32, mas: [[-28, -80, 30]], nombre: 'Los Miradores', en: 'The Lookouts' },
+    // cap. 6: el río al pie del tepuy (muelles y puente), la Ciudad de los 36 en la meseta (el círculo) y el paso entre los dos
+    6: { x: 36, z: -50, r: 24, mas: [[-38, -128, 20], [11, -76, 20], [-14, -102, 20]], nombre: 'la Ciudad de los 36', en: 'the City of the 36' },
   };
   const enIngles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
   const cap = (G.pack.meta && G.pack.meta.capitulo) || 0;
@@ -36,7 +40,7 @@ AVE.module('zonas', function (G) {
     if (S.complete && ZONAS[cap + 1]) a.add(cap + 1);
     return [...a].filter(n => ZONAS[n]).sort((p, q) => p - q);
   }
-  const en = (z, x, zz) => Math.hypot(x - z.x, zz - z.z) <= z.r;
+  const en = (z, x, zz) => Math.hypot(x - z.x, zz - z.z) <= z.r || (z.mas || []).some(c => Math.hypot(x - c[0], zz - c[1]) <= c[2]);
   const dentro = (x, z) => abiertas().some(n => en(ZONAS[n], x, z));
   const zonaEn = (x, z) => { for (const n of Object.keys(ZONAS)) if (en(ZONAS[n], x, z)) return Number(n); return 0; };
 
