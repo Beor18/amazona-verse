@@ -128,9 +128,9 @@ AVE.module('momentos', function (G) {
     try {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
       R.drawScene();
-      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 640; c.height = 480; // como las fotos del cómic
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
-      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 480, 360);
+      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 640, 480);
       const url = c.toDataURL('image/jpeg', 0.75);
       return url.length > 2000 ? url : null;
     } catch (e) { return null; }

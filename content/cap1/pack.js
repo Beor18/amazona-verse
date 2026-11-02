@@ -172,12 +172,14 @@
         }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
         { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
           opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
+        // El chapuzón y el aterrizaje se fotografían con Vittata a la vista (encuadre 'posada' de comic.js: un ángulo libre a 3 m),
+        // no con la cámara del juego, que en el agua solo ve agua.
         // Momentos graciosos (src/game/momentos.js; DIVERSION_CAP1 mejora 5): viñetas por hechos que ya pasan, con tres textos de
         // humor amable a elegir (nunca burla). Las fotos las pone momentos.js en S.captures con la clave de img; el brinco y la
         // foto no capturan el mundo (sinCaptura): el brinco trae la foto del criadero (o la ilustración del nido) y la foto, la suya.
-        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
+        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', encuadre: 'posada', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
           opciones: ['Las plumas mojadas pesan, pero el agua estaba buenísima.', 'Quise volar bajito. Bajito de más.', 'Los peces me miraron como a un pez nuevo con plumas.'] },
-        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
+        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', encuadre: 'posada', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
           opciones: ['Aterricé de panza. Diez puntos por el estilo.', 'El suelo llegó antes de lo que yo pensaba.', 'Me sacudí las plumas y seguí como si nada.'] },
         { id: 'brinco', img: 'brinco', needs: 'ChickJumped', sinCaptura: true, ilustracion: 'eclosion', texto: 'Toqué a mi cotorrita y dio un brinco de alegría.',
           opciones: ['¡Un brinco! Casi se sale del nido.', 'Le hice cosquillas y saltó como un coquí.', 'Cada vez que la toco, brinca más alto.'] },

@@ -48,10 +48,11 @@ AVE.module('comic', function (G) {
   // Captura del mundo. Si el lienzo no tiene tamaño (ventana 0×0, pestaña minimizada), snapshot() da null: no se guarda
   // y la captura queda pendiente hasta que el lienzo vuelva a tener tamaño (QA-21)
   const pendientes = new Set();
+  const FW = 640, FH = 480; // fotos del mundo a 640×480 (a 480×360 se veían borrosas en las viñetas a lo ancho)
   const lienzoListo = () => { const c = G.renderer.canvas; return !!c && c.width > 0 && c.height > 0; };
   function capture(key) {
     let img = null;
-    if (lienzoListo()) { try { img = G.renderer.snapshot(480, 360, 0.72); } catch (e) { img = null; } }
+    if (lienzoListo()) { try { img = G.renderer.snapshot(FW, FH, 0.72); } catch (e) { img = null; } }
     if (typeof img === 'string' && /^data:image\/[a-z]+;base64,/.test(img) && img.length > 2000) { S.captures[key] = img; pendientes.delete(key); return true; }
     pendientes.add(key);
     return false;
@@ -82,9 +83,9 @@ AVE.module('comic', function (G) {
     try {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
       R.drawScene();
-      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = FW; c.height = FH;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
-      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 480, 360);
+      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, FW, FH);
       const url = c.toDataURL('image/jpeg', 0.72);
       return url.length > 2000 ? url : null;
     } catch (e) { return null; }
@@ -281,7 +282,8 @@ AVE.module('comic', function (G) {
   // Calcula las cajas de las viñetas (probado en selfTest y comicTest: sin solapes y dentro de la página)
   function comicLayout(n, layout, W, H, top) {
     const boxes = [], g = 20;
-    if (layout === 'strip') {
+    // Con 1 o 2 viñetas, la cuadrícula las apila a lo ancho: en media columna quedaban como tiras altas y la foto se recortaba
+    if (layout === 'strip' || n <= 2) {
       const ph = (H - top - g * (n + 1)) / n;
       for (let i = 0; i < n; i++) boxes.push({ x: g, y: top + g + i * (ph + g), w: W - 2 * g, h: ph });
     } else {
@@ -935,31 +937,31 @@ AVE.module('comic', function (G) {
         const A = G.actores, M = G.momentos;
         if (A && A.modoFoto && A.EMOTE_KEYS && M && M.tomarFoto) {
           check('Gestos: 7 gestos y el botón «Foto»', A.EMOTE_KEYS.length === 7 && document.querySelectorAll('#emotes [data-emote]').length === 7 && !!document.querySelector('#emotes [data-foto]'));
-          // El gesto en sí es de actores.js (posar en el suelo y quieta): aquí se simula que pudo posar y que no pudo
-          let pedida = null; const emit = G.emit, jugar = A.playEmote, PZ = G.pausa, activa = PZ && PZ.activa;
-          if (PZ && activa) PZ.activa = () => false; // la batería puede correr con la pausa puesta
+          // La tecla la recibe input.js (hace el gesto si Vittata puede posar en el suelo y quieta) y luego este módulo. Aquí se
+          // simula lo de input.js con un playEmote de prueba y se llama al manejador de este módulo, sin tocar la pausa (el
+          // cronómetro del marcador correría) ni depender de dónde está Vittata.
+          let pedida = null; const emit = G.emit, jugar = A.playEmote;
           G.emit = function (n, a, b2, c2) { if (n === 'foto') pedida = a; return emit.call(this, n, a, b2, c2); };
-          const tecla = async (k, puede) => {
+          const tecla = async (k, puede, foto) => {
             pedida = null; A.playEmote = name => { if (!puede) return false; A.emote.name = name; return true; };
-            A.modoFoto(true);
-            const pulsado = document.querySelector('#emotes [data-foto]').getAttribute('aria-pressed') === 'true';
-            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); // como el teclado (input.js y este módulo)
+            A.modoFoto(!!foto);
+            const pulsado = !foto || document.querySelector('#emotes [data-foto]').getAttribute('aria-pressed') === 'true';
+            const ev = new KeyboardEvent('keydown', { key: k });
+            A.playEmote(A.EMOTE_KEYS[+k - 1]); // lo que hace input.js con la tecla
+            const atendida = alTeclaFoto(ev);
             await new Promise(r => setTimeout(r, 30));
-            document.body.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
-            const r = { pulsado, sigue: A.fotoModo, pedida };
+            const r = { pulsado, atendida, sigue: A.fotoModo, pedida };
             A.playEmote = jugar; if (A.stopEmote) A.stopEmote();
             return r;
           };
           try {
-            const g3 = A.EMOTE_KEYS[2], r1 = await tecla('3', true);
-            check('Foto activa + tecla 3: hace el gesto, cierra Foto y pide la foto con ese gesto', r1.pulsado && !r1.sigue && !!r1.pedida && r1.pedida.gesto === g3, r1.pedida ? r1.pedida.gesto : JSON.stringify(r1));
-            const r2 = await tecla('1', false);
+            const g3 = A.EMOTE_KEYS[2], r1 = await tecla('3', true, true);
+            check('Foto activa + tecla 3: hace el gesto, cierra Foto y pide la foto con ese gesto', r1.pulsado && r1.atendida && !r1.sigue && !!r1.pedida && r1.pedida.gesto === g3, r1.pedida ? r1.pedida.gesto : JSON.stringify(r1));
+            const r2 = await tecla('1', false, true);
             check('Si no puede posar (volando o en el aire), no pide la foto y Foto se cierra', r2.pulsado && !r2.sigue && !r2.pedida, JSON.stringify(r2));
-            A.modoFoto(false); pedida = null;
-            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '2', bubbles: true })); await new Promise(r => setTimeout(r, 30));
-            document.body.dispatchEvent(new KeyboardEvent('keyup', { key: '2', bubbles: true }));
-            check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !pedida);
-          } finally { G.emit = emit; A.playEmote = jugar; if (PZ && activa) PZ.activa = activa; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
+            const r3 = await tecla('2', true, false);
+            check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !r3.atendida && !r3.pedida, JSON.stringify(r3));
+          } finally { G.emit = emit; A.playEmote = jugar; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
