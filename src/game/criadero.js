@@ -1192,11 +1192,13 @@ AVE.module('criadero', function (G) {
     let vivo = true;
     return {
       etapa: info.etapa,
-      antes() { if (vivo) deshacer(k); },
-      despues() { if (vivo) reaplicar(k); },
+      // Gags del pichón en el mundo (src/game/gags.js): solo actúan si ch es el compañero de actores.js
+      antes() { if (vivo) { deshacer(k); if (G.gags) G.gags.antes(ch, k, info); } },
+      despues() { if (vivo) { reaplicar(k); if (G.gags) G.gags.despues(ch, k, info); } },
       pies() { return vivo ? k.yOff * (ch.root.scale.y || 1) : 0; },
       quitar() {
         if (!vivo) return; vivo = false;
+        if (G.gags) G.gags.quitar(ch);
         deshacer(k);
         for (const s of k.fluff.shells) { s.mesh.parent && s.mesh.parent.remove(s.mesh); s.mesh.material.dispose(); }
         for (const o of Object.values(k.extras)) o.parent && o.parent.remove(o);
@@ -1538,6 +1540,35 @@ AVE.module('criadero', function (G) {
   });
   if (!D()) datos().catch(() => { /* se reintenta al abrir */ });
   // Rareza de las crías (perezosa, no va en index.html): si no carga, el criadero funciona como antes (todas comunes)
+  // Gags del pichón en el mundo (DIVERSION_CAP1 mejora 9; perezoso, no va en index.html): se cae y se sacude, persigue una
+  // mariposa, se duerme encima de un hallazgo y copia los gestos de Vittata. Cada gag emite G.emit('criadero', 'gag', {...}).
+  let gagsCarga = null;
+  function cargarGags() {
+    return gagsCarga || (gagsCarga = (window.AVGags ? Promise.resolve() : AVE.assets.script('src/game/gags.js'))
+      .then(() => window.AVGags(G, apiGags), e => { gagsCarga = null; throw e; }));
+  }
+  // Para AV.gagsTest: una cría nacida de prestado como compañero del mundo (sin guardar) y su vuelta atrás
+  const apiGags = {
+    async conCria(etapa) {
+      await datos();
+      let ls = null; try { ls = localStorage.getItem(KEY); } catch (e) { /* */ }
+      const bk = { st: JSON.parse(JSON.stringify(st)), ls };
+      st = fresh();
+      const c = st.capsulas.clasico = { estado: 'nacida', xp: XP_INCUBAR() };
+      if (etapa === 'juvenil') c.xp = Math.max(c.xp, NIV()[5]); else if (etapa === 'adulto') c.xp = Math.max(c.xp, NIV()[15]); else c.xp = Math.min(Math.max(c.xp, NIV()[0]), NIV()[4] - 1);
+      st.compa = 'clasico';
+      avisarCompanero();
+      return bk;
+    },
+    restaurar(bk) {
+      if (!bk) return;
+      st = bk.st; avisarCompanero();
+      try { if (bk.ls == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, bk.ls); } catch (e) { /* */ }
+    },
+  };
+  cargarGags().catch(() => { /* sin gags: la cría sigue a Vittata como siempre */ });
+  const exponerGags = n => { const AV = window.AV; if (AV && AV.G === G) { if (!AV.gagsTest) AV.gagsTest = o => cargarGags().then(m => m.test(o)); } else if (n > 0) setTimeout(() => exponerGags(n - 1), 500); };
+  exponerGags(60);
   if (!RZ()) AVE.assets.script('src/game/rareza.js').then(() => { if (window.AVRareza) { window.AVRareza(G); if (open) pintar(); } }).catch(() => { /* sin rareza */ });
 
   // =====================================================================================================================
