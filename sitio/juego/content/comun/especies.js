@@ -1402,6 +1402,7 @@
     "extintas": [
       {
         "id": "martinicana",
+        "piel": "martinicana",
         "cientifico": "Amazona martinicana",
         "comun": {
           "es": "loro de Martinica",
@@ -1437,6 +1438,7 @@
       },
       {
         "id": "violacea",
+        "piel": "violacea",
         "cientifico": "Amazona violacea",
         "comun": {
           "es": "amazona de Guadalupe",
