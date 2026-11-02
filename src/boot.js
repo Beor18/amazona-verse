@@ -66,11 +66,16 @@
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca
     let records = null;
     const cargarRecords = () => records || (records = AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G), e => { records = null; throw e; }));
-    AV.records = o => cargarRecords().then(r => r.abrir(o), () => G.ui.toast('No se pudieron abrir tus récords. Prueba otra vez.', 3000));
+    // Bandada de la casa (src/game/equipos.js): local, sin red. Se carga con «Mis récords», no en la descarga inicial.
+    let equipos = null;
+    const cargarEquipos = () => equipos || (equipos = AVE.assets.script('src/game/equipos.js').then(() => window.AVEquipos(G), e => { equipos = null; throw e; }));
+    const conBandada = r => cargarEquipos().catch(() => {}).then(() => r);
+    AV.records = o => cargarRecords().then(r => conBandada(r).then(x => x.abrir(o)), () => G.ui.toast('No se pudieron abrir tus récords. Prueba otra vez.', 3000));
     AV.recordsTest = o => cargarRecords().then(r => r.test(o));
+    AV.equiposTest = o => cargarEquipos().then(m => m.test(o));
     for (const [id, accion, o] of [['b-records', 'abrir', { desde: 'pausa' }], ['b-records-title', 'abrir', { desde: 'portada' }], ['c-share', 'compartirComic']]) {
       const b = document.getElementById(id);
-      if (b) b.addEventListener('click', () => cargarRecords().then(r => r[accion](o), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000)));
+      if (b) b.addEventListener('click', () => cargarRecords().then(r => (accion === 'abrir' ? conBandada(r) : Promise.resolve(r)).then(x => x[accion](o)), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000)));
     }
     // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
     let retos = null;
@@ -118,11 +123,11 @@
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
     // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
-    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
-    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)) }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
+    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records', recEquipos = ((P.meta && P.meta.almacen) || P.id) + '.equipos'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa y la bandada)
     const cargarMaze = aDemanda('src/game/maze.js', 'AVMaze'); AV.maze = () => cargarMaze().then(m => m.abrir()); AV.mazeTest = o => cargarMaze().then(m => m.test(o)); if (/[?&]mini=maze\b/.test(location.search)) { const ir = () => setTimeout(() => AV.maze().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // Amazona Maze (AB1, src/game/maze.js): prototipo oculto; ?mini=maze o AV.maze(); AV.mazeTest()
     const cargarRiver = aDemanda('src/game/river_rush.js', 'AVRiverRush'); AV.riverRush = () => cargarRiver().then(r => r.abrir()); AV.riverTest = o => cargarRiver().then(r => r.test(o)); if (/[?&]mini=river\b/.test(location.search)) { const ir = () => setTimeout(() => AV.riverRush().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // River Rush (AC1, src/game/river_rush.js): prototipo oculto; ?mini=river o AV.riverRush(); AV.riverTest()
-    G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
+    G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa, recEquipos]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
     let musica = null;
     const cargarMusica = () => musica || (musica = AVE.assets.script('src/game/musica.js').then(() => window.AVMusica(G), e => { musica = null; throw e; }));
