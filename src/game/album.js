@@ -6,9 +6,14 @@
    - los rivales de una carrera del Modo Retos (G.on('retosResultado'): rivales = especies; las de las pruebas no cuentan).
    Cerrada: silueta gris y «???», nunca datos inventados. Abierta: retrato con los colores de la piel de la especie, nombre ES y
    EN, nombre científico y el estado UICN solo si coincide con el catálogo de Kelvin (la misma regla que «Amazonas del mundo»
-   en diario.js; si no, «por verificar»). Las 2 extintas salen siempre, como tarjetas históricas y con suavidad («ya no vuela;
-   se conoce solo por relatos antiguos», de la nota de especies.js); no se «desbloquean» porque no hay ninguna que ver.
-   Los nombres del canon de las extintas (ep5/ep6) no se dicen aquí: los revelan ellas al final del capítulo 5.
+   en diario.js; si no, «por verificar»). Las 2 extintas no se «desbloquean» viéndolas (no hay ninguna que ver: nunca salen vivas
+   en el mundo). Su tarjeta queda oculta (silueta gris y «???», «Una historia por descubrir») hasta que el jugador conoce su
+   historia en el cap. 5: el evento VoicesRevealed (content/ep5, la escena e_fin_a en la que Mara y Vela se presentan). Entonces
+   se abren con el nombre del canon (CANON_REGISTRY, Kelvin 2-nov: Mara = martinicana, Vela = violacea), la especie ES y EN, el
+   nombre científico, Extinta (EX), «una de las dos voces del transmisor» y la nota suave («ya no vuela; se conoce solo por
+   relatos antiguos»). Cómo se recuerda: el evento apunta { voces: true } en el registro de temporada (AVTemporada, capítulo 5,
+   común a los 6 packs) y, en la partida del cap. 1, mete 'martinicana' y 'violacea' en S.album (no cuentan en las 34); al cargar
+   el cap. 1 se sincroniza con el registro (también si el cap. 5 está terminado). Nada de esto en las baterías (G.quiet).
    - Guardado: S.album (ids de especie, clave del pack cap1; las partidas viejas la reciben vacía). Sin la clave en el pack
      (otros capítulos) el álbum no se muestra.
    - Colores del retrato y de las cotorras 3D (PALETA): el verde del cuerpo y el color propio de la cabeza, medidos sobre las
@@ -40,6 +45,7 @@ AVE.module('album', function (G) {
     xantholora: ['#329b02', '#e79807', 0.35], martinicana: ['#359a04', '#697373', 0.9], violacea: ['#369c04', '#5b5c86', 1],
   };
   const colores = id => { const p = PALETA[id]; return p ? { cuerpo: p[0], cabeza: p[1], cob: p[2] } : null; };
+  const EXT = ['martinicana', 'violacea'], CANON = { martinicana: 'Mara', violacea: 'Vela' }; // CANON_REGISTRY (Kelvin, 2-nov)
 
   // ---------- Especies ----------
   const E = () => window.AV_ESPECIES || { especies: [], extintas: [], categorias: {} };
@@ -71,6 +77,34 @@ AVE.module('album', function (G) {
     return true;
   }
 
+  // ---------- Mara y Vela: se revelan con su historia en el cap. 5 (VoicesRevealed) ----------
+  let pruebaVoces = false;
+  const T = () => window.AVTemporada;
+  function vocesReveladas() {
+    if (Array.isArray(S.album) && EXT.every(id => S.album.includes(id))) return true;
+    try { if (G.eventos && G.eventos.had && G.eventos.had('VoicesRevealed')) return true; } catch (e) { /* sin eventos */ }
+    try { const t = T(); if (t && (t.dato(5, 'voces') || (t.leer().terminados || {})[5])) return true; } catch (e) { /* sin registro */ }
+    return false;
+  }
+  function revelarVoces(aviso) {
+    try { const t = T(); if (t && !t.dato(5, 'voces')) t.apuntar(5, { voces: true }); } catch (e) { /* sin registro */ }
+    if (!activo()) return false;
+    const v = vistos(); let nueva = false;
+    for (const id of EXT) if (!v.includes(id)) { v.push(id); nueva = true; }
+    if (nueva) G.emit('album', { id: 'voces', fuente: 'cap5' });
+    if (nueva && aviso && !G.quiet) {
+      try { G.ui.toastHTML(`<b data-no-tr>${esc(L('Álbum de las 36', 'Album of the 36'))}</b> <span data-no-tr>${esc(L('Dos tarjetas nuevas: Mara y Vela', 'Two new cards: Mara and Vela'))}</span>`, 4200); } catch (err) { /* sin HUD */ }
+      try { G.guardado.autosave(); } catch (err) { /* sin guardado */ }
+    }
+    return nueva;
+  }
+  const sincronizarVoces = aviso => (activo() && vocesReveladas() ? revelarVoces(aviso) : false);
+  (function enganchar() { // el evento del cap. 5, venga de donde venga (ep5/pack.js lo apunta con G.eventos.log)
+    const Ev = G.eventos; if (!Ev || !Ev.log || Ev.log.album36) return;
+    const log0 = Ev.log, log = function (k) { const r = log0.apply(this, arguments); if (k === 'VoicesRevealed' && (!G.quiet || pruebaVoces)) revelarVoces(false); return r; };
+    log.album36 = true; Ev.log = log;
+  })();
+
   // ---------- Otros encuentros: crías del criadero y rivales de Retos ----------
   function criasNacidas() {
     const C = G.criadero, H = window.AV_HUEVOS;
@@ -83,7 +117,7 @@ AVE.module('album', function (G) {
     return out;
   }
   const revisarCrias = () => { for (const id of criasNacidas()) ver(id, 'criadero'); };
-  G.on('apply', () => { vistos(); setTimeout(revisarCrias, 0); }, 13);
+  G.on('apply', () => { vistos(); setTimeout(() => { revisarCrias(); if (!G.quiet) sincronizarVoces(true); }, 0); }, 13);
   G.on('companero', () => revisarCrias());
   G.on('retosResultado', r => { if (r && !r.prueba && Array.isArray(r.rivales)) for (const id of r.rivales) ver(id, 'retos'); });
 
@@ -111,7 +145,7 @@ AVE.module('album', function (G) {
     '.album36 li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:8px 6px;border-radius:12px;background:rgba(47,143,78,.10);border:1px solid rgba(47,143,78,.35);min-width:0}' +
     '.album36 li b{font-size:var(--fs-sm,14px);line-height:1.2;overflow-wrap:anywhere}.album36 li small{font-size:calc(12px * var(--fs-k,1));line-height:1.25;opacity:.85;overflow-wrap:anywhere}' +
     '.album36 li i{font-size:calc(11px * var(--fs-k,1));opacity:.8}.album36 li.cerrada{background:none;border-style:dashed;opacity:.75}' +
-    '.album36 li.historica{background:rgba(160,120,60,.10);border-color:rgba(160,120,60,.45)}.album36 .uicn{font-weight:700}' +
+    '.album36 li.historica{background:rgba(160,120,60,.10);border-color:rgba(160,120,60,.45)}.album36 li.historica.oculta{background:none;border-style:dashed;opacity:.75}.album36 li b.canon{font-size:calc(17px * var(--fs-k,1))}.album36 .uicn{font-weight:700}' +
     '.album-nota{margin:2px 0 6px;font-size:var(--fs-sm,14px);opacity:.85}' +
     ':root.a11y-contraste .album36 li{background:#000;border-color:#fff;color:#fff;opacity:1}';
   if (!document.getElementById('estilo-album36')) { const st = document.createElement('style'); st.id = 'estilo-album36'; st.textContent = ESTILO; document.head.appendChild(st); }
@@ -128,11 +162,17 @@ AVE.module('album', function (G) {
         `<small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
         `<small class="uicn">${s ? `${esc(s[l])} (${esc(s.cat)})` : esc(L('Estado por verificar', 'Status to be verified'))}</small></li>`;
     }).join('');
+    const reveladas = vocesReveladas();
     const hist = extintas().map(e => {
+      if (!reveladas || !CANON[e.id]) { // antes del cap. 5: ni nombre ni retrato (ver la cabecera)
+        return `<li class="historica oculta" data-album="${esc(e.id)}" aria-label="${esc(L('Historia por descubrir', 'Story still to discover'))}">${retrato(e.id, 'cerrada')}<b>???</b>` +
+          `<small>${esc(L('Una historia por descubrir', 'A story still to discover'))}</small></li>`;
+      }
       const s = estado(e);
-      return `<li class="historica" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'historica')}<b>${esc(nombre(e, l))}</b>` +
-        `<small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
+      return `<li class="historica" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'historica')}<b class="canon">${esc(CANON[e.id])}</b>` +
+        `<small>${esc(nombre(e, l))}</small><small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
         `<small class="uicn">${s ? `${esc(s[l])} (${esc(s.cat)})` : esc(L('Estado por verificar', 'Status to be verified'))}</small>` +
+        `<small>${esc(L('Una de las dos voces del transmisor.', 'One of the two voices of the transmitter.'))}</small>` +
         `<small>${esc(L('Ya no vuela. Se conoce solo por relatos antiguos.', 'It no longer flies. It is known only from old accounts.'))}</small></li>`;
     }).join('');
     return `<div class="album-sec" data-no-tr><span class="lbl">${esc(L('Álbum de las 36', 'Album of the 36'))} ${c.n}/${c.m}</span>` +
@@ -155,9 +195,13 @@ AVE.module('album', function (G) {
     const SV = G.guardado, snap = SV.instantanea(), quiet = G.quiet, posBk = Object.assign({}, S.pos);
     const aj = G.aula && G.aula.aj, idiomaBk = aj && aj.idioma, M = G.fisica.MOVE, movBk = { flying: M.flying, posado: M.posado, grounded: M.grounded, speed: M.speed };
     const calBk = G.renderer.calidad.nivel, emote = G.actores && G.actores.emote;
+    const TP = window.AVTemporada, leerReg = () => { try { return localStorage.getItem(TP.KEY); } catch (e) { return null; } };
+    const regBk = TP ? leerReg() : null; // el registro de temporada se devuelve intacto
+    const regVacio = () => { try { localStorage.removeItem(TP.KEY); } catch (e) { /* sin almacén */ } };
     SV.suspender(true); G.quiet = true;
     let B = null, R = null;
     try {
+      if (TP) regVacio();
       B = await cargarVivo(); R = G.residentes;
       check('Bandada y residentes cargados (src/game/bandada.js, residentes.js)', !!(B && R && R.paso));
       if (!B || !R) throw new Error('sin bandada o sin residentes');
@@ -174,22 +218,53 @@ AVE.module('album', function (G) {
       check('Colonias en los lugares del mapa (plaza de Villa Raíz, río, Poza, Ciudad de los 36)', ['plaza', 'rio', 'poza', 'ciudad36'].every(id => cols.some(c => c.id === id)), cols.map(c => c.id + '@' + Math.round(c.x) + ',' + Math.round(c.z)).join(' '));
       G.renderer.calidad.nivel = 'medio';
       R.prueba(true);
+      // ----- Ecología (docs/equipo/MUNDO_VIVO_ECOLOGIA.md): cada colonia con las especies de su hábitat
+      const HB = R.HAB, enHab = new Set();
+      check('Los 9 lugares con colonia: plaza, río, Poza Honda, Dajao, Ciudad de los 36, Charca de las Nubes, Puerta del Yunque, Colina y Hacienda',
+        ['plaza', 'rio', 'poza', 'dajao', 'ciudad36', 'nubes', 'puerta', 'colina', 'hacienda'].every(id => cols.some(c => c.id === id)), cols.map(c => c.id + ':' + c.hab).join(' '));
+      check('El cap. 1 está antes del pacto (la Ciudad de los 36 no es aún la colonia mezclada)', R.pacto() === false);
+      R.pactoPrueba(false);
+      for (const c of cols) R.poblar(c, 6);
+      const malas = cols.filter(c => !c.aves.every(a => HB[c.hab].sp.includes(a.sp))).map(c => c.id + ':' + c.aves.map(a => a.sp).join('/'));
+      for (const c of cols) for (const a of c.aves) enHab.add(a.sp);
+      check('Cada colonia solo tiene especies de su hábitat (nada al azar entre las 34)', !malas.length, malas.join(' ') || cols.map(c => c.id + ':' + [...new Set(c.aves.map(a => a.sp))].join('/')).join(' '));
+      const cubre = new Set(); for (const c of cols) for (const id of R.poolDe(c)) cubre.add(id);
+      check('Entre todas las colonias están las 34 vivas (el álbum se llena en el cap. 1)', vivas().every(e => cubre.has(e.id)), vivas().filter(e => !cubre.has(e.id)).map(e => e.id).join(','));
+      check('Ninguna extinta en ningún hábitat ni colonia (no salen vivas en el mundo)', ![...cubre].concat([...enHab]).some(id => !esViva(id)) && !Object.values(HB).some(h => h.sp && h.sp.some(id => EXT.includes(id))));
+      const cPlaza = cols.find(c => c.id === 'plaza'), cCiudad = cols.find(c => c.id === 'ciudad36');
+      check('La plaza de Villa Raíz: solo cotorras puertorriqueñas', cPlaza.aves.length && cPlaza.aves.every(a => a.sp === 'vittata'));
+      check('La Ciudad de los 36 antes del pacto: bosque nublado de las Antillas (con vittata)', cCiudad.aves.every(a => HB.nublado.sp.includes(a.sp)) && cCiudad.aves.some(a => a.sp === 'vittata'), cCiudad.aves.map(a => a.sp).join(','));
+      R.pactoPrueba(true); R.poblar(cCiudad, 6);
+      const mix = cCiudad.aves.map(a => a.sp);
+      check('Tras el pacto (cap. 6): la Ciudad de los 36 es la colonia mezclada, sin repetir y sin extintas', new Set(mix).size === 6 && mix.some(id => !HB.nublado.sp.includes(id)) && mix.every(esViva) && R.habitatDe(cCiudad) === 'pacto', mix.join(','));
+      R.pactoPrueba(false);
+      check('La bandada lleva las especies del hábitat de su ruta: puertorriqueñas sobre la plaza, de río sobre el río', (() => {
+        const cR = cols.find(c => c.id === 'rio'); B.mezclar(cPlaza.x, cPlaza.z); const a1 = B.especies(); B.mezclar(cR.x, cR.z); const a2 = B.especies();
+        return a1.length && a1.every(id => id === 'vittata') && a2.length && a2.every(id => HB.rio.sp.includes(id));
+      })(), B.especies().join(','));
+      R.reiniciar();
       const plaza = cols.find(c => c.id === 'plaza') || cols[0];
       const lejos = (c, d) => { S.pos.x = c.x + d; S.pos.z = c.z + d; S.pos.y = G.terreno.height(S.pos.x, S.pos.z); M.flying = false; M.posado = ''; M.grounded = true; M.speed = 0; };
       lejos(plaza, 40); R.reiniciar(); R.paso(0.05);
       const aves = () => R.aves().filter(a => a.colonia === plaza.id);
       check('Al llegar a la plaza aparecen sus cotorras, posadas', aves().length === N.medio && aves().every(a => a.est === 'posada'), aves().length + ' · ' + aves().map(a => a.est).join(','));
-      check('De varias especies (3 o más pieles distintas) y ninguna extinta', new Set(R.aves().map(a => a.sp)).size >= 3 && !R.aves().some(a => !esViva(a.sp)), [...new Set(R.aves().map(a => a.sp))].join(','));
-      check('En la plaza de Villa Raíz viven cotorras puertorriqueñas', aves().some(a => a.sp === 'vittata'));
+      check('Alrededor de Villa Raíz (plaza, río y poza): 3 o más especies y ninguna extinta', new Set(R.aves().map(a => a.sp)).size >= 3 && !R.aves().some(a => !esViva(a.sp)), [...new Set(R.aves().map(a => a.sp))].join(','));
+      check('En la plaza de Villa Raíz viven cotorras puertorriqueñas (todas)', aves().length && aves().every(a => a.sp === 'vittata'));
       // ----- Comportamientos: 90 s simulados
       const vistosEst = new Set(), H = (x, z) => G.terreno.height(x, z);
-      let bien = true, aterrizajes = 0;
+      let bien = true, aterrizajes = 0, despegues = 0, grupos = 0, parejas = 0;
+      const enCasa = () => R.aves().filter(a => !a.vis);
       for (let i = 0; i < 900; i++) {
-        const antes = R.aves().map(a => a.est);
+        const antes = enCasa().map(a => a.est);
         R.paso(0.1);
-        R.aves().forEach((a, k) => { vistosEst.add(a.est); if (a.accion) vistosEst.add(a.accion); if (antes[k] === 'vuela' && a.est === 'posada') aterrizajes++;
+        const L = enCasa();
+        L.forEach((a, k) => { vistosEst.add(a.est); if (a.accion) vistosEst.add(a.accion); if (antes[k] === 'vuela' && a.est === 'posada') aterrizajes++; if (antes[k] === 'posada' && a.est === 'vuela') despegues++;
           if (!isFinite(a.x + a.y + a.z) || a.y < H(a.x, a.z) - 0.2) bien = false; });
+        if (L.some(a => a.est === 'posada' && a.accion === 'come' && a.perch && a.perch.tipo === 'suelo' && L.some(b => b !== a && b.colonia === a.colonia && b.est === 'posada' && b.accion === 'come' && b.perch && b.perch.tipo === 'suelo' && Math.hypot(a.x - b.x, a.z - b.z) < 2.5))) grupos++;
+        if (L.some(a => a.est === 'posada' && a.accion === 'pareja' && a.compa && a.compa.est === 'posada' && Math.hypot(a.x - a.compa.x, a.z - a.compa.z) < 0.8)) parejas++;
       }
+      check('Más vida: comen en el suelo en grupitos (2 o más juntas) y se posan en pareja a acicalarse', grupos > 0 && parejas > 0, `${(grupos / 10).toFixed(0)} s con grupito · ${(parejas / 10).toFixed(0)} s con pareja`);
+      check('Más vida: muchos despegues y aterrizajes (más de 1 por ave y minuto)', despegues >= 12 && aterrizajes >= 12, `${despegues} despegues · ${aterrizajes} aterrizajes en 90 s`);
       check('Vuelan entre perchas y aterrizan', vistosEst.has('vuela') && aterrizajes >= 2, aterrizajes + ' aterrizajes');
       check('Comen (picotean fruta o el suelo), se acicalan y se llaman', vistosEst.has('come') && vistosEst.has('acicala') && vistosEst.has('llama'), [...vistosEst].join(','));
       check('Se persiguen en parejas (salvo con «reducir movimiento»)', vistosEst.has('persigue') || R.reducido());
@@ -236,9 +311,10 @@ AVE.module('album', function (G) {
       const eSp = vivas().find(e => e.id === sp);
       check('Diario: tarjeta abierta con nombre ES y EN, científico y estado', !!ab && ab.textContent.includes(nombre(eSp, 'es')) && ab.textContent.includes(nombre(eSp, 'en')) && ab.querySelector('i[lang=la]') && ab.querySelector('.uicn'), ab && ab.textContent);
       const nombresCerr = vivas().filter(e => !visto(e.id)).some(e => [...cerr].some(li => li.textContent.includes(nombre(e, 'es')) || li.textContent.includes(e.cientifico)));
-      check('Las cerradas: silueta y «???», sin nombre ni datos', cerr.length === 34 - S.album.length && [...cerr].every(li => /\?\?\?/.test(li.textContent) && li.querySelector('svg')) && !nombresCerr, cerr.length + ' cerradas');
+      check('Las cerradas: silueta y «???», sin nombre ni datos', cerr.length === 34 - cuenta().n && [...cerr].every(li => /\?\?\?/.test(li.textContent) && li.querySelector('svg')) && !nombresCerr, cerr.length + ' cerradas');
       const hi = d.querySelectorAll('li.historica');
-      check('Las 2 extintas salen como históricas (EX), con suavidad', hi.length === 2 && [...hi].every(li => /Extinta \(EX\)/.test(li.textContent) && /relatos antiguos/.test(li.textContent)), [...hi].map(li => li.textContent.slice(0, 60)).join(' | '));
+      check('Antes del cap. 5, Mara y Vela están ocultas: silueta gris y «???», sin nombre del canon ni de especie', hi.length === 2 && [...hi].every(li => li.classList.contains('oculta') && /\?\?\?/.test(li.textContent) &&
+        /historia por descubrir/i.test(li.textContent) && li.innerHTML.includes('#8a8f94') && !/Mara|Vela|Martini|Guadalup|martinicana|violacea|Extint/i.test(li.textContent)), [...hi].map(li => li.textContent).join(' | '));
       check(`Cuenta «Álbum de las 36 ${S.album.length}/34»`, d.textContent.includes(`Álbum de las 36 ${S.album.length}/34`));
       check('Sin «undefined» ni «null»', !/undefined|null|\[object/.test(d.textContent));
       if (aj) aj.idioma = 'en';
@@ -250,6 +326,39 @@ AVE.module('album', function (G) {
       // ----- Guardado
       const ser = SV.serialize ? SV.serialize(true) : '';
       check('El álbum viaja con la partida (serialize)', typeof ser !== 'string' || (ser.includes('"album"') && ser.includes(sp)));
+      // ----- Mara y Vela: el evento del cap. 5 (VoicesRevealed, la escena e_fin_a) las revela
+      const n0 = cuenta().n, hist = () => { const x = document.createElement('div'); x.innerHTML = html(); return [...x.querySelectorAll('li.historica')]; };
+      pruebaVoces = true; try { G.eventos.log('VoicesRevealed'); } finally { pruebaVoces = false; }
+      check('VoicesRevealed (cap. 5) las revela: lo apunta en la partida (S.album) y en el registro de temporada', EXT.every(visto) && TP && TP.dato(5, 'voces') === true && cuenta().n === n0, S.album.join(','));
+      let hv = hist();
+      const tarjeta = (l, id) => l.find(li => li.dataset.album === id);
+      const okCard = (li, canon, e, lang) => li && !li.classList.contains('oculta') && li.querySelector('b.canon') && li.querySelector('b.canon').textContent === canon &&
+        li.textContent.includes(nombre(e, 'es')) && li.textContent.includes(nombre(e, 'en')) && li.textContent.includes(e.cientifico) &&
+        (lang === 'en' ? /Extinct \(EX\)/.test(li.textContent) && /voices of the transmitter/.test(li.textContent) : /Extinta \(EX\)/.test(li.textContent) && /voces del transmisor/.test(li.textContent) && /relatos antiguos/.test(li.textContent));
+      const eMar = extintas().find(e => e.id === 'martinicana'), eVio = extintas().find(e => e.id === 'violacea');
+      check('Después: «Mara» (martinicana) y «Vela» (violacea), con la especie ES y EN, científico y Extinta (EX)', okCard(tarjeta(hv, 'martinicana'), 'Mara', eMar) && okCard(tarjeta(hv, 'violacea'), 'Vela', eVio), hv.map(li => li.textContent).join(' | '));
+      if (aj) aj.idioma = 'en'; hv = hist(); if (aj) aj.idioma = 'es';
+      check('En inglés también: Mara y Vela, Martinique / Guadeloupe amazon', okCard(tarjeta(hv, 'martinicana'), 'Mara', eMar, 'en') && okCard(tarjeta(hv, 'violacea'), 'Vela', eVio, 'en'), hv.map(li => li.textContent).join(' | '));
+      check('Siguen sin poder «verse» vivas: ver() de una extinta no hace nada', ver('martinicana', 'x') === false && ver('violacea', 'x') === false);
+      // guardar y recargar: lo revelado vive en la partida del cap. 1
+      S.events = (S.events || []).filter(e => e.key !== 'VoicesRevealed'); regVacio();
+      const d5 = JSON.parse(SV.serialize(true));
+      const recargar = dd => { const o = Object.assign({}, dd); for (const k of ['formato', 'escrito', 'satelites', 'resumen']) delete o[k]; SV.restaurar(Object.assign(SV.instantanea(), o)); };
+      const albumAntes = S.album.filter(id => !EXT.includes(id));
+      recargar(Object.assign({}, d5, { album: albumAntes }));
+      const ocultaSin = hist().every(li => li.classList.contains('oculta'));
+      recargar(d5);
+      check('Guardar y recargar: sin el evento ni el registro, la partida guardada las sigue mostrando (y una partida de antes, ocultas)', ocultaSin && EXT.every(visto) && hist().every(li => !li.classList.contains('oculta')) && Array.isArray(d5.album) && EXT.every(id => d5.album.includes(id)));
+      // otra partida del cap. 1 en el mismo dispositivo: el registro de temporada (o el cap. 5 terminado) la sincroniza al cargar
+      recargar(Object.assign({}, d5, { album: albumAntes }));
+      TP.apuntar(5, { voces: true });
+      const sinc = sincronizarVoces(false);
+      check('Al cargar el cap. 1 con el cap. 5 ya jugado (registro de temporada), se abren y se guardan en la partida', sinc === true && EXT.every(visto) && sincronizarVoces(false) === false);
+      regVacio(); S.album = albumAntes.slice();
+      const d6 = TP.leer(); d6.terminados[5] = Date.now(); localStorage.setItem(TP.KEY, JSON.stringify(d6));
+      check('…y también si solo consta el cap. 5 terminado', vocesReveladas() && sincronizarVoces(false) === true && EXT.every(visto));
+      regVacio(); S.album = albumAntes.slice();
+      check('Sin evento, sin registro y sin partida: vuelven a estar ocultas', !vocesReveladas() && hist().every(li => li.classList.contains('oculta')));
       // ----- Otros encuentros: Retos y criadero
       S.album = [];
       G.emit('retosResultado', { modo: 'carrera', rivales: ['oratrix', 'versicolor'], prueba: true });
@@ -275,15 +384,30 @@ AVE.module('album', function (G) {
       check('Viaja a una zona con nombre, se posa en grupo (árboles o techos) y luego se va', estados.has('viaja') && estados.has('posa') && maxPos >= 9 && B.F.estado === 'off', `${dest.nombre || dest.id}: ${[...estados].join('→')} · ${maxPos}/12 posadas · ${(g / 10).toFixed(0)} s`);
       check('La bandada no lleva especies extintas', B.especies().every(id => esViva(id)), B.especies().join(','));
       check('El horario pide viajes entre zonas (no solo cruzar el cielo)', B.motivoTarde && ['viaje', 'tarde'].includes(B.motivoTarde()) && (() => { let v = 0; for (let i = 0; i < 40; i++) if (B.motivoTarde() === 'viaje') v++; return v >= 10; })());
+      // ----- Bandaditas de 4 a 8 entre colonias vecinas del mismo tipo de hábitat
+      lejos(plaza, 40); R.reiniciar(); R.paso(0.05);
+      const okVis = R.visitar() || !!R.visita(); // el horario puede haber sacado ya una
+      const V = R.visita(), nV = V ? V.aves.length : 0, spV = V ? V.aves.map(a => a.sp) : [];
+      const famOk = V && HB[R.habitatDe(V.de)].familia === HB[R.habitatDe(V.a)].familia;
+      const fasesV = new Set(); let posadasEnB = 0, gV = 0, malV = '';
+      for (; R.visita() === V && gV < 2400; gV++) {
+        R.paso(0.1); if (V) { fasesV.add(V.fase); if (V.fase === 'posada') posadasEnB = Math.max(posadasEnB, V.aves.filter(a => a.est === 'posada' && Math.hypot(a.x - V.a.x, a.z - V.a.z) < V.a.r + 3).length); }
+        for (const a of R.aves()) if (!isFinite(a.x + a.y + a.z) || a.y < H(a.x, a.z) - 0.2) { if (!malV) malV = `${a.colonia}${a.vis ? '(visita ' + a.vis.fase + ')' : ''} ${a.est}/${a.accion || '-'} ${a.perch ? a.perch.tipo : ''} y ${a.y.toFixed(2)} suelo ${H(a.x, a.z).toFixed(2)}`; }
+      }
+      check('Bandadita: 4 a 5 en medio vuelan a una colonia vecina de la misma familia de hábitat, se posan allí y vuelven a casa',
+        okVis && nV >= 4 && nV <= 5 && famOk && spV.every(id => R.poolDe(V.de).includes(id)) && ['ida', 'posada', 'vuelta', 'llega'].every(f => fasesV.has(f)) && posadasEnB >= Math.ceil(nV / 2) && R.visita() !== V,
+        V ? `${V.de.id}→${V.a.id} · ${nV} (${spV.join(',')}) · ${[...fasesV].join('→')} · ${posadasEnB} posadas · ${(gV / 10).toFixed(0)} s` : 'sin pares vecinos');
+      check('Con la bandadita, ninguna bajo el suelo ni con posiciones inválidas', !malV, malV);
+      check('En alto la bandadita es de 6 a 8; en bajo no hay', R.VIS_N.alto[0] === 6 && R.VIS_N.alto[1] === 8 && R.VIS_N.bajo[1] === 0);
       // ----- Draw calls (mismo método que bandadaTest, QA-51): residentes + bandada en las 2 mallas de la bandada
-      lejos(plaza, 6); R.paso(0.05);
+      lejos(plaza, 6); R.paso(0.05); R.visitar(); for (let i = 0; i < 30; i++) R.paso(0.1);
       B.aparecer('prueba', { forzar: true, n: 12, dist: 60, ang: 0.4 }); B.mover(0.05);
       const meshes = B.meshes, info = G.renderer.renderer.info, sc = G.renderer.scene, cam = G.renderer.camera;
       const vis = meshes.map(m => m.visible);
       const una = () => { G.renderer.renderer.render(sc, cam); return info.render.calls; };
       meshes.forEach(m => { m.visible = false; }); const base = una();
       meshes.forEach((m, i) => { m.visible = vis[i]; }); const con = una();
-      check('Residentes y bandada a la vez: 3 draw calls o menos en total', con - base >= 1 && con - base <= 3, `${base} → ${con} · ${R.aves().length} residentes + ${B.F.n} en bandada`);
+      check('Residentes, bandadita y bandada a la vez: 3 draw calls o menos en total (las 2 mallas de la etapa 1)', con - base >= 1 && con - base <= 3, `${base} → ${con} · ${R.aves().length} residentes (bandadita: ${R.estado().visita || 'no'}) + ${B.F.n} en bandada`);
       check('Las cotorras van en mallas instanciadas sin sombras', meshes.every(m => m.isInstancedMesh && !m.castShadow && !m.receiveShadow));
       B.terminar();
       // ----- CPU
@@ -305,12 +429,15 @@ AVE.module('album', function (G) {
       G.renderer.calidad.nivel = calBk;
       Object.assign(M, movBk); Object.assign(S.pos, posBk);
       if (G.ui.hideToast) G.ui.hideToast();
+      pruebaVoces = false;
+      if (TP) { try { if (regBk == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, regBk); } catch (e) { /* sin almacén */ } }
       SV.restaurar(snap); SV.suspender(false); G.quiet = quiet;
     }
+    check('El registro de temporada queda como estaba', !TP || leerReg() === regBk);
     check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.vivoTest) AV.vivoTest = o => test(o); }, 0);
 
-  return { ver, visto, cuenta, colores, especies: () => vivas().concat(extintas()), html, retrato, test, PALETA };
+  return { ver, visto, cuenta, colores, especies: () => vivas().concat(extintas()), html, retrato, test, PALETA, vocesReveladas, sincronizarVoces, CANON };
 });
