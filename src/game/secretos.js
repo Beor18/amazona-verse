@@ -43,8 +43,11 @@ AVE.module('secretos', function (G) {
   }
 
   function enPercha(p) {
-    const y = p.y != null ? p.y : H(p.x, p.z);
-    return !G.fisica.MOVE.flying && dist2(p, p.x, p.z) <= (p.r || 1.4) * (p.r || 1.4) && Math.abs(S.pos.y - y) < 1.6;
+    const r = p.r || 1.4;
+    if (G.fisica.MOVE.flying || dist2(p, p.x, p.z) > r * r) return false;
+    const suelo = H(p.x, p.z), meta = p.y != null ? p.y : suelo;
+    // Vale la piedra (su y) o el suelo del mismo sitio: el mapa puede quedar un poco más bajo que la nota.
+    return Math.abs(S.pos.y - meta) < 2.5 || Math.abs(S.pos.y - suelo) < 2.2;
   }
 
   function pasoPerchas(s) {
@@ -82,8 +85,9 @@ AVE.module('secretos', function (G) {
   }
 
   function bajoAgua(p) {
-    const w = agua(p.x, p.z);
-    return w != null && S.pos.y < w - 0.15 && dist2(p, p.x, p.z) <= (p.r || 4) * (p.r || 4);
+    const w = agua(p.x, p.z), r = p.r || 4;
+    if (w == null || dist2(p, p.x, p.z) > r * r) return false;
+    return S.pos.y < w - 0.05 || !!G.fisica.MOVE.swimming;
   }
 
   function pasoLlevar(s) {
@@ -203,11 +207,18 @@ AVE.module('secretos', function (G) {
       S.secretos = [];
       st.clear();
       G.quiet = false;
+      if (G.input && G.input.keys) G.input.keys.clear();
       const quieto = () => { S.vy = 0; G.fisica.MOVE.vx = 0; G.fisica.MOVE.vz = 0; G.fisica.MOVE.flying = false; };
-      const posar = p => { S.pos.x = p.x; S.pos.z = p.z; S.pos.y = p.y != null ? p.y : H(p.x, p.z) + 0.2; quieto(); P.tick(0.2); };
+      const posar = p => {
+        const suelo = H(p.x, p.z);
+        S.pos.x = p.x; S.pos.z = p.z;
+        S.pos.y = Math.abs((p.y != null ? p.y : suelo) - suelo) < 12 ? suelo + 0.25 : (p.y + 0.15);
+        quieto(); P.tick(0.15);
+      };
       const hac = todos.find(s => s.id === 'hacienda');
       hac.puntos.forEach(posar);
-      check('Jugando: los tres pilares, en orden, guardan el secreto', tiene('hacienda'), hechos().join());
+      check('Jugando: los tres pilares, en orden, guardan el secreto', tiene('hacienda'),
+        'i=' + ((st.get('hacienda') || {}).i || 0) + ' y=' + S.pos.y.toFixed(1) + ' fly=' + G.fisica.MOVE.flying + ' ' + hechos().join());
       const cas = todos.find(s => s.id === 'cascada');
       S.pos.x = cas.punto.x; S.pos.z = cas.punto.z; S.pos.y = cas.punto.y; P.tick(0.2);
       check('Jugando: entrar en la gruta de la cascada', tiene('cascada'));
