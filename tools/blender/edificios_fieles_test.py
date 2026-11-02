@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/blender'))
-from integrar_originales import GLB
+from integrar_originales import GLB, geometry_bounds
 
 SOURCE = ROOT / 'tools/build/salida/integracion-edificios/edificios.glb'
 MODELS = ROOT / 'assets/models/edificios'
@@ -16,6 +16,7 @@ TARGETS = [
     'muro_templo', 'ruina_torre', 'ruina_torre_b', 'ruina_torre_c', 'ruina_torre_e', 'ruina_torre_f',
     'ruina_altar', 'ruina_mirador', 'ruina_pilar', 'ruina_portal',
 ]
+QA71 = ['templo_grande', 'templo_grande_f', 'ruina_mirador']
 
 
 def triangles(doc, mesh_index):
@@ -50,6 +51,15 @@ class FaithfulBuildingsTest(unittest.TestCase):
             current = GLB(MODELS / (name + '_hd.glb'))
             actual = sum(triangles(current.doc, mesh) for mesh in range(len(current.doc['meshes'])))
             self.assertEqual(actual, expected[name], name + ' sigue decimado respecto a TransferNow')
+
+    def test_qa71_light_and_hd_share_bounds(self):
+        for name in QA71:
+            light = GLB(MODELS / (name + '.glb'))
+            hd = GLB(MODELS / (name + '_hd.glb'))
+            light_bounds = geometry_bounds(light.doc, light.binary)
+            hd_bounds = geometry_bounds(hd.doc, hd.binary)
+            difference = max(abs(a - b) for pair in zip(light_bounds, hd_bounds) for a, b in zip(*pair))
+            self.assertLessEqual(difference, 0.3, '%s difiere %.4f m entre ligero y HD' % (name, difference))
 
 
 if __name__ == '__main__':
