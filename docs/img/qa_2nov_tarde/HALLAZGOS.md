@@ -1,0 +1,16 @@
+# BM130 · QA visual de lo de hoy (2-nov-2026, tarde)
+
+Capturas con el Chrome de Metal de `tools/build/qa_2nov.py`; los guiones de cada captura están en `pasos/` (`c1.js` rama, crucero y ladera; `nido.js`; `diario.js`; `medalla.js`; `nayara.js`; `d2.js` «Descubriste»). Errores de consola: 0 en todas las corridas.
+
+| Revisado | Captura | Resultado |
+|---|---|---|
+| Posarse en una rama (cap. 1) | `bm130_posarse_rama.png`, `bm130_rama_quieta.png` | Bien en lo medido: 1 gesto, peso máx. 1, `posado: fino`, tipo rama. En la captura, una hoja grande de la copa tapa las patas desde esa cámara (es flora entre la cámara y los pies; el fundido B1 solo mira a la cotorra entera). Sin arreglo: ángulo de la prueba. |
+| Posarse en el nido del criadero | `bm130_posarse_nido.png`, `bm130_nido_quieta.png` | El gesto se dispara (1 gesto, tipo `nido`). Vittata queda de pie junto al borde (a 1,8 m del centro) y el nido, con escala 1,3, tapa media vista a 3 m: no se aprecian las patas. Gráfico/cámara, no urgente. |
+| Patas recogidas en crucero, desde atrás y de lado | `bm130_crucero_atras.png`, `bm130_crucero_lado.png` | Bien: a 12 m/s (`legsDown` 0) las patas van contra el vientre y solo asoman los dedos amarillos bajo la cola; alas abiertas sin cruces. |
+| Patas en una ladera de 30° | `bm130_ladera_lado.png`, `bm130_ladera_frente.png` | Bien: los dos pies apoyados en la pendiente, dedos abiertos, sin hundirse ni flotar. |
+| «¡Descubriste!» | `bm130_descubriste.png` | Bien: aviso dorado con estrella, «Descubriste Estación de Conservación» y «Lugares descubiertos 3/32». Ojo con la prueba: las capturas por CDP del toast salen con el lienzo en negro porque se dibuja en otro cuadro; el aviso es lo que vale. |
+| Diario del cap. 2 al 6 | `bm130_diario_cap2.png` … `cap6.png` | Las 5 tarjetas abren con su título propio (Cuaderno del terreno, Carta de la bahía, Cuaderno del río, Diario de las voces, Cuaderno del pacto), sus categorías, «Lugares descubiertos 0/21» (caps. 2 a 4), la sección de ciencia y «Amazonas del mundo». **Fallo (contenido):** en el cap. 3, «Ropa desbloqueable» dice «Carta de la bahía (undefined)»: `content/ep3/pack.js:249` (`mano:mapa`) no tiene `pista`. Anotado en PEDIDOS.md. |
+| Medalla del Guardián en el Cuaderno (cap. 6) | `bm130_medalla_cuaderno_cap6.png` | La sección «La medalla del Guardián» aparece solo con `S.collected` `medalla` y el texto es el del pack. El icono de la ficha sale como un círculo con «?» aunque está encontrada: falta un icono propio (gráfico → Kimi). En la captura se ve el diálogo de apertura de Iguaca encima del Cuaderno: lo causó el guion (abrió el Diario con el diálogo en curso), en el juego el botón queda bloqueado por `ui.busy`. |
+| Nayara en el cap. 3 | `bm130_nayara_cap3.png` | El retrato del diálogo es el de ventralis (`navegante.png`), con el nombre «Navegante» y el texto de Nayara. No se capturó su sprite en el muelle: solo es visible tras `BoatLaunched`, que no se simuló; y el guion dejó a Vittata nadando junto a la orilla. Por repetir con el cap. 3 jugado hasta la botadura. |
+
+Gráfico para Kimi: icono propio de la medalla del Guardián en el Cuaderno (hoy el «?» genérico de ficha); sprite de Nayara en el muelle y el nido en el gesto de posarse por revisar con el sprite real.
