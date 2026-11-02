@@ -176,6 +176,9 @@
           const a = G.dialogo.actual(); if (tr) { tr.lineas++; tr.chars += (a && a.text || '').length; }
           G.interaccion.action(); hizo = true; await jugar(0.05); continue;
         }
+        // CG-8 (2-nov): en una charla de más de 2 líneas el resto sale en bocadillos que no paran el juego y el paso avanza
+        // al terminarlos. Un niño los lee mientras vuela; aquí se pasan como lo hace drain() de las pruebas.
+        if (G.dialogo.activo && G.dialogo.activo()) { if (tr) tr.lineas++; G.dialogo.next(); hizo = true; await jugar(0.05); continue; }
         if (cartaAbierta()) {
           const card = $('card'); hizo = true;
           if (tr && !tr.cap && tr.momento) { tr.cap = true; await captura(tr.momento); }
