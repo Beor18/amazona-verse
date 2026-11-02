@@ -45,6 +45,15 @@
     const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     const ALMACEN = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.retos';
     let claveRec = ALMACEN;
+    // CG-17: «Con dones» es opcional. Por defecto todo sigue en la clave de siempre.
+    const DONES_RETOS = new Set(['carrera', 'banquete', 'tormenta']);
+    const FAMILIAS_DONES = ['islenas', 'montaneras', 'norte', 'cordilleranas', 'gran_rio', 'bosque_sur'];
+    const NOMBRE_FAMILIA = {
+      islenas: ['Isleñas', 'Islanders'], montaneras: ['Montañeras', 'Highlanders'], norte: ['Del norte', 'Northern'],
+      cordilleranas: ['Cordilleranas', 'Andean'], gran_rio: ['Del gran río', 'Great river'], bosque_sur: ['Del bosque del sur', 'Southern forest']
+    };
+    let conDones = false, familiaDones = 'islenas';
+    const claveDones = () => (claveRec === ALMACEN ? ALMACEN : claveRec) + '.dones';
     const rate = (k, dt) => 1 - Math.exp(-dt * k);
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const lerp = (a, b, k) => a + (b - a) * k;
@@ -63,11 +72,32 @@
     // =================================================================================================================
     // Récords (aparte de la partida)
     // =================================================================================================================
-    function leerRec() {
-      try { const d = JSON.parse(localStorage.getItem(claveRec) || 'null'); if (d && d.v === 1) return Object.assign({ carrera: {}, tormenta: {}, rio: {}, banquete: {} }, d); } catch (e) { /* sin almacén o dañado */ }
-      return { v: 1, carrera: {}, tormenta: {}, rio: {}, banquete: {} };
+    function leerClave(k) {
+      try { const d = JSON.parse(localStorage.getItem(k) || 'null'); if (d && d.v === 1) return d; } catch (e) { /* sin almacén o dañado */ }
+      return null;
     }
-    function guardarRec(d) { try { localStorage.setItem(claveRec, JSON.stringify(d)); return true; } catch (e) { return false; } }
+    function formaClasica(d) { return Object.assign({ v: 1, carrera: {}, tormenta: {}, rio: {}, banquete: {} }, d || {}); }
+    function vistaDones(d) {
+      const fam = (d && d.familias && d.familias[familiaDones]) || {};
+      return { v: 1, carrera: fam.carrera || {}, tormenta: fam.tormenta || {}, rio: {}, banquete: fam.banquete || {}, familia: familiaDones };
+    }
+    function leerRec() {
+      if (st.partidaDones) return vistaDones(leerClave(claveDones()));
+      return formaClasica(leerClave(claveRec));
+    }
+    function guardarRec(d) {
+      try {
+        if (st.partidaDones) {
+          const prev = leerClave(claveDones()) || { v: 1, familias: {} };
+          const familias = prev.familias || {};
+          familias[familiaDones] = { carrera: d.carrera || {}, tormenta: d.tormenta || {}, banquete: d.banquete || {} };
+          localStorage.setItem(claveDones(), JSON.stringify({ v: 1, familias: familias }));
+          return true;
+        }
+        localStorage.setItem(claveRec, JSON.stringify(d));
+        return true;
+      } catch (e) { return false; }
+    }
     const relajado = () => !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
 
     // Fantasma de la mejor carrera: { v: 1, dt: 0.1, ms, p: 'x0 y0 z0 dx dy dz …' } con decímetros enteros y diferencias en base 36
@@ -332,6 +362,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-reto p { margin: 0; font-size: var(--fs-sm); }
 #retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #704205; } /* 8,0:1 sobre #fff8e8 (antes #8a5208, 6,0:1; alto contraste pide ≥ 7:1) */
 #retos .rt-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+#retos .rt-dones { margin: 0 0 8px; }
+#retos .rt-familias { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+#retos .rt-familias[hidden] { display: none; }
+#retos .rt-familias .btn, #retos [data-con-dones] { min-height: 44px; min-width: 44px; }
 #retos .rt-medalla { width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 5px #fff, 0 6px 0 5px rgba(0,0,0,.18), 0 0 40px var(--m1); position: relative; }
 #retos .rt-medalla::before, #retos .rt-medalla::after { content: ""; position: absolute; top: -30px; width: 22px; height: 44px; background: var(--crest); z-index: -1; }
@@ -409,6 +443,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     <div class="rt-reto" hidden style="display:none"><h3>Amazona Maze</h3><p>Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.</p>
       <span class="rt-rec" data-rec="maze"></span><button class="btn" type="button" data-jugar="maze" data-icon="flag">Jugar</button></div>
   </div>
+  <div class="rt-dones"><button class="btn ghost secondary" type="button" data-con-dones aria-pressed="false">Con dones</button><div class="rt-familias" hidden></div></div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
 </div></div>
@@ -436,6 +471,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       el.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.jugar) jugar(b.dataset.jugar);
+        else if (b.hasAttribute('data-con-dones')) { conDones = !conDones; pintarConDones(); abrir(); }
+        else if (b.dataset.familia && FAMILIAS_DONES.includes(b.dataset.familia)) { familiaDones = b.dataset.familia; if (conDones) abrir(); else pintarConDones(); }
         else if (b.hasAttribute('data-otra')) otraVez();
         else if (b.hasAttribute('data-ranking')) publicarMarca(b);
         else if (b.hasAttribute('data-menu')) abrir();
@@ -454,7 +491,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // =================================================================================================================
     // Entrar y salir del modo (envolturas reversibles; la partida se restaura al salir)
     // =================================================================================================================
-    const st = { activo: false, reto: null, fase: 'nada', snap: null, quiet: false, creador: false, env: null, ultimoManual: -1e9 };
+    const st = { activo: false, reto: null, fase: 'nada', snap: null, quiet: false, creador: false, env: null, ultimoManual: -1e9, partidaDones: false };
     const efectos = { fovExtra: 0, fovAplicado: 0, lineas: 0, destello: 0, oscuro: 0, moja: 0 };
     let modo = null; // CARRERA o TORMENTA mientras se juega
     // ¿Se puede entrar? Con una conversación, tarjeta o panel abiertos, no (se perdería el hilo de la historia)
@@ -505,7 +542,11 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       st.fase = 'nada'; st.reto = null;
       G.pausa.set('retos', false);
       const volverCreador = () => { if (st.creador && !(S.profile && S.profile.created)) G.creador.open(true); st.creador = false; };
-      if (!st.activo) { if (ui) ui.el.hidden = true; document.body.classList.remove('retos-on'); volverCreador(); return; }
+      if (!st.activo) {
+        st.partidaDones = false;
+        if (G.dones && G.dones.conDones) G.dones.conDones(null);
+        if (ui) ui.el.hidden = true; document.body.classList.remove('retos-on'); volverCreador(); return;
+      }
       const env = st.env;
       G.ui.busy = env.busy; F.step = env.step; G.interaccion.action = env.action; G.camara.manual = env.manual;
       const cam = R.camera; cam.fov -= efectos.fovAplicado; efectos.fovAplicado = efectos.fovExtra = 0; cam.updateProjectionMatrix(); G.camara.fov = env.fov;
@@ -523,7 +564,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       G.camara.place(true);
       const br = $('b-retos'); if (br) br.textContent = 'Retos';
       if (ui) ui.el.hidden = true;
-      st.activo = false; st.env = null;
+      st.activo = false; st.env = null; st.partidaDones = false;
+      if (G.dones && G.dones.conDones) G.dones.conDones(null);
     }
     function cerrarPaneles() { if (!ui) return; ui.menu.hidden = true; ui.fin.hidden = true; }
     function limpiarFx() {
@@ -532,9 +574,24 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (const k of ['lineas', 'destello', 'oscuro', 'moja']) ui[k].style.opacity = 0;
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = ''; mostrarCuenta('');
     }
+    function pintarConDones() {
+      const b = ui && ui.menu && ui.menu.querySelector('[data-con-dones]'); if (!b) return;
+      b.setAttribute('aria-pressed', String(conDones));
+      b.textContent = ingles() ? 'With gifts' : 'Con dones';
+      const box = ui.menu.querySelector('.rt-familias'); if (!box) return;
+      box.hidden = !conDones;
+      if (!box.childElementCount) box.innerHTML = FAMILIAS_DONES.map(id => '<button class="btn ghost secondary" type="button" data-familia="' + id + '"></button>').join('');
+      box.querySelectorAll('[data-familia]').forEach(btn => {
+        const nom = NOMBRE_FAMILIA[btn.dataset.familia] || [btn.dataset.familia, btn.dataset.familia];
+        btn.textContent = ingles() ? nom[1] : nom[0];
+        btn.setAttribute('aria-pressed', String(btn.dataset.familia === familiaDones));
+      });
+    }
     // Menú de retos (pausa el mundo mientras se elige)
     function abrir() {
       montarUI();
+      st.partidaDones = false;
+      if (G.dones && G.dones.conDones) G.dones.conDones(null);
       if (modo) { modo.terminar(); modo = null; }
       if (!st.activo && !libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a tocar «Retos».', 3200); return false; }
       cortarApertura();
@@ -544,10 +601,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (!st.activo) G.camara.place(true);
       ui.el.hidden = false; ui.fin.hidden = true; ui.menu.hidden = false;
       const rec = leerRec();
-      ui.menu.querySelector('[data-rec="carrera"]').textContent = rec.carrera.mejor ? 'Récord: ' + reloj(rec.carrera.mejor / 1000) + (rec.carrera.puesto ? ' · mejor puesto ' + ordinal(rec.carrera.puesto) : '') : 'Aún sin récord';
-      ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
-      ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
-      ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
+      const recD = conDones ? vistaDones(leerClave(claveDones())) : rec;
+      const fuente = k => (conDones && DONES_RETOS.has(k) ? recD : rec);
+      const car = fuente('carrera'), tor = fuente('tormenta'), rio = fuente('rio'), ban = fuente('banquete');
+      ui.menu.querySelector('[data-rec="carrera"]').textContent = car.carrera.mejor ? 'Récord: ' + reloj(car.carrera.mejor / 1000) + (car.carrera.puesto ? ' · mejor puesto ' + ordinal(car.carrera.puesto) : '') : 'Aún sin récord';
+      ui.menu.querySelector('[data-rec="tormenta"]').textContent = tor.tormenta.mejor ? 'Récord: ' + tor.tormenta.mejor + ' puntos' : 'Aún sin récord';
+      ui.menu.querySelector('[data-rec="rio"]').textContent = rio.rio.mejor ? 'Récord: ' + reloj(rio.rio.mejor / 1000) + (rio.rio.medalla ? ' · medalla de ' + rio.rio.medalla : '') : 'Aún sin récord';
+      ui.menu.querySelector('[data-rec="banquete"]').textContent = ban.banquete.mejor ? 'Récord: ' + ban.banquete.mejor + ' puntos' : 'Aún sin récord';
       const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
       { const z = rec.tren || {}; ui.menu.querySelector('[data-rec="tren"]').textContent = z.mejor ? 'Récord: ' + z.mejor + ' puntos' : 'Aún sin récord'; } // src/game/tren.js (C16)
       { const z = rec.rio_rush || {}, t = [z.mejor ? 'Récord: ' + z.mejor + ' puntos' : '', z.reloj ? 'Contrarreloj: ' + reloj(z.reloj / 1000) : ''].filter(Boolean); ui.menu.querySelector('[data-rec="rio_rush"]').textContent = t.length ? t.join(' · ') : 'Aún sin récord'; } // src/game/river_rush.js (AC2)
@@ -556,12 +616,12 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (const k of Object.keys(NOMBRE_RETO)) {
         const rr = ui.menu.querySelector('[data-rec="' + k + '"]'); if (!rr) continue;
         let md = rr.nextElementSibling; if (!md || !md.classList.contains('rt-med')) { md = document.createElement('span'); md.className = 'rt-med'; rr.after(md); }
-        const m = medallaDeReto(k, rec); md.textContent = m ? 'Medalla de ' + m : ''; md.hidden = !m;
+        const m = medallaDeReto(k, fuente(k)); md.textContent = m ? 'Medalla de ' + m : ''; md.hidden = !m;
         rr.closest('.rt-reto').classList.toggle('es-hoy', k === hoy);
       }
       const hb = ui.menu.querySelector('.rt-hoy'); hb.hidden = false;
       hb.innerHTML = '<small>Reto del día</small><b>' + NOMBRE_RETO[hoy] + '</b><button class="btn" type="button" data-jugar="' + hoy + '" data-icon="flag">Jugar</button>';
-      ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
+      ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma(); pintarConDones();
       st.fase = 'menu';
       G.pausa.set('retos', true);
       const b = ui.menu.querySelector('[data-jugar]'); if (b) b.focus({ preventScroll: true });
@@ -572,7 +632,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       leerRec, guardarRec, esPrueba: () => claveRec !== ALMACEN };
     const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
-      montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
+      montarUI();
+      st.partidaDones = !!(conDones && DONES_RETOS.has(reto));
+      if (G.dones && G.dones.conDones) {
+        if (st.partidaDones) { G.dones.conDones(familiaDones); if (G.dones.nuevaPartida) G.dones.nuevaPartida(); }
+        else G.dones.conDones(null);
+      }
+      st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
       if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
       if (reto === 'tren') { salir(); const f = window.AV && window.AV.tren; if (f) f().catch(() => {}); return true; } // El tren de Vittata (src/game/tren.js, C16): igual que Flight
       if (reto === 'rio_rush') { salir(); const f = window.AV && window.AV.riverRush; if (f) f().catch(() => {}); return true; } // River Rush (src/game/river_rush.js, AC2): igual que Flight
@@ -646,6 +712,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function tocaDescanso(ahora, limite) { if (sesion.t0 && ahora - sesion.t0 >= (limite || DESCANSO_MS)) { sesion.t0 = ahora; return true; } return false; }
     // Ranking global: solo si la marca es tu mejor y la partida no es de prueba; el panel y el envío viven en records.js
     function datosRanking(reto, u, rec) {
+      if (st.partidaDones) return null;
       if (!u || u.modo !== reto || claveRec !== ALMACEN) return null;
       const r = (rec && rec[reto]) || {};
       if (reto === 'carrera' || reto === 'rio') return u.llego && u.ms > 0 && r.mejor && u.ms <= r.mejor ? { reto, valor: u.ms } : null;
@@ -653,6 +720,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       return null;
     }
     function publicarMarca(btn, fetchSim) {
+      if (st.partidaDones) return Promise.resolve('no-ranking');
       const d = st.rankDatos; if (!d) return Promise.resolve('invalido');
       const ir = G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
       return ir.then(rk => rk.publicarRanking({ reto: d.reto, valor: d.valor, dur_ms: d.dur_ms, prueba: claveRec !== ALMACEN, fetch: fetchSim }), () => { G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000); return 'error'; })
@@ -1817,7 +1885,66 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
+    // QA: seis comprobaciones del modo «Con dones». Por defecto no cambia nada y nunca publica.
+    async function cg17Test() {
+      const out = [];
+      const check = (name, ok, extra) => { if (out.length < 6) out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
+      const clase0 = document.body.classList.contains('retos-on');
+      const con0 = conDones, fam0 = familiaDones, part0 = st.partidaDones, clave0 = claveRec, rank0 = st.rankDatos;
+      const real0 = (() => { try { return localStorage.getItem(ALMACEN); } catch (e) { return null; } })();
+      const aislada = ALMACEN + '.cg17';
+      document.body.classList.add('retos-on');
+      try {
+        if (!G.dones && window.AVDones) window.AVDones(G);
+        if (!G.dones) await G.AVE.assets.script('src/game/dones.js').then(() => window.AVDones(G));
+        conDones = false; familiaDones = 'islenas'; st.partidaDones = false; claveRec = ALMACEN;
+        G.dones.conDones(null);
+        const rankClasico = datosRanking('tormenta', { modo: 'tormenta', puntos: 900 }, { tormenta: { mejor: 900 } });
+        check('Por defecto Retos sigue igual: los ejes valen 1 y el ranking puede salir', G.dones.mult('velocidad') === 1 && rankClasico && rankClasico.reto === 'tormenta' && rankClasico.valor === 900);
+        conDones = true; familiaDones = 'norte'; st.partidaDones = true;
+        G.dones.conDones('norte');
+        check('Con dones se elige una familia, no una especie, y sus ejes se aplican', G.dones.familia() === 'norte' && Math.abs(G.dones.mult('velocidad') - 1.03) < 1e-9);
+        claveRec = aislada; st.partidaDones = true; familiaDones = 'norte';
+        try { localStorage.removeItem(claveDones()); } catch (e) { /* sin almacén */ }
+        guardarRec({ v: 1, carrera: { mejor: 12000, puesto: 1, oros: 1, jugadas: 1 }, tormenta: {}, rio: {}, banquete: {} });
+        const crudo = localStorage.getItem(claveDones());
+        const libro = crudo && JSON.parse(crudo);
+        check('Los récords van a una clave aparte, por familia, y no pisan los clásicos', localStorage.getItem(ALMACEN) === real0 && libro && libro.familias && libro.familias.norte && libro.familias.norte.carrera.mejor === 12000 && !/especie|species/.test(crudo), crudo);
+        claveRec = ALMACEN; st.partidaDones = true; st.rankDatos = { reto: 'tormenta', valor: 100, dur_ms: 1000 };
+        let pubs = 0, redes = 0;
+        const pub0 = G.recordsApi && G.recordsApi.publicarRanking;
+        if (G.recordsApi) G.recordsApi.publicarRanking = () => { pubs++; return Promise.resolve('publicado'); };
+        const fetch0 = window.fetch;
+        if (typeof fetch0 === 'function') window.fetch = function () { redes++; return fetch0.apply(this, arguments); };
+        let pub = 'no-ranking';
+        try {
+          const noRank = datosRanking('carrera', { modo: 'carrera', llego: true, ms: 1000 }, { carrera: { mejor: 1000 } });
+          pub = await publicarMarca();
+          check('Con dones no entra al ranking en línea ni llama a la red', noRank === null && pub === 'no-ranking' && pubs === 0 && redes === 0, String(pub) + ' pubs ' + pubs);
+        } finally {
+          if (typeof fetch0 === 'function') window.fetch = fetch0;
+          if (G.recordsApi && pub0) G.recordsApi.publicarRanking = pub0;
+        }
+        G.dones.conDones('islenas'); G.dones.nuevaPartida();
+        const primera = G.dones.activar(), despues = (G.dones.soltarDon(), G.dones.activar());
+        check('El don tiene una carga por partida y no se recarga', primera === true && despues === false, String(primera) + '/' + String(despues));
+        st.partidaDones = !!(conDones && DONES_RETOS.has('rio'));
+        G.dones.conDones(null);
+        const rioRank = datosRanking('rio', { modo: 'rio', llego: true, ms: 5000 }, { rio: { mejor: 5000 } });
+        check('Solo carrera, banquete y tormenta usan dones; el río sigue en clásico', ['carrera', 'banquete', 'tormenta'].every(k => DONES_RETOS.has(k)) && !DONES_RETOS.has('rio') && !DONES_RETOS.has('flight') && st.partidaDones === false && G.dones.mult('velocidad') === 1 && rioRank && rioRank.reto === 'rio');
+      } catch (e) {
+        check('CG-17', false, String(e && e.stack || e).slice(0, 300));
+      } finally {
+        conDones = con0; familiaDones = fam0; st.partidaDones = part0; claveRec = clave0; st.rankDatos = rank0;
+        try { localStorage.removeItem(aislada); localStorage.removeItem(aislada + '.dones'); } catch (e) { /* sin almacén */ }
+        if (G.dones) { G.dones.conDones(null); if (G.dones.soltarDon) G.dones.soltarDon(); }
+        if (!clase0) document.body.classList.remove('retos-on');
+      }
+      while (out.length < 6) check('CG-17 incompleto', false);
+      return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+    }
+
+    const api = G.retosApi = { abrir, jugar, salir, otraVez, test, cg17Test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
       pruebas: { datosRanking, publicarMarca, medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
       alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
