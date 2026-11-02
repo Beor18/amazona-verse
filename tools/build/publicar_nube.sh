@@ -73,12 +73,17 @@ if [ $RC -ne 0 ]; then
 fi
 NOTA="${NOTA:-pruebas obligatorias en la nube en verde}"
 
-[ $PROBAR -eq 1 ] && { echo "pruebas en verde para $HEAD_SHA (--probar: sin publicar)"; exit 0; }
+# Informe de la publicación (CG-2): resumen del reporte-test.json de esta misma corrida
+informe() { "$AV_PYTHON" -I tools/build/ultima_publicacion.py "$OUT/reporte-test.json" "$1" --codigo "$HEAD_SHA" --nota "$NOTA"; }
+[ $PROBAR -eq 1 ] && { informe "$OUT/ultima_publicacion.json" || true; echo "pruebas en verde para $HEAD_SHA (--probar: sin publicar)"; exit 0; }
 tools/build/sitio.sh "$OUT/site"
 T=$(mktemp)
 GIT_INDEX_FILE=$T git read-tree HEAD
 GIT_INDEX_FILE=$T git add -A sitio
 if GIT_INDEX_FILE=$T git diff --cached --quiet; then rm -f "$T"; echo "sitio/ sin cambios"; exit 0; fi
+# Va en el mismo commit «Sitio: publica»; se escribe solo ahora para no dejar la carpeta sucia si no se publica
+if informe docs/equipo/ultima_publicacion.json; then GIT_INDEX_FILE=$T git add docs/equipo/ultima_publicacion.json
+else echo "aviso: no se pudo escribir docs/equipo/ultima_publicacion.json"; git checkout -q -- docs/equipo/ultima_publicacion.json 2>/dev/null || true; fi
 GIT_INDEX_FILE=$T git commit -q -m "Sitio: publica $HEAD_SHA ($NOTA)
 
 Co-Authored-By: ${AV_COAUTOR:-Claude <noreply@anthropic.com>}"

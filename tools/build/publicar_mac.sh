@@ -5,7 +5,7 @@
 #   tools/build/publicar_mac.sh --probar     # igual pero sin commit ni push
 # Autorizado por Kelvin (publicar sin pedirle permiso si las pruebas pasan). Nunca usa --force.
 set -u
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."; ORIG="$PWD"
 PROBAR=0; CONT=0; IGUAL=0
 for a in "$@"; do case "$a" in --probar) PROBAR=1;; --continuo) CONT=1;; --igual) IGUAL=1;; esac; done
 # --igual: publica aunque las pruebas estén en rojo (Kelvin lo pidió para ver los gráficos del día en vivo;
@@ -49,10 +49,17 @@ PY
     else
       echo "== pruebas (13 baterías + extras) =="; tools/build/test.sh "$OUT/" --extra || { echo "NO SE PUBLICA $SHA: pruebas en rojo (arriba está cuál)"; exit 1; }
     fi
-    [ $PROBAR -eq 1 ] && { echo "pruebas en verde para $SHA (--probar: sin publicar)"; exit 0; }
+    # Informe de la publicación (CG-2): resumen de $OUT/reporte-test.json; con --igual no hay pruebas («-»)
+    REPJ="$OUT/reporte-test.json"; [ $IGUAL -eq 1 ] && REPJ=-
+    PY="$(source tools/build/lib.sh && avb_python)" || PY=""
+    informe() { [ -n "$PY" ] && "$PY" -I tools/build/ultima_publicacion.py "$REPJ" "$1" --codigo "$SHA" --nota "$NOTA"; }
+    [ $PROBAR -eq 1 ] && { informe "$ORIG/tools/build/salida/ultima_publicacion-$SHA.json"; echo "pruebas en verde para $SHA (--probar: sin publicar)"; exit 0; }
     tools/build/sitio.sh "$OUT/site" || exit 1
     T=$(mktemp); GIT_INDEX_FILE=$T git read-tree HEAD; GIT_INDEX_FILE=$T git add -A sitio
     GIT_INDEX_FILE=$T git diff --cached --quiet && { echo "sitio/ sin cambios"; exit 0; }
+    # Va en el mismo commit «Sitio: publica»; si falla, se publica igual sin él
+    if informe docs/equipo/ultima_publicacion.json; then GIT_INDEX_FILE=$T git add docs/equipo/ultima_publicacion.json
+    else echo "aviso: no se pudo escribir docs/equipo/ultima_publicacion.json"; fi
     TREE=$(GIT_INDEX_FILE=$T git write-tree); rm -f "$T"
     C=$(git commit-tree "$TREE" -p HEAD -m "Sitio: publica $SHA ($NOTA)
 
@@ -63,7 +70,10 @@ Co-Authored-By: $COAUTOR")
       # con el mismo sitio/ ya probado (antes se reintentaba con un commit viejo y GitHub lo rechazaba siempre; 1-nov)
       sleep $((2**i)); git fetch -q origin main || continue
       T2=$(mktemp); GIT_INDEX_FILE=$T2 git read-tree origin/main && GIT_INDEX_FILE=$T2 git rm -r -q --cached --ignore-unmatch sitio >/dev/null \
-        && GIT_INDEX_FILE=$T2 git read-tree --prefix=sitio/ "$C:sitio" && TREE2=$(GIT_INDEX_FILE=$T2 git write-tree) \
+        && GIT_INDEX_FILE=$T2 git read-tree --prefix=sitio/ "$C:sitio" \
+        && { B=$(git rev-parse -q --verify "$C:docs/equipo/ultima_publicacion.json" || true)   # el informe va con su sitio/
+             [ -z "$B" ] || GIT_INDEX_FILE=$T2 git update-index --add --cacheinfo "100644,$B,docs/equipo/ultima_publicacion.json"; } \
+        && TREE2=$(GIT_INDEX_FILE=$T2 git write-tree) \
         && C=$(git commit-tree "$TREE2" -p origin/main -m "Sitio: publica $SHA ($NOTA)
 
 Co-Authored-By: $COAUTOR"); rm -f "$T2"
