@@ -9,17 +9,36 @@
    fuente. Todo el estado va en S.collected (se guarda solo): observaciones, voces, pruebas de la maqueta, acuerdo y cuidado. */
 (function () {
   'use strict';
-  const LUMA = { x: -4, z: 2 }, ABUELA = { x: -1, z: -5 }, PAPA = { x: -6, z: -13 }, NAVEGA = { x: 1.2, z: 4.8 }, MESA = { x: -5, z: -2 };
   const RIO = 8; // el río corre de norte a sur por x = 8; Villa Raíz queda al oeste y la otra comunidad al este
+  // Mundo único (BM113, docs/equipo/MUNDO_UNICO.md): con el mapa real cargado, el capítulo se juega en el tramo recto del río
+  // real que baja de norte a sur al este de Villa Raíz, hacia la desembocadura (x ≈ 200–211, z ≈ 130–190): llano a 4 m al
+  // oeste (Villa Raíz) y una franja llana al este (la otra orilla). Los Portales del Río que proponía el plan quedan en un cañón
+  // de 9–15 m con paredes de más de 30° (medido el 2-nov), donde ni la asamblea ni la obra caben. Todo se traslada 160 m al sur
+  // y sigue la curva del cauce: x real = centro del río a esa z + (x − 8). RX(z) es el centro del río y OR(z) la orilla (medio
+  // ancho + 1,5 m); sin el mapa, RIO y 6 como siempre.
+  const REAL = !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const DZ = 160;
+  const CAUCE = REAL ? window.AV_MAPA_CAP1.agua.rio.puntos.filter(q => q[0] > 185 && q[0] < 225 && q[1] > 110 && q[1] < 205).sort((u, v) => u[1] - v[1]) : [];
+  function cauce(z) { // [centro x, medio ancho] del río real a esa z (interpolado en la polilínea del mapa)
+    const P = CAUCE; if (!P.length) return [RIO, 5];
+    if (z <= P[0][1]) return [P[0][0], P[0][3]];
+    for (let i = 1; i < P.length; i++) if (z <= P[i][1]) { const t = (z - P[i - 1][1]) / (P[i][1] - P[i - 1][1]); return [P[i - 1][0] + (P[i][0] - P[i - 1][0]) * t, P[i - 1][3] + (P[i][3] - P[i - 1][3]) * t]; }
+    const u = P[P.length - 1]; return [u[0], u[3]];
+  }
+  const RX = z => (REAL ? cauce(z)[0] : RIO), OR = z => (REAL ? cauce(z)[1] + 1.5 : 6);
+  // a tierra: si el punto cae en el agua real (curvas, orilla irregular), se corre hacia su lado hasta 1 m de la orilla seca
+  const seco = (x, z, lado) => { const MD = window.AV_MAPA_CAP1; let k = 0; while (k < 16 && MD.nivelAguaEn(x, z) > MD.alturaEn(x, z) - 0.3) { x += lado * 0.5; k++; } return k ? x + lado : x; };
+  const M = p => { if (!REAL) return p; const z = p.z + DZ, c = cauce(z)[0]; return Object.assign({}, p, { x: seco(c + (p.x - RIO), z, p.x < RIO ? -1 : 1), z }); };
+  const LUMA = M({ x: -4, z: 2 }), ABUELA = M({ x: -1, z: -5 }), PAPA = M({ x: -6, z: -13 }), NAVEGA = M({ x: 1.2, z: 4.8 }), MESA = M({ x: -5, z: -2 });
   // Los tres tramos del río (M1) y lo que se observa en cada uno (valores del juego)
   const TRAMOS = {
-    a: { id: 'a', nombre: 'el estrecho', z: -13, ve: 'El río es estrecho aquí. En la orilla hay un bosquecillo con sombra sobre el agua.' },
-    b: { id: 'b', nombre: 'río abajo', z: 13, ve: 'Las orillas son altas y el río es ancho. Aquí cabría un puente alto, pero el camino es largo.' },
-    c: { id: 'c', nombre: 'el remanso', z: 2, ve: 'El agua va tranquila. Pasan canoas de una orilla a otra: aquí ya se cruza remando.' },
+    a: { id: 'a', nombre: 'el estrecho', z: -13 + (REAL ? DZ : 0), ve: 'El río es estrecho aquí. En la orilla hay un bosquecillo con sombra sobre el agua.' },
+    b: { id: 'b', nombre: 'río abajo', z: 13 + (REAL ? DZ : 0), ve: 'Las orillas son altas y el río es ancho. Aquí cabría un puente alto, pero el camino es largo.' },
+    c: { id: 'c', nombre: 'el remanso', z: 2 + (REAL ? DZ : 0), ve: 'El agua va tranquila. Pasan canoas de una orilla a otra: aquí ya se cruza remando.' },
   };
   const TIDS = Object.keys(TRAMOS);
   const OBS = TIDS.map(i => 'obs_' + i).concat('obs_bosque');
-  const BOSQUE = { x: -1, z: -17 }; // el bosquecillo del estrecho: huecos de nido y sombra
+  const BOSQUE = M({ x: -1, z: -17 }); // el bosquecillo del estrecho: huecos de nido y sombra
   // D27 (DECISION_LOG, AP10 lote 3): en el bosquecillo anida uno de los 36, un guardián que el jugador ya conoce.
   // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
   const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
@@ -111,14 +130,21 @@
         etiqueta: 'Capítulo 4 · El precio del progreso', fin: '¡El primer cruce!',
         nota: 'Capítulo 4: una forma de cruzar el río, con todos. No uses tu nombre real.', inventario: {} },
     },
-    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -6, z: 5 }, camara: 0.6 },
+    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: M({ x: -6, z: 5 }), camara: 0.6 },
     // edu: aula del episodio (respuestas de «Iguaca te pregunta» y el registro local)
     guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     aula: { clave: 'amazonaverse.aula.cap4', estado: 'edu', archivo: 'amazonaverse_cap4', lecciones: () => window.AV_LECCIONES_EP4 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata); el nido entra al cerrar M1 con Iguaca. Ninguna cápsula se compra.
     criadero: { desde: 'ShoreSurveyed', almacen: 'amazonaverse' },
 
-    mundo: {
+    // Mundo único: el mapa real del cap. 1 (AVE.mundoReal) con los lugares del capítulo y la flora despejada en sus sitios;
+    // sin el reubicar ni los pois del cap. 1. Sin el mapa, el mundo de relleno de antes.
+    mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
+      lugares: { inicio: { x: M({ x: -6, z: 4 }).x, z: M({ x: -6, z: 4 }).z, r: 5 }, mesa: { x: MESA.x, z: MESA.z, r: 3 } },
+      pois: [], reubicar: null,
+      flora: Object.assign({}, window.AVE.mundoReal.flora, { evitar: pack => [LUMA, ABUELA, PAPA, NAVEGA, MESA, M({ x: -6, z: 5 })].map(p => ({ x: p.x, z: p.z, r: 2.5 }))
+        .concat([{ x: BOSQUE.x, z: BOSQUE.z, r: 3 }], TIDS.map(i => ({ x: RX(TRAMOS[i].z) - OR(TRAMOS[i].z), z: TRAMOS[i].z, r: 9 })), ((pack.diario || {}).entradas || []).map(e => ({ x: e.x, z: e.z, r: 1.5 }))) }),
+    }) : {
       tamano: 40, segmentos: 80,
       exposicion: 0.74,
       cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
@@ -137,6 +163,9 @@
         evitar: [LUMA, ABUELA, PAPA, NAVEGA, MESA, { x: BOSQUE.x, z: BOSQUE.z, r: 5 }].concat(TIDS.map(i => ({ x: RIO - 6, z: TRAMOS[i].z }))) },
       oceano: { color: '#0b4f86', y: -2.6 },
     },
+    // Mundo único: los lugares y asentamientos del mapa con su nombre propio (ES/EN), como en el cap. 1
+    descubrir: REAL ? { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] } : undefined,
+    asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true },
       { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
@@ -179,17 +208,17 @@
       categorias: { ribera: { nombre: 'Ribera', desconocido: 'Algo en la orilla', sonido: 'pickup', rafaga: 'feathers' },
         cruces: { nombre: 'Cruces', desconocido: 'Una forma de cruzar', sonido: 'pickup', rafaga: 'gold' } },
       entradas: [
-        { id: 'raices', cat: 'ribera', nombre: 'Raíces en la orilla', x: 1.5, z: -9, texto: 'Raíces que bajan hasta el agua y sujetan la tierra de la orilla.',
+        { id: 'raices', cat: 'ribera', nombre: 'Raíces en la orilla', ...M({ x: 1.5, z: -9 }), texto: 'Raíces que bajan hasta el agua y sujetan la tierra de la orilla.',
           modelo: (add) => { for (const dx of [-0.3, 0, 0.3]) { const m = add(new THREE.CylinderGeometry(0.04, 0.07, 0.9, 5), '#6b4a2a', dx, 0.3, 0); m.rotation.z = dx; } } },
-        { id: 'sombra', cat: 'ribera', nombre: 'Sombra sobre el agua', x: 1, z: -21, texto: 'Bajo las ramas, el agua está más quieta y se ven pececitos.',
+        { id: 'sombra', cat: 'ribera', nombre: 'Sombra sobre el agua', ...M({ x: 1, z: -21 }), texto: 'Bajo las ramas, el agua está más quieta y se ven pececitos.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.7, 0.7, 0.03, 14), '#3d6a5a', 0, 0.02, 0); } },
-        { id: 'hoja_seca', cat: 'ribera', nombre: 'Hojas en el remanso', x: 1.5, z: 7, texto: 'Hojas caídas que el agua lleva despacio por el remanso.',
+        { id: 'hoja_seca', cat: 'ribera', nombre: 'Hojas en el remanso', ...M({ x: 1.5, z: 7 }), texto: 'Hojas caídas que el agua lleva despacio por el remanso.',
           modelo: (add) => { for (const [dx, dz] of [[-0.2, 0], [0.2, 0.15], [0, -0.2]]) add(new THREE.BoxGeometry(0.22, 0.02, 0.12), '#b58a3a', dx, 0.03, dz); } },
-        { id: 'soga', cat: 'cruces', nombre: 'Soga vieja de cruce', x: -2, z: 9, texto: 'Una soga gruesa atada a un poste. Alguien la usó para cruzar.',
+        { id: 'soga', cat: 'cruces', nombre: 'Soga vieja de cruce', ...M({ x: -2, z: 9 }), texto: 'Una soga gruesa atada a un poste. Alguien la usó para cruzar.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.06, 0.07, 1.2, 6), '#8a6a3a', 0, 0.6, 0); add(new THREE.TorusGeometry(0.25, 0.05, 6, 12), '#c9a86a', 0, 0.9, 0); } },
-        { id: 'remo', cat: 'cruces', nombre: 'Remo de madera', x: -4, z: 12, texto: 'Un remo gastado de tanto ir y venir.',
+        { id: 'remo', cat: 'cruces', nombre: 'Remo de madera', ...M({ x: -4, z: 12 }), texto: 'Un remo gastado de tanto ir y venir.',
           modelo: (add) => { const m = add(new THREE.BoxGeometry(0.08, 1.3, 0.05), '#8a5a2a', 0, 0.3, 0); m.rotation.z = 1.3; add(new THREE.BoxGeometry(0.3, 0.04, 0.16), '#8a5a2a', 0.6, 0.12, 0); } },
-        { id: 'piedras', cat: 'cruces', nombre: 'Piedras de paso', x: -8, z: -9, texto: 'Piedras planas en fila, como para cruzar un arroyo sin mojarse.',
+        { id: 'piedras', cat: 'cruces', nombre: 'Piedras de paso', ...M({ x: -8, z: -9 }), texto: 'Piedras planas en fila, como para cruzar un arroyo sin mojarse.',
           modelo: (add) => { for (let i = 0; i < 4; i++) add(new THREE.CylinderGeometry(0.22, 0.25, 0.12, 8), '#8d8a82', i * 0.45 - 0.7, 0.06, 0); } },
       ],
       hitos: [{ id: 'cuaderno', todos: true }],
@@ -314,7 +343,7 @@
 
       // ---------- Misión 1 · «Lo que hay en la orilla»: 3 tramos y el bosquecillo ----------
       for (const id of TIDS) {
-        const t = TRAMOS[id], x = RIO - 6, y = H(x, t.z);
+        const t = TRAMOS[id], x = RX(t.z) - OR(t.z), y = H(x, t.z);
         const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), mat('#8a6a3a'));
         poste.position.set(x, y + 1.1, t.z); scene.add(poste);
         const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3), new THREE.MeshLambertMaterial({ color: '#2f8fd6', side: THREE.DoubleSide }));
@@ -471,7 +500,7 @@
       // ---------- Piezas del kit de edificios (assets/models/edificios, propio): el muelle de quien navega con su canoa en el
       // remanso y el toldo de la asamblea junto a la mesa. Sin el modelo, el sitio queda como estaba (nada depende de ellas) ----------
       const KIT = 'assets/models/edificios/';
-      const nivelRio = z => { const n = G.agua && G.agua.levelAt ? G.agua.levelAt(RIO, z) : -Infinity; return isFinite(n) ? n : H(RIO, z); };
+      const nivelRio = z => { const n = G.agua && G.agua.levelAt ? G.agua.levelAt(RX(z), z) : -Infinity; return isFinite(n) ? n : H(RX(z), z); };
       // El modelo con su lado largo en x, centrado y apoyado en y = 0, medido a `largo`
       function kit(nombre, largo) {
         return G.assets.loadGLB(KIT + nombre + '.glb', { b64: () => (window.AV_EDIFICIOS_B64 || {})[nombre], script: KIT + nombre + '_glb.js', base: KIT, error: nombre + ' no disponible' }).then(g => {
@@ -502,8 +531,8 @@
       }
 
       // ---------- La obra en la orilla y el primer cruce ----------
-      const obraPos = () => { const t = TRAMOS[(OPCIONES[opcion()] || OPCIONES.a).tramo]; return { x: RIO - 5, z: t.z + 1.5 }; };
-      const obra = G.interaccion.add({ id: 'obra', x: RIO - 5, z: 0, r: 3, visible: () => S.step >= 7 && !!opcion(),
+      const obraPos = () => { const t = TRAMOS[(OPCIONES[opcion()] || OPCIONES.a).tramo]; return { x: RX(t.z + 1.5) - (OR(t.z + 1.5) - 1), z: t.z + 1.5 }; };
+      const obra = G.interaccion.add({ id: 'obra', x: RX(REAL ? DZ : 0) - 5, z: REAL ? DZ : 0, r: 3, visible: () => S.step >= 7 && !!opcion(),
         label: () => S.step === 7 ? 'Construir lo acordado' : 'Mirar lo construido',
         use: () => {
           if (S.step !== 7) { G.dialogo.say([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
@@ -519,7 +548,7 @@
           b: [di('Abuela', 'El camino es largo, pero con descansos llego. Y el río sigue igual de bonito.'), di('Navegante', '¡Y las canoas pasan por debajo!')],
           c: [di('Navegante', 'Súbase, abuela: hoy remamos juntos.'), di('Abuela', 'Cuando crezca el río esperaré, pero hoy cruzo en buena compañía.')],
         }[o] || [];
-        G.fx.burst(RIO, H(RIO - 5, TRAMOS[OPCIONES[o].tramo].z) + 2, TRAMOS[OPCIONES[o].tramo].z, 'feathers', 30);
+        { const zq = TRAMOS[OPCIONES[o].tramo].z; G.fx.burst(RX(zq), H(RX(zq) - (OR(zq) - 1), zq) + 2, zq, 'feathers', 30); }
         encuadrar(); G.audio.play('unlock'); G.comic.capture('cruce');
         S.complete = true; G.eventos.log('Chapter4Completed', { choice: o }); E().fin = S.clock;
         G.misiones.advanceTo(G.misiones.DONE); registrar();
@@ -530,7 +559,7 @@
       function colocarAbuela() {
         const n = G.actores.npc('abuela'), o = opcion(); if (!n) return;
         let x = ABUELA.x, z = ABUELA.z;
-        if (o && tiene('construido')) { z = TRAMOS[OPCIONES[o].tramo].z - 1.8; x = S.complete ? RIO + 6 : RIO - 6; }
+        if (o && tiene('construido')) { z = TRAMOS[OPCIONES[o].tramo].z - 1.8; x = S.complete ? RX(z) + OR(z) : RX(z) - OR(z); }
         n.def.x = x; n.def.z = z; n.sp.position.set(x, H(x, z) + 1.0, z); n.sh.position.set(x, H(x, z) + 0.03, z); n.collider.x = x; n.collider.z = z;
         itAbuela.x = x; itAbuela.z = z;
       }
@@ -561,25 +590,25 @@
         }
         if (!hecho || !o) return;
         const add = (w, h, d, col, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(col)); m.position.set(x, y, z); obraG.add(m); return m; };
-        const zt = TRAMOS[OPCIONES[o].tramo].z, x0 = RIO - 5.5, x1 = RIO + 5.5, y0 = H(x0, zt), y1 = H(x1, zt);
+        const zt = TRAMOS[OPCIONES[o].tramo].z, RC = RX(zt), x0 = RC - (OR(zt) - 0.5), x1 = RC + (OR(zt) - 0.5), y0 = H(x0, zt), y1 = H(x1, zt);
         if (o === 'a') {
           const alto = c === 'paso' ? 1.2 : 0;
-          add(x1 - x0, 0.2, 1.6, '#a87c4f', RIO, Math.max(y0, y1) + 0.3 + alto, zt);
+          add(x1 - x0, 0.2, 1.6, '#a87c4f', RC, Math.max(y0, y1) + 0.3 + alto, zt);
           for (const x of [x0, x1]) add(0.6, 0.6, 1.8, '#8d8a82', x, H(x, zt) + 0.3, zt);
           if (c === 'cajas') for (const [dx, dz] of ARB.slice(0, 3)) { add(0.1, 2.4, 0.1, '#6b4a2a', BOSQUE.x + dx + 0.8, H(BOSQUE.x + dx, BOSQUE.z + dz) + 1.2, BOSQUE.z + dz); add(0.4, 0.5, 0.4, '#5a3d22', BOSQUE.x + dx + 0.8, H(BOSQUE.x + dx, BOSQUE.z + dz) + 2.5, BOSQUE.z + dz); }
         } else if (o === 'b') {
           const top = Math.max(y0, y1) + 2.6;
-          add(x1 - x0 + 2, 0.22, 1.6, '#a87c4f', RIO, top, zt);
-          for (const x of [RIO - 2.5, RIO + 2.5, x0, x1]) { const yb = H(x, zt) - 1; add(0.7, top - yb, 0.7, '#8d8a82', x, yb + (top - yb) / 2, zt); }
+          add(x1 - x0 + 2, 0.22, 1.6, '#a87c4f', RC, top, zt);
+          for (const x of [RC - 2.5, RC + 2.5, x0, x1]) { const yb = H(x, zt) - 1; add(0.7, top - yb, 0.7, '#8d8a82', x, yb + (top - yb) / 2, zt); }
           if (c === 'descansos') for (let i = 0; i < 3; i++) add(1.2, 0.4, 0.4, '#8a6a3a', x0 - 2 - i * 3, H(x0 - 2 - i * 3, zt - 2) + 0.2, zt - 2 - i * 4);
           if (c === 'minga') for (const dx of [-1, 1]) add(0.15, 1.6, 0.15, '#d6403a', x0 - 1, H(x0 - 1, zt + dx) + 0.8, zt + dx);
         } else if (o === 'c') {
-          for (const [xa, xb, giro] of [[x0 - 1, RIO - 3.2, 0], [RIO + 3.2, x1 + 1, Math.PI]]) {
+          for (const [xa, xb, giro] of [[x0 - 1, RC - 3.2, 0], [RC + 3.2, x1 + 1, Math.PI]]) {
             if (!muelleKit) { add(xb - xa, 0.15, 1.2, '#8a5a2a', (xa + xb) / 2, H(xa, zt) + 0.35, zt); continue; }
             const d = muelleKit.clone(), k = (xb - xa) / 4.4; d.scale.setScalar(k); d.rotation.y = giro; d.position.set((xa + xb) / 2, nivelRio(zt) + 0.3 - muelleKit.userData.alto * k, zt); obraG.add(d);
           }
-          if (canoaKit) { const ca = canoaKit.clone(); ca.position.set(RIO - 2.2, nivelRio(zt) - 0.15, zt + 1.4); ca.rotation.y = 0.1; obraG.add(ca); }
-          else { const ca = add(2.4, 0.4, 0.8, '#c9a86a', RIO - 2.2, nivelRio(zt) + 0.2, zt + 1.4); ca.rotation.y = 0.1; }
+          if (canoaKit) { const ca = canoaKit.clone(); ca.position.set(RC - 2.2, nivelRio(zt) - 0.15, zt + 1.4); ca.rotation.y = 0.1; obraG.add(ca); }
+          else { const ca = add(2.4, 0.4, 0.8, '#c9a86a', RC - 2.2, nivelRio(zt) + 0.2, zt + 1.4); ca.rotation.y = 0.1; }
           if (c === 'turnos') { add(0.12, 2.2, 0.12, '#6b4a2a', x0 - 1.5, H(x0 - 1.5, zt) + 1.1, zt + 1); add(0.4, 0.4, 0.4, '#c9a227', x0 - 1.5, H(x0 - 1.5, zt) + 2.1, zt + 1); }
         }
       }
@@ -657,14 +686,14 @@
           ck('M3 · Cuidado elegido y acuerdo', tiene('cuidado_' + cu) && G.eventos.had('CareChosen') && S.step === 7, 'paso ' + S.step);
           useAt('obra'); drain();
           ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 8 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
-          ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', G.interaccion.find('abuela').x === RIO - 6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
+          ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', Math.abs(G.interaccion.find('abuela').x - (RX(TRAMOS[OPCIONES[op].tramo].z - 1.8) - OR(TRAMOS[OPCIONES[op].tramo].z - 1.8))) < 1e-6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
           const tocones = () => { const b = G.renderer.scene.getObjectByName('ep4_bosque'); return b ? b.children.filter(m => m.geometry && m.geometry.parameters && m.geometry.parameters.height === 0.4).length : -1; };
           check('D26 · El mundo muestra lo decidido (opción ' + op.toUpperCase() + '): el bosquecillo queda en tocones solo con el puente del estrecho', tocones() === (op === 'a' ? 6 : 0), tocones());
           useAt('abuela'); drain();
           return S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter4Completed') && !$('end').hidden;
         }
 
-        check('Quien navega está en esta orilla, junto al remanso (Villa Raíz)', NAVEGA.x < RIO - 5 && G.interaccion.find('navegante').x === NAVEGA.x);
+        check('Quien navega está en esta orilla, junto al remanso (Villa Raíz)', NAVEGA.x < RX(NAVEGA.z) - 5 && G.interaccion.find('navegante').x === NAVEGA.x);
         const okEsquema = OIDS.every(o => CIDS.filter(c => CUIDADOS[c].para.includes(o)).length > 0);
         check('Cada opción tiene al menos un cuidado', okEsquema);
         check('Ninguna opción lo maximiza todo, con ningún cuidado', OIDS.every(o => [null].concat(CIDS).every(c => !EJES.every(e => hojasCon(o, c)[e.id] === 3))));
@@ -677,7 +706,7 @@
           check(`Opción ${op.toUpperCase()} con «${CUIDADOS[cu].nombre}» llega al final`, fin, 'paso ' + S.step);
         }
         check('Final completo con la opción A, sus chequeos y cajas nido', partida('a', 'cajas', true));
-        check('Tras el cruce, la abuela queda en la otra orilla', G.actores.npc('abuela').def.x === RIO + 6);
+        { const da = G.actores.npc('abuela').def; check('Tras el cruce, la abuela queda en la otra orilla', Math.abs(da.x - (RX(da.z) + OR(da.z))) < 1e-6, da.x); }
         check('El cómic sale de los eventos (5 viñetas)', G.comic.comicPanels().length === 5, G.comic.comicPanels().length);
 
         // ---------- «Iguaca te pregunta» · Modo Maestro · Diario y criadero ----------
