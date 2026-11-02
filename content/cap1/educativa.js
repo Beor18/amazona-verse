@@ -781,7 +781,6 @@
 
       // Distancia del jugador a la voluta o a la gota; si va bajo tierra (infiltración) se mide contra la superficie
       const distA = p => Math.hypot(S.pos.x - p.x, S.pos.y - Math.max(p.y, H(p.x, p.z) + 0.5), S.pos.z - p.z);
-      const volando = () => !!(G.fisica && G.fisica.MOVE && G.fisica.MOVE.flying);
       const enRafaga = t => { const c = RUTA.rafaga.on + RUTA.rafaga.off; return (t % c) < RUTA.rafaga.on; };
       if (!document.getElementById('aula-css')) {
         const l = document.createElement('link'); l.id = 'aula-css'; l.rel = 'stylesheet'; l.href = 'src/ui/aula.css';
@@ -834,8 +833,9 @@
           if (V) {
             V.t = (V.t || 0) + dt;
             const p = V.r.en(V.d);
-            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera && volando() && S.pos.y >= p.y - 2.5;
-            if (sube && V.d < V.r.total) V.d += Math.min(11, V.vel * RUTA.rafaga.empuje) * dt;
+            const duty = RUTA.rafaga.on / (RUTA.rafaga.on + RUTA.rafaga.off);
+            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera && S.pos.y >= p.y - 2.5;
+            if (sube && V.d < V.r.total) V.d += (V.vel / duty) * dt;
             const q = V.r.en(V.d); voluta.position.set(q.x, q.y, q.z);
             modoVuelo = 'rafaga';
             if ((V.humo -= dt) <= 0) {
@@ -852,7 +852,7 @@
           const tr = Gt.tramos[Gt.i], p = tr.r.en(Gt.d);
           const sobre = S.pos.y - H(S.pos.x, S.pos.z);
           const techo = Math.max(RUTA.rasante, (p.y - H(p.x, p.z)) + 2.2);
-          const ras = tr.fase !== 'escorrentia' || (volando() && sobre <= techo && Math.abs(S.pos.y - p.y) < 3.2);
+          const ras = tr.fase !== 'escorrentia' || (sobre <= techo && Math.abs(S.pos.y - p.y) < 3.2);
           if (tr.fase === 'escorrentia') modoVuelo = 'rasante';
           if (distA(p) <= RUTA.espera && ras) Gt.d += tr.vel * dt;
           const q = tr.r.en(Gt.d); gota.position.set(q.x, q.y, q.z);
