@@ -290,3 +290,9 @@ Avisos para Kelvin:
 
 ## 2-nov · Pieles de las extintas en el juego (Kelvin)
 «Busca cómo se veían y hazlas.» *martinicana* (Mara) y *violacea* (Vela) tienen piel pintada según los relatos antiguos (Labat, Du Tertre, Buffon) y las fichas de parrots.org y Wikipedia; donde discrepan, se anota en `docs/equipo/pieles_fuentes/`. Entran al creador como las demás. Las 36 especies del catálogo tienen piel.
+
+## 2-nov-2026 · Kelvin: estados UICN verificados al catálogo
+Los 12 estados UICN verificados de `docs/equipo/ESPECIES_DISCREPANCIAS.md` sustituyen a los del catálogo del PDF (diadema LC, imperialis CR, lilacina CR, rhodocorytha VU, agilis EN, auropalliata CR, barbadensis NT, brasiliensis NT, farinosa LC, festiva LC, kawalli LC, aestiva NT). *A. tresmariae*: sin estado propio en la UICN. Se conservan las 36 especies.
+
+## 2-nov-2026 · Kelvin aprueba la propuesta de dones y secretos
+`docs/equipo/PROPUESTA_PODERES_SECRETOS_BANDADAS.md`: 6 familias con 5 ejes equilibrados, un don de fantasía por familia que se activa manteniendo Impulso, y secretos por capítulo unidos por el «Mapa en pedazos». Orden de construcción: CG-10 a CG-14. Las bandadas en línea esperan al día legal.
