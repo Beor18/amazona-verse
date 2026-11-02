@@ -230,7 +230,8 @@ AVE.module('comic', function (G) {
     setTimeout(() => {
       if (!A.fotoModo) return;
       A.modoFoto(false); const m = $('emotes'); if (m) m.hidden = true;
-      if (A.emote && A.emote.name === gesto) G.emit('foto', { gesto });
+      const pausa = !!(G.pausa && G.pausa.activa && G.pausa.activa());
+      if ((A.emote && A.emote.name === gesto) || (!pausa && A.playEmote(gesto))) G.emit('foto', { gesto });
       else aviso('Para la foto, posa en el suelo y quieta.', 2600);
     }, 0);
     return true;
@@ -935,7 +936,8 @@ AVE.module('comic', function (G) {
         if (A && A.modoFoto && A.EMOTE_KEYS && M && M.tomarFoto) {
           check('Gestos: 7 gestos y el botón «Foto»', A.EMOTE_KEYS.length === 7 && document.querySelectorAll('#emotes [data-emote]').length === 7 && !!document.querySelector('#emotes [data-foto]'));
           // El gesto en sí es de actores.js (posar en el suelo y quieta): aquí se simula que pudo posar y que no pudo
-          let pedida = null; const emit = G.emit, jugar = A.playEmote;
+          let pedida = null; const emit = G.emit, jugar = A.playEmote, PZ = G.pausa, activa = PZ && PZ.activa;
+          if (PZ && activa) PZ.activa = () => false; // la batería puede correr con la pausa puesta
           G.emit = function (n, a, b2, c2) { if (n === 'foto') pedida = a; return emit.call(this, n, a, b2, c2); };
           const tecla = async (k, puede) => {
             pedida = null; A.playEmote = name => { if (!puede) return false; A.emote.name = name; return true; };
@@ -957,7 +959,7 @@ AVE.module('comic', function (G) {
             document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '2', bubbles: true })); await new Promise(r => setTimeout(r, 30));
             document.body.dispatchEvent(new KeyboardEvent('keyup', { key: '2', bubbles: true }));
             check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !pedida);
-          } finally { G.emit = emit; A.playEmote = jugar; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
+          } finally { G.emit = emit; A.playEmote = jugar; if (PZ && activa) PZ.activa = activa; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
@@ -1009,7 +1011,9 @@ AVE.module('comic', function (G) {
       SV.suspender(false); G.quiet = quiet;
       $('c-export').hidden = true; $('comic').hidden = !abierto;
     }
-    check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
+    const ahora = SV.instantanea();
+    check('G.S queda como estaba', JSON.stringify(ahora) === JSON.stringify(snap),
+      Object.keys(Object.assign({}, snap, ahora)).filter(k => JSON.stringify(snap[k]) !== JSON.stringify(ahora[k])).join(', '));
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   // AV.comicTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
