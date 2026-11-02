@@ -6,7 +6,9 @@
    las escenas del mismo disparador se encadenan en orden.
    Línea = { who, img, text, mood?, onShow?, lang? } (lang marca el idioma de la línea en #d-text: lectores y voz).
    Dos modos (DIVERSION_CAP1, mejora 3):
-   - say(lines, done): la caja #dialog bloquea el juego (ui.busy) hasta pulsar «Seguir»; para las decisiones y las charlas.
+   - say(lines, done): la caja #dialog bloquea el juego (ui.busy) hasta pulsar «Seguir»; para las decisiones y las charlas
+     de hasta 2 líneas. Una charla más larga muestra las 2 primeras en la caja y el resto en bocadillos, para que haya
+     algo que hacer (mejora 3). Narrador, Guardián y Voz, si van solos, nunca bloquean.
    - say(lines, done, { libre: true }): bocadillos (#bocadillos) que pasan solos con el tiempo del juego mientras la cotorra
      sigue moviéndose; la narración (Narrador, Guardián, Voz) y los comentarios. No cuentan como ocupado. Un toque en el
      bocadillo pasa al siguiente; `done` llega al terminar el último. Si se abre una caja o una tarjeta, se esconden y esperan.
@@ -48,12 +50,26 @@ AVE.module('dialogo', function (G) {
     if (src) { if (el.getAttribute('src') !== src) el.src = src; el.alt = who || ''; el.hidden = false; }
     else { el.removeAttribute('src'); el.alt = ''; el.hidden = true; }
   }
+  const EXPO = new Set(['Narrador', 'Guardián', 'Voz']);
+  let segJuego = 0, segCaja = 0;
   function say(lines, done, opts) {
-    if (opts && opts.libre) { sayLibre(lines, done); return; }
+    const todas = lines.slice();
+    // La exposición, si no va mezclada con una charla, sale en bocadillos aunque el que llama no ponga libre.
+    if ((opts && opts.libre) || (!(opts && opts.caja) && todas.length && todas.every(l => EXPO.has(l.who)))) {
+      sayLibre(todas, done); return;
+    }
     const e = ++epoca;
-    queue = lines.slice();
-    // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
-    onDone = done ? () => { if (e === epoca) done(); } : null;
+    const fin = done ? () => { if (e === epoca) done(); } : null;
+    // Más de 2 líneas: la caja enseña el arranque (las pruebas lo leen) y el resto no para el vuelo.
+    if (!(opts && opts.caja) && todas.length > 2) {
+      queue = todas.slice(0, 2);
+      const resto = todas.slice(2);
+      onDone = () => { if (e !== epoca) return; sayLibre(resto, fin); };
+    } else {
+      queue = todas;
+      // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
+      onDone = fin;
+    }
     nextCaja();
   }
   function nextCaja() {
@@ -124,9 +140,13 @@ AVE.module('dialogo', function (G) {
   }
   // Tiempo del juego (se puede probar con tick()); con la caja o una tarjeta abiertas, espera
   G.on('update', dt => {
+    segJuego += dt; if (open()) segCaja += dt;
     if (!libreCur || open() || G.ui.cardOpen) return;
     libreT -= dt; if (libreT <= 0) nextLibre();
   }, 84);
+  function ocupacion() {
+    return { juego: segJuego, caja: segCaja, parte: segJuego > 0.5 ? segCaja / segJuego : 0 };
+  }
 
   function next() { if (open()) nextCaja(); else if (libreCur) nextLibre(); else nextCaja(); }
   function libre() { return libreCur; }
@@ -152,6 +172,6 @@ AVE.module('dialogo', function (G) {
   }
   G.on('apply', () => { G.ui.hideCard(); clear(); }, 45);
 
-  return { L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE,
+  return { L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE, ocupacion,
     get queue() { return open() ? queue : libreCur ? libreQ : queue; }, escenas: data.escenas || [] };
 });
