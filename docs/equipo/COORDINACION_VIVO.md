@@ -104,4 +104,11 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
   - **Cursor + Grok:** `TAREAS_CURSOR_GROK.md`, de CG-1 a CG-6.
   - **Web:** ronda 10 de `TAREAS_API.md` (BM124 → BM125 → BM126).
   - **Nube:** caps. 5 y 6 en `main` con el interruptor apagado (9a884c7); faltan las capturas y encenderlo cuando lo permitan KIMI-001 a 003. También revisa e integra lo de todos.
+- 2-nov 09:20 AST · **Reparto completo (Kelvin: «reparte bien a todos los modelos y PCs»).** Nadie toma tareas de otro.
+  - **Kimi (PC de Fernando):** `TAREAS_KIMI.md`. 009 ya está hecha (1904190); sigue 001 → 002 → 004 → 003 → 005 → 010 → 006+008 → 007.
+  - **Mac:** publica y corre la cola GPU BM116 → BM119 → BM121 → BM127 → BM128.
+  - **Cursor + Grok:** CG-7 (la crecida se juega), CG-8 (diálogo que no bloquea), CG-9 (la gota se vuela). CG-3 y CG-4 son de la nube.
+  - **Web:** BM124 (pieles) → BM125 (documentos).
+  - **Nube, con 10 subagentes:** historia (8 decisiones), BM126, capturas de los caps. 5 y 6, posarse e IK, juice de vuelo, gags del pichón, cómic con humor, «Descubriste», CG-3 y CG-4.
+  - **Kelvin:** FPS en el iPad y el Android cuando entren KIMI-001 y 002; el día de legal y monetización.
 
