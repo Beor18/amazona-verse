@@ -291,6 +291,52 @@ window.AVJuice = function (G) {
       for (let i = 0; i < 60; i++) cam.fov(0.1); const fConPic = camF.fov;
       C.sinVida = true; for (let i = 0; i < 60; i++) cam.fov(0.1); const fSinVida = camF.fov; C.sinVida = sv; cam.fovPicado = 0; for (let i = 0; i < 60; i++) cam.fov(0.1);
       ok('Cámara: fovPicado abre el FOV (+6) y se apaga con la cámara sin vida', fConPic - fSinVida > 5.5, JSON.stringify({ f0: +f0.toFixed(1), con: +fConPic.toFixed(1), sinVida: +fSinVida.toFixed(1) }));
+      { const sv2 = C.sinVida, snapM = { flying: M.flying, speed: M.speed, dashT: M.dashT }; C.sinVida = false;
+        Object.assign(M, { flying: true, speed: F.FLY_SPEED, dashT: 0 }); const ex = cam.fovExtra(); cam.fovPicado = 6; for (let i = 0; i < 80; i++) cam.fov(0.1);
+        const fv = camF.fov; Object.assign(M, snapM); cam.fovPicado = 0; C.sinVida = sv2; for (let i = 0; i < 60; i++) cam.fov(0.1);
+        ok('Cámara: el FOV del picado no se suma al del vuelo (el mayor de los dos, más fovBonus)', Math.abs(fv - (55 + Math.max(ex, 6) + cam.fovBonus)) < 0.2, JSON.stringify({ vuelo: ex, fov: +fv.toFixed(2) })); }
+      // 11b. Bug del iPad de Kelvin (2-nov, «loop de zoom»): quieta junto a una pared alta, con toques del dedo en la pantalla,
+      // la distancia de la cámara no cambia más de ±5 % en 3 s; un toque no gira ni inclina la vista; dos dedos (pellizco) tampoco
+      if (G.solidos && G.solidos.activo) {
+        const keep = { x: S.pos.x, y: S.pos.y, z: S.pos.z, yaw: cam.yaw, inc: cam.inclina, flying: M.flying, grounded: M.grounded, speed: M.speed, vx: M.vx, vz: M.vz, his: C.histeresis };
+        const cv = G.renderer.canvas, r = cv.getBoundingClientRect(), cx = r.left + r.width * 0.5, cy = r.top + r.height * 0.55;
+        const toque = (id, x, y, t) => cv.dispatchEvent(new PointerEvent(t, { pointerId: id, pointerType: 'touch', isPrimary: id === 71, clientX: x, clientY: y, bubbles: true }));
+        const tap = (k) => { const j = (k % 2 ? 1 : -1) * 4; toque(71, cx, cy, 'pointerdown'); toque(71, cx + j, cy - j, 'pointermove'); toque(71, cx + j, cy - j, 'pointerup'); };
+        try {
+          Object.assign(M, { flying: false, grounded: true, speed: 0, vx: 0, vz: 0 });
+          let mejor = null;
+          for (const [px, pz] of [[0, 170], [keep.x, keep.z]]) {
+            S.pos.x = px; S.pos.z = pz; S.pos.y = F.suelo(px, pz, G.terreno.height(px, pz) + 0.5);
+            for (let i = 0; i < 48; i++) { cam.yaw = i * Math.PI / 24; cam.inclina = 0; cam.place(true); if (cam.dCol < 0.85 && (!mejor || cam.dCol < mejor.q)) mejor = { q: cam.dCol, yaw: cam.yaw, x: px, z: pz, y: S.pos.y }; }
+            if (mejor) break;
+          }
+          if (!mejor) ok('Cámara junto a una pared (sin pared cerca de la cámara: no aplica)', true, 'sin muro');
+          else {
+            const medir = his => {
+              C.histeresis = his; S.pos.x = mejor.x; S.pos.z = mejor.z; S.pos.y = mejor.y; cam.yaw = mejor.yaw; cam.inclina = 0; cam.place(true);
+              const hd = () => camF.position.distanceTo(new THREE.Vector3(S.pos.x, S.pos.y + C.look, S.pos.z)), ds = [];
+              const y0 = cam.yaw, i0 = cam.inclina;
+              for (let f = 0; f < 90; f++) { if (f % 10 === 3) tap(f); cam.follow(1 / 30); if (f >= 15) ds.push(hd()); }
+              const mn = Math.min(...ds), mx = Math.max(...ds), md = ds.reduce((a, b) => a + b, 0) / ds.length;
+              return { var: (mx - mn) / md, mn: +mn.toFixed(2), mx: +mx.toFixed(2), giro: Math.abs(cam.yaw - y0) + Math.abs(cam.inclina - i0) };
+            };
+            const sin = medir(false), con = medir(true);
+            ok('Cámara junto a una pared, en táctil: distancia estable ±5 % durante 3 s con toques (bug del iPad)', con.var <= 0.10 && con.giro < 1e-6,
+              JSON.stringify({ q: +mejor.q.toFixed(2), con, sinHisteresis: sin }));
+            // dos dedos: pellizco en el lienzo
+            const y1 = cam.yaw, i1 = cam.inclina;
+            toque(71, cx - 40, cy, 'pointerdown'); toque(72, cx + 40, cy, 'pointerdown');
+            for (let k = 1; k <= 6; k++) { toque(71, cx - 40 - k * 15, cy + k * 5, 'pointermove'); toque(72, cx + 40 + k * 15, cy - k * 5, 'pointermove'); }
+            toque(72, cx + 130, cy, 'pointerup'); toque(71, cx - 130, cy, 'pointerup');
+            ok('Táctil: un pellizco con dos dedos no gira ni inclina la cámara', cam.yaw === y1 && cam.inclina === i1);
+            toque(73, cx, cy, 'pointerdown'); for (let k = 1; k <= 6; k++) toque(73, cx + k * 20, cy, 'pointermove'); toque(73, cx + 120, cy, 'pointerup');
+            ok('Táctil: arrastrar con un dedo sí gira la cámara', cam.yaw !== y1);
+          }
+        } finally {
+          C.histeresis = keep.his; S.pos.x = keep.x; S.pos.y = keep.y; S.pos.z = keep.z; cam.yaw = keep.yaw; cam.inclina = keep.inc;
+          Object.assign(M, { flying: keep.flying, grounded: keep.grounded, speed: keep.speed, vx: keep.vx, vz: keep.vz }); cam.place(true);
+        }
+      }
       // 12. Con el estado real de Vittata: volando a 0,5 m del terreno a crucero, leer() lo ve como rasante
       const snap = { flying: M.flying, landing: M.landing, takeoff: M.takeoff, speed: M.speed, y: S.pos.y, vy: S.vy };
       try {
