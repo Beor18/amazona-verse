@@ -183,7 +183,7 @@
         nota: 'Capítulo 6: recibe a los guardianes que llegan y ayúdalos a trabajar juntos. No uses tu nombre real.', inventario: {} },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
-    guardado: { version: 1, claves: ['edu', 'plan'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, plan: null }) },
+    guardado: { version: 1, claves: ['edu', 'plan', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, plan: null }) },
     aula: { clave: 'amazonaverse.aula.ep6', estado: 'edu', archivo: 'amazonaverse_ep6', lecciones: () => window.AV_LECCIONES_EP6 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata); el nido entra con las tarjetas llenas. Ninguna cápsula se compra.
     // obtener.ep6 = { mision: 'circulo' } en content/comun/huevos.js queda como pedido aparte (EP6_MISIONES.md §7).

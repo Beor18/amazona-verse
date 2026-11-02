@@ -132,7 +132,7 @@
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: T(-6, -10), camara: 0.6 },
     // canoa: el nombre que le pone el jugador (D21): null = aún no se le preguntó; '' = sin nombre
-    guardado: { version: 1, claves: ['edu', 'canoa'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
+    guardado: { version: 1, claves: ['edu', 'canoa', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
     aula: { clave: 'amazonaverse.aula.ep3', estado: 'edu', archivo: 'amazonaverse_ep3', lecciones: () => window.AV_LECCIONES_EP3 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata y va en el bote); el nido entra en el mundo con la segunda botadura.
     // Ninguna cápsula se compra. obtener.ep3 en content/comun/huevos.js queda como pedido aparte (EP3_MISIONES.md §7).

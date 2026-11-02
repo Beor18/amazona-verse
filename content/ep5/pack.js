@@ -99,7 +99,7 @@
       },
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    guardado: { version: 1, claves: ['edu', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     aula: { clave: 'amazonaverse.aula.ep5', estado: 'edu', archivo: 'amazonaverse_ep5', lecciones: () => window.AV_LECCIONES_EP5 },
     criadero: { desde: 'FragmentsOrdered', almacen: 'amazonaverse' },
     notasKelvin: [], // se rellenan al preparar, desde historia.js

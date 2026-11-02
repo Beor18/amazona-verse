@@ -132,7 +132,7 @@
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: M({ x: -6, z: 5 }), camara: 0.6 },
     // edu: aula del episodio (respuestas de «Iguaca te pregunta» y el registro local)
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    guardado: { version: 1, claves: ['edu', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     aula: { clave: 'amazonaverse.aula.cap4', estado: 'edu', archivo: 'amazonaverse_cap4', lecciones: () => window.AV_LECCIONES_EP4 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata); el nido entra al cerrar M1 con Iguaca. Ninguna cápsula se compra.
     criadero: { desde: 'ShoreSurveyed', almacen: 'amazonaverse' },

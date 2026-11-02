@@ -119,7 +119,7 @@
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
     // edu: aula del episodio (fichas, respuestas de «Iguaca te pregunta» y el registro local). Las partidas del prototipo sin la
     // clave la reciben vacía (aula.js la crea si falta).
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    guardado: { version: 1, claves: ['edu', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     // Aula (src/game/aula.js): misma puerta («Docentes» + multiplicación) y mismo esquema que el ep. 1; clave propia del dispositivo
     aula: { clave: 'amazonaverse.aula.cap2', estado: 'edu', archivo: 'amazonaverse_cap2', lecciones: () => window.AV_LECCIONES_EP2 },
     // Criadero (src/game/criadero.js, content/comun/huevos.js): el nido entra en el mundo al cerrar M1 con Iguaca (SiteChosen).
