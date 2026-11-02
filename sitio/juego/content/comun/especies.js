@@ -118,7 +118,7 @@
         },
         "catalogo": {
           "nombre": "Loro diadema",
-          "uicn": "EN"
+          "uicn": "LC"
         },
         "nota": null
       },
@@ -198,7 +198,7 @@
         },
         "catalogo": {
           "nombre": "Loro imperial",
-          "uicn": "EN"
+          "uicn": "CR"
         },
         "nota": null
       },
@@ -238,7 +238,7 @@
         },
         "catalogo": {
           "nombre": "Loro lilacino",
-          "uicn": "EN"
+          "uicn": "CR"
         },
         "nota": null
       },
@@ -356,7 +356,7 @@
         },
         "catalogo": {
           "nombre": "Loro de corona roja",
-          "uicn": "EN"
+          "uicn": "VU"
         },
         "nota": null
       },
@@ -476,7 +476,7 @@
         },
         "catalogo": {
           "nombre": "Loro de pico negro",
-          "uicn": "VU"
+          "uicn": "EN"
         },
         "nota": null
       },
@@ -556,7 +556,7 @@
         },
         "catalogo": {
           "nombre": "Loro de nuca amarilla",
-          "uicn": "VU"
+          "uicn": "CR"
         },
         "nota": null
       },
@@ -596,7 +596,7 @@
         },
         "catalogo": {
           "nombre": "Loro de hombros amarillos",
-          "uicn": "VU"
+          "uicn": "NT"
         },
         "nota": "El texto del artículo aún dice VU (evaluación 2017); el infobox cita la de 2021 (NT)."
       },
@@ -636,7 +636,7 @@
         },
         "catalogo": {
           "nombre": "Loro de cola roja",
-          "uicn": "VU"
+          "uicn": "NT"
         },
         "nota": null
       },
@@ -956,7 +956,7 @@
         },
         "catalogo": {
           "nombre": "Loro harinoso",
-          "uicn": "NT"
+          "uicn": "LC"
         },
         "nota": null
       },
@@ -996,7 +996,7 @@
         },
         "catalogo": {
           "nombre": "Loro festivo",
-          "uicn": "NT"
+          "uicn": "LC"
         },
         "nota": "El texto del artículo menciona VU en 2012; el infobox cita la evaluación 2022 (LC)."
       },
@@ -1074,7 +1074,7 @@
         },
         "catalogo": {
           "nombre": "Loro de Kawall",
-          "uicn": "NT"
+          "uicn": "LC"
         },
         "nota": "es.wikipedia da «loro de garbes»: nombre dudoso, no se usa."
       },
@@ -1154,7 +1154,7 @@
         },
         "catalogo": {
           "nombre": "Loro hablador / frente azul",
-          "uicn": "LC"
+          "uicn": "NT"
         },
         "nota": "es.wikipedia: «loro hablador» (Argentina), «loro frentiazul» o «amazona frentiazul»."
       },

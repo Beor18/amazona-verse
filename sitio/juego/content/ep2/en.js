@@ -378,4 +378,10 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Nombra el problema o la solución.": "Names the problem or the solution.",
  "Explica el problema y nombra una solución.": "Explains the problem and names a solution.",
  "Explica por qué la cotorra necesita cavidades y nombra las cajas nido como solución humana, con la fuente.": "Explains why the parrot needs cavities and names nest boxes as a human solution, with the source.",
+ // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
+ "USDA NRCS, Rangeland Processes Handbook (textura y drenaje del suelo)": "USDA NRCS, Rangeland Processes Handbook (soil texture and drainage)",
+ "USDA Forest Service, National Agroforestry Center, Windbreaks; NWS Amarillo, herramienta de viento (zonas expuestas)": "USDA Forest Service, National Agroforestry Center, Windbreaks; NWS Amarillo, wind tool (exposed areas)",
+ "Relato del juego (no es un dato histórico)": "A story in the game (not a historical fact)",
+ "National Park Service, Registro Nacional de Lugares Históricos, n.º 90000767 (casa criolla de Puerto Rico: techo a dos o cuatro aguas, de teja o zinc corrugado)": "National Park Service, National Register of Historic Places, no. 90000767 (Puerto Rican criollo house: gable or hipped roof of tile or corrugated zinc)",
+ "Smithsonian, Museo Nacional del Indígena Americano (NMAI), guía «Taíno: herencia e identidad indígena en el Caribe»": "Smithsonian, National Museum of the American Indian (NMAI), guide “Taíno: Native Heritage and Identity in the Caribbean”",
 });

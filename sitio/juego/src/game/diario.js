@@ -106,7 +106,7 @@ AVE.module('diario', function (G) {
     const items = entries.map(f => S.field.includes(f.id)
       ? `<li class="found"><span class="ico ${f.cat}" aria-hidden="true"></span><div><b>${f.nombre}</b><small>${f.texto}</small></div></li>`
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${(cats[f.cat] || {}).desconocido || 'Algo'} por descubrir</small></div></li>`).join('');
-    const ropa = G.misiones.unlocks.map(u => `<li class="${S.unlocked.includes(u.clave) ? 'found' : ''}">${S.unlocked.includes(u.clave) ? '✓' : '·'} ${u.nombre} <small>(${u.pista})</small></li>`).join('');
+    const ropa = G.misiones.unlocks.map(u => `<li class="${S.unlocked.includes(u.clave) ? 'found' : ''}">${S.unlocked.includes(u.clave) ? '✓' : '·'} ${u.nombre}${u.pista ? ` <small>(${u.pista})</small>` : ''}</li>`).join('');
     const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
     G.ui.showCard(`<h2>${D.titulo || 'Diario'}</h2><p class="note">${S.field.length}/${total}${byCat}</p>
       <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
@@ -150,7 +150,7 @@ AVE.module('diario', function (G) {
     check('Solo salen las especies con datos completos', L.length === todas.filter(conDatos).length && L.length > 0, L.length + '/' + todas.length);
     const difiere = e => !(e.catalogo && e.uicn && e.catalogo.uicn === e.uicn.categoria), disc = todas.filter(e => conDatos(e) && difiere(e));
     const sinUicn = L.filter(s => !s.uicn);
-    check('Las especies que no coinciden con el catálogo (ESPECIES_DISCREPANCIAS.md) van sin estado UICN', todas.filter(difiere).length >= 13 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
+    check('Las que siguen sin coincidir con el catálogo (tresmariae, sin evaluación propia) van sin estado UICN', todas.filter(difiere).length >= 1 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
     check('Las que coinciden sí traen estado UICN', L.filter(s => s.uicn).length === L.length - sinUicn.length && L.some(s => s.id === 'vittata' && s.uicn === 'CR'));
     const aj = G.aula && G.aula.aj, ant = aj && aj.idioma;
     try {
@@ -161,7 +161,7 @@ AVE.module('diario', function (G) {
         check(`[${l}] Una ficha por especie, con común, científico, distribución, UICN y fuente`, li.length === L.length && [...li].every(x => x.querySelectorAll('b').length === 1 && x.querySelector('i[lang=la]') && x.querySelector('.uicn') && x.querySelector('.fuente') && x.querySelectorAll('small').length === 4));
         check(`[${l}] Sin «undefined» ni «null» en el texto`, !/undefined|null|\[object/.test(d.textContent));
         const fila = d.querySelector('[data-especie=diadema]');
-        check(`[${l}] Una de las 13 dice «${TX.porVerificar[l]}» y no una categoría`, !!fila && fila.querySelector('.uicn').textContent.includes(TX.porVerificar[l]));
+        check(`[${l}] El loro diadema ya trae su estado verificado (${E.categorias.LC[l]}, LC; Kelvin 2-nov)`, !!fila && fila.querySelector('.uicn').textContent.includes(E.categorias.LC[l] + ' (LC)'));
         const v = d.querySelector('[data-especie=vittata]');
         check(`[${l}] La cotorra muestra ${E.categorias.CR[l]} (CR) y la cita de BirdLife`, !!v && v.querySelector('.uicn').textContent.includes(E.categorias.CR[l] + ' (CR)') && /BirdLife/.test(v.querySelector('.fuente').textContent));
       }

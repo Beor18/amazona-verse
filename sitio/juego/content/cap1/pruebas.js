@@ -783,20 +783,20 @@
       G.ui.hideCard(); AU.setAjuste('corto', false);
       check('HUD de la misión en inglés', /Raindrop's path 8\/8/.test($('missions').textContent), $('missions').textContent);
       AU.setAjuste('idioma', 'es');
-      // Diario · Amazonas del mundo (content/comun/especies.js): solo datos verificados; las 13 de
-      // docs/equipo/ESPECIES_DISCREPANCIAS.md van sin estado UICN hasta que Kelvin decida
-      const DISCREPANCIAS = ['diadema', 'imperialis', 'lilacina', 'tresmariae', 'rhodocorytha', 'agilis', 'auropalliata', 'barbadensis', 'brasiliensis', 'farinosa', 'festiva', 'kawalli', 'aestiva'];
+      // Diario · Amazonas del mundo (content/comun/especies.js): solo datos verificados. Kelvin (2-nov) aplicó al catálogo los 12
+      // estados UICN verificados de docs/equipo/ESPECIES_DISCREPANCIAS.md; solo tresmariae sigue sin estado (la UICN no la evalúa aparte)
+      const DISCREPANCIAS = ['tresmariae'];
       const SP = G.diario.especies(), spId = id => SP.find(x => x.id === id);
       check('Amazonas del mundo: especies con nombre ES y EN, científico y distribución', SP.length >= 30 && SP.every(x => x.comun.es && x.comun.en && /^Amazona /.test(x.cientifico) && x.distribucion.es && x.distribucion.en), SP.length + ' especies');
       check('Amazonas del mundo: sin nombre común en español verificado no sale (guatemalae, kawalli)', !spId('guatemalae') && !spId('kawalli'));
-      check('Amazonas del mundo: las 13 discrepancias sin estado UICN', DISCREPANCIAS.every(id => !spId(id) || (spId(id).uicn === null && spId(id).evaluacion === null)), DISCREPANCIAS.filter(id => spId(id) && spId(id).uicn).join(','));
+      check('Amazonas del mundo: tresmariae (sin evaluación propia) sin estado UICN', DISCREPANCIAS.every(id => !spId(id) || (spId(id).uicn === null && spId(id).evaluacion === null)), DISCREPANCIAS.filter(id => spId(id) && spId(id).uicn).join(','));
       check('Amazonas del mundo: las demás con estado UICN y su evaluación', SP.filter(x => !DISCREPANCIAS.includes(x.id)).every(x => x.uicn && x.evaluacion && /BirdLife/.test(x.evaluacion)) && spId('vittata').uicn === 'CR', SP.filter(x => !DISCREPANCIAS.includes(x.id) && !x.uicn).map(x => x.id).join(','));
       G.diario.open();
       const de = $('card').querySelector('details.especies ul.diary.especies'), li = id => de && de.querySelector(`[data-especie="${id}"]`);
       check('Diario: sección «Amazonas del mundo» con una tarjeta por especie, fuente y sin enlaces', de && /Amazonas del mundo/.test($('card').querySelector('details.especies summary').textContent) && de.querySelectorAll('li').length === SP.length && de.querySelectorAll('li .fuente').length === SP.length && !/https?:/.test(de.innerHTML));
       check('Diario: la cotorra puertorriqueña con ambos nombres, científico y estado', li('vittata') && /cotorra puertorriqueña/.test(li('vittata').textContent) && /Puerto Rican amazon/.test(li('vittata').textContent) && /Amazona vittata/.test(li('vittata').textContent) && /En peligro crítico \(CR\)/.test(li('vittata').textContent));
       check('Diario: la fuente del estado UICN es corta y trae la evaluación (BirdLife, año e identificador)', li('vittata') && /Fuente: Wikipedia \(EN, ES\) · BirdLife International \(2020\), Lista Roja UICN e\.T22686239A179276011/.test(li('vittata').textContent) && !/IUCN Red List 2020/.test(li('vittata').textContent));
-      check('Diario: el loro imperial dice «por verificar» y no muestra categoría', li('imperialis') && /Estado UICN: por verificar/.test(li('imperialis').textContent) && !/\((CR|EN|VU|NT|LC)\)/.test(li('imperialis').textContent));
+      check('Diario: el loro imperial con su estado verificado (En peligro crítico)', li('imperialis') && /En peligro crítico \(CR\)/.test(li('imperialis').textContent));
       check('Diario: una especie extinta (loro de Martinica) con su estado y sin repetir «extinta»', li('martinicana') && /Estado UICN: Extinta \(EX\)/.test(li('martinicana').textContent) && !/ · extinta/.test(li('martinicana').textContent));
       AU.setAjuste('idioma', 'en'); G.diario.open();
       check('Diario en inglés: Amazons of the world', /Amazons of the world/.test($('card').textContent) && /IUCN status: Critically Endangered \(CR\)/.test($('card').textContent));

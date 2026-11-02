@@ -423,4 +423,10 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "La casa de la abuela y el papá sigue en pie allá en el llano. Ahora toca un bote.": "Grandma and Dad's house is still standing down on the lowland. Now it's time for a boat.",
  "La casa de la abuela y el papá sigue en pie allá en la loma. Ahora toca un bote.": "Grandma and Dad's house is still standing up on the hill. Now it's time for a boat.",
  "La casa de la abuela y el papá sigue en pie allá en el claro. Ahora toca un bote.": "Grandma and Dad's house is still standing over in the clearing. Now it's time for a boat.",
+ // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
+ "Universidad de Hawái, Exploring Our Fluid Earth (flotabilidad y principio de Arquímedes); OpenStax, College Physics, principio de Arquímedes": "University of Hawaiʻi, Exploring Our Fluid Earth (buoyancy and Archimedes' principle); OpenStax, College Physics, Archimedes' principle",
+ "National Weather Service, JetStream, The Sea Breeze (brisa de mar y brisa de tierra)": "National Weather Service, JetStream, The Sea Breeze (sea breeze and land breeze)",
+ "Te Ara, Enciclopedia de Nueva Zelanda (plantas de la costa: el coco); New Zealand Plant Conservation Network (cocos varados)": "Te Ara, The Encyclopedia of New Zealand (coastal plants: the coconut); New Zealand Plant Conservation Network (stranded coconuts)",
+ "Real Academia Española, Diccionario de la lengua española, «canoa» (de origen taíno); NPS, Taíno Settlement": "Royal Spanish Academy, Dictionary of the Spanish Language, “canoa” (of Taíno origin); NPS, Taíno Settlement",
+ "Real Academia Española, Diccionario de la lengua española, «cayuco»": "Royal Spanish Academy, Dictionary of the Spanish Language, “cayuco”",
 });

@@ -8,31 +8,43 @@
    - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): cotorra de ~110 triángulos de cerca
      y de ~24 a más de 55 m; el aleteo va en el vertex shader. Respeta la calidad automática de renderer.js: bajo = ninguna,
      medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
-   - Color: la media de la piel de cada especie (AVE.pieles.cargar, ≤ 6 especies; se descargan solo si la bandada sale).
-   Prueba: AV.bandadaTest(). */
+   - Color: el verde del cuerpo y el color de la cabeza de la piel de cada especie (G.album.colores: tabla medida sobre
+     assets/textures/pieles, sin descargar ninguna textura); ≤ 6 especies vivas por bandada (las extintas nunca vuelan aquí).
+   «Mundo vivo» (etapa 1):
+   - Viajes entre zonas: por la tarde, 3 de cada 5 salidas son un viaje a una zona con nombre del mapa (G.lugares) a la vista
+     de Vittata; la mitad de las veces la bandada se posa allí en grupo (copas, ramas y techos: perchas()) 25–45 s, picotea y
+     mira alrededor, y luego despega y se va. Si Vittata se acerca a menos de 4 m de una posada, despegan antes.
+   - Las mismas dos mallas dibujan las cotorras residentes (src/game/residentes.js, que se carga desde aquí): la bandada y los
+     residentes juntos siguen en 2 draw calls. Por instancia: fase del aleteo, pose (alas abiertas/plegadas, cabeceo y giro de
+     la cabeza) y el color de la cabeza (iAcento, cob).
+   Prueba: AV.bandadaTest(); con los residentes y el álbum, AV.vivoTest() (src/game/album.js). */
 window.AVBandada = function (G) {
   'use strict';
+  if (G.bandada && G.bandada.api) return G.bandada.api; // una sola bandada aunque la pidan boot.js y AV.vivoTest
   const S = G.S, scene = G.renderer.scene, AVE = window.AVE;
   const H = (x, z) => G.terreno.height(x, z);
   const NIVEL_N = { bajo: 0, medio: 12, alto: 20 };
-  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55;
+  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 24, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
   const TARDE_MIN = 150, TARDE_VAR = 150;
   const PALETA = ['#3c9a45', '#5fae3c', '#2f8a4f', '#7bb83e', '#c9a227', '#3f8f6a']; // si no hay pieles
 
   // ---------- Geometría: cotorra con el pico al +Z, alas en ±X ----------
   function malla(detalle) {
-    const pos = [], col = [];
-    const tri = (a, b, c, k) => { pos.push(...a, ...b, ...c); for (let i = 0; i < 3; i++) col.push(k, k, k); };
+    // parte de cada vértice (aParte): 0 cuerpo, 1 cabeza, 2 pico, 3 ala, 4 cola (el shader pliega las alas y gira la cabeza)
+    const pos = [], col = [], par = [];
+    let parte = 0;
+    const tri = (a, b, c, k) => { pos.push(...a, ...b, ...c); for (let i = 0; i < 3; i++) { col.push(k, k, k); par.push(parte); } };
     const quad = (a, b, c, d, k) => { tri(a, b, c, k); tri(a, c, d, k); };
     const elipsoide = (sx, sy, sz, x, y, z, ws, hs, k) => {
       const g = new THREE.SphereGeometry(1, ws, hs).toNonIndexed(), p = g.attributes.position;
-      for (let i = 0; i < p.count; i++) { pos.push(p.getX(i) * sx + x, p.getY(i) * sy + y, p.getZ(i) * sz + z); col.push(k, k, k); }
+      for (let i = 0; i < p.count; i++) { pos.push(p.getX(i) * sx + x, p.getY(i) * sy + y, p.getZ(i) * sz + z); col.push(k, k, k); par.push(parte); }
     };
     const f = detalle ? 1 : 0;
-    elipsoide(0.085, 0.09, 0.2, 0, 0, 0, f ? 8 : 5, f ? 6 : 3, 1);          // cuerpo
-    elipsoide(0.062, 0.062, 0.07, 0, 0.07, 0.2, f ? 7 : 4, f ? 5 : 3, 1.12); // cabeza
-    if (f) elipsoide(0.025, 0.03, 0.04, 0, 0.055, 0.27, 5, 4, 0.45);          // pico
-    quad([-0.05, 0.01, -0.16], [0.05, 0.01, -0.16], [0.035, -0.02, -0.5], [-0.035, -0.02, -0.5], 0.7); // cola
+    parte = 0; elipsoide(0.085, 0.09, 0.2, 0, 0, 0, f ? 8 : 5, f ? 6 : 3, 1);          // cuerpo
+    parte = 1; elipsoide(0.062, 0.062, 0.07, 0, 0.07, 0.2, f ? 7 : 4, f ? 5 : 3, 1.12); // cabeza
+    parte = 2; if (f) elipsoide(0.025, 0.03, 0.04, 0, 0.055, 0.27, 5, 4, 0.45);          // pico
+    parte = 4; quad([-0.05, 0.01, -0.16], [0.05, 0.01, -0.16], [0.035, -0.02, -0.5], [-0.035, -0.02, -0.5], 0.7); // cola
+    parte = 3;
     for (const s of [-1, 1]) {                                               // alas: la punta (|x| grande) es la que bate
       const alaIn = [[0.07, 0.03, 0.09], [0.07, 0.03, -0.12], [0.24, 0.045, -0.13], [0.24, 0.045, 0.07]];
       const alaOut = [[0.24, 0.045, 0.07], [0.24, 0.045, -0.13], [0.45, 0.06, -0.2], [0.44, 0.06, 0.0]];
@@ -44,53 +56,100 @@ window.AVBandada = function (G) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setAttribute('aParte', new THREE.Float32BufferAttribute(par, 1));
     g.computeVertexNormals();
     return g;
   }
   const uT = { value: 0 };
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  // iPose = (alas 0 plegadas … 1 batiendo, cabeceo de la cabeza en rad (+ = abajo), giro de la cabeza en rad, cob del color
+  // de la cabeza 0…1); iAcento = color de la cabeza (lineal). Con alas = 1 y sin giro es el aleteo de siempre.
   mat.onBeforeCompile = sh => {
     sh.uniforms.uT = uT;
-    sh.vertexShader = 'uniform float uT;\nattribute float iFase;\n' + sh.vertexShader.replace('#include <begin_vertex>',
-      'vec3 transformed = vec3(position);\n float ax = abs(position.x);\n transformed.y += sin(uT * 13.0 + iFase) * ax * 1.1 * (ax > 0.07 ? 1.0 : 0.0);\n transformed.x -= sign(position.x) * (1.0 - cos(sin(uT * 13.0 + iFase) * 0.5)) * ax * 0.6;');
+    sh.vertexShader = 'uniform float uT;\nattribute float iFase;\nattribute vec4 iPose;\nattribute vec3 iAcento;\nattribute float aParte;\n' + sh.vertexShader
+      .replace('#include <color_vertex>', `#include <color_vertex>
+  if (aParte > 0.5 && aParte < 1.5 && iPose.w > 0.01) vColor.xyz = mix(vColor.xyz, color.xyz * iAcento, smoothstep(0.275 - 0.15 * iPose.w, 0.295 - 0.15 * iPose.w, position.z + (position.y - 0.07) * 0.5 * (1.0 - iPose.w)));
+  if (aParte > 1.5 && aParte < 2.5) vColor.xyz = vec3(0.62, 0.58, 0.48);`)
+      .replace('#include <begin_vertex>', `vec3 transformed = vec3(position);
+  if (aParte > 2.5 && aParte < 3.5) {
+    float ax = abs(position.x), sx = sign(position.x), w = max(ax - 0.056, 0.0), s = sin(uT * 13.0 + iFase);
+    vec3 abierta = vec3(position.x - sx * (1.0 - cos(s * 0.5)) * ax * 0.6, position.y + s * ax * 1.1, position.z);
+    vec3 plegada = vec3(sx * (0.06 + w * 0.08), position.y + 0.025 + w * 0.04, position.z * 0.5 - 0.02 - w * 0.85);
+    transformed = mix(plegada, abierta, iPose.x);
+  }
+  if (aParte > 0.5 && aParte < 2.5) {
+    vec3 q = transformed - vec3(0.0, 0.03, 0.12);
+    float cy = cos(iPose.z), sy = sin(iPose.z), cp = cos(iPose.y), sp = sin(iPose.y);
+    q = vec3(cy * q.x + sy * q.z, q.y, -sy * q.x + cy * q.z);
+    q = vec3(q.x, cp * q.y - sp * q.z, sp * q.y + cp * q.z);
+    transformed = q + vec3(0.0, 0.03, 0.12);
+  }`);
   };
-  const MAXN = NIVEL_N.alto;
+  const MAXN = NIVEL_N.alto + RES_MAX; // la bandada (hasta 20) + los residentes (hasta RES_MAX) en las mismas mallas
   function instanciada(geo) {
     const im = new THREE.InstancedMesh(geo, mat, MAXN);
     im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 3).fill(1), 3);
     geo.setAttribute('iFase', new THREE.InstancedBufferAttribute(new Float32Array(MAXN), 1));
+    geo.setAttribute('iPose', new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 4), 4));
+    geo.setAttribute('iAcento', new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 3).fill(1), 3));
     im.frustumCulled = false; im.castShadow = false; im.receiveShadow = false; im.count = 0; im.visible = false; im.name = 'bandada'; im.userData.sinCulling = true; // renderer.js cullPequenos: la caja de la malla no sigue a las instancias
     return im;
   }
   const cerca = instanciada(malla(true)), lejos = instanciada(malla(false));
   scene.add(cerca); scene.add(lejos);
 
-  // ---------- Especies y colores (media de la piel) ----------
-  let colores = []; // [{ id, c: THREE.Color lineal }]
-  let preparando = null;
-  function mediaDe(tex) {
-    try {
-      const im = tex && tex.image; if (!im) return null;
-      const c = document.createElement('canvas'); c.width = c.height = 16;
-      const x = c.getContext('2d'); x.drawImage(im, 0, 0, 16, 16);
-      const d = x.getImageData(0, 0, 16, 16).data; let r = 0, g = 0, b = 0, n = 0;
-      for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200 || d[i] + d[i + 1] + d[i + 2] < 45) continue; r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
-      if (!n) return null;
-      const k = new THREE.Color(r / n / 255, g / n / 255, b / n / 255), hsl = {}; k.getHSL(hsl);
-      return k.setHSL(hsl.h, Math.min(1, hsl.s * 1.25 + 0.05), Math.min(0.62, Math.max(0.3, hsl.l * 1.2)));
-    } catch (e) { return null; }
+  // ---------- Especies y colores (G.album.colores: tabla medida sobre las pieles; solo especies vivas) ----------
+  let colores = []; // [{ id: especie, c: THREE.Color lineal (cuerpo), a: THREE.Color lineal (cabeza), cob }]
+  const lin = h => new THREE.Color(h).convertSRGBToLinear();
+  const vivas = () => { const E = window.AV_ESPECIES; return E && Array.isArray(E.especies) ? E.especies.map(e => e.id) : []; };
+  function colorDe(id) {
+    const p = G.album && G.album.colores ? G.album.colores(id) : null;
+    return p ? { id, c: lin(p.cuerpo), a: lin(p.cabeza), cob: p.cob } : null;
   }
   function preparar() {
     if (colores.length) return Promise.resolve(colores);
-    if (preparando) return preparando;
-    const P = AVE.pieles, lista = P && P.lista ? P.lista().map(x => x.piel) : [];
-    const elegidas = lista.slice().sort(() => Math.random() - 0.5).slice(0, 6);
-    preparando = Promise.all(elegidas.map(id => P.cargar(id).then(t => ({ id, c: mediaDe(t) }), () => ({ id, c: null })))).then(r => {
-      colores = r.filter(x => x.c).map(x => ({ id: x.id, c: x.c.convertSRGBToLinear() }));
-      if (!colores.length) colores = PALETA.map((h, i) => ({ id: 'pal' + i, c: new THREE.Color(h).convertSRGBToLinear() }));
-      preparando = null; return colores;
-    });
-    return preparando;
+    const ids = vivas().slice().sort(() => Math.random() - 0.5).slice(0, 6);
+    colores = ids.map(colorDe).filter(Boolean);
+    if (!colores.length) colores = PALETA.map((h, i) => ({ id: 'pal' + i, c: lin(h), a: lin(h), cob: 0 }));
+    return Promise.resolve(colores);
+  }
+  const mezclar = () => { colores = []; return preparar(); }; // otra mezcla de especies para la siguiente salida
+
+  // ---------- Perchas cerca de un punto: techos y ramas (G.solidos), copas (árboles de G.fisica.colliders) y suelo ----------
+  function perchas(cx, cz, r, n, o) {
+    o = o || {};
+    const out = [], SO = G.solidos, A = G.agua, k0 = (o.semilla || 0) * 7.13;
+    const conSuelo = o.suelo !== false, conAlto = o.alto !== false;
+    if (conAlto && SO && SO.activo && SO.altoEn) {
+      const m = Math.max(12, n * 5);
+      for (let k = 0; k < m && out.length < n; k++) {
+        const ang = k * 2.39996 + k0, rr = r * Math.sqrt((k + 0.5) / m), x = cx + Math.cos(ang) * rr, z = cz + Math.sin(ang) * rr, h = H(x, z);
+        const g = SO.altoEn(x, z, h + 45);
+        if (g > h + 1.6 && g < h + 40) out.push({ x, z, y: g, tipo: SO.fino && SO.fino(x, z, g + 0.01) ? 'rama' : 'techo' });
+      }
+    }
+    if (conAlto) for (const c of (G.fisica && G.fisica.colliders) || []) {
+      if (out.length >= n) break;
+      if (c.kind !== 'arbol' || !(c.h > 3) || Math.hypot(c.x - cx, c.z - cz) > r) continue;
+      const a = (c.x * 3.7 + c.z * 1.3 + k0) % 6.283, x = c.x + Math.cos(a) * 0.8, z = c.z + Math.sin(a) * 0.8;
+      out.push({ x, z, y: H(c.x, c.z) + c.h * 0.95, tipo: 'copa' });
+    }
+    if (conSuelo) {
+      const m = Math.max(8, n * 3);
+      for (let k = 0, q = 0; k < m && q < Math.max(3, Math.ceil(n / 2)); k++) {
+        const ang = k * 2.39996 + 1.1 + k0, rr = r * 0.85 * Math.sqrt((k + 0.5) / m), x = cx + Math.cos(ang) * rr, z = cz + Math.sin(ang) * rr, h = H(x, z);
+        if (A && A.levelAt && A.levelAt(x, z) > h - 0.05) continue;                 // agua: no
+        if (SO && SO.activo && SO.altoEn && SO.altoEn(x, z, h + 3) > h + 0.3) continue; // dentro de una casa o bajo un tronco: no
+        out.push({ x, z, y: h, tipo: 'suelo' }); q++;
+      }
+    }
+    return out;
+  }
+  // Zonas con nombre para los viajes (src/game/lugares.js; sin él, los pois del mapa)
+  function zonas() {
+    const l = G.lugares && G.lugares.lista ? G.lugares.lista() : Object.values((G.terreno && G.terreno.pois) || {});
+    return l.filter(p => p && typeof p.x === 'number' && typeof p.z === 'number' && !/^percha_|^parada_|^gota_|^nube_|^bromelia_/.test(p.id || ''))
+      .map(p => ({ id: p.id, x: p.x, z: p.z, nombre: G.lugares && G.lugares.nombreDe ? G.lugares.nombreDe(p) : (p.nombre || p.id) }));
   }
 
   // ---------- Bandada ----------
@@ -106,7 +165,7 @@ window.AVBandada = function (G) {
     for (let i = 0; i < n; i++) {
       const fila = 1 + Math.floor(i / 2), lado = i % 2 ? 1 : -1;
       F.aves.push({ x: 0, y: 0, z: 0, vx: 0, vz: 1, vy: 0, yaw: 0, lado: lado * (fila * 2.4 + rnd(-0.8, 0.8)), atras: fila * 1.9 + rnd(-0.7, 0.7), arriba: rnd(-1.4, 1.4),
-        fase: rnd(0, 6.28), sp: i % Math.max(1, colores.length), esc: rnd(0.9, 1.2) * 1.5 });
+        fase: rnd(0, 6.28), sp: i % Math.max(1, colores.length), esc: rnd(0.9, 1.2) * 1.5, ala: 1, cab: 0, gir: 0, posada: false, perch: null });
     }
     F.n = n;
   }
@@ -121,18 +180,29 @@ window.AVBandada = function (G) {
     if (n <= 0 || F.estado !== 'off') return false;
     if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false; // BM20: con calidad «bajo» tampoco sale la de 20
     F.pasadas = o.pasadas || 1; F.opts = o;
-    if (!colores.length) { preparar().then(() => { if (F.estado === 'off') aparecer(motivo, o); }); return true; }
+    if (!colores.length) preparar();
+    if (o.destino) return aparecerViaje(motivo, o, n);
     const dist = o.dist != null ? o.dist : motivo === 'despertar' ? rnd(190, 230) : rnd(150, 190), lado = rnd(55, motivo === 'mision' ? 45 : 110);
     const ang = o.ang != null ? o.ang : rnd(0, Math.PI * 2), L = F.lider;
     L.x = S.pos.x + Math.cos(ang) * dist; L.z = S.pos.z + Math.sin(ang) * dist;
     // rumbo: hacia un punto a `lado` metros de Vittata, de modo que pasen por un costado y se alejen
     const px = S.pos.x - Math.sin(ang) * lado, pz = S.pos.z + Math.cos(ang) * lado, dx = px - L.x, dz = pz - L.z, h = Math.hypot(dx, dz) || 1;
     L.vx = dx / h * VELO; L.vz = dz / h * VELO; L.y = H(L.x, L.z) + 38;
-    crearAves(Math.min(n, MAXN)); F.t = 0; F.tAcompana = 0; F.estado = 'pasa'; F.motivo = motivo; F.dur = 0;
+    crearAves(Math.min(n, NIVEL_N.alto)); F.t = 0; F.tAcompana = 0; F.estado = 'pasa'; F.motivo = motivo; F.dur = 0;
     for (const a of F.aves) { colocar(a, 1); a.x = a.tx; a.z = a.tz; a.y = a.ty; a.vx = L.vx; a.vz = L.vz; }
     return true;
   }
-  const terminar = () => { F.estado = 'off'; F.aves = []; F.n = 0; cerca.count = lejos.count = 0; cerca.visible = lejos.visible = false; };
+  // Viaje a una zona con nombre: sale a 150–200 m de ella, en la dirección contraria a Vittata, y vuela hacia allí
+  function aparecerViaje(motivo, o, n) {
+    const D = o.destino, L = F.lider, a0 = Math.atan2(D.z - S.pos.z, D.x - S.pos.x) + rnd(-0.7, 0.7), dist = o.dist != null ? o.dist : rnd(150, 200);
+    L.x = D.x + Math.cos(a0) * dist; L.z = D.z + Math.sin(a0) * dist;
+    const dx = D.x - L.x, dz = D.z - L.z, h = Math.hypot(dx, dz) || 1;
+    L.vx = dx / h * VELO; L.vz = dz / h * VELO; L.y = H(L.x, L.z) + 34;
+    crearAves(Math.min(n, NIVEL_N.alto)); F.t = 0; F.tAcompana = 0; F.estado = 'viaja'; F.motivo = motivo; F.dur = 0; F.destino = D; F.posar = !!o.posar;
+    for (const a of F.aves) { colocar(a, 1); a.x = a.tx; a.z = a.tz; a.y = a.ty; a.vx = L.vx; a.vz = L.vz; }
+    return true;
+  }
+  const terminar = () => { F.estado = 'off'; F.aves = []; F.n = 0; F.destino = null; if (!EXTRA.length) { cerca.count = lejos.count = 0; cerca.visible = lejos.visible = false; } };
 
   // Fin natural de una pasada: si quedan pasadas (BM20: las 20 cotorras de M3 cruzan dos veces), vuelve por el lado contrario
   function fin() {
@@ -141,13 +211,23 @@ window.AVBandada = function (G) {
   }
   function mover(dt) {
     if (F.estado === 'off') return;
-    dt = Math.min(dt, 0.1); F.t += dt; F.dur += dt; uT.value += dt;
+    dt = Math.min(dt, 0.1); F.t += dt; F.dur += dt;
     const L = F.lider, px = S.pos.x, pz = S.pos.z, dP = Math.hypot(L.x - px, L.z - pz);
     let tx, tz, vel = VELO, ty;
     if (F.estado === 'pasa') {
       if (dP < CERCA) { F.estado = 'acompana'; F.tAcompana = 0; F.giro = Math.atan2(L.z - pz, L.x - px); }
       else if (F.dur > 20 && dP > 280 || F.dur > 90) return fin();
     }
+    if (F.estado === 'viaja') {
+      const D = F.destino, dD = Math.hypot(D.x - L.x, D.z - L.z);
+      tx = D.x; tz = D.z; vel = dD < 40 ? Math.max(6, VELO * dD / 40) : VELO; ty = H(L.x, L.z) + (dD < 60 ? 14 + dD * 0.3 : 34);
+      if (dP < CERCA * 0.6 && !F.posar) { F.estado = 'acompana'; F.tAcompana = 0; F.giro = Math.atan2(L.z - pz, L.x - px); }
+      else if (dD < 14) {
+        if (F.posar && empezarPosa()) return dibujar();
+        F.estado = 'pasa'; F.dur = 25; // sigue de largo y se va
+      } else if (F.dur > 120) return fin();
+    }
+    if (F.estado === 'posa') return moverPosa(dt);
     if (F.estado === 'acompana') {
       F.tAcompana += dt; F.giro += dt * 0.32;
       tx = px + Math.cos(F.giro) * 13; tz = pz + Math.sin(F.giro) * 13; vel = 15;
@@ -174,42 +254,108 @@ window.AVBandada = function (G) {
     }
     dibujar();
   }
+  // ---------- Posarse en grupo en la zona de destino ----------
+  function empezarPosa() {
+    const D = F.destino, sem = Math.random() * 10;
+    let P = [];
+    for (let k = 0; k < 3 && P.length < F.aves.length; k++) { const q = perchas(D.x, D.z, 26 + k * 8, F.aves.length + 4, { suelo: false, semilla: sem + k }); if (q.length > P.length) P = q; }
+    if (P.length < Math.max(4, Math.ceil(F.aves.length * 0.4))) return false; // sin árboles ni techos: sigue de largo (varias comparten percha si hacen falta)
+    P.sort(() => Math.random() - 0.5);
+    F.aves.forEach((a, i) => { a.perch = P[i % P.length]; a.posada = false; a.ox = a.x; a.oy = a.y; a.oz = a.z; a.prog = 0; a.dVuelo = Math.max(4, Math.hypot(a.perch.x - a.x, a.perch.y - a.y, a.perch.z - a.z)); a.prox = rnd(1, 4); a.accion = ''; });
+    F.estado = 'posa'; F.dur = 0; F.posaS = POSA_MIN + Math.random() * POSA_VAR;
+    return true;
+  }
+  function moverPosa(dt) {
+    const px = S.pos.x, pz = S.pos.z;
+    let susto = false;
+    for (const a of F.aves) {
+      const p = a.perch, oy = a.y, ox = a.x, oz = a.z;
+      if (!a.posada) {
+        a.prog = Math.min(1, a.prog + dt * 9 / a.dVuelo);
+        const e = a.prog * a.prog * (3 - 2 * a.prog), arco = Math.sin(a.prog * Math.PI) * Math.min(6, a.dVuelo * 0.2);
+        a.x = a.ox + (p.x - a.ox) * e; a.z = a.oz + (p.z - a.oz) * e; a.y = a.oy + (p.y + 0.14 * a.esc - a.oy) * e + arco;
+        a.ala = 1; a.cab = 0; a.gir = 0;
+        if (a.prog >= 1) { a.posada = true; a.ala = 0; }
+      } else {
+        a.ala = Math.max(0, a.ala - dt * 4); a.prox -= dt;
+        if (a.prox <= 0) { a.accion = Math.random() < 0.45 ? 'come' : Math.random() < 0.5 ? 'mira' : ''; a.giroObj = rnd(-1.2, 1.2); a.prox = rnd(1.5, 4); }
+        a.gir += ((a.giroObj || 0) - a.gir) * Math.min(1, dt * 4);
+        a.cab = a.accion === 'come' ? 0.45 + Math.max(0, Math.sin(F.dur * 9 + a.fase)) * 0.5 : 0;
+        if (Math.hypot(a.x - px, a.z - pz) < 4 && Math.abs(a.y - S.pos.y) < 3) susto = true;
+      }
+      if (dt > 0) { a.vx = (a.x - ox) / dt; a.vz = (a.z - oz) / dt; a.vy = (a.y - oy) / dt; }
+    }
+    if (susto || F.dur > F.posaS + 12) { // despegan juntas y se van por donde no está Vittata
+      const L = F.lider, h = Math.hypot(L.x - px, L.z - pz) || 1;
+      L.x = F.destino.x; L.z = F.destino.z; L.y = H(L.x, L.z) + 12; L.vx = (L.x - px) / h * 8; L.vz = (L.z - pz) / h * 8;
+      for (const a of F.aves) { a.posada = false; a.ala = 1; a.cab = 0; a.gir = 0; }
+      F.estado = 'sale'; F.dur = 0; F.destino = null;
+    }
+    dibujar();
+  }
+
+  // ---------- Dibujo: la bandada y los residentes (EXTRA, de residentes.js) en las mismas dos mallas ----------
+  const EXTRA = []; // [{ x, y, z, yaw, pitch, roll, esc, c, a, cob, fase, ala, cab, gir }]
   const cam = G.renderer.camera;
+  let pintadas = 0;
   function dibujar() {
     let nc = 0, nl = 0;
-    const fc = cerca.geometry.attributes.iFase, fl = lejos.geometry.attributes.iFase;
-    for (const a of F.aves) {
-      const cl = colores[a.sp % colores.length].c, vel = Math.hypot(a.vx, a.vz) || 1;
-      const yaw = Math.atan2(a.vx, a.vz), banco = Math.max(-0.5, Math.min(0.5, (a.yawAnt != null ? ((yaw - a.yawAnt + 9.42) % 6.2832 - 3.1416) : 0) * -4));
+    const gc = cerca.geometry.attributes, gl = lejos.geometry.attributes;
+    const poner = (x, y, z, rx, ry, rz, esc, cl, ac, cob, fase, ala, cab, gir) => {
+      dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(esc); dummy.updateMatrix();
+      const dx = x - cam.position.x, dy = y - cam.position.y, dz = z - cam.position.z;
+      const im = dx * dx + dy * dy + dz * dz < LOD_LEJOS * LOD_LEJOS ? cerca : lejos, ga = im === cerca ? gc : gl;
+      const i = im === cerca ? nc++ : nl++;
+      if (i >= MAXN) return;
+      im.setMatrixAt(i, dummy.matrix); im.instanceColor.setXYZ(i, cl.r, cl.g, cl.b);
+      ga.iFase.setX(i, fase); ga.iPose.setXYZW(i, ala, cab, gir, cob); ga.iAcento.setXYZ(i, ac.r, ac.g, ac.b);
+    };
+    if (F.estado !== 'off') for (const a of F.aves) {
+      const k = colores[a.sp % colores.length], vel = Math.hypot(a.vx, a.vz) || 1;
+      let yaw = Math.atan2(a.vx, a.vz), pitch = -Math.atan2(a.vy, vel) * 0.8;
+      if (a.posada) { yaw = a.yawPosada != null ? a.yawPosada : (a.yawPosada = a.yawAnt != null ? a.yawAnt : yaw); pitch = -0.5 + a.cab * 0.5; }
+      else a.yawPosada = null;
+      const banco = a.posada ? 0 : Math.max(-0.5, Math.min(0.5, (a.yawAnt != null ? ((yaw - a.yawAnt + 9.42) % 6.2832 - 3.1416) : 0) * -4));
       a.yawAnt = yaw;
-      dummy.position.set(a.x, a.y, a.z); dummy.rotation.set(-Math.atan2(a.vy, vel) * 0.8, yaw, banco); dummy.scale.setScalar(a.esc); dummy.updateMatrix();
-      const dx = a.x - cam.position.x, dy = a.y - cam.position.y, dz = a.z - cam.position.z;
-      const im = dx * dx + dy * dy + dz * dz < LOD_LEJOS * LOD_LEJOS ? cerca : lejos, i = im === cerca ? nc++ : nl++;
-      im.setMatrixAt(i, dummy.matrix); im.instanceColor.setXYZ(i, cl.r, cl.g, cl.b); (im === cerca ? fc : fl).setX(i, a.fase);
+      poner(a.x, a.y, a.z, pitch, yaw, banco, a.esc, k.c, k.a, k.cob, a.fase, a.ala != null ? a.ala : 1, a.posada ? a.cab * 0.6 : 0, a.posada ? a.gir : 0);
     }
-    for (const [im, n, f] of [[cerca, nc, fc], [lejos, nl, fl]]) {
-      im.count = n; im.visible = n > 0; im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; f.needsUpdate = true;
+    for (const r of EXTRA) poner(r.x, r.y, r.z, r.pitch, r.yaw, r.roll, r.esc, r.c, r.a, r.cob, r.fase, r.ala, r.cab, r.gir);
+    nc = Math.min(nc, MAXN); nl = Math.min(nl, MAXN);
+    for (const [im, n, ga] of [[cerca, nc, gc], [lejos, nl, gl]]) {
+      im.count = n; im.visible = n > 0; im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true;
+      ga.iFase.needsUpdate = true; ga.iPose.needsUpdate = true; ga.iAcento.needsUpdate = true;
     }
+    pintadas = nc + nl;
   }
 
   // ---------- Disparadores ----------
   let pend = null, proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR);
   const pedir = (motivo, o) => { if (!(o && o.forzar) && !permitido()) return false; pend = { motivo, en: o && o.en != null ? o.en : 0, o, espera: 0 }; return true; };
   G.on('apply', () => { terminar(); pend = null; proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR); if (permitido()) pedir('despertar', { en: 6 }); }, 90);
-  G.on('aprendizaje', d => { if (d && d.tipo === 'mision') pedir('mision', d.id === 'm3' ? { en: 3, n: MAXN, pasadas: 2, ang: rnd(0, 6.28) } : { en: 3 }); }); // BM20: al terminar M3 «Co-quí», 20 cotorras en dos pasadas
+  G.on('aprendizaje', d => { if (d && d.tipo === 'mision') pedir('mision', d.id === 'm3' ? { en: 3, n: NIVEL_N.alto, pasadas: 2, ang: rnd(0, 6.28) } : { en: 3 }); }); // BM20: al terminar M3 «Co-quí», 20 cotorras en dos pasadas
   G.on('canto', () => pedir('canto', { en: 1 })); // rareza.js: la cría legendaria llama a la bandada al despegar
   const alCalidad = C => { const n = cuentaPara(C.nivel); if (n === 0 || (F.estado !== 'off' && F.n > n)) terminar(); };
   G.on('calidad', alCalidad);
   G.on('update', (dt, busy) => {
     if (pend) {
       pend.en -= dt; pend.espera += dt;
-      if (pend.en <= 0 && !busy) { const p = pend; if (aparecer(p.motivo, p.o) || F.estado !== 'off' || p.espera > 90) pend = null; }
+      if (pend.en <= 0 && !busy) { const p = pend; if (aparecer(p.motivo, Object.assign({}, p.o, { en: undefined })) || F.estado !== 'off' || p.espera > 90) pend = null; }
     } else if (F.estado === 'off' && S.clock >= proxTarde) {
       proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR);
-      if (!busy) pedir('tarde');
+      if (!busy) { if (motivoTarde() === 'viaje' && pedirViaje()) { /* viaje entre zonas */ } else pedir('tarde'); }
     }
-    mover(dt);
+    uT.value += Math.min(dt, 0.1);
+    if (F.estado !== 'off') mover(dt); else if (EXTRA.length || pintadas) dibujar();
   }, 88);
+  // Horario de la tarde: 3 de cada 5 salidas son un viaje a una zona con nombre a la vista de Vittata (40–170 m)
+  function motivoTarde() { return Math.random() < VIAJE_P ? 'viaje' : 'tarde'; }
+  function pedirViaje(o) {
+    const Z = zonas().filter(z => { const d = Math.hypot(z.x - S.pos.x, z.z - S.pos.z); return d > 40 && d < 170; });
+    if (!Z.length) return false;
+    const D = Z[Math.floor(Math.random() * Z.length)];
+    mezclar();
+    return pedir('viaje', Object.assign({ destino: D, posar: Math.random() < 0.5 }, o));
+  }
 
   // ---------- Prueba ----------
   async function test() {
@@ -282,6 +428,10 @@ window.AVBandada = function (G) {
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.bandada = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n, pasadas: F.pasadas }), aparecer, mover, F, test };
-  return { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n }), test, get meshes() { return [cerca, lejos]; }, aparecer, mover, F };
+  const api = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n }), test, get meshes() { return [cerca, lejos]; }, aparecer, mover, F };
+  G.bandada = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n, pasadas: F.pasadas, destino: F.destino && F.destino.id }), aparecer, mover, F, test, api,
+    terminar, zonas, perchas, colorDe, EXTRA, dibujar, motivoTarde, pedirViaje, especies: () => colores.map(c => c.id), meshes: [cerca, lejos], MAXN, RES_MAX, uT };
+  // Cotorras residentes (src/game/residentes.js): se cargan con la bandada y dibujan en sus mallas
+  G.bandada.residentes = window.AVE && AVE.assets ? AVE.assets.script('src/game/residentes.js').then(() => window.AVResidentes(G, G.bandada), e => { console.warn('residentes: ' + (e && e.message)); return null; }) : Promise.resolve(null);
+  return api;
 };

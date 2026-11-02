@@ -397,4 +397,10 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "En el cuaderno del puente, arma el plan: cada tarea con su nombre. Luego pruébalo.": "In the notebook at the bridge, build the plan: every task with a name. Then test it.",
  "Hablar con quien navega": "Talk to the navigator",
  "Navegante": "Navigator",
+ // QA-89: la tabla larga también se lleva volando, bajito (Roca no vuela alto)
+ "{} no vuela alto: vuela bajito para que te siga": "{} can't fly high: fly low so they can follow you",
+ "{} no vuela tan alto: baja hasta el puente para colocarla": "{} can't fly that high: come down to the bridge to set it in place",
+ // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
+ "FEMA, curso IS-242.c de comunicación (escucha activa)": "FEMA, communication course IS-242.c (active listening)",
+ "Aritmética (pares de factores); no necesita fuente externa": "Arithmetic (factor pairs); no outside source needed",
 });

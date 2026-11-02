@@ -213,6 +213,11 @@
     "Explica por qué la cotorra necesita huecos de árbol y nombra un cuidado, con la fuente.": "Explains why the parrot needs tree hollows and names a care measure, with the source.",
     // D11: la canoa del ep. 3 con su nombre (registro de temporada)
     'Nuestra canoa, «{}», ya cruza la bahía. Ahora toca cruzar el río.': 'Our canoe, «{}», already sails the bay. Now it\'s time to cross the river.',
+    // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
+    "USDA Forest Service, Southern Research Station, GTR SRS-109 (franjas ribereñas); USGS, SIR 2023-5140 (refugios térmicos)": "USDA Forest Service, Southern Research Station, GTR SRS-109 (riparian buffers); USGS, SIR 2023-5140 (thermal refuges)",
+    "USDA NRCS, norma 391 Riparian Forest Buffer (2018): hojarasca para organismos acuáticos": "USDA NRCS, practice standard 391 Riparian Forest Buffer (2018): leaf litter for aquatic organisms",
+    "U.S. National Park Service, Green River Ferry Navigational System Repairs (ejemplo de Estados Unidos)": "U.S. National Park Service, Green River Ferry Navigational System Repairs (a United States example)",
+    "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, norma 391 Riparian Forest Buffer (2018)": "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, practice standard 391 Riparian Forest Buffer (2018)",
   };
   const unir = d => Object.assign(d, EP4);
   if (window.AV_EN) unir(window.AV_EN);

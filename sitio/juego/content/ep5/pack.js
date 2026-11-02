@@ -6,6 +6,13 @@
    mismas ruinas del diseño: torre, mirador, pilar, portal y altar. No mueve el mapa del cap. 1. */
 (function () {
   'use strict';
+  // Diario · Ciencia (src/game/aula.js, enlazar): cada ficha de lecciones.js se gana con su hallazgo del mundo (mismo id) o con el
+  // momento de la misión en que el jugador lo vive (lo que entiende G.misiones.cumple). Sin mecánica nueva: solo eventos que ya existen.
+  const FICHA_VIA = { espejo: { alguno: [{ recogido: 'codigo_luz' }, { mision: 'relevo' }] }, tambor: { alguno: [{ recogido: 'codigo_sonido' }, { mision: 'relevo' }] }, // M3: el código elegido
+    banderas: { alguno: [{ recogido: 'codigo_tela' }, { mision: 'relevo' }] }, // y, al llegar la señal, los otros dos
+    marcas: { mision: 'piedras' }, especies: { evento: 'GuardianRemembered' }, treinta: { evento: 'GuardianRemembered' } }; // M2: las piedras y el Guardián
+  // Pruebas: deja correr el juego (con el mundo libre) hasta que se ganan las fichas que ya tocan
+  const soltarFichas = (G, T) => { for (let k = 0; k < 300 && G.aula.pendientes().length; k++) T.tick(0.5); };
   const EP = () => window.AV_EP5;
   // ---------- Mundo único (docs/equipo/MUNDO_UNICO.md § Interruptor) ----------
   // MAPA_REAL apagado (false): el capítulo se juega en su mundo pequeño de siempre, igual que antes. Encendido (true), o con
@@ -153,7 +160,7 @@
         { id: 'fichas', texto: 'Escucha al Guardián: recuerda a pedazos', hasta: { evento: 'GuardianRemembered' }, guia: G => G.misiones.at('guardian') },
         { id: 'antena', texto: 'Endereza la antena', hasta: { recogido: 'antena' }, guia: G => G.misiones.at('trx') },
         { id: 'codigo', texto: 'Elige cómo enviar la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
-        { id: 'estaciones', texto: 'Pon tres estaciones', hasta: { recogido: 'tres_estaciones' }, guia: G => G.misiones.at('loma') },
+        { id: 'estaciones', texto: 'Pon tres estaciones', hasta: { recogido: 'tres_estaciones' }, progreso: S => ' (' + Math.min(3, S.collected.filter(k => /^est_/.test(k)).length) + '/3)', guia: G => G.misiones.at(['loma', 'torre', 'mirador'].find(id => !G.S.collected.includes('est_' + id)) || 'prueba') }, // QA-86: cuántas van y la próxima altura sin estación
         { id: 'prueba1', texto: 'Prueba el relevo', hasta: { recogido: 'prueba1' }, guia: G => G.misiones.at('prueba') },
         { id: 'ayuda', texto: 'Pide ayuda para las estaciones', hasta: { evento: 'HelpAsked' }, guia: G => G.misiones.at('iguaca') },
         { id: 'prueba2', texto: 'Vuelve a probar hasta la niebla', guia: G => G.misiones.at('prueba') },
@@ -253,6 +260,27 @@
       const nivel2 = () => !!(G.aula && G.aula.aj && G.aula.aj.grado === '5-6');
       const codigo = () => ['luz', 'sonido', 'tela'].find(k => tiene('codigo_' + k)) || '';
       const puestos = () => (D.estaciones || []).filter(e => tiene('est_' + e.id));
+      // Las voces se oyen (Kelvin 2-nov, iPad): dos timbres sintetizados por el bus de voz, dorado (Mara: lento y redondo) y violeta
+      // (Vela: corto y en pico), que se juntan al final. Con «Subtítulos de sonido», cada uno trae su línea (src/game/accesibilidad.js).
+      const silabas = (A, t, notas, o) => notas.forEach(([f, a, d], i) => A.tone(f, t + a, d, Object.assign({ bus: 'voice' }, o)));
+      const MARA = [[392, 0, 0.26], [440, 0.3, 0.22], [370, 0.56, 0.34]], VELA = [[659, 0, 0.1], [784, 0.14, 0.08], [698, 0.26, 0.1], [880, 0.4, 0.12]];
+      const vozMara = (t, A, g) => { silabas(A, t, MARA, { type: 'triangle', gain: g || 0.13 }); silabas(A, t + 0.42, MARA, { type: 'triangle', gain: (g || 0.13) * 0.35 }); };
+      const vozVela = (t, A, g) => { silabas(A, t, VELA, { type: 'sine', gain: g || 0.1 }); silabas(A, t + 0.3, VELA, { type: 'sine', gain: (g || 0.1) * 0.35 }); };
+      G.audio.define('voz_mara', (t, a, A) => vozMara(t, A));
+      G.audio.define('voz_vela', (t, a, A) => vozVela(t, A));
+      G.audio.define('voces_dos', (t, a, A) => { vozMara(t, A, 0.11); vozVela(t + 0.08, A, 0.08); });
+      G.audio.define('voces_juntas', (t, a, A) => {
+        vozMara(t, A, 0.11); vozVela(t + 0.9, A, 0.08);
+        A.tone(392, t + 1.7, 1.4, { type: 'triangle', to: 523, gain: 0.12, bus: 'voice' }); A.tone(784, t + 1.7, 1.4, { type: 'sine', to: 523, gain: 0.08, bus: 'voice' });
+        A.tone(523, t + 3.1, 1.3, { type: 'triangle', gain: 0.1, bus: 'voice' }); A.tone(1046, t + 3.1, 1.3, { type: 'sine', gain: 0.04, bus: 'voice' });
+      });
+      if (G.accesibilidad && G.accesibilidad.SUB) Object.assign(G.accesibilidad.SUB, {
+        voz_mara: { ms: 2400, es: '[Una voz dorada, lenta y redonda]', en: '[A golden voice, slow and round]' },
+        voz_vela: { ms: 2400, es: '[Una voz violeta, corta y en pico]', en: '[A violet voice, short and sharp]' },
+        voces_dos: { ms: 3000, es: '[Dos voces a la vez en el transmisor: una dorada y otra violeta]', en: '[Two voices at once on the transmitter: one golden, one violet]' },
+        voces_juntas: { ms: 4200, es: '[La voz dorada y la violeta se juntan]', en: '[The golden voice and the violet voice come together]' },
+      });
+      const sonarVoz = f => G.audio.play(f.voz === 'b' ? 'voz_vela' : 'voz_mara');
 
       if (!document.getElementById('ep5-css')) {
         const st = document.createElement('style'); st.id = 'ep5-css';
@@ -280,6 +308,7 @@
       } catch (e) { /* sin partida del capítulo 1 */ }
 
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      if (AU.activo && AU.enlazar) AU.enlazar(FICHA_VIA);
       const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
       const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
       const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
@@ -451,7 +480,7 @@
         const faltan = D.fragmentos.filter(f => !tiene('frag_' + f.id));
         if (!faltan.length) { separar(); return; }
         elegir('Vittata', 'Gira la rueda del transmisor.', faltan.map(f => ({ label: 'Posición ' + f.pos, f })), o => {
-          poner('frag_' + o.f.id);
+          poner('frag_' + o.f.id); sonarVoz(o.f);
           const caja = document.getElementById('card');
           G.dialogo.say([
             di('Voz', o.f.texto),
@@ -473,7 +502,7 @@
           }
           poner('voz_' + f.id); G.audio.play('tick'); G.misiones.check(); separar();
         });
-        ondaEnCarta(f);
+        ondaEnCarta(f); sonarVoz(f);
       }
       // La onda del fragmento en la tarjeta (EP5_MISIONES t3: otro color y otro ritmo): dorada lenta y redonda, violeta corta y en
       // pico, para que «mira el color» se pueda mirar y se distinga también sin ver colores
@@ -601,21 +630,36 @@
           G.dialogo.say([Lu(cs[o.v].nombre + '. ' + cs[o.v].ventaja + ' ' + cs[o.v].costo), di('Vittata', 'Llevo ' + cs[o.v].pieza + ' a tres alturas.')]);
         });
       }
+      // QA-86 (Kelvin 2-nov, iPad): una estación puesta no se quita por accidente. Recién puesta, Acción solo recuerda a dónde ir; tras
+      // alejarse y volver, el primer toque avisa («Toca otra vez para mover esta estación») y el segundo la quita, como antes.
+      let recien = null, armada = null;
+      G.on('update', () => {
+        for (const k of ['recien', 'armada']) {
+          const id = k === 'recien' ? recien : armada, e = id && D.estaciones.find(x => x.id === id);
+          if (e && Math.hypot(S.pos.x - e.x, S.pos.z - e.z) > 3) { if (k === 'recien') recien = null; else armada = null; }
+        }
+      });
+      const siguiente = () => D.estaciones.find(e => ['loma', 'torre', 'mirador'].includes(e.id) && !tiene('est_' + e.id));
+      const aDonde = () => { const s = siguiente(); return s && puestos().length < 3 ? 'Bien. Ahora ' + s.nombre + ': sigue la flecha.' : 'Bien: tres estaciones. Ahora prueba el relevo: sigue la flecha.'; };
       function usarEstacion(est) {
         if (!est || S.step < 9) return false;
         const id = 'est_' + est.id;
         if (tiene(id)) {
+          if (recien === est.id) { G.ui.toast(aDonde(), 3000); return true; }
+          if (armada !== est.id) { armada = est.id; G.ui.toast('Esta estación ya está puesta. Toca otra vez para mover esta estación.', 3200); return true; }
+          armada = null;
           quitar(id); quitar('tres_estaciones'); pintar();
           G.dialogo.say([di('Vittata', 'Quito la estación de ' + est.nombre + '. Puedo ponerla en otro sitio.')]);
           return true;
         }
         if (puestos().length >= 3) { G.ui.toast('Ya hay tres. Quita una si quieres moverla.', 2500); return true; }
-        poner(id); // el mástil con la pieza lo dibuja pintar()
+        poner(id); recien = est.id; // el mástil con la pieza lo dibuja pintar()
         if (puestos().length === 3) {
           poner('tres_estaciones');
           if (!G.eventos.had('RelayBuilt')) { G.eventos.log('RelayBuilt'); G.comic.capture('relevo'); }
         }
         G.audio.play('pickup'); G.misiones.check(); pintar();
+        G.ui.toast(aDonde(), 3000);
         return true;
       }
       function motivoTexto(m) {
@@ -625,6 +669,14 @@
         if (m === 'noche') return 'De noche la tela no se ve. Enciende las estaciones con la linterna.';
         return 'La señal se corta.';
       }
+      // Qué hacer cuando la cadena no llega, en palabras de niño (Kelvin 2-nov)
+      function queHacer(m) {
+        if (m === 'loma') return 'No pasa nada: por eso se prueba. Las dos estaciones tienen que verse. Mueve la que está detrás de la loma a una altura despejada.';
+        if (m === 'niebla') return 'No pasa nada: por eso se prueba. Pon la última estación en el mirador: desde ahí la luz pasa sobre la niebla.';
+        if (m === 'corto') return 'No pasa nada: por eso se prueba. El sonido solo llega cerca: pon las estaciones más juntas.';
+        if (m === 'noche') return 'No pasa nada: por eso se prueba. Pasa por el transmisor y toma la linterna.';
+        return 'No pasa nada: por eso se prueba. Mueve una estación, o cambia lo que haga falta.';
+      }
       function probar() {
         const lista = puestos();
         if (!codigo()) { G.ui.toast('Primero elige luz, sonido o tela.', 2500); return; }
@@ -633,7 +685,7 @@
         pintar(); encuadrar();
         if (corte.motivo !== 'vacia') {
           poner('corte_' + corte.motivo);
-          G.dialogo.say([di('Vittata', motivoTexto(corte.motivo)), Lu('No pasa nada: por eso se prueba. Mueve una estación, o cambia lo que haga falta.')]);
+          G.dialogo.say([di('Vittata', motivoTexto(corte.motivo)), Lu(queHacer(corte.motivo))]);
           return;
         }
         if (!G.eventos.had('HelpAsked')) {
@@ -654,7 +706,7 @@
           return;
         }
         pararPulso();
-        G.eventos.log('VoicesRevealed'); G.comic.capture('niebla');
+        G.eventos.log('VoicesRevealed'); G.comic.capture('niebla'); G.audio.play('voces_juntas');
         G.fx.burst(D.niebla.x, H(D.niebla.x, D.niebla.z) + 3, D.niebla.z, 'gold', 28);
         for (const e of lista) foco(e.x, e.z, codigo() === 'sonido' ? '#7ec8e3' : codigo() === 'tela' ? '#d6403a' : '#f2c21a');
         foco(D.niebla.x + 4, D.niebla.z - 2, '#f6e7b2');
@@ -678,7 +730,7 @@
       }
       function hablarIguaca() {
         if (S.step === 0) {
-          E().inicio = S.clock;
+          E().inicio = S.clock; G.audio.play('voces_dos');
           elegir('Iguaca', '¿Es una voz con eco o son dos?', [
             { label: 'Una voz con eco', v: 'eco' }, { label: 'Son dos', v: 'dos' },
           ], o => {
@@ -733,7 +785,7 @@
       for (const est of D.estaciones) {
         const ruina = D.ruinas.find(r => r.id === est.id);
         G.interaccion.add({ id: est.id, x: est.x, z: est.z, r: 2.3,
-          label: () => S.step === 5 && ruina ? 'Leer ' + ruina.nombre : (tiene('est_' + est.id) ? 'Quitar estación' : 'Poner estación en ' + est.nombre),
+          label: () => S.step === 5 && ruina ? 'Leer ' + ruina.nombre : (tiene('est_' + est.id) ? (armada === est.id ? 'Mover esta estación' : 'Estación puesta') : 'Poner estación en ' + est.nombre),
           use: () => { if (S.step === 5 && ruina) leerRuina(ruina); else if (!usarEstacion(est) && ruina) leerRuina(ruina); else if (!ruina && S.step < 9) G.dialogo.say([di('Vittata', 'Una altura despejada. Servirá para el relevo.')]); } });
       }
       for (const r of D.ruinas) if (!D.estaciones.some(e => e.id === r.id)) {
@@ -759,7 +811,7 @@
         G.camara.yaw = Math.atan2(S.pos.x - D.niebla.x, S.pos.z - D.niebla.z); G.camara.manual();
       }
 
-      const api = { pintar, pararPulso, nivel2, exigeNivel2: nivel2, colocarAyudantes };
+      const api = { pintar, pararPulso, nivel2, exigeNivel2: nivel2, colocarAyudantes, queHacer };
       G.c.ep5 = api;
       pintar();
     },
@@ -789,6 +841,11 @@
           check('La predicción no juzga: hay eco y hay dos', opciones().some(t => t.includes('eco')) && opciones().some(t => t.includes('Son dos')));
           pick('Son dos'); drain();
           check('M1 · Dos voces: sigue sintonizar, sin castigo si era eco', G.eventos.had('TwoVoicesHeard') && S.collected.includes('pred_dos') && S.step === 1, 'paso ' + S.step);
+          { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
+            check('Diario · las 4 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 4 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            const vuelta = { x: S.pos.x, z: S.pos.z };
+            teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
+            check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); teleport(vuelta.x, vuelta.z); tick(0.05); }
 
           useAt('trx');
           for (const n of [1, 2, 3, 4, 5]) { check('M1 · Rueda, posición ' + n, pick('Posición ' + n), opciones().join(' | ')); drain(); }
@@ -832,6 +889,8 @@
           check('M3 · Tres estaciones, una de ellas tapada', S.collected.includes('tres_estaciones') && S.collected.includes('est_pilar') && S.step === 10, S.collected.filter(k => k.startsWith('est_')).join(','));
           useAt('prueba'); drain();
           check('M3 · La prueba muestra el choque y no castiga', S.collected.includes('corte_loma') && !S.collected.includes('prueba1') && S.step === 10);
+          useAt('pilar'); drain();
+          check('QA-86 · Un toque en una estación puesta no la quita: avisa', S.collected.includes('est_pilar') && /Toca otra vez/.test(($('toast') || {}).textContent || ''), ($('toast') || {}).textContent);
           useAt('pilar'); drain(); useAt('loma');
           check('M3 · Mover la estación deja la cadena libre', !S.collected.includes('est_pilar') && S.collected.includes('est_loma') && D.corte(h, 'luz', [est('loma'), est('torre'), est('mirador')], {}).motivo === 'vacia');
           const rel0 = G.accesibilidad.relajado;
@@ -863,6 +922,10 @@
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre', $('end').hidden && !G.ui.busy());
+          soltarFichas(G, T);
+          { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
+            check('Diario · al completar las misiones, las 4 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 4 && cien.querySelectorAll('li.found .fuente').length === 4 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            G.ui.hideCard(); }
           useAt('iguaca');
           check('Iguaca ofrece las preguntas', opciones().some(x => x.includes('Ahora no')));
           pick('Ahora no');
@@ -900,7 +963,10 @@
           check('Las escenas del episodio tienen inglés', sin.length === 0, sin.slice(0, 4).join(' | '));
           const leidos = [D.mensaje, ...Object.values(D.tarjeta), ...D.fragmentos.map(f => f.texto), ...D.ruinas.flatMap(r => [r.nombre, r.marca, r.se]),
             ...D.estaciones.map(e => e.nombre), ...G.diario.entries.flatMap(f => [f.nombre, f.texto]), 'Onda dorada', 'Lo sé: lo veo en la marca',
-            'Pide ayuda a Iguaca y al aprendiz', 'Probar el relevo', 'La línea choca con una loma. El trazo rojo marca dónde.'];
+            'Pide ayuda a Iguaca y al aprendiz', 'Probar el relevo', 'La línea choca con una loma. El trazo rojo marca dónde.',
+            'Pon tres estaciones (2/3)', 'Estación puesta', 'Mover esta estación', 'Esta estación ya está puesta. Toca otra vez para mover esta estación.',
+            'Bien. Ahora la torre que mira al mar: sigue la flecha.', 'Bien: tres estaciones. Ahora prueba el relevo: sigue la flecha.',
+            ...['loma', 'niebla', 'corto', 'noche', ''].map(m => G.c.ep5.queHacer(m))];
           const sinEn = G.idioma.faltan(leidos);
           check('Lo que se lee en el capítulo tiene inglés', sinEn.length === 0, sinEn.slice(0, 4).join(' | '));
           check('El título pasa a inglés', $('quest').querySelector('h1').textContent === 'The Forgotten Voices', $('quest').querySelector('h1').textContent);
@@ -915,6 +981,8 @@
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (aulaKey) { if (aulaRaw == null) localStorage.removeItem(aulaKey); else localStorage.setItem(aulaKey, aulaRaw); } } catch (e) { /* sin almacenamiento */ }
+          { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 4, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           if (G.aula.recargar) G.aula.recargar();
           T.restoreSave(keep);
