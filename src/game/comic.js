@@ -10,11 +10,9 @@
        G.emit('criadero', 'nido') (Iguaca presenta el nido) → NestAppeared; G.emit('criadero', 'eclosion', { id, imagen? })
          → ChickHatched (con la foto de la escena del criadero; sin foto, el nido y la eclosión se ilustran).
      Las viñetas van en el orden en que pasaron.
-   - Gags del pichón (DIVERSION_CAP1 mejoras 5 y 9): una viñeta del pack con gag: 'nombre' nace cuando alguien emite
-     G.emit('criadero', 'nombre', datos) o G.emit('nombre', datos), con datos = { id?, foto?() | imagen? }; p. ej. pichonCae,
-     pichonMariposa, pichonDuerme y pichonImita (criadero.js). Una vez por partida, nunca en las baterías (G.quiet) ni antes de
-     crear el personaje. Con la foto que traiga; si no, captura del mundo; sin lienzo, la ilustración del gag. Si nadie emite el
-     gag, su viñeta no existe.
+   - Gags del pichón (DIVERSION_CAP1 mejoras 5 y 9): src/game/gags.js emite G.emit('criadero', 'gag', { gag, clave, foto() }) y
+     src/game/momentos.js lo anota una vez por partida (ChickTumbled, ChickChasedButterfly, ChickNappedOnFind, ChickCopiedGesture)
+     con su foto. Aquí, sin foto ni lienzo, cada gag tiene su ilustración (ilustracion: 'pichon_…'). Sin el gag, no hay viñeta.
    - «Foto» (actores.js: Gestos → Foto → un gesto; src/game/momentos.js la pone en el cómic): con Foto activa, las teclas 1–7
      (que ya hacen el gesto, input.js) también toman la foto.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida
@@ -32,7 +30,7 @@
    Datos: pack.comic { marca, tituloDefecto, titulos?: [textos], archivo, pdfTitulo, pdfProductor, capturas: [claves],
      portadas: { valorDelSelect: claveDeCaptura },
      vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string],
-       gag?: nombreDelGag, ilustracion?: 'nido'|'eclosion'|'rama'|'pichon_cae'|'pichon_mariposa'|'pichon_duerme'|'pichon_imita', sinCaptura?, encuadre? }],
+       gag?: 'caida'|'mariposa'|'siesta'|'imitar' (solo para la prueba), ilustracion?: 'nido'|'eclosion'|'rama'|'pichon_cae'|'pichon_mariposa'|'pichon_duerme'|'pichon_imita', sinCaptura?, encuadre? }],
      decorar?(ctx, viñeta, caja, altoImagen, G) }.
    Pruebas: AV.comicTest(): evento real → viñeta con el look → PNG válido de 1080×1520 y no en blanco → entrega. */
 AVE.module('comic', function (G) {
@@ -202,27 +200,6 @@ AVE.module('comic', function (G) {
       registrar('ChickHatched', { cria: datos && typeof datos.id === 'string' ? datos.id.slice(0, 24) : null });
     }
   });
-
-  // ---------- Gags del pichón: viñetas del pack con gag (DIVERSION_CAP1 mejora 9; los emite criadero.js) ----------
-  const GAGS = VINETAS.filter(v => typeof v.gag === 'string' && v.gag && v.needs);
-  if (G.eventos.defs) for (const v of GAGS) if (!G.eventos.defs[v.needs]) G.eventos.defs[v.needs] = { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: v.gag };
-  const esFoto = im => typeof im === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(im) && im.length > 2000 && im.length < 800000;
-  // → true si el gag se volvió viñeta
-  function alGag(nombre, d) {
-    const v = GAGS.find(x => x.gag === nombre);
-    if (!v || G.quiet || G.eventos.had(v.needs) || !(S.profile && S.profile.created)) return false;
-    let im = null;
-    try { im = d && typeof d.foto === 'function' ? d.foto() : d && d.imagen; } catch (e) { im = null; }
-    if (v.img && v.img !== 'portrait' && esFoto(im)) S.captures[v.img] = im; // con foto puesta no se captura el mundo
-    const meta = { gag: nombre };
-    if (d && typeof d.id === 'string') meta.cria = d.id.slice(0, 24);
-    if (d && typeof d.gesto === 'string') meta.gesto = d.gesto.slice(0, 24);
-    G.eventos.log(v.needs, meta);
-    revisarEventos(); // la viñeta nace ahora, con la apariencia de ahora
-    return true;
-  }
-  G.on('criadero', (tipo, d) => { if (typeof tipo === 'string' && GAGS.length) alGag(tipo, d); });
-  for (const nombre of new Set(GAGS.map(v => v.gag))) G.on(nombre, d => alGag(nombre, d));
 
   // Teclado: con «Foto» activa en Gestos, las teclas 1–7 hacen el gesto (input.js) y aquí, además, toman la foto
   function alTeclaFoto(e) {
@@ -893,10 +870,11 @@ AVE.module('comic', function (G) {
         check('Las 4 viñetas nuevas están en la página y no en blanco', vacias.length === 0, vacias.map(c => c.id).join(', ') || 'todas con imagen');
         check('Las viñetas van en el orden en que pasaron', R2.panels.every((q, j) => j === 0 || R2.panels[j - 1].seq <= q.seq));
       }
-      // Gags del pichón (mejora 9): sin el gag no hay viñeta; por el canal del criadero o por su nombre, una vez, con la foto
-      // que traiga o una captura del mundo; sin ninguna, su ilustración. Un gag que nadie conoce no hace nada.
+      // Gags del pichón (mejora 9): el hecho real (gags.js → G.emit('criadero', 'gag', …), lo anota momentos.js) crea la viñeta
+      // una vez, con la foto del momento o una captura del mundo; sin ninguna, su ilustración. Un gag que nadie conoce no hace nada.
       const gags = VINETAS.filter(v => v.gag);
-      if (gags.length) {
+      const gagEv = (v, extra) => G.emit('criadero', 'gag', Object.assign({ gag: v.gag, clave: v.needs, id: 'h1', etapa: 'bebe' }, extra || {}));
+      if (gags.length && G.momentos && G.momentos.alGag) {
         const fotoGag = (() => { const c = document.createElement('canvas'); c.width = 480; c.height = 360; const g = c.getContext('2d');
           const gr = g.createLinearGradient(0, 0, 0, 360); gr.addColorStop(0, '#9fd3f0'); gr.addColorStop(1, '#3e7f3f'); g.fillStyle = gr; g.fillRect(0, 0, 480, 360);
           g.fillStyle = '#f29a2e'; g.beginPath(); g.arc(300, 120, 40, 0, 7); g.fill(); g.fillStyle = '#7fc35a'; g.beginPath(); g.arc(200, 250, 70, 0, 7); g.fill(); return c.toDataURL('image/jpeg', 0.8); })();
@@ -905,24 +883,24 @@ AVE.module('comic', function (G) {
         vistos = S.events.length;
         check('Sin gags del pichón no hay sus viñetas (si el gag no existe, nunca salen)', !comicPanels().some(p => gags.some(v => v.id === p.id)), gags.map(v => v.gag).join(', '));
         check('Cada gag trae 3 textos graciosos a elegir, además del suyo', gags.every(v => (v.opciones || []).length === 3 && typeof v.texto === 'string'));
-        for (const v of gags) { G.emit('criadero', v.gag, { id: 'h1', imagen: fotoGag }); G.emit(v.gag, { id: 'h1' }); }
+        for (const v of gags) gagEv(v, { foto: () => fotoGag });
         check('Con G.quiet (baterías) los gags no crean viñetas', !gags.some(v => G.eventos.had(v.needs)));
         const nEv = S.events.length;
         G.quiet = false;
-        try { G.emit('criadero', 'pichonVuelaDeLado', { id: 'h1' }); G.emit('criadero', 'brincoRaro'); } finally { G.quiet = true; }
+        try { G.emit('criadero', 'gag', { gag: 'volarDeLado', clave: 'ChickFlewSideways', id: 'h1' }); G.emit('criadero', 'gag', null); } finally { G.quiet = true; }
         check('Un gag sin viñeta no registra nada', S.events.length === nEv);
         const conFoto = gags.filter((v, j) => j % 2 === 1), sinFoto = gags.filter((v, j) => j % 2 === 0);
         const lookGag = { preset: 'versicolor', outfit: 'rojo', accessory: 'gorra' };
         try { S.profile = Object.assign({}, S.profile, { look: G.creador.profileLook(lookGag) }); } catch (e) { /* sin modelo */ }
         G.quiet = false;
         try {
-          for (const v of conFoto) G.emit('criadero', v.gag, { id: 'h1', foto: () => fotoGag }); // canal del criadero, con foto
-          for (const v of sinFoto) G.emit(v.gag, { id: 'h1', gesto: 'saludar' }); // por su nombre, sin foto
-          for (const v of gags) { G.emit('criadero', v.gag, { id: 'h1', imagen: fotoGag }); G.emit(v.gag, {}); } // otra vez
+          for (const v of conFoto) gagEv(v, { foto: () => fotoGag }); // con la foto del momento (gags.js)
+          for (const v of sinFoto) gagEv(v, { gesto: 'saludar', foto: () => null }); // sin foto: captura del mundo
+          for (const v of gags) gagEv(v, { foto: () => fotoGag }); // otra vez
         } finally { G.quiet = true; }
         for (const v of gags) {
           const r = vin()[v.id], pg = comicPanels().find(q => q.id === v.id);
-          check(`${v.gag} → ${v.needs} → viñeta «${v.id}» con la apariencia de ese momento y 4 textos`, !!pg && r && claveLook(r.look) === claveLook(lookActual()) && pg.opciones.length === 4, pg ? pg.text : 'sin viñeta');
+          check(`gag ${v.gag} → ${v.needs} → viñeta «${v.id}» con la apariencia de ese momento y 4 textos`, !!pg && r && claveLook(r.look) === claveLook(lookActual()) && pg.opciones.length === 4, pg ? pg.text : 'sin viñeta');
         }
         check('Cada gag cuenta una sola vez por partida', gags.every(v => S.events.filter(e => e.key === v.needs).length === 1));
         check('El gag con foto la usa en su viñeta', conFoto.every(v => S.captures[v.img] === fotoGag));

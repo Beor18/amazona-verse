@@ -8,6 +8,9 @@
                            partida, porque el reto restaura la instantánea de G.S al salir
      PhotoTaken            «Foto»: uno de los 7 gestos y la foto de frente al cómic (actores.js: G.emit('foto', { gesto }));
                            cada foto nueva reemplaza la imagen de la misma viñeta y queda registrada como evento
+     ChickTumbled, ChickChasedButterfly, ChickNappedOnFind, ChickCopiedGesture
+                           los gags del pichón en el mundo (src/game/gags.js: G.emit('criadero', 'gag', { gag: 'caida' |
+                           'mariposa' | 'siesta' | 'imitar', clave, id, etapa, gesto?, hallazgo?, foto() })), con la foto del momento
    - Nunca en las baterías (G.quiet) ni antes de crear el personaje. Las fotos van a S.captures con la clave de img de la
      viñeta del pack (chapuzon, aterrizaje, brinco, record, foto); con imagen puesta el cómic no vuelve a capturar.
    - Sin viñeta en el pack para una clave, el evento se registra igual (otro pack puede dibujarlo) y no se guarda foto.
@@ -70,6 +73,22 @@ AVE.module('momentos', function (G) {
     return true;
   }
   G.on('criadero', (tipo, d) => { if (tipo === 'brinco') alBrinco(d); });
+
+  // ---------- Gags del pichón en el mundo (gags.js: G.emit('criadero', 'gag', { gag, clave, id, etapa, gesto?, hallazgo?, foto() })) ----------
+  const GAGS = { caida: 'ChickTumbled', mariposa: 'ChickChasedButterfly', siesta: 'ChickNappedOnFind', imitar: 'ChickCopiedGesture' };
+  if (G.eventos.defs) for (const k of Object.values(GAGS)) if (!G.eventos.defs[k]) G.eventos.defs[k] = { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_gag' };
+  // → true si el gag quedó anotado (una vez por partida; sin foto, el cómic captura el mundo)
+  function alGag(d) {
+    if (!d || typeof d !== 'object') return false;
+    const key = GAGS[d.gag];
+    if (!key || !listo() || G.eventos.had(key)) return false;
+    let im = null;
+    try { im = typeof d.foto === 'function' ? d.foto() : d.imagen; } catch (e) { im = null; }
+    const meta = { gag: d.gag };
+    for (const [k, n] of [['id', 24], ['etapa', 16], ['gesto', 24], ['hallazgo', 32]]) if (typeof d[k] === 'string') meta[k === 'id' ? 'cria' : k] = d[k].slice(0, n);
+    return registrar(key, meta, im);
+  }
+  G.on('criadero', (tipo, d) => { if (tipo === 'gag') alGag(d); });
 
   // ---------- Primer récord del Modo Retos ----------
   let pendRecord = null;
@@ -264,5 +283,5 @@ AVE.module('momentos', function (G) {
   // AV.momentosTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.momentosTest) AV.momentosTest = o => test(o); }, 0);
 
-  return { CLAVES, registrar, imgDe, alBrinco, alResultado, pedirFoto, tomarFoto, fotoFrente, paso, test, get pendiente() { return pendRecord; } };
+  return { CLAVES, GAGS, registrar, imgDe, alBrinco, alGag, alResultado, pedirFoto, tomarFoto, fotoFrente, paso, test, get pendiente() { return pendRecord; } };
 });
