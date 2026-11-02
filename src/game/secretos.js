@@ -10,7 +10,16 @@ AVE.module('secretos', function (G) {
   const H = (x, z) => G.terreno.height(x, z);
   const agua = (x, z) => { const y = G.agua.levelAt(x, z); return y > -Infinity ? y : null; };
   const en = () => G.aula && G.aula.aj && G.aula.aj.idioma === 'en';
+  const ingles = () => en() || !!(G.idioma && G.idioma.activo && G.idioma.activo()) || document.documentElement.lang === 'en';
   const tx = (o, k) => (o && (en() ? o.en : o.es)) || (o && o.es) || k || '';
+  // El aviso sale en el idioma de verdad: el diccionario (idioma.tr) y, si no alcanzó, el texto EN del dato.
+  const aviso = (es, enText) => {
+    if (G.idioma && G.idioma.tr && G.idioma.activo && G.idioma.activo()) {
+      const t = G.idioma.tr(es);
+      if (t && t !== es) return t;
+    }
+    return ingles() ? (enText || es) : es;
+  };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const hechos = () => (Array.isArray(S.secretos) ? S.secretos : []);
   const tiene = id => hechos().includes(id);
@@ -35,8 +44,10 @@ AVE.module('secretos', function (G) {
       if (G.comic && G.comic.revisarEventos) G.comic.revisarEventos();
     }
     if (G.ui && G.ui.toastHTML) {
-      const mapa = premio.fragmento ? (en() ? ' · Map ' + premio.fragmento + '/6' : ' · Mapa ' + premio.fragmento + '/6') : '';
-      G.ui.toastHTML('<b>' + esc(en() ? 'Secret' : 'Secreto') + '</b><br>' + esc(tx(s.nombre, s.id)) + esc(mapa), 4200);
+      const mapa = premio.fragmento ? (ingles() ? ' · Map ' + premio.fragmento + '/6' : ' · Mapa ' + premio.fragmento + '/6') : '';
+      const titulo = aviso('Secreto', 'Secret');
+      const nombre = aviso(s.nombre && s.nombre.es, s.nombre && s.nombre.en);
+      G.ui.toastHTML('<b>' + esc(titulo) + '</b><br>' + esc(nombre) + esc(mapa), 4200);
     }
     if (G.guardado) G.guardado.autosave();
     return true;
@@ -99,7 +110,18 @@ AVE.module('secretos', function (G) {
     if (e.lleva && dentro(s.hasta)) conceder(s);
   }
 
-  function pasoFondo(s) { if (enDesde(s.punto || s.desde)) conceder(s); }
+  // QA-98: el fondo se gana buceando o nadando. enDesde, en seco, acepta estar a menos de 2,5 m del suelo
+  // y por eso «Lo que se llevó el río» se completaba en la orilla, a 6 m, sin meterse al agua.
+  function enFondo(p) {
+    if (!p) return false;
+    const r = p.r || 4;
+    if (dist2(p, p.x, p.z) > r * r) return false;
+    const w = agua(S.pos.x, S.pos.z);
+    if (w == null) return false;
+    if (G.fisica && G.fisica.MOVE && G.fisica.MOVE.swimming) return true;
+    return S.pos.y < w - 0.05;
+  }
+  function pasoFondo(s) { if (enFondo(s.punto || s.desde)) conceder(s); }
 
   function pasoRasante(s) {
     const p = s.punto;
@@ -265,5 +287,97 @@ AVE.module('secretos', function (G) {
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
-  return { lista, tiene, conceder, test };
+  // QA-98: el fondo no se gana en seco, y el aviso EN no se queda en español. 16 comprobaciones.
+  async function cg34() {
+    const P = G.pruebas, out = [];
+    const check = (name, ok, extra) => { if (out.length < 16) out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
+    const sec0 = hechos().slice(), pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+    const quiet0 = G.quiet, fly0 = G.fisica.MOVE.flying, swim0 = G.fisica.MOVE.swimming;
+    const idAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
+    const lang0 = document.documentElement.lang;
+    const auto = G.guardado && G.guardado.autosave;
+    const toast0 = G.ui && G.ui.toastHTML;
+    let html = '';
+    const arr = G.pack.secretos || (G.pack.secretos = []);
+    const puestos = [];
+    const buscar = fn => {
+      for (let dx = -80; dx <= 80; dx += 4) for (let dz = -80; dz <= 80; dz += 4) {
+        const x = pos0.x + dx, z = pos0.z + dz, h = H(x, z), w = agua(x, z);
+        if (!Number.isFinite(h)) continue;
+        if (fn(h, w)) return { x, z, h, w };
+      }
+      return null;
+    };
+    const quieto = () => { S.vy = 0; G.fisica.MOVE.vx = 0; G.fisica.MOVE.vz = 0; };
+    const meter = s => { arr.push(s); puestos.push(s); };
+    try {
+      if (auto) G.guardado.autosave = () => {};
+      if (toast0) G.ui.toastHTML = function (h, ms) { html = String(h); return toast0.apply(this, arguments); };
+      G.quiet = false;
+      if (!Array.isArray(S.secretos)) S.secretos = [];
+      const seco = buscar((h, w) => w == null || h > w + 1);
+      const mojado = buscar((h, w) => w != null && w > h + 0.6);
+      check('Hay suelo seco y agua para probar el fondo', !!seco && !!mojado, seco && mojado ? 'seco ' + seco.x.toFixed(0) + ' agua ' + mojado.x.toFixed(0) : 'no');
+      const rio = { id: 'qa98_rio', tipo: 'fondo', nombre: { es: 'Lo que se llevó el río', en: 'What the river carried' }, punto: { x: seco.x + 6, z: seco.z, r: 6 }, premio: {} };
+      meter(rio);
+      const enSeco = () => { S.pos.x = seco.x; S.pos.z = seco.z; S.pos.y = seco.h + 0.2; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false; quieto(); };
+      enSeco();
+      const d6 = Math.hypot(S.pos.x - rio.punto.x, S.pos.z - rio.punto.z);
+      P.tick(0.2);
+      check('En seco, a 6,0 m del punto, no se gana', !tiene('qa98_rio') && d6.toFixed(1) === '6.0', d6.toFixed(2));
+      for (let i = 0; i < 20; i++) { enSeco(); P.tick(0.2); }
+      check('A los 4 s en seco sigue sin ganarse', !tiene('qa98_rio'));
+      check('En seco no está nadando', G.fisica.MOVE.swimming === false && G.fisica.MOVE.flying === false);
+      rio.punto.x = seco.x; rio.punto.z = seco.z;
+      S.pos.x = seco.x; S.pos.z = seco.z; S.pos.y = seco.h + 0.2; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false; quieto(); P.tick(0.2);
+      check('En seco, encima del punto y a menos de 2,5 m del suelo, no se gana', !tiene('qa98_rio') && Math.abs(S.pos.y - seco.h) < 2.5);
+      rio.punto.x = mojado.x; rio.punto.z = mojado.z;
+      S.pos.x = mojado.x; S.pos.z = mojado.z; S.pos.y = mojado.w + 4; G.fisica.MOVE.flying = true; G.fisica.MOVE.swimming = false; quieto(); P.tick(0.15);
+      check('Volando sobre el agua no se gana', !tiene('qa98_rio'));
+      S.pos.y = mojado.w - 0.5; G.fisica.MOVE.flying = false; quieto(); P.tick(0.25);
+      check('Buceando, bajo el agua y dentro del radio, sí se gana', tiene('qa98_rio'), 'y=' + S.pos.y.toFixed(2) + ' w=' + mojado.w.toFixed(2));
+      const lejos = { id: 'qa98_lejos', tipo: 'fondo', nombre: { es: 'Lejos', en: 'Far' }, punto: { x: mojado.x + 20, z: mojado.z, r: 6 }, premio: {} };
+      meter(lejos);
+      S.pos.x = mojado.x; S.pos.z = mojado.z; S.pos.y = mojado.w - 0.5; G.fisica.MOVE.flying = false; quieto(); P.tick(0.2);
+      check('Buceando fuera del radio no se gana', !tiene('qa98_lejos'));
+      G.quiet = true;
+      const callado = { id: 'qa98_callado', tipo: 'fondo', nombre: { es: 'Callado', en: 'Quiet' }, punto: { x: mojado.x, z: mojado.z, r: 6 }, premio: {} };
+      meter(callado); P.tick(0.2);
+      check('En silencio de prueba no se concede', !tiene('qa98_callado'));
+      G.quiet = false;
+      check('Ganarlo otra vez no se duplica', conceder(rio) === false && S.secretos.filter(id => id === 'qa98_rio').length === 1);
+      if (G.aula && G.aula.aj) G.aula.aj.idioma = 'es';
+      const esToast = { id: 'qa98_es', tipo: 'fondo', nombre: { es: 'Lo que se llevó el río', en: 'What the river carried' }, punto: { x: mojado.x, z: mojado.z, r: 6 }, premio: {} };
+      meter(esToast); html = ''; S.pos.y = mojado.w - 0.5; quieto(); P.tick(0.2);
+      check('En español el aviso dice el nombre en español', /Lo que se llevó el río/.test(html) && /Secreto/.test(html), html.replace(/<[^>]+>/g, ' '));
+      if (G.idioma && G.idioma.poner) await G.idioma.poner('en');
+      const enToast = { id: 'qa98_en', tipo: 'fondo', nombre: { es: 'Lo que se llevó el río', en: 'What the river carried' }, punto: { x: mojado.x, z: mojado.z, r: 6 }, premio: {} };
+      meter(enToast); html = ''; S.pos.y = mojado.w - 0.5; G.fisica.MOVE.flying = false; quieto(); P.tick(0.2);
+      check('En inglés el aviso dice What the river carried', /What the river carried/.test(html), html.replace(/<[^>]+>/g, ' '));
+      check('En inglés el aviso no se queda en español', !/Lo que se llevó el río/.test(html), html.replace(/<[^>]+>/g, ' '));
+      check('En inglés el rótulo es Secret', /Secret/.test(html) && !/Secreto/.test(html), html.replace(/<[^>]+>/g, ' '));
+      const tr = G.idioma && G.idioma.tr;
+      check('El diccionario traduce el aviso', !!tr && tr('Lo que se llevó el río') === 'What the river carried' && tr('Secreto') === 'Secret', tr && tr('Lo que se llevó el río'));
+      const llev = { id: 'qa98_lleva', tipo: 'llevar', nombre: { es: 'Llevar', en: 'Carry' }, desde: { x: seco.x, z: seco.z, r: 4 }, hasta: { x: seco.x + 30, z: seco.z, r: 3 }, premio: {} };
+      meter(llev);
+      S.pos.x = seco.x; S.pos.z = seco.z; S.pos.y = seco.h + 0.2; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false; quieto(); P.tick(0.2);
+      check('En seco, llevar sigue usando el suelo: se recoge sin bucear', !!(st.get('qa98_lleva') || {}).lleva && !tiene('qa98_lleva'));
+    } catch (e) {
+      check('QA-98', false, String(e && e.stack || e).slice(0, 300));
+    } finally {
+      for (const s of puestos) { const i = arr.indexOf(s); if (i >= 0) arr.splice(i, 1); st.delete(s.id); }
+      S.secretos = sec0;
+      S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z;
+      G.quiet = quiet0; G.fisica.MOVE.flying = fly0; G.fisica.MOVE.swimming = swim0;
+      if (G.aula && G.aula.aj && idAntes) G.aula.aj.idioma = idAntes;
+      if (toast0) G.ui.toastHTML = toast0;
+      if (auto) G.guardado.autosave = auto;
+      if (G.idioma && G.idioma.poner) await G.idioma.poner(lang0 === 'en' ? 'en' : 'es');
+      document.documentElement.lang = lang0 || 'es';
+    }
+    while (out.length < 16) check('QA-98 incompleto', false);
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+
+  return { lista, tiene, conceder, test, cg34 };
 });

@@ -1611,4 +1611,6 @@ window.AV_EN = {
  " · mapa ": " · map ",
  " · ¡exploradora! +": " · explorer! +",
  " · plumas en tu colección: ": " · feathers in your collection: ",
+ "Secreto": "Secret",
+ "Lo que se llevó el río": "What the river carried",
 };

@@ -23,6 +23,7 @@
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
       ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
       secretosTest: o => (G.secretos ? G.secretos.test(o) : Promise.reject(new Error('sin secretos'))),
+      cg34Test: o => (G.secretos && G.secretos.cg34 ? G.secretos.cg34(o) : Promise.reject(new Error('sin cg34'))),
       ep3Test: o => T.templateTest(Object.assign({ pack: 'ep3', timeout: 60000 }, o)), // content/ep3: el episodio 3 de punta a punta, ES y EN
       ep4Test: o => T.templateTest(Object.assign({ pack: 'ep4', timeout: 60000 }, o)), // content/ep4: el capítulo 4 de principio a fin
       ep6Test: o => T.templateTest(Object.assign({ pack: 'ep6', timeout: 60000 }, o)), // content/ep6: el capítulo 6 «El pacto de los 36» de principio a fin, ES y EN
