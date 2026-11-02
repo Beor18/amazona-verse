@@ -10,19 +10,26 @@
    la parada del nido, con su fuente. Todo el estado va en S.collected (se guarda solo): tarjetas, decisiones y lo que falló. */
 (function () {
   'use strict';
-  const LUMA = { x: -2, z: 2 };
+  // Mundo único (BM111, docs/equipo/MUNDO_UNICO.md): con el mapa real cargado, el capítulo se juega en Caney del Meandro
+  // (kelvin_aldea_meandros, centro −14, 17), con los sitios medidos sobre el suelo real (pendiente, agua y casas de Kelvin a
+  // 6 m o más). Sin el mapa, el mundo de relleno de siempre. EN(relleno, mapa) elige la coordenada.
+  const REAL = !!(window.AVE && window.AVE.mundoReal);
+  const EN = (relleno, mapa) => (REAL ? mapa : relleno);
+  const LUMA = EN({ x: -2, z: 2 }, { x: -17, z: 29 });
   // Tres sitios para la casa: lo que se observa en cada uno (valores del juego). Ninguno es «el malo»: se elige con evidencia
   const SITIOS = {
-    a: { id: 'a', nombre: 'el llano', x: -12, z: 10, pendiente: 'plana', suelo: 'se hace charco: el agua tarda mucho en bajar', viento: 'poco viento' },
-    b: { id: 'b', nombre: 'la loma', x: 16, z: -6, pendiente: 'empinada', suelo: 'el agua baja rápido', viento: 'mucho viento' },
-    c: { id: 'c', nombre: 'el claro', x: 0, z: -16, pendiente: 'suave', suelo: 'el agua baja a ritmo medio', viento: 'algo de viento' },
+    a: { id: 'a', nombre: 'el llano', ...EN({ x: -12, z: 10 }, { x: -29.5, z: 22 }), pendiente: 'plana', suelo: 'se hace charco: el agua tarda mucho en bajar', viento: 'poco viento' },
+    b: { id: 'b', nombre: 'la loma', ...EN({ x: 16, z: -6 }, { x: 0, z: 60 }), pendiente: 'empinada', suelo: 'el agua baja rápido', viento: 'mucho viento' },
+    c: { id: 'c', nombre: 'el claro', ...EN({ x: 0, z: -16 }, { x: -24, z: 50 }), pendiente: 'suave', suelo: 'el agua baja a ritmo medio', viento: 'algo de viento' },
   };
   const IDS = Object.keys(SITIOS);
-  const NIDO = { x: -20, z: -4 };
+  const NIDO = EN({ x: -20, z: -4 }, { x: -31, z: 38 });
   // Misión 2: los dos residentes y la mesa de las tarjetas. [KELVIN: quiénes son la abuela y el papá y su aspecto]
-  const ABUELA = { x: 8, z: 9 }, PAPA = { x: -10, z: -7 }, MESA = { x: 5, z: 1 };
+  const ABUELA = EN({ x: 8, z: 9 }, { x: -27, z: 30 }), PAPA = EN({ x: -10, z: -7 }, { x: -12, z: 44 }), MESA = EN({ x: 5, z: 1 }, { x: -12, z: 37 });
   // Lo que rodea a los residentes: la charca junto a la abuela, su refugio viejo y la rama del papá
-  const CHARCA = { x: 10.6, z: 11.2, r: 1.5 }, REFUGIO = { x: 10.6, z: 6.4, r: 2 }, RAMA = { x: -11.8, z: -8.4, r: 1.6 };
+  const CHARCA = { ...EN({ x: 10.6, z: 11.2 }, { x: -24.4, z: 32.2 }), r: 1.5 }, REFUGIO = { ...EN({ x: 10.6, z: 6.4 }, { x: -24.4, z: 27.4 }), r: 2 },
+    RAMA = { ...EN({ x: -11.8, z: -8.4 }, { x: -13.8, z: 42.6 }), r: 1.6 };
+  const INICIO = EN({ x: -4, z: 6 }, { x: -20.5, z: 33.5 });
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
   const lee = id => 'lee_' + id, elige = id => 'sitio_' + id;
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png' };
@@ -109,7 +116,7 @@
         etiqueta: 'Capítulo 2 · Un lugar para todos', fin: '¡La casa aguanta!',
         nota: 'Capítulo 2: elige dónde vivir, escucha a todos y construye una casa que aguante. No uses tu nombre real.', inventario: {} },
     },
-    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -4, z: 6 }, camara: 0.6 },
+    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
     // edu: aula del episodio (fichas, respuestas de «Iguaca te pregunta» y el registro local). Las partidas del prototipo sin la
     // clave la reciben vacía (aula.js la crea si falta).
     guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
@@ -121,7 +128,14 @@
     // (almacen 'amazonaverse': la cría del ep. 1 sigue a Vittata). La partida del ep. 2 sigue aparte (ep2.save).
     criadero: { desde: 'SiteChosen', almacen: 'amazonaverse' },
 
-    mundo: {
+    // Mundo único: el mapa real del cap. 1 (cap1/mundo.js lo deja en AVE.mundoReal) con los lugares, la flora despejada y sin
+    // el reubicar ni los pois del cap. 1. Sin el mapa, el mundo de relleno de antes.
+    mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
+      lugares: { inicio: { x: INICIO.x, z: INICIO.z + 0.5, r: 5 }, nido: { x: NIDO.x, z: NIDO.z, r: 3 } },
+      pois: [], reubicar: null,
+      flora: Object.assign({}, window.AVE.mundoReal.flora, { evitar: pack => [LUMA, NIDO, ABUELA, PAPA, MESA, CHARCA, REFUGIO, RAMA, INICIO]
+        .map(p => ({ x: p.x, z: p.z, r: p.r || 2.5 })).concat(IDS.map(i => ({ x: SITIOS[i].x, z: SITIOS[i].z, r: 8 })), ((pack.diario || {}).entradas || []).map(e => ({ x: e.x, z: e.z, r: 1.5 }))) }),
+    }) : {
       tamano: 40, segmentos: 80,
       exposicion: 0.74,
       cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
@@ -139,6 +153,9 @@
         evitar: [LUMA, NIDO, ABUELA, PAPA, MESA, CHARCA, REFUGIO, RAMA, { x: -1.5, z: 11, r: 4.5 }].concat(IDS.map(i => SITIOS[i]), IDS.map(i => ({ x: SITIOS[i].x - 3, z: SITIOS[i].z }))) },
       oceano: { color: '#0b4f86', y: -2.6 },
     },
+    // Mundo único: los lugares y asentamientos del mapa con su nombre propio (ES/EN), como en el cap. 1; sin los grupos internos
+    descubrir: REAL ? { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] } : undefined,
+    asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true },
@@ -189,17 +206,17 @@
       categorias: { terreno: { nombre: 'Terreno', desconocido: 'Una marca del terreno', sonido: 'pickup', rafaga: 'feathers' },
         cultura: { nombre: 'Casas de aquí', desconocido: 'Un trozo de casa vieja', sonido: 'pickup', rafaga: 'gold' } },
       entradas: [
-        { id: 'charco', cat: 'terreno', nombre: 'Charco del llano', x: -12, z: 15, texto: 'El agua del cubo se quedó aquí un buen rato. La abuela lo sabía.',
+        { id: 'charco', cat: 'terreno', nombre: 'Charco del llano', ...EN({ x: -12, z: 15 }, { x: -30, z: 27 }), texto: 'El agua del cubo se quedó aquí un buen rato. La abuela lo sabía.',
           modelo: (add, S1) => { add(new THREE.CylinderGeometry(0.6, 0.6, 0.04, 14), '#5a7a9a', 0, 0.02, 0); } },
-        { id: 'cinta_lluvia', cat: 'terreno', nombre: 'Cinta de lluvia', x: 19, z: -1, texto: 'Un hilo de agua bajando por la loma, cada vez más rápido.',
+        { id: 'cinta_lluvia', cat: 'terreno', nombre: 'Cinta de lluvia', ...EN({ x: 19, z: -1 }, { x: -3, z: 56 }), texto: 'Un hilo de agua bajando por la loma, cada vez más rápido.',
           modelo: (add) => { add(new THREE.BoxGeometry(0.12, 0.04, 1.6), '#7ab8e0', 0, 0.05, 0); } },
-        { id: 'poste_viento', cat: 'terreno', nombre: 'Poste con cinta', x: -5, z: -18, texto: 'En la loma la cinta se agita; en el claro, apenas.',
+        { id: 'poste_viento', cat: 'terreno', nombre: 'Poste con cinta', ...EN({ x: -5, z: -18 }, { x: -11, z: 53 }), texto: 'En la loma la cinta se agita; en el claro, apenas.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.05, 0.06, 1.2, 6), '#8a6a3a', 0, 0.6, 0); add(new THREE.PlaneGeometry(0.5, 0.18), '#d6403a', 0.3, 1.05, 0); } },
-        { id: 'zocos', cat: 'cultura', nombre: 'Zocos viejos', x: 13, z: 12, texto: 'Cuatro postes de madera que una vez levantaron una casa del suelo.',
+        { id: 'zocos', cat: 'cultura', nombre: 'Zocos viejos', ...EN({ x: 13, z: 12 }, { x: -17, z: 22 }), texto: 'Cuatro postes de madera que una vez levantaron una casa del suelo.',
           modelo: (add) => { for (const [dx, dz] of [[-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4]]) add(new THREE.CylinderGeometry(0.07, 0.08, 0.7, 6), '#6b4a2a', dx, 0.35, dz); } },
-        { id: 'techo_zinc', cat: 'cultura', nombre: 'Plancha de techo', x: -14, z: -12, texto: 'Una plancha ondulada, puesta inclinada para que el agua corra.',
+        { id: 'techo_zinc', cat: 'cultura', nombre: 'Plancha de techo', ...EN({ x: -14, z: -12 }, { x: -29, z: 8.5 }), texto: 'Una plancha ondulada, puesta inclinada para que el agua corra.',
           modelo: (add) => { const m = add(new THREE.BoxGeometry(1.2, 0.04, 0.8), '#9aa0a6', 0, 0.35, 0); m.rotation.z = 0.5; } },
-        { id: 'bohio', cat: 'cultura', nombre: 'Hojas de palma trenzadas', x: -16, z: 2, texto: 'Un trozo de techo hecho de hojas de palma, como los de las casas de hace mucho.',
+        { id: 'bohio', cat: 'cultura', nombre: 'Hojas de palma trenzadas', ...EN({ x: -16, z: 2 }, { x: -10.5, z: 16.5 }), texto: 'Un trozo de techo hecho de hojas de palma, como los de las casas de hace mucho.',
           modelo: (add) => { const m = add(new THREE.ConeGeometry(0.6, 0.5, 8, 1, true), '#a8903a', 0, 0.3, 0); m.material.side = THREE.DoubleSide; } },
       ],
       hitos: [{ id: 'cuaderno', todos: true }],
