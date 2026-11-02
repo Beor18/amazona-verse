@@ -127,10 +127,14 @@ AVE.module('pruebas', function (G) {
       }
       check('El ropero monta todas sus piezas y estilos en sus huesos', failed.length === 0 && pieces > 0, failed.join(', ') || pieces + ' partes');
       check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
-      ch.applyLook({ species: 'festiva', accessories: {} }); // con máscara y sin piel (versicolor ya tiene piel, que apaga la máscara)
+      ch.applyLook({ species: 'festiva', accessories: {} });
     }
-    const pc = ch.tint ? hexOf(ch.tint.patchColor.value) : (ch.materials.Patch ? hexOf(ch.materials.Patch.color) : null);
-    check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.festiva.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
+    // BM124 (2-nov): todas las especies del creador tienen piel; la máscara facial va pintada en la piel de cada especie
+    // (antes festiva era la única con máscara por tinte y sin piel). Se comprueba que el plumaje pone la piel de festiva.
+    if (window.AVE && AVE.pieles) await AVE.pieles.listo(ch);
+    const mapas = []; ch.root.traverse(m => { if ((m.isSkinnedMesh || m.isMesh) && !m.userData.isAccessory && m.material && m.material.map) mapas.push(m.material.map.name || ''); });
+    const conPiel = mapas.some(n => n === 'piel_festiva');
+    check('El plumaje cambia la cara: festiva lleva su piel (máscara pintada) y el tinte se apaga', conPiel && (!ch.tint || ch.tint.tintOn.value.length() === 0), [...new Set(mapas)].join(',') || 'sin mapas');
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;
     S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };
