@@ -117,7 +117,7 @@
       "e2eTest",
       "lookCapitulosTest"
     ],
-    "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso). cg34_regresion.js y cg17_dones_ranking.js son informativas y no están en las 12 de «baterias». cg34Test (iframes, QA-86..98) da 16/16 tras el arreglo de QA-98. cg17Test da 3/6: el archivo pide que G.dones.conDones('norte') anule datosRanking y publicarRanking, y el modo ya hecho mira st.partidaDones. Meter cg17Test en las 12 dejaría la publicación en rojo por un fallo esperado. Con --extra avisan y no frenan. Al inyectarse pisan AV.cg34Test y AV.cg17Test de boot.js solo en esa sesión de prueba.",
+    "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso). cg34_regresion.js es informativa y no está en las 12 de «baterias». cg34Test (iframes, QA-86..98) da 16/16 tras el arreglo de QA-98. Al inyectarse pisa AV.cg34Test de boot.js solo en esa sesión de prueba. AV.cg17Test queda el del juego.",
     "inyectar": [
       "tests/qa/e2e.js",
       "tests/qa/ep2_e2e.js",
@@ -128,8 +128,7 @@
       "tests/qa/ep4_e2e.js",
       "tests/qa/ep5_e2e.js",
       "tests/qa/ep6_e2e.js",
-      "tests/qa/cg34_regresion.js",
-      "tests/qa/cg17_dones_ranking.js"
+      "tests/qa/cg34_regresion.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar. Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
