@@ -1617,6 +1617,7 @@ window.AV_EN = {
  "Entonces no vuelo sola. Mantengo el impulso… ¡y llamo!": "Then I do not fly alone. I hold the dash… and I call!",
  "Nuevo don: Llamada de la bandada. Mantén Impulso.": "New gift: Flock Call. Hold Dash.",
  // Cómic: gags del pichón (DIVERSION_CAP1 mejoras 5 y 9)
+ "¡Mi primer récord en la carrera de El Yunque!": "My first record in the El Yunque race!",
  "¡Pataplún! Mi cotorrita se cayó del borde, se sacudió y siguió como si nada.": "Ka-plop! My little parrot fell off the edge, shook itself off and carried on like nothing happened.",
  "Aterrizó de colita y se paró como una campeona.": "It landed on its tail and stood up like a champion.",
  "Una sacudida de plumas y ¡lista otra vez!": "One feather shake and ready to go again!",

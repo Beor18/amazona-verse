@@ -392,7 +392,7 @@ AVE.module('comic', function (G) {
     let g = x.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r * 1.15); g.addColorStop(0, '#a6dc7e'); g.addColorStop(1, '#3f8f3a');
     x.fillStyle = g; x.beginPath(); x.ellipse(0, 0, r * 0.82, r * 0.95, 0, 0, Math.PI * 2); x.fill(); // cuerpo
     x.fillStyle = 'rgba(225,246,196,.5)'; x.beginPath(); x.ellipse(r * 0.18, r * 0.22, r * 0.45, r * 0.58, 0, 0, Math.PI * 2); x.fill(); // pecho
-    x.save(); x.translate(-r * 0.5, -r * 0.2); x.rotate(o.ala ? -2.2 : 0.3); // ala
+    x.save(); x.translate(-r * 0.42, -r * 0.3); x.rotate(o.ala ? 2.55 : 0.3); // ala (levantada: hacia arriba y atrás)
     x.fillStyle = '#2f7a35'; x.beginPath(); x.ellipse(0, r * 0.38, r * 0.3, r * 0.58, 0, 0, Math.PI * 2); x.fill();
     x.fillStyle = '#2f6fb8'; x.beginPath(); x.ellipse(0, r * 0.76, r * 0.2, r * 0.22, 0, 0, Math.PI * 2); x.fill(); x.restore();
     x.save(); x.translate(0, -r * 0.95); x.rotate(-(o.mira || 0)); // cabeza
@@ -934,17 +934,30 @@ AVE.module('comic', function (G) {
         const A = G.actores, M = G.momentos;
         if (A && A.modoFoto && A.EMOTE_KEYS && M && M.tomarFoto) {
           check('Gestos: 7 gestos y el botón «Foto»', A.EMOTE_KEYS.length === 7 && document.querySelectorAll('#emotes [data-emote]').length === 7 && !!document.querySelector('#emotes [data-foto]'));
-          let pedida = null; const emit = G.emit;
+          // El gesto en sí es de actores.js (posar en el suelo y quieta): aquí se simula que pudo posar y que no pudo
+          let pedida = null; const emit = G.emit, jugar = A.playEmote;
           G.emit = function (n, a, b2, c2) { if (n === 'foto') pedida = a; return emit.call(this, n, a, b2, c2); };
-          try {
+          const tecla = async (k, puede) => {
+            pedida = null; A.playEmote = name => { if (!puede) return false; A.emote.name = name; return true; };
             A.modoFoto(true);
             const pulsado = document.querySelector('#emotes [data-foto]').getAttribute('aria-pressed') === 'true';
-            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true })); // como el teclado (input.js y este módulo)
+            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true })); // como el teclado (input.js y este módulo)
             await new Promise(r => setTimeout(r, 30));
-            document.body.dispatchEvent(new KeyboardEvent('keyup', { key: '1', bubbles: true }));
-            const g1 = A.EMOTE_KEYS[0], hizo = A.emote && A.emote.name === g1;
-            check('Foto activa + tecla 1: hace el gesto y pide la foto (o, sin poder posar, no la pide)', pulsado && !A.fotoModo && (hizo ? !!pedida && pedida.gesto === g1 : !pedida), hizo ? 'gesto ' + g1 : 'no podía posar aquí');
-          } finally { G.emit = emit; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
+            document.body.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
+            const r = { pulsado, sigue: A.fotoModo, pedida };
+            A.playEmote = jugar; if (A.stopEmote) A.stopEmote();
+            return r;
+          };
+          try {
+            const g3 = A.EMOTE_KEYS[2], r1 = await tecla('3', true);
+            check('Foto activa + tecla 3: hace el gesto, cierra Foto y pide la foto con ese gesto', r1.pulsado && !r1.sigue && !!r1.pedida && r1.pedida.gesto === g3, r1.pedida ? r1.pedida.gesto : JSON.stringify(r1));
+            const r2 = await tecla('1', false);
+            check('Si no puede posar (volando o en el aire), no pide la foto y Foto se cierra', r2.pulsado && !r2.sigue && !r2.pedida, JSON.stringify(r2));
+            A.modoFoto(false); pedida = null;
+            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: '2', bubbles: true })); await new Promise(r => setTimeout(r, 30));
+            document.body.dispatchEvent(new KeyboardEvent('keyup', { key: '2', bubbles: true }));
+            check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !pedida);
+          } finally { G.emit = emit; A.playEmote = jugar; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
