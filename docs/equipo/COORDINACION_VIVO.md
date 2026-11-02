@@ -113,3 +113,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
   - **Kelvin:** FPS en el iPad y el Android cuando entren KIMI-001 y 002; el día de legal y monetización.
 
 - 02-Nov 07:41 AST · **EN CURSO · web · ronda 10:** BM124 (pieles agilis, albifrons, festiva: tools/pieles, assets/textures/pieles, pieles.js, especies.js, pruebas de pieles y creador, en.js, pieles_fuentes) y BM125 (documentos técnicos: PROJECT_STATUS, TEST_REPORT, HUEVOS_GDD, MINIMAPA, ROADMAP, CAP1_PENDIENTE §2–4, hash de BM113, nº de baterías, SEGURIDAD_INFANTIL).
+- 02-Nov 07:52 AST · **HECHAS · web** · ronda 10: BM124 (3 pieles: las 34 especies vivas con piel) y BM125 (documentos técnicos al día, 8 commits). Publico con la nube.
