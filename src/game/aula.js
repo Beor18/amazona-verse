@@ -2,8 +2,9 @@
    - Ajustes del dispositivo: idioma ES/EN de los textos de la lección, modo de texto corto, lectura en voz alta
      (speechSynthesis, tolera que falle o no exista), grado (3-4 o 5-6) y etiqueta de estación del maestro.
      Se cambian en el menú de pausa (sección Aula) y en el Modo Maestro.
-   - Fichas de ciencia de la lección: solo se publican las verificadas (y del grado elegido); se muestran en el Diario
-     con su fuente. Las URL solo aparecen en el Modo Maestro.
+   - Fichas de ciencia de la lección: solo se publican las verificadas (o «narrativo»: contadas dentro del juego, sin afirmar
+     un hecho real) y del grado elegido; se muestran en el Diario con su fuente. Las URL solo aparecen en el Modo Maestro.
+     Caps. 2–6: G.aula.enlazar({ id: disparador }) dice con qué acción del jugador se gana cada ficha (y siempre con su hallazgo).
    - Preguntas de la lección (opción múltiple y ordenar) con retroalimentación inmediata, pista en el 2.º intento y
      respuesta explicada en el 3.º, sin puntaje visible. La usa la evaluación formativa del pack.
    - Modo Maestro: acceso discreto desde el menú de pausa resolviendo una suma (no es contraseña ni cuenta). Contiene la
@@ -234,7 +235,9 @@ AVE.module('aula', function (G) {
   const nivelDe = g => { const [a, b] = rango(g), x = a <= 4 ? 1 : 2, y = (b || a) <= 4 ? 1 : 2;
     return x === y ? t({ es: 'Nivel ' + x, en: 'Level ' + x }) : t({ es: 'Niveles 1 y 2', en: 'Levels 1 and 2' }); };
   const verificada = f => f && f.verificacion === 'verificado';
-  const publicada = f => verificada(f) && enGrado(f.grado);
+  // «narrativo»: ficha contada dentro del mundo del juego, sin afirmar un hecho real (su fuente lo dice); también sale al Diario
+  const publicable = f => verificada(f) || !!(f && f.verificacion === 'narrativo');
+  const publicada = f => publicable(f) && enGrado(f.grado);
   const ficha = id => FICHAS.find(f => f.id === id) || null;
   const fichasPublicadas = () => FICHAS.filter(publicada);
   const tieneFicha = id => (st().fichas || []).includes(id);
@@ -253,6 +256,22 @@ AVE.module('aula', function (G) {
     if (nuevas.length) G.guardado.autosave();
     return nuevas;
   }
+  // Caps. 2–6: con qué se gana cada ficha. El pack llama a enlazar({ id: disparador }) con lo que entiende G.misiones.cumple
+  // ({ evento }, { mision }, { recogido }…); además, cada ficha se gana con el hallazgo del Diario del mismo id. Se revisa cada
+  // 0,5 s con el mundo libre (así una partida guardada antes también recupera las suyas) y, si hay un aviso en pantalla (el del
+  // hallazgo), se espera a que termine (8 s como mucho) para no taparlo. Sin enlazar (cap. 1) no hace nada.
+  let vias = null, viaT = 0, viaEspera = 0;
+  const enlazar = mapa => { vias = Object.assign({}, mapa); };
+  const via = id => (vias ? { alguno: [S2 => (S2.field || []).includes(id)].concat(vias[id] ? [vias[id]] : []) } : null);
+  const pendientes = () => (vias && G.misiones ? fichasPublicadas().filter(f => !tieneFicha(f.id) && G.misiones.cumple(via(f.id))) : []);
+  G.on('update', (dt, busy) => {
+    if (!vias || busy || (viaT -= dt) > 0) return;
+    viaT = 0.5;
+    const p = pendientes(); if (!p.length) { viaEspera = 0; return; }
+    const aviso = $('toast');
+    if (aviso && !aviso.hidden && (viaEspera += 0.5) < 8) return;
+    viaEspera = 0; desbloquear([p[0].id]);
+  });
   if (G.diario && G.diario.seccion) G.diario.seccion({ id: 'ciencia', html: () => {
     const lista = fichasPublicadas();
     if (!lista.length) return '';
@@ -558,7 +577,7 @@ AVE.module('aula', function (G) {
       <details><summary>${esc(m('privacidad'))}</summary>${lista(t(PRIVACIDAD))}${R && R.cumplimiento ? `<p class="note">${esc(R.cumplimiento)}</p>` : ''}</details>`;
   }
   function htmlFuentes() {
-    const pub = FICHAS.filter(verificada), no = FICHAS.filter(f => !verificada(f));
+    const pub = FICHAS.filter(publicable), no = FICHAS.filter(f => !publicable(f));
     const E = (LEC.meta && LEC.meta.fuentes_estandares) || {};
     return `<h3>${esc(m('publicadas'))}</h3><ul class="maestro-fuentes">${pub.map(f => `<li><b>${esc(t(f.titulo))}</b> · ${esc(f.fuente)} <small>(${esc(nivelDe(f.grado))})</small><br><code>${esc(f.fuente_url || '')}</code></li>`).join('')}</ul>
       <details><summary>${esc(m('noPublicadas'))} (${no.length})</summary><ul class="maestro-fuentes">${no.map(f => `<li><b>${esc(t(f.titulo))}</b> · ${esc(f.verificacion)}${f.nota_verificacion ? ' · ' + esc(f.nota_verificacion) : ''}</li>`).join('')}</ul></details>
@@ -634,7 +653,7 @@ AVE.module('aula', function (G) {
   return {
     activo: true, LEC, KEY, aj, t, tc, u, esc, setAjuste,
     vozDisponible, leer, callar, auto, btnLeer, vozLog,
-    ficha, fichas: fichasPublicadas, verificada, publicada, desbloquear, tieneFicha,
+    ficha, fichas: fichasPublicadas, verificada, publicable, publicada, desbloquear, tieneFicha, enlazar, via, pendientes,
     pregunta, preguntaPublicable, hacerPregunta, serie, enCurso: () => enCurso, mezclar,
     partida, registrar, reporteCSV, reporteJSON, nombreArchivo, descargar, copiar, borrarProgreso, nuevoEstudiante, PRIVACIDAD,
     abrirMaestro, cerrarMaestro, maestroAbierto, nuevoReto, reto: () => retoSuma, pestana, pestanas: () => TABS.concat(extras.map(x => x.id)),

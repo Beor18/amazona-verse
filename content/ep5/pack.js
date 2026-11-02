@@ -6,6 +6,13 @@
    mismas ruinas del diseño: torre, mirador, pilar, portal y altar. No mueve el mapa del cap. 1. */
 (function () {
   'use strict';
+  // Diario · Ciencia (src/game/aula.js, enlazar): cada ficha de lecciones.js se gana con su hallazgo del mundo (mismo id) o con el
+  // momento de la misión en que el jugador lo vive (lo que entiende G.misiones.cumple). Sin mecánica nueva: solo eventos que ya existen.
+  const FICHA_VIA = { espejo: { alguno: [{ recogido: 'codigo_luz' }, { mision: 'relevo' }] }, tambor: { alguno: [{ recogido: 'codigo_sonido' }, { mision: 'relevo' }] }, // M3: el código elegido
+    banderas: { alguno: [{ recogido: 'codigo_tela' }, { mision: 'relevo' }] }, // y, al llegar la señal, los otros dos
+    marcas: { mision: 'piedras' }, especies: { evento: 'GuardianRemembered' }, treinta: { evento: 'GuardianRemembered' } }; // M2: las piedras y el Guardián
+  // Pruebas: deja correr el juego (con el mundo libre) hasta que se ganan las fichas que ya tocan
+  const soltarFichas = (G, T) => { for (let k = 0; k < 300 && G.aula.pendientes().length; k++) T.tick(0.5); };
   const EP = () => window.AV_EP5;
   // ---------- Mundo único (docs/equipo/MUNDO_UNICO.md § Interruptor) ----------
   // MAPA_REAL apagado (false): el capítulo se juega en su mundo pequeño de siempre, igual que antes. Encendido (true), o con
@@ -280,6 +287,7 @@
       } catch (e) { /* sin partida del capítulo 1 */ }
 
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      if (AU.activo && AU.enlazar) AU.enlazar(FICHA_VIA);
       const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
       const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
       const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
@@ -789,6 +797,10 @@
           check('La predicción no juzga: hay eco y hay dos', opciones().some(t => t.includes('eco')) && opciones().some(t => t.includes('Son dos')));
           pick('Son dos'); drain();
           check('M1 · Dos voces: sigue sintonizar, sin castigo si era eco', G.eventos.had('TwoVoicesHeard') && S.collected.includes('pred_dos') && S.step === 1, 'paso ' + S.step);
+          { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
+            check('Diario · las 4 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 4 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
+            check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); }
 
           useAt('trx');
           for (const n of [1, 2, 3, 4, 5]) { check('M1 · Rueda, posición ' + n, pick('Posición ' + n), opciones().join(' | ')); drain(); }
@@ -863,6 +875,10 @@
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre', $('end').hidden && !G.ui.busy());
+          soltarFichas(G, T);
+          { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
+            check('Diario · al completar las misiones, las 4 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 4 && cien.querySelectorAll('li.found .fuente').length === 4 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            G.ui.hideCard(); }
           useAt('iguaca');
           check('Iguaca ofrece las preguntas', opciones().some(x => x.includes('Ahora no')));
           pick('Ahora no');
@@ -915,6 +931,8 @@
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (aulaKey) { if (aulaRaw == null) localStorage.removeItem(aulaKey); else localStorage.setItem(aulaKey, aulaRaw); } } catch (e) { /* sin almacenamiento */ }
+          { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 4, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           if (G.aula.recargar) G.aula.recargar();
           T.restoreSave(keep);

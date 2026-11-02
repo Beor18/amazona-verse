@@ -10,6 +10,12 @@
    la parada del nido, con su fuente. Todo el estado va en S.collected (se guarda solo): tarjetas, decisiones y lo que falló. */
 (function () {
   'use strict';
+  // Diario · Ciencia (src/game/aula.js, enlazar): cada ficha de lecciones.js se gana con su hallazgo del mundo (mismo id) o con el
+  // momento de la misión en que el jugador lo vive (lo que entiende G.misiones.cumple). Sin mecánica nueva: solo eventos que ya existen.
+  const FICHA_VIA = { charco: { mision: 'lee_tierra' }, cinta_lluvia: { mision: 'lee_tierra' }, poste_viento: { mision: 'lee_tierra' }, // M1: los 3 sitios (agua, pendiente, viento)
+    zocos: { evento: 'HomeBuilt' }, techo_zinc: { evento: 'HomeBuilt' }, bohio: { evento: 'HomeBuilt' } }; // M3: la casa ya armada
+  // Pruebas: deja correr el juego (con el mundo libre) hasta que se ganan las fichas que ya tocan
+  const soltarFichas = (G, T) => { for (let k = 0; k < 300 && G.aula.pendientes().length; k++) T.tick(0.5); };
   // Mundo único (BM111, docs/equipo/MUNDO_UNICO.md): con el mapa real cargado, el capítulo se juega en Caney del Meandro
   // (kelvin_aldea_meandros, centro −14, 17), con los sitios medidos sobre el suelo real (pendiente, agua y casas de Kelvin a
   // 6 m o más). Sin el mapa, el mundo de relleno de siempre. EN(relleno, mapa) elige la coordenada.
@@ -200,7 +206,7 @@
     ],
     // Diario del ep. 2 (§7): 6 hallazgos, 3 de ciencia del terreno y 3 de cultura de la construcción en PR. Lo que el niño lee aquí
     // describe solo lo que hay en el juego; el dato real de cada uno está en lecciones.js (diario, mismo id) y solo sale al Diario
-    // si está «verificado» (Kelvin 2-nov; zocos queda sin publicar: no se afirma una tradición de PR). La parada del nido es la única charla con dato y fuente (abajo).
+    // si está «verificado» (Kelvin 2-nov; zocos sale como ficha narrativa: no se afirma una tradición de PR). La parada del nido es la única charla con dato y fuente (abajo).
     diario: {
       titulo: 'Cuaderno del terreno', corto: 'Cuaderno', boton: 'Cuaderno',
       categorias: { terreno: { nombre: 'Terreno', desconocido: 'Una marca del terreno', sonido: 'pickup', rafaga: 'feathers' },
@@ -266,6 +272,7 @@
 
       // ---------- Aula del episodio (§5 y §6): «Iguaca te pregunta» y el registro local del Modo Maestro (src/game/aula.js) ----------
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      if (AU.activo && AU.enlazar) AU.enlazar(FICHA_VIA);
       const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
       const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
       const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
@@ -779,6 +786,10 @@
         check('Los marcadores [KELVIN] no son canon: van en la nota de la escena, nunca en lo que lee el jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.nota)) && !G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.lineas.join(' '))));
         useAt('iguaca'); drain();
         check('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
+        { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
+          check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+          teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
+          check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); }
         check('Antes de leer los 3 sitios no se puede elegir', (useAt('sitio_a'), drain(), useAt('sitio_a'), drain(), !S.collected.includes('sitio_a')) && S.collected.includes('lee_a'));
         useAt('sitio_b'); drain(); useAt('sitio_c'); drain();
         check('Los 3 sitios observados', ['lee_a', 'lee_b', 'lee_c'].every(k => S.collected.includes(k)) && S.step === 1);
@@ -842,12 +853,16 @@
           (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
           (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
         // BM126: verificación de Kelvin del 2-nov (VERIFICACION_EDUCATIVA_EP2_EP6_02NOV.md). Antes se exigía que las 6 fueran por verificar.
-        check('Solo salen al Diario las fichas verificadas (Kelvin 2-nov), con fuente y enlace; zocos (sin fuente histórica) y techo_zinc siguen por verificar', AU.fichas().map(f => f.id).join(',') === 'charco,cinta_lluvia,poste_viento,bohio' && AU.fichas().every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'zocos,techo_zinc' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/zoco|Puerto Rico|tradici/i.test(AU.t(AU.ficha('zocos').dato) + AU.t(AU.ficha('zocos').titulo)), AU.fichas().map(f => f.id).join(','));
+        check('Salen al Diario las 6 fichas: 5 verificadas con fuente y enlace (techo_zinc con la de EDUCATIVO_EP2_EP6.md) y zocos narrativa (Kelvin 2-nov: sin fuente histórica, no se presenta como hecho)', AU.fichas().map(f => f.id).join(',') === 'charco,cinta_lluvia,poste_viento,zocos,techo_zinc,bohio' && AU.fichas().filter(f => f.id !== 'zocos').every(f => f.verificacion === 'verificado' && f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && AU.ficha('zocos').verificacion === 'narrativo' && !AU.verificada(AU.ficha('zocos')) && AU.ficha('zocos').fuente_url == null && /^Relato del juego/.test(AU.ficha('zocos').fuente) && /^En esta historia/.test(AU.ficha('zocos').dato.es) && /^In this story/.test(AU.ficha('zocos').dato.en) && G.diario.entries.find(e => e.id === 'zocos').nombre === 'Postes viejos' && !LEC.diario.some(f => f.verificacion === 'por_verificar') && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/zoco|Puerto Rico|tradici/i.test(AU.t(AU.ficha('zocos').dato) + AU.t(AU.ficha('zocos').titulo)), AU.fichas().map(f => f.id).join(','));
         check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
         check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
         check('Antes de contestar, el reporte no lleva preguntas ni E4', AU.partida() && !AU.partida().preguntas.q1 && !AU.partida().objetivos_logrados.includes('E4'), JSON.stringify(AU.partida() && AU.partida().objetivos_logrados));
         G.misiones.seguirExplorando(); // «Seguir explorando»: cierra la pantalla de fin y deja el mundo libre (como el jugador)
         check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
+        soltarFichas(G, T);
+        { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
+          check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 6 && cien.querySelectorAll('li.found .fuente').length === 6 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+          G.ui.hideCard(); }
         useAt('iguaca'); drain();
         check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join());
         pick('Ahora no');
@@ -887,6 +902,8 @@
         G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
         try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
         check('Guardar y cargar', G.guardado.load(true) && S.complete && S.collected.includes('sitio_c') && S.collected.includes('mejora_techo') && S.edu && S.edu.formativa.q1 === 2 && S.field.length === 6, JSON.stringify(S.edu));
+        { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
+          check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 6, ganadas.join(',') + ' · ' + recupera); }
         G.guardado.reset(true);
         if (AU.recargar) AU.recargar();
         T.restoreSave(keep);

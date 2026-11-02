@@ -341,6 +341,13 @@
           const f = (S.edu && S.edu.formativa) || {};
           check('«Iguaca te pregunta»: las 6 preguntas, sin puntaje', Object.keys(f).length === 6 && !G.ui.cardOpen, JSON.stringify(f));
         }
+        // Diario · Ciencia: jugando el capítulo (sin buscar los hallazgos) se ganan todas las fichas publicadas (G.aula.enlazar)
+        const AUc = G.aula;
+        if (AUc && AUc.activo && AUc.pendientes && AUc.fichas().length) {
+          for (let k = 0; k < 240 && AUc.pendientes().length; k++) { if (ocupado()) await resolver(); await jugar(0.5); }
+          const fal = AUc.fichas().filter(x => !AUc.tieneFicha(x.id)).map(x => x.id);
+          check('Diario · las ' + AUc.fichas().length + ' fichas de Ciencia del capítulo quedan ganadas al jugarlo', !fal.length, fal.join(',') || (S.edu.fichas || []).join(','));
+        }
       }
       cerrar();
       const errs = (W.__aveErrores || []).slice(errores0);

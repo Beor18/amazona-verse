@@ -12,6 +12,12 @@
    S.collected (se guarda solo). La canoa va sobre raíles (una polilínea por tramo): nadie se cae y nada se hunde. */
 (function () {
   'use strict';
+  // Diario · Ciencia (src/game/aula.js, enlazar): cada ficha de lecciones.js se gana con su hallazgo del mundo (mismo id) o con el
+  // momento de la misión en que el jugador lo vive (lo que entiende G.misiones.cumple). Sin mecánica nueva: solo eventos que ya existen.
+  const FICHA_VIA = { flota_hunde: { evento: 'MaterialsTested' }, brisa_mar: { mision: 'agua' }, semilla_viajera: { mision: 'agua' }, // M1 materiales; M2 viento y corriente
+    canoa_taina: { evento: 'BoatLaunched' }, cayuco: { evento: 'BoatLaunched' }, nasa: { evento: 'CommunityReached' } }; // la botadura; la otra orilla
+  // Pruebas: deja correr el juego (con el mundo libre) hasta que se ganan las fichas que ya tocan
+  const soltarFichas = (G, T) => { for (let k = 0; k < 300 && G.aula.pendientes().length; k++) T.tick(0.5); };
   // ---------- Mapa (valores medidos sobre el relieve analítico de abajo; ep3Test comprueba que cada punto de ruta tiene agua) ----------
   // Mundo único (BM112, docs/equipo/MUNDO_UNICO.md): con el mapa real cargado, el capítulo se juega en el río de Villa Raíz,
   // aguas abajo del cap. 4, hasta su desembocadura (x ≈ 194–210, z ≈ 165–210), y en la laguna del sur: la otra comunidad está en
@@ -295,6 +301,7 @@
 
       // ---------- Aula del episodio (§5 y §6): «Iguaca te pregunta» y el registro local del Modo Maestro ----------
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      if (AU.activo && AU.enlazar) AU.enlazar(FICHA_VIA);
       const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
       const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
       const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
@@ -886,6 +893,10 @@
           check('Rutas de la canoa: todos los puntos tienen agua (bahía y río)', !secos.length && isFinite(G.ep3.nivelRio()), secos.join(' '));
           useAt('papa'); drain();
           check('M1 · El papá: «¿Y eso flota cargado?» y empieza la misión', S.step === 1, 'paso ' + S.step);
+          { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
+            check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
+            check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); }
           useAt('mesa'); drain();
           check('M1 · Predecir: 3 predicciones sin juicio', opciones().length === 3, opciones().length);
           pick('Lo grande se hunde');
@@ -983,11 +994,15 @@
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
             (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
           // BM126: verificación de Kelvin del 2-nov. Antes se exigía que las 6 fueran por verificar.
-          check('Solo salen al Diario las fichas verificadas (Kelvin 2-nov), con fuente y enlace; el cayuco sin «de pesca»', AU.fichas().map(f => f.id).join(',') === 'canoa_taina,cayuco,nasa' && AU.fichas().every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'flota_hunde,brisa_mar,semilla_viajera' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/pesca/i.test(AU.ficha('cayuco').dato.es), AU.fichas().map(f => f.id).join(','));
+          check('Salen al Diario las 6 fichas verificadas, con fuente y enlace (las 3 del agua con la de EDUCATIVO_EP2_EP6.md); el cayuco sin «de pesca»', AU.fichas().map(f => f.id).join(',') === 'flota_hunde,brisa_mar,semilla_viajera,canoa_taina,cayuco,nasa' && AU.fichas().every(f => f.verificacion === 'verificado' && f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && !LEC.diario.some(f => f.verificacion === 'por_verificar') && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/pesca/i.test(AU.ficha('cayuco').dato.es), AU.fichas().map(f => f.id).join(','));
           check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
+          soltarFichas(G, T);
+          { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
+            check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 6 && cien.querySelectorAll('li.found .fuente').length === 6 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            G.ui.hideCard(); }
           useAt('iguaca'); drain();
           check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join());
           pick('Ahora no');
@@ -1025,6 +1040,8 @@
           check('ES y EN: todo lo que se vio en la partida tiene inglés (' + vistos.size + ' textos)', G.idioma.activo() && vistos.size > 120 && !sinEN.length, sinEN.slice(0, 6).join(' | '));
           check('En inglés, el HUD del episodio sale traducido', $('quest').querySelector('h1').textContent === 'Beyond the Bay', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
+          { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 6, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           try { if (tempRaw == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, tempRaw); } catch (e) { /* sin almacenamiento */ }

@@ -30,6 +30,12 @@
    content/ep6/en.js (pack.idioma, después del de cap1). Todo el estado va en S.collected (se guarda solo). */
 (function () {
   'use strict';
+  // Diario · Ciencia (src/game/aula.js, enlazar): cada ficha de lecciones.js se gana con su hallazgo del mundo (mismo id) o con el
+  // momento de la misión en que el jugador lo vive (lo que entiende G.misiones.cumple). Sin mecánica nueva: solo eventos que ya existen.
+  const FICHA_VIA = { tarjetas: { evento: 'CardsFilled' }, plan: { evento: 'PlanMade' }, tabla: { evento: 'RaisedTogether' }, // M1 tarjetas; M2 plan y tabla larga
+    acuerdo: { evento: 'GroupsListened' }, forma: { evento: 'CircleFormed' }, esperan: { evento: 'PactRenewed' } }; // M3: escuchar, el círculo y el pacto
+  // Pruebas: deja correr el juego (con el mundo libre) hasta que se ganan las fichas que ya tocan
+  const soltarFichas = (G, T) => { for (let k = 0; k < 300 && G.aula.pendientes().length; k++) T.tick(0.5); };
   // ---------- Mapa (relieve analítico de abajo) ----------
   const MAR = -2.6, RIO_X = 20;
   // ---------- Mundo único (docs/equipo/MUNDO_UNICO.md § Interruptor) ----------
@@ -343,6 +349,7 @@
 
       // ---------- Aula del episodio (§5 y §6): «Iguaca te pregunta» y el registro local del Modo Maestro ----------
       const AU = G.aula, LEC = (AU.activo && AU.LEC) || {};
+      if (AU.activo && AU.enlazar) AU.enlazar(FICHA_VIA);
       const E = () => S.edu || (S.edu = { inicio: null, fin: null, fichas: [], formativa: {}, registro: null });
       const idsFormativa = () => ((LEC.formativa && LEC.formativa.seleccion && LEC.formativa.seleccion[AU.aj.grado]) || []).filter(id => AU.preguntaPublicable(AU.pregunta(id)));
       const todasPreguntadas = () => idsFormativa().every(id => (E().formativa || {})[id]);
@@ -646,8 +653,14 @@
           G.dialogo.say([Vi('¡Ahora!'), Vi('Sube. Entre tres, sube.')], () => G.ui.toast('Lleva la tabla larga al puente entre dos', 3000));
         } });
       // La tabla larga: solo se mueve si hay alguien en cada punta (Vittata y quien carga fuerte por el plan)
-      let llevando = false;
+      let llevando = false, avisoAlto = false;
       const cargador = () => (S.plan && S.plan.asig && S.plan.asig.cargar) || 'roca';
+      // QA-89 (Kelvin 2-nov): se puede llevar andando o volando, sin obligar a cruzar el puente a pie. Pero Roca «no vuela alto»
+      // (su tarjeta): la otra punta va como mucho ROCA_ALTO m sobre el suelo, el agua o el tablero; si Vittata sube más, Roca y la
+      // tabla se quedan abajo, avisa una vez, y para colocarla hay que bajar hasta el puente.
+      const ROCA_ALTO = 3.5, PX0 = Math.min(RX(13.5), RX(26.5)), PX1 = Math.max(RX(13.5), RX(26.5));
+      const techoRoca = (x, z) => { const a = G.agua.levelAt(x, z); return Math.max(H(x, z), isFinite(a) ? a : -Infinity, x >= PX0 && x <= PX1 && Math.abs(z - RZ(0)) < 1.6 ? topPuente : -Infinity) + ROCA_ALTO; };
+      const muyAlto = () => S.pos.y > topPuente + ROCA_ALTO;
       G.interaccion.add({ id: 'tabla_larga', x: TABLA_LARGA.x, z: TABLA_LARGA.z, r: 2.4, visible: () => S.step === 7 && !llevando, label: () => 'Cargar la tabla larga',
         use: () => {
           elegir('Vittata', 'La tabla larga pesa. ¿Cómo la llevo?', [{ label: 'Yo sola, de una punta', v: 'sola' }, { label: `Pedirle a ${nombre(cargador())} que agarre la otra punta`, v: 'dos' }], o => {
@@ -658,7 +671,8 @@
         } });
       G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
         use: () => {
-          llevando = false; encuadrar(RX(24), RZ(0)); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
+          if (muyAlto()) { G.ui.toast(`${nombre(cargador())} no vuela tan alto: baja hasta el puente para colocarla`, 2600); return; }
+          llevando = false; avisoAlto = false; encuadrar(RX(24), RZ(0)); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
           G.fx.burst(RX(24), topPuente + 1.5, RZ(0), 'gold', 30); G.misiones.check(); colocarNpcs(); registrar();
           const ultimo = tiene('plan_ensena') ? [di('Brote', 'El último nudo lo ato yo. Me lo enseñó Nudo.')] : [di('Brote', '¡Bravo! Desde aquí se ve bien.')];
           G.dialogo.say(ultimo.concat(L('evento:RaisedTogether')), () => G.ui.toast('Llegan dos grupos a la plaza', 3000));
@@ -666,9 +680,12 @@
       G.on('update', (dt) => {
         if (subiendo >= 0) { subiendo = Math.min(1, subiendo + dt / 2); tablaGrande.visible = true; tablaGrande.position.y = topPuente - 0.09 - (1 - subiendo) * 2.2; if (subiendo >= 1) subiendo = -1; }
         if (llevando) {
-          const f = S.facing || { x: 1, z: 0 }, x = S.pos.x + f.x * 1.4, z = S.pos.z + f.z * 1.4;
-          tablaLarga.position.set(x, S.pos.y + 0.9, z); tablaLarga.rotation.y = Math.atan2(f.x, f.z) + Math.PI / 2;
-          ponerNpc(npc(cargador()), S.pos.x + f.x * 2.8, S.pos.z + f.z * 2.8, S.pos.y);
+          const f = S.facing || { x: 1, z: 0 }, x = S.pos.x + f.x * 1.4, z = S.pos.z + f.z * 1.4, nx = S.pos.x + f.x * 2.8, nz = S.pos.z + f.z * 2.8;
+          tablaLarga.position.set(x, Math.min(S.pos.y, techoRoca(x, z)) + 0.9, z); tablaLarga.rotation.y = Math.atan2(f.x, f.z) + Math.PI / 2;
+          const ny = Math.min(S.pos.y, techoRoca(nx, nz));
+          ponerNpc(npc(cargador()), nx, nz, ny);
+          if (S.pos.y > ny + 0.5) { if (!avisoAlto) { avisoAlto = true; G.ui.toast(`${nombre(cargador())} no vuela alto: vuela bajito para que te siga`, 2600); } }
+          else avisoAlto = false;
         }
       }, 20);
 
@@ -808,7 +825,7 @@
         else m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r);
         lucesLejanas.add(m);
       }
-      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar, seccionMedalla };
+      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, ROCA_ALTO, techoRoca, sentados, asientos, tablero, probar, seccionMedalla };
     },
 
     pruebas: {
@@ -839,6 +856,10 @@
           // M1 · Cada quien con lo suyo
           useAt('v_mira'); drain();
           check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 1 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
+          { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
+            check('Diario · las 5 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 5 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
+            check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); }
           { const g = G.misiones.guideTarget && G.misiones.guideTarget(), it = G.interaccion.find('v_roca');
             check('Guía · la flecha va al visitante pendiente más cercano (Roca, en el mismo muelle), no en orden fijo', !g || (Math.abs(g.x - it.x) < 0.5 && Math.abs(g.z - it.z) < 0.5), g && [g.x, g.z].join()); }
           for (const v of ['roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + v); drain(); }
@@ -904,7 +925,25 @@
           check('M2 · La tabla larga no se mueve con una sola punta', !G.ep6.llevando());
           useAt('tabla_larga'); drain(); pick('agarre la otra punta');
           check('M2 · Entre dos sí: la tabla sigue a Vittata y Roca va en la otra punta', G.ep6.llevando() && S.collected.includes('tabla_dos'));
-          useAt('colocar'); drain();
+          // QA-89 (Kelvin 2-nov): también volando, sin cruzar el puente a pie. Vuelo bajito en línea recta de la tabla a «Colocar»
+          // (por encima del hueco del puente): nada lo tapa, Roca y la tabla siguen; muy alto, Roca se queda abajo y no se coloca
+          { const MV = G.fisica.MOVE, c = G.interaccion.find('colocar'), roca = G.actores.npc('roca'), x0 = S.pos.x, z0 = S.pos.z, yv = G.ep6.topPuente + 1.5;
+            const volar = (x, z, y) => { const d = Math.hypot(x - S.pos.x, z - S.pos.z) || 1; S.facing = { x: (x - S.pos.x) / d, z: (z - S.pos.z) / d }; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; MV.flying = true; MV.landing = false; tick(0.05); };
+            let sigue = true, maxD = 0, rocaY = -Infinity;
+            for (let i = 1; i <= 30; i++) { volar(x0 + (c.x - x0) * i / 30, z0 + (c.z - z0) * i / 30, yv); const d = Math.hypot(roca.def.x - S.pos.x, roca.def.z - S.pos.z); maxD = Math.max(maxD, d); rocaY = roca.sp.position.y; sigue = sigue && G.ep6.llevando() && d < 3.5; }
+            const llego = Math.hypot(S.pos.x - c.x, S.pos.z - c.z) < 0.5 && MV.flying && Math.abs(S.pos.y - yv) < 0.6;
+            check('QA-89 · Volando bajito con la tabla larga: llega a «Colocar» sin chocar, la tabla y Roca la siguen por el aire', llego && sigue && Math.abs(rocaY - 1 - yv) < 0.6 && G.interaccion.nearest() && G.interaccion.nearest().id === 'colocar', 'Roca a ' + maxD.toFixed(2) + ' m, y ' + (rocaY - 1).toFixed(2) + ' / ' + yv.toFixed(2) + ', Vittata y ' + S.pos.y.toFixed(2));
+            let aviso = ''; const toast1 = G.ui.toast; G.ui.toast = function (t) { aviso += t + ' '; return toast1.apply(this, arguments); };
+            try {
+              volar(c.x, c.z, G.ep6.topPuente + 14); volar(c.x, c.z, G.ep6.topPuente + 14);
+              const alto = roca.sp.position.y - 1;
+              G.interaccion.action(); drain();
+              check('QA-89 · Muy alto: Roca no vuela alto (se queda a ' + G.ep6.ROCA_ALTO + ' m), avisa y no se coloca', alto <= G.ep6.techoRoca(roca.def.x, roca.def.z) + 0.01 && alto < S.pos.y - 5 && /no vuela alto/.test(aviso) && /no vuela tan alto/.test(aviso) && !G.eventos.had('RaisedTogether') && G.ep6.llevando(), alto.toFixed(2) + ' · ' + aviso);
+              volar(c.x, c.z, yv); G.interaccion.action(); drain();
+              check('QA-89 · Bajito, volando todavía: se coloca y cuenta para la misión', G.eventos.had('RaisedTogether') && !G.ep6.llevando() && S.missions.obra);
+            } finally { G.ui.toast = toast1; MV.flying = false; MV.landing = false; }
+            teleport(c.x, c.z); tick(0.1); }
+          if (!G.eventos.had('RaisedTogether')) { useAt('colocar'); drain(); }
           check('M2 · Colocada: RaisedTogether, misión 2 y el cuaderno; Brote ata el último nudo', G.eventos.had('RaisedTogether') && S.missions.obra && S.unlocked.includes('mano:cuaderno') && S.step === 8, 'paso ' + S.step);
 
           // M3 · El círculo
@@ -950,6 +989,10 @@
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
+          soltarFichas(G, T);
+          { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
+            check('Diario · al completar las misiones, las 5 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 5 && cien.querySelectorAll('li.found .fuente').length === 5 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            G.ui.hideCard(); }
           useAt('iguaca'); drain();
           check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join() + ' · paso ' + S.step + ' · cerca ' + (G.interaccion.nearest() || {}).id + ' · ' + ($('card').querySelector('h2') || {}).textContent);
           pick('Ahora no');
@@ -1004,6 +1047,8 @@
           check('ES y EN: todo lo que se vio en la partida tiene inglés (' + vistos.size + ' textos)', G.idioma.activo() && vistos.size > 120 && !sinEN.length, sinEN.slice(0, 8).join(' | '));
           check('En inglés, el HUD del capítulo sale traducido', $('quest').querySelector('h1').textContent === 'The Pact of the 36', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
+          { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 5, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           if (AU.recargar) AU.recargar();

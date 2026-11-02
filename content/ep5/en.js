@@ -242,6 +242,8 @@
     'Desde que está el puente del estrecho, la abuela cruza a ver a su familia cada día.': 'Now that the bridge at the narrows is there, Grandma crosses to see her family every day.',
     'Desde que está el puente alto, las canoas pasan por debajo y la abuela cruza a ver a su familia.': 'Now that the high bridge is there, canoes pass underneath and Grandma crosses to see her family.',
     'Desde que están los muelles, las dos orillas reman juntas cada mañana.': 'Now that the docks are there, both banks paddle together every morning.',
+    // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
+    "The Physics Classroom, Reflection, Refraction, and Diffraction (ondas de sonido)": "The Physics Classroom, Reflection, Refraction, and Diffraction (sound waves)",
   };
   function publicar(base) {
     window.AV_EN = Object.assign({}, base || {}, extra);
