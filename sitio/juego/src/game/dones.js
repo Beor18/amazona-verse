@@ -54,15 +54,29 @@
       let m = Math.pow(k, n);
       // Rebufo de la Llamada: ×1,08 de crucero mientras dura. El tope ×1,15 lo pone fisica.js.
       if (eje === 'velocidad' && don && don.id === 'llamada' && performance.now() < don.fin) m *= 1.08;
+      // Rasante de río: ×1,25 de crucero a menos de 1,5 m del agua. El nado ×1,3 lo lee factorAgua.
+      if (eje === 'velocidad' && don && don.id === 'rasante' && performance.now() < don.fin && cercaAgua()) m *= 1.25;
       return m;
+    }
+    function cercaAgua() {
+      if (!G.agua || !G.S || !G.agua.levelAt) return false;
+      const w = G.agua.levelAt(G.S.pos.x, G.S.pos.z);
+      return w > -Infinity && Math.abs(G.S.pos.y - w) <= 1.5;
+    }
+    function factorAgua() {
+      const on = activo() === 'rasante' && cercaAgua();
+      const nado = on && G.fisica && G.fisica.MOVE && G.fisica.MOVE.swimming;
+      return { crucero: on ? 1.25 : 1, nado: nado ? 1.3 : 1 };
     }
     const REGALO = {
       islenas: { id: 'llamada', es: 'Vittata llama a la bandada.', en: 'Vittata calls the flock.', dura: 8, espera: 40 },
       cordilleranas: { id: 'ojo', es: 'Vittata ve desde la cumbre.', en: 'Vittata sees from the summit.', dura: 6, espera: 30 },
       norte: { id: 'rafaga', es: 'Fantasía: el impulso se encadena.', en: 'Fantasy: the dash chains.', dura: 5, espera: 25 },
-      montaneras: { id: 'columna', es: 'Fantasía: sube una columna de nube.', en: 'Fantasy: a cloud column rises.', dura: 6, espera: 30 }
+      montaneras: { id: 'columna', es: 'Fantasía: sube una columna de nube.', en: 'Fantasy: a cloud column rises.', dura: 6, espera: 30 },
+      gran_rio: { id: 'rasante', es: 'Fantasía: el río te lleva a ras.', en: 'Fantasy: the river carries you low.', dura: 8, espera: 30 },
+      bosque_sur: { id: 'plumas', es: 'Fantasía: las hojas te envuelven.', en: 'Fantasy: leaves wrap around you.', dura: 10, espera: 35 }
     };
-    let don = null, sostenido = 0, rafagaCd = null, columna = null;
+    let don = null, sostenido = 0, rafagaCd = null, columna = null, gotas = 0, hojas = 0;
     function soltarSostener() {
       if (!sostenido) return;
       const ms = performance.now() - sostenido;
@@ -107,6 +121,15 @@
           G.fx.burst(columna.x, (G.S.pos.y || 0) + 0.4, columna.z, 'bubbles', 3);
         }
       } else if (id !== 'columna') columna = null;
+      if (id === 'rasante' && cercaAgua() && G.agua && G.agua.spray && G.S && performance.now() > gotas) {
+        gotas = performance.now() + 180;
+        G.agua.spray(G.S.pos.x, G.agua.levelAt(G.S.pos.x, G.S.pos.z), G.S.pos.z);
+      }
+      // Hojas alrededor: no se toca el material de Vittata. La fauna no recibe un susto.
+      if (id === 'plumas' && G.fx && G.fx.burst && G.S && performance.now() > hojas) {
+        hojas = performance.now() + 350;
+        G.fx.burst(G.S.pos.x, (G.S.pos.y || 0) + 0.8, G.S.pos.z, 'leaves', 8);
+      }
     }
     function pintarBoton() {
       const b = document.getElementById('b-dash');
@@ -187,8 +210,43 @@
         check('Fuera de la columna no empuja', G.S.vy === 0, String(G.S.vy));
         G.S.pos.x = x0; G.S.vy = vy0;
         don = null; forzar = null; columna = null;
+        forzar = 'gran_rio';
+        const pos0 = { x: G.S.pos.x, y: G.S.pos.y, z: G.S.pos.z }, nad0 = G.fisica.MOVE.swimming;
+        let mojado = null;
+        if (G.agua && G.terreno) {
+          const H = G.terreno.height;
+          for (let x = -80; x <= 240 && !mojado; x += 20) for (let z = -80; z <= 240 && !mojado; z += 20) {
+            const lv = G.agua.levelAt(x, z);
+            if (lv > -Infinity && lv >= H(x, z) - 0.2) mojado = { x, z, w: lv };
+          }
+        }
+        check('Rasante de río: hay agua para probarlo', !!mojado, mojado ? mojado.x + ',' + mojado.z : 'sin agua');
+        if (mojado) {
+          G.S.pos.x = mojado.x; G.S.pos.y = mojado.w + 0.4; G.S.pos.z = mojado.z;
+          const base = mult('velocidad');
+          check('A ras del agua el crucero sube ×1,25', activar() === true && activo() === 'rasante' && cercaAgua() && Math.abs(mult('velocidad') - base * 1.25) < 1e-9, String(mult('velocidad')));
+          let sprays = 0; const spray0 = G.agua.spray;
+          G.agua.spray = () => { sprays++; };
+          try { pasoDon(); } finally { G.agua.spray = spray0; }
+          check('A ras del agua deja estela', sprays >= 1, String(sprays));
+          G.fisica.MOVE.swimming = true;
+          check('Al bucear el nado vale ×1,3', factorAgua().nado === 1.3, String(factorAgua().nado));
+          G.fisica.MOVE.swimming = nad0;
+          G.S.pos.y = mojado.w + 8;
+          check('Lejos del agua el crucero no cambia', !cercaAgua() && Math.abs(mult('velocidad') - base) < 1e-9, String(mult('velocidad')));
+        }
+        G.S.pos.x = pos0.x; G.S.pos.y = pos0.y; G.S.pos.z = pos0.z;
+        don = null;
+        forzar = 'bosque_sur';
+        let hojasN = 0;
+        const burst0 = G.fx && G.fx.burst;
+        if (burst0) G.fx.burst = function (x, y, z, kind, n) { if (kind === 'leaves') hojasN++; return burst0.apply(this, arguments); };
+        check('Plumas de hoja: un remolino, sin tocar a Vittata', activar() === true && activo() === 'plumas' && REGALO.bosque_sur.dura === 10 && REGALO.bosque_sur.espera === 35, activo() || 'sin don');
+        try { pasoDon(); } finally { if (burst0) G.fx.burst = burst0; }
+        check('Salen hojas y no se avisa a la fauna', hojasN >= 1, String(hojasN));
+        don = null; forzar = null;
         const en = document.documentElement.lang === 'en';
-        check('El aviso tiene frase en español y en inglés', REGALO.islenas.es && REGALO.islenas.en && REGALO.cordilleranas.es && REGALO.cordilleranas.en && REGALO.norte.es && REGALO.norte.en && REGALO.montaneras.es && REGALO.montaneras.en && (en ? REGALO.montaneras.en : REGALO.montaneras.es).length > 8);
+        check('El aviso tiene frase en español y en inglés', ['islenas', 'cordilleranas', 'norte', 'montaneras', 'gran_rio', 'bosque_sur'].every(id => REGALO[id].es && REGALO[id].en) && (en ? REGALO.bosque_sur.en : REGALO.bosque_sur.es).length > 8);
         const tiempos = ids.map(tiempo);
         const media = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
         const peor = Math.max(...tiempos.map(t => Math.abs(t / media - 1)));
