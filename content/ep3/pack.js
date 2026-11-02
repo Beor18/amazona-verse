@@ -93,7 +93,7 @@
   const PREG_ORDEN = { izquierda: '¿Qué señal será «izquierda»?', derecha: '¿Qué señal será «derecha»?', para: '¿Qué señal será «parar»?' };
 
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png',
-    Navegante: 'assets/agilis.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); su render es arte pendiente (hoy agilis). [KELVIN: render de la gente de Villa Mangle]
+    Navegante: 'assets/navegante.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); retrato navegante.png (ventralis, el de los caps. 4 y 6). [KELVIN: render de la gente de Villa Mangle]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);
 
