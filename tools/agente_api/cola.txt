@@ -1,2 +1,2 @@
-# 1-nov tarde (Kelvin): edificios, ciudad y lejanos son de Fernando/Kimi; la API NO los toca. BM98 y BM105 fuera de la cola.
-# Cola vacía a propósito: el trabajador espera sin gastar (quedan ~24 $ para el prompt grande del 2-nov).
+# 1-nov 20:15 (Kelvin: usar algo del crédito que queda): BM116, pruebas extra que solo fallan en la Mac (necesita GPU real). Una sola tarea, tope 6 $.
+BM116
