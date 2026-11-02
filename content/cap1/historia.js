@@ -822,9 +822,11 @@
           const seco = { x: PLACES.B.x, y: gy, z: PLACES.B.z };
           check('La colina queda a salvo del agua', aSalvo(seco), 'y ' + (gy || 0).toFixed(1));
           const cuadros = (n, listo) => { for (let i = 0; i < n && !listo(); i++) G.renderer.render(0.05, false); return !!listo(); };
+          const gestoQuieto = () => !G.agarre.fase;
           for (const o of flotan.slice()) {
             if (P && P.drain) P.drain();
             if (G.ui.hideCard) G.ui.hideCard();
+            cuadros(30, gestoQuieto);
             if (P) P.tick(0.05);
             S.pos.x = o.it.x; S.pos.y = o.obj.position.y + 1.3; S.pos.z = o.it.z; S.vy = 0; G.fisica.MOVE.flying = true;
             const nb = G.interaccion.nearest();
