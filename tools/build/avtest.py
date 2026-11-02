@@ -589,6 +589,8 @@ def correr(a, cfg):
             R['baterias_disponibles'] = disponibles
             req = [] if a.solo_medir else list(P['baterias'])
             extra = [b for b in disponibles if b not in req] if a.extra else []
+            if os.environ.get("AV_BATERIAS"):  # diagnóstico: solo estas baterías, en este orden (separadas por comas)
+                req = []; extra = [b for b in os.environ["AV_BATERIAS"].split(",") if b in disponibles]
             R['baterias'] = {}
             # 3. Baterías
             for nombre in req + extra:

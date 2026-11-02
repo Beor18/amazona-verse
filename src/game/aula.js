@@ -615,6 +615,7 @@ AVE.module('aula', function (G) {
     callar();
     tab = 'guia';
     pintarMaestro();
+    const est = $('m-estado'); if (est) est.textContent = ''; // el aviso de la vez anterior («Progreso borrado.») no se queda
     panel.hidden = false;
     const c = $('m-cerrar'); if (c) c.focus();
   }
