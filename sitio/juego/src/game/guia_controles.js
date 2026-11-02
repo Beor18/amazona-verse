@@ -55,6 +55,7 @@ AVE.module('guiaControles', function (G) {
       { id: 'aterrizar', k: kbd(t.aterrizar) + o + kbd(t.volar), txt: 'Dejar de volar', sub: 'Aterriza suave en el suelo', corto: 'aterriza suave', destacada: true },
       { id: 'camara', k: RATON + o + kbd('Q') + kbd('R'), txt: 'Mover la cámara', sub: 'Arrastra con el ratón; arriba y abajo para mirar al cielo o al suelo (también T y G)', corto: 'arrastra; T/G mira arriba' },
       { id: 'accion', k: kbd(t.accion), txt: 'Acción', sub: 'Hablar, examinar y usar', corto: 'hablar, examinar, usar' },
+      { id: 'don', k: kbd('F'), txt: 'Don', sub: 'Mantén Impulso un momento. Hold Boost for a moment', corto: 'mantenlo' },
     ];
   }
   // corto: la leyenda del icono es compacta (una línea por fila); el panel lleva la explicación entera

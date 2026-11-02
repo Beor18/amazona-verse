@@ -21,6 +21,14 @@
    'despegue' | 'vuelo' | 'cernido' | 'aterrizaje' | 'nado'), speed, land (s de aplastón), impact (0..1), slope (°),
    agachada (0..1: bajo un toldo o un alero bajo; la lee la pose de character.js) y alto (alto del cuerpo para chocar). */
 AVE.module('fisica', function (G) {
+  // CG-10: los ejes de familia. Si el script aún no llegó, los multiplicadores valen 1.
+  if (!G.dones && typeof document !== 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'src/game/dones.js';
+    s.onload = () => { if (window.AVDones) window.AVDones(G); };
+    (document.head || document.documentElement).appendChild(s);
+  }
+  const don = eje => (G.dones && G.dones.mult ? G.dones.mult(eje) : 1);
   'use strict';
   const S = G.S;
   // ---------- Ajuste fino (tuning). Unidades: m, s, m/s, m/s²; las tasas k en 1/s (llega al 90 % en ln(10)/k s) ----------
@@ -327,7 +335,12 @@ AVE.module('fisica', function (G) {
       // Shift (o el joystick a fondo) corre
       const run = keys.has('shift') || Math.hypot(stick.x, stick.y) > 0.92;
       let sp = MOVE.flying ? FLY_SPEED * (MOVE.landing ? T.landSpeed : 1) : MOVE.swimming ? SWIM_SPEED * (run ? T.swimRunFactor : 1) : run ? RUN_SPEED : SPEED;
-      if (MOVE.flying) sp *= G.rareza ? G.rareza.mult('vuelo') : 1; // cría épica o legendaria; en Retos y duelos mult() es 1
+      if (MOVE.flying) {
+        // Rareza de la cría y eje de velocidad de la familia. Juntos no pasan de ×1,15. En Retos, los dos valen 1.
+        let vuelo = G.rareza ? G.rareza.mult('vuelo') : 1;
+        if (G.dones) vuelo = Math.min(1.15, vuelo * don('velocidad'));
+        sp *= vuelo;
+      }
       // Cuesta arriba se frena (según la subida del cuadro anterior)
       if (MOVE.grounded && MOVE.grade > 0) sp /= 1 + T.uphillSlow * Math.min(1.2, MOVE.grade);
       if (MOVE.agachada && !MOVE.flying) sp *= 1 - 0.4 * MOVE.agachada; // agachada camina más despacio
@@ -346,9 +359,9 @@ AVE.module('fisica', function (G) {
       MOVE.vx = S.facing.x * DASH_SPEED; MOVE.vz = S.facing.z * DASH_SPEED;
     } else {
       let k;
-      if (MOVE.flying) k = tx || tz ? T.flyAccel : T.flyBrake;
+      if (MOVE.flying) k = tx || tz ? T.flyAccel * don('giro') : T.flyBrake;
       else if (MOVE.swimming) k = T.swimAccel;
-      else if (onGround) k = !(tx || tz) ? T.decel : MOVE.vx * tx + MOVE.vz * tz < 0 ? T.turnAccel : T.accel;
+      else if (onGround) k = !(tx || tz) ? T.decel : MOVE.vx * tx + MOVE.vz * tz < 0 ? T.turnAccel * don('giro') : T.accel;
       else k = T.airAccel;
       const a = rate(k, dt);
       MOVE.vx += (tx - MOVE.vx) * a; MOVE.vz += (tz - MOVE.vz) * a;
@@ -454,9 +467,9 @@ AVE.module('fisica', function (G) {
       let want, k = T.vAccel;
       if (MOVE.takeoff > 0) { MOVE.takeoff -= dt; want = T.takeoffV * 0.6 * (G.rareza ? G.rareza.mult('impulso') : 1); k = 2; }
       else if (MOVE.landing) { want = above > T.flareHeight ? -T.landV : -Math.max(T.flareV, T.landV * above / T.flareHeight * 0.6); k = T.vAccelLand; }
-      else if (jumpHeld && !busy) want = T.climbV;
+      else if (jumpHeld && !busy) want = T.climbV * don('trepar');
       else if (dive) want = above < T.flareHeight ? -Math.max(T.flareV, T.diveV * above / T.flareHeight) : -T.diveV;
-      else want = -T.glideSink * Math.min(1, hSpeed / FLY_SPEED) ** 2;
+      else want = -T.glideSink * don('planeo') * Math.min(1, hSpeed / FLY_SPEED) ** 2;
       // Techo de vuelo: la subida se frena en los últimos techoZona m y, por encima, el viento la baja suave (y se avisa)
       const lim = techoVuelo(S.pos.x, S.pos.z, ground);
       if (want > 0) want *= Math.max(0, Math.min(1, (lim - S.pos.y) / T.techoZona));
