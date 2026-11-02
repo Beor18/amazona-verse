@@ -837,24 +837,170 @@
 window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
 </script>
 <script src="assets/js/web.js"></script>
-<!-- Contador de avance (tools/build/progreso.sh lo escribe en /progreso.json al publicar). Discreto a propósito: un número en la esquina, sin explicar. -->
-<div id="av-progreso" hidden aria-hidden="true"></div>
+<!-- Contador de avance (tools/build/progreso.sh lo escribe en /progreso.json al publicar). Discreto a propósito: un número en la esquina.
+     Al pulsarlo abre «Así vamos» (tools/build/estado.py → /estado.json): qué hace cada carril. Sin nombres de personas (solo en los créditos). -->
+<button type="button" id="av-progreso" hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="av-estado"></button>
+<dialog id="av-estado" aria-labelledby="av-estado-h">
+  <div class="ae-cab">
+    <div>
+      <h2 id="av-estado-h"><span data-l="es">Así vamos</span><span data-l="en">How it’s going</span></h2>
+      <p class="ae-sub"><span data-l="es">Lo que el equipo está construyendo ahora en Amazona Verse. Se pone al día con cada publicación.</span><span data-l="en">What the team is building right now in Amazona Verse. It updates with every release.</span></p>
+    </div>
+    <button type="button" class="ae-cerrar" aria-label="Cerrar">&times;</button>
+  </div>
+  <p class="ae-pub" id="ae-pub"></p>
+  <div id="ae-cuerpo" aria-live="polite"></div>
+</dialog>
 <style>
-#av-progreso{position:fixed;right:10px;bottom:10px;z-index:50;padding:3px 8px;border-radius:999px;font:600 11px/1.4 system-ui,sans-serif;letter-spacing:.04em;color:#f6f1e4;background:rgba(20,28,24,.55);opacity:.55;pointer-events:auto;user-select:none;font-variant-numeric:tabular-nums}
-#av-progreso:hover{opacity:1}
+#av-progreso{position:fixed;right:10px;bottom:10px;z-index:50;padding:3px 8px;border:0;border-radius:999px;font:600 11px/1.4 system-ui,sans-serif;letter-spacing:.04em;color:#f6f1e4;background:rgba(20,28,24,.55);opacity:.55;cursor:pointer;user-select:none;font-variant-numeric:tabular-nums;min-height:24px}
+#av-progreso:hover,#av-progreso:focus-visible,#av-progreso[aria-expanded="true"]{opacity:1}
+#av-progreso[hidden]{display:none}
+#av-estado{box-sizing:border-box;width:min(460px,100vw);max-width:100vw;height:100dvh;max-height:100dvh;margin:0 0 0 auto;padding:0;border:0;border-left:2px solid var(--line);background:var(--night,#10241c);color:var(--paper,#f4f7f1);font-family:var(--font-body);overflow:auto;overscroll-behavior:contain}
+#av-estado::backdrop{background:rgba(6,14,10,.6)}
+#av-estado[open]{animation:ae-entra .22s var(--ease-out,ease-out)}
+@keyframes ae-entra{from{transform:translateX(24px);opacity:0}}
+@media (prefers-reduced-motion:reduce){#av-estado[open]{animation:none}}
+#av-estado .ae-cab{position:sticky;top:0;z-index:1;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:20px 20px 12px;background:var(--night,#10241c);border-bottom:1px solid var(--line)}
+#av-estado h2{margin:0;font:700 26px/1.1 var(--font-display);color:var(--gold)}
+#av-estado .ae-sub{margin:6px 0 0;color:var(--muted);font-size:var(--fs-sm)}
+#av-estado .ae-cerrar{flex:none;width:44px;height:44px;border:0;border-radius:999px;background:rgba(255,255,255,.1);color:var(--paper);font:400 28px/1 system-ui,sans-serif;cursor:pointer}
+#av-estado .ae-cerrar:hover{background:rgba(255,255,255,.18)}
+#av-estado .ae-pub{margin:12px 20px 0;color:var(--muted);font-size:var(--fs-xs);font-variant-numeric:tabular-nums}
+#ae-cuerpo{padding:12px 20px 28px}
+.ae-res{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 18px;padding:0;list-style:none}
+.ae-res li{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line)}
+.ae-res b{display:block;font:700 24px/1.1 var(--font-display);color:var(--paper);font-variant-numeric:tabular-nums}
+.ae-res span{font-size:var(--fs-xs);color:var(--muted)}
+.ae-res .ae-c b{color:var(--gold)} .ae-res .ae-h b{color:var(--leaf-hi)}
+.ae-carril{margin:0 0 10px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px var(--line)}
+.ae-carril>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:44px;box-sizing:border-box;cursor:pointer;list-style:none;border-radius:16px}
+.ae-carril>summary::-webkit-details-marker{display:none}
+.ae-carril>summary::after{content:"";margin-left:auto;width:9px;height:9px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .15s}
+.ae-carril[open]>summary::after{transform:rotate(-135deg)}
+.ae-carril h3{margin:0;font:600 18px/1.2 var(--font-display);color:var(--paper)}
+.ae-carril .ae-que{display:block;font:400 var(--fs-xs)/1.3 var(--font-body);color:var(--muted)}
+.ae-carril .ae-n{flex:none;padding:2px 8px;border-radius:999px;background:rgba(255,210,122,.16);color:var(--gold);font:700 12px/1.6 var(--font-body);font-variant-numeric:tabular-nums}
+.ae-carril .ae-n.ae-0{background:rgba(255,255,255,.08);color:var(--muted)}
+.ae-grupo{padding:0 14px 12px}
+.ae-grupo h4{margin:6px 0 6px;font:700 12px/1.4 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ae-grupo ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.ae-grupo li{display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.05);font-size:var(--fs-sm);line-height:1.35}
+.ae-grupo li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;transform:translateY(-1px);background:var(--muted)}
+.ae-grupo.ae-g-c li::before{background:var(--gold);box-shadow:0 0 0 3px rgba(255,210,122,.22)}
+.ae-grupo.ae-g-h li::before{background:var(--leaf-hi)}
+.ae-grupo li span{flex:1;min-width:0;overflow-wrap:anywhere}
+.ae-grupo li em{flex:none;font-style:normal;font-size:var(--fs-xs);color:var(--muted);font-variant-numeric:tabular-nums}
+.ae-grupo li .ae-bl{color:var(--beak-hi)}
+.ae-vacio{margin:0;color:var(--muted);font-size:var(--fs-sm)}
+.ae-mas{margin-top:6px;padding:8px 12px;min-height:36px;border:0;border-radius:999px;background:rgba(255,255,255,.08);color:var(--paper);font:600 var(--fs-xs)/1 var(--font-body);cursor:pointer}
+.ae-nota{margin:16px 0 0;color:var(--muted);font-size:var(--fs-xs)}
+@media (max-width:520px){#av-estado{width:100vw;border-left:0}#av-estado .ae-cab,#ae-cuerpo{padding-left:16px;padding-right:16px}#av-estado .ae-pub{margin-left:16px;margin-right:16px}}
 </style>
 <script>
 (function () {
+  var pill = document.getElementById('av-progreso'), dlg = document.getElementById('av-estado');
+  var cuerpo = document.getElementById('ae-cuerpo'), pub = document.getElementById('ae-pub');
+  var prog = null, est = null, cargando = false, HECHAS_VISIBLES = 5;
+  var en = function () { return document.documentElement.lang === 'en'; };
+  var TZ = 'America/Puerto_Rico';
+  var CARRILES = [
+    ['Nube', 'N', 'N', 'Coordina, revisa y publica', 'Coordinates, reviews and releases'],
+    ['Mac', 'M', 'M', 'Pruebas con gráficos reales y arreglos', 'Tests on real graphics and fixes'],
+    ['Kimi', 'K', 'K', 'Edificios, ciudad y terreno', 'Buildings, city and terrain'],
+    ['Grok/Cursor', 'G', 'G', 'Jugabilidad: dones, secretos y retos', 'Gameplay: gifts, secrets and challenges'],
+    ['Web', 'W', 'W', 'Textos, inglés e interfaz', 'Text, English and interface']
+  ];
+  function cuando(iso, conHora) {
+    var f = iso ? new Date(iso.length === 10 ? iso + 'T12:00:00-04:00' : iso) : null;
+    if (!f || isNaN(f)) return '';
+    var loc = en() ? 'en-US' : 'es-PR', s = f.toLocaleDateString(loc, { day: 'numeric', month: 'short', timeZone: TZ });
+    return conHora ? s + ' ' + f.toLocaleTimeString(loc, { hour: 'numeric', minute: '2-digit', timeZone: TZ }) : s;
+  }
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function pintarPill() {
+    if (!prog) return;
+    var c = cuando(prog.fecha, true);
+    pill.textContent = '◔ ' + prog.total + '%' + (c ? ' · ' + c : '');
+    pill.title = 'cap1 ' + prog.cap1 + '% · ' + (en() ? 'tasks ' : 'tareas ') + prog.tareas + '% · ' + (prog.sha || '');
+    pill.setAttribute('aria-label', (en() ? 'Progress ' : 'Avance ') + prog.total + '%' + (c ? (en() ? ', released ' : ', publicado ') + c : '') + (en() ? '. Open “How it’s going”' : '. Abrir «Así vamos»'));
+  }
+  function grupo(cls, titulo, filas, conFecha) {
+    var g = el('div', 'ae-grupo ' + cls); g.appendChild(el('h4', null, titulo));
+    var ul = el('ul'); g.appendChild(ul);
+    filas.forEach(function (r, i) {
+      var li = el('li'); li.appendChild(el('span', null, r.titulo));
+      if (r.estado === 'bloqueada') li.appendChild(el('em', 'ae-bl', en() ? 'blocked' : 'bloqueada'));
+      else if (conFecha && r.fecha) li.appendChild(el('em', null, cuando(r.fecha)));
+      if (conFecha && i >= HECHAS_VISIBLES) li.hidden = true;
+      ul.appendChild(li);
+    });
+    if (conFecha && filas.length > HECHAS_VISIBLES) {
+      var b = el('button', 'ae-mas', (en() ? 'Show ' : 'Ver ') + (filas.length - HECHAS_VISIBLES) + (en() ? ' more' : ' más')); b.type = 'button';
+      b.onclick = function () { ul.querySelectorAll('li[hidden]').forEach(function (li) { li.hidden = false; }); b.remove(); };
+      g.appendChild(b);
+    }
+    return g;
+  }
+  function pintar() {
+    pintarPill();
+    dlg.querySelector('.ae-cerrar').setAttribute('aria-label', en() ? 'Close' : 'Cerrar');
+    var p = [];
+    if (prog && prog.fecha) p.push((en() ? 'Last release: ' : 'Última publicación: ') + cuando(prog.fecha, true));
+    if (prog && prog.sha) p.push(prog.sha);
+    if (prog && typeof prog.total === 'number') p.push((en() ? 'progress ' : 'avance ') + prog.total + '%');
+    pub.textContent = p.join(' · ');
+    cuerpo.innerHTML = '';
+    if (!est) { cuerpo.appendChild(el('p', 'ae-vacio', cargando ? (en() ? 'Loading…' : 'Cargando…') : (en() ? 'We couldn’t load the status right now. Try again later.' : 'No pudimos cargar el estado ahora. Inténtalo más tarde.'))); return; }
+    var r = est.resumen || {}, ul = el('ul', 'ae-res');
+    [['ae-c', r.en_construccion, 'En construcción', 'In progress'], ['', (r.pendientes || 0) + (r.bloqueadas || 0), 'Pendientes', 'To do'],
+     ['ae-h', r.hechas_hoy, 'Hechas hoy', 'Done today']].forEach(function (x) {
+      var li = el('li', x[0]); li.appendChild(el('b', null, String(x[1] || 0))); li.appendChild(el('span', null, en() ? x[3] : x[2])); ul.appendChild(li); });
+    if (est.cap1 && est.cap1.hitos) { var li = el('li', 'ae-h'); li.appendChild(el('b', null, est.cap1.hechos + '/' + est.cap1.hitos)); li.appendChild(el('span', null, en() ? 'Chapter 1 milestones' : 'Hitos del capítulo 1')); ul.appendChild(li); }
+    cuerpo.appendChild(ul);
+    var por = est.por_agente || {};
+    CARRILES.forEach(function (c) {
+      var filas = por[c[0]] || [], vivas = filas.filter(function (f) { return f.estado === 'en construcción'; });
+      var pend = filas.filter(function (f) { return f.estado === 'pendiente' || f.estado === 'bloqueada'; });
+      var hechas = filas.filter(function (f) { return f.estado === 'hecha'; });
+      var d = el('details', 'ae-carril'); d.open = vivas.length > 0;
+      var s = el('summary'), t = el('div'), h = el('h3', null, en() ? c[2] : c[1]);
+      t.appendChild(h); t.appendChild(el('span', 'ae-que', en() ? c[4] : c[3])); s.appendChild(t);
+      s.appendChild(el('span', 'ae-n' + (vivas.length ? '' : ' ae-0'), vivas.length ? vivas.length + (en() ? ' in progress' : ' en curso') : (en() ? 'idle' : 'sin tarea en curso')));
+      d.appendChild(s);
+      if (vivas.length) d.appendChild(grupo('ae-g-c', en() ? 'In progress' : 'En construcción', vivas));
+      if (pend.length) d.appendChild(grupo('ae-g-p', en() ? 'To do or blocked' : 'Pendiente o bloqueada', pend));
+      if (hechas.length) d.appendChild(grupo('ae-g-h', en() ? 'Recently done' : 'Hecho reciente', hechas, true));
+      if (!filas.length) { var g = el('div', 'ae-grupo'); g.appendChild(el('p', 'ae-vacio', en() ? 'Nothing to show yet.' : 'Todavía nada que enseñar.')); d.appendChild(g); }
+      cuerpo.appendChild(d);
+    });
+    var n = el('p', 'ae-nota', (en() ? 'Task names are written in Spanish by the team. Status generated ' : 'Estado generado el ') + cuando(est.generado, true) + '.');
+    cuerpo.appendChild(n);
+  }
+  function cargar() {
+    if (est || cargando) return;
+    cargando = true; pintar();
+    try {
+      fetch('estado.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { est = j && j.por_agente ? j : null; }).catch(function () { est = null; })
+        .then(function () { cargando = false; if (dlg.open) pintar(); });
+    } catch (e) { cargando = false; }
+  }
+  function abrir() {
+    cargar(); pintar();
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+    pill.setAttribute('aria-expanded', 'true');
+  }
+  function cerrar() { if (dlg.close) dlg.close(); else { dlg.removeAttribute('open'); pill.setAttribute('aria-expanded', 'false'); pill.focus(); } }
+  pill.addEventListener('click', function () { dlg.open ? cerrar() : abrir(); });
+  dlg.querySelector('.ae-cerrar').addEventListener('click', cerrar);
+  dlg.addEventListener('close', function () { pill.setAttribute('aria-expanded', 'false'); pill.focus(); });
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) cerrar(); }); // clic en el fondo
+  new MutationObserver(function () { pintarPill(); if (dlg.open) pintar(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   try {
     fetch('progreso.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (p) {
       if (!p || typeof p.total !== 'number') return;
-      var e = document.getElementById('av-progreso');
       // 1-nov (Kelvin): el % casi no se mueve porque entran tareas nuevas; la fecha de la publicación dice si hay algo nuevo
-      var f = p.fecha ? new Date(p.fecha) : null, cuando = '';
-      if (f && !isNaN(f)) cuando = ' · ' + f.toLocaleDateString('es-PR', { day: 'numeric', month: 'short', timeZone: 'America/Puerto_Rico' }) + ' ' + f.toLocaleTimeString('es-PR', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Puerto_Rico' });
-      e.textContent = '\u25D4 ' + p.total + '%' + cuando;
-      e.title = 'cap1 ' + p.cap1 + '% · tareas ' + p.tareas + '% · ' + (p.sha || '') + ' · ' + String(p.fecha || '').slice(0, 10);
-      e.hidden = false;
+      prog = p; pintarPill(); pill.hidden = false;
     }).catch(function () {});
   } catch (err) { /* sin fetch: no se enseña */ }
 })();
