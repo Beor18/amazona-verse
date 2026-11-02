@@ -244,6 +244,17 @@
     'Desde que están los muelles, las dos orillas reman juntas cada mañana.': 'Now that the docks are there, both banks paddle together every morning.',
     // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
     "The Physics Classroom, Reflection, Refraction, and Diffraction (ondas de sonido)": "The Physics Classroom, Reflection, Refraction, and Diffraction (sound waves)",
+    // QA-86 (Kelvin 2-nov): estaciones claras y qué hacer cuando la cadena no llega
+    'Pon tres estaciones ({}/3)': 'Place three stations ({}/3)',
+    'Estación puesta': 'Station placed', 'Acción: Estación puesta': 'Action: Station placed',
+    'Mover esta estación': 'Move this station', 'Acción: Mover esta estación': 'Action: Move this station',
+    'Esta estación ya está puesta. Toca otra vez para mover esta estación.': 'This station is already placed. Tap again to move this station.',
+    'Bien. Ahora {}: sigue la flecha.': 'Good. Now {}: follow the arrow.',
+    'Bien: tres estaciones. Ahora prueba el relevo: sigue la flecha.': 'Good: three stations. Now test the relay: follow the arrow.',
+    'No pasa nada: por eso se prueba. Las dos estaciones tienen que verse. Mueve la que está detrás de la loma a una altura despejada.': 'That\'s okay: that\'s why we test. The two stations have to see each other. Move the one behind the hill to a clear height.',
+    'No pasa nada: por eso se prueba. Pon la última estación en el mirador: desde ahí la luz pasa sobre la niebla.': 'That\'s okay: that\'s why we test. Put the last station on the lookout: from there the light passes over the fog.',
+    'No pasa nada: por eso se prueba. El sonido solo llega cerca: pon las estaciones más juntas.': 'That\'s okay: that\'s why we test. Sound only reaches nearby: put the stations closer together.',
+    'No pasa nada: por eso se prueba. Pasa por el transmisor y toma la linterna.': 'That\'s okay: that\'s why we test. Stop by the transmitter and take the flashlight.',
   };
   function publicar(base) {
     window.AV_EN = Object.assign({}, base || {}, extra);

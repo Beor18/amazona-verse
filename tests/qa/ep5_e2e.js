@@ -5,7 +5,7 @@
    doblar el tiempo).
    Lo propio del capítulo, como lo haría un niño que lee las tarjetas: copia «tres cortos y uno largo» (falla una vez a propósito),
    ordena el mensaje (una vez en un orden sin sentido y luego en el que se entiende: AV_EP5.ordenMensaje) y, en «Pon tres
-   estaciones», va a las alturas que aún no tienen estación (loma, torre, mirador) porque la guía solo señala la loma.
+   estaciones», sigue la guía a las alturas que aún no tienen estación (loma, torre, mirador); si la guía señalara una ya puesta, sale en rojo (QA-86).
    Opciones: { idioma: 'es'|'en', mapa: 'real', timeout }. Carga: inyectar ep_caminar.js y este archivo, y await AV.ep5e2eTest(). */
 (function () {
   'use strict';
@@ -35,7 +35,9 @@
         const S = G.S, D = ctx.W.AV_EP5 || {}, est = D.estaciones || [];
         if (G.misiones.steps[S.step] && G.misiones.steps[S.step].id === 'estaciones') {
           const falta = CADENA.find(id => !S.collected.includes('est_' + id));
-          if (falta && guia && S.collected.includes('est_loma')) {
+          // Solo es bug si la guía señala una altura que ya tiene estación (Acción la quitaría): QA-86, corregido
+          const puesta = guia && est.some(e => S.collected.includes('est_' + e.id) && Math.hypot(e.x - guia.x, e.z - guia.z) < 0.5);
+          if (falta && puesta) {
             const it = G.interaccion.find(falta);
             return it && { x: it.x, z: it.z, id: falta, porque: 'tras poner la estación de la loma, la guía sigue en la loma (Acción la quitaría)', bug: 'QA-86' };
           }
