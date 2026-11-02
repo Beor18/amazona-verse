@@ -32,7 +32,7 @@
     {
       id: 'cascada', tipo: 'seguir',
       nombre: { es: 'Detrás de la cascada', en: 'Behind the waterfall' },
-      punto: { x: 65.5, y: 9.7, z: -98.5, r: 5 },
+      punto: { x: 61, y: 10.5, z: -109, r: 6 },
       premio: { vineta: 'sec_cascada', evento: 'SecretoCascada' },
       leyenda: {
         es: 'Detrás de la cortina de La Mina hay un atajo. Es un cuento de Vittata, no un dato.',

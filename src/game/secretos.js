@@ -84,20 +84,22 @@ AVE.module('secretos', function (G) {
     if (dentro(s.punto)) conceder(s);
   }
 
-  function bajoAgua(p) {
-    const w = agua(p.x, p.z), r = p.r || 4;
-    if (w == null || dist2(p, p.x, p.z) > r * r) return false;
-    return S.pos.y < w - 0.05 || !!G.fisica.MOVE.swimming;
+  function enDesde(p) {
+    const r = p.r || 4;
+    if (dist2(p, p.x, p.z) > r * r) return false;
+    const w = agua(p.x, p.z), suelo = H(p.x, p.z);
+    if (w != null && w > suelo + 0.3) return S.pos.y < w - 0.05 || !!G.fisica.MOVE.swimming;
+    return Math.abs(S.pos.y - suelo) < 2.5;
   }
 
   function pasoLlevar(s) {
     if (s.hora != null && !(Number.isFinite(S.hora) && S.hora >= s.hora)) return;
     const e = estado(s);
-    if (!e.lleva && bajoAgua(s.desde)) { e.lleva = true; nota(1); }
+    if (!e.lleva && enDesde(s.desde)) { e.lleva = true; nota(1); }
     if (e.lleva && dentro(s.hasta)) conceder(s);
   }
 
-  function pasoFondo(s) { if (bajoAgua(s.punto || s.desde)) conceder(s); }
+  function pasoFondo(s) { if (enDesde(s.punto || s.desde)) conceder(s); }
 
   function pasoRasante(s) {
     const p = s.punto;
@@ -198,11 +200,12 @@ AVE.module('secretos', function (G) {
           const h = H(q.x, q.z);
           if (!Number.isFinite(h)) return true;
           const w = agua(q.x, q.z);
-          if (s.fondo) return !(w != null && (q.y == null || q.y < w + 1.2));
-          return w != null && h + 0.4 < w;
+          const mojado = w != null && h + 0.4 < w;
+          if (!mojado) return false;
+          return !(s.fondo || s.vuelta);
         });
-        check(tx(s.nombre, s.id) + ' está en suelo real' + (s.fondo ? ' (bajo el agua)' : ''), mal.length === 0,
-          mal.map(q => q.x.toFixed(0) + ',' + q.z.toFixed(0) + ' h=' + H(q.x, q.z).toFixed(1)).join(' | ') || 'ok');
+        check(tx(s.nombre, s.id) + ' está en suelo real' + ((s.fondo || s.vuelta) ? ' (el agua vale)' : ''), mal.length === 0,
+          mal.map(q => q.x.toFixed(0) + ',' + q.z.toFixed(0) + ' h=' + H(q.x, q.z).toFixed(1) + ' w=' + (agua(q.x, q.z) == null ? '—' : agua(q.x, q.z).toFixed(1))).join(' | ') || 'ok');
       }
       S.secretos = [];
       st.clear();
@@ -227,7 +230,11 @@ AVE.module('secretos', function (G) {
       const cu = todos.find(s => s.id === 'cueva');
       S.hora = 18; S.pos.x = cu.desde.x; S.pos.z = cu.desde.z; S.pos.y = 0; P.tick(0.2);
       check('De día la cueva no entrega la caracola', !tiene('cueva'));
-      S.hora = 20; S.pos.y = (agua(cu.desde.x, cu.desde.z) || 0) - 0.8; P.tick(0.2);
+      S.hora = 20;
+      const wc = agua(cu.desde.x, cu.desde.z), hc = H(cu.desde.x, cu.desde.z);
+      S.pos.x = cu.desde.x; S.pos.z = cu.desde.z;
+      S.pos.y = (wc != null && wc > hc + 0.3) ? wc - 0.8 : hc + 0.3;
+      quieto(); P.tick(0.2);
       S.pos.x = cu.hasta.x; S.pos.z = cu.hasta.z; S.pos.y = H(cu.hasta.x, cu.hasta.z) + 0.4; P.tick(0.2);
       check('Jugando: de noche la caracola llega al muelle', tiene('cueva'));
       const ba = todos.find(s => s.id === 'bahia'), c = ba.vuelta;
