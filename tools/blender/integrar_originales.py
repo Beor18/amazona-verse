@@ -118,7 +118,7 @@ def image_name(image, index):
 IMAGE_CACHE = {}
 
 
-def export_images(glb, folder, max_size=1024):
+def export_images(glb, folder, max_size=512):
     key = str(folder)
     if key in IMAGE_CACHE:
         return IMAGE_CACHE[key]

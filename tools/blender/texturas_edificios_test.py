@@ -22,6 +22,13 @@ class BuildingTextureBudgetTest(unittest.TestCase):
         self.assertLess(total, 100 * 1024 * 1024,
                         'Memoria estimada con mipmaps: %.2f MiB' % (total / 1024 / 1024))
 
+    def test_reexport_keeps_the_same_texture_budget(self):
+        import inspect
+        import sys
+        sys.path.insert(0, str(ROOT / 'tools/blender'))
+        from integrar_originales import export_images
+        self.assertEqual(inspect.signature(export_images).parameters['max_size'].default, 512)
+
 
 if __name__ == '__main__':
     unittest.main()
