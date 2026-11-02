@@ -270,7 +270,7 @@
         recompensa: { hito: 'circulo' } },
     ],
     // Diario del ep. 6 (§7): 6 hallazgos. Lo que el niño lee aquí describe solo lo que ve; el dato de cada uno está en lecciones.js
-    // (diario, mismo id): la conducta en bandada va «por verificar»; los pares de factores de 36 son aritmética y no necesitan fuente.
+    // (diario, mismo id): la conducta en bandada va con fuente (Kelvin 2-nov); los pares de factores de 36 son aritmética y no necesitan fuente.
     diario: {
       titulo: 'Cuaderno del pacto', corto: 'Cuaderno', boton: 'Cuaderno',
       categorias: { pacto: { nombre: 'El pacto', desconocido: 'Algo del encuentro', sonido: 'pickup', rafaga: 'gold' } },
@@ -944,7 +944,8 @@
           check('Esquema igual a los eps. 2–5: 4 objetivos, 6 preguntas, 6 fichas, guía de 45 min, 3 sin pantalla y rúbrica de 5',
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
             (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
-          check('Ninguna ficha sale sin fuente: la conducta en bandada va por verificar; solo la aritmética de 36 está verificada', AU.fichas().every(f => f.id === 'forma') && LEC.diario.filter(f => f.verificacion === 'por_verificar').every(f => f.fuente && f.nota_verificacion));
+          // BM126: verificación de Kelvin del 2-nov. Antes solo la aritmética de 36 estaba verificada.
+          check('Solo salen las fichas con fuente (Kelvin 2-nov) y la aritmética de 36; «algunas cotorras Amazona»; esperan sigue por verificar', AU.fichas().map(f => f.id).join(',') === 'tarjetas,plan,tabla,acuerdo,forma' && AU.fichas().filter(f => f.id !== 'forma').every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '')) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'esperan' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && /^Algunas cotorras Amazona/.test(AU.ficha('tarjetas').dato.es), AU.fichas().map(f => f.id).join(','));
           check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();

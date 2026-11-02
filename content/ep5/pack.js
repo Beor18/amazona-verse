@@ -857,7 +857,8 @@
           const g45 = MM.guia_45_min || {};
           check('Esquema del Aula: 4 objetivos, 6 preguntas, 6 fichas, 45 min, 3 sin pantalla y rúbrica de 5',
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 && (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
-          check('Solo la ficha de las dos especies está verificada', LEC.diario.filter(f => f.verificacion === 'verificado').map(f => f.id).join(',') === 'especies' && AU.fichas().length === 1);
+          // BM126: espejo, tambor y banderas verificados por Kelvin (2-nov). Antes solo la de las dos especies.
+          check('Salen al Diario las fichas verificadas (Kelvin 2-nov y las dos especies); marcas y treinta (canon) no', LEC.diario.filter(f => f.verificacion === 'verificado').map(f => f.id).join(',') === 'espejo,tambor,banderas,especies' && AU.fichas().length === 4 && AU.fichas().every(f => f.fuente && f.fuente_url) && !AU.fichas().some(f => f.id === 'marcas' || f.id === 'treinta'));
           check('Las preguntas se pueden hacer', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
