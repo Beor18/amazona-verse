@@ -76,16 +76,24 @@ window.AVLook = function (G) {
       },
       // Noche permitida (cap. 5, mundo.cielo.permiso = 'noche'): misma gradación y mismo toon; cielo atmosférico, no un fondo plano.
       // BM127: la noche anterior (sol cálido 1,35 alto en el cielo, cenit #24366e) se veía de día en la Mac con GPU. Ahora es
-      // luz de luna: fría, suave y baja (la altura la da luces.solPos del pack), con cielo y niebla de noche. [KELVIN] valores de arte.
+      // luz de luna: fría y baja (la altura la da luces.solPos del pack), con cielo y niebla de noche. [KELVIN] valores de arte.
+      // v2 (Kelvin 2-nov: «demasiado oscuro; misterio, pero que el jugador se oriente»): más relleno frío del cielo (las formas
+      // del suelo y los caminos se leen), luna más clara, horizonte más claro que la niebla (las crestas se recortan contra él),
+      // niebla más lejos, edificios con tinte de luna (no gris plano) y borde de luna en paredes, troncos y rocas.
       noche: {
-        exposicion: 0.7,
-        cielo: { cenit: '#0f1a3d', horizonte: '#34466e', sol: '#dfe6ff' },
-        niebla: { color: '#2c3a5c', inicio: 48, fin: 720 },
-        luces: { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75 },
-      },
-    },
+        exposicion: 0.72,
+        cielo: { cenit: '#0d1840', horizonte: '#43588c', sol: '#c4cdea' },
+        niebla: { color: '#2f3f66', inicio: 60, fin: 900 },
+        luces: { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0 },
+        hoja: [0.66, 0.8, 0.98],                                                   // follaje de noche: verde frío, no el de mediodía
+        tintes: { roca: [0.86, 0.93, 1.1], corteza: [0.92, 0.9, 0.98], 'av-hd-atlas': [0.84, 0.93, 1.18], edificio: [0.8, 0.88, 1.12], flora: [0.7, 0.82, 0.98] }, // edificio: mallas edificios*/estructura:; flora: flora:*
+        rim: { color: [0.62, 0.78, 1.0], int: 0.75, borde: [0.5, 1.0] },           // personajes: el mismo borde, más frío y fuerte
+        rimMundo: { color: [0.5, 0.64, 1.0], int: 0.55, borde: [0.45, 1.0] },     // Phong (suelo, rocas, edificios): solo caras de lado
+      },    },
   };
   const NOMBRES = Object.keys(LOOKS);
+  const NOCHE = !!(W.cielo && W.cielo.permiso === 'noche'); // el capítulo pide la noche del look (cap. 5)
+  const nocheDe = L => (NOCHE && L && L.noche) || null;
   const q = new URLSearchParams(location.search);
   const TEX_URL = +q.get('tex') || 0;
   let actual = null;   // look activo (null = fábrica)
@@ -122,13 +130,26 @@ window.AVLook = function (G) {
     let out = ORIG.tone.includes(linea) ? ORIG.tone.replace(linea, linea + '\n' + extra) : ORIG.tone;
     // Borde de luz en los personajes: antes del tone mapping, solo en el shader físico (STANDARD) y solo si el material lleva
     // el define AV_RIM (lo ponen tocar() en las mallas con esqueleto). normal, vViewPosition y diffuseColor son los de meshphysical.
+    const N = nocheDe(L);
     if (Rf && Rf.rim) {
-      const r = Rf.rim, c = r.color, b = r.borde;
+      const r = (N && N.rim) || Rf.rim, c = r.color, b = r.borde;
       out = [
         '#if defined( STANDARD ) && defined( AV_RIM )',
         `\t{ float avRim = smoothstep( ${f(b[0])}, ${f(b[1])}, 1.0 - saturate( dot( normalize( vViewPosition ), normal ) ) );`,
         '\t  float avL = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );',
         `\t  gl_FragColor.rgb += vec3( ${f(c[0])}, ${f(c[1])}, ${f(c[2])} ) * ( avRim * ${f(r.int)} * ( 0.3 + 0.7 * smoothstep( 0.0, 0.4, avL ) ) ); }`,
+        '#endif',
+      ].join('\n') + '\n' + out;
+    }
+    // De noche, borde de luna en el mundo Phong (suelo, rocas, corteza, edificios): solo en las caras de lado (paredes, troncos,
+    // laderas), no en el suelo plano, y teñido por el albedo; así las siluetas se separan del fondo oscuro. Unas pocas operaciones.
+    if (N && N.rimMundo) {
+      const r = N.rimMundo, c = r.color, b = r.borde;
+      out = [
+        '#if defined( PHONG )',
+        `\t{ float avRimM = smoothstep( ${f(b[0])}, ${f(b[1])}, 1.0 - saturate( dot( normalize( vViewPosition ), normal ) ) );`,
+        '\t  float avLado = 1.0 - abs( inverseTransformDirection( normal, viewMatrix ).y );',
+        `\t  gl_FragColor.rgb += vec3( ${f(c[0])}, ${f(c[1])}, ${f(c[2])} ) * diffuseColor.rgb * ( avRimM * avLado * ${f(r.int)} ); }`,
         '#endif',
       ].join('\n') + '\n' + out;
     }
@@ -210,7 +231,7 @@ window.AVLook = function (G) {
     return especieDe.get(m);
   }
   const obcOriginal = new WeakMap(); // onBeforeCompile de la hoja antes de envolverlo (se repone al quitar)
-  function tocar(m, L, esqueleto, forzar, flora) {
+  function tocar(m, L, esqueleto, forzar, flora, edificio) {
     envolverClave(m);
     const Rf = L && L.refinado, clave = claveOriginal(m);
     let recompilar = !!forzar; // al aplicar o quitar (cambia el chunk global) siempre; en el barrido, solo si cambia el programa
@@ -220,7 +241,8 @@ window.AVLook = function (G) {
     }
     const u = m.userData && m.userData.splat && m.userData.uniforms;
     if (u && u.uSat) { if (!guardado.has(u.uSat)) guardado.set(u.uSat, u.uSat.value.clone()); u.uSat.value.copy(guardado.get(u.uSat)).multiplyScalar(L ? L.terrenoSat : 1); }
-    const tinte = L && (clave === 'hoja' ? L.hoja : Rf && Rf.tintes && Rf.tintes[clave]);
+    const tintes = (nocheDe(L) && nocheDe(L).tintes) || (Rf && Rf.tintes); // de noche, los tintes de luna (edificios, rocas)
+    const tinte = L && (clave === 'hoja' ? (nocheDe(L) && nocheDe(L).hoja) || L.hoja : tintes && (tintes[clave] || (edificio && tintes.edificio) || (flora && tintes.flora)));
     if ((tinte || guardado.has(m)) && m.color) {
       if (!guardado.has(m)) guardado.set(m, m.color.clone());
       m.color.copy(guardado.get(m));
@@ -258,7 +280,7 @@ window.AVLook = function (G) {
     const max = topeTex(L);
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
       const flora = /^flora:/.test(o.name);
-      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora);
+      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora, /^(edificios|estructura:)/.test(o.name));
       else if (max) texturasDe(m, (t, k) => encoger(t, max, k, flora)); // las imágenes llegan después del primer toque: se encogen al verlas
     } });
     if (!L) { for (const m of tocados) tocar(m, null, false, true); tocados.clear(); }

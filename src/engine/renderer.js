@@ -218,7 +218,8 @@ AVE.module('renderer', function (G) {
   // Nubes en dos capas, todas en una llamada: cúmulos pintados en un lienzo como tarjetas que miran a la cámara. La capa baja
   // (mundo.cielo.nubes = n, 16) es densa y pasa rápido; la alta (mundo.cielo.nubesAltas = n, 12) es más fina, más blanca y lenta.
   // uTime deforma la tarjeta (ondea el contorno) y las hace derivar. clima.js toma uBajo de este material (sombra de la nube).
-  const nubesU = { uTime: { value: 0 }, tNube: { value: null }, uSolDir: { value: sunDir }, uAlto: skyU.uSolCol, uBajo: { value: new THREE.Color(cielo.nubeSombra || '#a9bfd6').convertSRGBToLinear() } };
+  // mundo.cielo.nubeSombra (uBajo) y nubeLuz (uLuz, multiplica la parte clara; 1 = de siempre): la noche del cap. 5 las apaga.
+  const nubesU = { uTime: { value: 0 }, tNube: { value: null }, uSolDir: { value: sunDir }, uAlto: skyU.uSolCol, uBajo: { value: new THREE.Color(cielo.nubeSombra || '#a9bfd6').convertSRGBToLinear() }, uLuz: { value: cielo.nubeLuz != null ? cielo.nubeLuz : 1 } };
   if (ATMOS && cielo.nubes !== 0) {
     const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
     const x = cv.getContext('2d'), rr = G.util.rng(77);
@@ -247,12 +248,12 @@ AVE.module('renderer', function (G) {
           vUv = uv; vH = uv.y; vCapa = iCapa.x; vFase = iCapa.y;
           gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
         }`,
-      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
+      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; uniform float uTime, uLuz; varying vec2 vUv; varying float vH, vCapa, vFase;
         float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
         void main() {
           vec2 uv = vUv + vec2(0.012 * sin(uTime * 0.33 + vUv.y * 7.0 + vFase), 0.01 * cos(uTime * 0.27 + vUv.x * 5.0 + vFase));
           vec4 t = texture2D(tNube, uv);
-          vec3 claro = uAlto * 0.42 + vec3(0.55);
+          vec3 claro = (uAlto * 0.42 + vec3(0.55)) * uLuz; // uLuz (mundo.cielo.nubeLuz, 1 de día): de noche la nube no brilla sola
           vec3 c = mix(mix(uBajo, claro, 0.55 * vCapa), claro, smoothstep(0.15, 0.8, vH));
           gl_FragColor = vec4(c, t.a * mix(0.9, 0.62, vCapa));
           #include <tonemapping_fragment>

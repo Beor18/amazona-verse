@@ -16,8 +16,11 @@
   function nocheViva(W) {
     const R = W.AV.G.renderer, sk = R.sky && R.sky.material.uniforms, c = sk && sk.uCenit.value, lum = c ? 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b : NaN;
     const sol = R.sun.intensity, alto = R.sunDir ? R.sunDir.y : NaN, fria = R.sun.color.b >= R.sun.color.r;
-    const ok = sol <= 1 && alto <= 0.45 && fria && lum < 0.03 && R.renderer.toneMappingExposure <= 0.72;
-    return { ok, txt: 'sol ' + sol.toFixed(2) + ' a y=' + (+alto).toFixed(2) + (fria ? ' fría' : ' cálida') + ' · cenit lum ' + (+lum).toFixed(3) + ' · exposición ' + R.renderer.toneMappingExposure };
+    const ok = sol <= 1.25 && alto <= 0.45 && fria && lum < 0.03 && R.renderer.toneMappingExposure <= 0.78;
+    // v2 (Kelvin: orientarse de noche): faroles en los sitios, cucubanos en los caminos y estrellas, en 3 llamadas y sin luces reales
+    const L = W.AV.G.c.ep5noche, luces = []; R.scene.traverse(o => { if (o.isLight) luces.push(o); });
+    const faroles = !!L && L.faroles >= 10 && L.cucubanos >= 20 && L.estrellas >= 1000 && L.llamadas === 3 && !!R.scene.getObjectByName('ep5-noche-luces') && !!R.scene.getObjectByName('ep5-noche-estrellas') && luces.length <= 3;
+    return { ok, faroles, txtF: L ? L.faroles + ' faroles · ' + L.cucubanos + ' cucubanos · ' + L.estrellas + ' estrellas · ' + luces.length + ' luces reales' : 'sin luces de noche', txt: 'sol ' + sol.toFixed(2) + ' a y=' + (+alto).toFixed(2) + (fria ? ' fría' : ' cálida') + ' · cenit lum ' + (+lum).toFixed(3) + ' · exposición ' + R.renderer.toneMappingExposure };
   }
   window.AV = window.AV || {};
   window.AV.zonas56Test = async function (opts) {
@@ -45,7 +48,7 @@
         // Con tests/qa/mapa_real.js cargado todos los iframes llevan ?mapa=real: la mitad «apagada» no se puede comprobar aquí
         if (!window.AV.mapaRealForzado) {
           check(`Cap. ${cap} · apagado: mundo pequeño de siempre (sin el mapa real) y zonas inactivas`, !G.terreno.mapa && !G.zonas.activa, 'mapa ' + !!G.terreno.mapa);
-          if (cap === 5) { const n = nocheViva(W); check('Cap. 5 · apagado: la luz y el cielo vivos son de noche (BM127)', n.ok, n.txt); }
+          if (cap === 5) { const n = nocheViva(W); check('Cap. 5 · apagado: la luz y el cielo vivos son de noche (BM127)', n.ok, n.txt); check('Cap. 5 · apagado: faroles y cucubanos guían de noche', n.faroles, n.txtF); }
           r = await W.AV.zonasTest();
           check(`Cap. ${cap} · apagado: AV.zonasTest ${r.passed}/${r.total}`, r.total > 0 && r.passed === r.total, r.results.filter(x => !x.ok).map(x => x.name + ' ' + x.extra).join(' | '));
         }
@@ -66,6 +69,7 @@
           check('Cap. 5 · ?mapa=real: de noche (permiso «noche» del look y S.hora de noche)', G.pack.mundo.cielo.permiso === 'noche' && G.S.hora >= 19, 'hora ' + G.S.hora);
           const n = nocheViva(W);
           check('Cap. 5 · ?mapa=real: la luz y el cielo vivos son de noche (luna baja, fría y suave; cielo oscuro), no solo S.hora (BM127)', n.ok, n.txt);
+          check('Cap. 5 · ?mapa=real: faroles en el taller, la cadena, las ruinas y el Guardián, y cucubanos en los caminos, y cielo estrellado', n.faroles, n.txtF);
         }
         r = await W.AV.zonasTest();
         check(`Cap. ${cap} · ?mapa=real: AV.zonasTest ${r.passed}/${r.total}`, r.total >= 7 && r.passed === r.total, r.results.filter(x => !x.ok).map(x => x.name + ' ' + x.extra).join(' | '));

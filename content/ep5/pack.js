@@ -30,6 +30,7 @@
   const IGUACA = EN({ x: -4, z: 8 }, { x: -46, z: -118 }), GUARDIAN = EN({ x: 8, z: 10 }, { x: -19, z: -79 }), APRENDIZ = EN({ x: -10, z: 6 }, { x: -49, z: -122 }),
     TRX = EN({ x: 4, z: 8 }, { x: -38, z: -118 }), PRUEBA = EN({ x: 0, z: 2 }, { x: -42, z: -124 });
   const INICIO = EN({ x: -4, z: 6 }, { x: -46, z: -121 });
+  window.AV_EP5.sitiosNoche = { inicio: INICIO, trx: TRX, guardian: GUARDIAN }; // faroles y cucubanos de la noche (noche.js)
   // De noche en el mapa real: la hora de la noche (maravillas.js y musica.js leen S.hora: coquíes, bahía que brilla)
   const HORA_NOCHE = 21;
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
@@ -95,7 +96,7 @@
 
   AVE.registerPack({
     id: 'ep5',
-    archivos: ['transmisor.js', 'relevo.js', 'historia.js', 'lecciones.js', 'secretos.js'],
+    archivos: ['transmisor.js', 'relevo.js', 'historia.js', 'lecciones.js', 'secretos.js', 'noche.js'],
     idioma: 'content/ep5/en.js',
     meta: {
       titulo: 'Las voces olvidadas', capitulo: 5, almacen: 'ep5',
@@ -114,10 +115,11 @@
     // (los mismos valores del mundo pequeño), los lugares del capítulo y la flora despejada en sus sitios; sin el reubicar ni
     // los pois del cap. 1. Sin el interruptor, el mundo pequeño de siempre.
     mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
-      // La luna baja con su propio solPos: sin él heredaba el sol de mediodía del cap. 1 ([-42, 70, 46]) y se veía de día (BM127)
-      exposicion: 0.7,
-      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#34466e', cenit: '#0f1a3d', sol: '#dfe6ff', niebla: [48, 720], permiso: 'noche' }),
-      luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75, solPos: [-36, 14, 40] }),
+      // La luna baja con su propio solPos: sin él heredaba el sol de mediodía del cap. 1 ([-42, 70, 46]) y se veía de día (BM127).
+      // Los valores de la noche son los del look (src/game/look.js, vibrant_toon.noche); las nubes, apagadas y frías (nubeLuz).
+      exposicion: 0.72,
+      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nubeSombra: '#28345a', nubeLuz: 0.4, permiso: 'noche' }),
+      luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0, solPos: [-36, 20, 40] }),
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
       lugares: { inicio: { x: INICIO.x, z: INICIO.z + 1, r: 5 } },
@@ -130,9 +132,9 @@
       } }),
     }) : {
       tamano: 46, segmentos: 64,
-      exposicion: 0.7,
-      cielo: { color: '#34466e', cenit: '#0f1a3d', sol: '#dfe6ff', niebla: [48, 720], nieblaAltura: [6, 48], permiso: 'noche' },
-      luces: { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75, solPos: [-24, 12, 30] },
+      exposicion: 0.72,
+      cielo: { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nieblaAltura: [6, 48], nubeSombra: '#28345a', nubeLuz: 0.4, permiso: 'noche' },
+      luces: { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0, solPos: [-24, 14, 30] },
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
       lugares: { inicio: { x: -4, z: 8, r: 6 } },
