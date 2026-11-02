@@ -11,7 +11,7 @@ Validado el 25-oct, uno por uno, en `docs/equipo/DIARIO_VALIDACION.md`: 12 de 12
 | Dos aviarios: Iguaca (El Yunque, USFWS) y José Vivaldi (Río Abajo, DRNA) | USFWS, ficha de 2026: https://www.fws.gov/sites/default/files/documents/2026-02/202602_puerto-rican-parrot-info-doc-spanish.pdf | verificado (antes) |
 | Atienden pichones silvestres heridos; anidan en huecos de árboles; liberaciones desde 2020; Maricao desde 2022; más de 900 cotorras; María (2017) | Misma ficha del USFWS (2026) | verificado (antes) |
 | **«La hembra calienta los huevos unos 26 días. Mientras tanto, el macho le trae comida.»** | 26 días: Wilson Bulletin 107(3), 1995, https://sora.unm.edu/sites/default/files/journals/wilson/v107n03/p0518-p0529.pdf, y parrots.org (puesta de 2 a 4 huevos, 26 días). Otras fuentes dan de 24 a 28 días. Durante la incubación la hembra está muy atenta al nido y el macho casi no entra en la cavidad: USGS, «Successful nesting behavior of Puerto Rican parrots», https://pubs.usgs.gov/publication/5222610. El macho le trae la comida: El Yunque, https://elyunque.com/en/nature/animals/birds/puerto-rican-parrot (fuente secundaria). | **verificado hoy** (antes «parcial»); ahora sale como ficha con su fuente |
-| **«Los huevos de la cotorra puertorriqueña son blancos»** (ficha `huevo_blanco`; también lo dicen los diálogos del nido: «un huevo blanco, como los de las cotorras de verdad») | No se encontró fuente de *A. vittata*. Solo hay fichas de Wikipedia de otras amazonas (*A. amazonica*, *A. farinosa*, *A. albifrons*: «white eggs») | **parcial: no sale como ficha. [Kelvin: pedir la cita al DRNA o al USFWS, o quitar «blanco» de los diálogos del nido]** |
+| **«Los huevos de la cotorra puertorriqueña son blancos»** (ficha `huevo_blanco`; también lo dicen los diálogos del nido: «un huevo blanco, como los de las cotorras de verdad») | No se encontró fuente de *A. vittata*. Solo hay fichas de Wikipedia de otras amazonas (*A. amazonica*, *A. farinosa*, *A. albifrons*: «white eggs») | **parcial, no sale como ficha. Decisión de Kelvin (2-nov): los huevos son de fantasía (tendrán colores especiales); los diálogos del nido ya no dicen «blanco, como los de verdad»** |
 
 ## 3. El coquí (misión «Co-quí», `src/game/atardecer.js`, `content/cap1/misiones.js`)
 | Dato en el juego | Fuente | Estado |
@@ -26,5 +26,5 @@ Validado el 25-oct, uno por uno, en `docs/equipo/DIARIO_VALIDACION.md`: 12 de 12
 | La caleta brilla azul de noche por los dinoflagelados *Pyrodinium bahamense*, como en Puerto Mosquito (Vieques) | NOAA Office for Coastal Management, https://coast.noaa.gov/states/stories/vieques-bioluminescent-bay.html (en el código, con `fuente` y `url`) | verificado (antes, BM21) |
 
 ## Para Kelvin
-1. El huevo blanco: sin fuente de la especie. Hay que pedir la cita (DRNA o USFWS) o quitar «blanco» de los diálogos del nido.
+1. Huevo blanco: resuelto por Kelvin (2-nov): fantasía; el juego ya no lo afirma como dato real.
 2. «Del atardecer al amanecer» del coquí: solo hay respaldo de fuentes secundarias (turismo y El Yunque). Conviene la cita del DRNA.

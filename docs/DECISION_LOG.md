@@ -268,3 +268,6 @@ La protagonista se representa con los renders verdes oficiales. Los uniformes se
 
 ## 1-nov · Iguaca es vittata (Kelvin)
 Iguaca es una *Amazona vittata* de otra familia de cotorras puertorriqueñas: más madura y serena; Vittata es la joven e intensa («puede ser como yo»). Se registra en `docs/CANON_REGISTRY.md`. Pendiente para arte (Fernando/Kelvin): cambiar su apariencia del sustituto *leucocephala* a vittata, distinguible de Vittata; y decidir si su familia se ve entrando al refugio (hito 11, KELVIN-5).
+
+## 2-nov · Los huevos del criadero son de fantasía (Kelvin)
+«Ponlo como quieras: los huevos tendrán colores especiales luego, es un juego, hay fantasía.» No hay fuente del color del huevo de *A. vittata* (BM120), así que el juego ya no dice que el huevo es blanco «como los de las cotorras de verdad» (criadero.js y en.js): «Adentro hay un huevo. ¿Qué cotorrita saldrá?». La ficha real `huevo_blanco` queda parcial y no se muestra. Ver `docs/equipo/FUENTES_CAP1.md`.
