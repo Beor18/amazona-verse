@@ -59,9 +59,10 @@
     const REGALO = {
       islenas: { id: 'llamada', es: 'Vittata llama a la bandada.', en: 'Vittata calls the flock.', dura: 8, espera: 40 },
       cordilleranas: { id: 'ojo', es: 'Vittata ve desde la cumbre.', en: 'Vittata sees from the summit.', dura: 6, espera: 30 },
-      norte: { id: 'rafaga', es: 'Fantasía: el impulso se encadena.', en: 'Fantasy: the dash chains.', dura: 5, espera: 25 }
+      norte: { id: 'rafaga', es: 'Fantasía: el impulso se encadena.', en: 'Fantasy: the dash chains.', dura: 5, espera: 25 },
+      montaneras: { id: 'columna', es: 'Fantasía: sube una columna de nube.', en: 'Fantasy: a cloud column rises.', dura: 6, espera: 30 }
     };
-    let don = null, sostenido = 0, rafagaCd = null;
+    let don = null, sostenido = 0, rafagaCd = null, columna = null;
     function soltarSostener() {
       if (!sostenido) return;
       const ms = performance.now() - sostenido;
@@ -83,6 +84,7 @@
         G.fisica.TUNING.dashCooldown = 0.25;
         if (G.fisica.MOVE) G.fisica.MOVE.airDash = true;
       }
+      if (r.id === 'columna' && G.S) columna = { x: G.S.pos.x, y: G.S.pos.y, z: G.S.pos.z };
       const en = document.documentElement.lang === 'en';
       if (G.ui && G.ui.toast) G.ui.toast(en ? r.en : r.es, 2200);
       return true;
@@ -97,6 +99,14 @@
       const id = activo();
       if (id === 'rafaga' && G.fisica && G.fisica.MOVE) G.fisica.MOVE.airDash = true;
       else if (rafagaCd != null) cerrarRafaga();
+      if (id === 'columna' && columna && G.S) {
+        const dx = G.S.pos.x - columna.x, dz = G.S.pos.z - columna.z;
+        if (dx * dx + dz * dz <= 36) G.S.vy = Math.max(G.S.vy || 0, 6);
+        if (G.fx && G.fx.burst && performance.now() > (columna.humo || 0)) {
+          columna.humo = performance.now() + 220;
+          G.fx.burst(columna.x, (G.S.pos.y || 0) + 0.4, columna.z, 'bubbles', 3);
+        }
+      } else if (id !== 'columna') columna = null;
     }
     function pintarBoton() {
       const b = document.getElementById('b-dash');
@@ -167,9 +177,18 @@
         don.fin = performance.now() - 1;
         pasoDon();
         check('Al acabar la ráfaga, la espera del impulso vuelve', G.fisica.TUNING.dashCooldown === cd0 && rafagaCd == null, String(G.fisica.TUNING.dashCooldown));
-        don = null; forzar = null;
+        don = null;
+        forzar = 'montaneras';
+        const vy0 = G.S.vy, x0 = G.S.pos.x;
+        check('Columna de nube: sale bajo la cotorra', activar() === true && activo() === 'columna' && columna && Math.hypot(columna.x - x0, columna.z - G.S.pos.z) < 0.01, activo() || 'sin don');
+        G.S.vy = 0; pasoDon();
+        check('Dentro de 6 m la columna sube con fuerza 6', G.S.vy >= 6, String(G.S.vy));
+        G.S.pos.x = x0 + 10; G.S.vy = 0; pasoDon();
+        check('Fuera de la columna no empuja', G.S.vy === 0, String(G.S.vy));
+        G.S.pos.x = x0; G.S.vy = vy0;
+        don = null; forzar = null; columna = null;
         const en = document.documentElement.lang === 'en';
-        check('El aviso tiene frase en español y en inglés', REGALO.islenas.es && REGALO.islenas.en && REGALO.cordilleranas.es && REGALO.cordilleranas.en && REGALO.norte.es && REGALO.norte.en && (en ? REGALO.norte.en : REGALO.norte.es).length > 8);
+        check('El aviso tiene frase en español y en inglés', REGALO.islenas.es && REGALO.islenas.en && REGALO.cordilleranas.es && REGALO.cordilleranas.en && REGALO.norte.es && REGALO.norte.en && REGALO.montaneras.es && REGALO.montaneras.en && (en ? REGALO.montaneras.en : REGALO.montaneras.es).length > 8);
         const tiempos = ids.map(tiempo);
         const media = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
         const peor = Math.max(...tiempos.map(t => Math.abs(t / media - 1)));
