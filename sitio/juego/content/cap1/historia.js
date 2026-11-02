@@ -779,8 +779,100 @@
       function limpiar() { for (const o of objs) if (o.obj.parent === scene) scene.remove(o.obj); objs.length = 0; }
       // Lugares secos y altos para la guía mientras se lleva algo: la copa de Iguaca, el techo del taller y la colina
       const altos = () => [{ x: percha.x, z: percha.z, y: percha.y }, { x: C.T.x, z: C.T.z, y: C.T.base + 3.9 }, { x: PLACES.B.x, z: PLACES.B.z, y: PLACES.B.base }].filter(p => p.y >= FLOOD_LEVEL + 0.5);
+      // AV.crecidaTest: rescata las tres cosas (la e2e salva una y deja dos para después). No cambia la partida.
+      function testCrecida() {
+        const out = [];
+        const check = (nombre, ok, extra) => out.push({ name: nombre, ok: !!ok, extra: extra == null ? '' : String(extra) });
+        const fin = () => { const passed = out.filter(o => o.ok).length; return { ok: passed === out.length, passed, total: out.length, results: out }; };
+        const puede = !!(G.agarre && G.agarre.agarrar && G.actores.player3D && G.actores.player3D.anchors);
+        if (!puede) { check('Hay modelo 3D para agarrar en vuelo', false, 'sin anclas'); return fin(); }
+        const P = G.pruebas;
+        const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+        const fly0 = !!G.fisica.MOVE.flying, swim0 = !!G.fisica.MOVE.swimming;
+        const ev0 = S.event ? { t: S.event.t, dur: S.event.dur } : null;
+        const agua0 = S.water, field0 = S.field.slice(), unlocked0 = S.unlocked.slice(), wear0 = Object.assign({}, S.wear);
+        const evN = S.events.length;
+        let save0 = null;
+        try { save0 = localStorage.getItem(G.guardado.KEY); } catch (e) { /* sin almacenamiento */ }
+        const modo0 = G.interaccion.modo;
+        const tapados = [];
+        try {
+          for (const id of ['end', 'comic', 'creator']) {
+            const el = document.getElementById(id); if (el && !el.hidden) { el.hidden = true; tapados.push(el); }
+          }
+          if (P && P.drain) P.drain();
+          if (G.ui.hideCard) G.ui.hideCard();
+          if (G.agarre.lleva()) { const llevaba = objs.find(o => o.id === G.agarre.lleva().id); if (llevaba) llevaba.fase = 'flota'; G.agarre.soltar({ instantaneo: true }); }
+          G.fisica.MOVE.swimming = false;
+          if (G.input && G.input.keys) G.input.keys.delete('c');
+          G.interaccion.modo = null;
+          if (!hallazgoCercano()) {
+            let best = null, bd = Infinity;
+            for (const f of (G.diario.entries || [])) {
+              if (f.agua || !G.diario.meshes[f.id]) continue;
+              const d = Math.hypot(f.x - ZONA.x, f.z - ZONA.z); if (d < bd) { bd = d; best = f; }
+            }
+            if (best) { const i = S.field.indexOf(best.id); if (i >= 0) S.field.splice(i, 1); G.diario.meshes[best.id].visible = true; }
+          }
+          S.event = { t: 1, dur: 400 };
+          empezar();
+          const flotan = objs.filter(o => o.fase === 'flota');
+          check('El río arrastra las tablas, el coquí y un hallazgo', flotan.map(o => o.id).join(',') === 'tablas,coqui,hallazgo', flotan.map(o => o.id).join(',') || 'ninguno');
+          const gy = G.fisica.suelo(PLACES.B.x, PLACES.B.z, PLACES.B.base + 2);
+          const seco = { x: PLACES.B.x, y: gy, z: PLACES.B.z };
+          check('La colina queda a salvo del agua', aSalvo(seco), 'y ' + (gy || 0).toFixed(1));
+          const cuadros = (n, listo) => { for (let i = 0; i < n && !listo(); i++) G.renderer.render(0.05, false); return !!listo(); };
+          const gestoQuieto = () => !G.agarre.fase;
+          for (const o of flotan.slice()) {
+            if (P && P.drain) P.drain();
+            if (G.ui.hideCard) G.ui.hideCard();
+            cuadros(30, gestoQuieto);
+            if (P) P.tick(0.05);
+            S.pos.x = o.it.x; S.pos.y = o.obj.position.y + 1.3; S.pos.z = o.it.z; S.vy = 0; G.fisica.MOVE.flying = true;
+            const nb = G.interaccion.nearest();
+            if (nb && nb.id === o.it.id) G.interaccion.action(); else o.it.use();
+            const llevado = cuadros(50, () => !!(G.agarre.lleva() && G.agarre.lleva().id === o.id && o.fase === 'llevado'));
+            if (!llevado) { check('Agarrar ' + o.nombre + ' al vuelo', false, (G.ui.busy() ? 'interfaz ocupada · ' : '') + ((nb && nb.id) || o.fase)); continue; }
+            S.pos.x = seco.x; S.pos.y = seco.y + 1.6; S.pos.z = seco.z; S.vy = 0; S.facing = { x: 0, z: 1 }; G.fisica.MOVE.flying = false;
+            if (P) P.tick(0.25);
+            if (P && P.drain) P.drain();
+            if (G.ui.hideCard) G.ui.hideCard();
+            if (G.interaccion.nearest()) G.agarre.soltar(); else G.interaccion.action();
+            check('A salvo: ' + o.nombre, cuadros(50, () => o.fase === 'salvado'), o.fase);
+          }
+          const nuevos = S.events.slice(evN).filter(e => e.key === 'FloodRescue').map(e => e.meta && e.meta.item);
+          check('Los tres quedan salvados y nada se pierde', salvados.slice().sort().join(',') === 'coqui,hallazgo,tablas' && perdidos.length === 0, 'salvados ' + salvados.join(',') + ' · perdidos ' + perdidos.join(','));
+          check('Cada rescate queda en el registro (FloodRescue)', ['tablas', 'coqui', 'hallazgo'].every(id => nuevos.includes(id)), nuevos.join(','));
+          const h = objs.find(o => o.id === 'hallazgo');
+          check('El hallazgo salvado entra al Diario', !!(h && h.hallazgo && S.field.includes(h.hallazgo.id)), h && h.hallazgo ? h.hallazgo.id : 'sin hallazgo');
+        } catch (e) {
+          check('La prueba corre sin excepciones', false, String(e && (e.stack || e)).slice(0, 300));
+        } finally {
+          try {
+            for (const o of objs) if (o.fase === 'llevado') o.fase = 'flota';
+            if (G.agarre && G.agarre.lleva()) G.agarre.soltar({ instantaneo: true });
+          } catch (e) { /* soltar */ }
+          limpiar(); salvados.length = 0; perdidos.length = 0;
+          S.event = ev0;
+          if (G.fx && G.fx.rain) G.fx.rain.visible = !!ev0;
+          G.agua.setLevel(agua0);
+          S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.vy = 0;
+          G.fisica.MOVE.flying = fly0; G.fisica.MOVE.swimming = swim0;
+          S.field.length = 0; field0.forEach(id => S.field.push(id));
+          if (G.diario && G.diario.meshes) for (const f of (G.diario.entries || [])) { const m = G.diario.meshes[f.id]; if (m) m.visible = !S.field.includes(f.id); }
+          if (S.unlocked.length !== unlocked0.length || S.unlocked.some((k, i) => k !== unlocked0[i])) {
+            S.unlocked.length = 0; unlocked0.forEach(k => S.unlocked.push(k)); S.wear = wear0;
+            try { G.actores.applyWear(); } catch (e) { /* ropa */ }
+          }
+          S.events.length = evN; G.interaccion.modo = modo0;
+          for (const el of tapados) el.hidden = false;
+          try { if (save0 != null) localStorage.setItem(G.guardado.KEY, save0); } catch (e) { /* sin almacenamiento */ }
+          try { G.misiones.renderQuest(); } catch (e) { /* misión */ }
+        }
+        return fin();
+      }
       const crecida = {
-        objetos: () => objs.slice(), salvados, perdidos, nombres, ZONA, altos, aSalvo, empezar, flotar, terminar, limpiar,
+        objetos: () => objs.slice(), salvados, perdidos, nombres, ZONA, altos, aSalvo, empezar, flotar, terminar, limpiar, test: testCrecida,
         guia: () => {
           if (G.agarre && G.agarre.lleva()) return G.misiones.closest(altos());
           const f = objs.filter(o => o.fase === 'flota').map(o => ({ x: o.it.x, z: o.it.z, y: o.obj.position.y + 1 }));
@@ -843,6 +935,11 @@
 
       Object.assign(C, { build: () => build, startBuild, cancelBuild, placeRefuge, openParcelCard, syncRefugeInteractable, applyGuardianLook, drawSymbol, showSymbol, examine,
         apertura, drawBlueprint, mostrarPlano, planoVisible, luma: lumaAPI, crecida, pendientesKelvin: PENDIENTES_KELVIN });
+      (function exponer(n) {
+        const AV = window.AV;
+        if (AV && AV.G === G) { if (!AV.crecidaTest) AV.crecidaTest = () => crecida.test(); }
+        else if (n > 0) setTimeout(() => exponer(n - 1), 200);
+      })(40);
     },
   });
 })();

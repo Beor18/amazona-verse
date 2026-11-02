@@ -1,7 +1,7 @@
 /* Content pack cap1 · misión educativa M2 "La ruta de la gota" (docs/equipo/EDUCATIVO.md §2, datos en lecciones.js)
    p1 predecir con Iguaca en las marcas de agua · p2 subir volando por las 4 capas del bosque posándose en perchas ·
-   p3 cadena alimentaria en el dosel · p4 ver los dos terrenos desde arriba (S.evaluated) · p5 seguir el vapor de la poza
-   a la nube · p6 seguir la gota (precipitación, infiltración, escorrentía) · p7 bucear en la poza hasta la gota y la marca
+   p3 cadena alimentaria en el dosel · p4 ver los dos terrenos desde arriba (S.evaluated) · p5 el vapor sube en ráfagas
+   y hay que remontar volando hasta la nube · p6 la gota baja en tramos de rasante (precipitación, infiltración, escorrentía) · p7 bucear en la poza hasta la gota y la marca
    de la crecida · p8 explicarle el ciclo a Iguaca, comparar predicción y evidencia, y "Iguaca te pregunta" (formativa).
    Al terminar se desbloquea la pava y la historia pasa a elegir terreno (la elección sigue libre).
    Sin tiempo, sin oxígeno y sin fallar: la gota y el vapor esperan si el jugador se aleja.
@@ -54,6 +54,10 @@
     gota: 'gota_poza', roca: 'roca_crecida',
     flamboyan: 'flamboyan_plaza',
     velocidad: { vapor: 6, lluvia: 7, suelo: 7, rio: 6 }, espera: 16, crecidaRio: 0.45,
+    // p5: el vapor no camina a 6 m/s; sube en ráfagas y solo avanza si se remonta con él
+    rafaga: { on: 1.35, off: 0.55, empuje: 1.65 },
+    // p6, escorrentía: hay que ir bajo, a ras de la quebrada
+    rasante: 3.4,
   };
   const ALIAS_VIEJO = { terrenoA: 'A', terrenoB: 'B', plaza: 'villa' };
   const PROCESOS = {
@@ -777,6 +781,24 @@
 
       // Distancia del jugador a la voluta o a la gota; si va bajo tierra (infiltración) se mide contra la superficie
       const distA = p => Math.hypot(S.pos.x - p.x, S.pos.y - Math.max(p.y, H(p.x, p.z) + 0.5), S.pos.z - p.z);
+      const enRafaga = t => { const c = RUTA.rafaga.on + RUTA.rafaga.off; return (t % c) < RUTA.rafaga.on; };
+      if (!document.getElementById('aula-css')) {
+        const l = document.createElement('link'); l.id = 'aula-css'; l.rel = 'stylesheet'; l.href = 'src/ui/aula.css';
+        document.head.appendChild(l);
+      }
+      function chipVuelo(modo) {
+        let el = document.getElementById('edu-vuelo');
+        if (!el) {
+          el = document.createElement('p'); el.id = 'edu-vuelo'; el.setAttribute('role', 'status');
+          document.body.appendChild(el);
+        }
+        if (!modo) { el.hidden = true; return; }
+        const en = AU.aj.idioma === 'en';
+        el.hidden = false; el.className = modo;
+        el.textContent = modo === 'rafaga'
+          ? (en ? 'Gust: climb with the steam' : 'Ráfaga: remonta con el vapor')
+          : (en ? 'Skim: stay low with the drop' : 'Rasante: baja con la gota');
+      }
 
       // ---------- Bucle de la misión ----------
       G.on('update', (dt, busy) => {
@@ -797,7 +819,8 @@
         if (!busy && AU.publicada(AU.ficha('flamboyan')) && !AU.tieneFicha('flamboyan') && Math.hypot(S.pos.x - L.flamboyan.x, S.pos.z - L.flamboyan.z) < 2.2) {
           AU.desbloquear(['flamboyan']); G.fx.burst(L.flamboyan.x, yS(L.flamboyan) + 1.2, L.flamboyan.z, 'feathers', 18);
         }
-        if (!enMision() || busy) return;
+        if (!enMision() || busy) { chipVuelo(null); return; }
+        let modoVuelo = null;
         // p4: ver los terrenos desde arriba
         if (e.hecho.p2 && e.hecho.p3 && !e.hecho.p4) for (const k of ['A', 'B']) {
           const p = L[k];
@@ -808,10 +831,19 @@
           if (!T.voluta && Math.hypot(S.pos.x - L.poza.x, S.pos.z - L.poza.z) < 8) iniciarVapor();
           const V = T.voluta;
           if (V) {
-            const p = V.r.en(V.d), lejos = distA(p) > RUTA.espera;
-            if (!lejos && V.d < V.r.total) V.d += V.vel * dt;
+            V.t = (V.t || 0) + dt;
+            const p = V.r.en(V.d);
+            const duty = RUTA.rafaga.on / (RUTA.rafaga.on + RUTA.rafaga.off);
+            // Seguir el vapor ya obliga a ir a su altura (a 16 m). La ráfaga solo parte el avance: sube, para, sube.
+            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera;
+            if (sube && V.d < V.r.total) V.d += (V.vel / duty) * dt;
             const q = V.r.en(V.d); voluta.position.set(q.x, q.y, q.z);
-            if ((V.humo -= dt) <= 0) { V.humo = 0.15; bocanada(q.x, q.y - 0.4, q.z, 2.2); G.fx.burst(q.x, q.y - 0.3, q.z, 'bubbles', 3); }
+            modoVuelo = 'rafaga';
+            if ((V.humo -= dt) <= 0) {
+              V.humo = sube ? 0.08 : 0.22;
+              bocanada(q.x, q.y - 0.4, q.z, sube ? 3.4 : 1.6);
+              G.fx.burst(q.x, q.y - 0.3, q.z, 'bubbles', sube ? 6 : 2);
+            }
             if (V.d >= V.r.total && Math.hypot(S.pos.x - L.nube.x, S.pos.y - NUBE_Y, S.pos.z - L.nube.z) < NUBE_R + 1.5) enNube();
           }
         }
@@ -819,8 +851,13 @@
         const Gt = T.gota;
         if (Gt && !Gt.parada) {
           const tr = Gt.tramos[Gt.i], p = tr.r.en(Gt.d);
-          const lejos = distA(p) > RUTA.espera;
-          if (!lejos) Gt.d += tr.vel * dt;
+          // Escorrentía: hay que ir bajo. Vale ir a ras del suelo propio o a la altura de la gota
+          // (a un metro al lado el suelo puede ser un risco o un hoyo; la gota sigue su quebrada).
+          const ref = Math.max(p.y, H(p.x, p.z));
+          const sobreSuelo = S.pos.y - H(S.pos.x, S.pos.z);
+          const ras = tr.fase !== 'escorrentia' || sobreSuelo <= RUTA.rasante || S.pos.y <= ref + RUTA.rasante;
+          if (tr.fase === 'escorrentia') modoVuelo = 'rasante';
+          if (distA(p) <= RUTA.espera && ras) Gt.d += tr.vel * dt;
           const q = tr.r.en(Gt.d); gota.position.set(q.x, q.y, q.z);
           if ((Gt.rastro = (Gt.rastro || 0) - dt) <= 0) { Gt.rastro = 0.3; G.fx.burst(q.x, q.y, q.z, tr.fase === 'precipitacion' ? 'vapor' : 'bubbles', 3); }
           if (Gt.d >= tr.r.total) {
@@ -833,6 +870,7 @@
           if (!e.poza.gota && Math.hypot(S.pos.x - L.gota.x, S.pos.z - L.gota.z) < 1.9 && S.pos.y - H(L.gota.x, L.gota.z) < 1.8) hallazgoPoza('gota');
           if (!e.poza.marca && Math.hypot(S.pos.x - L.roca.x, S.pos.z - L.roca.z) < 2.8 && S.pos.y < S.water + 1.2) hallazgoPoza('marca');
         }
+        chipVuelo(modoVuelo);
       }, 47);
 
       // ---------- Visibilidad y animación de los marcadores ----------
