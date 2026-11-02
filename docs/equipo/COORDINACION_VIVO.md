@@ -112,3 +112,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
   - **Nube, con 10 subagentes:** historia (8 decisiones), BM126, capturas de los caps. 5 y 6, posarse e IK, juice de vuelo, gags del pichón, cómic con humor, «Descubriste», CG-3 y CG-4.
   - **Kelvin:** FPS en el iPad y el Android cuando entren KIMI-001 y 002; el día de legal y monetización.
 
+- 02-Nov 07:41 AST · **EN CURSO · web · ronda 10:** BM124 (pieles agilis, albifrons, festiva: tools/pieles, assets/textures/pieles, pieles.js, especies.js, pruebas de pieles y creador, en.js, pieles_fuentes) y BM125 (documentos técnicos: PROJECT_STATUS, TEST_REPORT, HUEVOS_GDD, MINIMAPA, ROADMAP, CAP1_PENDIENTE §2–4, hash de BM113, nº de baterías, SEGURIDAD_INFANTIL).
