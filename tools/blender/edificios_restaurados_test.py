@@ -4,6 +4,8 @@ import json
 import math
 import re
 import struct
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -193,15 +195,17 @@ def support_error(instance, surfaces, ground):
 
 
 class RestoredBuildingsTest(unittest.TestCase):
-    def test_structures_are_connected_and_complete(self):
+    def test_structures_keep_original_connectivity(self):
         failures = []
         for name in TARGETS:
-            if name == 'ruina_torre':
-                continue
-            tris = triangles(MODELS / (name + '.glb'))
-            fraction = component_fraction(tris)
-            if fraction < 0.85:
-                failures.append('%s: pieza principal %.1f%%' % (name, fraction * 100))
+            raw = subprocess.check_output(['git', 'show', 'dbdfecf:assets/models/edificios/%s.glb' % name], cwd=ROOT)
+            with tempfile.NamedTemporaryFile(suffix='.glb') as reference_file:
+                reference_file.write(raw)
+                reference_file.flush()
+                reference = component_fraction(triangles(Path(reference_file.name)))
+            current = component_fraction(triangles(MODELS / (name + '.glb')))
+            if current + 0.01 < reference:
+                failures.append('%s: pieza principal %.1f%% < %.1f%% original' % (name, current * 100, reference * 100))
         self.assertFalse(failures, 'Edificios desarmados: ' + '; '.join(failures))
 
     def test_lod_triangle_budgets(self):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import json
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -51,6 +53,20 @@ class FaithfulBuildingsTest(unittest.TestCase):
             current = GLB(MODELS / (name + '_hd.glb'))
             actual = sum(triangles(current.doc, mesh) for mesh in range(len(current.doc['meshes'])))
             self.assertEqual(actual, expected[name], name + ' sigue decimado respecto a TransferNow')
+
+    def test_lights_match_pre_parametric_originals(self):
+        text = (MODELS / 'kit.js').read_text()
+        start = text.index('window.AV_EDIFICIOS_KIT = ') + len('window.AV_EDIFICIOS_KIT = ')
+        kit = json.loads(text[start:text.rindex(';')])
+        for name in TARGETS:
+            raw = subprocess.check_output(['git', 'show', 'dbdfecf:assets/models/edificios/%s.glb' % name], cwd=ROOT)
+            with tempfile.NamedTemporaryFile(suffix='.glb') as reference_file:
+                reference_file.write(raw)
+                reference_file.flush()
+                reference = GLB(Path(reference_file.name))
+                current = GLB(MODELS / (name + '.glb'))
+                self.assertEqual(current.binary, reference.binary, name + ' no conserva la geometría ligera original')
+            self.assertTrue(kit[name].get('restaurado'), name + ' no está marcado como restaurado')
 
     def test_qa71_light_and_hd_share_bounds(self):
         for name in QA71:
