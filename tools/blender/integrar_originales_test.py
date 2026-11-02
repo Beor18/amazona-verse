@@ -16,6 +16,7 @@ sys.path.insert(0, str(ROOT / 'tools/blender'))
 from integrar_originales import GLB, matrix
 MODELS = ROOT / 'assets/models/edificios'
 MAP = ROOT / 'assets/models/mapa'
+DISABLED_HD = {'corral', 'campamento_a', 'monumento_b', 'monumento_d', 'monumento_e', 'monumento_g', 'muro_roca', 'tienda_pequena'}
 
 
 def glb_json(path):
@@ -53,6 +54,9 @@ class OriginalAssetsTest(unittest.TestCase):
         for name, entry in kit.items():
             path = MODELS / (name + '_hd.glb')
             if entry.get('original') or not path.exists():
+                continue
+            if name in DISABLED_HD:
+                self.assertFalse(entry.get('hd'), name + ' debe quedar desactivado por estar boca abajo')
                 continue
             checked += 1
             self.assertTrue(entry.get('hd'), name + ' tiene HD pero está desactivado')

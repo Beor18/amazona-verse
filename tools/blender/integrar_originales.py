@@ -26,6 +26,7 @@ SCALE = 0.255
 TERRAIN_REF = '3019fcf'
 MODEL_REF = '48ab25e'
 STORY_HEIGHT = None
+DISABLED_HD = {'corral', 'campamento_a', 'monumento_b', 'monumento_d', 'monumento_e', 'monumento_g', 'muro_roca', 'tienda_pequena'}
 
 
 def story_elevations(points):
@@ -363,6 +364,8 @@ def update_buildings(glb):
         write_glb(path, doc, binary, 'AV_EDIFICIOS_B64')
         kit[name].update(hd=True, trisHD=tris, kbHD=round(path.with_name(name + '_hd_glb.js').stat().st_size / 1024, 1), original=True)
         print('EDIFICIO', asset, name, tris, flush=True)
+    for name in DISABLED_HD:
+        kit[name]['hd'] = False
     kit_path.write_text(text[:start] + json.dumps(kit, ensure_ascii=False, separators=(',', ':')) + text[text.rindex(';'):])
 
 
