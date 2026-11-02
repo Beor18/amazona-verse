@@ -71,7 +71,9 @@
     }
     // Inglés: lo que siga en español en pantalla (el observador traduce en microtareas: se espera un poco). MOTOR: textos del motor que
     // no son del episodio y se anotan aparte en EP2_PLAYTEST.md (la pista «Pulsa <kbd>Espacio</kbd> para volar» va en 3 nodos de texto)
-    const MOTOR = new Set(['Pulsa', 'para volar', 'Flor of El Yunque']); // «Flor of El Yunque»: nombre del criadero a medias en cap1/en.js
+    const MOTOR = new Set(['Pulsa', 'para volar']);
+    // «<Nombre> of El Yunque»: nombre del criadero a medias en cap1/en.js; el nombre sale al azar de la lista de creador.js
+    const NOMBRE_NIDO = /^(Nube|Pluma|Brisa|Rayo|Trueno|Lluvia|Semilla|Hoja|Coral|Estrella|Luna|Sol|Ola|Flor|Viento|Cielo|Ceiba|Palma) of El Yunque$/;
     let fijosES = new Set();
     let valores = null;
     async function mirarEN() {
@@ -86,7 +88,7 @@
         // Un texto fijo del pack tal cual (también como chip «· …» o con su progreso «(1/3)») sigue en español aunque no lo parezca
         const base = t.replace(/^[·✓]\s*/, '').replace(/\s*\(\d+\/\d+\)$/, '').replace(/\s*\d+\/\d+$/, '');
         if (fijosES.has(base)) { faltanEN.add(t.slice(0, 200)); continue; }
-        if (!G.idioma.faltan([t]).length || MOTOR.has(t)) continue;
+        if (!G.idioma.faltan([t]).length || MOTOR.has(t) || NOMBRE_NIDO.test(t)) continue;
         // Ya en inglés (un valor del diccionario, o su final mientras el diálogo se escribe letra a letra) aunque diga «no» o «El Yunque»
         if (!valores) valores = Object.values(W.AV_EN || {});
         if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)))) continue;

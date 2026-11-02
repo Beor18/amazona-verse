@@ -63,6 +63,8 @@ window.AVPielesTest = function () {
       check('Especie sin piel (agilis): queda el tinte de hoy', cuerpo().every(esBase) && on.x === 1 && on.z === 1, [on.x, on.y, on.z].join(','));
       ch.applyLook({ species: 'amazonica', accessories: {} }); await listo(ch);
       check('Look con especie con piel (amazonica): usa la piel', cuerpo().every(x => x === T.amazonica) && on.length() === 0);
+      ch.applyLook({ species: 'aestiva', accessories: {} }); await listo(ch); // BM121: aestiva no está en SPECIES; applyLook la devolvía a vittata
+      check('Look con especie con piel fuera de SPECIES (aestiva): se queda y usa su piel', ch.species === 'aestiva' && ch._piel.actual === 'aestiva' && on.length() === 0, ch.species + '/' + ch._piel.actual);
       ch.applyLook({ species: 'vittata', accessories: {} }); await listo(ch);
       check('Volver a vittata pone su piel verde', cuerpo().every(x => x === T.vittata) && on.length() === 0);
       body.parent.remove(plumon); plumon.material.dispose();
