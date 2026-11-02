@@ -23,6 +23,7 @@
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
       ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
       secretosTest: o => (G.secretos ? G.secretos.test(o) : Promise.reject(new Error('sin secretos'))),
+      cg34Test: o => (G.secretos && G.secretos.cg34 ? G.secretos.cg34(o) : Promise.reject(new Error('sin cg34'))),
       ep3Test: o => T.templateTest(Object.assign({ pack: 'ep3', timeout: 60000 }, o)), // content/ep3: el episodio 3 de punta a punta, ES y EN
       ep4Test: o => T.templateTest(Object.assign({ pack: 'ep4', timeout: 60000 }, o)), // content/ep4: el capítulo 4 de principio a fin
       ep6Test: o => T.templateTest(Object.assign({ pack: 'ep6', timeout: 60000 }, o)), // content/ep6: el capítulo 6 «El pacto de los 36» de principio a fin, ES y EN
@@ -82,6 +83,7 @@
     const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
     AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
     AV.retosTest = o => cargarRetos().then(r => r.test(o));
+    AV.cg17Test = o => cargarRetos().then(r => r.cg17Test(o));
     // «Save the Parrot» (src/game/rescate.js): cartel con caja nido tras la crecida; se carga sola tras el arranque y al pedir su prueba
     let rescate = null;
     const cargarRescate = () => rescate || (rescate = AVE.assets.script('src/game/rescate.js').then(() => window.AVRescate(G), e => { rescate = null; throw e; }));
@@ -124,10 +126,10 @@
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
     // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
     if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)) }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
-    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records', recEquipos = ((P.meta && P.meta.almacen) || P.id) + '.equipos'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa y la bandada)
+    const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records', recEquipos = ((P.meta && P.meta.almacen) || P.id) + '.equipos', recDones = recRetos + '.dones'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro, la bandada y Retos «Con dones»)
     const cargarMaze = aDemanda('src/game/maze.js', 'AVMaze'); AV.maze = () => cargarMaze().then(m => m.abrir()); AV.mazeTest = o => cargarMaze().then(m => m.test(o)); if (/[?&]mini=maze\b/.test(location.search)) { const ir = () => setTimeout(() => AV.maze().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // Amazona Maze (AB1, src/game/maze.js): prototipo oculto; ?mini=maze o AV.maze(); AV.mazeTest()
     const cargarRiver = aDemanda('src/game/river_rush.js', 'AVRiverRush'); AV.riverRush = () => cargarRiver().then(r => r.abrir()); AV.riverTest = o => cargarRiver().then(r => r.test(o)); if (/[?&]mini=river\b/.test(location.search)) { const ir = () => setTimeout(() => AV.riverRush().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // River Rush (AC1, src/game/river_rush.js): prototipo oculto; ?mini=river o AV.riverRush(); AV.riverTest()
-    G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa, recEquipos]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
+    G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa, recEquipos, recDones]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
     let musica = null;
     const cargarMusica = () => musica || (musica = AVE.assets.script('src/game/musica.js').then(() => window.AVMusica(G), e => { musica = null; throw e; }));

@@ -231,7 +231,7 @@
       { clave: 'lentes:#2b2b2b:binoculares', hito: 'tierra', nombre: 'Lentes binoculares', pista: 'leer la tierra', viste: { slot: 'eyes', id: 'lentes', color: '#2b2b2b', style: 'binoculares' } },
       { clave: 'mano:cuaderno', hito: 'escuchar', nombre: 'Cuaderno de campo', pista: 'escuchar primero', viste: { slot: 'hand', id: 'mano', color: '#2f8f4e', style: 'cuaderno' } },
       { clave: 'casco:constructor', hito: 'casa', nombre: 'Casco de constructor', pista: 'una casa que aguanta', viste: { slot: 'head', id: 'casco', color: '#f2c21a', style: 'constructor' } },
-      { clave: 'botas:constructor', hito: 'casa', nombre: 'Botas de constructor', viste: { slot: 'feet', id: 'botas', color: '#2b2b2b', style: 'constructor' } },
+      { clave: 'botas:constructor', hito: 'casa', nombre: 'Botas de constructor', pista: 'una casa que aguanta', viste: { slot: 'feet', id: 'botas', color: '#2b2b2b', style: 'constructor' } },
       { clave: 'mano:mapa', hito: 'cuaderno', nombre: 'Mapa del terreno', pista: 'el Cuaderno completo', viste: { slot: 'hand', id: 'mano', color: '#c9a227', style: 'mapa' } },
     ],
     eventos: { defs: {

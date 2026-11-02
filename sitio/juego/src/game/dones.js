@@ -76,7 +76,7 @@
       gran_rio: { id: 'rasante', es: 'Fantasía: el río te lleva a ras.', en: 'Fantasy: the river carries you low.', dura: 8, espera: 30 },
       bosque_sur: { id: 'plumas', es: 'Fantasía: las hojas te envuelven.', en: 'Fantasy: leaves wrap around you.', dura: 10, espera: 35 }
     };
-    let don = null, sostenido = 0, rafagaCd = null, columna = null, gotas = 0, hojas = 0;
+    let don = null, sostenido = 0, rafagaCd = null, columna = null, gotas = 0, hojas = 0, cargas = null;
     function soltarSostener() {
       if (!sostenido) return;
       const ms = performance.now() - sostenido;
@@ -86,11 +86,15 @@
     function sostener(on) { if (on) sostenido = performance.now(); else soltarSostener(); }
     function activar() {
       if (enReto() && !conDonesFam) return false;
+      // «Con dones»: una carga por partida. No se recarga al terminar la espera.
+      if (conDonesFam && cargas === 0) return false;
       const ahora = performance.now();
       if (don && ahora < don.listo) return false;
       const r = REGALO[idFamilia()];
       if (!r) return false;
-      don = { id: r.id, fin: ahora + r.dura * 1000, listo: ahora + (r.dura + r.espera) * 1000 };
+      const una = conDonesFam && cargas != null;
+      don = { id: r.id, fin: ahora + r.dura * 1000, listo: una ? Infinity : ahora + (r.dura + r.espera) * 1000 };
+      if (una) cargas = 0;
       if (r.id === 'llamada') G.emit('canto');
       if (r.id === 'ojo' && G.fx && G.fx.ringFx && G.S && G.S.pos) G.fx.ringFx(G.S.pos.x, G.S.pos.y + 1, G.S.pos.z, 12, 1.4, 0.85);
       if (r.id === 'rafaga' && G.fisica && G.fisica.TUNING) {
@@ -104,6 +108,8 @@
       return true;
     }
     function activo() { return don && performance.now() < don.fin ? don.id : null; }
+    function nuevaPartida() { cargas = 1; don = null; sostenido = 0; cerrarRafaga(); columna = null; return true; }
+    function soltarDon() { don = null; sostenido = 0; cerrarRafaga(); columna = null; }
     function cerrarRafaga() {
       if (rafagaCd == null || !G.fisica || !G.fisica.TUNING) return;
       G.fisica.TUNING.dashCooldown = rafagaCd;
@@ -262,15 +268,18 @@
     }
     const api = G.dones = {
       familias: FAMILIAS, de: DE, familia: idFamilia, ejes: ficha, paso, mult, tiempo,
-      conDones(id) { conDonesFam = id || null; return api; },
+      conDones(id) { conDonesFam = id && FAMILIAS[id] ? id : null; if (!conDonesFam) cargas = null; return api; },
       forzar(id) { forzar = id || null; return api; },
-      sostener, activar,
+      nuevaPartida, soltarDon, sostener, activar,
       activo,
       test
     };
     const exponer = n => {
       const AV = window.AV;
-      if (AV && AV.G === G) { if (!AV.donesTest) AV.donesTest = () => test(); }
+      if (AV && AV.G === G) {
+        if (!AV.donesTest) AV.donesTest = () => test();
+        if (!AV.cg17Test) AV.cg17Test = o => (G.retosApi ? Promise.resolve(G.retosApi.cg17Test(o)) : G.AVE.assets.script('src/game/retos.js').then(() => window.AVRetos(G).cg17Test(o)));
+      }
       else if (n > 0) setTimeout(() => exponer(n - 1), 200);
     };
     exponer(40);

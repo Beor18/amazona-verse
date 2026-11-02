@@ -252,7 +252,7 @@
       { clave: 'casco:marinero', hito: 'flota', nombre: 'Casco marinero', pista: 'una canoa que flota', viste: { slot: 'head', id: 'casco', color: '#f4f4f0', style: 'marinero' } },
       { clave: 'mano:bandera', hito: 'agua', nombre: 'Bandera de señales', pista: 'leer el agua', viste: { slot: 'hand', id: 'mano', color: '#d6403a', style: 'bandera' } },
       { clave: 'sombrero2:pescador', hito: 'bahia', nombre: 'Sombrero de pescador', pista: 'cruzar la bahía', viste: { slot: 'head', id: 'sombrero2', color: '#8a6a3a', style: 'pescador' } },
-      { clave: 'mano:mapa', hito: 'bahia', nombre: 'Carta de la bahía', viste: { slot: 'hand', id: 'mano', color: '#c9a227', style: 'mapa' } },
+      { clave: 'mano:mapa', hito: 'bahia', nombre: 'Carta de la bahía', pista: 'cruzar la bahía', viste: { slot: 'hand', id: 'mano', color: '#c9a227', style: 'mapa' } },
     ],
     eventos: { defs: {
       PlayerCharacterCreated: { type: 'CharacterCreated', loc: 'villa', chars: ['player'], scene: 'portrait' },

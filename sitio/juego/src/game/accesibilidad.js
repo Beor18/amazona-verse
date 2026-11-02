@@ -615,7 +615,7 @@ AVE.module('accesibilidad', function (G) {
       S.profile = Object.assign({}, perfil0, { a11y: { texto: 9, contraste: 'sí', subtitulos: 1, relajado: 'true', zurdo: {} } }); sync();
       check('Un valor dañado vuelve a Normal y todo apagado', !/a11y-/.test(raiz.className));
     } catch (e) {
-      check('Sin excepciones', false, e && e.message);
+      check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {
       S.profile = perfil0; ultimo = ultimo0; escala = 1; G.audio.vol.muted = mudo0; limpiar(); sync(); guardarAlCambiar = true;
       try { G.fx.guide(null, 0); } catch (e) { /* sin guía */ }

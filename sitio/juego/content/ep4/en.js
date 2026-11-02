@@ -218,6 +218,9 @@
     "USDA NRCS, norma 391 Riparian Forest Buffer (2018): hojarasca para organismos acuáticos": "USDA NRCS, practice standard 391 Riparian Forest Buffer (2018): leaf litter for aquatic organisms",
     "U.S. National Park Service, Green River Ferry Navigational System Repairs (ejemplo de Estados Unidos)": "U.S. National Park Service, Green River Ferry Navigational System Repairs (a United States example)",
     "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, norma 391 Riparian Forest Buffer (2018)": "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, practice standard 391 Riparian Forest Buffer (2018)",
+    // QA-98: el aviso del secreto del fondo (secretos.js). La historia de secretos.js no cambia.
+    'Secreto': 'Secret',
+    'Lo que se llevó el río': 'What the river carried',
   };
   const unir = d => Object.assign(d, EP4);
   if (window.AV_EN) unir(window.AV_EN);
