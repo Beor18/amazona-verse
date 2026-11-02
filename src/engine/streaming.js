@@ -13,9 +13,9 @@
    Histéresis: una zona baja de nivel con H m de más (40) y los modelos se sueltan tras 3 s sin uso (no hay vaivén en el borde).
    Por instancia, cerca/lejos se elige por la distancia a la cámara (CFG.lod ± CFG.lodH) y cada cuadro se descarta lo que
    queda fuera del frustum o de la distancia de dibujo (las de cerca a menos del radio de sombra se dibujan igual: su sombra
-   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
-   ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
-   En las ciudades, los _hd se funden por material ('edificiosZonaHD:<zona>:<material>') para no repetir un lote por modelo.
+   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible. En las zonas cercanas, los
+   modelos se funden por material; los cercanos, los _hd y los lejanos de varias zonas se vuelven a fundir globalmente.
+   Las sombras de las ciudades usan una malla ligera por zona en la capa 1, visible solo para la cámara del sol.
    Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
    lo visible a menos de CFG.lejosQuieto; el resto espera a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
    más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda).
@@ -34,8 +34,8 @@
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
      originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Los modelos con atlas usan un material AV_HD_* con las 16
      texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda);
-     los restaurados pueden tener varios materiales. Fuera de las ciudades hay un draw call por modelo y material; en las
-     ciudades se funden por material. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
+     los restaurados pueden tener varios materiales. Al fundir se reasignan a su celda del atlas; los materiales sin equivalente
+     conservan el suyo. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
      de moverse si ya estás en la zona. La distancia es hasta la superficie (cámara o Vittata, la que esté más cerca):
      encima de una torre no cuenta el centro, que queda abajo, y no se dibuja el lod beige. Mientras el _hd baja se ve
      el ligero, no la silueta. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
@@ -355,6 +355,7 @@ AVE.module('streaming', function (G) {
     });
   }
   const matLejos = new THREE.MeshLambertMaterial({ vertexColors: true, name: 'AV_Lejos' });
+  const matSombra = new THREE.MeshBasicMaterial({ name: 'AV_Sombra' });
 
   // ---------- Geometría: fundir partes, simplificar para el LOD lejano ----------
   // Factor de un atributo entero normalizado (COLOR_0 Uint16 del _lejos, cuantización): en r128 getX no desnormaliza (QA-25)
@@ -683,6 +684,34 @@ AVE.module('streaming', function (G) {
     const cargarGLB = clave => G.assets.loadGLB(base + clave + '.glb', { b64: () => (window[B64] || {})[clave], script: base + clave + '_glb.js', base, error: 'edificio no disponible: ' + clave });
     const tieneLejos = n => { const k = KIT(); return !!(k && k[n] && k[n].lejos); };
     const tieneHD = n => { const k = KIT(); return !!(k && k[n] && k[n].hd); };
+    const CELDAS = [
+      ['ancient', 0, /AV_Restaurado_Bloques|KB3D_stoneM/i], ['ancient', 1, /AV_Restaurado_Piedra|KB3D_wallM/i],
+      ['ancient', 2, /KB3D_wallL/i], ['ancient', 3, /KB3D_pillarsM/i], ['ancient', 4, /AV_Restaurado_Base|KB3D_floorM/i],
+      ['ancient', 5, /KB3D_floorDarkM/i], ['ancient', 6, /KB3D_mudM/i], ['ancient', 7, /KB3D_mudDarkM/i],
+      ['ancient', 8, /KB3D_damageM/i], ['ancient', 9, /KB3D_damageL/i], ['ancient', 10, /AV_Restaurado_Tallado|KB3D_decoM/i],
+      ['ancient', 11, /KB3D_blocksL/i], ['ancient', 12, /KB3D_bricksM/i], ['ancient', 13, /KB3D_beams/i],
+      ['ancient', 14, /KB3D_rockM/i], ['ancient', 15, /KB3D_sculptM/i],
+      ['savage', 0, /KB3D_WoodPlanks/i], ['savage', 1, /KB3D_WoodHewn/i], ['savage', 2, /KB3D_BarkNew/i],
+      ['savage', 3, /KB3D_BarkCharred/i], ['savage', 4, /KB3D_RoofThatched/i], ['savage', 5, /KB3D_TarpFabricDamaged/i],
+      ['savage', 6, /KB3D_Rope/i], ['savage', 7, /KB3D_RockSharp/i], ['savage', 8, /KB3D_RockSmooth/i], ['savage', 9, /KB3D_MudRocky/i]
+    ];
+    function materialAtlas(kit) {
+      const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
+      if (!mats[k]) {
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg'), normalMap = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        map.flipY = normalMap.flipY = false;
+        mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
+      }
+      return mats[k].mat;
+    }
+    function convertirAtlas(geo, mat) {
+      if ((geo.attributes.avCelda && /^AV_HD_/.test(mat.name)) || !geo.attributes.uv) return null;
+      const c = CELDAS.find(c => c[2].test(mat.name)); if (!c) return null;
+      const out = geo.clone(), n = out.attributes.position.count, uv = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) { uv[i * 2] = (c[1] % 4) / 4; uv[i * 2 + 1] = Math.floor(c[1] / 4) / 4; }
+      out.setAttribute('avCelda', new THREE.BufferAttribute(uv, 2)); out.deleteAttribute('uv2');
+      return { geo: out, mat: materialAtlas(c[0]) };
+    }
     const hdActivo = () => (CFG.hd[nivelCal()] || 0) > 0 && hdGL2();
     function pedir(r, prio) {
       r.refs++; r.soltarEn = 0;
@@ -784,9 +813,11 @@ AVE.module('streaming', function (G) {
       crearLote(r);
       r.ok(r);
       if (r.tipo === 'lejos') zonasDe(r.n);
-      if (r.tipo === 'hd') for (const id in zonas) if (zonas[id].ciudad && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]));
+      if (r.tipo === 'hd') for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]));
       if (r.tipo === 'cerca') {
-        for (const id in zonas) if (zonas[id].ciudad && zonas[id].modelos.has(r.n)) encolar(() => fundirCercaZona(zonas[id]));
+        for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) {
+          encolar(() => fundirCercaZona(zonas[id])); encolar(() => fundirSombraZona(zonas[id]));
+        }
         for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
       }
     }
@@ -841,7 +872,7 @@ AVE.module('streaming', function (G) {
         G.solidos.agregar(g);
       }
       const Z = zonas[I.zona];
-      if (Z.ciudad && Z.cercaMallas) encolar(() => fundirCercaZona(Z));
+      if ((Z.ciudad || Z.nivel === 2) && Z.cercaMallas) encolar(() => fundirCercaZona(Z));
     }
 
     // --- niveles de las zonas ---
@@ -855,6 +886,7 @@ AVE.module('streaming', function (G) {
         if (antes < 1 && quiere >= 1) pedir(res(n, 'lejos'), Z.d + 1).catch(() => {});
         if (antes >= 1 && quiere < 1) soltar(res(n, 'lejos'));
       }
+      if (antes === 2 && quiere < 2 && !Z.ciudad) quitarCercaZona(Z);
       if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I));
       if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
@@ -866,14 +898,18 @@ AVE.module('streaming', function (G) {
       for (const I of Z.inst) if (I.modelo === n && I.pos) m = Math.min(m, Math.hypot(I.pos[0] - x, I.pos[2] - z) - (I.r || 0));
       return m;
     }
+    function cargasPendientes(Z, tipo) {
+      return [...Z.modelos].some(n => { const r = res(n, tipo); return r.estado === 'bajando' || (r.estado === 'cola' && r.refs); });
+    }
     // En las ciudades, todos los _hd comparten la misma vista aérea: se funden por material en vez de dibujar un lote por modelo.
     function quitarHDZona(Z) {
       Z.hdFundiendo = false;
       for (const m of Z.hdMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
       Z.hdMallas = null; Z.hdModelos = new Set();
+      programarHDGlobal();
     }
     function fundirHD(Z) {
-      if (!Z.ciudad || !Z.hd || Z.hdFundiendo) return;
+      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdFundiendo || cargasPendientes(Z, 'hd')) return;
       const modelos = new Set([...Z.modelos].filter(n => tieneHD(n) && res(n, 'hd').estado === 'listo'));
       if (!modelos.size) return;
       if (Z.hdMallas) {
@@ -886,8 +922,9 @@ AVE.module('streaming', function (G) {
         for (const I of Z.inst) {
           if (!modelos.has(I.modelo)) continue;
           for (const p of res(I.modelo, 'hd').partes) {
-            let gr = grupos.get(p.mat.name); if (!gr) grupos.set(p.mat.name, gr = { mat: p.mat, geos: [], modelos: new Set() });
-            const geo = p.geo.clone().applyMatrix4(I.m);
+            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
+            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], modelos: new Set() });
+            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
             temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
           }
         }
@@ -900,7 +937,7 @@ AVE.module('streaming', function (G) {
           scene.add(m); ms.push(m);
         }
         Z.hdMallas = ms; Z.hdModelos = modelos;
-        encolar(() => fundirCercaZona(Z));
+        encolar(() => fundirCercaZona(Z)); programarHDGlobal();
       } catch (e) {
         for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
         console.warn('AVE streaming: no se pudo fundir el _hd de ' + Z.id, e && e.message || e);
@@ -909,13 +946,46 @@ AVE.module('streaming', function (G) {
         Z.hdFundiendo = false;
       }
     }
+    const hdGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarHDGlobal() {
+      for (const m of hdGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      hdGlobal.mallas = []; hdGlobal.ids = '';
+    }
+    function fundirHDGlobal() {
+      if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
+      const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      const ids = zs.map(Z => Z.id + ':' + [...Z.hdModelos].sort().join(',')).join('|');
+      if (ids === hdGlobal.ids) return;
+      quitarHDGlobal();
+      if (zs.length < 2) { hdGlobal.ids = ids; return; }
+      const grupos = new Map();
+      for (const Z of zs) for (const m of Z.hdMallas) {
+        let gr = grupos.get(m.material.name); if (!gr) grupos.set(m.material.name, gr = { mat: m.material, geos: [] });
+        gr.geos.push(m.geometry);
+      }
+      for (const gr of grupos.values()) {
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+        m.name = 'edificiosZonaHDGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+        const it = mats[gr.mat.name]; if (it) it.refs++;
+        scene.add(m); hdGlobal.mallas.push(m);
+      }
+      hdGlobal.ids = ids;
+    }
+    function programarHDGlobal() {
+      if (hdGlobal.pendiente) return;
+      hdGlobal.pendiente = true;
+      encolar(() => { hdGlobal.pendiente = false; fundirHDGlobal(); });
+    }
     function quitarCercaZona(Z) {
       Z.cercaFundiendo = false;
       for (const m of Z.cercaMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
       Z.cercaMallas = null; Z.cercaModelos = new Set();
+      programarCercaGlobal();
     }
     function fundirCercaZona(Z) {
-      if (!Z.ciudad || Z.cercaFundiendo) return;
+      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaFundiendo || cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')) return;
       const hd = Z.hdMallas && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)) ? Z.hdModelos : new Set();
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !hd.has(n) && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
@@ -927,19 +997,22 @@ AVE.module('streaming', function (G) {
         for (const I of Z.inst) {
           if (!modelos.has(I.modelo)) continue;
           for (const p of res(I.modelo, 'cerca').partes) {
-            let gr = grupos.get(p.mat.name); if (!gr) grupos.set(p.mat.name, gr = { mat: p.mat, geos: [], modelos: new Set() });
-            const geo = p.geo.clone().applyMatrix4(I.m);
+            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
+            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], modelos: new Set() });
+            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
             temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
           }
         }
         for (const gr of grupos.values()) {
-          const m = new THREE.Mesh(fundir(gr.geos, false), gr.mat);
+          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
           m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
           m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
           const it = mats[gr.mat.name]; if (it) it.refs++;
           scene.add(m); ms.push(m);
         }
         Z.cercaMallas = ms; Z.cercaModelos = modelos;
+        programarCercaGlobal();
       } catch (e) {
         for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
         console.warn('AVE streaming: no se pudo fundir el cercano de ' + Z.id, e && e.message || e);
@@ -947,6 +1020,61 @@ AVE.module('streaming', function (G) {
         for (const g of temporales) g.dispose();
         Z.cercaFundiendo = false;
       }
+    }
+    const cercaGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarCercaGlobal() {
+      for (const m of cercaGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      cercaGlobal.mallas = []; cercaGlobal.ids = '';
+    }
+    function fundirCercaGlobal() {
+      if (Object.values(zonas).some(Z => Z.cercaFundiendo)) return;
+      const zs = Object.values(zonas).filter(Z => Z.cercaMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      const ids = zs.map(Z => Z.id + ':' + [...Z.cercaModelos].sort().join(',')).join('|');
+      if (ids === cercaGlobal.ids) return;
+      quitarCercaGlobal();
+      if (zs.length < 2) { cercaGlobal.ids = ids; return; }
+      const grupos = new Map();
+      for (const Z of zs) for (const m of Z.cercaMallas) {
+        let gr = grupos.get(m.material.name); if (!gr) grupos.set(m.material.name, gr = { mat: m.material, geos: [] });
+        gr.geos.push(m.geometry);
+      }
+      for (const gr of grupos.values()) {
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+        m.name = 'edificiosZonaCercaGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+        const it = mats[gr.mat.name]; if (it) it.refs++;
+        scene.add(m); cercaGlobal.mallas.push(m);
+      }
+      cercaGlobal.ids = ids;
+    }
+    function programarCercaGlobal() {
+      if (cercaGlobal.pendiente) return;
+      cercaGlobal.pendiente = true;
+      encolar(() => { cercaGlobal.pendiente = false; fundirCercaGlobal(); });
+    }
+    function quitarSombraZona(Z) {
+      if (!Z.sombraMalla) return;
+      scene.remove(Z.sombraMalla); Z.sombraMalla.geometry.dispose(); Z.sombraMalla = null; Z.sombraModelos = new Set();
+    }
+    function fundirSombraZona(Z) {
+      if (!Z.ciudad || cargasPendientes(Z, 'cerca')) return;
+      const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo'));
+      if (Z.sombraMalla && modelos.size === Z.sombraModelos.size && [...modelos].every(n => Z.sombraModelos.has(n))) return;
+      quitarSombraZona(Z);
+      if (!modelos.size) return;
+      const geos = [];
+      for (const I of Z.inst) {
+        if (!modelos.has(I.modelo)) continue;
+        for (const p of res(I.modelo, 'cerca').partes) geos.push(p.geo.clone().applyMatrix4(I.m));
+      }
+      const m = new THREE.Mesh(fundir(geos, false), matSombra);
+      for (const g of geos) g.dispose();
+      m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
+      m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
+      m.layers.set(1);
+      if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
+      scene.add(m); Z.sombraMalla = m; Z.sombraModelos = modelos;
     }
     // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
@@ -1000,12 +1128,46 @@ AVE.module('streaming', function (G) {
       }
       for (const g of F.geos.concat(F.tex)) g.dispose();
       Z.malla = ms[0]; Z.mallaExtra = ms.slice(1);
+      programarLejosGlobal();
     }
     function quitarZona(Z) {
       if (Z.fundir) { for (const g of Z.fundir.geos) g.dispose(); Z.fundir = null; }
       if (!Z.malla) return;
       for (const m of [Z.malla].concat(Z.mallaExtra || [])) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
       Z.malla = null; Z.mallaExtra = [];
+      programarLejosGlobal();
+    }
+    const lejosGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarLejosGlobal() {
+      for (const m of lejosGlobal.mallas) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
+      lejosGlobal.mallas = []; lejosGlobal.ids = '';
+    }
+    function fundirLejosGlobal() {
+      if (Object.values(zonas).some(Z => Z.fundir)) return;
+      const zs = Object.values(zonas).filter(Z => Z.malla).sort((a, b) => a.id < b.id ? -1 : 1), ids = zs.map(Z => Z.id).join('|');
+      if (ids === lejosGlobal.ids) return;
+      quitarLejosGlobal();
+      if (zs.length < 2) { lejosGlobal.ids = ids; return; }
+      const color = [], tex = new Map();
+      for (const Z of zs) {
+        color.push(Z.malla.geometry);
+        for (const m of Z.mallaExtra || []) { let g = tex.get(m.material.name); if (!g) tex.set(m.material.name, g = { mat: m.material, geos: [] }); g.geos.push(m.geometry); }
+      }
+      const add = (geo, mat, nom, conTex) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.name = 'edificiosZona:global:' + nom; m.userData.sinSolido = true; m.userData.matTex = conTex; m.matrixAutoUpdate = false;
+        m.receiveShadow = true; m.castShadow = false; m.visible = false;
+        if (conTex) { const it = mats[mat.name]; if (it) it.refs++; }
+        scene.add(m); lejosGlobal.mallas.push(m);
+      };
+      if (color.length) add(fundir(color, true), matLejos, 'lejos', false);
+      for (const g of tex.values()) add(fundirTex(g.geos), g.mat, 'lejosTex', true);
+      lejosGlobal.ids = ids;
+    }
+    function programarLejosGlobal() {
+      if (lejosGlobal.pendiente) return;
+      lejosGlobal.pendiente = true;
+      encolar(() => { lejosGlobal.pendiente = false; fundirLejosGlobal(); });
     }
     function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
     const avisados = new Set();
@@ -1036,8 +1198,8 @@ AVE.module('streaming', function (G) {
               else soltar(res(n, 'cerca'));
             }
           }
-          if (quiere) encolar(() => fundirCercaZona(Z));
-          else if (Z.cercaMallas) quitarCercaZona(Z);
+          if (quiere) { encolar(() => fundirCercaZona(Z)); encolar(() => fundirSombraZona(Z)); }
+          else { quitarCercaZona(Z); quitarSombraZona(Z); }
         }
         ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd
         if (Z.hd) for (const n of Z.modelos) {
@@ -1084,8 +1246,9 @@ AVE.module('streaming', function (G) {
       vis.zonas = vis.hd = vis.cerca = 0;
       for (const id in zonas) {
         const Z = zonas[id], m = Z.malla;
-        Z.usaHDFusion = !!(Z.ciudad && Z.hdMallas && Z.hdMallas.length && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)));
-        Z.usaCercaFusion = !!(Z.ciudad && Z.cercaMallas && Z.cercaMallas.length);
+        Z.usaHDFusion = !!((Z.ciudad || Z.nivel === 2) && Z.hdMallas && Z.hdMallas.length && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)));
+        Z.usaCercaFusion = !!((Z.ciudad || Z.nivel === 2) && Z.cercaMallas && Z.cercaMallas.length);
+        if (Z.sombraMalla) Z.sombraMalla.visible = false;
         for (const h of Z.hdMallas || []) { h.visible = false; h.castShadow = false; }
         for (const h of Z.cercaMallas || []) { h.visible = false; h.castShadow = false; }
         if (Z.usaHDFusion) for (const h of Z.hdMallas) {
@@ -1105,9 +1268,24 @@ AVE.module('streaming', function (G) {
         // La silueta fundida solo si la cámara y Vittata están lejos del borde. Junto a las ruinas se dibujan las mallas.
         // En la ciudad del tepuy, nunca: la silueta beige tapa el kit justo en la vista aérea.
         Z.usaMalla = !Z.ciudad && (Z.nivel === 1 || (dz > umbral && dj > umbral));
-        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
+        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && !lejosGlobal.mallas.length && cp.distanceTo(bs.center) - bs.radius < maxZ;
         if (Z.mallaExtra) for (const e of Z.mallaExtra) e.visible = m.visible;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
+      }
+      for (const m of lejosGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        if (m.visible) vis.zonas++;
+      }
+      for (const m of hdGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = false; m.castShadow = false;
+        m.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+      }
+      for (const m of cercaGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = false; m.castShadow = false;
+        m.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
       }
       for (let i = 0; i < activas.length; i++) {
         const I = activas[i], Z = zonas[I.zona];
@@ -1152,14 +1330,40 @@ AVE.module('streaming', function (G) {
       vis.lejos = vis.mallas = 0;
       for (const id in zonas) {
         const Z = zonas[id];
-        if (Z.usaHDFusion) for (const m of Z.hdMallas) {
-          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = m.userData.sombra;
+        if (Z.usaHDFusion && !hdGlobal.mallas.length) for (const m of Z.hdMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = Z.ciudad ? false : m.userData.sombra;
           if (m.visible) vis.mallas++;
         }
-        if (Z.usaCercaFusion) for (const m of Z.cercaMallas) {
-          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = m.userData.sombra;
+        if (Z.usaCercaFusion && !cercaGlobal.mallas.length) for (const m of Z.cercaMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = Z.ciudad ? false : m.userData.sombra;
           if (m.visible) vis.mallas++;
         }
+        if (Z.sombraMalla) {
+          const sombra = (Z.usaHDFusion && Z.hdMallas.some(m => m.userData.sombra)) || (Z.usaCercaFusion && Z.cercaMallas.some(m => m.userData.sombra));
+          Z.sombraMalla.visible = sombra;
+        }
+      }
+      for (const m of hdGlobal.mallas) {
+        let sombra = false, directa = false;
+        for (const id in zonas) {
+          const Z = zonas[id]; if (!Z.usaHDFusion) continue;
+          if (Z.hdMallas.some(h => h.material.name === m.material.name && h.userData.sombra)) {
+            sombra = true; if (!Z.ciudad) directa = true;
+          }
+        }
+        m.visible = m.userData.enVista || sombra; m.castShadow = directa;
+        if (m.visible) vis.mallas++;
+      }
+      for (const m of cercaGlobal.mallas) {
+        let sombra = false, directa = false;
+        for (const id in zonas) {
+          const Z = zonas[id]; if (!Z.usaCercaFusion) continue;
+          if (Z.cercaMallas.some(h => h.material.name === m.material.name && h.userData.sombra)) {
+            sombra = true; if (!Z.ciudad) directa = true;
+          }
+        }
+        m.visible = m.userData.enVista || sombra; m.castShadow = directa;
+        if (m.visible) vis.mallas++;
       }
       for (const k in lotes) {
         const L = lotes[k], li = L.lista, pr = L.prev;
@@ -1224,7 +1428,7 @@ AVE.module('streaming', function (G) {
           };
           mirar();
         });
-        return espera().then(() => { drenarColocar(); drenar(); });
+        return espera().then(() => { drenarColocar(); drenar(); fundirHDGlobal(); fundirCercaGlobal(); fundirLejosGlobal(); });
       },
       stats() {
         let modCerca = 0, modLejos = 0, modHD = 0, bytes = 0;
@@ -1239,7 +1443,11 @@ AVE.module('streaming', function (G) {
           if (Z.malla) bytes += tam(Z.malla.geometry);
           for (const m of Z.hdMallas || []) bytes += tam(m.geometry);
           for (const m of Z.cercaMallas || []) bytes += tam(m.geometry);
+          if (Z.sombraMalla) bytes += tam(Z.sombraMalla.geometry);
         }
+        for (const m of lejosGlobal.mallas) bytes += tam(m.geometry);
+        for (const m of hdGlobal.mallas) bytes += tam(m.geometry);
+        for (const m of cercaGlobal.mallas) bytes += tam(m.geometry);
         const zs = Object.values(zonas);
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
           instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos, modelosHD: modHD,
