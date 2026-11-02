@@ -108,7 +108,7 @@
 
   AVE.registerPack({
     id: 'ep2',
-    archivos: ['lecciones.js'], // la lección del Aula (window.AV_LECCIONES_EP2); boot.js la carga después de este archivo
+    archivos: ['lecciones.js', 'secretos.js'], // la lección del Aula y los secretos (CG-13); boot.js los carga después de este archivo
     idioma: ['content/cap1/en.js', 'content/ep2/en.js'], // inglés: el diccionario común y el del episodio (solo si el idioma es EN)
     meta: {
       titulo: 'Un lugar para todos', capitulo: 2, almacen: 'ep2',
