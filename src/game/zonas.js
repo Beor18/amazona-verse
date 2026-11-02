@@ -47,7 +47,7 @@ AVE.module('zonas', function (G) {
       : (enIngles() ? "The wind won't let you through: this part of the island opens later." : 'El viento no te deja pasar: esta parte de la isla se abre más adelante.');
   }
 
-  let lastOk = null, avisoT = -1e9;
+  let lastOk = null, avisoT = -1e9, ultimo = '';
   if (activa) {
     // Después de la física (que mueve a Vittata) y antes de la cámara: si salió de lo abierto, el viento la devuelve
     G.on('update', (dt, busy) => {
@@ -58,7 +58,7 @@ AVE.module('zonas', function (G) {
       P.x = lastOk.x; P.z = lastOk.z; P.y = Math.max(lastOk.y, G.terreno.height(P.x, P.z));
       S.vy = Math.min(S.vy || 0, 0);
       if (G.fisica && G.fisica.MOVE) { G.fisica.MOVE.vx = 0; G.fisica.MOVE.vz = 0; }
-      if (!busy && S.clock - avisoT > 4) { avisoT = S.clock; G.ui.toast(aviso(fuera.x, fuera.z), 3200); if (G.fx && G.fx.burst) G.fx.burst(P.x, P.y + 1.2, P.z, 'feathers', 12); }
+      if (S.clock - avisoT > 4) { avisoT = S.clock; ultimo = aviso(fuera.x, fuera.z); if (!busy) G.ui.toast(ultimo, 3200); if (G.fx && G.fx.burst) G.fx.burst(P.x, P.y + 1.2, P.z, 'feathers', 12); }
     }, 21);
     G.on('apply', () => { lastOk = null; }, 80);
   }
@@ -85,9 +85,11 @@ AVE.module('zonas', function (G) {
       const otra = Object.keys(ZONAS).map(Number).find(n => n !== cap && Math.hypot(ZONAS[n].x - Z.x, ZONAS[n].z - Z.z) > ZONAS[n].r + Z.r);
       const O = ZONAS[otra];
       const toast = document.getElementById('toast');
+      avisoT = -1e9; ultimo = ''; if (G.ui.hideCard) G.ui.hideCard(); const fin = document.getElementById('end'); if (fin) fin.hidden = true;
       T.teleport(O.x, O.z); T.tick(0.3);
       check('Una zona cerrada no deja pasar: el viento la devuelve a lo abierto', dentro(S.pos.x, S.pos.z) && Math.hypot(S.pos.x - O.x, S.pos.z - O.z) > 1, `zona ${otra} → ${S.pos.x.toFixed(1)},${S.pos.z.toFixed(1)}`);
-      check('Sale el aviso «esta zona se abre en el capítulo N»', !!toast && !toast.hidden && new RegExp('cap[ií]tulo ' + otra + '|chapter ' + otra).test(toast.textContent), toast && toast.textContent);
+      const reN = new RegExp('cap[ií]tulo ' + otra + '|chapter ' + otra);
+      check('Sale el aviso «esta zona se abre en el capítulo N» (en el HUD si no hay una pantalla abierta)', reN.test(ultimo) && (G.ui.busy() || (!!toast && !toast.hidden && reN.test(toast.textContent))), ultimo + ' · ' + (toast && toast.textContent));
       // Con ese capítulo terminado, su zona queda abierta
       if (window.AVTemporada) { const d = window.AVTemporada.leer(); d.terminados[otra] = Date.now(); localStorage.setItem(KEY, JSON.stringify(d)); }
       check('Un capítulo terminado abre su zona', abiertas().includes(otra), abiertas().join());
