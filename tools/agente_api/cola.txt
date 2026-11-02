@@ -1,2 +1,5 @@
-# 1-nov 20:15 (Kelvin: usar algo del crédito que queda): BM116, pruebas extra que solo fallan en la Mac (necesita GPU real). Una sola tarea, tope 6 $.
+# 1-nov 20:25 (Kelvin: «déjalo que se gasten hoy»): 4 tareas, tope 6 $ cada una. Nada de edificios/terreno/flora (Kimi) ni de content/ep2-ep4 (web).
 BM116
+BM119
+BM120
+BM121

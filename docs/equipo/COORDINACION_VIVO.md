@@ -82,3 +82,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 
 - 01-Nov 19:02 AST · **EN CURSO · web** · ronda 7: BM111–BM113 (content/ep2–ep4 al mapa real), BM115 (retratos cap. 6 y Aprendiz), BM116 (pruebas extra que fallan en la Mac), BM117 (ROADMAP), BM118 (landing con Vittata v4).
 - 1-nov 20:15 AST · **BM116 pasa a la Mac** (trabajador de la API, tope 6 $): las extras que solo fallan en la Mac se reproducen allí con GPU real. **Web: sáltala** y sigue con BM117 y BM118.
+- 1-nov 20:25 AST · **Cola de la Mac (API, ~24 $ hoy):** BM116 → BM119 (tirón de «Empezar» en móvil) → BM120 (datos educativos con fuente) → BM121 (QA visual con GPU de lo de hoy). Web y Kimi: no las toquen.
