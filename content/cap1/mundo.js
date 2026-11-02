@@ -548,8 +548,8 @@
       G.c.IMG = { V: 'assets/vittata.png', L: 'assets/luma.png', G: 'assets/guardian.png', VOZ: RET.Voz || '', N: RET.Narrador || '' };
       G.c.FLOOD_LEVEL = PLACES.A.base + 1.1;
       // Marcas de agua a 1 m en los árboles junto al río (en el mapa, ajustadas al tronco real cuando carga la flora)
-      const lin = c => new THREE.Color(c).convertSRGBToLinear();
-      const bandMat = new THREE.MeshLambertMaterial({ color: lin('#3b5f6e'), side: THREE.DoubleSide });
+      // Colores en sRGB: G.renderer.linMat los pasa a lineal UNA vez y los marca (antes lin() + linearize() de core.js los convertía dos veces)
+      const bandMat = G.renderer.linMat(new THREE.MeshLambertMaterial({ color: '#3b5f6e', side: THREE.DoubleSide }));
       const bands = MARK_TREES.map(t => {
         const band = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.2, 14, 1, true), bandMat);
         band.position.set(t.x, H(t.x, t.z) + 1.0, t.z); band.visible = !MAPA;
@@ -560,10 +560,10 @@
         bands.forEach((b, i) => { const t = MARK_TREES[i], r = inf ? Math.max(0.3, inf.tronco * t.s * 1.0) : 0.6; b.scale.set(r / 0.4, 1, r / 0.4); b.position.y = H(t.x, t.z) + 1.0; b.visible = true; });
       });
       // Estacas y letrero de cada terreno
-      const madera = new THREE.MeshLambertMaterial({ color: lin('#8a5e34') });
+      const madera = G.renderer.linMat(new THREE.MeshLambertMaterial({ color: '#8a5e34' }));
       function parcelMarker(p, color) {
         const g = new THREE.Group();
-        const mat = new THREE.MeshLambertMaterial({ color: lin(color) });
+        const mat = G.renderer.linMat(new THREE.MeshLambertMaterial({ color: color }));
         const h = p.half;
         // estacas y sus topes de color: dos mallas instanciadas (2 draw calls por terreno)
         const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.16, 1.1, 0.16), madera, 4), caps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.2, 0.16, 0.2), mat, 4);
@@ -574,9 +574,9 @@
         });
         posts.castShadow = true; posts.frustumCulled = caps.frustumCulled = false; g.add(posts, caps);
         const pts = [[-1, -1], [1, -1], [1, 1], [-1, 1], [-1, -1]].map(([sx, sz]) => new THREE.Vector3(p.x + sx * h, H(p.x + sx * h, p.z + sz * h) + 0.85, p.z + sz * h));
-        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: lin(color) })));
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), G.renderer.linMat(new THREE.LineBasicMaterial({ color: color }))));
         const sx = p.x - h - 1.2, sz = p.z - h, sy = H(sx, sz);
-        const sign = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.1), new THREE.MeshLambertMaterial({ color: lin('#e8d7a8') }));
+        const sign = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.1), G.renderer.linMat(new THREE.MeshLambertMaterial({ color: '#e8d7a8' })));
         sign.position.set(sx, sy + 1.4, sz); sign.castShadow = true;
         const stick = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.4, 0.12), madera);
         stick.position.set(sx, sy + 0.7, sz);
@@ -607,8 +607,8 @@
       // Analítico: la caseta de primitivas de antes.
       const taller = new THREE.Group();
       const tY = T.base;
-      const wood = new THREE.MeshLambertMaterial({ color: lin('#a8743f') });
-      const windowGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.8), new THREE.MeshBasicMaterial({ color: lin('#3a2a1a') }));
+      const wood = G.renderer.linMat(new THREE.MeshLambertMaterial({ color: '#a8743f' }));
+      const windowGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.8), G.renderer.linMat(new THREE.MeshBasicMaterial({ color: '#3a2a1a' })));
       const debris = new THREE.Group();
       const tablas = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 0.12, 0.35), wood, 5);
       for (let i = 0; i < 5; i++) {
