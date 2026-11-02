@@ -24,7 +24,7 @@
   };
   const IDS = Object.keys(SITIOS);
   const NIDO = EN({ x: -20, z: -4 }, { x: -31, z: 38 });
-  // Misión 2: los dos residentes y la mesa de las tarjetas. [KELVIN: quiénes son la abuela y el papá y su aspecto]
+  // Misión 2: los dos residentes y la mesa de las tarjetas. Kelvin 1-nov: son la Abuela y el Papá de Iguaca (vittata), con retrato propio.
   const ABUELA = EN({ x: 8, z: 9 }, { x: -27, z: 30 }), PAPA = EN({ x: -10, z: -7 }, { x: -12, z: 44 }), MESA = EN({ x: 5, z: 1 }, { x: -12, z: 37 });
   // Lo que rodea a los residentes: la charca junto a la abuela, su refugio viejo y la rama del papá
   const CHARCA = { ...EN({ x: 10.6, z: 11.2 }, { x: -24.4, z: 32.2 }), r: 1.5 }, REFUGIO = { ...EN({ x: 10.6, z: 6.4 }, { x: -24.4, z: 27.4 }), r: 2 },

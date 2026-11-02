@@ -114,7 +114,7 @@
     { id: 'e_nav', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'pensando', lineas: ['Ese bote flota, sí. Pero hoy no sale.'] },
     { id: 'e_nav_v', disparador: 'evento:NavigatorMet', personaje: 'Vittata', emocion: 'triste', lineas: ['¡Pero si está listo! Lo hice yo.'] },
     { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si el Guardián va en el bote o despide desde el muelle]', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
-    { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Me llamo Nayara. Crucé el mar desde La Española, y allá aprendí a leer el agua.', 'Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
+    { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Me llamo Nayara. Crucé el mar desde La Española, y allá aprendí a leer el agua.', 'Los botes yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
     { id: 'e_fin', disparador: 'evento:Chapter3Completed', personaje: 'Navegante', emocion: 'feliz', lineas: ['Este bote ya no es tuyo ni mío. Es de las dos.'] },
     { id: 'e_fin_v', disparador: 'evento:Chapter3Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Enrolla el plano de la Vecina y se lo lleva.)', 'Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.'] },
     { id: 'e_fin_i', disparador: 'evento:Chapter3Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste qué flota, leíste el agua y supiste cuándo dar el timón. Cuando vuelvas a Villa Raíz, ven y te hago unas preguntas. Sin prisa y sin nota.'] },
@@ -792,7 +792,8 @@
         dibujarCanoa(); colocarNavegante(); registrar(); G.misiones.check();
         G.dialogo.say([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
       }
-      // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4 [KELVIN: decisiones 2, 4, 7 y 8]
+      // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4. Kelvin 2-nov: la otra
+      // comunidad es Villa Mangle (decisión 2 de EP3_GDD §10). Siguen abiertas las decisiones 4, 7 y 8 [KELVIN].
       function vecina() {
         if (S.step < 13) { G.dialogo.say([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
         if (!G.eventos.had('CommunityReached')) {

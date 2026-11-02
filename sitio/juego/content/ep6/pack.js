@@ -6,7 +6,7 @@
    Diseño: docs/equipo/EP6_GDD.md, EP6_NARRATIVA.md y EP6_MISIONES.md (tarea AL1). Ábrelo con index.html?pack=ep6 (o desde la portada).
    Lo que depende del canon de Kelvin (EP6_GDD.md §10) queda con la opción por defecto del GDD y marcado [KELVIN] en un
    comentario o en «nota», nunca en el texto que lee el jugador:
-     [KELVIN-1] (Kelvin 2-nov: se quedan los seis visitantes y sus nombres) Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
+     KELVIN-1 · resuelto (Kelvin 2-nov: se quedan los seis visitantes y sus nombres). Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
                 Marea · arausiaca, Nudo · leucocephala (la cubana, Kelvin 1-nov), Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
                 D32 (DECIDIDO-EQUIPO 30-oct): llegan los guardianes que el jugador encontró en la temporada (registro de temporada,
@@ -58,7 +58,7 @@
   const MUELLE_N = EN({ x: 15.2, z: -8 }, { x: 29, z: -58 }), MUELLE_S = EN({ x: 15.2, z: 8 }, { x: 27.5, z: -42 }), PUENTE = PR(20, 0), PUENTE_W = PR(15.5, 0);
   const TABLA_LARGA = EN({ x: 11, z: -3 }, { x: 35, z: -49 });
   const INICIO = EN({ x: -16, z: -16 }, { x: 44, z: -62 });
-  // [KELVIN-1] Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
+  // KELVIN-1 · resuelto (Kelvin 2-nov). Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
   const VISITANTES = [
     { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', ...EN({ x: 13.5, z: -10.5 }, { x: 39, z: -60 }), sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
       presenta: 'Soy Mira. Desde arriba veo las islas, una por una. Lo que necesito… ya lo verás.' },
@@ -742,7 +742,7 @@
           Gu('Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.'),
           Gu('(Se quita la medalla.) Es igual a una de las piezas. Cada vez que la tocaba, me volvía un recuerdo.'), // Kelvin 2-nov: la medalla se gana
           Gu('Ya no me hace falta: ahora recordamos entre todos. Es tuya, mija. Te la ganaste juntando a los que quedan.'),
-          Vi('Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.'),
+          Vi('Guardiana del Pacto… Está bien. Pero lo cuidamos entre todos.'),
         ], terminar);
       }
       function terminar() {

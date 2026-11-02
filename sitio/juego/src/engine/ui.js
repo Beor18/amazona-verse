@@ -11,9 +11,18 @@ AVE.module('ui', function (G) {
   function showCard(html) { $('card').innerHTML = html; $('card').hidden = false; cardOpen = true; }
   function hideCard() { $('card').hidden = true; cardOpen = false; G.emit('cardHidden'); }
   let toastTimer = 0;
-  function toast(text, ms) { G.audio.play('tick'); $('toast').textContent = text; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
-  function toastHTML(html, ms) { $('toast').innerHTML = html; $('toast').hidden = false; toastTimer = ms === 0 ? Infinity : (ms || 2200) / 1000; }
+  // QA-93 (W3): un aviso que salta con una pantalla que lo taparía (la tarjeta en un teléfono, ≤ 560 px, como el Diario o
+  // Retos; o el cómic o el creador, a pantalla completa) espera a que se cierre y sale después. Solo se guarda el último.
+  let pendiente = null;
+  const tapado = () => (cardOpen && window.innerWidth <= 560) || !$('comic').hidden || !$('creator').hidden;
+  function mostrar(p) {
+    if (p.html) $('toast').innerHTML = p.html; else { G.audio.play('tick'); $('toast').textContent = p.text; }
+    $('toast').hidden = false; toastTimer = p.ms === 0 ? Infinity : (p.ms || 2200) / 1000;
+  }
+  function toast(text, ms) { const p = { text, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
+  function toastHTML(html, ms) { const p = { html, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
   function hideToast() { $('toast').hidden = true; toastTimer = 0; }
+  G.on('update', () => { if (pendiente && !tapado()) { const p = pendiente; pendiente = null; mostrar(p); } }, 84);
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
@@ -40,5 +49,5 @@ AVE.module('ui', function (G) {
     if (H.titulo) document.title = H.titulo;
   }
 
-  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, toast, toastHTML, hideToast, overlayOpen, busy, worldHidden };
+  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return pendiente; }, toast, toastHTML, hideToast, overlayOpen, busy, worldHidden };
 });
