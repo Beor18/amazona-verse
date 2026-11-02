@@ -792,7 +792,8 @@
         dibujarCanoa(); colocarNavegante(); registrar(); G.misiones.check();
         G.dialogo.say([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
       }
-      // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4 [KELVIN: decisiones 2, 4, 7 y 8]
+      // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4. Kelvin 2-nov: la otra
+      // comunidad es Villa Mangle (decisión 2 de EP3_GDD §10). Siguen abiertas las decisiones 4, 7 y 8 [KELVIN].
       function vecina() {
         if (S.step < 13) { G.dialogo.say([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
         if (!G.eventos.had('CommunityReached')) {
