@@ -161,6 +161,9 @@
       modelo: { url: 'assets/models/isla_mapa.glb', b64: 'AV_ISLA_B64', script: 'assets/models/isla_mapa_glb.js', base: 'assets/models/' },
     },
   };
+  // Mundo único (MUNDO_UNICO.md, BM111): los capítulos 2–6 usan este mismo mapa real, cada uno en su zona. Lo toman de aquí y
+  // ponen sus propios lugares, pois y reubicar (los de abajo son del cap. 1).
+  if (MUNDO_MAPA) AVE.mundoReal = MUNDO_MAPA;
   const MUNDO_ANALITICO = {
     tamano: 70, segmentos: 110,
     exposicion: 0.74,

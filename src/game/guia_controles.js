@@ -178,6 +178,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const enSesion = {};
   function pista(id, html, seg) {
     if (tactil()) return false;
+    // En inglés se traduce la frase entera con sus teclas («Pulsa {} para volar»): el traductor de la página va nodo a nodo y
+    // no reconoce una frase partida por <kbd>
+    if (G.idioma && G.idioma.tr) html = G.idioma.tr(html);
     pistaEl.innerHTML = html; pistaEl.hidden = false; pistaT = seg || AJ.pista; pistaId = id; enSesion[id] = (enSesion[id] || 0) + 1;
     return true;
   }
