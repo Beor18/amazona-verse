@@ -1,5 +1,4 @@
-# 1-nov 20:25 (Kelvin: «déjalo que se gasten hoy»): 4 tareas, tope 6 $ cada una. Nada de edificios/terreno/flora (Kimi) ni de content/ep2-ep4 (web).
+# 2-nov madrugada (volvió la luz): tareas con GPU real, tope 6 $ cada una. BM120 ya la hizo el web. Nada de edificios/terreno/flora (Kimi) ni de content/ep2-ep6 (web y nube).
 BM116
 BM119
-BM120
 BM121
