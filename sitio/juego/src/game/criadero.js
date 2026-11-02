@@ -1010,12 +1010,12 @@ AVE.module('criadero', function (G) {
     hatch.t += dt * hatch.speed; const T = hatch.t, once = k => (hatch.done[k] ? false : (hatch.done[k] = true));
     const wp = egg.getWorldPosition(new THREE.Vector3());
     const E = egg.userData, U1 = E.bottom.material.userData.u, U2 = E.top.material.userData.u;
-    // A · la cápsula se abre como una flor (fantasía) y deja ver el huevo blanco (real)
+    // A · la cápsula se abre como una flor y deja ver el huevo (fantasía: Kelvin, 2-nov, los huevos tendrán colores especiales)
     const shake = T < 0.6 ? Math.sin(T * 40) * 0.06 * (1 - T / 0.6) : 0; cap.rotation.z = shake;
     const o = Math.max(0, Math.min(1, (T - 0.5) / 1.0)), oe = easeOutBack(o) * 1.75;
     for (const p of cap.userData.petals) p.quaternion.setFromAxisAngle(p.userData.axis, -oe);
     if (T > 0.55) egg.visible = true;
-    if (T > 0.8 && once('chispas')) { scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.1, 0)), 40, ['#ffe08a', '#ffffff', '#ffb3c7'], 1.2, 2); aviso(t({ es: '¡Mira! Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Look! Inside there is a white egg, like real parrot eggs.' }), 4200); }
+    if (T > 0.8 && once('chispas')) { scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.1, 0)), 40, ['#ffe08a', '#ffffff', '#ffb3c7'], 1.2, 2); aviso(t({ es: '¡Mira! Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Look! There is an egg inside. Which little parrot will hatch?' }), 4200); }
     if (T > 1.6) { cap.position.y -= dt * hatch.speed * 0.05; cap.scale.setScalar(Math.max(0.001, 1 - (T - 1.6) * 0.8)); }
     // B · el huevo se mueve
     let wob = 0, hop = 0;
@@ -1483,8 +1483,8 @@ AVE.module('criadero', function (G) {
       // Bocadillo: la presentación no frena el vuelo (playtest G10: la caja bloqueante dejaba a Vittata quieta y sin frutos ni peces)
       G.dialogo.say([
         { who: 'Iguaca', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
-          ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
-          : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
+          ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. There is an egg inside. Which little parrot will hatch?' })
+          : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Vittata, look! There is a nest with a capsule nearby. There is an egg inside. Which little parrot will hatch?' }) },
         { who: 'Iguaca', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
       ], null, { libre: true });
     }
