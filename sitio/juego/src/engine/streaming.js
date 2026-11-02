@@ -277,12 +277,12 @@ AVE.module('streaming', function (G) {
           '    diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle * 0.74, 0.85 );\n' +
           '  }\n}\n' +
           // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
-          // (6, 7) a media fuerza; beams (13, madera) y rockM (14, roca) conservan su textura. Albedo máximo ~0,85 (antes 1,11:
-          // se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
+          // (6, 7) a media fuerza; las restauradas (0, 1, 4, 10), beams (13) y rockM (14) conservan su textura. Albedo máximo
+          // ~0,85 (antes 1,11: se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
           'if (avCrema > 0.5) {\n' +
           '  vec2 cc = floor( vAvCelda * 4.0 + 0.5 );\n' +
           '  float k = cc.y * 4.0 + cc.x;\n' +
-          '  float fuerza = ( abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
+          '  float fuerza = ( k < 1.5 || abs( k - 4.0 ) < 0.5 || abs( k - 10.0 ) < 0.5 || abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
           '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
           '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
           '  vec3 piedra = mix( vec3( 0.54, 0.45, 0.34 ), vec3( 0.94, 0.85, 0.70 ), t );\n' +
@@ -699,6 +699,7 @@ AVE.module('streaming', function (G) {
       const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
       if (!mats[k]) {
         const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg'), normalMap = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        map.encoding = THREE.sRGBEncoding;
         map.flipY = normalMap.flipY = false;
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
       }
@@ -1606,6 +1607,10 @@ AVE.module('streaming', function (G) {
         scene.traverse(o => { const m = o.material; if (m && m.name === 'AV_HD_Ancient') matCrema = m; });
         const claveCrema = matCrema && matCrema.customProgramCacheKey ? String(matCrema.customProgramCacheKey()) : '';
         check('La piedra Ancient del kit es crema mate (sin brillo especular)', !!(matCrema && matCrema.shininess === 1 && matCrema.specular && matCrema.specular.r === 0 && matCrema.userData && matCrema.userData.avAtlasEsc), claveCrema || 'sin material');
+        const atlasFusion = [];
+        scene.traverse(o => { const m = o.material; if (/^edificiosZonaHD:/.test(o.name) && m && /^AV_HD_/.test(m.name)) atlasFusion.push(m); });
+        check('El atlas de las fusiones conserva la codificación sRGB del original', atlasFusion.length > 0 && atlasFusion.every(m => !m.map || m.map.encoding === THREE.sRGBEncoding),
+          atlasFusion.map(m => m.name + '=' + (m.map ? m.map.encoding : 'sin mapa')).join(', '));
         await ir(x0, z0); ST.liberarYa(); dibujar();
         check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
       }

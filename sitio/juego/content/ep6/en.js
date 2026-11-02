@@ -95,7 +95,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
 
  // Gancho y diálogos de eventos
  "Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming, and some new ones. At least six arrive today; the rest are still faraway lights.",
- "… once, doce… La cadena de señales sigue encendida hasta la niebla. Alba y Violeta pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.": "… eleven, twelve… The chain of signals is still lit all the way to the fog. Alba and Violeta asked us to look for those who remain, and there are new lights on the horizon.",
+ "… once, doce… La cadena de señales sigue encendida hasta la niebla. Mara y Vela pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.": "… eleven, twelve… The chain of signals is still lit all the way to the fog. Mara and Vela asked us to look for those who remain, and there are new lights on the horizon.",
  "Una canoa asoma por el río. Y detrás, alguien volando bajo.": "A canoe appears on the river. And behind it, someone flying low.",
  "Llegan hoy. Yo preparo el puente, la comida, los sitios…": "They arrive today. I'll get the bridge ready, the food, the seats…",
  "Es más rápido si lo hago yo. ¡A los muelles!": "It's faster if I do it myself. To the docks!",
@@ -305,7 +305,11 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)": "(She takes out the notebook and, for the first time, doesn't draw a plan for herself alone: she writes a column of names.)",
  "¿Y eso?": "What's that?",
  "La tripulación.": "The crew.",
- "Violeta": "Violeta",
+ "Vela": "Vela",
+ "(Se quita la medalla.) Es igual a una de las piezas. Cada vez que la tocaba, me volvía un recuerdo.": "(He takes off his medal.) It matches one of the pieces. Every time I touched it, a memory came back.",
+ "Ya no me hace falta: ahora recordamos entre todos. Es tuya, mija. Te la ganaste juntando a los que quedan.": "I don't need it anymore: now we remember together. It's yours, dear. You earned it by bringing together those who remain.",
+ "La medalla del Guardián": "The Guardian's medal",
+ "Me la dio el Guardián al renovar el pacto. Es igual a una de las piezas del emblema de los 36.": "The Guardian gave it to me when we renewed the pact. It matches one of the pieces of the emblem of the 36.",
  "Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.": "We speak from now because someone keeps saying our names. One day you'll know who.",
 
  // Iguaca: pistas y preguntas
@@ -385,9 +389,9 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Repite lo que quiere cada parte antes de proponer.": "Repeats what each side wants before proposing.",
  "Repite lo que quiere cada parte, encuentra lo que comparten y propone algo que nadie rechaza.": "Repeats what each side wants, finds what they share and proposes something no one rejects.",
  // D32: quién llega según el registro de temporada
- "Vienen los guardianes que fuimos encontrando: quien navega ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the navigator is already paddling downriver. And new ones too: at least six arrive today; the rest are still distant lights.",
+ "Vienen los guardianes que fuimos encontrando: Nayara ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: Nayara is already paddling downriver. And new ones too: at least six arrive today; the rest are still distant lights.",
  "Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the one from the grove at the narrows left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
- "Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: the navigator is paddling downriver and the one from the grove left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
+ "Vienen los guardianes que fuimos encontrando: Nayara viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.": "The guardians we found along the way are coming: Nayara is paddling downriver and the one from the grove left its nest to come. And new ones too: at least six arrive today; the rest are still distant lights.",
  "Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».": "I saw the chain of signals and paddled over. This time I'm not here to say «not today».",
  "Ve al puente, donde está el cuaderno: primero se escribe qué queremos lograr y qué límites hay.": "Go to the bridge, where the notebook is: first write down what we want to achieve and what the limits are.",
  "En el cuaderno del puente, arma el plan: cada tarea con su nombre. Luego pruébalo.": "In the notebook at the bridge, build the plan: every task with a name. Then test it.",

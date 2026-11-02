@@ -73,7 +73,7 @@
     cajas: { nombre: 'Poner cajas nido donde estaban los huecos', eje: 'bosque', mas: 1, para: ['a'] },
     paso: { nombre: 'Subir el centro del puente para que pasen las canoas', eje: 'rio', mas: 1, cuesta: 1, para: ['a'] },
     descansos: { nombre: 'Bancos a la sombra en el camino largo', eje: 'conexion', mas: 1, para: ['b'] },
-    minga: { nombre: 'Construir por turnos con la otra comunidad', eje: 'esfuerzo', mas: 1, para: ['b'] },
+    minga: { nombre: 'Construir por turnos con Villa Mangle', eje: 'esfuerzo', mas: 1, para: ['b'] },
     turnos: { nombre: 'Turnos de remo y una campana para llamar', eje: 'conexion', mas: 1, para: ['c'] },
   };
   const CIDS = Object.keys(CUIDADOS);
@@ -90,7 +90,7 @@
   const VOCES = {
     abuela: { quien: 'Abuela', eje: 'conexion', dice: 'Quiero cruzar a pie para ver a mi familia del otro lado, también cuando llueve.', tarjeta: 'Cruzar a pie, todo el año' },
     papa: { quien: 'Papá', eje: 'bosque', dice: 'En el bosquecillo del estrecho hay huecos de nido y sombra para el río. Si se corta, se pierden.', tarjeta: 'Cuidar el bosquecillo' },
-    // La navegante es la del ep. 3 (de Villa Raíz, EP3_NARRATIVA.md): habla por el río y las canoas, no por la otra comunidad. [KELVIN: nombre y especie de quien navega]
+    // La navegante es Nayara, la del ep. 3 (Kelvin 2-nov: Amazona ventralis de La Española, hoy en el muelle de Villa Raíz): habla por el río y las canoas, no por Villa Mangle.
     navegante: { quien: 'Navegante', eje: 'rio', dice: 'Las canoas tienen que poder pasar, también con el río crecido. Del río vivimos.', tarjeta: 'Que las canoas pasen' },
     iguaca: { quien: 'Iguaca', eje: 'esfuerzo', dice: 'Somos pocos y tenemos pocas vigas. Lo que hagamos tiene que caber en lo que podemos construir.', tarjeta: 'Que lo podamos construir' },
   };
@@ -108,10 +108,10 @@
 
   const DIALOGOS = { escenas: [
     // Lo que depende del canon (EP4_GDD.md §10) va en «nota», nunca en «lineas» (regla de los packs; ep4Test lo comprueba)
-    { id: 'e_inicio', disparador: 'inicio:ep4', personaje: 'Vittata', emocion: 'feliz', nota: '[KELVIN: quién es la otra comunidad y cómo se llama (EP4_GDD.md §10.1); el plano es el que dio la Vecina al final del ep. 3]',
-      lineas: ['La abuela quiere visitar a su familia del otro lado del río. Y el plano que nos dio la Vecina… ¡ya lo redibujé como un puente!', 'Lo pongo en el sitio más corto y listo… ¿no?'] },
+    { id: 'e_inicio', disparador: 'inicio:ep4', personaje: 'Vittata', emocion: 'feliz', nota: 'Kelvin 2-nov (EP4_GDD.md §10.1): la otra comunidad es Villa Mangle, en la otra orilla; el plano es el que dio la Vecina al final del ep. 3',
+      lineas: ['La abuela quiere visitar a su familia del otro lado del río. Y el plano que nos dio la Vecina de Villa Mangle… ¡ya lo redibujé como un puente!', 'Lo pongo en el sitio más corto y listo… ¿no?'] },
     { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Un puente es una gran idea. Pero antes de dibujarlo, mira lo que ya hay en la orilla.', 'Mira los tres tramos del río: el estrecho, el remanso y río abajo. Busca los postes con cinta azul junto al agua. Y posa la vista en el bosquecillo del estrecho.'] },
-    { id: 'e_orilla', disparador: 'evento:ShoreSurveyed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Ya sabes lo que hay en cada orilla. Ahora falta saber a quién le importa cada cosa.', 'Escucha a la abuela, al papá, a la navegante del muelle… y a mí. Cada voz te deja una tarjeta.'] },
+    { id: 'e_orilla', disparador: 'evento:ShoreSurveyed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Ya sabes lo que hay en cada orilla. Ahora falta saber a quién le importa cada cosa.', 'Escucha a la abuela, al papá, a Nayara en el muelle… y a mí. Cada voz te deja una tarjeta.'] },
     { id: 'e_voces', disparador: 'evento:VoicesHeard', personaje: 'Iguaca', emocion: 'idea', lineas: ['Cuatro voces, cuatro tarjetas. Llévalas a la Balanza de la mesa y mira qué da y qué cuesta cada opción.'] },
     { id: 'e_balanza', disparador: 'evento:TradeoffSeen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es: aquí no hay una sola respuesta. Cada opción da algo a alguien y le cuesta algo a otro.', 'Pruébalas en la maqueta antes de decidir. Luego hacemos la asamblea.'] },
     { id: 'e_guardian', disparador: 'evento:TradeoffSeen', personaje: 'Guardián', emocion: 'pensando', nota: '[KELVIN: qué recuerda el Guardián de antes de la Gran Ruptura (EP4_GDD.md §10.6); pista para el ep. 5, sin revelar]', lineas: ['Antes también se cruzaba este río… pero no recuerdo cómo.'] },
@@ -392,7 +392,7 @@
       function navegante() {
         if (TP()) TP().encontrar(4, 'navegante'); // D32: llega al ep. 6
         if (S.step === 3 && !tiene('voz_navegante')) { voz('navegante'); return; }
-        // Quien navega es de Villa Raíz (ep. 3): mira la otra orilla desde este lado. [KELVIN: la otra comunidad]
+        // Nayara vive ahora en Villa Raíz (ep. 3): mira Villa Mangle, la otra orilla, desde este lado.
         G.dialogo.say([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
       }
       const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 8 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
@@ -447,12 +447,12 @@
           });
         });
       }
-      // D26 (DECISION_LOG, AP10 lote 3): decide el jugador entre las 3 opciones tras oír las 4 voces (la mesa solo abre la asamblea
+      // D26, aprobado por Kelvin el 2-nov (decisión 6): Vittata abre y ordena la ronda, la asamblea opina y decide el jugador entre las 3 opciones tras oír las 4 voces (la mesa solo abre la asamblea
       // en el paso 6) y el mundo muestra las consecuencias (la obra en su tramo, el bosquecillo en tocones con la A, el cruce de la
       // abuela). La asamblea es donde se oye a todos: no hay respuesta correcta ni examen (ep4Test lo comprueba).
       function asamblea() {
         if (!opcion()) {
-          elegir('Vittata', 'Asamblea en la mesa. Todos escuchan. ¿Qué opción propones?', OIDS.map(o => ({ label: `${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`, o })), x => {
+          elegir('Vittata', 'Asamblea en la mesa. Ya hablaron todos; yo abro la ronda y cada quien dice lo suyo. ¿Qué opción propones?', OIDS.map(o => ({ label: `${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`, o })), x => {
             poner('opcion_' + x.o); G.eventos.log('AgreementMade', { choice: x.o }); if (TP()) TP().apuntar(4, { opcion: x.o }); /* D11: el ep. 5 lo nombra */ G.audio.play('unlock'); maquetaVer(x.o); dibujarObra();
             const gana = VIDS.filter(v => OPCIONES[x.o].hojas[VOCES[v].eje] === 3), pierde = VOCES[PIERDE[x.o]];
             G.dialogo.say(gana.map(v => di(VOCES[v].quien, 'Esto me da lo que pedía. ¡Gracias!')).concat(

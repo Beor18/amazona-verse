@@ -510,8 +510,8 @@
     id: 'cap1',
     mundo: MUNDO_MAPA || MUNDO_ANALITICO,
     // Iguaca y el Guardián son sprites 2D de renders sustitutos (CANON_REGISTRY: PROVISIONALES), junto a una Vittata 3D.
-    // [KELVIN-1] Identidad del Guardián (¿cotorra, humano u otra forma?): decide su retrato, su sprite y su modelo 3D.
-    // [KELVIN-3] Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): si es canon, falta un detalle visible en su figura.
+    // [KELVIN-1] Decidido por Kelvin (2-nov): el Guardián es una cotorra mayor, Amazona imperialis, sabia y protectora. Falta su arte definitivo.
+    // [KELVIN-3] Medalla del Guardián igual a una pieza del emblema: canon (Kelvin 2-nov; se la da a Vittata al final del cap. 6). Falta un detalle visible en su figura.
     // Familia de Iguaca (SCRIPT p.9, decidido por Kelvin el 1-nov): la Abuela y el Papá entran al refugio de la colina. Ver historia.js, familiaLlega().
     npcs: [
       // id histórico 'luma' (partidas guardadas, escenas c1_luma_*, LumaHelped): el personaje se llama Iguaca
