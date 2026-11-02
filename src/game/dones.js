@@ -78,10 +78,11 @@
         });
         check('La velocidad no pasa de ±3 %', ids.every(id => { forzar = id; const m = mult('velocidad'); return m >= 0.97 - 1e-9 && m <= 1.03 + 1e-9; }));
         forzar = null;
-        const cat = window.AV_ESPECIES && AV_ESPECIES.especies;
-        if (cat) {
-          const faltan = cat.filter(e => !DE[e.id]).map(e => e.id);
-          const sobran = Object.keys(DE).filter(id => !cat.some(e => e.id === id));
+        const cat = window.AV_ESPECIES;
+        const lista = cat ? (cat.especies || []).concat(cat.extintas || []) : null;
+        if (lista) {
+          const faltan = lista.filter(e => !DE[e.id]).map(e => e.id);
+          const sobran = Object.keys(DE).filter(id => !lista.some(e => e.id === id));
           check('Cada especie del catálogo tiene familia', !faltan.length && !sobran.length, faltan.concat(sobran).join(', '));
         } else check('Hay catálogo de especies', false, 'sin AV_ESPECIES');
         forzar = 'islenas';
