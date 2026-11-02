@@ -296,3 +296,6 @@ Los 12 estados UICN verificados de `docs/equipo/ESPECIES_DISCREPANCIAS.md` susti
 
 ## 2-nov-2026 · Kelvin aprueba la propuesta de dones y secretos
 `docs/equipo/PROPUESTA_PODERES_SECRETOS_BANDADAS.md`: 6 familias con 5 ejes equilibrados, un don de fantasía por familia que se activa manteniendo Impulso, y secretos por capítulo unidos por el «Mapa en pedazos». Orden de construcción: CG-10 a CG-14. Las bandadas en línea esperan al día legal.
+
+## 2-nov-2026 · Fernando: «hagan lo que quieran»
+Fernando libera lo gráfico, que estaba reservado a Kimi/Fernando hasta que él dijera. Otros carriles pueden tomar tareas visuales (edificios, ciudad, terreno) sin pisar las que Kimi tenga EN CURSO. La Mac toma KIMI-Task-003 (BM133) y 007 (BM134).
