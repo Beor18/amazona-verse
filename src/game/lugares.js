@@ -152,9 +152,9 @@ AVE.module('lugares', function (G) {
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
     cola.shift();
     espera = d.asentamiento ? 3.8 : 3.4;
-    const cuenta = d.nuevo && G.descubrir && G.descubrir.htmlCuenta ? G.descubrir.htmlCuenta() : ''; // «Lugares descubiertos N/M» (descubrir.js)
+    const D = d.nuevo && G.descubrir, cuenta = D && D.htmlCuenta ? D.htmlCuenta() : ''; // «Lugares descubiertos N/M» (descubrir.js)
     if (d.asentamiento) rotulo(d.asentamiento, d.nuevo, cuenta);
-    else G.ui.toastHTML(`<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200);
+    else G.ui.toastHTML(D && D.htmlAviso ? D.htmlAviso(d.nombre) : `<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200); // dos líneas: «¡Descubriste …!» y la cuenta
     if (d.nuevo) G.audio.play('pickup');
   }
   let t = 0;
