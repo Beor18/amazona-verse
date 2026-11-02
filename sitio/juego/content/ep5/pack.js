@@ -88,7 +88,7 @@
 
   AVE.registerPack({
     id: 'ep5',
-    archivos: ['transmisor.js', 'relevo.js', 'historia.js', 'lecciones.js'],
+    archivos: ['transmisor.js', 'relevo.js', 'historia.js', 'lecciones.js', 'secretos.js'],
     idioma: 'content/ep5/en.js',
     meta: {
       titulo: 'Las voces olvidadas', capitulo: 5, almacen: 'ep5',

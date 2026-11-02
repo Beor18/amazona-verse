@@ -123,7 +123,7 @@
 
   AVE.registerPack({
     id: 'ep4',
-    archivos: ['lecciones.js', 'en.js'], // la lección del Aula (window.AV_LECCIONES_EP4) y el inglés del episodio; boot.js los carga después
+    archivos: ['lecciones.js', 'en.js', 'secretos.js'], // la lección del Aula, el inglés y los secretos (CG-14); boot.js los carga después
     meta: {
       titulo: 'El precio del progreso', capitulo: 4, almacen: 'ep4',
       hud: { capitulo: 'Capítulo 4', titulo: 'El precio del progreso', portada: 'Capítulo 4 · El precio del progreso',
