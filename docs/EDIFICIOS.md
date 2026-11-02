@@ -345,3 +345,10 @@ Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lect
 `templo_mediano_h` no cabe entero en 16 MB (a razón del muro, 84 288 tris ocupan 4,3 MB). No se inventó una malla intermedia.
 
 **Qué se ve cuando el `_hd` no está.** En `streaming.js`, la torre chica (radio < 10 m) usa el `_hd` solo dentro de la distancia de LOD. Entre esa distancia y la del `_hd` (45 / 70 / 90 m) se dibuja el ligero, que es la retopología. Más lejos, el lejano de color de vértice, sin textura. No se tocó `streaming.js` (lo tiene la otra sesión). El lejano no se regeneró: el script pide Blender y aquí no está.
+
+## Presupuesto de texturas originales (2-nov-2026)
+
+- Los 62 JPG de `tex_original` quedaron a un máximo de 512 px, conservando nombres, rutas, formato y proporción. La memoria estimada con RGBA y mipmaps baja de 322,20 a 80,60 MiB; su tamaño en disco baja de 26,26 a 5,83 MiB.
+- `integrar_originales.py` vuelve a exportar con el mismo tope de 512 px. Los ocho HD desactivados por KIMI-Task-009 se conservan en `DISABLED_HD`.
+- `tools/blender/texturas_edificios_test.py` comprueba el límite de 1024 px por textura, el presupuesto total inferior a 100 MiB y el tope del generador.
+- En la misma vista de la Ciudad de los 36 (`docs/img/kimi/kimi_task_002_{antes,despues}.png`), las texturas originales visibles bajan de 197,9 a 75,4 MiB y las texturas grandes de 47 a 16. Se conservan 109 draw calls, 1 551 525 triángulos y 0 errores de consola. Las medidas completas están en los JSON homónimos.

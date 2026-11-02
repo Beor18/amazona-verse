@@ -1,0 +1,79 @@
+{
+ "look": "vibrant_toon",
+ "fps": 12,
+ "calls": 109,
+ "triangulos": 1551525,
+ "calidad": "alto",
+ "dpr": 1,
+ "post": true,
+ "programas": 58,
+ "heapMB": 404,
+ "geometrias": 369,
+ "texturasGPU": 140,
+ "texturas": 152,
+ "texturasGrandes": 16,
+ "atlasGrandes": 4,
+ "texturasMB": 560.4,
+ "sombraMB": 16,
+ "postMB": 17.4,
+ "texturasPor": {
+  "generadas": 75.4,
+  "otros": 7,
+  "suelo": 43.3,
+  "personajes": 16,
+  "flora": 77.4,
+  "atlas_hd": 341.3
+ },
+ "texturasTop": [
+  [
+   "hd_savage.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_savage_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "flora:impostores",
+   "2048×2048",
+   21.3
+  ],
+  [
+   "suelo_musgo.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_tierra_hojarasca.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_roca.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_arena_rio.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_musgo_n.jpg",
+   "1024×1024",
+   5.3
+  ]
+ ]
+}
