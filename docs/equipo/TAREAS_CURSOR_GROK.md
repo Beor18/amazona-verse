@@ -14,6 +14,17 @@
 4. **Al terminar:** `hecha · <commit> · <una línea de resultado>` en la tabla, y una línea en `docs/equipo/REGISTRO_TAREAS.md`. **No se publica:** publica la Mac.
 5. **Sin gastos nuevos, descargas ni claves.** Nada de canon: si algo lo pide, anótalo en `PENDIENTES_KELVIN.md` y sigue con lo demás.
 
+## Antes de tocar nada (2-nov, para no pisar a nadie)
+1. `git pull --rebase origin main`.
+2. Comprueba que **nadie** tiene la tarea ni sus archivos. Hay que mirar:
+   - las filas EN CURSO de este archivo, de `TAREAS_WEB.md`, de `TAREAS_KIMI.md` y de la tabla Estado de `TAREAS_API.md`;
+   - las últimas líneas de `COORDINACION_VIVO.md`;
+   - `git log --since="6 hours ago" --name-only -- <archivos de la tarea>`, para ver si alguien tocó esos archivos hace poco.
+3. Si algo coincide, **salta a la siguiente** y apúntalo en una línea de `COORDINACION_VIVO.md`.
+4. Si no, márcala `EN CURSO · Grok|Cursor · hora` en un commit solo de este archivo, haz push y entonces empieza.
+
+**Ahorro de créditos:** lee solo los archivos de la tarea, sin auditorías del repo. Haz un commit y un push por paso pequeño. Si te quedas sin crédito a mitad, deja la fila «a medias · qué falta».
+
 ## Tabla (en orden)
 
 | Id | Estado | Tarea | Archivos | Hecha cuando |
@@ -25,7 +36,7 @@
 | CG-5 | **no es de este carril** | La investigación de los datos educativos la hace Kelvin con ChatGPT o Gemini (`docs/equipo/INVESTIGACION_KELVIN.md`). Grok no la toma. | — | — |
 | CG-6 | hecha · 1e7c8d6 · vista de arranque en la nube: 106 draw calls, 130,8 MB (SwiftShader, calidad baja); solo avisos | **Tope de presupuestos en las pruebas (solo avisos).** La carga inicial ya mide el heap. Añade al informe de `test.sh` los draw calls y la memoria de texturas de la vista de arranque, con aviso si pasan de 150 draw calls o de 300 MB de texturas. **No** hacen fallar la build: los topes que fallan los decide Kelvin. | `tools/build/avtest.py` (solo la parte del informe) | El informe muestra las dos cifras y el aviso |
 | CG-7 | libre | **La crecida se juega** (DIVERSION_CAP1 §3, mejora 4): el río sube durante 20 s (hoy 8) y se lleva tres cosas (las tablas de Iguaca, el coquí y un hallazgo). Se agarran en vuelo con `agarre.js` y se sueltan en la colina. Lo salvado se conserva; lo demás se recupera después, sin castigo. | `content/cap1/historia.js` (evento de la crecida), `src/engine/agarre.js` (solo lectura si basta) | missionTest y e2eTest en verde, y una prueba nueva que rescata los 3 objetos |
-| CG-8 | libre | **Diálogo que no bloquea** (mejora 3): la exposición (Narrador, Guardián, Voz) sale en bocadillos mientras se vuela, y solo bloquean las decisiones. Regla: ninguna escena de más de 2 líneas sin algo que hacer. **No se borra ni se cambia ninguna línea**: solo cómo se muestran. | `src/game/dialogo.js`, `src/engine/ui.js` | e2eTest y missionTest en verde; segundos con `ui.busy()` < 20 % de la partida |
+| CG-8 | libre | **Diálogo que no bloquea** (mejora 3): la exposición (Narrador, Guardián, Voz) sale en bocadillos mientras se vuela, y solo bloquean las decisiones. Regla: ninguna escena de más de 2 líneas sin algo que hacer. **No se borra ni se cambia ninguna línea**: solo cómo se muestran. | `src/game/dialogo.js` (y `src/engine/ui.js` **solo cuando W3 de `TAREAS_WEB.md` esté hecha**: el web toca ahí los avisos) | e2eTest y missionTest en verde; segundos con `ui.busy()` < 20 % de la partida |
 | CG-9 | libre | **La ruta de la gota se vuela** (mejora 8): en p5 el vapor sube en ráfagas y hay que remontar con él; en p6 la gota baja en tramos de rasante. La lección y las fichas no cambian. | `src/game/educativa.js`, `aula.css` | eduTest y e2eTest en verde |
 
 ## Ya no son de este carril
