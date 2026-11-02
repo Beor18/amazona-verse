@@ -908,8 +908,8 @@ AVE.module('streaming', function (G) {
       Z.hdMallas = null; Z.hdModelos = new Set();
       programarHDGlobal();
     }
-    function fundirHD(Z) {
-      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdFundiendo || cargasPendientes(Z, 'hd')) return;
+    function fundirHD(Z, forzar) {
+      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdFundiendo || (!forzar && cargasPendientes(Z, 'hd'))) return;
       const modelos = new Set([...Z.modelos].filter(n => tieneHD(n) && res(n, 'hd').estado === 'listo'));
       if (!modelos.size) return;
       if (Z.hdMallas) {
@@ -984,8 +984,8 @@ AVE.module('streaming', function (G) {
       Z.cercaMallas = null; Z.cercaModelos = new Set();
       programarCercaGlobal();
     }
-    function fundirCercaZona(Z) {
-      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaFundiendo || cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')) return;
+    function fundirCercaZona(Z, forzar) {
+      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaFundiendo || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
       const hd = Z.hdMallas && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)) ? Z.hdModelos : new Set();
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !hd.has(n) && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
@@ -1428,7 +1428,11 @@ AVE.module('streaming', function (G) {
           };
           mirar();
         });
-        return espera().then(() => { drenarColocar(); drenar(); fundirHDGlobal(); fundirCercaGlobal(); fundirLejosGlobal(); });
+        return espera().then(() => {
+          drenarColocar(); drenar();
+          for (const id in zonas) { const Z = zonas[id]; fundirHD(Z, true); fundirCercaZona(Z, true); }
+          fundirHDGlobal(); fundirCercaGlobal(); fundirLejosGlobal();
+        });
       },
       stats() {
         let modCerca = 0, modLejos = 0, modHD = 0, bytes = 0;
@@ -1557,7 +1561,7 @@ AVE.module('streaming', function (G) {
       const idsZ = new Set(Z.inst.map(I => I.id)), colZ = () => G.fisica.colliders.filter(c => idsZ.has(c.id)).length;
       const I0 = Z.inst.find(I => I.erguido && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 2), alto0 = () => I0 && G.solidos && G.solidos.altoEn ? G.solidos.altoEn(I0.pos[0], I0.pos[2], 1e4) : 0;
       const c1 = colZ(), s1 = alto0();
-      const visibles = Object.values(ST.lotes).some(L => L.mallas.some(m => m.visible && m.count > 0));
+      const visibles = Object.values(ST.lotes).some(L => L.mallas.some(m => m.visible && m.count > 0)) || scene.children.some(o => o.visible && /^edificiosZona(Cerca|HD)/.test(o.name));
       check('Se dibujan instancias de la zona', visibles, '');
       // 3. Salir: volver al inicio y liberar
       await ir(x0, z0, f0 && f0.x, f0 && f0.z);
