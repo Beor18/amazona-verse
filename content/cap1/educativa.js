@@ -834,14 +834,15 @@
             V.t = (V.t || 0) + dt;
             const p = V.r.en(V.d);
             const duty = RUTA.rafaga.on / (RUTA.rafaga.on + RUTA.rafaga.off);
-            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera && S.pos.y >= p.y - 2.5;
+            // Seguir el vapor ya obliga a ir a su altura (a 16 m). La ráfaga solo parte el avance: sube, para, sube.
+            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera;
             if (sube && V.d < V.r.total) V.d += (V.vel / duty) * dt;
             const q = V.r.en(V.d); voluta.position.set(q.x, q.y, q.z);
             modoVuelo = 'rafaga';
             if ((V.humo -= dt) <= 0) {
               V.humo = sube ? 0.08 : 0.22;
               bocanada(q.x, q.y - 0.4, q.z, sube ? 3.4 : 1.6);
-              G.fx.burst(q.x, q.y - 0.3, q.z, sube ? 'vapor' : 'bubbles', sube ? 6 : 2);
+              G.fx.burst(q.x, q.y - 0.3, q.z, 'bubbles', sube ? 6 : 2);
             }
             if (V.d >= V.r.total && Math.hypot(S.pos.x - L.nube.x, S.pos.y - NUBE_Y, S.pos.z - L.nube.z) < NUBE_R + 1.5) enNube();
           }
