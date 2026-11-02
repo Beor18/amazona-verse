@@ -65,6 +65,8 @@
   const TABLA_LARGA = EN({ x: 11, z: -3 }, { x: 35, z: -49 });
   const INICIO = EN({ x: -16, z: -16 }, { x: 44, z: -62 });
   // KELVIN-1 · resuelto (Kelvin 2-nov). Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
+  // En el real, Brote no va junto a la mesa (45, −60): a 1 m, su radio de Acción (2,4) quedaba dentro del de la mesa y, al
+  // llegar desde los otros visitantes (del oeste), Acción apuntaba a la mesa y el paso 2 no avanzaba (BM129).
   const VISITANTES = [
     { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', ...EN({ x: 13.5, z: -10.5 }, { x: 39, z: -60 }), sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
       presenta: 'Soy Mira. Desde arriba veo las islas, una por una. Lo que necesito… ya lo verás.' },
@@ -76,7 +78,7 @@
       presenta: 'Nudo. Ato y tejo. Pero para tejer una red buena necesito saber cómo va el agua, y de eso no sé.' },
     { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/eco.png', ...EN({ x: 6, z: -9 }, { x: 37, z: -55 }), sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
       presenta: '¿Tú eres Vittata? ¿Y ese puente? ¿Y la luz de allá? Soy Eco: aviso fuerte y vuelo alto. Pero necesito que me expliquen las cosas con calma.' },
-    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/brote.png', ...EN({ x: -6, z: -9 }, { x: 46, z: -60 }), sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
+    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/brote.png', ...EN({ x: -6, z: -9 }, { x: 42, z: -53 }), sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
       presenta: 'Soy Brote, el más nuevo. Aprendo rápido y traigo una hoja grande que da sombra. Necesito que me enseñen.' },
   ];
   const PAREJAS = [['mira', 'brote'], ['roca', 'eco'], ['marea', 'nudo']]; // las tres parejas que se cubren una a la otra
