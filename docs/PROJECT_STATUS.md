@@ -1,22 +1,25 @@
-# PROJECT_STATUS · 24 oct 2026
+# PROJECT_STATUS · 2 nov 2026
 
-**Hito actual:** 6, motor de cómic (completado en web). **Siguiente:** 7, cómic oficial, o 8, el bote (ver BACKLOG).
+Estado corto y verificable. El detalle vivo está en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`, `ROADMAP.md` y `docs/equipo/BUGS.md`. Qué versión está en línea: míralo en la hoja viva (último «Sitio: publica …» en `git log`).
 
-| Hito | Estado | Nota |
+**Ahora:** capítulo 1 al **100 %** (`docs/equipo/CAP1_PENDIENTE.md`). Temporada 1 (caps. 2 a 6) con contenido y pruebas; quedan por cerrar los caps. 5 y 6 en el mapa real. Rama única: `main`.
+
+| Área | Estado | Nota |
 |---|---|---|
-| 0 Base | TESTED | Repo Git, servidor de pruebas, documentación |
-| 1 Vittata | TESTED (sustituto) | Movimiento, cámara, colisiones, joystick táctil; Vittata como sprite del render |
-| 2 Interacción | TESTED | Objetos, NPC, diálogos, recursos, inventario |
-| 3 Construcción | TESTED | Plano, colocación con validación, costo, estructura persistente |
-| 4 Capítulo 1 | TESTED | Iguaca, dos terrenos, crecida, corrección, Guardián, transmisor, mirador (pág. 12), final |
-| 5 Personaje del jugador | TESTED | Modelo 3D original con esqueleto, 8 plumajes, 6 accesorios 3D con colores, Taller de los Guardianes, retrato 3D, guardado. Expresión facial: NOT STARTED (el rig no tiene huesos de pico ni párpados) |
-| 6 Motor de cómic | TESTED | Eventos con esquema, selección por eventos reales, editor, PNG y PDF inspeccionados |
-| 7 Cómic oficial | NOT STARTED | Necesita aprobar el diseño de Vittata |
-| 8 Bote | NOT STARTED | El plano ya se desbloquea al final del capítulo 1 |
-| 9 Comunidad | NOT STARTED | Indicadores básicos ya existen |
-| 10 Family Quest | NOT STARTED | |
-| 11 Builds por plataforma | BLOCKED | Web funciona; iOS/Android nativos requieren cuentas y Xcode completo |
+| Capítulo 1 | Hecho | Jugable de principio a fin; los 28 hitos de `CAP1_PENDIENTE.md` cerrados. Los sobrinos de Kelvin lo jugaron en 16 min (1-nov) |
+| Cap. 2 (Caney del Meandro) | En el mapa real | BM111, d027b6b |
+| Cap. 3 (río de Villa Raíz, desembocadura y laguna) | En el mapa real | BM112, e72f153 |
+| Cap. 4 (río al este de Villa Raíz; los Portales del Río son un cañón y no sirven) | En el mapa real | BM113, ff3a738 |
+| Caps. 5 y 6 | En su mundo pequeño; ya en el mapa real tras un interruptor apagado | `MAPA_REAL` en el pack o `?mapa=real`; se enciende cuando Kimi termine KIMI-Task-001 a 003 (`docs/equipo/MUNDO_UNICO.md`) |
+| Mundo único | Hecho (caps. 1 a 4) | `src/game/zonas.js` (BM114): lo cerrado se ve de lejos; el viento no deja pasar y avisa |
+| Pieles de especie | 31 especies con piel (BM109); 3 más en curso (BM124) | Quedan sin piel martinicana y violacea (solo propuesta) |
+| Criadero «Mi nido» | En el menú | Los huevos son de fantasía (decisión de Kelvin, 2-nov) |
+| Minimapa | Hecho | `src/game/minimapa.js`, ver `docs/equipo/MINIMAPA.md` |
+| Ranking en línea | Existe, opcional | `docs/equipo/SEGURIDAD_INFANTIL.md` §5; la decisión es de Kelvin (`PENDIENTES_KELVIN.md` §0) |
+| Cómic oficial, bote, Family Quest, builds nativos | Pendientes | Bote: el plano se desbloquea al final del cap. 1 |
 
-**Pruebas:** `AV.selfTest({saveFiles:true})` → 48/48 y `AV.accessoryTest()` → 10/10 en Chromium de escritorio (24 oct).
-**Bugs conocidos:** capturas de escena con cielo muy claro; en móvil el panel de misión ocupa espacio (ahora solo muestra el paso actual); la tira vertical deja viñetas bajas.
-**No probado:** iPhone/Android reales, Safari, rendimiento en móviles, duración real del capítulo.
+**Pruebas:** 12 baterías obligatorias en verde en la publicación 2d6257b / aa35ad7 (nube); `temporadaE2eTest` 31/31. Detalle y cómo correrlas: `docs/TEST_REPORT.md`.
+**Bugs abiertos de peso:** QA-85 (intermitente, sin reproducir). Lista completa en `docs/equipo/BUGS.md`.
+**Medido en equipos reales (1-nov, Kelvin, `#fps`):** Android 89 FPS (mín 40) e iPad 39 FPS (mín 36). Falta un Chromebook escolar. Kimi trabaja en bajar draw calls y texturas de las ruinas (`docs/equipo/TAREAS_KIMI.md`).
+**Pendiente de Kelvin:** `docs/equipo/PENDIENTES_KELVIN.md` (canon, arte, datos, producto y el día de legal y monetización).
+**No probado:** Safari de escritorio, Chromebook, niños fuera de la familia de Kelvin.
