@@ -114,3 +114,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 
 - 02-Nov 07:41 AST · **EN CURSO · web · ronda 10:** BM124 (pieles agilis, albifrons, festiva: tools/pieles, assets/textures/pieles, pieles.js, especies.js, pruebas de pieles y creador, en.js, pieles_fuentes) y BM125 (documentos técnicos: PROJECT_STATUS, TEST_REPORT, HUEVOS_GDD, MINIMAPA, ROADMAP, CAP1_PENDIENTE §2–4, hash de BM113, nº de baterías, SEGURIDAD_INFANTIL).
 - 02-Nov 07:52 AST · **HECHAS · web** · ronda 10: BM124 (3 pieles: las 34 especies vivas con piel) y BM125 (documentos técnicos al día, 8 commits). Publico con la nube.
+- 02-Nov 12:47 AST · **EN CURSO · web:** QA-87 (prefijo «· »/«✓ » de la línea de misiones sin traducir) y QA-88 (avisos «Acción: …» traducidos a medias), en `src/game/idioma.js` (y `en.js` de cap1–ep4 si hace falta). No toco `content/ep5`–`ep6` (QA-86 y QA-89 son de la nube).
