@@ -19,8 +19,10 @@
 2. Comprueba que **nadie** tiene la tarea ni sus archivos. Hay que mirar:
    - las filas EN CURSO de este archivo, de `TAREAS_WEB.md`, de `TAREAS_KIMI.md` y de la tabla Estado de `TAREAS_API.md`;
    - las últimas líneas de `COORDINACION_VIVO.md`;
-   - `git log --since="6 hours ago" --name-only -- <archivos de la tarea>`, para ver si alguien tocó esos archivos hace poco.
-3. Si algo coincide, **salta a la siguiente** y apúntalo en una línea de `COORDINACION_VIVO.md`.
+   - (solo como información) `git log --since="6 hours ago" --name-only -- <archivos de la tarea>`.
+3. **Solo se salta una tarea si otra tarea EN CURSO declara esos mismos archivos** en su columna «Archivos» (de este archivo o de `TAREAS_WEB.md`, `TAREAS_KIMI.md` o `TAREAS_API.md`). Que alguien haya hecho commit en un archivo hace poco **no** lo bloquea: haz `git pull --rebase` y trabaja encima.
+   - Los archivos compartidos de una línea, como `index.html` (añadir un `<script>`), `config.json` (añadir una prueba), los `en.js` (añadir claves) o `REGISTRO_TAREAS.md`, **nunca** bloquean: se añade y se resuelve el choque al hacer rebase.
+   - Si hay choque de verdad, salta a la siguiente y apúntalo en una línea de `COORDINACION_VIVO.md`.
 4. Si no, márcala `EN CURSO · Grok|Cursor · hora` en un commit solo de este archivo, haz push y entonces empieza.
 
 **Ahorro de créditos:** lee solo los archivos de la tarea, sin auditorías del repo. Haz un commit y un push por paso pequeño. Si te quedas sin crédito a mitad, deja la fila «a medias · qué falta».
