@@ -906,10 +906,18 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
               const sgT = V.segs.find(sg => sg.tuneles.length), tn = sgT.tuneles[0]; irA(sgT.id, Math.max(0, tn[0] - 12)); J.carga = []; J.zona = 0; camFollow(null);
               cuadros(Math.min(4, (12 + (tn[1] - tn[0]) / 2) / 8), 8); const dCam = R.camera.position.distanceTo(E.tren.position);
               check('Túnel: silbato al entrar, retumbe con eco dentro, farol encendido (haz a la vista) y cámara cerca y baja', J.zona === 2 && oidos.includes('tren_silbato') && oidos.includes('tren_tunel') && cam.tun > 0.6 && E.haz.visible && E.haz.material.opacity > 0.05 && dCam < 10 && E.inst.farol.count >= 1, 'cámara a ' + dCam.toFixed(1) + ' m · ' + E.inst.farol.count + ' faroles · ' + oidos.join(','));
-              let sgP = null, pt = null; for (const sg of V.segs) for (const p of sg.puentes) if (p[1] - p[0] >= 20 && (!pt || p[1] - p[0] > pt[1] - pt[0])) { sgP = sg; pt = p; }
-              oidos.length = 0; irA(sgP.id, Math.max(0, pt[0] - 6)); J.zona = 0; camFollow(null); cuadros(Math.min(3, (pt[1] - pt[0]) / 8), 8);
-              const lat = (() => { const q = enVia(sgP, J.s); return Math.abs((R.camera.position.x - q.x) * -q.tz + (R.camera.position.z - q.z) * q.tx); })(), vp = vista(16 / 9);
-              check('Puente largo: silbato, traqueteo de hierro y plano grúa (la cámara sube, se aleja y se abre hacia el lado libre; el tren sigue a la vista)', J.zona === 1 && oidos.includes('tren_silbato') && oidos.includes('tren_puente') && cam.pte > 0.6 && lat > 2.5 && R.camera.position.y - E.tren.position.y > 6 && enVista(vp.T), 'lateral ' + lat.toFixed(1) + ' m · alto ' + (R.camera.position.y - E.tren.position.y).toFixed(1) + ' m · pte ' + cam.pte.toFixed(2) + ' · ' + sgP.id + '@' + pt[0] + '-' + pt[1]);
+              // Puentes largos de mayor a menor: la cámara en grúa solo se abre donde el lado está libre (suelo, rocas, edificios); se prueba el primero donde lo está
+              const puentes = []; for (const sg of V.segs) for (const p of sg.puentes) if (p[1] - p[0] >= 20) puentes.push({ sg, p });
+              puentes.sort((x, y) => (y.p[1] - y.p[0]) - (x.p[1] - x.p[0]));
+              let ok = false, info = '';
+              for (const { sg: sgP, p: pt } of puentes) {
+                oidos.length = 0; irA(sgP.id, Math.max(0, pt[0] - 6)); J.zona = 0; camFollow(null); cuadros(Math.min(3, (pt[1] - pt[0]) / 8), 8);
+                const lat = (() => { const q = enVia(sgP, J.s); return Math.abs((R.camera.position.x - q.x) * -q.tz + (R.camera.position.z - q.z) * q.tx); })(), vp = vista(16 / 9);
+                ok = J.zona === 1 && oidos.includes('tren_silbato') && oidos.includes('tren_puente') && cam.pte > 0.6 && lat > 2.5 && R.camera.position.y - E.tren.position.y > 6 && enVista(vp.T);
+                info = 'lateral ' + lat.toFixed(1) + ' m · alto ' + (R.camera.position.y - E.tren.position.y).toFixed(1) + ' m · pte ' + cam.pte.toFixed(2) + ' · ' + sgP.id + '@' + pt[0] + '-' + pt[1] + ' (' + (puentes.findIndex(x => x.p === pt) + 1) + '/' + puentes.length + ')';
+                if (ok) break;
+              }
+              check('Puente largo: silbato, traqueteo de hierro y plano grúa (la cámara sube, se aleja y se abre hacia el lado libre; el tren sigue a la vista)', ok, info);
             } finally { G.audio.play = play0; J.v = 0; camFollow(null); } }
           // ---------- Curva con exceso de velocidad: tambaleo, una caja al suelo, sin descarrilar ----------
           { let sgC = null, cv = null; for (const sg of V.segs) for (const c of sg.curvas) if (!cv || c.v < cv.v) { sgC = sg; cv = c; }
