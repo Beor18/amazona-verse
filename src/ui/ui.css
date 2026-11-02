@@ -650,6 +650,10 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #prompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 206px); font-size: 15px; }
   /* El aviso se alinea a la izquierda y deja libre la columna de botones de la derecha (Diario, Gestos, Pausa) */
   #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 262px); left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
+  /* CG-4 (QA-86, QA-87): con el diálogo o los gestos abiertos, el aviso sube bajo el objetivo; abajo tapaba el nombre y la
+     primera línea del diálogo y las filas 3–4 de los gestos (375×812) */
+  body:has(:is(#dialog, #emotes):not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; }
+  body:has(#end:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + var(--sp-3)); bottom: auto; } /* QA-88: sobre el panel final tapaba «Ver mi cómic» */
   #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--sp-3)); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
   .d-portrait { width: 76px; height: 76px; margin-top: -36px; border-width: 4px; }
   #dialog .who { font-size: var(--fs-md); margin-top: -30px; }

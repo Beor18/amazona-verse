@@ -100,7 +100,7 @@
 .maestro-body dt { font-weight: 700; }
 .maestro-body dd { margin: 0; overflow-wrap: anywhere; }
 /* BM73: alto contraste ≥ 7:1 en el rótulo verde y en el botón de peligro */
-:root.a11y-contraste .edu-head .eyebrow, :root.a11y-contraste .maestro-head .eyebrow { color: #0f4a24; }
+:root.a11y-contraste .edu-head .eyebrow, :root.a11y-contraste .maestro-head .eyebrow, :root.a11y-contraste .maestro-estado { color: #0f4a24; } /* BM116: el estado del Maestro (--leaf) daba 4,1:1 sobre el papel blanco; #0f4a24 sobre #fff = 10,4:1 */
 :root.a11y-contraste .btn.danger { --btn-bg: #8a1410; }
 .maestro-body label, .maestro-body .lbl { display: block; margin: var(--sp-3) 0 var(--sp-1); font-weight: 700; }
 .maestro-body .lbl { color: var(--c-ink-muted); }
