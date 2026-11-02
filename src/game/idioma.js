@@ -51,10 +51,18 @@ AVE.module('idioma', function (G) {
     return v.replace(/\{\}/g, () => (i < caps.length ? tr(caps[i++]) : ''));
   }
 
+  // Prefijos que la interfaz pega delante de un texto del diccionario (QA-87, QA-88): la línea de misiones («· », «✓ ») y el
+  // aviso de Acción («Acción: »). Se traduce el resto entero (con sus patrones {}) y se vuelve a poner el prefijo.
+  const PREFIJOS = [['· ', '· '], ['✓ ', '✓ '], ['Acción: ', 'Action: ']];
   // Traduce un texto (sin espacios de sobra) o lo devuelve igual
   function traducir(t) {
     const e = exactas.get(t);
     if (e != null) return e;
+    for (const [es, en] of PREFIJOS) {
+      if (t.length <= es.length || t.indexOf(es) !== 0) continue;
+      const resto = t.slice(es.length), r = traducir(resto);
+      if (r !== resto) return en + r;
+    }
     for (const p of patrones) {
       if (p.lit && t.indexOf(p.lit) !== 0) continue;
       const m = p.re.exec(t);

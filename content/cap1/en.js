@@ -565,6 +565,8 @@ window.AV_EN = {
  "Lugar": "Place",
  "Asentamiento": "Settlement",
  "Villa Raíz · la Empalizada": "Villa Raíz · the Stockade",
+ "Plaza de Villa Raíz": "Villa Raíz Square",
+ "Estación de Conservación": "Conservation Station",
  "Los Portales del Río": "The River Gateways",
  "Caney del Meandro": "Meander Caney",
  "Embarcadero de las Canoas": "Canoe Landing",
