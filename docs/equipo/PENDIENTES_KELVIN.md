@@ -40,6 +40,7 @@ Nada de esta sección frena el trabajo técnico. Mientras tanto, el juego sigue 
 23. **Alcance de «capítulo completo»** (§3-7) y **taller con interior** (§3-9). Duración meta (10-15, 20-30 o 45 min); «wow» obligatorios o al ep. 2; taller con interior en el cap. 1 o después (hoy: después).
 24. **14 capítulos / multiverso.** Mencionado para el prompt del 2-nov; no hay documento en el repo que lo defina (el repo trae 6 temporadas y 6 episodios de la temporada 1). Opciones: (a) Kelvin lo describe en su prompt; (b) se mantiene el plan de `STORY_BIBLE.md`.
 24b. **La Maraña (CG-18).** Hoy es una enredadera gris de fantasía, solo en el dispositivo, sin animal y sin especie invasora (`src/game/equipos.js`). Opciones: (a) entra en canon como en `PROPUESTA_PODERES_SECRETOS_BANDADAS.md` §D.1; (b) no entra. No se afirma ninguna amenaza real.
+24c. **Iguaca enseña la Llamada (CG-16).** En el refugio de la colina hay dos líneas nuevas y el aviso «Nuevo don: Llamada de la bandada. Mantén Impulso.» / «New gift: Flock Call. Hold Dash.» [KELVIN]. Lilacina (Ojo de cumbre) y Oratrix (Ráfaga doble) no están en el juego. Opciones: (a) se quedan estas líneas; (b) Kelvin las reescribe. Las otras dos mentoras: (a) entran después, con su texto; (b) no entran.
 
 ## 2. Arte
 
