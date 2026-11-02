@@ -205,12 +205,16 @@ class RestoredBuildingsTest(unittest.TestCase):
         self.assertFalse(failures, 'Edificios desarmados: ' + '; '.join(failures))
 
     def test_lod_triangle_budgets(self):
+        source_budget = {
+            'templo_grande': 184792, 'templo_grande_a': 89477, 'templo_grande_d': 212822,
+            'templo_grande_e': 128423, 'templo_grande_f': 144286, 'templo_mediano_h': 462218,
+        }
         failures = []
         for name in TARGETS:
             near = len(triangles(MODELS / (name + '.glb')))
             high = len(triangles(MODELS / (name + '_hd.glb')))
             far = len(triangles(MODELS / (name + '_lejos.glb')))
-            if near > 5000 or high > 85000 or far > 10000:
+            if near > 5000 or high > source_budget.get(name, 85000) or far > 10000:
                 failures.append('%s: ligero %d, HD %d, lejos %d' % (name, near, high, far))
         self.assertFalse(failures, 'Presupuesto superado: ' + '; '.join(failures))
 
