@@ -163,7 +163,8 @@ AVE.module('comic', function (G) {
       opciones: [() => L('Desde la rama mirábamos el bosque.', 'From the branch we watched the forest.'),
         () => L('Agarrarse bien a una rama también se aprende.', 'Holding on to a branch is something you learn too.'),
         () => L('Allá arriba el bosque sonaba distinto.', 'Up there the forest sounded different.')] },
-    { id: 'nido', img: 'nido', needs: 'NestAppeared', sinCaptura: true, ilustracion: 'nido',
+    // El nido: foto real de la escena (Iguaca lo presenta en el mundo); la ilustración queda solo si no hay lienzo
+    { id: 'nido', img: 'nido', needs: 'NestAppeared', ilustracion: 'nido',
       texto: () => L('Encontramos un nido con una cápsula. Lo que aprenda le dará calor.', 'We found a nest with a capsule. What I learn will keep it warm.'),
       opciones: [() => L('Un nido nuevo nos esperaba cerca del camino.', 'A new nest was waiting for us near the path.'),
         () => L('Cada cosa que aprendo ayuda a mi cotorrita.', 'Everything I learn helps my little parrot.'),
