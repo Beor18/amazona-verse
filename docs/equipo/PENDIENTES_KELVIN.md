@@ -2,6 +2,17 @@
 
 Lista única para el prompt del 2-nov. Cada punto: una línea de contexto (de dónde sale) y las opciones posibles. **No se decide ni se recomienda nada.** Las letras D1… son las de `docs/equipo/TEMPORADA1_HILO.md` («Decisiones para Kelvin»); lo marcado «hoy» es lo que el juego hace ahora, no una propuesta.
 
+## 0. Para el día de legal y monetización (Kelvin, 2-nov: «no bloquean lo técnico; luego les dedico un día»)
+Nada de esta sección frena el trabajo técnico. Mientras tanto, el juego sigue tal cual está hoy.
+1. **Licencias del 3D.** Kelvin tiene las facturas del encargo con licencia comercial. Falta confirmar la licencia de las piezas de terceros incluidas: KitBash3D Savage y Ancient, Archmodels vol. 61, palmeras, hierba, losas y `canoa.jpg`. El detalle está en el informe privado del 2-nov, fuera del repo. Opciones: (a) prueba del vendedor; (b) comprar los kits a nombre de Kelvin; (c) sustituir esas piezas.
+2. **Música (Suno):** cubierta por la cuenta comercial de Kelvin.
+3. **Ranking en línea (Supabase).** Hoy publica sin la puerta de adulto y envía un apodo, una marca y un id de dispositivo (`src/game/records.js`). Opciones: (a) poner la puerta de adulto; (b) apagarlo para el piloto; (c) quitar el id; (d) dejarlo así. Revisión COPPA antes del piloto.
+4. **Límites de tamaño de la build:** se quitaron en `7847993`; la build publicada pesa ~223 MB. Opciones: (a) dejarlo sin límite; (b) poner topes nuevos.
+5. **Política «solo CC0»:** ajustarla para incluir lo comprado con licencia (KitBash3D, Suno), o sustituir.
+6. **Monetización:** `docs/equipo/MODELO_NEGOCIO.md`.
+
+**Mientras no decida, el juego usa lo que ya está hecho.** Esto vale también para las secciones 1 a 4: ninguna bloquea el trabajo técnico.
+
 ## 1. Canon e historia
 
 1. **Forma del Guardián.** `CANON_REGISTRY.md` (conflicto abierto), `CAP1_PENDIENTE.md` §3-1, KELVIN-1, D1. Hoy: cotorra mayor con el render de *imperialis* como sustituto. (a) cotorra mayor; (b) humano; (c) otra forma (pide arte nuevo).

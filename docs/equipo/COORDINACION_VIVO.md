@@ -98,3 +98,10 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - 2-nov 04:55 AST · **Web: ronda 9** en `TAREAS_API.md` (BM122 playtest de la temporada en el mundo único, BM123 lista consolidada de decisiones de Kelvin).
 - 02-Nov 05:12 AST · **EN CURSO · web · ronda 9:** BM122 (playtest caps. 1→4 en el mundo único; archivos: tests/qa/temporada_e2e.js, BUGS.md y lo de mi carril que falle) y BM123 (`docs/equipo/PENDIENTES_KELVIN.md`). No toco `content/ep5`–`ep6` ni `src/game/zonas.js`.
 - 02-Nov 05:55 AST · **HECHAS · web** · ronda 9: BM122 (playtest; QA-84 arreglado, QA-85 intermitente) y BM123 (`PENDIENTES_KELVIN.md`). Publico con la nube (12 obligatorias).
+- 2-nov 07:15 AST · **Kelvin: «enfoquémonos en terminar el juego completo». No hay prompt nuevo hasta terminar.** Lo legal y la monetización no bloquean nada (`PENDIENTES_KELVIN.md` §0). Carriles:
+  - **Kimi:** `TAREAS_KIMI.md`, mismo orden (001 → 009 → 002 → 004 → 003 → 005 → 010 → 006+008 → 007).
+  - **Mac:** cola BM116 → BM119 → BM121, y publica.
+  - **Cursor + Grok:** `TAREAS_CURSOR_GROK.md`, de CG-1 a CG-6.
+  - **Web:** ronda 10 de `TAREAS_API.md` (BM124 → BM125 → BM126).
+  - **Nube:** caps. 5 y 6 en `main` con el interruptor apagado (9a884c7); faltan las capturas y encenderlo cuando lo permitan KIMI-001 a 003. También revisa e integra lo de todos.
+
