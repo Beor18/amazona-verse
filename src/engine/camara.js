@@ -325,8 +325,9 @@ AVE.module('camara', function (G) {
     return CAM.fovMin + (CAM.fovMax - CAM.fovMin) * k;
   }
   let fovBonus = 0; // BM20: el despegue del mirador abre el campo de visión (G.wow); 0 el resto del tiempo
+  let fovPicado = 0; // DIVERSION_CAP1 mejora 6 (src/game/juice.js): el picado y el remonte abren el campo de visión; sin vida no cuenta
   function fov(dt) {
-    const wantFov = 55 + fovExtra() + fovBonus;
+    const wantFov = 55 + fovExtra() + fovBonus + (quieta() ? 0 : fovPicado);
     let dirty = false;
     // Un minijuego puede dejar el FOV en 34 o el zoom de la cámara en otro valor: aquí vuelve al de exploración.
     if (!(camera.fov > 30 && camera.fov < 100)) { camera.fov = wantFov; dirty = true; }
@@ -463,6 +464,6 @@ AVE.module('camara', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, get cortes() { return cortes; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });

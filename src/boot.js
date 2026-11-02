@@ -99,6 +99,10 @@
     const cargarWow = () => wow || (wow = cargarBandada().catch(() => {}).then(() => AVE.assets.script('src/game/wow.js')).then(() => window.AVWow(G), e => { wow = null; throw e; }));
     AV.wowTest = o => cargarWow().then(w => w.test(o));
     alPrimerGesto(cargarWow);
+    // «Juice» de vuelo (src/game/juice.js, DIVERSION_CAP1 mejora 6): rasante, picado, aterrizaje perfecto y pétalos; tras el primer gesto y al pedir su prueba
+    const cargarJuice = aDemanda('src/game/juice.js', 'AVJuice');
+    AV.juiceTest = o => cargarJuice().then(j => j.test(o));
+    alPrimerGesto(cargarJuice);
     // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
     let rioVivo = null;
     const cargarRioVivo = () => rioVivo || (rioVivo = AVE.assets.script('src/game/rio_vivo.js').then(() => window.AVRioVivo(G), e => { rioVivo = null; throw e; }));

@@ -1660,4 +1660,7 @@ window.AV_EN = {
  "Percha · sotobosque": "Perch · understory",
  "Percha · dosel": "Perch · canopy",
  "Percha · emergente": "Perch · emergent",
+ "¡Aterrizaje perfecto!": "Perfect landing!",
+ "¡Remonte!": "Swoop!",
+ "Rasante": "Skim",
 };
