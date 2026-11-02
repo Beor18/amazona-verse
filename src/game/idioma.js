@@ -192,7 +192,7 @@ AVE.module('idioma', function (G) {
     for (let n = w.nextNode(); n; n = w.nextNode()) {
       const p = n.parentNode;
       if (!p || ignorar(p) || !/\p{L}/u.test(n.data)) continue;
-      if (p.closest && p.closest('#dialog[hidden]')) continue; // línea que quedó de un diálogo ya cerrado
+      if (p.closest && p.closest('#dialog[hidden],#card[hidden]')) continue; // línea que quedó de un diálogo o una ficha (Diario) ya cerrados
       const t = norm(n.data);
       if (resto(t)) fuera.push(t);
     }
