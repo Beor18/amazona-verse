@@ -33,6 +33,8 @@ window.AVMovimientoTest = function (G) {
     // Solo la física (sin los oyentes de 'update' de fauna, retos…): para los recorridos largos que no miran nada más
     const paso = () => F.step(DT, G.ui.busy());
     const anim = n => { for (let i = 0; i < n; i++) { const mv = G.renderer.update(DT); G.emit('render', DT, G.renderer.t, mv); } };
+    // Física y solo la animación de Vittata (actores.sync3D), sin el resto de oyentes de 'render': más barato que anim
+    const animV = n => { for (let i = 0; i < n; i++) { const mv = G.renderer.update(DT); G.actores.sync3D(DT, mv, false); } };
     const reset = (x, z, y) => {
       K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false;
       F.endFlight(); M.flying = false; M.vx = M.vz = 0; M.dashT = M.dashCd = 0; M.buffer = 0; M.swimming = false;
@@ -197,12 +199,12 @@ window.AVMovimientoTest = function (G) {
       // aproximación final: nada por encima de 6 m al aterrizar, patas abajo en el último metro.
       if (P3 && P3.feet && P3.feet.length === 2) {
         const _w = new THREE.Vector3(), pieAlto = () => { P3.root.updateMatrixWorld(true); return Math.min(...P3.feet.map(f => P3.root.worldToLocal(f.eff.getWorldPosition(_w)).y)); };
-        reset(L.x, L.z); M.flying = true; M.grounded = false; S.pos.y += 20; S.vy = 0;
+        reset(L.x, L.z); M.flying = true; M.grounded = false; S.pos.y += 12; S.vy = 0;
         let ldCrucero = 0, pieCrucero = 9;
-        for (let i = 0; i < 90; i++) { K.add('w'); if (i === 45) F.tryDash(); anim(1); if (i >= 25) { ldCrucero = Math.max(ldCrucero, P3.legsDown || 0); pieCrucero = Math.min(pieCrucero, pieAlto()); } }
+        for (let i = 0; i < 70; i++) { K.add('w'); if (i === 40) F.tryDash(); animV(1); if (i >= 25) { ldCrucero = Math.max(ldCrucero, P3.legsDown || 0); pieCrucero = Math.min(pieCrucero, pieAlto()); } }
         K.clear(); F.land();
         let ldAlto = 0, ldFinal = 0, nl = 0;
-        while (M.flying && nl++ < 900) { anim(1); const a = S.pos.y - M.groundY; if (a > 6) ldAlto = Math.max(ldAlto, P3.legsDown || 0); else if (a < 1.2) ldFinal = Math.max(ldFinal, P3.legsDown || 0); }
+        while (M.flying && nl++ < 900) { animV(1); const a = S.pos.y - M.groundY; if (a > 6) ldAlto = Math.max(ldAlto, P3.legsDown || 0); else if (a < 1.2) ldFinal = Math.max(ldFinal, P3.legsDown || 0); }
         met.patasVuelo = { legsDownCrucero: r2(ldCrucero), pieCrucero: r2(pieCrucero), legsDownAltoAterrizando: r2(ldAlto), legsDownUltimoMetro: r2(ldFinal) };
         check('Patas en vuelo: recogidas en crucero e impulso; legsDown solo en la aproximación final', ldCrucero === 0 && pieCrucero > 0.2 && ldAlto === 0 && ldFinal > 0.8, JSON.stringify(met.patasVuelo));
       }
@@ -235,8 +237,8 @@ window.AVMovimientoTest = function (G) {
         const _v = new THREE.Vector3(), hl = Math.hypot(ladIK.nx, ladIK.nz) || 1;
         const pies = () => { P3.root.updateMatrixWorld(true); return P3.feet.map(f => { f.eff.getWorldPosition(_v); return _v.y - F.suelo(_v.x, _v.z, S.pos.y + 0.05); }); };
         const deLado = () => { S.facing = { x: -ladIK.nz / hl, z: ladIK.nx / hl }; };
-        reset(L.x, L.z); deLado(); anim(60); const h0 = pies();
-        reset(ladIK.x, ladIK.z); deLado(); anim(60); const e = pies().map((v, i) => v - h0[i]);
+        reset(L.x, L.z); deLado(); animV(45); const h0 = pies();
+        reset(ladIK.x, ladIK.z); deLado(); animV(45); const e = pies().map((v, i) => v - h0[i]);
         const sube = P3.ikFeet ? (P3.ikFeet[0] > P3.ikFeet[1] ? 0 : 1) : 0;
         met.ikLadera = { grados: r2(ladIK.deg), errPieArribaCm: Math.round(e[sube] * 1000) / 10, errPieAbajoCm: Math.round(e[1 - sube] * 1000) / 10, desnivelCm: P3.ikFeet ? Math.round(Math.abs(P3.ikFeet[0] - P3.ikFeet[1]) * 1000) / 10 : null };
         check('IK de patas: en una ladera de más de 20° cada pie queda a menos de 2 cm de su suelo', Math.abs(e[0]) < 0.02 && Math.abs(e[1]) < 0.02 && met.ikLadera.desnivelCm > 5, JSON.stringify(met.ikLadera));
@@ -312,9 +314,9 @@ window.AVMovimientoTest = function (G) {
         SO.terminar();
         // empieza ya en el aire (sin pasar por el suelo: junto a una estaca quedaría metida en ella y la red de seguridad de fisica.js la sacaría)
         // conAnim: cada cuadro también anima a Vittata (sync3D), para ver el gesto de aterrizar o de posarse
-        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) { if (conAnim) anim(1); else frame(); } SO.terminar(); };
+        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) { if (conAnim) animV(1); else frame(); } SO.terminar(); };
         // Tras aterrizar con animación: ¿hubo gesto de posarse (cuántos, dónde, peso máximo) o asentarse general?
-        const gestoTras = n0 => { let g = 0, se = 0, alas = false; for (let i = 0; i < 40; i++) { anim(1); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se) }; };
+        const gestoTras = n0 => { let g = 0, se = 0, alas = false; for (let i = 0; i < 40; i++) { animV(1); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se) }; };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
@@ -381,7 +383,7 @@ window.AVMovimientoTest = function (G) {
               aterrizarEn(rama.x, rama.z, rama.g + 2, true);
               const enRama = gestoTras(n0), posadoRama = M.posado;
               reset(L.x, L.z); n0 = G.actores.posa.n;
-              aterrizarEn(L.x, L.z, S.pos.y + 4, true);
+              aterrizarEn(L.x, L.z, S.pos.y + 3.5, true);
               const enSuelo = gestoTras(n0);
               met.posarse = { rama: enRama, posado: posadoRama, suelo: enSuelo };
               check('Posarse: en una rama usa el gesto de posarse (no el aterrizaje general); en el suelo llano, el general',
