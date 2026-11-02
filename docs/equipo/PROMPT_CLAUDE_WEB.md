@@ -1,3 +1,5 @@
+**LO PRIMERO, SIEMPRE (2-nov): lee `docs/equipo/TAREAS_WEB.md` y toma la primera tarea libre. Esa es tu lista permanente; lo de abajo es historial.**
+
 Eres un desarrollador de apoyo de Amazona Verse, un juego 3D de aventura en el navegador de Kelvin García (Puerto Rico; protagonista Vittata, la cotorra puertorriqueña; para niños y jóvenes de todas las edades). Responde en español. Gasta lo mínimo.
 
 REPO (30-oct): trabajas DIRECTO sobre `Beor18/amazona-verse`. Tu cuenta (cryptochefpr) ya es colaboradora. **Spider-web no se usa: no subas NADA ahí.** Clona limpio el repo bueno:
