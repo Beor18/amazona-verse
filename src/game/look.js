@@ -75,11 +75,13 @@ window.AVLook = function (G) {
         rim: { color: [0.75, 0.88, 1.0], int: 0.55, borde: [0.55, 1.0] }, // color (lineal), fuerza y rango del borde
       },
       // Noche permitida (cap. 5, mundo.cielo.permiso = 'noche'): misma gradación y mismo toon; cielo atmosférico, no un fondo plano.
+      // BM127: la noche anterior (sol cálido 1,35 alto en el cielo, cenit #24366e) se veía de día en la Mac con GPU. Ahora es
+      // luz de luna: fría, suave y baja (la altura la da luces.solPos del pack), con cielo y niebla de noche. [KELVIN] valores de arte.
       noche: {
-        exposicion: 0.72,
-        cielo: { cenit: '#24366e', horizonte: '#6d84b0', sol: '#ffd7a8' },
-        niebla: { color: '#8aa4c8', inicio: 48, fin: 720 },
-        luces: { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35 },
+        exposicion: 0.7,
+        cielo: { cenit: '#0f1a3d', horizonte: '#34466e', sol: '#dfe6ff' },
+        niebla: { color: '#2c3a5c', inicio: 48, fin: 720 },
+        luces: { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75 },
       },
     },
   };

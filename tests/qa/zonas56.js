@@ -12,6 +12,13 @@
     while (performance.now() - t0 < ms) { try { const v = fn(); if (v) return v; } catch (e) { /* aún no */ } await sleep(step || 100); }
     return null;
   }
+  // BM127: S.hora = 21 no basta; lo que se ve lo deciden la luz y el cielo vivos del renderer (look «noche» + solPos del pack)
+  function nocheViva(W) {
+    const R = W.AV.G.renderer, sk = R.sky && R.sky.material.uniforms, c = sk && sk.uCenit.value, lum = c ? 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b : NaN;
+    const sol = R.sun.intensity, alto = R.sunDir ? R.sunDir.y : NaN, fria = R.sun.color.b >= R.sun.color.r;
+    const ok = sol <= 1 && alto <= 0.45 && fria && lum < 0.03 && R.renderer.toneMappingExposure <= 0.72;
+    return { ok, txt: 'sol ' + sol.toFixed(2) + ' a y=' + (+alto).toFixed(2) + (fria ? ' fría' : ' cálida') + ' · cenit lum ' + (+lum).toFixed(3) + ' · exposición ' + R.renderer.toneMappingExposure };
+  }
   window.AV = window.AV || {};
   window.AV.zonas56Test = async function (opts) {
     opts = opts || {};
@@ -38,6 +45,7 @@
         // Con tests/qa/mapa_real.js cargado todos los iframes llevan ?mapa=real: la mitad «apagada» no se puede comprobar aquí
         if (!window.AV.mapaRealForzado) {
           check(`Cap. ${cap} · apagado: mundo pequeño de siempre (sin el mapa real) y zonas inactivas`, !G.terreno.mapa && !G.zonas.activa, 'mapa ' + !!G.terreno.mapa);
+          if (cap === 5) { const n = nocheViva(W); check('Cap. 5 · apagado: la luz y el cielo vivos son de noche (BM127)', n.ok, n.txt); }
           r = await W.AV.zonasTest();
           check(`Cap. ${cap} · apagado: AV.zonasTest ${r.passed}/${r.total}`, r.total > 0 && r.passed === r.total, r.results.filter(x => !x.ok).map(x => x.name + ' ' + x.extra).join(' | '));
         }
@@ -54,7 +62,11 @@
         const bajo = sitios.filter(([n, p]) => { if (/percha_v|colocar/.test(n)) return false; const y = G.terreno.height(p.x, p.z), w = G.agua && G.agua.levelAt ? G.agua.levelAt(p.x, p.z) : -Infinity; return !(isFinite(y) && y > 5) || (isFinite(w) && w > y - 0.3); })
           .map(([n, p]) => n + ' (' + p.x.toFixed(1) + ', ' + p.z.toFixed(1) + ')');
         check(`Cap. ${cap} · nada queda bajo el agua ni fuera del suelo de la isla`, !bajo.length, bajo.join(' | '));
-        if (cap === 5) check('Cap. 5 · ?mapa=real: de noche (permiso «noche» del look y S.hora de noche)', G.pack.mundo.cielo.permiso === 'noche' && G.S.hora >= 19, 'hora ' + G.S.hora);
+        if (cap === 5) {
+          check('Cap. 5 · ?mapa=real: de noche (permiso «noche» del look y S.hora de noche)', G.pack.mundo.cielo.permiso === 'noche' && G.S.hora >= 19, 'hora ' + G.S.hora);
+          const n = nocheViva(W);
+          check('Cap. 5 · ?mapa=real: la luz y el cielo vivos son de noche (luna baja, fría y suave; cielo oscuro), no solo S.hora (BM127)', n.ok, n.txt);
+        }
         r = await W.AV.zonasTest();
         check(`Cap. ${cap} · ?mapa=real: AV.zonasTest ${r.passed}/${r.total}`, r.total >= 7 && r.passed === r.total, r.results.filter(x => !x.ok).map(x => x.name + ' ' + x.extra).join(' | '));
         check(`Cap. ${cap} · sin errores de consola`, !((W.__aveErrores) || []).length, ((W.__aveErrores) || []).slice(0, 3).join(' | '));

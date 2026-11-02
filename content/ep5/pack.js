@@ -114,9 +114,10 @@
     // (los mismos valores del mundo pequeño), los lugares del capítulo y la flora despejada en sus sitios; sin el reubicar ni
     // los pois del cap. 1. Sin el interruptor, el mundo pequeño de siempre.
     mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
-      exposicion: 0.72,
-      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#6d84b0', cenit: '#24366e', sol: '#ffd7a8', niebla: [48, 720], permiso: 'noche' }),
-      luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35 }),
+      // La luna baja con su propio solPos: sin él heredaba el sol de mediodía del cap. 1 ([-42, 70, 46]) y se veía de día (BM127)
+      exposicion: 0.7,
+      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#34466e', cenit: '#0f1a3d', sol: '#dfe6ff', niebla: [48, 720], permiso: 'noche' }),
+      luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75, solPos: [-36, 14, 40] }),
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
       lugares: { inicio: { x: INICIO.x, z: INICIO.z + 1, r: 5 } },
@@ -129,9 +130,9 @@
       } }),
     }) : {
       tamano: 46, segmentos: 64,
-      exposicion: 0.72,
-      cielo: { color: '#6d84b0', cenit: '#24366e', sol: '#ffd7a8', niebla: [48, 720], nieblaAltura: [6, 48], permiso: 'noche' },
-      luces: { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35, solPos: [-20, 28, 30] },
+      exposicion: 0.7,
+      cielo: { color: '#34466e', cenit: '#0f1a3d', sol: '#dfe6ff', niebla: [48, 720], nieblaAltura: [6, 48], permiso: 'noche' },
+      luces: { cielo: '#6f86c0', suelo: '#1c2620', hemi: 0.55, sol: '#aebfff', solInt: 0.75, solPos: [-24, 12, 30] },
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
       lugares: { inicio: { x: -4, z: 8, r: 6 } },
