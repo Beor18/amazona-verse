@@ -1345,14 +1345,15 @@ AVE.module('streaming', function (G) {
         }
       }
       for (const m of hdGlobal.mallas) {
-        let sombra = false, directa = false;
+        let enVista = false, sombra = false, directa = false;
         for (const id in zonas) {
           const Z = zonas[id]; if (!Z.usaHDFusion) continue;
+          if (Z.hdMallas.some(h => h.material.name === m.material.name && h.userData.enVista)) enVista = true;
           if (Z.hdMallas.some(h => h.material.name === m.material.name && h.userData.sombra)) {
             sombra = true; if (!Z.ciudad) directa = true;
           }
         }
-        m.visible = m.userData.enVista || sombra; m.castShadow = directa;
+        m.visible = enVista || sombra; m.castShadow = directa;
         if (m.visible) vis.mallas++;
       }
       for (const m of cercaGlobal.mallas) {
@@ -1498,6 +1499,14 @@ AVE.module('streaming', function (G) {
       const iniciales = zs.filter(Z => Math.max(0, Math.hypot(x0 - Z.cx, z0 - Z.cz) - Z.r) < Rc);
       check('Lo de cerca del inicio está cargado y con colisiones', iniciales.every(Z => Z.nivel === 2 && Z.inst.every(I => I.colocado)),
         iniciales.map(Z => Z.id + ':' + Z.inst.filter(I => I.colocado).length + '/' + Z.inst.length).join(' '));
+      if (hdGL2() && R.setCalidad) {
+        R.setCalidad('medio', true); ST.revisar(); dibujar(2);
+        const zonasHD = zs.filter(zn => zn.usaHDFusion && zn.hdMallas.some(h => h.userData.enVista || h.userData.sombra)).length, globalHD = [];
+        scene.traverse(o => { if (o.visible && o.name && o.name.indexOf('edificiosZonaHDGlobal:') === 0) globalHD.push(o.name); });
+        check('La fusión global HD solo se dibuja con una zona HD visible', globalHD.length === 0 || zonasHD > 0,
+          zonasHD + ' zonas HD visibles · mallas globales: ' + (globalHD.join(', ') || 'ninguna'));
+        R.setCalidad('alto', true); ST.revisar(); dibujar(2);
+      }
       // 2. Entrar en una zona que no esté cerca del punto de partida: fuera de vista si la hay, si no la más lejana
       ST.revisar(x0, z0);
       const Z = zs.filter(Zn => !iniciales.includes(Zn) && Zn.nivel < 2).sort((a, b) => a.nivel - b.nivel || b.d - a.d)[0] || zs.slice().sort((a, b) => b.d - a.d)[0];
