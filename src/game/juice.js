@@ -297,6 +297,11 @@ window.AVJuice = function (G) {
         Object.assign(M, { flying: true, speed: F.FLY_SPEED, dashT: 0 }); const ex = cam.fovExtra(); cam.fovPicado = 6; for (let i = 0; i < 80; i++) cam.fov(0.1);
         const fv = camF.fov; Object.assign(M, snapM); cam.fovPicado = 0; C.sinVida = sv2; for (let i = 0; i < 60; i++) cam.fov(0.1);
         ok('Cámara: el FOV del picado no se suma al del vuelo (el mayor de los dos, más fovBonus)', Math.abs(fv - (55 + Math.max(ex, 6) + cam.fovBonus)) < 0.2, JSON.stringify({ vuelo: ex, fov: +fv.toFixed(2) })); }
+      { // BM131: saltos seguidos (un aterrizaje cada 0,5 s) no hacen latir la cámara: un dolly cada 1,2 s como mucho
+        const V = cam.vida, sv3 = C.sinVida, l0 = M.land, i0 = M.impact; C.sinVida = false; V.desdeCaida = 99; let nuevos = 0, prev = V.caida;
+        for (let f = 0; f < 90; f++) { if (f % 15 === 0) { M.land = (M.land || 0) + 1; M.impact = 0.5; } cam.follow(1 / 30); if (V.caida > prev + 0.05) nuevos++; prev = V.caida; }
+        M.land = l0; M.impact = i0; C.sinVida = sv3; V.caida = 0;
+        ok('Cámara: con saltos seguidos el dolly del aterrizaje no late (≤ 3 en 3 s con 6 aterrizajes)', nuevos >= 1 && nuevos <= 3, nuevos); }
       // 11b. Bug del iPad de Kelvin (2-nov, «loop de zoom»): quieta junto a una pared alta, con toques del dedo en la pantalla,
       // la distancia de la cámara no cambia más de ±5 % en 3 s; un toque no gira ni inclina la vista; dos dedos (pellizco) tampoco
       if (G.solidos && G.solidos.activo) {

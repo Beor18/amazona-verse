@@ -61,7 +61,7 @@ Director de diseño de juego, 2026-10-25, según la directiva V8.0 de Kelvin: **
 
 **Orden:** 1, 2, 3 (una semana: el primer minuto cambia) → 4, 5 → 6, 7 → 8, 9 → 10 cuando haya arte y decisiones de Kelvin.
 
-**Estado (2-nov):** 1 a 5 hechas. **6 hecha** en `src/game/juice.js` (prueba `AV.juiceTest`): estela y ondas a < 1 m del río o la hierba con el chip «Rasante ×N», FOV al picar (`G.camara.fovPicado`) y «¡Remonte!» al nivelar sin aletear, pop «¡Aterrizaje perfecto!» a < 2 m/s, pétalos al cruzar un flamboyán; `fisica.js` no cambia. Queda [KELVIN]: si el primer aterrizaje perfecto da las coderas de TRAITS_V2 (el juego ya emite `aterrizajePerfecto`). 7 a medias (retos con récord y fantasma propio; faltan fantasma por código y Vuelo del día), 10 a medias (bandada y álbum de fauna; faltan las cotorras que rondan y el Álbum de las Amazonas); 8 y 9 sin empezar.
+**Estado (2-nov):** 1 a 5 hechas. **6 hecha** en `src/game/juice.js` (prueba `AV.juiceTest`): estela y ondas a < 1 m del río o la hierba con el chip «Rasante ×N», FOV al picar (`G.camara.fovPicado`) y «¡Remonte!» al nivelar sin aletear, pop «¡Aterrizaje perfecto!» a < 2 m/s, pétalos al cruzar un flamboyán; `fisica.js` no cambia. Queda [KELVIN]: si el primer aterrizaje perfecto da las coderas de TRAITS_V2 (el juego ya emite `aterrizajePerfecto`). 7 a medias (retos con récord y fantasma propio; faltan fantasma por código y Vuelo del día). 8 (CG-9), 9 (gags del pichón) y 10 etapa 1 (residentes, bandada que se posa, Álbum de las 36) hechas por otros carriles.
 
 ---
 
