@@ -81,6 +81,7 @@
       if (G.ui && G.ui.toast) G.ui.toast(en ? r.en : r.es, 2200);
       return true;
     }
+    function activo() { return don && performance.now() < don.fin ? don.id : null; }
     function pintarBoton() {
       const b = document.getElementById('b-dash');
       if (!b) return;
@@ -163,7 +164,7 @@
       conDones(id) { conDonesFam = id || null; return api; },
       forzar(id) { forzar = id || null; return api; },
       sostener, activar,
-      activo() { return don && performance.now() < don.fin ? don.id : null; },
+      activo,
       test
     };
     const exponer = n => {
