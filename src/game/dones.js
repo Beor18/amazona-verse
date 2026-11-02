@@ -51,8 +51,46 @@
     }
     function mult(eje) {
       const n = paso(eje), k = PASO[eje] || (eje === 'aguante' ? PASO.trepar : 1);
-      return Math.pow(k, n);
+      let m = Math.pow(k, n);
+      // Rebufo de la Llamada: ×1,08 de crucero mientras dura. El tope ×1,15 lo pone fisica.js.
+      if (eje === 'velocidad' && don && don.id === 'llamada' && performance.now() < don.fin) m *= 1.08;
+      return m;
     }
+    const REGALO = {
+      islenas: { id: 'llamada', es: 'Vittata llama a la bandada.', en: 'Vittata calls the flock.', dura: 8, espera: 40 },
+      cordilleranas: { id: 'ojo', es: 'Vittata ve desde la cumbre.', en: 'Vittata sees from the summit.', dura: 6, espera: 30 }
+    };
+    let don = null, sostenido = 0;
+    function soltarSostener() {
+      if (!sostenido) return;
+      const ms = performance.now() - sostenido;
+      sostenido = 0;
+      if (ms >= 600) activar();
+    }
+    function sostener(on) { if (on) sostenido = performance.now(); else soltarSostener(); }
+    function activar() {
+      if (enReto() && !conDonesFam) return false;
+      const ahora = performance.now();
+      if (don && ahora < don.listo) return false;
+      const r = REGALO[idFamilia()];
+      if (!r) return false;
+      don = { id: r.id, fin: ahora + r.dura * 1000, listo: ahora + (r.dura + r.espera) * 1000 };
+      if (r.id === 'llamada') G.emit('canto');
+      if (r.id === 'ojo' && G.fx && G.fx.ringFx && G.S && G.S.pos) G.fx.ringFx(G.S.pos.x, G.S.pos.y + 1, G.S.pos.z, 12, 1.4, 0.85);
+      const en = document.documentElement.lang === 'en';
+      if (G.ui && G.ui.toast) G.ui.toast(en ? r.en : r.es, 2200);
+      return true;
+    }
+    function pintarBoton() {
+      const b = document.getElementById('b-dash');
+      if (!b) return;
+      const ahora = performance.now();
+      let p = 0;
+      if (sostenido) p = Math.min(1, (ahora - sostenido) / 600);
+      else if (don && ahora < don.listo) p = Math.max(0, (don.listo - ahora) / ((don.listo - don.fin) || 1));
+      b.style.outline = p > 0.02 ? '3px solid rgba(255, 208, 120, ' + (0.35 + 0.6 * Math.min(1, p)).toFixed(2) + ')' : '';
+    }
+    G.on('update', () => { pintarBoton(); }, 80);
     // Vuelta de prueba: crucero, giros, planeo que hay que recuperar, vista y sigilo.
     // Los pesos dejan a las 6 familias dentro de ±1,5 % de la media (CG-10).
     function tiempo(id) {
@@ -95,6 +133,18 @@
         check('Con dones, Del norte va a ×1,03', Math.abs(mult('velocidad') - 1.03) < 1e-9, String(mult('velocidad')));
         conDonesFam = null; forzar = null;
         document.body.classList.remove('retos-on');
+        don = null;
+        forzar = 'islenas';
+        let cantos = 0;
+        G.on('canto', () => { cantos++; });
+        check('Mantener Impulso activa la Llamada de la bandada', activar() === true && activo() === 'llamada' && cantos >= 1, activo() || 'sin don');
+        check('Mientras recarga no vuelve a activarse', activar() === false);
+        don = null;
+        forzar = 'cordilleranas';
+        check('Ojo de cumbre se activa en las Cordilleranas', activar() === true && activo() === 'ojo', activo() || 'sin don');
+        don = null; forzar = null;
+        const en = document.documentElement.lang === 'en';
+        check('El aviso tiene frase en español y en inglés', REGALO.islenas.es && REGALO.islenas.en && REGALO.cordilleranas.es && REGALO.cordilleranas.en && (en ? REGALO.islenas.en : REGALO.islenas.es).length > 8);
         const tiempos = ids.map(tiempo);
         const media = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
         const peor = Math.max(...tiempos.map(t => Math.abs(t / media - 1)));
@@ -102,7 +152,7 @@
       } catch (e) {
         check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));
       } finally {
-        forzar = forz0; conDonesFam = con0;
+        forzar = forz0; conDonesFam = con0; don = null; sostenido = 0;
         if (!clase0) document.body.classList.remove('retos-on');
       }
       const passed = out.filter(o => o.ok).length;
@@ -112,6 +162,8 @@
       familias: FAMILIAS, de: DE, familia: idFamilia, ejes: ficha, paso, mult, tiempo,
       conDones(id) { conDonesFam = id || null; return api; },
       forzar(id) { forzar = id || null; return api; },
+      sostener, activar,
+      activo() { return don && performance.now() < don.fin ? don.id : null; },
       test
     };
     const exponer = n => {
