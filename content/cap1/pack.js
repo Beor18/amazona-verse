@@ -34,6 +34,11 @@
     ChickJumped: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'nest' },
     FirstChallengeRecord: { type: 'RecordAchieved', loc: null, chars: ['vittata'], scene: 'race' },
     PhotoTaken: { type: 'PhotoTaken', loc: null, chars: ['player'], scene: 'photo' },
+    // Gags del pichón (criadero.js, mejora 9): el cómic los anota una vez por partida (src/game/comic.js)
+    ChickFell: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_fall' },
+    ChickChasedButterfly: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_butterfly' },
+    ChickNapped: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_nap' },
+    ChickMimicked: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_mimic' },
   };
   const DONE = 8; // pasos de la historia (historia.js)
   // Viñetas de los momentos: el último evento de una clave y el tiempo m:ss.d de la carrera
@@ -182,6 +187,21 @@
         }, opciones: ['Volé tan rápido que el viento me pidió que esperara.', 'Récord nuevo. Mañana lo rompo otra vez.', 'Mis plumas todavía van a toda velocidad.'] },
         { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
           opciones: ['Esta es mi mejor pose. Sin discusión.', 'Lista para la foto: plumas peinadas y todo.', '¡Digan «coquí»!'] },
+        // Gags del pichón en el mundo (DIVERSION_CAP1 mejora 9; los emite criadero.js): G.emit('criadero', gag, { id?, foto?() | imagen? })
+        // o G.emit(gag, { … }). comic.js registra el evento una vez por partida y la viñeta nace con la foto que traiga o, si no
+        // trae, con una captura del mundo (sin lienzo: la ilustración). Si el gag todavía no existe, su viñeta nunca aparece.
+        { id: 'pichon_cae', img: 'pichon_cae', needs: 'ChickFell', gag: 'pichonCae', ilustracion: 'pichon_cae',
+          texto: '¡Pataplún! Mi cotorrita se cayó del borde, se sacudió y siguió como si nada.',
+          opciones: ['Aterrizó de colita y se paró como una campeona.', 'Una sacudida de plumas y ¡lista otra vez!', 'Dice que lo hizo a propósito. Yo le creo.'] },
+        { id: 'pichon_mariposa', img: 'pichon_mariposa', needs: 'ChickChasedButterfly', gag: 'pichonMariposa', ilustracion: 'pichon_mariposa',
+          texto: 'Mi cotorrita persiguió una mariposa por todo el camino.',
+          opciones: ['La mariposa iba ganando, pero por poquito.', 'Corre que corre… ¡y la mariposa ni sudó!', 'Dice que mañana la alcanza. Mañana.'] },
+        { id: 'pichon_duerme', img: 'pichon_duerme', needs: 'ChickNapped', gag: 'pichonDuerme', ilustracion: 'pichon_duerme',
+          texto: 'Mi cotorrita se quedó dormida… ¡justo encima de un hallazgo escondido!',
+          opciones: ['Zzz… Hasta dormida me ayuda a buscar.', 'Encontró el tesoro y se acostó encima. Muy lista.', 'Roncaba bajito, como un coquí con sueño.'] },
+        { id: 'pichon_imita', img: 'pichon_imita', needs: 'ChickMimicked', gag: 'pichonImita', ilustracion: 'pichon_imita',
+          texto: 'Hice un gesto y mi cotorrita me imitó. ¡Igualita!',
+          opciones: ['Ahora somos dos haciendo la misma pose.', 'Copia todo lo que hago. Me tengo que portar bien.', '¿Quién imita a quién? Ya no sé.'] },
         // Fauna que reacciona (src/game/fauna.js): la foto es la del momento (Vittata con el animal al lado)
         { id: 'flexiones', img: 'fauna_flexiones', needs: 'AnoleContest', texto: 'Concurso de flexiones: saludé a un lagartijo y me contestó con flexiones.',
           opciones: ['El lagartijo ganó. Yo solo tengo alas, no brazos.', 'Le dije hola y me enseñó su abanico amarillo.', 'Mañana entreno y vuelvo a retarlo.'] },
