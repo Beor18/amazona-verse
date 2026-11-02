@@ -907,7 +907,7 @@ AVE.module('comic', function (G) {
         G.quiet = false;
         try { G.emit('criadero', 'pichonVuelaDeLado', { id: 'h1' }); G.emit('criadero', 'brincoRaro'); } finally { G.quiet = true; }
         check('Un gag sin viñeta no registra nada', S.events.length === nEv);
-        const conFoto = gags.filter((v, j) => j % 2 === 0), sinFoto = gags.filter((v, j) => j % 2 === 1);
+        const conFoto = gags.filter((v, j) => j % 2 === 1), sinFoto = gags.filter((v, j) => j % 2 === 0);
         const lookGag = { preset: 'versicolor', outfit: 'rojo', accessory: 'gorra' };
         try { S.profile = Object.assign({}, S.profile, { look: G.creador.profileLook(lookGag) }); } catch (e) { /* sin modelo */ }
         G.quiet = false;
