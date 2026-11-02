@@ -132,7 +132,7 @@
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: M({ x: -6, z: 5 }), camara: 0.6 },
     // edu: aula del episodio (respuestas de «Iguaca te pregunta» y el registro local)
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    guardado: { version: 1, claves: ['edu', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     aula: { clave: 'amazonaverse.aula.cap4', estado: 'edu', archivo: 'amazonaverse_cap4', lecciones: () => window.AV_LECCIONES_EP4 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata); el nido entra al cerrar M1 con Iguaca. Ninguna cápsula se compra.
     criadero: { desde: 'ShoreSurveyed', almacen: 'amazonaverse' },
@@ -202,7 +202,7 @@
           { texto: 'Elige un cuidado', hasta: { evento: 'CareChosen' } }, { texto: 'Construye', hasta: { evento: 'ProjectBuilt' } }], recompensa: { hito: 'acuerdo' } },
     ],
     // Diario del ep. 4: 6 hallazgos, 3 de la ribera y 3 de cómo se cruzan los ríos. El texto del juego describe solo lo que hay en
-    // el juego; el dato real de cada uno está en lecciones.js (mismo id) y va «por verificar»: no sale al Diario sin fuente.
+    // el juego; el dato real de cada uno está en lecciones.js (mismo id) y solo sale al Diario si está «verificado» (Kelvin 2-nov).
     diario: {
       titulo: 'Cuaderno del río', corto: 'Cuaderno', boton: 'Cuaderno',
       categorias: { ribera: { nombre: 'Ribera', desconocido: 'Algo en la orilla', sonido: 'pickup', rafaga: 'feathers' },
@@ -717,7 +717,8 @@
         check('Esquema igual al ep. 1: 4 objetivos, 6 preguntas, 6 fichas, guía de 45 min, 3 sin pantalla y rúbrica de 5',
           (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
           (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
-        check('Ninguna ficha sale al Diario sin fuente verificada', AU.fichas().length === 0 && LEC.diario.every(f => f.verificacion === 'por_verificar' && f.fuente && f.nota_verificacion));
+        // BM126: verificación de Kelvin del 2-nov. Antes se exigía que las 6 fueran por verificar.
+        check('Solo salen al Diario las fichas verificadas (Kelvin 2-nov); los taínos no «navegaban ríos» y el cable no es tradición de PR', AU.fichas().map(f => f.id).join(',') === 'sombra,soga,remo,piedras' && AU.fichas().every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'raices,hoja_seca' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/río/i.test(AU.ficha('remo').dato.es) && !/Puerto Rico/i.test(AU.ficha('soga').dato.es), AU.fichas().map(f => f.id).join(','));
         check('Las 6 preguntas se pueden hacer', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
         check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
         G.misiones.seguirExplorando();

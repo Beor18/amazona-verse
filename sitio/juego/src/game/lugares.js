@@ -87,14 +87,14 @@ AVE.module('lugares', function (G) {
     '@media (prefers-reduced-motion:reduce){#rotulo-lugar{animation:rotulo-lugar-quieto 3.6s linear forwards}@keyframes rotulo-lugar-quieto{0%,85%{opacity:1}100%{opacity:0}}}' +
     ':root.a11y-contraste #rotulo-lugar{background:#000;border-color:#fff;border-width:3px}';
   let elR = null, tR = 0;
-  function rotulo(a, nuevo) {
+  function rotulo(a, nuevo, extra) {
     if (!elR) {
       if (!document.getElementById('estilo-rotulo-lugar')) { const st = document.createElement('style'); st.id = 'estilo-rotulo-lugar'; st.textContent = ESTILO; document.head.appendChild(st); }
       elR = document.createElement('div'); elR.id = 'rotulo-lugar'; elR.className = 'hud'; elR.hidden = true; elR.setAttribute('role', 'status'); elR.setAttribute('aria-live', 'polite'); elR.setAttribute('data-no-tr', '');
       document.body.appendChild(elR);
     }
     elR.innerHTML = (nuevo ? `<small class="nuevo">${esc(L('¡Lugar descubierto!', 'Place discovered!'))}</small>` : '') +
-      `<small>${esc(L('Bienvenido a', 'Welcome to'))}</small><b>${esc(L(a.nombre, a.en))}</b>`;
+      `<small>${esc(L('Bienvenido a', 'Welcome to'))}</small><b>${esc(L(a.nombre, a.en))}</b>` + (extra || '');
     elR.hidden = true; void elR.offsetWidth; elR.hidden = false; // reinicia la animación
     tR = 3.6;
   }
@@ -152,8 +152,9 @@ AVE.module('lugares', function (G) {
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
     cola.shift();
     espera = d.asentamiento ? 3.8 : 3.4;
-    if (d.asentamiento) rotulo(d.asentamiento, d.nuevo);
-    else G.ui.toastHTML(`<b>Descubriste</b> ${esc(d.nombre)}`, 3200);
+    const cuenta = d.nuevo && G.descubrir && G.descubrir.htmlCuenta ? G.descubrir.htmlCuenta() : ''; // «Lugares descubiertos N/M» (descubrir.js)
+    if (d.asentamiento) rotulo(d.asentamiento, d.nuevo, cuenta);
+    else G.ui.toastHTML(`<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200);
     if (d.nuevo) G.audio.play('pickup');
   }
   let t = 0;
@@ -254,5 +255,5 @@ AVE.module('lugares', function (G) {
   // AV.lugaresTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.lugaresTest) AV.lugaresTest = o => test(o); }, 0);
 
-  return { lista, nombreDe, descubiertos, cerca, revisar, descubrir, omitido, asentamientos, asentamiento, cargarAsentamientos, test };
+  return { lista, nombreDe, descubiertos, cerca, revisar, avisar, descubrir, omitido, asentamientos, asentamiento, cargarAsentamientos, test };
 });

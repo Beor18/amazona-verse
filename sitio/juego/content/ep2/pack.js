@@ -119,7 +119,7 @@
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
     // edu: aula del episodio (fichas, respuestas de «Iguaca te pregunta» y el registro local). Las partidas del prototipo sin la
     // clave la reciben vacía (aula.js la crea si falta).
-    guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
+    guardado: { version: 1, claves: ['edu', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     // Aula (src/game/aula.js): misma puerta («Docentes» + multiplicación) y mismo esquema que el ep. 1; clave propia del dispositivo
     aula: { clave: 'amazonaverse.aula.cap2', estado: 'edu', archivo: 'amazonaverse_cap2', lecciones: () => window.AV_LECCIONES_EP2 },
     // Criadero (src/game/criadero.js, content/comun/huevos.js): el nido entra en el mundo al cerrar M1 con Iguaca (SiteChosen).
@@ -199,8 +199,8 @@
         recompensa: { hito: 'casa' } },
     ],
     // Diario del ep. 2 (§7): 6 hallazgos, 3 de ciencia del terreno y 3 de cultura de la construcción en PR. Lo que el niño lee aquí
-    // describe solo lo que hay en el juego; el dato real de cada uno está en lecciones.js (diario, mismo id) y va «por verificar»:
-    // no sale al Diario hasta tener fuente. La parada del nido es la única charla con dato y fuente (abajo).
+    // describe solo lo que hay en el juego; el dato real de cada uno está en lecciones.js (diario, mismo id) y solo sale al Diario
+    // si está «verificado» (Kelvin 2-nov; zocos queda sin publicar: no se afirma una tradición de PR). La parada del nido es la única charla con dato y fuente (abajo).
     diario: {
       titulo: 'Cuaderno del terreno', corto: 'Cuaderno', boton: 'Cuaderno',
       categorias: { terreno: { nombre: 'Terreno', desconocido: 'Una marca del terreno', sonido: 'pickup', rafaga: 'feathers' },
@@ -212,7 +212,7 @@
           modelo: (add) => { add(new THREE.BoxGeometry(0.12, 0.04, 1.6), '#7ab8e0', 0, 0.05, 0); } },
         { id: 'poste_viento', cat: 'terreno', nombre: 'Poste con cinta', ...EN({ x: -5, z: -18 }, { x: -11, z: 53 }), texto: 'En la loma la cinta se agita; en el claro, apenas.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.05, 0.06, 1.2, 6), '#8a6a3a', 0, 0.6, 0); add(new THREE.PlaneGeometry(0.5, 0.18), '#d6403a', 0.3, 1.05, 0); } },
-        { id: 'zocos', cat: 'cultura', nombre: 'Zocos viejos', ...EN({ x: 13, z: 12 }, { x: -17, z: 22 }), texto: 'Cuatro postes de madera que una vez levantaron una casa del suelo.',
+        { id: 'zocos', cat: 'cultura', nombre: 'Postes viejos', ...EN({ x: 13, z: 12 }, { x: -17, z: 22 }), texto: 'Cuatro postes de madera que una vez levantaron una casa del suelo.',
           modelo: (add) => { for (const [dx, dz] of [[-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4]]) add(new THREE.CylinderGeometry(0.07, 0.08, 0.7, 6), '#6b4a2a', dx, 0.35, dz); } },
         { id: 'techo_zinc', cat: 'cultura', nombre: 'Plancha de techo', ...EN({ x: -14, z: -12 }, { x: -29, z: 8.5 }), texto: 'Una plancha ondulada, puesta inclinada para que el agua corra.',
           modelo: (add) => { const m = add(new THREE.BoxGeometry(1.2, 0.04, 0.8), '#9aa0a6', 0, 0.35, 0); m.rotation.z = 0.5; } },
@@ -841,7 +841,8 @@
         check('Esquema igual al ep. 1: 4 objetivos, 6 preguntas, 6 fichas, guía de 45 min, 3 sin pantalla y rúbrica de 5',
           (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
           (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
-        check('Ninguna ficha sale al Diario sin fuente verificada: las 6 van por verificar, con fuente propuesta y nota', AU.fichas().length === 0 && LEC.diario.every(f => f.verificacion === 'por_verificar' && f.fuente && f.nota_verificacion));
+        // BM126: verificación de Kelvin del 2-nov (VERIFICACION_EDUCATIVA_EP2_EP6_02NOV.md). Antes se exigía que las 6 fueran por verificar.
+        check('Solo salen al Diario las fichas verificadas (Kelvin 2-nov), con fuente y enlace; zocos (sin fuente histórica) y techo_zinc siguen por verificar', AU.fichas().map(f => f.id).join(',') === 'charco,cinta_lluvia,poste_viento,bohio' && AU.fichas().every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'zocos,techo_zinc' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/zoco|Puerto Rico|tradici/i.test(AU.t(AU.ficha('zocos').dato) + AU.t(AU.ficha('zocos').titulo)), AU.fichas().map(f => f.id).join(','));
         check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
         check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
         check('Antes de contestar, el reporte no lleva preguntas ni E4', AU.partida() && !AU.partida().preguntas.q1 && !AU.partida().objetivos_logrados.includes('E4'), JSON.stringify(AU.partida() && AU.partida().objetivos_logrados));
@@ -873,7 +874,7 @@
         // §7 Diario
         for (const f of G.diario.entries) { teleport(f.x + 0.3, f.z); tick(0.1); }
         check('Diario: 6 hallazgos (3 del terreno, 3 de casas de aquí) y el mapa del terreno', S.field.length === 6 && G.diario.count('terreno') === 3 && G.diario.count('cultura') === 3 && S.unlocked.includes('mano:mapa'), S.field.join(','));
-        check('Cada hallazgo tiene su ficha por verificar en la lección y el texto del juego no afirma el dato real', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)) && !/arcill|taíno|zinc|pilote/i.test(G.diario.entries.map(e => e.texto).join(' ')));
+        check('Cada hallazgo tiene su ficha en la lección y el texto del juego no afirma el dato real', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)) && !/arcill|taíno|zinc|pilote/i.test(G.diario.entries.map(e => e.texto).join(' ')));
         // §7 Criadero (compartido con todos los packs: content/comun/huevos.js)
         const H = (window.AV_HUEVOS && window.AV_HUEVOS.huevos) || [], cond = id => { const h = H.find(x => x.id === id); return (h && h.obtener && h.obtener.defecto) || {}; };
         check('Criadero del juego: el nido entra al elegir sitio (SiteChosen) y ninguna cápsula se compra', !!G.criadero && G.pack.criadero.desde === 'SiteChosen' && G.eventos.had('SiteChosen') && H.length > 0 && H.every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))));

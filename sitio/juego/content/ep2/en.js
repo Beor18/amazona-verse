@@ -293,7 +293,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
   "Un hilo de agua bajando por la loma, cada vez más rápido.": "A trickle of water running down the hill, faster and faster.",
   "Poste con cinta": "Post with a ribbon",
   "En la loma la cinta se agita; en el claro, apenas.": "On the hill the ribbon flaps; in the clearing, hardly at all.",
-  "Zocos viejos": "Old stilts",
+  "Postes viejos": "Old posts",
   "Cuatro postes de madera que una vez levantaron una casa del suelo.": "Four wooden posts that once lifted a house off the ground.",
   "Plancha de techo": "Roof sheet",
   "Una plancha ondulada, puesta inclinada para que el agua corra.": "A corrugated sheet, set at a slant so the water runs off.",

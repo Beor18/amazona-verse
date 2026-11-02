@@ -93,7 +93,7 @@
   const PREG_ORDEN = { izquierda: '¿Qué señal será «izquierda»?', derecha: '¿Qué señal será «derecha»?', para: '¿Qué señal será «parar»?' };
 
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png',
-    Navegante: 'assets/agilis.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); su render es arte pendiente (hoy agilis). [KELVIN: render de la gente de Villa Mangle]
+    Navegante: 'assets/navegante.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); retrato navegante.png (ventralis, el de los caps. 4 y 6). [KELVIN: render de la gente de Villa Mangle]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);
 
@@ -132,7 +132,7 @@
     },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: T(-6, -10), camara: 0.6 },
     // canoa: el nombre que le pone el jugador (D21): null = aún no se le preguntó; '' = sin nombre
-    guardado: { version: 1, claves: ['edu', 'canoa'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
+    guardado: { version: 1, claves: ['edu', 'canoa', 'lugares'], estado: () => ({ lugares: [], edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
     aula: { clave: 'amazonaverse.aula.ep3', estado: 'edu', archivo: 'amazonaverse_ep3', lecciones: () => window.AV_LECCIONES_EP3 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata y va en el bote); el nido entra en el mundo con la segunda botadura.
     // Ninguna cápsula se compra. obtener.ep3 en content/comun/huevos.js queda como pedido aparte (EP3_MISIONES.md §7).
@@ -221,7 +221,7 @@
         recompensa: { hito: 'bahia' } },
     ],
     // Diario del ep. 3 (§7): 6 hallazgos, 3 del agua y 3 de la gente de mar. Lo que el niño lee aquí describe solo lo que ve; el dato
-    // real de cada uno está en lecciones.js (diario, mismo id) y va «por verificar»: no sale al Diario hasta tener fuente.
+    // real de cada uno está en lecciones.js (diario, mismo id) y solo sale al Diario si está «verificado» (Kelvin 2-nov).
     diario: {
       titulo: 'Carta de la bahía', corto: 'Carta', boton: 'Carta',
       categorias: { agua: { nombre: 'Agua y viento', desconocido: 'Algo junto al agua', sonido: 'pickup', rafaga: 'feathers' },
@@ -981,7 +981,8 @@
           check('Esquema igual al ep. 2: 4 objetivos, 6 preguntas, 6 fichas, guía de 45 min, 3 sin pantalla y rúbrica de 5',
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
             (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
-          check('Ninguna ficha sale al Diario sin fuente verificada: las 6 van por verificar, con fuente propuesta y nota', AU.fichas().length === 0 && LEC.diario.every(f => f.verificacion === 'por_verificar' && f.fuente && f.nota_verificacion));
+          // BM126: verificación de Kelvin del 2-nov. Antes se exigía que las 6 fueran por verificar.
+          check('Solo salen al Diario las fichas verificadas (Kelvin 2-nov), con fuente y enlace; el cayuco sin «de pesca»', AU.fichas().map(f => f.id).join(',') === 'canoa_taina,cayuco,nasa' && AU.fichas().every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '') && f.nota_verificacion) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'flota_hunde,brisa_mar,semilla_viajera' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && !/pesca/i.test(AU.ficha('cayuco').dato.es), AU.fichas().map(f => f.id).join(','));
           check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
@@ -1003,7 +1004,7 @@
           check('Modo Maestro: pestaña del ep. 3', AU.pestanas().includes('ep3') && (AU.abrirMaestro(), AU.maestroAbierto()) && (AU.cerrarMaestro(), !AU.maestroAbierto()));
           for (const f of G.diario.entries) { teleport(f.x + 0.3, f.z); tick(0.1); }
           check('Diario: 6 hallazgos (3 del agua, 3 de gente de mar)', S.field.length === 6 && G.diario.count('agua') === 3 && G.diario.count('mar') === 3, S.field.join(','));
-          check('Cada hallazgo tiene su ficha por verificar y el texto del juego no afirma el dato real', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)) && !/taín|dens|arquím|antillas/i.test(G.diario.entries.map(e => e.texto).join(' ')));
+          check('Cada hallazgo tiene su ficha y el texto del juego no afirma el dato real', G.diario.entries.every(e => LEC.diario.some(f => f.id === e.id)) && !/taín|dens|arquím|antillas/i.test(G.diario.entries.map(e => e.texto).join(' ')));
           const HV = (window.AV_HUEVOS && window.AV_HUEVOS.huevos) || [];
           check('Criadero del juego: el nido entra con la segunda botadura; ninguna cápsula se compra; la cría sigue a Vittata', !!G.criadero && G.pack.criadero.desde === 'BoatLaunched' && G.criadero.KEY === 'amazonaverse.criadero' && G.guardado.KEY.startsWith('ep3.') && HV.every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))), G.criadero.KEY + ' · ' + G.guardado.KEY);
           // La bahía honda: a pie no se entra

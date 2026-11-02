@@ -170,8 +170,29 @@ AVE.module('actores', function (G) {
   // arriba (se nivela, patas y cola empiezan a bajar), flare en el metro siguiente (se echa atrás de pecho) y patas estiradas
   // hacia adelante en el último metro (alcance: de alcance m a alcance - 1). Inclinación (rad, + de pico): nivelada en el
   // pre-flare, echada atrás en el flare. Asentarse: s tras tocar el suelo (alas que se pliegan, reajuste de equilibrio).
-  const LAND = { pre: 2.4, flare: 1.0, alcance: 1.4, leanPre: 0, leanFlare: -0.6, asentar: 0.45, cabeceo: 0.12 };
+  // patas: m sobre el suelo bajo los que, cernida o despegando, baja las patas (más arriba van recogidas).
+  const LAND = { pre: 2.4, flare: 1.0, alcance: 1.4, leanPre: 0, leanFlare: -0.6, asentar: 0.45, cabeceo: 0.12, patas: 3 };
   const aterr = { vol: false, t: 9 };
+  // Posarse: gesto propio al tocar una percha (rama, poste, cuerda, baranda, cumbrera), un techo o una roca (MOVE.posado), una
+  // percha del diseño (fisica.perchas) o el borde del nido del criadero (su tronco no se pisa: collider), en vez del aterrizaje
+  // general. Al tocar: los dedos agarran, las rodillas amortiguan, el cuerpo se mece adelante y atrás (balanceo amortiguado,
+  // hz y amort) con la cola a contrapeso y las alas arriba para el equilibrio, y al final se acomoda las plumas. Volando hacia
+  // la percha, en el último metro las patas se estiran más con los dedos abiertos y la cabeza mira dónde se va a posar.
+  // Solo postura (character.js posarPose y ANIM.posar): la física no cambia. dur en s; cabeceo en rad (+ de pico); nido en m;
+  // salto: fuerza del gesto si llega saltando (no volando). n cuenta los gestos (pruebas).
+  const POSAR = { dur: 1.1, cabeceo: 0.16, hz: 2.2, amort: 3.4, nido: 2.2, salto: 0.6 };
+  const posa = { aire: false, t: 9, tipo: '', fuerza: 0, n: 0 };
+  function nidoCerca(x, z) {
+    const it = G.interaccion && G.interaccion.find && G.interaccion.find('nido_criadero');
+    return !!it && (!it.visible || it.visible()) && Math.hypot(it.x - x, it.z - z) < POSAR.nido;
+  }
+  // Dónde se posa (o se va a posar): '' si es suelo normal
+  function tipoPosada(F, MOVE, aire) {
+    if (!aire && MOVE.posado) { const SO = G.solidos; return (SO && SO.que && SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01)) || MOVE.posado; }
+    if (aire && (MOVE.perchY > -Infinity || MOVE.groundY - H(S.pos.x, S.pos.z) > 0.3)) return 'percha';
+    if (!aire && F.perchas.some(p => Math.abs(S.pos.y - p.y) < 0.05 && Math.hypot(S.pos.x - p.x, S.pos.z - p.z) < p.r && (!p.when || p.when()))) return 'percha';
+    return nidoCerca(S.pos.x, S.pos.z) ? 'nido' : '';
+  }
   const suave = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 
   function sync3D(dt, moving, snap) {
@@ -201,13 +222,24 @@ AVE.module('actores', function (G) {
       const alc = ate ? suave(LAND.alcance - alto) : 0;
       if (aterr.vol && !MOVE.flying && MOVE.grounded && !snap) aterr.t = 0; // acaba de posarse volando
       aterr.vol = MOVE.flying; aterr.t = snap ? 9 : aterr.t + dt;
-      const asen = aterr.t < LAND.asentar ? 1 - aterr.t / LAND.asentar : 0;
+      // Posarse: al tocar una percha (viniendo del aire, volando o saltando) empieza el gesto; mientras dura, no hay asentarse general
+      const enSuelo = MOVE.grounded && !MOVE.swimming;
+      posa.t = snap ? 9 : posa.t + dt;
+      if (enSuelo && posa.aire && !snap) {
+        const tipo = tipoPosada(F, MOVE, false);
+        if (tipo) { posa.t = dt; posa.tipo = tipo; posa.fuerza = aterr.t <= dt * 1.5 ? 1 : POSAR.salto; posa.n++; }
+      }
+      posa.aire = !MOVE.grounded && !MOVE.swimming;
+      const posando = enSuelo && posa.t < POSAR.dur && !moving;
+      const aprox = ate && tipoPosada(F, MOVE, true) ? 1 : 0;
+      const asen = posando ? 0 : aterr.t < LAND.asentar ? 1 - aterr.t / LAND.asentar : 0;
+      const balanceo = posando ? Math.sin(posa.t * Math.PI * 2 * POSAR.hz) * Math.exp(-posa.t * POSAR.amort) * posa.fuerza : 0;
       const flyLean = ate ? (0.1 + bajada * 0.45) * (1 - pre) + LAND.leanPre * pre + (LAND.leanFlare - LAND.leanPre) * fl
         : fase === 'despegue' ? 0.05 : fase === 'cernido' ? 0.12 + Math.min(1, sp / 2.5) * 0.1 + bajada * 0.5
         : 0.2 + Math.min(1, sp / F.FLY_SPEED) * 0.55 - Math.max(0, S.vy) * 0.05 + bajada * 0.25;
       // Al posarse, el cuerpo cabecea un poco hacia adelante y vuelve (recupera el equilibrio)
       const lean = MOVE.flying ? flyLean : MOVE.swimming ? swimLean : Math.min(0.35, sp / F.RUN_SPEED * 0.12 + (MOVE.dashT > 0 ? 0.25 : 0))
-        + LAND.cabeceo * Math.sin((1 - asen) * Math.PI);
+        + LAND.cabeceo * Math.sin((1 - asen) * Math.PI) + POSAR.cabeceo * balanceo;
       r.x += (lean - r.x) * Math.min(1, dt * 8);
       // Ladeo (roll): volando se inclina hacia dentro de la curva como un ave; corriendo, apenas; en el agua, meceo
       const bank = MOVE.flying ? Math.max(-0.65, Math.min(0.65, -turn.rate * Math.min(1, sp / F.FLY_SPEED) * 0.45))
@@ -229,9 +261,13 @@ AVE.module('actores', function (G) {
       P.speed = sp;
       P.gait = MOVE.swimming ? (moving ? 2 : 1) : air || !moving ? 0 : run ? 2 : 1; // nadando patalea siempre
       P.airborne = air; P.flying = MOVE.flying; P.posado = MOVE.posado || ''; P.agachada = MOVE.agachada || 0;
-      // Las patas se bajan al final: bajando de alto van recogidas, empiezan a salir en el pre-flare y en el flare quedan abajo
-      P.legsDown = ate ? Math.max(1 - bajada, Math.min(1, pre * 0.6 + fl)) : fase === 'cernido' ? 0.65 * (1 - bajada) : fase === 'despegue' ? 0.8 : 0;
+      // Las patas solo salen en la aproximación final (2-nov, Kelvin: «en crucero las patas cuelgan»): en crucero, planeo,
+      // impulso y bajando de alto van recogidas contra el vientre; empiezan a salir en el pre-flare y en el flare quedan abajo.
+      // Cernida o despegando, solo cerca del suelo (a menos de LAND.patas m): lista para posarse o recién impulsada.
+      const cerca = suave((LAND.patas - alto) / 1.2);
+      P.legsDown = ate ? Math.min(1, pre * 0.6 + fl) : fase === 'cernido' ? 0.65 * (1 - bajada) * cerca : fase === 'despegue' ? 0.8 * cerca : 0;
       P.landPre = pre; P.landFlare = fl; P.landReach = alc; P.landSettle = asen;
+      P.posarAprox = aprox; P.posarT = posando ? posa.t : -1; P.posarFuerza = posa.fuerza; P.posarDur = POSAR.dur; P.posarTipo = posando ? posa.tipo : ''; P.posarBalanceo = balanceo;
       P.swimming = MOVE.swimming; P.diving = diving;
       P.swimRate = moving ? 1.3 : 0.55;
       // IK de patas: el suelo bajo cada pie (terreno, pisos y perchas)
@@ -259,7 +295,7 @@ AVE.module('actores', function (G) {
       P.wingMode = MOVE.swimming ? (diving ? 'dive' : 'swim')
         : MOVE.flying ? (fase === 'despegue' ? 'takeoff' : ate ? (fl > 0.02 ? 'land' : pre > 0.3 ? 'preflare' : bajada > 0.3 ? 'descend' : 'glide')
           : jumpHeld ? 'flap' : bajada > 0.3 && sp < F.FLY_SPEED * 0.7 ? 'descend' : fase === 'cernido' ? 'hover' : S.vy < -0.2 && sp > F.FLY_SPEED * 0.7 ? 'glide' : 'fly')
-        : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (asen > 0.55 ? 'settle' : moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
+        : MOVE.dashT > 0 ? 'glide' : joy.t > 0.3 ? 'flap' : !air ? (posando ? (posa.t < 0.5 ? 'posar' : posa.t < 0.8 ? 'settle' : 'idle') : asen > 0.55 ? 'settle' : moving ? 'walk' : 'idle') : S.vy > 0 ? 'flap' : jumpHeld ? 'glide' : 'flap';
       ideaBulb.visible = emote.name === 'idea';
       if (ideaBulb.visible) ideaBulb.position.set(S.pos.x, S.pos.y + 2.55 + Math.sin(performance.now() / 180) * 0.06, S.pos.z);
       P.update(dt);
@@ -308,7 +344,7 @@ AVE.module('actores', function (G) {
     const moving = sp > 0.6;
     const clip = moving && !air && etapa !== 'bebe' && sp < (F.SPEED + F.RUN_SPEED) / 2 ? 'Walk' : 'Idle';
     if (anim3D.companion !== clip && C.play(clip)) anim3D.companion = clip;
-    C.speed = sp; C.airborne = air; C.flying = flying; C.legsDown = flying && sp < 2.5 ? 0.6 : 0;
+    C.speed = sp; C.airborne = air; C.flying = flying; C.legsDown = flying && sp < 2.5 && cmp.y - ground < LAND.patas ? 0.6 : 0; // patas recogidas salvo cernida cerca del suelo
     // Bebé: siempre a saltitos (patas juntas) y aleteando al saltar; juvenil y adulto caminan o corren
     C.gait = !moving || air ? 0 : etapa === 'bebe' || sp > (F.SPEED + F.RUN_SPEED) / 2 ? 2 : 1;
     C.wingMode = flying ? (sp < 2.5 ? 'hover' : 'fly') : air ? 'flap' : moving ? 'walk' : 'idle';
@@ -479,7 +515,7 @@ AVE.module('actores', function (G) {
   return {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
-    init3D, applyWear, refreshCompanion, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
+    init3D, applyWear, refreshCompanion, POSAR, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
     placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie,
   };
 });
