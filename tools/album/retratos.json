@@ -1,0 +1,121 @@
+{
+  "_nota": "Configuración común de los 36 retratos del Álbum (tools/album/README.md). Mismo encuadre y misma luz para todas; solo cambian la piel, la región del fondo y el acento (color propio de la cabeza, de PALETA en src/game/album.js).",
+  "pose": "Idle",
+  "t": 0.3,
+  "yaw": -0.6,
+  "encuadre": {
+    "fov": 24,
+    "tf": 0.66,
+    "alto": 0.98,
+    "az": 0,
+    "el": 0.08
+  },
+  "luces": {
+    "key": [
+      -0.55,
+      0.75,
+      0.6
+    ],
+    "keyI": 2.4,
+    "keyC": "#fff0d6",
+    "fill": [
+      0.8,
+      0.15,
+      0.6
+    ],
+    "fillI": 0.3,
+    "fillC": "#cfe3ff",
+    "rim": [
+      0.6,
+      0.6,
+      -0.9
+    ],
+    "rimI": 2.4,
+    "rimC": "#ffffff",
+    "hemiI": 0.55,
+    "exp": 0.78
+  },
+  "salida": {
+    "w2": 512,
+    "h2": 640,
+    "ss": 2,
+    "maxKB1": 25,
+    "maxKB2": 60
+  },
+  "regiones": {
+    "caribe": [
+      "vittata",
+      "imperialis",
+      "arausiaca",
+      "agilis",
+      "collaria",
+      "guildingii",
+      "versicolor",
+      "ventralis",
+      "leucocephala",
+      "barbadensis",
+      "martinicana",
+      "violacea"
+    ],
+    "centro": [
+      "finschi",
+      "oratrix",
+      "tresmariae",
+      "viridigenalis",
+      "auropalliata",
+      "guatemalae",
+      "albifrons",
+      "autumnalis",
+      "xantholora"
+    ],
+    "amazonia": [
+      "diadema",
+      "kawalli",
+      "festiva",
+      "dufresniana",
+      "farinosa",
+      "amazonica",
+      "ochrocephala"
+    ],
+    "andes": [
+      "lilacina",
+      "mercenarius",
+      "tucumana"
+    ],
+    "atlantico": [
+      "rhodocorytha",
+      "brasiliensis",
+      "vinacea",
+      "pretrei",
+      "aestiva"
+    ]
+  },
+  "provisionales": {
+    "_nota": "Pieles pintadas después sobre el UV (tools/pieles/pintor.py), no salidas de los .blend de Kelvin. Fuentes en docs/equipo/pieles_fuentes/<id>.md. Las otras 21 especies usan la piel cocida de su .blend.",
+    "con_render_de_kelvin_como_guia": [
+      "arausiaca",
+      "collaria",
+      "agilis",
+      "albifrons",
+      "festiva"
+    ],
+    "hay_render_de_kelvin_sin_cotejar": [
+      "finschi",
+      "lilacina",
+      "ventralis"
+    ],
+    "solo_con_fuentes": [
+      "pretrei",
+      "tucumana",
+      "vinacea",
+      "autumnalis"
+    ],
+    "extintas_canon_kelvin": [
+      "martinicana",
+      "violacea"
+    ],
+    "recoloreada_v4_aprobada": [
+      "vittata"
+    ]
+  }
+}
