@@ -65,7 +65,7 @@ window.AVJuice = function (G) {
   // Si el juego se pausa (menú, Diario, una tarjeta) el bucle 'update' no corre: el chip y el pop no se quedan encima de esa pantalla
   let ultimoPaso = 0;
   const ocultar = () => { chip.hidden = true; chip.classList.remove('sale'); pop.hidden = true; pop.classList.remove('anim'); popT = 0; };
-  setInterval(() => { if ((!chip.hidden || !pop.hidden) && performance.now() - ultimoPaso > 400) ocultar(); }, 250);
+  setInterval(() => { if ((!chip.hidden || !pop.hidden) && ((G.pausa && G.pausa.activa && G.pausa.activa()) || performance.now() - ultimoPaso > 1500)) ocultar(); }, 250); // 1,5 s: un equipo lento no lo apaga entre cuadros
   const pintarChip = n => { chip.innerHTML = `${L('Rasante', 'Skim')} <b>×${n}</b>`; };
 
   // ---------- Estela: dos colas de puntos (puntas de las alas), un solo Points aditivo ----------
@@ -259,7 +259,9 @@ window.AVJuice = function (G) {
       for (let i = 0; i < 20; i++) paso(0.1);
       ok('Aterrizaje perfecto: el pop se va solo', pop.hidden);
       reset(); correr(1.5, { alto: 0.5 }); alAterrizar(base({ flying: false, speed: 0.5, vy: -1, y: 2, suelo: 2 }));
-      const antesPausa = !chip.hidden && !pop.hidden; await new Promise(res => setTimeout(res, 900));
+      const antesPausa = !chip.hidden && !pop.hidden; simulado = null;
+      if (G.pausa && G.pausa.set) { G.pausa.set('juiceTest', true); try { await new Promise(res => setTimeout(res, 700)); } finally { G.pausa.set('juiceTest', false); } }
+      else await new Promise(res => setTimeout(res, 2000));
       ok('En pausa (sin cuadros) el chip y el pop no se quedan encima del menú', antesPausa && chip.hidden && pop.hidden);
       // 8. Pétalos al cruzar un flamboyán (copa de prueba) con espera por árbol
       reset(); copasExtra = [[S.pos.x, 10, S.pos.z, 4, 'prueba']]; copasT = -1; a0 = oidos.length; const vivos0 = G.fx.live;
