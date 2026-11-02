@@ -6,7 +6,7 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 
 ## Trabajo continuo (Kelvin, 1-nov: «que no pare»)
 **No pares a preguntar.** Al terminar una tarea, súbela y toma la siguiente libre, hasta que no quede ninguna. Orden recomendado:
-**009** (minutos) → **002** → **001** → **005** → **010** → **006 + 008** → **007** → **004** → **003**. Si una tarea se traba
+**001** (en curso) → **009** (minutos) → **002** → **004** → **003** → **005** → **010** → **006 + 008** → **007**. (Kelvin, 1-nov: 001, 002, 004 y 003 son las que llevan el juego al 100 %: cierran BM54, BM90 y BM98 del tablero.) Al terminar 001+002, 004 o 003, marca también la fila correspondiente de `TAREAS_API.md` (BM54, BM90, BM98) como `hecha · <commit>`. Si una tarea se traba
 más de una hora, déjala `BLOQUEADA · <motivo>` y sigue con la siguiente. Si te cortan (crédito, cuota, desconexión), al volver:
 `git pull --rebase origin main`, lee esta tabla y toma la primera libre o la tuya `EN CURSO`.
 
