@@ -161,7 +161,7 @@ AVE.module('diario', function (G) {
         check(`[${l}] Una ficha por especie, con común, científico, distribución, UICN y fuente`, li.length === L.length && [...li].every(x => x.querySelectorAll('b').length === 1 && x.querySelector('i[lang=la]') && x.querySelector('.uicn') && x.querySelector('.fuente') && x.querySelectorAll('small').length === 4));
         check(`[${l}] Sin «undefined» ni «null» en el texto`, !/undefined|null|\[object/.test(d.textContent));
         const fila = d.querySelector('[data-especie=diadema]');
-        check(`[${l}] Una de las 13 dice «${TX.porVerificar[l]}» y no una categoría`, !!fila && fila.querySelector('.uicn').textContent.includes(TX.porVerificar[l]));
+        check(`[${l}] El loro diadema ya trae su estado verificado (${E.categorias.LC[l]}, LC; Kelvin 2-nov)`, !!fila && fila.querySelector('.uicn').textContent.includes(E.categorias.LC[l] + ' (LC)'));
         const v = d.querySelector('[data-especie=vittata]');
         check(`[${l}] La cotorra muestra ${E.categorias.CR[l]} (CR) y la cita de BirdLife`, !!v && v.querySelector('.uicn').textContent.includes(E.categorias.CR[l] + ' (CR)') && /BirdLife/.test(v.querySelector('.fuente').textContent));
       }
