@@ -101,7 +101,7 @@
       function alTeclear(e) { if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
-        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar';
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar intro'; // «Saltar» a secas es el botón de saltar (Jump)
         btn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto'; // arriba al centro: abajo a la derecha pisaba «Acción» (BM55)
         btn.onclick = () => terminar(true); document.body.appendChild(btn);
       }

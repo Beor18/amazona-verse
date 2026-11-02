@@ -63,6 +63,10 @@ AVE.module('idioma', function (G) {
       const resto = t.slice(es.length), r = traducir(resto);
       if (r !== resto) return en + r;
     }
+    { // gestos «1 · Saludar» (QA-95): número y punto delante
+      const m = /^(\d+ · )(.+)$/.exec(t);
+      if (m) { const r = traducir(m[2]); if (r !== m[2]) return m[1] + r; }
+    }
     for (const p of patrones) {
       if (p.lit && t.indexOf(p.lit) !== 0) continue;
       const m = p.re.exec(t);
