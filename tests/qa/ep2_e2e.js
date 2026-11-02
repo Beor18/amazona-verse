@@ -91,7 +91,8 @@
         if (!G.idioma.faltan([t]).length || MOTOR.has(t) || NOMBRE_NIDO.test(t)) continue;
         // Ya en inglés (un valor del diccionario, o su final mientras el diálogo se escribe letra a letra) aunque diga «no» o «El Yunque»
         if (!valores) valores = Object.values(W.AV_EN || {});
-        if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)))) continue;
+        // QA-85 (W6): en el móvil el diálogo se ve a medio escribir: el principio de una línea inglesa («No…» de «Now…», «Las…» de «Last…»)
+        if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)) || (t.length >= 2 && v.startsWith(t)))) continue;
         faltanEN.add(t.slice(0, 200));
       }
     }
