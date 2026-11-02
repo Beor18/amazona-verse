@@ -93,6 +93,10 @@
         if (!valores) valores = Object.values(W.AV_EN || {});
         // QA-85 (W6): en el móvil el diálogo se ve a medio escribir: el principio de una línea inglesa («No…» de «Now…», «Las…» de «Last…»)
         if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)) || (t.length >= 2 && v.startsWith(t)))) continue;
+        { // la línea que se está escribiendo (caja o bocadillo), traducida entera, aunque lleve un nombre dentro («I choose {}…»)
+          const cur = [G.dialogo.actual && G.dialogo.actual(), G.dialogo.libre && G.dialogo.libre()].filter(Boolean);
+          if (cur.some(c => { const en = G.idioma.tr(c.text || ''); return en && en.includes(t); })) continue;
+        }
         faltanEN.add(t.slice(0, 200));
       }
     }
