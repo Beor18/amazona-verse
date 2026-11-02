@@ -742,7 +742,7 @@
           Gu('Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.'),
           Gu('(Se quita la medalla.) Es igual a una de las piezas. Cada vez que la tocaba, me volvía un recuerdo.'), // Kelvin 2-nov: la medalla se gana
           Gu('Ya no me hace falta: ahora recordamos entre todos. Es tuya, mija. Te la ganaste juntando a los que quedan.'),
-          Vi('Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.'),
+          Vi('Guardiana del Pacto… Está bien. Pero lo cuidamos entre todos.'),
         ], terminar);
       }
       function terminar() {

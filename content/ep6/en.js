@@ -298,7 +298,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Tiene algo grabado alrededor…": "There's something carved around it…",
  "El emblema de los 36, completo": "The emblem of the 36, whole",
  "Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.": "And you, Vittata: from today you are Guardian of the Pact. Not to give orders: so that no one is left out.",
- "Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.": "Guardian of the Pact… All right. But we look after it together.",
+ "Guardiana del Pacto… Está bien. Pero lo cuidamos entre todos.": "Guardian of the Pact… All right. But we look after it together.",
  "Entonces, entre todos: nos conocemos, nos ayudamos y nos seguimos buscando.": "Then, all together: we know each other, we help each other and we keep looking for each other.",
  "De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.": "At night, from the lookout, we count the seats that wait. No new light answers from the fog.",
  "Las islas olvidadas no oyen el relevo.": "The forgotten islands can't hear the relay.",
