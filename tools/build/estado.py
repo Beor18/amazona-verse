@@ -248,7 +248,7 @@ def cap1():
 
 def main():
     otras = tablero("TAREAS_KIMI.md", r"KIMI-Task-\d+", "Kimi") + \
-        tablero("TAREAS_CURSOR_GROK.md", r"CG-\d+", "Grok/Cursor") + tablero("TAREAS_WEB.md", r"W\d+", "Web")
+        tablero("TAREAS_CURSOR_GROK.md", r"CG-\d+", "Grok/Cursor") + tablero("TAREAS_WEB.md", r"W\d+", "Web") + tablero("TAREAS_NUBE.md", r"N\d+", "Nube")
     filas = api() + otras  # api() después: usa los ALIAS de los otros tableros
     hoy = dt.datetime.now(AST).date().isoformat()
     por = {k: [] for k in CARRILES}
