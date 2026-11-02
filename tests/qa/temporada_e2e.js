@@ -44,10 +44,26 @@
         cards: () => [...doc.querySelectorAll('[id^="ch-"]')].map(b => b.textContent) };
     };
     const texto = ls => (ls || []).map(l => l.text || '').join(' ');
+    // BM122 · Mundo único: el capítulo se juega en el mapa real, con su zona y las de los capítulos terminados abiertas
+    // (src/game/zonas.js), y todo lo que el jugador tiene que usar o encontrar (lo visible, el Diario y los personajes) cae
+    // dentro de lo abierto: si algo quedara fuera, el viento no dejaría llegar.
+    const mundo = (k, n, previos) => {
+      const Z = k.G.zonas, TP = k.TP, KEY = TP.KEY;
+      check('Ep. ' + n + ' · se juega en el mapa real, con sus zonas', !!k.G.terreno.mapa && !!Z && Z.activa, 'mapa ' + !!k.G.terreno.mapa + ' zonas ' + !!(Z && Z.activa));
+      if (!Z || !Z.activa) return;
+      try { const d = TP.leer(); for (const p of previos) d.terminados[p] = d.terminados[p] || Date.now(); localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* sin almacenamiento */ }
+      const ab = Z.abiertas();
+      check('Ep. ' + n + ' · abiertas: la suya y las de los capítulos terminados (' + (previos.join(', ') || 'ninguno') + ')', ab.includes(n) && previos.every(p => ab.includes(p)), ab.join());
+      const pts = k.G.interaccion.list.filter(it => it && typeof it.x === 'number' && (!it.visible || it.visible())).map(it => ['acción ' + it.id, it.x, it.z])
+        .concat((k.G.diario.entries || []).map(e => ['Diario ' + e.id, e.x, e.z]), (k.G.pack.npcs || []).map(c => ['personaje ' + c.id, c.x, c.z]));
+      const fuera = pts.filter(([, x, z]) => !Z.dentro(x, z)).map(([id, x, z]) => id + '@' + Math.round(x) + ',' + Math.round(z));
+      check('Ep. ' + n + ' · lo visible, el Diario y los personajes caen dentro de lo abierto', !fuera.length, fuera.join(' ') || pts.length + ' puntos');
+    };
     try {
       // ---------- ep. 2 · elige el sitio (se recarga entre lecturas y elección) ----------
       let W = await abrir('ep2'); if (!W) { check('Ep. 2 arranca', false, 'no arrancó'); throw new Error('ep2'); }
       let k = kit(W); k.G.quiet = true; k.G.guardado.reset(true);
+      mundo(k, 2, []);
       check('Ep. 2 · crea el personaje', k.G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
       k.useAt('iguaca'); k.drain(); k.useAt('sitio_a'); k.drain(); k.useAt('sitio_b'); k.drain(); k.useAt('sitio_c'); k.drain();
       check('Ep. 2 · lee los 3 sitios', ['lee_a', 'lee_b', 'lee_c'].every(x => k.S.collected.includes(x)), k.S.collected.join());
@@ -59,6 +75,7 @@
       // ---------- ep. 3 · nombra la casa elegida; navega; bautiza la canoa ----------
       W = await abrir('ep3'); if (!W) { check('Ep. 3 arranca', false, 'no arrancó'); throw new Error('ep3'); }
       k = kit(W); k.G.quiet = true; k.G.guardado.reset(true); k.G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+      mundo(k, 3, [2]);
       const cont3 = texto(k.G.pack.continuidad());
       check('Ep. 3 · nombra la casa elegida en el ep. 2 (sitio ' + sitio + ')', cont3.length > 20, cont3);
       const otros = ['a', 'b', 'c'].filter(x => x !== sitio).map(x => { k.TP.apuntar(2, { sitio: x }); return texto(k.G.pack.continuidad()); });
@@ -80,6 +97,7 @@
       // ---------- ep. 4 · nombra la canoa; encuentra a los guardianes; decide ----------
       W = await abrir('ep4'); if (!W) { check('Ep. 4 arranca', false, 'no arrancó'); throw new Error('ep4'); }
       k = kit(W); k.G.quiet = true; k.G.guardado.reset(true); k.G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
+      mundo(k, 4, [2, 3]);
       const cont4 = texto(k.G.pack.continuidad());
       check('Ep. 4 · nombra la canoa «Ceiba» del ep. 3', /Ceiba/.test(cont4), cont4);
       k.S.step = 1; k.useAt('bosque'); k.drain();

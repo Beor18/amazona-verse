@@ -107,6 +107,7 @@ AVE.module('zonas', function (G) {
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
-  G.zonas = { activa, abiertas, dentro, zonaEn, ZONAS, test };
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.zonasTest) AV.zonasTest = o => test(o); }, 0);
+  // El motor guarda en G.zonas lo que devuelve el módulo (core.js: G[nombre] = factory(G) || {}): se devuelve la API
+  return { activa, abiertas, dentro, zonaEn, ZONAS, test };
 });
