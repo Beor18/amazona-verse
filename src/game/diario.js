@@ -106,7 +106,7 @@ AVE.module('diario', function (G) {
     const items = entries.map(f => S.field.includes(f.id)
       ? `<li class="found"><span class="ico ${f.cat}" aria-hidden="true"></span><div><b>${f.nombre}</b><small>${f.texto}</small></div></li>`
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${(cats[f.cat] || {}).desconocido || 'Algo'} por descubrir</small></div></li>`).join('');
-    const ropa = G.misiones.unlocks.map(u => `<li class="${S.unlocked.includes(u.clave) ? 'found' : ''}">${S.unlocked.includes(u.clave) ? '✓' : '·'} ${u.nombre} <small>(${u.pista})</small></li>`).join('');
+    const ropa = G.misiones.unlocks.map(u => `<li class="${S.unlocked.includes(u.clave) ? 'found' : ''}">${S.unlocked.includes(u.clave) ? '✓' : '·'} ${u.nombre}${u.pista ? ` <small>(${u.pista})</small>` : ''}</li>`).join('');
     const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
     G.ui.showCard(`<h2>${D.titulo || 'Diario'}</h2><p class="note">${S.field.length}/${total}${byCat}</p>
       <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
