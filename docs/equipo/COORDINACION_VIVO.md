@@ -3,6 +3,7 @@
 Esta hoja la leen y actualizan **los dos equipos** antes y después de cada tarea. Es la única fuente de verdad para no duplicar trabajo y para retomar después de un corte, una desconexión o una recarga de crédito.
 
 ## Carriles (no se pisan)
+- **Regla anti-duplicados (Kelvin, 1-nov: «coordínense bien para no perder créditos»):** nadie toma una tarea del carril de otro. La coordinadora (nube) NO hace tareas del web ni de Kimi: coordina, revisa, integra y publica; solo toma una tarea ajena si su dueño la marcó `BLOQUEADA` o lo pide aquí. Antes de empezar cualquier tarea: `git pull`, leer las últimas 10 líneas de esta hoja y `git log -5` del área.
 - **Mac (API, GPU real):** gráficos y motor. Archivos: `src/engine/*` de render (`terreno, streaming, vegetacion, dosel, mundo, renderer, solidos`), `src/game/look.js`, `tools/blender/*`, y las pruebas de movimiento/visual. Cola en `tools/agente_api/cola.txt`.
 - **Web (cryptochefpr, sin GPU):** todo lo demás — contenido (`content/*`), texto, inglés, datos educativos (con fuente), accesibilidad, bugs no gráficos, pruebas de esos. Tareas en `TAREAS_API.md` «Carril del agente web».
 
