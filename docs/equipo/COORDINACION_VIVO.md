@@ -97,3 +97,4 @@ Prioridad de Kelvin: 1º EDIFICIOS Y MAPA (para mejorar gráficas en la web y el
 - 2-nov 04:50 AST · **EN CURSO · nube · caps. 5 y 6 al mapa real tras interruptor** (definitivo: el web ya los dejó a la nube en su nota de las 02:48). Incluye ajustar `src/game/zonas.js` (ZONAS[5], ZONAS[6]). **Web: no los toques.**
 - 2-nov 04:55 AST · **Web: ronda 9** en `TAREAS_API.md` (BM122 playtest de la temporada en el mundo único, BM123 lista consolidada de decisiones de Kelvin).
 - 02-Nov 05:12 AST · **EN CURSO · web · ronda 9:** BM122 (playtest caps. 1→4 en el mundo único; archivos: tests/qa/temporada_e2e.js, BUGS.md y lo de mi carril que falle) y BM123 (`docs/equipo/PENDIENTES_KELVIN.md`). No toco `content/ep5`–`ep6` ni `src/game/zonas.js`.
+- 02-Nov 05:55 AST · **HECHAS · web** · ronda 9: BM122 (playtest; QA-84 arreglado, QA-85 intermitente) y BM123 (`PENDIENTES_KELVIN.md`). Publico con la nube (12 obligatorias).
