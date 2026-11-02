@@ -352,3 +352,9 @@ Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lect
 - `integrar_originales.py` vuelve a exportar con el mismo tope de 512 px. Los ocho HD desactivados por KIMI-Task-009 se conservan en `DISABLED_HD`.
 - `tools/blender/texturas_edificios_test.py` comprueba el límite de 1024 px por textura, el presupuesto total inferior a 100 MiB y el tope del generador.
 - En la misma vista de la Ciudad de los 36 (`docs/img/kimi/kimi_task_002_{antes,despues}.png`), las texturas originales visibles bajan de 197,9 a 75,4 MiB y las texturas grandes de 47 a 16. Se conservan 109 draw calls, 1 551 525 triángulos y 0 errores de consola. Las medidas completas están en los JSON homónimos.
+
+## Visibilidad de la fusión global HD (2-nov-2026)
+
+- La vista aérea de Villa Raíz en calidad media dibujaba `edificiosZonaHDGlobal:AV_HD_Ancient` aunque ninguna zona contribuyente usaba HD: eran 4 600 625 triángulos de una malla global activada solo por su caja envolvente.
+- `streaming.js` ahora activa cada fusión global HD únicamente cuando una zona que sí usa HD tiene esa materia en vista o proyectando sombra. La prueba integrada comprueba que no quede una fusión global visible sin una zona HD visible.
+- A/B en la misma vista, calidad media y Linux (`docs/img/kimi/kimi_task_011_{antes,despues}.png`): 5 365 191 → 733 545 triángulos, 89 draw calls y 37 → 56 FPS medidos, con 0 errores de consola. Las medidas y el desglose de mallas están en los JSON homónimos. La medición en iPad sigue siendo una comprobación aparte del dispositivo.

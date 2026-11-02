@@ -1,0 +1,84 @@
+{
+ "look": "vibrant_toon",
+ "fps": 37,
+ "calls": 89,
+ "triangulos": 5365191,
+ "calidad": "medio",
+ "dpr": 1,
+ "post": true,
+ "programas": 55,
+ "heapMB": 854,
+ "geometrias": 144,
+ "texturasGPU": 92,
+ "texturas": 147,
+ "texturasGrandes": 43,
+ "atlasGrandes": 4,
+ "texturasMB": 648.1,
+ "sombraMB": 4,
+ "postMB": 18.5,
+ "texturasPor": {
+  "generadas": 213.1,
+  "otros": 7,
+  "suelo": 11.3,
+  "personajes": 12,
+  "flora": 63.4,
+  "atlas_hd": 341.3
+ },
+ "texturasTop": [
+  [
+   "hd_savage.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_savage_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "flora:impostores",
+   "2048×2048",
+   21.3
+  ],
+  [
+   "Vittata_1",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "Vittata_2",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:toldo_pequeno:hd:Multi_Pikes_KB3D_",
+   "1024×1024",
+   5.3
+  ]
+ ],
+ "ms": 27.31,
+ "fpsMedidos": 37,
+ "msMediana": 16.7,
+ "msP90": 50,
+ "cuadros": 180
+}

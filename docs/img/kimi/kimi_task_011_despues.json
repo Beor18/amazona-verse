@@ -1,0 +1,341 @@
+{
+ "look": "vibrant_toon",
+ "fps": 58,
+ "calls": 89,
+ "triangulos": 733545,
+ "calidad": "medio",
+ "dpr": 1,
+ "post": true,
+ "programas": 54,
+ "heapMB": 830,
+ "geometrias": 150,
+ "texturasGPU": 94,
+ "texturas": 147,
+ "texturasGrandes": 43,
+ "atlasGrandes": 4,
+ "texturasMB": 648.1,
+ "sombraMB": 4,
+ "postMB": 18.5,
+ "texturasPor": {
+  "generadas": 213.1,
+  "otros": 7,
+  "suelo": 11.3,
+  "personajes": 12,
+  "flora": 63.4,
+  "atlas_hd": 341.3
+ },
+ "texturasTop": [
+  [
+   "hd_savage.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_savage_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "hd_ancient_n.jpg",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "flora:impostores",
+   "2048×2048",
+   21.3
+  ],
+  [
+   "Vittata_1",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "Vittata_2",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "edificiosInst:toldo_pequeno:hd:Fabric_KB3D_TarpF",
+   "1024×1024",
+   5.3
+  ]
+ ],
+ "ms": 17.87,
+ "fpsMedidos": 56,
+ "msMediana": 16.7,
+ "msP90": 16.7,
+ "cuadros": 180,
+ "streaming": {
+  "zonas": 17,
+  "zonasCerca": 1,
+  "zonasLejos": 16,
+  "instancias": 422,
+  "colocadas": 18,
+  "modelosCerca": 36,
+  "modelosLejos": 50,
+  "modelosHD": 23,
+  "materiales": 32,
+  "kbGeometria": 538559,
+  "visiblesCerca": 35,
+  "visiblesLejos": 0,
+  "visiblesHD": 0,
+  "hd": true,
+  "drawEdificios": 7,
+  "zonasFundidas": 12,
+  "descargando": 0,
+  "trabajos": 0,
+  "omitidos": []
+ },
+ "lotes": [
+  {
+   "nombre": "bohio_redondo:cerca",
+   "instancias": 12,
+   "triangulos": 39528
+  }
+ ],
+ "zonas": [
+  {
+   "id": "villa",
+   "nivel": 2,
+   "ciudad": false,
+   "colocadas": 1,
+   "total": 1,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_ruinas_yunque",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 0,
+   "total": 61,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_aldea_rio_este_2",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 0,
+   "total": 32,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_ruinas_yunque_2",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 0,
+   "total": 26,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_aldea_colina",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 0,
+   "total": 25,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  }
+ ],
+ "mallas": [
+  {
+   "nombre": "edificiosZonaCercaGlobal:AV_HD_Ancient",
+   "triangulos": 183552,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosZona:global:lejos",
+   "triangulos": 96533,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosZonaCercaGlobal:AV_HD_Savage",
+   "triangulos": 53757,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:tabonuco:corteza",
+   "triangulos": 40800,
+   "instancias": 34
+  },
+  {
+   "nombre": "flora:tabonuco:corteza:lod",
+   "triangulos": 37200,
+   "instancias": 31
+  },
+  {
+   "nombre": "flora:tabonuco:hoja",
+   "triangulos": 29308,
+   "instancias": 34
+  },
+  {
+   "nombre": "edificiosInst:bohio_redondo:cerca:KB3D_RoofThatched",
+   "triangulos": 23928,
+   "instancias": 12
+  },
+  {
+   "nombre": "Vittata_2",
+   "triangulos": 21072,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_ne",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_se",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_no",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_so",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:manchas",
+   "triangulos": 14716,
+   "instancias": 7358
+  },
+  {
+   "nombre": "flora:yagrumo:hoja",
+   "triangulos": 11200,
+   "instancias": 10
+  },
+  {
+   "nombre": "mar",
+   "triangulos": 10656,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosInst:bohio_redondo:cerca:KB3D_WoodPlanks",
+   "triangulos": 8976,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:yagrumo:corteza:lod",
+   "triangulos": 7872,
+   "instancias": 12
+  },
+  {
+   "nombre": "Vittata_1",
+   "triangulos": 7196,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:tabonuco:hoja:lod",
+   "triangulos": 6665,
+   "instancias": 31
+  },
+  {
+   "nombre": "flora:yagrumo:corteza",
+   "triangulos": 6560,
+   "instancias": 10
+  },
+  {
+   "nombre": "edificiosInst:bohio_redondo:cerca:KB3D_BarkNew",
+   "triangulos": 6480,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:yagrumo_joven:corteza",
+   "triangulos": 6432,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:yagrumo_joven:hoja",
+   "triangulos": 6336,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:yagrumo_joven:corteza:lod",
+   "triangulos": 4824,
+   "instancias": 9
+  },
+  {
+   "nombre": "flora:bambu:corteza:lod",
+   "triangulos": 4785,
+   "instancias": 3
+  },
+  {
+   "nombre": "flora:palma_sierra:corteza:lod",
+   "triangulos": 4500,
+   "instancias": 10
+  },
+  {
+   "nombre": "flora:palma_sierra:hoja",
+   "triangulos": 3408,
+   "instancias": 6
+  },
+  {
+   "nombre": "flora:yagrumo:hoja:lod",
+   "triangulos": 3360,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:flamboyan:hoja",
+   "triangulos": 3328,
+   "instancias": 2
+  },
+  {
+   "nombre": "flora:palma_sierra:corteza",
+   "triangulos": 2700,
+   "instancias": 6
+  },
+  {
+   "nombre": "estructura:puente",
+   "triangulos": 2604,
+   "instancias": 1
+  },
+  {
+   "nombre": "estructura:muelle",
+   "triangulos": 2564,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:piedras_rio:roca",
+   "triangulos": 2520,
+   "instancias": 7
+  },
+  {
+   "nombre": "flora:flamboyan:corteza",
+   "triangulos": 2400,
+   "instancias": 2
+  },
+  {
+   "nombre": "flora:flamboyan:corteza:lod",
+   "triangulos": 2400,
+   "instancias": 2
+  }
+ ]
+}
