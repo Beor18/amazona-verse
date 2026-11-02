@@ -1613,4 +1613,7 @@ window.AV_EN = {
  " · plumas en tu colección: ": " · feathers in your collection: ",
  "Secreto": "Secret",
  "Lo que se llevó el río": "What the river carried",
+ "Una sola cotorra no se oye. Cuando llamas a la bandada, el viento te devuelve el canto.": "One parrot alone is not heard. When you call the flock, the wind brings the song back.",
+ "Entonces no vuelo sola. Mantengo el impulso… ¡y llamo!": "Then I do not fly alone. I hold the dash… and I call!",
+ "Nuevo don: Llamada de la bandada. Mantén Impulso.": "New gift: Flock Call. Hold Dash."
 };
