@@ -309,6 +309,14 @@
     C.startBuild('B'); teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
     check('Ruta colina directa: texto del cómic correcto', CM.comicPanels()[1] && CM.comicPanels().find(p => p.id === 'refugio').text.startsWith('Elegí construir en la colina'));
     check('Sin capítulo completo no hay viñeta final', !CM.comicPanels().some(p => p.id === 'final'));
+    { // W3 (QA-93): con una pantalla que lo taparía (aquí, el cómic) el aviso espera y sale al cerrarla
+      const UI = G.ui, tt = document.getElementById('toast'), cm = document.getElementById('comic'), cm0 = cm.hidden;
+      UI.hideToast(); cm.hidden = false; UI.toast('Aviso de prueba W3', 3000);
+      const espera = tt.hidden && !!UI.avisoPendiente;
+      cm.hidden = true; tick(0.1);
+      check('W3 · un aviso con el cómic abierto espera y sale al cerrarlo', espera && !tt.hidden && tt.textContent === 'Aviso de prueba W3' && !UI.avisoPendiente, espera + ' · ' + tt.textContent);
+      UI.hideToast(); cm.hidden = cm0;
+    }
     SV.reset(true);
     try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
     devolver();
