@@ -851,9 +851,11 @@
         const Gt = T.gota;
         if (Gt && !Gt.parada) {
           const tr = Gt.tramos[Gt.i], p = tr.r.en(Gt.d);
-          const sobre = S.pos.y - H(S.pos.x, S.pos.z);
-          const techo = Math.max(RUTA.rasante, (p.y - H(p.x, p.z)) + 2.2);
-          const ras = tr.fase !== 'escorrentia' || (sobre <= techo && Math.abs(S.pos.y - p.y) < 3.2);
+          // Escorrentía: hay que ir bajo. Vale ir a ras del suelo propio o a la altura de la gota
+          // (a un metro al lado el suelo puede ser un risco o un hoyo; la gota sigue su quebrada).
+          const ref = Math.max(p.y, H(p.x, p.z));
+          const sobreSuelo = S.pos.y - H(S.pos.x, S.pos.z);
+          const ras = tr.fase !== 'escorrentia' || sobreSuelo <= RUTA.rasante || S.pos.y <= ref + RUTA.rasante;
           if (tr.fase === 'escorrentia') modoVuelo = 'rasante';
           if (distA(p) <= RUTA.espera && ras) Gt.d += tr.vel * dt;
           const q = tr.r.en(Gt.d); gota.position.set(q.x, q.y, q.z);
