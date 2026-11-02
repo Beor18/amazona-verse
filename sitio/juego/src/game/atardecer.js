@@ -1,6 +1,7 @@
 /* Juego · atardecer (C9: el coquí canta al atardecer)
    Feedback real: los coquíes (Eleutherodactylus coqui) son nocturnos y cantan del atardecer al amanecer (USGS NAS, ficha de la
-   especie: «These treefrogs are nocturnal insectivores»; el horario exacto «del atardecer al amanecer» queda por verificar con DRNA).
+   especie: «These treefrogs are nocturnal insectivores»; el horario «del atardecer al amanecer», con respaldo secundario: Discover Puerto Rico, topuertorico.org y El Yunque; falta la cita del
+   DRNA, ver docs/equipo/FUENTES_CAP1.md).
    La misión 3 «Co-quí» se jugaba a pleno sol porque el cielo del juego siempre es de día. Desde aquí, cuando empieza el coro
    (S.chorus) el mundo pasa en unos 8 s a atardecer y vuelve el día al terminar la misión del coquí (S.missions.m3; decisión de
    Kelvin, docs/DECISION_LOG.md, 26-oct).

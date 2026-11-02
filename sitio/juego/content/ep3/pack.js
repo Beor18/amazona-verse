@@ -13,13 +13,34 @@
 (function () {
   'use strict';
   // ---------- Mapa (valores medidos sobre el relieve analítico de abajo; ep3Test comprueba que cada punto de ruta tiene agua) ----------
-  const MAR = -2.6, RIO_X = 20, BAHIA = { x: -4, z: 40, r: 26 };
-  const IGUACA = { x: -12, z: -14 }, ABUELA = { x: -4, z: -9 }, PAPA = { x: 12, z: -3 }, MESA = { x: 11, z: 2 };
-  const ASTILLERO = { x: 13.5, z: 8 }, BOTADURA = { x: 20, z: 8 }, MUELLE = { x: 6, z: 17 }, NAVEGANTE = { x: 7.6, z: 16.4 };
-  const POSTES = { poste_muelle: { x: 4.4, z: 16.2 }, poste_punta: { x: -14, z: 13 } }, MIRADOR = { x: -20, z: -20 }, SEMILLA = { x: 15.6, z: -17 };
-  const PRACTICA = { x: 15.5, z: -12.5 }, VECINA = { x: -32, z: 28.5 }, ALDEA = { x: -30, z: 30.5 };
+  // Mundo único (BM112, docs/equipo/MUNDO_UNICO.md): con el mapa real cargado, el capítulo se juega en el río de Villa Raíz,
+  // aguas abajo del cap. 4, hasta su desembocadura (x ≈ 194–210, z ≈ 165–210), y en la laguna del sur: la otra comunidad está en
+  // la playa del oeste, «más allá de la bahía». Lo de tierra se traslada (T: +178, +184, así la orilla del río cae en la orilla
+  // real); el agua es la real (el mar a 0, el río a 2) y las rutas de la canoa están medidas punto a punto sobre ella: la boca
+  // sale por la desembocadura, el atajo cruza la barra de arena (el bajío) y la costa la rodea por mar abierto.
+  const REAL = !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const T = (x, z) => (REAL ? { x: x + 178, z: z + 184 } : { x, z });
+  const EN = (relleno, mapa) => (REAL ? mapa : relleno);
+  const MAR = EN(-2.6, 0), RIO_X = EN(20, 198), BAHIA = EN({ x: -4, z: 40, r: 26 }, { x: 188, z: 236, r: 26 });
+  const IGUACA = T(-12, -14), ABUELA = T(-4, -9), PAPA = T(12, -3), MESA = T(11, 2);
+  const ASTILLERO = T(13.5, 8), BOTADURA = T(20, 8), MUELLE = EN({ x: 6, z: 17 }, { x: 197, z: 206 }), NAVEGANTE = EN({ x: 7.6, z: 16.4 }, { x: 195.5, z: 204.5 });
+  const POSTES = { poste_muelle: EN({ x: 4.4, z: 16.2 }, { x: 192.5, z: 205 }), poste_punta: T(-14, 13) }, MIRADOR = T(-20, -20), SEMILLA = T(15.6, -17);
+  const PRACTICA = T(15.5, -12.5), VECINA = EN({ x: -32, z: 28.5 }, { x: 150, z: 200.5 }), ALDEA = EN({ x: -30, z: 30.5 }, { x: 152, z: 202 });
+  // Dónde espera la canoa tras la práctica y al llegar; el muelle (tablones) de cada orilla; las rocas de la boca y el bajío;
+  // un punto de la bahía honda (para la prueba de que a pie no se entra)
+  const CANOA_MUELLE = EN({ x: 6, z: 21.5 }, { x: 202.5, z: 211 }), LLEGADA = EN({ x: -25, z: 33 }, { x: 157, z: 221 });
+  const MUELLES = EN([[6, 19.6, 0.9, 2.6, 0], [-27.2, 32.2, 0.9, 2.2, -1.1]], [[199.6, 207.8, 0.9, 2.6, 0], [155.5, 214.5, 0.9, 4, 0]]);
+  const ROCAS = EN([[-3, 30.2, 1.3], [3, 30.6, 1.1]], [[204.5, 219.5, 1.3], [224, 219, 1.1]]), BAJIO = EN({ x: -18.5, z: 38.5 }, { x: 213, z: 242 });
+  const HONDO = EN({ x: -4, z: 30 }, { x: 186, z: 236 });
   // Rutas de la canoa (x, z): río abajo para practicar; la bahía en tres tramos, con la elección de ruta y la del bajío
-  const RUTAS = {
+  const RUTAS = REAL ? {
+    rio: [[198, 171], [198, 178], [197.2, 186], [198, 195]],
+    boca: [[203, 212], [206, 214], [214, 222]],
+    atajo: [[214, 222], [216, 232], [216, 238], [210, 246], [200, 248]],
+    costa: [[214, 222], [220, 230], [221, 238], [224, 246], [214, 252], [200, 248]],
+    atras: [[200, 248], [190, 238], [178, 228], [166, 224], [LLEGADA.x, LLEGADA.z]],
+    otro: [[200, 248], [184, 236], [170, 226], [LLEGADA.x, LLEGADA.z]],
+  } : {
     rio: [[20, -13], [20, -6], [19.2, 2], [20, 11]],
     boca: [[6, 22], [3, 27], [0, 30]],
     atajo: [[0, 30], [-8, 35], [-16, 37]],
@@ -27,7 +48,7 @@
     atras: [[-16, 37], [-13, 38], [-17, 41], [-23, 37], [-25, 33]],
     otro: [[-16, 37], [-20, 39], [-23, 37], [-25, 33]],
   };
-  const SEMILLA_RUTA = [[20, -17], [20, -4]];
+  const SEMILLA_RUTA = EN([[20, -17], [20, -4]], [[200, 167], [199, 180]]);
 
   // ---------- Misión 1 · «¿Qué flota?»: 6 materiales (valores del juego: lo que el jugador ve en la poza) ----------
   const MATERIALES = [
@@ -39,7 +60,8 @@
     { id: 'coco', flota: true, color: '#7a5230', z: 3, soltar: 'Soltar el coco en la poza', frase: 'Suelto el coco… ¡se queda arriba! Flota.' },
     { id: 'clavo', flota: false, color: '#6e6a66', z: 5, soltar: 'Soltar el clavo viejo en la poza', frase: 'Suelto el clavo viejo… ¡al fondo! Se hunde. Luego buceo a buscarlo.', bucear: 'Bucear por el clavo viejo', tengo: '¡Lo tengo! El clavo vuelve a la orilla.' },
   ];
-  const BANCO_X = 15.2, AGUA_X = 18.6;
+  const BANCO_X = T(15.2, 0).x, AGUA_X = T(18.6, 0).x;
+  if (REAL) for (const m of MATERIALES) m.z = T(0, m.z).z;
   const HUNDEN = MATERIALES.filter(m => !m.flota);
   const PREDICCIONES = [
     ['madera', 'Todo lo de madera flota; la piedra y el metal se hunden'],
@@ -108,7 +130,7 @@
         etiqueta: 'Capítulo 3 · Más allá de la bahía', fin: '¡Llegamos a la otra orilla!',
         nota: 'Capítulo 3: construye el primer bote y cruza la bahía. No uses tu nombre real.', inventario: {} },
     },
-    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -6, z: -10 }, camara: 0.6 },
+    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: T(-6, -10), camara: 0.6 },
     // canoa: el nombre que le pone el jugador (D21): null = aún no se le preguntó; '' = sin nombre
     guardado: { version: 1, claves: ['edu', 'canoa'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, canoa: null }) },
     aula: { clave: 'amazonaverse.aula.ep3', estado: 'edu', archivo: 'amazonaverse_ep3', lecciones: () => window.AV_LECCIONES_EP3 },
@@ -116,7 +138,15 @@
     // Ninguna cápsula se compra. obtener.ep3 en content/comun/huevos.js queda como pedido aparte (EP3_MISIONES.md §7).
     criadero: { desde: 'BoatLaunched', almacen: 'amazonaverse' },
 
-    mundo: {
+    // Mundo único: el mapa real del cap. 1 (AVE.mundoReal) con los lugares del capítulo y la flora despejada en sus sitios;
+    // sin el reubicar ni los pois del cap. 1. Sin el mapa, el mundo de relleno de antes.
+    mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
+      lugares: { inicio: Object.assign(T(-6, -10), { r: 6 }), astillero: Object.assign(T(12, 2), { r: 4 }), mirador: { x: MIRADOR.x, z: MIRADOR.z, r: 2.5 }, aldea: { x: ALDEA.x, z: ALDEA.z, r: 4 } },
+      pois: [], reubicar: null,
+      flora: Object.assign({}, window.AVE.mundoReal.flora, { evitar: pack => [IGUACA, ABUELA, PAPA, MESA, ASTILLERO, MUELLE, NAVEGANTE, SEMILLA, PRACTICA, VECINA, ALDEA, MIRADOR,
+        POSTES.poste_muelle, POSTES.poste_punta, T(11.2, 6.1), T(-6, -10)].map(p => ({ x: p.x, z: p.z, r: 3 }))
+        .concat([{ x: 145.5, z: 200.5, r: 3.5 }, { x: 148, z: 196.5, r: 3.5 }, { x: 154, z: 198, r: 2.6 }, { x: BANCO_X, z: T(0, 0).z, r: 7 }], ((pack.diario || {}).entradas || []).map(e => ({ x: e.x, z: e.z, r: 1.5 }))) }),
+    }) : {
       tamano: 46, segmentos: 92,
       exposicion: 0.74,
       cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
@@ -143,6 +173,9 @@
           { x: 11.2, z: 6.1, r: 2.6 }, { x: -31.6, z: 34.6, r: 2.6 }, { x: -35, z: 30, r: 2.4 }, { x: -34, z: 33.5, r: 2.4 }] }, // ramada, tendedero y casas
       oceano: { color: '#0b4f86', y: MAR },
     },
+    // Mundo único: los lugares y asentamientos del mapa con su nombre propio (ES/EN), como en el cap. 1
+    descubrir: REAL ? { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] } : undefined,
+    asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
       { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
@@ -194,17 +227,17 @@
       categorias: { agua: { nombre: 'Agua y viento', desconocido: 'Algo junto al agua', sonido: 'pickup', rafaga: 'feathers' },
         mar: { nombre: 'Gente de mar', desconocido: 'Algo de pescadores', sonido: 'pickup', rafaga: 'gold' } },
       entradas: [
-        { id: 'flota_hunde', cat: 'agua', nombre: 'Corcho y piedra', x: 15.5, z: -8.5, texto: 'Un corcho arriba y una piedrita abajo, en el mismo charco.',
+        { id: 'flota_hunde', cat: 'agua', nombre: 'Corcho y piedra', ...T(15.5, -8.5), texto: 'Un corcho arriba y una piedrita abajo, en el mismo charco.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.5, 0.5, 0.04, 14), '#5a8aaa', 0, 0.02, 0); add(new THREE.CylinderGeometry(0.08, 0.08, 0.1, 8), '#c9a86a', 0.15, 0.08, 0); } },
-        { id: 'brisa_mar', cat: 'agua', nombre: 'Cinta en la baranda', x: 3.6, z: 14.4, texto: 'Una cinta atada a la baranda del muelle, siempre señalando hacia el monte.',
+        { id: 'brisa_mar', cat: 'agua', nombre: 'Cinta en la baranda', ...EN({ x: 3.6, z: 14.4 }, { x: 195.6, z: 204.4 }), texto: 'Una cinta atada a la baranda del muelle, siempre señalando hacia el monte.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.05, 0.06, 1.1, 6), '#8a6a3a', 0, 0.55, 0); add(new THREE.PlaneGeometry(0.5, 0.16), '#3d8fb0', 0, 1, -0.28); } },
-        { id: 'semilla_viajera', cat: 'agua', nombre: 'Coco en la arena', x: -12, z: 12, texto: 'Un coco con un brote verde, varado en la orilla. ¿De dónde vino?',
+        { id: 'semilla_viajera', cat: 'agua', nombre: 'Coco en la arena', ...T(-12, 12), texto: 'Un coco con un brote verde, varado en la orilla. ¿De dónde vino?',
           modelo: (add) => { add(new THREE.SphereGeometry(0.22, 12, 10), '#7a5230', 0, 0.2, 0); add(new THREE.ConeGeometry(0.06, 0.4, 6), '#4f9a4a', 0, 0.5, 0); } },
-        { id: 'canoa_taina', cat: 'mar', nombre: 'Canoa vieja', x: -33, z: 26, texto: 'Una canoa vieja de un solo tronco, boca abajo bajo un techito.',
+        { id: 'canoa_taina', cat: 'mar', nombre: 'Canoa vieja', ...EN({ x: -33, z: 26 }, { x: 147, z: 203.5 }), texto: 'Una canoa vieja de un solo tronco, boca abajo bajo un techito.',
           modelo: (add) => { const m = add(new THREE.CylinderGeometry(0.35, 0.35, 2.4, 10, 1, false, 0, Math.PI), '#5a3d22', 0, 0.3, 0); m.rotation.z = Math.PI / 2; } },
-        { id: 'cayuco', cat: 'mar', nombre: 'Cayuco en la orilla', x: 13, z: 12, texto: 'Un bote pequeñito, hecho de una sola pieza de madera.',
+        { id: 'cayuco', cat: 'mar', nombre: 'Cayuco en la orilla', ...T(13, 12), texto: 'Un bote pequeñito, hecho de una sola pieza de madera.',
           modelo: (add) => { const m = add(new THREE.CylinderGeometry(0.28, 0.28, 1.6, 10, 1, false, Math.PI, Math.PI), '#8a5a2a', 0, 0.28, 0); m.rotation.z = Math.PI / 2; } },
-        { id: 'nasa', cat: 'mar', nombre: 'Nasa tejida', x: -30, z: 25, texto: 'Una cesta tejida con una boca que entra hacia adentro.',
+        { id: 'nasa', cat: 'mar', nombre: 'Nasa tejida', ...EN({ x: -30, z: 25 }, { x: 154.5, z: 203 }), texto: 'Una cesta tejida con una boca que entra hacia adentro.',
           modelo: (add) => { const m = add(new THREE.ConeGeometry(0.35, 0.8, 10, 1, true), '#b8955a', 0, 0.35, 0); m.material.side = THREE.DoubleSide; m.rotation.z = Math.PI / 2; } },
       ],
       hitos: [{ id: 'cuaderno', todos: true }],
@@ -252,7 +285,7 @@
       const valor = (pref, ops) => ops.find(o => tiene(pref + o));
       const elegir = (who, text, opciones, done) => G.dialogo.choose(di(who, text), opciones, done);
       const mat = c => new THREE.MeshLambertMaterial({ color: c });
-      const nivelRio = () => { const y = G.agua.levelAt(RIO_X, 0); return isFinite(y) ? y : MAR; };
+      const nivelRio = () => { const y = G.agua.levelAt(RIO_X, T(0, 0).z); return isFinite(y) ? y : MAR; };
       const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
       const probados = () => MATERIALES.filter(m => tiene('probado_' + m.id));
       const casco = () => valor('dec_casco_', ['tronco', 'bambu', 'tablas']);
@@ -361,9 +394,9 @@
         if (viaje) return;
         // Dónde está: en el astillero, en el río (botada), en el muelle (tras la práctica) o en la otra orilla
         let p = ASTILLERO, y = H(ASTILLERO.x, ASTILLERO.z), ry = 0;
-        if (tiene('llegada')) { p = { x: -25, z: 33 }; y = MAR; ry = 1.1; }
-        else if (G.eventos.had('PracticeDone')) { p = { x: 6, z: 21.5 }; y = MAR; }
-        else if (G.eventos.had('SignalsAgreed')) { p = { x: RIO_X, z: -13 }; y = nivelRio(); }
+        if (tiene('llegada')) { p = LLEGADA; y = MAR; ry = 1.1; }
+        else if (G.eventos.had('PracticeDone')) { p = CANOA_MUELLE; y = MAR; }
+        else if (G.eventos.had('SignalsAgreed')) { p = { x: RIO_X, z: T(0, -13).z }; y = nivelRio(); }
         else if (G.eventos.had('LaunchTested')) { p = BOTADURA; y = nivelRio(); }
         canoa.position.set(p.x, y - 0.3, p.z); canoa.rotation.set(0, ry, 0);
       }
@@ -427,7 +460,7 @@
         }
         // La bahía es honda: a pie no se entra (volando sí se cruza). Fuera del río, de vuelta a la orilla con un aviso
         const P = S.pos;
-        if (P.y < MAR - 0.3 && Math.abs(P.x - RIO_X) > 4 && H(P.x, P.z) < MAR - 0.3) {
+        if (P.y < MAR - 0.3 && (REAL ? P.z > 207 : Math.abs(P.x - RIO_X) > 4) && H(P.x, P.z) < MAR - 0.3) { // en el mapa, el río acaba en la desembocadura (z ≈ 207)
           P.x = lastOk.x; P.z = lastOk.z; P.y = Math.max(P.y, H(P.x, P.z)); S.vy = 0;
           if (S.clock - avisoOrilla > 4) { avisoOrilla = S.clock; G.ui.toast('La bahía es honda: se cruza en canoa (o volando).', 2600); }
         } else lastOk = { x: P.x, z: P.z };
@@ -444,13 +477,12 @@
         for (const sx of [-1, 1]) for (const sz of [-1, 0, 1]) { const lx = sx * (hx - 0.15), lz = sz * (hz - 0.2), c = Math.cos(rot || 0), s = Math.sin(rot || 0); pieza(new THREE.CylinderGeometry(0.09, 0.1, 2.4, 6), '#6b4a2a', cx + lx * c + lz * s, top - 1.2, cz - lx * s + lz * c); }
         G.terreno.addPlatform({ tipo: 'rect', x: cx, z: cz, hx, hz, rotY: rot || 0, top, unaVia: true });
       };
-      tablones(6, 19.6, 0.9, 2.6, 0);
-      tablones(-27.2, 32.2, 0.9, 2.2, -1.1);
+      for (const t of MUELLES) tablones(...t);
       for (const k of Object.keys(POSTES)) { const p = POSTES[k], y = H(p.x, p.z); pieza(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), '#8a6a3a', p.x, y + 1.1, p.z); const c = pieza(new THREE.PlaneGeometry(0.9, 0.28), '#d6403a', p.x, y + 2, p.z - 0.5); c.rotation.y = Math.PI / 2; c.material.side = THREE.DoubleSide; }
-      for (const [x, z, r] of [[-3, 30.2, 1.3], [3, 30.6, 1.1]]) pieza(new THREE.IcosahedronGeometry(r, 1), '#7a7266', x, MAR + r * 0.35, z).scale.set(1.2, 0.8, 1); // las dos rocas de la boca
-      { const b = pieza(new THREE.CylinderGeometry(2.2, 2.6, 0.1, 18), '#e6d29a', -18.5, MAR - 0.12, 38.5); b.material.transparent = true; b.material.opacity = 0.55; } // el bajío
+      for (const [x, z, r] of ROCAS) pieza(new THREE.IcosahedronGeometry(r, 1), '#7a7266', x, MAR + r * 0.35, z).scale.set(1.2, 0.8, 1); // las dos rocas de la boca
+      { const b = pieza(new THREE.CylinderGeometry(2.2, 2.6, 0.1, 18), '#e6d29a', BAJIO.x, MAR - 0.12, BAJIO.z); b.material.transparent = true; b.material.opacity = 0.55; } // el bajío
       // Las casas de la otra orilla: primitivas hasta que llega el modelo del kit (bohío y casa de paja), y no se atraviesan
-      const casas = [[-35, 30, 'bohio_redondo', 3.6, 0.4], [-34, 33.5, 'casa_paja_a', 3.8, 2.2]].map(([x, z, nombre, largo, ry]) => {
+      const casas = EN([[-35, 30, 'bohio_redondo', 3.6, 0.4], [-34, 33.5, 'casa_paja_a', 3.8, 2.2]], [[145.5, 200.5, 'bohio_redondo', 3.6, 0.4], [148, 196.5, 'casa_paja_a', 3.8, 2.2]]).map(([x, z, nombre, largo, ry]) => {
         const y = H(x, z), g = [pieza(new THREE.CylinderGeometry(1.4, 1.4, 1.8, 8), '#c9a86a', x, y + 0.9, z), pieza(new THREE.ConeGeometry(1.8, 1.4, 8), '#a8903a', x, y + 2.5, z)];
         G.fisica.colliders.push({ x, z, r: 1.6, h: 3.2, kind: 'obj' });
         return { x, z, nombre, largo, ry, g };
@@ -468,19 +500,19 @@
       const ponerKit = (nombre, largo, x, z, ry) => kit(nombre, largo).then(w => { w.position.set(x, H(x, z) - 0.05, z); w.rotation.y = ry || 0; scene.add(w); return w; });
       for (const c of casas) ponerKit(c.nombre, c.largo, c.x, c.z, c.ry).then(() => c.g.forEach(m => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); })).catch(() => { /* quedan las primitivas */ });
       // La ramada del astillero (4 horcones y techo de palma) sobre la pila de troncos y cañas de bambú con que se arma el casco
-      { const x0 = 11.2, z0 = 6.1, y0 = H(x0, z0);
+      { const { x: x0, z: z0 } = T(11.2, 6.1), y0 = H(x0, z0);
         for (const [dx, dz] of [[-1.1, -1.3], [1.1, -1.3], [-1.1, 1.3], [1.1, 1.3]]) pieza(new THREE.CylinderGeometry(0.07, 0.09, 2.5, 6), '#6b4a2a', x0 + dx, H(x0 + dx, z0 + dz) + 1.25, z0 + dz);
         pieza(new THREE.BoxGeometry(2.8, 0.18, 3.2), '#b8955a', x0, y0 + 2.5, z0).rotation.x = 0.06; }
       // El tendedero de la otra orilla: dos horcones, una vara y la red tendida al sol
-      { const x0 = -31.6, z0 = 34.6, y0 = H(x0, z0);
+      { const { x: x0, z: z0 } = EN({ x: -31.6, z: 34.6 }, { x: 154, z: 198 }), y0 = H(x0, z0);
         for (const d of [-1.3, 1.3]) pieza(new THREE.CylinderGeometry(0.06, 0.08, 1.9, 6), '#6b4a2a', x0 + d * Math.cos(0.5), y0 + 0.95, z0 - d * Math.sin(0.5));
         pieza(new THREE.CylinderGeometry(0.04, 0.04, 2.8, 6), '#8a6a3a', x0, y0 + 1.85, z0).rotation.set(0, 0.5, Math.PI / 2);
         const red = pieza(new THREE.PlaneGeometry(2.4, 1.1), '#d8c9a0', x0, y0 + 1.3, z0); red.rotation.y = 0.5; red.material.side = THREE.DoubleSide; red.material.transparent = true; red.material.opacity = 0.7; }
       for (const [i, col, r] of [[0, '#6b4a2a', 0.22], [1, '#6b4a2a', 0.22], [2, '#7a5634', 0.2], [3, '#c9b26a', 0.08], [4, '#c9b26a', 0.08]]) {
-        const x = 11.2, z = 5.6 + (i < 2 ? i * 0.46 : i === 2 ? 0.23 : 1.2 + (i - 3) * 0.2), y = H(x, z) + (i === 2 ? 0.58 : r);
+        const x = T(11.2, 0).x, z = T(0, 5.6).z + (i < 2 ? i * 0.46 : i === 2 ? 0.23 : 1.2 + (i - 3) * 0.2), y = H(x, z) + (i === 2 ? 0.58 : r);
         pieza(new THREE.CylinderGeometry(r, r, i < 3 ? 2.2 : 2.6, 8), col, x, y, z).rotation.z = Math.PI / 2;
       }
-      G.fisica.colliders.push({ x: 11.2, z: 6.1, r: 0.9, h: 0.8, kind: 'obj' });
+      G.fisica.colliders.push(Object.assign(T(11.2, 6.1), { r: 0.9, h: 0.8, kind: 'obj' }));
       // La semilla de la corriente (se ve bajar por el río)
       const semilla = pieza(new THREE.SphereGeometry(0.14, 8, 6), '#7a5230', SEMILLA_RUTA[0][0], -50, SEMILLA_RUTA[0][1]);
       let semillaT = -1;
@@ -931,7 +963,7 @@
           navegar();
           check('M3 · El bajío: la navegante se equivoca y lo dice; dos salidas', opciones().length === 2 && opciones().some(x => x.includes('Juntas')), opciones().join());
           pick('otro paso'); navegar();
-          check('M3 · Llegan a la otra orilla', G.eventos.had('BayCrossed') && S.step === 13 && !G.ep3.enViaje() && S.collected.includes('llegada') && Math.hypot(S.pos.x + 30, S.pos.z - 30.5) < 1, 'paso ' + S.step);
+          check('M3 · Llegan a la otra orilla', G.eventos.had('BayCrossed') && S.step === 13 && !G.ep3.enViaje() && S.collected.includes('llegada') && Math.hypot(S.pos.x - ALDEA.x, S.pos.z - ALDEA.z) < 1, 'paso ' + S.step);
           useAt('vecina'); drain();
           check('M3 · Desconfían al principio', G.eventos.had('CommunityReached') && opciones().length === 2);
           pick('Miren el bote');
@@ -975,13 +1007,13 @@
           const HV = (window.AV_HUEVOS && window.AV_HUEVOS.huevos) || [];
           check('Criadero del juego: el nido entra con la segunda botadura; ninguna cápsula se compra; la cría sigue a Vittata', !!G.criadero && G.pack.criadero.desde === 'BoatLaunched' && G.criadero.KEY === 'amazonaverse.criadero' && G.guardado.KEY.startsWith('ep3.') && HV.every(h => !/precio|price|compra|buy/i.test(JSON.stringify(h.obtener))), G.criadero.KEY + ' · ' + G.guardado.KEY);
           // La bahía honda: a pie no se entra
-          teleport(-4, 30); tick(0.2);
-          check('A pie no se entra en la bahía honda (vuelve a la orilla)', G.terreno.height(S.pos.x, S.pos.z) > G.ep3.MAR - 0.6 || Math.abs(S.pos.x + 4) > 0.5 || Math.abs(S.pos.z - 30) > 0.5, S.pos.x.toFixed(1) + ',' + S.pos.z.toFixed(1));
+          teleport(HONDO.x, HONDO.z); tick(0.2);
+          check('A pie no se entra en la bahía honda (vuelve a la orilla)', G.terreno.height(S.pos.x, S.pos.z) > G.ep3.MAR - 0.6 || Math.abs(S.pos.x - HONDO.x) > 0.5 || Math.abs(S.pos.z - HONDO.z) > 0.5, S.pos.x.toFixed(1) + ',' + S.pos.z.toFixed(1));
           // Guardar y cargar
           try { if (aulaRaw == null) localStorage.removeItem(AU.KEY); else localStorage.setItem(AU.KEY, aulaRaw); } catch (e) { /* sin almacenamiento */ }
           G.guardado.save(true); const snap = G.guardado.serialize(); G.guardado.reset(true);
           try { localStorage.setItem(G.guardado.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-          check('Guardar y cargar: la canoa vuelve a la otra orilla (y con su nombre)', G.guardado.load(true) && S.canoa === 'Coralito' && S.complete && S.collected.includes('timon_navegante') && S.edu.formativa.q1 === 2 && G.ep3.canoa.visible && Math.abs(G.ep3.canoa.position.x + 25) < 0.5);
+          check('Guardar y cargar: la canoa vuelve a la otra orilla (y con su nombre)', G.guardado.load(true) && S.canoa === 'Coralito' && S.complete && S.collected.includes('timon_navegante') && S.edu.formativa.q1 === 2 && G.ep3.canoa.visible && Math.abs(G.ep3.canoa.position.x - LLEGADA.x) < 0.5);
           // Inglés: cada texto que se vio tiene su EN (content/ep3/en.js o el común de cap1), igual que los pasos, misiones y Diario
           const datos = G.misiones.steps.map(s => s.texto).concat(G.pack.misiones.flatMap(m => [m.titulo, m.hud].concat(m.pasos.map(x => x.texto))),
             G.diario.entries.flatMap(e => [e.nombre, e.texto]), G.pack.ropa.flatMap(r => [r.nombre, r.pista]), [G.pack.historia.fin()], Object.values(G.pack.meta.hud).filter(v => typeof v === 'string'));

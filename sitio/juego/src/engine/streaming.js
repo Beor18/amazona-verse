@@ -15,6 +15,7 @@
    queda fuera del frustum o de la distancia de dibujo (las de cerca a menos del radio de sombra se dibujan igual: su sombra
    puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
    ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
+   En las ciudades, los _hd se funden por material ('edificiosZonaHD:<zona>:<material>') para no repetir un lote por modelo.
    Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
    lo visible a menos de CFG.lejosQuieto; el resto espera a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
    más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda).
@@ -31,9 +32,10 @@
    - Manifiesto opcional window.AV_EDIFICIOS_KIT = { <modelo>: { lejos: bool, radio, alto, tris, kb, kbLejos } } (se carga
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
-     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las 16
-     texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda):
-     un draw call por modelo. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
+     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Los modelos con atlas usan un material AV_HD_* con las 16
+     texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda);
+     los restaurados pueden tener varios materiales. Fuera de las ciudades hay un draw call por modelo y material; en las
+     ciudades se funden por material. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
      de moverse si ya estás en la zona. La distancia es hasta la superficie (cámara o Vittata, la que esté más cerca):
      encima de una torre no cuenta el centro, que queda abajo, y no se dibuja el lod beige. Mientras el _hd baja se ve
      el ligero, no la silueta. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
@@ -782,7 +784,11 @@ AVE.module('streaming', function (G) {
       crearLote(r);
       r.ok(r);
       if (r.tipo === 'lejos') zonasDe(r.n);
-      if (r.tipo === 'cerca') for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
+      if (r.tipo === 'hd') for (const id in zonas) if (zonas[id].ciudad && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]));
+      if (r.tipo === 'cerca') {
+        for (const id in zonas) if (zonas[id].ciudad && zonas[id].modelos.has(r.n)) encolar(() => fundirCercaZona(zonas[id]));
+        for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
+      }
     }
     function actualizarEsferas(n, esf) {
       for (const I of porModelo[n] || []) {
@@ -834,6 +840,8 @@ AVE.module('streaming', function (G) {
         g.userData.modelo = I.modelo; // BM6-3: solidos.js guarda las matrices por nombre de modelo
         G.solidos.agregar(g);
       }
+      const Z = zonas[I.zona];
+      if (Z.ciudad && Z.cercaMallas) encolar(() => fundirCercaZona(Z));
     }
 
     // --- niveles de las zonas ---
@@ -858,11 +866,95 @@ AVE.module('streaming', function (G) {
       for (const I of Z.inst) if (I.modelo === n && I.pos) m = Math.min(m, Math.hypot(I.pos[0] - x, I.pos[2] - z) - (I.r || 0));
       return m;
     }
+    // En las ciudades, todos los _hd comparten la misma vista aérea: se funden por material en vez de dibujar un lote por modelo.
+    function quitarHDZona(Z) {
+      Z.hdFundiendo = false;
+      for (const m of Z.hdMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      Z.hdMallas = null; Z.hdModelos = new Set();
+    }
+    function fundirHD(Z) {
+      if (!Z.ciudad || !Z.hd || Z.hdFundiendo) return;
+      const modelos = new Set([...Z.modelos].filter(n => tieneHD(n) && res(n, 'hd').estado === 'listo'));
+      if (!modelos.size) return;
+      if (Z.hdMallas) {
+        if ([...modelos].every(n => Z.hdModelos.has(n))) return;
+        quitarHDZona(Z);
+      }
+      Z.hdFundiendo = true;
+      const grupos = new Map(), temporales = [], ms = [];
+      try {
+        for (const I of Z.inst) {
+          if (!modelos.has(I.modelo)) continue;
+          for (const p of res(I.modelo, 'hd').partes) {
+            let gr = grupos.get(p.mat.name); if (!gr) grupos.set(p.mat.name, gr = { mat: p.mat, geos: [], modelos: new Set() });
+            const geo = p.geo.clone().applyMatrix4(I.m);
+            temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
+          }
+        }
+        for (const gr of grupos.values()) {
+          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+          m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); ms.push(m);
+        }
+        Z.hdMallas = ms; Z.hdModelos = modelos;
+        encolar(() => fundirCercaZona(Z));
+      } catch (e) {
+        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+        console.warn('AVE streaming: no se pudo fundir el _hd de ' + Z.id, e && e.message || e);
+      } finally {
+        for (const g of temporales) g.dispose();
+        Z.hdFundiendo = false;
+      }
+    }
+    function quitarCercaZona(Z) {
+      Z.cercaFundiendo = false;
+      for (const m of Z.cercaMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      Z.cercaMallas = null; Z.cercaModelos = new Set();
+    }
+    function fundirCercaZona(Z) {
+      if (!Z.ciudad || Z.cercaFundiendo) return;
+      const hd = Z.hdMallas && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)) ? Z.hdModelos : new Set();
+      const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !hd.has(n) && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
+      if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
+      quitarCercaZona(Z);
+      if (!modelos.size) return;
+      Z.cercaFundiendo = true;
+      const grupos = new Map(), temporales = [], ms = [];
+      try {
+        for (const I of Z.inst) {
+          if (!modelos.has(I.modelo)) continue;
+          for (const p of res(I.modelo, 'cerca').partes) {
+            let gr = grupos.get(p.mat.name); if (!gr) grupos.set(p.mat.name, gr = { mat: p.mat, geos: [], modelos: new Set() });
+            const geo = p.geo.clone().applyMatrix4(I.m);
+            temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
+          }
+        }
+        for (const gr of grupos.values()) {
+          const m = new THREE.Mesh(fundir(gr.geos, false), gr.mat);
+          m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); ms.push(m);
+        }
+        Z.cercaMallas = ms; Z.cercaModelos = modelos;
+      } catch (e) {
+        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+        console.warn('AVE streaming: no se pudo fundir el cercano de ' + Z.id, e && e.message || e);
+      } finally {
+        for (const g of temporales) g.dispose();
+        Z.cercaFundiendo = false;
+      }
+    }
     // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
       if (!!Z.hd === quiere) return;
       Z.hd = quiere;
+      if (!quiere) quitarHDZona(Z);
       for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
+      if (quiere) encolar(() => fundirHD(Z));
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
@@ -944,6 +1036,8 @@ AVE.module('streaming', function (G) {
               else soltar(res(n, 'cerca'));
             }
           }
+          if (quiere) encolar(() => fundirCercaZona(Z));
+          else if (Z.cercaMallas) quitarCercaZona(Z);
         }
         ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd
         if (Z.hd) for (const n of Z.modelos) {
@@ -987,9 +1081,24 @@ AVE.module('streaming', function (G) {
       const S = G.S, px = S.pos ? S.pos.x : cp.x, py = S.pos ? S.pos.y : cp.y, pz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
-      vis.zonas = 0;
+      vis.zonas = vis.hd = vis.cerca = 0;
       for (const id in zonas) {
-        const Z = zonas[id], m = Z.malla; if (!m) { Z.usaMalla = false; continue; }
+        const Z = zonas[id], m = Z.malla;
+        Z.usaHDFusion = !!(Z.ciudad && Z.hdMallas && Z.hdMallas.length && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)));
+        Z.usaCercaFusion = !!(Z.ciudad && Z.cercaMallas && Z.cercaMallas.length);
+        for (const h of Z.hdMallas || []) { h.visible = false; h.castShadow = false; }
+        for (const h of Z.cercaMallas || []) { h.visible = false; h.castShadow = false; }
+        if (Z.usaHDFusion) for (const h of Z.hdMallas) {
+          const bs = h.geometry.boundingSphere;
+          h.userData.sombra = false;
+          h.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        }
+        if (Z.usaCercaFusion) for (const h of Z.cercaMallas) {
+          const bs = h.geometry.boundingSphere;
+          h.userData.sombra = false;
+          h.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        }
+        if (!m) { Z.usaMalla = false; continue; }
         const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
         const dj = Math.hypot(px - Z.cx, pz - Z.cz) - Z.r;
         const umbral = lodD + (Z.usaMalla ? -H : H);
@@ -1001,10 +1110,10 @@ AVE.module('streaming', function (G) {
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
       for (let i = 0; i < activas.length; i++) {
-        const I = activas[i];
-        if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
+        const I = activas[i], Z = zonas[I.zona];
+        if (Z.usaMalla) continue; // la dibuja la malla fundida de su zona
         const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
-        const vista = zonas[I.zona].ciudad;
+        const vista = Z.ciudad;
         const cM = CFG.ciudadMalla[nivelCal()], maxI = vista ? Math.max(max, cM) : max;
         if (dCam - I.r > maxI) continue;
         // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
@@ -1028,9 +1137,30 @@ AVE.module('streaming', function (G) {
         const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
+        if (L.tipo === 'cerca' && Z.usaCercaFusion && Z.cercaModelos.has(I.modelo)) {
+          vis.cerca++;
+          if (sombra) for (const h of Z.cercaMallas) if (h.userData.modelos.has(I.modelo)) h.userData.sombra = true;
+          continue;
+        }
+        if (I.hd && Z.usaHDFusion && Z.hdModelos.has(I.modelo)) {
+          vis.hd++;
+          if (sombra) for (const h of Z.hdMallas) if (h.userData.modelos.has(I.modelo)) h.userData.sombra = true;
+          continue;
+        }
         L.lista.push(I); if (sombra) L.sombra = true;
       }
-      vis.cerca = vis.lejos = vis.hd = vis.mallas = 0;
+      vis.lejos = vis.mallas = 0;
+      for (const id in zonas) {
+        const Z = zonas[id];
+        if (Z.usaHDFusion) for (const m of Z.hdMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = m.userData.sombra;
+          if (m.visible) vis.mallas++;
+        }
+        if (Z.usaCercaFusion) for (const m of Z.cercaMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = m.userData.sombra;
+          if (m.visible) vis.mallas++;
+        }
+      }
       for (const k in lotes) {
         const L = lotes[k], li = L.lista, pr = L.prev;
         // BM6-1: panel de la puerta abierta compartida, como una malla más del lote; la instancia amueblada va la última y no lo lleva
@@ -1104,7 +1234,12 @@ AVE.module('streaming', function (G) {
           if (rh && rh.estado === 'listo') { modHD++; for (const p of rh.partes) bytes += tam(p.geo); }
           if (rl && rl.estado === 'listo') { modLejos++; bytes += tam(rl.geo); }
         }
-        for (const id in zonas) if (zonas[id].malla) bytes += tam(zonas[id].malla.geometry);
+        for (const id in zonas) {
+          const Z = zonas[id];
+          if (Z.malla) bytes += tam(Z.malla.geometry);
+          for (const m of Z.hdMallas || []) bytes += tam(m.geometry);
+          for (const m of Z.cercaMallas || []) bytes += tam(m.geometry);
+        }
         const zs = Object.values(zonas);
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
           instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos, modelosHD: modHD,
