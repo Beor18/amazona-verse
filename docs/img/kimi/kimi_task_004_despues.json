@@ -1,0 +1,345 @@
+{
+ "look": "vibrant_toon",
+ "fps": 15,
+ "calls": 90,
+ "triangulos": 6344703,
+ "calidad": "alto",
+ "dpr": 1.5,
+ "post": true,
+ "programas": 55,
+ "heapMB": 1229,
+ "geometrias": 350,
+ "texturasGPU": 135,
+ "texturas": 149,
+ "texturasGrandes": 53,
+ "atlasGrandes": 4,
+ "texturasMB": 702.9,
+ "sombraMB": 16,
+ "postMB": 41.5,
+ "texturasPor": {
+  "generadas": 217.9,
+  "otros": 7,
+  "suelo": 43.3,
+  "personajes": 16,
+  "flora": 77.4,
+  "atlas_hd": 341.3
+ },
+ "texturasTop": [
+  [
+   "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+   "4096×4096",
+   85.3
+  ],
+  [
+   "flora:impostores",
+   "2048×2048",
+   21.3
+  ],
+  [
+   "suelo_musgo.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_tierra_hojarasca.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_roca.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_arena_rio.jpg",
+   "1024×1024",
+   5.3
+  ],
+  [
+   "suelo_musgo_n.jpg",
+   "1024×1024",
+   5.3
+  ]
+ ],
+ "ms": 73.33,
+ "fpsMedidos": 14,
+ "msMediana": 66.7,
+ "msP90": 116.7,
+ "cuadros": 180,
+ "streaming": {
+  "zonas": 17,
+  "zonasCerca": 4,
+  "zonasLejos": 13,
+  "instancias": 422,
+  "colocadas": 148,
+  "modelosCerca": 42,
+  "modelosLejos": 63,
+  "modelosHD": 40,
+  "materiales": 34,
+  "kbGeometria": 678435,
+  "visiblesCerca": 0,
+  "visiblesLejos": 0,
+  "visiblesHD": 11,
+  "hd": true,
+  "drawEdificios": 3,
+  "zonasFundidas": 17,
+  "descargando": 0,
+  "trabajos": 0,
+  "omitidos": []
+ },
+ "lotes": [],
+ "zonas": [
+  {
+   "id": "kelvin_ruinas_yunque",
+   "nivel": 2,
+   "ciudad": true,
+   "colocadas": 61,
+   "total": 61,
+   "hd": 61,
+   "fusionHD": true,
+   "fusionCerca": false
+  },
+  {
+   "id": "kelvin_aldea_rio_este_2",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 0,
+   "total": 32,
+   "hd": 0,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_aldea_mina",
+   "nivel": 2,
+   "ciudad": false,
+   "colocadas": 27,
+   "total": 27,
+   "hd": 0,
+   "fusionHD": true,
+   "fusionCerca": false
+  },
+  {
+   "id": "kelvin_ruinas_yunque_2",
+   "nivel": 2,
+   "ciudad": true,
+   "colocadas": 26,
+   "total": 26,
+   "hd": 26,
+   "fusionHD": true,
+   "fusionCerca": false
+  },
+  {
+   "id": "kelvin_aldea_colina",
+   "nivel": 1,
+   "ciudad": true,
+   "colocadas": 3,
+   "total": 25,
+   "hd": 3,
+   "fusionHD": false,
+   "fusionCerca": true
+  },
+  {
+   "id": "kelvin_aldea_yunque",
+   "nivel": 2,
+   "ciudad": false,
+   "colocadas": 13,
+   "total": 13,
+   "hd": 0,
+   "fusionHD": true,
+   "fusionCerca": false
+  }
+ ],
+ "mallas": [
+  {
+   "nombre": "edificiosZonaHDGlobal:AV_HD_Ancient",
+   "triangulos": 5319366,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosZona:global:lejos",
+   "triangulos": 228291,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosZona:global:lejosTex",
+   "triangulos": 161014,
+   "instancias": 1
+  },
+  {
+   "nombre": "edificiosZonaSombra:kelvin_ruinas_yunque",
+   "triangulos": 100958,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:palma_sierra:corteza:lod",
+   "triangulos": 49050,
+   "instancias": 109
+  },
+  {
+   "nombre": "flora:palma_sierra:hoja",
+   "triangulos": 47712,
+   "instancias": 84
+  },
+  {
+   "nombre": "flora:palma_sierra:corteza",
+   "triangulos": 37800,
+   "instancias": 84
+  },
+  {
+   "nombre": "flora:arbol_enano:corteza",
+   "triangulos": 36432,
+   "instancias": 46
+  },
+  {
+   "nombre": "flora:arbol_enano:corteza:lod",
+   "triangulos": 32472,
+   "instancias": 41
+  },
+  {
+   "nombre": "flora:bromelia:hoja",
+   "triangulos": 28672,
+   "instancias": 64
+  },
+  {
+   "nombre": "flora:palma_sierra_joven:corteza:lod",
+   "triangulos": 24840,
+   "instancias": 69
+  },
+  {
+   "nombre": "flora:arbol_enano:hoja",
+   "triangulos": 23552,
+   "instancias": 46
+  },
+  {
+   "nombre": "flora:helecho_arboreo:hoja",
+   "triangulos": 22176,
+   "instancias": 44
+  },
+  {
+   "nombre": "Vittata_2",
+   "triangulos": 21072,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_so",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_no",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_ne",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "terreno:terreno_se",
+   "triangulos": 20000,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:helecho_arboreo:corteza",
+   "triangulos": 17512,
+   "instancias": 44
+  },
+  {
+   "nombre": "flora:tabonuco:corteza:lod",
+   "triangulos": 16800,
+   "instancias": 14
+  },
+  {
+   "nombre": "flora:palma_sierra:hoja:lod",
+   "triangulos": 15478,
+   "instancias": 109
+  },
+  {
+   "nombre": "flora:palma_sierra_joven:hoja",
+   "triangulos": 15456,
+   "instancias": 42
+  },
+  {
+   "nombre": "flora:palma_sierra_joven:corteza",
+   "triangulos": 15120,
+   "instancias": 42
+  },
+  {
+   "nombre": "flora:manchas",
+   "triangulos": 14716,
+   "instancias": 7358
+  },
+  {
+   "nombre": "flora:tabonuco:corteza",
+   "triangulos": 14400,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:palma_sierra:hoja:sombra",
+   "triangulos": 10792,
+   "instancias": 19
+  },
+  {
+   "nombre": "mar",
+   "triangulos": 10656,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:tabonuco:hoja",
+   "triangulos": 10344,
+   "instancias": 12
+  },
+  {
+   "nombre": "flora:yagrumo:corteza:lod",
+   "triangulos": 9840,
+   "instancias": 15
+  },
+  {
+   "nombre": "flora:helecho_arboreo:corteza:lod",
+   "triangulos": 9154,
+   "instancias": 23
+  },
+  {
+   "nombre": "flora:palma_sierra:corteza:sombra",
+   "triangulos": 8550,
+   "instancias": 19
+  },
+  {
+   "nombre": "Vittata_1",
+   "triangulos": 7196,
+   "instancias": 1
+  },
+  {
+   "nombre": "flora:helecho_suelo:hoja",
+   "triangulos": 6864,
+   "instancias": 22
+  },
+  {
+   "nombre": "flora:palma_sierra_joven:hoja:lod",
+   "triangulos": 6348,
+   "instancias": 69
+  },
+  {
+   "nombre": "flora:yagrumo:hoja",
+   "triangulos": 5600,
+   "instancias": 5
+  }
+ ]
+}

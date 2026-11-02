@@ -358,3 +358,9 @@ Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lect
 - La vista aérea de Villa Raíz en calidad media dibujaba `edificiosZonaHDGlobal:AV_HD_Ancient` aunque ninguna zona contribuyente usaba HD: eran 4 600 625 triángulos de una malla global activada solo por su caja envolvente.
 - `streaming.js` ahora activa cada fusión global HD únicamente cuando una zona que sí usa HD tiene esa materia en vista o proyectando sombra. La prueba integrada comprueba que no quede una fusión global visible sin una zona HD visible.
 - A/B en la misma vista, calidad media y Linux (`docs/img/kimi/kimi_task_011_{antes,despues}.png`): 5 365 191 → 733 545 triángulos, 89 draw calls y 37 → 56 FPS medidos, con 0 errores de consola. Las medidas y el desglose de mallas están en los JSON homónimos. La medición en iPad sigue siendo una comprobación aparte del dispositivo.
+
+## Piedra dorada de las ruinas (2-nov-2026)
+
+- La paleta cercana y del atlas pasa de sombra `0,54/0,45/0,34` y luz `0,94/0,85/0,70` a `0,50/0,40/0,26` y `0,90/0,76/0,52`. Las celdas restauradas conservan su textura y reciben además el factor cálido `1,06/0,94/0,70`; no se cambia la geometría, el LOD ni el sombreado normal.
+- Comparación en `docs/img/kimi/kimi_task_004_comparacion.png`, con la meta de Kelvin, el antes y el después en el mismo encuadre y calidad alta. Las capturas y medidas individuales son `kimi_task_004_{antes,despues}.{png,json}`: 6 344 703 triángulos y 90 draw calls en ambas, con 0 errores de consola. Los FPS de estas ejecuciones Linux no son comparables por la carga concurrente del equipo.
+- Kelvin aprobó la lámina y la publicación de esta paleta el 2-nov-2026.
