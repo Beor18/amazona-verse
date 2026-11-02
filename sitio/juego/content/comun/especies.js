@@ -442,6 +442,7 @@
       },
       {
         "id": "agilis",
+        "piel": "agilis",
         "cientifico": "Amazona agilis",
         "comun": {
           "es": "amazona de pico negro",
@@ -961,6 +962,7 @@
       },
       {
         "id": "festiva",
+        "piel": "festiva",
         "cientifico": "Amazona festiva",
         "comun": {
           "es": "loro de lomo rojo",
@@ -1158,6 +1160,7 @@
       },
       {
         "id": "albifrons",
+        "piel": "albifrons",
         "cientifico": "Amazona albifrons",
         "comun": {
           "es": "loro frente blanca",

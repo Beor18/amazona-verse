@@ -1,0 +1,98 @@
+{
+ "codigo": "151cf1131fd481c2a14afff13f11be2403e11ccc",
+ "sitio": null,
+ "fecha": "2026-11-02T12:13:31Z",
+ "nota": "pruebas obligatorias en la nube en verde",
+ "pruebas": {
+  "estado": "pasa",
+  "inicio": "2026-11-02T12:04:18+00:00",
+  "duracion_s": 547.2,
+  "chrome": "Chrome/153.0.8010.12",
+  "huella_build": "996deaaa0b6ff9aed05967dfebfd0754a14f622349e1cc5b889e5179e3f78179",
+  "requeridas_ok": 12,
+  "requeridas": 12
+ },
+ "baterias": {
+  "selfTest": {
+   "requerida": true,
+   "passed": 102,
+   "total": 102,
+   "ok": true
+  },
+  "missionTest": {
+   "requerida": true,
+   "passed": 76,
+   "total": 76,
+   "ok": true
+  },
+  "accessoryTest": {
+   "requerida": true,
+   "passed": 12,
+   "total": 12,
+   "ok": true
+  },
+  "templateTest": {
+   "requerida": true,
+   "passed": 19,
+   "total": 19,
+   "ok": true
+  },
+  "eduTest": {
+   "requerida": true,
+   "passed": 79,
+   "total": 79,
+   "ok": true
+  },
+  "maestroTest": {
+   "requerida": true,
+   "passed": 26,
+   "total": 26,
+   "ok": true
+  },
+  "criaderoTest": {
+   "requerida": true,
+   "passed": 51,
+   "total": 51,
+   "ok": true
+  },
+  "movementTest": {
+   "requerida": true,
+   "passed": 49,
+   "total": 49,
+   "ok": true
+  },
+  "saveTest": {
+   "requerida": true,
+   "passed": 45,
+   "total": 45,
+   "ok": true
+  },
+  "comicTest": {
+   "requerida": true,
+   "passed": 32,
+   "total": 32,
+   "ok": true
+  },
+  "e2eTest": {
+   "requerida": true,
+   "passed": 47,
+   "total": 47,
+   "ok": true
+  },
+  "lookCapitulosTest": {
+   "requerida": true,
+   "passed": 12,
+   "total": 12,
+   "ok": true
+  }
+ },
+ "consola": {
+  "errores": 0,
+  "avisos": 0,
+  "muestras_error": []
+ },
+ "carga_inicial_mb": 8.95,
+ "heap_mb": 90.7,
+ "fallas": [],
+ "avisos": []
+}

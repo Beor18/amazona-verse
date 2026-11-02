@@ -91,7 +91,8 @@
   function normalizeLook(look) {
     const out = defaultLook();
     if (!look) return out;
-    if (SPECIES[look.species]) out.species = look.species;
+    // Las especies con piel (pieles.js) no están en SPECIES (eso es el tinte) pero se quedan en el look: si no, applyLook las devolvía a vittata
+    if (SPECIES[look.species] || (window.AVE && window.AVE.pieles && window.AVE.pieles.tiene(look.species))) out.species = look.species;
     if (look.accessories && typeof look.accessories === 'object') {
       out.accessories = {};
       for (const slot of SLOTS) {

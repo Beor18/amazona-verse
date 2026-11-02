@@ -615,10 +615,12 @@ AVE.module('aula', function (G) {
     callar();
     tab = 'guia';
     pintarMaestro();
+    const eEst = $('m-estado'); if (eEst) eEst.textContent = ''; // el aviso de la vez anterior («Progreso borrado.») no se queda
     panel.hidden = false;
     const c = $('m-cerrar'); if (c) c.focus();
   }
   function cerrarMaestro() {
+    const eEst = panel && panel.querySelector('#m-estado'); if (eEst) eEst.textContent = ''; // el aviso no sobrevive al panel
     if (!panel || panel.hidden) return;
     panel.hidden = true;
     G.pausa && G.pausa.set('maestro', false);
