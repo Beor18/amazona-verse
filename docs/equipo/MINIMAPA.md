@@ -1,17 +1,6 @@
 # Minimapa (P0 de Kelvin: «el jugador nunca debe sentirse perdido»)
 
-Estado ANTES de construir (se marcó primero; lo que no era EXISTE se construyó en `src/game/minimapa.js`):
-
-1. Posición y orientación (flecha que gira): **PARCIAL**. Hay flecha y haz en 3D (`fx.guide`), `S.pos` y `S.facing`; ningún mapa.
-2. Objetivo principal con icono amarillo y metros: **PARCIAL**. `G.misiones.guideTarget()` da el punto; no hay icono ni distancia.
-3. Marcadores por tipo (misión «!», parada «?», Retos, frutos, lugares): **PARCIAL**. Los datos existen (`G.interaccion.list`, `lugares.js`, `banquete.js`, `retosApi`); nada se dibuja.
-4. Destino verde y ruta opcional: **PENDIENTE**.
-5. Relieve, agua y flora precalculados (canvas 2D): **PARCIAL**. `terreno.height`, `agua.levelAt` y `vegetacion.instancias` existen; ninguna imagen.
-6. HUD compacto en una esquina libre: **PENDIENTE** (hueco medido: bajo el inventario y los botones del sistema).
-7. Mapa grande con toque o tecla M: **PENDIENTE**.
-8. Alto contraste, texto grande y zurdo: **EXISTE** el sistema (`accesibilidad.js`: clases `a11y-*`, `--fs-k`, `maqueta()`); **PENDIENTE** aplicarlo al minimapa.
-9. ~10 Hz, sin bajar FPS y carga perezosa: **PENDIENTE** (el patrón de carga tras el arranque **EXISTE** en `boot.js`).
-10. `minimapaTest`: **PENDIENTE** (la maqueta móvil de accesibilidad **EXISTE**).
+**Estado (2-nov-2026): hecho.** Vive en `src/game/minimapa.js` (`window.AVMinimapa(G)`). `src/boot.js` lo carga a los 3 s del arranque, fuera de la descarga inicial, y `AV.minimapaTest()` lo carga al pedirla. Los 10 puntos del diseño están cubiertos: posición y rumbo, objetivo con distancia, marcadores por tipo, destino verde y ruta, relieve/agua/flora precalculados, HUD compacto, mapa grande (toque o **M**), alto contraste, texto grande y zurdo, ~10 Hz y `minimapaTest`. `minimapaTest` es una batería extra (no está en las 12 obligatorias de `tools/build/config.json`). Se oculta con `?hud=0`. Capturas: `docs/img/minimapa_*.png`.
 
 ## Qué hace ahora
 - **Compacto** (`#minimapa`): norte arriba; flecha blanca con el rumbo; 55 m a la redonda andando y 85 m volando; «● 128 m» al objetivo (sin objetivo, el lugar más cercano). Móvil: a la izquierda de la columna de botones; escritorio: bajo los botones del sistema. Se oculta con la portada, el creador, el cómic, el final, los Gestos y el objetivo desplegado.

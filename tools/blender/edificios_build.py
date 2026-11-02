@@ -1150,6 +1150,13 @@ def inject_web_textures(path):
                 idx[tf] = len(textures) - 1
             pbr['baseColorTexture'] = {'index': idx[tf]}
             pbr['baseColorFactor'] = [1, 1, 1, 1]
+            nf = os.path.splitext(tf)[0] + '_n.jpg'
+            if os.path.exists(os.path.join(WEB_TEXDIR, nf)):
+                if nf not in idx:
+                    images.append({'uri': 'tex/' + nf, 'name': os.path.splitext(nf)[0]})
+                    textures.append({'source': len(images) - 1, 'sampler': 0})
+                    idx[nf] = len(textures) - 1
+                mat['normalTexture'] = {'index': idx[nf]}
         mat.pop('extensions', None)
     js.pop('extensionsUsed', None)
     if images:
@@ -1287,6 +1294,8 @@ def make_lejos(o, name, tris0):
     js.pop('extensionsUsed', None)
     write_glb(path, js, rest)
     kb, jskb = write_js(path, name + '_lejos')
+    from edificios_lejos_tono import aplicar_si_ancient
+    aplicar_si_ancient(path, name)
     t = tri_count([lo])
     bpy.data.objects.remove(lo, do_unlink=True)
     return dict(tris_lejos=t, kb_lejos=round(kb / 1024, 1), js_kb_lejos=round(jskb / 1024, 1))

@@ -1,6 +1,8 @@
 # HUEVOS_GDD · Criadero de cotorras
 
-Estado: PROTOTIPO jugable (`index.html?criadero=1`). Dueño: game designer de huevos.
+Estado (2-nov-2026): **jugable en el juego**, no es un prototipo. El criadero «Mi nido» está en el menú; `index.html?criadero=1` sigue sirviendo para abrirlo directo. Dueño: game designer de huevos.
+
+**Decisión de Kelvin (2-nov, `docs/DECISION_LOG.md`): los huevos son de fantasía.** «Los huevos tendrán colores especiales luego, es un juego, hay fantasía.» No hay fuente del color del huevo de *A. vittata* (`docs/equipo/FUENTES_CAP1.md`, BM120), así que el juego ya no afirma que sea blanco «como el de las cotorras de verdad»: dice «Adentro hay un huevo. ¿Qué cotorrita saldrá?». Donde este documento dice «huevo blanco» (tabla, §2 y riesgos), léase como el huevo de fantasía de hoy, no como un dato científico.
 - Datos: `content/comun/huevos.js`.
 - Código: `src/game/criadero.js` y `src/ui/criadero.css`.
 - Traits: `docs/equipo/TRAITS_V2.md`. Bandera: `docs/BANDERA_PR_GUIA.md`.
@@ -47,7 +49,7 @@ La XP llega por el evento `aprendizaje` que emiten aula, Diario y misiones. Cada
 - Posturas con `ch.rot`, `play`, `gait`, `wingMode` y `expression`. No se toca `src/personaje/`.
 
 ## 3. Cápsulas: fantasía con capa real
-Los huevos reales de *Amazona vittata* son blancos. Los temáticos son **cápsulas**: sus pétalos decorados se abren como una flor y dejan ver el huevo blanco de verdad. La narración lo dice en ese momento.
+Los temáticos son **cápsulas**: sus pétalos decorados se abren como una flor y dejan ver el huevo. Es fantasía (decisión de Kelvin, 2-nov): el color del huevo no se presenta como dato real, y la narración ya no lo afirma.
 
 Eclosión, hecha con primitivas y shaders:
 1. La cápsula tiembla y se abre.

@@ -1,0 +1,218 @@
+[
+ {
+  "pack": "cap1",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_cap1_escritorio",
+  "archivo": "bd1_despues_cap1_escritorio.jpg"
+ },
+ {
+  "pack": "cap1",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_cap1_movil",
+  "archivo": "bd1_despues_cap1_movil.jpg"
+ },
+ {
+  "pack": "ep2",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep2_escritorio",
+  "archivo": "bd1_despues_ep2_escritorio.jpg"
+ },
+ {
+  "pack": "ep2",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep2_movil",
+  "archivo": "bd1_despues_ep2_movil.jpg"
+ },
+ {
+  "pack": "ep3",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep3_escritorio",
+  "archivo": "bd1_despues_ep3_escritorio.jpg"
+ },
+ {
+  "pack": "ep3",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep3_movil",
+  "archivo": "bd1_despues_ep3_movil.jpg"
+ },
+ {
+  "pack": "ep4",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep4_escritorio",
+  "archivo": "bd1_despues_ep4_escritorio.jpg"
+ },
+ {
+  "pack": "ep4",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep4_movil",
+  "archivo": "bd1_despues_ep4_movil.jpg"
+ },
+ {
+  "pack": "ep5",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.72,
+  "cenit": "#24366e",
+  "horizonte": "#6d84b0",
+  "niebla": [
+   48,
+   720
+  ],
+  "permiso": "noche",
+  "fogFar": 720,
+  "skyCenit": "#040927",
+  "solInt": 1.35,
+  "id": "bd1_despues_ep5_escritorio",
+  "archivo": "bd1_despues_ep5_escritorio.jpg"
+ },
+ {
+  "pack": "ep5",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.72,
+  "cenit": "#24366e",
+  "horizonte": "#6d84b0",
+  "niebla": [
+   48,
+   720
+  ],
+  "permiso": "noche",
+  "fogFar": 720,
+  "skyCenit": "#040927",
+  "solInt": 1.35,
+  "id": "bd1_despues_ep5_movil",
+  "archivo": "bd1_despues_ep5_movil.jpg"
+ },
+ {
+  "pack": "ep6",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep6_escritorio",
+  "archivo": "bd1_despues_ep6_escritorio.jpg"
+ },
+ {
+  "pack": "ep6",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_despues_ep6_movil",
+  "archivo": "bd1_despues_ep6_movil.jpg"
+ }
+]

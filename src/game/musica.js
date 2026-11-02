@@ -15,6 +15,17 @@
    fundidos cruzados de 1,2 a 3,5 s; nadie pisa a nadie. Cada pista lleva su nivel para que todas suenen parecido (~0,05 de nivel medio).
    Armonías y melodías propias (escritas aquí, en notas MIDI); no copian ninguna canción.
 
+   BANDA SONORA (C13): los temas de Kelvin (hechos con Suno) mandan sobre las pistas sintéticas. La tabla BANDA_SONORA (abajo) dice qué
+   pista suena en cada momento del juego (momentos → pista) y, de cada tema, su archivo, nivel, punto de bucle y alternativa sintética.
+   - exploracion · mundo libre (Aventura y Vuelo libre) y lluvia;  carrera · Retos: carrera contra las cotorras, río, banquete y su menú;
+     criadero · el criadero abierto (la eclosión baja la música; su efecto va aparte, en los SFX);  tormenta · «¡Escapa de la tormenta!» y
+     la crecida del capítulo 1;  arena · registrada para Amazona Arena (el modo aún no existe: nada la elige).
+   - Portada, creador y final del capítulo siguen con sus pistas sintéticas (alegre y final).
+   - Un tema se pide (streaming con <audio> + MediaElementSource) solo cuando toca, tras el primer gesto, y nunca en la descarga inicial.
+     Mientras carga sigue lo que sonaba; si tarda más de esperaCarga, o falla, suena su alternativa sintética (y entra el tema al cargar).
+   - Una pista a la vez: fundido cruzado de BANDA_SONORA.fundido s; el bucle es un fundido de igual potencia dentro del mismo tema
+     (docs/equipo/BANDA_SONORA.md: puntos de bucle elegidos por similitud). Volver a un tema antes de «recordar» s sigue donde iba.
+
    AMBIENTE (capas siempre encendidas, con su nivel suavizado; se oye discreto):
    - aves de día (silbidos, trinos y, de vez en cuando, una cotorra) y coquíes de noche («co-quí» de un coro de ranas) más grillos;
    - el río (y el mar, más grave y con olas) según la cercanía al agua: 33 consultas a G.agua.levelAt cada 0,4 s;
@@ -22,7 +33,7 @@
    La hora sale de S.hora (0 a 24) si algún día el mundo tiene ciclo de día y noche (de día de 6:30 a 17:30, de noche de 19:00 a 5:00,
    con un atardecer y un amanecer suaves); mientras el cielo sea siempre de día, el ambiente es de día.
    Las ranas callan 9 s si suena el Simon de los coquíes (sonidos co, qui y chorus) para no confundir el juego. La música baja mientras habla la voz
-   del Aula (gancho 'voz').
+   del Aula (gancho 'voz') y, a 0,6, mientras haya un diálogo abierto (G.dialogo.activo()).
 
    CPU: tres modos según G.renderer.calidad y el equipo. completo (escritorio): 28 voces y eco; ligero (pantalla táctil o 4 núcleos o menos): 8 voces,
    rasgueos de 2 notas, sin eco, sin vibrato; simple (calidad «bajo»): sin música, solo ambiente con 3 capas y sin paneo. Volver de «simple» tarda 15 s
@@ -59,17 +70,87 @@
   // 0 de día … 1 de noche, con atardecer (17:30 a 19:00) y amanecer (5:00 a 6:30)
   const noche = h => (h >= 12 ? suave(17.5, 19, h) : 1 - suave(5, 6.5, h));
 
-  // Qué pista toca (prioridad: final > portada o creador > retos > tensión > explora)
-  function elegir(e, previa) {
-    if (e.fin || (e.comic && previa === 'final')) return 'final';
-    if (e.portada || e.creador) return 'alegre';
-    if (e.retos) return 'retos';
-    if (e.evento || e.lluvia) return 'tension';
-    return 'explora';
+  // =====================================================================
+  // BANDA SONORA: la tabla pista ↔ momentos (cámbiala aquí; docs/equipo/BANDA_SONORA.md explica cada campo)
+  // =====================================================================
+  const BANDA_SONORA = {
+    fundido: 1.5,        // s del fundido cruzado entre dos pistas (de 1 a 2)
+    fundidoBucle: 2.5,   // s del fundido de igual potencia en el punto de bucle (dentro del mismo tema)
+    esperaCarga: 4,      // s que se espera a que un tema cargue antes de tocar su alternativa sintética
+    recordar: 120,       // s: si se vuelve a un tema antes de esto, sigue donde iba; si no, empieza desde el principio
+    eclosion: 0.35,      // factor de la música mientras un huevo eclosiona (el efecto de la eclosión no baja)
+    // Temas de Kelvin (Suno). dur y bucle en s: el bucle salta de bucle[1] a bucle[0] con un fundido de fundidoBucle centrado en bucle[1].
+    // nivel: ganancia para que suenen como las sintéticas (~0,05 de nivel medio). alternativa: pista sintética si el archivo no está.
+    pistas: {
+      exploracion: { archivo: 'assets/audio/musica/exploracion.m4a', titulo: 'El Yunque Awakens', dur: 177.2, bucle: [59.81, 152.93], nivel: 0.42, alternativa: 'explora' },
+      carrera: { archivo: 'assets/audio/musica/carrera.m4a', titulo: 'Carrera sobre El Yunque', dur: 167.24, bucle: [59.66, 138.62], nivel: 0.46, alternativa: 'retos' },
+      criadero: { archivo: 'assets/audio/musica/criadero.m4a', titulo: 'The Golden Hatch', dur: 167.16, bucle: [23.8, 135.93], nivel: 0.38, alternativa: 'explora' },
+      tormenta: { archivo: 'assets/audio/musica/tormenta.m4a', titulo: 'Guardians of Borikén', dur: 162.16, bucle: [59.65, 133.07], nivel: 0.41, alternativa: 'tension' },
+      // Amazona Arena: registrada como pista futura. Sin archivo publicado hasta que exista el modo (el .m4a ya está en el repo, junto a los
+      // otros; la build no lo lleva porque nada lo nombra). Ese día se le pone su ruta en archivo, como a los demás (docs/equipo/BANDA_SONORA.md).
+      arena: { archivo: null, futura: true, titulo: 'El Yunque battle', dur: 153.6, bucle: [59.27, 128.38], nivel: 0.43, alternativa: 'retos' },
+    },
+    // Momento del juego → pista (un tema de arriba o una sintética: alegre, explora, retos, tension, final). La prioridad es el orden de MOMENTOS.
+    momentos: {
+      final: 'final', criadero: 'criadero', portada: 'alegre', creador: 'alegre', arena: 'arena',
+      retosTormenta: 'tormenta', retosCarrera: 'carrera', retosRio: 'carrera', retosBanquete: 'carrera', retosMenu: 'carrera',
+      crecida: 'tormenta', lluvia: 'exploracion', mundo: 'exploracion',
+    },
+  };
+  const MOMENTOS = ['final', 'criadero', 'portada', 'creador', 'arena', 'retosTormenta', 'retosCarrera', 'retosRio', 'retosBanquete', 'retosMenu', 'crecida', 'lluvia', 'mundo'];
+  const RETO_MOMENTO = { tormenta: 'retosTormenta', carrera: 'retosCarrera', rio: 'retosRio', banquete: 'retosBanquete' };
+
+  // Qué momento es (prioridad: final > criadero > portada o creador > arena > retos > crecida > lluvia > mundo) y qué pista le toca
+  function momentoDe(e, previa) {
+    if (e.fin || (e.comic && previa === BANDA_SONORA.momentos.final)) return 'final';
+    if (e.criadero) return 'criadero';
+    if (e.portada) return 'portada';
+    if (e.creador) return 'creador';
+    if (e.arena) return 'arena';
+    if (e.retos) return RETO_MOMENTO[e.reto] || 'retosMenu';
+    if (e.evento) return 'crecida';
+    if (e.lluvia) return 'lluvia';
+    return 'mundo';
+  }
+  function elegir(e, previa) { return BANDA_SONORA.momentos[momentoDe(e, previa)] || 'explora'; }
+
+  // BM66: ambiente por zona de los capítulos 2 a 6 (círculos en el mundo de cada pack; x, z, r en metros). `mul` multiplica una capa y
+  // `sum` le suma nivel; el efecto baja de lleno en el centro a nada en el borde, así que cruzar una zona es un fundido y no un corte.
+  // `murmullo` (voces lejanas) y `eco` (hueco de piedra) solo existen aquí.
+  const ZONAS_CAP = {
+    2: [{ x: -20, z: -4, r: 14, mul: { bosque: 1.25, aves: 1.2 } },                    // el nido: hojas y pájaros
+        { x: 10.6, z: 8, r: 10, mul: { bosque: 0.6 }, sum: { viento: 0.12 } }],        // charca y refugio: claro abierto
+    3: [{ x: 13, z: 12, r: 16, sum: { mar: 0.4, viento: 0.15 } },                      // astillero, botadura y muelle: se huele la bahía
+        { x: -31, z: 29, r: 12, sum: { murmullo: 0.6 } }],                             // la aldea vecina
+    4: [{ x: -1, z: -17, r: 10, mul: { bosque: 1.3, aves: 1.2 } },                     // el bosquecillo del estrecho
+        { x: 1, z: 5, r: 12, sum: { mar: 0.3, murmullo: 0.3 } }],                      // la orilla con la obra
+    5: [{ x: 0, z: 5, r: 25, mul: { bosque: 0.5, aves: 0.5 }, sum: { eco: 0.8, viento: 0.1 } }], // las ruinas: piedra y silencio
+    6: [{ x: 0, z: 0, r: 16, sum: { murmullo: 0.7 } },                                 // la plaza de Villa Raíz
+        { x: 18, z: 0, r: 10, sum: { rio: 0.3 } },                                     // el puente y los muelles
+        { x: -20, z: -20, r: 12, sum: { viento: 0.4 } }],                              // el mirador
+  };
+  function zonaCap(cap, x, z) {
+    const mul = {}, sum = {};
+    for (const q of ZONAS_CAP[cap] || []) {
+      const w = clamp(1 - Math.hypot((x || 0) - q.x, (z || 0) - q.z) / q.r, 0, 1);
+      if (!w) continue;
+      for (const k in q.mul || {}) mul[k] = (mul[k] || 1) * (1 + (q.mul[k] - 1) * w);
+      for (const k in q.sum || {}) sum[k] = (sum[k] || 0) + q.sum[k] * w;
+    }
+    return { mul, sum };
   }
 
   // Niveles 0 a 1 de cada capa del ambiente a partir de dónde está la cotorra y qué hora es
   function calcularAmbiente(e) {
+    const r = calcularBase(e), zc = e.cap > 1 ? zonaCap(e.cap, e.x, e.z) : null;
+    r.murmullo = 0; r.eco = 0;
+    if (zc) {
+      const f = e.portada || e.creador ? 0.35 : e.retos ? 0.7 : 1;
+      for (const k of ['rio', 'mar', 'viento', 'bosque', 'aves', 'murmullo', 'eco']) r[k] = clamp(((r[k] || 0) / f * (zc.mul[k] || 1) + (zc.sum[k] || 0)) * f, 0, 1);
+    }
+    return r;
+  }
+  function calcularBase(e) {
     const n = noche(e.hora == null ? 12 : e.hora), dia = 1 - n;
     const tormenta = !!(e.evento || e.lluvia);
     const f = e.portada || e.creador ? 0.35 : e.retos ? 0.7 : 1; // detrás de la portada o en una carrera, más bajito
@@ -78,6 +159,9 @@
       rio: clamp(e.rio || 0, 0, 1) * f,
       mar: clamp(e.mar || 0, 0, 1) * f,
       viento: clamp(0.1 + alto + (e.volando ? 0.1 : 0) + (tormenta ? 0.35 : 0), 0, 1) * f,
+      // BM34: bosque (hojas) donde no hay agua ni altura; cede ante el río y el mar y se funde al cruzar la orilla. Lluvia continua en la crecida o el aguacero.
+      bosque: clamp(1 - clamp(e.rio || 0, 0, 1) * 1.25 - clamp(e.mar || 0, 0, 1) - alto * 0.8, 0, 1) * (tormenta ? 0.6 : 1) * f,
+      lluvia: tormenta ? f : 0,
       aves: dia * (tormenta ? 0.15 : 1) * f,
       coquies: n * (tormenta ? 0.5 : 1) * f,
       grillos: n * 0.8 * f,
@@ -351,16 +435,142 @@
     }
     // Fundido cruzado: la nueva sube deprisa (constante fade/4,5) y la anterior baja más despacio (fade/2,5), así no queda un hueco mientras entran
     // las primeras notas de la nueva. Todo con setTargetAtTime: nunca un salto.
-    function cruzar(ant, nueva, t, fade) {
-      const tauIn = fade / 4.5, tauOut = fade / 2.5;
-      if (ant) {
-        const val = ant.g.gain.value;
-        ant.g.gain.cancelScheduledValues(t); ant.g.gain.setValueAtTime(Math.max(val, 0.0001), t); ant.g.gain.setTargetAtTime(0, t, tauOut);
-        ant.fin = t + fade * 3;
-      }
-      nueva.g.gain.setValueAtTime(0.0001, t); nueva.g.gain.setTargetAtTime(nueva.nivel, t, tauIn);
-    }
     return { pista, cruzar, maxVoces: () => maxVoces, LIM, ligero };
+  }
+  // (fuera del motor: lo usa también el reproductor de temas en archivo)
+  function cruzar(ant, nueva, t, fade) {
+    const tauIn = fade / 4.5, tauOut = fade / 2.5;
+    if (ant) {
+      const val = ant.g.gain.value;
+      ant.g.gain.cancelScheduledValues(t); ant.g.gain.setValueAtTime(Math.max(val, 0.0001), t); ant.g.gain.setTargetAtTime(0, t, tauOut);
+      ant.fin = t + fade * 3;
+    }
+    nueva.g.gain.cancelScheduledValues(t); nueva.g.gain.setValueAtTime(0.0001, t); nueva.g.gain.setTargetAtTime(nueva.nivel, t, tauIn);
+  }
+
+  // =====================================================================
+  // Reproductor: UNA pista a la vez (sintética o tema en archivo), fundidos, bucles, carga perezosa y alternativa si el tema falla.
+  // o = { c (AudioContext), salida (bus de música), sintetica(nombre, t) → pista del motor, crearAudio() → <audio>, ahora() → ms,
+  //       mem: { fallo: {id: motivo}, pos: {id: { t, salio }}, bloqueo } (sobrevive a rehacer el motor), tabla (BANDA_SONORA) }.
+  // Las pruebas lo montan con un contexto y un <audio> de mentira: no depende del juego.
+  // =====================================================================
+  function crearReproductor(o) {
+    const c = o.c, T = o.tabla || BANDA_SONORA, mem = o.mem;
+    let real = null, cargando = null, cargandoDesde = 0, salientes = [], cambios = 0, vivos = 0, bucles = 0;
+    const curva = sube => { const n = 33, a = new Float32Array(n); for (let i = 0; i < n; i++) { const x = (sube ? i : n - 1 - i) / (n - 1); a[i] = Math.sin(x * Math.PI / 2); } return a; };
+    function crearArchivo(id) {
+      const def = T.pistas[id], g = c.createGain(); g.gain.value = 0.0001; g.connect(o.salida);
+      const pos = mem.pos[id], desde = pos && o.ahora() - pos.salio < T.recordar * 1000 && pos.t < def.dur - 3 ? pos.t : 0;
+      const p = { nombre: id, archivo: true, def, g, nivel: def.nivel, fin: Infinity, estado: 'cargando', error: '', voces: [], actual: null, sig: null, cruce: null, sonando: false, bloqueada: false, bucles: 0 };
+      function voz(t0, vol) {
+        const el = o.crearAudio(), vg = c.createGain(), v = { el, g: vg, src: null, t0, lista: false };
+        vg.gain.value = vol; vg.connect(g);
+        el.preload = 'auto';
+        el.addEventListener('loadedmetadata', () => { if (t0 > 0) { try { el.currentTime = t0; } catch (e) { /* aún no se puede saltar */ } } });
+        el.addEventListener('canplay', () => { v.lista = true; if (v === p.actual && p.estado === 'cargando') p.estado = 'lista'; });
+        el.addEventListener('error', () => { p.estado = 'fallo'; p.error = 'no carga ' + def.archivo + (el.error && el.error.code ? ' (código ' + el.error.code + ')' : ''); });
+        try { v.src = c.createMediaElementSource(el); v.src.connect(vg); } catch (e) { p.estado = 'fallo'; p.error = String((e && e.message) || e); }
+        el.src = (o.base || '') + def.archivo;
+        p.voces.push(v); vivos++;
+        return v;
+      }
+      function tocar(v) {
+        let pr; try { pr = v.el.play(); } catch (e) { pr = Promise.reject(e); }
+        if (pr && pr.catch) pr.catch(e => {
+          if (e && e.name === 'NotAllowedError') { mem.bloqueo = true; p.bloqueada = true; } // el navegador pide un gesto (iOS): sigue la alternativa
+          else if (!(e && e.name === 'AbortError')) { p.estado = 'fallo'; p.error = String((e && e.message) || e); }
+        });
+      }
+      function soltarVoz(v) {
+        try { v.el.pause(); } catch (e) { /* ya parada */ }
+        try { if (v.src) v.src.disconnect(); v.g.disconnect(); } catch (e) { /* ya suelto */ }
+        try { v.el.removeAttribute('src'); v.el.load(); } catch (e) { /* sin recurso */ } // suelta el búfer del navegador
+        const i = p.voces.indexOf(v); if (i >= 0) { p.voces.splice(i, 1); vivos--; }
+      }
+      p.actual = voz(desde, 1);
+      p.arrancar = () => { p.sonando = true; tocar(p.actual); };
+      p.pausar = () => { for (const v of p.voces) { try { v.el.pause(); } catch (e) { /* ya parada */ } } };
+      p.reanudar = () => {
+        if (!p.sonando || p.bloqueada) return;
+        for (const v of [p.actual, p.cruce && p.cruce.viejo]) if (v && v.el.paused && !v.el.ended) tocar(v);
+      };
+      p.desbloquear = () => { if (!p.bloqueada) return; p.bloqueada = false; if (p.sonando) tocar(p.actual); }; // dentro de un gesto
+      p.ajustar = () => {};
+      // El bucle: 12 s antes se precarga otra voz del mismo tema en bucle[0] − X/2; en bucle[1] − X/2 entra con un fundido de igual potencia
+      p.programar = () => {
+        if (!p.sonando || p.bloqueada) return;
+        const a = p.actual, ct = a.el.currentTime || 0, b0 = def.bucle[0], b1 = def.bucle[1], X = T.fundidoBucle, t = c.currentTime;
+        if (!p.sig && !p.cruce && ct >= b1 - X / 2 - 12) p.sig = voz(Math.max(0, b0 - X / 2), 0);
+        if (p.sig && !p.cruce && ((p.sig.lista && ct >= b1 - X / 2) || a.el.ended)) {
+          const v = p.sig; p.sig = null; tocar(v);
+          a.g.gain.cancelScheduledValues(t); a.g.gain.setValueCurveAtTime(curva(false), t, X);
+          v.g.gain.cancelScheduledValues(t); v.g.gain.setValueCurveAtTime(curva(true), t, X);
+          p.cruce = { viejo: a, hasta: t + X + 0.05 }; p.actual = v; p.bucles++; bucles++;
+        }
+        if (p.cruce && t >= p.cruce.hasta) { soltarVoz(p.cruce.viejo); p.cruce = null; }
+        else if (!p.cruce && !p.sig && a.el.ended) { try { a.el.currentTime = b0; } catch (e) { /* sin salto */ } tocar(a); } // red de seguridad
+      };
+      p.posicion = () => (p.actual ? p.actual.el.currentTime || 0 : 0);
+      p.cerrar = () => {
+        if (p.sonando) mem.pos[id] = { t: p.posicion(), salio: o.ahora() };
+        for (const v of p.voces.slice()) soltarVoz(v);
+        try { g.disconnect(); } catch (e) { /* ya suelto */ }
+        p.sig = p.cruce = null; p.estado = 'cerrada'; p.sonando = false;
+      };
+      return p;
+    }
+    function soltar(p) { if (p) p.cerrar(); }
+    // Qué suena de verdad para la pista pedida: el tema si está listo; si no, lo que ya sonaba (null) o, tras esperar, su alternativa
+    function resolver(id) {
+      const def = T.pistas[id];
+      if (!def) return id;
+      if (real && real.nombre === id) {
+        if (real.estado === 'fallo') { mem.fallo[id] = real.error || 'fallo'; return def.alternativa; }
+        return real.bloqueada ? def.alternativa : id;
+      }
+      if (mem.fallo[id] || mem.bloqueo || !def.archivo) return def.alternativa; // sin archivo (Arena, pista futura): la alternativa
+      if (!cargando || cargando.nombre !== id) { soltar(cargando); cargando = crearArchivo(id); cargandoDesde = o.ahora(); }
+      if (cargando.estado === 'fallo') { mem.fallo[id] = cargando.error || 'fallo'; soltar(cargando); cargando = null; return def.alternativa; }
+      if (cargando.estado === 'lista') return id;
+      return o.ahora() - cargandoDesde > T.esperaCarga * 1000 ? def.alternativa : null;
+    }
+    function apurar(s, t) { // una saliente que aún suena se va del todo en ~0,3 s: nunca más de una pista entrando y una saliendo
+      const v = s.g.gain.value; s.g.gain.cancelScheduledValues(t); s.g.gain.setValueAtTime(Math.max(v, 0.0001), t); s.g.gain.setTargetAtTime(0, t, 0.06);
+      s.fin = Math.min(s.fin, t + 0.4);
+    }
+    function cambiar(q) {
+      const t = c.currentTime;
+      let nueva;
+      if (T.pistas[q]) { nueva = cargando; cargando = null; nueva.arrancar(); } else nueva = o.sintetica(q, t + 0.08);
+      const fade = nueva.archivo || (real && real.archivo) || !PISTAS[q] ? T.fundido : PISTAS[q].fade;
+      for (const s of salientes) apurar(s, t);
+      cruzar(real, nueva, t, fade);
+      if (real) salientes.push(real);
+      real = nueva; cambios++;
+    }
+    function poner(id) {
+      if (cargando && cargando.nombre !== id) { soltar(cargando); cargando = null; } // solo se pide el tema que toca
+      const q = resolver(id);
+      if (q == null || (real && real.nombre === q)) return;
+      cambiar(q);
+    }
+    function paso() {
+      const t = c.currentTime;
+      if (real) { real.ajustar(t); real.programar(t + 0.4); }
+      salientes = salientes.filter(s => { if (t > s.fin) { s.cerrar(); return false; } if (s.archivo) s.programar(); return true; });
+    }
+    const archivos = () => [real, cargando].concat(salientes).filter(p => p && p.archivo);
+    return {
+      poner, paso,
+      pausar() { for (const p of archivos()) p.pausar(); },
+      reanudar() { if (real && real.archivo) real.reanudar(); },
+      gesto() { mem.bloqueo = false; for (const p of archivos()) p.desbloquear(); },
+      cerrar() { for (const p of [real, cargando].concat(salientes)) if (p) p.cerrar(); real = cargando = null; salientes = []; },
+      get real() { return real; }, get salientes() { return salientes.slice(); },
+      estado: () => ({ sonando: real ? real.nombre : null, archivo: !!(real && real.archivo), cargando: cargando ? cargando.nombre : null,
+        salientes: salientes.map(s => s.nombre), elementos: vivos, cambios, bucles, posicion: real && real.archivo ? Math.round(real.posicion() * 10) / 10 : null,
+        fallos: Object.assign({}, mem.fallo), bloqueo: !!mem.bloqueo, pasos: real && !real.archivo ? real.paso : 0 }),
+    };
   }
 
   // =====================================================================
@@ -379,12 +589,17 @@
       if (simple) f.connect(capas.mar); else { const am = c.createGain(); am.gain.value = 0.55; nodos.push(am); lfo(0.11, 0.45, am.gain); f.connect(am); am.connect(capas.mar); } // olas
     }
     capas.viento = cap(); { const f = filtro('bandpass', 520, 1.1); lazo().connect(f); f.connect(capas.viento); if (!simple) lfo(0.07, 260, f.frequency); }
+    capas.bosque = cap(); { const f = filtro('bandpass', simple ? 2600 : 3100, 0.8); lazo().connect(f); if (simple) f.connect(capas.bosque); else { const am = c.createGain(); am.gain.value = 0.6; nodos.push(am); lfo(0.17, 0.35, am.gain); lfo(0.05, 500, f.frequency); f.connect(am); am.connect(capas.bosque); } } // hojas movidas por la brisa
+    capas.lluvia = cap(); { const f = filtro('highpass', 2300, 0.4); lazo().connect(f); f.connect(capas.lluvia); }
     if (!simple) { // grillos: ruido agudo que pulsa unas 31 veces por segundo
       capas.grillos = cap(); const f = filtro('bandpass', 4700, 14), am = c.createGain(); am.gain.value = 0.5; nodos.push(am);
       lfo(31, 0.5, am.gain); lazo().connect(f); f.connect(am); am.connect(capas.grillos);
     }
+    const quieto = !!(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches); // BM66: con «Reducir movimiento» las capas de zona no ondulan
+    capas.murmullo = cap(); { const f = filtro('bandpass', 420, 0.9); lazo().connect(f); if (simple || quieto) f.connect(capas.murmullo); else { const am = c.createGain(); am.gain.value = 0.55; nodos.push(am); lfo(0.23, 0.4, am.gain); f.connect(am); am.connect(capas.murmullo); } } // voces lejanas
+    capas.eco = cap(); { const f = filtro('lowpass', 240, 1.4); lazo().connect(f); if (simple || quieto) f.connect(capas.eco); else { const am = c.createGain(); am.gain.value = 0.6; nodos.push(am); lfo(0.09, 0.4, am.gain); f.connect(am); am.connect(capas.eco); } } // hueco de piedra
     capas.aves = cap(); capas.coquies = cap();
-    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, aves: 2.2, coquies: 1 }; // ganancia interna de cada capa (se calibra con renderizar)
+    const K = { rio: 0.22, mar: 0.45, viento: 0.3, grillos: 0.1, bosque: 0.14, lluvia: 0.2, aves: 2.2, coquies: 1, murmullo: 0.2, eco: 0.5 }; // ganancia interna de cada capa (se calibra con renderizar)
     const pan = d => { if (simple || !c.createStereoPanner) return d; const p = c.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; p.connect(d); return p; };
     function pio(d, t, f0, f1, dur, vol, tipo) {
       const s = c.createOscillator(), g = c.createGain(); s.type = tipo || 'sine';
@@ -462,30 +677,36 @@
     }
 
     // ---------- Qué pista toca ----------
-    const st = { pista: null, desde: 0, cand: null, desdeCand: 0, cambios: 0, historial: [] };
+    const st = { pista: null, mom: null, desde: 0, cand: null, desdeCand: 0, cambios: 0, historial: [] };
     let sim = null; // entradas simuladas (pruebas o para oír una pista a mano)
-    let lluviaDesde = 0, ranasHasta = 0, hablaHasta = 0, horaForzada = null, fallos = 0, ultimoFallo = '', muerto = false;
+    let lluviaDesde = 0, ranasHasta = 0, hablaHasta = 0, eclosionAhora = false, horaForzada = null, fallos = 0, ultimoFallo = '', muerto = false;
+    const BASE_E = { portada: false, creador: false, fin: false, comic: false, retos: false, reto: null, evento: false, lluvia: false, criadero: false, eclosion: false, arena: false };
     function leerEntradas() {
-      if (sim) return Object.assign({ portada: false, creador: false, fin: false, comic: false, retos: false, evento: false, lluvia: false }, sim);
+      if (sim) return Object.assign({}, BASE_E, sim);
       const ahora = performance.now(), llueve = !!(G.fx && G.fx.rain && G.fx.rain.visible);
       if (!llueve) lluviaDesde = 0; else if (!lluviaDesde) lluviaDesde = ahora;
       const vis = id => { const e = $(id); return !!e && !e.hidden; };
-      const tit = $('title');
+      const tit = $('title'), cr = G.criadero, rt = G.retosApi;
+      const criadero = !!(cr && typeof cr.abierto === 'function' && cr.abierto());
+      const saltar = criadero && document.querySelector('#criadero .cr-skip'); // «Saltar» solo se ve mientras un huevo eclosiona
       return {
         portada: !!(tit && tit.open), creador: vis('creator'), fin: vis('end'), comic: vis('comic'),
-        retos: document.body.classList.contains('retos-on') || !!(G.retosApi && G.retosApi.activo),
+        retos: document.body.classList.contains('retos-on') || !!(rt && rt.activo), reto: (rt && rt.reto) || null,
         evento: !!S.event, lluvia: llueve && ahora - lluviaDesde > 5000, // la lluvia de una demostración de 4 s no cuenta
+        criadero, eclosion: !!(saltar && !saltar.hidden), arena: document.body.classList.contains('arena-on'), // arena-on: el día que exista el modo
       };
     }
     // Decide la pista con calma: un cambio pide 0,7 s seguidos (así un parpadeo, como el de la portada al abrir Retos, no hace dos fundidos);
-    // salir de la tensión pide 5 s seguidos de calma
+    // salir de la crecida pide 5 s seguidos de calma. Cambiar de momento sin cambiar de pista (puntos de control, otro huevo, «Otra vez»,
+    // el menú de Retos → la carrera) no toca nada: la pista sigue sonando.
     function evaluar(e, ahora) {
-      const c = elegir(e, st.pista);
+      const m = momentoDe(e, st.pista), c = BANDA_SONORA.momentos[m] || 'explora';
       if (c !== st.cand) { st.cand = c; st.desdeCand = ahora; }
       let quiere = st.pista;
       if (!st.pista) quiere = c;
-      else if (c !== st.pista && ahora - st.desdeCand >= (st.pista === 'tension' ? 5000 : 700)) quiere = c;
+      else if (c !== st.pista && ahora - st.desdeCand >= (st.mom === 'crecida' ? 5000 : 700)) quiere = c;
       if (quiere !== st.pista) { st.pista = quiere; st.desde = ahora; st.cambios++; st.historial.push(quiere); if (st.historial.length > 20) st.historial.shift(); }
+      if (c === st.pista) st.mom = m;
       return st.pista;
     }
 
@@ -503,11 +724,12 @@
     }
 
     // ---------- Motor en vivo ----------
-    let eng = null, real = null, salientes = [], niv = calcularAmbiente({}), cuenta = 0, programadas = 0;
+    let eng = null, niv = calcularAmbiente({}), cuenta = 0;
+    const memBanda = { fallo: {}, pos: {}, bloqueo: false }; // sobrevive a rehacer el motor (cambio de calidad o de contexto)
     function desmontar() {
       if (!eng) return;
-      try { if (real) real.p.cerrar(); for (const s of salientes) s.p.cerrar(); eng.ambiente.cerrar(); eng.musicaBus.disconnect(); eng.ambBus.disconnect(); } catch (e) { /* ya suelto */ }
-      eng = null; real = null; salientes = [];
+      try { eng.rep.cerrar(); eng.ambiente.cerrar(); eng.musicaBus.disconnect(); eng.ambBus.disconnect(); } catch (e) { /* ya suelto */ }
+      eng = null;
     }
     function preparar() {
       const c = A.ctx; if (!c || !A.master) return false;
@@ -516,19 +738,16 @@
       desmontar();
       const musicaBus = c.createGain(), ambBus = c.createGain();
       musicaBus.gain.value = 0; ambBus.gain.value = 0;
-      eng = { c, modo, musicaBus, ambBus, motor: crearMotor(c, modo, musicaBus), ambiente: crearAmbiente(c, ambBus, modo), conectado: { m: false, a: false }, nuevo: true };
+      const motor = crearMotor(c, modo, musicaBus);
+      const rep = crearReproductor({ c, salida: musicaBus, mem: memBanda, tabla: BANDA_SONORA, ahora: () => performance.now(),
+        crearAudio: () => new Audio(), sintetica: (nombre, t) => motor.pista(nombre, t, true) });
+      eng = { c, modo, musicaBus, ambBus, motor, rep, ambiente: crearAmbiente(c, ambBus, modo), conectado: { m: false, a: false }, nuevo: true };
       return true;
     }
     function conectar(bus, clave, quiere) {
       if (eng.conectado[clave] === quiere) return;
       try { if (quiere) bus.connect(A.master); else bus.disconnect(); } catch (e) { /* sin master */ }
       eng.conectado[clave] = quiere;
-    }
-    function cambiarPista(nombre) {
-      const c = eng.c, t = c.currentTime, nueva = eng.motor.pista(nombre, t + 0.08, true);
-      eng.motor.cruzar(real && real.p, nueva, t, PISTAS[nombre].fade);
-      if (real) salientes.push({ p: real.p });
-      real = { nombre, p: nueva };
     }
 
     // Cuántas consultas de agua hace falta: 33 cada 0,4 s. Separa el río del mar por el nivel del agua en cada punto.
@@ -553,18 +772,22 @@
     }
     function entradasAmbiente(e) {
       const a = entornoAgua(), M = G.fisica && G.fisica.MOVE;
-      return { hora: horaActual(), rio: a.rio, mar: a.mar, sobreSuelo: Math.max(0, S.pos.y - G.terreno.height(S.pos.x, S.pos.z)), y: S.pos.y, volando: !!(M && M.flying),
+      return { hora: horaActual(), rio: a.rio, mar: a.mar, sobreSuelo: Math.max(0, S.pos.y - G.terreno.height(S.pos.x, S.pos.z)), y: S.pos.y, x: S.pos.x, z: S.pos.z, cap: (G.pack && G.pack.meta && G.pack.meta.capitulo) || 1, volando: !!(M && M.flying),
         evento: e.evento, lluvia: e.lluvia, retos: e.retos, portada: e.portada, creador: e.creador };
     }
 
     // ---------- Volumen ----------
+    const DIALOGO_DUCK = 0.6;
     const MBASE = 1.8, ABASE = 1.4; // con las pistas normalizadas a ~0,05 de nivel medio, el valor de fábrica (55 %) queda ~-33 dBFS
-    const duck = () => (hablaHasta > performance.now() ? 0.45 : 1); // la voz del Aula tapa menos
+    // La voz del Aula tapa menos; mientras un huevo eclosiona, la música se aparta (el efecto de la eclosión va por el bus de efectos)
+    // Diálogo (caja o bocadillo de G.dialogo): la música baja a 0,6 para que se lea tranquilo; vuelve suave al cerrarlo
+    const enDialogo = () => { try { return !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()); } catch (e) { return false; } };
+    const duck = () => Math.min(hablaHasta > performance.now() ? 0.45 : 1, eclosionAhora ? BANDA_SONORA.eclosion : 1, enDialogo() ? DIALOGO_DUCK : 1);
     let gM = -1, gA = -1;
     function aplicarVolumen() { // solo escribe en el bus si el valor cambió: menos eventos de automatización
       if (!eng) return;
       const t = eng.c.currentTime, m = leer(), nm = MBASE * ganancia(m.musica) * duck(), na = ABASE * ganancia(m.ambiente);
-      if (eng.nuevo || Math.abs(nm - gM) > 0.002) { eng.musicaBus.gain.setTargetAtTime(nm, t, 0.08); gM = nm; }
+      if (eng.nuevo || Math.abs(nm - gM) > 0.002) { eng.musicaBus.gain.setTargetAtTime(nm, t, nm < gM ? 0.1 : 0.3); gM = nm; } // baja deprisa, vuelve suave
       if (eng.nuevo || Math.abs(na - gA) > 0.002) { eng.ambBus.gain.setTargetAtTime(na, t, 0.08); gA = na; }
       eng.nuevo = false;
     }
@@ -573,19 +796,16 @@
       if (muerto) return;
       try {
         const e = leerEntradas(), ahora = performance.now();
-        evaluar(e, ahora);
+        evaluar(e, ahora); eclosionAhora = !!e.eclosion;
         if (!preparar()) return; // sin AudioContext (aún no hubo gesto): no hay nada que sonar
         const c = eng.c, m = leer();
-        const sonable = c.state === 'running' && !A.vol.muted && !document.hidden;
+        const sonable = c.state === 'running' && !A.vol.muted && !document.hidden && !G.quiet; // G.quiet: en las baterías no suena nada
         const quiereMusica = sonable && m.musica > 0 && eng.modo !== 'simple', quiereAmb = sonable && m.ambiente > 0;
         conectar(eng.musicaBus, 'm', quiereMusica); conectar(eng.ambBus, 'a', quiereAmb);
+        if (!quiereMusica) eng.rep.pausar(); // con el sonido apagado, la música a 0 o la pestaña oculta, los temas en archivo se pausan (no bajan datos)
         if (!quiereMusica && !quiereAmb) return;
         aplicarVolumen();
-        if (quiereMusica) {
-          if (!real || real.nombre !== st.pista) cambiarPista(st.pista);
-          const t = c.currentTime; real.p.ajustar(t); real.p.programar(t + 0.4); programadas = real.p.paso;
-          salientes = salientes.filter(s => { if (t > s.p.fin) { s.p.cerrar(); return false; } return true; });
-        }
+        if (quiereMusica) { eng.rep.reanudar(); eng.rep.poner(st.pista); eng.rep.paso(); }
         if (quiereAmb) {
           if (cuenta++ % 4 === 0) { niv = calcularAmbiente(entradasAmbiente(e)); eng.ambiente.aplicar(niv, c.currentTime); }
           eng.ambiente.eventos(c.currentTime, niv, ranasHasta > ahora);
@@ -659,7 +879,11 @@
     if (A.alSonar) A.alSonar(n => { if (n === 'co' || n === 'qui' || n === 'chorus') ranasHasta = performance.now() + 9000; });
     // El navegador solo deja sonar tras un gesto; audio.js ya crea el contexto en pointerdown y keydown. Aquí se reintenta también al soltar y
     // en touchend (iOS), mientras el contexto no esté sonando. No se llama sin gesto: así no hay avisos de autoplay.
-    const desbloquear = () => { try { if (!A.ctx || A.ctx.state !== 'running') A.ensure(); } catch (e) { /* sin audio */ } };
+    // Un tema en archivo que el navegador no dejó sonar sin gesto (iOS) se vuelve a tocar aquí, dentro del gesto.
+    const desbloquear = () => {
+      try { if (!A.ctx || A.ctx.state !== 'running') A.ensure(); } catch (e) { /* sin audio */ }
+      try { if (eng && memBanda.bloqueo) eng.rep.gesto(); } catch (e) { /* sin audio */ }
+    };
     for (const ev of ['pointerdown', 'pointerup', 'touchend', 'keydown']) addEventListener(ev, desbloquear, { passive: true, capture: true });
     document.addEventListener('visibilitychange', () => { if (!muerto) tick(); });
 
@@ -688,6 +912,131 @@
       return Object.assign(analizar(buf, 1.5), { eventos: am.eventosSonados, capas: am.capas });
     }
 
+    // Pruebas de la banda sonora: la tabla, los archivos de verdad (solo sus metadatos) y el reproductor con un contexto y un <audio> de mentira
+    async function probarBanda(check) {
+      const BS = BANDA_SONORA, ids = Object.keys(BS.pistas);
+      // a) La tabla
+      const malasP = ids.filter(id => { const d = BS.pistas[id]; return !((d.futura ? d.archivo === null : /^assets\/audio\/musica\/[a-z]+\.m4a$/.test(d.archivo)) && d.dur > 60 && d.bucle[0] > 0 && d.bucle[0] < d.bucle[1] - 20 && d.bucle[1] < d.dur - 1 && d.nivel > 0 && d.nivel <= 1 && PISTAS[d.alternativa] && d.titulo); });
+      check('Tabla: los 5 temas (exploración, carrera, criadero, tormenta y arena) con archivo, duración, bucle, nivel y alternativa sintética',
+        JSON.stringify(ids) === '["exploracion","carrera","criadero","tormenta","arena"]' && !malasP.length, malasP.join(', '));
+      const destinos = Object.values(BS.momentos), malosM = MOMENTOS.filter(m => !(BS.pistas[BS.momentos[m]] || PISTAS[BS.momentos[m]]));
+      check('Tabla: cada momento del juego tiene una pista que existe y el orden de prioridad los nombra a todos', !malosM.length && MOMENTOS.length === Object.keys(BS.momentos).length && MOMENTOS.every(m => m in BS.momentos), malosM.join(', '));
+      check('Tabla: los cuatro temas en uso salen de algún momento; Arena queda solo registrada (pista futura sin archivo publicado: ningún modo la pide hoy)',
+        ['exploracion', 'carrera', 'criadero', 'tormenta'].every(id => destinos.includes(id)) && BS.pistas.arena.futura && !BS.pistas.arena.archivo && destinos.filter(d => d === 'arena').length === 1 && !document.body.classList.contains('arena-on'));
+      check('Tabla: fundido cruzado ajustable de 1 a 2 s y bucle con su propio fundido', BS.fundido >= 1 && BS.fundido <= 2 && BS.fundidoBucle >= 1 && BS.fundidoBucle <= 4 && BS.esperaCarga > 0 && BS.recordar > 0, BS.fundido + ' / ' + BS.fundidoBucle);
+      // b) Fuera de la descarga inicial: sin sonido en marcha, ningún .m4a se ha pedido
+      const pedidos = (performance.getEntriesByType ? performance.getEntriesByType('resource') : []).filter(r => /\/musica\/[a-z]+\.m4a/.test(r.name));
+      const sonando = !!(A.ctx && A.ctx.state === 'running');
+      check('Los temas no van en la descarga inicial: sin gesto ni sonido, no se pidió ningún .m4a', sonando || !pedidos.length, pedidos.length + ' pedidos');
+      // c) Los archivos de verdad: el navegador lee sus metadatos y la duración cuadra con la tabla
+      const aac = (() => { try { return document.createElement('audio').canPlayType('audio/mp4; codecs="mp4a.40.2"'); } catch (e) { return ''; } })();
+      if (!aac) check('Este navegador reproduce AAC (.m4a)', false, 'canPlayType vacío');
+      else {
+        const usados = ids.filter(id => BS.pistas[id].archivo);
+        const meta = await Promise.all(usados.map(id => new Promise(res => {
+          const el = new Audio(), fin = r => { clearTimeout(to); el.removeAttribute('src'); try { el.load(); } catch (e) { /* nada */ } res(r); };
+          const to = setTimeout(() => fin({ id, error: 'tiempo' }), 15000);
+          el.preload = 'metadata'; el.muted = true;
+          el.addEventListener('loadedmetadata', () => fin({ id, dur: el.duration }), { once: true });
+          el.addEventListener('error', () => fin({ id, error: 'código ' + (el.error && el.error.code) }), { once: true });
+          el.src = BS.pistas[id].archivo;
+        })));
+        const mal = meta.filter(m => m.error || Math.abs(m.dur - BS.pistas[m.id].dur) > 0.5);
+        check('Los 4 temas en uso (.m4a) existen, el navegador los abre y su duración cuadra con la tabla (±0,5 s)', !mal.length, mal.length ? JSON.stringify(mal) : meta.map(m => m.id + ' ' + m.dur.toFixed(1)).join(' · '));
+      }
+      // d) El reproductor con dobles: una pista a la vez, fundidos, bucle, silencio, salida, alternativa
+      const montar = opciones => {
+        const op = opciones || {}, els = [], sints = [];
+        const param = v => ({ value: v, objetivo: v, tau: null,
+          setValueAtTime(x) { this.value = x; this.objetivo = x; }, setTargetAtTime(x, t, tau) { this.objetivo = x; this.tau = tau; },
+          cancelScheduledValues() {}, setValueCurveAtTime(cu) { this.objetivo = cu[cu.length - 1]; this.curva = cu; } });
+        const nodo = () => ({ gain: param(1), con: 0, connect() { this.con++; }, disconnect() { this.con = 0; } });
+        const c = { currentTime: 0, createGain: nodo, createMediaElementSource: () => nodo() };
+        const audio = () => {
+          const oy = {}, el = { preload: '', src: '', paused: true, ended: false, currentTime: 0, error: null, veces: 0,
+            addEventListener(t, f) { (oy[t] = oy[t] || []).push(f); }, emitir(t) { (oy[t] || []).forEach(f => f()); },
+            play() { this.veces++; if (op.rechazo) { const e = new Error('sin gesto'); e.name = op.rechazo; return Promise.reject(e); } this.paused = false; return Promise.resolve(); },
+            pause() { this.paused = true; }, removeAttribute(k) { if (k === 'src') this.src = ''; }, load() {} };
+          els.push(el); return el;
+        };
+        let ms = 0;
+        const mem = { fallo: {}, pos: {}, bloqueo: false };
+        const rep = crearReproductor({ c, salida: nodo(), mem, tabla: BS, ahora: () => ms, crearAudio: audio,
+          sintetica: (n) => { const s = { nombre: n, g: nodo(), nivel: 1, fin: Infinity, paso: 0, programar() {}, ajustar() {}, cerrar() { s.cerrada = true; } }; s.g.gain.value = 0.0001; sints.push(s); return s; } });
+        const listo = el => { el.emitir('loadedmetadata'); el.emitir('canplay'); };
+        return { c, els, sints, mem, rep, listo, avanzar(s) { ms += s * 1000; c.currentTime += s; } };
+      };
+      const espera = () => new Promise(r => setTimeout(r, 0));
+      const P = montar(), R = P.rep, X = BS.fundidoBucle;
+      const subiendo = () => [R.real].concat(R.salientes).filter(p => p && p.g.gain.objetivo > 0.001).length;
+      R.poner('exploracion');
+      const mientrasCarga = R.estado().sonando === null && P.els.length === 1 && P.els[0].src === BS.pistas.exploracion.archivo && P.els[0].paused;
+      P.listo(P.els[0]); R.poner('exploracion'); R.paso();
+      const expl = P.els[0];
+      check('Un tema se pide solo cuando toca y suena al poder: mientras carga no hay salto ni silencio forzado', mientrasCarga && R.estado().sonando === 'exploracion' && !expl.paused && R.real.g.gain.objetivo === BS.pistas.exploracion.nivel, JSON.stringify(R.estado()));
+      expl.currentTime = 42.5;
+      P.avanzar(30); R.poner('carrera'); R.paso();
+      const sigueExpl = R.estado().sonando === 'exploracion' && R.estado().cargando === 'carrera';
+      P.listo(P.els[1]); R.poner('carrera'); R.paso();
+      const car = P.els[1];
+      check('Al cambiar de pista: mientras la nueva carga sigue la anterior, luego un fundido cruzado y una sola pista subiendo',
+        sigueExpl && R.estado().sonando === 'carrera' && JSON.stringify(R.estado().salientes) === '["exploracion"]' && subiendo() === 1 && R.salientes[0].g.gain.objetivo === 0, JSON.stringify(R.estado()));
+      check('El fundido cruzado dura lo que dice la tabla (' + BS.fundido + ' s)', Math.abs(R.real.g.gain.tau - BS.fundido / 4.5) < 1e-9 && Math.abs(R.salientes[0].g.gain.tau - BS.fundido / 2.5) < 1e-9 && R.salientes[0].fin === P.c.currentTime + BS.fundido * 3);
+      // «Otra vez» o el mismo modo: la misma pista sigue, sin otro <audio> ni reinicio
+      car.currentTime = 33;
+      for (let i = 0; i < 5; i++) { P.avanzar(1); R.poner('carrera'); R.paso(); }
+      check('Repetir el modo («Otra vez») no reinicia la pista: el mismo <audio> sigue donde iba', R.estado().cambios === 2 && car.veces === 1 && car.currentTime === 33 && P.els.length === 2);
+      // Al salir del modo, lo que sale se para y suelta su búfer
+      check('La pista que sale se para y suelta el archivo al terminar su fundido', R.estado().salientes.length === 0 && expl.paused && expl.src === '' && R.estado().elementos === 1, JSON.stringify(R.estado()));
+      // Volver antes de «recordar»: sigue donde iba
+      R.poner('exploracion'); const expl2 = P.els[2]; expl2.emitir('loadedmetadata');
+      check('Volver a la exploración enseguida sigue donde iba (no vuelve a empezar)', expl2 && expl2.currentTime === 42.5, expl2 && expl2.currentTime);
+      expl2.emitir('canplay'); R.poner('exploracion'); R.paso(); P.avanzar(6); R.paso();
+      check('Al salir de Retos la carrera para con fundido y vuelve la exploración', R.estado().sonando === 'exploracion' && car.paused && car.src === '' && R.estado().elementos === 1, JSON.stringify(R.estado()));
+      // Silencio del jugador: se pausa todo; al volver, sigue la misma pista
+      R.pausar();
+      const todoParado = P.els.every(el => el.paused);
+      R.reanudar();
+      check('Con «Sonido: no» (o la música a 0, o la pestaña oculta) el tema se pausa; al volver sigue', todoParado && !expl2.paused && expl2.veces === 2);
+      // El bucle: otra voz del mismo tema, fundido de igual potencia, y la vieja se suelta
+      const [b0, b1] = BS.pistas.exploracion.bucle;
+      expl2.currentTime = b1 - X / 2 - 11; R.paso();
+      const sig = P.els[3], precarga = !!sig && sig.paused;
+      if (sig) { sig.emitir('loadedmetadata'); sig.emitir('canplay'); }
+      expl2.currentTime = b1 - X / 2 + 0.05; R.paso();
+      const cruzando = sig && !sig.paused && Math.abs(sig.currentTime - (b0 - X / 2)) < 1e-6 && R.real.g.gain.objetivo > 0 && R.estado().bucles === 1;
+      P.avanzar(X + 0.2); R.paso();
+      check('Bucle sin corte: 12 s antes se precarga, en el punto de bucle entra con un fundido de ' + X + ' s y la voz vieja se suelta',
+        precarga && cruzando && expl2.paused && expl2.src === '' && R.estado().elementos === 1 && R.estado().sonando === 'exploracion', JSON.stringify(R.estado()));
+      // Solo una pista a la vez aunque se cambie deprisa
+      R.poner('alegre'); P.avanzar(0.3); R.poner('final'); P.avanzar(0.3); R.poner('explora');
+      check('Cambios seguidos y rápidos: nunca más de una pista subiendo; las anteriores se apuran', subiendo() === 1 && R.salientes.every(s => s.g.gain.objetivo === 0) && R.salientes.filter(s => s.fin > P.c.currentTime + 1).length <= 1, subiendo());
+      R.cerrar();
+      check('Cerrar el reproductor suelta todos los <audio>', R.estado().elementos === 0 && P.els.every(el => el.paused));
+      // Alternativa: un tema que no carga → su pista sintética, y no se vuelve a pedir
+      const Q = montar();
+      Q.rep.poner('tormenta'); Q.els[0].emitir('error'); Q.rep.poner('tormenta'); Q.avanzar(2); Q.rep.poner('tormenta');
+      check('Si un tema no carga, el juego sigue con su alternativa sintética (tormenta → tensión) y no lo pide más', Q.rep.estado().sonando === 'tension' && Q.mem.fallo.tormenta && Q.els.length === 1, JSON.stringify(Q.rep.estado()));
+      const Q2 = montar();
+      Q2.rep.poner('criadero'); Q2.avanzar(BS.esperaCarga + 0.5); Q2.rep.poner('criadero');
+      const porTiempo = Q2.rep.estado().sonando === 'explora';
+      Q2.listo(Q2.els[0]); Q2.rep.poner('criadero');
+      check('Si un tema tarda más de ' + BS.esperaCarga + ' s suena la alternativa, y el tema entra en cuanto carga', porTiempo && Q2.rep.estado().sonando === 'criadero' && Q2.rep.estado().salientes[0] === 'explora', JSON.stringify(Q2.rep.estado()));
+      const Q3 = montar({ rechazo: 'NotAllowedError' });
+      Q3.rep.poner('exploracion'); Q3.listo(Q3.els[0]); Q3.rep.poner('exploracion'); await espera(); Q3.rep.poner('exploracion');
+      const bloq = Q3.rep.estado().sonando === 'explora' && Q3.mem.bloqueo;
+      Q3.rep.gesto();
+      check('Si el navegador no deja sonar el <audio> sin gesto (iOS), suena la sintética y el siguiente gesto lo desbloquea', bloq && !Q3.mem.bloqueo, JSON.stringify(Q3.rep.estado()));
+      Q.rep.cerrar(); Q2.rep.cerrar(); Q3.rep.cerrar();
+      // e) En vivo (si hay sonido): el reproductor del juego existe y respeta el silencio
+      if (eng) {
+        const m0 = A.vol.muted; A.vol.muted = true; tick();
+        const parado = eng.rep.estado() && [eng.rep.real].filter(p => p && p.archivo).every(p => p.voces.every(v => v.el.paused));
+        A.vol.muted = m0; tick();
+        check('En vivo: con «Sonido: no» el tema en archivo queda en pausa', parado);
+      }
+    }
+
     async function test() {
       const out = [];
       const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
@@ -695,39 +1044,52 @@
       const ctxAntes = !!A.ctx, vol0 = JSON.stringify({ sfx: A.vol.sfx, master: A.vol.master, voice: A.vol.voice });
       const tit = $('title'), fin = $('end'), crea = $('creator'), com = $('comic');
       const hidden0 = [fin && fin.hidden, crea && crea.hidden, com && com.hidden], ev0 = S.event, clase0 = document.body.classList.contains('retos-on');
-      const stGuardado = { pista: st.pista, desde: st.desde, cand: st.cand, desdeCand: st.desdeCand, cambios: st.cambios, historial: st.historial.slice() };
+      const stGuardado = { pista: st.pista, mom: st.mom, desde: st.desde, cand: st.cand, desdeCand: st.desdeCand, cambios: st.cambios, historial: st.historial.slice() };
       guardarAlCambiar = false;
       try {
         // 1. Peso y arranque
         const idx = await fetch('index.html').then(r => r.text()).catch(() => null);
         check('El módulo no va en la descarga inicial (index.html no lo lista)', idx == null || !/musica\.js/.test(idx));
-        check('La API está completa', ['estado', 'leer', 'set', 'elegir', 'evaluar', 'simular', 'calcularAmbiente', 'renderizar', 'test'].every(k => typeof api[k] === 'function'));
+        check('La API está completa', ['estado', 'leer', 'set', 'elegir', 'momentoDe', 'evaluar', 'simular', 'calcularAmbiente', 'renderizar', 'test'].every(k => typeof api[k] === 'function'));
         tick(); tick();
         check('El módulo no crea ningún AudioContext por su cuenta (sin gesto no hay aviso de autoplay)', !!A.ctx === ctxAntes);
         check('Sin interacción: el estado lo dice y no hay errores', api.estado().contexto === (A.ctx ? A.ctx.state : 'sin') && api.estado().fallos === 0 && (window.__aveErrores || []).length === errores0, api.estado().contexto);
 
         // 2. La pista según el momento
-        const base = { portada: false, creador: false, fin: false, comic: false, retos: false, evento: false, lluvia: false };
+        const base = Object.assign({}, BASE_E);
         const casos = [
-          ['portada', { portada: true }, 'alegre'], ['creador', { creador: true }, 'alegre'], ['mundo libre', {}, 'explora'],
-          ['Modo Retos', { retos: true }, 'retos'], ['crecida', { evento: true }, 'tension'], ['lluvia sostenida', { lluvia: true }, 'tension'],
+          ['portada', { portada: true }, 'alegre'], ['creador', { creador: true }, 'alegre'], ['mundo libre (Aventura y Vuelo libre)', {}, 'exploracion'],
+          ['menú de Retos', { retos: true }, 'carrera'], ['carrera contra las cotorras', { retos: true, reto: 'carrera' }, 'carrera'],
+          ['contrarreloj del río', { retos: true, reto: 'rio' }, 'carrera'], ['banquete', { retos: true, reto: 'banquete' }, 'carrera'],
+          ['¡Escapa de la tormenta!', { retos: true, reto: 'tormenta' }, 'tormenta'], ['crecida del cap. 1', { evento: true }, 'tormenta'],
+          ['lluvia sostenida', { lluvia: true }, 'exploracion'], ['criadero', { criadero: true }, 'criadero'], ['eclosión (criadero)', { criadero: true, eclosion: true }, 'criadero'],
+          ['criadero encima de la portada (Mi nido)', { criadero: true, portada: true }, 'criadero'],
           ['final del capítulo', { fin: true }, 'final'], ['final con Retos abierto', { fin: true, retos: true }, 'final'],
-          ['portada con crecida', { portada: true, evento: true }, 'alegre'], ['Retos con crecida', { retos: true, evento: true }, 'retos'],
+          ['portada con crecida', { portada: true, evento: true }, 'alegre'], ['Retos con crecida', { retos: true, reto: 'carrera', evento: true }, 'carrera'],
         ];
-        const malos = casos.filter(([, e, esp]) => elegir(Object.assign({}, base, e), 'explora') !== esp).map(c => c[0]);
-        check('Cada momento elige su pista: portada y creador alegre, mundo libre explora, Retos retos, crecida tensión, fin de capítulo final', !malos.length, malos.join(', '));
-        check('El cómic abierto tras el final sigue con la música del final; sin final, no', elegir(Object.assign({}, base, { comic: true }), 'final') === 'final' && elegir(Object.assign({}, base, { comic: true }), 'explora') === 'explora');
+        const malos = casos.filter(([, e, esp]) => elegir(Object.assign({}, base, e), 'exploracion') !== esp).map(c => c[0] + ' → ' + elegir(Object.assign({}, base, c[1]), 'exploracion'));
+        check('Cada momento elige su pista: mundo exploración, Retos carrera, tormenta y crecida tormenta, criadero, portada y creador alegre, final', !malos.length, malos.join(', '));
+        check('El cómic abierto tras el final sigue con la música del final; sin final, no', elegir(Object.assign({}, base, { comic: true }), 'final') === 'final' && elegir(Object.assign({}, base, { comic: true }), 'exploracion') === 'exploracion');
         check('Hay cinco pistas con compás, tempo y fundido propios', Object.keys(PISTAS).length === 5 && Object.values(PISTAS).every(p => p.bpm > 40 && p.compases === 8 && p.fade >= 1 && typeof p.paso === 'function'));
 
         // 3. Los cambios con calma y fundido
         st.pista = null; st.cand = null; st.cambios = 0; st.historial = [];
         evaluar(base, 0); evaluar({ ...base, evento: true }, 1000); evaluar({ ...base, evento: true }, 1800); evaluar(base, 2000); evaluar(base, 5000); evaluar(base, 7100);
-        check('La tensión entra en menos de un segundo y sale tras 5 s de calma', JSON.stringify(st.historial) === '["explora","tension","explora"]' && st.pista === 'explora', JSON.stringify(st.historial));
+        check('La crecida entra en menos de un segundo y sale tras 5 s de calma', JSON.stringify(st.historial) === '["exploracion","tormenta","exploracion"]' && st.pista === 'exploracion', JSON.stringify(st.historial));
         st.pista = null; st.cand = null; st.cambios = 0; st.historial = [];
         evaluar({ ...base, portada: true }, 0); evaluar({ ...base, creador: true }, 100); evaluar(base, 200); evaluar(base, 1000); evaluar({ ...base, retos: true }, 1100); evaluar({ ...base, retos: true }, 1900); evaluar({ ...base, fin: true }, 2000); evaluar({ ...base, fin: true }, 2800);
         // Un parpadeo (la portada se cierra y Retos aún no ha abierto) no cambia de pista
         evaluar(base, 3000); evaluar({ ...base, retos: true }, 3200); evaluar({ ...base, retos: true }, 3400);
-        check('Portada → creador sigue alegre; luego explora, retos y final, y un parpadeo de 0,2 s no cambia nada', JSON.stringify(st.historial) === '["alegre","explora","retos","final"]', JSON.stringify(st.historial));
+        check('Portada → creador sigue alegre; luego exploración, carrera y final, y un parpadeo de 0,2 s no cambia nada', JSON.stringify(st.historial) === '["alegre","exploracion","carrera","final"]', JSON.stringify(st.historial));
+        // Cambios pequeños no reinician: menú de Retos → carrera → resultados → «Otra vez»; elegir otro huevo o eclosionar en el criadero
+        st.pista = null; st.cand = null; st.cambios = 0; st.historial = [];
+        evaluar({ ...base, retos: true }, 0); evaluar({ ...base, retos: true, reto: 'carrera' }, 900); evaluar({ ...base, retos: true, reto: 'carrera' }, 5000); evaluar({ ...base, retos: true, reto: 'carrera' }, 9000);
+        evaluar({ ...base, retos: true, reto: 'rio' }, 9500); evaluar({ ...base, retos: true, reto: 'rio' }, 12000);
+        const sinCambio = st.cambios === 1;
+        evaluar({ ...base, criadero: true }, 13000); evaluar({ ...base, criadero: true }, 14000); evaluar({ ...base, criadero: true, eclosion: true }, 15000); evaluar({ ...base, criadero: true }, 25000);
+        check('Menú de Retos → carrera → «Otra vez» → río no cambia de pista; el criadero con su eclosión es una sola entrada', sinCambio && JSON.stringify(st.historial) === '["carrera","criadero"]', JSON.stringify(st.historial));
+        evaluar(base, 26000); evaluar(base, 26800);
+        check('Al salir del criadero (o de Retos) vuelve la exploración', st.pista === 'exploracion', st.pista);
         // El estado real del juego (sin tocar la partida: se enciende y se apaga en el mismo instante)
         st.pista = null; st.cand = null;
         if (fin) fin.hidden = false; const eFin = leerEntradas(); if (fin) fin.hidden = hidden0[0];
@@ -736,6 +1098,15 @@
         S.event = { t: 0, dur: 20 }; const eEv = leerEntradas(); S.event = ev0;
         const eLibre = leerEntradas();
         check('Lee el panel final, el creador, el Modo Retos y la crecida del juego', eFin.fin && eCrea.creador && eRetos.retos && eEv.evento && !eLibre.fin && !eLibre.evento && eLibre.portada === !!(tit && tit.open), JSON.stringify([eFin.fin, eCrea.creador, eRetos.retos, eEv.evento]));
+        { // Qué reto se juega y si el criadero está abierto (con dobles por un instante; las APIs de verdad vuelven en el finally)
+          const rt0 = G.retosApi, cr0 = G.criadero;
+          let eTor = null, eCri = null;
+          try {
+            G.retosApi = { activo: true, reto: 'tormenta' }; eTor = leerEntradas();
+            G.retosApi = rt0; G.criadero = Object.assign({}, cr0 || {}, { abierto: () => true }); eCri = leerEntradas();
+          } finally { G.retosApi = rt0; G.criadero = cr0; }
+          check('Lee qué reto se juega (la tormenta) y si el criadero está abierto', eTor.retos && eTor.reto === 'tormenta' && elegir(eTor, 'exploracion') === 'tormenta' && eCri.criadero && elegir(eCri, 'exploracion') === 'criadero' && !leerEntradas().arena, JSON.stringify([eTor.reto, eCri.criadero]));
+        }
 
         // 4. Ambiente por zona y hora
         const noche0 = calcularAmbiente({ hora: 22 }), dia0 = calcularAmbiente({ hora: 12 }), rio0 = calcularAmbiente({ hora: 12, rio: 1 }), alto0 = calcularAmbiente({ hora: 12, sobreSuelo: 40, y: 90 });
@@ -745,6 +1116,26 @@
         check('El río se oye cerca del agua y no lejos; el mar es otra capa', rio0.rio === 1 && dia0.rio === 0 && calcularAmbiente({ mar: 1 }).mar === 1 && calcularAmbiente({ mar: 1 }).rio === 0);
         check('El viento sube con la altura (en el suelo es una brisa)', alto0.viento > 0.9 && dia0.viento > 0.05 && dia0.viento < 0.2 && calcularAmbiente({ evento: true }).viento > dia0.viento + 0.3, `${dia0.viento.toFixed(2)} → ${alto0.viento.toFixed(2)}`);
         const tormenta0 = calcularAmbiente({ hora: 12, evento: true });
+        { // BM34: bosque lejos del agua, río cerca del agua, lluvia en la crecida, martillo al construir, nada con G.quiet
+          const bos0 = calcularAmbiente({ hora: 12, sobreSuelo: 1 }), orilla0 = calcularAmbiente({ hora: 12, rio: 1 }), cielo0 = calcularAmbiente({ hora: 12, sobreSuelo: 60, y: 90 });
+          check('Bosque donde no hay agua; el río lo desplaza y a 60 m de altura casi no se oye', bos0.bosque > 0.9 && orilla0.bosque === 0 && orilla0.rio === 1 && bos0.rio === 0 && cielo0.bosque < 0.1, [bos0.bosque, orilla0.bosque, cielo0.bosque].map(v => v.toFixed(2)).join(' · '));
+          check('La lluvia suena en la crecida y el aguacero, y no con sol', tormenta0.lluvia > 0.9 && calcularAmbiente({ lluvia: true }).lluvia > 0.9 && bos0.lluvia === 0);
+          const q0 = G.quiet;
+          try {
+            G.quiet = true; const sinSonido = A.martillar(4);
+            G.quiet = false; const conSonido = A.martillar(4);
+            check('El martillo da 4 golpes, 1 con «Reducir movimiento» y ninguno con G.quiet', sinSonido === 0 && (conSonido === 4 || (G.renderer.REDUCED && conSonido === 1)) && A.has('martillo'), `${sinSonido}/${conSonido}`);
+          } finally { G.quiet = q0; }
+        }
+        { // BM66: ambiente por zona de los caps. 2 a 6 (fundido por distancia; el cap. 1 no cambia)
+          const base = calcularAmbiente({ hora: 12, sobreSuelo: 1 }), lej = c => calcularAmbiente({ cap: c, x: 500, z: 500, hora: 12, sobreSuelo: 1 });
+          const z2 = calcularAmbiente({ cap: 2, x: -20, z: -4, hora: 12, sobreSuelo: 1 }), z3 = calcularAmbiente({ cap: 3, x: 13, z: 12, hora: 12, sobreSuelo: 1 }), z4 = calcularAmbiente({ cap: 4, x: -1, z: -17, hora: 12, sobreSuelo: 1 });
+          const z5 = calcularAmbiente({ cap: 5, x: 0, z: 5, hora: 12, sobreSuelo: 1 }), z6 = calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, sobreSuelo: 1 }), z6m = calcularAmbiente({ cap: 6, x: 0, z: 8, hora: 12, sobreSuelo: 1 });
+          check('Cap. 2: el nido sube aves; lejos de toda zona y en el cap. 1 no cambia nada', calcularAmbiente({ cap: 2, x: -20, z: -4, hora: 12, evento: true }).aves > calcularAmbiente({ cap: 2, x: 500, z: 500, hora: 12, evento: true }).aves && z2.bosque === 1 && [2, 3, 4, 5, 6].every(c => JSON.stringify(lej(c)) === JSON.stringify(Object.assign({}, base, { murmullo: 0, eco: 0 }))), [z2.aves, z2.bosque].join());
+          check('Cap. 3: la bahía suma mar; cap. 4: el bosquecillo suma aves y la orilla murmullo', z3.mar > 0.39 && z4.aves >= 1 && calcularAmbiente({ cap: 4, x: 1, z: 5, hora: 12 }).murmullo > 0.29, [z3.mar, z4.aves].join());
+          check('Cap. 5: las ruinas dan eco y menos hojas; cap. 6: la plaza da murmullo que se funde al alejarse', z5.eco > 0.79 && z5.bosque < 0.6 && z6.murmullo > 0.69 && z6m.murmullo > 0.2 && z6m.murmullo < z6.murmullo && lej(6).murmullo === 0, [z5.eco, z6.murmullo, z6m.murmullo].map(v => v.toFixed(2)).join(' · '));
+          check('Las zonas respetan el volumen de portada y retos, y la tormenta no las apaga a cero', calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, portada: true }).murmullo < 0.3 && calcularAmbiente({ cap: 6, x: 0, z: 0, hora: 12, evento: true }).lluvia > 0.9);
+        }
         check('En la tormenta casi no hay aves; detrás de la portada todo baja', tormenta0.aves < 0.2 && calcularAmbiente({ hora: 12, portada: true }).aves < 0.4 && calcularAmbiente({ hora: 12, rio: 1, retos: true }).rio < 0.8);
         check('La hora sale de S.hora si existe; sin ella, de día como el cielo', (() => { const h = S.hora; S.hora = 21.5; const a = horaActual(); S.hora = 3; const b = horaActual(); if (h === undefined) delete S.hora; else S.hora = h; const r = horaActual(); return a === 21.5 && b === 3 && (h !== undefined || r === 12); })());
         check('noche(): día de 6:30 a 17:30, noche de 19 a 5', noche(12) === 0 && noche(7) === 0 && noche(20) === 1 && noche(2) === 1 && noche(0) === 1 && noche(23.9) === 1);
@@ -818,12 +1209,21 @@
           check('El ambiente no se pasa de volumen (pico bajo 0,6 con todo al máximo)', aguas.pico < 0.6 && simp.pico < 0.6 && noch.pico < 0.6 && dia.pico < 0.6, [aguas, simp, noch, dia].map(v => v.pico.toFixed(2)).join(' · '));
         }
 
+        // 10. Banda sonora (los temas de Kelvin)
+        await probarBanda(check);
+
         // 9. Otros enganches
         const ranas0 = ranasHasta; ranasHasta = 0;
         if (A.has('co')) { A.play('co'); check('Si suena el Simon de los coquíes, las ranas del ambiente callan', ranasHasta > performance.now() + 5000); }
         ranasHasta = ranas0;
         G.emit('voz', { charIndex: 3 }); const baja = duck(); G.emit('voz', { fin: true, texto: '' });
         check('La música baja mientras habla la voz del Aula y vuelve al terminar', baja < 1 && duck() === 1);
+        const dlg0 = G.dialogo; G.dialogo = { activo: () => true }; const bajaDlg = duck(); G.dialogo = dlg0;
+        check('La música baja durante un diálogo y vuelve al cerrarlo', bajaDlg === DIALOGO_DUCK && duck() === 1, bajaDlg);
+        if (A.esSuave) { const r0 = A.reducido; A.reducido = true; const suaves = ['trueno', 'crecida', 'construir'].every(A.esSuave) && !A.esSuave('pickup'); A.reducido = false; const normal = !A.esSuave('trueno'); A.reducido = r0;
+          check('Con «Reducir movimiento» trueno, crecida y martillazos suenan a la mitad; sin él, normal', suaves && normal); }
+        const ecl0 = eclosionAhora; eclosionAhora = true; const bajaHuevo = duck(); eclosionAhora = ecl0;
+        check('Mientras un huevo eclosiona la música baja (el efecto de la eclosión no: va por el bus de efectos)', bajaHuevo === BANDA_SONORA.eclosion && bajaHuevo < 0.5 && duck() === 1, bajaHuevo);
         check('Ningún fallo interno y ningún error de JavaScript de la página', fallos === 0 && (window.__aveErrores || []).length === errores0, ultimoFallo);
       } catch (e) {
         check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : e);
@@ -837,16 +1237,16 @@
     }
 
     function estado() {
-      const c = A.ctx;
+      const c = A.ctx, b = eng ? eng.rep.estado() : null;
       return {
-        pista: st.pista, modo: eng ? eng.modo : modoDe(R && R.calidad && R.calidad.nivel, TACTIL, NUCLEOS), contexto: c ? c.state : 'sin',
+        pista: st.pista, momento: st.mom, modo: eng ? eng.modo : modoDe(R && R.calidad && R.calidad.nivel, TACTIL, NUCLEOS), contexto: c ? c.state : 'sin',
         silencio: !!A.vol.muted, audible: !!(c && c.state === 'running' && !A.vol.muted && !document.hidden && leer().musica + leer().ambiente > 0),
-        sonando: real ? real.nombre : null, mezcla: leer(), ambiente: niv, hora: horaActual(), historial: st.historial.slice(), cambios: st.cambios,
-        voces: eng ? eng.motor.maxVoces() : 0, buses: eng ? Object.assign({}, eng.conectado) : null, pasos: programadas, fallos, ultimoFallo, muerto,
+        sonando: b ? b.sonando : null, banda: b, mezcla: leer(), ambiente: niv, hora: horaActual(), historial: st.historial.slice(), cambios: st.cambios,
+        voces: eng ? eng.motor.maxVoces() : 0, buses: eng ? Object.assign({}, eng.conectado) : null, pasos: b ? b.pasos : 0, fallos, ultimoFallo, muerto,
       };
     }
     const api = G.musicaApi = {
-      estado, leer, set, elegir, evaluar: (e, ms) => evaluar(Object.assign({ portada: false, creador: false, fin: false, comic: false, retos: false, evento: false, lluvia: false }, e), ms == null ? performance.now() : ms),
+      estado, leer, set, elegir, momentoDe, banda: BANDA_SONORA, evaluar: (e, ms) => evaluar(Object.assign({}, BASE_E, e), ms == null ? performance.now() : ms),
       simular(e) { sim = e || null; tick(); return estado(); }, hora(h) { horaForzada = h == null ? null : h; return horaActual(); },
       calcularAmbiente, renderizar, renderizarAmbiente, tick, test,
     };

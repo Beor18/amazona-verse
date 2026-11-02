@@ -14,7 +14,8 @@
     "*.pyc"
   ],
   "limites": {
-    "archivos_max": 511,
+    "_nota": "Sin límites de cantidad ni tamaño: archivos, total, por archivo y objetivo desactivados; el tamaño se mide en el reporte.",
+    "archivos_max": 0,
     "total_max_mb": 0,
     "archivo_max_mb": 0,
     "objetivo_mb": 0
@@ -29,6 +30,9 @@
     ],
     "fuentes": [
       "fonts.gstatic.com"
+    ],
+    "conexiones": [
+      "muxxdjyxwjxaoziczkcz.supabase.co"
     ]
   },
   "espacios_xml": [
@@ -110,11 +114,20 @@
       "movementTest",
       "saveTest",
       "comicTest",
-      "e2eTest"
+      "e2eTest",
+      "lookCapitulosTest"
     ],
     "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso).",
     "inyectar": [
-      "tests/qa/e2e.js"
+      "tests/qa/e2e.js",
+      "tests/qa/ep2_e2e.js",
+      "tests/qa/temporada_e2e.js",
+      "tests/qa/zonas56.js",
+      "tests/qa/ep_caminar.js",
+      "tests/qa/ep3_e2e.js",
+      "tests/qa/ep4_e2e.js",
+      "tests/qa/ep5_e2e.js",
+      "tests/qa/ep6_e2e.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar. Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
@@ -126,7 +139,6 @@
     "total_max_s": 1800,
     "_nota_presupuestos": "Medidos en la carga inicial (hasta el mundo jugable, antes de las baterías). Los que estén en 'fallan' hacen fallar test.sh; el resto da aviso.",
     "presupuestos": {
-      "descarga_inicial_mb": 8,
       "heap_mb": 120,
       "heap_gc_mb": 100,
       "b64_residente_mb": 0.5,

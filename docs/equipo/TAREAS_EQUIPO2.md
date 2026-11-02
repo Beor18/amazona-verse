@@ -19,7 +19,7 @@ Lee primero `CLAUDE.md`, que tiene el contexto y las reglas. Después lee `docs/
    - diálogos;
    - una parada de aprendizaje con un dato verificable y su fuente.
 4. **Lo que dependa de las decisiones de canon de Kelvin** (la lista está al final de `EP2_GDD.md`) va con **marcadores neutros** y anotado. No lo decidas tú.
-5. Añade su prueba al estilo de `templateTest`, que el pack arranca y la misión se completa, y deja las 13 baterías en verde.
+5. Añade su prueba al estilo de `templateTest`, que el pack arranca y la misión se completa, y deja las 12 baterías en verde.
 
 ## E2-2 · Validar los textos del Diario del capítulo 1 (solo documento)
 Revisa las 12 entradas del Diario del capítulo 1 (`content/cap1/lecciones.js` y `docs/equipo/EDUCATIVO.md`). Para cada dato, indica:

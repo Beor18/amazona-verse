@@ -1,0 +1,1 @@
+# Sin uso: Kelvin (29-oct) decidió que la API corre solo en la Mac. La cola es tools/agente_api/cola.txt.

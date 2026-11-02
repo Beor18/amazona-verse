@@ -272,6 +272,68 @@ AVE.module('mundo', function (G) {
   }
   // Los edificios esperan la malla del terreno: así se asientan a la altura exacta y las grutas usan su material.
   // streaming.js carga antes de mundoListo lo cercano al inicio y el resto por zonas al acercarse (y lo libera al alejarse).
+  // G27: agranda solo los bohíos redondos de Villa Raíz antes de que streaming lea la escala.
+  // No toca streaming.js (lo tienen en curso los carriles B y C). escalaPack de esos bohíos es false:
+  // el 5.º número de la instancia es la escala del mundo. ?bohioEsc= solo admite las tres pruebas.
+  const VILLA = ED.escalaVilla;
+  let factorVilla = VILLA && VILLA.factor > 1 ? VILLA.factor : 0;
+  try {
+    const qv = /[?&]bohioEsc=(1|1\.25|1\.5|1\.75)(?:&|$)/.exec(location.search);
+    if (qv && VILLA) factorVilla = parseFloat(qv[1]);
+  } catch (e) { /* sin location */ }
+  if (factorVilla > 1 && VILLA && MAPA.escenaKelvin && MAPA.escenaKelvin.compacto) {
+    for (const e of MAPA.escenaKelvin.compacto) {
+      if (!e || e._bohioEsc || e.grupo !== VILLA.zona || e.modelo !== VILLA.modelo || !Array.isArray(e.inst)) continue;
+      for (const v of e.inst) if (v.length >= 5 && v.length < 16 && v[4] > 0) v[4] *= factorVilla;
+      e._bohioEsc = factorVilla;
+    }
+    G.bohiosAbiertos = G.bohiosAbiertos || {};
+    G.bohiosAbiertos[VILLA.modelo] = true; // malla abierta: solo la amueblada (bohios.js) conserva la puerta; las demás llevan su panel (BM6-1)
+    // la única instancia con la puerta abierta: la amueblada (la misma que elige bohios.js: mayor escala y más cerca del spawn)
+    const sp = MAPA.spawn || { x: 134, z: 182.5 };
+    let amb = null; // mayor escala y, a igualdad, más cerca del spawn (lo mismo que elige bohios.js)
+    for (const e of MAPA.escenaKelvin.compacto) {
+      if (!e || e.grupo !== VILLA.zona || e.modelo !== VILLA.modelo || !Array.isArray(e.inst)) continue;
+      for (const v of e.inst) if (v.length >= 5 && v.length < 16) {
+        const d = Math.hypot(v[0] - sp.x, v[2] - sp.z);
+        if (!amb || v[4] > amb.s + 1e-6 || (Math.abs(v[4] - amb.s) <= 1e-6 && d < amb.d)) amb = { x: v[0], z: v[2], s: v[4], d };
+      }
+    }
+    G.esBohioAbierto = I => !!(amb && I && I.modelo === VILLA.modelo && I.pos && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5);
+    // BM13: una casa más por aldea (Caney del Meandro, Embarcadero, Puerto de La Mina), con la misma puerta abierta y mobiliario.
+    // Se elige la de escala uniforme con más sitio alrededor que pueda llegar a la escala de la amueblada de Villa Raíz (sube hasta ×1,75; la matriz de 16 números, por columnas).
+    const AL = ED.aldeasBohio, abiertas = [];
+    if (AL && amb) {
+      const escDe = v => v.length >= 16 ? (Math.hypot(v[0], v[1], v[2]) + Math.hypot(v[4], v[5], v[6]) + Math.hypot(v[8], v[9], v[10])) / 3 : v[4];
+      const posDe = v => v.length >= 16 ? [v[12], v[14]] : [v[0], v[2]];
+      for (const zona of AL.zonas) {
+        let mejor = null;
+        const todas = []; // todo lo colocado a mano en la aldea (casas y props): la elegida es la que tiene más sitio alrededor
+        for (const e of MAPA.escenaKelvin.compacto) if (e && e.grupo === zona && Array.isArray(e.inst)) for (const v of e.inst) todas.push(posDe(v));
+        for (const e of MAPA.escenaKelvin.compacto) {
+          if (!e || e.grupo !== zona || e.modelo !== AL.modelo || !Array.isArray(e.inst)) continue;
+          for (const v of e.inst) {
+            const s = escDe(v);
+            if (!(s > 0 && s <= 1) || s * AL.factor < amb.s * 0.99) continue; // que llegue a la escala de la amueblada
+            const u = v.length < 16 ? 0 : 1, p = posDe(v); // primero las de escala uniforme (5 números); las matrices solo si no hay otra
+            let libre = 99; for (const q of todas) { const d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d > 0.5 && d < libre) libre = d; }
+            const g = s >= amb.s ? 1 : 0; // si ya llega sin escalar, mejor: se queda como la exportó Kelvin
+            if (!mejor || u < mejor.u || (u === mejor.u && (g > mejor.g || (g === mejor.g && libre > mejor.libre)))) mejor = { v, s, u, g, libre, zona };
+          }
+        }
+        if (!mejor) continue;
+        const f = mejor.s < amb.s ? Math.min(AL.factor, amb.s / mejor.s) : 1; // hasta la escala de la amueblada de Villa (puerta de ~1,95 m)
+        if (f !== 1) {
+          if (mejor.v.length >= 16) for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10]) mejor.v[i] *= f; else mejor.v[4] *= f;
+        }
+        const p = mejor.v.length >= 16 ? [mejor.v[12], mejor.v[14]] : [mejor.v[0], mejor.v[2]];
+        abiertas.push({ x: p[0], z: p[1], zona, escala: mejor.s * f });
+      }
+    }
+    G.bohiosAmueblados = abiertas;
+    G.esBohioAbierto = I => !!(I && I.modelo === VILLA.modelo && I.pos && ((amb && Math.hypot(I.pos[0] - amb.x, I.pos[2] - amb.z) < 0.5) || abiertas.some(a => Math.hypot(I.pos[0] - a.x, I.pos[2] - a.z) < 0.5)));
+  }
+  G.bohiosFactor = factorVilla || 1;
   const ST = G.streaming.iniciar({ mapa: MAPA, ED, escalaDe, orientar: orientarKelvin, analizar, colocar: colocarKelvin, respaldo: respaldoKelvin });
   const listo = T.listo.then(() => {
     const tareas = [ST.arrancar()];

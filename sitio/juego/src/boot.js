@@ -8,6 +8,8 @@
   const cfg = AVE.config || {};
   const fromUrl = new URLSearchParams(location.search).get('pack');
   const want = fromUrl && /^[a-z0-9_-]+$/.test(fromUrl) ? fromUrl : cfg.pack || Object.keys(AVE.packs)[0];
+  // ?hud=0: sin interfaz (capturas de video del tráiler, BM11). Solo oculta el HUD del mundo; no cambia el juego.
+  if (/[?&]hud=0\b/.test(location.search)) { const st = document.createElement('style'); st.textContent = '#top, #acts, #stick, #keyhint, #tag, #toast, #prompt, #emotes, .guia-hud, .hud-btn, #minimap, #minimapa, .fl-hud, .fl-salir, .fl-pista, .mz-hud, .mz-salir, .mz-pista, .mz-ayuda, .mz-mapa, .rr-hud, .rr-barra, .rr-modos, .rr-salir, .rr-pista { display: none !important; }'; document.head.appendChild(st); }
 
   function expose(G) {
     const P = G.pack, T = G.pruebas;
@@ -20,6 +22,10 @@
       exportComic: (f, u) => G.comic.exportComic(f, u), portraitCanvasFor: (n, bg) => G.creador.portraitCanvasFor(n, bg),
       accessoryTest: () => T.accessoryTest(), templateTest: o => T.templateTest(o),
       ep2Test: o => T.templateTest(Object.assign({ pack: 'ep2' }, o)), // content/ep2: el pack arranca y su misión 1 se completa
+      ep3Test: o => T.templateTest(Object.assign({ pack: 'ep3', timeout: 60000 }, o)), // content/ep3: el episodio 3 de punta a punta, ES y EN
+      ep4Test: o => T.templateTest(Object.assign({ pack: 'ep4', timeout: 60000 }, o)), // content/ep4: el capítulo 4 de principio a fin
+      ep6Test: o => T.templateTest(Object.assign({ pack: 'ep6', timeout: 60000 }, o)), // content/ep6: el capítulo 6 «El pacto de los 36» de principio a fin, ES y EN
+      ep5Test: o => T.templateTest(Object.assign({ pack: 'ep5' }, o)), // content/ep5: capítulo 5 de principio a fin
     };
     // Pruebas propias del pack (cap1: selfTest y missionTest)
     for (const [name, fn] of Object.entries(P.pruebas || {})) AV[name] = opts => fn(G, T, opts);
@@ -31,6 +37,8 @@
       for (const name of dif.nombres) if (!AV[name]) AV[name] = opts => cargarPruebas().then(ps => ps[name](G, T, opts));
     }
     if (G.criadero && G.criadero.test) AV.criaderoTest = o => G.criadero.test(o); // src/game/criadero.js
+    if (window.AVTemporada) AV.registroTemporadaTest = () => Promise.resolve(window.AVTemporada.test()); // src/game/temporada.js (D11, D32)
+    if (G.creador && G.creador.test) AV.creadorTest = o => G.creador.test(o); // src/game/creador.js (carril N)
     // Pruebas que se cargan al pedirlas (no van en la descarga inicial): movimiento y guía de controles
     // Módulos que no van en la descarga inicial: se piden en el primer gesto del jugador (Jugar en la portada, una tecla o un toque)
     const alPrimerGesto = fn => { let hecho = false; const ir = () => { if (hecho) return; hecho = true; setTimeout(() => fn().catch(() => {}), 300); };
@@ -40,12 +48,18 @@
     AV.movementTest = o => movimiento().then(m => m.test(o));
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
+    if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
+    if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
+    if (G.bohiosFactor > 1) { const bohios = aDemanda('src/game/bohios.js', 'AVBohios'); AV.bohios = bohios; AV.bohiosTest = o => bohios().then(b => b.test(o)); alPrimerGesto(bohios); } // src/game/bohios.js (G27: interior del bohío de Villa Raíz)
+    if (G.vegetacion && G.vegetacion.listo && G.terreno.mapa && G.terreno.mapa.flora) { const dosel = aDemanda('src/engine/dosel.js', 'AVDosel'); AV.dosel = () => dosel().then(d => d.listo.then(() => d)); AV.doselTest = o => dosel().then(d => d.test(o)); alPrimerGesto(() => G.vegetacion.listo.then(dosel)); } // src/engine/dosel.js (dosel por celdas, AW3)
     if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
     if (G.streaming && G.streaming.test) AV.streamingTest = o => G.streaming.test(o); // src/engine/streaming.js
+    if (G.vegetacion && G.vegetacion.test) AV.floraTest = o => G.vegetacion.test(o); // src/engine/vegetacion.js (AW2, bosque lleno)
     if (G.guiaControles) AV.controlesTest = o => controles().then(m => m.test(o)); // src/game/guia_controles.js
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
+    if (G.camara.test) AV.camaraTest = o => G.camara.test(o); // src/engine/camara.js (mirar arriba, 31-oct)
     if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
     // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca
@@ -66,12 +80,17 @@
     let rescate = null;
     const cargarRescate = () => rescate || (rescate = AVE.assets.script('src/game/rescate.js').then(() => window.AVRescate(G), e => { rescate = null; throw e; }));
     AV.rescateTest = o => cargarRescate().then(r => r.test(o));
-    setTimeout(() => cargarRescate().catch(() => {}), 6000);
+    alPrimerGesto(cargarRescate);
     // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar si la calidad no es «bajo», y al pedir su prueba
     let bandada = null;
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
     if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    // Momentos «wow» del capítulo 1 (src/game/wow.js, BM20): despegue del mirador y luciérnagas del coro; se carga tras el primer gesto y al pedir su prueba
+    let wow = null;
+    const cargarWow = () => wow || (wow = cargarBandada().catch(() => {}).then(() => AVE.assets.script('src/game/wow.js')).then(() => window.AVWow(G), e => { wow = null; throw e; }));
+    AV.wowTest = o => cargarWow().then(w => w.test(o));
+    alPrimerGesto(cargarWow);
     // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
     let rioVivo = null;
     const cargarRioVivo = () => rioVivo || (rioVivo = AVE.assets.script('src/game/rio_vivo.js').then(() => window.AVRioVivo(G), e => { rioVivo = null; throw e; }));
@@ -91,28 +110,41 @@
     let marcador = null;
     const cargarMarcador = () => marcador || (marcador = AVE.assets.script('src/game/marcador.js').then(() => window.AVMarcador(G), e => { marcador = null; throw e; }));
     AV.marcadorTest = o => cargarMarcador().then(m => m.test(o));
+    if (G.diario && G.diario.test) AV.diarioTest = o => G.diario.test(o); // src/game/diario.js (BM72)
     if (G.idioma && G.idioma.test) AV.idiomaTest = o => G.idioma.test(o); // src/game/idioma.js
     alPrimerGesto(cargarMarcador); // cuenta desde que el jugador empieza (Jugar), no desde la portada
     const bRetos = document.getElementById('b-retos'), portada = document.getElementById('title');
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
-    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); }
+    // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: cargarRecords }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
     const recRetos = ((P.meta && P.meta.almacen) || P.id) + '.retos', recCasa = ((P.meta && P.meta.almacen) || P.id) + '.records'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro de la casa)
+    const cargarMaze = aDemanda('src/game/maze.js', 'AVMaze'); AV.maze = () => cargarMaze().then(m => m.abrir()); AV.mazeTest = o => cargarMaze().then(m => m.test(o)); if (/[?&]mini=maze\b/.test(location.search)) { const ir = () => setTimeout(() => AV.maze().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // Amazona Maze (AB1, src/game/maze.js): prototipo oculto; ?mini=maze o AV.maze(); AV.mazeTest()
+    const cargarRiver = aDemanda('src/game/river_rush.js', 'AVRiverRush'); AV.riverRush = () => cargarRiver().then(r => r.abrir()); AV.riverTest = o => cargarRiver().then(r => r.test(o)); if (/[?&]mini=river\b/.test(location.search)) { const ir = () => setTimeout(() => AV.riverRush().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // River Rush (AC1, src/game/river_rush.js): prototipo oculto; ?mini=river o AV.riverRush(); AV.riverTest()
     G.on('nuevoEstudiante', () => { for (const k of [recRetos, recCasa]) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } } });
     // Música y ambiente sintetizados (src/game/musica.js): se cargan tras el primer gesto del jugador (pointerdown o tecla), no en la descarga inicial
     let musica = null;
     const cargarMusica = () => musica || (musica = AVE.assets.script('src/game/musica.js').then(() => window.AVMusica(G), e => { musica = null; throw e; }));
     AV.musica = () => cargarMusica();
     AV.musicaTest = o => cargarMusica().then(m => m.test(o));
-    // Clima de El Yunque (src/game/clima.js): sol, llovizna, aguacero y neblina; se carga solo tras el arranque y al pedir su prueba
+    // Clima de El Yunque (src/game/clima.js): sol, llovizna, aguacero y neblina; se carga en el primer gesto y al pedir su prueba
     const cargarClima = aDemanda('src/game/clima.js', 'AVClima');
     AV.climaTest = o => cargarClima().then(c => c.test(o));
-    setTimeout(() => cargarClima().catch(() => {}), 6000);
+    alPrimerGesto(cargarClima);
     for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { cargarMusica().catch(() => {}); }, { once: true, passive: true });
-    // Looks de color A/B para Kelvin (src/game/look.js): ?look=vibrante|soleado|toon y sección oculta en la pausa; el de fábrica no cambia
+    // Look de color (src/game/look.js): «vibrant_toon» es el de fábrica (DEFECTO); ?look=fabrica|vibrante|soleado|toon y sección oculta en la pausa
+    // Atardecer del coquí (C9, src/game/atardecer.js): lo carga el pack cuando empieza el coro (AV.atardecer); ?atardecer=1 lo fuerza
+    const cargarAtardecer = aDemanda('src/game/atardecer.js', 'AVAtardecer');
+    AV.atardecer = cargarAtardecer; AV.atardecerTest = o => cargarAtardecer().then(a => a.test(o));
+    if (/[?&]atardecer=/.test(location.search)) cargarAtardecer().catch(() => {});
+    // Amazona Flight (C14, src/game/flight.js): prototipo oculto (fase 3 la deciden Kelvin y Fernando); ?mini=flight (al cerrar la portada) o AV.flight() lo abren; AV.flightTest()
+    const cargarFlight = aDemanda('src/game/flight.js', 'AVFlight'); AV.flight = () => cargarFlight().then(f => f.abrir()); AV.flightTest = o => cargarFlight().then(f => f.test(o)); if (/[?&]mini=flight\b/.test(location.search)) { const ir = () => setTimeout(() => AV.flight().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
+    const cargarTren = aDemanda('src/game/tren.js', 'AVTren'); AV.tren = () => cargarTren().then(t => t.abrir()); AV.trenTest = o => cargarTren().then(t => t.test(o)); if (/[?&]mini=tren\b/.test(location.search)) { const ir = () => setTimeout(() => AV.tren().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // El tren de Vittata (C16, src/game/tren.js): ?mini=tren o AV.tren(); AV.trenTest()
+    // Manga Toon (G17, src/game/manga.js): prototipo aparte del cómic; ?manga=demo o AV.manga(); AV.mangaTest(). No está en el menú.
+    const cargarManga = aDemanda('src/game/manga.js', 'AVManga'); AV.manga = () => cargarManga().then(m => m.abrir()); AV.mangaTest = o => cargarManga().then(m => m.test(o)); if (/[?&]manga=demo\b/.test(location.search)) { const ir = () => setTimeout(() => AV.manga().catch(() => {}), 600); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); }
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
-    if (/[?&]look=/.test(location.search)) cargarLook().catch(() => {}); else setTimeout(() => cargarLook().catch(() => {}), 7000);
+    cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }

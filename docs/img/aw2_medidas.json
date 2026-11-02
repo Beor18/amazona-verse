@@ -1,0 +1,375 @@
+{
+"_nota": "AW2: 12 vistas de MAPA_PLAN_COMPLETO § 2.3 en escritorio (1280x800), look fabrica; calls, triángulos y MB de texturas (35 cuadros por vista: la Mac iba a carga 20-35, los ms no sirven). antes = build f9483b8 (bajo, medio) o BE1 a766950 (alto); despues = f9483b8 + AW2.",
+"antes-bajo": {
+"aerea": {
+"calls": 28,
+"tris": 114218,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 46,
+"tris": 300679,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 37,
+"tris": 237240,
+"texMB": 443.4
+},
+"v_villa": {
+"calls": 51,
+"tris": 258877,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 75,
+"tris": 393332,
+"texMB": 267.4
+},
+"v_lomas": {
+"calls": 67,
+"tris": 395094,
+"texMB": 446
+},
+"v_mina": {
+"calls": 75,
+"tris": 393985,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 73,
+"tris": 575319,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 75,
+"tris": 414829,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 66,
+"tris": 285816,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 76,
+"tris": 317377,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 68,
+"tris": 643341,
+"texMB": 447.4
+}
+},
+"despues-bajo": {
+"aerea": {
+"calls": 28,
+"tris": 122908,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 54,
+"tris": 371470,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 37,
+"tris": 249120,
+"texMB": 443.4
+},
+"v_villa": {
+"calls": 52,
+"tris": 267796,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 69,
+"tris": 347337,
+"texMB": 267.4
+},
+"v_lomas": {
+"calls": 64,
+"tris": 361565,
+"texMB": 446
+},
+"v_mina": {
+"calls": 74,
+"tris": 294890,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 69,
+"tris": 509627,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 69,
+"tris": 347367,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 68,
+"tris": 250619,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 77,
+"tris": 334943,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 65,
+"tris": 568834,
+"texMB": 447.4
+}
+},
+"antes-medio": {
+"aerea": {
+"calls": 43,
+"tris": 198888,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 71,
+"tris": 346721,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 51,
+"tris": 237254,
+"texMB": 443.4
+},
+"v_villa": {
+"calls": 76,
+"tris": 307533,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 104,
+"tris": 619436,
+"texMB": 446
+},
+"v_lomas": {
+"calls": 96,
+"tris": 605400,
+"texMB": 446
+},
+"v_mina": {
+"calls": 100,
+"tris": 1190736,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 111,
+"tris": 804667,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 106,
+"tris": 885825,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 86,
+"tris": 445881,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 99,
+"tris": 377953,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 83,
+"tris": 916929,
+"texMB": 447.4
+}
+},
+"despues-medio": {
+"aerea": {
+"calls": 43,
+"tris": 199628,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 71,
+"tris": 445791,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 51,
+"tris": 249766,
+"texMB": 447.4
+},
+"v_villa": {
+"calls": 84,
+"tris": 400842,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 98,
+"tris": 550150,
+"texMB": 446
+},
+"v_lomas": {
+"calls": 88,
+"tris": 566338,
+"texMB": 446
+},
+"v_mina": {
+"calls": 98,
+"tris": 1034762,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 107,
+"tris": 680197,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 102,
+"tris": 800169,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 84,
+"tris": 376037,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 99,
+"tris": 417142,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 81,
+"tris": 820209,
+"texMB": 447.4
+}
+},
+"despues-alto": {
+"aerea": {
+"calls": 43,
+"tris": 345964,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 81,
+"tris": 640546,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 51,
+"tris": 249766,
+"texMB": 443.4
+},
+"v_villa": {
+"calls": 117,
+"tris": 594477,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 124,
+"tris": 1066382,
+"texMB": 446
+},
+"v_lomas": {
+"calls": 110,
+"tris": 1036910,
+"texMB": 446
+},
+"v_mina": {
+"calls": 114,
+"tris": 1486473,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 118,
+"tris": 1198999,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 110,
+"tris": 1219361,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 122,
+"tris": 1043536,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 135,
+"tris": 635355,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 96,
+"tris": 1203493,
+"texMB": 447.4
+}
+},
+"antes-alto": {
+"aerea": {
+"calls": 42,
+"tris": 361848,
+"texMB": 447.4
+},
+"aerea_sur": {
+"calls": 82,
+"tris": 381560,
+"texMB": 447.4
+},
+"aerea_media": {
+"calls": 50,
+"tris": 218681,
+"texMB": 443.4
+},
+"v_villa": {
+"calls": 116,
+"tris": 329790,
+"texMB": 443.4
+},
+"v_rio_oeste": {
+"calls": 130,
+"tris": 1005915,
+"texMB": 446
+},
+"v_lomas": {
+"calls": 114,
+"tris": 912323,
+"texMB": 446
+},
+"v_mina": {
+"calls": 114,
+"tris": 1496212,
+"texMB": 447.4
+},
+"v_este": {
+"calls": 118,
+"tris": 1182580,
+"texMB": 447.4
+},
+"v_meandros": {
+"calls": 112,
+"tris": 1212430,
+"texMB": 447.4
+},
+"v_yunque": {
+"calls": 120,
+"tris": 1033352,
+"texMB": 447.4
+},
+"s_villa": {
+"calls": 125,
+"tris": 437280,
+"texMB": 446
+},
+"s_meandros": {
+"calls": 98,
+"tris": 1179117,
+"texMB": 447.4
+}
+}
+}

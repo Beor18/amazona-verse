@@ -53,6 +53,9 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const superficie = (x, z) => Math.max(H(x, z), nivelAgua(x, z));
     // m:ss.d con aritmética entera (el tiempo y el récord de la misma carrera se ven iguales)
+    // HUD de cada cuadro (AF1): solo se escribe en el DOM lo que cambia; un texto o estilo igual también invalida estilo y maqueta
+    const pon = (el, v) => { if (el.textContent !== v) el.textContent = v; };
+    const estilo = (el, k, v) => { v = k === 'opacity' ? String(+v) : v; if (el.style[k] !== v) el.style[k] = v; };
     const reloj = t => { const d = Math.max(0, Math.round(t * 10)); return Math.floor(d / 600) + ':' + String(Math.floor(d / 10) % 60).padStart(2, '0') + '.' + (d % 10); };
     const ordinal = n => n + (n === 1 || n === 3 ? '.er' : '.º');
     const MAPA = window.AV_MAPA_CAP1 || null;
@@ -206,12 +209,31 @@
         x.strokeStyle = col; x.lineWidth = lw; x.lineJoin = 'round'; x.beginPath(); pts.forEach(([a, b], i) => (i ? x.lineTo(a, b) : x.moveTo(a, b))); x.stroke();
       }
     });
-    // Cortina de lluvia del frente: gris azulado casi opaco hasta el agua, con trazos de lluvia (la textura se desplaza)
-    const texCortina = () => lienzo('cortina', 256, 256, (x, w, h) => {
-      const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(34,40,62,.96)'); g.addColorStop(0.55, 'rgba(52,62,90,.86)'); g.addColorStop(1, 'rgba(70,84,112,.72)');
+    // Cortina: trazos de lluvia sobre una bruma pareja. El tile se repite, así que el desvanecido
+    // (agua, cielo y lados) no va aquí: lo pone bordeSuave con el UV del plano, no el de la textura.
+    const texCortina = () => lienzo('cortina', 512, 512, (x, w, h) => {
+      x.fillStyle = 'rgba(32, 40, 62, 0.62)'; x.fillRect(0, 0, w, h);
+      x.lineCap = 'round';
+      for (let i = 0; i < 340; i++) {
+        const a = Math.random() * (w + 40) - 20, b = Math.random() * h, largo = 48 + Math.random() * 86, al = 0.16 + Math.random() * 0.5;
+        x.strokeStyle = 'rgba(214, 226, 242, ' + (al * 0.35).toFixed(3) + ')'; x.lineWidth = 5 + Math.random() * 3;
+        x.beginPath(); x.moveTo(a, b); x.lineTo(a - largo * 0.18, b + largo); x.stroke();
+        x.strokeStyle = 'rgba(236, 244, 252, ' + al.toFixed(3) + ')'; x.lineWidth = 1.4 + Math.random() * 1.3;
+        x.beginPath(); x.moveTo(a, b); x.lineTo(a - largo * 0.18, b + largo); x.stroke();
+      }
+    });
+    // Techo de la tormenta: mancha de nube que ya nace transparente en el borde del lienzo
+    const texTecho = () => lienzo('techo-tormenta', 512, 512, (x, w, h) => {
+      const g = x.createRadialGradient(w / 2, h / 2, w * 0.04, w / 2, h / 2, w * 0.5);
+      g.addColorStop(0, 'rgba(28, 34, 54, 0.92)'); g.addColorStop(0.42, 'rgba(36, 44, 68, 0.55)');
+      g.addColorStop(0.72, 'rgba(44, 54, 82, 0.16)'); g.addColorStop(1, 'rgba(44, 54, 82, 0)');
       x.fillStyle = g; x.fillRect(0, 0, w, h);
-      x.strokeStyle = 'rgba(205,220,245,.35)'; x.lineWidth = 1.6;
-      for (let i = 0; i < 220; i++) { const a = Math.random() * w, b = Math.random() * h; x.beginPath(); x.moveTo(a, b); x.lineTo(a - 5, b + 22); x.stroke(); }
+      for (let i = 0; i < 7; i++) {
+        const cx = w * (0.22 + Math.random() * 0.56), cy = h * (0.22 + Math.random() * 0.56), r = w * (0.1 + Math.random() * 0.16);
+        const b = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+        b.addColorStop(0, 'rgba(20, 26, 44, 0.4)'); b.addColorStop(1, 'rgba(20, 26, 44, 0)');
+        x.fillStyle = b; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+      }
     });
     // Banderín con número (o META): triángulo de tela con el borde cosido
     function texBanderin(txt) {
@@ -235,6 +257,29 @@
       return MAT;
     }
     const aditivo = (map, color, op) => lm(new THREE.MeshBasicMaterial({ map, color: color || '#ffffff', transparent: true, opacity: op == null ? 1 : op, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+    // Apaga la alfa hacia el borde del plano (el UV de la geometría, no el de la textura que se desplaza).
+    // cortina: se disuelve en el agua, en el cielo y en los lados. techo: óvalo, sin arista contra el cielo.
+    function bordeSuave(mat, modo) {
+      // La clave por defecto es el texto de onBeforeCompile, igual para los dos modos: sin esto compartirían programa
+      mat.customProgramCacheKey = function () { return 'avBorde:' + modo; };
+      mat.onBeforeCompile = sh => {
+        sh.vertexShader = 'varying vec2 vAvUv;\n' + sh.vertexShader.replace(
+          '#include <uv_vertex>',
+          'vAvUv = vec2(0.5);\n\t#ifdef USE_UV\n\tvAvUv = uv;\n\t#endif\n\t#include <uv_vertex>'
+        );
+        const fade = modo === 'techo'
+          ? 'vec2 avQ = vAvUv - vec2(0.5); float avBorde = 1.0 - smoothstep(0.10, 0.50, length(avQ));'
+          : 'float avLado = smoothstep(0.0, 0.18, vAvUv.x) * (1.0 - smoothstep(0.82, 1.0, vAvUv.x));'
+            + 'float avAgua = smoothstep(0.20, 0.50, vAvUv.y);'
+            + 'float avCielo = 1.0 - smoothstep(0.58, 0.98, vAvUv.y);'
+            + 'float avBorde = avLado * avAgua * avCielo;';
+        sh.fragmentShader = 'varying vec2 vAvUv;\n' + sh.fragmentShader.replace(
+          'gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+          fade + '\n\tdiffuseColor.a *= avBorde;\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );'
+        );
+      };
+      return mat;
+    }
     const spriteMat = (map, color, add, op) => lm(new THREE.SpriteMaterial({ map, color: color || '#ffffff', transparent: true, opacity: op == null ? 1 : op, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, fog: false }));
     if (G.fx.PALETTE && !G.fx.PALETTE.petalos) G.fx.PALETTE.petalos = ['#e8365a', '#ff8fa8', '#ffd84a', '#ffffff', '#c41e3a'];
 
@@ -248,7 +293,7 @@
     // =================================================================================================================
     const CSS = `
 body.retos-on #top, body.retos-on #b-diary, body.retos-on #b-emotes, body.retos-on #b-nido, body.retos-on #prompt, body.retos-on #toast,
-body.retos-on #keyhint, body.retos-on #tag, body.retos-on #emotes, body.retos-on #b-act, body.retos-on #b-fly, body.retos-on #quest-toggle, body.retos-on #guia-hud { display: none !important; }
+body.retos-on #keyhint, body.retos-on #tag, body.retos-on #bocadillos, body.retos-on #emotes, body.retos-on #b-act, body.retos-on #b-fly, body.retos-on #quest-toggle, body.retos-on #guia-hud { display: none !important; }
 body.retos-on #pause .pause-grid > :not(#b-retos):not(#b-sound) { display: none !important; }
 body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos { inset: 0; z-index: var(--z-card); font-family: var(--font-display); color: var(--c-text); }
@@ -280,22 +325,30 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-panel h2 { margin: 0 0 6px; font: 700 var(--fs-2xl)/1.15 var(--font-display); }
 #retos .rt-panel p { margin: 0 0 14px; font: 400 var(--fs-md)/1.4 var(--font-body); color: var(--c-ink-muted); }
 #retos .rt-menu .rt-panel { width: min(780px, calc(100vw - 32px)); }
+#retos .rt-menu .rt-x { position: sticky; top: 0; float: right; z-index: 1; margin: -10px -10px 12px 8px; } /* QA-42: salida siempre a la vista; en el móvil «Volver a la historia» queda bajo 7 tarjetas */
 #retos .rt-retos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 10px 0 16px; text-align: left; }
 #retos .rt-reto { background: #fff8e8; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); padding: 14px; display: grid; gap: 8px; align-content: start; }
 #retos .rt-reto h3 { margin: 0; font: 700 var(--fs-lg)/1.2 var(--font-display); color: var(--c-ink); }
 #retos .rt-reto p { margin: 0; font-size: var(--fs-sm); }
-#retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #8a5208; }
+#retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #704205; } /* 8,0:1 sobre #fff8e8 (antes #8a5208, 6,0:1; alto contraste pide ≥ 7:1) */
 #retos .rt-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-#retos .rt-medalla { width: 96px; height: 96px; margin: -70px auto 8px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
+#retos .rt-medalla { width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; font: 700 40px/1 var(--font-display); color: #4a2a05;
   background: radial-gradient(circle at 35% 30%, #fff8d8, var(--m1) 45%, var(--m2)); box-shadow: 0 0 0 5px #fff, 0 6px 0 5px rgba(0,0,0,.18), 0 0 40px var(--m1); position: relative; }
 #retos .rt-medalla::before, #retos .rt-medalla::after { content: ""; position: absolute; top: -30px; width: 22px; height: 44px; background: var(--crest); z-index: -1; }
 #retos .rt-medalla::before { left: 22px; transform: rotate(18deg); } #retos .rt-medalla::after { right: 22px; transform: rotate(-18deg); background: var(--sky); }
 #retos .rt-medalla.oro { --m1: #ffd24a; --m2: #c98a10; } #retos .rt-medalla.plata { --m1: #e4ecf2; --m2: #8a9aa8; } #retos .rt-medalla.bronce { --m1: #f0a86a; --m2: #9a5a24; }
-#retos .rt-medalla.sin { --m1: #bfe7c8; --m2: #3f9a55; font-size: 30px; }
-#retos .rt-fin .rt-panel { padding-top: 54px; }
+#retos .rt-medalla.sin { --m1: #bfe7c8; --m2: #3f9a55; font-size: 24px; }
+#retos .rt-fin .rt-panel { padding-top: 48px; } /* la medalla y sus cintas caben dentro del panel (tiene overflow: auto y las cortaba) */
 #retos .rt-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
 #retos .rt-dato { background: #fff8e8; border-radius: var(--r-sm); padding: 8px; font: 700 22px/1.1 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
 #retos .rt-dato small { display: block; font: 600 12px/1.2 var(--font-body); color: var(--c-ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+#retos .rt-meta { margin: 0 0 12px; display: grid; gap: 4px; font: 700 var(--fs-md)/1.25 var(--font-display); color: #8a5208; }
+#retos .rt-descanso { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--r-sm); background: #e8f3ff; color: var(--c-ink); font-size: var(--fs-sm); }
+#retos .rt-hoy { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; justify-content: center; margin: 10px 0 0; padding: 10px 14px; border-radius: var(--r-md); background: #fff1c2; border: 2px solid var(--c-paper-edge); font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink); }
+#retos .rt-hoy small { font: 600 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: .05em; color: var(--c-ink-muted); }
+#retos .rt-reto.es-hoy { border-color: #e0a526; }
+#retos .rt-med { font: 600 var(--fs-xs)/1.2 var(--font-body); color: var(--c-ink-muted); }
+#retos .rt-rank { margin: 0 0 12px; }
 #retos .rt-nuevo { display: inline-block; background: var(--crest); color: #fff; padding: 3px 12px; border-radius: var(--r-pill); font: 700 14px/1.3 var(--font-display); margin: 0 0 10px; animation: rt-latido 1s ease-in-out infinite; }
 #retos .rt-tecla { font: 600 12px/1 var(--font-body); opacity: .75; margin-left: 6px; }
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
@@ -334,8 +387,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 <div class="rt-cuenta" aria-live="assertive"></div>
 <div class="rt-aviso" aria-live="polite"></div>
 <div class="rt-menu" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-menu-t">
+  <button class="btn ghost icon rt-x" type="button" data-salir data-icon="close" aria-label="Volver a la historia"></button>
   <h2 id="rt-menu-t">Retos</h2>
   <p>Partidas cortas para volar con Vittata. Tu partida de la historia queda tal como está.</p>
+  <div class="rt-hoy" hidden></div>
   <div class="rt-retos">
     <div class="rt-reto"><h3>Carrera en El Yunque</h3><p>Cuatro cotorras, seis banderines y la meta en el Mirador Yokahú. Atraviesa las corrientes de aire para ir más rápido.</p>
       <span class="rt-rec" data-rec="carrera"></span><button class="btn" type="button" data-jugar="carrera" data-icon="flag">Jugar</button></div>
@@ -345,6 +400,14 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
     <div class="rt-reto"><h3>¡Banquete!</h3><p>75 segundos en la colina: recoge los frutos de las palmas y los tabonucos en vuelo. Seguidos, sin tocar el suelo, suben el combo. Los de las copas valen más.</p>
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>Amazona Flight</h3><p>Vuela sin parar entre los troncos y las ramas. Toca para dar un aleteo y pasa por cada hueco.</p>
+      <span class="rt-rec" data-rec="flight"></span><button class="btn" type="button" data-jugar="flight" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto" hidden style="display:none"><h3>El tren de Vittata</h3><p>Conduce el tren de la caña por la costa y el bosque. Elige la vía en los desvíos, frena en las curvas y entrega cada carga en su estación.</p>
+      <span class="rt-rec" data-rec="tren"></span><button class="btn" type="button" data-jugar="tren" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto"><h3>River Rush</h3><p>Baja el río Amazonas en canoa. Esquiva troncos y rocas, recoge racimos y llega al mar. Clásico, contrarreloj o contra tu fantasma.</p>
+      <span class="rt-rec" data-rec="rio_rush"></span><button class="btn" type="button" data-jugar="rio_rush" data-icon="flag">Jugar</button></div>
+    <div class="rt-reto" hidden style="display:none"><h3>Amazona Maze</h3><p>Recorre el laberinto del cayo y recoge todos los frutos. Los guardianes del musgo te buscan: si te encuentran, el combo baja a x1.</p>
+      <span class="rt-rec" data-rec="maze"></span><button class="btn" type="button" data-jugar="maze" data-icon="flag">Jugar</button></div>
   </div>
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
@@ -354,6 +417,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   <h2 id="rt-fin-t"></h2>
   <div class="rt-nuevo" hidden>¡Nuevo récord!</div>
   <div class="rt-datos"></div>
+  <p class="rt-meta" hidden></p>
+  <div class="rt-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
+  <p class="rt-descanso" hidden>Llevas un buen rato jugando. ¿Un descanso para estirar las alas? Aquí te esperamos cuando quieras.</p>
   <div class="rt-fila">
     <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rt-tecla">${TACTIL ? '' : 'Enter'}</span></button>
     <button class="btn ghost secondary" type="button" data-menu data-icon="trophy">Otro reto</button>
@@ -365,12 +431,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui = { el, fx, hud: q('.rt-hud'), pos: q('.rt-pos b'), posN: q('.rt-pos small'), tiempo: q('.rt-tiempo span:last-child'), pts: q('.rt-pts span:last-child'),
         vidas: q('.rt-vidas'), puntos: q('.rt-puntos span:nth-of-type(2)'), combo: q('.rt-combo'), flecha: q('.rt-flecha'), flechaSvg: q('.rt-flecha svg'), flechaTxt: q('.rt-flecha span'),
         tags: q('.rt-tags'), cuenta: q('.rt-cuenta'), aviso: q('.rt-aviso'), menu: q('.rt-menu'), fin: q('.rt-fin'), medalla: q('.rt-medalla'), finT: q('#rt-fin-t'),
-        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
+        nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), meta: q('.rt-meta'), rank: q('.rt-rank'), descanso: q('.rt-descanso'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
         lineas: fx.querySelector('.rt-lineas'), destello: fx.querySelector('.rt-destello'), oscuro: fx.querySelector('.rt-oscuro'), moja: fx.querySelector('.rt-moja') };
       el.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
         if (b.dataset.jugar) jugar(b.dataset.jugar);
         else if (b.hasAttribute('data-otra')) otraVez();
+        else if (b.hasAttribute('data-ranking')) publicarMarca(b);
         else if (b.hasAttribute('data-menu')) abrir();
         else if (b.hasAttribute('data-fantasma')) alternarFantasma();
         else if (b.hasAttribute('data-salir')) salir();
@@ -396,9 +463,17 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const ocupado = G.dialogo.open() || G.ui.cardOpen || !$('end').hidden || !$('comic').hidden || (!$('creator').hidden && !creadorNuevo);
       return !ocupado;
     }
+    // QA-41: la apertura del capítulo 1 deja #c1-fade (negro, z 9) hasta claro() o el evento apply.
+    // Retos no emite apply. Al entrar se corta la capa y los bocadillos libres, o el mundo sigue en negro.
+    function cortarApertura() {
+      const A = G.c && G.c.apertura;
+      if (A && A.fin) A.fin();
+      if (G.dialogo && G.dialogo.cancelarLibre) G.dialogo.cancelarLibre();
+    }
     function entrar() {
       if (st.activo) return true;
       if (!libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a tocar «Retos».', 3200); return false; }
+      cortarApertura();
       st.snap = G.guardado.instantanea();
       G.guardado.suspender(true);
       st.quiet = G.quiet; G.quiet = true;
@@ -462,6 +537,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       montarUI();
       if (modo) { modo.terminar(); modo = null; }
       if (!st.activo && !libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a tocar «Retos».', 3200); return false; }
+      cortarApertura();
       if (!$('creator').hidden) { st.creador = true; G.creador.close(); } // jugador nuevo: el creador vuelve al salir
       limpiarFx();
       document.body.classList.add('retos-on');
@@ -472,6 +548,19 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.menu.querySelector('[data-rec="tormenta"]').textContent = rec.tormenta.mejor ? 'Récord: ' + rec.tormenta.mejor + ' puntos' : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="rio"]').textContent = rec.rio.mejor ? 'Récord: ' + reloj(rec.rio.mejor / 1000) + (rec.rio.medalla ? ' · medalla de ' + rec.rio.medalla : '') : 'Aún sin récord';
       ui.menu.querySelector('[data-rec="banquete"]').textContent = rec.banquete.mejor ? 'Récord: ' + rec.banquete.mejor + ' puntos' : 'Aún sin récord';
+      const fl = rec.flight || {}; ui.menu.querySelector('[data-rec="flight"]').textContent = fl.mejor ? 'Récord: ' + fl.mejor + (fl.mejor === 1 ? ' obstáculo' : ' obstáculos') : 'Aún sin récord'; // src/game/flight.js
+      { const z = rec.tren || {}; ui.menu.querySelector('[data-rec="tren"]').textContent = z.mejor ? 'Récord: ' + z.mejor + ' puntos' : 'Aún sin récord'; } // src/game/tren.js (C16)
+      { const z = rec.rio_rush || {}, t = [z.mejor ? 'Récord: ' + z.mejor + ' puntos' : '', z.reloj ? 'Contrarreloj: ' + reloj(z.reloj / 1000) : ''].filter(Boolean); ui.menu.querySelector('[data-rec="rio_rush"]').textContent = t.length ? t.join(' · ') : 'Aún sin récord'; } // src/game/river_rush.js (AC2)
+      { const z = rec.maze || {}; ui.menu.querySelector('[data-rec="maze"]').textContent = z.mejor ? 'Récord: ' + z.mejor + ' puntos' : 'Aún sin récord'; } // src/game/maze.js (BI2)
+      const hoy = retoDelDia();
+      for (const k of Object.keys(NOMBRE_RETO)) {
+        const rr = ui.menu.querySelector('[data-rec="' + k + '"]'); if (!rr) continue;
+        let md = rr.nextElementSibling; if (!md || !md.classList.contains('rt-med')) { md = document.createElement('span'); md.className = 'rt-med'; rr.after(md); }
+        const m = medallaDeReto(k, rec); md.textContent = m ? 'Medalla de ' + m : ''; md.hidden = !m;
+        rr.closest('.rt-reto').classList.toggle('es-hoy', k === hoy);
+      }
+      const hb = ui.menu.querySelector('.rt-hoy'); hb.hidden = false;
+      hb.innerHTML = '<small>Reto del día</small><b>' + NOMBRE_RETO[hoy] + '</b><button class="btn" type="button" data-jugar="' + hoy + '" data-icon="flag">Jugar</button>';
       ui.menu.querySelector('.rt-nota').hidden = !relajado(); pintarFantasma();
       st.fase = 'menu';
       G.pausa.set('retos', true);
@@ -483,7 +572,11 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       leerRec, guardarRec, esPrueba: () => claveRec !== ALMACEN };
     const cargarBanquete = () => (G.banquete ? Promise.resolve(G.banquete) : G.AVE.assets.script('src/game/banquete.js').then(() => window.AVBanquete(G)));
     function jugar(reto) {
-      montarUI();
+      montarUI(); st.ultimo = null; st.antes = JSON.parse(JSON.stringify(leerRec())); tocarSesion(Date.now()); st.t0 = Date.now(); st.rankDatos = null;
+      if (reto === 'flight') { salir(); const f = window.AV && window.AV.flight; if (f) f().catch(() => {}); return true; } // Amazona Flight (src/game/flight.js) vive aparte: se sale de Retos y se abre
+      if (reto === 'tren') { salir(); const f = window.AV && window.AV.tren; if (f) f().catch(() => {}); return true; } // El tren de Vittata (src/game/tren.js, C16): igual que Flight
+      if (reto === 'rio_rush') { salir(); const f = window.AV && window.AV.riverRush; if (f) f().catch(() => {}); return true; } // River Rush (src/game/river_rush.js, AC2): igual que Flight
+      if (reto === 'maze') { salir(); const f = window.AV && window.AV.maze; if (f) f().catch(() => {}); return true; } // Amazona Maze (src/game/maze.js, BI2): igual que Flight
       if (reto === 'banquete' && !G.banquete) { cargarBanquete().then(() => jugar(reto), () => G.ui.toast('No se pudo cargar el banquete. Prueba otra vez.', 3000)); return true; }
       if (!entrar()) return false;
       cerrarPaneles(); limpiarFx();
@@ -495,11 +588,91 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       return true;
     }
     function otraVez() { if (st.reto) jugar(st.reto); }
+    // ---------- Ganas de seguir (decisión de Kelvin, 26-oct): el «casi», la siguiente meta, sellos y reto del día ----------
+    // Sano y para niños: solo habilidad (nada de monedas, cajas ni azar), sin rachas, sin cuentas atrás para volver y sin culpa.
+    const ORDEN = ['bronce', 'plata', 'oro'], ART = { oro: 'el oro', plata: 'la plata', bronce: 'el bronce' };
+    const UMBRAL = { tormenta: [['bronce', 1], ['plata', 800], ['oro', 1500]], banquete: [['bronce', 1], ['plata', 600], ['oro', 1200]], flight: [['bronce', 10], ['plata', 25], ['oro', 60]], tren: [['bronce', 250], ['plata', 450], ['oro', 650]], rio_rush: [['bronce', 40], ['plata', 120], ['oro', 250]], maze: [['bronce', 200], ['plata', 500], ['oro', 900]] };
+    const UNIDAD = { tormenta: ['punto', 'puntos'], banquete: ['punto', 'puntos'], flight: ['obstáculo', 'obstáculos'], tren: ['punto', 'puntos'], rio_rush: ['punto', 'puntos'], maze: ['punto', 'puntos'] };
+    const NOMBRE_RETO = { carrera: 'Carrera en El Yunque', tormenta: '¡Escapa de la tormenta!', rio: 'Contrarreloj del río', banquete: '¡Banquete!', flight: 'Amazona Flight', tren: 'El tren de Vittata', rio_rush: 'River Rush', maze: 'Amazona Maze' };
+    const RETOS_DIA = ['banquete', 'flight', 'rio', 'tormenta', 'carrera'];
+    const DESCANSO_MS = 30 * 60 * 1000;
+    const ingles = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+    const dec = x => (Math.round(x * 10) / 10).toString().replace('.', ingles() ? '.' : ',');
+    // Medalla de un reto según los récords guardados (la de «Mis récords»: 1.º oro, 2.º plata, 3.º bronce; el río guarda la suya)
+    function medallaDeReto(reto, rec) {
+      const r = (rec && rec[reto]) || {};
+      if (reto === 'carrera') return !r.puesto ? null : r.puesto === 1 ? 'oro' : r.puesto === 2 ? 'plata' : r.puesto === 3 ? 'bronce' : null;
+      if (reto === 'rio') return ORDEN.includes(r.medalla) ? r.medalla : null;
+      let m = null; for (const [n, v] of UMBRAL[reto] || []) if (r.mejor >= v) m = n;
+      if (reto === 'rio_rush' && ORDEN.indexOf(r.medallaReloj) > ORDEN.indexOf(m)) m = r.medallaReloj; // River Rush: también la de su contrarreloj
+      return m;
+    }
+    // El mismo reto para todos ese día, sin servidor: sale de la fecha local
+    function retoDelDia(f) { f = f || new Date(); const n = Math.floor(Date.UTC(f.getFullYear(), f.getMonth(), f.getDate()) / 864e5); return RETOS_DIA[((n % RETOS_DIA.length) + RETOS_DIA.length) % RETOS_DIA.length]; }
+    // Líneas de ánimo tras una partida: el «casi» y la siguiente meta (u = lo emitido por retosResultado; rec = récords ya guardados)
+    function metaLineas(reto, u, rec) {
+      if (!u || u.modo !== reto) return [];
+      const L = [], r = (rec && rec[reto]) || {};
+      if (UMBRAL[reto]) {
+        const best = r.mejor || 0, v = u.puntos || 0, tope = Math.max(v, best), un = UNIDAD[reto], nom = n => n + ' ' + un[n === 1 ? 0 : 1];
+        if (v > 0 && v < best && best - v <= Math.max(3, Math.round(best * 0.2))) L.push('¡A solo ' + nom(best - v) + ' del récord!');
+        const sig = UMBRAL[reto].find(([, t]) => t > tope);
+        L.push(sig ? 'Te faltan ' + nom(sig[1] - tope) + ' para ' + ART[sig[0]] : '¡Tienes todas las medallas! Intenta superar tu récord.');
+      } else if (reto === 'rio') {
+        const R = ruta && ruta.R && ruta.R.medallas;
+        if (!u.llego) L.push('Siguiente meta: llegar a la desembocadura.');
+        else if (R) {
+          const t = u.ms / 1000, tb = r.mejor ? Math.min(r.mejor / 1000, t) : t;
+          if (t > tb && t - tb <= 2) L.push('¡A solo ' + dec(t - tb) + ' s de tu récord!');
+          let i = -1; for (let k = R.length - 1; k >= 0; k--) if (R[k] < tb) { i = k; break; }
+          L.push(i < 0 ? '¡Tienes el oro! Intenta superar tu récord.' : 'Te faltan ' + dec(tb - R[i]) + ' s para ' + ART[MEDALLAS[i]]);
+        }
+      } else if (reto === 'carrera') {
+        const p = u.puesto;
+        if (!u.llego) L.push('Siguiente meta: cruzar la meta.');
+        else if (p === 1) L.push(u.ms && r.mejor && u.ms > r.mejor && u.ms - r.mejor <= 2000 ? '¡A solo ' + dec((u.ms - r.mejor) / 1000) + ' s de tu récord!' : '¡Ahora supera tu mejor tiempo!');
+        else L.push(p === 2 ? 'Siguiente meta: ¡ganar la carrera!' : p === 3 ? 'Siguiente meta: la medalla de plata.' : 'Siguiente meta: la medalla de bronce.');
+      }
+      return L;
+    }
+    // Sello nuevo en «Mis récords»: la medalla de este reto subió respecto a antes de la partida
+    function selloNuevo(reto, antes, ahora) {
+      const a = ORDEN.indexOf(medallaDeReto(reto, antes)), b = ORDEN.indexOf(medallaDeReto(reto, ahora));
+      return b > a ? ORDEN[b] : null;
+    }
+    // Aviso amable de descanso tras unos 30 min seguidos (una sola vez por tramo; se olvida tras 10 min sin jugar)
+    const sesion = { t0: 0, ult: 0 };
+    function tocarSesion(ahora) { if (!sesion.t0 || ahora - sesion.ult > 10 * 60 * 1000) sesion.t0 = ahora; sesion.ult = ahora; }
+    function tocaDescanso(ahora, limite) { if (sesion.t0 && ahora - sesion.t0 >= (limite || DESCANSO_MS)) { sesion.t0 = ahora; return true; } return false; }
+    // Ranking global: solo si la marca es tu mejor y la partida no es de prueba; el panel y el envío viven en records.js
+    function datosRanking(reto, u, rec) {
+      if (!u || u.modo !== reto || claveRec !== ALMACEN) return null;
+      const r = (rec && rec[reto]) || {};
+      if (reto === 'carrera' || reto === 'rio') return u.llego && u.ms > 0 && r.mejor && u.ms <= r.mejor ? { reto, valor: u.ms } : null;
+      if (UMBRAL[reto]) return u.puntos > 0 && u.puntos >= (r.mejor || 0) ? { reto, valor: u.puntos } : null;
+      return null;
+    }
+    function publicarMarca(btn, fetchSim) {
+      const d = st.rankDatos; if (!d) return Promise.resolve('invalido');
+      const ir = G.recordsApi ? Promise.resolve(G.recordsApi) : G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+      return ir.then(rk => rk.publicarRanking({ reto: d.reto, valor: d.valor, dur_ms: d.dur_ms, prueba: claveRec !== ALMACEN, fetch: fetchSim }), () => { G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000); return 'error'; })
+        .then(r => { if (r === 'publicado' && btn) btn.parentNode.hidden = true; return r; });
+    }
+    function pintarGanchos() {
+      if (!ui || !ui.meta) return;
+      const reto = st.reto, rec = leerRec(), ls = metaLineas(reto, st.ultimo, rec);
+      const s = selloNuevo(reto, st.antes || {}, rec);
+      if (s) ls.unshift('¡Nuevo sello de ' + s + ' en Mis récords!');
+      ui.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join('');
+      ui.meta.hidden = !ls.length;
+      ui.descanso.hidden = !tocaDescanso(Date.now());
+      const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !dr;
+    }
     function resultados(html) {
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
       ui.fin.hidden = false; st.fase = 'fin';
       G.pausa.set('retos', true);
-      html();
+      html(); pintarGanchos();
       const b = ui.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
     // Enter, Espacio o la tecla de Acción: «Otra vez» en los resultados (un botón con el foco ya hace su propio clic)
@@ -533,10 +706,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function chispasFx(dt) {
       const k = rate(5, dt);
       efectos.destello = Math.max(0, efectos.destello - dt * 3.2);
-      ui.lineas.style.opacity = REDUCED ? 0 : efectos.lineas.toFixed(3);
-      ui.destello.style.opacity = (efectos.destello * (REDUCED ? 0.25 : 0.75)).toFixed(3);
-      ui.oscuro.style.opacity = efectos.oscuro.toFixed(3);
-      ui.moja.style.opacity = efectos.moja.toFixed(3);
+      estilo(ui.lineas, 'opacity', REDUCED ? 0 : efectos.lineas.toFixed(3));
+      estilo(ui.destello, 'opacity', (efectos.destello * (REDUCED ? 0.25 : 0.75)).toFixed(3));
+      estilo(ui.oscuro, 'opacity', efectos.oscuro.toFixed(3));
+      estilo(ui.moja, 'opacity', efectos.moja.toFixed(3));
       return k;
     }
 
@@ -961,7 +1134,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function mostrarResultadosRio() {
       resultados(() => {
         const md = ui.medalla, m = C.medalla, Mr = ruta.R.medallas;
-        md.className = 'rt-medalla ' + (m || 'sin'); md.textContent = m ? String(MEDALLAS.indexOf(m) + 1) : C.llego ? '¡Bien!' : '…';
+        md.className = 'rt-medalla ' + (m || 'sin'); md.textContent = m ? String(MEDALLAS.indexOf(m) + 1) : C.llego ? '¡Bien!' : '¡Casi!';
         ui.finT.textContent = !C.llego ? 'Casi llegas a la desembocadura' : m === 'oro' ? '¡Medalla de oro!' : m === 'plata' ? '¡Medalla de plata!' : m === 'bronce' ? '¡Medalla de bronce!' : '¡Llegaste a la desembocadura!';
         ui.nuevo.hidden = !C.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Tu tiempo</small>${C.llego ? reloj(C.tiempo) : '—'}</div>` +
@@ -975,7 +1148,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       resultados(() => {
         const p = C.puesto, md = ui.medalla;
         md.className = 'rt-medalla ' + (!C.llego ? 'sin' : p === 1 ? 'oro' : p === 2 ? 'plata' : p === 3 ? 'bronce' : 'sin');
-        md.textContent = C.llego && p <= 3 ? String(p) : C.llego ? '¡Bien!' : '…';
+        md.textContent = C.llego && p <= 3 ? String(p) : C.llego ? '¡Bien!' : '¡Casi!';
         ui.finT.textContent = !C.llego ? 'Casi llegas a la meta' : p === 1 ? '¡Ganaste la carrera!' : p === 2 ? '¡Segundo lugar!' : p === 3 ? '¡Tercer lugar!' : '¡Llegaste a la meta!';
         ui.nuevo.hidden = !C.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Tu tiempo</small>${C.llego ? reloj(C.tiempo) : '—'}</div>` +
@@ -1050,22 +1223,22 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (tag) {
           v3.set(x, y + 2.3, z).project(cam);
           const d = Math.hypot(x - S.pos.x, y - S.pos.y, z - S.pos.z), ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
-          tag.style.display = ver ? '' : 'none';
-          if (ver) tag.style.transform = `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`;
+          estilo(tag, 'display', ver ? '' : 'none');
+          if (ver) estilo(tag, 'transform', `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`);
         }
       });
       // HUD
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
-        ui.pos.textContent = p + (p === 1 || p === 3 ? '.er' : '.º');
-        ui.tiempo.textContent = reloj(C.fase === 'fin' ? C.tiempo : C.t);
-        ui.pts.textContent = Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1);
+        pon(ui.pos, p + (p === 1 || p === 3 ? '.er' : '.º'));
+        pon(ui.tiempo, reloj(C.fase === 'fin' ? C.tiempo : C.t));
+        pon(ui.pts, Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1));
         const o = C.objetos[Math.min(C.sig, C.objetos.length - 1)].userData;
         const dx = o.x - S.pos.x, dz = o.z - S.pos.z, yaw = G.camara.yaw;
         const ang = Math.atan2(dx * Math.cos(yaw) - dz * Math.sin(yaw), -dx * Math.sin(yaw) - dz * Math.cos(yaw));
-        ui.flechaSvg.style.transform = 'rotate(' + ang.toFixed(3) + 'rad)';
+        estilo(ui.flechaSvg, 'transform', 'rotate(' + ang.toFixed(2) + 'rad)');
         const pt = Rr.puntos[Math.min(C.sig, Rr.puntos.length - 1)];
-        ui.flechaTxt.textContent = C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + Math.round(Math.hypot(dx, dz)) + ' m';
+        pon(ui.flechaTxt, C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + Math.round(Math.hypot(dx, dz)) + ' m');
       }
       chispasFx(dt);
     }
@@ -1104,11 +1277,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const tela = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1), lm(new THREE.MeshLambertMaterial({ map: texBanderin(' '), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: i % 2 ? '#ffcf5a' : '#7fd3ff' })));
         tela.position.set(x + 0.8 * Math.cos(t + 1.57), y0 + 8.3, z + 0.8 * Math.sin(t + 1.57)); tela.rotation.y = -t; TM.grupo.add(tela);
       }
-      // Frente: cortina de lluvia vertical (se mueve) y techo de nubes sobre lo que ya cubrió
+      // Frente: cortina alta (entra en el agua y en el cielo) y techo de nube. El plano es más grande que
+      // lo que se ve: bordeSuave deja la arista en alfa 0, así no hay un rectángulo contra el mar ni el cielo.
       const mc = texCortina().clone(); mc.needsUpdate = true; mc.wrapS = mc.wrapT = THREE.RepeatWrapping; mc.repeat.set(6, 2); TM.mapaCortina = mc;
-      const cort = new THREE.Mesh(new THREE.PlaneGeometry(140, 36), lm(new THREE.MeshBasicMaterial({ map: mc, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 0.92 })));
+      const cort = new THREE.Mesh(new THREE.PlaneGeometry(220, 120), bordeSuave(lm(new THREE.MeshBasicMaterial({ map: mc, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 1 })), 'cortina'));
       cort.rotation.y = Math.atan2(a.dx, a.dz); TM.cortina = cort; TM.grupo.add(cort);
-      const techo = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), lm(new THREE.MeshBasicMaterial({ color: '#262d44', transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, fog: false })));
+      const mt = texTecho(); mt.wrapS = mt.wrapT = THREE.ClampToEdgeWrapping;
+      const techo = new THREE.Mesh(new THREE.PlaneGeometry(240, 240), bordeSuave(lm(new THREE.MeshBasicMaterial({ map: mt, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, opacity: 0.9 })), 'techo'));
       techo.rotation.x = -Math.PI / 2; TM.techo = techo; TM.grupo.add(techo);
       sobreAgua(TM.grupo); TM.cortina.renderOrder = TM.techo.renderOrder = 8;
       raiz.add(TM.grupo);
@@ -1128,6 +1303,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         Object.assign(G.camara.CAM, { distFly: 11.5, heightFly: 8.5, follow: 7 });
         G.camara.place(true);
         G.fx.rain.visible = true;
+        if (G.agua && G.agua.tormenta) G.agua.tormenta(true); // el mar de la arena es la tormenta, no la laguna calma
         ui.hud.hidden = false; ui.flecha.hidden = true;
         ui.chipPos.hidden = ui.chipPts.hidden = true; ui.chipVidas.hidden = ui.chipPuntos.hidden = ui.chipTiempo.hidden = false;
         pintarVidas(); ui.puntos.textContent = '0'; ui.combo.textContent = '';
@@ -1140,6 +1316,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         for (const k in pool) pool[k].forEach(soltar);
         TM.peligros = []; TM.semillas = []; TM.fase = 'nada';
         G.fx.rain.visible = false;
+        if (G.agua && G.agua.tormenta) G.agua.tormenta(false);
         const pj = G.actores.player3D; if (pj) pj.root.visible = true;
       },
       update(dt) { actualizarTormenta(dt); },
@@ -1305,7 +1482,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       resultados(() => {
         const md = ui.medalla, tot = TM.total;
         const medalla = !TM.sobrevivio ? 'sin' : tot >= 1500 ? 'oro' : tot >= 800 ? 'plata' : 'bronce';
-        md.className = 'rt-medalla ' + medalla; md.textContent = TM.sobrevivio ? '' + Math.round(TM.t) + 's' : '…';
+        md.className = 'rt-medalla ' + medalla; md.textContent = TM.sobrevivio ? '' + Math.round(TM.t) + 's' : '¡Casi!';
         ui.finT.textContent = TM.sobrevivio ? '¡Escapaste de la tormenta!' : 'La tormenta te alcanzó';
         ui.nuevo.hidden = !TM.nuevo;
         ui.datos.innerHTML = `<div class="rt-dato"><small>Puntos</small>${tot}</div><div class="rt-dato"><small>Récord</small>${TM.rec.mejor || 0}</div>` +
@@ -1317,8 +1494,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const a = TM.arena, now = performance.now() / 1000;
       // Frente (cortina) y techo de nubes sobre la parte cubierta
       const fx = a.x + a.dx * TM.frente, fz = a.z + a.dz * TM.frente, y0 = superficie(a.x, a.z);
-      TM.cortina.position.set(fx, y0 + 17, fz);
-      TM.techo.position.set(fx - a.dx * 80, y0 + 15, fz - a.dz * 80);
+      // Centro de la cortina (alto 120): el borde de abajo queda bajo el agua y el de arriba, en el cielo
+      TM.cortina.position.set(fx, y0 + 36, fz);
+      TM.techo.position.set(fx - a.dx * 90, y0 + 22, fz - a.dz * 90);
       TM.mapaCortina.offset.y += dt * 1.8; TM.mapaCortina.offset.x += dt * 0.05;
       for (const z of TM.peligros) {
         if (z.tipo === 'rama') {
@@ -1336,9 +1514,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (const s of TM.semillas) { s.t += dt; s.sp.position.y = s.y + Math.sin(s.t * 2.4) * 0.25; s.sp.material.rotation = Math.sin(s.t * 1.7) * 0.3; }
       // Parpadeo de Vittata tras un golpe
       const pj = G.actores.player3D; if (pj) pj.root.visible = TM.invul <= 0 || Math.floor(now * 12) % 2 === 0;
-      ui.tiempo.textContent = reloj(Math.max(0, T_TORMENTA.dur - TM.t));
-      ui.puntos.textContent = String(TM.puntos);
-      ui.combo.textContent = TM.combo >= 2 ? ' x' + TM.combo : '';
+      pon(ui.tiempo, reloj(Math.max(0, T_TORMENTA.dur - TM.t)));
+      pon(ui.puntos, String(TM.puntos));
+      pon(ui.combo, TM.combo >= 2 ? ' x' + TM.combo : '');
       chispasFx(dt);
     }
 
@@ -1346,6 +1524,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // Ganchos (se registran una vez; solo actúan con el modo activo)
     // =================================================================================================================
     G.on('update', dt => { if (st.activo && modo) modo.update(dt); }, 46);
+    G.on('retosResultado', d => { st.ultimo = d; });
     G.on('render', dt => {
       if (!st.activo) return;
       const comp = G.actores.companion3D; if (comp) comp.root.visible = false;
@@ -1361,6 +1540,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
       const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const comparable = d => { const o = {}; for (const k of SV.KEYS) o[k] = d && d[k]; return JSON.stringify(o); };
+      if (G.marcador && G.marcador.tiempo) G.marcador.tiempo(); // el marcador crea S.marcador al leerlo la primera vez (no es del reto): se materializa antes de la foto (QA-82)
       const realAntes = claves.map(leer), sAntes = comparable(S), recReal = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
       const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
       const tick = (s, dt) => { dt = dt || 0.05; for (let i = 0, n = Math.ceil(s / dt); i < n; i++) R.update(dt); };
@@ -1375,11 +1555,27 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       let emit0 = null; const busy0 = G.ui.busy, step0 = F.step, relOrig = G.accesibilidad.relajado;
       try {
         // ---------- Menú ----------
-        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 4);
+        const fadeQA = document.createElement('div');
+        fadeQA.id = 'c1-fade'; fadeQA.style.opacity = '1'; document.body.appendChild(fadeQA);
+        let siguioQA = false;
+        G.dialogo.say(
+          [{ who: 'NARRADOR', text: 'Hubo un tiempo en que las islas estaban conectadas.' },
+           { who: 'NARRADOR', text: 'Esta línea no debe llegar.', onShow: () => { siguioQA = true; } }],
+          () => { siguioQA = true; }, { libre: true });
+        check('Abre el menú de retos', abrir() && !ui.menu.hidden && ui.menu.querySelectorAll('[data-jugar]').length === 9);
+        check('Al abrir Retos se quita #c1-fade y se cortan los bocadillos (QA-41)', !document.getElementById('c1-fade') && !(G.dialogo.libre && G.dialogo.libre()) && !siguioQA);
         check('Con el menú abierto el mundo queda en pausa', G.pausa.activa());
         check('Abrir el menú no toca la partida', comparable(S) === sAntes && !st.activo);
         // ---------- Carrera ----------
+        const fadeCarrera = document.createElement('div');
+        fadeCarrera.id = 'c1-fade'; fadeCarrera.style.opacity = '1'; document.body.appendChild(fadeCarrera);
+        let siguioCarrera = false;
+        G.dialogo.say(
+          [{ who: 'NARRADOR', text: 'Hubo un tiempo en que las islas estaban conectadas.' },
+           { who: 'NARRADOR', text: 'Esta línea no debe llegar.', onShow: () => { siguioCarrera = true; } }],
+          () => { siguioCarrera = true; }, { libre: true });
         check('La carrera arranca', jugar('carrera') && st.activo && modo === CARRERA && C.fase === 'cuenta');
+        check('Durante la cuenta atrás no queda la capa negra ni siguen los bocadillos (QA-41)', !document.getElementById('c1-fade') && !(G.dialogo.libre && G.dialogo.libre()) && !siguioCarrera && ui.cuenta.textContent !== '');
         check('El guardado queda suspendido y G.quiet activo', SV.save(true) === false && G.quiet === true);
         check('La historia ve el mundo ocupado; el vuelo no', G.ui.busy() === true && F.step !== step0);
         const Rr = ruta.R;
@@ -1467,6 +1663,47 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // ---------- Contrarreloj del río ----------
         const ghCarrera = leer(claveFantasmaDe('carrera'));
         abrir();
+        check('El menú de Retos tiene la tarjeta de Amazona Flight con su récord', !!ui.menu.querySelector('[data-jugar="flight"]') && /sin récord|Récord: \d+ obstáculo/.test(ui.menu.querySelector('[data-rec="flight"]').textContent));
+        check('El menú de Retos tiene la tarjeta de River Rush con su récord (AC2)', !!ui.menu.querySelector('[data-jugar="rio_rush"]') && /sin récord|Récord: \d+ puntos|Contrarreloj: \d+:\d\d\.\d/.test(ui.menu.querySelector('[data-rec="rio_rush"]').textContent) && medallaDeReto('rio_rush', { rio_rush: { mejor: 130 } }) === 'plata' && medallaDeReto('rio_rush', { rio_rush: { mejor: 50, medallaReloj: 'oro' } }) === 'oro');
+        // ---------- Ganas de seguir: el «casi», la siguiente meta, sellos, reto del día y descanso ----------
+        { const P = api.pruebas, rec0 = { tormenta: { mejor: 700 }, banquete: { mejor: 0 }, flight: { mejor: 22 }, carrera: { puesto: 2 }, rio: { medalla: 'plata' } };
+          check('Reto del día: el mismo para la misma fecha y cambia con los días (sin servidor)', P.retoDelDia(new Date(2026, 9, 26)) === P.retoDelDia(new Date(2026, 9, 26, 23, 59)) && new Set([0, 1, 2, 3, 4].map(i => P.retoDelDia(new Date(2026, 9, 26 + i)))).size === 5);
+          check('Medallas por reto desde los récords (puntos, puesto y río)', P.medallaDeReto('tormenta', rec0) === 'bronce' && P.medallaDeReto('flight', rec0) === 'bronce' && P.medallaDeReto('carrera', rec0) === 'plata' && P.medallaDeReto('rio', rec0) === 'plata' && P.medallaDeReto('banquete', rec0) === null);
+          const t1 = P.metaLineas('tormenta', { modo: 'tormenta', puntos: 650 }, rec0), t2 = P.metaLineas('flight', { modo: 'flight', puntos: 20 }, rec0);
+          check('El «casi»: «¡A solo 50 puntos del récord!» y la siguiente meta con lo que falta', t1[0] === '¡A solo 50 puntos del récord!' && t1[1] === 'Te faltan 100 puntos para la plata', t1.join(' | '));
+          check('El «casi» y la meta de Flight (obstáculos)', t2[0] === '¡A solo 2 obstáculos del récord!' && t2[1] === 'Te faltan 3 obstáculos para la plata', t2.join(' | '));
+          check('Con todas las medallas: ánimo de superar el récord, sin presión', /todas las medallas/.test(P.metaLineas('tormenta', { modo: 'tormenta', puntos: 1600 }, { tormenta: { mejor: 1600 } }).join('')));
+          const rr = ruta.R && ruta.R.medallas, tr = P.metaLineas('rio', { modo: 'rio', llego: true, ms: 15300 }, { rio: { mejor: 15300 } });
+          check('Río: «Te faltan x s para la plata» con la tabla de medallas', !rr || (tr.length === 1 && /^Te faltan \d+,\d s para (la plata|el oro|el bronce)$/.test(tr[0])), tr.join(' | '));
+          check('Un sello nuevo solo si la medalla sube (nada de azar)', P.selloNuevo('tormenta', { tormenta: { mejor: 700 } }, { tormenta: { mejor: 900 } }) === 'plata' && P.selloNuevo('tormenta', { tormenta: { mejor: 900 } }, { tormenta: { mejor: 900 } }) === null && P.selloNuevo('flight', {}, { flight: { mejor: 12 } }) === 'bronce');
+          P.sesion.t0 = 0; const h = 1e9; P.tocarSesion(h);
+          check('Descanso: nada antes de 30 min; después, un aviso amable una sola vez', P.tocaDescanso(h + 29 * 60e3) === false && P.tocaDescanso(h + 31 * 60e3) === true && P.tocaDescanso(h + 32 * 60e3) === false);
+          check('Tras 10 min sin jugar la sesión se reinicia (sin castigos ni rachas)', (P.tocarSesion(h), P.tocarSesion(h + 11 * 60e3), P.sesion.t0 === h + 11 * 60e3));
+          abrir(); const hoyB = ui.menu.querySelector('.rt-hoy'), nom = hoyB.querySelector('b').textContent;
+          check('El menú de Retos muestra el reto del día y lo marca en su tarjeta', !hoyB.hidden && hoyB.querySelector('[data-jugar="' + P.retoDelDia() + '"]') && ui.menu.querySelectorAll('.rt-reto.es-hoy').length === 1 && nom.length > 3, nom);
+          check('Cada reto con récord enseña su medalla en el menú', [...ui.menu.querySelectorAll('.rt-reto')].every(c => c.querySelector('.rt-med')));
+          check('Sin rachas ni cuentas atrás: no hay contadores de días en el menú', !/racha|mañana|vuelve|perder/i.test(ui.menu.textContent)); }
+        // ---------- Ranking global: nunca publica en pruebas; con fetch simulado, apodo de listas fijas y top 3 ----------
+        { const P = api.pruebas, rk = G.recordsApi || await G.AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G));
+          let llamadas = 0; const fetch0 = window.fetch; window.fetch = function () { llamadas++; return Promise.reject(new Error('sin red en pruebas')); };
+          let r1; try { r1 = await rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true }); } finally { window.fetch = fetch0; }
+          check('Ranking: una partida de prueba nunca publica (ni abre el panel ni llama a la red)', r1 === 'prueba' && llamadas === 0 && !rk.abrirRank());
+          check('Ranking: el botón no sale en las pruebas', P.datosRanking('tormenta', { modo: 'tormenta', puntos: 900 }, { tormenta: { mejor: 900 } }) === null);
+          const envios = []; const falso = (url, o) => { envios.push({ url, o }); return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true, puesto: 2, top: [{ puesto: 1, alias: 'Coquí Veloz 7', valor: 1200 }, { puesto: 2, alias: 'Cotorra Feliz 12', valor: 900 }, { puesto: 3, alias: 'Iguaca Sabio 3', valor: 800 }, { puesto: 4, alias: 'Manatí Ágil 9', valor: 100 }] }) }); };
+          let panel; const p1 = rk.publicarRanking({ reto: 'tormenta', valor: 900, dur_ms: 60000, prueba: true, fetch: falso }); panel = document.getElementById('rec-rank');
+          check('Ranking: el panel abre con tres desplegables (sin texto libre) y «otro al azar»', rk.abrirRank() && !panel.hidden && panel.querySelectorAll('select').length === 3 && !panel.querySelector('input, textarea') && !!panel.querySelector('#rk-azar'));
+          const alias0 = panel.querySelector('#rk-alias').textContent; panel.querySelector('#rk-azar').click();
+          check('Ranking: el apodo es «Animal Adjetivo NN» de las listas exactas', new RegExp('^(' + rk.ANIMALES.join('|') + ') (Veloz|Valiente|Curioso|Brillante|Alegre|Audaz|Sabio|Feliz|Ágil|Sereno) ([1-9]\\d?)$').test(panel.querySelector('#rk-alias').textContent) && alias0.length > 5);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          const cuerpo = envios[0] && JSON.parse(envios[0].o.body);
+          check('Ranking: envía reto, valor, dur_ms, alias y un dispositivo aleatorio (nada personal)', envios.length === 1 && /amazona-records$/.test(envios[0].url) && cuerpo.reto === 'tormenta' && cuerpo.valor === 900 && cuerpo.dur_ms === 60000 && /^[a-f0-9]{32}$/.test(cuerpo.dispositivo) && cuerpo.alias === panel.querySelector('#rk-alias').textContent && Object.keys(cuerpo).sort().join() === 'alias,dispositivo,dur_ms,reto,valor', JSON.stringify(cuerpo));
+          check('Ranking: muestra el puesto y solo el top 3, y el enlace «Ver el top»', /2/.test(panel.querySelector('#rk-res').textContent) && panel.querySelectorAll('.rk-top li').length === 3 && panel.querySelector('#rk-ver').href === 'https://amazonaverse.com/#top-records');
+          panel.querySelector('#rk-no').click(); check('Ranking: cierra y devuelve «publicado»', (await p1) === 'publicado' && !rk.abrirRank());
+          const p2 = rk.publicarRanking({ reto: 'flight', valor: 30, dur_ms: 40000, prueba: true, fetch: () => Promise.reject(new Error('sin red')) }); panel = document.getElementById('rec-rank');
+          check('Ranking: el apodo se recuerda en el dispositivo', panel.querySelector('#rk-alias').textContent === cuerpo.alias);
+          panel.querySelector('#rk-pub').click(); await esperar(60);
+          check('Ranking: sin red, mensaje amable y el juego sigue (se puede reintentar)', /no hay conexión/i.test(panel.querySelector('#rk-res').textContent) && !panel.querySelector('#rk-pub').disabled);
+          panel.querySelector('#rk-no').click(); check('Ranking: cerrar sin publicar devuelve «cerrado»', (await p2) === 'cerrado'); }
         check('El menú muestra la contrarreloj del río, sin récord aún', !!ui.menu.querySelector('[data-jugar="rio"]') && ui.menu.querySelector('[data-rec="rio"]').textContent === 'Aún sin récord');
         let emitido = null; emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
         check('La contrarreloj arranca', jugar('rio') && modo === CARRERA && C.rio === true && C.fase === 'cuenta');
@@ -1516,6 +1753,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         abrir();
         check('«Otro reto» vuelve al menú', !ui.menu.hidden && ui.fin.hidden);
         check('La tormenta arranca', jugar('tormenta') && modo === TORMENTA && TM.fase === 'cuenta' && C.fase === 'nada');
+        check('El agua de la tormenta es un solo cuerpo', G.agua.uniforms.uTormenta && G.agua.uniforms.uTormenta.value === 1);
         check('Las cosas de la carrera se esconden', !C.grupo.visible && !C.rivales.length);
         tick(3);
         check('Tras 3-2-1 empieza la tormenta', TM.fase === 'juego');
@@ -1559,8 +1797,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         // ---------- Salir ----------
         salir();
         check('Al salir se quitan las envolturas', G.ui.busy === busy0 && F.step === step0 && !document.body.classList.contains('retos-on'));
+        check('Al salir el mar vuelve a su agua', G.agua.uniforms.uTormenta.value === 0);
         check('Al salir G.quiet vuelve a como estaba', G.quiet === quiet0);
-        check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
+        check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes, (() => { try { const a = JSON.parse(sAntes), b = JSON.parse(comparable(S)); return Object.keys(a).filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])).map(k => k + ': ' + JSON.stringify(a[k]) + ' → ' + JSON.stringify(b[k])).join('; ').slice(0, 300); } catch (e) { return ''; } })());
         check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
         check('El mundo no queda en pausa', G.pausa.activa() === pausa0);
         check('Récords reales intactos', leer(ALMACEN) === recReal);
@@ -1579,7 +1818,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
-      pruebas: { prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
+      pruebas: { datosRanking, publicarMarca, medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
       alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
     return api;
   };

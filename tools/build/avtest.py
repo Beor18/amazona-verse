@@ -297,8 +297,25 @@ MEMORIA_JS = r'''(() => {
 })()'''
 
 
+# Vista de arranque (CG-6): la misma medida del juego que usan bm14_medir.py y look_capturas.py (AV.look.medir():
+# draw calls del cuadro entero según R.stats() y memoria de texturas estimada desde las imágenes de la escena).
+# Espera dos cuadros para que el contador de draw calls sea el de un cuadro completo.
+VISTA_JS = r'''new Promise(ok => requestAnimationFrame(() => requestAnimationFrame(() => {
+  try {
+    const L = window.AV && window.AV.look;
+    if (!L || typeof L.medir !== 'function') return ok(JSON.stringify({ error: 'AV.look.medir no existe' }));
+    const m = L.medir();
+    ok(JSON.stringify({ calls: m.calls, triangulos: m.triangulos, texturasMB: m.texturasMB, texturas: m.texturas, texturasGPU: m.texturasGPU,
+      programas: m.programas, calidad: m.calidad, dpr: m.dpr, look: m.look, texturasPor: m.texturasPor }));
+  } catch (e) { ok(JSON.stringify({ error: String(e) })); }
+})))'''
+# Topes orientativos: solo dan aviso, nunca hacen fallar la build (los topes que fallan los decide Kelvin)
+TOPE_DRAW_CALLS, TOPE_TEXTURAS_MB = 150, 300
+
+
 def medir(cdp, ses, estado, P):
-    """Carga inicial: espera a que la red quede quieta y mide el heap (sin GC y tras GC) y el base64 residente."""
+    """Carga inicial: espera a que la red quede quieta y mide el heap (sin GC y tras GC), el base64 residente y,
+    de la vista de arranque, los draw calls y la memoria de texturas."""
     out = {}
     t0 = time.monotonic()
     while time.monotonic() - t0 < P.get('espera_red_s', 30):
@@ -335,6 +352,15 @@ def medir(cdp, ses, estado, P):
         cdp.call('HeapProfiler.disable', {}, ses, 20)
     except (CDPError, JSError, TimeoutError, KeyError, ValueError) as e:
         out['error_heap_gc'] = ('%s: %s' % (type(e).__name__, e))[:200]
+    try:
+        v = json.loads(evaluar(cdp, ses, VISTA_JS, 60, promesa=True))
+        if v.get('error'):
+            out['error_vista'] = v['error'][:200]
+        else:
+            out['vista_arranque'] = v
+            out['draw_calls'], out['texturas_mb'] = v.get('calls'), v.get('texturasMB')
+    except (CDPError, JSError, TimeoutError, ValueError) as e:
+        out['error_vista'] = ('%s: %s' % (type(e).__name__, e))[:200]
     return out
 
 
@@ -485,7 +511,7 @@ def correr(a, cfg):
     R['inyectados'] = inyectados
 
     H = cfg['hosts_permitidos']
-    permitidos = set(H['scripts']) | set(H['estilos']) | set(H['fuentes'])
+    permitidos = set(H['scripts']) | set(H['estilos']) | set(H['fuentes']) | set(H.get('conexiones', []))
     estado = {'ses': None, 'reqs': {}, 'excepciones': [], 'consola': [], 'log': [], 'avisos_consola': 0, 'muestras_aviso': [], 'caida': False,
               'fase': 'arranque', 'ultima_red': time.monotonic()}
 
@@ -573,8 +599,8 @@ def correr(a, cfg):
             R['medidas'] = medir(cdp, ses, estado, P)
             estado['fase'] = 'pruebas'
             med = R['medidas']
-            print('· medida la carga inicial: heap %s MB (%s MB tras GC) · base64 residente %s MB' % (
-                med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb')), flush=True)
+            print('· medida la carga inicial: heap %s MB (%s MB tras GC) · base64 residente %s MB · vista de arranque: %s draw calls, %s MB de texturas' % (
+                med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')), flush=True)
             for x in ([] if a.solo_medir else inyectados):
                 try:
                     evaluar(cdp, ses, INYECTAR_JS % json.dumps(x['url']), 30, promesa=True)
@@ -725,6 +751,14 @@ def correr(a, cfg):
             continue
         if valor > lim:
             (falla if clave in duros else aviso)('presupuesto: %s %s (límite %s)' % (valor, unidad, lim))
+    # Vista de arranque (CG-6): solo avisos, aunque la clave esté en 'fallan'
+    R['presupuestos_vista'] = {'draw_calls': PR.get('draw_calls', TOPE_DRAW_CALLS), 'texturas_mb': PR.get('texturas_mb', TOPE_TEXTURAS_MB)}
+    for clave, unidad in (('draw_calls', 'draw calls en la vista de arranque'), ('texturas_mb', 'MB de texturas en la vista de arranque')):
+        valor, lim = med.get(clave), R['presupuestos_vista'][clave]
+        if valor is None:
+            aviso('presupuesto sin medir: %s (%s)' % (clave, med.get('error_vista') or 'sin dato'))
+        elif valor > lim:
+            aviso('presupuesto: %s %s (límite %s)' % (valor, unidad, lim))
 
     # Consola
     permitidos_re = [re.compile(x) for x in P['errores_permitidos']]
@@ -751,8 +785,9 @@ def correr(a, cfg):
     print('  red: %d locales ok, %d con 404 (%d sondas .glb), %d rotas, %d externas permitidas, %d prohibidas · consola: %d errores, %d avisos'
           % (locales, n404, len(set(sondas)), len(rotas), len(ext_ok), len(ext_mal), len(errs), estado['avisos_consola']))
     print('  carga inicial: %.2f MB en %d archivos %s (%.2f MB en %d peticiones sin caché) · heap %s MB (%s MB tras GC) · base64 residente %s MB'
+          ' · vista de arranque: %s draw calls, %s MB de texturas'
           % (ini['mb'], ini['archivos_n'], json.dumps(ini['por_tipo'], ensure_ascii=False), ini['mb_peticiones'], ini['peticiones'],
-             med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb')))
+             med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')))
     for f in R['fallas']:
         print('  FALLA ' + f)
     for w in R['avisos']:
@@ -792,6 +827,16 @@ def escribir_reporte(informe, R):
     md.append('| Heap a ~%s s, sin forzar GC | **%s MB** |' % (med.get('heap_t_s', '?'), med.get('heap_mb', '?')))
     md.append('| Heap tras GC | %s MB |' % med.get('heap_gc_mb', '?'))
     md.append('| Base64 que sigue en `window.AV_*_B64` | %s MB en %s cadenas |' % (med.get('b64_residente_mb', '?'), med.get('b64_residente_cadenas', '?')))
+    va, lim = med.get('vista_arranque') or {}, (R.get('presupuestos_vista') or {})
+    md.append('| Draw calls de la vista de arranque (cuadro entero) | **%s** (aviso si > %s) |' % (med.get('draw_calls', '?'), lim.get('draw_calls', TOPE_DRAW_CALLS)))
+    md.append('| Texturas de la vista de arranque (estimadas, con mipmaps) | **%s MB** en %s texturas (aviso si > %s MB) |' % (
+        med.get('texturas_mb', '?'), va.get('texturas', '?'), lim.get('texturas_mb', TOPE_TEXTURAS_MB)))
+    if va:
+        md.append('| Vista de arranque: detalle | %s triángulos · %s programas · calidad %s · dpr %s · look %s · texturas por origen (MB): %s |' % (
+            va.get('triangulos', '?'), va.get('programas', '?'), va.get('calidad', '?'), va.get('dpr', '?'), va.get('look', '?'),
+            ', '.join('%s %s' % kv for kv in sorted((va.get('texturasPor') or {}).items(), key=lambda kv: -kv[1])) or '—'))
+    elif med.get('error_vista'):
+        md.append('| Vista de arranque: sin medir | %s |' % med['error_vista'].replace('|', '/'))
     md.append('| Build marcada sin .glb (`ave:sin-glb`) | %s |' % ('sí' if R.get('build_sin_glb') else 'no'))
     if ci.get('mayores'):
         md.append('\nMayores en la carga inicial: ' + ', '.join('`%s` %s KB' % (k, v) for k, v in ci['mayores'][:10]) + '.')

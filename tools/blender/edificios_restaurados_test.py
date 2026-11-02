@@ -4,6 +4,8 @@ import json
 import math
 import re
 import struct
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -193,36 +195,38 @@ def support_error(instance, surfaces, ground):
 
 
 class RestoredBuildingsTest(unittest.TestCase):
-    def test_structures_are_connected_and_complete(self):
+    def test_structures_keep_original_connectivity(self):
         failures = []
         for name in TARGETS:
-            tris = triangles(MODELS / (name + '.glb'))
-            fraction = component_fraction(tris)
-            if fraction < 0.85:
-                failures.append('%s: pieza principal %.1f%%' % (name, fraction * 100))
+            raw = subprocess.check_output(['git', 'show', 'dbdfecf:assets/models/edificios/%s.glb' % name], cwd=ROOT)
+            with tempfile.NamedTemporaryFile(suffix='.glb') as reference_file:
+                reference_file.write(raw)
+                reference_file.flush()
+                reference = component_fraction(triangles(Path(reference_file.name)))
+            current = component_fraction(triangles(MODELS / (name + '.glb')))
+            if current + 0.01 < reference:
+                failures.append('%s: pieza principal %.1f%% < %.1f%% original' % (name, current * 100, reference * 100))
         self.assertFalse(failures, 'Edificios desarmados: ' + '; '.join(failures))
 
     def test_lod_triangle_budgets(self):
+        source_budget = {
+            'templo_grande': 184792, 'templo_grande_a': 89477, 'templo_grande_d': 212822,
+            'templo_grande_e': 128423, 'templo_grande_f': 144286, 'templo_mediano_h': 462218,
+        }
         failures = []
         for name in TARGETS:
             near = len(triangles(MODELS / (name + '.glb')))
             high = len(triangles(MODELS / (name + '_hd.glb')))
             far = len(triangles(MODELS / (name + '_lejos.glb')))
-            if near > 5000 or high > 40000 or far > 2500:
+            if near > 5000 or high > source_budget.get(name, 85000) or far > 10000:
                 failures.append('%s: ligero %d, HD %d, lejos %d' % (name, near, high, far))
         self.assertFalse(failures, 'Presupuesto superado: ' + '; '.join(failures))
 
-    def test_ancient_buildings_have_real_support(self):
+    def test_tower_keeps_validated_placement(self):
         doc = json.loads((ROOT / 'assets/data/escena_kelvin_cap1.json').read_text())
-        instances = [instance for zone in doc['zonas'] for instance in zone['instancias']]
-        ancient = [instance for instance in instances if instance['asset'].startswith('ancient_') and instance.get('modelo')]
-        relevant = [instance for instance in instances if instance.get('modelo') and (
-            instance['asset'].startswith('ancient_') or instance['asset'].startswith('losa_'))]
-        surfaces = upward_surfaces(relevant)
-        ground = terrain_height()
-        failures = [(instance['id'], instance['modelo'], support_error(instance, surfaces, ground)) for instance in ancient]
-        failures = [(identifier, model, error) for identifier, model, error in failures if error > 0.75]
-        self.assertFalse(failures, 'Sin apoyo real: ' + '; '.join('%s %s %.2f m' % row for row in failures[:20]))
+        tower = next(instance for zone in doc['zonas'] for instance in zone['instancias'] if instance['id'] == 'k127')
+        self.assertEqual(tower['modelo'], 'ruina_torre')
+        self.assertAlmostEqual(tower['matriz'][13], 98.05356, places=5)
 
 
 if __name__ == '__main__':

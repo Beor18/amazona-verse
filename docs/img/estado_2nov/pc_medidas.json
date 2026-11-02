@@ -1,0 +1,543 @@
+{
+ "vibrant_toon": {
+  "aldea": {
+   "look": "vibrant_toon",
+   "fps": 32,
+   "calls": 147,
+   "triangulos": 1186290,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 57,
+   "heapMB": 146,
+   "geometrias": 367,
+   "texturasGPU": 127,
+   "texturas": 150,
+   "texturasGrandes": 46,
+   "atlasGrandes": 4,
+   "texturasMB": 678.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "texturasPor": {
+    "generadas": 193.1,
+    "otros": 7,
+    "suelo": 43.3,
+    "personajes": 16,
+    "flora": 77.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "flora:impostores",
+     "2048×2048",
+     21.3
+    ],
+    [
+     "suelo_musgo.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_tierra_hojarasca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_roca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_arena_rio.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_musgo_n.jpg",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 33.33,
+   "fpsMedidos": 30,
+   "msMediana": 33.3,
+   "msP90": 50,
+   "cuadros": 180,
+   "cam": [
+    125,
+    13,
+    169
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "yunque": {
+   "look": "vibrant_toon",
+   "fps": 26,
+   "calls": 131,
+   "triangulos": 1411645,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 58,
+   "heapMB": 177,
+   "geometrias": 468,
+   "texturasGPU": 140,
+   "texturas": 152,
+   "texturasGrandes": 47,
+   "atlasGrandes": 4,
+   "texturasMB": 682.9,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "texturasPor": {
+    "generadas": 197.9,
+    "otros": 7,
+    "suelo": 43.3,
+    "personajes": 16,
+    "flora": 77.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "flora:impostores",
+     "2048×2048",
+     21.3
+    ],
+    [
+     "suelo_musgo.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_tierra_hojarasca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_roca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_arena_rio.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_musgo_n.jpg",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 28.05,
+   "fpsMedidos": 36,
+   "msMediana": 16.7,
+   "msP90": 33.4,
+   "cuadros": 180,
+   "cam": [
+    85,
+    36,
+    16
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "rio": {
+   "look": "vibrant_toon",
+   "fps": 29,
+   "calls": 180,
+   "triangulos": 694942,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 64,
+   "heapMB": 174,
+   "geometrias": 504,
+   "texturasGPU": 145,
+   "texturas": 152,
+   "texturasGrandes": 47,
+   "atlasGrandes": 4,
+   "texturasMB": 682.9,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "texturasPor": {
+    "generadas": 197.9,
+    "otros": 7,
+    "suelo": 43.3,
+    "personajes": 16,
+    "flora": 77.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "flora:impostores",
+     "2048×2048",
+     21.3
+    ],
+    [
+     "suelo_musgo.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_tierra_hojarasca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_roca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_arena_rio.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_musgo_n.jpg",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 66.02,
+   "fpsMedidos": 15,
+   "msMediana": 49.9,
+   "msP90": 116.7,
+   "cuadros": 180,
+   "cam": [
+    194,
+    6,
+    116
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "kelvin_villa": {
+   "look": "vibrant_toon",
+   "fps": 15,
+   "calls": 239,
+   "triangulos": 2421620,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 63,
+   "heapMB": 152,
+   "geometrias": 504,
+   "texturasGPU": 143,
+   "texturas": 150,
+   "texturasGrandes": 46,
+   "atlasGrandes": 4,
+   "texturasMB": 678.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "texturasPor": {
+    "generadas": 193.1,
+    "otros": 7,
+    "suelo": 43.3,
+    "personajes": 16,
+    "flora": 77.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "flora:impostores",
+     "2048×2048",
+     21.3
+    ],
+    [
+     "suelo_musgo.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_tierra_hojarasca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_roca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_arena_rio.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_musgo_n.jpg",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 70.27,
+   "fpsMedidos": 14,
+   "msMediana": 33.3,
+   "msP90": 166.6,
+   "cuadros": 180,
+   "cam": [
+    130,
+    156,
+    183
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  },
+  "ciudad": {
+   "look": "vibrant_toon",
+   "fps": 47,
+   "calls": 237,
+   "triangulos": 1691701,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 64,
+   "heapMB": 178,
+   "geometrias": 511,
+   "texturasGPU": 146,
+   "texturas": 152,
+   "texturasGrandes": 47,
+   "atlasGrandes": 4,
+   "texturasMB": 682.9,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "texturasPor": {
+    "generadas": 197.9,
+    "otros": 7,
+    "suelo": 43.3,
+    "personajes": 16,
+    "flora": 77.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "flora:impostores",
+     "2048×2048",
+     21.3
+    ],
+    [
+     "suelo_musgo.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_tierra_hojarasca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_roca.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_arena_rio.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "suelo_musgo_n.jpg",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 55.92,
+   "fpsMedidos": 18,
+   "msMediana": 33.3,
+   "msP90": 116.6,
+   "cuadros": 180,
+   "cam": [
+    59,
+    116,
+    -78
+   ],
+   "tamano": [
+    1280,
+    713
+   ],
+   "movil": false
+  }
+ },
+ "series": {
+  "vibrant_toon": {
+   "aldea": [
+    {
+     "ms": 33.33,
+     "msMediana": 33.3,
+     "msP90": 50,
+     "fps": 32,
+     "calls": 147,
+     "programas": 57,
+     "heapMB": 146,
+     "texturasMB": 678.1,
+     "calidad": "alto"
+    }
+   ],
+   "yunque": [
+    {
+     "ms": 28.05,
+     "msMediana": 16.7,
+     "msP90": 33.4,
+     "fps": 26,
+     "calls": 131,
+     "programas": 58,
+     "heapMB": 177,
+     "texturasMB": 682.9,
+     "calidad": "alto"
+    }
+   ],
+   "rio": [
+    {
+     "ms": 66.02,
+     "msMediana": 49.9,
+     "msP90": 116.7,
+     "fps": 29,
+     "calls": 180,
+     "programas": 64,
+     "heapMB": 174,
+     "texturasMB": 682.9,
+     "calidad": "alto"
+    }
+   ],
+   "kelvin_villa": [
+    {
+     "ms": 70.27,
+     "msMediana": 33.3,
+     "msP90": 166.6,
+     "fps": 15,
+     "calls": 239,
+     "programas": 63,
+     "heapMB": 152,
+     "texturasMB": 678.1,
+     "calidad": "alto"
+    }
+   ],
+   "ciudad": [
+    {
+     "ms": 55.92,
+     "msMediana": 33.3,
+     "msP90": 116.6,
+     "fps": 47,
+     "calls": 237,
+     "programas": 64,
+     "heapMB": 178,
+     "texturasMB": 682.9,
+     "calidad": "alto"
+    }
+   ]
+  }
+ }
+}

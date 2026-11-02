@@ -1,71 +1,57 @@
 # Amazona Verse: roadmap y pendientes
 
-Actualizado el 25 de octubre de 2026, con la **versión 25** publicada en https://amazona-verse.vercel.app (`main` en 52d7558).
-Detalle de bugs en `docs/equipo/BUGS.md`, decisiones en `docs/DECISION_LOG.md` y plan técnico del auditor en la rama `auditoria-motores` (`docs/auditoria/`).
+Actualizado el **2 de noviembre de 2026**. Detalle vivo en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`,
+`docs/equipo/CAP1_PENDIENTE.md`, `docs/equipo/BUGS.md` y `docs/DECISION_LOG.md`. Publica la nube (`tools/build/publicar_nube.sh`) o la Mac (`publicar_mac.sh`), siempre con las 12 baterías obligatorias en verde; este documento no
+dice qué versión está en línea (míralo en la hoja viva).
 
-## Dónde estamos
+## Dónde estamos (2-nov)
+- **Capítulo 1 al 100 %.** Jugable de principio a fin; sobrinos de Kelvin lo terminaron en 16 min; en un Android y un iPad corre a más de 30 FPS. Solo quedan decisiones de Kelvin (`docs/equipo/CAP1_PENDIENTE.md`, `PENDIENTES_KELVIN.md`).
+- **Capítulos 2 a 6 con contenido y pruebas** (`content/ep2`…`ep6`): `ep2Test` 60/60, `ep2e2eTest` 71/71, `ep3Test` 71/71, `ep4Test` 63/63, `ep5Test` 74/74, `ep6Test` 79/79 y `temporadaE2eTest` 22/22 (BM85, 31-oct), con el registro de temporada compartido entre capítulos.
+- **Mundo único** (decisión de Kelvin, 1-nov): los caps. 2 a 6 pasan del mundo de relleno al mapa real del cap. 1, una zona por capítulo. Plan en `docs/equipo/MUNDO_UNICO.md`.
+  - **Hechos y publicados:** cap. 2 en Caney del Meandro (BM111), cap. 3 en el río de Villa Raíz hasta su desembocadura y la laguna (BM112), cap. 4 en el río al este de Villa Raíz (BM113; Los Portales del Río son un cañón y no sirven).
+  - **Zonas** (BM114, `src/game/zonas.js`): se abre la zona del capítulo en curso y las ya jugadas; lo demás se ve de lejos y el viento avisa. `temporadaE2eTest` 31/31 en el mundo único (BM122).
+  - **Caps. 5 y 6:** ya en el mapa real, tras un interruptor apagado (`MAPA_REAL` o `?mapa=real`). Se encienden cuando Kimi termine KIMI-Task-001 a 003 (draw calls y color de las ruinas); antes, capturas de la Mac (BM127).
+- **Modo creador: después de terminar el juego** (Kelvin, 2-nov; `TAREAS_CURSOR_GROK.md`). Base preparada en `MUNDO_UNICO.md`: parcelas en zonas libres, catálogo del kit actual, presupuesto por parcela, sin chat.
+- **Pieles de especie y retratos:** 31 especies con piel (BM109); agilis, albifrons y festiva en curso (BM124); martinicana y violacea solo como propuesta; retratos de Nudo y de los visitantes del cap. 6 y del Aprendiz (BM110, BM115); landing con el verde v4 (BM118).
+- **Pruebas:** 12 baterías obligatorias en verde en la última publicación de la nube (`docs/TEST_REPORT.md`). Las extra que solo fallan en la Mac (`idiomaTest`, `camaraTest`, `accesibilidadTest`, `trenTest`, `ep2e2eTest`) siguen en BM116; QA-85 es intermitente.
 
-**Capítulo 1, "El día que el cielo se rompió": jugable de principio a fin en el navegador.**
+## Carriles (no se pisan)
+| Carril | Quién | Qué |
+|---|---|---|
+| 3D: edificios, ciudad, terreno y mapa | Kimi y Fernando | `docs/equipo/TAREAS_KIMI.md` (KIMI-Task-001 a 010). Nadie más toca lo gráfico del mundo. |
+| Contenido, historia, inglés, accesibilidad, web, documentos | Agente web | Ronda 10 de `TAREAS_API.md` (BM124 a BM126). |
+| GitHub, integración, hoja viva, flora translúcida (B1) y objetos de la historia (hito 28) | Coordinadora (nube) | Revisa e integra lo de todos. |
+| GPU real, Blender y publicación | Mac | Cola BM116, BM119, BM121, BM127, BM128; publica `sitio/` solo con las 12 baterías obligatorias en verde. |
+| Diversión del capítulo 1 | Cursor + Grok | `docs/equipo/TAREAS_CURSOR_GROK.md`: CG-7 a CG-9 (la crecida y la gota se juegan, diálogo que no bloquea); el modo creador espera. |
 
-| Área | Estado |
-|---|---|
-| Motor propio sobre Three.js r128, separado del contenido (`content/cap1`, `content/plantilla`) | Hecho |
-| Vittata con el modelo original de Kelvin: vuela, se posa en ramas y techos, nada, agarra | Hecho |
-| Ropero: 40 piezas modeladas en Blender, bandera de PR según su guía | Hecho |
-| Escena de 3ds Max de Kelvin en el mapa: 376 edificios de 64 modelos, carga por zonas y LOD | Hecho |
-| Misión educativa «La ruta de la gota», paradas de ciencias, Diario y Modo Maestro (DEPR 2022 / NGSS) | Hecho |
-| Criadero: huevo, eclosión, bebé → juvenil → adulto; la cría acompaña a Vittata | Hecho |
-| Cómic personal con viñetas de eventos reales (PNG) | Hecho |
-| Guardado v5 con migraciones y recuperación | Hecho |
-| Recuperación si el equipo pierde el contexto gráfico (Chromebook) | Hecho |
-| Descarga inicial de **7,98 MB** (meta ≤ 8 MB), con meshopt y WebP | Hecho |
-| 13 baterías automáticas (`tools/build/test.sh --extra`) y E2E de QA | Hecho |
-| Datos verificados de las 34 especies de Amazona y las 2 extintas | Hecho, con 13 estados UICN pendientes de decisión |
-| Pitch v1 (2:45) y página web con video | Hecho |
+## Lo que falta para el piloto escolar
+**Técnico**
+- [ ] FPS en equipos reales con `#fps`: Android (Kelvin lo tiene), un Chromebook escolar y un iPad.
+- [ ] Rendimiento de las ruinas (222 draw calls, meta ≤ 150) y memoria de texturas de edificios (313 MB, meta < 100 MB): KIMI-Task-001 y 002.
+- [ ] Edificios con defectos (28 de 64 en la auditoría del 1-nov), `_hd` boca abajo y flora en el mar o en la montaña: KIMI-Task-005 a 010.
+- [ ] Encender el mapa real en los caps. 5 y 6 (los caps. 2 a 4 ya están; 5 y 6 tras Kimi).
+- [ ] Revisar en una Mac los rojos que dependen del orden de las baterías (BM116).
 
-**Decisión técnica:** se mantiene el motor actual y se le añaden herramientas, sin migrar a Unity ni a Godot (auditoría V7.0, opción B).
+**Con niños y familias**
+- [ ] Prueba de juego con niños y niñas (duración real y qué les divierte), antes que cualquier piloto en aula.
 
-## Fase 0: capítulo 1 listo para un piloto escolar
+**Legal y datos**
+- [ ] Revisión de privacidad infantil (COPPA) antes del piloto, y antes de que el modo creador permita compartir nada.
+- [ ] Reglamento 5282 sobre la bandera de Puerto Rico en ropa y ventas (lo lleva Kelvin).
+- [ ] Datos educativos: de las fichas de BM84, 10 verificadas, 9 parciales y 10 por verificar; siempre con fuente.
 
-Estimado: **del 31 de octubre al 8 de noviembre de 2026**, sujeto a las dependencias externas.
-
-### Técnico
-- [ ] Medir FPS en hardware real con `#fps`: Android (Kelvin lo tiene), un Chromebook escolar y un iPad.
-- [ ] Integración continua en GitHub Actions: `tools/build/build.sh` + `test.sh` en cada push, que bloquee un commit roto (M-4).
-- [ ] QA-30: `contextTest` falla a veces dentro de la batería, aunque solo pasa (baja).
-- [ ] Validar a mano QA-32 (foto de la viñeta de rama con copa encima) y QA-33 (posición del panel `#fps`).
-- [ ] Comprobar de oído los 5 sonidos del juego en un dispositivo real.
-- [ ] Revisar la memoria de colisiones en móvil con la escena completa (3–5 MB estimados).
-
-### Contenido y calidad
-- [ ] Especies por textura (M-7): recuperar las texturas originales (estaban en un disco E:) o repintarlas a partir de los renders.
-- [ ] Detalle final de los 3 templos grandes y del complejo de ruinas (hoy remallados, con algunas aristas facetadas).
-- [ ] P2 de movimiento: interiores de los edificios grandes, posarse en piezas decorativas, cuerda del puente colgante y toldo bajo.
-- [ ] Fundido de la flora que queda entre la cámara y Vittata.
-
-### Decisiones de Kelvin
+**Decisiones de Kelvin** (no las toma el equipo)
 - [ ] Estado UICN de 13 especies que no coinciden con el catálogo (`docs/equipo/ESPECIES_DISCREPANCIAS.md`).
-- [ ] Escala de los bohíos de su escena (~1,7 m, casi como Vittata): agrandar la aldea entera o dejarla fiel.
-- [ ] Reemplazar `04_Blender_3D/vittata_rig_final.blend` para que la textura vaya dentro del archivo.
-- [ ] Correo de contacto de la web y del pitch, monto del pitch y hosting del piloto.
+- [ ] Aspecto de las voces, de la navegante y de las especies extintas (martinicana y violacea: solo hay propuesta); canon e historia de los caps. 2–6.
+- [ ] Escala de los bohíos, correo de contacto, monto del pitch, hosting del piloto y qué se comparte en el modo creador.
 
-### Legal y datos
-- [ ] Reglamento 5282 sobre el uso de la bandera de PR en ropa y ventas (lo lleva Kelvin).
-- [ ] Revisión de privacidad infantil (COPPA) antes del piloto.
-- [ ] Citas del DRNA/USFWS para las fichas de la cotorra (huevo blanco, 24–28 días de incubación).
+## Temporada 1 completa, en el mapa real
 
-### Pitch y web
-- [ ] Volver a montar el pitch ligero de 720p desde el master (el anterior salió recortado).
-- [ ] Pitch v2 con tomas nuevas: posado, nido y escena de Kelvin.
-- [ ] Formulario de contacto con backend real y publicación en el hosting final.
-
-## Fase 1: temporada 1 completa
-
-Estimado: **de mediados de diciembre de 2026 a mediados de febrero de 2027**, a razón de 1–3 semanas por episodio. La estimación se afinará al cerrar el episodio 2.
+Las fechas dependen del mundo único y de las decisiones de Kelvin; no se prometen todavía.
 
 | Ep. | Título | Lo nuevo |
 |---|---|---|
-| 1 | El día que el cielo se rompió | Jugable (fase 0) |
+| 1 | El día que el cielo se rompió | Jugable (al 100 %) |
 | 2 | Un lugar para todos | Hogar permanente, tres características del terreno, dos residentes; escuchar también es liderar |
 | 3 | Más allá de la bahía | Construir el primer bote, navegar y llegar a otra comunidad |
 | 4 | El precio del progreso | Proyecto con beneficios y costos, sin una sola respuesta correcta |

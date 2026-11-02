@@ -4,6 +4,8 @@
      Villa Raíz en la partida (waterBase) y sube con la crecida (setLevel).
    - Mar: plano grande con oleaje suave en el vértice, color por profundidad (turquesa en la laguna, azul hondo afuera),
      reflejo del cielo con Fresnel, brillo del sol y espuma en la orilla, todo desde la altura del terreno en una textura.
+     En el minijuego de la tormenta (tormenta(true)) ese corte no se dibuja: color, oleaje y claridad pasan a un solo
+     cuerpo, con un ruido ancho, y la boca del río a nivel del mar deja de ser un segundo plano.
    - Río, quebrada y pozas (modo mapa): la cinta agua.glb del mapa con flujo (normales que avanzan por la v de la cinta,
      más rápido donde corre), espuma en las orillas, en los saltos y al pie de las cascadas; las cascadas caen con vetas.
    - Cascadas: rocío y neblina como partículas en la GPU (una sola llamada de dibujo para todas).
@@ -63,7 +65,7 @@ AVE.module('agua', function (G) {
 
   // ---------- Altura del terreno como textura (profundidad del agua en el shader) ----------
   // WebGL2: media precisión en metros (R16F, filtrable). WebGL1: 8 bits normalizados (0,5 m de paso).
-  let hTex = null; const hInfo = new THREE.Vector4(0, 0, 1, 1), hDec = new THREE.Vector2(1, 0);
+  let hTex = null; const hInfo = new THREE.Vector4(0, 0, 1, 1), hDec = new THREE.Vector2(1, 0), hN = new THREE.Vector2(265, 265);
   if (MAPA && T.hmHeight) {
     const A = window.AV_MAPA_CAP1_ALTURA || null;
     const nx = A ? A.nx : 265, nz = A ? A.nz : 265, x0 = A ? A.x0 : MAPA.tamano.x0, z0 = A ? A.z0 : MAPA.tamano.z0, paso = A ? A.paso : 2;
@@ -84,25 +86,34 @@ AVE.module('agua', function (G) {
     hTex.magFilter = hTex.minFilter = THREE.LinearFilter; hTex.wrapS = hTex.wrapT = THREE.ClampToEdgeWrapping; hTex.needsUpdate = true;
     // uv = (xz - origen) / tamaño, con medio texel de margen
     hInfo.set(x0 - paso / 2, z0 - paso / 2, nx * paso, nz * paso);
+    hN.set(nx, nz);
   }
 
   // ---------- Uniformes compartidos ----------
   const sunCol = R.sun.color.clone().multiplyScalar(R.sun.intensity);
   const U = {
-    uTime: { value: 0 }, tNormal: { value: tNormal }, tAltura: { value: hTex }, uHInfo: { value: hInfo }, uHDec: { value: hDec },
+    uTime: { value: 0 }, tNormal: { value: tNormal }, tAltura: { value: hTex }, uHInfo: { value: hInfo }, uHDec: { value: hDec }, uHN: { value: hN },
     uSolDir: { value: R.sunDir }, uSolCol: { value: sunCol },
     uCielo: { value: lin((W.cielo && W.cielo.cenit) || '#3d8fd6') }, uHorizonte: { value: lin((W.cielo && W.cielo.color) || '#bfe1d6') },
     uHemiSuelo: { value: R.hemi.groundColor.clone() }, uHemiCielo: { value: R.hemi.color.clone().multiplyScalar(R.hemi.intensity) },
     uEstilo: { value: C.agua > 0 ? 1 : 0 }, // 26-C: espuma en bandas de borde duro y destellos del sol (medio y alto)
+    uTormenta: { value: 0 }, // 1 mientras se juega «¡Escapa de la tormenta!»: un solo cuerpo de agua
+    uBio: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, // BM21: x, z, intensidad (0 apagado) de 4 toques de la caleta
   };
   const COMMON_FRAG = `
-    uniform float uTime; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec;
+    uniform float uTime, uTormenta; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec, uHN;
     uniform vec3 uSolDir, uSolCol, uCielo, uHorizonte, uHemiSuelo, uHemiCielo; uniform float uEstilo;
     float alturaTerreno(vec2 xz) {
       #ifdef HAY_ALTURA
         vec2 uv = (xz - uHInfo.xy) / uHInfo.zw;
         if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -30.0;
-        return texture2D(tAltura, uv).r * uHDec.x + uHDec.y;
+        // BM41: la bilineal de una malla de 2 m deja la profundidad en facetas (rombos y bloques de azul y espuma dentada).
+        // Se interpola a mano con peso suavizado (continuo en la derivada) sobre los centros de texel.
+        vec2 tp = uv * uHN - 0.5, tf = fract(tp), ti = (floor(tp) + 0.5) / uHN, d1 = 1.0 / uHN;
+        tf = tf * tf * tf * (tf * (tf * 6.0 - 15.0) + 10.0);
+        float h00 = texture2D(tAltura, ti).r, h10 = texture2D(tAltura, ti + vec2(d1.x, 0.0)).r;
+        float h01 = texture2D(tAltura, ti + vec2(0.0, d1.y)).r, h11 = texture2D(tAltura, ti + d1).r;
+        return mix(mix(h00, h10, tf.x), mix(h01, h11, tf.x), tf.y) * uHDec.x + uHDec.y;
       #else
         return -30.0;
       #endif
@@ -129,7 +140,7 @@ AVE.module('agua', function (G) {
 
   // ---------- Mar ----------
   const MAR_VERT = `
-    uniform float uTime; varying vec3 vW; varying float vOla;
+    uniform float uTime, uTormenta; varying vec3 vW; varying float vOla;
     #include <fog_pars_vertex>
     void main() {
       vec4 w = modelMatrix * vec4(position, 1.0);
@@ -139,21 +150,33 @@ AVE.module('agua', function (G) {
       float o2 = sin(dot(w.xz, vec2(-0.052, 0.094)) + uTime * 1.27 + 1.3);
       float o3 = sin(dot(w.xz, vec2(0.19, -0.13)) + uTime * 2.1);
       vOla = o1 * 0.5 + o2 * 0.35 + o3 * 0.15;
-      w.y += (o1 * 0.07 + o2 * 0.05 + o3 * 0.02) * amp;
+      // La tormenta sube el oleaje en una onda larga: cambia de forma continua, sin un escalón.
+      float mar = sin(dot(w.xz, vec2(0.02, 0.013)) + uTime * 0.45) * 0.5 + 0.5;
+      float kOla = 1.0 + uTormenta * (0.18 + 0.32 * mar);
+      w.y += (o1 * 0.07 + o2 * 0.05 + o3 * 0.02) * amp * kOla;
       vW = w.xyz;
       vec4 mvPosition = viewMatrix * w;
       gl_Position = projectionMatrix * mvPosition;
       #include <fog_vertex>
     }`;
   const MAR_FRAG = COMMON_FRAG + `
-    uniform vec3 uSomero, uHondo, uLaguna;
+    uniform vec3 uSomero, uHondo, uLaguna; uniform vec4 uBio[4];
     varying vec3 vW; varying float vOla;
     #include <fog_pars_fragment>
     void main() {
       vec2 xz = vW.xz;
       float hT = alturaTerreno(xz);
-      float prof = vW.y - hT;
-      if (prof < -0.05) discard;
+      float profReal = vW.y - hT;
+      if (profReal < -0.05) discard;
+      // Fuera de la tormenta, prof es la profundidad real (laguna turquesa, azul hondo).
+      // En la tormenta, la caída del arrecife y el borde del mapa (altura -30 m de golpe) no pueden
+      // leerse como dos planos: el color sale de un ruido de decenas de metros, no de ese escalón.
+      float nA = vnoise(xz * 0.009) * 0.65 + vnoise(xz * 0.021 + vec2(8.0, 3.0)) * 0.35;
+      float nB = vnoise(xz * 0.015 + vec2(2.0, 19.0)) * 0.6 + vnoise(xz * 0.037 + 5.0) * 0.4;
+      // Familia del azul de tormenta (no vuelve a la laguna turquesa ni al vacío de -30 m
+      // fuera del mapa). El ruido es ancho: el color no sigue el escalón del arrecife.
+      float profMar = mix(4.3, 5.8, clamp(nA * 0.7 + nB * 0.3, 0.0, 1.0));
+      float prof = mix(profReal, profMar, uTormenta);
       vec3 V = cameraPosition - vW; float dist = length(V); V /= dist;
       vec2 uv1 = xz * 0.045 + vec2(uTime * 0.012, uTime * 0.007), uv2 = xz * 0.083 + vec2(-uTime * 0.009, uTime * 0.015);
       vec3 n1 = texture2D(tNormal, uv1).xzy * 2.0 - 1.0, n2 = texture2D(tNormal, uv2).xzy * 2.0 - 1.0;
@@ -161,6 +184,7 @@ AVE.module('agua', function (G) {
       // tercera muestra muy grande y lenta: rompe la repetición de las otras dos a lo lejos
       vec3 n3 = texture2D(tNormal, xz * 0.0071 + vec2(uTime * 0.002, -uTime * 0.0013)).xzy * 2.0 - 1.0;
       vec2 nxz = (n1.xz + n2.xz) * mix(0.5, 0.04, lejos) + n3.xz * mix(0.15, 0.22, lejos);
+      nxz *= mix(1.0, 0.9 + 0.45 * nB, uTormenta); // el chop del oleaje también cambia sin una recta
       vec3 N = normalize(vec3(nxz.x, 1.0, nxz.y));
       // color por profundidad: laguna turquesa, borde arenoso y azul hondo
       float k = 1.0 - exp(-max(prof, 0.0) * 0.28);
@@ -188,7 +212,14 @@ AVE.module('agua', function (G) {
       col = mix(col, uHemiCielo * 0.85 + uSolCol * 0.35, espuma * 0.85);
       float a = mix(0.55, 0.96, smoothstep(0.0, 1.6, prof));
       a = max(a, espuma * 0.9);
-      a *= smoothstep(-0.05, 0.08, prof);
+      a *= smoothstep(-0.05, 0.08, profReal); // la orilla real sigue fundiéndose con la arena
+      // Casi opaca: si el fondo se viera, la arena y la caída del arrecife volverían a ser un corte
+      float aMar = max(mix(0.95, 0.99, nB), espuma * 0.95) * smoothstep(-0.05, 0.55, profReal);
+      a = mix(a, aMar, uTormenta);
+      // BM21: tinte emisivo azul-verde de la caleta alrededor de cada toque (6 m), sin luces
+      float bio = 0.0;
+      for (int i = 0; i < 4; i++) if (uBio[i].z > 0.0) bio += uBio[i].z * (1.0 - smoothstep(1.0, 6.0, length(xz - uBio[i].xy)));
+      col += vec3(0.04, 0.8, 0.95) * min(bio, 1.0) * (0.75 + 0.5 * vnoise(xz * 2.5 + uTime * 0.8));
       gl_FragColor = vec4(col, a);
       #include <tonemapping_fragment>
       #include <encodings_fragment>
@@ -250,14 +281,17 @@ AVE.module('agua', function (G) {
       vec3 n1 = texture2D(tNormal, fl).xzy * 2.0 - 1.0, n2 = texture2D(tNormal, fl2).xzy * 2.0 - 1.0;
       vec3 N = normalize(vec3((n1.x + n2.x) * 0.38, 1.0, (n1.z + n2.z) * 0.38));
       if (cae > 0.5) N = normalize(vN + vec3(n1.x, 0.0, n1.z) * 0.2);
+      // BB1: azul turquesa brillante como el render de 2022, con un borde claro (cian) donde el agua es somera
       float k = 1.0 - exp(-max(prof, 0.0) * 0.6);
-      vec3 col = mix(uClaro, uHondo, k);
+      vec3 col = mix(uClaro, uHondo, smoothstep(0.08, 0.75, k));
       col = mix(col, uTurbio, uTurbidez);
-      col = saturar(col, 1.18);
+      col = saturar(col, 1.3);
       float ndl = max(dot(N, uSolDir), 0.0);
-      col *= uHemiCielo * 0.6 + uSolCol * ndl * 0.3 + 0.08;
-      float fres = 0.03 + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
-      col = mix(col, skyRefl(reflect(-V, N)), fres * (1.0 - cae));
+      col *= uHemiCielo * 0.75 + uSolCol * ndl * 0.32 + 0.22;
+      float fres = 0.03 + 0.45 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+      col = mix(col, mix(skyRefl(reflect(-V, N)), col, 0.35), fres * (1.0 - cae)); // el cielo se refleja teñido: no agrisa el río
+      float borde = (1.0 - smoothstep(0.0, 0.55, prof)) * (1.0 - cae) * (1.0 - uTurbidez);
+      col = mix(col, uClaro * (uHemiCielo * 0.9 + uSolCol * 0.35 + 0.25), borde * 0.75);
       col += uSolCol * pow(max(dot(N, normalize(uSolDir + V)), 0.0), 220.0) * 2.0 * (1.0 - cae);
       col += uSolCol * destello(N, normalize(uSolDir + V), vW.xz) * (1.0 - cae) * (1.0 - smoothstep(40.0, 160.0, dist));
       col = mix(col, uClaro * 0.75 * (uHemiCielo * 0.8 + 0.2), cae * 0.6); // la lámina que cae: verde claro translúcido
@@ -267,10 +301,13 @@ AVE.module('agua', function (G) {
       float esp = (1.0 - smoothstep(mix(0.05, ori - 0.04, uEstilo), mix(0.45 + nz * 0.25, ori, uEstilo), prof)) * 0.8 * (1.0 - cae); // orillas (no en la lámina que cae)
       esp = max(esp, vC.r * smoothstep(0.35, 0.6, nz + vC.r * 0.4) * (1.0 - cae * 0.7));
       // cascada: vetas finas y largas que caen (u = ancho de la cinta), sobre agua translúcida
-      float s1 = vnoise(vec2(vUv.x * 5.5, vW.y * 0.18 + uTime * 2.6));
-      float s2 = vnoise(vec2(vUv.x * 13.0 + 3.1, vW.y * 0.42 + uTime * 4.4));
-      float vetas = s1 * 0.6 + s2 * 0.4;
-      esp = max(esp, cae * smoothstep(0.44, 0.74, vetas));
+      // BM41: vetas sin celdas rectangulares: la coordenada se curva con un ruido lento y hay una tercera capa fina; umbral más suave
+      float cu = vUv.x + (vnoise(vec2(vUv.x * 2.3, vW.y * 0.11 + uTime * 0.5)) - 0.5) * 0.35;
+      float s1 = vnoise(vec2(cu * 9.0, vW.y * 0.26 + uTime * 2.6));
+      float s2 = vnoise(vec2(cu * 21.0 + 3.1, vW.y * 0.5 + uTime * 4.4));
+      float s3 = vnoise(vec2(cu * 41.0 + 7.7, vW.y * 0.9 + uTime * 6.1));
+      float vetas = s1 * 0.5 + s2 * 0.32 + s3 * 0.18;
+      esp = max(esp, cae * smoothstep(0.42, 0.78, vetas));
       for (int i = 0; i < 8; i++) {
         vec4 p = uPies[i];
         if (p.w <= 0.0) continue;
@@ -280,10 +317,13 @@ AVE.module('agua', function (G) {
       }
       esp = clamp(esp, 0.0, 1.0) * (1.0 - smoothstep(120.0, 260.0, dist));
       col = mix(col, uHemiCielo * 0.9 + uSolCol * 0.4, esp * 0.9);
-      float a = mix(0.62, 0.9, k);
-      a = max(a, esp * 0.95);
+      float a = mix(0.8, 0.97, k); // BB1: casi opaca, para que el fondo de roca no agrise el color
+      a = max(a, max(esp * 0.95, borde * 0.85));
       a = mix(a, 0.5 + esp * 0.45, cae);
       a *= smoothstep(-0.25, 0.05, prof + cae);
+      // Boca del río a nivel del mar: en la tormenta no es un segundo plano encima del mar
+      a *= 1.0 - uTormenta * (1.0 - smoothstep(0.55, 1.35, vW.y));
+      if (uTormenta > 0.0 && a < 0.02) discard;
       gl_FragColor = vec4(col, a);
       #include <tonemapping_fragment>
       #include <encodings_fragment>
@@ -296,7 +336,7 @@ AVE.module('agua', function (G) {
     while (pies.length < 8) pies.push(new THREE.Vector4(0, 0, 0, 0));
     const AG = (W.aguaRio || {});
     rioMat = waterMaterial(RIO_VERT, RIO_FRAG, {
-      uClaro: { value: lin(AG.claro || '#3fb6a8') }, uHondo: { value: lin(AG.hondo || '#14566b') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
+      uClaro: { value: lin(AG.claro || '#56c8f0') }, uHondo: { value: lin(AG.hondo || '#1c62d6') }, uTurbio: { value: lin(AG.turbio || '#8a6b3d') },
       uTurbidez: { value: 0 }, uPies: { value: pies },
     }, hTex ? { HAY_ALTURA: '' } : {});
     const url = MAPA.terreno && MAPA.terreno.agua;
@@ -408,6 +448,8 @@ AVE.module('agua', function (G) {
   }
 
   // Efectos de agua: anillos que se expanden (salpicadura y ondas) y gotas con gravedad
+  // Minijuego de la tormenta: un solo cuerpo de agua. Al salir vuelve el mar de siempre (uTormenta 0).
+  function tormenta(on) { U.uTormenta.value = on ? 1 : 0; }
   function ripple(x, y, z, size) { G.fx.ringFx(x, y, z, size || 1.2, 0.9, 0.4); }
   function splash(x, y, z, s) {
     G.audio.play('splash');
@@ -426,5 +468,5 @@ AVE.module('agua', function (G) {
   }, 25);
   G.on('apply', () => setLevel(S.water), 40);
 
-  return { base, mesh: strip, mar, get rio() { return rio; }, flood, levelAt, setLevel, ripple, splash, spray, uniforms: U, alturaTex: hTex };
+  return { base, mesh: strip, mar, get rio() { return rio; }, flood, levelAt, setLevel, tormenta, ripple, splash, spray, uniforms: U, alturaTex: hTex };
 });

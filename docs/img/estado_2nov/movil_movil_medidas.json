@@ -1,0 +1,329 @@
+{
+ "vibrant_toon": {
+  "aldea": {
+   "look": "vibrant_toon",
+   "fps": 10,
+   "calls": 103,
+   "triangulos": 817556,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 56,
+   "heapMB": 166,
+   "geometrias": 252,
+   "texturasGPU": 105,
+   "texturas": 150,
+   "texturasGrandes": 37,
+   "atlasGrandes": 4,
+   "texturasMB": 626.1,
+   "sombraMB": 16,
+   "postMB": 6.3,
+   "texturasPor": {
+    "generadas": 193.1,
+    "otros": 7,
+    "suelo": 11.3,
+    "personajes": 12,
+    "flora": 61.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "Vittata_1",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_2",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "flora:impostores",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:carpa_e:hd:Fabric_KB3D_TarpFabricD",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 58.33,
+   "fpsMedidos": 17,
+   "msMediana": 33.3,
+   "msP90": 116.7,
+   "cuadros": 180,
+   "cam": [
+    124,
+    13,
+    169
+   ],
+   "tamano": [
+    390,
+    844
+   ],
+   "movil": true
+  },
+  "yunque": {
+   "look": "vibrant_toon",
+   "fps": 45,
+   "calls": 108,
+   "triangulos": 1240487,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 57,
+   "heapMB": 160,
+   "geometrias": 368,
+   "texturasGPU": 138,
+   "texturas": 152,
+   "texturasGrandes": 38,
+   "atlasGrandes": 4,
+   "texturasMB": 630.9,
+   "sombraMB": 16,
+   "postMB": 6.3,
+   "texturasPor": {
+    "generadas": 197.9,
+    "otros": 7,
+    "suelo": 11.3,
+    "personajes": 12,
+    "flora": 61.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "Vittata_1",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_2",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "flora:impostores",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:carpa_e:hd:Fabric_KB3D_TarpFabricD",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 48.89,
+   "fpsMedidos": 20,
+   "msMediana": 33.2,
+   "msP90": 116.7,
+   "cuadros": 180,
+   "cam": [
+    85,
+    36,
+    16
+   ],
+   "tamano": [
+    390,
+    844
+   ],
+   "movil": true
+  },
+  "ciudad": {
+   "look": "vibrant_toon",
+   "fps": 25,
+   "calls": 192,
+   "triangulos": 1595491,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 59,
+   "heapMB": 176,
+   "geometrias": 372,
+   "texturasGPU": 141,
+   "texturas": 152,
+   "texturasGrandes": 38,
+   "atlasGrandes": 4,
+   "texturasMB": 630.9,
+   "sombraMB": 16,
+   "postMB": 6.3,
+   "texturasPor": {
+    "generadas": 197.9,
+    "otros": 7,
+    "suelo": 11.3,
+    "personajes": 12,
+    "flora": 61.4,
+    "atlas_hd": 341.3
+   },
+   "texturasTop": [
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+     "4096×4096",
+     85.3
+    ],
+    [
+     "Vittata_1",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_2",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "flora:impostores",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:carpa_e:hd:Fabric_KB3D_TarpFabricD",
+     "1024×1024",
+     5.3
+    ]
+   ],
+   "ms": 58.15,
+   "fpsMedidos": 17,
+   "msMediana": 33.3,
+   "msP90": 116.7,
+   "cuadros": 180,
+   "cam": [
+    59,
+    116,
+    -78
+   ],
+   "tamano": [
+    390,
+    844
+   ],
+   "movil": true
+  }
+ },
+ "series": {
+  "vibrant_toon": {
+   "aldea": [
+    {
+     "ms": 58.33,
+     "msMediana": 33.3,
+     "msP90": 116.7,
+     "fps": 10,
+     "calls": 103,
+     "programas": 56,
+     "heapMB": 166,
+     "texturasMB": 626.1,
+     "calidad": "alto"
+    }
+   ],
+   "yunque": [
+    {
+     "ms": 48.89,
+     "msMediana": 33.2,
+     "msP90": 116.7,
+     "fps": 45,
+     "calls": 108,
+     "programas": 57,
+     "heapMB": 160,
+     "texturasMB": 630.9,
+     "calidad": "alto"
+    }
+   ],
+   "ciudad": [
+    {
+     "ms": 58.15,
+     "msMediana": 33.3,
+     "msP90": 116.7,
+     "fps": 25,
+     "calls": 192,
+     "programas": 59,
+     "heapMB": 176,
+     "texturasMB": 630.9,
+     "calidad": "alto"
+    }
+   ]
+  }
+ }
+}

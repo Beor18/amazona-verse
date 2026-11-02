@@ -1,0 +1,75 @@
+<!doctype html><html><head><base href="/"><meta charset="utf-8"></head><body style="margin:0;background:#888">
+<script src="assets/vendor/three/build/three.min.js"></script>
+<script src="assets/vendor/three/examples/js/loaders/GLTFLoader.js"></script>
+<script src="assets/vendor/meshopt/meshopt_decoder.js"></script>
+<script src="assets/vendor/three/examples/js/utils/SkeletonUtils.js"></script>
+<script src="src/engine/core.js"></script>
+<script src="src/engine/assets.js"></script>
+<script src="content/comun/especies.js"></script>
+<script src="src/personaje/wardrobe.js"></script>
+<script src="src/personaje/character.js"></script>
+<script src="src/personaje/pieles.js"></script>
+<script src="src/game/look.js"></script>
+<script>
+let RIG=null;
+async function rig(){
+  if(RIG) return RIG;
+  const canvas=document.createElement('canvas'); document.body.appendChild(canvas);
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});
+  renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.setClearColor(0x000000,0);
+  const scene=new THREE.Scene();
+  const hemi=new THREE.HemisphereLight('#ffe9c4','#1f3a2c',0.8); scene.add(hemi);
+  const key=new THREE.DirectionalLight('#ffd9a0',1.1); key.position.set(2,3,4); scene.add(key);
+  const rim=new THREE.DirectionalLight('#9fd7ff',0.6); rim.position.set(-3,2,-2); scene.add(rim);
+  const camera=new THREE.PerspectiveCamera(26,1,0.01,100);
+  const ch=await AVCharacter.create(); scene.add(ch.root);
+  const fill=new THREE.DirectionalLight('#fff4e6',0); scene.add(fill); RIG={canvas,renderer,scene,camera,ch,key,rim,hemi,fill};
+  // Look del juego: el código real de src/game/look.js sobre un G mínimo (renderer, hemi, sol, escena; pack del cap. 1)
+  const G={renderer:{renderer,hemi,sun:key,scene,calidad:{nivel:'alto',texMax:0}},pack:{mundo:{exposicion:0.74,luces:{cielo:'#cfe6ff',suelo:'#45602e',hemi:0.66,sol:'#fff0d6',solInt:2.0,solPos:[-42,70,46]}}},util:{$:()=>null},emit(){},on(){}};
+  RIG.LOOK=window.AVLook(G); return RIG;
+}
+// opts: look, size, pose, t (0..1), yaw, camX, camY, dist, fov, targetFrac, bones:{name:[x,y,z]} añadidos, expression, keyPos
+window.render=async function(o){
+  const R=await rig(); const {canvas,renderer,scene,camera,ch}=R;
+  renderer.setSize(o.size||512,o.size||512,false);
+  const nl=AVCharacter.normalizeLook(o.look);
+  await AVCharacter.preloadRopa();
+  ch.applyLook(nl);
+  if(o.piel) await AVE.pieles.aplicar(ch,o.piel);
+  if(AVE.pieles) await AVE.pieles.listo(ch);
+  renderer.capabilities && AVColor.setMaxAnisotropy(renderer.capabilities.getMaxAnisotropy());
+  for(const [bone,ax,v] of ch.ofs||[]) bone.rotation[ax]-=v; ch.ofs=[];
+  ch.mixer.stopAllAction();
+  const clip=ch.clips[o.pose||'Welcome']||ch.clips.Idle;
+  const a=ch.mixer.clipAction(clip); a.reset().play(); ch.mixer.setTime(clip.duration*(o.t==null?0.45:o.t));
+  if(o.bones) for(const [n,r] of Object.entries(o.bones)){const b=ch.bones[n]; if(b){b.rotation.x+=r[0];b.rotation.y+=r[1];b.rotation.z+=r[2];}}
+  if(o.expression && ch.setExpression) ch.setExpression(o.expression);
+  ch.clothes();
+  if(o.lids!=null && ch.lids && ch.setLids) ch.setLids(o.lids);
+  if(!R.base){R.base=new Set();}
+  ch.root.traverse(m=>{ if(m.isMesh||m.isSkinnedMesh){ if(m.userData._av_base===undefined) m.userData._av_base=!!o._baseMark; m.visible = o.onlyAcc ? !m.userData._av_base : true; }});
+  if(o.accent) ch.root.traverse(m=>{ if((m.isMesh||m.isSkinnedMesh)&&!m.userData._av_base&&(!o.accentName||new RegExp(o.accentName).test(m.name+' '+(m.parent&&m.parent.name)))){ const ms=Array.isArray(m.material)?m.material:[m.material]; ms.forEach((mm,k)=>{ if(mm&&/^ACENTO/.test(mm.name||'')){ const c=mm.clone(); AVColor.set(c.color,o.accent); c.roughness=o.rough||0.75; c.metalness=0; if(Array.isArray(m.material)) m.material[k]=c; else m.material=c; } }); }});
+  ch.root.rotation.y=o.yaw||0; ch.root.rotation.x=o.pitch||0; ch.root.rotation.z=o.roll||0;
+  ch.root.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(ch.root); if(o.fixedBox){box.min.set(...o.fixedBox[0]);box.max.set(...o.fixedBox[1]);} const h=box.max.y-box.min.y;
+  const tgt=new THREE.Vector3(o.tx||0,box.min.y+h*(o.tf||0.5),0);
+  camera.fov=o.fov||26; camera.updateProjectionMatrix();
+  camera.position.set(h*(o.cx==null?0.5:o.cx),box.min.y+h*(o.cy==null?0.82:o.cy),h*(o.d||3.0));
+  camera.lookAt(tgt);
+  if(o.focusBone){ const v=new THREE.Vector3(); ch.bones[o.focusBone].getWorldPosition(v); if(o.focusOff){v.x+=o.focusOff[0];v.y+=o.focusOff[1];v.z+=o.focusOff[2];}
+    camera.position.set(v.x,v.y,v.z+(o.camDist||1.2)); camera.lookAt(v); }
+  R.key.position.set(...(o.keyPos||[2,3,4])); R.key.intensity=o.keyI==null?1.1:o.keyI; R.hemi.intensity=o.hemiI==null?0.8:o.hemiI; renderer.toneMappingExposure=o.exp||1; R.fill.intensity=o.fillI||0; R.fill.position.set(...(o.fillPos||[-3,1,3])); R.rim.intensity=o.rimI==null?0.6:o.rimI; R.rim.position.set(...(o.rimPos||[-3,2,-2]));
+  if(o.vt){ R.LOOK.aplicar('vibrant_toon'); R.rim.intensity=0; R.fill.intensity=0; R.key.position.set(...(o.sunPos||[-42,70,46])); }
+  if(o.sunLocal){ const v=new THREE.Vector3(...o.sunLocal).applyAxisAngle(new THREE.Vector3(0,1,0),o.yaw||0); R.key.position.copy(v.multiplyScalar(10)); }
+  if(o.localCam){ camera.fov=o.localCam.fov; camera.updateProjectionMatrix(); camera.position.set(...o.localCam.cam); camera.lookAt(new THREE.Vector3(...o.localCam.target)); R.key.position.set(...o.localCam.sunDir.map(v=>v*10)); }
+  renderer.render(scene,camera);
+  return canvas.toDataURL('image/png');
+};
+window.info=async function(){const R=await rig();return {clips:Object.keys(R.ch.clips),bones:Object.keys(R.ch.bones),methods:Object.getOwnPropertyNames(Object.getPrototypeOf(R.ch)),species:Object.keys(AVCharacter.SPECIES).slice(0,40),acc:AVCharacter.ACCESSORIES.map(a=>a.id+':'+a.slot+':'+(a.styles||[]).map(s=>s[0]).join('/'))};};
+window.names=async function(){const R=await rig();const a=[];R.ch.root.traverse(m=>{if(m.isMesh||m.isSkinnedMesh)a.push(m.name+'|'+(m.parent&&m.parent.name)+'|'+(Array.isArray(m.material)?m.material.map(x=>x.name).join(','):m.material.name)+'|'+m.visible)});return a;};
+window.lookInfo=async function(){const R=await rig();const a=[];R.ch.root.traverse(m=>{if(m.isSkinnedMesh)a.push(m.name+JSON.stringify([].concat(m.material).map(x=>x.defines)))});return {actual:R.LOOK.actual,exp:R.renderer.toneMappingExposure,tm:R.renderer.toneMapping,sun:[R.key.color.getHexString(),R.key.intensity],hemi:[R.hemi.color.getHexString(),R.hemi.groundColor.getHexString(),R.hemi.intensity],rim:R.rim.intensity,mats:a,chunk:THREE.ShaderChunk.tonemapping_fragment.includes('AV_RIM')};};
+window.uvdump=async function(){const R=await rig();const out=[];R.ch.root.traverse(m=>{if((m.isMesh||m.isSkinnedMesh)&&!m.userData.isAccessory&&m.geometry.attributes.uv){const g=m.geometry;const uv=g.attributes.uv;const ix=g.index;const pos=g.attributes.position;const a=[];const n=ix?ix.count:uv.count;for(let i=0;i<n;i++){const k=ix?ix.getX(i):i;a.push(+uv.getX(k).toFixed(4),+uv.getY(k).toFixed(4));}const p=[];for(let i=0;i<n;i++){const k=ix?ix.getX(i):i;p.push(+pos.getX(k).toFixed(4),+pos.getY(k).toFixed(4),+pos.getZ(k).toFixed(4));}out.push({name:m.name,mat:[].concat(m.material).map(x=>x.name).join(','),hasMap:!![].concat(m.material)[0].map,uv:a,pos:p});}});return out;};
+window.dbg=async function(){const R=await rig();const ch=R.ch;await AVE.pieles.aplicar(ch,'leucocephala');await AVE.pieles.listo(ch);const a=[];ch.root.traverse(m=>{if(m.isMesh&&!m.userData.isAccessory){for(const x of [].concat(m.material))a.push(m.name+'|'+x.name+'|'+(x.map&&(x.map.name+':'+x.map.uuid.slice(0,6)+':'+(x.map.image&&x.map.image.width)))+'|'+x.type+'|'+JSON.stringify(x.defines||{})+'|vc '+x.vertexColors);}});a.push('mats:'+Object.keys(ch.materials||{}).map(k=>k+':'+(ch.materials[k]&&ch.materials[k].map&&ch.materials[k].map.uuid.slice(0,6))).join(','));a.push('tint:'+JSON.stringify(ch.tint&&Object.keys(ch.tint)));return a;};
+window.READY=true;
+</script></body></html>

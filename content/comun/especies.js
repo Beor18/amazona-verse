@@ -44,6 +44,7 @@
     "especies": [
       {
         "id": "vittata",
+        "piel": "vittata",
         "cientifico": "Amazona vittata",
         "comun": {
           "es": "cotorra puertorriqueña",
@@ -123,6 +124,7 @@
       },
       {
         "id": "finschi",
+        "piel": "finschi",
         "cientifico": "Amazona finschi",
         "comun": {
           "es": "loro corona lila",
@@ -202,6 +204,7 @@
       },
       {
         "id": "lilacina",
+        "piel": "lilacina",
         "cientifico": "Amazona lilacina",
         "comun": {
           "es": "loro de lores rojas",
@@ -359,6 +362,7 @@
       },
       {
         "id": "vinacea",
+        "piel": "vinacea",
         "cientifico": "Amazona vinacea",
         "comun": {
           "es": "loro vináceo",
@@ -438,6 +442,7 @@
       },
       {
         "id": "agilis",
+        "piel": "agilis",
         "cientifico": "Amazona agilis",
         "comun": {
           "es": "amazona de pico negro",
@@ -477,6 +482,7 @@
       },
       {
         "id": "arausiaca",
+        "piel": "arausiaca",
         "cientifico": "Amazona arausiaca",
         "comun": {
           "es": "amazona gorgirroja",
@@ -636,6 +642,7 @@
       },
       {
         "id": "collaria",
+        "piel": "collaria",
         "cientifico": "Amazona collaria",
         "comun": {
           "es": "amazona de pico amarillo",
@@ -715,6 +722,7 @@
       },
       {
         "id": "pretrei",
+        "piel": "pretrei",
         "cientifico": "Amazona pretrei",
         "comun": {
           "es": "loro de anteojos rojos",
@@ -754,6 +762,7 @@
       },
       {
         "id": "tucumana",
+        "piel": "tucumana",
         "cientifico": "Amazona tucumana",
         "comun": {
           "es": "loro alisero",
@@ -793,6 +802,7 @@
       },
       {
         "id": "ventralis",
+        "piel": "ventralis",
         "cientifico": "Amazona ventralis",
         "comun": {
           "es": "cotorra de La Española",
@@ -952,6 +962,7 @@
       },
       {
         "id": "festiva",
+        "piel": "festiva",
         "cientifico": "Amazona festiva",
         "comun": {
           "es": "loro de lomo rojo",
@@ -1149,6 +1160,7 @@
       },
       {
         "id": "albifrons",
+        "piel": "albifrons",
         "cientifico": "Amazona albifrons",
         "comun": {
           "es": "loro frente blanca",
@@ -1228,6 +1240,7 @@
       },
       {
         "id": "autumnalis",
+        "piel": "autumnalis",
         "cientifico": "Amazona autumnalis",
         "comun": {
           "es": "loro de cachetes amarillos",
@@ -1389,6 +1402,7 @@
     "extintas": [
       {
         "id": "martinicana",
+        "piel": "martinicana",
         "cientifico": "Amazona martinicana",
         "comun": {
           "es": "loro de Martinica",
@@ -1424,6 +1438,7 @@
       },
       {
         "id": "violacea",
+        "piel": "violacea",
         "cientifico": "Amazona violacea",
         "comun": {
           "es": "amazona de Guadalupe",

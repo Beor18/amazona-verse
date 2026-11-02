@@ -8,13 +8,14 @@
    API: G.idioma = { actual(), activo(), poner('es'|'en'), tr(texto), listo (Promise), faltan(), test }. Prueba: AV.idiomaTest(). */
 AVE.module('idioma', function (G) {
   'use strict';
-  const RUTA = (G.pack && G.pack.idioma) || 'content/cap1/en.js';
+  // pack.idioma: una ruta o una lista (se cargan en orden; p. ej. el ep. 2 suma content/ep2/en.js al de cap1)
+  const RUTAS = [].concat((G.pack && G.pack.idioma) || 'content/cap1/en.js');
   const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
   const ACENTO = /[áéíóúñüÁÉÍÓÚÑ¿¡]/;
   const PALABRA = /(?:^|[\s«"(¡¿])(el|la|los|las|de|del|que|con|para|por|una?|tu|tus|te|se|es|al|su|mi|no|hay|más|muy|ya|vamos|hola|pulsa|toca|usa|elige|sigue|busca|ve|cierra|abre|aún|sin|ahora|otra|otro|cerca|hasta|desde|todo|todos|esta|este|eso|aquí|allí|qué|cómo|dónde)(?=$|[\s.,;:!?»")])/i;
   const esEs = s => ACENTO.test(s) || PALABRA.test(s);
   // Nombres propios y palabras del lugar que se quedan como son en inglés (con tilde o artículo en español)
-  const NOMBRES = /(El Yunque|Villa Raíz|Río Abajo|Flamboyán|Co-quí|Pava jíbara|Raíz|Río|María|José|Coquí|coquí|coquís|Taíno|taíno|jíbaro|jíbara|güiro|Güiro|Iguaca|Maricao|Loíza|Yokahú|Caguana|Utuado|flamboyán|yagrumo|tabonuco|ceiba|Mina|Dajao|Boricua|boricua|Wepa|Pa'lante|Apóstol|vejigante|pavas?|quí)/g;
+  const NOMBRES = /(El Yunque|Villa Raíz|Río Abajo|Flamboyán|Co-quí|Pava jíbara|Raíz|Río|María|José|Coquí|coquí|coquís|Taíno|taíno|jíbaro|jíbara|güiro|Güiro|Iguaca|Maricao|Loíza|Yokahú|Caguana|Utuado|flamboyán|yagrumo|tabonuco|ceiba|Mina|Dajao|Boricua|boricua|Wepa|Pa'lante|Apóstol|vejigante|pavas?|quí|Quí)/g;
   // Lo que queda en español en un texto (ya traducido o no), sin contar esos nombres
   const resto = s => { const t = s.replace(NOMBRES, ' '); return ACENTO.test(t) || /\b(el|la|los|las|de|del|que|con|para|por|una|tu|tus|te|se|al|su|mi|hay|más|muy|ya|sin|aún)\b/i.test(t); };
 
@@ -50,10 +51,22 @@ AVE.module('idioma', function (G) {
     return v.replace(/\{\}/g, () => (i < caps.length ? tr(caps[i++]) : ''));
   }
 
+  // Prefijos que la interfaz pega delante de un texto del diccionario (QA-87, QA-88): la línea de misiones («· », «✓ ») y el
+  // aviso de Acción («Acción: »). Se traduce el resto entero (con sus patrones {}) y se vuelve a poner el prefijo.
+  const PREFIJOS = [['· ', '· '], ['✓ ', '✓ '], ['Acción: ', 'Action: ']];
   // Traduce un texto (sin espacios de sobra) o lo devuelve igual
   function traducir(t) {
     const e = exactas.get(t);
     if (e != null) return e;
+    for (const [es, en] of PREFIJOS) {
+      if (t.length <= es.length || t.indexOf(es) !== 0) continue;
+      const resto = t.slice(es.length), r = traducir(resto);
+      if (r !== resto) return en + r;
+    }
+    { // gestos «1 · Saludar» (QA-95): número y punto delante
+      const m = /^(\d+ · )(.+)$/.exec(t);
+      if (m) { const r = traducir(m[2]); if (r !== m[2]) return m[1] + r; }
+    }
     for (const p of patrones) {
       if (p.lit && t.indexOf(p.lit) !== 0) continue;
       const m = p.re.exec(t);
@@ -162,7 +175,7 @@ AVE.module('idioma', function (G) {
   function cargarDic() {
     if (dic) return Promise.resolve(dic);
     if (!cargando) {
-      cargando = (window.AV_EN ? Promise.resolve() : AVE.assets.script(RUTA)).then(() => { dic = window.AV_EN || {}; compilar(dic); return dic; },
+      cargando = (window.AV_EN ? Promise.resolve() : RUTAS.reduce((p, r) => p.then(() => AVE.assets.script(r)), Promise.resolve())).then(() => { dic = window.AV_EN || {}; compilar(dic); return dic; },
         e => { cargando = null; throw e; });
     }
     return cargando;
@@ -191,13 +204,75 @@ AVE.module('idioma', function (G) {
     for (let n = w.nextNode(); n; n = w.nextNode()) {
       const p = n.parentNode;
       if (!p || ignorar(p) || !/\p{L}/u.test(n.data)) continue;
-      if (p.closest && p.closest('#dialog[hidden]')) continue; // línea que quedó de un diálogo ya cerrado
+      if (p.closest && p.closest('#dialog[hidden],#card[hidden]')) continue; // línea que quedó de un diálogo o una ficha (Diario) ya cerrados
       const t = norm(n.data);
       if (resto(t)) fuera.push(t);
     }
     return fuera;
   }
   function faltan(textos) { return textos.filter(t => { if (exactas.has(t)) return false; const d = lang; lang = 'en'; const r = tr(t); lang = d; return r === t && esEs(t); }); }
+
+
+  // Recorre las pantallas de la interfaz (abre cada una, también las que se arman al abrirse) y junta lo que sigue en español
+  async function pantallas(solo) {
+    const esp = ms => new Promise(r => setTimeout(r, ms));
+    const $ = id => document.getElementById(id);
+    const sal = {}, uni = a => a.filter((t, i) => a.indexOf(t) === i);
+    const toma = async (nombre, abrir, cerrar, extra) => {
+      if (solo && solo.indexOf(nombre) < 0) return;
+      try {
+        await abrir(); await esp(250);
+        let v = textosVisibles();
+        if (extra) { for (const f of await extra()) { await esp(150); v = v.concat(textosVisibles()); } }
+        sal[nombre] = uni(v);
+      } catch (e) { sal[nombre] = ['(error: ' + e.message + ')']; }
+      try { if (cerrar) await cerrar(); } catch (e) { /* ya cerrada */ }
+      await esp(120);
+    };
+    const pausa = $('pause');
+    const popAbrir = () => { try { if (pausa && pausa.showPopover && !pausa.matches(':popover-open')) pausa.showPopover(); } catch (e) { /* sin popover */ } };
+    const popCerrar = () => { try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ } };
+    await toma('pausa', popAbrir, popCerrar);
+    await toma('menu de modos', () => G.menuModos && G.menuModos.mostrar(), () => { const d = $('modos'); if (d && d.open) d.close(); });
+    await toma('mis records', () => { popAbrir(); const b = $('b-records'); if (b) b.click(); }, () => { const r = $('records'); const c = r && r.querySelector('[data-cerrar],.rec-cerrar,button'); if (r && !r.hidden && c) c.click(); popCerrar(); });
+    await toma('retos', () => { const b = $('b-retos'); if (b) b.click(); }, () => { popCerrar(); });
+    await toma('criadero', () => G.criadero && G.criadero.abrir(), () => G.criadero && G.criadero.cerrar());
+    await toma('comic', () => { const b = $('b-comic-menu'); if (b) b.click(); }, () => { const c = $('c-close'); if (c) c.click(); });
+    await toma('creador', () => G.creador && G.creador.open(false), () => G.creador && G.creador.close());
+    await toma('capitulos', () => { const b = $('b-capitulos'); if (b) b.click(); }, () => { const c = $('b-capitulos-cerrar'); if (c) c.click(); });
+    await toma('modo maestro', () => G.aula && G.aula.abrirMaestro(), () => G.aula && G.aula.cerrarMaestro(), async () => {
+      const ts = [...document.querySelectorAll('#maestro [role="tab"], #maestro .m-tab, #maestro nav button')];
+      ts.forEach((b, i) => setTimeout(() => b.click(), 0));
+      return ts;
+    });
+    await toma('fin del capitulo', () => { const e = $('end'); if (e) e.hidden = false; }, () => { const e = $('end'); if (e) e.hidden = true; });
+    popCerrar();
+    return sal;
+  }
+
+  // Modo Maestro de otro capítulo: arranca el pack (?pack=epN) en un iframe oculto, pone EN y recorre sus pestañas
+  async function maestroPack(id) {
+    const fr = document.createElement('iframe');
+    fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+    fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:700px;border:0;';
+    const u = new URL(location.href); u.searchParams.set('pack', id); fr.src = u.href;
+    document.body.appendChild(fr);
+    try {
+      let W = null; const t0 = performance.now();
+      while (performance.now() - t0 < 90000) {
+        await new Promise(r => setTimeout(r, 200));
+        try { W = fr.contentWindow; if (W && W.AV && W.AV.pack === id && W.AV.G && W.AV.G.idioma && W.AV.G.aula) break; } catch (e) { /* cargando */ }
+        W = null;
+      }
+      if (!W) return ['(el pack ' + id + ' no arrancó)'];
+      const Gp = W.AV.G, antes = Gp.aula.aj ? Gp.aula.aj.idioma : null;
+      if (Gp.aula.setAjuste) Gp.aula.setAjuste('idioma', 'en'); else Gp.idioma.poner('en');
+      await Gp.idioma.listo; await new Promise(r => setTimeout(r, 300));
+      const r = await Gp.idioma.pantallas(['modo maestro']);
+      if (Gp.aula.setAjuste && antes) Gp.aula.setAjuste('idioma', antes); // el ajuste se guarda en localStorage: que el pack no quede en EN
+      return r['modo maestro'] || [];
+    } finally { fr.remove(); }
+  }
 
   async function test(o) {
     o = o || {};
@@ -229,6 +304,15 @@ AVE.module('idioma', function (G) {
     const vis = textosVisibles();
     const visFalta = vis.filter((t, i) => vis.indexOf(t) === i);
     ok('Con EN puesto, no queda texto en español en la interfaz (' + vis.length + ')', !visFalta.length, visFalta.slice(0, 60).join(' | '));
+    const pan = await pantallas();
+    for (const k of Object.keys(pan)) { const f = pan[k]; ok('Pantalla «' + k + '» sin texto en español (' + f.length + ')', !f.length, f.slice(0, 200).join(' | ')); }
+    // Modo Maestro de los otros capítulos (cada pack trae su propia guía de 45 min, actividades sin pantalla, rúbrica y vocabulario)
+    if (G.pack && G.pack.id === 'cap1') {
+      for (const id of (o.packs || ['ep2', 'ep3', 'ep4', 'ep5', 'ep6'])) {
+        const f = await maestroPack(id);
+        ok('Modo Maestro de ' + id + ' sin texto en español (' + f.length + ')', !f.length, f.join(' ¦ '));
+      }
+    }
     // Diálogo en pantalla
     if (G.dialogo && ts.length) {
       const l = { who: 'Vittata', text: ts[0] };
@@ -238,14 +322,43 @@ AVE.module('idioma', function (G) {
       ok('El texto en inglés se lee con voz inglesa (lang="en")', document.getElementById('d-text').lang === 'en');
       G.dialogo.clear();
     }
+    const rotuloHud = modo => {
+      const ol = document.getElementById('steps');
+      const quest = document.getElementById('quest');
+      if (!ol) return '';
+      const abierto = quest && quest.classList.contains('abierto');
+      if (quest) quest.classList.add('abierto');
+      const ahora = [...ol.querySelectorAll('li.now')];
+      const li = document.createElement('li');
+      let c = '';
+      if (modo === 'fin') {
+        ahora.forEach(n => n.classList.remove('now'));
+        li.className = 'done';
+        ol.appendChild(li);
+        c = getComputedStyle(ol, '::after').content;
+      } else {
+        li.className = 'now';
+        ol.appendChild(li);
+        c = getComputedStyle(li, '::after').content;
+      }
+      li.remove();
+      ahora.forEach(n => n.classList.add('now'));
+      if (quest && !abierto) quest.classList.remove('abierto');
+      return c;
+    };
+    const enObj = rotuloHud('ahora'), enFin = rotuloHud('fin');
+    ok('El rótulo del objetivo sale en inglés (Goal, no Objetivo)', /Goal/.test(enObj) && !/Objetivo/.test(enObj), enObj);
+    ok('Al terminar los pasos el rótulo sale en inglés', /Chapter complete/.test(enFin) && !/Capítulo/.test(enFin), enFin);
     if (aula) aula.setAjuste('idioma', 'es'); else poner('es');
     await tmp.listo; await new Promise(r => setTimeout(r, 60));
+    const esObj = rotuloHud('ahora');
+    ok('El rótulo del objetivo vuelve a español', /Objetivo/.test(esObj) && !/Goal/.test(esObj), esObj);
     ok('Al volver a ES, el texto original se restaura', !document.querySelector('#d-text[lang="en"]') && (document.getElementById('b-menu').getAttribute('aria-label') === 'Pausa y opciones'));
     ok('El idioma por defecto sigue en español', lang === 'es' && document.documentElement.lang === 'es');
     if (aula && idAntes) aula.setAjuste('idioma', idAntes); else if (antes === 'en') poner('en');
     return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
   }
 
-  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, test };
+  G.idioma = { actual: () => lang, activo: () => lang === 'en', poner, tr, get listo() { return tmp.listo; }, faltan, textosVisibles, pantallas, maestroPack, test };
   return G.idioma;
 });

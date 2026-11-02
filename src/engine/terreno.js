@@ -15,7 +15,7 @@
      plataformas [{ lugar | x, z, r, alto }], rio { x }, agua { x, ancho, nivel: { x, z, sobre } },
      arboles { cantidad, semilla, copaCada, margenRio, extra: [{ x, z, s, copa }], evitar: [{ x, z, r }] },
      islas { lista: [{ x, z, r }], modelo: { url, b64, script, base } }, bruma { dentro, fuera, color, opacidad, y }, texturas {}.
-   Esquema mapa: mapa { datos: () => AV_MAPA_*, alturas: () => AV_MAPA_*_ALTURA, b64: 'AV_MAPA_B64' }, suelo { capas: [4 × { tex, normal, escala, tinte }] },
+   Esquema mapa: mapa { datos: () => AV_MAPA_*, alturas: () => AV_MAPA_*_ALTURA, b64: 'AV_MAPA_B64' }, suelo { capas: [4 × { tex, normal, escala, tinte }], plazas?: (mapa) => [{ x, z, r, f }] (tierra, ver pintarPlazas) },
      reubicar(pack, datos) (mueve en sitio las posiciones del contenido al mapa), pois [{ id, x, y, z, nombre }], nivelBase, islas. */
 AVE.module('terreno', function (G) {
   'use strict';
@@ -105,21 +105,91 @@ AVE.module('terreno', function (G) {
       const k0 = Math.max(0, Math.floor((Math.min(az, bz, cz) - T.z0) / cell)), k1 = Math.min(nz - 1, Math.floor((Math.max(az, bz, cz) - T.z0) / cell));
       for (let k = k0; k <= k1; k++) for (let i = i0; i <= i1; i++) f(k * nx + i);
     };
-    for (let t = 0; t < nt; t++) each(t, ci => cnt[ci + 1]++);
-    for (let i = 1; i < cnt.length; i++) cnt[i] += cnt[i - 1];
-    const list = new Uint32Array(cnt[cnt.length - 1]), fill = cnt.slice(0, nx * nz);
-    for (let t = 0; t < nt; t++) each(t, ci => { list[fill[ci]++] = t; });
-    Object.assign(TG, { pos, col, tri, start: cnt, list, nx, nz, x0: T.x0, z0: T.z0, ready: true });
+    return new Promise(resolve => {
+      let t = 0, fase = 'contar', list = null, fill = null;
+      const luego = fn => (window.requestIdleCallback ? window.requestIdleCallback(() => fn(), { timeout: 50 }) : setTimeout(fn, 0));
+      const paso = () => {
+        const t0 = performance.now();
+        if (fase === 'contar') {
+          while (t < nt && performance.now() - t0 < 8) each(t++, ci => cnt[ci + 1]++);
+          if (t < nt) return luego(paso);
+          for (let i = 1; i < cnt.length; i++) cnt[i] += cnt[i - 1];
+          list = new Uint32Array(cnt[cnt.length - 1]); fill = cnt.slice(0, nx * nz); t = 0; fase = 'llenar';
+        }
+        while (t < nt && performance.now() - t0 < 8) { const k = t++; each(k, ci => { list[fill[ci]++] = k; }); }
+        if (t < nt) return luego(paso);
+        Object.assign(TG, { pos, col, tri, start: cnt, list, nx, nz, x0: T.x0, z0: T.z0, ready: true });
+        resolve();
+      };
+      paso();
+    });
   }
-  // Triángulo bajo (x, z): devuelve la altura (el más alto si hay varios) o NaN; deja vértices y pesos en hit
+  // Triángulo bajo (x, z): devuelve la altura (el más alto si hay varios) o NaN; deja vértices y pesos en hit.
+  // QA-53 / G22: la celda de 4 m junta muchos triángulos (el índice grande es de la malla, carril D).
+  // La primera consulta de una celda densa la parte en 4×4 (1 m) y las siguientes solo miran ese metro.
+  // La altura es la misma: entra todo triángulo cuya caja toca el metro, con 2 mm de margen.
   const hit = { a: 0, b: 0, c: 0, wa: 0, wb: 0, wc: 0 };
+  const SUB = 4;
+  let subBase = null, ultX = Infinity, ultZ = Infinity, ultY = NaN;
+  const subCeldas = new Map();
+  function indexarSub(ci, n0, n1) {
+    const pos = TG.pos, tri = TG.tri, list = TG.list, cell = TG.cell, inv = SUB / cell, EPS = 0.002;
+    const ix = ci % TG.nx, iz = (ci / TG.nx) | 0, x0 = TG.x0 + ix * cell, z0 = TG.z0 + iz * cell;
+    const clamp = v => v < 0 ? 0 : v >= SUB ? SUB - 1 : v;
+    const caja = t => {
+      const a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
+      const ax = pos[a * 3], az = pos[a * 3 + 2], bx = pos[b * 3], bz = pos[b * 3 + 2], cx = pos[c * 3], cz = pos[c * 3 + 2];
+      let minX = ax, maxX = ax, minZ = az, maxZ = az;
+      if (bx < minX) minX = bx; else if (bx > maxX) maxX = bx;
+      if (cx < minX) minX = cx; else if (cx > maxX) maxX = cx;
+      if (bz < minZ) minZ = bz; else if (bz > maxZ) maxZ = bz;
+      if (cz < minZ) minZ = cz; else if (cz > maxZ) maxZ = cz;
+      return [
+        clamp(Math.floor((minX - x0 - EPS) * inv)), clamp(Math.floor((maxX - x0 + EPS) * inv)),
+        clamp(Math.floor((minZ - z0 - EPS) * inv)), clamp(Math.floor((maxZ - z0 + EPS) * inv)),
+      ];
+    };
+    const cnt = new Uint32Array(SUB * SUB);
+    for (let n = n0; n < n1; n++) {
+      const bb = caja(list[n]);
+      for (let k = bb[2]; k <= bb[3]; k++) for (let i = bb[0]; i <= bb[1]; i++) cnt[k * SUB + i]++;
+    }
+    const off = new Uint32Array(SUB * SUB + 1), fill = new Uint32Array(SUB * SUB);
+    for (let i = 0; i < SUB * SUB; i++) off[i + 1] = off[i] + cnt[i];
+    for (let i = 0; i < SUB * SUB; i++) fill[i] = off[i];
+    const flat = new Uint32Array(off[SUB * SUB]);
+    for (let n = n0; n < n1; n++) {
+      const t = list[n], bb = caja(t);
+      for (let k = bb[2]; k <= bb[3]; k++) for (let i = bb[0]; i <= bb[1]; i++) flat[fill[k * SUB + i]++] = t;
+    }
+    return { off, flat };
+  }
+  function subDe(ci, x, z) {
+    if (subBase !== TG.list) { subCeldas.clear(); subBase = TG.list; ultX = Infinity; }
+    let P = subCeldas.get(ci);
+    if (P === undefined) {
+      const n0 = TG.start[ci], n1 = TG.start[ci + 1];
+      P = n1 - n0 > 8 ? indexarSub(ci, n0, n1) : null;
+      subCeldas.set(ci, P);
+    }
+    if (!P) return null;
+    const cell = TG.cell, ix = ci % TG.nx, iz = (ci / TG.nx) | 0;
+    let sx = Math.floor((x - (TG.x0 + ix * cell)) * (SUB / cell)), sz = Math.floor((z - (TG.z0 + iz * cell)) * (SUB / cell));
+    if (sx < 0) sx = 0; else if (sx >= SUB) sx = SUB - 1;
+    if (sz < 0) sz = 0; else if (sz >= SUB) sz = SUB - 1;
+    const s = sz * SUB + sx;
+    return { flat: P.flat, a: P.off[s], b: P.off[s + 1] };
+  }
   function triQuery(x, z) {
     const ix = Math.floor((x - TG.x0) / TG.cell), iz = Math.floor((z - TG.z0) / TG.cell);
     if (ix < 0 || iz < 0 || ix >= TG.nx || iz >= TG.nz) return NaN;
-    const ci = iz * TG.nx + ix, pos = TG.pos, tri = TG.tri;
+    if (subBase !== TG.list) { subCeldas.clear(); subBase = TG.list; ultX = Infinity; }
+    if (x === ultX && z === ultZ) return ultY;
+    const ci = iz * TG.nx + ix, pos = TG.pos, tri = TG.tri, rango = subDe(ci, x, z);
+    const list = rango ? rango.flat : TG.list, n0 = rango ? rango.a : TG.start[ci], n1 = rango ? rango.b : TG.start[ci + 1];
     let best = NaN;
-    for (let n = TG.start[ci], e = TG.start[ci + 1]; n < e; n++) {
-      const t = TG.list[n], a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
+    for (let n = n0; n < n1; n++) {
+      const t = list[n], a = tri[t * 3], b = tri[t * 3 + 1], c = tri[t * 3 + 2];
       const x0 = pos[a * 3], z0 = pos[a * 3 + 2], x1 = pos[b * 3], z1 = pos[b * 3 + 2], x2 = pos[c * 3], z2 = pos[c * 3 + 2];
       const d = (z1 - z2) * (x0 - x2) + (x2 - x1) * (z0 - z2);
       if (Math.abs(d) < 1e-9) continue;
@@ -128,6 +198,7 @@ AVE.module('terreno', function (G) {
       const y = wa * pos[a * 3 + 1] + wb * pos[b * 3 + 1] + wc * pos[c * 3 + 1];
       if (!(y <= best)) { best = y; hit.a = a; hit.b = b; hit.c = c; hit.wa = wa; hit.wb = wb; hit.wc = wc; }
     }
+    ultX = x; ultZ = z; ultY = best;
     return best;
   }
   function height(x, z) {
@@ -257,7 +328,10 @@ AVE.module('terreno', function (G) {
     'uniform sampler2D tA0, tA1, tA2, tA3, tN0, tN1, tN2, tN3, tMacro;',
     'uniform vec4 uEsc, uSat; uniform vec3 uTint0, uTint1, uTint2, uTint3; uniform float uMar;',
     'uniform sampler2D tZona; uniform vec4 uZona;', // mapa de zonas de ambiente.js (RGB = tinte − 0,5, A = humedad); uZona = x0, z0, 1/ancho, 1/largo
+    'uniform sampler2D tBosque; uniform vec4 uBosque;', // F0.2: cuánto bosque hay encima (densidad de árboles del mapa en celdas de 8 m)
+    'uniform vec4 uTepuy; uniform float uTepuyB;', // BL1: elipse de la selva del tepuy (x, z, 1/rx, 1/rz) y su borde suave
     'varying vec4 vSplat; varying vec3 vWPos; varying vec3 vWNor;',
+    'uniform sampler2D tOrilla; uniform vec4 uOrilla;', // BB1: orilla del río y las pozas (1 = borde del agua, 0 = a 3 m o más)
     'vec3 lin3(vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }', // sRGB -> lineal
     'vec2 rotUv(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }',
   ].join('\n');
@@ -268,27 +342,52 @@ AVE.module('terreno', function (G) {
   vec3 nG = normalize(vWNor);
   vec4 mac = texture2D(tMacro, wp * 0.0071);
   vec4 mac2 = texture2D(tMacro, wp * 0.043 + 0.37);
+  // BE2: desde muy alto el moteado fino (manchas de ~23 m) forma un muaré; se apaga con la distancia
+  float lejos = smoothstep(160.0, 420.0, camD);
+  mac2 = mix(mac2, vec4(0.5), lejos * 0.75);
   vec4 w = clamp(vSplat, 0.0, 1.0);
   float steep = smoothstep(0.80, 0.56, nG.y + (mac2.g - 0.5) * 0.12);
   w.z = max(w.z, steep);
   w.x *= 1.0 - steep * 0.9; w.y *= 1.0 - steep * 0.5; w.w *= 1.0 - steep;
   float playa = (1.0 - smoothstep(uMar + 0.25, uMar + 1.4 + mac.g * 0.8, vWPos.y)) * (1.0 - steep);
   w.w = max(w.w, playa);
+  #ifdef SPLAT_ORILLA
+    // BB1: la orilla del río y de las pozas es una franja de arena y barro, no un corte de roca gris
+    float ori = texture2D(tOrilla, (wp - uOrilla.xy) * uOrilla.zw).r * smoothstep(0.25, 0.5, nG.y);
+    ori *= smoothstep(0.15, 0.45, ori + (mac2.g - 0.5) * 0.35);
+    w.z *= 1.0 - ori * 0.9; w.x *= 1.0 - ori * 0.75; w.y *= 1.0 - ori * 0.4;
+    w.w = max(w.w, ori);
+  #endif
   w.y += (mac.r - 0.5) * 0.25 * (w.x + w.y);
+  // BB2: el borde entre pasto y tierra se deshilacha (matas de hierba en la tierra y calvas en el pasto), no es una línea
+  float bordeT = clamp(min(w.x, w.y) * 4.0, 0.0, 1.0);
+  w.y += (mac2.b - 0.5) * 0.45 * bordeT;
   vec2 uv0 = wp * uEsc.x, uv1 = wp * uEsc.y, uv2 = wp * uEsc.z, uv3 = wp * uEsc.w;
   vec4 a0 = texture2D(tA0, uv0), a1 = texture2D(tA1, uv1), a2 = texture2D(tA2, uv2), a3 = texture2D(tA3, uv3);
   #ifdef SPLAT_TRIPLANAR
     // roca triplanar: en acantilados la proyección desde arriba se estira; aquí se proyecta por los tres ejes
     vec3 tpB = pow(abs(nG), vec3(4.0)); tpB /= dot(tpB, vec3(1.0));
     vec2 uvRX = vWPos.zy * uEsc.z, uvRZ = vWPos.xy * uEsc.z;
-    if (tpB.y < 0.98) a2 = texture2D(tA2, uvRX) * tpB.x + a2 * tpB.y + texture2D(tA2, uvRZ) * tpB.z;
+    if (tpB.y < 0.98) {
+      // BM100 (Kelvin, 1-nov: «escamas repetidas» en la pared del tepuy): la roca a 1/5 se repetía cada 5 m en 100 m de pared.
+      // Se mezcla con una segunda escala (×0,23 ≈ 22 m) girada, según el ruido macro, así el patrón deja de verse en mosaico.
+      vec4 rX = texture2D(tA2, uvRX), rZ = texture2D(tA2, uvRZ);
+      float kR = clamp(0.5 + (mac2.g - 0.5) * 1.1, 0.15, 0.85);
+      rX = mix(rX, texture2D(tA2, rotUv(uvRX, 0.9) * 0.23), kR);
+      rZ = mix(rZ, texture2D(tA2, rotUv(uvRZ, 2.1) * 0.23), kR);
+      a2 = rX * tpB.x + a2 * tpB.y + rZ * tpB.z;
+    }
   #endif
   #ifdef SPLAT_DOS_ESCALAS
     float far = smoothstep(14.0, 70.0, camD);
     float k2 = clamp(far * 0.75 + (mac2.b - 0.5) * 0.6, 0.0, 1.0);
     a0 = mix(a0, texture2D(tA0, rotUv(uv0, 1.1) * 0.29), k2);
     a1 = mix(a1, texture2D(tA1, rotUv(uv1, 2.3) * 0.31), k2);
-    a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2);
+    #ifdef SPLAT_TRIPLANAR
+      a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2 * tpB.y); // en la pared no: la proyección desde arriba se estira
+    #else
+      a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2);
+    #endif
     a3 = mix(a3, texture2D(tA3, rotUv(uv3, 1.9) * 0.33), k2);
   #endif
   vec4 hgt = vec4(dot(a0.rgb, vec3(0.33)), dot(a1.rgb, vec3(0.33)), dot(a2.rgb, vec3(0.33)), dot(a3.rgb, vec3(0.33)));
@@ -297,6 +396,9 @@ AVE.module('terreno', function (G) {
   float hm = max(max(hw.x, hw.y), max(hw.z, hw.w)) - 0.22;
   vec4 bw = max(hw - hm, 0.0) * on;
   bw /= max(dot(bw, vec4(1.0)), 1e-4);
+  // BB2: entre pasto y tierra (sendas, plazas y claros) la mezcla por altura se suaviza con los pesos lineales: borde suave
+  vec4 wl = w * on / max(dot(w * on, vec4(1.0)), 1e-4);
+  bw = mix(bw, wl, 0.45 * clamp(min(wl.x, wl.y) * 5.0, 0.0, 1.0) * (1.0 - steep));
   vec3 c0 = lin3(a0.rgb) * uTint0, c1 = lin3(a1.rgb) * uTint1, c2 = lin3(a2.rgb) * uTint2, c3 = lin3(a3.rgb) * uTint3;
   const vec3 LUM = vec3(0.2126, 0.7152, 0.0722);
   c0 = mix(vec3(dot(c0, LUM)), c0, uSat.x); c1 = mix(vec3(dot(c1, LUM)), c1, uSat.y);
@@ -305,17 +407,75 @@ AVE.module('terreno', function (G) {
   c0 *= mix(vec3(0.72, 0.86, 0.7), vec3(1.18, 1.08, 0.72), smoothstep(0.25, 0.75, mac.b)) * (0.8 + mac2.r * 0.36);
   c0 = mix(c0, c1 * vec3(1.1, 1.0, 0.8), smoothstep(0.62, 0.85, mac.a * 0.6 + mac2.g * 0.5) * 0.35);
   c1 *= 0.86 + mac.g * 0.3;
+  // BB2: la tierra de las sendas y los claros es marrón de tierra pisada, no rojo saturado: la hojarasca rojiza pasa a un
+  // pardo medio (se queda su luminancia), más clara y seca a manchas, y el pasto del borde amarillea un poco
+  float l1 = dot(c1, LUM);
+  c1 = mix(c1, vec3(l1) * vec3(1.42, 0.98, 0.62), 0.7) * mix(1.12, 1.38, smoothstep(0.3, 0.75, mac2.g));
+  // BE2: de lejos las sendas finas quedaban como hilos rojizos; se vuelven tierra parda apagada que se funde con el verde
+  c1 = mix(c1, mix(vec3(dot(c1, LUM)) * vec3(1.16, 1.0, 0.8), c0, 0.3), lejos * 0.7);
+  c0 *= mix(vec3(1.0), vec3(1.07, 1.0, 0.78), bordeT * 0.6);
   c2 *= mix(vec3(0.9, 0.92, 0.95), vec3(1.08, 1.03, 0.95), mac.r);
   // acantilados: oclusión en las grietas (la luminancia de la roca hace de altura) y musgo en las repisas que miran arriba
   c2 *= mix(0.55, 1.08, smoothstep(0.15, 0.6, hgt.z));
+  // BB2: y para que no sean de cartón, estratos horizontales que ondulan (bandas frías y cálidas de unos 6 m), chorreones
+  // verticales de humedad y la cara más honda cuanto más vertical; a escala de decenas de metros, se lee desde el aire
+  float hc = (vWPos.x + vWPos.z) * 0.7071;
+  float estr = texture2D(tMacro, vec2(hc * 0.002 + 0.21, vWPos.y * 0.02 + (mac.g - 0.5) * 0.05)).g;
+  float chor = texture2D(tMacro, vec2(hc * 0.012 + 0.63, vWPos.y * 0.003)).b;
+  vec3 rocaT = mix(vec3(0.84, 0.86, 0.88), vec3(1.04, 0.98, 0.9), smoothstep(0.3, 0.7, estr)) * mix(0.86, 1.04, smoothstep(0.2, 0.8, estr)); // BE2: bandas más suaves (el Yunque)
+  rocaT *= mix(1.0, 0.74, smoothstep(0.5, 0.78, chor)) * mix(1.0, 0.78, smoothstep(0.6, 0.15, nG.y));
+  c2 = mix(c2, c2 * rocaT, steep);
+  // gris pardo más frío en la pared (no beige) y matas de musgo que cuelgan de las cornisas de los estratos
+  c2 = mix(c2, vec3(dot(c2, LUM)) * vec3(0.94, 0.98, 1.02), steep * 0.45);
+  float mataR = smoothstep(0.6, 0.78, texture2D(tMacro, vec2(hc * 0.006 + 0.47, vWPos.y * 0.008)).r) * smoothstep(0.3, 0.6, estr);
+  c2 = mix(c2, c0 * 0.6, mataR * steep * 0.65);
   float musgoRoca = smoothstep(0.42, 0.78, nG.y + (mac2.r - 0.5) * 0.45) * smoothstep(0.35, 0.65, mac.g + mac2.b * 0.3);
   c2 = mix(c2, c0 * 0.78, musgoRoca * 0.75);
+  // BE2: selva colgante. En el render las gargantas están cubiertas de verde hasta el borde y la roca solo asoma en lo
+  // más vertical: las pendientes medias se cubren casi del todo y las paredes, a parches grandes de enredadera y helecho
+  float parche = texture2D(tMacro, vec2(hc * 0.0045 + 0.11, vWPos.y * 0.012 + mac.r * 0.15)).g * 0.6 + mac.g * 0.4;
+  float cubre = mix(0.42, 0.9, smoothstep(0.22, 0.6, nG.y)) * smoothstep(0.32, 0.55, parche + (mac2.b - 0.5) * 0.25);
+  vec3 selva = c0 * vec3(0.5, 0.66, 0.46) * (0.8 + mac2.r * 0.35);
+  float tep = 0.0;
+  #ifdef SPLAT_TEPUY
+    // G19, segunda vuelta: en el render de 2022 la pared del tepuy es roca gris clara y la selva la rodea
+    // abajo y en la cima. El verde liso de la primera vuelta (cubre casi a 1 en el risco) se leía como un bloque
+    // de musgo. Aquí el risco vertical recupera la roca; las copas las pone vegetacion.js.
+    tep = 1.0 - smoothstep(1.0 - uTepuyB, 1.0, length((wp - uTepuy.xy) * uTepuy.zw));
+    float risco = smoothstep(0.50, 0.22, nG.y);
+    cubre *= mix(1.0, 0.16, tep * risco);
+  #endif
+  c2 = mix(c2, selva, cubre * steep);
   vec3 alb = c0 * bw.x + c1 * bw.y + c2 * bw.z + c3 * bw.w;
+  #ifdef SPLAT_ORILLA
+    alb = mix(alb, c3 * vec3(0.62, 0.52, 0.4), smoothstep(0.55, 0.95, ori) * bw.w * 0.6); // barro húmedo junto al agua
+  #endif
   alb *= 1.0 - 0.25 * (1.0 - smoothstep(uMar + 0.05, uMar + 0.6, vWPos.y)) * (1.0 - steep);
+  #ifdef SPLAT_BOSQUE
+    // F0.2, sotobosque: bajo los árboles el pasto y la tierra pasan a hojarasca marrón verdosa más oscura (no rojo), para
+    // que desde el aire lea como selva y no como césped; la roca y la arena no cambian
+    float bq = texture2D(tBosque, (wp - uBosque.xy) * uBosque.zw).r * (1.0 - bw.z) * (1.0 - bw.w);
+    vec3 hoja = mix(vec3(dot(c1, LUM)), c1, 0.45) * vec3(0.92, 0.9, 0.6);
+    hoja = mix(hoja, c0 * 0.8, 0.3 + (mac2.g - 0.5) * 0.4) * (0.55 + mac.g * 0.2);
+    alb = mix(alb, hoja, bq * 0.9);
+    // BE2: sombra del dosel. El bosque de alrededor (4 muestras a 12 m) oscurece el suelo cercano y el de debajo: claros
+    // con borde en penumbra y masas de selva hondas, en lugar de una luz plana y uniforme
+    vec2 ub = (wp - uBosque.xy) * uBosque.zw, ob = 12.0 * uBosque.zw;
+    float bqA = (texture2D(tBosque, ub + vec2(ob.x, 0.0)).r + texture2D(tBosque, ub - vec2(ob.x, 0.0)).r
+      + texture2D(tBosque, ub + vec2(0.0, ob.y)).r + texture2D(tBosque, ub - vec2(0.0, ob.y)).r) * 0.25;
+    alb *= 1.0 - 0.32 * clamp(bqA * 0.6 + bq * 0.6, 0.0, 1.0) * (1.0 - bw.w);
+  #endif
+  // BE2: las paredes de las gargantas, algo más hondas que las mesetas (oclusión aproximada por la pendiente)
+  alb *= 1.0 - 0.18 * steep * smoothstep(0.7, 0.2, nG.y) * (1.0 - tep * 0.5);
+  #ifdef SPLAT_TEPUY
+    // La cima deja el pasto brillante: hojarasca más oscura bajo las copas. La textura se queda (no es un verde plano).
+    float cima = smoothstep(0.58, 0.84, nG.y) * smoothstep(46.0, 68.0, vWPos.y);
+    alb = mix(alb, alb * vec3(0.36, 0.44, 0.28), tep * cima * bw.x * 0.94);
+  #endif
   #ifdef SPLAT_ZONAS
     // identidad por zona (ficha 26-F): la villa cálida, el Yunque verde azulado, la costa clara, la mesa del este ocre; la roca, a medias
     vec4 zn = texture2D(tZona, (wp - uZona.xy) * uZona.zw);
-    alb *= mix(vec3(1.0), zn.rgb + 0.5, 1.0 - bw.z * 0.5);
+    alb *= mix(vec3(1.0), zn.rgb + 0.5, 1.0 - bw.z * 0.5 - bw.y * 0.5); // BB2: la tierra, a medias (la villa la enrojecía)
     #ifdef SPLAT_MUSGO
       // musgo húmedo en los llanos altos (pendiente < 15°, más de 60 m) de las zonas húmedas
       float musgo = zn.a * smoothstep(0.955, 0.975, nG.y) * smoothstep(56.0, 64.0, vWPos.y) * smoothstep(0.3, 0.6, mac.g + mac2.r * 0.4);
@@ -347,8 +507,80 @@ AVE.module('terreno', function (G) {
   }
   #endif
 `;
+  // BB1: textura de orilla (1 canal, 1 texel cada 2 m) con la distancia al borde del río, la quebrada y las pozas de
+  // mapa.agua: 1 en el borde del agua y 0 a 3 m o más (BE2; antes 4,5). El shader pone ahí arena y barro en vez de roca o pasto.
+  const ORILLA = (() => {
+    const DA = MAPA && MAPA.agua, TM = MAPA && MAPA.tamano;
+    if (!DA || !TM || (W.suelo && W.suelo.orilla === false)) return null;
+    const paso = 2, BANDA = 3, /* BE2: franja más estrecha (la selva llega casi al agua) */ nx = Math.ceil(TM.ancho / paso) + 1, nz = Math.ceil(TM.largo / paso) + 1;
+    const dist = new Float32Array(nx * nz).fill(BANDA);
+    const marca = (x0, x1, z0, z1, f) => {
+      const i0 = Math.max(0, Math.floor((x0 - TM.x0) / paso)), i1 = Math.min(nx - 1, Math.ceil((x1 - TM.x0) / paso));
+      const k0 = Math.max(0, Math.floor((z0 - TM.z0) / paso)), k1 = Math.min(nz - 1, Math.ceil((z1 - TM.z0) / paso));
+      for (let k = k0; k <= k1; k++) for (let i = i0; i <= i1; i++) {
+        const d = f(TM.x0 + i * paso, TM.z0 + k * paso);
+        if (d < dist[k * nx + i]) dist[k * nx + i] = d;
+      }
+    };
+    for (const P of [DA.rio && DA.rio.puntos, DA.quebrada && DA.quebrada.puntos]) {
+      if (!P) continue;
+      for (let j = 0; j < P.length - 1; j++) {
+        const p = P[j], q = P[j + 1], dx = q[0] - p[0], dz = q[1] - p[1], L2 = dx * dx + dz * dz || 1, e = Math.max(p[3], q[3]) + BANDA;
+        marca(Math.min(p[0], q[0]) - e, Math.max(p[0], q[0]) + e, Math.min(p[1], q[1]) - e, Math.max(p[1], q[1]) + e, (x, z) => {
+          const t = Math.max(0, Math.min(1, ((x - p[0]) * dx + (z - p[1]) * dz) / L2));
+          return Math.hypot(x - p[0] - t * dx, z - p[1] - t * dz) - (p[3] + t * (q[3] - p[3]));
+        });
+      }
+    }
+    for (const o of DA.pozas || []) marca(o.x - o.r - BANDA, o.x + o.r + BANDA, o.z - o.r - BANDA, o.z + o.r + BANDA, (x, z) => Math.hypot(x - o.x, z - o.z) - o.r);
+    const u8 = new Uint8Array(nx * nz);
+    for (let i = 0; i < u8.length; i++) { const t = clamp01(1 - (dist[i] + 0.5) / BANDA); u8[i] = Math.round(255 * t * t * (3 - 2 * t)); }
+    const tex = new THREE.DataTexture(u8, nx, nz, THREE.LuminanceFormat, THREE.UnsignedByteType);
+    tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+    return { tex, v: new THREE.Vector4(TM.x0 - paso / 2, TM.z0 - paso / 2, 1 / (nx * paso), 1 / (nz * paso)) };
+  })();
   const splatMats = [];
   const ZONAS = G.ambiente && G.ambiente.zonas; // src/engine/ambiente.js (va antes en index.html); null sin mapa
+  // F0.2: textura de bosque (1 canal, una celda por texel) con la suma de las densidades de árboles de mapa.flora, suavizada
+  // con un 3×3; 0 = claro, 1 = bosque cerrado. Sin coste de descarga; mundo.suelo.bosque = false la apaga.
+  const BOSQUE = (() => {
+    const FD = MAPA && MAPA.flora;
+    if (!FD || !FD.densidad || (W.suelo && W.suelo.bosque === false)) return null;
+    const nx = FD.nx, nz = FD.nz, suma = new Float32Array(nx * nz);
+    for (const k of ['tabonuco', 'tabonuco_enano', 'palma_sierra', 'yagrumo', 'helecho_gigante', 'ceiba', 'bambu', 'flamboyan']) {
+      if (!FD.densidad[k]) continue;
+      const b = atob(FD.densidad[k]);
+      for (let i = 0; i < b.length && i < suma.length; i++) suma[i] += b.charCodeAt(i);
+    }
+    const u8 = new Uint8Array(nx * nz);
+    for (let z = 0; z < nz; z++) for (let x = 0; x < nx; x++) {
+      let s = 0, n = 0;
+      for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++) {
+        const xx = x + a, zz = z + b; if (xx < 0 || zz < 0 || xx >= nx || zz >= nz) continue;
+        s += suma[xx + zz * nx] * (a || b ? 1 : 2); n += a || b ? 1 : 2;
+      }
+      const v = s / n; u8[x + z * nx] = Math.round(255 * Math.min(1, Math.max(0, (v - 2) / 14)));
+    }
+    const tex = new THREE.DataTexture(u8, nx, nz, THREE.LuminanceFormat, THREE.UnsignedByteType);
+    tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+    return { tex, v: new THREE.Vector4(FD.x0, FD.z0, 1 / (nx * FD.celda), 1 / (nz * FD.celda)) };
+  })();
+  // BL1 / G19: selva del tepuy. Elipse alrededor de la ciudad (vegetacion.js siembra árboles y copas; el dosel
+  // de entorno_dosel.py usa la misma elipse). La pared vertical se queda en roca gris: pintarla de verde se leía
+  // como un bloque de musgo, y en el render de 2022 la selva rodea el risco por abajo y por la cima.
+  // mundo.suelo.selvaTepuy: false la apaga; { x, z, rx, rz, borde, arboles, ciudad }.
+  const TEPUY = (() => {
+    const c = W.suelo && W.suelo.selvaTepuy, CAP1 = window.AV_MAPA_CAP1;
+    if (!MAPA || c === false || !(c || (CAP1 && MAPA.nombre === CAP1.nombre))) return null;
+    return Object.assign({ x: -25, z: -160, rx: 135, rz: 105, borde: 0.3, arboles: 1800, ciudad: 8 }, c); // ciudad: m libres alrededor de cada pieza de las ruinas
+  })();
+  // 0..1: cuánto de la selva del tepuy hay en (x, z)
+  function selvaTepuy(x, z) {
+    if (!TEPUY) return 0;
+    const t = clamp01((1 - Math.hypot((x - TEPUY.x) / TEPUY.rx, (z - TEPUY.z) / TEPUY.rz)) / TEPUY.borde);
+    return t * t * (3 - 2 * t);
+  }
+  if (TEPUY) selvaTepuy.zona = TEPUY;
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
@@ -360,7 +592,10 @@ AVE.module('terreno', function (G) {
       tMacro: { value: macroNoise() }, uEsc: { value: new THREE.Vector4(L[0].e, L[1].e, L[2].e, L[3].e) },
       uTint0: { value: L[0].t }, uTint1: { value: L[1].t }, uTint2: { value: L[2].t }, uTint3: { value: L[3].t },
       uMar: { value: q.mar || 0 }, uSat: { value: new THREE.Vector4(L[0].s, L[1].s, L[2].s, L[3].s) },
+      tOrilla: { value: ORILLA ? ORILLA.tex : null }, uOrilla: { value: ORILLA ? ORILLA.v : new THREE.Vector4() },
       tZona: { value: ZONAS ? ZONAS.tex : null }, uZona: { value: ZONAS ? new THREE.Vector4(ZONAS.x0, ZONAS.z0, 1 / ZONAS.ancho, 1 / ZONAS.largo) : new THREE.Vector4() },
+      tBosque: { value: BOSQUE ? BOSQUE.tex : null }, uBosque: { value: BOSQUE ? BOSQUE.v : new THREE.Vector4() },
+      uTepuy: { value: TEPUY ? new THREE.Vector4(TEPUY.x, TEPUY.z, 1 / TEPUY.rx, 1 / TEPUY.rz) : new THREE.Vector4() }, uTepuyB: { value: TEPUY ? TEPUY.borde : 1 },
     };
     m.defines = {};
     m.userData.splat = true; m.userData.uniforms = U;
@@ -385,9 +620,13 @@ AVE.module('terreno', function (G) {
   }
   function calidadSplat(m, C) {
     const d = {};
-    if (C.normalesSuelo) { d.SPLAT_NORMALES = ''; d.SPLAT_TRIPLANAR = ''; }
+    if (ORILLA) d.SPLAT_ORILLA = '';
+    d.SPLAT_TRIPLANAR = ''; // BB2: la roca triplanar en todas las calidades (sin ella, en bajo y en el móvil la pared se estira)
+    if (C.normalesSuelo) d.SPLAT_NORMALES = '';
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
     if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
+    if (BOSQUE) d.SPLAT_BOSQUE = '';
+    if (TEPUY) d.SPLAT_TEPUY = '';
     if (Object.keys(d).join() !== Object.keys(m.defines).join()) { m.defines = d; m.needsUpdate = true; }
   }
   G.on('calidad', C => { for (const m of splatMats) calidadSplat(m, C); });
@@ -426,6 +665,56 @@ AVE.module('terreno', function (G) {
       { tex: 'assets/tex/entorno/suelo_arena_rio.jpg', normal: 'assets/tex/entorno/suelo_arena_rio_n.jpg', escala: 1 / 3, tinte: '#fff8ec', saturacion: 0.9 },
     ];
     const sueloMat = splatMaterial(capas, { mar: 0, texMax: R.calidad.texMax });
+    // F2.3 (AY2): plaza y suelo de los asentamientos. mundo.suelo.plazas(MAPA) → [{ x, z, r, f }]: discos donde el pasto pasa
+    // a tierra (f = fuerza 0–1, con 4 m de borde suave y algo de ruido); la roca y la arena no cambian. Se pinta en el splat
+    // de cada trozo al cargarlo, antes de la rejilla exacta (splatAt lo ve igual). Sin coste de descarga ni de GPU.
+    const PLAZAS = (typeof SU.plazas === 'function' ? SU.plazas(MAPA) : SU.plazas) || [];
+    function pintarPlazas(geo) {
+      if (!PLAZAS.length) return;
+      if (!geo.boundingBox) geo.computeBoundingBox();
+      const s = geo.getAttribute('splat'), p = geo.attributes.position, bb = geo.boundingBox, B = 4;
+      const ds = PLAZAS.filter(d => d.x + d.r + B > bb.min.x && d.x - d.r - B < bb.max.x && d.z + d.r + B > bb.min.z && d.z - d.r - B < bb.max.z);
+      if (!ds.length) return;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i), z = p.getZ(i), ru = 1.5 * Math.sin(x * 0.37 + Math.sin(z * 0.23) * 2) * Math.cos(z * 0.31 - x * 0.11);
+        let t = 0;
+        for (const d of ds) {
+          const dx = x - d.x, dz = z - d.z, e = d.r + B;
+          if (dx > e || dx < -e || dz > e || dz < -e) continue;
+          const u = clamp01((d.r + B * 0.5 + ru - Math.hypot(dx, dz)) / B);
+          t = Math.max(t, u * u * (3 - 2 * u) * (d.f || 1));
+        }
+        if (t > 0) { const r = s.getX(i) * t; s.setX(i, s.getX(i) - r); s.setY(i, s.getY(i) + r); }
+      }
+    }
+    // BM29: normales suavizadas entre trozos. Cada GLB trae normales calculadas solo con sus triángulos, así que en los bordes
+    // entre trozos (y donde la malla trae vértices sin soldar) la ladera se ve en facetas. Se recalculan acumulando la normal de
+    // cada cara (ponderada por área) en una tabla por posición de mundo común a todos los trozos; solo se paga al cargar.
+    function soldarNormales(geos) {
+      const acc = new Map(), clave = (x, y, z) => Math.round(x * 100) + ',' + Math.round(y * 100) + ',' + Math.round(z * 100);
+      for (const g of geos) {
+        const p = g.getAttribute('position'), ix = g.index, n = ix ? ix.count : p.count;
+        for (let i = 0; i < n; i += 3) {
+          const a = ix ? ix.getX(i) : i, b = ix ? ix.getX(i + 1) : i + 1, c = ix ? ix.getX(i + 2) : i + 2;
+          const ux = p.getX(b) - p.getX(a), uy = p.getY(b) - p.getY(a), uz = p.getZ(b) - p.getZ(a);
+          const vx = p.getX(c) - p.getX(a), vy = p.getY(c) - p.getY(a), vz = p.getZ(c) - p.getZ(a);
+          const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; // sin normalizar = ponderada por área
+          for (const v of [a, b, c]) {
+            const k = clave(p.getX(v), p.getY(v), p.getZ(v));
+            let t = acc.get(k); if (!t) acc.set(k, t = [0, 0, 0]);
+            t[0] += nx; t[1] += ny; t[2] += nz;
+          }
+        }
+      }
+      for (const g of geos) {
+        const p = g.getAttribute('position'), nor = g.getAttribute('normal');
+        for (let v = 0; v < p.count; v++) {
+          const t = acc.get(clave(p.getX(v), p.getY(v), p.getZ(v))), l = t ? Math.hypot(t[0], t[1], t[2]) : 0;
+          if (l > 1e-9) nor.setXYZ(v, t[0] / l, t[1] / l, t[2] / l);
+        }
+        nor.needsUpdate = true;
+      }
+    }
     const B64 = (W.mapa && W.mapa.b64) || 'AV_MAPA_B64';
     const trozos = (MAPA.terreno && MAPA.terreno.trozos) || [];
     listo = Promise.all(trozos.map(t => G.assets.loadGLB(t.glb, {
@@ -438,6 +727,7 @@ AVE.module('terreno', function (G) {
       const c = geo.getAttribute('color');
       if (c) { geo.setAttribute('splat', c); geo.deleteAttribute('color'); }
       else geo.setAttribute('splat', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 4).fill(0.25), 4));
+      pintarPlazas(geo);
       if (!geo.getAttribute('normal')) geo.computeVertexNormals();
       geo.computeBoundingSphere();
       const mesh = new THREE.Mesh(geo, sueloMat);
@@ -448,8 +738,10 @@ AVE.module('terreno', function (G) {
     }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })))
       .then(geos => {
         const ok = geos.filter(Boolean);
-        if (ok.length) buildTriGrid(ok);
-        G.emit('terrenoListo');
+        soldarNormales(ok);
+        const fin = () => G.emit('terrenoListo');
+        if (!ok.length) { fin(); return; }
+        return buildTriGrid(ok).then(fin);
       });
     G.on('calidad', C => { for (const m of chunks) m.castShadow = !!C.sombraTerreno; });
   } else {
@@ -545,9 +837,35 @@ AVE.module('terreno', function (G) {
   const islas = ISL.lista || [];
   const O = W.oceano || {};
   const seaY = MAPA ? 0 : O.y != null ? O.y : -2.6;
-  const islandCones = islas.map(I => {
-    const isl = new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
-    isl.position.set(I.x, seaY + I.r * (MAPA ? 0.12 : 0.3), I.z); scene.add(isl);
+  const loma = (I, k) => {
+    const geo = new THREE.SphereGeometry(I.r, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), h = y / I.r;
+      // BM95: contorno suave (sin picos de estrella) y cumbres desiguales: el islote se lee como isla y no como silueta plana
+      const f = 1 + 0.07 * Math.sin(a * 2 + k) + 0.05 * Math.sin(a * 3 + 2 * k + 1) + 0.025 * Math.sin(a * 5 + k * 3);
+      p.setXYZ(i, x * f, y * (0.95 + 0.35 * Math.sin(a * 2 + k) + 0.2 * Math.sin(a * 4 + 3 * k)) * (1 + 0.25 * Math.sin(h * 6 + a * 3 + k)), z * f);
+      const u = clamp01(h * 4.5);
+      // BM57: el color de vértice se lee como lineal y la loma salía menta pálida; arena y verde hondos (sRGB → lineal)
+      // BM88: manchas de selva (copas más oscuras y claras, por ángulo y altura) para que el islote no sea un disco liso; solo color
+      const m = 1 + u * (0.20 * Math.sin(a * 5 + k * 2 + h * 9) + 0.14 * Math.sin(a * 11 - k + h * 17));
+      col.push(Math.pow((0.72 - 0.52 * u) * m, 2.2), Math.pow((0.66 - 0.26 * u) * m, 2.2), Math.pow((0.46 - 0.30 * u) * m, 2.2));
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    const aro = new THREE.Mesh(new THREE.RingGeometry(I.r * 0.95, I.r * 1.3, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35, depthWrite: false }));
+    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.45; m.add(aro); // la loma se aplasta (scale.y 0.45): el aro queda ~0,5 m sobre el mar
+    // BM95: bajío turquesa alrededor de la orilla (aguas poco profundas)
+    const bajo = new THREE.Mesh(new THREE.RingGeometry(I.r * 1.0, I.r * 1.75, 32), new THREE.MeshBasicMaterial({ color: '#7fd6c8', transparent: true, opacity: 0.22, depthWrite: false }));
+    bajo.rotation.x = -Math.PI / 2; bajo.position.y = 0.3 / 0.45; m.add(bajo);
+    return m;
+  };
+  const islandCones = islas.map((I, k) => {
+    // BM23: con mapa, la isla de respaldo es una loma baja y redonda con el tono neblinoso del horizonte, no una pirámide verde saturada
+    // BM42: con mapa, loma de borde irregular con color de vértice (arena en la orilla, verde hondo arriba) y aro de espuma; no un disco liso menta
+    const isl = MAPA ? loma(I, k)
+      : new THREE.Mesh(new THREE.ConeGeometry(I.r, I.r * 0.7, 9), new THREE.MeshLambertMaterial({ color: '#4f8a52' }));
+    if (MAPA) isl.scale.y = 0.45;
+    isl.position.set(I.x, seaY + (MAPA ? -0.5 : I.r * 0.3), I.z); scene.add(isl);
     return isl;
   });
   // El relieve de las islas se pide cuando la cotorra se acerca a una (a menos de ISLA_VER m de su orilla): hasta entonces
@@ -596,7 +914,7 @@ AVE.module('terreno', function (G) {
 
   return {
     WORLD, places, pois, poi, rawHeight, height, surfaceY, normalAt, splatAt, addPlatform, removePlatform, plataformas, platformTop,
-    flats: FLATS, waterBase, riverX, islas, trees: allTrees, groundMaterial, splatMaterial, macroNoise, texRep,
+    flats: FLATS, waterBase, riverX, islas, selvaTepuy, trees: allTrees, groundMaterial, splatMaterial, macroNoise, texRep,
     mapa: MAPA, chunks, get listo() { return listo; }, get exacto() { return TG.ready; }, hmHeight: HM ? hmHeight : null,
   };
 });

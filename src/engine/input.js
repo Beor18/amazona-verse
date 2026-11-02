@@ -1,5 +1,5 @@
 /* AVE · entrada
-   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
+   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, T/G mirar arriba/abajo (los lee camara.js), 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
    Solo traduce entrada a llamadas: G.fisica (saltar, soltar el salto, impulso, volar/aterrizar), G.actores (gestos), G.interaccion (acción).
    Volar y dejar de volar: V (o el botón Volar) despega; volando, V (o el botón, que pasa a decir "Aterrizar") baja suave hasta el
    suelo; otra vez V o Saltar sigue volando. Volando sin tocar nada se queda cernida en el sitio; Espacio sube y C baja.
@@ -90,7 +90,7 @@ AVE.module('input', function (G) {
     if (t != null) { keys.add(t); pulsadas.set(k, t); }
     if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
     if (e.key === ' ') { jumpHeld = true; if (!e.repeat) G.fisica.tryJump(); e.preventDefault(); }
-    if (k === 'f' && !e.repeat) G.fisica.tryDash();
+    if (k === 'f' && !e.repeat) { G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); }
     if (es('volar', e) && !e.repeat) G.fisica.toggleFly();
     if (es('aterrizar', e) && !e.repeat) G.fisica.land();
     if (/^[1-7]$/.test(e.key) && !e.repeat) G.actores.playEmote(G.actores.EMOTE_KEYS[+e.key - 1]);
@@ -101,8 +101,9 @@ AVE.module('input', function (G) {
     const k = e.key.toLowerCase();
     if (pulsadas.has(k)) { keys.delete(pulsadas.get(k)); pulsadas.delete(k); } else keys.delete(k);
     if (e.key === ' ') { jumpHeld = false; G.fisica.releaseJump(); }
+    if (k === 'f' && G.dones && G.dones.sostener) G.dones.sostener(false);
   });
-  addEventListener('blur', () => { soltarTodo(); jumpHeld = false; });
+  addEventListener('blur', () => { soltarTodo(); jumpHeld = false; if (G.dones && G.dones.sostener) G.dones.sostener(false); });
 
   // ---------- Sección «Teclas» del menú de pausa ----------
   // Reusa los estilos de la ayuda (.pause-help, .keys, .chip, kbd) y, como .help-keys, se oculta en pantallas táctiles.
@@ -179,7 +180,12 @@ AVE.module('input', function (G) {
   jumpBtn.addEventListener('pointerup', jumpUp);
   jumpBtn.addEventListener('pointerleave', jumpUp);
   jumpBtn.addEventListener('pointercancel', jumpUp);
-  $('b-dash').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.tryDash(); });
+  const dashBtn = $('b-dash');
+  dashBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (paused()) return; G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); });
+  const dashUp = () => { if (G.dones && G.dones.sostener) G.dones.sostener(false); };
+  dashBtn.addEventListener('pointerup', dashUp);
+  dashBtn.addEventListener('pointerleave', dashUp);
+  dashBtn.addEventListener('pointercancel', dashUp);
   $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
   const actBtn = $('b-act');
   // pointerdown como los demás botones: en iOS el 'click' de un segundo dedo (con el joystick agarrado) no llega
@@ -202,11 +208,16 @@ AVE.module('input', function (G) {
     }
   }
 
-  // Arrastrar en el lienzo gira la cámara
+  // Arrastrar en el lienzo gira la cámara; en vertical inclina la vista (hacia arriba mira al cielo)
   const canvas = G.renderer.canvas;
-  let dragId = null, dragX = 0;
-  canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; });
-  canvas.addEventListener('pointermove', e => { if (e.pointerId !== dragId) return; G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX; if (G.camara.manual) G.camara.manual(); });
+  let dragId = null, dragX = 0, dragY = 0;
+  canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; });
+  canvas.addEventListener('pointermove', e => {
+    if (e.pointerId !== dragId) return;
+    G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX;
+    if (G.camara.inclinar) G.camara.inclinar((dragY - e.clientY) * 0.005); dragY = e.clientY;
+    if (G.camara.manual) G.camara.manual();
+  });
   const endDrag = e => { if (e.pointerId === dragId) dragId = null; };
   canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 

@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="es">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Amazona Verse</title>
+<link rel="icon" type="image/png" href="assets/vittata.png">
 <meta name="description" content="Juega el capítulo 1 de Amazona Verse: vuela con Vittata por El Yunque, explora y descubre Puerto Rico. Para todas las edades, gratis en el navegador.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://amazona-verse.vercel.app/juego/">
@@ -97,11 +98,17 @@
         <button class="btn tile modo" type="submit" value="carreras" data-modo="carreras"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 34h10M4 42h14M10 50h10" stroke="var(--sky)" stroke-width="3" stroke-linecap="round"/><path d="M26 10h2v46h-2z" fill="var(--ink)"/><path d="M28 10h30l-6 10 6 10H28z" fill="#fff"/><path d="M28 10h7.5v6.7H28zm15 0h7.5v6.7H43zM35.5 16.7H43v6.6h-7.5zm15 0H58v6.6h-7.5zM28 23.3h7.5V30H28zm15 0h7.5V30H43z" fill="var(--ink)"/></svg><b>Carreras</b><small>El Yunque, el río y tu fantasma</small></button>
         <button class="btn tile modo" type="submit" value="tormenta" data-modo="tormenta"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 40a12 12 0 0 1 2-23.8A14 14 0 0 1 46 18a10 10 0 0 1 2 22z" fill="var(--violet)"/><path d="M34 26l-10 16h8l-4 14 14-20h-8l6-10z" fill="var(--gold)"/></svg><b>¡Escapa de la tormenta!</b><small>90 segundos sobre el mar</small></button>
         <button class="btn tile modo" type="submit" value="banquete" data-modo="banquete"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 20q24-6 52 10" stroke="var(--wood)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M30 12q8 2 6 12-8-2-6-12z" fill="var(--leaf-hi)"/><circle cx="22" cy="40" r="8" fill="var(--crest)"/><circle cx="40" cy="44" r="8" fill="var(--beak)"/><circle cx="52" cy="36" r="6" fill="var(--crest)"/><circle cx="20" cy="37" r="2" fill="#fff" opacity=".7"/><circle cx="38" cy="41" r="2" fill="#fff" opacity=".7"/></svg><b>¡Banquete!</b><small>Frutos en vuelo y combos</small></button>
+        <button class="btn tile modo" type="submit" value="flight" data-modo="flight"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 8h12v20H8zM8 44h12v12H8z" fill="var(--wood)"/><path d="M44 6h12v14H44zM44 38h12v20H44z" fill="var(--wood)"/><path d="M12 36q10-14 22-4 6 4 14-2-4 12-16 12-6 0-8 4-6-4-12-10z" fill="var(--leaf)"/><path d="M26 32q4-6 12-6-4 6-12 6z" fill="var(--leaf-hi)"/><path d="M4 34h8M2 40h8" stroke="var(--sky)" stroke-width="3" stroke-linecap="round"/></svg><b>Amazona Flight</b><small>Vuela sin parar entre los troncos</small></button>
+        <button class="btn tile modo" type="submit" value="tren" data-modo="tren" hidden style="display:none"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M2 56h60" stroke="var(--wood)" stroke-width="3" stroke-linecap="round"/><path d="M8 52h48" stroke="var(--wood-lo)" stroke-width="2" stroke-linecap="round" opacity=".7"/><rect x="10" y="28" width="30" height="16" rx="3" fill="#d9342b"/><rect x="38" y="20" width="16" height="24" rx="2" fill="#d9342b"/><rect x="42" y="25" width="8" height="7" rx="1" fill="#fff1c8"/><rect x="14" y="20" width="6" height="9" rx="1" fill="#2b2b2b"/><circle cx="17" cy="47" r="4" fill="#2b2b2b"/><circle cx="29" cy="47" r="4" fill="#2b2b2b"/><circle cx="46" cy="47" r="4" fill="#2b2b2b"/><path d="M14 16q4-8 8-3t8-3" stroke="#e9eef0" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/><circle cx="50" cy="12" r="5" fill="var(--leaf)"/><path d="M53 11l4 1.5-4 1.5z" fill="var(--beak)"/></svg><b>El tren de Vittata</b><small>Carga, desvíos y curvas por la costa</small></button>
+        <button class="btn tile modo" type="submit" value="river" data-modo="river"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 4q-12 20 4 32t0 26h20q16-14 0-26T40 4z" fill="var(--sky)" opacity=".55"/><path d="M14 40q18 8 36 0-2 8-18 9-14-1-18-9z" fill="var(--wood)"/><path d="M16 40q16 5 32 0" stroke="var(--wood-lo)" stroke-width="2" fill="none"/><circle cx="32" cy="33" r="6" fill="var(--leaf)"/><path d="M30 28q2-6 8-4-2 4-8 4z" fill="var(--crest)"/><path d="M36 32l5 1.5-5 1.5z" fill="var(--beak)"/><path d="M8 54q6-3 12 0t12 0 12 0 12 0" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/></svg><b>River Rush</b><small>Baja el río en canoa: contrarreloj y fantasma</small></button>
+        <button class="btn tile modo" type="submit" value="maze" data-modo="maze" hidden style="display:none"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="4" width="56" height="56" rx="6" fill="var(--parchment)"/><path d="M8 8h48v48H8zM20 8v14M8 32h14M32 20v16h12M44 8v12M20 44v12M32 48h16M44 32v10" stroke="var(--leaf)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="27" r="4" fill="var(--crest)"/><circle cx="50" cy="26" r="4" fill="var(--beak)"/><circle cx="38" cy="42" r="4" fill="var(--crest)"/><circle cx="14" cy="50" r="5" fill="var(--leaf-hi)"/><path d="M17 49l4 1.5-4 1.5z" fill="var(--beak)"/></svg><b>Amazona Maze</b><small>Frutos en el laberinto y guardianes</small></button>
         <button class="btn tile modo" type="submit" value="libre" data-modo="libre"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 46a8 8 0 0 1 2-15.7A10 10 0 0 1 29 28a7 7 0 0 1 1 18z" fill="#fff" opacity=".85"/><path d="M38 54a6 6 0 0 1 1-11.8 8 8 0 0 1 15-1 5 5 0 0 1 1 12.8z" fill="#fff" opacity=".7"/><path d="M24 16q8-10 16 0M28 16q4-5 8 0" stroke="var(--leaf)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M44 30q6-7 12 0" stroke="var(--crest)" stroke-width="3" fill="none" stroke-linecap="round"/></svg><b>Vuelo libre</b><small>Explora sin misiones</small></button>
         <button class="btn tile modo" type="button" id="b-nido-title" data-modo="nido"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="26" cy="38" rx="9" ry="12" fill="var(--parchment)"/><ellipse cx="38" cy="38" rx="9" ry="12" fill="var(--gold)"/><circle cx="36" cy="34" r="2" fill="var(--crest)"/><circle cx="41" cy="40" r="1.6" fill="var(--crest)"/><path d="M6 40q26-6 52 0-4 16-26 18T6 40z" fill="var(--wood)"/><path d="M10 42q22-4 44 0" stroke="var(--wood-lo)" stroke-width="2.5" fill="none"/></svg><b>Mi nido</b><small>Tus huevos y crías</small></button>
         <button class="btn tile modo" type="button" id="b-records-menu" data-modo="records"><svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5L32 39.2 19 46l2.5-14.5L11 21.3l14.5-2.1z" fill="var(--gold)"/><path d="M6 50h16v10H6zm18-6h16v16H24zm18 10h16v6H42z" fill="var(--sky)"/></svg><b id="b-records-title">Mis récords</b><small>Medallas y tiempos</small></button>
       </div>
     </form>
+    <!-- Capítulos de la temporada (AV1): cada uno es un content pack (?pack=<id>, boot.js lo carga solo); el botón abre #capitulos -->
+    <nav class="title-episodios" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button></nav>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
   </div>
   <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
@@ -143,6 +150,7 @@
       <button class="btn tile" id="b-retos" type="button" data-icon="trophy" popovertarget="pause" popovertargetaction="hide">Retos</button>
       <button class="btn tile" id="b-records" type="button" data-icon="star" popovertarget="pause" popovertargetaction="hide">Mis récords</button>
       <button class="btn tile" id="b-menu-modos" type="button" data-icon="rotate" popovertarget="pause" popovertargetaction="hide">Cambiar de juego</button>
+      <button class="btn tile" id="b-capitulos" type="button" data-no-tr data-icon="book" popovertarget="pause" popovertargetaction="hide">Capítulos</button>
       <button class="btn tile" id="b-sound" type="button" data-icon="sound" aria-pressed="true">Sonido: sí</button>
       <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
     </div>
@@ -158,13 +166,14 @@
         <div><dt><kbd>E</kbd></dt><dd>Acción: hablar, examinar, usar</dd></div>
         <div><dt><kbd>1</kbd>–<kbd>7</kbd></dt><dd>Gestos</dd></div>
         <div><dt><kbd>Q</kbd><kbd>R</kbd></dt><dd>Girar la cámara</dd></div>
+        <div><dt><kbd>T</kbd><kbd>G</kbd></dt><dd>Mirar arriba o abajo (o arrastrar)</dd></div>
         <div><dt><kbd>Esc</kbd></dt><dd>Cerrar ventanas</dd></div>
       </dl>
       <dl class="keys help-touch">
         <div><dt>Joystick</dt><dd>Moverte</dd></div>
         <div><dt>Saltar</dt><dd>Otra vez en el aire para planear; la 3.ª vez vuelas</dd></div>
         <div><dt>Acción</dt><dd>Hablar, examinar y usar</dd></div>
-        <div><dt>Arrastrar</dt><dd>Girar la cámara</dd></div>
+        <div><dt>Arrastrar</dt><dd>Girar la cámara y mirar arriba o abajo</dd></div>
       </dl>
       <p class="note">Los materiales se recogen al pasar por encima.</p>
     </section>
@@ -208,7 +217,8 @@
     <h2 id="end-title">Capítulo 1 completado</h2>
     <p id="end-text"></p>
     <div class="row center" id="end-acciones">
-      <button class="btn xl" id="b-comic" type="button" data-icon="book">Crear mi cómic</button>
+      <button class="btn xl" id="b-siguiente" type="button" data-no-tr data-icon="play" hidden>Siguiente capítulo</button>
+      <button class="btn xl" id="b-comic" type="button" data-icon="book">Ver mi cómic</button>
       <button class="btn" id="b-seguir" type="button" data-icon="play">Seguir explorando</button>
       <button class="btn ghost" id="b-again" type="button" data-icon="reset">Comenzar de cero</button>
     </div>
@@ -223,6 +233,16 @@
     </div>
   </div>
 </div>
+
+<!-- Capítulos de la temporada 1 (AV1, src/game/menu_modos.js + src/ui/menu_modos.css): los 6 con portada, estado y Jugar.
+     Se abre desde la portada (#b-capitulos-title) y la pausa (#b-capitulos); los textos los pone menu_modos.js en ES o EN. -->
+<dialog id="capitulos" class="panel capitulos" aria-labelledby="capitulos-t" data-no-tr>
+  <div class="capitulos-head">
+    <h2 id="capitulos-t">Capítulos</h2>
+    <button class="btn ghost icon" id="b-capitulos-cerrar" type="button" data-icon="close" aria-label="Cerrar"></button>
+  </div>
+  <ol class="capitulos-lista" id="capitulos-lista"></ol>
+</dialog>
 
 <div id="symbol" class="hud" hidden aria-label="Símbolo de los 36 fragmentos">
   <canvas id="symbol-canvas" width="360" height="360"></canvas>
@@ -340,6 +360,7 @@
 <script src="src/game/misiones.js" charset="utf-8"></script>
 <script src="src/game/lugares.js" charset="utf-8"></script>
 <script src="src/game/diario.js" charset="utf-8"></script>
+<script src="src/game/descubrir.js" charset="utf-8"></script>
 <script src="src/game/aula.js" charset="utf-8"></script>
 <script src="src/game/idioma.js" charset="utf-8"></script>
 <script src="src/game/accesibilidad.js" charset="utf-8"></script>
@@ -350,7 +371,9 @@
 <script src="content/comun/especies.js" charset="utf-8"></script>
 <script src="src/game/criadero.js" charset="utf-8"></script>
 <script src="src/game/guia_controles.js" charset="utf-8"></script>
+<script src="src/game/zonas.js" charset="utf-8"></script>
 <script src="src/game/menu_modos.js" charset="utf-8"></script>
+<script src="src/game/temporada.js" charset="utf-8"></script>
 <script src="src/pruebas/motor.js" charset="utf-8"></script>
 <script src="content/cap1/dialogos_cap1.js" charset="utf-8"></script>
 <script src="content/cap1/lecciones.js" charset="utf-8"></script>

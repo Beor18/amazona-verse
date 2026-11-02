@@ -53,8 +53,9 @@ AVE.module('guiaControles', function (G) {
       { id: 'subir', k: kbd('Espacio'), txt: 'Subir', sub: 'Mantenlo pulsado mientras vuelas. En el suelo, salta', corto: 'mantenlo volando' },
       { id: 'bajar', k: kbd('C'), txt: 'Bajar', sub: 'Mantenlo pulsado mientras vuelas', corto: 'mantenlo volando' },
       { id: 'aterrizar', k: kbd(t.aterrizar) + o + kbd(t.volar), txt: 'Dejar de volar', sub: 'Aterriza suave en el suelo', corto: 'aterriza suave', destacada: true },
-      { id: 'camara', k: RATON + o + kbd('Q') + kbd('R'), txt: 'Girar la cámara', sub: 'Arrastra con el ratón', corto: 'arrastra el ratón' },
+      { id: 'camara', k: RATON + o + kbd('Q') + kbd('R'), txt: 'Mover la cámara', sub: 'Arrastra con el ratón; arriba y abajo para mirar al cielo o al suelo (también T y G)', corto: 'arrastra; T/G mira arriba' },
       { id: 'accion', k: kbd(t.accion), txt: 'Acción', sub: 'Hablar, examinar y usar', corto: 'hablar, examinar, usar' },
+      { id: 'don', k: kbd('F'), txt: 'Don', sub: 'Mantén Impulso un momento. Hold Boost for a moment', corto: 'mantenlo' },
     ];
   }
   // corto: la leyenda del icono es compacta (una línea por fila); el panel lleva la explicación entera
@@ -178,6 +179,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const enSesion = {};
   function pista(id, html, seg) {
     if (tactil()) return false;
+    // En inglés se traduce la frase entera con sus teclas («Pulsa {} para volar»): el traductor de la página va nodo a nodo y
+    // no reconoce una frase partida por <kbd>
+    if (G.idioma && G.idioma.tr) html = G.idioma.tr(html);
     pistaEl.innerHTML = html; pistaEl.hidden = false; pistaT = seg || AJ.pista; pistaId = id; enSesion[id] = (enSesion[id] || 0) + 1;
     return true;
   }
@@ -213,8 +217,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (M.flying && G.input.jumpHeld && (subirT += dt) > 0.4) hecho('subir');
     if (M.flying && M.landing) hecho('aterrizar');
     if (!M.flying && M.speed > 1 && (movT += dt) > 0.5) hecho('mover');
-    // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse
-    if (jugando) listoT += dt; else listoT = 0;
+    // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse.
+    // Espera a que acaben los bocadillos libres: si no, tapa el gancho del capítulo (la apertura en negro va en bocadillos)
+    if (jugando && !(G.dialogo.libre && G.dialogo.libre())) listoT += dt; else listoT = 0;
     if (!panelAbierto && !tactil() && listoT > AJ.listo && !enSesion.panel && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
     if (panelAbierto) {
       panelT += dt;

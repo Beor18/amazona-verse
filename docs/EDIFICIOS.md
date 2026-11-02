@@ -118,7 +118,7 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
   - colapso por material: la arquitectura pesa 3 veces más que el escombro;
   - y, en el escombro, se quitan las piezas sueltas más pequeñas.
 - Las normales son suaves en lo orgánico y con aristas vivas a 40° en la piedra labrada. Las caras de nodos en espejo se invierten.
-- Texturas: las 16 originales con normales en un atlas 4×4 de 2048 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 512 px con margen de 16) y **un solo material `AV_HD_Ancient`**, es decir, **un draw call por modelo**. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras.
+- Texturas: las 16 originales con normales en un atlas 4×4 de 4096 px (`tex_hd/hd_ancient.jpg` y `_n`, celdas de 1024 px con margen de 32; la fracción es la misma que 512/16) y **un solo material `AV_HD_Ancient`** en los modelos con atlas; los restaurados pueden tener varios materiales con nombre. La UV2 guarda la celda; el shader (streaming.js `atlasHD`) envuelve la UV con `fract()` y elige el mipmap con la UV sin envolver, sin costuras. Al fundir, los materiales Ancient y Savage se reasignan a su celda del atlas; los que no tienen equivalente conservan el suyo. Las zonas cercanas se funden por material y los modelos cercanos, los `_hd` y los lejanos de varias zonas se vuelven a fundir globalmente; los modelos aún no cargados conservan su lote de respaldo.
 - Se guarda ya comprimido con el gltfpack de la build. Las texturas van en `tex_hd/` y no en `tex/`, porque la build pasa `tex/` a WebP y no reescribe las uris de un glTF ya comprimido.
 - Streaming: se pide con la zona en nivel cerca, en calidad media (hasta 40 m) o alta (hasta 90 m), con WebGL2 y cuando el jugador ya se movió. En calidad baja se queda el ligero. Los grandes (más de 10 m de radio) cuentan la distancia desde su mitad cercana, tanto en el LOD como en el _hd.
 - **Colisiones, pisos y vanos salen siempre del ligero**: son iguales en todos los equipos.
@@ -160,7 +160,7 @@ En total, el _hd suma 6,5 MB de js (streaming, nada en la descarga inicial) más
 
 La vista más cargada de streamingTest (ruinas de El Yunque) queda en 137 draw calls (≤ 150). La build pasa de 17,6 a 28,6 MB, de los que unos 10 MB son de los _hd y del atlas. Suma 42 archivos (390 de 511). La descarga inicial no cambia (8,2 MB, igual que HEAD).
 
-**Calidad.** Bajo no usa _hd. Medio lo usa hasta 40 m y alto, hasta 90 m. Hace falta WebGL2.
+**Calidad.** Bajo lo usa hasta 45 m, medio hasta 70 m y alto hasta 90 m, cuando el edificio está en el LOD cercano (los grandes, también más allá). Hace falta WebGL2. Se pide también antes de moverse si ya estás en la zona.
 
 **Pendiente.**
 - Lote 3, Savage: sogas y escombros en un _hd con el atlas `hd_savage`. El atlas está en el pipeline y falta generarlo.
@@ -189,6 +189,8 @@ Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero m
 
 **Lejanos de los templos** (`tools/blender/edificios_lejos.py`). Salen de la geometría original (la misma del `_hd`), con grosor y remallado por vóxeles a diagonal/110. Tienen entre 1070 y 2000 tris y color de vértice del atlas. Antes salían del vóxel del ligero: las torres «derretidas» medían 33 m en lugar de 42 y les faltaban las coronas.
 
+El color medio del atlas es arena plana a más de 90 m. `tools/blender/edificios_lejos_tono.py` deja dos tonos en ese COLOR_0: piedra en la cara que mira al cielo y sombra en la que mira al suelo y en los huecos (oclusión por la posición de los vecinos). Solo usa la normal vertical, así el rotY de la pieza no gira la luz. La malla lejana recibe la sombra del sol y no la proyecta.
+
 **Lote 3, aldeas Savage** (`edificios_hd.py`, atlas `tex_hd/hd_savage*.jpg`). Llevan `_hd` 21 modelos con sogas y escombros:
 - torres, murallas con atalaya, monumentos A, C y F, puente, portales, mirador escalonado, casa con plataforma, bohíos, caney, casas de paja, cercado y empalizada.
 - Las sogas reciben casi un tercio del presupuesto y no se quitan como escombro.
@@ -202,18 +204,163 @@ Kelvin: «no veo los otros edificios» y la ciudad «tipo Asgard, antigua pero m
 - 41 179 tris en el `_hd`, 15 190 en el ligero y 1732 en el lejano.
 - Sin caja de colisión gruesa (`mundo.js`): era una caja de 42 × 28 m sobre 12 templos con plazas entre ellos. Lo detienen sus sólidos reales, como a los demás.
 
-**Peso.** La build pasa de 28,6 a 36,6 MB y 420 archivos (límites: 64 MB y 511). Supera el objetivo de 30 MB: son los `_hd` de las aldeas y su atlas, todo por streaming.
+**Peso.** La build pasa de 28,6 a 36,6 MB y 420 archivos (límite de archivos: 511). Supera el objetivo de 30 MB: son los `_hd` de las aldeas y su atlas, todo por streaming. Kelvin retiró el tope de 64 MB el 26-oct-2026: el peso se mide y ya no rechaza la publicación.
 
 Capturas: `docs/img/ciudad_r2_*` (móvil 375×812 en calidad media y escritorio en alta).
 
 ## Restauración paramétrica Ancient (31-oct-2026)
-- `tools/blender/edificios_restaurados.py` aplica el flujo paramétrico de Kimi 3D Make a los 19 modelos Ancient: templos grandes y medianos, muro, cinco torres, altar, mirador, pilar y portal. Sustituye las piezas de ruina desmontadas por edificios completos con escaleras, columnas, muros, cornisas biseladas, dentados, relieves y coronas.
-- Conserva exactamente la caja, el centro de la base, la orientación y las instancias del kit. No cambia Vittata, los modelos Savage ni el mapa original de 3ds Max.
+- `tools/blender/edificios_restaurados.py` aplica el flujo paramétrico de Kimi 3D Make a 18 modelos Ancient: templos grandes y medianos, muro, cuatro torres, altar, mirador, pilar y portal. El ligero usa edificios completos con escaleras, columnas, muros, cornisas biseladas, dentados, relieves y coronas; `ruina_torre` conserva la geometría original con su cavidad interior validada. La fusión conserva también las mejoras posteriores de geometría, pivotes, HD y lejanos de `main`.
+- Conserva la caja, el centro de la base, la orientación y las instancias del kit. No cambia Vittata, los modelos Savage ni el mapa original de 3ds Max.
 - Los materiales reutilizan las texturas licenciadas del proyecto: sillares `wallM`, frisos `decoM`, `floorM` y `stoneM`, con mapas de normales. Las celdas originales se extraen del atlas `tex_hd/hd_ancient*.jpg`.
-- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–17958 tris y el lejano 88–2340 tris con color de vértice. `kit.js` lleva `restaurado: true` en estos modelos.
-- Colocación: `relocate()` calcula intersecciones verticales con triángulos reales y con el heightmap, no solo cajas envolventes. Corrige las bases sin apoyo y se integra también en `mapa_build.py`.
-- Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y apoyo real de todas las instancias Ancient. El generador es idempotente: al repetirlo no quedan ajustes de altura pendientes.
+- LOD: el ligero tiene 88–2340 tris (colisiones y calidad baja), el HD 152–84288 tris y el lejano 88–9542 tris. `kit.js` lleva `restaurado: true` en los modelos paramétricos.
+- Colocación: se conservan las posiciones validadas de `main`, incluida la torre con su espacio interior y su plataforma. `relocate()` queda solo como utilidad de análisis; no se aplica globalmente porque podía cambiar apoyos funcionales.
+- Verificación: `python3 tools/blender/edificios_restaurados_test.py` comprueba estructura conectada, presupuestos de los tres LOD y la posición validada de `ruina_torre`.
+
+## Integración del paquete TransferNow (01-nov-2026)
+
+- Fuente: `edificios.glb` y `mapa.glb` del enlace entregado por Kelvin. El conversor reproducible es `tools/blender/integrar_originales.py`; no necesita Blender ni añade dependencias.
+- Integración mixta: 18 recursos ligeros usan la geometría y los materiales originales (`original: true` en `kit.js`); los modelos pesados conservan el HD optimizado que ya funcionaba y lo mantienen activado (`hd: true`). Las texturas originales están en `tex_original/` y se cargan por URI externa.
+- Al dividir la escena se elimina la transformación completa de cada instancia, no solo su posición. Cada modelo se ajusta a la caja y al pivote del kit validado, de modo que conserva su escala, orientación, apoyo y colocación en el juego. Las losas se ajustan a sus cajas rectangulares existentes.
+- El terreno original se publica en cuatro trozos con 80 000 triángulos en total. Conserva su malla en planta, pero adapta la altura de sus vértices al heightmap validado del juego para mantener misiones, edificios y apoyos en su sitio. `mapa_cap1_altura.js` conserva exactamente esas alturas de referencia. Escala del terreno: 0,255.
+- Se exportan también seis árboles originales como recursos opcionales en `assets/models/entorno/*_original.glb`; el bosque activo sigue siendo la flora procedural para no multiplicar el coste de cada vista.
+- `python3 tools/blender/integrar_originales_test.py` comprueba los recursos originales, sus URI, el HD conservado, el terreno, el heightmap y las dimensiones/pivotes frente al kit anterior. No hay límite de tamaño de archivo ni de descarga en la build; el presupuesto de 20 000 triángulos del conversor es únicamente el criterio para elegir entre el original ligero y el HD ya optimizado. Las referencias fijas hacen la conversión repetible.
+- Capturas de la build real: `docs/img/integracion_original_ciudad_20261101.png`, `integracion_original_villa_20261101.png` e `integracion_original_mapa_20261101.png`. La activación del HD de los templos se comprueba en `docs/img/hd_templos_corregido_20261101.png`.
 
 ## Licencias
 - KitBash3D *Savage* y *Ancient Temples*: licencia confirmada por Kelvin.
 - `canoa` usa `canoa.jpg` (`WORK/Amazonas/references`), de origen desconocido: hay que verificarla o reemplazarla.
+
+## Texturas 4K de Drive (26-oct-2026)
+Kelvin pasó tres archivos. No son un kit nuevo: son las fuentes de 2021 que el documento ya describe.
+
+| Archivo | Qué es | Qué entró al juego |
+|---|---|---|
+| `AV3DMaxExportBuildings.zip` (1,3 GB) | `AV3DMaxExportBuildings.max` (2,4 GB, 15,8 millones de caras, 377 instancias) y las JPG 4K de KitBash | El `.max` ya estaba migrado (64 modelos, `_hd` y lejanos). Entraron las texturas. |
+| `AV3DMaxTerrainExport.zip` | El mismo `.max` de terreno más plantas, `trees.psd` y cuatro JPG Ancient | Nada nuevo: el terreno ya está en el mapa (`MAPA_COMPLETO.md`). |
+| `AV3DMaxTerrainExport.max` | El mismo terreno, suelto | Igual que la fila de arriba. |
+
+**Qué cambió en el kit.**
+- El atlas que se publica es el de **4096 (celda 1024, margen 32)**, JPG, las 16 de Ancient y las 10 de Savage, desde las 4K del Drive. Kelvin, 26-oct-2026: en el juego tiene que estar el kit completo; no se recorta por calidad ni por el tope de peso (ese tope ya no está). La paleta ligera del arranque sigue en 512: es el respaldo mientras llega el `_hd`, no lo que se ve junto al edificio.
+- El look de fábrica no encoge `tex_hd/`. `?tex=512` sigue pudiendo medirlo chico. El `_hd` se pide en bajo (45 m), medio (70 m) y alto (90 m), también antes de moverse si ya estás en la zona. De lejos, la torre chica sigue en silueta; el templo grande no.
+- El lod del atlas mira el eje corto cuando la pared se ve de lado, sin salirse del margen de la celda.
+- `edificios_hd_atlas.py` acepta Pillow si no hay OpenImageIO. `edificios_build.py` engancha la normal del kit ligero si el archivo existe.
+
+**Qué no entró, y por qué.**
+- No hay otra ciudad dentro del `.max`. Releerlo no añade edificios. El `.max` de 2,4 GB no se abre: no hay 3ds Max.
+- Palmeras, Archmodels, hierba y losas pintadas vienen de carpetas `Torrents/` o del plugin. No son el kit y la licencia no está confirmada. No se copiaron.
+- `canoa.jpg` sigue en 512. La foto de Drive es la misma fuente, y la licencia sigue sin verificar.
+- Los 9 mapas de brillo de Savage no entran. En el tejado el brillo es parejo y alto (media 121 de 255); con el toon de fábrica el especular de Phong queda como un punto plástico. El sombreador del `_hd` tampoco tiene ese canal. No se fuerzan.
+
+## Lectura del .max sin 3ds Max (26-oct-2026, noche)
+
+No hay 3ds Max ni Blender en esta máquina (el `python3.11` de Blender es un enlace al Python del sistema). El `.max` tampoco lo abre Assimp. Se releyó con el lector OLE que ya está en el repo (`tools/blender/edificios_maxscene.py` y `edificios_maxindex.py`): el flujo `Scene` (2,4 GB), 27 885 objetos, 1 828 nodos, 1 516 Editable Poly, 293 Dummy, 17 Box, 2 Editable Mesh y 15 778 860 caras de malla base. Son las mismas 377 raíces. No aparece un edificio que no esté ya en el catálogo. `LargeJ_SculptMd` sigue siendo una caja de 12 caras y se deja fuera. Las losas, bloques y plataformas son primitivas Box del propio archivo: no hay una losa labrada que copiar. La canoa es un Editable Poly de 54 caras con TurboSmooth; el juego ya tiene las 432 de esa suavidad y no se rehizo (hace falta Blender para el modificador). `canoa.jpg` no se tocó.
+
+Los `_hd` que ya estaban usan las 16 celdas Ancient y las 10 Savage (UV2 decodificada con el meshopt del repo). El ligero sigue en la paleta corta, sin normales.
+
+Lo que el ligero no dibujaba y el `.max` sí tiene, y ahora entra como `_hd` (misma escala y pivote que el modelo ligero; la lona o el muro que el ligero conservó encaja a menos de 5 cm):
+
+| modelo | tris del ligero → `_hd` | qué vuelve |
+|---|---|---|
+| ruina_torre_b | 948 → 1086 (antes el `_hd` tenía 417) | las 543 caras del `.max`: stoneM, wallL, pillarsM, decoM |
+| campamento_a | 702 → 34 036 | sogas (Rope), picos y corteza |
+| campamento_c | 1375 → 3 282 | lona y corteza quemada |
+| campamento_f | 921 → 66 500 | sogas |
+| toldo_pequeno | 1176 → 3 282 | la lona entera (el ligero había quedado en una lámina de unos 7 cm) |
+| tienda_pequena | 942 → 47 196 | sogas |
+| muro_roca | 871 → 34 140 | sogas |
+| corral | 4017 → 253 910 | sogas, barro y lona. Siete caras de `BuildingMesh` no tenían bitmap del kit y no se copiaron |
+| monumento_b | 1588 → 136 457 | sogas y RockSmooth. La malla entera (355 733 tris) pasa de 16 MB; se agrupó a 8,5 cm para caber |
+| monumento_d | 1905 → 322 423 | sogas y RockSmooth |
+| monumento_e | 3198 → 140 900 | sogas y tablas |
+| monumento_g | 2864 → 203 558 | sogas |
+| carpa_a, _c, _d, _e, _f | ver catálogo | la lona del `.max`, con sogas donde la pieza las trae |
+| carpa_b | 925 → 188 504 | sogas |
+
+No entró `carpa_g`: la única pieza que quedaba en el `.max` mide unas 2,5 veces el modelo del juego y no encaja en su sitio. El muelle no tiene instancias; es la misma malla que `empalizada`, que ya tiene `_hd`. Los gloss de Savage siguen fuera. Palmeras, Archmodels y el scatter del terreno no se copiaron (licencia no confirmada). El `.max` del terreno no trae edificios ni píxeles nuevos.
+- Rope (3600×1375) y la difusa de WoodHewn (3572) se estiran a la celda cuadrada, como ya hacía el pipeline.
+- El `.max` del terreno no trae píxeles nuevos. No se integró.
+
+## Torres de las ruinas, malla completa (26-oct-2026)
+
+De cerca, en `kelvin_ruinas_yunque`, el atlas de piedra ya se veía y la geometría no: cilindros sin suelo, aros, muros abiertos y la base recortada. No era el lod mezclado con el `_hd` (cada instancia dibuja una sola malla). El `_hd` de esas piezas venía del migrado ya reducido y le faltaban caras que el `.max` sí tiene. El ligero no se toca: sigue dando colisiones y pisos de juego.
+
+Se reescribieron desde el Editable Poly del `.max` (lector OLE, misma escala y el mismo pivote que el `_hd` anterior), sin decimar:
+
+| modelo | tris del `_hd` anterior → ahora | qué vuelve |
+|---|---|---|
+| ruina_torre | 5622 → 7250 | peldaños de la base, suelo, muro y pilares enteros |
+| ruina_torre_c | 7516 → 9006 | el suelo del pie (el cilindro ya no queda abierto abajo) |
+| ruina_torre_e | 2388 → 4632 | la base ancha y el muro (antes quedaba en un cuarto) |
+| ruina_torre_f | 7265 → 10020 | el disco del suelo: antes solo quedaba el aro |
+| ruina_mirador | 1202 → 1916 | los muros curvos de los lados |
+| ruina_portal | 2566 → 4032 | vigas y barro que el colapso había quitado |
+| ruina_pilar | 588 → 740 | las vigas alrededor del fuste |
+| ruina_altar | 2562 → 4108 | el barro y la piedra |
+| muro_templo | 11900 → 84288 | el muro entero (84 288 tris del `.max`; el `_hd` anterior dejaba el 67 % de las aristas sueltas) |
+
+`ruina_torre_b` ya era la malla completa (1086 tris) y no se rehizo. Los templos grandes siguen en su `_hd` anterior. Las losas y plataformas siguen siendo las cajas del archivo.
+
+## Verificación contra el .max (27-oct-2026)
+
+Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lector OLE que ya está en el repo. No hay 3ds Max en esta máquina. Las capturas de la izquierda son el `_hd` (la malla del `.max`) y las de la derecha el ligero: `docs/img/edificios_max_torre_a.jpg`, `edificios_max_torre_f.jpg`, `edificios_max_mirador.jpg`, `edificios_max_campamento_a.jpg`, `edificios_max_corral.jpg`.
+
+**Qué estaba mal armado, con números.**
+
+| modelo | qué medía el archivo | qué se corrigió |
+|---|---|---|
+| corral `_hd` | el sólido visible mide 16,61 × 4,39 × 6,45 m, pero el centro Z quedaba en −1,44 m. Siete caras sin bitmap, en un punto (x −4,5, z 4,5), estiraban la caja hasta Z 4,66 y el recentrado las contaba | centro XZ en 0, base en y = 0. 253 910 tris, igual que antes |
+| campamento_a `_hd` | 34 036 tris, 8,94 × 3,43 × 8,11 m, base en y = 0,60. El alineado a la lona del ligero subió los postes | postes en y = 0. La lona sigue en el XZ del ligero (4,39 × 3,42 m). Las sogas del `.max` sí llegan a 8,94 m de ancho |
+| campamento_c `_hd` | hundido 0,17 m (3 282 tris, 5,53 × 2,37 × 5,86 m) | base en y = 0 |
+| campamento_f `_hd` | corrido 7 cm en X y 19 cm en Z | centrado, base en y = 0. 66 500 tris |
+| tienda_pequena `_hd` | corrido 4 / 7 / 7 cm | centrado, base en y = 0 |
+| ruina_torre_b `_hd` | corrido 3 cm en X y 9 cm en Z | centrado. 1 086 tris, la malla entera del `.max` |
+| ruina_torre `_hd` | 7 250 tris, misma caja que el `.max` (6,46 × 14,11 × 6,46). El disco del centro (r < 1,5 m) tenía la normal hacia abajo; el aro de piedra (r 1,94–2,70, y = 0,22) miraba hacia arriba | el disco mira hacia arriba. No se añadieron caras. La torre sigue abierta por arriba: así está el Editable Poly |
+| ruina_torre_f `_hd` | 10 020 tris. 430 caras del disco (y = 0,19, normal −1) | esas caras miran hacia arriba. El aro de arriba es el borde, no un disco que faltara |
+| ruina_torre_c, _e y ruina_mirador | el mismo caso: lámina de la base con la normal hacia abajo | dadas vuelta solo esas caras, sin cambiar el número de tris |
+
+`ruina_torre` del `.max` y el `_hd` tienen los mismos 7 250 tris y la misma caja. El ligero tiene 1 924 y la misma caja: es la retopología, no otra pieza.
+
+**Qué no es un error de armado.**
+
+- Losas, bloques y plataformas son primitivas Box del propio `.max` (12 tris). No hay una losa labrada que copiar.
+- `carpa_g` no entra. La malla del `.max` mide 13,0 × 5,0 × 11,8 m (34 036 tris, casi todas sogas) y el ligero 7,73 × 4,20 × 7,02 m. No es 2,5 veces el modelo entero: ese número salía de un solo primitivo de 5,14 m.
+- `canoa`: Editable Poly de 54 caras con TurboSmooth. El juego ya tiene las 432 de esa suavidad. Sin Blender no se rehace el modificador. `canoa.jpg` sigue sin licencia verificada.
+- Los 9 mapas de brillo de Savage no entran: con el toon de fábrica el tejado queda plástico. Palmeras, Archmodels y el scatter del terreno tampoco (licencia no confirmada).
+- `LargeJ_SculptMd` sigue siendo una caja de 12 caras, fuera de la escena.
+
+**Templos, leídos del mismo `.max` y no reescritos.** La altura coincide con el `_hd` (misma escala). Lo que falta es profundidad, porque el `_hd` ya venía decimado:
+
+| modelo | tris del `.max` | caja del `.max` (m) | tris del `_hd` | caja del `_hd` |
+|---|---|---|---|---|
+| templo_grande | 184 792 | 38,0 × 22,7 × 33,3 | 21 363 | 38,0 × 22,7 × 29,1 |
+| templo_grande_a | 89 477 | 26,7 × 42,5 × 20,6 | 23 117 | 31,2 × 42,5 × 16,8 |
+| templo_grande_d | 212 822 | 19,7 × 20,6 × 28,3 | 20 493 | 21,3 × 20,5 × 23,8 |
+| templo_grande_e | 128 423 | 27,6 × 25,2 × 38,5 | 33 016 | 29,8 × 24,8 × 32,1, centro Z −2,1 m |
+| templo_grande_f | 144 286 | 18,5 × 29,6 × 20,8 | 34 252 | 18,8 × 28,9 × 18,8 |
+| templo_mediano | 57 875 | 10,0 × 9,8 × 15,4 | 14 101 | 10,7 × 9,8 × 13,4 |
+| templo_mediano_f | 67 090 | 11,4 × 14,4 × 20,4 | 13 639 | 12,7 × 14,4 × 15,7, 30 cm bajo tierra |
+| templo_mediano_g | 64 495 | 8,9 × 9,7 × 8,6 | 13 857 | 8,9 × 9,7 × 7,6 |
+| templo_mediano_h | 462 218 | 7,8 × 9,0 × 10,1 | 23 360 | 8,2 × 9,0 × 9,6 |
+
+`templo_mediano_h` no cabe entero en 16 MB (a razón del muro, 84 288 tris ocupan 4,3 MB). No se inventó una malla intermedia.
+
+**Qué se ve cuando el `_hd` no está.** En `streaming.js`, la torre chica (radio < 10 m) usa el `_hd` solo dentro de la distancia de LOD. Entre esa distancia y la del `_hd` (45 / 70 / 90 m) se dibuja el ligero, que es la retopología. Más lejos, el lejano de color de vértice, sin textura. No se tocó `streaming.js` (lo tiene la otra sesión). El lejano no se regeneró: el script pide Blender y aquí no está.
+
+## Presupuesto de texturas originales (2-nov-2026)
+
+- Los 62 JPG de `tex_original` quedaron a un máximo de 512 px, conservando nombres, rutas, formato y proporción. La memoria estimada con RGBA y mipmaps baja de 322,20 a 80,60 MiB; su tamaño en disco baja de 26,26 a 5,83 MiB.
+- `integrar_originales.py` vuelve a exportar con el mismo tope de 512 px. Los ocho HD desactivados por KIMI-Task-009 se conservan en `DISABLED_HD`.
+- `tools/blender/texturas_edificios_test.py` comprueba el límite de 1024 px por textura, el presupuesto total inferior a 100 MiB y el tope del generador.
+- En la misma vista de la Ciudad de los 36 (`docs/img/kimi/kimi_task_002_{antes,despues}.png`), las texturas originales visibles bajan de 197,9 a 75,4 MiB y las texturas grandes de 47 a 16. Se conservan 109 draw calls, 1 551 525 triángulos y 0 errores de consola. Las medidas completas están en los JSON homónimos.
+
+## Visibilidad de la fusión global HD (2-nov-2026)
+
+- La vista aérea de Villa Raíz en calidad media dibujaba `edificiosZonaHDGlobal:AV_HD_Ancient` aunque ninguna zona contribuyente usaba HD: eran 4 600 625 triángulos de una malla global activada solo por su caja envolvente.
+- `streaming.js` ahora activa cada fusión global HD únicamente cuando una zona que sí usa HD tiene esa materia en vista o proyectando sombra. La prueba integrada comprueba que no quede una fusión global visible sin una zona HD visible.
+- A/B en la misma vista, calidad media y Linux (`docs/img/kimi/kimi_task_011_{antes,despues}.png`): 5 365 191 → 733 545 triángulos, 89 draw calls y 37 → 56 FPS medidos, con 0 errores de consola. Las medidas y el desglose de mallas están en los JSON homónimos. La medición en iPad sigue siendo una comprobación aparte del dispositivo.
+
+## Piedra dorada de las ruinas (2-nov-2026)
+
+- La paleta cercana y del atlas pasa de sombra `0,54/0,45/0,34` y luz `0,94/0,85/0,70` a `0,50/0,40/0,26` y `0,90/0,76/0,52`. Las celdas restauradas conservan su textura y reciben además el factor cálido `1,06/0,94/0,70`; no se cambia la geometría, el LOD ni el sombreado normal.
+- Comparación en `docs/img/kimi/kimi_task_004_comparacion.png`, con la meta de Kelvin, el antes y el después en el mismo encuadre y calidad alta. Las capturas y medidas individuales son `kimi_task_004_{antes,despues}.{png,json}`: 6 344 703 triángulos y 90 draw calls en ambas, con 0 errores de consola. Los FPS de estas ejecuciones Linux no son comparables por la carga concurrente del equipo.
+- Kelvin aprobó la lámina y la publicación de esta paleta el 2-nov-2026.

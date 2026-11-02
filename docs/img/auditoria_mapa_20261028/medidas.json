@@ -1,0 +1,3139 @@
+[
+ {
+  "id": "kelvin_aldea_rio_este",
+  "nombre": "Villa Raíz",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_rio_este_aire.jpg",
+  "s": 48.3,
+  "h": 8,
+  "cam": [
+   128.23711791997974,
+   62.725506787650836,
+   174.04607516986846
+  ],
+  "mir": [
+   111.1336467391304,
+   16.017433986954323,
+   96.30302434782605
+  ],
+  "cubo": {
+   "crema": 72,
+   "dorado": 191,
+   "rojo": 68,
+   "verde": 6756,
+   "gris": 9,
+   "azul": 351,
+   "oscuro": 125,
+   "otro": 1548
+  },
+  "n": 9120,
+  "piezas": 46,
+  "flotando": 12,
+  "enterradas": 0,
+  "torcidas": 13,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 8.2,
+    "erguido": false,
+    "lod": 1
+   },
+   {
+    "m": "empalizada",
+    "dy": 8.1,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 7.9,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 7.2,
+    "erguido": false,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "puente_madera",
+    "dy": -1.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_c",
+    "dy": -1.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 43,
+   "1": 3
+  },
+  "modelos": {
+   "monumento_g": 1,
+   "casa_paja_a": 3,
+   "bohio_redondo": 13,
+   "torre_vigia_b": 1,
+   "torre_vigia": 2,
+   "muralla_atalaya_b": 3,
+   "muralla_atalaya_a": 3,
+   "empalizada": 13,
+   "portal_puas": 1,
+   "puente_madera": 1,
+   "campamento_c": 1,
+   "toldo_pequeno": 3,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 57,
+   "visiblesLejos": 24,
+   "visiblesCerca": 44,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 192
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_este",
+  "nombre": "Villa Raíz",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_rio_este_camino.jpg",
+  "s": 35.0,
+  "h": 8,
+  "cam": [
+   116.30390788388377,
+   16.017433986954323,
+   119.80421136943228
+  ],
+  "mir": [
+   111.1336467391304,
+   13.017433986954323,
+   96.30302434782605
+  ],
+  "cubo": {
+   "crema": 240,
+   "dorado": 469,
+   "rojo": 80,
+   "verde": 2800,
+   "gris": 84,
+   "azul": 594,
+   "oscuro": 1562,
+   "otro": 3291
+  },
+  "n": 9120,
+  "piezas": 46,
+  "flotando": 12,
+  "enterradas": 0,
+  "torcidas": 13,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 8.2,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 8.1,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 7.9,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 7.2,
+    "erguido": false,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "puente_madera",
+    "dy": -1.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_c",
+    "dy": -1.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 46
+  },
+  "modelos": {
+   "monumento_g": 1,
+   "casa_paja_a": 3,
+   "bohio_redondo": 13,
+   "torre_vigia_b": 1,
+   "torre_vigia": 2,
+   "muralla_atalaya_b": 3,
+   "muralla_atalaya_a": 3,
+   "empalizada": 13,
+   "portal_puas": 1,
+   "puente_madera": 1,
+   "campamento_c": 1,
+   "toldo_pequeno": 3,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 61,
+   "visiblesLejos": 12,
+   "visiblesCerca": 50,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 158
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_este_3",
+  "nombre": "Los Portales del Río",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_rio_este_3_aire.jpg",
+  "s": 50.9,
+  "h": 20.1,
+  "cam": [
+   56.41908674529354,
+   80.0002729928382,
+   137.30458781951614
+  ],
+  "mir": [
+   37.693659166666656,
+   28.1041241723145,
+   52.18900791666666
+  ],
+  "cubo": {
+   "crema": 65,
+   "dorado": 121,
+   "rojo": 19,
+   "verde": 6155,
+   "gris": 68,
+   "azul": 269,
+   "oscuro": 353,
+   "otro": 2070
+  },
+  "n": 9120,
+  "piezas": 24,
+  "flotando": 0,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "campamento_c",
+    "dy": 0.9,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "puente_madera",
+    "dy": -2.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "mirador_escalonado",
+    "dy": -1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "puente_madera",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "monumento_e",
+    "dy": -0.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 15,
+   "1": 9
+  },
+  "modelos": {
+   "monumento_e": 1,
+   "portal_madera_b": 3,
+   "portal_madera_c": 3,
+   "portal_madera_a": 3,
+   "mirador_escalonado": 1,
+   "torre_vigia_b": 1,
+   "muralla_atalaya_a": 1,
+   "portal_puas": 1,
+   "puente_madera": 6,
+   "campamento_c": 1,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 118,
+   "visiblesLejos": 5,
+   "visiblesCerca": 50,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 154
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_este_3",
+  "nombre": "Los Portales del Río",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_rio_este_3_camino.jpg",
+  "s": 39.4,
+  "h": 20.1,
+  "cam": [
+   43.519347746683906,
+   28.1041241723145,
+   78.66941055310872
+  ],
+  "mir": [
+   37.693659166666656,
+   25.1041241723145,
+   52.18900791666666
+  ],
+  "cubo": {
+   "crema": 34,
+   "dorado": 126,
+   "rojo": 12,
+   "verde": 2046,
+   "gris": 43,
+   "azul": 255,
+   "oscuro": 5222,
+   "otro": 1382
+  },
+  "n": 9120,
+  "piezas": 24,
+  "flotando": 0,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "campamento_c",
+    "dy": 0.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "puente_madera",
+    "dy": -2.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "mirador_escalonado",
+    "dy": -1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "puente_madera",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "monumento_e",
+    "dy": -0.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 24
+  },
+  "modelos": {
+   "monumento_e": 1,
+   "portal_madera_b": 3,
+   "portal_madera_c": 3,
+   "portal_madera_a": 3,
+   "mirador_escalonado": 1,
+   "torre_vigia_b": 1,
+   "muralla_atalaya_a": 1,
+   "portal_puas": 1,
+   "puente_madera": 6,
+   "campamento_c": 1,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 98,
+   "visiblesLejos": 17,
+   "visiblesCerca": 65,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 154
+  }
+ },
+ {
+  "id": "kelvin_aldea_meandros",
+  "nombre": "Caney del Meandro",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_meandros_aire.jpg",
+  "s": 50.3,
+  "h": 12.5,
+  "cam": [
+   4.516378641560285,
+   72.06732992657903,
+   100.67988622787144
+  ],
+  "mir": [
+   -14.09487535714286,
+   20.536382792680094,
+   16.083277142857142
+  ],
+  "cubo": {
+   "crema": 106,
+   "dorado": 133,
+   "rojo": 25,
+   "verde": 5931,
+   "gris": 48,
+   "azul": 613,
+   "oscuro": 342,
+   "otro": 1922
+  },
+  "n": 9120,
+  "piezas": 28,
+  "flotando": 1,
+  "enterradas": 0,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "bohio_redondo",
+    "dy": 4.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.6,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "mirador_escalonado",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_paja_a",
+    "dy": -0.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -0.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 19,
+   "1": 9
+  },
+  "modelos": {
+   "canoa": 10,
+   "monumento_c": 1,
+   "bohio_puntiagudo": 1,
+   "casa_paja_a": 1,
+   "bohio_redondo": 10,
+   "corral": 1,
+   "mirador_escalonado": 1,
+   "casa_plataforma": 1,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 49,
+   "visiblesLejos": 0,
+   "visiblesCerca": 53,
+   "zonasCerca": 11,
+   "zonasLejos": 6,
+   "llamadas": 119
+  }
+ },
+ {
+  "id": "kelvin_aldea_meandros",
+  "nombre": "Caney del Meandro",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_meandros_camino.jpg",
+  "s": 29.2,
+  "h": 12.5,
+  "cam": [
+   -8.304707446435215,
+   20.536382792680094,
+   42.40222219152825
+  ],
+  "mir": [
+   -14.09487535714286,
+   17.536382792680094,
+   16.083277142857142
+  ],
+  "cubo": {
+   "crema": 355,
+   "dorado": 384,
+   "rojo": 119,
+   "verde": 4565,
+   "gris": 25,
+   "azul": 439,
+   "oscuro": 666,
+   "otro": 2567
+  },
+  "n": 9120,
+  "piezas": 28,
+  "flotando": 1,
+  "enterradas": 0,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "bohio_redondo",
+    "dy": 4.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.6,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "mirador_escalonado",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_paja_a",
+    "dy": -0.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -0.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 25,
+   "1": 3
+  },
+  "modelos": {
+   "canoa": 10,
+   "monumento_c": 1,
+   "bohio_puntiagudo": 1,
+   "casa_paja_a": 1,
+   "bohio_redondo": 10,
+   "corral": 1,
+   "mirador_escalonado": 1,
+   "casa_plataforma": 1,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 49,
+   "visiblesLejos": 0,
+   "visiblesCerca": 35,
+   "zonasCerca": 11,
+   "zonasLejos": 6,
+   "llamadas": 115
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_oeste",
+  "nombre": "Embarcadero de las Canoas",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_rio_oeste_aire.jpg",
+  "s": 39.6,
+  "h": 15.3,
+  "cam": [
+   -113.92848965808076,
+   78.97682942581024,
+   115.35955698541358
+  ],
+  "mir": [
+   -133.82280051282046,
+   23.341828375296053,
+   24.93087128205128
+  ],
+  "cubo": {
+   "crema": 102,
+   "dorado": 143,
+   "rojo": 33,
+   "verde": 5690,
+   "gris": 42,
+   "azul": 1021,
+   "oscuro": 277,
+   "otro": 1812
+  },
+  "n": 9120,
+  "piezas": 39,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 2.4,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 30,
+   "1": 9
+  },
+  "modelos": {
+   "canoa": 9,
+   "carpa_a": 1,
+   "carpa_b": 1,
+   "carpa_e": 6,
+   "monumento_b": 1,
+   "bohio_redondo": 5,
+   "tienda_pequena": 1,
+   "muralla_atalaya_b": 4,
+   "empalizada": 4,
+   "muro_roca": 4,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 39,
+   "visiblesLejos": 0,
+   "visiblesCerca": 41,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 121
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_oeste",
+  "nombre": "Embarcadero de las Canoas",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_rio_oeste_camino.jpg",
+  "s": 29.8,
+  "h": 15.3,
+  "cam": [
+   -127.63345935801256,
+   23.341828375296053,
+   53.06424016754177
+  ],
+  "mir": [
+   -133.82280051282046,
+   20.341828375296053,
+   24.93087128205128
+  ],
+  "cubo": {
+   "crema": 390,
+   "dorado": 356,
+   "rojo": 182,
+   "verde": 2499,
+   "gris": 9,
+   "azul": 1070,
+   "oscuro": 2150,
+   "otro": 2464
+  },
+  "n": 9120,
+  "piezas": 39,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 2.4,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 38,
+   "1": 1
+  },
+  "modelos": {
+   "canoa": 9,
+   "carpa_a": 1,
+   "carpa_b": 1,
+   "carpa_e": 6,
+   "monumento_b": 1,
+   "bohio_redondo": 5,
+   "tienda_pequena": 1,
+   "muralla_atalaya_b": 4,
+   "empalizada": 4,
+   "muro_roca": 4,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 53,
+   "visiblesLejos": 0,
+   "visiblesCerca": 25,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 105
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_este_2",
+  "nombre": "La Otra Orilla",
+  "carril": "K",
+  "glifo": "piedra",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_rio_este_2_aire.jpg",
+  "s": 39.6,
+  "h": 19.5,
+  "cam": [
+   155.99412543722002,
+   89.28150688955647,
+   111.26005028281844
+  ],
+  "mir": [
+   134.19346874999997,
+   27.548766644239794,
+   12.166156249999998
+  ],
+  "cubo": {
+   "crema": 456,
+   "dorado": 309,
+   "rojo": 13,
+   "verde": 5309,
+   "gris": 81,
+   "azul": 915,
+   "oscuro": 131,
+   "otro": 1906
+  },
+  "n": 9120,
+  "piezas": 32,
+  "flotando": 4,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "ruina_torre",
+    "dy": 15.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "templo_mediano_h",
+    "dy": 9.8,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "templo_grande_d",
+    "dy": 7.9,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 6.4,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "templo_mediano_h",
+    "dy": -7.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_paja_b",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 24,
+   "1": 8
+  },
+  "modelos": {
+   "templo_grande_d": 1,
+   "templo_mediano_h": 3,
+   "ruina_torre": 7,
+   "monumento_d": 1,
+   "caney_largo": 2,
+   "cercado_redondo": 1,
+   "bohio_puntiagudo": 1,
+   "bohio_redondo": 12,
+   "casa_paja_b": 1,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 57,
+   "visiblesLejos": 27,
+   "visiblesCerca": 72,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 177
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_este_2",
+  "nombre": "La Otra Orilla",
+  "carril": "K",
+  "glifo": "piedra",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_rio_este_2_camino.jpg",
+  "s": 35.6,
+  "h": 19.5,
+  "cam": [
+   140.97589527491286,
+   27.548766644239794,
+   42.99536772687684
+  ],
+  "mir": [
+   134.19346874999997,
+   24.548766644239794,
+   12.166156249999998
+  ],
+  "cubo": {
+   "crema": 48,
+   "dorado": 271,
+   "rojo": 39,
+   "verde": 4945,
+   "gris": 191,
+   "azul": 223,
+   "oscuro": 663,
+   "otro": 2740
+  },
+  "n": 9120,
+  "piezas": 32,
+  "flotando": 4,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "ruina_torre",
+    "dy": 15.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "templo_mediano_h",
+    "dy": 9.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "templo_grande_d",
+    "dy": 7.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 6.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "templo_mediano_h",
+    "dy": -7.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_paja_b",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 29,
+   "1": 3
+  },
+  "modelos": {
+   "templo_grande_d": 1,
+   "templo_mediano_h": 3,
+   "ruina_torre": 7,
+   "monumento_d": 1,
+   "caney_largo": 2,
+   "cercado_redondo": 1,
+   "bohio_puntiagudo": 1,
+   "bohio_redondo": 12,
+   "casa_paja_b": 1,
+   "toldo_pequeno": 2,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 81,
+   "visiblesLejos": 0,
+   "visiblesCerca": 51,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 137
+  }
+ },
+ {
+  "id": "kelvin_aldea_lomas",
+  "nombre": "Atalayas del Oeste",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_lomas_aire.jpg",
+  "s": 40.9,
+  "h": 17.5,
+  "cam": [
+   -72.9613805428605,
+   58.99432295169615,
+   146.76824028364842
+  ],
+  "mir": [
+   -85.92838236842105,
+   25.51738108542504,
+   87.82732289473684
+  ],
+  "cubo": {
+   "crema": 11,
+   "dorado": 95,
+   "rojo": 35,
+   "verde": 5654,
+   "gris": 28,
+   "azul": 118,
+   "oscuro": 1121,
+   "otro": 2058
+  },
+  "n": 9120,
+  "piezas": 38,
+  "flotando": 1,
+  "enterradas": 2,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "carpa_g",
+    "dy": 4.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 2.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 1.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 0.6,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "torre_vigia",
+    "dy": -2.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_b",
+    "dy": -2.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_f",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muro_roca",
+    "dy": -1.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 38
+  },
+  "modelos": {
+   "carpa_a": 2,
+   "carpa_b": 2,
+   "carpa_c": 3,
+   "carpa_d": 5,
+   "carpa_e": 3,
+   "carpa_f": 1,
+   "carpa_g": 1,
+   "torre_vigia": 11,
+   "muro_roca": 5,
+   "portal_madera_b": 1,
+   "toldo_pequeno": 3,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 44,
+   "visiblesLejos": 7,
+   "visiblesCerca": 75,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 150
+  }
+ },
+ {
+  "id": "kelvin_aldea_lomas",
+  "nombre": "Atalayas del Oeste",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_lomas_camino.jpg",
+  "s": 46.9,
+  "h": 17.5,
+  "cam": [
+   -81.8942040226911,
+   25.51738108542504,
+   106.16449719350933
+  ],
+  "mir": [
+   -85.92838236842105,
+   22.51738108542504,
+   87.82732289473684
+  ],
+  "cubo": {
+   "crema": 5,
+   "dorado": 277,
+   "rojo": 434,
+   "verde": 3512,
+   "gris": 139,
+   "azul": 4,
+   "oscuro": 1149,
+   "otro": 3600
+  },
+  "n": 9120,
+  "piezas": 38,
+  "flotando": 1,
+  "enterradas": 2,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "carpa_g",
+    "dy": 4.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 2.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 1.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_e",
+    "dy": 0.6,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "torre_vigia",
+    "dy": -2.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_b",
+    "dy": -2.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_f",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muro_roca",
+    "dy": -1.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 38
+  },
+  "modelos": {
+   "carpa_a": 2,
+   "carpa_b": 2,
+   "carpa_c": 3,
+   "carpa_d": 5,
+   "carpa_e": 3,
+   "carpa_f": 1,
+   "carpa_g": 1,
+   "torre_vigia": 11,
+   "muro_roca": 5,
+   "portal_madera_b": 1,
+   "toldo_pequeno": 3,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 111,
+   "visiblesLejos": 6,
+   "visiblesCerca": 67,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 138
+  }
+ },
+ {
+  "id": "kelvin_aldea_mina_2",
+  "nombre": "Los Monumentos",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_mina_2_aire.jpg",
+  "s": 47.7,
+  "h": 9.6,
+  "cam": [
+   117.81121644594782,
+   73.88414395900773,
+   44.79610933472792
+  ],
+  "mir": [
+   97.69861038461538,
+   17.550892247674998,
+   -46.62482730769231
+  ],
+  "cubo": {
+   "crema": 71,
+   "dorado": 138,
+   "rojo": 18,
+   "verde": 6034,
+   "gris": 39,
+   "azul": 434,
+   "oscuro": 175,
+   "otro": 2211
+  },
+  "n": 9120,
+  "piezas": 26,
+  "flotando": 1,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 3.3,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.7,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.5,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.1,
+    "erguido": false,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "monumento_f",
+    "dy": -0.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 0,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "lod": {
+   "0": 21,
+   "1": 5
+  },
+  "modelos": {
+   "canoa": 7,
+   "monumento_a": 4,
+   "monumento_f": 1,
+   "casa_plataforma": 1,
+   "torre_vigia_b": 3,
+   "muralla_atalaya_b": 4,
+   "empalizada": 4,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 101,
+   "visiblesLejos": 15,
+   "visiblesCerca": 78,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 168
+  }
+ },
+ {
+  "id": "kelvin_aldea_mina_2",
+  "nombre": "Los Monumentos",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_mina_2_camino.jpg",
+  "s": 26.5,
+  "h": 9.6,
+  "cam": [
+   103.95586560369658,
+   17.550892247674998,
+   -18.182758130050463
+  ],
+  "mir": [
+   97.69861038461538,
+   14.550892247674998,
+   -46.62482730769231
+  ],
+  "cubo": {
+   "crema": 68,
+   "dorado": 386,
+   "rojo": 344,
+   "verde": 3818,
+   "gris": 6,
+   "azul": 313,
+   "oscuro": 821,
+   "otro": 3364
+  },
+  "n": 9120,
+  "piezas": 26,
+  "flotando": 1,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "empalizada",
+    "dy": 3.3,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.7,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.5,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "empalizada",
+    "dy": 2.1,
+    "erguido": false,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "monumento_f",
+    "dy": -0.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 23,
+   "1": 3
+  },
+  "modelos": {
+   "canoa": 7,
+   "monumento_a": 4,
+   "monumento_f": 1,
+   "casa_plataforma": 1,
+   "torre_vigia_b": 3,
+   "muralla_atalaya_b": 4,
+   "empalizada": 4,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 44,
+   "visiblesLejos": 1,
+   "visiblesCerca": 41,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 119
+  }
+ },
+ {
+  "id": "kelvin_aldea_mina",
+  "nombre": "Puerto de La Mina",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_mina_aire.jpg",
+  "s": 38.1,
+  "h": 12.8,
+  "cam": [
+   91.74090354468207,
+   68.0808341843182,
+   -24.5011338541387
+  ],
+  "mir": [
+   74.4481537037037,
+   20.767324591963146,
+   -103.10454222222221
+  ],
+  "cubo": {
+   "crema": 136,
+   "dorado": 129,
+   "rojo": 7,
+   "verde": 4561,
+   "gris": 14,
+   "azul": 460,
+   "oscuro": 278,
+   "otro": 3535
+  },
+  "n": 9120,
+  "piezas": 27,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "ruina_torre_b",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "lod": {
+   "0": 14,
+   "1": 13
+  },
+  "modelos": {
+   "canoa": 8,
+   "ruina_torre_b": 3,
+   "monumento_a": 1,
+   "bohio_puntiagudo": 2,
+   "bohio_redondo": 5,
+   "casa_paja_b": 2,
+   "empalizada": 4,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 43,
+   "visiblesLejos": 0,
+   "visiblesCerca": 45,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 127
+  }
+ },
+ {
+  "id": "kelvin_aldea_mina",
+  "nombre": "Puerto de La Mina",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_mina_camino.jpg",
+  "s": 20.1,
+  "h": 12.8,
+  "cam": [
+   79.82812032089697,
+   20.767324591963146,
+   -78.65014850770734
+  ],
+  "mir": [
+   74.4481537037037,
+   17.767324591963146,
+   -103.10454222222221
+  ],
+  "cubo": {
+   "crema": 435,
+   "dorado": 202,
+   "rojo": 2,
+   "verde": 3692,
+   "gris": 27,
+   "azul": 546,
+   "oscuro": 1388,
+   "otro": 2828
+  },
+  "n": 9120,
+  "piezas": 27,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 4,
+  "peorArriba": [
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bohio_redondo",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre_b",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "bohio_puntiagudo",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 21,
+   "1": 6
+  },
+  "modelos": {
+   "canoa": 8,
+   "ruina_torre_b": 3,
+   "monumento_a": 1,
+   "bohio_puntiagudo": 2,
+   "bohio_redondo": 5,
+   "casa_paja_b": 2,
+   "empalizada": 4,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 17,
+   "visiblesLejos": 0,
+   "visiblesCerca": 18,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 94
+  }
+ },
+ {
+  "id": "kelvin_ruinas_yunque",
+  "nombre": "Ciudad de los 36",
+  "carril": "C",
+  "glifo": "piedra",
+  "toma": "aire",
+  "archivo": "kelvin_ruinas_yunque_aire.jpg",
+  "s": 29.2,
+  "h": 97,
+  "cam": [
+   12.116139249438755,
+   156.0887775081911,
+   -47.74569475292368
+  ],
+  "mir": [
+   -6.355351475409835,
+   105.00488461726127,
+   -131.70701622950818
+  ],
+  "cubo": {
+   "crema": 865,
+   "dorado": 3,
+   "rojo": 0,
+   "verde": 3215,
+   "gris": 157,
+   "azul": 2661,
+   "oscuro": 355,
+   "otro": 1864
+  },
+  "n": 9120,
+  "piezas": 61,
+  "flotando": 16,
+  "enterradas": 9,
+  "torcidas": 8,
+  "peorArriba": [
+   {
+    "m": "muro_templo",
+    "dy": 27.3,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 17.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre_b",
+    "dy": 14.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 13.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -18.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 61
+  },
+  "modelos": {
+   "plataforma_piedra": 4,
+   "muro_templo": 8,
+   "templo_grande": 2,
+   "templo_grande_e": 2,
+   "templo_grande_f": 1,
+   "templo_mediano_h": 2,
+   "ruina_torre_b": 9,
+   "ruina_torre_e": 1,
+   "ruina_torre_c": 1,
+   "ruina_torre": 5,
+   "ruina_mirador": 3,
+   "ruina_pilar": 6,
+   "ruina_altar": 1,
+   "ruina_portal": 7,
+   "ruina_torre_f": 3,
+   "templo_grande_a": 2,
+   "losa_piedra": 2,
+   "toldo_pequeno": 2
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 55,
+   "visiblesLejos": 6,
+   "visiblesCerca": 30,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 125
+  }
+ },
+ {
+  "id": "kelvin_ruinas_yunque",
+  "nombre": "Ciudad de los 36",
+  "carril": "C",
+  "glifo": "piedra",
+  "toma": "camino",
+  "archivo": "kelvin_ruinas_yunque_camino.jpg",
+  "s": 36.2,
+  "h": 97,
+  "cam": [
+   -0.6086654721236071,
+   105.00488461726127,
+   -105.58571621457078
+  ],
+  "mir": [
+   -6.355351475409835,
+   102.00488461726127,
+   -131.70701622950818
+  ],
+  "cubo": {
+   "crema": 3382,
+   "dorado": 0,
+   "rojo": 0,
+   "verde": 2993,
+   "gris": 283,
+   "azul": 64,
+   "oscuro": 35,
+   "otro": 2363
+  },
+  "n": 9120,
+  "piezas": 61,
+  "flotando": 16,
+  "enterradas": 9,
+  "torcidas": 8,
+  "peorArriba": [
+   {
+    "m": "muro_templo",
+    "dy": 27.3,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 17.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre_b",
+    "dy": 14.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_torre",
+    "dy": 13.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -19.3,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "plataforma_piedra",
+    "dy": -18.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 61
+  },
+  "modelos": {
+   "plataforma_piedra": 4,
+   "muro_templo": 8,
+   "templo_grande": 2,
+   "templo_grande_e": 2,
+   "templo_grande_f": 1,
+   "templo_mediano_h": 2,
+   "ruina_torre_b": 9,
+   "ruina_torre_e": 1,
+   "ruina_torre_c": 1,
+   "ruina_torre": 5,
+   "ruina_mirador": 3,
+   "ruina_pilar": 6,
+   "ruina_altar": 1,
+   "ruina_portal": 7,
+   "ruina_torre_f": 3,
+   "templo_grande_a": 2,
+   "losa_piedra": 2,
+   "toldo_pequeno": 2
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 77,
+   "visiblesLejos": 0,
+   "visiblesCerca": 13,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 96
+  }
+ },
+ {
+  "id": "kelvin_ruinas_yunque_2",
+  "nombre": "Los Miradores",
+  "carril": "J",
+  "glifo": "piedra",
+  "toma": "aire",
+  "archivo": "kelvin_ruinas_yunque_2_aire.jpg",
+  "s": 26.8,
+  "h": 95.8,
+  "cam": [
+   -58.73882983876507,
+   136.6036992661426,
+   -75.13210657480633
+  ],
+  "mir": [
+   -71.48707692307691,
+   103.82647795268724,
+   -133.07868423076923
+  ],
+  "cubo": {
+   "crema": 1284,
+   "dorado": 1,
+   "rojo": 1,
+   "verde": 3224,
+   "gris": 107,
+   "azul": 2962,
+   "oscuro": 329,
+   "otro": 1212
+  },
+  "n": 9120,
+  "piezas": 26,
+  "flotando": 6,
+  "enterradas": 7,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "ruina_mirador",
+    "dy": 13.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "templo_grande_a",
+    "dy": 11.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_pilar",
+    "dy": 8.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "templo_mediano",
+    "dy": 6.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "templo_mediano_h",
+    "dy": -6.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -4.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -3.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -3.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 26
+  },
+  "modelos": {
+   "bloque_piedra": 4,
+   "templo_grande": 1,
+   "templo_mediano_g": 1,
+   "templo_mediano_f": 1,
+   "templo_mediano": 1,
+   "templo_mediano_h": 1,
+   "ruina_mirador": 7,
+   "ruina_pilar": 6,
+   "templo_grande_a": 1,
+   "losa_piedra": 2,
+   "toldo_pequeno": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 42,
+   "visiblesLejos": 0,
+   "visiblesCerca": 12,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 98
+  }
+ },
+ {
+  "id": "kelvin_ruinas_yunque_2",
+  "nombre": "Los Miradores",
+  "carril": "J",
+  "glifo": "piedra",
+  "toma": "camino",
+  "archivo": "kelvin_ruinas_yunque_2_camino.jpg",
+  "s": 22.5,
+  "h": 95.8,
+  "cam": [
+   -67.52095560795767,
+   103.82647795268724,
+   -115.05086007113633
+  ],
+  "mir": [
+   -71.48707692307691,
+   100.82647795268724,
+   -133.07868423076923
+  ],
+  "cubo": {
+   "crema": 3329,
+   "dorado": 15,
+   "rojo": 0,
+   "verde": 1429,
+   "gris": 265,
+   "azul": 2097,
+   "oscuro": 63,
+   "otro": 1922
+  },
+  "n": 9120,
+  "piezas": 26,
+  "flotando": 6,
+  "enterradas": 7,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "ruina_mirador",
+    "dy": 13.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "templo_grande_a",
+    "dy": 11.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "ruina_pilar",
+    "dy": 8.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "templo_mediano",
+    "dy": 6.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "templo_mediano_h",
+    "dy": -6.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -4.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -3.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "bloque_piedra",
+    "dy": -3.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 26
+  },
+  "modelos": {
+   "bloque_piedra": 4,
+   "templo_grande": 1,
+   "templo_mediano_g": 1,
+   "templo_mediano_f": 1,
+   "templo_mediano": 1,
+   "templo_mediano_h": 1,
+   "ruina_mirador": 7,
+   "ruina_pilar": 6,
+   "templo_grande_a": 1,
+   "losa_piedra": 2,
+   "toldo_pequeno": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 41,
+   "visiblesLejos": 0,
+   "visiblesCerca": 11,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "llamadas": 90
+  }
+ },
+ {
+  "id": "kelvin_aldea_yunque",
+  "nombre": "Puerta del Yunque",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_yunque_aire.jpg",
+  "s": 18.8,
+  "h": 26.7,
+  "cam": [
+   -5.3479855242848995,
+   71.06335315711543,
+   -8.121797907588707
+  ],
+  "mir": [
+   -19.23035846153846,
+   34.65845655647273,
+   -71.22349307692308
+  ],
+  "cubo": {
+   "crema": 38,
+   "dorado": 41,
+   "rojo": 29,
+   "verde": 3592,
+   "gris": 3,
+   "azul": 128,
+   "oscuro": 449,
+   "otro": 4840
+  },
+  "n": 9120,
+  "piezas": 13,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 1.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_plataforma",
+    "dy": 0.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia_b",
+    "dy": 0.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_a",
+    "dy": -0.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "cercado_redondo",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -0.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 12,
+   "1": 1
+  },
+  "modelos": {
+   "canoa": 1,
+   "cercado_redondo": 1,
+   "casa_plataforma": 1,
+   "torre_vigia_b": 2,
+   "torre_vigia": 1,
+   "muralla_atalaya_b": 3,
+   "muralla_atalaya_a": 2,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 20,
+   "visiblesLejos": 32,
+   "visiblesCerca": 19,
+   "zonasCerca": 8,
+   "zonasLejos": 9,
+   "llamadas": 153
+  }
+ },
+ {
+  "id": "kelvin_aldea_yunque",
+  "nombre": "Puerta del Yunque",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_yunque_camino.jpg",
+  "s": 28.6,
+  "h": 26.7,
+  "cam": [
+   -14.911397992170688,
+   34.65845655647273,
+   -51.59185457979683
+  ],
+  "mir": [
+   -19.23035846153846,
+   31.658456556472725,
+   -71.22349307692308
+  ],
+  "cubo": {
+   "crema": 115,
+   "dorado": 276,
+   "rojo": 32,
+   "verde": 3239,
+   "gris": 0,
+   "azul": 0,
+   "oscuro": 1348,
+   "otro": 4110
+  },
+  "n": 9120,
+  "piezas": 13,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "canoa",
+    "dy": 1.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 1.2,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "casa_plataforma",
+    "dy": 0.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia_b",
+    "dy": 0.2,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "muralla_atalaya_a",
+    "dy": -0.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "torre_vigia",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "cercado_redondo",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": -0.1,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 13
+  },
+  "modelos": {
+   "canoa": 1,
+   "cercado_redondo": 1,
+   "casa_plataforma": 1,
+   "torre_vigia_b": 2,
+   "torre_vigia": 1,
+   "muralla_atalaya_b": 3,
+   "muralla_atalaya_a": 2,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 48,
+   "visiblesLejos": 0,
+   "visiblesCerca": 20,
+   "zonasCerca": 8,
+   "zonasLejos": 9,
+   "llamadas": 105
+  }
+ },
+ {
+  "id": "kelvin_aldea_meandros_2",
+  "nombre": "Ladera de los Cuatro",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_meandros_2_aire.jpg",
+  "s": 34.3,
+  "h": 32.7,
+  "cam": [
+   -64.5734619646021,
+   66.69171079322538,
+   -21.30514997896062
+  ],
+  "mir": [
+   -75.21493,
+   40.653345023434134,
+   -69.67545923076923
+  ],
+  "cubo": {
+   "crema": 47,
+   "dorado": 173,
+   "rojo": 113,
+   "verde": 4108,
+   "gris": 5,
+   "azul": 165,
+   "oscuro": 764,
+   "otro": 3745
+  },
+  "n": 9120,
+  "piezas": 13,
+  "flotando": 0,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "monumento_a",
+    "dy": 0.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "monumento_a",
+    "dy": 0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "puente_madera",
+    "dy": -2.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_a",
+    "dy": -0.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_a",
+    "dy": -0.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_d",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 13
+  },
+  "modelos": {
+   "carpa_a": 3,
+   "carpa_b": 1,
+   "carpa_c": 1,
+   "carpa_d": 1,
+   "monumento_a": 4,
+   "puente_madera": 1,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 19,
+   "visiblesLejos": 10,
+   "visiblesCerca": 47,
+   "zonasCerca": 10,
+   "zonasLejos": 7,
+   "llamadas": 118
+  }
+ },
+ {
+  "id": "kelvin_aldea_meandros_2",
+  "nombre": "Ladera de los Cuatro",
+  "carril": "J",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_meandros_2_camino.jpg",
+  "s": 25.4,
+  "h": 32.7,
+  "cam": [
+   -71.69493,
+   40.653345023434134,
+   -53.675459230769235
+  ],
+  "mir": [
+   -75.21493,
+   37.653345023434134,
+   -69.67545923076923
+  ],
+  "cubo": {
+   "crema": 225,
+   "dorado": 436,
+   "rojo": 93,
+   "verde": 3605,
+   "gris": 29,
+   "azul": 100,
+   "oscuro": 1503,
+   "otro": 3129
+  },
+  "n": 9120,
+  "piezas": 13,
+  "flotando": 0,
+  "enterradas": 1,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "monumento_a",
+    "dy": 0.6,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "monumento_a",
+    "dy": 0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "puente_madera",
+    "dy": -2.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_a",
+    "dy": -0.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_a",
+    "dy": -0.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "carpa_d",
+    "dy": -0.6,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 13
+  },
+  "modelos": {
+   "carpa_a": 3,
+   "carpa_b": 1,
+   "carpa_c": 1,
+   "carpa_d": 1,
+   "monumento_a": 4,
+   "puente_madera": 1,
+   "toldo_pequeno": 1,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 52,
+   "visiblesLejos": 0,
+   "visiblesCerca": 13,
+   "zonasCerca": 10,
+   "zonasLejos": 7,
+   "llamadas": 97
+  }
+ },
+ {
+  "id": "kelvin_aldea_colina",
+  "nombre": "Templos de la Colina",
+  "carril": "J",
+  "glifo": "piedra",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_colina_aire.jpg",
+  "s": 24.1,
+  "h": 26.3,
+  "cam": [
+   18.509460026885883,
+   98.31595637399349,
+   238.00457815857226
+  ],
+  "mir": [
+   -4.014567599999999,
+   34.26940335870196,
+   135.62263440000007
+  ],
+  "cubo": {
+   "crema": 410,
+   "dorado": 150,
+   "rojo": 21,
+   "verde": 6390,
+   "gris": 220,
+   "azul": 208,
+   "oscuro": 142,
+   "otro": 1579
+  },
+  "n": 9120,
+  "piezas": 25,
+  "flotando": 1,
+  "enterradas": 8,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "complejo_ruinas",
+    "dy": 8.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 0.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "mirador_escalonado",
+    "dy": 0,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 1
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "losa_piedra",
+    "dy": -1.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.7,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 16,
+   "1": 9
+  },
+  "modelos": {
+   "losa_piedra": 10,
+   "complejo_ruinas": 1,
+   "carpa_e": 8,
+   "monumento_f": 1,
+   "mirador_escalonado": 1,
+   "muralla_atalaya_b": 2,
+   "toldo_pequeno": 2
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 9,
+   "visiblesLejos": 2,
+   "visiblesCerca": 45,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 129
+  }
+ },
+ {
+  "id": "kelvin_aldea_colina",
+  "nombre": "Templos de la Colina",
+  "carril": "J",
+  "glifo": "piedra",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_colina_camino.jpg",
+  "s": 26.8,
+  "h": 26.3,
+  "cam": [
+   2.9929076616978305,
+   34.26940335870196,
+   167.47479468044475
+  ],
+  "mir": [
+   -4.014567599999999,
+   31.269403358701958,
+   135.62263440000007
+  ],
+  "cubo": {
+   "crema": 0,
+   "dorado": 0,
+   "rojo": 0,
+   "verde": 3647,
+   "gris": 3497,
+   "azul": 0,
+   "oscuro": 0,
+   "otro": 1976
+  },
+  "n": 9120,
+  "piezas": 25,
+  "flotando": 1,
+  "enterradas": 8,
+  "torcidas": 0,
+  "peorArriba": [
+   {
+    "m": "complejo_ruinas",
+    "dy": 8.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 0.1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "mirador_escalonado",
+    "dy": 0,
+    "erguido": true,
+    "lod": 1
+   },
+   {
+    "m": "muralla_atalaya_b",
+    "dy": 0,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "losa_piedra",
+    "dy": -1.9,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.8,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "losa_piedra",
+    "dy": -1.7,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 23,
+   "1": 2
+  },
+  "modelos": {
+   "losa_piedra": 10,
+   "complejo_ruinas": 1,
+   "carpa_e": 8,
+   "monumento_f": 1,
+   "mirador_escalonado": 1,
+   "muralla_atalaya_b": 2,
+   "toldo_pequeno": 2
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 21,
+   "visiblesLejos": 9,
+   "visiblesCerca": 24,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 113
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_oeste_2",
+  "nombre": "Campamento de los Toldos",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "aire",
+  "archivo": "kelvin_aldea_rio_oeste_2_aire.jpg",
+  "s": 44.6,
+  "h": 20.7,
+  "cam": [
+   -127.94177333333333,
+   52.6791891049808,
+   -4.831092380952377
+  ],
+  "mir": [
+   -135.42177333333333,
+   28.6791891049808,
+   -38.83109238095238
+  ],
+  "cubo": {
+   "crema": 142,
+   "dorado": 134,
+   "rojo": 21,
+   "verde": 3250,
+   "gris": 1,
+   "azul": 997,
+   "oscuro": 1054,
+   "otro": 3521
+  },
+  "n": 9120,
+  "piezas": 21,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 1,
+  "peorArriba": [
+   {
+    "m": "campamento_c",
+    "dy": 2.8,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_c",
+    "dy": 1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_f",
+    "dy": 0.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_a",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 21
+  },
+  "modelos": {
+   "canoa": 2,
+   "campamento_f": 1,
+   "campamento_a": 1,
+   "campamento_c": 2,
+   "toldo_pequeno": 14,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 105,
+   "visiblesLejos": 0,
+   "visiblesCerca": 55,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 132
+  }
+ },
+ {
+  "id": "kelvin_aldea_rio_oeste_2",
+  "nombre": "Campamento de los Toldos",
+  "carril": "K",
+  "glifo": "madera",
+  "toma": "camino",
+  "archivo": "kelvin_aldea_rio_oeste_2_camino.jpg",
+  "s": 20.5,
+  "h": 20.7,
+  "cam": [
+   -131.90177333333332,
+   28.6791891049808,
+   -22.831092380952377
+  ],
+  "mir": [
+   -135.42177333333333,
+   25.6791891049808,
+   -38.83109238095238
+  ],
+  "cubo": {
+   "crema": 0,
+   "dorado": 3,
+   "rojo": 0,
+   "verde": 7355,
+   "gris": 0,
+   "azul": 0,
+   "oscuro": 1759,
+   "otro": 3
+  },
+  "n": 9120,
+  "piezas": 21,
+  "flotando": 0,
+  "enterradas": 0,
+  "torcidas": 1,
+  "peorArriba": [
+   {
+    "m": "campamento_c",
+    "dy": 2.8,
+    "erguido": false,
+    "lod": 0
+   },
+   {
+    "m": "canoa",
+    "dy": 1.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_c",
+    "dy": 1,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_f",
+    "dy": 0.3,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "peorAbajo": [
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.7,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "campamento_a",
+    "dy": -0.5,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   },
+   {
+    "m": "toldo_pequeno",
+    "dy": -0.4,
+    "erguido": true,
+    "lod": 0
+   }
+  ],
+  "lod": {
+   "0": 21
+  },
+  "modelos": {
+   "canoa": 2,
+   "campamento_f": 1,
+   "campamento_a": 1,
+   "campamento_c": 2,
+   "toldo_pequeno": 14,
+   "losa_piedra": 1
+  },
+  "stats": {
+   "hd": true,
+   "visiblesHD": 27,
+   "visiblesLejos": 0,
+   "visiblesCerca": 6,
+   "zonasCerca": 7,
+   "zonasLejos": 10,
+   "llamadas": 83
+  }
+ }
+]

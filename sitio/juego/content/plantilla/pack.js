@@ -32,8 +32,11 @@
     // ---------- Mundo: una isla pequeña con una colina, un río y una poza ----------
     mundo: {
       tamano: 40, segmentos: 80,
-      cielo: { color: '#f7cfa8', niebla: [40, 120] },
-      luces: { cielo: '#ffe6c8', suelo: '#3a4a2a', hemi: 0.9, sol: '#ffc58a', solInt: 0.8, solPos: [30, 40, -20] },
+      exposicion: 0.74,
+      cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
+      luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] },
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 },
+      mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
       lugares: { inicio: { x: -4, z: 2, r: 5 }, cima: { x: -16, z: -14, r: 3 } },
       terreno: {
         ondas: [{ fn: 'sin', x: 0.09, amp: 0.6 }, { fn: 'cos', z: 0.07, amp: 0.5 }],
@@ -45,9 +48,9 @@
         planos: ['inicio', 'cima'],
       },
       rio: { x: 22 },
-      agua: { x: 22, ancho: 10, nivel: { x: 22, z: 8, sobre: 1.0 } },
-      arboles: { cantidad: 40, semilla: 3, copaCada: 2, margenRio: 5, copaColor: '#3f8f4a', evitar: [AGIL] },
-      oceano: { color: '#4a9ab8', y: -2.6 },
+      agua: { x: 22, ancho: 10, color: '#5fe3d6', nivel: { x: 22, z: 8, sobre: 1.0 } },
+      arboles: { cantidad: 40, semilla: 3, copaCada: 2, margenRio: 5, copaColor: '#2f7d43', evitar: [AGIL] },
+      oceano: { color: '#0b4f86', y: -2.6 },
       islas: { lista: [{ x: 60, z: -40, r: 9 }] },
     },
     npcs: [{ id: 'agil', nombre: 'Ágil', sprite: 'assets/agilis.png', x: AGIL.x, z: AGIL.z, escala: 2.2, flota: true }],

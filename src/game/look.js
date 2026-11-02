@@ -1,9 +1,11 @@
-/* Juego · Looks de color (A/B para Kelvin): «vibrante», «soleado» y «toon» frente al look de fábrica.
-   Carga perezosa desde boot.js (window.AVLook(G)). El look de fábrica no se toca: sin look activo este módulo no cambia ni
-   un byte de los shaders ni de los valores del pack; cada look guarda lo que pisa y lo devuelve al quitarse.
-   Cómo se elige: ?look=vibrante en la URL (manda sobre todo), sessionStorage 'ave.look' (lo que se eligió en la pausa) o la
-   sección oculta «Look» del menú de pausa (se ve con ?look=… o con localStorage 'ave.look.dev' = '1').
-   Para fijar uno de fábrica el día que Kelvin decida: cambiar DEFECTO abajo (una línea).
+/* Juego · Looks de color: «vibrant_toon» (Vibrant Toon Refinado, el look de fábrica desde el 26-oct por decisión de Kelvin),
+   y las variantes de la prueba A/B («vibrante», «soleado», «toon») y el original («fabrica»: lo que había antes, para comparar).
+   Lo carga boot.js al arrancar (window.AVLook(G)), antes del primer cuadro del mundo (la portada lo tapa). Sin look activo este
+   módulo no cambia ni un byte de los shaders ni de los valores del pack; cada look guarda lo que pisa y lo devuelve al quitarse.
+   Cómo se elige: ?look=vibrant_toon|fabrica|… en la URL (manda sobre todo), sessionStorage 'ave.look' (lo que se eligió en la
+   pausa) o DEFECTO. La sección «Look» del menú de pausa está oculta (se ve con ?look=… o con localStorage 'ave.look.dev' = '1').
+   Con un look activo la gradación de fábrica de renderer.js (W1: uSat/uCon/uTint del composer, o CustomToneMapping en bajo) se
+   sustituye por la del look (no se suman); el cielo vivo (C1), el clima y el atardecer siguen mandando sobre sus uniformes.
    Qué toca cada look (todo en vivo, sin recargar):
    - Gradación global barata: saturación, contraste y calidez después del ACES, en el ShaderChunk tonemapping_fragment (afecta a
      todos los materiales con tone mapping, también al cielo y a las nubes; los sprites toneMapped = false quedan fuera). Son
@@ -20,8 +22,8 @@ window.AVLook = function (G) {
   'use strict';
   const R = G.renderer, W = G.pack.mundo || {}, $ = G.util.$;
   const SC = THREE.ShaderChunk;
-  const ORIG = { tone: SC.tonemapping_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex };
-  const DEFECTO = null; // ← el look de fábrica. Cuando Kelvin elija: 'vibrante', 'soleado' o 'toon'.
+  const ORIG = { tone: SC.tonemapping_fragment, pars: SC.tonemapping_pars_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex };
+  const DEFECTO = 'vibrant_toon'; // ← el look de fábrica (decisión de Kelvin, 26-oct: docs/DECISION_LOG.md). ?look=fabrica muestra el original.
   const LOOKS = {
     vibrante: {
       titulo: 'Vibrante', exposicion: 0.82,
@@ -57,18 +59,27 @@ window.AVLook = function (G) {
     // - borde de luz (rim) en los personajes (mallas con esqueleto: Vittata, cotorras, bandada): un define AV_RIM en su material
     //   Standard; ni geometría, ni rig, ni texturas se tocan y al quitar el look el define desaparece.
     vibrant_toon: {
-      titulo: 'Vibrant Toon', exposicion: 0.78,
-      grade: { sat: 1.24, con: 1.07, tint: [1.02, 1.0, 0.96], rodilla: true },
+      // 28-oct (Kelvin: «muy saturado, con mucho brillo; equilibra la iluminación»): sat 1.24 → 1.12, contraste 1.07 → 1.05,
+      // exposición 0.78 → 0.76, sol 2.05 → 1.95, terreno 1.1 → 1.05, hojas y tintes de especie con menos recorte de azul.
+      titulo: 'Vibrant Toon', exposicion: 0.76,
+      grade: { sat: 1.12, con: 1.05, tint: [1.01, 1.0, 0.975], rodilla: true },
       cielo: { cenit: '#1e78e8', horizonte: '#b4e4ff', sol: '#fff4d6' },
       niebla: { color: '#b8e4ff', inicio: 80, fin: 1500 },
-      luces: { cielo: '#a8d4ff', suelo: '#4a7a34', hemi: 0.84, sol: '#ffe4b0', solInt: 2.05 },
-      terrenoSat: 1.1, hoja: [0.96, 1.08, 0.84], toon: true, texMax: 512,
+      luces: { cielo: '#a8d4ff', suelo: '#4a7a34', hemi: 0.84, sol: '#ffe8c0', solInt: 1.95 },
+      terrenoSat: 1.05, hoja: [0.97, 1.04, 0.9], toon: true, texMax: 512,
       refinado: {
-        rampa: [-0.08, 0.5, 0.4],                                      // smoothstep(a, b) mezclado con saturate() al 40 %
-        especies: [[1.0, 1.0, 1.0], [1.12, 1.04, 0.72], [0.8, 1.02, 1.0], [0.98, 1.1, 0.84], [1.14, 0.96, 0.8]], // por material de hoja (±20 % por canal)
-        altura: { bajo: [0.72, 0.9, 0.92], alto: [1.12, 1.06, 0.8], h0: 0.5, h1: 9 }, // tinte por altura local (m)
-        tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.06, 1.0, 0.9] },
+        rampa: [-0.05, 0.6, 0.55],                                     // smoothstep(a, b) mezclado con saturate() al 55 %
+        especies: [[1.0, 1.0, 1.0], [1.08, 1.03, 0.82], [0.86, 1.01, 1.0], [0.98, 1.06, 0.9], [1.1, 0.97, 0.86]], // por material de hoja
+        altura: { bajo: [0.72, 0.9, 0.92], alto: [1.08, 1.04, 0.88], h0: 0.5, h1: 9 }, // tinte por altura local (m)
+        tintes: { roca: [0.9, 0.93, 1.0], corteza: [1.06, 0.96, 0.86], 'av-hd-atlas': [1.02, 1.0, 0.94] },
         rim: { color: [0.75, 0.88, 1.0], int: 0.55, borde: [0.55, 1.0] }, // color (lineal), fuerza y rango del borde
+      },
+      // Noche permitida (cap. 5, mundo.cielo.permiso = 'noche'): misma gradación y mismo toon; cielo atmosférico, no un fondo plano.
+      noche: {
+        exposicion: 0.72,
+        cielo: { cenit: '#24366e', horizonte: '#6d84b0', sol: '#ffd7a8' },
+        niebla: { color: '#8aa4c8', inicio: 48, fin: 720 },
+        luces: { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35 },
       },
     },
   };
@@ -127,8 +138,20 @@ window.AVLook = function (G) {
     ? (x => { const [a, b, k] = L.refinado.rampa; return `mix( smoothstep( ${f(a)}, ${f(b)}, ${x} ), saturate( ${x} ), ${f(k)} )`; })
     : (x => `smoothstep( -0.05, 0.45, ${x} )`);
   const rampaLambert = (src, L) => { const r = rampaDe(L); return src.split('saturate( dotNL )').join(r('dotNL')).split('saturate( -dotNL )').join(r('-dotNL')); };
+  // Gradación de fábrica de renderer.js (W1). Sin composer va dentro de CustomToneMapping (ACES + saturación y contraste): con un
+  // look se deja en ACES puro, para que la del look la sustituya. Con composer, el pase de gradación tiene uSat/uCon/uTint: se
+  // ponen a 1 (la viñeta y los rayos siguen). Al quitar el look vuelven los valores de fábrica (post.GRADO).
+  const RE_CUSTOM = /vec3 CustomToneMapping\( vec3 color \) \{[^}]*\}/;
+  const NEUTRO_PARS = ORIG.pars.replace(RE_CUSTOM, 'vec3 CustomToneMapping( vec3 color ) { return ACESFilmicToneMapping( color ); }');
+  function gradoFabrica(L) {
+    const g = R.post && R.post.grade, G0 = R.post && R.post.GRADO; if (!g || !g.uniforms || !g.uniforms.uSat || !G0) return;
+    const u = g.uniforms;
+    if (L) { u.uSat.value = 1; u.uCon.value = 1; u.uTint.value.set(1, 1, 1); }
+    else { u.uSat.value = G0.sat; u.uCon.value = G0.con; u.uTint.value.set(G0.tint[0], G0.tint[1], G0.tint[2]); }
+  }
   function aplicarChunks(L) {
     SC.tonemapping_fragment = L ? chunkTone(L) : ORIG.tone;
+    SC.tonemapping_pars_fragment = L ? NEUTRO_PARS : ORIG.pars;
     SC.lights_phong_pars_fragment = L && L.toon ? ORIG.phong.replace('float dotNL = saturate( dot( geometry.normal, directLight.direction ) );', 'float dotNL = ' + rampaDe(L)('dot( geometry.normal, directLight.direction )') + ';') : ORIG.phong;
     SC.lights_lambert_vertex = L && L.toon ? rampaLambert(ORIG.lambert, L) : ORIG.lambert;
   }
@@ -149,13 +172,24 @@ window.AVLook = function (G) {
   const tocados = new Set(), guardado = new WeakMap(), imagenes = new WeakMap();
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
   function texturasDe(m, fn) {
-    for (const k of ['map', 'normalMap', 'alphaMap', 'emissiveMap', 'specularMap', 'aoMap', 'roughnessMap', 'metalnessMap']) if (m[k] && m[k].isTexture) fn(m[k]);
+    for (const k of ['map', 'normalMap', 'alphaMap', 'emissiveMap', 'specularMap', 'aoMap', 'roughnessMap', 'metalnessMap']) if (m[k] && m[k].isTexture) fn(m[k], k);
     const uu = m.uniforms || (m.userData && m.userData.uniforms); // ShaderMaterial o el splat del suelo (userData.uniforms)
-    if (uu) for (const u in uu) { const v = uu[u] && uu[u].value; if (v && v.isTexture) fn(v); }
+    if (uu) for (const u in uu) { const v = uu[u] && uu[u].value; if (v && v.isTexture) fn(v, u); }
   }
-  function encoger(t, max) {
+  // BE5: el GLTFLoader sube las imágenes de la flora como CanvasTexture sobre un ImageBitmap, y antes se saltaban (el tope no
+  // les llegaba). Las de la flora sí se encogen; los lienzos dibujados y las de edificios y personajes, no. En medio y bajo la
+  // normal de la flora (corteza y roca) va a la mitad del tope: se nota poco y ahorra ~18 MB en el móvil.
+  const esBitmap = img => typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap;
+  function topeK(max, k, flora) { return flora && max && k === 'normalMap' && R.calidad.nivel !== 'alto' ? max >> 1 : max; }
+  function encoger(t, max, k, flora) {
     const img = t.image;
-    if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isCanvasTexture || t.isVideoTexture || Array.isArray(img)) return;
+    if (t.isCanvasTexture && !imagenes.has(t) && !(flora && esBitmap(img))) return;
+    max = topeK(max, k, flora);
+    if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isVideoTexture || Array.isArray(img)) return;
+    // El atlas HD (4096, celda 1024) no se encoge: a 512 la celda quedaría en 128 y la piedra se ve blanda.
+    // ?tex= sigue pudiendo medirlo. La flora y el suelo sí bajan.
+    const src = img.src || img.currentSrc || '';
+    if (!TEX_URL && (t.userData && t.userData.avAtlas || /\/tex_hd\/hd_/.test(src))) return;
     if (!imagenes.has(t)) { if (!(img.width > max && img.height > max)) return; imagenes.set(t, img); }
     const o = imagenes.get(t);
     if (!max) { if (t.image !== o) { t.image = o; t.needsUpdate = true; } return; }
@@ -174,7 +208,7 @@ window.AVLook = function (G) {
     return especieDe.get(m);
   }
   const obcOriginal = new WeakMap(); // onBeforeCompile de la hoja antes de envolverlo (se repone al quitar)
-  function tocar(m, L, esqueleto, forzar) {
+  function tocar(m, L, esqueleto, forzar, flora) {
     envolverClave(m);
     const Rf = L && L.refinado, clave = claveOriginal(m);
     let recompilar = !!forzar; // al aplicar o quitar (cambia el chunk global) siempre; en el barrido, solo si cambia el programa
@@ -204,16 +238,26 @@ window.AVLook = function (G) {
       else if (m.defines) delete m.defines.AV_RIM;
       if (tenia !== !!(m.defines && m.defines.AV_RIM)) recompilar = true;
     }
-    const max = L ? TEX_URL || L.texMax || 0 : 0;
-    texturasDe(m, t => encoger(t, max));
+    const max = topeTex(L);
+    texturasDe(m, (t, k) => encoger(t, max, k, flora));
     if (recompilar) m.needsUpdate = true;
     if (L) tocados.add(m); else tocados.delete(m);
   }
+  // F0.6: el tope de la calidad (renderer: bajo 512, medio 1024) también recorta, con look y sin él (antes solo el suelo lo
+  // respetaba); con look manda el menor de los dos y ?tex= manda sobre todo. Los atlas _hd siguen sin encogerse (encoger()).
+  function topeTex(L) {
+    if (TEX_URL) return TEX_URL;
+    let a = (L && L.texMax) || 0; const b = R.calidad.texMax || 0;
+    if (a && a < 1024 && R.calidad.nivel === "alto" && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) a = 1024;   // BM14: en alto de escritorio el look no encoge flora ni suelo por debajo de 1024
+    return a && b ? Math.min(a, b) : a || b;
+  }
+  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => encoger(t, topeTex(null), k, /^flora:/.test(o.name))); }); }
   function barrer(L, todos) {
-    const max = L ? TEX_URL || L.texMax || 0 : 0;
+    const max = topeTex(L);
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos);
-      else if (max) texturasDe(m, t => encoger(t, max)); // las imágenes llegan después del primer toque: se encogen al verlas
+      const flora = /^flora:/.test(o.name);
+      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora);
+      else if (max) texturasDe(m, (t, k) => encoger(t, max, k, flora)); // las imágenes llegan después del primer toque: se encogen al verlas
     } });
     if (!L) { for (const m of tocados) tocar(m, null, false, true); tocados.clear(); }
   }
@@ -235,8 +279,24 @@ window.AVLook = function (G) {
     };
     base.niebla.lin = base.niebla.srgb.clone().convertSRGBToLinear();
   }
+  // Un capítulo con permiso «noche» usa la noche del look (misma calidad). El día usa el look tal cual.
+  function ambienteDe(L) {
+    if (!L) return null;
+    const p = W.cielo && W.cielo.permiso;
+    if (p === 'noche' && L.noche) {
+      const n = L.noche;
+      return { exposicion: n.exposicion, luces: n.luces, cielo: { cenit: n.cielo.cenit, horizonte: n.cielo.horizonte, sol: n.cielo.sol }, niebla: n.niebla };
+    }
+    return L;
+  }
+  let pausaAmbiente = false; // la tormenta del cap. 2 pide el cielo un rato; el barrido no se lo pisa
+  function pausarAmbiente(v) {
+    pausaAmbiente = !!v;
+    if (!pausaAmbiente && actual) aplicarAmbiente(ambienteDe(LOOKS[actual]));
+    return pausaAmbiente;
+  }
   function aplicarAmbiente(L) {
-    guardarBase();
+    guardarBase(); gradoFabrica(L);
     const B = base, sky = R.sky && R.sky.material.uniforms, A = G.agua && G.agua.uniforms, fog = R.scene.fog;
     R.renderer.toneMappingExposure = L ? L.exposicion : B.exposicion;
     if (L) { R.hemi.color.set(L.luces.cielo); R.hemi.groundColor.set(L.luces.suelo); R.hemi.intensity = L.luces.hemi; R.sun.color.set(L.luces.sol); R.sun.intensity = L.luces.solInt; }
@@ -260,9 +320,9 @@ window.AVLook = function (G) {
   let barridoN = 0;
   function aplicar(nombre) {
     const L = LOOKS[nombre] || null;
-    if (!L) return quitar();
+    if (!L) { quitar(); try { sessionStorage.setItem('ave.look', 'fabrica'); } catch (e) { /* sin almacén */ } return null; } // «Fábrica» elegido a propósito: no vuelve el DEFECTO
     actual = nombre;
-    aplicarChunks(L); aplicarAmbiente(L); barrer(L, true);
+    aplicarChunks(L); aplicarAmbiente(ambienteDe(L)); barrer(L, true);
     G.emit('contexto', true); // el atlas de impostores de la flora se repinta con el look
     try { sessionStorage.setItem('ave.look', nombre); } catch (e) { /* sin almacén */ }
     sincronizarMenu();
@@ -287,27 +347,40 @@ window.AVLook = function (G) {
   let huella = -1;
   const huellaDe = () => { const m = R.renderer.info.memory; return m.geometries * 4096 + m.textures; };
   G.on('render', () => {
-    if (!actual) return;
+    if (!actual) { const h = huellaDe(); if (h !== huella) { huella = h; recortar(); } return; } // fábrica: solo el tope de la calidad
     const h = huellaDe(), nuevo = h !== huella; huella = h;
-    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); if (!nuevo && climaQuieto()) aplicarAmbiente(LOOKS[actual]); }
+    if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && !pausaAmbiente && climaQuieto()) aplicarAmbiente(ambienteDe(LOOKS[actual])); }
   }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
+  G.on('calidad', () => { if (actual) barrer(LOOKS[actual], false); else recortar(); });
 
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
   function medir() {
     const s = R.stats(), vistas = new Set(); let bytes = 0, n = 0, grandes = 0;
+    let atlas = 0;
+    // F0.6: desglose por origen (la URL de la imagen o el nombre de la malla) y las 10 texturas más pesadas
+    const por = {}, top = [];
+    const origen = (src, o) => /\/tex_hd\//.test(src) ? 'atlas_hd' : /\/tex\/entorno\/suelo/.test(src) ? 'suelo' : /\/models\/entorno\//.test(src) || /^flora:/.test(o.name) ? 'flora'
+      : /^terreno/.test(o.name) ? 'suelo' : o.isSkinnedMesh ? 'personajes' : /\/(edificios|kelvin|ruinas|aldea)/i.test(src) ? 'edificios' : src ? 'otros' : 'generadas';
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, t => {
       if (vistas.has(t)) return; vistas.add(t);
       const img = t.image, w = img && (img.width || (img.data && img.width)) || 0, h = img && img.height || 0;
-      if (!w) return; n++; if (w > 512) grandes++;
-      bytes += w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1);
+      if (!w) return; n++;
+      const src = (img && (img.src || img.currentSrc)) || (imagenes.has(t) && imagenes.get(t).src) || '';
+      const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test(src);
+      if (w > 512) { grandes++; if (esAtlas) atlas++; }
+      const b = w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1), k = esAtlas ? 'atlas_hd' : origen(src, o);
+      bytes += b; por[k] = (por[k] || 0) + b;
+      top.push([(src.split('/').pop() || t.name || o.name || '?').slice(0, 48), w + '×' + h, Math.round(b / 104857.6) / 10]);
     }); });
+    for (const k in por) por[k] = Math.round(por[k] / 104857.6) / 10;
+    top.sort((a, b) => b[2] - a[2]); top.length = Math.min(10, top.length);
     const C = R.calidad, sombra = C.sombras ? C.sombras * C.sombras * 4 : 0;
     const dbs = R.renderer.getDrawingBufferSize(new THREE.Vector2()), post = R.post.activo ? dbs.x * dbs.y * 8 * 2.5 : 0;
     const pm = performance.memory, heapMB = pm && pm.usedJSHeapSize ? Math.round(pm.usedJSHeapSize / 1048576) : null;
     return { look: actual || 'fabrica', fps: s.fps, calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, post: s.post,
-      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
-      sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10 };
+      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, atlasGrandes: atlas, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
+      sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10, texturasPor: por, texturasTop: top };
   }
 
   // ---------- Sección oculta «Look» en el menú de pausa ----------
@@ -331,7 +404,8 @@ window.AVLook = function (G) {
 
   // ---------- Arranque: URL > sesión > DEFECTO ----------
   const pedido = q.get('look') || (() => { try { return sessionStorage.getItem('ave.look'); } catch (e) { return null; } })() || DEFECTO;
-  if (pedido && LOOKS[pedido]) aplicar(pedido);
+  if (LOOKS[pedido]) aplicar(pedido);
+  else if (pedido !== 'fabrica' && LOOKS[DEFECTO]) aplicar(DEFECTO); // un nombre desconocido cae en el de fábrica actual
 
   // ---------- Prueba: AV.lookTest() ----------
   async function test() {
@@ -339,6 +413,8 @@ window.AVLook = function (G) {
     const antes = actual, errores = [], ce = console.error, e0 = (window.__aveErrores || []).length;
     console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
     const cuadro = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // QA-78: con la Mac cargada la fauna, los peces y la bandada entran entre medidas; se espera a 3 cuadros seguidos con los mismos draw calls (tope 10 s)
+    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls; n = c === ult ? n + 1 : 1; ult = c; } };
     const foto = () => {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
@@ -350,7 +426,9 @@ window.AVLook = function (G) {
     const firma = () => {
       const u = R.sky && R.sky.material.uniforms, fog = R.scene.fog;
       let sat = ''; R.scene.traverse(o => { const m = o.material; if (m && m.userData && m.userData.splat) sat += m.userData.uniforms.uSat.value.toArray().map(v => v.toFixed(3)).join(',') + ';'; });
-      return JSON.stringify({ tone: SC.tonemapping_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex,
+      const pg = R.post && R.post.grade && R.post.grade.uniforms;
+      return JSON.stringify({ tone: SC.tonemapping_fragment, pars: SC.tonemapping_pars_fragment, phong: SC.lights_phong_pars_fragment, lambert: SC.lights_lambert_vertex,
+        grado: pg && [pg.uSat.value, pg.uCon.value, pg.uTint.value.toArray()],
         exp: R.renderer.toneMappingExposure, hemi: [hex(R.hemi.color), hex(R.hemi.groundColor), R.hemi.intensity], sol: [hex(R.sun.color), R.sun.intensity],
         sky: u && [hex(u.uCenit.value), hex(u.uHorizonte.value)], fog: fog && [hex(fog.color), fog.near, fog.far], sat, key: new THREE.MeshBasicMaterial().customProgramCacheKey() });
     };
@@ -358,9 +436,11 @@ window.AVLook = function (G) {
     if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true }); // sin transición de clima a mitad de la prueba
     try {
       if (actual) quitar();
-      await cuadro();
+      await cuadro(); await asentar();
       const F0 = firma(), f0 = foto(), c0 = f0.croma, m0 = medir();
-      check('De fábrica: los ShaderChunks de three son los originales', SC.tonemapping_fragment === ORIG.tone && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
+      check('Sin look («fabrica»): los ShaderChunks son los originales (los de three y la gradación W1 de renderer.js)', SC.tonemapping_fragment === ORIG.tone && SC.tonemapping_pars_fragment === ORIG.pars && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
+      check('DEFECTO es «vibrant_toon» (decisión de Kelvin) y existe; ?look=fabrica o el chip «Fábrica» dejan ver el original', DEFECTO === 'vibrant_toon' && !!LOOKS[DEFECTO] && (q.get('look') === 'fabrica' ? antes === null : antes === (sessionStorage.getItem('ave.look') === 'fabrica' ? null : antes)), 'al entrar: ' + (antes || 'fabrica'));
+      check('La gradación de fábrica (W1) se encuentra para sustituirla (CustomToneMapping en tonemapping_pars_fragment)', RE_CUSTOM.test(ORIG.pars) && NEUTRO_PARS !== ORIG.pars || !/CustomToneMapping[^}]*ACESFilmicToneMapping/.test(ORIG.pars), /ACESFilmicToneMapping/.test(ORIG.pars) ? 'W1 presente' : 'sin W1 (three a secas)');
       check('De fábrica: exposición y luces del pack', R.renderer.toneMappingExposure === (W.exposicion != null ? W.exposicion : 0.7) && (!W.luces || R.sun.intensity === W.luces.solInt),
         'exposición ' + R.renderer.toneMappingExposure + ' · sol ' + R.sun.intensity);
       check('De fábrica: la clave de los programas es la de three', new THREE.MeshBasicMaterial().customProgramCacheKey() === keyProto.call(new THREE.MeshBasicMaterial()));
@@ -369,16 +449,24 @@ window.AVLook = function (G) {
       check('Sección «Look» en la pausa, oculta salvo en modo prueba, con un chip por look', !!sec && menu.contains(sec) && sec.hidden === !DEV && sec.querySelectorAll('button[data-look]').length === NOMBRES.length + 1);
       for (const n of NOMBRES) {
         const t0 = performance.now(); aplicar(n); const tApl = performance.now() - t0;
-        await cuadro(); await cuadro();
+        await cuadro(); await cuadro(); await asentar();
         const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n];
         check(`Look «${n}»: se aplica (chunk, exposición, sol, cielo, niebla y clave de programas)`, actual === n && SC.tonemapping_fragment !== ORIG.tone && R.renderer.toneMappingExposure === L.exposicion &&
           R.sun.intensity === L.luces.solInt && (!R.sky || hex(R.sky.material.uniforms.uCenit.value) === hex(lin(L.cielo.cenit))) && (!R.ATMOS || R.scene.fog.far === L.niebla.fin) &&
           new THREE.MeshBasicMaterial().customProgramCacheKey().endsWith('|look:' + n), Math.round(tApl) + ' ms en aplicar');
         check(`Look «${n}»: la imagen tiene más color que la de fábrica`, c1 > c0 * 1.03, 'croma medio ' + c0.toFixed(1) + ' → ' + c1.toFixed(1));
         check(`Look «${n}»: el chip de la pausa lo marca`, !!sec && sec.querySelector(`button[data-look="${n}"]`).getAttribute('aria-pressed') === 'true');
+        { const pg = R.post && R.post.grade && R.post.grade.uniforms;
+          check(`Look «${n}»: sustituye la gradación de fábrica en vez de sumarse (CustomToneMapping = ACES puro; uSat/uCon del composer = 1; viñeta intacta)`,
+            /CustomToneMapping\( vec3 color \) \{ return ACESFilmicToneMapping\( color \); \}/.test(SC.tonemapping_pars_fragment) && (!pg || (pg.uSat.value === 1 && pg.uCon.value === 1 && pg.uTint.value.x === 1 && pg.uVig.value === (R.post.grade.uniforms.uVig.value))), pg ? 'composer' : 'sin composer'); }
         if (L.toon) {
           check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
-          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, m1.texturasGrandes < m0.texturasGrandes || m0.texturasGrandes === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' texturas de más de 512 px · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          const g0 = m0.texturasGrandes - (m0.atlasGrandes || 0), g1 = m1.texturasGrandes - (m1.atlasGrandes || 0);
+          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, g1 < g0 || g0 === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' (el atlas HD no se encoge: ' + (m1.atlasGrandes || 0) + ') · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          { let cuantas = 0, mal = 0, maxW = 0; R.scene.traverse(o => { if (!o.material || !/^flora:/.test(o.name)) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => {
+              if (!t.isCanvasTexture || !(imagenes.has(t) || esBitmap(t.image))) return; cuantas++; const tope = topeK(topeTex(L), k, true), w = t.image.width;
+              if (k === 'normalMap') maxW = Math.max(maxW, w); if (tope && w > tope && t.image.height > tope) mal++; }); });
+            check(`Look «${n}»: la flora del GLB respeta el tope de texturas (BE5; la normal, a la mitad en medio y bajo)`, !mal, cuantas + ' texturas de flora · ' + mal + ' por encima · normal más grande ' + maxW + ' px · calidad ' + R.calidad.nivel); }
         }
         if (L.refinado) {
           const hojas = new Set(), tintes = new Set(), rim = [], sinRim = [];
@@ -395,11 +483,11 @@ window.AVLook = function (G) {
         }
         check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
       }
-      quitar(); await cuadro(); await cuadro();
+      quitar(); await cuadro(); await cuadro(); await asentar();
       const F1 = firma(), c2 = foto().croma, m2 = medir();
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
-      check('Al quitar el look las texturas vuelven a su tamaño', m2.texturasGrandes === m0.texturasGrandes && Math.abs(m2.texturasMB - m0.texturasMB) < 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
+      check('Al quitar el look las texturas vuelven a su tamaño (no quedan reducidas; si otros módulos cargan texturas durante la prueba, el total puede crecer)', m2.texturasGrandes >= m0.texturasGrandes && m2.texturasMB > m0.texturasMB - 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
       { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
           if (m.defines && m.defines.AV_RIM) rim++;
           if (guardado.has(m) && m.color && hex(m.color) !== hex(guardado.get(m))) colores++;
@@ -419,7 +507,84 @@ window.AVLook = function (G) {
     return result();
   }
 
-  const api = { aplicar, quitar, get actual() { return actual; }, LOOKS, DEFECTO, medir, test, ORIG };
-  if (window.AV) window.AV.look = api;
+  // ---------- Prueba: AV.lookCapitulosTest() — frena la publicación si un pack se sale del estándar (BD1) ----------
+  const DIA = {
+    cielo: "cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] }",
+    luces: "luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] }",
+    post: 'post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.16 }',
+    mar: "mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' }",
+    exp: 'exposicion: 0.74',
+  };
+  const PACKS_DIA = [['cap1', 'content/cap1/mundo.js'], ['ep2', 'content/ep2/pack.js'], ['ep3', 'content/ep3/pack.js'], ['ep4', 'content/ep4/pack.js'], ['ep6', 'content/ep6/pack.js'], ['plantilla', 'content/plantilla/pack.js']];
+  function revisarDia(id, src) {
+    const falta = [];
+    for (const k of Object.keys(DIA)) if (!src.includes(DIA[k])) falta.push(k);
+    if (src.includes("permiso: 'noche'")) falta.push('noche-no-permitida');
+    const rios = (src.match(/agua:\s*\{[^}]*\}/g) || []).filter(b => /\bancho:/.test(b));
+    if (rios.some(b => !b.includes("color: '#5fe3d6'"))) falta.push('agua');
+    return { ok: !falta.length, porque: falta.join(', ') };
+  }
+  function revisarNoche(src) {
+    const n = LOOKS.vibrant_toon.noche, falta = [];
+    if (!src.includes("permiso: 'noche'")) falta.push('permiso');
+    if (!src.includes("cenit: '" + n.cielo.cenit + "'")) falta.push('cenit');
+    if (!src.includes("color: '" + n.cielo.horizonte + "'")) falta.push('horizonte');
+    if (!src.includes('niebla: [' + n.niebla.inicio + ', ' + n.niebla.fin + ']')) falta.push('niebla');
+    if (!src.includes('solInt: ' + n.luces.solInt)) falta.push('sol');
+    if (!src.includes('exposicion: ' + n.exposicion)) falta.push('exposicion');
+    if (!src.includes('saturacion: 1.08')) falta.push('post');
+    if (!src.includes("somero: '#1a7a86'")) falta.push('mar');
+    if (src.includes(DIA.cielo)) falta.push('dia-de-mas');
+    return { ok: !falta.length, porque: falta.join(', ') };
+  }
+  async function testCapitulos() {
+    const P = G.pruebas, { check, result } = P.runner();
+    const traer = async ruta => {
+      const r = await fetch(ruta, { cache: 'no-store' });
+      if (!r.ok) throw new Error(ruta + ' ' + r.status);
+      return r.text();
+    };
+    try {
+      for (const [id, ruta] of PACKS_DIA) {
+        let src = '', mal = null;
+        try { src = await traer(ruta); } catch (e) { mal = String(e && e.message || e); }
+        const rev = mal ? { ok: false, porque: mal } : revisarDia(id, src);
+        check('Pack «' + id + '» hereda el día del capítulo 1 (cielo atmosférico, luces, post, mar y agua)', rev.ok, rev.porque);
+      }
+      let ep5 = '', mal5 = null;
+      try { ep5 = await traer('content/ep5/pack.js'); } catch (e) { mal5 = String(e && e.message || e); }
+      const rn = mal5 ? { ok: false, porque: mal5 } : revisarNoche(ep5);
+      check('El capítulo 5 es noche atmosférica del estándar (permiso «noche», misma saturación)', rn.ok, rn.porque);
+      let ep2 = '';
+      try { ep2 = await traer('content/ep2/pack.js'); } catch (e) { ep2 = ''; }
+      check('La tormenta del capítulo 2 pide el cielo y lo devuelve (pausarAmbiente)', ep2.includes('pausarAmbiente(true)') && ep2.includes('pausarAmbiente(false)'));
+      const falso = "mundo: { cielo: { color: '#ff66aa', niebla: [12, 40] }, luces: { solInt: 0.2 }, permisos: '' }";
+      check('Un cielo rosa con niebla corta no pasa el estándar', !revisarDia('falso', falso).ok, revisarDia('falso', falso).porque);
+      if (actual && !pausaAmbiente) aplicarAmbiente(ambienteDe(LOOKS[actual]));
+      const esp = ambienteDe(LOOKS[DEFECTO]);
+      const u = R.sky && R.sky.material.uniforms;
+      check('En vivo el look de fábrica es vibrant_toon y el cielo es atmosférico', DEFECTO === 'vibrant_toon' && actual === 'vibrant_toon' && !!R.ATMOS && !!esp, 'look ' + (actual || 'fabrica'));
+      check('En vivo la exposición, la niebla y el cenit son los del estándar de este capítulo', !!esp && R.renderer.toneMappingExposure === esp.exposicion && R.scene.fog && R.scene.fog.far === esp.niebla.fin && (!u || hex(u.uCenit.value) === hex(lin(esp.cielo.cenit))),
+        'exposición ' + R.renderer.toneMappingExposure + ' · niebla ' + (R.scene.fog && R.scene.fog.far) + ' · cenit ' + (u ? hex(u.uCenit.value) : 'sin cielo'));
+      // BM23: nada de vegetación ni de «pirámides» sobre el mar: ni conos de isla visibles con mapa, ni vértices del dosel bajo el nivel del mar
+      if (G.terreno && G.terreno.mapa) {
+        const conos = []; R.scene.traverse(o => { if (o.isMesh && o.visible && o.geometry && o.geometry.type === 'ConeGeometry' && o.geometry.parameters.radius >= 20) conos.push(o.position.toArray().map(Math.round).join(',')); });
+        check('Sobre el mar no hay conos verdes de isla (BM23)', !conos.length, conos.join(' | '));
+        const D = window.AV_DOSEL_CAP1;
+        if (D && G.dosel && G.dosel.activo) {
+          const u8 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+          const q = new Uint16Array(u8(D.pos).buffer), o = D.origen, e = D.escala; let mar = 0;
+          for (let i = 0; i < q.length; i += 3) { const x = o[0] + q[i] * e, z = o[2] + q[i + 2] * e; if (G.terreno.height(x, z) < -2) mar++; }
+          check('El dosel no tiene vértices sobre el mar abierto (BM23)', mar === 0, mar + ' vértices');
+        }
+      }
+    } catch (e) {
+      check('La prueba de capítulos terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
+    }
+    return result();
+  }
+
+  const api = { aplicar, quitar, get actual() { return actual; }, LOOKS, DEFECTO, medir, test, pausarAmbiente, ORIG };
+  if (window.AV) { window.AV.look = api; window.AV.lookCapitulosTest = () => testCapitulos(); }
   return api;
 };

@@ -28,7 +28,7 @@
     const S = G.S, scene = G.renderer.scene, M = G.fisica.MOVE, D = G.pack.fauna || { especies: [], zonas: {} };
     const H = (x, z) => G.terreno.height(x, z);
     const N_LAG = { bajo: 6, medio: 12, alto: 20 }, N_MAR = { bajo: 4, medio: 8, alto: 12 };
-    const OBS_R = 4, OBS_T = 2, LAG_HUYE = 6, APAGA = 70, RECOLOCA = 40, RADIO_ARB = 60, LOD_MAR = 25;
+    const OBS_R = 4, OBS_T = 2, LAG_HUYE = 6, APAGA = 70, RECOLOCA = 40, RADIO_ARB = 60, LOD_MAR = 25, PISTA_R = 8, PRECARGA = 120;
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' && en ? en : es);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
     const nivel = () => (G.renderer.calidad && G.renderer.calidad.nivel) || 'medio';
@@ -36,7 +36,7 @@
     const conBoa = D.boa !== false;
     const especies = () => (D.especies || []).filter(e => e.id !== 'boa' || conBoa);
     const vistos = () => (Array.isArray(S.fauna) ? S.fauna : (S.fauna = []));
-    const F = { prueba: false, quieta: 0, t: 0, gestos: [] };
+    const F = { prueba: false, quieta: 0, t: 0, gestos: [], pista: 0, calentado: false, anilloT: 0 };
     const uT = { value: 0 };
     let oyenteTest = null; // la prueba cuenta los «aprendizaje» de fauna (G no tiene off)
     G.on('aprendizaje', d => { if (oyenteTest) oyenteTest(d); });
@@ -265,7 +265,31 @@
     })();
     const matCoq = material(['iSaco'], `if (aMarca > 0.5) { vec3 g = vec3(${SACO.join(', ')}); transformed = g + (position - g) * iSaco; }`);
     const coqMesh = instanciada(geoCoq, matCoq, 8, 'coquies', ['iSaco']);
-    const COQ = { lista: [] };
+    const COQ = { lista: [], anillo: null, anilloDe: null, cerca: Infinity };
+    // Anillo de 4 m en el suelo alrededor del coquí más cercano: dice hasta dónde hay que acercarse (OBS_R). Se calca al terreno al cambiar de coquí.
+    function crearAnillo() {
+      const g = new THREE.RingGeometry(OBS_R - 0.14, OBS_R, 64, 1); g.rotateX(-Math.PI / 2);
+      const m = new THREE.MeshBasicMaterial({ color: 0xcfffd0, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide, fog: false });
+      const r = new THREE.Mesh(g, m); r.name = 'coqui_anillo'; r.visible = false; r.frustumCulled = false; r.renderOrder = 3; r.userData.sinCulling = true;
+      scene.add(r); return r;
+    }
+    function ponerAnillo(c) {
+      if (!COQ.anillo) COQ.anillo = crearAnillo();
+      if (COQ.anilloDe !== c) {
+        const p = COQ.anillo.geometry.attributes.position, base = COQ.anillo.userData.base || (COQ.anillo.userData.base = Float32Array.from(p.array));
+        for (let i = 0; i < p.count; i++) { const x = c.x + base[i * 3], z = c.z + base[i * 3 + 2]; p.setXYZ(i, x, H(x, z) + 0.12, z); }
+        p.needsUpdate = true; COQ.anilloDe = c; COQ.anillo.position.set(0, 0, 0);
+      }
+      COQ.anillo.material.opacity = 0.4 + 0.2 * Math.sin(F.t * 3); COQ.anillo.visible = true;
+    }
+    // Pista del coquí: con neblina y a menos de 8 m, «quédate quieta» (una vez por acercamiento) y el anillo; se apaga al observarlo
+    function pistaCoqui(dt, libre, vis, cerca) {
+      F.pista = Math.max(0, F.pista - dt);
+      const hay = vis && libre && cerca && COQ.cerca < PISTA_R && !vistos().includes('coqui') && verDe();
+      if (!hay) { if (COQ.anillo) COQ.anillo.visible = false; if (!vis || COQ.cerca > PISTA_R * 1.5) F.pista = Math.min(F.pista, 1); return; }
+      ponerAnillo(cerca);
+      if (F.pista <= 0) { F.pista = 60; try { G.ui.toast(L('Shhh… quédate quieta dentro del círculo y escucha al coquí.', 'Shh… stay still inside the circle and listen for the coquí.'), 3200); } catch (err) { /* sin HUD */ } }
+    }
     function crearCoquies() {
       const bushes = (G.c && G.c.BUSHES) || G.pack.coquies || [];
       const ls = bushes.map(b => ({ id: b.id, x: b.x + 0.7, z: b.z + 0.3, alto: 0.55 }));
@@ -277,18 +301,22 @@
       const c = G.clima; if (!c || typeof c.estado !== 'function') return null;
       try { const e = c.estado(); return typeof e === 'string' ? { nombre: e } : e || null; } catch (err) { return null; }
     }
+    // C9: el coquí es nocturno (canta del atardecer al amanecer): con M3 terminada solo sale al atardecer (src/game/atardecer.js
+    // o S.hora de tarde o de noche), nunca a pleno sol; con neblina o llovizna sale a cualquier hora
+    const tarde = () => !!(G.atardecer && G.atardecer.activo()) || (Number.isFinite(S.hora) && (S.hora >= 17.5 || S.hora < 6.5));
     function coquiVisible() {
       const e = climaNombre();
       if (e) { const nom = e.nombre || e.estado || e.actual || e.objetivo; if (nom === 'neblina' || nom === 'llovizna' || e.niebla > 0.5 || e.llovizna > 0.5) return true; }
-      return !!(S.missions && S.missions.m3);
+      return !!(S.missions && S.missions.m3) && tarde();
     }
     const cantar = (c, primero) => { c.canta = 1.1; if (!G.quiet) { G.audio.play(primero ? 'qui' : 'co'); setTimeout(() => G.audio.play(primero ? 'co' : 'qui'), 260); } };
     function pasoCoquies(dt, libre) {
       const vis = coquiVisible(), ver = verDe() && vis, sc = coqMesh.geometry.attributes.iSaco, cam = G.renderer.camera.position;
-      let n = 0;
+      let n = 0, mejor = null; COQ.cerca = Infinity;
       for (const c of COQ.lista) {
         c.y = H(c.x, c.z) + c.alto;
         const d = Math.hypot(S.pos.x - c.x, S.pos.y - c.y, S.pos.z - c.z);
+        if (d < COQ.cerca) { COQ.cerca = d; mejor = c; }
         c.espera -= dt;
         if (vis && d < 3 && c.espera <= 0) { cantar(c); c.espera = 3.2; }
         if (vis && libre && F.quieta >= OBS_T && d < OBS_R) observar('coqui');
@@ -299,7 +327,14 @@
         dummy.position.set(c.x, c.y, c.z); dummy.rotation.set(0, c.rot, 0); dummy.scale.setScalar(2); dummy.updateMatrix();
         coqMesh.setMatrixAt(n, dummy.matrix); sc.setX(n++, c.saco);
       }
+      // Precarga: a unos 120 m se dibuja una instancia fuera del mundo un solo cuadro; así el programa y los buffers se compilan lejos y no al llegar
+      const calienta = !F.calentado && COQ.cerca < PRECARGA; if (calienta) F.calentado = true;
+      if (calienta) { if (n === 0) { dummy.position.set(cam.x, -500, cam.z); dummy.rotation.set(0, 0, 0); dummy.scale.setScalar(1); dummy.updateMatrix(); coqMesh.setMatrixAt(0, dummy.matrix); sc.setX(0, 0.25); n = 1; } }
       coqMesh.count = n; coqMesh.visible = n > 0; coqMesh.instanceMatrix.needsUpdate = true; sc.needsUpdate = true;
+      pistaCoqui(dt, libre, vis, mejor);
+      // el anillo también se compila lejos, pero medio segundo después, para no sumar los dos compilados en un solo cuadro
+      if (calienta) F.anilloT = 0.5;
+      if (F.anilloT > 0 && (F.anilloT -= dt) <= 0) { const r = COQ.anillo || (COQ.anillo = crearAnillo()); r.position.set(0, -500, 0); r.visible = true; COQ.anilloDe = null; }
     }
     function coro() {
       const cerca = COQ.lista.filter(c => Math.hypot(S.pos.x - c.x, S.pos.z - c.z) < 30);
@@ -447,6 +482,7 @@
     async function test() {
       const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
       const cuadros = n => new Promise(r => { const f = () => (--n <= 0 ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); });
+      const hora0 = S.hora; // C9: el bloque 4 pone S.hora de tarde
       const g0 = { pos: Object.assign({}, S.pos), vy: S.vy, fauna: vistos().slice(), m3: S.missions && S.missions.m3, posado: M.posado, speed: M.speed, flying: M.flying,
         nivel: nivel(), clima: null };
       const simular = (seg, antes) => { for (let t = 0; t < seg - 1e-6; t += 0.1) { if (antes) antes(); paso(0.1, false); } };
@@ -487,8 +523,13 @@
         const ave = nb.aves[0]; picoMundo(_v);
         ok('Quieta junto a las flores, una mariposa se le posa en el pico (observada)', vistos().includes('mariposa') && nb.pico && nb.pico.llego && Math.hypot(ave.x - _v.x, ave.y - _v.y - 0.06, ave.z - _v.z) < 0.15);
         nb.pico = null;
-        // 4. Coquíes: ocultos con sol, visibles con neblina (o con M3 si no hay clima)
+        // 4. Coquíes: ocultos con sol, visibles con neblina (o con M3 si no hay clima, y solo al atardecer: C9)
         const C = G.clima && typeof G.clima.fijar === 'function' ? G.clima : null;
+        const at0 = G.atardecer && G.atardecer.activo();
+        S.missions = S.missions || {}; const m3b = S.missions.m3; S.missions.m3 = true; delete S.hora;
+        if (C) C.fijar('sol');
+        const conSol = coquiVisible(); S.hora = 18.5; const alAtardecer = coquiVisible(); if (C) C.fijar(null); S.missions.m3 = m3b;
+        ok('C9: con M3 terminada y sol de mediodía el coquí no sale ni canta; al atardecer (S.hora 18,5) sí', (at0 || !conSol) && alAtardecer, `sol ${conSol} · tarde ${alAtardecer}`);
         if (C) {
           C.fijar('sol'); const oculto = !coquiVisible(); C.fijar('neblina'); const visto = coquiVisible(); C.fijar(null);
           ok('Coquíes: ocultos con sol y visibles con neblina (G.clima)', oculto && visto);
@@ -500,6 +541,32 @@
         const c0 = COQ.lista[0]; quietaEn(c0.x + 1.5, H(c0.x + 1.5, c0.z), c0.z); F.quieta = 0; c0.espera = 0; simular(0.3);
         ok('A menos de 3 m infla el saco vocal y canta', c0.saco > 0.9, c0.saco.toFixed(2));
         simular(2); ok('Quieta junto a un coquí visible: observado', vistos().includes('coqui'));
+        // pista del coquí: con neblina y a 6 m, «quédate quieta» una vez y el anillo de 4 m; al observarlo se apaga; en inglés también
+        {
+          const toast0 = G.ui.toast, textos = [], idioma0 = G.aula && G.aula.aj && G.aula.aj.idioma; G.ui.toast = t => { textos.push(String(t)); };
+          try {
+            const seen = vistos().filter(x => x !== 'coqui'); S.fauna = seen; F.pista = 0;
+            quietaEn(c0.x + 6, H(c0.x + 6, c0.z), c0.z); F.quieta = 0; simular(0.3); simular(0.5);
+            const r = COQ.anillo, dx = r && r.geometry.attributes.position.getX(0) - c0.x, dz = r && r.geometry.attributes.position.getZ(0) - c0.z;
+            ok('Pista del coquí: a 6 m con neblina sale «quédate quieta» una sola vez (ES)', textos.length === 1 && /quieta/.test(textos[0]), textos.join(' | '));
+            ok('Anillo de 4 m alrededor del coquí, visible', !!r && r.visible && Math.abs(Math.hypot(dx, dz) - OBS_R + 0.14) < 0.3 + 1e-6, r ? Math.hypot(dx, dz).toFixed(2) + ' m' : 'sin anillo');
+            if (G.aula && G.aula.aj) {
+              G.aula.aj.idioma = 'en'; textos.length = 0; F.pista = 0; simular(0.3);
+              ok('Pista del coquí en inglés (idioma en)', textos.length === 1 && /still/.test(textos[0]) && !/quieta/.test(textos[0]), textos.join(' | '));
+              G.aula.aj.idioma = idioma0;
+            }
+            textos.length = 0; quietaEn(c0.x + 30, H(c0.x + 30, c0.z), c0.z); simular(0.3);
+            ok('Lejos (30 m) no hay pista ni anillo', textos.length === 0 && !COQ.anillo.visible);
+            quietaEn(c0.x + 1.5, H(c0.x + 1.5, c0.z), c0.z); F.quieta = 0; simular(2.5);
+            ok('Observado el coquí, el anillo se apaga', vistos().includes('coqui') && !COQ.anillo.visible);
+            S.fauna = seen;
+          } finally { G.ui.toast = toast0; if (G.aula && G.aula.aj) G.aula.aj.idioma = idioma0; }
+        }
+        // precarga: a menos de 120 m se dibuja un cuadro una instancia fuera del mundo (compila el programa lejos del coquí)
+        {
+          F.calentado = false; quietaEn(c0.x + 100, H(c0.x + 100, c0.z), c0.z); pasoCoquies(0.05, true);
+          ok('Precarga del coquí a ~100 m: se dibuja ya (visible, al menos una instancia) y el anillo se compila medio segundo después', F.calentado && coqMesh.visible && coqMesh.count >= 1 && F.anilloT > 0, 'visible ' + coqMesh.visible + ' · count ' + coqMesh.count);
+        }
         S.missions.m3 = g0.m3;
         // 5. Boa: posada en su rama → levanta la cabeza unos 2 s, nunca se desplaza, observada
         if (conBoa) {
@@ -542,7 +609,7 @@
         ok('En las baterías (G.quiet) no se ve ningún animal', (() => { const q = G.quiet; G.quiet = true; F.prueba = false; paso(0.05, false); const n = [lagMesh, marCerca, marLejos, coqMesh].every(m => !m.visible) && !(BOA.mesh && BOA.mesh.visible); F.prueba = true; G.quiet = q; return n; })());
       } finally {
         oyenteTest = null;
-        F.prueba = false; Object.assign(S.pos, g0.pos); S.vy = g0.vy; S.fauna = g0.fauna; if (S.missions) S.missions.m3 = g0.m3;
+        F.prueba = false; Object.assign(S.pos, g0.pos); S.vy = g0.vy; S.fauna = g0.fauna; if (S.missions) S.missions.m3 = g0.m3; if (hora0 === undefined) delete S.hora; else S.hora = hora0;
         M.posado = g0.posado; M.speed = g0.speed; M.flying = g0.flying; F.quieta = 0; BOA.t = -1; BOA.visto = false;
         for (const nb of MAR.nubes) { nb.pico = null; nb.disp = 0; nb.dispT = 0; }
         recolocarLagartijos();

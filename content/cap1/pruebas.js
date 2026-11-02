@@ -26,9 +26,25 @@
   // Vuela hasta la percha (atajo: posición directa, como en la ruta de la gota) y se posa; devuelve si quedó junto a Iguaca.
   function posarseLuma(G, T) {
     const S = G.S, p = G.c.luma.percha;
-    S.pos.x = p.x + 0.6; S.pos.y = p.y + 1.6; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true; T.tick(0.1);
-    G.fisica.MOVE.flying = false; T.tick(1.2);
+    // La copa puede crecer cuando llega la vegetación (el alto real llega en una promesa). Si la percha
+    // sube durante el tick, Vittata se queda debajo y Acción no ve a Iguaca (QA-64, solo con la máquina rápida).
+    const sentar = () => { S.pos.x = p.x + 0.6; S.pos.y = p.y + 0.3; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = false; };
+    sentar(); T.tick(0.7); sentar();
     return G.c.luma.junto() && !G.fisica.MOVE.flying;
+  }
+
+  // QA-64: un choose del coro no puede quedar abierto, y una capa (final, cómic, creador o tarjeta)
+  // no puede tragarse la Acción: si hay una, action() no habla con Iguaca y el paso se queda en 0.
+  async function limpiarDialogo(G) {
+    await new Promise(r => setTimeout(r, 0));
+    soltarCapas(G);
+    if (G.S) G.S.chorus = false;
+  }
+  function soltarCapas(G) {
+    const $ = G.util.$;
+    for (const id of ['end', 'comic', 'creator']) { const n = $(id); if (n) n.hidden = true; }
+    if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+    if (G.dialogo && G.dialogo.open && G.dialogo.open()) G.dialogo.clear();
   }
 
   async function selfTest(G, T, opts) {
@@ -40,6 +56,7 @@
     const action = () => G.interaccion.action();
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true);
     // Creador de personaje
     check('Nombre vacío se rechaza', saveCharacter({ name: '', preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null);
@@ -47,7 +64,7 @@
     check('Nombre con números, correo o "me llamo" se rechaza (seguridad infantil)', ['Ana123', 'yo@correo', 'me llamo Ana'].every(n => saveCharacter({ name: n, preset: 'agilis', outfit: 'azul', accessory: 'gafas' }) !== null));
     check('Personaje válido se guarda', saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' }) === null && S.profile.created && had('PlayerCharacterCreated'));
     await G.creador.open(false); G.creador.pintarNombre('Luna del Mar'); $('p-save').click();
-    check('El creador da el nombre de dos listas (sin texto libre)', S.profile.name === 'Luna del Mar' && $('p-name-a').tagName === 'SELECT' && !document.querySelector('#creator input[type=text]'), S.profile.name);
+    check('El creador guarda el nombre de las listas y deja escribir el propio', S.profile.name === 'Luna del Mar' && $('p-name-a').tagName === 'SELECT' && !!$('p-name-libre'), S.profile.name);
     saveCharacter({ name: 'Nube Azul', preset: 'versicolor', outfit: 'azul', accessory: 'gafas' });
     await G.actores.refreshCompanion();
     if (G.criadero && G.criadero.companero) {
@@ -83,15 +100,21 @@
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
+    const oidos = () => { const v = []; for (let k = 0; k < 40 && G.dialogo.activo(); k++) { v.push(G.dialogo.actual().text); G.dialogo.next(); } drain(); return v; };
     check('Sin la ruta de la gota todavía no se elige terreno', S.step === 3 && S.evaluated.A && S.evaluated.B, 'paso ' + S.step);
     jugarRutaGota(G, T);
     check('Dos terrenos inspeccionados y misión educativa hecha', S.step === 4 && S.missions.educativa && S.events.filter(e => e.key === 'LandInspected').length === 2, 'paso ' + S.step);
+    // KELVIN-2 (equipo, 30-oct): como el guion p.7, el Guardián aparece al llegar a construir y escucha la idea de Vittata
+    tick(0.1); check('Guardián · aparece en el sendero al llegar al paso de construir', G.actores.npc('guardian').sp.visible && !S.guardianIntro);
+    useAt('guardian', 1.4, 0); const p7a = oidos();
+    check('Guardián · p.7 antes de construir: «¿Y usted quién es?» y «primero quiero escuchar tu idea», sin adelantar el paso', S.guardianIntro && S.step === 4 && p7a.includes('¿Y usted quién es?') && p7a.includes('Quizás. Pero primero quiero escuchar tu idea.') && !had('GuardianMet'), p7a.join(' | ').slice(0, 160));
     C.startBuild('A'); teleport(PLACES.A.x + 50, PLACES.A.z, 0, 1); tick(0.1);
     const build = () => C.build();
     check('Construcción fuera del terreno rechazada', build() && !build().valid, build() && build().reason);
     teleport(PLACES.A.x, PLACES.A.z - 1.5, 0, 1); tick(0.1);
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
-    action(); drain();
+    action(); const p8 = oidos();
+    check('Guardián · p.8 al levantar el refugio: «¿Segura de que funcionará?» / «No completamente.» / «Bien. Entonces vamos a comprobarlo.»', ['¿Segura de que funcionará?', 'No completamente.', 'Bien. Entonces vamos a comprobarlo.'].every(t => p8.includes(t)), p8.slice(0, 4).join(' | '));
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
     // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
     const CRE = C.crecida, flotando = () => CRE.objetos().filter(o => o.fase === 'flota');
@@ -113,15 +136,26 @@
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
     const bb = document.getElementById('c-build'); if (bb) bb.click();
-    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21); drain();
+    teleport(PLACES.B.x, PLACES.B.z - 1.5, 0, 1); tick(0.1); action(); drain(); tick(21);
+    const p9 = oidos();
+    check('AP2 · guion p.9: al aguantar la colina, «Pensé que hoy lo habíamos perdido todo» y «Yo también»', p9.includes('Pensé que hoy lo habíamos perdido todo.') && p9.includes('Yo también.'), p9.join(' | ').slice(0, 160));
     check('Reconstruido en la colina y a salvo', S.refuge && S.refuge.parcel === 'B' && !S.refuge.damaged && had('ShelterRelocated'));
-    useAt('guardian', 1.4, 0); drain();
+    check('Engranaje · el de la máquina pasa al techo del refugio y la máquina queda con el hueco', S.gearRoof && !C.engMaquina.visible && !!C.refugeMesh().getObjectByName('engranaje_techo'));
+    { // hito 28: modelos de varias piezas (no primitivas) y ligeros: menos de 3000 triángulos cada uno
+      const O = C.objetos, tri = O ? { maquina: O.triangulos(C.maquina), transmisor: O.triangulos(C.trx), banco: O.triangulos(C.bench), coqui: O.triangulos(O.coqui()) } : {};
+      check('Hito 28 · máquina, transmisor, banco y coquí son modelos con detalle y de menos de 3000 triángulos', !!O && Object.values(tri).every(n => n > 1000 && n < 3000), JSON.stringify(tri));
+    }
+    useAt('guardian', 1.4, 0); const p7 = oidos();
+    check('Guardián · tras la crecida ya lo conocemos: no se vuelve a presentar y regala el banco', p7[0] === 'Ya lo comprobamos: la crecida dijo la verdad.' && !p7.includes('¿Y usted quién es?'), p7.slice(0, 3).join(' | '));
     check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
     useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
     for (const b of C.BUSHES) { useAt(b.id, 1.3, 0); for (const n of b.song) C.simonPress(n); }
     useAt('transmisor');
     check('Símbolo de 36 fragmentos visible', !$('symbol').hidden);
+    const medL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); medL.push({ who: a.who, txt: a.text, img: a.img || '', sim: !$('symbol').hidden }); G.dialogo.next(); }
+    const med = medL.find(e => /medalla/.test(e.txt));
+    check('Medalla del Guardián · su línea sale con el retrato de la medalla y el emblema a la vista', !!med && med.who === 'Guardián' && /^(data:image\/png|assets\/guardian)/.test(med.img) && med.sim, med && med.img.slice(0, 24));
     drain();
     check('Después del transmisor toca subir al mirador', S.step === 7 && !S.complete && $('symbol').hidden, 'paso ' + S.step);
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
@@ -132,7 +166,7 @@
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
     const avanza = () => { const x0 = S.pos.x, z0 = S.pos.z; teclas.add('d'); tick(0.6); teclas.delete('d'); return Math.hypot(S.pos.x - x0, S.pos.z - z0); };
     teleport(PLACES.villa.x, PLACES.villa.z + 4, 0, 1); tick(0.1);
-    check('Panel final: «Crear mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm());
+    check('Panel final: «Ver mi cómic», «Seguir explorando» y «Comenzar de cero» (ya no «Jugar de nuevo»)', ['b-comic', 'b-seguir', 'b-again'].every(id => $(id) && !$(id).hidden) && $('b-seguir').textContent.trim() === 'Seguir explorando' && $('b-comic').textContent.trim() === 'Ver mi cómic' && ['b-comic', 'b-seguir', 'b-again'].every(id => $(id).offsetHeight >= 44) && $('b-again').textContent.trim() === 'Comenzar de cero' && !/Jugar de nuevo/.test($('end').textContent) && !enConfirm(), ['b-comic', 'b-seguir', 'b-again'].map(id => $(id) ? $(id).hidden + '/' + $(id).offsetHeight + '/' + $(id).textContent.trim() : 'x').join(' | ') + ' conf ' + enConfirm());
     check('Con el panel final abierto el mundo queda quieto', G.ui.busy() && avanza() < 0.05);
     $('b-again').click();
     check('«Comenzar de cero» pregunta «¿Comenzar de cero? Se borrará tu partida y tu cómic.» con «No, volver» y «Sí, comenzar de cero», y no borra todavía', enConfirm() && $('end-confirm-title').textContent === '¿Comenzar de cero?' && $('end-confirm-text').textContent === 'Se borrará tu partida y tu cómic.' && $('b-again-no').textContent.trim() === 'No, volver' && $('b-again-si').textContent.trim() === 'Sí, comenzar de cero' && $('end-acciones').hidden && !$('end').hidden && S.complete && S.profile.created && S.profile.name === 'Nube Azul' && !!S.captures.final);
@@ -218,9 +252,9 @@
     SV.reset(true); check('Reiniciar limpia la partida', S.step === 0 && !S.refuge && !S.profile.created);
     try { localStorage.setItem(KEY, snap); } catch (e) { /* sin almacenamiento */ }
     check('Cargar restaura progreso, personaje, cómic y eventos', SV.load(true) && S.complete && S.profile.name === 'Nube Azul' && S.comic.layout === 'strip' && S.events.length > 15 && !!S.captures.final, S.events.length + ' eventos');
-    const vieja = JSON.parse(snap); vieja.profile.name = 'Ana'; vieja.comic.title = 'La casa de Ana';
+    const vieja = JSON.parse(snap); vieja.profile.name = 'Ana Pérez'; vieja.comic.title = 'La casa de Ana';
     try { localStorage.setItem(KEY, JSON.stringify(vieja)); } catch (e) { /* sin almacenamiento */ }
-    check('Partida vieja: el nombre escrito a mano se cambia por uno de la lista', SV.load(true) && S.profile.name !== 'Ana' && G.creador.esNombreDeLista(S.profile.name), S.profile.name);
+    check('Partida vieja: un nombre con apellido se cambia por uno de la lista', SV.load(true) && S.profile.name !== 'Ana Pérez' && G.creador.esNombreDeLista(S.profile.name), S.profile.name);
     const v2 = { v: 2, pos: { x: 1, z: 2, y: 0 }, facing: { x: 0, z: 1 }, step: 2, inv: { madera: 1, piedra: 0, componente: 0 }, examined: { maquina: true, transmisor: true },
       collected: ['m1'], evaluated: { A: false, B: false }, refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, complete: false,
       indicators: { seguridad: '—', acceso: '—', habitat: '—' }, events: [{ type: 'PlayerCharacterCreated', t: 0, data: {} }, { type: 'WorkshopExplored', t: 5, data: {} }, { type: 'LumaHelped', t: 9, data: {} }], captures: {}, clock: 12 };
@@ -293,10 +327,11 @@
     const { teleport, tick, drain, useAt } = T;
     const keep = T.keepSave(), devolver = conservar(G);
     G.quiet = true;
+    await limpiarDialogo(G);
     SV.reset(true); G.creador.saveCharacter({ name: 'Pluma Verde', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
     // Diálogos
     const scenes = G.dialogo.escenas;
-    check('dialogos_cap1.js carga las 27 escenas', scenes.length === 27, scenes.length + ' escenas');
+    check('dialogos_cap1.js carga las 28 escenas', scenes.length === 28, scenes.length + ' escenas');
     const unknown = scenes.filter(sc => { const [k, v] = sc.disparador.split(':'); return k === 'evento' ? !G.eventos.defs[v] : !['inicio', 'interact'].includes(k); });
     check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
@@ -312,12 +347,23 @@
     G.c.apertura.fin(); G.audio.log.length = 0; G.pack.inicio(G);
     const fade = () => document.getElementById('c1-fade'), obs = () => [G.dialogo.actual().who, fade() ? fade().style.opacity : null, !!document.getElementById('c1-ruptura')];
     const ap = [obs()], retratoApertura = G.dialogo.actual().img || '';
+    const zDe = id => parseInt(getComputedStyle(document.getElementById(id)).zIndex, 10) || 0;
+    check('Apertura: con el negro puesto, el bocadillo del Narrador queda encima y se lee (AJ3)', !!fade() && !!document.getElementById('bocadillos') && zDe('bocadillos') > zDe('c1-fade'), zDe('bocadillos') + ' > ' + zDe('c1-fade'));
     while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) ap.push(obs()); }
     check('Apertura: negro con viento hasta el corte al taller, brillo y onda en la Ruptura, negro de nuevo y fundido al despertar',
       ap.length === 6 && ap[0][1] === '1' && ap[1][1] === '1' && ap[2][1] === '0' && ap[3][1] === '0' && !ap[3][2] && ap[4][2] && ap[5][1] === '1' && fade() && fade().style.opacity === '0' && ['viento', 'vmmm', 'zzzt', 'onda'].every(n => G.audio.log.includes(n)), JSON.stringify(ap) + ' ' + G.audio.log.join());
     check('Apertura: el Narrador no usa la cara de Vittata', /^data:image\/svg/.test(retratoApertura) && ap[0][0] === 'Narrador', retratoApertura.slice(0, 30));
     G.c.apertura.fin();
     check('Apertura: al terminar no queda ninguna capa encima del juego', !fade() && !document.getElementById('c1-ruptura'));
+    // AP1: se salta con cualquier tecla (o el botón «Saltar», ≥ 44 px) y queda igual que al verla entera
+    G.quiet = false; G.audio.log.length = 0; const ap1 = G.pack.inicio(G), bS = document.getElementById('c1-saltar'), rS = bS && bS.getBoundingClientRect();
+    check('Apertura: botón «Saltar» de 44 px o más mientras dura', !!bS && rS.width >= 44 && rS.height >= 44, bS ? Math.round(rS.width) + '×' + Math.round(rS.height) : 'no hay');
+    const pisa = bS && ['acts', 'sys', 'stick', 'top'].map(id => document.getElementById(id)).filter(e => e && e.offsetParent).flatMap(e => [...e.querySelectorAll('button')].concat(e.tagName === 'BUTTON' ? [e] : []))
+      .filter(b => b.offsetParent).map(b => b.getBoundingClientRect()).some(r => r.width && r.left < rS.right && rS.left < r.right && r.top < rS.bottom && rS.top < r.bottom);
+    check('Apertura: «Saltar» no pisa ningún botón del HUD (Acción, sistema, joystick)', bS && !pisa);
+    dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+    check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
+    G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
@@ -325,8 +371,12 @@
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
-    G.interaccion.action();
-    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre());
+    soltarCapas(G);
+    if (!G.c.luma.junto()) posarseLuma(G, T);
+    const nb0 = G.interaccion.nearest();
+    if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+    check('La charla con Iguaca es la caja de diálogo (bloquea) con el guion en orden', G.dialogo.open() && $('d-who').textContent === 'Iguaca' && !G.dialogo.libre(),
+      'junto ' + G.c.luma.junto() + ' cerca ' + (nb0 && nb0.id) + ' y ' + S.pos.y.toFixed(2) + '/' + G.c.luma.percha.y.toFixed(2) + ' ' + ($('d-who').textContent || '') + ' ' + ($('d-text').textContent || '').slice(0, 40));
     drain();
     check('Con el taller ya revisado, tras Iguaca el paso salta a «Recolectar»', S.step === 2 && had('LumaHelped'), 'paso ' + S.step);
     // M1: nado
@@ -361,9 +411,9 @@
     for (const f of cult.slice(0, 4)) { teleport(f.x + 0.4, f.z); tick(0.1); }
     check('Diario: 4 objetos de cultura dan las maracas', S.unlocked.includes('mano:maracas'));
     for (const f of [...fauna.slice(4), ...cult.slice(4)]) { teleport(f.x + 0.4, f.z); if (f.agua) S.pos.y = nivel(f.x, f.z) - F.SWIM_DEPTH; tick(0.1); }
-    check('Diario 12/12 da la Deportiva 787 y los lentes dorados', S.field.length === 12 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
+    check('Diario 13/13 da la Deportiva 787 y los lentes dorados', S.field.length === FIELD.length && FIELD.length === 13 && S.unlocked.includes('camisa:deportiva') && S.unlocked.includes('lentes:#c9a227'));
     G.diario.open();
-    check('El Diario muestra los 12 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 12);
+    check('El Diario muestra los 13 hallazgos', $('card').querySelectorAll('.diary:not(.ciencia):not(.especies) li.found').length === 13);
     G.ui.hideCard();
     // Creador: lo bloqueado se ve apagado y no se puede elegir
     S.unlocked = S.unlocked.filter(k => k !== 'camisa:guayabera');
@@ -371,8 +421,13 @@
     check('Bloqueos por pieza, estilo y color', !lockOf('botas') && !!lockOf('camisa', 'guayabera') && !lockOf('camisa', 'liso') && !lockOf('lentes', 'sol', '#c9a227'));
     // M3: coro de coquíes
     S.step = 6; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
-    useAt('transmisor'); drain();
+    useAt('transmisor');
+    const lineasCoro = []; while (G.dialogo.activo() && lineasCoro.length < 40) { lineasCoro.push(G.dialogo.actual().text); G.dialogo.next(); }
     check('M3: el transmisor pide voz y ofrece una elección con Iguaca', S.chorus && !S.transmitterOn && !!$('ch-0'));
+    // C9: el coquí canta al atardecer. Iguaca lo explica aquí; el atardecer se comprueba más abajo (en las baterías, G.quiet,
+    // el fundido no arranca solo: se fuerza para medirlo y se apaga al final)
+    const FRASE_TARDE = 'Los coquíes cantan cuando cae la tarde, del atardecer al amanecer. Mira: el sol ya baja.';
+    check('Iguaca explica que los coquíes cantan al caer la tarde', lineasCoro.includes(FRASE_TARDE), lineasCoro.join(' | ').slice(0, 200));
     $('ch-0').click();
     check('La elección cambia la frase de Iguaca', $('d-text').textContent.startsWith('¡Eso, nena!') && had('LumaChoice'));
     drain();
@@ -391,20 +446,46 @@
     check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
     const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
     check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
-    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
+    check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1]) || /^data:image\/png/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
     check('El transmisor suena: BIP y estática bajo la Voz', ['bip', 'estatica'].every(n => G.audio.log.includes(n)), G.audio.log.slice(-12).join());
     // Sonido y feedback
     check('Sonidos sintéticos registrados (recoger, coquí, desbloqueo; sin anillo)', ['pickup', 'co', 'qui', 'unlock'].every(n => G.audio.log.includes(n)) && !G.audio.log.includes('ring'), G.audio.log.slice(-8).join(','));
     check('Partículas dentro del límite de 200', G.fx.live <= G.fx.MAX_PARTICLES, G.fx.live + ' vivas');
+    // AJ2: un 'render' sin dt o con NaN no deja partículas en NaN (THREE «Computed radius is NaN» al dibujarlas)
+    { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 3);   // si hay 200 vivas no crea más: se prueba con las que haya
+      const ps = G.fx.list.filter(f => f.m && f.m.isPoints && f.vel);
+      G.fx.update(); G.fx.update(NaN); G.fx.update(0.016);
+      check('Un render sin dt no deja partículas en NaN', ps.length > 0 && ps.every(f => Number.isFinite(f.t) && Array.from(f.m.geometry.attributes.position.array).every(Number.isFinite)), ps.length + ' ráfagas'); }
     // Guardado del progreso del sprint
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
     // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa)
-    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 12 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
+    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 13 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
-    check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && R.toneMapping === THREE.ACESFilmicToneMapping);
+    // El post se carga perezoso: hasta que termina (o si el equipo cae a «bajo») el tone mapping es CustomToneMapping (W1: ACES con
+    // la gradación de fábrica dentro). Se espera a que el post se asiente y se acepta ACES o CustomToneMapping-con-ACES; otro
+    // encoding u otro tone mapping (lineal, Reinhard, ninguno) sigue fallando: eso sí sería un color distinto del creador.
+    if (G.renderer.post && G.renderer.post.cargando) await G.renderer.post.cargando.catch(() => {});
+    const tmACES = R.toneMapping === THREE.ACESFilmicToneMapping || (R.toneMapping === THREE.CustomToneMapping && /CustomToneMapping[^}]*ACESFilmicToneMapping/.test(THREE.ShaderChunk.tonemapping_pars_fragment));
+    check('Juego y creador con el mismo color (sRGB + ACES)', R.outputEncoding === THREE.sRGBEncoding && tmACES, 'toneMapping ' + R.toneMapping + (G.renderer.post && G.renderer.post.activo ? ' · composer' : ' · sin composer'));
     check('Pixel ratio limitado', R.getPixelRatio() <= (G.renderer.MOBILE ? 1.5 : 2), String(R.getPixelRatio()));
+    // C9 (sigue): las comprobaciones con await van después de las del color (el post se carga perezoso y cambia el tone mapping)
+    const enTarde = await fetch((G.pack.idioma || 'content/cap1/en.js') + '?c9').then(r => r.text()).catch(() => '');
+    check('La frase tiene su versión en inglés (en.js)', enTarde.includes(JSON.stringify(FRASE_TARDE) + ':'));
+    const AT = window.AV && window.AV.atardecer ? await window.AV.atardecer() : null;
+    check('El atardecer dura lo que el coro: con el coro en marcha y M3 sin terminar lo pide; al terminar M3 vuelve el día', AT && (() => { const q = G.quiet; G.quiet = false; const d = AT.deseado(); G.quiet = q; return d === (!!S.chorus && !S.missions.m3 && !S.complete); })(), AT ? JSON.stringify(AT.estado()) : 'sin atardecer.js');
+    if (AT) {
+      const R0 = G.renderer, sky0 = R0.sky && R0.sky.material.uniforms, dia = sky0 ? sky0.uHorizonte.value.clone() : null, solY = R0.sunDir ? R0.sunDir.y : 1;
+      AT.forzar(true); AT.avanzar(AT.DUR + 1);
+      const h = sky0 && sky0.uHorizonte.value;
+      check('Durante M3 el cielo es de atardecer: horizonte naranja, sol bajo y S.hora casi de noche', AT.k() === 1 && (!h || (h.r > h.b * 1.8 && !h.equals(dia))) && (!R0.sunDir || R0.sunDir.y < solY - 0.2) && S.hora > 18.5 && S.hora < 19, `hora ${S.hora} · solY ${R0.sunDir ? R0.sunDir.y.toFixed(2) : '-'}`);
+      const amb = G.musicaApi ? G.musicaApi.calcularAmbiente({ hora: S.hora }) : null;
+      check('Y el ambiente suena a coquíes, no a aves de día', !amb || (amb.coquies > 0.85 && amb.aves < 0.15), amb ? `coquíes ${amb.coquies.toFixed(2)} · aves ${amb.aves.toFixed(2)}` : 'musica.js sin cargar: solo la hora');
+      AT.forzar(false); AT.avanzar(AT.DUR + 1);
+      check('Al apagar el atardecer vuelve el día exacto', AT.k() === 0 && (!h || h.equals(dia)) && S.hora === undefined);
+      AT.forzar(null);
+    }
     // Fugas: cambiar de ropa muchas veces no aumenta geometrías ni texturas en la GPU
     if (window.AVCharacter) {
       try {
@@ -424,6 +505,15 @@
       } catch (e) { check('Cambiar de ropa no acumula memoria de GPU', false, String(e)); }
     }
     await recorrerFinal(G, T, check);
+    // BM20: momentos «wow» del capítulo 1 (src/game/wow.js, AV.wowTest): ocurren y no bloquean la misión; con G.quiet no aparecen
+    {
+      const W = window.AV && window.AV.wowTest ? await window.AV.wowTest().catch(e => ({ results: [{ name: String(e), ok: false }] })) : null, r = (W && W.results) || [];
+      const de = re => r.filter(x => re.test(x.name));
+      const bien = re => { const l = de(re); return l.length > 0 && l.every(x => x.ok); };
+      check('BM20 · Despegue del mirador: la cámara se abre, la misión sigue sola a los 4 s o con una tecla, y con G.quiet no aparece', bien(/^Despegue/), JSON.stringify(de(/^Despegue/).filter(x => !x.ok)).slice(0, 200));
+      check('BM20 · Bandada de 20 cotorras al terminar M3 en dos pasadas (y con G.quiet no sale)', !!G.bandada, 'G.bandada');
+      check('BM20 · Coro con luciérnagas: 60–120 puntos cálidos laten con las notas del Simon, sin luces reales, y con G.quiet no aparecen', bien(/^Luciérnagas/), JSON.stringify(de(/^Luciérnagas/).filter(x => !x.ok)).slice(0, 200));
+    }
     SV.reset(true);
     devolver();
     T.restoreSave(keep);
@@ -508,6 +598,7 @@
     const opts = () => ($('card').hidden ? 0 : $('card').querySelectorAll('.edu-opt').length);
     const volarA = (x, y, z) => { S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; F.MOVE.flying = true; };
     // p1 Predecir
+    soltarCapas(G);
     useAt('marcas_agua', 0.5, 0);
     ok('p1: en las marcas Iguaca pregunta de dónde salió el agua', G.dialogo.open() && $('d-text').textContent === AU.t(paso('p1').linea), $('d-text').textContent);
     drain();
@@ -619,7 +710,7 @@
     try {
       // Datos de la lección
       const M = LEC.mision_educativa || {};
-      await new Promise(r => setTimeout(r, 0)); // deja pasar eventos pendientes
+      await limpiarDialogo(G); // deja pasar un clic pendiente del coro y lo anula (QA-64)
       check('lecciones.js carga la lección (8 pasos, 4 perchas, 7 preguntas, 23 fichas)', window.AV_LECCIONES_CAP1 === LEC && M.pasos.length === 8 && M.pasos[1].perchas.length === 4 && LEC.preguntas.length === 7 && LEC.diario.length === 23);
       const sinEn = [];
       const bil = (o, path) => { if (!o || typeof o !== 'object') return; if ('es' in o && !('en' in o)) sinEn.push(path); for (const k of Object.keys(o)) bil(o[k], path + '.' + k); };
@@ -629,7 +720,9 @@
       // Partida nueva en 3.º–4.º, español
       AU.setAjuste('grado', '3-4'); AU.setAjuste('idioma', 'es'); AU.setAjuste('corto', false); AU.setAjuste('voz', false); AU.borrarProgreso();
       SV.reset(true); G.creador.saveCharacter({ name: 'Nube Valiente', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
-      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); G.interaccion.action(); drain();
+      useAt('maquina'); drain(); useAt('transmisor'); drain(); posarseLuma(G, T); soltarCapas(G);
+      if (G.c.luma.junto()) G.interaccion.find('luma').use(); else G.interaccion.action();
+      drain();
       check('Recolección -1 min: Iguaca aporta 3 tablas', S.step === 2 && S.inv.madera === 3, JSON.stringify(S.inv));
       for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
       drain();

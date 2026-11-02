@@ -96,6 +96,8 @@ captura dice cómo se graba cada toma:
   entre 30 y 90 min, según la carga de la Mac. El `_ligero` (720p) ya sale siempre del master recodificado: exportar el
   montaje a 1280x720 recortaba el centro del cuadro (le pasó al `_ligero` de v1 del 24 oct, 23:48; hay que rehacerlo).
   Rehacerlo solo: `montaje.py --ver v1 --ligero-desde-master`.
+- Cambiar solo el audio sin recapturar ni recodificar la imagen (segundos, no horas): primero `bash tools/audio/generar_todo.sh --mezcla` y después, para cada MP4 (master 256 kb/s; web y `_compartir` 128 kb/s):
+  `python3 tools/audio/remux_audio.py ENTRADA.mp4 SALIDA.mp4 --kbps 128`. Copia la pista de video tal cual, codifica el WAV con `afconvert` y deja el índice (moov) al principio. `remux_audio.py --info ARCHIVO.mp4` da duración, códecs, resolución y peso (hace de ffprobe).
 - Pitch para la web (≤ 14 MB, 960x540, video 480 kb/s + AAC 128 kb/s, póster en el logo):
   `montaje.py --ver v1 --ligero-desde-master --alto 540 --kbps 480 --poster 27.2 --destino ~/AmazonaVerse/Web/assets/video/pitch.mp4`.
 - Python: los comandos `python3 …` de esta guía se corren con el de Blender

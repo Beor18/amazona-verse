@@ -1,0 +1,27 @@
+{
+ "variantes": {
+  "guineo_a": {
+   "tris": 1760,
+   "alto": 4.25,
+   "ancho": 4.36
+  },
+  "guineo_b": {
+   "tris": 856,
+   "alto": 3.61,
+   "ancho": 3.85
+  },
+  "guineo_c": {
+   "tris": 512,
+   "alto": 1.92,
+   "ancho": 1.71
+  }
+ },
+ "tris": 3128,
+ "kb": 137.7,
+ "atributos": [
+  "COLOR_0",
+  "NORMAL",
+  "POSITION",
+  "TEXCOORD_0"
+ ]
+}

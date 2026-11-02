@@ -8,7 +8,7 @@ Dirección de arte, no copia: color saturado y alegre, cielo azul intenso, sol c
 - URL: `?look=vibrante`, `?look=soleado`, `?look=toon` (con `&tex=512` para probar texturas pequeñas en cualquier look).
 - Pausa: sección «Look (prueba)», oculta; se ve con `?look=…` o con `localStorage['ave.look.dev'] = '1'`. Lo elegido vive en
   la sesión (sessionStorage), no en la partida.
-- Para fijar uno de fábrica: `DEFECTO` en `src/game/look.js` (una línea: `null` → `'vibrante'`).
+- El de fábrica es `DEFECTO` en `src/game/look.js` (hoy `'vibrant_toon'`); `?look=fabrica` muestra el original.
 
 ## Qué cambia cada look (todo en vivo, sin recargar; `src/game/look.js`)
 | | Fábrica | Vibrante | Soleado | Toon |
@@ -64,7 +64,7 @@ Pendiente de Kelvin: elegir look (una línea, `DEFECTO`); si elige vibrante o to
 educativas y del cómic (las fotos del cómic van sin post, pero sí con la gradación).
 
 ## Vibrant Toon Refinado (26-oct, prototipo; decisión y regresiones en `DECISION_VISUAL_2026.md`)
-Preset `vibrant_toon` (`?look=vibrant_toon`, chip «Vibrant Toon» en la sección oculta de la pausa; `DEFECTO` sigue en `null`).
+Preset `vibrant_toon`: **es el look de fábrica desde el 26-oct** (`DEFECTO = 'vibrant_toon'`, decisión de Kelvin en `docs/DECISION_LOG.md`); el original se ve con `?look=fabrica` o con el chip «Fábrica» de la sección oculta de la pausa (se recuerda en la sesión). Con un look activo la gradación de fábrica de renderer.js (W1) se sustituye (CustomToneMapping = ACES puro; uSat/uCon/uTint del composer a 1; viñeta y rayos siguen).
 Toon como base, refinado:
 - Gradación con rodilla: sat 1,24 · con 1,07 · cálida, pero la saturación cae a 1 en las altas luces (l > 0,78) y un hombro
   suave recorta lo que pasa de 0,9: no quema cielo, agua ni plumas claras. Exposición 0,78.

@@ -1,0 +1,92 @@
+[
+ {
+  "paso": 0,
+  "cerca": null,
+  "guia": [
+   -4,
+   2
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (0/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (0/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (0/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    · Observar antes de construir· Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_inicio_escritorio_es"
+ },
+ {
+  "paso": 1,
+  "cerca": "tramo_a",
+  "guia": [
+   2,
+   -13
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (1/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (0/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (0/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    · Observar antes de construir· Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_orilla_escritorio_es"
+ },
+ {
+  "paso": 3,
+  "cerca": null,
+  "guia": [
+   -6,
+   -13
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (1/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (0/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir· Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_voces_escritorio_es"
+ },
+ {
+  "paso": 5,
+  "cerca": "iguaca",
+  "guia": [
+   -5,
+   -2
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (4/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (1/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir✓ Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_mesa_escritorio_es"
+ },
+ {
+  "paso": 8,
+  "cerca": "abuela",
+  "guia": [
+   2,
+   -14.8
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (4/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (3/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir✓ Beneficios y costos✓ Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_obra_a_escritorio_es"
+ },
+ {
+  "paso": 8,
+  "cerca": "abuela",
+  "guia": [
+   2,
+   11.2
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (4/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (3/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir✓ Beneficios y costos✓ Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_obra_b_escritorio_es"
+ },
+ {
+  "paso": 8,
+  "cerca": "abuela",
+  "guia": [
+   2,
+   0.2
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (4/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (3/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir✓ Beneficios y costos✓ Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_obra_c_escritorio_es"
+ },
+ {
+  "paso": 3,
+  "cerca": null,
+  "guia": [
+   -6,
+   -13
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (1/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (0/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir· Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_muelle_escritorio_es"
+ },
+ {
+  "paso": 3,
+  "cerca": "abuela",
+  "guia": [
+   -6,
+   -13
+  ],
+  "quest": "\n    Capítulo 4\n    El precio del progreso\n    Habla con IguacaMira los 3 tramos del río y el bosquecillo (4/4)Cuéntale a Iguaca lo que visteEscucha todas las voces (0/4)Pon las tarjetas en la Balanza de la mesaPrueba las 3 opciones en la maqueta (0/3)Haz la asamblea y elige un cuidadoConstruye lo acordadoAcompaña a la abuela en el primer cruce#next-reward{display:flex;align-items:baseline;gap:6px;margin:8px 0 0;font:400 var(--fs-xs,12px)/1.35 var(--font-body,sans-serif);color:var(--c-text)}#next-reward[hidden]{display:none}#next-reward .nr-k{flex:none;font-weight:700;text-transform:uppercase;letter-spacing:var(--tracking-caps,.04em);color:var(--c-eyebrow,inherit)}#next-reward b{font:700 var(--fs-sm,14px)/1.3 var(--font-display,inherit);color:var(--c-primary,#f2a03d)}#next-reward .nr-p{opacity:.85}@media (max-height:480px){#next-reward{display:none}}@media (max-width:360px){#next-reward{display:none}}@media (max-width:560px){html.a11y-t2 #next-reward{display:none}}Próximo: Lentes binoculares · mirar la orilla\n    ✓ Observar antes de construir· Beneficios y costos· Probar, decidir y cuidar· Cuaderno 0/6\n    \n  ",
+  "id": "bf4_despues_dialogo_escritorio_es"
+ }
+]

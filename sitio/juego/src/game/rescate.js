@@ -45,6 +45,7 @@ window.AVRescate = function (G) {
     lluvia: 'Llueve: el pichón se esconde bajo tu ala.',
     suelo: 'El pichón está en el suelo. Agárralo otra vez y llévalo a la caja nido.',
     ocupado: 'Termina primero el banquete: deja los frutos en el nido.',
+    frutos: 'Tus frutos siguen contigo para el nido. ¡Un pichón se cayó! Está piando por ahí.',
     llevas: 'Tienes las patas ocupadas: suelta lo que llevas primero.',
   };
   // Dato real para el cartel (Wikipedia EN, «Puerto Rican amazon», consultada el 25-oct-2026; por verificar en USFWS/DRNA)
@@ -251,8 +252,9 @@ window.AVRescate = function (G) {
     o = o || {};
     if (R.activo) return false;
     if (!o.forzar && !disponible()) return false;
-    if (banqueteActivo() || frutosEnPatas()) { G.ui.toast(TXT.ocupado, 3000); return false; }
+    if (banqueteActivo()) { G.ui.toast(TXT.ocupado, 3000); return false; }
     if (lleva()) { G.ui.toast(TXT.llevas, 3000); return false; }
+    const frutos = frutosEnPatas(); // los frutos son un contador del banquete, no un objeto en las patas: no estorban; se avisa y siguen contigo para el nido
     construirCartel();
     const lista = CFG.sitios.map(sitioPichon).filter(Boolean);
     const sitio = o.sitio ? lista.find(s => s.id === o.sitio) : lista[Math.floor(Math.random() * lista.length)];
@@ -265,7 +267,7 @@ window.AVRescate = function (G) {
     await crearPichon();
     if (!R.activo) return false; // salió mientras cargaba el modelo
     ponerPichon(sitio.x, sitio.y, sitio.z);
-    if (!o.sinCuenta) G.ui.toast(TXT.inicio, 3600);
+    if (!o.sinCuenta) G.ui.toast(frutos ? TXT.frutos : TXT.inicio, 3600);
     R.fase = R.cuenta > 0 ? 'cuenta' : 'buscar'; pintarHud();
     return true;
   }
@@ -387,13 +389,13 @@ window.AVRescate = function (G) {
   function estilo() {
     if (estiloListo) return; estiloListo = true;
     const st = document.createElement('style'); st.id = 'rs-estilo';
-    st.textContent = `#rs-hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:center;
-      background:var(--c-panel,#fff8ec);color:var(--c-ink,#2b2116);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 16px Fredoka,system-ui,sans-serif}
-      #rs-hud .rs-reloj{font-size:22px;min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums}
-      #rs-hud .rs-salir{border:0;border-radius:999px;padding:6px 12px;background:var(--c-accent-soft,#f2e2c4);color:inherit;font:inherit;cursor:pointer;min-height:36px}
+    st.textContent = `#rs-hud{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center;max-width:calc(100vw - 24px);box-sizing:border-box;
+      background:var(--c-panel,#fff8ec);color:var(--c-ink,#2b2116);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 var(--fs-md,16px)/1.2 Fredoka,system-ui,sans-serif}
+      #rs-hud .rs-reloj{font-size:var(--fs-xl,22px);min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums}
+      #rs-hud .rs-salir{border:0;border-radius:999px;padding:6px 12px;background:var(--c-accent-soft,#f2e2c4);color:inherit;font:inherit;cursor:pointer;min-height:44px}
       .rs-card h2{margin-top:0}.rs-card .rs-dato{background:rgba(63,174,74,.12);border-radius:10px;padding:8px 10px}
-      .rs-res{display:flex;gap:14px;align-items:center;margin:8px 0}.rs-res b{font-size:34px;display:block;font-variant-numeric:tabular-nums}
-      .rs-med{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;font-size:28px;color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+      .rs-res{display:flex;gap:14px;align-items:center;margin:8px 0;flex-wrap:wrap}.rs-res b{font-size:calc(34px * var(--fs-k,1));display:block;font-variant-numeric:tabular-nums}
+      .rs-med{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;font-size:calc(28px * var(--fs-k,1));color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
       .rs-med.oro{background:#e6b422}.rs-med.plata{background:#9aa6ad}.rs-med.bronce{background:#b87333}`;
     document.head.appendChild(st);
   }
@@ -451,7 +453,7 @@ window.AVRescate = function (G) {
     const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const comparable = d => { const o = {}; for (const k of SV.KEYS) if (k !== 'rescates' && k !== 'clock' && k !== 'marcador') o[k] = d && d[k]; return JSON.stringify(o); }; // clock y el cronómetro del marcador avanzan con cada tick de la prueba
     const realAntes = claves.map(leer), sAntes = comparable(S), propioAntes = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
-    const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, fauna: S.fauna && S.fauna.slice(), peces: S.peces && S.peces.slice(), // fauna y peces se observan solos al pasar junto al agua
+    const guard = { quiet: G.quiet, step: S.step, rescates: S.rescates, fauna: S.fauna && S.fauna.slice(), peces: S.peces && S.peces.slice(), edu: S.edu ? JSON.stringify(S.edu) : null, // fauna y peces se observan solos al pasar junto al agua; S.edu (la misión educativa) anota por sí sola lo que se mira al teletransportar al jugador por el mapa (QA-39)
       pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), flying: M.flying, grounded: M.grounded, swimming: M.swimming, pausa: G.pausa.activa(), banq: G.banqueteApi, sbanq: S.banquete };
     const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
     const estCri = G.criadero && G.criadero.estado ? G.criadero.estado() : null, criBackup = estCri ? JSON.parse(JSON.stringify(estCri)) : null, criKey = G.criadero && G.criadero.KEY, criLS = criKey ? leer(criKey) : null;
@@ -531,6 +533,11 @@ window.AVRescate = function (G) {
       G.banqueteApi = { activo: () => true };
       check('Con G.banqueteApi.activo() en true, jugar() devuelve false con aviso', (await jugar({ prueba: true })) === false && !R.activo && /banquete/.test($('toast').textContent), $('toast').textContent);
       G.banqueteApi = null;
+      const bqB = G.banquete && G.banquete._dev && G.banquete._dev.B, llevo0 = bqB ? bqB.llevo : 0, bqAntes = G.banquete; // sin banquete cargado se simula con un «estado» falso
+      if (bqB) bqB.llevo = 2; else G.banquete = { estado: () => ({ llevo: 2 }) };
+      const conFrutos = await jugar({ prueba: true, forzar: true });
+      check("Con frutos en las patas se puede jugar: avisa amable y los frutos siguen contigo", conFrutos === true && R.activo && (!bqB || bqB.llevo === 2) && /frutos/.test($("toast").textContent), $("toast").textContent);
+      salir(); if (bqB) bqB.llevo = llevo0; else G.banquete = bqAntes;
       // 7. 5 rescates → cápsula «Pichón rescatado»
       const H5 = window.AV_HUEVOS && window.AV_HUEVOS.huevos.find(h => h.id === 'rescatado');
       check('huevos.js trae la cápsula «Pichón rescatado» con { rescates: 5 }', H5 && H5.obtener && H5.obtener.defecto && H5.obtener.defecto.rescates === 5, H5 && JSON.stringify(H5.obtener));
@@ -556,7 +563,7 @@ window.AVRescate = function (G) {
       if (estCri && criBackup) { for (const k of Object.keys(estCri)) delete estCri[k]; Object.assign(estCri, criBackup); try { if (criLS == null) localStorage.removeItem(criKey); else localStorage.setItem(criKey, criLS); } catch (e) { /* sin almacén */ } }
       try { if (casaKey) { if (casaLS == null) localStorage.removeItem(casaKey); else localStorage.setItem(casaKey, casaLS); } } catch (e) { /* sin almacén */ }
       try { if (propioAntes == null) localStorage.removeItem(ALMACEN); else localStorage.setItem(ALMACEN, propioAntes); } catch (e) { /* sin almacén */ }
-      S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; if (guard.fauna) S.fauna = guard.fauna; if (guard.peces) S.peces = guard.peces; G.banqueteApi = guard.banq;
+      S.step = guard.step; S.rescates = guard.rescates; S.banquete = guard.sbanq; if (guard.fauna) S.fauna = guard.fauna; if (guard.peces) S.peces = guard.peces; if (guard.edu && S.edu) { for (const k of Object.keys(S.edu)) delete S.edu[k]; Object.assign(S.edu, JSON.parse(guard.edu)); } // en el mismo objeto: educativa.js lo lee con S.edu G.banqueteApi = guard.banq;
       Object.assign(S.pos, guard.pos); S.facing = guard.facing; M.flying = guard.flying; M.grounded = guard.grounded; M.swimming = guard.swimming;
       R.fase = ''; R.resultado = null; tick(0.05); Object.assign(S.pos, guard.pos); S.vy = 0; // el último tick la mueve un poco
       if (SV.suspender) SV.suspender(false); G.quiet = guard.quiet; console.error = ce;

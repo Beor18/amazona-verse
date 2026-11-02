@@ -1,7 +1,8 @@
 /* Juego · Bandada de cotorras (carril M, M1: «un mundo con vida»)
-   12 a 20 cotorras de pieles de distintas especies (AVE.pieles) que cruzan el cielo de El Yunque en bandada. Salen en tres momentos:
+   12 a 20 cotorras de pieles de distintas especies (AVE.pieles) que cruzan el cielo de El Yunque en bandada. Salen en estos momentos:
    al despertar (la partida empieza o se carga: pasan a lo lejos), al terminar una misión (G.emit('aprendizaje', { tipo: 'mision' }),
-   pasan más cerca) y de vez en cuando por la tarde (cada 2,5 a 5 min de juego). Si Vittata se acerca (menos de 30 m), la bandada
+   pasan más cerca), de vez en cuando por la tarde (cada 2,5 a 5 min de juego) y cuando la cría legendaria canta
+   (G.on('canto') → pedir('canto', { en: 1 })). Si Vittata se acerca (menos de 30 m), la bandada
    la acompaña unos 18 s dando vueltas a su alrededor y luego se va. Nunca en las baterías (G.quiet) ni antes de crear el personaje.
    - Se carga al pedirlo (boot.js la trae tras 'listo'): no suma a la descarga inicial. window.AVBandada(G) → { pedir, estado, test }.
    - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): cotorra de ~110 triángulos de cerca
@@ -118,7 +119,8 @@ window.AVBandada = function (G) {
     o = o || {};
     const n = o.n != null ? o.n : cuentaPara(nivel());
     if (n <= 0 || F.estado !== 'off') return false;
-    if (!o.forzar && !permitido()) return false;
+    if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false; // BM20: con calidad «bajo» tampoco sale la de 20
+    F.pasadas = o.pasadas || 1; F.opts = o;
     if (!colores.length) { preparar().then(() => { if (F.estado === 'off') aparecer(motivo, o); }); return true; }
     const dist = o.dist != null ? o.dist : motivo === 'despertar' ? rnd(190, 230) : rnd(150, 190), lado = rnd(55, motivo === 'mision' ? 45 : 110);
     const ang = o.ang != null ? o.ang : rnd(0, Math.PI * 2), L = F.lider;
@@ -132,6 +134,11 @@ window.AVBandada = function (G) {
   }
   const terminar = () => { F.estado = 'off'; F.aves = []; F.n = 0; cerca.count = lejos.count = 0; cerca.visible = lejos.visible = false; };
 
+  // Fin natural de una pasada: si quedan pasadas (BM20: las 20 cotorras de M3 cruzan dos veces), vuelve por el lado contrario
+  function fin() {
+    const o = F.opts || {}, m = F.motivo, quedan = (F.pasadas || 1) - 1; terminar();
+    if (quedan > 0) aparecer(m, Object.assign({}, o, { pasadas: quedan, ang: (o.ang != null ? o.ang : 0) + Math.PI * 0.8 + rnd(-0.3, 0.3), forzar: true, dist: 150 }));
+  }
   function mover(dt) {
     if (F.estado === 'off') return;
     dt = Math.min(dt, 0.1); F.t += dt; F.dur += dt; uT.value += dt;
@@ -139,7 +146,7 @@ window.AVBandada = function (G) {
     let tx, tz, vel = VELO, ty;
     if (F.estado === 'pasa') {
       if (dP < CERCA) { F.estado = 'acompana'; F.tAcompana = 0; F.giro = Math.atan2(L.z - pz, L.x - px); }
-      else if (F.dur > 20 && dP > 280 || F.dur > 90) return terminar();
+      else if (F.dur > 20 && dP > 280 || F.dur > 90) return fin();
     }
     if (F.estado === 'acompana') {
       F.tAcompana += dt; F.giro += dt * 0.32;
@@ -149,7 +156,7 @@ window.AVBandada = function (G) {
     }
     if (F.estado === 'sale') {
       const h = Math.hypot(L.x - px, L.z - pz) || 1; tx = L.x + (L.x - px) / h * 100; tz = L.z + (L.z - pz) / h * 100; vel = 17; ty = H(L.x, L.z) + 45;
-      if (dP > 260 || F.dur > 40) return terminar();
+      if (dP > 260 || F.dur > 40) return fin();
     }
     if (tx != null) {
       const dx = tx - L.x, dz = tz - L.z, h = Math.hypot(dx, dz) || 1, k = Math.min(1, dt * 1.4);
@@ -189,7 +196,8 @@ window.AVBandada = function (G) {
   let pend = null, proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR);
   const pedir = (motivo, o) => { if (!(o && o.forzar) && !permitido()) return false; pend = { motivo, en: o && o.en != null ? o.en : 0, o, espera: 0 }; return true; };
   G.on('apply', () => { terminar(); pend = null; proxTarde = S.clock + rnd(TARDE_MIN, TARDE_MIN + TARDE_VAR); if (permitido()) pedir('despertar', { en: 6 }); }, 90);
-  G.on('aprendizaje', d => { if (d && d.tipo === 'mision') pedir('mision', { en: 3 }); });
+  G.on('aprendizaje', d => { if (d && d.tipo === 'mision') pedir('mision', d.id === 'm3' ? { en: 3, n: MAXN, pasadas: 2, ang: rnd(0, 6.28) } : { en: 3 }); }); // BM20: al terminar M3 «Co-quí», 20 cotorras en dos pasadas
+  G.on('canto', () => pedir('canto', { en: 1 })); // rareza.js: la cría legendaria llama a la bandada al despegar
   const alCalidad = C => { const n = cuentaPara(C.nivel); if (n === 0 || (F.estado !== 'off' && F.n > n)) terminar(); };
   G.on('calidad', alCalidad);
   G.on('update', (dt, busy) => {
@@ -223,15 +231,13 @@ window.AVBandada = function (G) {
       const dist = Math.hypot(F.lider.x - S.pos.x, F.lider.z - S.pos.z);
       ok('Sale a lo lejos (más de 150 m)', dist > 150, Math.round(dist) + ' m');
       ok('Usan 3 o más especies (colores distintos)', new Set(F.aves.map(a => colores[a.sp % colores.length].id)).size >= 3 || colores.length < 3, colores.length + ' colores');
-      // El streaming de edificios puede cambiar los draw calls entre cuadros: 3 pares con y sin bandada, se queda la menor diferencia
-      await cuadros(8); let dif = Infinity, nota = '';
-      for (let i = 0; i < 3; i++) {
-        mat.visible = true; await cuadros(2); const con = G.renderer.stats().calls;
-        mat.visible = false; await cuadros(2); const base = G.renderer.stats().calls;
-        if (con - base < dif) { dif = con - base; nota = base + ' → ' + con; }
-      }
-      mat.visible = true;
-      ok('Suma 2 draw calls o menos', dif <= 2, nota);
+      // QA-51: el material no tiene «visible». stats() mezcla el streaming de otros cuadros, así que se dibuja la escena dos veces seguidas, con las mallas apagadas y encendidas.
+      const ver = on => { cerca.visible = !!on && cerca.count > 0; lejos.visible = !!on && lejos.count > 0; };
+      const info = G.renderer.renderer.info, cam3 = G.renderer.camera, sc = G.renderer.scene;
+      const una = () => { G.renderer.renderer.render(sc, cam3); return info.render.calls; };
+      ver(false); const base = una();
+      ver(true); const con = una();
+      ok('Suma 2 draw calls o menos', con - base >= 1 && con - base <= 2, base + ' → ' + con + ' · cerca ' + cerca.count + ' · lejos ' + lejos.count);
       let minD = 1e9, bien = true, pasos = 0, acompano = false;
       for (; F.estado !== 'off' && pasos < 3000; pasos++) {
         mover(0.1);
@@ -259,12 +265,23 @@ window.AVBandada = function (G) {
       G.quiet = false; const creado = S.profile.created; S.profile.created = true;
       G.emit('aprendizaje', { tipo: 'mision', id: 'x' }); const trasMision = pend && pend.motivo; pend = null;
       G.emit('aprendizaje', { tipo: 'hallazgo', id: 'x' }); const trasOtra = pend; pend = null;
+      G.emit('canto', { poder: 'canto', rareza: 'legendaria' });
+      const trasCanto = !!(pend && pend.motivo === 'canto' && pend.en <= 1 && pend.en > 0); pend = null;
+      G.quiet = true; G.emit('canto', { poder: 'canto' }); const cantoQuieto = !pend;
       S.profile.created = creado; G.quiet = true;
+      // BM20: al terminar M3 salen 20 cotorras en dos pasadas
+      G.quiet = false; S.profile.created = true; G.emit('aprendizaje', { tipo: 'mision', id: 'm3' }); const m3p = pend && pend.o; pend = null; S.profile.created = creado; G.quiet = true;
+      ok('Terminar M3 «Co-quí» pide 20 cotorras en dos pasadas', m3p && m3p.n === 20 && m3p.pasadas === 2, JSON.stringify(m3p));
+      aparecer('mision', { forzar: true, n: 20, pasadas: 2, dist: 160, ang: 1 }); await preparar(); if (F.estado === 'off') aparecer('mision', { forzar: true, n: 20, pasadas: 2, dist: 160, ang: 1 });
+      let pasadasVistas = 0, estAnt = '', guardia = 0; for (; F.estado !== 'off' && guardia < 6000; guardia++) { if (F.pasadas === 2 && estAnt !== 'p2') { estAnt = 'p2'; pasadasVistas = 1; } if (F.pasadas === 1 && estAnt === 'p2') { estAnt = 'p1'; pasadasVistas = 2; } mover(0.1); }
+      ok('Las 20 cruzan dos veces y luego terminan', pasadasVistas === 2 && F.estado === 'off' && guardia < 6000, pasadasVistas + ' pasadas, ' + (guardia / 10).toFixed(0) + ' s');
       ok('Terminar una misión la pide; otros aprendizajes no', trasMision === 'mision' && !trasOtra);
+      ok('El canto de la cría pide la bandada (1 s) y en las baterías no', trasCanto && cantoQuieto, `${trasCanto}/${cantoQuieto}`);
     } finally {
       terminar(); G.quiet = guardado.quiet; Object.assign(S.pos, guardado.pos); pend = guardado.pend; proxTarde = guardado.prox;
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
+  G.bandada = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n, pasadas: F.pasadas }), aparecer, mover, F, test };
   return { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n }), test, get meshes() { return [cerca, lejos]; }, aparecer, mover, F };
 };

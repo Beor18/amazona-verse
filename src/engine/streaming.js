@@ -7,16 +7,20 @@
      aquí se le ponen sus colisiones (las de mundo.js y G.solidos.agregar) y ya no se quitan: siguen activas aunque la zona
      se libere (son pocas y pesan poco).
    - lejos (d < CFG.zonaLejos, 650 m, o la niebla si llega antes): solo el LOD lejano, fundido por zona; los edificios
-     sueltos se dibujan hasta CFG.dibujo del preset.
+     sueltos se dibujan hasta CFG.dibujo del preset. El lejano no proyecta sombra (está fuera del mapa) pero sí la
+     recibe: la del sol cae encima cuando entra en el radio. El volumen, a 100 m, va en el color de vértice.
    - fuera: nada en memoria.
    Histéresis: una zona baja de nivel con H m de más (40) y los modelos se sueltan tras 3 s sin uso (no hay vaivén en el borde).
    Por instancia, cerca/lejos se elige por la distancia a la cámara (CFG.lod ± CFG.lodH) y cada cuadro se descarta lo que
    queda fuera del frustum o de la distancia de dibujo (las de cerca a menos del radio de sombra se dibujan igual: su sombra
-   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible, más una malla fundida por zona
-   ('edificiosZona:<zona>:lejos', todos sus lejanos juntos) para las zonas que se ven enteras más allá de la distancia de LOD.
+   puede caer en pantalla). Draw calls = pares modelo × material con alguna instancia visible. En las zonas cercanas, los
+   modelos se funden por material; los cercanos, los _hd y los lejanos de varias zonas se vuelven a fundir globalmente.
+   Las sombras de las ciudades usan una malla ligera por zona en la capa 1, visible solo para la cámara del sol.
    Carga: antes de mundoListo entra el modelo completo de lo que el jugador tiene encima (CFG.precarga) y el LOD lejano de
    lo visible a menos de CFG.lejosQuieto; el resto espera a que el jugador se mueva (CFG.moverse) y llegan en segundo plano,
-   más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda). Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
+   más cerca primero, con una descarga a la vez y el trabajo de CPU troceado (requestIdleCallback, CFG.msCuadro por tanda).
+   La fusión de una zona lejana va por tandas. El programa de las ráfagas (burbujas al llegar a la caleta) y el del atlas
+   se compilan al cargar, dentro de la escena, para no hacerlo en el cuadro en el que Vittata aparece. Liberar = quitar las mallas, geometry.dispose() y soltar materiales y texturas (conteo de
    referencias por nombre de material: el kit comparte su paleta). La cadena base64 la suelta AVE.assets.loadGLB al decodificar.
    El buffer de instancias de cada modelo×LOD se reutiliza (three r128 no lo libera al quitar la malla).
 
@@ -28,10 +32,13 @@
    - Manifiesto opcional window.AV_EDIFICIOS_KIT = { <modelo>: { lejos: bool, radio, alto, tris, kb, kbLejos } } (se carga
      de mundo.edificios.kit si el pack lo pone). Con manifiesto, un modelo que no figura se salta con un aviso (sin pedir nada).
    - <modelo>_hd.glb | _hd_glb.js (si el manifiesto dice hd: true): versión cercana de alta fidelidad (geometría y UV
-     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Un solo material AV_HD_* con el atlas 4×4 de las texturas
-     originales (difusa y normales) y la celda de cada cara en la UV2 (atributo avCelda): un draw call por modelo. Se pide
-     con la zona en nivel cerca, en calidad media o alta y con WebGL2 (CFG.hd), cuando el jugador ya se movió; mientras no
-     está, se dibuja el ligero. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
+     originales de KitBash3D, docs/EDIFICIOS.md § Ciudad completa). Los modelos con atlas usan un material AV_HD_* con las 16
+     texturas Ancient (o las 10 Savage), difusa y normales, atlas 4096, y la celda de cada cara en la UV2 (atributo avCelda);
+     los restaurados pueden tener varios materiales. Al fundir se reasignan a su celda del atlas; los materiales sin equivalente
+     conservan el suyo. Se pide con la zona en nivel cerca, en cualquier calidad y con WebGL2 (CFG.hd), también antes
+     de moverse si ya estás en la zona. La distancia es hasta la superficie (cámara o Vittata, la que esté más cerca):
+     encima de una torre no cuenta el centro, que queda abajo, y no se dibuja el lod beige. Mientras el _hd baja se ve
+     el ligero, no la silueta. Solo es imagen: colisiones, pisos y vanos salen siempre del ligero (iguales en todo equipo).
 
    Formato de datos en el mapa (compatible con el anterior; lo genera el level designer):
    - mapa.edificiosKelvin: [ entrada ] y mapa.escenaKelvin.compacto: [ entrada compacta ] (se leen las dos listas).
@@ -63,13 +70,22 @@ AVE.module('streaming', function (G) {
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
-    hd: { bajo: 0, medio: 40, alto: 90 },          // m de la cámara a la mitad cercana de la instancia con el modelo de alta fidelidad (_hd); 0 = solo el ligero
+    // F2.1: 45/70/90 m eran el mínimo (Kelvin, 26-oct: no se recorta el kit), no el tope.
+    // Media 90 m y alta 120 m. Baja se queda en 45 m: el móvil modesto no carga más mallas.
+    hd: { bajo: 45, medio: 90, alto: 120 },
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
+    // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
+    // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
+    // 1-nov (Kelvin: «de lejos se ve blanco y de cerca de otra forma»): en «alto» los templos se ven con su modelo texturizado
+    // desde casi toda la isla, no con el lejano crema sin textura (AV_Lejos). En «bajo» queda como antes (el spawn no carga la ciudad).
+    ciudadVista: { bajo: 220, medio: 420, alto: 650 }, // m al borde de la zona: carga el kit
+    ciudadMalla: { bajo: 340, medio: 450, alto: 700 }, // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
     descargas: 1, descargasArranque: 3,            // descargas a la vez
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
+    sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras
   };
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
   function alcanceNiebla() {
@@ -98,39 +114,217 @@ AVE.module('streaming', function (G) {
   function encolar(fn) { trabajos.push(fn); programar(); }
   function drenar() { while (trabajos.length) { const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); } } }
 
+  // ---------- Precarga del programa de las ráfagas ----------
+  // fx.burst crea el PointsMaterial al llegar al agua (burbujas de la caleta): el primer dibujo, en SwiftShader,
+  // se queda varios segundos en getProgramInfoLog. Se deja una de cada familia en la escena y el primer render
+  // de verdad (luces y sombras ya puestos) la compila; luego se oculta. El material sigue vivo para no soltar el programa.
+  let rafagas = [];
+  function precargarRafagas() {
+    if (!G.fx || !G.fx.burst || rafagas.length) return;
+    const antes = new Set();
+    scene.traverse(o => { if (o.isPoints) antes.add(o); });
+    for (const k of ['bubbles', 'feathers', 'gold', 'stars']) { try { G.fx.burst(0, -500, 0, k, 1); } catch (e) { console.warn('AVE precarga:', e && e.message || e); } }
+    const nuevos = [];
+    scene.traverse(o => { if (o.isPoints && !antes.has(o)) nuevos.push(o); });
+    for (const o of nuevos) {
+      const mat = o.material;
+      o.visible = false;
+      scene.remove(o);
+      o.material = new THREE.PointsMaterial();
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([0, -500, 0], 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1], 3));
+      const ancla = new THREE.Points(g, mat);
+      ancla.name = 'precarga-rafaga'; ancla.visible = false; ancla.frustumCulled = false; ancla.userData.sinSolido = true;
+      scene.add(ancla); rafagas.push(ancla);
+    }
+    // También el PointsMaterial sin mapa (llovizna, gotas): es otro programa y, si no, se compila al llegar.
+    const g0 = new THREE.BufferGeometry();
+    g0.setAttribute('position', new THREE.Float32BufferAttribute([0, -500, 0], 3));
+    const plano = new THREE.Points(g0, new THREE.PointsMaterial({ size: 0.16, transparent: true, depthWrite: false, sizeAttenuation: true, fog: true }));
+    plano.name = 'precarga-rafaga'; plano.visible = false; plano.frustumCulled = false; plano.userData.sinSolido = true;
+    scene.add(plano); rafagas.push(plano);
+  }
+  G.on('mundoListo', precargarRafagas, 90);
+  // Primer render de la escena: se ven un cuadro (compila con las luces y las sombras de verdad) y al siguiente se ocultan.
+  let rafagaPaso = 0;
+  G.on('render', () => {
+    if (!rafagas.length || rafagaPaso > 1) return;
+    rafagaPaso++;
+    for (const a of rafagas) a.visible = rafagaPaso === 1;
+  }, 1);
+
   // ---------- Materiales compartidos por nombre, con conteo de referencias ----------
   const mats = {}; // nombre → { mat, refs, fijo }
+  function afilar(t) {
+    if (!t || !R.renderer || !R.renderer.capabilities) return;
+    const max = R.renderer.capabilities.getMaxAnisotropy();
+    if (max > 1) t.anisotropy = Math.min(8, max);
+  }
   function crearMaterial(src, k) {
     const m = new THREE.MeshPhongMaterial({ map: src.map || null, color: src.map ? 0xffffff : src.color, side: src.side, shininess: 8,
       specular: new THREE.Color(0x101010), alphaTest: src.alphaTest || 0, transparent: false, vertexColors: !!src.vertexColors });
     if (!src.map && src.color) m.color.copy(src.color);
+    // Si el glTF ligero trae normalMap, se usa. El kit de ahora no la trae: en la aldea del inicio pesaba en la descarga. El relieve va en el atlas, solo en alta.
+    if (src.normalMap && !/^AV_HD_/.test(k)) {
+      m.normalMap = src.normalMap;
+      if (src.normalScale) m.normalScale.copy(src.normalScale);
+    }
+    afilar(m.map); afilar(m.normalMap);
     m.name = k;
     if (/^AV_HD_/.test(k)) atlasHD(m, src);
+    else if (/^KB3D_mud(Dark)?M$/.test(k)) cremaPlana(m, /Dark/.test(k) ? 0.5 : 0.85);
+    // BM79: losa, plataforma, bloque y templo_grande_e (sin _hd) traen KB3D_floorM/wallL/pillarsM, y el kit KB3D_stoneM: sin crema salían como losas blancas
+    else if (/^KB3D_(floor|stone|pillars)M$|^KB3D_wallL$/.test(k)) cremaPlana(m, 0.85, 0.74);
+    // BM97: el kit Savage cercano pasa a la misma paleta que el _hd y el _lejos (madera cálida, teja roja, piedra crema)
+    else if (/^KB3D_(WoodPlanks|WoodHewn|BarkNew|beams)$/.test(k)) paletaPlana(m, 'madera');
+    else if (/^KB3D_(RoofThatched|TarpFabricDamaged)$/.test(k)) paletaPlana(m, 'teja');
+    else if (/^KB3D_(RockSharp|MudRocky)$/.test(k)) cremaPlana(m, 0.85, 0.74);
     return m;
+  }
+  // BM97: UNA paleta vibrant_toon por material, la misma en el modelo cercano, el _hd y el _lejos (albedo, antes de la luz).
+  // madera = la del _lejos (edificios_lejos_madera.py: sombra 0,20, cara clara 0,56, tono 0,62/0,36/0,16); teja = techar().
+  const PAL = { teja: [0.58, 0.22, 0.14], madera: [0.62, 0.36, 0.16] };
+  const glslMadera = (k) => 'vec3( ' + (PAL.madera[0] / 0.401).toFixed(4) + ', ' + (PAL.madera[1] / 0.401).toFixed(4) + ', ' + (PAL.madera[2] / 0.401).toFixed(4) + ' ) * ( 0.20 + 0.36 * smoothstep( 0.03, 0.35, ' + k + ' ) )';
+  function paletaPlana(m, clase) {
+    m.specular.setHex(0x000000); m.shininess = 1;
+    const c = PAL.teja, cuerpo = clase === 'teja'
+      ? 'vec3( ' + c.map(v => v.toFixed(2)).join(', ') + ' ) * clamp( y / 0.30, 0.92, 1.08 )'
+      : glslMadera('y');
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
+        '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, ' + cuerpo + ', 0.9 ); }');
+    };
+    m.customProgramCacheKey = () => 'av-paleta-' + clase;
+  }
+  // BM23: los modelos Ancient que llegan sin _hd (templo_grande_a y otras torres de la ciudad del tepuy) pintaban el ocre del kit
+  // (KB3D_mudM) y desde el aire la ciudad era amarilla. Misma crema que el atlas (piedra mate, albedo máx. ~0,90), conservando el detalle.
+  // brillo (BM79): 1 por defecto; las losas llanas ven el sol y el cielo de frente y con 1 salen blancas desde el aire
+  function cremaPlana(m, fuerza, brillo) {
+    brillo = brillo || 1;
+    m.specular.setHex(0x000000); m.shininess = 1;
+    m.onBeforeCompile = sh => {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' +
+        '{ float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+        '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+        '  vec3 piedra = mix( vec3( 0.50, 0.40, 0.26 ), vec3( 0.90, 0.76, 0.52 ), t );\n' +
+        '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+        '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle * ' + brillo.toFixed(2) + ', ' + fuerza.toFixed(2) + ' ); }');
+    };
+    m.customProgramCacheKey = () => 'av-crema-plana-' + fuerza + '-' + brillo;
   }
   // ---------- Alta fidelidad (_hd): atlas 4×4 de las texturas originales (tools/blender/edificios_hd_atlas.py) ----------
   // La UV original repite la textura; avCelda (UV2) es el origen de la celda del material en el atlas. fract() envuelve la UV
   // dentro de la celda, que tiene un margen que repite su borde, y el nivel de mipmap sale de la UV sin envolver (sin costuras).
-  const HD = { celdas: 4, celda: 512, margen: 16, lodMax: 4 };
+  // Celda 1024 y margen 32 (atlas 4096). La fracción es la misma que 512/16, así que la UV2 horneada no cambia.
+  // El lod usa el eje corto cuando el otro es mucho mayor (relieve de lado, sin pasar el margen de la celda).
+  const HD = { celdas: 4, celda: 1024, margen: 32, lodMax: 5 };
   const hdGL2 = () => !!(R.renderer && R.renderer.capabilities && R.renderer.capabilities.isWebGL2);
+  // three r128: Texture no trae userData (el Material sí). Crearlo aquí evita que procesar() del _hd lance
+  // «Cannot set properties of undefined (setting 'avAtlas')» y deje el modelo en «bajando».
+  function marcarAtlas(t) {
+    if (!t || !t.isTexture) return;
+    if (!t.userData) t.userData = {};
+    t.userData.avAtlas = true;
+  }
   function atlasHD(m, src) {
     if (src.normalMap) { m.normalMap = src.normalMap; if (src.normalScale) m.normalScale.copy(src.normalScale); }
+    // El look no debe bajar este atlas: la celda de 1024 es el detalle del kit. La URL a veces queda en blob.
+    marcarAtlas(m.map); marcarAtlas(m.normalMap);
+    afilar(m.map); afilar(m.normalMap);
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
+    const esc = m.userData.avAtlasEsc = { value: 1 }; // tamaño del atlas / 4096 (reducirAtlas): corrige el lod sin recompilar
+    // F2.2 (carril B): en el atlas Savage, RoofThatched es la celda 4. Rojo teja, el uniforme lo apaga en Ancient.
+    // G18 (carril C): el atlas Ancient es ocre; con vibrant_toon se ve dorado. La piedra pasa a crema mate.
+    // Un solo programa (av-hd-atlas): cada uniforme actúa solo en su kit.
+    const teja = { value: m.name === 'AV_HD_Savage' ? 1 : 0 };
+    const esCrema = m.name === 'AV_HD_Ancient';
+    const uCrema = { value: esCrema ? 1 : 0 };
+    if (esCrema) { m.specular.setHex(0x000000); m.shininess = 1; }
     m.onBeforeCompile = sh => {
+      sh.uniforms.avAtlasEsc = esc;
+      sh.uniforms.avTeja = teja;
+      sh.uniforms.avCrema = uCrema;
       sh.vertexShader = sh.vertexShader
         .replace('#include <uv_pars_vertex>', '#include <uv_pars_vertex>\nattribute vec2 avCelda;\nvarying vec2 vAvCelda;')
         .replace('#include <uv_vertex>', '#include <uv_vertex>\nvAvCelda = avCelda;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\n' +
+        .replace('#include <uv_pars_fragment>', '#include <uv_pars_fragment>\nvarying vec2 vAvCelda;\nuniform float avAtlasEsc;\nuniform float avTeja;\nuniform float avCrema;\n' +
           'vec4 avAtlas( sampler2D t, vec2 uv ) {\n' +
-          '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ', dy = dFdy( uv ) * ' + f(dentro) + ';\n' +
-          '  float lod = clamp( 0.5 * log2( max( max( dot( dx, dx ), dot( dy, dy ) ), 1e-8 ) ), 0.0, ' + f(HD.lodMax) + ' );\n' +
+          '  vec2 dx = dFdx( uv ) * ' + f(dentro) + ' * avAtlasEsc, dy = dFdy( uv ) * ' + f(dentro) + ' * avAtlasEsc;\n' +
+          '  float ax = length( dx ), ay = length( dy ), mayor = max( ax, ay ), menor = min( ax, ay );\n' +
+          '  float lod = clamp( log2( max( max( menor, mayor / 4.0 ), 1e-4 ) ), 0.0, ' + f(HD.lodMax) + ' + log2( avAtlasEsc ) );\n' +
           '  return textureLod( t, vAvCelda + ' + f(HD.margen / A) + ' + fract( uv ) * ' + f(dentro / A) + ', lod );\n}')
-        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.replace('texture2D( map, vUv )', 'avAtlas( map, vUv )'))
-        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.replace('texture2D( normalMap, vUv )', 'avAtlas( normalMap, vUv )'));
+        // split/join: el mapa de normales usa texture2D dos veces (espacio de objeto y tangente). replace() solo
+        // cambiaba la primera, y la que se dibuja seguía leyendo el atlas entero con la UV suelta (borde beige, sin relieve).
+        .replace('#include <map_fragment>', THREE.ShaderChunk.map_fragment.split('texture2D( map, vUv )').join('avAtlas( map, vUv )') +
+          // BM43: la tela roja sacaba el entramado de la paja como malla de colores; ahora casi plana (0,97) con el detalle de luz
+          // comprimido a ±8 % alrededor de la media de la celda, como lona
+          // BM97: paleta única en el atlas Savage (celdas: 0-3 madera, 4 paja y 5 lona = teja, 6 cuerda = madera, 7-9 roca = crema)
+          '\nif (avTeja > 0.5) {\n' +
+          '  vec2 cs = floor( vAvCelda * 4.0 + 0.5 );\n' +
+          '  float ks = cs.y * 4.0 + cs.x;\n' +
+          '  float ys = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  if ( ks < 3.5 || abs( ks - 6.0 ) < 0.5 ) diffuseColor.rgb = mix( diffuseColor.rgb, ' + glslMadera('ys') + ', 0.9 );\n' +
+          '  else if ( ks < 5.5 ) {\n' +
+          '    float ym = dot( textureLod( map, vAvCelda + 0.125, 5.0 ).rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '    diffuseColor.rgb = vec3(0.58, 0.22, 0.14) * clamp( ys / max( ym, 0.05 ), 0.92, 1.08 );\n' +
+          '  } else if ( ks > 6.5 && ks < 9.5 ) {\n' +
+          '    float t = clamp( pow( max( ys, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+          '    vec3 piedra = mix( vec3( 0.50, 0.40, 0.26 ), vec3( 0.90, 0.76, 0.52 ), t );\n' +
+          '    float detalle = clamp( ys / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+          '    diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle * 0.74, 0.85 );\n' +
+          '  }\n}\n' +
+          // Crema solo en la piedra labrada del atlas Ancient (celdas en tools/blender/edificios_hd_atlas.py): mudM y mudDarkM
+          // (6, 7) a media fuerza; las restauradas (0, 1, 4, 10), beams (13) y rockM (14) conservan su textura. Albedo máximo
+          // ~0,90 (antes 1,11: se veía blanco, como yeso) y el detalle de la textura se conserva en vez de aplanarse.
+          'if (avCrema > 0.5) {\n' +
+          '  vec2 cc = floor( vAvCelda * 4.0 + 0.5 );\n' +
+          '  float k = cc.y * 4.0 + cc.x;\n' +
+          '  float fuerza = ( k < 1.5 || abs( k - 4.0 ) < 0.5 || abs( k - 10.0 ) < 0.5 || abs( k - 13.0 ) < 0.5 || abs( k - 14.0 ) < 0.5 ) ? 0.0 : ( ( abs( k - 6.0 ) < 0.5 || abs( k - 7.0 ) < 0.5 ) ? 0.5 : 1.0 );\n' +
+          '  float y = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );\n' +
+          '  float t = clamp( pow( max( y, 0.0 ), 0.75 ), 0.0, 1.0 );\n' +
+          '  vec3 piedra = mix( vec3( 0.50, 0.40, 0.26 ), vec3( 0.90, 0.76, 0.52 ), t );\n' +
+          '  float detalle = clamp( y / max( mix( 0.40, 0.80, t ), 0.15 ), 0.70, 1.08 );\n' +
+          '  diffuseColor.rgb = mix( diffuseColor.rgb, piedra * detalle, fuerza );\n' +
+          '}\n')
+        // BM2: la crema se veía plana. Con la normal ya perturbada, las caras que miran al suelo (cornisas por debajo, techos
+        // de huecos, dinteles) y las verticales pierden hasta un 38 % de albedo; la que mira al cielo se queda como estaba.
+        // Solo cambia el albedo: no toca el specular 0 ni el shininess 1 de la piedra.
+        .replace('#include <normal_fragment_maps>', THREE.ShaderChunk.normal_fragment_maps.split('texture2D( normalMap, vUv )').join('avAtlas( normalMap, vUv )') +
+          '\nif (avCrema > 0.5) {\n' +
+          '  float ny = inverseTransformDirection( normal, viewMatrix ).y;\n' +
+          '  float u = clamp( ( ny + 0.15 ) / 1.05, 0.0, 1.0 );\n' +
+          '  diffuseColor.rgb *= mix( 0.72, 1.0, u * u * ( 3.0 - 2.0 * u ) );\n' +
+          // BM90: también las celdas restauradas conservan su textura, pero entran en la misma piedra dorada de la meta.
+          '  diffuseColor.rgb *= vec3( 1.06, 0.94, 0.70 );\n' +
+          '}\n');
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
+    reducirAtlas(m);
   }
+  // BJ1 (QA-52, QA-53): cada atlas de 4096 (difusa y normales) ocupa 85 MB en la GPU; en el móvil, el de la casa junto al punto
+  // de aparición llevaba el cap. 1 a 250 MB y subirlo al pulsar «Empezar» congelaba la pantalla. En calidad baja, y en el móvil
+  // fuera de alta, se queda en 2048 (celda 512, 21 MB): se dibuja una vez en un lienzo y se suelta el original. Al volver a una
+  // calidad mayor sigue en 2048 hasta que la zona se descarga y el modelo vuelve a bajar.
+  const MOVIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const atlasMax = () => nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+  function reducirAtlas(m) {
+    const max = atlasMax();
+    if (!max || !m.userData.avAtlasEsc) return;
+    for (const t of [m.map, m.normalMap]) {
+      const img = t && t.image;
+      if (!img || !(img.width > max)) continue;
+      const c = document.createElement('canvas');
+      c.width = max; c.height = Math.round(img.height * max / img.width);
+      try { c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); } catch (e) { continue; } // imagen sin leer: se queda
+      t.image = c; t.needsUpdate = true;
+      if (img.close) img.close(); // ImageBitmap del GLTFLoader: libera la copia de 64 MB en memoria
+    }
+    if (m.map && m.map.image) m.userData.avAtlasEsc.value = m.map.image.width / (HD.celdas * HD.celda);
+  }
+  G.on('calidad', () => { for (const k in mats) if (/^AV_HD_/.test(k)) reducirAtlas(mats[k].mat); });
   function material(src, fijo) {
     const k = src.name || src.uuid;
     let it = mats[k];
@@ -154,18 +348,39 @@ AVE.module('streaming', function (G) {
       for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
         for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap']) {
           const t = m[k]; if (!t || vistas.has(t) || usados.has(t)) continue;
-          vistas.add(t); t.dispose(); if (t.image && typeof t.image.close === 'function') t.image.close();
+          vistas.add(t); t.dispose();
+          // El atlas es un ImageBitmap compartido: close() del sobrante dejaba en blanco el material que se queda.
+          if (t.image && typeof t.image.close === 'function' && !(AVE.assets && AVE.assets.imagenRetenida && AVE.assets.imagenRetenida(t.image))) t.image.close();
         }
         if (!usados.has(m)) m.dispose();
       }
     });
   }
   const matLejos = new THREE.MeshLambertMaterial({ vertexColors: true, name: 'AV_Lejos' });
+  const matSombra = new THREE.MeshBasicMaterial({ name: 'AV_Sombra' });
 
   // ---------- Geometría: fundir partes, simplificar para el LOD lejano ----------
   // Factor de un atributo entero normalizado (COLOR_0 Uint16 del _lejos, cuantización): en r128 getX no desnormaliza (QA-25)
   const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
     : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
+  // BM105: fusión de lejanos con atlas (posición, normal, uv y celda del atlas)
+  function fundirTex(geos) {
+    let nv = 0, ni = 0;
+    for (const g of geos) { nv += g.attributes.position.count; ni += g.index.count; }
+    const A = { position: [3, new Float32Array(nv * 3)], normal: [3, new Float32Array(nv * 3)], uv: [2, new Float32Array(nv * 2)], avCelda: [2, new Float32Array(nv * 2)] };
+    const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+    let vo = 0, io = 0;
+    for (const g of geos) {
+      for (const k in A) { const a = g.attributes[k], d = A[k][0], k1 = kNorm(a); for (let i = 0, n = a.count; i < n; i++) for (let c = 0; c < d; c++) A[k][1][(vo + i) * d + c] = a['get' + 'XYZ'[c]](i) * k1; }
+      for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
+      io += g.index.count; vo += g.attributes.position.count;
+    }
+    const out = new THREE.BufferGeometry();
+    for (const k in A) out.setAttribute(k, new THREE.BufferAttribute(A[k][1], A[k][0]));
+    out.setIndex(new THREE.BufferAttribute(idx, 1));
+    out.computeBoundingSphere(); out.computeBoundingBox();
+    return out;
+  }
   function fundir(geos, conColor) {
     let nv = 0, ni = 0;
     for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
@@ -206,6 +421,87 @@ AVE.module('streaming', function (G) {
       const n = d.length / 4; c.multiply(new THREE.Color(r / n, g / n, b / n));
     } catch (e) { /* lienzo no disponible: color del material */ }
     return c;
+  }
+  // F2.2: las caras de arriba del tejado (normal hacia el cielo, en la mitad alta) pasan a rojo teja
+  // cálido. El color de vértice del _lejos estaba en ~0,11 y desde el aire no se leía. No se toca la geometría.
+  function techar(geo) {
+    const pos = geo.attributes.position, nor = geo.attributes.normal, col = geo.attributes.color;
+    if (!pos || !nor || !col) return;
+    let y1 = -1e9;
+    for (let i = 0; i < pos.count; i++) y1 = Math.max(y1, pos.getY(i));
+    const corte = y1 * 0.42;
+    for (let i = 0; i < pos.count; i++) {
+      if (nor.getY(i) > 0.32 && pos.getY(i) > corte) col.setXYZ(i, PAL.teja[0], PAL.teja[1], PAL.teja[2]);
+    }
+    col.needsUpdate = true;
+  }
+  // BM97: la lona del _lejos era ocre (0,72/0,46/0,22) y la de cerca roja: pasa a la misma teja, conservando su sombreado
+  const esLona = n => /^(toldo_|tienda_|campamento_|carpa_)/.test(n);
+  function lonar(geo) {
+    const col = geo.attributes.color;
+    if (!col || geo.userData.lona) return;
+    for (let i = 0; i < col.count; i++) {
+      const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i), k = Math.min(1.2, Math.max(0.6, y / 0.40));
+      col.setXYZ(i, PAL.teja[0] * k, PAL.teja[1] * k, PAL.teja[2] * k);
+    }
+    col.needsUpdate = true; geo.userData.lona = 1;
+  }
+  // Piedra Ancient (ciudad del tepuy y el resto del kit). El _hd ya va a marfil; el _lejos
+  // seguía ocre y, desde el aire, la ciudad se veía dorada y el grupo de la izquierda, oscuro.
+  // muro_roca no entra: es roca y madera del kit Savage, no piedra labrada (se veía crema y perdía caras).
+  const esPiedra = n => /^(ruina_|templo_|muro_templo|plataforma_piedra|bloque_piedra|losa_piedra|complejo_ruinas)/.test(n);
+  function cremar(geo) {
+    const col = geo.attributes.color;
+    if (!col) return;
+    for (let i = 0; i < col.count; i++) {
+      const y = 0.2126 * col.getX(i) + 0.7152 * col.getY(i) + 0.0722 * col.getZ(i);
+      const t = Math.min(1, Math.pow(Math.max(y, 0) / 0.22, 0.55));
+      const d = Math.min(1.12, Math.max(0.84, y / 0.28));
+      col.setXYZ(i, (0.55 + 0.41 * t) * d, (0.48 + 0.40 * t) * d, (0.38 + 0.36 * t) * d);
+    }
+    col.needsUpdate = true;
+  }
+  // Solo se quitan los triángulos degenerados (altura sobre la arista larga < 2 cm). La regla de antes
+  // (arista larga > 12 × la corta) borraba caras reales de torres, pilastras y cornisas: 18–38 % de los
+  // triángulos de ruina_torre* y muro_roca, y desde lejos las ciudades se veían como esqueletos con huecos.
+  function podarAstillas(geo) {
+    const pos = geo.attributes.position, index = geo.index;
+    if (!pos || !index) return;
+    const src = index.array, nt = index.count / 3, keep = [];
+    const dist = (a, b) => Math.hypot(pos.getX(a) - pos.getX(b), pos.getY(a) - pos.getY(b), pos.getZ(a) - pos.getZ(b));
+    for (let t = 0; t < nt; t++) {
+      const a = src[t * 3], b = src[t * 3 + 1], c = src[t * 3 + 2];
+      const ab = dist(a, b), bc = dist(b, c), ca = dist(c, a);
+      const corto = Math.min(ab, bc, ca), largo = Math.max(ab, bc, ca), sp = (ab + bc + ca) / 2;
+      const area = Math.sqrt(Math.max(0, sp * (sp - ab) * (sp - bc) * (sp - ca)));
+      if (corto < 1e-4 || 2 * area / largo < 0.02) continue;
+      keep.push(a, b, c);
+    }
+    if (!keep.length || keep.length === index.count) return;
+    geo.setIndex(new THREE.BufferAttribute(new (pos.count > 65535 ? Uint32Array : Uint16Array)(keep), 1));
+    geo.computeBoundingSphere();
+  }
+  // horneado: el _lejos ya trae la crema en COLOR_0 (77d79ca, extras.avCremaLejos). Cremarlo otra vez lo llevaba a blanco.
+  function piedraLejos(n, geo, horneado) {
+    if (!esPiedra(n) || !geo) return;
+    podarAstillas(geo);
+    if (!horneado) cremar(geo);
+    marfilar(geo);
+  }
+  // BM23: desde el aire la crema horneada, con el sol cálido y el verde del suelo en la luz hemisférica, se leía amarillo oliva.
+  // Se acerca al marfil de la meta de Kelvin: menos saturación (×0,55) y algo más de luz, sin tocar la luminosidad relativa de las caras.
+  // BM56 (BM38 se había perdido): el ×1,38 llevaba a 1,0 las caras claras y el _lejos salía blanco puro frente al crema
+  // del cercano. Tope por canal = el techo de la piedra cercana (cremaPlana/atlas: 0,94 / 0,85 / 0,72).
+  // BM79: con el sol y la luz del cielo el Lambert multiplicaba el 0,94 por más de 1 y las losas llanas salían blancas: tope más bajo.
+  const TOPE_LEJOS = [0.80, 0.68, 0.52], TINTE_LEJOS = [1, 0.86, 0.60];
+  function marfilar(geo) {
+    const col = geo.attributes.color;
+    if (!col || geo.userData.marfil) return;
+    for (let i = 0; i < col.count; i++) {
+      const r = col.getX(i), g = col.getY(i), b = col.getZ(i), y = 0.2126 * r + 0.7152 * g + 0.0722 * b, s = 0.5, k = 1.38;
+      col.setXYZ(i, Math.min(TOPE_LEJOS[0], (y + (r - y) * s) * k * TINTE_LEJOS[0]), Math.min(TOPE_LEJOS[1], (y + (g - y) * s) * k * 0.97 * TINTE_LEJOS[1]), Math.min(TOPE_LEJOS[2], (y + (b - y) * s * 1.15) * k * TINTE_LEJOS[2]));
+    }
+    col.needsUpdate = true; geo.userData.marfil = 1;
   }
   // Agrupado de vértices en una rejilla de lado `celda`: triángulos planos (sin índice), normales de cara y color fijo
   function agrupar(g, celda, color) {
@@ -285,6 +581,37 @@ AVE.module('streaming', function (G) {
     const res = (n, tipo) => { const r = recursos[n] || (recursos[n] = {}); return r[tipo] || (r[tipo] = { n, tipo, refs: 0, estado: 'nada', promesa: null, partes: null, geo: null, mallas: [], soltarEn: 0, fijo: false }); };
     const analisis = {}; // modelo|escala → resultado de cfg.analizar
     const vecA = new THREE.Vector3(), quatA = new THREE.Quaternion(), escA = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    // ruina_torre_f mide 6,6 m en Y y 2,3 m en planta. En la ciudad la matriz del export le aplica
+    // un cabeceo de −90° y la torre queda acostada: desde el sureste se lee como un gancho.
+    // El modelo ya es Y-arriba. Se conservan el rumbo, la escala uniforme y el origen.
+    const ejeT = new THREE.Vector3(), ejeYT = new THREE.Vector3(0, 1, 0), ejeZT = new THREE.Vector3();
+    function enderezarTorreY(I) {
+      I.m.decompose(vecA, quatA, escA);
+      ejeT.set(1, 0, 0).applyQuaternion(quatA); ejeT.y = 0;
+      if (ejeT.lengthSq() < 1e-8) ejeT.set(1, 0, 0);
+      ejeT.normalize();
+      ejeZT.crossVectors(ejeT, ejeYT).normalize();
+      const s = (escA.x + escA.y + escA.z) / 3;
+      I.m.makeBasis(ejeT, ejeYT, ejeZT);
+      I.m.scale(escA.set(s, s, s));
+      I.m.setPosition(vecA);
+      I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = s; I.erguido = true;
+      const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
+    }
+    // 1-nov: también las otras dos zonas con templos grandes (las ruinas del este y el complejo de la colina), que de lejos salían como bloques blancos
+    const CIUDADES = new Set(['kelvin_ruinas_yunque', 'kelvin_ruinas_yunque_2', 'kelvin_aldea_rio_este_2', 'kelvin_aldea_colina']);
+    const esCiudad = id => CIUDADES.has(id);
+
+    // BM39: piedra de ruinas (miradores, ciudad y colina) que flota sobre el escalón. Solo baja: si el origen queda más de
+    // `sobre` por encima del mínimo del terreno bajo su huella, se lleva a ese mínimo; las hundidas a propósito (zócalo) no se tocan.
+    const RUINA = { modelos: /^(ruina_(?!torre)|templo_|bloque_piedra|complejo_ruinas|monolito)/, zonas: /^kelvin_ruinas_yunque/, huella: 0.5, huellaMax: 6, sobre: 0.3 };
+    function bajarRuina(I) {
+      if (!RUINA.modelos.test(I.modelo) || !RUINA.zonas.test(I.zona)) return;
+      const h = Math.min(I.r * RUINA.huella, RUINA.huellaMax), c = Math.cos(I.rotY), s = Math.sin(I.rotY);
+      let y = Infinity;
+      for (const [u, v] of [[-h, -h], [h, -h], [-h, h], [h, h], [0, 0]]) y = Math.min(y, T.height(I.pos[0] + u * c + v * s, I.pos[2] - u * s + v * c));
+      if (isFinite(y) && I.pos[1] - y > RUINA.sobre) { I.pos[1] = y; I.m.elements[13] = y; }
+    }
 
     function construir() {
       const kit = KIT();
@@ -300,6 +627,7 @@ AVE.module('streaming', function (G) {
           I.pos = [vecA.x, vecA.y, vecA.z]; I.escala = (escA.x + escA.y + escA.z) / 3;
           const ey = new THREE.Vector3(0, 1, 0).applyQuaternion(quatA); I.erguido = ey.y > 0.95;
           const e = I.m.elements; I.rotY = Math.atan2(e[8], e[10]);
+          if (c.zona === 'kelvin_ruinas_yunque' && c.n === 'ruina_torre_f' && !I.erguido) enderezarTorreY(I);
         } else {
           const x = c.pos[0], z = c.pos[2], suelo = T.height(x, z);
           const y = c.op.yExacta && c.pos[1] != null ? c.pos[1] : c.pos[1] != null ? Math.min(c.pos[1], suelo) : suelo;
@@ -309,10 +637,10 @@ AVE.module('streaming', function (G) {
           I.m.compose(vecA.set(x, y, z), quatA.setFromAxisAngle(up, rot), escA.set(I.escala, I.escala, I.escala));
         }
         const k = kit && kit[c.n], rad = k && k.radio ? k.radio : c.e.dim ? Math.hypot(c.e.dim[0], c.e.dim[1], c.e.dim[2]) / 2 : 10;
-        I.r = rad * I.escala; I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
+        I.r = rad * I.escala; bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
-        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, d: Infinity });
+        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
         Z.inst.push(I); Z.modelos.add(c.n);
       }
       for (const id in zonas) {
@@ -334,12 +662,13 @@ AVE.module('streaming', function (G) {
       if (!cap || lotes[k]) return; // pieza solo del contenido (taller) o ya creado
       let attr = buffers[k];
       if (!attr || attr.count < cap) { attr = buffers[k] = new THREE.InstancedBufferAttribute(new Float32Array(cap * 16), 16); attr.setUsage(THREE.DynamicDrawUsage); }
-      const partes = r.tipo === 'lejos' ? [{ geo: r.geo, mat: matLejos }] : r.partes;
+      const partes = r.tipo === 'lejos' ? [{ geo: r.geo, mat: r.mat || matLejos }] : r.partes;
       const L = lotes[k] = { n: r.n, tipo: r.tipo, attr, mallas: [], lista: [], prev: [], sombra: false };
       for (const p of partes) {
         const m = new THREE.InstancedMesh(p.geo, p.mat, cap);
         m.instanceMatrix = attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
-        m.castShadow = m.receiveShadow = r.tipo !== 'lejos';
+        m.castShadow = r.tipo !== 'lejos';
+        m.receiveShadow = true;
         m.name = 'edificiosInst:' + r.n + ':' + r.tipo + ':' + p.mat.name; m.userData.sinSolido = true;
         scene.add(m); L.mallas.push(m);
       }
@@ -348,6 +677,7 @@ AVE.module('streaming', function (G) {
     function quitarLote(r) {
       const k = r.n + ':' + r.tipo, L = lotes[k]; if (!L) return;
       for (const m of L.mallas) scene.remove(m);
+      if (L.panel) L.panel.geometry.dispose();
       delete lotes[k]; r.mallas = [];
     }
 
@@ -356,6 +686,35 @@ AVE.module('streaming', function (G) {
     const cargarGLB = clave => G.assets.loadGLB(base + clave + '.glb', { b64: () => (window[B64] || {})[clave], script: base + clave + '_glb.js', base, error: 'edificio no disponible: ' + clave });
     const tieneLejos = n => { const k = KIT(); return !!(k && k[n] && k[n].lejos); };
     const tieneHD = n => { const k = KIT(); return !!(k && k[n] && k[n].hd); };
+    const CELDAS = [
+      ['ancient', 0, /AV_Restaurado_Bloques|KB3D_stoneM/i], ['ancient', 1, /AV_Restaurado_Piedra|KB3D_wallM/i],
+      ['ancient', 2, /KB3D_wallL/i], ['ancient', 3, /KB3D_pillarsM/i], ['ancient', 4, /AV_Restaurado_Base|KB3D_floorM/i],
+      ['ancient', 5, /KB3D_floorDarkM/i], ['ancient', 6, /KB3D_mudM/i], ['ancient', 7, /KB3D_mudDarkM/i],
+      ['ancient', 8, /KB3D_damageM/i], ['ancient', 9, /KB3D_damageL/i], ['ancient', 10, /AV_Restaurado_Tallado|KB3D_decoM/i],
+      ['ancient', 11, /KB3D_blocksL/i], ['ancient', 12, /KB3D_bricksM/i], ['ancient', 13, /KB3D_beams/i],
+      ['ancient', 14, /KB3D_rockM/i], ['ancient', 15, /KB3D_sculptM/i],
+      ['savage', 0, /KB3D_WoodPlanks/i], ['savage', 1, /KB3D_WoodHewn/i], ['savage', 2, /KB3D_BarkNew/i],
+      ['savage', 3, /KB3D_BarkCharred/i], ['savage', 4, /KB3D_RoofThatched/i], ['savage', 5, /KB3D_TarpFabricDamaged/i],
+      ['savage', 6, /KB3D_Rope/i], ['savage', 7, /KB3D_RockSharp/i], ['savage', 8, /KB3D_RockSmooth/i], ['savage', 9, /KB3D_MudRocky/i]
+    ];
+    function materialAtlas(kit) {
+      const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
+      if (!mats[k]) {
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg'), normalMap = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        map.encoding = THREE.sRGBEncoding;
+        map.flipY = normalMap.flipY = false;
+        mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
+      }
+      return mats[k].mat;
+    }
+    function convertirAtlas(geo, mat) {
+      if ((geo.attributes.avCelda && /^AV_HD_/.test(mat.name)) || !geo.attributes.uv) return null;
+      const c = CELDAS.find(c => c[2].test(mat.name)); if (!c) return null;
+      const out = geo.clone(), n = out.attributes.position.count, uv = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) { uv[i * 2] = (c[1] % 4) / 4; uv[i * 2 + 1] = Math.floor(c[1] / 4) / 4; }
+      out.setAttribute('avCelda', new THREE.BufferAttribute(uv, 2)); out.deleteAttribute('uv2');
+      return { geo: out, mat: materialAtlas(c[0]) };
+    }
     const hdActivo = () => (CFG.hd[nivelCal()] || 0) > 0 && hdGL2();
     function pedir(r, prio) {
       r.refs++; r.soltarEn = 0;
@@ -365,21 +724,25 @@ AVE.module('streaming', function (G) {
         r.promesa.catch(() => {});
         if (r.tipo === 'lejos' && !tieneLejos(r.n)) generarDesdeCerca(r, prio);
         else { cola.push(r); siguiente(); }
-      } else if (r.estado === 'cola') r.prio = Math.min(r.prio, prio);
+      } else if (r.estado === 'cola' && prio < r.prio) { r.prio = prio; siguiente(); }
       return r.promesa;
     }
     function soltar(r) {
       if (--r.refs > 0 || r.fijo) return;
       r.refs = 0; r.soltarEn = performance.now() + CFG.gracia * 1000;
     }
+    // Con el jugador quieto solo arrancan el lejano cercano y el modelo completo de la precarga.
+    // El resto espera en cola, con referencia, hasta que Vittata se mueve.
+    function puedeAhora(r) {
+      if (!(arrancando || quieto)) return true;
+      const pre = CFG.precarga[nivelCal()] || 50, lq = CFG.lejosQuieto[nivelCal()] || 150;
+      return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
+    }
     function siguiente() {
-      const max = arrancando ? CFG.descargasArranque : CFG.descargas, pre = CFG.precarga[nivelCal()] || 50;
+      const max = arrancando ? CFG.descargasArranque : CFG.descargas;
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
-        // antes de mundoListo solo baja lo de precarga y los lejanos del kit (pesan poco); el resto espera
-        // hasta que el jugador se mueve, igual: lejanos para todo y el modelo completo solo de lo que tiene encima
-        const lq = CFG.lejosQuieto[nivelCal()] || 150;
-        const i = arrancando || quieto ? cola.findIndex(q => (q.tipo === 'lejos' && q.prio < lq) || (q.tipo === 'cerca' && q.prio < pre)) : 0;
+        const i = cola.findIndex(puedeAhora);
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
@@ -389,6 +752,10 @@ AVE.module('streaming', function (G) {
           .then(gltf => encolar(() => procesar(r, gltf.scene)), err => { r.estado = 'error'; r.error = err; r.mal(err); })
           .then(() => { enVuelo--; siguiente(); });
       }
+    }
+    function tieneTeja(n) {
+      const k = KIT(), mats = k && k[n] && k[n].mats;
+      return !!(mats && mats.some(m => /RoofThatched/i.test(m)));
     }
     function procesar(r, root) {
       root.updateMatrixWorld(true);
@@ -400,7 +767,15 @@ AVE.module('streaming', function (G) {
         let gr = grupos.get(k); if (!gr) grupos.set(k, gr = { src: o.material, geos: [] });
         gr.geos.push(geo);
       });
-      if (r.tipo === 'lejos') {
+      // BM105: el _lejos Ancient con UV y celda del atlas (TEXCOORD_1) se dibuja con AV_HD_Ancient, el mismo material y tono del cercano
+      const gt = r.tipo === 'lejos' && grupos.size === 1 && grupos.get('AV_Lejos').geos.length === 1 ? grupos.get('AV_Lejos') : null;
+      if (gt && gt.geos[0].attributes.uv && gt.geos[0].attributes.uv2 && gt.src && gt.src.map && /^AV_HD_/.test(gt.src.name)) {
+        const geo = gt.geos[0];
+        geo.setAttribute('avCelda', geo.attributes.uv2); geo.deleteAttribute('uv2'); geo.deleteAttribute('color');
+        if (!geo.boundingSphere) geo.computeBoundingSphere(); if (!geo.boundingBox) geo.computeBoundingBox();
+        r.mat = material(gt.src, r.fijo); usados.add(r.mat); if (r.mat.map) usados.add(r.mat.map); if (r.mat.normalMap) usados.add(r.mat.normalMap);
+        r.geo = geo;
+      } else if (r.tipo === 'lejos') {
         const geos = [...grupos.values()].flatMap(g => g.geos.map(geo => {
           if (geo.attributes.color) return geo;
           const c = g.src.color || new THREE.Color(1, 1, 1), n = geo.attributes.position.count, a = new Float32Array(n * 3);
@@ -408,6 +783,9 @@ AVE.module('streaming', function (G) {
           const out = geo.clone(); out.setAttribute('color', new THREE.BufferAttribute(a, 3)); return out;
         }));
         r.geo = fundir(geos, true);
+        piedraLejos(r.n, r.geo, [...grupos.values()].some(g => g.src && g.src.userData && g.src.userData.avCremaLejos === 1));
+        if (tieneTeja(r.n)) techar(r.geo);
+        if (esLona(r.n)) lonar(r.geo);
       } else {
         r.partes = [];
         for (const [, gr] of grupos) {
@@ -438,7 +816,13 @@ AVE.module('streaming', function (G) {
       crearLote(r);
       r.ok(r);
       if (r.tipo === 'lejos') zonasDe(r.n);
-      if (r.tipo === 'cerca') for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
+      if (r.tipo === 'hd') for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]));
+      if (r.tipo === 'cerca') {
+        for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) {
+          encolar(() => fundirCercaZona(zonas[id])); encolar(() => fundirSombraZona(zonas[id]));
+        }
+        for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
+      }
     }
     function actualizarEsferas(n, esf) {
       for (const I of porModelo[n] || []) {
@@ -451,7 +835,8 @@ AVE.module('streaming', function (G) {
       r.estado = 'bajando';
       const rc = res(r.n, 'cerca');
       pedir(rc, prio + 1000).then(() => encolar(() => {
-        try { r.geo = generarLejos(rc.partes); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
+        try { r.geo = generarLejos(rc.partes); piedraLejos(r.n, r.geo); if (tieneTeja(r.n)) techar(r.geo);
+        if (esLona(r.n)) lonar(r.geo); r.estado = 'listo'; crearLote(r); if (!r.refs) r.soltarEn = performance.now() + CFG.gracia * 1000; r.ok(r); zonasDe(r.n); }
         catch (e) { r.estado = 'error'; r.mal(e); }
         soltar(rc);
       }), err => { r.estado = 'error'; r.mal(err); soltar(rc); });
@@ -459,7 +844,7 @@ AVE.module('streaming', function (G) {
     function liberar(r) {
       quitarLote(r);
       if (r.tipo !== 'lejos' && r.partes) { for (const p of r.partes) { p.geo.dispose(); soltarMaterial(p.mat); } r.partes = null; }
-      if (r.tipo === 'lejos' && r.geo) { r.geo.dispose(); r.geo = null; }
+      if (r.tipo === 'lejos' && r.geo) { r.geo.dispose(); r.geo = null; if (r.mat) { soltarMaterial(r.mat); r.mat = null; } }
       r.estado = 'nada'; r.promesa = null; r.soltarEn = 0;
     }
     function liberarVencidos(ahora) {
@@ -481,11 +866,16 @@ AVE.module('streaming', function (G) {
         analisis[kA] = cfg.analizar(g, I.escala);
       }
       if (cfg.colocar) cfg.colocar(I, analisis[kA] || { sol: null, pisos: [], alto: r.alto * I.escala });
+      // BM6-1: bohío de puerta abierta compartida: salvo la instancia amueblada, cada una pone su panel (sólido)
+      if (G.bohiosAbiertos && G.bohiosAbiertos[I.modelo] && !(G.esBohioAbierto && G.esBohioAbierto(I)) && G.solidos && G.solidos.panelInstancia) G.solidos.panelInstancia(I.modelo, I.m);
       if (G.solidos && G.solidos.agregar) {
         const g = new THREE.Group();
         for (const p of r.partes) { const m = new THREE.Mesh(p.geo, p.mat); m.matrixAutoUpdate = false; m.matrix.copy(I.m); g.add(m); }
+        g.userData.modelo = I.modelo; // BM6-3: solidos.js guarda las matrices por nombre de modelo
         G.solidos.agregar(g);
       }
+      const Z = zonas[I.zona];
+      if ((Z.ciudad || Z.nivel === 2) && Z.cercaMallas) encolar(() => fundirCercaZona(Z));
     }
 
     // --- niveles de las zonas ---
@@ -499,29 +889,289 @@ AVE.module('streaming', function (G) {
         if (antes < 1 && quiere >= 1) pedir(res(n, 'lejos'), Z.d + 1).catch(() => {});
         if (antes >= 1 && quiere < 1) soltar(res(n, 'lejos'));
       }
+      if (antes === 2 && quiere < 2 && !Z.ciudad) quitarCercaZona(Z);
       if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I));
       if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
     }
-    // Versión _hd de los modelos de la zona: se pide en nivel cerca (calidad media o alta) y se suelta al salir
+    // Distancia al modelo más cercano de la zona (prioridad de descarga: lo que tienes delante entra antes que el resto).
+    function distModelo(Z, n) {
+      const S = G.S, x = S.pos ? S.pos.x : Z.cx, z = S.pos ? S.pos.z : Z.cz;
+      let m = Z.d;
+      for (const I of Z.inst) if (I.modelo === n && I.pos) m = Math.min(m, Math.hypot(I.pos[0] - x, I.pos[2] - z) - (I.r || 0));
+      return m;
+    }
+    function cargasPendientes(Z, tipo) {
+      return [...Z.modelos].some(n => { const r = res(n, tipo); return r.estado === 'bajando' || (r.estado === 'cola' && r.refs); });
+    }
+    // En las ciudades, todos los _hd comparten la misma vista aérea: se funden por material en vez de dibujar un lote por modelo.
+    function quitarHDZona(Z) {
+      Z.hdFundiendo = false;
+      for (const m of Z.hdMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      Z.hdMallas = null; Z.hdModelos = new Set();
+      programarHDGlobal();
+    }
+    function fundirHD(Z, forzar) {
+      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdFundiendo || (!forzar && cargasPendientes(Z, 'hd'))) return;
+      const modelos = new Set([...Z.modelos].filter(n => tieneHD(n) && res(n, 'hd').estado === 'listo'));
+      if (!modelos.size) return;
+      if (Z.hdMallas) {
+        if ([...modelos].every(n => Z.hdModelos.has(n))) return;
+        quitarHDZona(Z);
+      }
+      Z.hdFundiendo = true;
+      const grupos = new Map(), temporales = [], ms = [];
+      try {
+        for (const I of Z.inst) {
+          if (!modelos.has(I.modelo)) continue;
+          for (const p of res(I.modelo, 'hd').partes) {
+            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
+            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], modelos: new Set() });
+            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
+            temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
+          }
+        }
+        for (const gr of grupos.values()) {
+          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+          m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); ms.push(m);
+        }
+        Z.hdMallas = ms; Z.hdModelos = modelos;
+        encolar(() => fundirCercaZona(Z)); programarHDGlobal();
+      } catch (e) {
+        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+        console.warn('AVE streaming: no se pudo fundir el _hd de ' + Z.id, e && e.message || e);
+      } finally {
+        for (const g of temporales) g.dispose();
+        Z.hdFundiendo = false;
+      }
+    }
+    const hdGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarHDGlobal() {
+      for (const m of hdGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      hdGlobal.mallas = []; hdGlobal.ids = '';
+    }
+    function fundirHDGlobal() {
+      if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
+      const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      const ids = zs.map(Z => Z.id + ':' + [...Z.hdModelos].sort().join(',')).join('|');
+      if (ids === hdGlobal.ids) return;
+      quitarHDGlobal();
+      if (zs.length < 2) { hdGlobal.ids = ids; return; }
+      const grupos = new Map();
+      for (const Z of zs) for (const m of Z.hdMallas) {
+        let gr = grupos.get(m.material.name); if (!gr) grupos.set(m.material.name, gr = { mat: m.material, geos: [] });
+        gr.geos.push(m.geometry);
+      }
+      for (const gr of grupos.values()) {
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+        m.name = 'edificiosZonaHDGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+        const it = mats[gr.mat.name]; if (it) it.refs++;
+        scene.add(m); hdGlobal.mallas.push(m);
+      }
+      hdGlobal.ids = ids;
+    }
+    function programarHDGlobal() {
+      if (hdGlobal.pendiente) return;
+      hdGlobal.pendiente = true;
+      encolar(() => { hdGlobal.pendiente = false; fundirHDGlobal(); });
+    }
+    function quitarCercaZona(Z) {
+      Z.cercaFundiendo = false;
+      for (const m of Z.cercaMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      Z.cercaMallas = null; Z.cercaModelos = new Set();
+      programarCercaGlobal();
+    }
+    function fundirCercaZona(Z, forzar) {
+      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaFundiendo || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
+      const hd = Z.hdMallas && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)) ? Z.hdModelos : new Set();
+      const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !hd.has(n) && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
+      if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
+      quitarCercaZona(Z);
+      if (!modelos.size) return;
+      Z.cercaFundiendo = true;
+      const grupos = new Map(), temporales = [], ms = [];
+      try {
+        for (const I of Z.inst) {
+          if (!modelos.has(I.modelo)) continue;
+          for (const p of res(I.modelo, 'cerca').partes) {
+            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
+            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], modelos: new Set() });
+            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
+            temporales.push(geo); gr.geos.push(geo); gr.modelos.add(I.modelo);
+          }
+        }
+        for (const gr of grupos.values()) {
+          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+          m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); ms.push(m);
+        }
+        Z.cercaMallas = ms; Z.cercaModelos = modelos;
+        programarCercaGlobal();
+      } catch (e) {
+        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+        console.warn('AVE streaming: no se pudo fundir el cercano de ' + Z.id, e && e.message || e);
+      } finally {
+        for (const g of temporales) g.dispose();
+        Z.cercaFundiendo = false;
+      }
+    }
+    const cercaGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarCercaGlobal() {
+      for (const m of cercaGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.material); }
+      cercaGlobal.mallas = []; cercaGlobal.ids = '';
+    }
+    function fundirCercaGlobal() {
+      if (Object.values(zonas).some(Z => Z.cercaFundiendo)) return;
+      const zs = Object.values(zonas).filter(Z => Z.cercaMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      const ids = zs.map(Z => Z.id + ':' + [...Z.cercaModelos].sort().join(',')).join('|');
+      if (ids === cercaGlobal.ids) return;
+      quitarCercaGlobal();
+      if (zs.length < 2) { cercaGlobal.ids = ids; return; }
+      const grupos = new Map();
+      for (const Z of zs) for (const m of Z.cercaMallas) {
+        let gr = grupos.get(m.material.name); if (!gr) grupos.set(m.material.name, gr = { mat: m.material, geos: [] });
+        gr.geos.push(m.geometry);
+      }
+      for (const gr of grupos.values()) {
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
+        m.name = 'edificiosZonaCercaGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+        const it = mats[gr.mat.name]; if (it) it.refs++;
+        scene.add(m); cercaGlobal.mallas.push(m);
+      }
+      cercaGlobal.ids = ids;
+    }
+    function programarCercaGlobal() {
+      if (cercaGlobal.pendiente) return;
+      cercaGlobal.pendiente = true;
+      encolar(() => { cercaGlobal.pendiente = false; fundirCercaGlobal(); });
+    }
+    function quitarSombraZona(Z) {
+      if (!Z.sombraMalla) return;
+      scene.remove(Z.sombraMalla); Z.sombraMalla.geometry.dispose(); Z.sombraMalla = null; Z.sombraModelos = new Set();
+    }
+    function fundirSombraZona(Z) {
+      if (!Z.ciudad || cargasPendientes(Z, 'cerca')) return;
+      const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo'));
+      if (Z.sombraMalla && modelos.size === Z.sombraModelos.size && [...modelos].every(n => Z.sombraModelos.has(n))) return;
+      quitarSombraZona(Z);
+      if (!modelos.size) return;
+      const geos = [];
+      for (const I of Z.inst) {
+        if (!modelos.has(I.modelo)) continue;
+        for (const p of res(I.modelo, 'cerca').partes) geos.push(p.geo.clone().applyMatrix4(I.m));
+      }
+      const m = new THREE.Mesh(fundir(geos, false), matSombra);
+      for (const g of geos) g.dispose();
+      m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
+      m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
+      m.layers.set(1);
+      if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
+      scene.add(m); Z.sombraMalla = m; Z.sombraModelos = modelos;
+    }
+    // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
       if (!!Z.hd === quiere) return;
       Z.hd = quiere;
-      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 0.5).catch(() => {}); else soltar(res(n, 'hd')); }
+      if (!quiere) quitarHDZona(Z);
+      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
+      if (quiere) encolar(() => fundirHD(Z));
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
+    // La zona se funde en tandas de pocos milisegundos: cerrarla de una vez trababa el cuadro.
     function fundirZona(Z) {
-      if (Z.nivel < 1 || Z.malla) return;
+      if (Z.nivel < 1 || Z.malla || Z.fundir) return;
       const rs = [...Z.modelos].map(n => res(n, 'lejos'));
       if (!rs.every(r => r.estado === 'listo' && r.geo)) return;
-      const geos = Z.inst.map(I => res(I.modelo, 'lejos').geo.clone().applyMatrix4(I.m));
-      const m = new THREE.Mesh(fundir(geos, true), matLejos);
-      for (const g of geos) g.dispose();
-      m.name = 'edificiosZona:' + Z.id + ':lejos'; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
-      scene.add(m); Z.malla = m;
+      Z.fundir = { i: 0, geos: [], tex: [], mat: null };
+      encolar(() => fundirPaso(Z));
     }
-    function quitarZona(Z) { if (!Z.malla) return; scene.remove(Z.malla); Z.malla.geometry.dispose(); Z.malla = null; }
+    function fundirPaso(Z) {
+      const F = Z.fundir;
+      const libF = () => { for (const g of F.geos.concat(F.tex)) g.dispose(); Z.fundir = null; };
+      if (!F || Z.malla || Z.nivel < 1) { if (F) libF(); return; }
+      const t0 = performance.now();
+      while (F.i < Z.inst.length && performance.now() - t0 < 6) {
+        const I = Z.inst[F.i++], rl = res(I.modelo, 'lejos'), geo = rl.geo;
+        if (!geo) { libF(); return; }
+        (rl.mat ? F.tex : F.geos).push(geo.clone().applyMatrix4(I.m));
+        if (rl.mat) F.mat = rl.mat;
+      }
+      if (F.i < Z.inst.length || performance.now() - t0 >= 6) { encolar(() => (Z.fundir && Z.fundir.i < Z.inst.length) ? fundirPaso(Z) : fundirCerrar(Z)); return; }
+      fundirCerrar(Z);
+    }
+    function fundirCerrar(Z) {
+      const F = Z.fundir; if (!F) return;
+      Z.fundir = null;
+      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos.concat(F.tex)) g.dispose(); return; }
+      if (!F.geos.length && !F.tex.length) return;
+      // BM105: los lejanos con atlas (Ancient) van en su propia malla, con AV_HD_Ancient; el resto, el color de vértice de siempre
+      const mk = (geo, mat, nom) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.name = 'edificiosZona:' + Z.id + ':' + nom; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
+        m.receiveShadow = true; m.castShadow = false;
+        scene.add(m); return m;
+      };
+      const ms = [];
+      if (F.geos.length) ms.push(mk(fundir(F.geos, true), matLejos, 'lejos'));
+      if (F.tex.length) {
+        const it = mats[F.mat.name]; if (it) it.refs++;
+        const m = mk(fundirTex(F.tex), F.mat, 'lejosTex'); m.userData.matTex = true; ms.push(m);
+      }
+      for (const g of F.geos.concat(F.tex)) g.dispose();
+      Z.malla = ms[0]; Z.mallaExtra = ms.slice(1);
+      programarLejosGlobal();
+    }
+    function quitarZona(Z) {
+      if (Z.fundir) { for (const g of Z.fundir.geos) g.dispose(); Z.fundir = null; }
+      if (!Z.malla) return;
+      for (const m of [Z.malla].concat(Z.mallaExtra || [])) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
+      Z.malla = null; Z.mallaExtra = [];
+      programarLejosGlobal();
+    }
+    const lejosGlobal = { mallas: [], ids: '', pendiente: false };
+    function quitarLejosGlobal() {
+      for (const m of lejosGlobal.mallas) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
+      lejosGlobal.mallas = []; lejosGlobal.ids = '';
+    }
+    function fundirLejosGlobal() {
+      if (Object.values(zonas).some(Z => Z.fundir)) return;
+      const zs = Object.values(zonas).filter(Z => Z.malla).sort((a, b) => a.id < b.id ? -1 : 1), ids = zs.map(Z => Z.id).join('|');
+      if (ids === lejosGlobal.ids) return;
+      quitarLejosGlobal();
+      if (zs.length < 2) { lejosGlobal.ids = ids; return; }
+      const color = [], tex = new Map();
+      for (const Z of zs) {
+        color.push(Z.malla.geometry);
+        for (const m of Z.mallaExtra || []) { let g = tex.get(m.material.name); if (!g) tex.set(m.material.name, g = { mat: m.material, geos: [] }); g.geos.push(m.geometry); }
+      }
+      const add = (geo, mat, nom, conTex) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.name = 'edificiosZona:global:' + nom; m.userData.sinSolido = true; m.userData.matTex = conTex; m.matrixAutoUpdate = false;
+        m.receiveShadow = true; m.castShadow = false; m.visible = false;
+        if (conTex) { const it = mats[mat.name]; if (it) it.refs++; }
+        scene.add(m); lejosGlobal.mallas.push(m);
+      };
+      if (color.length) add(fundir(color, true), matLejos, 'lejos', false);
+      for (const g of tex.values()) add(fundirTex(g.geos), g.mat, 'lejosTex', true);
+      lejosGlobal.ids = ids;
+    }
+    function programarLejosGlobal() {
+      if (lejosGlobal.pendiente) return;
+      lejosGlobal.pendiente = true;
+      encolar(() => { lejosGlobal.pendiente = false; fundirLejosGlobal(); });
+    }
     function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
     const avisados = new Set();
     function respaldo(Z, n, err) {
@@ -540,21 +1190,43 @@ AVE.module('streaming', function (G) {
         const cerca = Z.forzada || (Z.nivel === 2 ? Z.d < Rc + H : Z.d < Rc);
         const lejos = Z.nivel >= 1 ? Z.d < Rl + H : Z.d < Rl;
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
-        ajustarHD(Z, Z.nivel === 2 && hdActivo() && Z.d < Rc + (Z.hd ? H : 0)); // forzada de lejos (cargarTodo): sin _hd
+        // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
+        // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
+        if (esCiudad(Z.id)) {
+          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista[nivelCal()] + (Z.ciudad ? H : 0);
+          if (Z.ciudad !== quiere) {
+            Z.ciudad = quiere;
+            for (const n of Z.modelos) {
+              if (quiere) pedir(res(n, 'cerca'), Z.d).catch(err => respaldo(Z, n, err));
+              else soltar(res(n, 'cerca'));
+            }
+          }
+          if (quiere) { encolar(() => fundirCercaZona(Z)); encolar(() => fundirSombraZona(Z)); }
+          else { quitarCercaZona(Z); quitarSombraZona(Z); }
+        }
+        ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd
+        if (Z.hd) for (const n of Z.modelos) {
+          const rh = recursos[n] && recursos[n].hd;
+          if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
+        }
       }
       liberarVencidos(performance.now());
     }
     // Promesa: las zonas en nivel cerca que pasan el filtro, cargadas y colocadas (y los lejanos con archivo propio)
     function listasCerca(filtro) {
       const ps = [];
+      // Quien espera esta promesa tiene que poder bajarla: en quieto, un cerca a 30,5 m
+      // (justo por encima de la precarga) se quedaba en cola y la prueba no salía del spawn.
+      const exigir = r => { if (r && r.estado === 'cola') r.prio = -1; return r && r.promesa; };
       for (const id in zonas) {
         const Z = zonas[id]; if (!filtro(Z)) continue;
         for (const n of Z.modelos) {
-          if (Z.nivel === 2) ps.push(res(n, 'cerca').promesa);
+          if (Z.nivel === 2) ps.push(exigir(res(n, 'cerca')));
         }
       }
       const lq = quieto ? CFG.lejosQuieto[nivelCal()] || 150 : Infinity;
-      for (const id in zonas) if (zonas[id].nivel >= 1 && zonas[id].d < lq) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(res(n, 'lejos').promesa);
+      for (const id in zonas) if (zonas[id].nivel >= 1 && zonas[id].d < lq) for (const n of zonas[id].modelos) if (tieneLejos(n)) ps.push(exigir(res(n, 'lejos')));
+      siguiente();
       return Promise.all(ps.filter(Boolean).map(p => p.catch(() => null))).then(() => new Promise(ok => {
         const hecho = () => { for (const id in zonas) { const Z = zonas[id]; if (filtro(Z) && Z.nivel === 2 && Z.inst.some(I => !I.colocado && res(I.modelo, 'cerca').estado === 'listo')) return false; } return true; };
         const mirar = () => { if (hecho()) ok(); else { if (arrancando || !programado) drenarColocar(); setTimeout(mirar, 30); } };
@@ -571,37 +1243,151 @@ AVE.module('streaming', function (G) {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
       const cp = cam.position, max = alcance(), maxZ = alcanceZona(), lodD = CFG.lod[nivelCal()] || 65, H = CFG.lodH, hdD = hdActivo() ? CFG.hd[nivelCal()] : 0;
-      const S = G.S, sx = S.pos ? S.pos.x : cp.x, sz = S.pos ? S.pos.z : cp.z;
+      const S = G.S, px = S.pos ? S.pos.x : cp.x, py = S.pos ? S.pos.y : cp.y, pz = S.pos ? S.pos.z : cp.z;
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
-      vis.zonas = 0;
+      vis.zonas = vis.hd = vis.cerca = 0;
       for (const id in zonas) {
-        const Z = zonas[id], m = Z.malla; if (!m) { Z.usaMalla = false; continue; }
+        const Z = zonas[id], m = Z.malla;
+        Z.usaHDFusion = !!((Z.ciudad || Z.nivel === 2) && Z.hdMallas && Z.hdMallas.length && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)));
+        Z.usaCercaFusion = !!((Z.ciudad || Z.nivel === 2) && Z.cercaMallas && Z.cercaMallas.length);
+        if (Z.sombraMalla) Z.sombraMalla.visible = false;
+        for (const h of Z.hdMallas || []) { h.visible = false; h.castShadow = false; }
+        for (const h of Z.cercaMallas || []) { h.visible = false; h.castShadow = false; }
+        if (Z.usaHDFusion) for (const h of Z.hdMallas) {
+          const bs = h.geometry.boundingSphere;
+          h.userData.sombra = false;
+          h.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        }
+        if (Z.usaCercaFusion) for (const h of Z.cercaMallas) {
+          const bs = h.geometry.boundingSphere;
+          h.userData.sombra = false;
+          h.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        }
+        if (!m) { Z.usaMalla = false; continue; }
         const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
-        Z.usaMalla = Z.nivel === 1 || dz > lodD + (Z.usaMalla ? -H : H);
-        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && cp.distanceTo(bs.center) - bs.radius < maxZ;
+        const dj = Math.hypot(px - Z.cx, pz - Z.cz) - Z.r;
+        const umbral = lodD + (Z.usaMalla ? -H : H);
+        // La silueta fundida solo si la cámara y Vittata están lejos del borde. Junto a las ruinas se dibujan las mallas.
+        // En la ciudad del tepuy, nunca: la silueta beige tapa el kit justo en la vista aérea.
+        Z.usaMalla = !Z.ciudad && (Z.nivel === 1 || (dz > umbral && dj > umbral));
+        const bs = m.geometry.boundingSphere; m.visible = Z.usaMalla && !lejosGlobal.mallas.length && cp.distanceTo(bs.center) - bs.radius < maxZ;
+        if (Z.mallaExtra) for (const e of Z.mallaExtra) e.visible = m.visible;
         if (m.visible && frustum.intersectsSphere(bs)) vis.zonas++;
       }
+      for (const m of lejosGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+        if (m.visible) vis.zonas++;
+      }
+      for (const m of hdGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = false; m.castShadow = false;
+        m.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+      }
+      for (const m of cercaGlobal.mallas) {
+        const bs = m.geometry.boundingSphere;
+        m.visible = false; m.castShadow = false;
+        m.userData.enVista = cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs);
+      }
       for (let i = 0; i < activas.length; i++) {
-        const I = activas[i];
-        if (zonas[I.zona].usaMalla) continue; // la dibuja la malla fundida de su zona
-        const d = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
-        if (d - I.r > max) continue;
-        // los grandes (más de CFG.hdGrande m de radio: templos, el complejo) cuentan desde su mitad cercana: junto a uno de 40 m
-        // de radio no se ve su lejano. Su _hd sigue más allá del LOD, hasta hdD (los pequeños, el lejano: menos draw calls)
-        const grande = I.r > CFG.hdGrande, dl = grande ? d - I.r * 0.5 : d;
-        if (I.lod === 0 && dl > lodD + H) I.lod = 1; else if (I.lod === 1 && dl < lodD - H) I.lod = 0;
-        I.hd = hdD > 0 && (I.lod === 0 || grande) && dl < hdD + (I.hd ? H : -H);
-        let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + (I.lod === 0 ? ':cerca' : ':lejos')] || lotes[I.modelo + (I.lod === 0 ? ':lejos' : ':cerca')];
+        const I = activas[i], Z = zonas[I.zona];
+        if (Z.usaMalla) continue; // la dibuja la malla fundida de su zona
+        const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
+        const vista = Z.ciudad;
+        const cM = CFG.ciudadMalla[nivelCal()], maxI = vista ? Math.max(max, cM) : max;
+        if (dCam - I.r > maxI) continue;
+        // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
+        // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
+        const dPla = Math.hypot(I.cx - px, I.cy - py, I.cz - pz);
+        const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
+        const grande = I.r > CFG.hdGrande;
+        const lodLim = vista ? Math.max(lodD, cM) : lodD;
+        const hdLim = vista ? Math.max(hdD, cM) : hdD;
+        if (I.lod === 0 && dl > lodLim + H) I.lod = 1; else if (I.lod === 1 && dl < lodLim - H) I.lod = 0;
+        // Junto a la pared, la malla completa en cualquier calidad. Los grandes siguen en HD más allá del LOD, hasta hdD.
+        // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.
+        // En la ciudad del tepuy el límite es el de la vista aérea: si no, a 100 m ya es la silueta beige.
+        const junto = hdLim > 0 && dl < hdLim + (I.hd ? H : -H);
+        I.hd = junto && (I.lod === 0 || grande) && I.colocado; // BM6-6: el _hd no sustituye al ligero hasta que el sólido esté colocado
+        const base = (I.lod === 0 || junto) ? 'cerca' : 'lejos';
+        let L = (I.hd && lotes[I.modelo + ':hd']) || lotes[I.modelo + ':' + base] || lotes[I.modelo + ':' + (base === 'cerca' ? 'lejos' : 'cerca')];
         if (!L) continue;
-        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - sx, I.cz - sz) < rS + I.r;
+        // Los props chicos (losas, toldos, canoas: BH1) solo dan sombra junto a Vittata: más allá son unos pocos texels
+        // del mapa de sombras y cada modelo con sombra es un draw call más en la pasada de sombras.
+        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
+        if (L.tipo === 'cerca' && Z.usaCercaFusion && Z.cercaModelos.has(I.modelo)) {
+          vis.cerca++;
+          if (sombra) for (const h of Z.cercaMallas) if (h.userData.modelos.has(I.modelo)) h.userData.sombra = true;
+          continue;
+        }
+        if (I.hd && Z.usaHDFusion && Z.hdModelos.has(I.modelo)) {
+          vis.hd++;
+          if (sombra) for (const h of Z.hdMallas) if (h.userData.modelos.has(I.modelo)) h.userData.sombra = true;
+          continue;
+        }
         L.lista.push(I); if (sombra) L.sombra = true;
       }
-      vis.cerca = vis.lejos = vis.hd = vis.mallas = 0;
+      vis.lejos = vis.mallas = 0;
+      for (const id in zonas) {
+        const Z = zonas[id];
+        if (Z.usaHDFusion && !hdGlobal.mallas.length) for (const m of Z.hdMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = Z.ciudad ? false : m.userData.sombra;
+          if (m.visible) vis.mallas++;
+        }
+        if (Z.usaCercaFusion && !cercaGlobal.mallas.length) for (const m of Z.cercaMallas) {
+          m.visible = m.userData.enVista || m.userData.sombra; m.castShadow = Z.ciudad ? false : m.userData.sombra;
+          if (m.visible) vis.mallas++;
+        }
+        if (Z.sombraMalla) {
+          const sombra = (Z.usaHDFusion && Z.hdMallas.some(m => m.userData.sombra)) || (Z.usaCercaFusion && Z.cercaMallas.some(m => m.userData.sombra));
+          Z.sombraMalla.visible = sombra;
+        }
+      }
+      for (const m of hdGlobal.mallas) {
+        let enVista = false, sombra = false, directa = false;
+        for (const id in zonas) {
+          const Z = zonas[id]; if (!Z.usaHDFusion) continue;
+          if (Z.hdMallas.some(h => h.material.name === m.material.name && h.userData.enVista)) enVista = true;
+          if (Z.hdMallas.some(h => h.material.name === m.material.name && h.userData.sombra)) {
+            sombra = true; if (!Z.ciudad) directa = true;
+          }
+        }
+        m.visible = enVista || sombra; m.castShadow = directa;
+        if (m.visible) vis.mallas++;
+      }
+      for (const m of cercaGlobal.mallas) {
+        let sombra = false, directa = false;
+        for (const id in zonas) {
+          const Z = zonas[id]; if (!Z.usaCercaFusion) continue;
+          if (Z.cercaMallas.some(h => h.material.name === m.material.name && h.userData.sombra)) {
+            sombra = true; if (!Z.ciudad) directa = true;
+          }
+        }
+        m.visible = m.userData.enVista || sombra; m.castShadow = directa;
+        if (m.visible) vis.mallas++;
+      }
       for (const k in lotes) {
         const L = lotes[k], li = L.lista, pr = L.prev;
+        // BM6-1: panel de la puerta abierta compartida, como una malla más del lote; la instancia amueblada va la última y no lo lleva
+        if (L.tipo === 'cerca' && !L.panelHecho && G.bohiosAbiertos && G.bohiosAbiertos[L.n] && G.solidos && G.solidos.panelAbierto) {
+          const rc = recursos[L.n] && recursos[L.n].cerca, pa = rc && rc.partes && G.solidos.panelAbierto(L.n, rc.partes);
+          if (pa !== undefined && rc && rc.partes) {
+            L.panelHecho = true;
+            if (pa) {
+              const m = new THREE.InstancedMesh(pa.geo, pa.mat, L.attr.count);
+              m.instanceMatrix = L.attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
+              m.castShadow = m.receiveShadow = true; m.name = 'edificiosInst:' + L.n + ':panel'; m.userData.sinSolido = true;
+              scene.add(m); L.mallas.push(m); L.panel = m;
+            }
+          }
+        }
+        if (L.panel && G.esBohioAbierto && li.some(I => G.esBohioAbierto(I))) { // BM13: varias abiertas (una por aldea), todas al final
+          const cerr = li.filter(I => !G.esBohioAbierto(I)), abi = li.filter(I => G.esBohioAbierto(I));
+          for (let j = 0; j < li.length; j++) li[j] = j < cerr.length ? cerr[j] : abi[j - cerr.length];
+        }
         let igual = li.length === pr.length;
         for (let j = 0; igual && j < li.length; j++) if (li[j] !== pr[j]) igual = false;
         if (!igual) {
@@ -610,7 +1396,9 @@ AVE.module('streaming', function (G) {
           L.attr.needsUpdate = true;
           L.prev = li.slice();
         }
-        for (const m of L.mallas) { m.count = li.length; m.visible = li.length > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
+        let nPanel = L.panel ? li.length : 0;
+        while (nPanel > 0 && G.esBohioAbierto && G.esBohioAbierto(li[nPanel - 1])) nPanel--;
+        for (const m of L.mallas) { m.count = m === L.panel ? nPanel : li.length; m.visible = m.count > 0; m.castShadow = L.tipo !== 'lejos' && L.sombra; }
         if (li.length) { vis[L.tipo] += li.length; vis.mallas += L.mallas.length; }
       }
     }
@@ -634,12 +1422,21 @@ AVE.module('streaming', function (G) {
       soltarTodo() { for (const id in zonas) zonas[id].forzada = false; revisar(); },
       liberarYa() { for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },
       terminar() {
-        // todo lo pendiente ya (pruebas y capturas): descargas en curso, trabajos y colocación
+        // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto
+        // todavía no deja bajar (el mapa entero, a 650 m) no cuenta: si no, la prueba no arranca.
         const espera = () => new Promise(ok => {
-          const mirar = () => { drenar(); if (!enVuelo && !cola.some(r => r.estado === 'cola' && (r.refs || r.fijo)) && !trabajos.length) ok(); else setTimeout(mirar, 25); };
+          const mirar = () => {
+            drenar(); siguiente();
+            const esperaCola = cola.some(r => r.estado === 'cola' && (r.refs || r.fijo) && puedeAhora(r));
+            if (!enVuelo && !esperaCola && !trabajos.length) ok(); else setTimeout(mirar, 25);
+          };
           mirar();
         });
-        return espera().then(() => { drenarColocar(); drenar(); });
+        return espera().then(() => {
+          drenarColocar(); drenar();
+          for (const id in zonas) { const Z = zonas[id]; fundirHD(Z, true); fundirCercaZona(Z, true); }
+          fundirHDGlobal(); fundirCercaGlobal(); fundirLejosGlobal();
+        });
       },
       stats() {
         let modCerca = 0, modLejos = 0, modHD = 0, bytes = 0;
@@ -649,7 +1446,16 @@ AVE.module('streaming', function (G) {
           if (rh && rh.estado === 'listo') { modHD++; for (const p of rh.partes) bytes += tam(p.geo); }
           if (rl && rl.estado === 'listo') { modLejos++; bytes += tam(rl.geo); }
         }
-        for (const id in zonas) if (zonas[id].malla) bytes += tam(zonas[id].malla.geometry);
+        for (const id in zonas) {
+          const Z = zonas[id];
+          if (Z.malla) bytes += tam(Z.malla.geometry);
+          for (const m of Z.hdMallas || []) bytes += tam(m.geometry);
+          for (const m of Z.cercaMallas || []) bytes += tam(m.geometry);
+          if (Z.sombraMalla) bytes += tam(Z.sombraMalla.geometry);
+        }
+        for (const m of lejosGlobal.mallas) bytes += tam(m.geometry);
+        for (const m of hdGlobal.mallas) bytes += tam(m.geometry);
+        for (const m of cercaGlobal.mallas) bytes += tam(m.geometry);
         const zs = Object.values(zonas);
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
           instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos, modelosHD: modHD,
@@ -695,6 +1501,14 @@ AVE.module('streaming', function (G) {
       const iniciales = zs.filter(Z => Math.max(0, Math.hypot(x0 - Z.cx, z0 - Z.cz) - Z.r) < Rc);
       check('Lo de cerca del inicio está cargado y con colisiones', iniciales.every(Z => Z.nivel === 2 && Z.inst.every(I => I.colocado)),
         iniciales.map(Z => Z.id + ':' + Z.inst.filter(I => I.colocado).length + '/' + Z.inst.length).join(' '));
+      if (hdGL2() && R.setCalidad) {
+        R.setCalidad('medio', true); ST.revisar(); dibujar(2);
+        const zonasHD = zs.filter(zn => zn.usaHDFusion && zn.hdMallas.some(h => h.userData.enVista || h.userData.sombra)).length, globalHD = [];
+        scene.traverse(o => { if (o.visible && o.name && o.name.indexOf('edificiosZonaHDGlobal:') === 0) globalHD.push(o.name); });
+        check('La fusión global HD solo se dibuja con una zona HD visible', globalHD.length === 0 || zonasHD > 0,
+          zonasHD + ' zonas HD visibles · mallas globales: ' + (globalHD.join(', ') || 'ninguna'));
+        R.setCalidad('alto', true); ST.revisar(); dibujar(2);
+      }
       // 2. Entrar en una zona que no esté cerca del punto de partida: fuera de vista si la hay, si no la más lejana
       ST.revisar(x0, z0);
       const Z = zs.filter(Zn => !iniciales.includes(Zn) && Zn.nivel < 2).sort((a, b) => a.nivel - b.nivel || b.d - a.d)[0] || zs.slice().sort((a, b) => b.d - a.d)[0];
@@ -714,15 +1528,35 @@ AVE.module('streaming', function (G) {
         hdMax = Math.max(hdMax, se.visiblesHD);
       }
       G.camara.yaw = yaw0;
-      // Versión cercana de alta fidelidad (_hd) de los modelos que la tienen: cargada y dibujada en calidad alta con WebGL2
+      // Versión cercana de alta fidelidad (_hd): cargada y dibujada en calidad alta con WebGL2. Media y baja también la piden.
       const conHD = [...ZM.modelos].filter(n => ST.tieneHD(n));
+      if (hdGL2() && R.setCalidad) {
+        R.setCalidad('medio', true); ST.revisar();
+        check('En calidad media se pide el edificio completo', (CFG.hd.medio || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'medio ' + (CFG.hd.medio || 0) + ' m');
+        R.setCalidad('bajo', true); ST.revisar();
+        check('En calidad baja, junto al edificio, también', (CFG.hd.bajo || 0) > 0 && !!(ST.stats() && ST.stats().hd), 'bajo ' + (CFG.hd.bajo || 0) + ' m');
+        check('F2.1: el detalle llega a 90 m en media y a 120 m en alta; en baja el kit sigue a 45 m', CFG.hd.medio === 90 && CFG.hd.alto === 120 && CFG.hd.bajo === 45,
+          'bajo ' + CFG.hd.bajo + ' · medio ' + CFG.hd.medio + ' · alto ' + CFG.hd.alto);
+        R.setCalidad('alto', true); ST.revisar();
+      }
       if (conHD.length && (CFG.hd.alto || 0) > 0 && hdGL2()) {
         const listosHD = conHD.filter(n => ST.recursos[n].hd && ST.recursos[n].hd.estado === 'listo');
         check('Cerca, los edificios con versión de alta fidelidad la cargan y la dibujan', listosHD.length === conHD.length && hdMax > 0,
           ZM.id + ': ' + listosHD.length + '/' + conHD.length + ' modelos _hd, hasta ' + hdMax + ' instancias _hd a la vista');
+      if (listosHD.length) { // BM6-5: las colisiones salen del ligero; el _hd debe medir lo mismo (cajas a 0,3 m)
+        const caja = r => { const b = new THREE.Box3(); for (const p of r.partes) b.union(p.geo.boundingBox); return b; };
+        const dif = n => { const rc = ST.recursos[n]; if (!(rc.cerca.partes && rc.hd.partes)) return 0; const a = caja(rc.cerca), b = caja(rc.hd); return Math.max(...[a.min.x - b.min.x, a.min.y - b.min.y, a.min.z - b.min.z, a.max.x - b.max.x, a.max.y - b.max.y, a.max.z - b.max.z].map(Math.abs)); };
+        const PENDIENTE_HD = ['templo_grande', 'templo_grande_f', 'ruina_mirador']; // BM6-5: desfase medido, a reexportar en Blender (BUGS.md)
+        const malos = listosHD.filter(n => dif(n) > 0.3 && !PENDIENTE_HD.includes(n));
+        check('El _hd mide lo mismo que el ligero (de donde salen las colisiones)', malos.length === 0, malos.map(n => n + ' ' + dif(n).toFixed(2)).join(', ') || listosHD.length + ' modelos; pendientes: ' + listosHD.filter(n => PENDIENTE_HD.includes(n)).map(n => n + ' ' + dif(n).toFixed(2)).join(', '));
+      }
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
+      const lejosM = [];
+      scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
+      check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
+        lejosM.length + ' mallas');
       const g0 = M.geometries, t0 = M.textures;
       // Entrar en Z por el borde sur, mirando al centro
       const bx = Z.cx, bz = Z.cz + Math.min(Z.r, 40) + 6;
@@ -739,7 +1573,7 @@ AVE.module('streaming', function (G) {
       const idsZ = new Set(Z.inst.map(I => I.id)), colZ = () => G.fisica.colliders.filter(c => idsZ.has(c.id)).length;
       const I0 = Z.inst.find(I => I.erguido && G.mundo.activos[I.id] && G.mundo.activos[I.id].alto > 2), alto0 = () => I0 && G.solidos && G.solidos.altoEn ? G.solidos.altoEn(I0.pos[0], I0.pos[2], 1e4) : 0;
       const c1 = colZ(), s1 = alto0();
-      const visibles = Object.values(ST.lotes).some(L => L.mallas.some(m => m.visible && m.count > 0));
+      const visibles = Object.values(ST.lotes).some(L => L.mallas.some(m => m.visible && m.count > 0)) || scene.children.some(o => o.visible && /^edificiosZona(Cerca|HD)/.test(o.name));
       check('Se dibujan instancias de la zona', visibles, '');
       // 3. Salir: volver al inicio y liberar
       await ir(x0, z0, f0 && f0.x, f0 && f0.z);
@@ -768,6 +1602,29 @@ AVE.module('streaming', function (G) {
       const m2 = foto();
       check('Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB)', m2.kb <= m1.kb * 1.02 + 16 && m2.mats <= m1.mats && m2.mod <= m1.mod && !(gc && m2.heap - m1.heap > tolHeap),
         'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc: no se exige)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t);
+      // La ciudad del tepuy, desde el aire (150 m al borde, más lejos que el _hd general): el kit, no la silueta beige.
+      const ZC = ST.zonas.kelvin_ruinas_yunque;
+      if (ZC && hdGL2()) {
+        await ir(ZC.cx, ZC.cz + ZC.r + 150, 0, -1);
+        const seC = ST.stats();
+        const beige = ZC.malla && ZC.malla.visible;
+        check('La ciudad del tepuy, desde el aire, usa el kit con textura y no la silueta beige', ZC.ciudad && ZC.nivel >= 1 && seC.visiblesHD > 0 && !beige,
+          'hd ' + seC.visiblesHD + ' · cerca ' + seC.visiblesCerca + ' · lejos ' + seC.visiblesLejos + ' · ciudad ' + !!ZC.ciudad + ' · silueta ' + !!beige);
+        const torresF = (ST.instancias || []).filter(I => I.zona === 'kelvin_ruinas_yunque' && I.modelo === 'ruina_torre_f');
+        check('Las torres F de la ciudad están erguidas (el export las tumbaba y se leían como ganchos)', torresF.length === 3 && torresF.every(I => I.erguido), torresF.map(I => I.id + (I.erguido ? '' : ' tumbada')).join(', '));
+        const Z2 = ST.zonas.kelvin_ruinas_yunque_2;
+        check('El conjunto de torres de la izquierda usa el kit en la vista aérea', !!(Z2 && Z2.ciudad && Z2.nivel >= 1), Z2 ? 'ciudad ' + !!Z2.ciudad + ' · nivel ' + Z2.nivel + ' · d ' + Math.round(Z2.d) : 'sin zona');
+        let matCrema = null;
+        scene.traverse(o => { const m = o.material; if (m && m.name === 'AV_HD_Ancient') matCrema = m; });
+        const claveCrema = matCrema && matCrema.customProgramCacheKey ? String(matCrema.customProgramCacheKey()) : '';
+        check('La piedra Ancient del kit es crema mate (sin brillo especular)', !!(matCrema && matCrema.shininess === 1 && matCrema.specular && matCrema.specular.r === 0 && matCrema.userData && matCrema.userData.avAtlasEsc), claveCrema || 'sin material');
+        const atlasFusion = [];
+        scene.traverse(o => { const m = o.material; if (/^edificiosZonaHD:/.test(o.name) && m && /^AV_HD_/.test(m.name)) atlasFusion.push(m); });
+        check('El atlas de las fusiones conserva la codificación sRGB del original', atlasFusion.length > 0 && atlasFusion.every(m => !m.map || m.map.encoding === THREE.sRGBEncoding),
+          atlasFusion.map(m => m.name + '=' + (m.map ? m.map.encoding : 'sin mapa')).join(', '));
+        await ir(x0, z0); ST.liberarYa(); dibujar();
+        check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
+      }
     } catch (e) {
       check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
@@ -779,6 +1636,8 @@ AVE.module('streaming', function (G) {
     return result();
   }
 
-  return { iniciar, material, soltarMaterial, generarLejos, CFG, test, get gestor() { return ST; },
+  return { iniciar, material, soltarMaterial, generarLejos, CFG, test,
+    rafagasListas: () => rafagaPaso >= 1 && rafagas.length > 0,
+    get gestor() { return ST; },
     modelo: n => ST ? ST.modelo(n) : Promise.reject(new Error('streaming sin iniciar')) };
 });

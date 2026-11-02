@@ -58,11 +58,12 @@ AVE.module('comic', function (G) {
     const base = Math.atan2(cam.position.x - S.pos.x, cam.position.z - S.pos.z);
     const libre = q => {
       if (q.y < G.terreno.height(q.x, q.z) + 0.3) return false;
+      if (G.camara.copaLibre && !G.camara.copaLibre(q, cab)) return false; // ni dentro de una copa ni con hojas delante
       if (!SO || !SO.activo || !SO.dentro) return true;
       for (let i = 0; i <= 11; i++) { const t = i / 14; if (SO.dentro(q.x + (cab.x - q.x) * t, q.z + (cab.z - q.z) * t, q.y + (cab.y - q.y) * t) > -Infinity) return false; }
       return true;
     };
-    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of [[3.0, 0.5], [3.8, -0.3]]) {
+    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of [[3.0, 0.5], [3.8, -0.3], [2.6, -1.0], [3.2, -1.8]]) {
       const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, S.pos.y + dy, S.pos.z + Math.cos(a) * dist);
       if (libre(q)) return fotoDesde(q, cab);
     }
@@ -743,6 +744,9 @@ AVE.module('comic', function (G) {
         const solBk = G.solidos;
         try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
         finally { G.solidos = solBk; }
+        const copaBk = G.camara.copaLibre;
+        try { G.camara.copaLibre = () => false; check('Posada dentro de una copa (hojas en todos los ángulos): sin foto, la rama usa su ilustración (QA-32)', fotoPosada() === null); }
+        finally { G.camara.copaLibre = copaBk; }
         G.quiet = false; try { G.emit('criadero', 'nido'); G.emit('posado', { tipo: 'alto', que: 'techo', altura: 6 }); } finally { G.quiet = true; }
         check('Cada evento del motor cuenta una sola vez por partida', S.events.filter(e => e.key === 'NestAppeared' || e.key === 'FirstRoofPerch').length === 2);
         // Página con todas las viñetas: más alta si hace falta, PNG válido y cada viñeta nueva con contenido y en orden

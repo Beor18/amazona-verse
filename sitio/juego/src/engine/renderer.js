@@ -5,8 +5,10 @@
    (que llama a drawScene: post-proceso si está activo, si no render directo).
    Calidad: presets bajo / medio / alto (calidad, setCalidad). Se elige por GPU, núcleos y memoria (perfilEquipo), baja en los primeros 3 s si no llega al objetivo (decidirArranque) y se ajusta por FPS; cada cambio emite el gancho
    'calidad' (G.on('calidad', C => …)) para que terreno, vegetación y agua bajen o suban su detalle. ?calidad=bajo fija uno. Prueba: calidadTest() (corre también dentro de contextTest).
-   Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala] },
-   mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom }.
+   Datos del pack: mundo.cielo { color (horizonte), cenit, sol, niebla: [inicio, extincion], nieblaAltura: [h0, escala], nubes, nubesAltas },
+   mundo.luces { cielo, suelo, hemi, sol, solInt, solPos }, mundo.exposicion, mundo.post { saturacion, contraste, bloom, rayos }.
+   Cielo vivo (26-B): degradado de tres paradas con horizonte cálido, halo y disco del sol, nubes en dos capas (una llamada) y
+   rayos de luz en alto (pase radial a 1/4 en el composer, post.rayos); clima.js y look.js mandan sobre sus colores.
    Sin cielo.cenit se usa el fondo plano de antes (plantillas viejas).
    Contexto WebGL: si se pierde, pausa con un aviso y al volver lo rehace todo sin tocar G.S (gancho 'contexto'; ver la sección
    «Contexto WebGL»). Prueba: contextTest() (AV.contextTest). */
@@ -26,19 +28,38 @@ AVE.module('renderer', function (G) {
   const DEVICE_DPR = window.devicePixelRatio || 1;
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
+  // QA-53: three r128, justo después de linkProgram, lee getShaderInfoLog y getProgramInfoLog
+  // en el mismo hilo (debug.checkShaderErrors). En SwiftShader eso congelaba el primer dibujo
+  // al pulsar «Empezar» (~65 programas, un cuadro de unos 6 s). Sin el chequeo el enlace no
+  // espera ese registro. ?shaders=1 lo vuelve a encender para ver un shader roto.
+  if (!/[?&]shaders=1(?:&|$)/.test(location.search)) renderer.debug.checkShaderErrors = false;
   const DPR_MAX = Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2), DPR_MIN = Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
-  const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0 };
+  const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
+  // RN1: en móviles y Chromebooks (objetivo 30 FPS) la media no ve los tirones: se vigila también el p95 de los últimos 120
+  // cuadros. Por encima de 42 ms (cuadros de ~24 FPS cada 20) baja la resolución igual que con la media lenta; y si la media
+  // está por debajo de 22 FPS (ms > 45), baja de a 0,5 y sin esperar al segundo conteo (antes tardaba ~6 s en llegar al mínimo).
+  const P95_LENTO = 42, MS_GRAVE = 45;
+  function p95Ventana() {
+    if (dyn.n < 40) return 0;
+    const a = Array.prototype.slice.call(dyn.v, 0, dyn.n).sort((x, y) => x - y);
+    return a[Math.min(a.length - 1, Math.floor(0.95 * a.length))];
+  }
   function adaptDPR(raw) {
     if (!(raw > 0 && raw < 100)) return;                     // pestaña oculta o pausa larga: no cuenta
     dyn.ms += (raw - dyn.ms) * 0.05; dyn.t += raw; dyn.lock = Math.max(0, dyn.lock - raw);
+    dyn.v[dyn.i] = raw; dyn.i = (dyn.i + 1) % dyn.v.length; dyn.n = Math.min(dyn.v.length, dyn.n + 1);
     if (dyn.t < 1000) return;
     dyn.t = 0;
-    dyn.slow = dyn.ms > 20.5 ? dyn.slow + 1 : 0;               // < ~49 FPS sostenido
-    dyn.fast = dyn.ms < 17.6 ? dyn.fast + 1 : 0;               // a tope de refresco
+    dyn.p95 = p95Ventana();
+    const lento = dyn.ms > 20.5 || (OBJETIVO <= 30 && dyn.p95 > P95_LENTO);   // < ~49 FPS sostenido, o tirones en el móvil
+    const grave = dyn.ms > MS_GRAVE;
+    dyn.slow = lento ? dyn.slow + 1 : 0;
+    dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
-    if (dyn.slow >= 2 && pr > DPR_MIN) { renderer.setPixelRatio(Math.max(DPR_MIN, pr - 0.25)); dyn.slow = 0; dyn.lock = 20000; }
-    else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; }
+    const piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
+    if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
+    else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
     G.emit('dpr', renderer.getPixelRatio());
   }
@@ -150,7 +171,9 @@ AVE.module('renderer', function (G) {
       '#endif',
     ].join('\n');
   }
-  // Cielo: degradado cenit → horizonte con un halo cálido alrededor del sol y su disco; sigue a la cámara
+  // Cielo vivo (ficha 26-B): degradado de tres paradas (cenit, medio y horizonte cálido hacia el sol), halo del sol y su
+  // disco; sigue a la cámara. El clima (clima.js) y el look (look.js) escriben uCenit, uHorizonte y uSolCol: la parada
+  // intermedia y el calor del horizonte se derivan de ellos, así con aguacero o neblina el cielo entero se agrisa solo.
   let sky = null;
   const skyU = {
     uCenit: { value: new THREE.Color(cielo.cenit || '#3d8fd6').convertSRGBToLinear() },
@@ -164,25 +187,37 @@ AVE.module('renderer', function (G) {
       vertexShader: 'varying vec3 vDir;\nvoid main() { vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
       fragmentShader: [
         'uniform vec3 uCenit, uHorizonte, uSolCol, uSolDir; varying vec3 vDir;',
+        'float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }',
         'void main() {',
         '  vec3 d = normalize(vDir);',
         '  float h = d.y;',
-        '  float t = pow(clamp(h, 0.0, 1.0), 0.45);',
-        '  vec3 c = mix(uHorizonte, uCenit, t);',
-        '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
         '  float s = max(dot(d, uSolDir), 0.0);',
-        '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45) * smoothstep(-0.1, 0.1, h);',
-        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9993, 0.9997, s));',
+        // tres paradas: horizonte → medio (más claro y limpio) → cenit; el medio sale de los dos colores que mandan clima y look
+        '  vec3 medio = mix(uHorizonte, uCenit, 0.55) * 1.05;',
+        '  vec3 c = mix(uHorizonte, medio, smoothstep(0.0, 0.22, h));',
+        '  c = mix(c, uCenit, pow(smoothstep(0.05, 0.9, h), 0.7));',
+        // horizonte cálido: más hacia el lado del sol; con el sol apagado por la lluvia (uSolCol baja) se apaga también
+        '  float lado = 0.5 + 0.5 * dot(normalize(d.xz + vec2(1e-4)), normalize(uSolDir.xz + vec2(1e-4)));',
+        '  float franja = (1.0 - smoothstep(0.0, 0.2, h)) * smoothstep(-0.08, 0.0, h);',
+        '  c += uSolCol * franja * (0.05 + 0.11 * lado * lado);',
+        '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
+        // halo ancho, halo cerrado y disco
+        '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45 + pow(s, 300.0) * 0.5) * smoothstep(-0.1, 0.1, h);',
+        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9991, 0.9996, s));',
         '  gl_FragColor = vec4(c, 1.0);',
         '  #include <tonemapping_fragment>',
         '  #include <encodings_fragment>',
+        // BM42: dither triangular de ±1/255 contra las franjas del degradado
+        '  gl_FragColor.rgb += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;',
         '}',
       ].join('\n'),
     }));
     sky.name = 'cielo'; sky.frustumCulled = false; sky.renderOrder = -100; sky.scale.setScalar(FAR * 0.8);
     scene.add(sky);
   }
-  // Nubes: cúmulos pintados en un lienzo, como tarjetas que miran a la cámara, todas en una llamada (mundo.cielo.nubes = n)
+  // Nubes en dos capas, todas en una llamada: cúmulos pintados en un lienzo como tarjetas que miran a la cámara. La capa baja
+  // (mundo.cielo.nubes = n, 16) es densa y pasa rápido; la alta (mundo.cielo.nubesAltas = n, 12) es más fina, más blanca y lenta.
+  // uTime deforma la tarjeta (ondea el contorno) y las hace derivar. clima.js toma uBajo de este material (sombra de la nube).
   const nubesU = { uTime: { value: 0 }, tNube: { value: null }, uSolDir: { value: sunDir }, uAlto: skyU.uSolCol, uBajo: { value: new THREE.Color(cielo.nubeSombra || '#a9bfd6').convertSRGBToLinear() } };
   if (ATMOS && cielo.nubes !== 0) {
     const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
@@ -194,28 +229,35 @@ AVE.module('renderer', function (G) {
       x.fillStyle = gr; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
     }
     nubesU.tNube.value = new THREE.CanvasTexture(cv);
-    const N = cielo.nubes || 16, q = new THREE.PlaneGeometry(1, 0.5), ig = new THREE.InstancedBufferGeometry();
+    const NB = cielo.nubes || 16, NA = cielo.nubesAltas != null ? cielo.nubesAltas : 12, N = NB + NA;
+    const q = new THREE.PlaneGeometry(1, 0.5), ig = new THREE.InstancedBufferGeometry();
     ig.index = q.index; ig.setAttribute('position', q.attributes.position); ig.setAttribute('uv', q.attributes.uv);
-    const d = new Float32Array(N * 4); const rn = G.util.rng(311);
-    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2 + rn() * 0.4, r = FAR * (0.38 + rn() * 0.2); d.set([Math.cos(a) * r, 110 + rn() * 120, Math.sin(a) * r, 140 + rn() * 160], i * 4); }
-    ig.setAttribute('iNube', new THREE.InstancedBufferAttribute(d, 4)); ig.instanceCount = N;
+    const d = new Float32Array(N * 4), capa = new Float32Array(N * 2); const rn = G.util.rng(311);
+    for (let i = 0; i < NB; i++) { const a = i / NB * Math.PI * 2 + rn() * 0.4, r = FAR * (0.38 + rn() * 0.2); d.set([Math.cos(a) * r, 110 + rn() * 120, Math.sin(a) * r, 140 + rn() * 160], i * 4); capa.set([0, rn() * 6.28], i * 2); }
+    for (let i = 0; i < NA; i++) { const a = i / NA * Math.PI * 2 + rn() * 0.5, r = FAR * (0.3 + rn() * 0.25); d.set([Math.cos(a) * r, 300 + rn() * 160, Math.sin(a) * r, 260 + rn() * 220], (NB + i) * 4); capa.set([1, rn() * 6.28], (NB + i) * 2); }
+    ig.setAttribute('iNube', new THREE.InstancedBufferAttribute(d, 4)); ig.setAttribute('iCapa', new THREE.InstancedBufferAttribute(capa, 2)); ig.instanceCount = N;
     const nubes = new THREE.Mesh(ig, new THREE.ShaderMaterial({
       uniforms: nubesU, transparent: true, depthWrite: false, fog: false,
-      vertexShader: `attribute vec4 iNube; uniform float uTime; varying vec2 vUv; varying float vH;
+      vertexShader: `attribute vec4 iNube; attribute vec2 iCapa; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
         void main() {
-          vec3 c = iNube.xyz; float ang = uTime * 0.004; c.xz = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c.xz;
+          vec3 c = iNube.xyz; float ang = uTime * mix(0.006, 0.0022, iCapa.x); c.xz = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c.xz;
           vec3 toCam = normalize(vec3(cameraPosition.x - c.x, 0.0, cameraPosition.z - c.z)); vec3 right = vec3(toCam.z, 0.0, -toCam.x);
-          vec3 w = c + right * position.x * iNube.w + vec3(0.0, position.y * iNube.w, 0.0);
-          vUv = uv; vH = uv.y;
+          float resp = 1.0 + 0.03 * sin(uTime * 0.21 + iCapa.y);
+          vec3 w = c + right * position.x * iNube.w * resp + vec3(0.0, position.y * iNube.w * (2.0 - resp), 0.0);
+          vUv = uv; vH = uv.y; vCapa = iCapa.x; vFase = iCapa.y;
           gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
         }`,
-      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; varying vec2 vUv; varying float vH;
+      fragmentShader: `uniform sampler2D tNube; uniform vec3 uAlto, uBajo; uniform float uTime; varying vec2 vUv; varying float vH, vCapa, vFase;
+        float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
         void main() {
-          vec4 t = texture2D(tNube, vUv);
-          vec3 c = mix(uBajo, uAlto * 0.42 + vec3(0.55), smoothstep(0.15, 0.8, vH));
-          gl_FragColor = vec4(c, t.a * 0.9);
+          vec2 uv = vUv + vec2(0.012 * sin(uTime * 0.33 + vUv.y * 7.0 + vFase), 0.01 * cos(uTime * 0.27 + vUv.x * 5.0 + vFase));
+          vec4 t = texture2D(tNube, uv);
+          vec3 claro = uAlto * 0.42 + vec3(0.55);
+          vec3 c = mix(mix(uBajo, claro, 0.55 * vCapa), claro, smoothstep(0.15, 0.8, vH));
+          gl_FragColor = vec4(c, t.a * mix(0.9, 0.62, vCapa));
           #include <tonemapping_fragment>
           #include <encodings_fragment>
+          gl_FragColor.rgb += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;
         }`,
     }));
     nubes.name = 'cielo-nubes'; nubes.frustumCulled = false; nubes.renderOrder = -90;
@@ -275,6 +317,10 @@ AVE.module('renderer', function (G) {
   const PP = W.post || {};
   const GRADO = { sat: PP.saturacion != null ? PP.saturacion : 1.08, con: PP.contraste != null ? PP.contraste : 1.04, tint: [1.0, 0.995, 0.985] };
   const BLOOM = { 2: { escala: 1 / 2, fuerza: PP.bloom != null ? PP.bloom : 0.22 }, 1: { escala: 1 / 4, fuerza: PP.bloomMedio != null ? PP.bloomMedio : 0.18 } };
+  const RAYOS = PP.rayos != null ? PP.rayos : 0.8; // fuerza de los rayos de luz (alto); 0 los apaga
+  // Máscara de los rayos (lineal, tras ACES): lo muy claro (disco, halo, nubes) y lo azul claro (el cielo entre las copas);
+  // el follaje (verde o amarillo) y la tierra quedan fuera. La misma función la usa el pase de gradación para restarla.
+  const MASCARA_GLSL = 'float mascaraCielo(vec3 c) { float l = dot(c, vec3(0.2126, 0.7152, 0.0722)); return max(smoothstep(0.55, 0.8, l), smoothstep(0.03, 0.14, c.b - max(c.r, c.g)) * smoothstep(0.08, 0.2, l)); }';
   const CUSTOM_TM = 'vec3 CustomToneMapping( vec3 color ) { return color; }';
   {
     const g = GRADO, n = v => (Math.round(v * 1000) / 1000).toFixed(3);
@@ -298,7 +344,7 @@ AVE.module('renderer', function (G) {
   const LOCAL = 'assets/vendor/three/examples/js/', CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/';
   const POST_JS = ['shaders/CopyShader.js', 'shaders/LuminosityHighPassShader.js', 'postprocessing/EffectComposer.js',
     'postprocessing/RenderPass.js', 'postprocessing/ShaderPass.js', 'postprocessing/UnrealBloomPass.js'];
-  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, origen: null, escala: 1 / 2, GRADO, BLOOM };
+  const post = { activo: false, composer: null, cargando: null, bloom: null, grade: null, rayos: null, origen: null, escala: 1 / 2, GRADO, BLOOM, RAYOS };
   const fogLin = fogSRGB.clone().convertSRGBToLinear();
   function fogColorFor(rt) { if (scene.fog && ATMOS) scene.fog.color.copy(rt ? fogLin : fogSRGB); }
   function cargarDesde(base) { return POST_JS.reduce((p, f) => p.then(() => AVE.assets.script(base + f)), Promise.resolve()).then(() => { post.origen = base; }); }
@@ -312,6 +358,65 @@ AVE.module('renderer', function (G) {
         const rt = new THREE.WebGLMultisampleRenderTarget(size.x, size.y, opts); rt.samples = 4;
         const comp = new THREE.EffectComposer(renderer, rt);
         comp.addPass(new THREE.RenderPass(scene, camera));
+        // Rayos de luz (ficha 26-B, solo alto): máscara del sol (el cielo claro y el disco, con la escena ya dibujada: los
+        // árboles y el relieve lo tapan) estirada hacia el sol en pantalla con dos pases radiales de 8 muestras a 1/4 de
+        // resolución (64 muestras efectivas). La cámara del juego mira 25° hacia abajo y el sol está a 48°: el disco casi
+        // nunca entra en el encuadre, así que los rayos salen del cielo que asoma entre las copas y bajan hacia la escena
+        // (se restan donde el píxel ya es cielo: no aclaran el cielo, solo se cuelan en lo oscuro). No cambia el búfer del
+        // composer: el pase de gradación suma tRayos en lineal.
+        class RayosPass extends THREE.Pass {
+          constructor() {
+            super(); this.needsSwap = false; this.enabled = false;
+            const o = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false };
+            this.rtA = new THREE.WebGLRenderTarget(4, 4, o); this.rtB = new THREE.WebGLRenderTarget(4, 4, o);
+            const vs = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
+            // pase 1: muestra hacia el sol solo lo que supera el umbral, con caída radial (el radio en fracción de la pantalla)
+            this.matA = new THREE.ShaderMaterial({
+              uniforms: { tDiffuse: { value: null }, uSol: { value: new THREE.Vector2(0.5, 0.5) }, uAspecto: { value: new THREE.Vector2(1, 1) }, uRadio: { value: 1.6 }, uPaso: { value: 0.03 } },
+              vertexShader: vs,
+              fragmentShader: [
+                'uniform sampler2D tDiffuse; uniform vec2 uSol, uAspecto; uniform float uRadio, uPaso; varying vec2 vUv;', MASCARA_GLSL,
+                'void main() {',
+                '  vec2 haciaSol = uSol - vUv; float dist = length(haciaSol * uAspecto);',
+                '  vec2 paso = haciaSol / max(dist, 1e-3) * uPaso / uAspecto; vec2 uv = vUv; vec3 acc = vec3(0.0); float w = 1.0, sw = 0.0;',
+                '  for (int i = 0; i < 8; i++) {',
+                '    vec3 c = texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb;',
+                '    acc += c * (mascaraCielo(c) * w); sw += w; w *= 0.88; uv += paso;',
+                '  }',
+                '  gl_FragColor = vec4(acc / sw * (1.0 - smoothstep(0.0, uRadio, dist)), 1.0);',
+                '}'].join('\n'),
+            });
+            // pase 2: vuelve a estirar hacia el sol lo del pase 1 (pasos más largos)
+            this.matB = new THREE.ShaderMaterial({
+              uniforms: { tDiffuse: { value: null }, uSol: { value: this.matA.uniforms.uSol.value }, uAspecto: { value: this.matA.uniforms.uAspecto.value }, uPaso: { value: 0.06 } },
+              vertexShader: vs,
+              fragmentShader: [
+                'uniform sampler2D tDiffuse; uniform vec2 uSol, uAspecto; uniform float uPaso; varying vec2 vUv;',
+                'void main() {',
+                '  vec2 haciaSol = uSol - vUv; float dist = length(haciaSol * uAspecto);',
+                '  vec2 paso = haciaSol / max(dist, 1e-3) * uPaso / uAspecto; vec2 uv = vUv; vec3 acc = vec3(0.0); float w = 1.0, sw = 0.0;',
+                '  for (int i = 0; i < 8; i++) { acc += texture2D(tDiffuse, clamp(uv, 0.0, 1.0)).rgb * w; sw += w; w *= 0.9; uv += paso; }',
+                '  gl_FragColor = vec4(acc / sw, 1.0);',
+                '}'].join('\n'),
+            });
+            this.quad = new THREE.FullScreenQuad(this.matA);
+          }
+          setSize(w, h) {
+            const a = Math.max(2, Math.round(w / 4)), b = Math.max(2, Math.round(h / 4));
+            this.rtA.setSize(a, b); this.rtB.setSize(a, b);
+            this.matA.uniforms.uAspecto.value.set(w / h, 1);
+          }
+          render(renderer, writeBuffer, readBuffer) {
+            this.matA.uniforms.tDiffuse.value = readBuffer.texture; this.quad.material = this.matA;
+            renderer.setRenderTarget(this.rtA); this.quad.render(renderer);
+            this.matB.uniforms.tDiffuse.value = this.rtA.texture; this.quad.material = this.matB;
+            renderer.setRenderTarget(this.rtB); this.quad.render(renderer);
+            renderer.setRenderTarget(null);
+          }
+          get textura() { return this.rtB.texture; }
+        }
+        const rayos = new RayosPass();
+        comp.addPass(rayos);
         const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), BLOOM[2].fuerza, 0.45, 0.9);
         // UnrealBloomPass trabaja a la mitad de lo que recibe: con 2 × escala, su primera cadena queda a 1/2 (alto) o 1/4 (medio)
         const tamBloom = bloom.setSize.bind(bloom);
@@ -319,23 +424,29 @@ AVE.module('renderer', function (G) {
         comp.addPass(bloom);
         const grade = new THREE.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uSat: { value: GRADO.sat }, uCon: { value: GRADO.con },
-            uTint: { value: new THREE.Vector3(...GRADO.tint) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 } },
+            uTint: { value: new THREE.Vector3(...GRADO.tint) }, uVig: { value: PP.vineta != null ? PP.vineta : 0.18 },
+            tRayos: { value: rayos.textura }, uRayos: { value: 0 } },
           vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
           fragmentShader: [
-            'uniform sampler2D tDiffuse; uniform float uSat, uCon, uVig; uniform vec3 uTint; varying vec2 vUv;',
+            'uniform sampler2D tDiffuse, tRayos; uniform float uSat, uCon, uVig, uRayos; uniform vec3 uTint; varying vec2 vUv;', MASCARA_GLSL,
+            'float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }',
             'void main() {',
-            '  vec3 c = LinearTosRGB(vec4(max(texture2D(tDiffuse, vUv).rgb, 0.0), 1.0)).rgb;',
+            '  vec3 lin = max(texture2D(tDiffuse, vUv).rgb, 0.0);',
+            '  vec3 rayo = texture2D(tRayos, vUv).rgb - lin * mascaraCielo(lin);',
+            '  lin += max(rayo, 0.0) * uRayos;',
+            '  vec3 c = LinearTosRGB(vec4(lin, 1.0)).rgb;',
             '  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));',
             '  c = mix(vec3(l), c, uSat);',
             '  c = (c - 0.5) * uCon + 0.5;',
             '  c *= uTint;',
             '  vec2 q = vUv - 0.5; c *= 1.0 - uVig * smoothstep(0.25, 0.85, dot(q, q) * 2.2);',
+            '  c += (ditherAV(gl_FragCoord.xy) + ditherAV(gl_FragCoord.xy + 17.0) - 1.0) / 255.0;', // BM42: sin franjas en cielo y nubes
             '  gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);',
             '}',
           ].join('\n'),
         });
         comp.addPass(grade);
-        Object.assign(post, { composer: comp, bloom, grade });
+        Object.assign(post, { composer: comp, bloom, grade, rayos });
         post.resize = () => { comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(tam.w, tam.h); };
         post.resize();
       });
@@ -352,6 +463,8 @@ AVE.module('renderer', function (G) {
       post.activo = calidad.post > 0; fogColorFor(post.activo); gradoEnTono(!post.activo);
       if (post.escala !== B.escala) { post.escala = B.escala; post.resize(); }
       post.bloom.strength = B.fuerza;
+      post.rayos.quiere = post.activo && calidad.post >= 2 && RAYOS > 0; // rayos de luz solo en alto (situarRayos los sitúa cada cuadro)
+      post.rayos.enabled = post.rayos.quiere; post.grade.uniforms.uRayos.value = 0;
     }).catch(e => { console.warn('AVE post:', e && e.message || e); post.activo = false; fogColorFor(false); gradoEnTono(true); });
   }
   aplicarPost(calidad);
@@ -389,20 +502,42 @@ AVE.module('renderer', function (G) {
   }
 
   // Dibuja la escena del mundo (la cámara lo llama cada cuadro)
+  // Rayos: el sol en pantalla (proyección de su dirección, normalmente por encima del encuadre) y su fuerza: suben al mirar
+  // hacia el sol y se apagan al darle la espalda, y bajan con el clima (clima.js atenúa uSolCol en lluvia y neblina: la
+  // luminancia respecto a la del mundo)
+  const solPant = new THREE.Vector3(), solFrente = new THREE.Vector3(), solLum0 = Math.max(1e-3, skyU.uSolCol.value.r * 0.2126 + skyU.uSolCol.value.g * 0.7152 + skyU.uSolCol.value.b * 0.0722);
+  function situarRayos(cam) {
+    const R = post.rayos; if (!R || !R.quiere) { if (R) { R.enabled = false; post.grade.uniforms.uRayos.value = 0; } return; }
+    solPant.copy(sunDir).multiplyScalar(1000).add(cam.position).project(cam);
+    const c = skyU.uSolCol.value, lum = Math.min(1, (c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722) / solLum0);
+    const frente = cam.getWorldDirection(solFrente).dot(sunDir), a = Math.min(1, Math.max(0, (frente + 0.3) / 0.6)), ang = a * a * (3 - 2 * a);
+    R.matA.uniforms.uSol.value.set(solPant.x * 0.5 + 0.5, solPant.y * 0.5 + 0.5);
+    const k = solPant.z < 1 ? lum * lum * ang : 0;
+    post.grade.uniforms.uRayos.value = RAYOS * k;
+    R.enabled = k > 0; // sin sol en pantalla no se corren los pases
+  }
   function drawScene(cam) {
     nubesU.uTime.value = t;
     cullPequenos(cam || camera);
     seguirSombra();
     if (sky) sky.position.copy((cam || camera).position);
-    if (post.activo && post.composer) post.composer.render();
-    else renderer.render(scene, cam || camera);
+    // Lo que todavía no se enlazó no entra en este dibujo: si no, el cuadro de «Empezar» compila el resto de golpe.
+    const guard = ocultarPendientes();
+    try {
+      if (post.activo && post.composer) { situarRayos(cam || camera); post.composer.render(); }
+      else renderer.render(scene, cam || camera);
+    } finally { restaurarVis(guard); }
   }
 
   // ---------- Calidad adaptativa por FPS ----------
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
   // quieta: contextTest la congela mientras compara fotos (con la máquina cargada bajaba un nivel entre una foto y otra; QA-30)
   const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
-  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => requestAnimationFrame(() => { precalentar(); fpsM.warm = 3000; })); });
+  // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo y la
+  // vegetación están, cada cuadro (con el creador todavía delante) enlaza unas pocas familias
+  // de material. El dibujo de verdad espera a que no quede ninguna pendiente.
+  let puedeCalentar = false;
+  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { puedeCalentar = true; fpsM.warm = 3000; }); });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
@@ -412,18 +547,100 @@ AVE.module('renderer', function (G) {
     const rt = new THREE.WebGLRenderTarget(32, 32), guardado = [], capa31 = (camera.layers.mask & (1 << 31)) !== 0;
     camera.layers.enable(31);
     scene.traverse(o => {
-      if (!(o.isMesh || o.isPoints || o.isSprite)) return;
-      const propio = /^(terreno|flora|edificios|estructura)/.test(o.name || '');
+      if (!(o.isMesh || o.isPoints || o.isSprite || o.isLine)) return;
       guardado.push([o, o.frustumCulled, o.visible, o.isInstancedMesh ? o.count : null]);
       o.frustumCulled = false;
-      if (propio) { o.visible = true; if (o.isInstancedMesh && o.count === 0) o.count = 1; }
+      o.visible = true;
+      if (o.isInstancedMesh && o.count === 0) o.count = 1;
     });
     try { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     renderer.setRenderTarget(null);
     if (!capa31) camera.layers.disable(31);
-    for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; }
+    for (const [o, fc, vis, n] of guardado) { o.frustumCulled = fc; o.visible = vis; if (n != null) o.count = n; marcarCalor(o); }
     rt.dispose();
+  }
+  // Una familia de material por objeto. La clave incluye el tone mapping y customProgramCacheKey:
+  // look.js puede cambiarla en el gancho 'render', justo antes del dibujo, y entonces hay que enlazar otra vez.
+  let genCalor = 1, rtCalor = null, postCalor = false;
+  const calorHecho = new Set();
+  function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
+  function claveDe(m) {
+    let k = '';
+    try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
+    return genCalor + '|' + renderer.toneMapping + '|' + k;
+  }
+  // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph.
+  function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
+  function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
+  function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
+  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
+  function siguienteCalor() {
+    let hallado = null;
+    scene.traverse(o => { if (!hallado && dibujable(o) && objPendiente(o)) hallado = o; });
+    return hallado;
+  }
+  function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
+  function ocultarPendientes() {
+    const guard = [];
+    scene.traverse(o => {
+      if (!dibujable(o) || !objPendiente(o)) return;
+      guard.push([o, o.visible]); o.visible = false;
+    });
+    return guard;
+  }
+  function restaurarVis(guard) { if (guard) for (const [o, vis] of guard) o.visible = vis; }
+  function conCapa31(fn) {
+    const capa31 = (camera.layers.mask & (1 << 31)) !== 0;
+    camera.layers.enable(31);
+    try { fn(); }
+    finally {
+      renderer.setRenderTarget(null);
+      if (!capa31) camera.layers.disable(31);
+    }
+  }
+  // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
+  function warmUno(o) {
+    const objs = [];
+    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
+    const padres = [];
+    for (let p = o.parent; p && p !== scene; p = p.parent) { padres.push([p, p.visible]); p.visible = true; }
+    for (const obj of objs) obj.visible = false;
+    o.visible = true; o.frustumCulled = false;
+    if (o.isInstancedMesh && o.count === 0) o.count = 1;
+    if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
+    try {
+      conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); });
+    } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
+    finally {
+      for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
+      for (const [p, vis] of padres) p.visible = vis;
+    }
+    marcarCalor(o);
+  }
+  function warmPost() {
+    if (!post.composer) return;
+    const objs = [];
+    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const guard = objs.map(obj => [obj, obj.visible]);
+    for (const obj of objs) obj.visible = false;
+    try { post.composer.render(); }
+    catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
+    finally { for (const [obj, vis] of guard) obj.visible = vis; }
+  }
+  // Unos pocos programas por cuadro (tope ~12 ms) para que ni el creador ni «Empezar» se queden congelados.
+  function calentarPresupuesto() {
+    const t0 = performance.now();
+    let n = 0;
+    while (n < 8 && performance.now() - t0 < 12) {
+      const o = siguienteCalor();
+      if (!o) break;
+      warmUno(o); n++;
+    }
+    if (n === 0 && post.composer && !postCalor) { warmPost(); postCalor = true; n = 1; }
+    if (!post.composer) postCalor = false;
+    return n;
   }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
@@ -454,7 +671,8 @@ AVE.module('renderer', function (G) {
     const fps = 1000 / fpsM.ms, i = NIVELES.indexOf(calidad.nivel);
     const dprAlMinimo = renderer.getPixelRatio() <= DPR_MIN + 0.01;
     // Baja solo si no llega al objetivo y la resolución dinámica del TA ya está en su mínimo (primero actúa ella)
-    fpsM.bajo = fps < OBJETIVO * 0.85 && dprAlMinimo ? fpsM.bajo + 1 : 0;
+    const tirones = OBJETIVO <= 30 && dyn.p95 > P95_LENTO * 1.25;      // RN1: móvil con la media aceptable pero p95 > ~52 ms
+    fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
@@ -483,6 +701,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
+    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear();
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
@@ -591,7 +810,7 @@ AVE.module('renderer', function (G) {
     P.t = now;
     if (!P.el) {
       P.el = document.createElement('div'); P.el.id = 'av-fps'; P.el.setAttribute('aria-hidden', 'true');
-      P.el.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 140px);z-index:35;' +
+      P.el.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + ' + (innerWidth <= 480 ? 200 : 140) + 'px);z-index:35;' +   // móvil: bajo el objetivo desplegado (QA-33)
         'pointer-events:none;padding:3px 9px;border-radius:8px;background:rgba(8,20,14,.78);color:#f4f7f1;white-space:pre;text-align:right;' +
         'font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums';
       document.body.appendChild(P.el);
@@ -621,8 +840,14 @@ AVE.module('renderer', function (G) {
   function render(dt, moving) {
     t += dt;
     G.camara.follow(dt);
-    G.emit('render', dt, t, moving);
+    G.emit('render', dt, t, moving); // look.js puede cambiar la clave del programa aquí
     G.camara.fov(dt);
+    // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Una familia que tarde
+    // más de 12 ms corta la tanda: el cuadro no acumula los ~65 programas.
+    if (puedeCalentar && siguienteCalor()) {
+      calentarPresupuesto();
+      fpsM.warm = Math.max(fpsM.warm, 2000);
+    }
     G.camara.draw(dt);
   }
   let last = performance.now();
@@ -646,8 +871,12 @@ AVE.module('renderer', function (G) {
     const juice = G.camara.juice;
     if (juice.hitStop > 0) { juice.hitStop -= dt; dt = 0; } // hit-stop de 60 ms al capturar
     const moving = update(dt);
-    // Con un overlay opaco (el creador) el mundo no se dibuja: una sola escena por cuadro
-    if (!G.ui.worldHidden()) render(dt, moving);
+    // El creador es opaco: el mundo no se dibuja. Mientras tanto se enlazan programas por tandas
+    // (QA-53). Al dibujar, render() vuelve a enlazar lo que el look cambió en ese cuadro.
+    const oculto = G.ui.worldHidden && G.ui.worldHidden();
+    if (oculto && puedeCalentar) {
+      if (calentarPresupuesto() > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
+    } else if (!oculto) render(dt, moving);
     requestAnimationFrame(frame);
   }
   // Un solo bucle: llamar a start() con el bucle vivo no hace nada; al reanudar, el primer cuadro tiene dt = 0

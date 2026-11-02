@@ -1,0 +1,124 @@
+{
+ "escritorio": {
+  "antes": {
+   "geometrias": 196,
+   "texturas": 90
+  },
+  "calidad": "alto",
+  "abrirMs": 19,
+  "listo": {
+   "look": "vibrant_toon",
+   "fps": 60,
+   "calls": 84,
+   "triangulos": 277884,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 49,
+   "heapMB": 83,
+   "geometrias": 202,
+   "texturasGPU": 100,
+   "texturas": 109,
+   "texturasGrandes": 6,
+   "atlasGrandes": 0,
+   "texturasMB": 199.1,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 16.67,
+   "fpsMedidos": 60,
+   "msMediana": 16.7,
+   "msP90": 16.7,
+   "cuadros": 180,
+   "mem": {
+    "geometrias": 202,
+    "texturas": 100
+   },
+   "estado": {
+    "fase": "listo",
+    "puntos": 0,
+    "mejor": 0,
+    "y": 5.911923627538042,
+    "vy": 0,
+    "v": 9,
+    "dist": 0,
+    "obstaculos": 7,
+    "instancias": 34,
+    "semilla": 1393774581
+   }
+  },
+  "juego": {
+   "look": "vibrant_toon",
+   "fps": 60,
+   "calls": 86,
+   "triangulos": 277884,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "programas": 50,
+   "heapMB": 86,
+   "geometrias": 204,
+   "texturasGPU": 100,
+   "texturas": 102,
+   "texturasGrandes": 4,
+   "atlasGrandes": 0,
+   "texturasMB": 148.8,
+   "sombraMB": 16,
+   "postMB": 17.4,
+   "ms": 16.67,
+   "fpsMedidos": 60,
+   "msMediana": 16.7,
+   "msP90": 16.7,
+   "cuadros": 840,
+   "segundos": 14,
+   "mem": {
+    "geometrias": 204,
+    "texturas": 100
+   },
+   "estado": {
+    "fase": "juego",
+    "puntos": 9,
+    "mejor": 0,
+    "y": 8.30275562000004,
+    "vy": 1.6325999999999858,
+    "v": 9.45,
+    "dist": 128.71488499999973,
+    "obstaculos": 10,
+    "instancias": 38,
+    "semilla": 1912415412
+   }
+  },
+  "reinicios": {
+   "n": 50,
+   "ms": 213,
+   "antes": {
+    "geometrias": 204,
+    "texturas": 100
+   },
+   "despues": {
+    "geometrias": 204,
+    "texturas": 100
+   },
+   "heapMB": 83,
+   "instancias": 39
+  },
+  "fin": {
+   "fase": "fin",
+   "panel": true,
+   "puntos": 19
+  },
+  "salir": {
+   "activo": false,
+   "visible": false,
+   "hijos": 0,
+   "mem": {
+    "geometrias": 196,
+    "texturas": 90
+   },
+   "clases": [],
+   "fov": 55,
+   "busy": false
+  },
+  "movil": false,
+  "errores": []
+ }
+}

@@ -20,7 +20,8 @@ AVE.module('criadero', function (G) {
   const DATA_SRC = 'content/comun/huevos.js', CSS_SRC = 'src/ui/criadero.css';
   const D = () => window.AV_HUEVOS;
   const RZ = () => G.rareza || null; // src/game/rareza.js (se carga abajo; sin él, todo sigue igual que antes)
-  const KEY = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
+  // pack.criadero.almacen: otro episodio puede leer el mismo criadero que el cap. 1 (la cría sigue a Vittata); sin él, el almacén del pack
+  const KEY = ((G.pack.criadero && G.pack.criadero.almacen) || (G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero');
   const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   // Botones para simular XP: solo en el prototipo con ?demo=1 (en clase la XP sale del juego)
   const DEMO = /^(1|true)$/i.test(new URLSearchParams(location.search).get('demo') || '');
@@ -530,9 +531,11 @@ AVE.module('criadero', function (G) {
   function initScene() {
     if (scene3d.renderer) return;
     const r = scene3d.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Móvil (AF1): el mismo tope de píxeles que el mundo (1,5 con pantalla táctil) y, con la calidad baja del mundo, sombra más barata
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches), bajo = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.nivel === 'bajo');
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, tactil ? 1.5 : 2));
     r.outputEncoding = THREE.sRGBEncoding; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.0;
-    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.shadowMap.enabled = true; r.shadowMap.type = bajo ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; scene3d.sombraBaja = bajo;
     if (C().setMaxAnisotropy) C().setMaxAnisotropy(r.capabilities.getMaxAnisotropy());
     const s = scene3d.scene = new THREE.Scene();
     s.fog = new THREE.Fog(C().lin('#bfdcc0').getHex(), 4.5, 16);
@@ -548,7 +551,7 @@ AVE.module('criadero', function (G) {
     s.add(sky);
     s.add(new THREE.HemisphereLight(C().lin('#fff1d6'), C().lin('#2f5a3a'), 0.75));
     const key = new THREE.DirectionalLight(C().lin('#ffe2b0'), 1.35); key.position.set(2.5, 5, 3.2); key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024); key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5; key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5; key.shadow.bias = -0.0006;
+    key.shadow.mapSize.set(scene3d.sombraBaja ? 512 : 1024, scene3d.sombraBaja ? 512 : 1024); key.shadow.camera.left = -2.5; key.shadow.camera.right = 2.5; key.shadow.camera.top = 2.5; key.shadow.camera.bottom = -2.5; key.shadow.bias = -0.0006;
     s.add(key);
     const rim = new THREE.DirectionalLight(C().lin('#a8e1ff'), 0.55); rim.position.set(-3, 2.2, -2.5); s.add(rim);
     // Suelo de musgo
@@ -1007,12 +1010,12 @@ AVE.module('criadero', function (G) {
     hatch.t += dt * hatch.speed; const T = hatch.t, once = k => (hatch.done[k] ? false : (hatch.done[k] = true));
     const wp = egg.getWorldPosition(new THREE.Vector3());
     const E = egg.userData, U1 = E.bottom.material.userData.u, U2 = E.top.material.userData.u;
-    // A · la cápsula se abre como una flor (fantasía) y deja ver el huevo blanco (real)
+    // A · la cápsula se abre como una flor y deja ver el huevo (fantasía: Kelvin, 2-nov, los huevos tendrán colores especiales)
     const shake = T < 0.6 ? Math.sin(T * 40) * 0.06 * (1 - T / 0.6) : 0; cap.rotation.z = shake;
     const o = Math.max(0, Math.min(1, (T - 0.5) / 1.0)), oe = easeOutBack(o) * 1.75;
     for (const p of cap.userData.petals) p.quaternion.setFromAxisAngle(p.userData.axis, -oe);
     if (T > 0.55) egg.visible = true;
-    if (T > 0.8 && once('chispas')) { scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.1, 0)), 40, ['#ffe08a', '#ffffff', '#ffb3c7'], 1.2, 2); aviso(t({ es: '¡Mira! Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Look! Inside there is a white egg, like real parrot eggs.' }), 4200); }
+    if (T > 0.8 && once('chispas')) { scene3d.fx.burst(wp.clone().add(new THREE.Vector3(0, 0.1, 0)), 40, ['#ffe08a', '#ffffff', '#ffb3c7'], 1.2, 2); aviso(t({ es: '¡Mira! Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Look! There is an egg inside. Which little parrot will hatch?' }), 4200); }
     if (T > 1.6) { cap.position.y -= dt * hatch.speed * 0.05; cap.scale.setScalar(Math.max(0.001, 1 - (T - 1.6) * 0.8)); }
     // B · el huevo se mueve
     let wob = 0, hop = 0;
@@ -1213,6 +1216,8 @@ AVE.module('criadero', function (G) {
     focoPrevio = document.activeElement;
     root.hidden = false; open = true;
     G.pausa && G.pausa.set('criadero', true);
+    // El overlay es opaco: mientras está abierto, el mundo no se dibuja debajo (AF1; el bucle del renderer salta el render con worldHidden)
+    if (G.ui && G.ui.worldHidden && !G.ui.worldHidden.criadero) { const previo = G.ui.worldHidden; G.ui.worldHidden = () => open || previo(); G.ui.worldHidden.criadero = true; }
     try {
       st.vistos.abierto = 1; revisarCapsulas(); guardar();
       if (!st.vista) st.vista = st.activa;
@@ -1284,10 +1289,11 @@ AVE.module('criadero', function (G) {
 
 
   // =====================================================================================================================
-  // El nido en el mundo y el botón «Nido» del HUD. Se activan al terminar la primera misión o, antes, cuando se cumple
-  // pack.criadero.desde (cap1: el evento LumaHelped de la charla con Iguaca, minuto 2; DIVERSION_CAP1 mejora 2);
-  // Iguaca lo presenta una vez. Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'),
-  // la plaza o el inicio.
+  // El nido en el mundo y el botón «Nido» del HUD. Si el pack trae `criadero.desde` como evento (cap. 1: LumaHelped;
+  // ep. 2: SiteChosen), esa puerta manda sola: la primera misión no lo abre antes (QA-62, el aviso cortaba
+  // «cuéntale a Iguaca»). Sin esa puerta, o si `desde` es una función de prueba, sigue el atajo de la primera misión.
+  // `soloDesde: true` obliga la puerta aunque `desde` sea una función. Iguaca lo presenta una vez.
+  // Sitio: pack.criadero.nido (id de POI) o junto a la Estación de Conservación ('estacion'), la plaza o el inicio.
   // =====================================================================================================================
   function desdeCumplido() {
     const d = (G.pack.criadero || {}).desde;
@@ -1295,7 +1301,13 @@ AVE.module('criadero', function (G) {
     if (typeof d === 'function') { try { return !!d(G); } catch (e) { return false; } }
     return !!(G.eventos && G.eventos.had && G.eventos.had(d));
   }
-  const nidoActivo = () => !!D() && (misionesHechas().size > 0 || desdeCumplido());
+  // Un nombre de evento es la puerta del capítulo. Una función no: las pruebas la usan para encender y apagar el nido.
+  function desdeEsPuerta() {
+    const c = (G.pack && G.pack.criadero) || {};
+    if (c.soloDesde) return true;
+    return typeof c.desde === 'string' && c.desde.length > 0;
+  }
+  const nidoActivo = () => !!D() && (desdeEsPuerta() ? desdeCumplido() : (misionesHechas().size > 0 || desdeCumplido()));
   let nidoMundo = null, nidoIt = null, nidoBtnHidden = null, presentarT = 0, revisarT = 0;
   // ---------- «+XP al nido» y el huevo en el HUD (mejora 2: la XP ya no sube en silencio) ----------
   // Dentro del botón «Nido»: un huevo que se va llenando con los días de incubación (o la cría cuando ya nació) y, con cada
@@ -1468,12 +1480,13 @@ AVE.module('criadero', function (G) {
       st.presentado = true; guardar();
       if (!silencio) G.emit('criadero', 'nido'); // cómic: viñeta de la aparición del nido (src/game/comic.js)
       const lang = (G.aula && G.aula.aj && G.aula.aj.idioma) || 'es';
+      // Bocadillo: la presentación no frena el vuelo (playtest G10: la caja bloqueante dejaba a Vittata quieta y sin frutos ni peces)
       G.dialogo.say([
         { who: 'Iguaca', lang, text: nidoMundo && nidoMundo.userData.donde === 'estacion'
-          ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. Inside is a white egg, like real parrot eggs.' })
-          : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo blanco, como los de las cotorras de verdad.', en: 'Vittata, look! There is a nest with a capsule nearby. Inside is a white egg, like real parrot eggs.' }) },
+          ? t({ es: '¡Vittata, mira! En la Estación de Conservación hay un nido con una cápsula. Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Vittata, look! There is a nest with a capsule at the Conservation Station. There is an egg inside. Which little parrot will hatch?' })
+          : t({ es: '¡Vittata, mira! Aquí cerca hay un nido con una cápsula. Adentro hay un huevo. ¿Qué cotorrita saldrá?', en: 'Vittata, look! There is a nest with a capsule nearby. There is an egg inside. Which little parrot will hatch?' }) },
         { who: 'Iguaca', lang, text: t({ es: 'Todo lo que aprendas y explores le dará calor. Visítalo cuando quieras, o toca «Nido».', en: 'Everything you learn and explore keeps it warm. Visit it anytime, or tap "Nest".' }) },
-      ]);
+      ], null, { libre: true });
     }
   }
   G.on('update', dt => pasoMundo(dt), 70);
@@ -1661,6 +1674,22 @@ AVE.module('criadero', function (G) {
         pasoMundo(0);
         const btn = document.getElementById('b-nido');
         check('Sin misión ni disparador del pack: no hay nido en el mundo ni botón Nido', !nidoActivo() && (!nidoMundo || !nidoMundo.visible) && (!btn || btn.hidden) && !(nidoIt && nidoIt.visible()));
+        // QA-62: `desde` con nombre de evento manda solo. La primera misión no abre el nido antes de ese evento
+        // (en el ep. 2, lee_tierra se cumple al elegir sitio y SiteChosen al contárselo a Iguaca).
+        const evBk = Array.isArray(G.S.events) ? G.S.events.slice() : [];
+        const mis0 = Object.keys(G.S.missions || {})[0];
+        G.S.events = evBk.filter(e => !e || e.key !== 'SiteChosen');
+        G.pack.criadero = Object.assign({}, cfgBk || {}, { desde: 'SiteChosen' });
+        if (mis0) G.S.missions[mis0] = true;
+        pasoMundo(0);
+        check('Si desde es un evento que aún no pasó, la primera misión no abre el nido', !nidoActivo() && !(nidoMundo && nidoMundo.visible) && !(btn && !btn.hidden));
+        G.S.events = G.S.events.concat([{ key: 'SiteChosen' }]);
+        pasoMundo(0); pasoMundo(2.1);
+        check('Cuando ese evento ya pasó, el nido entra sin otra misión', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden);
+        G.S.events = evBk;
+        if (mis0) G.S.missions[mis0] = false;
+        G.pack.criadero = Object.assign({}, cfgBk || {}, { desde: () => false });
+        pasoMundo(0);
         // Disparador del pack (criadero.desde; cap1: la charla con Iguaca, minuto 2): el nido entra antes de la primera misión
         G.pack.criadero.desde = () => true; pasoMundo(0); pasoMundo(2.1);
         check('Con el disparador del pack y sin misión: nido visible y botón «Nido» en el HUD', nidoActivo() && !!nidoMundo && nidoMundo.visible && !!btn && !btn.hidden && !!nidoIt && nidoIt.visible());
@@ -1689,8 +1718,8 @@ AVE.module('criadero', function (G) {
           check('Se abre desde el botón Nido del HUD', open); cerrar();
           st.presentado = false; if (G.dialogo.open()) G.dialogo.clear();
           const puede = puedePresentar(); pasoMundo(2);
-          check('Iguaca presenta el nido una sola vez (si no hay lección ni diálogo)', puede ? st.presentado && G.dialogo.open() : !st.presentado);
-          if (G.dialogo.open()) G.dialogo.clear();
+          check('Iguaca presenta el nido una sola vez, en bocadillo, sin frenar el juego', puede ? st.presentado && !!G.dialogo.libre() && !G.dialogo.open() : !st.presentado);
+          if (G.dialogo.clear) G.dialogo.clear();
           pasoMundo(2);
           check('La presentación no se repite', !G.dialogo.open());
         }

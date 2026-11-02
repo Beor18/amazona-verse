@@ -6,7 +6,9 @@
    las escenas del mismo disparador se encadenan en orden.
    Línea = { who, img, text, mood?, onShow?, lang? } (lang marca el idioma de la línea en #d-text: lectores y voz).
    Dos modos (DIVERSION_CAP1, mejora 3):
-   - say(lines, done): la caja #dialog bloquea el juego (ui.busy) hasta pulsar «Seguir»; para las decisiones y las charlas.
+   - say(lines, done): la caja #dialog bloquea el juego (ui.busy) hasta pulsar «Seguir»; para las decisiones y las charlas
+     de hasta 2 líneas. Una charla más larga muestra las 2 primeras en la caja y el resto en bocadillos, para que haya
+     algo que hacer (mejora 3). Narrador, Guardián y Voz, si van solos, nunca bloquean.
    - say(lines, done, { libre: true }): bocadillos (#bocadillos) que pasan solos con el tiempo del juego mientras la cotorra
      sigue moviéndose; la narración (Narrador, Guardián, Voz) y los comentarios. No cuentan como ocupado. Un toque en el
      bocadillo pasa al siguiente; `done` llega al terminar el último. Si se abre una caja o una tarjeta, se esconden y esperan.
@@ -30,7 +32,7 @@ AVE.module('dialogo', function (G) {
   // Líneas de un disparador (copia); si los datos faltan, se usan las líneas de respaldo del pack
   function L(trigger, fallback) { const l = DIALOG[trigger]; return l && l.length ? l.map(x => Object.assign({}, x)) : (fallback || []); }
 
-  let queue = [], onDone = null;
+  let queue = [], onDone = null, epoca = 0;
   const talk = { who: '', until: 0, mood: 'neutral' };
   function moodOf(text) {
     if (/…\s*$|perdido|inund|no tenemos/i.test(text)) return 'sad';
@@ -48,9 +50,27 @@ AVE.module('dialogo', function (G) {
     if (src) { if (el.getAttribute('src') !== src) el.src = src; el.alt = who || ''; el.hidden = false; }
     else { el.removeAttribute('src'); el.alt = ''; el.hidden = true; }
   }
+  const EXPO = new Set(['Narrador', 'Guardián', 'Voz']);
+  let segJuego = 0, segCaja = 0;
   function say(lines, done, opts) {
-    if (opts && opts.libre) { sayLibre(lines, done); return; }
-    queue = lines.slice(); onDone = done || null; nextCaja();
+    const todas = lines.slice();
+    // La exposición, si no va mezclada con una charla, sale en bocadillos aunque el que llama no ponga libre.
+    if ((opts && opts.libre) || (!(opts && opts.caja) && todas.length && todas.every(l => EXPO.has(l.who)))) {
+      sayLibre(todas, done); return;
+    }
+    const e = ++epoca;
+    const fin = done ? () => { if (e === epoca) done(); } : null;
+    // Más de 2 líneas: la caja enseña el arranque (las pruebas lo leen) y el resto no para el vuelo.
+    if (!(opts && opts.caja) && todas.length > 2) {
+      queue = todas.slice(0, 2);
+      const resto = todas.slice(2);
+      onDone = () => { if (e !== epoca) return; sayLibre(resto, fin); };
+    } else {
+      queue = todas;
+      // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
+      onDone = fin;
+    }
+    nextCaja();
   }
   function nextCaja() {
     const l = queue.shift();
@@ -80,7 +100,7 @@ AVE.module('dialogo', function (G) {
         'box-shadow:0 4px 0 var(--c-paper-edge,#d9c7a3),0 8px 24px rgba(0,0,0,.28);font:400 17px/1.3 var(--font-body,sans-serif);cursor:pointer;animation:bl-in .25s ease-out both;text-wrap:pretty}' +
         '.bocadillo img{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#e9dcc2;flex:none}' +
         '.bocadillo img[hidden]{display:none}' +
-        '.bocadillo b{display:block;font:700 12px/1.2 var(--font-display,sans-serif);text-transform:uppercase;letter-spacing:.06em;color:var(--c-eyebrow,#7a5634)}' +
+        '.bocadillo b{display:block;font:700 12px/1.2 var(--font-display,sans-serif);text-transform:uppercase;letter-spacing:.06em;color:#7a5634}' + // marrón sobre papel (5,7:1); --c-eyebrow es dorado, para paneles oscuros (1,2:1 aquí)
         'body:has(#dialog:not([hidden])) #bocadillos,body:has(#card:not([hidden])) #bocadillos{visibility:hidden}' +
         '@keyframes bl-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}' +
         '@media (prefers-reduced-motion:reduce){.bocadillo{animation:none}}' +
@@ -120,9 +140,13 @@ AVE.module('dialogo', function (G) {
   }
   // Tiempo del juego (se puede probar con tick()); con la caja o una tarjeta abiertas, espera
   G.on('update', dt => {
+    segJuego += dt; if (open()) segCaja += dt;
     if (!libreCur || open() || G.ui.cardOpen) return;
     libreT -= dt; if (libreT <= 0) nextLibre();
   }, 84);
+  function ocupacion() {
+    return { juego: segJuego, caja: segCaja, parte: segJuego > 0.5 ? segCaja / segJuego : 0 };
+  }
 
   function next() { if (open()) nextCaja(); else if (libreCur) nextLibre(); else nextCaja(); }
   function libre() { return libreCur; }
@@ -132,15 +156,22 @@ AVE.module('dialogo', function (G) {
     if (libreCur) return { who: libreCur.who, text: libreCur.text, img: libreCur.img || img(libreCur.who), libre: true };
     return null;
   }
-  function clear() { $('dialog').hidden = true; queue = []; onDone = null; cancelarLibre(); }
+  function clear() {
+    epoca++;
+    $('dialog').hidden = true; queue = []; onDone = null; cancelarLibre();
+    // Una elección a medias (ch-0 del coro) no puede pulsarse después y tapar la charla siguiente
+    const card = document.getElementById('card');
+    if (card && !card.hidden && card.querySelector('#ch-0, #s-co') && G.ui && G.ui.hideCard) G.ui.hideCard();
+  }
   // Elección de diálogo: cambia la frase de respuesta, no el desenlace
   function choose(line, options, done) {
+    const e = epoca;
     G.ui.showCard(`<h2>${line.who}</h2><p>${line.text}</p><div class="row">${options.map((o, i) => `<button class="btn" id="ch-${i}" type="button">${o.label}</button>`).join('')}</div>`);
-    options.forEach((o, i) => { $('ch-' + i).onclick = () => { G.ui.hideCard(); done(o); }; });
+    options.forEach((o, i) => { $('ch-' + i).onclick = () => { if (e !== epoca) return; G.ui.hideCard(); done(o); }; });
     const b = $('ch-0'); if (b) b.focus();
   }
   G.on('apply', () => { G.ui.hideCard(); clear(); }, 45);
 
-  return { L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE,
+  return { L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE, ocupacion,
     get queue() { return open() ? queue : libreCur ? libreQ : queue; }, escenas: data.escenas || [] };
 });

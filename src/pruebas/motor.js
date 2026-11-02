@@ -98,7 +98,7 @@ AVE.module('pruebas', function (G) {
     // El material puede guardar el color en sRGB o ya pasado a lineal (flujo de color del personaje): ambos son el color elegido
     const lin = '#' + new THREE.Color('#7a4fb3').convertSRGBToLinear().getHexString();
     check('Cambiar el color reemplaza la pieza con el color nuevo', ch.mounted.neck.objects[0] !== before && (col === '#7a4fb3' || col === lin), col);
-    ch.applyLook({ species: 'versicolor', accessories: {} });
+    ch.applyLook({ species: 'festiva', accessories: {} });
     check('Quitar accesorios los desmonta', Object.keys(ch.mounted).length === 0 && !before.parent);
     // Ropero: cada pieza en cada estilo se monta en su hueso, y gorras/lentes no tocan ojos ni pico
     {
@@ -127,10 +127,14 @@ AVE.module('pruebas', function (G) {
       }
       check('El ropero monta todas sus piezas y estilos en sus huesos', failed.length === 0 && pieces > 0, failed.join(', ') || pieces + ' partes');
       check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
-      ch.applyLook({ species: 'versicolor', accessories: {} });
+      ch.applyLook({ species: 'festiva', accessories: {} });
     }
-    const pc = ch.tint ? hexOf(ch.tint.patchColor.value) : (ch.materials.Patch ? hexOf(ch.materials.Patch.color) : null);
-    check('El plumaje cambia la máscara facial', pc === window.AVCharacter.SPECIES.versicolor.patch && (!ch.tint || ch.tint.tintOn.value.x === 1), pc || 'sin máscara ni material Patch');
+    // BM124 (2-nov): todas las especies del creador tienen piel; la máscara facial va pintada en la piel de cada especie
+    // (antes festiva era la única con máscara por tinte y sin piel). Se comprueba que el plumaje pone la piel de festiva.
+    if (window.AVE && AVE.pieles) await AVE.pieles.listo(ch);
+    const mapas = []; ch.root.traverse(m => { if ((m.isSkinnedMesh || m.isMesh) && !m.userData.isAccessory && m.material && m.material.map) mapas.push(m.material.map.name || ''); });
+    const conPiel = mapas.some(n => n === 'piel_festiva');
+    check('El plumaje cambia la cara: festiva lleva su piel (máscara pintada) y el tinte se apaga', conPiel && (!ch.tint || ch.tint.tintOn.value.length() === 0), [...new Set(mapas)].join(',') || 'sin mapas');
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;
     S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };
@@ -153,7 +157,8 @@ AVE.module('pruebas', function (G) {
     document.body.appendChild(fr);
     const t0 = performance.now();
     let W = null;
-    while (performance.now() - t0 < (opts.timeout || 30000)) {
+    // QA-60: con la máquina cargada el iframe tarda más de 30 s y la prueba salía en falso rojo
+    while (performance.now() - t0 < (opts.timeout || 90000)) {
       await new Promise(r => setTimeout(r, 150));
       try { W = fr.contentWindow; if (W && W.AV && W.AV.pack) break; } catch (e) { /* aún cargando */ }
       W = null;
@@ -165,7 +170,9 @@ AVE.module('pruebas', function (G) {
     try {
       check('La plantilla arranca con su propio content pack', A.pack === packId && P.id === packId, A.pack);
       check('Mismo motor: todos los módulos instanciados', W.AVE.modules().every(m => !!G2[m]), W.AVE.modules().length + ' módulos');
-      check('Guarda aparte de cap1 (otra clave de localStorage)', G2.guardado.KEY !== G.guardado.KEY, G2.guardado.KEY);
+      // contra la clave del cap. 1 aunque la prueba corra desde la pestaña del propio pack (?pack=epN, la ronda de QA BE4)
+      const K1 = G.pack.id === 'cap1' ? G.guardado.KEY : 'amazonaverse.save';
+      check('Guarda aparte de cap1 (otra clave de localStorage)', G2.guardado.KEY !== K1, G2.guardado.KEY);
       check('Nada del capítulo 1 en la plantilla', !G2.interaccion.find('maquina') && !G2.interaccion.find('transmisor') && !G2.actores.npc('luma'));
       check('Su historia en el HUD', doc.querySelectorAll('#steps li').length === G2.misiones.steps.length && G2.misiones.steps.length > 0 &&
         doc.querySelector('#steps li').textContent.startsWith(G2.misiones.steps[0].texto), G2.misiones.steps.length + ' pasos');

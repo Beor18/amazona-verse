@@ -74,7 +74,8 @@ AVE.module('misiones', function (G) {
     S.wear = Object.assign({}, S.wear);
     G.actores.applyWear();
     G.audio.play('unlock'); G.fx.rewardChest(); G.camara.shake(0.12, 0.3);
-    if (navigator.vibrate && G.renderer.MOBILE) try { navigator.vibrate(60); } catch (e) { /* sin vibración */ }
+    // Sin un toque previo Chrome bloquea la vibración y lo anota como error de consola (BC2)
+    if (navigator.vibrate && G.renderer.MOBILE && !(navigator.userActivation && !navigator.userActivation.hasBeenActive)) try { navigator.vibrate(60); } catch (e) { /* sin vibración */ }
     G.ui.toast('¡Ropa nueva: ' + got.map(u => u.nombre).join(' y ') + '! ' + G.actores.nombre + ' la estrena y ya está en Mi personaje.', 4200);
     G.guardado.autosave();
     return got;
@@ -149,7 +150,7 @@ AVE.module('misiones', function (G) {
     $('indicators').innerHTML = HIST.indicadores ? HIST.indicadores(S, G) : '';
   }
   // ---------- Pantalla final ----------
-  // «Crear mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
+  // «Ver mi cómic» abre el cómic; «Seguir explorando» cierra el panel y deja el mundo libre con la partida terminada
   // (S.explorando, que se guarda: al recargar el panel no vuelve a abrirse solo); «Comenzar de cero» borra la partida y el
   // cómic, así que primero pregunta DENTRO del juego (#end-confirm; nunca confirm()). Esc cancela la pregunta o, sin
   // pregunta, cierra el panel como «Seguir explorando».

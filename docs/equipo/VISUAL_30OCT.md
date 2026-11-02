@@ -1,0 +1,52 @@
+# Recorrido visual del capítulo 1 · 30-oct (BM50)
+
+Build `HEAD-be8a52f` (sin cambios de código; árbol de trabajo sin los cambios ajenos), Chrome con GPU real (Metal), calidad «alto», sol, 1280×800.
+90 capturas = 6 sitios × 5 alturas × 3 rumbos, mismas vistas que BM33 (`tools/build/bm33_vistas.json`): `docs/img/bm50_<sitio>_<suelo|a5|a20|a60|a150>_<r0|r1|r2>.jpg`
+(medidas en `docs/img/bm50_medidas.json`). Comparar con `docs/img/bm33_*` (mismo nombre) y con `docs/img/kelvin_29oct/` (en la carpeta `amazona-verse/`, 5 láminas).
+Revisé a ojo una muestra de 8 láminas por problema (no las 90 una a una); lo que digo de las demás es por extensión y puede fallar.
+
+| Sitio / problema del 29-oct | Ahora (30-oct) |
+|---|---|
+| Embarcadero: tienda roja como red (`embarcadero_suelo_r2`) | **Arreglado**: se ve tela con costuras y remiendos. Sigue flojo: cuerdas muy finas atravesando el suelo. |
+| Embarcadero y río: agua en bloques | **Mejor**: río (`villa_a60_r0`) liso con orilla de arena clara; mar con olas finas. |
+| Tepuy: cascada y agua (`tepuy_suelo_r1`) | **Mejor, no resuelto**: ya hay espuma y brillos, pero la cascada sigue en escalones de ángulos rectos y los bordes de orilla en picos. |
+| Ciudad: interior (`ciudad_suelo_r0`, `miradores_a5_r0`) | **Mejor**: piedra con losas y a escala de mundo, sombras claras. Flojo: columnas largas que se cruzan, esferas verdes «sandía» cortadas por vigas, bordes de bloque muy rectos. |
+| Ciudad lejana (`villa_a60_r0`, `colina_a150_r0`) | **Flojo**: de lejos sigue blanca y sin detalle (maqueta de espuma), más clara que la crema de cerca. |
+| Piezas flotantes (miradores, tepuy, colina) | **Flojo**: en `miradores_a5_r0` hay bloques y una torre colgando sin apoyo a la izquierda; en `colina_suelo_r0` la cámara queda dentro de una losa (pantalla de piedra lisa). |
+| Mar a 150 m (`villa_a150_r1`, `colina_a150_r1`) | **Flojo**: horizonte con curvatura clara y cielo sin bandas notorias (mejor), pero los islotes menta siguen: discos lisos de palmas pálidas flotando sobre el mar. |
+| Bosque de Villa Raíz a 60 m | **Bien**: copas con volumen, sin piruletas; la mejora más clara respecto a Kelvin 29-oct. |
+| Zonas casi negras bajo el follaje | **Mejor**: relleno visible en `embarcadero_suelo_r2` (sombras suaves). |
+
+## Lo que sigue flojo (para aprobar o devolver)
+
+1. Ciudad lejana blanca (LOD `_lejos`), a 60–150 m. · RESUELTO (BM56): el tope de BM38 se había perdido en BM43; restaurado y con tinte cálido (`docs/img/bm56_ciudad_lejos_antes.png` / `_despues.png`): ahora marfil crema, algo caqui.
+2. Piezas flotantes y la cámara dentro de la losa en `colina_suelo_r0` (0, 170). · RESUELTO (BM51/BM57): ya no flotan y la cámara queda fuera; queda la alcoba con rumbo 0,6 rad (`docs/img/bm57_colina_alcoba_yaw06.png`).
+3. Islotes menta lisos en el mar. · RESUELTO (BM57, 13df89d): verde y arena hondos (`docs/img/bm57_islote_*`).
+4. Cascada en escalones y orillas en pico.
+5. Sandías verdes de la ciudad cortadas por las vigas, aristas demasiado rectas.
+
+Sin esto no está aprobado el mapa: Kelvin decide sobre las láminas.
+
+## BM67 · barrido de capturas pendientes (30 oct, Chrome/Metal real, build HEAD-40cee6c)
+
+Capturas `docs/img/bm67_fabrica_*.png` y `bm67_medidas.json` (vistas propias, look fábrica, calidad alto, 0 errores de consola):
+- **Ciudad (BM23/BM32)**: `ciudad_60` sostiene el marfil crema; ya no hay oliva ni ocre. Siguen las astillas de la aguja y las sandías verdes (geometría, arte de Kelvin). 43 FPS a 60 m; `ciudad_150` 20 FPS (1,9 M tris, 170 draw calls).
+- **Dosel/colina (BM23, BM31)**: `colina_vuelo_120` 46 FPS, sin sábana del dosel; `colina_vuelo_250` 9 FPS pero con solo 61 calls y 0,3 M tris (parece coste de postproceso/mar, no de árboles; sin analizar).
+- **Villa Raíz (BM31)**: `villa_bosque_60` 41 FPS, 0,83 M tris.
+- **Aldea (BM28)**: `aldea_toldos` 39 FPS; la cámara quedó dentro de una palma, no sirve para juzgar toldos.
+- **No hechas**: BM20 (despegue/bandada/luciérnagas), BM29 (`cap1_2` a 30/80 m) y BM27 (distancia del impostor): requieren guion de juego o coordenadas que no tengo; siguen pendientes. No se tocó código; nada se rompió en lo capturado.
+
+## BM63 · recorrido FINAL para que Kelvin apruebe (31 oct, build HEAD-e3e2e38, GPU real, sin cambiar código)
+
+90 capturas = 6 sitios × 5 alturas × 3 rumbos (mismas vistas de `tools/build/bm33_vistas.json`, look fábrica, calidad alto, 1280×800, 0 errores de consola): `docs/img/bm63_<sitio>_<suelo|a5|a20|a60|a150>_<r0|r1|r2>.jpg`, medidas en `docs/img/bm63_medidas.json`. Compárense con `bm50_*` (mismo nombre) y `kelvin_29oct/`. Revisé a ojo 6 láminas (una por sitio o problema), no las 90; lo demás es por extensión y puede fallar. El árbol tenía cambios ajenos sin commit (BM79 en `streaming.js`); el build usa solo HEAD, así que no están en estas capturas.
+
+| Sitio | Arreglado respecto al 29-oct | Sigue flojo |
+|---|---|---|
+| Villa Raíz (`villa_a150_r1`) | Bosque con volumen, sin piruletas; el islote lejano ya es verde hondo (no menta). | El islote sigue siendo un disco liso sin detalle. |
+| Embarcadero (`embarcadero_suelo_r2`) | Tiendas con tela, costuras y remiendos (ya no red); relleno de luz bajo el follaje; hojas y agua con orilla de arena. | Cuerdas muy finas que cruzan el suelo. |
+| Colina (`colina_suelo_r0`) | La cámara ya no queda dentro de la losa; la piedra sale crema con losas. | Piezas de piedra voladas sobre el césped (balcón que cuelga sin pilares) y bordes del césped en dientes de sierra. |
+| Miradores (`miradores_a5_r0`) | Piedra crema con losas y sombras claras. | Bloques y torre a la izquierda siguen sin apoyo; sandías verdes cortadas por vigas; columnas largas cruzadas. |
+| Tepuy (`tepuy_suelo_r1`) | Espuma, brillos y orilla de arena con guijarros. | Cascada aún en escalones de ángulos rectos y orillas en pico (geometría de `mapa_build.py`). |
+| Ciudad (`ciudad_a60_r0`, `ciudad_a150_*`) | De lejos ya no es blanca: marfil crema (BM56). | A 150 m solo 14-22 FPS (0,7-0,8 M tris, 100-140 calls); sandías y aristas rectas (arte de Kelvin). |
+
+Abiertos para Kelvin: cascada/orillas (Blender), sandías y piezas sin apoyo (arte), FPS de la ciudad a 150 m.

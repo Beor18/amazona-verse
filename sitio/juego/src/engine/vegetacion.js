@@ -9,9 +9,15 @@
      por tramado entre los dos. Plantas y rocas se apagan por distancia.
    - Pasto en tarjetas (pasto.glb) alrededor del jugador, donde el splat es pasto, fuera de senderos y agua.
    - Sombras: en 'alto' los árboles cercanos proyectan sombra real; en todos, una mancha suave bajo cada árbol los asienta.
-   - Colisiones: troncos cercanos al jugador como colliders (se actualizan al moverse).
-   - Fundido entre la cámara y Vittata: lo que queda dentro del cono cámara→Vittata (radio que crece hasta FUNDIDO.radio
-     junto a ella) se vuelve translúcido por tramado, sin ordenar transparencias ni tocar las sombras.
+   - Bosque lleno (AW2): relleno hasta ~7 000 árboles con la máscara de Kelvin (assets/data/bosque_cap1.js), con tope de
+     árboles en malla por calidad (300/600/1 200, los más cercanos) y sombra real solo a menos de 30 m.
+   - Colisiones: troncos a menos de 40 m del jugador como colliders (se actualizan al moverse).
+   - Fundido entre la cámara y Vittata (G1, B1): lo que queda dentro del cono cámara→pecho de Vittata (S.pos + FUNDIDO.alto;
+     radio que crece del 25 % junto a la cámara a FUNDIDO.radio junto a ella) se vuelve translúcido por tramado (discard: sin
+     ordenar transparencias); hasta el 40 % del radio queda visible 1 − FUNDIDO.fuerza (~25 %) y luego un borde suave. Hojas, cortezas y rocas, en malla
+     cercana, lejana y LOD; la sombra (customDepthMaterial) no se funde. Dos uniformes compartidos (uOcluA: cámara + fuerza,
+     uOcluB: pecho + radio) que se ponen en el gancho 'render' (programas cacheados por tipo: no se recompila nada).
+     fundidoEn(x, y, z) hace la misma cuenta en JS (floraTest). Con la cámara a < 1,8 m de una copa también se funde (BM43).
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
    API: G.vegetacion.listo (promesa), stats(), instancias, especies, atlas (render target de los impostores; se repinta si se
    pierde el contexto WebGL). */
@@ -23,8 +29,22 @@ AVE.module('vegetacion', function (G) {
   const W = G.pack.mundo || {}, FL = W.flora || {};
   const KIT = Object.assign({ base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' }, FL.kit);
   const VI = Object.assign({ dir: [0.8, 0.35], fuerza: 1 }, FL.viento);
-  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34 }, FL.distancias);
+  const DIST = Object.assign({ arbol: 110, impostor: 520, planta: 55, roca: 110, tronco: 80, hojarasca: 40, pasto: 34, lod: 135 }, FL.distancias);
   const PASTO_NIVEL = { bajo: { rad: 0.4, dens: 0.3 }, medio: { rad: 0.765 }, alto: { rad: 1 } }; // 26-D: 14 / 26 / 34 m; en bajo, poco
+  // F1 (AW2, MAPA_PLAN_COMPLETO.md): bosque lleno. Se rellena con árboles hasta `objetivo` donde la máscara de MultiScatter de
+  // Kelvin (trees.psd → assets/data/bosque_cap1.js, tools/blender/bosque_mascara.py) tenía bosque, en el suelo libre del mapa.
+  // De cerca, como mucho TOPE_ARBOLES árboles visibles en malla (los más cercanos); el resto, impostor. Sombra real solo a
+  // menos de SOMBRA_MAX y troncos sólidos solo a menos de COL_RAD. mundo.flora.bosque: false lo apaga.
+  const MAPA_CAP1 = window.AV_MAPA_CAP1;
+  const BOSQUE = FL.bosque === false ? null : Object.assign({ src: 'assets/data/bosque_cap1.js', global: 'AV_BOSQUE_CAP1', objetivo: 7000, semilla: 7351 }, FL.bosque);
+  const usarBosque = !!(BOSQUE && (FL.bosque || (MAPA_CAP1 && MAPA.nombre === MAPA_CAP1.nombre)));
+  const MOBILE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const TOPE_ARBOLES =Object.assign({ bajo: 300, medio: 600, alto: MOBILE ? 1200 : 2000 }, FL.topeArboles);
+  // y como mucho estos triángulos de árboles en malla (los del kit tienen 1 000–5 700): con 300/600/1 200 árboles no cabría
+  // en el presupuesto de MAPA_PLAN_COMPLETO.md § 3 (250 k / 450 k / 1,2 M el cuadro entero). Medido en las 12 vistas: con
+  // 110/200/550 k el móvil (medio) pasaba de 450 k en aerea_sur y s_villa; con esto no crece respecto a antes de AW2.
+  const TOPE_TRIS = Object.assign({ bajo: 60e3, medio: 120e3, alto: 300e3 }, FL.topeTris);
+  const SOMBRA_MAX = 30, COL_RAD = 40;
   const { rng } = G.util;
   const C = R.calidad;
   const lin = c => new THREE.Color(c).convertSRGBToLinear();
@@ -96,7 +116,8 @@ AVE.module('vegetacion', function (G) {
   // ---------- Materiales con viento, AO, tinte y fundido ----------
   const U = { uTime: { value: 0 }, uSolDir: { value: R.sunDir }, uSolCol: { value: R.sun.color.clone().multiplyScalar(R.sun.intensity) },
     uOcluA: { value: new THREE.Vector4() }, uOcluB: { value: new THREE.Vector4() } }; // cámara (xyz, opacidad que se quita) / Vittata (xyz, radio)
-  const FUNDIDO = Object.assign({ fuerza: 0.7, radio: 1.15, alto: 0.45 }, FL.fundido);
+  // B1: centro del cono en el pecho (Vittata mide 1,75 m: con 0,45 m la cabeza quedaba fuera del centro del cono) y ~25 % visible
+  const FUNDIDO = Object.assign({ fuerza: 0.75, radio: 1.2, alto: 0.8 }, FL.fundido);
   const VIENTO_DIR = new THREE.Vector2(VI.dir[0], VI.dir[1]).normalize();
   const WIND_PARS = 'uniform float uTime; uniform vec4 uViento; uniform vec2 uFade; uniform vec3 uSolDir;\nattribute vec4 aViento;\nvarying float vAO; varying float vFadeD; varying float vTrans; varying vec3 vWPos;\n';
   const WIND_PROJECT = `
@@ -123,11 +144,14 @@ AVE.module('vegetacion', function (G) {
   const DITHER = 'float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }\n';
   const FADE_FRAG = `
     if ( uFade.y > 0.0 ) { float fd = smoothstep( uFade.x, uFade.y, vFadeD ); if ( fd > 0.0 && ign( gl_FragCoord.xy ) < fd ) discard; }
+    { float dc = distance( vWPos, uOcluA.xyz ); if ( dc < 1.8 && ign( gl_FragCoord.xy + 5.0 ) < 1.0 - smoothstep( 0.4, 1.8, dc ) ) discard; } // BM43: copa pegada a la cámara
     if ( uOcluA.w > 0.0 ) {
       vec3 ab = uOcluB.xyz - uOcluA.xyz; float t = dot( vWPos - uOcluA.xyz, ab ) / max( dot( ab, ab ), 1e-4 );
       if ( t > 0.0 && t < 1.0 ) {
         float r = uOcluB.w * mix( 0.25, 1.0, t ), dl = distance( vWPos, uOcluA.xyz + ab * t );
-        float k = ( 1.0 - smoothstep( r * 0.6, r, dl ) ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w;
+        // B1: meseta (fuerza entera) hasta el 40 % del radio y borde suave hasta el radio; antes (BM43) solo el eje llegaba a la
+        // fuerza y a media distancia quedaba ~1/3: la cabeza de Vittata seguía tapada. El borde ancho evita que se marque el círculo.
+        float k = ( 1.0 - smoothstep( r * 0.4, r, dl ) ) * smoothstep( 0.0, 0.08, 1.0 - t ) * uOcluA.w;
         if ( k > 0.0 && ign( gl_FragCoord.xy + 17.0 ) < k ) discard;
       }
     }
@@ -146,13 +170,14 @@ AVE.module('vegetacion', function (G) {
   }
   function hojaMaterial(src, nombre, own) {
     const m = new THREE.MeshLambertMaterial({ map: src.map, alphaTest: 0.5, side: src.side, color: new THREE.Color(0.86, 0.88, 0.8) });
+    m.alphaToCoverage = true; // BM31: bordes de hoja suaves con MSAA (sin él, el alphaTest duro serra los bordes)
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
       sh.vertexShader = 'varying float vPunta;\n' + sh.vertexShader.replace('#include <lights_lambert_vertex>', LAMBERT_WRAP)
         .replace('#include <fog_vertex>', '#include <fog_vertex>\n  vPunta = aViento.g;'); // peso del viento: 0 en la base, 1 en la punta
       sh.fragmentShader = 'uniform vec2 uFade; uniform vec3 uSolCol;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
-        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.22, 1.0, vAO ) * mix( vec3( 0.86, 0.9, 0.84 ), vec3( 1.1, 1.12, 0.92 ), vPunta );')
+        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.38, 1.0, vAO ) * mix( vec3( 0.86, 0.9, 0.84 ), vec3( 1.1, 1.12, 0.92 ), vPunta );')
         .replace(/\( gl_FrontFacing \) \? vIndirectFront : vIndirectBack/g, 'vIndirectFront')
         .replace(/\( gl_FrontFacing \) \? vLightFront : vLightBack/g, 'vLightFront')
         .replace('#include <envmap_fragment>', '#include <envmap_fragment>\n  outgoingLight += mix( diffuseColor.rgb, vec3( 0.42, 0.62, 0.16 ), 0.45 ) * uSolCol * vTrans * vAO * mix( 0.4, 0.62, vPunta );');
@@ -161,14 +186,16 @@ AVE.module('vegetacion', function (G) {
     m.customProgramCacheKey = () => 'hoja';
     return m;
   }
+  // BE7: tinte pardo de la corteza; con el de antes (0,74) los troncos claros del kit se leían como «palitos» blancos a media distancia
+  const CORTEZA_TINTE = new THREE.Color(0.5, 0.45, 0.39);
   function solidoMaterial(src, own, roca) {
-    const m = new THREE.MeshPhongMaterial({ map: src.map, normalMap: src.normalMap || null, shininess: roca ? 10 : 6, specular: new THREE.Color(0x0c0c0c), side: THREE.FrontSide, color: roca ? new THREE.Color(0.9, 0.9, 0.88) : new THREE.Color(0.74, 0.72, 0.7) });
+    const m = new THREE.MeshPhongMaterial({ map: src.map, normalMap: src.normalMap || null, shininess: roca ? 10 : 6, specular: new THREE.Color(0x0c0c0c), side: THREE.FrontSide, color: roca ? new THREE.Color(0.9, 0.9, 0.88) : CORTEZA_TINTE.clone() });
     if (m.normalMap) m.normalScale = new THREE.Vector2(1, roca ? 1 : -1).multiplyScalar(roca ? 1.0 : 0.9);
     m.onBeforeCompile = sh => {
       injectWind(sh, own);
       sh.fragmentShader = 'uniform vec2 uFade;\nvarying float vAO; varying float vFadeD; varying float vTrans;\n' + OCLU_PARS + DITHER + sh.fragmentShader
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n' + FADE_FRAG)
-        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.3, 1.0, vAO );');
+        .replace('#include <color_fragment>', '#include <color_fragment>\n  diffuseColor.rgb *= mix( 0.42, 1.0, vAO );');
     };
     m.customProgramCacheKey = () => roca ? 'roca' : 'corteza';
     return m;
@@ -221,11 +248,11 @@ AVE.module('vegetacion', function (G) {
     const despejar = (typeof FL.evitar === 'function' ? FL.evitar(G.pack) : FL.evitar || []).concat(G.pack.npcs || []).filter(e => e && e.x != null);
     const tapado = (x, z, r) => despejar.some(e => Math.hypot(e.x - x, e.z - z) < (e.r || 0) + r);
     const cel = FD.celda, area = cel * cel / 100;
+    const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
     for (const esp of FD.especies || []) {
       const d = dens[esp], md = MODELOS[esp];
       if (!d || !md) continue;
       const esArb = md.kit.some(k => esArbol(k));
-      const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
       for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
         const v = d[ix + iz * FD.nx]; if (!v) continue;
         const exp = v / 10 * area;
@@ -240,7 +267,7 @@ AVE.module('vegetacion', function (G) {
           const y = T.height(x, z);
           if (enAgua(x, z, y)) continue;
           if (tapado(x, z, esArb ? 3 : 1.6)) continue;
-          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.62) continue; // matas: no en paredes de roca
+          if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
           if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
@@ -262,8 +289,99 @@ AVE.module('vegetacion', function (G) {
         }
       }
     }
+    // F0.4, cumbre verde: la meseta de El Yunque (97 m) y las terrazas altas quedaban casi peladas (en el mapa la palma de
+    // sierra llega a 80 m y el tabonuco enano sale ralo). Palma de sierra y tabonuco enano en el suelo libre por encima de
+    // `desde`, con su propia semilla para no mover el resto de la flora; mundo.flora.cumbre { desde, n, palma } (n: 0 la apaga).
+    const CU = Object.assign({ desde: 82, n: 220, palma: 0.6 }, FL.cumbre);
+    const altas = [];
+    if (CU.n > 0) for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
+      if (T.height(FD.x0 + (ix + 0.5) * cel, FD.z0 + (iz + 0.5) * cel) > CU.desde - 4) altas.push(ix + iz * FD.nx);
+    }
+    const r2 = rng(5821);
+    for (let t = 0, n = 0; altas.length && n < CU.n && t < CU.n * 12; t++) {
+      const c = altas[Math.floor(r2() * altas.length)];
+      const x = FD.x0 + (c % FD.nx + r2()) * cel, z = FD.z0 + (Math.floor(c / FD.nx) + r2()) * cel;
+      const palma = r2() < CU.palma, md = MODELOS[palma ? 'palma_sierra' : 'tabonuco_enano'];
+      const s = (md.escala || 1) * (0.8 + r2() * 0.4), r = (palma ? 1.8 : 3.2) * s;
+      const y = T.height(x, z);
+      if (y < CU.desde || !libre(x, z) || enAgua(x, z, y) || tapado(x, z, 3) || T.normalAt(x, z).y < 0.72 || !libreDe(x, z, r)) continue;
+      marcar(x, z, r);
+      add(md.kit[0], x, z, s, { rank: r2() });
+      n++;
+    }
+    // F1.1 (AW2), bosque lleno: de ~1 900 árboles a BOSQUE.objetivo, en las celdas de 4 m con bosque en la máscara de Kelvin
+    // y fuera de sendas, agua, edificios y sitios despejados (libre/tapado), sin encimarse (libreDe). Tres especies por
+    // ambiente según la altura: tabonuco en el llano y los meandros, palma de sierra en las terrazas, bosque enano en lo
+    // nublado. Semilla propia: el resto de la flora no se mueve.
+    const MB = usarBosque && window[BOSQUE.global];
+    bosquePos.length = 0;
+    const especie = (h, u) => h > 64 ? (u < 0.55 ? 'tabonuco_enano' : u < 0.9 ? 'palma_sierra' : 'helecho_gigante')
+      : h > 24 ? (u < 0.55 ? 'palma_sierra' : u < 0.85 ? 'tabonuco' : 'yagrumo')
+      : (u < 0.6 ? 'tabonuco' : u < 0.8 ? 'yagrumo' : 'palma_sierra');
+    if (MB && MB.bits) {
+      const mb = b64u8(MB.bits), r3 = rng(BOSQUE.semilla), celdas = [];
+      for (let i = 0; i < MB.nx * MB.nz; i++) if ((mb[i >> 3] >> (i & 7)) & 1) celdas.push(i);
+      for (let i = celdas.length - 1; i > 0; i--) { const j = Math.floor(r3() * (i + 1)), t = celdas[i]; celdas[i] = celdas[j]; celdas[j] = t; }
+      let n = lista.reduce((a, it) => a + (CAT(it.m) === 'arbol' ? 1 : 0), 0);
+      for (let pasada = 0; pasada < 10 && n < BOSQUE.objetivo; pasada++) for (const c of celdas) {
+        if (n >= BOSQUE.objetivo) break;
+        const x = MB.x0 + (c % MB.nx + r3()) * MB.celda, z = MB.z0 + (Math.floor(c / MB.nx) + r3()) * MB.celda;
+        const md = MODELOS[especie(T.height(x, z), r3())], u = r3(), s0 = r3(), rk = r3();
+        if (!md || !libre(x, z)) continue;
+        const y = T.height(x, z);
+        if (y < 0.8 || enAgua(x, z, y) || T.normalAt(x, z).y < 0.72 || tapado(x, z, 3)) continue;
+        const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.8 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.8; // dosel cerrado: las copas del relleno se tocan algo más
+        if (!libreDe(x, z, r)) continue;
+        marcar(x, z, r);
+        add(m, x, z, s, { rank: rk, bosque: true });
+        n++; bosquePos.push(x, z);
+      }
+    }
+    // BL1, selva del tepuy (T.selvaTepuy, como en el render de 2022): árboles en la cima y en las laderas alrededor de la gran
+    // ciudad (BM101, 1-nov: ya no en las paredes de roca de más de ~44°; antes hasta ~72°, y Kelvin los veía metidos en la roca), con la probabilidad de la
+    // elipse. Fuera de las piezas de la ciudad (escenaKelvin de las ruinas), de sendas, agua y sitios despejados. Semilla
+    // propia y después del relleno: lo demás no se mueve. Cuentan aparte (tepuyPos).
+    tepuyPos.length = 0;
+    const ST = T.selvaTepuy && T.selvaTepuy.zona;
+    if (ST) {
+      const r4 = rng(4127), piezas = [], EK = MAPA.escenaKelvin || {};
+      for (const g of EK.compacto || []) if (/ruinas/.test(g.grupo || '')) for (const t of g.inst || []) piezas.push(t.length >= 16 ? [t[12], t[14]] : [t[0], t[2]]);
+      const enCiudad = (x, z, r) => piezas.some(p => Math.hypot(p[0] - x, p[1] - z) < ST.ciudad + r);
+      const objetivo = ST.arboles || 1800;
+      for (let t = 0, n = 0; n < objetivo && t < objetivo * 12; t++) {
+        const x = ST.x + (r4() * 2 - 1) * ST.rx, z = ST.z + (r4() * 2 - 1) * ST.rz, w = T.selvaTepuy(x, z);
+        if (r4() >= w || !libre(x, z)) continue;
+        const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
+        // BM101 (Kelvin, 1-nov: «árboles metidos en la roca»): nada en pendientes de más de ~44° (antes hasta ~72°, hundidos en el risco)
+        if (!md || y < 4 || ny < 0.72 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
+        if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
+        marcar(x, z, r);
+        const it = add(m, x, z, s, { rank: r4(), bosque: true });
+        it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
+        n++; tepuyPos.push(x, z);
+      }
+      // Revisión 11:10: las copas de 8–11 m se leían como nenúfares y solo caían en el borde
+      // (el centro de la meseta no es «libre»: lo ocupan las piezas). Aquí son copas chicas, también
+      // entre los edificios. El risco vertical no lleva copa.
+      copasCima.length = 0;
+      // BM99 (Kelvin, 1-nov): estas copas de relleno se veían como «sandías» en hileras; la cima ya tiene los árboles reales de BL1.
+      const pasoC = 3.3, rC = rng(9051), SIN_COPAS_CIMA = true;
+      if (!SIN_COPAS_CIMA)
+      for (let z = ST.z - ST.rz; z <= ST.z + ST.rz; z += pasoC) for (let x = ST.x - ST.rx; x <= ST.x + ST.rx; x += pasoC) {
+        const jx = x + (rC() - 0.5) * pasoC * 1.1, jz = z + (rC() - 0.5) * pasoC * 1.1;
+        if (rC() < 0.2) continue; // BM99: sin rejilla de hileras
+        if (T.selvaTepuy(jx, jz) < 0.55) continue;
+        const y = T.height(jx, jz), nyC = T.normalAt(jx, jz).y;
+        if (y < 78 || nyC < 0.78 || enAgua(jx, jz, y) || tapado(jx, jz, 1.4) || enCiudad(jx, jz, -2)) continue;
+        copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 2.6 + rC() * 1.5, h: 2.8 + rC() * 1.3, tono: rC() });
+      }
+    }
     return lista;
   }
+  const bosquePos = []; // x, z de los árboles de relleno (floraTest)
+  const tepuyPos = []; // y los de la selva del tepuy (BL1)
+  const copasCima = []; // copas sueltas de la meseta (G19), entre los edificios
   function empaquetar(lista) {
     const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), m4 = new THREE.Matrix4(), c = new THREE.Color();
     const cuenta = {};
@@ -291,26 +409,52 @@ AVE.module('vegetacion', function (G) {
   }
 
   // ---------- Mallas instanciadas por primitiva (cerca: con sombra real en 'alto'; medio: sin sombra) ----------
-  const grupos = {}; // modelo -> { prims: [{ cerca, lejos }], cap }
+  // BM31: LOD intermedio del árbol. Hojas: 1 de cada 4 triángulos, cada uno crecido ×2 desde su centro (misma cobertura, mismo
+  // atlas y tono, ≤ 25 % de triángulos); el tronco y las rocas se comparten. Entre la malla y el impostor (≥ DIST.lod con fundido).
+  const LOD_PASO = 4;
+  function geoLOD(geo) {
+    const g = geo.index ? geo.toNonIndexed() : geo, n = g.attributes.position.count / 3, k = Math.max(1, Math.floor(n / LOD_PASO));
+    const out = new THREE.BufferGeometry(), pos = g.attributes.position;
+    for (const nom in g.attributes) {
+      const a = g.attributes[nom], sz = a.itemSize, arr = new Float32Array(k * 3 * sz);
+      for (let t = 0; t < k; t++) {
+        const f = Math.min(n - 1, Math.floor(t * n / k));
+        for (let v = 0; v < 3; v++) for (let c = 0; c < sz; c++) arr[(t * 3 + v) * sz + c] = a.array[(f * 3 + v) * sz + c];
+        if (nom === 'position') {
+          const b = t * 9; let cx = 0, cy = 0, cz = 0;
+          for (let v = 0; v < 3; v++) { cx += arr[b + v * 3]; cy += arr[b + v * 3 + 1]; cz += arr[b + v * 3 + 2]; }
+          cx /= 3; cy /= 3; cz /= 3;
+          for (let v = 0; v < 3; v++) { arr[b + v * 3] = cx + (arr[b + v * 3] - cx) * 2; arr[b + v * 3 + 1] = cy + (arr[b + v * 3 + 1] - cy) * 2; arr[b + v * 3 + 2] = cz + (arr[b + v * 3 + 2] - cz) * 2; }
+        }
+      }
+      out.setAttribute(nom, new THREE.BufferAttribute(arr, sz));
+    }
+    out.computeBoundingBox(); out.computeBoundingSphere();
+    return out;
+  }
+  const grupos = {}; // modelo -> { prims: [{ cerca, lejos, lod }], cap }
   const BOXY = {}; // modelo -> alto para las celdas
   function crearMallas(m) {
     const P = porModelo[m], prims = geos[m]; if (!P || !prims) return;
     const own = windUniforms(m), cat = CAT(m);
-    const g = { prims: [], cat, own };
+    const g = { prims: [], cat, own, tris: 0 };
+    for (const p of prims) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
     for (const p of prims) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
-      const mk = (sombra) => {
-        const im = new THREE.InstancedMesh(p.geo, mat, P.n);
+      const geoL = cat === 'arbol' && p.tipo === 'hoja' ? geoLOD(p.geo) : p.geo;
+      const mk = (sombra, lod) => {
+        const im = new THREE.InstancedMesh(lod ? geoL : p.geo, mat, P.n);
         im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(P.n * 3), 3);
         im.instanceColor.setUsage(THREE.DynamicDrawUsage);
         im.count = 0; im.visible = false; im.frustumCulled = false; im.receiveShadow = true; im.castShadow = sombra;
         if (sombra) im.customDepthMaterial = depthMaterial(p.src, own, p.tipo === 'hoja');
-        im.name = 'flora:' + m + ':' + p.tipo + (sombra ? ':sombra' : '');
+        im.name = 'flora:' + m + ':' + p.tipo + (sombra ? ':sombra' : lod ? ':lod' : '');
         scene.add(im);
         return im;
       };
-      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false) });
+      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false), lod: cat === 'arbol' ? mk(false, true) : null, trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
+      g.trisLod = (g.trisLod || 0) + g.prims[g.prims.length - 1].trisLod;
       mats.push(mat);
     }
     BOXY[m] = info[m] ? info[m].alto : 5;
@@ -322,8 +466,10 @@ AVE.module('vegetacion', function (G) {
   function hornearImpostores() {
     const lista = [...ARBOLES].filter(m => geos[m] && porModelo[m]);
     if (!lista.length) return;
-    const TS = 256, cols = 4, rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
+    const TS = (!MOBILE && C.nivel !== "bajo") ? 512 : 256, cols = 4,   // BM14: impostores de 512 px en medio y alto (escritorio)
+       rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
     const rt = new THREE.WebGLRenderTarget(TS * cols, TS * rows, { minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, generateMipmaps: true });
+    rt.texture.anisotropy = Math.min(8, R.renderer.capabilities.getMaxAnisotropy ? R.renderer.capabilities.getMaxAnisotropy() : 1);
     // El atlas solo vive en la GPU: si se pierde el contexto WebGL, se repinta al volver (gancho 'contexto', más abajo)
     const pintar = () => {
       const sc = new THREE.Scene();
@@ -336,7 +482,7 @@ AVE.module('vegetacion', function (G) {
       lista.forEach((m, k) => {
         const holder = new THREE.Group();
         for (const p of geos[m]) {
-          const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map });
+          const mat = p.tipo === 'hoja' ? new THREE.MeshLambertMaterial({ map: p.src.map, alphaTest: 0.5, side: THREE.DoubleSide }) : new THREE.MeshLambertMaterial({ map: p.src.map, color: CORTEZA_TINTE });
           holder.add(new THREE.Mesh(p.geo, mat));
         }
         sc.add(holder);
@@ -374,29 +520,57 @@ AVE.module('vegetacion', function (G) {
       fog: true, transparent: false,
       vertexShader: `
         attribute vec4 iPos; attribute vec4 iTile; attribute vec3 iCol;
-        uniform float uTime; varying vec2 vUv; varying vec3 vCol; varying float vD;
+        uniform float uTime; varying vec2 vUv; varying vec2 vLoc; varying vec3 vCol; varying float vD; varying float vAereo;
         #include <fog_pars_vertex>
         void main() {
           vec3 c = iPos.xyz; float lado = iPos.w;
-          vec3 toCam = cameraPosition - c; toCam.y = 0.0; toCam = normalize(toCam);
+          vec3 d3 = cameraPosition - c, toCam = normalize(vec3(d3.x, 0.0, d3.z));
           vec3 right = vec3(toCam.z, 0.0, -toCam.x);
+          // F0.3: desde el aire el cuadro se recuesta hacia atrás (hasta ~63°) y la copa se ve; a pie y en vuelo bajo sigue de pie
+          float elev = atan(d3.y, length(d3.xz));
+          float inc = clamp(elev - 0.3, 0.0, 1.1);
+          // G19: no agrandar el cuadro. A 1,7× la altura del árbol la copa era una hoja de varios metros
+          // y, en render2022, tapaba la cámara. El tinte de copa solo entra lejos.
+          float distC = length(d3);
+          // BM27: sin repintar la copa (el disco de 4 m con palo parecía una piruleta y no el árbol cercano): el impostor es el mismo render del modelo
+          float aereo = 0.0;
+          vec3 up = vec3(0.0, cos(inc), 0.0) - toCam * sin(inc);
+          float ladoX = lado;
+          float ladoY = lado;
           float sway = sin(uTime * 0.9 + c.x * 0.3 + c.z * 0.2) * 0.012 * position.y * position.y * lado;
-          vec3 w = c + right * (position.x * lado + sway) + vec3(0.0, position.y * lado, 0.0) - toCam * lado * 0.15;
-          vUv = iTile.xy + uv * iTile.zw; vCol = iCol; vD = distance(c, cameraPosition);
+          vec3 w = c + right * (position.x * ladoX + sway) + up * (position.y * ladoY) - toCam * lado * 0.15;
+          vUv = iTile.xy + uv * iTile.zw; vLoc = uv; vCol = iCol; vD = distance(c, cameraPosition); vAereo = aereo;
           vec4 mvPosition = viewMatrix * vec4(w, 1.0);
           gl_Position = projectionMatrix * mvPosition;
           #include <fog_vertex>
         }`,
       fragmentShader: `
-        uniform sampler2D tAtlas; uniform vec2 uFade; varying vec2 vUv; varying vec3 vCol; varying float vD;
+        uniform sampler2D tAtlas; uniform vec2 uFade; varying vec2 vUv; varying vec2 vLoc; varying vec3 vCol; varying float vD; varying float vAereo;
         #include <fog_pars_fragment>
         float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
         void main() {
           vec4 t = texture2D(tAtlas, vUv);
+          float a = vAereo;
+          if (a > 0.2) {
+            // copa chica en lo alto del cuadro (unos 4 m), no un disco del tamaño del árbol entero
+            vec2 q = (vLoc - vec2(0.5, 0.72)) * vec2(2.15, 2.4);
+            float rad = length(q);
+            float mascara = smoothstep(0.58, 0.26, rad);
+            if (a > 0.8 && mascara < 0.06) discard;
+            float n = fract(sin(dot(vLoc * vec2(19.0, 13.0) + vCol.xy, vec2(12.9898, 78.233))) * 43758.5453);
+            float n2 = fract(sin(dot(floor(vLoc * 6.0) + vCol.yz, vec2(39.3, 11.7))) * 24634.634);
+            vec3 osc = vec3(0.045, 0.09, 0.03);
+            vec3 med = vec3(0.10, 0.18, 0.05);
+            vec3 cla = vec3(0.18, 0.28, 0.07);
+            vec3 copa = mix(osc, mix(med, cla, n2), 0.3 + 0.7 * mascara) * (0.8 + n * 0.4);
+            float tronco = smoothstep(0.58, 0.2, vLoc.y);
+            t.rgb = mix(t.rgb, copa, a * mix(0.78, 1.0, tronco));
+            t.a = max(t.a, mascara * a);
+          }
           if (t.a < 0.5) discard;
           float fd = smoothstep(uFade.x, uFade.y, vD);
           if (ign(gl_FragCoord.xy) >= fd) discard;
-          gl_FragColor = vec4(t.rgb * vCol, 1.0);
+          gl_FragColor = vec4(t.rgb * mix(vCol, vec3(1.0), a * 0.7), 1.0);
           #include <encodings_fragment>
           #include <fog_fragment>
         }`,
@@ -412,14 +586,16 @@ AVE.module('vegetacion', function (G) {
   let manchas = null;
   function crearManchas() {
     const lista = [];
-    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(7, info[m].ancho * 0.42) * P.pos[i * 4 + 3]]); }
+    // F0.3: mancha de copa más ancha y densa, verde muy oscuro en vez de negro: desde el aire el bosque se lee como dosel
+    // G19: la mancha cubre el hueco entre copas (antes una palma dejaba un círculo chico y el pasto se veía desde el aire)
+    for (const m of ARBOLES) { const P = porModelo[m]; if (!P || !info[m]) continue; for (let i = 0; i < P.n; i++) lista.push([P.pos[i * 4], P.pos[i * 4 + 1], P.pos[i * 4 + 2], Math.min(6.2, Math.max(2.6, (info[m].ancho || 3) * 0.5)) * P.pos[i * 4 + 3]]); }
     if (!lista.length) return;
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.45)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    gr.addColorStop(0, 'rgba(0,0,0,0.95)'); gr.addColorStop(0.55, 'rgba(0,0,0,0.7)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
     const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.32, color: 0x000000,
+    const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0.66, color: 0x122616,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     manchas = new THREE.InstancedMesh(geo, mat, lista.length);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), n = new THREE.Vector3(), s = new THREE.Vector3(), p = new THREE.Vector3();
@@ -429,6 +605,64 @@ AVE.module('vegetacion', function (G) {
     });
     manchas.frustumCulled = false; manchas.renderOrder = 1; manchas.name = 'flora:manchas';
     scene.add(manchas);
+  }
+
+  // ---------- Copas de la cima (G19): entre los edificios, donde no cabe un tronco ----------
+  // Tres planos cruzados, no un disco horizontal: la vista ciudad_tepuy mira unos 22° hacia abajo y un disco se vería de canto.
+  let copasMesh = null;
+  function crearCopasCima() {
+    if (!copasCima.length) return;
+    const partes = [];
+    for (let i = 0; i < 3; i++) {
+      const p = new THREE.PlaneGeometry(1, 1);
+      p.translate(0, 0.42, 0);
+      p.rotateY(i * Math.PI / 3);
+      partes.push(p);
+    }
+    let nv = 0, ni = 0;
+    for (const p of partes) { nv += p.attributes.position.count; ni += p.index.count; }
+    const pos = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), idx = new Uint16Array(ni);
+    let vo = 0, io = 0;
+    for (const p of partes) {
+      pos.set(p.attributes.position.array, vo * 3);
+      uv.set(p.attributes.uv.array, vo * 2);
+      const ix = p.index.array;
+      for (let k = 0; k < ix.length; k++) idx[io + k] = ix[k] + vo;
+      vo += p.attributes.position.count; io += ix.length;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    geo.computeVertexNormals();
+    // BM99: antes era una elipse maciza con puntos oscuros (de cerca, una «sandía» a rayas). Ahora es un arbusto de hojas
+    // lanceoladas recortadas (alfa), en verdes vibrant_toon, con huecos entre hojas; semilla fija para que sea siempre igual.
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    const g = cv.getContext('2d');
+    const rh = rng(3307), verdes = ['#4fb83a', '#3a9f3c', '#6fd04a', '#2f8a3e', '#86dc52'];
+    const hoja = (ang, len, ancho, col) => {
+      g.save(); g.translate(64, 100); g.rotate(ang);
+      g.fillStyle = col; g.beginPath();
+      g.moveTo(0, 0); g.quadraticCurveTo(ancho, -len * 0.45, 0, -len); g.quadraticCurveTo(-ancho, -len * 0.45, 0, 0); g.fill();
+      g.restore();
+    };
+    for (let capa = 0; capa < 3; capa++) for (let i = 0; i < 12; i++) {
+      const ang = (i / 12 + capa * 0.04) * Math.PI * 2 * 0.5 - Math.PI * 0.5 + (rh() - 0.5) * 0.35 + (i % 2 ? 0.1 : -0.1);
+      hoja(ang * 1.0, 48 + capa * 10 + rh() * 14, 8 + rh() * 4, verdes[Math.floor(rh() * verdes.length)]);
+    }
+    const tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding;
+    const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.3, side: THREE.DoubleSide, color: 0xffffff });
+    copasMesh = new THREE.InstancedMesh(geo, mat, copasCima.length);
+    const cols = new Float32Array(copasCima.length * 3);
+    copasMesh.instanceColor = new THREE.InstancedBufferAttribute(cols, 3);
+    const m4 = new THREE.Matrix4(), qq = new THREE.Quaternion(), eje = new THREE.Vector3(0, 1, 0), scv = new THREE.Vector3(), pv = new THREE.Vector3();
+    copasCima.forEach((k, i) => {
+      m4.compose(pv.set(k.x, k.y, k.z), qq.setFromAxisAngle(eje, k.tono * Math.PI * 2), scv.set(k.s, k.h, k.s));
+      copasMesh.setMatrixAt(i, m4);
+      cols[i * 3] = 0.78 + k.tono * 0.28; cols[i * 3 + 1] = 0.86 + (1 - k.tono) * 0.16; cols[i * 3 + 2] = 0.72;
+    });
+    copasMesh.frustumCulled = false; copasMesh.castShadow = false; copasMesh.receiveShadow = true; copasMesh.name = 'flora:copas-cima';
+    scene.add(copasMesh);
   }
 
   // ---------- Pasto en tarjetas alrededor del jugador ----------
@@ -532,13 +766,20 @@ AVE.module('vegetacion', function (G) {
     pv.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
     frustum.setFromProjectionMatrix(pv);
     const cx = cam.position.x, cz = cam.position.z;
-    const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? C.sombraRadio + 12 : 0;
-    const impMax = DIST.impostor * Math.max(0.6, C.floraDist);
-    let ni = 0;
+    const sombraR = C.sombraFlora && C.sombras && C.nivel === 'alto' ? Math.min(SOMBRA_MAX, C.sombraRadio + 12) : 0;
+    // F0.3: 520 m en todas las calidades (4 tris por árbol); antes 312–416 en bajo y medio. Con el dosel por celdas (AW3, dosel.js), 250 m
+    const impMax = G.dosel && G.dosel.activo ? Math.min(DIST.impostor, G.dosel.impostorMax) : DIST.impostor;
+    const maxArb = topeArbol(cx, cz, distancias('arbol'));
+    // BM31: la malla simplificada cubre de maxArb a lodMax y el impostor solo empieza en lodMax - banda (≥ 120 m en alto/medio).
+    const lodMax = TOPE_ARBOLES[C.nivel] > 0 && C.nivel !== 'bajo' && !FL.sinLod ? Math.max(maxArb, topeArbol(cx, cz, DIST.lod * C.floraDist, TOPE_ARBOLES[C.nivel] * 3, (TOPE_TRIS[C.nivel] || Infinity) * 0.5, 1 / LOD_PASO)) : maxArb;
+    ULT.dLod = lodMax;
+    let ni = 0, nMalla = 0, nLod = 0, trisMalla = 0, dSombra = 0;
     for (const m in grupos) {
-      const g = grupos[m], P = porModelo[m], maxD = distancias(g.cat);
+      const g = grupos[m], P = porModelo[m], maxD = g.cat === 'arbol' ? maxArb : distancias(g.cat);
       const lejosMax = g.cat === 'arbol' && IMP.mesh ? impMax : maxD;
-      const banda = Math.min(12, maxD * 0.15); // fundido entre malla e impostor
+      const finMalla = g.cat === 'arbol' ? lodMax : maxD; // hasta aquí hay malla (completa o simplificada); luego, impostor
+      const banda = Math.min(12, finMalla * 0.15); // fundido entre malla e impostor
+      const medio = [];
       const dens = g.cat === 'arbol' || g.cat === 'roca' ? 1 : C.flora;
       const cerca = [], lejos = [], imp = [];
       const c0x = Math.max(0, Math.floor((cx - lejosMax - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((cx + lejosMax - X0) / CELL));
@@ -551,15 +792,18 @@ AVE.module('vegetacion', function (G) {
           if (P.rank[i] > dens) continue;
           const dx = P.pos[i * 4] - cx, dz = P.pos[i * 4 + 2] - cz, d = Math.sqrt(dx * dx + dz * dz);
           if (d > lejosMax) continue;
-          if (d <= maxD) { if (d < sombraR) cerca.push(i); else lejos.push(i); }
-          if (g.cat === 'arbol' && IMP.tile[m] && d > maxD - banda) imp.push(i);
+          if (d <= maxD) { if (d < sombraR) { cerca.push(i); if (d > dSombra) dSombra = d; } else lejos.push(i); }
+          else if (d <= finMalla && g.cat === 'arbol') medio.push(i);
+          if (g.cat === 'arbol' && IMP.tile[m] && d > finMalla - banda) imp.push(i);
         }
       }
+      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; nLod += medio.length; }
       for (const pr of g.prims) {
         llenar(pr.cerca, P, sombraR ? cerca : []);
         llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
+        if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
-        g.own.uFade.value.set(g.cat === 'arbol' && IMP.mesh ? maxD - banda : 0, g.cat === 'arbol' && IMP.mesh ? maxD : 0);
+        g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»
         if (mt.userData.fade !== undefined) mt.userData.fade = g.own.uFade.value;
       }
       if (IMP.mesh && imp.length) {
@@ -570,13 +814,42 @@ AVE.module('vegetacion', function (G) {
           IMP.aC.setXYZ(ni, P.col[i * 3], P.col[i * 3 + 1], P.col[i * 3 + 2]);
           ni++;
         }
-        IMP.mat.uniforms.uFade.value.set(maxD - banda, maxD);
+        IMP.mat.uniforms.uFade.value.set(finMalla - banda, finMalla);
       }
     }
     if (IMP.mesh) {
       IMP.mesh.geometry.instanceCount = ni; IMP.mesh.visible = ni > 0;
       IMP.aP.needsUpdate = IMP.aT.needsUpdate = IMP.aC.needsUpdate = true;
     }
+    Object.assign(ULT, { arbolesLod: nLod, arbolesMalla: nMalla, trisArboles: trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: maxArb, dSombra, sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
+  }
+  // F1.3 (AW2): distancia hasta la que van en malla los árboles para que no pasen de TOPE_ARBOLES[nivel] ni de TOPE_TRIS[nivel]
+  // en pantalla (los más cercanos; el resto pasa al impostor con el mismo fundido). Si caben todos, la distancia de la calidad.
+  const ULT = {};
+  let dTope = new Float32Array(0), tTope = new Float32Array(0), iTope = new Uint32Array(0);
+  function topeArbol(cx, cz, maxD, tope0, topeT0, fTris) {
+    const tope = tope0 || TOPE_ARBOLES[C.nivel], topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;
+    if (!(tope > 0)) return maxD;
+    if (dTope.length < total) { dTope = new Float32Array(total); tTope = new Float32Array(total); iTope = new Uint32Array(total); }
+    let n = 0, tris = 0;
+    const c0x = Math.max(0, Math.floor((cx - maxD - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((cx + maxD - X0) / CELL));
+    const c0z = Math.max(0, Math.floor((cz - maxD - Z0) / CELL)), c1z = Math.min(NCZ - 1, Math.floor((cz + maxD - Z0) / CELL));
+    for (const m in grupos) {
+      if (grupos[m].cat !== 'arbol') continue;
+      const P = porModelo[m], tm = grupos[m].tris * ft;
+      for (let iz = c0z; iz <= c1z; iz++) for (let ix = c0x; ix <= c1x; ix++) {
+        const l = P.celdas.get(ix + iz * NCX); if (!l) continue;
+        cbox.min.set(X0 + ix * CELL - 8, -20, Z0 + iz * CELL - 8); cbox.max.set(X0 + (ix + 1) * CELL + 8, 140, Z0 + (iz + 1) * CELL + 8);
+        if (!frustum.intersectsBox(cbox)) continue;
+        for (const i of l) { const d = Math.hypot(P.pos[i * 4] - cx, P.pos[i * 4 + 2] - cz); if (d <= maxD) { dTope[n] = d; tTope[n] = tm; iTope[n] = n; n++; tris += tm; } }
+      }
+    }
+    if (n <= tope && tris <= topeT) return maxD;
+    const idx = iTope.subarray(0, n).sort((a, b) => dTope[a] - dTope[b]);
+    let k = 0, t = 0;
+    while (k < n && k < tope && t + tTope[idx[k]] <= topeT) t += tTope[idx[k++]];
+    // corte a medio camino entre el último que entra y el primero que no (los que empatan en distancia no se cuelan)
+    return k ? Math.max(4, (dTope[idx[k - 1]] + dTope[idx[k]]) / 2) : 4;
   }
   function llenar(im, P, idx) {
     if (!im) return;
@@ -601,7 +874,7 @@ AVE.module('vegetacion', function (G) {
     const cols = G.fisica.colliders;
     for (const c of misColliders) { const i = cols.indexOf(c); if (i >= 0) cols.splice(i, 1); }
     misColliders.length = 0;
-    const RAD = 40;
+    const RAD = COL_RAD; // F1.5: solo troncos a menos de 40 m (en círculo)
     for (const m of ARBOLES) {
       const P = porModelo[m], inf = info[m]; if (!P || !inf || inf.tronco < 0.08) continue;
       const c0x = Math.max(0, Math.floor((px - RAD - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((px + RAD - X0) / CELL));
@@ -610,7 +883,7 @@ AVE.module('vegetacion', function (G) {
         const l = P.celdas.get(ix + iz * NCX); if (!l) continue;
         for (const i of l) {
           const x = P.pos[i * 4], z = P.pos[i * 4 + 2], s = P.pos[i * 4 + 3];
-          if (Math.abs(x - px) > RAD || Math.abs(z - pz) > RAD) continue;
+          if ((x - px) * (x - px) + (z - pz) * (z - pz) > RAD * RAD) continue;
           const c = { x, z, r: Math.max(0.2, inf.tronco * s * 0.95), h: inf.alto * s * 0.85, kind: 'arbol' };
           cols.push(c); misColliders.push(c);
         }
@@ -626,13 +899,15 @@ AVE.module('vegetacion', function (G) {
   let listoRes = null;
   const listo = new Promise(res => { listoRes = res; });
   let activo = false;
-  T.listo.then(() => Promise.all([...necesarios].map(n => cargar(n).catch(e => { console.warn('AVE flora:', e && e.message || e); return null; }))))
+  const mascara = () => usarBosque && !window[BOSQUE.global] ? G.assets.script(BOSQUE.src).catch(e => console.warn('AVE bosque:', e && e.message || e)) : null;
+  T.listo.then(() => Promise.all([mascara(), ...[...necesarios].map(n => cargar(n).catch(e => { console.warn('AVE flora:', e && e.message || e); return null; }))]))
     .then(() => {
       const lista = generar().filter(it => geos[it.m]);
       empaquetar(lista);
       for (const m in porModelo) crearMallas(m);
       try { hornearImpostores(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); }
       crearManchas();
+      crearCopasCima();
       crearPasto();
       activo = true;
       actualizar(true); actualizarPasto(true); actualizarColliders(true);
@@ -665,10 +940,209 @@ AVE.module('vegetacion', function (G) {
   // en la CPU y se repinta aquí (el renderer emite 'contexto' antes de precalentar y de volver a dibujar)
   G.on('contexto', ok => { if (ok && IMP.pintar) try { IMP.pintar(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); } });
 
+  // B1: la misma cuenta que FADE_FRAG en JS, para la prueba. Fracción que se descarta en (x, y, z) (0 = entera, 1 = nada):
+  // cono = entre la cámara y Vittata, camara = copa pegada a la cámara (BM43). Sin el fundido por distancia (uFade).
+  const ss = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+  function fundidoEn(x, y, z) {
+    const a = U.uOcluA.value, b = U.uOcluB.value;
+    const dc = Math.hypot(x - a.x, y - a.y, z - a.z), camara = dc < 1.8 ? 1 - ss(0.4, 1.8, dc) : 0;
+    let cono = 0;
+    if (a.w > 0) {
+      const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+      const t = ((x - a.x) * abx + (y - a.y) * aby + (z - a.z) * abz) / Math.max(abx * abx + aby * aby + abz * abz, 1e-4);
+      if (t > 0 && t < 1) {
+        const r = b.w * (0.25 + 0.75 * t), dl = Math.hypot(x - a.x - abx * t, y - a.y - aby * t, z - a.z - abz * t);
+        cono = (1 - ss(r * 0.4, r, dl)) * ss(0, 0.08, 1 - t) * a.w;
+      }
+    }
+    return { cono, camara };
+  }
+
   function stats() {
     const out = { fundido: U.uOcluA.value.w, total, mallas: 0, instanciasVisibles: 0, impostores: IMP.mesh ? IMP.mesh.geometry.instanceCount : 0, pasto: PASTO.mesh ? PASTO.mesh.count : 0, colliders: misColliders.length };
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
-    return out;
+    let arboles = 0;
+    for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2, copasCima: copasCima.length }, ULT);
   }
-  return { listo, stats, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+
+  // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
+  const PRESUPUESTO_TRIS = { bajo: 250e3, medio: 450e3, alto: 1.2e6 }; // MAPA_PLAN_COMPLETO.md § 3, el cuadro entero
+  function trisFlora() {
+    let t = 0;
+    for (const m in grupos) for (const p of grupos[m].prims) {
+      const g = p.lejos.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3;
+      for (const im of [p.cerca, p.lejos]) if (im && im.visible) t += im.count * n;
+      if (p.lod && p.lod.visible) t += p.lod.count * p.trisLod;
+    }
+    if (IMP.mesh && IMP.mesh.visible) t += IMP.mesh.geometry.instanceCount * 2;
+    if (manchas) t += manchas.count * 2;
+    if (copasMesh && copasMesh.visible) t += copasMesh.count * (copasMesh.geometry.index.count / 3);
+    return t;
+  }
+  // B1: (a) uniformes y cuenta en JS (en el segmento se funde, lejos de él o detrás de Vittata no); (b) los shaders: hojas y
+  // cortezas llevan el fundido y la sombra no; (c) en la GPU, con una planta real entre la cámara y una esfera en el pecho de
+  // Vittata: la planta tapa la esfera sin fundido y con fundido se ve, y lo que no está en el cono no cambia ni un píxel.
+  function fundidoTest(check, sp) {
+    const cam = R.camera, FU = FUNDIDO, r2 = v => Math.round(v * 100) / 100;
+    G.pruebas.teleport(sp.x, sp.z);
+    const pecho = new THREE.Vector3(S.pos.x, S.pos.y + FU.alto, S.pos.z);
+    cam.position.set(sp.x, S.pos.y + 4.2, sp.z + 7.5); cam.lookAt(sp.x, S.pos.y + 1.2, sp.z); cam.updateMatrixWorld();
+    actualizarFundido();
+    const A = U.uOcluA.value, B = U.uOcluB.value;
+    check('B1: uniformes del fundido por cuadro (cámara, pecho de Vittata a ' + FU.alto + ' m, radio y fuerza)',
+      A.w === FU.fuerza && Math.hypot(A.x - cam.position.x, A.y - cam.position.y, A.z - cam.position.z) < 1e-6 && pecho.distanceTo(new THREE.Vector3(B.x, B.y, B.z)) < 1e-6 && B.w === FU.radio,
+      JSON.stringify({ camara: [A.x, A.y, A.z].map(r2), fuerza: A.w, pecho: [B.x, B.y, B.z].map(r2), radio: B.w }));
+    const en = (t, lado, alto) => { // punto del segmento cámara→pecho en t, desplazado `lado` m en horizontal y `alto` en vertical
+      const p = cam.position.clone().lerp(pecho, t); return fundidoEn(p.x + lado, p.y + alto, p.z).cono;
+    };
+    const m5 = en(0.5, 0, 0), m8 = en(0.8, 0.3, 0.2), lejos = en(0.5, 3, 0), arriba = en(0.6, 0, 2.5), detras = en(1.15, 0, 0), borde = en(0.9, FU.radio * 0.5, 0);
+    check('B1: una planta en el segmento cámara→Vittata se funde (~' + Math.round((1 - FU.fuerza) * 100) + ' % visible) y una lejos de él (3 m al lado, 2,5 m arriba) o detrás de Vittata no',
+      m5 >= FU.fuerza * 0.99 && m8 > FU.fuerza * 0.6 && lejos === 0 && arriba === 0 && detras === 0 && borde > 0 && borde < m8,
+      JSON.stringify({ centro: r2(m5), cerca_de_ella: r2(m8), borde: r2(borde), lejos_3m: lejos, arriba_2_5m: arriba, detras: detras }));
+    // (b) qué shaders llevan el fundido: se compila a texto cada material de la flora con un shader de juguete
+    const prog = m => { const sh = { uniforms: {}, vertexShader: '#include <project_vertex>\n#include <lights_lambert_vertex>\n#include <fog_vertex>', fragmentShader: '#include <clipping_planes_fragment>\n#include <color_fragment>\n#include <envmap_fragment>' }; m.onBeforeCompile(sh); return sh; };
+    let conF = 0, sinF = 0, sombras = 0, sombraF = 0, comp = 0;
+    for (const m in grupos) for (const pr of grupos[m].prims) {
+      for (const im of [pr.cerca, pr.lejos, pr.lod]) if (im) { const sh = prog(im.material); comp++; if (/uOcluA/.test(sh.fragmentShader) && sh.uniforms.uOcluA === U.uOcluA) conF++; else sinF++; }
+      if (pr.cerca && pr.cerca.customDepthMaterial) { sombras++; if (/uOcluA/.test(prog(pr.cerca.customDepthMaterial).fragmentShader)) sombraF++; }
+    }
+    check('B1: todas las mallas de flora (cerca, lejos, LOD) llevan el fundido con el uniforme compartido, y la sombra no se funde',
+      comp > 0 && !sinF && sombras > 0 && !sombraF, conF + ' de ' + comp + ' materiales con fundido; ' + sombras + ' materiales de sombra, ' + sombraF + ' con fundido');
+    // (c) en la GPU: la planta que tapa a Vittata se funde
+    const rr = R.renderer, W = 192, H = 120, rt = new THREE.WebGLRenderTarget(W, H), px = new Uint8Array(W * H * 4);
+    const bola = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), new THREE.MeshBasicMaterial({ color: 0xff00ff, fog: false, toneMapped: false }));
+    const AC = G.actores, ocultos = [AC && AC.player3D && AC.player3D.root, AC && AC.companion3D && AC.companion3D.root].filter(o => o && o.visible);
+    const fu0 = FU.fuerza, flora = [];
+    for (const m in grupos) for (const pr of grupos[m].prims) for (const im of [pr.cerca, pr.lejos, pr.lod]) if (im) flora.push(im);
+    const foto = (fuerza, sinFlora) => {
+      FU.fuerza = fuerza; actualizarFundido();
+      const vis = sinFlora ? flora.map(im => { const v = im.visible; im.visible = false; return v; }) : null;
+      rr.setRenderTarget(rt); rr.render(scene, cam); rr.readRenderTargetPixels(rt, 0, 0, W, H, px); rr.setRenderTarget(null);
+      if (vis) flora.forEach((im, k) => { im.visible = vis[k]; });
+      return px.slice();
+    };
+    const bolaPx = f => { let n = 0; for (let k = 0; k < f.length; k += 4) if (f[k] > 200 && f[k + 1] < 60 && f[k + 2] > 200) n++; return n; };
+    let mejor = null;
+    // el mapa de sombras no se redibuja en estas fotos (la sombra no se funde y es la misma en las tres): más barato
+    const sombraAuto = rr.shadowMap.autoUpdate; rr.shadowMap.autoUpdate = false;
+    scene.add(bola); ocultos.forEach(o => { o.visible = false; });
+    try {
+      // las plantas más cercanas al inicio (arbustos, helechos, palmas y árboles jóvenes): Vittata detrás, la cámara al otro lado
+      const cand = [];
+      for (const m in porModelo) {
+        if (!grupos[m] || !info[m] || CAT(m) === 'roca' || CAT(m) === 'tronco' || CAT(m) === 'hojarasca') continue;
+        const PM = porModelo[m];
+        for (let i = 0; i < PM.n; i++) { const d = Math.hypot(PM.pos[i * 4] - sp.x, PM.pos[i * 4 + 2] - sp.z); if (d > 3 && d < 80) cand.push({ m, i, d }); }
+      }
+      cand.sort((a, b) => a.d - b.d);
+      for (const c of cand.slice(0, 40)) {
+        const PM = porModelo[c.m], inf = info[c.m], x = PM.pos[c.i * 4], y = PM.pos[c.i * 4 + 1], z = PM.pos[c.i * 4 + 2], s = PM.pos[c.i * 4 + 3];
+        const hc = Math.min(inf.alto * s * 0.5, 2.2);
+        if (hc < 0.9) continue; // muy baja para tapar a Vittata
+        const atras = 1.2 + Math.min(4, inf.ancho * s * 0.25), vx = x + Math.sin(0.6) * atras, vz = z + Math.cos(0.6) * atras;
+        G.pruebas.teleport(vx, vz);
+        pecho.set(vx, S.pos.y + FU.alto, vz);
+        const dir = new THREE.Vector3(x, y + hc, z).sub(pecho).normalize();
+        cam.position.copy(pecho).addScaledVector(dir, 7.5);
+        if (cam.position.y < T.height(cam.position.x, cam.position.z) + 0.9) continue;
+        cam.lookAt(pecho); cam.updateMatrixWorld();
+        bola.position.copy(pecho); bola.updateMatrixWorld();
+        actualizar(true);
+        const total = bolaPx(foto(0, true)); if (total < 40) continue;
+        const f0 = foto(0, false), sin = bolaPx(f0); if (sin > total * 0.6) continue; // la planta no la tapa lo bastante
+        const f1 = foto(fu0, false), con = bolaPx(f1);
+        // lo que no está en el cono no cambia: píxeles distintos lejos de la esfera (fuera del 40 % central)
+        let fuera = 0, nFuera = 0;
+        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+          if (Math.abs(xx - W / 2) < W * 0.2 && Math.abs(yy - H / 2) < H * 0.2) continue;
+          nFuera++; const k = (yy * W + xx) * 4;
+          if (f0[k] !== f1[k] || f0[k + 1] !== f1[k + 1] || f0[k + 2] !== f1[k + 2]) fuera++;
+        }
+        mejor = { planta: c.m + ' #' + c.i, a: Math.round(c.d) + ' m', total, sin, con, fuera, nFuera };
+        break;
+      }
+    } finally {
+      FU.fuerza = fu0; actualizarFundido(); rr.shadowMap.autoUpdate = sombraAuto;
+      scene.remove(bola); bola.geometry.dispose(); bola.material.dispose(); rt.dispose();
+      ocultos.forEach(o => { o.visible = true; });
+    }
+    const M = mejor;
+    check('B1 (GPU): una planta real que tapa a Vittata se funde: sin fundido se ve < 60 % de ella, con fundido > 70 %; fuera del cono no cambia ningún píxel',
+      M && M.con >= M.total * 0.7 && M.con > M.sin + (M.total - M.sin) * 0.5 && M.fuera === 0,
+      M ? JSON.stringify({ planta: M.planta, a: M.a, visible_sin: r2(M.sin / M.total), visible_con: r2(M.con / M.total), px_esfera: M.total, cambian_fuera: M.fuera + '/' + M.nFuera }) : 'ninguna planta cerca del inicio la tapaba');
+  }
+  async function test() {
+    const P = G.pruebas, { check, result } = P.runner();
+    await listo;
+    if (!activo) { check('Flora del mapa cargada', !FD, 'sin flora'); return result(); }
+    const st = stats(), cam = R.camera, c0 = cam.position.clone(), q0 = cam.quaternion.clone();
+    const cal0 = { nivel: C.nivel, manual: !!C.manual }, xo = S.pos.x, zo = S.pos.z;
+    const r1 = v => Math.round(v * 10) / 10;
+    try {
+      // 1. Cuántos árboles y dónde (F1.1)
+      // (sin contar la selva del tepuy de BL1, que va aparte y se comprueba abajo)
+      const nArb = st.arboles - st.tepuy;
+      check('Bosque lleno: entre 6 000 y 8 000 árboles', !usarBosque || (nArb >= 6000 && nArb <= 8000), nArb + ' árboles (' + st.bosque + ' de relleno), ' + total + ' instancias');
+      // BL1: la selva del tepuy cae en su elipse, en suelo libre y fuera de la ciudad
+      const ST = T.selvaTepuy && T.selvaTepuy.zona;
+      if (ST) {
+        let fueraT = 0, noLibreT = 0;
+        for (let i = 0; i < tepuyPos.length; i += 2) {
+          if (!(T.selvaTepuy(tepuyPos[i], tepuyPos[i + 1]) > 0)) fueraT++;
+          if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
+        }
+        // BM101 (1-nov): sin los árboles metidos en la pared de roca quedan ~390 en la meseta y las laderas; el mínimo de 800 contaba la pared
+        check('Selva del tepuy (BL1): más de 300 árboles alrededor de la ciudad (sin la pared de roca), en su elipse y en suelo libre', st.tepuy > 300 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
+        let malC = 0, grandes = 0;
+        for (const c of copasCima) {
+          if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.75 || c.y < 74 || c.s > 4.6) malC++;
+          if (c.s > 4.6) grandes++;
+        }
+        check('Sin las copas falsas de la cima (BM99: Kelvin las veía como «sandías» en hileras)', copasCima.length === 0 && !malC && !grandes, copasCima.length + ' copas');
+        let enPared = 0;
+        for (let i = 0; i < tepuyPos.length; i += 2) if (T.normalAt(tepuyPos[i], tepuyPos[i + 1]).y < 0.72) enPared++;
+        check('Ningún árbol del tepuy en la pared de roca (BM101: pendiente de más de ~44°)', enPared === 0, enPared + ' en pared de ' + st.tepuy);
+      }
+      const MB = usarBosque && window[BOSQUE.global];
+      if (MB) {
+        const mb = b64u8(MB.bits);
+        let fuera = 0, noLibre = 0;
+        for (let i = 0; i < bosquePos.length; i += 2) {
+          const x = bosquePos[i], z = bosquePos[i + 1], k = Math.floor((x - MB.x0) / MB.celda) + Math.floor((z - MB.z0) / MB.celda) * MB.nx;
+          if (!((mb[k >> 3] >> (k & 7)) & 1)) fuera++;
+          if (!libre(x, z)) noLibre++;
+        }
+        check('El relleno cae en el bosque de Kelvin (trees.psd) y en suelo libre (sin sendas, agua ni edificios)', st.bosque > 0 && !fuera && !noLibre, st.bosque + ' árboles, ' + fuera + ' fuera de la máscara, ' + noLibre + ' en suelo no libre');
+      }
+      // 2. Por calidad, a pie en el inicio y desde el aire: tope de árboles en malla, sombras a < 30 m, tris de la flora
+      const sp = MAPA.spawn || { x: xo, z: zo }, yS = T.height(sp.x, sp.z);
+      const vistas = [['a pie', [sp.x, yS + 2.2, sp.z + 6], [sp.x, yS + 1.5, sp.z - 30]], ['aire 250 m', [0, 250, 230], [0, 0, 0]], ['aire 90 m', [sp.x, yS + 90, sp.z + 90], [sp.x, yS, sp.z - 40]]];
+      for (const nivel of ['bajo', 'medio', 'alto']) {
+        if (R.setCalidad) R.setCalidad(nivel, true);
+        for (const [nom, p, mira] of vistas) {
+          cam.position.set(p[0], p[1], p[2]); cam.lookAt(mira[0], mira[1], mira[2]); cam.updateMatrixWorld();
+          actualizar(true);
+          const tr = trisFlora(), s = stats();
+          check(nivel + ', ' + nom + ': árboles en malla ≤ ' + s.tope + ' y ≤ ' + (s.topeTris / 1e3) + ' k tris, sombras < ' + SOMBRA_MAX + ' m, flora ≤ ' + (PRESUPUESTO_TRIS[nivel] / 1e3) + ' k tris',
+            s.arbolesMalla <= s.tope && s.trisArboles <= s.topeTris && s.dSombra < SOMBRA_MAX && (nivel === 'alto' || !s.sombraR) && tr <= PRESUPUESTO_TRIS[nivel],
+            s.arbolesMalla + ' en malla (' + Math.round(s.trisArboles / 1e3) + ' k tris) hasta ' + r1(s.dArbol) + ' m, ' + s.impostores + ' impostores, sombra hasta ' + r1(s.dSombra) + ' m, ' + Math.round(tr / 1e3) + ' k tris de flora');
+        }
+      }
+      // 3. Colisión: solo troncos a menos de 40 m, y todos los de ese radio (F1.5)
+      P.teleport(sp.x, sp.z); actualizarColliders(true);
+      const lejos = misColliders.filter(c => Math.hypot(c.x - S.pos.x, c.z - S.pos.z) > COL_RAD).length;
+      let cerca = 0;
+      for (const m of ARBOLES) { const PM = porModelo[m], inf = info[m]; if (!PM || !inf || inf.tronco < 0.08) continue; for (let i = 0; i < PM.n; i++) if (Math.hypot(PM.pos[i * 4] - S.pos.x, PM.pos[i * 4 + 2] - S.pos.z) <= COL_RAD) cerca++; }
+      check('Colisión: solo los troncos a menos de ' + COL_RAD + ' m, y todos ellos', !lejos && misColliders.length === cerca, misColliders.length + ' troncos sólidos de ' + cerca + ' a < ' + COL_RAD + ' m, ' + lejos + ' más lejos; ' + st.arboles + ' árboles en total');
+      // 4. B1: fundido de la flora entre la cámara y Vittata
+      fundidoTest(check, sp);
+    } finally {
+      if (R.setCalidad) { R.setCalidad(cal0.nivel); C.manual = cal0.manual; }
+      cam.position.copy(c0); cam.quaternion.copy(q0); cam.updateMatrixWorld();
+      P.teleport(xo, zo); actualizarColliders(true); actualizar(true);
+    }
+    return result();
+  }
+  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, fundidoEn, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
 });

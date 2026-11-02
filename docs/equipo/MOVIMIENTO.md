@@ -24,7 +24,9 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 | P1 | No había agarrar ni llevar. | — | Nuevo: `agarre.js` (pico, mano, brazos y patas en vuelo) con pose de carga por IK. |
 | P1 | Volar no parecía volar: sin ladeo en las curvas, alas iguales en todo y sin despegue ni aterrizaje. Con rotación XYZ, de lado la inclinación tumbaba el cuerpo de costado. | — | Resuelto: rotación YXZ, ladeo en las curvas, alas por modo y cabeza nivelada. |
 | P1 | Los pies patinaban: el paso iba a 3,4 Hz fijos a cualquier velocidad, encima del clip Walk a 1 Hz. | 1,9 m por ciclo | Resuelto: la cadencia sale de la velocidad, el clip va en fase y correr es a saltitos con aleteo. |
-| P1 | Sin IK de patas: en una ladera un pie flotaba y el otro se hundía. | 0,21 m flotando | Mejorado: 0,06 m. |
+| P1 | Sin IK de patas: en una ladera un pie flotaba y el otro se hundía. | 0,21 m flotando | Resuelto: 10 iteraciones CCD con tolerancia de 2 mm y los dedos giran con la normal del suelo. Pie de arriba en laderas de 20–35°: de 3–4,3 cm metido a < 0,6 cm; los dedos ya no se clavan (antes hasta 10 cm). |
+| P1 | En crucero las patas colgaban bajo el cuerpo, bien visibles desde la cámara de espaldas (Kelvin, 2-nov). Al pulsar Aterrizar en lo alto, las patas salían de golpe. | pies detrás y debajo del cuerpo | Resuelto: en crucero, planeo e impulso van recogidas contra el vientre con los dedos cerrados (`ANIM.recoger`); `legsDown` solo en la aproximación final (desde el pre-flare) y, cernida o despegando, a menos de 3 m del suelo (`LAND.patas`). |
+| P2 | Posarse en una rama, un techo o el nido usaba el aterrizaje general. | — | Resuelto: gesto propio de posarse (§ 6). |
 | P1 | Cámara: subía y bajaba con cada salto y no se ponía detrás. | — | Resuelto: altura estable al saltar y seguimiento perezoso. |
 | P2 | Al escuchar a un NPC no lo miraba, y al recoger algo no reaccionaba. | — | Resuelto: mira a quien habla y da un saltito feliz al recoger. |
 | P2 | Bandera de mano casi horizontal con los brazos abajo. Lo pidió el TA. | — | Resuelto: el asta queda vertical en cualquier pose. |
@@ -58,7 +60,7 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 
 - **Física:** `G.fisica.TUNING`, en `fisica.js` y documentado línea a línea. Un pack lo cambia con `jugador.fisica = { walk, jumpV, fly, landV, … }`. Techo de vuelo y red de seguridad: `flyCeil`, `techoRadio`, `techoZona`, `vientoV`, `techoAyuda`, `atasco` y `salirV`.
 - **Cámara:** `G.camara.CAM`; el pack usa `jugador.camaraAjuste`.
-- **Animación:** `ANIM` en `character.js` (zancada, cadencias, alas por modo, apertura del pico, giro de cabeza e IK).
+- **Animación:** `ANIM` en `character.js` (zancada, cadencias, alas por modo, apertura del pico, giro de cabeza, IK `footIter`/`footTol`/`footTilt`, patas recogidas `recoger` y gesto `posar`). Tiempos del aterrizaje y de posarse: `LAND` y `POSAR` en `actores.js`.
 - **Agarre:** `G.agarre.AG` (tiempos y tamaños por enganche).
 - **Boca:** `MOUTH` en `actores.js` (sílabas por segundo y letras por segundo de la voz).
 
@@ -68,7 +70,12 @@ Medido con la simulación real (`fisica.step` a 60 Hz) y con capturas (`docs/img
 - **Perchas:** `addPercha`, `suelo` y la regla de "posado" no cambian.
 - **Criadero:** el compañero es la cría nacida. criadero.js da `companero()`, `vestir(ch, info)` y el evento `companero`; actores.js la sigue. El bebé va a saltitos a 1,2 m y no vuela; el juvenil camina a 1,6 m; el adulto, a 1,9 m, vuela junto a Vittata. Si se queda a más de 25 m, reaparece detrás. Sin cría nacida no hay compañero; sin criadero en el pack, sigue el aprendiz (`docs/img/mov_companero.png`).
 
-## 6. Pendiente
+## 6. Posarse e IK de patas (2-nov)
 
-- El IK de patas deja ~7 cm de error en el pie de arriba en laderas de más de 20°. Se puede afinar con más iteraciones o con una inclinación del tobillo según la normal.
-- Un gesto de "posarse" propio en las perchas y en el nido (ahora usa el aterrizaje general).
+- **Posarse** (`POSAR` en actores.js, `posarPose` y `ANIM.posar` en character.js): al tocar una rama, poste, cuerda, baranda o cumbrera, un techo o una roca (`MOVE.posado`), una percha del diseño (`fisica.perchas`) o el borde del nido del criadero (a menos de 2,2 m: su tronco es un collider y no se pisa), en vez del asentarse general: los dedos agarran, las rodillas amortiguan, el cuerpo se mece adelante y atrás (balanceo amortiguado de 2,2 Hz) con la cola a contrapeso y las alas arriba con aleteos cortos de equilibrio (`wingMode` 'posar'), y a 0,8–1 s se acomoda las plumas. Volando hacia la percha, en el último metro las patas se estiran más con los dedos abiertos y la cabeza mira dónde se va a posar. Llegando de un salto, el gesto va al 60 %. Dura 1,1 s y se corta al caminar. `G.actores.posa` da el último (tipo y cuántos).
+- **IK de patas:** CCD de 10 iteraciones con parada a 2 mm; después las raíces de los dedos giran alrededor de la bola con la normal del suelo (hasta 0,6 rad; un lado con un salto de más de ~50°, como el borde de un techo, no cuenta; posada en algo fino, no se inclinan).
+- **Pruebas** (movementTest): «IK de patas: en una ladera de más de 20° cada pie queda a menos de 2 cm de su suelo», «Posarse: en una rama usa el gesto de posarse; en el suelo llano, el general» y «Patas en vuelo: recogidas en crucero e impulso; legsDown solo en la aproximación final».
+
+## 7. Pendiente
+
+- Posarse **dentro** del nido: hoy el nido es un tronco con collider y no se puede pisar; el gesto sale al posarse a su lado. Si se quiere que Vittata se pose encima, el criadero tendría que añadir una percha (`addPercha`) en la copa del nido (decisión de diseño).

@@ -21,7 +21,7 @@ window.AVRioVivo = function (G) {
   const nivelAgua = (x, z) => (G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity);
   const MAPA = G.terreno.mapa || window.AV_MAPA_CAP1 || null, AG = MAPA && MAPA.agua;
   const POR_BANCO = { bajo: 2, medio: 4, alto: 6 }, MAXI = 48;
-  const ACTIVO = 55, VUELO_BAJO = 4, ORILLA = 4.5, OBS_R = 7, OBS_T = 1.5, HUYE_R = 3.5, VIS = 1.6;
+  const ACTIVO = 55, VUELO_BAJO = 4, ORILLA = 4.5, OBS_R = 7, OBS_T = 1.5, HUYE_R = 3.5, VIS = 1.6, PISTA_ALTO = 8, PRECARGA = 120;
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' && en ? en : es);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const nivel = () => (G.renderer.calidad && G.renderer.calidad.nivel) || 'medio';
@@ -48,7 +48,7 @@ window.AVRioVivo = function (G) {
   ];
   const espDe = id => ESPECIES.find(e => e.id === id);
   const vistos = () => (Array.isArray(S.peces) ? S.peces : (S.peces = []));
-  const F = { prueba: false, t: 0, quieta: 0, visor: 0, visorOn: false, obs: {}, mirando: '', avisado: false };
+  const F = { prueba: false, t: 0, quieta: 0, visor: 0, visorOn: false, obs: {}, mirando: '', avisado: false, pistaDada: false, pistaT: 0, calentado: false, bancoCerca: Infinity };
   let oyenteTest = null;
   G.on('aprendizaje', d => { if (oyenteTest) oyenteTest(d); });
 
@@ -209,8 +209,10 @@ window.AVRioVivo = function (G) {
     const cuenta = {}; for (const e of ESPECIES) cuenta[e.id] = 0;
     const nadando = M.swimming;
     let cerca = null, dCerca = Infinity;
+    F.bancoCerca = Infinity;
     for (const b of bancos) {
       const db = Math.hypot(b.x - S.pos.x, b.z - S.pos.z);
+      if (db < F.bancoCerca) F.bancoCerca = db;
       if (db > ACTIVO + 6) continue;
       // nadando cerca, el banco se aparta de Vittata; si no, vuelve a su sitio
       if (nadando && db < HUYE_R + b.ra) { const h = db || 1, enc = db < 0.3; b.huye.x += (enc ? b.dx : (b.x - S.pos.x) / h) * dt * 3; b.huye.z += (enc ? b.dz : (b.z - S.pos.z) / h) * dt * 3; } // encima del banco: se apartan a lo largo del cauce
@@ -235,11 +237,25 @@ window.AVRioVivo = function (G) {
       }
     }
     const ver = verDe();
+    // Precarga: a unos 120 m de un banco se dibuja una instancia fuera del mundo un solo cuadro; el programa y los buffers se compilan lejos, no al llegar
+    const calienta = !F.calentado && F.bancoCerca < PRECARGA; if (calienta) F.calentado = true;
     for (const e of ESPECIES) {
       const im = mallas[e.id]; im.count = cuenta[e.id]; im.visible = ver && cuenta[e.id] > 0;
+      if (calienta && im.count === 0) { dummy.position.set(S.pos.x, -500, S.pos.z); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix(); im.setMatrixAt(0, dummy.matrix); im.count = 1; im.visible = true; }
       im.instanceMatrix.needsUpdate = true; im.geometry.attributes.iFase.needsUpdate = true;
     }
     return { cerca, dCerca };
+  }
+
+  // Pista del visor: la primera vez que se vuela a menos de 8 m del agua sin que el visor esté encendido (aún muy alto), un aviso corto
+  function pistaVisor(dt, busy) {
+    if (F.pistaDada || F.visorOn || busy || !verDe() || !M.flying || M.swimming || vistos().length > 0) return;
+    F.pistaT -= dt; if (F.pistaT > 0) return; F.pistaT = 0.3;
+    const l = aguaCerca(2.5), h = S.pos.y - l;
+    if (l > -Infinity && h >= VUELO_BAJO && h < PISTA_ALTO) {
+      F.pistaDada = true;
+      try { G.ui.toast(L('Baja a 4 m del agua o quédate quieta en la orilla para mirar los peces con el visor.', 'Fly down to within 4 m of the water, or stay still on the bank, to look for fish with the viewer.'), 4200); } catch (err) { /* sin HUD */ }
+    }
   }
 
   // ---------- Bucle ----------
@@ -259,6 +275,7 @@ window.AVRioVivo = function (G) {
       if (!vistos().includes(id)) { F.obs[id] = (F.obs[id] || 0) + dt; if (F.obs[id] >= OBS_T) observar(id); }
     }
     for (const id in F.obs) if (id !== F.mirando) F.obs[id] = Math.max(0, F.obs[id] - dt * 0.5);
+    pistaVisor(dt, busy);
     // HUD
     const mostrar = F.visorOn && !G.quiet && !busy;
     hud.classList.toggle('on', mostrar);
@@ -318,6 +335,29 @@ window.AVRioVivo = function (G) {
       ok('Volando bajo sobre el río (1,8 m), el visor se enciende', F.visorOn, 'visor ' + F.visor.toFixed(2));
       ponEn(b.x, lvl + 12, b.z, { flying: true, speed: 4 }); simular(0.6);
       ok('Volando alto (12 m), el visor se apaga', !F.visorOn);
+      // precarga: a menos de 120 m de un banco, un cuadro con una instancia fuera del mundo en cada malla (compila el programa lejos del agua)
+      F.calentado = false; ponEn(b.x + 100, lvl + 30, b.z, { flying: true, speed: 4 }); paso(0.05, false);
+      ok('Precarga del río a ~120 m: las 3 mallas se dibujan un cuadro con una instancia oculta', F.calentado && Object.values(mallas).every(m => m.visible && m.count >= 1), Object.values(mallas).map(m => m.count).join(','));
+      ponEn(b.x + 400, lvl + 30, b.z, { flying: true, speed: 4 }); paso(0.05, false);
+      ok('Y se retiran al siguiente cuadro', Object.values(mallas).every(m => m.count === 0 && !m.visible));
+      // pista del visor: la primera vez a 6 m del agua (sin visor aún) sale un aviso, una sola vez, en el idioma del jugador
+      {
+        const toast0 = G.ui.toast, textos = [], idioma0 = G.aula && G.aula.aj && G.aula.aj.idioma; G.ui.toast = t => { textos.push(String(t)); };
+        try {
+          F.pistaDada = false; F.pistaT = 0; S.peces = [];
+          ponEn(b.x, lvl + 6, b.z, { flying: true, speed: 4 }); simular(0.8); simular(1);
+          ok('Pista del visor: a 6 m del agua, una sola vez, «baja a 4 m» (ES)', textos.length === 1 && /4 m/.test(textos[0]) && /quieta/.test(textos[0]), textos.join(' | '));
+          if (G.aula && G.aula.aj) {
+            G.aula.aj.idioma = 'en'; textos.length = 0; F.pistaDada = false; F.pistaT = 0; simular(0.8);
+            ok('Pista del visor en inglés (idioma en)', textos.length === 1 && /viewer/.test(textos[0]) && !/quieta/.test(textos[0]), textos.join(' | '));
+            G.aula.aj.idioma = idioma0;
+          }
+          F.pistaDada = false; F.pistaT = 0; textos.length = 0; ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.8);
+          ok('Con el visor ya encendido (a 1,8 m) no hay pista', textos.length === 0);
+          F.pistaDada = false; F.pistaT = 0; S.peces = ['dajao']; ponEn(b.x, lvl + 6, b.z, { flying: true, speed: 4 }); simular(0.8);
+          ok('Quien ya observó un pez no recibe la pista', textos.length === 0);
+        } finally { G.ui.toast = toast0; if (G.aula && G.aula.aj) G.aula.aj.idioma = idioma0; S.peces = []; F.pistaDada = true; }
+      }
       // orilla: el punto seco más cercano al banco, de pie y quieta
       let orilla = null;
       for (let r = 1; r < 8 && !orilla; r += 0.5) for (const [u, v] of OFF8.slice(1)) { const x = b.x + u * r, z = b.z + v * r; if (!mojado(x, z, 0.01) && H(x, z) - lvl < 2.5) { orilla = { x, z }; break; } }

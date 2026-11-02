@@ -127,7 +127,7 @@
       { id: 'bosque', cria: { es: 'Musgo', en: 'Moss' }, rareza: 'diario', nombre: { es: 'Cápsula del bosque', en: 'Forest capsule' },
         lema: { es: 'Musgo y hojas de los cuatro pisos del bosque.', en: 'Moss and leaves from the four forest layers.' },
         aspecto: { patron: 'hojas', a: '#4f8f3a', b: '#a6d46a', brillo: 0 },
-        obtener: { texto: { es: 'Completa «La ruta de la gota».', en: 'Finish "The path of the drop".' }, cap1: { mision: 'educativa' }, defecto: { fichas: 3 } },
+        obtener: { texto: { es: 'Completa «La ruta de la gota».', en: 'Finish "The path of the drop".' }, cap1: { mision: 'educativa' }, ep2: { mision: 'casa' }, defecto: { fichas: 3 } }, // ep2: el nido de M3 es el hito de las cavidades
         traits: {
           bebe: [{ nuevo: 'cascaron_gorro' }, { slot: 'neck', id: 'panuelo', color: '#2f8f4e', style: 'liso' }],
           juvenil: [{ nuevo: 'binoculares', respaldo: { slot: 'eyes', id: 'lentes', color: '#2b2b2b', style: 'redondas' } }],
@@ -222,11 +222,11 @@
     real: [
       { id: 'aviarios', momento: 'inicio', estado: 'verificado', fuente: 'USFWS (2026)', url: 'https://www.fws.gov/sites/default/files/documents/2026-02/202602_puerto-rican-parrot-info-doc-spanish.pdf',
         texto: { es: 'Hay dos aviarios de cotorras: Iguaca, en El Yunque (USFWS), y José Vivaldi, en Río Abajo (DRNA). Allí nacen y se crían cotorras para liberarlas en el bosque.', en: 'There are two parrot aviaries: Iguaca in El Yunque (USFWS) and José Vivaldi in Río Abajo (DRNA). Parrots hatch and grow there to be released into the forest.' } },
-      { id: 'huevo_blanco', momento: 'abrir', estado: 'parcial', fuente: 'USDA Forest Service (enlace por reconfirmar)', url: '',
-        nota: 'Dato general de los loros; pedir la cita al DRNA o al USFWS antes de publicarlo como ficha.',
+      { id: 'huevo_blanco', momento: 'abrir', estado: 'parcial', fuente: '—', url: '',
+        nota: 'Dato general de los loros; pedir la cita al DRNA o al USFWS antes de publicarlo como ficha.', // BM120 y decisión de Kelvin (2-nov): fantasía; ver docs/equipo/FUENTES_CAP1.md
         texto: { es: 'Los huevos de la cotorra puertorriqueña son blancos. Las cápsulas de colores son fantasía; el huevo de adentro es como el de verdad.', en: 'Puerto Rican parrot eggs are white. The colorful capsules are make-believe; the egg inside is like the real one.' } },
-      { id: 'incubacion', momento: 'incubar', estado: 'parcial', fuente: 'USDA Forest Service; Encyclopedia.com', url: 'https://encyclopedia.com/environment/science-magazines/puerto-rican-parrot',
-        nota: 'Las fuentes dan de 24 a 28 días (unos 26) y de 2 a 4 huevos. Confirmar con el DRNA.',
+      { id: 'incubacion', momento: 'incubar', estado: 'verificado', fuente: 'Wilson Bulletin 107(3), 1995; USGS, «Successful nesting behavior of Puerto Rican parrots»; El Yunque', url: 'https://sora.unm.edu/sites/default/files/journals/wilson/v107n03/p0518-p0529.pdf',
+        nota: '26 días (Wilson Bulletin 1995); la hembra incuba y el macho le trae comida (USGS; El Yunque).', // BM120: ver docs/equipo/FUENTES_CAP1.md
         texto: { es: 'La hembra calienta los huevos unos 26 días. Mientras tanto, el macho le trae comida.', en: 'The female keeps the eggs warm for about 26 days while the male brings her food.' } },
       { id: 'pichones', momento: 'nacer', estado: 'verificado', fuente: 'USFWS (2026)', url: 'https://www.fws.gov/sites/default/files/documents/2026-02/202602_puerto-rican-parrot-info-doc-spanish.pdf',
         texto: { es: 'Los aviarios también atienden a pichones silvestres heridos y les dan refugio de emergencia.', en: 'The aviaries also care for injured wild chicks and give them emergency shelter.' } },

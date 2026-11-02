@@ -46,7 +46,8 @@
   // La Voz del transmisor y el Narrador no llevan la cara de ningún personaje (CAP1_PENDIENTE P0-2): el guion no revela quién habla
   // por el transmisor y la propia Vittata dice «esa voz es de ahora». La caja de diálogo recorta el retrato con
   // translate(-8%, 35%) scale(1.6), así que lo que se ve es el cuadro (0.24-0.86, 0-0.59) del SVG: todo va centrado en (55, 30).
-  // [KELVIN-4] Cara definitiva de la Voz (silueta, onda o ninguna) y si es alguien del pacto de los 36: decide Kelvin.
+  // [KELVIN-4] Decidido por Kelvin (26-oct): la Voz son los dos guardianes extintos (martinicana y violacea). En el cap. 1 no se
+  // revela: se queda el retrato neutro. Kelvin 2-nov: son dos voces distintas, Mara y Vela, que se unen al final (se revelan en el cap. 5).
   const svgURI = cuerpo => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' + cuerpo + '</svg>');
   const RETRATO_VOZ = svgURI(
     '<style>.o{fill:none;stroke:#ffd27a;stroke-linecap:round}' +
@@ -72,12 +73,13 @@
       version: 5,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
+      // guardianIntro: el Guardián ya se presentó antes de construir (KELVIN-2, decisión del equipo 30-oct); false en las partidas viejas.
       // marcador: cronómetro, puntuación y final del capítulo (src/game/marcador.js); null en las partidas viejas.
       // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces'],
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
-        refuge: null, builds: [], guardianMet: false, benchUnlocked: false, transmitterOn: false, boatPlan: false,
+        refuge: null, builds: [], guardianMet: false, guardianIntro: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, gearRoof: false,
         indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [],
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
@@ -131,6 +133,9 @@
     // Lugares descubiertos (src/game/lugares.js): «Descubriste: <lugar>» al llegar a un POI con nombre del mapa. Fuera: Iguaca (es un
     // personaje), las paradas de aprendizaje y los grupos de la escena de Kelvin (nombres internos de assets/data/mapa_cap1.js).
     descubrir: { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] },
+    // Los 14 asentamientos de la escena de Kelvin con nombre propio, rótulo «Bienvenido a …», línea del Diario y glifo en el mapa
+    // (AY1; nombres de MAPA_PLAN_COMPLETO § 5, [KELVIN] K2). Cuentan como lugares aunque omitir quite /^kelvin_/; se baja en el primer gesto.
+    asentamientos: 'content/cap1/asentamientos.js',
     // Fauna que reacciona (src/game/fauna.js, BOSQUE_VIVO_DISENO ficha 2): datos y álbum en este archivo, que se baja al cargar la fauna.
     // S.fauna: ids de los animales ya observados (claves del guardado).
     faunaDatos: 'content/cap1/fauna.js',
@@ -138,7 +143,7 @@
     dialogos: {
       datos: () => window.AV_DIALOGOS_CAP1,
       // La Voz y el Narrador llevan retratos neutros (arriba): ya no comparten la cara del Guardián ni la de Vittata
-      retratos: { Vittata: 'assets/vittata.png', Iguaca: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
+      retratos: { Vittata: 'assets/vittata.png', Iguaca: 'assets/luma.png', 'Guardián': 'assets/guardian.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', Voz: RETRATO_VOZ, Narrador: RETRATO_NARRADOR },
       retratoDefecto: 'assets/vittata.png',
       emociones: { feliz: 'happy', triste: 'sad', sorpresa: 'surprised', idea: 'idea', enojo: 'angry' },
     },

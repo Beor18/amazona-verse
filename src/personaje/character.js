@@ -26,15 +26,45 @@
     walkAmp: [0.35, 0.75],    // amplitud de la cadera (rad) de paso lento a paso rápido
     runAmp: 0.85,
     bobWalk: 0.05, bobRun: 0.12, // rebote del cuerpo (unidades del modelo)
+    // Patas recogidas en el aire (rad; peso = en el aire y sin legsDown). Una cotorra en crucero lleva las patas pegadas al
+    // vientre, con los dedos cerrados: muslo adelante, rodilla y tobillo muy doblados (2-nov, Kelvin: «las patas cuelgan»).
+    // Antes (+0,55 / -0,7 / +0,3) los pies quedaban colgando detrás del cuerpo, a la vista desde la cámara de espaldas.
+    // salto: peso del recogido en un salto o un planeo a pie (no volando): a medias, para que el saltito no se vea encogido.
+    recoger: { cadera: 0.6, rodilla: -2.0, tobillo: 0.6, dedos: 0.7, salto: 0.45 },
     // Alas por modo: [apertura media, amplitud, frecuencia rad/s, barrido (-X adelanta)]; la bajada es más rápida que la subida
     wings: {
       idle: [0, 0.05, 2.2, 0], walk: [0.14, 0.05, 11, 0], hop: [0.55, 0.35, 0, 0],
       fly: [1.0, 0.55, 11, 0], flap: [0.95, 0.7, 18, 0], hover: [1.0, 0.62, 17, -0.15], takeoff: [0.95, 0.8, 15, -0.05],
-      glide: [1.25, 0.05, 9, 0], land: [1.15, 0.22, 20, -0.55],
+      glide: [1.25, 0.05, 9, 0],
+      // Bajando (1-nov, Kelvin: «una cotorra no baja de esa manera»): alas levantadas en V (diedro), aleteo corto y lento
+      descend: [1.75, 0.15, 7, 0.35],
+      // Aterrizaje por etapas (ver ANIM.land): pre-flare con las alas abiertas y algo adelantadas, casi quietas (frena planeando);
+      // flare con aletazos hondos y rápidos, alas adelante; al posarse, dos o tres aleteos cortos de equilibrio antes de plegarlas
+      preflare: [1.4, 0.06, 6, -0.2], land: [1.3, 0.42, 17, -0.22], settle: [0.7, 0.18, 24, -0.1],
+      // Posarse en una percha (ANIM.posar): alas arriba y abiertas con aleteos cortos de equilibrio mientras se mece
+      posar: [1.5, 0.32, 19, -0.12],
     },
+    // Aterrizaje (rad; el juego pone landPre, landFlare, landReach y landSettle, 0..1). Cola (espalda1001, +X sube): baja un
+    // poco en el pre-flare, más en el flare y se abre en abanico (escala de su hueso); al posarse da un golpe arriba de equilibrio.
+    // Patas adelante en el último metro: muslo adelante, rodilla estirada, dedos abiertos para agarrar. Alas ahuecadas en el
+    // flare: codo y mano doblados. Al tocar: rodillas que amortiguan y bajan el cuerpo (modelo) y vuelven en landSettle.
+    land: { colaPre: -0.2, colaFlare: -0.45, colaAsentar: 0.35, abanico: 0.45, cadera: 0.25, rodilla: 0.35, tobillo: -0.2, dedos: 0.5,
+      codo: 0.15, mano: 0.2, cabeza: 0.3, amortigua: { cadera: 0.3, rodilla: 0.5, tobillo: 0.35, bajar: 0.05 } },
+    // Posarse (perchas, techos, nido; el juego pone posarAprox 0..1 en el aire, posarT s desde que tocó, posarFuerza y
+    // posarBalanceo -1..1). alcance: en el último metro, además del aterrizaje general, cadera más adelante, rodilla más
+    // estirada, dedos bien abiertos, cola abajo y cabeza mirando a la percha. Al tocar: dedos que agarran (agarre), rodillas que
+    // amortiguan (amortigua, bajar en modelo), pecho que se mece con el balanceo (pecho) y cola a contrapeso (cola), cabeza
+    // estable (cabeza) y, al final (acomodo: de 0,78 a 1,05 s), un temblor corto de alas y pecho para acomodarse las plumas.
+    posar: { alcance: { cadera: 0.22, rodilla: 0.15, dedos: 0.45, cola: -0.2, cabeza: 0.25 }, agarre: 0.75,
+      amortigua: { cadera: 0.4, rodilla: 0.65, tobillo: 0.45, bajar: 0.07 }, pecho: 0.16, cola: 0.5, cabeza: 0.7,
+      acomodo: [0.78, 1.05], plumas: 0.1 },
     mouthMax: 0.4,            // apertura máxima del pico al hablar (rad; 0,35 ≈ 5,5 cm): algo más para que se lea de lejos
     lookMax: [1.05, 0.45],    // giro máximo de la cabeza al mirar a alguien (lado, arriba/abajo)
     footIK: 0.32,             // corrección máxima de cada pata en pendiente (unidades del modelo)
+    // IK de patas: iteraciones CCD y tolerancia (m) con las que se para antes; inclinación máxima del pie (dedos) según la
+    // normal del suelo (rad) y paso (m) con que se mide la normal. Con 3 iteraciones el pie de arriba quedaba 3–4 cm metido en
+    // laderas de 20–35°; con 10 y la tolerancia, < 0,5 cm, y los dedos siguen la ladera en vez de clavarse en ella.
+    footIter: 10, footTol: 0.002, footTilt: 0.6, footNormalStep: 0.12,
     // Posada en algo fino: cadera, patas juntas, rodilla, tobillo, dedos cerrados (rad) y cuánto baja el cuerpo (modelo)
     perch: { cadera: 0.15, juntas: 0.08, rodilla: 0.45, tobillo: 0.35, dedos: 0.6, bajar: 0.04 },
     agachada: { espalda: 1.0, pecho: 0.45, cabeza: 0.4, cadera: 0.45, rodilla: 0.7, tobillo: 0.5, bajar: 0.1 }, // de 1,75 a 0,81 m
@@ -80,7 +110,8 @@
   function normalizeLook(look) {
     const out = defaultLook();
     if (!look) return out;
-    if (SPECIES[look.species]) out.species = look.species;
+    // Las especies con piel (pieles.js) no están en SPECIES (eso es el tinte) pero se quedan en el look: si no, applyLook las devolvía a vittata
+    if (SPECIES[look.species] || (window.AVE && window.AVE.pieles && window.AVE.pieles.tiene(look.species))) out.species = look.species;
     if (look.accessories && typeof look.accessories === 'object') {
       out.accessories = {};
       for (const slot of SLOTS) {
@@ -448,8 +479,10 @@
       mk('manoL', 'armL2', [0.66, 0.688, 0.05]); mk('manoR', 'armL2001', [-0.66, 0.688, 0.05]);
       mk('pico', 'cabeza001', [0, 0.9, 0.4]); mk('pecho', 'espalda2', [0, 0.5, 0.25]); mk('patas', 'espalda1', [0, 0.1, 0.08]);
       // Pies (bola del pie) para el IK de patas
+      // y raíces de los dedos (hijos del tarso, todas nacen en la bola): se giran con la normal del suelo sin mover la bola
       this.feet = [['pieL4', ['pieL1', 'pieL2', 'pieL3']], ['pieL4001', ['pieL1001', 'pieL2001', 'pieL3001']]]
-        .filter(([f, ch]) => this.bones[f] && ch.every(n => this.bones[n])).map(([f, ch]) => ({ eff: this.bones[f], chain: ch.map(n => this.bones[n]) }));
+        .filter(([f, ch]) => this.bones[f] && ch.every(n => this.bones[n]))
+        .map(([f, ch]) => { const toes = this.bones[ch[2]].children.filter(o => o.isBone); return { eff: this.bones[f], chain: ch.map(n => this.bones[n]), toes, toeQ: toes.map(() => new THREE.Quaternion()) }; });
       // Signos medidos de la cabeza: girar en +Y lleva el pico hacia ±X; inclinar en +X lo baja o lo sube
       const head = this.bones.cabeza, tip = A.pico;
       this.headSign = { yaw: 1, pitch: 1 };
@@ -589,6 +622,8 @@
         this.rot(L, "z", 0.35 * env); this.rot(R, "z", -0.35 * env);
       }
       this.locomotion(dt, k);
+      this.landPose(k);
+      this.posarPose(k);
       this.face(dt);
       this.emotePose(dt);
       this.actPose(dt);
@@ -762,7 +797,9 @@
       this.rW = (this.rW || 0) + ((run && !this.swimming ? 1 : 0) - (this.rW || 0)) * k;
       this.aW = (this.aW || 0) + ((this.airborne ? 1 : 0) - (this.aW || 0)) * k;
       this.ldW = (this.ldW || 0) + ((this.airborne ? this.legsDown || 0 : 0) - (this.ldW || 0)) * k;
-      const w = this.gW, rw = this.rW, ld = this.ldW, aw = this.aW * (1 - ld);
+      // tW: patas recogidas (volando del todo; saltando, a medias)
+      this.tW = (this.tW || 0) + ((this.airborne ? (this.flying ? 1 : ANIM.recoger.salto) : 0) - (this.tW || 0)) * k;
+      const w = this.gW, rw = this.rW, ld = this.ldW, aw = this.tW * (1 - ld);
       const ph = this.ph || 0, s = Math.sin(ph), c = Math.cos(ph);
       const sp01 = this.speed != null ? Math.min(1, this.speed / ANIM.walkRef) : 1;
       const A = ((ANIM.walkAmp[0] + (ANIM.walkAmp[1] - ANIM.walkAmp[0]) * sp01) * (1 - rw) + ANIM.runAmp * rw) * w;
@@ -771,10 +808,13 @@
         const sgE = sg * (1 - rw) + rw;   // caminar: piernas alternas; correr: juntas
         const sw = s * sgE, lift = Math.max(0, c * sgE) * w * (0.85 + 0.3 * rw);
         // Nadando el cuerpo va tumbado: las patas se adelantan ~1 rad para quedar debajo y patalear en el agua
-        this.rot(B[hip], "x", -A * sw + aw * 0.55 - ld * 0.5 - (this.swimming && !this.diving ? 1.0 : 0));
-        this.rot(B[knee], "x", -lift * 0.95 - aw * 0.7 - ld * 0.2);
-        this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * 0.3 + ld * 0.3);
+        const RC = ANIM.recoger;
+        this.rot(B[hip], "x", -A * sw + aw * RC.cadera - ld * 0.5 - (this.swimming && !this.diving ? 1.0 : 0));
+        this.rot(B[knee], "x", -lift * 0.95 + aw * RC.rodilla - ld * 0.2);
+        this.rot(B[ankle], "x", lift * 0.45 + A * sw * 0.25 + aw * RC.tobillo + ld * 0.3);
       }
+      // Dedos cerrados con las patas recogidas (con calzado se quedan en su pose dentro del zapato)
+      if (aw > 0.01 && !(this.fitAdj && this.fitAdj.toes)) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', ANIM.recoger.dedos * aw);
       if (B.espalda1) {
         this.rot(B.espalda1, "x", (run ? 0.2 : 0.08) * w + this.aW * 0.12);
         this.rot(B.espalda1, "z", s * 0.07 * w * (1 - rw));
@@ -782,10 +822,12 @@
       if (B.cabeza) {
         this.rot(B.cabeza, "x", -((run ? 0.14 : 0.05) + Math.cos(ph * 2) * 0.04) * w);
         this.rot(B.cabeza, "z", -s * 0.05 * w * (1 - rw));
-        // Volando, la cabeza se queda casi nivelada aunque el cuerpo se incline o se ladee (estabiliza la mirada, como las aves)
-        if (this.flying) {
+        // Volando, la cabeza se queda casi nivelada aunque el cuerpo se incline o se ladee (estabiliza la mirada, como las aves);
+        // al posarse sigue estabilizada mientras el cuerpo se endereza (sin salto de la cabeza al tocar el suelo)
+        this.hsW = (this.hsW || 0) + ((this.flying || this.landSettle > 0 || this.posarG > 0.05 ? 1 : 0) - (this.hsW || 0)) * k;
+        if (this.hsW > 0.01) {
           const r = this.root.rotation;
-          this.rot(B.cabeza, "x", -r.x * 0.55 * this.headSign.pitch); this.rot(B.cabeza, "z", -r.z * 0.5);
+          this.rot(B.cabeza, "x", -r.x * 0.55 * this.headSign.pitch * this.hsW); this.rot(B.cabeza, "z", -r.z * 0.5 * this.hsW);
         }
       }
       if (B.espalda1001) this.rot(B.espalda1001, "z", Math.sin(ph + 1) * 0.12 * w);
@@ -807,6 +849,70 @@
       // Rebote del cuerpo: caminando, dos subidas por ciclo (una por pie); corriendo, un saltito por ciclo con las patas recogidas
       const bob = (1 - Math.cos(ph * 2)) * 0.5 * ANIM.bobWalk * (1 - rw) + Math.max(0, c) * ANIM.bobRun * rw;
       this.root.position.y += bob * w * this.root.scale.y;
+    }
+    // Aterrizaje por etapas (ANIM.land; actores.js da los pesos según la altura y el tiempo desde que tocó el suelo).
+    // Ejes medidos en el rig: cola (espalda1001) +X sube; dedos de las patas +X cierran; muslo -X adelanta; rodilla -X dobla.
+    landPose(k) {
+      const B = this.bones, L = ANIM.land, air = this.airborne && !this.swimming;
+      const sm = (key, v) => (this[key] = (this[key] || 0) + ((v || 0) - (this[key] || 0)) * k);
+      const pre = sm('lpW', air ? this.landPre : 0), fl = sm('lfW', air ? this.landFlare : 0), re = sm('lrW', air ? this.landReach : 0);
+      const se = sm('lsW', !air ? this.landSettle : 0), golpe = Math.sin((1 - se) * Math.PI) * (se > 0.01 ? 1 : 0);
+      const cola = B.espalda1001;
+      if (cola) {
+        if (!this.colaS) this.colaS = cola.scale.clone();
+        this.rot(cola, 'x', L.colaPre * pre * (1 - fl) + L.colaFlare * fl + L.colaAsentar * golpe);
+        const ab = 1 + L.abanico * Math.max(pre * 0.6, fl, se * 0.5);
+        cola.scale.set(this.colaS.x * ab, this.colaS.y, this.colaS.z * ab);
+      }
+      if (re > 0.01 || se > 0.01) {
+        const A = L.amortigua;
+        for (const [hip, knee, ankle] of [['pieL1', 'pieL2', 'pieL3'], ['pieL1001', 'pieL2001', 'pieL3001']]) {
+          if (!B[hip]) continue;
+          this.rot(B[hip], 'x', -L.cadera * re - A.cadera * se); this.rot(B[knee], 'x', L.rodilla * re - A.rodilla * se);
+          this.rot(B[ankle], 'x', L.tobillo * re + A.tobillo * se);
+        }
+        if (!(this.fitAdj && this.fitAdj.toes)) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', -L.dedos * re);
+        this.root.position.y -= A.bajar * se * this.root.scale.y;
+      }
+      if (fl > 0.01) {
+        for (const n of ['armL2', 'armL2001']) if (B[n]) this.rot(B[n], 'x', L.codo * fl);
+        for (const n of ['armL3', 'armL3001']) if (B[n]) this.rot(B[n], 'x', L.mano * fl);
+        // La cabeza mira al sitio donde se va a posar aunque el cuerpo se eche atrás
+        if (B.cabeza) this.rot(B.cabeza, 'x', -this.root.rotation.x * L.cabeza * fl * this.headSign.pitch);
+      }
+    }
+    // Posarse en una percha, un techo o el nido (ANIM.posar; actores.js da posarAprox, posarT, posarFuerza y posarBalanceo).
+    // posarG (0..1): peso del gesto en este cuadro (se apaga al caminar y en los últimos 0,25 s). Ejes como en landPose.
+    posarPose(k) {
+      const B = this.bones, P = ANIM.posar, air = this.airborne && !this.swimming, t = this.posarT;
+      const ap = this.paW = (this.paW || 0) + ((air ? (this.posarAprox || 0) * (this.landReach || 0) : 0) - (this.paW || 0)) * k;
+      const dur = this.posarDur || 1.1, on = t != null && t >= 0 && !air && !this.swimming;
+      const g = this.posarG = on ? (this.posarFuerza || 1) * (1 - (this.gW || 0)) * clamp((dur - t) / 0.25, 0, 1) : 0;
+      const zapatos = this.fitAdj && this.fitAdj.toes, cola = B.espalda1001;
+      if (ap > 0.01) {
+        const A = P.alcance;
+        for (const [hip, knee] of [['pieL1', 'pieL2'], ['pieL1001', 'pieL2001']]) if (B[hip]) { this.rot(B[hip], 'x', -A.cadera * ap); this.rot(B[knee], 'x', A.rodilla * ap); }
+        if (!zapatos) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', -A.dedos * ap);
+        if (cola) this.rot(cola, 'x', A.cola * ap);
+        if (B.cabeza) this.rot(B.cabeza, 'x', A.cabeza * ap * this.headSign.pitch);
+      }
+      if (g < 0.01) return;
+      const A = P.amortigua, golpe = t < 0.09 ? t / 0.09 : Math.exp(-(t - 0.09) * 6), agarra = clamp(t / 0.07, 0, 1);
+      const bal = this.posarBalanceo || 0;
+      for (const [hip, knee, ankle] of [['pieL1', 'pieL2', 'pieL3'], ['pieL1001', 'pieL2001', 'pieL3001']]) if (B[hip]) {
+        this.rot(B[hip], 'x', -A.cadera * golpe * g); this.rot(B[knee], 'x', -A.rodilla * golpe * g); this.rot(B[ankle], 'x', A.tobillo * golpe * g);
+      }
+      this.root.position.y -= A.bajar * golpe * g * this.root.scale.y;
+      if (!zapatos) for (const n of TOES) if (B[n]) this.rot(B[n], 'x', P.agarre * agarra * g);
+      if (B.espalda1) this.rot(B.espalda1, 'x', P.pecho * bal);
+      if (cola) this.rot(cola, 'x', P.cola * bal + 0.2 * golpe * g);
+      if (B.cabeza) this.rot(B.cabeza, 'x', -P.cabeza * bal * this.headSign.pitch);
+      const [a0, a1] = P.acomodo;
+      if (t > a0 && t < a1) {
+        const e = Math.sin((t - a0) / (a1 - a0) * Math.PI) * g, q = Math.sin(t * 60) * e * P.plumas;
+        if (B.armL1 && B.armL1001) { this.rot(B.armL1, 'z', 0.12 * e + q); this.rot(B.armL1001, 'z', -0.12 * e - q); }
+        if (B.espalda2) this.rot(B.espalda2, 'y', q * 0.6);
+      }
     }
     // Posada en algo fino (posado = 'fino': rama, baranda, poste, cumbrera): agachada, patas juntas y dedos cerrados agarrando,
     // con un leve balanceo para mantener el equilibrio. Con calzado los dedos no se tocan (siguen en su pose dentro del zapato).
@@ -862,10 +968,12 @@
       sv.length = 0;
     }
     // Lleva el punto mundial de `eff` hacia `target` girando la cadena (de la raíz al extremo); w 0..1, maxA rad por hueso
-    _ccd(chain, eff, target, w, iters, maxA) {
+    // tol (m): se para en cuanto el extremo queda a menos de tol del objetivo (más iteraciones sin gastar de más)
+    _ccd(chain, eff, target, w, iters, maxA, tol) {
       if (w < 0.01) return;
       for (const b of chain) this.ikSaved.push([b, b.quaternion.clone()]);
       for (let it = 0; it < iters; it++) {
+        if (tol && eff.getWorldPosition(_ep).distanceToSquared(target) < tol * tol) break;
         for (let i = chain.length - 1; i >= 0; i--) {
           const b = chain[i];
           b.getWorldPosition(_bp); eff.getWorldPosition(_ep);
@@ -899,22 +1007,51 @@
       el.parent.getWorldQuaternion(_qp); _qw.premultiply(_qi); el.quaternion.copy(_qp.invert().multiply(_qw));
       el.updateMatrixWorld(true);
     }
-    // IK de patas: en pendiente o escalón cada pie busca su suelo (groundAt) y la cadera baja lo que pida el pie más bajo
+    // IK de patas: en pendiente o escalón cada pie busca su suelo (groundAt) y la cadera baja lo que pida el pie más bajo.
+    // Después los dedos se inclinan con la normal del suelo bajo cada pie (en ladera no se clavan ni quedan en el aire).
+    // ikErr: lo que le falta a cada pie para su suelo tras el IK (m, + = flota), para las pruebas.
     _footIK(dt) {
       const on = !!(this.groundAt && !this.airborne && !this.swimming && this.feet && this.feet.length === 2);
       this.fkW = (this.fkW || 0) + ((on ? 1 : 0) - (this.fkW || 0)) * Math.min(1, dt * 10);
-      if (this.fkW < 0.02 || !on) { this.ikFeet = null; return; }
+      if (this.fkW < 0.02 || !on) { this.ikFeet = this.ikErr = null; return; }
       this.root.updateMatrixWorld(true);
       const sc = this.root.scale.y, max = ANIM.footIK * sc, g0 = this.groundY != null ? this.groundY : this.root.position.y;
       const d = this.feet.map(f => { f.eff.getWorldPosition(_ep); return clamp(this.groundAt(_ep.x, _ep.z) - g0, -max, max); });
       const pelvis = Math.min(0, d[0], d[1]) * this.fkW;
       if (pelvis < -1e-4) { this.root.position.y += pelvis; this.root.updateMatrixWorld(true); }
       this.ikFeet = d;
+      this.ikErr = [0, 0];
       this.feet.forEach((f, i) => {
         const raise = d[i] * this.fkW - pelvis;
-        if (raise < 0.003) return;
-        f.eff.getWorldPosition(_tg); _tg.y += raise;
-        this._ccd(f.chain, f.eff, _tg, 1, 3, 0.7);
+        f.eff.getWorldPosition(_tg);
+        f.toes.forEach((b, j) => b.getWorldQuaternion(f.toeQ[j])); // orientación animada de los dedos, antes de que el IK gire el tarso
+        if (raise >= 0.003) {
+          _tg.y += raise;
+          this._ccd(f.chain, f.eff, _tg, 1, ANIM.footIter, 0.7, ANIM.footTol);
+          f.eff.getWorldPosition(_ep); this.ikErr[i] = _ep.y - _tg.y;
+        }
+        this._footTilt(f, this.fkW);
+      });
+    }
+    // Dedos con la normal del suelo: las raíces de los dedos giran alrededor de la bola (que no se mueve) y quedan como en la
+    // animación sobre suelo llano, pero inclinadas con la ladera (sin heredar el giro que el IK dio al tarso). La normal sale de
+    // groundAt a ±paso; un lado con un salto de más de ~50° (borde de un techo, de una rama, un escalón) no cuenta.
+    // Posada en algo fino, los dedos agarran (perchPose) y no se inclinan.
+    _footTilt(f, w) {
+      w *= 1 - (this.pW || 0);
+      if (w < 0.02 || !f.toes.length) return;
+      f.eff.getWorldPosition(_bp);
+      const e = ANIM.footNormalStep, g = this.groundAt, g0 = g(_bp.x, _bp.z), lim = e * 1.2;
+      const der = (a, b) => { const l = g0 - a, r = b - g0, ol = Math.abs(l) < lim, or = Math.abs(r) < lim; return ol && or ? (l + r) / (2 * e) : ol ? l / e : or ? r / e : 0; };
+      const gx = der(g(_bp.x - e, _bp.z), g(_bp.x + e, _bp.z)), gz = der(g(_bp.x, _bp.z - e), g(_bp.x, _bp.z + e));
+      _v1.set(0, 1, 0); _v2.set(-gx, 1, -gz).normalize();
+      const ang = Math.acos(clamp(_v2.y, -1, 1));
+      if (ang > 1e-3) { _q.setFromUnitVectors(_v1, _v2); _qi.identity().slerp(_q, Math.min(1, Math.min(ang, ANIM.footTilt) / ang) * w); } else _qi.identity();
+      f.toes.forEach((b, j) => {
+        this.ikSaved.push([b, b.quaternion.clone()]);
+        b.parent.getWorldQuaternion(_qp); _qw.copy(f.toeQ[j]).premultiply(_qi);
+        b.quaternion.copy(_qp.invert().multiply(_qw));
+        b.updateMatrixWorld(true);
       });
     }
     // IK de brazos: con algo en las manos (agarre.js pone carryTargets = { L, R } en el espacio del modelo y el peso armW)

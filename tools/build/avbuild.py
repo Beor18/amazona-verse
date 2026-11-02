@@ -858,7 +858,7 @@ def analizar(sitio, cfg):
 def clasificar_externas(an, cfg):
     H = cfg['hosts_permitidos']
     ok_scripts, ok_estilos, ok_fuentes = set(H['scripts']), set(H['estilos']), set(H['fuentes'])
-    todos = ok_scripts | ok_estilos | ok_fuentes
+    todos = ok_scripts | ok_estilos | ok_fuentes | set(H.get('conexiones', []))  # conexiones: solo fetch a la función de récords (ranking global)
     errores, permitidas, enlaces = [], [], []
     for x in an['externas']:
         h, t, u = host_de(x['url']), x['tipo'], x['url']
@@ -982,7 +982,7 @@ def paso_validar(sitio, cfg, reg, paso, estricto, subdirs_tex=()):
             reg.add('aviso', paso, '%s/ mezcla globales base64 (%s)' % (d, ', '.join(sorted(gs))))
     # límites
     tot = sum(files.values())
-    if len(files) > L['archivos_max']:
+    if L.get('archivos_max', 0) > 0 and len(files) > L['archivos_max']:
         reg.add('error', paso, '%d archivos (máximo %d por publicación)' % (len(files), L['archivos_max']))
     if L.get('total_max_mb', 0) > 0 and tot > L['total_max_mb'] * MB:
         reg.add('error', paso, '%.2f MB (máximo %d MB por publicación)' % (tot / MB, L['total_max_mb']))
@@ -1197,7 +1197,20 @@ def paso_geometria(sitio, cfg, reg, hilos, cache):
         raw = base64.b64decode(b64)
         j, binc = partir_glb(raw)
         if 'EXT_meshopt_compression' in (j.get('extensionsUsed') or []):
-            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido'}
+            # Ya viene comprimido (p. ej. un _glb.js subido desde Cursor): igual hay que apuntar sus uris a las texturas
+            # convertidas a WebP; si no, piden un .jpg que el sitio ya no tiene (Amazona Flight no abría, 27-oct).
+            cambio = False
+            for im in j.get('images') or []:
+                if 'uri' in im:
+                    destino = posixpath.normpath(posixpath.join(posixpath.dirname(f), im['uri']))
+                    if destino in renombre:
+                        im['uri'] = posixpath.relpath(renombre[destino], posixpath.dirname(f))
+                        im['mimeType'] = 'image/webp'
+                        cambio = True
+            if cambio:
+                raw = armar_glb(j, binc)
+                escribir(p, (pre + base64.b64encode(raw).decode('ascii') + post).encode('utf-8'))
+            return {'archivo': f, 'antes': len(raw), 'despues': len(raw), 'estado': 'ya comprimido' + (' (uris a WebP)' if cambio else '')}
         # WebP: uris de texturas externas convertidas, y las embebidas en las carpetas configuradas
         cambio = False
         base_f = posixpath.dirname(f)
@@ -1302,7 +1315,8 @@ def escribir_reporte(salida, R):
         ['Rutas literales (index, src, content, datos, css)', '%d comprobadas, %d rotas' % (V['referencias'], V['rotas'])],
         ['Carpetas con nombre dinámico (se prueban en test.sh)', ', '.join('`%s`' % d for d in V['carpetas_dinamicas']) or '—'],
         ['*_glb.js → glTF 2.0 válido', '%d de %d' % (V['glb_validos'], V['glb_total'])],
-        ['Archivos (máx. %d)' % R['limites']['archivos_max'], V['archivos']],
+        ['Archivos (sin límite)' if not R['limites']['archivos_max'] else
+         'Archivos (máx. %d)' % R['limites']['archivos_max'], V['archivos']],
         ['Total (sin límites de tamaño)' if not R['limites']['total_max_mb'] and not R['limites']['objetivo_mb'] else
          'Total (máx. %d MB, objetivo %d MB)' % (R['limites']['total_max_mb'], R['limites']['objetivo_mb']), '%.2f MB' % V['mb']],
         ['Mayor archivo (sin límite)' if not R['limites']['archivo_max_mb'] else

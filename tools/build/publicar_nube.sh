@@ -1,0 +1,92 @@
+#!/bin/bash
+# Amazona Verse · publicar desde la nube (sesión coordinadora en claude.ai/code, sin la Mac ni GPU).
+#
+#   tools/build/publicar_nube.sh            # build de HEAD, pruebas obligatorias y, si pasan, publica sitio/ en main
+#   tools/build/publicar_nube.sh --probar   # igual, pero sin commit ni push
+#
+# Kelvin autorizó publicar siempre sin pedirle permiso (DECISION_LOG, 28-oct) si las pruebas pasan.
+# Sin GPU se usa SwiftShader: todo va 3–10 veces más lento, así que la config de la nube sube los tiempos máximos
+# y solo tolera el fallo de tiempo de arranque de movementTest («en menos de 0,18 s»), que mide la GPU, no el juego.
+# Cualquier otro fallo, un tiempo agotado o un error de consola no publica.
+set -euo pipefail
+JUEGO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$JUEGO"
+PROBAR=0; MOVMAC=0
+for a in "$@"; do case "$a" in --probar) PROBAR=1;; --mov-mac) MOVMAC=1;; esac; done
+# --mov-mac: tolera también que movementTest agote su tiempo en la nube (29-oct: con el dosel horneado de BM3, SwiftShader
+# no termina esa batería). Solo cuando los commits que se publican vienen de la API de la Mac, que corre las 13 baterías
+# con GPU real antes de cada commit (regla de TAREAS_API.md); queda escrito en el mensaje del commit de sitio/.
+TMPD="${TMPDIR:-/tmp}/av_publicar_nube"; mkdir -p "$TMPD"
+
+git pull -q --rebase origin main
+HEAD_SHA=$(git rev-parse --short=7 HEAD)
+ULT=$(git log -1 --format=%s -- sitio | sed -n 's/^Sitio: publica \([0-9a-f]\{7,\}\).*/\1/p')
+if [ -n "$ULT" ] && git diff --quiet "$ULT" HEAD -- . ':!sitio' ':!docs' ':!*.md'; then
+  echo "nada nuevo que publicar: sitio/ ya es $ULT y desde entonces solo cambian documentos"; exit 0
+fi
+
+# Chrome de Playwright con WebGL por software (el contenedor corre como root: --no-sandbox)
+CHROME="$TMPD/chrome"
+printf '#!/bin/sh\nexec /opt/pw-browsers/chromium --no-sandbox --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist "$@"\n' > "$CHROME"
+chmod +x "$CHROME"
+export AV_PYTHON="${AV_PYTHON:-/usr/bin/python3}" AV_CHROME="$CHROME"
+
+CFG="$TMPD/config_nube.json"
+"$AV_PYTHON" - "$JUEGO/tools/build/config.json" "$CFG" <<'EOF'
+import json, sys
+c = json.load(open(sys.argv[1]))
+p = c['pruebas']
+p['chrome_flags'] = ['--headless=new']
+p['bateria_max_s'] = 1800
+p['total_max_s'] = 7200
+p['espera_listo_s'] = 300
+json.dump(c, open(sys.argv[2], 'w'), ensure_ascii=False)
+EOF
+
+OUT="$TMPD/build-$HEAD_SHA"; rm -rf "$OUT"
+tools/build/build.sh HEAD "$OUT"
+REP="$OUT/reporte-test.md"
+set +e
+for INTENTO in 1 2 3; do
+  rm -f "$REP"
+  timeout -k 30 7400 "$AV_PYTHON" tools/build/avtest.py "$OUT" --config "$CFG"
+  RC=$?
+  # Sin reporte = la página no respondió (sin GPU el primer cuadro a veces bloquea >10 s): se reintenta
+  [ -f "$REP" ] && break
+  echo "intento $INTENTO sin reporte (rc=$RC): reintento"
+done
+set -e
+[ -f "$REP" ] || { echo "NO SE PUBLICA $HEAD_SHA: las pruebas no llegaron a correr en 3 intentos"; exit 1; }
+if [ $RC -ne 0 ]; then
+  # Solo se tolera el tiempo de arranque de movementTest; todo lo demás bloquea.
+  FALLAS=$(sed -n '/^## Fallas/,/^## /p' "$REP" | grep '^- ' || true)
+  OTRAS=$(printf '%s\n' "$FALLAS" | grep -v 'movementTest 4[0-9]/[0-9]* · falla: Arranque: 90 % de la velocidad en menos de [^|]*$' | grep . || true)
+  # (1-nov) «[^|]*$»: si la misma línea trae otra falla tras « | » (p. ej. la torre de b120729), ya no se tolera.
+  NOTA="pruebas obligatorias en la nube en verde"
+  if [ $MOVMAC -eq 1 ] && [ -n "$OTRAS" ]; then
+    RESTO=$(printf '%s\n' "$OTRAS" | grep -v -E '^- AV\.movementTest( lanzó)?: tiempo agotado' | grep . || true)
+    if [ -z "$RESTO" ]; then OTRAS=""; NOTA="12 baterías en verde en la nube; movementTest agotó el tiempo con GPU por software y va verificada en la Mac con GPU real por la API"; fi
+  fi
+  if [ -n "$OTRAS" ] || [ -z "$FALLAS" ]; then
+    echo "NO SE PUBLICA $HEAD_SHA. Fallas:"; grep -E 'FALLA|ERROR|errores|agotado' "$REP" | head -20; exit 1
+  fi
+  echo "se publica: $NOTA"
+fi
+NOTA="${NOTA:-pruebas obligatorias en la nube en verde}"
+
+# Informe de la publicación (CG-2): resumen del reporte-test.json de esta misma corrida
+informe() { "$AV_PYTHON" -I tools/build/ultima_publicacion.py "$OUT/reporte-test.json" "$1" --codigo "$HEAD_SHA" --nota "$NOTA"; }
+[ $PROBAR -eq 1 ] && { informe "$OUT/ultima_publicacion.json" || true; echo "pruebas en verde para $HEAD_SHA (--probar: sin publicar)"; exit 0; }
+tools/build/sitio.sh "$OUT/site"
+T=$(mktemp)
+GIT_INDEX_FILE=$T git read-tree HEAD
+GIT_INDEX_FILE=$T git add -A sitio
+if GIT_INDEX_FILE=$T git diff --cached --quiet; then rm -f "$T"; echo "sitio/ sin cambios"; exit 0; fi
+# Va en el mismo commit «Sitio: publica»; se escribe solo ahora para no dejar la carpeta sucia si no se publica
+if informe docs/equipo/ultima_publicacion.json; then GIT_INDEX_FILE=$T git add docs/equipo/ultima_publicacion.json
+else echo "aviso: no se pudo escribir docs/equipo/ultima_publicacion.json"; git checkout -q -- docs/equipo/ultima_publicacion.json 2>/dev/null || true; fi
+GIT_INDEX_FILE=$T git commit -q -m "Sitio: publica $HEAD_SHA ($NOTA)
+
+Co-Authored-By: ${AV_COAUTOR:-Claude <noreply@anthropic.com>}"
+rm -f "$T"; git reset -q
+for i in 1 2 3 4; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep $((2**i)); done
+echo "publicado $HEAD_SHA en $(git rev-parse --short HEAD); Vercel lo sirve en 1–2 minutos"

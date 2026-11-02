@@ -78,6 +78,7 @@ VISTAS = {  # en las vistas de vuelo Vittata queda 8 m bajo la cámara (fuera de
     'aldea': {'x': 120, 'y': 8, 'z': 162, 'vuelo': True, 'yaw': 0.63, 'cam': [120, 16, 162], 'mirar': [88, 9, 118], 'nota': 'Aldea de Kelvin junto a Villa Raíz'},
     'yunque': {'x': 80, 'y': 30, 'z': 8, 'vuelo': True, 'yaw': 0.6, 'cam': [80, 38, 8], 'mirar': [-30, 95, -150], 'nota': 'El Yunque: paredes, cascadas y cumbre'},
     'rio': {'x': 190, 'alt': 0, 'z': 122, 'vuelo': False, 'yaw': 2.6, 'cam': [194.7, 5.5, 114.3], 'mirar': [179.6, 4, 139.2], 'nota': 'Río junto a Poza Honda'},
+    'kelvin_villa': {'x': 125, 'y': 150, 'z': 175, 'vuelo': True, 'yaw': 0.5, 'cam': [125, 165, 200], 'mirar': [-30, 95, -150], 'nota': 'La vista de la captura de Kelvin del 1-nov: sobre Villa Raíz, a ~300 m de la ciudad'},
     'ciudad': {'x': 52, 'y': 110, 'z': -84, 'vuelo': True, 'yaw': 0.885, 'cam': [52, 118, -84], 'mirar': [-10, 100, -140], 'nota': 'Ruinas de Kelvin (ciudad antigua)'},
     'criadero': {'criadero': True, 'nota': 'Criadero (nido, su propio lienzo)'},
 }
@@ -96,6 +97,8 @@ VISTA_JS = r'''(async () => {
   if (ST) { if (ST.alrededor) await ST.alrededor(V.x, V.z); if (ST.terminar) await ST.terminar(); }
   if (G.solidos && G.solidos.terminar) G.solidos.terminar();
   await Promise.resolve(G.vegetacion && G.vegetacion.listo);
+  if (AV.guineo) await AV.guineo().then(g => g.listo).catch(() => {}); // huertos de guineo (C12): perezosos, se piden en el primer gesto
+  if (AV.dosel) await AV.dosel().catch(() => {}); // dosel por celdas (AW3): perezoso, se pide en el primer gesto
   G.camara.yaw = V.yaw; G.camara.place(true);
   await cuadros(60);
   G.camara.yaw = V.yaw; G.camara.place(true);
@@ -184,13 +187,17 @@ def main():
     ap.add_argument('--movil', action='store_true', help='emula un celular (390×844, dpr 2, táctil)')
     ap.add_argument('--repetir', type=int, default=1, help='repite cada look N veces (series independientes)')
     ap.add_argument('--titulo', help='título de la lámina')
+    ap.add_argument('--espera', type=int, default=240, help='segundos máximos por vista (sin GPU, en la nube, hacen falta ~1500)')
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(AQUI, 'config.json')))
     P = cfg['pruebas']
     looks, vistas = a.looks.split(','), a.vistas.split(',')
     if a.vistas_json:
-        VISTAS.update(json.load(open(a.vistas_json)))
-        vistas = list(json.load(open(a.vistas_json)))
+        extra = {k: v for k, v in json.load(open(a.vistas_json)).items() if isinstance(v, dict)}  # sin «_nota»
+        VISTAS.update(extra)
+        # --vistas elige entre las del JSON; sin --vistas explícito, todas las del JSON
+        pedidas = [v for v in vistas if v in extra]
+        vistas = pedidas or list(extra)
     os.makedirs(a.salida, exist_ok=True)
     ruta_med = os.path.join(a.salida, a.prefijo + ('movil_' if a.movil else '') + 'medidas.json')
     medidas = json.load(open(ruta_med)) if os.path.exists(ruta_med) else {}
@@ -243,7 +250,7 @@ def main():
             avtest.evaluar(cdp, ses, '(async () => { const G = window.AV.G; await (G.mundo && G.mundo.listo); if (window.AV.look === undefined) await new Promise(r => setTimeout(r, 8000)); return (window.AV.look && window.AV.look.actual) || "fabrica"; })()', 120)
             for v in vistas:
                 js = CRIADERO_JS if VISTAS[v].get('criadero') else VISTA_JS % json.dumps(VISTAS[v])
-                r = json.loads(avtest.evaluar(cdp, ses, js, 240))
+                r = json.loads(avtest.evaluar(cdp, ses, js, a.espera))
                 if r.get('error'):
                     print('  · %s/%s: %s' % (lk, v, r['error']), flush=True)
                     continue

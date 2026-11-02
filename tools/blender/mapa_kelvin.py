@@ -192,7 +192,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             # a menos de 2,5 m de su suelo es ruido del muestreo: se asienta en el terreno; más alto es una pieza apilada
             acostada = abs(L[1, 1]) / max(1e-9, np.linalg.norm(L[:, 1])) < 0.5   # estacas acostadas (muelle): sobre el punto más alto
             base = (float(g.max()) + 0.05) if acostada else \
-                max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (off * S if off * S > 2.5 else min(0.0, off * S))
+                max(float(np.percentile(g, 25)), float(g.mean()) - 0.6) - 0.08 + (0.0 if ins['asset'] in ASENTADAS else off * S if off * S > 2.5 else min(0.0, off * S))
         dy = base - Wn[:, 1].min()
         Mn[0, 3] += dx; Mn[1, 3] += dy; Mn[2, 3] += dz
         e = {'id': 'k%03d' % idx, 'asset': ins['asset'], 'nodo': ins.get('nodo_max'),
@@ -201,7 +201,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
                         'y0': round(float(Wn[:, 1].min() + dy), 2), 'y1': round(float(Wn[:, 1].max() + dy), 2)},
              'ajuste': {'dx': round(dx, 2), 'dy': round(float(dy), 2), 'dz': round(dz, 2)}}
         e['_his'] = (float(base_his), float(Wh[:, 1].max()), float(Wh[:, 0].min()), float(Wh[:, 0].max()), float(Wh[:, 2].min()), float(Wh[:, 2].max()), float(cx), float(cz))
-        e['_apilada'] = (not canoa) and off * S > 2.5
+        e['_apilada'] = (not canoa) and ins['asset'] not in ASENTADAS and off * S > 2.5
         e['_d'] = (dx, float(dy), dz)
         if not ok: e['oculto'] = 'choca con agua o sendero'
         if a['web']:
@@ -251,7 +251,7 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
     for e in sorted(out, key=lambda e: e['huella']['y0']):
         if e['asset'] == 'canoa' and e['huella']['y0'] > ground(e['huella']['x'], -e['huella']['z']) - 0.2 and water_level(e['huella']['x'], -e['huella']['z']) is not None:
             continue   # canoa sobre el agua
-        f = apoyo(e)
+        f = None if e['asset'] in ASENTADAS else apoyo(e)
         if f is not None and f['id'] in corr:
             d = corr[f['id']]
             if e['asset'].startswith('losa'):
@@ -305,7 +305,20 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
         Z.append({'id': zid, 'nombre': nm, 'centro': [cx, round(ground(cx, -cz), 1), cz], 'r': round(r, 1), 'instancias': lst})
     return {'Z': Z, 'S': S, 'aj': aj, 'saltados': skipped, 'conv': bool(conv)}
 
+ASENTADAS = ('savage_wall_pikessm', 'savage_wall_pikessm_v2', 'savage_entrance_spiked')   # empalizada: nunca apilada en el aire, siempre en el suelo (BM8)
 DECORATIVOS = ('canoa', 'empalizada', 'muelle_troncos')
+# BM39: piezas que quedaban flotando (apiladas sin apoyo) o pegadas al risco: (modelo, x, z) -> y fija (suelo de la rejilla de 2 m)
+BAJAR_BM39 = {('ruina_mirador', -81.7, -136.8): 86.3, ('ruina_pilar', -82.3, -140.6): 85.2, ('templo_grande_a', -74.5, -130.1): 95.6,
+              ('templo_mediano', -61.0, -137.1): 96.3, ('complejo_ruinas', -18.5, 177.2): 35.7, ('ruina_torre_b', 43.7, -103.0): 51.7}
+
+# BM80: las 3 torres de Puerto de La Mina (k122-k124) estaban pegadas a la pared del tepuy a 51-60 m, como placas en el aire:
+# (modelo, x, z) -> (x, y, z) en el llano llano (pendiente < 2,3 m en 10 m, lejos del agua) al este de la poza de La Mina
+RELOCAR_BM80 = {('ruina_torre_b', 43.7, -103.0): (92.0, 11.2, -68.0), ('ruina_torre_b', 49.5, -117.3): (88.0, 10.0, -80.0),
+                ('ruina_torre_b', 51.8, -134.1): (102.0, 11.3, -74.0)}
+# BM102: la placa que quedó clavada en la pared del tepuy (torre_b a 47,6 m, rango de suelo 40 m en 3 m) baja al llano de La Mina; los 2 pilares
+# crema del borde de la meseta (suelo con 10-15 m de desnivel en 3 m) entran 4-6 m en la meseta, sobre suelo llano (rango < 1 m en 3 m)
+RELOCAR_BM80.update({('ruina_torre_b', 24.3, -91.3): (91.0, 9.7, -84.0), ('ruina_pilar', -18.3, -113.1): (-18.3, 97.0, -117.1),
+                     ('ruina_pilar', -0.7, -103.4): (-0.7, 94.4, -109.4)})
 
 def compacto(Z):
     """Forma compacta para streaming.js: una entrada por modelo y zona. inst = [x, y, z, rotY, escala] si es giro en Y con
@@ -324,6 +337,12 @@ def compacto(Z):
                 it = [round(float(Mw[0, 3]), 3), round(float(Mw[1, 3]), 3), round(float(Mw[2, 3]), 3), round(math.atan2(R[0, 2], R[0, 0]), 4), round(s_, 4)]
             else:
                 it = e['matriz']
+            for (bm, bx, bz), by in BAJAR_BM39.items():
+                if e['modelo'] == bm and abs(Mw[0, 3] - bx) < 0.06 and abs(Mw[2, 3] - bz) < 0.06:
+                    it = list(it); it[13 if len(it) == 16 else 1] = by
+            for (bm, bx, bz), (nx_, ny_, nz_) in RELOCAR_BM80.items():
+                if e['modelo'] == bm and abs(Mw[0, 3] - bx) < 0.06 and abs(Mw[2, 3] - bz) < 0.06 and len(it) == 5:
+                    it = [nx_, ny_, nz_, it[3], it[4]]
             per.setdefault(e['modelo'], []).append(it)
         for m, lst in per.items():
             ent = {'grupo': z['id'], 'modelo': m, 'inst': lst, 'orientar': False, 'yExacta': True, 'escalaPack': False}

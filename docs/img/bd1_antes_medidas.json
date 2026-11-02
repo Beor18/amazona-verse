@@ -1,0 +1,218 @@
+[
+ {
+  "pack": "cap1",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_antes_cap1_escritorio",
+  "archivo": "bd1_antes_cap1_escritorio.jpg"
+ },
+ {
+  "pack": "cap1",
+  "atmos": true,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "#2a7fd4",
+  "horizonte": "#c3e2f0",
+  "niebla": [
+   40,
+   1000
+  ],
+  "permiso": "",
+  "fogFar": 1500,
+  "skyCenit": "#032fcd",
+  "solInt": 2.05,
+  "id": "bd1_antes_cap1_movil",
+  "archivo": "bd1_antes_cap1_movil.jpg"
+ },
+ {
+  "pack": "ep2",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#d9c4a8",
+  "niebla": [
+   30,
+   100
+  ],
+  "permiso": "",
+  "fogFar": 100,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep2_escritorio",
+  "archivo": "bd1_antes_ep2_escritorio.jpg"
+ },
+ {
+  "pack": "ep2",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#d9c4a8",
+  "niebla": [
+   30,
+   100
+  ],
+  "permiso": "",
+  "fogFar": 100,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep2_movil",
+  "archivo": "bd1_antes_ep2_movil.jpg"
+ },
+ {
+  "pack": "ep3",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#bcd6e6",
+  "niebla": [
+   40,
+   130
+  ],
+  "permiso": "",
+  "fogFar": 130,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep3_escritorio",
+  "archivo": "bd1_antes_ep3_escritorio.jpg"
+ },
+ {
+  "pack": "ep3",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#bcd6e6",
+  "niebla": [
+   40,
+   130
+  ],
+  "permiso": "",
+  "fogFar": 130,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep3_movil",
+  "archivo": "bd1_antes_ep3_movil.jpg"
+ },
+ {
+  "pack": "ep4",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#cfe0e8",
+  "niebla": [
+   35,
+   110
+  ],
+  "permiso": "",
+  "fogFar": 110,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep4_escritorio",
+  "archivo": "bd1_antes_ep4_escritorio.jpg"
+ },
+ {
+  "pack": "ep4",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#cfe0e8",
+  "niebla": [
+   35,
+   110
+  ],
+  "permiso": "",
+  "fogFar": 110,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep4_movil",
+  "archivo": "bd1_antes_ep4_movil.jpg"
+ },
+ {
+  "pack": "ep5",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#1e2740",
+  "niebla": [
+   28,
+   90
+  ],
+  "permiso": "",
+  "fogFar": 90,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep5_escritorio",
+  "archivo": "bd1_antes_ep5_escritorio.jpg"
+ },
+ {
+  "pack": "ep5",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#1e2740",
+  "niebla": [
+   28,
+   90
+  ],
+  "permiso": "",
+  "fogFar": 90,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep5_movil",
+  "archivo": "bd1_antes_ep5_movil.jpg"
+ },
+ {
+  "pack": "ep6",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#f3cfae",
+  "niebla": [
+   40,
+   130
+  ],
+  "permiso": "",
+  "fogFar": 130,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep6_escritorio",
+  "archivo": "bd1_antes_ep6_escritorio.jpg"
+ },
+ {
+  "pack": "ep6",
+  "atmos": false,
+  "look": "vibrant_toon",
+  "exp": 0.78,
+  "cenit": "",
+  "horizonte": "#f3cfae",
+  "niebla": [
+   40,
+   130
+  ],
+  "permiso": "",
+  "fogFar": 130,
+  "skyCenit": "",
+  "solInt": 2.05,
+  "id": "bd1_antes_ep6_movil",
+  "archivo": "bd1_antes_ep6_movil.jpg"
+ }
+]

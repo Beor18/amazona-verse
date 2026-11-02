@@ -17,6 +17,7 @@ import asyncio
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -27,6 +28,7 @@ from claude_agent_sdk import (AssistantMessage, ClaudeAgentOptions, ClaudeSDKCli
 JUEGO = Path(__file__).resolve().parents[2]
 MODELO = 'claude-sonnet-5-5'
 REGLAS = """
+NUNCA corras nada en segundo plano (run_in_background, &, «aviso cuando termine»): aquí no llegan avisos y la tarea se cierra sin commit. Build y pruebas en primer plano con timeout largo; espera, haz commit y luego termina.
 Trabajas en el repo de Amazona Verse (~/AmazonaVerse/Juego) como agente de la sesión de terminal con créditos de la API.
 Sigue al pie de la letra docs/equipo/TAREAS_API.md y docs/equipo/COORDINACION.md. En resumen:
 - Una sola rama, main. Commits pequeños solo de tus archivos o líneas; termina cada mensaje de commit con la línea
@@ -77,7 +79,8 @@ def gastado():
 def autorizar(presupuesto, marca=''):
     """Antes de cada tarea: la niega si su tope rebasaría el tope total o el del día; avisa al pasar alerta_pct."""
     try:
-        L = json.loads(LIMITES.read_text(encoding='utf-8'))
+        # 29-oct: los topes se leen de origin/main (la Mac no puede hacer pull con ventanas editando): subirlos desde GitHub basta
+        L = json.loads(remoto('tools/agente_api/limites.json') or LIMITES.read_text(encoding='utf-8'))
     except FileNotFoundError:
         print(f'{marca}== PARO: falta tools/agente_api/limites.json. ==', flush=True)
         return False
@@ -92,11 +95,11 @@ def autorizar(presupuesto, marca=''):
     return True
 
 
-def registrar(tarea, costo, turnos, estado):
+def registrar(tarea, costo, turnos, estado, texto=''):
     GASTOS.parent.mkdir(parents=True, exist_ok=True)
     with GASTOS.open('a', encoding='utf-8') as f:
         f.write(json.dumps({'fecha': time.strftime('%Y-%m-%dT%H:%M:%S'), 'tarea': tarea, 'modelo': MODELO,
-                            'costo': round(costo, 4), 'turnos': turnos, 'estado': estado}) + '\n')
+                            'costo': round(costo, 4), 'turnos': turnos, 'estado': estado, 'resultado': (texto or '')[:3000]}) + '\n')
 
 
 def resumen():
@@ -112,7 +115,8 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     """Corre una tarea; devuelve su costo, o None si los topes no la dejan arrancar."""
     global reservado
     clave = os.environ.get('ANTHROPIC_API_KEY', '')
-    if not clave.startswith('sk-ant-'):
+    base = os.environ.get('AV_BASE_URL', '')   # 1-nov: otro proveedor compatible con la API de Anthropic (Kimi); ver lanzar_kimi.sh
+    if not clave or (not base and not clave.startswith('sk-ant-')):
         sys.exit('Falta la clave. En esta Terminal escribe primero:  export ANTHROPIC_API_KEY=\'tu clave\'')
     if not autorizar(presupuesto, marca):
         return None
@@ -120,11 +124,11 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
     config = Path.home() / '.claude-sdk'
     config.mkdir(exist_ok=True)
     opciones = ClaudeAgentOptions(
-        model=MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos,
+        model=os.environ.get('AV_MODELO') or MODELO, cwd=str(JUEGO), max_budget_usd=presupuesto, max_turns=turnos, max_buffer_size=32 * 1024 * 1024,
         system_prompt={'type': 'preset', 'preset': 'claude_code', 'append': REGLAS},
         setting_sources=[], permission_mode='acceptEdits', can_use_tool=permiso,
         allowed_tools=['Read', 'Glob', 'Grep', 'Write', 'Edit', 'MultiEdit', 'TodoWrite'],
-        env={'ANTHROPIC_API_KEY': clave, 'CLAUDE_CONFIG_DIR': str(config)},
+        env={'ANTHROPIC_API_KEY': clave, 'CLAUDE_CONFIG_DIR': str(config), **({'ANTHROPIC_BASE_URL': base} if base else {})},
     )
 
     async def mensajes():
@@ -138,7 +142,7 @@ async def correr(prompt, presupuesto, turnos, marca='', tarea='?'):
         raise
     finally:
         reservado -= presupuesto
-        registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'])
+        registrar(tarea, resultado['costo'], resultado['turnos'], resultado['estado'], resultado.get('texto', ''))
     return resultado['costo']
 
 
@@ -155,7 +159,7 @@ async def _sesion(opciones, mensajes, marca, presupuesto, resultado):
                         print(f'{marca}  [{b.name}] {str(detalle)[:140]}', flush=True)
             elif isinstance(m, ResultMessage):
                 costo = m.total_cost_usd if m.total_cost_usd is not None else 0
-                resultado.update(costo=costo, turnos=m.num_turns, estado=m.subtype)
+                resultado.update(costo=costo, turnos=m.num_turns, estado=m.subtype, texto=m.result or '')
                 print(f'\n{marca}== Fin: {m.subtype} · {m.num_turns} turnos · costo ${costo:.4f} (tope ${presupuesto}) ==')
                 if m.result:
                     print(m.result[:1500])
@@ -164,20 +168,76 @@ async def _sesion(opciones, mensajes, marca, presupuesto, resultado):
 CARRILES = {'A': ['A1', 'A2', 'A3'], 'B': ['B1', 'B2', 'B3', 'B4'], 'C': ['C1', 'C2', 'C3'], 'D': ['D1', 'D2', 'D3', 'D4'],
             'E': ['E1', 'E2'], 'F': ['F1', 'F2'], 'G': ['G1', 'G2'], 'H': ['H1'],
             'K': ['K1', 'K2'], 'L': ['L1'], 'M': ['M1'],
-            'N': ['N1'], 'O': ['O1'], 'P': ['P1'], 'Q': ['Q1'], 'R': ['R1'], 'T': ['T1'], 'U': ['U1'], 'V': ['V1'], 'W': ['W1', 'W2'], 'Z': ['Z1', 'Z2'], 'X': ['X1'], 'Y': ['Y1']}
+            'N': ['N1'], 'O': ['O1'], 'P': ['P1'], 'Q': ['Q1'], 'R': ['R1'], 'T': ['T1'], 'U': ['U1'], 'V': ['V1'], 'W': ['W1', 'W2'], 'Z': ['Z1', 'Z2'], 'X': ['X1'], 'Y': ['Y1'],
+            'AB': ['AB1', 'AB2'], 'AC': ['AC1', 'AC2'], 'AD': ['AD1', 'AD2'], 'AE': ['AE1'], 'AF': ['AF1'],
+            'AG': ['AG1', 'AG2'], 'AH': ['AH1', 'AH2'], 'AI': ['AI1', 'AI2'], 'AJ': ['AJ1', 'AJ2', 'AJ3'], 'AL': ['AL1'], 'AM': ['AM1'], 'AO': ['AO1', 'AO2'], 'AQ': ['AQ1'], 'AT': ['AT1'], 'AV': ['AV1', 'AV2'], 'AW': ['AW1', 'AW2', 'AW3'], 'AY': ['AY1', 'AY2'], 'AZ': ['AZ1'], 'BB': ['BB1', 'BB2'], 'BC': ['BC1', 'BC2'], 'BD': ['BD1', 'BD2']}
 MODELOS = {'sonnet': 'claude-sonnet-5-5', 'opus': 'claude-opus-5-5'}
+
+
+def remoto(ruta):
+    """El archivo tal como está en origin/main (subir.sh hace fetch cada 5 min). 29-oct: con 3 trabajadores la carpeta
+    nunca está limpia y no se puede hacer pull, así que la cola y las tareas nuevas de la coordinadora se leen de aquí."""
+    try:
+        return subprocess.run(['git', 'show', f'origin/main:{ruta}'], cwd=JUEGO, capture_output=True, text=True,
+                              timeout=20).stdout
+    except Exception:
+        return ''
 
 
 def prompt_tarea(t):
     return (f'Lee docs/equipo/TAREAS_API.md y haz SOLO la tarea {t}, de principio a fin, siguiendo sus reglas. '
+            f'Si {t} no está en tu copia, la versión al día es la de GitHub: «git show origin/main:docs/equipo/TAREAS_API.md» '
+            '(y lo mismo para PEDIDOS.md); no hagas pull ni rebase, otras ventanas están editando. '
             'Puede haber cambios tuyos a medias sin commit de una corrida anterior: revísalos y continúa desde ahí. '
+            'Si la tarea depende de otra que no está hecha, anótalo UNA vez en la tabla y termina sin más. '
+            'Solo tareas BM; no toques content/, src/ui/ ni web/ salvo que tu tarea BM lo pida (zonas en docs/equipo/COLABORACION_DOS_EQUIPOS.md); '
+            'si descubres un fallo de esa zona, anótalo al final de PEDIDOS.md («para Apoyo») y sigue. '
             'Al terminar marca su estado en la tabla y resume en 3 líneas.')
 
 
 def hecha(t):
-    """Lee la tabla «Estado» de TAREAS_API.md en el momento: las tareas marcadas «hecha» no se vuelven a correr."""
+    """Lee la tabla «Estado» de TAREAS_API.md (la local y la de origin/main): las marcadas «hecha» no se repiten."""
+    patron = rf'^\|\s*{t}\s*\|\s*hecha'
     tabla = (JUEGO / 'docs/equipo/TAREAS_API.md').read_text(encoding='utf-8')
-    return re.search(rf'^\|\s*{t}\s*\|\s*hecha', tabla, re.M) is not None
+    return bool(re.search(patron, tabla, re.M) or re.search(patron, remoto('docs/equipo/TAREAS_API.md'), re.M))
+
+
+BLOQUEOS = Path.home() / 'AmazonaVerse/_herramientas/agent-sdk/bloqueos'
+
+
+EN_CURSO = set()   # tareas tomadas por los trabajadores de este mismo proceso (--cola N comparte el pid)
+
+
+def tomar(t):
+    """Bloqueo por tarea entre ventanas de Terminal: si otra corrida viva ya tiene la tarea, no se repite
+    (26-oct: varias ventanas hicieron la misma tarea a la vez). Dentro del mismo proceso manda EN_CURSO
+    (27-oct: los 4 trabajadores de --cola 4 tomaron AZ1 a la vez porque el pid era el suyo)."""
+    if t in EN_CURSO:
+        return False
+    BLOQUEOS.mkdir(parents=True, exist_ok=True)
+    f = BLOQUEOS / f'{t}.pid'
+    try:
+        pid = int(f.read_text().strip())
+        if pid != os.getpid():
+            os.kill(pid, 0)   # sigue viva: la tarea es suya
+            return False
+    except (FileNotFoundError, ValueError, ProcessLookupError):
+        pass
+    except PermissionError:
+        return False
+    f.write_text(str(os.getpid()))
+    EN_CURSO.add(t)
+    return True
+
+
+def soltar(t):
+    EN_CURSO.discard(t)
+    f = BLOQUEOS / f'{t}.pid'
+    try:
+        if f.read_text().strip() == str(os.getpid()):
+            f.unlink()
+    except FileNotFoundError:
+        pass
 
 
 async def carril(tareas, por_tarea, total, turnos, marca=''):
@@ -186,9 +246,13 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
         if hecha(t):
             print(f'{marca}== {t} ya está hecha; la salto. ==', flush=True)
             continue
+        if not tomar(t):
+            print(f'{marca}== {t} la está haciendo otra ventana de Terminal; la salto. ==', flush=True)
+            continue
         queda = total - gasto
         if queda < 0.5:
             print(f'\n{marca}== Tope total del carril alcanzado (${gasto:.2f} de ${total}); paro antes de {t}. ==')
+            soltar(t)
             return gasto
         print(f'\n{marca}######## {t} · tope ${min(por_tarea, queda):.2f} · gastado hasta ahora ${gasto:.2f} ########', flush=True)
         try:
@@ -196,10 +260,65 @@ async def carril(tareas, por_tarea, total, turnos, marca=''):
         except Exception as e:   # un fallo de una tarea (red, SDK) no tumba el carril ni a los demás
             print(f'\n{marca}== {t} falló ({type(e).__name__}: {str(e)[:200]}); sigo con la siguiente. ==', flush=True)
             continue
+        finally:
+            soltar(t)
         if costo is None:
             return gasto
         gasto += costo
     print(f'\n{marca}== Carril terminado: ${gasto:.2f} gastados ==')
+    return gasto
+
+
+COLA = JUEGO / os.environ.get('AV_COLA', 'tools/agente_api/cola.txt')   # AV_COLA: otra cola (la nube usa cola_nube.txt)
+
+
+INTENTOS, ESPERA, MAX_INTENTOS = {}, {}, 4   # por tarea, dentro de esta ventana (ver trabajador)
+
+
+async def trabajador(n, por_tarea, total, turnos):
+    """Modo continuo: toma la primera tarea de tools/agente_api/cola.txt que no esté hecha ni tomada; si no hay,
+    espera 3 min y vuelve a mirar. La sesión coordinadora va añadiendo tareas a la cola; así la ventana no se cierra."""
+    marca, gasto, vacia = f'[cola {n}] ', 0.0, 0
+    while total - gasto >= 0.5:
+        try:
+            texto = remoto(str(COLA.relative_to(JUEGO))) or COLA.read_text(encoding='utf-8')   # la de GitHub manda
+            ids = [l.split('#')[0].strip().upper() for l in texto.splitlines()]
+        except FileNotFoundError:
+            ids = []
+        ahora = time.monotonic()
+        t = next((i for i in ids if i and not hecha(i) and ESPERA.get(i, 0) <= ahora
+                  and INTENTOS.get(i, 0) < MAX_INTENTOS and tomar(i)), None)
+        if not t:
+            if vacia % 10 == 0:
+                print(f'{marca}== cola sin tareas libres; espero ==', flush=True)
+            vacia += 1
+            await asyncio.sleep(180)
+            continue
+        vacia = 0
+        print(f'\n{marca}######## {t} · tope ${min(por_tarea, total - gasto):.2f} · gastado ${gasto:.2f} ########', flush=True)
+        try:
+            costo = await correr(prompt_tarea(t), min(por_tarea, total - gasto), turnos, marca, t)
+        except Exception as e:
+            print(f'\n{marca}== {t} falló ({type(e).__name__}: {str(e)[:200]}); sigo. ==', flush=True)
+            costo = 0.0
+        finally:
+            soltar(t)
+        if costo is None:   # tope de gasto (limites.json)
+            # 29-oct: antes la ventana se cerraba y Kelvin la veía parada con crédito en la consola. Ahora espera 10 min y
+            # vuelve a mirar (los topes se leen de GitHub): cuando se suban, sigue sola. Solo se cierra con el tope de la ventana.
+            print(f'{marca}== frenada por un tope de limites.json; espero 10 min y reviso otra vez (no cierres la ventana) ==', flush=True)
+            await asyncio.sleep(600)
+            continue
+        gasto += costo
+        if not hecha(t):
+            # 29-oct: BM12 se tomó 44 veces seguidas en 10 min solo para anotar «sigue bloqueada». Una corrida barata que
+            # no la termina (miró y se fue) la aparca 45 min; cualquier tarea sin terminar se intenta como mucho
+            # MAX_INTENTOS veces por ventana. Así se pasa a la siguiente de la cola en vez de gastar en bucle.
+            INTENTOS[t] = INTENTOS.get(t, 0) + 1
+            if costo < 0.5:
+                ESPERA[t] = time.monotonic() + 45 * 60
+                print(f'{marca}== {t} sin terminar y sin trabajo hecho (${costo:.2f}); la aparco 45 min ==', flush=True)
+    print(f'\n{marca}== tope de la ventana alcanzado: ${gasto:.2f} ==')
     return gasto
 
 
@@ -221,6 +340,7 @@ def main():
     g.add_argument('--prueba', action='store_true', help='tarea mínima para verificar el cobro (tope $0,50)')
     g.add_argument('--tarea', help='una tarea de docs/equipo/TAREAS_API.md, por ejemplo A1')
     g.add_argument('--carril', choices=sorted(CARRILES), help='corre en orden todas las tareas de un carril (A a E)')
+    g.add_argument('--cola', type=int, help='modo continuo: N trabajadores toman tareas de tools/agente_api/cola.txt sin cerrarse')
     g.add_argument('--carriles', help='varios carriles a la vez con una sola clave, por ejemplo A,C,D,E')
     ap.add_argument('--modelo', choices=sorted(MODELOS), default='sonnet', help='sonnet (por defecto) u opus')
     ap.add_argument('--presupuesto', type=float, help='tope en USD por tarea (por defecto 6 con sonnet, 15 con opus)')
@@ -237,6 +357,10 @@ def main():
         asyncio.run(correr(prompt, a.presupuesto or 0.5, 6, tarea='prueba'))
     elif a.carril:
         asyncio.run(carril(CARRILES[a.carril], por_tarea, a.total, a.turnos))
+    elif a.cola:
+        async def _cola():
+            await asyncio.gather(*(trabajador(i + 1, por_tarea, a.total, a.turnos) for i in range(a.cola)))
+        asyncio.run(_cola())
     elif a.carriles:
         letras = [l.strip().upper() for l in a.carriles.split(',') if l.strip()]
         malas = [l for l in letras if l not in CARRILES]
