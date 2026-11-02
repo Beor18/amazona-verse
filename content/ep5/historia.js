@@ -2,12 +2,15 @@
 (function () {
   'use strict';
   const EP = window.AV_EP5 = window.AV_EP5 || {};
+  // Mundo único (pack.js, MAPA_REAL): con el interruptor encendido, las ruinas en el mapa real. kit: false = la ruina es un
+  // edificio de Kelvin (el pilar de piedra de la cornisa de Los Miradores) y no se pone la pieza del kit.
+  const R = !!EP.mapaReal, EN = (relleno, mapa) => Object.assign(relleno, R ? mapa : {});
   EP.ruinas = [
-    { id: 'torre', nombre: 'la torre', x: 0, z: -18, marca: 'un número: 36', se: 'En la piedra está escrito 36.' },
-    { id: 'mirador', nombre: 'el mirador', x: 0, z: -28, marca: 'dos cotorras dibujadas', se: 'Hay dos cotorras dibujadas en la piedra.' },
-    { id: 'pilar', nombre: 'el pilar', x: 18, z: -6, marca: 'un camino de torres', se: 'La marca es un camino de torres.' },
-    { id: 'portal', nombre: 'el portal', x: -18, z: -14, marca: 'un fuego en lo alto', se: 'Hay un fuego dibujado en lo alto.' },
-    { id: 'altar', nombre: 'el altar', x: 12, z: 12, marca: 'una mano que pasa algo a otra', se: 'Una mano le pasa algo a otra mano.' },
+    EN({ id: 'torre', nombre: 'la torre', x: 0, z: -18, marca: 'un número: 36', se: 'En la piedra está escrito 36.' }, { x: -50, z: -145 }),
+    EN({ id: 'mirador', nombre: 'el mirador', x: 0, z: -28, marca: 'dos cotorras dibujadas', se: 'Hay dos cotorras dibujadas en la piedra.' }, { x: -63, z: -146 }),
+    EN({ id: 'pilar', nombre: 'el pilar', x: 18, z: -6, marca: 'un camino de torres', se: 'La marca es un camino de torres.' }, { x: -59, z: -102, kit: false }),
+    EN({ id: 'portal', nombre: 'el portal', x: -18, z: -14, marca: 'un fuego en lo alto', se: 'Hay un fuego dibujado en lo alto.' }, { x: -34, z: -147 }),
+    EN({ id: 'altar', nombre: 'el altar', x: 12, z: 12, marca: 'una mano que pasa algo a otra', se: 'Una mano le pasa algo a otra mano.' }, { x: -30, z: -124 }),
   ];
   // Opción por defecto de EP5_GDD §10. El jugador no ve estos marcadores.
   EP.notasKelvin = [

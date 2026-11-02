@@ -30,23 +30,45 @@
   'use strict';
   // ---------- Mapa (relieve analítico de abajo) ----------
   const MAR = -2.6, RIO_X = 20;
-  const PLAZA = { x: 0, z: 0 }, TALLER = { x: -7, z: 7 }, MESA = { x: -6, z: 4.5 }, IGUACA = { x: -3, z: -5 }, GUARDIAN = { x: 3.5, z: -6 };
-  const MIRADOR = { x: -20, z: -20 }, TRANSMISOR = { x: 6, z: 5 };
-  const MUELLE_N = { x: 15.2, z: -8 }, MUELLE_S = { x: 15.2, z: 8 }, PUENTE = { x: 20, z: 0 }, PUENTE_W = { x: 15.5, z: 0 };
-  const TABLA_LARGA = { x: 11, z: -3 };
+  // ---------- Mundo único (docs/equipo/MUNDO_UNICO.md § Interruptor) ----------
+  // MAPA_REAL apagado (false): el capítulo se juega en su mundo pequeño de siempre, igual que antes. Encendido (true), o con
+  // ?mapa=real en la URL para probar: en el mapa real del cap. 1, en dos sitios medidos sobre el suelo real el 2-nov:
+  //  - M1 y M2 (los muelles, los visitantes, el taller y el puente) junto al río real, al pie del tepuy: el tramo recto del Río
+  //    Amazonas que baja junto a la Puerta del Yunque (x ≈ 17–28, z ≈ −62…−38, agua a 9 m), en la orilla baja del este (11–12 m)
+  //    y fuera del monumento de Los Monumentos. La Ciudad de los 36 no tiene agua (está en la meseta del tepuy, a 97 m), y el
+  //    capítulo necesita el río para las canoas, los muelles y el puente: [KELVIN] anotado en MUNDO_UNICO.md.
+  //  - M3 (los grupos, el círculo de los 36, el Guardián, el pacto y el mirador) en la Ciudad de los 36: la explanada de la
+  //    meseta ante su puerta oeste (centro −40, −131, 97 m, libre de edificios), y el mirador en el borde norte.
+  //  El mundo pequeño tiene el río de norte a sur en x = 20 con la plaza al oeste; en el real la orilla baja es la del este,
+  //  así que lo del río se refleja: x real = 22,5 − (x − 20) · 1,23 en la línea del puente (13 m → 16 m, para que los dos
+  //  extremos apoyen en la orilla) y z real = z − 50. Lo de la plaza se traslada: real = (−40, −131) + (x, z).
+  const MAPA_REAL = false;
+  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const EN = (relleno, mapa) => (REAL ? mapa : relleno);
+  const RIO_R = { x: 22.5, z: -50, k: 1.2308 }, K = REAL ? RIO_R.k : 1;
+  const RX = x => (REAL ? RIO_R.x - (x - RIO_X) * RIO_R.k : x), RZ = z => (REAL ? RIO_R.z + z : z);
+  const PR = (x, z) => ({ x: RX(x), z: RZ(z) }); // el río y el puente
+  const PC = { x: -40, z: -131 }; // centro de la plaza en la Ciudad de los 36
+  const CI = (x, z) => (REAL ? { x: PC.x + x, z: PC.z + z } : { x, z }); // la plaza y lo que la rodea
+  const PLAZA = CI(0, 0), TALLER = EN({ x: -7, z: 7 }, { x: 47, z: -62 }), MESA = EN({ x: -6, z: 4.5 }, { x: 45, z: -60 }), IGUACA = CI(-3, -5), GUARDIAN = CI(3.5, -6);
+  const IGUACA_RIO = EN(IGUACA, { x: 42, z: -60.5 }); // en el real, Iguaca espera junto al taller hasta subir a la Ciudad
+  const MIRADOR = EN({ x: -20, z: -20 }, { x: -40, z: -117 }), TRANSMISOR = CI(6, 5);
+  const MUELLE_N = EN({ x: 15.2, z: -8 }, { x: 29, z: -58 }), MUELLE_S = EN({ x: 15.2, z: 8 }, { x: 27.5, z: -42 }), PUENTE = PR(20, 0), PUENTE_W = PR(15.5, 0);
+  const TABLA_LARGA = EN({ x: 11, z: -3 }, { x: 35, z: -49 });
+  const INICIO = EN({ x: -16, z: -16 }, { x: 44, z: -62 });
   // [KELVIN-1] Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
   const VISITANTES = [
-    { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', x: 13.5, z: -10.5, sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
+    { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', ...EN({ x: 13.5, z: -10.5 }, { x: 39, z: -60 }), sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
       presenta: 'Soy Mira. Desde arriba veo las islas, una por una. Lo que necesito… ya lo verás.' },
-    { id: 'roca', nombre: 'Roca', especie: 'guildingii', sprite: 'assets/roca.png', x: 16.5, z: -11, sabe: ['cargar fuerte', 'explicar con calma'], necesita: 'alguien que mire desde arriba', dice: true,
+    { id: 'roca', nombre: 'Roca', especie: 'guildingii', sprite: 'assets/roca.png', ...EN({ x: 16.5, z: -11 }, { x: 36.5, z: -58 }), sabe: ['cargar fuerte', 'explicar con calma'], necesita: 'alguien que mire desde arriba', dice: true,
       presenta: 'Roca. Cargo lo que haga falta y explico despacio. Pero no vuelo alto: necesito a alguien que mire desde arriba.' },
-    { id: 'marea', nombre: 'Marea', especie: 'arausiaca', sprite: 'assets/marea.png', x: 13.5, z: 10.5, sabe: ['conocer el agua', 'remar'], necesita: 'un nudo que aguante', dice: false, observa: 'Mira al río todo el tiempo y sujeta la soga de su canoa con el pico.',
+    { id: 'marea', nombre: 'Marea', especie: 'arausiaca', sprite: 'assets/marea.png', ...EN({ x: 13.5, z: 10.5 }, { x: 35, z: -40 }), sabe: ['conocer el agua', 'remar'], necesita: 'un nudo que aguante', dice: false, observa: 'Mira al río todo el tiempo y sujeta la soga de su canoa con el pico.',
       presenta: 'Me llaman Marea. Conozco el agua y remo contra la corriente. Lo demás… ya se verá.' },
-    { id: 'nudo', nombre: 'Nudo', especie: 'leucocephala', sprite: 'assets/nudo.png', x: 16.5, z: 11, sabe: ['atar nudos', 'tejer redes'], necesita: 'saber cómo va el agua', dice: true,
+    { id: 'nudo', nombre: 'Nudo', especie: 'leucocephala', sprite: 'assets/nudo.png', ...EN({ x: 16.5, z: 11 }, { x: 35.5, z: -43 }), sabe: ['atar nudos', 'tejer redes'], necesita: 'saber cómo va el agua', dice: true,
       presenta: 'Nudo. Ato y tejo. Pero para tejer una red buena necesito saber cómo va el agua, y de eso no sé.' },
-    { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/eco.png', x: 6, z: -9, sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
+    { id: 'eco', nombre: 'Eco', especie: 'collaria', sprite: 'assets/eco.png', ...EN({ x: 6, z: -9 }, { x: 37, z: -55 }), sabe: ['avisar fuerte', 'volar alto'], necesita: 'que le expliquen con calma', dice: true,
       presenta: '¿Tú eres Vittata? ¿Y ese puente? ¿Y la luz de allá? Soy Eco: aviso fuerte y vuelo alto. Pero necesito que me expliquen las cosas con calma.' },
-    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/brote.png', x: -6, z: -9, sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
+    { id: 'brote', nombre: 'Brote', especie: 'barbadensis', sprite: 'assets/brote.png', ...EN({ x: -6, z: -9 }, { x: 46, z: -60 }), sabe: ['aprender rápido', 'dar sombra con su hoja'], necesita: 'que le enseñen', dice: true,
       presenta: 'Soy Brote, el más nuevo. Aprendo rápido y traigo una hoja grande que da sombra. Necesito que me enseñen.' },
   ];
   const PAREJAS = [['mira', 'brote'], ['roca', 'eco'], ['marea', 'nudo']]; // las tres parejas que se cubren una a la otra
@@ -99,7 +121,8 @@
   // Quién se sienta: 6 visitantes, 2 voceros (cada uno con 5 más de su isla), Vittata, Iguaca, el Guardián y el aprendiz = 22 [KELVIN-8]
   const ASIENTOS = { mira: 1, roca: 1, marea: 1, nudo: 1, eco: 1, brote: 1, alta: 6, baja: 6 };
   const SENTABLES = Object.keys(ASIENTOS), FIJOS = 4;
-  const ACOMPANAN = [['alta_1', 'alta', -5.6, 10.6, 'assets/vittata.png'], ['alta_2', 'alta', -2.6, 10.8, 'assets/agilis.png'], ['baja_1', 'baja', 2.6, 10.8, 'assets/agilis.png'], ['baja_2', 'baja', 5.6, 10.6, 'assets/vittata.png']];
+  const ACOMPANAN = [['alta_1', 'alta', -5.6, 10.6, 'assets/vittata.png'], ['alta_2', 'alta', -2.6, 10.8, 'assets/agilis.png'], ['baja_1', 'baja', 2.6, 10.8, 'assets/agilis.png'], ['baja_2', 'baja', 5.6, 10.6, 'assets/vittata.png']]
+    .map(([id, g, x, z, sp]) => { const p = CI(x, z); return [id, g, p.x, p.z, sp]; });
 
   // La flecha de guía lleva al pendiente más cercano a Vittata (los muelles están a 21 m uno del otro: en orden fijo se iba y volvía)
   const cercano = (G, ids) => G.misiones.closest(ids.map(G.misiones.at));
@@ -122,9 +145,15 @@
     bosquecillo: 'Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
     'navegante+bosquecillo': 'Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
   };
-  const NAVEGA_LLEGA = { x: 8.5, z: 8 }; // junto a la plaza, lejos de los muelles de los 6
+  const NAVEGA_LLEGA = EN({ x: 8.5, z: 8 }, { x: 37, z: -35 }); // junto a la plaza, lejos de los muelles de los 6 (en el real, río arriba de los muelles)
   const NAVEGA_DICE = 'Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».';
   const LUCES_LEJANAS = 14; // los asientos que esperan (36 − 22) [KELVIN-8]
+  // Tras las tarjetas, los 6 visitantes esperan juntos: cerca de la plaza (mundo pequeño). En el real, junto al taller del río
+  // mientras dura la obra del puente y, después, en la Ciudad, al sur de la plaza.
+  function cercaPlaza(i, enCiudad) {
+    if (!REAL) return { x: -8 + i * 3, z: 12 };
+    return enCiudad ? CI(-8 + i * 3, -11) : { x: 35 + (i % 3) * 1.5, z: -44 - Math.floor(i / 3) * 2 };
+  }
   const llegan = () => { const T = window.AVTemporada, g = T ? T.guardianes() : []; return ['navegante', 'bosquecillo'].filter(k => g.includes(k)); };
   const lineaLlegan = () => LLEGAN[llegan().join('+')] || LLEGAN_DEF;
   const lineasInicio = G => G.dialogo.L('inicio:ep6').map(l => (l.text === LLEGAN_DEF ? Object.assign({}, l, { text: lineaLlegan() }) : l));
@@ -151,14 +180,22 @@
         etiqueta: 'Capítulo 6 · El pacto de los 36', fin: '¡El pacto, renovado!',
         nota: 'Capítulo 6: recibe a los guardianes que llegan y ayúdalos a trabajar juntos. No uses tu nombre real.', inventario: {} },
     },
-    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -16, z: -16 }, camara: 0.6 },
+    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
     guardado: { version: 1, claves: ['edu', 'plan'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null }, plan: null }) },
     aula: { clave: 'amazonaverse.aula.ep6', estado: 'edu', archivo: 'amazonaverse_ep6', lecciones: () => window.AV_LECCIONES_EP6 },
     // Criadero: el mismo del cap. 1 (la cría sigue a Vittata); el nido entra con las tarjetas llenas. Ninguna cápsula se compra.
     // obtener.ep6 = { mision: 'circulo' } en content/comun/huevos.js queda como pedido aparte (EP6_MISIONES.md §7).
     criadero: { desde: 'CardsFilled', almacen: 'amazonaverse' },
 
-    mundo: {
+    // Mundo único: el mapa real del cap. 1 (AVE.mundoReal) con los lugares del capítulo y la flora despejada en sus sitios; sin el
+    // reubicar ni los pois del cap. 1. Sin el interruptor, el mundo pequeño de siempre.
+    mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
+      lugares: { inicio: { x: INICIO.x, z: INICIO.z, r: 4 }, plaza: { x: PLAZA.x, z: PLAZA.z, r: 11 }, taller: { x: TALLER.x, z: TALLER.z, r: 4 }, mirador: { x: MIRADOR.x, z: MIRADOR.z, r: 2.5 } },
+      pois: [], reubicar: null,
+      flora: Object.assign({}, window.AVE.mundoReal.flora, { evitar: pack => [{ x: PLAZA.x, z: PLAZA.z, r: 13 }, { x: PUENTE.x, z: PUENTE.z, r: 10 }, TALLER, MESA, IGUACA, IGUACA_RIO, GUARDIAN, MIRADOR, TRANSMISOR,
+        MUELLE_N, MUELLE_S, TABLA_LARGA, INICIO, NAVEGA_LLEGA, CI(0, 9), { x: 35, z: -53 }, { x: 33.5, z: -52.5 }].concat(VISITANTES, ACOMPANAN.map(a => ({ x: a[2], z: a[3] })), [0, 1, 2, 3, 4, 5].flatMap(i => [cercaPlaza(i), cercaPlaza(i, true)]))
+        .map(p => ({ x: p.x, z: p.z, r: p.r || 3 })).concat(((pack.diario || {}).entradas || []).map(e => ({ x: e.x, z: e.z, r: 1.5 }))) }),
+    }) : {
       tamano: 46, segmentos: 92,
       exposicion: 0.74,
       cielo: { color: '#c3e2f0', cenit: '#2a7fd4', sol: '#fff1cf', niebla: [40, 1000], nieblaAltura: [8, 70] },
@@ -182,11 +219,14 @@
         evitar: [{ x: PLAZA.x, z: PLAZA.z, r: 12 }, TALLER, MESA, IGUACA, GUARDIAN, MIRADOR, TRANSMISOR, MUELLE_N, MUELLE_S, PUENTE_W, TABLA_LARGA, { x: 27, z: 0, r: 4 }].concat(VISITANTES.map(v => ({ x: v.x, z: v.z, r: 3 }))) },
       oceano: { color: '#0b4f86', y: MAR },
     },
+    // Mundo único: los lugares y asentamientos del mapa con su nombre propio (ES/EN), como en el cap. 1
+    descubrir: REAL ? { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] } : undefined,
+    asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
-      { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
+      { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA_RIO.x, z: IGUACA_RIO.z, escala: 2.2, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: IMG['Guardián'], x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.4 }, // [KELVIN-6: qué forma tiene]
-      { id: 'alta', nombre: 'Vocera de la isla alta', sprite: IMG['Vocera de la isla alta'], x: -4, z: 9, escala: 1.8 },
-      { id: 'baja', nombre: 'Vocero de la isla baja', sprite: IMG['Vocero de la isla baja'], x: 4, z: 9, escala: 1.8 },
+      { id: 'alta', nombre: 'Vocera de la isla alta', sprite: IMG['Vocera de la isla alta'], ...CI(-4, 9), escala: 1.8 },
+      { id: 'baja', nombre: 'Vocero de la isla baja', sprite: IMG['Vocero de la isla baja'], ...CI(4, 9), escala: 1.8 },
       { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGA_LLEGA.x, z: NAVEGA_LLEGA.z, escala: 1.8 }, // D32: solo si se encontró
     ].concat(VISITANTES.map(v => ({ id: v.id, nombre: v.nombre, sprite: v.sprite, x: v.x, z: v.z, escala: 1.8 })),
       ACOMPANAN.map(([id, g, x, z, sprite]) => ({ id, nombre: g === 'alta' ? 'Isla alta' : 'Isla baja', sprite, x, z, escala: 1.5 }))),
@@ -235,13 +275,13 @@
       entradas: [
         { id: 'tarjetas', cat: 'pacto', nombre: 'Tarjetas de visitante', x: MESA.x - 2, z: MESA.z - 1.5, texto: 'Seis tarjetas en la mesa: dos cosas que cada uno sabe hacer y una que necesita.',
           modelo: (add) => { for (let i = 0; i < 3; i++) add(new THREE.PlaneGeometry(0.4, 0.26), i ? '#f1e6c8' : '#ffd27a', i * 0.45 - 0.45, 0.02, 0).rotation.x = -Math.PI / 2; } },
-        { id: 'plan', cat: 'pacto', nombre: 'El tablero del plan', x: PUENTE_W.x - 2, z: PUENTE_W.z + 3, texto: 'Una tabla con dos columnas: las tareas y quién las hace.',
+        { id: 'plan', cat: 'pacto', nombre: 'El tablero del plan', ...EN({ x: PUENTE_W.x - 2, z: PUENTE_W.z + 3 }, { x: 34, z: -46.5 }), texto: 'Una tabla con dos columnas: las tareas y quién las hace.',
           modelo: (add) => { add(new THREE.BoxGeometry(0.9, 0.6, 0.06), '#8a6a3a', 0, 0.5, 0); add(new THREE.BoxGeometry(0.06, 0.5, 0.06), '#6b4a2a', 0, 0.2, 0); } },
-        { id: 'tabla', cat: 'pacto', nombre: 'La tabla que subió', x: 26.5, z: 2.5, texto: 'Una tabla grande con tres marcas de patas: una en cada punta y otra en el medio.',
+        { id: 'tabla', cat: 'pacto', nombre: 'La tabla que subió', ...EN({ x: 26.5, z: 2.5 }, { x: 32.5, z: -48.5 }), texto: 'Una tabla grande con tres marcas de patas: una en cada punta y otra en el medio.',
           modelo: (add) => { add(new THREE.BoxGeometry(1.4, 0.08, 0.4), '#a87c4f', 0, 0.3, 0); for (const x of [-0.5, 0, 0.5]) add(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 6), '#6b4a2a', x, 0.15, 0); } },
-        { id: 'acuerdo', cat: 'pacto', nombre: 'Dos piedras juntas', x: 0, z: 10.5, texto: 'Dos piedras de islas distintas, puestas una junto a la otra en la plaza.',
+        { id: 'acuerdo', cat: 'pacto', nombre: 'Dos piedras juntas', ...CI(0, 10.5), texto: 'Dos piedras de islas distintas, puestas una junto a la otra en la plaza.',
           modelo: (add) => { add(new THREE.DodecahedronGeometry(0.28, 0), '#8d8a82', -0.25, 0.25, 0); add(new THREE.DodecahedronGeometry(0.24, 0), '#b8955a', 0.25, 0.22, 0); } },
-        { id: 'forma', cat: 'pacto', nombre: 'Marca de asiento', x: -9.5, z: 2, texto: 'Un círculo de cal en el suelo. Hay 36 iguales, y caben de varias formas.',
+        { id: 'forma', cat: 'pacto', nombre: 'Marca de asiento', ...EN({ x: -9.5, z: 2 }, { x: -47, z: -127 }), texto: 'Un círculo de cal en el suelo. Hay 36 iguales, y caben de varias formas.',
           modelo: (add) => { add(new THREE.RingGeometry(0.25, 0.36, 18), '#f4f0e0', 0, 0.02, 0).rotation.x = -Math.PI / 2; } },
         { id: 'esperan', cat: 'pacto', nombre: 'La luz que espera', x: MIRADOR.x + 2.2, z: MIRADOR.z + 1.5, texto: 'Un farolito con la llama baja. No está apagado: espera.',
           modelo: (add) => { add(new THREE.CylinderGeometry(0.08, 0.1, 0.9, 6), '#6b4a2a', 0, 0.45, 0); add(new THREE.SphereGeometry(0.14, 10, 8), '#ffd27a', 0, 1.0, 0); } },
@@ -289,7 +329,7 @@
       const elegir = (who, text, opciones, done) => G.dialogo.choose(di(who, text), opciones, done);
       const mat = c => new THREE.MeshLambertMaterial({ color: c });
       const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-      const nivelRio = () => { const y = G.agua.levelAt(RIO_X, 0); return isFinite(y) ? y : MAR; };
+      const nivelRio = () => { const y = G.agua.levelAt(PUENTE.x, PUENTE.z); return isFinite(y) ? y : MAR; };
       const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const conocidos = () => VISITANTES.filter(v => tiene('conocido_' + v.id));
       const parejasHechas = () => PAREJAS.filter(p => tiene('pareja_' + p.join('+')));
@@ -353,24 +393,31 @@
       for (let i = 0; i < 6; i++) { const c = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.28), mat('#f1e6c8')); c.rotation.x = -Math.PI / 2; c.position.set(MESA.x - 0.75 + (i % 3) * 0.55, H(MESA.x, MESA.z) + 0.82, MESA.z - 0.25 + Math.floor(i / 3) * 0.4); c.visible = false; tarjetasMesa.add(c); }
       for (const [dx, dz] of [[-1.6, -1.2], [1.6, -1.2], [0, 1.6]]) pieza(new THREE.CylinderGeometry(0.12, 0.14, 2.6, 6), '#6b4a2a', TALLER.x + dx, H(TALLER.x, TALLER.z) + 1.3, TALLER.z + dz);
       pieza(new THREE.ConeGeometry(2.6, 1.2, 6), '#a8903a', TALLER.x, H(TALLER.x, TALLER.z) + 3.1, TALLER.z); // el techo del taller
+      // La tierra de un muelle es su punta oeste (mundo pequeño) o la este (mapa real: la orilla baja es la del este)
       const tablones = (cx, cz, hx, hz, rot) => {
-        const top = H(cx - hx, cz) + 0.1, m = pieza(new THREE.BoxGeometry(hx * 2, 0.16, hz * 2), '#9a7448', cx, top - 0.08, cz); m.rotation.y = rot || 0;
+        const top = H(cx - (REAL ? -hx : hx), cz) + 0.1, m = pieza(new THREE.BoxGeometry(hx * 2, 0.16, hz * 2), '#9a7448', cx, top - 0.08, cz); m.rotation.y = rot || 0;
         for (const sx of [-1, 1]) for (const sz of [-1, 0, 1]) { const lx = sx * (hx - 0.15), lz = sz * (hz - 0.2), c = Math.cos(rot || 0), s = Math.sin(rot || 0); pieza(new THREE.CylinderGeometry(0.09, 0.1, 2.4, 6), '#6b4a2a', cx + lx * c + lz * s, top - 1.2, cz - lx * s + lz * c); }
         G.terreno.addPlatform({ tipo: 'rect', x: cx, z: cz, hx, hz, rotY: rot || 0, top, unaVia: true });
         return top;
       };
-      tablones(MUELLE_N.x + 1.2, MUELLE_N.z, 2.2, 0.9, 0); tablones(MUELLE_S.x + 1.2, MUELLE_S.z, 2.2, 0.9, 0);
+      if (REAL) { tablones(MUELLE_N.x, MUELLE_N.z, 2.5, 0.9, 0); tablones(MUELLE_S.x, MUELLE_S.z, 2.5, 0.9, 0); }
+      else { tablones(MUELLE_N.x + 1.2, MUELLE_N.z, 2.2, 0.9, 0); tablones(MUELLE_S.x + 1.2, MUELLE_S.z, 2.2, 0.9, 0); }
       // El puente de madera: la mitad oeste está; la tabla grande (centro) y la tabla larga (este) faltan hasta la obra de M2
-      const topPuente = Math.max(H(13.5, 0), H(26.5, 0)) + 0.25;
-      const tramo = (x0, x1, col) => { const m = pieza(new THREE.BoxGeometry(x1 - x0, 0.18, 2.2), col, (x0 + x1) / 2, topPuente - 0.09, 0); return m; };
+      // (en el mapa real, la línea del puente reflejada y estirada: RX, RZ y K; en el pequeño, x y z tal cual)
+      const topPuente = Math.max(H(RX(13.5), RZ(0)), H(RX(26.5), RZ(0))) + 0.25;
+      const tramo = (x0, x1, col) => { const a = RX(x0), b = RX(x1); const m = pieza(new THREE.BoxGeometry(Math.abs(b - a), 0.18, 2.2), col, (a + b) / 2, topPuente - 0.09, RZ(0)); return m; };
       tramo(13.5, 18, '#9a7448');
       const tablaGrande = tramo(18, 22, '#b8864f'), tablaLargaPuente = tramo(22, 26.5, '#a87c4f');
-      for (const x of [14, 18, 22, 26]) for (const s of [-1, 1]) pieza(new THREE.CylinderGeometry(0.1, 0.12, 3, 6), '#6b4a2a', x, topPuente - 1.5, s * 0.95);
-      G.terreno.addPlatform({ tipo: 'rect', x: 20, z: 0, hx: 2, hz: 1.1, top: topPuente, unaVia: true, when: () => tiene('levantada') });
-      G.terreno.addPlatform({ tipo: 'rect', x: 24.25, z: 0, hx: 2.25, hz: 1.1, top: topPuente, unaVia: true, when: () => G.eventos.had('RaisedTogether') });
-      G.terreno.addPlatform({ tipo: 'rect', x: 15.75, z: 0, hx: 2.25, hz: 1.1, top: topPuente, unaVia: true });
+      for (const x of [14, 18, 22, 26]) for (const s of [-1, 1]) {
+        if (!REAL) { pieza(new THREE.CylinderGeometry(0.1, 0.12, 3, 6), '#6b4a2a', x, topPuente - 1.5, s * 0.95); continue; }
+        const px = RX(x), pz = RZ(s * 0.95), yb = Math.min(H(px, pz), nivelRio()) - 0.4, l = topPuente - yb; // en el real, hasta el fondo
+        pieza(new THREE.CylinderGeometry(0.1, 0.12, l, 6), '#6b4a2a', px, yb + l / 2, pz);
+      }
+      G.terreno.addPlatform({ tipo: 'rect', x: RX(20), z: RZ(0), hx: 2 * K, hz: 1.1, top: topPuente, unaVia: true, when: () => tiene('levantada') });
+      G.terreno.addPlatform({ tipo: 'rect', x: RX(24.25), z: RZ(0), hx: 2.25 * K, hz: 1.1, top: topPuente, unaVia: true, when: () => G.eventos.had('RaisedTogether') });
+      G.terreno.addPlatform({ tipo: 'rect', x: RX(15.75), z: RZ(0), hx: 2.25 * K, hz: 1.1, top: topPuente, unaVia: true });
       // Las tres perchas de la obra (postes): dos ayudantes y la de Vittata, que da la señal
-      const PERCHAS = { a: { x: 18.2, z: -1.6 }, b: { x: 18.2, z: 1.6 }, v: { x: 21.8, z: 0 } };
+      const PERCHAS = { a: PR(18.2, -1.6), b: PR(18.2, 1.6), v: PR(21.8, 0) };
       const perchaV = G.fisica.addPercha({ x: PERCHAS.v.x, z: PERCHAS.v.z, y: topPuente + 1.6, r: 0.8 });
       for (const k of Object.keys(PERCHAS)) { const p = PERCHAS[k]; pieza(new THREE.CylinderGeometry(0.09, 0.11, 1.6, 6), '#8a6a3a', p.x, topPuente + 0.8, p.z); pieza(new THREE.BoxGeometry(0.5, 0.06, 0.5), '#c9a86a', p.x, topPuente + 1.6, p.z); }
       // La tabla larga, en la orilla hasta que se carga entre dos
@@ -383,7 +430,7 @@
       // Las canoas de quien llega: el modelo del kit (ep. 3), varadas en los muelles; sin el modelo, una canoa de primitivas
       const KIT = 'assets/models/edificios/';
       const canoaPrimitiva = () => { const g = new THREE.Group(); const m = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 3.4, 12, 1, false, Math.PI / 2, Math.PI), mat('#8a5a2a')); m.rotation.x = Math.PI / 2; m.rotation.z = Math.PI; m.position.y = 0.45; g.add(m); return g; };
-      const CANOAS = [[17.2, -12.2, 0.4], [17.6, 12.4, -0.6]];
+      const CANOAS = EN([[17.2, -12.2, 0.4], [17.6, 12.4, -0.6]], [[27.5, -62, -0.4], [27, -38, 0.6]]);
       const canoas = CANOAS.map(([x, z, ry]) => { const c = canoaPrimitiva(); c.position.set(x, nivelRio() - 0.3, z); c.rotation.y = ry; scene.add(c); return c; });
       G.assets.loadGLB(KIT + 'canoa.glb', { b64: () => (window.AV_EDIFICIOS_B64 || {}).canoa, script: 'assets/models/edificios/canoa_glb.js', base: KIT, error: 'canoa no disponible' }).then(g => {
         const m = g.scene || (g.scenes && g.scenes[0]); if (!m) return;
@@ -421,7 +468,7 @@
       // ---------- NPC: dónde está cada uno según la partida ----------
       const npc = id => G.actores.npc(id);
       function ponerNpc(n, x, z, y) { if (!n) return; n.def.x = x; n.def.z = z; n.sp.position.set(x, (y != null ? y : H(x, z)) + 1.0, z); n.sh.position.set(x, (y != null ? y : H(x, z)) + 0.03, z); n.collider.x = x; n.collider.z = z; }
-      const PUESTO_NPC = { cargar: { x: 12.5, z: -2 }, sostener: PERCHAS.a, atar: PERCHAS.b, revisar: { x: 20, z: -3.5 }, avisar: { x: 16, z: -5 } };
+      const PUESTO_NPC = { cargar: EN({ x: 12.5, z: -2 }, { x: 33.5, z: -51 }), sostener: PERCHAS.a, atar: PERCHAS.b, revisar: PR(20, -3.5), avisar: EN({ x: 16, z: -5 }, { x: 34.5, z: -55 }) };
       const ASIENTO_NPC = { mira: [-5, -2], roca: [-3, -2], marea: [-1, -2], nudo: [1, -2], eco: [3, -2], brote: [5, -2], alta: [-4, 2], baja: [4, 2] };
       // De pie sobre su marca (j: cuál de las marcas de su grupo); sin forma elegida, el sitio de antes
       function enSuMarca(n, k, j) { const p = puntosAsientos()[MARCA[k] + j]; if (p) ponerNpc(n, p[0], p[1]); else ponerNpc(n, PLAZA.x + ASIENTO_NPC[k][0] + j * 1.2, PLAZA.z + ASIENTO_NPC[k][1] + 1); }
@@ -431,12 +478,12 @@
           const n = npc(v.id); if (!n) continue;
           if (tiene('sentado_' + v.id)) enSuMarca(n, v.id, 0);
           else if (G.eventos.had('PlanMade') && !G.eventos.had('RaisedTogether') && S.plan && S.plan.asig) { const t = TAREAS.find(x => S.plan.asig[x.id] === v.id); if (t) { const p = PUESTO_NPC[t.id]; ponerNpc(n, p.x, p.z, t.id === 'sostener' || t.id === 'atar' ? topPuente + 1.6 : null); } else ponerNpc(n, v.x, v.z); }
-          else if (G.eventos.had('CardsFilled')) { const i = VISITANTES.indexOf(v); ponerNpc(n, -8 + i * 3, 12); } // tras las tarjetas, todos cerca de la plaza
+          else if (G.eventos.had('CardsFilled')) { const p = cercaPlaza(VISITANTES.indexOf(v), G.eventos.had('RaisedTogether')); ponerNpc(n, p.x, p.z); } // tras las tarjetas, todos cerca de la plaza
           else ponerNpc(n, v.x, v.z);
         }
         for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + k)) enSuMarca(n, k, 0); }
         for (const [id, g, x, z] of ACOMPANAN) { const n = npc(id); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + g)) enSuMarca(n, g, id.endsWith('1') ? 1 : 2); else ponerNpc(n, x, z); }
-        const ig = npc('iguaca'); if (ig) { if (S.step >= 4 && S.step <= 7) ponerNpc(ig, PUENTE_W.x - 4.5, PUENTE_W.z - 2.5); else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else ponerNpc(ig, IGUACA.x, IGUACA.z); }
+        const ig = npc('iguaca'); if (ig) { if (S.step >= 4 && S.step <= 7) { const p = EN({ x: PUENTE_W.x - 4.5, z: PUENTE_W.z - 2.5 }, { x: 35, z: -53 }); ponerNpc(ig, p.x, p.z); } else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else { const p = S.step < 4 ? IGUACA_RIO : IGUACA; ponerNpc(ig, p.x, p.z); } }
         navLlega = llegan().includes('navegante'); const na = npc('navegante'); if (na) na.setVisible(navLlega); // D32
         const gu = npc('guardian'); if (gu) { if (S.step >= 11 && !S.complete) { if (formaElegida() === 'anillo' || !puntosAsientos().length) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else { const p = puntosAsientos()[2]; ponerNpc(gu, p[0], p[1]); } } else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
         for (let i = 0; i < 6; i++) tarjetasMesa.children[i].visible = i < conocidos().length;
@@ -484,9 +531,9 @@
       for (const v of VISITANTES) G.interaccion.add({ id: 'v_' + v.id, x: v.x, z: v.z, r: 2.4, label: () => S.step === 10 && !tiene('sentado_' + v.id) ? 'Invitar a ' + v.nombre + ' a su asiento' : tiene('conocido_' + v.id) ? 'Hablar con ' + v.nombre : 'Recibir a quien llega',
         use: () => hablarVisitante(v) });
       // Observar: lo que no dijeron (Mira en la sombra, Marea mirando al río)
-      G.interaccion.add({ id: 'o_mira', x: 12.2, z: -12.5, r: 2, visible: () => S.step >= 2 && !tiene('obs_sombra'), label: () => 'Observar a Mira',
+      G.interaccion.add({ id: 'o_mira', ...EN({ x: 12.2, z: -12.5 }, { x: 40.5, z: -62 }), r: 2, visible: () => S.step >= 2 && !tiene('obs_sombra'), label: () => 'Observar a Mira',
         use: () => { poner('obs_sombra'); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say([Vi(visitante('mira').observa), Lu('Ya lo tengo: necesita sombra.')], finObservar); } });
-      G.interaccion.add({ id: 'o_marea', x: 12.2, z: 12.5, r: 2, visible: () => S.step >= 2 && !tiene('obs_rio'), label: () => 'Observar a Marea',
+      G.interaccion.add({ id: 'o_marea', ...EN({ x: 12.2, z: 12.5 }, { x: 36.5, z: -38 }), r: 2, visible: () => S.step >= 2 && !tiene('obs_rio'), label: () => 'Observar a Marea',
         use: () => { poner('obs_rio'); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say([Vi(visitante('marea').observa), Lu('La soga se le suelta. Necesita un nudo que aguante.')], finObservar); } });
       function finObservar() { if (Object.values(OBSERVAR).every(tiene) && S.step === 3) G.ui.toast('Presenta en la mesa a los que se cubren uno al otro', 3200); }
       // La mesa: presentar parejas (tocar uno y luego otro; una pareja que no se cubre solo saluda, sin castigo)
@@ -587,13 +634,13 @@
         poner('plan_' + r.tipo); G.eventos.log('PlanMade', { choice: r.tipo }); G.audio.play('unlock'); colocarNpcs(); G.misiones.check(); registrar();
         G.dialogo.say([Vi('Funciona. Cada uno en lo suyo… y yo en la tercera percha, para dar la señal.'), Lu('Ahora de verdad: la tabla grande se levanta entre tres.')], () => G.ui.toast('Pósate en la percha vacía y da la señal', 3200));
       }
-      G.interaccion.add({ id: 'cuaderno', x: PUENTE_W.x - 1.5, z: PUENTE_W.z - 2.5, r: 2.6, label: () => ({ 4: 'Escribir el objetivo y los límites', 5: 'Abrir el tablero del plan' })[S.step] || 'Hablar con Iguaca', use: cuaderno });
+      G.interaccion.add({ id: 'cuaderno', ...EN({ x: PUENTE_W.x - 1.5, z: PUENTE_W.z - 2.5 }, { x: 33.5, z: -52.5 }), r: 2.6, label: () => ({ 4: 'Escribir el objetivo y los límites', 5: 'Abrir el tablero del plan' })[S.step] || 'Hablar con Iguaca', use: cuaderno });
       // La tabla grande: dos ayudantes en sus perchas (por el plan) y Vittata posada en la tercera, que da la señal
       let subiendo = -1;
       G.interaccion.add({ id: 'percha_v', x: PERCHAS.v.x, z: PERCHAS.v.z, r: 1.6, visible: () => S.step === 6, label: () => 'Dar la señal desde la percha',
         use: () => {
           if (Math.abs(S.pos.y - perchaV.y) > 0.5) { G.ui.toast('Pósate en la percha vacía (vuela hasta el poste) y da la señal', 2600); return; }
-          poner('levantada'); subiendo = 0; encuadrar(20, 0); G.audio.play('unlock'); G.misiones.check(); registrar();
+          poner('levantada'); subiendo = 0; encuadrar(PUENTE.x, PUENTE.z); G.audio.play('unlock'); G.misiones.check(); registrar();
           G.dialogo.say([Vi('¡Ahora!'), Vi('Sube. Entre tres, sube.')], () => G.ui.toast('Lleva la tabla larga al puente entre dos', 3000));
         } });
       // La tabla larga: solo se mueve si hay alguien en cada punta (Vittata y quien carga fuerte por el plan)
@@ -607,10 +654,10 @@
             G.dialogo.say([di(nombre(cargador()), 'Yo de esta punta. Tú marcas el paso.')], () => G.ui.toast('Llévala al puente y colócala', 2600));
           });
         } });
-      G.interaccion.add({ id: 'colocar', x: 24.2, z: 0, r: 2.6, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
+      G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
         use: () => {
-          llevando = false; encuadrar(24, 0); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
-          G.fx.burst(24, topPuente + 1.5, 0, 'gold', 30); G.misiones.check(); colocarNpcs(); registrar();
+          llevando = false; encuadrar(RX(24), RZ(0)); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
+          G.fx.burst(RX(24), topPuente + 1.5, RZ(0), 'gold', 30); G.misiones.check(); colocarNpcs(); registrar();
           const ultimo = tiene('plan_ensena') ? [di('Brote', 'El último nudo lo ato yo. Me lo enseñó Nudo.')] : [di('Brote', '¡Bravo! Desde aquí se ve bien.')];
           G.dialogo.say(ultimo.concat(L('evento:RaisedTogether')), () => G.ui.toast('Llegan dos grupos a la plaza', 3000));
         } });
@@ -627,7 +674,7 @@
       function grupos() {
         if (S.step < 8) { G.dialogo.say([Lu('La plaza. Aquí cabremos todos… de alguna forma.')]); return; }
         if (G.eventos.had('GroupsListened')) { G.dialogo.say([Lu('Ya se escucharon. Ahora, los asientos.')]); return; }
-        if (!tiene('grupos_intro')) { poner('grupos_intro'); encuadrar(0, 9.5); G.dialogo.say([di(GRUPOS.alta.who, 'Nosotros decimos el mirador.'), di(GRUPOS.baja.who, 'Y nosotros la plaza. Y no es lo mismo.'), Vi('Yo decido: lo mejor es…'), Lu('(Le toca el ala.) Todavía no. Escucha a uno, luego al otro, y repite lo que oíste.')], escucharA); return; }
+        if (!tiene('grupos_intro')) { poner('grupos_intro'); { const p = CI(0, 9.5); encuadrar(p.x, p.z); } G.dialogo.say([di(GRUPOS.alta.who, 'Nosotros decimos el mirador.'), di(GRUPOS.baja.who, 'Y nosotros la plaza. Y no es lo mismo.'), Vi('Yo decido: lo mejor es…'), Lu('(Le toca el ala.) Todavía no. Escucha a uno, luego al otro, y repite lo que oíste.')], escucharA); return; }
         if (!tiene('escucha_alta')) return escucharA();
         if (!tiene('escucha_baja')) return escucharB();
         comparten();
@@ -655,7 +702,7 @@
           });
         });
       }
-      G.interaccion.add({ id: 'grupos', x: 0, z: 9, r: 3, visible: () => S.step >= 8, label: () => S.step === 8 ? 'Escuchar a los dos grupos' : 'Hablar con los grupos', use: grupos });
+      G.interaccion.add({ id: 'grupos', ...CI(0, 9), r: 3, visible: () => S.step >= 8, label: () => S.step === 8 ? 'Escuchar a los dos grupos' : 'Hablar con los grupos', use: grupos });
       function marcas() {
         if (S.step < 9) { G.dialogo.say([Lu('Treinta y seis marcas de cal. Caben de varias formas.')]); return; }
         if (G.eventos.had('CircleFormed')) { const f = FORMAS.find(x => tiene('forma_' + x[0])); G.dialogo.say([Lu(f[2]), Lu(f[3])]); return; }
@@ -673,7 +720,7 @@
         const l = k === 'alta' || k === 'baja' ? di(quien, 'Venimos todos. Gracias por invitarnos.') : di(quien, 'Voy. Gracias por venir a buscarme.');
         G.dialogo.say([Vi('Este es tu sitio. Siéntate cuando quieras.'), l], () => { if (SENTABLES.every(x => tiene('sentado_' + x))) G.ui.toast('Habla con el Guardián en el centro', 3000); });
       }
-      for (const k of ['alta', 'baja']) G.interaccion.add({ id: 's_' + k, x: k === 'alta' ? -4 : 4, z: 9, r: 2.2, visible: () => S.step === 10 && !tiene('sentado_' + k), label: () => 'Invitar a su asiento', use: () => sentar(k) });
+      for (const k of ['alta', 'baja']) G.interaccion.add({ id: 's_' + k, ...CI(k === 'alta' ? -4 : 4, 9), r: 2.2, visible: () => S.step === 10 && !tiene('sentado_' + k), label: () => 'Invitar a su asiento', use: () => sentar(k) });
       // El pacto renovado y el final de temporada [KELVIN-2, 3, 6, 7, 8]
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
@@ -748,9 +795,13 @@
       const geoLuz = new THREE.SphereGeometry(0.7, 8, 6), matLuz = new THREE.MeshBasicMaterial({ color: '#ffe2a0', fog: false });
       for (let i = 0; i < LUCES_LEJANAS; i++) {
         const a = -0.7 + (i / (LUCES_LEJANAS - 1)) * 1.4 + Math.sin(i * 2.3) * 0.05, r = 110 + (i * 37 % 50);
-        const m = new THREE.Mesh(geoLuz, matLuz); m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r); lucesLejanas.add(m);
+        const m = new THREE.Mesh(geoLuz, matLuz);
+        // Mundo único: en el mapa real, sobre el mar abierto del norte, más allá del tepuy (se ven desde el mirador de la Ciudad)
+        if (REAL) m.position.set(Math.cos(a - Math.PI / 2) * (r + 170), 2 + (i * 13 % 5), Math.sin(a - Math.PI / 2) * (r + 170));
+        else m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r);
+        lucesLejanas.add(m);
       }
-      G.ep6 = { lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar };
+      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar };
     },
 
     pruebas: {
@@ -841,7 +892,7 @@
           check('M2 · Sin posarse en la percha no hay señal (aviso, sin castigo)', !S.collected.includes('levantada'));
           S.pos.y = p.y; tick(0.1); G.interaccion.action(); drain();
           check('M2 · Posada en la tercera percha: la tabla grande sube', S.collected.includes('levantada') && S.step === 7, 'paso ' + S.step);
-          check('M2 · La tabla grande ya se pisa (para llevar la larga andando); el tramo de la larga todavía no', Math.abs(G.fisica.suelo(20, 0, G.ep6.topPuente + 0.3) - G.ep6.topPuente) < 0.05 && G.fisica.suelo(24.5, 0, G.ep6.topPuente + 0.3) < G.ep6.topPuente - 0.1, [G.fisica.suelo(20, 0, G.ep6.topPuente + 0.3), G.fisica.suelo(24.5, 0, G.ep6.topPuente + 0.3), G.ep6.topPuente].map(x => x.toFixed(2)).join());
+          check('M2 · La tabla grande ya se pisa (para llevar la larga andando); el tramo de la larga todavía no', (() => { const c = G.ep6.PR(20, 0), l = G.ep6.PR(24.5, 0); return Math.abs(G.fisica.suelo(c.x, c.z, G.ep6.topPuente + 0.3) - G.ep6.topPuente) < 0.05 && G.fisica.suelo(l.x, l.z, G.ep6.topPuente + 0.3) < G.ep6.topPuente - 0.1; })(), [G.ep6.PR(20, 0), G.ep6.PR(24.5, 0)].map(p => G.fisica.suelo(p.x, p.z, G.ep6.topPuente + 0.3)).concat(G.ep6.topPuente).map(x => x.toFixed(2)).join());
           useAt('tabla_larga'); drain(); pick('Yo sola');
           check('M2 · La tabla larga no se mueve con una sola punta', !G.ep6.llevando());
           useAt('tabla_larga'); drain(); pick('agarre la otra punta');

@@ -3,15 +3,19 @@
 (function () {
   'use strict';
   const EP = window.AV_EP5 = window.AV_EP5 || {};
-  EP.taller = { id: 'taller', x: 0, z: 6 };
-  EP.niebla = { id: 'niebla', x: 0, z: -34 };
+  // Mundo único (pack.js, MAPA_REAL): con el interruptor encendido, los mismos puestos medidos sobre el mapa real (ver pack.js).
+  // La cadena sigue las mismas reglas: luz libre taller → loma → torre → mirador → niebla; el pilar, a 24,8 m del taller (más
+  // de lo que alcanza el sonido y menos que la torre, a 26,2 m), queda tapado por el borde de la meseta.
+  const R = !!EP.mapaReal, EN = (relleno, mapa) => Object.assign(relleno, R ? mapa : {});
+  EP.taller = EN({ id: 'taller', x: 0, z: 6 }, { x: -42, z: -120 });
+  EP.niebla = EN({ id: 'niebla', x: 0, z: -34 }, { x: -74, z: -150 });
   // Cinco alturas: dos lomas, dos ruinas y el mirador. El jugador usa tres.
   EP.estaciones = [
-    { id: 'loma', nombre: 'la loma baja', x: 0, z: -6 },
-    { id: 'otra', nombre: 'la otra loma', x: -14, z: -8 },
-    { id: 'torre', nombre: 'la torre que mira al mar', x: 0, z: -18 },
-    { id: 'mirador', nombre: 'el mirador', x: 0, z: -28 },
-    { id: 'pilar', nombre: 'el pilar', x: 18, z: -6 },
+    EN({ id: 'loma', nombre: 'la loma baja', x: 0, z: -6 }, { x: -42, z: -133 }),
+    EN({ id: 'otra', nombre: 'la otra loma', x: -14, z: -8 }, { x: -30, z: -138 }),
+    EN({ id: 'torre', nombre: 'la torre que mira al mar', x: 0, z: -18 }, { x: -50, z: -145 }),
+    EN({ id: 'mirador', nombre: 'el mirador', x: 0, z: -28 }, { x: -63, z: -146 }),
+    EN({ id: 'pilar', nombre: 'el pilar', x: 18, z: -6 }, { x: -59, z: -102 }),
   ];
   EP.codigos = {
     luz: { nombre: 'Luz', pieza: 'el espejo', ventaja: 'La luz llega lejos si no hay una loma en medio.', costo: 'No atraviesa la niebla, salvo desde el mirador.' },

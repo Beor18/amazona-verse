@@ -7,7 +7,24 @@
 (function () {
   'use strict';
   const EP = () => window.AV_EP5;
-  const IGUACA = { x: -4, z: 8 }, GUARDIAN = { x: 8, z: 10 }, APRENDIZ = { x: -10, z: 6 }, TRX = { x: 4, z: 8 }, PRUEBA = { x: 0, z: 2 };
+  // ---------- Mundo único (docs/equipo/MUNDO_UNICO.md § Interruptor) ----------
+  // MAPA_REAL apagado (false): el capítulo se juega en su mundo pequeño de siempre, igual que antes. Encendido (true), o con
+  // ?mapa=real en la URL para probar: en el mapa real del cap. 1, de noche, en Los Miradores (kelvin_ruinas_yunque_2) y la
+  // meseta del tepuy que los une con la Ciudad de los 36, con el Guardián abajo, en la Puerta del Yunque (kelvin_aldea_yunque).
+  // Coordenadas medidas sobre el suelo real el 2-nov (pendiente, agua y edificios de Kelvin) y la línea de vista de la cadena
+  // con el relieve real: el taller en el borde norte de la meseta; la loma baja y la torre sobre la meseta; el mirador y la
+  // niebla en el claro de Los Miradores; el pilar abajo, en la cornisa norte (78 m), tapado por el borde de la meseta, junto
+  // al pilar de piedra de Kelvin (allí no se pone el del kit). relevo.js e historia.js leen AV_EP5.mapaReal.
+  const MAPA_REAL = false;
+  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const EN = (relleno, mapa) => (REAL ? mapa : relleno);
+  window.AV_EP5 = window.AV_EP5 || {};
+  window.AV_EP5.mapaReal = REAL;
+  const IGUACA = EN({ x: -4, z: 8 }, { x: -46, z: -118 }), GUARDIAN = EN({ x: 8, z: 10 }, { x: -19, z: -79 }), APRENDIZ = EN({ x: -10, z: 6 }, { x: -49, z: -122 }),
+    TRX = EN({ x: 4, z: 8 }, { x: -38, z: -118 }), PRUEBA = EN({ x: 0, z: 2 }, { x: -42, z: -124 });
+  const INICIO = EN({ x: -4, z: 6 }, { x: -46, z: -121 });
+  // De noche en el mapa real: la hora de la noche (maravillas.js y musica.js leen S.hora: coquíes, bahía que brilla)
+  const HORA_NOCHE = 21;
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
   function onda() {
     const c = document.createElement('canvas'); c.width = 128; c.height = 128;
@@ -65,12 +82,29 @@
         nota: 'Capítulo 5. No uses tu nombre real.', inventario: {},
       },
     },
-    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: { x: -4, z: 6 }, camara: 0.6 },
+    jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, aparicion: INICIO, camara: 0.6 },
     guardado: { version: 1, claves: ['edu'], estado: () => ({ edu: { inicio: null, fin: null, fichas: [], formativa: {}, registro: null } }) },
     aula: { clave: 'amazonaverse.aula.ep5', estado: 'edu', archivo: 'amazonaverse_ep5', lecciones: () => window.AV_LECCIONES_EP5 },
     criadero: { desde: 'FragmentsOrdered', almacen: 'amazonaverse' },
     notasKelvin: [], // se rellenan al preparar, desde historia.js
-    mundo: {
+    // Mundo único: el mapa real del cap. 1 (AVE.mundoReal) de noche, con el cielo, las luces y el mar de la noche del estándar
+    // (los mismos valores del mundo pequeño), los lugares del capítulo y la flora despejada en sus sitios; sin el reubicar ni
+    // los pois del cap. 1. Sin el interruptor, el mundo pequeño de siempre.
+    mundo: REAL ? Object.assign({}, window.AVE.mundoReal, {
+      exposicion: 0.72,
+      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#6d84b0', cenit: '#24366e', sol: '#ffd7a8', niebla: [48, 720], permiso: 'noche' }),
+      luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#9eb6e4', suelo: '#3a4a32', hemi: 0.62, sol: '#ffd0a0', solInt: 1.35 }),
+      post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
+      mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
+      lugares: { inicio: { x: INICIO.x, z: INICIO.z + 1, r: 5 } },
+      pois: [], reubicar: null,
+      flora: Object.assign({}, window.AVE.mundoReal.flora, { evitar: pack => {
+        const D = window.AV_EP5 || {};
+        return [IGUACA, GUARDIAN, APRENDIZ, TRX, PRUEBA, INICIO].map(p => ({ x: p.x, z: p.z, r: 2.5 }))
+          .concat([D.taller, D.niebla].concat(D.estaciones || []).filter(Boolean).map(p => ({ x: p.x, z: p.z, r: 3 })), (D.ruinas || []).map(p => ({ x: p.x, z: p.z, r: 3 })),
+            ((pack.diario || {}).entradas || []).map(e => ({ x: e.x, z: e.z, r: 1.5 })));
+      } }),
+    }) : {
       tamano: 46, segmentos: 64,
       exposicion: 0.72,
       cielo: { color: '#6d84b0', cenit: '#24366e', sol: '#ffd7a8', niebla: [48, 720], nieblaAltura: [6, 48], permiso: 'noche' },
@@ -83,6 +117,9 @@
         evitar: [IGUACA, GUARDIAN, APRENDIZ, TRX, PRUEBA, { x: 0, z: 6 }, { x: 0, z: -6 }, { x: -14, z: -8 }, { x: 0, z: -18 }, { x: 0, z: -28 }, { x: 18, z: -6 }, { x: -18, z: -14 }, { x: 12, z: 12 }, { x: 0, z: -34 }] },
       oceano: { color: '#0b3a62', y: -2.6 },
     },
+    // Mundo único: los lugares y asentamientos del mapa con su nombre propio (ES/EN), como en el cap. 1
+    descubrir: REAL ? { omitir: ['luma', 'aldea', /^kelvin_/, /^parada_/] } : undefined,
+    asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.2 },
@@ -139,12 +176,12 @@
         memoria: { nombre: 'Memoria', desconocido: 'Una marca', sonido: 'pickup', rafaga: 'feathers' },
       },
       entradas: [
-        { id: 'espejo', cat: 'senal', nombre: 'Espejo de señales', x: 6, z: 16, texto: 'Un espejo chico para mandar un destello. En el juego, la niebla lo apaga.' },
-        { id: 'tambor', cat: 'senal', nombre: 'Tambor', x: -8, z: 16, texto: 'Un tambor. En el juego el golpe pasa la loma y se apaga si te alejas.' },
-        { id: 'banderas', cat: 'senal', nombre: 'Bandera de tela', x: 10, z: -2, texto: 'Una tela para verla de día. De noche, en el juego, hace falta luz.' },
-        { id: 'marcas', cat: 'memoria', nombre: 'Marcas en la piedra', x: 16, z: 14, texto: 'Cinco marcas: un 36, dos cotorras, un camino, un fuego y una mano. Lo que significan de verdad sigue abierto.' },
-        { id: 'especies', cat: 'memoria', nombre: 'Dos de las islas del sur', x: -12, z: 14, texto: 'Amazona martinicana y Amazona violacea. La UICN las tiene por extintas. Las conocemos por Du Tertre (1654) y Labat (1742). No hay restos. No decimos cuándo ni por qué.' },
-        { id: 'treinta', cat: 'memoria', nombre: 'El número 36', x: -2, z: -2, texto: 'En la piedra está el 36. En esta historia el pacto se llama así.' },
+        { id: 'espejo', cat: 'senal', nombre: 'Espejo de señales', ...EN({ x: 6, z: 16 }, { x: -37, z: -123 }), texto: 'Un espejo chico para mandar un destello. En el juego, la niebla lo apaga.' },
+        { id: 'tambor', cat: 'senal', nombre: 'Tambor', ...EN({ x: -8, z: 16 }, { x: -12, z: -80 }), texto: 'Un tambor. En el juego el golpe pasa la loma y se apaga si te alejas.' },
+        { id: 'banderas', cat: 'senal', nombre: 'Bandera de tela', ...EN({ x: 10, z: -2 }, { x: -15, z: -64 }), texto: 'Una tela para verla de día. De noche, en el juego, hace falta luz.' },
+        { id: 'marcas', cat: 'memoria', nombre: 'Marcas en la piedra', ...EN({ x: 16, z: 14 }, { x: -46, z: -140 }), texto: 'Cinco marcas: un 36, dos cotorras, un camino, un fuego y una mano. Lo que significan de verdad sigue abierto.' },
+        { id: 'especies', cat: 'memoria', nombre: 'Dos de las islas del sur', ...EN({ x: -12, z: 14 }, { x: -17, z: -85 }), texto: 'Amazona martinicana y Amazona violacea. La UICN las tiene por extintas. Las conocemos por Du Tertre (1654) y Labat (1742). No hay restos. No decimos cuándo ni por qué.' },
+        { id: 'treinta', cat: 'memoria', nombre: 'El número 36', ...EN({ x: -2, z: -2 }, { x: -34, z: -131 }), texto: 'En la piedra está el 36. En esta historia el pacto se llama así.' },
       ],
       hitos: [{ id: 'cuaderno', todos: true }],
     },
@@ -188,6 +225,8 @@
     preparar(G) {
       const S = G.S, H = G.terreno.height, D = EP();
       G.pack.notasKelvin = (D && D.notasKelvin) || [];
+      // Mundo único: en el mapa real el capítulo es de noche también para lo que lee la hora (coquíes, fauna, maravillas)
+      if (REAL) { const noche = () => { S.hora = HORA_NOCHE; }; noche(); G.on('apply', noche, 79); }
       const tiene = k => S.collected.includes(k);
       const poner = k => { if (!tiene(k)) S.collected.push(k); };
       const quitar = k => { const i = S.collected.indexOf(k); if (i >= 0) S.collected.splice(i, 1); };
@@ -308,7 +347,7 @@
       }
       // Cada estación puesta se ve: un mástil con la pieza del código (espejo, tambor o bandera) a la altura del rayo
       function mastil(e, cod) {
-        const x = e.x + (D.ruinas.some(r => r.id === e.id) ? 1.6 : 0), z = e.z, y = H(x, z);
+        const x = e.x + (D.ruinas.some(r => r.id === e.id && r.kit !== false) ? 1.6 : 0), z = e.z, y = H(x, z);
         const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 2.3, 6), new THREE.MeshLambertMaterial({ color: '#6b4a2a' }));
         palo.position.set(x, y + 1.15, z); rayos.add(palo);
         const pieza = cod === 'sonido' ? new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.36, 12), new THREE.MeshLambertMaterial({ color: '#a0703c' }))
@@ -357,6 +396,7 @@
       // Ancho de cada ruina y hacia dónde mira (la marca, hacia el taller)
       const RUINA_KIT = { torre: 2.8, mirador: 3.4, pilar: 1.8, portal: 3.4, altar: 2.6 };
       for (const r of D.ruinas) {
+        if (r.kit === false) continue; // mundo único: la ruina es un edificio de Kelvin (ya tiene su colisión)
         const alto = r.id === 'torre' || r.id === 'mirador' ? 4.2 : 2.4;
         const p = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, alto, 6), new THREE.MeshLambertMaterial({ color: '#8a8178' }));
         p.position.set(r.x, H(r.x, r.z) + alto / 2, r.z); scene.add(p);
@@ -369,7 +409,7 @@
       }
 
       // La otra loma: un bloque de piedra del kit (mientras carga, un poste bajo de piedra)
-      { const x = -14, z = -8, p = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 1.4, 6), new THREE.MeshLambertMaterial({ color: '#8a8178' }));
+      { const otra = D.estaciones.find(e => e.id === 'otra'), x = otra.x, z = otra.z, p = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 1.4, 6), new THREE.MeshLambertMaterial({ color: '#8a8178' }));
         p.position.set(x, H(x, z) + 0.7, z); G.renderer.scene.add(p); G.fisica.colliders.push({ x, z, r: 0.7, h: 1.4, kind: 'obj' });
         kit('bloque_piedra', 1.6).then(w => { w.position.set(x, H(x, z) - 0.1, z); w.rotation.y = 0.6; G.renderer.scene.add(w); G.renderer.scene.remove(p); }).catch(() => {}); }
 
