@@ -274,6 +274,42 @@ def tucumana(c):
     c.pintar(R['cola_base_lat'] * 0.75, hexc('#c0372c'))                                      # rojo en la base de la cola
     c.pico('#d9b9a2'); c.patas('#a4928e'); c.ojo('#e6801c', '#f1f0eb')                        # cuerno rosado; patas gris rosado; iris naranja
 
+def agilis(c):
+    # Render de Kelvin (Agilis.jpg): verde entera y pico gris. Macho adulto.
+    c.tono(verde_vientre='#7fbf2a', k_vientre=0.38)                                           # partes inferiores más pálidas y amarillentas
+    c.tintar(cab * np.clip(R['auricular'] * 1.2, 0, 0.85), hexc('#1f2a22'), keep=0.3)         # auriculares negruzcos
+    c.pintar(R['borde_ataque'] * ss(0.50, 0.54, x) * 0.92, hexc('#d22b22'))                   # coberteras primarias rojas
+    c.pintar(R['primarias'] * 0.85, hexc('#3c3f9a')); c.pintar(R['punta_primarias'] * 0.5, hexc('#1a1c3a'))  # primarias azul violáceo y negro
+    c.pintar(R['cola_base_lat'] * 0.7, hexc('#c0372c'))                                       # plumas laterales de la cola con rojo
+    c.pintar(cab * R['anillo'], hexc('#5e5f62'))                                              # anillo gris oscuro
+    c.pico('#4d4e52', color_punta='#3a3b3e', color_inferior='#6a6b6e')                        # gris oscuro, más pálido en la base
+    c.patas('#8e958a'); c.ojo('#4a2c18', '#5e5f62')                                           # patas gris verdoso; iris castaño oscuro
+
+def albifrons(c):
+    # Render de Kelvin (Albifrons.jpg): frente blanca, corona azul, antifaz rojo alrededor de los ojos y primarias azules. Macho.
+    c.tono()
+    c.tintar(cab * np.clip(R['corona'] * 1.0, 0, 0.9), hexc('#3f63b4'), keep=0.35)            # corona azul tras la frente
+    c.pintar(cab * np.clip(R['frente_ancha'] * 0.95, 0, 0.95), hexc('#f2f1ec'))               # frente blanca
+    roja = np.maximum(R['lores'], ss(0.165, 0.125, dE + 0.006 * n3) * ss(-0.02, 0.05, zz) * ss(1.15, 1.18, y))
+    c.pintar(cab * np.clip(roja * 0.95, 0, 0.95), hexc('#d3261f'))                            # lores y zona del ojo rojos
+    c.pintar(cab * R['anillo'], hexc('#d6d5d1'))                                              # anillo gris pálido
+    c.pintar(R['borde_ataque'] * 0.9, hexc('#d22b22'))                                        # borde carpal y coberteras primarias rojas
+    c.pintar(R['espejo'] * 0.8, hexc('#24408a'))                                              # espejo azul oscuro
+    c.pintar(R['primarias'] * 0.8, hexc('#2f56a8'))                                           # primarias azules (render de Kelvin)
+    c.pico('#e9c84a', color_punta='#d8b23a'); c.patas('#8f8580'); c.ojo('#e6c21c', '#d6d5d1')  # pico e iris amarillos
+
+def festiva(c):
+    # Render de Kelvin (Festiva.jpg): franja roja en la frente y los lores, azul alrededor de los ojos y primarias azules.
+    c.tono()
+    azul = ss(0.15, 0.10, dE + 0.006 * n3) * ss(1.17, 1.215, y) * ss(-0.12, 0.04, zz)       # azul sobre y detrás del ojo
+    c.tintar(cab * np.clip(azul * 1.0, 0, 0.9), hexc('#3f63b4'), keep=0.3)
+    c.pintar(cab * np.clip(np.maximum(R['frente'], R['lores']) * 0.95, 0, 0.95), hexc('#8e1e22'))  # frente estrecha y lores rojo oscuro
+    rabadilla = body * (x < 0.2) * ss(-0.05, -0.15, zz) * ss(0.40, 0.46, y) * ss(0.66, 0.58, y + 0.02 * n4)
+    c.tintar(rabadilla * 0.9, hexc('#c0262a'), keep=0.35)                                      # espalda baja y rabadilla rojas
+    c.pintar(R['primarias'] * 0.85, hexc('#3c3f9a'))                                          # primarias violeta azulado
+    c.pintar(cab * R['anillo'], hexc('#c9c7c2'))
+    c.pico('#8f857c', color_punta='#5e5650'); c.patas('#8f8580'); c.ojo('#d8891f', '#c9c7c2')  # pico cuerno oscuro; iris sin fuente (neutro)
+
 # ---------- PROPUESTAS (extintas, canon de Kelvin: no entran en el juego) ----------
 def martinicana(c):
     # Propuesta: tools/pieles/propuestas/README.md. Solo descripciones antiguas (Labat 1742, Buffon 1779), sin ejemplares.
@@ -295,7 +331,7 @@ def violacea(c):
     c.pintar(cab * R['anillo'], hexc('#b9b7b3'))
     c.pico('#2c2c2e'); c.patas('#6c7075'); c.ojo('#c8281e', '#b9b7b3')                        # pico negro, ojos rojos
 
-ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria, 'pretrei': pretrei, 'tucumana': tucumana, 'martinicana': martinicana, 'violacea': violacea}
+ESP = {'finschi': finschi, 'lilacina': lilacina, 'autumnalis': autumnalis, 'vinacea': vinacea, 'arausiaca': arausiaca, 'collaria': collaria, 'pretrei': pretrei, 'tucumana': tucumana, 'agilis': agilis, 'albifrons': albifrons, 'festiva': festiva, 'martinicana': martinicana, 'violacea': violacea}
 if __name__ == '__main__':
     sp = sys.argv[1]; out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(AQUI, '..', sp, sp + '.jpg')
     c = Lienzo(); ESP[sp](c); c.guardar(out)

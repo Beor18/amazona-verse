@@ -392,7 +392,7 @@ AVE.module('creador', function (G) {
       const ES = window.AV_ESPECIES;
       const conPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => e.piel && AVE.pieles.tiene(e.id)) : [];
       const faltan = conPiel.filter(e => !ids.has(e.id)).map(e => e.id);
-      ok('Las 31 especies con piel salen en el creador (21 de Kelvin + 10 pintadas, con vittata)', conPiel.length === 31 && !faltan.length, (faltan.join(',') || String(conPiel.length)));
+      ok('Las 34 especies con piel salen en el creador (21 de Kelvin + 13 pintadas, con vittata)', conPiel.length === 34 && !faltan.length, (faltan.join(',') || String(conPiel.length)));
       ok('Vittata sigue la primera', ops[0] && ops[0].id === 'vittata');
       const sinPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => !e.piel && e.id !== 'vittata' && !C3.SPECIES[e.id]) : [];
       const coladas = sinPiel.filter(e => ids.has(e.id)).map(e => e.id);
