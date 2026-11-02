@@ -93,7 +93,7 @@
   const PREG_ORDEN = { izquierda: '¿Qué señal será «izquierda»?', derecha: '¿Qué señal será «derecha»?', para: '¿Qué señal será «parar»?' };
 
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png',
-    Navegante: 'assets/agilis.png', Vecina: 'assets/vittata.png' }; // [KELVIN: especie y render de la navegante y de la gente de la otra orilla]
+    Navegante: 'assets/agilis.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); su render es arte pendiente (hoy agilis). [KELVIN: render de la gente de Villa Mangle]
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);
 
@@ -110,11 +110,11 @@
     { id: 'e_papa', disparador: 'interact:papa', personaje: 'Papá', emocion: 'pensando', lineas: ['¿El tronco más grande? ¿Y eso flota cargado?', 'Antes de cortar nada, probemos qué flota. Ahí está la poza.'] },
     { id: 'e_papa_v', disparador: 'interact:papa', personaje: 'Vittata', emocion: 'idea', lineas: ['Primero predigo, luego pruebo. Como con la casa.'] },
     { id: 'e_flota', disparador: 'evento:BoatLaunched', personaje: 'Abuela', emocion: 'feliz', lineas: ['¡Derechita! Ahora falta quién la lleve.'] },
-    { id: 'e_flota_n', disparador: 'evento:BoatLaunched', personaje: 'Navegante', emocion: 'pensando', nota: '[KELVIN: especie, nombre y de dónde viene la navegante]', lineas: ['(En el muelle, una cotorra mira la canoa con las alas cruzadas.)'] },
+    { id: 'e_flota_n', disparador: 'evento:BoatLaunched', personaje: 'Navegante', emocion: 'pensando', nota: 'Kelvin 2-nov: la navegante es Nayara, una Amazona ventralis de La Española; se presenta en e_nav_n2', lineas: ['(En el muelle, una cotorra mira la canoa con las alas cruzadas.)'] },
     { id: 'e_nav', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'pensando', lineas: ['Ese bote flota, sí. Pero hoy no sale.'] },
     { id: 'e_nav_v', disparador: 'evento:NavigatorMet', personaje: 'Vittata', emocion: 'triste', lineas: ['¡Pero si está listo! Lo hice yo.'] },
     { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si el Guardián va en el bote o despide desde el muelle]', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
-    { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
+    { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Me llamo Nayara. Crucé el mar desde La Española, y allá aprendí a leer el agua.', 'Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
     { id: 'e_fin', disparador: 'evento:Chapter3Completed', personaje: 'Navegante', emocion: 'feliz', lineas: ['Este bote ya no es tuyo ni mío. Es de las dos.'] },
     { id: 'e_fin_v', disparador: 'evento:Chapter3Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Enrolla el plano de la Vecina y se lo lleva.)', 'Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.'] },
     { id: 'e_fin_i', disparador: 'evento:Chapter3Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste qué flota, leíste el agua y supiste cuándo dar el timón. Cuando vuelvas a Villa Raíz, ven y te hago unas preguntas. Sin prisa y sin nota.'] },
@@ -181,7 +181,7 @@
       { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
       { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 1.8 },
       { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGANTE.x, z: NAVEGANTE.z, escala: 1.8 },
-      { id: 'vecina', nombre: 'Vecina', sprite: IMG.Vecina, x: VECINA.x, z: VECINA.z, escala: 1.8 }, // [KELVIN: quién vive en la otra orilla]
+      { id: 'vecina', nombre: 'Vecina', sprite: IMG.Vecina, x: VECINA.x, z: VECINA.z, escala: 1.8 }, // la otra orilla es Villa Mangle (Kelvin 2-nov)
     ],
     objetos: {}, recursos: [],
 
@@ -272,7 +272,7 @@
         { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}. El plano del bote estaba en la mesa de todos.` },
         { id: 'bote', img: 'bote', needs: 'BoatLaunched', texto: 'La primera botadura falló en una parte. La cambié… ¡y flotó!' },
         { id: 'senales', img: 'senales', needs: 'HelmChosen', texto: S => S.collected.includes('timon_vittata') ? 'Acordamos señales. Yo llevé el timón y ella me cantó el agua.' : 'Acordamos señales y le di el timón a quien sabe leer el agua.' },
-        { id: 'llegada', img: 'llegada', needs: 'Chapter3Completed', texto: 'Cruzamos la bahía. En la otra orilla pregunté antes de contar.' },
+        { id: 'llegada', img: 'llegada', needs: 'Chapter3Completed', texto: 'Cruzamos la bahía. En Villa Mangle pregunté antes de contar.' },
       ],
     },
 
@@ -806,7 +806,7 @@
         elegir('Vittata', '¿Qué le dices?', [{ label: '¡Miren el bote que hicimos! Lo construimos nosotras', v: 'contar' }, { label: 'Hola. ¿Cómo se llama este sitio y quiénes viven aquí?', v: 'preguntar' }], o => {
           if (o.v === 'contar') { G.dialogo.say([di('Vecina', 'Botes aquí sobran, mija. Mira la orilla.'), Vi('Tiene razón. Perdón: mejor pregunto primero.')], saludar); return; }
           poner('pregunto'); G.audio.play('tick');
-          G.dialogo.say([di('Vecina', 'Gracias por preguntar. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.'), di('Vecina', 'Sabemos de agua y de redes. Y también tenemos un transmisor: oímos una voz.'),
+          G.dialogo.say([di('Vecina', 'Gracias por preguntar. Esto es Villa Mangle. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.'), di('Vecina', 'Sabemos de agua y de redes. Y también tenemos un transmisor: oímos una voz.'),
             Vi('¡Nosotras también! Lo que oímos encaja con lo suyo, como dos mitades.')], intercambio);
         });
       }

@@ -26,20 +26,27 @@
   // De noche en el mapa real: la hora de la noche (maravillas.js y musica.js leen S.hora: coquíes, bahía que brilla)
   const HORA_NOCHE = 21;
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
-  function onda() {
+  // Retrato de onda (Kelvin 2-nov: dos voces distintas que se unen al final): dorada (voz A, Mara) y violeta (voz B, Vela);
+  // con las dos, el retrato de siempre («Voz» antes de la revelación y «Voces» cuando hablan juntas).
+  function onda(dorada = true, violeta = true) {
     const c = document.createElement('canvas'); c.width = 128; c.height = 128;
     const g = c.getContext('2d');
     g.fillStyle = '#243044'; g.fillRect(0, 0, 128, 128);
     g.lineWidth = 4; g.lineCap = 'round';
-    g.strokeStyle = '#f2c21a'; g.beginPath();
-    for (let x = 10; x <= 118; x++) { const y = 48 + Math.sin(x * 0.18) * 12; if (x === 10) g.moveTo(x, y); else g.lineTo(x, y); }
-    g.stroke();
-    g.strokeStyle = '#8d7aee'; g.beginPath();
-    for (let x = 10; x <= 118; x++) { const y = 84 + Math.sin(x * 0.31 + 1) * 10; if (x === 10) g.moveTo(x, y); else g.lineTo(x, y); }
-    g.stroke();
+    if (dorada) {
+      g.strokeStyle = '#f2c21a'; g.beginPath();
+      for (let x = 10; x <= 118; x++) { const y = 48 + Math.sin(x * 0.18) * 12; if (x === 10) g.moveTo(x, y); else g.lineTo(x, y); }
+      g.stroke();
+    }
+    if (violeta) {
+      g.strokeStyle = '#8d7aee'; g.beginPath();
+      for (let x = 10; x <= 118; x++) { const y = 84 + Math.sin(x * 0.31 + 1) * 10; if (x === 10) g.moveTo(x, y); else g.lineTo(x, y); }
+      g.stroke();
+    }
     return c.toDataURL('image/png');
   }
   IMG.Voz = onda();
+  IMG.Voces = IMG.Voz; IMG.Mara = onda(true, false); IMG.Vela = onda(false, true);
   const di = (who, text) => ({ who, img: IMG[who] || IMG.Vittata, text });
   const Lu = t => di('Iguaca', t);
   // D11 (DECISION_LOG, AP10 lote 2): lo que se construyó en el ep. 4 (puente o muelles) sigue ahí (registro de temporada, src/game/temporada.js).
@@ -51,16 +58,25 @@
 
   const DIALOGOS = { escenas: [
     { id: 'e_inicio', disparador: 'inicio:ep5', personaje: 'Vittata', emocion: 'sorpresa', lineas: ['Dos voces a la vez, pisándose en la misma frecuencia.', 'Esa voz es de ahora… y la otra también.'] },
-    { id: 'e_fin_a', disparador: 'evento:VoicesRevealed', personaje: 'Voz', emocion: 'idea', lineas: [
+    // Kelvin 2-nov (decisión 2): dos voces distintas, cada una con su onda, que se unen al final. Mismas líneas que antes, repartidas;
+    // las escenas del mismo disparador se encadenan en orden (src/game/dialogo.js). Nombres definitivos de Kelvin (2-nov): Mara (martinicana) y Vela (violacea).
+    { id: 'e_fin_a', disparador: 'evento:VoicesRevealed', personaje: 'Mara', emocion: 'idea', lineas: [
       'Villa Raíz. Por fin.',
       'Nos conocían por otros nombres, en dos islas del sur.',
-      'Yo soy Alba.',
-      'Y yo, Violeta.',
+      'Yo soy Mara.',
+    ] },
+    { id: 'e_fin_a2', disparador: 'evento:VoicesRevealed', personaje: 'Vela', emocion: 'idea', lineas: [
+      'Y yo, Vela.',
       'Ya no estamos donde estábamos. Pero hablamos desde ahora, igual que ustedes.',
+    ] },
+    { id: 'e_fin_a3', disparador: 'evento:VoicesRevealed', personaje: 'Mara', emocion: 'idea', lineas: [
       'El pacto no se rompió con el cielo. Se rompió cuando dejamos de hablarnos.',
+    ] },
+    { id: 'e_fin_a4', disparador: 'evento:VoicesRevealed', personaje: 'Voces', emocion: 'idea', lineas: [
+      '(Las dos ondas se juntan en una sola voz.)',
       'Busquen a los que quedan. Los treinta y seis no eran treinta y seis por separado.',
     ] },
-    { id: 'e_fin_g', disparador: 'evento:Chapter5Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['Alba y Violeta… Esos nombres los había perdido.'] }, // D3 y D6 (DECISION_LOG 30-oct): los nombres vuelven al oírlas
+    { id: 'e_fin_g', disparador: 'evento:Chapter5Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['Mara y Vela… Esos nombres los había perdido.'] }, // D3 y D6 (DECISION_LOG 30-oct): los nombres vuelven al oírlas
     { id: 'e_fin_i', disparador: 'evento:Chapter5Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Mira: otra luz, más allá. Y otra.', 'No los vas a poder juntar tú sola.'] },
     { id: 'e_fin_v', disparador: 'evento:Chapter5Completed', personaje: 'Vittata', emocion: 'feliz', lineas: ['No. Pero sí puedo ayudar a que se junten.'] },
   ] };
@@ -539,7 +555,7 @@
       }
       function fichas() {
         if (S.step < 6) { G.dialogo.say([di('Guardián', 'Antes éramos treinta y… Las torres hablaban de isla en isla con…')]); return; }
-        if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', G.eventos.had('VoicesRevealed') ? 'Alba y Violeta. Esta vez no se me olvidan.' : 'Eran dos. Las de las islas del sur.')]); return; }
+        if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', G.eventos.had('VoicesRevealed') ? 'Mara y Vela. Esta vez no se me olvidan.' : 'Eran dos. Las de las islas del sur.')]); return; }
         G.dialogo.say([
           di('Guardián', 'Antes éramos treinta y seis. Las torres hablaban de isla en isla con luz, con voz o con tela.'),
           di('Vittata', 'Me poso a su lado. El Guardián toca la medalla.'),

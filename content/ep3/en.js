@@ -86,7 +86,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "La primera botadura falló en una parte. La cambié… ¡y flotó!": "The first launch failed in one part. I changed it… and it floated!",
  "Acordamos señales. Yo llevé el timón y ella me cantó el agua.": "We agreed on signals. I took the helm and she called out the water for me.",
  "Acordamos señales y le di el timón a quien sabe leer el agua.": "We agreed on signals and I gave the helm to the one who can read the water.",
- "Cruzamos la bahía. En la otra orilla pregunté antes de contar.": "We crossed the bay. On the other shore I asked before telling.",
+ "Cruzamos la bahía. En Villa Mangle pregunté antes de contar.": "We crossed the bay. In Villa Mangle I asked before telling.",
 
  // Escenas
  "El plano del bote está en la mesa de todos. La abuela escribió «que no se vire»; el papá, «amarre doble».": "The boat blueprint is on everyone's table. Grandma wrote “don't let it tip over”; Dad wrote “double lashing”.",
@@ -99,6 +99,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Ese bote flota, sí. Pero hoy no sale.": "That boat floats, yes. But it's not going out today.",
  "¡Pero si está listo! Lo hice yo.": "But it's ready! I made it.",
  "Mija, tú hiciste el bote; ella conoce el agua.": "Dear, you made the boat; she knows the water.",
+ "Me llamo Nayara. Crucé el mar desde La Española, y allá aprendí a leer el agua.": "My name is Nayara. I crossed the sea from Hispaniola, and that's where I learned to read the water.",
  "Yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.": "I sail them, I don't make them. See for yourself: the ribbons on the two posts, the clouds from the lookout and the river current. Then we'll talk.",
  "(Enrolla el plano de la Vecina y se lo lleva.)": "(She rolls up the Neighbor's plan and takes it with her.)",
  "Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.": "A road would help everyone, but it would cost forest. Before deciding, I'll ask everyone and look closely at what is gained and what is lost.",
@@ -321,7 +322,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Hola. ¿Cómo se llama este sitio y quiénes viven aquí?": "Hello. What is this place called, and who lives here?",
  "Botes aquí sobran, mija. Mira la orilla.": "We have plenty of boats here, dear. Look at the shore.",
  "Tiene razón. Perdón: mejor pregunto primero.": "She's right. Sorry: I'd better ask first.",
- "Gracias por preguntar. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.": "Thank you for asking. We who live here got back on our feet after the Rupture, like you.",
+ "Gracias por preguntar. Esto es Villa Mangle. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.": "Thank you for asking. This is Villa Mangle. We who live here got back on our feet after the Rupture, like you.",
  "Sabemos de agua y de redes. Y también tenemos un transmisor: oímos una voz.": "We know about water and nets. And we have a transmitter too: we hear a voice.",
  "¡Nosotras también! Lo que oímos encaja con lo suyo, como dos mitades.": "So do we! What we heard fits with yours, like two halves.",
  "¿Qué les ofrecemos?": "What do we offer them?",

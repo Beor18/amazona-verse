@@ -271,3 +271,19 @@ Iguaca es una *Amazona vittata* de otra familia de cotorras puertorriqueñas: m�
 
 ## 2-nov · Los huevos del criadero son de fantasía (Kelvin)
 «Ponlo como quieras: los huevos tendrán colores especiales luego, es un juego, hay fantasía.» No hay fuente del color del huevo de *A. vittata* (BM120), así que el juego ya no dice que el huevo es blanco «como los de las cotorras de verdad» (criadero.js y en.js): «Adentro hay un huevo. ¿Qué cotorrita saldrá?». La ficha real `huevo_blanco` queda parcial y no se muestra. Ver `docs/equipo/FUENTES_CAP1.md`.
+
+## 2-nov, Kelvin: 8 decisiones narrativas (definitivas)
+Kelvin aprobó las ocho el 2-nov; la 3 y la 8 las confirmó como definitivas después de la revisión de coherencia. Condiciones: no cambiar mecánicas, no tocar el modelo ni el rig de Vittata, no quitar personajes, capítulos ni contenido que funciona, y las dos especies históricas siguen en las 36. Solo cambian textos, nombres, notas y una sección del Cuaderno del cap. 6.
+1. **Guardián:** cotorra mayor, *Amazona imperialis*, sabia y protectora (cierra KELVIN-1 y el conflicto abierto de `CANON_REGISTRY.md`). Ya era lo que usa el juego: su render de *imperialis* deja de ser sustituto. Falta solo su arte definitivo.
+2. **La Voz:** dos voces ancestrales distintas que se unen al final. Cap. 5: la revelación se reparte entre Mara (onda dorada) y Vela (onda violeta), y la última línea, «Busquen a los que quedan…», la dicen juntas («Voces», las dos ondas). Cap. 6: la insinuación de «hablamos desde ahora» (D4) la dicen las dos juntas.
+3. **Las extintas:** Mara (*A. martinicana*) y Vela (*A. violacea*), en lugar de Alba y Violeta (D3, que era provisional). Marea (cap. 6, *arausiaca*) conserva su nombre; según Kelvin no hay conflicto. Las dos siguen entre las 36.
+4. **La navegante:** Nayara, *A. ventralis* de La Española. Se presenta en el cap. 3 («Me llamo Nayara. Crucé el mar desde La Española…»). Vive en el muelle de Villa Raíz, así que D19 se mantiene: es de aquí, pero llegó por mar. Los caps. 4 y 6 la nombran.
+5. **La otra comunidad:** Villa Mangle, en la otra orilla. La Vecina la nombra en el cap. 3; el cap. 4 la nombra en el inicio y en el cuidado «Construir por turnos con Villa Mangle».
+6. **Cap. 4:** el jugador elige entre los tres proyectos (D26), Vittata facilita y la asamblea participa. El juego ya funcionaba así; solo cambia la pregunta de la asamblea: «Ya hablaron todos; yo abro la ronda y cada quien dice lo suyo».
+7. **Cap. 6:** se quedan los seis visitantes y sus nombres (KELVIN-1 del ep. 6). No hay cambio en el juego.
+8. **La medalla del Guardián:** es canon (D5: igual a una pieza del emblema) y se gana. Al renovar el pacto (fin del cap. 6), tras nombrarla Guardiana del Pacto, el Guardián se quita la medalla y se la da a Vittata: «Es tuya, mija. Te la ganaste juntando a los que quedan». Desde ahí sale en el Cuaderno del cap. 6 como sección propia, con `G.diario.seccion`, el mismo sistema de las fichas del Aula. Se guarda como `S.collected` «medalla». Sin mecánica nueva, sin accesorio ni modelo 3D.
+
+Avisos para Kelvin:
+- El sprite de Nayara en el cap. 3 sigue siendo el sustituto *agilis*; en los caps. 4 y 6 es `navegante.png`. Es arte.
+- El rótulo del mapa «La Otra Orilla · Mesa del Este» (`content/cap1/asentamientos.js`, nombres K2) no se cambió a Villa Mangle.
+- «Medalla de oro/plata/bronce» de los retos es otra cosa. Por eso la del Guardián siempre se nombra «la medalla del Guardián».

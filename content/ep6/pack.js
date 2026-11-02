@@ -6,7 +6,7 @@
    Diseño: docs/equipo/EP6_GDD.md, EP6_NARRATIVA.md y EP6_MISIONES.md (tarea AL1). Ábrelo con index.html?pack=ep6 (o desde la portada).
    Lo que depende del canon de Kelvin (EP6_GDD.md §10) queda con la opción por defecto del GDD y marcado [KELVIN] en un
    comentario o en «nota», nunca en el texto que lee el jugador:
-     [KELVIN-1] Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
+     [KELVIN-1] (Kelvin 2-nov: se quedan los seis visitantes y sus nombres) Llegan 6 guardianes con tarjeta y voz, inspirados en 6 especies vivas del catálogo (Mira · versicolor, Roca · guildingii,
                 Marea · arausiaca, Nudo · leucocephala (la cubana, Kelvin 1-nov), Eco · collaria, Brote · barbadensis) y dos grupos más (isla alta e isla baja).
                 Sus habilidades son del personaje, no de la especie. Retratos sustitutos (agilis/vittata) hasta tener los renders.
                 D32 (DECIDIDO-EQUIPO 30-oct): llegan los guardianes que el jugador encontró en la temporada (registro de temporada,
@@ -15,8 +15,10 @@
      [KELVIN-2] D33 (DECIDIDO-EQUIPO 30-oct): el pacto es un objeto, el emblema de los 36 completo, con la promesa grabada
                 («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
-                D3/D4 (DECIDIDO-EQUIPO 30-oct): se llaman Alba y Violeta, y al final Violeta insinúa por qué hablan «desde ahora»
-                (una frase sin explicar; la explicación sigue guardada).
+                Kelvin 2-nov (definitivo): se llaman Mara (martinicana) y Vela (violacea); son dos voces distintas que se unen al
+                final, así que la insinuación de por qué hablan «desde ahora» (D4) la dicen las dos juntas («Voces»), sin explicar.
+     [KELVIN-3 · medalla] Kelvin 2-nov (definitivo): al renovar el pacto el Guardián le da su medalla a Vittata (se la ganó) y queda
+                en el Cuaderno como sección propia (G.diario.seccion). Solo diálogo y Diario: sin mecánica nueva ni modelo 3D.
      [KELVIN-4] D34 (DECIDIDO-EQUIPO 30-oct): la Ciudad de los 36 si el mapa lo permite; si no, la plaza de Villa Raíz.
                 Este pack tiene su propio mundo analítico (sin la Ciudad, que está en el mapa del cap. 1): queda la plaza; pedido en PEDIDOS.md.
      [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
@@ -132,8 +134,8 @@
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', 'Guardián': 'assets/guardian.png', Voces: RETRATO_VOCES, Aprendiz: 'assets/aprendiz.png',
     'Vocera de la isla alta': 'assets/agilis.png', 'Vocero de la isla baja': 'assets/vittata.png' };
   for (const v of VISITANTES) IMG[v.nombre] = v.sprite;
-  IMG.Violeta = RETRATO_VOCES; // D3: una de las dos voces, con el mismo retrato neutro
-  IMG.Navegante = 'assets/navegante.png'; // la misma de los eps. 3 y 4 [KELVIN: especie y render de la navegante]
+  IMG.Vela = RETRATO_VOCES; // Mara y Vela (Kelvin 2-nov), con el mismo retrato neutro
+  IMG.Navegante = 'assets/navegante.png'; // Nayara, la de los eps. 3 y 4: Amazona ventralis de La Española (Kelvin 2-nov)
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Vi = t => di('Vittata', t), Gu = t => di('Guardián', t);
 
@@ -141,9 +143,9 @@
   // visitantes de la historia (mínimo 6). Sin registro (capítulo suelto), la línea de siempre y solo los 6.
   const LLEGAN_DEF = 'Vienen los guardianes que fuimos encontrando, y otros nuevos. Hoy llegan seis por lo menos; los demás todavía son luces lejanas.';
   const LLEGAN = {
-    navegante: 'Vienen los guardianes que fuimos encontrando: quien navega ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
+    navegante: 'Vienen los guardianes que fuimos encontrando: Nayara ya viene remando río abajo. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
     bosquecillo: 'Vienen los guardianes que fuimos encontrando: el del bosquecillo del estrecho dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
-    'navegante+bosquecillo': 'Vienen los guardianes que fuimos encontrando: quien navega viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
+    'navegante+bosquecillo': 'Vienen los guardianes que fuimos encontrando: Nayara viene remando río abajo y el del bosquecillo dejó su nido para venir. Y otros nuevos: hoy llegan seis por lo menos; los demás todavía son luces lejanas.',
   };
   const NAVEGA_LLEGA = EN({ x: 8.5, z: 8 }, { x: 37, z: -35 }); // junto a la plaza, lejos de los muelles de los 6 (en el real, río arriba de los muelles)
   const NAVEGA_DICE = 'Vi la cadena de señales y vine remando. Esta vez no vengo a decir «hoy no».';
@@ -159,8 +161,8 @@
   const lineasInicio = G => G.dialogo.L('inicio:ep6').map(l => (l.text === LLEGAN_DEF ? Object.assign({}, l, { text: lineaLlegan() }) : l));
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1: cuántos llegan y de dónde]',
-      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla. Alba y Violeta pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
+    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1 decidido por Kelvin el 2-nov: se quedan los seis visitantes y sus nombres; D32 suma a los encontrados]',
+      lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla. Mara y Vela pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
     { id: 'e_tarjetas_i', disparador: 'evento:CardsFilled', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Sí te necesitaron. Para presentarlos.', 'Ahora el puente. Te espero allí con el cuaderno.'] },
@@ -224,7 +226,7 @@
     asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA_RIO.x, z: IGUACA_RIO.z, escala: 2.2, flota: true },
-      { id: 'guardian', nombre: 'Guardián', sprite: IMG['Guardián'], x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.4 }, // [KELVIN-6: qué forma tiene]
+      { id: 'guardian', nombre: 'Guardián', sprite: IMG['Guardián'], x: GUARDIAN.x, z: GUARDIAN.z, escala: 2.4 }, // forma: cotorra mayor, Amazona imperialis (Kelvin 2-nov)
       { id: 'alta', nombre: 'Vocera de la isla alta', sprite: IMG['Vocera de la isla alta'], ...CI(-4, 9), escala: 1.8 },
       { id: 'baja', nombre: 'Vocero de la isla baja', sprite: IMG['Vocero de la isla baja'], ...CI(4, 9), escala: 1.8 },
       { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGA_LLEGA.x, z: NAVEGA_LLEGA.z, escala: 1.8 }, // D32: solo si se encontró
@@ -725,7 +727,7 @@
       function guardian() {
         if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
         if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola, Guardiana.')]); return; }
-        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); poner('medalla'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
           Gu('El pacto antiguo decía… Lo recuerdo a pedazos. Mejor así: ahora lo recordamos entre todos.'),
@@ -738,6 +740,8 @@
           Vi('Tiene algo grabado alrededor…'),
           Gu('Entonces, entre todos: nos conocemos, nos ayudamos y nos seguimos buscando.'),
           Gu('Y tú, Vittata: desde hoy eres Guardiana del Pacto. No para mandar: para que nadie se quede fuera.'),
+          Gu('(Se quita la medalla.) Es igual a una de las piezas. Cada vez que la tocaba, me volvía un recuerdo.'), // Kelvin 2-nov: la medalla se gana
+          Gu('Ya no me hace falta: ahora recordamos entre todos. Es tuya, mija. Te la ganaste juntando a los que quedan.'),
           Vi('Guardiana del Pacto… Vale. Pero lo cuidamos entre todos.'),
         ], terminar);
       }
@@ -747,10 +751,13 @@
         G.misiones.check(); G.misiones.advanceTo(G.misiones.DONE); colocarNpcs(); registrar();
         G.fx.burst(MIRADOR.x, H(MIRADOR.x, MIRADOR.z) + 3, MIRADOR.z, 'feathers', 30);
         G.dialogo.say([Lu('De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.'),
-          di('Violeta', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.'),
+          di('Voces', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.'),
           Gu('Las islas olvidadas no oyen el relevo.'), Vi('(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)'),
           Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
       }
+      // La medalla del Guardián en el Cuaderno (Kelvin 2-nov): sección propia del Diario, solo cuando ya se la dio (S.collected 'medalla')
+      const seccionMedalla = { id: 'medalla', html: () => (tiene('medalla') ? '<span class="lbl">La medalla del Guardián</span><ul class="diary"><li class="found"><span class="ico pacto" aria-hidden="true"></span><div><b>La medalla del Guardián</b><small>Me la dio el Guardián al renovar el pacto. Es igual a una de las piezas del emblema de los 36.</small></div></li></ul>' : '') };
+      if (G.diario && G.diario.seccion) G.diario.seccion(seccionMedalla);
       G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 11 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
 
       // ---------- Iguaca: pistas del paso en curso y, al final, las preguntas (opcionales) ----------
@@ -801,7 +808,7 @@
         else m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r);
         lucesLejanas.add(m);
       }
-      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar };
+      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, sentados, asientos, tablero, probar, seccionMedalla };
     },
 
     pruebas: {
@@ -925,6 +932,7 @@
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);
           check('M3 · D33: el pacto es un objeto, el emblema de los 36 completo', S.collected.includes('emblema'));
+          check('M3 · Kelvin 2-nov: el Guardián le da su medalla a Vittata al final y sale en el Cuaderno', S.collected.includes('medalla') && /La medalla del Guardián/.test(G.ep6.seccionMedalla.html()));
           check('El cómic sale de los eventos (con la viñeta del atasco, que sí pasó)', G.comic.comicPanels().length === 6, G.comic.comicPanels().length);
 
           // ---------- §5 «Iguaca te pregunta» · §6 Modo Maestro · §7 Diario y criadero ----------
@@ -974,7 +982,7 @@
             check('D32 · Registro vacío: la línea de siempre («seis por lo menos»), los 6 visitantes y quien navega no está', textoLlegan().includes('Vienen los guardianes que fuimos encontrando, y otros nuevos.') && G.ep6.VISITANTES.length === 6 && !navNpc().visible && !navIt().visible(), textoLlegan());
             TP.encontrar(3, 'navegante'); TP.encontrar(4, 'bosquecillo'); G.ep6.colocarNpcs();
             const con = textoLlegan(); lineas().forEach(ver); ver(navIt().label());
-            check('D32 · Con quien navega y el guardián del bosquecillo encontrados: se nombran y quien navega está junto a la plaza', /quien navega viene remando/.test(con) && /bosquecillo dejó su nido/.test(con) && /seis por lo menos/.test(con) && navNpc().visible && navIt().visible(), con);
+            check('D32 · Con quien navega y el guardián del bosquecillo encontrados: se nombran y quien navega está junto a la plaza', /Nayara viene remando/.test(con) && /bosquecillo dejó su nido/.test(con) && /seis por lo menos/.test(con) && navNpc().visible && navIt().visible(), con);
             const navDijo = []; const say1 = D.say; D.say = function (lines) { (lines || []).forEach(l => navDijo.push(l.text)); return say1.apply(this, arguments); };
             useAt('navegante'); drain(); D.say = say1;
             check('D32 · Quien navega habla («Esta vez no vengo a decir «hoy no»»)', navDijo.some(t => /hoy no/.test(t)), navDijo.join(' | '));
