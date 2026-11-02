@@ -150,7 +150,7 @@ AVE.module('diario', function (G) {
     check('Solo salen las especies con datos completos', L.length === todas.filter(conDatos).length && L.length > 0, L.length + '/' + todas.length);
     const difiere = e => !(e.catalogo && e.uicn && e.catalogo.uicn === e.uicn.categoria), disc = todas.filter(e => conDatos(e) && difiere(e));
     const sinUicn = L.filter(s => !s.uicn);
-    check('Las especies que no coinciden con el catálogo (ESPECIES_DISCREPANCIAS.md) van sin estado UICN', todas.filter(difiere).length >= 13 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
+    check('Las que siguen sin coincidir con el catálogo (tresmariae, sin evaluación propia) van sin estado UICN', todas.filter(difiere).length >= 1 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
     check('Las que coinciden sí traen estado UICN', L.filter(s => s.uicn).length === L.length - sinUicn.length && L.some(s => s.id === 'vittata' && s.uicn === 'CR'));
     const aj = G.aula && G.aula.aj, ant = aj && aj.idioma;
     try {

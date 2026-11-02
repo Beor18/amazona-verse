@@ -5,6 +5,8 @@ Kelvin decide. Estas 13 de las 36 especies del catálogo (34 vivas y 2 extintas)
 - **Catálogo:** `AmazonaVerse_Catalogo_Especies.pdf` (Wikipedia «List of parrots» y BirdLife, 24 oct 2026).
 - **Verificado:** la evaluación de BirdLife International, autoridad de la Lista Roja para aves, que cita la Wikipedia en inglés. Se leyó el 25 oct 2026.
 - **Datos:** `content/comun/especies.js` usa el estado verificado y guarda el del catálogo en `catalogo.uicn`.
+**2-nov-2026 · Kelvin: aplicado.** Los 12 estados verificados pasan al catálogo del juego (`content/comun/especies.js`, campo `catalogo.uicn`), y el Diario ya los muestra con su evaluación de BirdLife. *A. tresmariae* sigue sin estado, porque la UICN no la evalúa por separado. Las 36 especies se conservan.
+
 
 | Especie | Nombre en el catálogo | Catálogo | Verificado | Evaluación citada | Ficha UICN |
 |---|---|---|---|---|---|
