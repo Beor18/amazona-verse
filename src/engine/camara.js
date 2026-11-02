@@ -41,6 +41,7 @@ AVE.module('camara', function (G) {
     rollMax: 4, rollK: 0.09,       // inclinación en vuelo: máximo (°) y grados por grado/s de giro del rumbo
     fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
     caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
+    pasoMax: 36,                   // m/s como mucho al seguir (a 60 fps, 0,6 m por cuadro; vuela a 25 m/s con impulso)
     caidaEspera: 1.2,              // s entre dos dollies de aterrizaje (saltos seguidos: sin latido)
     plano: 1.2, planoGiro: 0.55,   // plano de descubrimiento: duración (s) y giro de la órbita (rad)
     inclinaMax: 70, inclinaMin: 25, // mirar arriba: ° del centro de la vista sobre el horizonte / ° extra hacia abajo
@@ -195,6 +196,7 @@ AVE.module('camara', function (G) {
   // podían dar un cuadro una distancia corta y al siguiente otra larga (otro hueco al rodear el muro), y la cámara entraba y salía
   // en bucle como un zoom. Ahora acercarse es al instante (nunca dentro del muro) y alejarse espera colEspera s sin choques y va
   // despacio. La colisión no cambia: la distancia corta está sobre la misma recta libre cabeza→destino.
+  const paso = new THREE.Vector3();
   let dCol = null, colT = 0, dtCam = 0, lastLn = 0; // dCol: fracción de la distancia que se usa (1 = sin choque)
   const nominal = new THREE.Vector3();
   function histeresis(snap) {
@@ -325,7 +327,13 @@ AVE.module('camara', function (G) {
     lazyYaw(dt);
     inclinaPaso(dt);
     updateAnchor(dt, false);
-    dtCam = dt || 0; target(false); camera.position.lerp(camPos, rate(CAM.follow, dt));
+    dtCam = dt || 0; target(false);
+    // BM131: el seguimiento no pasa de pasoMax m/s. Al rodear un muro, evitarMuros puede pasar el destino al otro lado de
+    // Vittata (hasta ~19 m) y el lerp daba saltos de 2–3 m por cuadro, que en el iPad se veían como un zoom de ida y vuelta
+    paso.subVectors(camPos, camera.position).multiplyScalar(rate(CAM.follow, dt));
+    const lp = paso.length(), tope = CAM.pasoMax * Math.max(dt || 0, 1 / 120);
+    if (lp > tope && camera.position.distanceTo(camPos) < 25) paso.multiplyScalar(tope / lp); // lejos (un teletransporte): como antes
+    camera.position.add(paso);
     muroEnMedio();
   }
   // BM87: el seguimiento suaviza (lerp) y, al girar o cambiar de modo, la cámara podía cruzar un muro, una losa o un tejado
@@ -346,10 +354,10 @@ AVE.module('camara', function (G) {
     const dx = p.x - hx, dy = p.y - hy, dz = p.z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return;
     const t0 = tramoLibre(hx, hy, hz, p.x, p.y, p.z); if (t0 >= 1) return;
     // BM131: antes de acercarla de golpe hacia la cabeza, se adelanta por el camino hacia su destino (libre por evitarMuros):
-    // el primer punto con la vista libre que esté a menos de 1 m (sin tirón ni corte)
+    // el primer punto con la vista libre que esté a menos de 0,5 m (sin tirón ni corte)
     const ex = camPos.x - p.x, ey = camPos.y - p.y, ez = camPos.z - p.z, E = Math.hypot(ex, ey, ez);
     for (let j = 1; j <= 8 && E > 1e-3; j++) {
-      const f = Math.min(1, j * 0.125 / Math.max(1, E)); const x = p.x + ex * f, y = p.y + ey * f, z = p.z + ez * f;
+      const f = Math.min(1, j * 0.0625 / Math.max(0.5, E)); const x = p.x + ex * f, y = p.y + ey * f, z = p.z + ez * f;
       if (tramoLibre(hx, hy, hz, x, y, z) >= 1) { p.set(x, y, z); suaves++; return; }
       if (f >= 1) break;
     }

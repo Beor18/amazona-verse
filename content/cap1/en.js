@@ -1662,5 +1662,4 @@ window.AV_EN = {
  "Percha · emergente": "Perch · emergent",
  "¡Aterrizaje perfecto!": "Perfect landing!",
  "¡Remonte!": "Swoop!",
- "Rasante": "Skim",
 };
