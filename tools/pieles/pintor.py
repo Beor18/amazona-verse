@@ -312,19 +312,21 @@ def festiva(c):
 
 # ---------- PROPUESTAS (extintas, canon de Kelvin: no entran en el juego) ----------
 def martinicana(c):
-    # Propuesta: tools/pieles/propuestas/README.md. Solo descripciones antiguas (Labat 1742, Buffon 1779), sin ejemplares.
+    # Sin ejemplares: Labat (1742) y Buffon (1779). Wikipedia: «top of the head slate colour with a small amount of red»;
+    # parrots.org: «red crown and blue and lilac wash on face, nape and neck», cola externa roja, pico gris pizarra.
     c.tono()
-    c.tintar(cab * np.clip(np.maximum.reduce([R['mejilla'] * 1.2, R['auricular'], R['lores'], R['nuca'], R['lados_cuello']]) * 0.8, 0, 0.8), hexc('#7d7fc8'), keep=0.45)  # lavado azul y lila en cara, nuca y cuello
-    c.pintar(cab * np.clip(np.maximum(R['frente_ancha'], R['corona']) * 0.95, 0, 0.95), hexc('#d3261f'))  # corona roja
+    c.tintar(cab * np.clip(np.maximum.reduce([R['mejilla'] * 1.2, R['auricular'], R['lores'], R['nuca'], R['lados_cuello']]) * 0.8, 0, 0.8), hexc('#8a84cc'), keep=0.45)  # lavado azul y lila
+    c.tintar(cab * np.clip(R['corona'] * 1.0 + R['frente_ancha'] * 0.5, 0, 0.9), hexc('#5d6472'), keep=0.3)  # parte alta de la cabeza color pizarra
+    c.pintar(cab * np.clip(R['frente'] * 0.9, 0, 0.9), hexc('#c8302a'))                      # un poco de rojo en la frente
     c.pintar(cab * R['anillo'], hexc('#d6d5d1'))
     c.pintar(R['cola_base_lat'] * 0.85, hexc('#c0372c'))                                      # plumas externas de la cola rojas
-    c.pico('#6c7075'); c.patas('#6c7075'); c.ojo('#e07a1c', '#d6d5d1')                        # pico y patas gris pizarra
+    c.pico('#6c7075'); c.patas('#6c7075'); c.ojo('#e07a1c', '#d6d5d1')                        # pico y patas gris pizarra; iris sin fuente
 
 def violacea(c):
     # Propuesta: tools/pieles/propuestas/README.md. Du Tertre 1667, Labat 1742; las fuentes discrepan (violeta pizarra o negra).
     c.tono(); c.oscurecer(0.18 * ss(-0.05, -0.25, zz) * body)                                  # dorso verde parduzco (aprox.: verde más apagado)
     violeta = np.maximum(cab * 0.9, R['pecho'] * ss(0.40, 0.60, y) * 0.85)
-    c.tintar(np.clip(violeta, 0, 0.9), hexc('#5b4f8c'), keep=0.35)                            # cabeza, cuello y partes inferiores violeta pizarra
+    c.tintar(np.clip(violeta, 0, 0.9), hexc('#4a3f78'), keep=0.25)                            # cabeza, cuello y partes inferiores violeta pizarra
     c.festoneado(cab * 1.0, 0.25)                                                              # mezcla con negro
     c.pintar(R['carpo'] * 0.9, hexc('#d22b22'))                                               # rojo en el hombro
     c.pintar(R['espejo'] * 0.6, hexc('#e0b020'))                                              # coberteras amarillo intenso (aprox.)

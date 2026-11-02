@@ -1397,6 +1397,8 @@ window.AV_EN = {
  "Loro de pecho vináceo": "Vinaceous-breasted amazon",
  "Loro cachete amarillo": "Red-lored amazon",
  "Loro de cuello rojo": "Red-necked amazon",
+ "Cotorra de Martinica": "Martinique amazon",
+ "Cotorra de Guadalupe": "Guadeloupe amazon",
  "Loro de pico negro": "Black-billed amazon",
  "Loro frentiblanco": "White-fronted amazon",
  "Loro festivo": "Festive amazon",

@@ -1,6 +1,6 @@
 # Propuestas de piel: las dos extintas (BM109, para que decida Kelvin)
 
-**No están en el juego.** Su aspecto es canon de Kelvin (son «la Voz»), así que solo quedan aquí como propuesta. Las texturas `<id>.jpg` están pintadas con `tools/pieles/pintor.py <id>` y `<id>_vistas.jpg` muestra frente, lado, espalda, 3/4 y cara con el look vibrant_toon. Para integrarlas, sigue los pasos de `tools/pieles/README.md`.
+**Ya están en el juego (2-nov, Kelvin: «busca cómo se veían y hazlas»)**: pieles `martinicana` (Mara) y `violacea` (Vela) en `assets/textures/pieles/`, con fuentes en `docs/equipo/pieles_fuentes/`. Lo de abajo es la propuesta original del 1-nov. Las texturas `<id>.jpg` están pintadas con `tools/pieles/pintor.py <id>` y `<id>_vistas.jpg` muestra frente, lado, espalda, 3/4 y cara con el look vibrant_toon. Para integrarlas, sigue los pasos de `tools/pieles/README.md`.
 
 Las dos se conocen **solo por descripciones antiguas, sin ejemplares**, y las fuentes no coinciden entre sí. Las citas salen de los extractos del buscador, porque desde la nube no abren parrots.org ni Wikipedia. Hay que releerlas antes de decidir.
 

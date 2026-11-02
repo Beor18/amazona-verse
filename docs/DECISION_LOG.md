@@ -287,3 +287,6 @@ Avisos para Kelvin:
 - El sprite de Nayara en el cap. 3 sigue siendo el sustituto *agilis*; en los caps. 4 y 6 es `navegante.png`. Es arte.
 - El rótulo del mapa «La Otra Orilla · Mesa del Este» (`content/cap1/asentamientos.js`, nombres K2) no se cambió a Villa Mangle.
 - «Medalla de oro/plata/bronce» de los retos es otra cosa. Por eso la del Guardián siempre se nombra «la medalla del Guardián».
+
+## 2-nov · Pieles de las extintas en el juego (Kelvin)
+«Busca cómo se veían y hazlas.» *martinicana* (Mara) y *violacea* (Vela) tienen piel pintada según los relatos antiguos (Labat, Du Tertre, Buffon) y las fichas de parrots.org y Wikipedia; donde discrepan, se anota en `docs/equipo/pieles_fuentes/`. Entran al creador como las demás. Las 36 especies del catálogo tienen piel.
