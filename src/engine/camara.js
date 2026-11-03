@@ -361,7 +361,13 @@ AVE.module('camara', function (G) {
       if (tramoLibre(hx, hy, hz, x, y, z) >= 1) { p.set(x, y, z); suaves++; return; }
       if (f >= 1) break;
     }
-    const k = Math.max(0.35 / L, t0 - 0.05); p.set(hx + dx * k, hy + dy * k, hz + dz * k); cortes++;
+    // Corte: de dos saltos, el más corto: hacia la cabeza por la misma recta, o al primer punto libre camino del destino
+    const k = Math.max(0.35 / L, t0 - 0.05), saltoCabeza = (1 - k) * L;
+    for (let a = 0.75; a < E && a < saltoCabeza; a += 0.25) {
+      const f = a / E, x = p.x + ex * f, y = p.y + ey * f, z = p.z + ez * f;
+      if (tramoLibre(hx, hy, hz, x, y, z) >= 1) { p.set(x, y, z); cortes++; return; }
+    }
+    p.set(hx + dx * k, hy + dy * k, hz + dz * k); cortes++;
     // la histéresis lo recuerda: tras un corte, el destino no vuelve a alejarse hasta colEspera s con la vista libre
     if (dCol != null && lastLn > 1e-3) { dCol = Math.min(dCol, k * L / lastLn); colT = CAM.colEspera; }
   }
@@ -512,7 +518,7 @@ AVE.module('camara', function (G) {
       const y0 = S.pos.y, yT = y0;
       faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
       Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
-      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z)] }));
+      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z), Math.round(S.pos.y * 10) / 10] }));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
