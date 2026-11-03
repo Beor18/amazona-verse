@@ -20,6 +20,10 @@ window.AVMovimientoTest = function (G) {
     const lap = n => { const t = performance.now(); dur[n] = Math.round(t - tLap); tLap = t; };
     const keep = { pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing), vy: S.vy, yaw: G.camara.yaw, quiet: G.quiet, lazy: [G.camara.CAM.lazy, G.camara.CAM.lazyFly] };
     G.camara.CAM.lazy = G.camara.CAM.lazyFly = 0; // la cámara no gira sola durante la prueba: las direcciones son repetibles
+    // La batería puede arrancar antes de que el mundo termine de cargar (GLB de estructuras lentos en frío): sin esperar,
+    // los checks de cuerda/toldos/edificios miden con la cola de sólidos a medias y fallan en carrera (intermitente).
+    if (G.mundo && G.mundo.listo && G.mundo.listo.then) await G.mundo.listo;
+    if (G.solidos && G.solidos.activo) G.solidos.terminar();
     // Mundo limpio, venga de donde venga (otras pruebas, partida nueva con el creador abierto): sin ventanas ni diálogos,
     // MOVE en reposo y la cámara con el giro inicial del pack (las direcciones de la prueba son relativas a la cámara)
     const $ = G.util.$, ventanas = ['creator', 'comic', 'end'].filter(id => $(id) && !$(id).hidden);
