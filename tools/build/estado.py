@@ -232,8 +232,13 @@ def cap1():
     if not L:
         return None
     h = p = f = 0
+    tabla = False
     for l in L:
+        if tabla and not l.startswith("|"):
+            break  # solo la primera tabla (los hitos); la de decisiones de Kelvin no cuenta
         c = celdas(l) if l.startswith("|") else None
+        if c and len(c) >= 3 and re.fullmatch(r"\d+", c[0]):
+            tabla = True
         if not c or len(c) < 3 or not re.fullmatch(r"\d+", c[0]):
             continue
         e = c[2].lower()

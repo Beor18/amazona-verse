@@ -91,11 +91,11 @@ Las abiertas están consolidadas en `docs/equipo/PENDIENTES_KELVIN.md` (BM123); 
 
 | # | Tema | Estado |
 |---|---|---|
-| 1 | Aprobar el guion; forma del Guardián | Abierta (`PENDIENTES_KELVIN.md` §1) |
+| 1 | Aprobar el guion; forma del Guardián | Decidida (Kelvin, 2-nov): Guardián *imperialis* mayor, sabio y protector |
 | 2 | Orden del Guardián | Decidida (KELVIN-2): sigue el guion; implementado en BM47 |
-| 3 | Medalla del Guardián | En el juego (BM24, BM53) con texto por validar; sigue en `PENDIENTES_KELVIN.md` §1 |
-| 4 | La Voz | Decidido que son las dos extintas (KELVIN-4); falta cómo se presenta (`PENDIENTES_KELVIN.md` §1) |
-| 5 | Iguaca y el Guardián en 2D | Iguaca ya en 3D; el Guardián abierto |
+| 3 | Medalla del Guardián | Decidida (Kelvin, 2-nov): se la gana Vittata al final del cap. 6 |
+| 4 | La Voz | Decidida (Kelvin, 2-nov): dos voces, Mara y Vela, que se unen al final; ya suenan en el cap. 5 |
+| 5 | Iguaca y el Guardián en 2D | Iguaca en 3D; el Guardián decidido (*imperialis*) |
 | 6 | Diseño de máquina y transmisor | Hecho con diseño provisional [KELVIN-6]; pendiente de confirmar |
 | 7 | Alcance y duración | Medida en 16 min; los «wow» están en el juego |
 | 8 | Idioma | Bilingüe ES/EN en todo el juego |
