@@ -296,8 +296,17 @@
         let llego = porAire ? false : await hacia(g.x, g.z, 120, 1.4, it && it.id);
         if (!llego && !S.complete && !ocupado()) { // a pie no se llega: se intenta volando (como haría un niño)
           if (!porAire) atasco('a pie no llega: prueba volando', [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), it && it.id].join(' '));
-          llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, porAire ? 2.5 : 1.2);
-          if (!llego && it) { const nb = G.interaccion.nearest(); llego = !!(nb && nb.id === it.id); }
+          // W9 (QA-99): tras posarse (a veces en un borde, cerca pero no encima) se vuelve a caminar el tramo que falte; si no
+          // basta, otro vuelo más alto y otra vez a pie. Hasta 3 vueltas.
+          for (let k = 0; k < 3 && !llego && !S.complete; k++) {
+            llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2);
+            if (!llego && it) { const nb = G.interaccion.nearest(); llego = !!(nb && nb.id === it.id); }
+            if (!llego && !porAire && !ocupado()) {
+              if (MV().flying) { await pulsar('x'); for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25); }
+              llego = await hacia(g.x, g.z, 40, 1.4, it && it.id);
+            }
+            if (!llego && ocupado()) await resolver();
+          }
         }
         if (!llego) {
           atasco('no se llega ni a pie ni volando', [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), 'ocupado', ocupado(), 'agua', MV().swimming, 'vuela', MV().flying].join(' '));
