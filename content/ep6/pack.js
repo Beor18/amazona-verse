@@ -671,7 +671,10 @@
             G.dialogo.say([di(nombre(cargador()), 'Yo de esta punta. Tú marcas el paso.')], () => G.ui.toast('Llévala al puente y colócala', 2600));
           });
         } });
-      G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
+      // En el real el puente está estirado (K = 1,23): desde la punta de la tabla grande (RX(22)) hay 2,71 m hasta «Colocar»
+      // y con r 2,6 no se llegaba andando por el puente (había que caerse al río o volar). El radio se estira igual (3,2 m);
+      // Roca va 2,8 m delante y su «Hablar» (r 2,4) sigue fuera de alcance. En el mundo pequeño K = 1: igual que antes.
+      G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6 * K, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
         use: () => {
           if (muyAlto()) { G.ui.toast(`${nombre(cargador())} no vuela tan alto: baja hasta el puente para colocarla`, 2600); return; }
           llevando = false; avisoAlto = false; encuadrar(RX(24), RZ(0)); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
@@ -928,10 +931,14 @@
           check('M2 · La tabla larga no se mueve con una sola punta', !G.ep6.llevando());
           useAt('tabla_larga'); drain(); pick('agarre la otra punta');
           check('M2 · Entre dos sí: la tabla sigue a Vittata y Roca va en la otra punta', G.ep6.llevando() && S.collected.includes('tabla_dos'));
+          { const c = G.interaccion.find('colocar'), e = G.ep6.PR(21.9, 0), d = Math.hypot(e.x - c.x, e.z - c.z);
+            check('M2 · Andando: desde la punta de la tabla grande (sin pisar el hueco) se llega a «Colocar»', d < c.r, d.toFixed(2) + ' m / r ' + c.r.toFixed(2)); }
           // QA-89 (Kelvin 2-nov): también volando, sin cruzar el puente a pie. Vuelo bajito en línea recta de la tabla a «Colocar»
           // (por encima del hueco del puente): nada lo tapa, Roca y la tabla siguen; muy alto, Roca se queda abajo y no se coloca
+          // Subir o bajar en el sitio no cambia hacia dónde mira Vittata (antes quedaba S.facing = {0, 0}: Roca caía en su mismo x, z,
+          // empataba con «Colocar» y Acción abría «Hablar con Roca»; en el mapa real tapaba la obra y todo lo que sigue)
           { const MV = G.fisica.MOVE, c = G.interaccion.find('colocar'), roca = G.actores.npc('roca'), x0 = S.pos.x, z0 = S.pos.z, yv = G.ep6.topPuente + 1.5;
-            const volar = (x, z, y) => { const d = Math.hypot(x - S.pos.x, z - S.pos.z) || 1; S.facing = { x: (x - S.pos.x) / d, z: (z - S.pos.z) / d }; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; MV.flying = true; MV.landing = false; tick(0.05); };
+            const volar = (x, z, y) => { const d = Math.hypot(x - S.pos.x, z - S.pos.z); if (d > 1e-6) S.facing = { x: (x - S.pos.x) / d, z: (z - S.pos.z) / d }; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; MV.flying = true; MV.landing = false; tick(0.05); };
             let sigue = true, maxD = 0, rocaY = -Infinity;
             for (let i = 1; i <= 30; i++) { volar(x0 + (c.x - x0) * i / 30, z0 + (c.z - z0) * i / 30, yv); const d = Math.hypot(roca.def.x - S.pos.x, roca.def.z - S.pos.z); maxD = Math.max(maxD, d); rocaY = roca.sp.position.y; sigue = sigue && G.ep6.llevando() && d < 3.5; }
             const llego = Math.hypot(S.pos.x - c.x, S.pos.z - c.z) < 0.5 && MV.flying && Math.abs(S.pos.y - yv) < 0.6;
