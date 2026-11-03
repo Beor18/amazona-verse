@@ -4,7 +4,8 @@
    - una cotorra residente o de la bandada a menos de 8 m durante 2 s (src/game/residentes.js y bandada.js llaman a ver());
    - una cría nacida en el criadero (huevos.js: especie de la cápsula; sin especie, Vittata), al cargar y al nacer;
    - los rivales de una carrera del Modo Retos (G.on('retosResultado'): rivales = especies; las de las pruebas no cuentan).
-   Cerrada: silueta gris y «???», nunca datos inventados. Abierta: retrato con los colores de la piel de la especie, nombre ES y
+   Cerrada: silueta gris y «???», nunca datos inventados. Abierta: retrato 3D de la especie (assets/retratos_album/, hechos con
+   tools/album: el modelo de Vittata con la piel de la especie; se cargan al abrir el Diario, no al arrancar), nombre ES y
    EN, nombre científico y el estado UICN solo si coincide con el catálogo de Kelvin (la misma regla que «Amazonas del mundo»
    en diario.js; si no, «por verificar»). Las 2 extintas no se «desbloquean» viéndolas (no hay ninguna que ver: nunca salen vivas
    en el mundo). Su tarjeta queda oculta (silueta gris y «???», «Una historia por descubrir») hasta que el jugador conoce su
@@ -121,33 +122,26 @@ AVE.module('album', function (G) {
   G.on('companero', () => revisarCrias());
   G.on('retosResultado', r => { if (r && !r.prueba && Array.isArray(r.rivales)) for (const id of r.rivales) ver(id, 'retos'); });
 
-  // ---------- Retrato (SVG, de perfil mirando a la derecha) ----------
+  // ---------- Retrato 3D (tools/album/README.md: el modelo de Vittata con la piel de la especie, fondo de su región) ----------
+  // 256×320 (+ 2x/ a 512×640), ≈ 12 KB + 28 KB cada uno. Solo se piden al abrir el Diario (html() se llama entonces) y con
+  // loading="lazy": nada en la carga inicial. Cerradas (y Mara y Vela antes del cap. 5): la silueta, igual para las 36.
+  const DIR_RET = 'assets/retratos_album/', DIR_RET2 = 'assets/retratos_album/2x/', SILUETA = 'silueta';
   function retrato(id, modo) { // modo: 'abierta' | 'cerrada' | 'historica'
-    const p = colores(id) || { cuerpo: '#3b9f00', cabeza: '#3b9f00', cob: 0 };
-    const gris = modo === 'cerrada', cu = gris ? '#8a8f94' : p.cuerpo, ca = gris ? '#8a8f94' : p.cabeza;
-    const ala = gris ? '#767b80' : 'rgba(0,0,0,.22)', pico = gris ? '#9da2a6' : '#e9dcc0';
-    // la parte de la cabeza con su color: de la frente hacia la nuca según cob
-    const cob = gris ? 0 : Math.max(0, Math.min(1, p.cob));
-    const capa = cob > 0 ? `<path d="M${(53 - cob * 14).toFixed(1)} ${(10 + cob * 2).toFixed(1)} Q50 ${(5 - cob).toFixed(1)} 58 9 Q63 13 61 ${(15 + cob * 6).toFixed(1)} Q${(54 - cob * 8).toFixed(1)} ${(16 + cob * 6).toFixed(1)} ${(53 - cob * 14).toFixed(1)} ${(10 + cob * 2).toFixed(1)}Z" fill="${ca}"/>` : '';
+    const f = modo === 'cerrada' || !PALETA[id] ? SILUETA : id;
     const filtro = modo === 'historica' ? ' style="filter:sepia(.55) saturate(.7)"' : '';
-    return `<svg viewBox="0 0 72 56" width="72" height="56" aria-hidden="true" focusable="false"${filtro}>` +
-      `<path d="M14 44 L4 54 L10 54 L20 46Z" fill="${cu}"/>` +                                         // cola
-      `<ellipse cx="32" cy="34" rx="18" ry="12" fill="${cu}" transform="rotate(-28 32 34)"/>` +          // cuerpo
-      `<path d="M22 28 Q34 22 44 32 Q34 44 18 44 Q16 36 22 28Z" fill="${ala}"/>` +                     // ala plegada
-      `<circle cx="52" cy="16" r="10" fill="${cu}"/>${capa}` +                                          // cabeza y su color
-      `<path d="M60 12 Q69 13 66 22 Q63 19 59 19Z" fill="${pico}"/>` +                                  // pico
-      `<circle cx="54" cy="14" r="2.6" fill="${gris ? '#6c7176' : '#f4f1e6'}"/><circle cx="54.4" cy="14" r="1.4" fill="#1d1d1d"/>` +
-      `<path d="M30 46 l-2 6 M36 46 l0 6" stroke="#6b5a3e" stroke-width="2" stroke-linecap="round"/></svg>`;
+    return `<img class="retrato" src="${DIR_RET}${f}.webp" srcset="${DIR_RET}${f}.webp 1x, ${DIR_RET2}${f}.webp 2x" width="256" height="320" alt="" loading="lazy" decoding="async"${filtro}>`;
   }
 
   // ---------- Diario ----------
-  const ESTILO = '.album36{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}' +
-    '.album36 li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:8px 6px;border-radius:12px;background:rgba(47,143,78,.10);border:1px solid rgba(47,143,78,.35);min-width:0}' +
+  const ESTILO = '.album36{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}' +
+    '.album36 li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:0 0 10px;overflow:hidden;border-radius:14px;background:#fffaf0;border:2px solid rgba(107,82,54,.22);box-shadow:0 2px 0 rgba(107,82,54,.12),0 6px 14px rgba(60,40,20,.10);min-width:0}' +
+    '.album36 li img.retrato{display:block;width:100%;height:auto;aspect-ratio:4/5;margin:0 0 6px;border-bottom:2px solid rgba(107,82,54,.18);background:#e4ddd0}' +
+    '.album36 li b,.album36 li small,.album36 li i{padding:0 8px}' +
     '.album36 li b{font-size:var(--fs-sm,14px);line-height:1.2;overflow-wrap:anywhere}.album36 li small{font-size:calc(12px * var(--fs-k,1));line-height:1.25;opacity:.85;overflow-wrap:anywhere}' +
-    '.album36 li i{font-size:calc(11px * var(--fs-k,1));opacity:.8}.album36 li.cerrada{background:none;border-style:dashed;opacity:.75}' +
-    '.album36 li.historica{background:rgba(160,120,60,.10);border-color:rgba(160,120,60,.45)}.album36 li.historica.oculta{background:none;border-style:dashed;opacity:.75}.album36 li b.canon{font-size:calc(17px * var(--fs-k,1))}.album36 .uicn{font-weight:700}' +
+    '.album36 li i{font-size:calc(11px * var(--fs-k,1));opacity:.8}.album36 li.cerrada{background:#f4efe6;border-style:dashed;box-shadow:none}.album36 li.cerrada img.retrato{opacity:.9}' +
+    '.album36 li.historica{background:#f6ecdc;border-color:rgba(160,120,60,.45)}.album36 li.historica.oculta{background:#f4efe6;border-style:dashed;box-shadow:none}.album36 li b.canon{font-size:calc(17px * var(--fs-k,1))}.album36 .uicn{font-weight:700}' +
     '.album-nota{margin:2px 0 6px;font-size:var(--fs-sm,14px);opacity:.85}' +
-    ':root.a11y-contraste .album36 li{background:#000;border-color:#fff;color:#fff;opacity:1}';
+    ':root.a11y-contraste .album36 li{background:#000;border-color:#fff;color:#fff;opacity:1;box-shadow:none}:root.a11y-contraste .album36 li img.retrato{border-color:#fff}';
   if (!document.getElementById('estilo-album36')) { const st = document.createElement('style'); st.id = 'estilo-album36'; st.textContent = ESTILO; document.head.appendChild(st); }
 
   function html() {
@@ -309,12 +303,19 @@ AVE.module('album', function (G) {
       let d = document.createElement('div'); d.innerHTML = html();
       const ab = d.querySelector(`[data-album="${sp}"]`), cerr = d.querySelectorAll('li.cerrada');
       const eSp = vivas().find(e => e.id === sp);
+      const esSilueta = li => { const im = li.querySelectorAll('img'); return im.length === 1 && im[0].getAttribute('src') === DIR_RET + SILUETA + '.webp' && !im[0].outerHTML.includes(li.dataset.album); };
       check('Diario: tarjeta abierta con nombre ES y EN, científico y estado', !!ab && ab.textContent.includes(nombre(eSp, 'es')) && ab.textContent.includes(nombre(eSp, 'en')) && ab.querySelector('i[lang=la]') && ab.querySelector('.uicn'), ab && ab.textContent);
       const nombresCerr = vivas().filter(e => !visto(e.id)).some(e => [...cerr].some(li => li.textContent.includes(nombre(e, 'es')) || li.textContent.includes(e.cientifico)));
-      check('Las cerradas: silueta y «???», sin nombre ni datos', cerr.length === 34 - cuenta().n && [...cerr].every(li => /\?\?\?/.test(li.textContent) && li.querySelector('svg')) && !nombresCerr, cerr.length + ' cerradas');
+      check('Las cerradas: silueta y «???», sin nombre ni datos (ni en la imagen: la silueta es la misma para las 36)', cerr.length === 34 - cuenta().n && [...cerr].every(li => /\?\?\?/.test(li.textContent) && esSilueta(li)) && !nombresCerr, cerr.length + ' cerradas');
+      const img = ab && ab.querySelector('img.retrato');
+      check('La abierta lleva su retrato 3D (1x y 2x), perezoso y sin texto alternativo repetido', !!img && img.getAttribute('src') === DIR_RET + sp + '.webp' && img.getAttribute('srcset').includes(DIR_RET2 + sp + '.webp 2x') && img.getAttribute('loading') === 'lazy' && img.getAttribute('alt') === '', img && img.outerHTML.slice(0, 200));
+      const faltan = [];
+      await Promise.all(vivas().concat(extintas()).map(e => e.id).concat([SILUETA]).flatMap(f => [DIR_RET, DIR_RET2].map(dd => fetch(dd + f + '.webp', { method: 'HEAD', cache: 'no-store' })
+        .then(r => { if (!r.ok || !/webp/.test(r.headers.get('content-type') || 'image/webp')) faltan.push(dd + f); }).catch(() => faltan.push(dd + f)))));
+      check('Están los 36 retratos y la silueta, en 1x y 2x (WebP)', !faltan.length, faltan.join(' ') || '74 archivos');
       const hi = d.querySelectorAll('li.historica');
       check('Antes del cap. 5, Mara y Vela están ocultas: silueta gris y «???», sin nombre del canon ni de especie', hi.length === 2 && [...hi].every(li => li.classList.contains('oculta') && /\?\?\?/.test(li.textContent) &&
-        /historia por descubrir/i.test(li.textContent) && li.innerHTML.includes('#8a8f94') && !/Mara|Vela|Martini|Guadalup|martinicana|violacea|Extint/i.test(li.textContent)), [...hi].map(li => li.textContent).join(' | '));
+        /historia por descubrir/i.test(li.textContent) && esSilueta(li) && !/Mara|Vela|Martini|Guadalup|martinicana|violacea|Extint/i.test(li.textContent)), [...hi].map(li => li.textContent).join(' | '));
       check(`Cuenta «Álbum de las 36 ${S.album.length}/34»`, d.textContent.includes(`Álbum de las 36 ${S.album.length}/34`));
       check('Sin «undefined» ni «null»', !/undefined|null|\[object/.test(d.textContent));
       if (aj) aj.idioma = 'en';
