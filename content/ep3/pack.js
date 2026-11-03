@@ -192,23 +192,34 @@
     objetos: {}, recursos: [],
 
     historia: {
+      // CG-38: 6 pasos. Hablar con el papá, la navegante y saludar van dentro del paso que les da sentido.
       pasos: [
-        { id: 'hablar', texto: 'Baja al astillero y habla con el papá', guia: G => G.misiones.at('papa') },
-        { id: 'predecir', texto: 'Predice qué flota en la mesa del plano', guia: G => G.misiones.at('mesa') },
-        { id: 'probar', texto: 'Suelta los 6 materiales en la poza', progreso: S => ` (${MATERIALES.filter(m => S.collected.includes('probado_' + m.id)).length}/6)`,
-          hasta: { evento: 'MaterialsTested' }, guia: G => { const S = G.S, m = MATERIALES.find(x => !S.collected.includes('probado_' + x.id)); if (m) return G.misiones.at('mat_' + m.id); const h = HUNDEN.find(x => !S.collected.includes('recuperado_' + x.id)); return G.misiones.at(h ? 'fondo_' + h.id : 'mesa'); } },
-        { id: 'construir', texto: 'Arma el bote en el astillero', hasta: { evento: 'BoatBuilt' }, guia: G => G.misiones.at('astillero') },
-        { id: 'botar1', texto: 'Bota la canoa en el río', hasta: { evento: 'LaunchTested' }, guia: G => G.misiones.at('astillero') },
-        { id: 'ajustar', texto: 'Cambia solo la parte que falló', hasta: { evento: 'BoatImproved' }, guia: G => G.misiones.at('astillero') },
-        { id: 'botar2', texto: 'Bótala otra vez', hasta: { evento: 'BoatLaunched' }, guia: G => G.misiones.at('astillero') },
-        { id: 'navegante', texto: 'Habla con la navegante en el muelle', hasta: { evento: 'NavigatorMet' }, guia: G => G.misiones.at('navegante') },
-        { id: 'leer', texto: 'Lee el agua: los 2 postes, las nubes y la corriente', progreso: S => ` (${OBS.filter(k => S.collected.includes(k)).length}/4)`,
-          hasta: { recogido: OBS }, guia: G => { const k = OBS.find(x => !G.S.collected.includes(x)); return G.misiones.at({ obs_poste_muelle: 'poste_muelle', obs_poste_punta: 'poste_punta', obs_nubes: 'mirador', obs_semilla: 'semilla' }[k] || 'navegante'); } },
-        { id: 'senales', texto: 'Acuerda 3 señales con la navegante', hasta: { evento: 'SignalsAgreed' }, guia: G => G.misiones.at('navegante') },
-        { id: 'practica', texto: 'Practica río abajo en la canoa', hasta: { evento: 'PracticeDone' }, guia: G => (G.ep3 && G.ep3.destino()) || G.misiones.at('practica') },
-        { id: 'timon', texto: 'Decide quién lleva el timón', hasta: { evento: 'HelmChosen' }, guia: G => G.misiones.at('navegante') },
-        { id: 'travesia', texto: 'Cruza la bahía desde el muelle', hasta: { evento: 'BayCrossed' }, guia: G => (G.ep3 && G.ep3.destino()) || G.misiones.at('muelle') },
-        { id: 'llegada', texto: 'Saluda a la gente de la otra orilla', guia: G => G.misiones.at('vecina') },
+        { id: 'flota', texto: 'Habla con el papá, predice y prueba qué flota',
+          progreso: S => { const n = MATERIALES.filter(m => S.collected.includes('probado_' + m.id)).length; return n ? ` (${n}/6)` : ''; },
+          hasta: { evento: 'MaterialsTested' },
+          guia: G => {
+            const S = G.S;
+            if (!(S.edu && S.edu.inicio)) return G.misiones.at('papa');
+            if (!S.collected.some(k => k.indexOf('prediccion_') === 0)) return G.misiones.at('mesa');
+            const m = MATERIALES.find(x => !S.collected.includes('probado_' + x.id));
+            if (m) return G.misiones.at('mat_' + m.id);
+            const h = HUNDEN.find(x => !S.collected.includes('recuperado_' + x.id));
+            return G.misiones.at(h ? 'fondo_' + h.id : 'mesa');
+          } },
+        { id: 'bote', texto: 'Arma el bote y bótalo', hasta: { evento: 'LaunchTested' }, guia: G => G.misiones.at('astillero') },
+        { id: 'ajustar', texto: 'Cambia lo que falló y bótalo otra vez', hasta: { evento: 'BoatLaunched' }, guia: G => G.misiones.at('astillero') },
+        { id: 'agua', texto: 'Lee el agua con la navegante',
+          progreso: S => { const n = OBS.filter(k => S.collected.includes(k)).length; return n ? ` (${n}/4)` : ''; },
+          hasta: { evento: 'SignalsAgreed' },
+          guia: G => {
+            if (!G.eventos.had('NavigatorMet')) return G.misiones.at('navegante');
+            const k = OBS.find(x => !G.S.collected.includes(x));
+            return G.misiones.at(k ? { obs_poste_muelle: 'poste_muelle', obs_poste_punta: 'poste_punta', obs_nubes: 'mirador', obs_semilla: 'semilla' }[k] : 'navegante');
+          } },
+        { id: 'practica', texto: 'Practica en el río y decide quién lleva el timón', hasta: { evento: 'HelmChosen' },
+          guia: G => G.eventos.had('PracticeDone') ? G.misiones.at('navegante') : ((G.ep3 && G.ep3.destino()) || G.misiones.at('practica')) },
+        { id: 'bahia', texto: 'Cruza la bahía y saluda en la otra orilla',
+          guia: G => G.eventos.had('BayCrossed') ? G.misiones.at('vecina') : ((G.ep3 && G.ep3.destino()) || G.misiones.at('muelle')) },
       ],
       fin: () => 'Probaste qué flota, construiste la canoa, leíste el agua con la navegante y cruzaste la bahía. Iguaca tiene unas preguntas para ti, cuando quieras. Y te llevas un plano: un camino que ayudaría a todos, pero costaría bosque. Habrá que pensarlo bien.',
     },
@@ -557,18 +568,19 @@
 
       // ---------- Misión 1 · «¿Qué flota?» ----------
       function papa() {
-        if (S.step === 0) { decir(L('interact:papa'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); G.ui.toast('Predice qué flota en la mesa del plano', 3000); }); return; }
+        if (S.step === 0 && !(S.edu && S.edu.inicio)) { decir(L('interact:papa'), () => { E().inicio = S.clock; G.misiones.check(); G.ui.toast('Predice qué flota en la mesa del plano', 3000); }); return; }
         const fr = { 1: 'La mesa del plano está aquí al lado. Predice primero.', 2: 'Suelta cada cosa en la poza y mira qué pasa.', 3: 'Amarre doble, mija. Ya lo escribí en el plano.' };
         decir([di('Papá', S.complete ? '¡Llegaron! Lo sabía.' : fr[S.step] || 'Ese bote va a llegar lejos.')]);
       }
       G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 3.6, label: () => S.step === 0 ? 'Hablar con el papá' : 'Hablar con el papá', use: papa });
       G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => 'Hablar con la abuela',
         use: () => decir([di('Abuela', S.complete ? 'Me contaron que preguntaste antes de contar. Así se llega lejos.' : G.eventos.had('BoatLaunched') ? 'Que no se vire, ¿eh? Y escucha a quien conoce el agua.' : 'Yo vuelo poco ya, mi niña. Un bote nos llevaría a todos.')]) });
-      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.2, label: () => S.step === 1 ? 'Predecir qué flota' : 'Mirar el plano del bote',
+      const predicho = () => S.collected.some(k => k.indexOf('prediccion_') === 0);
+      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.2, label: () => S.step === 0 && S.edu && S.edu.inicio && !predicho() ? 'Predecir qué flota' : 'Mirar el plano del bote',
         use: () => {
-          if (S.step === 1) {
+          if (S.step === 0 && S.edu && S.edu.inicio && !predicho()) {
             elegir('Vittata', '¿Qué flota: la piedra, el tronco, el bambú, la tabla, el coco o el clavo viejo?', PREDICCIONES.map(p => ({ label: p[1], k: p[0] })), o => {
-              poner('prediccion_' + o.k); G.audio.play('tick'); G.misiones.advanceTo(2);
+              poner('prediccion_' + o.k); G.audio.play('tick'); G.misiones.check();
               decir([Vi('Lo apunto en el plano. Ahora, a probarlo en la poza.')], () => G.ui.toast('Suelta los 6 materiales en la poza', 3000));
             });
             return;
@@ -584,10 +596,10 @@
           Vi('Ya sé con qué puedo hacer el casco. ¡Al astillero!')], () => { G.misiones.check(); G.ui.toast('Arma el bote en el astillero', 3000); });
       }
       for (const m of MATERIALES) {
-        G.interaccion.add({ id: 'mat_' + m.id, x: BANCO_X, z: m.z, r: 1.1, visible: () => S.step >= 2 && !tiene('probado_' + m.id),
+        G.interaccion.add({ id: 'mat_' + m.id, x: BANCO_X, z: m.z, r: 1.1, visible: () => S.step === 0 && predicho() && !tiene('probado_' + m.id),
           label: () => m.soltar,
           use: () => {
-            if (S.step < 2) return;
+            if (S.step !== 0) return;
             encuadrar(AGUA_X, m.z);
             poner('probado_' + m.id); const P = piezas[m.id]; P.y0 = P.mesh.position.y + 1; P.t = 0; dibujarMateriales();
             if (G.agua.splash) G.agua.splash(AGUA_X, nivelRio(), m.z, 0.7);
@@ -601,15 +613,15 @@
 
       // El astillero: construir (4 decisiones), botar, ajustar y botar otra vez
       function astillero() {
-        if (S.step === 3) return construir();
-        if (S.step === 4) return botadura1();
-        if (S.step === 5) return ajustar();
-        if (S.step === 6) return botadura2();
-        if (S.step >= 7 && S.canoa == null) return bautizar();
-        decir([Vi(S.step < 3 ? 'Aquí se arma el bote. Primero, saber qué flota.' : nombreCanoa() ? '«' + nombreCanoa() + '», la canoa que hicimos entre todos.' : 'La canoa que hicimos entre todos.')]);
+        if (S.step === 1 && !G.eventos.had('BoatBuilt')) return construir();
+        if (S.step === 1) return botadura1();
+        if (S.step === 2 && !G.eventos.had('BoatImproved')) return ajustar();
+        if (S.step === 2) return botadura2();
+        if (G.eventos.had('BoatLaunched') && S.canoa == null) return bautizar();
+        decir([Vi(S.step < 1 ? 'Aquí se arma el bote. Primero, saber qué flota.' : nombreCanoa() ? '«' + nombreCanoa() + '», la canoa que hicimos entre todos.' : 'La canoa que hicimos entre todos.')]);
       }
       G.interaccion.add({ id: 'astillero', x: ASTILLERO.x, z: ASTILLERO.z, r: 2.6,
-        label: () => ({ 3: 'Armar el bote', 4: 'Botar la canoa', 5: 'Arreglar la canoa', 6: 'Botar otra vez' })[S.step] || (S.step >= 7 && S.canoa == null ? 'Ponerle nombre a la canoa' : 'Mirar el astillero'), use: astillero });
+        label: () => (S.step === 1 ? (G.eventos.had('BoatBuilt') ? 'Botar la canoa' : 'Armar el bote') : S.step === 2 ? (G.eventos.had('BoatImproved') ? 'Botar otra vez' : 'Arreglar la canoa') : (G.eventos.had('BoatLaunched') && S.canoa == null ? 'Ponerle nombre a la canoa' : 'Mirar el astillero')), use: astillero });
       function construir() {
         const d = DECISIONES.find(x => !valor('dec_' + x.parte + '_', x.opciones.map(o => o[0])));
         if (!d) {
@@ -683,28 +695,28 @@
         poste_muelle: ['La cinta del muelle apunta hacia el monte: el viento viene del mar, y fuerte.'],
         poste_punta: ['En la punta, la cinta también apunta hacia tierra y da tirones: viento del mar con rachas.'],
       };
-      for (const k of Object.keys(POSTES)) G.interaccion.add({ id: k, x: POSTES[k].x, z: POSTES[k].z, r: 2, visible: () => S.step >= 8,
+      for (const k of Object.keys(POSTES)) G.interaccion.add({ id: k, x: POSTES[k].x, z: POSTES[k].z, r: 2, visible: () => S.step === 3 && G.eventos.had('NavigatorMet'),
         label: () => 'Mirar la cinta del poste', use: () => observar('obs_' + k, [Vi(OBS_TXT[k][0])]) });
-      G.interaccion.add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 2.4, visible: () => S.step >= 8,
+      G.interaccion.add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 2.4, visible: () => S.step === 3 && G.eventos.had('NavigatorMet'),
         label: () => 'Mirar las nubes desde el mirador', use: () => { encuadrar(BAHIA.x, BAHIA.z); observar('obs_nubes', [Vi('Sobre la bahía hay nubes bajas y oscuras, y van creciendo.')]); } });
-      G.interaccion.add({ id: 'semilla', x: SEMILLA.x, z: SEMILLA.z, r: 2.2, visible: () => S.step >= 8,
+      G.interaccion.add({ id: 'semilla', x: SEMILLA.x, z: SEMILLA.z, r: 2.2, visible: () => S.step === 3 && G.eventos.had('NavigatorMet'),
         label: () => 'Soltar una semilla en el río', use: () => { semillaT = 0; observar('obs_semilla', [Vi('La semilla se va río abajo, rápido. Así de fuerte va la corriente.')]); } });
 
       function navegante() {
-        if (S.step < 7) { decir([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
-        if (S.step === 7) encuadrar(NAVEGANTE.x, NAVEGANTE.z);
-        if (S.step === 7) { G.eventos.log('NavigatorMet'); registrar(); if (window.AVTemporada) window.AVTemporada.encontrar(3, 'navegante'); // D32: llega al ep. 6
+        if (!G.eventos.had('BoatLaunched') || S.step < 3) { decir([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
+        if (S.step === 3 && !G.eventos.had('NavigatorMet')) { encuadrar(NAVEGANTE.x, NAVEGANTE.z);
+          G.eventos.log('NavigatorMet'); registrar(); if (window.AVTemporada) window.AVTemporada.encontrar(3, 'navegante'); // D32: llega al ep. 6
           decir(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
-        if (S.step === 8) { decir([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
-        if (S.step === 9) { acordar(); return; }
-        if (S.step === 10) { decir([Na('Te espero río arriba, junto a la canoa.')]); return; }
-        if (S.step === 11) { elegirTimon(); return; }
-        if (S.step === 12) { decir([Na(timon() === 'vittata' ? 'Tú al timón; yo te canto el agua. Sube cuando quieras.' : 'Yo al timón; tú remas a mi señal. Sube cuando quieras.')]); return; }
+        if (S.step === 3 && !OBS.every(tiene)) { decir([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
+        if (S.step === 3) { acordar(); return; }
+        if (S.step === 4 && !G.eventos.had('PracticeDone')) { decir([Na('Te espero río arriba, junto a la canoa.')]); return; }
+        if (S.step === 4) { elegirTimon(); return; }
+        if (S.step === 5 && !G.eventos.had('BayCrossed')) { decir([Na(timon() === 'vittata' ? 'Tú al timón; yo te canto el agua. Sube cuando quieras.' : 'Yo al timón; tú remas a mi señal. Sube cuando quieras.')]); return; }
         if (S.complete && AU.activo && !todasPreguntadas()) { decir([Na('Iguaca te espera en Villa Raíz con unas preguntas. Sin prisa.')]); return; }
         decir([Na(S.complete ? 'Mañana volvemos, con el viento de tierra.' : 'El agua se lee como una vecina: hay que saludarla primero.')]);
       }
       G.interaccion.add({ id: 'navegante', x: NAVEGANTE.x, z: NAVEGANTE.z, r: 2.4, visible: () => G.eventos.had('BoatLaunched') && !viaje,
-        label: () => ({ 7: 'Hablar con la navegante', 9: 'Acordar las señales', 11: 'Decidir quién lleva el timón' })[S.step] || 'Hablar con la navegante', use: navegante });
+        label: () => S.step === 3 && !G.eventos.had('NavigatorMet') ? 'Hablar con la navegante' : (S.step === 3 ? 'Acordar las señales' : (S.step === 4 && G.eventos.had('PracticeDone') ? 'Decidir quién lleva el timón' : 'Hablar con la navegante')), use: navegante });
       function acordar() {
         const libres = ['bandera', 'silbido', 'gesto'].filter(s => !ORDENES.some(o => tiene('sen_' + o[0] + '_' + s)));
         const o = ORDENES.find(x => !senalDe(x[0]));
@@ -739,7 +751,7 @@
       }
       // La práctica: tres señales río abajo; la que es el silbido falla con el chubasco y se cambia (una vez)
       function practica() {
-        if (S.step !== 10) { decir([Vi(S.step < 10 ? 'La canoa espera aquí para la práctica.' : 'Aquí practicamos las señales.')]); return; }
+        if (S.step !== 4 || G.eventos.had('PracticeDone')) { decir([Vi(S.step < 4 ? 'La canoa espera aquí para la práctica.' : 'Aquí practicamos las señales.')]); return; }
         const paradas = {};
         ORDENES.forEach((o, i) => { paradas[i + 1] = seguir => (senalDe(o[0]) === 'silbido' && !tiene('cambio_silbido') ? chubasco(o[0], seguir) : senal(o[0], seguir)); });
         decir([Na('Sube. Yo te hago las señales y tú respondes. La canoa no se sale del cauce.')], () => navegar(RUTAS.rio, nivelRio(), finPractica, { paradas }));
@@ -751,10 +763,10 @@
         G.eventos.log('PracticeDone'); dibujarCanoa(); registrar(); G.misiones.check();
         decir([Na('Nos entendemos. Una señal falló y la cambiamos juntas: así se hace.')], elegirTimon);
       }
-      G.interaccion.add({ id: 'practica', x: PRACTICA.x, z: PRACTICA.z, r: 2.4, visible: () => S.step >= 10 && !viaje,
-        label: () => S.step === 10 ? 'Subir a la canoa con la navegante' : 'Mirar el río', use: practica });
+      G.interaccion.add({ id: 'practica', x: PRACTICA.x, z: PRACTICA.z, r: 2.4, visible: () => S.step === 4 && !viaje && !G.eventos.had('PracticeDone'),
+        label: () => 'Subir a la canoa con la navegante', use: practica });
       function elegirTimon() {
-        if (S.step !== 11) return;
+        if (S.step !== 4) return;
         elegir('Vittata', 'Mañana cruzamos la bahía. ¿Quién lleva el timón?', [{ label: 'Lo llevo yo, que lo hice', v: 'vittata' }, { label: 'Llévalo tú, que sabes leer el agua', v: 'navegante' }], o => {
           poner('timon_' + o.v); G.eventos.log('HelmChosen', { choice: o.v }); G.comic.capture('senales'); G.audio.play('unlock'); registrar();
           decir(o.v === 'vittata' ? [Vi('Lo llevo yo, que lo hice.'), Na('Pues yo te canto el agua.')] : [Vi('Llévalo tú, que sabes. Gracias por volver a salir.'), Na('Gracias a ti por dejarme.')],
@@ -764,13 +776,13 @@
 
       // ---------- Misión 3 · «Más allá de la bahía» ----------
       function travesia() {
-        if (S.step !== 12) { decir([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
+        if (S.step !== 5 || G.eventos.had('BayCrossed')) { decir([Vi(S.step < 5 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
         rumbo = { x: ALDEA.x, z: ALDEA.z };
         decir([di('Abuela', nombreCanoa() ? 'Van cargadas en «' + nombreCanoa() + '»: fibra trenzada, semillas y herramientas. ¡Buen viaje!' : 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
           () => navegar(RUTAS.boca, MAR, rutaElegir, { paradas: { 1: s => senal('izquierda', s, 'En la boca de la bahía las olas cruzan entre dos rocas.'), 2: s => senal('derecha', s) } }));
       }
       G.interaccion.add({ id: 'muelle', x: MUELLE.x, z: MUELLE.z, r: 2.4, visible: () => !viaje,
-        label: () => S.step === 12 ? (nombreCanoa() ? 'Subir a «' + nombreCanoa() + '» y cruzar la bahía' : 'Subir a la canoa y cruzar la bahía') : 'Mirar la bahía', use: travesia });
+        label: () => S.step === 5 && !G.eventos.had('BayCrossed') ? (nombreCanoa() ? 'Subir a «' + nombreCanoa() + '» y cruzar la bahía' : 'Subir a la canoa y cruzar la bahía') : 'Mirar la bahía', use: travesia });
       function rutaElegir() {
         G.fx.rain.visible = true;
         elegir('Navegante', 'Viene un chubasco. ¿Por dónde vamos?', [{ label: 'El atajo: corto, con el viento de frente', v: 'atajo' }, { label: 'Por la costa: más largo y más seco', v: 'costa' }], o => {
@@ -806,7 +818,7 @@
       // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4. Kelvin 2-nov: la otra
       // comunidad es Villa Mangle (decisión 2 de EP3_GDD §10). Siguen abiertas las decisiones 4, 7 y 8 [KELVIN].
       function vecina() {
-        if (S.step < 13) { decir([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
+        if (!(S.step === 5 && G.eventos.had('BayCrossed'))) { decir([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
         if (!G.eventos.had('CommunityReached')) {
           G.eventos.log('CommunityReached'); registrar(); G.misiones.check();
           decir([di('Vecina', '¿Y ustedes quiénes son? ¿De dónde salieron con ese bote?')], saludar);
@@ -838,7 +850,7 @@
         G.misiones.advanceTo(G.misiones.DONE); registrar();
         decir(L('evento:Chapter3Completed'), () => G.misiones.showEnd());
       }
-      G.interaccion.add({ id: 'vecina', x: VECINA.x, z: VECINA.z, r: 2.4, label: () => S.step === 13 ? 'Saludar' : 'Hablar con la vecina', use: vecina });
+      G.interaccion.add({ id: 'vecina', x: VECINA.x, z: VECINA.z, r: 2.4, label: () => S.step === 5 && G.eventos.had('BayCrossed') ? 'Saludar' : 'Hablar con la vecina', use: vecina });
 
       // ---------- Iguaca: pistas del paso en curso y, al final, las preguntas (opcionales) ----------
       function hablar() {
@@ -848,12 +860,12 @@
           return;
         }
         const pistas = {
-          0: 'El papá está en el astillero, junto al río.', 1: 'Antes de probar, predice. La mesa del plano está junto al astillero.',
-          2: 'Suelta cada material en la poza. Lo que se hunda, búscalo buceando.', 3: 'En el astillero eliges casco, amarre, carga y batanga.',
-          4: 'Ya está armada. Ahora, la prueba de verdad: el agua.', 5: 'La botadura te enseñó la parte más débil. Cambia solo esa.',
-          6: 'Vuelve a botarla. Si flota derecha, ¡fiesta!', 7: 'Alguien mira la canoa desde el muelle.',
-          8: 'Mira las dos cintas, las nubes desde el mirador y la corriente del río.', 9: 'Acuerda las señales con la navegante.',
-          10: 'La canoa te espera río arriba.', 11: '¿Quién lleva el timón? Con las dos respuestas se llega.', 12: 'Sube a la canoa en el muelle.', 13: 'Saluda a la gente de la otra orilla.',
+          0: !(S.edu && S.edu.inicio) ? 'El papá está en el astillero, junto al río.' : (!predicho() ? 'Antes de probar, predice. La mesa del plano está junto al astillero.' : 'Suelta cada material en la poza. Lo que se hunda, búscalo buceando.'),
+          1: !G.eventos.had('BoatBuilt') ? 'En el astillero eliges casco, amarre, carga y batanga.' : 'Ya está armada. Ahora, la prueba de verdad: el agua.',
+          2: !G.eventos.had('BoatImproved') ? 'La botadura te enseñó la parte más débil. Cambia solo esa.' : 'Vuelve a botarla. Si flota derecha, ¡fiesta!',
+          3: !G.eventos.had('NavigatorMet') ? 'Alguien mira la canoa desde el muelle.' : (!OBS.every(tiene) ? 'Mira las dos cintas, las nubes desde el mirador y la corriente del río.' : 'Acuerda las señales con la navegante.'),
+          4: !G.eventos.had('PracticeDone') ? 'La canoa te espera río arriba.' : '¿Quién lleva el timón? Con las dos respuestas se llega.',
+          5: !G.eventos.had('BayCrossed') ? 'Sube a la canoa en el muelle.' : 'Saluda a la gente de la otra orilla.',
         };
         decir([Lu(S.complete ? '¡Cruzaste la bahía! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
@@ -889,14 +901,14 @@
         try {
           G.quiet = true; G.guardado.reset(true);
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
-          check('Empieza en el paso 1 de 14', S.step === 0 && $('steps').children.length === 14);
+          check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
           check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.nota || '')).includes('[KELVIN') && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
           // Mapa: cada punto de las rutas de la bahía tiene agua (relieve bajo el mar) y los del río, bajo el nivel del río
           const R = G.ep3.RUTAS, hondo = (p, y) => G.terreno.height(p[0], p[1]) < y - 0.4;
           const secos = ['boca', 'atajo', 'costa', 'atras', 'otro'].flatMap(k => R[k].filter(p => !hondo(p, G.ep3.MAR)).map(p => k + ':' + p)).concat(R.rio.filter(p => !hondo(p, G.ep3.nivelRio())).map(p => 'rio:' + p));
           check('Rutas de la canoa: todos los puntos tienen agua (bahía y río)', !secos.length && isFinite(G.ep3.nivelRio()), secos.join(' '));
           useAt('papa'); drain();
-          check('M1 · El papá: «¿Y eso flota cargado?» y empieza la misión', S.step === 1, 'paso ' + S.step);
+          check('M1 · El papá: «¿Y eso flota cargado?» y empieza la misión', S.step === 0 && !!S.edu.inicio, 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
             check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
@@ -905,24 +917,24 @@
           useAt('mesa'); drain();
           check('M1 · Predecir: 3 predicciones sin juicio', opciones().length === 3, opciones().length);
           pick('Lo grande se hunde');
-          check('M1 · Predicción anotada: a probar', S.step === 2 && S.collected.includes('prediccion_grande'), 'paso ' + S.step);
+          check('M1 · Predicción anotada: a probar', S.step === 0 && S.collected.includes('prediccion_grande'), 'paso ' + S.step);
           for (const m of ['piedra', 'tronco', 'bambu', 'tabla', 'coco', 'clavo']) { useAt('mat_' + m); drain(); }
           check('M1 · Los 6 en la poza: flotan 4, se hunden 2 y hay que bucear por ellos', ['piedra', 'clavo'].every(m => G.interaccion.find('fondo_' + m).visible()) && !G.eventos.had('MaterialsTested'));
           useAt('fondo_piedra'); drain(); useAt('fondo_clavo'); drain();
-          check('M1 · Recuperados los hundidos: tabla de flotación completa', G.eventos.had('MaterialsTested') && S.step === 3, 'paso ' + S.step);
+          check('M1 · Recuperados los hundidos: tabla de flotación completa', G.eventos.had('MaterialsTested') && S.step === 1, 'paso ' + S.step);
           useAt('astillero'); drain();
           check('M1 · Armar el bote: 4 decisiones (casco, amarre, carga, batanga)', opciones().length === 3 && /casco/.test($('card').textContent));
           pick('Bambú'); pick('Bejuco'); pick('Al centro'); pick('No: más rápida');
-          check('M1 · Bote armado y la canoa se ve', G.eventos.had('BoatBuilt') && S.step === 4 && G.ep3.canoa.visible, 'paso ' + S.step);
+          check('M1 · Bote armado y la canoa se ve', G.eventos.had('BoatBuilt') && S.step === 1 && G.ep3.canoa.visible, 'paso ' + S.step);
           useAt('astillero'); drain();
-          check('M1 · Botadura 1: falla solo la parte más débil (bambú con bejuco: el amarre)', G.eventos.had('LaunchTested') && S.collected.includes('falla_amarre') && S.step === 5, 'paso ' + S.step);
+          check('M1 · Botadura 1: falla solo la parte más débil (bambú con bejuco: el amarre)', G.eventos.had('LaunchTested') && S.collected.includes('falla_amarre') && S.step === 2, 'paso ' + S.step);
           useAt('astillero'); drain();
           pick('Ponerle una batanga');
           check('M1 · Arreglar otra parte no vale: pista y se repite', !G.eventos.had('BoatImproved') && opciones().length === 5);
           pick('Cambiar el bejuco');
-          check('M1 · Cambia solo lo que falló', G.eventos.had('BoatImproved') && S.step === 6, 'paso ' + S.step);
+          check('M1 · Cambia solo lo que falló', G.eventos.had('BoatImproved') && S.step === 2, 'paso ' + S.step);
           useAt('astillero'); drain();
-          check('M1 · Botadura 2: flota derecha; casco marinero y la navegante en el muelle', G.eventos.had('BoatLaunched') && S.missions.flota && S.unlocked.includes('casco:marinero') && G.actores.npc('navegante').visible && S.step === 7, 'paso ' + S.step);
+          check('M1 · Botadura 2: flota derecha; casco marinero y la navegante en el muelle', G.eventos.had('BoatLaunched') && S.missions.flota && S.unlocked.includes('casco:marinero') && G.actores.npc('navegante').visible && S.step === 3, 'paso ' + S.step);
           // D21 · Nombre de la canoa: lista corta o escrito con el filtro del creador; vacío = sin nombre
           const leerTarjeta = () => [...$('card').querySelectorAll('h2,p,label,button')].forEach(e => ver(e.textContent));
           check('D21 · Tras botarla, la abuela pide un nombre: 4 de la lista, escribirlo o sin nombre', G.ui.cardOpen && !!$('canoa-nombre') && opciones().length === 5 && S.canoa === null, opciones().join());
@@ -938,7 +950,7 @@
 
           // M2 · Leer el agua
           useAt('navegante'); drain();
-          check('M2 · La navegante: «hoy no» y el Guardián pone paz', G.eventos.had('NavigatorMet') && S.step === 8, 'paso ' + S.step);
+          check('M2 · La navegante: «hoy no» y el Guardián pone paz', G.eventos.had('NavigatorMet') && S.step === 3, 'paso ' + S.step);
           check('D32 · La navegante queda entre los guardianes encontrados (llega al ep. 6)', TP.guardianes().includes('navegante'), TP.guardianes().join());
           { // D11 · Sin dato del ep. 2, el arranque de siempre; con dato, Vittata nombra la casa en su sitio
             try { localStorage.removeItem(TP.KEY); } catch (e) { /* */ }
@@ -947,11 +959,11 @@
             check('D11 · Registro vacío: arranque de siempre; con el sitio del ep. 2: «… allá en la loma»', sin.length === 0 && con.length === 1 && /en la loma/.test(con[0].text), JSON.stringify(con));
           }
           useAt('poste_muelle'); drain(); useAt('poste_punta'); drain(); useAt('mirador'); drain(); useAt('semilla'); drain();
-          check('M2 · Viento (2 postes), nubes y corriente observados', ['obs_poste_muelle', 'obs_poste_punta', 'obs_nubes', 'obs_semilla'].every(k => S.collected.includes(k)) && S.step === 9, 'paso ' + S.step);
+          check('M2 · Viento (2 postes), nubes y corriente observados', ['obs_poste_muelle', 'obs_poste_punta', 'obs_nubes', 'obs_semilla'].every(k => S.collected.includes(k)) && S.step === 3, 'paso ' + S.step);
           useAt('navegante'); drain();
           check('M2 · Señales: 3 para elegir para «izquierda»', opciones().length === 3, opciones().join());
           pick('Levantar la bandera'); pick('Un silbido'); pick('Un gesto');
-          check('M2 · Código acordado: bandera = izquierda, silbido = derecha, gesto = parar', G.eventos.had('SignalsAgreed') && S.step === 10 && S.collected.includes('sen_derecha_silbido'), 'paso ' + S.step);
+          check('M2 · Código acordado: bandera = izquierda, silbido = derecha, gesto = parar', G.eventos.had('SignalsAgreed') && S.step === 4 && S.collected.includes('sen_derecha_silbido'), 'paso ' + S.step);
           useAt('practica'); drain();
           check('M2 · Sube a la canoa: Vittata va posada en ella', G.ep3.enViaje());
           navegar();
@@ -967,7 +979,7 @@
           responder(); navegar(); responder(); navegar();
           check('M2 · Práctica terminada: elegir quién lleva el timón', G.eventos.had('PracticeDone') && !G.ep3.enViaje() && opciones().length === 2 && !G.fx.rain.visible, opciones().join());
           pick('Llévalo tú');
-          check('M2 · Timón a la navegante: misión completa y bandera de señales', G.eventos.had('HelmChosen') && S.missions.agua && S.unlocked.includes('mano:bandera') && S.step === 12, 'paso ' + S.step);
+          check('M2 · Timón a la navegante: misión completa y bandera de señales', G.eventos.had('HelmChosen') && S.missions.agua && S.unlocked.includes('mano:bandera') && S.step === 5, 'paso ' + S.step);
 
           // M3 · Más allá de la bahía (atajo y otro paso en el bajío)
           useAt('muelle'); drain();
@@ -980,7 +992,7 @@
           navegar();
           check('M3 · El bajío: la navegante se equivoca y lo dice; dos salidas', opciones().length === 2 && opciones().some(x => x.includes('Juntas')), opciones().join());
           pick('otro paso'); navegar();
-          check('M3 · Llegan a la otra orilla', G.eventos.had('BayCrossed') && S.step === 13 && !G.ep3.enViaje() && S.collected.includes('llegada') && Math.hypot(S.pos.x - ALDEA.x, S.pos.z - ALDEA.z) < 1, 'paso ' + S.step);
+          check('M3 · Llegan a la otra orilla', G.eventos.had('BayCrossed') && S.step === 5 && !G.ep3.enViaje() && S.collected.includes('llegada') && Math.hypot(S.pos.x - ALDEA.x, S.pos.z - ALDEA.z) < 1, 'paso ' + S.step);
           useAt('vecina'); drain();
           check('M3 · Desconfían al principio', G.eventos.had('CommunityReached') && opciones().length === 2);
           pick('Miren el bote');

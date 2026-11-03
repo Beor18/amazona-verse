@@ -131,7 +131,7 @@
     tick(15); drain();
     check('Al bajar el agua, lo no salvado se da por perdido sin castigo y Iguaca lo cuenta', !S.event && CRE.perdidos.length === 2 && !CRE.objetos().some(o => o.fase === 'flota' && o.obj.parent) && S.events.filter(e => e.key === 'FloodRescue').length === 1, CRE.perdidos.join());
     check('Consecuencia visible: refugio inundado', S.refuge.damaged && C.refugeMesh().rotation.z > 0.1 && had('ShelterFlooded'));
-    check('Aparece el Guardián', G.actores.npc('guardian').sp.visible && S.step === 5);
+    check('Aparece el Guardián', G.actores.npc('guardian').sp.visible && S.step === 4);
     C.syncRefugeInteractable(); useAt('refuge', 1.6, 0); drain(); // escena evento:ShelterDismantled
     check('Corregir: desarmar recupera materiales', !S.refuge && S.inv.madera === 4 && S.inv.piedra === 2, JSON.stringify(S.inv));
     useAt('postB', 1, 1);
@@ -147,7 +147,7 @@
     }
     useAt('guardian', 1.4, 0); const p7 = oidos();
     check('Guardián · tras la crecida ya lo conocemos: no se vuelve a presentar y regala el banco', p7[0] === 'Ya lo comprobamos: la crecida dijo la verdad.' && !p7.includes('¿Y usted quién es?'), p7.slice(0, 3).join(' | '));
-    check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 6);
+    check('Guardián conocido y banco desbloqueado', had('GuardianMet') && S.benchUnlocked && C.bench.visible && S.step === 5);
     // M3 (sprint 1): el transmisor pide el coro de coquíes antes de encenderse
     useAt('transmisor'); drain(); if ($('ch-1')) $('ch-1').click(); drain();
     for (const b of C.BUSHES) { useAt(b.id, 1.3, 0); for (const n of b.song) C.simonPress(n); }
@@ -157,7 +157,7 @@
     const med = medL.find(e => /medalla/.test(e.txt));
     check('Medalla del Guardián · su línea sale con el retrato de la medalla y el emblema a la vista', !!med && med.who === 'Guardián' && /^(data:image\/png|assets\/guardian)/.test(med.img) && med.sim, med && med.img.slice(0, 24));
     drain();
-    check('Después del transmisor toca subir al mirador', S.step === 7 && !S.complete && $('symbol').hidden, 'paso ' + S.step);
+    check('Después del transmisor toca subir al mirador', S.transmitterOn && S.step === 5 && !S.complete && $('symbol').hidden && /mirador/i.test($('steps').querySelector('li.now').textContent), 'paso ' + S.step);
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
@@ -452,7 +452,7 @@
     check('El coro enciende el transmisor', S.transmitterOn && !$('symbol').hidden);
     // La Voz (P0-2): retrato neutro, no la cara del Guardián ni la de Vittata; suenan el BIP y la estática de la radio
     // La Voz y el Guardián narran en bocadillos libres (mejora 3): la historia ya pasó al mirador mientras hablan
-    check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 7);
+    check('El transmisor narra en bocadillos: el símbolo queda a la vista y el juego no se para', !!G.dialogo.libre() && !G.ui.busy() && !$('symbol').hidden && S.step === 5 && S.transmitterOn);
     const vozL = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); vozL.push([a.who, a.img]); G.dialogo.next(); }
     check('Al terminar los bocadillos se retira el símbolo', $('symbol').hidden);
     check('La Voz sale con un retrato neutro y el Guardián conserva el suyo', vozL.filter(l => l[0] === 'Voz').length === 2 && vozL.filter(l => l[0] === 'Voz').every(l => /^data:image\/svg/.test(l[1])) && vozL.filter(l => l[0] === 'Guardián').every(l => /guardian\.png$/.test(l[1]) || /^data:image\/png/.test(l[1])) && G.pack.dialogos.retratos.Voz !== G.pack.dialogos.retratos['Guardián'], JSON.stringify(vozL.map(l => [l[0], l[1].slice(0, 22)])));
@@ -551,14 +551,14 @@
     check('Final · crecida: el río sube con su rugido y la lluvia no se corta', log().includes('crecida') && cuenta('lluvia') >= 2, 'lluvia ×' + cuenta('lluvia'));
     tick(14); drain();
     const llovio = cuenta('lluvia'); tick(2);
-    check('Final · al terminar la crecida deja de llover', !S.event && cuenta('lluvia') <= llovio && S.refuge && !S.refuge.damaged && S.step === 5, 'paso ' + S.step);
+    check('Final · al terminar la crecida deja de llover', !S.event && cuenta('lluvia') <= llovio && S.refuge && !S.refuge.damaged && S.step === 4, 'paso ' + S.step);
     // Guardián (banco) y transmisor (Voz con retrato neutro)
     useAt('guardian', 1.4, 0); drain();
-    check('Final · el Guardián presenta el refugio y regala el banco', S.step === 6 && S.benchUnlocked && had('GuardianMet'), 'paso ' + S.step);
+    check('Final · el Guardián presenta el refugio y regala el banco', S.step === 5 && S.benchUnlocked && had('GuardianMet'), 'paso ' + S.step);
     S.inv = { madera: 1, piedra: 0, componente: 1 }; S.missions.m3 = true; // el coro de coquíes ya se probó arriba (M3)
     G.audio.log.length = 0; useAt('transmisor');
     const voz = []; while (G.dialogo.activo()) { const a = G.dialogo.actual(); voz.push([a.who, a.img]); G.dialogo.next(); }
-    check('Final · transmisor: símbolo de 36, BIP, estática y la Voz sin la cara del Guardián', S.transmitterOn && ['bip', 'estatica'].every(n => log().includes(n)) && voz.filter(l => l[0] === 'Voz').length === 2 && voz.filter(l => l[0] === 'Voz').every(l => !/guardian|vittata|luma/.test(l[1])) && S.step === 7, JSON.stringify(voz.map(l => [l[0], l[1].slice(0, 20)])));
+    check('Final · transmisor: símbolo de 36, BIP, estática y la Voz sin la cara del Guardián', S.transmitterOn && ['bip', 'estatica'].every(n => log().includes(n)) && voz.filter(l => l[0] === 'Voz').length === 2 && voz.filter(l => l[0] === 'Voz').every(l => !/guardian|vittata|luma/.test(l[1])) && S.step === 5, JSON.stringify(voz.map(l => [l[0], l[1].slice(0, 20)])));
     // Mirador: plano del bote y luz que parpadea tres veces
     const luz = C.luzMirador;
     G.audio.log.length = 0; useAt('mirador', 2.4, 0);

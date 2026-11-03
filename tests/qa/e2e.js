@@ -314,7 +314,7 @@
         flotan.length === 3 && rescate.salvado && had('FloodRescue') && !!rescate.guiaAlgoFlota && !!rescate.guiaLlevando && CRE.perdidos.length === 2 && accionesCrecida >= 2,
         { flotan: rescate.flotan.join(','), agarrado: rescate.agarrado, guias: [!!rescate.guiaAlgoFlota, !!rescate.guiaLlevando], soltadoEn: rescate.soltadoEn, salvado: rescate.salvado, salvados: CRE.salvados.join(','), perdidos: CRE.perdidos.join(','), evento: had('FloodRescue'), acciones: accionesCrecida, atajo: 'vuelo directo hasta lo que flota y hasta tierra seca' }, 900);
       if (rama === 'A') {
-        check('4.5', 'Crecida: el refugio del río queda dañado y aparece el Guardián (paso «Habla con el Guardián»)', !!S.refuge && S.refuge.damaged && had('ShelterFlooded') && G.actores.npc('guardian').sp.visible && S.step === 5 && !!S.captures.shelter && S.indicators.seguridad === 'baja',
+        check('4.5', 'Crecida: el refugio del río queda dañado y aparece el Guardián (paso «Habla con el Guardián»)', !!S.refuge && S.refuge.damaged && had('ShelterFlooded') && G.actores.npc('guardian').sp.visible && S.step === 4 && !!S.captures.shelter && S.indicators.seguridad === 'baja',
           { refugio: S.refuge, paso: S.step, guardian: G.actores.npc('guardian').sp.visible, indicadores: S.indicators, foto: !!S.captures.shelter });
         // ---------- 4.6 Corregir: desarmar y volver a construir en la colina ----------
         fase('Corregir y reubicar'); muestraGuia();
@@ -327,10 +327,10 @@
           { refugio: S.refuge, construcciones: S.builds, indicadores: S.indicators, valido: c2b.valido, razon: c2b.razon, paso: S.step });
       } else {
         tick(3); drain();
-        check('4.5', 'Crecida: el refugio de la colina aguanta y queda a salvo; aparece el Guardián', !!S.refuge && !S.refuge.damaged && S.refuge.parcel === 'B' && G.actores.npc('guardian').sp.visible && S.step === 5 && S.indicators.seguridad === 'alta' && !!S.captures.shelter,
+        check('4.5', 'Crecida: el refugio de la colina aguanta y queda a salvo; aparece el Guardián', !!S.refuge && !S.refuge.damaged && S.refuge.parcel === 'B' && G.actores.npc('guardian').sp.visible && S.step === 4 && S.indicators.seguridad === 'alta' && !!S.captures.shelter,
           { refugio: S.refuge, paso: S.step, guardian: G.actores.npc('guardian').sp.visible, indicadores: S.indicators });
       }
-      if (corte('4.5 y 4.6', !!S.refuge && !S.refuge.damaged && S.step === 5, { refugio: S.refuge, paso: S.step })) return fin();
+      if (corte('4.5 y 4.6', !!S.refuge && !S.refuge.damaged && S.step === 4, { refugio: S.refuge, paso: S.step })) return fin();
 
       // ---------- 3b. Eclosión con patitas (criadero) ----------
       if (CR) {
@@ -394,9 +394,9 @@
       // ---------- 4.7 El Guardián presenta el refugio y regala el banco ----------
       fase('Guardián'); muestraGuia();
       const guardOk = useAt('guardian', 1.4, 0); const cercG = ultimoCercano; drain();
-      check('4.7', 'Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo', guardOk && had('GuardianMet') && S.benchUnlocked && G.c.bench.visible && S.step === 6 && had('WorkshopUpgradeUnlocked'),
+      check('4.7', 'Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo', guardOk && had('GuardianMet') && S.benchUnlocked && G.c.bench.visible && S.step === 5 && had('WorkshopUpgradeUnlocked'),
         { paso: S.step, banco: G.c.bench.visible, cercano: guardOk ? null : cercG });
-      if (corte('4.7', S.step === 6)) return fin();
+      if (corte('4.7', S.step === 5)) return fin();
 
       // ---------- 4.8 Transmisor: pide voz, M3 «Co-quí» (Simon de 3 coquíes) y el símbolo de los 36 fragmentos ----------
       fase('Transmisor y coquíes'); muestraGuia();
@@ -424,13 +424,13 @@
       const t2 = useAt('transmisor'); const cercX2 = ultimoCercano;
       const simboloVisible = !$('symbol').hidden;
       drain();
-      check('4.8', 'Reparar y activar el transmisor: aparece el símbolo de 36 fragmentos, suena la Voz y la historia pasa al mirador', t2 && simboloVisible && $('symbol').hidden && S.transmitterOn && had('TransmitterActivated') && S.step === 7 && s(S.inv) === s(invFinal),
+      check('4.8', 'Reparar y activar el transmisor: aparece el símbolo de 36 fragmentos, suena la Voz y la historia pasa al mirador', t2 && simboloVisible && $('symbol').hidden && S.transmitterOn && had('TransmitterActivated') && S.step === 5 && /mirador/i.test(hudAhora()) && s(S.inv) === s(invFinal),
         { simbolo: simboloVisible, simboloCerrado: $('symbol').hidden, paso: S.step, inv: S.inv, esperado: invFinal, cercano: t2 ? null : cercX2 });
       // La Voz del transmisor no debe llevar la cara del Guardián (CAP1_PENDIENTE P0-2): informativa mientras QA-34 esté abierto
       const imgVoz = (vistas.find(l => l.who === 'Voz') || {}).img, imgGuardian = (vistas.find(l => l.who === 'Guardián') || {}).img;
       const vozIgual = !!imgVoz && imgVoz === imgGuardian;
       check('4.8', vozIgual ? 'La Voz del transmisor lleva un retrato distinto al del Guardián (informativa: QA-34 ABIERTO, hoy usa el mismo)' : 'La Voz del transmisor lleva un retrato distinto al del Guardián (QA-34 corregido)', !!imgVoz, { voz: imgVoz ? imgVoz.slice(0, 60) : 'la Voz no habló', guardian: imgGuardian ? imgGuardian.slice(0, 60) : 'el Guardián no habló', igual: vozIgual });
-      if (corte('4.8', S.step === 7)) return fin();
+      if (corte('4.8', S.step === 5 && S.transmitterOn)) return fin();
 
       // ---------- 4.9 Mirador: el final del capítulo ----------
       fase('Mirador y final'); muestraGuia();

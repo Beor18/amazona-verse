@@ -68,9 +68,9 @@
       k.useAt('iguaca'); k.drain(); k.useAt('sitio_a'); k.drain(); k.useAt('sitio_b'); k.drain(); k.useAt('sitio_c'); k.drain();
       check('Ep. 2 · lee los 3 sitios', ['lee_a', 'lee_b', 'lee_c'].every(x => k.S.collected.includes(x)), k.S.collected.join());
       W = await recargar(W, 'ep2'); k = kit(W); k.G.quiet = true;
-      check('Ep. 2 · recargar a mitad: siguen las 3 lecturas', ['lee_a', 'lee_b', 'lee_c'].every(x => k.S.collected.includes(x)) && k.S.step === 1, k.S.step + ' ' + k.S.collected.join());
+      check('Ep. 2 · recargar a mitad: siguen las 3 lecturas', ['lee_a', 'lee_b', 'lee_c'].every(x => k.S.collected.includes(x)) && k.S.step === 0, k.S.step + ' ' + k.S.collected.join());
       k.useAt('sitio_' + sitio); k.drain(); k.useAt('iguaca'); k.drain(); // la elección se apunta al cerrarla con Iguaca
-      check('Ep. 2 · elige el sitio y queda en la temporada', k.TP.dato(2, 'sitio') === sitio && k.S.step === 3, JSON.stringify(k.TP.decision(2)) + ' paso ' + k.S.step);
+      check('Ep. 2 · elige el sitio y queda en la temporada', k.TP.dato(2, 'sitio') === sitio && k.S.step === 1, JSON.stringify(k.TP.decision(2)) + ' paso ' + k.S.step);
 
       // ---------- ep. 3 · nombra la casa elegida; navega; bautiza la canoa ----------
       W = await abrir('ep3'); if (!W) { check('Ep. 3 arranca', false, 'no arrancó'); throw new Error('ep3'); }
@@ -81,9 +81,9 @@
       const otros = ['a', 'b', 'c'].filter(x => x !== sitio).map(x => { k.TP.apuntar(2, { sitio: x }); return texto(k.G.pack.continuidad()); });
       k.TP.apuntar(2, { sitio });
       check('Ep. 3 · cada sitio da una casa distinta', otros.every(t => t && t !== cont3) && texto(k.G.pack.continuidad()) === cont3, otros.join(' | '));
-      k.S.step = 7; k.G.guardado.save(true); // atajo: el capítulo ya llegó al final de la canoa
+      k.S.step = 3; k.G.guardado.save(true); // atajo: el capítulo ya llegó a leer el agua (CG-38)
       W = await recargar(W, 'ep3'); k = kit(W); k.G.quiet = true;
-      check('Ep. 3 · recargar a mitad: sigue en el paso 7 y la temporada conserva el sitio', k.S.step === 7 && k.TP.dato(2, 'sitio') === sitio, 'paso ' + k.S.step);
+      check('Ep. 3 · recargar a mitad: sigue en el paso 3 y la temporada conserva el sitio', k.S.step === 3 && k.TP.dato(2, 'sitio') === sitio, 'paso ' + k.S.step);
       k.G.eventos.log('BoatLaunched'); k.useAt('navegante'); k.drain();
       check('Ep. 3 · conoce a quien navega y queda entre los guardianes', k.TP.guardianes().includes('navegante'), k.TP.guardianes().join());
       k.useAt('astillero'); k.drain();
@@ -100,13 +100,13 @@
       mundo(k, 4, [2, 3]);
       const cont4 = texto(k.G.pack.continuidad());
       check('Ep. 4 · nombra la canoa «Ceiba» del ep. 3', /Ceiba/.test(cont4), cont4);
-      k.S.step = 1; k.useAt('bosque'); k.drain();
+      k.S.step = 0; k.useAt('bosque'); k.drain();
       check('Ep. 4 · mira el bosquecillo y lo apunta entre los guardianes', k.TP.guardianes().includes('bosquecillo'), k.TP.guardianes().join());
       k.G.guardado.save(true); W = await recargar(W, 'ep4'); k = kit(W); k.G.quiet = true;
       check('Ep. 4 · recargar a mitad: sigue lo observado y la temporada', k.S.collected.includes('obs_bosque') && k.TP.dato(3, 'canoa') === 'Ceiba', k.S.collected.join());
-      k.S.step = 3; k.useAt('navegante'); k.drain();
+      k.S.step = 1; k.useAt('navegante'); k.drain();
       check('Ep. 4 · quien navega sigue entre los guardianes (sin repetirse)', k.TP.guardianes().filter(g => g === 'navegante').length === 1, k.TP.guardianes().join());
-      k.S.step = 6; k.useAt('mesa'); k.drain();
+      k.S.step = 3; k.useAt('mesa'); k.drain();
       const op4 = k.cards();
       check('Ep. 4 · la asamblea ofrece las 3 opciones', op4.length === 3, op4.join(' | '));
       k.click('ch-0'); k.drain();
@@ -120,7 +120,7 @@
       k = kit(W); k.G.quiet = true; k.G.guardado.reset(true); k.G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
       const cont5 = texto(k.G.pack.continuidad());
       check('Ep. 5 · nombra lo decidido en el ep. 4 (opción ' + opcion + ')', cont5.length > 20, cont5);
-      k.S.step = 6; k.useAt('guardian'); k.drain();
+      k.S.step = 2; k.useAt('guardian'); k.drain();
       for (let i = 0; i < 6 && !k.TP.guardianes().includes('guardian'); i++) { if (!k.click('ch-0')) { k.drain(); } }
       check('Ep. 5 · el Guardián recuerda y queda entre los encontrados', k.TP.guardianes().includes('guardian'), k.TP.guardianes().join() + ' / ' + k.cards().join(' | '));
 

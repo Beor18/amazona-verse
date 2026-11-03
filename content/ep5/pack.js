@@ -153,20 +153,17 @@
     ],
     objetos: {}, recursos: [],
     historia: {
+      // CG-38: 6 pasos. El Guardián, Mara y Vela y la medalla se quedan. El id «estaciones» sigue (QA-86).
       pasos: [
-        { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
-        { id: 'sintonizar', texto: 'Sintoniza el transmisor', hasta: { recogido: FRAG }, guia: G => G.misiones.at('trx') },
-        { id: 'ondas', texto: 'Separa las dos ondas', hasta: { recogido: VOZ }, guia: G => G.misiones.at('trx') },
-        { id: 'patron', texto: 'Copia el patrón de la luz', hasta: { recogido: 'patron_ok' }, guia: G => G.misiones.at('trx') },
-        { id: 'ordenar', texto: 'Ordena el mensaje', hasta: { evento: 'FragmentsOrdered' }, guia: G => G.misiones.at('trx') },
-        { id: 'ruinas', texto: 'Lee las cinco ruinas', hasta: { recogido: RUIN.concat(CLS) }, guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
-        { id: 'fichas', texto: 'Escucha al Guardián: recuerda a pedazos', hasta: { evento: 'GuardianRemembered' }, guia: G => G.misiones.at('guardian') },
-        { id: 'antena', texto: 'Endereza la antena', hasta: { recogido: 'antena' }, guia: G => G.misiones.at('trx') },
-        { id: 'codigo', texto: 'Elige cómo enviar la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
-        { id: 'estaciones', texto: 'Pon tres estaciones', hasta: { recogido: 'tres_estaciones' }, progreso: S => ' (' + Math.min(3, S.collected.filter(k => /^est_/.test(k)).length) + '/3)', guia: G => G.misiones.at(['loma', 'torre', 'mirador'].find(id => !G.S.collected.includes('est_' + id)) || 'prueba') }, // QA-86: cuántas van y la próxima altura sin estación
-        { id: 'prueba1', texto: 'Prueba el relevo', hasta: { recogido: 'prueba1' }, guia: G => G.misiones.at('prueba') },
-        { id: 'ayuda', texto: 'Pide ayuda para las estaciones', hasta: { evento: 'HelpAsked' }, guia: G => G.misiones.at('iguaca') },
-        { id: 'prueba2', texto: 'Vuelve a probar hasta la niebla', guia: G => G.misiones.at('prueba') },
+        { id: 'ondas', texto: 'Habla con Iguaca y separa las dos ondas', hasta: { recogido: VOZ }, guia: G => (G.S.edu && G.S.edu.inicio) ? G.misiones.at('trx') : G.misiones.at('iguaca') },
+        { id: 'mensaje', texto: 'Copia el patrón y ordena el mensaje', hasta: { evento: 'FragmentsOrdered' }, guia: G => G.misiones.at('trx') },
+        { id: 'ruinas', texto: 'Lee las ruinas y escucha al Guardián', hasta: { evento: 'GuardianRemembered' },
+          guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
+        { id: 'senal', texto: 'Endereza la antena y elige la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
+        { id: 'estaciones', texto: 'Pon tres estaciones y prueba el relevo', progreso: S => ' (' + Math.min(3, S.collected.filter(k => /^est_/.test(k)).length) + '/3)',
+          hasta: { recogido: 'prueba1' },
+          guia: G => G.S.collected.includes('tres_estaciones') ? G.misiones.at('prueba') : G.misiones.at(['loma', 'torre', 'mirador'].find(id => !G.S.collected.includes('est_' + id)) || 'prueba') },
+        { id: 'niebla', texto: 'Pide ayuda y prueba hasta la niebla', guia: G => G.eventos.had('HelpAsked') ? G.misiones.at('prueba') : G.misiones.at('iguaca') },
       ],
       fin: () => 'Las dos voces se oyeron enteras. Iguaca tiene unas preguntas, cuando quieras. Y el capítulo 6 espera: el pacto de los 36.',
     },
@@ -405,12 +402,12 @@
       }
       function pintar() {
         const rel = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
-        nota.hidden = !rel || S.step < 9 || S.complete;
+        nota.hidden = !rel || S.step < 4 || S.complete;
         if (!nota.hidden) nota.textContent = 'Con luz, la niebla se cruza desde el mirador. El sonido llega corto. La tela, de noche, necesita la linterna.';
         limpiarRayos();
         const lista = puestos(), cod = codigo() || 'luz';
         for (const e of lista) mastil(e, cod);
-        if (lista.length < 2 && !(rel && S.step >= 9)) return;
+        if (lista.length < 2 && !(rel && S.step >= 4)) return;
         const cadena = [D.taller].concat(lista.slice().sort((a, b) => Math.hypot(a.x - D.taller.x, a.z - D.taller.z) - Math.hypot(b.x - D.taller.x, b.z - D.taller.z)), [D.niebla]);
         if (lista.length >= 1) for (let i = 0; i < cadena.length - 1; i++) {
           const r = cod === 'tela' ? { ok: tiene('linternas') } : D.lineaVista(H, cadena[i], cadena[i + 1], cod);
@@ -568,8 +565,8 @@
 
       // ---------- M2 · ruinas ----------
       function leerRuina(r) {
-        if (S.step < 5) { G.dialogo.say([di('Vittata', 'Desde aquí se ve ' + r.nombre + '.')]); return; }
-        if (S.step > 5) { usarEstacion(D.estaciones.find(e => e.id === r.id) || null, r); return; }
+        if (S.step < 2) { G.dialogo.say([di('Vittata', 'Desde aquí se ve ' + r.nombre + '.')]); return; }
+        if (S.step > 2) { usarEstacion(D.estaciones.find(e => e.id === r.id) || null, r); return; }
         if (tiene('cls_' + r.id)) { G.dialogo.say([di('Vittata', 'Ya leí esta marca: ' + r.marca + '.')]); return; }
         poner('ruina_' + r.id);
         G.dialogo.say([di('Vittata', 'En ' + r.nombre + ' la marca es ' + r.marca + '.'), Lu('¿Eso lo ves o lo supones?')], () => {
@@ -586,7 +583,7 @@
         });
       }
       function fichas() {
-        if (S.step < 6) { G.dialogo.say([di('Guardián', 'Antes éramos treinta y… Las torres hablaban de isla en isla con…')]); return; }
+        if (S.step < 2) { G.dialogo.say([di('Guardián', 'Antes éramos treinta y… Las torres hablaban de isla en isla con…')]); return; }
         if (G.eventos.had('GuardianRemembered')) { G.dialogo.say([di('Guardián', G.eventos.had('VoicesRevealed') ? 'Mara y Vela. Esta vez no se me olvidan.' : 'Eran dos. Las de las islas del sur.')]); return; }
         G.dialogo.say([
           di('Guardián', 'Antes éramos treinta y seis. Las torres hablaban de isla en isla con luz, con voz o con tela.'),
@@ -645,7 +642,7 @@
       const siguiente = () => D.estaciones.find(e => ['loma', 'torre', 'mirador'].includes(e.id) && !tiene('est_' + e.id));
       const aDonde = () => { const s = siguiente(); return s && puestos().length < 3 ? 'Bien. Ahora ' + s.nombre + ': sigue la flecha.' : 'Bien: tres estaciones. Ahora prueba el relevo: sigue la flecha.'; };
       function usarEstacion(est) {
-        if (!est || S.step < 9) return false;
+        if (!est || S.step < 4) return false;
         const id = 'est_' + est.id;
         if (tiene(id)) {
           if (recien === est.id) { G.ui.toast(aDonde(), 3000); return true; }
@@ -739,7 +736,7 @@
           ], o => {
             poner('pred_' + o.v);
             G.eventos.log('TwoVoicesHeard', { choice: o.v }); G.comic.capture('taller');
-            G.dialogo.say([Lu(o.v === 'dos' ? 'Puede ser. Vamos a mirar las ondas.' : 'Puede ser un eco. Vamos a mirar las ondas.'), di('Vittata', 'Giro la rueda.')], () => G.misiones.advanceTo(1));
+            G.dialogo.say([Lu(o.v === 'dos' ? 'Puede ser. Vamos a mirar las ondas.' : 'Puede ser un eco. Vamos a mirar las ondas.'), di('Vittata', 'Giro la rueda.')], () => G.misiones.check());
           });
           return;
         }
@@ -749,7 +746,7 @@
           ], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
-        if (S.step === 11 && !G.eventos.had('HelpAsked')) { pedirAyuda(); return; }
+        if (S.step === 5 && !G.eventos.had('HelpAsked')) { pedirAyuda(); return; }
         const pistas = {
           1: 'Gira la rueda. Cada posición suelta un pedazo.',
           2: 'Dos fragmentos llevan la onda violeta.',
@@ -766,13 +763,13 @@
         G.dialogo.say([Lu(S.complete ? 'Puedes seguir explorando. Las luces siguen encendidas.' : (pistas[S.step] || 'Sigue la señal.'))]);
       }
       function usarTrx() {
-        if (S.step === 1) { sintonizar(); return; }
-        if (S.step === 2) { separar(); return; }
-        if (S.step === 3) { copiar([]); return; }
-        if (S.step === 4) { ordenar([]); return; }
-        if (S.step === 7) { enderezar(); return; }
-        if (S.step === 8) { elegirCodigo(); return; }
-        if (S.step >= 9 && codigo() === 'tela' && !tiene('linternas')) {
+        if (S.step === 0 && S.edu && S.edu.inicio && !FRAGOK(S)) { sintonizar(); return; }
+        if (S.step === 0 && FRAGOK(S) && !VOZOK(S)) { separar(); return; }
+        if (S.step === 1 && !tiene('patron_ok')) { copiar([]); return; }
+        if (S.step === 1) { ordenar([]); return; }
+        if (S.step === 3 && !tiene('antena')) { enderezar(); return; }
+        if (S.step === 3) { elegirCodigo(); return; }
+        if (S.step >= 4 && codigo() === 'tela' && !tiene('linternas')) {
           poner('linternas'); pintar();
           G.dialogo.say([di('Vittata', 'Enciendo las telas con la linterna. Ahora se ven de noche.')]);
           return;
@@ -780,16 +777,24 @@
         G.dialogo.say([di('Vittata', S.complete ? 'El transmisor quedó en silencio. Las voces ya se oyeron.' : 'El transmisor espera.')]);
       }
 
-      const itIguaca = G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => S.step === 11 ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
-      G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.4, label: () => S.step === 6 ? 'Escuchar al Guardián' : 'Hablar con el Guardián', use: fichas });
+      const itIguaca = G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => S.step === 5 && !G.eventos.had('HelpAsked') ? 'Pedir ayuda' : 'Hablar con Iguaca', use: hablarIguaca });
+      G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.4, label: () => S.step === 2 && G.eventos.had('RuinsRead') ? 'Escuchar al Guardián' : 'Hablar con el Guardián', use: fichas });
       const itAprendiz = G.interaccion.add({ id: 'aprendiz', x: APRENDIZ.x, z: APRENDIZ.z, r: 2.2, label: () => 'Hablar con el aprendiz', use: () => G.dialogo.say([di('Aprendiz', G.eventos.had('HelpAsked') ? 'Yo sostengo mi estación. Tú sigue.' : 'Si hace falta otra persona, aquí estoy.')]) });
-      G.interaccion.add({ id: 'trx', x: TRX.x, z: TRX.z, r: 2.4, label: () => ({ 1: 'Sintonizar', 2: 'Separar las ondas', 3: 'Copiar el patrón', 4: 'Ordenar el mensaje', 7: 'Enderezar la antena', 8: 'Elegir el código' })[S.step] || 'Mirar el transmisor', use: usarTrx });
-      G.interaccion.add({ id: 'prueba', x: PRUEBA.x, z: PRUEBA.z, r: 2.4, visible: () => S.step >= 9, label: () => S.complete ? 'Mirar la cadena' : 'Probar el relevo', use: () => { if (S.complete) G.dialogo.say([di('Vittata', 'La cadena sigue encendida, hasta la niebla.')]); else probar(); } });
+      G.interaccion.add({ id: 'trx', x: TRX.x, z: TRX.z, r: 2.4, label: () => {
+        if (S.step === 0 && S.edu && S.edu.inicio && !FRAGOK(S)) return 'Sintonizar';
+        if (S.step === 0 && FRAGOK(S) && !VOZOK(S)) return 'Separar las ondas';
+        if (S.step === 1 && !tiene('patron_ok')) return 'Copiar el patrón';
+        if (S.step === 1) return 'Ordenar el mensaje';
+        if (S.step === 3 && !tiene('antena')) return 'Enderezar la antena';
+        if (S.step === 3) return 'Elegir el código';
+        return 'Mirar el transmisor';
+      }, use: usarTrx });
+      G.interaccion.add({ id: 'prueba', x: PRUEBA.x, z: PRUEBA.z, r: 2.4, visible: () => S.step >= 4, label: () => S.complete ? 'Mirar la cadena' : 'Probar el relevo', use: () => { if (S.complete) G.dialogo.say([di('Vittata', 'La cadena sigue encendida, hasta la niebla.')]); else probar(); } });
       for (const est of D.estaciones) {
         const ruina = D.ruinas.find(r => r.id === est.id);
         G.interaccion.add({ id: est.id, x: est.x, z: est.z, r: 2.3,
-          label: () => S.step === 5 && ruina ? 'Leer ' + ruina.nombre : (tiene('est_' + est.id) ? (armada === est.id ? 'Mover esta estación' : 'Estación puesta') : 'Poner estación en ' + est.nombre),
-          use: () => { if (S.step === 5 && ruina) leerRuina(ruina); else if (!usarEstacion(est) && ruina) leerRuina(ruina); else if (!ruina && S.step < 9) G.dialogo.say([di('Vittata', 'Una altura despejada. Servirá para el relevo.')]); } });
+          label: () => S.step === 2 && ruina ? 'Leer ' + ruina.nombre : (tiene('est_' + est.id) ? (armada === est.id ? 'Mover esta estación' : 'Estación puesta') : 'Poner estación en ' + est.nombre),
+          use: () => { if (S.step === 2 && ruina) leerRuina(ruina); else if (!usarEstacion(est) && ruina) leerRuina(ruina); else if (!ruina && S.step < 4) G.dialogo.say([di('Vittata', 'Una altura despejada. Servirá para el relevo.')]); } });
       }
       for (const r of D.ruinas) if (!D.estaciones.some(e => e.id === r.id)) {
         G.interaccion.add({ id: r.id, x: r.x, z: r.z, r: 2.3, label: () => 'Leer ' + r.nombre, use: () => leerRuina(r) });
@@ -833,7 +838,7 @@
         G.quiet = true; G.guardado.reset(true);
         try {
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
-          check('Empieza en el paso 1 de 13', S.step === 0 && $('steps').children.length === 13, $('steps').children.length);
+          check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6, $('steps').children.length);
           check('Las notas [KELVIN] no salen en los diálogos', !(JSON.stringify(G.pack.dialogos.datos()).includes('[KELVIN')) && (D.notasKelvin || []).length >= 8 && D.notasKelvin.every(n => n.includes('[KELVIN')));
           check('Retrato de las voces: neutro, dos ondas', typeof D.retratoVoz === 'string' && D.retratoVoz.indexOf('data:image/png') === 0);
           check('Nivel 1 no exige la pregunta extra', grado0 === '3-4' && !G.c.ep5.exigeNivel2());
@@ -843,7 +848,7 @@
           useAt('iguaca');
           check('La predicción no juzga: hay eco y hay dos', opciones().some(t => t.includes('eco')) && opciones().some(t => t.includes('Son dos')));
           pick('Son dos'); drain();
-          check('M1 · Dos voces: sigue sintonizar, sin castigo si era eco', G.eventos.had('TwoVoicesHeard') && S.collected.includes('pred_dos') && S.step === 1, 'paso ' + S.step);
+          check('M1 · Dos voces: sigue sintonizar, sin castigo si era eco', G.eventos.had('TwoVoicesHeard') && S.collected.includes('pred_dos') && S.step === 0, 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
             check('Diario · las 4 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 4 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
@@ -852,29 +857,29 @@
 
           useAt('trx');
           for (const n of [1, 2, 3, 4, 5]) { check('M1 · Rueda, posición ' + n, pick('Posición ' + n), opciones().join(' | ')); drain(); }
-          check('M1 · Cinco fragmentos y la onda violeta marcada en la charla', FRAGOK(S) && S.step === 2, S.collected.filter(k => k.startsWith('frag_')).join(','));
+          check('M1 · Cinco fragmentos y la onda violeta marcada en la charla', FRAGOK(S) && S.step === 0, S.collected.filter(k => k.startsWith('frag_')).join(','));
           const boton = document.querySelector('#card [id^="ch-"]');
           check('M1 · Los botones de la rueda miden al menos 56 px', boton && boton.offsetHeight >= 56, boton && boton.offsetHeight);
           for (const lab of ['Onda dorada', 'Onda violeta', 'Onda dorada', 'Onda violeta', 'Onda dorada']) { pick(lab); }
-          check('M1 · Las dos ondas quedan separadas', VOZOK(S) && S.step === 3, 'paso ' + S.step);
+          check('M1 · Las dos ondas quedan separadas', VOZOK(S) && S.step === 1, 'paso ' + S.step);
           pick('Largo'); drain();
           check('M1 · Un destello mal puesto no bloquea', !S.collected.includes('patron_ok') && opciones().some(t => t === 'Corto'));
           pick('Corto'); pick('Corto'); pick('Corto'); pick('Largo'); drain();
-          check('M1 · Patrón tres cortos y uno largo', S.collected.includes('patron_ok') && S.step === 4, 'paso ' + S.step);
+          check('M1 · Patrón tres cortos y uno largo', S.collected.includes('patron_ok') && S.step === 1, 'paso ' + S.step);
           pick('Porque va en pasos'); drain();
           check('Nivel 2 · El patrón en pasos', S.collected.includes('n2_patron'));
           pick('No lo hagas sola'); pick('Seguimos aquí'); pick('La torre que mira al mar'); drain();
           check('M1 · Un orden sin sentido se puede rehacer', !G.eventos.had('FragmentsOrdered') && opciones().length === 3, opciones().join(' | '));
           pick('Seguimos aquí'); pick('La torre que mira al mar'); pick('No lo hagas sola'); drain();
-          check('M1 · Mensaje ordenado y linterna', G.eventos.had('FragmentsOrdered') && S.missions.mensajes && S.unlocked.includes('mano:linterna') && S.step === 5, S.unlocked.join(','));
+          check('M1 · Mensaje ordenado y linterna', G.eventos.had('FragmentsOrdered') && S.missions.mensajes && S.unlocked.includes('mano:linterna') && S.step === 2, S.unlocked.join(','));
 
           const visitas = [['torre', 'Lo sé'], ['mirador', 'Lo supongo'], ['pilar', 'Lo sé'], ['portal', 'Lo sé'], ['altar', 'Lo sé']];
           for (const [id, cual] of visitas) { useAt(id); drain(); pick(cual); drain(); }
-          check('M2 · Cinco marcas, sé y supongo, sin corrección', G.eventos.had('RuinsRead') && S.collected.includes('cls_mirador_supongo') && S.collected.includes('cls_torre_se') && S.step === 6, 'paso ' + S.step);
+          check('M2 · Cinco marcas, sé y supongo, sin corrección', G.eventos.had('RuinsRead') && S.collected.includes('cls_mirador_supongo') && S.collected.includes('cls_torre_se') && S.step === 2, 'paso ' + S.step);
           useAt('guardian'); drain();
           check('M2 · La ficha no da fecha ni causa', G.eventos.had('GuardianRemembered') && !/1779|caza|hurricane|deforest/i.test(ultimoTexto()));
           pick('Un dibujo de la época'); drain();
-          check('M2 · Lupa y Nivel 2 de la evidencia', S.missions.piedras && S.unlocked.includes('mano:lupa') && S.collected.includes('n2_evidencia') && S.step === 7, 'paso ' + S.step);
+          check('M2 · Lupa y Nivel 2 de la evidencia', S.missions.piedras && S.unlocked.includes('mano:lupa') && S.collected.includes('n2_evidencia') && S.step === 3, 'paso ' + S.step);
 
           const h = G.terreno.height, est = id => D.estaciones.find(e => e.id === id);
           check('Luz: taller, loma, torre y mirador se ven', D.lineaVista(h, D.taller, est('loma'), 'luz').ok && D.lineaVista(h, est('loma'), est('torre'), 'luz').ok && D.lineaVista(h, est('torre'), est('mirador'), 'luz').ok && D.lineaVista(h, est('mirador'), D.niebla, 'luz').ok);
@@ -885,13 +890,13 @@
           check('El pulso no pasa de tres por segundo', D.pulsoMs >= 334);
 
           useAt('trx'); drain();
-          check('M3 · Antena derecha', S.collected.includes('antena') && S.step === 8, 'paso ' + S.step);
+          check('M3 · Antena derecha', S.collected.includes('antena') && S.step === 3, 'paso ' + S.step);
           useAt('trx'); pick('Luz:'); drain();
-          check('M3 · Código de luz, con su costo', G.eventos.had('CodeChosen') && S.collected.includes('codigo_luz') && S.step === 9);
+          check('M3 · Código de luz, con su costo', G.eventos.had('CodeChosen') && S.collected.includes('codigo_luz') && S.step === 4);
           useAt('pilar'); useAt('torre'); useAt('mirador');
-          check('M3 · Tres estaciones, una de ellas tapada', S.collected.includes('tres_estaciones') && S.collected.includes('est_pilar') && S.step === 10, S.collected.filter(k => k.startsWith('est_')).join(','));
+          check('M3 · Tres estaciones, una de ellas tapada', S.collected.includes('tres_estaciones') && S.collected.includes('est_pilar') && S.step === 4, S.collected.filter(k => k.startsWith('est_')).join(','));
           useAt('prueba'); drain();
-          check('M3 · La prueba muestra el choque y no castiga', S.collected.includes('corte_loma') && !S.collected.includes('prueba1') && S.step === 10);
+          check('M3 · La prueba muestra el choque y no castiga', S.collected.includes('corte_loma') && !S.collected.includes('prueba1') && S.step === 4);
           useAt('pilar'); drain();
           check('QA-86 · Un toque en una estación puesta no la quita: avisa', S.collected.includes('est_pilar') && /Toca otra vez/.test(($('toast') || {}).textContent || ''), ($('toast') || {}).textContent);
           useAt('pilar'); drain(); useAt('loma');
@@ -902,11 +907,11 @@
           G.accesibilidad.relajado = rel0; G.c.ep5.pintar();
           useAt('prueba');
           pick('Porque no había nadie'); drain();
-          check('M3 · Nivel 2 explica el corte y pasa a pedir ayuda', S.collected.includes('n2_fallo') && S.collected.includes('prueba1') && S.step === 11, 'paso ' + S.step);
+          check('M3 · Nivel 2 explica el corte y pasa a pedir ayuda', S.collected.includes('n2_fallo') && S.collected.includes('prueba1') && S.step === 5, 'paso ' + S.step);
           useAt('iguaca'); pick('Lo hago yo'); drain();
           check('M3 · Hacerlo sola no castiga y recuerda el fragmento', !G.eventos.had('HelpAsked') && opciones().some(t => t.includes('Pide ayuda')));
           pick('Pide ayuda'); drain();
-          check('M3 · Iguaca y el aprendiz toman estaciones', G.eventos.had('HelpAsked') && S.step === 12, 'paso ' + S.step);
+          check('M3 · Iguaca y el aprendiz toman estaciones', G.eventos.had('HelpAsked') && S.step === 5, 'paso ' + S.step);
           const cerca = (id, e) => { const n = G.actores.npc(id); return n && Math.hypot(n.def.x - e.x, n.def.z - e.z) < 3 && Math.hypot(G.interaccion.find(id).x - e.x, G.interaccion.find(id).z - e.z) < 3; };
           check('M3 · Se van a su estación: Iguaca a la loma y el aprendiz a la torre', cerca('iguaca', est('loma')) && cerca('aprendiz', est('torre')));
           useAt('prueba'); drain();

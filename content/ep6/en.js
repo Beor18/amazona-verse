@@ -23,6 +23,14 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
 
  // Pasos de la historia
  "Baja a los muelles y recibe a quien llega": "Go down to the docks and welcome whoever arrives",
+ "Recibe y conoce a los 6 visitantes": "Welcome and meet the 6 visitors",
+ "Recibe y conoce a los 6 visitantes ({}/6)": "Welcome and meet the 6 visitors ({}/6)",
+ "Observa a dos y presenta las parejas": "Watch two of them and introduce the pairs",
+ "Observa a dos y presenta las parejas ({}/3)": "Watch two of them and introduce the pairs ({}/3)",
+ "Escribe el objetivo y arma el plan": "Write the goal and make the plan",
+ "Levanta las tablas entre todos": "Lift the planks together",
+ "Escucha a los dos grupos y sienta a los 36": "Listen to both groups and seat the 36",
+ "Escucha a los dos grupos y sienta a los 36 ({}/8)": "Listen to both groups and seat the 36 ({}/8)",
  "Conoce a los 6 visitantes": "Meet the 6 visitors",
  "Conoce a los 6 visitantes ({}/6)": "Meet the 6 visitors ({}/6)",
  "Dos no dijeron qué necesitan: obsérvalos": "Two didn't say what they need: watch them",

@@ -103,8 +103,8 @@
       }
     }
     // Una captura por paso: en la primera tarjeta de elección o, si el paso no tiene, en su primera línea de diálogo
-    const MOMENTOS = ['iguaca', 'sitios', 'eleccion', 'plano', 'preguntas', 'mesa', 'construir', 'nido', 'tormenta', 'mejora', 'fiesta'];
-    const CON_CARTA = new Set([4, 5, 6, 7, 9]);
+    const MOMENTOS = ['tierra', 'escuchar', 'casa', 'tormenta', 'mejora', 'fiesta'];
+    const CON_CARTA = new Set([1, 2, 4]);
     const captura = async nombre => {
       if (!opts.aqui || !opts.capturas) return;
       await sleep(G.dialogo.open() ? 2500 : 300); W.__ep2Pide = nombre; // el diálogo se escribe letra a letra: se espera a que acabe
@@ -267,13 +267,15 @@
         if (!nb || (it && nb.id !== it.id)) { atasco('al llegar, Acción no apunta a lo que señala la guía', (nb && nb.id) + ' ≠ ' + (it && it.id)); }
         if (mismo === 0) check('Paso ' + (st + 1) + ' · al llegar, el aviso dice qué hacer', !!nb && pr && !pr.hidden && pr.textContent.length > 8, pr && pr.textContent);
         await mirarEN();
-        const antes = { step: S.step, col: S.collected.length };
+        const firma = () => S.step + '|' + S.collected.length + '|' + (S.events || []).length + '|' + (S.edu && S.edu.inicio ? 1 : 0);
+        const antes = firma();
         if (tr) tr.usos++;
         G.interaccion.action();
         const hizo = await resolver();
         await jugar(0.5);
-        if (!hizo && S.step === antes.step && S.collected.length === antes.col) atasco('Acción no hace nada', nb && nb.id);
-        if (S.step === antes.step) { if (++mismo >= 6) { atasco('el paso no avanza tras 6 intentos', def && def.texto); check('Paso ' + (st + 1) + ' · avanza', false, 'sigue en ' + st); break; } }
+        if (!hizo && firma() === antes) atasco('Acción no hace nada', nb && nb.id);
+        if (firma() === antes) { if (++mismo >= 8) { atasco('el paso no avanza tras 8 intentos', def && def.texto); check('Paso ' + (st + 1) + ' · avanza', false, 'sigue en ' + st); break; } }
+        else mismo = 0;
       }
       // ---------- Final ----------
       const fin = !$('end').hidden;
