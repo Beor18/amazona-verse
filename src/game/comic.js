@@ -1132,12 +1132,22 @@ AVE.module('comic', function (G) {
       const R2 = await PT.componer(cv2, d2);
       const i0 = vs.indexOf(base), iv = R2.vinetas[i0];
       const dentro = !!(iv && iv.poseFoto && iv.poseFoto.dentro);
-      let verde = 0;
+      // Se miran los píxeles opacos de la pose (no un punto fijo de su caja: en vuelo, «crucero», el centro de abajo
+      // queda vacío) llevados a la página como los coloca contener(..., abajo): tienen que verse sobre la foto falsa.
+      let verde = 0, total = 0;
       if (dentro) {
-        const pix = cv2.getContext('2d').getImageData(Math.round(iv.poseFoto.x + iv.poseFoto.w / 2 - 8), Math.round(iv.poseFoto.y + iv.poseFoto.h - 28), 16, 16).data;
-        for (let i = 0; i < pix.length; i += 4) if (pix[i + 3] > 20 && Math.abs(pix[i] - 0x12) + Math.abs(pix[i + 1] - 0x3a) + Math.abs(pix[i + 2] - 0x6b) > 48) verde++;
+        const P = await PT.pose(base.look || d.look, base.pose || 'celebrar', 384), pb = P.bbox, pf = iv.poseFoto;
+        const sc = Math.min(pf.w / pb.w, pf.h / pb.h), dx = pf.x + (pf.w - pb.w * sc) / 2, dy = pf.y + pf.h - pb.h * sc;
+        const al = P.canvas.getContext('2d').getImageData(pb.x, pb.y, pb.w, pb.h).data, pag = cv2.getContext('2d');
+        const pix = pag.getImageData(0, 0, cv2.width, cv2.height).data, paso = Math.max(2, Math.round(Math.sqrt(pb.w * pb.h / 400)));
+        for (let y = 0; y < pb.h; y += paso) for (let x = 0; x < pb.w; x += paso) {
+          if (al[(y * pb.w + x) * 4 + 3] < 230) continue;
+          const X = Math.round(dx + (x + 0.5) * sc), Y = Math.round(dy + (y + 0.5) * sc), i = (Y * cv2.width + X) * 4;
+          total++;
+          if (Math.abs(pix[i] - 0x12) + Math.abs(pix[i + 1] - 0x3a) + Math.abs(pix[i + 2] - 0x6b) > 48) verde++;
+        }
       }
-      check('La foto de la escena lleva a Vittata dentro del panel, sin tapar el texto', dentro && verde > 4, dentro ? verde + ' px verdes' : 'sin pose');
+      check('La foto de la escena lleva a Vittata dentro del panel, sin tapar el texto', dentro && total >= 20 && verde >= total * 0.8, dentro ? `${verde}/${total} px de la pose a la vista` : 'sin pose');
     }
     check('Los 4 botones de la página son zonas de acción dentro de la página', R.info.botones.length === 4 && R.info.botones.every(b => b.x >= 0 && b.y >= 0 && b.x + b.w <= W && b.y + b.h <= H) && accionBoton('escenas') && accionBoton('editar'),
       R.info.botones.map(b => b.id).join(','));
