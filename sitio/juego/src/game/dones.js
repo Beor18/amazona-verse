@@ -81,7 +81,27 @@
     };
     // Mentoras que ya se pueden jugar. Otra entra aquí o en pack.mentoras:
     // { id, don, es: [{ who, text }], en: [{ who, text }], aviso: { es, en }, cabe: () => bool }.
-    // [KELVIN] Las dos líneas y el aviso de Iguaca. Lilacina (ojo) y Oratrix (ráfaga) no van en esta lista.
+    // [KELVIN] Nombres de A.5 (Lilacina, Oratrix y la familia). Las dos líneas son neutras: no cambian la historia.
+    function posOk(x, z) {
+      const S = G.S;
+      if (!S || !S.pos || !S.profile || !S.profile.created || S.event) return false;
+      const M = G.fisica && G.fisica.MOVE;
+      if (!M || M.flying || M.swimming) return false;
+      const dx = S.pos.x - x, dz = S.pos.z - z;
+      return dx * dx + dz * dz <= 36;
+    }
+    function mapa56() {
+      const q = location.search || '';
+      const pequeno = /[?&]mapa=pequeno(&|$)/.test(q), forzar = /[?&]mapa=real(&|$)/.test(q);
+      return ((!pequeno) || forzar) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+    }
+    function sitio(cap, fill, mapa) {
+      let real = !!(window.AVE && window.AVE.mundoReal);
+      if (cap === 'ep3' || cap === 'ep4') real = real && !!window.AV_MAPA_CAP1;
+      if (cap === 'ep5' || cap === 'ep6') real = mapa56();
+      return real ? mapa : fill;
+    }
+    const cabeEn = (cap, fill, mapa) => () => G.pack && G.pack.id === cap && posOk(sitio(cap, fill, mapa).x, sitio(cap, fill, mapa).z);
     const MENTORAS = [
       {
         id: 'iguaca', don: 'llamada',
@@ -103,6 +123,71 @@
           const dx = S.pos.x - S.refuge.x, dz = S.pos.z - S.refuge.z;
           return dx * dx + dz * dz <= 64;
         }
+      },
+      {
+        id: 'vinacea', don: 'plumas',
+        es: [
+          { who: 'Vinacea', text: 'Quieta, las hojas te cubren y nadie huye.' },
+          { who: 'Vittata', text: 'Me quedo quieta. Que las hojas me envuelvan.' }
+        ],
+        en: [
+          { who: 'Vinacea', text: 'Stay still. The leaves cover you and no one flees.' },
+          { who: 'Vittata', text: 'I stay still. Let the leaves wrap around me.' }
+        ],
+        aviso: { es: 'Nuevo don: Plumas de hoja. Mantén Impulso.', en: 'New gift: Leaf Feathers. Hold Dash.' },
+        cabe: cabeEn('ep2', { x: -5, z: -18 }, { x: -11, z: 53 })
+      },
+      {
+        id: 'festiva', don: 'rasante',
+        es: [
+          { who: 'Festiva', text: 'A ras del agua el río te lleva. Sostén el impulso.' },
+          { who: 'Vittata', text: 'Bajo y lo sostengo. El río me empuja.' }
+        ],
+        en: [
+          { who: 'Festiva', text: 'Skim the water and the river carries you. Hold the dash.' },
+          { who: 'Vittata', text: 'I go low and hold it. The river pushes me.' }
+        ],
+        aviso: { es: 'Nuevo don: Rasante de río. Mantén Impulso.', en: 'New gift: River Skim. Hold Dash.' },
+        cabe: cabeEn('ep3', { x: 7.6, z: 16.4 }, { x: 195.6, z: 204.4 })
+      },
+      {
+        id: 'oratrix', don: 'rafaga',
+        es: [
+          { who: 'Oratrix', text: 'Si sostienes el impulso, sale otra vez. Es fantasía.' },
+          { who: 'Vittata', text: 'Lo sostengo… ¡y salgo dos veces!' }
+        ],
+        en: [
+          { who: 'Oratrix', text: 'If you hold the dash, it comes again. It is fantasy.' },
+          { who: 'Vittata', text: 'I hold it… and I dash twice!' }
+        ],
+        aviso: { es: 'Nuevo don: Ráfaga doble. Mantén Impulso.', en: 'New gift: Double Gust. Hold Dash.' },
+        cabe: cabeEn('ep4', { x: 12, z: 0 }, { x: 205, z: 160 })
+      },
+      {
+        id: 'lilacina', don: 'ojo',
+        es: [
+          { who: 'Lilacina', text: 'Desde aquí se ve lo escondido. Sostén el impulso.' },
+          { who: 'Vittata', text: 'Lo sostengo. Quiero ver más lejos.' }
+        ],
+        en: [
+          { who: 'Lilacina', text: 'From here you see what is hidden. Hold the dash.' },
+          { who: 'Vittata', text: 'I hold it. I want to see farther.' }
+        ],
+        aviso: { es: 'Nuevo don: Ojo de cumbre. Mantén Impulso.', en: 'New gift: Summit Eye. Hold Dash.' },
+        cabe: cabeEn('ep5', { x: 0, z: 2 }, { x: -63, z: -146 })
+      },
+      {
+        id: 'versicolor', don: 'columna',
+        es: [
+          { who: 'Versicolor', text: 'El aire sube en columna. Sostén el impulso y remonta.' },
+          { who: 'Vittata', text: 'Lo sostengo. La nube me sube.' }
+        ],
+        en: [
+          { who: 'Versicolor', text: 'The air rises in a column. Hold the dash and climb.' },
+          { who: 'Vittata', text: 'I hold it. The cloud lifts me.' }
+        ],
+        aviso: { es: 'Nuevo don: Columna de nube. Mantén Impulso.', en: 'New gift: Cloud Column. Hold Dash.' },
+        cabe: cabeEn('ep6', { x: -20, z: -20 }, { x: -40, z: -117 })
       }
     ];
     const enCurso = new Set();
@@ -374,6 +459,7 @@
         const en = document.documentElement.lang === 'en';
         check('El aviso tiene frase en español y en inglés', ['islenas', 'cordilleranas', 'norte', 'montaneras', 'gran_rio', 'bosque_sur'].every(id => REGALO[id].es && REGALO[id].en) && (en ? REGALO.bosque_sur.en : REGALO.bosque_sur.es).length > 8);
         const refugio0 = G.S.refuge, evento0 = G.S.event, posM = { x: G.S.pos.x, y: G.S.pos.y, z: G.S.pos.z };
+        const packId0 = G.pack && G.pack.id;
         const dones0 = Array.isArray(G.S.dones) ? G.S.dones.slice() : [];
         const quiet0 = G.quiet, fly0 = G.fisica.MOVE.flying, swim0 = G.fisica.MOVE.swimming;
         const look0 = G.S.profile && G.S.profile.look;
@@ -394,7 +480,7 @@
           document.body.classList.remove('retos-on');
           check('Sin la escena de Iguaca la Llamada no se activa', idFamilia() === 'islenas' && activar() === false && !activo(), activo() || 'parada');
           const listaM = mentoras();
-          check('Solo Iguaca está en juego; Lilacina y Oratrix esperan', listaM.length === 1 && listaM[0].id === 'iguaca' && listaM[0].don === 'llamada' && !listaM.some(m => m.id === 'lilacina' || m.id === 'oratrix' || m.don === 'ojo' || m.don === 'rafaga'));
+          check('En el capítulo 1 solo Iguaca enseña; las otras cinco esperan su capítulo', listaM.length === 6 && listaM[0].id === 'iguaca' && listaM[0].don === 'llamada' && ['vinacea', 'festiva', 'oratrix', 'lilacina', 'versicolor'].every(id => listaM.some(m => m.id === id)) && listaM.filter(m => m.id !== 'iguaca').every(m => !m.cabe()));
           const iguaca = listaM[0];
           check('Las dos líneas caben en un globo y el aviso trae inglés', iguaca.es.length === 2 && iguaca.en.length === 2 && iguaca.es.every(l => l.text.length < 100) && iguaca.en.every(l => l.text.length < 100) && iguaca.aviso.en === 'New gift: Flock Call. Hold Dash.');
           check('La partida guarda los dones aprendidos', !!(G.guardado && G.guardado.KEYS && G.guardado.KEYS.includes('dones')) && Array.isArray(G.guardado.freshState().dones));
@@ -414,10 +500,25 @@
           check('Al aprender sale el aviso y Impulso late una vez', sabe('llamada') && tt && !tt.hidden && tt.classList.contains('don-aprender') && /Llamada de la bandada|Flock Call/.test(tt.textContent) && dash && dash.classList.contains('don-latido'), tt ? tt.textContent : 'sin aviso');
           don = null;
           check('Con la Llamada aprendida, mantener Impulso la activa', activar() === true && activo() === 'llamada', activo() || 'sin don');
+          don = null;
+          const pack0 = G.pack.id;
+          G.pack.id = 'ep4';
+          const ora = sitio('ep4', { x: 12, z: 0 }, { x: 205, z: 160 });
+          G.S.dones = (G.S.dones || []).filter(id => id !== 'rafaga');
+          G.S.pos.x = ora.x; G.S.pos.z = ora.z;
+          G.S.event = null; G.quiet = false; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false;
+          if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
+          soltarEscenas();
+          const oraOk = mirar() === true && G.dialogo && G.dialogo.actual && G.dialogo.actual() && G.dialogo.actual().who === 'Oratrix';
+          check('En su capítulo, Oratrix enseña la Ráfaga doble', oraOk, G.dialogo && G.dialogo.actual && G.dialogo.actual() ? G.dialogo.actual().who : 'sin diálogo');
+          if (oraOk) { G.dialogo.next(); G.dialogo.next(); }
+          check('Al aprender la ráfaga sale su aviso', sabe('rafaga') && /Ráfaga doble|Double Gust/.test((document.getElementById('toast') || {}).textContent || ''), (document.getElementById('toast') || {}).textContent || '');
+          G.pack.id = pack0;
         } finally {
           if (G.guardado && auto0) G.guardado.autosave = auto0;
           G.S.refuge = refugio0; G.S.event = evento0;
           G.S.pos.x = posM.x; G.S.pos.y = posM.y; G.S.pos.z = posM.z;
+          if (G.pack && packId0) G.pack.id = packId0;
           G.S.dones = dones0;
           G.quiet = quiet0; G.fisica.MOVE.flying = fly0; G.fisica.MOVE.swimming = swim0;
           if (G.S.profile) {

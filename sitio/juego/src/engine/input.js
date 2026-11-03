@@ -210,16 +210,25 @@ AVE.module('input', function (G) {
 
   // Arrastrar en el lienzo gira la cámara; en vertical inclina la vista (hacia arriba mira al cielo)
   const canvas = G.renderer.canvas;
-  let dragId = null, dragX = 0, dragY = 0;
-  canvas.addEventListener('pointerdown', e => { dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; });
+  // Bug del iPad de Kelvin (2-nov, «se me va en un zoom»): un toque con el dedo temblaba unos píxeles e inclinaba la vista (la
+  // cámara orbitaba y se acercaba al suelo o al acantilado), y un pellizco con dos dedos se leía como arrastre. Ahora un toque
+  // no mueve la cámara hasta pasar ZONA_MUERTA px, y con dos dedos en el lienzo no se gira (se espera a levantarlos todos).
+  const ZONA_MUERTA = { touch: 10, pen: 6 }, enLienzo = new Set();
+  let dragId = null, dragX = 0, dragY = 0, dragVivo = false, dosDedos = false;
+  canvas.addEventListener('pointerdown', e => {
+    enLienzo.add(e.pointerId);
+    if (enLienzo.size > 1) { dosDedos = true; dragId = null; return; }
+    dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; dragVivo = !(ZONA_MUERTA[e.pointerType] > 0);
+  });
   canvas.addEventListener('pointermove', e => {
-    if (e.pointerId !== dragId) return;
+    if (e.pointerId !== dragId || dosDedos) return;
+    if (!dragVivo) { if (Math.hypot(e.clientX - dragX, e.clientY - dragY) < ZONA_MUERTA[e.pointerType]) return; dragVivo = true; dragX = e.clientX; dragY = e.clientY; return; }
     G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX;
     if (G.camara.inclinar) G.camara.inclinar((dragY - e.clientY) * 0.005); dragY = e.clientY;
     if (G.camara.manual) G.camara.manual();
   });
-  const endDrag = e => { if (e.pointerId === dragId) dragId = null; };
-  canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+  const endDrag = e => { enLienzo.delete(e.pointerId); if (e.pointerId === dragId) dragId = null; if (!enLienzo.size) dosDedos = false; };
+  addEventListener('pointerup', endDrag, true); addEventListener('pointercancel', endDrag, true); // en window: el dedo puede levantarse sobre un botón del HUD
 
   // ---------- Pruebas (AV.teclasTest) ----------
   // Deja el mapa y el almacén como estaban. Los eventos sintéticos solo usan teclas de mover (no disparan acciones).

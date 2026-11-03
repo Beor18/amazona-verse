@@ -41,6 +41,8 @@ AVE.module('camara', function (G) {
     rollMax: 4, rollK: 0.09,       // inclinación en vuelo: máximo (°) y grados por grado/s de giro del rumbo
     fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
     caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
+    pasoMax: 36,                   // m/s como mucho al seguir (a 60 fps, 0,6 m por cuadro; vuela a 25 m/s con impulso)
+    caidaEspera: 1.2,              // s entre dos dollies de aterrizaje (saltos seguidos: sin latido)
     plano: 1.2, planoGiro: 0.55,   // plano de descubrimiento: duración (s) y giro de la órbita (rad)
     inclinaMax: 70, inclinaMin: 25, // mirar arriba: ° del centro de la vista sobre el horizonte / ° extra hacia abajo
     inclinaEspera: 4, inclinaVuelta: 0.6, // s sin tocar antes de volver sola (solo en marcha) y tasa de la vuelta (1/s)
@@ -48,6 +50,8 @@ AVE.module('camara', function (G) {
                  // ° sobre el borde inferior del cuadro: pegada al suelo, Vittata no sale de la vista
     teclaInclina: 1.3,             // rad/s con T/G (o RePág/AvPág)
     sinVida: false,                // true: sin cámara con vida (como prefers-reduced-motion; lo usa movementTest)
+    histeresis: true,              // iPad de Kelvin (2-nov, «loop de zoom»): tras chocar con un muro o una copa, la cámara no vuelve a alejarse…
+    colEspera: 0.4, colSalida: 2.2, // …hasta colEspera s con la vista libre (sin muro ni copa en medio), y luego despacio (tasa colSalida); acercarse sigue siendo al instante
   }, G.pack.jugador && G.pack.jugador.camaraAjuste);
   // combo/comboT: racha de capturas (la usan objetos y diario para subir la nota del arpegio)
   const juice = { shake: 0, amp: 0, hitStop: 0, combo: 0, comboT: 0 };
@@ -188,7 +192,29 @@ AVE.module('camara', function (G) {
     }
     return true;
   }
-  function target() {
+  // Histéresis de la distancia (bug del iPad de Kelvin, 2-nov): junto a una pared alta o un acantilado, evitarMuros/evitarCopas
+  // podían dar un cuadro una distancia corta y al siguiente otra larga (otro hueco al rodear el muro), y la cámara entraba y salía
+  // en bucle como un zoom. Ahora acercarse es al instante (nunca dentro del muro) y alejarse espera colEspera s sin choques y va
+  // despacio. La colisión no cambia: la distancia corta está sobre la misma recta libre cabeza→destino.
+  const paso = new THREE.Vector3();
+  let dCol = null, colT = 0, dtCam = 0, lastLn = 0; // dCol: fracción de la distancia que se usa (1 = sin choque)
+  const nominal = new THREE.Vector3();
+  function histeresis(snap) {
+    const hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z;
+    const Ln = Math.hypot(nominal.x - hx, nominal.y - hy, nominal.z - hz); lastLn = Ln;
+    const dx = camPos.x - hx, dy = camPos.y - hy, dz = camPos.z - hz, L = Math.hypot(dx, dy, dz);
+    const q = Ln > 1e-3 ? Math.min(1, L / Ln) : 1;
+    if (snap || dCol == null || !CAM.histeresis) { dCol = q; colT = 0; return; }
+    if (q < dCol - 0.01) { dCol = q; colT = CAM.colEspera; return; }  // se acerca (choque nuevo): al instante
+    if (q < 0.995) colT = Math.max(colT, CAM.colEspera);              // el muro sigue en medio: no se aleja todavía
+    else if (colT > 0) colT = Math.max(0, colT - dtCam);
+    else dCol += (q - dCol) * rate(CAM.colSalida, dtCam);            // se aleja: tras la espera, despacio
+    if (q - dCol < 0.005) { dCol = Math.min(dCol, q); return; }
+    const k = dCol / q;
+    camPos.set(hx + dx * k, hy + dy * k, hz + dz * k);
+    const gy = suelo(camPos.x, camPos.z); if (camPos.y < gy) camPos.y = gy;
+  }
+  function target(snap) {
     const M = G.fisica.MOVE, fly = M.flying, ay = anchorY == null ? S.pos.y : anchorY, ag = fly ? 0 : M.agachada || 0;
     let h = fly ? CAM.heightFly : CAM.height, d = dist();
     if (ag) { h += (CAM.agachadaAlto - h) * ag; d += (CAM.agachadaDist - d) * ag; }
@@ -216,11 +242,13 @@ AVE.module('camara', function (G) {
         if (hz < CAM.cercaMin) { camPos.x = S.pos.x + Math.sin(yw) * CAM.cercaMin; camPos.z = S.pos.z + Math.cos(yw) * CAM.cercaMin; }
       }
     }
+    nominal.copy(camPos);
     evitarCopas();
     // En laderas y barrancos la cámara no se mete bajo el terreno (ni en el agua)
     const gy = suelo(camPos.x, camPos.z);
     if (camPos.y < gy) camPos.y = gy;
     evitarMuros();
+    histeresis(snap);
   }
   const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look - 0.5 * (G.fisica.MOVE.flying ? 0 : G.fisica.MOVE.agachada || 0);
   // Apunta a Vittata y, si el jugador mira arriba y la cámara no pudo bajar lo bastante (suelo, agua), gira la vista
@@ -235,7 +263,7 @@ AVE.module('camara', function (G) {
   // Coloca la cámara: snap = al instante (cargar, capturas); también deja al jugador y al aprendiz en su sitio
   function place(snap) {
     if (snap) updateAnchor(0, true);
-    target();
+    target(!!snap);
     if (snap) { camera.position.copy(camPos); muroEnMedio(); G.actores.snapCompanionSprite(); }
     G.actores.placePlayerSprite(0);
     if (snap) G.actores.sync3D(0, false, true);
@@ -266,7 +294,9 @@ AVE.module('camara', function (G) {
     vida.roll += (want - vida.roll) * rate(4, dt);
     if (Math.abs(vida.roll) < 1e-4 && !want) vida.roll = 0;
     // Aterrizaje (fisica.js pone MOVE.land al tocar suelo): la cámara baja un poco y vuelve; posarse en vuelo sacude leve
-    if ((M.land || 0) > vida.land + 1e-3) { vida.caida = Math.max(vida.caida, CAM.caida * Math.max(0.3, M.impact || 0)); if ((M.impact || 0) <= 0.3) shake(0.04, 0.15); }
+    // BM131: con saltos seguidos el dolly se veía como un latido (7,56–8,08 m): uno nuevo solo pasado caidaEspera s del anterior
+    vida.desdeCaida = (vida.desdeCaida == null ? 99 : vida.desdeCaida) + dt;
+    if ((M.land || 0) > vida.land + 1e-3 && vida.desdeCaida >= CAM.caidaEspera) { vida.desdeCaida = 0; vida.caida = Math.max(vida.caida, CAM.caida * Math.max(0.3, M.impact || 0)); if ((M.impact || 0) <= 0.3) shake(0.04, 0.15); }
     vida.land = M.land || 0;
     vida.caida *= 1 - rate(5, dt); if (vida.caida < 1e-3) vida.caida = 0;
     if (vida.plano > 0) vida.plano = Math.max(0, vida.plano - dt);
@@ -297,22 +327,49 @@ AVE.module('camara', function (G) {
     lazyYaw(dt);
     inclinaPaso(dt);
     updateAnchor(dt, false);
-    target(); camera.position.lerp(camPos, rate(CAM.follow, dt));
+    dtCam = dt || 0; target(false);
+    // BM131: el seguimiento no pasa de pasoMax m/s. Al rodear un muro, evitarMuros puede pasar el destino al otro lado de
+    // Vittata (hasta ~19 m) y el lerp daba saltos de 2–3 m por cuadro, que en el iPad se veían como un zoom de ida y vuelta
+    paso.subVectors(camPos, camera.position).multiplyScalar(rate(CAM.follow, dt));
+    const lp = paso.length(), tope = CAM.pasoMax * Math.max(dt || 0, 1 / 120);
+    if (lp > tope && camera.position.distanceTo(camPos) < 25) paso.multiplyScalar(tope / lp); // lejos (un teletransporte): como antes
+    camera.position.add(paso);
     muroEnMedio();
   }
   // BM87: el seguimiento suaviza (lerp) y, al girar o cambiar de modo, la cámara podía cruzar un muro, una losa o un tejado
   // entre un cuadro y otro aunque el destino estuviera libre. Si el tramo cabeza→cámara toca un sólido, se acerca hasta
   // justo antes del sólido (acercamiento, no teletransporte) en vez de ver por dentro del muro.
   let cortes = 0;
+  // Primer tramo libre (0..1) de la cabeza a (x, y, z); 1 si no toca ningún sólido
+  function tramoLibre(hx, hy, hz, x, y, z) {
+    const dx = x - hx, dy = y - hy, dz = z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return 1;
+    const n = Math.ceil(L / 0.3);
+    for (let i = 1; i <= n; i++) { const t = i / n; if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) return (i - 1) / n; }
+    return 1;
+  }
+  let suaves = 0;
   function muroEnMedio() {
     if (!G.solidos || !G.solidos.activo) return;
     const hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z, p = camera.position;
     const dx = p.x - hx, dy = p.y - hy, dz = p.z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return;
-    const n = Math.ceil(L / 0.3);
-    for (let i = 1; i <= n; i++) {
-      const t = i / n;
-      if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { const k = Math.max(0.35 / L, (i - 1) / n - 0.05); p.set(hx + dx * k, hy + dy * k, hz + dz * k); cortes++; return; }
+    const t0 = tramoLibre(hx, hy, hz, p.x, p.y, p.z); if (t0 >= 1) return;
+    // BM131: antes de acercarla de golpe hacia la cabeza, se adelanta por el camino hacia su destino (libre por evitarMuros):
+    // el primer punto con la vista libre que esté a menos de 0,5 m (sin tirón ni corte)
+    const ex = camPos.x - p.x, ey = camPos.y - p.y, ez = camPos.z - p.z, E = Math.hypot(ex, ey, ez);
+    for (let j = 1; j <= 8 && E > 1e-3; j++) {
+      const f = Math.min(1, j * 0.0625 / Math.max(0.5, E)); const x = p.x + ex * f, y = p.y + ey * f, z = p.z + ez * f;
+      if (tramoLibre(hx, hy, hz, x, y, z) >= 1) { p.set(x, y, z); suaves++; return; }
+      if (f >= 1) break;
     }
+    // Corte: de dos saltos, el más corto: hacia la cabeza por la misma recta, o al primer punto libre camino del destino
+    const k = Math.max(0.35 / L, t0 - 0.05), saltoCabeza = (1 - k) * L;
+    for (let a = 0.75; a < E && a < saltoCabeza; a += 0.25) {
+      const f = a / E, x = p.x + ex * f, y = p.y + ey * f, z = p.z + ez * f;
+      if (tramoLibre(hx, hy, hz, x, y, z) >= 1) { p.set(x, y, z); cortes++; return; }
+    }
+    p.set(hx + dx * k, hy + dy * k, hz + dz * k); cortes++;
+    // la histéresis lo recuerda: tras un corte, el destino no vuelve a alejarse hasta colEspera s con la vista libre
+    if (dCol != null && lastLn > 1e-3) { dCol = Math.min(dCol, k * L / lastLn); colT = CAM.colEspera; }
   }
   function shake(amp, secs) { if (R.REDUCED) return; juice.amp = Math.max(juice.amp, amp); juice.shake = Math.max(juice.shake, secs || 0.3); }
   function hitStop(secs) { juice.hitStop = Math.max(juice.hitStop, secs || 0.06); }
@@ -325,8 +382,9 @@ AVE.module('camara', function (G) {
     return CAM.fovMin + (CAM.fovMax - CAM.fovMin) * k;
   }
   let fovBonus = 0; // BM20: el despegue del mirador abre el campo de visión (G.wow); 0 el resto del tiempo
+  let fovPicado = 0; // DIVERSION_CAP1 mejora 6 (src/game/juice.js): el picado y el remonte abren el campo de visión (el mayor de este y fovExtra, no la suma); sin vida no cuenta
   function fov(dt) {
-    const wantFov = 55 + fovExtra() + fovBonus;
+    const wantFov = 55 + Math.max(fovExtra(), quieta() ? 0 : fovPicado) + fovBonus; // el picado no se suma al FOV del vuelo o del impulso
     let dirty = false;
     // Un minijuego puede dejar el FOV en 34 o el zoom de la cámara en otro valor: aquí vuelve al de exploración.
     if (!(camera.fov > 30 && camera.fov < 100)) { camera.fov = wantFov; dirty = true; }
@@ -450,12 +508,17 @@ AVE.module('camara', function (G) {
       } else ok('muros y losas (sin sólidos activos: no aplica)', true, '');
       // 5. Transición suelo↔vuelo y aterrizaje: sin saltos de cámara mayores de 1 m por cuadro (a 60 fps)
       modo(false, 0); yaw = keep.yaw; inclina = 0; place(true);
-      let salto = 0, prevP = camera.position.clone(), c1 = cortes;
-      const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); salto = Math.max(salto, camera.position.distanceTo(prevP)); prevP.copy(camera.position); } };
+      let salto = 0, prevP = camera.position.clone(), c1 = cortes, sv1 = suaves, dondeSalto = '', faseT = 'suelo';
+      const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); const dd = camera.position.distanceTo(prevP); if (dd > salto) { salto = dd; dondeSalto = faseT + i; } prevP.copy(camera.position); } };
       paso60(30);
-      Object.assign(M, { flying: true, grounded: false }); S.pos.y += 3; paso60(60);          // despegue
-      Object.assign(M, { flying: false, grounded: true }); S.pos.y = G.terreno.height(S.pos.x, S.pos.z); M.land = (M.land || 0) + 1; M.impact = 1; paso60(60); // aterriza
-      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m');
+      // BM131: sube y baja 3 m en 0,5 s (como el despegue y el aterrizaje de fisica.js, ~6 m/s), no de golpe en un cuadro: con el
+      // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero (134,183, tras las baterías) y el corte daba 2–3 m.
+      // Aterriza donde despegó (antes, en la altura del terreno: si las baterías la dejaban sobre una losa o un tejado, la
+      // «aterrizaba» por dentro del edificio)
+      const y0 = S.pos.y, yT = y0;
+      faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
+      Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
+      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z), Math.round(S.pos.y * 10) / 10] }));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
@@ -463,6 +526,6 @@ AVE.module('camara', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, CAM, juice, vida, get cortes() { return cortes; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });

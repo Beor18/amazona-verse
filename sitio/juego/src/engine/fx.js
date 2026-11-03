@@ -12,7 +12,8 @@ AVE.module('fx', function (G) {
   const fx = [];
   let liveParticles = 0;
   const MAX_PARTICLES = 200;
-  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'], dust: ['#c9b48a', '#b09a72', '#d9c9a3'], leaves: ['#3f8f3a', '#6fb84a', '#2f6f35', '#a3c94a'] }; // leaves: BM20, despegue del mirador
+  const PALETTE = { feathers: ['#2f8f4e', '#7fd38f', '#d6403a', '#3d8fb0', '#f2a03d'], stars: ['#d6403a', '#ffffff', '#0a50a1'], bubbles: ['#e6f7ff'], gold: ['#ffd84a', '#fff3b0', '#f2a03d'], dust: ['#c9b48a', '#b09a72', '#d9c9a3'], leaves: ['#3f8f3a', '#6fb84a', '#2f6f35', '#a3c94a'],
+    petals: ['#e2402b', '#f2672e', '#d12e26', '#ff8a3d', '#f6c84a'] }; // leaves: BM20, despegue del mirador; petals: flamboyán (juice.js, DIVERSION_CAP1 mejora 6)
 
   // Atlas de 256 px (2×2 celdas de 128): estrella de 4 puntas con halo, pluma, burbuja y punto suave
   const ATLAS = (function () {
@@ -35,7 +36,7 @@ AVE.module('fx', function (G) {
   })();
   const SPRITE = {}; // celda del atlas por tipo de ráfaga (texturas que comparten la misma imagen)
   function sprite(kind) {
-    const celda = kind === 'bubbles' ? [0, 0] : (kind === 'feathers' || kind === 'leaves') ? [1, 1] : kind === 'gold' ? [1, 0] : [0, 1];
+    const celda = kind === 'bubbles' ? [0, 0] : (kind === 'feathers' || kind === 'leaves' || kind === 'petals') ? [1, 1] : kind === 'gold' ? [1, 0] : [0, 1];
     const k = celda.join();
     if (!SPRITE[k]) { const t = new THREE.CanvasTexture(ATLAS); t.repeat.set(0.5, 0.5); t.offset.set(celda[0] * 0.5, celda[1] * 0.5); SPRITE[k] = t; }
     return SPRITE[k];
@@ -71,12 +72,13 @@ AVE.module('fx', function (G) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     // Sprites del atlas: estrellas y oro suman luz (brillan); plumas y burbujas, mezcla normal para no perder el color
-    const brilla = kind !== 'feathers' && kind !== 'bubbles' && kind !== 'leaves';
+    const brilla = kind !== 'feathers' && kind !== 'bubbles' && kind !== 'leaves' && kind !== 'petals';
     const p = new THREE.Points(g, new THREE.PointsMaterial({ size: kind === 'bubbles' ? 0.22 : 0.42, map: sprite(kind), vertexColors: true, transparent: true, opacity: 1, depthWrite: false,
       blending: brilla ? THREE.AdditiveBlending : THREE.NormalBlending }));
     scene.add(p); liveParticles += n;
-    fx.push({ m: p, t: 0, n, life: kind === 'bubbles' ? 1.8 : 1.3, vel, y0: -Infinity, ceil: ceil != null ? ceil : null, op: 1,
-      grav: kind === 'bubbles' ? -0.6 : (kind === 'feathers' || kind === 'leaves') ? 4 : 9, drag: (kind === 'feathers' || kind === 'leaves') ? 2.2 : 0 });
+    const hoja = kind === 'feathers' || kind === 'leaves' || kind === 'petals';
+    fx.push({ m: p, t: 0, n, life: kind === 'bubbles' ? 1.8 : kind === 'petals' ? 2.2 : 1.3, vel, y0: -Infinity, ceil: ceil != null ? ceil : null, op: 1,
+      grav: kind === 'bubbles' ? -0.6 : kind === 'petals' ? 2.2 : hoja ? 4 : 9, drag: kind === 'petals' ? 2.8 : hoja ? 2.2 : 0 });
   }
   // Cofre de recompensa: aparece frente al jugador, abre la tapa y suelta plumas y estrellas
   function rewardChest() {
@@ -221,9 +223,11 @@ AVE.module('fx', function (G) {
   G.on('apply', () => { rain.visible = false; }, 40);
 
   // BM22, feedback «juicy»: polvo al aterrizar en tierra y hojas al atravesar una copa. juicy cuenta cada disparo (para pruebas)
-  const juicy = { polvo: 0, hojas: 0, salpicadura: 0, sacudida: 0, aleteo: 0 };
+  const juicy = { polvo: 0, hojas: 0, salpicadura: 0, sacudida: 0, aleteo: 0, petalos: 0 };
   function polvo(x, y, z, fuerza) { juicy.polvo++; burst(x, y + 0.1, z, 'dust', Math.round(6 + 8 * Math.min(1, fuerza || 0.5))); }
   function hojas(x, y, z) { juicy.hojas++; burst(x, y, z, 'leaves', 6); }
-  return { list: fx, juicy, polvo, hojas, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
+  // Pétalos del flamboyán al cruzar su copa volando (src/game/juice.js); quien llama ya respeta «Reducir movimiento»
+  function petalos(x, y, z, n) { juicy.petalos++; burst(x, y, z, 'petals', n || 16); }
+  return { list: fx, juicy, polvo, hojas, petalos, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
     ATLAS, sprite, luzSube, recoger, saltar, descubrimiento };
 });
