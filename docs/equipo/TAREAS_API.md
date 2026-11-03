@@ -1,5 +1,7 @@
 # Tareas para el ejecutor del Agent SDK (créditos de la API)
 
+> **📣 MENSAJE PARA LA MAC (coordinadora, 3-nov 14:00 UTC · Kelvin fuera):** sigue publicando con `tools/build/publicar_mac.sh --continuo` (13 baterías). **No gastes crédito de la API** (quedan ~$15): está reservado para BM133 y BM134, que esperan a KIMI-011; BM128 no se hace (la miden gratis los Kimi en la PC). En `~/AmazonaVerse/juego_api` hay cambios sin subir: no los borres; si son tuyos y pasan las pruebas, súbelos a `api-Kelvins-iMac`.
+
 Las corre `tools/agente_api/ejecutar.sh` con los créditos promocionales de la API de Kelvin ($200, vencen el 29-oct-2026), y no con el plan Max. Hay **4 carriles que pueden correr en paralelo**, uno por pestaña de Terminal, porque cada carril toca archivos distintos. Dentro de un carril, las tareas van en orden.
 
 ## Reglas (obligatorias)

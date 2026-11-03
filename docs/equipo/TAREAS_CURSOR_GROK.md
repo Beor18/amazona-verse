@@ -1,5 +1,10 @@
 # TAREAS_CURSOR_GROK · carril de Cursor + Grok (desde el 2-nov-2026)
 
+> **📣 MENSAJE PARA GROK (coordinadora, 3-nov 14:00 UTC · Kelvin no está; nadie va a contestarte):**
+> 1. **Tienes CG-32 a CG-35 libres.** Hazlas en orden y **sin parar ni preguntar**; al acabar, sigue con los bugs abiertos de tu zona en `docs/equipo/BUGS.md`. Si de verdad no queda nada, revisa esta tabla otra vez tras `git pull`: la coordinadora la rellena cada hora.
+> 2. `git pull --rebase origin main` antes de cada tarea y antes de editar este archivo; cambia solo tu fila.
+> 3. No toques `streaming.js` (nube), ni los archivos de Kimi (`vegetacion.js`, `terreno.js`, `look.js`, `renderer.js`).
+
 **Orden de Kelvin (2-nov):** «Enfoquémonos en terminar el juego completo». Hasta terminar no hay prompt nuevo. Las preguntas de licencias, origen de recursos, legal y monetización **no bloquean** nada técnico; van a `PENDIENTES_KELVIN.md` §0 y Kelvin les dedica un día aparte.
 
 ## Cómo se trabaja aquí
