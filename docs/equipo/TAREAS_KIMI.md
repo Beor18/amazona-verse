@@ -12,8 +12,7 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 > 2. **Antes de editar este archivo, `git pull --rebase origin main`** y cambia **solo tu fila** (no pegues una copia vieja): tu commit 2514853 borró sin querer las filas 012 a 014 y hubo que reponerlas.
 > 3. Sube cada arreglo con `git push origin HEAD:main` y pon en el commit FPS, draw calls y triángulos medidos en Chrome con la GPU de la PC.
 > 4. **KIMI-011 ya está en main (33fb0e2, LOD por distancia en `streaming.js`).** Ya puedes hacer la 010 (después de 006+008 y 012): haz `git pull` antes y respeta `CFG.ciudadHD` y `CFG.hdTris`.
-> 5. **⚠ 3-nov 17:10 UTC: tu altura nueva (5fbaa0b) rompe `movementTest` 47/48:** «Todos los edificios cargados: no se atraviesan… · `toldo_pequeno@kelvin_ruinas_yunque#0` se mete 8» (`src/pruebas/movimiento.js:481`). Con la altura vieja da 48/48. La coordinadora **volvió `assets/data/mapa_cap1_altura.js` a la versión anterior** para poder publicar lo del iPad; tu script `tools/blender/mapa_altura_desde_glb.js` sigue en main. Vuelve a generarla y, antes de subirla, comprueba en el juego que en las ruinas del Yunque Vittata no se mete en el toldo (o ajusta la altura en ese edificio). Sube la altura nueva junto con lo de la flora, en un solo commit que diga «movementTest 48/48».
-> 6. **⏱ 3-nov 17:40 UTC: llevas 1 h 40 min sin subir: sube YA lo que tengas de 006+008 (avance, si no rompe el juego) y escribe en tu fila en qué vas; luego un avance cada 30–45 min.**
+> 5. 006+008 cerradas (b0056c00, f965dd1a; movementTest 48/48 según Kimi; la nube lo confirma en la próxima publicación). **Kimi 1: sigue con 013.**
 
 ## Trabajo continuo (Kelvin, 1-nov: «que no pare»)
 **No pares a preguntar.** Al terminar una tarea, súbela y toma la siguiente libre, hasta que no quede ninguna. Orden recomendado:
