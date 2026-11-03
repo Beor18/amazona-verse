@@ -9,7 +9,8 @@
      y de ~24 a más de 55 m; el aleteo va en el vertex shader. Respeta la calidad automática de renderer.js: bajo = ninguna,
      medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
    - Color: el verde del cuerpo y el color de la cabeza de la piel de cada especie (G.album.colores: tabla medida sobre
-     assets/textures/pieles, sin descargar ninguna textura); ≤ 6 especies vivas por bandada (las extintas nunca vuelan aquí).
+     assets/textures/pieles, sin descargar ninguna textura); ≤ 6 especies vivas por bandada (las extintas nunca vuelan aquí), y
+     siempre del hábitat de su ruta (residentes.js especiesEn; docs/equipo/MUNDO_VIVO_ECOLOGIA.md): sobre Villa Raíz, puertorriqueñas.
    «Mundo vivo» (etapa 1):
    - Viajes entre zonas: por la tarde, 3 de cada 5 salidas son un viaje a una zona con nombre del mapa (G.lugares) a la vista
      de Vittata; la mitad de las veces la bandada se posa allí en grupo (copas, ramas y techos: perchas()) 25–45 s, picotea y
@@ -24,7 +25,7 @@ window.AVBandada = function (G) {
   const S = G.S, scene = G.renderer.scene, AVE = window.AVE;
   const H = (x, z) => G.terreno.height(x, z);
   const NIVEL_N = { bajo: 0, medio: 12, alto: 20 };
-  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 24, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
+  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 30, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
   const TARDE_MIN = 150, TARDE_VAR = 150;
   const PALETA = ['#3c9a45', '#5fae3c', '#2f8a4f', '#7bb83e', '#c9a227', '#3f8f6a']; // si no hay pieles
 
@@ -106,14 +107,21 @@ window.AVBandada = function (G) {
     const p = G.album && G.album.colores ? G.album.colores(id) : null;
     return p ? { id, c: lin(p.cuerpo), a: lin(p.cabeza), cob: p.cob } : null;
   }
-  function preparar() {
+  // Ecología (docs/equipo/MUNDO_VIVO_ECOLOGIA.md): la bandada lleva las especies del hábitat del lugar al que va o por donde pasa
+  // (G.residentes.especiesEn: el lugar con colonia más cercano). Sin residentes todavía: cotorras puertorriqueñas.
+  function poolEn(x, z) {
+    const R = G.residentes, v = vivas();
+    const p = R && R.especiesEn && x != null ? R.especiesEn(x, z) : [];
+    return p.length ? p : v.filter(id => id === 'vittata');
+  }
+  function preparar(x, z) {
     if (colores.length) return Promise.resolve(colores);
-    const ids = vivas().slice().sort(() => Math.random() - 0.5).slice(0, 6);
+    const ids = poolEn(x != null ? x : S.pos.x, z != null ? z : S.pos.z).slice().sort(() => Math.random() - 0.5).slice(0, 6);
     colores = ids.map(colorDe).filter(Boolean);
     if (!colores.length) colores = PALETA.map((h, i) => ({ id: 'pal' + i, c: lin(h), a: lin(h), cob: 0 }));
     return Promise.resolve(colores);
   }
-  const mezclar = () => { colores = []; return preparar(); }; // otra mezcla de especies para la siguiente salida
+  const mezclar = (x, z) => { colores = []; return preparar(x, z); }; // otra mezcla de especies para la siguiente salida
 
   // ---------- Perchas cerca de un punto: techos y ramas (G.solidos), copas (árboles de G.fisica.colliders) y suelo ----------
   function perchas(cx, cz, r, n, o) {
@@ -180,7 +188,7 @@ window.AVBandada = function (G) {
     if (n <= 0 || F.estado !== 'off') return false;
     if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false; // BM20: con calidad «bajo» tampoco sale la de 20
     F.pasadas = o.pasadas || 1; F.opts = o;
-    if (!colores.length) preparar();
+    if (o.destino) mezclar(o.destino.x, o.destino.z); else if (!o.mismas) mezclar(S.pos.x, S.pos.z); // especies del hábitat de su ruta
     if (o.destino) return aparecerViaje(motivo, o, n);
     const dist = o.dist != null ? o.dist : motivo === 'despertar' ? rnd(190, 230) : rnd(150, 190), lado = rnd(55, motivo === 'mision' ? 45 : 110);
     const ang = o.ang != null ? o.ang : rnd(0, Math.PI * 2), L = F.lider;
@@ -207,7 +215,7 @@ window.AVBandada = function (G) {
   // Fin natural de una pasada: si quedan pasadas (BM20: las 20 cotorras de M3 cruzan dos veces), vuelve por el lado contrario
   function fin() {
     const o = F.opts || {}, m = F.motivo, quedan = (F.pasadas || 1) - 1; terminar();
-    if (quedan > 0) aparecer(m, Object.assign({}, o, { pasadas: quedan, ang: (o.ang != null ? o.ang : 0) + Math.PI * 0.8 + rnd(-0.3, 0.3), forzar: true, dist: 150 }));
+    if (quedan > 0) aparecer(m, Object.assign({}, o, { mismas: true, pasadas: quedan, ang: (o.ang != null ? o.ang : 0) + Math.PI * 0.8 + rnd(-0.3, 0.3), forzar: true, dist: 150 }));
   }
   function mover(dt) {
     if (F.estado === 'off') return;
@@ -353,7 +361,6 @@ window.AVBandada = function (G) {
     const Z = zonas().filter(z => { const d = Math.hypot(z.x - S.pos.x, z.z - S.pos.z); return d > 40 && d < 170; });
     if (!Z.length) return false;
     const D = Z[Math.floor(Math.random() * Z.length)];
-    mezclar();
     return pedir('viaje', Object.assign({ destino: D, posar: Math.random() < 0.5 }, o));
   }
 
@@ -430,7 +437,7 @@ window.AVBandada = function (G) {
   }
   const api = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n }), test, get meshes() { return [cerca, lejos]; }, aparecer, mover, F };
   G.bandada = { pedir, estado: () => ({ estado: F.estado, motivo: F.motivo, n: F.n, pasadas: F.pasadas, destino: F.destino && F.destino.id }), aparecer, mover, F, test, api,
-    terminar, zonas, perchas, colorDe, EXTRA, dibujar, motivoTarde, pedirViaje, especies: () => colores.map(c => c.id), meshes: [cerca, lejos], MAXN, RES_MAX, uT };
+    terminar, zonas, perchas, colorDe, EXTRA, dibujar, motivoTarde, pedirViaje, especies: () => colores.map(c => c.id), mezclar, poolEn, meshes: [cerca, lejos], MAXN, RES_MAX, uT };
   // Cotorras residentes (src/game/residentes.js): se cargan con la bandada y dibujan en sus mallas
   G.bandada.residentes = window.AVE && AVE.assets ? AVE.assets.script('src/game/residentes.js').then(() => window.AVResidentes(G, G.bandada), e => { console.warn('residentes: ' + (e && e.message)); return null; }) : Promise.resolve(null);
   return api;
