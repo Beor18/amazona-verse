@@ -184,7 +184,7 @@
       const xpAntes = CR ? (CR.estado().capsulas[CR.estado().activa || 'clasico'] || {}).xp || 0 : 0;
 
       // ====================================================================================================================
-      // 4. EL CAPÍTULO, ETAPA POR ETAPA (pasos de la historia 0–7 de content/cap1/historia.js)
+      // 4. EL CAPÍTULO, ETAPA POR ETAPA (pasos de la historia 0–5 de content/cap1/historia.js, CG-38)
       // ====================================================================================================================
       despejar('inicio'); muestraGuia();                                        // paso 0
 
@@ -490,7 +490,7 @@
 
       // ---------- Objetivo y guía en cada paso ----------
       const porPaso = {}; for (const g of guias) porPaso[g.paso] = g;
-      check('4.10', 'En cada paso de la historia (0–7) el HUD muestra el objetivo y hay una guía hacia él', [0, 1, 2, 3, 4, 5, 6, 7].every(p => porPaso[p] && porPaso[p].hud && porPaso[p].guia), Object.values(porPaso).map(g => g.paso + ':' + (g.guia ? 'guía' : 'SIN GUÍA') + ':' + (g.hud || 'SIN HUD')));
+      check('4.10', 'En cada paso de la historia (0–5) el HUD muestra el objetivo y hay una guía hacia él', [0, 1, 2, 3, 4, 5].every(p => porPaso[p] && porPaso[p].hud && porPaso[p].guia), Object.values(porPaso).map(g => g.paso + ':' + (g.guia ? 'guía' : 'SIN GUÍA') + ':' + (g.hud || 'SIN HUD')));
 
       // ---------- Inglés del HUD y del panel final (QA-65) ----------
       if (G.idioma && G.idioma.poner && G.idioma.faltan) {

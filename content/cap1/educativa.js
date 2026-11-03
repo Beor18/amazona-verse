@@ -775,7 +775,7 @@
       const fichasDePaso = p => FICHAS.filter(f => f.paso === p).map(f => f.id);
       const MOMENTOS = [
         { paso: 'construir refugio', hay: () => G.eventos.had('ShelterConstructed') && !S.event },
-        { paso: 'crecida', hay: () => G.eventos.had('ShelterFlooded') || G.eventos.had('ShelterRelocated') || (S.builds.length > 0 && !S.event && G.eventos.had('ShelterConstructed') && S.refuge && !S.refuge.damaged && S.step >= 5) },
+        { paso: 'crecida', hay: () => G.eventos.had('ShelterFlooded') || G.eventos.had('ShelterRelocated') || (S.builds.length > 0 && !S.event && G.eventos.had('ShelterConstructed') && S.refuge && !S.refuge.damaged && S.step >= 4) },
         { paso: 'mirador', hay: () => G.eventos.had('LocationDiscoveredMirador') },
       ];
 

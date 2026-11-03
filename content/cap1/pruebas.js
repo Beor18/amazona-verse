@@ -429,7 +429,7 @@
     const lockOf = G.misiones.lockOf;
     check('Bloqueos por pieza, estilo y color', !lockOf('botas') && !!lockOf('camisa', 'guayabera') && !lockOf('camisa', 'liso') && !lockOf('lentes', 'sol', '#c9a227'));
     // M3: coro de coquíes
-    S.step = 6; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
+    S.step = 5; S.inv = { madera: 1, piedra: 0, componente: 1 }; S.benchUnlocked = true;
     useAt('transmisor');
     const lineasCoro = []; while (G.dialogo.activo() && lineasCoro.length < 40) { lineasCoro.push(G.dialogo.actual().text); G.dialogo.next(); }
     check('M3: el transmisor pide voz y ofrece una elección con Iguaca', S.chorus && !S.transmitterOn && !!$('ch-0'));
