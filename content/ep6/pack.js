@@ -50,8 +50,8 @@
   //  El mundo pequeño tiene el río de norte a sur en x = 20 con la plaza al oeste; en el real la orilla baja es la del este,
   //  así que lo del río se refleja: x real = 22,5 − (x − 20) · 1,23 en la línea del puente (13 m → 16 m, para que los dos
   //  extremos apoyen en la orilla) y z real = z − 50. Lo de la plaza se traslada: real = (−40, −131) + (x, z).
-  const MAPA_REAL = false;
-  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const MAPA_REAL = true; // Kelvin, 3-nov: encendido. ?mapa=pequeno vuelve al mundo pequeño (pruebas)
+  const REAL = ((MAPA_REAL && !/[?&]mapa=pequeno(&|$)/.test(location.search)) || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
   const EN = (relleno, mapa) => (REAL ? mapa : relleno);
   const RIO_R = { x: 22.5, z: -50, k: 1.2308 }, K = REAL ? RIO_R.k : 1;
   const RX = x => (REAL ? RIO_R.x - (x - RIO_X) * RIO_R.k : x), RZ = z => (REAL ? RIO_R.z + z : z);
