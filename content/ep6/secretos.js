@@ -5,8 +5,9 @@
   'use strict';
   const p = AVE.packs && AVE.packs.ep6;
   if (!p) return;
-  const MAPA_REAL = false;
-  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  // Igual que pack.js (3-nov): mapa real, salvo ?mapa=pequeno. El pedazo 5 está en el pilar del cap. 5; el 6, en este mirador.
+  const q = location.search || '';
+  const REAL = ((!/[?&]mapa=pequeno(&|$)/.test(q)) || /[?&]mapa=real(&|$)/.test(q)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
   const EN = (relleno, mapa) => (REAL ? mapa : relleno);
   const RIO_X = 20, RIO_R = { x: 22.5, z: -50, k: 1.2308 };
   const RX = x => (REAL ? RIO_R.x - (x - RIO_X) * RIO_R.k : x), RZ = z => (REAL ? RIO_R.z + z : z);
