@@ -792,6 +792,9 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       if (st.activo) salir();
       const busy0 = G.ui.busy, step0 = F.step, suelo0 = F.suelo, follow0 = G.camara.follow, draw0 = G.camara.draw, quiet0 = G.quiet, fov0 = R.camera.fov;
       const mem = () => ({ g: R.renderer.info.memory.geometries, t: R.renderer.info.memory.textures });
+      // W10 (BM132): lo que el laberinto tiene en escena (geometrías y texturas distintas bajo su raíz). La carga diferida del mundo
+      // sube el total del renderer en cualquier momento; esto no.
+      const memPropia = () => { const g = new Set(), t = new Set(); raiz.traverse(o => { if (o.geometry) g.add(o.geometry.uuid); [].concat(o.material || []).forEach(m => { for (const k in m) if (m[k] && m[k].isTexture) t.add(m[k].uuid); }); }); return { g: g.size, t: t.size }; };
       claveRec = ALMACEN + '.prueba';
       try { localStorage.removeItem(claveRec); } catch (e) { /* sin almacén */ }
       let emitido = null; const emit0 = G.emit; G.emit = function (n, d) { if (n === 'retosResultado') emitido = d; return emit0.apply(G, arguments); };
@@ -946,16 +949,17 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Móvil vertical 375×812: Vittata ≥ 4 % del alto y centrada; 1,5 casillas a cada lado, 3 delante y 1 detrás a la vista', en(vm.V) && Math.abs(vm.V.x) < 0.2 && vm.tam >= 0.04 && en(vm.izq) && en(vm.der) && en(vm.arr) && en(vm.abj), 'V ' + vm.V.x.toFixed(2) + ',' + vm.V.y.toFixed(2) + ' tam ' + (vm.tam * 100).toFixed(1) + '% · izq ' + vm.izq.x.toFixed(2) + ' der ' + vm.der.x.toFixed(2) + ' arr ' + vm.arr.y.toFixed(2) + ' abj ' + vm.abj.y.toFixed(2));
           // ---------- 50 reinicios: sin fugas ----------
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m0 = mem(), capOk = [];
+          const m0 = mem(), p0 = memPropia(), capOk = [];
           for (let i = 0; i < 50; i++) {
             otraVez(); dirigir(i % 4); robot(3 + (i % 5));
             capOk.push(Object.keys(pool).every(t => pool[t].libres.length >= 0 && new Set(pool[t].libres).size === pool[t].libres.length) && vivas() <= Object.values(CAP).reduce((a, b) => a + b, 0));
           }
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas)', m1.g <= m0.g && m1.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          const m1 = mem(), p1 = memPropia();
+          check('50 reinicios: geometrías y texturas del laberinto no crecen (sin fugas)', p1.g <= p0.g && p1.t <= p0.t, JSON.stringify(p0) + ' → ' + JSON.stringify(p1) + ' · renderer ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- Salir ----------
+          const mPre = mem();
           salir();
           check('Al salir se quitan las envolturas (también el suelo) y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && F.suelo === suelo0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('maze-on') && !document.body.classList.contains('retos-on'));
           check('Al salir G.quiet vuelve y la partida de la historia (G.S) queda intacta', G.quiet === quiet0 && comparable(S) === sAntes);
@@ -963,7 +967,7 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Nada del laberinto queda en la escena (pool liberado)', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && propios.length === 0);
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();
-          check('Al salir las geometrías del renderer bajan de las de la partida y las texturas no suben', m2.g < m0.g && m2.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
+          check('Al salir las geometrías del renderer bajan y las texturas no suben (frente a justo antes de salir)', m2.g < mPre.g && m2.t <= mPre.t, JSON.stringify(mPre) + ' → ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }
