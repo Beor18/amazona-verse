@@ -12,7 +12,7 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 > 2. **Antes de editar este archivo, `git pull --rebase origin main`** y cambia **solo tu fila** (no pegues una copia vieja): tu commit 2514853 borró sin querer las filas 012 a 014 y hubo que reponerlas.
 > 3. Sube cada arreglo con `git push origin HEAD:main` y pon en el commit FPS, draw calls y triángulos medidos en Chrome con la GPU de la PC.
 > 4. **KIMI-011 ya está en main (33fb0e2, LOD por distancia en `streaming.js`).** Ya puedes hacer la 010 (después de 006+008 y 012): haz `git pull` antes y respeta `CFG.ciudadHD` y `CFG.hdTris`.
-> 5. 006+008 cerradas (b0056c00, f965dd1a; movementTest 48/48 según Kimi; la nube lo confirma en la próxima publicación). **Kimi 1: sigue con 013.**
+> 5. **⚠ 3-nov 23:05 UTC · Kimi 1: la altura nueva (b0056c00) vuelve a romper `movementTest` en la nube: 46/48** (las 2 que fallan: «La cámara no se mete en la pared del edificio y no se pega (dist 2,33)» y «Todos los edificios cargados… `toldo_pequeno@kelvin_ruinas_yunque#0` se mete»). Con la altura anterior da 48/48. La coordinadora la **volvió a la anterior** para publicar lo demás. **Pausa 013 y arregla esto primero:** junto a esos edificios, que el suelo nuevo no quede por encima de la base del sólido del toldo ni de la pared (o baja el suelo ahí). Prueba `AV.movementTest()` en Chrome con `?mapa=real` y también sin caché (Ctrl+Shift+R, carga en frío) 3 veces seguidas, y sube la altura solo si da 48/48 las 3.
 
 ## Trabajo continuo (Kelvin, 1-nov: «que no pare»)
 **No pares a preguntar.** Al terminar una tarea, súbela y toma la siguiente libre, hasta que no quede ninguna. Orden recomendado:
