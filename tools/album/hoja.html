@@ -1,40 +1,27 @@
 <!doctype html><html lang="es"><head><base href="/"><meta charset="utf-8">
-<!-- Hoja de contacto: las tarjetas del Álbum con el CSS real del Diario (src/ui/tokens.css, ui.css y el ESTILO de src/game/album.js)
-     más la propuesta de tarjeta con retrato 3D. Uso: node tools/album/hoja.js <carpeta_retratos> <salida.png> <ids…> -->
+<!-- Hoja de contacto del Álbum de las 36: la sección real del Diario (html() de src/game/album.js, con sus retratos de
+     assets/retratos_album/) y el CSS real (src/ui/tokens.css, ui.css y el ESTILO de album.js). Uso: tools/album/hoja.js -->
 <link rel="stylesheet" href="src/ui/tokens.css"><link rel="stylesheet" href="src/ui/ui.css">
 <style>
   html,body{margin:0;background:var(--c-paper,#fbf1dc)}
-  #card{position:static!important;display:block!important;width:var(--ancho,760px)!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;transform:none!important;opacity:1!important;visibility:visible!important}
-  .hoja-tit{font:700 13px/1.3 var(--font-body,system-ui);color:var(--c-ink-muted,#6b5236);margin:14px 0 6px}
-  /* Propuesta: retrato 3D a sangre arriba, marco único (sin rarezas) */
-  .album36.retratos{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .album36.retratos li{padding:0 0 10px;overflow:hidden;background:#fffaf0;border:2px solid rgba(107,82,54,.22);border-radius:14px;box-shadow:0 2px 0 rgba(107,82,54,.12),0 6px 14px rgba(60,40,20,.10);gap:3px}
-  .album36.retratos li img{display:block;width:100%;aspect-ratio:4/5;height:auto;margin:0 0 6px;border-bottom:2px solid rgba(107,82,54,.18)}
-  .album36.retratos li b{padding:0 8px}.album36.retratos li small,.album36.retratos li i{padding:0 8px}
+  #card{position:static!important;display:block!important;width:var(--ancho,1000px)!important;max-width:none!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;transform:none!important;opacity:1!important;visibility:visible!important}
+  #card .album36{grid-template-columns:repeat(var(--cols,6),1fr)}
 </style></head><body>
-<div id="card"><ul class="diary" hidden></ul><div class="album-sec" data-no-tr><!-- como en diario.js: las secciones van después de <ul class="diary"> -->
-  <span class="lbl">Álbum de las 36 · muestra</span>
-  <p class="hoja-tit">Propuesta: retrato 3D (modelo de Vittata + piel de cada especie)</p>
-  <ul class="album36 retratos" id="nuevas"></ul>
-  <p class="hoja-tit">Hoy: retrato vectorial (src/game/album.js)</p>
-  <ul class="album36" id="hoy"></ul>
-</div></div>
+<div id="card"><ul class="diary" hidden></ul><div id="sec"></div></div>
 <script src="content/comun/especies.js"></script>
 <script>
-// album.js real sobre un G mínimo: su html() da el marcado y el CSS de hoy; la propuesta cambia el SVG por el retrato.
+// album.js real sobre un G mínimo (sin juego): su html() da el marcado de la sección.
 let SEC = null; const S = { album: [] };
 window.AVE = { module: (n, f) => f(G) };
 const G = { S, guardado: { KEYS: ['album'] }, diario: { seccion: s => (SEC = s) }, on() {}, emit() {}, quiet: true };
 </script>
 <script src="src/game/album.js"></script>
 <script>
-window.montar = function (ids, carpeta) {
+// ids: las especies vistas (las extintas, si están, salen ya reveladas como Mara y Vela). Las demás, cerradas (silueta).
+window.montar = function (ids) {
   S.album = ids.slice();
-  const tmp = document.createElement('div'); tmp.innerHTML = SEC.html();
-  const de = id => tmp.querySelector(`li[data-album="${id}"]`);
-  document.getElementById('hoy').innerHTML = ids.map(id => de(id).outerHTML).join('');
-  document.getElementById('nuevas').innerHTML = ids.map(id => { const li = de(id).cloneNode(true);
-    li.querySelector('svg').outerHTML = `<img src="${carpeta}/${id}.webp" srcset="${carpeta}/${id}.webp 1x, ${carpeta}/${id}@2x.webp 2x" width="256" height="320" alt="">`; return li.outerHTML; }).join('');
-  return Promise.all([...document.images].map(i => i.decode().catch(() => null)));
+  document.getElementById('sec').innerHTML = SEC.html();
+  for (const i of document.images) i.loading = 'eager';
+  return Promise.all([...document.images].map(i => i.decode().catch(() => { throw new Error('no carga ' + i.src); })));
 };
 </script></body></html>

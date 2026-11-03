@@ -7,9 +7,15 @@ Vittata** (`assets/models/vittata.glb`, `src/personaje/character.js`) y **la pie
 ## Uso
 ```sh
 NODE_PATH=$(npm root -g) node tools/album/retratos.js [--out carpeta] [--jpg] [--var variantes.json] [id …]   # sin ids: las 36
-NODE_PATH=$(npm root -g) node tools/album/hoja.js <carpeta de retratos> <hoja.png> <id …>   # hoja de contacto
+NODE_PATH=$(npm root -g) node tools/album/retratos.js --silueta                                             # la silueta de las cerradas
+NODE_PATH=$(npm root -g) node tools/album/hoja.js docs/img/retratos/hoja_36.jpg [--cols 6] [id …]          # hoja de contacto
 ```
-- Salida: `<out>/<id>.webp` (256×320, ≤ 25 KB) y `<out>/<id>@2x.webp` (512×640, ≤ 60 KB). Por defecto `assets/retratos_album/`.
+- Salida: `<out>/<id>.webp` (256×320, ≤ 25 KB) y `<out>/2x/<id>.webp` (512×640, ≤ 60 KB). Por defecto `assets/retratos_album/`.
+  El 2x va en una carpeta y no como `<id>@2x.webp` porque la poda de la build (`tools/build/avbuild.py`, carpetas dinámicas) solo
+  alcanza los archivos cuyo nombre es un token del código (el id de la especie).
+- En el juego: `src/game/album.js` (`retrato()`) los pone en las tarjetas abiertas con `srcset` 1x/2x y `loading="lazy"`; solo se
+  piden al abrir el Diario. Las cerradas (y Mara y Vela antes del cap. 5) llevan `silueta.webp`: la misma ave, misma pose y
+  encuadre, en gris liso; es igual para las 36, así que no delata la especie. Las 36 + silueta pesan ≈ 1,4 MB en total (1x + 2x: unos 12 KB + 29 KB cada uno).
   La calidad baja sola de 0,94 en pasos de 0,04 hasta caber en el tope (`salida.maxKB1/maxKB2` en `retratos.json`).
 - Chromium de Playwright (`/opt/pw-browsers/chromium`, SwiftShader). Sin descargas ni APIs. En la nube, envolver en `turno.sh`.
 - `--var`: lista `[{"nombre":…, "yaw":…, "encuadre":{…}, "luces":{…}, "region":…}]` que pisa `retratos.json`; cada
@@ -23,7 +29,7 @@ NODE_PATH=$(npm root -g) node tools/album/hoja.js <carpeta de retratos> <hoja.pn
 | `retratos.html` | Página de render: carga los scripts del juego, aplica el look `vibrant_toon` (código real de `src/game/look.js`) y la luz de 3 puntos; compone fondo + ave y codifica WebP en el navegador |
 | `fondos.js` | Fondos vectoriales por región (canvas 2D, con semilla: salen iguales cada vez) |
 | `retratos.js` | Lanza Chromium, sirve el repo y escribe los archivos |
-| `hoja.html` / `hoja.js` | Hoja de contacto con el CSS real del Diario y el `html()` real de `album.js` (propuesta arriba, tarjeta de hoy abajo) |
+| `hoja.html` / `hoja.js` | Hoja de contacto: la sección real del Diario (`html()` de `album.js` y su CSS) con los retratos; la de las 36 está en `docs/img/retratos/hoja_36.jpg` |
 
 ## Receta (igual para las 36)
 - **Pose y encuadre:** pose `Idle` (t = 0,3), giro de ¾ (yaw −0,6), plano medio (cabeza, pecho y hombros, con aire arriba):

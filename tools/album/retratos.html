@@ -92,5 +92,24 @@ window.retrato = async function (o) {
   const t = o.formato === 'jpg' ? 'image/jpeg' : 'image/webp';
   return { x2: encode(c2, t, o.maxKB2 || 60, 0.94), x1: encode(c1, t, o.maxKB1 || 25, 0.94) };
 };
+// Silueta de las tarjetas cerradas: la misma ave, en la misma pose y encuadre, rellena de un gris liso sobre papel claro.
+// Es igual para las 36 (mismo modelo, misma pose), así que no delata la especie. Sin texto.
+window.silueta = async function (o) {
+  const W = o.w2 || 512, Hh = o.h2 || 640, SS = o.ss || 2;
+  const a = await ave(o, W * SS, Hh * SS);
+  const cv = document.createElement('canvas'); cv.width = W * SS; cv.height = Hh * SS; const x = cv.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, cv.height); g.addColorStop(0, '#eee9df'); g.addColorStop(1, '#d9d2c4');
+  x.fillStyle = g; x.fillRect(0, 0, cv.width, cv.height);
+  const h = x.createRadialGradient(cv.width * 0.5, cv.height * 0.34, 0, cv.width * 0.5, cv.height * 0.34, cv.width * 0.62);
+  h.addColorStop(0, 'rgba(255,255,255,.55)'); h.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = h; x.fillRect(0, 0, cv.width, cv.height);
+  const m = document.createElement('canvas'); m.width = cv.width; m.height = cv.height; const y = m.getContext('2d');
+  y.drawImage(a, 0, 0); y.globalCompositeOperation = 'source-in';
+  const f = y.createLinearGradient(0, 0, 0, cv.height); f.addColorStop(0, '#9a9fa4'); f.addColorStop(1, '#7c8186'); // #8a8f94 de media
+  y.fillStyle = f; y.fillRect(0, 0, cv.width, cv.height);
+  x.drawImage(m, 0, 0);
+  AVFondos.acabado(x, cv.width, cv.height);
+  const c2 = reducir(cv, W, Hh), c1 = reducir(c2, W / 2, Hh / 2);
+  return { x2: encode(c2, 'image/webp', o.maxKB2 || 60, 0.94), x1: encode(c1, 'image/webp', o.maxKB1 || 25, 0.94) };
+};
 window.READY = true;
 </script></body></html>
