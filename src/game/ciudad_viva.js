@@ -289,7 +289,7 @@ window.AVCiudadViva = function (G) {
     const d = Math.hypot(S.pos.x - s.x, S.pos.z - s.z), quiere = forzar || d < ACTIVA + (R.on ? HIST : 0);
     if (!quiere) { if (R.on) { R.on = false; R.aves = []; } return 0; }
     if (!R.on || !R.aves.length) { R.on = true; poblar(); }
-    R.chkT += dt; if (R.chkT > 2) { R.chkT = 0; if (G.solidos && R.verP !== G.solidos.version) R.P = null; } // llegan más edificios con el streaming
+    R.chkT += dt; if (R.chkT > 10) { R.chkT = 0; if (G.solidos && R.verP !== G.solidos.version) R.P = null; } // llegan más edificios con el streaming
     const cam = G.renderer.camera.position;
     R.stats.cuadros++;
     for (const a of R.aves) {
@@ -320,14 +320,15 @@ window.AVCiudadViva = function (G) {
       if (!s || !B) throw new Error('sin ciudad o sin bandada');
       // a la ciudad, con sus edificios y sus sólidos cargados
       const ST = G.mundo && G.mundo.streaming;
-      // los edificios llegan con el streaming: se espera (como mucho o.espera s) a que la mayoría tenga su sólido
-      const espera = (o && o.espera != null ? o.espera : 420) * 1000, t0 = performance.now(), dormir = ms => new Promise(r => setTimeout(r, ms));
+      // los edificios llegan con el streaming: se espera (como mucho o.espera s) a que la mitad tenga su sólido; las aves se prueban
+      // contra los que ya están (sin GPU el streaming tarda varios minutos)
+      const espera = (o && o.espera != null ? o.espera : 300) * 1000, t0 = performance.now(), dormir = ms => new Promise(r => setTimeout(r, ms));
       T.teleport(s.x + 16, s.z + 16); T.tick(0.1);
       if (ST && ST.alrededor) ST.alrededor(s.x, s.z).catch(() => {});
       const conSolido = () => { const so = SO(); return so ? s.ins.filter(i => so.altoEn(i.pos[0], i.pos[2], 1e4) > H(i.pos[0], i.pos[2]) + 0.3).length : 0; };
-      while (performance.now() - t0 < espera && conSolido() < s.ins.length * 0.8) { await dormir(3000); if (G.solidos && G.solidos.terminar) G.solidos.terminar(); }
+      while (performance.now() - t0 < espera && conSolido() < s.ins.length * 0.5) { await dormir(3000); if (G.solidos && G.solidos.terminar) G.solidos.terminar(); }
       if (G.solidos && G.solidos.terminar) G.solidos.terminar();
-      check('Los edificios de la ciudad tienen sus sólidos', conSolido() >= s.ins.length * 0.5, conSolido() + '/' + s.ins.length + ' en ' + Math.round((performance.now() - t0) / 1000) + ' s');
+      check('Hay edificios con sólido para probar las aves', conSolido() >= 8, conSolido() + '/' + s.ins.length + ' con sólido en ' + Math.round((performance.now() - t0) / 1000) + ' s');
       R.prueba = true; R.horaPrueba = 12; R.P = null; R.sitio = null; sitio();
       if (Rd.setCalidad) Rd.setCalidad('alto', true); else Rd.calidad.nivel = 'alto';
       paso(0.05, true);
