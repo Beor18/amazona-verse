@@ -560,10 +560,22 @@ AVE.module('comicPlantilla', function (G) {
     d.vinetas.forEach((v, i) => {
       const s = SLOTS[i], q = s.quad, b = caja(q);
       x.save(); poli(x, q); x.clip();
+      let poseFoto = null;
       if (v.sceneImage) {
         cubrir(x, v.sceneImage, b.x, b.y, b.w, b.h);
         const sombra = x.createLinearGradient(0, b.y + b.h * 0.6, 0, b.y + b.h); sombra.addColorStop(0, 'rgba(0,0,0,0)'); sombra.addColorStop(1, 'rgba(0,0,0,.18)');
         x.fillStyle = sombra; x.fillRect(b.x, b.y, b.w, b.h);
+        // La captura a veces no trae a Vittata: su pose de acción va en la zona libre, sin tapar el globo ni el texto.
+        if (!v.falta && poses[i] && poses[i].bbox) {
+          const pw = Math.min(118, b.w * 0.3), ph = Math.min(148, b.h * 0.46);
+          let px = s.libre[0] - pw * 0.45, py = Math.min(s.libre[1], s.caja.y - 8) - ph;
+          if (py < b.y + 8) py = b.y + 8;
+          if (py + ph > s.caja.y - 4) py = s.caja.y - 4 - ph;
+          if (px < b.x + 6) px = b.x + 6;
+          if (px + pw > b.x + b.w - 6) px = b.x + b.w - 6 - pw;
+          contener(x, poses[i], px, py, pw, ph, true);
+          poseFoto = { x: px * K, y: py * K, w: pw * K, h: ph * K, dentro: py >= b.y - 1 && px >= b.x - 1 && px + pw <= b.x + b.w + 1 && py + ph <= s.caja.y + 2 };
+        }
       } else if (v.escena) v.escena(x, b.x, b.y, b.w, b.h);
       else {
         rayos(x, s, b);
@@ -593,7 +605,7 @@ AVE.module('comicPlantilla', function (G) {
       circulo(x, s, poses[i]);
       const c = s.circulo;
       info.push({ id: v.id, caja: { x: b.x * K, y: b.y * K, w: b.w * K, h: b.h * K }, circulo: { x: (c.cx - c.r) * K, y: (c.cy - c.r) * K, s: c.r * 2 * K },
-        globo: gl, textoCaja: cj, efecto: ef, poseReal: !!poses[i].real });
+        globo: gl, textoCaja: cj, efecto: ef, poseReal: !!poses[i].real, poseFoto });
     });
     // Abajo: «¿Qué aprendí?», personaje central y «Mi enseñanza de vida»
     roca(x);

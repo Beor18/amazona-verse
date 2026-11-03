@@ -49,6 +49,13 @@ AVE.module('comic', function (G) {
   const PAG = (G.comicPlantilla && G.comicPlantilla.PAGINA) || { w: 1536, h: 2304 }, W = PAG.w, H = PAG.h;
   const LW = 1080, LH = 1520, TOP = 380;
   const L = (es, en) => ((G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || (G.aula && G.aula.aj && G.aula.aj.idioma === 'en') ? en : es);
+  // QA-105: la casilla de «En la página» medía 22×48 (vacía) y #c-aprendi se salía de la maqueta.
+  if (!document.getElementById('cg28-comic')) {
+    const st = document.createElement('style'); st.id = 'cg28-comic';
+    st.textContent = '#comic :is(#c-aprendi,#c-ensenanza,#c-title){width:100%;max-width:100%;min-width:0;box-sizing:border-box}' +
+      '#comic #c-panels .pv input{width:44px;height:44px;min-width:44px;min-height:44px;box-sizing:border-box}';
+    document.head.appendChild(st);
+  }
   const aviso = (t, ms) => { if (!G.quiet) G.ui.toast(t, ms); };
   const vin = () => (S.comic.vinetas && typeof S.comic.vinetas === 'object' ? S.comic.vinetas : (S.comic.vinetas = {}));
 
@@ -1098,6 +1105,22 @@ AVE.module('comic', function (G) {
     check('Decoraciones solo si el evento las justifica (¡FUUUSH!, ???, bandera, récord)', efOk && R.info.vinetas.every((iv, i) => vs[i].falta ? !iv.efecto : iv.efecto === vs[i].effectId), vs.map(v => v.effectId || '-').join(','));
     const con3D = !!window.AVCharacter && !G.actores.failed3D;
     if (con3D) check('Círculos y personaje central: poses reales del modelo (no la silueta gris)', R.info.vinetas.every(v => v.poseReal) && R.info.centro.real);
+    {
+      const falsa = document.createElement('canvas'); falsa.width = 64; falsa.height = 40;
+      const fx = falsa.getContext('2d'); fx.fillStyle = '#123a6b'; fx.fillRect(0, 0, 64, 40);
+      const base = vs[0] && !vs[0].falta ? vs[0] : vs.find(v => !v.falta);
+      const d2 = Object.assign({}, d, { vinetas: vs.map(v => v === base ? Object.assign({}, v, { sceneImage: falsa, falta: false }) : v) });
+      const cv2 = document.createElement('canvas');
+      const R2 = await PT.componer(cv2, d2);
+      const i0 = vs.indexOf(base), iv = R2.vinetas[i0];
+      const dentro = !!(iv && iv.poseFoto && iv.poseFoto.dentro);
+      let verde = 0;
+      if (dentro) {
+        const pix = cv2.getContext('2d').getImageData(Math.round(iv.poseFoto.x + iv.poseFoto.w / 2 - 8), Math.round(iv.poseFoto.y + iv.poseFoto.h - 28), 16, 16).data;
+        for (let i = 0; i < pix.length; i += 4) if (pix[i + 3] > 20 && Math.abs(pix[i] - 0x12) + Math.abs(pix[i + 1] - 0x3a) + Math.abs(pix[i + 2] - 0x6b) > 48) verde++;
+      }
+      check('La foto de la escena lleva a Vittata dentro del panel, sin tapar el texto', dentro && verde > 4, dentro ? verde + ' px verdes' : 'sin pose');
+    }
     check('Los 4 botones de la página son zonas de acción dentro de la página', R.info.botones.length === 4 && R.info.botones.every(b => b.x >= 0 && b.y >= 0 && b.x + b.w <= W && b.y + b.h <= H) && accionBoton('escenas') && accionBoton('editar'),
       R.info.botones.map(b => b.id).join(','));
     // Dos cotorras distintas (especie/piel, traje y corona): los círculos y el personaje central cambian
