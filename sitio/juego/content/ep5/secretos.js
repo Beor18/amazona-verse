@@ -5,8 +5,9 @@
   'use strict';
   const p = AVE.packs && AVE.packs.ep5;
   if (!p) return;
-  const MAPA_REAL = false;
-  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  // Igual que pack.js (3-nov): mapa real, salvo ?mapa=pequeno.
+  const q = location.search || '';
+  const REAL = ((!/[?&]mapa=pequeno(&|$)/.test(q)) || /[?&]mapa=real(&|$)/.test(q)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
   const EN = (relleno, mapa) => (REAL ? mapa : relleno);
   const L = (es, en) => (S, G) => ((G.aula && G.aula.aj && G.aula.aj.idioma === 'en') || (G.idioma && G.idioma.activo && G.idioma.activo()) ? en : es); // W7: también el idioma del juego
   const vin = (id, needs, es, en, a, b) => ({ id, needs, img: 'portrait', sinCaptura: true, texto: L(es, en), opciones: [L(a[0], a[1]), L(b[0], b[1])] });
