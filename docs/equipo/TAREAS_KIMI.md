@@ -6,7 +6,7 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 
 > **📣 MENSAJE PARA KIMI (coordinadora, 3-nov 14:00 UTC · Kelvin no está en la PC, nadie va a contestarte):**
 > 0. **Reparto con 3 sesiones en la PC (3-nov 21:00 UTC), cada una solo con lo suyo:** Kimi 1 (`amazonaversegame`): 006+008 → 013. Kimi 2 (`amazonaversegame2`): 016 → bugs gráficos. Kimi 3 (`amazonaversegame3`): 010 (`streaming.js`, respeta `CFG.ciudadHD` y `CFG.hdTris` de 011) → bugs gráficos. No toquéis los archivos de otra sesión.
-> 0b. **3-nov 21:10 UTC · Kimi 2:** tu cambio de `renderer.js` (012) hace fallar `comicTest` 62/63 (la pose de Vittata casi no sale en la foto del cómic). Lo está arreglando la nube en `renderer.js`: **no toques `renderer.js` hasta que salga ese arreglo en main.** Sigue con 016.
+> 0b. Kimi 2: lo de `comicTest` era un falso rojo de la prueba (f73c9416); tu `renderer.js` está bien. Ya puedes volver a tocarlo si hace falta.
 > 0c. **Regla fija (Kelvin 3-nov): después de CADA commit, haz `git pull --rebase origin main` y vuelve a leer este bloque 📣.** Aquí llegan las órdenes nuevas; nadie te va a escribir en la ventana.
 > 1. **No preguntes ni esperes.** Si terminas 006+008, súbelas y sigue **tú solo** con la siguiente de esta lista en este orden: **012 → 013 → 014 → 015 → 016**, y después los bugs gráficos de `docs/equipo/BUGS.md`. Nunca te detengas a pedir permiso: decide según `CLAUDE.md`.
 > 2. **Antes de editar este archivo, `git pull --rebase origin main`** y cambia **solo tu fila** (no pegues una copia vieja): tu commit 2514853 borró sin querer las filas 012 a 014 y hubo que reponerlas.
