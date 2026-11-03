@@ -34,6 +34,11 @@
     ChickJumped: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'nest' },
     FirstChallengeRecord: { type: 'RecordAchieved', loc: null, chars: ['vittata'], scene: 'race' },
     PhotoTaken: { type: 'PhotoTaken', loc: null, chars: ['player'], scene: 'photo' },
+    // Gags del pichón (criadero.js, mejora 9): el cómic los anota una vez por partida (src/game/comic.js)
+    ChickTumbled: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_fall' },
+    ChickChasedButterfly: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_butterfly' },
+    ChickNappedOnFind: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_nap' },
+    ChickCopiedGesture: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_mimic' },
   };
   const DONE = 8; // pasos de la historia (historia.js)
   // Viñetas de los momentos: el último evento de una clave y el tiempo m:ss.d de la carrera
@@ -77,11 +82,12 @@
       // marcador: cronómetro, puntuación y final del capítulo (src/game/marcador.js); null en las partidas viejas.
       // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
       // album: ids de las especies vistas de cerca para el Álbum de las 36 (src/game/album.js); las partidas viejas la reciben vacía.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album'],
+      // dones: ids aprendidos con una mentora (src/game/dones.js). Vacío en las partidas viejas: la Llamada espera a Iguaca.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, guardianIntro: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, gearRoof: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [],
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [], dones: [],
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
           inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
@@ -166,12 +172,14 @@
         }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
         { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
           opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
+        // El chapuzón y el aterrizaje se fotografían con Vittata a la vista (encuadre 'posada' de comic.js: un ángulo libre a 3 m),
+        // no con la cámara del juego, que en el agua solo ve agua.
         // Momentos graciosos (src/game/momentos.js; DIVERSION_CAP1 mejora 5): viñetas por hechos que ya pasan, con tres textos de
         // humor amable a elegir (nunca burla). Las fotos las pone momentos.js en S.captures con la clave de img; el brinco y la
         // foto no capturan el mundo (sinCaptura): el brinco trae la foto del criadero (o la ilustración del nido) y la foto, la suya.
-        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
+        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', encuadre: 'posada', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
           opciones: ['Las plumas mojadas pesan, pero el agua estaba buenísima.', 'Quise volar bajito. Bajito de más.', 'Los peces me miraron como a un pez nuevo con plumas.'] },
-        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
+        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', encuadre: 'posada', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
           opciones: ['Aterricé de panza. Diez puntos por el estilo.', 'El suelo llegó antes de lo que yo pensaba.', 'Me sacudí las plumas y seguí como si nada.'] },
         { id: 'brinco', img: 'brinco', needs: 'ChickJumped', sinCaptura: true, ilustracion: 'eclosion', texto: 'Toqué a mi cotorrita y dio un brinco de alegría.',
           opciones: ['¡Un brinco! Casi se sale del nido.', 'Le hice cosquillas y saltó como un coquí.', 'Cada vez que la toco, brinca más alto.'] },
@@ -181,6 +189,21 @@
         }, opciones: ['Volé tan rápido que el viento me pidió que esperara.', 'Récord nuevo. Mañana lo rompo otra vez.', 'Mis plumas todavía van a toda velocidad.'] },
         { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
           opciones: ['Esta es mi mejor pose. Sin discusión.', 'Lista para la foto: plumas peinadas y todo.', '¡Digan «coquí»!'] },
+        // Gags del pichón en el mundo (DIVERSION_CAP1 mejora 9): src/game/gags.js emite G.emit('criadero', 'gag', { gag, clave, foto() })
+        // y momentos.js anota el evento una vez por partida con la foto del momento (sin foto: captura del mundo; sin lienzo: la
+        // ilustración de comic.js). gag: solo lo usa comicTest para emitir el hecho.
+        { id: 'pichon_cae', img: 'pichon_cae', needs: 'ChickTumbled', gag: 'caida', ilustracion: 'pichon_cae',
+          texto: '¡Pataplún! Mi cotorrita se cayó del borde, se sacudió y siguió como si nada.',
+          opciones: ['Aterrizó de colita y se paró como una campeona.', 'Una sacudida de plumas y ¡lista otra vez!', 'Dice que lo hizo a propósito. Yo le creo.'] },
+        { id: 'pichon_mariposa', img: 'pichon_mariposa', needs: 'ChickChasedButterfly', gag: 'mariposa', ilustracion: 'pichon_mariposa',
+          texto: 'Mi cotorrita persiguió una mariposa por todo el camino.',
+          opciones: ['La mariposa iba ganando, pero por poquito.', 'Corre que corre… ¡y la mariposa ni sudó!', 'Dice que mañana la alcanza. Mañana.'] },
+        { id: 'pichon_duerme', img: 'pichon_duerme', needs: 'ChickNappedOnFind', gag: 'siesta', ilustracion: 'pichon_duerme',
+          texto: 'Mi cotorrita se quedó dormida… ¡justo encima de un hallazgo escondido!',
+          opciones: ['Zzz… Hasta dormida me ayuda a buscar.', 'Encontró el tesoro y se acostó encima. Muy lista.', 'Roncaba bajito, como un coquí con sueño.'] },
+        { id: 'pichon_imita', img: 'pichon_imita', needs: 'ChickCopiedGesture', gag: 'imitar', ilustracion: 'pichon_imita',
+          texto: 'Hice un gesto y mi cotorrita me imitó. ¡Igualita!',
+          opciones: ['Ahora somos dos haciendo la misma pose.', 'Copia todo lo que hago. Me tengo que portar bien.', '¿Quién imita a quién? Ya no sé.'] },
         // Fauna que reacciona (src/game/fauna.js): la foto es la del momento (Vittata con el animal al lado)
         { id: 'flexiones', img: 'fauna_flexiones', needs: 'AnoleContest', texto: 'Concurso de flexiones: saludé a un lagartijo y me contestó con flexiones.',
           opciones: ['El lagartijo ganó. Yo solo tengo alas, no brazos.', 'Le dije hola y me enseñó su abanico amarillo.', 'Mañana entreno y vuelvo a retarlo.'] },

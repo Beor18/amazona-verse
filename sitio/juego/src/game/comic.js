@@ -10,6 +10,11 @@
        G.emit('criadero', 'nido') (Iguaca presenta el nido) → NestAppeared; G.emit('criadero', 'eclosion', { id, imagen? })
          → ChickHatched (con la foto de la escena del criadero; sin foto, el nido y la eclosión se ilustran).
      Las viñetas van en el orden en que pasaron.
+   - Gags del pichón (DIVERSION_CAP1 mejoras 5 y 9): src/game/gags.js emite G.emit('criadero', 'gag', { gag, clave, foto() }) y
+     src/game/momentos.js lo anota una vez por partida (ChickTumbled, ChickChasedButterfly, ChickNappedOnFind, ChickCopiedGesture)
+     con su foto. Aquí, sin foto ni lienzo, cada gag tiene su ilustración (ilustracion: 'pichon_…'). Sin el gag, no hay viñeta.
+   - «Foto» (actores.js: Gestos → Foto → un gesto; src/game/momentos.js la pone en el cómic): con Foto activa, las teclas 1–7
+     (que ya hacen el gesto, input.js) también toman la foto.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida
      (0 = el texto de la historia); S.comic.title = uno de los títulos.
    - Página de 1080×1520 (más alta si hay más de 4 viñetas): portada, viñetas en cuadrícula o tira (comicLayout, sin solapes) con marco de tinta y, en cada
@@ -24,7 +29,8 @@
      copiarla al portapapeles. <a download> solo fuera del visor, porque dentro no funciona.
    Datos: pack.comic { marca, tituloDefecto, titulos?: [textos], archivo, pdfTitulo, pdfProductor, capturas: [claves],
      portadas: { valorDelSelect: claveDeCaptura },
-     vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string] }],
+     vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string],
+       gag?: 'caida'|'mariposa'|'siesta'|'imitar' (solo para la prueba), ilustracion?: 'nido'|'eclosion'|'rama'|'pichon_cae'|'pichon_mariposa'|'pichon_duerme'|'pichon_imita', sinCaptura?, encuadre? }],
      decorar?(ctx, viñeta, caja, altoImagen, G) }.
    Pruebas: AV.comicTest(): evento real → viñeta con el look → PNG válido de 1080×1520 y no en blanco → entrega. */
 AVE.module('comic', function (G) {
@@ -40,10 +46,11 @@ AVE.module('comic', function (G) {
   // Captura del mundo. Si el lienzo no tiene tamaño (ventana 0×0, pestaña minimizada), snapshot() da null: no se guarda
   // y la captura queda pendiente hasta que el lienzo vuelva a tener tamaño (QA-21)
   const pendientes = new Set();
+  const FW = 640, FH = 480; // fotos del mundo a 640×480 (a 480×360 se veían borrosas en las viñetas a lo ancho)
   const lienzoListo = () => { const c = G.renderer.canvas; return !!c && c.width > 0 && c.height > 0; };
   function capture(key) {
     let img = null;
-    if (lienzoListo()) { try { img = G.renderer.snapshot(480, 360, 0.72); } catch (e) { img = null; } }
+    if (lienzoListo()) { try { img = G.renderer.snapshot(FW, FH, 0.72); } catch (e) { img = null; } }
     if (typeof img === 'string' && /^data:image\/[a-z]+;base64,/.test(img) && img.length > 2000) { S.captures[key] = img; pendientes.delete(key); return true; }
     pendientes.add(key);
     return false;
@@ -73,10 +80,15 @@ AVE.module('comic', function (G) {
     const R = G.renderer, cam = R.camera, pos = cam.position.clone(), rot = cam.quaternion.clone();
     try {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
-      R.drawScene();
-      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      // Dibujo directo, como snapshot() (renderer.js): con el posproceso, drawScene() dentro del bucle dejaba la foto en negro
+      if (R.renderer && R.scene) R.renderer.render(R.scene, cam); else R.drawScene();
+      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = FW; c.height = FH;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
-      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 480, 360);
+      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, FW, FH);
+      // Una foto casi negra (lienzo sin dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
+      const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let luz = 0;
+      for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
+      if (luz < 40) return null;
       const url = c.toDataURL('image/jpeg', 0.72);
       return url.length > 2000 ? url : null;
     } catch (e) { return null; }
@@ -154,7 +166,8 @@ AVE.module('comic', function (G) {
       opciones: [() => L('Desde la rama mirábamos el bosque.', 'From the branch we watched the forest.'),
         () => L('Agarrarse bien a una rama también se aprende.', 'Holding on to a branch is something you learn too.'),
         () => L('Allá arriba el bosque sonaba distinto.', 'Up there the forest sounded different.')] },
-    { id: 'nido', img: 'nido', needs: 'NestAppeared', sinCaptura: true, ilustracion: 'nido',
+    // El nido: foto real de la escena (Iguaca lo presenta en el mundo); la ilustración queda solo si no hay lienzo
+    { id: 'nido', img: 'nido', needs: 'NestAppeared', ilustracion: 'nido',
       texto: () => L('Encontramos un nido con una cápsula. Lo que aprenda le dará calor.', 'We found a nest with a capsule. What I learn will keep it warm.'),
       opciones: [() => L('Un nido nuevo nos esperaba cerca del camino.', 'A new nest was waiting for us near the path.'),
         () => L('Cada cosa que aprendo ayuda a mi cotorrita.', 'Everything I learn helps my little parrot.'),
@@ -192,6 +205,22 @@ AVE.module('comic', function (G) {
       registrar('ChickHatched', { cria: datos && typeof datos.id === 'string' ? datos.id.slice(0, 24) : null });
     }
   });
+
+  // Teclado: con «Foto» activa en Gestos, las teclas 1–7 hacen el gesto (input.js) y aquí, además, toman la foto
+  function alTeclaFoto(e) {
+    const A = G.actores;
+    if (!A || !A.fotoModo || e.repeat || !/^[1-7]$/.test(e.key) || !A.EMOTE_KEYS) return false;
+    const gesto = A.EMOTE_KEYS[+e.key - 1];
+    setTimeout(() => {
+      if (!A.fotoModo) return;
+      A.modoFoto(false); const m = $('emotes'); if (m) m.hidden = true;
+      const pausa = !!(G.pausa && G.pausa.activa && G.pausa.activa());
+      if ((A.emote && A.emote.name === gesto) || (!pausa && A.playEmote(gesto))) G.emit('foto', { gesto });
+      else aviso('Para la foto, posa en el suelo y quieta.', 2600);
+    }, 0);
+    return true;
+  }
+  window.addEventListener('keydown', alTeclaFoto);
 
   // ---------- Selección narrativa ----------
   const TITULOS = (C.titulos && C.titulos.length ? C.titulos : [C.tituloDefecto || 'Mi cómic']).slice();
@@ -236,7 +265,8 @@ AVE.module('comic', function (G) {
   // Calcula las cajas de las viñetas (probado en selfTest y comicTest: sin solapes y dentro de la página)
   function comicLayout(n, layout, W, H, top) {
     const boxes = [], g = 20;
-    if (layout === 'strip') {
+    // Con 1 o 2 viñetas, la cuadrícula las apila a lo ancho: en media columna quedaban como tiras altas y la foto se recortaba
+    if (layout === 'strip' || n <= 2) {
       const ph = (H - top - g * (n + 1)) / n;
       for (let i = 0; i < n; i++) boxes.push({ x: g, y: top + g + i * (ph + g), w: W - 2 * g, h: ph });
     } else {
@@ -292,6 +322,7 @@ AVE.module('comic', function (G) {
       x.fillStyle = k % 2 ? 'rgba(36,104,60,.75)' : 'rgba(58,135,78,.7)';
       x.beginPath(); x.ellipse(hx, hy, r, r * 0.42, (k * 0.9) % Math.PI, 0, Math.PI * 2); x.fill();
     }
+    if (/^pichon_/.test(tipo)) return ilustrarGag(x, tipo, ix, iy, iw, ih, s, cx);
     x.lineCap = 'round'; x.strokeStyle = '#5b3a1e'; x.lineWidth = Math.max(6, s * 0.09); // rama
     x.beginPath(); x.moveTo(ix - 10, cy + s * 0.42); x.quadraticCurveTo(cx - s * 0.2, cy + s * 0.5, ix + iw + 10, cy + s * 0.28); x.stroke();
     if (tipo === 'rama') { // rama alta en el dosel, sin nido
@@ -329,6 +360,93 @@ AVE.module('comic', function (G) {
         x.beginPath(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, rr = k % 2 ? R * 0.35 : R; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } x.closePath(); x.fill();
       }
     } else huevo(cx, nidoY - s * 0.1, s * 0.14, s * 0.19);
+  }
+
+  function estrella(x, sx, sy, R, puntas) {
+    puntas = puntas || 4; x.beginPath();
+    for (let k = 0; k < puntas * 2; k++) { const a = k * Math.PI / puntas - Math.PI / 2, rr = k % 2 ? R * 0.38 : R; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); }
+    x.closePath(); x.fill();
+  }
+  // Pichón de cotorra puertorriqueña (verde, frente roja, anillo blanco en el ojo, primarias azules, pico claro), de pie en
+  // (0, 0) = sus patas. o: { giro, ala (levantada), dormido, mira (inclina la cabeza: + arriba) }
+  function pichon(x, px, py, r, o) {
+    o = o || {};
+    x.save(); x.translate(px, py); x.rotate(o.giro || 0); x.translate(0, -r * 1.05);
+    x.strokeStyle = '#d99a52'; x.lineWidth = Math.max(2, r * 0.1); x.lineCap = 'round'; // patas
+    for (const dx of [-0.25, 0.22]) { x.beginPath(); x.moveTo(r * dx, r * 0.8); x.lineTo(r * dx, r * 1.05); x.lineTo(r * (dx + 0.18), r * 1.05); x.stroke(); }
+    x.fillStyle = 'rgba(0,0,0,.18)'; x.beginPath(); x.ellipse(0, r * 1.07, r * 0.75, r * 0.12, 0, 0, Math.PI * 2); x.fill(); // sombra
+    let g = x.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r * 1.15); g.addColorStop(0, '#a6dc7e'); g.addColorStop(1, '#3f8f3a');
+    x.fillStyle = g; x.beginPath(); x.ellipse(0, 0, r * 0.82, r * 0.95, 0, 0, Math.PI * 2); x.fill(); // cuerpo
+    x.fillStyle = 'rgba(225,246,196,.5)'; x.beginPath(); x.ellipse(r * 0.18, r * 0.22, r * 0.45, r * 0.58, 0, 0, Math.PI * 2); x.fill(); // pecho
+    x.save(); x.translate(-r * 0.42, -r * 0.3); x.rotate(o.ala ? 2.55 : 0.3); // ala (levantada: hacia arriba y atrás)
+    x.fillStyle = '#2f7a35'; x.beginPath(); x.ellipse(0, r * 0.38, r * 0.3, r * 0.58, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#2f6fb8'; x.beginPath(); x.ellipse(0, r * 0.76, r * 0.2, r * 0.22, 0, 0, Math.PI * 2); x.fill(); x.restore();
+    x.save(); x.translate(0, -r * 0.95); x.rotate(-(o.mira || 0)); // cabeza
+    const hr = r * 0.64;
+    g = x.createRadialGradient(-hr * 0.3, -hr * 0.35, hr * 0.1, 0, 0, hr * 1.2); g.addColorStop(0, '#b2e48c'); g.addColorStop(1, '#55a644');
+    x.fillStyle = g; x.beginPath(); x.arc(0, 0, hr, 0, Math.PI * 2); x.fill();
+    x.fillStyle = 'rgba(200,240,170,.8)'; x.beginPath(); x.arc(-hr * 0.35, -hr * 0.8, hr * 0.22, 0, Math.PI * 2); x.fill(); // plumón
+    x.fillStyle = '#d8352a'; x.beginPath(); x.ellipse(hr * 0.42, -hr * 0.5, hr * 0.36, hr * 0.15, 0.4, 0, Math.PI * 2); x.fill(); // frente roja
+    const ex = hr * 0.3, ey = -hr * 0.06;
+    x.fillStyle = '#fff'; x.beginPath(); x.arc(ex, ey, hr * 0.27, 0, Math.PI * 2); x.fill(); // anillo del ojo
+    if (o.dormido) { x.strokeStyle = '#10241c'; x.lineWidth = Math.max(2, hr * 0.09); x.beginPath(); x.arc(ex, ey - hr * 0.03, hr * 0.14, 0.15 * Math.PI, 0.85 * Math.PI); x.stroke(); }
+    else {
+      x.fillStyle = '#10241c'; x.beginPath(); x.arc(ex + hr * 0.04, ey, hr * 0.15, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#fff'; x.beginPath(); x.arc(ex + hr * 0.1, ey - hr * 0.07, hr * 0.05, 0, Math.PI * 2); x.fill();
+    }
+    x.fillStyle = 'rgba(242,120,110,.35)'; x.beginPath(); x.arc(hr * 0.12, hr * 0.38, hr * 0.15, 0, Math.PI * 2); x.fill(); // cachete
+    x.fillStyle = '#f1e2b2'; x.beginPath(); x.moveTo(hr * 0.74, -hr * 0.2); x.quadraticCurveTo(hr * 1.3, -hr * 0.05, hr * 0.84, hr * 0.38); x.lineTo(hr * 0.66, hr * 0.12); x.closePath(); x.fill(); // pico
+    x.strokeStyle = 'rgba(120,96,50,.6)'; x.lineWidth = Math.max(1, hr * 0.04); x.stroke();
+    x.restore(); x.restore();
+  }
+  // Escena de un gag del pichón (sin foto del momento): suelo del bosque y el pichón con su gag
+  function ilustrarGag(x, tipo, ix, iy, iw, ih, s, cx) {
+    const suelo = iy + ih * 0.8;
+    x.fillStyle = '#3e7f3f'; x.beginPath(); x.moveTo(ix, suelo + ih * 0.04); x.quadraticCurveTo(ix + iw * 0.5, suelo - ih * 0.08, ix + iw, suelo); x.lineTo(ix + iw, iy + ih); x.lineTo(ix, iy + ih); x.closePath(); x.fill();
+    x.strokeStyle = '#2d6a33'; x.lineWidth = 3; x.lineCap = 'round';
+    for (let k = 0; k < 22; k++) { const hx = ix + iw * ((k * 0.137 + 0.03) % 1), hy = suelo + ih * (0.04 + (k % 3) * 0.04); x.beginPath(); x.moveTo(hx, hy); x.lineTo(hx + 4 - (k % 3) * 4, hy - 12 - (k % 4) * 3); x.stroke(); }
+    const r = Math.min(s * 0.24, ih * 0.2), py = suelo - ih * 0.01;
+    x.fillStyle = '#ffe27a';
+    if (tipo === 'pichon_cae') {
+      // El borde del que se cayó, la trayectoria, el polvito y estrellitas (se sacude, no se hace daño)
+      x.fillStyle = '#8b7558'; x.beginPath(); x.ellipse(cx + s * 0.62, iy + ih * 0.36, s * 0.3, s * 0.08, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#4f9a4c'; x.beginPath(); x.ellipse(cx + s * 0.62, iy + ih * 0.33, s * 0.3, s * 0.05, 0, 0, Math.PI * 2); x.fill();
+      x.setLineDash([8, 10]); x.strokeStyle = 'rgba(16,36,28,.55)'; x.lineWidth = 4;
+      x.beginPath(); x.moveTo(cx + s * 0.45, iy + ih * 0.3); x.quadraticCurveTo(cx + s * 0.2, iy + ih * 0.2, cx + r * 0.3, py - r * 2.4); x.stroke(); x.setLineDash([]);
+      x.fillStyle = 'rgba(240,232,214,.85)';
+      for (const [dx, rr] of [[-1.1, 0.32], [-0.6, 0.24], [0.9, 0.3], [1.3, 0.2]]) { x.beginPath(); x.arc(cx + dx * r, py - rr * r * 0.6, rr * r, 0, Math.PI * 2); x.fill(); }
+      pichon(x, cx, py, r, { giro: -0.32, ala: true, mira: 0.2 });
+      x.fillStyle = '#ffd34d';
+      for (let k = 0; k < 3; k++) { const a = k * 2.1 + 0.4; estrella(x, cx - r * 0.55 + Math.cos(a) * r * 0.85, py - r * 2.75 + Math.sin(a) * r * 0.28, r * 0.2, 5); }
+    } else if (tipo === 'pichon_mariposa') {
+      // Mira hacia arriba, con un ala levantada; la mariposa va delante, dejando un rastro de puntos
+      const bx = cx + s * 0.5, by = iy + ih * 0.28;
+      x.setLineDash([3, 12]); x.strokeStyle = 'rgba(16,36,28,.5)'; x.lineWidth = 4;
+      x.beginPath(); x.moveTo(cx - s * 0.5, iy + ih * 0.5); x.bezierCurveTo(cx - s * 0.1, iy + ih * 0.15, cx + s * 0.1, iy + ih * 0.65, bx - 10, by + 6); x.stroke(); x.setLineDash([]);
+      pichon(x, cx - r * 0.2, py, r, { ala: true, mira: 0.45, giro: 0.08 });
+      x.save(); x.translate(bx, by); x.rotate(-0.25);
+      for (const lado of [-1, 1]) {
+        x.fillStyle = '#f29a2e'; x.beginPath(); x.ellipse(lado * s * 0.07, -s * 0.03, s * 0.075, s * 0.055, lado * 0.5, 0, Math.PI * 2); x.fill();
+        x.fillStyle = '#f7c548'; x.beginPath(); x.ellipse(lado * s * 0.055, s * 0.045, s * 0.05, s * 0.038, -lado * 0.4, 0, Math.PI * 2); x.fill();
+        x.strokeStyle = '#3a2410'; x.lineWidth = 2; x.beginPath(); x.ellipse(lado * s * 0.07, -s * 0.03, s * 0.075, s * 0.055, lado * 0.5, 0, Math.PI * 2); x.stroke();
+      }
+      x.fillStyle = '#3a2410'; x.beginPath(); x.ellipse(0, 0, s * 0.012, s * 0.06, 0, 0, Math.PI * 2); x.fill(); x.restore();
+    } else if (tipo === 'pichon_duerme') {
+      // Dormido encima del hallazgo, que brilla por debajo; las zetas suben
+      const hy = py - r * 0.05, luz = x.createRadialGradient(cx, hy, r * 0.1, cx, hy, r * 1.9);
+      luz.addColorStop(0, 'rgba(255,226,122,.95)'); luz.addColorStop(1, 'rgba(255,226,122,0)'); x.fillStyle = luz; x.fillRect(cx - r * 2, hy - r * 2, r * 4, r * 4);
+      x.fillStyle = '#c9a24a'; x.beginPath(); x.ellipse(cx, hy, r * 0.95, r * 0.28, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#ffe9a3'; for (const [dx, dy] of [[-1.2, -0.3], [1.25, -0.5], [1.5, 0.05], [-1.5, 0.1]]) estrella(x, cx + dx * r, hy + dy * r, r * 0.16, 4);
+      pichon(x, cx, py - r * 0.18, r, { dormido: true, mira: -0.15, giro: -0.04 });
+      x.fillStyle = '#10241c'; x.textAlign = 'left';
+      [[0.55, 0.26], [0.95, 0.34], [1.4, 0.44]].forEach(([d, t], k) => { x.font = `700 ${Math.round(r * t * 1.6)}px Fredoka, sans-serif`; x.fillText('z', cx + r * (0.5 + d * 0.6), py - r * (2.2 + k * 0.55)); });
+    } else {
+      // pichon_imita: con el ala arriba igual que el gesto, rayitas de movimiento y una estrella de «¡igualita!»
+      pichon(x, cx, py, r, { ala: true, mira: 0.1 });
+      x.strokeStyle = 'rgba(16,36,28,.6)'; x.lineWidth = 4; x.lineCap = 'round';
+      for (let k = 0; k < 3; k++) { x.beginPath(); x.arc(cx - r * 0.6, py - r * 2.0, r * (0.75 + k * 0.28), Math.PI * (1.05 + k * 0.02), Math.PI * 1.4); x.stroke(); }
+      x.fillStyle = '#ffd34d'; estrella(x, cx + r * 1.25, py - r * 2.65, r * 0.3, 5); estrella(x, cx + r * 1.7, py - r * 2.05, r * 0.17, 5);
+    }
   }
 
   // ---------- Composición ----------
@@ -757,6 +875,90 @@ AVE.module('comic', function (G) {
         check('Las 4 viñetas nuevas están en la página y no en blanco', vacias.length === 0, vacias.map(c => c.id).join(', ') || 'todas con imagen');
         check('Las viñetas van en el orden en que pasaron', R2.panels.every((q, j) => j === 0 || R2.panels[j - 1].seq <= q.seq));
       }
+      // Gags del pichón (mejora 9): el hecho real (gags.js → G.emit('criadero', 'gag', …), lo anota momentos.js) crea la viñeta
+      // una vez, con la foto del momento o una captura del mundo; sin ninguna, su ilustración. Un gag que nadie conoce no hace nada.
+      const gags = VINETAS.filter(v => v.gag);
+      const gagEv = (v, extra) => G.emit('criadero', 'gag', Object.assign({ gag: v.gag, clave: v.needs, id: 'h1', etapa: 'bebe' }, extra || {}));
+      if (gags.length && G.momentos && G.momentos.alGag) {
+        const fotoGag = (() => { const c = document.createElement('canvas'); c.width = 480; c.height = 360; const g = c.getContext('2d');
+          const gr = g.createLinearGradient(0, 0, 0, 360); gr.addColorStop(0, '#9fd3f0'); gr.addColorStop(1, '#3e7f3f'); g.fillStyle = gr; g.fillRect(0, 0, 480, 360);
+          g.fillStyle = '#f29a2e'; g.beginPath(); g.arc(300, 120, 40, 0, 7); g.fill(); g.fillStyle = '#7fc35a'; g.beginPath(); g.arc(200, 250, 70, 0, 7); g.fill(); return c.toDataURL('image/jpeg', 0.8); })();
+        S.profile = Object.assign({}, S.profile, { created: true });
+        for (const v of gags) { S.events = S.events.filter(e => e.key !== v.needs); delete vin()[v.id]; delete S.captures[v.img]; pendientes.delete(v.img); delete S.comic.captions[v.id]; }
+        vistos = S.events.length;
+        check('Sin gags del pichón no hay sus viñetas (si el gag no existe, nunca salen)', !comicPanels().some(p => gags.some(v => v.id === p.id)), gags.map(v => v.gag).join(', '));
+        check('Cada gag trae 3 textos graciosos a elegir, además del suyo', gags.every(v => (v.opciones || []).length === 3 && typeof v.texto === 'string'));
+        for (const v of gags) gagEv(v, { foto: () => fotoGag });
+        check('Con G.quiet (baterías) los gags no crean viñetas', !gags.some(v => G.eventos.had(v.needs)));
+        const nEv = S.events.length;
+        G.quiet = false;
+        try { G.emit('criadero', 'gag', { gag: 'volarDeLado', clave: 'ChickFlewSideways', id: 'h1' }); G.emit('criadero', 'gag', null); } finally { G.quiet = true; }
+        check('Un gag sin viñeta no registra nada', S.events.length === nEv);
+        const conFoto = gags.filter((v, j) => j % 2 === 1), sinFoto = gags.filter((v, j) => j % 2 === 0);
+        const lookGag = { preset: 'versicolor', outfit: 'rojo', accessory: 'gorra' };
+        try { S.profile = Object.assign({}, S.profile, { look: G.creador.profileLook(lookGag) }); } catch (e) { /* sin modelo */ }
+        G.quiet = false;
+        try {
+          for (const v of conFoto) gagEv(v, { foto: () => fotoGag }); // con la foto del momento (gags.js)
+          for (const v of sinFoto) gagEv(v, { gesto: 'saludar', foto: () => null }); // sin foto: captura del mundo
+          for (const v of gags) gagEv(v, { foto: () => fotoGag }); // otra vez
+        } finally { G.quiet = true; }
+        for (const v of gags) {
+          const r = vin()[v.id], pg = comicPanels().find(q => q.id === v.id);
+          check(`gag ${v.gag} → ${v.needs} → viñeta «${v.id}» con la apariencia de ese momento y 4 textos`, !!pg && r && claveLook(r.look) === claveLook(lookActual()) && pg.opciones.length === 4, pg ? pg.text : 'sin viñeta');
+        }
+        check('Cada gag cuenta una sola vez por partida', gags.every(v => S.events.filter(e => e.key === v.needs).length === 1));
+        check('El gag con foto la usa en su viñeta', conFoto.every(v => S.captures[v.img] === fotoGag));
+        if (lienzoListo()) check('El gag sin foto captura el mundo', sinFoto.every(v => /^data:image\//.test(S.captures[v.img] || '') && S.captures[v.img] !== fotoGag));
+        else check('Gag sin foto con el lienzo sin tamaño: la captura queda pendiente', sinFoto.every(v => pendientes.has(v.img)));
+        // Elegir un texto de la lista (sin texto libre)
+        const g0 = gags[0]; S.comic.captions[g0.id] = 2;
+        const pg0 = comicPanels().find(q => q.id === g0.id);
+        check('Se elige uno de los textos graciosos de la lista', pg0 && pg0.text === pg0.opciones[2] && pg0.eleccion === 2, pg0 ? pg0.text : '');
+        // Sin foto ni captura (sin WebGL): la ilustración del gag
+        for (const v of sinFoto) { delete S.captures[v.img]; pendientes.delete(v.img); }
+        // «Foto»: con Foto activa en Gestos, la tecla de un gesto (1–7) hace el gesto y pide la foto; momentos.js la pone en el cómic
+        const A = G.actores, M = G.momentos;
+        if (A && A.modoFoto && A.EMOTE_KEYS && M && M.tomarFoto) {
+          check('Gestos: 7 gestos y el botón «Foto»', A.EMOTE_KEYS.length === 7 && document.querySelectorAll('#emotes [data-emote]').length === 7 && !!document.querySelector('#emotes [data-foto]'));
+          // La tecla la recibe input.js (hace el gesto si Vittata puede posar en el suelo y quieta) y luego este módulo. Aquí se
+          // simula lo de input.js con un playEmote de prueba y se llama al manejador de este módulo, sin tocar la pausa (el
+          // cronómetro del marcador correría) ni depender de dónde está Vittata.
+          let pedida = null; const emit = G.emit, jugar = A.playEmote;
+          G.emit = function (n, a, b2, c2) { if (n === 'foto') pedida = a; return emit.call(this, n, a, b2, c2); };
+          const tecla = async (k, puede, foto) => {
+            pedida = null; A.playEmote = name => { if (!puede) return false; A.emote.name = name; return true; };
+            A.modoFoto(!!foto);
+            const pulsado = !foto || document.querySelector('#emotes [data-foto]').getAttribute('aria-pressed') === 'true';
+            const ev = new KeyboardEvent('keydown', { key: k });
+            A.playEmote(A.EMOTE_KEYS[+k - 1]); // lo que hace input.js con la tecla
+            const atendida = alTeclaFoto(ev);
+            await new Promise(r => setTimeout(r, 30));
+            const r = { pulsado, atendida, sigue: A.fotoModo, pedida };
+            A.playEmote = jugar; if (A.stopEmote) A.stopEmote();
+            return r;
+          };
+          try {
+            const g3 = A.EMOTE_KEYS[2], r1 = await tecla('3', true, true);
+            check('Foto activa + tecla 3: hace el gesto, cierra Foto y pide la foto con ese gesto', r1.pulsado && r1.atendida && !r1.sigue && !!r1.pedida && r1.pedida.gesto === g3, r1.pedida ? r1.pedida.gesto : JSON.stringify(r1));
+            const r2 = await tecla('1', false, true);
+            check('Si no puede posar (volando o en el aire), no pide la foto y Foto se cierra', r2.pulsado && !r2.sigue && !r2.pedida, JSON.stringify(r2));
+            const r3 = await tecla('2', true, false);
+            check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !r3.atendida && !r3.pedida, JSON.stringify(r3));
+          } finally { G.emit = emit; A.playEmote = jugar; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
+          S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
+          G.quiet = false;
+          let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
+          if (lienzoListo()) check('La foto con pose entra al cómic como viñeta', okF && comicPanels().some(q => q.id === 'foto'));
+        }
+        const url3 = await exportComic('png'), R3 = ultimoRender, alto3 = altoPagina(R3.panels.length, 'grid');
+        const v3 = await verificarPNG(ultimo.png, W, alto3), im3 = url3 ? await loadImg(url3) : null;
+        check(`PNG con los gags (${R3.panels.length} viñetas): válido y de ${W}×${alto3}`, v3.ok && im3 && im3.width === W && im3.height === alto3, `${v3.ancho}×${v3.alto}`);
+        const ids = gags.map(v => v.id).concat(R3.panels.some(q => q.id === 'foto') ? ['foto'] : []);
+        const vacias3 = ids.filter(id => { const j = R3.panels.findIndex(q => q.id === id), e = j >= 0 && im3 ? estadisticas(im3, R3.boxes[j]) : null; return !e || enBlanco(e); });
+        check('Las viñetas de los gags (foto, captura o ilustración) y la foto con pose no están en blanco', vacias3.length === 0, vacias3.join(', ') || ids.length + ' con imagen');
+        if (opts.muestra) opts.muestra(url3);
+      }
       // Diseños: sin solapes y dentro de la página
       let malos = 0;
       for (const lay of ['grid', 'strip']) for (let n = 1; n <= 6; n++) {
@@ -795,7 +997,9 @@ AVE.module('comic', function (G) {
       SV.suspender(false); G.quiet = quiet;
       $('c-export').hidden = true; $('comic').hidden = !abierto;
     }
-    check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
+    const ahora = SV.instantanea();
+    check('G.S queda como estaba', JSON.stringify(ahora) === JSON.stringify(snap),
+      Object.keys(Object.assign({}, snap, ahora)).filter(k => JSON.stringify(snap[k]) !== JSON.stringify(ahora[k])).join(', '));
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   // AV.comicTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)

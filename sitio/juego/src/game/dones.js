@@ -2,7 +2,10 @@
    Seis familias por geografía (PROPUESTA_PODERES_SECRETOS_BANDADAS.md §A.2 y §A.3).
    Los ejes son de fantasía: ±1 paso, suma cero, velocidad como mucho ±3 %.
    En Retos y duelos valen 1, salvo el modo «Con dones». El don activo es el paso 2 (CG-11).
-   Lo carga src/engine/fisica.js. API: G.dones = { familia, ejes, paso, mult, conDones, test }. */
+   CG-16: un don con mentora solo se activa después de su escena. Hoy solo Iguaca (Llamada).
+   Otra mentora entra en MENTORAS o en pack.mentoras, sin archivo content/epN/dones.js.
+   Lilacina (ojo) y Oratrix (ráfaga) no están: las decide Kelvin.
+   Lo carga src/engine/fisica.js. API: G.dones = { familia, ejes, paso, mult, conDones, mentoras, mirar, test }. */
 (function () {
   'use strict';
   const FAMILIAS = {
@@ -76,6 +79,120 @@
       gran_rio: { id: 'rasante', es: 'Fantasía: el río te lleva a ras.', en: 'Fantasy: the river carries you low.', dura: 8, espera: 30 },
       bosque_sur: { id: 'plumas', es: 'Fantasía: las hojas te envuelven.', en: 'Fantasy: leaves wrap around you.', dura: 10, espera: 35 }
     };
+    // Mentoras que ya se pueden jugar. Otra entra aquí o en pack.mentoras:
+    // { id, don, es: [{ who, text }], en: [{ who, text }], aviso: { es, en }, cabe: () => bool }.
+    // [KELVIN] Las dos líneas y el aviso de Iguaca. Lilacina (ojo) y Oratrix (ráfaga) no van en esta lista.
+    const MENTORAS = [
+      {
+        id: 'iguaca', don: 'llamada',
+        es: [
+          { who: 'Iguaca', text: 'Una sola cotorra no se oye. Cuando llamas a la bandada, el viento te devuelve el canto.' },
+          { who: 'Vittata', text: 'Entonces no vuelo sola. Mantengo el impulso… ¡y llamo!' }
+        ],
+        en: [
+          { who: 'Iguaca', text: 'One parrot alone is not heard. When you call the flock, the wind brings the song back.' },
+          { who: 'Vittata', text: 'Then I do not fly alone. I hold the dash… and I call!' }
+        ],
+        aviso: { es: 'Nuevo don: Llamada de la bandada. Mantén Impulso.', en: 'New gift: Flock Call. Hold Dash.' },
+        cabe() {
+          const S = G.S;
+          if (!G.pack || G.pack.id !== 'cap1' || !S || !S.refuge || S.refuge.parcel !== 'B' || S.refuge.damaged || S.event) return false;
+          if (!S.profile || !S.profile.created || !S.pos) return false;
+          const M = G.fisica && G.fisica.MOVE;
+          if (!M || M.flying || M.swimming) return false;
+          const dx = S.pos.x - S.refuge.x, dz = S.pos.z - S.refuge.z;
+          return dx * dx + dz * dz <= 64;
+        }
+      }
+    ];
+    const enCurso = new Set();
+    function aprendidos() {
+      const S = G.S;
+      if (!S) return [];
+      if (!Array.isArray(S.dones)) S.dones = [];
+      return S.dones;
+    }
+    function sabe(id) { return aprendidos().includes(id); }
+    function mentoras() {
+      const extra = (G.pack && G.pack.mentoras) || [];
+      return MENTORAS.concat(extra).filter(m => m && m.lista !== false && m.don && typeof m.cabe === 'function');
+    }
+    function mentoraDe(donId) { return mentoras().find(m => m.don === donId) || null; }
+    function puede(r) {
+      if (!r) return false;
+      if (forzar || conDonesFam) return true;
+      const m = mentoraDe(r.id);
+      if (!m) return true;
+      return sabe(r.id);
+    }
+    function enAhora() {
+      return document.documentElement.lang === 'en' || !!(G.idioma && G.idioma.activo && G.idioma.activo());
+    }
+    function aprender(id) {
+      const a = aprendidos();
+      if (a.includes(id)) return false;
+      a.push(id);
+      if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+      return true;
+    }
+    function estiloMentora() {
+      if (document.getElementById('don-mentora-css')) return;
+      const st = document.createElement('style');
+      st.id = 'don-mentora-css';
+      st.textContent = '#toast.don-aprender,:root:is(.a11y-t1,.a11y-t2) #toast.don-aprender{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;left:0;right:0;margin-inline:auto;max-width:min(343px,calc(100vw - 32px));font-size:max(16px,calc(16px * var(--fs-k,1)));line-height:1.25;cursor:pointer}' +
+        '@media (max-width:560px){#toast.don-aprender{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;left:0;right:0;margin-inline:auto;max-width:min(343px,calc(100vw - 32px))}}' +
+        '#b-dash.don-latido{animation:don-latido .9s ease-out 1}' +
+        '@keyframes don-latido{0%{box-shadow:0 0 0 3px rgba(255,208,120,.95)}100%{box-shadow:0 0 0 18px rgba(255,208,120,0)}}' +
+        '@media (prefers-reduced-motion:reduce){#b-dash.don-latido{animation:none;outline:3px solid rgba(255,208,120,.95)}}';
+      document.head.appendChild(st);
+      const t = document.getElementById('toast');
+      if (t) t.addEventListener('click', () => {
+        if (!t.classList.contains('don-aprender')) return;
+        t.classList.remove('don-aprender');
+        if (G.ui && G.ui.hideToast) G.ui.hideToast();
+      });
+    }
+    function avisoAprender(texto) {
+      estiloMentora();
+      const t = document.getElementById('toast');
+      if (G.ui && G.ui.toast) G.ui.toast(texto, 3000);
+      if (t) t.classList.add('don-aprender');
+      const b = document.getElementById('b-dash');
+      if (b) {
+        b.classList.remove('don-latido');
+        void b.offsetWidth;
+        b.classList.add('don-latido');
+        setTimeout(() => b.classList.remove('don-latido'), 1000);
+      }
+      setTimeout(() => { if (t) t.classList.remove('don-aprender'); }, 3200);
+    }
+    function ofrecer(m) {
+      if (!G.dialogo || !G.dialogo.say) return false;
+      enCurso.add(m.id);
+      const en = enAhora();
+      const src = (en && m.en) || m.es || [];
+      const lineas = src.map(l => ({ who: l.who, text: l.text, lang: en ? 'en' : '' }));
+      G.dialogo.say(lineas, () => {
+        enCurso.delete(m.id);
+        if (!aprender(m.don)) return;
+        const a = m.aviso || {};
+        avisoAprender(en ? (a.en || a.es || '') : (a.es || ''));
+      }, { libre: true });
+      return true;
+    }
+    function mirar() {
+      if (G.quiet || enReto() || conDonesFam || forzar) return false;
+      if (!G.dialogo || !G.dialogo.activo || G.dialogo.activo()) return false;
+      if (G.ui && (G.ui.cardOpen || (G.ui.overlayOpen && G.ui.overlayOpen()))) return false;
+      for (const m of mentoras()) {
+        if (sabe(m.don)) { enCurso.delete(m.id); continue; }
+        if (enCurso.has(m.id)) continue;
+        if (!m.cabe()) continue;
+        return ofrecer(m);
+      }
+      return false;
+    }
+    function soltarEscenas() { enCurso.clear(); }
     let don = null, sostenido = 0, rafagaCd = null, columna = null, gotas = 0, hojas = 0, cargas = null;
     function soltarSostener() {
       if (!sostenido) return;
@@ -91,7 +208,9 @@
       const ahora = performance.now();
       if (don && ahora < don.listo) return false;
       const r = REGALO[idFamilia()];
-      if (!r) return false;
+      if (!r || !puede(r)) return false;
+      const avisoEl = document.getElementById('toast');
+      if (avisoEl) avisoEl.classList.remove('don-aprender');
       const una = conDonesFam && cargas != null;
       don = { id: r.id, fin: ahora + r.dura * 1000, listo: una ? Infinity : ahora + (r.dura + r.espera) * 1000 };
       if (una) cargas = 0;
@@ -146,7 +265,8 @@
       else if (don && ahora < don.listo) p = Math.max(0, (don.listo - ahora) / ((don.listo - don.fin) || 1));
       b.style.outline = p > 0.02 ? '3px solid rgba(255, 208, 120, ' + (0.35 + 0.6 * Math.min(1, p)).toFixed(2) + ')' : '';
     }
-    G.on('update', () => { pasoDon(); pintarBoton(); }, 80);
+    G.on('update', () => { pasoDon(); pintarBoton(); mirar(); }, 80);
+    G.on('apply', () => { soltarEscenas(); }, 46);
     // Vuelta de prueba: crucero, giros, planeo que hay que recuperar, vista y sigilo.
     // Los pesos dejan a las 6 familias dentro de ±1,5 % de la media (CG-10).
     function tiempo(id) {
@@ -253,6 +373,68 @@
         don = null; forzar = null;
         const en = document.documentElement.lang === 'en';
         check('El aviso tiene frase en español y en inglés', ['islenas', 'cordilleranas', 'norte', 'montaneras', 'gran_rio', 'bosque_sur'].every(id => REGALO[id].es && REGALO[id].en) && (en ? REGALO.bosque_sur.en : REGALO.bosque_sur.es).length > 8);
+        const refugio0 = G.S.refuge, evento0 = G.S.event, posM = { x: G.S.pos.x, y: G.S.pos.y, z: G.S.pos.z };
+        const dones0 = Array.isArray(G.S.dones) ? G.S.dones.slice() : [];
+        const quiet0 = G.quiet, fly0 = G.fisica.MOVE.flying, swim0 = G.fisica.MOVE.swimming;
+        const look0 = G.S.profile && G.S.profile.look;
+        const creado0 = !!(G.S.profile && G.S.profile.created);
+        const especiePerfil0 = G.S.profile && G.S.profile.species;
+        const auto0 = G.guardado && G.guardado.autosave;
+        const capas = ['end', 'comic', 'creator'].map(id => { const n = document.getElementById(id); return n ? { n, hidden: n.hidden } : null; });
+        try {
+          if (G.guardado) G.guardado.autosave = () => {};
+          if (!G.S.profile) G.S.profile = { created: true, name: 'Aprendiz', look: { species: 'vittata' } };
+          G.S.profile.created = true;
+          G.S.profile.species = 'vittata';
+          G.S.profile.look = Object.assign({}, look0, { species: 'vittata' });
+          capas.forEach(c => { if (c) c.n.hidden = true; });
+          if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+          G.S.dones = dones0.filter(id => id !== 'llamada');
+          forzar = null; conDonesFam = null; don = null;
+          document.body.classList.remove('retos-on');
+          check('Sin la escena de Iguaca la Llamada no se activa', idFamilia() === 'islenas' && activar() === false && !activo(), activo() || 'parada');
+          const listaM = mentoras();
+          check('Solo Iguaca está en juego; Lilacina y Oratrix esperan', listaM.length === 1 && listaM[0].id === 'iguaca' && listaM[0].don === 'llamada' && !listaM.some(m => m.id === 'lilacina' || m.id === 'oratrix' || m.don === 'ojo' || m.don === 'rafaga'));
+          const iguaca = listaM[0];
+          check('Las dos líneas caben en un globo y el aviso trae inglés', iguaca.es.length === 2 && iguaca.en.length === 2 && iguaca.es.every(l => l.text.length < 100) && iguaca.en.every(l => l.text.length < 100) && iguaca.aviso.en === 'New gift: Flock Call. Hold Dash.');
+          check('La partida guarda los dones aprendidos', !!(G.guardado && G.guardado.KEYS && G.guardado.KEYS.includes('dones')) && Array.isArray(G.guardado.freshState().dones));
+          G.quiet = false; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false;
+          G.S.event = null;
+          G.S.refuge = { parcel: 'B', x: G.S.pos.x + 40, z: G.S.pos.z, damaged: false };
+          if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
+          soltarEscenas();
+          check('Lejos de la colina Iguaca no habla', mirar() === false && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()));
+          G.S.refuge = { parcel: 'B', x: G.S.pos.x, z: G.S.pos.z, damaged: false };
+          const empezo = mirar() === true && G.dialogo && G.dialogo.libre && !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.length < 100;
+          check('En el refugio de la colina Iguaca enseña la Llamada', empezo, G.dialogo && G.dialogo.actual() ? G.dialogo.actual().who + ': ' + G.dialogo.actual().text : 'sin diálogo');
+          if (empezo) G.dialogo.next();
+          check('Vittata contesta y el globo sigue libre', empezo && G.dialogo.actual() && G.dialogo.actual().who === 'Vittata' && G.dialogo.actual().libre === true && G.dialogo.actual().text.length < 100, G.dialogo && G.dialogo.actual() ? G.dialogo.actual().text : '');
+          if (empezo) G.dialogo.next();
+          const tt = document.getElementById('toast'), dash = document.getElementById('b-dash');
+          check('Al aprender sale el aviso y Impulso late una vez', sabe('llamada') && tt && !tt.hidden && tt.classList.contains('don-aprender') && /Llamada de la bandada|Flock Call/.test(tt.textContent) && dash && dash.classList.contains('don-latido'), tt ? tt.textContent : 'sin aviso');
+          don = null;
+          check('Con la Llamada aprendida, mantener Impulso la activa', activar() === true && activo() === 'llamada', activo() || 'sin don');
+        } finally {
+          if (G.guardado && auto0) G.guardado.autosave = auto0;
+          G.S.refuge = refugio0; G.S.event = evento0;
+          G.S.pos.x = posM.x; G.S.pos.y = posM.y; G.S.pos.z = posM.z;
+          G.S.dones = dones0;
+          G.quiet = quiet0; G.fisica.MOVE.flying = fly0; G.fisica.MOVE.swimming = swim0;
+          if (G.S.profile) {
+            G.S.profile.look = look0 || null;
+            G.S.profile.created = creado0;
+            if (especiePerfil0 === undefined) delete G.S.profile.species; else G.S.profile.species = especiePerfil0;
+          }
+          if (clase0) document.body.classList.add('retos-on');
+          capas.forEach(c => { if (c) c.n.hidden = c.hidden; });
+          soltarEscenas();
+          if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
+          const tt = document.getElementById('toast');
+          if (tt) tt.classList.remove('don-aprender');
+          const dash = document.getElementById('b-dash');
+          if (dash) dash.classList.remove('don-latido');
+          don = null;
+        }
         const tiempos = ids.map(tiempo);
         const media = tiempos.reduce((a, b) => a + b, 0) / tiempos.length;
         const peor = Math.max(...tiempos.map(t => Math.abs(t / media - 1)));
@@ -271,7 +453,7 @@
       conDones(id) { conDonesFam = id && FAMILIAS[id] ? id : null; if (!conDonesFam) cargas = null; return api; },
       forzar(id) { forzar = id || null; return api; },
       nuevaPartida, soltarDon, sostener, activar,
-      activo,
+      activo, mentoras, mirar, soltarEscenas,
       test
     };
     const exponer = n => {
