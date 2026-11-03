@@ -60,3 +60,5 @@
 - **Modo creador de mundos:** espera a que el juego esté terminado (Kelvin, 2-nov).
 - **BM116, BM119 y BM121:** son de la Mac (`tools/agente_api/cola.txt`).
 - **Pieles y documentos desfasados:** son del agente web (ronda 10).
+
+**Nunca te quedes sin trabajo (Kelvin, 3-nov):** si terminas la tabla, sigue sin parar con los bugs abiertos de tu zona en `docs/equipo/BUGS.md` (uno por commit, con su prueba) y avisa en una fila nueva. La coordinadora revisa esta lista cada hora y la rellena.
