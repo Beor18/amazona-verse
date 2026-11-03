@@ -1,25 +1,27 @@
 # Amazona Verse: roadmap y pendientes
 
-Actualizado el **2 de noviembre de 2026**. Detalle vivo en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`,
+Actualizado el **3 de noviembre de 2026**. Detalle vivo en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`,
 `docs/equipo/CAP1_PENDIENTE.md`, `docs/equipo/BUGS.md` y `docs/DECISION_LOG.md`. Publica la nube (`tools/build/publicar_nube.sh`) o la Mac (`publicar_mac.sh`), siempre con las 12 baterías obligatorias en verde; este documento no
 dice qué versión está en línea (míralo en la hoja viva).
 
-## Dónde estamos (2-nov)
-- **Capítulo 1 al 100 %.** Jugable de principio a fin; sobrinos de Kelvin lo terminaron en 16 min; en un Android y un iPad corre a más de 30 FPS. Solo quedan decisiones de Kelvin (`docs/equipo/CAP1_PENDIENTE.md`, `PENDIENTES_KELVIN.md`).
-- **Capítulos 2 a 6 con contenido y pruebas** (`content/ep2`…`ep6`): `ep2Test` 60/60, `ep2e2eTest` 71/71, `ep3Test` 71/71, `ep4Test` 63/63, `ep5Test` 74/74, `ep6Test` 79/79 y `temporadaE2eTest` 22/22 (BM85, 31-oct), con el registro de temporada compartido entre capítulos.
-- **Mundo único** (decisión de Kelvin, 1-nov): los caps. 2 a 6 pasan del mundo de relleno al mapa real del cap. 1, una zona por capítulo. Plan en `docs/equipo/MUNDO_UNICO.md`.
-  - **Hechos y publicados:** cap. 2 en Caney del Meandro (BM111), cap. 3 en el río de Villa Raíz hasta su desembocadura y la laguna (BM112), cap. 4 en el río al este de Villa Raíz (BM113; Los Portales del Río son un cañón y no sirven).
-  - **Zonas** (BM114, `src/game/zonas.js`): se abre la zona del capítulo en curso y las ya jugadas; lo demás se ve de lejos y el viento avisa. `temporadaE2eTest` 31/31 en el mundo único (BM122).
-  - **Caps. 5 y 6:** ya en el mapa real, tras un interruptor apagado (`MAPA_REAL` o `?mapa=real`). Se encienden cuando Kimi termine KIMI-Task-001 a 003 (draw calls y color de las ruinas); antes, capturas de la Mac (BM127).
-- **Modo creador: después de terminar el juego** (Kelvin, 2-nov; `TAREAS_CURSOR_GROK.md`). Base preparada en `MUNDO_UNICO.md`: parcelas en zonas libres, catálogo del kit actual, presupuesto por parcela, sin chat.
-- **Pieles de especie y retratos:** 31 especies con piel (BM109); agilis, albifrons y festiva en curso (BM124); martinicana y violacea solo como propuesta; retratos de Nudo y de los visitantes del cap. 6 y del Aprendiz (BM110, BM115); landing con el verde v4 (BM118).
-- **Pruebas:** 12 baterías obligatorias en verde en la última publicación de la nube (`docs/TEST_REPORT.md`). Las extra que solo fallan en la Mac (`idiomaTest`, `camaraTest`, `accesibilidadTest`, `trenTest`, `ep2e2eTest`) siguen en BM116; QA-85 es intermitente.
+## Dónde estamos (3-nov)
+Cada punto lleva el commit que lo prueba.
+- **Capítulo 1 al 100 %.** Jugable de principio a fin; sobrinos de Kelvin lo terminaron en 16 min. Solo quedan decisiones de Kelvin (`docs/equipo/CAP1_PENDIENTE.md`, `PENDIENTES_KELVIN.md`).
+- **Toda la temporada en un solo mapa.** Los 6 capítulos se juegan en el mapa real del cap. 1, una zona por capítulo (`src/game/zonas.js`): caps. 2 a 4 (BM111–BM113) y caps. 5 y 6 encendidos por Kelvin el 3-nov (`cf88e2ab`; `?mapa=pequeno` vuelve al mundo pequeño para pruebas). QA visual con GPU de los caps. 5 y 6: `07300c5c`.
+- **36 especies con piel** (37 pieles con la de Vittata): agilis, albifrons y festiva (BM124, `bfbb9378`), finschi, lilacina, vinacea y autumnalis (`7c552a1d`) y las extintas Mara y Vela (`a188c4e9`). Cada piel con sus fuentes en `docs/equipo/pieles_fuentes/`.
+- **Diario de los caps. 2 a 6:** las fichas de Ciencia se ganan jugando (`8684a696`).
+- **Mundo vivo, etapa 1:** cotorras residentes en 5 lugares, la bandada viaja y se posa, y el Álbum de las 36 en el Diario (`1b710e3b`); bandada de la casa, local y sin red (CG-18, `9095e5a2`).
+- **Dones:** seis dones por familia; Iguaca enseña la Llamada de la bandada (CG-16, `e88d59ba`); faltan las mentoras Lilacina y Oratrix (CG-19). Retos «Con dones» opcional y fuera del ranking (CG-17).
+- **Secretos:** 5 en el cap. 1 (CG-12, `13e91e10`) y 4 o 5 en cada cap. 2 a 6 (CG-13/CG-14, `97c955b9`); todo en inglés también (W7, `f07a8829`).
+- **El cap. 5 de noche:** luna fría y baja, faroles, cucubanos, estrellas y nubes (`850bc1f3`, `67f18e79`).
+- **Rendimiento:** ruinas a 150 draw calls (KIMI-Task-001, `b5bf103`) y texturas de edificios de 322 a 81 MiB (KIMI-Task-002, `8586f72`).
+- **Pruebas:** 12 baterías obligatorias en verde en cada publicación (`docs/TEST_REPORT.md`).
 
 ## Carriles (no se pisan)
 | Carril | Quién | Qué |
 |---|---|---|
 | 3D: edificios, ciudad, terreno y mapa | Kimi y Fernando | `docs/equipo/TAREAS_KIMI.md` (KIMI-Task-001 a 010). Nadie más toca lo gráfico del mundo. |
-| Contenido, historia, inglés, accesibilidad, web, documentos | Agente web | Ronda 10 de `TAREAS_API.md` (BM124 a BM126). |
+| Contenido, historia, inglés, accesibilidad, web, documentos | Agente web | `docs/equipo/TAREAS_WEB.md` (W1 a W12). |
 | GitHub, integración, hoja viva, flora translúcida (B1) y objetos de la historia (hito 28) | Coordinadora (nube) | Revisa e integra lo de todos. |
 | GPU real, Blender y publicación | Mac | Cola BM116, BM119, BM121, BM127, BM128; publica `sitio/` solo con las 12 baterías obligatorias en verde. |
 | Diversión del capítulo 1 | Cursor + Grok | `docs/equipo/TAREAS_CURSOR_GROK.md`: CG-7 a CG-9 (la crecida y la gota se juegan, diálogo que no bloquea); el modo creador espera. |
@@ -27,9 +29,10 @@ dice qué versión está en línea (míralo en la hoja viva).
 ## Lo que falta para el piloto escolar
 **Técnico**
 - [ ] FPS en equipos reales con `#fps`: Android (Kelvin lo tiene), un Chromebook escolar y un iPad.
-- [ ] Rendimiento de las ruinas (222 draw calls, meta ≤ 150) y memoria de texturas de edificios (313 MB, meta < 100 MB): KIMI-Task-001 y 002.
-- [ ] Edificios con defectos (28 de 64 en la auditoría del 1-nov), `_hd` boca abajo y flora en el mar o en la montaña: KIMI-Task-005 a 010.
-- [ ] Encender el mapa real en los caps. 5 y 6 (los caps. 2 a 4 ya están; 5 y 6 tras Kimi).
+- [x] Rendimiento de las ruinas (150 draw calls) y memoria de texturas de edificios (81 MiB): KIMI-Task-001 (`b5bf103`) y 002 (`8586f72`).
+- [ ] Edificios: los `_hd` boca abajo ya están (KIMI-Task-009); quedan la Ciudad de los 36 y los edificios rotos (BM133 y BM134, en la Mac) y la flora en el mar o pegada a la montaña (KIMI-Task-006 y 008, en curso).
+- [x] Encender el mapa real en los caps. 5 y 6 (`cf88e2ab`, 3-nov).
+- [ ] iPad en el tepuy del cap. 5: 6,9 M triángulos en calidad baja, 31/16 FPS (KIMI-Task-011, `3d5ea1f2`); el zoom en bucle no se reproduce (BM131, `24b1a26a`).
 - [ ] Revisar en una Mac los rojos que dependen del orden de las baterías (BM116).
 
 **Con niños y familias**
@@ -42,7 +45,7 @@ dice qué versión está en línea (míralo en la hoja viva).
 
 **Decisiones de Kelvin** (no las toma el equipo)
 - [ ] Estado UICN de 13 especies que no coinciden con el catálogo (`docs/equipo/ESPECIES_DISCREPANCIAS.md`).
-- [ ] Aspecto de las voces, de la navegante y de las especies extintas (martinicana y violacea: solo hay propuesta); canon e historia de los caps. 2–6.
+- [ ] Aspecto de las voces, de la navegante y de las especies extintas (martinicana y violacea: piel provisional en el juego, `a188c4e9`, a falta de su visto bueno); canon e historia de los caps. 2–6.
 - [ ] Escala de los bohíos, correo de contacto, monto del pitch, hosting del piloto y qué se comparte en el modo creador.
 
 ## Temporada 1 completa, en el mapa real
