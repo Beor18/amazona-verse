@@ -1716,4 +1716,6 @@ window.AV_EN = {
  "Mi enseñanza de vida": "My life lesson",
  "Mis escenas (hasta 6: elige cuáles, su texto y su orden)": "My scenes (up to 6: choose which ones, their text and their order)",
  "Actualizar vista": "Refresh preview",
+ "Ráfaga: remonta con el vapor": "Gust: climb with the steam",
+ "Rasante: baja con la gota": "Skim: stay low with the drop",
 };
