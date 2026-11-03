@@ -1,14 +1,14 @@
 {
- "codigo": "a2aac054580c8bd0e50b1ca8fcef7af610bfb328",
+ "codigo": "3d23f6b623e2a453c17329be855f644c9a920a35",
  "sitio": null,
- "fecha": "2026-11-03T09:32:45Z",
- "nota": "pruebas obligatorias en la nube en verde",
+ "fecha": "2026-11-03T11:59:48Z",
+ "nota": "13 baterías en verde en la Mac con GPU real",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-03T09:16:35+00:00",
-  "duracion_s": 912.9,
-  "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "ae7c686e901f5165f9cc3bc49e3d17aa5f191a2d24bdc55a11ac3917f06a9850",
+  "inicio": "2026-11-03T07:49:50-04:00",
+  "duracion_s": 590.0,
+  "chrome": "Chrome/157.0.8103.26",
+  "huella_build": "7f50b676442aa13ffa954fc42011f1ccfc62be067eac00b357a64981b6c757d5",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -84,6 +84,408 @@
    "passed": 12,
    "total": 12,
    "ok": true
+  },
+  "ep2Test": {
+   "requerida": false,
+   "passed": 64,
+   "total": 64,
+   "ok": true
+  },
+  "secretosTest": {
+   "requerida": false,
+   "passed": 19,
+   "total": 19,
+   "ok": true
+  },
+  "cg34Test": {
+   "requerida": false,
+   "passed": 16,
+   "total": 16,
+   "ok": true
+  },
+  "ep3Test": {
+   "requerida": false,
+   "passed": 75,
+   "total": 75,
+   "ok": true
+  },
+  "ep4Test": {
+   "requerida": false,
+   "passed": 67,
+   "total": 67,
+   "ok": true
+  },
+  "ep6Test": {
+   "requerida": false,
+   "passed": 88,
+   "total": 88,
+   "ok": true
+  },
+  "ep5Test": {
+   "requerida": false,
+   "passed": 79,
+   "total": 79,
+   "ok": true
+  },
+  "registroTemporadaTest": {
+   "requerida": false,
+   "passed": 6,
+   "total": 6,
+   "ok": true
+  },
+  "creadorTest": {
+   "requerida": false,
+   "passed": 16,
+   "total": 16,
+   "ok": true
+  },
+  "pielesTest": {
+   "requerida": false,
+   "passed": 14,
+   "total": 14,
+   "ok": true
+  },
+  "faunaTest": {
+   "requerida": false,
+   "passed": 29,
+   "total": 29,
+   "ok": true
+  },
+  "maravillasTest": {
+   "requerida": false,
+   "passed": 27,
+   "total": 27,
+   "ok": true
+  },
+  "guineoTest": {
+   "requerida": false,
+   "passed": 14,
+   "total": 14,
+   "ok": true
+  },
+  "bohiosTest": {
+   "requerida": false,
+   "passed": 26,
+   "total": 27,
+   "ok": false
+  },
+  "doselTest": {
+   "requerida": false,
+   "passed": 1,
+   "total": 1,
+   "ok": true
+  },
+  "contextTest": {
+   "requerida": false,
+   "passed": 29,
+   "total": 30,
+   "ok": false
+  },
+  "streamingTest": {
+   "requerida": false,
+   "passed": 22,
+   "total": 23,
+   "ok": false
+  },
+  "floraTest": {
+   "requerida": false,
+   "passed": 19,
+   "total": 19,
+   "ok": true
+  },
+  "controlesTest": {
+   "requerida": false,
+   "passed": 19,
+   "total": 19,
+   "ok": true
+  },
+  "teclasTest": {
+   "requerida": false,
+   "passed": 18,
+   "total": 18,
+   "ok": true
+  },
+  "camaraTest": {
+   "requerida": false,
+   "passed": 13,
+   "total": 14,
+   "ok": false
+  },
+  "accesibilidadTest": {
+   "requerida": false,
+   "passed": 40,
+   "total": 41,
+   "ok": false
+  },
+  "recordsTest": {
+   "requerida": false,
+   "passed": 47,
+   "total": 47,
+   "ok": true
+  },
+  "equiposTest": {
+   "requerida": false,
+   "passed": 28,
+   "total": 28,
+   "ok": true
+  },
+  "retosTest": {
+   "requerida": false,
+   "passed": 115,
+   "total": 115,
+   "ok": true
+  },
+  "cg17Test": {
+   "requerida": false,
+   "passed": 6,
+   "total": 6,
+   "ok": true
+  },
+  "rescateTest": {
+   "requerida": false,
+   "passed": 33,
+   "total": 33,
+   "ok": true
+  },
+  "bandadaTest": {
+   "requerida": false,
+   "passed": 15,
+   "total": 17,
+   "ok": false
+  },
+  "comunidadesTest": {
+   "requerida": false,
+   "passed": 19,
+   "total": 19,
+   "ok": true
+  },
+  "wowTest": {
+   "requerida": false,
+   "passed": 13,
+   "total": 13,
+   "ok": true
+  },
+  "juiceTest": {
+   "requerida": false,
+   "passed": 34,
+   "total": 34,
+   "ok": true
+  },
+  "rioVivoTest": {
+   "requerida": false,
+   "passed": 29,
+   "total": 29,
+   "ok": true
+  },
+  "banqueteTest": {
+   "requerida": false,
+   "passed": 44,
+   "total": 44,
+   "ok": true
+  },
+  "minimapaTest": {
+   "requerida": false,
+   "passed": 37,
+   "total": 37,
+   "ok": true
+  },
+  "marcadorTest": {
+   "requerida": false,
+   "passed": 37,
+   "total": 37,
+   "ok": true
+  },
+  "diarioTest": {
+   "requerida": false,
+   "passed": 15,
+   "total": 15,
+   "ok": true
+  },
+  "idiomaTest": {
+   "requerida": false,
+   "passed": 20,
+   "total": 31,
+   "ok": false
+  },
+  "menuModosTest": {
+   "requerida": false,
+   "passed": 42,
+   "total": 42,
+   "ok": true
+  },
+  "temporadaTest": {
+   "requerida": false,
+   "passed": 28,
+   "total": 28,
+   "ok": true
+  },
+  "mazeTest": {
+   "requerida": false,
+   "passed": 51,
+   "total": 51,
+   "ok": true
+  },
+  "riverTest": {
+   "requerida": false,
+   "passed": 69,
+   "total": 69,
+   "ok": true
+  },
+  "musicaTest": {
+   "requerida": false,
+   "passed": 81,
+   "total": 81,
+   "ok": true
+  },
+  "climaTest": {
+   "requerida": false,
+   "passed": 31,
+   "total": 31,
+   "ok": true
+  },
+  "atardecerTest": {
+   "requerida": false,
+   "passed": 17,
+   "total": 17,
+   "ok": true
+  },
+  "flightTest": {
+   "requerida": false,
+   "passed": 57,
+   "total": 57,
+   "ok": true
+  },
+  "trenTest": {
+   "requerida": false,
+   "passed": 57,
+   "total": 57,
+   "ok": true
+  },
+  "mangaTest": {
+   "requerida": false,
+   "passed": 23,
+   "total": 23,
+   "ok": true
+  },
+  "lookTest": {
+   "requerida": false,
+   "passed": 44,
+   "total": 44,
+   "ok": true
+  },
+  "lugaresTest": {
+   "requerida": false,
+   "passed": 20,
+   "total": 20,
+   "ok": true
+  },
+  "descubrirTest": {
+   "requerida": false,
+   "passed": 14,
+   "total": 14,
+   "ok": true
+  },
+  "vivoTest": {
+   "requerida": false,
+   "passed": 62,
+   "total": 62,
+   "ok": true
+  },
+  "momentosTest": {
+   "requerida": false,
+   "passed": 20,
+   "total": 20,
+   "ok": true
+  },
+  "zonasTest": {
+   "requerida": false,
+   "passed": 1,
+   "total": 1,
+   "ok": true
+  },
+  "crecidaTest": {
+   "requerida": false,
+   "passed": 8,
+   "total": 8,
+   "ok": true
+  },
+  "donesTest": {
+   "requerida": false,
+   "passed": 46,
+   "total": 46,
+   "ok": true
+  },
+  "rarezaTest": {
+   "requerida": false,
+   "passed": 21,
+   "total": 21,
+   "ok": true
+  },
+  "gagsTest": {
+   "requerida": false,
+   "passed": 38,
+   "total": 38,
+   "ok": true
+  },
+  "ep2e2eTest": {
+   "requerida": false,
+   "passed": 71,
+   "total": 71,
+   "ok": true
+  },
+  "temporadaE2eTest": {
+   "requerida": false,
+   "passed": 31,
+   "total": 31,
+   "ok": true
+  },
+  "zonas56Test": {
+   "requerida": false,
+   "passed": 18,
+   "total": 19,
+   "ok": false
+  },
+  "ep3e2eTest": {
+   "requerida": false,
+   "passed": 21,
+   "total": 27,
+   "ok": false
+  },
+  "ep4e2eTest": {
+   "requerida": false,
+   "passed": 23,
+   "total": 29,
+   "ok": false
+  },
+  "ep5e2eTest": {
+   "requerida": false,
+   "passed": 27,
+   "total": 33,
+   "ok": false
+  },
+  "ep5e2eRealTest": {
+   "requerida": false,
+   "passed": 12,
+   "total": 15,
+   "ok": false
+  },
+  "ep6e2eTest": {
+   "requerida": false,
+   "passed": 44,
+   "total": 49,
+   "ok": false
+  },
+  "ep6e2eRealTest": {
+   "requerida": false,
+   "passed": 21,
+   "total": 23,
+   "ok": false
+  },
+  "temporadaRealTest": {
+   "requerida": false,
+   "passed": 5,
+   "total": 10,
+   "ok": false
   }
  },
  "consola": {
@@ -91,8 +493,26 @@
   "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 5.8,
- "heap_mb": 78.1,
+ "carga_inicial_mb": 9.12,
+ "heap_mb": 88.8,
  "fallas": [],
- "avisos": []
+ "avisos": [
+  "AV.bohiosTest (extra, no obligatoria) no pasa: 26/27",
+  "AV.contextTest (extra, no obligatoria) no pasa: 29/30",
+  "AV.streamingTest (extra, no obligatoria) no pasa: 22/23",
+  "AV.camaraTest (extra, no obligatoria) no pasa: 13/14",
+  "AV.accesibilidadTest (extra, no obligatoria) no pasa: 40/41",
+  "AV.bandadaTest (extra, no obligatoria) no pasa: 15/17",
+  "AV.idiomaTest (extra, no obligatoria) no pasa: 20/31",
+  "AV.zonas56Test (extra, no obligatoria) no pasa: 18/19",
+  "AV.ep3e2eTest (extra, no obligatoria) no pasa: 21/27",
+  "AV.ep4e2eTest (extra, no obligatoria) no pasa: 23/29",
+  "AV.ep5e2eTest (extra, no obligatoria) no pasa: 27/33",
+  "AV.ep5e2eRealTest (extra, no obligatoria) no pasa: 12/15",
+  "AV.ep6e2eTest (extra, no obligatoria) no pasa: 44/49",
+  "AV.ep6e2eRealTest (extra, no obligatoria) no pasa: 21/23",
+  "AV.temporadaRealTest (extra, no obligatoria) no pasa: 5/10",
+  "presupuesto: 168 draw calls en la vista de arranque (límite 150)",
+  "presupuesto: 496.9 MB de texturas en la vista de arranque (límite 300)"
+ ]
 }

@@ -786,19 +786,22 @@
         const l = document.createElement('link'); l.id = 'aula-css'; l.rel = 'stylesheet'; l.href = 'src/ui/aula.css';
         document.head.appendChild(l);
       }
-      function chipVuelo(modo) {
+      let modoChip = null;
+      function chipVuelo(modo) { modoChip = modo; pintarChip(); }
+      function pintarChip() {
         let el = document.getElementById('edu-vuelo');
         if (!el) {
           el = document.createElement('p'); el.id = 'edu-vuelo'; el.setAttribute('role', 'status');
           document.body.appendChild(el);
         }
-        if (!modo) { el.hidden = true; return; }
-        const en = AU.aj.idioma === 'en';
-        el.hidden = false; el.className = modo;
-        el.textContent = modo === 'rafaga'
+        if (!modoChip) { el.hidden = true; el.textContent = ''; el.lang = ''; return; }
+        const en = (AU.aj && AU.aj.idioma === 'en') || document.documentElement.lang === 'en';
+        el.hidden = false; el.className = modoChip; el.lang = en ? 'en' : 'es';
+        el.textContent = modoChip === 'rafaga'
           ? (en ? 'Gust: climb with the steam' : 'Ráfaga: remonta con el vapor')
           : (en ? 'Skim: stay low with the drop' : 'Rasante: baja con la gota');
       }
+      G.on('aula', k => { if (k === 'idioma') pintarChip(); });
 
       // ---------- Bucle de la misión ----------
       G.on('update', (dt, busy) => {
