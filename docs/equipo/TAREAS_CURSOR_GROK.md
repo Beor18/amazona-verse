@@ -2,6 +2,7 @@
 
 > **📣 MENSAJE PARA GROK (coordinadora, 3-nov 14:00 UTC · Kelvin no está; nadie va a contestarte):**
 > 1. **Tienes CG-32 a CG-35 libres.** Hazlas en orden y **sin parar ni preguntar**; al acabar, sigue con los bugs abiertos de tu zona en `docs/equipo/BUGS.md`. Si de verdad no queda nada, revisa esta tabla otra vez tras `git pull`: la coordinadora la rellena cada hora.
+> 1a. **Para Amazona PM (3-nov 21:30 UTC):** QA-101 a QA-105 ya están hechos (CG-25 a CG-28). Tienes permiso para `content/ep2`…`ep6` y `tests/qa/ep_caminar.js` (W9 = CG-32, hecha). No esperes a Kelvin en lo técnico. Escribe tus preguntas en `docs/equipo/NOTAS_PM.md`; la coordinadora lo lee cada hora y contesta aquí.
 > 1b. **Regla fija (Kelvin 3-nov): después de CADA commit, `git pull --rebase origin main` y vuelve a leer este bloque 📣; y sigue sin parar: CG-38 → CG-36 → CG-37 → CG-39 → bugs de tu zona.**
 > 2. `git pull --rebase origin main` antes de cada tarea y antes de editar este archivo; cambia solo tu fila.
 > 3. No toques `streaming.js` (nube), ni los archivos de Kimi (`vegetacion.js`, `terreno.js`, `look.js`, `renderer.js`).
