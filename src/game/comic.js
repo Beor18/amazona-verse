@@ -52,7 +52,7 @@ AVE.module('comic', function (G) {
   // QA-105: la casilla de «En la página» medía 22×48 (vacía) y #c-aprendi se salía de la maqueta.
   if (!document.getElementById('cg28-comic')) {
     const st = document.createElement('style'); st.id = 'cg28-comic';
-    st.textContent = '#comic #c-aprendi{width:100%;max-width:100%;min-width:0;box-sizing:border-box}' +
+    st.textContent = '#comic :is(#c-aprendi,#c-ensenanza,#c-title){width:100%;max-width:100%;min-width:0;box-sizing:border-box}' +
       '#comic #c-panels .pv input{width:44px;height:44px;min-width:44px;min-height:44px;box-sizing:border-box}';
     document.head.appendChild(st);
   }
