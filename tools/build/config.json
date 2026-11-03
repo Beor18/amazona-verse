@@ -61,7 +61,7 @@
       "ttf",
       "otf"
     ],
-    "conservar": [],
+    "conservar": ["assets/comic/plantilla/*"],
     "quitar": []
   },
   "texturas": {
