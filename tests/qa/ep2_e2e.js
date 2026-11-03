@@ -88,7 +88,9 @@
         // Un texto fijo del pack tal cual (también como chip «· …» o con su progreso «(1/3)») sigue en español aunque no lo parezca
         const base = t.replace(/^[·✓]\s*/, '').replace(/\s*\(\d+\/\d+\)$/, '').replace(/\s*\d+\/\d+$/, '');
         if (fijosES.has(base)) { faltanEN.add(t.slice(0, 200)); continue; }
-        if (!G.idioma.faltan([t]).length || MOTOR.has(t) || NOMBRE_NIDO.test(t)) continue;
+        // W8: sin el nombre del jugador (nombre propio, «Ceiba del Yunque» o ya traducido «Ceiba of El Yunque»)
+        const nom = G.S && G.S.profile && G.S.profile.name, sinNom = nom ? [nom, G.idioma.tr(nom)].reduce((u, x) => u.split(x).join(' '), t).trim() : t;
+        if (!G.idioma.faltan([t]).length || !/\p{L}{2}/u.test(sinNom) || !G.idioma.faltan([sinNom]).length || MOTOR.has(t) || NOMBRE_NIDO.test(t)) continue;
         // Ya en inglés (un valor del diccionario, o su final mientras el diálogo se escribe letra a letra) aunque diga «no» o «El Yunque»
         if (!valores) valores = Object.values(W.AV_EN || {});
         // QA-85 (W6): en el móvil el diálogo se ve a medio escribir: el principio de una línea inglesa («No…» de «Now…», «Las…» de «Last…»)
