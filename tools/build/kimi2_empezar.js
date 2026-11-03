@@ -25,7 +25,13 @@ const RONDAS = parseInt(arg('--rondas', '4'), 10);
 const PACK = arg('--pack', 'cap1');
 const CPU = parseFloat(arg('--cpu', '4'));
 const BATERIAS = process.argv.includes('--baterias');
+const CAPTURAS = process.argv.includes('--capturas');
+const EXTRA_URL = arg('--extra-url', '');
+const VISTAS = arg('--vistas', '');   // "x,z,yaw;x,z,yaw" (yaw en radianes; vacío = solo la vista de aparición)
+const PREFIJO = arg('--prefijo', PACK);
+const DIR_CAPTURAS = arg('--dir', path.join(RAIZ, 'docs', 'img', 'kimi014'));
 const LISTA_BATERIAS = ['selfTest', 'missionTest', 'accessoryTest', 'templateTest', 'eduTest', 'maestroTest', 'criaderoTest', 'movementTest', 'saveTest', 'comicTest', 'e2eTest', 'lookCapitulosTest'];
+const SOLO = arg('--solo', '');
 const ANCHO = parseInt(arg('--ancho', '375'), 10), ALTO = parseInt(arg('--alto', '812'), 10), DPR = parseFloat(arg('--dpr', '3'));
 const SALIDA = arg('--salida', path.join(AQUI, 'salida', 'kimi2-empezar'));
 const PERFIL = process.argv.includes('--perfil');
@@ -35,13 +41,19 @@ fs.mkdirSync(SALIDA, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 
 function servir() {
+  const QA_TAG = '<script src="tests/qa/qa.js" charset="utf-8"></script>';
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
+    const qa = /[?&]qa=1(?:&|$)/.test(req.url);
     if (p.endsWith('/')) p += 'index.html';
     const f = path.join(RAIZ, p);
     if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('404'); }
+      if (qa && /index\.html$/.test(f)) {
+        const html = d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + QA_TAG);
+        d = Buffer.from(html, 'utf8');
+      }
       res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(d);
     });
@@ -186,13 +198,14 @@ async function lanzarChrome() {
     // Jugador nuevo como test.sh: portada → Jugar → creador → Empezar
     console.log('· jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
     const informe = {};
-    for (const b of LISTA_BATERIAS) {
+    for (const b of (SOLO ? SOLO.split(',') : LISTA_BATERIAS)) {
       const t0 = Date.now();
       try {
-        const r = await evaluar(cdp, ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && r.passed, t: r && r.total, mal: ((r && r.results) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => x.name).slice(0, 4) }); })()`, 900);
+        const r = await evaluar(cdp, ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && (r.passed != null ? r.passed : r.pasan != null ? r.pasan : r.ok), t: r && r.total, ok: r && r.ok, mal: ((r && r.results) || (r && r.checks) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => (x.name || '?') + (x.extra ? ' — ' + String(x.extra).slice(0, 220) : '')).slice(0, 4) }); })()`, 900);
         const j = JSON.parse(r);
         informe[b] = j;
-        console.log(`  · ${b}: ${j.p}/${j.t}${j.mal && j.mal.length ? ' · falla: ' + j.mal.join(' | ') : ''} (${Math.round((Date.now() - t0) / 1000)} s)`);
+        const falla = (j.t != null && j.p != null && j.p !== j.t) || j.ok === false || (j.mal && j.mal.length);
+        console.log(`  · ${b}: ${j.p}/${j.t}${j.mal && j.mal.length ? ' · falla: ' + j.mal.join(' | ') : ''}${falla ? ' <<<' : ''} (${Math.round((Date.now() - t0) / 1000)} s)`);
       } catch (e) { informe[b] = { error: e.message.slice(0, 200) }; console.log(`  · ${b}: ERROR ${e.message.slice(0, 160)}`); }
     }
     const errs = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
@@ -201,6 +214,36 @@ async function lanzarChrome() {
     try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
     srv.close();
     console.log('· informe en ' + path.join(SALIDA, 'baterias.json'));
+    process.exit(0);
+    return;
+  }
+
+  if (CAPTURAS) {
+    // Ronda visual: jugador nuevo en el pack pedido, teletransporte por vistas, captura PNG en DIR_CAPTURAS
+    fs.mkdirSync(DIR_CAPTURAS, { recursive: true });
+    const { tid, ses } = await nuevaPestana(false);
+    await cdp.call('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: DPR, mobile: false }, ses);
+    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1&pack=${PACK}${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ses);
+    if (!(await esperarListo(ses))) { console.log('· el juego no arrancó'); process.exit(1); }
+    console.log('· jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
+    await cdp.bombear(2500);
+    const vistas = VISTAS ? VISTAS.split(';').map(v => v.split(',').map(Number)) : [[null, null, null]];
+    let i = 0;
+    for (const [x, z, yaw] of vistas) {
+      if (x != null) await evaluar(cdp, ses, `(AV.teleport(${x}, ${z}), AV.debug.camYaw(${yaw || 0}), 'ok')`, 15, false);
+      await cdp.bombear(2800); // streaming y precalentado se asientan
+      const img = await cdp.call('Page.captureScreenshot', { format: 'png' }, ses, 60);
+      const ruta = path.join(DIR_CAPTURAS, `${PREFIJO}_${String(i).padStart(2, '0')}.png`);
+      fs.writeFileSync(ruta, Buffer.from(img.data, 'base64'));
+      const stats = JSON.parse(await evaluar(cdp, ses, "JSON.stringify(AV.G.renderer.stats())", 10, false));
+      console.log(`  · vista ${i} (${x == null ? 'aparición' : x + ',' + z + ' yaw ' + yaw}): ${stats.fps} FPS · ${stats.calls} calls · ${Math.round(stats.triangulos / 1000)} k tris · ${stats.calidad} → ${ruta}`);
+      i++;
+    }
+    const errs = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
+    console.log('· errores de consola: ' + errs);
+    try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
+    srv.close();
+    process.exit(0);
     return;
   }
 
