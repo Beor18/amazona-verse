@@ -765,7 +765,7 @@
           Gu('(Se quita la medalla.) Es igual a una de las piezas. Cada vez que la tocaba, me volvía un recuerdo.'), // Kelvin 2-nov: la medalla se gana
           Gu('Ya no me hace falta: ahora recordamos entre todos. Es tuya, mija. Te la ganaste juntando a los que quedan.'),
           Vi('Guardiana del Pacto… Está bien. Pero lo cuidamos entre todos.'),
-        ], terminar);
+        ], terminar, { caja: true });
       }
       function terminar() {
         if (S.complete) return;
@@ -775,7 +775,7 @@
         G.dialogo.say([Lu('De noche, desde el mirador, contamos los asientos que esperan. De la niebla no responde ninguna luz nueva.'),
           di('Voces', 'Hablamos desde ahora porque alguien nos sigue nombrando. Algún día sabrán quién.'),
           Gu('Las islas olvidadas no oyen el relevo.'), Vi('(Saca el cuaderno y, por primera vez, no dibuja un plan para ella sola: escribe una columna de nombres.)'),
-          Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd());
+          Lu('¿Y eso?'), Vi('La tripulación.')].concat(L('evento:Chapter6Completed')), () => G.misiones.showEnd(), { caja: true });
       }
       // La medalla del Guardián en el Cuaderno (Kelvin 2-nov): sección propia del Diario, solo cuando ya se la dio (S.collected 'medalla')
       const seccionMedalla = { id: 'medalla', html: () => (tiene('medalla') ? '<span class="lbl">La medalla del Guardián</span><ul class="diary"><li class="found"><span class="ico pacto" aria-hidden="true"></span><div><b>La medalla del Guardián</b><small>Me la dio el Guardián al renovar el pacto. Es igual a una de las piezas del emblema de los 36.</small></div></li></ul>' : '') };
