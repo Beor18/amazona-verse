@@ -891,6 +891,7 @@
       check('Si el docente cancela la descarga se avisa', /cancel/i.test($('m-estado').textContent), $('m-estado').textContent);
       ponerClaude({ use: async () => null });
       $('m-csv').click(); await espera(150);
+      for (let k = 0; k < 30 && /Preparando|Preparing/.test($('m-estado').textContent); k++) await espera(100); // el portapapeles tarda en Chrome sin pantalla
       check('Sin descargas: copia al portapapeles o deja el texto listo para copiar', /portapapeles|clipboard/.test($('m-estado').textContent) || (!$('m-manual').hidden && $('m-manual').value.includes('estacion')), $('m-estado').textContent);
       const csv = AU.reporteCSV();
       check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
