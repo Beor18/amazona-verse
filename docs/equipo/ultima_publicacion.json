@@ -1,14 +1,14 @@
 {
- "codigo": "3c02050826c25e11dc846b32e1893ef99ba4c131",
+ "codigo": "a2aac054580c8bd0e50b1ca8fcef7af610bfb328",
  "sitio": null,
- "fecha": "2026-11-02T22:17:37Z",
+ "fecha": "2026-11-03T09:32:45Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-02T22:08:37+00:00",
-  "duracion_s": 515.2,
+  "inicio": "2026-11-03T09:16:35+00:00",
+  "duracion_s": 912.9,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "6fa97d6337973eb692a232c1db9d0a224533d8f2d550f39a0a63778674c0b79f",
+  "huella_build": "ae7c686e901f5165f9cc3bc49e3d17aa5f191a2d24bdc55a11ac3917f06a9850",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -69,14 +69,14 @@
   },
   "comicTest": {
    "requerida": true,
-   "passed": 32,
-   "total": 32,
+   "passed": 62,
+   "total": 62,
    "ok": true
   },
   "e2eTest": {
    "requerida": true,
-   "passed": 47,
-   "total": 47,
+   "passed": 48,
+   "total": 48,
    "ok": true
   },
   "lookCapitulosTest": {
@@ -91,8 +91,8 @@
   "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 9.1,
- "heap_mb": 87.5,
+ "carga_inicial_mb": 5.8,
+ "heap_mb": 78.1,
  "fallas": [],
  "avisos": []
 }

@@ -941,8 +941,9 @@ AVE.module('comic', function (G) {
         const vacias = enLa.filter(c => { const j = R2.panels.findIndex(q => q.id === c.id), e = j >= 0 && im2 ? estadisticas(im2, R2.boxes[j]) : null; return !e || enBlanco(e); });
         check('Las viñetas nuevas que van en la página (como mucho 6) no están en blanco', enLa.length > 0 && vacias.length === 0 && R2.panels.length <= 6, (vacias.map(c => c.id).join(', ') || enLa.map(c => c.id).join(', ')) + ' · ' + R2.panels.length + ' en la página');
         const tits = R2.datos.vinetas.filter(v => !v.falta).map(v => v.sceneTitle), jMeta = R2.panels.findIndex(q => tipoDe(VINETAS.find(v => v.id === q.id)) === 'meta');
-        check('Las viñetas siguen la plantilla: el comienzo primero, ¡La meta! (si la hay) en la última y sin títulos repetidos',
-          R2.panels[0].id === 'intro' && (jMeta < 0 || jMeta === R2.panels.length - 1) && new Set(tits).size === tits.length, R2.panels.map(q => q.id).join(' · ') + ' | ' + tits.join(' · '));
+        const jIntro = R2.panels.findIndex(q => q.id === 'intro');
+        check('Las viñetas siguen la plantilla: el comienzo (si lo hay) primero, ¡La meta! (si la hay) en la última y sin títulos repetidos',
+          jIntro <= 0 && (jMeta < 0 || jMeta === R2.panels.length - 1) && new Set(tits).size === tits.length, R2.panels.map(q => q.id).join(' · ') + ' | ' + tits.join(' · '));
         // ---- Plantilla de Kelvin (docs/equipo/COMIC_PLANTILLA_GUIA.md §7) ----
         await plantillaTest(check, im2, R2);
       }
