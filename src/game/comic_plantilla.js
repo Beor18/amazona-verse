@@ -78,8 +78,10 @@ AVE.module('comicPlantilla', function (G) {
         posarBalanceo: t >= 1.2 ? bal : 0, wingMode: t >= 1.2 && tt < 0.5 ? 'posar' : 'idle', groundY: 1.2, groundAt: () => 1.2, expression: 'happy' });
       return { y: 1.2, perchY: 1.2, pitch: 0.16 * bal };
     } },
-    nadar: { t: 1.757, yaw: -0.9, cam: { az: 0.1, el: 0.3 }, prop: 'agua', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, swimming: true, diving: false, speed: 4.5, gait: 2, swimRate: 1.3, wingMode: 'swim', expression: 'happy' }); return { y: -0.22, pitch: 1.2, roll: 0 }; } },
-    celebrar: { t: 0.9, yaw: -0.45, cam: { az: 0, el: 0.08 }, clip: 'Celebrate', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, speed: 0, gait: 0, wingMode: 'idle', expression: 'happy', groundY: 0, groundAt: () => 0 }); return { y: 0 }; } },
+    // nadar: un poco más alta y el agua más clara que en la hoja, para que se vea la cotorra dentro del círculo
+    nadar: { t: 1.757, yaw: -0.9, cam: { az: 0.1, el: 0.3 }, prop: 'agua', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, swimming: true, diving: false, speed: 4.5, gait: 2, swimRate: 1.3, wingMode: 'swim', expression: 'happy' }); return { y: -0.1, pitch: 1.2, roll: 0 }; } },
+    // celebrar: el cuadro de Celebrate con las alas arriba en V (t 0,45); el de la hoja (0,9) tiene las alas en cruz y parece la pose T
+    celebrar: { t: 0.45, yaw: -0.45, cam: { az: 0, el: 0.08 }, clip: 'Celebrate', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, speed: 0, gait: 0, wingMode: 'idle', expression: 'happy', groundY: 0, groundAt: () => 0 }); return { y: 0 }; } },
   };
   let rig = null, rigProm = null;
   const cachePoses = new Map(); // clave look+pose+px → { canvas, bbox }
@@ -97,10 +99,9 @@ AVE.module('comicPlantilla', function (G) {
       const camera = new THREE.PerspectiveCamera(24, 1, 0.01, 100);
       const rama = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.085, 3.2, 20), new THREE.MeshStandardMaterial({ color: '#7a5233', roughness: 0.85 }));
       rama.visible = false; scene.add(rama);
-      const agua = new THREE.Mesh(new THREE.CircleGeometry(2.2, 64), new THREE.MeshStandardMaterial({ color: '#2fa7c9', roughness: 0.25, metalness: 0.05, transparent: true, opacity: 0.82 }));
+      const agua = new THREE.Mesh(new THREE.CircleGeometry(2.2, 64), new THREE.MeshStandardMaterial({ color: '#2fa7c9', roughness: 0.25, metalness: 0.05, transparent: true, opacity: 0.55, depthWrite: false }));
       agua.rotation.x = -Math.PI / 2; agua.visible = false; scene.add(agua);
-      const ch = await window.AVCharacter.create(); scene.add(ch.root);
-      rig = { canvas, renderer, scene, camera, key, fill, rim, hemi, rama, agua, ch };
+      rig = { canvas, renderer, scene, camera, key, fill, rim, hemi, rama, agua, ch: null };
       return rig;
     })();
     try { return await rigProm; } finally { rigProm = null; }
@@ -129,7 +130,10 @@ AVE.module('comicPlantilla', function (G) {
       try {
         const nl = window.AVCharacter.normalizeLook(look || G.creador.profileLook(G.S.profile));
         await window.AVCharacter.renderPortrait(nl, 64); // precarga la ropa de Blender de ese look (como el retrato)
-        const R = await rigPoses(), ch = R.ch, o = POSES[id];
+        // Una cotorra nueva por pose, como tools/poses: la animación procedural (fase del aleteo, suavizados) no arrastra la pose anterior
+        const R = await rigPoses(), o = POSES[id];
+        if (R.ch) R.scene.remove(R.ch.root);
+        const ch = R.ch = await window.AVCharacter.create(); R.scene.add(ch.root);
         ch.applyLook(nl);
         if (window.AVE && window.AVE.pieles) await window.AVE.pieles.listo(ch);
         const S = 1.75 / ch.height; ch.root.scale.setScalar(S);
@@ -444,6 +448,61 @@ AVE.module('comicPlantilla', function (G) {
     g.addColorStop(0, c0); g.addColorStop(0.8, c1); g.addColorStop(1, c1);
     x.save(); rr(x, X, Y, w, h, Math.min(16, h / 2)); x.fillStyle = g; x.shadowColor = c1; x.shadowBlur = 8; x.fill(); x.restore();
   }
+  // Textos de las piezas raster en inglés (cabecera, pasos y botones). Se tapa el texto en español estirando una columna limpia
+  // de la misma pieza (conserva el degradado del botón y la veta de la madera) y se escribe encima con el mismo estilo.
+  // Medidas en píxeles de cada pieza (assets/comic/plantilla/capas/*.webp, dibujadas a su tamaño en la referencia).
+  const EN_PIEZAS = {
+    // tapar: { r: [x0, y0, x1, y1], cl, cr: columnas limpias a la izquierda y a la derecha del texto (se funden de una a otra), clip?: polígono }
+    cabecera: { tapar: [
+      { r: [25, 12, 287, 64], cl: 29, cr: 282, clip: [[25, 22], [287, 13], [287, 60], [25, 64]] },
+      { r: [25, 59, 334, 89], cl: 28, cr: 330, clip: [[25, 63], [334, 59], [334, 81], [25, 88]] }], textos: [
+      { t: 'CREATE YOUR COMIC', cx: 155, cy: 41, w: 252, s: 38, peso: 700, rot: -0.035, grueso: 1.3 },
+      { t: 'Tell your adventure in your own words', cx: 178, cy: 73, w: 288, s: 15.5, peso: 700, rot: -0.03, grueso: 0.3 }] },
+    pasos: { tapar: [{ r: [12, 50, 358, 87], cl: 94, cr: 268 }], textos: [
+      { t: 'Write', cx: 50, cy: 61, w: 80, s: 14, peso: 700, color: '#fff' }, { t: 'your story', cx: 50, cy: 77, w: 84, s: 12.5, peso: 500, color: '#fff' },
+      { t: 'Choose', cx: 141, cy: 61, w: 80, s: 14, peso: 700, color: '#fff' }, { t: 'your scenes', cx: 141, cy: 77, w: 84, s: 12.5, peso: 500, color: '#fff' },
+      { t: 'Design', cx: 229, cy: 61, w: 80, s: 14, peso: 700, color: '#fff' }, { t: 'your comic', cx: 229, cy: 77, w: 84, s: 12.5, peso: 500, color: '#fff' },
+      { t: 'Download', cx: 318, cy: 61, w: 80, s: 14, peso: 700, color: '#fff' }, { t: '& share', cx: 318, cy: 77, w: 84, s: 12.5, peso: 500, color: '#fff' }] },
+    boton_escenas: { tapar: [{ r: [73, 15, 240, 67], cl: 74, cr: 236 }], textos: [{ t: 'SEE MY SCENES', cx: 156, cy: 41, w: 152, s: 21, peso: 700, color: '#fff', borde: '#0b3d8f' }] },
+    boton_editar: { tapar: [{ r: [72, 14, 239, 66], cl: 73, cr: 235 }], textos: [{ t: 'EDIT MY COMIC', cx: 154, cy: 40, w: 150, s: 21, peso: 700, color: '#fff', borde: '#0b3d8f' }] },
+    boton_descargar: { tapar: [{ r: [78, 14, 209, 72], cl: 79, cr: 204 }], textos: [{ t: 'DOWNLOAD', cx: 142, cy: 30, w: 116, s: 19, peso: 700, color: '#fff', borde: '#0d5a1c' },
+      { t: 'PNG / PDF', cx: 142, cy: 54, w: 116, s: 19, peso: 700, color: '#fff', borde: '#0d5a1c' }] },
+    boton_compartir: { tapar: [{ r: [73, 12, 214, 68], cl: 74, cr: 209 }], textos: [{ t: 'SHARE', cx: 143, cy: 29, w: 124, s: 21, peso: 700, color: '#fff', borde: '#3e1a7a' },
+      { t: '(with permission)', cx: 143, cy: 52, w: 126, s: 15, peso: 700, color: '#fff', borde: '#3e1a7a' }] },
+  };
+  // Parche de una pieza: la columna cl estirada a lo ancho, fundida hacia la columna cr (sin costuras con el degradado de la pieza)
+  function parchePieza(im, t) {
+    const [x0, y0, x1, y1] = t.r, w = x1 - x0, h = y1 - y0;
+    const a = document.createElement('canvas'); a.width = w; a.height = h;
+    const ax = a.getContext('2d'); ax.drawImage(im, t.cl, y0, 1, h, 0, 0, w, h);
+    const b = document.createElement('canvas'); b.width = w; b.height = h;
+    const bx = b.getContext('2d'); bx.drawImage(im, t.cr, y0, 1, h, 0, 0, w, h);
+    const g = bx.createLinearGradient(0, 0, w, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)');
+    bx.globalCompositeOperation = 'destination-in'; bx.fillStyle = g; bx.fillRect(0, 0, w, h);
+    ax.drawImage(b, 0, 0);
+    return a;
+  }
+  function textosEN(x, C) {
+    for (const k of Object.keys(EN_PIEZAS)) {
+      const im = C[k], p = CAPAS[k], e = EN_PIEZAS[k]; if (!im) continue;
+      const sx = p[2] / (im.width || im.naturalWidth || p[2]), sy = p[3] / (im.height || im.naturalHeight || p[3]);
+      x.save(); x.translate(p[0], p[1]); x.scale(sx, sy);
+      for (const t of e.tapar) {
+        x.save();
+        if (t.clip) { x.beginPath(); t.clip.forEach(([X, Y], n) => (n ? x.lineTo(X, Y) : x.moveTo(X, Y))); x.closePath(); x.clip(); }
+        x.drawImage(parchePieza(im, t), t.r[0], t.r[1]); x.restore();
+      }
+      for (const o of e.textos) {
+        let f = o.s; x.font = `${o.peso} ${f}px ${FD}`; while (x.measureText(o.t).width > o.w && f > 8) { f -= 0.5; x.font = `${o.peso} ${f}px ${FD}`; }
+        x.save(); x.translate(o.cx, o.cy); if (o.rot) x.rotate(o.rot);
+        x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
+        if (o.borde) { x.lineWidth = 3; x.strokeStyle = o.borde; x.strokeText(o.t, 0, 1); }
+        if (o.grueso) { x.lineWidth = o.grueso; x.strokeStyle = o.color || INK; x.strokeText(o.t, 0, 0); } // más negra, como la letra de la pieza
+        x.fillStyle = o.color || INK; x.fillText(o.t, 0, 0); x.restore();
+      }
+      x.restore();
+    }
+  }
   // Borde blanco de pegatina alrededor de una pose (personaje central)
   function pegatina(x, p, X, Y, w, h) {
     const b = p.bbox, s = Math.min(w / b.w, h / b.h), dw = b.w * s, dh = b.h * s, ox = X + (w - dw) / 2, oy = Y + h - dh;
@@ -553,10 +612,11 @@ AVE.module('comicPlantilla', function (G) {
     const ctr = pegatina(x, centro, CENTRO.x, CENTRO.y, CENTRO.w, CENTRO.h); // encima de los marcos, como la silueta de la referencia
     const botones = [];
     if (d.botones !== false) for (const [id, k] of BOTONES) { if (pieza(k)) { const p = CAPAS[k]; botones.push({ id, x: p[0] * K, y: p[1] * K, w: p[2] * K, h: p[3] * K }); } }
+    if (en()) textosEN(x, d.botones !== false ? C : Object.assign({}, C, { boton_escenas: null, boton_editar: null, boton_descargar: null, boton_compartir: null }));
     x.setTransform(1, 0, 0, 1, 0, 0);
     return { vinetas: info, centro: { x: ctr.x * K, y: ctr.y * K, w: ctr.w * K, h: ctr.h * K, real: !!centro.real }, botones, logo: !!C.logo };
   }
   function botones() { return BOTONES.map(([id, k]) => { const p = CAPAS[k]; return { id, x: p[0] * K, y: p[1] * K, w: p[2] * K, h: p[3] * K }; }); }
 
-  return { PAGINA, REF, K, SLOTS, LOGO, LOGO_SHA256, POSES, CAPAS, componer, pose, botones, limpiarCache, cargarCapas };
+  return { PAGINA, REF, K, SLOTS, LOGO, LOGO_SHA256, POSES, CAPAS, EN_PIEZAS, textosEN, componer, pose, botones, limpiarCache, cargarCapas };
 });

@@ -184,7 +184,7 @@
         ],
       },
       vinetas: [
-        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', tipo: 'comienzo', pose: 'despegue', dialogo: S => `¡Hola! Me llamo ${S.profile.name}.`, texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.`,
+        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', tipo: 'comienzo', pose: 'crucero', dialogo: S => `¡Hola! Me llamo ${S.profile.name}.`, texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.`,
           opciones: ['Hoy empezó mi aventura en Villa Raíz.', 'Me convertí en aprendiz de Vittata.', 'Con mi pañuelo listo, salí a ayudar.'] },
         { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', tipo: 'hallazgo', pose: 'posarse', pensamiento: '¿Qué le pasó a mi taller?', efecto: 'confusion', texto: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.',
           opciones: ['El taller quedó hecho pedazos, pero no nos rendimos.', 'Entre los restos encontramos piezas útiles.', 'Vittata me enseñó a ver posibilidades.'] },
@@ -193,7 +193,7 @@
           if (S.builds.includes('A') && S.refuge && S.refuge.parcel === 'B') return 'Mi primera idea no era segura. Aprendí a observar mejor el terreno y encontré una solución.';
           return 'Construimos junto al río y la crecida dañó el refugio. Aprendí que construir rápido no siempre es construir bien.';
         }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
-        { id: 'final', img: 'final', needs: 'ChapterCompleted', tipo: 'meta', pose: 'celebrar', dialogo: '¡Construiremos un bote!', efecto: 'bandera', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
+        { id: 'final', img: 'final', needs: 'ChapterCompleted', encuadre: 'posada', tipo: 'meta', pose: 'celebrar', dialogo: '¡Construiremos un bote!', efecto: 'bandera', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
           opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
         // El chapuzón y el aterrizaje se fotografían con Vittata a la vista (encuadre 'posada' de comic.js: un ángulo libre a 3 m),
         // no con la cámara del juego, que en el agua solo ve agua.

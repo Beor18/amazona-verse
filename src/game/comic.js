@@ -67,21 +67,37 @@ AVE.module('comic', function (G) {
   // Encuadre de una posada (QA-32): la foto con la cámara del juego puede quedar tapada por un tronco. Se busca un punto de
   // cámara cerca de Vittata desde el que ningún sólido (tronco, pared, roca: G.solidos) tape su cabeza, se fotografía con la
   // cámara del juego y se devuelve la cámara a su sitio. null si no hay ángulo libre o no hay lienzo.
+  let ultimaPosada = null; // punto de cámara de la última foto (para la prueba)
   function fotoPosada() {
     const R = G.renderer, cam = R.camera, SO = G.solidos;
     if (!lienzoListo() || !cam || !R.drawScene || !window.THREE) return null;
-    const cab = new THREE.Vector3(S.pos.x, S.pos.y + 1.1, S.pos.z);
+    // Nadando (chapuzón), S.pos queda bajo la superficie: se mira la cabeza, que asoma del agua, y la cámara va por encima del
+    // agua (antes la foto salía desde debajo del agua: arena del fondo y sin la cotorra)
+    const nivel = (x, z) => (G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity);
+    const wY = nivel(S.pos.x, S.pos.z), nadando = wY > S.pos.y + 0.2;
+    const cab = new THREE.Vector3(S.pos.x, nadando ? wY + 0.35 : S.pos.y + 1.1, S.pos.z);
+    const y0 = nadando ? wY : S.pos.y, alturas = nadando ? [[3.0, 1.2], [3.6, 0.7], [2.6, 2.0], [4.2, 1.6]] : [[3.0, 0.5], [3.8, -0.3], [2.6, -1.0], [3.2, -1.8]];
     const base = Math.atan2(cam.position.x - S.pos.x, cam.position.z - S.pos.z);
     const libre = q => {
       if (q.y < G.terreno.height(q.x, q.z) + 0.3) return false;
+      if (q.y < nivel(q.x, q.z) + 0.35) return false; // nunca desde dentro del agua
       if (G.camara.copaLibre && !G.camara.copaLibre(q, cab)) return false; // ni dentro de una copa ni con hojas delante
-      if (!SO || !SO.activo || !SO.dentro) return true;
-      for (let i = 0; i <= 11; i++) { const t = i / 14; if (SO.dentro(q.x + (cab.x - q.x) * t, q.z + (cab.z - q.z) * t, q.y + (cab.y - q.y) * t) > -Infinity) return false; }
+      // Vista libre, no solo la cabeza: rayos a la cabeza y a puntos a los lados y encima (media foto), sin sólidos ni ladera
+      // delante (QA: una roca tapaba media viñeta de la meta aunque la cotorra se viera)
+      const dx = cab.x - q.x, dz = cab.z - q.z, l = Math.hypot(dx, dz) || 1, lx = -dz / l, lz = dx / l;
+      for (const [o, u] of [[0, 0], [1.6, 0.3], [-1.6, 0.3], [0, 1.3]]) {
+        const tx = cab.x + lx * o, ty = cab.y + u, tz = cab.z + lz * o;
+        for (let i = 1; i <= 11; i++) {
+          const t = i / 14, px = q.x + (tx - q.x) * t, py = q.y + (ty - q.y) * t, pz = q.z + (tz - q.z) * t;
+          if (G.terreno.height(px, pz) > py) return false;
+          if (SO && SO.activo && SO.dentro && SO.dentro(px, pz, py) > -Infinity) return false;
+        }
+      }
       return true;
     };
-    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of [[3.0, 0.5], [3.8, -0.3], [2.6, -1.0], [3.2, -1.8]]) {
-      const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, S.pos.y + dy, S.pos.z + Math.cos(a) * dist);
-      if (libre(q)) return fotoDesde(q, cab);
+    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of alturas) {
+      const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, y0 + dy, S.pos.z + Math.cos(a) * dist);
+      if (libre(q)) { ultimaPosada = { q: q.clone(), agua: nivel(q.x, q.z) }; return fotoDesde(q, cab); }
     }
     return null;
   }
@@ -253,8 +269,19 @@ AVE.module('comic', function (G) {
     }).sort((a, b) => a.seq - b.seq || a.k - b.k);
   }
   const tituloValido = t => (TITULOS.includes(t) ? t : TITULOS[0]);
+  // Orden de la plantilla de Kelvin (sin orden propio del niño): EL COMIENZO, EL HALLAZGO, EL DESAFÍO/¡CHAPUZÓN!/…, LA SOLUCIÓN,
+  // EL REGRESO/…, ¡LA META! (siempre la última). Cada hueco lo toma el primer evento de su tipo; los repetidos (un segundo hallazgo)
+  // y los que no tienen hueco propio llenan los libres (antes el 5.º) o van antes de la meta.
+  const HUECO = { comienzo: 0, hallazgo: 1, solucion: 3, regreso: 4, record: 4, vida: 4, meta: 5 };
+  function ordenPlantilla(panels) {
+    const hu = [null, null, null, null, null, null], resto = [];
+    for (const p of panels) { const h = HUECO[tipoDe(VINETAS.find(v => v.id === p.id))]; const k = h == null ? 2 : h; if (!hu[k]) hu[k] = p; else resto.push(p); }
+    for (const k of [4, 2, 1, 3, 0]) if (!hu[k] && resto.length) hu[k] = resto.shift();
+    return hu.slice(0, 5).filter(Boolean).concat(resto, hu[5] ? [hu[5]] : []);
+  }
   function orderedPanels() {
     const panels = comicPanels();
+    if (!S.comic.order.length) return ordenPlantilla(panels);
     const order = S.comic.order.filter(i => i < panels.length);
     for (let i = 0; i < panels.length; i++) if (!order.includes(i)) order.push(i);
     return order.map(i => panels[i]);
@@ -453,8 +480,10 @@ AVE.module('comic', function (G) {
   const T = t => (G.idioma && G.idioma.tr ? G.idioma.tr(t) : t);
   const TIT_DEF = { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!', vida: '¡Nueva vida!',
     record: '¡Nuevo récord!', chapuzon: '¡Chapuzón!', risa: '¡Qué risa!', pose: '¡Mi mejor pose!', amigos: 'Nuevos amigos', altura: '¡Desde lo alto!' };
+  const TIT_ALT = { hallazgo: '¡Una sorpresa!', desafio: '¡Otro reto!', solucion: '¡Otra idea!', amigos: '¡Más amigos!', risa: '¡Otra risa!', altura: '¡Más alto!',
+    vida: '¡Qué alegría!', record: '¡Otro récord!', pose: '¡Otra pose!', chapuzon: '¡Otro chapuzón!', comienzo: 'Y después…', regreso: 'Y después…', meta: 'Y después…' };
   // Pose de acción por tipo de evento (guía: vuelo o récord → crucero/impulso; llegada → aterrizaje; descubrimiento → posarse; final → celebrar; chapuzón → nadar)
-  const POSE_DE = { comienzo: 'despegue', hallazgo: 'posarse', desafio: 'aterrizaje', solucion: 'aterrizaje', regreso: 'crucero', meta: 'celebrar', vida: 'celebrar',
+  const POSE_DE = { comienzo: 'crucero', hallazgo: 'posarse', desafio: 'aterrizaje', solucion: 'aterrizaje', regreso: 'crucero', meta: 'celebrar', vida: 'celebrar',
     record: 'impulso', chapuzon: 'nadar', risa: 'celebrar', pose: 'celebrar', amigos: 'posarse', altura: 'aterrizaje' };
   const TIPO_EV = { LocationDiscovered: 'hallazgo', CharacterMet: 'amigos', SkillMoment: 'desafio', RecordAchieved: 'record', PhotoTaken: 'pose', CompanionMoment: 'risa' };
   function tipoDe(def) {
@@ -487,7 +516,9 @@ AVE.module('comic', function (G) {
     const panels = enPagina();
     const imgs = {};
     for (const k of new Set(panels.map(p => p.img).filter(k => k && k !== 'portrait'))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]).catch(() => null) : null;
-    const vinetas = [];
+    const vinetas = [], usados = new Set();
+    // Un título de escena no se repite en la página: el segundo del mismo tipo usa el alternativo (pack plantilla.titulosAlt)
+    const titulo = tipo => { let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || ''; if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || 'Y después…'; usados.add(t); return T(t); };
     for (let i = 0; i < MAXV; i++) {
       const p = panels[i];
       if (!p) { vinetas.push({ id: null, falta: true, look: null, pose: 'celebrar' }); continue; }
@@ -496,7 +527,7 @@ AVE.module('comic', function (G) {
       const img = p.img && p.img !== 'portrait' ? imgs[p.img] : null;
       vinetas.push({ id: p.id, eventId: p.needs, timestamp: ev ? ev.t : null, sceneImage: img || null,
         escena: !img && p.ilustracion ? (x, X, Y, w, h) => ilustrar(x, p.ilustracion, X, Y, w, h) : null,
-        sceneTitle: T((PL.titulos || {})[tipo] || TIT_DEF[tipo] || ''), dialogueText: gl ? T(gl) : '', dialogueType: def.pensamiento ? 'pensamiento' : 'dialogo',
+        sceneTitle: titulo(tipo), dialogueText: gl ? T(gl) : '', dialogueType: def.pensamiento ? 'pensamiento' : 'dialogo',
         captionText: T(p.text), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
     }
     return { panels, datos: { chapterId: C.capitulo || null, titulo: T(tituloValido(S.comic.title)), nombre: S.profile.name, look: lookActual(), retrato: await retratoDe(null, 256),
@@ -892,6 +923,11 @@ AVE.module('comic', function (G) {
         const solBk = G.solidos;
         try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
         finally { G.solidos = solBk; }
+        const aguaBk = G.agua.levelAt;
+        try { // nadando: la superficie queda por encima de S.pos; la cámara no puede quedar bajo el agua
+          G.agua.levelAt = () => S.pos.y + 0.8; ultimaPosada = null; const f = fotoPosada();
+          check('Chapuzón: la foto se toma desde encima del agua (no desde el fondo)', f === null || (ultimaPosada && ultimaPosada.q.y >= S.pos.y + 0.8 + 0.35), ultimaPosada ? ultimaPosada.q.y.toFixed(2) + ' / agua ' + (S.pos.y + 0.8).toFixed(2) : 'sin ángulo libre');
+        } finally { G.agua.levelAt = aguaBk; }
         const copaBk = G.camara.copaLibre;
         try { G.camara.copaLibre = () => false; check('Posada dentro de una copa (hojas en todos los ángulos): sin foto, la rama usa su ilustración (QA-32)', fotoPosada() === null); }
         finally { G.camara.copaLibre = copaBk; }
@@ -904,7 +940,9 @@ AVE.module('comic', function (G) {
         const enLa = casos.filter(c => R2.panels.some(q => q.id === c.id));
         const vacias = enLa.filter(c => { const j = R2.panels.findIndex(q => q.id === c.id), e = j >= 0 && im2 ? estadisticas(im2, R2.boxes[j]) : null; return !e || enBlanco(e); });
         check('Las viñetas nuevas que van en la página (como mucho 6) no están en blanco', enLa.length > 0 && vacias.length === 0 && R2.panels.length <= 6, (vacias.map(c => c.id).join(', ') || enLa.map(c => c.id).join(', ')) + ' · ' + R2.panels.length + ' en la página');
-        check('Las viñetas van en el orden en que pasaron', R2.panels.every((q, j) => j === 0 || R2.panels[j - 1].seq <= q.seq));
+        const tits = R2.datos.vinetas.filter(v => !v.falta).map(v => v.sceneTitle), jMeta = R2.panels.findIndex(q => tipoDe(VINETAS.find(v => v.id === q.id)) === 'meta');
+        check('Las viñetas siguen la plantilla: el comienzo primero, ¡La meta! (si la hay) en la última y sin títulos repetidos',
+          R2.panels[0].id === 'intro' && (jMeta < 0 || jMeta === R2.panels.length - 1) && new Set(tits).size === tits.length, R2.panels.map(q => q.id).join(' · ') + ' | ' + tits.join(' · '));
         // ---- Plantilla de Kelvin (docs/equipo/COMIC_PLANTILLA_GUIA.md §7) ----
         await plantillaTest(check, im2, R2);
       }
