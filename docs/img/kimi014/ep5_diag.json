@@ -1,0 +1,741 @@
+{
+ "pale": 199,
+ "grupos": [
+  [
+   0.418,
+   0.264,
+   13
+  ],
+  [
+   0.699,
+   0.262,
+   41
+  ],
+  [
+   0.67,
+   0.262,
+   5
+  ],
+  [
+   0.848,
+   0.37,
+   4
+  ],
+  [
+   0.86,
+   0.382,
+   24
+  ],
+  [
+   0.398,
+   0.387,
+   9
+  ],
+  [
+   0.88,
+   0.386,
+   7
+  ],
+  [
+   0.493,
+   0.453,
+   6
+  ],
+  [
+   0.31,
+   0.57,
+   3
+  ],
+  [
+   0.712,
+   0.598,
+   5
+  ],
+  [
+   0.3,
+   0.606,
+   40
+  ],
+  [
+   0.338,
+   0.609,
+   13
+  ]
+ ],
+ "golpes": [
+  {
+   "px": 0.418,
+   "py": 0.264,
+   "objs": [
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Bloques",
+     "d": 16.8,
+     "mat": "AV_Restaurado_Bloques"
+    },
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Tallado",
+     "d": 20.7,
+     "mat": "AV_Restaurado_Tallado"
+    }
+   ]
+  },
+  {
+   "px": 0.699,
+   "py": 0.262,
+   "objs": [
+    {
+     "n": "flora:arbol_enano:hoja",
+     "d": 11.2,
+     "mat": null
+    },
+    {
+     "n": "flora:arbol_enano:hoja",
+     "d": 11.4,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.67,
+   "py": 0.262,
+   "objs": [
+    {
+     "n": "flora:arbol_enano:hoja",
+     "d": 11.5,
+     "mat": null
+    },
+    {
+     "n": "flora:arbol_enano:hoja",
+     "d": 11.7,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.848,
+   "py": 0.37,
+   "objs": [
+    {
+     "n": "ep5-noche-luces",
+     "d": 9.5,
+     "mat": null
+    },
+    {
+     "n": "ep5-noche-luces",
+     "d": 16,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.86,
+   "py": 0.382,
+   "objs": [
+    {
+     "n": "ep5-noche-luces",
+     "d": 9.5,
+     "mat": null
+    },
+    {
+     "n": "ep5-noche-luces",
+     "d": 16,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.398,
+   "py": 0.387,
+   "objs": [
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Piedra",
+     "d": 17.3,
+     "mat": "AV_Restaurado_Piedra"
+    },
+    {
+     "n": "edificiosInst:templo_mediano_h:hd:MudDarkMd_KB3D_mudDarkM_Diffuse",
+     "d": 19.2,
+     "mat": "MudDarkMd_KB3D_mudDarkM_Diffuse"
+    }
+   ]
+  },
+  {
+   "px": 0.88,
+   "py": 0.386,
+   "objs": [
+    {
+     "n": "ep5-noche-luces",
+     "d": 16,
+     "mat": null
+    },
+    {
+     "n": "ep5-noche-suelo",
+     "d": 18.1,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.493,
+   "py": 0.453,
+   "objs": [
+    {
+     "n": "Vittata_2",
+     "d": 7.2,
+     "mat": "cuerpo"
+    },
+    {
+     "n": "Vittata_2",
+     "d": 7.7,
+     "mat": "cuerpo"
+    }
+   ]
+  },
+  {
+   "px": 0.31,
+   "py": 0.57,
+   "objs": [
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Bloques",
+     "d": 18.4,
+     "mat": "AV_Restaurado_Bloques"
+    },
+    {
+     "n": "edificiosZona:kelvin_ruinas_yunque_2:lejos",
+     "d": 19.9,
+     "mat": "AV_Lejos"
+    }
+   ]
+  },
+  {
+   "px": 0.712,
+   "py": 0.598,
+   "objs": [
+    {
+     "n": "ep5-noche-luces",
+     "d": 7.1,
+     "mat": null
+    },
+    {
+     "n": "flora:manchas",
+     "d": 79.4,
+     "mat": null
+    }
+   ]
+  },
+  {
+   "px": 0.3,
+   "py": 0.606,
+   "objs": [
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Bloques",
+     "d": 17.3,
+     "mat": "AV_Restaurado_Bloques"
+    },
+    {
+     "n": "edificiosZona:kelvin_ruinas_yunque_2:lejos",
+     "d": 18.7,
+     "mat": "AV_Lejos"
+    }
+   ]
+  },
+  {
+   "px": 0.338,
+   "py": 0.609,
+   "objs": [
+    {
+     "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Bloques",
+     "d": 17.1,
+     "mat": "AV_Restaurado_Bloques"
+    },
+    {
+     "n": "edificiosZona:kelvin_ruinas_yunque_2:lejos",
+     "d": 18.1,
+     "mat": "AV_Lejos"
+    }
+   ]
+  }
+ ],
+ "zonas": [
+  {
+   "id": "villa",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 360,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 1
+  },
+  {
+   "id": "lomas",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 258,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 1
+  },
+  {
+   "id": "colina",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 286,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 1
+  },
+  {
+   "id": "kelvin_ruinas_yunque",
+   "nivel": 2,
+   "ciudad": true,
+   "d": 0,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 57
+  },
+  {
+   "id": "kelvin_aldea_rio_este",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 211,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 42
+  },
+  {
+   "id": "kelvin_aldea_rio_oeste",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 106,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 35
+  },
+  {
+   "id": "kelvin_aldea_lomas",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 171,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 34
+  },
+  {
+   "id": "kelvin_aldea_rio_este_2",
+   "nivel": 1,
+   "ciudad": true,
+   "d": 143,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 29
+  },
+  {
+   "id": "kelvin_aldea_mina",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 69,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 24
+  },
+  {
+   "id": "kelvin_aldea_meandros",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 77,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 25
+  },
+  {
+   "id": "kelvin_ruinas_yunque_2",
+   "nivel": 2,
+   "ciudad": true,
+   "d": 0,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 23
+  },
+  {
+   "id": "kelvin_aldea_colina",
+   "nivel": 1,
+   "ciudad": true,
+   "d": 186,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 22
+  },
+  {
+   "id": "kelvin_aldea_mina_2",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 89,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 23
+  },
+  {
+   "id": "kelvin_aldea_rio_este_3",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 125,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 21
+  },
+  {
+   "id": "kelvin_aldea_rio_oeste_2",
+   "nivel": 1,
+   "ciudad": false,
+   "d": 98,
+   "usaMalla": true,
+   "lejosVe": false,
+   "inst": 18
+  },
+  {
+   "id": "kelvin_aldea_yunque",
+   "nivel": 2,
+   "ciudad": false,
+   "d": 8,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 11
+  },
+  {
+   "id": "kelvin_aldea_meandros_2",
+   "nivel": 2,
+   "ciudad": false,
+   "d": 19,
+   "usaMalla": false,
+   "lejosVe": false,
+   "inst": 11
+  }
+ ],
+ "instancias": [
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_mediano_h",
+   "d": 0,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_pilar",
+   "d": 3,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_grande",
+   "d": 5,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_mirador",
+   "d": 7,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_grande_a",
+   "d": 7,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_mediano_f",
+   "d": 11,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_mediano",
+   "d": 14,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "bloque_piedra",
+   "d": 15,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "muro_templo",
+   "d": 17,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "muro_templo",
+   "d": 17,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "bloque_piedra",
+   "d": 19,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_pilar",
+   "d": 19,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_b",
+   "d": 20,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_b",
+   "d": 20,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_pilar",
+   "d": 20,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "plataforma_piedra",
+   "d": 21,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "plataforma_piedra",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_pilar",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_pilar",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_f",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "bloque_piedra",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_pilar",
+   "d": 22,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_f",
+   "d": 23,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_mirador",
+   "d": 23,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "templo_grande_e",
+   "d": 24,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "templo_mediano_g",
+   "d": 25,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_portal",
+   "d": 26,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_f",
+   "d": 27,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "templo_grande_e",
+   "d": 28,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_b",
+   "d": 28,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_altar",
+   "d": 28,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "bloque_piedra",
+   "d": 28,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "muro_templo",
+   "d": 29,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_portal",
+   "d": 29,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_pilar",
+   "d": 29,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque_2",
+   "m": "ruina_mirador",
+   "d": 30,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "muro_templo",
+   "d": 31,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_torre_b",
+   "d": 31,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  },
+  {
+   "z": "kelvin_ruinas_yunque",
+   "m": "ruina_portal",
+   "d": 31,
+   "lod": 0,
+   "hd": true,
+   "colocado": true
+  }
+ ],
+ "pos": [
+  -46,
+  97,
+  -121
+ ]
+}
