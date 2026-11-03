@@ -1040,6 +1040,9 @@ def _trabajos(tx, items, hilos):
 def paso_texturas(sitio, cfg, tx, reg, hilos):
     files = listar(sitio)
     externas = [f for f in files if ext_de(f) in ('.png', '.jpg', '.jpeg')]
+    # texturas.intactas: archivos que se publican byte a byte (el logo oficial del cómic: lo prueba comicTest con su SHA-256)
+    intactas = cfg.get('texturas', {}).get('intactas', [])
+    externas = [f for f in externas if not any(fnmatch.fnmatch(f, p) for p in intactas)]
     glbs = {}
     unicos = {}
     for f in externas:

@@ -229,7 +229,8 @@
     const png = await CM.exportComic('png');
     check('Exporta PNG válido', png.startsWith('data:image/png') && png.length > 50000, Math.round(png.length / 1024) + ' KB');
     const im = await G.assets.image(png);
-    check('El PNG se decodifica a 1080×1520', im && im.width === 1080 && im.height === 1520, im ? im.width + '×' + im.height : 'no carga');
+    const PAG = CM.PAGINA || { w: 1536, h: 2304 };
+    check(`El PNG se decodifica a ${PAG.w}×${PAG.h} (plantilla 2:3)`, im && im.width === PAG.w && im.height === PAG.h, im ? im.width + '×' + im.height : 'no carga');
     await CM.exportComic('pdf');
     const pdf = CM.lastBlob;
     const head = new TextDecoder().decode(new Uint8Array(await pdf.slice(0, 8).arrayBuffer()));

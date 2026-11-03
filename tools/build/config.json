@@ -77,7 +77,8 @@
     "psnr_color": 40.0,
     "psnr_normal": 44.0,
     "patron_normal": "(_n|_normal|normal|_nrm)(\\.|$)",
-    "ahorro_min": 0.05
+    "ahorro_min": 0.05,
+    "intactas": ["assets/comic/plantilla/originales/00_LOGO_OFICIAL_ORIGINAL_INTACTO.png"]
   },
   "geometria": {
     "_nota": "Compresión de geometría con gltfpack (tools/build/bin/gltfpack, fuera del sitio; versión, URL y SHA256 en docs/equipo/BUILD.md). EXT_meshopt_compression (r128 lo lee con MeshoptDecoder de assets/vendor/meshopt) y KHR_mesh_quantization; assets.js pasa los atributos a Float32 al cargar. -kn -km -ke -kv conservan nombres de nodos y materiales, extras y atributos (el color de vértice del viento de la flora); -tr deja las texturas como están; -vtf UV en float (sin KHR_texture_transform: los materiales se comparten por nombre); -af 0 -ac -ar 16: animaciones sin remuestrear ni podar.",

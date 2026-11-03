@@ -255,28 +255,29 @@
       <button class="btn ghost" id="c-close" type="button" data-icon="close">Cerrar</button>
     </div>
     <div class="comic-body">
-      <canvas id="comic-canvas" width="1080" height="1520" aria-label="Vista previa del cómic"></canvas>
+      <canvas id="comic-canvas" width="1536" height="2304" aria-label="Vista previa del cómic"></canvas>
       <div class="comic-form">
-        <label for="c-title">Título</label>
-        <select id="c-title"></select>
-        <label for="c-cover">Portada</label>
-        <select id="c-cover">
-          <option value="vittata">Vittata</option>
-          <option value="personaje">Mi personaje</option>
-          <option value="taller">El taller</option>
-          <option value="refugio">El refugio</option>
-        </select>
-        <label for="c-layout">Diseño</label>
-        <select id="c-layout">
-          <option value="grid">Cuadrícula 2 × 2</option>
-          <option value="strip">Tira vertical</option>
-        </select>
-        <span class="lbl">Viñetas (elige el texto y cambia el orden)</span>
-        <ol id="c-panels"></ol>
-        <div class="row">
+        <div class="c-acciones">
+          <button class="btn ghost sm" id="c-ver" type="button" data-icon="book">Ver mis escenas</button>
+          <button class="btn ghost sm" id="c-editar" type="button" data-icon="reset">Editar mi cómic</button>
+        </div>
+        <section id="c-sec-editar" class="c-sec">
+          <label for="c-title">Título de mi aventura</label>
+          <select id="c-title"></select>
+          <label for="c-aprendi">¿Qué aprendí?</label>
+          <select id="c-aprendi"></select>
+          <label for="c-ensenanza">Mi enseñanza de vida</label>
+          <select id="c-ensenanza"></select>
+        </section>
+        <section id="c-sec-escenas" class="c-sec">
+          <span class="lbl">Mis escenas (hasta 6: elige cuáles, su texto y su orden)</span>
+          <p class="note" id="c-escenas-nota"></p>
+          <ol id="c-panels"></ol>
+        </section>
+        <div id="c-sec-descargar" class="row c-sec">
           <button class="btn ghost" id="c-refresh" type="button" data-icon="reset">Actualizar vista</button>
-          <button class="btn" id="c-png" type="button" data-icon="save">Exportar PNG</button>
-          <button class="btn" id="c-pdf" type="button" data-icon="save">Exportar PDF</button>
+          <button class="btn" id="c-png" type="button" data-icon="save">Descargar PNG</button>
+          <button class="btn" id="c-pdf" type="button" data-icon="save">Descargar PDF</button>
           <button class="btn success" id="c-share" type="button" data-icon="share" style="--icon: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 15V4M8 8l4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6'/%3E%3C/svg%3E&quot;)">Compartir</button>
         </div>
         <div id="c-export" hidden>
@@ -366,6 +367,7 @@
 <script src="src/game/idioma.js" charset="utf-8"></script>
 <script src="src/game/accesibilidad.js" charset="utf-8"></script>
 <script src="src/game/creador.js" charset="utf-8"></script>
+<script src="src/game/comic_plantilla.js" charset="utf-8"></script>
 <script src="src/game/comic.js" charset="utf-8"></script>
 <script src="src/game/momentos.js" charset="utf-8"></script>
 <script src="content/comun/huevos.js" charset="utf-8"></script>

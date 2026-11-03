@@ -160,58 +160,82 @@
       titulos: ['Mi primera reconstrucción', 'El día que el cielo se rompió', 'La ruta de la gota', 'Vittata y yo', 'Aprendiz de Villa Raíz', 'Construimos juntos'],
       archivo: 'amazona-verse-mi-comic', pdfTitulo: 'Amazona Verse - Mi comic', pdfProductor: 'Amazona Verse prototipo',
       capturas: ['workshop', 'shelter', 'final'], portadas: { taller: 'workshop', refugio: 'shelter' },
+      // Plantilla de Kelvin (src/game/comic_plantilla.js, 3-nov): títulos de escena por tipo de evento (estilo de la plantilla) y textos
+      // de «¿Qué aprendí?» y «Mi enseñanza de vida» de listas fijas y positivas, cada uno ligado a un evento real del capítulo (needs).
+      // «¿Qué aprendí?» repite lo que el capítulo ya enseña con fuente (ruta de la gota, lecciones.js O3) o lo que pasó en la historia:
+      // nada inventado. El EN está en en.js. Por viñeta: tipo (título), pose (tools/poses), dialogo/pensamiento (globo), efecto, marca.
+      plantilla: {
+        titulos: { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!',
+          vida: '¡Nueva vida!', record: '¡Nuevo récord!', chapuzon: '¡Chapuzón!', risa: '¡Qué risa!', pose: '¡Mi mejor pose!', amigos: 'Nuevos amigos', altura: '¡Desde lo alto!' },
+        aprendi: [
+          { needs: 'ShelterConstructed', texto: 'Lo que llueve en la montaña baja por el río. Antes de construir, seguimos la ruta de la gota.' },
+          { needs: 'ShelterFlooded', texto: 'Construir junto al río no es seguro: con mucha lluvia el río crece y la crecida llega a la orilla.' },
+          { needs: 'WorkshopExplored', texto: 'Entre los restos del taller había piezas que todavía servían.' },
+          { needs: 'ChickHatched', texto: 'Lo que aprendo en la aventura ayuda a crecer a mi cotorrita.' },
+          { needs: 'ChapterCompleted', texto: 'Desde el mirador vimos otras islas: hay mucho más por explorar.' },
+        ],
+        ensenanza: [
+          { needs: 'ShelterFlooded', texto: 'Equivocarse también enseña: lo intenté otra vez y lo logré.' },
+          { needs: 'ShelterConstructed', texto: 'Observar con calma antes de actuar me ayuda a decidir mejor.' },
+          { needs: 'ChickHatched', texto: 'Cuidar a otros nos hace crecer por dentro.' },
+          { needs: 'WorkshopExplored', texto: 'Aunque algo se rompa, siempre podemos volver a construir.' },
+          { needs: 'ChapterCompleted', texto: 'Juntos llegamos más lejos.' },
+          { needs: 'PlayerCharacterCreated', texto: 'Cada aventura empieza con un primer paso.' },
+        ],
+      },
       vinetas: [
-        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.`,
+        { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', tipo: 'comienzo', pose: 'despegue', dialogo: S => `¡Hola! Me llamo ${S.profile.name}.`, texto: S => `Soy ${S.profile.name}, aprendiz de Vittata en Villa Raíz.`,
           opciones: ['Hoy empezó mi aventura en Villa Raíz.', 'Me convertí en aprendiz de Vittata.', 'Con mi pañuelo listo, salí a ayudar.'] },
-        { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', texto: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.',
+        { id: 'taller', img: 'workshop', needs: 'WorkshopExplored', tipo: 'hallazgo', pose: 'posarse', pensamiento: '¿Qué le pasó a mi taller?', efecto: 'confusion', texto: 'La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.',
           opciones: ['El taller quedó hecho pedazos, pero no nos rendimos.', 'Entre los restos encontramos piezas útiles.', 'Vittata me enseñó a ver posibilidades.'] },
-        { id: 'refugio', img: 'shelter', needs: 'ShelterConstructed', texto: S => {
+        { id: 'refugio', img: 'shelter', needs: 'ShelterConstructed', tipo: 'solucion', pose: 'aterrizaje', dialogo: S => (S.builds[0] === 'B' ? '¡Aquí arriba el agua no llega!' : '¡Esta vez sí quedó a salvo!'), texto: S => {
           if (S.builds[0] === 'B') return 'Elegí construir en la colina porque descubrí que el río podía inundar el otro terreno.';
           if (S.builds.includes('A') && S.refuge && S.refuge.parcel === 'B') return 'Mi primera idea no era segura. Aprendí a observar mejor el terreno y encontré una solución.';
           return 'Construimos junto al río y la crecida dañó el refugio. Aprendí que construir rápido no siempre es construir bien.';
         }, opciones: ['Antes de construir, seguimos la ruta de la gota.', 'Lo que llueve en la montaña baja por el río.', 'Elegimos dónde construir mirando la evidencia.'] },
-        { id: 'final', img: 'final', needs: 'ChapterCompleted', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
+        { id: 'final', img: 'final', needs: 'ChapterCompleted', tipo: 'meta', pose: 'celebrar', dialogo: '¡Construiremos un bote!', efecto: 'bandera', texto: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.',
           opciones: ['El transmisor mostró un símbolo de 36 fragmentos.', 'Desde el mirador vimos otras islas.', 'La aventura apenas comienza. Continuará…'] },
         // El chapuzón y el aterrizaje se fotografían con Vittata a la vista (encuadre 'posada' de comic.js: un ángulo libre a 3 m),
         // no con la cámara del juego, que en el agua solo ve agua.
         // Momentos graciosos (src/game/momentos.js; DIVERSION_CAP1 mejora 5): viñetas por hechos que ya pasan, con tres textos de
         // humor amable a elegir (nunca burla). Las fotos las pone momentos.js en S.captures con la clave de img; el brinco y la
         // foto no capturan el mundo (sinCaptura): el brinco trae la foto del criadero (o la ilustración del nido) y la foto, la suya.
-        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', encuadre: 'posada', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
+        { id: 'chapuzon', img: 'chapuzon', needs: 'FirstSplash', encuadre: 'posada', tipo: 'chapuzon', pose: 'nadar', dialogo: '¡Splash!', texto: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.',
           opciones: ['Las plumas mojadas pesan, pero el agua estaba buenísima.', 'Quise volar bajito. Bajito de más.', 'Los peces me miraron como a un pez nuevo con plumas.'] },
-        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', encuadre: 'posada', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
+        { id: 'aterrizaje', img: 'aterrizaje', needs: 'FirstHardLanding', encuadre: 'posada', tipo: 'desafio', pose: 'aterrizaje', pensamiento: '¿Dónde estaba el suelo?', efecto: 'confusion', texto: 'Un aterrizaje… digamos que creativo. Nada que una sacudida de plumas no arregle.',
           opciones: ['Aterricé de panza. Diez puntos por el estilo.', 'El suelo llegó antes de lo que yo pensaba.', 'Me sacudí las plumas y seguí como si nada.'] },
-        { id: 'brinco', img: 'brinco', needs: 'ChickJumped', sinCaptura: true, ilustracion: 'eclosion', texto: 'Toqué a mi cotorrita y dio un brinco de alegría.',
+        { id: 'brinco', img: 'brinco', needs: 'ChickJumped', sinCaptura: true, ilustracion: 'eclosion', tipo: 'risa', pose: 'celebrar', dialogo: '¡Qué brinco!', texto: 'Toqué a mi cotorrita y dio un brinco de alegría.',
           opciones: ['¡Un brinco! Casi se sale del nido.', 'Le hice cosquillas y saltó como un coquí.', 'Cada vez que la toco, brinca más alto.'] },
-        { id: 'record', img: 'record', needs: 'FirstChallengeRecord', texto: S => {
+        { id: 'record', img: 'record', needs: 'FirstChallengeRecord', tipo: 'record', pose: 'impulso', dialogo: '¡A toda velocidad!', efecto: 'record',
+          marca: S => { const e = ultimo(S, 'FirstChallengeRecord'), m = (e && e.meta) || {}; return m.modo === 'tormenta' ? (m.puntos || 0) + ' pts' : (m.ms ? reloj(m.ms) : null); }, texto: S => {
           const e = ultimo(S, 'FirstChallengeRecord'), m = (e && e.meta) || {};
           return m.modo === 'tormenta' ? `¡Mi primer récord en «Escapa de la tormenta»: ${m.puntos || 0} puntos!` : `¡Mi primer récord en la carrera de El Yunque${m.ms ? ': ' + reloj(m.ms) : ''}!`;
         }, opciones: ['Volé tan rápido que el viento me pidió que esperara.', 'Récord nuevo. Mañana lo rompo otra vez.', 'Mis plumas todavía van a toda velocidad.'] },
-        { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
+        { id: 'foto', img: 'foto', needs: 'PhotoTaken', sinCaptura: true, tipo: 'pose', pose: 'celebrar', dialogo: '¡Digan «coquí»!', texto: S => { const e = ultimo(S, 'PhotoTaken'), g = e && e.meta && e.meta.gesto; return 'Foto para el cómic: ' + (POSES[g] || 'así soy yo.'); },
           opciones: ['Esta es mi mejor pose. Sin discusión.', 'Lista para la foto: plumas peinadas y todo.', '¡Digan «coquí»!'] },
         // Gags del pichón en el mundo (DIVERSION_CAP1 mejora 9): src/game/gags.js emite G.emit('criadero', 'gag', { gag, clave, foto() })
         // y momentos.js anota el evento una vez por partida con la foto del momento (sin foto: captura del mundo; sin lienzo: la
         // ilustración de comic.js). gag: solo lo usa comicTest para emitir el hecho.
-        { id: 'pichon_cae', img: 'pichon_cae', needs: 'ChickTumbled', gag: 'caida', ilustracion: 'pichon_cae',
+        { id: 'pichon_cae', img: 'pichon_cae', tipo: 'risa', pose: 'posarse', needs: 'ChickTumbled', gag: 'caida', ilustracion: 'pichon_cae',
           texto: '¡Pataplún! Mi cotorrita se cayó del borde, se sacudió y siguió como si nada.',
           opciones: ['Aterrizó de colita y se paró como una campeona.', 'Una sacudida de plumas y ¡lista otra vez!', 'Dice que lo hizo a propósito. Yo le creo.'] },
-        { id: 'pichon_mariposa', img: 'pichon_mariposa', needs: 'ChickChasedButterfly', gag: 'mariposa', ilustracion: 'pichon_mariposa',
+        { id: 'pichon_mariposa', img: 'pichon_mariposa', tipo: 'risa', pose: 'posarse', needs: 'ChickChasedButterfly', gag: 'mariposa', ilustracion: 'pichon_mariposa',
           texto: 'Mi cotorrita persiguió una mariposa por todo el camino.',
           opciones: ['La mariposa iba ganando, pero por poquito.', 'Corre que corre… ¡y la mariposa ni sudó!', 'Dice que mañana la alcanza. Mañana.'] },
-        { id: 'pichon_duerme', img: 'pichon_duerme', needs: 'ChickNappedOnFind', gag: 'siesta', ilustracion: 'pichon_duerme',
+        { id: 'pichon_duerme', img: 'pichon_duerme', tipo: 'risa', pose: 'posarse', needs: 'ChickNappedOnFind', gag: 'siesta', ilustracion: 'pichon_duerme',
           texto: 'Mi cotorrita se quedó dormida… ¡justo encima de un hallazgo escondido!',
           opciones: ['Zzz… Hasta dormida me ayuda a buscar.', 'Encontró el tesoro y se acostó encima. Muy lista.', 'Roncaba bajito, como un coquí con sueño.'] },
-        { id: 'pichon_imita', img: 'pichon_imita', needs: 'ChickCopiedGesture', gag: 'imitar', ilustracion: 'pichon_imita',
+        { id: 'pichon_imita', img: 'pichon_imita', tipo: 'risa', pose: 'posarse', needs: 'ChickCopiedGesture', gag: 'imitar', ilustracion: 'pichon_imita',
           texto: 'Hice un gesto y mi cotorrita me imitó. ¡Igualita!',
           opciones: ['Ahora somos dos haciendo la misma pose.', 'Copia todo lo que hago. Me tengo que portar bien.', '¿Quién imita a quién? Ya no sé.'] },
         // Fauna que reacciona (src/game/fauna.js): la foto es la del momento (Vittata con el animal al lado)
-        { id: 'flexiones', img: 'fauna_flexiones', needs: 'AnoleContest', texto: 'Concurso de flexiones: saludé a un lagartijo y me contestó con flexiones.',
+        { id: 'flexiones', tipo: 'amigos', pose: 'posarse', dialogo: '¡Qué fuerte!', img: 'fauna_flexiones', needs: 'AnoleContest', texto: 'Concurso de flexiones: saludé a un lagartijo y me contestó con flexiones.',
           opciones: ['El lagartijo ganó. Yo solo tengo alas, no brazos.', 'Le dije hola y me enseñó su abanico amarillo.', 'Mañana entreno y vuelvo a retarlo.'] },
-        { id: 'mariposa', img: 'fauna_mariposa', needs: 'ButterflyOnBeak', texto: 'Me quedé quieta junto a las flores y una mariposa se posó en mi pico.',
+        { id: 'mariposa', tipo: 'amigos', pose: 'posarse', dialogo: '¡Shhh! No te muevas…', img: 'fauna_mariposa', needs: 'ButterflyOnBeak', texto: 'Me quedé quieta junto a las flores y una mariposa se posó en mi pico.',
           opciones: ['No me moví ni un poquito. Bueno, un poquito.', 'Mi pico es la mejor percha del bosque.', 'Me dio cosquillas y no estornudé.'] },
-        { id: 'coro_coquies', img: 'fauna_coro', needs: 'CoquiChorusWild', texto: 'Canté con los coquíes y el coro se descontroló.',
+        { id: 'coro_coquies', tipo: 'amigos', pose: 'posarse', dialogo: '¡Co-quí!', img: 'fauna_coro', needs: 'CoquiChorusWild', texto: 'Canté con los coquíes y el coro se descontroló.',
           opciones: ['Co-quí, co-quí… y yo desafinando.', 'Los coquíes cantan mejor que yo, pero yo canto más alto.', 'El concierto más ruidoso del bosque.'] },
-        { id: 'boa', img: 'fauna_boa', needs: 'BoaMet', texto: 'Una boa dormía en la rama. Me miró un momento y siguió durmiendo.',
+        { id: 'boa', tipo: 'amigos', pose: 'posarse', dialogo: 'Buenas tardes…', img: 'fauna_boa', needs: 'BoaMet', texto: 'Una boa dormía en la rama. Me miró un momento y siguió durmiendo.',
           opciones: ['Le dije buenas tardes, muy bajito.', 'Ella en su rama y yo en la mía. Respeto.', 'La siesta de la boa es muy seria.'] },
       ],
       // Viñeta final: el símbolo de los 36 arriba a la derecha y el plano del bote abajo a la derecha (el medallón del jugador va abajo a la izquierda)

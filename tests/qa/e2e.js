@@ -12,7 +12,7 @@
         4.9 mirador y pantalla final (con «Seguir explorando» si el pack lo ofrece) · 4.10 objetivo y guía en cada paso.
         Los bocadillos libres (G.dialogo.say(..., { libre: true }), DIVERSION_CAP1 mejora 3) se cuentan aparte: no paran el juego.
      5. Guardar a mitad del capítulo, recargar el iframe y verificar que todo persiste (y se sigue jugando tras recargar).
-     6. Eventos narrativos → viñetas del cómic (con el nombre del jugador) → exportar PNG (se decodifica; 1080×1520 hasta 4 viñetas).
+     6. Eventos narrativos → viñetas del cómic (con el nombre del jugador) → página de la plantilla con 6 viñetas reales → exportar PNG (1536×2304).
      7. Guardar al final, recargar y verificar que el capítulo sigue completo.
      T. Duración: mínimo automático del recorrido (ver el modelo más abajo; NO sustituye medir con jugadores).
    Cada paso da ok / falla / BLOQUEADO con su evidencia. Atajos permitidos, siempre dichos en la evidencia: AV.teleport (en vez
@@ -465,9 +465,12 @@
       let png = '';
       try { png = await CM.exportComic('png'); } catch (e) { png = 'error: ' + e.message; }
       const im = png.startsWith('data:image/png') ? await new Promise(r => { const i = new W.Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = png; }) : null;
-      // Página de 1080×1520 hasta 4 viñetas; con más (el nido y la eclosión también cuentan) crece (src/game/comic.js, altoPagina)
-      const nV = CM.orderedPanels().length, lay = S.comic.layout === 'strip' ? 'strip' : 'grid', altoEsp = Math.max(1520, Math.round(lay === 'strip' ? 430 + nV * 272.5 : 430 + Math.ceil(nV / 2) * 545));
-      check('6', 'Exportar el cómic a PNG (se decodifica; 1080 de ancho y 1520 de alto hasta 4 viñetas, más alto con más)', !!im && im.width === 1080 && im.height === altoEsp, { kb: Math.round(png.length / 1024), medida: im ? im.width + '×' + im.height : png.slice(0, 60), vinetas: nV, diseno: lay, esperado: '1080×' + altoEsp });
+      // Página de la plantilla de Kelvin (src/game/comic_plantilla.js): 1536×2304 (2:3) con 6 viñetas de los eventos reales de la partida
+      const PAG = CM.PAGINA || { w: 1536, h: 2304 }, R = CM.datosPagina ? await CM.datosPagina() : null;
+      const reales = R ? R.datos.vinetas.filter(v => !v.falta) : [];
+      check('6', 'Exportar el cómic a PNG con la plantilla (se decodifica; ' + PAG.w + '×' + PAG.h + ', 2:3)', !!im && im.width === PAG.w && im.height === PAG.h, { kb: Math.round(png.length / 1024), medida: im ? im.width + '×' + im.height : png.slice(0, 60), esperado: PAG.w + '×' + PAG.h });
+      check('6', 'La página del cómic lleva 6 viñetas de eventos reales de la partida (con título de escena y narración)', reales.length === 6 && reales.every(v => had(v.eventId) && v.sceneTitle && v.captionText),
+        { vinetas: R ? R.datos.vinetas.map(v => v.falta ? '(por descubrir)' : v.id + ' · ' + v.eventId + ' · ' + v.sceneTitle + (v.sceneImage ? ' · captura' : '')) : 'sin datosPagina' });
       click('c-close'); if (!$('comic').hidden) $('comic').hidden = true;
 
       // ---------- «Seguir explorando» (si el pack lo ofrece) ----------
