@@ -11,11 +11,12 @@ La coordinadora mantiene al día esta tabla. La lee `tools/build/estado.py` para
 | N5 | hecha · 5e61012 | **Estaciones claras y voces en el cap. 5** |
 | N6 | hecha · 23417eb | **Gags del pichón** |
 | N7 | hecha · a5fb0ce | **Gesto de posarse y patas recogidas en vuelo** |
-| N8 | EN CURSO · nube | **Noche del cap. 5 más clara, con estrellas y luna** |
-| N9 | EN CURSO · nube | **Retratos 3D de las 36 para el álbum (3 de muestra)** |
-| N10 | EN CURSO · nube | **Mundo vivo por ecología y la revelación de Mara y Vela** |
-| N11 | EN CURSO · nube | **Cómic con humor, foto con pose y el cómic de los 6 capítulos** |
-| N12 | EN CURSO · nube | **Efectos de vuelo y la cámara que se acercaba sola en el iPad** |
-| N13 | EN CURSO · nube | **Cap. 6 en el mapa real hasta el final** |
-| N14 | pendiente | **Encender los caps. 5 y 6 en el mapa real** (espera a KIMI-011) |
-| N15 | pendiente | **Mundo vivo, etapa 2: comunidades con actividades** |
+| N8 | hecha · 850bc1f + 67f18e7 · luna fría y baja, faroles, cucubanos, estrellas y nubes de noche | **Noche del cap. 5 más clara, con estrellas y luna** |
+| N9 | espera a Kelvin · 3 retratos de muestra hechos; con su sí se hacen los 36 | **Retratos 3D de las 36 para el álbum (3 de muestra)** |
+| N10 | hecha · 9acb698 · colonias por hábitat y Mara y Vela en el Álbum (ocultas hasta el cap. 5) | **Mundo vivo por ecología y la revelación de Mara y Vela** |
+| N11 | hecha · 75a2ef4 + d0b0eae · plantilla de Kelvin, poses de acción, cómic del cap. 1 lleno (caps. 2–6: CG-37 de Grok) | **Cómic con humor, foto con pose y el cómic de los 6 capítulos** |
+| N12 | hecha · c98a8d9 a 3983809 · juice de vuelo y la cámara ya no hace zoom sola en el iPad | **Efectos de vuelo y la cámara que se acercaba sola en el iPad** |
+| N13 | hecha · b8b055c + 15a16f6 (CG-32) · el cap. 6 se juega hasta el final en el mapa real | **Cap. 6 en el mapa real hasta el final** |
+| N14 | hecha · cf88e2a · caps. 5 y 6 encendidos en el mapa real | **Encender los caps. 5 y 6 en el mapa real** (espera a KIMI-011) |
+| N15 | hecha · 10863c4 (CG-21, Grok) · comunidades con rutinas en las tres orillas | **Mundo vivo, etapa 2: comunidades con actividades** |
+| N16 | hecha · 33fb0e2 | **iPad: triángulos de 8,1 M a ≤ 1,5 M** (KIMI-011, LOD por distancia) |
