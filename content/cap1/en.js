@@ -1718,4 +1718,8 @@ window.AV_EN = {
  "Actualizar vista": "Refresh preview",
  "Ráfaga: remonta con el vapor": "Gust: climb with the steam",
  "Rasante: baja con la gota": "Skim: stay low with the drop",
+ "En la página": "On the page",
+ "Tienes {} de {} escenas. Las que faltan aparecen al jugar.": "You have {} of {} scenes. The rest appear as you play.",
+ "Tus {} escenas están en la página.": "Your {} scenes are on the page.",
+ "En la página caben {} escenas: quita una primero.": "{} scenes fit on the page: remove one first."
 };
