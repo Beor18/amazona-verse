@@ -1521,6 +1521,11 @@ AVE.module('streaming', function (G) {
     const heap = () => (performance.memory ? performance.memory.usedJSHeapSize / 1048576 : NaN);
     const r2 = v => Math.round(v * 10) / 10;
     try {
+      // PC rápido: la batería puede arrancar antes de que el mundo registre las instancias del kit
+      // (con zonas vacías la elección de zona de abajo casca). Se espera a que haya zonas (tope 120 s).
+      const tZonas = performance.now();
+      while (!Object.keys(ST.zonas).length && performance.now() - tZonas < 120000) await new Promise(r => setTimeout(r, 250));
+      if (G.mundo && G.mundo.listo) await G.mundo.listo;
       await ST.listo; await ST.terminar();
       if (R.setCalidad) R.setCalidad('alto', true);
       ST.soltarTodo(); await ir(x0, z0, 0, -1); ST.liberarYa(); await ST.terminar();
@@ -1540,6 +1545,7 @@ AVE.module('streaming', function (G) {
       // 2. Entrar en una zona que no esté cerca del punto de partida: fuera de vista si la hay, si no la más lejana
       ST.revisar(x0, z0);
       const Z = zs.filter(Zn => !iniciales.includes(Zn) && Zn.nivel < 2).sort((a, b) => a.nivel - b.nivel || b.d - a.d)[0] || zs.slice().sort((a, b) => b.d - a.d)[0];
+      if (!Z) { check('Hay zonas de edificios que probar', false, 'zonas: ' + zs.length); return result(); }
       const modelosZ = [...Z.modelos], otros = n => zs.some(o => o !== Z && o.modelos.has(n));
       const propios = modelosZ.filter(n => !otros(n));
       // Vista más cargada: borde sur de la zona con más instancias, mirando a su centro

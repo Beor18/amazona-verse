@@ -534,11 +534,12 @@ AVE.module('renderer', function (G) {
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
   // quieta: contextTest la congela mientras compara fotos (con la máquina cargada bajaba un nivel entre una foto y otra; QA-30)
   const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
-  // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo y la
-  // vegetación están, cada cuadro (con el creador todavía delante) enlaza unas pocas familias
-  // de material. El dibujo de verdad espera a que no quede ninguna pendiente.
+  // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo está listo, cada
+  // cuadro (con la portada o el creador todavía delante) enlaza unas pocas familias de material; la
+  // flora y los edificios que lleguen después quedan pendientes y se enlazan en los pases siguientes.
+  // Así el precalentado empieza en cuanto el mundo existe, no cuando termina la flora (que tarda más).
   let puedeCalentar = false;
-  G.on('mundoListo', () => { Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { puedeCalentar = true; fpsM.warm = 3000; }); });
+  G.on('mundoListo', () => { puedeCalentar = true; fpsM.warm = 3000; });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
@@ -576,18 +577,27 @@ AVE.module('renderer', function (G) {
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
   function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
   function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
+  // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
+  // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
+  // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
+  let listaDib = null, listaMarco = -1;
+  function dibujables() {
+    if (listaDib && listaMarco === cuadros) return listaDib;
+    listaDib = []; listaMarco = cuadros;
+    scene.traverse(o => { if (dibujable(o)) listaDib.push(o); });
+    return listaDib;
+  }
   function siguienteCalor() {
-    let hallado = null;
-    scene.traverse(o => { if (!hallado && dibujable(o) && objPendiente(o)) hallado = o; });
-    return hallado;
+    for (const o of dibujables()) if (objPendiente(o)) return o;
+    return null;
   }
   function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
   function ocultarPendientes() {
     const guard = [];
-    scene.traverse(o => {
-      if (!dibujable(o) || !objPendiente(o)) return;
+    for (const o of dibujables()) {
+      if (!objPendiente(o)) continue;
       guard.push([o, o.visible]); o.visible = false;
-    });
+    }
     return guard;
   }
   function restaurarVis(guard) { if (guard) for (const [o, vis] of guard) o.visible = vis; }
@@ -602,8 +612,7 @@ AVE.module('renderer', function (G) {
   }
   // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
   function warmUno(o) {
-    const objs = [];
-    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const objs = dibujables();
     const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
     const padres = [];
     for (let p = o.parent; p && p !== scene; p = p.parent) { padres.push([p, p.visible]); p.visible = true; }
@@ -622,24 +631,32 @@ AVE.module('renderer', function (G) {
   }
   function warmPost() {
     if (!post.composer) return;
-    const objs = [];
-    scene.traverse(obj => { if (dibujable(obj)) objs.push(obj); });
+    const objs = dibujables();
     const guard = objs.map(obj => [obj, obj.visible]);
     for (const obj of objs) obj.visible = false;
+    // Los pases de rayos solo corren en calidad alta (situarRayos los apaga): se encienden un
+    // instante para que sus dos programas también queden enlazados y no haya tirón al subir a alto.
+    const R = post.rayos, r0 = R && R.enabled, u0 = R && post.grade.uniforms.uRayos.value;
+    if (R) { R.enabled = true; post.grade.uniforms.uRayos.value = 0.02; }
     try { post.composer.render(); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
-    finally { for (const [obj, vis] of guard) obj.visible = vis; }
+    finally { for (const [obj, vis] of guard) obj.visible = vis; if (R) { R.enabled = r0; post.grade.uniforms.uRayos.value = u0; } }
   }
-  // Unos pocos programas por cuadro (tope ~12 ms) para que ni el creador ni «Empezar» se queden congelados.
-  function calentarPresupuesto() {
+  // Unos pocos programas por cuadro, con tope de tiempo, para que ni la portada, ni el creador ni
+  // «Empezar» se queden congelados. Detrás del creador (mundo oculto) se enlazan hasta 8 por cuadro;
+  // con el mundo ya visible, de 2 como mucho: el cuadro de «Empezar» no apila ocho enlaces de
+  // programas seguidos antes del primer dibujo (QA-53: el peor cuadro quedaba en 483–903 ms).
+  function calentarPresupuesto(maxN, ms) {
     const t0 = performance.now();
     let n = 0;
-    while (n < 8 && performance.now() - t0 < 12) {
+    while (n < maxN && performance.now() - t0 < ms) {
       const o = siguienteCalor();
       if (!o) break;
       warmUno(o); n++;
     }
-    if (n === 0 && post.composer && !postCalor) { warmPost(); postCalor = true; n = 1; }
+    // El post se enlaza en cuanto queda presupuesto en un cuadro (no espera a agotar la escena):
+    // si no, el primer dibujo de verdad —el cuadro de «Empezar»— compilaría bloom/gradación allí.
+    if (post.composer && !postCalor && n < maxN) { warmPost(); postCalor = true; n++; }
     if (!post.composer) postCalor = false;
     return n;
   }
@@ -838,18 +855,33 @@ AVE.module('renderer', function (G) {
     return moving;
   }
   let t = 0;
+  // Diagnóstico temporal QA-53 (?fases=1): reparte el tiempo de los primeros cuadros visibles
+  // (update / ganchos render / precalentado / dibujo) para localizar cuadros de >500 ms.
+  const FASES = /[?&]fases=1(?:&|$)/.test(location.search) ? { n: 0, log: [] } : null;
   function render(dt, moving) {
     t += dt;
+    const f0 = FASES ? performance.now() : 0;
     G.camara.follow(dt);
     G.emit('render', dt, t, moving); // look.js puede cambiar la clave del programa aquí
     G.camara.fov(dt);
-    // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Una familia que tarde
-    // más de 12 ms corta la tanda: el cuadro no acumula los ~65 programas.
+    const f1 = FASES ? performance.now() : 0;
+    // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Con el mundo visible el
+    // tope es de 2 familias y ~6 ms: el cuadro no apila enlaces antes del primer dibujo (QA-53).
+    const f2 = FASES ? performance.now() : 0;
+    let warmMs = 0;
     if (puedeCalentar && siguienteCalor()) {
-      calentarPresupuesto();
+      const w0 = performance.now();
+      calentarPresupuesto(2, 6);
+      warmMs = performance.now() - w0;
       fpsM.warm = Math.max(fpsM.warm, 2000);
     }
+    const f3 = FASES ? performance.now() : 0;
     G.camara.draw(dt);
+    if (FASES) {
+      const f4 = performance.now();
+      if (FASES.log.length < 400) FASES.log.push([Math.round(f0), Math.round(FASES.u || 0), Math.round(f1 - f0), Math.round(f3 - f2 - warmMs), Math.round(warmMs), Math.round(f4 - f3)]);
+      window.__fases = FASES.log;
+    }
   }
   let last = performance.now();
   // Draw calls del cuadro entero (con post hay varios render() por cuadro). No se toca info.autoReset: en r128 info.reset()
@@ -871,12 +903,15 @@ AVE.module('renderer', function (G) {
     let dt = Math.min(0.05, (now - last) / 1000); last = now;
     const juice = G.camara.juice;
     if (juice.hitStop > 0) { juice.hitStop -= dt; dt = 0; } // hit-stop de 60 ms al capturar
+    const u0 = FASES ? performance.now() : 0;
     const moving = update(dt);
+    if (FASES) FASES.u = performance.now() - u0;
     // El creador es opaco: el mundo no se dibuja. Mientras tanto se enlazan programas por tandas
-    // (QA-53). Al dibujar, render() vuelve a enlazar lo que el look cambió en ese cuadro.
+    // (QA-53), hasta 8 por cuadro. Al dibujar, render() vuelve a enlazar lo que el look cambió en
+    // ese cuadro, pero de 2 en 2 para no inflar el cuadro de «Empezar».
     const oculto = G.ui.worldHidden && G.ui.worldHidden();
     if (oculto && puedeCalentar) {
-      if (calentarPresupuesto() > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
+      if (calentarPresupuesto(8, 12) > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
     } else if (!oculto) render(dt, moving);
     requestAnimationFrame(frame);
   }
@@ -1066,5 +1101,6 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
+    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });
