@@ -221,28 +221,211 @@ async function lanzarChrome() {
   if (CAPTURAS) {
     // Ronda visual: jugador nuevo en el pack pedido, teletransporte por vistas, captura PNG en DIR_CAPTURAS
     fs.mkdirSync(DIR_CAPTURAS, { recursive: true });
+    const relojPerro = setTimeout(() => { console.log('· WATCHDOG: se acabó el tiempo'); process.exit(1); }, 7 * 60 * 1000);
     const { tid, ses } = await nuevaPestana(false);
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: DPR, mobile: false }, ses);
-    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1&pack=${PACK}${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ses);
+    await cdp.call('Emulation.setCPUThrottlingRate', { rate: 1 }, ses);
+    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1${PACK === 'cap1' ? '' : '&pack=' + PACK}${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ses);
     if (!(await esperarListo(ses))) { console.log('· el juego no arrancó'); process.exit(1); }
     console.log('· jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
-    await cdp.bombear(2500);
+    console.log('· esperando asentamiento…');
+    await cdp.bombear(2.5);
     const vistas = VISTAS ? VISTAS.split(';').map(v => v.split(',').map(Number)) : [[null, null, null]];
     let i = 0;
     for (const [x, z, yaw] of vistas) {
-      if (x != null) await evaluar(cdp, ses, `(AV.teleport(${x}, ${z}), AV.debug.camYaw(${yaw || 0}), 'ok')`, 15, false);
-      await cdp.bombear(2800); // streaming y precalentado se asientan
-      const img = await cdp.call('Page.captureScreenshot', { format: 'png' }, ses, 60);
-      const ruta = path.join(DIR_CAPTURAS, `${PREFIJO}_${String(i).padStart(2, '0')}.png`);
-      fs.writeFileSync(ruta, Buffer.from(img.data, 'base64'));
-      const stats = JSON.parse(await evaluar(cdp, ses, "JSON.stringify(AV.G.renderer.stats())", 10, false));
-      console.log(`  · vista ${i} (${x == null ? 'aparición' : x + ',' + z + ' yaw ' + yaw}): ${stats.fps} FPS · ${stats.calls} calls · ${Math.round(stats.triangulos / 1000)} k tris · ${stats.calidad} → ${ruta}`);
+      try {
+        console.log(`  · vista ${i}: teletransporte…`);
+        if (x != null) await evaluar(cdp, ses, `(AV.teleport(${x}, ${z}), AV.debug.camYaw(${yaw || 0}), 'ok')`, 45, false);
+        console.log('  · vista ' + i + ': asentando…');
+        await cdp.bombear(2.8); // streaming y precalentado se asientan
+        console.log('  · vista ' + i + ': capturando…');
+        // Page.captureScreenshot espera al compositor y se cuelga con la GPU saturada; snapshot()
+        // dibuja y lee el lienzo dentro de la propia página (mismo mecanismo que el cómic).
+        const dataUrl = await evaluar(cdp, ses, "AV.G.renderer.snapshot(1280, 800, 0.92)", 90);
+        if (!dataUrl || dataUrl === 'null') { console.log(`  · vista ${i}: snapshot devolvió null`); i++; continue; }
+        const ruta = path.join(DIR_CAPTURAS, `${PREFIJO}_${String(i).padStart(2, '0')}.jpg`);
+        fs.writeFileSync(ruta, Buffer.from(dataUrl.split(',')[1], 'base64'));
+        const stats = JSON.parse(await evaluar(cdp, ses, "JSON.stringify(AV.G.renderer.stats())", 10, false));
+        console.log(`  · vista ${i} (${x == null ? 'aparición' : x + ',' + z + ' yaw ' + yaw}): ${stats.fps} FPS · ${stats.calls} calls · ${Math.round(stats.triangulos / 1000)} k tris · ${stats.calidad} → ${ruta}`);
+      } catch (e) { console.log(`  · vista ${i}: ERROR ${e.message.slice(0, 200)}`); }
       i++;
     }
     const errs = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
     console.log('· errores de consola: ' + errs);
+    if (process.argv.includes('--diag-rayos')) {
+      const PUNTOS = arg('--diag-puntos', '0.2,0.6;0.1,0.7;0.3,0.5;0,0.75;0.15,0.85');
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const R = AV.G.renderer, cam = R.camera;
+        const rayos = [];
+        const mallas = [];
+        R.scene.traverse(o => {
+          if (!o.isMesh || !o.visible) return;
+          let p = o, edificio = false;
+          for (; p && p !== R.scene; p = p.parent) { if (p.userData && p.userData.modelo) { edificio = true; break; } }
+          const nom = (o.name || '') + (o.parent && o.parent.name ? '/' + o.parent.name : '');
+          if (!edificio && /^(flora:|personaje|cielo|mar$|ep5-noche|rocio|niebla)/.test(nom)) return;
+          mallas.push(o);
+        });
+        const rc = new THREE.Raycaster();
+        for (const par of ${JSON.stringify(PUNTOS.split(';').map(p => p.split(',').map(Number)))}) {
+          rc.setFromCamera({ x: par[0], y: par[1] }, cam);
+          const hits = rc.intersectObjects(mallas, false);
+          if (hits[0]) {
+            const h = hits[0], o = h.object;
+            const cadena = [];
+            for (let p = o; p && p !== R.scene; p = p.parent) {
+              if (p.userData && p.userData.modelo) { cadena.push('modelo:' + p.userData.modelo); break; }
+              if (p.name) cadena.push(p.name);
+            }
+            const ms = Array.isArray(o.material) ? o.material : [o.material];
+            const mi = h.face && h.face.materialIndex != null ? h.face.materialIndex : 0;
+            const m = ms[mi] || ms[0];
+            const img = m && m.map && m.map.image;
+            const lista = ms.map((x, i2) => '[' + i2 + ']' + (x && (x.name || x.type)) + '/mapa=' + !!(x && x.map) + '/col=' + (x && x.color ? x.color.getHexString() : '?') + '/vc=' + !!(x && x.vertexColors)).join(' ');
+            rayos.push('(' + par[0] + ',' + par[1] + ') → ' + cadena.join('<') + ' :: caraUsa=' + mi + ' de ' + ms.length + ' :: ' + (m && (m.name || m.type)) + ' mapa=' + !!(m && m.map) + (img ? ' img=' + (img.width || '?') + 'x' + (img.height || '?') : ' sin-img') + ' color=' + (m && m.color ? m.color.getHexString() : '?') + ' vc=' + !!(m && m.vertexColors) + ' d=' + h.distance.toFixed(1) + ' || ' + lista + (h.face && o.geometry.attributes.color ? ' || colores=' + [h.face.a, h.face.b, h.face.c].map(ix => { const c = o.geometry.attributes.color; return '(' + c.getX(ix).toFixed(2) + ',' + c.getY(ix).toFixed(2) + ',' + c.getZ(ix).toFixed(2) + ')'; }).join(' ') : ' sin-color0'));
+          } else rayos.push('(' + par[0] + ',' + par[1] + ') → nada');
+        }
+        return JSON.stringify(rayos);
+      })()`, 90, false));
+      console.log('· rayos a la columna:');
+      for (const d of diag) console.log('    ' + d);
+    }
+    if (process.argv.includes('--diag-zona')) {
+      const ZX = parseFloat(arg('--diag-x', '-59')), ZZ = parseFloat(arg('--diag-z', '-102')), ZY = parseFloat(arg('--diag-y', '85')), ZR = parseFloat(arg('--diag-r', '8'));
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const out = [];
+        const c = { x: ${ZX}, y: ${ZY}, z: ${ZZ} };
+        AV.G.renderer.scene.traverse(o => {
+          if (!(o.isMesh || o.isPoints || o.isSprite || o.isLine)) return;
+          if (!o.visible) return;
+          if (!o.geometry) return;
+          if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+          const bs = o.geometry.boundingSphere;
+          if (!bs) return;
+          const e = o.matrixWorld.elements;
+          const dx = e[12] + bs.center.x - c.x, dy = e[13] + bs.center.y - c.y, dz = e[14] + bs.center.z - c.z;
+          if (Math.sqrt(dx * dx + dy * dy + dz * dz) > bs.radius + ${ZR}) return;
+          const cadena = [];
+          for (let p = o; p && p !== AV.G.renderer.scene; p = p.parent) {
+            if (p.userData && p.userData.modelo) { cadena.push('modelo:' + p.userData.modelo); break; }
+            if (p.name) cadena.push(p.name);
+          }
+          const m = Array.isArray(o.material) ? o.material[0] : o.material;
+          out.push(o.type + ' capa=' + o.layers.mask + ' :: ' + cadena.join('<') + ' :: ' + (m && (m.name || m.type)) + ' transparente=' + !!(m && m.transparent) + ' opac=' + (m && m.opacity != null ? m.opacity : '?') + ' col=' + (m && m.color ? m.color.getHexString() : '?') + ' radio=' + bs.radius.toFixed(1) + ' @' + [e[12], e[13], e[14]].map(n => Math.round(n)).join(','));
+        });
+        return JSON.stringify(out.slice(0, 30));
+      })()`, 60, false));
+      console.log('· objetos cerca de (' + ZX + ',' + ZY + ',' + ZZ + '):');
+      for (const d of diag) console.log('    ' + d);
+    }
+    if (process.argv.includes('--diag-pixels')) {
+      const PX = parseFloat(arg('--diag-px', '768')), PY = parseFloat(arg('--diag-py', '260'));
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const R = AV.G.renderer, gl = R.renderer.getContext();
+        const out = [];
+        const leer = () => {
+          R.drawScene(R.camera);
+          const px = new Uint8Array(4);
+          const dpr = R.renderer.getPixelRatio();
+          gl.readPixels(Math.round(${PX} * dpr), Math.round(gl.drawingBufferHeight - ${PY} * dpr), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          return [px[0], px[1], px[2]];
+        };
+        const nomes = ['edificiosZona:global:lejos', 'edificiosZona:global:lejosTex', 'estructura:grutas', 'edificiosZona:global:cerca', 'ep5-noche-suelo'];
+        out.push('base=' + leer().join(','));
+        for (const n of nomes) {
+          let obj = null;
+          R.scene.traverse(o => { if (!obj && o.name === n) obj = o; });
+          if (!obj) { out.push(n + ': no está'); continue; }
+          const v0 = obj.visible; obj.visible = false;
+          out.push(n + ' OFF → ' + leer().join(','));
+          obj.visible = v0;
+        }
+        return JSON.stringify(out);
+      })()`, 90, false));
+      for (const d of diag) console.log('    ' + d);
+    }
+    if (process.argv.includes('--diag-vertices')) {
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const out = { blancos: 0, muestra: [], total: 0 };
+        AV.G.renderer.scene.traverse(o => {
+          if (!o.isMesh || o.name !== 'edificiosZona:global:lejos') return;
+          const c = o.geometry.attributes.color, p = o.geometry.attributes.position;
+          if (!c || !p) { out.error = 'sin color/pos'; return; }
+          out.total = c.count;
+          for (let i = 0; i < c.count; i++) {
+            if (c.getX(i) > 0.93 && c.getY(i) > 0.93 && c.getZ(i) > 0.93) {
+              out.blancos++;
+              if (out.muestra.length < 12) out.muestra.push([Math.round(p.getX(i)), Math.round(p.getY(i)), Math.round(p.getZ(i))].join(','));
+            }
+          }
+        });
+        return JSON.stringify(out);
+      })()`, 60, false));
+      console.log('· vértices blancos en edificiosZona:global:lejos: ' + diag.blancos + ' de ' + diag.total + (diag.error ? ' (' + diag.error + ')' : ''));
+      for (const m of diag.muestra || []) console.log('    @ ' + m);
+    }
+    if (process.argv.includes('--diag-lod')) {
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const out = [];
+        AV.G.renderer.scene.traverse(o => {
+          if (!(o.isMesh || o.isGroup || o.isInstancedMesh)) return;
+          const n = o.name || '';
+          if (!/edificio|Inst|lejos|cerca|hd/.test(n)) return;
+          if (o.isMesh && !o.geometry) return;
+          let p = o;
+          const cadena = [];
+          for (; p && p !== AV.G.renderer.scene; p = p.parent) { if (p.name) cadena.push(p.name); }
+          out.push(o.type + ' ' + (o.name || '?') + ' vis=' + o.visible + (o.isInstancedMesh ? ' n=' + o.count : '') + ' :: ' + cadena.slice(0, 3).join('<'));
+        });
+        const st = AV.G.mundo && AV.G.mundo.streaming && AV.G.mundo.streaming.stats ? AV.G.mundo.streaming.stats() : null;
+        return JSON.stringify({ objs: out.slice(0, 40), streaming: st });
+      })()`, 60, false));
+      console.log('· objetos de edificios en escena:');
+      for (const d of diag.objs) console.log('    ' + d);
+      console.log('· streaming stats: ' + JSON.stringify(diag.streaming));
+    }
+    if (process.argv.includes('--diag-blancos')) {
+      const RADIO = parseFloat(arg('--diag-radio', '30'));
+      const diag = JSON.parse(await evaluar(cdp, ses, `(() => {
+        const out = [], visto = new Set();
+        const S = AV.G.S;
+        const M = window.THREE ? THREE.Matrix4 : null;
+        AV.G.renderer.scene.traverse(o => {
+          if (!o.isMesh) return;
+          // posiciones de mundo de cada instancia (o del propio objeto)
+          const posis = [];
+          if (o.isInstancedMesh && o.instanceMatrix && M) {
+            const tmp = new M();
+            for (let i = 0; i < o.count; i++) { tmp.fromArray(o.instanceMatrix.array, i * 16); posis.push([tmp.elements[12], tmp.elements[13], tmp.elements[14]]); }
+          } else {
+            const e = o.matrixWorld.elements;
+            posis.push([e[12], e[13], e[14]]);
+          }
+          let cerca = false;
+          for (const [px, py, pz] of posis) { const dx = px - S.pos.x, dz = pz - S.pos.z; if (dx * dx + dz * dz <= ${RADIO} * ${RADIO}) { cerca = true; break; } }
+          if (!cerca) return;
+          for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+            if (!m) continue;
+            const cadena = [];
+            for (let p = o; p && p !== AV.G.renderer.scene; p = p.parent) {
+              if (p.userData && p.userData.modelo) { cadena.push('modelo:' + p.userData.modelo); break; }
+              if (p.name) cadena.push(p.name);
+            }
+            const img = m.map && m.map.image;
+            const clave = cadena.join('<') + '|' + (m.name || m.type) + '|' + (m.map ? 'map' : (o.isInstancedMesh ? 'inst' : 'nomap'));
+            if (visto.has(clave)) continue;
+            visto.add(clave);
+            out.push((o.isInstancedMesh ? '[inst x' + o.count + '] ' : '') + cadena.join('<') + ' :: ' + (m.name || m.type) + ' mapa=' + !!(m.map) + (img ? ' img=' + (img.width || '?') + 'x' + (img.height || '?') : ' sin-img') + ' color=' + (m.color ? m.color.getHexString() : '?') + (o.visible ? '' : ' OCULTO'));
+          }
+        });
+        return JSON.stringify(out.slice(0, 60));
+      })()`, 90, false));
+      console.log('· mallas con instancias en radio ' + RADIO + ' m (' + diag.length + '):');
+      for (const d of diag) console.log('    ' + d);
+    }
     try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
     srv.close();
+    clearTimeout(relojPerro);
     process.exit(0);
     return;
   }
