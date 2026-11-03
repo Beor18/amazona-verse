@@ -717,7 +717,7 @@
         G.eventos.log('Chapter5Completed');
         E().fin = S.clock;
         G.misiones.advanceTo(G.misiones.DONE); registrar();
-        G.dialogo.say(G.dialogo.L('evento:VoicesRevealed').concat(G.dialogo.L('evento:Chapter5Completed')), () => G.misiones.showEnd());
+        G.dialogo.say(G.dialogo.L('evento:VoicesRevealed').concat(G.dialogo.L('evento:Chapter5Completed')), () => G.misiones.showEnd(), { caja: true });
       }
       const ordenTaller = () => puestos().slice().sort((a, b) => Math.hypot(a.x - D.taller.x, a.z - D.taller.z) - Math.hypot(b.x - D.taller.x, b.z - D.taller.z));
       function pedirAyuda() {
