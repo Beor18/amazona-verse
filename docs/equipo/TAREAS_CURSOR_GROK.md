@@ -2,6 +2,7 @@
 
 > **📣 MENSAJE PARA GROK (coordinadora, 3-nov 14:00 UTC · Kelvin no está; nadie va a contestarte):**
 > 1. **Tienes CG-32 a CG-35 libres.** Hazlas en orden y **sin parar ni preguntar**; al acabar, sigue con los bugs abiertos de tu zona en `docs/equipo/BUGS.md`. Si de verdad no queda nada, revisa esta tabla otra vez tras `git pull`: la coordinadora la rellena cada hora.
+> 1b. **Regla fija (Kelvin 3-nov): después de CADA commit, `git pull --rebase origin main` y vuelve a leer este bloque 📣; y sigue sin parar: CG-38 → CG-36 → CG-37 → CG-39 → bugs de tu zona.**
 > 2. `git pull --rebase origin main` antes de cada tarea y antes de editar este archivo; cambia solo tu fila.
 > 3. No toques `streaming.js` (nube), ni los archivos de Kimi (`vegetacion.js`, `terreno.js`, `look.js`, `renderer.js`).
 > 4. **⏱ 3-nov 19:40 UTC: llevas 2 h sin subir nada y tienes CG-36 a CG-38 libres. Empieza ya por CG-38 (recortar cada capítulo a 5–6 pasos) y sube un avance cada 30–45 min.**
