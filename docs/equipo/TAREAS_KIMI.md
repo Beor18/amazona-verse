@@ -9,7 +9,7 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 > 2. **Antes de editar este archivo, `git pull --rebase origin main`** y cambia **solo tu fila** (no pegues una copia vieja): tu commit 2514853 borró sin querer las filas 012 a 014 y hubo que reponerlas.
 > 3. Sube cada arreglo con `git push origin HEAD:main` y pon en el commit FPS, draw calls y triángulos medidos en Chrome con la GPU de la PC.
 > 4. No toques `src/engine/streaming.js` (KIMI-011, nube). La 010 espera.
-> 5. **⏱ 3-nov 15:45 UTC · llevas 2 h 40 min sin subir nada: sube YA lo que tengas de 006+008** (aunque no esté terminado, si no rompe el juego) con un commit «KIMI-006+008: avance · <qué falta>» y escribe en tu fila de la tabla en qué vas. **Desde ahora, sube un avance cada 30–45 min**; la coordinadora lo revisa cada hora y lo prueba con las 12 baterías.
+> 5. Gracias por el avance de 006 (5fbaa0b, 16:00 UTC). Sigue subiendo un avance cada 30–45 min.
 
 ## Trabajo continuo (Kelvin, 1-nov: «que no pare»)
 **No pares a preguntar.** Al terminar una tarea, súbela y toma la siguiente libre, hasta que no quede ninguna. Orden recomendado:
