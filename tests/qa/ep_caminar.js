@@ -77,7 +77,7 @@
     // pack tal cual. Y solo si sigue igual 300 ms después (el observador de idioma traduce en microtareas)
     const ES_PAL = /(^|[\s(,.:;¿¡])(y|el|los|las|del|que|con|para|por|una|en|de|la|al|está|sin|pero|como|cuando|aquí|también|muy)(?=$|[\s),.:;!?])/i;
     // W8: el nombre del jugador es un nombre propio («Ceiba del Yunque», o ya traducido «Ceiba of El Yunque»): no cuenta como español
-    const sinNombre = t => { const n = G.S && G.S.profile && G.S.profile.name; if (!n) return t; const tr = G.idioma && G.idioma.tr ? G.idioma.tr(n) : n; return [n, tr].reduce((u, x) => x ? u.split(x).join(' ') : u, t); };
+    const sinNombre = t => { const n = G.S && G.S.profile && G.S.profile.name; if (!n) return t; const tr = G.idioma && G.idioma.tr ? G.idioma.tr(n) : n; return [n, tr, 'El Yunque'].reduce((u, x) => x ? u.split(x).join(' ') : u, t); };
     const pareceES = t => { const u = sinNombre(t).replace(/«[^»]*»/g, ' '); return ES_PAL.test(u) || /(^|\s)[a-záéíóúüñ]*[áéíóúñ][a-záéíóúüñ]*/.test(u) || /[¿¡]/.test(u); };
     async function mirarEN() {
       if (idioma !== 'en' || !G.idioma || !G.idioma.faltan) return;

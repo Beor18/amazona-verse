@@ -36,7 +36,11 @@
     const copiar = n => {
       try {
         const G = n.contentWindow && n.contentWindow.AV && n.contentWindow.AV.G;
-        if (G && G.guardado && G.S && G.S.profile && G.S.profile.created && G.guardado.save(true) !== false) tomada = foto();
+        if (G && G.guardado && G.S && G.S.profile && G.S.profile.created && G.guardado.save(true) !== false) {
+          const ahora = foto();
+          const tiene = o => o && Object.keys(o).some(k => /\.save$/.test(k));
+          if (tiene(ahora) || !tiene(tomada)) tomada = ahora;
+        }
       } catch (e) { /* todavía arranca */ }
     };
     const obs = new MutationObserver(recs => {
