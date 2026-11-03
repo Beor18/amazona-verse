@@ -16,7 +16,7 @@
    - reacciona a Vittata: a menos de 10 m la mira; si Vittata se posa a menos de 2,2 m, se aparta de un salto o se va volando;
      si Vittata hace el gesto «Saludar» cerca, 1 a 3 la siguen unos 8 s y vuelven a su sitio.
    Ver una de cerca (menos de 8 m durante 2 s) abre su tarjeta del Álbum de las 36 (src/game/album.js, G.album.ver); también las
-   de la bandada (bandada.js) cuando pasa o se posa cerca. La bandada elige sus especies con especiesEn(x, z): las del hábitat del
+   de la bandada (bandada.js) cuando pasa o se posa cerca, y las de la Ciudad viva (ciudad_viva.js). La bandada elige sus especies con especiesEn(x, z): las del hábitat del
    lugar al que va (o por donde pasa).
    - Rendimiento: no hay mallas propias. Se dibujan en las dos mallas instanciadas de la bandada (bandada.js EXTRA): la bandada y
      los residentes juntos son 2 draw calls. Solo viven las colonias a menos de 130 m (las 3 más cercanas): bajo 0, medio 4 y
@@ -388,6 +388,7 @@ window.AVResidentes = function (G, B) {
       for (const a of lista) if (Math.hypot(a.x - px, a.y - py, a.z - pz) < VER_R) aqui.add(a.sp);
       const F = B.F, ids = B.especies();
       if (F.estado !== 'off' && ids.length) for (const a of F.aves) if (Math.hypot(a.x - px, a.y - py, a.z - pz) < VER_R) aqui.add(ids[a.sp % ids.length]);
+      if (G.ciudadViva && G.ciudadViva.cerca) for (const a of G.ciudadViva.cerca(px, py, pz)) aqui.add(a.sp); // las de la Ciudad viva (ciudad_viva.js)
       for (const id of Object.keys(R.acum)) if (!aqui.has(id)) delete R.acum[id];
       for (const id of aqui) { R.acum[id] = (R.acum[id] || 0) + paso4; if (R.acum[id] >= VER_T - 1e-6 && !G.album.visto(id)) G.album.ver(id, 'residente'); }
     } else if (R.verT >= 0.25) R.verT = 0;
