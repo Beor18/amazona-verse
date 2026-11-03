@@ -37,7 +37,7 @@
     historia: {
       pasos: [
         // Mejora 1: al despertar, Iguaca llama desde la copa del flamboyán de la plaza (o el techo del taller): hay que despegar y posarse
-        { id: 'luma', texto: (S, G) => 'Vuela hasta Iguaca, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
+        { id: 'luma', texto: (S, G) => 'Despega, vuela hasta Iguaca y pósate a su lado, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
           guia: G => (G.c.luma ? G.c.luma.guia() : at(G, 'luma')) },
         // Revisar el taller avanza solo al examinar la máquina y el transmisor (también vale si se revisaron antes de subir con Iguaca)
         { id: 'taller', texto: 'Revisa tu taller dañado',
@@ -96,7 +96,10 @@
       const terminar = (saltada) => {
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
-        G.ui.toast('La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.', 5000);
+        const llama = 'La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
+        G.ui.toast(llama, 5000);
+        // El taller se descubre al despertar y su aviso («Lugares descubiertos 1/32») tapa esta llamada. Se repite cuando ese aviso se va.
+        setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 5000); }, 3400);
       };
       function alTeclear(e) { if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
