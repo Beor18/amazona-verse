@@ -1,0 +1,654 @@
+{
+ "cuando": "2026-11-03T20:34:45.486Z",
+ "maquina": "PC Windows · Chrome headless GPU (ANGLE/D3D11) · 1920×1080 dpr 1",
+ "tomas": [
+  {
+   "cuadros": 1718,
+   "fps": 142.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 27.9,
+   "info": {
+    "calls": 164,
+    "triangulos": 917975
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 164,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 917975
+   },
+   "pos": [
+    134,
+    5,
+    183
+   ],
+   "captura": "cap1_alto_aparicion.jpg",
+   "pack": "cap1",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 142.2,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 27.8,
+   "info": {
+    "calls": 165,
+    "triangulos": 917118
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 165,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 917118
+   },
+   "pos": [
+    134,
+    5,
+    183
+   ],
+   "captura": "cap1_alto_giro.jpg",
+   "pack": "cap1",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 143,
+    "triangulos": 528279
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 143,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 528279
+   },
+   "pos": [
+    134,
+    5,
+    183
+   ],
+   "captura": "cap1_medio_aparicion.jpg",
+   "pack": "cap1",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 143.6,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 144,
+    "triangulos": 528641
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 144,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 528641
+   },
+   "pos": [
+    134,
+    5,
+    183
+   ],
+   "captura": "cap1_medio_giro.jpg",
+   "pack": "cap1",
+   "calidad": "medio",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.7,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.8,
+   "info": {
+    "calls": 138,
+    "triangulos": 838708
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 138,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 838708
+   },
+   "pos": [
+    -20,
+    12,
+    34
+   ],
+   "captura": "ep2_alto_aparicion.jpg",
+   "pack": "ep2",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 138.4,
+   "p50": 6.9,
+   "p95": 7.1,
+   "peor": 104.1,
+   "info": {
+    "calls": 138,
+    "triangulos": 838714
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 138,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 838714
+   },
+   "pos": [
+    -20,
+    12,
+    34
+   ],
+   "captura": "ep2_alto_giro.jpg",
+   "pack": "ep2",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 123,
+    "triangulos": 497492
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 123,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 497492
+   },
+   "pos": [
+    -20,
+    12,
+    34
+   ],
+   "captura": "ep2_medio_aparicion.jpg",
+   "pack": "ep2",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 140.5,
+   "p50": 6.9,
+   "p95": 7.1,
+   "peor": 20.9,
+   "info": {
+    "calls": 123,
+    "triangulos": 496999
+   },
+   "stats": {
+    "fps": 142,
+    "calls": 123,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 496999
+   },
+   "pos": [
+    -20,
+    12,
+    34
+   ],
+   "captura": "ep2_medio_giro.jpg",
+   "pack": "ep2",
+   "calidad": "medio",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1729,
+   "fps": 143.7,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 21,
+   "info": {
+    "calls": 113,
+    "triangulos": 891092
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 113,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 891092
+   },
+   "pos": [
+    172,
+    4,
+    174
+   ],
+   "captura": "ep3_alto_aparicion.jpg",
+   "pack": "ep3",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 139.5,
+   "p50": 6.9,
+   "p95": 7.1,
+   "peor": 104.1,
+   "info": {
+    "calls": 112,
+    "triangulos": 892948
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 112,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 892948
+   },
+   "pos": [
+    172,
+    4,
+    174
+   ],
+   "captura": "ep3_alto_giro.jpg",
+   "pack": "ep3",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 98,
+    "triangulos": 474582
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 98,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 474582
+   },
+   "pos": [
+    172,
+    4,
+    174
+   ],
+   "captura": "ep3_medio_aparicion.jpg",
+   "pack": "ep3",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 143.4,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 98,
+    "triangulos": 474898
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 98,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 474898
+   },
+   "pos": [
+    172,
+    4,
+    174
+   ],
+   "captura": "ep3_medio_giro.jpg",
+   "pack": "ep3",
+   "calidad": "medio",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1731,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 142,
+    "triangulos": 864706
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 142,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 864706
+   },
+   "pos": [
+    191,
+    4,
+    165
+   ],
+   "captura": "ep4_alto_aparicion.jpg",
+   "pack": "ep4",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 143.4,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 141,
+    "triangulos": 860574
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 141,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 860574
+   },
+   "pos": [
+    191,
+    4,
+    165
+   ],
+   "captura": "ep4_alto_giro.jpg",
+   "pack": "ep4",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.7,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.8,
+   "info": {
+    "calls": 128,
+    "triangulos": 463337
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 128,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 463337
+   },
+   "pos": [
+    191,
+    4,
+    165
+   ],
+   "captura": "ep4_medio_aparicion.jpg",
+   "pack": "ep4",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 143.6,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 127,
+    "triangulos": 459998
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 127,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 459998
+   },
+   "pos": [
+    191,
+    4,
+    165
+   ],
+   "captura": "ep4_medio_giro.jpg",
+   "pack": "ep4",
+   "calidad": "medio",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 115,
+    "triangulos": 2201356
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 115,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 2201356
+   },
+   "pos": [
+    -46,
+    97,
+    -121
+   ],
+   "captura": "ep5_alto_aparicion.jpg",
+   "pack": "ep5",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 140.5,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 62.5,
+   "info": {
+    "calls": 115,
+    "triangulos": 2202682
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 115,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 2202682
+   },
+   "pos": [
+    -46,
+    97,
+    -121
+   ],
+   "captura": "ep5_alto_giro.jpg",
+   "pack": "ep5",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1731,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.8,
+   "info": {
+    "calls": 107,
+    "triangulos": 1249822
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 107,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 1249822
+   },
+   "pos": [
+    -46,
+    97,
+    -121
+   ],
+   "captura": "ep5_medio_aparicion.jpg",
+   "pack": "ep5",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 143.4,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 13.9,
+   "info": {
+    "calls": 102,
+    "triangulos": 1233228
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 102,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 1233228
+   },
+   "pos": [
+    -46,
+    97,
+    -121
+   ],
+   "captura": "ep5_medio_giro.jpg",
+   "pack": "ep5",
+   "calidad": "medio",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1730,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.7,
+   "info": {
+    "calls": 124,
+    "triangulos": 676704
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 124,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 676704
+   },
+   "pos": [
+    44,
+    13,
+    -62
+   ],
+   "captura": "ep6_alto_aparicion.jpg",
+   "pack": "ep6",
+   "calidad": "alto",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 142.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 27.7,
+   "info": {
+    "calls": 124,
+    "triangulos": 676618
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 124,
+    "calidad": "alto",
+    "dpr": 1,
+    "triangulos": 676618
+   },
+   "pos": [
+    44,
+    13,
+    -62
+   ],
+   "captura": "ep6_alto_giro.jpg",
+   "pack": "ep6",
+   "calidad": "alto",
+   "fase": "giro"
+  },
+  {
+   "cuadros": 1731,
+   "fps": 143.8,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 20.9,
+   "info": {
+    "calls": 105,
+    "triangulos": 385471
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 105,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 385471
+   },
+   "pos": [
+    44,
+    13,
+    -62
+   ],
+   "captura": "ep6_medio_aparicion.jpg",
+   "pack": "ep6",
+   "calidad": "medio",
+   "fase": "aparicion"
+  },
+  {
+   "cuadros": 721,
+   "fps": 141.1,
+   "p50": 6.9,
+   "p95": 7,
+   "peor": 83.3,
+   "info": {
+    "calls": 105,
+    "triangulos": 385385
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 105,
+    "calidad": "medio",
+    "dpr": 1,
+    "triangulos": 385385
+   },
+   "pos": [
+    44,
+    13,
+    -62
+   ],
+   "captura": "ep6_medio_giro.jpg",
+   "pack": "ep6",
+   "calidad": "medio",
+   "fase": "giro"
+  }
+ ]
+}
