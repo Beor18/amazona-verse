@@ -1,0 +1,89 @@
+<!doctype html><html><head><base href="/"><meta charset="utf-8"></head><body style="margin:0;background:#777">
+<!-- Hoja de poses de acción: modelo real (character.js) + pieles.js, estado de animación puesto cada cuadro como actores.js sync3D,
+     look vibrant_toon (look.js) + luz de 3 puntos (como tools/album/retratos.html). Sale el ave sola, con fondo transparente. -->
+<script src="assets/vendor/three/build/three.min.js"></script>
+<script src="assets/vendor/three/examples/js/loaders/GLTFLoader.js"></script>
+<script src="assets/vendor/meshopt/meshopt_decoder.js"></script>
+<script src="assets/vendor/three/examples/js/utils/SkeletonUtils.js"></script>
+<script src="src/engine/core.js"></script>
+<script src="src/engine/assets.js"></script>
+<script src="content/comun/especies.js"></script>
+<script src="src/personaje/wardrobe.js"></script>
+<script src="src/personaje/character.js"></script>
+<script src="src/personaje/pieles.js"></script>
+<script src="src/game/look.js"></script>
+<script>
+'use strict';
+let R = null;
+async function rig() {
+  if (R) return R;
+  const canvas = document.createElement('canvas'); document.body.appendChild(canvas);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const hemi = new THREE.HemisphereLight('#ffe9c4', '#1f3a2c', 0.8); scene.add(hemi);
+  const key = new THREE.DirectionalLight('#ffd9a0', 1.1); scene.add(key);
+  const fill = new THREE.DirectionalLight('#cfe3ff', 0.3); scene.add(fill);
+  const rim = new THREE.DirectionalLight('#ffffff', 1.0); scene.add(rim);
+  const camera = new THREE.PerspectiveCamera(22, 1, 0.01, 100);
+  const G = { renderer: { renderer, hemi, sun: key, scene, calidad: { nivel: 'alto', texMax: 0 } }, pack: { mundo: { exposicion: 0.74, luces: { cielo: '#cfe6ff', suelo: '#45602e', hemi: 0.66, sol: '#fff0d6', solInt: 2.0, solPos: [-42, 70, 46] } } }, util: { $: () => null }, emit() {}, on() {} };
+  const LOOK = window.AVLook(G); LOOK.aplicar('vibrant_toon');
+  // Accesorios de escena (no son del ave): rama para posarse, agua para nadar
+  const bark = new THREE.MeshStandardMaterial({ color: '#7a5233', roughness: 0.85 });
+  const rama = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.085, 3.2, 20), bark); rama.rotation.z = Math.PI / 2; rama.visible = false; scene.add(rama);
+  const agua = new THREE.Mesh(new THREE.CircleGeometry(2.2, 64), new THREE.MeshStandardMaterial({ color: '#2fa7c9', roughness: 0.25, metalness: 0.05, transparent: true, opacity: 0.82 }));
+  agua.rotation.x = -Math.PI / 2; agua.visible = false; scene.add(agua);
+  R = { canvas, renderer, scene, camera, key, fill, rim, hemi, rama, agua, ch: null }; return R;
+}
+const suave = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+
+// o: { piel, yaw, pitch, roll, cam:{az, el, dist, fov}, state(t) → campos del personaje, lean(t), y(t), caps:[t...], dur, prop, size }
+window.pose = async function (o) {
+  const { canvas, renderer, scene, camera } = await rig();
+  if (R.ch) { scene.remove(R.ch.root); }
+  const ch = await AVCharacter.create(); scene.add(ch.root); R.ch = ch;
+  await AVCharacter.preloadRopa();
+  ch.applyLook(AVCharacter.normalizeLook({ species: 'vittata', accessories: {} }));
+  if (o.piel) await AVE.pieles.aplicar(ch, o.piel);
+  await AVE.pieles.listo(ch);
+  const S = 1.75 / ch.height; ch.root.scale.setScalar(S);
+  ch.play(o.clip || 'Idle');
+  const st = new Function('t', 'ch', o.state);
+  const size = o.size || 1100; renderer.setSize(size, size, false);
+  const dt = 1 / 60, caps = (o.caps || [1.5]).slice().sort((a, b) => a - b), out = [];
+  const r = ch.root.rotation; r.order = 'YXZ';
+  R.rama.visible = o.prop === 'rama'; R.agua.visible = o.prop === 'agua';
+  Object.assign(ch, { speed: 0, gait: 0, airborne: false, flying: false, legsDown: 0, wingMode: 'idle', swimming: false, diving: false,
+    expression: 'happy', mouth: null, lookAt: null, emote: null, posado: '', agachada: 0, groundY: 0, groundAt: null, posarT: -1 });
+  const end = caps[caps.length - 1];
+  for (let i = 0, t = 0; t <= end + 1e-6; i++, t = i * dt) {
+    const s = st(t, ch) || {};
+    ch.root.position.set(0, s.y || 0, 0);
+    r.set(s.pitch || 0, o.yaw || 0, s.roll || 0);
+    const sy = s.stretch || 0; ch.root.scale.set(S * (1 - sy * 0.4), S * (1 + sy), S * (1 - sy * 0.4));
+    ch.update(dt);
+    if (caps.length && t >= caps[0] - 1e-6) {
+      caps.shift();
+      ch.root.updateMatrixWorld(true);
+      const c = new THREE.Vector3(); (ch.bones.espalda1 || ch.root).getWorldPosition(c);
+      if (o.prop === 'rama') { R.rama.position.set(0, (s.perchY || 0) - 0.08, 0.02); R.rama.rotation.set(0, (o.yaw || 0), Math.PI / 2); }
+      if (o.prop === 'agua') R.agua.position.set(0, 0, 0);
+      const C = o.cam || {}, az = C.az || 0, el = C.el || 0.1, dist = (C.dist || 7.5), fov = C.fov || 24;
+      const tg = new THREE.Vector3(c.x + (C.tx || 0), c.y + (C.ty || 0), c.z);
+      camera.fov = fov; camera.aspect = 1; camera.updateProjectionMatrix();
+      camera.position.set(tg.x + dist * Math.sin(az) * Math.cos(el), tg.y + dist * Math.sin(el), tg.z + dist * Math.cos(az) * Math.cos(el));
+      camera.lookAt(tg);
+      // 3 puntos relativos a la cámara: clave cálida arriba-izquierda, relleno frío a la derecha, contraluz desde atrás
+      const rotY = v => new THREE.Vector3(...v).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), az).multiplyScalar(10);
+      R.key.position.copy(rotY([-0.55, 0.75, 0.6])); R.key.intensity = 2.4; R.key.color.set('#fff0d6');
+      R.fill.position.copy(rotY([0.8, 0.15, 0.6])); R.fill.intensity = 0.35; R.fill.color.set('#cfe3ff');
+      R.rim.position.copy(rotY([0.6, 0.6, -0.9])); R.rim.intensity = 2.4; R.rim.color.set('#ffffff');
+      R.hemi.intensity = 0.55; renderer.toneMappingExposure = 0.78;
+      renderer.render(scene, camera);
+      out.push({ t: +t.toFixed(3), mode: ch.wingMode, url: canvas.toDataURL('image/png') });
+    }
+  }
+  return out;
+};
+window.READY = true;
+</script></body></html>

@@ -1,0 +1,142 @@
+[
+ {
+  "id": "despegue",
+  "frame": 3,
+  "es": "Despegue",
+  "en": "Take-off",
+  "especie": "Cotorra puertorriqueña",
+  "top": "#ffd36b",
+  "bot": "#ff8a3d",
+  "glow": "#fff1b8",
+  "nota": "Sube con aletazos fuertes"
+ },
+ {
+  "id": "crucero",
+  "frame": 2,
+  "es": "Vuelo de crucero",
+  "en": "Cruising",
+  "especie": "Loro imperial",
+  "top": "#7fd3ff",
+  "bot": "#2f7fd1",
+  "glow": "#e3f6ff",
+  "lineas": -12,
+  "nota": "Ladea en las curvas"
+ },
+ {
+  "id": "planeo",
+  "frame": 1,
+  "es": "Planeo",
+  "en": "Gliding",
+  "especie": "Cotorra de La Española",
+  "top": "#9be37a",
+  "bot": "#2f9a5a",
+  "glow": "#e8ffd9",
+  "lineas": -12,
+  "nota": "Alas abiertas, sin aletear"
+ },
+ {
+  "id": "picada",
+  "frame": 1,
+  "es": "En picado",
+  "en": "Diving",
+  "especie": "Cotorra cubana",
+  "top": "#ff9bb0",
+  "bot": "#c2416b",
+  "glow": "#ffe3ea",
+  "lineas": -45,
+  "nota": "Gana velocidad"
+ },
+ {
+  "id": "bajada",
+  "frame": 3,
+  "es": "Bajada",
+  "en": "Descending",
+  "especie": "Loro hablador",
+  "top": "#c7a6ff",
+  "bot": "#6b4fc2",
+  "glow": "#efe6ff",
+  "nota": "Pico abajo, alas en V"
+ },
+ {
+  "id": "impulso",
+  "frame": 2,
+  "es": "¡Impulso!",
+  "en": "Boost",
+  "especie": "Cotorra puertorriqueña",
+  "top": "#ffe08a",
+  "bot": "#e05a2a",
+  "glow": "#fff3c4",
+  "lineas": -12,
+  "nota": "Mantén Impulso para su don"
+ },
+ {
+  "id": "cernido",
+  "frame": 2,
+  "es": "Suspendida en el aire",
+  "en": "Hovering",
+  "especie": "Loro hablador",
+  "top": "#ffd36b",
+  "bot": "#ff8a3d",
+  "glow": "#fff1b8",
+  "nota": "Se queda en el sitio"
+ },
+ {
+  "id": "aterrizaje",
+  "frame": 2,
+  "es": "Aterrizaje",
+  "en": "Landing",
+  "especie": "Loro festivo",
+  "top": "#7fd3ff",
+  "bot": "#2f7fd1",
+  "glow": "#e3f6ff",
+  "sombra": "pies",
+  "nota": "Frena de pecho, patas adelante"
+ },
+ {
+  "id": "posarse",
+  "frame": 2,
+  "es": "Posarse",
+  "en": "Perching",
+  "especie": "Cotorra puertorriqueña",
+  "top": "#9be37a",
+  "bot": "#2f9a5a",
+  "glow": "#e8ffd9",
+  "sombra": "pies",
+  "nota": "Se agarra y se equilibra"
+ },
+ {
+  "id": "correr",
+  "frame": 3,
+  "es": "Correr",
+  "en": "Running",
+  "especie": "Loro cabeza amarilla",
+  "top": "#ff9bb0",
+  "bot": "#c2416b",
+  "glow": "#ffe3ea",
+  "sombra": "pies",
+  "nota": "En tierra también es rápida"
+ },
+ {
+  "id": "nadar",
+  "frame": 2,
+  "es": "Nadar",
+  "en": "Swimming",
+  "especie": "Loro de San Vicente",
+  "top": "#c7a6ff",
+  "bot": "#6b4fc2",
+  "glow": "#efe6ff",
+  "nota": "Se posa a nadar"
+ },
+ {
+  "id": "celebrar",
+  "frame": 3,
+  "es": "¡Celebrar!",
+  "en": "Celebrate",
+  "especie": "Loro imperial",
+  "top": "#ffe08a",
+  "bot": "#e05a2a",
+  "glow": "#fff3c4",
+  "sombra": "pies",
+  "nota": "Un gesto de alegría"
+ }
+]

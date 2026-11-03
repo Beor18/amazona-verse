@@ -45,3 +45,10 @@ Si falta un dato, el editor muestra un marcador claro: no se inventan eventos ni
 7. Capturas del editor y de la exportación, y la lista de errores pendientes.
 
 **Criterio de aceptación:** el jugador termina el capítulo, abre el cómic, reconoce sus 6 momentos, ve su cotorra equipada y exporta una página legible, sin que intervenga ningún diseñador. **Kelvin valida un cómic completo antes de extenderlo al resto de capítulos.**
+
+## Las poses de acción también son del cómic (Kelvin, 3-nov: «muy importante»)
+La hoja `docs/img/poses/poses_de_accion.jpg` (12 poses: despegue, crucero, planeo, picado, bajada, impulso, suspendida, aterrizaje, posarse, correr, nadar y celebrar) sale del modelo y la animación reales. Su renderizador está en `tools/poses/` (`poses.html`, `run.js`, `jobs.json`, `hoja.py`). En el cómic:
+- **El personaje central** (pieza 13) y **el retrato de cada viñeta** usan estas poses, renderizadas al momento con **la especie, la piel, el traje y la corona del jugador**, nunca una imagen fija de otra especie.
+- **Pose según el evento de la viñeta:** vuelo o récord → crucero o impulso; llegada → aterrizaje; descubrimiento → posarse; final → celebrar; chapuzón → nadar.
+- **Si una viñeta no tiene una captura buena del juego,** la pose renderizada va sobre el fondo de la escena (la captura real detrás, desenfocada); nunca se inventa la escena.
+- **Rendimiento:** las poses se renderizan una vez al abrir el cómic y se guardan en caché, no en cada desplazamiento.
