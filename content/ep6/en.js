@@ -403,4 +403,13 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
  "FEMA, curso IS-242.c de comunicación (escucha activa)": "FEMA, communication course IS-242.c (active listening)",
  "Aritmética (pares de factores); no necesita fuente externa": "Arithmetic (factor pairs); no outside source needed",
+ // Secretos (CG-14): el aviso y el Diario muestran el nombre en español si el diccionario no lo tiene
+ "El nudo perdido": "The lost knot",
+ "El mapa en la mesa": "The map on the table",
+ "Los seis asientos": "The six seats",
+ "La luz que parpadea distinto": "The light that blinks differently",
+ "Bajo el puente, nadando, está la soga de Nudo. Cuando se la llevan, la ata tan bonita que no se puede desatar.": "Under the bridge, swimming, is Nudo's rope. When it is brought back, the knot is so pretty it will not undo.",
+ "En la mesa del taller los pedazos se miran juntos. Sin ellos, el capítulo se termina igual.": "On the workshop table the pieces sit together. Without them, the chapter still ends.",
+ "En cada asiento, un saludo distinto. Con los seis, la foto de grupo entra al cómic.": "At each seat, a different greeting. With all six, the group picture goes into the comic.",
+ "Una de las luces que esperan parpadea distinto y suelta el pedazo 6. Las demás siguen esperando.": "One of the lights that are waiting blinks differently and drops piece 6. The others keep waiting.",
 });

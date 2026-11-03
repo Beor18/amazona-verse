@@ -103,10 +103,11 @@
         if (k === 'amazonaverse.temporada') return;
         return quitar(k);
       };
+      const idioma = opts.idioma === 'en' ? 'en' : 'es';
       for (const c of (opts.caps || CAPS)) {
-        const { res, tomada } = await conFoto(() => c.jugar({ idioma: 'es', timeout: opts.timeout || 240000 }));
+        const { res, tomada } = await conFoto(() => c.jugar({ idioma, timeout: opts.timeout || 240000 }));
         const mal = ((res && res.results) || []).filter(x => !x.ok);
-        check('Cap. ' + c.n + ' se juega a pie o volando, en español', !!(res && res.ok), mal.slice(0, 3).map(x => x.name + (x.extra ? ' (' + x.extra + ')' : '')).join(' | ') || (res ? res.passed + '/' + res.total : 'sin resultado'));
+        check('Cap. ' + c.n + ' se juega a pie o volando, en ' + (idioma === 'en' ? 'inglés' : 'español'), !!(res && res.ok), mal.slice(0, 4).map(x => x.name + (x.extra ? ' (' + x.extra + ')' : '')).join(' | ') || (res ? res.passed + '/' + res.total : 'sin resultado'));
         const rec = await recargar(c.pack, c.query, tomada, pasoDe(tomada, c.pack));
         check('Cap. ' + c.n + ' · al guardar y recargar el paso sigue', rec.ok, rec.extra);
       }
