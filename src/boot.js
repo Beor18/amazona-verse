@@ -94,6 +94,12 @@
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
     if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    // Comunidades (CG-21, src/game/comunidades.js): rutinas en Villa Raíz, Villa Mangle y la otra orilla.
+    // Se dibujan en las mallas de la bandada. En calidad baja no se cargan.
+    let comunidades = null;
+    const cargarComunidades = () => comunidades || (comunidades = cargarBandada().then(() => AVE.assets.script('src/game/comunidades.js')).then(() => window.AVComunidades(G), e => { comunidades = null; throw e; }));
+    AV.comunidadesTest = o => cargarComunidades().then(c => c.test(o));
+    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarComunidades);
     // Momentos «wow» del capítulo 1 (src/game/wow.js, BM20): despegue del mirador y luciérnagas del coro; se carga tras el primer gesto y al pedir su prueba
     let wow = null;
     const cargarWow = () => wow || (wow = cargarBandada().catch(() => {}).then(() => AVE.assets.script('src/game/wow.js')).then(() => window.AVWow(G), e => { wow = null; throw e; }));
