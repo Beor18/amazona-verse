@@ -308,6 +308,7 @@ AVE.module('accesibilidad', function (G) {
     document.body.appendChild(f);
     await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
     const d = f.contentDocument;
+    if (!d) return { f, d: null, w: f.contentWindow, hay, cerrar: () => f.remove() };
     try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
     for (const id of hay) {
       const e = d.getElementById(id); if (!e) continue;
@@ -316,6 +317,10 @@ AVE.module('accesibilidad', function (G) {
       if (id === 'pause') e.style.display = 'block';
     }
     return { f, d, w: f.contentWindow, hay, cerrar: () => f.remove() };
+  }
+  function cajaDe(m, pid) {
+    if (!m || !m.d || !m.d.getElementById) return null;
+    return m.d.getElementById(pid);
   }
   // BM83: dos controles visibles (botones, selectores, resúmenes) no se pisan entre sí; devuelve las parejas que se solapan más de 4 px
   // Los pies «pegajosos» (Cerrar del Diario, Empezar del creador) se superponen al contenido que se desliza por debajo: eso es lo normal, no un solape
@@ -354,6 +359,15 @@ AVE.module('accesibilidad', function (G) {
       check('Sección «Accesibilidad» en el menú de pausa: 3 niveles de texto, alto contraste, subtítulos, modo relajado y modo zurdo',
         !!sec && sec.querySelectorAll('[data-a11y-texto]').length === 3 && BOOLS.every(k => !!sec.querySelector(`[data-a11y-bool="${k}"]`)));
       check('Los ajustes nuevos están apagados de entrada', (() => { S.profile = Object.assign({}, perfil0, { a11y: undefined }); const a = leer(); return a.texto === 0 && BOOLS.every(k => a[k] === false); })());
+      check('QA-97 · sin documento o sin caja no se llama a querySelectorAll', (() => {
+        try {
+          const vacia = cajaDe(null, 'pause');
+          const sinCaja = cajaDe({ d: { getElementById() { return null; } } }, 'pause');
+          if (vacia) vacia.querySelectorAll('button');
+          if (sinCaja) sinCaja.querySelectorAll('button');
+          return vacia == null && sinCaja == null;
+        } catch (e) { return false; }
+      })());
 
       // Tamaño de texto: cada nivel agranda el diálogo, la interfaz, el aviso, el aviso de acción y los gestos
       const dTxt = $('d-text'), body = document.body, tam = [];
@@ -523,10 +537,12 @@ AVE.module('accesibilidad', function (G) {
         const malosO = []; let vistas = []; await prepararOtras();
         for (const [W, H] of [[375, 812], [320, 568]]) for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
           const m = await maquetaOtras(W, H, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
+          if (!m || !m.d) { if (m && m.cerrar) m.cerrar(); continue; }
           try {
             vistas = m.hay;
             for (const pid of m.hay) {
-              const cajaP = m.d.getElementById(pid); const et = `${W}px nivel ${i}${contr ? ' contraste' : ''} #${pid}`;
+              const cajaP = cajaDe(m, pid); if (!cajaP) continue;
+              const et = `${W}px nivel ${i}${contr ? ' contraste' : ''} #${pid}`;
               for (const b of cajaP.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')) {
                 if (!visible(b)) continue;
                 const r = b.getBoundingClientRect();
