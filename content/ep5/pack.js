@@ -604,7 +604,7 @@
               { label: 'Un hueso', v: 'hueso' }, { label: 'Un dibujo de la época', v: 'dibujo' }, { label: 'Una pluma en un museo', v: 'pluma' },
             ], o => { poner('n2_evidencia'); G.dialogo.say([Lu('Cualquiera sería evidencia nueva. Hoy no la tenemos, así que sigue siendo un supongo.')]); });
           }
-        });
+        }, { caja: true }); // QA-103: si el resto sale en bocadillos, la siguiente Acción cancela el recuerdo
       }
 
       // ---------- M3 · relevo ----------
