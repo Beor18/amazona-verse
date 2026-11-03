@@ -49,6 +49,13 @@ AVE.module('comic', function (G) {
   const PAG = (G.comicPlantilla && G.comicPlantilla.PAGINA) || { w: 1536, h: 2304 }, W = PAG.w, H = PAG.h;
   const LW = 1080, LH = 1520, TOP = 380;
   const L = (es, en) => ((G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || (G.aula && G.aula.aj && G.aula.aj.idioma === 'en') ? en : es);
+  // QA-105: la casilla de «En la página» medía 22×48 (vacía) y #c-aprendi se salía de la maqueta.
+  if (!document.getElementById('cg28-comic')) {
+    const st = document.createElement('style'); st.id = 'cg28-comic';
+    st.textContent = '#comic #c-aprendi{width:100%;max-width:100%;min-width:0;box-sizing:border-box}' +
+      '#comic #c-panels .pv input{width:44px;height:44px;min-width:44px;min-height:44px;box-sizing:border-box}';
+    document.head.appendChild(st);
+  }
   const aviso = (t, ms) => { if (!G.quiet) G.ui.toast(t, ms); };
   const vin = () => (S.comic.vinetas && typeof S.comic.vinetas === 'object' ? S.comic.vinetas : (S.comic.vinetas = {}));
 
