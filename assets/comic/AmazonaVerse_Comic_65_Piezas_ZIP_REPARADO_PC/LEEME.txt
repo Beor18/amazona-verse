@@ -1,0 +1,11 @@
+AMAZONA VERSE - ELEMENTOS DEL COMIC SEPARADOS
+
+Cada archivo PNG es independiente.
+01-06: seis vinetas del formato original, sin redisenar.
+07-17: encabezado, campos, secciones inferiores y botones.
+18-45: globos, circulos, textos, titulos y decoraciones.
+46-57: globos y circulos con fondo transparente aproximado.
+00: logo oficial original exacto del usuario.
+99: referencia del formato, NO usar el logo incluido en la referencia.
+
+NOTA TECNICA: Los recortes son raster. El texto no es editable dentro de PNG. Claude debe colocar texto, capturas y skin/corona como capas dinamicas.
