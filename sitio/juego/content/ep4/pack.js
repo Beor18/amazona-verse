@@ -185,7 +185,7 @@
       pasos: [
         { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
         { id: 'orilla', texto: 'Mira los 3 tramos del río y el bosquecillo', progreso: S => ` (${OBS.filter(k => S.collected.includes(k)).length}/4)`,
-          hasta: { mision: 'orilla' }, guia: G => { const k = OBS.find(o => !G.S.collected.includes(o)); return G.misiones.at(k === 'obs_bosque' ? 'bosque' : 'tramo_' + (k ? k.slice(4) : 'a')); } },
+          hasta: { mision: 'orilla' }, guia: G => { const k = OBS.find(o => !G.S.collected.includes(o)); const id = k === 'obs_bosque' ? 'bosque' : 'tramo_' + (k ? k.slice(4) : 'a'); const p = G.misiones.at(id); return p ? { id: id, x: p.x, z: p.z } : null; } },
         { id: 'volver', texto: 'Cuéntale a Iguaca lo que viste', guia: G => G.misiones.at('iguaca') },
         { id: 'voces', texto: 'Escucha todas las voces', progreso: S => ` (${VOC.filter(k => S.collected.includes(k)).length}/4)`,
           hasta: { recogido: VOC }, guia: G => G.misiones.at(VIDS.find(v => !G.S.collected.includes('voz_' + v)) || 'iguaca') },
@@ -269,6 +269,8 @@
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
       const tiene = k => S.collected.includes(k), poner = k => { if (!tiene(k)) S.collected.push(k); };
       const elegir = (who, text, opciones, done) => G.dialogo.choose(di(who, text), opciones, done);
+      // Más de 2 líneas se quedan en la caja: si no, la siguiente Acción corta el avance (QA-102).
+      const decir = (lines, done, o) => G.dialogo.say(lines, done, lines && lines.length > 2 ? Object.assign({ caja: true }, o || {}) : o);
       const opcion = () => OIDS.find(o => tiene('opcion_' + o));
       const cuidado = () => CIDS.find(c => tiene('cuidado_' + c));
       const vistas = () => OBS.filter(tiene), oidas = () => VOC.filter(tiene), probadas = () => OIDS.filter(o => tiene('prueba_' + o));
@@ -309,7 +311,7 @@
           `<div class="edu-dots" aria-hidden="true">${Array.from({ length: n }, (_, k) => `<span class="${k < i ? 'ok' : k === i ? 'now' : ''}"></span>`).join('')}</div>`;
         AU.serie(ids, { cabecera: cab, alResponder: registrar, alTerminar: () => {
           G.ui.hideCard(); registrar();
-          G.dialogo.say([Lu('¡Eso es pensar como quien decide con todos! Mirar, escuchar, comparar y cuidar lo que cuesta.')]);
+          decir([Lu('¡Eso es pensar como quien decide con todos! Mirar, escuchar, comparar y cuidar lo que cuesta.')]);
         } });
       }
       if (AU.activo && AU.pestana) AU.pestana({ id: 'ep4', titulo: { es: 'Progreso cap. 4', en: 'Ch. 4 progress' }, html: () => {
@@ -323,17 +325,17 @@
 
       // ---------- Iguaca: da cada misión, su tarjeta (M2) y, en medio, una pista del paso en curso ----------
       function hablar() {
-        if (S.step === 0) { G.dialogo.say(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); }); return; }
-        if (S.step === 1) { G.dialogo.say([Lu('Mira los 3 tramos y el bosquecillo. Llevas ' + vistas().length + ' de 4.')]); return; }
+        if (S.step === 0) { decir(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); }); return; }
+        if (S.step === 1) { decir([Lu('Mira los 3 tramos y el bosquecillo. Llevas ' + vistas().length + ' de 4.')]); return; }
         if (S.step === 2) {
           G.eventos.log('ShoreSurveyed'); G.comic.capture('orilla'); G.audio.play('unlock'); registrar();
-          G.dialogo.say(L('evento:ShoreSurveyed'), () => { G.misiones.advanceTo(3); G.ui.toast('Escucha todas las voces', 3000); });
+          decir(L('evento:ShoreSurveyed'), () => { G.misiones.advanceTo(3); G.ui.toast('Escucha todas las voces', 3000); });
           return;
         }
         if (S.step === 3 && !tiene('voz_iguaca')) { voz('iguaca'); return; }
         if (S.complete && AU.activo && !todasPreguntadas()) {
           elegir('Iguaca', '¡Ya se cruza el río! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.',
-            [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
+            [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else decir([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
         const pistas = {
@@ -344,33 +346,36 @@
           7: 'Ya hay acuerdo. Ve a la orilla y constrúyelo.',
           8: 'La abuela te espera para cruzar por primera vez.',
         };
-        G.dialogo.say([Lu(S.complete ? '¡Ya se cruza el río! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
+        decir([Lu(S.complete ? '¡Ya se cruza el río! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
       G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 ? 'Contarle a Iguaca' : S.step === 3 && !tiene('voz_iguaca') ? 'Escuchar a Iguaca' : 'Hablar con Iguaca', use: hablar });
 
       // ---------- Misión 1 · «Lo que hay en la orilla»: 3 tramos y el bosquecillo ----------
       for (const id of TIDS) {
-        const t = TRAMOS[id], x = RX(t.z) - OR(t.z), y = H(x, t.z);
+        const t = TRAMOS[id];
+        let x = RX(t.z) - OR(t.z);
+        if (REAL) x = seco(x, t.z, -1); // la orilla seca: el poste no queda dentro del agua del mapa real
+        const y = H(x, t.z);
         const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6), mat('#8a6a3a'));
         poste.position.set(x, y + 1.1, t.z); scene.add(poste);
         const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3), new THREE.MeshLambertMaterial({ color: '#2f8fd6', side: THREE.DoubleSide }));
         cinta.position.set(x + 0.5, y + 2, t.z); scene.add(cinta);
-        G.interaccion.add({ id: 'tramo_' + id, x, z: t.z, r: 2.4, visible: () => S.step === 1 && !tiene('obs_' + id),
+        G.interaccion.add({ id: 'tramo_' + id, x, z: t.z, r: 4.5, visible: () => S.step === 1 && !tiene('obs_' + id),
           label: () => 'Mirar ' + t.nombre,
           use: () => {
             poner('obs_' + id); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
-            G.dialogo.say([di('Vittata', t.ve)], () => G.misiones.check());
+            decir([di('Vittata', t.ve)], () => G.misiones.check());
           } });
       }
       // El bosquecillo: árboles propios (para poder quitarlos o replantarlos según el acuerdo) y una percha para mirar
       const bosque = new THREE.Group(); bosque.name = 'ep4_bosque'; scene.add(bosque);
       const ARB = [[-2.5, -1.5], [0.5, -2.5], [2, 0.5], [-1, 1.8], [-3, 1.2], [1.2, 2.6]];
-      G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 3, visible: () => S.step === 1 && !tiene('obs_bosque'),
+      G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 4.5, visible: () => S.step === 1 && !tiene('obs_bosque'),
         label: () => 'Posarse y mirar el bosquecillo',
         use: () => {
           poner('obs_bosque'); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
           if (TP()) TP().encontrar(4, 'bosquecillo'); // D32: el guardián del bosquecillo llega al ep. 6
-          G.dialogo.say([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'), di('Vittata', NIDO_36),
+          decir([di('Vittata', 'Desde la rama cuento tres huecos de nido en los troncos viejos, y pececitos en la sombra del agua.'), di('Vittata', NIDO_36),
             Lu('La cotorra puertorriqueña anida en huecos de los árboles. Fuente: ' + FUENTE + '.')], () => G.misiones.check());
         } });
 
@@ -381,26 +386,26 @@
         poner('voz_' + id); if (nueva) G.audio.play('pickup');
         const lineas = [di(v.quien, v.dice)];
         if (nueva) lineas.push(di('Vittata', `Lo anoto en una tarjeta de ${e.nombre}: «${v.tarjeta}».`));
-        G.dialogo.say(lineas, () => {
+        decir(lineas, () => {
           G.misiones.check();
-          if (nueva && oidas().length === 4) { G.eventos.log('VoicesHeard'); G.dialogo.say(L('evento:VoicesHeard')); }
+          if (nueva && oidas().length === 4) { G.eventos.log('VoicesHeard'); decir(L('evento:VoicesHeard')); }
           else if (nueva) G.ui.toast('Tarjetas: ' + oidas().length + ' de 4', 2500);
         });
       }
       function abuela() {
         if (S.step === 3 && !tiene('voz_abuela')) { voz('abuela'); return; }
         if (S.step === 8) { cruce(); return; }
-        G.dialogo.say([di('Abuela', S.complete ? '¡Qué alegría ir y venir otra vez!' : S.step < 3 ? 'Mi familia vive del otro lado del río. Hace tanto que no la veo…' : 'Gracias por preguntarme, mi niña.')]);
+        decir([di('Abuela', S.complete ? '¡Qué alegría ir y venir otra vez!' : S.step < 3 ? 'Mi familia vive del otro lado del río. Hace tanto que no la veo…' : 'Gracias por preguntarme, mi niña.')]);
       }
       function papa() {
         if (S.step === 3 && !tiene('voz_papa')) { voz('papa'); return; }
-        G.dialogo.say([di('Papá', S.complete ? 'Gracias por cuidar lo que costaba.' : S.step < 3 ? 'Este bosquecillo da buena sombra y buenos huecos.' : 'Que no se te olvide el bosquecillo.')]);
+        decir([di('Papá', S.complete ? 'Gracias por cuidar lo que costaba.' : S.step < 3 ? 'Este bosquecillo da buena sombra y buenos huecos.' : 'Que no se te olvide el bosquecillo.')]);
       }
       function navegante() {
         if (TP()) TP().encontrar(4, 'navegante'); // D32: llega al ep. 6
         if (S.step === 3 && !tiene('voz_navegante')) { voz('navegante'); return; }
         // Nayara vive ahora en Villa Raíz (ep. 3): mira Villa Mangle, la otra orilla, desde este lado.
-        G.dialogo.say([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
+        decir([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
       }
       const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 8 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
       G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_papa') ? 'Escuchar al papá' : 'Hablar con el papá', use: papa });
@@ -416,13 +421,13 @@
           OIDS.map(o => ({ label: `${OPCIONES[o].nombre} (${e.icono} ${puntos(OPCIONES[o].hojas[e.id])})`, o })), o => {
             if (OPCIONES[o.o].hojas[e.id] < max) {
               G.audio.play('wrong');
-              G.dialogo.say([Lu(`Mira las hojas de ${e.nombre}: hay otra opción que tiene más.`)], balanza);
+              decir([Lu(`Mira las hojas de ${e.nombre}: hay otra opción que tiene más.`)], balanza);
               return;
             }
             poner('bal_' + v); G.audio.play('tick'); balanza();
           });
         // La primera vez, Iguaca lee la Balanza entera: 3 opciones, 4 ejes, hojas con icono y palabra
-        if (v === VIDS[0] && !tiene('bal_vista')) { poner('bal_vista'); G.dialogo.say(OIDS.map(o => Lu(`${o.toUpperCase()} · ${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`)), preguntar); }
+        if (v === VIDS[0] && !tiene('bal_vista')) { poner('bal_vista'); decir(OIDS.map(o => Lu(`${o.toUpperCase()} · ${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`)), preguntar); }
         else preguntar();
       }
       function mejor() {
@@ -432,11 +437,11 @@
         ], o => {
           if (typeof o.v === 'string') {
             const q = VOCES[PIERDE[o.v]];
-            G.dialogo.say([di(q.quien, RECLAMO[o.v])], mejor);
+            decir([di(q.quien, RECLAMO[o.v])], mejor);
             return;
           }
           poner('frase_' + o.v); G.eventos.log('TradeoffSeen', { choice: FRASES[o.v] }); G.comic.capture('balanza'); G.audio.play('unlock'); registrar();
-          G.dialogo.say([di('Vittata', FRASES[o.v])].concat(L('evento:TradeoffSeen')), () => G.misiones.check());
+          decir([di('Vittata', FRASES[o.v])].concat(L('evento:TradeoffSeen')), () => G.misiones.check());
         });
       }
 
@@ -446,10 +451,10 @@
         elegir('Vittata', quedan.length ? '¿Qué opción pruebo en la maqueta?' : 'Ya probé las tres. ¿Miro una otra vez?', OIDS.map(o => ({ label: (tiene('prueba_' + o) ? '✓ ' : '') + OPCIONES[o].nombre, o })), x => {
           const op = OPCIONES[x.o], nueva = !tiene('prueba_' + x.o);
           poner('prueba_' + x.o); maquetaVer(x.o); G.audio.play('tick'); G.fx.burst(MESA.x, H(MESA.x, MESA.z) + 1.2, MESA.z, 'feathers', 8);
-          G.dialogo.say(op.prueba.map(t => di('Vittata', t)).concat(Lu(fila(op.hojas))), () => {
+          decir(op.prueba.map(t => di('Vittata', t)).concat(Lu(fila(op.hojas))), () => {
             if (nueva && probadas().length === 3) {
               G.eventos.log('ModelTested'); G.misiones.check();
-              G.dialogo.say([Lu('Las probaste todas. Ninguna sale perfecta en la maqueta. Ahora, la asamblea.')]);
+              decir([Lu('Las probaste todas. Ninguna sale perfecta en la maqueta. Ahora, la asamblea.')]);
             } else if (probadas().length < 3) maqueta();
           });
         });
@@ -462,7 +467,7 @@
           elegir('Vittata', 'Asamblea en la mesa. Ya hablaron todos; yo abro la ronda y cada quien dice lo suyo. ¿Qué opción propones?', OIDS.map(o => ({ label: `${OPCIONES[o].nombre}: ${fila(OPCIONES[o].hojas)}`, o })), x => {
             poner('opcion_' + x.o); G.eventos.log('AgreementMade', { choice: x.o }); if (TP()) TP().apuntar(4, { opcion: x.o }); /* D11: el ep. 5 lo nombra */ G.audio.play('unlock'); maquetaVer(x.o); dibujarObra();
             const gana = VIDS.filter(v => OPCIONES[x.o].hojas[VOCES[v].eje] === 3), pierde = VOCES[PIERDE[x.o]];
-            G.dialogo.say(gana.map(v => di(VOCES[v].quien, 'Esto me da lo que pedía. ¡Gracias!')).concat(
+            decir(gana.map(v => di(VOCES[v].quien, 'Esto me da lo que pedía. ¡Gracias!')).concat(
               di(pierde.quien, RECLAMO[x.o]), di('Aprendiz', APRENDIZ_ASAMBLEA), Lu('Nadie lo tiene todo. Elige un cuidado para lo que cuesta.')), asamblea);
           });
           return;
@@ -473,12 +478,12 @@
             const c = CUIDADOS[x.c];
             if (!c.para.includes(op)) {
               G.audio.play('wrong');
-              G.dialogo.say([Lu(`Con ${OPCIONES[op].corto} ese cuidado no ayuda: mira qué es lo que cuesta en la Balanza.`)], asamblea);
+              decir([Lu(`Con ${OPCIONES[op].corto} ese cuidado no ayuda: mira qué es lo que cuesta en la Balanza.`)], asamblea);
               return;
             }
             poner('cuidado_' + x.c); G.audio.play('tick');
             const h = hojasCon(op, x.c);
-            G.dialogo.say([di('Vittata', c.nombre + '.'), Lu('Mejora una cosa, pero no lo arregla todo: ' + fila(h) + '.')], asamblea);
+            decir([di('Vittata', c.nombre + '.'), Lu('Mejora una cosa, pero no lo arregla todo: ' + fila(h) + '.')], asamblea);
           });
           return;
         }
@@ -486,16 +491,16 @@
         elegir('Vittata', `¿Qué le dices a ${pierde.quien === 'Iguaca' ? 'Iguaca' : pierde.quien === 'Abuela' ? 'la abuela' : 'el papá'}?`, [
           { label: PALABRAS[0], v: 0 }, { label: 'Es lo mejor para todos.', v: 'todos' }, { label: PALABRAS[1], v: 1 },
         ], o => {
-          if (o.v === 'todos') { G.audio.play('wrong'); G.dialogo.say([Lu('¿Para todos? Mira la Balanza: a alguien le cuesta. Díselo con cariño.')], asamblea); return; }
+          if (o.v === 'todos') { G.audio.play('wrong'); decir([Lu('¿Para todos? Mira la Balanza: a alguien le cuesta. Díselo con cariño.')], asamblea); return; }
           poner('palabra_' + o.v); G.eventos.log('CareChosen', { choice: cuidado() }); if (TP()) TP().apuntar(4, { cuidado: cuidado() }); G.comic.capture('acuerdo'); registrar();
-          G.dialogo.say([di('Vittata', PALABRAS[o.v]), di(pierde.quien, 'Gracias por decírmelo de frente. Así sí.'), Lu('¡Hay acuerdo! Ve a la orilla y constrúyelo.')], () => G.misiones.check());
+          decir([di('Vittata', PALABRAS[o.v]), di(pierde.quien, 'Gracias por decírmelo de frente. Así sí.'), Lu('¡Hay acuerdo! Ve a la orilla y constrúyelo.')], () => G.misiones.check());
         });
       }
       G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => S.step >= 4,
         label: () => ({ 4: 'Poner las tarjetas en la Balanza', 5: 'Probar en la maqueta', 6: 'Hacer la asamblea' })[S.step] || 'Mirar la Balanza',
         use: () => {
           if (S.step === 4) balanza(); else if (S.step === 5) maqueta(); else if (S.step === 6) asamblea();
-          else G.dialogo.say(OIDS.map(o => di('Vittata', `${OPCIONES[o].nombre}: ${fila(o === opcion() ? hojasCon(o, cuidado()) : OPCIONES[o].hojas)}`)));
+          else decir(OIDS.map(o => di('Vittata', `${OPCIONES[o].nombre}: ${fila(o === opcion() ? hojasCon(o, cuidado()) : OPCIONES[o].hojas)}`)));
         } });
       // La mesa de la asamblea: tablero con patas y troncos para sentarse alrededor (BF4: antes era una caja sola)
       { const y = H(MESA.x, MESA.z), tab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.12, 1.4), mat('#8a6a3a')); tab.position.set(MESA.x, y + 0.74, MESA.z); scene.add(tab);
@@ -542,11 +547,11 @@
       const obra = G.interaccion.add({ id: 'obra', x: RX(REAL ? DZ : 0) - 5, z: REAL ? DZ : 0, r: 3, visible: () => S.step >= 7 && !!opcion(),
         label: () => S.step === 7 ? 'Construir lo acordado' : 'Mirar lo construido',
         use: () => {
-          if (S.step !== 7) { G.dialogo.say([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
+          if (S.step !== 7) { decir([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
           poner('construido'); dibujarObra(); colocarAbuela(); encuadrar(); G.eventos.log('ProjectBuilt', { choice: opcion() }); G.audio.play('unlock'); registrar();
           const y = H(obra.x, obra.z);
           G.fx.burst(obra.x, y + 2, obra.z, 'gold', 30);
-          G.dialogo.say([di('Vittata', '¡Entre todos, ' + OPCIONES[opcion()].corto + ' está listo!'), di('Vittata', 'Y el cuidado también: «' + CUIDADOS[cuidado()].nombre + '».'),
+          decir([di('Vittata', '¡Entre todos, ' + OPCIONES[opcion()].corto + ' está listo!'), di('Vittata', 'Y el cuidado también: «' + CUIDADOS[cuidado()].nombre + '».'),
             Lu('Ahora, lo más bonito: la abuela te espera para cruzar.')], () => G.misiones.check());
         } });
       function cruce() {
@@ -559,7 +564,7 @@
         encuadrar(); G.audio.play('unlock'); G.comic.capture('cruce');
         S.complete = true; G.eventos.log('Chapter4Completed', { choice: o }); E().fin = S.clock;
         G.misiones.advanceTo(G.misiones.DONE); registrar();
-        G.dialogo.say(lineas.concat(L('evento:Chapter4Completed')), () => { colocarAbuela(); G.misiones.showEnd(); });
+        decir(lineas.concat(L('evento:Chapter4Completed')), () => { colocarAbuela(); G.misiones.showEnd(); });
       }
       // La abuela espera en la cabecera de lo construido (la flecha del paso 8 lleva allí y el cruce se ve) y, tras cruzar, queda
       // en la otra orilla; antes de la obra, en su sitio de siempre

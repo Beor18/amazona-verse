@@ -290,6 +290,9 @@
       const tiene = k => S.collected.includes(k), poner = k => { if (!tiene(k)) S.collected.push(k); };
       const valor = (pref, ops) => ops.find(o => tiene(pref + o));
       const elegir = (who, text, opciones, done) => G.dialogo.choose(di(who, text), opciones, done);
+      // Más de 2 líneas se quedan en la caja: si el resto sale en bocadillos, la siguiente Acción
+      // vuelve a abrir la charla y el paso no avanza (QA-100 y QA-101, los dos idiomas).
+      const decir = (lines, done, o) => G.dialogo.say(lines, done, lines && lines.length > 2 ? Object.assign({ caja: true }, o || {}) : o);
       const mat = c => new THREE.MeshLambertMaterial({ color: c });
       const nivelRio = () => { const y = G.agua.levelAt(RIO_X, T(0, 0).z); return isFinite(y) ? y : MAR; };
       const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -335,7 +338,7 @@
           `<div class="edu-dots" aria-hidden="true">${Array.from({ length: n }, (_, k) => `<span class="${k < i ? 'ok' : k === i ? 'now' : ''}"></span>`).join('')}</div>`;
         AU.serie(ids, { cabecera: cab, alResponder: registrar, alTerminar: () => {
           G.ui.hideCard(); registrar();
-          G.dialogo.say([Lu('¡Eso es pensar como gente de mar! Probar, mirar el agua y confiar en quien sabe.')]);
+          decir([Lu('¡Eso es pensar como gente de mar! Probar, mirar el agua y confiar en quien sabe.')]);
         } });
       }
       if (AU.activo && AU.pestana) AU.pestana({ id: 'ep3', titulo: { es: 'Progreso ep. 3', en: 'Ep. 3 progress' }, html: () => {
@@ -554,29 +557,29 @@
 
       // ---------- Misión 1 · «¿Qué flota?» ----------
       function papa() {
-        if (S.step === 0) { G.dialogo.say(L('interact:papa'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); G.ui.toast('Predice qué flota en la mesa del plano', 3000); }); return; }
+        if (S.step === 0) { decir(L('interact:papa'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); G.ui.toast('Predice qué flota en la mesa del plano', 3000); }); return; }
         const fr = { 1: 'La mesa del plano está aquí al lado. Predice primero.', 2: 'Suelta cada cosa en la poza y mira qué pasa.', 3: 'Amarre doble, mija. Ya lo escribí en el plano.' };
-        G.dialogo.say([di('Papá', S.complete ? '¡Llegaron! Lo sabía.' : fr[S.step] || 'Ese bote va a llegar lejos.')]);
+        decir([di('Papá', S.complete ? '¡Llegaron! Lo sabía.' : fr[S.step] || 'Ese bote va a llegar lejos.')]);
       }
-      G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 0 ? 'Hablar con el papá' : 'Hablar con el papá', use: papa });
+      G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 3.6, label: () => S.step === 0 ? 'Hablar con el papá' : 'Hablar con el papá', use: papa });
       G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => 'Hablar con la abuela',
-        use: () => G.dialogo.say([di('Abuela', S.complete ? 'Me contaron que preguntaste antes de contar. Así se llega lejos.' : G.eventos.had('BoatLaunched') ? 'Que no se vire, ¿eh? Y escucha a quien conoce el agua.' : 'Yo vuelo poco ya, mi niña. Un bote nos llevaría a todos.')]) });
+        use: () => decir([di('Abuela', S.complete ? 'Me contaron que preguntaste antes de contar. Así se llega lejos.' : G.eventos.had('BoatLaunched') ? 'Que no se vire, ¿eh? Y escucha a quien conoce el agua.' : 'Yo vuelo poco ya, mi niña. Un bote nos llevaría a todos.')]) });
       G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.2, label: () => S.step === 1 ? 'Predecir qué flota' : 'Mirar el plano del bote',
         use: () => {
           if (S.step === 1) {
             elegir('Vittata', '¿Qué flota: la piedra, el tronco, el bambú, la tabla, el coco o el clavo viejo?', PREDICCIONES.map(p => ({ label: p[1], k: p[0] })), o => {
               poner('prediccion_' + o.k); G.audio.play('tick'); G.misiones.advanceTo(2);
-              G.dialogo.say([Vi('Lo apunto en el plano. Ahora, a probarlo en la poza.')], () => G.ui.toast('Suelta los 6 materiales en la poza', 3000));
+              decir([Vi('Lo apunto en el plano. Ahora, a probarlo en la poza.')], () => G.ui.toast('Suelta los 6 materiales en la poza', 3000));
             });
             return;
           }
-          G.dialogo.say([Vi(G.eventos.had('MaterialsTested') ? 'En el plano: flotan el tronco, el bambú, la tabla y el coco; se hunden la piedra y el clavo.' : 'El plano: casco, amarre doble y que no se vire.')]);
+          decir([Vi(G.eventos.had('MaterialsTested') ? 'En el plano: flotan el tronco, el bambú, la tabla y el coco; se hunden la piedra y el clavo.' : 'El plano: casco, amarre doble y que no se vire.')]);
         } });
       function terminarPrueba() {
         if (G.eventos.had('MaterialsTested') || probados().length < 6 || HUNDEN.some(m => !tiene('recuperado_' + m.id))) return;
         G.eventos.log('MaterialsTested'); G.audio.play('unlock'); registrar();
         const pred = valor('prediccion_', PREDICCIONES.map(p => p[0]));
-        G.dialogo.say([Vi('Flotaron el tronco, el bambú, la tabla y el coco. La piedra y el clavo se hundieron.'),
+        decir([Vi('Flotaron el tronco, el bambú, la tabla y el coco. La piedra y el clavo se hundieron.'),
           di('Papá', pred === 'madera' ? 'Lo predijiste bien. Y fíjate: el tronco grande también flota.' : 'No era lo que pensabas, ¿verdad? Para eso se prueba.'),
           Vi('Ya sé con qué puedo hacer el casco. ¡Al astillero!')], () => { G.misiones.check(); G.ui.toast('Arma el bote en el astillero', 3000); });
       }
@@ -589,11 +592,11 @@
             poner('probado_' + m.id); const P = piezas[m.id]; P.y0 = P.mesh.position.y + 1; P.t = 0; dibujarMateriales();
             if (G.agua.splash) G.agua.splash(AGUA_X, nivelRio(), m.z, 0.7);
             G.audio.play('pickup'); G.misiones.check();
-            G.dialogo.say([Vi(m.frase)], terminarPrueba);
+            decir([Vi(m.frase)], terminarPrueba);
           } });
         if (!m.flota) G.interaccion.add({ id: 'fondo_' + m.id, x: AGUA_X, z: m.z, r: 1.3, visible: () => tiene('probado_' + m.id) && !tiene('recuperado_' + m.id),
           label: () => m.bucear,
-          use: () => { poner('recuperado_' + m.id); dibujarMateriales(); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say([Vi(m.tengo)], terminarPrueba); } });
+          use: () => { poner('recuperado_' + m.id); dibujarMateriales(); G.audio.play('pickup'); G.misiones.check(); decir([Vi(m.tengo)], terminarPrueba); } });
       }
 
       // El astillero: construir (4 decisiones), botar, ajustar y botar otra vez
@@ -603,7 +606,7 @@
         if (S.step === 5) return ajustar();
         if (S.step === 6) return botadura2();
         if (S.step >= 7 && S.canoa == null) return bautizar();
-        G.dialogo.say([Vi(S.step < 3 ? 'Aquí se arma el bote. Primero, saber qué flota.' : nombreCanoa() ? '«' + nombreCanoa() + '», la canoa que hicimos entre todos.' : 'La canoa que hicimos entre todos.')]);
+        decir([Vi(S.step < 3 ? 'Aquí se arma el bote. Primero, saber qué flota.' : nombreCanoa() ? '«' + nombreCanoa() + '», la canoa que hicimos entre todos.' : 'La canoa que hicimos entre todos.')]);
       }
       G.interaccion.add({ id: 'astillero', x: ASTILLERO.x, z: ASTILLERO.z, r: 2.6,
         label: () => ({ 3: 'Armar el bote', 4: 'Botar la canoa', 5: 'Arreglar la canoa', 6: 'Botar otra vez' })[S.step] || (S.step >= 7 && S.canoa == null ? 'Ponerle nombre a la canoa' : 'Mirar el astillero'), use: astillero });
@@ -611,7 +614,7 @@
         const d = DECISIONES.find(x => !valor('dec_' + x.parte + '_', x.opciones.map(o => o[0])));
         if (!d) {
           poner('dec_casco'); G.eventos.log('BoatBuilt'); G.audio.play('unlock'); dibujarCanoa(); G.misiones.check(); registrar();
-          G.dialogo.say([di('Papá', 'Ahí está la canoa. ¿Flotará derecha? Solo hay una forma de saberlo.')], () => G.ui.toast('Bota la canoa en el río', 3000));
+          decir([di('Papá', 'Ahí está la canoa. ¿Flotará derecha? Solo hay una forma de saberlo.')], () => G.ui.toast('Bota la canoa en el río', 3000));
           return;
         }
         elegir('Vittata', d.pregunta, d.opciones.map(o => ({ label: o[1], v: o[0] })), o => {
@@ -623,14 +626,14 @@
         encuadrar(BOTADURA.x, BOTADURA.z);
         G.eventos.log('LaunchTested', { outcome: 'falla:' + f.parte }); poner('falla_' + f.parte); dibujarCanoa();
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
-        G.dialogo.say([Vi('¡Al agua!'), Vi('¡Uy!'), Vi(f.que), di('Abuela', 'No pasa nada, mi niña: para eso se prueba. Ya sabes cuál es la parte más débil.')], () => { G.misiones.check(); registrar(); });
+        decir([Vi('¡Al agua!'), Vi('¡Uy!'), Vi(f.que), di('Abuela', 'No pasa nada, mi niña: para eso se prueba. Ya sabes cuál es la parte más débil.')], () => { G.misiones.check(); registrar(); });
       }
       function ajustar() {
         const f = falla();
         elegir('Papá', 'Cambia solo una parte. ¿Cuál?', Object.keys(ARREGLOS).map(k => ({ label: ARREGLOS[k], k })), o => {
-          if (o.k !== f.parte) { G.audio.play('wrong'); G.dialogo.say([di('Papá', 'Eso no fue lo que falló. Mira la marca roja.'), Vi(f.que)], ajustar); return; }
+          if (o.k !== f.parte) { G.audio.play('wrong'); decir([di('Papá', 'Eso no fue lo que falló. Mira la marca roja.'), Vi(f.que)], ajustar); return; }
           poner('mejora_' + o.k); G.audio.play('unlock'); dibujarCanoa(); G.eventos.log('BoatImproved', { choice: o.k }); registrar();
-          G.dialogo.say([Vi(ARREGLOS[o.k]), Vi('Listo.'), di('Papá', 'Ahora, otra vez al agua. Una sola prueba no basta.')], () => G.misiones.check());
+          decir([Vi(ARREGLOS[o.k]), Vi('Listo.'), di('Papá', 'Ahora, otra vez al agua. Una sola prueba no basta.')], () => G.misiones.check());
         });
       }
       function botadura2() {
@@ -638,13 +641,13 @@
         if (G.agua.splash) G.agua.splash(BOTADURA.x, nivelRio(), BOTADURA.z, 1.2);
         G.eventos.log('BoatLaunched'); G.comic.capture('bote'); G.audio.play('unlock'); dibujarCanoa(); colocarNavegante(); registrar();
         const y = nivelRio(); G.fx.burst(BOTADURA.x, y + 1.5, BOTADURA.z, 'gold', 30);
-        G.dialogo.say([Vi('Flota… ¡flota derechita!')].concat(L('evento:BoatLaunched')), () => { G.misiones.check(); bautizar(() => G.ui.toast('Habla con la navegante en el muelle', 3000)); });
+        decir([Vi('Flota… ¡flota derechita!')].concat(L('evento:BoatLaunched')), () => { G.misiones.check(); bautizar(() => G.ui.toast('Habla con la navegante en el muelle', 3000)); });
       }
       // D21 · El nombre de la canoa: de una lista corta o escrito con el filtro del creador de personaje (G.creador.filtroNombreLibre).
       // Si no escribe nada, queda sin nombre. Se guarda en S.canoa (partida del ep. 3). Si cierra la tarjeta, se pregunta en el astillero.
       const NOMBRES_CANOA = ['Coquí', 'Ceiba', 'Yagrumo', 'Esperanza'];
       function bautizar(hecho) {
-        G.dialogo.say([di('Abuela', 'Mi abuelo decía que un bote con nombre siempre encuentra el camino a casa.'), di('Abuela', 'Una canoa que flota merece un nombre. ¿Cómo la llamamos?')], () => {
+        decir([di('Abuela', 'Mi abuelo decía que un bote con nombre siempre encuentra el camino a casa.'), di('Abuela', 'Una canoa que flota merece un nombre. ¿Cómo la llamamos?')], () => {
           G.ui.showCard('<h2>' + 'Abuela' + '</h2><p>' + 'Una canoa que flota merece un nombre. ¿Cómo la llamamos?' + '</p><div class="row">' +
             NOMBRES_CANOA.map((n, i) => '<button class="btn" id="ch-' + i + '" type="button">' + n + '</button>').join('') + '</div>' +
             '<p><label for="canoa-nombre">' + 'O escríbelo tú (de 3 a 14 letras):' + '</label></p><div class="row"><input id="canoa-nombre" maxlength="14" autocomplete="off" enterkeyhint="done">' +
@@ -653,7 +656,7 @@
           const $ = G.util.$, fin = n => {
             G.ui.hideCard(); S.canoa = n; G.audio.play(n ? 'unlock' : 'tick');
             if (n && window.AVTemporada) window.AVTemporada.apuntar(3, { canoa: n }); // D11: el ep. 4 la nombra
-            G.dialogo.say(n ? [Vi('¡Se llamará «' + n + '»!'), di('Abuela', '«' + n + '». Suena a casa.')] : [Vi('Por ahora, sin nombre. Ya se lo ganará.')], hecho);
+            decir(n ? [Vi('¡Se llamará «' + n + '»!'), di('Abuela', '«' + n + '». Suena a casa.')] : [Vi('Por ahora, sin nombre. Ya se lo ganará.')], hecho);
           };
           NOMBRES_CANOA.forEach((n, i) => { $('ch-' + i).onclick = () => fin(n); });
           $('ch-' + NOMBRES_CANOA.length).onclick = () => fin('');
@@ -670,11 +673,11 @@
       }
 
       // ---------- Misión 2 · «Leer el agua» ----------
-      function observar(k, lineas) { if (tiene(k)) { G.dialogo.say(lineas.slice(0, 1)); return; } poner(k); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say(lineas, finLectura); }
+      function observar(k, lineas) { if (tiene(k)) { decir(lineas.slice(0, 1)); return; } poner(k); G.audio.play('pickup'); G.misiones.check(); decir(lineas, finLectura); }
       function finLectura() {
         if (!OBS.every(tiene) || tiene('lectura_hecha')) return;
         poner('lectura_hecha'); registrar();
-        G.dialogo.say([Vi('Viento del mar con rachas, nubes bajas y oscuras que crecen y una corriente que baja rápido. Vale: hoy no.')], () => G.ui.toast('Vuelve con la navegante', 3000));
+        decir([Vi('Viento del mar con rachas, nubes bajas y oscuras que crecen y una corriente que baja rápido. Vale: hoy no.')], () => G.ui.toast('Vuelve con la navegante', 3000));
       }
       const OBS_TXT = {
         poste_muelle: ['La cinta del muelle apunta hacia el monte: el viento viene del mar, y fuerte.'],
@@ -688,17 +691,17 @@
         label: () => 'Soltar una semilla en el río', use: () => { semillaT = 0; observar('obs_semilla', [Vi('La semilla se va río abajo, rápido. Así de fuerte va la corriente.')]); } });
 
       function navegante() {
-        if (S.step < 7) { G.dialogo.say([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
+        if (S.step < 7) { decir([Na('Bonita canoa. ¿Y quién la va a llevar?')]); return; }
         if (S.step === 7) encuadrar(NAVEGANTE.x, NAVEGANTE.z);
         if (S.step === 7) { G.eventos.log('NavigatorMet'); registrar(); if (window.AVTemporada) window.AVTemporada.encontrar(3, 'navegante'); // D32: llega al ep. 6
-          G.dialogo.say(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
-        if (S.step === 8) { G.dialogo.say([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
+          decir(L('evento:NavigatorMet'), () => { G.misiones.check(); G.ui.toast('Lee el agua: los 2 postes, las nubes y la corriente', 3200); }); return; }
+        if (S.step === 8) { decir([Na('Mira las dos cintas, las nubes desde el mirador y suelta una semilla en el río. Llevas ' + OBS.filter(tiene).length + ' de 4.')]); return; }
         if (S.step === 9) { acordar(); return; }
-        if (S.step === 10) { G.dialogo.say([Na('Te espero río arriba, junto a la canoa.')]); return; }
+        if (S.step === 10) { decir([Na('Te espero río arriba, junto a la canoa.')]); return; }
         if (S.step === 11) { elegirTimon(); return; }
-        if (S.step === 12) { G.dialogo.say([Na(timon() === 'vittata' ? 'Tú al timón; yo te canto el agua. Sube cuando quieras.' : 'Yo al timón; tú remas a mi señal. Sube cuando quieras.')]); return; }
-        if (S.complete && AU.activo && !todasPreguntadas()) { G.dialogo.say([Na('Iguaca te espera en Villa Raíz con unas preguntas. Sin prisa.')]); return; }
-        G.dialogo.say([Na(S.complete ? 'Mañana volvemos, con el viento de tierra.' : 'El agua se lee como una vecina: hay que saludarla primero.')]);
+        if (S.step === 12) { decir([Na(timon() === 'vittata' ? 'Tú al timón; yo te canto el agua. Sube cuando quieras.' : 'Yo al timón; tú remas a mi señal. Sube cuando quieras.')]); return; }
+        if (S.complete && AU.activo && !todasPreguntadas()) { decir([Na('Iguaca te espera en Villa Raíz con unas preguntas. Sin prisa.')]); return; }
+        decir([Na(S.complete ? 'Mañana volvemos, con el viento de tierra.' : 'El agua se lee como una vecina: hay que saludarla primero.')]);
       }
       G.interaccion.add({ id: 'navegante', x: NAVEGANTE.x, z: NAVEGANTE.z, r: 2.4, visible: () => G.eventos.had('BoatLaunched') && !viaje,
         label: () => ({ 7: 'Hablar con la navegante', 9: 'Acordar las señales', 11: 'Decidir quién lleva el timón' })[S.step] || 'Hablar con la navegante', use: navegante });
@@ -707,20 +710,20 @@
         const o = ORDENES.find(x => !senalDe(x[0]));
         if (!o) {
           G.eventos.log('SignalsAgreed'); G.audio.play('unlock'); dibujarCanoa(); registrar();
-          G.dialogo.say([Na('Hecho. En el agua hay ruido: viento, olas, lluvia. Con señales nos entendemos.'), Na('Mañana sale el viento de tierra. Hoy practicamos en el río: te espero río arriba, junto a la canoa.')],
+          decir([Na('Hecho. En el agua hay ruido: viento, olas, lluvia. Con señales nos entendemos.'), Na('Mañana sale el viento de tierra. Hoy practicamos en el río: te espero río arriba, junto a la canoa.')],
             () => { G.misiones.check(); G.ui.toast('Practica río abajo en la canoa', 3000); });
           return;
         }
-        if (!tiene('senales_intro')) { poner('senales_intro'); G.dialogo.say([Na('En el agua no siempre se oye. Elige una señal para cada orden: izquierda, derecha y parar.')], acordar); return; }
+        if (!tiene('senales_intro')) { poner('senales_intro'); decir([Na('En el agua no siempre se oye. Elige una señal para cada orden: izquierda, derecha y parar.')], acordar); return; }
         elegir('Navegante', PREG_ORDEN[o[0]], libres.map(s => ({ label: SENALES[s], s })), r => { poner('sen_' + o[0] + '_' + r.s); G.audio.play('tick'); acordar(); });
       }
       // Una señal en el agua: la navegante la hace y el jugador responde según su código. Si falla: pista con el código, sin castigo
       function senal(orden, seguir, intro) {
-        if (intro) { G.dialogo.say([Na(intro)], () => senal(orden, seguir)); return; }
+        if (intro) { decir([Na(intro)], () => senal(orden, seguir)); return; }
         const s = senalDe(orden), pide = timon() === 'navegante' ? '¿Qué te pide que hagas?' : '¿Qué haces?';
         G.audio.play('tick');
         elegir('Navegante', DESC[s] + ' ' + pide, ORDENES.map(o => ({ label: o[1], v: o[0] })), r => {
-          if (r.v !== orden) { G.audio.play('wrong'); G.dialogo.say([Na('¡Atenta! Repasa el código:')].concat(ORDENES.map(o => Na(COD[senalDe(o[0])][o[0]]))), () => senal(orden, seguir)); return; }
+          if (r.v !== orden) { G.audio.play('wrong'); decir([Na('¡Atenta! Repasa el código:')].concat(ORDENES.map(o => Na(COD[senalDe(o[0])][o[0]]))), () => senal(orden, seguir)); return; }
           G.audio.play('pickup'); seguir();
         });
       }
@@ -729,23 +732,24 @@
         elegir('Navegante', 'Llueve y sopla fuerte. La navegante silba… pero el viento se lleva el silbido. ¿Qué hacen?', [
           { label: 'Silbar más fuerte', v: 0 }, { label: 'Cambiar el silbido por levantar el remo: se ve de cerca y el viento no lo tapa', v: 1 },
         ], o => {
-          if (!o.v) { G.audio.play('wrong'); G.dialogo.say([Vi('¡Más fuerte!… Nada: el viento lo tapa otra vez.')], () => chubasco(orden, seguir)); return; }
+          if (!o.v) { G.audio.play('wrong'); decir([Vi('¡Más fuerte!… Nada: el viento lo tapa otra vez.')], () => chubasco(orden, seguir)); return; }
           S.collected = S.collected.filter(k => k !== 'sen_' + orden + '_silbido'); poner('sen_' + orden + '_remo'); poner('cambio_silbido'); registrar();
-          G.dialogo.say([Na('Buena idea. Desde ahora:'), Na(COD.remo[orden])], () => senal(orden, () => { G.fx.rain.visible = false; seguir(); }));
+          decir([Na('Buena idea. Desde ahora:'), Na(COD.remo[orden])], () => senal(orden, () => { G.fx.rain.visible = false; seguir(); }));
         });
       }
       // La práctica: tres señales río abajo; la que es el silbido falla con el chubasco y se cambia (una vez)
       function practica() {
-        if (S.step !== 10) { G.dialogo.say([Vi(S.step < 10 ? 'La canoa espera aquí para la práctica.' : 'Aquí practicamos las señales.')]); return; }
+        if (S.step !== 10) { decir([Vi(S.step < 10 ? 'La canoa espera aquí para la práctica.' : 'Aquí practicamos las señales.')]); return; }
         const paradas = {};
         ORDENES.forEach((o, i) => { paradas[i + 1] = seguir => (senalDe(o[0]) === 'silbido' && !tiene('cambio_silbido') ? chubasco(o[0], seguir) : senal(o[0], seguir)); });
-        G.dialogo.say([Na('Sube. Yo te hago las señales y tú respondes. La canoa no se sale del cauce.')], () => navegar(RUTAS.rio, nivelRio(), finPractica, { paradas }));
+        decir([Na('Sube. Yo te hago las señales y tú respondes. La canoa no se sale del cauce.')], () => navegar(RUTAS.rio, nivelRio(), finPractica, { paradas }));
       }
       function finPractica() {
         G.fx.rain.visible = false;
-        S.pos.x = 15.2; S.pos.z = 11; S.pos.y = H(15.2, 11); lastOk = { x: S.pos.x, z: S.pos.z };
+        const finP = T(15.2, 11); // el final de la práctica: en el mapa real no es el (15, 11) del mundo pequeño
+        S.pos.x = finP.x; S.pos.z = finP.z; S.pos.y = H(finP.x, finP.z); lastOk = { x: S.pos.x, z: S.pos.z };
         G.eventos.log('PracticeDone'); dibujarCanoa(); registrar(); G.misiones.check();
-        G.dialogo.say([Na('Nos entendemos. Una señal falló y la cambiamos juntas: así se hace.')], elegirTimon);
+        decir([Na('Nos entendemos. Una señal falló y la cambiamos juntas: así se hace.')], elegirTimon);
       }
       G.interaccion.add({ id: 'practica', x: PRACTICA.x, z: PRACTICA.z, r: 2.4, visible: () => S.step >= 10 && !viaje,
         label: () => S.step === 10 ? 'Subir a la canoa con la navegante' : 'Mirar el río', use: practica });
@@ -753,16 +757,16 @@
         if (S.step !== 11) return;
         elegir('Vittata', 'Mañana cruzamos la bahía. ¿Quién lleva el timón?', [{ label: 'Lo llevo yo, que lo hice', v: 'vittata' }, { label: 'Llévalo tú, que sabes leer el agua', v: 'navegante' }], o => {
           poner('timon_' + o.v); G.eventos.log('HelmChosen', { choice: o.v }); G.comic.capture('senales'); G.audio.play('unlock'); registrar();
-          G.dialogo.say(o.v === 'vittata' ? [Vi('Lo llevo yo, que lo hice.'), Na('Pues yo te canto el agua.')] : [Vi('Llévalo tú, que sabes. Gracias por volver a salir.'), Na('Gracias a ti por dejarme.')],
+          decir(o.v === 'vittata' ? [Vi('Lo llevo yo, que lo hice.'), Na('Pues yo te canto el agua.')] : [Vi('Llévalo tú, que sabes. Gracias por volver a salir.'), Na('Gracias a ti por dejarme.')],
             () => { G.misiones.check(); G.ui.toast('Al día siguiente: el viento está a favor. Ve al muelle.', 3200); });
         });
       }
 
       // ---------- Misión 3 · «Más allá de la bahía» ----------
       function travesia() {
-        if (S.step !== 12) { G.dialogo.say([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
+        if (S.step !== 12) { decir([Vi(S.step < 12 ? 'El muelle. Desde aquí se sale a la bahía.' : 'Por aquí salimos a la bahía.')]); return; }
         rumbo = { x: ALDEA.x, z: ALDEA.z };
-        G.dialogo.say([di('Abuela', nombreCanoa() ? 'Van cargadas en «' + nombreCanoa() + '»: fibra trenzada, semillas y herramientas. ¡Buen viaje!' : 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
+        decir([di('Abuela', nombreCanoa() ? 'Van cargadas en «' + nombreCanoa() + '»: fibra trenzada, semillas y herramientas. ¡Buen viaje!' : 'Van cargadas: fibra trenzada, semillas y herramientas. ¡Buen viaje!'), Na('Viento de tierra, a favor. Vamos.')],
           () => navegar(RUTAS.boca, MAR, rutaElegir, { paradas: { 1: s => senal('izquierda', s, 'En la boca de la bahía las olas cruzan entre dos rocas.'), 2: s => senal('derecha', s) } }));
       }
       G.interaccion.add({ id: 'muelle', x: MUELLE.x, z: MUELLE.z, r: 2.4, visible: () => !viaje,
@@ -772,22 +776,22 @@
         elegir('Navegante', 'Viene un chubasco. ¿Por dónde vamos?', [{ label: 'El atajo: corto, con el viento de frente', v: 'atajo' }, { label: 'Por la costa: más largo y más seco', v: 'costa' }], o => {
           poner('ruta_' + o.v); registrar();
           const lin = o.v === 'atajo' ? [Vi('Por el atajo, que es más corto.'), Na('Pues agárrate: la carga se va a mojar.')] : [Vi('Por la costa. Mejor llegar secas, aunque sea al atardecer.'), Na('Buena elección: la costa nos abriga.')];
-          G.dialogo.say(lin, () => navegar(RUTAS[o.v], MAR, bajio, { paradas: o.v === 'atajo' ? { 1: achicar } : { 2: s => senal('para', s, 'Unas rocas asoman junto a la costa.') } }));
+          decir(lin, () => navegar(RUTAS[o.v], MAR, bajio, { paradas: o.v === 'atajo' ? { 1: achicar } : { 2: s => senal('para', s, 'Unas rocas asoman junto a la costa.') } }));
         });
       }
       function achicar(seguir) {
         elegir('Navegante', 'Las olas entran por la proa y la carga se moja. ¿Qué haces?', [{ label: 'Achicar el agua con la jícara', v: 1 }, { label: 'Remar más rápido sin mirar', v: 0 }], o => {
-          if (!o.v) { G.audio.play('wrong'); G.dialogo.say([Na('Así se llena más. Primero saca el agua.')], () => achicar(seguir)); return; }
-          poner('carga_mojada'); G.audio.play('pickup'); G.dialogo.say([Vi('¡Fuera agua! La fibra se mojó un poco, pero llegamos.')], seguir);
+          if (!o.v) { G.audio.play('wrong'); decir([Na('Así se llena más. Primero saca el agua.')], () => achicar(seguir)); return; }
+          poner('carga_mojada'); G.audio.play('pickup'); decir([Vi('¡Fuera agua! La fibra se mojó un poco, pero llegamos.')], seguir);
         });
       }
       function bajio() {
         G.fx.rain.visible = false;
-        G.dialogo.say([Na('Por aquí… ¡no! El fondo sube. Me equivoqué de paso.'), Na('Me equivoqué. Atrás.')], () => elegir('Vittata', '¿Qué hacemos?', [
+        decir([Na('Por aquí… ¡no! El fondo sube. Me equivoqué de paso.'), Na('Me equivoqué. Atrás.')], () => elegir('Vittata', '¿Qué hacemos?', [
           { label: 'Atrás, pues. Juntas', v: 'atras' }, { label: 'Busquemos otro paso, más hacia afuera', v: 'otro' },
         ], o => {
           poner('bajio_' + o.v); registrar();
-          G.dialogo.say(o.v === 'atras' ? [Vi('Atrás, pues. Juntas. A cualquiera le pasa.'), Na('Gracias por no culparme.')] : [Vi('Allí el agua es más oscura: más honda. ¿Probamos?'), Na('Bien visto. Probemos tu paso.')],
+          decir(o.v === 'atras' ? [Vi('Atrás, pues. Juntas. A cualquiera le pasa.'), Na('Gracias por no culparme.')] : [Vi('Allí el agua es más oscura: más honda. ¿Probamos?'), Na('Bien visto. Probemos tu paso.')],
             () => navegar(RUTAS[o.v], MAR, llegar));
         }));
       }
@@ -797,31 +801,31 @@
         S.pos.x = ALDEA.x; S.pos.z = ALDEA.z; S.pos.y = H(ALDEA.x, ALDEA.z); lastOk = { x: S.pos.x, z: S.pos.z };
         encuadrar(VECINA.x, VECINA.z);
         dibujarCanoa(); colocarNavegante(); registrar(); G.misiones.check();
-        G.dialogo.say([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
+        decir([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
       }
       // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4. Kelvin 2-nov: la otra
       // comunidad es Villa Mangle (decisión 2 de EP3_GDD §10). Siguen abiertas las decisiones 4, 7 y 8 [KELVIN].
       function vecina() {
-        if (S.step < 13) { G.dialogo.say([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
+        if (S.step < 13) { decir([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
         if (!G.eventos.had('CommunityReached')) {
           G.eventos.log('CommunityReached'); registrar(); G.misiones.check();
-          G.dialogo.say([di('Vecina', '¿Y ustedes quiénes son? ¿De dónde salieron con ese bote?')], saludar);
+          decir([di('Vecina', '¿Y ustedes quiénes son? ¿De dónde salieron con ese bote?')], saludar);
           return;
         }
         saludar();
       }
       function saludar() {
         elegir('Vittata', '¿Qué le dices?', [{ label: '¡Miren el bote que hicimos! Lo construimos nosotras', v: 'contar' }, { label: 'Hola. ¿Cómo se llama este sitio y quiénes viven aquí?', v: 'preguntar' }], o => {
-          if (o.v === 'contar') { G.dialogo.say([di('Vecina', 'Botes aquí sobran, mija. Mira la orilla.'), Vi('Tiene razón. Perdón: mejor pregunto primero.')], saludar); return; }
+          if (o.v === 'contar') { decir([di('Vecina', 'Botes aquí sobran, mija. Mira la orilla.'), Vi('Tiene razón. Perdón: mejor pregunto primero.')], saludar); return; }
           poner('pregunto'); G.audio.play('tick');
-          G.dialogo.say([di('Vecina', 'Gracias por preguntar. Esto es Villa Mangle. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.'), di('Vecina', 'Sabemos de agua y de redes. Y también tenemos un transmisor: oímos una voz.'),
+          decir([di('Vecina', 'Gracias por preguntar. Esto es Villa Mangle. Aquí vivimos los que salimos adelante después de la Ruptura, como ustedes.'), di('Vecina', 'Sabemos de agua y de redes. Y también tenemos un transmisor: oímos una voz.'),
             Vi('¡Nosotras también! Lo que oímos encaja con lo suyo, como dos mitades.')], intercambio);
         });
       }
       function intercambio() {
         elegir('Vittata', '¿Qué les ofrecemos?', [{ label: 'Cómo hicimos la casa que aguanta la tormenta', v: 'casa' }, { label: 'La fibra trenzada del papá', v: 'fibra' }], o => {
           poner('intercambio_' + o.v); G.audio.play('unlock');
-          G.dialogo.say([di('Vecina', o.v === 'casa' ? 'Eso nos sirve: aquí el viento se lleva los techos.' : 'Fibra buena. Con esto tejemos redes nuevas.'), di('Vecina', 'Y nosotros les enseñamos a tejer una nasa, para pescar sin pasar hambre.'),
+          decir([di('Vecina', o.v === 'casa' ? 'Eso nos sirve: aquí el viento se lleva los techos.' : 'Fibra buena. Con esto tejemos redes nuevas.'), di('Vecina', 'Y nosotros les enseñamos a tejer una nasa, para pescar sin pasar hambre.'),
             di('Vecina', 'Antes de que se vayan: miren este plano. Un camino para unir las dos orillas. Ayudaría a todos… pero hay que cortar mucho bosque.'),
             Vi('…Déjame pensarlo.')], terminar);
         });
@@ -832,7 +836,7 @@
         G.fx.burst(ALDEA.x, H(ALDEA.x, ALDEA.z) + 3, ALDEA.z, 'gold', 40); G.fx.burst(ALDEA.x, H(ALDEA.x, ALDEA.z) + 3, ALDEA.z, 'feathers', 30);
         S.complete = true; E().fin = S.clock; G.misiones.check();
         G.misiones.advanceTo(G.misiones.DONE); registrar();
-        G.dialogo.say(L('evento:Chapter3Completed'), () => G.misiones.showEnd());
+        decir(L('evento:Chapter3Completed'), () => G.misiones.showEnd());
       }
       G.interaccion.add({ id: 'vecina', x: VECINA.x, z: VECINA.z, r: 2.4, label: () => S.step === 13 ? 'Saludar' : 'Hablar con la vecina', use: vecina });
 
@@ -840,7 +844,7 @@
       function hablar() {
         if (S.complete && AU.activo && !todasPreguntadas()) {
           elegir('Iguaca', '¡Cruzaste la bahía! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.',
-            [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
+            [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else decir([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
         const pistas = {
@@ -851,7 +855,7 @@
           8: 'Mira las dos cintas, las nubes desde el mirador y la corriente del río.', 9: 'Acuerda las señales con la navegante.',
           10: 'La canoa te espera río arriba.', 11: '¿Quién lleva el timón? Con las dos respuestas se llega.', 12: 'Sube a la canoa en el muelle.', 13: 'Saluda a la gente de la otra orilla.',
         };
-        G.dialogo.say([Lu(S.complete ? '¡Cruzaste la bahía! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
+        decir([Lu(S.complete ? '¡Cruzaste la bahía! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
       G.interaccion.add({ id: 'iguaca', x: IGUACA.x, z: IGUACA.z, r: 2.4, label: () => 'Hablar con Iguaca', use: hablar });
 

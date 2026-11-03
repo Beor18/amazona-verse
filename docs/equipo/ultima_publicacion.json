@@ -1,14 +1,14 @@
 {
- "codigo": "3d23f6b623e2a453c17329be855f644c9a920a35",
+ "codigo": "25148537cc035e25ffa825f70a0968742731ce2b",
  "sitio": null,
- "fecha": "2026-11-03T11:59:48Z",
+ "fecha": "2026-11-03T13:20:52Z",
  "nota": "13 baterías en verde en la Mac con GPU real",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-03T07:49:50-04:00",
-  "duracion_s": 590.0,
+  "inicio": "2026-11-03T09:12:42-04:00",
+  "duracion_s": 483.0,
   "chrome": "Chrome/157.0.8103.26",
-  "huella_build": "7f50b676442aa13ffa954fc42011f1ccfc62be067eac00b357a64981b6c757d5",
+  "huella_build": "4d6d4ac6080ee5124f80177bede0adfc90103e75befdcf46377785e60c65e681",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -183,7 +183,7 @@
   },
   "streamingTest": {
    "requerida": false,
-   "passed": 22,
+   "passed": 21,
    "total": 23,
    "ok": false
   },
@@ -207,9 +207,9 @@
   },
   "camaraTest": {
    "requerida": false,
-   "passed": 13,
+   "passed": 14,
    "total": 14,
-   "ok": false
+   "ok": true
   },
   "accesibilidadTest": {
    "requerida": false,
@@ -279,9 +279,9 @@
   },
   "banqueteTest": {
    "requerida": false,
-   "passed": 44,
+   "passed": 43,
    "total": 44,
-   "ok": true
+   "ok": false
   },
   "minimapaTest": {
    "requerida": false,
@@ -447,27 +447,27 @@
   },
   "ep3e2eTest": {
    "requerida": false,
-   "passed": 21,
-   "total": 27,
-   "ok": false
+   "passed": 57,
+   "total": 57,
+   "ok": true
   },
   "ep4e2eTest": {
    "requerida": false,
-   "passed": 23,
-   "total": 29,
-   "ok": false
+   "passed": 49,
+   "total": 49,
+   "ok": true
   },
   "ep5e2eTest": {
    "requerida": false,
-   "passed": 27,
-   "total": 33,
-   "ok": false
+   "passed": 51,
+   "total": 51,
+   "ok": true
   },
   "ep5e2eRealTest": {
    "requerida": false,
-   "passed": 12,
-   "total": 15,
-   "ok": false
+   "passed": 24,
+   "total": 24,
+   "ok": true
   },
   "ep6e2eTest": {
    "requerida": false,
@@ -483,7 +483,7 @@
   },
   "temporadaRealTest": {
    "requerida": false,
-   "passed": 5,
+   "passed": 7,
    "total": 10,
    "ok": false
   }
@@ -494,25 +494,20 @@
   "muestras_error": []
  },
  "carga_inicial_mb": 9.12,
- "heap_mb": 88.8,
+ "heap_mb": 85.6,
  "fallas": [],
  "avisos": [
   "AV.bohiosTest (extra, no obligatoria) no pasa: 26/27",
   "AV.contextTest (extra, no obligatoria) no pasa: 29/30",
-  "AV.streamingTest (extra, no obligatoria) no pasa: 22/23",
-  "AV.camaraTest (extra, no obligatoria) no pasa: 13/14",
+  "AV.streamingTest (extra, no obligatoria) no pasa: 21/23",
   "AV.accesibilidadTest (extra, no obligatoria) no pasa: 40/41",
   "AV.bandadaTest (extra, no obligatoria) no pasa: 15/17",
+  "AV.banqueteTest (extra, no obligatoria) no pasa: 43/44",
   "AV.idiomaTest (extra, no obligatoria) no pasa: 20/31",
   "AV.zonas56Test (extra, no obligatoria) no pasa: 18/19",
-  "AV.ep3e2eTest (extra, no obligatoria) no pasa: 21/27",
-  "AV.ep4e2eTest (extra, no obligatoria) no pasa: 23/29",
-  "AV.ep5e2eTest (extra, no obligatoria) no pasa: 27/33",
-  "AV.ep5e2eRealTest (extra, no obligatoria) no pasa: 12/15",
   "AV.ep6e2eTest (extra, no obligatoria) no pasa: 44/49",
   "AV.ep6e2eRealTest (extra, no obligatoria) no pasa: 21/23",
-  "AV.temporadaRealTest (extra, no obligatoria) no pasa: 5/10",
-  "presupuesto: 168 draw calls en la vista de arranque (límite 150)",
-  "presupuesto: 496.9 MB de texturas en la vista de arranque (límite 300)"
+  "AV.temporadaRealTest (extra, no obligatoria) no pasa: 7/10",
+  "presupuesto: 169 draw calls en la vista de arranque (límite 150)"
  ]
 }
