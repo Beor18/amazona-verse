@@ -102,11 +102,25 @@ AVE.module('diario', function (G) {
     }).join('');
     return `<details class="especies"><summary class="lbl lbl-especies">${esc(tx('titulo'))} <small>${L.length} ${esc(tx('especies'))}</small></summary><ul class="diary especies">${items}</ul></details>`;
   }
+  // Ropa del Diario: el nombre y, si hay, la pista. Sin pista no se imprime «(undefined)» (QA-94).
+  const textoRopa = s => {
+    if (s == null || s === '' || s === 'undefined' || s === 'null') return '';
+    const t = String(s);
+    return (G.idioma && G.idioma.tr) ? G.idioma.tr(t) : t;
+  };
+  function htmlRopa(lista, desbloqueada) {
+    return (lista || []).map(u => {
+      const tiene = !!(u && desbloqueada(u.clave));
+      const nombre = textoRopa(u && u.nombre);
+      const pista = textoRopa(u && u.pista);
+      return `<li class="${tiene ? 'found' : ''}">${tiene ? '✓' : '·'} ${nombre}${pista ? ` <small>(${pista})</small>` : ''}</li>`;
+    }).join('');
+  }
   function open() {
     const items = entries.map(f => S.field.includes(f.id)
       ? `<li class="found"><span class="ico ${f.cat}" aria-hidden="true"></span><div><b>${f.nombre}</b><small>${f.texto}</small></div></li>`
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${(cats[f.cat] || {}).desconocido || 'Algo'} por descubrir</small></div></li>`).join('');
-    const ropa = G.misiones.unlocks.map(u => `<li class="${S.unlocked.includes(u.clave) ? 'found' : ''}">${S.unlocked.includes(u.clave) ? '✓' : '·'} ${u.nombre}${u.pista ? ` <small>(${u.pista})</small>` : ''}</li>`).join('');
+    const ropa = htmlRopa(G.misiones.unlocks, k => S.unlocked.includes(k));
     const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
     G.ui.showCard(`<h2>${D.titulo || 'Diario'}</h2><p class="note">${S.field.length}/${total}${byCat}</p>
       <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
@@ -153,6 +167,7 @@ AVE.module('diario', function (G) {
     check('Las que siguen sin coincidir con el catálogo (tresmariae, sin evaluación propia) van sin estado UICN', todas.filter(difiere).length >= 1 && disc.every(e => { const s = L.find(x => x.id === e.id); return s && !s.uicn && !s.evaluacion; }), `${disc.length} con datos de ${todas.filter(difiere).length}`);
     check('Las que coinciden sí traen estado UICN', L.filter(s => s.uicn).length === L.length - sinUicn.length && L.some(s => s.id === 'vittata' && s.uicn === 'CR'));
     const aj = G.aula && G.aula.aj, ant = aj && aj.idioma;
+    const lang0 = G.idioma && G.idioma.actual ? G.idioma.actual() : null;
     try {
       for (const l of ['es', 'en']) {
         if (aj) aj.idioma = l;
@@ -164,8 +179,24 @@ AVE.module('diario', function (G) {
         check(`[${l}] El loro diadema ya trae su estado verificado (${E.categorias.LC[l]}, LC; Kelvin 2-nov)`, !!fila && fila.querySelector('.uicn').textContent.includes(E.categorias.LC[l] + ' (LC)'));
         const v = d.querySelector('[data-especie=vittata]');
         check(`[${l}] La cotorra muestra ${E.categorias.CR[l]} (CR) y la cita de BirdLife`, !!v && v.querySelector('.uicn').textContent.includes(E.categorias.CR[l] + ' (CR)') && /BirdLife/.test(v.querySelector('.fuente').textContent));
+        if (G.idioma && G.idioma.poner) await G.idioma.poner(l);
+        const ropa = document.createElement('div');
+        ropa.innerHTML = htmlRopa([
+          { clave: 'mano:mapa', nombre: 'Carta de la bahía', pista: 'cruzar la bahía' },
+          { clave: 'botas:constructor', nombre: 'Botas de constructor', pista: 'una casa que aguanta' },
+          { clave: 'sin', nombre: 'Sin dato' },
+          { clave: 'roto', nombre: 'Rota', pista: undefined },
+        ], () => true);
+        const rt = ropa.textContent;
+        check(`[${l}] Carta de la bahía y Botas de constructor muestran su pista, y sin pista no sale «undefined»`,
+          !/undefined|\(null\)/.test(rt) && /Carta de la bahía|Bay chart/.test(rt) && /cruzar la bahía|crossing the bay/.test(rt) &&
+          /Botas de constructor|Builder/.test(rt) && /una casa que aguanta|a house that holds/.test(rt) &&
+          /Sin dato/.test(rt) && !/Sin dato\s*\(/.test(rt) && /Rota/.test(rt) && !/Rota\s*\(/.test(rt), rt);
       }
-    } finally { if (aj) aj.idioma = ant; }
+    } finally {
+      if (aj) aj.idioma = ant;
+      if (lang0 && G.idioma && G.idioma.poner && G.idioma.actual && G.idioma.actual() !== lang0) await G.idioma.poner(lang0);
+    }
     // La tarjeta real, estrecha: la sección existe, se abre y no desborda
     const card = $('card');
     if (card && card.hidden !== false || !G.ui.overlayOpen()) {
