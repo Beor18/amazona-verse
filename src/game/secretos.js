@@ -11,7 +11,7 @@ AVE.module('secretos', function (G) {
   const agua = (x, z) => { const y = G.agua.levelAt(x, z); return y > -Infinity ? y : null; };
   const en = () => G.aula && G.aula.aj && G.aula.aj.idioma === 'en';
   const ingles = () => en() || !!(G.idioma && G.idioma.activo && G.idioma.activo()) || document.documentElement.lang === 'en';
-  const tx = (o, k) => (o && (en() ? o.en : o.es)) || (o && o.es) || k || '';
+  const tx = (o, k) => (o && (ingles() ? o.en : o.es)) || (o && o.es) || k || ''; // W7: el idioma del juego, no solo el del Aula
   // El aviso sale en el idioma de verdad: el diccionario (idioma.tr) y, si no alcanzó, el texto EN del dato.
   const aviso = (es, enText) => {
     if (G.idioma && G.idioma.tr && G.idioma.activo && G.idioma.activo()) {
@@ -144,12 +144,12 @@ AVE.module('secretos', function (G) {
       .sort((a, b) => dist2(a.p, a.p.x, a.p.z) - dist2(b.p, b.p.x, b.p.z))[0];
     if (d === 'ojo' && cerca && pistaOjo !== cerca.s.id && G.ui && G.ui.toast) {
       pistaOjo = cerca.s.id;
-      G.ui.toast((en() ? 'From the summit: ' : 'Desde la cumbre: ') + tx(cerca.s.nombre, cerca.s.id), 2800);
+      G.ui.toast((ingles() ? 'From the summit: ' : 'Desde la cumbre: ') + tx(cerca.s.nombre, cerca.s.id), 2800);
     }
     if (d !== 'ojo') pistaOjo = '';
     if (d === 'llamada' && cerca && pistaLlama !== cerca.s.id && G.ui && G.ui.toast) {
       pistaLlama = cerca.s.id;
-      G.ui.toast((en() ? 'A parrot looks toward ' : 'Una cotorra mira hacia ') + tx(cerca.s.nombre, cerca.s.id), 2800);
+      G.ui.toast((ingles() ? 'A parrot looks toward ' : 'Una cotorra mira hacia ') + tx(cerca.s.nombre, cerca.s.id), 2800);
     }
     if (d !== 'llamada') pistaLlama = '';
     if (!cerca || dist2(cerca.p, cerca.p.x, cerca.p.z) > 40 * 40) return;
@@ -157,7 +157,7 @@ AVE.module('secretos', function (G) {
     e.zona = (e.zona || 0) + dt;
     if (e.zona >= 600 && !avisados[cerca.s.id] && G.ui && G.ui.toast) {
       avisados[cerca.s.id] = true;
-      G.ui.toast(en()
+      G.ui.toast(ingles()
         ? 'Iguaca: something here still wants to be found. Take your time.'
         : 'Iguaca: aquí todavía hay algo por encontrar. Sin prisa.', 4200);
     }
@@ -174,8 +174,8 @@ AVE.module('secretos', function (G) {
     html: () => {
       const todos = lista(), n = todos.filter(s => tiene(s.id)).length;
       const fr = new Set(todos.filter(s => tiene(s.id) && s.premio && s.premio.fragmento).map(s => s.premio.fragmento));
-      const titulo = en() ? 'Vittata’s legends' : 'Leyendas de Vittata';
-      const mapa = en() ? 'Map in pieces' : 'Mapa en pedazos';
+      const titulo = ingles() ? 'Vittata’s legends' : 'Leyendas de Vittata';
+      const mapa = ingles() ? 'Map in pieces' : 'Mapa en pedazos';
       const lineas = todos.filter(s => tiene(s.id) && s.leyenda).map(s => '<li>' + esc(tx(s.leyenda)) + '</li>').join('');
       return '<section class="diario-sec"><h3>' + esc(titulo) + ' · ' + n + '/' + todos.length + '</h3>'
         + '<p>' + esc(mapa) + ' ' + fr.size + '/6</p><ul>' + lineas + '</ul></section>';
@@ -228,6 +228,14 @@ AVE.module('secretos', function (G) {
         });
         check(tx(s.nombre, s.id) + ' está en suelo real' + ((s.fondo || s.vuelta) ? ' (el agua vale)' : ''), mal.length === 0,
           mal.map(q => q.x.toFixed(0) + ',' + q.z.toFixed(0) + ' h=' + H(q.x, q.z).toFixed(1) + ' w=' + (agua(q.x, q.z) == null ? '—' : agua(q.x, q.z).toFixed(1))).join(' | ') || 'ok');
+      }
+      // W7: con el juego en inglés (sin tocar el Aula), los nombres y leyendas salen en inglés
+      if (G.idioma && G.idioma.activo) {
+        const act0 = G.idioma.activo; G.idioma.activo = () => true;
+        try {
+          const sinEn = todos.filter(s => (s.nombre && (!s.nombre.en || tx(s.nombre) !== s.nombre.en)) || (s.leyenda && (!s.leyenda.en || tx(s.leyenda) !== s.leyenda.en)));
+          check('Con el juego en inglés, nombres y leyendas salen en inglés', sinEn.length === 0, sinEn.map(s => s.id).join() || 'ok');
+        } finally { G.idioma.activo = act0; }
       }
       S.secretos = [];
       st.clear();

@@ -13,7 +13,7 @@
   const PR = (x, z) => ({ x: RX(x), z: RZ(z) });
   const PC = { x: -40, z: -131 };
   const CI = (x, z) => (REAL ? { x: PC.x + x, z: PC.z + z } : { x, z });
-  const L = (es, en) => (S, G) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+  const L = (es, en) => (S, G) => ((G.aula && G.aula.aj && G.aula.aj.idioma === 'en') || (G.idioma && G.idioma.activo && G.idioma.activo()) ? en : es); // W7: también el idioma del juego
   const vin = (id, needs, es, en, a, b) => ({ id, needs, img: 'portrait', sinCaptura: true, texto: L(es, en), opciones: [L(a[0], a[1]), L(b[0], b[1])] });
 
   const asientos = [];

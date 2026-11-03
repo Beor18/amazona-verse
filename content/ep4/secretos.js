@@ -15,7 +15,7 @@
   }
   const seco = (x, z, lado) => { const MD = window.AV_MAPA_CAP1; let k = 0; while (k < 16 && MD.nivelAguaEn(x, z) > MD.alturaEn(x, z) - 0.3) { x += lado * 0.5; k++; } return k ? x + lado : x; };
   const M = q => { if (!REAL) return q; const z = q.z + DZ, c = cauce(z)[0]; return Object.assign({}, q, { x: seco(c + (q.x - RIO), z, q.x < RIO ? -1 : 1), z }); };
-  const L = (es, en) => (S, G) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+  const L = (es, en) => (S, G) => ((G.aula && G.aula.aj && G.aula.aj.idioma === 'en') || (G.idioma && G.idioma.activo && G.idioma.activo()) ? en : es); // W7: también el idioma del juego
   const vin = (id, needs, es, en, a, b) => ({ id, needs, img: 'portrait', sinCaptura: true, texto: L(es, en), opciones: [L(a[0], a[1]), L(b[0], b[1])] });
 
   p.secretos = [

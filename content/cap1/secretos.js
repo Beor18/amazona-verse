@@ -7,7 +7,7 @@
   const p = AVE.packs && AVE.packs.cap1;
   if (!p) return;
 
-  const L = (es, en) => (S, G) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+  const L = (es, en) => (S, G) => ((G.aula && G.aula.aj && G.aula.aj.idioma === 'en') || (G.idioma && G.idioma.activo && G.idioma.activo()) ? en : es); // W7: también el idioma del juego
   const vineta = (id, needs, es, en, o1, o2) => ({
     id, needs, img: 'portrait', sinCaptura: true,
     texto: L(es, en),
