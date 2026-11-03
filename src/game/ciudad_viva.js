@@ -122,17 +122,20 @@ window.AVCiudadViva = function (G) {
     const P = perchas(), l = P.alto.length ? P.alto : P.suelo, s = sitio();
     const p = l.length ? l[(i * 7) % l.length] : { x: s.x, z: s.z, y: H(s.x, s.z), tipo: 'suelo' };
     const off = ocupar(p, null);
-    return { i, sp, k: piel(sp), x: p.x + off[0], y: p.y, z: p.z + off[1], yaw: rnd(0, 6.28), est: 'posada', accion: 'mira', t: 0, dur: rnd(3, 8),
+    return { i, sp, slot: off[2], k: piel(sp), x: p.x + off[0], y: p.y, z: p.z + off[1], yaw: rnd(0, 6.28), est: 'posada', accion: 'mira', t: 0, dur: rnd(3, 8),
       perch: p, ala: 0, cab: 0, gir: 0, giroObj: 0, pitch: -0.4, roll: 0, fase: rnd(0, 6.28), esc: ESC * rnd(0.92, 1.06), prox: rnd(0.5, 2),
       acum: 0, cada: 1, grupo: null, viajes: 0, vx: 0, vy: 0, vz: 0, lejos: false };
   }
-  // Varias en la misma percha: cada una a su lado (0,35 m), sin montarse
+  // Varias en la misma percha: cada una en su sitio (a 0,55 m o más, sin montarse) y siempre sobre la superficie de la percha
   function ocupar(p, a) {
-    const n = R.aves.filter(b => b !== a && b.perch === p && b.est !== 'vuela').length + (a && a.est === 'vuela' ? 0 : 0);
-    if (!n) return [0, 0];
-    const ang = n * 2.1 + (p.x % 1), d = 0.35;
-    const x = p.x + Math.cos(ang) * d, z = p.z + Math.sin(ang) * d;
-    return p.tipo !== 'suelo' && tope(x, z) < p.y - 0.4 ? [Math.cos(ang) * 0.15, Math.sin(ang) * 0.15] : [Math.cos(ang) * d, Math.sin(ang) * d]; // borde del tejado: más juntas
+    const usados = new Set(R.aves.filter(b => b !== a && b.perch === p).map(b => b.slot));
+    for (let k = 0; k < 9; k++) {
+      if (usados.has(k)) continue;
+      if (!k) return [0, 0, 0];
+      const ang = k * 2.39996 + p.x, d = 0.55 + 0.12 * Math.floor((k - 1) / 4), dx = Math.cos(ang) * d, dz = Math.sin(ang) * d, y = tope(p.x + dx, p.z + dz);
+      if (y > p.y - 0.25 && y < p.y + 0.5) return [dx, dz, k];
+    }
+    return [0, 0, -1];
   }
   function poblar() {
     const n = cuantas(), sp = pool(), out = [];
@@ -150,7 +153,7 @@ window.AVCiudadViva = function (G) {
   G.on('apply', () => { R.aves = []; R.P = null; R.sitio = null; R.on = false; quitar(); }, 91);
 
   function volarA(a, p, alLlegar) {
-    const off = ocupar(p, a), tx = p.x + off[0], tz = p.z + off[1];
+    a.perch = null; const off = ocupar(p, a), tx = p.x + off[0], tz = p.z + off[1]; a.slot = off[2];
     a.est = 'vuela'; a.ox = a.x; a.oy = a.y; a.oz = a.z; a.tx = tx; a.tz = tz; a.perch = p; a.prog = 0; a.alLlegar = alLlegar || '';
     a.dVuelo = Math.max(3, Math.hypot(tx - a.x, tz - a.z));
     a.yc = Math.max(a.oy, p.y, topeCamino(a.x, a.z, tx, tz)) + 1.5 + Math.min(4, a.dVuelo * 0.12); // por encima de todo el camino

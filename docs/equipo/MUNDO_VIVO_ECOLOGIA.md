@@ -26,4 +26,6 @@ Qué cotorras viven en cada lugar del mapa del cap. 1 y por qué. Está en códi
 
 Las aves llevan las especies de su colonia, se posan un rato en la otra y vuelven a casa. Las cotorras de verdad también van y vienen cada día entre el dormidero y los árboles donde comen.
 
+**Ciudad viva** (N17, `src/game/ciudad_viva.js`). Además de la colonia de la Ciudad de los 36, viven allí 4, 10 o 16 cotorras más (calidad baja, media o alta) de las mismas especies del bosque nublado (tras el pacto, de las 36). De día vuelan de torre en torre, conversan en grupitos en los tejados, buscan comida en la plaza, arreglan un tejado (bajan a por una ramita y vuelven) y juegan a perseguirse alrededor de una torre. De noche duermen en parejas en las perchas más altas. Junto a un farol solo se quedan despiertas si el capítulo ya trae faroles en la ciudad (cap. 5). Se dibujan en las mallas de la bandada: como mucho 2 draw calls más (medido: +1). Prueba: `AV.ciudadVivaTest()`.
+
 **Para Kelvin (canon y arte, sin decidir):** ¿la Ciudad de los 36 se queda en «bosque nublado de las Antillas» hasta el pacto? ¿Y las colonias de especies de fuera, son «guardianes de paso» o tienen otra explicación en la historia? Mientras tanto queda así.
