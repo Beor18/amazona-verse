@@ -364,3 +364,23 @@ Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lect
 - La paleta cercana y del atlas pasa de sombra `0,54/0,45/0,34` y luz `0,94/0,85/0,70` a `0,50/0,40/0,26` y `0,90/0,76/0,52`. Las celdas restauradas conservan su textura y reciben además el factor cálido `1,06/0,94/0,70`; no se cambia la geometría, el LOD ni el sombreado normal.
 - Comparación en `docs/img/kimi/kimi_task_004_comparacion.png`, con la meta de Kelvin, el antes y el después en el mismo encuadre y calidad alta. Las capturas y medidas individuales son `kimi_task_004_{antes,despues}.{png,json}`: 6 344 703 triángulos y 90 draw calls en ambas, con 0 errores de consola. Los FPS de estas ejecuciones Linux no son comparables por la carga concurrente del equipo.
 - Kelvin aprobó la lámina y la publicación de esta paleta el 2-nov-2026.
+
+## LOD por distancia de las fusiones (KIMI-Task-011, 3-nov-2026)
+
+- **Causa de los 8,1 M triángulos del iPad.** Las mallas fundidas por zona (`edificiosZonaHD:*`, `edificiosZonaCerca:*`) y sus globales (`edificiosZonaHDGlobal:*`, `edificiosZonaCercaGlobal:*`, `edificiosZona:global:*`) se dibujaban enteras en cuanto su caja estaba a la vista (650 m). Así salía el `_hd` de toda la ciudad (hasta 462 000 triángulos por templo) desde Villa Raíz, el lejano debajo del cercano (doble dibujo) y, en el lejano global, las zonas solo Ancient fundidas con el color de vértice: blancas (el parche blanco de la pared).
+- **Ahora** cada fusión guarda un tramo del índice por instancia (por zona en el lejano global) y se dibuja con grupos: solo los tramos de las instancias que este cuadro quieren esa versión. Nada se dibuja dos veces. Los modelos con `_hd` entran también en la fusión del ligero.
+- **Distancias:** el `_hd` llega a 45 / 90 / 120 m (bajo / medio / alto), como antes. En la ciudad, a 45 / 150 / 700 m (`CFG.ciudadHD`); antes, a 340 / 450 / 700 m. Más allá se ve el ligero con textura hasta `ciudadMalla`. En «alto» no cambia nada.
+- **Tope de `_hd` a la vista:** 400 000 / 900 000 triángulos en bajo / medio (`CFG.hdTris`; sin tope en alto). Entran primero los más cercanos. El más cercano entra siempre, y los que ya iban en `_hd` tienen 10 m de ventaja para que no parpadeen. El resto se ve con el ligero.
+- **Medidas** (`tools/build/tris_medir.py`, SwiftShader: triángulos y draw calls valen, FPS no). Mismas cámaras antes y después, 0 errores de consola:
+
+| vista | medio antes | medio después | bajo antes | bajo después |
+|---|---|---|---|---|
+| ipad (Villa Raíz a 40 m, mirando al tepuy) | 1,60 M · 110 | 0,64 M · 119 | 1,35 M · 66 | 0,64 M · 68 |
+| ciudad (sobre la ciudad, 116 m) | 7,05 M · 90 | 1,33 M · 106 | 6,75 M · 55 | 0,75 M · 58 |
+| kelvin_villa (a ~300 m de la ciudad) | 6,74 M · 93 | 0,67 M · 102 | 5,65 M · 48 | 0,50 M · 73 |
+| aldea | 6,79 M · 119 | 0,69 M · 109 | 5,64 M · 77 | 0,38 M · 79 |
+| tepuy (cap. 5, a pie en la meseta) | 6,91 M · 81 | 1,41 M · 110 | 6,74 M · 47 | 0,73 M · 82 |
+| tepuy_aire (meseta, 25 m) | 6,91 M · 79 | 1,45 M · 114 | 6,74 M · 45 | 0,72 M · 79 |
+
+- **Lo que se ve distinto:** de cerca, nada. Entre 150 y 450 m, las torres de la ciudad usan el ligero (más macizo que el `_hd`: sin los calados). Se probó el lejano con atlas como paso intermedio y no sirve: algunos salen crema o con otra forma. Un LOD intermedio fiel del `_hd` es trabajo de arte (Blender) y queda anotado para Kelvin y Fernando. Capturas: `docs/img/kimi/kimi_task_011_{ipad,ciudad}_{antes,despues}.jpg`.
+- Flora y terreno no cambian: en estas vistas suman 0,25–0,35 M (flora con su tope por calidad, terreno 4 × 20 000).

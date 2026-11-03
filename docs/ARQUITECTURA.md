@@ -83,7 +83,7 @@ Los edificios de Kelvin se cargan por zonas y se dibujan instanciados. `mundo.js
 - **Dibujo:**
   - Una `InstancedMesh` por modelo × LOD × material, con el nombre `edificiosInst:*` y `sinSolido`. En las zonas cercanas se funden por material; los cercanos, los `_hd` y los lejanos de varias zonas se vuelven a fundir globalmente. Los materiales Ancient y Savage comparten su atlas; los que no tienen equivalente conservan el suyo. Las sombras de las ciudades usan una malla ligera por zona en la capa 1, visible solo para la cámara del sol.
   - Cada cuadro se eligen las instancias visibles. Pasan las que están dentro del frustum y de la distancia de dibujo, y también las de cerca que caen en el radio de sombra.
-  - El LOD de cada instancia lo decide su distancia a la cámara, con 35/50/60 m ± 8. Una zona que queda entera más allá de esa distancia usa sus lejanos fundidos; las zonas visibles se vuelven a unir en una malla global por material (`edificiosZona:global:*`).
+  - El LOD de cada instancia lo decide su distancia a la cámara, con 35/50/60 m ± 8. Una zona que queda entera más allá de esa distancia usa sus lejanos fundidos; las zonas visibles se vuelven a unir en una malla global por material (`edificiosZona:global:*`). Las fusiones (de zona y globales) llevan un tramo de índice por instancia o por zona y se dibujan con grupos: solo lo que cada instancia quiere ese cuadro (KIMI-Task-011). El `_hd` tiene tope de triángulos por calidad (`CFG.hdTris`).
   - Los sólidos de Movimiento llegan por `G.solidos.agregar` en cada instancia.
 - **Liberar:** quita las mallas, llama a `geometry.dispose()` y suelta materiales y texturas. Los materiales se comparten por nombre y llevan conteo de referencias. La cadena base64 la suelta `AVE.assets.loadGLB`.
 - **Kit:**
