@@ -78,8 +78,8 @@ AVE.module('comicPlantilla', function (G) {
         posarBalanceo: t >= 1.2 ? bal : 0, wingMode: t >= 1.2 && tt < 0.5 ? 'posar' : 'idle', groundY: 1.2, groundAt: () => 1.2, expression: 'happy' });
       return { y: 1.2, perchY: 1.2, pitch: 0.16 * bal };
     } },
-    // nadar: un poco más alta y el agua más clara que en la hoja, para que se vea la cotorra dentro del círculo
-    nadar: { t: 1.757, yaw: -0.9, cam: { az: 0.1, el: 0.3 }, prop: 'agua', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, swimming: true, diving: false, speed: 4.5, gait: 2, swimRate: 1.3, wingMode: 'swim', expression: 'happy' }); return { y: -0.1, pitch: 1.2, roll: 0 }; } },
+    // nadar: sin disco de agua. Ese plano transparente salía como un recuadro alrededor de la cotorra (CG-36).
+    nadar: { t: 1.757, yaw: -0.9, cam: { az: 0.1, el: 0.3 }, st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, swimming: true, diving: false, speed: 4.5, gait: 2, swimRate: 1.3, wingMode: 'swim', expression: 'happy' }); return { y: -0.1, pitch: 1.2, roll: 0 }; } },
     // celebrar: el cuadro de Celebrate con las alas arriba en V (t 0,45); el de la hoja (0,9) tiene las alas en cruz y parece la pose T
     celebrar: { t: 0.45, yaw: -0.45, cam: { az: 0, el: 0.08 }, clip: 'Celebrate', st: (t, ch) => { Object.assign(ch, { airborne: false, flying: false, speed: 0, gait: 0, wingMode: 'idle', expression: 'happy', groundY: 0, groundAt: () => 0 }); return { y: 0 }; } },
   };
@@ -377,7 +377,7 @@ AVE.module('comicPlantilla', function (G) {
     x.fillStyle = g; x.fill(); x.lineWidth = 2.6; x.strokeStyle = INK; x.stroke();
     // el círculo se come la esquina izquierda: el texto empieza después
     const x0 = c.x + 30, tw = w - 42;
-    texto(x, t, x0 + tw / 2, c.y + c.h / 2, tw, c.h - 8, { max: 19, min: 11, lineas: 2, lh: 1.08 });
+    texto(x, t, x0 + tw / 2, c.y + c.h / 2, tw, c.h - 8, { max: 19, min: 12, lineas: 3, lh: 1.08 });
     x.restore();
     return { x: c.x, y: c.y, w, h: c.h };
   }

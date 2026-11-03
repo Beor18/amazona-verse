@@ -485,6 +485,19 @@ AVE.module('comic', function (G) {
   const MAXV = 6;
   const PL = C.plantilla || {};
   const T = t => (G.idioma && G.idioma.tr ? G.idioma.tr(t) : t);
+  // CG-36: el chapuzón habla de quien juega (la foto es su cotorra). ¡La meta! se parte para no salir diminuta.
+  function narracionDe(p) {
+    if (p && p.id === 'chapuzon' && !p.eleccion) {
+      const nom = (S.profile && S.profile.name) || L('yo', 'I');
+      return L('¡Chapuzón! ' + nom + ' descubrió que el río está mojado. Muy mojado.',
+        'Splash! ' + nom + ' found out the river is wet. Very wet.');
+    }
+    if (p && p.id === 'final' && !p.eleccion) {
+      return L('El transmisor mostró 36 fragmentos. Desde el mirador vimos otras islas: haremos un bote.',
+        'The transmitter showed 36 pieces. From the lookout we saw other islands: we will build a boat.');
+    }
+    return T(p && p.text);
+  }
   const TIT_DEF = { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!', vida: '¡Nueva vida!',
     record: '¡Nuevo récord!', chapuzon: '¡Chapuzón!', risa: '¡Qué risa!', pose: '¡Mi mejor pose!', amigos: 'Nuevos amigos', altura: '¡Desde lo alto!' };
   const TIT_ALT = { hallazgo: '¡Una sorpresa!', desafio: '¡Otro reto!', solucion: '¡Otra idea!', amigos: '¡Más amigos!', risa: '¡Otra risa!', altura: '¡Más alto!',
@@ -535,7 +548,7 @@ AVE.module('comic', function (G) {
       vinetas.push({ id: p.id, eventId: p.needs, timestamp: ev ? ev.t : null, sceneImage: img || null,
         escena: !img && p.ilustracion ? (x, X, Y, w, h) => ilustrar(x, p.ilustracion, X, Y, w, h) : null,
         sceneTitle: titulo(tipo), dialogueText: gl ? T(gl) : '', dialogueType: def.pensamiento ? 'pensamiento' : 'dialogo',
-        captionText: T(p.text), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
+        captionText: narracionDe(p), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
     }
     return { panels, datos: { chapterId: C.capitulo || null, titulo: T(tituloValido(S.comic.title)), nombre: S.profile.name, look: lookActual(), retrato: await retratoDe(null, 256),
       aprendi: T(leccion('aprendi')), ensenanza: T(leccion('ensenanza')), botones: opts.botones !== false, vinetas } };
@@ -934,6 +947,11 @@ AVE.module('comic', function (G) {
         try { // nadando: la superficie queda por encima de S.pos; la cámara no puede quedar bajo el agua
           G.agua.levelAt = () => S.pos.y + 0.8; ultimaPosada = null; const f = fotoPosada();
           check('Chapuzón: la foto se toma desde encima del agua (no desde el fondo)', f === null || (ultimaPosada && ultimaPosada.q.y >= S.pos.y + 0.8 + 0.35), ultimaPosada ? ultimaPosada.q.y.toFixed(2) + ' / agua ' + (S.pos.y + 0.8).toFixed(2) : 'sin ángulo libre');
+        const nomCg = (S.profile && S.profile.name) || 'yo';
+        const txChap = narracionDe({ id: 'chapuzon', eleccion: 0, text: '¡Chapuzón! Vittata descubrió que el río está mojado. Muy mojado.' });
+        const txMeta = narracionDe({ id: 'final', eleccion: 0, text: 'El transmisor nos mostró un símbolo de 36 fragmentos. Desde el mirador vimos otras islas: construiremos un bote.' });
+        check('CG-36 · el chapuzón nombra al jugador y no dice «Vittata descubrió»', txChap.indexOf(nomCg) >= 0 && txChap.indexOf('Vittata descubrió') < 0, txChap);
+        check('CG-36 · ¡La meta! cabe sin letra diminuta', txMeta.length > 20 && txMeta.length < 120 && !G.comicPlantilla.POSES.nadar.prop, txMeta.length + ' · agua ' + (G.comicPlantilla.POSES.nadar.prop || 'no'));
         } finally { G.agua.levelAt = aguaBk; }
         const copaBk = G.camara.copaLibre;
         try { G.camara.copaLibre = () => false; check('Posada dentro de una copa (hojas en todos los ángulos): sin foto, la rama usa su ilustración (QA-32)', fotoPosada() === null); }
