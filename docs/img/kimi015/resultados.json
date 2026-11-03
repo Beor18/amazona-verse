@@ -1,13 +1,13 @@
 {
- "cuando": "2026-11-03T20:34:45.486Z",
+ "cuando": "2026-11-03T20:43:26.504Z",
  "maquina": "PC Windows · Chrome headless GPU (ANGLE/D3D11) · 1920×1080 dpr 1",
  "tomas": [
   {
-   "cuadros": 1718,
-   "fps": 142.8,
+   "cuadros": 1731,
+   "fps": 143.4,
    "p50": 6.9,
    "p95": 7,
-   "peor": 27.9,
+   "peor": 41.7,
    "info": {
     "calls": 164,
     "triangulos": 917975
@@ -30,11 +30,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 142.2,
+   "cuadros": 724,
+   "fps": 140.5,
    "p50": 6.9,
    "p95": 7,
-   "peor": 27.8,
+   "peor": 48.7,
    "info": {
     "calls": 165,
     "triangulos": 917118
@@ -57,11 +57,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.8,
+   "cuadros": 1734,
+   "fps": 143.6,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 41.7,
    "info": {
     "calls": 143,
     "triangulos": 528279
@@ -84,11 +84,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 143.6,
+   "cuadros": 726,
+   "fps": 143.2,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 34.9,
    "info": {
     "calls": 144,
     "triangulos": 528641
@@ -111,11 +111,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.7,
+   "cuadros": 1732,
+   "fps": 143.5,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.8,
+   "peor": 34.8,
    "info": {
     "calls": 138,
     "triangulos": 838708
@@ -138,11 +138,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 138.4,
+   "cuadros": 725,
+   "fps": 137.6,
    "p50": 6.9,
    "p95": 7.1,
-   "peor": 104.1,
+   "peor": 90.2,
    "info": {
     "calls": 138,
     "triangulos": 838714
@@ -165,11 +165,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.8,
+   "cuadros": 1733,
+   "fps": 143.6,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 41.8,
    "info": {
     "calls": 123,
     "triangulos": 497492
@@ -192,17 +192,17 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 140.5,
+   "cuadros": 724,
+   "fps": 141.7,
    "p50": 6.9,
-   "p95": 7.1,
-   "peor": 20.9,
+   "p95": 7,
+   "peor": 55.5,
    "info": {
     "calls": 123,
     "triangulos": 496999
    },
    "stats": {
-    "fps": 142,
+    "fps": 144,
     "calls": 123,
     "calidad": "medio",
     "dpr": 1,
@@ -219,11 +219,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1729,
-   "fps": 143.7,
+   "cuadros": 1733,
+   "fps": 143.5,
    "p50": 6.9,
    "p95": 7,
-   "peor": 21,
+   "peor": 41.8,
    "info": {
     "calls": 113,
     "triangulos": 891092
@@ -246,11 +246,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 139.5,
+   "cuadros": 725,
+   "fps": 139,
    "p50": 6.9,
-   "p95": 7.1,
-   "peor": 104.1,
+   "p95": 7,
+   "peor": 104.2,
    "info": {
     "calls": 112,
     "triangulos": 892948
@@ -273,11 +273,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.8,
+   "cuadros": 1734,
+   "fps": 143.6,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 41.7,
    "info": {
     "calls": 98,
     "triangulos": 474582
@@ -300,11 +300,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 143.4,
+   "cuadros": 725,
+   "fps": 143,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 34.7,
    "info": {
     "calls": 98,
     "triangulos": 474898
@@ -327,11 +327,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1731,
-   "fps": 143.8,
+   "cuadros": 1733,
+   "fps": 143.6,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 41.8,
    "info": {
     "calls": 142,
     "triangulos": 864706
@@ -354,11 +354,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 143.4,
+   "cuadros": 725,
+   "fps": 143,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 34.7,
    "info": {
     "calls": 141,
     "triangulos": 860574
@@ -381,11 +381,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
+   "cuadros": 1735,
    "fps": 143.7,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.8,
+   "peor": 34.9,
    "info": {
     "calls": 128,
     "triangulos": 463337
@@ -408,11 +408,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 143.6,
+   "cuadros": 725,
+   "fps": 143,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 41.7,
    "info": {
     "calls": 127,
     "triangulos": 459998
@@ -435,11 +435,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.8,
+   "cuadros": 1733,
+   "fps": 143.7,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 34.8,
    "info": {
     "calls": 115,
     "triangulos": 2201356
@@ -462,8 +462,8 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 140.5,
+   "cuadros": 723,
+   "fps": 140.3,
    "p50": 6.9,
    "p95": 7,
    "peor": 62.5,
@@ -490,16 +490,16 @@
   },
   {
    "cuadros": 1731,
-   "fps": 143.8,
+   "fps": 143.6,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.8,
+   "peor": 27.8,
    "info": {
     "calls": 107,
     "triangulos": 1249822
    },
    "stats": {
-    "fps": 144,
+    "fps": 142,
     "calls": 107,
     "calidad": "medio",
     "dpr": 1,
@@ -516,11 +516,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 143.4,
+   "cuadros": 724,
+   "fps": 142.8,
    "p50": 6.9,
    "p95": 7,
-   "peor": 13.9,
+   "peor": 34.7,
    "info": {
     "calls": 102,
     "triangulos": 1233228
@@ -543,11 +543,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1730,
-   "fps": 143.8,
+   "cuadros": 1734,
+   "fps": 143.7,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.7,
+   "peor": 34.7,
    "info": {
     "calls": 124,
     "triangulos": 676704
@@ -570,11 +570,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 142.8,
+   "cuadros": 725,
+   "fps": 142.2,
    "p50": 6.9,
    "p95": 7,
-   "peor": 27.7,
+   "peor": 34.7,
    "info": {
     "calls": 124,
     "triangulos": 676618
@@ -597,11 +597,11 @@
    "fase": "giro"
   },
   {
-   "cuadros": 1731,
-   "fps": 143.8,
+   "cuadros": 1734,
+   "fps": 143.2,
    "p50": 6.9,
    "p95": 7,
-   "peor": 20.9,
+   "peor": 69.5,
    "info": {
     "calls": 105,
     "triangulos": 385471
@@ -624,11 +624,11 @@
    "fase": "aparicion"
   },
   {
-   "cuadros": 721,
-   "fps": 141.1,
+   "cuadros": 724,
+   "fps": 142,
    "p50": 6.9,
    "p95": 7,
-   "peor": 83.3,
+   "peor": 41.6,
    "info": {
     "calls": 105,
     "triangulos": 385385

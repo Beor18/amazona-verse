@@ -77,7 +77,7 @@ const MEDIR_JS = `(() => { const Q = window.__qaM || { dt: [] }; const d = Q.dt.
   let st = {}; try { const R = window.AV && AV.G && AV.G.renderer; st = (R && R.stats && R.stats()) || {}; } catch (e) {}
   const info = (st.calls != null) ? { calls: st.calls, triangulos: st.triangulos } : null;
   let pos = null; try { const S = AV.G.S; pos = [Math.round(S.pos.x), Math.round(S.pos.y), Math.round(S.pos.z)]; } catch (e) {}
-  const png = (() => { try { return AV.G.renderer.canvas.toDataURL('image/jpeg', 0.85); } catch (e) { return null; } })();
+  const png = (() => { try { const R2 = AV.G.renderer; if (R2.drawScene) R2.drawScene(R2.camera); return R2.canvas.toDataURL('image/jpeg', 0.85); } catch (e) { return null; } })();
   Q.dt = [];
   return JSON.stringify({ cuadros: n, fps: n ? Math.round(10000 / media) / 10 : 0, p50: Math.round(q(0.5) * 10) / 10, p95: Math.round(q(0.95) * 10) / 10, peor: Math.round((n ? orden[n - 1] : 0) * 10) / 10,
     info, stats: { fps: st.fps, calls: st.calls, calidad: st.calidad, dpr: st.dpr, triangulos: st.triangulos }, pos, png }); })()`;
