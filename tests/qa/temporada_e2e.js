@@ -4,7 +4,7 @@
    guardianes encontrados (ep3, ep4, ep5) en ep6. Cada capítulo se juega con sus interacciones reales (useAt + diálogos + tarjetas);
    el paso se fuerza solo donde se dice (atajo: S.step) y se RECARGA el iframe a mitad de ep3 y de ep4 para comprobar que la partida
    y la temporada siguen. El almacenamiento se respalda entero y se devuelve igual. Carga: inyectar y await AV.temporadaE2eTest().
-   Opciones: { sitio: 'a'|'b'|'c' (defecto 'b'), timeout: ms de arranque (defecto 180000) }. */
+   Opciones: { sitio: 'a'|'b'|'c' (defecto 'b'), timeout: ms de arranque (defecto 300000) }. */
 (function () {
   'use strict';
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -30,7 +30,7 @@
       return recargado(pack);
     };
     const recargado = async pack => {
-      const W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === pack && x.AV.G && x.AV.G.actores && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x.AVTemporada && x; }, opts.timeout || 180000, 100);
+      const W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === pack && x.AV.G && x.AV.G.actores && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x.AVTemporada && x; }, opts.timeout || 300000, 100);
       if (W) await sleep(600);
       return W;
     };
