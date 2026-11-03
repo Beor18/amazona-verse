@@ -17,9 +17,12 @@
      (que ya hacen el gesto, input.js) también toman la foto.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida
      (0 = el texto de la historia); S.comic.title = uno de los títulos.
-   - Página de 1080×1520 (más alta si hay más de 4 viñetas): portada, viñetas en cuadrícula o tira (comicLayout, sin solapes) con marco de tinta y, en cada
-     una, el retrato 3D del jugador con su look de ese momento (de busto si img = 'portrait'; si no, un medallón abajo a la
-     izquierda, lejos de lo que dibuja decorar).
+   - Página de la plantilla aprobada de Kelvin (3-nov; src/game/comic_plantilla.js): 1536×2304 (2:3), 6 viñetas 2 × 3 con la
+     captura real de cada momento, cintillo con título de escena (tipo de evento), globo, narración, círculo con la cotorra del
+     jugador en una pose real según el evento (con su look de ese momento), decoraciones si el evento las justifica, «¿Qué aprendí?»,
+     «Mi enseñanza de vida», el personaje central y los 4 botones (zonas de acción en el editor). Con más de 6 escenas el niño
+     elige cuáles van (S.comic.ocultas); con menos, los huecos dicen «Escena por descubrir». comicLayout (la cuadrícula anterior)
+     queda para manga.js.
    - PNG fiable: canvas.toBlob (o toDataURL de respaldo), con la firma PNG y el IHDR (ancho y alto) verificados. Si el lienzo
      queda contaminado, se recompone solo con imágenes embebidas.
    - PDF de una página sin librerías (el JPEG del cómic con DCTDecode, ~60 líneas). Una librería como jsPDF (~300 KB) no
@@ -31,15 +34,21 @@
      portadas: { valorDelSelect: claveDeCaptura },
      vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string],
        gag?: 'caida'|'mariposa'|'siesta'|'imitar' (solo para la prueba), ilustracion?: 'nido'|'eclosion'|'rama'|'pichon_cae'|'pichon_mariposa'|'pichon_duerme'|'pichon_imita', sinCaptura?, encuadre? }],
-     decorar?(ctx, viñeta, caja, altoImagen, G) }.
-   Pruebas: AV.comicTest(): evento real → viñeta con el look → PNG válido de 1080×1520 y no en blanco → entrega. */
+     tipo?, pose?, dialogo?|pensamiento?, efecto?: 'fuush'|'confusion'|'bandera'|'record', marca?(S) (valor del récord) }],
+     plantilla: { titulos: { tipo: texto }, aprendi: [{ needs, texto }], ensenanza: [{ needs, texto }] },
+     decorar?(ctx, viñeta, caja, altoImagen, G) (de la página anterior; la plantilla no lo usa) }.
+   Estado: S.comic { title, order, captions, vinetas, ocultas?: [ids fuera de la página], aprendi?: índice, ensenanza?: índice }.
+   Pruebas: AV.comicTest(): evento real → viñeta con el look → PNG válido de 1536×2304 y no en blanco → entrega; y la prueba mínima
+   de la plantilla (plantillaTest: logo original, 6 viñetas, dos cotorras, poses, decoraciones, botones, EN). */
 AVE.module('comic', function (G) {
   'use strict';
   const S = G.S, $ = G.util.$, C = G.pack.comic || {};
   const loadImg = G.assets.image;
   const FILE = C.archivo || 'mi-comic';
-  const W = 1080, H = 1520, TOP = 380;
-  const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+  // Página de la plantilla (comic_plantilla.js): 1536×2304. comicLayout (la cuadrícula anterior) queda para manga.js y sus pruebas
+  const PAG = (G.comicPlantilla && G.comicPlantilla.PAGINA) || { w: 1536, h: 2304 }, W = PAG.w, H = PAG.h;
+  const LW = 1080, LH = 1520, TOP = 380;
+  const L = (es, en) => ((G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || (G.aula && G.aula.aj && G.aula.aj.idioma === 'en') ? en : es);
   const aviso = (t, ms) => { if (!G.quiet) G.ui.toast(t, ms); };
   const vin = () => (S.comic.vinetas && typeof S.comic.vinetas === 'object' ? S.comic.vinetas : (S.comic.vinetas = {}));
 
@@ -58,21 +67,37 @@ AVE.module('comic', function (G) {
   // Encuadre de una posada (QA-32): la foto con la cámara del juego puede quedar tapada por un tronco. Se busca un punto de
   // cámara cerca de Vittata desde el que ningún sólido (tronco, pared, roca: G.solidos) tape su cabeza, se fotografía con la
   // cámara del juego y se devuelve la cámara a su sitio. null si no hay ángulo libre o no hay lienzo.
+  let ultimaPosada = null; // punto de cámara de la última foto (para la prueba)
   function fotoPosada() {
     const R = G.renderer, cam = R.camera, SO = G.solidos;
     if (!lienzoListo() || !cam || !R.drawScene || !window.THREE) return null;
-    const cab = new THREE.Vector3(S.pos.x, S.pos.y + 1.1, S.pos.z);
+    // Nadando (chapuzón), S.pos queda bajo la superficie: se mira la cabeza, que asoma del agua, y la cámara va por encima del
+    // agua (antes la foto salía desde debajo del agua: arena del fondo y sin la cotorra)
+    const nivel = (x, z) => (G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity);
+    const wY = nivel(S.pos.x, S.pos.z), nadando = wY > S.pos.y + 0.2;
+    const cab = new THREE.Vector3(S.pos.x, nadando ? wY + 0.35 : S.pos.y + 1.1, S.pos.z);
+    const y0 = nadando ? wY : S.pos.y, alturas = nadando ? [[3.0, 1.2], [3.6, 0.7], [2.6, 2.0], [4.2, 1.6]] : [[3.0, 0.5], [3.8, -0.3], [2.6, -1.0], [3.2, -1.8]];
     const base = Math.atan2(cam.position.x - S.pos.x, cam.position.z - S.pos.z);
     const libre = q => {
       if (q.y < G.terreno.height(q.x, q.z) + 0.3) return false;
+      if (q.y < nivel(q.x, q.z) + 0.35) return false; // nunca desde dentro del agua
       if (G.camara.copaLibre && !G.camara.copaLibre(q, cab)) return false; // ni dentro de una copa ni con hojas delante
-      if (!SO || !SO.activo || !SO.dentro) return true;
-      for (let i = 0; i <= 11; i++) { const t = i / 14; if (SO.dentro(q.x + (cab.x - q.x) * t, q.z + (cab.z - q.z) * t, q.y + (cab.y - q.y) * t) > -Infinity) return false; }
+      // Vista libre, no solo la cabeza: rayos a la cabeza y a puntos a los lados y encima (media foto), sin sólidos ni ladera
+      // delante (QA: una roca tapaba media viñeta de la meta aunque la cotorra se viera)
+      const dx = cab.x - q.x, dz = cab.z - q.z, l = Math.hypot(dx, dz) || 1, lx = -dz / l, lz = dx / l;
+      for (const [o, u] of [[0, 0], [1.6, 0.3], [-1.6, 0.3], [0, 1.3]]) {
+        const tx = cab.x + lx * o, ty = cab.y + u, tz = cab.z + lz * o;
+        for (let i = 1; i <= 11; i++) {
+          const t = i / 14, px = q.x + (tx - q.x) * t, py = q.y + (ty - q.y) * t, pz = q.z + (tz - q.z) * t;
+          if (G.terreno.height(px, pz) > py) return false;
+          if (SO && SO.activo && SO.dentro && SO.dentro(px, pz, py) > -Infinity) return false;
+        }
+      }
       return true;
     };
-    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of [[3.0, 0.5], [3.8, -0.3], [2.6, -1.0], [3.2, -1.8]]) {
-      const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, S.pos.y + dy, S.pos.z + Math.cos(a) * dist);
-      if (libre(q)) return fotoDesde(q, cab);
+    for (const d of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) for (const [dist, dy] of alturas) {
+      const a = base + d, q = new THREE.Vector3(S.pos.x + Math.sin(a) * dist, y0 + dy, S.pos.z + Math.cos(a) * dist);
+      if (libre(q)) { ultimaPosada = { q: q.clone(), agua: nivel(q.x, q.z) }; return fotoDesde(q, cab); }
     }
     return null;
   }
@@ -156,23 +181,23 @@ AVE.module('comic', function (G) {
   };
   if (G.eventos.defs) for (const [k, d] of Object.entries(EV_MOTOR)) if (!G.eventos.defs[k]) G.eventos.defs[k] = d;
   const VMOTOR = [
-    { id: 'techo', img: 'techo', needs: 'FirstRoofPerch', encuadre: 'posada',
+    { id: 'techo', img: 'techo', needs: 'FirstRoofPerch', encuadre: 'posada', tipo: 'altura', pose: 'aterrizaje', dialogo: () => L('¡Qué vista desde aquí!', 'What a view from up here!'),
       texto: () => L(`${VIT} aterrizó en un techo por primera vez. ¡Desde arriba todo se ve distinto!`, `${VIT} landed on a roof for the first time. Everything looks different from above!`),
       opciones: [() => L('Desde el techo se veía todo alrededor.', 'From the roof we could see everything around.'),
         () => L('Aprendimos a aterrizar con calma, sin prisa.', 'We learned to land calmly, without rushing.'),
         () => L('Allá arriba el viento nos despeinó las plumas.', 'Up there the wind ruffled our feathers.')] },
-    { id: 'rama', img: 'rama', needs: 'FirstHighBranchPerch', encuadre: 'posada', ilustracion: 'rama',
+    { id: 'rama', img: 'rama', needs: 'FirstHighBranchPerch', encuadre: 'posada', ilustracion: 'rama', tipo: 'altura', pose: 'posarse', dialogo: () => L('¡Bien agarrada!', 'Holding on tight!'),
       texto: () => L(`${VIT} se posó en una rama alta por primera vez, como las cotorras del bosque.`, `${VIT} perched on a high branch for the first time, like the forest parrots.`),
       opciones: [() => L('Desde la rama mirábamos el bosque.', 'From the branch we watched the forest.'),
         () => L('Agarrarse bien a una rama también se aprende.', 'Holding on to a branch is something you learn too.'),
         () => L('Allá arriba el bosque sonaba distinto.', 'Up there the forest sounded different.')] },
     // El nido: foto real de la escena (Iguaca lo presenta en el mundo); la ilustración queda solo si no hay lienzo
-    { id: 'nido', img: 'nido', needs: 'NestAppeared', ilustracion: 'nido',
+    { id: 'nido', img: 'nido', needs: 'NestAppeared', ilustracion: 'nido', tipo: 'hallazgo', pose: 'posarse', pensamiento: () => L('¿Qué habrá en esa cápsula?', 'What could be in that capsule?'),
       texto: () => L('Encontramos un nido con una cápsula. Lo que aprenda le dará calor.', 'We found a nest with a capsule. What I learn will keep it warm.'),
       opciones: [() => L('Un nido nuevo nos esperaba cerca del camino.', 'A new nest was waiting for us near the path.'),
         () => L('Cada cosa que aprendo ayuda a mi cotorrita.', 'Everything I learn helps my little parrot.'),
         () => L('Prometí visitar el nido muy seguido.', 'I promised to visit the nest often.')] },
-    { id: 'eclosion', img: 'eclosion', needs: 'ChickHatched', sinCaptura: true, ilustracion: 'eclosion',
+    { id: 'eclosion', img: 'eclosion', needs: 'ChickHatched', sinCaptura: true, ilustracion: 'eclosion', tipo: 'vida', pose: 'celebrar', dialogo: () => L('¡Bienvenida, cotorrita!', 'Welcome, little parrot!'),
       texto: () => L('¡Nació mi cotorrita! Creció con todo lo que aprendí.', 'My little parrot hatched! It grew with everything I learned.'),
       opciones: [() => L('Le di la bienvenida a mi cotorrita.', 'I welcomed my little parrot.'),
         () => L('La cuidaré y seguiré aprendiendo para que crezca.', 'I will care for it and keep learning so it grows.'),
@@ -244,23 +269,22 @@ AVE.module('comic', function (G) {
     }).sort((a, b) => a.seq - b.seq || a.k - b.k);
   }
   const tituloValido = t => (TITULOS.includes(t) ? t : TITULOS[0]);
+  // Orden de la plantilla de Kelvin (sin orden propio del niño): EL COMIENZO, EL HALLAZGO, EL DESAFÍO/¡CHAPUZÓN!/…, LA SOLUCIÓN,
+  // EL REGRESO/…, ¡LA META! (siempre la última). Cada hueco lo toma el primer evento de su tipo; los repetidos (un segundo hallazgo)
+  // y los que no tienen hueco propio llenan los libres (antes el 5.º) o van antes de la meta.
+  const HUECO = { comienzo: 0, hallazgo: 1, solucion: 3, regreso: 4, record: 4, vida: 4, meta: 5 };
+  function ordenPlantilla(panels) {
+    const hu = [null, null, null, null, null, null], resto = [];
+    for (const p of panels) { const h = HUECO[tipoDe(VINETAS.find(v => v.id === p.id))]; const k = h == null ? 2 : h; if (!hu[k]) hu[k] = p; else resto.push(p); }
+    for (const k of [4, 2, 1, 3, 0]) if (!hu[k] && resto.length) hu[k] = resto.shift();
+    return hu.slice(0, 5).filter(Boolean).concat(resto, hu[5] ? [hu[5]] : []);
+  }
   function orderedPanels() {
     const panels = comicPanels();
+    if (!S.comic.order.length) return ordenPlantilla(panels);
     const order = S.comic.order.filter(i => i < panels.length);
     for (let i = 0; i < panels.length; i++) if (!order.includes(i)) order.push(i);
     return order.map(i => panels[i]);
-  }
-  function coverFit(ctx, img, x, y, w, h) {
-    const ar = img.width / img.height, tr = w / h;
-    let sw = img.width, sh = img.height, sx = 0, sy = 0;
-    if (ar > tr) { sw = img.height * tr; sx = (img.width - sw) / 2; } else { sh = img.width / tr; sy = (img.height - sh) / 2; }
-    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-  }
-  function wrapLines(ctx, text, maxW) {
-    const words = String(G.idioma ? G.idioma.tr(text) : text).split(/\s+/); const lines = []; let line = ''; // U1: el pie de viñeta sale en el idioma elegido
-    for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
-    if (line) lines.push(line);
-    return lines;
   }
   // Calcula las cajas de las viñetas (probado en selfTest y comicTest: sin solapes y dentro de la página)
   function comicLayout(n, layout, W, H, top) {
@@ -307,8 +331,6 @@ AVE.module('comic', function (G) {
     return out;
   }
 
-  // Alto de la página: 1520 hasta 4 viñetas; con más, crece para que cada viñeta conserve su tamaño
-  function altoPagina(n, layout) { return Math.max(H, Math.round(layout === 'strip' ? 430 + n * 272.5 : 430 + Math.ceil(n / 2) * 545)); }
 
   // Ilustraciones del motor (sin foto del momento): el nido con su huevo y la eclosión
   function ilustrar(x, tipo, ix, iy, iw, ih) {
@@ -449,82 +471,77 @@ AVE.module('comic', function (G) {
     }
   }
 
-  // ---------- Composición ----------
+  // ---------- Composición: la plantilla aprobada de Kelvin (src/game/comic_plantilla.js) ----------
+  // La página tiene 6 viñetas. Con más escenas, el niño elige cuáles (S.comic.ocultas: ids fuera de la página); sin elegir, van la
+  // primera y la última y, entre medias, las de la historia del pack antes que las del motor y los momentos. Con menos de 6, los
+  // huecos muestran «Escena por descubrir» (no se inventan eventos ni capturas).
+  const MAXV = 6;
+  const PL = C.plantilla || {};
+  const T = t => (G.idioma && G.idioma.tr ? G.idioma.tr(t) : t);
+  const TIT_DEF = { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!', vida: '¡Nueva vida!',
+    record: '¡Nuevo récord!', chapuzon: '¡Chapuzón!', risa: '¡Qué risa!', pose: '¡Mi mejor pose!', amigos: 'Nuevos amigos', altura: '¡Desde lo alto!' };
+  const TIT_ALT = { hallazgo: '¡Una sorpresa!', desafio: '¡Otro reto!', solucion: '¡Otra idea!', amigos: '¡Más amigos!', risa: '¡Otra risa!', altura: '¡Más alto!',
+    vida: '¡Qué alegría!', record: '¡Otro récord!', pose: '¡Otra pose!', chapuzon: '¡Otro chapuzón!', comienzo: 'Y después…', regreso: 'Y después…', meta: 'Y después…' };
+  // Pose de acción por tipo de evento (guía: vuelo o récord → crucero/impulso; llegada → aterrizaje; descubrimiento → posarse; final → celebrar; chapuzón → nadar)
+  const POSE_DE = { comienzo: 'crucero', hallazgo: 'posarse', desafio: 'aterrizaje', solucion: 'aterrizaje', regreso: 'crucero', meta: 'celebrar', vida: 'celebrar',
+    record: 'impulso', chapuzon: 'nadar', risa: 'celebrar', pose: 'celebrar', amigos: 'posarse', altura: 'aterrizaje' };
+  const TIPO_EV = { LocationDiscovered: 'hallazgo', CharacterMet: 'amigos', SkillMoment: 'desafio', RecordAchieved: 'record', PhotoTaken: 'pose', CompanionMoment: 'risa' };
+  function tipoDe(def) {
+    if (def && def.tipo) return def.tipo;
+    const d = G.eventos.defs && def && G.eventos.defs[def.needs];
+    return (d && TIPO_EV[d.type]) || 'hallazgo';
+  }
+  const ocultasDe = () => (Array.isArray(S.comic.ocultas) ? S.comic.ocultas.filter(x => typeof x === 'string').slice(0, 64) : null);
+  function enPagina(panels) {
+    panels = panels || orderedPanels();
+    const oc = ocultasDe();
+    if (oc) return panels.filter(p => !oc.includes(p.id)).slice(0, MAXV);
+    if (panels.length <= MAXV) return panels;
+    const prio = p => { const i = (C.vinetas || []).findIndex(v => v.id === p.id); return i >= 0 ? i : 100 + VINETAS.findIndex(v => v.id === p.id); };
+    const fijas = new Set([panels[0].id, panels[panels.length - 1].id]);
+    const resto = panels.filter(p => !fijas.has(p.id)).sort((a, b) => prio(a) - prio(b)).slice(0, MAXV - fijas.size).map(p => p.id);
+    return panels.filter(p => fijas.has(p.id) || resto.includes(p.id));
+  }
+  // «¿Qué aprendí?» y «Mi enseñanza de vida»: de las listas fijas del pack, solo las de eventos que pasaron; el niño elige (índice)
+  const opcionesLeccion = k => (PL[k] || []).filter(o => !o.needs || G.eventos.had(o.needs)).map(o => val(o.texto));
+  function leccion(k) {
+    const l = opcionesLeccion(k), i = S.comic[k];
+    if (!l.length) return k === 'aprendi' ? L('Juega el capítulo para descubrir lo que aprendiste.', 'Play the chapter to discover what you learned.') : L('Tu enseñanza aparecerá al jugar.', 'Your lesson will appear as you play.');
+    return l[Number.isInteger(i) && i >= 0 && i < l.length ? i : 0];
+  }
+  // Datos de la página (los de la guía: por viñeta eventId, sceneImage, sceneTitle, dialogueText, captionText, effectId, timestamp)
+  async function datosPagina(opts) {
+    opts = opts || {};
+    const propia = src => !!src && (!opts.seguro || /^data:/.test(src));
+    const panels = enPagina();
+    const imgs = {};
+    for (const k of new Set(panels.map(p => p.img).filter(k => k && k !== 'portrait'))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]).catch(() => null) : null;
+    const vinetas = [], usados = new Set();
+    // Un título de escena no se repite en la página: el segundo del mismo tipo usa el alternativo (pack plantilla.titulosAlt)
+    const titulo = tipo => { let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || ''; if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || 'Y después…'; usados.add(t); return T(t); };
+    for (let i = 0; i < MAXV; i++) {
+      const p = panels[i];
+      if (!p) { vinetas.push({ id: null, falta: true, look: null, pose: 'celebrar' }); continue; }
+      const def = VINETAS.find(v => v.id === p.id) || {}, tipo = tipoDe(def), ev = S.events.find(e => e.key === p.needs);
+      const gl = def.pensamiento ? val(def.pensamiento) : val(def.dialogo);
+      const img = p.img && p.img !== 'portrait' ? imgs[p.img] : null;
+      vinetas.push({ id: p.id, eventId: p.needs, timestamp: ev ? ev.t : null, sceneImage: img || null,
+        escena: !img && p.ilustracion ? (x, X, Y, w, h) => ilustrar(x, p.ilustracion, X, Y, w, h) : null,
+        sceneTitle: titulo(tipo), dialogueText: gl ? T(gl) : '', dialogueType: def.pensamiento ? 'pensamiento' : 'dialogo',
+        captionText: T(p.text), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
+    }
+    return { panels, datos: { chapterId: C.capitulo || null, titulo: T(tituloValido(S.comic.title)), nombre: S.profile.name, look: lookActual(), retrato: await retratoDe(null, 256),
+      aprendi: T(leccion('aprendi')), ensenanza: T(leccion('ensenanza')), botones: opts.botones !== false, vinetas } };
+  }
   let ultimoRender = null;
-  // opts.seguro: solo imágenes embebidas (data:), para un lienzo que no quede contaminado
+  // opts.seguro: solo imágenes embebidas (data:), para un lienzo que no quede contaminado; opts.botones = false: sin los 4 botones
   async function renderComic(target, opts) {
     opts = opts || {};
-    const CM = S.comic;
-    const panels = orderedPanels(), HP = altoPagina(panels.length, CM.layout);
-    target.width = W; target.height = HP;
-    const x = target.getContext('2d');
-    try { await document.fonts.load('700 40px Fredoka'); await document.fonts.load('400 24px "Atkinson Hyperlegible"'); } catch (e) { /* fuente de respaldo */ }
-    const propia = src => !!src && (!opts.seguro || /^data:/.test(src));
-    const portrait = await retratoDe(null, 512);
-    const vit = propia(G.actores.sprite) ? await loadImg(G.actores.sprite) : null;
-    const imgs = {};
-    for (const k of new Set((C.capturas || []).concat(panels.map(p => p.img).filter(k => k && k !== 'portrait')))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]) : null;
-    // Retratos de cada viñeta, en secuencia (el renderizador de retratos es uno solo)
-    const rets = [];
-    for (const p of panels) rets.push(p.img === 'portrait' ? await retratoDe(p.look, 512, false) : await retratoDe(p.look, 320));
-    x.fillStyle = '#10241c'; x.fillRect(0, 0, W, HP);
-    // Portada
-    x.save(); x.beginPath(); x.rect(20, 20, W - 40, TOP - 30); x.clip();
-    const coverKey = (C.portadas || {})[CM.cover];
-    const coverImg = coverKey ? imgs[coverKey] : null;
-    if (coverImg) coverFit(x, coverImg, 20, 20, W - 40, TOP - 30);
-    else {
-      const g = x.createLinearGradient(0, 20, 0, TOP); g.addColorStop(0, '#2f8f4e'); g.addColorStop(1, '#10241c');
-      x.fillStyle = g; x.fillRect(20, 20, W - 40, TOP - 30);
-      if (CM.cover === 'personaje') x.drawImage(portrait, W - 380, 10, 360, 360); else if (vit) x.drawImage(vit, W - 400, 0, 380, 380);
-    }
-    const shade = x.createLinearGradient(0, 150, 0, TOP); shade.addColorStop(0, 'rgba(16,36,28,0)'); shade.addColorStop(1, 'rgba(16,36,28,.92)');
-    x.fillStyle = shade; x.fillRect(20, 150, W - 40, TOP - 160); x.restore();
-    x.textBaseline = 'alphabetic'; x.textAlign = 'left';
-    x.fillStyle = '#f2a03d'; x.font = '600 26px Fredoka, sans-serif'; x.fillText(C.marca || '', 52, 288);
-    x.fillStyle = '#f4f7f1'; x.font = '700 58px Fredoka, sans-serif'; x.fillText(tituloValido(CM.title).slice(0, 32), 50, 346);
-    // Viñetas
-    const boxes = comicLayout(panels.length, CM.layout, W, HP - 30, TOP);
-    const cameos = [], looks = {};
-    panels.forEach((p, i) => {
-      const b = boxes[i], ret = rets[i];
-      const lk = p.look || lookActual();
-      looks[p.id] = claveLook(lk);
-      x.fillStyle = '#f4f7f1'; x.fillRect(b.x, b.y, b.w, b.h);
-      x.font = '400 25px "Atkinson Hyperlegible", sans-serif';
-      const lines = wrapLines(x, p.text, b.w - 64).slice(0, 4);
-      const capH = 30 + lines.length * 33;
-      const ih = b.h - capH - 20, ix = b.x + 10, iy = b.y + 10, iw = b.w - 20;
-      x.save(); x.beginPath(); x.rect(ix, iy, iw, ih); x.clip();
-      if (p.img === 'portrait') {
-        const neckAcc = lk && lk.accessories && lk.accessories.neck, outfit = neckAcc && neckAcc.color ? neckAcc.color : '#2f8f4e';
-        const g = x.createLinearGradient(b.x, b.y, b.x + b.w, b.y + ih); g.addColorStop(0, '#f4f7f1'); g.addColorStop(1, outfit);
-        x.fillStyle = g; x.fillRect(ix, iy, iw, ih);
-        const s = Math.min(iw, ih); x.drawImage(ret, b.x + (b.w - s) / 2, iy + (ih - s) / 2, s, s);
-      } else {
-        if (imgs[p.img]) coverFit(x, imgs[p.img], ix, iy, iw, ih);
-        else if (p.ilustracion) ilustrar(x, p.ilustracion, ix, iy, iw, ih);
-        else { x.fillStyle = '#4f9a4c'; x.fillRect(ix, iy, iw, ih); }
-      }
-      if (C.decorar) C.decorar(x, p, b, ih, G);
-      if (p.img !== 'portrait') {
-        // Medallón del jugador con el look de ese momento
-        const s = Math.round(Math.min(ih * 0.62, iw * 0.3, 200)), cx = ix + 12, cy = iy + ih - s - 12, r = s / 2;
-        x.save(); x.beginPath(); x.arc(cx + r, cy + r, r, 0, Math.PI * 2);
-        x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 12; x.fillStyle = '#10241c'; x.fill(); x.shadowBlur = 0;
-        x.clip(); x.drawImage(ret, ret.width * 0.13, ret.height * 0.04, ret.width * 0.74, ret.height * 0.74, cx, cy, s, s); x.restore(); // busto
-        x.beginPath(); x.arc(cx + r, cy + r, r - 2, 0, Math.PI * 2); x.lineWidth = 5; x.strokeStyle = '#f4f7f1'; x.stroke();
-        cameos.push({ id: p.id, x: cx, y: cy, s });
-      }
-      x.restore();
-      x.lineWidth = 4; x.strokeStyle = '#10241c'; x.strokeRect(ix, iy, iw, ih); // marco de tinta
-      x.fillStyle = '#10241c'; x.font = '600 22px Fredoka, sans-serif'; x.fillText(String(i + 1), b.x + 16, b.y + ih + 46);
-      x.font = '400 25px "Atkinson Hyperlegible", sans-serif';
-      lines.forEach((l, k) => x.fillText(l, b.x + 44, b.y + ih + 46 + k * 33));
-    });
-    x.fillStyle = '#a9c2b1'; x.font = '400 18px "Atkinson Hyperlegible", sans-serif';
-    x.fillText(L('Cómic personal generado con ', 'Personal comic made from ') + S.events.length + L(' eventos reales de tu partida', ' real events of your game'), 24, HP - 10);
-    ultimoRender = { target, boxes, panels, cameos, looks };
+    const { panels, datos } = await datosPagina(opts);
+    const R = await G.comicPlantilla.componer(target, datos);
+    const looks = {}; panels.forEach(p => { looks[p.id] = claveLook(p.look || lookActual()); });
+    const vs = R.vinetas.slice(0, panels.length);
+    ultimoRender = { target, datos, panels, boxes: vs.map(v => v.caja), cameos: vs.map(v => ({ id: v.id, x: v.circulo.x, y: v.circulo.y, s: v.circulo.s })), looks, info: R };
     return ultimoRender;
   }
 
@@ -601,16 +618,28 @@ AVE.module('comic', function (G) {
     return new Blob(parts, { type: 'application/pdf' });
   }
 
-  // ---------- Formulario ----------
+  // ---------- Editor ----------
+  // Todo se elige de listas (sin texto libre: seguridad infantil): título, qué escenas van en la página (hasta 6), el texto de
+  // cada una, su orden, «¿Qué aprendí?» y «Mi enseñanza de vida». Los 4 botones de la página son acciones reales (zonas del lienzo).
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function syncComicForm() {
-    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     S.comic.title = tituloValido(S.comic.title);
-    $('c-title').innerHTML = TITULOS.map(t => `<option>${esc(t)}</option>`).join('');
-    $('c-title').value = S.comic.title; $('c-cover').value = S.comic.cover; $('c-layout').value = S.comic.layout;
-    const panels = orderedPanels();
-    $('c-panels').innerHTML = panels.map((p, i) => `<li><div class="pn">Viñeta ${i + 1}</div>
-      <select id="cap-${p.id}" data-id="${p.id}" aria-label="Texto de la viñeta ${i + 1}">${p.opciones.map((o, k) => `<option value="${k}"${k === p.eleccion ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>
-      <div class="pm"><button class="btn ghost sm" type="button" data-mv="-1" data-i="${i}" aria-label="Subir viñeta ${i + 1}">↑</button><button class="btn ghost sm" type="button" data-mv="1" data-i="${i}" aria-label="Bajar viñeta ${i + 1}">↓</button></div></li>`).join('');
+    $('c-title').innerHTML = TITULOS.map(t => `<option value="${esc(t)}">${esc(T(t))}</option>`).join('');
+    $('c-title').value = S.comic.title;
+    for (const k of ['aprendi', 'ensenanza']) {
+      const sel = $('c-' + k); if (!sel) continue;
+      const ops = opcionesLeccion(k), i = Number.isInteger(S.comic[k]) && S.comic[k] < ops.length ? S.comic[k] : 0;
+      sel.innerHTML = ops.length ? ops.map((o, j) => `<option value="${j}"${j === i ? ' selected' : ''}>${esc(T(o))}</option>`).join('') : `<option value="0">${esc(leccion(k))}</option>`;
+      sel.disabled = ops.length < 2;
+    }
+    const panels = orderedPanels(), visibles = new Set(enPagina(panels).map(p => p.id)), llena = visibles.size >= MAXV;
+    $('c-panels').innerHTML = panels.map((p, i) => { const v = visibles.has(p.id); return `<li class="${v ? 'en' : 'fuera'}"><div class="pn">${L('Escena', 'Scene')} ${i + 1}</div>
+      <label class="pv"><input type="checkbox" data-ver="${p.id}"${v ? ' checked' : ''}${!v && llena ? ' disabled' : ''}> ${L('En la página', 'On the page')}</label>
+      <select id="cap-${p.id}" data-id="${p.id}" aria-label="${L('Texto de la escena', 'Scene text')} ${i + 1}">${p.opciones.map((o, k) => `<option value="${k}"${k === p.eleccion ? ' selected' : ''}>${esc(T(o))}</option>`).join('')}</select>
+      <div class="pm"><button class="btn ghost sm" type="button" data-mv="-1" data-i="${i}" aria-label="${L('Subir escena', 'Move scene up')} ${i + 1}">↑</button><button class="btn ghost sm" type="button" data-mv="1" data-i="${i}" aria-label="${L('Bajar escena', 'Move scene down')} ${i + 1}">↓</button></div></li>`; }).join('');
+    const nota = $('c-escenas-nota');
+    if (nota) nota.textContent = panels.length > MAXV ? L(`Tienes ${panels.length} escenas: en la página caben 6.`, `You have ${panels.length} scenes: 6 fit on the page.`)
+      : panels.length < MAXV ? L(`Tienes ${panels.length} de 6 escenas. Las que faltan aparecen al jugar.`, `You have ${panels.length} of 6 scenes. The rest appear as you play.`) : L('Tus 6 escenas están en la página.', 'Your 6 scenes are on the page.');
   }
   function moveComicPanel(i, dir) {
     const n = comicPanels().length;
@@ -619,21 +648,53 @@ AVE.module('comic', function (G) {
     [order[i], order[j]] = [order[j], order[i]];
     S.comic.order = order; return true;
   }
+  // Poner o quitar una escena de la página (como mucho 6). → false si no se pudo
+  function verEscena(id, ver) {
+    const panels = orderedPanels(), vis = enPagina(panels).map(p => p.id).filter(x => x !== id);
+    if (ver) { if (vis.length >= MAXV) return false; vis.push(id); }
+    S.comic.ocultas = panels.map(p => p.id).filter(x => !vis.includes(x));
+    return true;
+  }
   $('c-panels').addEventListener('click', e => {
     const b = e.target.closest('button[data-mv]'); if (!b) return;
     if (moveComicPanel(+b.dataset.i, +b.dataset.mv)) { syncComicForm(); refreshComic(); G.guardado.autosave(); }
   });
   $('c-panels').addEventListener('change', e => {
+    const cb = e.target.closest('input[data-ver]');
+    if (cb) {
+      if (!verEscena(cb.dataset.ver, cb.checked)) { cb.checked = false; aviso(L('En la página caben 6 escenas: quita una primero.', '6 scenes fit on the page: remove one first.'), 3000); }
+      syncComicForm(); refreshComic(); G.guardado.autosave(); return;
+    }
     const sel = e.target.closest('select[data-id]'); if (!sel) return;
     const i = parseInt(sel.value, 10);
     if (i > 0) S.comic.captions[sel.dataset.id] = i; else delete S.comic.captions[sel.dataset.id];
     refreshComic(); G.guardado.autosave();
   });
-  for (const id of ['c-title', 'c-cover', 'c-layout']) $(id).addEventListener('change', () => {
-    S.comic.title = tituloValido($('c-title').value);
-    S.comic.cover = $('c-cover').value; S.comic.layout = $('c-layout').value;
-    refreshComic(); G.guardado.autosave();
-  });
+  $('c-title').addEventListener('change', () => { S.comic.title = tituloValido($('c-title').value); refreshComic(); G.guardado.autosave(); });
+  for (const k of ['aprendi', 'ensenanza']) if ($('c-' + k)) $('c-' + k).addEventListener('change', () => { S.comic[k] = parseInt($('c-' + k).value, 10) || 0; refreshComic(); G.guardado.autosave(); });
+  // Botones de la página (14–17) y de la barra del editor: misma acción
+  function verSeccion(id) {
+    const el = $(id); if (!el) return false;
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { el.scrollIntoView(); }
+    el.classList.remove('destaca'); void el.offsetWidth; el.classList.add('destaca');
+    return true;
+  }
+  function accionBoton(id) {
+    if (id === 'escenas') return verSeccion('c-sec-escenas');
+    if (id === 'editar') { verSeccion('c-sec-editar'); const t = $('c-title'); if (t) t.focus({ preventScroll: true }); return true; }
+    if (id === 'descargar') { verSeccion('c-sec-descargar'); const b = $('c-png'); if (b) b.focus({ preventScroll: true }); return true; }
+    if (id === 'compartir') { $('c-share').click(); return true; } // records.js: puerta para adultos
+    return false;
+  }
+  function botonEn(ev) {
+    const cv = $('comic-canvas'), r = cv.getBoundingClientRect(), R = ultimoRender && ultimoRender.target === cv ? ultimoRender.info : null;
+    if (!R || !r.width) return null;
+    const px = (ev.clientX - r.left) * cv.width / r.width, py = (ev.clientY - r.top) * cv.height / r.height;
+    return R.botones.find(b => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) || null;
+  }
+  $('comic-canvas').addEventListener('click', ev => { const b = botonEn(ev); if (b) accionBoton(b.id); });
+  $('comic-canvas').addEventListener('pointermove', ev => { $('comic-canvas').style.cursor = botonEn(ev) ? 'pointer' : ''; });
+  for (const [id, a] of [['c-ver', 'escenas'], ['c-editar', 'editar']]) if ($(id)) $(id).addEventListener('click', () => accionBoton(a));
   async function openComic() {
     $('end').hidden = true; $('comic').hidden = false;
     $('c-export').hidden = true;
@@ -765,7 +826,7 @@ AVE.module('comic', function (G) {
     G.on('apply', verMenu, 65); verMenu();
     if ($('pause')) $('pause').addEventListener('toggle', verMenu);
   }
-  $('c-close').onclick = () => { $('comic').hidden = true; if (S.complete && !S.explorando) $('end').hidden = false; };
+  $('c-close').onclick = () => { $('comic').hidden = true; if (G.comicPlantilla.limpiarCache) G.comicPlantilla.limpiarCache(); if (S.complete && !S.explorando) $('end').hidden = false; };
   $('c-refresh').onclick = refreshComic;
   $('c-png').onclick = () => exportComic('png', true);
   $('c-pdf').onclick = () => exportComic('pdf', true);
@@ -813,7 +874,7 @@ AVE.module('comic', function (G) {
       // Componer y exportar a PNG
       S.comic.layout = 'grid'; S.comic.order = [];
       const url = await exportComic('png');
-      const HP = altoPagina(ultimoRender.panels.length, 'grid'), blob = ultimo.png, v = await verificarPNG(blob, W, HP);
+      const HP = H, blob = ultimo.png, v = await verificarPNG(blob, W, HP);
       check(`PNG válido: firma, IHDR y ${W}×${HP}`, v.ok && typeof url === 'string' && url.startsWith('data:image/png'), `${v.ancho}×${v.alto} · ${Math.round((v.bytes || 0) / 1024)} KB`);
       const im = url ? await loadImg(url) : null;
       check('El PNG se decodifica con esas dimensiones', im && im.width === W && im.height === HP, im ? im.width + '×' + im.height : 'no carga');
@@ -862,18 +923,28 @@ AVE.module('comic', function (G) {
         const solBk = G.solidos;
         try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
         finally { G.solidos = solBk; }
+        const aguaBk = G.agua.levelAt;
+        try { // nadando: la superficie queda por encima de S.pos; la cámara no puede quedar bajo el agua
+          G.agua.levelAt = () => S.pos.y + 0.8; ultimaPosada = null; const f = fotoPosada();
+          check('Chapuzón: la foto se toma desde encima del agua (no desde el fondo)', f === null || (ultimaPosada && ultimaPosada.q.y >= S.pos.y + 0.8 + 0.35), ultimaPosada ? ultimaPosada.q.y.toFixed(2) + ' / agua ' + (S.pos.y + 0.8).toFixed(2) : 'sin ángulo libre');
+        } finally { G.agua.levelAt = aguaBk; }
         const copaBk = G.camara.copaLibre;
         try { G.camara.copaLibre = () => false; check('Posada dentro de una copa (hojas en todos los ángulos): sin foto, la rama usa su ilustración (QA-32)', fotoPosada() === null); }
         finally { G.camara.copaLibre = copaBk; }
         G.quiet = false; try { G.emit('criadero', 'nido'); G.emit('posado', { tipo: 'alto', que: 'techo', altura: 6 }); } finally { G.quiet = true; }
         check('Cada evento del motor cuenta una sola vez por partida', S.events.filter(e => e.key === 'NestAppeared' || e.key === 'FirstRoofPerch').length === 2);
         // Página con todas las viñetas: más alta si hace falta, PNG válido y cada viñeta nueva con contenido y en orden
-        const url2 = await exportComic('png'), R2 = ultimoRender, alto = altoPagina(R2.panels.length, 'grid');
+        const url2 = await exportComic('png'), R2 = ultimoRender, alto = H;
         const v2 = await verificarPNG(ultimo.png, W, alto), im2 = url2 ? await loadImg(url2) : null;
         check(`PNG con ${R2.panels.length} viñetas: válido y de ${W}×${alto}`, v2.ok && im2 && im2.width === W && im2.height === alto, `${v2.ancho}×${v2.alto}`);
-        const vacias = casos.filter(c => { const j = R2.panels.findIndex(q => q.id === c.id), e = j >= 0 && im2 ? estadisticas(im2, R2.boxes[j]) : null; return !e || enBlanco(e); });
-        check('Las 4 viñetas nuevas están en la página y no en blanco', vacias.length === 0, vacias.map(c => c.id).join(', ') || 'todas con imagen');
-        check('Las viñetas van en el orden en que pasaron', R2.panels.every((q, j) => j === 0 || R2.panels[j - 1].seq <= q.seq));
+        const enLa = casos.filter(c => R2.panels.some(q => q.id === c.id));
+        const vacias = enLa.filter(c => { const j = R2.panels.findIndex(q => q.id === c.id), e = j >= 0 && im2 ? estadisticas(im2, R2.boxes[j]) : null; return !e || enBlanco(e); });
+        check('Las viñetas nuevas que van en la página (como mucho 6) no están en blanco', enLa.length > 0 && vacias.length === 0 && R2.panels.length <= 6, (vacias.map(c => c.id).join(', ') || enLa.map(c => c.id).join(', ')) + ' · ' + R2.panels.length + ' en la página');
+        const tits = R2.datos.vinetas.filter(v => !v.falta).map(v => v.sceneTitle), jMeta = R2.panels.findIndex(q => tipoDe(VINETAS.find(v => v.id === q.id)) === 'meta');
+        check('Las viñetas siguen la plantilla: el comienzo primero, ¡La meta! (si la hay) en la última y sin títulos repetidos',
+          R2.panels[0].id === 'intro' && (jMeta < 0 || jMeta === R2.panels.length - 1) && new Set(tits).size === tits.length, R2.panels.map(q => q.id).join(' · ') + ' | ' + tits.join(' · '));
+        // ---- Plantilla de Kelvin (docs/equipo/COMIC_PLANTILLA_GUIA.md §7) ----
+        await plantillaTest(check, im2, R2);
       }
       // Gags del pichón (mejora 9): el hecho real (gags.js → G.emit('criadero', 'gag', …), lo anota momentos.js) crea la viñeta
       // una vez, con la foto del momento o una captura del mundo; sin ninguna, su ilustración. Un gag que nadie conoce no hace nada.
@@ -951,23 +1022,28 @@ AVE.module('comic', function (G) {
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
           if (lienzoListo()) check('La foto con pose entra al cómic como viñeta', okF && comicPanels().some(q => q.id === 'foto'));
         }
-        const url3 = await exportComic('png'), R3 = ultimoRender, alto3 = altoPagina(R3.panels.length, 'grid');
+        const url3 = await exportComic('png'), R3 = ultimoRender, alto3 = H;
         const v3 = await verificarPNG(ultimo.png, W, alto3), im3 = url3 ? await loadImg(url3) : null;
         check(`PNG con los gags (${R3.panels.length} viñetas): válido y de ${W}×${alto3}`, v3.ok && im3 && im3.width === W && im3.height === alto3, `${v3.ancho}×${v3.alto}`);
-        const ids = gags.map(v => v.id).concat(R3.panels.some(q => q.id === 'foto') ? ['foto'] : []);
-        const vacias3 = ids.filter(id => { const j = R3.panels.findIndex(q => q.id === id), e = j >= 0 && im3 ? estadisticas(im3, R3.boxes[j]) : null; return !e || enBlanco(e); });
+        // En la página caben 6: se eligen los gags y la foto (como haría el niño en «Mis escenas») para verlos dibujados
+        const ids = gags.map(v => v.id).concat(comicPanels().some(q => q.id === 'foto') ? ['foto'] : []).slice(0, 6);
+        S.comic.ocultas = comicPanels().map(q => q.id).filter(id => !ids.includes(id));
+        await exportComic('png'); const R3b = ultimoRender, im3b = ultimo.png ? await loadImg(await blobADataUrl(ultimo.png)) : null;
+        check('«Mis escenas»: la página lleva justo las escenas elegidas', R3b.panels.length === ids.length && R3b.panels.every(q => ids.includes(q.id)), R3b.panels.map(q => q.id).join(', '));
+        const vacias3 = ids.filter(id => { const j = R3b.panels.findIndex(q => q.id === id), e = j >= 0 && im3b ? estadisticas(im3b, R3b.boxes[j]) : null; return !e || enBlanco(e); });
+        delete S.comic.ocultas;
         check('Las viñetas de los gags (foto, captura o ilustración) y la foto con pose no están en blanco', vacias3.length === 0, vacias3.join(', ') || ids.length + ' con imagen');
         if (opts.muestra) opts.muestra(url3);
       }
       // Diseños: sin solapes y dentro de la página
       let malos = 0;
       for (const lay of ['grid', 'strip']) for (let n = 1; n <= 6; n++) {
-        const bx = comicLayout(n, lay, W, H - 30, TOP);
-        const dentro = bx.every(b => b.x >= 0 && b.y >= TOP && b.x + b.w <= W && b.y + b.h <= H - 30 && b.w > 100 && b.h > 100);
+        const bx = comicLayout(n, lay, LW, LH - 30, TOP);
+        const dentro = bx.every(b => b.x >= 0 && b.y >= TOP && b.x + b.w <= LW && b.y + b.h <= LH - 30 && b.w > 100 && b.h > 100);
         const solape = bx.some((a, j) => bx.some((b, k) => j < k && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h));
         if (!dentro || solape) malos++;
       }
-      check('Diseños en cuadrícula y tira (1–6 viñetas) sin solapes y dentro de la página', malos === 0, malos + ' fallan');
+      check('Cuadrícula anterior (comicLayout, la usa manga.js): 1–6 viñetas sin solapes y dentro', malos === 0, malos + ' fallan');
       // Entrega con la capacidad 'downloads' (simulada), cancelada y ausente
       let recibido = null;
       descargasPrueba = { save: async r => { recibido = r; return { status: 'saved' }; } };
@@ -1002,10 +1078,54 @@ AVE.module('comic', function (G) {
       Object.keys(Object.assign({}, snap, ahora)).filter(k => JSON.stringify(snap[k]) !== JSON.stringify(ahora[k])).join(', '));
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
+  // Prueba mínima de la plantilla (guía §7): página 2:3 con 6 viñetas de eventos reales, logo original byte a byte, dos cotorras
+  // distintas cambian los círculos y el personaje central, poses reales, decoraciones solo con su evento, botones como acciones.
+  async function plantillaTest(check, im, R) {
+    const PT = G.comicPlantilla;
+    check(`Página de la plantilla: ${W}×${H} (2:3)`, im && im.width === W && im.height === H && W * 3 === H * 2, im ? im.width + '×' + im.height : 'sin imagen');
+    let sha = '', bytes = 0;
+    try {
+      const buf = await (await fetch(PT.LOGO, { cache: 'no-store' })).arrayBuffer(); bytes = buf.byteLength;
+      if (crypto.subtle) sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', buf))).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) { sha = 'error: ' + e.message; }
+    check('Logo: el archivo oficial 00 original, byte a byte (SHA-256), y dibujado en la página', R.info.logo && sha === PT.LOGO_SHA256, `${Math.round(bytes / 1024)} KB · ${sha.slice(0, 12)}…`);
+    const d = R.datos, vs = d.vinetas;
+    check('Seis viñetas (2 × 3) con sus datos: evento, escena, título, diálogo, narración, efecto', vs.length === 6 && vs.filter(v => !v.falta).every(v => v.eventId && G.eventos.had(v.eventId) && v.sceneTitle && v.captionText && 'dialogueText' in v && 'effectId' in v && 'sceneImage' in v),
+      vs.map(v => v.falta ? '·' : v.id + ':' + v.sceneTitle).join(' | '));
+    check('Las escenas que faltan (si hay menos de 6) muestran un marcador, no algo inventado', vs.every((v, i) => (i < R.panels.length) === !v.falta), R.panels.length + ' reales');
+    const efOk = vs.filter(v => !v.falta).every(v => { const def = VINETAS.find(q => q.id === v.id) || {}; return (val(def.efecto) || null) === v.effectId; });
+    check('Decoraciones solo si el evento las justifica (¡FUUUSH!, ???, bandera, récord)', efOk && R.info.vinetas.every((iv, i) => vs[i].falta ? !iv.efecto : iv.efecto === vs[i].effectId), vs.map(v => v.effectId || '-').join(','));
+    const con3D = !!window.AVCharacter && !G.actores.failed3D;
+    if (con3D) check('Círculos y personaje central: poses reales del modelo (no la silueta gris)', R.info.vinetas.every(v => v.poseReal) && R.info.centro.real);
+    check('Los 4 botones de la página son zonas de acción dentro de la página', R.info.botones.length === 4 && R.info.botones.every(b => b.x >= 0 && b.y >= 0 && b.x + b.w <= W && b.y + b.h <= H) && accionBoton('escenas') && accionBoton('editar'),
+      R.info.botones.map(b => b.id).join(','));
+    // Dos cotorras distintas (especie/piel, traje y corona): los círculos y el personaje central cambian
+    const muestra = (cv, b) => { const c = document.createElement('canvas'); c.width = c.height = 24; const x = c.getContext('2d'); x.drawImage(cv, b.x, b.y, b.w, b.h, 0, 0, 24, 24); return x.getImageData(0, 0, 24, 24).data; };
+    const dif = (a, b) => { let s = 0; for (let i = 0; i < a.length; i += 4) s += Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); return s / (a.length / 4) / 3; };
+    const vin0 = JSON.parse(JSON.stringify(vin())), perfil0 = S.profile;
+    const lookA = G.creador.profileLook({ preset: 'vittata', outfit: 'naranja', accessory: 'gorra' });
+    const lookB = (() => { try { return window.AVCharacter.normalizeLook({ species: 'imperialis', accessories: { neck: { id: 'panuelo', color: '#7a4fb3', style: 'pr' }, head: { id: 'casco' } } }); } catch (e) { return G.creador.profileLook({ preset: 'agilis', outfit: 'morado', accessory: 'gafas' }); } })();
+    const cvP = document.createElement('canvas'), zonas = [];
+    for (const lk of [lookA, lookB]) {
+      S.profile = Object.assign({}, perfil0, { look: lk }); for (const k of Object.keys(vin())) vin()[k].look = lk;
+      const r = await renderComic(cvP);
+      const c0 = r.cameos[0], ct = r.info.centro;
+      zonas.push({ c: c0 ? muestra(cvP, { x: c0.x, y: c0.y, w: c0.s, h: c0.s }) : null, t: muestra(cvP, { x: 372 * 1.5, y: 1168 * 1.5, w: 252 * 1.5, h: 226 * 1.5 }), real: ct.real });
+    }
+    S.profile = perfil0; for (const [k, v] of Object.entries(vin0)) vin()[k] = v;
+    const dc = zonas[0].c && zonas[1].c ? dif(zonas[0].c, zonas[1].c) : 0, dt = dif(zonas[0].t, zonas[1].t);
+    check('Dos cotorras distintas: cambian los círculos y el personaje central', dc > 4 && dt > 4, `círculo Δ${dc.toFixed(1)} · centro Δ${dt.toFixed(1)}`);
+    // Inglés: los textos dinámicos salen en EN (títulos de escena del diccionario)
+    if (G.idioma && G.idioma.poner && G.idioma.actual) {
+      const antes = G.idioma.actual();
+      try { await G.idioma.poner('en'); const r = await datosPagina(); check('En inglés, los títulos de escena y las lecciones salen en EN', r.datos.vinetas.filter(v => !v.falta).every(v => !/[áéíóúñ¡¿]/i.test(v.sceneTitle)) && !/[ñ¿]/.test(r.datos.aprendi), r.datos.vinetas.map(v => v.sceneTitle || '·').join(' | ')); }
+      finally { await G.idioma.poner(antes); }
+    }
+  }
   // AV.comicTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.comicTest) AV.comicTest = o => test(o); }, 0);
 
-  return { titulos: TITULOS, capture, comicPanels, orderedPanels, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic, pngSinRegistro,
+  return { titulos: TITULOS, PAGINA: PAG, capture, comicPanels, orderedPanels, enPagina, datosPagina, verEscena, accionBoton, comicLayout, renderComic, buildPdf, syncComicForm, moveComicPanel, openComic, refreshComic, exportComic, pngSinRegistro,
     revisarEventos, verificarPNG, estadisticas, entregar, test,
     get lastBlob() { return ultimo.pdf; }, get lastPng() { return ultimo.png; } };
 });

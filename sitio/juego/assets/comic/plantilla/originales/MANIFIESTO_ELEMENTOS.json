@@ -1,0 +1,982 @@
+{
+  "reference_source": "B0877EB1-411F-4090-A3A0-E0EAC0EFA6B1.jpeg",
+  "source_canvas_px": [
+    1024,
+    1536
+  ],
+  "official_logo": "IMG_3363(2).png",
+  "policy": "No se redisenaron los elementos. Cada PNG conserva pixeles de la referencia. Los recortes rectangulares incluyen fondo; los archivos TRANSPARENTE tienen mascara aproximada.",
+  "integration": "Para un compositor dinamico, dibujar escenas del juego en capa inferior y reconstruir títulos, captions y avatares como capas programaticas; no tratar los PNG como vectores editables.",
+  "assets": [
+    {
+      "file": "00_LOGO_OFICIAL_ORIGINAL_INTACTO.png",
+      "group": "logo",
+      "bounds": null,
+      "size": [
+        2000,
+        813
+      ],
+      "note": "Archivo PNG exacto del usuario, sin redibujar"
+    },
+    {
+      "file": "01_vineta_comienzo.png",
+      "group": "vinetas",
+      "bounds": [
+        11,
+        217,
+        523,
+        534
+      ],
+      "size": [
+        512,
+        317
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "02_vineta_descubrimiento.png",
+      "group": "vinetas",
+      "bounds": [
+        512,
+        216,
+        1014,
+        541
+      ],
+      "size": [
+        502,
+        325
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "03_vineta_confusion.png",
+      "group": "vinetas",
+      "bounds": [
+        11,
+        534,
+        505,
+        827
+      ],
+      "size": [
+        494,
+        293
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "04_vineta_nuevo_intento.png",
+      "group": "vinetas",
+      "bounds": [
+        482,
+        534,
+        1014,
+        829
+      ],
+      "size": [
+        532,
+        295
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "05_vineta_velocidad.png",
+      "group": "vinetas",
+      "bounds": [
+        11,
+        827,
+        516,
+        1155
+      ],
+      "size": [
+        505,
+        328
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "06_vineta_meta.png",
+      "group": "vinetas",
+      "bounds": [
+        488,
+        826,
+        1014,
+        1155
+      ],
+      "size": [
+        526,
+        329
+      ],
+      "note": "Viñeta original separada, sin rediseñar"
+    },
+    {
+      "file": "07_cabecera_crea_tu_comic.png",
+      "group": "encabezado",
+      "bounds": [
+        280,
+        11,
+        637,
+        119
+      ],
+      "size": [
+        357,
+        108
+      ],
+      "note": ""
+    },
+    {
+      "file": "08_pasos_1_a_4.png",
+      "group": "encabezado",
+      "bounds": [
+        645,
+        14,
+        1015,
+        115
+      ],
+      "size": [
+        370,
+        101
+      ],
+      "note": ""
+    },
+    {
+      "file": "09_campo_titulo_aventura.png",
+      "group": "campos",
+      "bounds": [
+        239,
+        117,
+        671,
+        210
+      ],
+      "size": [
+        432,
+        93
+      ],
+      "note": ""
+    },
+    {
+      "file": "10_campo_mi_cotorra.png",
+      "group": "campos",
+      "bounds": [
+        674,
+        116,
+        1015,
+        211
+      ],
+      "size": [
+        341,
+        95
+      ],
+      "note": ""
+    },
+    {
+      "file": "11_seccion_que_aprendi.png",
+      "group": "final",
+      "bounds": [
+        13,
+        1162,
+        366,
+        1417
+      ],
+      "size": [
+        353,
+        255
+      ],
+      "note": ""
+    },
+    {
+      "file": "12_seccion_ensenanza_de_vida.png",
+      "group": "final",
+      "bounds": [
+        616,
+        1163,
+        1015,
+        1417
+      ],
+      "size": [
+        399,
+        254
+      ],
+      "note": ""
+    },
+    {
+      "file": "13_personaje_central_placeholder.png",
+      "group": "final",
+      "bounds": [
+        352,
+        1160,
+        641,
+        1425
+      ],
+      "size": [
+        289,
+        265
+      ],
+      "note": ""
+    },
+    {
+      "file": "14_boton_ver_mis_escenas.png",
+      "group": "botones",
+      "bounds": [
+        23,
+        1420,
+        282,
+        1516
+      ],
+      "size": [
+        259,
+        96
+      ],
+      "note": ""
+    },
+    {
+      "file": "15_boton_editar_mi_comic.png",
+      "group": "botones",
+      "bounds": [
+        285,
+        1420,
+        537,
+        1516
+      ],
+      "size": [
+        252,
+        96
+      ],
+      "note": ""
+    },
+    {
+      "file": "16_boton_descargar.png",
+      "group": "botones",
+      "bounds": [
+        549,
+        1420,
+        769,
+        1516
+      ],
+      "size": [
+        220,
+        96
+      ],
+      "note": ""
+    },
+    {
+      "file": "17_boton_compartir.png",
+      "group": "botones",
+      "bounds": [
+        775,
+        1420,
+        1007,
+        1516
+      ],
+      "size": [
+        232,
+        96
+      ],
+      "note": ""
+    },
+    {
+      "file": "18_globo_dialogo_01.png",
+      "group": "globos",
+      "bounds": [
+        327,
+        234,
+        514,
+        383
+      ],
+      "size": [
+        187,
+        149
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "19_globo_pensamiento_02.png",
+      "group": "globos",
+      "bounds": [
+        773,
+        233,
+        1001,
+        400
+      ],
+      "size": [
+        228,
+        167
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "20_globo_dialogo_03.png",
+      "group": "globos",
+      "bounds": [
+        157,
+        682,
+        334,
+        778
+      ],
+      "size": [
+        177,
+        96
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "21_globo_dialogo_04.png",
+      "group": "globos",
+      "bounds": [
+        718,
+        545,
+        938,
+        712
+      ],
+      "size": [
+        220,
+        167
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "22_globo_dialogo_05.png",
+      "group": "globos",
+      "bounds": [
+        310,
+        840,
+        481,
+        1034
+      ],
+      "size": [
+        171,
+        194
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "23_globo_dialogo_06.png",
+      "group": "globos",
+      "bounds": [
+        675,
+        874,
+        891,
+        1035
+      ],
+      "size": [
+        216,
+        161
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "24_circulo_usuario_01.png",
+      "group": "avatares",
+      "bounds": [
+        15,
+        420,
+        130,
+        528
+      ],
+      "size": [
+        115,
+        108
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "25_circulo_usuario_02.png",
+      "group": "avatares",
+      "bounds": [
+        513,
+        420,
+        625,
+        531
+      ],
+      "size": [
+        112,
+        111
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "26_circulo_usuario_03.png",
+      "group": "avatares",
+      "bounds": [
+        14,
+        716,
+        128,
+        824
+      ],
+      "size": [
+        114,
+        108
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "27_circulo_usuario_04.png",
+      "group": "avatares",
+      "bounds": [
+        515,
+        716,
+        625,
+        824
+      ],
+      "size": [
+        110,
+        108
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "28_circulo_usuario_05.png",
+      "group": "avatares",
+      "bounds": [
+        16,
+        1031,
+        128,
+        1148
+      ],
+      "size": [
+        112,
+        117
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "29_circulo_usuario_06.png",
+      "group": "avatares",
+      "bounds": [
+        513,
+        1031,
+        624,
+        1148
+      ],
+      "size": [
+        111,
+        117
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "30_caja_texto_01.png",
+      "group": "textos",
+      "bounds": [
+        114,
+        472,
+        488,
+        521
+      ],
+      "size": [
+        374,
+        49
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "31_caja_texto_02.png",
+      "group": "textos",
+      "bounds": [
+        622,
+        472,
+        1004,
+        524
+      ],
+      "size": [
+        382,
+        52
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "32_caja_texto_03.png",
+      "group": "textos",
+      "bounds": [
+        112,
+        774,
+        482,
+        819
+      ],
+      "size": [
+        370,
+        45
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "33_caja_texto_04.png",
+      "group": "textos",
+      "bounds": [
+        618,
+        774,
+        1005,
+        819
+      ],
+      "size": [
+        387,
+        45
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "34_caja_texto_05.png",
+      "group": "textos",
+      "bounds": [
+        113,
+        1081,
+        483,
+        1133
+      ],
+      "size": [
+        370,
+        52
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "35_caja_texto_06.png",
+      "group": "textos",
+      "bounds": [
+        622,
+        1081,
+        831,
+        1132
+      ],
+      "size": [
+        209,
+        51
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "36_titulo_escena_01.png",
+      "group": "titulos",
+      "bounds": [
+        19,
+        220,
+        306,
+        276
+      ],
+      "size": [
+        287,
+        56
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "37_titulo_escena_02.png",
+      "group": "titulos",
+      "bounds": [
+        534,
+        220,
+        822,
+        278
+      ],
+      "size": [
+        288,
+        58
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "38_titulo_escena_03.png",
+      "group": "titulos",
+      "bounds": [
+        18,
+        537,
+        312,
+        596
+      ],
+      "size": [
+        294,
+        59
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "39_titulo_escena_04.png",
+      "group": "titulos",
+      "bounds": [
+        502,
+        538,
+        801,
+        599
+      ],
+      "size": [
+        299,
+        61
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "40_titulo_escena_05.png",
+      "group": "titulos",
+      "bounds": [
+        18,
+        830,
+        312,
+        888
+      ],
+      "size": [
+        294,
+        58
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "41_titulo_escena_06.png",
+      "group": "titulos",
+      "bounds": [
+        501,
+        830,
+        802,
+        890
+      ],
+      "size": [
+        301,
+        60
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "42_onomatopeya_fuush.png",
+      "group": "decoraciones",
+      "bounds": [
+        20,
+        904,
+        261,
+        1017
+      ],
+      "size": [
+        241,
+        113
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "43_signos_confusion.png",
+      "group": "decoraciones",
+      "bounds": [
+        254,
+        594,
+        389,
+        706
+      ],
+      "size": [
+        135,
+        112
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "44_bandera_meta.png",
+      "group": "decoraciones",
+      "bounds": [
+        878,
+        1078,
+        1010,
+        1151
+      ],
+      "size": [
+        132,
+        73
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "45_placa_nuevo_record.png",
+      "group": "decoraciones",
+      "bounds": [
+        824,
+        1023,
+        1007,
+        1151
+      ],
+      "size": [
+        183,
+        128
+      ],
+      "note": "Recorte original; su fondo rectangular es parte del raster"
+    },
+    {
+      "file": "99_REFERENCIA_FORMATO_ORIGINAL.png",
+      "group": "referencia",
+      "bounds": [
+        0,
+        0,
+        1024,
+        1536
+      ],
+      "size": [
+        1024,
+        1536
+      ],
+      "note": "Solo referencia del formato aprobado; logo de este mockup no es el oficial"
+    },
+    {
+      "file": "46_globo_01_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        327,
+        234,
+        514,
+        383
+      ],
+      "size": [
+        187,
+        149
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "47_globo_02_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        773,
+        233,
+        1001,
+        400
+      ],
+      "size": [
+        228,
+        167
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "48_globo_03_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        157,
+        682,
+        334,
+        778
+      ],
+      "size": [
+        177,
+        96
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "49_globo_04_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        718,
+        545,
+        938,
+        712
+      ],
+      "size": [
+        220,
+        167
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "50_globo_05_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        310,
+        840,
+        481,
+        1034
+      ],
+      "size": [
+        171,
+        194
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "51_globo_06_TRANSPARENTE.png",
+      "group": "globos_alpha",
+      "bounds": [
+        675,
+        874,
+        891,
+        1035
+      ],
+      "size": [
+        216,
+        161
+      ],
+      "note": "PNG transparente; recorte aproximado de contorno del globo original"
+    },
+    {
+      "file": "52_avatar_circular_01_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        15,
+        420,
+        130,
+        528
+      ],
+      "size": [
+        115,
+        108
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "53_avatar_circular_02_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        513,
+        420,
+        625,
+        531
+      ],
+      "size": [
+        112,
+        111
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "54_avatar_circular_03_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        14,
+        716,
+        128,
+        824
+      ],
+      "size": [
+        114,
+        108
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "55_avatar_circular_04_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        515,
+        716,
+        625,
+        824
+      ],
+      "size": [
+        110,
+        108
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "56_avatar_circular_05_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        16,
+        1031,
+        128,
+        1148
+      ],
+      "size": [
+        112,
+        117
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "57_avatar_circular_06_TRANSPARENTE.png",
+      "group": "avatares_alpha",
+      "bounds": [
+        513,
+        1031,
+        624,
+        1148
+      ],
+      "size": [
+        111,
+        117
+      ],
+      "note": "Círculo PNG transparente; sustituir silueta por skin/corona del jugador"
+    },
+    {
+      "file": "01_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        9,
+        214,
+        528,
+        535
+      ],
+      "size": [
+        519,
+        321
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    },
+    {
+      "file": "02_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        499,
+        214,
+        1015,
+        539
+      ],
+      "size": [
+        516,
+        325
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    },
+    {
+      "file": "03_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        9,
+        535,
+        497,
+        829
+      ],
+      "size": [
+        488,
+        294
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    },
+    {
+      "file": "04_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        453,
+        535,
+        1015,
+        829
+      ],
+      "size": [
+        562,
+        294
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    },
+    {
+      "file": "05_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        9,
+        828,
+        518,
+        1157
+      ],
+      "size": [
+        509,
+        329
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    },
+    {
+      "file": "06_VINETA_AISLADA_FONDO_TRANSPARENTE.png",
+      "group": "vinetas_alpha",
+      "bounds": [
+        499,
+        829,
+        1015,
+        1157
+      ],
+      "size": [
+        516,
+        328
+      ],
+      "note": "Viñeta con máscara transparente que oculta piezas de viñetas vecinas; no rediseñada"
+    }
+  ]
+}

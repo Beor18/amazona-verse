@@ -1,0 +1,79 @@
+{
+ "cabecera": {
+  "de": "07_cabecera_crea_tu_comic.png",
+  "x": 280,
+  "y": 12,
+  "w": 357,
+  "h": 107
+ },
+ "pasos": {
+  "de": "08_pasos_1_a_4.png",
+  "x": 647,
+  "y": 16,
+  "w": 367,
+  "h": 95
+ },
+ "campo_titulo": {
+  "de": "09_campo_titulo_aventura.png",
+  "x": 239,
+  "y": 117,
+  "w": 428,
+  "h": 90
+ },
+ "campo_cotorra": {
+  "de": "10_campo_mi_cotorra.png",
+  "x": 674,
+  "y": 118,
+  "w": 341,
+  "h": 93
+ },
+ "que_aprendi": {
+  "de": "11_seccion_que_aprendi.png",
+  "x": 13,
+  "y": 1162,
+  "w": 353,
+  "h": 255
+ },
+ "ensenanza": {
+  "de": "12_seccion_ensenanza_de_vida.png",
+  "x": 616,
+  "y": 1163,
+  "w": 399,
+  "h": 254
+ },
+ "boton_escenas": {
+  "de": "14_boton_ver_mis_escenas.png",
+  "x": 23,
+  "y": 1425,
+  "w": 252,
+  "h": 84
+ },
+ "boton_editar": {
+  "de": "15_boton_editar_mi_comic.png",
+  "x": 285,
+  "y": 1426,
+  "w": 251,
+  "h": 83
+ },
+ "boton_descargar": {
+  "de": "16_boton_descargar.png",
+  "x": 549,
+  "y": 1421,
+  "w": 220,
+  "h": 88
+ },
+ "boton_compartir": {
+  "de": "17_boton_compartir.png",
+  "x": 776,
+  "y": 1426,
+  "w": 226,
+  "h": 83
+ },
+ "confusion": {
+  "de": "43_signos_confusion.png",
+  "x": 254,
+  "y": 594,
+  "w": 135,
+  "h": 112
+ }
+}
