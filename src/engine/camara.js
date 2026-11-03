@@ -506,8 +506,10 @@ AVE.module('camara', function (G) {
       const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); const dd = camera.position.distanceTo(prevP); if (dd > salto) { salto = dd; dondeSalto = faseT + i; } prevP.copy(camera.position); } };
       paso60(30);
       // BM131: sube y baja 3 m en 0,5 s (como el despegue y el aterrizaje de fisica.js, ~6 m/s), no de golpe en un cuadro: con el
-      // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero (134,183, tras las baterías) y el corte daba 2–3 m
-      const y0 = S.pos.y, yT = G.terreno.height(S.pos.x, S.pos.z);
+      // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero (134,183, tras las baterías) y el corte daba 2–3 m.
+      // Aterriza donde despegó (antes, en la altura del terreno: si las baterías la dejaban sobre una losa o un tejado, la
+      // «aterrizaba» por dentro del edificio)
+      const y0 = S.pos.y, yT = y0;
       faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
       Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
       ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z)] }));
