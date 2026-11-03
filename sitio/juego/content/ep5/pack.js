@@ -22,8 +22,8 @@
   // con el relieve real: el taller en el borde norte de la meseta; la loma baja y la torre sobre la meseta; el mirador y la
   // niebla en el claro de Los Miradores; el pilar abajo, en la cornisa norte (78 m), tapado por el borde de la meseta, junto
   // al pilar de piedra de Kelvin (allí no se pone el del kit). relevo.js e historia.js leen AV_EP5.mapaReal.
-  const MAPA_REAL = false;
-  const REAL = (MAPA_REAL || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
+  const MAPA_REAL = true; // Kelvin, 3-nov: encendido. ?mapa=pequeno vuelve al mundo pequeño (pruebas)
+  const REAL = ((MAPA_REAL && !/[?&]mapa=pequeno(&|$)/.test(location.search)) || /[?&]mapa=real(&|$)/.test(location.search)) && !!(window.AVE && window.AVE.mundoReal && window.AV_MAPA_CAP1);
   const EN = (relleno, mapa) => (REAL ? mapa : relleno);
   window.AV_EP5 = window.AV_EP5 || {};
   window.AV_EP5.mapaReal = REAL;
