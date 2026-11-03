@@ -40,7 +40,7 @@ Tarea BM71 de `docs/equipo/TAREAS_API.md`. Como BM44 con el capítulo 1 (`DIARIO
 | Para mover una pieza larga o difícil, puede ser más seguro coordinarse y pedir ayuda, o usar equipo adecuado | ep6 | `tabla` | CDC/NIOSH, *Materials Handling: Lifting and Carrying* (2026) https://www.cdc.gov/niosh/media/pdfs/2026/09/2026-119.pdf | verificado · Kelvin 2-nov (18, con matiz) · enlace comprobado (BM126) |
 | Repetir con tus propias palabras lo que otro dijo ayuda a comprobar si lo entendiste y a descubrir puntos en común | ep6 | `acuerdo` | FEMA, IS-242.c https://emilms.fema.gov/is_0242c/groups/21.html | verificado · Kelvin 2-nov (19, con matiz) · enlace comprobado (BM126) |
 | 36 = 1×36, 2×18, 3×12, 4×9, 6×6; 35 = 1×35, 5×7 | ep6 | `forma` | Aritmética (pares de factores): comprobada | verificado |
-| El género *Amazona* tiene 36 especies en el catálogo: 34 vivas y 2 extintas | ep6 | `esperan` | Catálogo del juego `content/comun/especies.js` (Lista Roja UICN, BirdLife); las 13 discrepancias de `ESPECIES_DISCREPANCIAS.md` siguen sin estado | por verificar (cifra del catálogo propio; depende de la decisión de Kelvin) |
+| En esta historia, un farolito sigue encendido por las cotorras que todavía no están. No se cuenta cuántas viven | ep6 | `esperan` | Sin lista oficial abierta. No se publica | por verificar · suavizado en CG-39 (antes: «34 vivas y 2 extintas») · [KELVIN: canon de los 36] |
 
 ## Resultado (actualizado en BM126, 2 de noviembre de 2026)
 
@@ -48,7 +48,7 @@ Kelvin verificó los 19 datos pendientes en `VERIFICACION_EDUCATIVA_EP2_EP6_02NO
 
 - **Datos:** 31. **Verificados: 27** (9 de antes + 18 de Kelvin; el cayuco ya estaba). **Parciales: 0.** **Por verificar: 1** (la cifra 36 del catálogo). **Narrativo: 1** (zocos). **No aplica (canon): 2.** Ojo: 6 datos que esta tabla ya daba por verificados (`techo_zinc`, `flota_hunde`, `brisa_mar`, `semilla_viajera`, `raices`, `hoja_seca`) seguían `por_verificar` en el juego (no estaban en la lista de Kelvin); el 2-nov se publicaron con la fuente de esta tabla (ver «Cerrado»).
 - `depr_2022` sigue «por verificar» (fuera del alcance de BM126).
-- **Cerrado (2-nov, aprobado por Kelvin):** las fichas de los caps. 2–6 se ganan jugando: cada una con su hallazgo del mundo (mismo id) o con el momento de la misión en que se vive (`G.aula.enlazar` en `src/game/aula.js`; el mapa `FICHA_VIA` está en cada `content/epN/pack.js`). Se guardan en `S.edu.fichas` y una partida de antes las recupera sola. Las 6 de arriba que la tabla ya daba por verificadas (`techo_zinc`, `flota_hunde`, `brisa_mar`, `semilla_viajera`, `raices`, `hoja_seca`) se publicaron con esa fuente, y `zocos` como ficha narrativa. Publicadas: ep2 6, ep3 6, ep4 6, ep5 4, ep6 5. Siguen sin publicar: `marcas`, `treinta` (canon) y `esperan` (cifra del catálogo).
+- **Cerrado (2-nov, aprobado por Kelvin):** las fichas de los caps. 2–6 se ganan jugando: cada una con su hallazgo del mundo (mismo id) o con el momento de la misión en que se vive (`G.aula.enlazar` en `src/game/aula.js`; el mapa `FICHA_VIA` está en cada `content/epN/pack.js`). Se guardan en `S.edu.fichas` y una partida de antes las recupera sola. Las 6 de arriba que la tabla ya daba por verificadas (`techo_zinc`, `flota_hunde`, `brisa_mar`, `semilla_viajera`, `raices`, `hoja_seca`) se publicaron con esa fuente, y `zocos` como ficha narrativa. Publicadas: ep2 6, ep3 6, ep4 6, ep5 4, ep6 5. Siguen sin publicar: `marcas`, `treinta` (canon) y `esperan` (sin cifra desde CG-39).
 
 ## Resultado anterior (BM84, 31 de octubre de 2026)
 
@@ -57,3 +57,38 @@ Kelvin verificó los 19 datos pendientes en `VERIFICACION_EDUCATIVA_EP2_EP6_02NO
 - **Sin dato hallado** (siguen por verificar): zocos, nasa, soga, piedras, espejo, banderas, tabla, acuerdo, tarjetas (*Amazona* en bandadas), cifra 36 del catálogo. ICP, DRNA y Archivo General no dieron nada sobre bohío, zocos, nasa ni cayuco.
 - **Datos nuevos en ep2–ep6:** ninguno fuera de la tabla. Para BM85: `pack.js` ep3 aún dice «bote pequeñito de pesca» (el DLE no dice «de pesca»).
 - Ninguna ficha pasa a «verificado» en el juego: eso las publicaría en el Diario y las pruebas exigen `por_verificar`. Decisión de Kelvin.
+
+## CG-39 (3-nov-2026) · antes → después
+
+Los 19 datos de `INVESTIGACION_KELVIN.md` ya no están en el juego como afirmación sin matiz. Kelvin los verificó el 2-nov (`VERIFICACION_EDUCATIVA_EP2_EP6_02NOV.md`) y BM126 puso el texto en la ficha, en español y en inglés. CG-39 no los vuelve a suavizar: quitar el matiz que Kelvin aprobó sería inventar un texto nuevo o borrar un dato con fuente. Los 10 que esta tabla ya daba por verificados antes de esa lista se quedan.
+
+| N.º | Antes (lo que pedía investigar) | Después (la ficha, sin cambio en CG-39) |
+|---|---|---|
+| 1 | En la arena el agua baja rápido; en el barro arcilloso baja lento y queda un charco | `charco`: «Por lo general, el agua se filtra más rápido en suelos arenosos… Si el agua no logra entrar, puede formar charcos.» Fuente USDA NRCS, abierta. |
+| 2 | Con más pendiente, la lluvia corre más rápido y se lleva más suelo | `cinta_lluvia`: «puede correr con más fuerza y arrastrar más suelo.» Fuente USGS, abierta. |
+| 3 | El viento sopla más fuerte en lo alto y sin árboles | `poste_viento`: «suele sentirse más fuerte en lugares expuestos; detrás de árboles… puede soplar más suave.» USDA y NWS, abiertas. |
+| 4 | Las casas del campo en Puerto Rico se levantan sobre zocos | `zocos`: «En esta historia, cuatro postes levantaron una casa del suelo.» Narrativa. Sin fuente histórica. No dice Puerto Rico ni zocos. |
+| 5 | Los taínos vivían en bohíos de postes de madera y techo de palma | `bohio`: «con materiales del entorno, como palmas y bejucos.» Sin postes de madera. Fuente Smithsonian, abierta. |
+| 6 | «Canoa» viene del taíno y las hacían de un tronco | `canoa_taina`: el mismo dato, con el NPS leído («dugout canoes»). El DLE no abre desde esta red: [Reportado: Kelvin]. |
+| 7 | El cayuco es un bote de pesca más pequeño que la canoa | `cayuco`: «de una pieza… más pequeña… canalete». Sin «de pesca». El DLE no abre: [Reportado: Kelvin]. |
+| 8 | La nasa es una trampa tejida: el pez entra y no sale | `nasa`: «los peces entran y les resulta difícil salir. Puede construirse con distintos materiales.» NOAA, abierta. |
+| 9 | La sombra mantiene fresca el agua y muchos peces la buscan | `sombra`: «puede mantener más fresca… Algunos peces buscan zonas más frescas.» USGS abierto; el PDF del USDA no abre: [Reportado: Kelvin]. |
+| 10 | Sogas o cables de orilla a orilla | `soga`: «Algunas balsas y transbordadores…» Ejemplo de Estados Unidos, no tradición de Puerto Rico. NPS, abierta. |
+| 11 | Los taínos navegaban ríos y costas | `remo`: «entre islas y por aguas costeras». Se quitó «ríos». NPS, abierta. |
+| 12 | Una fila de piedras planas permite cruzar | `piedras`: «En algunos senderos hay piedras colocadas…» Sin «planas» ni promesa de que sea seguro. NPS, abierta. |
+| 13 | Un espejo manda un destello lejos si no hay nada en medio | `espejo`: «puede… si llega hasta quien lo observa.» NASA, abierta. |
+| 14 | Un tambor se oye detrás de una loma y se apaga con la distancia | `tambor`: «puede rodear algunos obstáculos… suele escucharse más débil.» Physics Classroom, abierta. |
+| 15 | Una bandera se ve de día; de noche hace falta luz | `banderas`: «pueden servir… De noche se necesitan señales iluminadas.» El PDF de la Marina no abre: [Reportado: Kelvin]. |
+| 16 | Las cotorras Amazona viven y comen en bandadas y ven antes el peligro | `tarjetas`: «Algunas cotorras Amazona vuelan en bandadas… puede dar una alarma.» Cambridge, abierta. |
+| 17 | Un plan dice el objetivo y los límites, se prueba y se mejora | `plan`: el mismo sentido, con «buen plan» y «después probamos». NGSS 3-5-ETS1, abierta. |
+| 18 | Una pieza larga se levanta mejor con una persona en cada punta | `tabla`: «puede ser más seguro coordinarse y pedir ayuda, o usar equipo adecuado.» NIOSH, abierta. |
+| 19 | Repetir con tus palabras ayuda a encontrar lo que comparten | `acuerdo`: «ayuda a comprobar si la entendiste y a descubrir puntos en común.» FEMA, abierta. |
+
+Cambio de texto en CG-39 (la ficha no se publica: sigue `por_verificar`):
+
+- `esperan`, antes: «El género Amazona tiene 36 especies en el catálogo del juego: 34 vivas y 2 extintas (martinicana y violacea).»
+- `esperan`, después: «En esta historia, un farolito sigue encendido por las cotorras que todavía no están. Cuántas viven y cuántas ya no, no se cuenta aquí.»
+
+Dos etiquetas internas de preguntas decían que un dato del mundo «sigue por verificar» aunque la ficha ya tiene fuente. No las ve el niño. Ahora dicen que la pregunta es del juego: la de la cinta (`ep2`, q2) apunta a `cinta_lluvia`; la de las nubes (`ep3`, q6) no afirma un dato del cielo.
+
+`marcas` y `treinta` (cap. 5) ya hablan solo de lo que hay en el juego y no salen al Diario. `depr_2022` sigue sin el PDF oficial: no se inventan códigos.
