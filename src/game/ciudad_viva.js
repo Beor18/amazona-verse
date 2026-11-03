@@ -263,7 +263,7 @@ window.AVCiudadViva = function (G) {
     if (a.est !== 'posada' && dt > 0) {
       a.vx = (a.x - ox) / dt; a.vy = (a.y - oy) / dt; a.vz = (a.z - oz) / dt;
       if (Math.hypot(a.vx, a.vz) > 0.3) a.yaw = Math.atan2(a.vx, a.vz);
-      const vh = Math.hypot(a.vx, a.vz) || 1; a.pitch = -Math.atan2(a.vy, vh) * 0.8;
+      const vh = Math.hypot(a.vx, a.vz) || 1; a.pitch = Math.max(-0.5, Math.min(0.5, -Math.atan2(a.vy, vh) * 0.8)); // al subir o bajar en vertical, sin ponerse de pie
     }
   }
 
