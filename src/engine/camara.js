@@ -347,15 +347,12 @@ AVE.module('camara', function (G) {
     for (let i = 1; i <= n; i++) { const t = i / n; if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) return (i - 1) / n; }
     return 1;
   }
-  let suaves = 0, pegadas = 0;
+  let suaves = 0;
   function muroEnMedio() {
     if (!G.solidos || !G.solidos.activo) return;
     const hx = S.pos.x, hy = S.pos.y + CAM.look, hz = S.pos.z, p = camera.position;
     const dx = p.x - hx, dy = p.y - hy, dz = p.z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return;
     const t0 = tramoLibre(hx, hy, hz, p.x, p.y, p.z); if (t0 >= 1) return;
-    // La cabeza misma está metida en un sólido (un alero al subir de golpe; fisica.js la saca): no hay vista libre que buscar
-    // y acercarla de golpe a la cabeza solo daba un tirón de 2–3 m (camaraTest «despegar y aterrizar», BM129/BM131)
-    if (t0 * L < 0.6) { pegadas++; return; }
     // BM131: antes de acercarla de golpe hacia la cabeza, se adelanta por el camino hacia su destino (libre por evitarMuros):
     // el primer punto con la vista libre que esté a menos de 0,5 m (sin tirón ni corte)
     const ex = camPos.x - p.x, ey = camPos.y - p.y, ez = camPos.z - p.z, E = Math.hypot(ex, ey, ez);
@@ -505,12 +502,15 @@ AVE.module('camara', function (G) {
       } else ok('muros y losas (sin sólidos activos: no aplica)', true, '');
       // 5. Transición suelo↔vuelo y aterrizaje: sin saltos de cámara mayores de 1 m por cuadro (a 60 fps)
       modo(false, 0); yaw = keep.yaw; inclina = 0; place(true);
-      let salto = 0, prevP = camera.position.clone(), c1 = cortes, sv1 = suaves, pg1 = pegadas, dondeSalto = '', faseT = 'suelo';
+      let salto = 0, prevP = camera.position.clone(), c1 = cortes, sv1 = suaves, dondeSalto = '', faseT = 'suelo';
       const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); const dd = camera.position.distanceTo(prevP); if (dd > salto) { salto = dd; dondeSalto = faseT + i; } prevP.copy(camera.position); } };
       paso60(30);
-      faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); S.pos.y += 3; paso60(60);          // despegue
-      Object.assign(M, { flying: false, grounded: true }); S.pos.y = G.terreno.height(S.pos.x, S.pos.z); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60); // aterriza
-      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, pegadas: pegadas - pg1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z)] }));
+      // BM131: sube y baja 3 m en 0,5 s (como el despegue y el aterrizaje de fisica.js, ~6 m/s), no de golpe en un cuadro: con el
+      // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero (134,183, tras las baterías) y el corte daba 2–3 m
+      const y0 = S.pos.y, yT = G.terreno.height(S.pos.x, S.pos.z);
+      faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
+      Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
+      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z)] }));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
@@ -518,6 +518,6 @@ AVE.module('camara', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, get pegadas() { return pegadas; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });
