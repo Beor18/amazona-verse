@@ -130,7 +130,7 @@
     };
     async function empujar(segs, correr, lado, rumbo) {
       const el = $('stick');
-      if (!el) { await jugar(segs); return; }
+      if (!el || (opts.pulgar && !paloPuesto && W.getComputedStyle(el).visibility === 'hidden')) { await jugar(segs); return; }
       let c = centro(el);
       const mag = correr ? 0.98 : 0.55;
       if (opts.pulgar && !paloPuesto) { mirarToque(el, 'stick'); toque(el, 'pointerdown', c.x, c.y); paloPuesto = true; c = centro(el); } // baja el pulgar y arrastra
@@ -151,14 +151,16 @@
     const malToque = new Map();
     function mirarToque(el, nombre) {
       if (!opts.pulgar || !el) return;
-      const r = el.getBoundingClientRect(), vw = W.innerWidth, vh = W.innerHeight;
+      let r = el.getBoundingClientRect();
+      const vw = W.innerWidth, vh = W.innerHeight;
+      if (r.width && (r.top + r.height / 2 < 0 || r.top + r.height / 2 > vh)) { el.scrollIntoView({ block: 'nearest' }); r = el.getBoundingClientRect(); } // el dedo desliza la tarjeta
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       let mal = null;
       if (r.width < 1 || r.height < 1) mal = 'no se ve';
       else if (cx < 0 || cy < 0 || cx > vw || cy > vh) mal = 'fuera de la pantalla (' + Math.round(cx) + ',' + Math.round(cy) + ')';
       else if (Math.min(r.width, r.height) < 40) mal = 'pequeño: ' + Math.round(r.width) + '×' + Math.round(r.height) + ' px';
       else { const t = doc.elementFromPoint(cx, cy); if (t && t !== el && !el.contains(t)) mal = 'tapado por ' + t.tagName.toLowerCase() + (t.id ? '#' + t.id : '') + (t.className && typeof t.className === 'string' ? '.' + t.className.split(' ')[0] : ''); }
-      if (mal && !malToque.has(nombre)) malToque.set(nombre, (tr ? tr.nombre.split(' · ')[0] + ': ' : '') + mal);
+      if (mal && !malToque.has(nombre)) malToque.set(nombre, (tr ? tr.nombre.split(' · ')[0] + ': ' : '') + mal + ' «' + (el.textContent || '').trim().slice(0, 30) + '»' + (el.parentElement ? ' en ' + (el.parentElement.id || el.parentElement.className || el.parentElement.tagName) : ''));
     }
     // W17: con el pulgar no se toca lo que no se ve (bajo un diálogo o una tarjeta los controles quedan ocultos: visibility)
     const oculto = el => opts.pulgar && W.getComputedStyle(el).visibility === 'hidden';
@@ -544,14 +546,16 @@
         if (tr) tr.usos++;
         // W17: lo del fondo del agua («Bucear (C) hasta la …»): se mantiene Bucear (o C) nadando encima, como dice el aviso
         const etq = nb && (typeof nb.label === 'function' ? nb.label() : nb.label);
-        if (/^Bucear/.test(etq || '')) {
+        // …o lo que la guía señala bajo el agua (la gota en el fondo de la poza): nadando encima, se bucea hasta allí
+        const alFondo = /^Bucear/.test(etq || '') || (opts.pulgar && g.y != null && MV().swimming && S.pos.y > g.y + 1);
+        if (alFondo) {
           if (MV().flying) { await pulsar('x'); for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25); } // primero al agua
           // abajo, con Bucear aún pulsado, el otro pulgar toca Acción (al soltar Bucear, Vittata flota y sube)
           if (tacto) { const bd = $('b-dive'); if (bd && !bd.hidden) { mirarToque(bd, '#b-dive'); const c = centro(bd); paloId = 8; toque(bd, 'pointerdown', c.x, c.y); paloId = 7; } await jugar(2.5); }
           else { tecla('keydown', 'c'); await jugar(2.5); }
         }
         await accion();
-        if (/^Bucear/.test(etq || '')) {
+        if (alFondo) {
           if (tacto) { const bd = $('b-dive'); if (bd) { const c = centro(bd); paloId = 8; toque(bd, 'pointerup', c.x, c.y); paloId = 7; } } else tecla('keyup', 'c');
         }
         const hizo = await resolver();
@@ -569,7 +573,9 @@
       else check('Toda la historia jugada sin teleport (' + pasos.length + ' pasos)', true, atascos.map(a => a.que).join('; '));
       // ---------- Final ----------
       await until(() => !$('end').hidden, 3000);
+      if (opts.pulgar) for (let i = 0; i < 480 && $('end').hidden && S.complete; i++) { if (ocupado()) await resolver(); else await jugar(0.25); } // el final llega con el tiempo del juego (la fiesta, la última línea)
       const fin = !$('end').hidden;
+      if (!fin) log('sin pantalla de fin', s({ abierta: G.dialogo.open(), libre: G.dialogo.libre() && G.dialogo.libre().text, carta: G.ui.cardOpen, explorando: S.explorando, ultimas: (S.events || []).slice(-5) }));
       const ev = 'Chapter' + cfg.n + 'Completed';
       check('Final: ' + ev + ' y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had(ev) && fin, { paso: S.step, completo: S.complete, fin });
       const ms = (G.pack.misiones || []).map(m => m.id);

@@ -11,7 +11,8 @@
    (tests/qa/ep3_e2e.js … ep6_e2e.js, mismas tarjetas y comprobaciones); el 1 y el 2 siguen solo la flecha.
    Cómo se corre (navegador móvil de verdad: Playwright con viewport 390×844, hasTouch, isMobile, deviceScaleFactor 2):
      inyectar ep_caminar.js, ep3_e2e.js, ep4_e2e.js, ep5_e2e.js, ep6_e2e.js y este archivo, y await AV.temporadaMovilTest(opts).
-     Todo seguido: node tests/qa/temporada_movil_correr.js http://127.0.0.1:<puerto>/        (los 6, ~1–2 h con SwiftShader)
+     Todo seguido: AV_SWIFTSHADER=1 node tests/qa/temporada_movil_correr.js http://127.0.0.1:<puerto>/ [--log]
+       (los 6, ~15 min con SwiftShader en la nube, 4-nov: cap. 1 ~5 min, caps. 2 a 6 ~7 min; --log saca la traza de epCaminar)
      Por capítulo, encadenados: node tests/qa/temporada_movil_correr.js <url> --caps 1 --perfil /tmp/perfil-av   y luego
      --caps 2 --seguir --perfil /tmp/perfil-av, etc. (--perfil guarda el almacenamiento entre corridas; --seguir no lo limpia).
    opts: { caps: [1..6], idioma: 'es', seguir: false (true: no limpia ni devuelve el almacenamiento, sigue la temporada que haya),
@@ -99,6 +100,7 @@
         const fr = frs.find(x => { try { return x.contentWindow && x.contentWindow.AV && x.contentWindow.AV.pack === PACK(n); } catch (e) { return false; } });
         if (!fr) { check(pre + 'el iframe del capítulo sigue abierto para recargarlo', false, frs.length + ' iframes'); continue; }
         const W0 = fr.contentWindow, completo = !!(W0.AV.G.S.complete);
+        if (window.AV_E2E_LOG) { const g = W0.AV.G; log('diag', JSON.stringify({ fin: !W0.document.getElementById('end').hidden, explorando: g.S.explorando, abierta: g.dialogo.open(), libre: !!g.dialogo.libre(), carta: g.ui.cardOpen, eventos: (g.S.events || []).slice(-6).map(e => e.type || e.t || e) })); }
         await sleep(400);
         const sv = leerJSON(ALMACEN(n) + '.save');
         check(pre + 'la partida queda guardada sola, terminada (' + ALMACEN(n) + '.save)', !!sv && sv.complete === true && !!(sv.profile && sv.profile.created), sv ? 'complete ' + sv.complete + ' paso ' + sv.step : 'sin guardado');
@@ -128,8 +130,8 @@
           };
           let boton = null, via = '', extra = '';
           const bs = $('b-siguiente'), t = $('title');
-          if ($('end') && !$('end').hidden && bs && !bs.hidden) { boton = bs; via = 'panel final'; }
-          else if (t && t.open && $('b-capitulos-title')) {
+          if (!(t && t.open) && $('end') && !$('end').hidden && bs && !bs.hidden) { boton = bs; via = 'panel final'; }
+          else if (t && t.open && $('b-capitulos-title')) { // al volver a entrar sale la portada, encima de todo
             const bc = $('b-capitulos-title');
             if (bc) bc.scrollIntoView({ block: 'center' }); // la portada se desliza con el dedo
             await sleep(200);
