@@ -1,0 +1,351 @@
+{
+  "etiqueta": "k038-diag",
+  "cuando": "2026-11-04T21:00:15.287Z",
+  "commit": "6aec4592",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "(-33,-136)",
+    "vuelo": "quieto",
+    "segundos": 12,
+    "ventanaS": 6
+  },
+  "repro": {
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 731.9,
+        "basuraKB": 19928,
+        "retenidoKB": 362,
+        "cuadros": 229,
+        "trans": 0
+      },
+      {
+        "v": 1,
+        "h0MB": 732.3,
+        "basuraKB": 28653,
+        "retenidoKB": 961,
+        "cuadros": 235,
+        "trans": 0
+      }
+    ],
+    "solidosT": [
+      {
+        "t": 1,
+        "solidos": {
+          "bloques": 1539,
+          "bloquesFlora": 14,
+          "triangulos": 481560,
+          "rellenas": 129,
+          "pendientes": 722,
+          "regiones": 25,
+          "kb": 1250,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 2,
+        "solidos": {
+          "bloques": 1539,
+          "bloquesFlora": 14,
+          "triangulos": 482706,
+          "rellenas": 129,
+          "pendientes": 717,
+          "regiones": 25,
+          "kb": 1250,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 3,
+        "solidos": {
+          "bloques": 1551,
+          "bloquesFlora": 14,
+          "triangulos": 486594,
+          "rellenas": 129,
+          "pendientes": 667,
+          "regiones": 25,
+          "kb": 1260,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 4,
+        "solidos": {
+          "bloques": 1620,
+          "bloquesFlora": 14,
+          "triangulos": 504455,
+          "rellenas": 129,
+          "pendientes": 632,
+          "regiones": 25,
+          "kb": 1316,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 5,
+        "solidos": {
+          "bloques": 1678,
+          "bloquesFlora": 14,
+          "triangulos": 508756,
+          "rellenas": 129,
+          "pendientes": 572,
+          "regiones": 25,
+          "kb": 1363,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 6,
+        "solidos": {
+          "bloques": 1696,
+          "bloquesFlora": 14,
+          "triangulos": 510880,
+          "rellenas": 129,
+          "pendientes": 545,
+          "regiones": 25,
+          "kb": 1378,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 7,
+        "solidos": {
+          "bloques": 1734,
+          "bloquesFlora": 14,
+          "triangulos": 511486,
+          "rellenas": 129,
+          "pendientes": 540,
+          "regiones": 25,
+          "kb": 1409,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 8,
+        "solidos": {
+          "bloques": 1757,
+          "bloquesFlora": 14,
+          "triangulos": 512278,
+          "rellenas": 129,
+          "pendientes": 535,
+          "regiones": 25,
+          "kb": 1428,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 9,
+        "solidos": {
+          "bloques": 1764,
+          "bloquesFlora": 14,
+          "triangulos": 513693,
+          "rellenas": 129,
+          "pendientes": 520,
+          "regiones": 25,
+          "kb": 1433,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 10,
+        "solidos": {
+          "bloques": 1895,
+          "bloquesFlora": 14,
+          "triangulos": 538294,
+          "rellenas": 129,
+          "pendientes": 487,
+          "regiones": 25,
+          "kb": 1540,
+          "kbFlora": 11
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 11,
+        "solidos": {
+          "bloques": 1895,
+          "bloquesFlora": 153,
+          "triangulos": 579734,
+          "rellenas": 250,
+          "pendientes": 401,
+          "regiones": 25,
+          "kb": 1540,
+          "kbFlora": 124
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      },
+      {
+        "t": 12,
+        "solidos": {
+          "bloques": 1895,
+          "bloquesFlora": 315,
+          "triangulos": 625077,
+          "rellenas": 250,
+          "pendientes": 309,
+          "regiones": 25,
+          "kb": 1540,
+          "kbFlora": 256
+        },
+        "mallasEscena": 693,
+        "mallasEdificios": 0,
+        "trans": {
+          "error": "transNivel is not defined"
+        }
+      }
+    ],
+    "transFin": null,
+    "dbgRes": {
+      "gs": "object",
+      "gst": "function",
+      "stt": "undefined"
+    },
+    "cuadrosTotal": 464,
+    "heapFinMB": 733.2,
+    "calls": 89,
+    "ktris": 500,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 89,
+      "ktris": 500
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 874,
+    "top": [
+      {
+        "kb": 658,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 48,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 26,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 24,
+        "fn": "Xi · three.min.js:6"
+      },
+      {
+        "kb": 22,
+        "fn": "(anon) · three.min.js:6"
+      },
+      {
+        "kb": 20,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 14,
+        "fn": "set · :0"
+      },
+      {
+        "kb": 12,
+        "fn": "Wi · three.min.js:6"
+      },
+      {
+        "kb": 9,
+        "fn": "updateMatrixWorld · three.min.js:6"
+      },
+      {
+        "kb": 9,
+        "fn": "copasCerca · camara.js:96"
+      },
+      {
+        "kb": 8,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 8,
+        "fn": "mem · :7"
+      },
+      {
+        "kb": 8,
+        "fn": "Zi · three.min.js:6"
+      },
+      {
+        "kb": 8,
+        "fn": "cullPequenos · renderer.js:495"
+      }
+    ],
+    "porArchivo": [
+      {
+        "kb": 658,
+        "arch": "solidos.js"
+      },
+      {
+        "kb": 84,
+        "arch": "three.min.js"
+      },
+      {
+        "kb": 9,
+        "arch": "camara.js"
+      },
+      {
+        "kb": 8,
+        "arch": "renderer.js"
+      }
+    ]
+  },
+  "errores": []
+}

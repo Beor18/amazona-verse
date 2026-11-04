@@ -102,6 +102,10 @@ AVE.module('streaming', function (G) {
     margenSombra: 4,
     sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras
   };
+  // KIMI-038: contadores de transiciones de nivel/HD aplicadas y de bajadas diferidas evitadas. Viven a nivel de
+  // módulo: el closure de streaming.transiciones() (API de diagnóstico para las herramientas kimi3_*) los lee
+  // desde fuera de iniciar(); dentro de iniciar los actualizan nivelZona/aplicarNivel/ajustarHD.
+  let transNivel = 0, transHD = 0, bajasEvitadas = 0;
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
   // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
   // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
@@ -1033,9 +1037,33 @@ AVE.module('streaming', function (G) {
 
     // --- niveles de las zonas ---
     let activas = [];
-    let transNivel = 0, transHD = 0; // KIMI-038: contador de transiciones aplicadas (medición del flapping en vuelo)
     function nivelZona(Z, quiere) {
-      const antes = Z.nivel; if (quiere === antes) return;
+      const antes = Z.nivel;
+      if (quiere === antes) { // estable (o subió de verdad en un tick previo): cancela la bajada que pudiera estar pendiente
+        if (Z.bajarPide) { Z.bajarPide = 0; bajasEvitadas++; }
+        return;
+      }
+      if (quiere > antes) { // subida: inmediata y cancela la bajada pendiente
+        if (Z.bajarPide) { Z.bajarPide = 0; bajasEvitadas++; }
+        aplicarNivel(Z, antes, quiere);
+        return;
+      }
+      // KIMI-038: la bajada solo se aplica si se pide de seguido durante CFG.bajarEspera s. Rozar una frontera en
+      // vuelo (la banda de histéresis son ~4 s a 15 m/s) ya no destruye y refunde la fusión de la zona en cada
+      // cruce; si el nivel deseado sube antes de que cumpla el temporizador, la bajada se cancela (evitada).
+      const ahora = performance.now();
+      if (Z.bajarPide) {
+        if (quiere <= Z.bajarNivel) Z.bajarNivel = quiere; // sigue queriendo bajar al menos: conserva el reloj
+        else { Z.bajarPide = 0; bajasEvitadas++; return; }   // quiso subir respecto al pendiente: cancelar
+        if (ahora - Z.bajarPide < CFG.bajarEspera * 1000) return;
+        Z.bajarPide = 0;
+      } else {
+        Z.bajarPide = ahora; Z.bajarNivel = quiere;
+        return;
+      }
+      aplicarNivel(Z, antes, Z.bajarNivel != null ? Z.bajarNivel : quiere);
+    }
+    function aplicarNivel(Z, antes, quiere) {
       Z.nivel = quiere;
       transNivel++;
       for (const n of Z.modelos) {
@@ -1048,6 +1076,15 @@ AVE.module('streaming', function (G) {
       if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I), 'colocar:' + I.modelo);
       if (quiere >= 1) encolar(() => fundirZona(Z), 'fundirZona:' + Z.id); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
+    }
+    // KIMI-038: el asentado (terminar) y las comprobaciones de tests exigen el estado ya aplicado: las bajadas
+    // pendientes se resuelven al momento en vez de esperar al temporizador. Cubre nivel y _hd.
+    function aplicarBajasPendientes() {
+      for (const id in zonas) {
+        const Z = zonas[id];
+        if (Z.bajarPide) { Z.bajarPide = 0; const antes = Z.nivel, quiere = Z.bajarNivel != null ? Z.bajarNivel : antes; if (quiere < antes) aplicarNivel(Z, antes, quiere); }
+        if (Z.hdBajar) { Z.hdBajar = 0; if (Z.hd) { Z.hd = false; transHD++; quitarHDZona(Z); for (const n of Z.modelos) if (tieneHD(n)) soltar(res(n, 'hd')); } }
+      }
     }
     // Distancia al modelo más cercano de la zona (prioridad de descarga: lo que tienes delante entra antes que el resto).
     function distModelo(Z, n) {
@@ -1395,13 +1432,25 @@ AVE.module('streaming', function (G) {
       }
     }
     // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
+    // KIMI-038: la bajada se diferencia como la de nivel (CFG.bajarEspera): cruzar el borde del _hd en vuelo no
+    // destruye y refunde la fusión HD en cada pasada; la subida es inmediata.
     function ajustarHD(Z, quiere) {
-      if (!!Z.hd === quiere) return;
-      Z.hd = quiere;
-      transHD++;
-      if (!quiere) quitarHDZona(Z);
-      for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
-      if (quiere) encolar(() => fundirHD(Z), 'fundirHD:' + Z.id);
+      const antes = !!Z.hd;
+      if (quiere === antes) { if (Z.hdBajar) { Z.hdBajar = 0; bajasEvitadas++; } return; }
+      if (quiere) {
+        if (Z.hdBajar) { Z.hdBajar = 0; bajasEvitadas++; }
+        Z.hd = true; transHD++;
+        for (const n of Z.modelos) if (tieneHD(n)) pedir(res(n, 'hd'), Z.d + 1).catch(() => {});
+        encolar(() => fundirHD(Z), 'fundirHD:' + Z.id);
+        return;
+      }
+      const ahora = performance.now();
+      if (!Z.hdBajar) { Z.hdBajar = ahora; return; }
+      if (ahora - Z.hdBajar < CFG.bajarEspera * 1000) return;
+      Z.hdBajar = 0;
+      Z.hd = false; transHD++;
+      quitarHDZona(Z);
+      for (const n of Z.modelos) if (tieneHD(n)) soltar(res(n, 'hd'));
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
@@ -1852,7 +1901,7 @@ AVE.module('streaming', function (G) {
       },
       cargarTodo() { for (const id in zonas) zonas[id].forzada = true; return alrededor(); },
       soltarTodo() { for (const id in zonas) zonas[id].forzada = false; revisar(); },
-      liberarYa() { for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },
+      liberarYa() { aplicarBajasPendientes(); for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },
       // terminar(o): o.topeMs acota la espera (herramientas de captura: en vistas aéreas altas la cola es grande
       // y bajo contención puede superar el timeout del eval; KIMI-020). Sin tope, comportamiento de siempre.
       // Resuelve con null al agotarse la cola, o {tope:true, pendientes} al vencer el tope.
@@ -1863,6 +1912,7 @@ AVE.module('streaming', function (G) {
       terminar(o) {
         o = o || {};
         const topeMs = Math.max(0, o.topeMs || 0), t0 = performance.now();
+        aplicarBajasPendientes(); // KIMI-038: el asentado exige el estado aplicado (las bajadas diferidas no esperan al temporizador)
         // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto
         // todavía no deja bajar (el mapa entero, a 650 m) no cuenta: si no, la prueba no arranca.
         const espera = () => new Promise(ok => {
@@ -2115,7 +2165,7 @@ AVE.module('streaming', function (G) {
 
   return { iniciar, material, soltarMaterial, generarLejos, CFG, test,
     rafagasListas: () => rafagaPaso >= 1 && rafagas.length > 0,
-    transiciones: () => ({ nivel: transNivel, hd: transHD }), // KIMI-038: flapping de nivel/HD medido en vuelo (herramientas kimi3_*)
+    transiciones: () => ({ nivel: transNivel, hd: transHD, evitadas: bajasEvitadas }), // KIMI-038: flapping de nivel/HD medido en vuelo (herramientas kimi3_*)
     get gestor() { return ST; },
     modelo: n => ST ? ST.modelo(n) : Promise.reject(new Error('streaming sin iniciar')) };
 });

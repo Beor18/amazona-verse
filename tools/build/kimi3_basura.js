@@ -71,6 +71,7 @@ async function evaluar(cdp, ses, exp, timeoutS, promesa) {
 const PROBAR_JS = `(async () => {
   const AV = window.AV, G = AV.G, S = G.S, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
   if (!ST) return JSON.stringify({ error: 'sin streaming' });
+  const dbgRes = { gs: typeof G.streaming, gst: G.streaming && typeof G.streaming.transiciones, stt: ST && typeof ST.transiciones };
   if (typeof gc !== 'function') return JSON.stringify({ error: 'sin gc() — falta --expose-gc' });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const mem = () => performance.memory.usedJSHeapSize;
@@ -98,27 +99,29 @@ const PROBAR_JS = `(async () => {
   const ventanas = [];
   const nV = Math.floor(${SEGS} / ${VENTANA});
   const solidosT = [];
+  let transAnt = null;
   const muestreo = setInterval(() => {
-    let st = null, escena = 0, edi = 0;
+    let st = null, escena = 0, edi = 0, tr = null;
     try { st = G.solidos.stats(); } catch (e) {}
     try { (G.renderer.scene || G.scene).traverse(o => { if (o.isMesh) { escena++; if (/^edificios:/.test(o.name || '')) edi++; } }); } catch (e) {}
-    solidosT.push({ t: Math.round((performance.now() - t0) / 1000), solidos: st, mallasEscena: escena, mallasEdificios: edi });
+    try { const tf = (G.streaming && G.streaming.transiciones) || (ST && ST.transiciones); const t = tf && tf(); if (t) tr = { nivel: t.nivel - (transAnt ? transAnt.nivel : 0), hd: t.hd - (transAnt ? transAnt.hd : 0) }; transAnt = t || transAnt; } catch (e) { tr = { error: String(e && e.message || e).slice(0, 120) }; }
+    solidosT.push({ t: Math.round((performance.now() - t0) / 1000), solidos: st, mallasEscena: escena, mallasEdificios: edi, trans: tr });
   }, 1000);
   for (let v = 0; v < nV; v++) {
     gc2();
-    const h0 = mem(), f0 = window.__frames;
+    const h0 = mem(), f0 = window.__frames, tr0 = transAnt ? transAnt.nivel + transAnt.hd : 0;
     await sleep(${VENTANA * 1000});
-    const h1 = mem(), f1 = window.__frames;
+    const h1 = mem(), f1 = window.__frames, tr1 = transAnt ? transAnt.nivel + transAnt.hd : 0;
     gc2();
     const h2 = mem();
     ventanas.push({ v, h0MB: +(h0 / 1048576).toFixed(1), basuraKB: Math.round((h1 - h2) / 1024),
-      retenidoKB: Math.round((h2 - h0) / 1024), cuadros: f1 - f0 });
+      retenidoKB: Math.round((h2 - h0) / 1024), cuadros: f1 - f0, trans: tr1 - tr0 });
   }
   volando = false;
   clearInterval(muestreo);
   const st = (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })();
   const heapFin = mem();
-  return JSON.stringify({ ventanas, solidosT,
+  return JSON.stringify({ ventanas, solidosT, transFin: transAnt, dbgRes,
     cuadrosTotal: window.__frames, heapFinMB: +(heapFin / 1048576).toFixed(1),
     calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null, calidad: st.calidad,
     stats0: { calls: stats0.calls, ktris: stats0.triangulos != null ? Math.round(stats0.triangulos / 1000) : null } });

@@ -582,3 +582,44 @@ intermitente conocido: 158 draw calls en la banda histórica 152–163, rojo tam
 «las colisiones siguen activas tras liberar», «sin fugas», y el kit de la ciudad) · movementTest
 **48/48** (todos los de sólidos: estaca real, torre maciza 9,75 m, techo, rama, cuerda, toldo,
 «173 edificios: no se atraviesan y tienen dónde pararse»). 0 errores de consola.
+
+
+## KIMI-038 · anti-flapping de frontera zona/HD en `streaming.js` (4-nov · Kimi 3)
+
+**Cambios** (`src/engine/streaming.js`): (1) las **bajadas** de nivel de zona (`nivelZona`) y de la bandera
+`_hd` de la zona (`ajustarHD`) se diferencian: solo se aplican si la petición se mantiene `CFG.bajarEspera`
+s (1,5 s) seguidos; una **subida** es inmediata y cancela la bajada pendiente (contador `bajasEvitadas`).
+Rozar una frontera en vuelo ya no destruye y refunde la fusión de la zona en cada cruce. Las subidas y la
+colocación/colisiones no cambian (inmediatas), así que al jugador no se le nota. (2) Las bajadas pendientes
+se resuelven al momento en los asentados: `terminar()` y `liberarYa()` llaman a
+`aplicarBajasPendientes()` (nivel + HD), que es lo que los tests y herramientas exigen tras teleportar.
+(3) **Bug del avance 3f36ab20 corregido:** los contadores `transNivel`/`transHD` vivían dentro de
+`iniciar()` pero `streaming.transiciones()` (API de diagnóstico del módulo) los referencia desde fuera:
+cualquier llamada daba `ReferenceError: transNivel is not defined` (nunca se había llamado desde tests).
+Movidos al scope del módulo; `kimi3_basura.js` ahora los captura por segundo y acumulados (`transFin`,
+`dbgRes`).
+
+**Medición** (`tools/build/kimi3_basura.js --etiqueta k038-post2`, móvil 375×812 dpr 3, CPU ×4, GPU real,
+vuelo de 60 s en círculo de 55 m a +12 m sobre la Ciudad; evidencia
+`docs/img/kimi034/basura-k038-{base,base2,post,post2}.json`; **ojo: la corrida post2 compartió PC con la
+sesión de Kimi 1 — sus KB/cuadro y tiempos no son comparables con las base en PC libre; los contadores de
+transiciones son deterministas y sí comparan**): ráfaga inicial de asentado al despegar (t≈1 s: 25 nivel +
+12 HD) y después **≈1 transición nivel + 1 HD por segundo** durante todo el vuelo (transFin: nivel 44 · hd
+35 · **evitadas 0**).
+
+**Lectura:** en el escenario de círculo **no hay flapping**: cada zona se cruza una vez por banda y de
+forma monótona (la cancelación del diferido no aporta aquí, `evitadas=0`). La hipótesis de KIMI-034/037 de
+que el umbral zona/LOD era la palanca de la basura en vuelo **no se confirma con este escenario**: el churn
+medido viene del ciclo crear/destruir bloques de región de `solidos.js` (datos necesarios, KIMI-037). El
+diferido queda como **protección de borde sin coste medible** (hover en un umbral: villa a d=228 m del
+`ciudadVista.bajo=220`, vuelo orbital a distancia fija ≈ Rc/`hdLim`), complementaria a la histéresis de
+distancia existente (H=30 m). No baja la basura por cuadro en vuelo: la palabra grande sigue siendo el
+techo de trabajos de región (flora/`colaFlora`, carril Kimi 1).
+
+**Baterías:** streamingTest **23/24** en página limpia (único rojo = QA-81 intermitente conocido: 158
+draw calls en giro 4.7, banda histórica 152–163, rojo también en HEAD puro); verdes los de liberación de
+zona («Al salir de su radio…», «Fuera de la vista…» — los que la primera pasada del fix rompió por no
+flushar la bajada HD pendiente) y «sin fugas». movementTest: **2 intentos sin veredicto** — el navegador
+del arnés murió a mitad de la batería (familia QA-111) con la PC compartida con Kimi 1; re-correr en PC
+libre (`node tools/build/kimi2_una_bateria.js movementTest`); el cambio no toca la lógica de colisiones
+(`colocar`/sólidos inalterados: las bajadas solo aplazan la liberación de recursos).
