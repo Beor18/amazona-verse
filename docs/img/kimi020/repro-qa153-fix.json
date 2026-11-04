@@ -1,0 +1,147 @@
+{
+  "etiqueta": "qa153-fix",
+  "cuando": "2026-11-04T15:34:25.300Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 20,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 10954,
+    "pos": "-33,127,-136",
+    "heapBase": {
+      "heap": 384,
+      "total": 428
+    },
+    "heapPico": {
+      "heap": 848,
+      "total": 910
+    },
+    "calls": 53,
+    "ktris": 611,
+    "snaps": [
+      {
+        "t": 3698,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCercaGlobal",
+            "fundirCerca:kelvin_aldea_meandros_2",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_ruinas_yunque_2",
+            "fundirHDGlobal"
+          ]
+        }
+      },
+      {
+        "t": 8957,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 10657,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Savage"
+          ]
+        }
+      },
+      {
+        "t": 10954,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 33
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 491
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque_2",
+        "ms": 44
+      },
+      {
+        "n": "fundirCerca:kelvin_aldea_yunque",
+        "ms": 103
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 46
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 34
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 3743
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 734
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 27
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 40
+      }
+    ]
+  },
+  "heap": {
+    "base": {
+      "heap": 384,
+      "total": 428
+    },
+    "pico": {
+      "heap": 848,
+      "total": 910
+    },
+    "retenido": {
+      "heap": 763,
+      "total": 765
+    }
+  },
+  "errores": []
+}

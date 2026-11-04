@@ -22,6 +22,7 @@ const X = parseFloat((() => { const i = process.argv.indexOf('--x'); return i > 
 const Z = parseFloat((() => { const i = process.argv.indexOf('--z'); return i > 0 ? process.argv[i + 1] : '-136'; })(), 10);
 const YAW = parseFloat((() => { const i = process.argv.indexOf('--yaw'); return i > 0 ? process.argv[i + 1] : String(Math.PI * 0.9); })(), 10);
 const TOPE_S = parseInt((() => { const i = process.argv.indexOf('--tope'); return i > 0 ? process.argv[i + 1] : '15'; })(), 10);
+const HEAP = process.argv.includes('--heap'); // QA-153: performance.memory en base/pico/retenido (gc por CDP)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi020');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -84,6 +85,8 @@ const PROBAR_JS = `(async () => {
   AV.teleport(${X}, ${Z});
   S.pos.y += ${ALZAR}; S.vy = 0; G.fisica.MOVE.flying = true;
   try { AV.debug.camYaw(${YAW}); } catch (e) {}
+  const mem = () => ({ heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576) });
+  const heapBase = ${HEAP} ? mem() : null;
   const diag = () => { try { return ST._diag ? ST._diag() : null; } catch (e) { return String(e && e.message || e); } };
   await ST.alrededor(S.pos.x, S.pos.z); // esto resuelve (Kimi 1 cuelga en el paso siguiente)
   await sleep(1500); // deja que la revisión periódica y el bucle de cuadros reactiven la cola
@@ -94,8 +97,10 @@ const PROBAR_JS = `(async () => {
   const res = valor && valor.tope ? 'TOPE' : 'OK';
   clearInterval(timer);
   snaps.push({ t: Math.round(performance.now() - t0), d: diag() });
+  const heapPico = ${HEAP} ? mem() : null;
   const st = (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })();
   return JSON.stringify({ res, valor, ms: Math.round(performance.now() - t0), pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.y) + ',' + Math.round(S.pos.z),
+    heapBase, heapPico,
     calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
     snaps, lentos: ((G.trabajosLentos || []).slice(-10)) });
 })()`;
@@ -152,6 +157,7 @@ function limpiarHuerfanos() {
     const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
+    if (HEAP) await cdp.call('HeapProfiler.enable', {}, ses);
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 3, mobile: true }, ses);
     await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
     await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
@@ -170,6 +176,13 @@ function limpiarHuerfanos() {
     const r = JSON.parse(await evaluar(cdp, ses, PROBAR_JS, TOPE_S + 40, true));
     res.repro = r;
     console.log(`· terminar(): ${r.res} en ${r.ms} ms · pos ${r.pos} · ${r.calls} calls · ${r.ktris} k tris`);
+    if (HEAP) {
+      await cdp.bombear(3); // deja que las liberaciones por gracia y el gc natural pasen
+      try { await cdp.call('HeapProfiler.collectGarbage', {}, ses, 30000); } catch (e) { /* si no hay gc, el número queda con basura */ }
+      const reten = JSON.parse(await evaluar(cdp, ses, 'JSON.stringify({heap: Math.round(performance.memory.usedJSHeapSize/1048576), total: Math.round(performance.memory.totalJSHeapSize/1048576)})', 10, false));
+      res.heap = { base: r.heapBase, pico: r.heapPico, retenido: reten };
+      console.log(`· heap MB — base ${r.heapBase && r.heapBase.heap} · pico ${r.heapPico && r.heapPico.heap} · retenido tras gc ${reten.heap}`);
+    }
     for (const s of r.snaps || []) {
       if (!s.d) continue;
       const d = typeof s.d === 'string' ? s.d : `enVuelo=${s.d.enVuelo} quieto=${s.d.quieto} cola=${s.d.cola.length} trabajos=${s.d.trabajos.length}` +

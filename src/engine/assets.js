@@ -127,7 +127,11 @@
   function loadGLB(url, o) {
     o = o || {};
     return new Promise((ok, reject) => {
-      const resolve = gltf => { try { ok(descuantizar(gltf)); } catch (e) { reject(e); } };
+      // r128 resuelve el gltf con `parser`, que retiene el GLB crudo entero (GLTFBinaryExtension.body) y las
+      // estructuras del parse: QA-152/153 (heap retenido jugando). Nada del juego lo usa: se suelta al resolver
+      // para que el cuerpo binario se libere deterministamente en cuanto el parse acaba (el gltf vivo —Vittata,
+      // islas, ropa— queda sin el body; el resto ya era basura, pero esta referencia la retenía hasta el GC).
+      const resolve = gltf => { try { if (gltf && gltf.parser) gltf.parser = null; ok(descuantizar(gltf)); } catch (e) { reject(e); } };
       if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader no disponible')); return; }
       const falla = () => reject(new Error(o.error || 'no disponible: ' + url));
       const parse = () => {
