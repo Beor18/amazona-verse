@@ -197,11 +197,14 @@ function erroresDe(cdp) {
   return out.slice(0, 20);
 }
 
-async function matarChrome(chrome) {
+async function matarChrome(chrome, perf) {
   try { chrome.kill(); } catch (e) {}
   try {
     const { execSync } = require('child_process');
-    execSync(`taskkill /PID ${chrome.pid} /T /F 2>NUL`, { stdio: 'ignore' });
+    // chrome.exe puede delegar el navegador real en otro proceso del árbol: matar por el
+    // perfil (único por corrida), no por PID (deja zombis que roban GPU a las otras sesiones).
+    const marca = path.basename(perf).replace(/'/g, '');
+    execSync(`powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"Name='chrome.exe'\\" | Where-Object { \\$_.CommandLine -match '${marca}' } | ForEach-Object { try { Stop-Process -Id \\$_.ProcessId -Force -ErrorAction Stop } catch {} }"`, { stdio: 'ignore', timeout: 30000 });
   } catch (e) {}
 }
 
@@ -261,7 +264,7 @@ async function matarChrome(chrome) {
   } catch (e) {
     res.error = String(e.message).slice(0, 300);
   } finally {
-    if (chromeL) await matarChrome(chromeL.chrome);
+    if (chromeL) await matarChrome(chromeL.chrome, perf);
     await new Promise(r => setTimeout(r, 1200));
     try { ws && ws.close(); } catch (e) {}
     srv.close();
