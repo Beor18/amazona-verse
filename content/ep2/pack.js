@@ -838,7 +838,8 @@
         check('M3 · Nido: una respuesta mala da la pista del papá', !S.collected.includes('nido_listo') && opciones().length === 2);
         pick('Arriba'); pick('Oscura'); pick('techito');
         check('M3 · Nido alto, oscuro y seco: casa construida', G.eventos.had('HomeBuilt') && S.step === 3, 'paso ' + S.step);
-        check('M3 · El objetivo y el botón piden probar la tormenta en la casa', $('steps').textContent.includes('Ve a la casa y prueba la tormenta') && G.interaccion.find('obra').label() === 'Probar la tormenta' && !/espera la tormenta|Esperar la tormenta/.test($('steps').textContent + G.interaccion.find('obra').label()));
+        const ve = (es) => { const t = $('steps').textContent, en = G.idioma && G.idioma.tr ? G.idioma.tr(es) : es; return t.includes(es) || t.includes(en); };
+        check('M3 · El objetivo y el botón piden probar la tormenta en la casa', ve('Ve a la casa y prueba la tormenta') && G.interaccion.find('obra').label() === 'Probar la tormenta' && !/espera la tormenta|Esperar la tormenta|wait for the storm/i.test($('steps').textContent));
         useAt('obra'); drain();
         check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 4 && !G.fx.rain.visible, 'paso ' + S.step);
         useAt('obra'); drain();
@@ -847,7 +848,7 @@
         pick('Reforzar el techo');
         check('M3 · Si falló el techo, reforzarlo también vale (las dos opciones dicen «techo»)', G.eventos.had('HomeImproved') && S.collected.includes('mejora_techo'));
         check('M3 · Cambia solo lo que falló', G.eventos.had('HomeImproved') && S.step === 5, 'paso ' + S.step);
-        check('M3 · La segunda prueba pide volver a la casa', $('steps').textContent.includes('Vuelve a la casa y prueba otra vez') && G.interaccion.find('obra').label() === 'Probar la tormenta otra vez');
+        check('M3 · La segunda prueba pide volver a la casa', ve('Vuelve a la casa y prueba otra vez') && G.interaccion.find('obra').label() === 'Probar la tormenta otra vez');
         useAt('obra'); drain();
         check('M3 · Prueba 2: aguanta, nido, casco y botas', G.eventos.had('NestPlaced') && S.missions.casa && ['casco:constructor', 'botas:constructor'].every(k => S.unlocked.includes(k)));
         check('Final: fiesta y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter2Completed') && !$('end').hidden);
