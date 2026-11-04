@@ -548,7 +548,7 @@ AVE.module('renderer', function (G) {
   // ---------- Calidad adaptativa por FPS ----------
   // No mide hasta que el mundo terminó de cargar (los GLB y la flora dan tirones al llegar) y 3 s más
   // quieta: contextTest la congela mientras compara fotos (con la máquina cargada bajaba un nivel entre una foto y otra; QA-30)
-  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
+  const fpsM = { ms: 16.7, t: 0, bajo: 0, alto: 0, bloqueo: 0, subidas: 0, warm: Infinity, quieta: false, lentos: 0, arranque: { t: 0, n: 0, hecho: false, fps: 0 } };
   // QA-53: no se compila todo en el primer dibujo tras «Empezar». Desde que el mundo está listo, cada
   // cuadro (con la portada o el creador todavía delante) enlaza unas pocas familias de material; la
   // flora y los edificios que lleguen después quedan pendientes y se enlazan en los pases siguientes.
@@ -778,7 +778,19 @@ AVE.module('renderer', function (G) {
   function manchaJugador() { const A = G.actores; if (A && A.pShadow) A.pShadow.material.opacity = sun.castShadow ? 0.16 : 0.25; }
   G.on('listo', manchaJugador);
   function adaptCalidad(raw) {
-    if (!(raw > 0 && raw < 120) || calidad.manual || fpsM.quieta) return;
+    if (!(raw > 0) || calidad.manual || fpsM.quieta) return;
+    if (raw >= 200) { // cuadros muy lentos: quedan fuera de las medias (raw<120) y del arranque; si se sostienen, el nivel actual no da
+      if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return; // portada/creador/pantalla de carga: es carga, no dibujo
+      fpsM.lentos++;
+      if (fpsM.lentos >= 8) { // ~8 cuadros seguidos de ≥200 ms con el mundo a la vista: bajada de emergencia un nivel
+        const i = NIVELES.indexOf(calidad.nivel);
+        if (i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.alto = 0; }
+        fpsM.lentos = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; // sin subidas automáticas durante un buen rato
+      }
+      return;
+    }
+    fpsM.lentos = 0;
+    if (raw >= 120) return; // cuadro lento aislado: no mueve las medias ni el arranque
     if (fpsM.warm > 0) { fpsM.warm -= raw; return; }
     if (G.ui && G.ui.worldHidden && G.ui.worldHidden()) return;   // portada o creador: el mundo no se dibuja
     const A = fpsM.arranque;
@@ -1046,7 +1058,21 @@ AVE.module('renderer', function (G) {
   // cuadro algo más largo en vez de la congelación). La promesa devuelta resuelve en 1–2 cuadros. Si no hay
   // WebGL2 o la lectura falla, se usa dentro de la promesa la lectura antigua (drawImage): la foto sale igual,
   // con la espera de antes. Con el contexto perdido snapshot() devuelve null (el cómic reintenta, QA-21).
-  const FOTOS = { cola: [], diferidas: 0, sync: 0, esperas: 0 };
+  const FOTOS = { cola: [], diferidas: 0, sync: 0, esperas: 0, caidas: 0, errPBO: 0 };
+  // SwiftShader/llvmpipe (la nube) no señala la cerca nunca, pero no tiene cola de GPU: la lectura síncrona es
+  // barata y es el mecanismo previsto (0m). Una GPU real con la cola llena (reveal DPR 3 + streaming) tarda en
+  // señalarla legítimamente: ahí el getBufferSubData bloqueaba el hilo >25 s (QA-157) — nunca se usa.
+  let swGPU = null;
+  function esSoftwareGPU() {
+    if (swGPU === null) {
+      try {
+        const g = renderer.getContext();
+        const ext = g.getExtension('WEBGL_debug_renderer_info');
+        swGPU = /swiftshader|llvmpipe|softpipe|software/i.test(ext ? String(g.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '');
+      } catch (e) { swGPU = false; }
+    }
+    return swGPU;
+  }
   function fotoSync(x, y, cw, ch, w, h, quality, probar) {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const cx = c.getContext('2d');
@@ -1074,16 +1100,26 @@ AVE.module('renderer', function (G) {
           gl.bufferData(gl.PIXEL_PACK_BUFFER, cw * ch * 4, gl.STREAM_READ);
           gl.readPixels(x, y, cw, ch, gl.RGBA, gl.UNSIGNED_BYTE, 0);
           gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-          if (gl.getError()) { gl.deleteBuffer(pbo); pbo = null; }
+          const errLect = gl.getError();
+          if (errLect) { FOTOS.errPBO = FOTOS.errPBO || errLect; gl.deleteBuffer(pbo); pbo = null; }
           else {
             fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
             gl.flush(); // sin flush algunos drivers (SwiftShader de la nube) no procesan la copia y la cerca nunca se resuelve
           }
         } catch (e) { if (pbo) { try { gl.deleteBuffer(pbo); } catch (e2) { /* ya no está */ } } pbo = null; fence = null; }
       }
-      if (!pbo || !fence) { // sin WebGL2/PBO: lectura síncrona de antes, mismo resultado
-        FOTOS.sync++;
-        try { resolve(fotoSync(x, y, cw, ch, w, h, quality, probar)); } catch (e) { resolve(null); }
+      if (!pbo || !fence) { // falló la vía PBO (p. ej. readPixels con INVALID_OPERATION esporádico del driver)
+        if (!renderer.capabilities.isWebGL2 || esSoftwareGPU()) {
+          // sin WebGL2 o en software (SwiftShader): la lectura síncrona de antes es la vía prevista y es barata
+          FOTOS.sync++;
+          try { resolve(fotoSync(x, y, cw, ch, w, h, quality, probar)); } catch (e) { resolve(null); }
+        } else {
+          // GPU real: el drawImage de fotoSync espera a la cola de la GPU igual que el getBufferSubData (QA-157) —
+          // se rinde la foto (null) y el cómic la reintenta con backoff; el error del PBO es esporádico y la
+          // siguiente intentona suele entrar por la vía diferida normal.
+          FOTOS.caidas++;
+          resolve(null);
+        }
         return;
       }
       FOTOS.diferidas++;
@@ -1091,10 +1127,11 @@ AVE.module('renderer', function (G) {
     });
   }
   // Se llama al final de update(): una foto por paso, sin esperar a la GPU (clientWaitSync con timeout 0). Si la
-  // cerca lleva >300 ms sin resolverse (cola de la GPU llena, p. ej. reveal con DPR 3, o SwiftShader), se espera de
-  // forma incremental y acotada (~2 ms de hilo como mucho por cuadro, una foto por paso): la foto se resuelve en
-  // cuanto la GPU la copia, sin el bloqueo de >25 s del respaldo síncrono con la cola llena (QA-157). Como último
-  // recurso, si una foto lleva >8 s sin señalar (cerca rota), se lee síncrona de respaldo UNA vez por foto.
+  // cerca no señala (cola de la GPU llena, p. ej. reveal con DPR 3, o SwiftShader en la nube), se espera de forma
+  // incremental y acotada (~2 ms de hilo como mucho por cuadro, una foto por paso): la foto se resuelve en cuanto
+  // la GPU la copia, sin el bloqueo de >25 s del getBufferSubData con la cola llena (QA-157). En GPU de software
+  // (la cerca no señala nunca y no hay cola) hay lectura síncrona de respaldo a los ~300 ms (0m, barata); en GPU
+  // real NUNCA: si la foto lleva >4 s sin señalar se rinde (null) y el cómic la reintenta con su backoff (QA-21).
   function fotoPaso() {
     if (!FOTOS.cola.length) return;
     const gl = renderer.getContext();
@@ -1124,12 +1161,24 @@ AVE.module('renderer', function (G) {
           esperas++;
           if (!lista) FOTOS.esperas++;
         }
-        if (!lista && !f.respaldo && edad > 8000) {
-          // Último recurso (p. ej. SwiftShader con la cerca rota): lectura síncrona de respaldo del mismo PBO —
-          // getBufferSubData hace la espera implícita a la GPU —, una sola vez por foto, así la foto no se pierde.
-          FOTOS.sync++; // cuenta como lectura síncrona: es lo que era
-          f.respaldo = true;
-          lista = true;
+        if (!lista && !f.respaldo && edad > (esSoftwareGPU() ? 300 : 4000)) {
+          if (esSoftwareGPU()) {
+            // Último recurso en software (la cerca no señala nunca y no hay cola): lectura síncrona barata del
+            // mismo PBO — getBufferSubData —, una sola vez por foto, así la foto no se pierde (0m).
+            FOTOS.sync++; // cuenta como lectura síncrona: es lo que era
+            f.respaldo = true;
+            lista = true;
+          } else {
+            // GPU real: NUNCA lectura síncrona — con la cola llena el getBufferSubData bloqueaba el hilo >25 s
+            // (QA-157, medido dos veces). La cerca acaba señalando; si a los 4 s no lo hizo (cola anómala), se
+            // rinde la foto (null) y el cómic la reintenta con backoff (QA-21): la siguiente intentona, con la
+            // cola ya drenada, resuelve en 1–2 cuadros.
+            FOTOS.caidas++;
+            FOTOS.cola.splice(i, 1);
+            try { gl.deleteSync(f.fence); gl.deleteBuffer(f.pbo); } catch (e) { /* contexto perdido */ }
+            f.resolve(null);
+            continue;
+          }
         }
       }
       if (!lista) continue;
@@ -1340,7 +1389,7 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
-    fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, cola: FOTOS.cola.length }),
+    fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });

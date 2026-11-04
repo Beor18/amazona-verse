@@ -92,7 +92,8 @@ async function lanzarChrome() {
         if (d.params.type === 'error') res.erroresConsola.push({ texto: txt, t: Date.now() });
       }
       if (d.method === 'Log.entryAdded' && d.sessionId === ses && d.params.entry.level === 'error') {
-        res.erroresConsola.push({ texto: String(d.params.entry.text).slice(0, 300), t: Date.now() });
+        const en = d.params.entry;
+        res.erroresConsola.push({ texto: String(en.text).slice(0, 300), url: String(en.url || '').slice(-120), t: Date.now() });
       }
     });
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: true }, ses);
@@ -113,7 +114,7 @@ async function lanzarChrome() {
     try { res.fases = await ev(cdp, ses, `(() => { const f = window.__fases || []; return f.slice(-60); })()`, 15); } catch (e) { res.fases = 'n/d: ' + e.message; }
     try { res.gpu = await ev(cdp, ses, `(() => { const gl = AV.G.renderer.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'sin debug_info'; })()`, 15); } catch (e) { res.gpu = 'n/d'; }
     console.log('t+' + Math.round((Date.now() - t0) / 1000) + 's de muestreo');
-    for (const [i, m] of res.muestras.entries()) console.log(m.error ? `  s${i + 1}: EVAL TIMEOUT (>25 s de hilo bloqueado)` : `  s${i + 1}: calls ${m.calls} tris ${m.tris} fps ${m.fps} cal ${m.cal} progs ${m.progs} lost ${m.lost}/${m.restored} listo ${m.mundoListo} hidden ${m.hidden} fotos ${JSON.stringify(m.fotos)} fasesN ${m.fasesN} vivo ${m.vivo}`);
+    for (const [i, m] of res.muestras.entries()) console.log(m.error ? `  s${i + 1}: EVAL TIMEOUT (>25 s de hilo bloqueado)` : `  s${i + 1}: calls ${m.calls} tris ${m.tris} fps ${m.fps} cal ${m.cal} progs ${m.progs} lost ${m.lost}/${m.restored} calentar ${m.calentar} hidden ${m.hidden} fotos ${JSON.stringify(m.fotos)} fasesN ${m.fasesN} vivo ${m.vivo}`);
     console.log('excepciones:', res.excepciones.length ? JSON.stringify(res.excepciones.slice(0, 6), null, 1) : 'ninguna');
     console.log('errores consola:', res.erroresConsola.length ? JSON.stringify(res.erroresConsola.slice(0, 8), null, 1) : 'ninguno');
     try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}

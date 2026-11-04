@@ -2,11 +2,13 @@
  "erroresConsola": [
   {
    "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-   "t": 1793812087432
+   "url": "http://127.0.0.1:62170/src/",
+   "t": 1793816281748
   },
   {
    "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-   "t": 1793812087850
+   "url": "http://127.0.0.1:62170/content/cap1/",
+   "t": 1793816281866
   }
  ],
  "excepciones": [],
@@ -15,52 +17,60 @@
   {
    "calls": 0,
    "tris": 0,
-   "fps": 89,
+   "fps": 39,
    "cal": "alto",
-   "progs": 9,
+   "progs": 0,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": true,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 17,
+   "fasesN": 18,
    "faseUlt": [
-    3587,
-    7,
+    6172,
     4,
+    5,
     0,
     0,
-    5
+    7
    ],
    "vivo": true
   },
   {
-   "calls": 20,
-   "tris": 19563,
-   "fps": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 36,
    "cal": "alto",
-   "progs": 9,
+   "progs": 0,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": true,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 17,
+   "fasesN": 18,
    "faseUlt": [
-    3587,
-    7,
+    6172,
     4,
+    5,
     0,
     0,
-    5
+    7
    ],
    "vivo": true
   },
@@ -69,154 +79,328 @@
    "tris": 0,
    "fps": 8,
    "cal": "alto",
-   "progs": 9,
+   "progs": 0,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": true,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 17,
+   "fasesN": 18,
    "faseUlt": [
-    3587,
-    7,
+    6172,
     4,
+    5,
     0,
     0,
-    5
+    7
    ],
    "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 18,
+   "fps": 11,
    "cal": "alto",
-   "progs": 9,
+   "progs": 0,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": true,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 17,
+   "fasesN": 18,
    "faseUlt": [
-    3587,
-    7,
+    6172,
     4,
+    5,
     0,
     0,
-    5
+    7
    ],
    "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 17,
+   "fps": 10,
    "cal": "alto",
-   "progs": 9,
+   "progs": 0,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": true,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 17,
+   "fasesN": 18,
    "faseUlt": [
-    3587,
-    7,
+    6172,
     4,
+    5,
     0,
     0,
-    5
+    7
    ],
    "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 18,
+   "fps": 12,
+   "cal": "alto",
+   "progs": 0,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 18,
+   "faseUlt": [
+    6172,
+    4,
+    5,
+    0,
+    0,
+    7
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 11,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true,
+   "calentar": false,
+   "hidden": false,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 137,
+   "fasesN": 141,
    "faseUlt": [
-    19518,
-    22,
-    5,
+    30241,
+    181,
+    9,
     0,
     0,
-    4
+    6
    ],
    "vivo": true
   },
   {
-   "calls": 0,
-   "tris": 0,
-   "fps": 31,
+   "calls": 14,
+   "tris": 14,
+   "fps": 13,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true,
+   "calentar": false,
+   "hidden": false,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 137,
+   "fasesN": 159,
    "faseUlt": [
-    19518,
-    22,
-    5,
+    32122,
+    19,
+    6,
     0,
     0,
-    4
+    6
    ],
    "vivo": true
   },
   {
-   "calls": 0,
-   "tris": 0,
-   "fps": 31,
+   "calls": 14,
+   "tris": 14,
+   "fps": 7,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true,
+   "calentar": false,
+   "hidden": false,
    "fotos": {
     "diferidas": 0,
     "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
-   "fasesN": 137,
+   "fasesN": 184,
    "faseUlt": [
-    19518,
+    33873,
+    16,
+    8,
+    0,
+    0,
+    9
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 27,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 345,
+   "faseUlt": [
+    39244,
+    91,
     22,
+    0,
+    0,
+    7
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 24,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 386,
+   "faseUlt": [
+    40889,
+    11,
     5,
     0,
     0,
-    4
+    8
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 28,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 28,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   },
@@ -225,232 +409,178 @@
    "tris": 14,
    "fps": 30,
    "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 0,
-    "sync": 0,
-    "cola": 0
-   },
-   "fasesN": 174,
-   "faseUlt": [
-    24724,
-    11,
-    3,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 42,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 0,
-    "sync": 0,
-    "cola": 0
-   },
-   "fasesN": 349,
-   "faseUlt": [
-    27982,
-    7,
-    3,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 51,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 0,
-    "sync": 0,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 49,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 0,
-    "sync": 0,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 54,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 0,
-    "sync": 0,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": false
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 54,
-   "cal": "alto",
    "progs": 48,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
     "diferidas": 1,
-    "sync": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 1
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 120,
+   "tris": 753919,
+   "fps": 3,
+   "cal": "alto",
+   "progs": 49,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
    "vivo": true
   },
   {
    "calls": 106,
-   "tris": 762354,
-   "fps": 7,
-   "cal": "alto",
-   "progs": 48,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 1,
-    "sync": 1,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 1810,
-   "tris": 16628540,
-   "fps": 13,
+   "tris": 748053,
+   "fps": 2,
    "cal": "alto",
    "progs": 51,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
     "diferidas": 1,
-    "sync": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 2030,
+   "tris": 16478016,
+   "fps": 6,
+   "cal": "alto",
+   "progs": 51,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 21,
+   "fps": 4,
    "cal": "alto",
    "progs": 50,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
     "diferidas": 1,
-    "sync": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 14,
+   "cal": "alto",
+   "progs": 51,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 0,
+    "esperas": 0,
+    "caidas": 0,
+    "errPBO": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   },
@@ -459,262 +589,186 @@
    "calls": -1
   },
   {
-   "calls": 239,
-   "tris": 1603854,
-   "fps": 5,
+   "error": "timeout Runtime.evaluate",
+   "calls": -1
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 0,
    "cal": "alto",
-   "progs": 61,
+   "progs": 63,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 4,
-    "sync": 2,
+    "diferidas": 3,
+    "sync": 0,
+    "esperas": 3,
+    "caidas": 2,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
    "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 5,
+   "fps": 1,
+   "cal": "alto",
+   "progs": 63,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 3,
+    "sync": 0,
+    "esperas": 3,
+    "caidas": 2,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 12,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 4,
+    "sync": 0,
+    "esperas": 3,
+    "caidas": 2,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 8,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 4,
+    "sync": 0,
+    "esperas": 3,
+    "caidas": 2,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 13,
    "cal": "alto",
    "progs": 60,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 4,
-    "sync": 2,
+    "diferidas": 5,
+    "sync": 0,
+    "esperas": 202,
+    "caidas": 3,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
    "vivo": true
   },
   {
-   "calls": 16,
-   "tris": 16,
-   "fps": 20,
+   "calls": 134,
+   "tris": 758923,
+   "fps": 0,
    "cal": "alto",
-   "progs": 58,
+   "progs": 63,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 4,
-    "sync": 2,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 67,
-   "tris": 377895,
-   "fps": 44,
-   "cal": "alto",
-   "progs": 59,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
     "diferidas": 6,
-    "sync": 3,
-    "cola": 1
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 1,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 6,
-    "sync": 3,
+    "sync": 0,
+    "esperas": 202,
+    "caidas": 4,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 218,
-   "tris": 1608298,
-   "fps": 6,
-   "cal": "alto",
-   "progs": 64,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 2,
-   "cal": "alto",
-   "progs": 62,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 5,
-   "cal": "alto",
-   "progs": 62,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 7,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 4,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
+    6
    ],
    "vivo": true
   },
@@ -723,266 +777,388 @@
    "tris": 16,
    "fps": 0,
    "cal": "alto",
-   "progs": 61,
+   "progs": 63,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 9,
-    "sync": 6,
+    "diferidas": 6,
+    "sync": 0,
+    "esperas": 202,
+    "caidas": 4,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 249,
+   "tris": 1624152,
+   "fps": 6,
+   "cal": "alto",
+   "progs": 66,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 4,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
    "fps": 3,
    "cal": "alto",
-   "progs": 61,
+   "progs": 65,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 9,
-    "sync": 6,
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
-   "vivo": false
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 65,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
   },
   {
    "calls": 16,
    "tris": 16,
    "fps": 4,
    "cal": "alto",
-   "progs": 61,
+   "progs": 64,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 9,
-    "sync": 6,
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
-   "vivo": true
+   "vivo": false
   },
   {
    "calls": 16,
    "tris": 16,
    "fps": 9,
    "cal": "alto",
-   "progs": 61,
+   "progs": 64,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 9,
-    "sync": 6,
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
    ],
    "vivo": true
   },
   {
    "calls": 16,
    "tris": 16,
-   "fps": 4,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 7,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "calls": 16,
-   "tris": 16,
-   "fps": 5,
-   "cal": "alto",
-   "progs": 61,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false,
-   "fotos": {
-    "diferidas": 9,
-    "sync": 6,
-    "cola": 0
-   },
-   "fasesN": 400,
-   "faseUlt": [
-    28988,
-    8,
-    2,
-    0,
-    0,
-    3
-   ],
-   "vivo": true
-  },
-  {
-   "error": "timeout Runtime.evaluate",
-   "calls": -1
-  },
-  {
-   "error": "timeout Runtime.evaluate",
-   "calls": -1
-  },
-  {
-   "calls": 70,
-   "tris": 70,
    "fps": 0,
    "cal": "alto",
-   "progs": 62,
+   "progs": 64,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 11,
-    "sync": 8,
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
+   ],
+   "vivo": false
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 2,
+   "cal": "medio",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 16,
-   "cal": "alto",
-   "progs": 62,
+   "fps": 4,
+   "cal": "medio",
+   "progs": 64,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
+   "calentar": false,
    "hidden": false,
    "fotos": {
-    "diferidas": 11,
-    "sync": 8,
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
     "cola": 0
    },
    "fasesN": 400,
    "faseUlt": [
-    28988,
-    8,
-    2,
+    41468,
+    11,
+    6,
     0,
     0,
-    3
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 5,
+   "cal": "medio",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 3,
+   "cal": "medio",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 5,
+   "cal": "medio",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "calentar": false,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 8,
+    "sync": 0,
+    "esperas": 396,
+    "caidas": 6,
+    "errPBO": 1282,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    41468,
+    11,
+    6,
+    0,
+    0,
+    6
    ],
    "vivo": true
   }
@@ -990,484 +1166,484 @@
  "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
  "fases": [
   [
-   27815,
-   8,
-   5,
-   0,
-   0,
-   3
-  ],
-  [
-   27839,
-   7,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   27862,
-   11,
-   2,
-   0,
-   0,
-   5
-  ],
-  [
-   27879,
-   8,
-   5,
-   0,
-   0,
-   4
-  ],
-  [
-   27901,
-   9,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   27921,
-   9,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   27940,
-   8,
-   6,
-   0,
-   0,
-   3
-  ],
-  [
-   27963,
-   10,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   27982,
-   7,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   28003,
-   8,
-   3,
-   0,
-   0,
-   4
-  ],
-  [
-   28023,
-   8,
-   6,
-   0,
-   0,
-   4
-  ],
-  [
-   28046,
-   9,
-   4,
-   0,
-   0,
-   3
-  ],
-  [
-   28066,
-   9,
-   4,
-   0,
-   0,
-   3
-  ],
-  [
-   28085,
-   7,
-   3,
-   0,
-   0,
-   5
-  ],
-  [
-   28106,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28127,
-   10,
-   6,
-   0,
-   0,
-   3
-  ],
-  [
-   28147,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28166,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28186,
-   8,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   28205,
-   8,
-   3,
-   0,
-   0,
-   4
-  ],
-  [
-   28225,
-   8,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   28245,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28265,
-   8,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28285,
-   8,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28307,
+   39004,
    12,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28322,
-   7,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28339,
-   8,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28356,
-   8,
-   7,
-   0,
-   0,
-   3
-  ],
-  [
-   28381,
-   11,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28396,
-   8,
-   3,
-   0,
-   0,
-   5
-  ],
-  [
-   28416,
-   9,
    6,
    0,
    0,
-   3
+   9
   ],
   [
-   28437,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28454,
-   7,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28473,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28492,
-   8,
-   4,
-   0,
-   0,
-   4
-  ],
-  [
-   28513,
-   8,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28532,
+   39034,
+   12,
    9,
-   2,
    0,
    0,
-   3
+   7
   ],
   [
-   28550,
-   9,
+   39065,
+   12,
    5,
    0,
    0,
-   3
-  ],
-  [
-   28571,
-   9,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28590,
-   8,
-   2,
-   0,
-   0,
-   3
-  ],
-  [
-   28606,
-   7,
-   6,
-   0,
-   0,
-   3
-  ],
-  [
-   28628,
-   8,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   28647,
-   10,
-   3,
-   0,
-   0,
-   4
-  ],
-  [
-   28664,
-   8,
-   6,
-   0,
-   0,
-   4
-  ],
-  [
-   28686,
-   8,
-   3,
-   0,
-   0,
-   3
-  ],
-  [
-   28704,
-   8,
-   2,
-   0,
-   0,
    5
   ],
   [
-   28724,
-   9,
+   39092,
+   12,
+   5,
+   0,
+   0,
+   8
+  ],
+  [
+   39244,
+   91,
+   22,
+   0,
+   0,
+   7
+  ],
+  [
+   39298,
+   14,
    6,
    0,
    0,
-   4
+   8
   ],
   [
-   28746,
-   8,
-   3,
+   39334,
+   12,
+   15,
    0,
    0,
-   4
+   8
   ],
   [
-   28766,
-   8,
-   2,
+   39381,
+   12,
+   5,
    0,
    0,
-   4
+   7
   ],
   [
-   28785,
-   8,
-   2,
-   0,
-   0,
-   4
-  ],
-  [
-   28807,
-   11,
-   6,
-   0,
-   0,
-   4
-  ],
-  [
-   28827,
-   8,
-   3,
+   39426,
+   26,
+   10,
    0,
    0,
    6
   ],
   [
-   28848,
-   8,
-   2,
+   39457,
+   12,
+   4,
    0,
    0,
-   4
+   7
   ],
   [
-   28868,
-   9,
-   2,
+   39499,
+   23,
+   13,
    0,
    0,
-   4
+   8
   ],
   [
-   28890,
+   39537,
    11,
-   3,
+   5,
+   0,
+   0,
+   9
+  ],
+  [
+   39575,
+   13,
+   10,
+   0,
+   0,
+   7
+  ],
+  [
+   39618,
+   15,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   39658,
+   15,
+   10,
+   0,
+   0,
+   8
+  ],
+  [
+   39698,
+   14,
+   5,
+   0,
+   0,
+   9
+  ],
+  [
+   39756,
+   23,
+   12,
+   0,
+   0,
+   14
+  ],
+  [
+   39799,
+   13,
+   6,
+   0,
+   0,
+   14
+  ],
+  [
+   39843,
+   14,
+   9,
+   0,
+   0,
+   13
+  ],
+  [
+   39886,
+   14,
+   4,
+   0,
+   0,
+   9
+  ],
+  [
+   39933,
+   21,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   39973,
+   16,
+   11,
    0,
    0,
    5
   ],
   [
-   28915,
-   11,
-   3,
+   40019,
+   21,
+   7,
    0,
    0,
-   3
+   6
   ],
   [
-   28931,
-   8,
-   2,
+   40050,
+   16,
+   4,
    0,
    0,
-   4
+   8
   ],
   [
-   28951,
-   9,
+   40083,
+   14,
+   6,
+   0,
+   0,
+   12
+  ],
+  [
+   40122,
+   14,
    5,
    0,
    0,
-   3
+   10
   ],
   [
-   28971,
+   40157,
+   12,
+   6,
+   0,
+   0,
+   10
+  ],
+  [
+   40193,
+   16,
+   10,
+   0,
+   0,
+   9
+  ],
+  [
+   40237,
+   14,
+   6,
+   0,
+   0,
+   9
+  ],
+  [
+   40275,
+   18,
+   15,
+   0,
+   0,
+   9
+  ],
+  [
+   40315,
+   13,
+   5,
+   0,
+   0,
+   8
+  ],
+  [
+   40347,
+   13,
+   16,
+   0,
+   0,
+   6
+  ],
+  [
+   40406,
+   13,
+   6,
+   0,
+   0,
+   8
+  ],
+  [
+   40466,
+   17,
+   10,
+   0,
+   0,
+   7
+  ],
+  [
+   40499,
+   13,
+   10,
+   0,
+   0,
+   7
+  ],
+  [
+   40540,
+   20,
+   4,
+   0,
+   0,
+   10
+  ],
+  [
+   40569,
+   12,
+   9,
+   0,
+   0,
+   8
+  ],
+  [
+   40601,
+   11,
+   6,
+   0,
+   0,
+   7
+  ],
+  [
+   40637,
+   18,
+   5,
+   0,
+   0,
+   11
+  ],
+  [
+   40670,
+   12,
+   6,
+   0,
+   0,
+   9
+  ],
+  [
+   40709,
+   17,
+   10,
+   0,
+   0,
+   6
+  ],
+  [
+   40744,
+   14,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   40779,
+   14,
    7,
-   2,
    0,
    0,
-   3
+   8
   ],
   [
-   28988,
+   40828,
+   16,
+   5,
+   0,
+   0,
+   9
+  ],
+  [
+   40861,
+   17,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   40889,
+   11,
+   5,
+   0,
+   0,
+   8
+  ],
+  [
+   40928,
+   19,
+   5,
+   0,
+   0,
+   8
+  ],
+  [
+   40962,
+   15,
+   5,
+   0,
+   0,
+   8
+  ],
+  [
+   41001,
+   16,
+   4,
+   0,
+   0,
+   7
+  ],
+  [
+   41026,
+   12,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   41058,
+   13,
+   5,
+   0,
+   0,
+   7
+  ],
+  [
+   41094,
+   17,
+   4,
+   0,
+   0,
+   9
+  ],
+  [
+   41126,
+   15,
    8,
-   2,
    0,
    0,
-   3
+   9
+  ],
+  [
+   41244,
+   16,
+   6,
+   0,
+   0,
+   7
+  ],
+  [
+   41283,
+   16,
+   7,
+   0,
+   0,
+   12
+  ],
+  [
+   41325,
+   14,
+   7,
+   0,
+   0,
+   10
+  ],
+  [
+   41369,
+   17,
+   4,
+   0,
+   0,
+   9
+  ],
+  [
+   41397,
+   12,
+   9,
+   0,
+   0,
+   7
+  ],
+  [
+   41436,
+   14,
+   4,
+   0,
+   0,
+   8
+  ],
+  [
+   41468,
+   11,
+   6,
+   0,
+   0,
+   6
   ]
  ]
 }

@@ -9,160 +9,69 @@
  "rondas": [
   {
    "reveal": {
-    "n": 131,
-    "p50": 14,
-    "p95": 167,
-    "peor": 3556,
-    "mas100": 19,
-    "mas200": 4,
+    "n": 119,
+    "p50": 28,
+    "p95": 153,
+    "peor": 5687,
+    "mas100": 21,
+    "mas200": 2,
     "top": [
      {
-      "d": 3556,
-      "t": 7.8
+      "d": 5687,
+      "t": 11.8
      },
      {
-      "d": 1306,
-      "t": 1
+      "d": 1993,
+      "t": 0.9
      },
      {
-      "d": 1042,
-      "t": 2.4
+      "d": 1465,
+      "t": 3.1
      },
      {
-      "d": 486,
-      "t": 13.9
-     },
-     {
-      "d": 479,
+      "d": 431,
       "t": 0
      },
      {
-      "d": 299,
-      "t": 0.5
+      "d": 424,
+      "t": 0.4
+     },
+     {
+      "d": 361,
+      "t": 6.5
      }
     ],
     "marcas": [
      {
-      "n": 83,
+      "n": 46,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 101,
+      "n": 62,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 107,
+      "n": 73,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 108,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 20,
-      "progs": 9
-     },
-     {
-      "n": 113,
+      "n": 86,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 117,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 121,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 126,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 130,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 131,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     }
-    ]
-   },
-   "tormenta": {
-    "error": "mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)"
-   },
-   "valida": false
-  },
-  {
-   "reveal": {
-    "n": 128,
-    "p50": 14,
-    "p95": 132,
-    "peor": 3465,
-    "mas100": 19,
-    "mas200": 4,
-    "top": [
-     {
-      "d": 3465,
-      "t": 7.3
-     },
-     {
-      "d": 1299,
-      "t": 1.1
-     },
-     {
-      "d": 826,
-      "t": 2.6
-     },
-     {
-      "d": 396,
-      "t": 12.6
-     },
-     {
-      "d": 368,
-      "t": 13
-     },
-     {
-      "d": 264,
-      "t": 0
-     }
-    ],
-    "marcas": [
-     {
-      "n": 83,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 96,
+      "n": 97,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -176,14 +85,119 @@
       "progs": 9
      },
      {
-      "n": 103,
+      "n": 106,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 112,
       "pend": -1,
       "cal": "alto",
       "calls": 20,
       "progs": 9
      },
      {
-      "n": 108,
+      "n": 115,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 119,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     }
+    ]
+   },
+   "tormenta": {
+    "error": "mundo no asentado en 120 s (CPU ×4 + calidad alta: carga lenta; sospechar QA-157 solo si hay fotos sync con GPU real — con el fix v3 sync solo dispara en GPU de software)"
+   },
+   "valida": false
+  },
+  {
+   "reveal": {
+    "n": 119,
+    "p50": 21,
+    "p95": 160,
+    "peor": 4507,
+    "mas100": 18,
+    "mas200": 2,
+    "top": [
+     {
+      "d": 4507,
+      "t": 8.9
+     },
+     {
+      "d": 1438,
+      "t": 1.2
+     },
+     {
+      "d": 944,
+      "t": 3
+     },
+     {
+      "d": 500,
+      "t": 0
+     },
+     {
+      "d": 306,
+      "t": 14.4
+     },
+     {
+      "d": 278,
+      "t": 5.1
+     }
+    ],
+    "marcas": [
+     {
+      "n": 60,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 74,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 90,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 97,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 101,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 104,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 20,
+      "progs": 9
+     },
+     {
+      "n": 109,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -197,28 +211,14 @@
       "progs": 9
      },
      {
-      "n": 117,
+      "n": 115,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 121,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 123,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 128,
+      "n": 119,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -227,7 +227,7 @@
     ]
    },
    "tormenta": {
-    "error": "mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)"
+    "error": "mundo no asentado en 120 s (CPU ×4 + calidad alta: carga lenta; sospechar QA-157 solo si hay fotos sync con GPU real — con el fix v3 sync solo dispara en GPU de software)"
    },
    "valida": false
   }

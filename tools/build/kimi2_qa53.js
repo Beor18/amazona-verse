@@ -100,8 +100,8 @@ const TORMENTA_JS = `(async () => { const sleep = ms => new Promise(r => setTime
   // QA-157: esperar a que la carga asiente (evento mundoListo → precarga activa) y el mundo dibuje de verdad
   // antes de forzar la tormenta; si no, las ventanas miden la pantalla de carga y la ronda no vale.
   const t0 = performance.now(); let ok = false;
-  while (performance.now() - t0 < 45000) { try { if (R.precarga.programas() >= 0 && R.stats().calls > 30) { ok = true; break; } } catch (e) {} await sleep(500); }
-  if (!ok) return JSON.stringify({ error: 'mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)' });
+  while (performance.now() - t0 < 120000) { try { if (R.precarga.programas() >= 0 && R.stats().calls > 30) { ok = true; break; } } catch (e) {} await sleep(500); }
+  if (!ok) return JSON.stringify({ error: 'mundo no asentado en 120 s (CPU ×4 + calidad alta: carga lenta; sospechar QA-157 solo si hay fotos sync con GPU real — con el fix v3 sync solo dispara en GPU de software)' });
   R.setCalidad('medio', true); await sleep(2500);   // base asentada CON sombras
   const antes = R.stats();
   R.setCalidad('bajo', true);                        // ← tormenta: todas las familias con luz piden programa nuevo
@@ -155,7 +155,7 @@ async function lanzarChrome() {
       if (!String(prep).startsWith('ok')) throw new Error('preparar: ' + prep);
       if (ronda === 1) { try { res.gpu = await ev(cdp, ses, `(() => { const gl = AV.G.renderer.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'sin debug_info'; })()`, 15); } catch (e) { res.gpu = 'n/d'; } }
       const reveal = JSON.parse(await ev(cdp, ses, VENTANA_JS, 30)); // 4 s post-reveal (el adaptativo dispara ~3 s)
-      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 90));
+      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 150));
       if (tormenta.error) {
         res.rondas.push({ reveal, tormenta, valida: false });
         console.log(`  · ronda ${ronda} ⚠ ABORTADA: ${tormenta.error}`);

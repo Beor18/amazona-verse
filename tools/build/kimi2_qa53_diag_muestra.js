@@ -10,6 +10,7 @@
     cal: R.calidad.nivel, progs: R.renderer.info.programs.length,
     lost: window.__ctxLost || 0, restored: window.__ctxRestored || 0,
     mundoListo: !!(AV.G.mundo && AV.G.mundo.listo),
+    calentar: !!(AV.G.renderer._precalentar && AV.G.renderer._precalentar.activo),
     hidden: AV.G.ui.worldHidden(),
     fotos: R.fotos ? R.fotos() : null,
     fasesN: f.length, faseUlt: f.length ? f[f.length - 1] : null,
