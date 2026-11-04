@@ -147,11 +147,16 @@ AVE.module('diario', function (G) {
       if (Math.hypot(S.pos.x - f.x, S.pos.z - f.z) < (f.r || 1.6) && (f.agua ? S.pos.y < nivel(f) + 1.5 : Math.abs(S.pos.y - ys[f.id]) < 3)) found(f);
     }
   }, 40);
-  // Cada hallazgo flota y su destello gira
+  // Cada hallazgo flota y su destello gira. Solo se dibuja cerca del jugador: a más de ~120 m la
+  // silueta y la chispa (0,16 m) son subpíxel, y cada entrada son 2 draw calls en cualquier vista.
+  const VER2 = 120 * 120;
   G.on('render', dt => {
-    const now = performance.now() / 1000;
+    const now = performance.now() / 1000, px = S.pos.x, pz = S.pos.z;
     for (const f of entries) {
-      const g = meshes[f.id]; if (!g.visible) continue;
+      const g = meshes[f.id];
+      const ver = !S.field.includes(f.id) && (f.x - px) * (f.x - px) + (f.z - pz) * (f.z - pz) < VER2;
+      if (g.visible !== ver) g.visible = ver;
+      if (!ver) continue;
       g.position.y = ys[f.id] + (f.agua ? Math.sin(now * 1.5 + f.x) * 0.08 : 0.15 + Math.sin(now * 2 + f.z) * 0.08);
       g.getObjectByName('spark').rotation.y += dt * 2.5;
     }

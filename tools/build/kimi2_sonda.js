@@ -16,7 +16,10 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', '--window-size=1280,800'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
   const pf = path.join(perf, 'DevToolsActivePort'); let puertoDev, wsPath;
-  for (let i = 0; i < 100; i++) { if (fs.existsSync(pf)) { const l = fs.readFileSync(pf, 'utf8').split('\n'); puertoDev = parseInt(l[0], 10); wsPath = l[1].trim(); break; } if (chrome.exitCode != null) throw new Error('Chrome murió ' + err.slice(0, 200)); await new Promise(r => setTimeout(r, 200)); }
+  // Chrome 156: el chrome.exe inicial sale enseguida y el navegador real sigue detached;
+  // se espera al archivo DevToolsActivePort, no a la salida del proceso padre.
+  for (let i = 0; i < 300; i++) { if (fs.existsSync(pf)) { const l = fs.readFileSync(pf, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) { puertoDev = parseInt(l[0], 10); wsPath = l[1].trim(); break; } } await new Promise(r => setTimeout(r, 200)); }
+  if (!puertoDev) throw new Error('Chrome no abrió DevTools en 60 s: ' + err.slice(0, 200));
   const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`); const cdp = new CDP(ws); await cdp.listo();
   const warns = [];
   const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;

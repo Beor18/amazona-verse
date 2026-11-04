@@ -106,12 +106,13 @@ async function lanzarChrome() {
   const chrome = spawn(CHROME, args, { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
   const puertoFile = path.join(perf, 'DevToolsActivePort');
-  for (let i = 0; i < 100; i++) {
-    if (fs.existsSync(puertoFile)) { const l = fs.readFileSync(puertoFile, 'utf8').split('\n'); return { chrome, perf, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; }
-    if (chrome.exitCode != null) throw new Error('Chrome murió: ' + err.slice(0, 300));
+  // Chrome 156: el chrome.exe inicial sale enseguida y el navegador real sigue detached;
+  // se espera al archivo DevToolsActivePort, no a la salida del proceso padre.
+  for (let i = 0; i < 300; i++) {
+    if (fs.existsSync(puertoFile)) { const l = fs.readFileSync(puertoFile, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) return { chrome, perf, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; }
     await new Promise(r => setTimeout(r, 200));
   }
-  throw new Error('Chrome no abrió DevTools en 20 s: ' + err.slice(0, 300));
+  throw new Error('Chrome no abrió DevTools en 60 s: ' + err.slice(0, 300));
 }
 
 (async () => {

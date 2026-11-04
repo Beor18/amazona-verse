@@ -17,8 +17,15 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi2u-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', '--window-size=1280,800'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
-  const pf = path.join(perf, 'DevToolsActivePort'); let puertoDev, wsPath;
-  for (let i = 0; i < 100; i++) { if (fs.existsSync(pf)) { const l = fs.readFileSync(pf, 'utf8').split('\n'); puertoDev = parseInt(l[0], 10); wsPath = l[1].trim(); break; } if (chrome.exitCode != null) throw new Error('Chrome murió ' + err.slice(0, 200)); await new Promise(r => setTimeout(r, 200)); }
+  const pf = path.join(perf, 'DevToolsActivePort'); let puertoDev, wsPath, caido = '';
+  chrome.on('exit', (c, s) => { caido = 'exit ' + c; });
+  // Chrome 156 (nov-2026): el chrome.exe inicial es un lanzador que sale enseguida y el navegador
+  // real sigue detached escribiendo DevToolsActivePort. Se espera al archivo, no a la salida del padre.
+  for (let i = 0; i < 300; i++) {
+    if (fs.existsSync(pf)) { const l = fs.readFileSync(pf, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) { puertoDev = parseInt(l[0], 10); wsPath = l[1].trim(); break; } }
+    await new Promise(r => setTimeout(r, 200));
+  }
+  if (!puertoDev) { try { chrome.kill(); } catch (e) { } throw new Error('Chrome no abrió DevTools en 60 s (' + (caido || 'sin exit') + ') ' + err.slice(0, 200)); }
   const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`); const cdp = new CDP(ws); await cdp.listo();
   const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
   const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
@@ -33,5 +40,6 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   const res = await ev(cdp, ses, `window.AV.${BATERIA}()`, 590);
   console.log(`· ${BATERIA}:`, JSON.stringify(res).slice(0, 9000));
   console.log(`· ${Math.round((Date.now() - t1) / 1000)} s`);
+  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { }
   try { chrome.kill(); } catch (e) { } srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
