@@ -570,7 +570,7 @@ window.AV_EN = {
  "Los Portales del Río": "The River Gateways",
  "Caney del Meandro": "Meander Caney",
  "Embarcadero de las Canoas": "Canoe Landing",
- "La Otra Orilla · Mesa del Este": "The Far Shore · East Mesa",
+ "Villa Mangle · Mesa del Este": "Villa Mangle · East Mesa",
  "Atalayas del Oeste": "Western Watchtowers",
  "Los Monumentos": "The Monuments",
  "Puerto de La Mina": "La Mina Harbor",
