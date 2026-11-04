@@ -414,7 +414,7 @@
         if (quieto >= 8) { quieto = 0; if (MV().landing) await boton('b-fly'); await sostener('b-jump', 0.4); await empujar(0.6, true, lado, { dx: g.x - S.pos.x, dz: g.z - S.pos.z }); lado = -lado; continue; }
         if (!MV().flying && !MV().swimming) { await boton('b-fly'); await jugar(0.3); continue; }
         const dx = g.x - S.pos.x, dz = g.z - S.pos.z, d = Math.hypot(dx, dz);
-        if (t % 10 < 0.25) log('sigue', [r1(t), 'd', r1(d), 'y', r1(S.pos.y), 'gy', g.y == null ? '-' : r1(g.y), 'vuela', MV().flying, 'nada', MV().swimming, 'mv', s({ l: MV().landing, sp: MV().speed, p: MV().posado || MV().perched }), 'palo', s(G.input.stick), paloPuesto, 'reloj', r1(S.clock), 'pos', r1(S.pos.x), r1(S.pos.z), s(G.c && G.c.edu && G.c.edu.estado ? G.c.edu.estado() : '')].join(' '));
+        if (t % 10 < 0.25) log('sigue', [r1(t), 'd', r1(d), 'y', r1(S.pos.y), 'gy', g.y == null ? '-' : r1(g.y), 'vuela', MV().flying, 'nada', MV().swimming, 'mv', s({ l: MV().landing, sp: MV().speed, p: MV().posado || MV().perched }), 'palo', s(G.input.stick), paloPuesto, 'reloj', r1(S.clock), 'pos', r1(S.pos.x), r1(S.pos.z), s(G.c && G.c.edu && G.c.edu.estado ? G.c.edu.estado() : ''), cfg.progreso ? cfg.progreso(G) : ''].join(' '));
         // en el móvil, volando, no hay botón de bajar: «Aterrizar» baja suave y «Volar» (el mismo botón) vuelve a sostenerla
         if (g.y != null && MV().flying && !MV().landing && S.pos.y > g.y + 2.5) await boton('b-fly');
         else if (g.y != null && MV().flying && MV().landing && S.pos.y < g.y + 0.8) await boton('b-fly');
@@ -592,7 +592,7 @@
       if (opts.pulgar) for (let i = 0; i < 480 && $('end').hidden && S.complete; i++) { if (ocupado()) await resolver(); else await jugar(0.25); } // el final llega con el tiempo del juego (la fiesta, la última línea)
       const fin = !$('end').hidden;
       if (!fin) log('sin pantalla de fin', s({ abierta: G.dialogo.open(), libre: G.dialogo.libre() && G.dialogo.libre().text, carta: G.ui.cardOpen, explorando: S.explorando, ultimas: (S.events || []).slice(-5) }));
-      const ev = 'Chapter' + cfg.n + 'Completed';
+      const ev = cfg.finEvento || 'Chapter' + cfg.n + 'Completed'; // el cap. 1 registra «ChapterCompleted» (tests/qa/e2e.js, content/cap1/pruebas.js)
       check('Final: ' + ev + ' y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had(ev) && fin, { paso: S.step, completo: S.complete, fin });
       const ms = (G.pack.misiones || []).map(m => m.id);
       check('Las ' + ms.length + ' misiones completas', ms.length > 0 && ms.every(m => S.missions[m]), JSON.stringify(S.missions));

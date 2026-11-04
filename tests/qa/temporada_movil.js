@@ -36,7 +36,7 @@
   const CFG = {
     // Cap. 1: «Despega, vuela hasta Iguaca y pósate a su lado» en la copa: se llega volando y posándose encima,
     // y lo mismo con las perchas de las capas del bosque («Pósate y observa»): la guía da su altura (y) sobre el suelo
-    1: { pack: 'cap1', n: 1, maxIter: 160, volar: G => {
+    1: { pack: 'cap1', n: 1, maxIter: 160, finEvento: 'ChapterCompleted', volar: G => {
       if (G.S.step === 0 && G.c && G.c.luma && G.c.luma.arriba()) return true;
       const g = G.misiones.guideTarget();
       return !!g && g.y != null && g.y - G.terreno.height(g.x, g.z) > 1.5;
@@ -45,11 +45,34 @@
     // y en la crecida, lo que arrastra el río se agarra al vuelo (Acción cerca) y se suelta en lo alto
     seguir: G => { const E = G.c && G.c.edu && G.c.edu.estado && G.c.edu.estado(); return (!!E && (E.voluta || (!!E.gota && !E.gota.parada))) || (!!G.S.event && !!G.c.crecida); },
     accionCerca: G => !!G.S.event && !!G.c.crecida,
-    progreso: G => (G.S.event && G.c.crecida ? G.c.crecida.objetos().map(o => o.id + ':' + o.fase).join(',') : ''),
+    // el final en el mirador son bocadillos que pasan solos: se mira hasta que terminan (Acción otra vez solo pasaría una línea)
+    esperar: G => !!G.S.transmitterOn && !G.S.complete && !!G.dialogo.libre(),
+    // y el refugio (terreno, dañado) y los terrenos ya construidos: la traza dice si se desarma y se reconstruye
+    progreso: G => (G.S.event && G.c.crecida ? G.c.crecida.objetos().map(o => o.id + ':' + o.fase).join(',') : '') +
+      (G.S.step === 4 ? '|' + (G.S.refuge ? G.S.refuge.parcel + (G.S.refuge.damaged ? '!' : '') : '-') + '|' + G.S.builds.join('') : ''),
     // «Elige un terreno y construye»: el cartel del terreno trae «Construir refugio aquí» (no es una tarjeta de elección ch-*).
     // Como un niño: lo toca, camina con el joystick dentro del terreno hasta que el fantasma sale verde y toca Acción.
     // Mientras dura el modo construir la guía se apaga a propósito (guiaBloqueada), así que se coloca aquí mismo.
     async tarjeta(card, ctx) {
+      // «Coquí escondido» (M3): se toca «Escuchar otra vez», se mira qué círculo se ilumina (grave = co, agudo = quí) y se repite
+      // con «Co (grave)» / «Quí (agudo)»; si sale mal dos veces, aparece «Pasar» y se toca
+      if (card.querySelector('#s-co')) {
+        const D = card.ownerDocument, W = D.defaultView, de = id => D.getElementById(id);
+        const skip = card.querySelector('#s-skip');
+        if (skip) { await ctx.clic(skip); return true; }
+        const oido = {}; // lo que se ve: cada círculo que se ilumina (sing-co / sing-qui) mientras canta el coquí
+        const mo = new W.MutationObserver(ms => { for (const m of ms) { const e = m.target; const k = e.id && /^sd-(\d+)$/.exec(e.id); if (k && e.classList.contains('sing')) oido[k[1]] = e.classList.contains('sing-co') ? 'co' : 'qui'; } });
+        mo.observe(card, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        await ctx.clic(de('s-again'));
+        const n = card.querySelectorAll('.sdot').length;
+        // el iframe de la prueba está fuera de la pantalla y Chrome frena sus setTimeout (300 ms salen a ~3 s): se espera más
+        await until(() => Object.keys(oido).length >= n, 20000, 50);
+        mo.disconnect();
+        const canto = [...Array(n).keys()].map(k => oido[k]);
+        if (canto.some(x => !x)) { ctx.atasco('el canto del coquí no se ve en los círculos', JSON.stringify(oido) + ' de ' + n); for (let k = 0; k < n && de('s-co'); k++) await ctx.clic(de('s-co')); return true; } // a ciegas: falla y tras 2 fallos sale «Pasar»
+        for (const x of canto) { const btn = de(x === 'co' ? 's-co' : 's-qui'); if (!btn) break; await ctx.clic(btn); }
+        return true;
+      }
       const b = card.querySelector('#c-build');
       if (!b || b.hidden) return false;
       const G = ctx.G, S = ctx.S;
@@ -130,6 +153,9 @@
         if (!fr) { check(pre + 'el iframe del capítulo sigue abierto para recargarlo', false, frs.length + ' iframes'); continue; }
         const W0 = fr.contentWindow, completo = !!(W0.AV.G.S.complete);
         if (window.AV_E2E_LOG) { const g = W0.AV.G; log('diag', JSON.stringify({ fin: !W0.document.getElementById('end').hidden, explorando: g.S.explorando, abierta: g.dialogo.open(), libre: !!g.dialogo.libre(), carta: g.ui.cardOpen, eventos: (g.S.events || []).slice(-6).map(e => e.type || e.t || e) })); }
+        // en el móvil el juego sigue dibujando tras el final; el iframe de la prueba (fuera de la pantalla) no tiene cuadros solos,
+        // así que se juega 1 s quieta: el autoguardado espera 0,5 s de tiempo del juego
+        try { for (let i = 0; i < 20; i++) W0.AV.G.renderer.update(0.05); } catch (e) { /* sin renderer */ }
         await sleep(400);
         const sv = leerJSON(ALMACEN(n) + '.save');
         check(pre + 'la partida queda guardada sola, terminada (' + ALMACEN(n) + '.save)', !!sv && sv.complete === true && !!(sv.profile && sv.profile.created), sv ? 'complete ' + sv.complete + ' paso ' + sv.step : 'sin guardado');
