@@ -585,22 +585,42 @@ AVE.module('renderer', function (G) {
   }
   // Una familia de material por objeto. La clave incluye el tone mapping y customProgramCacheKey:
   // look.js puede cambiarla en el gancho 'render', justo antes del dibujo, y entonces hay que enlazar otra vez.
+  // Lento-móvil (4-nov): render() y drawScene() miraban en cada cuadro todos los dibujables (miles con el mundo cargado):
+  // armar la clave con cadenas nuevas y un arreglo por objeto daba basura y CPU en cada cuadro. La clave se guarda por
+  // material (WeakMap) y solo se rehace si cambia algo que three también mira para recompilar: version (sube con needsUpdate;
+  // look.js la sube al aplicar/quitar), onBeforeCompile, customProgramCacheKey, tone mapping, genCalor y genLuz (invalida
+  // las familias CON luz). Mismo resultado, sin asignaciones por cuadro.
   let genCalor = 1, rtCalor = null, postCalor = false;
   const calorHecho = new Set();
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
-  function claveDe(m) {
+  const claveCache = new WeakMap();
+  function cacheDe(m) {
+    const tm = renderer.toneMapping, f = m.customProgramCacheKey, b = m.onBeforeCompile;
+    let c = claveCache.get(m);
+    if (c && c.v === m.version && c.g === genCalor && c.l === genLuz && c.tm === tm && c.f === f && c.b === b) return c;
     let k = '';
-    try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
-    return genCalor + '|' + renderer.toneMapping + '|' + k;
+    try { k = f ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
+    c = { v: m.version, g: genCalor, l: genLuz, tm, f, b, k: genCalor + '|' + tm + '|' + k, ids: {} };
+    claveCache.set(m, c);
+    return c;
   }
+  function claveDe(m) { return cacheDe(m).k; }
   // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph. Solo las
   // familias CON LUZ se invalidan al cambiar genLuz (mismo criterio que needsLights de three r128): las de
   // MeshBasic/Shader sin luces no recompilan al encender/apagar sombras y no se ocultan innecesariamente.
   function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
   function conLuz(m) { return !!(m.isMeshLambertMaterial || m.isMeshToonMaterial || m.isMeshPhongMaterial || m.isMeshStandardMaterial || m.isShadowMaterial || (m.isShaderMaterial && m.lights === true)); }
-  function idCalor(o, m) { return claveDe(m) + (conLuz(m) ? '|L' + genLuz : '') + '|' + rasgos(o); }
-  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
+  function idCalor(o, m) {
+    const c = cacheDe(m), r = (o.isSkinnedMesh ? 1 : 0) + (o.isInstancedMesh ? 2 : 0) + (o.morphTargetInfluences ? 4 : 0);
+    return c.ids[r] || (c.ids[r] = c.k + (conLuz(m) ? '|L' + genLuz : '') + '|' + rasgos(o));
+  }
+  function objPendiente(o) {
+    const m = o.material;
+    if (!Array.isArray(m)) return !!m && !calorHecho.has(idCalor(o, m));
+    for (let i = 0; i < m.length; i++) if (m[i] && !calorHecho.has(idCalor(o, m[i]))) return true;
+    return false;
+  }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
@@ -709,8 +729,12 @@ AVE.module('renderer', function (G) {
   }
   // Texturas 2D de lo que hay en la escena con imagen ya lista y todavía sin subir a la GPU
   function texturasPendientes() {
-    const todas = new Set(), out = [];
-    for (const o of dibujables()) texturasDe(o, todas);
+    const todas = new Set(), vistos = new Set(), out = [];
+    for (const o of dibujables()) {  // cada material una vez (muchos objetos lo comparten; for…in por material es lo caro)
+      const m = o.material;
+      if (Array.isArray(m)) texturasDe(o, todas);
+      else if (m && !vistos.has(m)) { vistos.add(m); texturasDe(o, todas); }
+    }
     for (const t of todas) {
       if (t.isCubeTexture || t.isDataTexture3D || t.isDataTexture2DArray || !(t.version > 0) || !t.image) continue;
       if (!renderer.properties.get(t).__webglTexture) out.push(t);
