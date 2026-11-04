@@ -1,0 +1,214 @@
+{
+ "cuando": "2026-11-04T18:59:18.075Z",
+ "maquina": "PC Windows · Chrome headless GPU real RX 5700 XT · 960×540 dpr 1 · calidad bajo",
+ "fases": {
+  "forja": {
+   "guia": {
+    "x": 187.78,
+    "z": 115.01,
+    "y": 0.3824423756003399
+   },
+   "fondoGota": {
+    "x": 187.78,
+    "y": -0.11755762439966011,
+    "z": 115.01
+   },
+   "fondoRoca": {
+    "x": 198.71,
+    "y": 3.5666572445869438,
+    "z": 110.48
+   },
+   "L": {
+    "gota": {
+     "x": 187.78,
+     "z": 115.01
+    },
+    "roca": {
+     "x": 198.71,
+     "z": 110.48
+    },
+    "poza": {
+     "x": 187.78,
+     "z": 115.01
+    }
+   },
+   "estado": {
+    "actual": "p7",
+    "voluta": false,
+    "vapor": 0,
+    "gota": null,
+    "agua": 3,
+    "tarjeta": false
+   }
+  },
+  "llegada": {
+   "pos": {
+    "x": 187.8,
+    "y": 2.82,
+    "z": 115
+   },
+   "nada": true
+  },
+  "nadoRoca": {
+   "dMin": 4.79,
+   "dMinPos": {
+    "x": 194.29,
+    "y": 2.78,
+    "z": 112.31
+   },
+   "muestras": [
+    {
+     "t": 74.7,
+     "x": 188.58,
+     "y": 2.79,
+     "z": 114.68,
+     "nada": true,
+     "vuela": false,
+     "suelo": "-0.55",
+     "agua": "3.00",
+     "dRoca": 10.96,
+     "dGota": 1.35,
+     "gota": false,
+     "marca": false,
+     "water": 3
+    },
+    {
+     "t": 74.2,
+     "x": 191.35,
+     "y": 2.78,
+     "z": 113.53,
+     "nada": true,
+     "vuela": false,
+     "suelo": "0.00",
+     "agua": "3.00",
+     "dRoca": 7.97,
+     "dGota": 3.57,
+     "gota": false,
+     "marca": false,
+     "water": 3
+    },
+    {
+     "t": 73.7,
+     "x": 194.29,
+     "y": 2.78,
+     "z": 112.31,
+     "nada": true,
+     "vuela": false,
+     "suelo": "1.51",
+     "agua": "3.00",
+     "dRoca": 4.79,
+     "dGota": 6.63,
+     "gota": false,
+     "marca": false,
+     "water": 3
+    }
+   ],
+   "gota": false,
+   "marca": true,
+   "pos": {
+    "x": 195.46,
+    "y": 2.78,
+    "z": 111.83
+   },
+   "nada": true
+  },
+  "buceoGota": {
+   "dMin": 6.53,
+   "dMinPos": {
+    "x": 194.39,
+    "y": 2.33,
+    "z": 112.67
+   },
+   "muestras": [
+    {
+     "t": 29.7,
+     "x": 195.33,
+     "y": 2.61,
+     "z": 112.07,
+     "nada": true,
+     "vuela": false,
+     "suelo": "1.91",
+     "agua": "3.00",
+     "dRoca": 3.74,
+     "dGota": 7.64,
+     "gota": false,
+     "marca": true,
+     "water": 3
+    },
+    {
+     "t": 29,
+     "x": 194.39,
+     "y": 2.33,
+     "z": 112.67,
+     "nada": true,
+     "vuela": false,
+     "suelo": "1.40",
+     "agua": "3.00",
+     "dRoca": 4.84,
+     "dGota": 6.53,
+     "gota": false,
+     "marca": true,
+     "water": 3
+    }
+   ],
+   "gota": true,
+   "marca": true,
+   "pos": {
+    "x": 181,
+    "y": 3.91,
+    "z": 136
+   },
+   "nada": false
+  },
+  "marca": {
+   "dMin": 31.06,
+   "dMinPos": {
+    "x": 181,
+    "y": 3.91,
+    "z": 136
+   },
+   "muestras": [
+    {
+     "t": 44.7,
+     "x": 181,
+     "y": 3.91,
+     "z": 136,
+     "nada": false,
+     "vuela": false,
+     "suelo": "3.91",
+     "agua": "-Infinity",
+     "dRoca": 31.06,
+     "dGota": 21.45,
+     "gota": true,
+     "marca": true,
+     "water": 3
+    }
+   ],
+   "gota": true,
+   "marca": true,
+   "pos": {
+    "x": 181,
+    "y": 3.91,
+    "z": 136
+   },
+   "nada": false
+  },
+  "estadoFinal": {
+   "poza": {
+    "gota": true,
+    "marca": true
+   },
+   "hecho": {
+    "p1": true,
+    "p2": true,
+    "p3": true,
+    "p4": true,
+    "p5": true,
+    "p6": true,
+    "p7": false,
+    "p8": false
+   },
+   "agua": 3
+  }
+ }
+}

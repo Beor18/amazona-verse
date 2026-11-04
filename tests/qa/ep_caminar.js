@@ -540,6 +540,17 @@
             if (!llego && ocupado()) await resolver();
           }
         }
+        // QA-156(b): si no se llega estando en el agua, algunos hallazgos son pasivos flotando junto al objetivo
+        // (la marca de la crecida de la poza se encuentra nadando cerca de la roca, sin Acción): un niño se quedaría
+        // flotando mirando. Se espera quieto un rato; si el paso avanza, no es atasco.
+        if (!llego && MV().swimming && !S.complete) {
+          for (let k = 0; k < 16 && !S.complete; k++) {
+            if (ocupado()) { await resolver(); continue; }
+            const p0 = progreso();
+            await jugar(0.5);
+            if (progreso() !== p0) { llego = true; break; }
+          }
+        }
         if (!llego) {
           atasco('no se llega ni a pie ni volando', [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), 'ocupado', ocupado(), 'agua', MV().swimming, 'vuela', MV().flying].join(' '));
           fallo = 'Paso ' + (st + 1) + ' · se llega (a pie o volando) adonde señala la guía: ' + ((it && it.id) || [r1(g.x), r1(g.z)].join(',')) + ' desde ' + [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z)].join(',');
