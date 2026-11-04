@@ -114,6 +114,7 @@ AVE.module('streaming', function (G) {
   const trabajos = [];
   let programado = false, arrancando = true, quieto = true; // quieto: el jugador no se ha movido desde el inicio
   let precarga = null; // precargarZona (pantalla de carga, src/ui/carga.js): { descargas, ms } mientras dura; null = lo de siempre
+  let terminarMax = false; // KIMI-020: mientras terminar() bombea la cola, más descargas en paralelo (un asentado aéreo pide decenas de GLB)
   const ric = window.requestIdleCallback ? (fn => window.requestIdleCallback(fn, { timeout: 60 })) : (fn => setTimeout(fn, 16));
   function programar() { if (!programado && trabajos.length) { programado = true; ric(bombear); } }
   function bombear(dl) {
@@ -860,7 +861,7 @@ AVE.module('streaming', function (G) {
       return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
     }
     function siguiente() {
-      const max = arrancando ? CFG.descargasArranque : precarga ? precarga.descargas : CFG.descargas;
+      const max = terminarMax ? Math.max(4, CFG.descargas * 2) : arrancando ? CFG.descargasArranque : precarga ? precarga.descargas : CFG.descargas;
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
         const i = cola.findIndex(puedeAhora);
@@ -1066,7 +1067,7 @@ AVE.module('streaming', function (G) {
         quitarHDZona(Z);
       }
       Z.hdFundiendo = true;
-      Z.hdF = { i: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      Z.hdF = { i: 0, g: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
       encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id);
     }
     // KIMI-Task-017: se funde en tandas de ~6 ms por trabajo (el fundido entero de una zona eran 100–420 ms
@@ -1088,7 +1089,12 @@ AVE.module('streaming', function (G) {
           }
         }
         if (F.i < Z.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
-        for (const gr of F.grupos.values()) {
+        // KIMI-020: el cierre (fundirTex/fundir por material) también se trocea en tandas de ~6 ms, un grupo
+        // por paso. En kelvin_ruinas_yunque el cierre entero era un solo trabajo de ~3,6 s (móvil ×4) que
+        // congelaba el cuadro tanto en juego como en terminar().
+        const grupos = [...F.grupos.values()];
+        while (F.g < grupos.length && performance.now() - t0 < 6) {
+          const gr = grupos[F.g++];
           const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
           const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
           conTramos(m, gr.mat, gr.geos, gr.ins);
@@ -1097,6 +1103,7 @@ AVE.module('streaming', function (G) {
           const it = mats[gr.mat.name]; if (it) it.refs++;
           scene.add(m); F.ms.push(m); subirTex(m);
         }
+        if (F.g < grupos.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
         Z.hdMallas = F.ms; Z.hdModelos = F.modelos;
         limpiar();
         Z.hdF = null; Z.hdFundiendo = false;
@@ -1742,21 +1749,42 @@ AVE.module('streaming', function (G) {
       cargarTodo() { for (const id in zonas) zonas[id].forzada = true; return alrededor(); },
       soltarTodo() { for (const id in zonas) zonas[id].forzada = false; revisar(); },
       liberarYa() { for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },
-      terminar() {
+      // terminar(o): o.topeMs acota la espera (herramientas de captura: en vistas aéreas altas la cola es grande
+      // y bajo contención puede superar el timeout del eval; KIMI-020). Sin tope, comportamiento de siempre.
+      // Resuelve con null al agotarse la cola, o {tope:true, pendientes} al vencer el tope.
+      // KIMI-020: la cola se bombea con presupuesto por tanda en vez de drenar() entera en un tick — el drenado
+      // monolítico bloqueaba el hilo ~15 s en el asentado a +30 m sobre la ciudad (parse de los GLB _hd de los
+      // templos) y los evals con timeout (ronda 013: 30 s) lo veían como un cuelgue «pre y post», con la página
+      // helada. Así el hilo queda vivo, el topeMs puede disparar y las descargas van más en paralelo.
+      terminar(o) {
+        o = o || {};
+        const topeMs = Math.max(0, o.topeMs || 0), t0 = performance.now();
         // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto
         // todavía no deja bajar (el mapa entero, a 650 m) no cuenta: si no, la prueba no arranca.
         const espera = () => new Promise(ok => {
           const mirar = () => {
-            drenar(); siguiente();
+            if (topeMs && performance.now() - t0 >= topeMs) {
+              let pendientes = 0;
+              for (const r of cola) if (r.estado === 'cola' && (r.refs || r.fijo)) pendientes++;
+              ok({ tope: true, pendientes, trabajos: trabajos.length, enVuelo });
+              return;
+            }
+            const tp = performance.now();
+            while (trabajos.length && performance.now() - tp < 90) {
+              const j = trabajos.shift();
+              try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); }
+            }
+            terminarMax = true; siguiente(); terminarMax = false;
             const esperaCola = cola.some(r => r.estado === 'cola' && (r.refs || r.fijo) && puedeAhora(r));
-            if (!enVuelo && !esperaCola && !trabajos.length) ok(); else setTimeout(mirar, 25);
+            if (!enVuelo && !esperaCola && !trabajos.length) ok(null); else setTimeout(mirar, 25);
           };
           mirar();
         });
-        return espera().then(() => {
+        return espera().then(r => {
           drenarColocar(); drenar();
           for (const id in zonas) { const Z = zonas[id]; fundirHD(Z, true); fundirCercaZona(Z, true); }
           fundirHDGlobal(); fundirCercaGlobal(); fundirLejosGlobal();
+          return r;
         });
       },
       stats() {

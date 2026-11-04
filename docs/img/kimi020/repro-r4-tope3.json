@@ -1,0 +1,82 @@
+{
+  "etiqueta": "r4-tope3",
+  "cuando": "2026-11-04T11:51:29.268Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 3,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 14690,
+    "pos": "-33,123,-136",
+    "calls": 71,
+    "ktris": 360,
+    "snaps": [
+      {
+        "t": 14689,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "procesar:canoa:cerca",
+        "ms": 39
+      },
+      {
+        "n": "procesar:templo_mediano_h:hd",
+        "ms": 141
+      },
+      {
+        "n": "procesar:templo_grande:hd",
+        "ms": 131
+      },
+      {
+        "n": "procesar:templo_grande_e:hd",
+        "ms": 65
+      },
+      {
+        "n": "procesar:templo_grande_f:hd",
+        "ms": 101
+      },
+      {
+        "n": "procesar:templo_grande_a:hd",
+        "ms": 35
+      },
+      {
+        "n": "procesar:templo_mediano_g:hd",
+        "ms": 50
+      },
+      {
+        "n": "procesar:templo_mediano_f:hd",
+        "ms": 47
+      },
+      {
+        "n": "procesar:templo_mediano:hd",
+        "ms": 39
+      },
+      {
+        "n": "procesar:templo_grande_d:hd",
+        "ms": 114
+      }
+    ]
+  },
+  "errores": []
+}

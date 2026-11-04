@@ -1,0 +1,81 @@
+{
+  "etiqueta": "r3-precal-alzar30",
+  "cuando": "2026-11-04T11:43:31.485Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 90,
+  "repro": {
+    "res": "OK",
+    "ms": 8002,
+    "pos": "-33,127,-136",
+    "calls": 69,
+    "ktris": 355,
+    "snaps": [
+      {
+        "t": 8001,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "procesar:templo_grande_f:cerca",
+        "ms": 48
+      },
+      {
+        "n": "procesar:templo_mediano_g:cerca",
+        "ms": 31
+      },
+      {
+        "n": "procesar:templo_grande_f:hd",
+        "ms": 66
+      },
+      {
+        "n": "procesar:templo_grande:hd",
+        "ms": 91
+      },
+      {
+        "n": "procesar:templo_mediano_h:hd",
+        "ms": 72
+      },
+      {
+        "n": "procesar:templo_mediano_g:hd",
+        "ms": 26
+      },
+      {
+        "n": "procesar:templo_mediano_f:hd",
+        "ms": 30
+      },
+      {
+        "n": "procesar:templo_grande_d:hd",
+        "ms": 86
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque_2",
+        "ms": 37
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 406
+      }
+    ]
+  },
+  "errores": []
+}

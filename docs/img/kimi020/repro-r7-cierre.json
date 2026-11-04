@@ -1,0 +1,114 @@
+{
+  "etiqueta": "r7-cierre",
+  "cuando": "2026-11-04T12:09:21.111Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 60,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 10089,
+    "pos": "-33,127,-136",
+    "calls": 53,
+    "ktris": 613,
+    "snaps": [
+      {
+        "t": 2822,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCercaGlobal",
+            "fundirCerca:kelvin_aldea_meandros_2",
+            "fundirCercaGlobal:AV_HD_Ancient",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_ruinas_yunque_2",
+            "fundirHDGlobal",
+            "fundirCerca:kelvin_aldea_yunque"
+          ]
+        }
+      },
+      {
+        "t": 7746,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 10089,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 37
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 435
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque_2",
+        "ms": 44
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 435
+      },
+      {
+        "n": "fundirCerca:kelvin_aldea_meandros_2",
+        "ms": 74
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 71
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 27
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 682
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 27
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 77
+      }
+    ]
+  },
+  "errores": []
+}

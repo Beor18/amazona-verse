@@ -62,10 +62,25 @@ async function evaluar(cdp, ses, exp, timeoutS, promesa) {
 }
 
 // teleport + alzar (escenario de kimi1_013_ronda.js: AV.teleport, S.pos.y += alzar, flying, alrededor, terminar)
+// --precalentar: antes del ancla final hace tomas previas (spawn → ciudad_yunque → bahía), como la ronda de Kimi 1,
+// para reproducir el cuelgue con el estado que tenía su eval (zonas soltadas con gracia, anillo de precarga de vuelo).
+const WARM = process.argv.includes('--precalentar') ? [
+  { x: null, z: null, alzar: 0.5, yaw: null }, // el spawn real (donde quedó el jugador nuevo)
+  { x: -20, z: -133, alzar: 2, yaw: Math.PI }, // ciudad_yunque
+  { x: 150, z: 218, alzar: 4, yaw: 0 },        // bahía norte (QA-109)
+] : [];
 const PROBAR_JS = `(async () => {
   const AV = window.AV, G = AV.G, S = G.S, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
   if (!ST) return JSON.stringify({ error: 'sin streaming' });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const asentar = async (x, z, alzar, yaw) => {
+    if (x != null) AV.teleport(x, z);
+    S.pos.y += alzar; S.vy = 0; G.fisica.MOVE.flying = true;
+    if (yaw != null) try { AV.debug.camYaw(yaw); } catch (e) {}
+    await ST.alrededor(S.pos.x, S.pos.z);
+    await ST.terminar();
+  };
+  for (const w of ${JSON.stringify(WARM)}) await asentar(w.x, w.z, w.alzar, w.yaw), await sleep(1200);
   AV.teleport(${X}, ${Z});
   S.pos.y += ${ALZAR}; S.vy = 0; G.fisica.MOVE.flying = true;
   try { AV.debug.camYaw(${YAW}); } catch (e) {}
@@ -75,14 +90,12 @@ const PROBAR_JS = `(async () => {
   const snaps = [];
   const t0 = performance.now();
   const timer = setInterval(() => snaps.push({ t: Math.round(performance.now() - t0), d: diag() }), 2500);
-  const res = await Promise.race([
-    ST.terminar().then(() => 'OK'),
-    new Promise(r => setTimeout(() => r('TIMEOUT'), ${TOPE_S * 1000})),
-  ]);
+  const valor = await ST.terminar({ topeMs: ${TOPE_S * 1000} }); // KIMI-020: acota la espera; null = cola agotada
+  const res = valor && valor.tope ? 'TOPE' : 'OK';
   clearInterval(timer);
   snaps.push({ t: Math.round(performance.now() - t0), d: diag() });
   const st = (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })();
-  return JSON.stringify({ res, ms: Math.round(performance.now() - t0), pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.y) + ',' + Math.round(S.pos.z),
+  return JSON.stringify({ res, valor, ms: Math.round(performance.now() - t0), pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.y) + ',' + Math.round(S.pos.z),
     calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
     snaps, lentos: ((G.trabajosLentos || []).slice(-10)) });
 })()`;

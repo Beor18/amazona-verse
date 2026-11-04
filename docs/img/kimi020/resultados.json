@@ -1,0 +1,112 @@
+{
+ "cuando": "2026-11-04T12:13:19.489Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 1600×900 dpr 1 · calidad media",
+ "tomas": [
+  {
+   "pos": {
+    "x": 150,
+    "y": 5,
+    "z": 170
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 130,
+    "calls": 105,
+    "triangulos": 962033,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "aparicion",
+   "archivo": "cap1_aparicion.jpg"
+  },
+  {
+   "pos": {
+    "x": -19.1,
+    "y": 97,
+    "z": -133
+   },
+   "desvio_m": 0.9,
+   "stats": {
+    "fps": 1,
+    "calls": 110,
+    "triangulos": 4243198,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "ciudad_yunque",
+   "archivo": "cap1_ciudad_yunque.jpg"
+  },
+  {
+   "pos": {
+    "x": -33,
+    "y": 125.9,
+    "z": -136
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 16,
+    "calls": 132,
+    "triangulos": 3373825,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "ciudad_aerea_vuelo",
+   "archivo": "cap1_ciudad_aerea_vuelo.jpg"
+  },
+  {
+   "pos": {
+    "x": 150,
+    "y": 3.5,
+    "z": 218
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 66,
+    "calls": 0,
+    "triangulos": 0,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "bahia_norte_qa109_h10",
+   "archivo": "cap1_bahia_norte_qa109_h10.jpg"
+  },
+  {
+   "pos": {
+    "x": 150,
+    "y": 1.3,
+    "z": 218
+   },
+   "desvio_m": 0,
+   "hora": 18.75,
+   "stats": {
+    "fps": 138,
+    "calls": 162,
+    "triangulos": 961459,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "bahia_norte_qa109_h17_8",
+   "archivo": "cap1_bahia_norte_qa109_h17_8.jpg"
+  }
+ ]
+}
