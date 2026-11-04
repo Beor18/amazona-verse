@@ -703,6 +703,22 @@ AVE.module('renderer', function (G) {
     }
     return n;
   }
+  // Marca en la cola de la GPU: listo() dice si ya terminó todo lo enviado antes (subidas de texturas, enlaces, el primer
+  // dibujo). Sin WebGL2 (o si falla) da listo enseguida. Solo consulta; no bloquea (no usa gl.finish ni clientWaitSync con espera).
+  function marcaGPU() {
+    const gl = renderer.getContext();
+    let sync = null;
+    try { if (gl.fenceSync) { sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); } } catch (e) { sync = null; }
+    let hecho = !sync;
+    return {
+      listo() {
+        if (hecho) return true;
+        try { hecho = gl.isContextLost() || gl.getSyncParameter(sync, gl.SYNC_STATUS) === gl.SIGNALED; } catch (e) { hecho = true; }
+        if (hecho) { try { gl.deleteSync(sync); } catch (e) { /* ya no está */ } sync = null; }
+        return hecho;
+      },
+    };
+  }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
     const keep = { manual: !!manual || calidad.manual, gpu: GPU, objetivo: OBJETIVO, texMax: calidad.texMax };
@@ -1148,6 +1164,6 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
-    precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas },
+    precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });

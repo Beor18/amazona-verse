@@ -8,6 +8,8 @@
                 juego (modelo completo y _hd de lo cercano, kit de la ciudad a la vista, lejanos) con sus rangos de siempre.
      3. texturas (peso 0,2): renderer.precarga.subirTexturas, unas pocas por cuadro (2 en el móvil o en «bajo»).
      4. programas (peso 0,2): el precalentado de renderer.js (QA-53), que con el mundo tapado enlaza hasta 8 por cuadro.
+     Al final, dos cuadros de verdad debajo de la pantalla (opaca) y una marca en la GPU (renderer.precarga.marcaGPU): el
+     jugador no ve el primer dibujo, que es el que paga los búferes a pantalla completa y la cola de subidas.
    Si ya está todo (caché, segunda vez) termina en el primer cuadro y casi no se ve: el contenido aparece a los 250 ms.
    Tope de 20 s: entra igual y lo que falte sigue en segundo plano como hoy. Sin texto de consola.
    Solo una vez por sesión (la primera entrada). ?carga=0 la apaga; los minijuegos aparte (flight, maze, river, tren) no la usan.
@@ -65,7 +67,8 @@ window.AVCarga = function (G) {
       .map(([y, w, t, d]) => `<span class="carga-nube" style="--y:${y}%;--w:${w}px;--t:${t}s;--d:${d}s"></span>`).join('');
     const plumas = [[9, 15, -3], [27, 19, -11, 16, 'var(--gold)'], [48, 17, -7, 18], [68, 21, -15, 26, 'var(--crest)'], [88, 16, -1, 18, 'var(--gold)']]
       .map(([x, t, d, s, c]) => `<span class="carga-pluma" style="--x:${x}%;--t:${t}s;--d:${d}s${s ? ';--s:' + s + 'px' : ''}${c ? ';--c:' + c : ''}"></span>`).join('');
-    el.innerHTML = `<div class="carga-cielo" aria-hidden="true"><span class="carga-sol"></span>${nubes}${plumas}</div>`
+    const colinas = doc.querySelector('#title .title-sky .hills'); // las colinas y palmas de la portada, si las hay
+    el.innerHTML = `<div class="carga-cielo" aria-hidden="true"><span class="carga-sol"></span>${nubes}${colinas ? colinas.outerHTML : ''}${plumas}</div>`
       + '<div class="carga-main">'
       + `<div class="carga-logo" aria-hidden="true">${logo()}</div>`
       + '<div class="carga-ave" aria-hidden="true"><span class="carga-sombra"></span><img src="assets/vittata.png" alt="" width="512" height="512" decoding="async"></div>'
@@ -82,7 +85,8 @@ window.AVCarga = function (G) {
 
   // ---------- Estado y medida ----------
   const estado = { activa: false, hecha: false, corridas: [], ultima: null };
-  let mundoOk = false, terrenoOk = false, ocultar = false, corriendo = null;
+  let mundoOk = false, terrenoOk = false, ocultar = false, corriendo = null, nDibujos = 0;
+  G.on('render', () => { nDibujos++; }, 99); // cuadros dibujados de verdad (con el mundo destapado)
   if (G.mundo && G.mundo.listo) Promise.resolve(G.mundo.listo).then(() => { mundoOk = true; }, () => { mundoOk = true; });
   else mundoOk = true;
   if (G.terreno && G.terreno.listo) Promise.resolve(G.terreno.listo).then(() => { terrenoOk = true; }, () => { terrenoOk = true; });
@@ -116,7 +120,7 @@ window.AVCarga = function (G) {
     if (G.pausa) G.pausa.set('carga', true);
     const foco = doc.activeElement; try { el.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
     const tVis = setTimeout(() => el.classList.add('carga-vis'), CONTENIDO_MS);
-    let tFrase = t0, zona = null, mostrado = 0, hito = 0;
+    let tFrase = t0, zona = null, mostrado = 0, hito = 0, fase = 'carga', d0 = 0, marca = null;
     const ST = () => G.mundo && G.mundo.streaming;
     corriendo = new Promise(fin => {
       let rafId = 0, guarda = 0, cerrado = false;
@@ -172,7 +176,9 @@ window.AVCarga = function (G) {
         ocultar = false;
         if (G.pausa) G.pausa.set('carga', false);
         const tR = performance.now();
-        requestAnimationFrame(() => requestAnimationFrame(() => { C.cuadroRevelar = Math.round(performance.now() - tR); }));
+        // El peor cuadro del primer segundo de juego (QA-53: < 500 ms)
+        let tp = tR; const peor = () => { const n = performance.now(); C.cuadroRevelar = Math.max(C.cuadroRevelar, Math.round(n - tp)); tp = n; if (n - tR < 1000) requestAnimationFrame(peor); };
+        requestAnimationFrame(peor);
         el.classList.add('carga-sale'); el.removeAttribute('aria-busy');
         setTimeout(() => { if (!estado.activa) { el.hidden = true; el.setAttribute('aria-busy', 'true'); } }, o.rapido ? 0 : 420);
         estado.activa = false; estado.hecha = true; estado.corridas.push(C); corriendo = null;
@@ -186,7 +192,12 @@ window.AVCarga = function (G) {
         C.muestras.push(Math.round(mostrado * 1000) / 1000);
         pintar();
         if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
-        if (listo) return cerrar('listo');
+        // Con todo cargado, los dos primeros cuadros de verdad se dibujan debajo de la pantalla (opaca): ahí se crean los búferes
+        // a pantalla completa y el mapa de sombras. Luego se espera a que la GPU termine lo enviado (marca, sin bloquear). Así el
+        // primer cuadro que ve el jugador no paga la cola de subidas (en la nube, 6 s de cuadro al destapar).
+        if (fase === 'carga' && listo) { fase = 'dibujo'; d0 = nDibujos; ocultar = false; C.tCargado = Math.round(now - t0); }
+        if (fase === 'dibujo' && nDibujos - d0 >= 2 && RP && !RP.texturas() && !Math.max(0, RP.programas())) { fase = 'gpu'; marca = RP.marcaGPU ? RP.marcaGPU() : null; }
+        if (fase === 'gpu' && (!marca || marca.listo())) return cerrar('listo');
         if (now - t0 >= tope) return cerrar('tope');
         rafId = requestAnimationFrame(paso);
       }
@@ -233,7 +244,7 @@ window.AVCarga = function (G) {
           real.muestras.length + ' muestras, ' + real.ms + ' ms, ' + real.motivo + (real.ligero ? ' (tandas cortas: móvil o bajo)' : ''));
         check('Entrada real: termina con todo listo o en el tope de 20 s', (real.motivo === 'listo' && real.ms <= TOPE + 300) || (real.motivo === 'tope' && real.ms <= TOPE + 600),
           real.motivo + ' en ' + real.ms + ' ms; zona ' + JSON.stringify(real.zona) + '; etapas ' + JSON.stringify(real.etapas));
-        check('Entrada real: el primer cuadro con el mundo destapado tarda < 500 ms (QA-53)', real.cuadroRevelar > 0 && real.cuadroRevelar < 500, real.cuadroRevelar + ' ms (2 cuadros)');
+        check('Entrada real: el peor cuadro del primer segundo de juego tarda < 500 ms (QA-53)', real.cuadroRevelar > 0 && real.cuadroRevelar < 500, real.cuadroRevelar + ' ms (todo cargado a los ' + real.tCargado + ' ms; dibujo y GPU al día a los ' + real.ms + ' ms)');
       } else check('Sin entrada real en esta sesión (la prueba simula las dos corridas)', true, 'sin corrida previa');
       check('Al terminar, el mundo está listo', mundoOk);
       const ST = G.mundo && G.mundo.streaming;

@@ -31,6 +31,9 @@
   background: currentColor; -webkit-mask: var(--i-feather) center / contain no-repeat; mask: var(--i-feather) center / contain no-repeat;
   opacity: 0; animation: float-up var(--t, 14s) linear infinite; animation-delay: var(--d, 0s);
 }
+.carga-cielo .hills { left: 0; right: 0; bottom: 0; width: 100%; height: 34%; }
+.carga-cielo .palm { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 5s ease-in-out infinite; }
+.carga-cielo .palm.p2 { animation-delay: -2.5s; animation-duration: 6s; }
 .carga-main {
   position: relative; z-index: 1; width: min(520px, 100%); padding: var(--sp-6) var(--sp-4);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center;
