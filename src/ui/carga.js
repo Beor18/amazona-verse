@@ -120,7 +120,7 @@ window.AVCarga = function (G) {
     if (G.pausa) G.pausa.set('carga', true);
     const foco = doc.activeElement; try { el.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
     const tVis = setTimeout(() => el.classList.add('carga-vis'), CONTENIDO_MS);
-    let tFrase = t0, zona = null, mostrado = 0, hito = 0, fase = 'carga', d0 = 0, marca = null, tGPU = 0;
+    let tFrase = t0, zona = null, mostrado = 0, hito = 0, fase = 'carga', d0 = 0, marca = null, tGPU = 0; const dib0 = nDibujos;
     const ST = () => G.mundo && G.mundo.streaming;
     corriendo = new Promise(fin => {
       let rafId = 0, guarda = 0, cerrado = false;
@@ -196,7 +196,11 @@ window.AVCarga = function (G) {
         // Con todo cargado, los dos primeros cuadros de verdad se dibujan debajo de la pantalla (opaca): ahí se crean los búferes
         // a pantalla completa y el mapa de sombras. Luego se espera a que la GPU termine lo enviado (marca, sin bloquear). Así el
         // primer cuadro que ve el jugador no paga la cola de subidas (en la nube, 6 s de cuadro al destapar).
-        if (fase === 'carga' && listo) { fase = 'dibujo'; d0 = nDibujos; ocultar = false; C.tCargado = Math.round(now - t0); }
+        if (fase === 'carga' && listo) {
+          C.tCargado = Math.round(now - t0);
+          if (dib0 > 30) return cerrar('listo'); // el mundo ya se dibujó a pantalla completa antes (otra corrida): nada que pagar
+          fase = 'dibujo'; d0 = nDibujos; ocultar = false;
+        }
         if (fase === 'dibujo' && nDibujos - d0 >= 2) { fase = 'gpu'; tGPU = now; marca = RP && RP.marcaGPU ? RP.marcaGPU() : null; }
         if (fase === 'gpu' && (!marca || marca.listo() || now - tGPU > 2500)) { C.msGPU = Math.round(now - tGPU); return cerrar('listo'); }
         if (now - t0 >= tope) return cerrar('tope');
