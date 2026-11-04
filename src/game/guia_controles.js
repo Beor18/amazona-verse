@@ -112,6 +112,9 @@ html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !impor
 #pm-pista[hidden] { display: none; }
 #pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
 #pm-pista.pm-atascado::before { border-bottom-color: #7fd3ff; }
+#pm-pista[data-paso="mover"] { left: 28px; bottom: 36px; }
+#pm-pista[data-paso="despegar"], #pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
+#pm-pista[data-paso="impulso"] { right: 118px; bottom: 48px; }
 #pm-pista[data-paso="truco"] { left: 0; right: 0; top: 22%; margin: auto; }
 html.guia-tactil #pm-pista { display: block; }
 html.guia-tactil #pm-pista[hidden] { display: none; }
