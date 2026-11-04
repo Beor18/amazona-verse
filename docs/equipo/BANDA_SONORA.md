@@ -13,6 +13,8 @@ Temas creados por Kelvin García con Suno en plan pagado (Pro/Premier), 26-oct-2
 | `assets/audio/musica/criadero.m4a` | The Golden Hatch — El huevo legendario | `52806a31-1a8f-4273-a59c-b0e2ba201d20` | 2026-10-26 14:29 | 167,2 s |
 | `assets/audio/musica/tormenta.m4a` | Guardians of Borikén — Desafíos y jefes | `bafc1974-807e-4cb2-be77-1059d29cd9db` | 2026-10-26 14:32 | 162,2 s |
 | `assets/audio/musica/arena.m4a` | El Yunque battle | `11024525-5f0e-4386-9e36-ff1df7376445` | 2026-10-26 14:27 | 153,6 s |
+| `assets/audio/musica/ciudadnoche.m4a` | La Ciudad de los 36 — Noche Encantada | `f9b240cd-136a-49f7-ba66-8c0ffc647093` | 2026-11-04 00:36 | 102,4 s |
+| `assets/audio/musica/sorpresas.m4a` | Las Sorpresas — ¡Algo se Esconde! | `3a0711f1-4f49-4f0e-843e-e22eea5c8004` | 2026-11-04 00:40 | 75,4 s |
 
 ## Asignación
 
@@ -25,6 +27,8 @@ Temas creados por Kelvin García con Suno en plan pagado (Pro/Premier), 26-oct-2
 | Eclosión de un huevo | **criadero** a 0,35 de volumen; el efecto de la eclosión suena aparte (SFX `eclosion_huevo`) |
 | «¡Escapa de la tormenta!» de Retos | **tormenta** |
 | La crecida del capítulo 1 (20 s: el río sube y arrastra cosas que se pueden salvar) | **tormenta**: es peligro ambiental y un desafío fuerte de la historia. Al acabar, vuelve la exploración tras 5 s de calma |
+| En la Ciudad de los 36 de noche (Kelvin, 4-nov) | **ciudad_noche** |
+| Una sorpresa de la ciudad a la vista (CG-45: quien la lance hace `G.emit('sorpresa')`; suena 25 s) | **sorpresas** |
 | Amazona Arena | **arena**: solo registrada (pista futura). No hay modo Arena: nada la pide y la build no publica el archivo |
 | Portada («¿Cómo quieres jugar?») y creador | sintética **alegre** (sin tema asignado; queda para Kelvin) |
 | Panel de fin de capítulo y el cómic tras él | sintética **final** |
@@ -87,3 +91,6 @@ Para oír un momento a mano: `AV.G.musicaApi.simular({ retos: true, reto: 'torme
 4. **Tormenta:** «¡Escapa de la tormenta!» completo (90 s) y salir: la tormenta se funde y vuelve la exploración.
 5. **Crecida (cap. 1):** al colocar el refugio empieza la crecida con el tema de la tormenta; ¿encaja ahí o prefieres la exploración?
 6. **Cambio rápido:** abrir y cerrar el criadero varias veces seguidas: nunca deben oírse dos temas a la vez.
+
+
+**4-nov-2026:** dos temas nuevos de Kelvin (Suno, cuenta de pago de Kelvin; ids en la tabla, sacados de los metadatos del MP3): «La Ciudad de los 36: Noche Encantada» y «Las Sorpresas: ¡Algo se Esconde!». Kelvin aprobó la dirección; **queda pendiente que Kelvin confirme por escrito o con captura el plan de pago de Suno con el que se crearon** (uso comercial). Convertidos a AAC 96 kb/s estéreo sin metadatos (1,26 MB y 0,92 MB), mismo nivel medio que los demás (−18,4 dB). Bucle a ojo: [20,5; 98,4] y [15; 71,4].

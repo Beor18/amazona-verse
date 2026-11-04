@@ -88,16 +88,19 @@
       tormenta: { archivo: 'assets/audio/musica/tormenta.m4a', titulo: 'Guardians of Borikén', dur: 162.16, bucle: [59.65, 133.07], nivel: 0.41, alternativa: 'tension' },
       // Amazona Arena: registrada como pista futura. Sin archivo publicado hasta que exista el modo (el .m4a ya está en el repo, junto a los
       // otros; la build no lo lleva porque nada lo nombra). Ese día se le pone su ruta en archivo, como a los demás (docs/equipo/BANDA_SONORA.md).
+      // 4-nov (Kelvin, Suno): la ciudad de noche y las sorpresas de la ciudad (CG-45). Bucle a ojo (intro fuera, cola fuera); nivel como los demás (−18 dB).
+      ciudad_noche: { archivo: 'assets/audio/musica/ciudadnoche.m4a', titulo: 'La Ciudad de los 36: Noche Encantada', dur: 102.4, bucle: [20.5, 98.4], nivel: 0.42, alternativa: 'explora' },
+      sorpresas: { archivo: 'assets/audio/musica/sorpresas.m4a', titulo: 'Las Sorpresas: ¡Algo se Esconde!', dur: 75.4, bucle: [15, 71.4], nivel: 0.42, alternativa: 'explora' },
       arena: { archivo: null, futura: true, titulo: 'El Yunque battle', dur: 153.6, bucle: [59.27, 128.38], nivel: 0.43, alternativa: 'retos' },
     },
     // Momento del juego → pista (un tema de arriba o una sintética: alegre, explora, retos, tension, final). La prioridad es el orden de MOMENTOS.
     momentos: {
       final: 'final', criadero: 'criadero', portada: 'alegre', creador: 'alegre', arena: 'arena',
       retosTormenta: 'tormenta', retosCarrera: 'carrera', retosRio: 'carrera', retosBanquete: 'carrera', retosMenu: 'carrera',
-      crecida: 'tormenta', lluvia: 'exploracion', mundo: 'exploracion',
+      crecida: 'tormenta', sorpresa: 'sorpresas', ciudadNoche: 'ciudad_noche', lluvia: 'exploracion', mundo: 'exploracion',
     },
   };
-  const MOMENTOS = ['final', 'criadero', 'portada', 'creador', 'arena', 'retosTormenta', 'retosCarrera', 'retosRio', 'retosBanquete', 'retosMenu', 'crecida', 'lluvia', 'mundo'];
+  const MOMENTOS = ['final', 'criadero', 'portada', 'creador', 'arena', 'retosTormenta', 'retosCarrera', 'retosRio', 'retosBanquete', 'retosMenu', 'crecida', 'sorpresa', 'ciudadNoche', 'lluvia', 'mundo'];
   const RETO_MOMENTO = { tormenta: 'retosTormenta', carrera: 'retosCarrera', rio: 'retosRio', banquete: 'retosBanquete' };
 
   // Qué momento es (prioridad: final > criadero > portada o creador > arena > retos > crecida > lluvia > mundo) y qué pista le toca
@@ -109,6 +112,8 @@
     if (e.arena) return 'arena';
     if (e.retos) return RETO_MOMENTO[e.reto] || 'retosMenu';
     if (e.evento) return 'crecida';
+    if (e.sorpresa) return 'sorpresa';       // una sorpresa de la ciudad a la vista (G.emit('sorpresa'), CG-45): 25 s
+    if (e.ciudadNoche) return 'ciudadNoche'; // en la Ciudad de los 36 de noche (G.ciudadViva: sitio y noche)
     if (e.lluvia) return 'lluvia';
     return 'mundo';
   }
@@ -679,8 +684,14 @@
     // ---------- Qué pista toca ----------
     const st = { pista: null, mom: null, desde: 0, cand: null, desdeCand: 0, cambios: 0, historial: [] };
     let sim = null; // entradas simuladas (pruebas o para oír una pista a mano)
+    let sorpresaHasta = 0;
+    G.on('sorpresa', () => { sorpresaHasta = performance.now() + 25000; });
+    const enCiudadNoche = () => {
+      const C = G.ciudadViva; if (!C || typeof C.sitio !== 'function' || typeof C.noche !== 'function' || !S.pos) return false;
+      const c = C.sitio(); return !!c && C.noche() && Math.hypot(S.pos.x - c.x, S.pos.z - c.z) < c.r + 40;
+    };
     let lluviaDesde = 0, ranasHasta = 0, hablaHasta = 0, eclosionAhora = false, horaForzada = null, fallos = 0, ultimoFallo = '', muerto = false;
-    const BASE_E = { portada: false, creador: false, fin: false, comic: false, retos: false, reto: null, evento: false, lluvia: false, criadero: false, eclosion: false, arena: false };
+    const BASE_E = { portada: false, creador: false, fin: false, comic: false, retos: false, reto: null, evento: false, lluvia: false, criadero: false, eclosion: false, arena: false, sorpresa: false, ciudadNoche: false };
     function leerEntradas() {
       if (sim) return Object.assign({}, BASE_E, sim);
       const ahora = performance.now(), llueve = !!(G.fx && G.fx.rain && G.fx.rain.visible);
@@ -694,6 +705,7 @@
         retos: document.body.classList.contains('retos-on') || !!(rt && rt.activo), reto: (rt && rt.reto) || null,
         evento: !!S.event, lluvia: llueve && ahora - lluviaDesde > 5000, // la lluvia de una demostración de 4 s no cuenta
         criadero, eclosion: !!(saltar && !saltar.hidden), arena: document.body.classList.contains('arena-on'), // arena-on: el día que exista el modo
+        sorpresa: ahora < sorpresaHasta, ciudadNoche: enCiudadNoche(),
       };
     }
     // Decide la pista con calma: un cambio pide 0,7 s seguidos (así un parpadeo, como el de la portada al abrir Retos, no hace dos fundidos);
@@ -917,12 +929,12 @@
       const BS = BANDA_SONORA, ids = Object.keys(BS.pistas);
       // a) La tabla
       const malasP = ids.filter(id => { const d = BS.pistas[id]; return !((d.futura ? d.archivo === null : /^assets\/audio\/musica\/[a-z]+\.m4a$/.test(d.archivo)) && d.dur > 60 && d.bucle[0] > 0 && d.bucle[0] < d.bucle[1] - 20 && d.bucle[1] < d.dur - 1 && d.nivel > 0 && d.nivel <= 1 && PISTAS[d.alternativa] && d.titulo); });
-      check('Tabla: los 5 temas (exploración, carrera, criadero, tormenta y arena) con archivo, duración, bucle, nivel y alternativa sintética',
-        JSON.stringify(ids) === '["exploracion","carrera","criadero","tormenta","arena"]' && !malasP.length, malasP.join(', '));
+      check('Tabla: los 7 temas (exploración, carrera, criadero, tormenta, ciudad de noche, sorpresas y arena) con archivo, duración, bucle, nivel y alternativa sintética',
+        JSON.stringify(ids) === '["exploracion","carrera","criadero","tormenta","ciudad_noche","sorpresas","arena"]' && !malasP.length, malasP.join(', '));
       const destinos = Object.values(BS.momentos), malosM = MOMENTOS.filter(m => !(BS.pistas[BS.momentos[m]] || PISTAS[BS.momentos[m]]));
       check('Tabla: cada momento del juego tiene una pista que existe y el orden de prioridad los nombra a todos', !malosM.length && MOMENTOS.length === Object.keys(BS.momentos).length && MOMENTOS.every(m => m in BS.momentos), malosM.join(', '));
-      check('Tabla: los cuatro temas en uso salen de algún momento; Arena queda solo registrada (pista futura sin archivo publicado: ningún modo la pide hoy)',
-        ['exploracion', 'carrera', 'criadero', 'tormenta'].every(id => destinos.includes(id)) && BS.pistas.arena.futura && !BS.pistas.arena.archivo && destinos.filter(d => d === 'arena').length === 1 && !document.body.classList.contains('arena-on'));
+      check('Tabla: los seis temas en uso salen de algún momento; Arena queda solo registrada (pista futura sin archivo publicado: ningún modo la pide hoy)',
+        ['exploracion', 'carrera', 'criadero', 'tormenta', 'ciudad_noche', 'sorpresas'].every(id => destinos.includes(id)) && BS.pistas.arena.futura && !BS.pistas.arena.archivo && destinos.filter(d => d === 'arena').length === 1 && !document.body.classList.contains('arena-on'));
       check('Tabla: fundido cruzado ajustable de 1 a 2 s y bucle con su propio fundido', BS.fundido >= 1 && BS.fundido <= 2 && BS.fundidoBucle >= 1 && BS.fundidoBucle <= 4 && BS.esperaCarga > 0 && BS.recordar > 0, BS.fundido + ' / ' + BS.fundidoBucle);
       // b) Fuera de la descarga inicial: sin sonido en marcha, ningún .m4a se ha pedido
       const pedidos = (performance.getEntriesByType ? performance.getEntriesByType('resource') : []).filter(r => /\/musica\/[a-z]+\.m4a/.test(r.name));
