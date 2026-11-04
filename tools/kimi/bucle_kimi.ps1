@@ -29,10 +29,10 @@ try {
 $prompt = @"
 Eres $Nombre, agente de graficos y rendimiento de Amazona Verse (Three.js r128), en la PC Windows de Kelvin, carpeta $Carpeta, rama main (nunca crees ramas).
 Esta es UNA vuelta de un bucle automatico: nadie va a contestarte; decide tu segun CLAUDE.md.
-1. git pull --rebase origin main. Lee el bloque "MENSAJE PARA KIMI" de docs/equipo/TAREAS_KIMI.md (punto 0: que le toca a cada sesion) y tu fila EN CURSO.
-2. Si tienes una tarea EN CURSO de $Nombre, avanzala; si no, toma la siguiente libre que el bloque asigne a $Nombre (o, si no hay, un bug grafico abierto de docs/equipo/BUGS.md) y marcala "EN CURSO - $Nombre - <hora>".
-3. Trabaja como mucho unos 40 minutos y deja un avance que no rompa el juego: commit pequeno solo de tus archivos (git add <rutas>), mensaje en espanol con que probaste y numeros (FPS, draw calls, triangulos, memoria), terminado en "Co-Authored-By: Kimi <noreply@moonshot.ai>"; git pull --rebase origin main; git push origin HEAD:main.
-4. Escribe en tu fila de TAREAS_KIMI.md en que vas o marcala "hecha - <commit> - resultado". No toques archivos de otra sesion ni de otro carril (ver el bloque ).
+1. git pull --rebase origin main. Lee el bloque 'MENSAJE PARA KIMI' de docs/equipo/TAREAS_KIMI.md (punto 0: que le toca a cada sesion) y tu fila EN CURSO.
+2. Si tienes una tarea EN CURSO de $Nombre, avanzala; si no, toma la siguiente libre que el bloque asigne a $Nombre (o, si no hay, un bug grafico abierto de docs/equipo/BUGS.md) y marcala 'EN CURSO - $Nombre - <hora>'.
+3. Trabaja como mucho unos 40 minutos y deja un avance que no rompa el juego: commit pequeno solo de tus archivos (git add <rutas>), mensaje en espanol con que probaste y numeros (FPS, draw calls, triangulos, memoria), terminado en 'Co-Authored-By: Kimi <noreply@moonshot.ai>'; git pull --rebase origin main; git push origin HEAD:main.
+4. Escribe en tu fila de TAREAS_KIMI.md en que vas o marcala 'hecha - <commit> - resultado'. No toques archivos de otra sesion ni de otro carril (ver el bloque ).
 "@
 
 $vuelta = 0
@@ -48,7 +48,8 @@ while ($true) {
   git pull --rebase --autostash origin main 2>&1 | Add-Content $log
   $extra = ''
   if ($pendiente) { $extra = "`nATENCION: en esta carpeta hay cambios sin subir de una vuelta anterior (la PC se apago o se corto):`n$pendiente`nPrimero revisalos: si son tuyos y no rompen el juego, termina ese avance, haz commit solo de esas rutas y push; si estan a medias y no sirven, dejalos anotados en tu fila y sigue. No borres nada." }
-  & $kimi -p ($prompt + $extra) 2>&1 | Tee-Object -FilePath $log -Append
+  $texto = (($prompt + $extra) -replace "`r?`n", ' ')
+  & $kimi -p $texto | Tee-Object -FilePath $log -Append
   Write-Host "[$(Get-Date -Format 'HH:mm')] $Nombre termino la vuelta $vuelta; la siguiente en $PausaSegundos s (Ctrl+C para parar)."
   Start-Sleep -Seconds $PausaSegundos
 }
