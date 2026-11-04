@@ -192,9 +192,9 @@
             return G.misiones.at('mesa');
           } },
         { id: 'obra', texto: 'Construye la casa y el nido', hasta: { evento: 'HomeBuilt' }, guia: G => G.misiones.at('obra') },
-        { id: 'prueba1', texto: 'Prueba la casa: espera la tormenta', hasta: { evento: 'StormTested' }, guia: G => G.misiones.at('obra') },
+        { id: 'prueba1', texto: 'Ve a la casa y prueba la tormenta', hasta: { evento: 'StormTested' }, guia: G => G.misiones.at('obra') },
         { id: 'mejorar', texto: 'Cambia solo lo que falló', hasta: { evento: 'HomeImproved' }, guia: G => G.misiones.at('obra') },
-        { id: 'prueba2', texto: 'Prueba otra vez', guia: G => G.misiones.at('obra') },
+        { id: 'prueba2', texto: 'Vuelve a la casa y prueba otra vez', guia: G => G.misiones.at('obra') },
       ],
       fin: () => 'Leíste la tierra, escuchaste primero y probaste la casa hasta que aguantó. La abuela ya entró y el nido del papá está seco y en alto. Iguaca tiene unas preguntas para ti, cuando quieras. Y el plano del bote ya está en la mesa: falta alguien que sepa navegar.',
     },
@@ -207,8 +207,8 @@
           { texto: 'Resuelve el choque', hasta: { evento: 'ListenChoice' } }],
         recompensa: { hito: 'escuchar' } },
       { id: 'casa', titulo: 'Casa que aguanta', hud: 'Construir, probar y mejorar',
-        pasos: [{ texto: 'Construye la casa y el nido', hasta: { evento: 'HomeBuilt' } }, { texto: 'Primera prueba', hasta: { evento: 'StormTested' } },
-          { texto: 'Mejora lo que falló', hasta: { evento: 'HomeImproved' } }, { texto: 'Segunda prueba', hasta: { evento: 'NestPlaced' } }],
+        pasos: [{ texto: 'Construye la casa y el nido', hasta: { evento: 'HomeBuilt' } }, { texto: 'Prueba la tormenta en la casa', hasta: { evento: 'StormTested' } },
+          { texto: 'Mejora lo que falló', hasta: { evento: 'HomeImproved' } }, { texto: 'Prueba la tormenta otra vez', hasta: { evento: 'NestPlaced' } }],
         recompensa: { hito: 'casa' } },
     ],
     // Diario del ep. 2 (§7): 6 hallazgos, 3 de ciencia del terreno y 3 de cultura de la construcción en PR. Lo que el niño lee aquí
@@ -345,9 +345,9 @@
         const pistas = {
           1: !G.eventos.had('ResidentsMet') ? 'La abuela está junto al agua. Enséñale tu plano.' : (!NEC.every(tiene) ? 'Haz preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.' : 'Las tarjetas te esperan en la mesa.'),
           2: !casaLista() ? 'Ve a tu sitio, ' + (SITIOS[elegido()] || SITIOS.a).nombre + ', y dibuja la casa.' : 'Falta el nido del papá: alto, oscuro y seco.',
-          3: 'Ya está construida. Ahora, la prueba de verdad: la tormenta.',
-          4: 'La tormenta te enseñó qué parte es la más débil. Cambia solo esa.',
-          5: 'Vuelve a probarla. Si aguanta, ¡hay fiesta!',
+          3: 'Ve a la casa y pulsa Probar la tormenta. Empieza cuando tú la pruebas, no hace falta quedarse esperando.',
+          4: 'La tormenta te enseñó qué parte es la más débil. Vuelve a la casa y cambia solo esa.',
+          5: 'Vuelve a la casa y prueba la tormenta otra vez. Si aguanta, ¡hay fiesta!',
         };
         G.dialogo.say([Lu(S.complete ? '¡La casa aguanta! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
@@ -527,7 +527,7 @@
           c: { parte: 'paredes', arreglo: 'paredes', que: 'En el claro la lluvia vino de lado y entró por las juntas de las paredes.' } }[sitio];
       }
       const obra = G.interaccion.add({ id: 'obra', x: 0, z: 0, r: 3, visible: () => S.step >= 2 && !!elegido(),
-        label: () => (S.step === 2 ? (casaLista() ? 'Armar el nido' : 'Dibujar y construir la casa') : { 3: 'Esperar la tormenta', 4: 'Mejorar la casa', 5: 'Probar otra vez' }[S.step]) || 'Mirar la casa',
+        label: () => (S.step === 2 ? (casaLista() ? 'Armar el nido' : 'Dibujar y construir la casa') : { 3: 'Probar la tormenta', 4: 'Mejorar la casa', 5: 'Probar la tormenta otra vez' }[S.step]) || 'Mirar la casa',
         use: () => {
           if (S.step === 2) { if (casaLista()) armarNido(); else construir(); }
           else if (S.step === 3) prueba1(); else if (S.step === 4) mejorar(); else if (S.step === 5) prueba2();
@@ -554,7 +554,7 @@
         encuadrar();
         if (!p) {
           poner('nido_listo'); G.eventos.log('HomeBuilt'); G.audio.play('unlock'); dibujarCasa(true); G.misiones.check(); registrar();
-          G.dialogo.say([di('Papá', 'Alto, oscuro y seco. Así sí.'), Lu('La casa está hecha. ¿Aguantará? Solo hay una forma de saberlo.')]);
+          G.dialogo.say([di('Papá', 'Alto, oscuro y seco. Así sí.'), Lu('La casa está hecha. ¿Aguantará? Solo hay una forma de saberlo.')], () => G.ui.toast('Ve a la casa y pulsa Probar la tormenta', 3200));
           return;
         }
         const ops = i % 2 ? [{ label: p.mal, ok: false }, { label: p.bien, ok: true }] : [{ label: p.bien, ok: true }, { label: p.mal, ok: false }];
@@ -674,7 +674,7 @@
           }
           poner('mejora_' + o.k); G.audio.play('unlock'); dibujarCasa(true);
           G.eventos.log('HomeImproved', { choice: o.k }); registrar();
-          G.dialogo.say([di('Vittata', ARREGLOS[o.k] + '. Listo. ¿Y ahora?'), Lu('Ahora se vuelve a probar. Una sola prueba no basta.')], () => G.misiones.check());
+          G.dialogo.say([di('Vittata', ARREGLOS[o.k] + '. Listo. ¿Y ahora?'), Lu('Ahora se vuelve a probar. Una sola prueba no basta.')], () => { G.misiones.check(); G.ui.toast('Vuelve a la casa y prueba la tormenta otra vez', 3200); });
         });
       }
       function prueba2() {
@@ -838,6 +838,7 @@
         check('M3 · Nido: una respuesta mala da la pista del papá', !S.collected.includes('nido_listo') && opciones().length === 2);
         pick('Arriba'); pick('Oscura'); pick('techito');
         check('M3 · Nido alto, oscuro y seco: casa construida', G.eventos.had('HomeBuilt') && S.step === 3, 'paso ' + S.step);
+        check('M3 · El objetivo y el botón piden probar la tormenta en la casa', $('steps').textContent.includes('Ve a la casa y prueba la tormenta') && G.interaccion.find('obra').label() === 'Probar la tormenta' && !/espera la tormenta|Esperar la tormenta/.test($('steps').textContent + G.interaccion.find('obra').label()));
         useAt('obra'); drain();
         check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 4 && !G.fx.rain.visible, 'paso ' + S.step);
         useAt('obra'); drain();
@@ -846,6 +847,7 @@
         pick('Reforzar el techo');
         check('M3 · Si falló el techo, reforzarlo también vale (las dos opciones dicen «techo»)', G.eventos.had('HomeImproved') && S.collected.includes('mejora_techo'));
         check('M3 · Cambia solo lo que falló', G.eventos.had('HomeImproved') && S.step === 5, 'paso ' + S.step);
+        check('M3 · La segunda prueba pide volver a la casa', $('steps').textContent.includes('Vuelve a la casa y prueba otra vez') && G.interaccion.find('obra').label() === 'Probar la tormenta otra vez');
         useAt('obra'); drain();
         check('M3 · Prueba 2: aguanta, nido, casco y botas', G.eventos.had('NestPlaced') && S.missions.casa && ['casco:constructor', 'botas:constructor'].every(k => S.unlocked.includes(k)));
         check('Final: fiesta y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter2Completed') && !$('end').hidden);

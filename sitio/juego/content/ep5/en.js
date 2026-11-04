@@ -16,6 +16,8 @@
     'Endereza la antena y elige la señal': 'Straighten the antenna and choose the signal',
     'Pon tres estaciones y prueba el relevo': 'Place three stations and test the relay',
     'Pon tres estaciones y prueba el relevo ({}/3)': 'Place three stations and test the relay ({}/3)',
+    'Pon tres estaciones y prueba el relevo · ahora la prueba': 'Place three stations and test the relay · now the test',
+    'Vuelve a probar el relevo: sigue la flecha': 'Test the relay again: follow the arrow',
     'Pide ayuda y prueba hasta la niebla': 'Ask for help and test all the way to the fog',
     'Sintoniza el transmisor': 'Tune the transmitter',
     'Separa las dos ondas': 'Separate the two waves',

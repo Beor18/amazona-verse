@@ -91,6 +91,7 @@
       rio_rush: ['River Rush', 'River Rush'], contrarreloj: ['Contrarreloj hasta el mar', 'Time trial to the sea'], // src/game/river_rush.js (AC2, publicado)
       maze: ['Amazona Maze', 'Amazona Maze'], // src/game/maze.js (AB1, publicado en BI2)
       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
+      rankSinAdulto: ['Tu récord quedó guardado en este dispositivo. Para publicarlo en línea hace falta un adulto.', 'Your record is saved on this device. An adult is needed to post it online.'],
       rankTitulo: ['Publicar en el ranking', 'Post to the leaderboard'], rankTexto: ['Elige tu apodo de animal. No se guarda nada personal: solo el apodo y tu marca.', 'Pick your animal nickname. Nothing personal is saved: just the nickname and your score.'],
       rankAnimal: ['Animal', 'Animal'], rankAdj: ['Cualidad', 'Quality'], rankNum: ['Número', 'Number'], rankAzar: ['Otro al azar', 'Another at random'], rankPub: ['Publicar', 'Post'],
       rankEnviando: ['Enviando…', 'Sending…'], rankPuesto: ['¡Quedaste en el puesto {}!', 'You are number {}!'], rankListo: ['¡Marca publicada!', 'Score posted!'], rankVer: ['Ver el top', 'See the top'],
@@ -559,7 +560,7 @@
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${G.retosDia ? G.retosDia.htmlRecords() : ''}${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
@@ -707,7 +708,7 @@
     // Ranking global (tools/supabase, función amazona-records): apodo «Animal Adjetivo NN» de listas fijas (sin texto libre),
     // id de dispositivo aleatorio y nada personal. Las partidas de prueba nunca publican (salvo con o.fetch simulado).
     // =================================================================================================================
-    const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/#top-records';
+    const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/ranking.html';
     const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
     const ADJETIVOS = ['Veloz', 'Valiente', 'Curioso', 'Brillante', 'Alegre', 'Audaz', 'Sabio', 'Feliz', 'Ágil', 'Sereno'];
     const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush', 'tren']; // rio_rush: River Rush clásico, por puntos (AC2)
@@ -793,8 +794,17 @@
       p.querySelector('#rk-no').textContent = tx('cerrar');
     }
     // o: { reto, valor, dur_ms, prueba, fetch } → Promise<'publicado'|'cerrado'|'prueba'|'invalido'>. Una partida de prueba nunca publica (salvo con fetch simulado)
-    function publicarRanking(o) {
+    // Directiva V17 (Kelvin, 4-nov): el ranking sigue, pero antes de publicar en línea un adulto pasa la misma puerta que «Compartir»
+    // (la suma). Sin adulto, el récord queda en el dispositivo. Las pruebas (o.prueba) usan el panel con su fetch falso, sin puerta.
+    async function publicarRanking(o) {
       o = o || {};
+      if (!o.prueba) {
+        if (!RANK_RETOS.includes(o.reto) || !(o.valor > 0) || !(o.dur_ms >= 0) || rankAbierto) return publicarPanel(o);
+        if (!(await puerta(o))) { if (G.ui && G.ui.toast) G.ui.toast(tx('rankSinAdulto'), 3500); return 'puerta'; }
+      }
+      return publicarPanel(o);
+    }
+    function publicarPanel(o) {
       if (o.prueba && typeof o.fetch !== 'function') return Promise.resolve('prueba');
       if (!RANK_RETOS.includes(o.reto) || !(o.valor > 0) || !(o.dur_ms >= 0)) return Promise.resolve('invalido');
       if (rankAbierto) return Promise.resolve('cerrado');

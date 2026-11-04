@@ -86,6 +86,7 @@
     '¿Y si hay crecida y nadie rema? Yo sola no puedo cruzar en canoa, mi niña.': 'And if the river floods and nobody paddles? I can\'t cross in a canoe on my own, dear.',
     // La maqueta
     'Poner las tarjetas en la Balanza': 'Put the cards on the Scale', 'Probar en la maqueta': 'Test on the model', 'Hacer la asamblea': 'Hold the assembly', 'Mirar la Balanza': 'Look at the Scale',
+    'Elegir un cuidado': 'Choose something to look after', 'Decirle a quien pierde': 'Tell the one who loses',
     '¿Qué opción pruebo en la maqueta?': 'Which option should I test on the model?', 'Ya probé las tres. ¿Miro una otra vez?': 'I\'ve tested all three. Should I look at one again?',
     'La abuela de juguete cruza a pie en un momento. ¡Qué rápido!': 'Toy Grandma walks across in a moment. So fast!',
     'Pero para apoyar las vigas hay que quitar el bosquecillo: los huecos de nido y la sombra se van.': 'But to support the beams the grove has to go: the nest holes and the shade disappear.',

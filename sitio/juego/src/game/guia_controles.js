@@ -107,14 +107,14 @@ AVE.module('guiaControles', function (G) {
 @media (prefers-reduced-motion: reduce) { .guia-pastilla { animation: none; } }
 @media (max-width: 560px) { #guia-panel .guia-fila, .guia-fila { grid-template-columns: 96px minmax(0, 1fr); } #guia-panel .guia-filas { grid-template-columns: 1fr; } }
 html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !important; }
-#pm-pista { position: fixed; z-index: 7; width: 72px; height: 72px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 8px rgba(255, 196, 60, 0.35); background: transparent; }
-#pm-pista::before { content: ""; position: absolute; left: 22px; top: 10px; border: 16px solid transparent; border-bottom-color: #ffe08a; }
+#pm-pista { position: fixed; z-index: 7; width: 96px; height: 96px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 8px rgba(255, 196, 60, 0.35); background: transparent; }
+#pm-pista::before { content: ""; position: absolute; left: 50%; top: -34px; margin-left: -14px; border: 14px solid transparent; border-bottom-color: #ffe08a; }
 #pm-pista[hidden] { display: none; }
 #pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
+#pm-pista.pm-atascado::before { border-bottom-color: #7fd3ff; }
 #pm-pista[data-paso="mover"] { left: 28px; bottom: 36px; }
-#pm-pista[data-paso="despegar"] { right: 28px; bottom: 168px; }
-#pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
-#pm-pista[data-paso="impulso"] { right: 108px; bottom: 36px; }
+#pm-pista[data-paso="despegar"], #pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
+#pm-pista[data-paso="impulso"] { right: 118px; bottom: 48px; }
 #pm-pista[data-paso="truco"] { left: 0; right: 0; top: 22%; margin: auto; }
 html.guia-tactil #pm-pista { display: block; }
 html.guia-tactil #pm-pista[hidden] { display: none; }
@@ -214,6 +214,23 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (!k || pmE.hecho[k]) return;
     pmE.hecho[k] = true; pmE.t = 0;
   }
+  const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', impulso: 'b-dash' };
+  function colocarPm() {
+    const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
+    const caja = el && el.getClientRects().length ? el.getBoundingClientRect() : null;
+    if (!caja || caja.width < 8) {
+      pm.style.left = pm.style.top = pm.style.width = pm.style.height = pm.style.right = pm.style.bottom = '';
+      return;
+    }
+    const hueco = 18;
+    const size = Math.ceil(Math.max(caja.width, caja.height) + hueco * 2);
+    pm.style.width = size + 'px';
+    pm.style.height = size + 'px';
+    pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
+    pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
+    pm.style.right = 'auto';
+    pm.style.bottom = 'auto';
+  }
   function pintarPm() {
     const id = pmPaso();
     pm.hidden = !id;
@@ -221,7 +238,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     pm.classList.toggle('pm-atascado', !!id && pmE.t >= 20);
     const q = document.getElementById('quest');
     if (q) q.classList.toggle('pm-senala', !!id && pmE.t >= 20);
+    if (id) colocarPm();
   }
+  addEventListener('resize', () => { if (!pm.hidden) colocarPm(); });
   function pmTick(dt) {
     const M = G.fisica.MOVE, jugando = pmForzar || enJuego();
     if (!jugando || (G.quiet && !pmForzar)) {
@@ -337,6 +356,18 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       forzado = 'tactil'; pmE.hecho = {}; pmE.t = 0; pmE.volaba = false; st.x = 0.6; st.y = 0;
       pmTick(0.2);
       ok('En táctil, mover el joystick apaga la pista de moverse', pmE.hecho.mover === true && pm.dataset.paso !== 'mover', pm.dataset.paso);
+      const acts = document.getElementById('acts'), dash = document.getElementById('b-dash');
+      const disp = acts ? acts.style.display : '';
+      if (acts) acts.style.display = 'grid';
+      pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmE.volaba = true;
+      M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
+      pmTick(0.05);
+      const b = dash.getBoundingClientRect(), r = pm.getBoundingClientRect(), borde = 6;
+      const rodea = r.left + borde <= b.left + 1 && r.top + borde <= b.top + 1 && r.right - borde >= b.right - 1 && r.bottom - borde >= b.bottom - 1;
+      const flecha = getComputedStyle(pm, '::before').top;
+      ok('El anillo del impulso rodea el botón y la flecha queda fuera', pm.dataset.paso === 'impulso' && b.width >= 44 && rodea && parseFloat(flecha) < 0,
+        'botón ' + Math.round(b.width) + '×' + Math.round(b.height) + ' anillo ' + Math.round(r.width) + ' flecha ' + flecha);
+      if (acts) acts.style.display = disp;
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     M.speed = guarda.speed; M.flying = guarda.flying; M.grounded = guarda.grounded; M.dashT = guarda.dashT;
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;

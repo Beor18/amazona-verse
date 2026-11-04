@@ -253,7 +253,7 @@
         { id: 'plan', texto: 'Escribe el objetivo y arma el plan', hasta: { evento: 'PlanMade' }, guia: G => G.misiones.at('cuaderno') },
         { id: 'levantar', texto: 'Levanta las tablas entre todos', hasta: { evento: 'RaisedTogether' },
           guia: G => G.S.collected.includes('levantada') ? G.misiones.at(G.ep6 && G.ep6.llevando() ? 'colocar' : 'tabla_larga') : G.misiones.at('percha_v') },
-        { id: 'circulo', texto: 'Escucha a los dos grupos y sienta a los 36', progreso: (S, G) => G.eventos.had('CircleFormed') ? ` (${SENTABLES.filter(k => S.collected.includes('sentado_' + k)).length}/8)` : '',
+        { id: 'circulo', texto: 'Escucha a los dos grupos e invita a los 8 que llegaron', progreso: (S, G) => G.eventos.had('CircleFormed') ? ` (${SENTABLES.filter(k => S.collected.includes('sentado_' + k)).length}/8)` : '',
           hasta: { recogido: SENTABLES.map(k => 'sentado_' + k) },
           guia: G => !G.eventos.had('GroupsListened') ? G.misiones.at('grupos') : (!G.eventos.had('CircleFormed') ? G.misiones.at('marcas') : cercano(G, SENTABLES.filter(x => !G.S.collected.includes('sentado_' + x)).map(k => k === 'alta' || k === 'baja' ? 's_' + k : 'v_' + k))) },
         { id: 'pacto', texto: 'Habla con el Guardián en el centro', guia: G => G.misiones.at('guardian') },
@@ -972,6 +972,7 @@
           check('M3 · 4 formas para los 36', opciones().length === 4, opciones().join());
           pick('4 filas de 9');
           check('M3 · Forma 4×9: 36 marcas en la plaza, 4 encendidas (Vittata, Iguaca, el Guardián y el aprendiz)', G.eventos.had('CircleFormed') && G.ep6.asientos.children.length === 36 && G.ep6.sentados() === 4 && S.step === 4, 'paso ' + S.step);
+          check('M3 · El objetivo invita a los 8 que llegaron y no pide sentar a los 36', /invita a los 8 que llegaron \(0\/8\)/.test($('steps').textContent) && !/sienta a los 36/.test($('steps').textContent), $('steps').textContent.replace(/\s+/g, ' ').slice(0, 180));
           for (const k of ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + k); drain(); } useAt('s_alta'); drain(); useAt('s_baja'); drain();
           check('M3 · Cada invitado queda de pie sobre una marca encendida; las marcas ya no tapan al Guardián', ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote', 'alta', 'baja', 'alta_1', 'baja_2'].every(id => { const n = G.actores.npc(id); return G.ep6.asientos.children.some(m => m.material.emissiveIntensity > 0.5 && Math.hypot(m.position.x - n.def.x, m.position.z - n.def.z) < 0.05); }) && !G.interaccion.find('marcas').visible());
           check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 5 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());

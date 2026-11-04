@@ -1,14 +1,14 @@
 {
- "codigo": "005ff0feac1c77091fe6b22be28e795f1054ff59",
+ "codigo": "bf25eeb1e6f2e804167174d6a07cc93afc9674f1",
  "sitio": null,
- "fecha": "2026-11-04T04:18:22Z",
+ "fecha": "2026-11-04T05:12:17Z",
  "nota": "13 baterías en verde en la Mac con GPU real",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-03T23:40:05-04:00",
-  "duracion_s": 2288.6,
+  "inicio": "2026-11-04T01:01:52-04:00",
+  "duracion_s": 617.8,
   "chrome": "Chrome/157.0.8103.39",
-  "huella_build": "a1194c3e4437c723ef460adf0b1d9ab5e5871eca2af03bff52ab1ea1204e8c6d",
+  "huella_build": "473cabad5b4682b37abba88170d2a1b16cddc1af0e4c0aa23847eaddc14e8baf",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -87,8 +87,8 @@
   },
   "ep2Test": {
    "requerida": false,
-   "passed": 64,
-   "total": 64,
+   "passed": 66,
+   "total": 66,
    "ok": true
   },
   "secretosTest": {
@@ -105,26 +105,26 @@
   },
   "ep3Test": {
    "requerida": false,
-   "passed": 75,
-   "total": 75,
+   "passed": 76,
+   "total": 76,
    "ok": true
   },
   "ep4Test": {
    "requerida": false,
-   "passed": 67,
-   "total": 67,
+   "passed": 70,
+   "total": 70,
    "ok": true
   },
   "ep6Test": {
    "requerida": false,
-   "passed": 88,
-   "total": 88,
+   "passed": 89,
+   "total": 89,
    "ok": true
   },
   "ep5Test": {
    "requerida": false,
-   "passed": 79,
-   "total": 79,
+   "passed": 81,
+   "total": 81,
    "ok": true
   },
   "registroTemporadaTest": {
@@ -249,9 +249,9 @@
   },
   "retosTest": {
    "requerida": false,
-   "passed": 115,
+   "passed": 114,
    "total": 115,
-   "ok": true
+   "ok": false
   },
   "cg17Test": {
    "requerida": false,
@@ -267,9 +267,9 @@
   },
   "bandadaTest": {
    "requerida": false,
-   "passed": 17,
+   "passed": 15,
    "total": 17,
-   "ok": true
+   "ok": false
   },
   "comunidadesTest": {
    "requerida": false,
@@ -319,6 +319,12 @@
    "total": 5,
    "ok": true
   },
+  "familiaTest": {
+   "requerida": false,
+   "passed": 17,
+   "total": 17,
+   "ok": true
+  },
   "rendimientoModulosTest": {
    "requerida": false,
    "passed": 21,
@@ -333,9 +339,9 @@
   },
   "banqueteTest": {
    "requerida": false,
-   "passed": 43,
+   "passed": 44,
    "total": 44,
-   "ok": false
+   "ok": true
   },
   "minimapaTest": {
    "requerida": false,
@@ -371,6 +377,12 @@
    "requerida": false,
    "passed": 28,
    "total": 28,
+   "ok": true
+  },
+  "retosDiaTest": {
+   "requerida": false,
+   "passed": 11,
+   "total": 11,
    "ok": true
   },
   "mazeTest": {
@@ -453,8 +465,8 @@
   },
   "primerosMinutosTest": {
    "requerida": false,
-   "passed": 8,
-   "total": 8,
+   "passed": 9,
+   "total": 9,
    "ok": true
   },
   "ninosTest": {
@@ -537,40 +549,36 @@
   },
   "ep6e2eTest": {
    "requerida": false,
-   "passed": null,
-   "total": null,
-   "ok": false,
-   "error": "tiempo agotado (600 s)"
+   "passed": 43,
+   "total": 43,
+   "ok": true
   },
   "ep6e2eRealTest": {
    "requerida": false,
-   "passed": null,
-   "total": null,
-   "ok": false,
-   "error": "tiempo agotado (600 s)"
+   "passed": 20,
+   "total": 20,
+   "ok": true
   },
   "temporadaRealTest": {
    "requerida": false,
-   "passed": null,
-   "total": null,
-   "ok": false,
-   "error": "tiempo agotado (600 s)"
+   "passed": 9,
+   "total": 10,
+   "ok": false
   },
   "temporadaRealEnTest": {
    "requerida": false,
-   "passed": null,
-   "total": null,
-   "ok": false,
-   "error": "sin tiempo (límite total 1800 s)"
+   "passed": 9,
+   "total": 10,
+   "ok": false
   }
  },
  "consola": {
   "errores": 0,
-  "avisos": 0,
+  "avisos": 1,
   "muestras_error": []
  },
- "carga_inicial_mb": 9.18,
- "heap_mb": 95.5,
+ "carga_inicial_mb": 9.19,
+ "heap_mb": 85.4,
  "fallas": [],
  "avisos": [
   "AV.bohiosTest (extra, no obligatoria) no pasa: 26/27",
@@ -578,14 +586,14 @@
   "AV.streamingTest (extra, no obligatoria) no pasa: 22/23",
   "AV.camaraTest (extra, no obligatoria) no pasa: 13/14",
   "AV.accesibilidadTest (extra, no obligatoria) no pasa: 39/41",
-  "AV.banqueteTest (extra, no obligatoria) no pasa: 43/44",
+  "AV.retosTest (extra, no obligatoria) no pasa: 114/115",
+  "AV.bandadaTest (extra, no obligatoria) no pasa: 15/17",
   "AV.minimapaTest (extra, no obligatoria) no pasa: 34/37",
   "AV.idiomaTest (extra, no obligatoria) no pasa: 15/31",
   "AV.zonas56Test (extra, no obligatoria) no pasa: 18/19",
   "AV.ep3e2eTest (extra, no obligatoria) no pasa: 42/43",
-  "AV.ep6e2eTest (extra, no obligatoria) no pasa: tiempo agotado (600 s)",
-  "AV.ep6e2eRealTest (extra, no obligatoria) no pasa: tiempo agotado (600 s)",
-  "AV.temporadaRealTest (extra, no obligatoria) no pasa: tiempo agotado (600 s)",
+  "AV.temporadaRealTest (extra, no obligatoria) no pasa: 9/10",
+  "AV.temporadaRealEnTest (extra, no obligatoria) no pasa: 9/10",
   "presupuesto: 167 draw calls en la vista de arranque (límite 150)",
   "presupuesto: 496.9 MB de texturas en la vista de arranque (límite 300)"
  ]

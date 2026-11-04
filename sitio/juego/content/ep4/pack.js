@@ -503,7 +503,12 @@
         });
       }
       G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => (S.step === 1 && VOC.every(tiene)) || S.step >= 2,
-        label: () => ({ 1: 'Poner las tarjetas en la Balanza', 2: 'Probar en la maqueta', 3: 'Hacer la asamblea' })[S.step] || 'Mirar la Balanza',
+        label: () => {
+          if (S.step === 1) return 'Poner las tarjetas en la Balanza';
+          if (S.step === 2) return 'Probar en la maqueta';
+          if (S.step === 3) return !opcion() ? 'Hacer la asamblea' : (!cuidado() ? 'Elegir un cuidado' : 'Decirle a quien pierde');
+          return 'Mirar la Balanza';
+        },
         use: () => {
           if (S.step === 1) balanza(); else if (S.step === 2) maqueta(); else if (S.step === 3) asamblea();
           else decir(OIDS.map(o => di('Vittata', `${OPCIONES[o].nombre}: ${fila(o === opcion() ? hojasCon(o, cuidado()) : OPCIONES[o].hojas)}`)));
@@ -690,17 +695,20 @@
           pick(OPCIONES.a.nombre); pick(OPCIONES.b.nombre); pick(OPCIONES.c.nombre);
           ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 3, 'paso ' + S.step);
           useAt('mesa'); drain();
+          ck('M3 · El botón dice hacer la asamblea', G.interaccion.find('mesa').label() === 'Hacer la asamblea');
           ck('D26 · Asamblea tras oír las 4 voces: el jugador elige entre las 3 opciones, sin una correcta', VOC.every(tiene) && opciones().length === 3 && OIDS.every(o => opciones().some(x => x.startsWith(OPCIONES[o].nombre + ':'))), opciones().join(' | '));
           let dichoAsamblea = [];
           { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoAsamblea = dichoAsamblea.concat((l || []).map(x => x.who + ': ' + x.text)); return s0.apply(this, arguments); }; try { pick(OPCIONES[op].nombre + ':'); } finally { G.dialogo.say = s0; } }
           ck('D8 · En la asamblea el aprendiz dice una línea corta, solo por sí mismo', dichoAsamblea.includes('Aprendiz: ' + APRENDIZ_ASAMBLEA) && APRENDIZ_ASAMBLEA.length < 90, dichoAsamblea.join(' | ').slice(0, 160));
           ck('M3 · Asamblea: la opción propuesta y quien pierde lo dice', tiene('opcion_' + op) && G.eventos.had('AgreementMade') && opciones().length === CIDS.length, opciones().length);
+          ck('M3 · Tras proponer, el botón pide elegir un cuidado', G.interaccion.find('mesa').label() === 'Elegir un cuidado');
           if (conChequeos) {
             const mal = CIDS.find(c => !CUIDADOS[c].para.includes(op));
             pick(CUIDADOS[mal].nombre);
             ck('M3 · Un cuidado que no ayuda a esa opción: pista y se repite', !CIDS.some(c => tiene('cuidado_' + c)) && opciones().length === CIDS.length);
           }
           pick(CUIDADOS[cu].nombre);
+          ck('M3 · Tras el cuidado, el botón pide decírselo a quien pierde', G.interaccion.find('mesa').label() === 'Decirle a quien pierde');
           if (conChequeos) {
             pick('Es lo mejor para todos');
             ck('M3 · «Es lo mejor para todos» no vale: se repite', !G.eventos.had('CareChosen') && opciones().length === 3);
