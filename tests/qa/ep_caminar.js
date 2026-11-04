@@ -253,7 +253,9 @@
           if (card.querySelector('.edu-opt') || card.querySelector('#edu-seguir')) { // «Iguaca te pregunta»: prueba opciones hasta acertar (pista y respuesta sin castigo)
             const sg = $('edu-seguir');
             if (sg) { await clic(sg); continue; }
-            const b = card.querySelector('.edu-opt:not([disabled])');
+            // QA-156b: en «Explícale a Iguaca» (p8, ordenar frases) un fallo no desactiva la frase: tras 2 fallos brilla la que
+            // toca (.brilla) y un niño la toca; sin esto se tocaba siempre la primera, mal, sin fin
+            const b = card.querySelector('.edu-opt.brilla:not([disabled])') || card.querySelector('.edu-opt:not([disabled])');
             if (!b) { atasco('tarjeta del aula sin opciones'); break; }
             await clic(b); continue;
           }
@@ -363,6 +365,9 @@
       return llego && !MV().flying;
     }
     async function volarTacto(x, z, max, tol, alto, yMin) { // yMin (W17, con pulgar): la guía da una altura: no bajar de ella
+      // QA-156b: nadando no sale Volar (en su sitio está Bucear, src/engine/input.js): como un niño, Saltar saca del agua y en
+      // el aire ya sale Volar (antes volarTacto devolvía false sin intentarlo y la roca de la crecida, en la orilla, no se alcanzaba)
+      if (!MV().flying && MV().swimming) { await boton('b-jump'); await jugar(0.15); }
       if (!MV().flying) { await boton('b-fly'); await jugar(0.6); }
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
