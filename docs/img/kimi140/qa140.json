@@ -1,0 +1,1274 @@
+{
+ "cuando": "2026-11-04T09:09:10.611Z",
+ "vistas": {
+  "ep2": {
+   "hits": [
+    {
+     "px": [
+      985,
+      300
+     ],
+     "golpes": [
+      {
+       "nombre": "terreno:terreno_no",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 20,
+       "punto": {
+        "x": -23.7,
+        "y": 12.3,
+        "z": 21.5
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 80.5,
+       "punto": {
+        "x": -46.1,
+        "y": 0,
+        "z": -33.4
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1278.3,
+       "punto": {
+        "x": -488.3,
+        "y": -243.3,
+        "z": -1119.7
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      985,
+      340
+     ],
+     "golpes": [
+      {
+       "nombre": "flora:pasto",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 15.4,
+       "punto": {
+        "x": -21.9,
+        "y": 12.6,
+        "z": 25.8
+       },
+       "mat": {
+        "tipo": "MeshLambertMaterial",
+        "color": "#e9e29d",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 2,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "terreno:terreno_no",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 16.6,
+       "punto": {
+        "x": -22.4,
+        "y": 12.3,
+        "z": 24.6
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 66.4,
+       "punto": {
+        "x": -40.4,
+        "y": 0,
+        "z": -20.2
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1274.1,
+       "punto": {
+        "x": -477.8,
+        "y": -297.3,
+        "z": -1105.9
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      960,
+      300
+     ],
+     "golpes": [
+      {
+       "nombre": "terreno:terreno_no",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 19.9,
+       "punto": {
+        "x": -24.2,
+        "y": 12.3,
+        "z": 21.8
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 80.1,
+       "punto": {
+        "x": -47.9,
+        "y": 0,
+        "z": -32.2
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1276.6,
+       "punto": {
+        "x": -519.8,
+        "y": -244.4,
+        "z": -1104.2
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    }
+   ],
+   "candidatos": [
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 800,
+      "y": 563
+     },
+     "d": 7.7,
+     "tam": {
+      "ancho": 1.2,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.16,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CylinderGeometry",
+     "pantalla": {
+      "x": 612,
+      "y": 447
+     },
+     "d": 9.7,
+     "tam": {
+      "ancho": 3,
+      "alto": 0.1
+     },
+     "mat": {
+      "tipo": "MeshLambertMaterial",
+      "color": "#0b3557",
+      "opacity": 0.78,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": true
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1274,
+      "y": 471
+     },
+     "d": 10.7,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 597,
+      "y": 371
+     },
+     "d": 14.2,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CylinderGeometry",
+     "pantalla": {
+      "x": 782,
+      "y": 292
+     },
+     "d": 18.8,
+     "tam": {
+      "ancho": 2.2,
+      "alto": 0.1
+     },
+     "mat": {
+      "tipo": "MeshLambertMaterial",
+      "color": "#0b3557",
+      "opacity": 0.78,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": true
+     }
+    }
+   ],
+   "stats": {
+    "fps": 5,
+    "calls": 130,
+    "triangulos": 864277,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pos": {
+    "x": -20.5,
+    "y": 12.2,
+    "z": 33.5
+   },
+   "yaw": 0.6
+  },
+  "ep4": {
+   "hits": [
+    {
+     "px": [
+      1055,
+      430
+     ],
+     "golpes": [
+      {
+       "nombre": "terreno:terreno_ne",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 12.2,
+       "punto": {
+        "x": 192.7,
+        "y": 3.5,
+        "z": 160.1
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 21.9,
+       "punto": {
+        "x": 191.7,
+        "y": 0,
+        "z": 151.1
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1272.2,
+       "punto": {
+        "x": 64.3,
+        "y": -453.9,
+        "z": -1006.9
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      1055,
+      470
+     ],
+     "golpes": [
+      {
+       "nombre": "terreno:terreno_ne",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 10.7,
+       "punto": {
+        "x": 192.9,
+        "y": 3.6,
+        "z": 161.6
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 19.7,
+       "punto": {
+        "x": 192.1,
+        "y": 0,
+        "z": 153.4
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1272.5,
+       "punto": {
+        "x": 73.5,
+        "y": -505.8,
+        "z": -986.6
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      1030,
+      430
+     ],
+     "golpes": [
+      {
+       "nombre": "terreno:terreno_ne",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 12.2,
+       "punto": {
+        "x": 192.4,
+        "y": 3.5,
+        "z": 160.2
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 21.8,
+       "punto": {
+        "x": 191.1,
+        "y": 0,
+        "z": 151.3
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1273.3,
+       "punto": {
+        "x": 30.7,
+        "y": -457.8,
+        "z": -1002.4
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    }
+   ],
+   "candidatos": [
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 800,
+      "y": 567
+     },
+     "d": 7.5,
+     "tam": {
+      "ancho": 1.2,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.16,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1146,
+      "y": 483
+     },
+     "d": 9.7,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1499,
+      "y": 402
+     },
+     "d": 17.1,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1269,
+      "y": 259
+     },
+     "d": 24.2,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "flora:manchas",
+     "tipo": "Mesh",
+     "geo": "PlaneGeometry",
+     "pantalla": {
+      "x": 376,
+      "y": 108
+     },
+     "d": 258.2,
+     "tam": {
+      "ancho": 1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#122616",
+      "opacity": 0.66,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    }
+   ],
+   "stats": {
+    "fps": 19,
+    "calls": 159,
+    "triangulos": 827061,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pos": {
+    "x": 191.1,
+    "y": 3.7,
+    "z": 165
+   },
+   "yaw": 0.6
+  },
+  "ep5": {
+   "hits": [
+    {
+     "px": [
+      985,
+      470
+     ],
+     "golpes": [
+      {
+       "nombre": "ep5-noche-luces",
+       "tipo": "Points",
+       "geo": "BufferGeometry",
+       "d": 15.1,
+       "punto": {
+        "x": -43,
+        "y": 97.7,
+        "z": -124.6
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 2,
+        "lado": 0,
+        "depthWrite": false
+       }
+      },
+      {
+       "nombre": "terreno:terreno_so",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 17,
+       "punto": {
+        "x": -43.3,
+        "y": 96.9,
+        "z": -123
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "rio",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 205,
+       "punto": {
+        "x": -78.3,
+        "y": 12,
+        "z": 41.1
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "terreno:terreno_no",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 205.3,
+       "punto": {
+        "x": -78.4,
+        "y": 11.9,
+        "z": 41.3
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 231.6,
+       "punto": {
+        "x": -83.3,
+        "y": 0,
+        "z": 64.3
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      1010,
+      100
+     ],
+     "golpes": [
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1274.2,
+       "punto": {
+        "x": -286.9,
+        "y": 15.5,
+        "z": 1109.1
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      1010,
+      140
+     ],
+     "golpes": [
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 958.5,
+       "punto": {
+        "x": -229,
+        "y": 0,
+        "z": 796.1
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "cielo",
+       "tipo": "Mesh",
+       "geo": "SphereGeometry",
+       "d": 1273.5,
+       "punto": {
+        "x": -291.1,
+        "y": -34.4,
+        "z": 1103
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 1,
+        "depthWrite": false
+       }
+      }
+     ]
+    },
+    {
+     "px": [
+      960,
+      470
+     ],
+     "golpes": [
+      {
+       "nombre": "ep5-noche-luces",
+       "tipo": "Points",
+       "geo": "BufferGeometry",
+       "d": 15.1,
+       "punto": {
+        "x": -42.6,
+        "y": 97.7,
+        "z": -124.6
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 2,
+        "lado": 0,
+        "depthWrite": false
+       }
+      },
+      {
+       "nombre": "terreno:terreno_so",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 17,
+       "punto": {
+        "x": -42.9,
+        "y": 96.9,
+        "z": -122.9
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "rio",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 203.9,
+       "punto": {
+        "x": -72.5,
+        "y": 12,
+        "z": 40.9
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "terreno:terreno_no",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 206.9,
+       "punto": {
+        "x": -73,
+        "y": 10.6,
+        "z": 43.6
+       },
+       "mat": {
+        "tipo": "MeshPhongMaterial",
+        "color": "#ffffff",
+        "opacity": 1,
+        "transparent": false,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      },
+      {
+       "nombre": "mar",
+       "tipo": "Mesh",
+       "geo": "BufferGeometry",
+       "d": 230.3,
+       "punto": {
+        "x": -76.7,
+        "y": 0,
+        "z": 64.1
+       },
+       "mat": {
+        "tipo": "ShaderMaterial",
+        "color": null,
+        "opacity": 1,
+        "transparent": true,
+        "blending": 1,
+        "lado": 0,
+        "depthWrite": true
+       }
+      }
+     ]
+    }
+   ],
+   "candidatos": [
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 800,
+      "y": 807
+     },
+     "d": 9.9,
+     "tam": {
+      "ancho": 1.2,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.16,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1258,
+      "y": 460
+     },
+     "d": 19,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 1060,
+      "y": 381
+     },
+     "d": 21.4,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "CircleGeometry",
+     "pantalla": {
+      "x": 609,
+      "y": 896
+     },
+     "d": 101.2,
+     "tam": {
+      "ancho": 1.1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#000000",
+      "opacity": 0.25,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "flora:manchas",
+     "tipo": "Mesh",
+     "geo": "PlaneGeometry",
+     "pantalla": {
+      "x": 616,
+      "y": 615
+     },
+     "d": 177.1,
+     "tam": {
+      "ancho": 1,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#0c1f15",
+      "opacity": 0.66,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 1280,
+      "y": 209
+     },
+     "d": 509.2,
+     "tam": {
+      "ancho": 210,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#36ab93",
+      "opacity": 0.22,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 1280,
+      "y": 209
+     },
+     "d": 543.8,
+     "tam": {
+      "ancho": 156,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#ffffff",
+      "opacity": 0.35,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 715,
+      "y": 184
+     },
+     "d": 588.4,
+     "tam": {
+      "ancho": 157.5,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#36ab93",
+      "opacity": 0.22,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 715,
+      "y": 183
+     },
+     "d": 608.7,
+     "tam": {
+      "ancho": 117,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#ffffff",
+      "opacity": 0.35,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 172,
+      "y": 207
+     },
+     "d": 609.5,
+     "tam": {
+      "ancho": 140,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#36ab93",
+      "opacity": 0.22,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    },
+    {
+     "nombre": "(sin nombre)",
+     "tipo": "Mesh",
+     "geo": "RingGeometry",
+     "pantalla": {
+      "x": 172,
+      "y": 206
+     },
+     "d": 634.3,
+     "tam": {
+      "ancho": 104,
+      "alto": 0
+     },
+     "mat": {
+      "tipo": "MeshBasicMaterial",
+      "color": "#ffffff",
+      "opacity": 0.35,
+      "transparent": true,
+      "blending": 1,
+      "lado": 0,
+      "depthWrite": false
+     }
+    }
+   ],
+   "stats": {
+    "fps": 28,
+    "calls": 158,
+    "triangulos": 2871917,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pos": {
+    "x": -40,
+    "y": 99.1,
+    "z": -131
+   },
+   "yaw": 3.14
+  }
+ }
+}

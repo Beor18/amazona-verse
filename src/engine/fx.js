@@ -212,8 +212,12 @@ AVE.module('fx', function (G) {
     guideArrow.material.wireframe = dalton;
     const gy = tg.y != null ? tg.y - 20 : G.terreno.height(tg.x, tg.z) + 20;
     guideBeam.position.set(tg.x, gy, tg.z);
+    const cp = G.renderer.camera.position, dCam = Math.hypot(cp.x - tg.x, cp.z - tg.z);
     // Con la cámara pegada al haz, el cilindro aditivo tapaba media pantalla (QA-22): se desvanece entre 8 y 2,5 m del eje
-    const cp = G.renderer.camera.position, cerca = THREE.MathUtils.smoothstep(Math.hypot(cp.x - tg.x, cp.z - tg.z), 2.5, 8);
+    const cerca = THREE.MathUtils.smoothstep(dCam, 2.5, 8);
+    // QA-140: ancho angular casi constante (haz de luz fino a cualquier distancia, no un panel de cristal cerca)
+    const r = Math.min(1.6, Math.max(0.2, dCam * 0.014));
+    guideBeam.scale.set(r / 0.7, 1, r / 0.7);
     guideBeam.visible = cerca > 0.01;
     guideBeam.material.opacity = (0.16 + Math.sin(now * 3) * 0.06) * cerca * (relajado ? 1.8 : 1);
     const d = Math.hypot(tg.x - S.pos.x, tg.z - S.pos.z);
