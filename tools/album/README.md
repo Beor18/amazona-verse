@@ -4,10 +4,17 @@ Retratos de tarjeta coleccionable para el «Álbum de las 36» del Diario (`src/
 Vittata** (`assets/models/vittata.glb`, `src/personaje/character.js`) y **la piel de cada especie** (`src/personaje/pieles.js`,
 `assets/textures/pieles/<id>.jpg`). No hay modelos nuevos ni cambios en el modelo o el rig: solo cambia la textura.
 
+**Se dibujan en el juego de verdad** (canon de Kelvin, 1-nov, `docs/CANON_REGISTRY.md`: el color tal como se ve en el juego).
+`retratos.js` abre `index.html?look=vibrant_toon&calidad=alto&clima=sol`, pasa Jugar → Empezar como un jugador nuevo e inyecta
+`en_juego.js`: el ave sale del renderer del juego (ACES, exposición, gradación y borde de luz de `vibrant_toon`, composer con
+bloom) con su sol y su cielo hemisférico; no hay luces propias. Comparación: `docs/img/retratos/comparacion_juego.jpg`
+(`--comparar`): el cuadro real del juego, el jugador en el mundo con la cámara del retrato, el retrato nuevo y el anterior.
+
 ## Uso
 ```sh
 NODE_PATH=$(npm root -g) node tools/album/retratos.js [--out carpeta] [--jpg] [--var variantes.json] [id …]   # sin ids: las 36
 NODE_PATH=$(npm root -g) node tools/album/retratos.js --silueta                                             # la silueta de las cerradas
+NODE_PATH=$(npm root -g) node tools/album/retratos.js --comparar docs/img/retratos/comparacion_juego.jpg    # juego frente a retrato
 NODE_PATH=$(npm root -g) node tools/album/hoja.js docs/img/retratos/hoja_36.jpg [--cols 6] [id …]          # hoja de contacto
 ```
 - Salida: `<out>/<id>.webp` (256×320, ≤ 25 KB) y `<out>/2x/<id>.webp` (512×640, ≤ 60 KB). Por defecto `assets/retratos_album/`.
@@ -25,22 +32,25 @@ NODE_PATH=$(npm root -g) node tools/album/hoja.js docs/img/retratos/hoja_36.jpg 
 ## Archivos
 | Archivo | Qué hace |
 |---|---|
-| `retratos.json` | Todo lo común: pose, encuadre, luces, tamaños, región de cada especie y la lista de pieles provisionales |
-| `retratos.html` | Página de render: carga los scripts del juego, aplica el look `vibrant_toon` (código real de `src/game/look.js`) y la luz de 3 puntos; compone fondo + ave y codifica WebP en el navegador |
+| `retratos.json` | Todo lo común: pose, encuadre, dirección de la clave, tamaños, región de cada especie y la lista de pieles provisionales |
+| `en_juego.js` | Dentro del juego: una Vittata nueva con la piel de la especie, cámara de retrato girada con el sol del juego, dibujo con el renderer del juego (sin el mundo, sin viñeta ni rayos) y fondo sacado por diferencia (negro y gris) |
+| `componer.js` | Fondo de la región + ave + acabado, WebP 1x/2x, la silueta y la lámina de comparación |
 | `fondos.js` | Fondos vectoriales por región (canvas 2D, con semilla: salen iguales cada vez) |
-| `retratos.js` | Lanza Chromium, sirve el repo y escribe los archivos |
+| `retratos.js` | Lanza Chromium, sirve el repo, arranca el juego y escribe los archivos |
 | `hoja.html` / `hoja.js` | Hoja de contacto: la sección real del Diario (`html()` de `album.js` y su CSS) con los retratos; la de las 36 está en `docs/img/retratos/hoja_36.jpg` |
 
 ## Receta (igual para las 36)
 - **Pose y encuadre:** pose `Idle` (t = 0,3), giro de ¾ (yaw −0,6), plano medio (cabeza, pecho y hombros, con aire arriba):
   cámara un poco por encima (elevación 0,08), FOV 24°, alto visible = 98 % del ave, centro al 66 % de su altura. La caja se mide
   una vez (mismo modelo y misma pose), así que las 36 salen al mismo tamaño y en la misma posición.
-- **Luz:** el look `vibrant_toon` del juego (gradación y exposición) + 3 puntos: clave cálida arriba a la izquierda, relleno
-  frío y suave abajo a la derecha, contraluz blanco desde atrás a la derecha (recorta la silueta del fondo).
+- **Luz:** la del juego, sin añadidos: su sol (color e intensidad de `vibrant_toon`), su cielo hemisférico, su exposición, su
+  gradación y el borde de luz de los personajes. La cámara y el ave se giran juntas para que el sol quede arriba a la izquierda y
+  por delante (`clave` en `retratos.json`), así las 36 tienen la misma luz. (Hasta el 4-nov llevaban una luz de 3 puntos propia;
+  Kelvin pidió el verde del juego.)
 - **Fondo:** cielo en degradado (cenit saturado, horizonte claro) + sol suave arriba a la izquierda (del lado de la luz clave)
   + motivo lejano de la región, desenfocado y con bruma, con el horizonte bajo para que asome a los lados + halo cálido detrás
   de la cabeza (con un 10 % del color propio de la especie, de `PALETA` en `album.js`) + dos nubes desenfocadas + sombra suave
-  del ave + viñeta. Sin texto en la imagen (la tarjeta lleva los nombres ES/EN). Sin rarezas, brillos de «legendaria» ni marcos
+  del ave + viñeta (solo sobre el fondo: el ave conserva el color del juego). Sin texto en la imagen (la tarjeta lleva los nombres ES/EN). Sin rarezas, brillos de «legendaria» ni marcos
   distintos: todas las tarjetas son iguales.
 - **Regiones** (agrupación visual sacada del campo `distribucion` de `content/comun/especies.js`; no es un dato que se
   muestre): `caribe` (mar e islas con palmas), `centro` (México y Centroamérica: volcanes), `amazonia` (río y dosel),

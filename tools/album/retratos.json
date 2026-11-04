@@ -1,5 +1,5 @@
 {
-  "_nota": "Configuración común de los 36 retratos del Álbum (tools/album/README.md). Mismo encuadre y misma luz para todas; solo cambian la piel, la región del fondo y el acento (color propio de la cabeza, de PALETA en src/game/album.js).",
+  "_nota": "Configuración común de los 36 retratos del Álbum (tools/album/README.md). Se dibujan EN EL JUEGO (look vibrant_toon, su sol, su cielo y su gradación: canon de Kelvin, 1-nov); aquí solo van la pose, el encuadre y la dirección de la clave (el sol del juego se pone ahí girando la cámara). Solo cambian la piel, la región del fondo y el acento (color propio de la cabeza, de PALETA en src/game/album.js).",
   "pose": "Idle",
   "t": 0.3,
   "yaw": -0.6,
@@ -10,31 +10,11 @@
     "az": 0,
     "el": 0.08
   },
-  "luces": {
-    "key": [
-      -0.55,
-      0.75,
-      0.6
-    ],
-    "keyI": 2.4,
-    "keyC": "#fff0d6",
-    "fill": [
-      0.8,
-      0.15,
-      0.6
-    ],
-    "fillI": 0.3,
-    "fillC": "#cfe3ff",
-    "rim": [
-      0.6,
-      0.6,
-      -0.9
-    ],
-    "rimI": 2.4,
-    "rimC": "#ffffff",
-    "hemiI": 0.55,
-    "exp": 0.78
-  },
+  "clave": [
+    -0.55,
+    0.75,
+    0.6
+  ],
   "salida": {
     "w2": 512,
     "h2": 640,
