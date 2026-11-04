@@ -35,7 +35,7 @@
   // Dónde espera la canoa tras la práctica y al llegar; el muelle (tablones) de cada orilla; las rocas de la boca y el bajío;
   // un punto de la bahía honda (para la prueba de que a pie no se entra)
   const CANOA_MUELLE = EN({ x: 6, z: 21.5 }, { x: 202.5, z: 211 }), LLEGADA = EN({ x: -25, z: 33 }, { x: 157, z: 221 });
-  const MUELLES = EN([[6, 19.6, 0.9, 2.6, 0], [-27.2, 32.2, 0.9, 2.2, -1.1]], [[199.6, 207.8, 0.9, 2.6, 0], [155.5, 214.5, 0.9, 4, 0]]);
+  const MUELLES = EN([[6, 19.6, 0.9, 2.6, 0], [-27.2, 32.2, 0.9, 2.2, -1.1]], [[199.6, 207.8, 0.9, 2.6, 0], [155.5, 206.5, 0.9, 4, 0]]); // el de la otra orilla empieza en arena seca y llega a la barra (QA-107: antes en z 214.5 quedaba entero en el agua)
   const ROCAS = EN([[-3, 30.2, 1.3], [3, 30.6, 1.1]], [[204.5, 219.5, 1.3], [224, 219, 1.1]]), BAJIO = EN({ x: -18.5, z: 38.5 }, { x: 213, z: 242 });
   const HONDO = EN({ x: -4, z: 30 }, { x: 186, z: 236 });
   // Rutas de la canoa (x, z): río abajo para practicar; la bahía en tres tramos, con la elección de ruta y la del bajío
