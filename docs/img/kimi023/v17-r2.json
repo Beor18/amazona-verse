@@ -1,0 +1,165 @@
+{
+ "etiqueta": "r2",
+ "chrome": "chrome.exe",
+ "escenarios": [
+  {
+   "escenario": "carga-frio",
+   "cacheable": false,
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "flujo": "portada → Aventura → barra de carga"
+   },
+   "clicAventura": 904,
+   "okCarga": true,
+   "durTotal": 34554,
+   "resumen": {
+    "ml": 30538,
+    "jugable": 32348,
+    "barra": 6642,
+    "barraFin": 27154,
+    "clickT": 894,
+    "nCuadros": 247,
+    "peorMs": 5417,
+    "p95Ms": 340,
+    "medMs": 56,
+    "heapMax": 109366872,
+    "heapFin": 109366872,
+    "bytes": 42808877,
+    "geo": 62,
+    "tex": 72,
+    "prog": 26,
+    "calls": 32,
+    "ktris": 131,
+    "calidad": "bajo"
+   },
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "errores": []
+  },
+  {
+   "escenario": "carga-cache",
+   "cacheable": true,
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "flujo": "portada → Aventura → barra de carga"
+   },
+   "clicAventura": 908,
+   "okCarga": true,
+   "durTotal": 31759,
+   "resumen": {
+    "ml": 29392,
+    "jugable": 29746,
+    "barra": 6139,
+    "barraFin": 26920,
+    "clickT": 896,
+    "nCuadros": 260,
+    "peorMs": 4972,
+    "p95Ms": 278,
+    "medMs": 42,
+    "heapMax": 101838569,
+    "heapFin": 93258032,
+    "bytes": 42615225,
+    "geo": 66,
+    "tex": 78,
+    "prog": 32,
+    "calls": 34,
+    "ktris": 140,
+    "calidad": "bajo"
+   },
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "errores": []
+  },
+  {
+   "escenario": "vuelo-ciudad",
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "dur": 45
+   },
+   "okCarga": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vuelo": {
+    "durReal": 134,
+    "nCuadros": 663,
+    "fpsMed": 4.95,
+    "fpsP50": 8,
+    "fpsP10": 3.89,
+    "peorMs": 19341,
+    "p95Ms": 382,
+    "calls": 34,
+    "ktris": 309,
+    "calidad": "bajo",
+    "terminarTope": true,
+    "mem": [
+     {
+      "t": 5.2,
+      "heapMB": 843.2,
+      "geo": 129,
+      "tex": 154,
+      "prog": 47
+     },
+     {
+      "t": 10.2,
+      "heapMB": 867.8,
+      "geo": 133,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 15.2,
+      "heapMB": 852,
+      "geo": 134,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 20.2,
+      "heapMB": 861.2,
+      "geo": 136,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 25.1,
+      "heapMB": 871.1,
+      "geo": 142,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 30,
+      "heapMB": 851.6,
+      "geo": 142,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 35.2,
+      "heapMB": 873.1,
+      "geo": 142,
+      "tex": 154,
+      "prog": 48
+     },
+     {
+      "t": 40.1,
+      "heapMB": 856.9,
+      "geo": 142,
+      "tex": 154,
+      "prog": 48
+     }
+    ]
+   },
+   "errores": []
+  }
+ ]
+}

@@ -1,0 +1,92 @@
+{
+ "etiqueta": "r4",
+ "chrome": "chrome.exe",
+ "escenarios": [
+  {
+   "escenario": "vuelo-ciudad",
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "dur": 45,
+    "flujo": "portada → Aventura → vuelo circular sobre la Ciudad de los 36"
+   },
+   "okCarga": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vuelo": {
+    "durReal": 83.1,
+    "nCuadros": 799,
+    "fpsMed": 9.61,
+    "fpsP50": 17.86,
+    "fpsP10": 6.25,
+    "peorMs": 4590,
+    "p95Ms": 278,
+    "calls": 44,
+    "ktris": 190,
+    "calidad": "bajo",
+    "terminarTope": false,
+    "mem": [
+     {
+      "t": 5.1,
+      "heapMB": 727.1,
+      "geo": 170,
+      "tex": 150,
+      "prog": 48
+     },
+     {
+      "t": 10.8,
+      "heapMB": 702.4,
+      "geo": 194,
+      "tex": 150,
+      "prog": 53
+     },
+     {
+      "t": 15.1,
+      "heapMB": 751.9,
+      "geo": 217,
+      "tex": 152,
+      "prog": 55
+     },
+     {
+      "t": 20.2,
+      "heapMB": 788.8,
+      "geo": 215,
+      "tex": 153,
+      "prog": 56
+     },
+     {
+      "t": 25.3,
+      "heapMB": 859.5,
+      "geo": 228,
+      "tex": 153,
+      "prog": 56
+     },
+     {
+      "t": 30.2,
+      "heapMB": 751.5,
+      "geo": 234,
+      "tex": 153,
+      "prog": 56
+     },
+     {
+      "t": 35.4,
+      "heapMB": 761.4,
+      "geo": 233,
+      "tex": 152,
+      "prog": 55
+     },
+     {
+      "t": 40.1,
+      "heapMB": 799,
+      "geo": 233,
+      "tex": 152,
+      "prog": 55
+     }
+    ]
+   },
+   "errores": []
+  }
+ ]
+}

@@ -1,0 +1,167 @@
+{
+ "etiqueta": "r3",
+ "chrome": "chrome.exe",
+ "escenarios": [
+  {
+   "escenario": "carga-frio",
+   "cacheable": false,
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "flujo": "portada → Aventura → barra de carga"
+   },
+   "clicAventura": 703,
+   "okCarga": true,
+   "durTotal": 28716,
+   "resumen": {
+    "ml": 17598,
+    "jugable": 25999,
+    "barra": 3668,
+    "barraFin": 26254,
+    "clickT": 698,
+    "nCuadros": 310,
+    "peorMs": 2861,
+    "p95Ms": 209,
+    "medMs": 49,
+    "heapMax": 174861537,
+    "heapFin": 174861537,
+    "bytes": 42808877,
+    "geo": 74,
+    "tex": 143,
+    "prog": 41,
+    "calls": 54,
+    "ktris": 229,
+    "calidad": "bajo"
+   },
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "errores": []
+  },
+  {
+   "escenario": "carga-cache",
+   "cacheable": true,
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "flujo": "portada → Aventura → barra de carga"
+   },
+   "cebo": true,
+   "clicAventura": 28193,
+   "okCarga": true,
+   "durTotal": 53928,
+   "resumen": {
+    "ml": 16074,
+    "jugable": 23614,
+    "barra": 2857,
+    "barraFin": 23614,
+    "clickT": 536,
+    "nCuadros": 315,
+    "peorMs": 2826,
+    "p95Ms": 181,
+    "medMs": 49,
+    "heapMax": 245005813,
+    "heapFin": 143975588,
+    "bytes": 0,
+    "geo": 75,
+    "tex": 137,
+    "prog": 42,
+    "calls": 55,
+    "ktris": 228,
+    "calidad": "bajo"
+   },
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "errores": []
+  },
+  {
+   "escenario": "vuelo-ciudad",
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "dur": 45,
+    "flujo": "portada → Aventura → vuelo circular sobre la Ciudad de los 36"
+   },
+   "okCarga": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vuelo": {
+    "durReal": 99.7,
+    "nCuadros": 738,
+    "fpsMed": 7.4,
+    "fpsP50": 14.49,
+    "fpsP10": 4.5,
+    "peorMs": 5972,
+    "p95Ms": 431,
+    "calls": 44,
+    "ktris": 191,
+    "calidad": "bajo",
+    "terminarTope": true,
+    "mem": [
+     {
+      "t": 5.1,
+      "heapMB": 735.1,
+      "geo": 201,
+      "tex": 151,
+      "prog": 50
+     },
+     {
+      "t": 10.3,
+      "heapMB": 698,
+      "geo": 220,
+      "tex": 150,
+      "prog": 51
+     },
+     {
+      "t": 15.1,
+      "heapMB": 743.3,
+      "geo": 245,
+      "tex": 152,
+      "prog": 54
+     },
+     {
+      "t": 20.4,
+      "heapMB": 837.9,
+      "geo": 246,
+      "tex": 153,
+      "prog": 55
+     },
+     {
+      "t": 25.1,
+      "heapMB": 823.1,
+      "geo": 253,
+      "tex": 153,
+      "prog": 55
+     },
+     {
+      "t": 30.1,
+      "heapMB": 867.4,
+      "geo": 259,
+      "tex": 153,
+      "prog": 55
+     },
+     {
+      "t": 35.4,
+      "heapMB": 754.9,
+      "geo": 258,
+      "tex": 152,
+      "prog": 54
+     },
+     {
+      "t": 40.1,
+      "heapMB": 800.3,
+      "geo": 258,
+      "tex": 152,
+      "prog": 54
+     }
+    ]
+   },
+   "errores": []
+  }
+ ]
+}

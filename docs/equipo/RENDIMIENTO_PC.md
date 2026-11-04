@@ -237,6 +237,49 @@ y lookCapitulosTest 12/12; movementTest 44/48 y comicTest 59/67 con cuadros de f
 viñetas que **re-corridos en limpio dan 48/48 y 67/67** (`kimi2_una_bateria.js`): los
 rojos de la corrida gruesa eran contención, no código.
 
+## KIMI-023 · medidas reales V17 (4-nov, en curso)
+
+Medido por Kimi 1 (PC Windows de Kelvin, Chrome headless=new con GPU AMD real RX 5700 XT vía
+ANGLE/D3D11, **móvil emulado 390×844 dpr 3, CPU ×4, calidad auto = bajo**, partida sembrada de
+cap1 sin creador, look de fábrica). Herramienta nueva `node tools/build/kimi1_v17.js`
+(--etiqueta r --solo carga-frio|carga-cache|vuelo): CDP sin librerías, sirve la copia de trabajo
+en local e inyecta instrumentación (cuadros rAF, heap cada 0,5 s, mundoListo, jugable =
+`worldHidden()===false` con draw calls > 5, bytes de `resource timing`). Flujo de carga =
+el del jugador: portada → clic en tarjeta **Aventura** → barra de carga (`#carga`) → mundo.
+Ojo: con UA de iPhone la entrada directa `?cap=` **no** entra sola (lleva al menú de modos):
+hay que pulsar Aventura (la herramienta lo hace). Datos: `docs/img/kimi023/v17-r*.json`.
+
+### Pantalla de carga, frío vs caché (r3; tiempos en s desde la navegación, en la página)
+
+| Escenario | portada→clic | barra visible | mundoListo | jugable | peor cuadro | p95 | heap máx | bytes |
+|---|---|---|---|---|---|---|---|---|
+| frío (perfil nuevo) | 0,7 | 3,7 → 26,3 | 17,6 | **26,0** | 2861 ms | 209 ms | 174,9 MB | **42,8 MB** (250 recursos) |
+| caché (mismo perfil, 2.ª visita) | 0,5 | 2,9 → 23,6 | 16,1 | **23,6** | 2826 ms | 181 ms | 245,0 MB (pico, acaba 144) | **0 MB** (todo de caché HTTP) |
+
+- La caché HTTP quita **los 42,8 MB de descarga** por completo, pero la barra solo acorta
+  ~2,4 s (26,0 → 23,6 s hasta jugable): **la carga es de CPU (parse/construcción), no de red**.
+- El peor cuadro de la carga (~2,8–2,9 s) y el p95 (181–209 ms) son el precalentado/compilación
+  dentro de la barra (misma familia que QA-53; en bajo con GPU real).
+- heap: 109–175 MB en frío según la contención de la PC (r2 dio 109,4 MB con menos carga);
+  en caché hay un pico de 245 MB a mitad de carga que el GC baja a 144 MB al final. Coincide
+  con la medición de QA-152 (148,1 MB en la pantalla de carga, cap1).
+- Al llegar al mundo (bajo): ~55 draw calls / ~0,2 M tris / 75 geometrías / ~140 texturas /
+  41–42 programas.
+- **Contención:** Kimi 2 medía en la misma PC durante r3 (varios Chrome vivos): los tiempos
+  totales son conservadores. La conclusión «la red no es el cuello» se sostiene (bytes 0 con
+  tiempos casi iguales).
+
+### Vuelo por la Ciudad de los 36 — pendiente de re-medir (no vale como cifra V17)
+
+La herramienta ya vuela un círculo de 45 s (r=55 m, h≈22 m) centrado en la ciudad (-33,-136),
+pero las corridas de hoy salieron bajo contención ×4 de Kimi 2 y la cámara terminó dentro de
+la copa de una palma (la posición se pelea con la cámara/paracaídas del juego): fpsMed 7–10,
+p50 14–18, pico 4,6–6,0 s, `terminar()` con tope en r3, heap 700–870 MB con geometrías que suben
+(170→234) y no bajan al volar en círculos. **Hipótesis a verificar con la PC libre:** ¿fuga de
+geometría al orbitar la ciudad (zonas que entran y no se sueltan)? Comando listo:
+`node tools/build/kimi1_v17.js --etiqueta pclibre --solo vuelo` (con 0 Chrome ajenos).
+Evidencia: `v17-r3.json`, `v17-r4.json` + capturas `v17-r*-vuelo_ciudad.jpg`.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
