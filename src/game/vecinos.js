@@ -123,10 +123,11 @@ window.AVVecinos = function (G) {
       ok('Quieta, la mariposa se le acerca', Math.hypot(mar.x - S.pos.x, mar.z - S.pos.z) < 1.2, Math.hypot(mar.x - S.pos.x, mar.z - S.pos.z).toFixed(2));
       S.pos.x = 11; S.pos.z = -76;
       const info = G.renderer.renderer.info, cam = G.renderer.camera, sc = G.renderer.scene;
-      const una = () => { G.renderer.renderer.render(sc, cam); return info.render.calls; };
+      const una = () => { G.renderer.renderer.render(sc, cam); return { c: info.render.calls, t: info.render.triangles }; };
       malla.visible = false; const base = una();
       malla.visible = true; malla.count = aves.length; const con = una();
-      ok('Suman 2 draw calls o menos', con - base >= 0 && con - base <= 2, base + ' → ' + con);
+      ok('Suman 2 draw calls o menos', con.c - base.c >= 0 && con.c - base.c <= 2 && con.t >= base.t,
+        base.c + ' calls / ' + base.t + ' tris → ' + con.c + ' calls / ' + con.t + ' tris');
       forzar = { nivel: 'alto' }; sembrar();
       ok('En calidad alta no pasan de 12', aves.length === 12 && aves.length <= 12, String(aves.length));
       S.pos.x = 0; S.pos.z = 0; forzar = null; G.quiet = true; paso(0.016);
