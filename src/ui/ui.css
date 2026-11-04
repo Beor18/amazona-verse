@@ -931,3 +931,13 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 }
 @keyframes bar-shine { 0% { background-position: 110% 0, 0 0; } 60%, 100% { background-position: -10% 0, 0 0; } }
 @keyframes spark-up { 0% { opacity: 0; transform: translateY(6px) scale(0.4) rotate(-30deg); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(1.1) rotate(20deg); } }
+/* CG-53 · modo familia */
+#familia { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: rgba(8, 28, 22, 0.55); }
+#familia[hidden] { display: none; }
+#familia .caja { width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px; border-radius: 18px; background: #f6f1e4; color: #1c140c; box-shadow: 0 8px 0 #c9b48a; }
+#familia h2 { margin: 0 0 8px; font: 800 28px/1.1 sans-serif; }
+#familia p { margin: 0 0 12px; }
+#familia .fila { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+#familia button.sel { outline: 3px solid #e0a93a; }
+#familia .marca { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: #fff; }
+#familia .premio { font-weight: 800; }
