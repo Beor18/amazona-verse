@@ -507,7 +507,7 @@
           check('En el refugio de la colina Iguaca enseña la Llamada', empezo, G.dialogo && G.dialogo.actual() ? G.dialogo.actual().who + ': ' + G.dialogo.actual().text : 'sin diálogo');
           if (empezo) G.dialogo.next();
           check('Vittata contesta y el globo sigue libre', empezo && G.dialogo.actual() && G.dialogo.actual().who === 'Vittata' && G.dialogo.actual().libre === true && G.dialogo.actual().text.length < 100, G.dialogo && G.dialogo.actual() ? G.dialogo.actual().text : '');
-          if (empezo) G.dialogo.next();
+          if (empezo) { G.dialogo.next(); G.dialogo.next(); } // 24c (Kelvin 4-nov): Iguaca, Vittata e Iguaca otra vez
           const tt = document.getElementById('toast'), dash = document.getElementById('b-dash');
           check('Al aprender sale el aviso y Impulso late una vez', sabe('llamada') && tt && !tt.hidden && tt.classList.contains('don-aprender') && /Llamada de la bandada|Flock Call/.test(tt.textContent) && dash && dash.classList.contains('don-latido'), tt ? tt.textContent : 'sin aviso');
           don = null;
@@ -523,7 +523,7 @@
           soltarEscenas();
           const oraOk = mirar() === true && G.dialogo && G.dialogo.actual && G.dialogo.actual() && G.dialogo.actual().who === 'Oratrix';
           check('En su capítulo, Oratrix enseña la Ráfaga doble', oraOk, G.dialogo && G.dialogo.actual && G.dialogo.actual() ? G.dialogo.actual().who : 'sin diálogo');
-          if (oraOk) { G.dialogo.next(); G.dialogo.next(); }
+          if (oraOk) { G.dialogo.next(); G.dialogo.next(); G.dialogo.next(); } // 3 líneas desde 24c
           check('Al aprender la ráfaga sale su aviso', sabe('rafaga') && /Ráfaga doble|Double Gust/.test((document.getElementById('toast') || {}).textContent || ''), (document.getElementById('toast') || {}).textContent || '');
           G.pack.id = pack0;
         } finally {
