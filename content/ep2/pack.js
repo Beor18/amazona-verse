@@ -94,18 +94,18 @@
   };
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Anoche el transmisor crujió: «…otra tormenta… tres días…». Y las ramas del refugio ya ceden.', 'El plano del bote puede esperar. Un techo de verdad, no.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: '[KELVIN: lo que dice la Voz y la luz de la niebla]' },
+    { id: 'e_inicio', disparador: 'inicio:ep2', personaje: 'Vittata', emocion: 'pensando', lineas: ['Anoche el transmisor crujió: «…otra tormenta… tres días…». Y las ramas del refugio ya ceden.', 'El plano del bote puede esperar. Un techo de verdad, no.', 'Ya sé dónde pondré la casa… ¿o no?'], nota: 'Kelvin 4-nov (K2 A): se queda el crujido «otra tormenta… tres días», sin explicar.' },
     { id: 'e_iguaca', disparador: 'interact:iguaca', personaje: 'Iguaca', emocion: 'idea', lineas: ['Elegiste el sitio a ojo. ¿Y si lo miras como en la ruta de la gota?', 'Hay tres sitios: el llano, la loma y el claro. Mira la pendiente, el suelo y el viento de cada uno. Luego eliges.'] },
     { id: 'e_fin', disparador: 'evento:SiteChosen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Elegiste con evidencia, no a ojo. Eso es leer la tierra.', 'Ahora falta lo más importante: quienes van a vivir ahí. Mi abuela y mi papá.', 'Ve a enseñarle tu plano a la abuela.'], nota: 'Kelvin 1-nov: los dos residentes son la Abuela y el Papá, la familia de Iguaca (todas Amazona vittata).' },
     { id: 'e_plano_v', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'feliz', lineas: ['¡Miren mi plano! Una casa grande, de una planta, con la puerta aquí y el nido aquí al lado.'] },
     { id: 'e_plano_a', disparador: 'evento:ResidentsMet', personaje: 'Abuela', emocion: 'triste', lineas: ['…'] },
     { id: 'e_plano_p', disparador: 'evento:ResidentsMet', personaje: 'Papá', emocion: 'triste', lineas: ['(El papá mira el plano, no dice nada y se va volando a su rama.)'] },
-    { id: 'e_plano_g', disparador: 'evento:ResidentsMet', personaje: 'Guardián', emocion: 'idea', lineas: ['¿Les preguntaste… o les contaste?'], nota: '[KELVIN: si el Guardián habla aquí y con qué voz]' },
+    { id: 'e_plano_g', disparador: 'evento:ResidentsMet', personaje: 'Guardián', emocion: 'idea', lineas: ['¿Les preguntaste… o les contaste?'], nota: 'Kelvin 4-nov (K3 A): el Guardián hace esa pregunta corta.' },
     { id: 'e_plano_v2', disparador: 'evento:ResidentsMet', personaje: 'Vittata', emocion: 'pensando', lineas: ['Les conté. Esta vez voy a preguntar primero.'] },
     { id: 'e_choque', disparador: 'evento:NeedsListed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Mira estas dos: «entrada baja» para la abuela y «nido alto» para el papá. Parece que chocan.'] },
     { id: 'e_escucha', disparador: 'evento:ListenChoice', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es escuchar primero: ahora sabes lo que la casa tiene que lograr y lo que no puedes saltarte.', 'Ve a tu sitio y dibuja la casa.'] },
     { id: 'e_fiesta', disparador: 'evento:Chapter2Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['Entrada baja, sin viento frío y el agua cerca, pero no encima. Esta casa me escuchó.', 'Primero nos salvaste de la crecida y ahora nos das casa. Gracias, Vittata.'] },
-    { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: '[KELVIN: si hay huevo en escena]' },
+    { id: 'e_fiesta_p', disparador: 'evento:Chapter2Completed', personaje: 'Papá', emocion: 'feliz', lineas: ['Alto, oscuro y seco. Aquí el huevo va a estar tranquilo.'], nota: 'Kelvin 4-nov (K4 A): el huevo se nombra y no se muestra.' },
     { id: 'e_fiesta_g', disparador: 'evento:Chapter2Completed', personaje: 'Guardián', emocion: 'pensando', lineas: ['(Se toca la medalla.) Una casa que escucha… Esto ya lo vi antes. No recuerdo dónde.'], nota: 'D5, canon por Kelvin el 2-nov: la medalla del Guardián asoma en el ep. 2, se explica en el ep. 5 y en el ep. 6 se la da a Vittata, que se la ganó.' },
     { id: 'e_fiesta_i', disparador: 'evento:Chapter2Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Probaste, viste qué falló, lo cambiaste y volviste a probar. ¡Fiesta de techado!', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
     { id: 'e_fiesta_v2', disparador: 'evento:Chapter2Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Saca el plano del bote y lo extiende en la mesa, para todos.)', 'Ahora sí. Ya hay techo para todos. ¿Qué le falta a este bote?'] },
@@ -539,7 +539,7 @@
         if (!boceto) {
           elegir('Vittata', 'Dos bocetos de dos niveles. ¿Cuál cumple más tarjetas?', Object.keys(BOCETOS).map(k => ({ label: BOCETOS[k].label, k })), o => {
             poner('boceto_' + o.k); G.audio.play('tick'); dibujarCasa(true);
-            G.dialogo.say([di('Vittata', 'Voy con ' + BOCETOS[o.k].corto + '. Uso la madera y la paja que tenemos y el banco de trabajo.')], construir); // [KELVIN: qué materiales pasan del ep. 1]
+            G.dialogo.say([di('Vittata', 'Voy con ' + BOCETOS[o.k].corto + '. Uso la madera y la paja que tenemos y el banco de trabajo.')], construir); // Kelvin 4-nov (K5 A): madera, paja y el banco, sin lista del cap. 1.
           });
           return;
         }
@@ -789,7 +789,7 @@
         G.quiet = true; G.guardado.reset(true);
         check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
         check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
-        check('Los marcadores [KELVIN] no son canon: van en la nota de la escena, nunca en lo que lee el jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.nota)) && !G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.lineas.join(' '))));
+        check('Los marcadores [KELVIN] no son canon: van en la nota de la escena, nunca en lo que lee el jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN|^Kelvin /.test(e.nota || '')) && !G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test((e.lineas || []).join(' '))));
         useAt('iguaca'); drain();
         check('Iguaca da la misión', S.step === 0 && !!S.edu.inicio, 'paso ' + S.step);
         { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
