@@ -343,6 +343,41 @@ Verificación: vecinosTest 10/10 · humorTest 4/4 · trucosTest 7/7 · escondite
 maranaTest 5/5 · sorpresasTest 10/10 · comunidadesTest 19/19 · ciudadVivaTest 20/20 en la corrida
 post; familiaTest se comprueba aparte (ver fila de la tarea).
 
+## QA-110-mem · atribución de las «texturas generadas» y la flora sobre la Ciudad de los 36 (4-nov, hecha · Kimi 1)
+
+Herramienta nueva `tools/build/kimi1_qa110.js` (entrada con partida sembrada, sin creador; iPhone
+emulado 390×844 dpr 3 + UA iOS + táctil + CPU ×4, GPU real RX 5700 XT; ancla (-33,-136) a +30 m
+mirando a la ciudad; `ST.terminar()` con el fix de 54e24e9a; `AV.look.medir()` + volcado de todas
+las texturas sin URL con su malla/material/slot). Evidencia: `docs/img/kimi110/qa110_{r6,r7}.json`
+y capturas `qa110_r7_*_{villa,ciudad}.jpg`.
+
+Matiz del emulador: con `?calidad=` forzado en escritorio, `setCalidad` conserva el `texMax` del
+perfil inicial (`keep.texMax`, renderer.js:771) → el tope queda 0 y nada se encoge (r6: 318–575 MB
+«generadas», no representa un iPhone). Con UA de iPhone el perfil arranca en bajo (texMax 512) y el
+tope sí aplica: los números de abajo son lo que ve un iPhone.
+
+**Ciudad de los 36 drenada, iPhone emulado (estimación w·h·4·4/3 por objeto de textura):**
+
+| grupo | bajo | qué es |
+|---|---|---|
+| KB3D kit restaurado | 161,4 MB (38 t @1024², map+normal) | texturas de los edificios del kit (`DecoMd_KB3D_*`…); el look NO las encoge: `encoger()` se salta los CanvasTexture que no sean flora (look.js:209, decisión «no se recorta lo gráfico») |
+| atlas `_hd` | 21,2 MB (4 t @1024²) | ya en suelo de iPhone (MOVIL_PEQ, 63376aae); en escritorio 2048²/4096² |
+| flora | 40,7 MB (44 t) | de ellas **27,8 MB en 30 texturas de la banda `:sombra`**, que en bajo no se dibuja (`sombraFlora:false`) |
+| Vittata | 11,9 MB (3 t: 2×1024² + 1×512²) | jugador + segunda copia (familia CG-62); candidata a dedupe |
+| suelo + otros | ~18 MB | splat del terreno + cielo/agua |
+| **total estimado** | **281 MB** | medio: 282 MB (mismo tope 512 heredado del perfil bajo) |
+| heap JS | 271 MB | mecanismo de QA-153 (GLB retenidos en JS); geo GPU 20 estables |
+
+Solo 73 (bajo) / 87 (medio) texturas llegan a subir a la GPU: para Safari manda la medición real
+por GPU de QA-110 (pico 129–193 MB en ruta); esta estimación incluye imágenes retenidas en JS
+(canvases del look + ImageBitmaps cerrados/retentidos).
+
+**Recortes posibles (decisión):** (a) kit KB3D a 512 en bajo → ~40 MB (ahorro ~120 MB): cambia la
+imagen de los edificios de cerca → **Kelvin** (es el mismo pedido del rojo conocido de lookTest).
+(b) flora `:sombra` → placeholder 1×1 cuando `sombraFlora:false` (bajo): ~28 MB de JS/decodificación,
+sin cambio visual → seguro, carril `vegetacion.js` (Kimi 1). (c) dedupe de la textura de
+Vittata/familia: ~6–10 MB → carril personaje.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
