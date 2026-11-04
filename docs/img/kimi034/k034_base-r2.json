@@ -1,0 +1,3137 @@
+{
+  "etiqueta": "base-r2",
+  "ancho": 1600,
+  "alto": 900,
+  "calidades": {
+    "medio": {
+      "vistas": {
+        "ciudad": {
+          "pos": {
+            "x": -8,
+            "y": 9.2,
+            "z": -2.5
+          },
+          "fps": 77,
+          "stats": {
+            "fps": 85,
+            "calls": 119,
+            "triangulos": 1301450,
+            "calidad": "medio",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:tabonuco:hoja",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 862,
+              "tris": 5172
+            },
+            {
+              "nombre": "flora:tabonuco:corteza",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 15,
+              "geoTris": 1200,
+              "tris": 18000
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 11,
+              "geoTris": 504,
+              "tris": 5544
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 26,
+              "geoTris": 398,
+              "tris": 10348
+            },
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 352,
+              "tris": 352
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 33,
+              "geoTris": 568,
+              "tris": 18744
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 69,
+              "geoTris": 450,
+              "tris": 31050
+            },
+            {
+              "nombre": "flora:yagrumo:hoja",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 1120,
+              "tris": 2240
+            },
+            {
+              "nombre": "flora:yagrumo:corteza",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 656,
+              "tris": 3936
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 56,
+              "geoTris": 448,
+              "tris": 25088
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 12,
+              "geoTris": 320,
+              "tris": 3840
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 320,
+              "tris": 2880
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 360,
+              "tris": 2160
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 368,
+              "tris": 5888
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 45,
+              "geoTris": 360,
+              "tris": 16200
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 528,
+              "tris": 528
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 536,
+              "tris": 3752
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 36,
+              "geoTris": 512,
+              "tris": 18432
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 49,
+              "geoTris": 792,
+              "tris": 38808
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 53,
+              "geoTris": 312,
+              "tris": 16536
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 304,
+              "tris": 912
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 10,
+              "geoTris": 56,
+              "tris": 560
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 9,
+              "geoTris": 215,
+              "tris": 1935
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 15,
+              "geoTris": 126,
+              "tris": 1890
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 36,
+              "geoTris": 142,
+              "tris": 5112
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 4,
+              "geoTris": 280,
+              "tris": 1120
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 29,
+              "geoTris": 92,
+              "tris": 2668
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 6,
+              "geoTris": 132,
+              "tris": 792
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 13,
+              "geoTris": 128,
+              "tris": 1664
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 21,
+            "instanciasVisibles": 369,
+            "impostores": 2522,
+            "pasto": 15,
+            "colliders": 134,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 48.649553298950195,
+            "arbolesLod": 88,
+            "arbolesMalla": 80,
+            "trisArboles": 118762,
+            "topeTris": 120000,
+            "dArbol": 31.35896110534668,
+            "dSombra": 0,
+            "sombraR": 0,
+            "tope": 600
+          },
+          "instMedio": 224,
+          "trisMedioCorteza": 111076
+        },
+        "ciudad_aerea": {
+          "pos": {
+            "x": -33,
+            "y": 96.9,
+            "z": -136
+          },
+          "fps": 38,
+          "stats": {
+            "fps": 45,
+            "calls": 179,
+            "triangulos": 1477052,
+            "calidad": "medio",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:tabonuco:hoja",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 862,
+              "tris": 862
+            },
+            {
+              "nombre": "flora:tabonuco:corteza",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 1200,
+              "tris": 15600
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 15,
+              "geoTris": 504,
+              "tris": 7560
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 26,
+              "geoTris": 398,
+              "tris": 10348
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 43,
+              "geoTris": 568,
+              "tris": 24424
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 77,
+              "geoTris": 450,
+              "tris": 34650
+            },
+            {
+              "nombre": "flora:yagrumo:hoja",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 1120,
+              "tris": 1120
+            },
+            {
+              "nombre": "flora:yagrumo:corteza",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 8,
+              "geoTris": 656,
+              "tris": 5248
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 67,
+              "geoTris": 448,
+              "tris": 30016
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 320,
+              "tris": 2240
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 320,
+              "tris": 1920
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 15,
+              "geoTris": 368,
+              "tris": 5520
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 43,
+              "geoTris": 360,
+              "tris": 15480
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 4,
+              "geoTris": 528,
+              "tris": 2112
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 536,
+              "tris": 4824
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 33,
+              "geoTris": 512,
+              "tris": 16896
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 42,
+              "geoTris": 792,
+              "tris": 33264
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 54,
+              "geoTris": 312,
+              "tris": 16848
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 304,
+              "tris": 304
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 56,
+              "tris": 728
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 12,
+              "geoTris": 215,
+              "tris": 2580
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 11,
+              "geoTris": 126,
+              "tris": 1386
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 34,
+              "geoTris": 142,
+              "tris": 4828
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 7,
+              "geoTris": 280,
+              "tris": 1960
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 28,
+              "geoTris": 92,
+              "tris": 2576
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 5,
+              "geoTris": 132,
+              "tris": 660
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 9,
+              "geoTris": 128,
+              "tris": 1152
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 18,
+            "instanciasVisibles": 491,
+            "impostores": 4741,
+            "pasto": 13,
+            "colliders": 78,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 54.07868194580078,
+            "arbolesLod": 113,
+            "arbolesMalla": 113,
+            "trisArboles": 119196,
+            "topeTris": 120000,
+            "dArbol": 41.82444381713867,
+            "dSombra": 0,
+            "sombraR": 0,
+            "tope": 600
+          },
+          "instMedio": 212,
+          "trisMedioCorteza": 100536
+        },
+        "meseta": {
+          "pos": {
+            "x": -33,
+            "y": 96.9,
+            "z": -136
+          },
+          "fps": 37,
+          "stats": {
+            "fps": 61,
+            "calls": 341,
+            "triangulos": 2121224,
+            "calidad": "medio",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:tabonuco:hoja",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 5,
+              "geoTris": 862,
+              "tris": 4310
+            },
+            {
+              "nombre": "flora:tabonuco:corteza",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 1200,
+              "tris": 19200
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 11,
+              "geoTris": 504,
+              "tris": 5544
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 23,
+              "geoTris": 398,
+              "tris": 9154
+            },
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 352,
+              "tris": 352
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 39,
+              "geoTris": 568,
+              "tris": 22152
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 73,
+              "geoTris": 450,
+              "tris": 32850
+            },
+            {
+              "nombre": "flora:yagrumo:hoja",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 1120,
+              "tris": 2240
+            },
+            {
+              "nombre": "flora:yagrumo:corteza",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 4,
+              "geoTris": 656,
+              "tris": 2624
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 59,
+              "geoTris": 448,
+              "tris": 26432
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 320,
+              "tris": 4160
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 12,
+              "geoTris": 320,
+              "tris": 3840
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 360,
+              "tris": 2520
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 17,
+              "geoTris": 368,
+              "tris": 6256
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 55,
+              "geoTris": 360,
+              "tris": 19800
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 528,
+              "tris": 528
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 536,
+              "tris": 4824
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 33,
+              "geoTris": 512,
+              "tris": 16896
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 42,
+              "geoTris": 792,
+              "tris": 33264
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 60,
+              "geoTris": 312,
+              "tris": 18720
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 304,
+              "tris": 304
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 15,
+              "geoTris": 56,
+              "tris": 840
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 11,
+              "geoTris": 215,
+              "tris": 2365
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 12,
+              "geoTris": 126,
+              "tris": 1512
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 34,
+              "geoTris": 142,
+              "tris": 4828
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 2,
+              "geoTris": 280,
+              "tris": 560
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 38,
+              "geoTris": 92,
+              "tris": 3496
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 132,
+              "tris": 1056
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 9,
+              "geoTris": 128,
+              "tris": 1152
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 18,
+            "instanciasVisibles": 498,
+            "impostores": 5084,
+            "pasto": 13,
+            "colliders": 78,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 53.68663787841797,
+            "arbolesLod": 114,
+            "arbolesMalla": 113,
+            "trisArboles": 119428,
+            "topeTris": 120000,
+            "dArbol": 41.02729415893555,
+            "dSombra": 0,
+            "sombraR": 0,
+            "tope": 600
+          },
+          "instMedio": 216,
+          "trisMedioCorteza": 103262
+        },
+        "bahia": {
+          "pos": {
+            "x": 150,
+            "y": 1.3,
+            "z": 218
+          },
+          "fps": 9,
+          "stats": {
+            "fps": 1,
+            "calls": 145,
+            "triangulos": 499038,
+            "calidad": "medio",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:flamboyan:hoja",
+              "modelo": "flamboyan",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 1664,
+              "tris": 4992
+            },
+            {
+              "nombre": "flora:flamboyan:corteza",
+              "modelo": "flamboyan",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 4,
+              "geoTris": 1200,
+              "tris": 4800
+            },
+            {
+              "nombre": "flora:tabonuco:hoja",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 34,
+              "geoTris": 862,
+              "tris": 29308
+            },
+            {
+              "nombre": "flora:tabonuco:corteza",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 70,
+              "geoTris": 1200,
+              "tris": 84000
+            },
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 352,
+              "tris": 1056
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 8,
+              "geoTris": 568,
+              "tris": 4544
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 14,
+              "geoTris": 450,
+              "tris": 6300
+            },
+            {
+              "nombre": "flora:yagrumo:hoja",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 8,
+              "geoTris": 1120,
+              "tris": 8960
+            },
+            {
+              "nombre": "flora:yagrumo:corteza",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 19,
+              "geoTris": 656,
+              "tris": 12464
+            },
+            {
+              "nombre": "flora:bambu:hoja",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 576,
+              "tris": 1152
+            },
+            {
+              "nombre": "flora:bambu:corteza",
+              "modelo": "bambu",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 1595,
+              "tris": 4785
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 320,
+              "tris": 2240
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 5,
+              "geoTris": 320,
+              "tris": 1600
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 360,
+              "tris": 720
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 368,
+              "tris": 2208
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 12,
+              "geoTris": 360,
+              "tris": 4320
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 528,
+              "tris": 4752
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 19,
+              "geoTris": 536,
+              "tris": 10184
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 304,
+              "tris": 304
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 56,
+              "tris": 56
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 36,
+              "geoTris": 215,
+              "tris": 7740
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 6,
+              "geoTris": 142,
+              "tris": 852
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 11,
+              "geoTris": 280,
+              "tris": 3080
+            },
+            {
+              "nombre": "flora:bambu:hoja:lod",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 1,
+              "geoTris": 144,
+              "tris": 144
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 6,
+              "geoTris": 92,
+              "tris": 552
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 10,
+              "geoTris": 132,
+              "tris": 1320
+            },
+            {
+              "nombre": "flora:flamboyan:hoja:lod",
+              "modelo": "flamboyan",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 1,
+              "geoTris": 416,
+              "tris": 416
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 19,
+            "instanciasVisibles": 247,
+            "impostores": 5264,
+            "pasto": 1,
+            "colliders": 36,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 67.32718276977539,
+            "arbolesLod": 74,
+            "arbolesMalla": 70,
+            "trisArboles": 119384,
+            "topeTris": 120000,
+            "dArbol": 55.525442123413086,
+            "dSombra": 0,
+            "sombraR": 0,
+            "tope": 600
+          },
+          "instMedio": 120,
+          "trisMedioCorteza": 68406
+        },
+        "ruinas_yunque": {
+          "pos": {
+            "x": -4,
+            "y": 25.4,
+            "z": -84.8
+          },
+          "fps": 16,
+          "stats": {
+            "fps": 6,
+            "calls": 150,
+            "triangulos": 1432678,
+            "calidad": "medio",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:tabonuco:hoja",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 20,
+              "geoTris": 862,
+              "tris": 17240
+            },
+            {
+              "nombre": "flora:tabonuco:corteza",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 32,
+              "geoTris": 1200,
+              "tris": 38400
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 504,
+              "tris": 1008
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 10,
+              "geoTris": 398,
+              "tris": 3980
+            },
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 8,
+              "geoTris": 352,
+              "tris": 2816
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 32,
+              "geoTris": 568,
+              "tris": 18176
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 67,
+              "geoTris": 450,
+              "tris": 30150
+            },
+            {
+              "nombre": "flora:yagrumo:hoja",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 5,
+              "geoTris": 1120,
+              "tris": 5600
+            },
+            {
+              "nombre": "flora:yagrumo:corteza",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 11,
+              "geoTris": 656,
+              "tris": 7216
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 17,
+              "geoTris": 448,
+              "tris": 7616
+            },
+            {
+              "nombre": "flora:bambu:corteza",
+              "modelo": "bambu",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 1,
+              "geoTris": 1595,
+              "tris": 1595
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 320,
+              "tris": 4160
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 20,
+              "geoTris": 320,
+              "tris": 6400
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 25,
+              "geoTris": 360,
+              "tris": 9000
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 31,
+              "geoTris": 368,
+              "tris": 11408
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 53,
+              "geoTris": 360,
+              "tris": 19080
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 528,
+              "tris": 3168
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 18,
+              "geoTris": 536,
+              "tris": 9648
+            },
+            {
+              "nombre": "flora:hojarasca:hoja",
+              "modelo": "hojarasca",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 36,
+              "tris": 216
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 5,
+              "geoTris": 512,
+              "tris": 2560
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 792,
+              "tris": 10296
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 54,
+              "geoTris": 312,
+              "tris": 16848
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 304,
+              "tris": 2128
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 18,
+              "geoTris": 56,
+              "tris": 1008
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 12,
+              "geoTris": 215,
+              "tris": 2580
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 126,
+              "tris": 1008
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 35,
+              "geoTris": 142,
+              "tris": 4970
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 6,
+              "geoTris": 280,
+              "tris": 1680
+            },
+            {
+              "nombre": "flora:bambu:hoja:lod",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 1,
+              "geoTris": 144,
+              "tris": 144
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 22,
+              "geoTris": 92,
+              "tris": 2024
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 12,
+              "geoTris": 132,
+              "tris": 1584
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 128,
+              "tris": 1024
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 23,
+            "instanciasVisibles": 457,
+            "impostores": 3774,
+            "pasto": 18,
+            "colliders": 154,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 48.204755783081055,
+            "arbolesLod": 105,
+            "arbolesMalla": 101,
+            "trisArboles": 119972,
+            "topeTris": 120000,
+            "dArbol": 32.308576583862305,
+            "dSombra": 0,
+            "sombraR": 0,
+            "tope": 600
+          },
+          "instMedio": 180,
+          "trisMedioCorteza": 90277
+        }
+      },
+      "consola": "0 errores"
+    },
+    "alto": {
+      "vistas": {
+        "ciudad": {
+          "pos": {
+            "x": -20,
+            "y": 97,
+            "z": -133
+          },
+          "fps": 64,
+          "stats": {
+            "fps": 66,
+            "calls": 85,
+            "triangulos": 4107920,
+            "calidad": "alto",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 352,
+              "tris": 1056
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 100,
+              "geoTris": 448,
+              "tris": 44800
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 18,
+              "geoTris": 320,
+              "tris": 5760
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 20,
+              "geoTris": 320,
+              "tris": 6400
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 360,
+              "tris": 3240
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 94,
+              "geoTris": 312,
+              "tris": 29328
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 304,
+              "tris": 912
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 15,
+              "geoTris": 56,
+              "tris": 840
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:sombra",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 23,
+              "geoTris": 862,
+              "tris": 19826
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 22,
+              "geoTris": 215,
+              "tris": 4730
+            },
+            {
+              "nombre": "flora:tabonuco:corteza:sombra",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 45,
+              "geoTris": 1200,
+              "tris": 54000
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 32,
+              "geoTris": 504,
+              "tris": 16128
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 23,
+              "geoTris": 126,
+              "tris": 2898
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 55,
+              "geoTris": 398,
+              "tris": 21890
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 88,
+              "geoTris": 568,
+              "tris": 49984
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 109,
+              "geoTris": 142,
+              "tris": 15478
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 197,
+              "geoTris": 450,
+              "tris": 88650
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:sombra",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 6,
+              "geoTris": 1120,
+              "tris": 6720
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 13,
+              "geoTris": 280,
+              "tris": 3640
+            },
+            {
+              "nombre": "flora:yagrumo:corteza:sombra",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 19,
+              "geoTris": 656,
+              "tris": 12464
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 57,
+              "geoTris": 368,
+              "tris": 20976
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 65,
+              "geoTris": 92,
+              "tris": 5980
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 122,
+              "geoTris": 360,
+              "tris": 43920
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 10,
+              "geoTris": 528,
+              "tris": 5280
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 18,
+              "geoTris": 132,
+              "tris": 2376
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 28,
+              "geoTris": 536,
+              "tris": 15008
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 54,
+              "geoTris": 512,
+              "tris": 27648
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 80,
+              "geoTris": 792,
+              "tris": 63360
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 26,
+              "geoTris": 128,
+              "tris": 3328
+            }
+          ],
+          "veg": {
+            "fundido": 0,
+            "total": 11544,
+            "mallas": 22,
+            "instanciasVisibles": 1078,
+            "impostores": 1479,
+            "pasto": 15,
+            "colliders": 72,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 86.20389175415039,
+            "arbolesLod": 266,
+            "arbolesMalla": 272,
+            "trisArboles": 298802,
+            "topeTris": 300000,
+            "dArbol": 60.49521255493164,
+            "dSombra": 29.912463438847112,
+            "sombraR": 30,
+            "tope": 2000
+          },
+          "instMedio": 746,
+          "trisMedioCorteza": 97128
+        },
+        "ciudad_aerea": {
+          "pos": {
+            "x": -33,
+            "y": 96.9,
+            "z": -136
+          },
+          "fps": 35,
+          "stats": {
+            "fps": 47,
+            "calls": 150,
+            "triangulos": 3294120,
+            "calidad": "alto",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 352,
+              "tris": 704
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 100,
+              "geoTris": 448,
+              "tris": 44800
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 13,
+              "geoTris": 320,
+              "tris": 4160
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 320,
+              "tris": 5120
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 12,
+              "geoTris": 360,
+              "tris": 4320
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 99,
+              "geoTris": 312,
+              "tris": 30888
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 5,
+              "geoTris": 304,
+              "tris": 1520
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 56,
+              "tris": 896
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:sombra",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 18,
+              "geoTris": 862,
+              "tris": 15516
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 32,
+              "geoTris": 215,
+              "tris": 6880
+            },
+            {
+              "nombre": "flora:tabonuco:corteza:sombra",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 50,
+              "geoTris": 1200,
+              "tris": 60000
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 29,
+              "geoTris": 504,
+              "tris": 14616
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 126,
+              "tris": 1008
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 37,
+              "geoTris": 398,
+              "tris": 14726
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 101,
+              "geoTris": 568,
+              "tris": 57368
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 112,
+              "geoTris": 142,
+              "tris": 15904
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 213,
+              "geoTris": 450,
+              "tris": 95850
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:sombra",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 9,
+              "geoTris": 1120,
+              "tris": 10080
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 18,
+              "geoTris": 280,
+              "tris": 5040
+            },
+            {
+              "nombre": "flora:yagrumo:corteza:sombra",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 27,
+              "geoTris": 656,
+              "tris": 17712
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 57,
+              "geoTris": 368,
+              "tris": 20976
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 70,
+              "geoTris": 92,
+              "tris": 6440
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 127,
+              "geoTris": 360,
+              "tris": 45720
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 15,
+              "geoTris": 528,
+              "tris": 7920
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 17,
+              "geoTris": 132,
+              "tris": 2244
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 32,
+              "geoTris": 536,
+              "tris": 17152
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 46,
+              "geoTris": 512,
+              "tris": 23552
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 54,
+              "geoTris": 792,
+              "tris": 42768
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 128,
+              "tris": 1024
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 21,
+            "instanciasVisibles": 1098,
+            "impostores": 4175,
+            "pasto": 16,
+            "colliders": 78,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 85.58638000488281,
+            "arbolesLod": 267,
+            "arbolesMalla": 279,
+            "trisArboles": 299296,
+            "topeTris": 300000,
+            "dArbol": 61.01986885070801,
+            "dSombra": 29.85720896306544,
+            "sombraR": 30,
+            "tope": 2000
+          },
+          "instMedio": 768,
+          "trisMedioCorteza": 98992
+        },
+        "meseta": {
+          "pos": {
+            "x": -40,
+            "y": 96.8,
+            "z": -131
+          },
+          "fps": 37,
+          "stats": {
+            "fps": 64,
+            "calls": 265,
+            "triangulos": 3986387,
+            "calidad": "alto",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 2,
+              "geoTris": 352,
+              "tris": 704
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 110,
+              "geoTris": 448,
+              "tris": 49280
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 24,
+              "geoTris": 320,
+              "tris": 7680
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 27,
+              "geoTris": 320,
+              "tris": 8640
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 360,
+              "tris": 5760
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 116,
+              "geoTris": 312,
+              "tris": 36192
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 304,
+              "tris": 2128
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 18,
+              "geoTris": 56,
+              "tris": 1008
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:sombra",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 20,
+              "geoTris": 862,
+              "tris": 17240
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 27,
+              "geoTris": 215,
+              "tris": 5805
+            },
+            {
+              "nombre": "flora:tabonuco:corteza:sombra",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 47,
+              "geoTris": 1200,
+              "tris": 56400
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 31,
+              "geoTris": 504,
+              "tris": 15624
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 16,
+              "geoTris": 126,
+              "tris": 2016
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 47,
+              "geoTris": 398,
+              "tris": 18706
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 96,
+              "geoTris": 568,
+              "tris": 54528
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 98,
+              "geoTris": 142,
+              "tris": 13916
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 194,
+              "geoTris": 450,
+              "tris": 87300
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:sombra",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 7,
+              "geoTris": 1120,
+              "tris": 7840
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 21,
+              "geoTris": 280,
+              "tris": 5880
+            },
+            {
+              "nombre": "flora:yagrumo:corteza:sombra",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 28,
+              "geoTris": 656,
+              "tris": 18368
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 68,
+              "geoTris": 368,
+              "tris": 25024
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 56,
+              "geoTris": 92,
+              "tris": 5152
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 124,
+              "geoTris": 360,
+              "tris": 44640
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 11,
+              "geoTris": 528,
+              "tris": 5808
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 19,
+              "geoTris": 132,
+              "tris": 2508
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 30,
+              "geoTris": 536,
+              "tris": 16080
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 45,
+              "geoTris": 512,
+              "tris": 23040
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 70,
+              "geoTris": 792,
+              "tris": 55440
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:lod",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 25,
+              "geoTris": 128,
+              "tris": 3200
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 21,
+            "instanciasVisibles": 998,
+            "impostores": 3529,
+            "pasto": 18,
+            "colliders": 91,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 101.70374298095703,
+            "arbolesLod": 265,
+            "arbolesMalla": 264,
+            "trisArboles": 299962,
+            "topeTris": 300000,
+            "dArbol": 66.9408187866211,
+            "dSombra": 29.72564470805206,
+            "sombraR": 30,
+            "tope": 2000
+          },
+          "instMedio": 1257,
+          "trisMedioCorteza": 161072
+        },
+        "bahia": {
+          "pos": {
+            "x": 150,
+            "y": 1.3,
+            "z": 218
+          },
+          "fps": 8,
+          "stats": {
+            "fps": 2,
+            "calls": 88,
+            "triangulos": 654097,
+            "calidad": "alto",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 7,
+              "geoTris": 352,
+              "tris": 2464
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 11,
+              "geoTris": 320,
+              "tris": 3520
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 10,
+              "geoTris": 320,
+              "tris": 3200
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 14,
+              "geoTris": 360,
+              "tris": 5040
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 3,
+              "geoTris": 312,
+              "tris": 936
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 14,
+              "geoTris": 56,
+              "tris": 784
+            },
+            {
+              "nombre": "flora:ceiba:hoja:sombra",
+              "modelo": "ceiba",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 1,
+              "geoTris": 2738,
+              "tris": 2738
+            },
+            {
+              "nombre": "flora:ceiba:corteza:sombra",
+              "modelo": "ceiba",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 1,
+              "geoTris": 2936,
+              "tris": 2936
+            },
+            {
+              "nombre": "flora:flamboyan:hoja:sombra",
+              "modelo": "flamboyan",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 4,
+              "geoTris": 1664,
+              "tris": 6656
+            },
+            {
+              "nombre": "flora:flamboyan:corteza:sombra",
+              "modelo": "flamboyan",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 4,
+              "geoTris": 1200,
+              "tris": 4800
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:sombra",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 83,
+              "geoTris": 862,
+              "tris": 71546
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 18,
+              "geoTris": 215,
+              "tris": 3870
+            },
+            {
+              "nombre": "flora:tabonuco:corteza:sombra",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 101,
+              "geoTris": 1200,
+              "tris": 121200
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 22,
+              "geoTris": 568,
+              "tris": 12496
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 16,
+              "geoTris": 142,
+              "tris": 2272
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 38,
+              "geoTris": 450,
+              "tris": 17100
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:sombra",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 23,
+              "geoTris": 1120,
+              "tris": 25760
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 5,
+              "geoTris": 280,
+              "tris": 1400
+            },
+            {
+              "nombre": "flora:yagrumo:corteza:sombra",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 28,
+              "geoTris": 656,
+              "tris": 18368
+            },
+            {
+              "nombre": "flora:bambu:hoja:sombra",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 7,
+              "geoTris": 576,
+              "tris": 4032
+            },
+            {
+              "nombre": "flora:bambu:corteza:sombra",
+              "modelo": "bambu",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 7,
+              "geoTris": 1595,
+              "tris": 11165
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 13,
+              "geoTris": 368,
+              "tris": 4784
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 7,
+              "geoTris": 92,
+              "tris": 644
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 20,
+              "geoTris": 360,
+              "tris": 7200
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 22,
+              "geoTris": 528,
+              "tris": 11616
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 4,
+              "geoTris": 132,
+              "tris": 528
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 26,
+              "geoTris": 536,
+              "tris": 13936
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 22,
+            "instanciasVisibles": 596,
+            "impostores": 228,
+            "pasto": 14,
+            "colliders": 36,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 101.39647674560547,
+            "arbolesLod": 200,
+            "arbolesMalla": 175,
+            "trisArboles": 299391,
+            "topeTris": 300000,
+            "dArbol": 71.40837478637695,
+            "dSombra": 0,
+            "sombraR": 30,
+            "tope": 2000
+          },
+          "instMedio": 323,
+          "trisMedioCorteza": 26192
+        },
+        "ruinas_yunque": {
+          "pos": {
+            "x": -4,
+            "y": 25.4,
+            "z": -84.8
+          },
+          "fps": 7,
+          "stats": {
+            "fps": 1,
+            "calls": 154,
+            "triangulos": 2666987,
+            "calidad": "alto",
+            "dpr": 1,
+            "post": true,
+            "sombras": true,
+            "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "flora": [
+            {
+              "nombre": "flora:heliconia:hoja",
+              "modelo": "heliconia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 16,
+              "geoTris": 352,
+              "tris": 5632
+            },
+            {
+              "nombre": "flora:bromelia:hoja",
+              "modelo": "bromelia",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 33,
+              "geoTris": 448,
+              "tris": 14784
+            },
+            {
+              "nombre": "flora:roca_musgo_a:roca",
+              "modelo": "roca_musgo_a",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 18,
+              "geoTris": 320,
+              "tris": 5760
+            },
+            {
+              "nombre": "flora:roca_musgo_b:roca",
+              "modelo": "roca_musgo_b",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 29,
+              "geoTris": 320,
+              "tris": 9280
+            },
+            {
+              "nombre": "flora:piedras_rio:roca",
+              "modelo": "piedras_rio",
+              "tipo": "roca",
+              "banda": "lejos",
+              "instancias": 34,
+              "geoTris": 360,
+              "tris": 12240
+            },
+            {
+              "nombre": "flora:hojarasca:hoja",
+              "modelo": "hojarasca",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 6,
+              "geoTris": 36,
+              "tris": 216
+            },
+            {
+              "nombre": "flora:helecho_suelo:hoja",
+              "modelo": "helecho_suelo",
+              "tipo": "hoja",
+              "banda": "lejos",
+              "instancias": 100,
+              "geoTris": 312,
+              "tris": 31200
+            },
+            {
+              "nombre": "flora:tronco_caido:corteza",
+              "modelo": "tronco_caido",
+              "tipo": "corteza",
+              "banda": "lejos",
+              "instancias": 9,
+              "geoTris": 304,
+              "tris": 2736
+            },
+            {
+              "nombre": "flora:manchas",
+              "modelo": "manchas",
+              "banda": "lejos",
+              "instancias": 7307,
+              "geoTris": 2,
+              "tris": 14614
+            },
+            {
+              "nombre": "flora:pasto",
+              "modelo": "pasto",
+              "banda": "lejos",
+              "instancias": 23,
+              "geoTris": 56,
+              "tris": 1288
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:sombra",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 40,
+              "geoTris": 862,
+              "tris": 34480
+            },
+            {
+              "nombre": "flora:tabonuco:hoja:lod",
+              "modelo": "tabonuco",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 65,
+              "geoTris": 215,
+              "tris": 13975
+            },
+            {
+              "nombre": "flora:tabonuco:corteza:sombra",
+              "modelo": "tabonuco",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 105,
+              "geoTris": 1200,
+              "tris": 126000
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 12,
+              "geoTris": 504,
+              "tris": 6048
+            },
+            {
+              "nombre": "flora:helecho_arboreo:hoja:lod",
+              "modelo": "helecho_arboreo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 12,
+              "geoTris": 126,
+              "tris": 1512
+            },
+            {
+              "nombre": "flora:helecho_arboreo:corteza:sombra",
+              "modelo": "helecho_arboreo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 24,
+              "geoTris": 398,
+              "tris": 9552
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 79,
+              "geoTris": 568,
+              "tris": 44872
+            },
+            {
+              "nombre": "flora:palma_sierra:hoja:lod",
+              "modelo": "palma_sierra",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 46,
+              "geoTris": 142,
+              "tris": 6532
+            },
+            {
+              "nombre": "flora:palma_sierra:corteza:sombra",
+              "modelo": "palma_sierra",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 125,
+              "geoTris": 450,
+              "tris": 56250
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:sombra",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 13,
+              "geoTris": 1120,
+              "tris": 14560
+            },
+            {
+              "nombre": "flora:yagrumo:hoja:lod",
+              "modelo": "yagrumo",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 26,
+              "geoTris": 280,
+              "tris": 7280
+            },
+            {
+              "nombre": "flora:yagrumo:corteza:sombra",
+              "modelo": "yagrumo",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 39,
+              "geoTris": 656,
+              "tris": 25584
+            },
+            {
+              "nombre": "flora:bambu:hoja:sombra",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 4,
+              "geoTris": 576,
+              "tris": 2304
+            },
+            {
+              "nombre": "flora:bambu:hoja:lod",
+              "modelo": "bambu",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 8,
+              "geoTris": 144,
+              "tris": 1152
+            },
+            {
+              "nombre": "flora:bambu:corteza:sombra",
+              "modelo": "bambu",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 12,
+              "geoTris": 1595,
+              "tris": 19140
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 65,
+              "geoTris": 368,
+              "tris": 23920
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:hoja:lod",
+              "modelo": "palma_sierra_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 37,
+              "geoTris": 92,
+              "tris": 3404
+            },
+            {
+              "nombre": "flora:palma_sierra_joven:corteza:sombra",
+              "modelo": "palma_sierra_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 102,
+              "geoTris": 360,
+              "tris": 36720
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 25,
+              "geoTris": 528,
+              "tris": 13200
+            },
+            {
+              "nombre": "flora:yagrumo_joven:hoja:lod",
+              "modelo": "yagrumo_joven",
+              "tipo": "hoja",
+              "banda": "lod",
+              "instancias": 17,
+              "geoTris": 132,
+              "tris": 2244
+            },
+            {
+              "nombre": "flora:yagrumo_joven:corteza:sombra",
+              "modelo": "yagrumo_joven",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 42,
+              "geoTris": 536,
+              "tris": 22512
+            },
+            {
+              "nombre": "flora:arbol_enano:hoja:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "hoja",
+              "banda": "sombra",
+              "instancias": 15,
+              "geoTris": 512,
+              "tris": 7680
+            },
+            {
+              "nombre": "flora:arbol_enano:corteza:sombra",
+              "modelo": "arbol_enano",
+              "tipo": "corteza",
+              "banda": "sombra",
+              "instancias": 15,
+              "geoTris": 792,
+              "tris": 11880
+            }
+          ],
+          "veg": {
+            "fundido": 0.75,
+            "total": 11544,
+            "mallas": 24,
+            "instanciasVisibles": 988,
+            "impostores": 3522,
+            "pasto": 23,
+            "colliders": 154,
+            "arboles": 7307,
+            "bosque": 5372,
+            "tepuy": 307,
+            "copasCima": 0,
+            "dLod": 87.68360900878906,
+            "arbolesLod": 214,
+            "arbolesMalla": 254,
+            "trisArboles": 299655,
+            "topeTris": 300000,
+            "dArbol": 53.73030471801758,
+            "dSombra": 29.91146006647289,
+            "sombraR": 30,
+            "tope": 2000
+          },
+          "instMedio": 595,
+          "trisMedioCorteza": 93924
+        }
+      },
+      "consola": "0 errores"
+    }
+  }
+}

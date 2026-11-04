@@ -495,7 +495,10 @@ AVE.module('vegetacion', function (G) {
     for (const p of partes) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
     for (const p of partes) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
-      const geoL = cat === 'arbol' && p.tipo === 'hoja' ? geoLOD(p.geo) : p.geo;
+      // KIMI-034: la corteza del árbol también se decima para la banda lod (geoLOD, como la hoja). Antes solo la hoja
+      // tenía LOD: la banda medio dibujaba el tronco a geometría completa (~70–110 k tris honestos por vista en
+      // calidad medio, frente a los 120 k del tope). Las rocas quedan fuera: su silueta se lee y ya son ligeras.
+      const geoL = cat === 'arbol' && (p.tipo === 'hoja' || p.tipo === 'corteza') ? geoLOD(p.geo) : p.geo;
       // QA-110-mem (Kimi 1): la banda cerca (la :sombra, que proyecta sombra con su customDepthMaterial) solo se usa
       // cuando sombraR > 0 ('alto') y la banda lod solo cuando lodMax > maxArb (medio/alto): en 'bajo' sus InstancedMesh
       // y los buffers de instancia que reservan (n×76 B) vivían creadas de arranque y nunca se llenaban. Se crean
@@ -512,7 +515,7 @@ AVE.module('vegetacion', function (G) {
         scene.add(im);
         return im;
       };
-      g.prims.push({ mk, cerca: null, lejos: mk(false), lod: null, sinLod: cat === 'arbol' && p.tipo !== 'hoja', puedeCerca: cat === 'arbol', puedeLod: cat === 'arbol' && p.tipo === 'hoja', trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
+      g.prims.push({ mk, cerca: null, lejos: mk(false), lod: null, sinLod: cat === 'arbol' && p.tipo !== 'hoja', puedeCerca: cat === 'arbol', puedeLod: cat === 'arbol' && p.tipo !== 'roca', trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
       g.trisLod = (g.trisLod || 0) + g.prims[g.prims.length - 1].trisLod;
       mats.push(mat);
     }
@@ -862,15 +865,20 @@ AVE.module('vegetacion', function (G) {
         // Una sola malla ('cerca', la que proyecta sombra y lleva customDepthMaterial) cubre todo el tramo de malla; el coste
         // añadido en el mapa de sombras son solo vértices de instancias fuera de su caja ortográfica (se recortan en hardware).
         // Además la flora no-árbol a menos de sombraR ya no cae en una lista cuya malla es null (antes desaparecía en 'alto').
-        // KIMI-021: la corteza/rocas usan la geometría completa en ambas bandas (solo la hoja tiene LOD
-        // decimado): una sola malla cubre cerca+lejos+medio y la banda lod desaparece para esas prims (−1 call por modelo).
+        // KIMI-021: la corteza/rocas usan la geometría completa en ambas bandas: una sola malla cubre cerca+lejos+medio y la
+        // banda lod desaparece para esas prims (−1 call por modelo).
+        // KIMI-034: la corteza del árbol vuelve a tener banda lod con geometría decimada (geoLOD), pero SOLO fuera de
+        // 'alto': en 'alto' la malla :sombra sigue cubriéndola entera (la peor vista de streamingTest no gana calls) y en
+        // 'bajo' la banda medio no existe. En medio la banda lod cuesta +1 call por modelo con árboles a media distancia
+        // a cambio de ~75 % menos triángulos de tronco en esa banda (medido 68–111 k tris de corteza lod por vista).
+        const lodCorteza = pr.sinLod && pr.puedeLod; // corteza de árbol (las rocas y el resto quedan como en KIMI-021)
         if (sombraR && (pr.cerca || pr.puedeCerca)) { // solo los árboles tienen banda :sombra; la flora no-árbol sigue por 'lejos'
           if (!pr.cerca) pr.cerca = pr.mk(true); // QA-110-mem: banda :sombra creada a la primera vez que hace falta
           llenar(pr.cerca, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); llenar(pr.lejos, P, []);
         }
-        else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); }
-        if (medio.length && !pr.lod && pr.puedeLod) pr.lod = pr.mk(false, true); // QA-110-mem: banda lod creada a la primera vez que hace falta
-        if (pr.lod) llenar(pr.lod, P, medio);
+        else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, lodCorteza ? cerca.concat(lejos) : pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); }
+        if (medio.length && !pr.lod && pr.puedeLod && !(lodCorteza && sombraR)) pr.lod = pr.mk(false, true); // QA-110-mem: banda lod creada a la primera vez que hace falta
+        if (pr.lod) llenar(pr.lod, P, lodCorteza && sombraR ? [] : medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
         g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»
         if (mt.userData.fade !== undefined) mt.userData.fade = g.own.uFade.value;
