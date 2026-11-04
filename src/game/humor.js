@@ -6,7 +6,9 @@ window.AVHumor = function (G) {
   if (G.humor) return G.humor;
   const S = G.S, M = G.fisica.MOVE;
   const FLORES = [{ x: 125, z: 140 }, { x: 20, z: 30 }];
-  let quieta = 0, loops = 0, nadaba = false, ultimo = '';
+  let quieta = 0, loops = 0, nadaba = false, ultimo = '', siestas = 0;
+  const CLAVE_H = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.humor';
+  try { const d = JSON.parse(localStorage.getItem(CLAVE_H) || 'null'); if (d && d.siestas > 0) siestas = Math.min(999, d.siestas | 0); } catch (e) { /* sin almacén */ }
   if (G.audio && G.audio.define) {
     try { G.audio.define('humor', (t, a, X) => X.tone(700, t, 0.12, { type: 'square', gain: 0.04 })); } catch (e) { /* ya estaba */ }
   }
@@ -18,7 +20,7 @@ window.AVHumor = function (G) {
     else if (id === 'mareo') gesto('molestia');
     else if (id === 'resbalon') { if (G.fx && G.fx.polvo) G.fx.polvo(S.pos.x, S.pos.y, S.pos.z, 0.6); }
     else if (id === 'sacudida') { if (G.fx && G.fx.drops) G.fx.drops(S.pos.x, S.pos.y + 0.4, S.pos.z, 1, G.terreno.height(S.pos.x, S.pos.z)); }
-    else if (id === 'bostezo' || id === 'siesta') gesto('idea');
+    else if (id === 'bostezo' || id === 'siesta') { gesto('idea'); if (id === 'siesta' && siestas < 999) { siestas++; try { localStorage.setItem(CLAVE_H, JSON.stringify({ v: 1, siestas })); } catch (e) { /* sin almacén */ } } }
     else if (id === 'risa') gesto('celebrar');
     if (G.ui && G.ui.toast && !G.quiet) {
       const t = { estornudo: '¡Achís!', mareo: '¡Qué mareo!', resbalon: '¡Ups, resbalón!', sacudida: '¡Sacudida de plumas!', bostezo: 'Bostezo…', siesta: 'Se quedó dormida.', risa: '¡Ja, ja!' };
@@ -48,7 +50,8 @@ window.AVHumor = function (G) {
   G.on('update', paso);
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
-    const q = G.quiet;
+    const q = G.quiet, siestasAntes = siestas;
+    let crudoH = null; try { crudoH = localStorage.getItem(CLAVE_H); } catch (e) { /* */ }
     try {
       G.quiet = false;
       ok('El estornudo usa un gesto que ya existe', hacer('estornudo') === 'estornudo');
@@ -59,7 +62,8 @@ window.AVHumor = function (G) {
       paso(0.05, true);
       ok('Quieta un rato, se duerme', ultimo === 'siesta', ultimo + ' ' + quieta.toFixed(2));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
-    G.quiet = q; quieta = 0; loops = 0;
+    G.quiet = q; quieta = 0; loops = 0; siestas = siestasAntes;
+    try { if (crudoH == null) localStorage.removeItem(CLAVE_H); else localStorage.setItem(CLAVE_H, crudoH); } catch (e) { /* */ }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
   G.humor = { hacer, paso, test, get ultimo() { return ultimo; } };

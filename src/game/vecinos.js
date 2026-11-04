@@ -12,6 +12,20 @@ window.AVVecinos = function (G) {
   const SITIOS = [{ id: 'villa', x: 125, z: 140 }, { id: 'ciudad', x: 11, z: -76 }];
   const TOPE = { bajo: 0, medio: 6, alto: 12 };
   const ESPECIE = ['coqui', 'lagartijo', 'mariposa'];
+  const CLAVE_V = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.vecinos';
+  const VISTOS = { coqui: false, lagartijo: false, mariposa: false };
+  function guardarVistos() {
+    const lista = [];
+    if (VISTOS.coqui) lista.push('coqui');
+    if (VISTOS.lagartijo) lista.push('lagartijo');
+    if (VISTOS.mariposa) lista.push('mariposa');
+    try { localStorage.setItem(CLAVE_V, JSON.stringify({ v: 1, vistos: lista })); } catch (e) { /* sin almacén */ }
+  }
+  function ver(esp) { if (!VISTOS[esp]) { VISTOS[esp] = true; guardarVistos(); } }
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE_V) || 'null');
+    if (d && Array.isArray(d.vistos)) for (let i = 0; i < d.vistos.length; i++) if (d.vistos[i] in VISTOS) VISTOS[d.vistos[i]] = true;
+  } catch (e) { /* sin almacén */ }
   const COLOR = { coqui: [0.45, 0.62, 0.28], lagartijo: [0.22, 0.72, 0.34], mariposa: [0.95, 0.78, 0.18] };
   const CAP = 12;
   const geo = new THREE.SphereGeometry(0.11, 10, 8);
@@ -77,6 +91,7 @@ window.AVVecinos = function (G) {
     const f = fase();
     for (const a of aves) {
       const d = Math.hypot(S.pos.x - a.x, S.pos.z - a.z);
+      if (d < 6) ver(a.especie);
       if (a.especie === 'coqui') {
         a.y = a.base + 0.12 + (a.huida > 0 ? Math.sin(a.huida * 14) * 0.35 : 0);
         if (d < 3.2 && a.huida <= 0) a.huida = 0.7;
@@ -104,6 +119,7 @@ window.AVVecinos = function (G) {
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const guard = { quiet: G.quiet, x: S.pos.x, y: S.pos.y, z: S.pos.z, hora: S.hora, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
+    let crudoV = null; try { crudoV = localStorage.getItem(CLAVE_V); } catch (e) { /* */ }
     try {
       ok('Tope: baja 0, media 6, alta 12', TOPE.bajo === 0 && TOPE.medio === 6 && TOPE.alto === 12);
       forzar = { nivel: 'bajo' }; sembrar();
@@ -138,6 +154,12 @@ window.AVVecinos = function (G) {
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     G.quiet = guard.quiet; S.pos.x = guard.x; S.pos.y = guard.y; S.pos.z = guard.z; S.hora = guard.hora;
     if (G.renderer.calidad) G.renderer.calidad.nivel = guard.nivel;
+    VISTOS.coqui = VISTOS.lagartijo = VISTOS.mariposa = false;
+    try { if (crudoV == null) localStorage.removeItem(CLAVE_V); else localStorage.setItem(CLAVE_V, crudoV); } catch (e) { /* */ }
+    try {
+      const d = JSON.parse(crudoV || 'null');
+      if (d && Array.isArray(d.vistos)) for (let i = 0; i < d.vistos.length; i++) if (d.vistos[i] in VISTOS) VISTOS[d.vistos[i]] = true;
+    } catch (e) { /* */ }
     forzar = null; sembrar(); pintar();
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }

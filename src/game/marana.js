@@ -19,6 +19,16 @@ window.AVMarana = function (G) {
   G.renderer.scene.add(malla);
   const dummy = new THREE.Object3D();
   const notas = [];
+  const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.marana';
+  const limpios = [];
+  function guardarLimpios() { try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, limpios })); } catch (e) { /* sin almacén */ } }
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+    if (d && Array.isArray(d.limpios)) for (const id of d.limpios) {
+      const r = rastros.find(x => x.id === id);
+      if (r && !r.limpio) { r.limpio = true; if (!limpios.includes(id)) limpios.push(id); }
+    }
+  } catch (e) { /* sin almacén */ }
   function pintar() {
     let n = 0;
     for (const r of rastros) {
@@ -39,6 +49,7 @@ window.AVMarana = function (G) {
     G.emit('momento', { id: 'marana-' + r.id, texto: linea });
     if (G.ui && G.ui.toast) G.ui.toast('La bandada desenredó un rastro de fantasía.', 2200);
     if (G.fx && G.fx.burst) G.fx.burst(r.x, r.y, r.z, 'leaves', 8);
+    if (!limpios.includes(r.id)) { limpios.push(r.id); guardarLimpios(); }
     pintar();
     return true;
   }
@@ -64,6 +75,7 @@ window.AVMarana = function (G) {
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const q = G.quiet, fly = M.flying, px = S.pos.x, pz = S.pos.z;
+    let crudo = null; try { crudo = localStorage.getItem(CLAVE); } catch (e) { /* */ }
     try {
       ok('Hay rastros escondidos y ninguno habla de una plaga', rastros.length >= 5 && notas.every(n => !/invasor|plaga|amenaza/i.test(n)));
       G.quiet = false; M.flying = true;
@@ -80,7 +92,15 @@ window.AVMarana = function (G) {
       S.pos.x = 0; S.pos.z = 0; G.quiet = true; pintar();
       ok('Lejos o en silencio se apaga', malla.visible === false);
     } catch (e) { ok('sin excepciones', false, e && e.message); }
-    G.quiet = q; M.flying = fly; S.pos.x = px; S.pos.z = pz; pintar();
+    G.quiet = q; M.flying = fly; S.pos.x = px; S.pos.z = pz;
+    try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
+    limpios.length = 0;
+    for (const r of rastros) r.limpio = false;
+    try {
+      const d = JSON.parse(crudo || 'null');
+      if (d && Array.isArray(d.limpios)) for (const id of d.limpios) { const r = rastros.find(x => x.id === id); if (r) { r.limpio = true; limpios.push(id); } }
+    } catch (e) { /* */ }
+    pintar();
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
   G.marana = { test, rastros, limpiar, notas, pintar, paso };
