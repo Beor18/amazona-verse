@@ -23,6 +23,7 @@ const Z = parseFloat((() => { const i = process.argv.indexOf('--z'); return i > 
 const YAW = parseFloat((() => { const i = process.argv.indexOf('--yaw'); return i > 0 ? process.argv[i + 1] : String(Math.PI * 0.9); })(), 10);
 const TOPE_S = parseInt((() => { const i = process.argv.indexOf('--tope'); return i > 0 ? process.argv[i + 1] : '15'; })(), 10);
 const HEAP = process.argv.includes('--heap'); // QA-153: performance.memory en base/pico/retenido (gc por CDP)
+const ALEJAR = process.argv.includes('--alejar'); // KIMI-030: tras el drenado, volver a la villa, esperar la descarga de zonas y re-medir
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi020');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -182,6 +183,24 @@ function limpiarHuerfanos() {
       const reten = JSON.parse(await evaluar(cdp, ses, 'JSON.stringify({heap: Math.round(performance.memory.usedJSHeapSize/1048576), total: Math.round(performance.memory.totalJSHeapSize/1048576)})', 10, false));
       res.heap = { base: r.heapBase, pico: r.heapPico, retenido: reten };
       console.log(`· heap MB — base ${r.heapBase && r.heapBase.heap} · pico ${r.heapPico && r.heapPico.heap} · retenido tras gc ${reten.heap}`);
+      if (ALEJAR) {
+        // KIMI-030: vuelta a la villa → ¿el heap de la ciudad baja o queda retenido? (QA-153)
+        await evaluar(cdp, ses, `(async () => { const AV = window.AV, G = AV.G, S = G.S, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
+          AV.teleport(134, 182); S.pos.y += 2; S.vy = 0;
+          await ST.alrededor(S.pos.x, S.pos.z); return 'ok'; })()`, 60, true);
+        console.log('· de vuelta en la villa; esperando la descarga de zonas de la ciudad (gracia)…');
+        await cdp.bombear(28);
+        try { await cdp.call('HeapProfiler.collectGarbage', {}, ses, 30000); } catch (e) { /* sin gc el número queda con basura */ }
+        const vuelta = await evaluar(cdp, ses, `JSON.stringify((() => { const G = window.AV.G;
+          const bytesGeo = () => { let b = 0, n = 0; (G.renderer.scene || G.scene).traverse(o => { if (o.isMesh && o.geometry) { n++;
+            const at = o.geometry.attributes; for (const k in at) if (at[k].array) b += at[k].array.byteLength;
+            if (o.geometry.index) b += o.geometry.index.array.byteLength; } }); return { mb: Math.round(b / 1048576), mallas: n }; };
+          return { pos: [Math.round(G.S.pos.x), Math.round(G.S.pos.y), Math.round(G.S.pos.z)],
+            heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576),
+            geoViva: bytesGeo(), st: (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })() }; })())`, 30, false);
+        res.heap.vuelta = JSON.parse(vuelta);
+        console.log(`· heap tras volver + gc: ${res.heap.vuelta.heap} MB · pos ${JSON.stringify(res.heap.vuelta.pos)} · geo viva en escena: ${res.heap.vuelta.geoViva.mb} MB en ${res.heap.vuelta.geoViva.mallas} mallas · ${res.heap.vuelta.st.calls} calls`);
+      }
     }
     for (const s of r.snaps || []) {
       if (!s.d) continue;

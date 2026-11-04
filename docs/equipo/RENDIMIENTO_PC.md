@@ -422,6 +422,28 @@ ya estaban verdes en KIMI-024). El cuadro de móvil CPU ×4 en la ciudad sigue d
 costes (`triQuery` ~500–600 ms, `insert` de sólidos ~450–530 ms, `(program)` ~1,2 s en la ventana):
 el parche es un ahorro real pero parcial dentro de ese presupuesto.
 
+## KIMI-030 · QA-153: heap al soltar la Ciudad de los 36, medido con vuelta a la villa (4-nov, avance · Kimi 3)
+
+Herramienta: `tools/build/kimi3_vuelo.js --heap --alejar [--precalentar]` (Chrome headless propio, GPU real RX 5700 XT,
+móvil 375×812 dpr 3, UA iPhone, CPU ×4, PC libre tras matar 2 zombis `Temp\kimi*`). El modo `--alejar`, nuevo:
+tras el drenado de la ciudad a +30 m (`ST.terminar()`) y el gc, teletransporta a la villa (134,182), espera 28 s
+(la gracia de descarga son 3 s), vuelve a forzar gc y re-mide heap + geometría viva en escena (bytes de atributos
+e índices de cada malla) + posición real.
+
+| corrida | precalentar | heap base | pico | retenido en ciudad (gc) | **vuelta villa +28 s + gc** | geo viva en villa | calls |
+|---|---|---|---|---|---|---|---|
+| k030-r1 | sí | 878 | 858 | 762 | (fallo de instrumentación, sin número) | — | — |
+| k030-r2 | no | 117 | 767 | 761 | **650** | 602 MB / 659 mallas | 62 |
+| k030-r3 | no | (id.) | — | — | **650** · pos verificada (134,7,182) | 602 MB / 659 mallas | 62 |
+
+Conclusión: la retención de QA-153 **también se da al alejarse de verdad** — no es un artefacto de quedarse volando
+sobre la ciudad. En la villa quedan ~650 MB (vs línea base de villa ~120–175 MB, KIMI-023) y el 92 % es geometría
+viva en la escena, no basura de GC: unas ~400–500 MB de geometría con referencias vivas no se sueltan al descargar
+las zonas de la ciudad. La revisión fila a fila del ciclo de vida en `streaming.js` no muestra el retenedor
+(`quitarHDZona`/`quitarCercaZona`/`liberar`/`soltar`/`conTramos`/`encolar` de sólidos sueltan lo suyo);
+falta la atribución por prefijo de malla (`edificiosZona*` vs terreno/flora) — pendiente de la próxima vuelta.
+Evidencia: `docs/img/kimi020/repro-k030-r{1,2,3}.json`. 0 errores de consola en las 3 corridas.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
