@@ -167,8 +167,20 @@ const MUESTRA_JS = `(async () => {
       if (o.geometry.index) b += o.geometry.index.array.byteLength; g.mb += b; } });
   const escena = Object.entries(grupos).map(([p, g]) => ({ p, n: g.n, geos: g.geos, mb: Math.round(g.mb / 1048576) }))
     .sort((a, b) => b.geos - a.geos).slice(0, 30);
+  // QA-158: firma de las mallas SIN NOMBRE (¿quién las crea?) — tipo, material, atributos y cadena de padres
+  const firmas = {};
+  (R.scene || G.scene).traverse(o => { if (!(o.isMesh && o.geometry) || o.name) return;
+    const cadena = []; let p = o.parent;
+    for (let i = 0; i < 4 && p; i++) { cadena.push(p.name || p.type); p = p.parent; }
+    const at = o.geometry.attributes || {};
+    const sig = [o.type, 'mat:' + (o.material ? (o.material.name || o.material.type) : 'none'),
+      'pos' + (at.position ? at.position.count : 0), at.uv ? 'uv' : '-', at.color ? 'col' : '-', at.normal ? 'nrm' : '-',
+      o.geometry.index ? 'idx' + o.geometry.index.count : '-', 'vis' + (o.visible ? 1 : 0), 'par:' + cadena.join('>')].join('|');
+    const f = firmas[sig] || (firmas[sig] = { n: 0 }); f.n++; });
+  const anonimas = { total: Object.values(firmas).reduce((a, f) => a + f.n, 0),
+    firmas: Object.entries(firmas).map(([s, f]) => ({ n: f.n, sig: s })).sort((a, b) => b.n - a.n).slice(0, 25) };
   return JSON.stringify({ pos: [Math.round(S.pos.x), Math.round(S.pos.y), Math.round(S.pos.z)],
-    heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576), ...inf, ...st, escena,
+    heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576), ...inf, ...st, escena, anonimas,
     ctx: window.__qa158 ? { perdidas: __qa158.ctxPerdidas, restauradas: __qa158.ctxRestauradas, errores: __qa158.errores.length } : null }); })()`;
 
 const FINAL_JS = `(async () => {
