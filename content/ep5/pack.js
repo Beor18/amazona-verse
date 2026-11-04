@@ -160,7 +160,11 @@
         { id: 'ruinas', texto: 'Lee las ruinas y escucha al Guardián', hasta: { evento: 'GuardianRemembered' },
           guia: G => { const p = G.S.pos, r = (window.AV_EP5.ruinas || []).filter(x => !G.S.collected.includes('cls_' + x.id)).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0]; return r ? { x: r.x, z: r.z } : G.misiones.at('guardian'); } },
         { id: 'senal', texto: 'Endereza la antena y elige la señal', hasta: { alguno: [{ recogido: 'codigo_luz' }, { recogido: 'codigo_sonido' }, { recogido: 'codigo_tela' }] }, guia: G => G.misiones.at('trx') },
-        { id: 'estaciones', texto: 'Pon tres estaciones y prueba el relevo', progreso: S => ' (' + Math.min(3, S.collected.filter(k => /^est_/.test(k)).length) + '/3)',
+        { id: 'estaciones', texto: 'Pon tres estaciones y prueba el relevo', progreso: S => {
+          const n = Math.min(3, S.collected.filter(k => /^est_/.test(k)).length);
+          if (n >= 3) return ' · ahora la prueba';
+          return ' (' + n + '/3)';
+        },
           hasta: { recogido: 'prueba1' },
           guia: G => G.S.collected.includes('tres_estaciones') ? G.misiones.at('prueba') : G.misiones.at(['loma', 'torre', 'mirador'].find(id => !G.S.collected.includes('est_' + id)) || 'prueba') },
         { id: 'niebla', texto: 'Pide ayuda y prueba hasta la niebla', guia: G => G.eventos.had('HelpAsked') ? G.misiones.at('prueba') : G.misiones.at('iguaca') },
@@ -725,7 +729,7 @@
           if (o.v === 'sola') { G.dialogo.say([Lu('No lo hagas sola. El último fragmento lo decía.')], pedirAyuda); return; }
           G.eventos.log('HelpAsked', { choice: 'iguaca-aprendiz' }); G.misiones.check(); registrar();
           colocarAyudantes();
-          G.dialogo.say([di('Vittata', '¿Me ayudas a sostener esta?'), Lu('Yo me quedo en ' + ordenTaller()[0].nombre + '.'), di('Aprendiz', 'Yo, en ' + ordenTaller()[1].nombre + '. Tú, en ' + ordenTaller()[2].nombre + '.')]);
+          G.dialogo.say([di('Vittata', '¿Me ayudas a sostener esta?'), Lu('Yo me quedo en ' + ordenTaller()[0].nombre + '.'), di('Aprendiz', 'Yo, en ' + ordenTaller()[1].nombre + '. Tú, en ' + ordenTaller()[2].nombre + '.')], () => G.ui.toast('Vuelve a probar el relevo: sigue la flecha', 3200));
         });
       }
       function hablarIguaca() {
@@ -895,6 +899,7 @@
           check('M3 · Código de luz, con su costo', G.eventos.had('CodeChosen') && S.collected.includes('codigo_luz') && S.step === 4);
           useAt('pilar'); useAt('torre'); useAt('mirador');
           check('M3 · Tres estaciones, una de ellas tapada', S.collected.includes('tres_estaciones') && S.collected.includes('est_pilar') && S.step === 4, S.collected.filter(k => k.startsWith('est_')).join(','));
+          check('M3 · Con tres estaciones el objetivo pide la prueba y no marca 3/3', /ahora la prueba/.test($('steps').textContent) && !/\(3\/3\)/.test($('steps').textContent), $('steps').textContent.replace(/\s+/g, ' ').slice(0, 160));
           useAt('prueba'); drain();
           check('M3 · La prueba muestra el choque y no castiga', S.collected.includes('corte_loma') && !S.collected.includes('prueba1') && S.step === 4);
           useAt('pilar'); drain();
@@ -912,6 +917,7 @@
           check('M3 · Hacerlo sola no castiga y recuerda el fragmento', !G.eventos.had('HelpAsked') && opciones().some(t => t.includes('Pide ayuda')));
           pick('Pide ayuda'); drain();
           check('M3 · Iguaca y el aprendiz toman estaciones', G.eventos.had('HelpAsked') && S.step === 5, 'paso ' + S.step);
+          check('M3 · Tras pedir ayuda el aviso manda a probar el relevo', /Vuelve a probar el relevo/.test(($('toast') || {}).textContent || ''), ($('toast') || {}).textContent);
           const cerca = (id, e) => { const n = G.actores.npc(id); return n && Math.hypot(n.def.x - e.x, n.def.z - e.z) < 3 && Math.hypot(G.interaccion.find(id).x - e.x, G.interaccion.find(id).z - e.z) < 3; };
           check('M3 · Se van a su estación: Iguaca a la loma y el aprendiz a la torre', cerca('iguaca', est('loma')) && cerca('aprendiz', est('torre')));
           useAt('prueba'); drain();
@@ -974,6 +980,7 @@
             'Pide ayuda a Iguaca y al aprendiz', 'Probar el relevo', 'La línea choca con una loma. El trazo rojo marca dónde.',
             'Pon tres estaciones (2/3)', 'Estación puesta', 'Mover esta estación', 'Esta estación ya está puesta. Toca otra vez para mover esta estación.',
             'Bien. Ahora la torre que mira al mar: sigue la flecha.', 'Bien: tres estaciones. Ahora prueba el relevo: sigue la flecha.',
+            'Pon tres estaciones y prueba el relevo · ahora la prueba', 'Vuelve a probar el relevo: sigue la flecha',
             ...['loma', 'niebla', 'corto', 'noche', ''].map(m => G.c.ep5.queHacer(m))];
           const sinEn = G.idioma.faltan(leidos);
           check('Lo que se lee en el capítulo tiene inglés', sinEn.length === 0, sinEn.slice(0, 4).join(' | '));
