@@ -1,0 +1,73 @@
+{
+ "bahia_baja": {
+  "pos": [
+   150,
+   1.68,
+   240
+  ],
+  "calls": 1,
+  "tris": "0M",
+  "luma": 167,
+  "palePc": 50,
+  "aguaPc": 43,
+  "tealPc": 92,
+  "hora": null
+ },
+ "bahia_original": {
+  "pos": [
+   150,
+   7.23,
+   222
+  ],
+  "calls": 1,
+  "tris": "0M",
+  "luma": 160,
+  "palePc": 44,
+  "aguaPc": 19,
+  "tealPc": 84,
+  "hora": null
+ },
+ "bahia_alta": {
+  "pos": [
+   150,
+   24.05,
+   238
+  ],
+  "calls": 1,
+  "tris": "0M",
+  "luma": 146,
+  "palePc": 31,
+  "aguaPc": 18,
+  "tealPc": 67,
+  "hora": null
+ },
+ "ctrl_playa_este": {
+  "pos": [
+   60,
+   0.53,
+   242
+  ],
+  "calls": 1,
+  "tris": "0M",
+  "luma": 99,
+  "palePc": 2,
+  "aguaPc": 69,
+  "tealPc": 7,
+  "hora": null
+ },
+ "ctrl_desembocadura": {
+  "pos": [
+   150,
+   7.83,
+   208
+  ],
+  "calls": 1,
+  "tris": "0M",
+  "luma": 163,
+  "palePc": 44,
+  "aguaPc": 26,
+  "tealPc": 70,
+  "hora": null
+ },
+ "fps": 144
+}
