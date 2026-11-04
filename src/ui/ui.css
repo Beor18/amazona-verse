@@ -796,6 +796,8 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 }
 @media (max-width: 560px) {
   #subtitulos { left: max(var(--sp-3), env(safe-area-inset-left, 0px)); right: calc(max(var(--sp-3), env(safe-area-inset-right, 0px)) + 56px); top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 118px)); align-items: flex-start; }
+  /* Con letra muy grande el diálogo ocupa el bajo: queda un subtítulo, para que se lea la charla. */
+  :root.a11y-t2 body:has(#dialog:not([hidden])) #subtitulos .sub:nth-last-child(n+2) { display: none; }
 }
 /* Pantallas bajas: menos líneas a la vez, y con el diálogo abierto solo la última, para no taparlo */
 @media (max-height: 700px) {
@@ -879,17 +881,40 @@ html.a11y-unamano .a11y-controles-extra :is(button, .btn) { min-width: 44px; min
 html.a11y-unamano.a11y-zurdo .a11y-controles-extra {
   left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
 }
+/* Con el pulgar a la derecha, el menú (Diario, Pausa) pasa al lado libre: si no, queda encima de los botones. */
+html.a11y-unamano.a11y-zurdo #sys {
+  right: auto; left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+}
+#pause-ninos input[type="checkbox"] {
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin: 0;
+  accent-color: var(--c-primary, #1f6a37);
+}
+#pause-ninos input[type="range"] { height: 44px; min-height: 44px; }
 @media (max-height: 520px) {
-  html.a11y-unamano #stick:not(.flotando) { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  html.a11y-unamano #stick:not(.flotando) {
+    width: 96px; height: 96px; bottom: 8px;
+  }
   html.a11y-unamano #acts {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-    left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px + var(--stick, 116px) + 8px);
+    bottom: 8px;
+    left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px + 96px + 8px);
+    grid-template-columns: 48px 48px 48px;
+    grid-template-rows: 44px 48px;
+    grid-template-areas: "tonel fly dash" "act jump loop";
+    gap: 4px;
+  }
+  html.a11y-unamano #acts :is(#b-fly, #b-dash, #b-jump, #b-act, #b-tonel, #b-loop) {
+    --sz: 44px; width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+  }
+  html.a11y-unamano.a11y-zurdo #stick:not(.flotando) {
+    left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
   }
   html.a11y-unamano.a11y-zurdo #acts {
     left: auto;
-    right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + var(--stick, 116px) + 8px);
+    right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + 96px + 8px);
+    grid-template-columns: 48px 48px 48px;
+    grid-template-areas: "dash fly tonel" "loop jump act";
   }
-  html.ninos-grande.a11y-unamano #acts { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  html.ninos-grande.a11y-unamano #acts { bottom: 8px; }
   html.a11y-unamano .a11y-controles-extra { bottom: auto; top: 8px; }
 }
 
