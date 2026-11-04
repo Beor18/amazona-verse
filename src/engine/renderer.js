@@ -451,6 +451,10 @@ AVE.module('renderer', function (G) {
           ].join('\n'),
         });
         comp.addPass(grade);
+        // QA-107: el último pase dibuja en pantalla, así que no hace falta alternar los búferes. Sin el intercambio, la escena
+        // se dibuja siempre en renderTarget1 y el segundo búfer MSAA (≈ 43 MB a 585×1266 en el móvil) nunca se crea en la GPU.
+        grade.needsSwap = false;
+        if (comp.readBuffer !== comp.renderTarget1) comp.swapBuffers();
         Object.assign(post, { composer: comp, bloom, grade, rayos });
         post.resize = () => { comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(tam.w, tam.h); };
         post.resize();
