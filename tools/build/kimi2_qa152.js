@@ -29,6 +29,11 @@
    retenedor con nombre específico (con 2 saltos de contexto) y agrupa por esa cadena: atribuye el
    binario a su dueño real en el motor (audio, geometría, fusión/instanciado, parse de GLB...).
    node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 160 --snap 60,150 --etiqueta ab1 --ab
+
+   Fase 6 (--ab, 4-nov): las cadenas se cortaban en 'reactions_or_result→Promise' (+16,5 MB en la fase 5)
+   → 'Promise' pasa a ser un nodo transparente: el BFS lo atraviesa y sigue hasta el dueño que retiene
+   la promesa (context/array/mapa del módulo); firma ampliada a los últimos 4 saltos y diff abDet
+   entre los dos snapshots (qué dueños crecen, con delta en MB y nº de buffers). Mismo uso que --ab.
 */
 'use strict';
 const http = require('http');
@@ -154,6 +159,9 @@ function subAtribuirAB(snap) {
     return str[aristas[e * ef.length + iEName]] || '';
   };
   const GENERICO = new Set(['', 'Object', 'Array', 'JSArrayBufferData', 'ArrayBuffer', 'system', '(anonymous)', 'NativeContext', 'WeakNativeContextSet']);
+  // nombres "específicos" que NO paran la cadena: atravesamos el nodo y seguimos hasta el dueño real
+  // (fase 5: 9→34 buffers retenidos por 'reactions_or_result→Promise'; la Promise es sólo el eslabón)
+  const TRANSPARENTE = new Set(['Promise']);
   const esAB = o => /ArrayBufferData/.test(nomNodo(o));
   const GRANDE = 64 * 1024;
   const grupos = new Map(); let totalAB = 0, nAB = 0, huerfanos = 0;
@@ -168,10 +176,10 @@ function subAtribuirAB(snap) {
     cubetas[cb][0]++; cubetas[cb][1] += sz;
     if (sz < GRANDE) continue;
     totalAB += sz; nAB++;
-    // BFS ascendente: primer nombre específico (con 2 saltos de contexto más)
+    // BFS ascendente: primer nombre específico (atravesando Promise; con 3 saltos de contexto más)
     let nivel = [{ o, camino: [] }], firma = null;
     gen++; vistosGen[o] = gen;
-    for (let paso = 0; paso < 7 && !firma; paso++) {
+    for (let paso = 0; paso < 10 && !firma; paso++) {
       const sigNivel = [];
       for (const { o: actual, camino } of nivel) {
         for (let e = cab[actual]; e !== -1; e = sig[e]) {
@@ -180,7 +188,7 @@ function subAtribuirAB(snap) {
           const nPadre = nomNodo(padre);
           const nBase = nPadre.replace(/^system \/ /, '');
           const c2 = camino.concat((etiqueta(e) || '·') + '→' + nPadre);
-          if (paso >= 1 && !GENERICO.has(nBase) && !/^[\d.,]+$/.test(nBase)) { firma = c2.slice(-3); break; }
+          if (paso >= 1 && !GENERICO.has(nBase) && !TRANSPARENTE.has(nBase) && !/^[\d.,]+$/.test(nBase)) { firma = c2.slice(-4); break; }
           sigNivel.push({ o: padre, camino: c2 });
         }
         if (firma) break;
@@ -188,14 +196,29 @@ function subAtribuirAB(snap) {
       nivel = sigNivel;
       if (!nivel.length) break;
     }
-    if (!firma) { firma = [nivel.length ? 'profundo>7' : 'huérfano']; if (!nivel.length) huerfanos++; }
+    if (!firma) { firma = [nivel.length ? 'profundo>10' : 'huérfano']; if (!nivel.length) huerfanos++; }
     const clave = firma.join('  ‹  ');
     const g = grupos.get(clave) || { b: 0, n: 0 }; g.b += sz; g.n++; grupos.set(clave, g);
   }
+  const lista = [...grupos.entries()].sort((a, b) => b[1].b - a[1].b);
   return { umbralKB: GRANDE / 1024, totalMB: Math.round(totalAB / 1048576 * 10) / 10, n: nAB, huerfanos,
     cubetas: Object.fromEntries(Object.entries(cubetas).map(([k, [n, b]]) => [k, { n, mb: Math.round(b / 1048576 * 100) / 100 }])),
-    top: [...grupos.entries()].sort((a, b) => b[1].b - a[1].b).slice(0, 25)
+    grupos: lista.map(([clave, g]) => ({ clave, b: g.b, n: g.n })),
+    top: lista.slice(0, 25)
       .map(([clave, g]) => ({ clave, mb: Math.round(g.b / 1048576 * 100) / 100, n: g.n })) };
+}
+// diff de la sub-atribución entre dos snapshots: qué dueños crecen (clave = cadena de retenedores)
+function difAB(a, b) {
+  if (!a || !b) return null;
+  const ma = new Map(a.grupos.map(g => [g.clave, g])), out = [];
+  for (const g of b.grupos) {
+    const x = ma.get(g.clave);
+    const aMB = x ? x.b / 1048576 : 0, bMB = g.b / 1048576;
+    if (Math.abs(bMB - aMB) < 0.3) continue;
+    out.push({ clave: g.clave, aMB: Math.round(aMB * 100) / 100, bMB: Math.round(bMB * 100) / 100,
+      deltaMB: Math.round((bMB - aMB) * 100) / 100, aN: x ? x.n : 0, bN: g.n });
+  }
+  return out.sort((x, y) => y.deltaMB - x.deltaMB).slice(0, 30);
 }
 
 // Semilla de cap1 (jugador existente: Jugar entra directo, sin creador) — misma que kimi2_qa53.js (QA-111)
@@ -298,6 +321,12 @@ async function lanzarChrome() {
       res.snaps = snaps.map(s => ({ t: s.t, totalMB: s.totalMB, nodos: s.nodos, top: s.porCtor.slice(0, 40).map(([ctor, sz]) => ({ ctor, mb: Math.round(sz / 1048576 * 100) / 100 })), abDet: s.abDet || null }));
       if (snaps.length >= 2) {
         res.snapDiff = difSnaps(snaps[0], snaps[1]).slice(0, 60);
+        res.abDiff = difAB(snaps[0].abDet, snaps[1].abDet);
+        if (res.abDiff && res.abDiff.length) {
+          console.log('\nAB DIFF (dueños de ArrayBuffer que crecen, por cadena de retenedores):');
+          for (const d of res.abDiff.filter(x => x.deltaMB > 0).slice(0, 15))
+            console.log(`  +${d.deltaMB} MB (${d.aN}→${d.bN} buffers)  ${d.clave}`);
+        }
         console.log('\nSNAP DIFF (por constructor, self_size):');
         for (const d of res.snapDiff.filter(x => Math.abs(x.deltaMB) >= 1).slice(0, 30))
           console.log(`  ${d.deltaMB >= 0 ? '+' : ''}${d.deltaMB} MB  ${d.ctor}  (${d.aMB} → ${d.bMB})`);
