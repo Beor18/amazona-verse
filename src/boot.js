@@ -46,6 +46,12 @@
     const alPrimerGesto = fn => { let hecho = false; const ir = () => { if (hecho) return; hecho = true; setTimeout(() => fn().catch(() => {}), 300); };
       for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, ir, { once: true, passive: true }); };
     const aDemanda = (src, fabrica) => { let p = null; return () => p || (p = AVE.assets.script(src).then(() => window[fabrica](G), e => { p = null; throw e; })); };
+    // Pantalla de carga (src/ui/carga.js): entre «Empezar» y el control del jugador espera, por tandas, al mundo, la zona de
+    // inicio, las texturas y los programas (tope 20 s). Se pide ya: tiene que estar antes de que el jugador entre.
+    const cargarCarga = aDemanda('src/ui/carga.js', 'AVCarga');
+    cargarCarga().then(c => { AV.carga = c; }, () => {});
+    AV.cargaEsperar = ms => cargarCarga().then(c => c.esperar(ms), () => null);
+    AV.cargaTest = o => cargarCarga().then(c => c.test(o));
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
