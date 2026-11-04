@@ -35,6 +35,7 @@ window.AVTrucos = function (G) {
     combo = (ahora - ultimo < VENTANA) ? combo + 1 : 1;
     ultimo = ahora; ultimoId = id;
     if (combo > mejor) { mejor = combo; guardar(); G.emit('record', { modo: 'trucos', combo, nombre: titulo(combo, id) }); }
+    G.emit('truco', id);
     chip.textContent = titulo(combo, id) + '  ×' + combo; chip.hidden = false; chipT = 1.6;
     if (G.audio && G.audio.play) { try { G.audio.play('truco', combo); } catch (e) { /* sin audio */ } }
     if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 0.4, S.pos.z, 'feathers', 8 + combo);
