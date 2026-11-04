@@ -83,6 +83,9 @@
 
     // ---------- Acciones del jugador (lo que se hace con el teclado, el ratón o el dedo) ----------
     const tick = secs => { T.tick(secs); reloj.sim += Math.ceil(secs / 0.05) * 0.05; };
+    // CG-64: la foto del mundo se codifica 1–2 cuadros después (lectura diferida de la GPU, no congela el juego):
+    // se bombean cuadros hasta que la captura llega (los .then de la foto son microtareas: hace falta ceder)
+    const esperaCaptura = async clave => { for (let i = 0; i < 30 && !S.captures[clave]; i++) { tick(0.1); await sleep(0); } };
     // Pulsar «Seguir» hasta cerrar el diálogo, contando líneas y caracteres que leería el niño. Los bocadillos libres también se
     // pasan (así llegan sus «done»), pero se cuentan aparte: la cotorra sigue jugando mientras salen
     const drain = () => {
@@ -221,6 +224,7 @@
       fase('Taller'); muestraGuia();
       const m1ok = useAt('maquina'); const cercM = ultimoCercano; const libreM = !!G.dialogo.libre() && !G.ui.busy(); drain();
       const tx1ok = useAt('transmisor'); const cercT = ultimoCercano; drain();
+      await esperaCaptura('workshop'); // CG-64: la foto se codifica 1–2 cuadros después (lectura diferida de la GPU)
       check('4.1', 'Taller: examinar la máquina y el transmisor (Acción) con los comentarios de Vittata en bocadillos libres; queda la foto y el paso pasa a «Recolectar»', m1ok && tx1ok && libreM && S.step === 2 && S.examined.maquina && S.examined.transmisor && had('WorkshopExplored') && !!S.captures.workshop,
         { maquina: m1ok, transmisor: tx1ok, bocadillo: libreM, paso: S.step, cercano: m1ok && tx1ok ? null : [cercM, cercT], foto: !!S.captures.workshop });
       if (corte('4.1', S.step === 2)) return fin();
@@ -322,6 +326,7 @@
         flotan.length === 3 && rescate.salvado && had('FloodRescue') && !!rescate.guiaAlgoFlota && !!rescate.guiaLlevando && CRE.perdidos.length === 2 && accionesCrecida >= 2,
         { flotan: rescate.flotan.join(','), agarrado: rescate.agarrado, guias: [!!rescate.guiaAlgoFlota, !!rescate.guiaLlevando], soltadoEn: rescate.soltadoEn, salvado: rescate.salvado, salvados: CRE.salvados.join(','), perdidos: CRE.perdidos.join(','), evento: had('FloodRescue'), acciones: accionesCrecida, atajo: 'vuelo directo hasta lo que flota y hasta tierra seca' }, 900);
       if (rama === 'A') {
+        await esperaCaptura('shelter'); // CG-64: la foto se codifica 1–2 cuadros después
         check('4.5', 'Crecida: el refugio del río queda dañado y aparece el Guardián (paso «Habla con el Guardián»)', !!S.refuge && S.refuge.damaged && had('ShelterFlooded') && G.actores.npc('guardian').sp.visible && S.step === 4 && !!S.captures.shelter && S.indicators.seguridad === 'baja',
           { refugio: S.refuge, paso: S.step, guardian: G.actores.npc('guardian').sp.visible, indicadores: S.indicators, foto: !!S.captures.shelter });
         // ---------- 4.6 Corregir: desarmar y volver a construir en la colina ----------
@@ -444,6 +449,7 @@
       fase('Mirador y final'); muestraGuia();
       const alto = G.c.mirador.position.y > G.terreno.places.villa.base + 2;
       const mirOk = useAt('mirador', 2.4, 0); const cercMi = ultimoCercano; drain();
+      await esperaCaptura('final'); // CG-64: la foto del final se codifica 1–2 cuadros después
       const botonesFin = [...W.document.querySelectorAll('#end button')].filter(b => !b.closest('[hidden]')).map(b => (b.id || '?') + '=' + b.textContent.trim());
       check('4.9', 'Mirador: subir y mirar el horizonte desbloquea el plano de la embarcación y completa el capítulo (panel final con «Crear mi cómic»)', alto && mirOk && S.boatPlan && S.complete && had('BoatBlueprintUnlocked') && had('LocationDiscoveredMirador') && had('ChapterCompleted') && S.step === G.misiones.DONE && !$('end').hidden && !!$('b-comic') && !!S.captures.final,
         { paso: S.step, miradorAlto: alto, botones: botonesFin, foto: !!S.captures.final, cercano: mirOk ? null : cercMi });

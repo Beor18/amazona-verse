@@ -177,7 +177,7 @@ window.AVComunidades = function (G) {
     if (window.AV && AV.debug && AV.debug.camYaw) AV.debug.camYaw(0.5);
     paso(0.05); pintar();
     if (G.bandada && G.bandada.dibujar) G.bandada.dibujar();
-    const jpg = G.renderer.snapshot(960, 540, 0.72);
+    const jpg = G.renderer.snapshot(960, 540, 0.72); // Promise: lectura diferida (CG-64); los píxeles ya quedaron ordenados en la GPU
     R.prueba = guarda.prueba; R.forzar = guarda.forzar; R.pausa = guarda.pausa;
     S.pos.x = guarda.x; S.pos.y = guarda.y; S.pos.z = guarda.z;
     return jpg;
@@ -261,7 +261,7 @@ window.AVComunidades = function (G) {
       check('Con calidad baja, versión mínima: 1 o 2 por sitio (QA-110)', Object.keys(porSitio).length > 0 && Object.values(porSitio).every(n => n >= 1 && n <= BAJO_N), JSON.stringify(porSitio));
       R.prueba = false; R.minima = false; R.forzar = null;
       G.renderer.calidad.nivel = cal0; G.quiet = quiet0;
-      const jpg = foto('villa');
+      const jpg = await foto('villa');
       check('La captura de Villa Raíz sale', typeof jpg === 'string' && jpg.indexOf('data:image/jpeg') === 0 && jpg.length > 2000, jpg ? jpg.length : 0);
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 500));

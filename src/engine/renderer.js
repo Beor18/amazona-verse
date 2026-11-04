@@ -934,6 +934,7 @@ AVE.module('renderer', function (G) {
     const busy = G.ui.busy();
     const moving = G.fisica.step(dt, busy);
     G.emit('update', dt, busy, moving);
+    if (FOTOS.cola.length) fotoPaso(); // fotos del cómic (CG-64): se resuelven fuera del cuadro del evento
     return moving;
   }
   let t = 0;
@@ -1012,8 +1013,98 @@ AVE.module('renderer', function (G) {
   // Un solo bucle: llamar a start() con el bucle vivo no hace nada; al reanudar, el primer cuadro tiene dt = 0
   function start() { if (vivo) return; vivo = true; last = null; requestAnimationFrame(frame); }
 
-  // Foto del mundo desde la cámara colocada al instante, recortada a w×h (JPEG en data URL; null si falla). Sin post: directo al lienzo.
-  // Sin contexto WebGL devuelve null (el cómic reintenta después).
+  // ---------- Fotos del mundo (cómic, CG-64): lectura diferida de la GPU ----------
+  // Antes snapshot() dibujaba y leía el lienzo en la misma tarea: drawImage() sobre el lienzo WebGL esperaba
+  // a la GPU con todo lo que había encolado el streaming (hasta ~3 s de juego congelado en móvil al saltar un
+  // evento, ~62 s de partida). Ahora el dibujo es idéntico, pero la lectura va a un PBO (WebGL2) con una cerca
+  // (fence): la GPU copia cuando puede y el hilo sigue jugando; en los cuadros siguientes se consulta la cerca
+  // sin esperar y, cuando está lista, se pasa a 2D y se codifica el JPEG (~20–40 ms una sola vez por foto, un
+  // cuadro algo más largo en vez de la congelación). La promesa devuelta resuelve en 1–2 cuadros. Si no hay
+  // WebGL2 o la lectura falla, se usa dentro de la promesa la lectura antigua (drawImage): la foto sale igual,
+  // con la espera de antes. Con el contexto perdido snapshot() devuelve null (el cómic reintenta, QA-21).
+  const FOTOS = { cola: [], diferidas: 0, sync: 0 };
+  function fotoSync(x, y, cw, ch, w, h, quality, probar) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.drawImage(canvas, x, y, cw, ch, 0, 0, w, h);
+    if (probar) {
+      const px = cx.getImageData(0, 0, w, h).data;
+      if (!probar(px)) return null;
+    }
+    return c.toDataURL('image/jpeg', quality);
+  }
+  // Lectura del lienzo YA dibujado, diferida: recorte centrado cw×ch (px de lienzo) → JPEG w×h. probar(píxeles)
+  // opcional puede rechazar la foto (p. ej. casi negra) mirando el buffer RGBA crudo. Devuelve Promise<string|null>.
+  function fotoLeer(cw, ch, w, h, quality, probar) {
+    const gl = renderer.getContext();
+    const sw = canvas.width, sh = canvas.height;
+    cw = Math.max(1, Math.round(cw)); ch = Math.max(1, Math.round(ch));
+    if (!sw || !sh || cw > sw || ch > sh || gl.isContextLost()) return Promise.resolve(null);
+    const x = Math.round((sw - cw) / 2), y = Math.round((sh - ch) / 2);
+    return new Promise(resolve => {
+      let pbo = null, fence = null;
+      if (renderer.capabilities.isWebGL2) {
+        try {
+          pbo = gl.createBuffer();
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+          gl.bufferData(gl.PIXEL_PACK_BUFFER, cw * ch * 4, gl.STREAM_READ);
+          gl.readPixels(x, y, cw, ch, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+          if (gl.getError()) { gl.deleteBuffer(pbo); pbo = null; }
+          else fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        } catch (e) { if (pbo) { try { gl.deleteBuffer(pbo); } catch (e2) { /* ya no está */ } } pbo = null; fence = null; }
+      }
+      if (!pbo || !fence) { // sin WebGL2/PBO: lectura síncrona de antes, mismo resultado
+        FOTOS.sync++;
+        try { resolve(fotoSync(x, y, cw, ch, w, h, quality, probar)); } catch (e) { resolve(null); }
+        return;
+      }
+      FOTOS.diferidas++;
+      FOTOS.cola.push({ pbo, fence, cw, ch, w, h, quality, probar, resolve });
+    });
+  }
+  // Se llama al final de update(): una foto por paso, sin esperar a la GPU (clientWaitSync con timeout 0).
+  function fotoPaso() {
+    if (!FOTOS.cola.length) return;
+    const gl = renderer.getContext();
+    if (CTX.perdido || gl.isContextLost()) {
+      const cola = FOTOS.cola.splice(0);
+      for (const f of cola) { try { gl.deleteSync(f.fence); gl.deleteBuffer(f.pbo); } catch (e) { /* contexto perdido */ } f.resolve(null); }
+      return;
+    }
+    for (let i = FOTOS.cola.length - 1; i >= 0; i--) {
+      const f = FOTOS.cola[i];
+      let lista = false;
+      try {
+        const st = gl.clientWaitSync(f.fence, 0, 0);
+        lista = st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED;
+      } catch (e) { lista = true; } // la cerca falló: se intenta leer igual
+      if (!lista) continue;
+      FOTOS.cola.splice(i, 1);
+      let url = null;
+      try {
+        const buf = new Uint8Array(f.cw * f.ch * 4);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, f.pbo);
+        gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, buf);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+        if (!f.probar || f.probar(buf)) {
+          // readPixels entrega las filas de abajo arriba: se voltean al orden del lienzo 2D
+          const volteado = new Uint8ClampedArray(buf.length);
+          for (let r = 0; r < f.ch; r++) volteado.set(buf.subarray((f.ch - 1 - r) * f.cw * 4, (f.ch - r) * f.cw * 4), r * f.cw * 4);
+          const tmp = document.createElement('canvas'); tmp.width = f.cw; tmp.height = f.ch;
+          tmp.getContext('2d').putImageData(new ImageData(volteado, f.cw, f.ch), 0, 0);
+          const c = document.createElement('canvas'); c.width = f.w; c.height = f.h;
+          c.getContext('2d').drawImage(tmp, 0, 0, f.w, f.h);
+          url = c.toDataURL('image/jpeg', f.quality);
+        }
+      } catch (e) { url = null; }
+      try { gl.deleteSync(f.fence); gl.deleteBuffer(f.pbo); } catch (e) { /* sigue la cola */ }
+      f.resolve(url);
+    }
+  }
+  // Foto del mundo desde la cámara colocada al instante, recortada a w×h (JPEG en data URL; Promise<string|null>;
+  // null si el contexto está perdido). Sin post: directo al lienzo. El dibujo es idéntico al de antes; la lectura
+  // es diferida (fotoLeer): los píxeles se toman del momento del evento y el JPEG se codifica 1–2 cuadros después.
   function snapshot(w, h, quality) {
     if (CTX.perdido || renderer.getContext().isContextLost()) return null;
     try {
@@ -1022,12 +1113,9 @@ AVE.module('renderer', function (G) {
       if (sky) sky.position.copy(camera.position);
       renderer.render(scene, camera);
       fogColorFor(post.activo);
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      const x = c.getContext('2d');
       const sw = canvas.width, sh = canvas.height, ar = w / h;
       let cw = sw, ch = sw / ar; if (ch > sh) { ch = sh; cw = sh * ar; }
-      x.drawImage(canvas, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, w, h);
-      return c.toDataURL('image/jpeg', quality);
+      return fotoLeer(cw, ch, w, h, quality, null);
     } catch (e) { return null; }
   }
 
@@ -1196,9 +1284,10 @@ AVE.module('renderer', function (G) {
     return fin();
   }
 
-  return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
+  return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
+    fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });

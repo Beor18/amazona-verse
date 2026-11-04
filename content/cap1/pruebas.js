@@ -47,6 +47,12 @@
     if (G.dialogo && G.dialogo.open && G.dialogo.open()) G.dialogo.clear();
   }
 
+  // CG-64: la foto del mundo se codifica 1–2 cuadros después (lectura diferida de la GPU, no congela el juego).
+  // La prueba va en bloque síncrono y el alta de la captura es una microtarea: se bombean cuadros hasta que llega.
+  async function esperaFoto(G, T, clave) {
+    for (let i = 0; i < 20 && !G.S.captures[clave]; i++) { T.tick(0.1); await new Promise(r => setTimeout(r, 0)); }
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -93,6 +99,7 @@
     useAt('maquina');
     check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
     drain(); useAt('transmisor'); drain();
+    await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     // Iguaca aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
@@ -161,6 +168,7 @@
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
+    await esperaFoto(G, T, 'final'); // CG-64: la foto del final se codifica 1–2 cuadros después
     // Panel final: «Seguir explorando» deja jugar libre; «Comenzar de cero» pregunta DENTRO del juego antes de borrar (nunca confirm())
     const confirmNativo = window.confirm; let confirmLlamado = 0; window.confirm = () => { confirmLlamado++; return true; };
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
@@ -377,6 +385,7 @@
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
+    await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
