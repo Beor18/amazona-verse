@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-121 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 5, con las tres estaciones puestas, el objetivo añade «· ahora la prueba». No dice a dónde ir. | `content/ep5/pack.js`, el progreso del paso estaciones. | Grok | resuelto · el objetivo dice «sigue la flecha y prueba el relevo», en ES y EN |
 | QA-116 | media | 4-nov, QA sobre CG-53 (`439d9dc`): en «En familia» no hay forma de elegir escondite ni la Maraña. El turno siempre es de trucos. | `src/game/familia.js` `empezar()`: si no llega el juego, pone `trucos`. La pantalla de «¿Cuántos juegan?» no ofrece los otros dos. | Grok · Dev 4 | resuelto · familia.js |
 | QA-117 | media | 4-nov, QA sobre CG-53: «Terminé mi turno» no abre el minijuego. Todos quedan con 1 punto y 10 s, y el premio sale por el orden del jugador, no por el puntaje. | `src/game/familia.js` el botón llama `anotar(1, 10)`. | Grok · Dev 4 | resuelto · familia.js |
 | QA-118 | media | 4-nov, QA sobre CG-53, inglés: el turno dice «play your trucos turn». El nombre del modo sigue en español. | `src/game/familia.js` concatena el id `juego` dentro de la frase. | Grok · Dev 4 | resuelto · familia.js |
