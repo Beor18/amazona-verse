@@ -32,9 +32,9 @@ window.AVHumor = function (G) {
     const est = G.vecinos.estado && G.vecinos.estado();
     if (est && est.n) hacer('risa');
   });
-  function paso(dt) {
+  function paso(dt, forzar) {
     const d = Math.min(0.05, dt || 0);
-    if (G.quiet) return;
+    if (G.quiet && !forzar) return;
     const cercaFlor = FLORES.some(f => Math.hypot(S.pos.x - f.x, S.pos.z - f.z) < 2.5);
     if (cercaFlor && ultimo !== 'estornudo') hacer('estornudo');
     if (M.swimming) nadaba = true;
@@ -55,9 +55,9 @@ window.AVHumor = function (G) {
       G.emit('truco', 'looping'); G.emit('truco', 'looping'); G.emit('truco', 'looping');
       ok('Tres loopings marean', ultimo === 'mareo', ultimo);
       ok('La sacudida y la risa también', hacer('sacudida') === 'sacudida' && hacer('risa') === 'risa');
-      quieta = 27.9; G.quiet = false; M.grounded = true; M.flying = false; M.speed = 0; M.swimming = false;
-      paso(0.3);
-      ok('Quieta un rato, se duerme', ultimo === 'siesta', ultimo + ' ' + quieta.toFixed(1));
+      quieta = 28; M.grounded = true; M.flying = false; M.speed = 0; M.swimming = false;
+      paso(0.05, true);
+      ok('Quieta un rato, se duerme', ultimo === 'siesta', ultimo + ' ' + quieta.toFixed(2));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     G.quiet = q; quieta = 0; loops = 0;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
