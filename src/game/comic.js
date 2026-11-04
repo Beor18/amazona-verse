@@ -697,7 +697,13 @@ AVE.module('comic', function (G) {
     for (const k of new Set(panels.map(p => p.img).filter(k => k && k !== 'portrait'))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]).catch(() => null) : null;
     const vinetas = [], usados = new Set();
     // Un título de escena no se repite en la página: el segundo del mismo tipo usa el alternativo (pack plantilla.titulosAlt)
-    const titulo = tipo => { let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || ''; if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || 'Y después…'; usados.add(t); return T(t); };
+    const reservaTit = ['Y después…', '¡Otra idea!', '¡Otro reto!', '¡Más alto!', 'Nuevos amigos', '¡Qué alegría!', '¡Una sorpresa!'];
+    const titulo = tipo => {
+      let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || '';
+      if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || reservaTit[0];
+      if (usados.has(t)) { for (const r of reservaTit) if (!usados.has(r)) { t = r; break; } }
+      usados.add(t); return T(t);
+    };
     for (let i = 0; i < MAXV; i++) {
       const p = panels[i];
       if (!p) { vinetas.push({ id: null, falta: true, look: null, pose: 'celebrar' }); continue; }
