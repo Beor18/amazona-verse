@@ -457,6 +457,7 @@ kbd {
   -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: auto;
   display: block; animation: toast-in var(--dur-3) var(--ease-pop);
 }
+#toast:not(:has(button)), #toast:not(:has(button)) * { pointer-events: none; } /* W17: un aviso sin botón no se come el toque del botón de la tarjeta que tapa (móvil) */
 #toast::before {
   content: ""; position: absolute; left: 12px; top: 50%; width: 40px; height: 40px; margin-top: -20px; border-radius: 50%;
   background: var(--i-sparkle) center / 22px no-repeat, var(--c-primary); box-shadow: 0 3px 0 var(--c-primary-lip);
