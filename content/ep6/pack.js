@@ -953,7 +953,12 @@
           check('M2 · Colocada: RaisedTogether, misión 2 y el cuaderno; Brote ata el último nudo', G.eventos.had('RaisedTogether') && S.missions.obra && S.unlocked.includes('mano:cuaderno') && S.step === 4, 'paso ' + S.step);
 
           // M3 · El círculo
-          useAt('grupos'); drain();
+          // W18: el niño vuelve a pulsar «Escuchar a los dos grupos» mientras pasan los bocadillos de la presentación
+          useAt('grupos');
+          for (let i = 0; i < 4 && G.dialogo.open(); i++) G.dialogo.next(); // pasada la caja, el resto va en bocadillos
+          const gruposEnBocadillos = !!G.dialogo.libre();
+          useAt('grupos'); // otra pulsación: no debe arrancar la escucha otra vez
+          drain();
           check('M3 · Mediación, paso 1: repetir con tus palabras lo de la isla alta (3 opciones)', opciones().length === 3 && G.actores.npc('alta').visible, opciones().join());
           pick('más bonito');
           check('M3 · Repetido mal: el grupo corrige con calma y se repite', !S.collected.includes('escucha_alta') && opciones().length === 3);
@@ -967,6 +972,10 @@
           check('M3 · Las tres propuestas: nadie se va', opciones().length === 3, opciones().join());
           pick('Una mezcla');
           check('M3 · GroupsListened con la mezcla', G.eventos.had('GroupsListened') && S.collected.includes('propuesta_mezcla') && S.step === 4, 'paso ' + S.step);
+          drain();
+          check('M3 · Volver a pulsar a los grupos mientras pasan los bocadillos no repite la escucha: un solo GroupsListened y una sola propuesta (W18; la tarjeta de elección corta el final encadenado)',
+            S.events.filter(e => e.key === 'GroupsListened').length === 1 && S.collected.filter(k => /^propuesta_/.test(k)).length === 1 && !G.ui.cardOpen,
+            (gruposEnBocadillos ? 'en bocadillos' : 'SIN bocadillos (la prueba no reprodujo el caso)') + ' · eventos ' + S.events.filter(e => e.key === 'GroupsListened').length + ' · tarjeta ' + !!G.ui.cardOpen);
           useAt('marcas'); drain();
           check('M3 · 4 formas para los 36', opciones().length === 4, opciones().join());
           pick('4 filas de 9');
