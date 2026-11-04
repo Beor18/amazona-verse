@@ -860,6 +860,12 @@ AVE.module('streaming', function (G) {
       return { geo: out, mat: materialAtlas(c[0]) };
     }
     const hdActivo = () => (CFG.hd[nivelCal()] || 0) > 0 && hdGL2();
+    // QA-158 (4-nov, iPhone Safari recarga tras 5–10 min de vuelo): en «bajo» no se funde el _hd de zona ni el global.
+    // Medido en vuelo (docs/img/kimi158/qa158-atrib2.json): las fusiones edificiosZonaHD* retenían ~270 MB de geometría
+    // en la villa (visibles a 0) + ~70 MB de recursos _hd listos. El _hd por instancia a <45 m (lotes, tope hdTris) se
+    // queda: la imagen de cerca en «bajo» no cambia. Móvil en «medio» usa nivelCiudad() = 'bajo' (mismo criterio que
+    // ciudadVista/ciudadHD, QA-107); escritorio en «medio» sigue fundiendo como antes.
+    const hdZona = () => nivelCiudad() !== 'bajo';
     function pedir(r, prio) {
       r.refs++; r.soltarEn = 0;
       if (r.estado === 'nada') {
@@ -961,7 +967,7 @@ AVE.module('streaming', function (G) {
       crearLote(r);
       r.ok(r);
       if (r.tipo === 'lejos') zonasDe(r.n);
-      if (r.tipo === 'hd') for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]), 'fundirHD:' + id);
+      if (r.tipo === 'hd' && hdZona()) for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]), 'fundirHD:' + id);
       if (r.tipo === 'cerca') {
         for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) {
           encolar(() => fundirCercaZona(zonas[id]), 'fundirCerca:' + id); encolar(() => fundirSombraZona(zonas[id]), 'fundirSombra:' + id);
@@ -1175,6 +1181,7 @@ AVE.module('streaming', function (G) {
     // fundido global entero era un trabajo monolítico: 600–900 ms de CPU en un cuadro al revelar la carga y
     // al teleportar. Mientras se funde a medias, la zona sigue dibujando sus lotes (mismo aspecto).
     function fundirHDGlobal() {
+      if (!hdZona()) { if (hdGlobal.mallas.length || hdGlobal.ids) quitarHDGlobal(); return; } // QA-158: en «bajo» la fusión global HD no existe
       if (hdGlobal.paso) { hdGlobal.rehacer = true; return; } // hay una a medias: al cerrar rehace con ids frescos
       if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
       const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
@@ -1581,7 +1588,7 @@ AVE.module('streaming', function (G) {
           if (quiere) { encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); encolar(() => fundirSombraZona(Z), 'fundirSombra:' + Z.id); }
           else { quitarCercaZona(Z); quitarSombraZona(Z); }
         }
-        ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd
+        ajustarHD(Z, hdZona() && hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // QA-158: en «bajo» sin fusión HD de zona (cargarTodo forzada: sin _hd, como antes)
         if (Z.hd) for (const n of Z.modelos) {
           const rh = recursos[n] && recursos[n].hd;
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
