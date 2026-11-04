@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-122 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 4, tras elegir el cuidado, el botón dice «Decirle a quien pierde». No se entiende a quién ni qué hay que decir. | `content/ep4/pack.js`, la etiqueta de la mesa en el paso de la asamblea. | Grok | resuelto · el botón dice «Explicar con cariño lo que cuesta», en ES y EN |
 | QA-121 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 5, con las tres estaciones puestas, el objetivo añade «· ahora la prueba». No dice a dónde ir. | `content/ep5/pack.js`, el progreso del paso estaciones. | Grok | resuelto · el objetivo dice «sigue la flecha y prueba el relevo», en ES y EN |
 | QA-122 | media | 4-nov, QA sobre familia.js: el premio sale por el puesto. Quien quedó segundo se llama «el más rápido» aunque haya tardado más. | `src/game/familia.js` `premioDe()` reparte valiente, rápido, gracioso y amigo según el orden de la lista, no según el tiempo ni los puntos. | Grok · Dev 4 | EN CURSO |
 | QA-123 | media | 4-nov, QA sobre familia.js, inglés: el turno de la Maraña dice «play your The Tangle turn». La frase no cabe con los tres modos. | `src/game/familia.js` pega el nombre del modo, con artículo, dentro de «play your … turn». | Grok · Dev 4 | EN CURSO |
