@@ -1,0 +1,293 @@
+{
+ "etiqueta": "movil-hd0-a",
+ "modo": "movil",
+ "calidadForzada": null,
+ "hd400": "0",
+ "url": "http://127.0.0.1:56693/index.html?hd400=0",
+ "pantalla": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4
+ },
+ "durOrbitaS": 14,
+ "clicAventura": true,
+ "okCarga": true,
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "medida": {
+  "durReal": 14.1,
+  "nCuadros": 239,
+  "fpsMed": 16.98,
+  "fpsP50": 20.41,
+  "fpsP10": 12.99,
+  "peorMs": 319,
+  "p95Ms": 90,
+  "calls": 113,
+  "ktris": 375,
+  "calidad": "bajo",
+  "geo": null,
+  "heapMB": 144.5,
+  "infoMem": {
+   "geo": 227,
+   "tex": 121
+  },
+  "progs": 55,
+  "lookTexturasMB": 153.5,
+  "cargadoHd400": 0,
+  "recursosComplejo": [
+   "complejo_ruinas_lejos.glb",
+   "complejo_ruinas.glb"
+  ],
+  "href": "http://127.0.0.1:56693/index.html?hd400=0",
+  "zonasDump": [
+   {
+    "id": "lomas",
+    "nivel": 2,
+    "d": 74,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "casa_paja_a"
+    ]
+   },
+   {
+    "id": "colina",
+    "nivel": 2,
+    "d": 36,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "mirador_escalonado"
+    ]
+   },
+   {
+    "id": "kelvin_ruinas_yunque",
+    "nivel": 1,
+    "d": 157,
+    "ciudad": true,
+    "hd": false,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "plataforma_piedra",
+     "muro_templo",
+     "templo_grande",
+     "templo_grande_e",
+     "templo_grande_f",
+     "templo_mediano_h",
+     "ruina_torre_b",
+     "ruina_torre_e"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_este",
+    "nivel": 1,
+    "d": 83,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "monumento_g",
+     "casa_paja_a",
+     "bohio_redondo",
+     "torre_vigia_b",
+     "torre_vigia",
+     "muralla_atalaya_b",
+     "muralla_atalaya_a",
+     "empalizada"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_oeste",
+    "nivel": 1,
+    "d": 92,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "canoa",
+     "carpa_a",
+     "carpa_b",
+     "carpa_e",
+     "monumento_b",
+     "bohio_redondo",
+     "tienda_pequena",
+     "muralla_atalaya_b"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_lomas",
+    "nivel": 2,
+    "d": 36,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "carpa_a",
+     "carpa_b",
+     "carpa_c",
+     "carpa_d",
+     "carpa_e",
+     "carpa_f",
+     "carpa_g",
+     "torre_vigia"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_meandros",
+    "nivel": 1,
+    "d": 59,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "canoa",
+     "monumento_c",
+     "bohio_puntiagudo",
+     "casa_paja_a",
+     "bohio_redondo",
+     "corral",
+     "mirador_escalonado",
+     "casa_plataforma"
+    ]
+   },
+   {
+    "id": "kelvin_ruinas_yunque_2",
+    "nivel": 1,
+    "d": 225,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "bloque_piedra",
+     "templo_grande",
+     "templo_mediano_g",
+     "templo_mediano_f",
+     "templo_mediano",
+     "templo_mediano_h",
+     "ruina_mirador",
+     "ruina_pilar"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_colina",
+    "nivel": 2,
+    "d": 0,
+    "ciudad": true,
+    "hd": false,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "losa_piedra",
+     "complejo_ruinas",
+     "carpa_e",
+     "monumento_f",
+     "mirador_escalonado",
+     "muralla_atalaya_b",
+     "toldo_pequeno"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_este_3",
+    "nivel": 2,
+    "d": 38,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "monumento_e",
+     "portal_madera_b",
+     "portal_madera_c",
+     "portal_madera_a",
+     "mirador_escalonado",
+     "torre_vigia_b",
+     "muralla_atalaya_a",
+     "portal_puas"
+    ]
+   }
+  ],
+  "stStreaming": {
+   "zonas": 17,
+   "zonasCerca": 5,
+   "zonasLejos": 12,
+   "instancias": 422,
+   "colocadas": 200,
+   "modelosCerca": 52,
+   "modelosLejos": 63,
+   "modelosHD": 0,
+   "materiales": 20,
+   "kbGeometria": 43059,
+   "visiblesCerca": 31,
+   "visiblesLejos": 0,
+   "visiblesHD": 0,
+   "hd": true,
+   "drawEdificios": 70,
+   "zonasFundidas": 17,
+   "descargando": 0,
+   "trabajos": 1,
+   "omitidos": []
+  },
+  "terminarTope": false,
+  "desvio0": 0.2,
+  "posFin": [
+   -19,
+   55,
+   139.2
+  ],
+  "mem": [
+   {
+    "t": 2.3,
+    "heapMB": 141.9,
+    "geo": 216,
+    "tex": 121,
+    "prog": 54
+   },
+   {
+    "t": 4.1,
+    "heapMB": 145.7,
+    "geo": 225,
+    "tex": 121,
+    "prog": 56
+   },
+   {
+    "t": 6,
+    "heapMB": 151.5,
+    "geo": 225,
+    "tex": 121,
+    "prog": 56
+   },
+   {
+    "t": 8,
+    "heapMB": 157.5,
+    "geo": 228,
+    "tex": 121,
+    "prog": 56
+   },
+   {
+    "t": 10,
+    "heapMB": 156.4,
+    "geo": 228,
+    "tex": 121,
+    "prog": 56
+   },
+   {
+    "t": 12.1,
+    "heapMB": 157.8,
+    "geo": 227,
+    "tex": 121,
+    "prog": 55
+   }
+  ]
+ },
+ "errores": []
+}

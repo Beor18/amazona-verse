@@ -1,0 +1,317 @@
+{
+ "etiqueta": "ab-medio-hd0-c",
+ "modo": "escritorio",
+ "calidadForzada": "medio",
+ "hd400": "0",
+ "url": "http://127.0.0.1:56611/index.html?calidad=medio&hd400=0",
+ "pantalla": {
+  "ancho": 1600,
+  "alto": 900,
+  "dpr": 1,
+  "cpu": 1
+ },
+ "durOrbitaS": 12,
+ "clicAventura": true,
+ "okCarga": true,
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "medida": {
+  "durReal": 12.1,
+  "nCuadros": 346,
+  "fpsMed": 28.65,
+  "fpsP50": 35.71,
+  "fpsP10": 15.87,
+  "peorMs": 181,
+  "p95Ms": 70,
+  "calls": 204,
+  "ktris": 773,
+  "calidad": "medio",
+  "geo": null,
+  "heapMB": 815.5,
+  "infoMem": {
+   "geo": 302,
+   "tex": 173
+  },
+  "progs": 53,
+  "lookTexturasMB": 633,
+  "cargadoHd400": 0,
+  "recursosComplejo": [
+   "complejo_ruinas_lejos.glb",
+   "complejo_ruinas_lejos_glb.js",
+   "complejo_ruinas.glb",
+   "complejo_ruinas_hd.glb",
+   "complejo_ruinas_hd_glb.js"
+  ],
+  "href": "http://127.0.0.1:56611/index.html?calidad=medio&hd400=0",
+  "zonasDump": [
+   {
+    "id": "lomas",
+    "nivel": 2,
+    "d": 70,
+    "ciudad": false,
+    "hd": true,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "casa_paja_a"
+    ]
+   },
+   {
+    "id": "colina",
+    "nivel": 2,
+    "d": 39,
+    "ciudad": false,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "mirador_escalonado"
+    ]
+   },
+   {
+    "id": "kelvin_ruinas_yunque",
+    "nivel": 1,
+    "d": 158,
+    "ciudad": true,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "plataforma_piedra",
+     "muro_templo",
+     "templo_grande",
+     "templo_grande_e",
+     "templo_grande_f",
+     "templo_mediano_h",
+     "ruina_torre_b",
+     "ruina_torre_e"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_este",
+    "nivel": 1,
+    "d": 87,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "monumento_g",
+     "casa_paja_a",
+     "bohio_redondo",
+     "torre_vigia_b",
+     "torre_vigia",
+     "muralla_atalaya_b",
+     "muralla_atalaya_a",
+     "empalizada"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_oeste",
+    "nivel": 1,
+    "d": 90,
+    "ciudad": false,
+    "hd": false,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "canoa",
+     "carpa_a",
+     "carpa_b",
+     "carpa_e",
+     "monumento_b",
+     "bohio_redondo",
+     "tienda_pequena",
+     "muralla_atalaya_b"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_lomas",
+    "nivel": 2,
+    "d": 33,
+    "ciudad": false,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "carpa_a",
+     "carpa_b",
+     "carpa_c",
+     "carpa_d",
+     "carpa_e",
+     "carpa_f",
+     "carpa_g",
+     "torre_vigia"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_meandros",
+    "nivel": 2,
+    "d": 60,
+    "ciudad": false,
+    "hd": true,
+    "usaMalla": true,
+    "hdVe": false,
+    "modelos": [
+     "canoa",
+     "monumento_c",
+     "bohio_puntiagudo",
+     "casa_paja_a",
+     "bohio_redondo",
+     "corral",
+     "mirador_escalonado",
+     "casa_plataforma"
+    ]
+   },
+   {
+    "id": "kelvin_ruinas_yunque_2",
+    "nivel": 1,
+    "d": 225,
+    "ciudad": true,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "bloque_piedra",
+     "templo_grande",
+     "templo_mediano_g",
+     "templo_mediano_f",
+     "templo_mediano",
+     "templo_mediano_h",
+     "ruina_mirador",
+     "ruina_pilar"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_colina",
+    "nivel": 2,
+    "d": 0,
+    "ciudad": true,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": true,
+    "modelos": [
+     "losa_piedra",
+     "complejo_ruinas",
+     "carpa_e",
+     "monumento_f",
+     "mirador_escalonado",
+     "muralla_atalaya_b",
+     "toldo_pequeno"
+    ]
+   },
+   {
+    "id": "kelvin_aldea_rio_este_3",
+    "nivel": 2,
+    "d": 41,
+    "ciudad": false,
+    "hd": true,
+    "usaMalla": false,
+    "hdVe": false,
+    "modelos": [
+     "monumento_e",
+     "portal_madera_b",
+     "portal_madera_c",
+     "portal_madera_a",
+     "mirador_escalonado",
+     "torre_vigia_b",
+     "muralla_atalaya_a",
+     "portal_puas"
+    ]
+   }
+  ],
+  "stStreaming": {
+   "zonas": 17,
+   "zonasCerca": 6,
+   "zonasLejos": 11,
+   "instancias": 422,
+   "colocadas": 276,
+   "modelosCerca": 56,
+   "modelosLejos": 50,
+   "modelosHD": 47,
+   "materiales": 37,
+   "kbGeometria": 436421,
+   "visiblesCerca": 88,
+   "visiblesLejos": 21,
+   "visiblesHD": 13,
+   "hd": true,
+   "drawEdificios": 121,
+   "zonasFundidas": 12,
+   "descargando": 0,
+   "trabajos": 15,
+   "omitidos": []
+  },
+  "terminarTope": false,
+  "desvio0": 0.2,
+  "posFin": [
+   -19.2,
+   53.1,
+   139.2
+  ],
+  "mem": [
+   {
+    "t": 2,
+    "heapMB": 685.5,
+    "geo": 291,
+    "tex": 173,
+    "prog": 54
+   },
+   {
+    "t": 4,
+    "heapMB": 779.7,
+    "geo": 291,
+    "tex": 173,
+    "prog": 54
+   },
+   {
+    "t": 6,
+    "heapMB": 852.6,
+    "geo": 289,
+    "tex": 173,
+    "prog": 54
+   },
+   {
+    "t": 8,
+    "heapMB": 766.2,
+    "geo": 289,
+    "tex": 171,
+    "prog": 53
+   },
+   {
+    "t": 10,
+    "heapMB": 829.9,
+    "geo": 290,
+    "tex": 171,
+    "prog": 53
+   },
+   {
+    "t": 12,
+    "heapMB": 812.9,
+    "geo": 302,
+    "tex": 173,
+    "prog": 53
+   }
+  ]
+ },
+ "errores": [
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES",
+  "log Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES",
+  "log Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES",
+  "log Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED",
+  "log Failed to load resource: net::ERR_FAILED"
+ ]
+}

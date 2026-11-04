@@ -413,3 +413,25 @@ Se volvió a leer `AV3DMaxExportBuildings.max` (2,3 GB, 16-oct-2021) con el lect
 
 - **Lo que se ve distinto:** de cerca, nada. Entre 150 y 450 m, las torres de la ciudad usan el ligero (más macizo que el `_hd`: sin los calados). Se probó el lejano con atlas como paso intermedio y no sirve: algunos salen crema o con otra forma. Un LOD intermedio fiel del `_hd` es trabajo de arte (Blender) y queda anotado para Kelvin y Fernando. Capturas: `docs/img/kimi/kimi_task_011_{ipad,ciudad}_{antes,despues}.jpg`.
 - Flora y terreno no cambian: en estas vistas suman 0,25–0,35 M (flora con su tope por calidad, terreno 4 × 20 000).
+
+## Validación del `_hd` de 400 k de complejo_ruinas (KIMI-022, 4-nov-2026)
+
+- **Qué es:** la Mac subió `complejo_ruinas_hd400` (5,5 MB GLB / 7,3 MB `_glb.js`, ~400 k triángulos frente a los 41 k del `_hd` viejo; la pieza es el gran complejo de la colina, instancia única en (−18,5; 35,7; 177,2), zona `kelvin_aldea_colina`). Interruptor en `streaming.js` (~l.834): APAGADO por defecto; `?hd400=1` lo enciende.
+- **Método:** herramienta nueva `tools/build/kimi1_022.js` (Chrome headless propio + CDP, GPU real RX 5700 XT). Semilla cap1 → portada → Aventura → teleport junto al complejo → `ST.terminar()` (drenado presupuestado) → órbita lenta r = 38 m a +18 m durante 12–16 s → FPS p50/p10/peor, draw calls, triángulos, `info.memory`, heap, `look.medir`, captura. Ojo: hay que agrandar el búfer de Resource Timing a 100 000 entradas (`performance.setResourceTimingBufferSize`) — con la ciudad drenada el búfer por defecto (250) evicta al `complejo_ruinas_*` y da falsos «no cargó».
+- **Resultado (04-11 ~22:15–22:40 UTC), medido CON CONTENCIÓN** (Kimi 2 corría `kimi2_qa53.js` + `kimi2_empezar.js --solo movementTest` en la misma PC; los FPS son techo, no cifra limpia). Escritorio 1600×900 dpr 1 CPU ×1:
+
+| condición | FPS med · p50 · p10 | calls | ktris | heap MB | hd400 cargado |
+|---|---|---|---|---|---|
+| medio · OFF | 60,5 · 71,4 · 35,7 | 186 | 799 | 836 | 0 |
+| medio · ON | 18,8 · 23,8 · 11,1 | 199 | 1077 | 619 | 1 |
+| alto · ON | 28,9 · 28,6 · 20,4 | 156 | 2986 | 895 | 1 |
+| alto · OFF | 21,8 · 20,4 · 14,3 | 169 | 4669 | 858 | 0 |
+| medio · OFF (A/B a) | 28,6 · 47,6 · 15,9 | 207 | 811 | 985 | 0 |
+| medio · ON (A/B b) | 20,1 · 20,4 · 11,9 | 199 | 716 | 748 | 1 |
+| medio · OFF (A/B c) | 28,7 · 35,7 · 15,9 | 204 | 773 | 816 | 0 |
+
+- Móvil emulado iPhone 390×844 dpr 3 CPU ×4 (calidad «bajo» natural): heap 144,5 (OFF) vs 141,9 MB (ON), geo 227 vs 231, tex 121 = 121, y `cargadoHd400: 0` en ambas — **en «bajo» el interruptor es inerte** (la guarda de QA-158 no funde HD de zona y el `_hd` por instancia tampoco se pide: `modelosHD: 0`, `visiblesHD: 0` verificado en el volcado de zonas). **El pico de móvil no sube.**
+- **Lectura:** la matriz primera es inválida como comparación (el alto-OFF sale peor que el alto-ON: varianza pura de contención). Lo consistente es el A/B entrelazado: con la misma contención media, hd400 ON cuesta ~30 % de FPS (20,1 frente a 28,6/28,7) **sin** subir triángulos a la vista (snapshot 716 k frente a 811/773 k): el coste no es de raster, y la cifra absoluta no permite certificar «≥ 50 FPS en medio».
+- **Decisión:** **se queda APAGADO por defecto** (`streaming.js` no se toca). Pendiente: re-medición limpia con la PC libre (mismo comando; si medio-ON ≥ 50 FPS limpio, se enciende solo en escritorio/tablet con el corte ya existente `MOVIL_PEQ` — teléfonos apagados — y `?hd400=0/1` como anulación manual).
+- **Ojo si se enciende algún día:** `kit.js` sigue diciendo `trisHD: 41179` para `complejo_ruinas`, pero el modelo real son ~400 k: la cuenta del tope `CFG.hdTris` (900 k en medio) quedaría deshonesta (~2× triángulos de los presupuestados pasarían). Habría que actualizar `trisHD`/`kbHD` al encenderlo.
+- Evidencia: `docs/img/kimi022/k022-*.json` + `k022-*.jpg` (0 errores de consola en todas las corridas; las capturas hd0/hd1 renderizan igual de bien, sin artefactos).
