@@ -419,11 +419,11 @@
         if (g.y != null && MV().flying && !MV().landing && S.pos.y > g.y + 2.5) await boton('b-fly');
         else if (g.y != null && MV().flying && MV().landing && S.pos.y < g.y + 0.8) await boton('b-fly');
         if (g.y != null && S.pos.y < g.y - 0.6 && !MV().landing) await sostener('b-jump', 0.15);
-        if (d > 1.2) await empujar(0.25, d > 6, 0, { dx, dz }); else { soltarPalo(); await jugar(0.25); }
+        if (d > 1.2) await empujar(0.25, d > 6, 0, { dx, dz }); else { soltarPalo(); if (cfg.accionCerca && cfg.accionCerca(G)) await accion(); await jugar(0.25); } // agarrar/soltar al vuelo (crecida del cap. 1)
       }
       soltarPalo();
     }
-    ctx.hacia = hacia; ctx.volarA = volarA; ctx.resolver = resolver;
+    ctx.hacia = hacia; ctx.volarA = volarA; ctx.resolver = resolver; ctx.clic = clic;
 
     try {
       check('Arranca limpio el capítulo ' + cfg.n + (cfg.query ? ' (' + cfg.query.replace(/^&/, '') + ')' : ''), W.AV.pack === cfg.pack && !S.profile.created, { pack: W.AV.pack, creado: S.profile.created });
@@ -481,7 +481,7 @@
       };
       // W17 (pulgar): lo que la misión educativa del cap. 1 lleva en S.edu (perchas, terrenos vistos, la poza) también es avanzar
       const progreso = () => S.step + '|' + S.collected.length + '|' + (S.events || []).length + '|' + Object.keys(S.missions || {}).filter(k => S.missions[k]).length +
-        (opts.pulgar && S.edu ? '|' + s([S.edu.hecho, S.edu.perchas, S.edu.vistos, S.edu.poza, S.edu.cadena]) : '');
+        (opts.pulgar && S.edu ? '|' + s([S.edu.hecho, S.edu.perchas, S.edu.vistos, S.edu.poza, S.edu.cadena]) : '') + (cfg.progreso ? '|' + cfg.progreso(G) : '');
       let mismo = 0, ultimoPaso = -1, iter = 0, ultimoProg = '', fallo = null;
       const vistos = new Set();
       while (!S.complete && iter++ < (cfg.maxIter || 260)) {

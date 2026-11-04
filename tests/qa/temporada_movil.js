@@ -42,7 +42,33 @@
       return !!g && g.y != null && g.y - G.terreno.height(g.x, g.z) > 1.5;
     },
     // el vapor y la gota de «La ruta de la gota» se mueven: se siguen en vuelo
-    seguir: G => { const E = G.c && G.c.edu && G.c.edu.estado && G.c.edu.estado(); return !!E && (E.voluta || (!!E.gota && !E.gota.parada)); } },
+    // y en la crecida, lo que arrastra el río se agarra al vuelo (Acción cerca) y se suelta en lo alto
+    seguir: G => { const E = G.c && G.c.edu && G.c.edu.estado && G.c.edu.estado(); return (!!E && (E.voluta || (!!E.gota && !E.gota.parada))) || (!!G.S.event && !!G.c.crecida); },
+    accionCerca: G => !!G.S.event && !!G.c.crecida,
+    progreso: G => (G.S.event && G.c.crecida ? G.c.crecida.objetos().map(o => o.id + ':' + o.fase).join(',') : ''),
+    // «Elige un terreno y construye»: el cartel del terreno trae «Construir refugio aquí» (no es una tarjeta de elección ch-*).
+    // Como un niño: lo toca, camina con el joystick dentro del terreno hasta que el fantasma sale verde y toca Acción.
+    // Mientras dura el modo construir la guía se apaga a propósito (guiaBloqueada), así que se coloca aquí mismo.
+    async tarjeta(card, ctx) {
+      const b = card.querySelector('#c-build');
+      if (!b || b.hidden) return false;
+      const G = ctx.G, S = ctx.S;
+      await ctx.clic(b);
+      const bd = G.c.build();
+      if (!bd) { ctx.atasco('«Construir refugio aquí» no abre el modo construir', (document.getElementById('toast') || {}).textContent || ''); const c = card.querySelector('#c-close'); if (c) await ctx.clic(c); return true; }
+      const p = G.c.PLACES[bd.parcel];
+      const cand = [[0, -1.5], [0, -3], [3, -1.5], [-3, -1.5], [0, 1.5], [3, -3], [-3, -3], [5, 0], [-5, 0]];
+      for (const [dx, dz] of cand) {
+        await ctx.hacia(p.x + dx, p.z + dz, 25, 0.6);
+        await ctx.jugar(0.1);
+        const v = G.c.build();
+        if (!v) break;
+        if (v.valid) { await ctx.accion(); await ctx.jugar(0.3); if (S.refuge) break; }
+      }
+      const queda = G.c.build();
+      if (queda) { ctx.atasco('no se pudo colocar el refugio con el pulgar', queda.reason); G.c.cancelBuild(); }
+      return true;
+    } },
     // Cap. 2: las tarjetas como en tests/qa/ep2_e2e.js (se equivoca una vez donde un niño suele equivocarse)
     2: { pack: 'ep2', n: 2, maxIter: 260, politica(ops, line, ctx) {
       const G = ctx.G, txt = (line && line.text) || '', idx = f => ops.findIndex(f);
