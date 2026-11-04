@@ -113,7 +113,7 @@ window.AVComunidades = function (G) {
     for (const s of activos()) ids[s.id] = true;
     const k = reducido() ? 0.35 : 1;
     for (const p of gente) {
-      p.on = !!ids[p.sitio] && (!bajo() || p.i < BAJO_N);
+      p.on = !!ids[p.sitio] && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
       if (!p.on) continue;
       p.t += dt * k;
       if (p.acto === 'cargar') {
@@ -256,10 +256,10 @@ window.AVComunidades = function (G) {
       check('No se crea ninguna malla nueva', sc.children.length === nHijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
       R.prueba = false; R.forzar = null; G.quiet = true; paso(0.05);
       check('Con G.quiet las comunidades no salen', g.every(p => !p.on));
-      R.prueba = true; R.forzar = 'todos'; G.renderer.calidad.nivel = 'bajo'; paso(0.05);
+      R.prueba = true; R.minima = true; R.forzar = 'todos'; G.renderer.calidad.nivel = 'bajo'; paso(0.05);
       const porSitio = {}; g.forEach(p => { if (p.on) porSitio[p.sitio] = (porSitio[p.sitio] || 0) + 1; });
       check('Con calidad baja, versión mínima: 1 o 2 por sitio (QA-110)', Object.keys(porSitio).length > 0 && Object.values(porSitio).every(n => n >= 1 && n <= BAJO_N), JSON.stringify(porSitio));
-      R.prueba = false; R.forzar = null;
+      R.prueba = false; R.minima = false; R.forzar = null;
       G.renderer.calidad.nivel = cal0; G.quiet = quiet0;
       const jpg = foto('villa');
       check('La captura de Villa Raíz sale', typeof jpg === 'string' && jpg.indexOf('data:image/jpeg') === 0 && jpg.length > 2000, jpg ? jpg.length : 0);

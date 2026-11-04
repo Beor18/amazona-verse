@@ -184,7 +184,7 @@ window.AVBandada = function (G) {
   };
   function aparecer(motivo, o) {
     o = o || {};
-    const tope = nivel() === 'bajo' ? cuentaPara('bajo') : Infinity; // QA-110: en bajo, la mínima (también la de 20 de M3)
+    const tope = nivel() === 'bajo' && (!o.forzar || o.minima) ? cuentaPara('bajo') : Infinity; // QA-110: en bajo, la mínima (también la de 20 de M3); las pruebas forzadas, completas
     const n = Math.min(o.n != null ? o.n : cuentaPara(nivel()), tope);
     if (n <= 0 || F.estado !== 'off') return false;
     if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false;
@@ -373,7 +373,7 @@ window.AVBandada = function (G) {
     try {
       terminar(); pend = null;
       ok('Cantidad por calidad: bajo 6, medio 12, alto 20', cuentaPara('bajo') === 6 && cuentaPara('medio') === 12 && cuentaPara('alto') === 20);
-      ok('Con calidad baja sale la mínima: como mucho 6, también si piden 20 (QA-110)', (() => { const q = G.renderer.calidad.nivel; G.renderer.calidad.nivel = 'bajo'; const r = aparecer('prueba', { forzar: true, n: 20 }); const nAves = F.aves.length; terminar(); G.renderer.calidad.nivel = q; return r !== false && nAves > 0 && nAves <= 6 && F.estado === 'off'; })());
+      ok('Con calidad baja sale la mínima: como mucho 6, también si piden 20 (QA-110)', (() => { const q = G.renderer.calidad.nivel; G.renderer.calidad.nivel = 'bajo'; const r = aparecer('prueba', { forzar: true, minima: true, n: 20 }); const nAves = F.aves.length; terminar(); G.renderer.calidad.nivel = q; return r !== false && nAves > 0 && nAves <= 6 && F.estado === 'off'; })());
       G.quiet = true; S.profile = S.profile || { created: false };
       ok('En las baterías (G.quiet) los disparadores no sacan la bandada', pedir('mision') === false && aparecer('tarde') === false && F.estado === 'off');
       ok('«pedir» forzado deja el aviso pendiente', pedir('despertar', { forzar: true, en: 5 }) === true && pend && pend.motivo === 'despertar'); pend = null;
