@@ -280,12 +280,12 @@ window.AVFamilia = function (G) {
       anotar(9, 40); anotar(2, 4); const desemp = anotar(6, 25);
       const rap = desemp.find(m => /rápido|fastest/.test(m.premio));
       const val = desemp.find(m => /valiente|bravest/.test(m.premio));
-      ok('QA-124 el más rápido es quien tardó menos, no el segundo puesto', rap && rap.n === 2 && rap.segundos === 4 && !/valiente|bravest/.test(rap.premio), JSON.stringify(desemp.map(m => m.n + ':' + m.premio + ' ' + m.puntos + '/' + m.segundos)));
-      ok('QA-124 el más valiente es quien más puntos hizo, aunque haya tardado', val && val.n === 1 && val.puntos === 9 && !/rápido|fastest/.test(val.premio), val && val.premio);
+      ok('QA-127 el más rápido es quien tardó menos, no el segundo puesto', rap && rap.n === 2 && rap.segundos === 4 && !/valiente|bravest/.test(rap.premio), JSON.stringify(desemp.map(m => m.n + ':' + m.premio + ' ' + m.puntos + '/' + m.segundos)));
+      ok('QA-127 el más valiente es quien más puntos hizo, aunque haya tardado', val && val.n === 1 && val.puntos === 9 && !/rápido|fastest/.test(val.premio), val && val.premio);
       empezar(3, 'trucos');
       anotar(9, 4); anotar(3, 30); const ambos = anotar(1, 20);
       const campeon = ambos.find(m => m.n === 1);
-      ok('QA-124 quien gana en puntos y en tiempo se lleva los dos premios', campeon && /valiente|bravest/.test(campeon.premio) && /rápido|fastest/.test(campeon.premio) && ambos.every(m => m.n === 1 || !/rápido|fastest/.test(m.premio)), campeon && campeon.premio);
+      ok('QA-127 quien gana en puntos y en tiempo se lleva los dos premios', campeon && /valiente|bravest/.test(campeon.premio) && /rápido|fastest/.test(campeon.premio) && ambos.every(m => m.n === 1 || !/rápido|fastest/.test(m.premio)), campeon && campeon.premio);
       const tr = empezar(2, 'trucos');
       $('fam-ok').click(); await listo;
       G.S.clock = (G.S.clock || 0) + 1; G.trucos.anotar('tonel');
