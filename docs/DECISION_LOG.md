@@ -309,3 +309,9 @@ Fernando libera lo gráfico, que estaba reservado a Kimi/Fernando hasta que él 
 6. Mantener ~12 GB libres en la nube como referencia y evitar copias innecesarias de agentes.
 Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar rendimiento, jugabilidad ni la identidad de Amazona Verse.
 7. **Dirección artística (Kelvin, 4-nov):** la ciudad no es solo bonita para mirar: el jugador descubre **pequeños comportamientos diferentes cada vez que la visita**. Eso es lo que la hace sentirse viva.
+
+## 4-nov-2026 · Kelvin: 24b, 24c y música
+- **24b · La Maraña: APROBADA** como elemento fantástico del universo: misterio, exploración y una función narrativa o jugable. No se presenta como un hecho histórico de Puerto Rico; separación clara entre ficción y contenido educativo verificable.
+- **24c · Iguaca y las mentoras: APROBACIÓN CONDICIONADA.** Se amplían diálogos y personalidades, pero Kelvin revisa el texto exacto antes de que entre al canon (propuesta en `docs/equipo/PROPUESTA_MENTORAS_24C.md`). Iguaca con iniciativa y personalidad propia; mentoras con voces diferenciadas, que orienten sin resolverlo todo y sin diálogos excesivamente educativos.
+- **Música:** aprobada la dirección de dos temas originales (ciudad de noche y sorpresas). Pendientes los MP3 y la verificación de derechos de uso comercial.
+- **Importante:** no alterar el canon establecido, las 36 especies, los seis capítulos ni las mecánicas existentes para introducir estos elementos.
