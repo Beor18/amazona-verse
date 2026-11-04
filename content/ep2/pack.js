@@ -165,8 +165,9 @@
     // el personaje es Iguaca (su id no es «luma»: esa es la de cap1)
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true },
-      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
-      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 1.8 },
+      // CG-62 (Kelvin 4-nov, propuesta A de CG-60): escala del grupo — Iguaca 1,08, Abuela 0,86, Papá 1,14
+      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.75 },
+      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 2.32 },
     ],
     objetos: {}, recursos: [],
 
@@ -257,7 +258,7 @@
       NestPlaced: { type: 'NestPlaced', loc: 'villa', chars: ['papa'], scene: 'final' },
       Chapter2Completed: { type: 'ChapterCompleted', loc: 'villa', chars: ['vittata', 'iguaca', 'abuela', 'papa'], scene: 'final' },
     } },
-    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
+    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png', fondos: { Vittata: 'bosque', Iguaca: 'taller', Abuela: 'porche', 'Papá': 'nido' } }, // CG-62 · fondos propios del retrato (propuesta A de CG-60)
     comic: {
       marca: 'UN LUGAR PARA TODOS', tituloDefecto: 'Mi capítulo 2', archivo: 'ep2-mi-comic', pdfTitulo: 'Un lugar para todos',
       capturas: ['sitio', 'escuchar', 'casa'], portadas: {},

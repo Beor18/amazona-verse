@@ -1,0 +1,195 @@
+{
+  "etiqueta": "antes",
+  "raiz": "C:\\Users\\kelvi\\AppData\\Local\\Temp\\cg62head-F5H9",
+  "packs": {
+    "cap1": {
+      "luma": {
+        "nombre": "Iguaca",
+        "escala": 2,
+        "mundo": 2,
+        "x": 153,
+        "z": 163,
+        "visible": true
+      },
+      "abuela": {
+        "nombre": "Abuela",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 78.5,
+        "z": 183.2,
+        "visible": false
+      },
+      "papa": {
+        "nombre": "Papá",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 75.5,
+        "z": 183.2,
+        "visible": false
+      }
+    },
+    "ep2": {
+      "iguaca": {
+        "nombre": "Iguaca",
+        "escala": 2.2,
+        "mundo": 2.2,
+        "x": -17,
+        "z": 29,
+        "visible": true
+      },
+      "abuela": {
+        "nombre": "Abuela",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": -27,
+        "z": 30,
+        "visible": true
+      },
+      "papa": {
+        "nombre": "Papá",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": -12,
+        "z": 44,
+        "visible": true
+      }
+    },
+    "ep3": {
+      "iguaca": {
+        "nombre": "Iguaca",
+        "escala": 2.2,
+        "mundo": 2.2,
+        "x": 166,
+        "z": 170,
+        "visible": true
+      },
+      "abuela": {
+        "nombre": "Abuela",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 174,
+        "z": 175,
+        "visible": true
+      },
+      "papa": {
+        "nombre": "Papá",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 190,
+        "z": 181,
+        "visible": true
+      }
+    },
+    "ep4": {
+      "iguaca": {
+        "nombre": "Iguaca",
+        "escala": 2.2,
+        "mundo": 2.2,
+        "x": 193.9,
+        "z": 162,
+        "visible": true
+      },
+      "abuela": {
+        "nombre": "Abuela",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 198.9,
+        "z": 155,
+        "visible": true
+      },
+      "papa": {
+        "nombre": "Papá",
+        "escala": 1.8,
+        "mundo": 1.8,
+        "x": 195.8,
+        "z": 147,
+        "visible": true
+      }
+    }
+  },
+  "dialogos": {
+    "cap1:Vittata": {
+      "who": "Vittata",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    },
+    "cap1:Iguaca": {
+      "who": "Iguaca",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    },
+    "cap1:Abuela": {
+      "who": "Abuela",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    },
+    "cap1:Papá": {
+      "who": "Papá",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    },
+    "cap1:bocadillo:Abuela": {
+      "dataFondo": null,
+      "visible": true
+    },
+    "ep2:Iguaca": {
+      "who": "Iguaca",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": false
+    },
+    "ep3:Iguaca": {
+      "who": "Iguaca",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    },
+    "ep4:Iguaca": {
+      "who": "Iguaca",
+      "dataFondo": null,
+      "imgDataFondo": null,
+      "fondoMarco": "radial-gradient(circle at 50% 30%, rgb(216, 241, 255) 0px, rgb(140, 201, 238) 55%, rgb(79,",
+      "dialogoVisible": true
+    }
+  },
+  "mundo": {
+    "familia": {
+      "bx": 77,
+      "bz": 183.2,
+      "fps": 2,
+      "calls": 115,
+      "tris": 663704,
+      "texturasMB": null,
+      "calidad": "alto",
+      "heapMB": 773,
+      "escalas": [
+        1.8,
+        1.8
+      ]
+    },
+    "iguaca": {
+      "bx": 153,
+      "bz": 163,
+      "fps": 50,
+      "calls": 219,
+      "tris": 1181798,
+      "texturasMB": null,
+      "calidad": "alto",
+      "heapMB": 889,
+      "escalas": [
+        2
+      ]
+    }
+  },
+  "erroresConsola": []
+}

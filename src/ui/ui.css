@@ -344,6 +344,12 @@ kbd {
   border: 5px solid #fff; box-shadow: 0 0 0 3px var(--c-primary), 0 8px 16px rgba(42, 29, 16, 0.3);
 }
 #dialog img#d-img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 0; background: none; transform: translate(-8%, 35%) scale(1.6); }
+/* CG-62 · fondos propios de los retratos (propuesta A de CG-60, tonos de docs/img/personajes/propuesta_a.png):
+   bosque (Vittata), taller (Iguaca), porche (Abuela), nido (Papá). Va en la caja y en los bocadillos */
+.d-portrait[data-fondo="bosque"], #dialog img#d-img[data-fondo="bosque"], .bocadillo img[data-fondo="bosque"] { background: radial-gradient(circle at 50% 30%, #2c6b45 0, #1e4d33 55%, #0f2e1d 100%); }
+.d-portrait[data-fondo="taller"], #dialog img#d-img[data-fondo="taller"], .bocadillo img[data-fondo="taller"] { background: radial-gradient(circle at 50% 30%, #2a4a58 0, #1d3a45 55%, #0e2028 100%); }
+.d-portrait[data-fondo="porche"], #dialog img#d-img[data-fondo="porche"], .bocadillo img[data-fondo="porche"] { background: radial-gradient(circle at 50% 30%, #96682f 0, #7a5426 55%, #4a3212 100%); }
+.d-portrait[data-fondo="nido"], #dialog img#d-img[data-fondo="nido"], .bocadillo img[data-fondo="nido"] { background: radial-gradient(circle at 50% 30%, #4a3b24 0, #33291a 55%, #1c1509 100%); }
 #dialog .txt { display: flex; flex-direction: column; min-width: 0; }
 #dialog .who {
   align-self: flex-start; margin: -34px 0 0; padding: 5px var(--sp-4);

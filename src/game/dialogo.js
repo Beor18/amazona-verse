@@ -19,6 +19,9 @@ AVE.module('dialogo', function (G) {
   'use strict';
   const $ = G.util.$, D = G.pack.dialogos || {};
   const retratos = D.retratos || {};
+  // CG-62 · propuesta A de CG-60: fondo propio del retrato por personaje (pack.dialogos.fondos { personaje: escena });
+  // las escenas las pinta ui.css (data-fondo): bosque (Vittata), taller (Iguaca), porche (Abuela), nido (Papá)
+  const FONDOS = D.fondos || {};
   const defImg = D.retratoDefecto || (G.pack.jugador && G.pack.jugador.sprite) || '';
   const EMO_MOOD = D.emociones || { feliz: 'happy', triste: 'sad', sorpresa: 'surprised', idea: 'idea', enojo: 'angry' };
   const img = who => retratos[who] || defImg;
@@ -47,6 +50,9 @@ AVE.module('dialogo', function (G) {
   }
   // Retrato de la línea; sin imagen no se pone src vacío (el navegador pediría la propia página): se oculta
   function retrato(el, src, who) {
+    const f = FONDOS[who] || '', marco = el.closest ? el.closest('.d-portrait') : null;
+    if (marco) { if (f) marco.setAttribute('data-fondo', f); else marco.removeAttribute('data-fondo'); }
+    if (f) el.setAttribute('data-fondo', f); else el.removeAttribute('data-fondo');
     if (src) { if (el.getAttribute('src') !== src) el.src = src; el.alt = who || ''; el.hidden = false; }
     else { el.removeAttribute('src'); el.alt = ''; el.hidden = true; }
   }
