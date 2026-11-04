@@ -30,6 +30,10 @@
    binario a su dueño real en el motor (audio, geometría, fusión/instanciado, parse de GLB...).
    node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 160 --snap 60,150 --etiqueta ab1 --ab
 
+  Fase 7 (4-nov): el perfil iPhone cae en 'bajo' (QA-110/158) y ahí el heap se queda sano — para
+  reproducir la fuga histórica (fases 2/5/6, medidas en 'alto') hay que forzar calidad:
+  node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 175 --snap 135,165 --ab --calidad alto --etiqueta ab7rN
+
    Fase 6 (--ab, 4-nov): las cadenas se cortaban en 'reactions_or_result→Promise' (+16,5 MB en la fase 5)
    → 'Promise' pasa a ser un nodo transparente: el BFS lo atraviesa y sigue hasta el dueño que retiene
    la promesa (context/array/mapa del módulo); firma ampliada a los últimos 4 saltos y diff abDet
@@ -53,6 +57,7 @@ const PERFIL = process.argv.includes('--perfil');
 const AB = process.argv.includes('--ab'); // sub-atribuir los ArrayBuffer grandes por retenedor
 const SNAP = arg('--snap', ''); // p. ej. "50,140": segundos de snapshot con gc previo
 const SNAP_T = SNAP ? SNAP.split(',').map(x => +x).filter(x => x > 0) : [];
+const CALIDAD = arg('--calidad', ''); // p. ej. "alto": fuerza ?calidad= (por defecto el perfil móvil cae en 'bajo', QA-110/158)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi152');
 fs.mkdirSync(SALIDA, { recursive: true });
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
@@ -268,7 +273,7 @@ async function lanzarChrome() {
 (async () => {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
-  const res = { movil: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU, secs: SECS, cap: CAP, etiqueta: ETIQUETA || null }, gpu: null, muestras: [], red: null };
+  const res = { movil: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU, secs: SECS, cap: CAP, etiqueta: ETIQUETA || null, calidad: CALIDAD || 'auto' }, gpu: null, muestras: [], red: null };
   const chromeL = await lanzarChrome();
   const ws = new WebSocket(`ws://127.0.0.1:${chromeL.puerto}${chromeL.wsPath}`);
   const cdp = new CDP(ws); await cdp.listo();
@@ -288,7 +293,7 @@ async function lanzarChrome() {
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
     const t0 = Date.now();
-    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=' + CAP }, ses);
+    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=' + CAP + (CALIDAD ? '&calidad=' + encodeURIComponent(CALIDAD) : '') }, ses);
     const limiteMs = SECS * 1000;
     let nMuestra = 0, perfilando = false, snapIdx = 0;
     const snaps = [];
