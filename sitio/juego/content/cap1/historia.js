@@ -19,7 +19,7 @@
     { id: 'KELVIN-2', que: 'Orden del Guardián (decidido por el equipo el 30-oct: como el guion, llega al paso de construir y ayuda; Kelvin lo revisa al final)', donde: 'historia.js (talkGuardian, applyGuardianLook)', bloquea: 'p.8: el Guardián sostiene una pieza (P1-2)' },
     { id: 'KELVIN-3', que: 'Medalla del Guardián igual a una pieza del emblema (NARRATIVA «Giro»): canon por Kelvin el 2-nov; al final del cap. 6 se la da a Vittata, que se la ganó (diálogo y Cuaderno). Queda el detalle visible en su figura (arte)', donde: 'historia.js (useTransmitter), mundo.js (npcs)', bloquea: 'giro de la escena p.11' },
     { id: 'KELVIN-4', que: 'Cara de la Voz del transmisor: Kelvin 2-nov, son dos voces distintas (Mara y Vela) que se unen al final; en el cap. 1 sigue el retrato neutro sin nombrarlas', donde: 'pack.js (RETRATO_VOZ)', bloquea: 'retrato definitivo' },
-    { id: 'KELVIN-5', que: 'Familia de Iguaca entrando al refugio (SCRIPT p.9): ni arte ni diseño de los personajes', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
+    { id: 'KELVIN-5', que: 'Familia de Iguaca entrando al refugio (SCRIPT p.9): Kelvin 4-nov eligió la propuesta A de CG-60 (aplicada en CG-62) — mismo plumaje vittata, escala del grupo (Iguaca 1,08, Abuela 0,86, Papá 1,14) y fondo propio en el retrato de diálogo (bosque/taller/porche/nido). Queda el arte definitivo (modelo propio)', donde: 'historia.js (afterRain), mundo.js (npcs)', bloquea: 'P1-2, recompensa emocional del refugio' },
     { id: 'KELVIN-6', que: 'Diseño de la máquina experimental y del transmisor antiguo, y engranaje visible en el techo del refugio', donde: 'mundo.js (preparar, objetos del taller)', bloquea: 'P1-6 y P2-2, modelos en Blender' },
     { id: 'KELVIN-7', que: 'Diseño del bote: el plano es un dibujo genérico (casco, mástil y dos velas) hasta el episodio 2', donde: 'historia.js (drawBlueprint)', bloquea: 'plano definitivo' },
     { id: 'KELVIN-8', que: 'Quién contesta con la luz de la niebla: no se revela en el cap. 1 y la luz es neutra', donde: 'mundo.js (luzMirador)', bloquea: 'cliffhanger al cap. 2' },
@@ -321,8 +321,15 @@
       // La llamada de Iguaca desde arriba (interact:luma_inicio): suena al acercarse a la copa, en bocadillos; si la charla
       // empieza antes de que termine, lo que faltaba se funde en la charla para no cambiar el orden del guion
       const LLAMADA = () => L('interact:luma_inicio', [{ who: 'Iguaca', img: IMG.L, text: '¡Vittata! ¡Necesitamos ayuda!', mood: 'surprised' }, { who: 'Iguaca', img: IMG.L, text: 'Mi familia no tiene dónde quedarse. Nuestro árbol se partió.' }]);
+      // PLAYTEST-cap1-paso1: la charla tiene más de 2 líneas y el resto sale en bocadillos; si el niño vuelve a pulsar «Hablar con
+      // Iguaca» mientras pasan, antes empezaba otra charla (época nueva en dialogo.say) y el final de la primera, el que da las
+      // tablas y pasa al paso 2, no llegaba nunca: pulsando seguido no se salía del paso 1. Ahora pulsar otra vez pasa la línea.
+      let charlaLuma = false;
+      G.on('apply', () => { charlaLuma = false; }, 36);
       function talkLuma() {
+        if (S.step === 0 && charlaLuma && G.dialogo.activo()) { G.dialogo.next(); return; }
         if (S.step === 0) {
+          charlaLuma = true;
           // La charla de la misión, posada junto a Iguaca en la copa (bloquea: es la conversación, no narración):
           // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales → las tres tablas
           const inicio = C.luma.llamo() ? G.dialogo.cancelarLibre() : LLAMADA();
@@ -334,6 +341,7 @@
             { who: 'Iguaca', img: IMG.L, text: 'Solo pudimos salvar tres tablas del árbol partido. Tómalas.' },
             { who: 'Vittata', img: IMG.V, text: 'Con eso empezamos. Faltan una madera, dos piedras y una pieza de metal. ¡Una cayó al fondo del río!' },
           ], () => {
+            charlaLuma = false;
             for (const k in REGALO_LUMA) S.inv[k] += REGALO_LUMA[k];
             G.objetos.renderInv(); G.audio.play('pickup', 2);
             log('LumaHelped'); advanceTo(1);

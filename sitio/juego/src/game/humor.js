@@ -42,7 +42,8 @@ window.AVHumor = function (G) {
   function paso(dt, forzar) {
     const d = Math.min(0.05, dt || 0);
     if (G.quiet && !forzar) return;
-    const cercaFlor = FLORES.some(f => Math.hypot(S.pos.x - f.x, S.pos.z - f.z) < 2.5);
+    let cercaFlor = false;
+    for (let i = 0; i < FLORES.length; i++) { const f = FLORES[i]; if (Math.hypot(S.pos.x - f.x, S.pos.z - f.z) < 2.5) { cercaFlor = true; break; } }
     if (cercaFlor && ultimo !== 'estornudo') hacer('estornudo');
     if (M.swimming) nadaba = true;
     else if (nadaba) { nadaba = false; hacer('sacudida'); }

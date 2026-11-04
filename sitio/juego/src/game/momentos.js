@@ -37,8 +37,11 @@ AVE.module('momentos', function (G) {
   // Clave de imagen (S.captures) de la viñeta del pack ligada a un evento
   function imgDe(key) { const v = ((G.pack.comic && G.pack.comic.vinetas) || []).find(x => x.needs === key); return v && v.img && v.img !== 'portrait' ? v.img : null; }
   const listo = () => !G.quiet && !!S.profile && !!S.profile.created;
-  function registrar(key, datos, imagen) {
-    if (!listo() || G.eventos.had(key)) return false;
+  // forzar (pedido diferido, CG-64): el alta se pidió con listo() verdadero y la foto llegó 1–2 cuadros después,
+  // quizá con G.quiet ya restaurado (las baterías): solo se reexige perfil, no el estado silencioso de ahora
+  function registrar(key, datos, imagen, forzar) {
+    const puede = forzar ? !!(S.profile && S.profile.created) : listo();
+    if (!puede || G.eventos.had(key)) return false;
     const img = imgDe(key);
     if (img && esImagen(imagen)) S.captures[img] = imagen;
     G.eventos.log(key, datos || {});
@@ -86,6 +89,11 @@ AVE.module('momentos', function (G) {
     try { im = typeof d.foto === 'function' ? d.foto() : d.imagen; } catch (e) { im = null; }
     const meta = { gag: d.gag };
     for (const [k, n] of [['id', 24], ['etapa', 16], ['gesto', 24], ['hallazgo', 32]]) if (typeof d[k] === 'string') meta[k === 'id' ? 'cria' : k] = d[k].slice(0, n);
+    if (im && typeof im.then === 'function') { // la foto se lee diferida (CG-64): la viñeta se anota al llegar
+      im.then(url => { if (!G.eventos.had(key)) registrar(key, meta, esImagen(url) ? url : null, true); })
+        .catch(() => { if (!G.eventos.had(key)) registrar(key, meta, null, true); });
+      return true;
+    }
     return registrar(key, meta, im);
   }
   G.on('criadero', (tipo, d) => { if (tipo === 'gag') alGag(d); });
@@ -100,7 +108,13 @@ AVE.module('momentos', function (G) {
     if (!nuevo) return false;
     let foto = null;
     try { foto = G.renderer && G.renderer.snapshot ? G.renderer.snapshot(480, 360, 0.72) : null; } catch (e) { foto = null; }
-    pendRecord = { meta: { modo: d.modo, ms: d.ms || null, puesto: d.puesto || null, puntos: d.puntos || null }, foto };
+    const meta = { modo: d.modo, ms: d.ms || null, puesto: d.puesto || null, puntos: d.puntos || null };
+    // pendRecord se anota ya (queda «pendiente» aunque la foto llegue 1–2 cuadros después, CG-64); si la foto
+    // tarda, el registro usa la captura del mundo del cómic (mismo camino que sin foto)
+    pendRecord = { meta, foto: null };
+    if (foto && typeof foto.then === 'function') {
+      foto.then(url => { if (pendRecord) pendRecord.foto = esImagen(url) ? url : null; }).catch(() => {});
+    } else pendRecord.foto = foto;
     return true;
   }
   G.on('retosResultado', d => alResultado(d));
@@ -148,15 +162,16 @@ AVE.module('momentos', function (G) {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
       // Dibujo directo, como snapshot() (renderer.js): con el posproceso, drawScene() dentro del bucle dejaba la foto en negro
       if (R.renderer && R.scene) R.renderer.render(R.scene, cam); else R.drawScene();
-      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = 640; c.height = 480; // como las fotos del cómic
+      const src = R.canvas, sw = src.width, sh = src.height;
+      if (!sw || !sh || !R.leerLienzo) return null;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
-      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, 640, 480);
-      // Una foto casi negra (lienzo sin dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
-      const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let luz = 0;
-      for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
-      if (luz < 40) return null;
-      const url = c.toDataURL('image/jpeg', 0.75);
-      return url.length > 2000 ? url : null;
+      // Lectura diferida (CG-64): promesa → JPEG 640×480 (como las fotos del cómic). Una foto casi negra (lienzo
+      // sin dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
+      return R.leerLienzo(cw, ch, 640, 480, 0.75, px => {
+        let luz = 0;
+        for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
+        return luz >= 40;
+      });
     } catch (e) { return null; }
     finally { cam.position.copy(pos); cam.quaternion.copy(rot); cam.updateMatrixWorld(); }
   }
@@ -174,6 +189,13 @@ AVE.module('momentos', function (G) {
     if (!listo()) return false;
     let img = fotoFrente();
     if (!img) { try { img = G.renderer.snapshot ? G.renderer.snapshot(480, 360, 0.75) : null; } catch (e) { img = null; } }
+    if (img && typeof img.then === 'function') { // lectura diferida (CG-64): se completa sola en 1–2 cuadros
+      img.then(url => terminarFoto(gesto, esImagen(url) ? url : null, true)).catch(() => terminarFoto(gesto, null, true));
+      return true;
+    }
+    return terminarFoto(gesto, esImagen(img) ? img : null, false);
+  }
+  function terminarFoto(gesto, img, diferida) {
     if (!esImagen(img)) { aviso('No se pudo tomar la foto aquí. Prueba en otro sitio.', 3000); return false; }
     const img0 = imgDe('PhotoTaken') || 'foto';
     S.captures[img0] = img;
@@ -182,7 +204,7 @@ AVE.module('momentos', function (G) {
       // La viñeta ya existe: la foto nueva la reemplaza, con la apariencia de ahora; el evento se registra igual
       const v = S.comic && S.comic.vinetas && S.comic.vinetas.foto; if (v) v.look = lookActual();
       G.eventos.log('PhotoTaken', meta);
-    } else registrar('PhotoTaken', meta, img);
+    } else registrar('PhotoTaken', meta, img, diferida);
     G.guardado.autosave();
     flash(); if (G.audio && G.audio.play) G.audio.play('foto');
     aviso(`<b>¡Foto al cómic!</b> Pose: ${esc(nombreGesto(meta.gesto))}`, 2800);
@@ -262,15 +284,21 @@ AVE.module('momentos', function (G) {
       // Foto con pose: de frente, al cómic; una foto nueva reemplaza la anterior en la misma viñeta
       if (lienzoListo()) {
         const ok1 = tomarFoto('bailar');
+        for (let i = 0; i < 100 && !had('PhotoTaken'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: la foto se completa 1–2 cuadros después; 0m: tiempo real (nube)
         const pF = panel('foto'), cap1 = S.captures[imgDe('PhotoTaken') || 'foto'];
         check('«Foto» con un gesto → PhotoTaken → viñeta «foto» con la pose en el texto', ok1 && had('PhotoTaken') && esImagen(cap1) && !!pF && /bailar/i.test(pF.text), pF ? pF.text : 'sin viñeta');
         check('Al tomar la foto se avisa en el HUD', !$('toast').hidden && /Foto al cómic/.test($('toast').textContent), $('toast').textContent);
         const ok2 = tomarFoto('idea');
+        for (let i = 0; i < 100 && cuenta('PhotoTaken') < 2; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64; 0m: tiempo real (nube)
         const pF2 = panel('foto');
         check('Otra foto: reemplaza la imagen y el texto de la misma viñeta (sigue habiendo una) y queda como evento', ok2 && cuenta('PhotoTaken') === 2 && G.comic.comicPanels().filter(p => p.id === 'foto').length === 1 && !!pF2 && /idea/i.test(pF2.text), pF2 ? pF2.text : 'sin viñeta');
         check('Sin pose no hay foto', pedirFoto('') === false);
         G.ui.hideToast();
       } else check('Foto (ventana sin tamaño: no se puede fotografiar aquí)', true, 'lienzo 0×0');
+      // CG-64: drena las capturas del cómic que aún estén en vuelo (la foto tarda 1–2 cuadros): si quedan
+      // pendientes, su reintento seguiría escribiendo S.captures durante la siguiente batería de la misma página
+      const imgsPend = CLAVES.map(k => imgDe(k)).filter(Boolean);
+      for (let i = 0; i < 60 && imgsPend.some(im => !S.captures[im]); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); }
       check('Las viñetas nuevas van en el orden en que pasaron', (() => { const P = G.comic.comicPanels(); return P.every((q, j) => j === 0 || P[j - 1].seq <= q.seq); })());
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));

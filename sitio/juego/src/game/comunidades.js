@@ -109,11 +109,13 @@ window.AVComunidades = function (G) {
   function paso(dt) {
     dt = Math.min(Math.max(dt || 0, 0), 0.1);
     R.t += dt;
-    const gente = crear(), ids = {};
-    for (const s of activos()) ids[s.id] = true;
+    const gente = crear();
+    const ids = R.idsB || (R.idsB = new Set()); // persistente: sin objeto nuevo por cuadro (CG-67)
+    ids.clear();
+    for (const s of activos()) ids.add(s.id);
     const k = reducido() ? 0.35 : 1;
     for (const p of gente) {
-      p.on = !!ids[p.sitio] && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
+      p.on = ids.has(p.sitio) && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
       if (!p.on) continue;
       p.t += dt * k;
       if (p.acto === 'cargar') {
@@ -152,10 +154,10 @@ window.AVComunidades = function (G) {
     let n = 0;
     for (const p of R.gente) {
       if (!p.on || !p.k) continue;
-      B.EXTRA.push({
-        comunidad: 1, x: p.x, y: p.y, z: p.z, yaw: p.yaw, pitch: p.pitch, roll: p.roll || 0,
-        esc: 1.35, c: p.k.c, a: p.k.a, cob: p.k.cob || 0, fase: p.fase, ala: p.ala, cab: p.cab, gir: p.gir,
-      });
+      const e = p.extra || (p.extra = { comunidad: 1 }); // persistente: bandada solo lee campos en el cuadro (CG-67)
+      e.x = p.x; e.y = p.y; e.z = p.z; e.yaw = p.yaw; e.pitch = p.pitch; e.roll = p.roll || 0;
+      e.esc = 1.35; e.c = p.k.c; e.a = p.k.a; e.cob = p.k.cob || 0; e.fase = p.fase; e.ala = p.ala; e.cab = p.cab; e.gir = p.gir;
+      B.EXTRA.push(e);
       n++;
     }
     return n;
@@ -177,7 +179,7 @@ window.AVComunidades = function (G) {
     if (window.AV && AV.debug && AV.debug.camYaw) AV.debug.camYaw(0.5);
     paso(0.05); pintar();
     if (G.bandada && G.bandada.dibujar) G.bandada.dibujar();
-    const jpg = G.renderer.snapshot(960, 540, 0.72);
+    const jpg = G.renderer.snapshot(960, 540, 0.72); // Promise: lectura diferida (CG-64); los píxeles ya quedaron ordenados en la GPU
     R.prueba = guarda.prueba; R.forzar = guarda.forzar; R.pausa = guarda.pausa;
     S.pos.x = guarda.x; S.pos.y = guarda.y; S.pos.z = guarda.z;
     return jpg;
@@ -261,7 +263,7 @@ window.AVComunidades = function (G) {
       check('Con calidad baja, versión mínima: 1 o 2 por sitio (QA-110)', Object.keys(porSitio).length > 0 && Object.values(porSitio).every(n => n >= 1 && n <= BAJO_N), JSON.stringify(porSitio));
       R.prueba = false; R.minima = false; R.forzar = null;
       G.renderer.calidad.nivel = cal0; G.quiet = quiet0;
-      const jpg = foto('villa');
+      const jpg = await foto('villa');
       check('La captura de Villa Raíz sale', typeof jpg === 'string' && jpg.indexOf('data:image/jpeg') === 0 && jpg.length > 2000, jpg ? jpg.length : 0);
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 500));

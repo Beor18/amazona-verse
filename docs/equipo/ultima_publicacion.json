@@ -1,14 +1,14 @@
 {
- "codigo": "4649b26983f876a0af1c94e69d7c13ab42a540e0",
+ "codigo": "b309174fe23ba43fdd2faa7ba854dcc1c89b9ea9",
  "sitio": null,
- "fecha": "2026-11-04T13:36:03Z",
+ "fecha": "2026-11-04T16:48:20Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-04T13:26:24+00:00",
-  "duracion_s": 575.7,
+  "inicio": "2026-11-04T16:37:55+00:00",
+  "duracion_s": 610.4,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "da43a62c103e7926c8dada9bbda37091d4b69efef33700f8434bd777eafe1085",
+  "huella_build": "5be5547e47246d8ab9b9818f3e65ec714580456c165d5dd88eb7a3d3ff0ab9c0",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -21,8 +21,8 @@
   },
   "missionTest": {
    "requerida": true,
-   "passed": 76,
-   "total": 76,
+   "passed": 77,
+   "total": 77,
    "ok": true
   },
   "accessoryTest": {
@@ -39,8 +39,8 @@
   },
   "eduTest": {
    "requerida": true,
-   "passed": 79,
-   "total": 79,
+   "passed": 80,
+   "total": 80,
    "ok": true
   },
   "maestroTest": {
@@ -75,8 +75,8 @@
   },
   "e2eTest": {
    "requerida": true,
-   "passed": 48,
-   "total": 48,
+   "passed": 49,
+   "total": 49,
    "ok": true
   },
   "lookCapitulosTest": {
@@ -91,10 +91,10 @@
   "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 10.72,
- "heap_mb": 163.5,
+ "carga_inicial_mb": 7.3,
+ "heap_mb": 149.8,
  "fallas": [],
  "avisos": [
-  "presupuesto: 163.5 MB de heap a ~9 s (límite 120)"
+  "presupuesto: 149.8 MB de heap a ~9 s (límite 120)"
  ]
 }

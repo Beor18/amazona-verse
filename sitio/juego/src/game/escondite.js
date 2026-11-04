@@ -54,15 +54,18 @@ window.AVEscondite = function (G) {
   function paso(dt) {
     if (!jugando) return;
     t += dt;
-    const c = cerca();
-    if (c.quien && c.d < 22) {
-      pio = Math.max(0, 1 - c.d / 22);
+    let mejorD = 1e9, quien = null; // cerca() inline: sin objeto por cuadro (CG-67); cerca() sigue exportando un objeto fresco
+    for (const s of sitios) if (!s.hallado) { const d = Math.hypot(S.pos.x - s.x, S.pos.z - s.z); if (d < mejorD) { mejorD = d; quien = s; } }
+    if (quien && mejorD < 22) {
+      pio = Math.max(0, 1 - mejorD / 22);
       if (G.audio && G.audio.play && Math.floor(t * 2) !== Math.floor((t - dt) * 2)) {
         try { G.audio.play('pio_escondite', pio); } catch (e) { /* */ }
       }
-      if (c.d < 2.4) { c.quien.hallado = true; gag(); pintar(); }
+      if (mejorD < 2.4) { quien.hallado = true; gag(); pintar(); }
     }
-    if (sitios.every(s => s.hallado)) {
+    let todos = true;
+    for (const s of sitios) if (!s.hallado) { todos = false; break; }
+    if (todos) {
       jugando = false; malla.visible = false;
       if (mejor == null || t < mejor) { mejor = t; try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* */ } }
       G.emit('record', { modo: 'escondite', segundos: t });

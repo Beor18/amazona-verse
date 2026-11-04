@@ -496,18 +496,23 @@ AVE.module('vegetacion', function (G) {
     for (const p of partes) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
       const geoL = cat === 'arbol' && p.tipo === 'hoja' ? geoLOD(p.geo) : p.geo;
+      // QA-110-mem (Kimi 1): la banda cerca (la :sombra, que proyecta sombra con su customDepthMaterial) solo se usa
+      // cuando sombraR > 0 ('alto') y la banda lod solo cuando lodMax > maxArb (medio/alto): en 'bajo' sus InstancedMesh
+      // y los buffers de instancia que reservan (n×76 B) vivían creadas de arranque y nunca se llenaban. Se crean
+      // perezosamente en el primer actualizar que las necesita (la calidad cambia en marcha) y se reutilizan después.
+      const base = { geo: p.geo, geoL, mat, tipo: p.tipo, src: p.src };
       const mk = (sombra, lod) => {
-        const im = new THREE.InstancedMesh(lod ? geoL : p.geo, mat, P.n);
+        const im = new THREE.InstancedMesh(lod ? base.geoL : base.geo, base.mat, P.n);
         im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(P.n * 3), 3);
         im.instanceColor.setUsage(THREE.DynamicDrawUsage);
         im.count = 0; im.visible = false; im.frustumCulled = false; im.receiveShadow = true; im.castShadow = sombra;
-        if (sombra) im.customDepthMaterial = depthMaterial(p.src, own, p.tipo === 'hoja');
-        im.name = 'flora:' + m + ':' + p.tipo + (sombra ? ':sombra' : lod ? ':lod' : '');
+        if (sombra) im.customDepthMaterial = depthMaterial(base.src, own, base.tipo === 'hoja');
+        im.name = 'flora:' + m + ':' + base.tipo + (sombra ? ':sombra' : lod ? ':lod' : '');
         scene.add(im);
         return im;
       };
-      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false), lod: cat === 'arbol' && p.tipo === 'hoja' ? mk(false, true) : null, sinLod: cat === 'arbol' && p.tipo !== 'hoja', trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
+      g.prims.push({ mk, cerca: null, lejos: mk(false), lod: null, sinLod: cat === 'arbol' && p.tipo !== 'hoja', puedeCerca: cat === 'arbol', puedeLod: cat === 'arbol' && p.tipo === 'hoja', trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
       g.trisLod = (g.trisLod || 0) + g.prims[g.prims.length - 1].trisLod;
       mats.push(mat);
     }
@@ -859,8 +864,12 @@ AVE.module('vegetacion', function (G) {
         // Además la flora no-árbol a menos de sombraR ya no cae en una lista cuya malla es null (antes desaparecía en 'alto').
         // KIMI-021: la corteza/rocas usan la geometría completa en ambas bandas (solo la hoja tiene LOD
         // decimado): una sola malla cubre cerca+lejos+medio y la banda lod desaparece para esas prims (−1 call por modelo).
-        if (sombraR && pr.cerca) { llenar(pr.cerca, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); llenar(pr.lejos, P, []); }
+        if (sombraR && (pr.cerca || pr.puedeCerca)) { // solo los árboles tienen banda :sombra; la flora no-árbol sigue por 'lejos'
+          if (!pr.cerca) pr.cerca = pr.mk(true); // QA-110-mem: banda :sombra creada a la primera vez que hace falta
+          llenar(pr.cerca, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); llenar(pr.lejos, P, []);
+        }
         else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); }
+        if (medio.length && !pr.lod && pr.puedeLod) pr.lod = pr.mk(false, true); // QA-110-mem: banda lod creada a la primera vez que hace falta
         if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
         g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»

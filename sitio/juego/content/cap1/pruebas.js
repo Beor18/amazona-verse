@@ -47,6 +47,14 @@
     if (G.dialogo && G.dialogo.open && G.dialogo.open()) G.dialogo.clear();
   }
 
+  // CG-64: la foto del mundo se codifica 1–2 cuadros después (lectura diferida de la GPU, no congela el juego).
+  // La prueba va en bloque síncrono y el alta de la captura es una microtarea: se bombean cuadros hasta que llega.
+  // 0m: la foto es una promesa y en la nube (SwiftShader) puede tardar >300 ms (respaldo síncrono): la espera debe
+  // dar tiempo real de pared, no solo cuadros, o acaba antes de que la GPU entregue la foto.
+  async function esperaFoto(G, T, clave) {
+    for (let i = 0; i < 100 && !G.S.captures[clave]; i++) { T.tick(0.1); await new Promise(r => setTimeout(r, 10)); }
+  }
+
   async function selfTest(G, T, opts) {
     opts = opts || {};
     const S = G.S, $ = G.util.$, C = G.c, PLACES = G.terreno.places, had = G.eventos.had, CM = G.comic, SV = G.guardado;
@@ -93,6 +101,7 @@
     useAt('maquina');
     check('Los comentarios de Vittata en el taller van en bocadillos (no bloquean)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy());
     drain(); useAt('transmisor'); drain();
+    await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     // Iguaca aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
@@ -161,6 +170,7 @@
     check('El mirador está en alto', C.mirador.position.y > PLACES.villa.base + 2, C.mirador.position.y.toFixed(1));
     useAt('mirador', 2.4, 0); drain();
     check('Capítulo completo', S.transmitterOn && S.boatPlan && S.complete && had('ChapterCompleted') && !$('end').hidden);
+    await esperaFoto(G, T, 'final'); // CG-64: la foto del final se codifica 1–2 cuadros después
     // Panel final: «Seguir explorando» deja jugar libre; «Comenzar de cero» pregunta DENTRO del juego antes de borrar (nunca confirm())
     const confirmNativo = window.confirm; let confirmLlamado = 0; window.confirm = () => { confirmLlamado++; return true; };
     const enConfirm = () => !$('end-confirm').hidden, teclas = G.input.keys;
@@ -345,6 +355,14 @@
     check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
     check('Emoción del .json llega a la cara de Vittata', L('evento:ShelterDismantled')[0].mood === 'angry' && L('interact:transmisor')[0].mood === 'sad');
+    // W18: el final de una charla larga (su resto va en bocadillos) llega aunque otra caja se abra mientras pasan
+    G.dialogo.clear(); let finLargo = 0;
+    G.dialogo.say([{ who: 'Iguaca', text: 'Uno.' }, { who: 'Iguaca', text: 'Dos.' }, { who: 'Iguaca', text: 'Tres.' }], () => finLargo++);
+    G.dialogo.next(); G.dialogo.next();
+    const colaLibre = !!G.dialogo.libre();
+    G.dialogo.say([{ who: 'Vittata', text: 'Otra charla.' }]);
+    for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
+    check('El final de una charla larga llega aunque otra caja se abra mientras pasan sus bocadillos (W18)', colaLibre && finLargo === 1, JSON.stringify({ colaLibre, finLargo }));
     G.quiet = false; G.pack.inicio(G);
     // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
     check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
@@ -377,6 +395,7 @@
     useAt('transmisor');
     check('interact:transmisor usa el texto del guion (en bocadillo libre)', !!G.dialogo.libre() && G.dialogo.actual().text === 'Este transmisor llevaba años mudo.', JSON.stringify(G.dialogo.actual()));
     drain(); useAt('maquina'); drain();
+    await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
@@ -651,7 +670,18 @@
     // p5 Nace la gota
     const pz = E.L.poza; volarA(pz.x + 3, Math.max(G.agua.levelAt(pz.x, pz.z), H(pz.x, pz.z)) + 2, pz.z); tick(0.3);
     ok('p5: en la poza sube el vapor', E.estado().voluta);
-    for (let i = 0; i < 900 && E.estado().vapor < 1; i++) { const v = E.volutaPos(); if (!v) break; volarA(v.x + 1, v.y, v.z); tick(0.1); }
+    // W17: se sigue el vapor como volando de verdad: nunca por encima del techo de vuelo (antes la ruta subía a 67 m donde el techo
+    // es ~51 y la voluta se quedaba esperando: el paso no se podía terminar sin teleport)
+    let topes = 0, vMax = E.estado().vapor || 0; // lo más que subió el vapor: llegar = 1, o casi 1 y la voluta ya en la nube (enNube la quita en el mismo cuadro); que se vaya antes no cuenta
+    for (let i = 0; i < 900 && E.estado().vapor < 1; i++) {
+      const v = E.volutaPos(); if (!v) break;
+      volarA(v.x + 1, v.y, v.z);
+      const lim = G.fisica.techoVuelo ? G.fisica.techoVuelo(S.pos.x, S.pos.z) : Infinity;
+      if (S.pos.y > lim) { volarA(v.x + 1, lim - 0.3, v.z); topes++; }
+      tick(0.1); vMax = Math.max(vMax, E.estado().vapor || 0);
+    }
+    vMax = Math.max(vMax, E.estado().vapor || 0);
+    ok('p5: siguiendo el vapor sin pasar del techo de vuelo, llega a la nube', vMax >= 0.999 || (vMax >= 0.95 && !E.estado().voluta), 'vapor ' + vMax.toFixed(2) + ' · ' + topes + ' veces en el techo');
     const nb = E.nube(); volarA(nb.x, nb.y, nb.z); tick(0.3);
     ok('p5: en la nube, segunda predicción', opts() === 3 && card().includes(AU.t(paso('p5').interaccion.pregunta)), card().slice(0, 60));
     click('ch-0');

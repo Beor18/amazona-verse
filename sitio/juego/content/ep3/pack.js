@@ -184,8 +184,9 @@
     asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: IMG.Iguaca, x: IGUACA.x, z: IGUACA.z, escala: 2.2, flota: true },
-      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
-      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 1.8 },
+      // CG-62 (Kelvin 4-nov, propuesta A de CG-60): escala del grupo — Iguaca 1,08, Abuela 0,86, Papá 1,14
+      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.75 },
+      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 2.32 },
       { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGANTE.x, z: NAVEGANTE.z, escala: 1.8 },
       { id: 'vecina', nombre: 'Vecina', sprite: IMG.Vecina, x: VECINA.x, z: VECINA.z, escala: 1.8 }, // la otra orilla es Villa Mangle (Kelvin 2-nov)
     ],
@@ -287,7 +288,7 @@
       CommunityReached: { type: 'CharacterMet', loc: 'orilla', chars: ['vittata', 'navegante', 'vecina'], scene: 'dialogue' },
       Chapter3Completed: { type: 'ChapterCompleted', loc: 'orilla', chars: ['vittata', 'navegante', 'vecina'], scene: 'final' },
     } },
-    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
+    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png', fondos: { Vittata: 'bosque', Iguaca: 'taller', Abuela: 'porche', 'Papá': 'nido' } }, // CG-62 · fondos propios del retrato (propuesta A de CG-60)
     comic: {
       marca: 'MÁS ALLÁ DE LA BAHÍA', tituloDefecto: 'Mi capítulo 3', archivo: 'ep3-mi-comic', pdfTitulo: 'Más allá de la bahía',
       capturas: ['bote', 'senales', 'llegada'], portadas: {},

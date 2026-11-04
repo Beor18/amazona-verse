@@ -48,12 +48,20 @@ window.AVSorpresas = function (G) {
     const h = S.hora;
     return typeof h === 'number' && (h >= 19 || h < 5.5);
   }
+  let centroCache = null, centroCacheSrc = null; // el sitio de la ciudad cambia en raras ocasiones: caché por identidad (CG-67)
   function centro() {
     const C = G.ciudadViva;
     if (C && typeof C.sitio === 'function') {
-      try { const s = C.sitio(); if (s && typeof s.x === 'number') return { x: s.x, z: s.z, r: s.r || 40 }; } catch (e) { /* sin ciudad cargada */ }
+      try {
+        const s = C.sitio();
+        if (s && typeof s.x === 'number') {
+          if (centroCacheSrc !== s) { centroCacheSrc = s; centroCache = { x: s.x, z: s.z, r: s.r || 40 }; }
+          return centroCache;
+        }
+      } catch (e) { /* sin ciudad cargada */ }
     }
-    return { x: 11, z: -76, r: 40 };
+    if (!centroCache) centroCache = { x: 11, z: -76, r: 40 };
+    return centroCache;
   }
   // Por encima del suelo y del sólido. Si el punto sigue dentro, sube hasta salir.
   function piso(x, z) {

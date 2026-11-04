@@ -598,9 +598,21 @@
       }
       // Velocidad de un tramo: las rutas largas del mapa nuevo van más rápido, sin pasar la del vuelo (12 m/s)
       const velTramo = (r, base) => Math.min(11, Math.max(base, r.total / 20));
+      // W17: el vapor nunca va por encima del techo de vuelo (4 m por debajo): a medio camino la ruta subía a 67 m donde el techo
+      // es ~51 m, la voluta esperaba a más de RUTA.espera y el paso «Sigue el vapor hasta la nube» no se podía terminar
+      const bajoTecho = q => { const tv = G.fisica.techoVuelo ? G.fisica.techoVuelo(q.x, q.z) - 4 : Infinity; return q.y > tv ? Object.assign({}, q, { y: Math.max(tv, H(q.x, q.z) + 3) }) : q; };
+      // Entre dos puntos lejanos el techo puede bajar: se parte cada tramo cada ~4 m y se baja cada punto (no el primero ni el último)
+      const sinPasarTecho = pts => {
+        const out = [pts[0]];
+        for (let i = 1; i < pts.length; i++) {
+          const a = pts[i - 1], b = pts[i], n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 4));
+          for (let k = 1; k <= n; k++) { const f = k / n, q = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f }; out.push(i === pts.length - 1 && k === n ? b : bajoTecho(q)); }
+        }
+        return out;
+      };
       function rutaVapor() {
         const p0 = { x: L.poza.x, y: aguaPoza() + 0.3, z: L.poza.z }, p3 = { x: L.nube.x, y: NUBE_Y, z: L.nube.z };
-        if (RG && RG.vapor && RG.vapor.length > 1) return ruta([p0, ...RG.vapor.slice(1, -1).map(xyz), p3]);
+        if (RG && RG.vapor && RG.vapor.length > 1) return ruta(sinPasarTecho([p0, ...RG.vapor.slice(1, -1).map(xyz), p3]));
         const pts = [];
         for (let k = 0; k <= 24; k++) {
           const s = k / 24, e = s * s * (3 - 2 * s);
@@ -608,7 +620,7 @@
           const base = p0.y + (p3.y - p0.y) * Math.sqrt(s);
           pts.push({ x, y: Math.max(base, H(x, z) + 3), z });
         }
-        return ruta(pts);
+        return ruta(sinPasarTecho(pts));
       }
       function iniciarVapor() { const r = rutaVapor(); T.voluta = { r, vel: velTramo(r, RUTA.velocidad.vapor), d: 0, llego: false, humo: 0 }; voluta.visible = true; nube.visible = true; aviso(`${t(PROCESOS.evaporacion)}: ${tc(paso('p5').instruccion, paso('p5').corto)}`, 5000); }
       function enNube() {
@@ -781,6 +793,8 @@
 
       // Distancia del jugador a la voluta o a la gota; si va bajo tierra (infiltración) se mide contra la superficie
       const distA = p => Math.hypot(S.pos.x - p.x, S.pos.y - Math.max(p.y, H(p.x, p.z) + 0.5), S.pos.z - p.z);
+      // W17: lo que va por encima del techo de vuelo de quien lo sigue cuenta a la altura de ese techo (más arriba no se puede subir)
+      const distSeguir = p => { const lim = G.fisica.techoVuelo ? G.fisica.techoVuelo(S.pos.x, S.pos.z) : Infinity; return distA(p.y > lim ? Object.assign({}, p, { y: lim }) : p); };
       const enRafaga = t => { const c = RUTA.rafaga.on + RUTA.rafaga.off; return (t % c) < RUTA.rafaga.on; };
       if (!document.getElementById('aula-css')) {
         const l = document.createElement('link'); l.id = 'aula-css'; l.rel = 'stylesheet'; l.href = 'src/ui/aula.css';
@@ -838,7 +852,7 @@
             const p = V.r.en(V.d);
             const duty = RUTA.rafaga.on / (RUTA.rafaga.on + RUTA.rafaga.off);
             // Seguir el vapor ya obliga a ir a su altura (a 16 m). La ráfaga solo parte el avance: sube, para, sube.
-            const sube = enRafaga(V.t) && distA(p) <= RUTA.espera;
+            const sube = enRafaga(V.t) && distSeguir(p) <= RUTA.espera;
             if (sube && V.d < V.r.total) V.d += (V.vel / duty) * dt;
             const q = V.r.en(V.d); voluta.position.set(q.x, q.y, q.z);
             modoVuelo = 'rafaga';

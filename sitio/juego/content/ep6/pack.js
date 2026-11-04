@@ -312,7 +312,7 @@
       PactRenewed: { type: 'DialogueChoiceMade', loc: 'plaza', chars: ['vittata', 'guardian', 'luma'], scene: 'final' }, // (StoryRevealed no existe)
       Chapter6Completed: { type: 'ChapterCompleted', loc: 'mirador', chars: ['vittata', 'luma', 'guardian'], scene: 'final' },
     } },
-    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
+    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png', fondos: { Vittata: 'bosque', Iguaca: 'taller', Abuela: 'porche', 'Papá': 'nido' } }, // CG-62 · fondos propios del retrato (propuesta A de CG-60)
     comic: {
       marca: 'EL PACTO DE LOS 36', tituloDefecto: 'El cierre de la temporada', archivo: 'ep6-mi-comic', pdfTitulo: 'El pacto de los 36',
       capturas: ['tarjetas', 'atasco', 'levantada', 'circulo', 'pacto'], portadas: {},

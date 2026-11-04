@@ -529,8 +529,9 @@
       { id: 'luma', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.0, flota: true },
       { id: 'guardian', nombre: 'Guardián', sprite: 'assets/guardian.png', x: GUARD.x, z: GUARD.z, escala: 2.6 },
       // La familia de Iguaca (Kelvin, 1-nov: la Abuela y el Papá del cap. 2): salen tras la crecida, si el refugio está en la colina
-      { id: 'abuela', nombre: 'Abuela', sprite: 'assets/abuela.png', x: LUGARES.B.x + 1.5, z: LUGARES.B.z + 2.2, escala: 1.8 },
-      { id: 'papa', nombre: 'Papá', sprite: 'assets/papa.png', x: LUGARES.B.x - 1.5, z: LUGARES.B.z + 2.2, escala: 1.8 },
+      // CG-62 (Kelvin 4-nov, propuesta A de CG-60): escala del grupo con plumaje vittata — Iguaca 1,08, Abuela 0,86, Papá 1,14
+      { id: 'abuela', nombre: 'Abuela', sprite: 'assets/abuela.png', x: LUGARES.B.x + 1.5, z: LUGARES.B.z + 2.2, escala: 1.59 },
+      { id: 'papa', nombre: 'Papá', sprite: 'assets/papa.png', x: LUGARES.B.x - 1.5, z: LUGARES.B.z + 2.2, escala: 2.11 },
     ],
     objetos: {
       madera: { nombre: 'madera', modelo: () => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.8, 7), mats().madera); m.rotation.z = Math.PI / 2; m.position.y = 0.3; return m; } },

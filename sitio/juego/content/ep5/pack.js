@@ -230,7 +230,7 @@
       VoicesRevealed: { type: 'DialogueChoiceMade', loc: 'niebla', chars: ['vittata'], scene: 'dialogue' },
       Chapter5Completed: { type: 'ChapterCompleted', loc: 'niebla', chars: ['vittata', 'iguaca'], scene: 'final' },
     } },
-    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
+    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png', fondos: { Vittata: 'bosque', Iguaca: 'taller', Abuela: 'porche', 'Papá': 'nido' } }, // CG-62 · fondos propios del retrato (propuesta A de CG-60)
     comic: {
       marca: 'CAPÍTULO 5 · LAS VOCES OLVIDADAS', tituloDefecto: 'Las voces olvidadas', archivo: 'ep5-mi-comic', pdfTitulo: 'Las voces olvidadas',
       capturas: ['taller', 'mensaje', 'ruina', 'relevo', 'niebla'], portadas: {},

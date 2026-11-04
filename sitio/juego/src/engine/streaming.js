@@ -1987,7 +1987,16 @@ AVE.module('streaming', function (G) {
         check('El atlas de las fusiones conserva la codificación sRGB del original', atlasFusion.length > 0 && atlasFusion.every(m => !m.map || m.map.encoding === THREE.sRGBEncoding),
           atlasFusion.map(m => m.name + '=' + (m.map ? m.map.encoding : 'sin mapa')).join(', '));
         await ir(x0, z0); ST.liberarYa(); dibujar();
-        check('Al volver al inicio, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel);
+        // 1-nov (3be9edeb, Kelvin: «de lejos se ve blanco»): en «alto» el kit de la ciudad se queda cargado desde casi
+        // toda la isla (ciudadVista 650 m; el spawn, a ~228 m del borde, está dentro a propósito) y en «bajo» el spawn
+        // cae en la banda de histéresis (220+30 m). La otra mitad del contrato es la que se exige aquí: fuera del
+        // rango el kit se suelta (memoria en móvil). En alto no existe punto de la isla a >680 m: se prueba en bajo.
+        if (R.setCalidad) { R.setCalidad('bajo', true); ST.revisar(); }
+        await ir(-220, 220, 0, -1); // esquina sureste de la isla: d ≈ 300 m > 220 + 30
+        check('Fuera de su rango, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel + ' · d ' + Math.round(ZC.d) + ' · ' + nivelCal());
+        await ir(x0, z0); ST.liberarYa(); dibujar();
+        check('En bajo, el spawn no carga la ciudad del tepuy (memoria de móvil)', !ZC.ciudad, 'ciudad ' + !!ZC.ciudad + ' · d ' + Math.round(ZC.d) + ' · ' + nivelCal());
+        if (R.setCalidad) { R.setCalidad('alto', true); ST.revisar(); }
       }
     } catch (e) {
       check('La prueba corre sin excepciones', false, String(e && e.stack || e).slice(0, 300));

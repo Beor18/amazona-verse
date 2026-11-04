@@ -177,16 +177,30 @@ AVE.module('comic', function (G) {
   const aviso = (t, ms) => { if (!G.quiet) G.ui.toast(t, ms); };
   const vin = () => (S.comic.vinetas && typeof S.comic.vinetas === 'object' ? S.comic.vinetas : (S.comic.vinetas = {}));
 
-  // Captura del mundo. Si el lienzo no tiene tamaño (ventana 0×0, pestaña minimizada), snapshot() da null: no se guarda
-  // y la captura queda pendiente hasta que el lienzo vuelva a tener tamaño (QA-21)
+  // Captura del mundo. snapshot() dibuja en el momento y devuelve una promesa: el JPEG se codifica 1–2 cuadros
+  // después sin congelar el juego (CG-64, lectura diferida de la GPU). Si el lienzo no tiene tamaño (ventana 0×0,
+  // pestaña minimizada) da null: no se guarda y la captura queda pendiente hasta que vuelva a haber tamaño (QA-21)
   const pendientes = new Set();
+  const programadas = new Set(); // claves con una lectura de snapshot ya encolada (no duplicar)
   const FW = 640, FH = 480; // fotos del mundo a 640×480 (a 480×360 se veían borrosas en las viñetas a lo ancho)
   const lienzoListo = () => { const c = G.renderer.canvas; return !!c && c.width > 0 && c.height > 0; };
+  const fotoValida = img => typeof img === 'string' && /^data:image\/[a-z]+;base64,/.test(img) && img.length > 2000;
   function capture(key) {
+    if (S.captures[key]) { pendientes.delete(key); return true; }
+    if (programadas.has(key)) return true; // ya encolada: la resuelve el .then de abajo
     let img = null;
     if (lienzoListo()) { try { img = G.renderer.snapshot(FW, FH, 0.72); } catch (e) { img = null; } }
-    if (typeof img === 'string' && /^data:image\/[a-z]+;base64,/.test(img) && img.length > 2000) { S.captures[key] = img; pendientes.delete(key); return true; }
+    if (fotoValida(img)) { S.captures[key] = img; pendientes.delete(key); return true; }
     pendientes.add(key);
+    if (img && typeof img.then === 'function') {
+      programadas.add(key);
+      img.then(url => {
+        programadas.delete(key);
+        if (fotoValida(url)) { S.captures[key] = url; pendientes.delete(key); G.guardado.autosave(); }
+        else pendientes.add(key); // foto no válida: reintenta luego (lienzo 0×0, contexto perdido…)
+      }).catch(() => { programadas.delete(key); pendientes.add(key); });
+      return true;
+    }
     return false;
   }
   // Encuadre de una posada (QA-32): la foto con la cámara del juego puede quedar tapada por un tronco. Se busca un punto de
@@ -232,15 +246,16 @@ AVE.module('comic', function (G) {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
       // Dibujo directo, como snapshot() (renderer.js): con el posproceso, drawScene() dentro del bucle dejaba la foto en negro
       if (R.renderer && R.scene) R.renderer.render(R.scene, cam); else R.drawScene();
-      const src = R.canvas, sw = src.width, sh = src.height, c = document.createElement('canvas'); c.width = FW; c.height = FH;
+      const src = R.canvas, sw = src.width, sh = src.height;
+      if (!sw || !sh || !R.leerLienzo) return null;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }
-      c.getContext('2d').drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, FW, FH);
-      // Una foto casi negra (lienzo sin dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
-      const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let luz = 0;
-      for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
-      if (luz < 40) return null;
-      const url = c.toDataURL('image/jpeg', 0.72);
-      return url.length > 2000 ? url : null;
+      // Lectura diferida (CG-64): la promesa resuelve con el JPEG o con null. Una foto casi negra (lienzo sin
+      // dibujo) no sirve: null, y la viñeta usa la captura normal o su ilustración
+      return R.leerLienzo(cw, ch, FW, FH, 0.72, px => {
+        let luz = 0;
+        for (let i = 0; i < px.length; i += 4 * 97) luz = Math.max(luz, px[i] + px[i + 1] + px[i + 2]);
+        return luz >= 40;
+      });
     } catch (e) { return null; }
     finally { cam.position.copy(pos); cam.quaternion.copy(rot); cam.updateMatrixWorld(); }
   }
@@ -252,9 +267,17 @@ AVE.module('comic', function (G) {
       const P = posadas[i]; if ((P.t -= dt) > 0) continue;
       posadas.splice(i, 1);
       if (S.captures[P.v.img]) continue;
-      const f = fotoPosada();
-      if (f) S.captures[P.v.img] = f; else if (!P.v.ilustracion) capture(P.v.img);
-      G.guardado.autosave();
+      const f = fotoPosada(); // Promise<string|null> | null: la lectura es diferida (CG-64)
+      if (f && typeof f.then === 'function') {
+        f.then(url => {
+          if (url && !S.captures[P.v.img]) S.captures[P.v.img] = url;
+          else if (!url && !P.v.ilustracion && !S.captures[P.v.img]) capture(P.v.img);
+          G.guardado.autosave();
+        }).catch(() => { if (!P.v.ilustracion && !S.captures[P.v.img]) capture(P.v.img); });
+      } else {
+        if (f) S.captures[P.v.img] = f; else if (!P.v.ilustracion) capture(P.v.img);
+        G.guardado.autosave();
+      }
     }
   }
   G.on('update', dt => { if (posadas.length) fotografiarPosadas(dt); }, 79);
@@ -1089,6 +1112,9 @@ AVE.module('comic', function (G) {
       // Evento real por el mismo camino que el juego (G.eventos.log) y un cuadro del bucle
       G.eventos.log(def.needs, {});
       G.renderer.update(0.05);
+      // CG-64: la captura se dibuja en el momento pero el JPEG se codifica 1–2 cuadros después (sin congelar).
+      // 0m: la espera da tiempo real de pared (en la nube la cerca puede tardar >300 ms y va por respaldo síncrono).
+      if (def.img !== 'portrait' && lienzoListo()) { for (let i = 0; i < 100 && !S.captures[def.img]; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } }
       const reg = vin()[def.id], p = comicPanels().find(q => q.id === def.id);
       check('Evento real → viñeta', !!p && G.eventos.had(def.needs) && !!reg, `${def.needs} → ${def.id}`);
       check('La viñeta guarda la apariencia del jugador de ese momento', reg && claveLook(reg.look) === claveLook(lookActual()), reg && reg.look ? reg.look.species : 'sin look');
@@ -1144,6 +1170,7 @@ AVE.module('comic', function (G) {
         }
         check('La eclosión usa la foto de la escena del criadero', S.captures.eclosion === foto);
         for (let i = 0; i < 8; i++) G.renderer.update(0.05); // las posadas se fotografían un instante después
+        if (lienzoListo()) for (let i = 0; i < 100 && !(S.captures.techo && S.captures.rama); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: lectura diferida; 0m: espera con tiempo real (nube)
         if (lienzoListo()) check('Techo y rama: foto encuadrada desde un ángulo libre (QA-32)', /^data:image\/jpeg/.test(S.captures.techo || '') && /^data:image\/jpeg/.test(S.captures.rama || ''));
         const solBk = G.solidos;
         try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
@@ -1211,6 +1238,7 @@ AVE.module('comic', function (G) {
         }
         check('Cada gag cuenta una sola vez por partida', gags.every(v => S.events.filter(e => e.key === v.needs).length === 1));
         check('El gag con foto la usa en su viñeta', conFoto.every(v => S.captures[v.img] === fotoGag));
+        if (lienzoListo()) for (let i = 0; i < 40 && !sinFoto.every(v => /^data:image\//.test(S.captures[v.img] || '')); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } // CG-64: la captura se codifica 1–2 cuadros después
         if (lienzoListo()) check('El gag sin foto captura el mundo', sinFoto.every(v => /^data:image\//.test(S.captures[v.img] || '') && S.captures[v.img] !== fotoGag));
         else check('Gag sin foto con el lienzo sin tamaño: la captura queda pendiente', sinFoto.every(v => pendientes.has(v.img)));
         // Elegir un texto de la lista (sin texto libre)
@@ -1251,6 +1279,7 @@ AVE.module('comic', function (G) {
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
+          if (lienzoListo() && okF) for (let i = 0; i < 100 && !comicPanels().some(q => q.id === 'foto'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: la foto se completa 1–2 cuadros después; 0m: espera con tiempo real (nube)
           if (lienzoListo()) check('La foto con pose entra al cómic como viñeta', okF && comicPanels().some(q => q.id === 'foto'));
         }
         const url3 = await exportComic('png'), R3 = ultimoRender, alto3 = H;

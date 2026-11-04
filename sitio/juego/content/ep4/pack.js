@@ -180,8 +180,9 @@
     asentamientos: REAL ? 'content/cap1/asentamientos.js' : undefined,
     npcs: [
       { id: 'iguaca', nombre: 'Iguaca', sprite: 'assets/luma.png', x: LUMA.x, z: LUMA.z, escala: 2.2, flota: true },
-      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.8 },
-      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 1.8 },
+      // CG-62 (Kelvin 4-nov, propuesta A de CG-60): escala del grupo — Iguaca 1,08, Abuela 0,86, Papá 1,14
+      { id: 'abuela', nombre: 'Abuela', sprite: IMG.Abuela, x: ABUELA.x, z: ABUELA.z, escala: 1.75 },
+      { id: 'papa', nombre: 'Papá', sprite: IMG['Papá'], x: PAPA.x, z: PAPA.z, escala: 2.32 },
       { id: 'navegante', nombre: 'Navegante', sprite: IMG.Navegante, x: NAVEGA.x, z: NAVEGA.z, escala: 1.8 },
     ],
     objetos: {}, recursos: [],
@@ -261,7 +262,7 @@
       ProjectBuilt: { type: 'BuildingConstructed', loc: 'villa', chars: ['vittata'], scene: 'action' },
       Chapter4Completed: { type: 'ChapterCompleted', loc: 'villa', chars: ['vittata', 'iguaca', 'abuela'], scene: 'final' },
     } },
-    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
+    dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png', fondos: { Vittata: 'bosque', Iguaca: 'taller', Abuela: 'porche', 'Papá': 'nido' } }, // CG-62 · fondos propios del retrato (propuesta A de CG-60)
     comic: {
       marca: 'EL PRECIO DEL PROGRESO', tituloDefecto: 'Mi capítulo 4', archivo: 'ep4-mi-comic', pdfTitulo: 'El precio del progreso',
       capturas: ['orilla', 'balanza', 'acuerdo', 'cruce'], portadas: {},
