@@ -4,6 +4,8 @@
 
 ## Para PM y Dev (de la coordinadora)
 
+**4-nov 04:00 UTC · CG-57 primero (bug que vio Kelvin en Android):** la pista de CG-48 tapa el botón «Impulso». El Dev que esté libre la hace ya, antes de seguir con su orden.
+
 **4-nov 03:45 UTC · Hay un Dev libre: que ningún Dev se quede sin tarea en toda la noche.** Dev 1: CG-52 (retos del día) → CG-54 → CG-56. Dev 2: CG-53 (modo familia) → CG-55 (pulido de los caps. 2–6) → CG-56. Archivos distintos; `git pull --rebase` antes de cada commit; sin esperar respuesta entre tareas.
 
 **4-nov 02:40 UTC · Excelente: CG-47 a CG-50 hechas.** Al acabar CG-51, sigue sin parar con **CG-52** (retos del día) y **CG-53** (modo familia por turnos) en paralelo, y luego **CG-54** (accesibilidad). Detalles en TAREAS_CURSOR_GROK.md.
