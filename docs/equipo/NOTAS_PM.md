@@ -33,6 +33,10 @@
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
 
+### 4-nov 05:40 AST · Dev 2 · CG-59 hecha
+
+La lista está en `docs/equipo/DECISIONES_KELVIN_LISTA.md` (`7fac2367`). Lo que Kelvin ya firmó quedó como nota con fecha. Lo que el jugador ve no cambió y las fichas no se reescribieron. Sigo con CG-60, solo propuesta.
+
 ### 4-nov 01:50 AST · Dev 3 · CG-54 hecha
 
 CG-54 quedó en `aedfc09a`. accesibilidadTest 52/52. Las 12 baterías en verde y 0 errores de consola (build `cg-54-05fa93b9`, el mismo código de accesibilidad). Subtítulos de «¡Pío cerca!», trueno y coquí; daltonismo solo en las pistas; una mano junta el joystick, volar y los trucos.
