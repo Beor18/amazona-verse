@@ -796,6 +796,12 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 }
 @media (max-width: 560px) {
   #subtitulos { left: max(var(--sp-3), env(safe-area-inset-left, 0px)); right: calc(max(var(--sp-3), env(safe-area-inset-right, 0px)) + 56px); top: var(--sub-top, calc(env(safe-area-inset-top, 0px) + 118px)); align-items: flex-start; }
+  /* Con letra muy grande el diálogo ocupa el bajo: queda un subtítulo, para que se lea la charla.
+     En el teléfono más bajo (320×568) ni una línea cabe: los subtítulos se apartan mientras habla alguien. */
+  :root.a11y-t2 body:has(#dialog:not([hidden])) #subtitulos .sub:nth-last-child(n+2) { display: none; }
+}
+@media (max-width: 560px) and (max-height: 600px) {
+  :root.a11y-t2 body:has(#dialog:not([hidden])) #subtitulos { visibility: hidden; }
 }
 /* Pantallas bajas: menos líneas a la vez, y con el diálogo abierto solo la última, para no taparlo */
 @media (max-height: 700px) {
@@ -825,6 +831,102 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 }
 @media (hover: hover) and (pointer: fine) { .a11y-solo-tactil { display: none; } }
 .pause-a11y .note { margin: var(--sp-2) 0 0; }
+
+/* CG-54 · Daltonismo: solo las pistas. Azul #0072B2 y naranja #E69F00, con tramas distintas.
+   No hay filtro sobre el lienzo: el mundo y las cotorras se quedan como están. */
+html.a11y-daltonismo #pm-pista {
+  border-color: #0072B2; border-style: solid;
+  box-shadow: 0 0 0 2px rgba(0, 114, 178, 0.45);
+  background: transparent;
+}
+html.a11y-daltonismo #pm-pista::before { border-bottom-color: #0072B2; }
+html.a11y-daltonismo #pm-pista.pm-atascado {
+  border-color: #E69F00; border-style: dashed;
+  box-shadow: 0 0 0 10px rgba(230, 159, 0, 0.55);
+  background: transparent;
+}
+html.a11y-daltonismo #pm-pista.pm-atascado::before { border-bottom-color: #E69F00; }
+html.a11y-daltonismo #truco-chip {
+  border-color: #E69F00 !important;
+  background-image: repeating-linear-gradient(135deg, #10324a 0 8px, #1d4e38 8px 11px) !important;
+}
+
+/* CG-54 · Una mano: joystick y botones en el mismo lado (el del pulgar). El botón grande queda en la esquina de fuera.
+   .a11y-controles-extra: un módulo nuevo (familia, retos del día) deja ahí sus botones y viajan con el pulgar. */
+html.a11y-unamano #stick:not(.flotando) {
+  left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px); right: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+}
+html.a11y-unamano #acts {
+  right: auto; left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + var(--stick, 136px) + 12px);
+  grid-template-columns: var(--tap-xl) 78px;
+  grid-template-rows: 48px 68px var(--tap-xl);
+  grid-template-areas: "tonel loop" "dash fly" "act jump";
+}
+html.a11y-unamano #b-tonel { grid-area: tonel; }
+html.a11y-unamano #b-loop { grid-area: loop; }
+html.a11y-unamano :is(#b-tonel, #b-loop) { --sz: 48px; width: 48px; height: 48px; min-width: 44px; min-height: 44px; font-size: 11px; padding: 0; }
+html.a11y-unamano.a11y-zurdo #stick:not(.flotando) {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+}
+html.a11y-unamano.a11y-zurdo #acts {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+  grid-template-columns: 78px var(--tap-xl);
+  grid-template-areas: "loop tonel" "fly dash" "jump act";
+}
+html.ninos-grande.a11y-unamano #acts { bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + 180px); }
+html.a11y-unamano .a11y-controles-extra {
+  position: fixed; z-index: var(--z-controls); display: flex; gap: 8px;
+  left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px); right: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + var(--stick, 136px) + 270px);
+}
+html.a11y-unamano .a11y-controles-extra :is(button, .btn) { min-width: 44px; min-height: 44px; }
+html.a11y-unamano.a11y-zurdo .a11y-controles-extra {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+}
+/* Con el pulgar a la derecha, el menú (Diario, Pausa) pasa al lado libre: si no, queda encima de los botones. */
+html.a11y-unamano.a11y-zurdo #sys {
+  right: auto; left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+}
+/* QA-134: el aviso («Cargando River Rush…») se queda en el lado libre y no llega al botón Volar. */
+html.a11y-unamano.a11y-zurdo #toast {
+  left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+  right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + var(--tap-xl, 92px) + 78px + 28px);
+  margin-inline: 0; width: auto; max-width: none; overflow-wrap: anywhere;
+}
+#pause-ninos input[type="checkbox"] {
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin: 0;
+  accent-color: var(--c-primary, #1f6a37);
+}
+#pause-ninos input[type="range"] { height: 44px; min-height: 44px; }
+@media (max-height: 520px) {
+  html.a11y-unamano #stick:not(.flotando) {
+    width: 96px; height: 96px; bottom: 8px;
+  }
+  html.a11y-unamano #acts {
+    bottom: 8px;
+    left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px + 96px + 8px);
+    grid-template-columns: 48px 48px 48px;
+    grid-template-rows: 44px 48px;
+    grid-template-areas: "tonel fly dash" "act jump loop";
+    gap: 4px;
+  }
+  html.a11y-unamano #acts :is(#b-fly, #b-dash, #b-jump, #b-act, #b-tonel, #b-loop) {
+    --sz: 44px; width: 44px; height: 44px; min-width: 44px; min-height: 44px;
+  }
+  html.a11y-unamano.a11y-zurdo #stick:not(.flotando) {
+    left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+  }
+  html.a11y-unamano.a11y-zurdo #acts {
+    left: auto;
+    right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + 96px + 8px);
+    grid-template-columns: 48px 48px 48px;
+    grid-template-areas: "dash fly tonel" "loop jump act";
+  }
+  html.ninos-grande.a11y-unamano #acts { bottom: 8px; }
+  html.a11y-unamano .a11y-controles-extra { bottom: auto; top: 8px; }
+}
 
 /* ---------- 8. Catálogo de iconos (generado; 24×24, trazo 2.4) ---------- */
 :root {

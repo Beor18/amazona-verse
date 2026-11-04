@@ -107,14 +107,11 @@ AVE.module('guiaControles', function (G) {
 @media (prefers-reduced-motion: reduce) { .guia-pastilla { animation: none; } }
 @media (max-width: 560px) { #guia-panel .guia-fila, .guia-fila { grid-template-columns: 96px minmax(0, 1fr); } #guia-panel .guia-filas { grid-template-columns: 1fr; } }
 html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !important; }
-#pm-pista { position: fixed; z-index: 7; width: 96px; height: 96px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 8px rgba(255, 196, 60, 0.35); background: transparent; }
+#pm-pista { position: fixed; z-index: 7; box-sizing: border-box; width: 96px; height: 96px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 2px rgba(255, 196, 60, 0.45); background: transparent; }
 #pm-pista::before { content: ""; position: absolute; left: 50%; top: -34px; margin-left: -14px; border: 14px solid transparent; border-bottom-color: #ffe08a; }
 #pm-pista[hidden] { display: none; }
 #pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
 #pm-pista.pm-atascado::before { border-bottom-color: #7fd3ff; }
-#pm-pista[data-paso="mover"] { left: 28px; bottom: 36px; }
-#pm-pista[data-paso="despegar"], #pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
-#pm-pista[data-paso="impulso"] { right: 118px; bottom: 48px; }
 #pm-pista[data-paso="truco"] { left: 0; right: 0; top: 22%; margin: auto; }
 html.guia-tactil #pm-pista { display: block; }
 html.guia-tactil #pm-pista[hidden] { display: none; }
@@ -215,21 +212,33 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     pmE.hecho[k] = true; pmE.t = 0;
   }
   const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', impulso: 'b-dash' };
+  const PM_BORDE = 6, PM_SOMBRA = 2;
+  const sePisan = (a, b, margen) => a.width > 0 && b.width > 0 && a.left - margen < b.right && b.left < a.right + margen && a.top - margen < b.bottom && b.top < a.bottom + margen;
   function colocarPm() {
-    const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
-    const caja = el && el.getClientRects().length ? el.getBoundingClientRect() : null;
-    if (!caja || caja.width < 8) {
+    if (pm.dataset.paso === 'truco') {
       pm.style.left = pm.style.top = pm.style.width = pm.style.height = pm.style.right = pm.style.bottom = '';
       return;
     }
-    const hueco = 18;
-    const size = Math.ceil(Math.max(caja.width, caja.height) + hueco * 2);
-    pm.style.width = size + 'px';
-    pm.style.height = size + 'px';
-    pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
-    pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
-    pm.style.right = 'auto';
-    pm.style.bottom = 'auto';
+    const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
+    const caja = el && !el.hidden && el.getClientRects().length ? el.getBoundingClientRect() : null;
+    if (!caja || caja.width < 8) {
+      pm.style.width = pm.style.height = '96px';
+      pm.style.left = '-400px'; pm.style.top = '0px'; pm.style.right = 'auto'; pm.style.bottom = 'auto';
+      return;
+    }
+    const otros = [...document.querySelectorAll('#acts .btn, #stick')].filter(n => n !== el && !n.hidden && n.getClientRects().length);
+    const poner = extra => {
+      const size = Math.ceil(Math.max(caja.width, caja.height) + PM_BORDE * 2 + extra * 2);
+      pm.style.width = size + 'px'; pm.style.height = size + 'px';
+      pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
+      pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
+      pm.style.right = 'auto'; pm.style.bottom = 'auto';
+    };
+    let extra = 8;
+    poner(extra);
+    while (extra > 0 && otros.some(o => sePisan(pm.getBoundingClientRect(), o.getBoundingClientRect(), PM_SOMBRA + 1))) {
+      extra -= 2; poner(extra);
+    }
   }
   function pintarPm() {
     const id = pmPaso();
@@ -367,8 +376,29 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       const flecha = getComputedStyle(pm, '::before').top;
       ok('El anillo del impulso rodea el botón y la flecha queda fuera', pm.dataset.paso === 'impulso' && b.width >= 44 && rodea && parseFloat(flecha) < 0,
         'botón ' + Math.round(b.width) + '×' + Math.round(b.height) + ' anillo ' + Math.round(r.width) + ' flecha ' + flecha);
-      if (acts) acts.style.display = disp;
+      const raiz = document.documentElement, lg0 = raiz.style.getPropertyValue('--tap-lg'), xl0 = raiz.style.getPropertyValue('--tap-xl');
+      raiz.style.setProperty('--tap-lg', '58px'); raiz.style.setProperty('--tap-xl', '80px');
+      if (acts) acts.style.gap = '8px';
+      pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmTick(0.05);
+      const rH = pm.getBoundingClientRect(), bH = dash.getBoundingClientRect();
+      const rodeaH = rH.left + borde <= bH.left + 1 && rH.top + borde <= bH.top + 1 && rH.right - borde >= bH.right - 1 && rH.bottom - borde >= bH.bottom - 1;
+      const vecinos = [...document.querySelectorAll('#b-act, #b-jump')].filter(n => !n.hidden && n.getClientRects().length);
+      const toca = vecinos.filter(n => sePisan(rH, n.getBoundingClientRect(), PM_SOMBRA + 1)).map(n => n.id);
+      ok('En horizontal el anillo no roza Acción ni Saltar', pm.dataset.paso === 'impulso' && vecinos.length === 2 && toca.length === 0 && rodeaH, toca.join(',') || 'libre');
+      const fly = document.getElementById('b-fly');
+      if (fly) fly.hidden = true;
+      pmE.hecho = { mover: true }; pmE.t = 0; pmE.volaba = false;
+      M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
+      pmTick(0.05);
+      const rOff = pm.getBoundingClientRect();
+      ok('Sin el botón de volar el anillo no cae sobre Impulso', pm.dataset.paso === 'despegar' && rOff.right < 0 && !sePisan(rOff, dash.getBoundingClientRect(), 0),
+        'paso ' + pm.dataset.paso + ' left ' + Math.round(rOff.left));
+      if (fly) fly.hidden = false;
+      if (lg0) raiz.style.setProperty('--tap-lg', lg0); else raiz.style.removeProperty('--tap-lg');
+      if (xl0) raiz.style.setProperty('--tap-xl', xl0); else raiz.style.removeProperty('--tap-xl');
+      if (acts) { acts.style.gap = ''; acts.style.display = disp; }
     } catch (e) { ok('sin excepciones', false, e && e.message); }
+    const flyFin = document.getElementById('b-fly'); if (flyFin) flyFin.hidden = false;
     M.speed = guarda.speed; M.flying = guarda.flying; M.grounded = guarda.grounded; M.dashT = guarda.dashT;
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });

@@ -799,8 +799,12 @@ AVE.module('vegetacion', function (G) {
       }
       if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; nLod += medio.length; }
       for (const pr of g.prims) {
-        llenar(pr.cerca, P, sombraR ? cerca : []);
-        llenar(pr.lejos, P, sombraR ? lejos : cerca.concat(lejos));
+        // QA-81 (KIMI-013): con sombras ('alto') la pareja cerca/lejos duplicaba draw calls con la misma geometría y material.
+        // Una sola malla ('cerca', la que proyecta sombra y lleva customDepthMaterial) cubre todo el tramo de malla; el coste
+        // añadido en el mapa de sombras son solo vértices de instancias fuera de su caja ortográfica (se recortan en hardware).
+        // Además la flora no-árbol a menos de sombraR ya no cae en una lista cuya malla es null (antes desaparecía en 'alto').
+        if (sombraR && pr.cerca) { llenar(pr.cerca, P, cerca.concat(lejos)); llenar(pr.lejos, P, []); }
+        else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, cerca.concat(lejos)); }
         if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
         g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»
