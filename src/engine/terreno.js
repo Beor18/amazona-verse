@@ -670,6 +670,30 @@ AVE.module('terreno', function (G) {
       { tex: 'assets/tex/entorno/suelo_arena_rio.jpg', normal: 'assets/tex/entorno/suelo_arena_rio_n.jpg', escala: 1 / 3, tinte: '#fff8ec', saturacion: 0.9 },
     ];
     const sueloMat = splatMaterial(capas, { mar: 0, texMax: R.calidad.texMax });
+    // KIMI-027: fondo marino bajo el agua. La malla del mapa termina en canto a lo largo de la costa (sin faldón) y su
+    // parte hondas se ve gris y recortada en línea recta a través del agua transparente («hueco sin suelo» desde el mar,
+    // quedante de KIMI-006). Un plano de arena con el mismo material del suelo continúa el fondo hasta el horizonte:
+    // tapa el canto de la malla y da suelo al agua clara de los riscos. Va a y −1,2: por encima de los bancos someros
+    // (la malla los sigue dando) y por debajo del oleaje. Mismo shader/programa que el terreno (0 texturas nuevas) y
+    // 2 triángulos por cuadrante; en cuadrantes para que el culling del frustum lo recorte mirando tierra adentro
+    // (un plano único englobaría siempre a la cámara en su esfera y sumaría 1 draw call en todas las vistas).
+    {
+      const LADO = 4200, N = 4, L = LADO / N;
+      for (let qx = 0; qx < N; qx++) for (let qz = 0; qz < N; qz++) {
+        const fgeo = new THREE.PlaneGeometry(L, L, 1, 1);
+        fgeo.rotateX(-Math.PI / 2);
+        const fn = fgeo.attributes.position.count;
+        const fsplat = new Float32Array(fn * 4);
+        for (let i = 0; i < fn; i++) fsplat[i * 4 + 3] = 1; // splat todo arena (w); el shader ya fuerza arena bajo el mar
+        fgeo.setAttribute('splat', new THREE.Float32BufferAttribute(fsplat, 4));
+        const fondo = new THREE.Mesh(fgeo, sueloMat);
+        fondo.name = 'fondoMarino';
+        fondo.position.set(-LADO / 2 + L * (qx + 0.5), -1.2, -LADO / 2 + L * (qz + 0.5));
+        fondo.receiveShadow = false; fondo.castShadow = false;
+        fondo.matrixAutoUpdate = false; fondo.updateMatrix();
+        scene.add(fondo);
+      }
+    }
     // F2.3 (AY2): plaza y suelo de los asentamientos. mundo.suelo.plazas(MAPA) → [{ x, z, r, f }]: discos donde el pasto pasa
     // a tierra (f = fuerza 0–1, con 4 m de borde suave y algo de ruido); la roca y la arena no cambian. Se pinta en el splat
     // de cada trozo al cargarlo, antes de la rejilla exacta (splatAt lo ve igual). Sin coste de descarga ni de GPU.
