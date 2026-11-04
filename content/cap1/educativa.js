@@ -598,15 +598,18 @@
       }
       // Velocidad de un tramo: las rutas largas del mapa nuevo van más rápido, sin pasar la del vuelo (12 m/s)
       const velTramo = (r, base) => Math.min(11, Math.max(base, r.total / 20));
+      // W17: el vapor nunca va por encima del techo de vuelo (4 m por debajo): a medio camino la ruta subía a 67 m donde el techo
+      // es ~51 m, la voluta esperaba a más de RUTA.espera y el paso «Sigue el vapor hasta la nube» no se podía terminar
+      const bajoTecho = q => { const tv = G.fisica.techoVuelo ? G.fisica.techoVuelo(q.x, q.z) - 4 : Infinity; return q.y > tv ? Object.assign({}, q, { y: Math.max(tv, H(q.x, q.z) + 3) }) : q; };
       function rutaVapor() {
         const p0 = { x: L.poza.x, y: aguaPoza() + 0.3, z: L.poza.z }, p3 = { x: L.nube.x, y: NUBE_Y, z: L.nube.z };
-        if (RG && RG.vapor && RG.vapor.length > 1) return ruta([p0, ...RG.vapor.slice(1, -1).map(xyz), p3]);
+        if (RG && RG.vapor && RG.vapor.length > 1) return ruta([p0, ...RG.vapor.slice(1, -1).map(xyz).map(bajoTecho), p3]);
         const pts = [];
         for (let k = 0; k <= 24; k++) {
           const s = k / 24, e = s * s * (3 - 2 * s);
           const x = p0.x + (p3.x - p0.x) * e, z = p0.z + (p3.z - p0.z) * e;
           const base = p0.y + (p3.y - p0.y) * Math.sqrt(s);
-          pts.push({ x, y: Math.max(base, H(x, z) + 3), z });
+          pts.push(k > 0 && k < 24 ? bajoTecho({ x, y: Math.max(base, H(x, z) + 3), z }) : { x, y: Math.max(base, H(x, z) + 3), z });
         }
         return ruta(pts);
       }

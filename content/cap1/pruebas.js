@@ -670,7 +670,9 @@
     // p5 Nace la gota
     const pz = E.L.poza; volarA(pz.x + 3, Math.max(G.agua.levelAt(pz.x, pz.z), H(pz.x, pz.z)) + 2, pz.z); tick(0.3);
     ok('p5: en la poza sube el vapor', E.estado().voluta);
-    for (let i = 0; i < 900 && E.estado().vapor < 1; i++) { const v = E.volutaPos(); if (!v) break; volarA(v.x + 1, v.y, v.z); tick(0.1); }
+    let sobreTecho = null; // W17: el vapor se puede seguir volando (no pasa del techo de vuelo; antes subía a 67 m donde el techo es ~51)
+    for (let i = 0; i < 900 && E.estado().vapor < 1; i++) { const v = E.volutaPos(); if (!v) break; if (!sobreTecho && G.fisica.techoVuelo && v.y > G.fisica.techoVuelo(v.x, v.z)) sobreTecho = v; volarA(v.x + 1, v.y, v.z); tick(0.1); }
+    ok('p5: el vapor nunca sube por encima del techo de vuelo', !sobreTecho, sobreTecho ? JSON.stringify(sobreTecho) + ' techo ' + G.fisica.techoVuelo(sobreTecho.x, sobreTecho.z).toFixed(1) : '');
     const nb = E.nube(); volarA(nb.x, nb.y, nb.z); tick(0.3);
     ok('p5: en la nube, segunda predicción', opts() === 3 && card().includes(AU.t(paso('p5').interaccion.pregunta)), card().slice(0, 60));
     click('ch-0');
