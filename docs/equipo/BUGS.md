@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-137 | baja | 4-nov: en `content/ep5/en.js` quedó la frase vieja «Pon tres estaciones y prueba el relevo · sigue la flecha y prueba el relevo». El objetivo ya no la usa. | `content/ep5/en.js`. `rg` solo la encuentra en esa línea y en el relato de QA-130. | Grok | resuelto · frase borrada |
 | QA-136 | media | 4-nov, QA: en horizontal los anillos de los primeros minutos rozan «Acción» y «Saltar». | `src/game/guia_controles.js` el anillo sale con 18 px de hueco y una sombra de 8 px, y en horizontal los botones quedan más juntos. | Grok | resuelto · el anillo se encoge hasta no pisar los botones de al lado |
 | QA-135 | media | 4-nov, QA sobre CG-54: `accesibilidadTest` en inglés falla porque compara los subtítulos contra el texto en español («llueve», «trueno», «¡Pío cerca!»). | `src/game/accesibilidad.js` `test()` no mira `G.aula.aj.idioma` al leer el subtítulo. | Grok | resuelto · las mismas frases se comprueban en español y en inglés |
 | QA-134 | baja | 4-nov, QA sobre CG-54: con Una mano y zurdo a la vez, el aviso «Cargando River Rush…» tapa el botón Volar. | En el móvil el aviso ocupa casi todo el ancho a la altura de los botones. Con el pulgar a la derecha, Volar queda debajo. `src/ui/ui.css`. | Grok | resuelto · el aviso se queda en el lado libre |

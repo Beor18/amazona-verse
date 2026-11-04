@@ -17,7 +17,6 @@
     'Pon tres estaciones y prueba el relevo': 'Place three stations and test the relay',
     'Pon tres estaciones y prueba el relevo ({}/3)': 'Place three stations and test the relay ({}/3)',
     'Pon tres estaciones y prueba el relevo · ahora la prueba': 'Place three stations and test the relay · now the test',
-    'Pon tres estaciones y prueba el relevo · sigue la flecha y prueba el relevo': 'Place three stations and test the relay · follow the arrow and test the relay',
     'Pon tres estaciones y prueba el relevo · sigue la flecha': 'Place three stations and test the relay · follow the arrow',
     'Vuelve a probar el relevo: sigue la flecha': 'Test the relay again: follow the arrow',
     'Pide ayuda y prueba hasta la niebla': 'Ask for help and test all the way to the fog',
