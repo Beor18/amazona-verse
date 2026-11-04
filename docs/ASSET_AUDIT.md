@@ -12,6 +12,7 @@
 | Referencias propias del mapa | JPG/PSD | `WORK/Amazonas/references/canoa.jpg`, `maps/trees.psd` (por extraer cuando termine la descarga) |
 | AV3DMaxExportBuildings.zip | ZIP 1.3 GB | En Google Drive, no descargado |
 | Cotorras cosplay (15) | PNG | En Drive; personajes de terceros, no comercializar |
+| Tipografías: Fredoka, Atkinson Hyperlegible y Atkinson Hyperlegible Mono | woff2 (latin y latin-ext) | **SIL OFL 1.1**, comprobado en el repositorio google/fonts (`ofl/fredoka`, `ofl/atkinsonhyperlegible`, `ofl/atkinsonhyperlegiblemono`). Servidas desde el propio sitio, sin Google Fonts (directiva L5, 4-nov): juego en `assets/vendor/fonts/` y landing en `web/assets/fonts/`, cada carpeta con su `OFL.txt` |
 
 ## Mapa de 3ds Max abierto (24 oct 2026)
 Abierto en Blender 4.2 con la extensión oficial gratuita "Import Autodesk MAX (.max)" (`io_scene_max`).
