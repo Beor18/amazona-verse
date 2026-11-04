@@ -355,6 +355,14 @@
     check('Cada disparador evento: existe en EVENT_DEFS', unknown.length === 0, unknown.map(x => x.id).join(', '));
     check('Escenas del mismo disparador se encadenan en orden', L('evento:ShelterRelocated').length === 4 && L('evento:ShelterRelocated')[2].who === 'Vittata');
     check('Emoción del .json llega a la cara de Vittata', L('evento:ShelterDismantled')[0].mood === 'angry' && L('interact:transmisor')[0].mood === 'sad');
+    // W18: el final de una charla larga (su resto va en bocadillos) llega aunque otra caja se abra mientras pasan
+    G.dialogo.clear(); let finLargo = 0;
+    G.dialogo.say([{ who: 'Iguaca', text: 'Uno.' }, { who: 'Iguaca', text: 'Dos.' }, { who: 'Iguaca', text: 'Tres.' }], () => finLargo++);
+    G.dialogo.next(); G.dialogo.next();
+    const colaLibre = !!G.dialogo.libre();
+    G.dialogo.say([{ who: 'Vittata', text: 'Otra charla.' }]);
+    for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
+    check('El final de una charla larga llega aunque otra caja se abra mientras pasan sus bocadillos (W18)', colaLibre && finLargo === 1, JSON.stringify({ colaLibre, finLargo }));
     G.quiet = false; G.pack.inicio(G);
     // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
     check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');

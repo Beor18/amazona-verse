@@ -70,7 +70,9 @@ AVE.module('dialogo', function (G) {
     if (!(opts && opts.caja) && todas.length > 2) {
       queue = todas.slice(0, 2);
       const resto = todas.slice(2);
-      onDone = () => { if (e !== epoca) return; sayLibre(resto, fin); };
+      // Pasada la caja, el final va con los bocadillos: otra caja que llegue mientras pasan ya no lo anula (W18: el niño que
+      // vuelve a pulsar perdía el paso siguiente o la pantalla de fin); clear() sí lo corta (cancelarLibre)
+      onDone = () => { if (e !== epoca) return; sayLibre(resto, done); };
     } else {
       queue = todas;
       // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
