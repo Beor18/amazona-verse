@@ -1,0 +1,15 @@
+{
+  "informe": {
+    "eduTest": {
+      "p": 80,
+      "t": 80,
+      "mal": []
+    },
+    "maestroTest": {
+      "p": 26,
+      "t": 26,
+      "mal": []
+    }
+  },
+  "errores": []
+}

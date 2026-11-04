@@ -1,0 +1,78 @@
+{
+  "informe": {
+    "selfTest": {
+      "p": 103,
+      "t": 103,
+      "mal": []
+    },
+    "missionTest": {
+      "p": 79,
+      "t": 79,
+      "mal": []
+    },
+    "accessoryTest": {
+      "p": 12,
+      "t": 12,
+      "mal": []
+    },
+    "templateTest": {
+      "p": 19,
+      "t": 19,
+      "mal": []
+    },
+    "eduTest": {
+      "p": 80,
+      "t": 80,
+      "mal": []
+    },
+    "maestroTest": {
+      "p": 24,
+      "t": 26,
+      "mal": [
+        "Progreso de este dispositivo en una tabla",
+        "JSON con las partidas y sin ids internos"
+      ]
+    },
+    "criaderoTest": {
+      "p": 44,
+      "t": 44,
+      "ok": true,
+      "mal": []
+    },
+    "movementTest": {
+      "p": 49,
+      "t": 50,
+      "mal": [
+        "Posarse: en una rama usa el gesto de posarse (no el aterrizaje general); en el suelo llano, el general — {\"rama\":{\"gestos\":0,\"tipo\":\"rama\",\"peso\":0,\"alasEquilibrio\":false,\"asentarGeneral\":0},\"posado\":\"fino\",\"suelo\":{\"gestos\":0,\"tipo\":\"rama\",\"peso\":0,\"alasEquilibrio\":false,\"asentarGeneral\":0.93}}"
+      ]
+    },
+    "saveTest": {
+      "p": 63,
+      "t": 63,
+      "mal": []
+    },
+    "comicTest": {
+      "p": 65,
+      "t": 67,
+      "mal": [
+        "«Mis escenas»: la página lleva justo las escenas elegidas",
+        "Las viñetas de los gags (foto, captura o ilustración) y la foto con pose no están en blanco — pichon_cae, pichon_mariposa, pichon_duerme, pichon_imita"
+      ]
+    },
+    "lookCapitulosTest": {
+      "p": 12,
+      "t": 12,
+      "mal": []
+    },
+    "e2eTest": {
+      "p": 29,
+      "t": 32,
+      "mal": [
+        "5 · Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero) — {\"distintos\":[\"nombre\",\"especie\",\"accs\",\"paso\",\"misiones\",\"edu\",\"refugio\",\"construcciones\",\"inv\",\"eventos\",\"ropa\",\"criadero\"],\"eventosNuevos\":null,\"antes\":{\"nombre\":\"Pluma Valiente\",\"especie\":\"violacea\",\"accs\":[\"sombrero",
+        "4.7 · Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo — {\"paso\":0,\"banco\":false,\"cercano\":\"ninguno\"}",
+        "! · El recorrido no puede seguir tras 4.7 — etapa anterior fallida"
+      ]
+    }
+  },
+  "errores": []
+}
