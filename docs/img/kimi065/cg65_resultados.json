@@ -1,0 +1,255 @@
+{
+ "cuando": "2026-11-04T12:31:07.066Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 390×844 dpr 3 · CPU ×4 · calidad bajo",
+ "idiomas": {
+  "es": {
+   "ok": true,
+   "passed": 23,
+   "total": 23,
+   "results": [
+    {
+     "name": "ES · Partida nueva en el paso 1 (orilla)",
+     "ok": true,
+     "extra": "step 0"
+    },
+    {
+     "name": "ES · Hablar con Iguaca abre la misión de la orilla",
+     "ok": true,
+     "extra": "edu.inicio true"
+    },
+    {
+     "name": "ES · Paso 1 · 4/4 observaciones hechas",
+     "ok": true,
+     "extra": "obs_a,obs_c,obs_b,obs_bosque"
+    },
+    {
+     "name": "ES · Paso 1 · contarle a Iguaca avanza al paso 2",
+     "ok": true,
+     "extra": "step 1"
+    },
+    {
+     "name": "ES · Paso 2 a mitad (1/4 voces)",
+     "ok": true,
+     "extra": "voz_abuela"
+    },
+    {
+     "name": "ES · Partida guardada a mitad (ep4.save)",
+     "ok": true,
+     "extra": "ep4.save"
+    },
+    {
+     "name": "ES · Reanuda en el capítulo 4",
+     "ok": true,
+     "extra": "ep4"
+    },
+    {
+     "name": "ES · Reanuda en el paso 2 con lo ya hecho",
+     "ok": true,
+     "extra": "step 1 · 5 collected"
+    },
+    {
+     "name": "ES · Al reanudar, la guía señala algo alcanzable",
+     "ok": true,
+     "extra": "196,147"
+    },
+    {
+     "name": "ES · El capítulo tiene 6 pasos",
+     "ok": true,
+     "extra": "6"
+    },
+    {
+     "name": "ES · Paso 1 · la guía señala a Iguaca (todo mirado), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · Paso 2 · la guía señala cada voz y luego la mesa, todo alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · Paso 3 · la guía señala la mesa (maqueta), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · Paso 4 · la guía señala la mesa (asamblea), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · Paso 5 · la guía señala la obra, alcanzable",
+     "ok": true,
+     "extra": "203,149"
+    },
+    {
+     "name": "ES · Paso 6 · la guía señala a la abuela (el cruce), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · Viento (norte): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "ES · Viento (sur): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "ES · Viento (oeste): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "ES · Viento (este): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "ES · Viento (este del cruce de la abuela): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "ES · La zona del cap. 4 cubre el área de la misión (centro 200,157 r 38)",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "ES · 0 errores de consola en la vuelta",
+     "ok": true,
+     "extra": "0 errores"
+    }
+   ]
+  },
+  "en": {
+   "ok": true,
+   "passed": 24,
+   "total": 24,
+   "results": [
+    {
+     "name": "EN · El juego arranca en inglés",
+     "ok": true,
+     "extra": "en"
+    },
+    {
+     "name": "EN · Partida nueva en el paso 1 (orilla)",
+     "ok": true,
+     "extra": "step 0"
+    },
+    {
+     "name": "EN · Hablar con Iguaca abre la misión de la orilla",
+     "ok": true,
+     "extra": "edu.inicio true"
+    },
+    {
+     "name": "EN · Paso 1 · 4/4 observaciones hechas",
+     "ok": true,
+     "extra": "obs_a,obs_c,obs_b,obs_bosque"
+    },
+    {
+     "name": "EN · Paso 1 · contarle a Iguaca avanza al paso 2",
+     "ok": true,
+     "extra": "step 1"
+    },
+    {
+     "name": "EN · Paso 2 a mitad (1/4 voces)",
+     "ok": true,
+     "extra": "voz_abuela"
+    },
+    {
+     "name": "EN · Partida guardada a mitad (ep4.save)",
+     "ok": true,
+     "extra": "ep4.save"
+    },
+    {
+     "name": "EN · Reanuda en el capítulo 4",
+     "ok": true,
+     "extra": "ep4"
+    },
+    {
+     "name": "EN · Reanuda en el paso 2 con lo ya hecho",
+     "ok": true,
+     "extra": "step 1 · 5 collected"
+    },
+    {
+     "name": "EN · Al reanudar, la guía señala algo alcanzable",
+     "ok": true,
+     "extra": "196,147"
+    },
+    {
+     "name": "EN · El capítulo tiene 6 pasos",
+     "ok": true,
+     "extra": "6"
+    },
+    {
+     "name": "EN · Paso 1 · la guía señala a Iguaca (todo mirado), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · Paso 2 · la guía señala cada voz y luego la mesa, todo alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · Paso 3 · la guía señala la mesa (maqueta), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · Paso 4 · la guía señala la mesa (asamblea), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · Paso 5 · la guía señala la obra, alcanzable",
+     "ok": true,
+     "extra": "203,149"
+    },
+    {
+     "name": "EN · Paso 6 · la guía señala a la abuela (el cruce), alcanzable",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · Viento (norte): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "EN · Viento (sur): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "EN · Viento (oeste): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "EN · Viento (este): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "EN · Viento (este del cruce de la abuela): devuelve dentro y en seco",
+     "ok": true,
+     "extra": "191,165"
+    },
+    {
+     "name": "EN · La zona del cap. 4 cubre el área de la misión (centro 200,157 r 38)",
+     "ok": true,
+     "extra": ""
+    },
+    {
+     "name": "EN · 0 errores de consola en la vuelta",
+     "ok": true,
+     "extra": "0 errores"
+    }
+   ]
+  }
+ }
+}
