@@ -60,8 +60,9 @@
           guia: G => (G.c.edu && G.c.edu.guia()) || at(G, !G.S.evaluated.A ? 'postA' : 'postB') },
         // Mejora 4: durante la crecida el objetivo es salvar lo que arrastra el río (la guía apunta a lo que flota o a tierra seca)
         // CG-38: la crecida y el Guardián (canon) son el mismo paso. El índice 3 sigue siendo la ruta de la gota.
+        // Tras desarmar el refugio inundado la guía va al letrero de la colina, como dice el aviso (antes, el más cercano: el del río, y vuelta a empezar)
         { id: 'refugio', texto: S => (S.event ? '¡Crecida! Agarra al vuelo lo que arrastra el río y ponlo a salvo' : (S.refuge && !S.guardianMet ? 'Habla con el Guardián Constructor' : 'Elige un terreno y construye el refugio')),
-          guia: G => { const S = G.S; return S.event ? (G.c.crecida ? G.c.crecida.guia() : null) : S.refuge && S.refuge.damaged ? at(G, 'refuge') : (S.refuge && !S.guardianMet ? at(G, 'guardian') : (S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]))); } },
+          guia: G => { const S = G.S; return S.event ? (G.c.crecida ? G.c.crecida.guia() : null) : S.refuge && S.refuge.damaged ? at(G, 'refuge') : (S.refuge && !S.guardianMet ? at(G, 'guardian') : (S.refuge ? null : S.builds.includes('A') ? at(G, 'postB') : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]))); } },
         // CG-38: el transmisor, la medalla y el mirador (canon) son el mismo paso.
         { id: 'transmisor', texto: S => S.transmitterOn ? 'Sube al mirador de la colina' : 'Repara y activa el transmisor',
           progreso: (S, G) => !S.transmitterOn && S.chorus && !S.missions.m3 ? ` (coquíes ${S.coquis.length}/${G.c.BUSHES.length})` : '',
