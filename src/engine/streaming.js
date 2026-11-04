@@ -143,7 +143,7 @@ AVE.module('streaming', function (G) {
         if (!mat) continue;
         for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap']) {
           const t = mat[k];
-          if (t && t.image && !t.userData.avSubida) { t.userData.avSubida = 1; W.initTexture(t); }
+          if (t && t.image && !(t.userData && t.userData.avSubida)) { t.userData = t.userData || {}; t.userData.avSubida = 1; W.initTexture(t); }
         }
       }
     });
