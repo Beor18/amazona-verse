@@ -31,7 +31,7 @@ function servir() {
     const qa = /[?&]qa=1(?:&|$)/.test(req.url);
     if (p.endsWith('/')) p += 'index.html';
     const f = path.join(RAIZ, p);
-    if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
+    if (!f.startsWith(RAIZ) || (req.method !== 'GET' && req.method !== 'HEAD')) { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('404'); }
       if (qa && /index\.html$/.test(f)) d = Buffer.from(d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + '<script src="tests/qa/qa.js" charset="utf-8"></script>'), 'utf8');

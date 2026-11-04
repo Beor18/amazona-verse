@@ -1,0 +1,592 @@
+{
+ "erroresConsola": [
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358059
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358098
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358100
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358102
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358103
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358104
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358105
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358106
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358176
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358179
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358182
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358184
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358186
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358188
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358190
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358237
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358239
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358241
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358243
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358245
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358247
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358249
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358369
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358373
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358376
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358379
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358382
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358383
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358385
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358630
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358632
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358634
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358635
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358638
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358641
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358643
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358860
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358863
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358865
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358867
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358869
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358870
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358873
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358947
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358949
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358951
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358953
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358954
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358956
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809358958
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359008
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359011
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359014
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359041
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359043
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359045
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359047
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359112
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359116
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359120
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359121
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359123
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359125
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359126
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359463
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359466
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359469
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359472
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359474
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359474
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359475
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359718
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359720
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359722
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+   "t": 1793809359723
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "t": 1793809359751
+  },
+  {
+   "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "t": 1793809359833
+  }
+ ],
+ "excepciones": [],
+ "contextLost": 0,
+ "muestras": [
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 81,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 20,
+   "tris": 19563,
+   "fps": 19,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 8,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "cal": "alto",
+   "progs": 9,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 1920,
+   "tris": 1920,
+   "fps": 0,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 20,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 0,
+   "tris": 0,
+   "fps": 31,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 29,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 37,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 41,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 42,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 35,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 42,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 46,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 42,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 41,
+   "cal": "alto",
+   "progs": 11,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 47,
+   "cal": "alto",
+   "progs": 42,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 191,
+   "tris": 1478140,
+   "fps": 6,
+   "cal": "alto",
+   "progs": 48,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 106,
+   "tris": 762354,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 50,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  },
+  {
+   "calls": 99,
+   "tris": 752210,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 49,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false
+  }
+ ],
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+}
