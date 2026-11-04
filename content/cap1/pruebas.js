@@ -363,6 +363,18 @@
     G.dialogo.say([{ who: 'Vittata', text: 'Otra charla.' }]);
     for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
     check('El final de una charla larga llega aunque otra caja se abra mientras pasan sus bocadillos (W18)', colaLibre && finLargo === 1, JSON.stringify({ colaLibre, finLargo }));
+    // W18b: la MISMA charla con final pedida otra vez mientras pasan sus bocadillos pasa la línea; su final corre una sola vez
+    G.dialogo.clear(); let finMismo = 0;
+    const larga = () => [1, 2, 3, 4].map(i => ({ who: 'Iguaca', text: 'W18b ' + i + '.' }));
+    G.dialogo.say(larga(), () => finMismo++); G.dialogo.next(); G.dialogo.next();
+    const enBoc = !!G.dialogo.libre(), t0 = G.dialogo.actual().text;
+    G.dialogo.say(larga(), () => finMismo++); // el niño vuelve a pulsar
+    const reabre = G.dialogo.open(), paso = G.dialogo.activo() && G.dialogo.actual().text !== t0;
+    for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
+    G.dialogo.say(larga().slice(0, 1), null, { libre: true }); G.dialogo.say(larga().slice(0, 1), () => finMismo++, { libre: true });
+    for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
+    check('W18b · La misma charla pedida en sus bocadillos pasa la línea y su final corre una vez', enBoc && !reabre && paso && finMismo === 2, JSON.stringify({ enBoc, reabre, paso, finMismo, sigue: G.dialogo.activo() }));
+    G.dialogo.clear();
     G.quiet = false; G.pack.inicio(G);
     // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
     check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
@@ -582,7 +594,11 @@
     const luz = C.luzMirador;
     G.audio.log.length = 0; useAt('mirador', 2.4, 0);
     const esc = [], mira = () => { const a = G.dialogo.actual(); esc.push({ who: a.who, txt: a.text, plano: C.planoVisible(), luz: !!luz && luz.sprite.visible, img: a.img || '', libre: a.libre }); };
-    mira(); while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) mira(); }
+    // W18b: el niño vuelve a pulsar Acción en el mirador mientras pasan los bocadillos: solo pasa la línea (un solo final)
+    mira(); const otraVez = useAt('mirador', 2.4, 0); if (G.dialogo.activo()) mira();
+    while (G.dialogo.activo()) { G.dialogo.next(); if (G.dialogo.activo()) mira(); }
+    const finales = S.events.filter(e => e.key === 'ChapterCompleted').length, planos = S.events.filter(e => e.key === 'BoatBlueprintUnlocked').length;
+    check('Final · W18b: pulsar otra vez el mirador mientras pasan los bocadillos no repite el final', otraVez && finales === 1 && planos === 1, JSON.stringify({ otraVez, finales, planos, lineas: esc.length }));
     check('Final · el mirador narra en bocadillos libres (la cotorra puede mirar alrededor) y el panel llega al terminar', esc.every(e => e.libre) && S.complete, esc.length + ' bocadillos');
     const lPlano = esc.find(e => /^Si los caminos/.test(e.txt)), lLuz = esc.find(e => /^Mira, Vittata\. Esa luz/.test(e.txt)), nar = esc.filter(e => e.who === 'Narrador');
     check('Final · mirador: el plano del bote sale en pantalla con su chispa de sonido', esc.length === 10 && !!lPlano && lPlano.plano && !lPlano.luz && log().includes('nido_chispa'), esc.length + ' líneas');

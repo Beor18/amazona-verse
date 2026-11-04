@@ -60,9 +60,12 @@ AVE.module('dialogo', function (G) {
   let segJuego = 0, segCaja = 0;
   function say(lines, done, opts) {
     const todas = lines.slice();
+    // W18b: con el final de W18 ya no se anula; si el niño vuelve a pedir LA MISMA charla con final mientras pasan sus bocadillos,
+    // se pasa la línea en vez de encolarla otra vez (si no, corrían los dos finales: premio, evento, pantalla de fin)
+    if (done && libreCur && firmas.has(firma(todas))) { nextLibre(); return; }
     // La exposición, si no va mezclada con una charla, sale en bocadillos aunque el que llama no ponga libre.
     if ((opts && opts.libre) || (!(opts && opts.caja) && todas.length && todas.every(l => EXPO.has(l.who)))) {
-      sayLibre(todas, done); return;
+      sayLibre(todas, done, done && firma(todas)); return;
     }
     const e = ++epoca;
     const fin = done ? () => { if (e === epoca) done(); } : null;
@@ -72,7 +75,7 @@ AVE.module('dialogo', function (G) {
       const resto = todas.slice(2);
       // Pasada la caja, el final va con los bocadillos: otra caja que llegue mientras pasan ya no lo anula (W18: el niño que
       // vuelve a pulsar perdía el paso siguiente o la pantalla de fin); clear() sí lo corta (cancelarLibre)
-      onDone = () => { if (e !== epoca) return; sayLibre(resto, done); };
+      onDone = () => { if (e !== epoca) return; sayLibre(resto, done, firma(todas)); };
     } else {
       queue = todas;
       // Si otra caja o un clear() llegan antes de que acabe esta, el callback no reabre el coro encima (QA-64)
@@ -96,6 +99,8 @@ AVE.module('dialogo', function (G) {
   // para no tapar la palanca ni los botones. Con una caja o una tarjeta abiertas se esconden (CSS) y su reloj se para.
   const LIBRE = { min: 2.4, max: 7, base: 0.9, porCar: 0.055 }; // s en pantalla: base + caracteres × porCar, entre min y max
   let libreQ = [], libreDone = null, libreCur = null, libreT = 0;
+  const firmas = new Set(); // W18b: charlas con final cuyo resto espera en los bocadillos (quién + texto de cada línea)
+  const firma = ls => ls.map(l => l.who + '\u0001' + l.text).join('\u0002');
   let caja = null;
   function bocadillo() {
     if (caja) return caja;
@@ -124,15 +129,16 @@ AVE.module('dialogo', function (G) {
     c.firstElementChild.addEventListener('click', () => { if (libreCur) nextLibre(); });
     return (caja = c);
   }
-  function sayLibre(lines, done) {
+  function sayLibre(lines, done, f) {
     const prev = libreDone;
+    if (f) firmas.add(f);
     libreQ.push(...lines); if (done) libreDone = prev ? () => { prev(); done(); } : done;
     if (!libreCur) nextLibre();
   }
   function nextLibre() {
     const c = bocadillo();
     const l = libreQ.shift();
-    if (!l) { libreCur = null; c.hidden = true; const d = libreDone; libreDone = null; if (d) d(); return; }
+    if (!l) { libreCur = null; c.hidden = true; firmas.clear(); const d = libreDone; libreDone = null; if (d) d(); return; }
     libreCur = l; libreT = Math.min(LIBRE.max, Math.max(LIBRE.min, LIBRE.base + l.text.length * LIBRE.porCar));
     $('bl-who').textContent = l.who; const t = $('bl-text'); t.lang = l.lang || ''; t.textContent = l.text;
     retrato($('bl-img'), l.img || img(l.who), l.who);
@@ -143,7 +149,7 @@ AVE.module('dialogo', function (G) {
   // Corta los bocadillos y devuelve lo que faltaba por decir (la línea a la vista incluida)
   function cancelarLibre() {
     const rest = libreCur ? [libreCur, ...libreQ] : libreQ.slice();
-    libreQ = []; libreCur = null; libreDone = null; if (caja) caja.hidden = true;
+    libreQ = []; libreCur = null; libreDone = null; firmas.clear(); if (caja) caja.hidden = true;
     return rest;
   }
   // Tiempo del juego (se puede probar con tick()); con la caja o una tarjeta abiertas, espera
