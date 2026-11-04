@@ -516,19 +516,21 @@ AVE.module('accesibilidad', function (G) {
       if (pm) {
         const ocultoPm = pm.hidden; pm.hidden = false; pm.classList.remove('pm-atascado');
         const azul = getComputedStyle(pm).borderTopColor;
+        const centroVacio = el => { const cs = getComputedStyle(el); return (cs.backgroundImage === 'none' || cs.backgroundImage === '') && /rgba?\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(cs.backgroundColor); };
+        const v1 = centroVacio(pm);
         pm.classList.add('pm-atascado');
-        const naranja = getComputedStyle(pm).borderTopColor, trama = getComputedStyle(pm).borderTopStyle;
+        const naranja = getComputedStyle(pm).borderTopColor, trama = getComputedStyle(pm).borderTopStyle, v2 = centroVacio(pm);
         const rgb = s => (String(s).match(/[\d.]+/g) || []).map(Number);
         const a = rgb(azul), b = rgb(naranja);
-        pistaOk = a.length >= 3 && b.length >= 3 && a[2] > a[0] && b[0] > b[2] && trama === 'dashed';
-        pistaExtra = `anillo ${azul} / atascado ${naranja} ${trama}`;
+        pistaOk = a.length >= 3 && b.length >= 3 && a[2] > a[0] && b[0] > b[2] && trama === 'dashed' && v1 && v2;
+        pistaExtra = `anillo ${azul} / atascado ${naranja} ${trama} / centro ${v1 && v2 ? 'vacío' : 'relleno'}`;
         pm.classList.remove('pm-atascado'); pm.hidden = ocultoPm;
       }
       G.fx.guide(null, 0); set('daltonismo', false); G.fx.guide(lejosD, 0); G.fx.guide(null, 0);
       check('Daltonismo: la flecha pasa a azul en alambre y el haz a bermellón; al quitarlo vuelven al naranja',
         hex0 === 0xf2a03d && !wire0 && haz0 === 0xfff1b0 && hex1 === 0x0072b2 && wire1 && haz1 === 0xd55e00 && G.fx.guideArrow.material.color.getHex() === 0xf2a03d && !G.fx.guideArrow.material.wireframe,
         hex0.toString(16) + '→' + hex1.toString(16) + ' haz ' + haz0.toString(16) + '→' + haz1.toString(16));
-      check('Daltonismo: el anillo de los primeros minutos es azul y, si te atascas, naranja a rayas', pistaOk, pistaExtra);
+      check('Daltonismo: el anillo es azul y, si te atascas, el borde es naranja discontinuo; el centro queda vacío', pistaOk, pistaExtra);
       check('Daltonismo no tiñe el mundo ni a las cotorras', sinFiltro && raiz.classList.contains('a11y-daltonismo') === false, filtroCuerpo + ' / ' + filtroLienzo);
 
       // ---------- Maqueta móvil ----------

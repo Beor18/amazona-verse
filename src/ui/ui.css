@@ -837,13 +837,13 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 html.a11y-daltonismo #pm-pista {
   border-color: #0072B2; border-style: solid;
   box-shadow: 0 0 0 8px rgba(0, 114, 178, 0.45);
-  background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(0, 114, 178, 0.55) 5px 7px);
+  background: transparent;
 }
 html.a11y-daltonismo #pm-pista::before { border-bottom-color: #0072B2; }
 html.a11y-daltonismo #pm-pista.pm-atascado {
   border-color: #E69F00; border-style: dashed;
   box-shadow: 0 0 0 10px rgba(230, 159, 0, 0.55);
-  background: repeating-linear-gradient(90deg, transparent 0 4px, rgba(230, 159, 0, 0.7) 4px 8px);
+  background: transparent;
 }
 html.a11y-daltonismo #pm-pista.pm-atascado::before { border-bottom-color: #E69F00; }
 html.a11y-daltonismo #truco-chip {
