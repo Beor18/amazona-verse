@@ -174,9 +174,12 @@ AVE.module('pruebas', function (G) {
       const K1 = G.pack.id === 'cap1' ? G.guardado.KEY : 'amazonaverse.save';
       check('Guarda aparte de cap1 (otra clave de localStorage)', G2.guardado.KEY !== K1, G2.guardado.KEY);
       check('Nada del capítulo 1 en la plantilla', !G2.interaccion.find('maquina') && !G2.interaccion.find('transmisor') && !G2.actores.npc('luma'));
+      const paso0 = G2.misiones.steps[0].texto, li0 = doc.querySelector('#steps li'), visto = li0 ? li0.textContent : '';
+      const tr = t => (G2.idioma && G2.idioma.tr ? G2.idioma.tr(t) : t);
       check('Su historia en el HUD', doc.querySelectorAll('#steps li').length === G2.misiones.steps.length && G2.misiones.steps.length > 0 &&
-        doc.querySelector('#steps li').textContent.startsWith(G2.misiones.steps[0].texto), G2.misiones.steps.length + ' pasos');
-      check('Sus textos en el HUD', !P.meta.hud || doc.querySelector('#quest h1').textContent === P.meta.hud.titulo, doc.querySelector('#quest h1').textContent);
+        (visto.startsWith(paso0) || visto.startsWith(tr(paso0))), G2.misiones.steps.length + ' pasos · ' + visto.slice(0, 48));
+      const tit = P.meta.hud && P.meta.hud.titulo, h1 = doc.querySelector('#quest h1');
+      check('Sus textos en el HUD', !tit || (h1 && (h1.textContent === tit || h1.textContent === tr(tit))), h1 && h1.textContent);
       check('Su mundo: NPC, objetos y Diario propios', Object.keys(G2.actores.npcs).length === (P.npcs || []).length && G2.objetos.recursos.length === (P.recursos || []).length && G2.diario.total === ((P.diario || {}).entradas || []).length,
         `${Object.keys(G2.actores.npcs).length} NPC, ${G2.objetos.recursos.length} objetos, ${G2.diario.total} hallazgos`);
       if (A.selfTest) {

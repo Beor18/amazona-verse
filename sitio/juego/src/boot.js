@@ -92,23 +92,23 @@
     const cargarRescate = () => rescate || (rescate = AVE.assets.script('src/game/rescate.js').then(() => window.AVRescate(G), e => { rescate = null; throw e; }));
     AV.rescateTest = o => cargarRescate().then(r => r.test(o));
     alPrimerGesto(cargarRescate);
-    // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar si la calidad no es «bajo», y al pedir su prueba
+    // Bandada de cotorras (src/game/bandada.js): se carga sola al arrancar (en «bajo», la mínima: QA-110) y al pedir su prueba
     let bandada = null;
     const cargarBandada = () => bandada || (bandada = AVE.assets.script('src/game/bandada.js').then(() => window.AVBandada(G), e => { bandada = null; throw e; }));
     AV.bandadaTest = o => cargarBandada().then(b => b.test(o));
-    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarBandada);
+    alPrimerGesto(cargarBandada);
     // Comunidades (CG-21, src/game/comunidades.js): rutinas en Villa Raíz, Villa Mangle y la otra orilla.
-    // Se dibujan en las mallas de la bandada. En calidad baja no se cargan.
+    // Se dibujan en las mallas de la bandada. En calidad baja, 2 por sitio (QA-110: el iPhone arranca en bajo).
     let comunidades = null;
     const cargarComunidades = () => comunidades || (comunidades = cargarBandada().then(() => AVE.assets.script('src/game/comunidades.js')).then(() => window.AVComunidades(G), e => { comunidades = null; throw e; }));
     AV.comunidadesTest = o => cargarComunidades().then(c => c.test(o));
-    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarComunidades);
+    alPrimerGesto(cargarComunidades);
     // Ciudad viva (N17, src/game/ciudad_viva.js): cotorras que viven en la Ciudad de los 36, en las mallas de la bandada.
-    // En calidad baja no se carga al arrancar (si la calidad baja después, quedan 4).
+    // En calidad baja también se carga, con 4 (QA-110: si no, en el iPhone la ciudad sale vacía).
     let ciudadViva = null;
     const cargarCiudadViva = () => ciudadViva || (ciudadViva = cargarBandada().then(b => (G.bandada && G.bandada.residentes) || b).then(() => AVE.assets.script('src/game/ciudad_viva.js')).then(() => window.AVCiudadViva(G), e => { ciudadViva = null; throw e; }));
     AV.ciudadVivaTest = o => cargarCiudadViva().then(c => c.test(o));
-    if (G.renderer.calidad.nivel !== 'bajo') alPrimerGesto(cargarCiudadViva);
+    alPrimerGesto(cargarCiudadViva);
     // Momentos «wow» del capítulo 1 (src/game/wow.js, BM20): despegue del mirador y luciérnagas del coro; se carga tras el primer gesto y al pedir su prueba
     let wow = null;
     const cargarWow = () => wow || (wow = cargarBandada().catch(() => {}).then(() => AVE.assets.script('src/game/wow.js')).then(() => window.AVWow(G), e => { wow = null; throw e; }));

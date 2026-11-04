@@ -6,7 +6,8 @@
    si esas dos mallas ya se dibujan, no suman draw calls. La nasa no toca a ningún pez.
    Villa Mangle es la comunidad de La Otra Orilla (Kelvin, 2-nov); el rótulo del mapa no se cambia.
    El embarcadero es la otra orilla del río, para que la tercera rutina no caiga en el mismo punto.
-   G.quiet y la calidad baja no las encienden. Prueba: AV.comunidadesTest(). */
+   G.quiet no las enciende. En calidad baja, versión mínima: las 2 primeras de cada sitio (QA-110: el iPhone arranca en bajo).
+   Prueba: AV.comunidadesTest(). */
 window.AVComunidades = function (G) {
   'use strict';
   if (G.comunidades) return G.comunidades;
@@ -15,7 +16,8 @@ window.AVComunidades = function (G) {
   const reducido = () => !!(G.renderer && G.renderer.REDUCED);
   const bajo = () => !!(G.renderer && G.renderer.calidad && G.renderer.calidad.nivel === 'bajo');
   const R = { prueba: false, forzar: null, pausa: false, t: 0, sitios: null, gente: [] };
-  const permitido = () => R.prueba || (!G.quiet && !bajo() && !!(S.profile && S.profile.created));
+  const permitido = () => R.prueba || (!G.quiet && !!(S.profile && S.profile.created));
+  const BAJO_N = 2; // por sitio, en calidad baja
   // Villa Mangle vive en kelvin_aldea_rio_este_2 (el mapa sigue diciendo «La Otra Orilla» [KELVIN]).
   // La otra orilla del río es el embarcadero (kelvin_aldea_rio_oeste).
   const DEFS = [
@@ -78,7 +80,7 @@ window.AVComunidades = function (G) {
           ax: base.x, az: base.z, ay: base.y, agua: !!base.agua,
           bx: base.x + 5.2, bz: base.z + 1.4,
           x: base.x, z: base.z, y: base.y, yaw: base.yaw || ang,
-          t: i * 0.45, fase: i * 0.9, ala: 0, cab: 0, gir: 0, roll: 0, pitch: -0.35, on: false,
+          i, t: i * 0.45, fase: i * 0.9, ala: 0, cab: 0, gir: 0, roll: 0, pitch: -0.35, on: false,
         };
         p.k = piel(p.sp);
         grupo.push(p); n++;
@@ -111,7 +113,7 @@ window.AVComunidades = function (G) {
     for (const s of activos()) ids[s.id] = true;
     const k = reducido() ? 0.35 : 1;
     for (const p of gente) {
-      p.on = !!ids[p.sitio];
+      p.on = !!ids[p.sitio] && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
       if (!p.on) continue;
       p.t += dt * k;
       if (p.acto === 'cargar') {
@@ -254,8 +256,10 @@ window.AVComunidades = function (G) {
       check('No se crea ninguna malla nueva', sc.children.length === nHijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
       R.prueba = false; R.forzar = null; G.quiet = true; paso(0.05);
       check('Con G.quiet las comunidades no salen', g.every(p => !p.on));
-      G.renderer.calidad.nivel = 'bajo'; paso(0.05);
-      check('Con calidad baja no salen', g.every(p => !p.on));
+      R.prueba = true; R.minima = true; R.forzar = 'todos'; G.renderer.calidad.nivel = 'bajo'; paso(0.05);
+      const porSitio = {}; g.forEach(p => { if (p.on) porSitio[p.sitio] = (porSitio[p.sitio] || 0) + 1; });
+      check('Con calidad baja, versión mínima: 1 o 2 por sitio (QA-110)', Object.keys(porSitio).length > 0 && Object.values(porSitio).every(n => n >= 1 && n <= BAJO_N), JSON.stringify(porSitio));
+      R.prueba = false; R.minima = false; R.forzar = null;
       G.renderer.calidad.nivel = cal0; G.quiet = quiet0;
       const jpg = foto('villa');
       check('La captura de Villa Raíz sale', typeof jpg === 'string' && jpg.indexOf('data:image/jpeg') === 0 && jpg.length > 2000, jpg ? jpg.length : 0);

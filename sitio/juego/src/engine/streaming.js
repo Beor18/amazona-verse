@@ -90,6 +90,7 @@ AVE.module('streaming', function (G) {
     hdTris: { bajo: 400e3, medio: 900e3, alto: Infinity },
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
+    precargaVuelo: 2.5, precargaVueloMax: 120, precargaVueloMin: 15, // KIMI-Task-017: anticipo (s × velocidad), tope en m y velocidad mínima (m/s): solo en vuelo rápido, no a pie (los gags del cómic capturan a velocidad baja)
     descargas: 1, descargasArranque: 3,            // descargas a la vez
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
@@ -126,6 +127,26 @@ AVE.module('streaming', function (G) {
   }
   function encolar(fn) { trabajos.push(fn); programar(); }
   function drenar() { while (trabajos.length) { const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); } } }
+
+  // ---------- Subida de texturas en tandas (KIMI-Task-017) ----------
+  // Los atlas de las fusiones (hasta 2048², 21 MB) se subían a la GPU dentro del primer cuadro que dibujaba
+  // la malla: al entrar una zona, ese cuadro se dispara (lag en móvil/iPad al moverse). La visibilidad no
+  // se toca (el cómic hace fotos del mundo en cualquier momento); en su lugar las texturas de cada malla
+  // nueva se suben aquí, de una en una, con la cola de trabajos (presupuesto CFG.msCuadro por tanda). El
+  // calentador del renderer sigue compilando programas y subiendo geometrías de 2 en 2 por cuadro.
+  function subirTex(m) {
+    if (!m) return;
+    encolar(() => {
+      const W = R.renderer; if (!W || !W.initTexture) return;
+      for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+        if (!mat) continue;
+        for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap']) {
+          const t = mat[k];
+          if (t && t.image && !t.userData.avSubida) { t.userData.avSubida = 1; W.initTexture(t); }
+        }
+      }
+    });
+  }
 
   // ---------- Precarga del programa de las ráfagas ----------
   // fx.burst crea el PointsMaterial al llegar al agua (burbujas de la caleta): el primer dibujo, en SwiftShader,
@@ -316,13 +337,39 @@ AVE.module('streaming', function (G) {
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
     reducirAtlas(m);
+    subirEnCola(m);
   }
   // BJ1 (QA-52, QA-53): cada atlas de 4096 (difusa y normales) ocupa 85 MB en la GPU; en el móvil, el de la casa junto al punto
   // de aparición llevaba el cap. 1 a 250 MB y subirlo al pulsar «Empezar» congelaba la pantalla. En calidad baja, y en el móvil
   // fuera de alta, se queda en 2048 (celda 512, 21 MB): se dibuja una vez en un lienzo y se suelta el original. Al volver a una
   // calidad mayor sigue en 2048 hasta que la zona se descarga y el modelo vuelve a bajar.
   const MOVIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
-  const atlasMax = () => nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+  // QA-110 (iPhone, 4-nov: se cerró volando sobre la Ciudad de los 36 en bajo). Decisión de Kelvin (4-nov, DECISION_LOG): en el
+  // móvil de pantalla pequeña (táctil y lado corto < 600 px: iPhone y Android, no tablets) el atlas baja a 1024 al cargar, antes
+  // de subirlo (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85), en cualquier calidad. Tablet y escritorio, como antes.
+  const MOVIL_PEQ = MOVIL && Math.min(screen.width || 0, screen.height || 0) > 0 && Math.min(screen.width, screen.height) < 600;
+  const atlasMax = () => MOVIL_PEQ ? HD.celdas * HD.celda / 4
+    : nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+  // QA-110: las texturas del atlas se suben a la GPU de una en una, cada 300 ms (renderer.initTexture), en cuanto se crea el
+  // material y antes de que la ciudad se vea; así no llegan las cuatro en el mismo cuadro al despegar. Una imagen que aún no
+  // ha cargado espera su turno de nuevo (hasta ~30 s); si la escena la dibuja antes, three la sube allí, como antes.
+  const colaSubir = []; let subiendo = false;
+  function subirEnCola(m) {
+    for (const t of [m.map, m.normalMap]) if (t && !colaSubir.some(c => c.t === t)) colaSubir.push({ m, t, n: 0 });
+    if (!subiendo) { subiendo = true; setTimeout(subirSiguiente, 300); }
+  }
+  function subirSiguiente() {
+    const c = colaSubir.shift();
+    if (!c) { subiendo = false; return; }
+    const img = c.t.image;
+    if (!(img && img.width)) { if (++c.n < 100) colaSubir.push(c); }
+    else {
+      reducirAtlas(c.m);
+      const rr = R.renderer;
+      if (rr && rr.initTexture && !(R.contexto && R.contexto.perdido)) { try { rr.initTexture(c.t); } catch (e) { console.warn('AVE streaming: initTexture', e && e.message || e); } }
+    }
+    setTimeout(subirSiguiente, 300);
+  }
   function reducirAtlas(m) {
     const max = atlasMax();
     if (!max || !m.userData.avAtlasEsc) return;
@@ -683,7 +730,7 @@ AVE.module('streaming', function (G) {
         m.castShadow = r.tipo !== 'lejos';
         m.receiveShadow = true;
         m.name = 'edificiosInst:' + r.n + ':' + r.tipo + ':' + p.mat.name; m.userData.sinSolido = true;
-        scene.add(m); L.mallas.push(m);
+        scene.add(m); L.mallas.push(m); subirTex(m);
       }
       r.mallas = L.mallas;
     }
@@ -975,7 +1022,7 @@ AVE.module('streaming', function (G) {
           m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
           m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
           const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); ms.push(m);
+          scene.add(m); ms.push(m); subirTex(m);
         }
         Z.hdMallas = ms; Z.hdModelos = modelos;
         encolar(() => fundirCercaZona(Z)); programarHDGlobal();
@@ -1011,7 +1058,7 @@ AVE.module('streaming', function (G) {
         m.name = 'edificiosZonaHDGlobal:' + gr.mat.name; m.userData.sinSolido = true;
         m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
         const it = mats[gr.mat.name]; if (it) it.refs++;
-        scene.add(m); hdGlobal.mallas.push(m);
+        scene.add(m); hdGlobal.mallas.push(m); subirTex(m);
       }
       hdGlobal.ids = ids; hdGlobal.zonas = new Set(zs.map(Z => Z.id));
     }
@@ -1052,7 +1099,7 @@ AVE.module('streaming', function (G) {
           m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
           m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
           const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); ms.push(m);
+          scene.add(m); ms.push(m); subirTex(m);
         }
         Z.cercaMallas = ms; Z.cercaModelos = modelos;
         programarCercaGlobal();
@@ -1088,7 +1135,7 @@ AVE.module('streaming', function (G) {
         m.name = 'edificiosZonaCercaGlobal:' + gr.mat.name; m.userData.sinSolido = true;
         m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
         const it = mats[gr.mat.name]; if (it) it.refs++;
-        scene.add(m); cercaGlobal.mallas.push(m);
+        scene.add(m); cercaGlobal.mallas.push(m); subirTex(m);
       }
       cercaGlobal.ids = ids; cercaGlobal.zonas = new Set(zs.map(Z => Z.id));
     }
@@ -1118,7 +1165,7 @@ AVE.module('streaming', function (G) {
       m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
       m.layers.set(1);
       if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
-      scene.add(m); Z.sombraMalla = m; Z.sombraModelos = modelos;
+      scene.add(m); Z.sombraMalla = m; Z.sombraModelos = modelos; subirTex(m);
     }
     // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
@@ -1162,7 +1209,7 @@ AVE.module('streaming', function (G) {
         const m = new THREE.Mesh(geo, mat);
         m.name = 'edificiosZona:' + Z.id + ':' + nom; m.userData.sinSolido = true; m.matrixAutoUpdate = false;
         m.receiveShadow = true; m.castShadow = false;
-        scene.add(m); return m;
+        scene.add(m); subirTex(m); return m;
       };
       const ms = [];
       if (F.geos.length) ms.push(mk(fundir(F.geos, true), matLejos, 'lejos'));
@@ -1206,7 +1253,7 @@ AVE.module('streaming', function (G) {
         m.name = 'edificiosZona:global:' + nom; m.userData.sinSolido = true; m.userData.matTex = conTex; m.matrixAutoUpdate = false;
         m.receiveShadow = true; m.castShadow = false; m.visible = false;
         if (conTex) { const it = mats[mat.name]; if (it) it.refs++; }
-        scene.add(m); lejosGlobal.mallas.push(m);
+        scene.add(m); lejosGlobal.mallas.push(m); subirTex(m);
       };
       if (color.geos.length) add(fundir(color.geos, true), matLejos, 'lejos', false, color);
       for (const g of tex.values()) add(fundirTex(g.geos), g.mat, 'lejosTex', true, g);
@@ -1224,11 +1271,35 @@ AVE.module('streaming', function (G) {
       for (const I of Z.inst) if (I.modelo === n && cfg.respaldo) cfg.respaldo(I);
     }
     let inicio = null;
+    // KIMI-Task-017: precarga hacia adelante. Al volar, las zonas nuevas entraban en alcance ya a la vista:
+    // el lejano (y el kit de la gran ciudad) se bajaba, fundía y estrenaba dentro de unos pocos cuadros
+    // (cuadros largos en móvil). Aquí se adelantan esas descargas cuando la zona va a entrar dentro de
+    // ~precargaVuelo s (según la velocidad de Vittata). La referencia de cada precarga se suelta en cuanto
+    // la zona toma el relevo (sube de nivel / entra la ciudad) o Vittata se deja de acercar a ella.
+    let vueloUlt = null;
+    function vueloAnticipo(x, z) {
+      const ahora = performance.now();
+      let v = 0;
+      if (vueloUlt) { const dt = (ahora - vueloUlt.t) / 1000; if (dt > 0.05) v = Math.hypot(x - vueloUlt.x, z - vueloUlt.z) / dt; }
+      vueloUlt = { x, z, t: ahora };
+      if (v < (CFG.precargaVueloMin || 0)) return 0; // a pie o posado no se precarga: no molestar al cómic ni gastar red
+      return Math.min(CFG.precargaVueloMax || 120, v * CFG.precargaVuelo);
+    }
+    function prePedir(Z, n, tipo, prio) {
+      const k = tipo + ':' + n;
+      if (Z.pre && Z.pre[k]) return;
+      const r = res(n, tipo);
+      if (r.estado !== 'nada') return; // ya lo lleva la cola de verdad
+      if (!Z.pre) Z.pre = {};
+      Z.pre[k] = true;
+      pedir(r, prio).catch(() => {});
+    }
     function revisar(x, z) {
       if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
       if (!inicio) inicio = [x, z];
       else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
       const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
+      const anticipo = vueloAnticipo(x, z);
       for (const id in zonas) {
         const Z = zonas[id];
         Z.d = Math.max(0, Math.hypot(x - Z.cx, z - Z.cz) - Z.r);
@@ -1253,6 +1324,19 @@ AVE.module('streaming', function (G) {
         if (Z.hd) for (const n of Z.modelos) {
           const rh = recursos[n] && recursos[n].hd;
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
+        }
+        // KIMI-Task-017: precarga hacia adelante (lejos de las zonas a las que se acerca; kit de la gran ciudad)
+        if (anticipo > 0) {
+          if (Z.nivel === 0 && Z.d < Rl + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'lejos', Z.d + 1);
+          if (esCiudad(Z.id) && !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'cerca', Z.d);
+        }
+        if (Z.pre) {
+          const dentroL = Z.nivel === 0 && Z.d < Rl + anticipo + 60;
+          const dentroC = !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo + 60;
+          for (const k in Z.pre) {
+            const i = k.indexOf(':'), tipo = k.slice(0, i);
+            if (!(tipo === 'lejos' ? dentroL : dentroC)) { soltar(res(k.slice(i + 1), tipo)); delete Z.pre[k]; }
+          }
         }
       }
       liberarVencidos(performance.now());
@@ -1413,7 +1497,7 @@ AVE.module('streaming', function (G) {
               const m = new THREE.InstancedMesh(pa.geo, pa.mat, L.attr.count);
               m.instanceMatrix = L.attr; m.count = 0; m.visible = false; m.frustumCulled = false; m.matrixAutoUpdate = false;
               m.castShadow = m.receiveShadow = true; m.name = 'edificiosInst:' + L.n + ':panel'; m.userData.sinSolido = true;
-              scene.add(m); L.mallas.push(m); L.panel = m;
+              scene.add(m); L.mallas.push(m); L.panel = m; subirTex(m);
             }
           }
         }

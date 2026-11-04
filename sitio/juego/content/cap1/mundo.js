@@ -143,6 +143,17 @@
     mar: { laguna: '#86e3cf', somero: '#1fa9ad', hondo: '#0b4f86' },
     aguaRio: { claro: '#56c8f0', hondo: '#1c62d6', turbio: '#8c6c3e' }, // BB1 y BE2: azul cobalto del render de 2022, borde cian
     flora: { viento: { dir: [0.85, 0.35], fuerza: 1 }, evitar: pack => [POOL, ...(pack.coquies || []), ...(pack.recursos || []), ...((pack.diario || {}).entradas || [])] },
+    // KIMI-018 (prototipo): faroles de Villa Raíz (caminos y entrada de la plaza, sobre los senderos del mapa) y de la
+    // Ciudad de los 36 (plazas de las ruinas del tepuy; huecos medidos a ≥5 m de las piezas de escenaKelvin). La Y sale
+    // del terreno al colocarlos y ambiente.js descarta los que queden bajo un sólido cargado. Los enciende la tarde-noche.
+    faroles: [
+      { x: 154.9, z: 173.3 }, { x: 154.7, z: 183.5 },  // camino del muelle (sendero playa)
+      { x: 159.0, z: 174.7 },                            // camino de la estación
+      { x: 144.0, z: 174.5 },                            // camino del taller
+      { x: 147.8, z: 173.0 }, { x: 152.2, z: 173.2 },    // entrada de la plaza
+      { x: -0.5, z: -134.3 }, { x: -8.8, z: -129.5 }, { x: -26.2, z: -115.4 }, { x: -36.5, z: -129.5 }, { x: -30.6, z: -135.5 }, // Ciudad · tepuy este
+      { x: -47.2, z: -134.1 }, { x: -52.8, z: -129.0 }, { x: -57.0, z: -144.9 },                                              // Ciudad · tepuy oeste
+    ],
     // Edificios de Kelvin a escala con la cotorra (1,75 m de alto en el juego): el kit está hecho para una persona de 1,8 m,
     // así que las casas van a 0,95 (puertas de ~1,95 m) y lo monumental (templos, ruinas) a 1. Factor uniforme, sin deformar.
     edificios: {

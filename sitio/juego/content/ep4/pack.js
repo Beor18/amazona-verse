@@ -506,7 +506,7 @@
         label: () => {
           if (S.step === 1) return 'Poner las tarjetas en la Balanza';
           if (S.step === 2) return 'Probar en la maqueta';
-          if (S.step === 3) return !opcion() ? 'Hacer la asamblea' : (!cuidado() ? 'Elegir un cuidado' : 'Decirle a quien pierde');
+          if (S.step === 3) return !opcion() ? 'Hacer la asamblea' : (!cuidado() ? 'Elegir un cuidado' : 'Explicar con cariño lo que cuesta');
           return 'Mirar la Balanza';
         },
         use: () => {
@@ -708,7 +708,7 @@
             ck('M3 · Un cuidado que no ayuda a esa opción: pista y se repite', !CIDS.some(c => tiene('cuidado_' + c)) && opciones().length === CIDS.length);
           }
           pick(CUIDADOS[cu].nombre);
-          ck('M3 · Tras el cuidado, el botón pide decírselo a quien pierde', G.interaccion.find('mesa').label() === 'Decirle a quien pierde');
+          ck('M3 · Tras el cuidado, el botón pide explicar con cariño lo que cuesta', G.interaccion.find('mesa').label() === 'Explicar con cariño lo que cuesta');
           if (conChequeos) {
             pick('Es lo mejor para todos');
             ck('M3 · «Es lo mejor para todos» no vale: se repite', !G.eventos.had('CareChosen') && opciones().length === 3);

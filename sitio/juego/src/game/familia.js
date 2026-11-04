@@ -87,15 +87,29 @@ window.AVFamilia = function (G) {
       fila.appendChild(b);
     }
   }
+  function fraseTurno() {
+    const modo = {
+      trucos: ['juega tu turno de trucos', 'play your tricks turn'],
+      escondite: ['juega tu turno de escondite', 'play your hide-and-seek turn'],
+      marana: ['juega tu turno de la Maraña', 'play the Tangle turn'],
+    }[juego] || ['juega tu turno', 'play your turn'];
+    return L('Pasa el control. Elige tu cotorra y ' + modo[0] + '.', 'Pass the controller. Pick your parrot and ' + modo[1] + '.');
+  }
   function premioDe(lista) {
-    const orden = lista.slice().sort((a, b) => b.puntos - a.puntos || a.segundos - b.segundos);
-    const titulos = [
-      L('el más valiente', 'the bravest'),
-      L('el más rápido', 'the fastest'),
-      L('el más gracioso', 'the funniest'),
-      L('el más amigo', 'the friendliest'),
-    ];
-    return orden.map((j, i) => ({ n: j.n, especie: j.especie, puntos: j.puntos, segundos: j.segundos, premio: titulos[i] || titulos[2] }));
+    const y = (a, b) => (en() ? a + ' and ' + b : a + ' y ' + b);
+    const rapidoT = L('el más rápido', 'the fastest');
+    const valienteT = L('el más valiente', 'the bravest');
+    const sobras = [L('el más gracioso', 'the funniest'), L('el más amigo', 'the friendliest'), L('voló con todos', 'flew with everyone')];
+    const porTiempo = lista.slice().sort((a, b) => a.segundos - b.segundos || b.puntos - a.puntos || a.n - b.n);
+    const porPuntos = lista.slice().sort((a, b) => b.puntos - a.puntos || a.segundos - b.segundos || a.n - b.n);
+    const texto = new Map();
+    function poner(j, t) { const prev = texto.get(j.n); texto.set(j.n, prev ? y(prev, t) : t); }
+    poner(porTiempo[0], rapidoT);
+    poner(porPuntos[0], valienteT);
+    const resto = lista.filter(j => j.n !== porTiempo[0].n && j.n !== porPuntos[0].n)
+      .sort((a, b) => b.puntos - a.puntos || a.segundos - b.segundos || a.n - b.n);
+    resto.forEach((j, i) => poner(j, sobras[Math.min(i, sobras.length - 1)]));
+    return lista.map(j => ({ n: j.n, especie: j.especie, puntos: j.puntos, segundos: j.segundos, premio: texto.get(j.n) }));
   }
   function pintarMarca(filas) {
     $('fam-marca').innerHTML = filas.map(f => `<div class="marca"><b>${L('Jugador', 'Player')} ${f.n}</b> · ${nombreEspecie(f.especie)}<div class="premio">${f.premio}</div><small>${f.puntos} · ${f.segundos}s</small></div>`).join('');
@@ -120,9 +134,7 @@ window.AVFamilia = function (G) {
     pintarJuegos();
     if (turno < jugadores.length) {
       const j = jugadores[turno];
-      $('fam-texto').textContent = L(
-        'Pasa el control. Elige tu cotorra y juega tu turno de ' + nombreJuego(juego) + '.',
-        'Pass the controller. Pick your parrot and play your ' + nombreJuego(juego) + ' turn.');
+      $('fam-texto').textContent = fraseTurno();
       $('fam-titulo').textContent = L('Turno ' + (turno + 1), 'Turn ' + (turno + 1));
       pintarEspecies(j);
       $('fam-ok').hidden = false;
@@ -231,13 +243,17 @@ window.AVFamilia = function (G) {
       ok('QA-116 hay botones de Escondite y de la Maraña', !!$('fam-juego-escondite') && !!$('fam-juego-marana') && !!$('fam-juego-trucos'));
       $('fam-juego-marana').click();
       [...$('fam-fila').children].find(b => b.textContent === '2').click();
-      ok('QA-116 el turno usa el minijuego elegido, no trucos', G.familia.juego === 'marana' && /Maraña|Tangle/.test($('fam-texto').textContent), G.familia.juego + ' · ' + $('fam-texto').textContent);
+      ok('QA-116 el turno usa el minijuego elegido, no trucos', G.familia.juego === 'marana' && /la Maraña|the Tangle/.test($('fam-texto').textContent) && !/your The/.test($('fam-texto').textContent), G.familia.juego + ' · ' + $('fam-texto').textContent);
       const nombres = [...$('fam-fila').querySelectorAll('button')].map(b => b.textContent);
       ok('QA-120 salen con el nombre común, no el id en latín', nombres.length === 6 && nombres.every(t => !/^(vittata|agilis|albifrons|guildingii|versicolor|festiva)$/.test(t) && !/^Amazona /.test(t)) && /puertorriqueña|Puerto Rican/i.test(nombres.join(' ')), nombres.join(' | '));
       if (aj) aj.idioma = 'en';
       G.emit('aula', 'idioma', 'en');
       empezar(2, 'trucos');
-      ok('QA-118 el nombre del modo sale en inglés', /Tricks/.test($('fam-texto').textContent) && !/\btrucos\b/.test($('fam-texto').textContent), $('fam-texto').textContent);
+      ok('QA-118 el nombre del modo sale en inglés', /play your tricks turn/.test($('fam-texto').textContent) && !/\btrucos\b/.test($('fam-texto').textContent) && !/your The/.test($('fam-texto').textContent), $('fam-texto').textContent);
+      empezar(2, 'escondite');
+      ok('QA-123 el escondite cabe en la frase inglesa', /play your hide-and-seek turn/.test($('fam-texto').textContent), $('fam-texto').textContent);
+      empezar(2, 'marana');
+      ok('QA-123 la Maraña no dice «your The»', /play the Tangle turn/.test($('fam-texto').textContent) && !/your The/.test($('fam-texto').textContent), $('fam-texto').textContent);
       const bp = $('b-familia');
       ok('QA-119 la pausa dice Family', !!bp && bp.textContent === 'Family', bp && bp.textContent);
       if (aj) aj.idioma = idi || 'es';
@@ -258,7 +274,18 @@ window.AVFamilia = function (G) {
         G.S.pos.x = q.x; G.S.pos.z = q.z;
         G.escondite.paso(0.2);
       }
-      ok('QA-117 el premio sigue el puntaje, no el orden del jugador', ronda[1].puntos === 3 && /Jugador 2|Player 2/.test($('fam-marca').querySelector('.marca').textContent) && /valiente|bravest/.test($('fam-marca').querySelector('.marca').textContent), $('fam-marca').textContent.slice(0, 180));
+      const marcas117 = [...$('fam-marca').querySelectorAll('.marca')].map(m => m.textContent);
+      ok('QA-117 el premio sigue el puntaje, no el orden del jugador', ronda[1].puntos === 3 && marcas117.some(t => /Jugador 2|Player 2/.test(t) && /valiente|bravest/.test(t)), marcas117.join(' || ').slice(0, 220));
+      empezar(3, 'trucos');
+      anotar(9, 40); anotar(2, 4); const desemp = anotar(6, 25);
+      const rap = desemp.find(m => /rápido|fastest/.test(m.premio));
+      const val = desemp.find(m => /valiente|bravest/.test(m.premio));
+      ok('QA-129 el más rápido es quien tardó menos, no el segundo puesto', rap && rap.n === 2 && rap.segundos === 4 && !/valiente|bravest/.test(rap.premio), JSON.stringify(desemp.map(m => m.n + ':' + m.premio + ' ' + m.puntos + '/' + m.segundos)));
+      ok('QA-129 el más valiente es quien más puntos hizo, aunque haya tardado', val && val.n === 1 && val.puntos === 9 && !/rápido|fastest/.test(val.premio), val && val.premio);
+      empezar(3, 'trucos');
+      anotar(9, 4); anotar(3, 30); const ambos = anotar(1, 20);
+      const campeon = ambos.find(m => m.n === 1);
+      ok('QA-129 quien gana en puntos y en tiempo se lleva los dos premios', campeon && /valiente|bravest/.test(campeon.premio) && /rápido|fastest/.test(campeon.premio) && ambos.every(m => m.n === 1 || !/rápido|fastest/.test(m.premio)), campeon && campeon.premio);
       const tr = empezar(2, 'trucos');
       $('fam-ok').click(); await listo;
       G.S.clock = (G.S.clock || 0) + 1; G.trucos.anotar('tonel');

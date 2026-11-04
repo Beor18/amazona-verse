@@ -21,6 +21,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Habla con el papá, predice y prueba qué flota": "Talk to Dad, predict and test what floats",
  "Habla con el papá, predice y prueba qué flota ({}/6)": "Talk to Dad, predict and test what floats ({}/6)",
  "Habla con el papá, predice y prueba qué flota · bucea ({}/2)": "Talk to Dad, predict and test what floats · dive ({}/2)",
+ "Habla con el papá, predice y prueba qué flota · saca del fondo lo hundido ({}/2)": "Talk to Dad, predict and test what floats · pull up what sank ({}/2)",
  "Arma el bote y bótalo": "Build the boat and launch it",
  "Cambia lo que falló y bótalo otra vez": "Change what failed and launch it again",
  "Lee el agua con la navegante": "Read the water with the navigator",
