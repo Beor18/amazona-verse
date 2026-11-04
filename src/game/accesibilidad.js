@@ -303,6 +303,9 @@ AVE.module('accesibilidad', function (G) {
   const visible = e => { const cs = e.ownerDocument.defaultView.getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden' && !e.closest('[hidden]'); };
   const rect = (m, sel) => { const e = typeof sel === 'string' ? m.d.querySelector(sel) : sel; return e && visible(e) ? e.getBoundingClientRect() : null; };
   const choca = (a, b) => !!a && !!b && a.width > 0 && b.width > 0 && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1;
+  // En un SVG className es un SVGAnimatedString. Sin baseVal el fallo dice «path.[object SVGAnimatedString]».
+  const clsDe = e => { const c = e && e.className; if (c && typeof c.baseVal === 'string') return c.baseVal; return typeof c === 'string' ? c : ''; };
+  const nomEl = e => e.id ? '#' + e.id : e.tagName.toLowerCase() + (clsDe(e).trim() ? '.' + clsDe(e).trim().split(/\s+/)[0] : '');
   // Qué se sale de la pantalla o de su caja en la maqueta (lista vacía = todo bien)
   function desbordes(m, ancho, etiqueta, ids) {
     const d = m.d, malos = [];
@@ -313,7 +316,7 @@ AVE.module('accesibilidad', function (G) {
       if (r.width && (r.left < -1 || r.right > ancho + 1)) malos.push(`${etiqueta}: #${id} se sale (${Math.round(r.left)}…${Math.round(r.right)})`);
     }
     for (const e of d.querySelectorAll('#quest, #steps li.now, #toast, #emotes .btn, #acts .round, #d-who, #d-next, #inv, .hud-btn, .sub')) {
-      if (visible(e) && e.scrollWidth > e.clientWidth + 1) malos.push(`${etiqueta}: ${e.id ? '#' + e.id : e.className || e.tagName} desborda su caja (${e.scrollWidth} > ${e.clientWidth})`);
+      if (visible(e) && e.scrollWidth > e.clientWidth + 1) malos.push(`${etiqueta}: ${e.id ? '#' + e.id : clsDe(e) || e.tagName} desborda su caja (${e.scrollWidth} > ${e.clientWidth})`);
     }
     return malos;
   }
@@ -421,7 +424,7 @@ AVE.module('accesibilidad', function (G) {
     }
     return mal;
   }
-  const nombreB = b => (b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 14);
+  const nombreB = b => (b.getAttribute('aria-label') || b.textContent || b.id || clsDe(b)).trim().slice(0, 14);
   // Contraste (WCAG) del texto de un elemento contra su fondo opaco más cercano
   function contrasteDe(e) {
     const w = e.ownerDocument.defaultView;
@@ -643,7 +646,7 @@ AVE.module('accesibilidad', function (G) {
             for (const b of pz.querySelectorAll('button, h2, h3, dd, p')) {
               if (!visible(b)) continue;
               const q2 = b.getBoundingClientRect();
-              if (q2.width && (q2.left < rp.left - 1 || q2.right > rp.right + 1)) { malosM.push(`${W}px nivel ${i}: ${b.id || b.className || b.tagName} se sale del menú`); break; }
+              if (q2.width && (q2.left < rp.left - 1 || q2.right > rp.right + 1)) { malosM.push(`${W}px nivel ${i}: ${b.id || clsDe(b) || b.tagName} se sale del menú`); break; }
             }
             for (const b of pz.querySelectorAll('.pause-grid .btn, .a11y-chips .chip')) if (b.scrollWidth > b.clientWidth + 1) { malosM.push(`${W}px nivel ${i}: el botón «${b.textContent.trim()}» desborda`); break; }
             pz.hidePopover();
@@ -666,16 +669,16 @@ AVE.module('accesibilidad', function (G) {
               for (const b of cajaP.querySelectorAll('button, select, input, summary, a[href]')) {
                 if (!visible(b) || b.closest('.rt-fin')) continue;
                 const r = b.getBoundingClientRect();
-                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosP.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosP.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || clsDe(b)).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
               }
-              if (cajaP.scrollWidth > cajaP.clientWidth + 1) { const cr = cajaP.getBoundingClientRect(); const culpa = [...cajaP.querySelectorAll('*')].filter(e => visible(e) && e.getBoundingClientRect().right > cr.left + cajaP.clientWidth + 1).slice(0, 2).map(e => (e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className)).join(','); malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth}) por ${culpa}`); }
+              if (cajaP.scrollWidth > cajaP.clientWidth + 1) { const cr = cajaP.getBoundingClientRect(); const culpa = [...cajaP.querySelectorAll('*')].filter(e => visible(e) && e.getBoundingClientRect().right > cr.left + cajaP.clientWidth + 1).slice(0, 2).map(nomEl).join(','); malosP.push(`${et}: desborda (${cajaP.scrollWidth} > ${cajaP.clientWidth}) por ${culpa}`); }
               for (const [x, y] of solapes(cajaP)) malosP.push(`${et}: «${nombreB(x)}» se solapa con «${nombreB(y)}»`);
               if (m.d.documentElement.scrollWidth > W + 1) malosP.push(`${et}: la página mide ${m.d.documentElement.scrollWidth} px`);
               if (contr) {
                 let peor = 99, quien = '';
                 for (const e of cajaP.querySelectorAll('h2, h3, p, b, small, label, .lbl, .chip, .btn, li, summary, .sname, span')) {
                   if (!visible(e) || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
-                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (e.className || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
+                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (clsDe(e) || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
                 }
                 if (peor < 7) malosP.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
               }
@@ -700,19 +703,19 @@ AVE.module('accesibilidad', function (G) {
               for (const b of cajaP.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')) {
                 if (!visible(b)) continue;
                 const r = b.getBoundingClientRect();
-                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosO.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || b.className).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+                if (r.width && (r.width < 43.5 || r.height < 43.5)) malosO.push(`${et}: «${(b.getAttribute('aria-label') || b.textContent || b.id || clsDe(b)).trim().slice(0, 18)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
               }
               for (const [x, y] of solapes(cajaP)) malosO.push(`${et}: «${nombreB(x)}» se solapa con «${nombreB(y)}»`);
               for (const e of [cajaP, ...cajaP.querySelectorAll('*')]) {
                 if (!visible(e) || e.closest('canvas') || e.tagName === 'CANVAS') continue;
                 const r = e.getBoundingClientRect();
-                if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + e.className} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
+                if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${nomEl(e)} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
               }
               if (contr) {
                 let peor = 99, quien = '';
                 for (const e of cajaP.querySelectorAll('h2, h3, p, b, small, label, button, li, summary, span, div')) {
                   if (!visible(e) || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
-                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (e.className || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
+                  const c = contrasteDe(e); if (c < peor) { peor = c; quien = (clsDe(e) || e.tagName) + ' «' + e.textContent.trim().slice(0, 14) + '»'; }
                 }
                 if (peor < 7) malosO.push(`${et}: contraste ${peor.toFixed(1)}:1 en ${quien}`);
               }
