@@ -1,0 +1,293 @@
+{
+  "etiqueta": "r1",
+  "cuando": "2026-11-04T21:53:05.843Z",
+  "calidad": "medio",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30
+  },
+  "ventana_s": 10,
+  "asentado": {
+    "terminar": null,
+    "pos": [
+      -33,
+      127,
+      -136
+    ],
+    "calls": 409,
+    "ktris": 1058,
+    "calidad": "medio",
+    "dibujables": null,
+    "heap": 140
+  },
+  "perfil": {
+    "totalSelfMs": 0,
+    "funciones": [
+      {
+        "nombre": "(root)",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "(program)",
+        "selfMs": 0,
+        "hits": 671,
+        "pct": 0
+      },
+      {
+        "nombre": "(garbage collector)",
+        "selfMs": 0,
+        "hits": 30,
+        "pct": 0
+      },
+      {
+        "nombre": "frame",
+        "selfMs": 0,
+        "hits": 15,
+        "pct": 0
+      },
+      {
+        "nombre": "update",
+        "selfMs": 0,
+        "hits": 128,
+        "pct": 0
+      },
+      {
+        "nombre": "step",
+        "selfMs": 0,
+        "hits": 76,
+        "pct": 0
+      },
+      {
+        "nombre": "pushOut",
+        "selfMs": 0,
+        "hits": 91,
+        "pct": 0
+      },
+      {
+        "nombre": "triQuery",
+        "selfMs": 0,
+        "hits": 193,
+        "pct": 0
+      },
+      {
+        "nombre": "cubre",
+        "selfMs": 0,
+        "hits": 86,
+        "pct": 0
+      },
+      {
+        "nombre": "spans",
+        "selfMs": 0,
+        "hits": 211,
+        "pct": 0
+      },
+      {
+        "nombre": "(anónima)",
+        "selfMs": 0,
+        "hits": 265,
+        "pct": 0
+      },
+      {
+        "nombre": "get activo",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "don",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "mult",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "paso",
+        "selfMs": 0,
+        "hits": 69,
+        "pct": 0
+      },
+      {
+        "nombre": "ficha",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "idFamilia",
+        "selfMs": 0,
+        "hits": 2,
+        "pct": 0
+      },
+      {
+        "nombre": "enReto",
+        "selfMs": 0,
+        "hits": 4,
+        "pct": 0
+      },
+      {
+        "nombre": "get camara",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "onGroundNow",
+        "selfMs": 0,
+        "hits": 2,
+        "pct": 0
+      },
+      {
+        "nombre": "suelo",
+        "selfMs": 0,
+        "hits": 7,
+        "pct": 0
+      },
+      {
+        "nombre": "surfaceY",
+        "selfMs": 0,
+        "hits": 9,
+        "pct": 0
+      },
+      {
+        "nombre": "get y",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "height",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "G.emit",
+        "selfMs": 0,
+        "hits": 24,
+        "pct": 0
+      },
+      {
+        "nombre": "rate",
+        "selfMs": 0,
+        "hits": 2,
+        "pct": 0
+      },
+      {
+        "nombre": "columnaPercha",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "pen",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "penetra",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "pasoMundo",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "nidoActivo",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "botonNido",
+        "selfMs": 0,
+        "hits": 4,
+        "pct": 0
+      },
+      {
+        "nombre": "getElementById",
+        "selfMs": 0,
+        "hits": 5,
+        "pct": 0
+      },
+      {
+        "nombre": "revisar",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "lista",
+        "selfMs": 0,
+        "hits": 1,
+        "pct": 0
+      },
+      {
+        "nombre": "actualizar",
+        "selfMs": 0,
+        "hits": 4,
+        "pct": 0
+      },
+      {
+        "nombre": "marcarModo",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      },
+      {
+        "nombre": "tactil",
+        "selfMs": 0,
+        "hits": 4,
+        "pct": 0
+      },
+      {
+        "nombre": "toggle",
+        "selfMs": 0,
+        "hits": 5,
+        "pct": 0
+      },
+      {
+        "nombre": "pmTick",
+        "selfMs": 0,
+        "hits": 0,
+        "pct": 0
+      }
+    ]
+  },
+  "calor": {
+    "cacheDe": null,
+    "objPendiente": null,
+    "texturasPendientes": {
+      "selfMs": 0,
+      "hits": 46,
+      "pct": 0
+    },
+    "siguienteCalor": {
+      "selfMs": 0,
+      "hits": 64,
+      "pct": 0
+    },
+    "calorHecho": null,
+    "precalentar": null
+  },
+  "errores": []
+}

@@ -1,0 +1,299 @@
+{
+  "etiqueta": "r2",
+  "cuando": "2026-11-04T21:55:14.086Z",
+  "calidad": "medio",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30
+  },
+  "ventana_s": 10,
+  "asentado": {
+    "terminar": null,
+    "pos": [
+      -33,
+      127,
+      -136
+    ],
+    "calls": 408,
+    "ktris": 1059,
+    "calidad": "medio",
+    "dibujables": null,
+    "heap": 138
+  },
+  "fin": {
+    "fps": 23,
+    "calls": 144,
+    "ktris": 353
+  },
+  "perfil": {
+    "duracionMs": 11200,
+    "muestras": 5891,
+    "funciones": [
+      {
+        "nombre": "(program)",
+        "selfMs": 1943.2,
+        "hits": 446,
+        "pct": 17.35
+      },
+      {
+        "nombre": "insert",
+        "selfMs": 1911.2,
+        "hits": 1102,
+        "pct": 17.06
+      },
+      {
+        "nombre": "triSeguir",
+        "selfMs": 1023.3,
+        "hits": 589,
+        "pct": 9.14
+      },
+      {
+        "nombre": "(anónima)",
+        "selfMs": 389.1,
+        "hits": 230,
+        "pct": 3.47
+      },
+      {
+        "nombre": "trabajar",
+        "selfMs": 378.9,
+        "hits": 215,
+        "pct": 3.38
+      },
+      {
+        "nombre": "triQuery",
+        "selfMs": 292.8,
+        "hits": 181,
+        "pct": 2.61
+      },
+      {
+        "nombre": "now",
+        "selfMs": 234.5,
+        "hits": 137,
+        "pct": 2.09
+      },
+      {
+        "nombre": "spans",
+        "selfMs": 221.6,
+        "hits": 133,
+        "pct": 1.98
+      },
+      {
+        "nombre": "updateMatrixWorld",
+        "selfMs": 176.4,
+        "hits": 106,
+        "pct": 1.58
+      },
+      {
+        "nombre": "update",
+        "selfMs": 175.7,
+        "hits": 101,
+        "pct": 1.57
+      },
+      {
+        "nombre": "cuadro",
+        "selfMs": 156.2,
+        "hits": 93,
+        "pct": 1.39
+      },
+      {
+        "nombre": "marca",
+        "selfMs": 146.9,
+        "hits": 85,
+        "pct": 1.31
+      },
+      {
+        "nombre": "getClientRects",
+        "selfMs": 141.2,
+        "hits": 82,
+        "pct": 1.26
+      },
+      {
+        "nombre": "pushOut",
+        "selfMs": 120.9,
+        "hits": 75,
+        "pct": 1.08
+      },
+      {
+        "nombre": "multiplyMatrices",
+        "selfMs": 120.6,
+        "hits": 69,
+        "pct": 1.08
+      },
+      {
+        "nombre": "traverse",
+        "selfMs": 116.5,
+        "hits": 67,
+        "pct": 1.04
+      },
+      {
+        "nombre": "It",
+        "selfMs": 108,
+        "hits": 64,
+        "pct": 0.96
+      },
+      {
+        "nombre": "bindBuffer",
+        "selfMs": 106.9,
+        "hits": 63,
+        "pct": 0.95
+      },
+      {
+        "nombre": "renderBufferDirect",
+        "selfMs": 100.1,
+        "hits": 62,
+        "pct": 0.89
+      },
+      {
+        "nombre": "At",
+        "selfMs": 95.8,
+        "hits": 54,
+        "pct": 0.86
+      },
+      {
+        "nombre": "siguienteCalor",
+        "selfMs": 92.5,
+        "hits": 51,
+        "pct": 0.83
+      },
+      {
+        "nombre": "triEmpezar",
+        "selfMs": 91.2,
+        "hits": 53,
+        "pct": 0.81
+      },
+      {
+        "nombre": "applyMatrix4",
+        "selfMs": 90.1,
+        "hits": 51,
+        "pct": 0.8
+      },
+      {
+        "nombre": "step",
+        "selfMs": 81.5,
+        "hits": 51,
+        "pct": 0.73
+      },
+      {
+        "nombre": "paso",
+        "selfMs": 77.6,
+        "hits": 45,
+        "pct": 0.69
+      },
+      {
+        "nombre": "vertexAttribPointer",
+        "selfMs": 71.2,
+        "hits": 42,
+        "pct": 0.64
+      },
+      {
+        "nombre": "bindVertexArray",
+        "selfMs": 70.2,
+        "hits": 41,
+        "pct": 0.63
+      },
+      {
+        "nombre": "getX",
+        "selfMs": 69.9,
+        "hits": 40,
+        "pct": 0.62
+      },
+      {
+        "nombre": "texturasPendientes",
+        "selfMs": 63.8,
+        "hits": 39,
+        "pct": 0.57
+      },
+      {
+        "nombre": "setup",
+        "selfMs": 62.7,
+        "hits": 35,
+        "pct": 0.56
+      },
+      {
+        "nombre": "cubre",
+        "selfMs": 59.7,
+        "hits": 39,
+        "pct": 0.53
+      },
+      {
+        "nombre": "render",
+        "selfMs": 59.2,
+        "hits": 35,
+        "pct": 0.53
+      },
+      {
+        "nombre": "Cr.upload",
+        "selfMs": 57.4,
+        "hits": 34,
+        "pct": 0.51
+      },
+      {
+        "nombre": "Oi",
+        "selfMs": 53.3,
+        "hits": 28,
+        "pct": 0.48
+      },
+      {
+        "nombre": "toArray",
+        "selfMs": 49.2,
+        "hits": 29,
+        "pct": 0.44
+      },
+      {
+        "nombre": "ocultarPendientes",
+        "selfMs": 43.8,
+        "hits": 25,
+        "pct": 0.39
+      },
+      {
+        "nombre": "G.emit",
+        "selfMs": 41.3,
+        "hits": 27,
+        "pct": 0.37
+      },
+      {
+        "nombre": "muestraVanos",
+        "selfMs": 38.5,
+        "hits": 23,
+        "pct": 0.34
+      },
+      {
+        "nombre": "Cr.setValue",
+        "selfMs": 38,
+        "hits": 20,
+        "pct": 0.34
+      },
+      {
+        "nombre": "(garbage collector)",
+        "selfMs": 37.6,
+        "hits": 21,
+        "pct": 0.34
+      }
+    ]
+  },
+  "calor": {
+    "cacheDe": null,
+    "objPendiente": null,
+    "texturasPendientes": {
+      "selfMs": 63.78,
+      "hits": 39,
+      "pct": 0.569
+    },
+    "siguienteCalor": {
+      "selfMs": 92.54,
+      "hits": 51,
+      "pct": 0.826
+    },
+    "calorHecho": null,
+    "precalentar": null
+  },
+  "errores": []
+}
