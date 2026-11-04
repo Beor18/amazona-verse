@@ -200,11 +200,18 @@ function erroresDe(cdp) {
 async function matarChrome(chrome, perf) {
   try { chrome.kill(); } catch (e) {}
   try {
-    const { execSync } = require('child_process');
+    const { execFileSync } = require('child_process');
     // chrome.exe puede delegar el navegador real en otro proceso del árbol: matar por el
     // perfil (único por corrida), no por PID (deja zombis que roban GPU a las otras sesiones).
+    // Se escribe un .ps1 temporal para no pelear con comillas anidadas (la versión inline fallaba).
     const marca = path.basename(perf).replace(/'/g, '');
-    execSync(`powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"Name='chrome.exe'\\" | Where-Object { \\$_.CommandLine -match '${marca}' } | ForEach-Object { try { Stop-Process -Id \\$_.ProcessId -Force -ErrorAction Stop } catch {} }"`, { stdio: 'ignore', timeout: 30000 });
+    const ps1 = path.join(os.tmpdir(), 'kimi1_mata_' + marca + '.ps1');
+    fs.writeFileSync(ps1, [
+      "$p = Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -match '" + marca.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "' }",
+      'foreach ($x in $p) { try { Stop-Process -Id $x.ProcessId -Force -ErrorAction Stop } catch {} }',
+    ].join('\n'));
+    execFileSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1], { stdio: 'ignore', timeout: 30000 });
+    try { fs.rmSync(ps1, { force: true }); } catch (e) {}
   } catch (e) {}
 }
 
