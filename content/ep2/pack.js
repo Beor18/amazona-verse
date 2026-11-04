@@ -179,9 +179,11 @@
           hasta: { evento: 'SiteChosen' },
           guia: G => {
             const S = G.S, inicio = S.edu && S.edu.inicio;
-            if (!inicio || S.missions.lee_tierra) return G.misiones.at('iguaca');
-            const i = IDS.find(k => !S.collected.includes(lee(k))), d = k => Math.hypot(SITIOS[k].x - S.pos.x, SITIOS[k].z - S.pos.z);
-            return G.misiones.at('sitio_' + (i || IDS.slice().sort((a, b) => d(a) - d(b))[0]));
+            const vistos = IDS.filter(i => S.collected.includes(lee(i))).length;
+            // Con los 3 sitios leídos la flecha vuelve a Iguaca: el objetivo es contarle, no dar otra vuelta al terreno.
+            if (!inicio || vistos >= 3 || S.missions.lee_tierra) return G.misiones.at('iguaca');
+            const i = IDS.find(k => !S.collected.includes(lee(k)));
+            return G.misiones.at('sitio_' + i);
           } },
         { id: 'escuchar', texto: 'Enseña el plano, pregunta qué necesitan y ordena las tarjetas',
           progreso: S => ` (${NEC.filter(k => S.collected.includes(k)).length}/${NEC.length})`,
@@ -328,15 +330,25 @@
 
       // ---------- Iguaca: da cada misión y, en medio, una pista del paso en curso; al final, las preguntas (opcionales) ----------
       const casaLista = () => ['base', 'paredes', 'techo', 'anclaje'].every(p => tiene('dec_' + p));
+      function cerrarSitio() {
+        if (G.eventos.had('SiteChosen')) return;
+        G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock'); registrar();
+        if (window.AVTemporada) window.AVTemporada.apuntar(2, { sitio: elegido() }); // D11: el ep. 3 nombra la casa en este sitio
+        G.misiones.check(); // el paso sigue aunque la charla de Iguaca todavía se esté leyendo
+        G.dialogo.say(L('evento:SiteChosen'), () => { G.ui.toast('Enséñale tu plano a la abuela', 3000); });
+      }
       function hablar() {
         if (S.step === 0 && !(S.edu && S.edu.inicio)) { G.dialogo.say(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.check(); }); return; }
-        if (S.step === 0 && !S.missions.lee_tierra) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
-        if (S.step === 0) {
-          G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock'); registrar();
-          if (window.AVTemporada) window.AVTemporada.apuntar(2, { sitio: elegido() }); // D11: el ep. 3 nombra la casa en este sitio
-          G.dialogo.say(L('evento:SiteChosen'), () => { G.misiones.check(); G.ui.toast('Enséñale tu plano a la abuela', 3000); });
+        if (S.step === 0 && leidos().length < 3) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
+        if (S.step === 0 && !elegido()) {
+          elegir('Iguaca', 'Ya miraste los tres. ¿En cuál construimos?', IDS.map(id => ({ label: SITIOS[id].nombre, id })), o => {
+            if (!tiene(elige(o.id))) { S.collected.push(elige(o.id)); G.misiones.check(); G.audio.play('unlock'); }
+            dibujarCasa();
+            cerrarSitio();
+          });
           return;
         }
+        if (S.step === 0) { cerrarSitio(); return; }
         if (S.complete && AU.activo && !todasPreguntadas()) {
           elegir('Iguaca', '¡La casa aguanta! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.',
             [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
