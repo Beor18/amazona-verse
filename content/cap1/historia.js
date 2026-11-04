@@ -689,14 +689,16 @@
       const mat = c => new THREE.MeshLambertMaterial({ color: c }); // en sRGB: G.renderer.linearize los pasa a lineal una sola vez
       function mallaTablas() {
         const g = new THREE.Group(), m = mat('#a8743f');
-        for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.3), m); t.position.set(0, 0.05 + i * 0.1, (i - 1) * 0.12); t.rotation.y = (i - 1) * 0.12; t.castShadow = true; g.add(t); }
+        g.name = 'crecida:tablas';
+        for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.3), m); t.name = 'crecida:tablas:tabla'; t.position.set(0, 0.05 + i * 0.1, (i - 1) * 0.12); t.rotation.y = (i - 1) * 0.12; t.castShadow = true; g.add(t); }
         return g;
       }
       function mallaCoqui() {
         const g = new THREE.Group();
-        const hoja = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.26, 0.04, 14), mat('#3f8f3a')); hoja.position.y = 0.02; g.add(hoja);
-        const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat('#b07a3c')); cuerpo.scale.set(1, 0.8, 1.25); cuerpo.position.y = 0.14; g.add(cuerpo);
-        for (const s of [-1, 1]) { const ojo = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat('#1a1208')); ojo.position.set(s * 0.07, 0.22, 0.11); g.add(ojo); }
+        g.name = 'crecida:coqui';
+        const hoja = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.26, 0.04, 14), mat('#3f8f3a')); hoja.name = 'crecida:coqui:hoja'; hoja.position.y = 0.02; g.add(hoja);
+        const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat('#b07a3c')); cuerpo.name = 'crecida:coqui:cuerpo'; cuerpo.scale.set(1, 0.8, 1.25); cuerpo.position.y = 0.14; g.add(cuerpo);
+        for (const s of [-1, 1]) { const ojo = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat('#1a1208')); ojo.name = 'crecida:coqui:ojo'; ojo.position.set(s * 0.07, 0.22, 0.11); g.add(ojo); }
         return g;
       }
       function hallazgoCercano() {
