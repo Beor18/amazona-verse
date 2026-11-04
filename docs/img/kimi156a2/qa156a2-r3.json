@@ -1,0 +1,2040 @@
+{
+ "etiqueta": "r3",
+ "cuando": "2026-11-04T22:59:54.687Z",
+ "punto": {
+  "x": 74.7,
+  "z": -155.3
+ },
+ "frames": 300,
+ "repro": {
+  "base": {
+   "x": 74.7,
+   "z": -155.3,
+   "h0": 46.25,
+   "percha": {
+    "x": 74.85,
+    "y": 48.07,
+    "z": -154.65
+   },
+   "solidos": {
+    "bloques": 558,
+    "bloquesFlora": 1312,
+    "triangulos": 774252,
+    "rellenas": 144,
+    "pendientes": 0,
+    "regiones": 25,
+    "kb": 453,
+    "kbFlora": 1066
+   },
+   "pos": [
+    74.7,
+    46.25,
+    -155.3
+   ]
+  },
+  "perfil": [
+   {
+    "ang": 0,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 5,
+      "techo": null,
+      "suelo": 45.82
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.52
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.3
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.05
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.78
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.53
+     }
+    ]
+   },
+   {
+    "ang": 0.39,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 4,
+      "techo": null,
+      "suelo": 45.84
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": 50.2,
+      "suelo": 45.52
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.28
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.71
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.46
+     }
+    ]
+   },
+   {
+    "ang": 0.79,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 6,
+      "techo": null,
+      "suelo": 48.07
+     },
+     {
+      "r": 1,
+      "pen": 1,
+      "techo": 50.2,
+      "suelo": 48.07
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.36
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.23
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.11
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.97
+     }
+    ]
+   },
+   {
+    "ang": 1.18,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 5,
+      "techo": null,
+      "suelo": 48.07
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 48.07
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.7
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.66
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.64
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.62
+     }
+    ]
+   },
+   {
+    "ang": 1.57,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 5,
+      "techo": null,
+      "suelo": 48.07
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.15
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.17
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.23
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.32
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.41
+     }
+    ]
+   },
+   {
+    "ang": 1.96,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 2,
+      "techo": null,
+      "suelo": 46.37
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.49
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.65
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.85
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.04
+     },
+     {
+      "r": 3,
+      "pen": 2,
+      "techo": null,
+      "suelo": 48.46
+     }
+    ]
+   },
+   {
+    "ang": 2.36,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.52
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.78
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.05
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.37
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.6
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.74
+     }
+    ]
+   },
+   {
+    "ang": 2.75,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.62
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.36
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.62
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.81
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 48
+     }
+    ]
+   },
+   {
+    "ang": 3.14,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.67
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.08
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.48
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.72
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.94
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 48.15
+     }
+    ]
+   },
+   {
+    "ang": 3.53,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.66
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.04
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.41
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.8
+     },
+     {
+      "r": 2.5,
+      "pen": 2,
+      "techo": null,
+      "suelo": 48.5
+     },
+     {
+      "r": 3,
+      "pen": 2,
+      "techo": null,
+      "suelo": 48.32
+     }
+    ]
+   },
+   {
+    "ang": 3.93,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.58
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.88
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.18
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.48
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.62
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.7
+     }
+    ]
+   },
+   {
+    "ang": 4.32,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.45
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.63
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.8
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.99
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.1
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 47.11
+     }
+    ]
+   },
+   {
+    "ang": 4.71,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.3
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.33
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.35
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.38
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.42
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.45
+     }
+    ]
+   },
+   {
+    "ang": 5.11,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.13
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 46.01
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.89
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.81
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.84
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.86
+     }
+    ]
+   },
+   {
+    "ang": 5.5,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 1,
+      "techo": null,
+      "suelo": 45.98
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.72
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.6
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.49
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.49
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.5
+     }
+    ]
+   },
+   {
+    "ang": 5.89,
+    "muestras": [
+     {
+      "r": 0,
+      "pen": 3,
+      "techo": null,
+      "suelo": 46.25
+     },
+     {
+      "r": 0.5,
+      "pen": 1,
+      "techo": null,
+      "suelo": 45.87
+     },
+     {
+      "r": 1,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.59
+     },
+     {
+      "r": 1.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.41
+     },
+     {
+      "r": 2,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.22
+     },
+     {
+      "r": 2.5,
+      "pen": 0,
+      "techo": null,
+      "suelo": 45.03
+     },
+     {
+      "r": 3,
+      "pen": 0,
+      "techo": null,
+      "suelo": 44.85
+     }
+    ]
+   }
+  ],
+  "runs": [
+   {
+    "dir": 0,
+    "angDeg": 0,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.69,
+     "y": 46.27,
+     "z": -155.41,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.45,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.27,
+     "h": 46.27,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 0,
+    "angDeg": 0,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.68,
+     "y": 46.27,
+     "z": -155.36,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.35,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.27,
+     "h": 46.27,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 0,
+    "angDeg": 0,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 84.23,
+     "y": 46.12,
+     "z": -155.17,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.85,
+     "pen": 2,
+     "techo": 47.88,
+     "perchY": null,
+     "suelo": 46.12,
+     "h": 45.94,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 1,
+    "angDeg": 23,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 102.47,
+     "y": 43.66,
+     "z": -141.6,
+     "vy": 0,
+     "sp": 9.33,
+     "at": 0.03,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 43.66,
+     "h": 43.66,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 1,
+    "angDeg": 23,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 101.53,
+     "y": 43.56,
+     "z": -141.88,
+     "vy": 0,
+     "sp": 10.11,
+     "at": 0.07,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 43.56,
+     "h": 43.56,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 1,
+    "angDeg": 23,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 109.8,
+     "y": 45.03,
+     "z": -139.43,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.9,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.03,
+     "h": 45.03,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 2,
+    "angDeg": 45,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 84.59,
+     "y": 45.34,
+     "z": -144.05,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.45,
+     "pen": 1,
+     "techo": 52.17,
+     "perchY": null,
+     "suelo": 45.34,
+     "h": 45.27,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 2,
+    "angDeg": 45,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 85.42,
+     "y": 45.52,
+     "z": -144.02,
+     "vy": 0,
+     "sp": 1.92,
+     "at": 0.27,
+     "pen": 1,
+     "techo": 51.01,
+     "perchY": null,
+     "suelo": 45.52,
+     "h": 45.04,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 2,
+    "angDeg": 45,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 109.67,
+     "y": 36.36,
+     "z": -119.7,
+     "vy": 0,
+     "sp": 8.13,
+     "at": 0.02,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 36.36,
+     "h": 36.36,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 3,
+    "angDeg": 68,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 75.74,
+     "y": 45.8,
+     "z": -151.54,
+     "vy": 0,
+     "sp": 1.04,
+     "at": 0.07,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.8,
+     "h": 45.8,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 3,
+    "angDeg": 68,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 75.73,
+     "y": 45.8,
+     "z": -151.54,
+     "vy": 0,
+     "sp": 1.04,
+     "at": 1.48,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.8,
+     "h": 45.8,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 3,
+    "angDeg": 68,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 92.41,
+     "y": 26.28,
+     "z": -114.86,
+     "vy": 0,
+     "sp": 2.72,
+     "at": 0.08,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 26.28,
+     "h": 26.28,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 4,
+    "angDeg": 90,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.4,
+     "y": 46.49,
+     "z": -155.12,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.45,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.49,
+     "h": 46.49,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 4,
+    "angDeg": 90,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.44,
+     "y": 46.46,
+     "z": -155.11,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.45,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.46,
+     "h": 46.46,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 4,
+    "angDeg": 90,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.96,
+     "y": 46.3,
+     "z": -151.83,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.38,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.3,
+     "h": 46.3,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 5,
+    "angDeg": 113,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 67.72,
+     "y": 37.94,
+     "z": -119.61,
+     "vy": 0,
+     "sp": 10.76,
+     "at": 0.02,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 37.94,
+     "h": 37.94,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 5,
+    "angDeg": 113,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 68.05,
+     "y": 38.64,
+     "z": -120.4,
+     "vy": 0,
+     "sp": 10.82,
+     "at": 0.03,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 38.64,
+     "h": 38.64,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 5,
+    "angDeg": 113,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 71.1,
+     "y": 48.25,
+     "z": -147.53,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.63,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 48.25,
+     "h": 48.25,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 6,
+    "angDeg": 135,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 68.34,
+     "y": 49.06,
+     "z": -149.11,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.88,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.06,
+     "h": 48.73,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 6,
+    "angDeg": 135,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 68.52,
+     "y": 48.9,
+     "z": -148.88,
+     "vy": 0,
+     "sp": 2.72,
+     "at": 0.88,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 48.9,
+     "h": 48.7,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 6,
+    "angDeg": 135,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 68.33,
+     "y": 49.01,
+     "z": -148.38,
+     "vy": 0,
+     "sp": 1.92,
+     "at": 0.62,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.01,
+     "h": 48.73,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 7,
+    "angDeg": 158,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 67.07,
+     "y": 49.08,
+     "z": -152.18,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.05,
+     "pen": 3,
+     "techo": 51.75,
+     "perchY": null,
+     "suelo": 49.08,
+     "h": 49.08,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 7,
+    "angDeg": 158,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 64.44,
+     "y": 49.51,
+     "z": -150.31,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.53,
+     "pen": 3,
+     "techo": 57.36,
+     "perchY": null,
+     "suelo": 49.51,
+     "h": 49.51,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 7,
+    "angDeg": 158,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 64.46,
+     "y": 49.5,
+     "z": -150.31,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.42,
+     "pen": 3,
+     "techo": 57.36,
+     "perchY": null,
+     "suelo": 49.5,
+     "h": 49.5,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 8,
+    "angDeg": 180,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 67.73,
+     "y": 49.2,
+     "z": -155.3,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.08,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.2,
+     "h": 49.11,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 8,
+    "angDeg": 180,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 67.51,
+     "y": 49.14,
+     "z": -155.15,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.05,
+     "pen": 2,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.14,
+     "h": 49.14,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 8,
+    "angDeg": 180,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 67.52,
+     "y": 49.14,
+     "z": -155.11,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.65,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.14,
+     "h": 49.14,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 9,
+    "angDeg": 202,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 72.83,
+     "y": 47.8,
+     "z": -156,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.18,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 47.8,
+     "h": 47.7,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 9,
+    "angDeg": 202,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 72.83,
+     "y": 47.8,
+     "z": -156,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.1,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 47.8,
+     "h": 47.7,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 9,
+    "angDeg": 202,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 1,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 52.75,
+     "y": 52.33,
+     "z": -167.02,
+     "vy": 0,
+     "sp": 3.78,
+     "at": 0.07,
+     "pen": 2,
+     "techo": 57.96,
+     "perchY": null,
+     "suelo": 52.33,
+     "h": 51.93,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 10,
+    "angDeg": 225,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 70.75,
+     "y": 48.53,
+     "z": -159.28,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.25,
+     "pen": 0,
+     "techo": 50.84,
+     "perchY": null,
+     "suelo": 48.53,
+     "h": 48.51,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 10,
+    "angDeg": 225,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 70.74,
+     "y": 48.53,
+     "z": -159.28,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.17,
+     "pen": 0,
+     "techo": 50.84,
+     "perchY": null,
+     "suelo": 48.53,
+     "h": 48.51,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 10,
+    "angDeg": 225,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 70.74,
+     "y": 48.62,
+     "z": -160.05,
+     "vy": 0,
+     "sp": 1.92,
+     "at": 1.03,
+     "pen": 1,
+     "techo": 50.84,
+     "perchY": null,
+     "suelo": 48.62,
+     "h": 48.3,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 11,
+    "angDeg": 247,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 66.83,
+     "y": 49.72,
+     "z": -174.25,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.28,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.72,
+     "h": 49.72,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 11,
+    "angDeg": 247,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 66.84,
+     "y": 49.72,
+     "z": -174.26,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.2,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.72,
+     "h": 49.72,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 11,
+    "angDeg": 247,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 66.83,
+     "y": 49.74,
+     "z": -174.27,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.15,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 49.74,
+     "h": 49.74,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 12,
+    "angDeg": 270,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.7,
+     "y": 46.44,
+     "z": -158.45,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.15,
+     "pen": 3,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.44,
+     "h": 46.44,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 12,
+    "angDeg": 270,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.74,
+     "y": 46.42,
+     "z": -158.44,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.03,
+     "pen": 3,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.42,
+     "h": 46.42,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 12,
+    "angDeg": 270,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 74.92,
+     "y": 46.27,
+     "z": -158.35,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.45,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 46.27,
+     "h": 46.27,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 13,
+    "angDeg": 293,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 79.95,
+     "y": 47.63,
+     "z": -167.73,
+     "vy": 0,
+     "sp": 1.04,
+     "at": 0.6,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 47.63,
+     "h": 47.52,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 13,
+    "angDeg": 293,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 89.67,
+     "y": 48.75,
+     "z": -189.34,
+     "vy": 0,
+     "sp": 0,
+     "at": 1,
+     "pen": 2,
+     "techo": null,
+     "perchY": null,
+     "suelo": 48.75,
+     "h": 48.75,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 13,
+    "angDeg": 293,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 89.67,
+     "y": 48.75,
+     "z": -189.35,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.98,
+     "pen": 2,
+     "techo": null,
+     "perchY": null,
+     "suelo": 48.75,
+     "h": 48.75,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 14,
+    "angDeg": 315,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 105.77,
+     "y": 44.83,
+     "z": -187.22,
+     "vy": 0,
+     "sp": 10.49,
+     "at": 0.07,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 44.83,
+     "h": 44.83,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 14,
+    "angDeg": 315,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 107.39,
+     "y": 44.66,
+     "z": -188.53,
+     "vy": 0,
+     "sp": 10.5,
+     "at": 0.02,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 44.66,
+     "h": 44.66,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 14,
+    "angDeg": 315,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 108.95,
+     "y": 44.34,
+     "z": -190.43,
+     "vy": 0,
+     "sp": 10.5,
+     "at": 0.03,
+     "pen": 0,
+     "techo": null,
+     "perchY": null,
+     "suelo": 44.34,
+     "h": 44.34,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 15,
+    "angDeg": 337,
+    "dy": 1.2,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 88.49,
+     "y": 45.52,
+     "z": -160.86,
+     "vy": 0,
+     "sp": 0,
+     "at": 1.48,
+     "pen": 1,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.52,
+     "h": 45.52,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 15,
+    "angDeg": 337,
+    "dy": 2.4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 88.27,
+     "y": 45.68,
+     "z": -161.1,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.18,
+     "pen": 2,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.68,
+     "h": 45.57,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   },
+   {
+    "dir": 15,
+    "angDeg": 337,
+    "dy": 4,
+    "fijaMax": 0,
+    "segFija": 0,
+    "desatascos": 0,
+    "aterrizo": true,
+    "fin": {
+     "i": 299,
+     "x": 88.47,
+     "y": 45.52,
+     "z": -160.88,
+     "vy": 0,
+     "sp": 0,
+     "at": 0.4,
+     "pen": 2,
+     "techo": null,
+     "perchY": null,
+     "suelo": 45.52,
+     "h": 45.52,
+     "land": false,
+     "fly": false,
+     "gr": true
+    }
+   }
+  ]
+ }
+}

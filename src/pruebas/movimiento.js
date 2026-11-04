@@ -660,6 +660,26 @@ window.AVMovimientoTest = function (G) {
           const subida = Math.max(...r2c.map(o => o.y)) - CY;
           met.qa156copa = { subidaM: r2(subida), vuela: M.flying, desatascos: M.desatascos || 0 };
           check('QA-156: bajo una copa, con una ramita hacia el cielo abierto, Saltar mantenido sube (más de 1 m en 2 s)', subida > 1, JSON.stringify(met.qa156copa));
+          // QA-156a2: temporada móvil 2/5 vueltas — volando SIN aterrizar (el botón dice «Aterrizar») tras la gota por
+          // la quebrada, al llegar con crucero al rincón cóncavo de (74,7; −155,3) el paso se deshacía cada cuadro con
+          // pen 0 en reposo: ni «dentro» ni «techo» (las dos ramas de la red de atasco no disparaban) y el planeo no
+          // pierde altura a velocidad 0 → cernida fija en el aire, palo empujado, 140 s. Ahora la red «sin castigo»
+          // también la recoloca al lado libre en vuelo cuando no avanza nada empujando
+          const STR2b = G.mundo.streaming;
+          if (STR2b && STR2b.alrededor) await STR2b.alrededor(74.7, -155.3);
+          SOL.terminar();
+          const AX = 74.7, AZ = -167.3, TX2 = 74.7, TZ2 = -143; // llegada 12 m atrás, palo a +z hacia el rincón
+          reset(AX, AZ);
+          Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, vx: 0, vz: 0 }); S.pos.y = H(AX, AZ) + 1.2; S.vy = 0;
+          const yw2 = G.camara.yaw, l2 = Math.hypot(TX2 - AX, TZ2 - AZ), ux2 = (TX2 - AX) / l2, uz2 = (TZ2 - AZ) / l2;
+          const st2 = { x: ux2 * Math.cos(yw2) - uz2 * Math.sin(yw2), y: ux2 * Math.sin(yw2) + uz2 * Math.cos(yw2) }; // mundo → palo
+          const desatAntes = M.desatascos || 0;
+          const r3b = frame(() => { I.stick.x = st2.x; I.stick.y = st2.y; }, 330);
+          I.stick.x = I.stick.y = 0;
+          let fijaMax2 = 0, fija2 = 0;
+          for (let i = 1; i < r3b.length; i++) { fija2 = r3b[i].fly && Math.hypot(r3b[i].x - r3b[i - 1].x, r3b[i].y - r3b[i - 1].y, r3b[i].z - r3b[i - 1].z) < 1e-4 ? fija2 + 1 : 0; fijaMax2 = Math.max(fijaMax2, fija2); }
+          met.qa156a2 = { cuadrosFijaEnElAire: fijaMax2, desatascos: (M.desatascos || 0) - desatAntes, vuela: M.flying };
+          check('QA-156a2: llegando con crucero al rincón de la quebrada, volando sin aterrizar, no se queda fija en el aire (la red la recoloca)', fijaMax2 < 120 && met.qa156a2.desatascos >= 1, JSON.stringify(met.qa156a2));
           reset(L.x, L.z);
         }
         // c) La torre antigua (ruina_torre de las ruinas de El Yunque): torre hueca con plataforma de baldosa arriba

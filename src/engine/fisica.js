@@ -309,6 +309,10 @@ AVE.module('fisica', function (G) {
     const tapa = techoCuerpo(SOL, S.pos.x, S.pos.z, S.pos.y, S.pos.y + 30, h);
     if (tapa < Infinity && !cieloAlcanzable(SOL, pen, S.pos.y, h, 8, 30)) recolocar({ x: S.pos.x, z: S.pos.z, y: salirPorArriba(SOL, pen, tapa, h), como: 'arriba' });
     else if (n) recolocar(libreCerca(SOL, h, false));
+    // QA-156a2: en vuelo (sin aterrizar), contra una cara cóncava el paso se deshace cada cuadro con pen 0 en
+    // reposo (ni dentro ni techo: las dos ramas de arriba no disparan) y el planeo no pierde altura a velocidad
+    // 0: queda cernida fija con el palo empujado para siempre. Misma red «sin castigo»: recolocarla al lado libre
+    else if (MOVE.flying) recolocar(libreCerca(SOL, h, false));
   }
 
   // ---------- Un paso de simulación del jugador; devuelve si se está moviendo ----------
