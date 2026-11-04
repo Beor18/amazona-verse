@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Amazona Verse · Kimi 1 (PC Windows) — KIMI-039: validación con GPU real de las pruebas que la nube no puede correr
-   (solo tiene SwiftShader): AV.temporadaMovilTest (temporada móvil con pulgar), AV.ep6e2eTest y AV.controlesTest.
+   (solo tiene SwiftShader): AV.temporadaMovilTest (temporada móvil con pulgar), AV.ep6Test y AV.controlesTest.
    Réplica en Node + CDP de tests/qa/temporada_movil_correr.js (playwright no está en esta PC): Chrome headless propio
    con GPU real, perfil temporal propio, móvil 390×844 dpr 2 táctil con UA de iPhone. Cada prueba va en carga de página
    propia; las de temporada/ep6 juegan dentro del iframe que prepara tests/qa/ep_caminar.js (mismo comportamiento que
@@ -15,7 +15,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
@@ -99,7 +99,9 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
   if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
   await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
   return 'ok: partida sembrada → Jugar (' + S.profile.name + ')'; })()`;
-const LISTO_JS = 'window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)';
+// OJO: tiene que devolver un booleano de verdad; `a && b && (obj || obj2)` devuelve el OBJETO (player3D es un Object3D
+// enorme) y CDP rechaza serializarlo con «Object reference chain is too long» (bug que dejó la página 90 s «sin arrancar»)
+const LISTO_JS = '!!(window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D))';
 
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1x039-'));
@@ -118,9 +120,16 @@ async function lanzarChrome() {
   throw new Error('Chrome no abrió DevTools en 60 s: ' + err.slice(0, 300));
 }
 
-function matarArbol(chrome) {
-  try { spawn('taskkill', ['/PID', String(chrome.pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
+function matarArbol(chrome, perf) {
+  try { if (chrome.pid) spawnSync('taskkill', ['/PID', String(chrome.pid), '/T', '/F'], { stdio: 'ignore', timeout: 15000 }); } catch (e) {}
   try { chrome.kill(); } catch (e) {}
+  // red de seguridad: cualquier chrome.exe que haya quedado con este perfil temporal (los zombies roban GPU)
+  try {
+    const marca = path.basename(perf || '');
+    if (marca) spawnSync('powershell', ['-NoProfile', '-Command',
+      "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -like '*" + marca + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"],
+      { stdio: 'ignore', timeout: 30000 });
+  } catch (e) {}
 }
 
 (async () => {
@@ -150,10 +159,13 @@ function matarArbol(chrome) {
 
   async function esperarListo(ses, segs) {
     const t0 = Date.now();
+    let ultErr = '', nErr = 0, nPoll = 0;
     while (Date.now() - t0 < segs * 1000) {
-      try { if (await evaluar(cdp, ses, LISTO_JS, 10, false)) return true; } catch (e) { /* aún no */ }
+      nPoll++;
+      try { if (await evaluar(cdp, ses, LISTO_JS, 10, false)) return true; } catch (e) { nErr++; ultErr = e.message.slice(0, 160); }
       await cdp.bombear(0.5);
     }
+    console.log(`  · esperarListo: ${nPoll} sondeos, ${nErr} errores; último: ${ultErr}`);
     return false;
   }
 
@@ -184,7 +196,23 @@ function matarArbol(chrome) {
     console.log(`· ${prueba}: nueva página móvil…`);
     const { ses } = await nuevaPagina();
     await cdp.call('Page.navigate', { url: `${origen}/index.html` }, ses);
-    if (!(await esperarListo(ses, 30))) { console.log(`  ✗ ${prueba}: el juego no arrancó en la página superior`); informe.pruebas[prueba] = { error: 'sin arranque' }; fallos++; continue; }
+    if (!(await esperarListo(ses, 90))) {
+      // diagnóstico: ¿en qué punto del arranque está la página y qué errores hay?
+      let diag = {};
+      try { diag = JSON.parse(await evaluar(cdp, ses, `JSON.stringify({
+        ready: document.readyState, av: typeof window.AV, g: !!(window.AV && window.AV.G),
+        actores: !!(window.AV && window.AV.G && window.AV.G.actores),
+        player3D: !!(window.AV && window.AV.G && window.AV.G.actores && window.AV.G.actores.player3D),
+        failed3D: !!(window.AV && window.AV.G && window.AV.G.actores && window.AV.G.actores.failed3D),
+        titleOpen: !!(document.getElementById('title') && document.getElementById('title').open),
+        creador: !!(document.getElementById('creator') && !document.getElementById('creator').hidden)
+      })`, 20, false) || '{}'); } catch (e) { diag = { evalError: e.message.slice(0, 200) }; }
+      const evs = drenarEventos(ses);
+      console.log(`  ✗ ${prueba}: el juego no arrancó en la página superior (90 s) · diag=${JSON.stringify(diag)}` +
+        (evs.errores.length ? ' · errores=' + JSON.stringify(evs.errores.slice(0, 4)) : ''));
+      informe.pruebas[prueba] = Object.assign({ error: 'sin arranque' }, diag, { erroresConsola: evs.errores.slice(0, 8) });
+      fallos++; continue;
+    }
     const prep = String(await evaluar(cdp, ses, PREPARAR_JS, 120));
     if (!prep.startsWith('ok')) { console.log(`  ✗ ${prueba}: entrada falló — ${prep}`); informe.pruebas[prueba] = { error: prep }; fallos++; continue; }
     // inyectar los recorridos (igual que el corredor playwright)
@@ -197,9 +225,11 @@ function matarArbol(chrome) {
         return JSON.stringify({ passed: r.passed, total: r.total, rojos: r.results.filter(x => !x.ok).map(x => x.name + (x.extra ? ' :: ' + x.extra : '')).slice(0, 30) }); })()`;
       timeoutS = 1800; // temporada completa: ~15 min en la nube; tope holgado
     } else if (prueba === 'ep6') {
-      exp = `(async () => { const r = await AV.ep6e2eTest({ idioma: 'es' });
+      // lo pedido por la coordinadora es AV.ep6Test (templateTest del pack ep6, con su iframe propio);
+      // el recorrido completo sin teleport de cap. 6 (ep6e2eTest) ya lo cubre temporadaMovilTest
+      exp = `(async () => { const r = await AV.ep6Test({ idioma: 'es' });
         return JSON.stringify({ passed: r.passed, total: r.total, rojos: r.results.filter(x => !x.ok).map(x => x.name + (x.extra ? ' :: ' + x.extra : '')).slice(0, 30) }); })()`;
-      timeoutS = 900;
+      timeoutS = 600;
     } else if (prueba === 'controles') {
       exp = `(async () => { const r = await AV.controlesTest();
         return JSON.stringify({ passed: r.passed, total: r.total, rojos: r.results.filter(x => !x.ok).map(x => x.name + (x.extra ? ' :: ' + x.extra : '')).slice(0, 30) }); })()`;
@@ -224,7 +254,8 @@ function matarArbol(chrome) {
 
   fs.writeFileSync(path.join(SALIDA, 'extras.json'), JSON.stringify(informe, null, 2));
   console.log(`· informe en ${path.join(SALIDA, 'extras.json')}`);
-  matarArbol(chrome);
+  matarArbol(chrome, perf);
+  await cdp.bombear(1);
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) {}
   srv.close();
   process.exit(fallos ? 1 : 0);
