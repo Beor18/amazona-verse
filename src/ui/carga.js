@@ -149,7 +149,8 @@ window.AVCarga = function (G) {
           pP = C.maxProg ? 1 - nP / C.maxProg : 1;
         } else if (mundoOk) pP = 1;
         const simulado = o.simularPendiente && now - t0 < tope + 10000;
-        const listo = mundoOk && zHecho && !nT && !nP && !simulado;
+        // Los 2 últimos programas no detienen la entrada (los enlaza el juego de 2 en 2 como hoy, ocultando lo suyo un cuadro)
+        const listo = mundoOk && zHecho && !nT && nP <= 2 && (!nP || pP >= 0.9) && !simulado;
         C.etapas = { mundo: pM, zona: Math.round(pZ * 100) / 100, texturas: nT, programas: nP };
         let v = PESOS.mundo * pM + PESOS.zona * pZ + PESOS.texturas * pT + PESOS.programas * pP;
         if (simulado) v = Math.min(v, 0.5);
