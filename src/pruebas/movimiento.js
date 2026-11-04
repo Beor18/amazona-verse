@@ -634,6 +634,24 @@ window.AVMovimientoTest = function (G) {
           check('El techo de vuelo se nota y se explica: frena, no se pasa y avisa del viento fuerte', met.subir.viento && maxY < lim + 0.3, JSON.stringify(met.subir));
         }
         lap('subir');
+        // QA-156 (a): aterrizando en vuelo por una ladera del cap. 1 (la escorrentía de «La ruta de la gota»), junto a una raíz a ras
+        // del suelo (percha de solidos.js), con el palo empujado: la ayuda para posarse la centraba hacia la raíz y el paso la
+        // devolvía, cada cuadro; se quedaba fija en el aire (velocidad 0, misma altura) hasta soltar «Aterrizar»
+        if (window.AV && window.AV.pack === 'cap1' && SOL && SOL.activo) {
+          const X = 77.1, Z = -146.4, TX = 78.2, TZ = -132.5;
+          reset(X, Z);
+          Object.assign(M, { flying: true, landing: true, takeoff: 0, grounded: false, vx: 0, vz: 0 }); S.pos.y = H(X, Z) + 2.4; S.vy = 0;
+          const yw = G.camara.yaw, l = Math.hypot(TX - X, TZ - Z), ux = (TX - X) / l, uz = (TZ - Z) / l;
+          const st = { x: ux * Math.cos(yw) - uz * Math.sin(yw), y: ux * Math.sin(yw) + uz * Math.cos(yw) }; // mundo → palo (adelante = −y)
+          const r = frame(() => { I.stick.x = st.x; I.stick.y = st.y; }, 240);
+          I.stick.x = I.stick.y = 0;
+          let fijaMax = 0, fija = 0;
+          for (let i = 1; i < r.length; i++) { fija = r[i].fly && Math.hypot(r[i].x - r[i - 1].x, r[i].y - r[i - 1].y, r[i].z - r[i - 1].z) < 1e-4 ? fija + 1 : 0; fijaMax = Math.max(fijaMax, fija); }
+          const avance = Math.hypot(S.pos.x - X, S.pos.z - Z);
+          met.qa156 = { avanceM: r2(avance), cuadrosFijaEnElAire: fijaMax, vuela: M.flying, aterriza: M.landing, y: r2(S.pos.y - H(S.pos.x, S.pos.z)) };
+          check('QA-156: aterrizando por una ladera junto a una raíz, con el palo empujado sigue avanzando (no se queda fija en el aire)', fijaMax < 30 && avance > 3, JSON.stringify(met.qa156));
+          reset(L.x, L.z);
+        }
         // c) La torre antigua (ruina_torre de las ruinas de El Yunque): torre hueca con plataforma de baldosa arriba
         const STR2 = G.mundo.streaming, torre = STR2 && (STR2.instancias || []).find(i => i.id === 'ruina_torre@kelvin_ruinas_yunque#0' && i.pos);
         if (torre && SOL && SOL.activo) {

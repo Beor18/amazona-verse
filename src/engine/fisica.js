@@ -415,7 +415,11 @@ AVE.module('fisica', function (G) {
       const pc = SOL.percha(S.pos.x, S.pos.z, S.pos.y, T.perchAssist, bajo);
       if (pc && S.pos.y - pc.y < bajo) {
         MOVE.perchY = pc.y; // el frenado del aterrizaje cuenta con la percha a la que se acerca
-        const k = rate(8, dt); S.pos.x += (pc.x - S.pos.x) * k; S.pos.z += (pc.z - S.pos.z) * k; MOVE.vx *= 0.9; MOVE.vz *= 0.9;
+        // QA-156: solo si centrarse no mete más el cuerpo en un sólido (una percha a ras del suelo, junto a una raíz o una roca
+        // medio enterrada): si no, el paso de abajo lo deshacía en cada cuadro, frenaba en seco y la dejaba fija en el aire
+        // aterrizando, con el palo empujado
+        const k = rate(8, dt), qx = S.pos.x + (pc.x - S.pos.x) * k, qz = S.pos.z + (pc.z - S.pos.z) * k;
+        if (pen(qx, qz, S.pos.y) <= pen(px, pz, S.pos.y)) { S.pos.x = qx; S.pos.z = qz; MOVE.vx *= 0.9; MOVE.vz *= 0.9; }
       }
     }
     // con la altura previa: las perchas sostienen al bajar. En el aire, un sólido solo es suelo si ya está bajo los pies
