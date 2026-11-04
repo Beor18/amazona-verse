@@ -32,9 +32,10 @@
 .modo:active { transform: translateY(2px) scale(0.98); }
 .modo.es-ultimo { --btn-border: var(--gold); animation: modo-in var(--dur-3) var(--ease-out) both, ring 2.4s ease-out 1.2s infinite; }
 .modo .modo-ultimo {
-  position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 1; white-space: nowrap;
-  font: 700 var(--fs-xs)/1 var(--font-body); letter-spacing: 0.02em; color: var(--c-primary-ink); background: var(--gold);
-  padding: 5px 10px; border-radius: var(--r-pill); box-shadow: 0 2px 0 #b8903a;
+  position: absolute; top: 4px; left: 4px; right: 4px; z-index: 1; box-sizing: border-box;
+  white-space: normal; overflow-wrap: anywhere; text-align: center;
+  font: 700 var(--fs-xs)/1.15 var(--font-body); letter-spacing: 0.02em; color: var(--c-primary-ink); background: var(--gold);
+  padding: 4px 6px; border-radius: var(--r-pill); box-shadow: 0 2px 0 #b8903a;
 }
 .modo .modo-ultimo[hidden] { display: none; }
 @keyframes modo-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } }

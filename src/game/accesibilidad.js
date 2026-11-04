@@ -360,6 +360,14 @@ AVE.module('accesibilidad', function (G) {
       maze: [() => AVg.maze && AVg.maze(), () => G.mazeApi && G.mazeApi.salir()],
       riverrush: [() => AVg.riverRush && AVg.riverRush(), () => G.riverRushApi && G.riverRushApi.salir()],
     };
+    // La chapa «Lo último que jugaste» solo existe si hay un modo recordado. Se pone para medirla (en español no cabe en la tarjeta) y se quita después.
+    const pack = G.pack || {}, claveMenu = ((pack.meta && pack.meta.almacen) || pack.id || 'cap1') + '.menu';
+    let menuPrev;
+    try {
+      menuPrev = localStorage.getItem(claveMenu);
+      localStorage.setItem(claveMenu, JSON.stringify({ v: 1, ultimo: 'aventura' }));
+      if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar();
+    } catch (e) { /* sin almacén */ }
     for (const id of PANTALLAS) {
       if ($(id) && !copias.has(id)) copias.set(id, $(id).outerHTML);
       else if (!$(id) && abre[id]) {
@@ -368,6 +376,10 @@ AVE.module('accesibilidad', function (G) {
         try { await abre[id][1](); await espera(200); } catch (e) { /* ya cerrada */ }
       }
     }
+    try {
+      if (menuPrev == null) localStorage.removeItem(claveMenu); else localStorage.setItem(claveMenu, menuPrev);
+      if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar();
+    } catch (e) { /* sin almacén */ }
   }
   async function maquetaOtras(ancho, alto, clases) {
     const f = document.createElement('iframe');
