@@ -1,4 +1,7 @@
 # 2-nov madrugada (volvió la luz): tareas con GPU real, tope 6 $ cada una. BM120 ya la hizo el web. Nada de edificios/terreno/flora (Kimi) ni de content/ep2-ep6 (web y nube).
+# 4-nov 21:30 (coordinadora web): A9 de Kelvin, primero BM133 y BM134 con capturas de la Ciudad de los 36
+BM133
+BM134
 BM116
 BM119
 BM121
@@ -8,6 +11,4 @@ BM129
 BM130
 BM131
 BM132
-BM133
-BM134
 BM135
