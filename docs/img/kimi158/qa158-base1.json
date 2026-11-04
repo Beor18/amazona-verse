@@ -1,0 +1,1771 @@
+{
+  "etiqueta": "base1",
+  "cpu": 4,
+  "vueltas": 2,
+  "circuito": [
+    {
+      "x": 12,
+      "z": -114.8,
+      "nombre": "ciudad_puerta"
+    },
+    {
+      "x": -33,
+      "z": -136,
+      "nombre": "ciudad_centro"
+    },
+    {
+      "x": 150,
+      "z": 218,
+      "nombre": "bahia_norte"
+    },
+    {
+      "x": 134,
+      "z": 182,
+      "nombre": "villa_norte"
+    },
+    {
+      "x": -8,
+      "z": -2.5,
+      "nombre": "villa_spawn"
+    }
+  ],
+  "curva": [
+    {
+      "fase": "quieto",
+      "t": 5,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 129,
+      "total": 191,
+      "geo": 85,
+      "tex": 144,
+      "calls": 62,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 10.1,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 153,
+      "total": 192,
+      "geo": 85,
+      "tex": 144,
+      "calls": 61,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 39,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 15.1,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 148,
+      "total": 193,
+      "geo": 85,
+      "tex": 144,
+      "calls": 62,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 65,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 20.1,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 150,
+      "total": 193,
+      "geo": 85,
+      "tex": 144,
+      "calls": 62,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 67,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 25.1,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 152,
+      "total": 193,
+      "geo": 85,
+      "tex": 144,
+      "calls": 62,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 67,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 30.2,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 149,
+      "total": 193,
+      "geo": 85,
+      "tex": 144,
+      "calls": 62,
+      "ktris": 230,
+      "calidad": "bajo",
+      "fps": 65,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v1",
+      "t": 0.5,
+      "pos": [
+        -6,
+        19,
+        -13
+      ],
+      "heap": 158,
+      "total": 194,
+      "geo": 117,
+      "tex": 144,
+      "calls": 82,
+      "ktris": 234,
+      "calidad": "bajo",
+      "fps": 30,
+      "kbGeo": 66588,
+      "cerca": 36,
+      "hd": 23,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 8.2,
+      "pos": [
+        15,
+        39,
+        -89
+      ],
+      "heap": 245,
+      "total": 294,
+      "geo": 218,
+      "tex": 151,
+      "calls": 54,
+      "ktris": 178,
+      "calidad": "bajo",
+      "fps": 29,
+      "kbGeo": 120076,
+      "cerca": 49,
+      "hd": 42,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 12.2,
+      "pos": [
+        3,
+        29,
+        -89
+      ],
+      "heap": 333,
+      "total": 375,
+      "geo": 220,
+      "tex": 153,
+      "calls": 50,
+      "ktris": 177,
+      "calidad": "bajo",
+      "fps": 37,
+      "kbGeo": 132676,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 16.3,
+      "pos": [
+        -3,
+        54,
+        -98
+      ],
+      "heap": 389,
+      "total": 430,
+      "geo": 245,
+      "tex": 153,
+      "calls": 53,
+      "ktris": 178,
+      "calidad": "bajo",
+      "fps": 31,
+      "kbGeo": 133769,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        -10,
+        89,
+        -106
+      ],
+      "heap": 379,
+      "total": 435,
+      "geo": 246,
+      "tex": 153,
+      "calls": 121,
+      "ktris": 559,
+      "calidad": "bajo",
+      "fps": 34,
+      "kbGeo": 133769,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 5.4,
+      "pos": [
+        -17,
+        87,
+        -111
+      ],
+      "heap": 532,
+      "total": 573,
+      "geo": 273,
+      "tex": 153,
+      "calls": 72,
+      "ktris": 439,
+      "calidad": "bajo",
+      "fps": 36,
+      "kbGeo": 146032,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 9.4,
+      "pos": [
+        -28,
+        92,
+        -111
+      ],
+      "heap": 631,
+      "total": 682,
+      "geo": 310,
+      "tex": 153,
+      "calls": 64,
+      "ktris": 357,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 160001,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 13.4,
+      "pos": [
+        -35,
+        97,
+        -123
+      ],
+      "heap": 773,
+      "total": 823,
+      "geo": 310,
+      "tex": 153,
+      "calls": 53,
+      "ktris": 190,
+      "calidad": "bajo",
+      "fps": 53,
+      "kbGeo": 176433,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        -29,
+        106,
+        -113
+      ],
+      "heap": 733,
+      "total": 778,
+      "geo": 321,
+      "tex": 153,
+      "calls": 63,
+      "ktris": 356,
+      "calidad": "bajo",
+      "fps": 43,
+      "kbGeo": 176433,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 5.7,
+      "pos": [
+        34,
+        43,
+        3
+      ],
+      "heap": 760,
+      "total": 797,
+      "geo": 339,
+      "tex": 153,
+      "calls": 58,
+      "ktris": 242,
+      "calidad": "bajo",
+      "fps": 34,
+      "kbGeo": 163105,
+      "cerca": 55,
+      "hd": 50,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 11,
+      "pos": [
+        96,
+        37,
+        119
+      ],
+      "heap": 777,
+      "total": 841,
+      "geo": 353,
+      "tex": 153,
+      "calls": 71,
+      "ktris": 260,
+      "calidad": "bajo",
+      "fps": 32,
+      "kbGeo": 133827,
+      "cerca": 52,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 4
+    },
+    {
+      "fase": "v1",
+      "t": 19.1,
+      "pos": [
+        150,
+        27,
+        217
+      ],
+      "heap": 828,
+      "total": 892,
+      "geo": 228,
+      "tex": 147,
+      "calls": 81,
+      "ktris": 567,
+      "calidad": "bajo",
+      "fps": 37,
+      "kbGeo": 85054,
+      "cerca": 26,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 23.1,
+      "pos": [
+        138,
+        26,
+        217
+      ],
+      "heap": 912,
+      "total": 964,
+      "geo": 244,
+      "tex": 147,
+      "calls": 87,
+      "ktris": 547,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 27.2,
+      "pos": [
+        132,
+        26,
+        206
+      ],
+      "heap": 583,
+      "total": 635,
+      "geo": 244,
+      "tex": 147,
+      "calls": 70,
+      "ktris": 527,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        133,
+        26,
+        195
+      ],
+      "heap": 565,
+      "total": 635,
+      "geo": 244,
+      "tex": 147,
+      "calls": 95,
+      "ktris": 541,
+      "calidad": "bajo",
+      "fps": 37,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 4.5,
+      "pos": [
+        139,
+        26,
+        206
+      ],
+      "heap": 594,
+      "total": 635,
+      "geo": 244,
+      "tex": 147,
+      "calls": 107,
+      "ktris": 552,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 8.5,
+      "pos": [
+        127,
+        26,
+        206
+      ],
+      "heap": 616,
+      "total": 664,
+      "geo": 248,
+      "tex": 147,
+      "calls": 67,
+      "ktris": 522,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 12.5,
+      "pos": [
+        121,
+        27,
+        195
+      ],
+      "heap": 613,
+      "total": 665,
+      "geo": 248,
+      "tex": 147,
+      "calls": 68,
+      "ktris": 521,
+      "calidad": "bajo",
+      "fps": 43,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        115,
+        29,
+        186
+      ],
+      "heap": 598,
+      "total": 665,
+      "geo": 258,
+      "tex": 147,
+      "calls": 74,
+      "ktris": 520,
+      "calidad": "bajo",
+      "fps": 41,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 3
+    },
+    {
+      "fase": "v1",
+      "t": 5.8,
+      "pos": [
+        43,
+        44,
+        75
+      ],
+      "heap": 558,
+      "total": 623,
+      "geo": 351,
+      "tex": 152,
+      "calls": 114,
+      "ktris": 303,
+      "calidad": "bajo",
+      "fps": 27,
+      "kbGeo": 222039,
+      "cerca": 51,
+      "hd": 43,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v1",
+      "t": 13,
+      "pos": [
+        7,
+        43,
+        21
+      ],
+      "heap": 574,
+      "total": 640,
+      "geo": 349,
+      "tex": 153,
+      "calls": 60,
+      "ktris": 235,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 208553,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 17,
+      "pos": [
+        -5,
+        41,
+        21
+      ],
+      "heap": 646,
+      "total": 701,
+      "geo": 350,
+      "tex": 153,
+      "calls": 65,
+      "ktris": 247,
+      "calidad": "bajo",
+      "fps": 36,
+      "kbGeo": 215548,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 21,
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 750,
+      "total": 817,
+      "geo": 350,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "fps": 39,
+      "kbGeo": 249446,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "retenido_v1",
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 746,
+      "total": 752,
+      "geo": 350,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    },
+    {
+      "fase": "v2",
+      "t": 0.4,
+      "pos": [
+        -9,
+        38,
+        0
+      ],
+      "heap": 747,
+      "total": 752,
+      "geo": 350,
+      "tex": 153,
+      "calls": 60,
+      "ktris": 231,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 249446,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 8.9,
+      "pos": [
+        17,
+        85,
+        -97
+      ],
+      "heap": 814,
+      "total": 821,
+      "geo": 384,
+      "tex": 153,
+      "calls": 107,
+      "ktris": 658,
+      "calidad": "bajo",
+      "fps": 32,
+      "kbGeo": 291290,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 12.9,
+      "pos": [
+        4,
+        61,
+        -96
+      ],
+      "heap": 752,
+      "total": 769,
+      "geo": 392,
+      "tex": 153,
+      "calls": 53,
+      "ktris": 179,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 377456,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 17,
+      "pos": [
+        -1,
+        94,
+        -108
+      ],
+      "heap": 753,
+      "total": 769,
+      "geo": 394,
+      "tex": 153,
+      "calls": 76,
+      "ktris": 391,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 406159,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 0.4,
+      "pos": [
+        -10,
+        104,
+        -115
+      ],
+      "heap": 751,
+      "total": 769,
+      "geo": 399,
+      "tex": 153,
+      "calls": 121,
+      "ktris": 519,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 406159,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 5.4,
+      "pos": [
+        -18,
+        119,
+        -118
+      ],
+      "heap": 735,
+      "total": 748,
+      "geo": 398,
+      "tex": 152,
+      "calls": 95,
+      "ktris": 584,
+      "calidad": "bajo",
+      "fps": 48,
+      "kbGeo": 427885,
+      "cerca": 46,
+      "hd": 44,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v2",
+      "t": 9.4,
+      "pos": [
+        -30,
+        121,
+        -118
+      ],
+      "heap": 736,
+      "total": 748,
+      "geo": 398,
+      "tex": 152,
+      "calls": 60,
+      "ktris": 571,
+      "calidad": "bajo",
+      "fps": 56,
+      "kbGeo": 427885,
+      "cerca": 46,
+      "hd": 44,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v2",
+      "t": 13.4,
+      "pos": [
+        -36,
+        122,
+        -129
+      ],
+      "heap": 733,
+      "total": 748,
+      "geo": 399,
+      "tex": 153,
+      "calls": 53,
+      "ktris": 275,
+      "calidad": "bajo",
+      "fps": 55,
+      "kbGeo": 414295,
+      "cerca": 46,
+      "hd": 44,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v2",
+      "t": 0.4,
+      "pos": [
+        -31,
+        122,
+        -119
+      ],
+      "heap": 729,
+      "total": 748,
+      "geo": 399,
+      "tex": 153,
+      "calls": 62,
+      "ktris": 574,
+      "calidad": "bajo",
+      "fps": 54,
+      "kbGeo": 414295,
+      "cerca": 46,
+      "hd": 44,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v2",
+      "t": 5.6,
+      "pos": [
+        32,
+        40,
+        -3
+      ],
+      "heap": 792,
+      "total": 807,
+      "geo": 403,
+      "tex": 154,
+      "calls": 64,
+      "ktris": 242,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 403011,
+      "cerca": 55,
+      "hd": 50,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 11,
+      "pos": [
+        94,
+        37,
+        114
+      ],
+      "heap": 803,
+      "total": 832,
+      "geo": 413,
+      "tex": 154,
+      "calls": 66,
+      "ktris": 244,
+      "calidad": "bajo",
+      "fps": 34,
+      "kbGeo": 381822,
+      "cerca": 52,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 4
+    },
+    {
+      "fase": "v2",
+      "t": 19.4,
+      "pos": [
+        152,
+        26,
+        221
+      ],
+      "heap": 884,
+      "total": 908,
+      "geo": 280,
+      "tex": 148,
+      "calls": 82,
+      "ktris": 567,
+      "calidad": "bajo",
+      "fps": 39,
+      "kbGeo": 418779,
+      "cerca": 26,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 23.4,
+      "pos": [
+        140,
+        26,
+        221
+      ],
+      "heap": 568,
+      "total": 599,
+      "geo": 282,
+      "tex": 148,
+      "calls": 77,
+      "ktris": 547,
+      "calidad": "bajo",
+      "fps": 34,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 27.4,
+      "pos": [
+        134,
+        26,
+        211
+      ],
+      "heap": 565,
+      "total": 599,
+      "geo": 282,
+      "tex": 148,
+      "calls": 73,
+      "ktris": 530,
+      "calidad": "bajo",
+      "fps": 37,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 0.4,
+      "pos": [
+        134,
+        26,
+        200
+      ],
+      "heap": 564,
+      "total": 599,
+      "geo": 282,
+      "tex": 148,
+      "calls": 87,
+      "ktris": 559,
+      "calidad": "bajo",
+      "fps": 37,
+      "kbGeo": 176691,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 4.5,
+      "pos": [
+        140,
+        26,
+        210
+      ],
+      "heap": 602,
+      "total": 629,
+      "geo": 282,
+      "tex": 148,
+      "calls": 95,
+      "ktris": 556,
+      "calidad": "bajo",
+      "fps": 40,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 8.5,
+      "pos": [
+        128,
+        26,
+        210
+      ],
+      "heap": 606,
+      "total": 629,
+      "geo": 282,
+      "tex": 148,
+      "calls": 69,
+      "ktris": 524,
+      "calidad": "bajo",
+      "fps": 56,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 12.5,
+      "pos": [
+        122,
+        26,
+        200
+      ],
+      "heap": 593,
+      "total": 629,
+      "geo": 282,
+      "tex": 148,
+      "calls": 69,
+      "ktris": 521,
+      "calidad": "bajo",
+      "fps": 56,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 0.4,
+      "pos": [
+        116,
+        28,
+        190
+      ],
+      "heap": 606,
+      "total": 629,
+      "geo": 282,
+      "tex": 148,
+      "calls": 75,
+      "ktris": 518,
+      "calidad": "bajo",
+      "fps": 47,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v2",
+      "t": 5.5,
+      "pos": [
+        51,
+        42,
+        89
+      ],
+      "heap": 456,
+      "total": 488,
+      "geo": 371,
+      "tex": 153,
+      "calls": 126,
+      "ktris": 339,
+      "calidad": "bajo",
+      "fps": 27,
+      "kbGeo": 314504,
+      "cerca": 51,
+      "hd": 41,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v2",
+      "t": 13.5,
+      "pos": [
+        3,
+        40,
+        16
+      ],
+      "heap": 645,
+      "total": 710,
+      "geo": 369,
+      "tex": 154,
+      "calls": 59,
+      "ktris": 232,
+      "calidad": "bajo",
+      "fps": 33,
+      "kbGeo": 307907,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 17.6,
+      "pos": [
+        -9,
+        39,
+        16
+      ],
+      "heap": 792,
+      "total": 843,
+      "geo": 370,
+      "tex": 154,
+      "calls": 61,
+      "ktris": 251,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 335210,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v2",
+      "t": 21.6,
+      "pos": [
+        -15,
+        39,
+        5
+      ],
+      "heap": 787,
+      "total": 843,
+      "geo": 370,
+      "tex": 154,
+      "calls": 55,
+      "ktris": 245,
+      "calidad": "bajo",
+      "fps": 39,
+      "kbGeo": 348800,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "retenido_v2",
+      "pos": [
+        -15,
+        39,
+        5
+      ],
+      "heap": 763,
+      "total": 767,
+      "geo": 370,
+      "tex": 154,
+      "calls": 55,
+      "ktris": 245,
+      "calidad": "bajo",
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    }
+  ],
+  "fases": {
+    "quieto": {
+      "muestras": [
+        {
+          "t": 5,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 129,
+          "total": 191,
+          "geo": 85,
+          "tex": 144,
+          "calls": 62,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 35,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 10.1,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 153,
+          "total": 192,
+          "geo": 85,
+          "tex": 144,
+          "calls": 61,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 39,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 15.1,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 148,
+          "total": 193,
+          "geo": 85,
+          "tex": 144,
+          "calls": 62,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 65,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 20.1,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 150,
+          "total": 193,
+          "geo": 85,
+          "tex": 144,
+          "calls": 62,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 67,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 25.1,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 152,
+          "total": 193,
+          "geo": 85,
+          "tex": 144,
+          "calls": 62,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 67,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 30.2,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 149,
+          "total": 193,
+          "geo": 85,
+          "tex": 144,
+          "calls": 62,
+          "ktris": 230,
+          "calidad": "bajo",
+          "fps": 65,
+          "kbGeo": 66588,
+          "cerca": 36,
+          "hd": 23,
+          "lejos": 63,
+          "zonas": 5
+        }
+      ],
+      "calidad": "bajo"
+    },
+    "retenido_v1": {
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 746,
+      "total": 752,
+      "geo": 350,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    },
+    "retenido_v2": {
+      "pos": [
+        -15,
+        39,
+        5
+      ],
+      "heap": 763,
+      "total": 767,
+      "geo": 370,
+      "tex": 154,
+      "calls": 55,
+      "ktris": 245,
+      "calidad": "bajo",
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    }
+  },
+  "arranque": {
+    "calidad": "bajo",
+    "dpr": 1,
+    "calls": 61,
+    "fps": 38
+  },
+  "final": {
+    "pos": [
+      -15,
+      39,
+      5
+    ],
+    "heap": 763,
+    "total": 767,
+    "inf": {
+      "geo": 370,
+      "tex": 154
+    },
+    "calls": 55,
+    "ktris": 245,
+    "calidad": "bajo",
+    "st": {
+      "kbGeo": 392649,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    "zonasCercaN": 17,
+    "escena": [
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_rio_este_2",
+        "n": 2,
+        "mb": 72,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "n": 1,
+        "mb": 68,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_ruinas_yunque_2",
+        "n": 1,
+        "mb": 43,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHDGlobal:AV_HD_Savage",
+        "n": 1,
+        "mb": 29,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_mina_2",
+        "n": 6,
+        "mb": 27,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZona:global",
+        "n": 2,
+        "mb": 17,
+        "vis": 1
+      },
+      {
+        "p": "edificiosInst:templo_mediano_h",
+        "n": 16,
+        "mb": 15,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_rio_este_3",
+        "n": 1,
+        "mb": 14,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_d",
+        "n": 15,
+        "mb": 10,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande",
+        "n": 15,
+        "mb": 9,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_colina",
+        "n": 2,
+        "mb": 8,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_f",
+        "n": 14,
+        "mb": 7,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZona:kelvin_ruinas_yunque",
+        "n": 2,
+        "mb": 7,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_meandros",
+        "n": 2,
+        "mb": 7,
+        "vis": 1
+      },
+      {
+        "p": "edificiosInst:templo_grande_e",
+        "n": 15,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_a",
+        "n": 16,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_yunque",
+        "n": 2,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:muro_templo",
+        "n": 5,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:complejo_ruinas",
+        "n": 8,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_aldea_rio_este_2",
+        "n": 1,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_mediano_g",
+        "n": 14,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_mediano_f",
+        "n": 14,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_aldea_colina",
+        "n": 1,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_ruinas_yunque",
+        "n": 1,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "(sin nombre)",
+        "n": 207,
+        "mb": 2,
+        "vis": 199
+      }
+    ],
+    "rec": {
+      "porTipo": {
+        "cerca:listo": {
+          "n": 51
+        },
+        "lejos:listo": {
+          "n": 63
+        },
+        "hd:listo": {
+          "n": 46
+        }
+      },
+      "listosRefs": [
+        {
+          "n": "templo_mediano_h",
+          "t": "hd",
+          "refs": 3,
+          "mb": 15
+        },
+        {
+          "n": "templo_grande",
+          "t": "hd",
+          "refs": 2,
+          "mb": 9
+        },
+        {
+          "n": "templo_grande_d",
+          "t": "hd",
+          "refs": 1,
+          "mb": 9
+        },
+        {
+          "n": "templo_grande_e",
+          "t": "hd",
+          "refs": 1,
+          "mb": 6
+        },
+        {
+          "n": "templo_grande_f",
+          "t": "hd",
+          "refs": 1,
+          "mb": 6
+        },
+        {
+          "n": "templo_grande_a",
+          "t": "hd",
+          "refs": 2,
+          "mb": 5
+        },
+        {
+          "n": "muro_templo",
+          "t": "hd",
+          "refs": 1,
+          "mb": 4
+        },
+        {
+          "n": "templo_mediano_g",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "templo_mediano_f",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "complejo_ruinas",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "templo_mediano",
+          "t": "hd",
+          "refs": 1,
+          "mb": 2
+        },
+        {
+          "n": "monumento_f",
+          "t": "hd",
+          "refs": 2,
+          "mb": 2
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "mirador_escalonado",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "templo_grande_e",
+          "t": "lejos",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "templo_grande_f",
+          "t": "lejos",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia_b",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "puente_madera",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "caney_largo",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "cercado_redondo",
+          "t": "hd",
+          "refs": 2,
+          "mb": 1
+        },
+        {
+          "n": "monumento_a",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "monumento_c",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "complejo_ruinas",
+          "t": "cerca",
+          "refs": 2,
+          "mb": 1
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "cerca",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "lejos",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "hd",
+          "refs": 2,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "cerca",
+          "refs": 12,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "lejos",
+          "refs": 14,
+          "mb": 0
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        }
+      ]
+    },
+    "ctx": {
+      "perdidas": 0,
+      "restauradas": 0,
+      "errores": []
+    }
+  }
+}
