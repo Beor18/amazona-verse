@@ -486,6 +486,48 @@ AVE.module('streaming', function (G) {
     out.computeBoundingSphere(); out.computeBoundingBox();
     return out;
   }
+  // KIMI-Task-017/QA-53: fundir resumible en tandas de ~ms. Los fundidos GLOBALES (varias zonas ya fundidas)
+  // se hacían en un solo trabajo: 600–900 ms de CPU en un cuadro (revelado de la pantalla de carga y
+  // teleports). Un paso procesa geometrías enteras hasta agotar el presupuesto y encola la continuación;
+  // alTerminar recibe la geometría fundida. Modos: 'tex' (pos+normal+uv+avCelda, como fundirTex),
+  // 'plana' (pos+normal+uv si todas la tienen, como fundir sin color) y 'color' (pos+normal+color).
+  function fusionLenta(geos, modo, ms, paso, alTerminar) {
+    let nv = 0, ni = 0;
+    for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
+    const dims = modo === 'tex' ? { position: 3, normal: 3, uv: 2, avCelda: 2 }
+      : modo === 'color' ? { position: 3, normal: 3, color: 3 }
+      : { position: 3, normal: 3, uv: geos.every(g => g.attributes.uv) ? 2 : 0 };
+    const arr = {};
+    for (const k in dims) if (dims[k]) arr[k] = new Float32Array(nv * dims[k]);
+    const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+    let g0 = 0, vo = 0, io = 0;
+    const avanzar = () => {
+      const t0 = performance.now();
+      while (g0 < geos.length && performance.now() - t0 < ms) {
+        const g = geos[g0++], a = g.attributes, n = a.position.count;
+        const kp = kNorm(a.position), kn = a.normal ? kNorm(a.normal) : 1, ku = a.uv ? kNorm(a.uv) : 1,
+          kc = a.color ? kNorm(a.color) : 1, ka = a.avCelda ? kNorm(a.avCelda) : 1;
+        for (let i = 0; i < n; i++) {
+          const v = vo + i;
+          arr.position[v * 3] = a.position.getX(i) * kp; arr.position[v * 3 + 1] = a.position.getY(i) * kp; arr.position[v * 3 + 2] = a.position.getZ(i) * kp;
+          if (arr.normal && a.normal) { arr.normal[v * 3] = a.normal.getX(i) * kn; arr.normal[v * 3 + 1] = a.normal.getY(i) * kn; arr.normal[v * 3 + 2] = a.normal.getZ(i) * kn; }
+          if (arr.uv && a.uv) { arr.uv[v * 2] = a.uv.getX(i) * ku; arr.uv[v * 2 + 1] = a.uv.getY(i) * ku; }
+          if (arr.color) { if (a.color) { arr.color[v * 3] = a.color.getX(i) * kc; arr.color[v * 3 + 1] = a.color.getY(i) * kc; arr.color[v * 3 + 2] = a.color.getZ(i) * kc; } else { arr.color[v * 3] = 1; arr.color[v * 3 + 1] = 1; arr.color[v * 3 + 2] = 1; } }
+          if (arr.avCelda && a.avCelda) { arr.avCelda[v * 2] = a.avCelda.getX(i) * ka; arr.avCelda[v * 2 + 1] = a.avCelda.getY(i) * ka; }
+        }
+        if (g.index) for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
+        else for (let i = 0; i < n; i++) idx[io + i] = i + vo;
+        io += g.index ? g.index.count : n; vo += n;
+      }
+      if (g0 < geos.length) { paso(avanzar); return; }
+      const out = new THREE.BufferGeometry();
+      for (const k in arr) if (arr[k]) out.setAttribute(k, new THREE.BufferAttribute(arr[k], dims[k]));
+      out.setIndex(new THREE.BufferAttribute(idx, 1));
+      out.computeBoundingSphere(); out.computeBoundingBox();
+      alTerminar(out);
+    };
+    avanzar();
+  }
   // Color medio (lineal) de la textura de un material, para el LOD lejano generado
   const lienzo = document.createElement('canvas'); lienzo.width = lienzo.height = 8;
   function colorMedio(m) {
@@ -1067,12 +1109,17 @@ AVE.module('streaming', function (G) {
         programarHDGlobal();
       }
     }
-    const hdGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set() };
+    const hdGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set(), paso: null, rehacer: false };
     function quitarHDGlobal() {
+      hdGlobal.paso = null; // invalida una fusión global a medias (su continuación descarta lo fundido)
       for (const m of hdGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat); }
       hdGlobal.mallas = []; hdGlobal.ids = ''; hdGlobal.zonas = new Set();
     }
+    // KIMI-Task-017/QA-53: un grupo (material) por trabajo y cada grupo fundido por tandas de ~6 ms. Antes el
+    // fundido global entero era un trabajo monolítico: 600–900 ms de CPU en un cuadro al revelar la carga y
+    // al teleportar. Mientras se funde a medias, la zona sigue dibujando sus lotes (mismo aspecto).
     function fundirHDGlobal() {
+      if (hdGlobal.paso) { hdGlobal.rehacer = true; return; } // hay una a medias: al cerrar rehace con ids frescos
       if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
       const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
       const ids = zs.map(Z => Z.id + ':' + [...Z.hdModelos].sort().join(',')).join('|');
@@ -1084,16 +1131,32 @@ AVE.module('streaming', function (G) {
         const mt = m.userData.mat; let gr = grupos.get(mt.name); if (!gr) grupos.set(mt.name, gr = { mat: mt, geos: [], zonas: [] });
         gr.geos.push(m.geometry); gr.zonas.push(m.userData.tramos);
       }
-      for (const gr of grupos.values()) {
-        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
-        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
-        conTramos(m, gr.mat, gr.geos, gr.zonas);
-        m.name = 'edificiosZonaHDGlobal:' + gr.mat.name; m.userData.sinSolido = true;
-        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
-        const it = mats[gr.mat.name]; if (it) it.refs++;
-        scene.add(m); hdGlobal.mallas.push(m); subirTex(m);
+      const F = { lista: [...grupos.values()], i: 0 };
+      hdGlobal.paso = F;
+      encolar(() => fundirHDGlobalPaso(F, ids, zs), 'fundirHDGlobal');
+    }
+    function fundirHDGlobalPaso(F, ids, zs) {
+      if (hdGlobal.paso !== F) return; // invalidada (se fundió/rehizo entretanto)
+      const gr = F.lista[F.i];
+      if (!gr) {
+        hdGlobal.paso = null; hdGlobal.ids = ids; hdGlobal.zonas = new Set(zs.map(Z => Z.id));
+        if (hdGlobal.rehacer) { hdGlobal.rehacer = false; programarHDGlobal(); }
+        return;
       }
-      hdGlobal.ids = ids; hdGlobal.zonas = new Set(zs.map(Z => Z.id));
+      const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+      fusionLenta(gr.geos, atlas ? 'tex' : 'plana', precarga ? Math.max(6, precarga.ms) : 6,
+        sig => encolar(sig, 'fundirHDGlobal:' + gr.mat.name),
+        geo => {
+          if (hdGlobal.paso !== F) { geo.dispose(); return; }
+          const m = new THREE.Mesh(geo, gr.mat);
+          conTramos(m, gr.mat, gr.geos, gr.zonas);
+          m.name = 'edificiosZonaHDGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); hdGlobal.mallas.push(m); subirTex(m);
+          F.i++;
+          encolar(() => fundirHDGlobalPaso(F, ids, zs), 'fundirHDGlobal');
+        });
     }
     function programarHDGlobal() {
       if (hdGlobal.pendiente) return;
@@ -1155,12 +1218,16 @@ AVE.module('streaming', function (G) {
         programarCercaGlobal();
       }
     }
-    const cercaGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set() };
+    const cercaGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set(), paso: null, rehacer: false };
     function quitarCercaGlobal() {
+      cercaGlobal.paso = null; // invalida una fusión global a medias (su continuación descarta lo fundido)
       for (const m of cercaGlobal.mallas) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat); }
       cercaGlobal.mallas = []; cercaGlobal.ids = ''; cercaGlobal.zonas = new Set();
     }
+    // KIMI-Task-017/QA-53: mismo reparto que el HD global (un material por trabajo, tandas de ~6 ms); antes
+    // era un trabajo monolítico en el mismo cuadro que el del HD global.
     function fundirCercaGlobal() {
+      if (cercaGlobal.paso) { cercaGlobal.rehacer = true; return; }
       if (Object.values(zonas).some(Z => Z.cercaFundiendo)) return;
       const zs = Object.values(zonas).filter(Z => Z.cercaMallas).sort((a, b) => a.id < b.id ? -1 : 1);
       const ids = zs.map(Z => Z.id + ':' + [...Z.cercaModelos].sort().join(',')).join('|');
@@ -1172,16 +1239,32 @@ AVE.module('streaming', function (G) {
         const mt = m.userData.mat; let gr = grupos.get(mt.name); if (!gr) grupos.set(mt.name, gr = { mat: mt, geos: [], zonas: [] });
         gr.geos.push(m.geometry); gr.zonas.push(m.userData.tramos);
       }
-      for (const gr of grupos.values()) {
-        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
-        const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
-        conTramos(m, gr.mat, gr.geos, gr.zonas);
-        m.name = 'edificiosZonaCercaGlobal:' + gr.mat.name; m.userData.sinSolido = true;
-        m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
-        const it = mats[gr.mat.name]; if (it) it.refs++;
-        scene.add(m); cercaGlobal.mallas.push(m); subirTex(m);
+      const F = { lista: [...grupos.values()], i: 0 };
+      cercaGlobal.paso = F;
+      encolar(() => fundirCercaGlobalPaso(F, ids, zs), 'fundirCercaGlobal');
+    }
+    function fundirCercaGlobalPaso(F, ids, zs) {
+      if (cercaGlobal.paso !== F) return;
+      const gr = F.lista[F.i];
+      if (!gr) {
+        cercaGlobal.paso = null; cercaGlobal.ids = ids; cercaGlobal.zonas = new Set(zs.map(Z => Z.id));
+        if (cercaGlobal.rehacer) { cercaGlobal.rehacer = false; programarCercaGlobal(); }
+        return;
       }
-      cercaGlobal.ids = ids; cercaGlobal.zonas = new Set(zs.map(Z => Z.id));
+      const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+      fusionLenta(gr.geos, atlas ? 'tex' : 'plana', precarga ? Math.max(6, precarga.ms) : 6,
+        sig => encolar(sig, 'fundirCercaGlobal:' + gr.mat.name),
+        geo => {
+          if (cercaGlobal.paso !== F) { geo.dispose(); return; }
+          const m = new THREE.Mesh(geo, gr.mat);
+          conTramos(m, gr.mat, gr.geos, gr.zonas);
+          m.name = 'edificiosZonaCercaGlobal:' + gr.mat.name; m.userData.sinSolido = true;
+          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+          const it = mats[gr.mat.name]; if (it) it.refs++;
+          scene.add(m); cercaGlobal.mallas.push(m); subirTex(m);
+          F.i++;
+          encolar(() => fundirCercaGlobalPaso(F, ids, zs), 'fundirCercaGlobal');
+        });
     }
     function programarCercaGlobal() {
       if (cercaGlobal.pendiente) return;
@@ -1288,12 +1371,16 @@ AVE.module('streaming', function (G) {
       Z.malla = null; Z.mallaExtra = [];
       programarLejosGlobal();
     }
-    const lejosGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set() };
+    const lejosGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set(), paso: null, rehacer: false };
     function quitarLejosGlobal() {
+      lejosGlobal.paso = null; // invalida una fusión global a medias (su continuación descarta lo fundido)
       for (const m of lejosGlobal.mallas) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.userData.mat); }
       lejosGlobal.mallas = []; lejosGlobal.ids = ''; lejosGlobal.zonas = new Set();
     }
+    // KIMI-Task-017/QA-53: mismo reparto (un material por trabajo, tandas de ~6 ms); antes era un trabajo
+    // monolítico en el mismo cuadro que los HD/cerca globales.
     function fundirLejosGlobal() {
+      if (lejosGlobal.paso) { lejosGlobal.rehacer = true; return; }
       if (Object.values(zonas).some(Z => Z.fundir)) return;
       const zs = Object.values(zonas).filter(Z => Z.malla).sort((a, b) => a.id < b.id ? -1 : 1), ids = zs.map(Z => Z.id).join('|');
       if (ids === lejosGlobal.ids) return;
@@ -1301,23 +1388,38 @@ AVE.module('streaming', function (G) {
       if (zs.length < 2) { lejosGlobal.ids = ids; return; }
       // Por el material de cada malla (userData.matTex), no por su orden: una zona solo con lejanos Ancient (las de la ciudad)
       // tiene la malla con atlas en Z.malla, y fundida con el color de vértice salía blanca.
-      const color = { geos: [], zonas: [] }, tex = new Map();
+      const color = { mat: matLejos, geos: [], zonas: [] }, tex = new Map();
       for (const Z of zs) for (const m of [Z.malla].concat(Z.mallaExtra || [])) {
         if (!m.userData.matTex) { color.geos.push(m.geometry); color.zonas.push(Z.id); continue; }
         let g = tex.get(m.material.name); if (!g) tex.set(m.material.name, g = { mat: m.material, geos: [], zonas: [] });
         g.geos.push(m.geometry); g.zonas.push(Z.id);
       }
-      const add = (geo, mat, nom, conTex, g) => {
-        const m = new THREE.Mesh(geo, mat);
-        conTramos(m, mat, g.geos, g.zonas);
-        m.name = 'edificiosZona:global:' + nom; m.userData.sinSolido = true; m.userData.matTex = conTex; m.matrixAutoUpdate = false;
-        m.receiveShadow = true; m.castShadow = false; m.visible = false;
-        if (conTex) { const it = mats[mat.name]; if (it) it.refs++; }
-        scene.add(m); lejosGlobal.mallas.push(m); subirTex(m);
-      };
-      if (color.geos.length) add(fundir(color.geos, true), matLejos, 'lejos', false, color);
-      for (const g of tex.values()) add(fundirTex(g.geos), g.mat, 'lejosTex', true, g);
-      lejosGlobal.ids = ids; lejosGlobal.zonas = new Set(zs.map(Z => Z.id));
+      const F = { lista: [color, ...tex.values()].filter(g => g.geos.length), i: 0 };
+      lejosGlobal.paso = F;
+      encolar(() => fundirLejosGlobalPaso(F, ids, zs), 'fundirLejosGlobal');
+    }
+    function fundirLejosGlobalPaso(F, ids, zs) {
+      if (lejosGlobal.paso !== F) return;
+      const g = F.lista[F.i];
+      if (!g) {
+        lejosGlobal.paso = null; lejosGlobal.ids = ids; lejosGlobal.zonas = new Set(zs.map(Z => Z.id));
+        if (lejosGlobal.rehacer) { lejosGlobal.rehacer = false; programarLejosGlobal(); }
+        return;
+      }
+      const conTex = g.mat !== matLejos;
+      fusionLenta(g.geos, conTex ? 'tex' : 'color', precarga ? Math.max(6, precarga.ms) : 6,
+        sig => encolar(sig, 'fundirLejosGlobal:' + g.mat.name),
+        geo => {
+          if (lejosGlobal.paso !== F) { geo.dispose(); return; }
+          const m = new THREE.Mesh(geo, g.mat);
+          conTramos(m, g.mat, g.geos, g.zonas);
+          m.name = 'edificiosZona:global:' + (conTex ? 'lejosTex' : 'lejos'); m.userData.sinSolido = true; m.userData.matTex = conTex; m.matrixAutoUpdate = false;
+          m.receiveShadow = true; m.castShadow = false; m.visible = false;
+          if (conTex) { const it = mats[g.mat.name]; if (it) it.refs++; }
+          scene.add(m); lejosGlobal.mallas.push(m); subirTex(m);
+          F.i++;
+          encolar(() => fundirLejosGlobalPaso(F, ids, zs), 'fundirLejosGlobal');
+        });
     }
     function programarLejosGlobal() {
       if (lejosGlobal.pendiente) return;

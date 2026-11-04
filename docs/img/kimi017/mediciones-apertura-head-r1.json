@@ -1,0 +1,47 @@
+{
+  "etiqueta": "apertura-head-r1",
+  "cuando": "2026-11-04T07:20:45.381Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "apertura": {
+        "cuadros": 142,
+        "p50": 56,
+        "p95": 361,
+        "peor": 1722,
+        "mas50": 96,
+        "mas100": 31,
+        "mas200": 9,
+        "top": [],
+        "calls": 79,
+        "ktris": 271
+      },
+      "tramos": [],
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "apertura": {
+        "cuadros": 123,
+        "p50": 56,
+        "p95": 139,
+        "peor": 1590,
+        "mas50": 76,
+        "mas100": 13,
+        "mas200": 3,
+        "top": [],
+        "calls": 0,
+        "ktris": 0
+      },
+      "tramos": [],
+      "errores": []
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "etiqueta": "head-r1",
+  "cuando": "2026-11-04T07:23:24.134Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "carga": [
+        {
+          "ms": 13503,
+          "motivo": "listo",
+          "cuadroRevelar": 349,
+          "tCargado": 12276,
+          "msGPU": 83,
+          "texSubidas": 83,
+          "maxProg": 134,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 21755,
+          "update": 8,
+          "ganchos": 30,
+          "dibujo": 1,
+          "warm": 24,
+          "postYDibujo": 933,
+          "total": 996
+        },
+        {
+          "t": 23035,
+          "update": 13,
+          "ganchos": 5,
+          "dibujo": 2,
+          "warm": 0,
+          "postYDibujo": 314,
+          "total": 334
+        },
+        {
+          "t": 23585,
+          "update": 12,
+          "ganchos": 4,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 104,
+          "total": 121
+        },
+        {
+          "t": 23793,
+          "update": 12,
+          "ganchos": 13,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 106,
+          "total": 132
+        },
+        {
+          "t": 25934,
+          "update": 10,
+          "ganchos": 7,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 172,
+          "total": 190
+        },
+        {
+          "t": 30980,
+          "update": 10,
+          "ganchos": 7,
+          "dibujo": 0,
+          "warm": 434,
+          "postYDibujo": 97,
+          "total": 548
+        }
+      ],
+      "top": [
+        {
+          "d": 2576,
+          "t": 0.5
+        },
+        {
+          "d": 2139,
+          "t": 7.1
+        },
+        {
+          "d": 1569,
+          "t": 24.4
+        },
+        {
+          "d": 1056,
+          "t": 21.6
+        },
+        {
+          "d": 743,
+          "t": 13
+        },
+        {
+          "d": 590,
+          "t": 4.4
+        },
+        {
+          "d": 549,
+          "t": 3.3
+        },
+        {
+          "d": 493,
+          "t": 23.8
+        }
+      ],
+      "nFases": 182,
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "carga": [
+        {
+          "ms": 10010,
+          "motivo": "listo",
+          "cuadroRevelar": 888,
+          "tCargado": 9614,
+          "msGPU": 66,
+          "texSubidas": 93,
+          "maxProg": 133,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 16813,
+          "update": 7,
+          "ganchos": 31,
+          "dibujo": 1,
+          "warm": 22,
+          "postYDibujo": 129,
+          "total": 190
+        },
+        {
+          "t": 23903,
+          "update": 10,
+          "ganchos": 7,
+          "dibujo": 1,
+          "warm": 165,
+          "postYDibujo": 97,
+          "total": 280
+        }
+      ],
+      "top": [
+        {
+          "d": 1792,
+          "t": 0.4
+        },
+        {
+          "d": 1729,
+          "t": 5.3
+        },
+        {
+          "d": 889,
+          "t": 17.8
+        },
+        {
+          "d": 493,
+          "t": 17.2
+        },
+        {
+          "d": 417,
+          "t": 2.4
+        },
+        {
+          "d": 396,
+          "t": 15.9
+        },
+        {
+          "d": 354,
+          "t": 9.7
+        },
+        {
+          "d": 306,
+          "t": 19.3
+        }
+      ],
+      "nFases": 217,
+      "errores": []
+    }
+  ]
+}
