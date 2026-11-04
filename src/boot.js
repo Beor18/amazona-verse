@@ -120,6 +120,7 @@
     alPrimerGesto(cargarJuice);
     const cargarTrucos = aDemanda('src/game/trucos.js', 'AVTrucos'); AV.trucosTest = o => cargarTrucos().then(t => t.test(o)); alPrimerGesto(cargarTrucos); // CG-41
     const cargarHumor = aDemanda('src/game/humor.js', 'AVHumor'); AV.humorTest = o => cargarHumor().then(h => h.test(o)); alPrimerGesto(cargarHumor); // CG-42
+    const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); alPrimerGesto(cargarEscondite); // CG-43
     // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
     let rioVivo = null;
     const cargarRioVivo = () => rioVivo || (rioVivo = AVE.assets.script('src/game/rio_vivo.js').then(() => window.AVRioVivo(G), e => { rioVivo = null; throw e; }));
