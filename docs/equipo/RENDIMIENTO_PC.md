@@ -47,6 +47,44 @@ son conservadores (contención de CPU). 24 tomas seguidas, 0 errores de consola.
 - cap1 alto 164 calls / 918 k tris cuadra con la medición de QA-53 (116–121 calls en la zona
   de aparición tras 20 s de juego; aquí 164 con el vuelo/giro y el dosel a la vista).
 
+## KIMI-019 · vecinos (CG-44) y ciudad viva (N17) en móvil (4-nov)
+
+Medido por Kimi 2. Herramienta nueva: `node tools/build/kimi2_vecinos.js [--micro|--simple]`
+(móvil 375×812 dpr 3, UA iPhone, CPU ×4, GPU real; A/B **en página** porque no existe
+`?vecinos=0`: `G.quiet` apaga los dos sistemas y al quitarlo se repueblan solos;
+`ciudadViva.pausa(true)` + limpiar las entradas `ciudad` de `G.bandada.EXTRA` aísla la ciudad
+viva; la malla instanciada `vecinos` se apaga con `count=0` y se restaura con `estado().n`).
+
+**Coste de GPU (exacto, de las pruebas de entrega CG-44/N17 y verificado en código):**
+
+| sistema | calidad media | calidad alta | se apaga |
+|---|---|---|---|
+| vecinos (CG-44) | +1 call · +840 tris (6) | +1 call · +1,7 k tris (12) | > 90 m de sus sitios, en bajo o en `quiet` |
+| ciudad viva (N17) | +1 call · +1,5 k tris (10) | +1 call · +2,4 k tris (16) | > 190 m de la ciudad (LOD: paso cada 1/3/6 cuadros por distancia) |
+| **ambos (ciudad)** | **+2 calls · ≤ 2,5 k tris** | +2 calls · ≤ 4 k tris | — |
+
+Mallas: vecinos = 1 `InstancedMesh` de esferas con `instanceColor` (sin textura); ciudad viva =
+reutiliza las 2 mallas instanciadas que ya usa la bandada (0 mallas nuevas). **0 texturas nuevas
+en ambos** → la memoria de GPU no sube por ellos.
+
+**Memoria móvil medida (texGPU, ambos activos):** ~377 MB en Villa Raíz y ~403 MB en la Ciudad;
+el delta Villa→ciudad es el streaming de la zona (edificios/terreno), no de estos sistemas.
+Heap JS: el del mundo en ambas vistas. 0 errores de consola en las 3 corridas.
+
+**FPS delta ON−SIN: sin concluir.** La PC tenía a las otras dos sesiones de Kimi midiendo a la
+vez (hasta 60 Chrome headless) y los stalls de streaming ajenos (hasta 19 s en una toma)
+envenenan las ventanas de 8 s. Las tomas válidas tras asentar quedaron: Villa media ON 101
+calls / 496 k tris (cuadro p50 42 ms) y ciudad media ON 110–122 calls / 772–835 k tris
+(p50 28–56 ms), pero no son comparables cara a cara. **Pendiente: re-medir cuando la PC esté
+libre** — `--simple` (Villa+ciudad de día, ON/SIN/ON con asentamiento) y `--micro` (ms/cuadro
+de CPU de `paso()+pintar()` forzando `paso(0.016,'todo')`, inmune al GPU).
+
+**Conclusión (4-nov):** memoria sin cambio, +2 draw calls y ≤ 2,5 k triángulos de margen
+(negligible frente a los 460–890 k de la vista) y CPU escalonada por distancia con apagado
+lejos. Con estos números **no hay nada que recortar antes de ampliar** los vecinos/la ciudad
+viva; la única condición pendiente es confirmar con `--micro` que `paso()+pintar()` cuesta
+< 0,5 ms/cuadro con CPU ×4.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
