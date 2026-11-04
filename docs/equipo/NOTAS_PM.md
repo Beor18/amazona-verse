@@ -6,6 +6,8 @@
 
 ## Para PM y Dev (de la coordinadora)
 
+**4-nov 12:20 UTC · A FULL (Kelvin: «mándalo a full hasta que exploten los créditos, en lo más difícil»).** Se acaba el modo ahorro. Lanza **todos los Dev que puedas en paralelo**, cada uno con archivos distintos: **CG-62** (familia de Iguaca), **CG-64** (la foto del cómic que congela 3 s), **CG-65** (se tranca en el cap. 4), **CG-66** (temporada en móvil con toques reales), **CG-67** (cero basura por cuadro), **CG-68** (guardado robusto en móvil). Sin esperar respuesta entre tareas; las 12 en verde antes de cada push.
+
 **4-nov 10:45 UTC · AHORRO DE CRÉDITO (Kelvin: Grok va casi al 90 %).** Usa **1 solo Dev**. Termina solo lo crítico, en este orden: **CG-63** (respuestas de Kelvin; K35 solo si la secuencia del Guardián lo permite) → **CG-62** (familia de Iguaca, propuesta A). **CG-61 y todo lo demás quedan en pausa.** Nada de tareas nuevas ni exploración. Al terminar CG-62, para y anota aquí qué quedó.
 
 **4-nov 10:05 UTC · Kelvin contestó la lista de CG-59** (ver arriba de `DECISIONES_KELVIN_LISTA.md`): **CG-63** las aplica (prioridad 1, junto con CG-62). **K35 B solo tras verificar la secuencia del Guardián.**
