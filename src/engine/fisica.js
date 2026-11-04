@@ -320,8 +320,9 @@ AVE.module('fisica', function (G) {
     if (keys.has('s') || keys.has('arrowdown')) iz += 1;
     if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
     if (keys.has('d') || keys.has('arrowright')) ix += 1;
-    if (keys.has('q')) { cam.yaw += 1.8 * dt; if (cam.manual) cam.manual(); }
-    if (keys.has('r')) { cam.yaw -= 1.8 * dt; if (cam.manual) cam.manual(); }
+    const ninosSens = (G.ninos && G.ninos.camara && G.ninos.camara.sensibilidad) || 1;
+    if (keys.has('q')) { cam.yaw += 1.8 * dt * ninosSens; if (cam.manual) cam.manual(); }
+    if (keys.has('r')) { cam.yaw -= 1.8 * dt * ninosSens; if (cam.manual) cam.manual(); }
     ix += stick.x; iz += stick.y;
     const len = Math.hypot(ix, iz);
     const onGround = onGroundNow();
