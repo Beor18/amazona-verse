@@ -7,7 +7,8 @@
 window.AVControlesTest = function (G) {
   'use strict';
   const $ = G.util.$;
-  async function test() {
+  async function test(opts) {
+    opts = opts || {};
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const X = G.guiaControles && G.guiaControles.prueba;
     if (!X) { ok('La guía de controles está cargada', false, 'sin G.guiaControles'); return { passed: 0, total: 1, results }; }
@@ -19,7 +20,11 @@ window.AVControlesTest = function (G) {
     const limpiarSesion = () => { for (const k in X.enSesion) delete X.enSesion[k]; };
     const mostrado = el => !el.hidden && getComputedStyle(el).display !== 'none' && el.getClientRects().length > 0;
     const ciclo = (n, dt) => { for (let i = 0; i < n; i++) X.actualizar(dt || 1 / 60); };
+    const verticalTactil = Object.prototype.hasOwnProperty.call(opts, 'verticalTactil') ? !!opts.verticalTactil : (window.innerHeight > window.innerWidth && !!(window.matchMedia && matchMedia('(hover: none), (pointer: coarse)').matches));
     try {
+      if (verticalTactil) {
+        ok('En vertical táctil los casos de teclado no se miden', true, window.innerWidth + '×' + window.innerHeight);
+      } else {
       // 1. Teclado: jugador nuevo → el panel sale solo, con las teclas reales y dejar de volar destacado
       X.forzado = 'teclado'; X.est = { hecho: {}, vistas: {} }; limpiarSesion(); X.cerrar(); X.leyenda(false); X.ocultarPista(); X.reiniciar();
       const jugable = X.enJuego() && !(G.dialogo.libre && G.dialogo.libre()); // con bocadillos libres el panel espera
@@ -72,12 +77,17 @@ window.AVControlesTest = function (G) {
       X.reiniciar(); G.emit('viento', true); G.emit('viento', false);
       ok('Aviso de viento fuerte en el techo de vuelo', mostrado(E.pista) && X.pistaId === 'viento' && /viento/i.test(E.pista.textContent), E.pista.textContent);
       X.ocultarPista();
+      }
       // 5. Táctil: nada de esto sale (allí están los botones)
       X.forzado = 'tactil'; X.est = { hecho: {}, vistas: {} }; limpiarSesion(); X.reiniciar(); X.cerrar(); X.leyenda(false);
       ciclo(60); M.flying = true; ciclo(2);
       ok('Táctil: ni panel, ni icono, ni pastilla', !mostrado(E.panel) && !mostrado(E.boton) && !mostrado(E.pastilla) && !X.panelAbierto && document.documentElement.classList.contains('guia-tactil'));
       ok('Táctil: mostrar() no abre el panel', X.mostrar(true) === false && !mostrado(E.panel));
       M.flying = false; ciclo(1);
+      if (!opts._interno && !verticalTactil) {
+        const r = await test({ verticalTactil: true, _interno: true });
+        ok('El modo vertical táctil no exige los casos de teclado', r.passed === r.total && r.results.some(x => /no se miden/.test(x.name)) && r.results.every(x => !/^Teclado:/.test(x.name)), r.passed + '/' + r.total + ' · ' + r.results.map(x => x.name).join(' | '));
+      }
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     // Todo como estaba
     X.forzado = antes.forzado; X.est = antes.est; limpiarSesion(); Object.assign(X.enSesion, antes.enSesion);

@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-131 | media | 4-nov, QA: `controlesTest` da 14/18 en vertical táctil porque mide casos de teclado que allí no salen. | `src/pruebas/controles.js` fuerza el modo teclado aunque la pantalla sea un teléfono vertical. | Grok | resuelto · en vertical táctil esos casos se saltan |
 | QA-130 | baja | 4-nov, ronda de textos: en el cap. 5, con las tres estaciones, el objetivo dice «Pon tres estaciones y prueba el relevo · sigue la flecha y prueba el relevo». «Prueba el relevo» sale dos veces. | `content/ep5/pack.js`, el progreso del paso estaciones. | Grok | resuelto · el añadido solo dice «sigue la flecha», en ES y EN |
 | QA-127 | baja | 4-nov, ronda de textos: `ep2Test` en inglés queda 65/66. El caso «Plantilla · Se registra el intento (2) y sigue la q2» busca «cinta de lluvia» y la tarjeta ya dice «rain ribbon». El HUD de la Plantilla también comparaba el objetivo solo en español. | `content/ep2/pack.js` y `src/pruebas/motor.js`. | Grok | resuelto · la pregunta vale en los dos idiomas y el HUD acepta la traducción |
 | QA-126 | media | 4-nov, QA: `retosDiaTest` en inglés falla porque busca «Retos de hoy» en Mis récords. | `src/game/retos_dia.js` la comprobación del panel no sigue el idioma. | Grok | resuelto · el panel se comprueba en español y en inglés |
