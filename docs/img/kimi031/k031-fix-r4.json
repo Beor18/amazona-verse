@@ -1,0 +1,227 @@
+{
+ "escenario": "k031-vuelo-ciudad",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "dur": 30,
+  "fases": true,
+  "flujo": "semilla cap1 → portada → Aventura → teleport ciudad +36 m → terminar → círculo"
+ },
+ "okCarga": true,
+ "vuelo": {
+  "marcas": {
+   "tIni": 28258,
+   "teleport": 28258,
+   "terminar0": 37575,
+   "terminar1": 49267,
+   "vuelo0": 50817
+  },
+  "nCuadros": 1020,
+  "peorMs": 500,
+  "p95Ms": 132,
+  "p50Ms": 42,
+  "fpsMed": 19.29,
+  "calls": 45,
+  "ktris": 187,
+  "calidad": "bajo",
+  "terminarMs": 11692,
+  "terminarTope": false,
+  "top": [
+   {
+    "t": 29018,
+    "ms": 500,
+    "fases": [
+     {
+      "t": 28585,
+      "upd": 31,
+      "ganchos": 20,
+      "calentado": 3,
+      "warm": 0,
+      "dibujo": 410
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 45261,
+    "ms": 465,
+    "fases": [
+     {
+      "t": 44921,
+      "upd": 23,
+      "ganchos": 6,
+      "calentado": 3,
+      "warm": 0,
+      "dibujo": 334
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 48685,
+    "ms": 438,
+    "fases": [
+     {
+      "t": 48358,
+      "upd": 9,
+      "ganchos": 5,
+      "calentado": 1,
+      "warm": 0,
+      "dibujo": 321
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 37844,
+    "ms": 271,
+    "fases": [
+     {
+      "t": 37786,
+      "upd": 15,
+      "ganchos": 5,
+      "calentado": 2,
+      "warm": 22,
+      "dibujo": 29
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 28518,
+    "ms": 264,
+    "fases": [
+     {
+      "t": 28305,
+      "upd": 36,
+      "ganchos": 18,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 172
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 30921,
+    "ms": 229,
+    "fases": [
+     {
+      "t": 30903,
+      "upd": 10,
+      "ganchos": 3,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 12
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 38060,
+    "ms": 215,
+    "fases": [
+     {
+      "t": 37873,
+      "upd": 10,
+      "ganchos": 10,
+      "calentado": 2,
+      "warm": 86,
+      "dibujo": 89
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 47046,
+    "ms": 215,
+    "fases": [
+     {
+      "t": 47031,
+      "upd": 105,
+      "ganchos": 5,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 8
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 34671,
+    "ms": 194,
+    "fases": [
+     {
+      "t": 34652,
+      "upd": 30,
+      "ganchos": 5,
+      "calentado": 3,
+      "warm": 0,
+      "dibujo": 15
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 55942,
+    "ms": 188,
+    "fases": [],
+    "lentos": []
+   }
+  ],
+  "lentos": [
+   {
+    "n": "procesar:templo_grande:hd",
+    "ms": 111,
+    "t": 33454
+   },
+   {
+    "n": "procesar:templo_mediano_h:hd",
+    "ms": 96,
+    "t": 34264
+   },
+   {
+    "n": "procesar:templo_grande_a:hd",
+    "ms": 25,
+    "t": 35263
+   },
+   {
+    "n": "procesar:templo_mediano_g:hd",
+    "ms": 31,
+    "t": 35534
+   },
+   {
+    "n": "procesar:templo_mediano:hd",
+    "ms": 29,
+    "t": 35774
+   },
+   {
+    "n": "procesar:templo_mediano_f:hd",
+    "ms": 35,
+    "t": 35905
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_rio_este_2",
+    "ms": 82,
+    "t": 38801
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_rio_este_2",
+    "ms": 89,
+    "t": 39447
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_meandros_2",
+    "ms": 29,
+    "t": 62658
+   }
+  ],
+  "heapMax": 1114.6,
+  "geo": 324,
+  "tex": 152,
+  "prog": 57
+ },
+ "errores": []
+}

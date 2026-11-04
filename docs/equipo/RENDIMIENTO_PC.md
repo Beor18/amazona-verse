@@ -460,3 +460,40 @@ y volver (356 / 308 / 520). 0 errores de consola.
 - Los picos de giro se atajan precargando las zonas colindantes al aterrizar (misma familia que
   la precarga de la caleta del coquí, C4); es trabajo de `streaming.js`/`terreno.js` (carril D,
   coordinar con la otra sesión de Kimi).
+
+## KIMI-031 · peor cuadro de 3,8 s al entrar en la Ciudad de los 36 (4-nov · Kimi 3)
+
+Escenario V17 de Kimi 1 (`tools/build/kimi1_v17.js --solo vuelo`): semilla cap1 → teleport
+(-20,-133) +36 m → `ST.alrededor()` + `ST.terminar()` → círculo 45 s sobre la ciudad (-33,-136,
+r=50 m, h=36±3). Móvil emulado 390×844 dpr 3, CPU ×4, GPU real RX 5700 XT, PC sin contención.
+Diagnóstico con la herramienta nueva `tools/build/kimi3_031.js` (mismo escenario con `?fases=1`
++ ventana de fases por peor cuadro + `G.trabajosLentos` con sello de tiempo + `--perfil` de CPU):
+
+**Base (HEAD):** peor cuadro **4097/3799 ms** (dos corridas), p95 229/167 ms, p50 42/35 ms.
+El cuadro malo cae en la fase de drenado de `terminar()` y las fases no lo explican (update 14 ms,
+dibujo ≤320 ms): el hueco era trabajo síncrono de la cola de streaming. Perfil de CPU (ventana
+terminar): `fundirTex · streaming.js:451` **4050 ms**, `fundirHDPaso · streaming.js:1081` 1777 ms,
+`avanzar · streaming.js:510` 1162 ms, getX/getY/setFromBufferAttribute/computeBoundingSphere
+~4000 ms más (las mismas fusiones, por dentro).
+
+**Causa:** los cierres de fusión seguían monolíticos a pesar de los troceos de KIMI-017/020:
+`fundirHDPaso` troceaba entre grupos pero fundía cada grupo de golpe (`fundirTex`, el grupo
+`AV_HD_Ancient` de la ciudad son todas las partes HD con atlas); `fundirCercaPaso` fundía todos
+los grupos en un solo trabajo sin presupuesto; `fundirSombraPaso` y `fundirCerrar` (lejos de zona)
+también; y `fusionLenta` (usada por las fusiones globales) no interrumpía una geometría grande
+(la fusión global HD era un trabajo de 370–720 ms) y cerraba con `computeBoundingSphere/Box`
+monolíticos (~700–900 ms en el mismo trabajo).
+
+**Fix (`streaming.js`):** los cuatro cierres usan `fusionLenta` reanudable (un grupo por trabajo,
+invalidación si la zona se suelta a medias: `Z.hdF !== F` etc.) y `fusionLenta` trocea también
+dentro de la geometría (slices de 24576 vértices, reloj por slice) y calcula boundingBox/Sphere
+durante la copia (sin pases extra). Los `fundir`/`fundirTex` monolíticos quedan solo en el parseo
+por modelo (trabajos `procesar:*` de 25–160 ms, aceptables).
+
+**Después (dos corridas):** peor cuadro **396/500 ms** (era 4097), p95 118/132 ms, p50 35/42 ms
+(sin bajar), fpsMed 24,2/19,3 (era 11,2), `terminar()` 8,4–11,7 s (los trabajos ahora son más
+pequeños y la cola se bombea con el mismo presupuesto), asentado 45 calls / 188 k tris, 0 errores
+de consola. Los peores cuadros que quedan son `dibujo` de 300–410 ms por compilación de programas
+al dibujar variantes nuevas (familia QA-53 «enlaces del primer dibujo», carril nube/`renderer.js`,
+ya repartido de 2 en 2 por el precalentado) y trabajos `procesar:*` de ≤111 ms.
+Evidencia: `docs/img/kimi031/k031-{base-r1,base-r2,fix-r1,fix-r3,fix-r4}.json`.

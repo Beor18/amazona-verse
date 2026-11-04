@@ -1,0 +1,313 @@
+{
+ "escenario": "k031-vuelo-ciudad",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "dur": 30,
+  "fases": true,
+  "flujo": "semilla cap1 → portada → Aventura → teleport ciudad +36 m → terminar → círculo"
+ },
+ "okCarga": true,
+ "vuelo": {
+  "marcas": {
+   "tIni": 27547,
+   "teleport": 27547,
+   "terminar0": 35047,
+   "terminar1": 44353,
+   "vuelo0": 45913
+  },
+  "nCuadros": 751,
+  "peorMs": 958,
+  "p95Ms": 153,
+  "p50Ms": 35,
+  "fpsMed": 15.46,
+  "calls": 45,
+  "ktris": 190,
+  "calidad": "bajo",
+  "terminarMs": 9305,
+  "terminarTope": false,
+  "top": [
+   {
+    "t": 43805,
+    "ms": 958,
+    "fases": [
+     {
+      "t": 43503,
+      "upd": 12,
+      "ganchos": 4,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 300
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 57604,
+    "ms": 910,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 68013,
+    "ms": 903,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 617,
+      "t": 67112
+     }
+    ]
+   },
+   {
+    "t": 71138,
+    "ms": 896,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 617,
+      "t": 70246
+     }
+    ]
+   },
+   {
+    "t": 42847,
+    "ms": 785,
+    "fases": [
+     {
+      "t": 42831,
+      "upd": 12,
+      "ganchos": 5,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 11
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 67041,
+    "ms": 757,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 717,
+      "t": 66292
+     }
+    ]
+   },
+   {
+    "t": 56527,
+    "ms": 750,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 63499,
+    "ms": 750,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 718,
+      "t": 62756
+     }
+    ]
+   },
+   {
+    "t": 70173,
+    "ms": 750,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 712,
+      "t": 69428
+     }
+    ]
+   },
+   {
+    "t": 47485,
+    "ms": 743,
+    "fases": [
+     {
+      "t": 47474,
+      "upd": 14,
+      "ganchos": 6,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 8
+     }
+    ],
+    "lentos": []
+   }
+  ],
+  "lentos": [
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 93,
+    "t": 58651
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_meandros_2",
+    "ms": 35,
+    "t": 60453
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_meandros_2",
+    "ms": 30,
+    "t": 61716
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 377,
+    "t": 62272
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 718,
+    "t": 62756
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 614,
+    "t": 63506
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 27,
+    "t": 64170
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 37,
+    "t": 64322
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 96,
+    "t": 64810
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 35,
+    "t": 64977
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 79,
+    "t": 65082
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 41,
+    "t": 65229
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 126,
+    "t": 65371
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 367,
+    "t": 65818
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 717,
+    "t": 66292
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 617,
+    "t": 67112
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 27,
+    "t": 68071
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 40,
+    "t": 68198
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 91,
+    "t": 68298
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 38,
+    "t": 68450
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 96,
+    "t": 68604
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 25,
+    "t": 68814
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 368,
+    "t": 68928
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 712,
+    "t": 69428
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 617,
+    "t": 70246
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 27,
+    "t": 71193
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 98,
+    "t": 71324
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 42,
+    "t": 71491
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 85,
+    "t": 71596
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 372,
+    "t": 75419
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 719,
+    "t": 75907
+   }
+  ],
+  "heapMax": 1065.7,
+  "geo": 316,
+  "tex": 152,
+  "prog": 57
+ },
+ "errores": []
+}

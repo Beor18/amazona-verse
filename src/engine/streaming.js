@@ -135,7 +135,7 @@ AVE.module('streaming', function (G) {
       if (d > 25) { // KIMI-017: diagnóstico de tirones (tools/build/kimi3_017.js --fases); en juego normal casi nunca dispara
         if (!G.trabajosLentos) G.trabajosLentos = [];
         const L = G.trabajosLentos;
-        L.push({ n: j.avNombre || j.name || 'job', ms: Math.round(d) });
+        L.push({ n: j.avNombre || j.name || 'job', ms: Math.round(d), t: Math.round(ta) });
         if (L.length > 40) L.shift();
       }
     }
@@ -492,11 +492,10 @@ AVE.module('streaming', function (G) {
     out.computeBoundingSphere(); out.computeBoundingBox();
     return out;
   }
-  // KIMI-Task-017/QA-53: fundir resumible en tandas de ~ms. Los fundidos GLOBALES (varias zonas ya fundidas)
-  // se hacían en un solo trabajo: 600–900 ms de CPU en un cuadro (revelado de la pantalla de carga y
-  // teleports). Un paso procesa geometrías enteras hasta agotar el presupuesto y encola la continuación;
-  // alTerminar recibe la geometría fundida. Modos: 'tex' (pos+normal+uv+avCelda, como fundirTex),
-  // 'plana' (pos+normal+uv si todas la tienen, como fundir sin color) y 'color' (pos+normal+color).
+  // KIMI-Task-017/031: fundir resumible en tandas de ~ms, también DENTRO de una geometría grande (la fusión
+  // global HD de una zona era un solo trabajo de 370–720 ms: una geometría de ~1 M de vértices no se
+  // interrumpía). Los límites (boundingBox/Sphere) se calculan durante la copia: computeBoundingSphere de
+  // la geometría fundida eran otros ~700–900 ms de golpe en el trabajo que cerraba la fusión.
   function fusionLenta(geos, modo, ms, paso, alTerminar) {
     let nv = 0, ni = 0;
     for (const g of geos) { nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
@@ -506,30 +505,48 @@ AVE.module('streaming', function (G) {
     const arr = {};
     for (const k in dims) if (dims[k]) arr[k] = new Float32Array(nv * dims[k]);
     const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
-    let g0 = 0, vo = 0, io = 0;
+    let g0 = 0, vo = 0, io = 0, v0 = 0, x0 = 0;
+    let bx1 = Infinity, by1 = Infinity, bz1 = Infinity, bx2 = -Infinity, by2 = -Infinity, bz2 = -Infinity;
+    const TROZO = 24576; // vértices por slice (y ×3 índices): cada slice queda en pocos ms incluso con CPU ×4
     const avanzar = () => {
       const t0 = performance.now();
-      while (g0 < geos.length && performance.now() - t0 < ms) {
-        const g = geos[g0++], a = g.attributes, n = a.position.count;
-        const kp = kNorm(a.position), kn = a.normal ? kNorm(a.normal) : 1, ku = a.uv ? kNorm(a.uv) : 1,
-          kc = a.color ? kNorm(a.color) : 1, ka = a.avCelda ? kNorm(a.avCelda) : 1;
-        for (let i = 0; i < n; i++) {
-          const v = vo + i;
-          arr.position[v * 3] = a.position.getX(i) * kp; arr.position[v * 3 + 1] = a.position.getY(i) * kp; arr.position[v * 3 + 2] = a.position.getZ(i) * kp;
-          if (arr.normal && a.normal) { arr.normal[v * 3] = a.normal.getX(i) * kn; arr.normal[v * 3 + 1] = a.normal.getY(i) * kn; arr.normal[v * 3 + 2] = a.normal.getZ(i) * kn; }
-          if (arr.uv && a.uv) { arr.uv[v * 2] = a.uv.getX(i) * ku; arr.uv[v * 2 + 1] = a.uv.getY(i) * ku; }
-          if (arr.color) { if (a.color) { arr.color[v * 3] = a.color.getX(i) * kc; arr.color[v * 3 + 1] = a.color.getY(i) * kc; arr.color[v * 3 + 2] = a.color.getZ(i) * kc; } else { arr.color[v * 3] = 1; arr.color[v * 3 + 1] = 1; arr.color[v * 3 + 2] = 1; } }
-          if (arr.avCelda && a.avCelda) { arr.avCelda[v * 2] = a.avCelda.getX(i) * ka; arr.avCelda[v * 2 + 1] = a.avCelda.getY(i) * ka; }
+      while (g0 < geos.length) {
+        const g = geos[g0], a = g.attributes, n = a.position.count;
+        if (v0 < n) {
+          const kp = kNorm(a.position), kn = a.normal ? kNorm(a.normal) : 1, ku = a.uv ? kNorm(a.uv) : 1,
+            kc = a.color ? kNorm(a.color) : 1, ka = a.avCelda ? kNorm(a.avCelda) : 1;
+          const fin = Math.min(n, v0 + TROZO);
+          for (let i = v0; i < fin; i++) {
+            const v = vo + i;
+            const px = a.position.getX(i) * kp, py = a.position.getY(i) * kp, pz = a.position.getZ(i) * kp;
+            arr.position[v * 3] = px; arr.position[v * 3 + 1] = py; arr.position[v * 3 + 2] = pz;
+            if (px < bx1) bx1 = px; if (px > bx2) bx2 = px;
+            if (py < by1) by1 = py; if (py > by2) by2 = py;
+            if (pz < bz1) bz1 = pz; if (pz > bz2) bz2 = pz;
+            if (arr.normal && a.normal) { arr.normal[v * 3] = a.normal.getX(i) * kn; arr.normal[v * 3 + 1] = a.normal.getY(i) * kn; arr.normal[v * 3 + 2] = a.normal.getZ(i) * kn; }
+            if (arr.uv && a.uv) { arr.uv[v * 2] = a.uv.getX(i) * ku; arr.uv[v * 2 + 1] = a.uv.getY(i) * ku; }
+            if (arr.color) { if (a.color) { arr.color[v * 3] = a.color.getX(i) * kc; arr.color[v * 3 + 1] = a.color.getY(i) * kc; arr.color[v * 3 + 2] = a.color.getZ(i) * kc; } else { arr.color[v * 3] = 1; arr.color[v * 3 + 1] = 1; arr.color[v * 3 + 2] = 1; } }
+            if (arr.avCelda && a.avCelda) { arr.avCelda[v * 2] = a.avCelda.getX(i) * ka; arr.avCelda[v * 2 + 1] = a.avCelda.getY(i) * ka; }
+          }
+          v0 = fin;
+        } else {
+          const cnt = g.index ? g.index.count : n, fin = Math.min(cnt, x0 + TROZO * 3);
+          if (g.index) for (let i = x0; i < fin; i++) idx[io + i] = g.index.getX(i) + vo;
+          else for (let i = x0; i < fin; i++) idx[io + i] = i + vo;
+          x0 = fin;
+          if (x0 >= cnt) { io += cnt; vo += n; g0++; v0 = 0; x0 = 0; }
         }
-        if (g.index) for (let i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
-        else for (let i = 0; i < n; i++) idx[io + i] = i + vo;
-        io += g.index ? g.index.count : n; vo += n;
+        if (performance.now() - t0 >= ms) break;
       }
       if (g0 < geos.length) { paso(avanzar); return; }
       const out = new THREE.BufferGeometry();
       for (const k in arr) if (arr[k]) out.setAttribute(k, new THREE.BufferAttribute(arr[k], dims[k]));
       out.setIndex(new THREE.BufferAttribute(idx, 1));
-      out.computeBoundingSphere(); out.computeBoundingBox();
+      if (nv) {
+        out.boundingBox = new THREE.Box3(new THREE.Vector3(bx1, by1, bz1), new THREE.Vector3(bx2, by2, bz2));
+        const c = out.boundingBox.getCenter(new THREE.Vector3());
+        out.boundingSphere = new THREE.Sphere(c, c.distanceTo(out.boundingBox.max));
+      } else { out.computeBoundingSphere(); out.computeBoundingBox(); }
       alTerminar(out);
     };
     avanzar();
@@ -1094,25 +1111,34 @@ AVE.module('streaming', function (G) {
           }
         }
         if (F.i < Z.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
-        // KIMI-020: el cierre (fundirTex/fundir por material) también se trocea en tandas de ~6 ms, un grupo
+        // KIMI-020/031: el cierre (fundirTex/fundir por material) también se trocea en tandas de ~6 ms, un grupo
         // por paso. En kelvin_ruinas_yunque el cierre entero era un solo trabajo de ~3,6 s (móvil ×4) que
-        // congelaba el cuadro tanto en juego como en terminar().
-        const grupos = [...F.grupos.values()];
-        while (F.g < grupos.length && performance.now() - t0 < 6) {
-          const gr = grupos[F.g++];
-          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
-          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
-          conTramos(m, gr.mat, gr.geos, gr.ins);
-          m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
-          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
-          const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); F.ms.push(m); subirTex(m);
+        // congelaba el cuadro tanto en juego como en terminar(); el troceo por grupos (KIMI-020) no bastaba
+        // porque el grupo AV_HD_Ancient funde todas las partes con atlas de golpe (medido 4-nov: 4050 ms).
+        if (!F.gruposL) F.gruposL = [...F.grupos.values()];
+        const gr = F.gruposL[F.g];
+        if (!gr) {
+          Z.hdMallas = F.ms; Z.hdModelos = F.modelos;
+          limpiar();
+          Z.hdF = null; Z.hdFundiendo = false;
+          encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); programarHDGlobal();
+          return;
         }
-        if (F.g < grupos.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
-        Z.hdMallas = F.ms; Z.hdModelos = F.modelos;
-        limpiar();
-        Z.hdF = null; Z.hdFundiendo = false;
-        encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); programarHDGlobal();
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        fusionLenta(gr.geos, atlas ? 'tex' : 'plana', 6,
+          sig => encolar(sig, 'fundirHD:' + Z.id),
+          geo => {
+            if (Z.hdF !== F) { geo.dispose(); return; } // la zona se invalidó a medias: se descarta
+            const m = new THREE.Mesh(geo, gr.mat);
+            conTramos(m, gr.mat, gr.geos, gr.ins);
+            m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+            m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+            const it = mats[gr.mat.name]; if (it) it.refs++;
+            scene.add(m); F.ms.push(m); subirTex(m);
+            F.g++;
+            encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id);
+          });
+        return;
       } catch (e) {
         for (const m of F.ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
         console.warn('AVE streaming: no se pudo fundir el _hd de ' + Z.id, e && e.message || e);
@@ -1209,19 +1235,33 @@ AVE.module('streaming', function (G) {
           }
         }
         if (F.i < Z.inst.length) { encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id); return; }
-        for (const gr of F.grupos.values()) {
-          const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
-          const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
-          conTramos(m, gr.mat, gr.geos, gr.ins);
-          m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
-          m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
-          const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); F.ms.push(m); subirTex(m);
+        // KIMI-031: el cierre por grupos era un solo trabajo sin presupuesto que fundía cada material de
+        // golpe (fundirTex monolítico): al teleportar a la ciudad sumaba segundos de cuadro. Mismo reparto
+        // que el HD (un grupo por paso, tandas de ~6 ms dentro del grupo).
+        if (!F.gruposL) F.gruposL = [...F.grupos.values()];
+        const gr = F.gruposL[F.g];
+        if (!gr) {
+          Z.cercaMallas = F.ms; Z.cercaModelos = F.modelos;
+          for (const g of F.temporales) g.dispose();
+          Z.cercaF = null; Z.cercaFundiendo = false;
+          programarCercaGlobal();
+          return;
         }
-        Z.cercaMallas = F.ms; Z.cercaModelos = F.modelos;
-        for (const g of F.temporales) g.dispose();
-        Z.cercaF = null; Z.cercaFundiendo = false;
-        programarCercaGlobal();
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
+        fusionLenta(gr.geos, atlas ? 'tex' : 'plana', 6,
+          sig => encolar(sig, 'fundirCerca:' + Z.id),
+          geo => {
+            if (Z.cercaF !== F) { geo.dispose(); return; } // la zona se invalidó a medias: se descarta
+            const m = new THREE.Mesh(geo, gr.mat);
+            conTramos(m, gr.mat, gr.geos, gr.ins);
+            m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
+            m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
+            const it = mats[gr.mat.name]; if (it) it.refs++;
+            scene.add(m); F.ms.push(m); subirTex(m);
+            F.g++;
+            encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
+          });
+        return;
       } catch (e) {
         for (const m of F.ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
         console.warn('AVE streaming: no se pudo fundir el cercano de ' + Z.id, e && e.message || e);
@@ -1307,15 +1347,22 @@ AVE.module('streaming', function (G) {
           for (const p of res(I.modelo, 'cerca').partes) F.geos.push(p.geo.clone().applyMatrix4(I.m));
         }
         if (F.i < Z.inst.length) { encolar(() => fundirSombraPaso(Z), 'fundirSombra:' + Z.id); return; }
-        const m = new THREE.Mesh(fundir(F.geos, false), matSombra);
-        for (const g of F.geos) g.dispose();
-        F.geos = [];
-        m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
-        m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
-        m.layers.set(1);
-        if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
-        scene.add(m); Z.sombraMalla = m; Z.sombraModelos = F.modelos; subirTex(m);
-        Z.sombraF = null;
+        // KIMI-031: la fusión de la sombra entera era monolítica; se trocea en tandas de ~6 ms.
+        fusionLenta(F.geos, 'plana', 6,
+          sig => encolar(sig, 'fundirSombra:' + Z.id),
+          geo => {
+            if (Z.sombraF !== F) { geo.dispose(); return; } // la zona se invalidó a medias: se descarta
+            const m = new THREE.Mesh(geo, matSombra);
+            for (const g of F.geos) g.dispose();
+            F.geos = [];
+            m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
+            m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
+            m.layers.set(1);
+            if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
+            scene.add(m); Z.sombraMalla = m; Z.sombraModelos = F.modelos; subirTex(m);
+            Z.sombraF = null;
+          });
+        return;
       } catch (e) {
         for (const g of F.geos) g.dispose();
         Z.sombraF = null;
@@ -1356,9 +1403,22 @@ AVE.module('streaming', function (G) {
     }
     function fundirCerrar(Z) {
       const F = Z.fundir; if (!F) return;
-      Z.fundir = null;
-      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos.concat(F.tex)) g.dispose(); return; }
-      if (!F.geos.length && !F.tex.length) return;
+      if (Z.nivel < 1 || Z.malla) { for (const g of F.geos.concat(F.tex)) g.dispose(); Z.fundir = null; return; }
+      if (!F.geos.length && !F.tex.length) { Z.fundir = null; return; }
+      // KIMI-031: los cierres fundían la zona entera de golpe (fundir/fundirTex monolíticos, segundos de
+      // cuadro al teleportar a la ciudad); se funden en tandas de ~6 ms, color primero y atlas después.
+      if (F.geos.length && !F.geoColor) {
+        fusionLenta(F.geos, 'color', 6,
+          sig => encolar(sig, 'fundirCerrar:' + Z.id),
+          geo => { if (Z.fundir !== F) { geo.dispose(); return; } F.geoColor = geo; encolar(() => fundirCerrar(Z), 'fundirCerrar:' + Z.id); });
+        return;
+      }
+      if (F.tex.length && !F.geoTex) {
+        fusionLenta(F.tex, 'tex', 6,
+          sig => encolar(sig, 'fundirCerrar:' + Z.id),
+          geo => { if (Z.fundir !== F) { geo.dispose(); return; } F.geoTex = geo; encolar(() => fundirCerrar(Z), 'fundirCerrar:' + Z.id); });
+        return;
+      }
       // BM105: los lejanos con atlas (Ancient) van en su propia malla, con AV_HD_Ancient; el resto, el color de vértice de siempre
       const mk = (geo, mat, nom) => {
         const m = new THREE.Mesh(geo, mat);
@@ -1367,12 +1427,13 @@ AVE.module('streaming', function (G) {
         scene.add(m); subirTex(m); return m;
       };
       const ms = [];
-      if (F.geos.length) ms.push(mk(fundir(F.geos, true), matLejos, 'lejos'));
-      if (F.tex.length) {
+      if (F.geoColor) ms.push(mk(F.geoColor, matLejos, 'lejos'));
+      if (F.geoTex) {
         const it = mats[F.mat.name]; if (it) it.refs++;
-        const m = mk(fundirTex(F.tex), F.mat, 'lejosTex'); m.userData.matTex = true; ms.push(m);
+        const m = mk(F.geoTex, F.mat, 'lejosTex'); m.userData.matTex = true; ms.push(m);
       }
       for (const g of F.geos.concat(F.tex)) g.dispose();
+      Z.fundir = null;
       Z.malla = ms[0]; Z.mallaExtra = ms.slice(1);
       programarLejosGlobal();
     }

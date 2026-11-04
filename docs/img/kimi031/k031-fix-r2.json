@@ -1,0 +1,14 @@
+{
+ "escenario": "k031-vuelo-ciudad",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "dur": 30,
+  "fases": true,
+  "flujo": "semilla cap1 → portada → Aventura → teleport ciudad +36 m → terminar → círculo"
+ },
+ "okCarga": true,
+ "error": "WebSocket: error de conexión"
+}

@@ -1,0 +1,633 @@
+{
+ "escenario": "k031-vuelo-ciudad",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "dur": 30,
+  "fases": true,
+  "flujo": "semilla cap1 → portada → Aventura → teleport ciudad +36 m → terminar → círculo"
+ },
+ "okCarga": true,
+ "vuelo": {
+  "marcas": {
+   "tIni": 28166,
+   "teleport": 28166,
+   "terminar0": 35287,
+   "terminar1": 43770,
+   "vuelo0": 45313
+  },
+  "nCuadros": 723,
+  "peorMs": 903,
+  "p95Ms": 160,
+  "p50Ms": 35,
+  "fpsMed": 15.27,
+  "calls": 45,
+  "ktris": 189,
+  "calidad": "bajo",
+  "terminarMs": 8482,
+  "terminarTope": false,
+  "top": [
+   {
+    "t": 70990,
+    "ms": 903,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 607,
+      "t": 70089
+     }
+    ]
+   },
+   {
+    "t": 43226,
+    "ms": 896,
+    "fases": [
+     {
+      "t": 42930,
+      "upd": 13,
+      "ganchos": 4,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 289
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 52712,
+    "ms": 868,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 67935,
+    "ms": 861,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 565,
+      "t": 67077
+     },
+     {
+      "n": "fundirHDGlobal",
+      "ms": 28,
+      "t": 67939
+     }
+    ]
+   },
+   {
+    "t": 42330,
+    "ms": 771,
+    "fases": [
+     {
+      "t": 42314,
+      "upd": 13,
+      "ganchos": 6,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 10
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 63421,
+    "ms": 764,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 727,
+      "t": 62660
+     },
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 572,
+      "t": 63426
+     }
+    ]
+   },
+   {
+    "t": 56900,
+    "ms": 757,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 51844,
+    "ms": 750,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 46837,
+    "ms": 743,
+    "fases": [
+     {
+      "t": 46831,
+      "upd": 14,
+      "ganchos": 4,
+      "calentado": 1,
+      "warm": 0,
+      "dibujo": 5
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 67004,
+    "ms": 743,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 716,
+      "t": 66268
+     }
+    ]
+   }
+  ],
+  "lentos": [
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 39,
+    "t": 58477
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 91,
+    "t": 59017
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_meandros_2",
+    "ms": 36,
+    "t": 60389
+   },
+   {
+    "n": "fundirHD:kelvin_aldea_meandros_2",
+    "ms": 27,
+    "t": 61717
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 372,
+    "t": 62183
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 727,
+    "t": 62660
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 572,
+    "t": 63426
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 29,
+    "t": 64440
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 40,
+    "t": 64578
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 92,
+    "t": 64715
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 34,
+    "t": 64837
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 80,
+    "t": 64973
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 40,
+    "t": 65150
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 115,
+    "t": 65307
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 386,
+    "t": 65761
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 716,
+    "t": 66268
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 565,
+    "t": 67077
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 28,
+    "t": 67939
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 38,
+    "t": 68069
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 90,
+    "t": 68220
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 39,
+    "t": 68409
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 88,
+    "t": 68558
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 362,
+    "t": 68825
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 706,
+    "t": 69289
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 607,
+    "t": 70089
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 35,
+    "t": 71063
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 126,
+    "t": 71273
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 42,
+    "t": 71515
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 83,
+    "t": 71660
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 412,
+    "t": 74818
+   }
+  ],
+  "heapMax": 1046.1,
+  "geo": 304,
+  "tex": 152,
+  "prog": 58
+ },
+ "perfil": {
+  "pn0": 28132,
+  "pn1": 77009,
+  "terminar": {
+   "desdeUs": 66734759765.69939,
+   "hastaUs": 66743318079.68149,
+   "ventanaMs": 8557,
+   "top": [
+    {
+     "ms": 2283.9,
+     "fn": "avanzar · streaming.js:510"
+    },
+    {
+     "ms": 921.5,
+     "fn": "computeBoundingSphere · three.min.js:6"
+    },
+    {
+     "ms": 721.5,
+     "fn": "getX · three.min.js:6"
+    },
+    {
+     "ms": 431.3,
+     "fn": "bufferData · :0"
+    },
+    {
+     "ms": 421,
+     "fn": "getY · three.min.js:6"
+    },
+    {
+     "ms": 377.1,
+     "fn": "clone · three.min.js:6"
+    },
+    {
+     "ms": 366.2,
+     "fn": "setFromBufferAttribute · three.min.js:6"
+    },
+    {
+     "ms": 303.6,
+     "fn": "(program) · :0"
+    },
+    {
+     "ms": 201.4,
+     "fn": "applyNormalMatrix · three.min.js:6"
+    },
+    {
+     "ms": 191.5,
+     "fn": "applyMatrix4 · three.min.js:6"
+    },
+    {
+     "ms": 111.7,
+     "fn": "triQuery · terreno.js:183"
+    },
+    {
+     "ms": 109,
+     "fn": "getProgramParameter · :0"
+    },
+    {
+     "ms": 103.8,
+     "fn": "(garbage collector) · :0"
+    },
+    {
+     "ms": 79.4,
+     "fn": "insert · solidos.js:45"
+    },
+    {
+     "ms": 74.7,
+     "fn": "convertirAtlas · streaming.js:836"
+    },
+    {
+     "ms": 71.5,
+     "fn": "getZ · three.min.js:6"
+    },
+    {
+     "ms": 71.1,
+     "fn": "getClientRects · :0"
+    },
+    {
+     "ms": 58.3,
+     "fn": "muestraVanos · solidos.js:485"
+    },
+    {
+     "ms": 56,
+     "fn": "cuadro · streaming.js:1597"
+    },
+    {
+     "ms": 55.6,
+     "fn": "multiplyMatrices · three.min.js:6"
+    },
+    {
+     "ms": 39.7,
+     "fn": "triSeguir · solidos.js:107"
+    },
+    {
+     "ms": 39.6,
+     "fn": "traverse · three.min.js:6"
+    }
+   ]
+  },
+  "primerVuelo": {
+   "desdeUs": 66743318079.68149,
+   "hastaUs": 66756981317.48174,
+   "ventanaMs": 13664.8,
+   "top": [
+    {
+     "ms": 2946.8,
+     "fn": "avanzar · streaming.js:510"
+    },
+    {
+     "ms": 1088.8,
+     "fn": "(program) · :0"
+    },
+    {
+     "ms": 895.1,
+     "fn": "getX · three.min.js:6"
+    },
+    {
+     "ms": 690,
+     "fn": "computeBoundingSphere · three.min.js:6"
+    },
+    {
+     "ms": 534.5,
+     "fn": "getY · three.min.js:6"
+    },
+    {
+     "ms": 522.9,
+     "fn": "insert · solidos.js:45"
+    },
+    {
+     "ms": 513.3,
+     "fn": "bufferData · :0"
+    },
+    {
+     "ms": 420.3,
+     "fn": "triQuery · terreno.js:183"
+    },
+    {
+     "ms": 314.1,
+     "fn": "triSeguir · solidos.js:107"
+    },
+    {
+     "ms": 219.5,
+     "fn": "setFromBufferAttribute · three.min.js:6"
+    },
+    {
+     "ms": 218.5,
+     "fn": "getProgramParameter · :0"
+    },
+    {
+     "ms": 187.7,
+     "fn": "cuadro · streaming.js:1597"
+    },
+    {
+     "ms": 163.2,
+     "fn": "multiplyMatrices · three.min.js:6"
+    },
+    {
+     "ms": 140.9,
+     "fn": "traverse · three.min.js:6"
+    },
+    {
+     "ms": 118.1,
+     "fn": "getClientRects · :0"
+    },
+    {
+     "ms": 109.9,
+     "fn": "bufferSubData · :0"
+    },
+    {
+     "ms": 109.2,
+     "fn": "pushOut · fisica.js:173"
+    },
+    {
+     "ms": 105.2,
+     "fn": "actualizar · vegetacion.js:816"
+    },
+    {
+     "ms": 102.8,
+     "fn": "texturasDe · renderer.js:723"
+    },
+    {
+     "ms": 99.2,
+     "fn": "(anon) · three.min.js:6"
+    },
+    {
+     "ms": 98.8,
+     "fn": "renderBufferDirect · three.min.js:6"
+    },
+    {
+     "ms": 96.5,
+     "fn": "bindBuffer · :0"
+    }
+   ]
+  },
+  "total": {
+   "desdeUs": 66727541242,
+   "hastaUs": 66776852183,
+   "ventanaMs": 48174,
+   "top": [
+    {
+     "ms": 9612.9,
+     "fn": "avanzar · streaming.js:510"
+    },
+    {
+     "ms": 4165.8,
+     "fn": "(program) · :0"
+    },
+    {
+     "ms": 2957.5,
+     "fn": "getX · three.min.js:6"
+    },
+    {
+     "ms": 2732.7,
+     "fn": "computeBoundingSphere · three.min.js:6"
+    },
+    {
+     "ms": 1825.3,
+     "fn": "bufferData · :0"
+    },
+    {
+     "ms": 1738.8,
+     "fn": "getY · three.min.js:6"
+    },
+    {
+     "ms": 1487.2,
+     "fn": "insert · solidos.js:45"
+    },
+    {
+     "ms": 1178.1,
+     "fn": "triQuery · terreno.js:183"
+    },
+    {
+     "ms": 1061.1,
+     "fn": "setFromBufferAttribute · three.min.js:6"
+    },
+    {
+     "ms": 894.1,
+     "fn": "getProgramParameter · :0"
+    },
+    {
+     "ms": 752.5,
+     "fn": "triSeguir · solidos.js:107"
+    },
+    {
+     "ms": 613.9,
+     "fn": "cuadro · streaming.js:1597"
+    },
+    {
+     "ms": 604.3,
+     "fn": "multiplyMatrices · three.min.js:6"
+    },
+    {
+     "ms": 517.5,
+     "fn": "traverse · three.min.js:6"
+    },
+    {
+     "ms": 516.2,
+     "fn": "clone · three.min.js:6"
+    },
+    {
+     "ms": 478,
+     "fn": "trabajar · solidos.js:192"
+    },
+    {
+     "ms": 463.5,
+     "fn": "getClientRects · :0"
+    },
+    {
+     "ms": 433.9,
+     "fn": "pushOut · fisica.js:173"
+    },
+    {
+     "ms": 427.6,
+     "fn": "(anon) · three.min.js:6"
+    },
+    {
+     "ms": 408.7,
+     "fn": "spans · solidos.js:75"
+    },
+    {
+     "ms": 369,
+     "fn": "updateMatrixWorld · three.min.js:6"
+    },
+    {
+     "ms": 358.5,
+     "fn": "applyMatrix4 · three.min.js:6"
+    },
+    {
+     "ms": 345.8,
+     "fn": "floraCerca · solidos.js:300"
+    },
+    {
+     "ms": 331,
+     "fn": "texturasDe · renderer.js:723"
+    },
+    {
+     "ms": 326.9,
+     "fn": "bufferSubData · :0"
+    },
+    {
+     "ms": 317.7,
+     "fn": "step · fisica.js:315"
+    },
+    {
+     "ms": 316.6,
+     "fn": "(garbage collector) · :0"
+    },
+    {
+     "ms": 313,
+     "fn": "getZ · three.min.js:6"
+    },
+    {
+     "ms": 292.6,
+     "fn": "bindBuffer · :0"
+    },
+    {
+     "ms": 283,
+     "fn": "applyNormalMatrix · three.min.js:6"
+    }
+   ]
+  }
+ },
+ "errores": []
+}

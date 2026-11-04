@@ -1,0 +1,280 @@
+{
+ "escenario": "k031-vuelo-ciudad",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "dur": 30,
+  "fases": true,
+  "flujo": "semilla cap1 → portada → Aventura → teleport ciudad +36 m → terminar → círculo"
+ },
+ "okCarga": true,
+ "vuelo": {
+  "marcas": {
+   "tIni": 28054,
+   "teleport": 28054,
+   "terminar0": 36555,
+   "terminar1": 53937,
+   "vuelo0": 55485
+  },
+  "nCuadros": 643,
+  "peorMs": 4097,
+  "p95Ms": 229,
+  "p50Ms": 42,
+  "fpsMed": 11.21,
+  "calls": 45,
+  "ktris": 189,
+  "calidad": "bajo",
+  "terminarMs": 17382,
+  "terminarTope": false,
+  "top": [
+   {
+    "t": 50815,
+    "ms": 4097,
+    "fases": [
+     {
+      "t": 50603,
+      "upd": 14,
+      "ganchos": 6,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 208
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 45586,
+    "ms": 1917,
+    "fases": [
+     {
+      "t": 45575,
+      "upd": 13,
+      "ganchos": 3,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 11
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 41912,
+    "ms": 1708,
+    "fases": [
+     {
+      "t": 41896,
+      "upd": 13,
+      "ganchos": 7,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 12
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 80281,
+    "ms": 1319,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 930,
+      "t": 78968
+     }
+    ]
+   },
+   {
+    "t": 66975,
+    "ms": 1014,
+    "fases": [],
+    "lentos": []
+   },
+   {
+    "t": 53357,
+    "ms": 993,
+    "fases": [
+     {
+      "t": 53035,
+      "upd": 14,
+      "ganchos": 4,
+      "calentado": 2,
+      "warm": 0,
+      "dibujo": 319
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 75044,
+    "ms": 993,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 642,
+      "t": 74057
+     }
+    ]
+   },
+   {
+    "t": 52364,
+    "ms": 972,
+    "fases": [
+     {
+      "t": 52350,
+      "upd": 13,
+      "ganchos": 4,
+      "calentado": 1,
+      "warm": 0,
+      "dibujo": 9
+     }
+    ],
+    "lentos": []
+   },
+   {
+    "t": 73850,
+    "ms": 813,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 769,
+      "t": 73042
+     }
+    ]
+   },
+   {
+    "t": 78808,
+    "ms": 806,
+    "fases": [],
+    "lentos": [
+     {
+      "n": "fundirHDGlobal:AV_HD_Ancient",
+      "ms": 752,
+      "t": 78009
+     }
+    ]
+   }
+  ],
+  "lentos": [
+   {
+    "n": "fundirHD:kelvin_aldea_meandros",
+    "ms": 213,
+    "t": 71778
+   },
+   {
+    "n": "fundirCerca:kelvin_aldea_meandros_2",
+    "ms": 76,
+    "t": 72314
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 388,
+    "t": 72538
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 769,
+    "t": 73042
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 642,
+    "t": 74057
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 29,
+    "t": 75253
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 40,
+    "t": 75540
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 95,
+    "t": 75780
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 33,
+    "t": 76122
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 78,
+    "t": 76341
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 41,
+    "t": 76645
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 131,
+    "t": 76888
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 380,
+    "t": 77587
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 752,
+    "t": 78009
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 930,
+    "t": 78968
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 26,
+    "t": 80522
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 106,
+    "t": 80836
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 46,
+    "t": 81223
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Savage",
+    "ms": 106,
+    "t": 81585
+   },
+   {
+    "n": "fundirHDGlobal",
+    "ms": 42,
+    "t": 84853
+   },
+   {
+    "n": "fundirCercaGlobal:AV_HD_Ancient",
+    "ms": 29,
+    "t": 85012
+   },
+   {
+    "n": "fundirHDGlobal:AV_HD_Ancient",
+    "ms": 502,
+    "t": 85204
+   }
+  ],
+  "heapMax": 1329.8,
+  "geo": 272,
+  "tex": 152,
+  "prog": 58
+ },
+ "errores": []
+}
