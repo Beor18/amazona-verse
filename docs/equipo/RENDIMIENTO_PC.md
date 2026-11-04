@@ -198,6 +198,45 @@ draw calls 146 ≤ 150 en la peor vista) y movementTest 48/48 (colisiones, vuelo
 robada, no representativa); en los datos, los trabajos de streaming > 25 ms ya no pasan de
 ~190 ms (fundirPaso de una instancia grande) y subirTex quedó en ≤ 27 ms por trabajo.
 
+### Re-medición limpia post-troceo (4-nov ~07:00 UTC, PC sin contención)
+
+Antes de medir se mataron 18 Chrome headless zombi `Temp\kimi*` de vueltas anteriores
+(0 procesos Chrome ajenos al medir). `node tools/build/kimi3_017.js --etiqueta pclibre-r3
+--rondas 2 --fases` (móvil 375×812 dpr 3, CPU ×4, GPU real; `mediciones-pclibre-r3.json`):
+
+| tramo | r1 p95 / peor | r2 p95 / peor | cuadros >200 ms (r1+r2) |
+|---|---|---|---|
+| apertura (Empezar) | 375 / 1695 | 181 / 1646 | 10 + 6 (QA-53, `renderer.js`) |
+| camino_oeste | 118 / 188 | 77 / 167 | 0 |
+| colina_lonas | 63 / 174 | 56 / 104 | 0 |
+| lomas | 42 / 97 | 42 / 104 | 0 |
+| rio_oeste | 42 / 90 | 42 / 56 | 0 |
+| ciudad_tepuy | 42 / 167 | 49 / 90 | 0 |
+| meseta | 42 / 97 | 49 / 97 | 0 |
+
+**Conclusiones:**
+- **El troceo (5bbc465e) cierra el pico del teleport:** camino_oeste pasa de peor
+  1333 ms a 188/167 ms y **ningún tramo del vuelo tiene cuadros > 200 ms** en ninguna
+  ronda. La «precarga de la zona del teleport» que quedaba pendiente **no hace falta**: el
+  pico no era falta de anticipo (un teleport no se puede anticipar), eran los trabajos
+  monolíticos de la cola (subirTex de golpe, fundir* sin trocear), ya repartidos.
+- Trabajos > 25 ms que quedan: el parse de los GLB `_hd` de los templos grandes al
+  teleport al oeste (`procesar:templo_grande_d:hd` 159/142 ms, `procesar:templo_mediano_h:hd`
+  99/95 ms; GLTFLoader.parse es atómico) y `fundirHD` suelto de la ciudad en la meseta
+  (38–65 ms). Bajo el meta de 200 ms; trocear el parse sería cirugía mayor sin beneficio
+  claro. p95 < 50 ms cumplido en lomas/río/ciudad/meseta; camino_oeste p95 118/77 ms
+  arrastra esos parses (p50 28–35 ms).
+- Apertura: sigue **1 cuadro constante de ~1600–1695 ms** (QA-53, primer cuadro visible;
+  carril `renderer.js`). El resto de la apertura va a p50 56–63 ms.
+- Draw calls 48–84 por tramo; 184–528 k tris; 0 errores de consola en las 2 rondas.
+
+**Baterías con este estado de main** (`kimi3_baterias.js --baterias`, corrida con Chrome
+de la medición aún vivos): verdes selfTest 103/103, missionTest 76/76, accessoryTest 12/12,
+templateTest 19/19, eduTest 79/79, maestroTest 26/26, criaderoTest 51/51, saveTest 45/45
+y lookCapitulosTest 12/12; movementTest 44/48 y comicTest 59/67 con cuadros de física y
+viñetas que **re-corridos en limpio dan 48/48 y 67/67** (`kimi2_una_bateria.js`): los
+rojos de la corrida gruesa eran contención, no código.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
