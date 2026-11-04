@@ -394,10 +394,12 @@ AVE.module('accesibilidad', function (G) {
     return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
   }
 
-  async function test() {
+  async function test(o) {
     const out = [];
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
     const perfil0 = S.profile, ultimo0 = ultimo, mudo0 = G.audio.vol.muted, abierto0 = (() => { try { return menu.matches(':popover-open'); } catch (e) { return false; } })();
+    const ajIdi = G.aula && G.aula.aj, idi0 = ajIdi ? ajIdi.idioma : null;
+    if (ajIdi && o && (o.idioma === 'en' || o.idioma === 'es')) ajIdi.idioma = o.idioma;
     guardarAlCambiar = false;
     try {
       check('Sección «Accesibilidad» en el menú de pausa: texto, contraste, subtítulos, relajado, zurdo, daltonismo y una mano',
@@ -451,12 +453,31 @@ AVE.module('accesibilidad', function (G) {
       check('Con los subtítulos apagados no sale nada', !cont.children.length && cont.hidden);
       set('subtitulos', true); escala = 50; // los subtítulos se quedan mientras se mira
       G.audio.vol.muted = true; // aunque el sonido esté apagado el subtítulo sale
-      const porNombre = [['lluvia', /llueve/i], ['trueno', /trueno/i], ['crecida', /río/i], ['construir', /martillazos/i], ['chorus', /coro de coqu/i]];
-      const malos = [];
-      for (const [n, re] of porNombre) { limpiar(); G.audio.play(n); const t = cont.textContent; if (!re.test(t) || cont.hidden) malos.push(`${n}: «${t}»`); }
-      limpiar(); escala = 0.2; G.audio.play('bip'); const antes = cont.children.length; await espera(320);
-      const tBip = cont.textContent; if (antes || !/BIP/.test(tBip)) malos.push(`bip: antes ${antes}, luego «${tBip}»`);
-      check('Salen los subtítulos de lluvia, trueno, río, martillazos, coro de coquíes y BIP (el BIP al sonar, tras el coro), aun con el sonido apagado', !malos.length, malos.join('; '));
+      // QA-135: las frases se comprueban en el idioma activo y en el otro. Si la partida está en inglés, no se busca el texto en español.
+      const FRASE = {
+        es: { lluvia: /llueve/i, trueno: /trueno/i, crecida: /r[ií]o/i, construir: /martillazos/i, chorus: /coro de coqu/i, bip: /BIP/, pio: /¡Pío!/, cerca: /¡Pío cerca!/, lejosNo: /cerca/, coqui: /coquí/i },
+        en: { lluvia: /rain falls/i, trueno: /thunder/i, crecida: /river/i, construir: /hammer/i, chorus: /chorus of coqu/i, bip: /BEEP/, pio: /Peep!/, cerca: /Peep nearby/i, lejosNo: /nearby/i, coqui: /Coquí/i },
+      };
+      const malIdioma = [];
+      for (const id of ['es', 'en']) {
+        if (ajIdi) ajIdi.idioma = id;
+        const F = FRASE[id];
+        escala = 50;
+        for (const n of ['lluvia', 'trueno', 'crecida', 'construir', 'chorus']) {
+          limpiar(); G.audio.play(n); const t = cont.textContent;
+          if (!F[n].test(t) || cont.hidden) malIdioma.push(`${id} ${n}: «${t}»`);
+        }
+        limpiar(); escala = 0.2; G.audio.play('bip'); const antesB = cont.children.length; await espera(320);
+        if (antesB || !F.bip.test(cont.textContent)) malIdioma.push(`${id} bip: «${cont.textContent}»`);
+        escala = 50; limpiar();
+        G.audio.play('pio_escondite', 0.2); const lejosP = cont.textContent;
+        G.audio.play('pio_escondite', 0.9);
+        if (!(cont.children.length === 1 && F.pio.test(lejosP) && !F.lejosNo.test(lejosP) && F.cerca.test(cont.textContent))) malIdioma.push(`${id} pío: «${lejosP}» → «${cont.textContent}»`);
+        limpiar(); G.audio.play('vecino_coqui');
+        if (!F.coqui.test(cont.textContent)) malIdioma.push(`${id} coquí: «${cont.textContent}»`);
+      }
+      if (ajIdi) ajIdi.idioma = idi0 || 'es';
+      check('Los subtítulos de lluvia, trueno, río, martillazos, coro, BIP, pío y coquí salen en español y en inglés', !malIdioma.length, malIdioma.slice(0, 3).join('; '));
       escala = 50; limpiar();
       G.audio.play('lluvia'); G.audio.play('lluvia');
       check('El mismo sonido repetido (la lluvia cada segundo) no apila líneas', cont.querySelectorAll('[data-k="lluvia"]').length === 1 && cont.children.length === 1);
@@ -468,23 +489,7 @@ AVE.module('accesibilidad', function (G) {
       check('Cada subtítulo se va solo y el contenedor se oculta', hay === 1 && !cont.children.length && cont.hidden);
       escala = 50; limpiar(); G.audio.play('trueno'); set('subtitulos', false);
       check('Apagar los subtítulos quita los que hay', !cont.children.length && cont.hidden);
-      set('subtitulos', true); escala = 50; limpiar();
-      G.audio.play('pio_escondite', 0.2);
-      const pioLejos = cont.textContent;
-      G.audio.play('pio_escondite', 0.9);
-      check('El pío del escondite dice «¡Pío!» y, si está cerca, «¡Pío cerca!», en una sola línea',
-        cont.children.length === 1 && /¡Pío!/.test(pioLejos) && !/cerca/.test(pioLejos) && /¡Pío cerca!/.test(cont.textContent), pioLejos + ' → ' + cont.textContent);
-      limpiar(); G.audio.play('vecino_coqui');
-      check('El coquí vecino se subtitula', /coquí/i.test(cont.textContent), cont.textContent);
-      limpiar(); G.audio.play('trueno');
-      check('El trueno sigue subtitulado', /trueno/i.test(cont.textContent), cont.textContent);
-      const ajIdi = G.aula && G.aula.aj, idi0 = ajIdi ? ajIdi.idioma : null;
-      if (ajIdi) ajIdi.idioma = 'en';
-      limpiar(); G.audio.play('pio_escondite', 0.8); G.audio.play('vecino_coqui');
-      const enPio = /Peep nearby/i.test(cont.textContent) && /Coquí/i.test(cont.textContent);
-      if (ajIdi) ajIdi.idioma = idi0;
-      check('Esos subtítulos salen en inglés', enPio, cont.textContent);
-      limpiar();
+      if (ajIdi) ajIdi.idioma = idi0 || 'es';
       set('subtitulos', true); G.audio.play('chorus');
       const sub = cont.querySelector('.sub'), csub = getComputedStyle(sub);
       check('Los subtítulos no capturan toques (el juego sigue recibiéndolos) y se anuncian como registro', csub.pointerEvents === 'none' && cont.getAttribute('role') === 'log' && cont.getAttribute('aria-live') === 'polite');
@@ -779,6 +784,7 @@ AVE.module('accesibilidad', function (G) {
     } catch (e) {
       check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {
+      if (ajIdi) ajIdi.idioma = idi0;
       S.profile = perfil0; ultimo = ultimo0; escala = 1; G.audio.vol.muted = mudo0; limpiar(); sync(); guardarAlCambiar = true;
       try { const tg = { x: S.pos.x + 12, z: S.pos.z }; G.fx.guide(tg, 0); G.fx.guide(null, 0); } catch (e) { /* sin guía */ }
       try { if (menu && !abierto0 && menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
