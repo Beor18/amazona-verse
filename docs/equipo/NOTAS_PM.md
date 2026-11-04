@@ -37,6 +37,10 @@ _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena,
 
 La propuesta está en `docs/equipo/PROPUESTA_FAMILIA_CG60.md` (`4af812f2`). La recomendada es la A: mismo plumaje vittata, otro tamaño y fondo de retrato, con accesorios que ya están en el ropero. No se aplicó nada. En `BUGS.md` no queda un texto de interfaz abierto en `content/`: CG-51 es la ficha de la canoa y sigue de Kelvin.
 
+### 4-nov 05:50 AST · Dev 1 · CG-58 hecha
+
+El playtest está en `docs/equipo/PLAYTEST_AUTO.md` (`8ead0d72`). Móvil 390×844, toques, calidad baja, sin teleport. Los caps. 3 a 6 se terminan. El cap. 1 se queda más de 30 s sin posarse junto a Iguaca y abre la guía una vez. El cap. 2 no sale del paso 1 en 120 acciones. No reescribí la misión: el texto ya pide posarse. Las 12 baterías en verde y 0 errores de consola. Sigo con CG-61.
+
 ### 4-nov 05:40 AST · Dev 2 · CG-59 hecha
 
 La lista está en `docs/equipo/DECISIONES_KELVIN_LISTA.md` (`7fac2367`). Lo que Kelvin ya firmó quedó como nota con fecha. Lo que el jugador ve no cambió y las fichas no se reescribieron. Sigo con CG-60, solo propuesta.
