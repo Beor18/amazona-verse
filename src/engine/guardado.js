@@ -319,9 +319,16 @@ AVE.module('guardado', function (G) {
   function autosave() { saveDebounce = 0.5; }
   G.on('update', dt => { if (saveDebounce > 0) { saveDebounce -= dt; if (saveDebounce <= 0) save(true); } }, 80);
   // Al ocultar o cerrar la pestaña se escribe lo pendiente (Chromebooks y móviles cierran sin avisar)
-  const pendiente = () => { if (saveDebounce > 0) { saveDebounce = 0; save(true); } };
-  addEventListener('pagehide', pendiente);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') pendiente(); });
+  // W15: con una partida empezada se guarda siempre al ocultarse (Safari puede matar la pestaña en segundo plano sin otro aviso,
+  // también a mitad de un paso: la posición y el reloj cambian sin autosave). 'freeze' es el aviso de Chrome/Android al congelar.
+  const alOcultar = () => {
+    if (suspendido) return false;
+    if (saveDebounce > 0 || (S.profile && S.profile.created)) { saveDebounce = 0; return save(true); }
+    return false;
+  };
+  addEventListener('pagehide', alOcultar);
+  document.addEventListener('freeze', alOcultar);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') alOcultar(); });
 
   // ---------- Lectura ----------
   // La mejor partida de un contexto: { d, fuente: 'principal'|'temporal'|'anterior'|'memoria'|null, danada }
@@ -595,6 +602,21 @@ AVE.module('guardado', function (G) {
       try { rReal = save(true); } catch (e) { lanzoReal = true; }
       suspendido = true; almacen = antes.almacen;
       check('El save() del juego con el almacén bloqueado no lanza y pasa a modo memoria', !lanzoReal && rReal === false && estado.almacen === 'memoria' && estado.ultimo === 'memoria');
+      // 6a. W15: el autoguardado silencioso que no puede escribir avisa una vez (no se pierde la partida sin saberlo)
+      {
+        const toastR = G.ui.toast, quietR = G.quiet, avR = avisadoMemoria, av = []; G.ui.toast = t => { av.push(String(t)); };
+        almacen = B; suspendido = false; G.quiet = false; avisadoMemoria = false;
+        try { save(true); save(true); } finally { suspendido = true; almacen = antes.almacen; G.quiet = quietR; G.ui.toast = toastR; avisadoMemoria = avR; }
+        check('Autoguardado sin almacén: avisa una sola vez aunque sea silencioso', av.length === 1 && /no deja guardar|cannot save/.test(av[0]), av.join(' | '));
+      }
+      // 6a2. W15: al ocultar la pestaña con una partida empezada se guarda aunque no hubiera nada pendiente
+      {
+        const F = almacenFalso(), pc = S.profile.created, sd = saveDebounce;
+        almacen = F; suspendido = false; S.profile.created = true; saveDebounce = 0; S.step = 9;
+        let rO = null; try { rO = alOcultar(); } finally { suspendido = true; almacen = antes.almacen; S.profile.created = pc; saveDebounce = sd; }
+        const dO = leerJSON(F.get(SAVE_KEY));
+        check('Al ocultar la pestaña (pagehide, freeze o oculta) se guarda la partida empezada sin esperar al autoguardado', rO === true && !!dO && dO.step === 9, String(rO) + ' · paso ' + (dO && dO.step));
+      }
       // 6b. Cuota llena: sin .prev; si aun así no cabe, sin capturas; si no cabe nada, en memoria
       S.captures = Object.assign({}, S.captures, { prueba: 'data:image/jpeg;base64,' + 'A'.repeat(60000) });
       const chico = serialize(true, almacenFalso()).length;
