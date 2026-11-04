@@ -31,6 +31,8 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Levanta las tablas entre todos": "Lift the planks together",
  "Escucha a los dos grupos y sienta a los 36": "Listen to both groups and seat the 36",
  "Escucha a los dos grupos y sienta a los 36 ({}/8)": "Listen to both groups and seat the 36 ({}/8)",
+ "Escucha a los dos grupos e invita a los 8 que llegaron": "Listen to both groups and invite the 8 who arrived",
+ "Escucha a los dos grupos e invita a los 8 que llegaron ({}/8)": "Listen to both groups and invite the 8 who arrived ({}/8)",
  "Conoce a los 6 visitantes": "Meet the 6 visitors",
  "Conoce a los 6 visitantes ({}/6)": "Meet the 6 visitors ({}/6)",
  "Dos no dijeron qué necesitan: obsérvalos": "Two didn't say what they need: watch them",
