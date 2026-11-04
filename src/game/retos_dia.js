@@ -186,12 +186,19 @@ AVE.module('retosDia', function (G) {
         G.aula.aj.idioma = idiomaAntes; pintar();
       }
       usarFecha('2026-11-04'); completar('looping');
+      if (G.aula && G.aula.aj) G.aula.aj.idioma = 'es';
       const html = htmlRecords();
-      ok('La insignia de Mis récords se llena con lo hecho', /1\/3/.test(html) && /--fill:0.333/.test(html) && !/compra|loot/i.test(html), html.slice(0, 120));
+      ok('La insignia de Mis récords se llena con lo hecho', /1\/3/.test(html) && /--fill:0.333/.test(html) && /Retos de hoy/.test(html) && !/compra|loot/i.test(html), html.slice(0, 120));
+      if (G.aula && G.aula.aj) { G.aula.aj.idioma = 'en'; }
+      const htmlEn = htmlRecords();
+      ok('La insignia también se llena en inglés', /1\/3/.test(htmlEn) && /Today(?:'|&#39;)s challenges/.test(htmlEn) && !/Retos de hoy/.test(htmlEn), htmlEn.slice(0, 140));
       if (window.AV && window.AV.records) {
+        if (G.aula && G.aula.aj) G.aula.aj.idioma = 'es';
         await window.AV.records({ desde: 'portada' });
-        const badge = document.querySelector('#rec-retos-dia');
-        ok('Mis récords muestra los retos de hoy', !!badge && /1\/3/.test(badge.textContent) && /Retos de hoy/.test(badge.textContent));
+        const badge = () => document.querySelector('#rec-retos-dia');
+        ok('Mis récords muestra los retos de hoy en español', !!badge() && /1\/3/.test(badge().textContent) && /Retos de hoy/.test(badge().textContent));
+        if (G.aula && G.aula.aj) { G.aula.aj.idioma = 'en'; G.emit('aula'); }
+        ok('Mis récords muestra los retos de hoy en inglés', !!badge() && /1\/3/.test(badge().textContent) && /Today's challenges/.test(badge().textContent) && !/Retos de hoy/.test(badge().textContent));
         if (G.recordsApi && G.recordsApi.cerrar) G.recordsApi.cerrar();
       }
     } catch (e) { ok('sin excepciones', false, String(e && e.stack || e).slice(0, 300)); }

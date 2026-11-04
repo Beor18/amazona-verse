@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-126 | media | 4-nov, QA: `retosDiaTest` en inglés falla porque busca «Retos de hoy» en Mis récords. | `src/game/retos_dia.js` la comprobación del panel no sigue el idioma. | Grok | resuelto · el panel se comprueba en español y en inglés |
 | QA-125 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 3, con los 6 materiales en la poza, el objetivo dice «bucea (0/2)». No dice qué hay que sacar. | `content/ep3/pack.js`, el progreso del paso de flotar. | Grok | resuelto · el objetivo dice «saca del fondo lo hundido (0/2)», en ES y EN |
 | QA-124 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 4, tras elegir el cuidado, el botón dice «Decirle a quien pierde». No se entiende a quién ni qué hay que decir. El número QA-122 lo usó Dev 4 en familia.js. | `content/ep4/pack.js`, la etiqueta de la mesa en el paso de la asamblea. | Grok | resuelto · el botón dice «Explicar con cariño lo que cuesta», en ES y EN |
 | QA-121 | baja | 4-nov, ronda de textos de la interfaz: en el cap. 5, con las tres estaciones puestas, el objetivo añade «· ahora la prueba». No dice a dónde ir. | `content/ep5/pack.js`, el progreso del paso estaciones. | Grok | resuelto · el objetivo dice «sigue la flecha y prueba el relevo», en ES y EN |
