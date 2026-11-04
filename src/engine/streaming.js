@@ -323,9 +323,12 @@ AVE.module('streaming', function (G) {
   // fuera de alta, se queda en 2048 (celda 512, 21 MB): se dibuja una vez en un lienzo y se suelta el original. Al volver a una
   // calidad mayor sigue en 2048 hasta que la zona se descarga y el modelo vuelve a bajar.
   const MOVIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
-  // QA-110 (iPhone, 4-nov: se cerró volando sobre la Ciudad de los 36 en bajo): en el móvil, fuera de alta, el atlas baja a 1024
-  // (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85). En el escritorio, en bajo, sigue en 2048.
-  const atlasMax = () => MOVIL && nivelCal() !== 'alto' ? HD.celdas * HD.celda / 4 : nivelCal() === 'bajo' ? HD.celdas * HD.celda / 2 : 0;
+  // QA-110 (iPhone, 4-nov: se cerró volando sobre la Ciudad de los 36 en bajo). Decisión de Kelvin (4-nov, DECISION_LOG): en el
+  // móvil de pantalla pequeña (táctil y lado corto < 600 px: iPhone y Android, no tablets) el atlas baja a 1024 al cargar, antes
+  // de subirlo (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85), en cualquier calidad. Tablet y escritorio, como antes.
+  const MOVIL_PEQ = MOVIL && Math.min(screen.width || 0, screen.height || 0) > 0 && Math.min(screen.width, screen.height) < 600;
+  const atlasMax = () => MOVIL_PEQ ? HD.celdas * HD.celda / 4
+    : nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
   // QA-110: las texturas del atlas se suben a la GPU de una en una, cada 300 ms (renderer.initTexture), en cuanto se crea el
   // material y antes de que la ciudad se vea; así no llegan las cuatro en el mismo cuadro al despegar. Una imagen que aún no
   // ha cargado espera su turno de nuevo (hasta ~30 s); si la escena la dibuja antes, three la sube allí, como antes.

@@ -316,3 +316,9 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **Música:** aprobada la dirección de dos temas originales (ciudad de noche y sorpresas). Pendientes los MP3 y la verificación de derechos de uso comercial.
 - **Importante:** no alterar el canon establecido, las 36 especies, los seis capítulos ni las mecánicas existentes para introducir estos elementos.
 - **4-nov · 24c APROBADA por Kelvin («todas ✅»):** las líneas de Iguaca y las cinco mentoras de `docs/equipo/PROPUESTA_MENTORAS_24C.md` entran tal cual (ES y EN) en `src/game/dones.js`.
+
+## 4-nov-2026 · Kelvin: en el móvil, los atlas _hd de los edificios a la mitad (QA-110)
+- **Decisión de Kelvin (04:10 UTC, opción A, «sí»):** en los móviles de pantalla pequeña (iPhone y Android: táctil y lado corto de la pantalla < 600 px), los atlas `_hd` de los edificios (Ancient y Savage, difusa y normales) se cargan a 1024² en vez de 2048². La reducción se hace al cargar, antes de subirlos a la GPU. Tablet y escritorio, sin cambios.
+- **Por qué:** el iPhone se cerró volando sobre la Ciudad de los 36 (pico de memoria al subir de golpe los cuatro atlas, 85 MB). Con 1024 los cuatro ocupan 21 MB y se suben de uno en uno (cada 300 ms). En el iPhone emulado: pico de GPU 193 → 129 MB y mayor salto 45 → 12 MB/s.
+- **Costo:** en el móvil las texturas de cerca de los edificios se ven menos nítidas.
+- **Código:** `src/engine/streaming.js` (`atlasMax`, `subirEnCola`).
