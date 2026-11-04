@@ -362,7 +362,7 @@ tope sí aplica: los números de abajo son lo que ve un iPhone.
 |---|---|---|
 | KB3D kit restaurado | 161,4 MB (38 t @1024², map+normal) | texturas de los edificios del kit (`DecoMd_KB3D_*`…); el look NO las encoge: `encoger()` se salta los CanvasTexture que no sean flora (look.js:209, decisión «no se recorta lo gráfico») |
 | atlas `_hd` | 21,2 MB (4 t @1024²) | ya en suelo de iPhone (MOVIL_PEQ, 63376aae); en escritorio 2048²/4096² |
-| flora | 40,7 MB (44 t) | de ellas **27,8 MB en 30 texturas de la banda `:sombra`**, que en bajo no se dibuja (`sombraFlora:false`) |
+| flora | 40,7 MB (44 t) | ⚠ **corrección (4-nov ~15:30 UTC, Kimi 1): no hay 28 MB ociosos**. Las 30 entradas `:sombra` del volcado son los MISMOS objetos de textura que usa la banda `lejos` (material compartido por cerca/lejos/lod en `crearMallas`): la herramienta los contó una sola vez y los atribuyó a `:sombra` solo porque esa malla se añade primero a la escena (recorrido en orden). Toda la flora ~41 MB está en uso; un placeholder en `:sombra` ahorraría 0 MB (y rompería la banda visible si sustituyera el mapa compartido) |
 | Vittata | 11,9 MB (3 t: 2×1024² + 1×512²) | jugador + segunda copia (familia CG-62); candidata a dedupe |
 | suelo + otros | ~18 MB | splat del terreno + cielo/agua |
 | **total estimado** | **281 MB** | medio: 282 MB (mismo tope 512 heredado del perfil bajo) |
@@ -374,9 +374,19 @@ por GPU de QA-110 (pico 129–193 MB en ruta); esta estimación incluye imágene
 
 **Recortes posibles (decisión):** (a) kit KB3D a 512 en bajo → ~40 MB (ahorro ~120 MB): cambia la
 imagen de los edificios de cerca → **Kelvin** (es el mismo pedido del rojo conocido de lookTest).
-(b) flora `:sombra` → placeholder 1×1 cuando `sombraFlora:false` (bajo): ~28 MB de JS/decodificación,
-sin cambio visual → seguro, carril `vegetacion.js` (Kimi 1). (c) dedupe de la textura de
-Vittata/familia: ~6–10 MB → carril personaje.
+(b) ~~flora `:sombra` → placeholder~~ **hecho en otra forma (4-nov ~15:45 UTC, commit de esta
+vuelta):** el placeholder ahorraba 0 MB (arriba); el recorte real fue crear perezosamente las bandas
+`cerca` (la `:sombra`, que proyecta sombra con su `customDepthMaterial`) y `lod` de cada primitiva de
+árbol: solo existen desde el primer `actualizar` que las usa (`sombraR>0` = 'alto'; `medio` no vacío =
+medio/alto). En bajo no se reservan sus buffers de instancia (n×76 B por banda): **1,6 MB exactos**
+(7 307 árboles × 3 bandas × 228 B) y 30 InstancedMesh menos en la escena; medido en A/B con
+`tools/build/kimi1_qa110b.js` (bajo ciudad: bandas 0/0 tras el fix, 20/10 en HEAD; heap 63,5 vs 69,8
+MB en el contexto de drenado forzado, ±ruido de carga; en alto tras `setCalidad` en marcha se crean
+solas 20 `:sombra` + 7 `:lod` y `sombraR`/`dSombra` quedan idénticos a HEAD). floraTest 18/19 =
+HEAD (el rojo B1 GPU preexiste, mismo número en HEAD), movementTest 48/48, streamingTest 22/23
+(rojo conocido), lookTest 42/44 (rojos conocidos), 0 errores de consola. Sin cambio de imagen ni de
+draw calls/tris (mismas mallas y materiales, solo cambia el momento de creación). (c) dedupe de la
+textura de Vittata/familia: ~6–10 MB → carril personaje.
 
 ## KIMI-025 · clave de calor por material (parche 0j.2) en móvil con GPU real (4-nov, hecha · Kimi 3)
 

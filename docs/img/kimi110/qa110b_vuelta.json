@@ -1,0 +1,221 @@
+{
+ "etiqueta": "vuelta",
+ "pantalla": "390x844@3 cpuX4",
+ "bajo": {
+  "nivel": "bajo",
+  "bandas": {
+   "sombra": 0,
+   "lod": 0
+  },
+  "arboles": 7307,
+  "lazyBytes": 1665996,
+  "lazyMB": 1.6,
+  "detalle": {
+   "ceiba": 7,
+   "flamboyan": 11,
+   "tabonuco": 1998,
+   "helecho_arboreo": 332,
+   "palma_sierra": 1733,
+   "yagrumo": 822,
+   "bambu": 73,
+   "palma_sierra_joven": 1385,
+   "yagrumo_joven": 785,
+   "arbol_enano": 161
+  },
+  "heapMB": 63.5,
+  "fps": 13,
+  "med": {
+   "look": "vibrant_toon",
+   "fps": 2,
+   "calls": 0,
+   "triangulos": 0,
+   "calidad": "bajo",
+   "dpr": 1.25,
+   "post": false,
+   "programas": 0,
+   "heapMB": 64,
+   "geometrias": 20,
+   "texturasGPU": 26,
+   "texturas": 98,
+   "texturasGrandes": 4,
+   "atlasGrandes": 0,
+   "texturasMB": 106.2,
+   "sombraMB": 0,
+   "postMB": 0,
+   "texturasPor": {
+    "generadas": 10.6,
+    "otros": 7,
+    "suelo": 11.3,
+    "personajes": 16,
+    "flora": 61.4
+   },
+   "texturasTop": [
+    [
+     "vittata.jpg",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_1",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_2",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "flora:impostores",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "vittata.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "luma.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "guardian.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "abuela.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "papa.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "?",
+     "512×512",
+     1.3
+    ]
+   ]
+  },
+  "medErr": null,
+  "vegTipo": "object",
+  "vegClaves": "listo,stats,test,libre,instancias,atlas,info,rafaga,fundido,fundir,fundidoEn,actualizar",
+  "floraStats": {
+   "fundido": 1,
+   "total": 11544,
+   "mallas": 20,
+   "instanciasVisibles": 133,
+   "impostores": 376,
+   "pasto": 1,
+   "colliders": 78,
+   "arboles": 7307,
+   "bosque": 5372,
+   "tepuy": 307,
+   "copasCima": 0,
+   "dLod": 25.506999015808105,
+   "arbolesLod": 0,
+   "arbolesMalla": 39,
+   "trisArboles": 58612,
+   "topeTris": 60000,
+   "dArbol": 25.506999015808105,
+   "dSombra": 0,
+   "sombraR": 0,
+   "tope": 300
+  }
+ },
+ "alto": {
+  "nivel": "alto",
+  "bandas": {
+   "sombra": 20,
+   "lod": 7
+  },
+  "med": {
+   "look": "vibrant_toon",
+   "fps": 15,
+   "calls": 0,
+   "triangulos": 0,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": false,
+   "programas": 0,
+   "heapMB": 100,
+   "geometrias": 20,
+   "texturasGPU": 40,
+   "texturas": 114,
+   "texturasGrandes": 5,
+   "atlasGrandes": 2,
+   "texturasMB": 131.6,
+   "sombraMB": 16,
+   "postMB": 0,
+   "texturasPor": {
+    "generadas": 29.2,
+    "otros": 7,
+    "suelo": 11.3,
+    "personajes": 12,
+    "flora": 61.4,
+    "atlas_hd": 10.7
+   },
+   "texturasTop": [
+    [
+     "Vittata_1",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "Vittata_2",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "flora:impostores",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:muro_templo:hd:AV_HD_Ancient",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "edificiosInst:muro_templo:hd:AV_HD_Ancient",
+     "1024×1024",
+     5.3
+    ],
+    [
+     "vittata.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "luma.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "guardian.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "abuela.png",
+     "512×512",
+     1.3
+    ],
+    [
+     "papa.png",
+     "512×512",
+     1.3
+    ]
+   ]
+  },
+  "medErr": null,
+  "dSombra": 29.89880990228149,
+  "sombraR": 30
+ },
+ "errores": 0
+}
