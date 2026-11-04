@@ -1,0 +1,178 @@
+{
+  "etiqueta": "k030-r2",
+  "cuando": "2026-11-04T16:51:31.924Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 20,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 12237,
+    "pos": "-33,123,-136",
+    "heapBase": {
+      "heap": 117,
+      "total": 150
+    },
+    "heapPico": {
+      "heap": 767,
+      "total": 830
+    },
+    "calls": 72,
+    "ktris": 443,
+    "snaps": [
+      {
+        "t": 3832,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCerca:kelvin_aldea_meandros_2",
+            "fundirHDGlobal",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_ruinas_yunque",
+            "fundirSombra:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_aldea_rio_este_2",
+            "fundirSombra:kelvin_aldea_rio_este_2",
+            "fundirCerca:kelvin_ruinas_yunque_2",
+            "fundirSombra:kelvin_ruinas_yunque_2",
+            "fundirCerca:kelvin_aldea_colina",
+            "fundirSombra:kelvin_aldea_colina",
+            "fundirCercaGlobal",
+            "fundirLejosGlobal:AV_Lejos",
+            "fundirHD:kelvin_aldea_rio_este_2",
+            "fundirCerca:kelvin_ruinas_yunque_2"
+          ]
+        }
+      },
+      {
+        "t": 5779,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCercaGlobal:AV_HD_Savage",
+            "fundirLejosGlobal:AV_HD_Ancient",
+            "fundirHD:kelvin_aldea_rio_este_2",
+            "fundirHD:kelvin_ruinas_yunque"
+          ]
+        }
+      },
+      {
+        "t": 10050,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 12237,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirHD:kelvin_aldea_rio_este_2",
+        "ms": 61
+      },
+      {
+        "n": "fundirSombra:kelvin_aldea_rio_este_2",
+        "ms": 25
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 41
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 27
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 30
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 64
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 30
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 658
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 26
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 71
+      }
+    ]
+  },
+  "heap": {
+    "base": {
+      "heap": 117,
+      "total": 150
+    },
+    "pico": {
+      "heap": 767,
+      "total": 830
+    },
+    "retenido": {
+      "heap": 761,
+      "total": 762
+    },
+    "vuelta": {
+      "heap": 650,
+      "total": 651,
+      "geoViva": {
+        "mb": 602,
+        "mallas": 659
+      },
+      "st": {
+        "fps": 73,
+        "calls": 62,
+        "triangulos": 159645,
+        "calidad": "bajo",
+        "dpr": 1.25,
+        "post": false,
+        "sombras": false,
+        "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    }
+  },
+  "errores": []
+}

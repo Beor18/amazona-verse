@@ -1,0 +1,150 @@
+{
+  "etiqueta": "k030-r1",
+  "cuando": "2026-11-04T16:47:55.170Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 20,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 9369,
+    "pos": "-33,127,-136",
+    "heapBase": {
+      "heap": 878,
+      "total": 938
+    },
+    "heapPico": {
+      "heap": 858,
+      "total": 910
+    },
+    "calls": 62,
+    "ktris": 612,
+    "snaps": [
+      {
+        "t": 2670,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCercaGlobal",
+            "fundirCerca:kelvin_aldea_meandros_2",
+            "fundirCercaGlobal:AV_HD_Ancient",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_ruinas_yunque_2",
+            "fundirHDGlobal"
+          ]
+        }
+      },
+      {
+        "t": 7002,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCerca:kelvin_ruinas_yunque",
+            "fundirHDGlobal",
+            "fundirCercaGlobal"
+          ]
+        }
+      },
+      {
+        "t": 8315,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 9368,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirHDGlobal",
+        "ms": 45
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 670
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 35
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque_2",
+        "ms": 39
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 404
+      },
+      {
+        "n": "fundirCerca:kelvin_aldea_yunque",
+        "ms": 92
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 60
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 363
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 514
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 36
+      }
+    ]
+  },
+  "heap": {
+    "base": {
+      "heap": 878,
+      "total": 938
+    },
+    "pico": {
+      "heap": 858,
+      "total": 910
+    },
+    "retenido": {
+      "heap": 762,
+      "total": 763
+    }
+  },
+  "error": "JS: \"SyntaxError: missing ) after argument list\""
+}
