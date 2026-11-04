@@ -709,7 +709,8 @@ AVE.module('accesibilidad', function (G) {
               for (const e of [cajaP, ...cajaP.querySelectorAll('*')]) {
                 if (!visible(e) || e.closest('canvas') || e.tagName === 'CANVAS') continue;
                 const r = e.getBoundingClientRect();
-                if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll')) { malosO.push(`${et}: ${nomEl(e)} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
+                // QA-151: polygon.logo-shine es el barrido del logo. La animación shine lo lleva a translateX(-700px) y el clip de la palabra AMAZONA lo recorta a propósito. Su caja sale por la izquierda; no es un desborde de la portada.
+                if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest('.cr-globo, .maestro-scroll') && !(e.matches && e.matches('.logo-shine'))) { malosO.push(`${et}: ${nomEl(e)} se sale (${Math.round(r.left)}…${Math.round(r.right)})`); break; }
               }
               if (contr) {
                 let peor = 99, quien = '';
