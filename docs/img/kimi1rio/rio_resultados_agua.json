@@ -1,0 +1,82 @@
+{
+ "cuando": "2026-11-04T17:54:18.949Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 1600×900 dpr 1 · calidad media",
+ "tomas": [
+  {
+   "pos": {
+    "x": 218,
+    "y": 0.8,
+    "z": 258
+   },
+   "stats": {
+    "fps": 112,
+    "calls": 51,
+    "triangulos": 82964,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "agua_borde_sur",
+   "archivo": "rio_agua_borde_sur_agua.jpg"
+  },
+  {
+   "pos": {
+    "x": 243,
+    "y": 0.8,
+    "z": 258
+   },
+   "stats": {
+    "fps": 114,
+    "calls": 50,
+    "triangulos": 82948,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "agua_borde_se",
+   "archivo": "rio_agua_borde_se_agua.jpg"
+  },
+  {
+   "pos": {
+    "x": 218,
+    "y": 0.1,
+    "z": 241
+   },
+   "stats": {
+    "fps": 3,
+    "calls": 240,
+    "triangulos": 1601034,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "agua_boca_mirando_rio",
+   "archivo": "rio_agua_boca_mirando_rio_agua.jpg"
+  },
+  {
+   "pos": {
+    "x": 216,
+    "y": -0.5,
+    "z": 245
+   },
+   "stats": {
+    "fps": 60,
+    "calls": 148,
+    "triangulos": 932243,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "agua_bajo_superficie_boca",
+   "archivo": "rio_agua_bajo_superficie_boca_agua.jpg"
+  }
+ ]
+}

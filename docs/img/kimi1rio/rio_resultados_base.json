@@ -1,0 +1,139 @@
+{
+ "cuando": "2026-11-04T17:45:47.295Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 1600×900 dpr 1 · calidad media",
+ "tomas": [
+  {
+   "pos": {
+    "x": 218,
+    "y": -1.9,
+    "z": 256
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 147,
+    "triangulos": 648878,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "boca_aerea_n",
+   "archivo": "rio_boca_aerea_n_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 218,
+    "y": 2.2,
+    "z": 249
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 109,
+    "triangulos": 649339,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "boca_rasante_n",
+   "archivo": "rio_boca_rasante_n_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 210,
+    "y": 2.5,
+    "z": 244
+   },
+   "stats": {
+    "fps": 29,
+    "calls": 90,
+    "triangulos": 690214,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "boca_cerca_ne",
+   "archivo": "rio_boca_cerca_ne_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 218,
+    "y": 3,
+    "z": 231
+   },
+   "stats": {
+    "fps": 110,
+    "calls": 68,
+    "triangulos": 149242,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "final_rio_desde_norte",
+   "archivo": "rio_final_rio_desde_norte_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 252,
+    "y": 44.6,
+    "z": 256
+   },
+   "stats": {
+    "fps": 3,
+    "calls": 97,
+    "triangulos": 641451,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "esquina_se_aerea",
+   "archivo": "rio_esquina_se_aerea_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 258,
+    "y": 3.5,
+    "z": 247
+   },
+   "stats": {
+    "fps": 0,
+    "calls": 337,
+    "triangulos": 1433610,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "borde_malla_rio",
+   "archivo": "rio_borde_malla_rio_base.jpg"
+  },
+  {
+   "pos": {
+    "x": 232,
+    "y": 1.2,
+    "z": 252
+   },
+   "stats": {
+    "fps": 43,
+    "calls": 56,
+    "triangulos": 150008,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "dentro_agua_tierra",
+   "archivo": "rio_dentro_agua_tierra_base.jpg"
+  }
+ ]
+}
