@@ -109,11 +109,13 @@ window.AVComunidades = function (G) {
   function paso(dt) {
     dt = Math.min(Math.max(dt || 0, 0), 0.1);
     R.t += dt;
-    const gente = crear(), ids = {};
-    for (const s of activos()) ids[s.id] = true;
+    const gente = crear();
+    const ids = R.idsB || (R.idsB = new Set()); // persistente: sin objeto nuevo por cuadro (CG-67)
+    ids.clear();
+    for (const s of activos()) ids.add(s.id);
     const k = reducido() ? 0.35 : 1;
     for (const p of gente) {
-      p.on = !!ids[p.sitio] && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
+      p.on = ids.has(p.sitio) && (!bajo() || (R.prueba && !R.minima) || p.i < BAJO_N); // las pruebas, completas
       if (!p.on) continue;
       p.t += dt * k;
       if (p.acto === 'cargar') {
@@ -152,10 +154,10 @@ window.AVComunidades = function (G) {
     let n = 0;
     for (const p of R.gente) {
       if (!p.on || !p.k) continue;
-      B.EXTRA.push({
-        comunidad: 1, x: p.x, y: p.y, z: p.z, yaw: p.yaw, pitch: p.pitch, roll: p.roll || 0,
-        esc: 1.35, c: p.k.c, a: p.k.a, cob: p.k.cob || 0, fase: p.fase, ala: p.ala, cab: p.cab, gir: p.gir,
-      });
+      const e = p.extra || (p.extra = { comunidad: 1 }); // persistente: bandada solo lee campos en el cuadro (CG-67)
+      e.x = p.x; e.y = p.y; e.z = p.z; e.yaw = p.yaw; e.pitch = p.pitch; e.roll = p.roll || 0;
+      e.esc = 1.35; e.c = p.k.c; e.a = p.k.a; e.cob = p.k.cob || 0; e.fase = p.fase; e.ala = p.ala; e.cab = p.cab; e.gir = p.gir;
+      B.EXTRA.push(e);
       n++;
     }
     return n;

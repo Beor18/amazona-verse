@@ -279,8 +279,10 @@ window.AVCiudadViva = function (G) {
     for (const a of R.aves) {
       if (a.lejos) continue;
       const posada = a.est === 'posada';
-      B.EXTRA.push({ ciudad: 1, x: a.x, y: a.y + (posada ? 0.13 * a.esc : 0), z: a.z, yaw: a.yaw, pitch: a.pitch, roll: a.roll || 0, esc: a.esc,
-        c: a.k.c, a: a.k.a, cob: a.k.cob || 0, fase: a.fase, ala: a.ala, cab: posada ? a.cab : 0, gir: posada ? a.gir : 0 });
+      const e = a.extra || (a.extra = { ciudad: 1 }); // objeto persistente: bandada solo lee campos en el cuadro (CG-67)
+      e.x = a.x; e.y = a.y + (posada ? 0.13 * a.esc : 0); e.z = a.z; e.yaw = a.yaw; e.pitch = a.pitch; e.roll = a.roll || 0; e.esc = a.esc;
+      e.c = a.k.c; e.a = a.k.a; e.cob = a.k.cob || 0; e.fase = a.fase; e.ala = a.ala; e.cab = posada ? a.cab : 0; e.gir = posada ? a.gir : 0;
+      B.EXTRA.push(e);
       n++;
     }
     return n;
@@ -298,7 +300,9 @@ window.AVCiudadViva = function (G) {
     for (const a of R.aves) {
       const dc = Math.hypot(a.x - cam.x, a.y - cam.y, a.z - cam.z);
       a.lejos = dc > ACTIVA + 40;
-      a.cada = forzar === 'todo' ? 1 : LOD.find(l => dc < l[0])[1];
+      let cada = LOD[LOD.length - 1][1];
+      for (let li = 0; li < LOD.length; li++) if (dc < LOD[li][0]) { cada = LOD[li][1]; break; }
+      a.cada = forzar === 'todo' ? 1 : cada;
       a.acum += dt;
       if ((R.cuadro + a.i) % a.cada === 0 || a.acum > 0.5) { pasoAve(a, Math.min(a.acum, 0.25)); a.acum = 0; R.stats.pasos++; }
     }

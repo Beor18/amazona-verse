@@ -1,0 +1,253 @@
+{
+ "etiqueta": "base",
+ "movil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4,
+  "cap": 1,
+  "secsSampler": 30,
+  "kFaseB": 2000,
+  "reps": 3,
+  "flujo": "portada → Aventura → Villa Raíz"
+ },
+ "intentos": 1,
+ "clicAventura1": true,
+ "okCarga": true,
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "modulosSinCargar": [],
+ "faseA": {
+  "paseo": {
+   "segs": 33.7,
+   "cuadros": 436
+  },
+  "agg": {
+   "porMod": {
+    "sorpresas": 17400,
+    "ciudad_viva": 16500
+   },
+   "fueraDeMods": 3551044,
+   "total": 3584944,
+   "samples": 188
+  }
+ },
+ "faseB": {
+  "villa": {
+   "comunidades": {
+    "reps": [
+     {
+      "h0": 795360130,
+      "h1": 798874262,
+      "h2": 795419266,
+      "msCuadro": 6.8
+     },
+     {
+      "h0": 795420042,
+      "h1": 798803910,
+      "h2": 795445494,
+      "msCuadro": 6
+     },
+     {
+      "h0": 795425354,
+      "h1": 797500046,
+      "h2": 795425446,
+      "msCuadro": 5.1
+     }
+    ],
+    "basuraBporCuadro": 1679.21,
+    "retenidoBporBarrido": 25452,
+    "msCuadro": 6
+   },
+   "vecinos": {
+    "reps": [
+     {
+      "h0": 795428310,
+      "h1": 795429474,
+      "h2": 795429210,
+      "msCuadro": 0.5
+     },
+     {
+      "h0": 795429338,
+      "h1": 795429426,
+      "h2": 795429366,
+      "msCuadro": 0.3
+     },
+     {
+      "h0": 795429394,
+      "h1": 795429482,
+      "h2": 795429406,
+      "msCuadro": 0.3
+     }
+    ],
+    "basuraBporCuadro": 0.04,
+    "retenidoBporBarrido": 28,
+    "msCuadro": 0.3,
+    "activos": 0
+   },
+   "escondite": {
+    "reps": [
+     {
+      "h0": 795430006,
+      "h1": 795431106,
+      "h2": 795431034,
+      "msCuadro": 0.6
+     },
+     {
+      "h0": 795431122,
+      "h1": 795431198,
+      "h2": 795431138,
+      "msCuadro": 0
+     },
+     {
+      "h0": 795431166,
+      "h1": 795431254,
+      "h2": 795431190,
+      "msCuadro": 0.1
+     }
+    ],
+    "basuraBporCuadro": 0.03,
+    "retenidoBporBarrido": 24,
+    "msCuadro": 0
+   },
+   "humor": {
+    "reps": [
+     {
+      "h0": 795431774,
+      "h1": 795629118,
+      "h2": 795436218,
+      "msCuadro": 1.1
+     },
+     {
+      "h0": 795436322,
+      "h1": 795643314,
+      "h2": 795436766,
+      "msCuadro": 0.7
+     },
+     {
+      "h0": 795436794,
+      "h1": 795615610,
+      "h2": 795436806,
+      "msCuadro": 0.6
+     }
+    ],
+    "basuraBporCuadro": 96.45,
+    "retenidoBporBarrido": 444,
+    "msCuadro": 0.7
+   },
+   "trucos": {
+    "reps": [
+     {
+      "h0": 795437086,
+      "h1": 795462174,
+      "h2": 795438102,
+      "msCuadro": 0.8
+     },
+     {
+      "h0": 795438206,
+      "h1": 795459942,
+      "h2": 795439822,
+      "msCuadro": 0.3
+     },
+     {
+      "h0": 795439850,
+      "h1": 795439926,
+      "h2": 795439850,
+      "msCuadro": 0.1
+     }
+    ],
+    "basuraBporCuadro": 10.06,
+    "retenidoBporBarrido": 1016,
+    "msCuadro": 0.3
+   },
+   "marana": {
+    "reps": [
+     {
+      "h0": 795440386,
+      "h1": 795441306,
+      "h2": 795441246,
+      "msCuadro": 0.6
+     },
+     {
+      "h0": 795441350,
+      "h1": 795443666,
+      "h2": 795443590,
+      "msCuadro": 0.3
+     },
+     {
+      "h0": 795443618,
+      "h1": 795443706,
+      "h2": 795443630,
+      "msCuadro": 0.1
+     }
+    ],
+    "basuraBporCuadro": 0.04,
+    "retenidoBporBarrido": 860,
+    "msCuadro": 0.3
+   },
+   "sorpresas": {
+    "reps": [
+     {
+      "h0": 795443950,
+      "h1": 795758446,
+      "h2": 795453510,
+      "msCuadro": 1.2
+     },
+     {
+      "h0": 795453614,
+      "h1": 795685702,
+      "h2": 795453626,
+      "msCuadro": 0.4
+     },
+     {
+      "h0": 795453654,
+      "h1": 795685742,
+      "h2": 795453666,
+      "msCuadro": 0.4
+     }
+    ],
+    "basuraBporCuadro": 116.04,
+    "retenidoBporBarrido": 12,
+    "msCuadro": 0.4
+   },
+   "familia": {
+    "reps": [],
+    "error": "a.paso is not a function"
+   }
+  },
+  "ciudad": {
+   "ciudad_viva": {
+    "reps": [
+     {
+      "h0": 795417618,
+      "h1": 806156370,
+      "h2": 795510426,
+      "msCuadro": 33.2
+     },
+     {
+      "h0": 795510754,
+      "h1": 800835414,
+      "h2": 795512706,
+      "msCuadro": 11.3
+     },
+     {
+      "h0": 795511946,
+      "h1": 799149350,
+      "h2": 795512182,
+      "msCuadro": 5.1
+     }
+    ],
+    "basuraBporCuadro": 2661.35,
+    "retenidoBporBarrido": 1952,
+    "msCuadro": 11.3,
+    "activos": 4
+   }
+  }
+ },
+ "snapshotFinal": {
+  "calls": 69,
+  "ktris": 634,
+  "calidad": "bajo",
+  "heapMB": 762.2
+ },
+ "errores": []
+}

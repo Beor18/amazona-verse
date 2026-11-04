@@ -309,6 +309,40 @@ de vuelo + al final, `posFin` registrado.
   atascado»: por eso el círculo definitivo va a 36±3 m; el anti-atasco actuó una sola vez
   y no corrompió las medidas de la primera mitad).
 
+## CG-67 · basura por cuadro en los módulos de juego (4-nov, avance · Kimi 1)
+
+Herramienta nueva `tools/build/kimi1_cg67.js` (Chrome propio + CDP, móvil 390×844 dpr 3,
+CPU ×4, GPU real RX 5700 XT, partida sembrada cap 1; `--js-flags=--expose-gc` para GC
+determinista). Dos fases: **A** — sampler de asignaciones de V8 (`HeapProfiler`) en un paseo
+de 30 s por Villa Raíz y la Ciudad de los 36, atribuido por archivo de módulo; **B** — basura
+determinista por módulo: K = 2000 pasos reales de `paso()` entre lecturas de heap con `gc()`,
+basura/cuadro = (H1−H0−retenido)/K, mediana de 3 repeticiones (todo dentro de un eval síncrono:
+sin interferencia del bucle del juego). Calidad **bajo** (lo que arranca el iPhone). Evidencia:
+`docs/img/kimi067/cg67-{base,post}.json`.
+
+**Tabla (fase B, bytes/cuadro, mediana de 3):**
+
+| módulo | antes | después | qué se quitó |
+|---|---|---|---|
+| comunidades | 1679 | 1043 | objeto del `EXTRA.push` por persona → persistente; `ids = {}` por cuadro → `Set` persistente |
+| ciudad_viva | 2661 | 2675 (sin cambio medible) | cierre de `LOD.find` y objeto del `EXTRA.push` por ave (son ~300 B dentro de una varianza de ±2 kB: los estados vuela/juega dominan; el ms/cuadro 11–33 en CPU ×4 es CPU de `tope()`, no basura) |
+| humor | 96 | 48 | cierre de `FLORES.some()` por cuadro |
+| sorpresas | 116 | 56 | `centro()` alojaba `{x,z,r}` cada cuadro → caché por identidad del sitio (sampler: 17,4 kB → 0) |
+| trucos | 10 | 9 | ya limpio |
+| vecinos | 0,04 | 0,04 | apagado en bajo por diseño (0 activos) |
+| escondite | 0,03 | 0,03 | inline de `cerca()` sin objeto por cuadro (mide sin partida activa; durante la partida quedaba `{d,quien}` + cierre `every`) |
+| marana | 0,04 | 0,04 | apagado en bajo por diseño |
+| familia | n/d | n/d | no exporta `paso`: su coste es DOM por evento de UI, no por cuadro |
+
+**Fase A (sampler, 30 s, 441 cuadros):** basura total del juego entero ≈ 3,58 MB (~8,1 kB/cuadro);
+los 10 módulos del listado aportan ~66 kB (1,8 %): ciudad_viva 65,8 kB y sorpresas 0 (era 17,4 kB).
+El grueso (renderer/streaming/terreno) es de otros carriles. Draw calls 55 · 278 k tris ·
+0 errores de consola en ambas corridas.
+
+Verificación: vecinosTest 10/10 · humorTest 4/4 · trucosTest 7/7 · esconditeTest 5/5 ·
+maranaTest 5/5 · sorpresasTest 10/10 · comunidadesTest 19/19 · ciudadVivaTest 20/20 en la corrida
+post; familiaTest se comprueba aparte (ver fila de la tarea).
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
