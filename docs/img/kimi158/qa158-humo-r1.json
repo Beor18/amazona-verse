@@ -1,0 +1,140 @@
+{
+  "etiqueta": "humo-r1",
+  "cuando": "2026-11-04T20:30:26.218Z",
+  "mins": 2,
+  "vel": 17,
+  "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)",
+    "calidad": "bajo"
+  },
+  "muestra_s": 30,
+  "curva": {
+    "muestras": [
+      {
+        "t": 0,
+        "heap": 249,
+        "heapTotal": 291,
+        "rend": {
+          "geo": 86,
+          "tex": 150,
+          "prog": 45
+        },
+        "calls": 61,
+        "ktris": 229,
+        "fps": 82,
+        "calidad": "bajo",
+        "pos": [
+          -8,
+          10,
+          -2
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 30,
+        "heap": 800,
+        "heapTotal": 845,
+        "rend": {
+          "geo": 251,
+          "tex": 154,
+          "prog": 60
+        },
+        "calls": 82,
+        "ktris": 261,
+        "fps": 38,
+        "calidad": "bajo",
+        "pos": [
+          16,
+          35,
+          -43
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 60,
+        "heap": 602,
+        "heapTotal": 663,
+        "rend": {
+          "geo": 300,
+          "tex": 153,
+          "prog": 59
+        },
+        "calls": 59,
+        "ktris": 170,
+        "fps": 41,
+        "calidad": "bajo",
+        "pos": [
+          104,
+          34,
+          117
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 90,
+        "heap": 815,
+        "heapTotal": 878,
+        "rend": {
+          "geo": 320,
+          "tex": 154,
+          "prog": 59
+        },
+        "calls": 61,
+        "ktris": 273,
+        "fps": 41,
+        "calidad": "bajo",
+        "pos": [
+          94,
+          35,
+          99
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 120,
+        "heap": 987,
+        "heapTotal": 1042,
+        "rend": {
+          "geo": 300,
+          "tex": 154,
+          "prog": 58
+        },
+        "calls": 51,
+        "ktris": 185,
+        "fps": 41,
+        "calidad": "bajo",
+        "pos": [
+          5,
+          52,
+          -66
+        ],
+        "hacia": "villa",
+        "trans": null
+      }
+    ],
+    "ctxPerdidos": 0,
+    "ctxRecuperados": 0
+  },
+  "muestras": 5,
+  "errores": [],
+  "tendencia": {
+    "heapMBmin": 298.2,
+    "texMin": 1.6,
+    "geoMin": 99.4
+  },
+  "veredicto": {
+    "creceSinParar": true,
+    "heapPrimero": 249,
+    "heapUltimo": 987,
+    "texPrimero": 150,
+    "texUltimo": 154
+  }
+}

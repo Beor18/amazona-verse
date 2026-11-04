@@ -1,0 +1,476 @@
+{
+  "etiqueta": "head-r1",
+  "cuando": "2026-11-04T20:33:48.027Z",
+  "mins": 10,
+  "vel": 17,
+  "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)",
+    "calidad": "bajo"
+  },
+  "muestra_s": 30,
+  "curva": {
+    "muestras": [
+      {
+        "t": 0,
+        "heap": 258,
+        "heapTotal": 302,
+        "rend": {
+          "geo": 98,
+          "tex": 150,
+          "prog": 51
+        },
+        "calls": 68,
+        "ktris": 257,
+        "fps": 9,
+        "calidad": "bajo",
+        "pos": [
+          -8,
+          9,
+          -2
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 30,
+        "heap": 735,
+        "heapTotal": 804,
+        "rend": {
+          "geo": 262,
+          "tex": 155,
+          "prog": 74
+        },
+        "calls": 76,
+        "ktris": 426,
+        "fps": 22,
+        "calidad": "bajo",
+        "pos": [
+          36,
+          47,
+          -6
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 60,
+        "heap": 864,
+        "heapTotal": 922,
+        "rend": {
+          "geo": 335,
+          "tex": 152,
+          "prog": 74
+        },
+        "calls": 93,
+        "ktris": 199,
+        "fps": 20,
+        "calidad": "bajo",
+        "pos": [
+          124,
+          32,
+          155
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 90,
+        "heap": 827,
+        "heapTotal": 871,
+        "rend": {
+          "geo": 355,
+          "tex": 155,
+          "prog": 77
+        },
+        "calls": 62,
+        "ktris": 341,
+        "fps": 27,
+        "calidad": "bajo",
+        "pos": [
+          73,
+          44,
+          61
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 120,
+        "heap": 893,
+        "heapTotal": 956,
+        "rend": {
+          "geo": 344,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 64,
+        "ktris": 246,
+        "fps": 31,
+        "calidad": "bajo",
+        "pos": [
+          -15,
+          72,
+          -103
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 150,
+        "heap": 839,
+        "heapTotal": 901,
+        "rend": {
+          "geo": 341,
+          "tex": 155,
+          "prog": 74
+        },
+        "calls": 72,
+        "ktris": 249,
+        "fps": 28,
+        "calidad": "bajo",
+        "pos": [
+          57,
+          47,
+          31
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 180,
+        "heap": 947,
+        "heapTotal": 1003,
+        "rend": {
+          "geo": 341,
+          "tex": 153,
+          "prog": 74
+        },
+        "calls": 76,
+        "ktris": 308,
+        "fps": 24,
+        "calidad": "bajo",
+        "pos": [
+          140,
+          30,
+          185
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 210,
+        "heap": 865,
+        "heapTotal": 928,
+        "rend": {
+          "geo": 356,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 62,
+        "ktris": 378,
+        "fps": 27,
+        "calidad": "bajo",
+        "pos": [
+          53,
+          47,
+          24
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 240,
+        "heap": 840,
+        "heapTotal": 902,
+        "rend": {
+          "geo": 341,
+          "tex": 155,
+          "prog": 75
+        },
+        "calls": 94,
+        "ktris": 346,
+        "fps": 25,
+        "calidad": "bajo",
+        "pos": [
+          -11,
+          60,
+          -96
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 270,
+        "heap": 958,
+        "heapTotal": 1013,
+        "rend": {
+          "geo": 341,
+          "tex": 153,
+          "prog": 74
+        },
+        "calls": 65,
+        "ktris": 231,
+        "fps": 21,
+        "calidad": "bajo",
+        "pos": [
+          75,
+          43,
+          65
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 300,
+        "heap": 806,
+        "heapTotal": 871,
+        "rend": {
+          "geo": 360,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 71,
+        "ktris": 335,
+        "fps": 27,
+        "calidad": "bajo",
+        "pos": [
+          122,
+          32,
+          151
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 330,
+        "heap": 1023,
+        "heapTotal": 1064,
+        "rend": {
+          "geo": 336,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 66,
+        "ktris": 221,
+        "fps": 34,
+        "calidad": "bajo",
+        "pos": [
+          35,
+          44,
+          -10
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 360,
+        "heap": 883,
+        "heapTotal": 944,
+        "rend": {
+          "geo": 343,
+          "tex": 155,
+          "prog": 75
+        },
+        "calls": 76,
+        "ktris": 295,
+        "fps": 29,
+        "calidad": "bajo",
+        "pos": [
+          7,
+          52,
+          -62
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 390,
+        "heap": 728,
+        "heapTotal": 797,
+        "rend": {
+          "geo": 342,
+          "tex": 153,
+          "prog": 74
+        },
+        "calls": 66,
+        "ktris": 250,
+        "fps": 36,
+        "calidad": "bajo",
+        "pos": [
+          94,
+          35,
+          99
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 420,
+        "heap": 884,
+        "heapTotal": 934,
+        "rend": {
+          "geo": 361,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 71,
+        "ktris": 293,
+        "fps": 33,
+        "calidad": "bajo",
+        "pos": [
+          104,
+          34,
+          117
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 450,
+        "heap": 905,
+        "heapTotal": 971,
+        "rend": {
+          "geo": 336,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 58,
+        "ktris": 211,
+        "fps": 31,
+        "calidad": "bajo",
+        "pos": [
+          17,
+          35,
+          -44
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 480,
+        "heap": 849,
+        "heapTotal": 893,
+        "rend": {
+          "geo": 343,
+          "tex": 155,
+          "prog": 75
+        },
+        "calls": 81,
+        "ktris": 376,
+        "fps": 31,
+        "calidad": "bajo",
+        "pos": [
+          25,
+          34,
+          -29
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 510,
+        "heap": 913,
+        "heapTotal": 980,
+        "rend": {
+          "geo": 341,
+          "tex": 152,
+          "prog": 74
+        },
+        "calls": 63,
+        "ktris": 189,
+        "fps": 29,
+        "calidad": "bajo",
+        "pos": [
+          112,
+          32,
+          132
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      },
+      {
+        "t": 540,
+        "heap": 958,
+        "heapTotal": 1009,
+        "rend": {
+          "geo": 358,
+          "tex": 155,
+          "prog": 76
+        },
+        "calls": 62,
+        "ktris": 291,
+        "fps": 29,
+        "calidad": "bajo",
+        "pos": [
+          86,
+          37,
+          84
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 570,
+        "heap": 956,
+        "heapTotal": 998,
+        "rend": {
+          "geo": 336,
+          "tex": 155,
+          "prog": 75
+        },
+        "calls": 56,
+        "ktris": 208,
+        "fps": 29,
+        "calidad": "bajo",
+        "pos": [
+          -3,
+          51,
+          -81
+        ],
+        "hacia": "villa",
+        "trans": null
+      },
+      {
+        "t": 600,
+        "heap": 877,
+        "heapTotal": 949,
+        "rend": {
+          "geo": 342,
+          "tex": 155,
+          "prog": 74
+        },
+        "calls": 71,
+        "ktris": 387,
+        "fps": 27,
+        "calidad": "bajo",
+        "pos": [
+          45,
+          51,
+          9
+        ],
+        "hacia": "ciudad",
+        "trans": null
+      }
+    ],
+    "ctxPerdidos": 0,
+    "ctxRecuperados": 0
+  },
+  "muestras": 21,
+  "errores": [],
+  "tendencia": {
+    "heapMBmin": 23.6,
+    "texMin": 0.15,
+    "geoMin": 8.31
+  },
+  "veredicto": {
+    "creceSinParar": true,
+    "heapPrimero": 258,
+    "heapUltimo": 877,
+    "texPrimero": 150,
+    "texUltimo": 155
+  }
+}
