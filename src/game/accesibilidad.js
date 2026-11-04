@@ -429,7 +429,15 @@ AVE.module('accesibilidad', function (G) {
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
     const perfil0 = S.profile, ultimo0 = ultimo, mudo0 = G.audio.vol.muted, abierto0 = (() => { try { return menu.matches(':popover-open'); } catch (e) { return false; } })();
     const ajIdi = G.aula && G.aula.aj, idi0 = ajIdi ? ajIdi.idioma : null;
-    if (ajIdi && o && (o.idioma === 'en' || o.idioma === 'es')) ajIdi.idioma = o.idioma;
+    // Asignar aj.idioma a mano deja el traductor (G.idioma) en el idioma de arranque. Con la partida en inglés,
+    // ese observador reescribe el subtítulo en español en cuanto pasa un rato: el BIP, que espera, sale en inglés.
+    const ponerIdioma = async id => {
+      if (G.aula && G.aula.setAjuste) G.aula.setAjuste('idioma', id);
+      else if (ajIdi) ajIdi.idioma = id;
+      if (!(G.aula && G.aula.setAjuste) && G.idioma && G.idioma.poner) await G.idioma.poner(id);
+      if (G.idioma && G.idioma.listo) await G.idioma.listo;
+    };
+    if (o && (o.idioma === 'en' || o.idioma === 'es')) await ponerIdioma(o.idioma);
     guardarAlCambiar = false;
     try {
       check('Sección «Accesibilidad» en el menú de pausa: texto, contraste, subtítulos, relajado, zurdo, daltonismo y una mano',
@@ -489,30 +497,34 @@ AVE.module('accesibilidad', function (G) {
         en: { lluvia: /rain falls/i, trueno: /thunder/i, crecida: /river rises/i, construir: /hammer/i, chorus: /chorus of coqu/i, bip: /the transmitter sounds/, pio: /Peep!/, cerca: /Peep nearby/i, lejosNo: /nearby/i, coqui: /\[Coquí!\]/ },
       };
       for (const id of ['es', 'en']) {
-        if (ajIdi) ajIdi.idioma = id;
+        await ponerIdioma(id);
         const F = FRASE[id];
         escala = 50;
         for (const n of ['lluvia', 'trueno', 'crecida', 'construir', 'chorus']) {
           limpiar(); G.audio.play(n);
           check(`Subtítulo ${id} · ${n}`, F[n].test(cont.textContent) && !cont.hidden, cont.textContent);
         }
-        limpiar(); escala = 0.2; G.audio.play('bip'); const antesB = cont.children.length; await espera(320);
-        check(`Subtítulo ${id} · bip`, !antesB && F.bip.test(cont.textContent), cont.textContent);
+        // El retraso real es 0,9 s; aquí se acorta. Una sola espera, más larga que ese retraso: si el hilo estuvo
+        // ocupado, los temporizadores salen en orden y el subtítulo ya está pintado cuando miramos.
+        limpiar(); escala = 0.2; G.audio.play('bip');
+        await espera(400);
+        check(`Subtítulo ${id} · bip`, F.bip.test(cont.textContent), cont.textContent || '(vacío)');
         escala = 50; limpiar();
         G.audio.play('pio_escondite', 0.2); const lejosP = cont.textContent;
         G.audio.play('pio_escondite', 0.9);
-        check(`Subtítulo ${id} · pío`, cont.children.length === 1 && F.pio.test(lejosP) && !F.lejosNo.test(lejosP) && F.cerca.test(cont.textContent), lejosP + ' → ' + cont.textContent);
+        check(`Subtítulo ${id} · pío`, cont.children.length === 1 && F.pio.test(lejosP) && !F.lejosNo.test(lejosP) && F.cerca.test(cont.textContent), (lejosP || '(vacío)') + ' → ' + (cont.textContent || '(vacío)'));
         limpiar(); G.audio.play('vecino_coqui');
-        check(`Subtítulo ${id} · coquí`, F.coqui.test(cont.textContent), cont.textContent);
+        check(`Subtítulo ${id} · coquí`, F.coqui.test(cont.textContent), cont.textContent || '(vacío)');
       }
-      // QA-142: el BIP se programa en un idioma y el cambio llega antes de que salga. El texto es el de ahora.
-      if (ajIdi) ajIdi.idioma = 'es';
-      escala = 1; limpiar();
+      // El BIP se programa en español y el idioma pasa a inglés antes de que salga. El cambio es síncrono
+      // (esperar al diccionario puede durar más que el subtítulo) y la espera es más larga que el retraso.
+      await ponerIdioma('es');
+      escala = 0.2; limpiar();
       G.audio.play('bip');
-      if (ajIdi) ajIdi.idioma = 'en';
-      await espera(1100);
-      check('Subtítulo en · bip pendiente', /the transmitter sounds/.test(cont.textContent) && !/suena el transmisor/.test(cont.textContent), cont.textContent);
-      if (ajIdi) ajIdi.idioma = idi0 || 'es';
+      if (G.aula && G.aula.setAjuste) G.aula.setAjuste('idioma', 'en'); else if (ajIdi) ajIdi.idioma = 'en';
+      await espera(400);
+      check('Subtítulo en · bip pendiente', /the transmitter sounds/.test(cont.textContent) && !/suena el transmisor/.test(cont.textContent), cont.textContent || '(vacío)');
+      await ponerIdioma(idi0 === 'en' ? 'en' : 'es');
       escala = 50; limpiar();
       G.audio.play('lluvia'); G.audio.play('lluvia');
       check('El mismo sonido repetido (la lluvia cada segundo) no apila líneas', cont.querySelectorAll('[data-k="lluvia"]').length === 1 && cont.children.length === 1);
@@ -524,7 +536,7 @@ AVE.module('accesibilidad', function (G) {
       check('Cada subtítulo se va solo y el contenedor se oculta', hay === 1 && !cont.children.length && cont.hidden);
       escala = 50; limpiar(); G.audio.play('trueno'); set('subtitulos', false);
       check('Apagar los subtítulos quita los que hay', !cont.children.length && cont.hidden);
-      if (ajIdi) ajIdi.idioma = idi0 || 'es';
+      await ponerIdioma(idi0 === 'en' ? 'en' : 'es');
       set('subtitulos', true); G.audio.play('chorus');
       const sub = cont.querySelector('.sub'), csub = getComputedStyle(sub);
       check('Los subtítulos no capturan toques (el juego sigue recibiéndolos) y se anuncian como registro', csub.pointerEvents === 'none' && cont.getAttribute('role') === 'log' && cont.getAttribute('aria-live') === 'polite');
@@ -819,7 +831,7 @@ AVE.module('accesibilidad', function (G) {
     } catch (e) {
       check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {
-      if (ajIdi) ajIdi.idioma = idi0;
+      await ponerIdioma(idi0 === 'en' ? 'en' : 'es');
       S.profile = perfil0; ultimo = ultimo0; escala = 1; G.audio.vol.muted = mudo0; limpiar(); sync(); guardarAlCambiar = true;
       try { const tg = { x: S.pos.x + 12, z: S.pos.z }; G.fx.guide(tg, 0); G.fx.guide(null, 0); } catch (e) { /* sin guía */ }
       try { if (menu && !abierto0 && menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
