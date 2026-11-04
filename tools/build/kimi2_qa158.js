@@ -148,14 +148,27 @@ const VUELO_JS = `(async (tx, tz, nombre) => {
   }
   return JSON.stringify({ muestras, llegada: nombre, pos: [Math.round(S.pos.x), Math.round(S.pos.y), Math.round(S.pos.z)] }); })`;
 
+// Muestra de una vuelta TRAS gc: heap retenido + atribución por prefijo (nº de GEOMETRÍAS distintas por familia,
+// no solo MB) — es la que crece en vuelo según la curva de Kimi 3 (geo 98→342); contar objetos separa
+// «familia que acumula» de «familia grande pero estable».
 const MUESTRA_JS = `(async () => {
   const AV = window.AV, G = AV.G, S = G.S, R = G.renderer;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(1500);
   const st = (() => { try { const s = R.stats() || {}; return { calls: s.calls, ktris: s.triangulos != null ? Math.round(s.triangulos / 1000) : null, calidad: s.calidad }; } catch (e) { return {}; } })();
-  const inf = (() => { try { const i = (R.renderer || R).info; return { geo: i.memory.geometries, tex: i.memory.textures }; } catch (e) { return {}; } })();
+  const inf = (() => { try { const i = (R.renderer || R).info; return { geo: i.memory.geometries, tex: i.memory.textures, prog: i.programs ? i.programs.length : null }; } catch (e) { return {}; } })();
+  const grupos = {}; const vistos = new Set();
+  (R.scene || G.scene).traverse(o => { if (!(o.isMesh && o.geometry)) return;
+    const p = (o.name || '(sin nombre)').split(':').slice(0, 2).join(':');
+    const g = grupos[p] || (grupos[p] = { n: 0, geos: 0, mb: 0 });
+    g.n++;
+    if (!vistos.has(o.geometry.uuid)) { vistos.add(o.geometry.uuid); g.geos++;
+      let b = 0; const at = o.geometry.attributes; for (const k in at) if (at[k].array) b += at[k].array.byteLength;
+      if (o.geometry.index) b += o.geometry.index.array.byteLength; g.mb += b; } });
+  const escena = Object.entries(grupos).map(([p, g]) => ({ p, n: g.n, geos: g.geos, mb: Math.round(g.mb / 1048576) }))
+    .sort((a, b) => b.geos - a.geos).slice(0, 30);
   return JSON.stringify({ pos: [Math.round(S.pos.x), Math.round(S.pos.y), Math.round(S.pos.z)],
-    heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576), ...inf, ...st,
+    heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576), ...inf, ...st, escena,
     ctx: window.__qa158 ? { perdidas: __qa158.ctxPerdidas, restauradas: __qa158.ctxRestauradas, errores: __qa158.errores.length } : null }); })()`;
 
 const FINAL_JS = `(async () => {

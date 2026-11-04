@@ -1,0 +1,1420 @@
+{
+  "etiqueta": "atrib2",
+  "cpu": 4,
+  "vueltas": 1,
+  "circuito": [
+    {
+      "x": 12,
+      "z": -114.8,
+      "nombre": "ciudad_puerta"
+    },
+    {
+      "x": -33,
+      "z": -136,
+      "nombre": "ciudad_centro"
+    },
+    {
+      "x": 150,
+      "z": 218,
+      "nombre": "bahia_norte"
+    },
+    {
+      "x": 134,
+      "z": 182,
+      "nombre": "villa_norte"
+    },
+    {
+      "x": -8,
+      "z": -2.5,
+      "nombre": "villa_spawn"
+    }
+  ],
+  "curva": [
+    {
+      "fase": "quieto",
+      "t": 5,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 211,
+      "total": 278,
+      "geo": 87,
+      "tex": 146,
+      "calls": 62,
+      "ktris": 229,
+      "calidad": "bajo",
+      "fps": 36,
+      "kbGeo": 111573,
+      "cerca": 45,
+      "hd": 31,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "quieto",
+      "t": 10.1,
+      "pos": [
+        -8,
+        10,
+        -2
+      ],
+      "heap": 228,
+      "total": 278,
+      "geo": 87,
+      "tex": 146,
+      "calls": 61,
+      "ktris": 229,
+      "calidad": "bajo",
+      "fps": 41,
+      "kbGeo": 152403,
+      "cerca": 45,
+      "hd": 31,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v1",
+      "t": 0.5,
+      "pos": [
+        -6,
+        19,
+        -13
+      ],
+      "heap": 237,
+      "total": 280,
+      "geo": 122,
+      "tex": 146,
+      "calls": 85,
+      "ktris": 236,
+      "calidad": "bajo",
+      "fps": 23,
+      "kbGeo": 152403,
+      "cerca": 45,
+      "hd": 31,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 8.2,
+      "pos": [
+        15,
+        39,
+        -89
+      ],
+      "heap": 359,
+      "total": 397,
+      "geo": 204,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 179,
+      "calidad": "bajo",
+      "fps": 33,
+      "kbGeo": 196735,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 12.3,
+      "pos": [
+        3,
+        29,
+        -89
+      ],
+      "heap": 455,
+      "total": 508,
+      "geo": 206,
+      "tex": 153,
+      "calls": 50,
+      "ktris": 177,
+      "calidad": "bajo",
+      "fps": 30,
+      "kbGeo": 200514,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 16.3,
+      "pos": [
+        -3,
+        54,
+        -98
+      ],
+      "heap": 628,
+      "total": 674,
+      "geo": 253,
+      "tex": 153,
+      "calls": 53,
+      "ktris": 178,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 206790,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        -10,
+        89,
+        -106
+      ],
+      "heap": 611,
+      "total": 677,
+      "geo": 254,
+      "tex": 153,
+      "calls": 121,
+      "ktris": 559,
+      "calidad": "bajo",
+      "fps": 30,
+      "kbGeo": 206790,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 5.4,
+      "pos": [
+        -17,
+        88,
+        -111
+      ],
+      "heap": 799,
+      "total": 855,
+      "geo": 292,
+      "tex": 153,
+      "calls": 73,
+      "ktris": 523,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 230915,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 9.4,
+      "pos": [
+        -28,
+        92,
+        -111
+      ],
+      "heap": 766,
+      "total": 832,
+      "geo": 329,
+      "tex": 153,
+      "calls": 64,
+      "ktris": 357,
+      "calidad": "bajo",
+      "fps": 59,
+      "kbGeo": 230915,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 13.5,
+      "pos": [
+        -35,
+        97,
+        -123
+      ],
+      "heap": 790,
+      "total": 832,
+      "geo": 330,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 189,
+      "calidad": "bajo",
+      "fps": 61,
+      "kbGeo": 261175,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        -29,
+        106,
+        -113
+      ],
+      "heap": 802,
+      "total": 839,
+      "geo": 330,
+      "tex": 153,
+      "calls": 65,
+      "ktris": 357,
+      "calidad": "bajo",
+      "fps": 55,
+      "kbGeo": 261175,
+      "cerca": 49,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 6
+    },
+    {
+      "fase": "v1",
+      "t": 5.7,
+      "pos": [
+        34,
+        43,
+        3
+      ],
+      "heap": 837,
+      "total": 879,
+      "geo": 349,
+      "tex": 153,
+      "calls": 58,
+      "ktris": 242,
+      "calidad": "bajo",
+      "fps": 39,
+      "kbGeo": 321696,
+      "cerca": 55,
+      "hd": 50,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 10.9,
+      "pos": [
+        96,
+        37,
+        119
+      ],
+      "heap": 869,
+      "total": 921,
+      "geo": 363,
+      "tex": 153,
+      "calls": 71,
+      "ktris": 260,
+      "calidad": "bajo",
+      "fps": 36,
+      "kbGeo": 248568,
+      "cerca": 52,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 4
+    },
+    {
+      "fase": "v1",
+      "t": 18.9,
+      "pos": [
+        150,
+        27,
+        217
+      ],
+      "heap": 639,
+      "total": 681,
+      "geo": 235,
+      "tex": 146,
+      "calls": 81,
+      "ktris": 567,
+      "calidad": "bajo",
+      "fps": 41,
+      "kbGeo": 175798,
+      "cerca": 26,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 22.9,
+      "pos": [
+        138,
+        26,
+        217
+      ],
+      "heap": 654,
+      "total": 712,
+      "geo": 256,
+      "tex": 146,
+      "calls": 87,
+      "ktris": 547,
+      "calidad": "bajo",
+      "fps": 41,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 26.9,
+      "pos": [
+        132,
+        26,
+        206
+      ],
+      "heap": 655,
+      "total": 713,
+      "geo": 256,
+      "tex": 146,
+      "calls": 70,
+      "ktris": 527,
+      "calidad": "bajo",
+      "fps": 43,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        133,
+        26,
+        195
+      ],
+      "heap": 671,
+      "total": 713,
+      "geo": 256,
+      "tex": 146,
+      "calls": 95,
+      "ktris": 541,
+      "calidad": "bajo",
+      "fps": 44,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 4.5,
+      "pos": [
+        139,
+        26,
+        206
+      ],
+      "heap": 671,
+      "total": 714,
+      "geo": 256,
+      "tex": 146,
+      "calls": 107,
+      "ktris": 552,
+      "calidad": "bajo",
+      "fps": 45,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 8.5,
+      "pos": [
+        127,
+        26,
+        206
+      ],
+      "heap": 673,
+      "total": 714,
+      "geo": 257,
+      "tex": 146,
+      "calls": 67,
+      "ktris": 522,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 12.5,
+      "pos": [
+        121,
+        27,
+        195
+      ],
+      "heap": 659,
+      "total": 714,
+      "geo": 257,
+      "tex": 146,
+      "calls": 68,
+      "ktris": 521,
+      "calidad": "bajo",
+      "fps": 49,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 2
+    },
+    {
+      "fase": "v1",
+      "t": 0.4,
+      "pos": [
+        115,
+        29,
+        186
+      ],
+      "heap": 664,
+      "total": 714,
+      "geo": 267,
+      "tex": 146,
+      "calls": 74,
+      "ktris": 520,
+      "calidad": "bajo",
+      "fps": 45,
+      "kbGeo": 276045,
+      "cerca": 40,
+      "hd": 22,
+      "lejos": 63,
+      "zonas": 3
+    },
+    {
+      "fase": "v1",
+      "t": 5.5,
+      "pos": [
+        49,
+        42,
+        85
+      ],
+      "heap": 516,
+      "total": 577,
+      "geo": 360,
+      "tex": 151,
+      "calls": 128,
+      "ktris": 326,
+      "calidad": "bajo",
+      "fps": 21,
+      "kbGeo": 318570,
+      "cerca": 48,
+      "hd": 42,
+      "lejos": 63,
+      "zonas": 5
+    },
+    {
+      "fase": "v1",
+      "t": 13.1,
+      "pos": [
+        7,
+        43,
+        21
+      ],
+      "heap": 646,
+      "total": 704,
+      "geo": 360,
+      "tex": 153,
+      "calls": 60,
+      "ktris": 235,
+      "calidad": "bajo",
+      "fps": 35,
+      "kbGeo": 307907,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 17.1,
+      "pos": [
+        -5,
+        41,
+        21
+      ],
+      "heap": 809,
+      "total": 862,
+      "geo": 361,
+      "tex": 153,
+      "calls": 65,
+      "ktris": 247,
+      "calidad": "bajo",
+      "fps": 31,
+      "kbGeo": 335210,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "v1",
+      "t": 21.2,
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 802,
+      "total": 861,
+      "geo": 361,
+      "tex": 153,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "fps": 38,
+      "kbGeo": 348800,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    {
+      "fase": "retenido_v1",
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 763,
+      "total": 768,
+      "geo": 361,
+      "tex": 153,
+      "prog": 61,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "escena": [
+        {
+          "p": "(sin nombre)",
+          "n": 207,
+          "geos": 192,
+          "mb": 2
+        },
+        {
+          "p": "fondoMarino",
+          "n": 16,
+          "geos": 16,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:templo_mediano_h",
+          "n": 16,
+          "geos": 16,
+          "mb": 15
+        },
+        {
+          "p": "edificiosInst:templo_grande_a",
+          "n": 16,
+          "geos": 16,
+          "mb": 6
+        },
+        {
+          "p": "edificiosInst:templo_grande",
+          "n": 15,
+          "geos": 15,
+          "mb": 9
+        },
+        {
+          "p": "edificiosInst:templo_grande_e",
+          "n": 15,
+          "geos": 15,
+          "mb": 6
+        },
+        {
+          "p": "edificiosInst:templo_grande_d",
+          "n": 15,
+          "geos": 15,
+          "mb": 10
+        },
+        {
+          "p": "edificiosInst:templo_grande_f",
+          "n": 14,
+          "geos": 14,
+          "mb": 7
+        },
+        {
+          "p": "edificiosInst:templo_mediano",
+          "n": 14,
+          "geos": 14,
+          "mb": 2
+        },
+        {
+          "p": "edificiosInst:templo_mediano_g",
+          "n": 14,
+          "geos": 14,
+          "mb": 3
+        },
+        {
+          "p": "edificiosInst:templo_mediano_f",
+          "n": 14,
+          "geos": 14,
+          "mb": 3
+        },
+        {
+          "p": "spark",
+          "n": 13,
+          "geos": 13,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre",
+          "n": 13,
+          "geos": 13,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_e",
+          "n": 12,
+          "geos": 12,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_portal",
+          "n": 12,
+          "geos": 12,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_altar",
+          "n": 11,
+          "geos": 11,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_b",
+          "n": 10,
+          "geos": 10,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_c",
+          "n": 10,
+          "geos": 10,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:ruina_torre_f",
+          "n": 10,
+          "geos": 10,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:ruina_pilar",
+          "n": 8,
+          "geos": 8,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:complejo_ruinas",
+          "n": 8,
+          "geos": 8,
+          "mb": 4
+        },
+        {
+          "p": "edificiosInst:ruina_mirador",
+          "n": 7,
+          "geos": 7,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:casa_paja_a",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:mirador_escalonado",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:casa_plataforma",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muro_templo",
+          "n": 5,
+          "geos": 5,
+          "mb": 4
+        },
+        {
+          "p": "edificiosInst:torre_vigia_b",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:torre_vigia",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_b",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_a",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        }
+      ],
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    }
+  ],
+  "fases": {
+    "quieto": {
+      "muestras": [
+        {
+          "t": 5,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 211,
+          "total": 278,
+          "geo": 87,
+          "tex": 146,
+          "calls": 62,
+          "ktris": 229,
+          "calidad": "bajo",
+          "fps": 36,
+          "kbGeo": 111573,
+          "cerca": 45,
+          "hd": 31,
+          "lejos": 63,
+          "zonas": 5
+        },
+        {
+          "t": 10.1,
+          "pos": [
+            -8,
+            10,
+            -2
+          ],
+          "heap": 228,
+          "total": 278,
+          "geo": 87,
+          "tex": 146,
+          "calls": 61,
+          "ktris": 229,
+          "calidad": "bajo",
+          "fps": 41,
+          "kbGeo": 152403,
+          "cerca": 45,
+          "hd": 31,
+          "lejos": 63,
+          "zonas": 5
+        }
+      ],
+      "calidad": "bajo"
+    },
+    "retenido_v1": {
+      "pos": [
+        -11,
+        39,
+        11
+      ],
+      "heap": 763,
+      "total": 768,
+      "geo": 361,
+      "tex": 153,
+      "prog": 61,
+      "calls": 54,
+      "ktris": 243,
+      "calidad": "bajo",
+      "escena": [
+        {
+          "p": "(sin nombre)",
+          "n": 207,
+          "geos": 192,
+          "mb": 2
+        },
+        {
+          "p": "fondoMarino",
+          "n": 16,
+          "geos": 16,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:templo_mediano_h",
+          "n": 16,
+          "geos": 16,
+          "mb": 15
+        },
+        {
+          "p": "edificiosInst:templo_grande_a",
+          "n": 16,
+          "geos": 16,
+          "mb": 6
+        },
+        {
+          "p": "edificiosInst:templo_grande",
+          "n": 15,
+          "geos": 15,
+          "mb": 9
+        },
+        {
+          "p": "edificiosInst:templo_grande_e",
+          "n": 15,
+          "geos": 15,
+          "mb": 6
+        },
+        {
+          "p": "edificiosInst:templo_grande_d",
+          "n": 15,
+          "geos": 15,
+          "mb": 10
+        },
+        {
+          "p": "edificiosInst:templo_grande_f",
+          "n": 14,
+          "geos": 14,
+          "mb": 7
+        },
+        {
+          "p": "edificiosInst:templo_mediano",
+          "n": 14,
+          "geos": 14,
+          "mb": 2
+        },
+        {
+          "p": "edificiosInst:templo_mediano_g",
+          "n": 14,
+          "geos": 14,
+          "mb": 3
+        },
+        {
+          "p": "edificiosInst:templo_mediano_f",
+          "n": 14,
+          "geos": 14,
+          "mb": 3
+        },
+        {
+          "p": "spark",
+          "n": 13,
+          "geos": 13,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre",
+          "n": 13,
+          "geos": 13,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_e",
+          "n": 12,
+          "geos": 12,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_portal",
+          "n": 12,
+          "geos": 12,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_altar",
+          "n": 11,
+          "geos": 11,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_b",
+          "n": 10,
+          "geos": 10,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:ruina_torre_c",
+          "n": 10,
+          "geos": 10,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:ruina_torre_f",
+          "n": 10,
+          "geos": 10,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:ruina_pilar",
+          "n": 8,
+          "geos": 8,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:complejo_ruinas",
+          "n": 8,
+          "geos": 8,
+          "mb": 4
+        },
+        {
+          "p": "edificiosInst:ruina_mirador",
+          "n": 7,
+          "geos": 7,
+          "mb": 0
+        },
+        {
+          "p": "edificiosInst:casa_paja_a",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:mirador_escalonado",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:casa_plataforma",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muro_templo",
+          "n": 5,
+          "geos": 5,
+          "mb": 4
+        },
+        {
+          "p": "edificiosInst:torre_vigia_b",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:torre_vigia",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_b",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_a",
+          "n": 5,
+          "geos": 5,
+          "mb": 1
+        }
+      ],
+      "ctx": {
+        "perdidas": 0,
+        "restauradas": 0,
+        "errores": 0
+      }
+    }
+  },
+  "arranque": {
+    "calidad": "bajo",
+    "dpr": 1,
+    "calls": 62,
+    "fps": 31
+  },
+  "final": {
+    "pos": [
+      -11,
+      39,
+      11
+    ],
+    "heap": 763,
+    "total": 768,
+    "inf": {
+      "geo": 361,
+      "tex": 153
+    },
+    "calls": 54,
+    "ktris": 243,
+    "calidad": "bajo",
+    "st": {
+      "kbGeo": 392649,
+      "cerca": 51,
+      "hd": 46,
+      "lejos": 63,
+      "zonas": 7
+    },
+    "zonasCercaN": 17,
+    "escena": [
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_rio_este_2",
+        "n": 2,
+        "mb": 72,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "n": 1,
+        "mb": 68,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_ruinas_yunque_2",
+        "n": 1,
+        "mb": 43,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHDGlobal:AV_HD_Savage",
+        "n": 1,
+        "mb": 29,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_rio_este_3",
+        "n": 2,
+        "mb": 28,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZona:global",
+        "n": 2,
+        "mb": 17,
+        "vis": 1
+      },
+      {
+        "p": "edificiosInst:templo_mediano_h",
+        "n": 16,
+        "mb": 15,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_mina_2",
+        "n": 2,
+        "mb": 13,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_d",
+        "n": 15,
+        "mb": 10,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande",
+        "n": 15,
+        "mb": 9,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_colina",
+        "n": 2,
+        "mb": 8,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_f",
+        "n": 14,
+        "mb": 7,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZona:kelvin_ruinas_yunque",
+        "n": 2,
+        "mb": 7,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_meandros",
+        "n": 2,
+        "mb": 7,
+        "vis": 1
+      },
+      {
+        "p": "edificiosInst:templo_grande_e",
+        "n": 15,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_grande_a",
+        "n": 16,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaHD:kelvin_aldea_yunque",
+        "n": 2,
+        "mb": 6,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:muro_templo",
+        "n": 5,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:complejo_ruinas",
+        "n": 8,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_aldea_rio_este_2",
+        "n": 1,
+        "mb": 4,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_mediano_g",
+        "n": 14,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosInst:templo_mediano_f",
+        "n": 14,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_aldea_colina",
+        "n": 1,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "edificiosZonaSombra:kelvin_ruinas_yunque",
+        "n": 1,
+        "mb": 3,
+        "vis": 0
+      },
+      {
+        "p": "(sin nombre)",
+        "n": 207,
+        "mb": 2,
+        "vis": 199
+      }
+    ],
+    "rec": {
+      "porTipo": {
+        "cerca:listo": {
+          "n": 51
+        },
+        "lejos:listo": {
+          "n": 63
+        },
+        "hd:listo": {
+          "n": 46
+        }
+      },
+      "listosRefs": [
+        {
+          "n": "templo_mediano_h",
+          "t": "hd",
+          "refs": 3,
+          "mb": 15
+        },
+        {
+          "n": "templo_grande",
+          "t": "hd",
+          "refs": 2,
+          "mb": 9
+        },
+        {
+          "n": "templo_grande_d",
+          "t": "hd",
+          "refs": 1,
+          "mb": 9
+        },
+        {
+          "n": "templo_grande_e",
+          "t": "hd",
+          "refs": 1,
+          "mb": 6
+        },
+        {
+          "n": "templo_grande_f",
+          "t": "hd",
+          "refs": 1,
+          "mb": 6
+        },
+        {
+          "n": "templo_grande_a",
+          "t": "hd",
+          "refs": 2,
+          "mb": 5
+        },
+        {
+          "n": "muro_templo",
+          "t": "hd",
+          "refs": 1,
+          "mb": 4
+        },
+        {
+          "n": "templo_mediano_g",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "templo_mediano_f",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "complejo_ruinas",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "templo_mediano",
+          "t": "hd",
+          "refs": 1,
+          "mb": 2
+        },
+        {
+          "n": "monumento_f",
+          "t": "hd",
+          "refs": 2,
+          "mb": 2
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "mirador_escalonado",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "templo_grande_e",
+          "t": "lejos",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "templo_grande_f",
+          "t": "lejos",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia_b",
+          "t": "hd",
+          "refs": 3,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "puente_madera",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "caney_largo",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "cercado_redondo",
+          "t": "hd",
+          "refs": 2,
+          "mb": 1
+        },
+        {
+          "n": "monumento_a",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "monumento_c",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "complejo_ruinas",
+          "t": "cerca",
+          "refs": 2,
+          "mb": 1
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "cerca",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "lejos",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "hd",
+          "refs": 2,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "cerca",
+          "refs": 12,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "lejos",
+          "refs": 14,
+          "mb": 0
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        }
+      ]
+    },
+    "ctx": {
+      "perdidas": 0,
+      "restauradas": 0,
+      "errores": []
+    }
+  }
+}
