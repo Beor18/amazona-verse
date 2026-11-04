@@ -9,7 +9,7 @@ Cómo se jugó: iframe de 390×844, `?calidad=bajo`, toques simulados en el joys
 | Cap. | ¿Llega al final? | Paso más largo | >30 s sin avanzar | Abre la guía |
 |---|---|---|---|---|
 | 1 | no (9/13) | 1 · Iguaca, 39,9 s | sí, en el paso 1 | 1 |
-| 2 | no (10/13, se acaba el cupo de 120 acciones en el paso 1) | 1 · Iguaca y los sitios, 148,5 s | no | 0 |
+| 2 | el paso 1 sí (27,9 s); el capítulo no, en 120 acciones del paso 2 | 2 · las tarjetas, 365,3 s | no | 0 |
 | 3 | sí (21/21) | 6 · la bahía, 60,7 s | no | 0 |
 | 4 | sí (21/21) | 1 · la orilla, 22 s | no | 0 |
 | 5 | sí (20/20) | 4 · la antena, 221,9 s | no | 0 |
@@ -30,12 +30,13 @@ El objetivo del primer paso ya dice «Despega, vuela hasta Iguaca y pósate a su
 
 ### Capítulo 2
 
-En 148,5 s lee la tierra (`lee_tierra`) y no llega a contar el sitio elegido. No hubo 30 s seguidos sin ningún avance, así que no abrió la guía. El cupo de 120 acciones se acaba en el paso 1.
+Medido otra vez el 4-nov sobre `04233d68` (incluye QA-148, `72fff7d5`), a 390×844, con toques y calidad baja. El paso 1 se cierra en 27,9 s y empieza el paso 2. No abre la guía. El cupo de 120 acciones se acaba en el paso 2 (`escuchar` sigue en falso): eso ya no es el atasco del paso 1. Playtest 3/4, 0 errores de consola.
 
 | Paso | Juego (s) | Metros | Guía | Notas |
 |---|---|---|---|---|
 | 0 · Portada, creador e inicio | 1,7 | 0 | 0 | |
-| 1 · Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste | 148,5 | 105 | 0 | no termina el capítulo |
+| 1 · Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste | 27,9 | 105 | 0 | sale del paso |
+| 2 · Enseña el plano, pregunta qué necesitan y ordena las tarjetas | 365,3 | 157 | 0 | el cupo de 120 acciones se acaba aquí |
 
 ### Capítulo 3
 
@@ -92,4 +93,4 @@ El paso 2 no abre fila: el índice pasa del 1 al 3 dentro de la misma acción.
 
 ## Qué no se cambió del juego
 
-Los capítulos 3 a 6 se terminan con toques. El atasco medido es el posarse del capítulo 1: el texto de la misión ya lo pide y no es un objetivo vacío. El capítulo 2 avanza dentro del primer paso (lee la tierra) y no se queda 30 s en blanco. No toqué `sitio/`, el carril de Kimi ni el modelo de Vittata.
+Los capítulos 3 a 6 se terminan con toques. En el capítulo 1 el niño no sale del paso 1 (6 intentos en `luma`); no se tocó el juego. En el capítulo 2, QA-148 hace que el paso 1 se cierre y empiece el siguiente. No toqué `sitio/`, el carril de Kimi ni el modelo de Vittata.
