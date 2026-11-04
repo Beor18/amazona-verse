@@ -843,7 +843,7 @@
         try {
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
           check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6, $('steps').children.length);
-          check('Las notas [KELVIN] no salen en los diálogos', !(JSON.stringify(G.pack.dialogos.datos()).includes('[KELVIN')) && (D.notasKelvin || []).length >= 8 && D.notasKelvin.every(n => n.includes('[KELVIN')));
+          check('Las notas [KELVIN] no salen en los diálogos', !(JSON.stringify(G.pack.dialogos.datos()).includes('[KELVIN')) && (D.notasKelvin || []).length >= 8 && D.notasKelvin.every(n => /\[KELVIN|^Kelvin /.test(n)));
           check('Retrato de las voces: neutro, dos ondas', typeof D.retratoVoz === 'string' && D.retratoVoz.indexOf('data:image/png') === 0);
           check('Nivel 1 no exige la pregunta extra', grado0 === '3-4' && !G.c.ep5.exigeNivel2());
           G.aula.aj.grado = '5-6';

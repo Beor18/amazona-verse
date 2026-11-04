@@ -17,7 +17,7 @@
      [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
                 Kelvin 2-nov (definitivo): se llaman Mara (martinicana) y Vela (violacea); son dos voces distintas que se unen al
                 final, así que la insinuación de por qué hablan «desde ahora» (D4) la dicen las dos juntas («Voces»), sin explicar.
-     [KELVIN-3 · medalla] Kelvin 2-nov (definitivo): al renovar el pacto el Guardián le da su medalla a Vittata (se la ganó) y queda
+     Kelvin 2-nov (definitivo): al renovar el pacto el Guardián le da su medalla a Vittata (se la ganó) y queda
                 en el Cuaderno como sección propia (G.diario.seccion). Solo diálogo y Diario: sin mecánica nueva ni modelo 3D.
      [KELVIN-4] D34 (DECIDIDO-EQUIPO 30-oct): la Ciudad de los 36 si el mapa lo permite; si no, la plaza de Villa Raíz.
                 Este pack tiene su propio mundo analítico (sin la Ciudad, que está en el mapa del cap. 1): queda la plaza; pedido en PEDIDOS.md.
@@ -169,7 +169,7 @@
   const lineasInicio = G => G.dialogo.L('inicio:ep6').map(l => (l.text === LLEGAN_DEF ? Object.assign({}, l, { text: lineaLlegan() }) : l));
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: '[KELVIN-1 decidido por Kelvin el 2-nov: se quedan los seis visitantes y sus nombres; D32 suma a los encontrados]',
+    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: 'Kelvin 2-nov: se quedan los seis visitantes y sus nombres. [KELVIN-4: el encuentro de este capítulo es la plaza; falta el sí para la Ciudad de los 36]',
       lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla. Mara y Vela pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
