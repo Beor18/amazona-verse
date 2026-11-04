@@ -341,7 +341,7 @@
           });
           return;
         }
-        // Pistas de Iguaca (una línea): bocadillos libres, no paran a la cotorra. [KELVIN] la del paso «taller» es provisional.
+        // Pistas de Iguaca (una línea): bocadillos libres, no paran a la cotorra. Kelvin 4-nov (K43 A): la del paso «taller» se queda.
         if (S.step === 1) { say([{ who: 'Iguaca', img: IMG.L, text: 'Revisa tu taller: la máquina y el transmisor. Después buscamos los materiales.' }], null, LIBRE); return; }
         if (S.step === 2 && !S.collected.includes('c1')) { say([{ who: 'Iguaca', img: IMG.L, text: 'La pieza de metal cayó en la poza del río. Nada hasta las burbujas y bucea con C (o el botón Bucear).' }], null, LIBRE); return; }
         if (S.step === 3 && C.edu && !S.missions.educativa) { say([C.edu.lineaLuma()], null, LIBRE); return; }
@@ -447,7 +447,7 @@
         if (e.t >= e.dur) { S.event = null; G.fx.rain.visible = false; crecida.terminar(); finishRainEvent(); }
       }, 20);
       // Al terminar: la escena de Iguaca va en bocadillos y la historia sigue en el acto (afterRain); si se salvó algo, Iguaca lo agradece
-      // y lo que se llevó el río se da por recuperado después (sin castigo). [KELVIN] las dos frases de Iguaca sobre el rescate son provisionales.
+      // y lo que se llevó el río se da por recuperado después (sin castigo). Kelvin 4-nov (K43 A): las dos frases de Iguaca sobre el rescate se quedan.
       function finishRainEvent() {
         const gracias = crecida.salvados.length ? [{ who: 'Iguaca', img: IMG.L, text: '¡Salvaste ' + crecida.nombres(crecida.salvados) + '! Mi familia te lo agradece.', mood: 'happy' }] : [];
         const rio = crecida.perdidos.length ? [{ who: 'Iguaca', img: IMG.L, text: 'El río se llevó ' + crecida.nombres(crecida.perdidos) + '. Tranquila: aparecerá río abajo y lo recogemos después.' }] : [];
@@ -593,7 +593,8 @@
       // despegar y posarse a su lado (una percha de fisica sostiene a Vittata en la copa, y queda para siempre como percha de la
       // plaza). Al acercarse, Iguaca llama desde arriba (interact:luma_inicio, bocadillos); la charla de la misión es en la copa y
       // después Iguaca baja a su sitio de la plaza. Sigue siendo el sprite con flota: true de mundo.js.
-      // [KELVIN] si Iguaca vuela o solo flota: hoy baja en línea recta en 1,4 s, sin alas ni animación.
+      // Kelvin 4-nov (K42 B): baja volando. El rig no se cambia: el aleteo usa el ritmo de ANIM.flap (18) del personaje,
+      // en el giro del sprite, y el camino hace un arco. No es una línea recta.
       const MAPA_C1 = window.AV_MAPA_CAP1 || null;
       const lumaN = G.actores.npc('luma'), lumaIt = G.interaccion.find('luma');
       const LUMA_SUELO = { x: lumaN.def.x, z: lumaN.def.z };
@@ -633,8 +634,13 @@
       G.on('render', (dt, t) => {
         const e = lumaPos(0), x = lumaIt.x, z = lumaIt.z;
         const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), y = percha.y + (gy - percha.y) * e;
+        const volando = lumaK > 0 && lumaK < 1;
+        const arco = volando ? Math.sin(e * Math.PI) * 2.4 : 0;
+        const lado = volando ? Math.sin(e * Math.PI) * 1.6 : 0;
+        const aleteo = volando ? Math.sin(t * 18) * 0.22 : 0; // 18: ANIM.flap del rig, sin tocar el rig
+        if (lumaN.sp.material) lumaN.sp.material.rotation = aleteo;
         if (lumaK >= 1) { lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
-        lumaN.sp.position.set(x, y + 1.0 + Math.sin(t * 2) * 0.05, z); lumaN.sh.position.set(x, y + 0.03, z);
+        lumaN.sp.position.set(x + lado, y + 1.0 + arco + (volando ? 0 : Math.sin(t * 2) * 0.05), z); lumaN.sh.position.set(x, y + 0.03, z);
       }, 12);
       // La llamada: al acercarse a la copa (18 m; desde el taller no se oye) con Iguaca arriba y sin otra cosa en pantalla, en bocadillos
       G.on('update', (dt, busy) => {

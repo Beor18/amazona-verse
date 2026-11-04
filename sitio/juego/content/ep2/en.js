@@ -103,6 +103,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
   "Acción: Hablar con Iguaca": "Action: Talk to Iguaca",
   "Acción: Contarle a Iguaca": "Action: Tell Iguaca",
   "Mira los 3 sitios: el llano, la loma y el claro. Llevas {} de 3.": "Look at the 3 sites: the lowland, the hill and the clearing. You've seen {} of 3.",
+  "Ya miraste los tres. ¿En cuál construimos?": "You've looked at all three. Which one do we build on?",
   "La abuela está junto al agua. Enséñale tu plano.": "Grandma is by the water. Show her your plan.",
   "Haz preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.": "Ask open questions: the ones that start with “how”, “what” or “why” get more of an answer than a yes or a no.",
   "Las tarjetas te esperan en la mesa.": "The cards are waiting for you on the table.",

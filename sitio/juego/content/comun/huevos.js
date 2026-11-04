@@ -171,8 +171,8 @@
           juvenil: [{ nuevo: 'visor_solar', respaldo: { slot: 'eyes', id: 'lentes', color: '#3d8fb0', style: 'deportivas' } }],
           adulto: [{ nuevo: 'kit_cientifico', respaldo: { slot: 'back', id: 'equipo', color: '#3d8fb0', style: 'mochila_pr' } }, { nuevo: 'anillo_cientifico' }],
         } },
-      // [KELVIN] nombre y piel de esta cápsula (src/game/rescate.js, «Save the Parrot»)
-      { id: 'rescatado', cria: { es: 'Pío', en: 'Pío' }, rareza: 'rescate', nombre: { es: 'Cápsula del pichón rescatado', en: 'Rescued chick capsule' },
+      // Kelvin 4-nov (K47 B): el pichón se llama «Salva a la cotorra». La piel sigue siendo la de ahora.
+      { id: 'rescatado', cria: { es: 'Salva a la cotorra', en: 'Save the Parrot' }, rareza: 'rescate', nombre: { es: 'Cápsula del pichón rescatado', en: 'Rescued chick capsule' },
         lema: { es: 'Para quien devuelve pichones a su nido.', en: 'For those who bring chicks back to their nest.' },
         aspecto: { patron: 'paja', a: '#9cc56a', b: '#5a7a2e', brillo: 0.2 },
         obtener: { texto: { es: 'Devuelve 5 pichones a su caja nido en «¡Salva al pichón!».', en: 'Bring 5 chicks back to their nest box in "Save the Parrot".' }, defecto: { rescates: 5 } },
@@ -195,19 +195,19 @@
     // a tirar; no hay botón de repetir). Se gana jugando: nada se compra. La suerte no castiga (garantias): tras 2 comunes seguidas
     // la siguiente es rara o mejor; tras 5 crías sin épica, épica o mejor; tras 7 sin legendaria, legendaria. Mismo modelo
     // siempre: la rareza solo cambia el marco, el aura y poderes suaves (mult) que no cuentan en el Modo Retos ni en los retos
-    // del mundo (rescate, banquete). pesos: propuesta inicial de P2, por balancear. [KELVIN] nombres (opción neutra: Nido, Bosque,
-    // Cielo, Leyenda) y si la legendaria es una especie concreta. Diseño: docs/equipo/HUEVOS_RAREZA.md.
+    // del mundo (rescate, banquete). pesos: propuesta inicial de P2, por balancear. Kelvin 4-nov (K48 A): los nombres son
+    // Nido, Bosque, Cielo y Leyenda. La legendaria no es una especie concreta. Diseño: docs/equipo/HUEVOS_RAREZA.md.
     rarezaCria: {
       pesos: { comun: 60, rara: 29, epica: 10, legendaria: 1 },
       garantias: { comunesSeguidas: 2, sinEpica: 5, sinLegendaria: 7 },
       niveles: [
-        { id: 'comun', nombre: { es: 'Común', en: 'Common' }, color: '#9fcf8a', aura: 0.3, poderes: ['aura'], mult: { vuelo: 1, impulso: 1, vista: 1 },
+        { id: 'comun', nombre: { es: 'Nido', en: 'Nest' }, color: '#9fcf8a', aura: 0.3, poderes: ['aura'], mult: { vuelo: 1, impulso: 1, vista: 1 },
           lema: { es: 'Habilidades básicas y un brillo suave.', en: 'Basic skills and a soft glow.' } },
-        { id: 'rara', nombre: { es: 'Rara', en: 'Rare' }, color: '#5ec8ff', aura: 0.45, poderes: ['aura', 'vista'], mult: { vuelo: 1, impulso: 1, vista: 1.2 },
+        { id: 'rara', nombre: { es: 'Bosque', en: 'Forest' }, color: '#5ec8ff', aura: 0.45, poderes: ['aura', 'vista'], mult: { vuelo: 1, impulso: 1, vista: 1.2 },
           lema: { es: 'Ve los frutos y hallazgos desde más lejos.', en: 'Spots fruit and finds from farther away.' } },
-        { id: 'epica', nombre: { es: 'Épica', en: 'Epic' }, color: '#c77dff', aura: 0.6, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela'], mult: { vuelo: 1.08, impulso: 1.08, vista: 1.3 },
+        { id: 'epica', nombre: { es: 'Cielo', en: 'Sky' }, color: '#c77dff', aura: 0.6, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela'], mult: { vuelo: 1.08, impulso: 1.08, vista: 1.3 },
           lema: { es: 'Vuela un poco más rápido y deja una estela de chispas.', en: 'Flies a bit faster and leaves a trail of sparks.' } },
-        { id: 'legendaria', nombre: { es: 'Legendaria', en: 'Legendary' }, color: '#ffd166', aura: 0.8, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela', 'canto'], mult: { vuelo: 1.12, impulso: 1.12, vista: 1.5 },
+        { id: 'legendaria', nombre: { es: 'Leyenda', en: 'Legend' }, color: '#ffd166', aura: 0.8, poderes: ['aura', 'vista', 'vuelo', 'impulso', 'estela', 'canto'], mult: { vuelo: 1.12, impulso: 1.12, vista: 1.5 },
           lema: { es: 'La máxima potencia y un canto que llama a la bandada.', en: 'Top power and a song that calls the flock.' } },
       ],
       poderes: {

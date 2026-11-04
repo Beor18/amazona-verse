@@ -118,6 +118,31 @@ AVE.module('agua', function (G) {
         return -30.0;
       #endif
     }
+    // QA-109: altura con bilineal simple (solo para el gradiente; los facetados de 2 m no importan aquí)
+    float alturaBil(vec2 xz) {
+      #ifdef HAY_ALTURA
+        vec2 uv = (xz - uHInfo.xy) / uHInfo.zw;
+        if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -30.0;
+        return texture2D(tAltura, uv).r * uHDec.x + uHDec.y;
+      #else
+        return -30.0;
+      #endif
+    }
+    // QA-109: distancia estimada a la línea de agua real ≈ profundidad / pendiente del fondo.
+    // La pendiente se toma sobre ±6 m para suavizar rizos de arena: un banco casi plano y ancho
+    // (bahía de Villa Raíz, 0–1,5 m durante decenas de metros) queda lejos de la orilla aunque
+    // sea somero y la banda de espuma lo blanquea entero; en una playa con pendiente la distancia
+    // es de metros y la espuma sigue igual.
+    float distEstimadaOrilla(vec2 xz, float prof) {
+      #ifdef HAY_ALTURA
+        float hx = alturaBil(xz + vec2(6.0, 0.0)) - alturaBil(xz - vec2(6.0, 0.0));
+        float hz = alturaBil(xz + vec2(0.0, 6.0)) - alturaBil(xz - vec2(0.0, 6.0));
+        float pend = length(vec2(hx, hz)) / 12.0;
+        return prof / max(pend, 0.02);
+      #else
+        return 0.0;
+      #endif
+    }
     float hash12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
     float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
       return mix(mix(hash12(i), hash12(i + vec2(1.0, 0.0)), f.x), mix(hash12(i + vec2(0.0, 1.0)), hash12(i + 1.0), f.x), f.y); }
@@ -208,6 +233,9 @@ AVE.module('agua', function (G) {
       espuma = max(espuma, uEstilo * (1.0 - smoothstep(0.9, 2.6, prof)) * smoothstep(0.4, 0.9, prof) * (smoothstep(0.86, 0.885, bandas2) - smoothstep(0.93, 0.955, bandas2)));
       float pie = 0.13 + nz * 0.15;
       espuma += 1.0 - smoothstep(mix(0.03, pie - 0.03, uEstilo), mix(pie + 0.09, pie, uEstilo), prof);
+      // QA-109: en los bancos de arena planos y amplios (bahía de Villa Raíz) la espuma se atenúa
+      // lejos de la orilla real; la orilla de las playas (pendiente, distancia corta) no cambia.
+      espuma *= 1.0 - smoothstep(2.5, 9.0, distEstimadaOrilla(xz, max(profReal, 0.0))) * 0.95 * (1.0 - uTormenta);
       espuma = clamp(espuma, 0.0, 1.0) * (1.0 - lejos);
       col = mix(col, uHemiCielo * 0.85 + uSolCol * 0.35, espuma * 0.85);
       float a = mix(0.55, 0.96, smoothstep(0.0, 1.6, prof));

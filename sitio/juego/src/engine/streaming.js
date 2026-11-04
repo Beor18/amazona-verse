@@ -1783,6 +1783,15 @@ AVE.module('streaming', function (G) {
           materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos, visiblesHD: vis.hd, hd: hdActivo(),
           drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
       },
+      // Diagnóstico para las herramientas de Kimi 3 (tools/build/kimi3_*.js): por qué terminar() sigue esperando.
+      // Solo lectura; no toca la cola ni los trabajos.
+      _diag() {
+        return {
+          enVuelo, quieto, arrancando, precarga: !!precarga,
+          cola: cola.map(r => ({ n: r.n, tipo: r.tipo, estado: r.estado, prio: Math.round(r.prio), refs: r.refs, fijo: !!r.fijo })),
+          trabajos: trabajos.map(j => j.avNombre || j.name || 'job'),
+        };
+      },
     };
     const tam = g => { let b = 0; if (!g) return 0; for (const k in g.attributes) b += g.attributes[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
     G.on('update', dt => {

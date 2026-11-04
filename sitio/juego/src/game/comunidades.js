@@ -4,7 +4,7 @@
    El modelo es el de la bandada (sin personajes ni mallas nuevas). Se añaden a
    G.bandada.EXTRA en la prioridad 87.5, entre los residentes (87) y el dibujo (88):
    si esas dos mallas ya se dibujan, no suman draw calls. La nasa no toca a ningún pez.
-   Villa Mangle es la comunidad de La Otra Orilla (Kelvin, 2-nov); el rótulo del mapa no se cambia.
+   Villa Mangle es la comunidad de la otra orilla (Kelvin, 2-nov). Kelvin 4-nov (K1 A): el rótulo del mapa es «Villa Mangle · Mesa del Este».
    El embarcadero es la otra orilla del río, para que la tercera rutina no caiga en el mismo punto.
    G.quiet no las enciende. En calidad baja, versión mínima: las 2 primeras de cada sitio (QA-110: el iPhone arranca en bajo).
    Prueba: AV.comunidadesTest(). */
@@ -18,7 +18,7 @@ window.AVComunidades = function (G) {
   const R = { prueba: false, forzar: null, pausa: false, t: 0, sitios: null, gente: [] };
   const permitido = () => R.prueba || (!G.quiet && !!(S.profile && S.profile.created));
   const BAJO_N = 2; // por sitio, en calidad baja
-  // Villa Mangle vive en kelvin_aldea_rio_este_2 (el mapa sigue diciendo «La Otra Orilla» [KELVIN]).
+  // Villa Mangle vive en kelvin_aldea_rio_este_2. Kelvin 4-nov (K1 A): el rótulo es «Villa Mangle · Mesa del Este».
   // La otra orilla del río es el embarcadero (kelvin_aldea_rio_oeste).
   const DEFS = [
     { id: 'villa', titulo: 'Villa Raíz', pois: ['kelvin_aldea_rio_este', 'plaza', 'flamboyan_plaza'], actos: ['cargar', 'construir', 'conversar', 'conversar'] },

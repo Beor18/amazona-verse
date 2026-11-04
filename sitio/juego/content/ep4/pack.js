@@ -46,7 +46,7 @@
   const OBS = TIDS.map(i => 'obs_' + i).concat('obs_bosque');
   const BOSQUE = M({ x: -1, z: -17 }); // el bosquecillo del estrecho: huecos de nido y sombra
   // D27 (DECISION_LOG, AP10 lote 3): en el bosquecillo anida uno de los 36, un guardián que el jugador ya conoce.
-  // [KELVIN: qué especie de los 36 es; hasta entonces el texto no la nombra]
+  // Kelvin 4-nov (K12 A): sigue sin nombre de especie.
   const NIDO_36 = 'En el hueco más alto anida uno de los 36: un guardián que ya conoces.';
   const FUENTE = 'USFWS, Programa interagencial de la cotorra puertorriqueña (2026)';
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', Navegante: 'assets/navegante.png', 'Guardián': 'assets/guardian.png', Aprendiz: 'assets/aprendiz.png' };
@@ -126,11 +126,11 @@
     { id: 'e_orilla', disparador: 'evento:ShoreSurveyed', personaje: 'Iguaca', emocion: 'pensando', lineas: ['Ya sabes lo que hay en cada orilla. Ahora falta saber a quién le importa cada cosa.', 'Escucha a la abuela, al papá, a Nayara en el muelle… y a mí. Cada voz te deja una tarjeta.'] },
     { id: 'e_voces', disparador: 'evento:VoicesHeard', personaje: 'Iguaca', emocion: 'idea', lineas: ['Cuatro voces, cuatro tarjetas. Llévalas a la Balanza de la mesa y mira qué da y qué cuesta cada opción.'] },
     { id: 'e_balanza', disparador: 'evento:TradeoffSeen', personaje: 'Iguaca', emocion: 'feliz', lineas: ['Eso es: aquí no hay una sola respuesta. Cada opción da algo a alguien y le cuesta algo a otro.', 'Pruébalas en la maqueta antes de decidir. Luego hacemos la asamblea.'] },
-    { id: 'e_guardian', disparador: 'evento:TradeoffSeen', personaje: 'Guardián', emocion: 'pensando', nota: '[KELVIN: qué recuerda el Guardián de antes de la Gran Ruptura (EP4_GDD.md §10.6); pista para el ep. 5, sin revelar]', lineas: ['Antes también se cruzaba este río… pero no recuerdo cómo.'] },
+    { id: 'e_guardian', disparador: 'evento:TradeoffSeen', personaje: 'Guardián', emocion: 'pensando', nota: 'Kelvin 4-nov (K13 A): se queda «no recuerdo cómo», sin revelar el cómo.', lineas: ['Antes también se cruzaba este río… pero no recuerdo cómo.'] },
     { id: 'e_fin_a', disparador: 'evento:Chapter4Completed', personaje: 'Abuela', emocion: 'feliz', lineas: ['¡Otra vez del otro lado! Mi familia me esperaba con café.'] },
     { id: 'e_fin_i', disparador: 'evento:Chapter4Completed', personaje: 'Iguaca', emocion: 'feliz', lineas: ['No elegiste lo perfecto: elegiste con todos y cuidaste lo que costaba. Eso también es construir.', 'Cuando quieras, ven y te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.'] },
     // La Voz solo llega por el transmisor y la luz de la niebla (TEMPORADA1_HILO.md §5.10): aquí el Guardián recuerda, no oye; el transmisor solo da estática desde este capítulo (gancho al ep. 5)
-    { id: 'e_fin_v', disparador: 'evento:Chapter4Completed', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si la Voz dice algo en el ep. 4 o solo estática (EP4_GDD.md §10.7); gancho al ep. 5]', lineas: ['El transmisor lleva días dando solo estática. Y aun así, al ver cruzar a la abuela, me vino un recuerdo: alguien de antes también cruzó aquí… y nos llamaba por el aparato.'] },
+    { id: 'e_fin_v', disparador: 'evento:Chapter4Completed', personaje: 'Guardián', emocion: 'idea', nota: 'Kelvin 4-nov (K14 A): la Voz no habla; solo estática y el recuerdo.', lineas: ['El transmisor lleva días dando solo estática. Y aun así, al ver cruzar a la abuela, me vino un recuerdo: alguien de antes también cruzó aquí… y nos llamaba por el aparato.'] },
   ] };
 
   AVE.registerPack({
@@ -736,7 +736,7 @@
         check('Ninguna opción lo maximiza todo, con ningún cuidado', OIDS.every(o => [null].concat(CIDS).every(c => !EJES.every(e => hojasCon(o, c)[e.id] === 3))));
         check('Cada opción es la mejor en algún eje', OIDS.every(o => EJES.some(e => OPCIONES[o].hojas[e.id] === Math.max(...OIDS.map(k => OPCIONES[k].hojas[e.id])))));
         check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador',
-          JSON.stringify(DIALOGOS.escenas.map(e => e.nota || '')).includes('[KELVIN') && !JSON.stringify([DIALOGOS.escenas.map(e => e.lineas), VOCES, OPCIONES, CUIDADOS, TRAMOS, RECLAMO, FRASES, PALABRAS, G.pack.historia.pasos.map(s => s.texto), G.pack.diario.entradas]).includes('[KELVIN'));
+          DIALOGOS.escenas.some(e => /\[KELVIN|^Kelvin /.test(e.nota || '')) && !JSON.stringify([DIALOGOS.escenas.map(e => e.lineas), VOCES, OPCIONES, CUIDADOS, TRAMOS, RECLAMO, FRASES, PALABRAS, G.pack.historia.pasos.map(s => s.texto), G.pack.diario.entradas]).includes('[KELVIN'));
         // Las otras dos opciones también terminan el capítulo (todas se pueden elegir)
         for (const [op, cu] of [['b', 'descansos'], ['c', 'turnos']]) {
           const fin = partida(op, cu, false);

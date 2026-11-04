@@ -99,7 +99,7 @@
   const PREG_ORDEN = { izquierda: '¿Qué señal será «izquierda»?', derecha: '¿Qué señal será «derecha»?', para: '¿Qué señal será «parar»?' };
 
   const IMG = { Iguaca: 'assets/luma.png', Vittata: 'assets/vittata.png', Abuela: 'assets/abuela.png', 'Papá': 'assets/papa.png', 'Guardián': 'assets/guardian.png',
-    Navegante: 'assets/navegante.png', Vecina: 'assets/vittata.png' }; // navegante: Nayara, A. ventralis de La Española (Kelvin 2-nov); retrato navegante.png (ventralis, el de los caps. 4 y 6). [KELVIN: render de la gente de Villa Mangle]
+    Navegante: 'assets/navegante.png', Vecina: 'assets/agilis.png' }; // navegante: Nayara, A. ventralis (Kelvin 2-nov). Kelvin 4-nov (K8 C): la Vecina usa el retrato ya aprobado de Amazona agilis, distinto de Vittata, sin modelo nuevo.
   const di = (who, text) => ({ who, img: IMG[who], text });
   const Lu = t => di('Iguaca', t), Na = t => di('Navegante', t), Vi = t => di('Vittata', t);
 
@@ -111,7 +111,7 @@
   const continuidad = () => { const T = window.AVTemporada, s = T && T.dato(2, 'sitio'); return CASA_EP2[s] ? [Vi(CASA_EP2[s])] : []; };
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep3', personaje: 'Vittata', emocion: 'pensando', nota: '[KELVIN: lo que dice la Voz y si la luz de la niebla se ve desde el mar]',
+    { id: 'e_inicio', disparador: 'inicio:ep3', personaje: 'Vittata', emocion: 'pensando', nota: 'Kelvin 4-nov (K6 A): Vittata cuenta la luz; la Voz no habla y la luz no se acerca.',
       lineas: ['El plano del bote está en la mesa de todos. La abuela escribió «que no se vire»; el papá, «amarre doble».', 'Y anoche la luz de la niebla parpadeó sobre el agua, más allá de la bahía. Pues vamos a contestar en persona.'] },
     { id: 'e_papa', disparador: 'interact:papa', personaje: 'Papá', emocion: 'pensando', lineas: ['¿El tronco más grande? ¿Y eso flota cargado?', 'Antes de cortar nada, probemos qué flota. Ahí está la poza.'] },
     { id: 'e_papa_v', disparador: 'interact:papa', personaje: 'Vittata', emocion: 'idea', lineas: ['Primero predigo, luego pruebo. Como con la casa.'] },
@@ -119,7 +119,7 @@
     { id: 'e_flota_n', disparador: 'evento:BoatLaunched', personaje: 'Navegante', emocion: 'pensando', nota: 'Kelvin 2-nov: la navegante es Nayara, una Amazona ventralis de La Española; se presenta en e_nav_n2', lineas: ['(En el muelle, una cotorra mira la canoa con las alas cruzadas.)'] },
     { id: 'e_nav', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'pensando', lineas: ['Ese bote flota, sí. Pero hoy no sale.'] },
     { id: 'e_nav_v', disparador: 'evento:NavigatorMet', personaje: 'Vittata', emocion: 'triste', lineas: ['¡Pero si está listo! Lo hice yo.'] },
-    { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: '[KELVIN: si el Guardián va en el bote o despide desde el muelle]', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
+    { id: 'e_nav_g', disparador: 'evento:NavigatorMet', personaje: 'Guardián', emocion: 'idea', nota: 'Kelvin 4-nov (K7 A): el Guardián despide desde el muelle.', lineas: ['Mija, tú hiciste el bote; ella conoce el agua.'] },
     { id: 'e_nav_n2', disparador: 'evento:NavigatorMet', personaje: 'Navegante', emocion: 'idea', lineas: ['Me llamo Nayara. Crucé el mar desde La Española, y allá aprendí a leer el agua.', 'Los botes yo los manejo, no los hago. Mira tú misma: las cintas de los dos postes, las nubes desde el mirador y la corriente del río. Luego hablamos.'] },
     { id: 'e_fin', disparador: 'evento:Chapter3Completed', personaje: 'Navegante', emocion: 'feliz', lineas: ['Este bote ya no es tuyo ni mío. Es de las dos.'] },
     { id: 'e_fin_v', disparador: 'evento:Chapter3Completed', personaje: 'Vittata', emocion: 'pensando', lineas: ['(Enrolla el plano de la Vecina y se lo lleva.)', 'Un camino ayudaría a todos, pero costaría bosque. Antes de decidir, voy a preguntar a todos y a mirar bien lo que se gana y lo que se pierde.'] },
@@ -825,7 +825,7 @@
         decir([Vi(tiene('ruta_costa') ? '¡La otra orilla! Y justo al atardecer.' : '¡La otra orilla! Mojadas, pero llegamos.'), Na('Ahí viene alguien. Saluda tú.')], () => G.ui.toast('Saluda a la gente de la otra orilla', 3000));
       }
       // La otra orilla: al principio desconfían; Vittata pregunta antes de contar. Intercambio y gancho al ep. 4. Kelvin 2-nov: la otra
-      // comunidad es Villa Mangle (decisión 2 de EP3_GDD §10). Siguen abiertas las decisiones 4, 7 y 8 [KELVIN].
+      // comunidad es Villa Mangle (Kelvin 2-nov). Kelvin 4-nov: K9 A nadie oye a la Voz todavía; K10 A el intercambio se queda como está; K11 A el gancho es el camino.
       function vecina() {
         if (!(S.step === 5 && G.eventos.had('BayCrossed'))) { decir([di('Vecina', S.complete ? 'Vuelvan cuando quieran. Y piénsenlo.' : '…')]); return; }
         if (!G.eventos.had('CommunityReached')) {
@@ -911,7 +911,7 @@
           G.quiet = true; G.guardado.reset(true);
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
           check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
-          check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.nota || '')).includes('[KELVIN') && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
+          check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN|^Kelvin /.test(e.nota || '')) && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
           // Mapa: cada punto de las rutas de la bahía tiene agua (relieve bajo el mar) y los del río, bajo el nivel del río
           const R = G.ep3.RUTAS, hondo = (p, y) => G.terreno.height(p[0], p[1]) < y - 0.4;
           const secos = ['boca', 'atajo', 'costa', 'atras', 'otro'].flatMap(k => R[k].filter(p => !hondo(p, G.ep3.MAR)).map(p => k + ':' + p)).concat(R.rio.filter(p => !hondo(p, G.ep3.nivelRio())).map(p => 'rio:' + p));

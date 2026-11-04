@@ -48,7 +48,8 @@
 }
 @media (max-width: 560px) {
   #title:has(#modos) .title-main { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px); }
-  #title:has(#modos) .title-hero { right: -6vw; bottom: 0; margin: 0; width: 42vw; opacity: 0.45; }
+  /* QA-148: right negativo la sacaba de la portada (240…398 a 375 px, 205…339 a 320 px). Cabe, con aire para el balanceo. */
+  #title:has(#modos) .title-hero { right: 12px; bottom: 0; margin: 0; width: min(38vw, calc(100% - 24px)); max-height: 42vh; height: auto; opacity: 0.45; }
   #title:has(#modos) .title-hint { display: none; }
 }
 @media (max-height: 520px) and (orientation: landscape) {
