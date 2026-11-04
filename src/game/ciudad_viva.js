@@ -10,7 +10,7 @@
      por encima de lo más alto del camino y, en cada paso, la altura nunca queda por debajo del tope sólido de ese punto ni del terreno.
    - Rendimiento (Kelvin: lag en móvil e iPad): sin mallas nuevas. Se dibujan en las dos mallas instanciadas de la bandada
      (G.bandada.EXTRA, prioridad 87.5, como comunidades.js): 0 draw calls extra si esas mallas ya se ven, 2 como mucho.
-     Cuántas: bajo 4 (no se carga si arranca en «bajo»), medio 10, alto 16. Se actualizan cada cuadro a menos de 45 m de la
+     Cuántas: bajo 6 (mínima visible: el iPhone arranca en «bajo», QA-110/0l), medio 10, alto 16. Se actualizan cada cuadro a menos de 45 m de la
      cámara, cada 3 cuadros hasta 100 m y cada 6 más lejos; a más de 170 m del centro de la ciudad se apagan (sin trabajo ni dibujo).
    - Nada en las baterías (G.quiet) ni antes de crear el personaje. Prueba: AV.ciudadVivaTest(). */
 window.AVCiudadViva = function (G) {
@@ -18,7 +18,7 @@ window.AVCiudadViva = function (G) {
   if (G.ciudadViva) return G.ciudadViva;
   const S = G.S, POI = 'kelvin_ruinas_yunque';
   const H = (x, z) => G.terreno.height(x, z);
-  const N = { bajo: 4, medio: 10, alto: 16 };
+  const N = { bajo: 6, medio: 10, alto: 16 };
   const ACTIVA = 170, HIST = 20, LOD = [[45, 1], [100, 3], [Infinity, 6]], ESC = 1.35, VER_R = 8;
   const SP_DEF = ['vittata', 'imperialis', 'arausiaca', 'guildingii', 'versicolor']; // = residentes.js HAB.nublado
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -373,7 +373,7 @@ window.AVCiudadViva = function (G) {
       // calidad: menos en medio y en bajo
       const cuenta = c => { Rd.calidad.nivel = c; G.emit('calidad', Rd.calidad); return R.aves.length; };
       const nm = cuenta('medio'), nb = cuenta('bajo'), na = cuenta('alto');
-      check('Menos cotorras con menos calidad: bajo 4, medio 10, alto 16', nb === 4 && nm === 10 && na === 16, 'bajo ' + nb + ' · medio ' + nm + ' · alto ' + na);
+      check('Menos cotorras con menos calidad: bajo 6, medio 10, alto 16', nb === 6 && nm === 10 && na === 16, 'bajo ' + nb + ' · medio ' + nm + ' · alto ' + na);
       // actualización por distancia: de cerca cada cuadro, lejos cada 6
       const ritmo = () => { R.stats.pasos = 0; R.stats.cuadros = 0; for (let i = 0; i < 60; i++) paso(1 / 60); return R.stats.pasos / Math.max(1, R.stats.cuadros) / R.aves.length; };
       G.camara.place(true);

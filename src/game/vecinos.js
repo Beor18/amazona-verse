@@ -1,7 +1,7 @@
 /* Juego · CG-44. Vecinos que no son cotorras: prototipo corto en Villa Raíz y en la Ciudad de los 36.
    Coquí (canta de tarde y de noche, salta si te acercas), lagartijo (sol en el muro, huye, papada) y
    mariposa (ochos junto a las flores; si Vittata se queda quieta, una se le posa).
-   Presupuesto: calidad baja 0, media ≤ 6, alta ≤ 12. Una sola malla instanciada (1 draw call) y se apaga
+   Presupuesto: calidad baja 2 (mínima visible en el iPhone, que arranca en «bajo»: QA-110/0l), media ≤ 6, alta ≤ 12. Una sola malla instanciada (1 draw call) y se apaga
    si el jugador está lejos de los dos sitios o si la batería va en silencio (G.quiet). No toca cotorras ni la ciudad.
    window.AVVecinos(G) → { test, estado }. Prueba: AV.vecinosTest(). */
 window.AVVecinos = function (G) {
@@ -10,7 +10,7 @@ window.AVVecinos = function (G) {
   const S = G.S, M = G.fisica.MOVE, scene = G.renderer.scene;
   const H = (x, z) => G.terreno.height(x, z);
   const SITIOS = [{ id: 'villa', x: 125, z: 140 }, { id: 'ciudad', x: 11, z: -76 }];
-  const TOPE = { bajo: 0, medio: 6, alto: 12 };
+  const TOPE = { bajo: 2, medio: 6, alto: 12 };
   const ESPECIE = ['coqui', 'lagartijo', 'mariposa'];
   const CLAVE_V = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.vecinos';
   const VISTOS = { coqui: false, lagartijo: false, mariposa: false };
@@ -82,7 +82,7 @@ window.AVVecinos = function (G) {
     malla.visible = !G.quiet && (forzar ? true : cerca) && aves.length > 0;
   }
   function paso(dt) {
-    if (!forzar && (G.quiet || nivel() === 'bajo' || lejos())) {
+    if (!forzar && (G.quiet || lejos())) {
       if (malla.visible || malla.count) { malla.visible = false; malla.count = 0; aves.length = 0; }
       return;
     }
@@ -121,9 +121,9 @@ window.AVVecinos = function (G) {
     const guard = { quiet: G.quiet, x: S.pos.x, y: S.pos.y, z: S.pos.z, hora: S.hora, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
     let crudoV = null; try { crudoV = localStorage.getItem(CLAVE_V); } catch (e) { /* */ }
     try {
-      ok('Tope: baja 0, media 6, alta 12', TOPE.bajo === 0 && TOPE.medio === 6 && TOPE.alto === 12);
+      ok('Tope: baja 2 (mínima visible), media 6, alta 12', TOPE.bajo === 2 && TOPE.medio === 6 && TOPE.alto === 12);
       forzar = { nivel: 'bajo' }; sembrar();
-      ok('En calidad baja no hay vecinos', aves.length === 0 && malla.count === 0, String(aves.length));
+      ok('En calidad baja hay 2 (mínima visible)', aves.length === 2 && malla.count === 2, String(aves.length));
       forzar = { nivel: 'medio' }; sembrar(); pintar();
       ok('En calidad media hay 6, entre Villa Raíz y la ciudad', aves.length === 6 && aves.some(a => a.sitio === 'villa') && aves.some(a => a.sitio === 'ciudad'), aves.map(a => a.sitio + ':' + a.especie).join(','));
       ok('Ninguno atraviesa el suelo', aves.every(a => a.y >= H(a.x, a.z) - 0.02), aves.map(a => (a.y - H(a.x, a.z)).toFixed(2)).join(','));

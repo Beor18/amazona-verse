@@ -8,6 +8,7 @@
    la malla instanciada 'vecinos' se apaga con count=0 y se restaura con estado().n).
 
    Uso: node tools/build/kimi2_vecinos.js [--cpu 4] [--dur 8] [--salida DIR] [--puerto N]
+        [--bajo]   (0l: A/B en calidad «bajo» fija + vecinosTest y ciudadVivaTest al final, en la misma sesión)
 */
 'use strict';
 const http = require('http');
@@ -28,6 +29,7 @@ const CPU = parseFloat(arg('--cpu', '4'));
 const DUR = parseFloat(arg('--dur', '8'));          // s de cada toma
 const SIMPLE = process.argv.includes('--simple');    // dia solo, Villa+Ciudad, sin aislados ni noche
 const MICRO = process.argv.includes('--micro');      // micro-benchmark CPU de paso()+pintar() (inmune al GPU)
+const BAJO = process.argv.includes('--bajo');        // 0l: calidad «bajo» fija (el iPhone arranca en bajo)
 const SALIDA = arg('--salida', path.join(AQUI, 'salida', 'kimi2-vecinos'));
 fs.mkdirSync(SALIDA, { recursive: true });
 
@@ -148,8 +150,8 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
   await cdp.bombear(2.0);
   console.log('· jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
 
-  // Calidad media fija (en el iPhone el juego arranca en bajo: vecinos 0 / ciudad viva 4) y sin rebaje automatico.
-  console.log('· calidad: ' + await evaluar(cdp, ses, `(() => { const R = AV.G.renderer; if (R.calidad) R.calidad.manual = true; if (R.setCalidad) R.setCalidad('medio'); return R.calidad && R.calidad.nivel; })()`, 15, false));
+  // Calidad fija (media por defecto; --bajo: en el iPhone el juego arranca en bajo: vecinos 0-2 / ciudad viva 4-6) y sin rebaje automatico.
+  console.log('· calidad: ' + await evaluar(cdp, ses, `(() => { const R = AV.G.renderer; if (R.calidad) R.calidad.manual = true; if (R.setCalidad) R.setCalidad('${BAJO ? 'bajo' : 'medio'}'); return R.calidad && R.calidad.nivel; })()`, 15, false));
   // Que los dos sistemas esten cargados (cargan al primer gesto; si no, sus pruebas los cargan).
   console.log('· sistemas: ' + await evaluar(cdp, ses, `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (!AV.G.vecinos) try { await AV.vecinosTest(); } catch (e) {}
@@ -159,7 +161,9 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
 
   // Precalienta la ciudad mientras se mide Villa; luego una pasada de calentamiento por cada vista
   // (la primera llegada a una zona trae stalls de streaming de varios segundos que envenenarian la toma).
-  await evaluar(cdp, ses, `(AV.G.mundo.streaming && AV.G.mundo.streaming.alrededor(-4, -130.8).catch(() => {}), 'ok')`, 10, false);
+  // OJO: el centro de la ciudad (-4,-130.8) esta dentro de un edificio: el anti-atasco devuelve a Vittata a la villa.
+  // El ancla buena es (12,-114.8) = centro del POI +16,+16 (la misma que usa ciudadVivaTest), yaw 0.785 hacia el centro.
+  await evaluar(cdp, ses, `(AV.G.mundo.streaming && AV.G.mundo.streaming.alrededor(12, -114.8).catch(() => {}), 'ok')`, 10, false);
 
   const resultados = [];
   async function toma(nombre) {
@@ -188,12 +192,15 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
   async function irA(x, z, yaw) {
     await evaluar(cdp, ses, `(AV.teleport(${x}, ${z}), AV.debug.camYaw(${yaw}), (AV.G.mundo.streaming && AV.G.mundo.streaming.alrededor(${x}, ${z}).catch(() => {})), 'ok')`, 60, false);
     await evaluar(cdp, ses, `(AV.G.solidos && AV.G.solidos.terminar && AV.G.solidos.terminar(), 'ok')`, 60, false);
+    const quedo = await evaluar(cdp, ses, `JSON.stringify({ x: Math.round(AV.G.S.pos.x), z: Math.round(AV.G.S.pos.z) })`, 20, false);
     await estable(ses);
+    return quedo;
   }
   // A/B: quiet apaga vecinos + ciudad viva y al quitarlo se repueblan solos. ON se mide antes y despues.
   async function ab(nombre, x, z, yaw, noche) {
     await evaluar(cdp, ses, `(() => { ${noche ? 'AV.G.S.hora = 22; if (AV.G.ciudadViva) AV.G.ciudadViva.hora(22);' : 'delete AV.G.S.hora; if (AV.G.ciudadViva) AV.G.ciudadViva.hora(null);'} return 'ok'; })()`, 20, false);
-    await irA(x, z, yaw);
+    const quedo = await irA(x, z, yaw);
+    console.log('  · ancla ' + nombre + ' (pos real ' + quedo + ')');
     const on1 = await toma(nombre + ' · ON-a');
     await evaluar(cdp, ses, `(AV.G.quiet = true, 'ok')`, 20, false);
     await estable(ses);
@@ -206,7 +213,7 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
 
   if (MICRO) {
     console.log('· micro · CPU x' + CPU + ' por cuadro de cada sistema (mediana de 5 lotes x 200 llamadas)');
-    for (const nivel of ['medio', 'alto']) {
+    for (const nivel of ['bajo', 'medio', 'alto']) {
       await evaluar(cdp, ses, `(AV.G.renderer.setCalidad('${nivel}'), 'ok')`, 20, false);
       await cdp.bombear(1.0);
       const j = JSON.parse(await evaluar(cdp, ses, `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)); const C = AV.G.ciudadViva, V = AV.G.vecinos;
@@ -221,21 +228,37 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
       resultados.push({ escena: 'micro-' + nivel, ...j });
       console.log(`  · ${nivel}: ciudad viva ${j.ciudadVivaMS} ms/cuadro (${j.aves} aves, forzar=todo) · vecinos ${j.vecinosMS} ms/cuadro (${j.vecinos} vecinos)`);
     }
-  } else if (SIMPLE) {
-    console.log('· dia SIMPLE · Villa Raiz (sitio vecinos 125,140)');
+  } else if (SIMPLE || BAJO) {
+    if (BAJO) { // calentar las dos vistas primero: la primera llegada trae stalls de streaming de segundos que envenenarian la toma
+      console.log('· calentamiento: Villa y Ciudad (sin medir)');
+      await irA(125, 140, 0.69, false);
+      await irA(12, -114.8, 0.785, false);
+      await irA(125, 140, 0.69, false);
+    }
+    console.log('· dia ' + (BAJO ? 'BAJO ' : 'SIMPLE ') + '· Villa Raiz (sitio vecinos 125,140)');
     await ab('dia-villa', 125, 140, 0.69, false);
-    console.log('· dia SIMPLE · Ciudad de los 36 (POI -4,-130.8)');
-    await ab('dia-ciudad', -4, -130.8, -1.87, false);
+    console.log('· dia ' + (BAJO ? 'BAJO ' : 'SIMPLE ') + '· Ciudad de los 36 (POI -4,-130.8)');
+    await ab('dia-ciudad', 12, -114.8, 0.785, false);
+    if (BAJO) {
+      // 0l: validar los topes de «bajo» con las pruebas de los dos modulos (misma sesion, al final)
+      console.log('· pruebas de los modulos (topes de bajo)');
+      const vt = JSON.parse(await evaluar(cdp, ses, `(async () => { const r = await AV.vecinosTest(); return JSON.stringify({ passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name + ' :: ' + x.extra) }); })()`, 120));
+      resultados.push({ escena: 'pruebas', vecinosTest: vt });
+      console.log(`  · vecinosTest ${vt.passed}/${vt.total}` + (vt.fallos.length ? ' · FALLOS: ' + vt.fallos.join(' | ') : ''));
+      const ct = JSON.parse(await evaluar(cdp, ses, `(async () => { const r = await AV.ciudadVivaTest({ espera: 90 }); return JSON.stringify({ passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name + ' :: ' + String(x.extra).slice(0, 220)) }); })()`, 600));
+      resultados.push({ escena: 'pruebas', ciudadVivaTest: ct });
+      console.log(`  · ciudadVivaTest ${ct.passed}/${ct.total}` + (ct.fallos.length ? ' · FALLOS: ' + ct.fallos.join(' | ') : ''));
+    }
   } else {
   console.log('· calentamiento: Villa y Ciudad (sin medir)');
   await irA(125, 140, 0.69, false);
-  await irA(-4, -130.8, -1.87, false);
+  await irA(12, -114.8, 0.785, false);
   await irA(125, 140, 0.69, false);
 
   console.log('· dia · Villa Raiz (sitio vecinos 125,140)');
   const vDia = await ab('dia-villa', 125, 140, 0.69, false);
   console.log('· dia · Ciudad de los 36 (POI -4,-130.8)');
-  const cDia = await ab('dia-ciudad', -4, -130.8, -1.87, false);
+  const cDia = await ab('dia-ciudad', 12, -114.8, 0.785, false);
   // ciudad viva aislada en la ciudad (pausa + limpiar EXTRA); vecinos intactos.
   await evaluar(cdp, ses, `(() => { if (!AV.G.ciudadViva) return 'no'; AV.G.ciudadViva.pausa(true); const E = AV.G.bandada.EXTRA; if (E) for (let i = E.length - 1; i >= 0; i--) if (E[i].ciudad) E.splice(i, 1); return 'ok'; })()`, 20, false);
   await estable(ses);
@@ -250,7 +273,7 @@ const TOMA_JS = dur => `(async () => { const sleep = ms => new Promise(r => setT
   await evaluar(cdp, ses, `(() => { const m = AV.G.renderer.scene.getObjectByName('vecinos'); const v = AV.G.vecinos && AV.G.vecinos.estado(); if (m && v) m.count = v.n; return 'ok'; })()`, 20, false);
 
   console.log('· noche (S.hora=22) · Ciudad de los 36');
-  const cNoche = await ab('noche-ciudad', -4, -130.8, -1.87, true);
+  const cNoche = await ab('noche-ciudad', 12, -114.8, 0.785, true);
   await evaluar(cdp, ses, `(() => { if (!AV.G.ciudadViva) return 'no'; AV.G.ciudadViva.pausa(true); const E = AV.G.bandada.EXTRA; if (E) for (let i = E.length - 1; i >= 0; i--) if (E[i].ciudad) E.splice(i, 1); return 'ok'; })()`, 20, false);
   await estable(ses);
   const cNocheSinCV = await toma('noche-ciudad · SIN ciudad viva');

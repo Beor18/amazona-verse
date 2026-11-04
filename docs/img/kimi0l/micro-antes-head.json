@@ -1,0 +1,40 @@
+{
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "real (RX 5700 XT)",
+    "nota": "contencion: otros Chrome del sistema corriendo"
+  },
+  "resultados": [
+    {
+      "escena": "micro-bajo",
+      "calidad": "bajo",
+      "ciudadVivaMS": 0.024,
+      "vecinosMS": 0,
+      "aves": 4,
+      "vecinos": 0,
+      "quiet": false
+    },
+    {
+      "escena": "micro-medio",
+      "calidad": "medio",
+      "ciudadVivaMS": 0.027,
+      "vecinosMS": 0.009,
+      "aves": 10,
+      "vecinos": 6,
+      "quiet": false
+    },
+    {
+      "escena": "micro-alto",
+      "calidad": "alto",
+      "ciudadVivaMS": 0.057,
+      "vecinosMS": 0.019,
+      "aves": 16,
+      "vecinos": 12,
+      "quiet": false
+    }
+  ],
+  "errores": []
+}

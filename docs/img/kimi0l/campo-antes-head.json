@@ -1,0 +1,299 @@
+{
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "real (RX 5700 XT)",
+    "nota": "contencion: otros Chrome del sistema corriendo"
+  },
+  "resultados": [
+    {
+      "n": 68,
+      "p50": 49,
+      "p95": 444,
+      "peor": 1826,
+      "mas100": 17,
+      "fps": 3,
+      "calls": 79,
+      "tris": 321862,
+      "heapMB": 364,
+      "texMB": 296.4,
+      "calidad": "bajo",
+      "quiet": false,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 1826,
+          "t": 176
+        },
+        {
+          "d": 1451,
+          "t": 171.9
+        },
+        {
+          "d": 1424,
+          "t": 169.9
+        },
+        {
+          "d": 444,
+          "t": 171.5
+        }
+      ],
+      "escena": "dia-villa · ON-a"
+    },
+    {
+      "n": 130,
+      "p50": 42,
+      "p95": 118,
+      "peor": 1194,
+      "mas100": 9,
+      "fps": 17,
+      "calls": 0,
+      "tris": 0,
+      "heapMB": 435,
+      "texMB": 280.9,
+      "calidad": "bajo",
+      "quiet": false,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 1194,
+          "t": 236.6
+        },
+        {
+          "d": 701,
+          "t": 242
+        },
+        {
+          "d": 222,
+          "t": 243.6
+        },
+        {
+          "d": 194,
+          "t": 238
+        }
+      ],
+      "escena": "dia-villa · SIN (quiet)"
+    },
+    {
+      "n": 32,
+      "p50": 56,
+      "p95": 236,
+      "peor": 15945,
+      "mas100": 3,
+      "fps": 1,
+      "calls": 62,
+      "tris": 210576,
+      "heapMB": 423,
+      "texMB": 280.9,
+      "calidad": "bajo",
+      "quiet": true,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 15945,
+          "t": 248.5
+        },
+        {
+          "d": 236,
+          "t": 247.1
+        },
+        {
+          "d": 104,
+          "t": 247.5
+        },
+        {
+          "d": 84,
+          "t": 247.8
+        }
+      ],
+      "escena": "dia-villa · ON-b"
+    },
+    {
+      "n": 195,
+      "p50": 28,
+      "p95": 42,
+      "peor": 3083,
+      "mas100": 4,
+      "fps": 31,
+      "calls": 0,
+      "tris": 0,
+      "heapMB": 325,
+      "texMB": 280.9,
+      "calidad": "bajo",
+      "quiet": false,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 3083,
+          "t": 406
+        },
+        {
+          "d": 167,
+          "t": 409.8
+        },
+        {
+          "d": 125,
+          "t": 411.3
+        },
+        {
+          "d": 111,
+          "t": 409.2
+        }
+      ],
+      "escena": "dia-ciudad · ON-a"
+    },
+    {
+      "n": 172,
+      "p50": 7,
+      "p95": 70,
+      "peor": 3306,
+      "mas100": 7,
+      "fps": 9,
+      "calls": 0,
+      "tris": 0,
+      "heapMB": 633,
+      "texMB": 280.9,
+      "calidad": "bajo",
+      "quiet": true,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 3306,
+          "t": 418.8
+        },
+        {
+          "d": 1681,
+          "t": 415.7
+        },
+        {
+          "d": 438,
+          "t": 418.1
+        },
+        {
+          "d": 222,
+          "t": 417.5
+        }
+      ],
+      "escena": "dia-ciudad · SIN (quiet)"
+    },
+    {
+      "n": 1149,
+      "p50": 7,
+      "p95": 7,
+      "peor": 28,
+      "mas100": 0,
+      "fps": 144,
+      "calls": 0,
+      "tris": 0,
+      "heapMB": 843,
+      "texMB": 280.9,
+      "calidad": "bajo",
+      "quiet": false,
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 123,
+          "cuadros": 32
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 0
+      },
+      "top": [
+        {
+          "d": 28,
+          "t": 430.2
+        },
+        {
+          "d": 14,
+          "t": 429.7
+        },
+        {
+          "d": 7,
+          "t": 424.5
+        },
+        {
+          "d": 7,
+          "t": 424.5
+        }
+      ],
+      "escena": "dia-ciudad · ON-b"
+    },
+    {
+      "escena": "pruebas",
+      "vecinosTest": {
+        "passed": 10,
+        "total": 10,
+        "fallos": []
+      }
+    },
+    {
+      "escena": "pruebas",
+      "ciudadVivaTest": {
+        "passed": 20,
+        "total": 20,
+        "fallos": []
+      }
+    }
+  ],
+  "errores": []
+}

@@ -139,7 +139,7 @@
     AV.comunidadesTest = o => cargarComunidades().then(c => c.test(o));
     alPrimerGesto(cargarComunidades);
     // Ciudad viva (N17, src/game/ciudad_viva.js): cotorras que viven en la Ciudad de los 36, en las mallas de la bandada.
-    // En calidad baja también se carga, con 4 (QA-110: si no, en el iPhone la ciudad sale vacía).
+    // En calidad baja también se carga, con 6 (QA-110/0l: si no, en el iPhone la ciudad sale vacía).
     let ciudadViva = null;
     const cargarCiudadViva = () => ciudadViva || (ciudadViva = cargarBandada().then(b => (G.bandada && G.bandada.residentes) || b).then(() => AVE.assets.script('src/game/ciudad_viva.js')).then(() => window.AVCiudadViva(G), e => { ciudadViva = null; throw e; }));
     AV.ciudadVivaTest = o => cargarCiudadViva().then(c => c.test(o));
