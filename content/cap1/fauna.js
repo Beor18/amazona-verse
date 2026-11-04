@@ -31,7 +31,7 @@
           estado: 'verificado', nota: 'Por verificar que sea común en El Yunque. [KELVIN] cebra o arlequín (Atlantea tulita, que no es de El Yunque).',
           color: '#f2cf3a', silueta: 'mariposa' },
         { id: 'coqui', nombre: 'Coquí común', nombreEn: 'Common coquí', cientifico: 'Eleutherodactylus coqui',
-          texto: 'Ranita nativa de Puerto Rico. De noche, el macho canta "co-quí".',
+          texto: 'Ranita nativa de Puerto Rico. Al atardecer y durante la noche, el macho canta "co-quí".',
           textoEn: 'A small frog native to Puerto Rico. At night, the male sings "co-quí".',
           fuente: 'ISSG/UICN, Global Invasive Species Database (y Beard & Pitt 2012, USGS: docs/equipo/DIARIO_VALIDACION.md)', url: 'https://www.iucngisd.org/gisd/species.php?sc=105',
           estado: 'verificado', nota: 'Por verificar que cante de día con lluvia: el texto no lo afirma.',

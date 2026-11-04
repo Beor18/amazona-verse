@@ -78,8 +78,8 @@
         S.chorus = true; G.misiones.renderQuest(); G.guardado.autosave();
         G.dialogo.say([
           { who: 'Vittata', img: IMG.V, text: 'Ya casi está, pero este transmisor no tiene voz. Necesita un canto fuerte.', mood: 'idea' },
-          // Dato: el coquí es nocturno (USGS NAS, ficha de Eleutherodactylus coqui: «nocturnal insectivores»); «del atardecer al amanecer» con respaldo secundario (docs/equipo/FUENTES_CAP1.md), falta la cita del DRNA
-          { who: 'Iguaca', img: IMG.L, text: 'Los coquíes cantan cuando cae la tarde, del atardecer al amanecer. Mira: el sol ya baja.', mood: 'idea' },
+          // Dato: el coquí es nocturno (USGS NAS, ficha de Eleutherodactylus coqui: «nocturnal insectivores»); texto prudente «al atardecer y durante la noche» (directiva E2 de Kelvin, 4-nov; respaldo secundario en docs/equipo/FUENTES_CAP1.md)
+          { who: 'Iguaca', img: IMG.L, text: 'Los coquíes cantan al atardecer y durante la noche. Mira: el sol ya baja.', mood: 'idea' },
           { who: 'Iguaca', img: IMG.L, text: '¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?', mood: 'happy' },
         ], () => G.dialogo.choose({ who: 'Iguaca', text: '¿Cómo los vas a convencer de cantar?' }, [
           { label: 'Cantando yo primero: ¡co-quí!', value: 'cantar', reply: { who: 'Iguaca', img: IMG.L, text: '¡Eso, nena! Si cantas bonito, te van a contestar.', mood: 'happy' } },
