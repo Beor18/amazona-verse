@@ -16,6 +16,10 @@
    objetivo(G, guia, ctx) → { x, z, id, porque, bug } cuando la guía no basta (sale en rojo), finales(ctx) comprobaciones del final,
    maxIter, mismoMax }.
    opts: { idioma: 'es'|'en' (solo una vuelta), timeout: ms de arranque, keep: true (deja el iframe) }.
+   W17 (tests/qa/temporada_movil.js), solo con tacto: { temporada: true (no limpia ni devuelve el almacenamiento: la temporada
+   sigue de un capítulo al otro; lo respalda quien llama), nativo: true (el joystick y los botones salen solos porque el navegador es
+   táctil: no se fuerzan con CSS), pulgar: true (el pulgar baja sobre el palo y arrastra hacia donde quiere ir según la cámara, sin
+   girar G.camara.yaw; cada botón tocado se mira: dentro de la pantalla, ≥ 40 px y sin nada encima) }.
    Salida: { ok, passed, total, results, tramos, md }. */
 (function () {
   'use strict';
@@ -36,7 +40,7 @@
     let W, fr = null, G, S, $;
     const respaldo = {};
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); respaldo[k] = localStorage.getItem(k); } } catch (e) { /* sin almacenamiento */ }
-    try { for (const k of Object.keys(respaldo)) if ((cfg.limpiar || new RegExp('^' + cfg.pack + '|aula\\.' + cfg.pack + '|temporada')).test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
+    if (!opts.temporada) try { for (const k of Object.keys(respaldo)) if ((cfg.limpiar || new RegExp('^' + cfg.pack + '|aula\\.' + cfg.pack + '|temporada')).test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
     const tacto = !!opts.tacto;
     fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
@@ -48,6 +52,7 @@
     W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === cfg.pack && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, opts.timeout || 240000, 100);
     if (W) await sleep(800);
     const devolver = () => {
+      if (opts.temporada) return;
       try {
         for (const k of Object.keys(localStorage)) if (!(k in respaldo)) localStorage.removeItem(k);
         for (const k of Object.keys(respaldo)) if (localStorage.getItem(k) !== respaldo[k]) localStorage.setItem(k, respaldo[k]);
@@ -123,21 +128,45 @@
       if (el) { const c = centro(el); toque(el, 'pointerup', c.x, c.y); }
       paloPuesto = false;
     };
-    async function empujar(segs, correr, lado) {
+    async function empujar(segs, correr, lado, rumbo) {
       const el = $('stick');
       if (!el) { await jugar(segs); return; }
-      const c = centro(el);
+      let c = centro(el);
       const mag = correr ? 0.98 : 0.55;
-      const x = c.x + (lado || 0) * c.radio * mag;
-      const y = c.y - (lado ? 0.15 : 1) * c.radio * mag;
+      if (opts.pulgar && !paloPuesto) { mirarToque(el, 'stick'); toque(el, 'pointerdown', c.x, c.y); paloPuesto = true; c = centro(el); } // baja el pulgar y arrastra
+      let ix = lado || 0, iz = lado ? -0.15 : -1;
+      if (opts.pulgar && rumbo) { // hacia dónde empujar según la cámara (src/engine/fisica.js: adelante = -y del palo)
+        const yw = G.camara.yaw, dl = Math.hypot(rumbo.dx, rumbo.dz) || 1, ux = rumbo.dx / dl, uz = rumbo.dz / dl;
+        const fx = ux * Math.cos(yw) - uz * Math.sin(yw), fz = -(ux * -Math.sin(yw) + uz * -Math.cos(yw));
+        if (lado) { ix = fx * 0.15 + lado * -fz; iz = fz * 0.15 + lado * fx; } else { ix = fx; iz = fz; }
+        const l = Math.hypot(ix, iz) || 1; ix /= l; iz /= l;
+      }
+      const x = c.x + ix * c.radio * mag;
+      const y = c.y + iz * c.radio * mag;
       if (!paloPuesto) { toque(el, 'pointerdown', x, y); paloPuesto = true; }
       else toque(W, 'pointermove', x, y);
       await jugar(segs);
     }
+    // W17 · ¿se puede tocar con el pulgar? Dentro de la pantalla, de al menos 40 px y sin nada encima (lo que tapa se apunta una vez)
+    const malToque = new Map();
+    function mirarToque(el, nombre) {
+      if (!opts.pulgar || !el) return;
+      const r = el.getBoundingClientRect(), vw = W.innerWidth, vh = W.innerHeight;
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let mal = null;
+      if (r.width < 1 || r.height < 1) mal = 'no se ve';
+      else if (cx < 0 || cy < 0 || cx > vw || cy > vh) mal = 'fuera de la pantalla (' + Math.round(cx) + ',' + Math.round(cy) + ')';
+      else if (Math.min(r.width, r.height) < 40) mal = 'pequeño: ' + Math.round(r.width) + '×' + Math.round(r.height) + ' px';
+      else { const t = doc.elementFromPoint(cx, cy); if (t && t !== el && !el.contains(t)) mal = 'tapado por ' + t.tagName.toLowerCase() + (t.id ? '#' + t.id : '') + (t.className && typeof t.className === 'string' ? '.' + t.className.split(' ')[0] : ''); }
+      if (mal && !malToque.has(nombre)) malToque.set(nombre, (tr ? tr.nombre.split(' · ')[0] + ': ' : '') + mal);
+    }
+    // W17: con el pulgar no se toca lo que no se ve (bajo un diálogo o una tarjeta los controles quedan ocultos: visibility)
+    const oculto = el => opts.pulgar && W.getComputedStyle(el).visibility === 'hidden';
     async function boton(id) {
       soltarPalo();
       const el = $(id);
-      if (!el || el.hidden) return false;
+      if (!el || el.hidden || oculto(el)) { await jugar(0.05); return false; }
+      mirarToque(el, '#' + id);
       const c = centro(el);
       toque(el, 'pointerdown', c.x, c.y);
       await jugar(0.05);
@@ -146,11 +175,16 @@
     }
     async function sostener(id, segs) {
       const el = $(id);
-      if (!el || el.hidden) { await jugar(segs); return false; }
-      const c = centro(el);
+      if (!el || el.hidden || oculto(el)) { await jugar(segs); return false; }
+      mirarToque(el, '#' + id);
+      const c = centro(el), p0 = paloId;
+      if (opts.pulgar) paloId = 8; // el otro pulgar: el palo (7) sigue agarrado; con el mismo id, soltar el botón soltaba el palo
       toque(el, 'pointerdown', c.x, c.y);
+      paloId = p0;
       await jugar(segs);
+      if (opts.pulgar) paloId = 8;
       toque(el, 'pointerup', c.x, c.y);
+      paloId = p0;
       return true;
     }
     const pulsar = async k => {
@@ -168,7 +202,7 @@
       if (tr) tr.guias = (tr.guias || 0) + 1;
       const p = $('guia-panel'); if (p) p.hidden = true;
     };
-    if (tacto) {
+    if (tacto && !opts.nativo) {
       const st = doc.createElement('style');
       st.textContent = '#stick{display:block !important}#acts{display:grid !important}';
       doc.head.appendChild(st);
@@ -200,16 +234,21 @@
     }
     const ctx = { cfg, idioma, check, atasco, fallaUnaVez, jugar, pulsar, accion, until, sleep, get G() { return G; }, get S() { return S; }, get W() { return W; }, $, get tr() { return tr; } };
     const cartaAbierta = () => G.ui.cardOpen && !$('card').hidden;
-    const clic = async b => { if (tr) tr.clics++; b.click(); await jugar(0.05); };
+    const clic = async b => { if (tr) tr.clics++; mirarToque(b, '#' + (b.id || b.className.split(' ')[0])); b.click(); await jugar(0.05); };
     ctx.clic = clic;
     async function resolver() {
       let n = 0, hizo = false;
       while (n++ < 600) {
         await mirarEN();
-        if (G.dialogo.open()) { if (tr) tr.lineas++; await accion(); hizo = true; await jugar(0.05); continue; }
+        if (G.dialogo.open()) {
+          if (tr) tr.lineas++; hizo = true;
+          const dn = opts.pulgar && $('d-next'); // con el pulgar se toca «Seguir» de la caja (Acción queda oculta bajo el diálogo)
+          if (dn && !dn.hidden && dn.getClientRects().length) await clic(dn); else await accion();
+          await jugar(0.05); continue;
+        }
         if (cartaAbierta()) {
           const card = $('card'); hizo = true;
-          if (card.querySelector('.edu-opt')) { // «Iguaca te pregunta»: prueba opciones hasta acertar (pista y respuesta sin castigo)
+          if (card.querySelector('.edu-opt') || card.querySelector('#edu-seguir')) { // «Iguaca te pregunta»: prueba opciones hasta acertar (pista y respuesta sin castigo)
             const sg = $('edu-seguir');
             if (sg) { await clic(sg); continue; }
             const b = card.querySelector('.edu-opt:not([disabled])');
@@ -276,13 +315,14 @@
         const nb = G.interaccion.nearest();
         if (id && nb && nb.id === id && d < nb.r - 0.3) { llego = true; break; }
         if (!id && d < tol) { llego = true; break; }
+        if (!id && opts.pulgar && nb && Math.abs(nb.x - x) < 0.01 && Math.abs(nb.z - z) < 0.01) { llego = true; break; } // lo señalado aparece al llegar (una percha al posarse)
         if (ocupado()) { soltarPalo(); await resolver(); continue; }
         if (cfg.esperar && cfg.esperar(G)) { soltarPalo(); await jugar(0.25); continue; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
+        if (!opts.pulgar) G.camara.yaw = Math.atan2(-dx, -dz);
         const p0 = { x: S.pos.x, z: S.pos.z };
-        await empujar(d < 2.5 ? 0.05 : 0.25, d > 4, 0);
+        await empujar(d < 2.5 ? 0.05 : 0.25, d > 4, 0, { dx, dz });
         quieto = Math.hypot(S.pos.x - p0.x, S.pos.z - p0.z) < (d < 2.5 ? 0.03 : 0.15) ? quieto + 1 : 0;
-        if (quieto >= 4) { await empujar(0.6, false, lado); lado = -lado; quieto = 0; }
+        if (quieto >= 4) { await empujar(0.6, false, lado, { dx, dz }); lado = -lado; quieto = 0; }
         if (d < mejor - 0.5) { mejor = d; sinMejora = 0; } else if (++sinMejora > 60) break;
       }
       soltarPalo();
@@ -290,8 +330,8 @@
       return llego;
     }
     // Vuela hasta (x,z): V despega, Espacio sube hasta pasar lo que tapa, W avanza; al llegar baja con C y se posa con X
-    async function volarA(x, z, max, tol, alto) {
-      if (tacto) return volarTacto(x, z, max, tol, alto);
+    async function volarA(x, z, max, tol, alto, yMin) {
+      if (tacto) return volarTacto(x, z, max, tol, alto, yMin);
       if (!MV().flying) { await pulsar('v'); await jugar(0.6); }
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
@@ -320,14 +360,15 @@
       await jugar(0.5);
       return llego && !MV().flying;
     }
-    async function volarTacto(x, z, max, tol, alto) {
+    async function volarTacto(x, z, max, tol, alto, yMin) { // yMin (W17, con pulgar): la guía da una altura: no bajar de ella
       if (!MV().flying) { await boton('b-fly'); await jugar(0.6); }
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
       await sostener('b-jump', alto || 1.2);
-      let llego = false;
+      let llego = false, yCerca = null;
       for (let t = 0; t < max; t += 0.25) {
         const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
+        if (d < 7 && yCerca == null) yCerca = r1(S.pos.y - G.terreno.height(x, z)) + (window.AV_E2E_LOG ? ' ocupado ' + ocupado() + ' ' + s(S.edu && S.edu.vistos) + ' ' + s(G.c && G.c.edu && G.c.edu.L && [G.c.edu.L.A, G.c.edu.L.B]) : '');
         if (d < tol) {
           soltarPalo();
           await jugar(0.6);
@@ -335,9 +376,10 @@
           continue;
         }
         if (ocupado()) { soltarPalo(); await resolver(); continue; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
+        if (!opts.pulgar) G.camara.yaw = Math.atan2(-dx, -dz);
         const y0 = S.pos.y;
-        await empujar(d < 5 ? (d < 1.5 ? 0.05 : 0.1) : 0.25, d > 4, 0);
+        if (opts.pulgar && yMin != null && S.pos.y < yMin) await sostener('b-jump', 0.25);
+        await empujar(d < 5 ? (d < 1.5 ? 0.05 : 0.1) : 0.25, d > 4, 0, { dx, dz });
         if (d < 5) { soltarPalo(); await jugar(0.3); }
         if (d >= 5 && Math.abs(S.pos.y - y0) < 0.02 && MV().speed < 1) await sostener('b-jump', 0.4);
       }
@@ -348,7 +390,31 @@
       if (MV().flying) await sostener('b-dive', 2);
       for (let i = 0; i < 40 && MV().flying; i++) await sostener('b-dive', 0.25);
       await jugar(0.5);
+      log('vuelo', [r1(x), r1(z), 'yMin', yMin == null ? '-' : r1(yMin), 'llegó', llego, 'a 7 m sobre el suelo', yCerca, 'queda', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'paso', S.step].join(' '));
       return llego && !MV().flying;
+    }
+    // W17 (pulgar): seguir en vuelo algo que se mueve (el vapor, la gota): el pulgar empuja hacia lo que señala la guía y el otro
+    // sube con Saltar si va por debajo (por encima, planea y baja solo), hasta que el paso avance (o pasen `segs` de juego)
+    async function perseguir(segs, hecho) {
+      if (!MV().flying) { await boton('b-fly'); await jugar(0.6); }
+      if (tr) tr.vuelo = true;
+      let quieto = 0, px = S.pos.x, py = S.pos.y, pz = S.pos.z, lado = 1;
+      for (let t = 0; t < segs && !hecho(); t += 0.25) {
+        if (ocupado()) { soltarPalo(); await resolver(); continue; }
+        const g = G.misiones.guideTarget(); if (!g) break;
+        // trabada (en una copa o un borde): como un niño, vuelve a subir un poco y empuja de lado
+        quieto = Math.hypot(S.pos.x - px, S.pos.y - py, S.pos.z - pz) < 0.05 ? quieto + 1 : 0; px = S.pos.x; py = S.pos.y; pz = S.pos.z;
+        if (quieto >= 8) { quieto = 0; if (MV().landing) await boton('b-fly'); await sostener('b-jump', 0.4); await empujar(0.6, true, lado, { dx: g.x - S.pos.x, dz: g.z - S.pos.z }); lado = -lado; continue; }
+        if (!MV().flying && !MV().swimming) { await boton('b-fly'); await jugar(0.3); continue; }
+        const dx = g.x - S.pos.x, dz = g.z - S.pos.z, d = Math.hypot(dx, dz);
+        if (t % 10 < 0.25) log('sigue', [r1(t), 'd', r1(d), 'y', r1(S.pos.y), 'gy', g.y == null ? '-' : r1(g.y), 'vuela', MV().flying, 'nada', MV().swimming, 'mv', s({ l: MV().landing, sp: MV().speed, p: MV().posado || MV().perched }), 'palo', s(G.input.stick), paloPuesto, 'reloj', r1(S.clock), 'pos', r1(S.pos.x), r1(S.pos.z), s(G.c && G.c.edu && G.c.edu.estado ? G.c.edu.estado() : '')].join(' '));
+        // en el móvil, volando, no hay botón de bajar: «Aterrizar» baja suave y «Volar» (el mismo botón) vuelve a sostenerla
+        if (g.y != null && MV().flying && !MV().landing && S.pos.y > g.y + 2.5) await boton('b-fly');
+        else if (g.y != null && MV().flying && MV().landing && S.pos.y < g.y + 0.8) await boton('b-fly');
+        if (g.y != null && S.pos.y < g.y - 0.6 && !MV().landing) await sostener('b-jump', 0.15);
+        if (d > 1.2) await empujar(0.25, d > 6, 0, { dx, dz }); else { soltarPalo(); await jugar(0.25); }
+      }
+      soltarPalo();
     }
     ctx.hacia = hacia; ctx.volarA = volarA; ctx.resolver = resolver;
 
@@ -358,6 +424,11 @@
         const nivel = G.renderer && G.renderer.calidad && G.renderer.calidad.nivel;
         check('Móvil emulado 390×844, toques y calidad baja', fr.clientWidth === 390 && fr.clientHeight === 844 && nivel === 'bajo' && !!$('b-act'),
           fr.clientWidth + '×' + fr.clientHeight + ' · ' + nivel + (tacto ? ' · toques' : ''));
+        if (opts.nativo) {
+          const vis = id => { const e = $(id); return !!e && W.getComputedStyle(e).display !== 'none'; };
+          check('Navegador táctil: el joystick y los botones salen solos (sin CSS de la prueba)', vis('stick') && vis('acts') && W.matchMedia('(pointer: coarse)').matches,
+            'stick ' + vis('stick') + ' · acts ' + vis('acts') + ' · coarse ' + W.matchMedia('(pointer: coarse)').matches);
+        }
       }
       if (idioma === 'en') {
         if (G.aula && G.aula.setAjuste) G.aula.setAjuste('idioma', 'en'); else G.idioma.poner('en');
@@ -389,7 +460,7 @@
       await until(() => cr.hidden, 8000);
       await jugar(0.5);
       check('Empezar cierra el creador y crea el perfil', cr.hidden && S.profile.created, S.profile.name);
-      const habla = await until(() => G.ui.busy(), 90000); // pack.inicio llega tras guardar; con la máquina cargada tarda
+      const habla = await until(() => G.ui.busy() || (opts.pulgar && G.dialogo.activo && G.dialogo.activo()), 90000); // pack.inicio llega tras guardar; con la máquina cargada tarda
       check('Al empezar se abre la escena de inicio', !!habla, G.dialogo.actual() && G.dialogo.actual().text);
       await resolver();
       await jugar(1);
@@ -401,7 +472,9 @@
         if (typeof def.texto !== 'function') return String(def.texto);
         try { return String(def.texto.length >= 2 ? def.texto(S, G) : def.texto(S)); } catch (e) { return '?'; }
       };
-      const progreso = () => S.step + '|' + S.collected.length + '|' + (S.events || []).length + '|' + Object.keys(S.missions || {}).filter(k => S.missions[k]).length;
+      // W17 (pulgar): lo que la misión educativa del cap. 1 lleva en S.edu (perchas, terrenos vistos, la poza) también es avanzar
+      const progreso = () => S.step + '|' + S.collected.length + '|' + (S.events || []).length + '|' + Object.keys(S.missions || {}).filter(k => S.missions[k]).length +
+        (opts.pulgar && S.edu ? '|' + s([S.edu.hecho, S.edu.perchas, S.edu.vistos, S.edu.poza, S.edu.cadena]) : '');
       let mismo = 0, ultimoPaso = -1, iter = 0, ultimoProg = '', fallo = null;
       const vistos = new Set();
       while (!S.complete && iter++ < (cfg.maxIter || 260)) {
@@ -426,6 +499,13 @@
         }
         if (ocupado()) { await resolver(); continue; }
         if (cfg.esperar && cfg.esperar(G)) { await jugar(0.5); continue; }
+        if (opts.pulgar && cfg.seguir && cfg.seguir(G)) { // lo señalado se mueve: se sigue en vuelo
+          const antes = progreso();
+          await perseguir(150, () => progreso() !== antes || !cfg.seguir(G) || S.complete);
+          if (progreso() === antes) { if (++mismo >= (cfg.mismoMax || 6)) { atasco('siguiéndolo, el paso no avanza', textoPaso(def)); fallo = 'Paso ' + (st + 1) + ' · avanza siguiendo lo que señala la guía en vuelo: «' + textoPaso(def) + '»'; break; } }
+          else mismo = 0;
+          continue;
+        }
         let g = G.misiones.guideTarget();
         // Donde la guía no basta (señala algo que ya está hecho o deshace lo hecho), el capítulo dice qué haría un niño que lee
         // los avisos; queda apuntado como atasco y como comprobación en rojo (es un bug de la guía, ver BUGS.md)
@@ -444,7 +524,7 @@
           // W9 (QA-99): tras posarse (a veces en un borde, cerca pero no encima) se vuelve a caminar el tramo que falte; si no
           // basta, otro vuelo más alto y otra vez a pie. Hasta 3 vueltas.
           for (let k = 0; k < 3 && !llego && !S.complete; k++) {
-            llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2);
+            llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2, g.y);
             if (!llego && it) { const nb = G.interaccion.nearest(); llego = !!(nb && nb.id === it.id); }
             if (!llego && !porAire && !ocupado()) {
               if (MV().flying) { await pulsar('x'); for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25); }
@@ -462,11 +542,22 @@
         if (it && (!nb || nb.id !== it.id)) atasco('al llegar, Acción no apunta a lo que señala la guía', (nb && nb.id) + ' ≠ ' + it.id);
         const antes = progreso();
         if (tr) tr.usos++;
+        // W17: lo del fondo del agua («Bucear (C) hasta la …»): se mantiene Bucear (o C) nadando encima, como dice el aviso
+        const etq = nb && (typeof nb.label === 'function' ? nb.label() : nb.label);
+        if (/^Bucear/.test(etq || '')) {
+          if (MV().flying) { await pulsar('x'); for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25); } // primero al agua
+          // abajo, con Bucear aún pulsado, el otro pulgar toca Acción (al soltar Bucear, Vittata flota y sube)
+          if (tacto) { const bd = $('b-dive'); if (bd && !bd.hidden) { mirarToque(bd, '#b-dive'); const c = centro(bd); paloId = 8; toque(bd, 'pointerdown', c.x, c.y); paloId = 7; } await jugar(2.5); }
+          else { tecla('keydown', 'c'); await jugar(2.5); }
+        }
         await accion();
+        if (/^Bucear/.test(etq || '')) {
+          if (tacto) { const bd = $('b-dive'); if (bd) { const c = centro(bd); paloId = 8; toque(bd, 'pointerup', c.x, c.y); paloId = 7; } } else tecla('keyup', 'c');
+        }
         const hizo = await resolver();
         await jugar(0.5);
         if (cfg.esperar) for (let k = 0; k < 2400 && (cfg.esperar(G) || ocupado()) && !S.complete; k++) { if (ocupado()) await resolver(); else await jugar(0.5); }
-        if (!hizo && progreso() === antes) atasco('Acción no hace nada', nb && nb.id);
+        if (!hizo && progreso() === antes) atasco('Acción no hace nada', (nb && nb.id) + (opts.pulgar ? ' · ' + [etq, 'nada ' + MV().swimming, 'vuela ' + MV().flying, 'y ' + r1(S.pos.y), 'suelo ' + r1(G.terreno.height(S.pos.x, S.pos.z))].join(' · ') : ''));
         const ahora = progreso();
         if (ahora === ultimoProg || ahora === antes) {
           if (++mismo >= (cfg.mismoMax || 6)) { atasco('el paso no avanza tras ' + mismo + ' intentos', textoPaso(def)); fallo = 'Paso ' + (st + 1) + ' · avanza: sigue en «' + textoPaso(def) + '» tras ' + mismo + ' intentos en ' + ((it && it.id) || '?'); break; }
@@ -506,6 +597,7 @@
         }
       }
       cerrar();
+      if (opts.pulgar) check('Con el pulgar: cada botón tocado está en pantalla, mide ≥ 40 px y no lo tapa nada', !malToque.size, [...malToque].map(([k, v]) => k + ' ' + v).join(' | '));
       const errs = (W.__aveErrores || []).slice(errores0);
       check('Sin errores de JavaScript en el recorrido', errs.length === 0, errs.slice(0, 3).join(' | '));
       if (idioma === 'en') check('En inglés, ningún texto en español en pantalla en todo el recorrido', faltanEN.size === 0, [...faltanEN].slice(0, 40).join(' | '));
