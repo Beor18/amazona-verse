@@ -13,7 +13,7 @@
 //      (paso 2 m, mismo formato que mapa_build.py: triángulo superior, baricéntrica).
 //   2. En las celdas sin malla propaga la altura del borde con una pendiente de
 //      salida al mar (0,35 m/m) y, fuera de la caja de la malla, la fuerza bajo el
-//      nivel del mar (<= -0,4 m, fondo -9 m): allí el juego dibuja el plano de mar.
+//      nivel del mar (<= -2 m, fondo -9 m): allí el juego dibuja el plano de mar.
 //   3. Recalcula min/max y el error frente a la malla y escribe el .js con el
 //      mismo formato que la salida de tools/blender/mapa_build.py.
 //
@@ -157,7 +157,10 @@ for (let q = 0; q < cola.length; q++) {
   }
 }
 const PEND_MAR = 0.35;      // pendiente de salida al mar (m por m)
-const BAJO_MAR = -0.4;      // tope fuera de la malla: siempre bajo el nivel del mar (0)
+// Tope fuera de la malla: siempre bajo el nivel del mar (0). -2 m y no -0,4: fuera de la malla no hay suelo dibujado y el
+// shader del mar es casi transparente con menos de 1,6 m de fondo (agua.js), así que con -0,4 se veía una franja pálida
+// (el fondo del cielo a través del agua) entre el borde de los riscos y el mar; y Vittata caminaba sobre el agua allí.
+const BAJO_MAR = -2.0;
 const FONDO = -9.0;         // fondo del arrecife, como en el diseño del mapa
 const MARGEN = 1.0;         // la caja de la malla, con 1 m de margen
 let nAnillo = 0, nHueco = 0;
