@@ -76,7 +76,7 @@ window.AV_LECCIONES_EP2 = {
       "correcta": 0,
       "retro": { "correcta": { "es": "Sí. Cuesta abajo el agua corre más rápido y no se queda.", "en": "Yes. Downhill, water runs faster and does not stay." },
         "incorrecta": { "es": "Pista: ¿hacia dónde corre el agua en la loma?", "en": "Hint: which way does water run on the hill?" } },
-      "verificacion": "juego (lo que el jugador vio; el dato del mundo está en la ficha cinta_lluvia, con fuente USGS)" },
+      "verificacion": "parcial (lo que el jugador vio en el juego; el dato real de pendiente y escorrentía sigue por verificar: USGS)" },
     { "id": "q3", "tipo": "opcion_multiple", "objetivo": "E2", "grado": "3-6",
       "enunciado": { "es": "«Hay que terminar en 3 días, antes de la tormenta.» ¿Qué tarjeta es?", "en": "“It must be finished in 3 days, before the storm.” Which card is it?" },
       "opciones": [{ "es": "Una restricción: un límite que no se puede saltar", "en": "A constraint: a limit you cannot skip" }, { "es": "Un criterio: algo que la casa debe lograr", "en": "A criterion: something the house must achieve" }, { "es": "Un deseo de la abuela", "en": "One of Grandma's wishes" }],

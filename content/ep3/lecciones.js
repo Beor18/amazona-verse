@@ -101,7 +101,7 @@ window.AV_LECCIONES_EP3 = {
       "correcta": 0,
       "retro": { "correcta": { "es": "Sí. Miró el cielo y el agua antes de salir. Al día siguiente, el viento estaba a favor.", "en": "Yes. She looked at the sky and the water before setting out. The next day, the wind was in their favor." },
         "incorrecta": { "es": "Pista: recuerda lo que viste desde el mirador.", "en": "Hint: remember what you saw from the lookout." } },
-      "verificacion": "juego (lo que dijo la navegante; no afirma un dato del cielo)" }
+      "verificacion": "juego (lo que pasó en la misión 2; el dato real de las nubes sigue por verificar: NWS)" }
   ],
   "formativa": {
     "momento": "Después del intercambio (Chapter3Completed), cuando el jugador vuelve a hablar con Iguaca. Es opcional y se puede dejar para luego.",
