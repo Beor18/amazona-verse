@@ -292,6 +292,21 @@ def escena(M, ML, ground, water_level, web_dir, bloqueos, nombres):
             if e.get('_sop') is not None and e['_sop'].get('espera') and not e.get('espera'):
                 e['espera'] = 'apoyo pendiente: %s' % e['_sop']['asset']
     for e in out: e.pop('_sop', None)
+    # QA-108: reubicaciones manuales (misma regla que el editado a mano en mapa_cap1.js hasta poder regenerar)
+    for e in out:
+        if not e.get('modelo'): continue
+        for (bm, bx, bz), (nx_, ny_, nz_) in RELOCAR_QA108.items():
+            m = e.get('matriz')
+            if e['modelo'] == bm and m and abs(m[12] - bx) < 0.06 and abs(m[14] - bz) < 0.06:
+                dx, dy, dz = nx_ - m[12], ny_ - m[13], nz_ - m[14]
+                for k_ in ('matriz', 'matrizMigrado'):
+                    if e.get(k_):
+                        e[k_][12] = round(e[k_][12] + dx, 5); e[k_][13] = round(e[k_][13] + dy, 5); e[k_][14] = round(e[k_][14] + dz, 5)
+                h = e['huella']
+                h['x'] = round(h['x'] + dx, 2); h['z'] = round(h['z'] + dz, 2)
+                h['y0'] = round(h['y0'] + dy, 2); h['y1'] = round(h['y1'] + dy, 2)
+                a = e['ajuste']
+                e['ajuste'] = {'dx': round(a['dx'] + dx, 2), 'dy': round(a['dy'] + dy, 2), 'dz': round(a['dz'] + dz, 2)}
     # zonas por cercanía (para la carga por zonas)
     # zonas fijas (estables entre lotes de modelos: streaming y gameplay usan sus ids); centro en coordenadas del juego
     C = np.array([[c[1], c[2]] for c in ZONAS_FIJAS])
@@ -319,6 +334,11 @@ RELOCAR_BM80 = {('ruina_torre_b', 43.7, -103.0): (92.0, 11.2, -68.0), ('ruina_to
 # crema del borde de la meseta (suelo con 10-15 m de desnivel en 3 m) entran 4-6 m en la meseta, sobre suelo llano (rango < 1 m en 3 m)
 RELOCAR_BM80.update({('ruina_torre_b', 24.3, -91.3): (91.0, 9.7, -84.0), ('ruina_pilar', -18.3, -113.1): (-18.3, 97.0, -117.1),
                      ('ruina_pilar', -0.7, -103.4): (-0.7, 94.4, -109.4)})
+
+# QA-108: la empalizada sur de la línea de kelvin_aldea_mina_2 (k362) bajaba la punta oeste a la línea de agua
+# (arena a ~5-6 m hacia z-50; mar a y=0): se traslada ~3 m dentro (este) y se asienta +0,96 m (media de su
+# huella en el terreno nuevo, 9,19 m frente a 8,23 m) para que la base quede enterrada igual que antes
+RELOCAR_QA108 = {('empalizada', 89.43, -47.31): (92.39573, 10.68141, -47.31425)}
 
 def compacto(Z):
     """Forma compacta para streaming.js: una entrada por modelo y zona. inst = [x, y, z, rotY, escala] si es giro en Y con
