@@ -504,12 +504,17 @@ AVE.module('fisica', function (G) {
         if (MOVE.flying && (jumpHeld || MOVE.takeoff > 0) && !busy && !MOVE.landing) {
           if ((MOVE.cieloT = (MOVE.cieloT || 0) - dt) <= 0) { MOVE.cielo = cieloAlcanzable(SOL, pen, S.pos.y, hT, 4, 3); MOVE.cieloT = 0.3; }
           const c = MOVE.cielo;
+          let qx = null, qz = null;
           if (c) {
-            MOVE.tapadaT = 0;
-            const dx = c.x - S.pos.x, dz = c.z - S.pos.z, d = Math.hypot(dx, dz), paso = Math.min(d, T.techoAyuda * dt);
-            const qx = S.pos.x + dx / (d || 1) * paso, qz = S.pos.z + dz / (d || 1) * paso;
-            if (pen(qx, qz, S.pos.y) <= pen(S.pos.x, S.pos.z, S.pos.y)) { S.pos.x = qx; S.pos.z = qz; MOVE.ayudaTecho = 1; }
-          } else if ((MOVE.tapadaT = (MOVE.tapadaT || 0) + dt) > T.atasco) {
+            const dx = c.x - S.pos.x, dz = c.z - S.pos.z, d = Math.hypot(dx, dz), paso = Math.min(d, T.techoAyuda * dt), p0 = pen(S.pos.x, S.pos.z, S.pos.y);
+            qx = S.pos.x + dx / (d || 1) * paso; qz = S.pos.z + dz / (d || 1) * paso;
+            // QA-156: cieloAlcanzable mira cada 0,3 m y entre medias puede haber una ramita (el paso corto chocaba con ella, en
+            // cada cuadro, y se quedaba fija con Saltar mantenido): a menos de un paso de muestreo del cielo, va directa
+            if (pen(qx, qz, S.pos.y) > p0) { if (d <= 0.35 && pen(c.x, c.z, S.pos.y) <= p0) { qx = c.x; qz = c.z; } else qx = qz = null; }
+          }
+          if (qx != null) { S.pos.x = qx; S.pos.z = qz; MOVE.ayudaTecho = 1; MOVE.tapadaT = 0; }
+          // sin cielo abierto alcanzable, o sin poder ir hacia él, a los T.atasco s sale por encima de lo que la tapa
+          else if ((MOVE.tapadaT = (MOVE.tapadaT || 0) + dt) > T.atasco) {
             // Sin cielo abierto alcanzable (encerrada, p. ej. dentro de una torre hueca): sale por encima de lo que la tapa
             MOVE.tapadaT = 0; ny = salirPorArriba(SOL, pen, tch, hT);
             MOVE.desatascos = (MOVE.desatascos || 0) + 1; G.emit('desatasco', { x: S.pos.x, y: ny, z: S.pos.z, como: 'arriba' });

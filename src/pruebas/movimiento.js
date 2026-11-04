@@ -650,6 +650,16 @@ window.AVMovimientoTest = function (G) {
           const avance = Math.hypot(S.pos.x - X, S.pos.z - Z);
           met.qa156 = { avanceM: r2(avance), cuadrosFijaEnElAire: fijaMax, vuela: M.flying, aterriza: M.landing, y: r2(S.pos.y - H(S.pos.x, S.pos.z)) };
           check('QA-156: aterrizando por una ladera junto a una raíz, con el palo empujado sigue avanzando (no se queda fija en el aire)', fijaMax < 30 && avance > 3, JSON.stringify(met.qa156));
+          // Saliendo de la poza tras el vapor: bajo la copa de un árbol, con una ramita entre ella y el cielo abierto más cercano
+          // (a 0,3 m), Saltar mantenido no subía nunca (el deslizamiento hacia el cielo chocaba con la ramita en cada cuadro)
+          const CX = 162.926, CY = 21.2, CZ = 66.051;
+          reset(CX, CZ);
+          Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, vx: 0, vz: 0 }); S.pos.y = CY; S.vy = 0;
+          const r2c = frame(() => { I.jumpHeld = true; }, 120);
+          I.jumpHeld = false;
+          const subida = Math.max(...r2c.map(o => o.y)) - CY;
+          met.qa156copa = { subidaM: r2(subida), vuela: M.flying, desatascos: M.desatascos || 0 };
+          check('QA-156: bajo una copa, con una ramita hacia el cielo abierto, Saltar mantenido sube (más de 1 m en 2 s)', subida > 1, JSON.stringify(met.qa156copa));
           reset(L.x, L.z);
         }
         // c) La torre antigua (ruina_torre de las ruinas de El Yunque): torre hueca con plataforma de baldosa arriba
