@@ -466,7 +466,7 @@
     check('M3: el transmisor pide voz y ofrece una elección con Iguaca', S.chorus && !S.transmitterOn && !!$('ch-0'));
     // C9: el coquí canta al atardecer. Iguaca lo explica aquí; el atardecer se comprueba más abajo (en las baterías, G.quiet,
     // el fundido no arranca solo: se fuerza para medirlo y se apaga al final)
-    const FRASE_TARDE = 'Los coquíes cantan cuando cae la tarde, del atardecer al amanecer. Mira: el sol ya baja.';
+    const FRASE_TARDE = 'Los coquíes cantan al atardecer y durante la noche. Mira: el sol ya baja.';
     check('Iguaca explica que los coquíes cantan al caer la tarde', lineasCoro.includes(FRASE_TARDE), lineasCoro.join(' | ').slice(0, 200));
     $('ch-0').click();
     check('La elección cambia la frase de Iguaca', $('d-text').textContent.startsWith('¡Eso, nena!') && had('LumaChoice'));

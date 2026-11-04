@@ -885,7 +885,9 @@
         // p7: bucear hasta la gota y la marca de la crecida
         if (e.hecho.p6 && !e.hecho.p7 && !T.gota) {
           if (!e.poza.gota && Math.hypot(S.pos.x - L.gota.x, S.pos.z - L.gota.z) < 1.9 && S.pos.y - H(L.gota.x, L.gota.z) < 1.8) hallazgoPoza('gota');
-          if (!e.poza.marca && Math.hypot(S.pos.x - L.roca.x, S.pos.z - L.roca.z) < 2.8 && S.pos.y < S.water + 1.2) hallazgoPoza('marca');
+          // QA-156(b): la orilla nadable frente a la roca queda a ~3,1 m (la poza tiene radio 8 y la roca está a 11,6 m del
+          // centro): con 2,8 m un niño flotando en el borde no la encontraba. 4,5 m cubre la orilla con margen.
+          if (!e.poza.marca && Math.hypot(S.pos.x - L.roca.x, S.pos.z - L.roca.z) < 4.5 && S.pos.y < S.water + 1.2) hallazgoPoza('marca');
         }
         chipVuelo(modoVuelo);
       }, 47);

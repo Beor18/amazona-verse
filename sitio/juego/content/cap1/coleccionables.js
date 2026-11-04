@@ -14,7 +14,7 @@
         cultura: { nombre: 'Cultura', desconocido: 'Algo de nuestra cultura', sonido: 'guiro', rafaga: 'stars' },
       },
       entradas: [
-        { id: 'coqui', cat: 'fauna', nombre: 'Coquí común', x: -17, z: 1, texto: 'Ranita nativa de Puerto Rico. De noche, el macho canta "co-quí".',
+        { id: 'coqui', cat: 'fauna', nombre: 'Coquí común', x: -17, z: 1, texto: 'Ranita nativa de Puerto Rico. Al atardecer y durante la noche, el macho canta "co-quí".',
           modelo: (add, S1) => { add(S1, '#b0773a', 0, 0.12, 0, 0.14, 0.11, 0.17); add(S1, '#1b1b1b', 0.06, 0.2, 0.1, 0.035, 0.035, 0.035); add(S1, '#1b1b1b', -0.06, 0.2, 0.1, 0.035, 0.035, 0.035); } },
         { id: 'sanpedrito', cat: 'fauna', nombre: 'San Pedrito', x: -4, z: -21, texto: 'Ave diminuta, verde y con la garganta roja, que solo vive en Puerto Rico. Anida en túneles que cava en barrancos de tierra.',
           modelo: (add, S1) => { add(S1, '#3fae4a', 0, 0.2, 0, 0.12, 0.12, 0.15); add(S1, '#d6403a', 0, 0.16, 0.11, 0.06, 0.05, 0.04); add(new THREE.ConeGeometry(0.03, 0.16, 6), '#d6403a', 0, 0.24, 0.2).rotation.x = Math.PI / 2; } },

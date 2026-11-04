@@ -796,8 +796,12 @@
     // o: { reto, valor, dur_ms, prueba, fetch } → Promise<'publicado'|'cerrado'|'prueba'|'invalido'>. Una partida de prueba nunca publica (salvo con fetch simulado)
     // Directiva V17 (Kelvin, 4-nov): el ranking sigue, pero antes de publicar en línea un adulto pasa la misma puerta que «Compartir»
     // (la suma). Sin adulto, el récord queda en el dispositivo. Las pruebas (o.prueba) usan el panel con su fetch falso, sin puerta.
+    // Directiva L3 (Kelvin, 4-nov): el ranking en internet queda DESACTIVADO hasta una revisión legal de privacidad infantil.
+    // Interruptor único: G.RANKING_EN_LINEA === true (nadie lo pone). Apagado, una partida real nunca abre el panel ni llama a la red;
+    // los récords siguen guardándose en el dispositivo. Las pruebas (o.prueba + fetch simulado) siguen usando el panel sin red real.
     async function publicarRanking(o) {
       o = o || {};
+      if (!o.prueba && G.RANKING_EN_LINEA !== true) return 'desactivado';
       if (!o.prueba) {
         if (!RANK_RETOS.includes(o.reto) || !(o.valor > 0) || !(o.dur_ms >= 0) || rankAbierto) return publicarPanel(o);
         if (!(await puerta(o))) { if (G.ui && G.ui.toast) G.ui.toast(tx('rankSinAdulto'), 3500); return 'puerta'; }

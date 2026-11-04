@@ -785,7 +785,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       u.medalla.className = 'rr-medalla ' + (J.medalla || ''); u.medalla.textContent = J.medalla ? '★ ' + NOMBRE_MEDALLA[J.medalla] : ''; u.medalla.hidden = !J.medalla;
       u.rec.textContent = reloj ? (J.mejorR ? 'Tu mejor: ' + relojTxt(J.mejorR / 1000) : '') : J.mejor ? 'Tu mejor: ' + J.mejor + ' puntos' : 'Baja un poco más para tener tu primer récord.';
       const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length;
-      u.rank.hidden = !(!reloj && J.nuevo && claveRec === ALMACEN && J.puntos > 0); // el ranking global es del clásico (reto rio_rush, por puntos)
+      u.rank.hidden = !(G.RANKING_EN_LINEA === true && !reloj && J.nuevo && claveRec === ALMACEN && J.puntos > 0); // L3: ranking en línea apagado. El ranking global es del clásico (reto rio_rush, por puntos)
       pintarModos();
       u.fin.hidden = false;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });

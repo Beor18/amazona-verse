@@ -734,7 +734,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join('');
       ui.meta.hidden = !ls.length;
       ui.descanso.hidden = !tocaDescanso(Date.now());
-      const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !dr;
+      const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !(dr && G.RANKING_EN_LINEA === true); // L3: ranking en línea apagado
     }
     function resultados(html) {
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
