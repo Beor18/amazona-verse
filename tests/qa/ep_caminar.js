@@ -26,7 +26,7 @@
     return null;
   }
   const r1 = v => Math.round(v * 10) / 10;
-  const s = v => { try { return typeof v === 'string' ? v : JSON.stringify(v); } catch (e) { return String(v); } };
+  const s = v => { try { const t = typeof v === 'string' ? v : JSON.stringify(v); return t == null ? String(v) : t; } catch (e) { return String(v); } };
 
   async function vuelta(cfg, idioma, opts) {
     const out = [], tramos = [], atascos = [], faltanEN = new Set();
@@ -37,10 +37,13 @@
     const respaldo = {};
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); respaldo[k] = localStorage.getItem(k); } } catch (e) { /* sin almacenamiento */ }
     try { for (const k of Object.keys(respaldo)) if ((cfg.limpiar || new RegExp('^' + cfg.pack + '|aula\\.' + cfg.pack + '|temporada')).test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
+    const tacto = !!opts.tacto;
     fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
-    fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
-    const url = new URL(location.href); url.search = '?pack=' + cfg.pack + (cfg.query || ''); url.hash = '';
+    fr.style.cssText = opts.movil
+      ? 'position:fixed;left:-1200px;top:0;width:390px;height:844px;border:0;'
+      : 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
+    const url = new URL(location.href); url.search = '?pack=' + cfg.pack + (cfg.query || '') + (opts.movil ? '&calidad=bajo' : ''); url.hash = '';
     fr.src = url.href; document.body.appendChild(fr);
     W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === cfg.pack && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, opts.timeout || 240000, 100);
     if (W) await sleep(800);
@@ -102,8 +105,74 @@
     // Teclas de verdad (las que lee src/engine/input.js)
     const CODE = { ' ': 'Space', Shift: 'ShiftLeft' };
     const tecla = (tipo, k) => W.dispatchEvent(new W.KeyboardEvent(tipo, { key: k, code: CODE[k] || 'Key' + k.toUpperCase(), bubbles: true }));
-    const pulsar = async k => { tecla('keydown', k); await jugar(0.05); tecla('keyup', k); };
-    const accion = async () => { tecla('keydown', 'e'); tecla('keyup', 'e'); };
+    let paloId = 7, paloPuesto = false;
+    const toque = (el, tipo, x, y) => {
+      if (!el) return;
+      el.dispatchEvent(new W.PointerEvent(tipo, {
+        bubbles: true, cancelable: true, pointerId: paloId, pointerType: 'touch',
+        clientX: x, clientY: y, button: 0, buttons: tipo === 'pointerup' || tipo === 'pointercancel' ? 0 : 1
+      }));
+    };
+    const centro = el => {
+      const r = el.getBoundingClientRect();
+      return { x: r.left + Math.max(r.width, 8) / 2, y: r.top + Math.max(r.height, 8) / 2, radio: Math.max(24, r.width / 2) };
+    };
+    const soltarPalo = () => {
+      if (!paloPuesto) return;
+      const el = $('stick');
+      if (el) { const c = centro(el); toque(el, 'pointerup', c.x, c.y); }
+      paloPuesto = false;
+    };
+    async function empujar(segs, correr, lado) {
+      const el = $('stick');
+      if (!el) { await jugar(segs); return; }
+      const c = centro(el);
+      const mag = correr ? 0.98 : 0.55;
+      const x = c.x + (lado || 0) * c.radio * mag;
+      const y = c.y - (lado ? 0.15 : 1) * c.radio * mag;
+      if (!paloPuesto) { toque(el, 'pointerdown', x, y); paloPuesto = true; }
+      else toque(W, 'pointermove', x, y);
+      await jugar(segs);
+    }
+    async function boton(id) {
+      soltarPalo();
+      const el = $(id);
+      if (!el || el.hidden) return false;
+      const c = centro(el);
+      toque(el, 'pointerdown', c.x, c.y);
+      await jugar(0.05);
+      toque(el, 'pointerup', c.x, c.y);
+      return true;
+    }
+    async function sostener(id, segs) {
+      const el = $(id);
+      if (!el || el.hidden) { await jugar(segs); return false; }
+      const c = centro(el);
+      toque(el, 'pointerdown', c.x, c.y);
+      await jugar(segs);
+      toque(el, 'pointerup', c.x, c.y);
+      return true;
+    }
+    const pulsar = async k => {
+      if (tacto) {
+        const mapa = { v: 'b-fly', x: 'b-fly', ' ': 'b-jump', c: 'b-dive', e: 'b-act' };
+        if (mapa[k]) { await boton(mapa[k]); return; }
+      }
+      tecla('keydown', k); await jugar(0.05); tecla('keyup', k);
+    };
+    const accion = async () => { if (tacto) { await boton('b-act'); return; } tecla('keydown', 'e'); tecla('keyup', 'e'); };
+    const abrirGuia = () => {
+      const b = $('guia-btn') || $('b-guia-controles');
+      if (!b) return;
+      b.click();
+      if (tr) tr.guias = (tr.guias || 0) + 1;
+      const p = $('guia-panel'); if (p) p.hidden = true;
+    };
+    if (tacto) {
+      const st = doc.createElement('style');
+      st.textContent = '#stick{display:block !important}#acts{display:grid !important}';
+      doc.head.appendChild(st);
+    }
     const ocupado = () => G.ui.busy();
 
     // ---------- Tarjetas ----------
@@ -175,6 +244,7 @@
 
     // ---------- Moverse: a pie y, si no se puede, volando ----------
     async function hacia(x, z, max, tol, id) {
+      if (tacto) return haciaTacto(x, z, max, tol, id);
       const obj = id && G.interaccion.find(id);
       if (obj && obj.r) tol = Math.min(tol, Math.max(0.4, obj.r - 0.4)); // dentro del radio de lo que se quiere usar
       tecla('keydown', 'Shift'); tecla('keydown', 'w');
@@ -197,8 +267,31 @@
       await jugar(0.3);
       return llego;
     }
+    async function haciaTacto(x, z, max, tol, id) {
+      const obj = id && G.interaccion.find(id);
+      if (obj && obj.r) tol = Math.min(tol, Math.max(0.4, obj.r - 0.4));
+      let quieto = 0, llego = false, lado = -1, mejor = Infinity, sinMejora = 0;
+      for (let t = 0; t < max; t += 0.25) {
+        const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
+        const nb = G.interaccion.nearest();
+        if (id && nb && nb.id === id && d < nb.r - 0.3) { llego = true; break; }
+        if (!id && d < tol) { llego = true; break; }
+        if (ocupado()) { soltarPalo(); await resolver(); continue; }
+        if (cfg.esperar && cfg.esperar(G)) { soltarPalo(); await jugar(0.25); continue; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        const p0 = { x: S.pos.x, z: S.pos.z };
+        await empujar(d < 2.5 ? 0.05 : 0.25, d > 4, 0);
+        quieto = Math.hypot(S.pos.x - p0.x, S.pos.z - p0.z) < (d < 2.5 ? 0.03 : 0.15) ? quieto + 1 : 0;
+        if (quieto >= 4) { await empujar(0.6, false, lado); lado = -lado; quieto = 0; }
+        if (d < mejor - 0.5) { mejor = d; sinMejora = 0; } else if (++sinMejora > 60) break;
+      }
+      soltarPalo();
+      await jugar(0.3);
+      return llego;
+    }
     // Vuela hasta (x,z): V despega, Espacio sube hasta pasar lo que tapa, W avanza; al llegar baja con C y se posa con X
     async function volarA(x, z, max, tol, alto) {
+      if (tacto) return volarTacto(x, z, max, tol, alto);
       if (!MV().flying) { await pulsar('v'); await jugar(0.6); }
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
@@ -227,10 +320,45 @@
       await jugar(0.5);
       return llego && !MV().flying;
     }
+    async function volarTacto(x, z, max, tol, alto) {
+      if (!MV().flying) { await boton('b-fly'); await jugar(0.6); }
+      if (!MV().flying) return false;
+      if (tr) tr.vuelo = true;
+      await sostener('b-jump', alto || 1.2);
+      let llego = false;
+      for (let t = 0; t < max; t += 0.25) {
+        const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
+        if (d < tol) {
+          soltarPalo();
+          await jugar(0.6);
+          if (Math.hypot(x - S.pos.x, z - S.pos.z) < tol) { llego = true; break; }
+          continue;
+        }
+        if (ocupado()) { soltarPalo(); await resolver(); continue; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        const y0 = S.pos.y;
+        await empujar(d < 5 ? (d < 1.5 ? 0.05 : 0.1) : 0.25, d > 4, 0);
+        if (d < 5) { soltarPalo(); await jugar(0.3); }
+        if (d >= 5 && Math.abs(S.pos.y - y0) < 0.02 && MV().speed < 1) await sostener('b-jump', 0.4);
+      }
+      soltarPalo();
+      await jugar(0.4);
+      await boton('b-fly');
+      for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25);
+      if (MV().flying) await sostener('b-dive', 2);
+      for (let i = 0; i < 40 && MV().flying; i++) await sostener('b-dive', 0.25);
+      await jugar(0.5);
+      return llego && !MV().flying;
+    }
     ctx.hacia = hacia; ctx.volarA = volarA; ctx.resolver = resolver;
 
     try {
       check('Arranca limpio el capítulo ' + cfg.n + (cfg.query ? ' (' + cfg.query.replace(/^&/, '') + ')' : ''), W.AV.pack === cfg.pack && !S.profile.created, { pack: W.AV.pack, creado: S.profile.created });
+      if (opts.movil) {
+        const nivel = G.renderer && G.renderer.calidad && G.renderer.calidad.nivel;
+        check('Móvil emulado 390×844, toques y calidad baja', fr.clientWidth === 390 && fr.clientHeight === 844 && nivel === 'bajo' && !!$('b-act'),
+          fr.clientWidth + '×' + fr.clientHeight + ' · ' + nivel + (tacto ? ' · toques' : ''));
+      }
       if (idioma === 'en') {
         if (G.aula && G.aula.setAjuste) G.aula.setAjuste('idioma', 'en'); else G.idioma.poner('en');
         await G.idioma.listo; await sleep(200);
@@ -268,16 +396,33 @@
 
       // ---------- Historia: sigue la guía hasta el final ----------
       const pasos = G.misiones.steps;
+      const textoPaso = def => {
+        if (!def || def.texto == null) return '?';
+        if (typeof def.texto !== 'function') return String(def.texto);
+        try { return String(def.texto.length >= 2 ? def.texto(S, G) : def.texto(S)); } catch (e) { return '?'; }
+      };
       const progreso = () => S.step + '|' + S.collected.length + '|' + (S.events || []).length + '|' + Object.keys(S.missions || {}).filter(k => S.missions[k]).length;
       let mismo = 0, ultimoPaso = -1, iter = 0, ultimoProg = '', fallo = null;
       const vistos = new Set();
       while (!S.complete && iter++ < (cfg.maxIter || 260)) {
         const st = S.step, def = pasos[st];
-        if (st !== ultimoPaso) { empezar((st + 1) + ' · ' + (def ? def.texto : '?')); tr.paso = st; mismo = 0; ultimoPaso = st; }
+        if (st !== ultimoPaso) { empezar((st + 1) + ' · ' + textoPaso(def)); tr.paso = st; tr.guias = 0; mismo = 0; ultimoPaso = st; }
+        if (opts.playtest && tr) {
+          const p30 = progreso();
+          if (p30 !== tr._p30) { tr._p30 = p30; tr._t30 = tr.simS; tr._ya30 = false; }
+          else if (!tr._ya30 && tr.simS - (tr._t30 || 0) >= 30) {
+            tr._ya30 = true;
+            atasco('más de 30 s sin avanzar', textoPaso(def));
+            abrirGuia();
+          }
+          const qv = ($('quest') && $('quest').textContent || '').replace(/\s+/g, ' ').trim();
+          if (!tr._vacio && qv.length < 3) { tr._vacio = true; atasco('sin saber qué hacer', 'el objetivo no dice nada'); abrirGuia(); }
+        }
         if (!vistos.has(st)) {
           vistos.add(st);
           const quest = $('quest') ? $('quest').textContent : '';
-          check('Paso ' + (st + 1) + ' · el objetivo está a la vista', idioma === 'en' ? quest.trim().length > 5 : !!def && quest.includes(def.texto), quest.replace(/\s+/g, ' ').trim().slice(0, 90));
+          const texto = textoPaso(def);
+          check('Paso ' + (st + 1) + ' · el objetivo está a la vista', idioma === 'en' ? quest.trim().length > 5 : !!def && quest.includes(texto), quest.replace(/\s+/g, ' ').trim().slice(0, 90));
         }
         if (ocupado()) { await resolver(); continue; }
         if (cfg.esperar && cfg.esperar(G)) { await jugar(0.5); continue; }
@@ -324,7 +469,7 @@
         if (!hizo && progreso() === antes) atasco('Acción no hace nada', nb && nb.id);
         const ahora = progreso();
         if (ahora === ultimoProg || ahora === antes) {
-          if (++mismo >= (cfg.mismoMax || 6)) { atasco('el paso no avanza tras ' + mismo + ' intentos', def && def.texto); fallo = 'Paso ' + (st + 1) + ' · avanza: sigue en «' + (def && def.texto) + '» tras ' + mismo + ' intentos en ' + ((it && it.id) || '?'); break; }
+          if (++mismo >= (cfg.mismoMax || 6)) { atasco('el paso no avanza tras ' + mismo + ' intentos', textoPaso(def)); fallo = 'Paso ' + (st + 1) + ' · avanza: sigue en «' + textoPaso(def) + '» tras ' + mismo + ' intentos en ' + ((it && it.id) || '?'); break; }
         } else mismo = 0;
         ultimoProg = ahora;
       }
@@ -369,6 +514,7 @@
     } finally {
       cerrar();
       G.dialogo.choose = chooseOrig;
+      if (tacto) soltarPalo();
       for (const k of ['w', 'Shift', 'a', 'd', ' ', 'c']) tecla('keyup', k);
       if (fr && !opts.keep) { try { G.renderer.renderer.dispose(); G.renderer.renderer.forceContextLoss(); } catch (e) { /* ya cerrado */ } fr.remove(); }
       devolver();

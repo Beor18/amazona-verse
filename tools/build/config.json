@@ -130,7 +130,8 @@
       "tests/qa/ep5_e2e.js",
       "tests/qa/ep6_e2e.js",
       "tests/qa/cg34_regresion.js",
-      "tests/qa/temporada_real.js"
+      "tests/qa/temporada_real.js",
+      "tests/qa/playtest_auto.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar, y se espera a la pantalla de carga (src/ui/carga.js, tope 20 s). Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
