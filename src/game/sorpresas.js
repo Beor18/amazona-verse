@@ -1,8 +1,11 @@
-/* Juego · CG-45. Sorpresas de la ciudad que cambian en cada visita.
-   No toca ciudad_viva.js ni añade mallas: el momento es un aviso, un sonido y el juice que ya existe (G.fx).
-   Hay 12 momentos. Cada visita a la ciudad (una vez por partida, al acercarte) enseña 1 o 2, y ninguno se repite
-   respecto a la visita anterior. El primero de cada tipo avisa al cómic con G.emit('momento') y deja una notita.
-   El contador vive en este dispositivo (localStorage), no en los textos educativos.
+/* Juego · CG-45. Sorpresas de la ciudad que rotan en cada visita.
+   No edita ciudad_viva.js, vecinos.js ni musica.js. El coquí y la mariposa se anuncian aquí;
+   mover sus instancias pediría vecinos.js (CG-44) y queda anotado.
+   Hay 12 momentos. Al entrar en la ciudad salen 1 o 2, junto al jugador, y ninguno se repite
+   en la visita siguiente. Hay que salir para que la próxima entrada cuente como otra visita.
+   El primero de cada tipo entra al cómic (G.emit('momento')) y al Diario. G.emit('sorpresa')
+   avisa a la música que ya está en musica.js.
+   El contador y las notitas viven en este dispositivo (localStorage).
    window.AVSorpresas(G) → { test, estado }. Prueba: AV.sorpresasTest(). */
 window.AVSorpresas = function (G) {
   'use strict';
@@ -24,82 +27,136 @@ window.AVSorpresas = function (G) {
     { id: 'siesta', es: 'Una se queda dormida y ronca bajito.', en: 'One falls asleep and snores softly.' },
     { id: 'flor', es: 'Una deja caer una flor al pasar.', en: 'One drops a flower as it passes.' }
   ];
-  const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+  const en = () => (G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
   const texto = m => (en() ? m.en : m.es);
-  let memoria = { visitas: 0, ultima: [], vistos: [] };
-  try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (d && Array.isArray(d.ultima)) memoria = d; } catch (e) { /* sin almacén */ }
+  let memoria = { visitas: 0, ultima: [], vistos: [], notas: [] };
+  try {
+    const d = JSON.parse(localStorage.getItem(CLAVE) || 'null');
+    if (d && Array.isArray(d.ultima)) {
+      memoria = { visitas: d.visitas || 0, ultima: d.ultima, vistos: Array.isArray(d.vistos) ? d.vistos : [], notas: Array.isArray(d.notas) ? d.notas : [] };
+    }
+  } catch (e) { /* sin almacén */ }
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(memoria)); } catch (e) { /* sin almacén */ } }
   if (G.audio && G.audio.define) {
     try { G.audio.define('sorpresa', (t, a, X) => { X.tone(660, t, 0.12, { type: 'triangle', gain: 0.05 }); X.tone(880, t + 0.1, 0.18, { type: 'sine', gain: 0.04 }); }); } catch (e) { /* ya estaba */ }
   }
-  const notas = [];
-  let hecha = false, activas = [], enPrueba = false;
+  let enPrueba = false, fuera = true;
 
+  function deNoche() {
+    const C = G.ciudadViva;
+    if (C && typeof C.noche === 'function') return !!C.noche();
+    const h = S.hora;
+    return typeof h === 'number' && (h >= 19 || h < 5.5);
+  }
+  function centro() {
+    const C = G.ciudadViva;
+    if (C && typeof C.sitio === 'function') {
+      try { const s = C.sitio(); if (s && typeof s.x === 'number') return { x: s.x, z: s.z, r: s.r || 40 }; } catch (e) { /* sin ciudad cargada */ }
+    }
+    return { x: 11, z: -76, r: 40 };
+  }
+  // Por encima del suelo y del sólido. Si el punto sigue dentro, sube hasta salir.
+  function piso(x, z) {
+    const suelo = H(x, z);
+    const so = G.solidos && G.solidos.activo ? G.solidos : null;
+    let y = suelo;
+    if (so && so.altoEn) {
+      const t = so.altoEn(x, z, 1e4);
+      if (isFinite(t)) y = Math.max(y, t);
+    }
+    y += 0.45;
+    if (so && so.dentro) {
+      const techo = so.dentro(x, z, y);
+      if (typeof techo === 'number' && techo > y) y = techo + 0.45;
+    }
+    if (!(y >= suelo)) y = suelo + 0.45;
+    return y;
+  }
   function elegir(ultima) {
     const prohibidos = new Set(ultima || []);
-    const bolsa = MOMENTOS.filter(m => !prohibidos.has(m.id));
+    let bolsa = MOMENTOS.filter(m => !prohibidos.has(m.id));
+    if (!deNoche()) bolsa = bolsa.filter(m => m.id !== 'sonambula');
+    if (!bolsa.length) bolsa = MOMENTOS.filter(m => !prohibidos.has(m.id));
+    if (!bolsa.length) bolsa = MOMENTOS.filter(m => m.id !== 'sonambula');
     const n = 1 + ((memoria.visitas || 0) % 2);
+    const copia = bolsa.slice();
     const out = [];
-    let sem = (memoria.visitas * 17 + 3) % 997;
-    while (out.length < n && out.length < bolsa.length) {
-      sem = (sem * 13 + 7) % bolsa.length;
-      const m = bolsa[sem % bolsa.length];
-      if (!out.includes(m)) out.push(m);
-      else break;
+    let sem = ((memoria.visitas || 0) * 17 + 3) >>> 0;
+    while (out.length < n && copia.length) {
+      sem = (Math.imul(sem, 1103515245) + 12345) >>> 0;
+      out.push(copia.splice(sem % copia.length, 1)[0]);
     }
-    if (!out.length) out.push(MOMENTOS[(memoria.visitas || 0) % MOMENTOS.length]);
     return out;
   }
   function jugar(m, x, z) {
-    const y = H(x, z) + 1.2;
-    activas.push({ id: m.id, x, z, y });
+    const y = piso(x, z);
+    const nuevo = !memoria.vistos.includes(m.id);
+    const pref = en() ? 'You saw something new in the city: ' : 'Viste algo nuevo en la ciudad: ';
+    const linea = (nuevo ? pref : '') + texto(m);
     if (G.fx && G.fx.burst) G.fx.burst(x, y, z, 'leaves', 8);
     G.emit('sorpresa');
     if (G.audio && G.audio.play) { try { G.audio.play('sorpresa'); } catch (e) { /* sin audio */ } }
-    const nuevo = !memoria.vistos.includes(m.id);
-    const linea = (nuevo ? (en() ? 'You saw something new in the city: ' : 'Viste algo nuevo en la ciudad: ') : '') + texto(m);
-    if (G.ui && G.ui.toast) G.ui.toast(linea, 3200);
+    if (G.ui && G.ui.toast && !enPrueba) G.ui.toast(linea, 3200);
     if (nuevo) {
       memoria.vistos.push(m.id);
-      notas.push(linea);
-      G.emit('momento', { id: m.id, texto: linea });
+      memoria.notas.push(linea);
+      guardar();
+      G.emit('momento', { id: m.id, texto: linea, prueba: enPrueba });
     }
     return { id: m.id, x, y, z };
   }
   function visitar(x, z) {
-    if (hecha) return activas;
-    hecha = true;
     memoria.visitas = (memoria.visitas || 0) + 1;
     const lista = elegir(memoria.ultima);
     memoria.ultima = lista.map(m => m.id);
     guardar();
-    lista.forEach((m, i) => jugar(m, x + i * 1.4, z));
-    return lista;
+    return lista.map((m, i) => jugar(m, x + i * 1.6, z));
   }
-  G.on('update', () => {
-    if (hecha || G.quiet || enPrueba) return;
-    if (Math.hypot(S.pos.x - 11, S.pos.z + 76) < 40) visitar(S.pos.x, S.pos.z);
-  });
+  function alMover() {
+    if ((G.quiet || enPrueba) && !alMover.forzar) return;
+    const c = centro();
+    const d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
+    const r = c.r || 40;
+    if (d > r + 22) fuera = true;
+    else if (fuera && d < r) { fuera = false; visitar(S.pos.x, S.pos.z); }
+  }
+  G.on('update', () => { if (!alMover.forzar) alMover(); });
 
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     let crudo = null; try { crudo = localStorage.getItem(CLAVE); } catch (e) { /* */ }
-    const antes = { x: S.pos.x, z: S.pos.z, quiet: G.quiet };
+    const antes = { x: S.pos.x, z: S.pos.z, quiet: G.quiet, hora: S.hora, solidos: G.solidos };
     const oidos = [];
-    const oyente = d => oidos.push(d.id);
+    const oyente = d => oidos.push(d && d.id);
     G.on('momento', oyente);
+    const mem0 = JSON.parse(JSON.stringify(memoria));
     try {
       ok('Hay al menos 12 momentos', MOMENTOS.length >= 12, String(MOMENTOS.length));
       enPrueba = true;
-      memoria = { visitas: 0, ultima: [], vistos: [] }; hecha = false; activas = [];
+      memoria = { visitas: 0, ultima: [], vistos: [], notas: [] };
+      S.hora = 12;
+      let prev = [], rotan = true;
+      for (let i = 0; i < 12; i++) {
+        memoria.visitas = i + 1;
+        const lista = elegir(prev);
+        const ids = lista.map(m => m.id);
+        if (lista.length < 1 || lista.length > 2 || new Set(ids).size !== ids.length || ids.some(id => prev.includes(id)) || ids.includes('sonambula')) rotan = false;
+        prev = ids;
+      }
+      ok('Doce visitas de día: 1 o 2 momentos, sin repetir el anterior ni la sonámbula', rotan, prev.join(','));
+      memoria.visitas = 1;
       const a = elegir([]);
-      memoria.ultima = a.map(m => m.id); memoria.visitas = 1;
+      memoria.ultima = a.map(m => m.id);
       const b = elegir(memoria.ultima);
       ok('La visita siguiente no repite el momento anterior', b.length >= 1 && b.every(m => !a.some(x => x.id === m.id)), a.map(m => m.id) + ' → ' + b.map(m => m.id));
       G.quiet = false;
       const p = jugar(MOMENTOS[0], 11, -76);
       ok('El momento queda sobre el suelo', p.y >= H(p.x, p.z) - 0.02, p.y.toFixed(2));
-      ok('La primera vez avisa al cómic y deja notita', oidos.includes('fruta') && notas.some(n => /fruta|fruit/i.test(n)), oidos.join(','));
+      G.solidos = { activo: true, altoEn: () => 4, dentro: (x, z, y) => y < 6 ? 8 : 0 };
+      const alto = piso(3, 4);
+      ok('No atraviesa un sólido: queda por encima del techo', alto >= 8.4, alto.toFixed(2));
+      G.solidos = antes.solidos;
+      ok('La primera vez avisa al cómic y deja notita', oidos.includes('fruta') && memoria.notas.some(n => n.indexOf('Viste algo nuevo en la ciudad:') === 0 || n.indexOf('You saw something new in the city:') === 0), oidos.join(','));
       const n0 = oidos.length;
       jugar(MOMENTOS[0], 12, -76);
       ok('La segunda vez del mismo tipo no vuelve a avisar', oidos.length === n0, String(oidos.length));
@@ -111,15 +168,17 @@ window.AVSorpresas = function (G) {
       const c1 = una();
       if (G.fx) G.fx.burst = burst;
       ok('No suma draw calls nuevos (no hay malla propia)', c1 - c0 <= 0 && !G.renderer.scene.children.some(o => o && o.name === 'sorpresas'), c0 + ' → ' + c1);
-      hecha = false;
       const v0 = memoria.visitas;
       visitar(11, -76);
       ok('El contador de visitas sube', memoria.visitas === v0 + 1, String(memoria.visitas));
+      ok('La notita queda guardada para el Diario', memoria.notas.length >= 1 && JSON.parse(localStorage.getItem(CLAVE) || '{}').notas.length >= 1, String(memoria.notas.length));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
-    S.pos.x = antes.x; S.pos.z = antes.z; G.quiet = antes.quiet; hecha = true; enPrueba = false;
+    memoria = mem0;
+    S.pos.x = antes.x; S.pos.z = antes.z; S.hora = antes.hora; G.quiet = antes.quiet; G.solidos = antes.solidos;
+    enPrueba = false; fuera = true;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.sorpresas = { test, MOMENTOS, elegir, jugar, visitar, estado: () => ({ visitas: memoria.visitas, ultima: memoria.ultima.slice(), notas: notas.slice() }) };
+  G.sorpresas = { test, MOMENTOS, elegir, jugar, visitar, estado: () => ({ visitas: memoria.visitas, ultima: memoria.ultima.slice(), notas: memoria.notas.slice() }) };
   return G.sorpresas;
 };

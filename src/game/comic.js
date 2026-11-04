@@ -329,6 +329,22 @@ AVE.module('comic', function (G) {
         () => L('Un día volará libre en el bosque.', 'One day it will fly free in the forest.')] },
   ];
   const VINETAS = (C.vinetas || []).concat(C.vinetasMotor === false ? [] : VMOTOR.filter(v => !(C.vinetas || []).some(p => p.id === v.id)));
+  // CG-45: el primer momento de cada sorpresa de la ciudad entra al cómic. En la prueba (d.prueba) y con G.quiet no se anota.
+  G.on('momento', d => {
+    if (!d || d.prueba || G.quiet || typeof d.id !== 'string') return;
+    const id = 'ciu_' + d.id.replace(/[^\w]/g, '').slice(0, 24);
+    const needs = 'CitySurprise_' + id;
+    if (VINETAS.some(v => v.id === id) || G.eventos.had(needs)) return;
+    if (G.eventos.defs && !G.eventos.defs[needs]) G.eventos.defs[needs] = { type: 'LocationDiscovered', loc: 'ciudad', chars: ['vittata'], scene: 'surprise' };
+    const linea = typeof d.texto === 'string' ? d.texto : '';
+    VINETAS.push({
+      id, img: id, needs, tipo: 'hallazgo', pose: 'celebrar',
+      dialogo: () => L('¡Mira eso!', 'Look at that!'),
+      texto: () => linea,
+    });
+    G.eventos.log(needs, {});
+    revisarEventos();
+  });
 
   // Ganchos de otros sistemas → eventos narrativos (una vez por partida; nunca en las baterías: G.quiet)
   const RAMA_ALTA = 2.5; // m sobre el terreno
