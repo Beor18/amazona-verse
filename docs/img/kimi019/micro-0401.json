@@ -1,0 +1,31 @@
+{
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "real (RX 5700 XT)",
+    "nota": "contencion: otros Chrome del sistema corriendo"
+  },
+  "resultados": [
+    {
+      "escena": "micro-medio",
+      "calidad": "medio",
+      "ciudadVivaMS": 0.031,
+      "vecinosMS": 0.012,
+      "aves": 10,
+      "vecinos": 6,
+      "quiet": false
+    },
+    {
+      "escena": "micro-alto",
+      "calidad": "alto",
+      "ciudadVivaMS": 0.062,
+      "vecinosMS": 0.02,
+      "aves": 16,
+      "vecinos": 12,
+      "quiet": false
+    }
+  ],
+  "errores": []
+}

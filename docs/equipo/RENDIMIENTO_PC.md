@@ -71,19 +71,19 @@ en ambos** → la memoria de GPU no sube por ellos.
 el delta Villa→ciudad es el streaming de la zona (edificios/terreno), no de estos sistemas.
 Heap JS: el del mundo en ambas vistas. 0 errores de consola en las 3 corridas.
 
-**FPS delta ON−SIN: sin concluir.** La PC tenía a las otras dos sesiones de Kimi midiendo a la
-vez (hasta 60 Chrome headless) y los stalls de streaming ajenos (hasta 19 s en una toma)
-envenenan las ventanas de 8 s. Las tomas válidas tras asentar quedaron: Villa media ON 101
-calls / 496 k tris (cuadro p50 42 ms) y ciudad media ON 110–122 calls / 772–835 k tris
-(p50 28–56 ms), pero no son comparables cara a cara. **Pendiente: re-medir cuando la PC esté
-libre** — `--simple` (Villa+ciudad de día, ON/SIN/ON con asentamiento) y `--micro` (ms/cuadro
-de CPU de `paso()+pintar()` forzando `paso(0.016,'todo')`, inmune al GPU).
+**FPS delta ON−SIN: sin concluir** (la PC tenía a las otras dos sesiones de Kimi midiendo a la
+vez y los stalls de streaming ajenos envenenaban las ventanas de 8 s). **Re-medición CPU
+(--micro, inmune al GPU) · 04-11 ~09:00 UTC, Kimi 2**: `paso()+pintar()` forzando `paso(0.016,'todo')`
+(sin escalonado por distancia: caso peor), móvil 375×812 dpr 3, CPU ×4, mediana de 5 lotes × 200
+llamadas: **ciudad viva 0,031 ms/cuadro en medio (10 aves) y 0,062 en alto (16 aves); vecinos
+0,012 ms/cuadro en medio (6) y 0,02 en alto (12)** — peor caso 0,082 ms/cuadro, ~6× por debajo
+del umbral de 0,5 ms. 0 errores de consola. Evidencia: `tools/build/salida/kimi2-vecinos/resultado.json`.
 
 **Conclusión (4-nov):** memoria sin cambio, +2 draw calls y ≤ 2,5 k triángulos de margen
-(negligible frente a los 460–890 k de la vista) y CPU escalonada por distancia con apagado
-lejos. Con estos números **no hay nada que recortar antes de ampliar** los vecinos/la ciudad
-viva; la única condición pendiente es confirmar con `--micro` que `paso()+pintar()` cuesta
-< 0,5 ms/cuadro con CPU ×4.
+(negligible frente a los 460–890 k de la vista), CPU escalonada por distancia con apagado
+lejos y **confirmado con `--micro`: `paso()+pintar()` cuesta ≤ 0,082 ms/cuadro con CPU ×4 en el
+peor caso** (< 0,5 ms exigido). Con estos números **no hay nada que recortar antes de ampliar**
+los vecinos/la ciudad viva.
 
 ## KIMI-017 · lag en móvil al moverse (4-nov, en curso)
 
