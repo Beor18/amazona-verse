@@ -104,6 +104,12 @@
   const VOC = VIDS.map(v => 'voz_' + v);
   // Quién nombra el costo de cada opción cuando se dice «esta es la mejor para todos»
   const PIERDE = { a: 'papa', b: 'iguaca', c: 'abuela' };
+  // El botón nombra a quién se le explica y qué le cuesta, según la opción ya elegida
+  const COSTO_BTN = {
+    a: 'Explicarle al papá el costo del bosquecillo',
+    b: 'Explicarle a Iguaca el costo del trabajo',
+    c: 'Explicarle a la abuela el costo del cruce',
+  };
   const RECLAMO = {
     a: '¿Y el nido del guardián que ya conoces? Para el puente del estrecho hay que cortar el bosquecillo.',
     b: '¿Con qué manos y en cuántos días? El puente alto es mucho trabajo para tan pocos.',
@@ -506,7 +512,7 @@
         label: () => {
           if (S.step === 1) return 'Poner las tarjetas en la Balanza';
           if (S.step === 2) return 'Probar en la maqueta';
-          if (S.step === 3) return !opcion() ? 'Hacer la asamblea' : (!cuidado() ? 'Elegir un cuidado' : 'Explicar con cariño lo que cuesta');
+          if (S.step === 3) return !opcion() ? 'Hacer la asamblea' : (!cuidado() ? 'Elegir un cuidado' : (COSTO_BTN[opcion()] || 'Explicar con cariño lo que cuesta'));
           return 'Mirar la Balanza';
         },
         use: () => {
@@ -708,7 +714,7 @@
             ck('M3 · Un cuidado que no ayuda a esa opción: pista y se repite', !CIDS.some(c => tiene('cuidado_' + c)) && opciones().length === CIDS.length);
           }
           pick(CUIDADOS[cu].nombre);
-          ck('M3 · Tras el cuidado, el botón pide explicar con cariño lo que cuesta', G.interaccion.find('mesa').label() === 'Explicar con cariño lo que cuesta');
+          ck('M3 · Tras el cuidado, el botón le explica al papá el costo del bosquecillo', G.interaccion.find('mesa').label() === 'Explicarle al papá el costo del bosquecillo');
           if (conChequeos) {
             pick('Es lo mejor para todos');
             ck('M3 · «Es lo mejor para todos» no vale: se repite', !G.eventos.had('CareChosen') && opciones().length === 3);
