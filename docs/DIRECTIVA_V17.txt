@@ -1,0 +1,210 @@
+                 DIRECTIVA MAESTRA PROPUESTA · V17
+
+ Amazona Verse | Contexto actualizado, decisiones de
+    canon, arte, móvil, cómic, música y pruebas
+ 4 de noviembre de 2026 · Documento para entregar a Claude y agentes
+
+
+ Control de versiones y certeza
+ La última base documental encontrada entre los archivos disponibles es V16.6. No se encontró un texto
+ V17 anterior confirmado. Este archivo es una propuesta nueva V17, no una reconstrucción literal de una
+ versión perdida. La información posterior proviene de los reportes y decisiones compartidos en esta
+ conversación; no se verificó el repositorio en vivo.
+
+ [A] aprobado por el fundador · [R] reportado por Claude/agentes · [P] pendiente de prueba o
+ implementación.
+
+
+ Instrucción principal lista para Claude
+ Trabaja desde el estado real de main; inspecciona código, pruebas y assets antes de editar. Conserva la
+ visión y lo que ya funciona. No reduzcas el elenco de 36 especies ni los seis capítulos. No sustituyas el
+ logo, personajes, cómic o mapas por arte genérico. Entrega cada cambio con commit, evidencia visual,
+ pruebas y métricas reales en iPhone.
+
+
+
+
+ Referencia visual del personaje aportada en los materiales del proyecto; no autoriza cambiar su modelo 3D.
+
+
+
+
+AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                   1
+ 1 | Estado reciente de la Ciudad de los 36
+ • [R] Claude informa que la ciudad viva pasó de commit 5f6ec9d4 a cec77c13 en main. Confirmar HEAD
+ y despliegue.
+
+ • [R] Conductas diurnas: vuelos entre torres, perchas, grupos conversando, comida en plaza, reparación
+ de techo y persecuciones. Nocturnas: dormir en pareja.
+
+ • [R] Coste declarado: un draw call adicional, ~1.500 triángulos; 4 aves en calidad baja, 10 media, 16
+ alta; 20/20 pruebas. Son cifras reportadas, no medición independiente.
+
+ • [R] Espacio de disco: pasó de menos de 1 GB a 12 GB libres tras limpiar copias de agentes terminados;
+ conservar trabajos activos y comprobar nuevamente antes de compilar.
+
+
+ 2 | Decisiones de canon aprobadas
+ • [A] La Maraña entra como lugar fantástico con misterio y función jugable. No presentarla como hecho
+ histórico.
+
+ • [A] Vecinos ambientales no cotorras: comenzar con coquíes, lagartijos y mariposas; mantener a las 36
+ Amazona como protagonistas.
+
+ • [A] Faroles cálidos en la ciudad del capítulo 1, especialmente para visibilidad nocturna, con
+ presupuesto móvil.
+
+ • [A] Iguaca, Vinacea, Festiva, Oratrix, Lilacina y Versicolor: aprobadas las seis líneas principales
+ resumidas en conversación; usar el texto completo del documento de diálogos, no inventar frases
+ faltantes.
+
+ • [A] iPhone: opción A para texturas de edificios a media resolución solo en móviles; escritorio y tablet
+ sin cambios. Validar calidad y estabilidad en hardware real.
+
+
+ 3 | Historia y alcance intocables
+ • Seis capítulos jugables; colección/selección de 36 especies, incluidas las dos históricas A. martinicana y
+ A. violacea con tratamiento taxonómico cuidadoso.
+
+ • Personajes, guardianes, huevos, minijuegos, carreras, Arena PvP, clips y Creator Lab conservan su
+ visión; ninguna expansión se implementa sin ticket y aprobación.
+
+ • No introducir Smarlin ni sistemas que requieran datos de menores. No afirmar contenido histórico o
+ científico sin fuente verificable.
+
+
+
+
+ Imagen comparativa del capítulo 5 disponible en materiales previos; validar contra el estado actual.
+
+
+
+
+AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                     2
+ 4 | Cómic del juego: contrato visual
+ La plantilla aprobada tiene seis viñetas dinámicas. El paquete de 65 PNG representa elementos
+ separados, no 65 pantallas. Deben componerse como capas: fondo de escena real, marcos, título,
+ globos, texto, retrato circular del jugador y secciones de aprendizaje. El personaje debe ser la especie y
+ skin real del jugador, con ropa y corona seleccionadas; nunca inventar cotorras genéricas.
+
+ Usar únicamente el logo oficial PNG original, sin redibujar, recolorear ni reescribir. El sistema debe
+ exportar PNG/PDF y permitir ver, editar y compartir. Inspeccionar la transparencia de cada recorte antes
+ de integrarlo; algunos son recortes con fondo y no capas limpias.
+
+
+
+
+ Ejemplo visual existente del cómic; referencia de composición, no captura demostrativa del motor.
+
+
+ 5 | Retratos de las 36 especies
+ [R] Claude indicó que se publicarían los retratos de las 36 especies y el trabajo reciente de Grok. Verificar
+ existencia, correspondencia con modelos 3D reales, skins, siluetas para no descubiertas y nombres
+ ocultos de Mara/Vela hasta el capítulo 5. Muestrear tres especies antes de aceptar el lote completo.
+
+
+
+
+AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                      3
+ 6 | Música original: dos pistas aprobadas en concepto
+ Ciudad de noche: aventura fantástica tropical, cálida y misteriosa; marimba suave, cuerdas pulsadas
+ inspiradas en el cuatro, flautas de madera, celesta y ambiente nocturno sutil. Instrumental, sin voz, sin
+ ritmo comercial ni merengue; objetivo aproximado 82 BPM y 90 s, adaptable a bucle.
+
+ Sorpresas: curiosidad juguetona y descubrimientos; pizzicato, marimba, celesta, percusión ligera y
+ motivo musical original compartido con la ciudad. Instrumental, sin voces ni pop; objetivo aproximado
+ 112 BPM y 60–90 s.
+
+ Los prompts son instrucciones creativas, no garantía de duración ni bucle perfecto. Guardar MP3
+ originales, fecha, cuenta/plan y comprobante de derechos comerciales; Claude normaliza volumen y
+ edita bucles sin saltos.
+
+
+ 7 | Educación: correcciones obligatorias
+ • 19 afirmaciones de capítulos 2–6 revisadas en conversación: distinguir CORRECTA, CON MATIZ y SIN
+ FUENTE. No convertir la revisión en una certificación científica automática.
+
+ • La afirmación de “zocos” como tradición de casas rurales de Puerto Rico quedó SIN FUENTE; mantener
+ como fantasía si se desea, sin atribución histórica.
+
+ • “Canoa” sustituye a “cayuco” en la narrativa según reporte del usuario; verificar todos los idiomas y
+ diálogos.
+
+ • Adjuntar citas reales y enlaces directos a fuentes gubernamentales, museos, diccionarios, NGSS o
+ artículos con DOI. No inventar códigos DEPR.
+
+
+ 8 | Rendimiento móvil: puerta de calidad
+ • Aplicar texturas de edificios a 50% en teléfonos únicamente, con selección de calidad por dispositivo y
+ fallback. No alterar por defecto tablet o escritorio.
+
+ • Probar iPhone real: inicio, carga de ciudad, transición día/noche, memoria, cierres, temperatura,
+ controles táctiles, audio, cómic y reentrada.
+
+ • Registrar modelo de iPhone, versión iOS, navegador, FPS p50/p10, memoria estimada, tiempo de carga
+ y fallos. Las 20/20 pruebas lógicas no reemplazan QA físico.
+
+ • Mantener carga diferida, actualización por distancia, culling y límites de luces; comparar capturas
+ antes/después de texturas reducidas.
+
+
+
+
+ Diagrama de ecosistema de una directiva anterior; orientación, no estado probado del HEAD actual.
+
+
+
+
+AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                  4
+ 9 | Orden operativo de ejecución
+ 1. Auditoría. Confirmar main, commits, espacio libre, agentes activos y pruebas reproducibles.
+
+ 2. Móvil. Aplicar opción A, medir iPhone y comprobar que la ciudad no se cierra.
+
+ 3. Arte. Verificar modelos, 36 retratos, identidad, luces nocturnas y fauna ambiental.
+
+ 4. Narrativa. Integrar La Maraña, las seis voces aprobadas y correcciones educativas.
+
+ 5. Cómic. Reconstruir seis viñetas desde capas reales y capturas del juego; probar exportaciones.
+
+ 6. Música. Integrar solo MP3 con licencia y bucles validados; documentar procedencia.
+
+ 7. Publicación. Pruebas automatizadas + manuales + capturas; integrar con control de versiones y
+ rollback.
+
+
+ 10 | Evidencia exigida en el informe final
+ • Tabla de funciones: implementada / parcial / no implementada, con rutas reales de archivos y commits.
+
+ • Capturas reales del juego de día y noche, iPhone y escritorio, 36 retratos y cómic de seis viñetas.
+
+ • Resultados de tests y pruebas manuales con dispositivo y fecha; errores abiertos y riesgos de
+ publicación.
+
+ • Medición antes/después de rendimiento, tamaño de texturas, uso de memoria, espacio libre y fallos.
+
+ • Lista de cambios, nuevos assets, licencias, decisiones pendientes y qué NO se modificó.
+
+
+ 11 | Preguntas abiertas: no inventar respuestas
+ El usuario mencionó “cora”, pero no se identificó un módulo, personaje o tarea con ese nombre en los
+ materiales revisados. Solicitar precisión antes de modificar algo bajo ese término. Tampoco consta en
+ esta conversación una segunda decisión A/B completa: solo está confirmada la decisión 1 = A.
+
+
+ MENSAJE PARA COPIAR A CLAUDE
+ Esta es la directiva V17 propuesta. Integra exclusivamente las decisiones aprobadas y audita el estado
+ real antes de programar. Prioriza estabilidad iPhone, arte fiel, ciudad viva, cómic por capas y pruebas
+ reproducibles. No declares completado nada sin evidencias de repositorio y dispositivo. Informa bloqueos
+ y preguntas concretas; no gastes recursos en expansiones no aprobadas.
+
+
+
+
+ Coordinación técnica del equipo: diagrama de referencia de versiones anteriores.
+
+
+
+
+AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                 5
+
