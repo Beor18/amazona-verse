@@ -57,9 +57,12 @@
       const bd = G.c.build();
       if (!bd) { ctx.atasco('«Construir refugio aquí» no abre el modo construir', (document.getElementById('toast') || {}).textContent || ''); const c = card.querySelector('#c-close'); if (c) await ctx.clic(c); return true; }
       const p = G.c.PLACES[bd.parcel];
-      const cand = [[0, -1.5], [0, -3], [3, -1.5], [-3, -1.5], [0, 1.5], [3, -3], [-3, -3], [5, 0], [-5, 0]];
-      for (const [dx, dz] of cand) {
-        await ctx.hacia(p.x + dx, p.z + dz, 25, 0.6);
+      // el fantasma va 2,6 m delante de Vittata: se entra desde el borde caminando hacia el centro, así queda dentro
+      const R = Math.max(3, (p.half || 4) + 0.5);
+      for (let k = 0; k < 8; k++) {
+        const a = k * Math.PI / 4, cx = Math.cos(a), cz = Math.sin(a);
+        await ctx.hacia(p.x + cx * R, p.z + cz * R, 25, 0.8);
+        await ctx.hacia(p.x + cx * 2.2, p.z + cz * 2.2, 15, 0.5);
         await ctx.jugar(0.1);
         const v = G.c.build();
         if (!v) break;
