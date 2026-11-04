@@ -1,0 +1,283 @@
+From becda2b64cad5bb890ff4b689dd495c9e73f023d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 4 Nov 2026 10:42:15 +0000
+Subject: [PATCH] =?UTF-8?q?Lento=20en=20m=C3=B3vil:=20la=20clave=20de=20ca?=
+ =?UTF-8?q?lor=20se=20guarda=20por=20material=20(sin=20cadenas=20ni=20arre?=
+ =?UTF-8?q?glos=20nuevos=20por=20cuadro)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+renderer.js miraba en cada cuadro todos los dibujables dos veces (siguienteCalor y
+ocultarPendientes) armando la clave con cadenas nuevas y un arreglo por objeto.
+Ahora la clave se guarda por material y solo se rehace si cambia version,
+onBeforeCompile, customProgramCacheKey, el tone mapping o genCalor. Mismo resultado.
+texturasPendientes recorre cada material una sola vez.
+
+Micro-banco del escaneo (4000 dibujables, 2 pasadas): 2,05 -> 0,39 ms por cuadro
+(CPU x1), ~8 -> ~1,5 ms con CPU x4. Nuevo tools/build/lento_movil.py (60 s de juego
+en móvil emulado + perfil anclado por cuadro largo).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01CFhoPYgX5CfK78r6RNsNYz
+---
+ docs/equipo/REGISTRO_TAREAS.md |   1 +
+ src/engine/renderer.js         |  37 +++++--
+ tools/build/lento_movil.py     | 176 +++++++++++++++++++++++++++++++++
+ 3 files changed, 207 insertions(+), 7 deletions(-)
+ create mode 100644 tools/build/lento_movil.py
+
+diff --git a/docs/equipo/REGISTRO_TAREAS.md b/docs/equipo/REGISTRO_TAREAS.md
+index f9af2c9c..7898c90e 100644
+--- a/docs/equipo/REGISTRO_TAREAS.md
++++ b/docs/equipo/REGISTRO_TAREAS.md
+@@ -271,3 +271,4 @@ Medido: la semana va por el 43 % de todos los modelos (tope 75 %, quedan 32 punt
+ | 4-nov | QA-140 · los «paneles translúcidos» de la ronda 013 eran el haz guía de misión (ancho fijo en mundo = panel de cristal cerca): ancho angular casi constante | Kimi 2 · Kimi Code | (este commit) | — | `src/engine/fx.js` (`guide()`: `r = clamp(dCam·0,014; 0,2; 1,6)` m y `guideBeam.scale.set(r/0.7, 1, r/0.7)`; el fundido QA-22 de 2,5–8 m queda intacto, solo se extrajo `dCam`), `tools/build/kimi2_qa140.js` (nueva: raycast en los píxeles del panel + barrido de translúcidos + capturas), `tools/build/kimi2_qa140_demo.js` (nueva: A/B del haz con la escala vieja forzada), `docs/img/kimi140/` (qa140.json + capturas post-fix de ep2/ep4/ep5), `docs/equipo/BUGS.md` (fila QA-140), `docs/equipo/TAREAS_KIMI.md` (mi fila) | Diagnóstico por raycast con GPU real (1600×900, calidad media): en los píxeles exactos de las 3 capturas de Kimi 1 el objeto es el `guideBeam` (cilindro aditivo 40 m, doble pared, op 0,16–0,20; `zonas.js` no dibuja nada). A/B medido: escala 0,286–0,453 a 14–25 m (radio ~0,2–0,32 m) frente a 1,0 vieja (0,7 m fijos ≈ 60–90 px); en ep5 la columna del cielo queda fina (captura en `docs/img/kimi140/qa140_ep5_meseta_ciudad.jpg` vs `docs/img/kimi013/ep5_meseta_ciudad.jpg`). Sigue 1 malla/1 draw call, 0 texturas nuevas; vistas: ep2 140 calls, ep5 158 calls (media, sin cambio). Baterías en página fresca (build.sh/test.sh no corren en esta PC, sin python): accesibilidadTest 64/64 (ejercita `G.fx.guide`), comicTest 67/67, selfTest 103/103, 0 errores de consola. | En corrida triple acumulada (accesibilidad→cómic→self en la misma página) comicTest da 63/67 y selfTest 91/103 por estado compartido entre baterías (histórico; solas dan 67/67 y 103/103). El `?? docs/img/kimi016/qa_tool_ep6_88_56.jpg` (captura negra de la sesión cortada) sigue sin trackear; el stash «Kimi 2 antes del apagon» (hack de bisect de renderer.js) sigue intacto y anotado como NO aplicar. No toqué `sitio/` ni archivos de otro carril. |
+ | 4-nov | CG-60 · distinguir a Iguaca, la Abuela y el Papá | Grok | 4af812f2 | — | `docs/equipo/PROPUESTA_FAMILIA_CG60.md`, `docs/img/personajes/` | Solo documentos y láminas. El juego no cambia: no hay batería nueva. | Propuesta A (recomendada): plumaje vittata, tamaño y fondo de retrato, accesorios del ropero. B suma la postura agachada. C (otra piel) no se recomienda. No toqué el modelo de Vittata ni `sitio/`. |
+ | 4-nov | KIMI-016 (QA-109) · la espuma del mar blanqueaba el banco de arena plano de la bahía de Villa Raíz: se atenúa donde el fondo está lejos de la orilla real | Kimi 1 · Kimi (Moonshot) | 51133668 | — | `src/engine/agua.js` (MAR_FRAG: `alturaBil` + `distEstimadaOrilla` = profundidad/pendiente del fondo a ±6 m; la espuma se multiplica por `1 - smoothstep(2,5;9,0;dist)·0,95·(1-uTormenta)`), `tools/build/kimi1_qa109.js` y `tools/build/kimi1_qa109_perfil.js` (medición + perfil de pendiente), `docs/img/kimi016/qa109_{base,post3}_*.jpg/json` (par antes/después y 2 controles), `docs/equipo/BUGS.md` (fila QA-109 → corregido), `docs/equipo/TAREAS_KIMI.md` (mi fila) | `node tools/build/kimi1_qa109.js --etiqueta base/post3` (Chrome headless, GPU real RX 5700 XT, 1920×1080, medio, % píxeles luma>180 en 96×54 del lienzo): bahía rasante 2,5 m 50→20 %, bahía original 8 m 44→42 %, bahía alta 25 m 31→25 %, desembocadura 44→40 %, playa este (control agua rica) 2→2 %; FPS ~144 sin cambio, 0 errores de consola; el plano del mar sigue en 1 draw call y 0 texturas nuevas (memoria GPU sin cambio). Perfil del fondo (x=150, z 198–252) verificado con `kimi1_qa109_perfil.js`. Baterías contra el worktree en la misma PC (`kimi2_una_bateria.js`): movementTest 48/48, lookTest 42/44 y streamingTest 22/23 (los rojos son los conocidos de HEAD: atlas HD no se encoge ×2 y alto/ciudadVista-650; nada del agua). | La 1.ª versión (pendiente a ±2 m, umbral 8–16 m) solo bajó la bahía a 42 %: los rizos de arena dan pendiente local alta; la clave era medir la pendiente a ±6 m. La vista clásica del muelle (8 m) queda en 42 % porque su palidez restante es arena de playa y la franja de espuma de la orilla, no la sábana (comparado captura a captura). Queda la decisión de Kelvin: aceptar el agua somera menta de la banca (fondo real) o hondear el fondo 1–2 m (heightmap, carril de la nube). No toqué `sitio/` ni archivos de otro carril. Aviso: al integrar encontré el índice real de git atrasado (de la sesión cortada; blob staged = árbol viejo ya commiteado): hice `git restore --staged :/` para poder hacer el pull --rebase obligatorio; el worktree nunca se tocó y el contenido staged era 100 % histórico. |
++| 4-nov | Lento en móvil (iPhone «bajo», cap. 1 y cap. 4): medición de 60 s tras la carga + caché de la clave de calor | Sesión de apoyo · Claude Opus 5.5 | (este commit) | — | `src/engine/renderer.js` (`cacheDe`: la clave de calor se guarda por material y se rehace solo si cambian `version`, `onBeforeCompile`, `customProgramCacheKey`, tone mapping o `genCalor`; `objPendiente` sin arreglos ni cadenas nuevas; `texturasPendientes` recorre cada material una vez), `tools/build/lento_movil.py` (nuevo: 60 s caminando/volando Villa Raíz → río → Ciudad de los 36 + 30 s en la ciudad, o 60 s por el río del cap. 4; perfil de CPU anclado con `__ancla` que atribuye cada cuadro > 150 ms) | Micro-banco del escaneo (2 pasadas por cuadro, 4000 dibujables): 2,05 → 0,39 ms por cuadro (CPU ×1), ~8 → ~1,5 ms con CPU ×4, y sin unas 30 000 asignaciones por cuadro. Baterías: ver commit. | En esta máquina (SwiftShader, carga 8–10 en 4 núcleos, otros agentes con Chrome) el cuadro de móvil emulado va a p50 1,4–2,3 s en cap. 1 y cap. 4 tanto antes como después: el 93 % es `(program)` = espera a la GPU software, así que no sirve para medir p95 < 50 ms. El JS del juego es ~7 % del tiempo. Lo más grande atribuible al juego: la foto del cómic (`comic.js` capture → `renderer.snapshot`: `drawImage` del lienzo WebGL 2,8–3,2 s = lectura síncrona de la GPU), las compilaciones de los primeros 3 s (`getProgramParameter`) y el anillo de primeros pasos (`guia_controles.js` `pmPuede`/`colocarPm`: `getClientRects` cada cuadro, ~0,3 s en 90 s). Cap. 4: heap JS 247–285 MB frente a 133–180 MB del cap. 1 (sin GC forzado; sospechoso para «se tranca en el 4» en iPhone, sin confirmar). Falta medir en un iPhone real (Web Inspector) o con GPU real. |
+diff --git a/src/engine/renderer.js b/src/engine/renderer.js
+index cdeaacc1..c39f6656 100644
+--- a/src/engine/renderer.js
++++ b/src/engine/renderer.js
+@@ -581,16 +581,35 @@ AVE.module('renderer', function (G) {
+   let genCalor = 1, rtCalor = null, postCalor = false;
+   const calorHecho = new Set();
+   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
+-  function claveDe(m) {
++  // Lento-móvil (4-nov): render() y drawScene() miran en cada cuadro todos los dibujables (miles con el mundo cargado):
++  // armar la clave con cadenas nuevas y un arreglo por objeto daba basura y CPU en cada cuadro. La clave se guarda por
++  // material y solo se rehace si cambia algo que three también mira para recompilar (version, que sube con needsUpdate;
++  // onBeforeCompile; customProgramCacheKey; tone mapping; genCalor). Mismo resultado, sin asignaciones por cuadro.
++  const claveCache = new WeakMap();
++  function cacheDe(m) {
++    const tm = renderer.toneMapping, f = m.customProgramCacheKey, b = m.onBeforeCompile;
++    let c = claveCache.get(m);
++    if (c && c.v === m.version && c.g === genCalor && c.tm === tm && c.f === f && c.b === b) return c;
+     let k = '';
+-    try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
+-    return genCalor + '|' + renderer.toneMapping + '|' + k;
++    try { k = f ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
++    c = { v: m.version, g: genCalor, tm, f, b, k: genCalor + '|' + tm + '|' + k, ids: {} };
++    claveCache.set(m, c);
++    return c;
+   }
++  function claveDe(m) { return cacheDe(m).k; }
+   // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph.
+   function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
+   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
+-  function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
+-  function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
++  function idCalor(o, m) {
++    const c = cacheDe(m), r = (o.isSkinnedMesh ? 1 : 0) + (o.isInstancedMesh ? 2 : 0) + (o.morphTargetInfluences ? 4 : 0);
++    return c.ids[r] || (c.ids[r] = c.k + '|' + rasgos(o));
++  }
++  function objPendiente(o) {
++    const m = o.material;
++    if (!Array.isArray(m)) return !!m && !calorHecho.has(idCalor(o, m));
++    for (let i = 0; i < m.length; i++) if (m[i] && !calorHecho.has(idCalor(o, m[i]))) return true;
++    return false;
++  }
+   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
+   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
+   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
+@@ -692,8 +711,12 @@ AVE.module('renderer', function (G) {
+   }
+   // Texturas 2D de lo que hay en la escena con imagen ya lista y todavía sin subir a la GPU
+   function texturasPendientes() {
+-    const todas = new Set(), out = [];
+-    for (const o of dibujables()) texturasDe(o, todas);
++    const todas = new Set(), vistos = new Set(), out = [];
++    for (const o of dibujables()) {  // cada material una vez (muchos objetos lo comparten; for…in por material es lo caro)
++      const m = o.material;
++      if (Array.isArray(m)) texturasDe(o, todas);
++      else if (m && !vistos.has(m)) { vistos.add(m); texturasDe(o, todas); }
++    }
+     for (const t of todas) {
+       if (t.isCubeTexture || t.isDataTexture3D || t.isDataTexture2DArray || !(t.version > 0) || !t.image) continue;
+       if (!renderer.properties.get(t).__webglTexture) out.push(t);
+diff --git a/tools/build/lento_movil.py b/tools/build/lento_movil.py
+new file mode 100644
+index 00000000..39fc20a0
+--- /dev/null
++++ b/tools/build/lento_movil.py
+@@ -0,0 +1,176 @@
++#!/usr/bin/env python3
++"""Amazona Verse · lento en móvil (4-nov). Mide tirones en móvil emulado: tras la pantalla de carga, 60 s caminando/volando + 30 s en la ciudad (cap1)
++o 60 s por la zona del río (ep4). Perfil de CPU anclado para atribuir los cuadros > 200 ms.
++uso: AV_CHROME=… python3 -I tools/build/lento_movil.py <build>/site --movil ios|android --pack cap1|ep4 [--guardada] [--salida F.json]"""
++import argparse, json, os, sys, tempfile, time
++
++ap = argparse.ArgumentParser()
++ap.add_argument('raiz'); ap.add_argument('--repo', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
++ap.add_argument('--movil', default='ios'); ap.add_argument('--pack', default='cap1')
++ap.add_argument('--guardada', action='store_true', help='entra, juega 20 s, recarga con la partida guardada y mide')
++ap.add_argument('--sinperfil', action='store_true')
++ap.add_argument('--salida', default='')
++ap.add_argument('--extra', default='', help='query extra')
++a = ap.parse_args()
++sys.path.insert(0, os.path.join(a.repo, 'tools', 'build'))
++import avtest, look_capturas  # noqa
++
++UA = {'ios': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
++      'android': 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'}[a.movil]
++W, H, DPR = (390, 844, 3) if a.movil == 'ios' else (412, 915, 2.625)
++P = json.load(open(os.path.join(a.repo, 'tools', 'build', 'config.json')))['pruebas']
++
++SONDA = r'''(() => { const Q = window.__lm = { f: [], on: false }; let t = 0;
++  const f = n => { if (t && Q.on) Q.f.push([Math.round(t * 10) / 10, Math.round((n - t) * 10) / 10]); t = n; requestAnimationFrame(f); }; requestAnimationFrame(f); })();'''
++
++ANCLA = r'''(() => { window.__anclaT = performance.now(); (function __ancla() { const t0 = performance.now(); let x = 0; while (performance.now() - t0 < 60) x += Math.sqrt(x + 1); return x; })(); return window.__anclaT; })()'''
++
++RUTA = r'''(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms));
++  const G = AV.G, S = G.S, M = G.fisica.MOVE, Q = window.__lm, log = [];
++  const k = (t, key, code) => dispatchEvent(new KeyboardEvent(t, { key, code, bubbles: true }));
++  const apunta = (x, z) => { const dx = x - S.pos.x, dz = z - S.pos.z; G.camara.yaw = Math.atan2(-dx, -dz); return Math.hypot(dx, dz); };
++  const PACK = '%s';
++  const x0 = S.pos.x, z0 = S.pos.z;
++  const tramos = PACK === 'cap1'
++    ? [{ s: 15, x: x0 + 60, z: z0 + 10, vuela: false }, { s: 45, x: -34, z: -144, vuela: true, alto: 14 }, { s: 30, x: -34, z: -144, vuela: false, ciudad: true }]
++    : [{ s: 20, x: x0 + 50, z: z0, vuela: false }, { s: 40, x: x0 + 60, z: z0 - 160, vuela: true, alto: 10 }];
++  Q.f = []; Q.on = true; const T0 = performance.now(); let marcas = [];
++  for (const tr of tramos) {
++    marcas.push([Math.round(performance.now()), tr.ciudad ? 'ciudad' : tr.vuela ? 'vuelo' : 'camina']);
++    if (tr.ciudad) { if (Math.hypot(S.pos.x - tr.x, S.pos.z - tr.z) > 40) { log.push('no llegó a la ciudad: salta desde ' + Math.round(S.pos.x) + ',' + Math.round(S.pos.z)); S.pos.x = tr.x; S.pos.z = tr.z; S.pos.y = G.terreno.height(tr.x, tr.z) + 8; } if (M.flying) G.fisica.land(); }
++    if (tr.vuela && !M.flying) G.fisica.startFlying();
++    k('keydown', 'w', 'KeyW');
++    const t1 = performance.now(); let i = 0;
++    while (performance.now() - t1 < tr.s * 1000) {
++      i++;
++      if (tr.ciudad) { const a = (performance.now() - t1) / 4000; apunta(tr.x + Math.cos(a) * 18, tr.z + Math.sin(a) * 18); }
++      else { const d = apunta(tr.x, tr.z); if (d < 6) { k('keyup', 'w', 'KeyW'); } }
++      if (tr.vuela && M.flying) { const sobre = S.pos.y - G.terreno.height(S.pos.x, S.pos.z); if (sobre < tr.alto) k('keydown', ' ', 'Space'); else k('keyup', ' ', 'Space'); }
++      if (i %% 20 === 0) log.push(Math.round((performance.now() - T0) / 1000) + 's ' + Math.round(S.pos.x) + ',' + Math.round(S.pos.y) + ',' + Math.round(S.pos.z) + (M.flying ? ' vuela' : ''));
++      await sleep(100);
++    }
++    k('keyup', 'w', 'KeyW'); k('keyup', ' ', 'Space');
++  }
++  Q.on = false;
++  let cal = null; try { cal = G.renderer.calidad && G.renderer.calidad.nivel; } catch (e) {}
++  let st = {}; try { st = G.renderer.stats ? G.renderer.stats() : {}; } catch (e) {}
++  return JSON.stringify({ f: Q.f, marcas, log, calidad: cal, stats: { texMB: st.texturasMB, calls: st.calls, dpr: st.dpr }, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null });
++})()''' % a.pack
++
++
++def resumen(fr):
++    d = sorted(x[1] for x in fr); n = len(d)
++    q = lambda p: d[min(n - 1, int(n * p))] if n else 0
++    return {'n': n, 'p50': q(.5), 'p95': q(.95), 'max': d[-1] if n else 0, 'mas50': sum(x > 50 for x in d), 'mas100': sum(x > 100 for x in d), 'mas200': sum(x > 200 for x in d)}
++
++
++def atribuir(pr, desde_us, hasta_us, N=6):
++    nodos = {n['id']: n for n in pr['nodes']}
++    padre = {c: n['id'] for n in pr['nodes'] for c in n.get('children') or []}
++    t = pr['startTime']; S, D = pr['samples'], pr['timeDeltas']; propio, juego = {}, {}
++    for i in range(1, len(S)):
++        t += D[i]
++        if t < desde_us or t > hasta_us:
++            continue
++        sid = S[i - 1]; cf = nodos[sid]['callFrame']; us = D[i]
++        k = '%s %s:%d' % (cf.get('functionName') or '(anon)', (cf.get('url') or '').split('/')[-1], cf.get('lineNumber', -1) + 1)
++        propio[k] = propio.get(k, 0) + us
++        n, pila = sid, []
++        while True:
++            f = nodos[n]['callFrame']; u = f.get('url') or ''
++            if ('/src/' in u or '/content/' in u) and len(pila) < 3:
++                pila.append('%s %s:%d' % (f.get('functionName') or '(anon)', u.split('/')[-1], f.get('lineNumber', -1) + 1))
++            if n not in padre:
++                break
++            n = padre[n]
++        kj = ' < '.join(pila) or '(fuera del juego)'
++        juego[kj] = juego.get(kj, 0) + us
++    top = lambda m: [(round(v / 1000), k) for k, v in sorted(m.items(), key=lambda x: -x[1])[:N]]
++    return {'propio': top(propio), 'juego': top(juego)}
++
++
++errores = []
++def al_evento(m):
++    me, p = m.get('method'), m.get('params') or {}
++    if me == 'Runtime.exceptionThrown':
++        d = p.get('exceptionDetails') or {}; errores.append(((d.get('exception') or {}).get('description') or d.get('text') or '')[:300])
++    elif me == 'Runtime.consoleAPICalled' and p.get('type') in ('error', 'assert'):
++        errores.append(' '.join(str(x.get('value', x.get('description', ''))) for x in p.get('args') or [])[:300])
++
++srv = chrome = ws = None; res = {'movil': a.movil, 'pack': a.pack, 'guardada': a.guardada}
++try:
++    srv = avtest.Servidor(os.path.abspath(a.raiz), 0, None)
++    origen = 'http://127.0.0.1:%d' % srv.puerto
++    chrome = look_capturas.ChromePaciente(P, set(P['puertos_prohibidos']), os.path.join(tempfile.mkdtemp(prefix='lento-'), 'chrome.log'))
++    ws = avtest.WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path)); cdp = avtest.CDP(ws, al_evento)
++    tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
++    ses = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
++    for me in ('Page.enable', 'Runtime.enable', 'Log.enable'):
++        cdp.call(me, {}, ses)
++    cdp.call('Emulation.setDeviceMetricsOverride', {'width': W, 'height': H, 'deviceScaleFactor': DPR, 'mobile': True}, ses)
++    cdp.call('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints': 5}, ses)
++    cdp.call('Emulation.setUserAgentOverride', {'userAgent': UA}, ses)
++    cdp.call('Emulation.setCPUThrottlingRate', {'rate': 4}, ses)
++    sc = cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': 'try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}'}, ses)['identifier']
++    cdp.call('Page.addScriptToEvaluateOnNewDocument', {'source': SONDA}, ses)
++    url = '%s/index.html?qa=1%s%s' % (origen, '' if a.pack == 'cap1' else '&pack=' + a.pack, a.extra)
++
++    def cargar():
++        t = time.monotonic(); cdp.call('Page.navigate', {'url': url}, ses)
++        while time.monotonic() - t < P['espera_listo_s'] * 2:
++            try:
++                if avtest.evaluar(cdp, ses, '!!(%s)' % P['listo_js'], 10, promesa=False):
++                    return
++            except Exception:
++                pass
++            cdp.bombear(0.5)
++        raise RuntimeError('no arrancó')
++    cargar()
++    print('· jugar:', avtest.evaluar(cdp, ses, P['preparar_js'], 300), flush=True)
++    if a.guardada:
++        avtest.evaluar(cdp, ses, '(async () => { await new Promise(r => setTimeout(r, 20000)); try { AV.G.guardado && AV.G.guardado.guardar && AV.G.guardado.guardar(); } catch (e) {} return "ok"; })()', 60)
++        cdp.call('Page.removeScriptToEvaluateOnNewDocument', {'identifier': sc}, ses)
++        cargar()
++        r = avtest.evaluar(cdp, ses, '''(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)); const t = document.getElementById('title');
++          if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); b && b.click(); }
++          await sleep(1500); const cr = document.getElementById('creator'); const C = AV.cargaEsperar ? await AV.cargaEsperar(30000) : null;
++          return 'recarga · creador ' + (cr && !cr.hidden ? 'ABIERTO' : 'cerrado') + (C ? ' · carga ' + C.ms + ' ms' : ''); })()''', 120)
++        print('· guardada:', r, flush=True)
++    if not a.sinperfil:
++        cdp.call('Profiler.enable', {}, ses); cdp.call('Profiler.setSamplingInterval', {'interval': 2000}, ses); cdp.call('Profiler.start', {}, ses)
++        tA = avtest.evaluar(cdp, ses, ANCLA, 30, promesa=False)
++    out = json.loads(avtest.evaluar(cdp, ses, RUTA, 400))
++    pr = None
++    if not a.sinperfil:
++        pr = cdp.call('Profiler.stop', {}, ses, 300)['profile']
++        nodos = {n['id']: n for n in pr['nodes']}; t = pr['startTime']; ancla_us = None
++        for i in range(1, len(pr['samples'])):
++            t += pr['timeDeltas'][i]
++            if nodos[pr['samples'][i]]['callFrame'].get('functionName') == '__ancla':
++                ancla_us = t; break
++        off = ancla_us - tA * 1000 if ancla_us else None
++    fr = out['f']; m = out['marcas']
++    tramos = {}
++    for j, (t0, nom) in enumerate(m):
++        t1 = m[j + 1][0] if j + 1 < len(m) else 1e18
++        tramos[nom] = resumen([x for x in fr if t0 <= x[0] < t1])
++    res.update({'total': resumen(fr), 'tramos': tramos, 'calidad': out['calidad'], 'stats': out['stats'], 'heap': out['heap'], 'log': out['log'], 'errores': errores})
++    largos = sorted([x for x in fr if x[1] > 150], key=lambda x: -x[1])[:12]
++    res['largos'] = []
++    for t, d in largos:
++        e = {'t_s': round((t - m[0][0]) / 1000, 1), 'ms': d}
++        if pr and off is not None:
++            e.update(atribuir(pr, t * 1000 + off, (t + d) * 1000 + off))
++        res['largos'].append(e)
++    if pr and off is not None:  # perfil completo: top del juego
++        res['juego_total'] = atribuir(pr, m[0][0] * 1000 + off, 1e18, 60)
++finally:
++    if ws: ws.cerrar()
++    if chrome: chrome.cerrar()
++    if srv: srv.cerrar()
++print(json.dumps({k: res.get(k) for k in ('movil', 'pack', 'calidad', 'total', 'tramos', 'stats', 'heap')}, ensure_ascii=False))
++for e in res.get('largos', []):
++    print('  largo %5.0f ms @%5.1fs' % (e['ms'], e['t_s']), '| juego:', e.get('juego', [])[:3], '| propio:', e.get('propio', [])[:3])
++print('  log:', res.get('log', [])[::3][:12]); print('  errores:', res.get('errores'))
++if a.salida:
++    json.dump(res, open(a.salida, 'w'), indent=1, ensure_ascii=False)
+-- 
+2.43.0
+
