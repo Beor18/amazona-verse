@@ -1,0 +1,134 @@
+{
+ "etiqueta": "pclibre",
+ "chrome": "chrome.exe",
+ "escenarios": [
+  {
+   "escenario": "vuelo-ciudad",
+   "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "cap": "1",
+    "dur": 45,
+    "flujo": "portada → Aventura → vuelo circular sobre la Ciudad de los 36"
+   },
+   "okCarga": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "vuelo": {
+    "durReal": 69.4,
+    "nCuadros": 1081,
+    "fpsMed": 15.57,
+    "fpsP50": 28.57,
+    "fpsP10": 12.99,
+    "peorMs": 3778,
+    "p95Ms": 160,
+    "calls": 40,
+    "ktris": 194,
+    "calidad": "bajo",
+    "terminarTope": false,
+    "mem": [
+     {
+      "t": 3,
+      "heapMB": 711.6,
+      "geo": 214,
+      "tex": 152,
+      "prog": 55
+     },
+     {
+      "t": 6.1,
+      "heapMB": 749.1,
+      "geo": 198,
+      "tex": 150,
+      "prog": 50
+     },
+     {
+      "t": 9.6,
+      "heapMB": 714.6,
+      "geo": 222,
+      "tex": 150,
+      "prog": 55
+     },
+     {
+      "t": 12.1,
+      "heapMB": 764.1,
+      "geo": 243,
+      "tex": 152,
+      "prog": 57
+     },
+     {
+      "t": 15.7,
+      "heapMB": 759.6,
+      "geo": 240,
+      "tex": 152,
+      "prog": 57
+     },
+     {
+      "t": 18.1,
+      "heapMB": 816.6,
+      "geo": 243,
+      "tex": 152,
+      "prog": 57
+     },
+     {
+      "t": 21.4,
+      "heapMB": 885.4,
+      "geo": 245,
+      "tex": 153,
+      "prog": 58
+     },
+     {
+      "t": 24.2,
+      "heapMB": 809.3,
+      "geo": 244,
+      "tex": 153,
+      "prog": 58
+     },
+     {
+      "t": 27,
+      "heapMB": 769.1,
+      "geo": 245,
+      "tex": 153,
+      "prog": 58
+     },
+     {
+      "t": 30.1,
+      "heapMB": 818.7,
+      "geo": 248,
+      "tex": 153,
+      "prog": 58
+     },
+     {
+      "t": 33.6,
+      "heapMB": 794.9,
+      "geo": 248,
+      "tex": 153,
+      "prog": 58
+     },
+     {
+      "t": 36,
+      "heapMB": 804.3,
+      "geo": 249,
+      "tex": 152,
+      "prog": 57
+     },
+     {
+      "t": 39.1,
+      "heapMB": 819,
+      "geo": 249,
+      "tex": 152,
+      "prog": 57
+     },
+     {
+      "t": 42.1,
+      "heapMB": 845,
+      "geo": 244,
+      "tex": 152,
+      "prog": 57
+     }
+    ]
+   },
+   "errores": []
+  }
+ ]
+}

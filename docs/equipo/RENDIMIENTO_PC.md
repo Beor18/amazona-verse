@@ -237,7 +237,7 @@ y lookCapitulosTest 12/12; movementTest 44/48 y comicTest 59/67 con cuadros de f
 viñetas que **re-corridos en limpio dan 48/48 y 67/67** (`kimi2_una_bateria.js`): los
 rojos de la corrida gruesa eran contención, no código.
 
-## KIMI-023 · medidas reales V17 (4-nov, en curso)
+## KIMI-023 · medidas reales V17 (4-nov, hecha · vuelo re-medido con PC libre)
 
 Medido por Kimi 1 (PC Windows de Kelvin, Chrome headless=new con GPU AMD real RX 5700 XT vía
 ANGLE/D3D11, **móvil emulado 390×844 dpr 3, CPU ×4, calidad auto = bajo**, partida sembrada de
@@ -269,16 +269,45 @@ hay que pulsar Aventura (la herramienta lo hace). Datos: `docs/img/kimi023/v17-r
   totales son conservadores. La conclusión «la red no es el cuello» se sostiene (bytes 0 con
   tiempos casi iguales).
 
-### Vuelo por la Ciudad de los 36 — pendiente de re-medir (no vale como cifra V17)
+### Vuelo por la Ciudad de los 36 — re-medido con PC libre (v17-pclibre.json)
 
-La herramienta ya vuela un círculo de 45 s (r=55 m, h≈22 m) centrado en la ciudad (-33,-136),
-pero las corridas de hoy salieron bajo contención ×4 de Kimi 2 y la cámara terminó dentro de
-la copa de una palma (la posición se pelea con la cámara/paracaídas del juego): fpsMed 7–10,
-p50 14–18, pico 4,6–6,0 s, `terminar()` con tope en r3, heap 700–870 MB con geometrías que suben
-(170→234) y no bajan al volar en círculos. **Hipótesis a verificar con la PC libre:** ¿fuga de
-geometría al orbitar la ciudad (zonas que entran y no se sueltan)? Comando listo:
-`node tools/build/kimi1_v17.js --etiqueta pclibre --solo vuelo` (con 0 Chrome ajenos).
-Evidencia: `v17-r3.json`, `v17-r4.json` + capturas `v17-r*-vuelo_ciudad.jpg`.
+Escenario: semilla cap1 → teleport (-20,-133) +36 m → `ST.terminar()` completa (sin tope)
+→ círculo de 45 s (r=50 m, h=36±3 m) centrado en la ciudad (-33,-136), cámara mirando al
+centro, calidad auto = **bajo**, GPU real AMD RX 5700 XT, **0 procesos ajenos** (13:58 UTC;
+Kimi 2 y Kimi 3 ya habían terminado sus vueltas). Herramienta endurecida tras r3/r4: altura
+de vuelo subida de 22→36 m (a 22 m la cámara terminaba dentro de la copa de una palma y el
+anti-atasco del juego reubicaba a Vittata), memoria muestreada cada 3 s, captura a mitad
+de vuelo + al final, `posFin` registrado.
+
+| Métrica (vuelo 45 s) | Valor |
+|---|---|
+| FPS med / p50 / p10 | **15,6 / 28,6 / 13,0** |
+| Peor cuadro / p95 | 3778 ms / 160 ms |
+| Draw calls / triángulos (al aterrizar el círculo) | 40 / 194 k |
+| Geometrías GPU | 214 → 249 (estables desde el s ~12) |
+| Texturas / programas GPU | ~152 / 55→58 (estables) |
+| Heap JS | **711 → 885 (pico) → 845 MB** |
+| `ST.terminar()` | completó sin tope (ya con el fix 54e24e9a) |
+
+- La media (15,6) la arrastra la primera mitad del círculo: el drenado forzado de **toda**
+  la ciudad (terminar) y las fusiones de zonas siguen activos; la mediana (28,6 FPS) refleja
+  mejor el vuelo ya cargado. Los 40 calls / 194 k tris finales muestran una vista asentada.
+- **Hipótesis de fuga de geometría descartada:** las geometrías suben 214→249 mientras se
+  cargan las zonas del círculo y se estabilizan (~245) al volar sobre lo ya cargado; no hay
+  crecimiento monotónico en la segunda mitad. tex/prog estables.
+- **El heap JS de 711–885 MB sí se reproduce con PC libre** (misma magnitud que las corridas
+  contaminadas r3/r4, 727–860): no era contención. Coincide con QA-152 (los ArrayBuffers
+  retenidos: atributos Float32Array, promesas con binario crudo y cuerpos GLB): forzar el
+  drenado de toda la ciudad de golpe retiene ~700 MB de binarios parseados. En juego real
+  (carga progresiva al acercarse) el efecto es el mismo por zona pero repartido; es la
+  magnitud lo que el drenado expone. Evidencia cruzada en BUGS.md (QA-152/QA-153).
+- El peor cuadro (3,8 s) cae en la fase de drenado/fundido justo tras el teleport; el p95
+  (160 ms) ya es jugable-en-móvil-emulado con CPU ×4.
+- Capturas: `v17-pclibre-vuelo_mitad.jpg` (vista aérea limpia de la ciudad a 36 m: se ve la
+  ciudad, el río y el mar — el fix de altura funciona) y `v17-pclibre-vuelo_ciudad.jpg` (al
+  final del 1.er círculo a 30 m aún rozó una copa y saltó el aviso «Vittata se había
+  atascado»: por eso el círculo definitivo va a 36±3 m; el anti-atasco actuó una sola vez
+  y no corrompió las medidas de la primera mitad).
 
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 

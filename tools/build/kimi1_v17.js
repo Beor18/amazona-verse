@@ -136,21 +136,21 @@ const VUELO_JS = `(async () => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   window.__v17.cuadros.length = 0; // ventana limpia: solo el vuelo
   AV.teleport(-20, -133);
-  S.pos.y += 22; S.vy = 0; G.fisica.MOVE.flying = true;
+  S.pos.y += 36; S.vy = 0; G.fisica.MOVE.flying = true;
   try { AV.debug.camYaw(Math.PI); } catch (e) {}
   await ST.alrededor(S.pos.x, S.pos.z);
   const valor = await ST.terminar({ topeMs: 30000 });
   await sleep(1500);
-  const CX = -33, CZ = -136, R = 55, H = 22, T = ${DUR_VUELO};
+  const CX = -33, CZ = -136, R = 50, H = 36, T = ${DUR_VUELO};
   const t0 = performance.now();
   const mem = [];
-  const mTimer = setInterval(() => { try { const R2 = G.renderer; mem.push({ t: Math.round((performance.now() - t0) / 100) / 10, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : null, geo: R2.renderer.info.memory.geometries, tex: R2.renderer.info.memory.textures, prog: R2.renderer.info.programs.length }); } catch (e) {} }, 5000);
+  const mTimer = setInterval(() => { try { const R2 = G.renderer; mem.push({ t: Math.round((performance.now() - t0) / 100) / 10, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : null, geo: R2.renderer.info.memory.geometries, tex: R2.renderer.info.memory.textures, prog: R2.renderer.info.programs.length }); } catch (e) {} }, 3000);
   await new Promise(res => {
     function paso() {
       const t = (performance.now() - t0) / 1000;
       if (t >= T) return res();
       const a = (t / T) * Math.PI * 2 - Math.PI / 2;
-      S.pos.x = CX + Math.cos(a) * R; S.pos.z = CZ + Math.sin(a) * R; S.pos.y = H + Math.sin(t * 0.4) * 4; S.vy = 0;
+      S.pos.x = CX + Math.cos(a) * R; S.pos.z = CZ + Math.sin(a) * R; S.pos.y = H + Math.sin(t * 0.4) * 3; S.vy = 0;
       G.fisica.MOVE.flying = true;
       try { AV.debug.camYaw(Math.atan2(Math.cos(a), Math.sin(a)) + Math.PI); } catch (e) {}
       requestAnimationFrame(paso);
@@ -166,7 +166,7 @@ const VUELO_JS = `(async () => {
     fpsMed: orden.length ? Math.round(orden.length * 100000 / suma) / 100 : null,
     fpsP50: p(0.5) ? Math.round(100000 / p(0.5)) / 100 : null, fpsP10: p(0.9) ? Math.round(100000 / p(0.9)) / 100 : null,
     peorMs: p(1), p95Ms: p(0.95), calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
-    calidad: st.calidad, terminarTope: !!(valor && valor.tope), mem });
+    calidad: st.calidad, terminarTope: !!(valor && valor.tope), posFin: [Math.round(S.pos.x * 10) / 10, Math.round(S.pos.y * 10) / 10, Math.round(S.pos.z * 10) / 10], mem });
 })()`;
 
 async function lanzarChrome(perf) {
@@ -303,7 +303,14 @@ async function escenarioVuelo(srvPuerto, perf) {
     res.okCarga = await esperarJugable(cdp, ses, 150);
     if (!res.okCarga) { res.error = 'el mundo no llegó a jugable; vuelo no medido'; return res; }
     res.gpu = await ev(cdp, ses, GPU_JS, 15);
+    const fotoMitad = new Promise(res2 => setTimeout(res2, 22000)).then(async () => {
+      try {
+        const shot = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses, 30000);
+        fs.writeFileSync(path.join(SALIDA, `v17-${ETIQUETA}-vuelo_mitad.jpg`), Buffer.from(shot.data, 'base64'));
+      } catch (e) { /* la captura de mitad es opcional */ }
+    });
     const raw = await ev(cdp, ses, VUELO_JS, DUR_VUELO + 90);
+    await fotoMitad;
     res.vuelo = JSON.parse(raw);
     try {
       const shot = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses, 30000);
