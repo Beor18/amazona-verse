@@ -76,7 +76,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Un coco con un brote verde, varado en la orilla. ¿De dónde vino?": "A coconut with a green sprout, washed up on the shore. Where did it come from?",
  "Canoa vieja": "Old canoe",
  "Una canoa vieja de un solo tronco, boca abajo bajo un techito.": "An old single-log canoe, upside down under a little roof.",
- "Cayuco en la orilla": "Cayuco on the shore",
+ "Canoa pequeña en la orilla": "Small canoe on the shore",
  "Un bote pequeñito, hecho de una sola pieza de madera.": "A tiny boat made from a single piece of wood.",
  "Nasa tejida": "Woven fish trap",
  "Una cesta tejida con una boca que entra hacia adentro.": "A woven basket with a mouth that turns inward.",
@@ -435,6 +435,6 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "Universidad de Hawái, Exploring Our Fluid Earth (flotabilidad y principio de Arquímedes); OpenStax, College Physics, principio de Arquímedes": "University of Hawaiʻi, Exploring Our Fluid Earth (buoyancy and Archimedes' principle); OpenStax, College Physics, Archimedes' principle",
  "National Weather Service, JetStream, The Sea Breeze (brisa de mar y brisa de tierra)": "National Weather Service, JetStream, The Sea Breeze (sea breeze and land breeze)",
  "Te Ara, Enciclopedia de Nueva Zelanda (plantas de la costa: el coco); New Zealand Plant Conservation Network (cocos varados)": "Te Ara, The Encyclopedia of New Zealand (coastal plants: the coconut); New Zealand Plant Conservation Network (stranded coconuts)",
- "Real Academia Española, Diccionario de la lengua española, «canoa» (de origen taíno); NPS, Taíno Settlement": "Royal Spanish Academy, Dictionary of the Spanish Language, “canoa” (of Taíno origin); NPS, Taíno Settlement",
- "Real Academia Española, Diccionario de la lengua española, «cayuco»": "Royal Spanish Academy, Dictionary of the Spanish Language, “cayuco”",
+ "ASALE y RAE, Diccionario de americanismos, «canoa» (de origen indígena antillano); NPS, Taíno Settlement": "ASALE and RAE, Dictionary of Americanisms, “canoa” (of Indigenous Antillean origin); NPS, Taíno Settlement",
+ "RAE, Diccionario de la lengua española, «canoa», acepción 1a": "RAE, Diccionario de la lengua española (Spanish dictionary), “canoa”, sense 1a",
 });

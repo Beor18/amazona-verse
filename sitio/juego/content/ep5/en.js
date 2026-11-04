@@ -251,6 +251,7 @@
     'Desde que están los muelles, las dos orillas reman juntas cada mañana.': 'Now that the docks are there, both banks paddle together every morning.',
     // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
     "The Physics Classroom, Reflection, Refraction, and Diffraction (ondas de sonido)": "The Physics Classroom, Reflection, Refraction, and Diffraction (sound waves)",
+    "FHWA (Administración Federal de Carreteras de EE. UU.), Noise Barrier Design Handbook, cap. 3 (difracción y distancia)": "FHWA (U.S. Federal Highway Administration), Noise Barrier Design Handbook, ch. 3 (diffraction and distance)",
     // QA-86 (Kelvin 2-nov): estaciones claras y qué hacer cuando la cadena no llega
     'Pon tres estaciones ({}/3)': 'Place three stations ({}/3)',
     'Estación puesta': 'Station placed', 'Acción: Estación puesta': 'Action: Station placed',

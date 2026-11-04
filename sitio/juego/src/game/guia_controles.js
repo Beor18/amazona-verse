@@ -107,6 +107,17 @@ AVE.module('guiaControles', function (G) {
 @media (prefers-reduced-motion: reduce) { .guia-pastilla { animation: none; } }
 @media (max-width: 560px) { #guia-panel .guia-fila, .guia-fila { grid-template-columns: 96px minmax(0, 1fr); } #guia-panel .guia-filas { grid-template-columns: 1fr; } }
 html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !important; }
+#pm-pista { position: fixed; z-index: 7; width: 72px; height: 72px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 8px rgba(255, 196, 60, 0.35); background: transparent; }
+#pm-pista::before { content: ""; position: absolute; left: 22px; top: 10px; border: 16px solid transparent; border-bottom-color: #ffe08a; }
+#pm-pista[hidden] { display: none; }
+#pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
+#pm-pista[data-paso="mover"] { left: 28px; bottom: 36px; }
+#pm-pista[data-paso="despegar"] { right: 28px; bottom: 168px; }
+#pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
+#pm-pista[data-paso="impulso"] { right: 108px; bottom: 36px; }
+#pm-pista[data-paso="truco"] { left: 0; right: 0; top: 22%; margin: auto; }
+html.guia-tactil #pm-pista { display: block; }
+html.guia-tactil #pm-pista[hidden] { display: none; }
 body:has(#title[open]) :is(#guia-hud, #guia-panel), body:has(:is(#creator, #comic, #end):not([hidden])) :is(#guia-hud, #guia-panel),
 body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
 `;
@@ -126,6 +137,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     '<dl class="guia-filas"></dl><div class="guia-pie"><p>Se cierra solo cuando empiezas a moverte. Vuelve a verlo con el botón «Controles» o en la Pausa.</p>' +
     '<button class="btn xl" type="button" data-guia="cerrar" data-icon="play">¡A jugar!</button></div></div>';
   document.body.append(hud, panel);
+  const pm = document.createElement('div');
+  pm.id = 'pm-pista'; pm.hidden = true; pm.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(pm);
   const ley = $('guia-leyenda'), pistaEl = $('guia-pista'), pastilla = $('guia-volando'), boton = $('guia-btn');
 
   // Botón en la pausa (sección Controles; como .help-keys, no sale en táctil)
@@ -191,6 +205,39 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   G.on('viento', on => { if (!on || S.clock - vientoT < 15) return; vientoT = S.clock; aviso('viento', '¡Mucho viento allá arriba! Vittata no puede subir más.'); });
   G.on('desatasco', () => { if (S.clock - libreT < 4) return; libreT = S.clock; aviso('desatasco', '¡Listo! Vittata se había atascado y ya está libre.'); });
   G.on('vuelo', on => { if (on) hecho('volar'); });
+  // CG-48: los primeros minutos. Una pista visual (anillo), sin ventana de texto. Se apaga al hacerlo.
+  const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];
+  const pmE = { hecho: {}, t: 0, volaba: false };
+  let pmForzar = false;
+  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k]) || '';
+  function pmMarcar(k) {
+    if (!k || pmE.hecho[k]) return;
+    pmE.hecho[k] = true; pmE.t = 0;
+  }
+  function pintarPm() {
+    const id = pmPaso();
+    pm.hidden = !id;
+    if (id) pm.dataset.paso = id;
+    pm.classList.toggle('pm-atascado', !!id && pmE.t >= 20);
+    const q = document.getElementById('quest');
+    if (q) q.classList.toggle('pm-senala', !!id && pmE.t >= 20);
+  }
+  function pmTick(dt) {
+    const M = G.fisica.MOVE, jugando = pmForzar || enJuego();
+    if (!jugando || (G.quiet && !pmForzar)) {
+      pm.hidden = true;
+      const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
+      return;
+    }
+    if ((M.speed || 0) > 0.8 || Math.hypot(G.input.stick.x, G.input.stick.y) > 0.35) pmMarcar('mover');
+    if (M.flying) { pmMarcar('despegar'); pmE.volaba = true; }
+    if (pmE.volaba && !M.flying && M.grounded) pmMarcar('posar');
+    if ((M.dashT || 0) > 0 || (G.input.keys && G.input.keys.has('f'))) pmMarcar('impulso');
+    const antes = pmPaso();
+    if (antes) pmE.t += dt || 0; else pmE.t = 0;
+    pintarPm();
+  }
+  G.on('truco', () => { pmMarcar('truco'); pintarPm(); });
 
   // ---------- Cada cuadro ----------
   function enJuego() {
@@ -212,6 +259,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   let listoT = 0, sueloT = 0, sinVolarT = 0, vueloT = 0, subirT = 0, movT = 0, volando = null;
   function actualizar(dt) {
     marcarModo();
+    pmTick(dt || 0);
     const M = G.fisica.MOVE, jugando = enJuego();
     // Lo aprendido (para no repetir lo que ya sabe)
     if (M.flying && G.input.jumpHeld && (subirT += dt) > 0.4) hecho('subir');
@@ -260,5 +308,44 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     reiniciar() { listoT = 0; sinVolarT = 0; vueloT = 0; volando = null; vientoT = libreT = -1e9; },
   };
 
-  return { mostrar, cerrar, leyenda, estado: () => ({ panel: panelAbierto, leyenda: !ley.hidden, pista: pistaId, hecho: Object.assign({}, est.hecho), tactil: tactil() }), prueba };
+  function primerosMinutosTest() {
+    const out = [], ok = (name, pass, extra) => out.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
+    const M = G.fisica.MOVE, K = G.input.keys, st = G.input.stick;
+    const guarda = { speed: M.speed, flying: M.flying, grounded: M.grounded, dashT: M.dashT, quiet: G.quiet, sx: st.x, sy: st.y };
+    const teclas0 = ['w', 'a', 's', 'd', 'f'];
+    const tenia = teclas0.filter(k => K.has(k));
+    try {
+      pmForzar = true; G.quiet = false;
+      pmE.hecho = {}; pmE.t = 0; pmE.volaba = false;
+      forzado = 'teclado';
+      M.speed = 0; M.flying = false; M.grounded = true; M.dashT = 0; st.x = st.y = 0;
+      pmTick(0.1);
+      ok('Al empezar la pista visual es moverse, sin ventana de texto', pm.dataset.paso === 'mover' && !pm.hidden && !pm.querySelector('p'), pm.dataset.paso);
+      K.add('w'); M.speed = 2; pmTick(0.2);
+      ok('Con la tecla de caminar la pista de moverse se apaga', pm.dataset.paso !== 'mover', pm.dataset.paso);
+      M.flying = true; M.grounded = false; pmTick(0.1);
+      ok('Al despegar la pista pasa a posarse', pm.dataset.paso === 'posar', pm.dataset.paso);
+      M.flying = false; M.grounded = true; pmTick(0.1);
+      ok('Al posarse la pista pasa al impulso', pm.dataset.paso === 'impulso', pm.dataset.paso);
+      M.dashT = 0.1; pmTick(0.05);
+      ok('El impulso apaga su pista y queda el truco', pm.dataset.paso === 'truco', pm.dataset.paso);
+      pmMarcar('truco'); pintarPm();
+      ok('Con el truco hecho no queda pista', pm.hidden, pm.dataset.paso || '');
+      pmE.hecho = { mover: true }; pmE.t = 0; M.flying = false; M.dashT = 0; M.speed = 0;
+      pmTick(21);
+      ok('Si pasan 20 s sin avanzar, la guía señala el objetivo', pm.classList.contains('pm-atascado') && document.getElementById('quest').classList.contains('pm-senala'), String(pmE.t));
+      forzado = 'tactil'; pmE.hecho = {}; pmE.t = 0; pmE.volaba = false; st.x = 0.6; st.y = 0;
+      pmTick(0.2);
+      ok('En táctil, mover el joystick apaga la pista de moverse', pmE.hecho.mover === true && pm.dataset.paso !== 'mover', pm.dataset.paso);
+    } catch (e) { ok('sin excepciones', false, e && e.message); }
+    M.speed = guarda.speed; M.flying = guarda.flying; M.grounded = guarda.grounded; M.dashT = guarda.dashT;
+    G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
+    tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
+    const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
+    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pintarPm();
+    return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
+  }
+  setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
+
+  return { mostrar, cerrar, leyenda, estado: () => ({ panel: panelAbierto, leyenda: !ley.hidden, pista: pistaId, hecho: Object.assign({}, est.hecho), tactil: tactil(), primeros: pmPaso() }), prueba };
 });

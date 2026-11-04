@@ -122,8 +122,10 @@ AVE.module('diario', function (G) {
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${(cats[f.cat] || {}).desconocido || 'Algo'} por descubrir</small></div></li>`).join('');
     const ropa = htmlRopa(G.misiones.unlocks, k => S.unlocked.includes(k));
     const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
+    const notasCiudad = (G.sorpresas && G.sorpresas.estado) ? G.sorpresas.estado().notas : [];
+    const bloqueCiudad = notasCiudad.length ? `<span class="lbl">${esc(G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'The city' : 'La ciudad')}</span><ul class="diary">${notasCiudad.map(n => `<li class="found"><div><small>${esc(n)}</small></div></li>`).join('')}</ul>` : '';
     G.ui.showCard(`<h2>${D.titulo || 'Diario'}</h2><p class="note">${S.field.length}/${total}${byCat}</p>
-      <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
+      <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}${bloqueCiudad}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
       <div class="row"><button class="btn ghost" id="d-close" type="button">Cerrar</button></div>`);
     $('d-close').onclick = G.ui.hideCard;
     // Foco: entra a la tarjeta al abrirla y vuelve al botón Diario al cerrarla (QA-07)

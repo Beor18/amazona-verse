@@ -96,6 +96,11 @@ AVE.module('streaming', function (G) {
     sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras
   };
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
+  // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
+  // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
+  // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
+  const MOVIL_C = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const nivelCiudad = () => { const n = nivelCal(); return MOVIL_C && n === 'medio' ? 'bajo' : n; };
   function alcanceNiebla() {
     const f = scene.fog; if (!f) return Infinity;
     return f.near < 0 ? -f.near + f.far * 3.5 : f.far; // atmosférica (near negativo): por debajo de ~3 % de visibilidad
@@ -1233,7 +1238,7 @@ AVE.module('streaming', function (G) {
         // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
         // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
         if (esCiudad(Z.id)) {
-          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista[nivelCal()] + (Z.ciudad ? H : 0);
+          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista[nivelCiudad()] + (Z.ciudad ? H : 0);
           if (Z.ciudad !== quiere) {
             Z.ciudad = quiere;
             for (const n of Z.modelos) {
@@ -1315,13 +1320,13 @@ AVE.module('streaming', function (G) {
         const n = tramos(m, id => !!(zonas[id] && zonas[id].lejosVe));
         m.visible = n > 0; vis.zonas += n;
       }
-      const hdTope = CFG.hdTris[nivelCal()] || Infinity;
+      const hdTope = CFG.hdTris[nivelCiudad()] || Infinity;
       for (let i = 0; i < activas.length; i++) {
         const I = activas[i], Z = zonas[I.zona];
         if (Z.usaMalla) continue; // la dibuja la malla fundida de su zona
         const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
         const vista = Z.ciudad;
-        const cM = CFG.ciudadMalla[nivelCal()], maxI = vista ? Math.max(max, cM) : max;
+        const cM = CFG.ciudadMalla[nivelCiudad()], maxI = vista ? Math.max(max, cM) : max;
         if (dCam - I.r > maxI) continue;
         // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
         // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
@@ -1329,7 +1334,7 @@ AVE.module('streaming', function (G) {
         const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
         const grande = I.r > CFG.hdGrande;
         const lodLim = vista ? Math.max(lodD, cM) : lodD;
-        const hdLim = vista ? Math.max(hdD, Math.min(cM, CFG.ciudadHD[nivelCal()] || 0)) : hdD;
+        const hdLim = vista ? Math.max(hdD, Math.min(cM, CFG.ciudadHD[nivelCiudad()] || 0)) : hdD;
         if (I.lod === 0 && dl > lodLim + H) I.lod = 1; else if (I.lod === 1 && dl < lodLim - H) I.lod = 0;
         // Junto a la pared, la malla completa en cualquier calidad. Los grandes siguen en HD más allá del LOD, hasta hdD.
         // La torre chica, de lejos, queda en la silueta. Mientras el _hd baja, se ve el ligero y no la silueta.

@@ -49,6 +49,124 @@ AVE.module('comic', function (G) {
   const PAG = (G.comicPlantilla && G.comicPlantilla.PAGINA) || { w: 1536, h: 2304 }, W = PAG.w, H = PAG.h;
   const LW = 1080, LH = 1520, TOP = 380;
   const L = (es, en) => ((G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || (G.aula && G.aula.aj && G.aula.aj.idioma === 'en') ? en : es);
+  const enAhora = () => (G.idioma && G.idioma.actual && G.idioma.actual() === 'en') || (G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+  // CG-37: la plantilla de Kelvin en los caps. 2 a 6. No se editan los packs: la historia, los textos y las fichas se quedan.
+  // «¿Qué aprendí?» es el dato ya verificado de lecciones.js (nada nuevo). La enseñanza sale de lo que pasa en el capítulo.
+  const CG37 = {
+    ep2: {
+      titulos: ['Mi capítulo 2', 'Un lugar para todos'],
+      aprendi: [
+        { needs: 'SiteChosen', es: 'En pendientes más empinadas, el agua de lluvia puede correr con más fuerza y arrastrar más suelo.', en: 'On steeper slopes, rainwater can run with more force and carry away more soil.' },
+        { needs: 'NestPlaced', es: 'El techo de dos aguas deja correr la lluvia hacia los dos lados. En la casa criolla de Puerto Rico, el techo solía ser de teja o de planchas de zinc.', en: 'A gable roof sheds rain to both sides. In Puerto Rico\'s criollo house, the roof was usually made of tile or zinc sheets.' },
+      ],
+      ensenanza: [
+        { needs: 'ListenChoice', es: 'Pregunté antes de construir.', en: 'I asked before building.' },
+        { needs: 'NestPlaced', es: 'La primera prueba falló. Lo cambié y volví a probar.', en: 'The first test failed. I changed it and tried again.' },
+        { needs: 'PlayerCharacterCreated', es: 'Cada aventura empieza con un primer paso.', en: 'Every adventure starts with a first step.' },
+      ],
+      vinetas: {
+        intro: { tipo: 'comienzo', pose: 'crucero' },
+        sitio: { tipo: 'hallazgo', pose: 'posarse', dialogo: () => L('Miré los tres sitios.', 'I looked at the three places.') },
+        escuchar: { tipo: 'desafio', pose: 'posarse', dialogo: () => L('Primero escuché.', 'I listened first.') },
+        casa: { tipo: 'meta', pose: 'celebrar', dialogo: () => L('¡La casa aguantó!', 'The house held!'), efecto: 'bandera' },
+      },
+    },
+    ep3: {
+      titulos: ['Mi capítulo 3', 'Más allá de la bahía'],
+      aprendi: [
+        { needs: 'BoatLaunched', es: 'Un objeto flota si es menos denso que el agua; la forma del casco cambia cuánta agua aparta.', en: 'An object floats if it is less dense than water; the shape of a hull changes how much water it pushes aside.' },
+        { needs: 'HelmChosen', es: 'De día el viento suele soplar del mar hacia la tierra, y de noche de la tierra hacia el mar.', en: 'By day the wind tends to blow from the sea to the land, and at night from the land to the sea.' },
+      ],
+      ensenanza: [
+        { needs: 'BoatLaunched', es: 'La primera botadura falló. Cambié una parte y volví a probar.', en: 'The first launch failed. I changed one part and tried again.' },
+        { needs: 'Chapter3Completed', es: 'En la otra orilla pregunté antes de contar.', en: 'On the other shore I asked before I told.' },
+        { needs: 'PlayerCharacterCreated', es: 'Cada aventura empieza con un primer paso.', en: 'Every adventure starts with a first step.' },
+      ],
+      vinetas: {
+        intro: { tipo: 'comienzo', pose: 'crucero' },
+        bote: { tipo: 'solucion', pose: 'aterrizaje', dialogo: () => L('¡Esta vez flotó!', 'This time it floated!') },
+        senales: { tipo: 'desafio', pose: 'posarse', dialogo: () => L('Acordamos las señales.', 'We agreed on the signals.') },
+        llegada: { tipo: 'meta', pose: 'celebrar', dialogo: () => L('¡Llegamos!', 'We made it!'), efecto: 'bandera' },
+      },
+    },
+    ep4: {
+      titulos: ['Mi capítulo 4', 'El precio del progreso', 'El primer cruce'],
+      aprendi: [
+        { needs: 'ShoreSurveyed', es: 'Las raíces de los árboles de la orilla sujetan la tierra y ayudan a que el río no se la lleve.', en: 'The roots of riverside trees hold the soil and help keep the river from carrying it away.' },
+        { needs: 'AgreementMade', es: 'Las hojas que caen al río son alimento para pequeños animales del agua.', en: 'Leaves that fall into the river are food for small water animals.' },
+      ],
+      ensenanza: [
+        { needs: 'TradeoffSeen', es: 'Ninguna opción lo da todo: hay que decir qué se cuida.', en: 'No option gives everything: you have to say what you will take care of.' },
+        { needs: 'AgreementMade', es: 'Decidimos con todas las voces, no solo con la mía.', en: 'We decided with every voice, not only mine.' },
+        { needs: 'PlayerCharacterCreated', es: 'Cada aventura empieza con un primer paso.', en: 'Every adventure starts with a first step.' },
+      ],
+      vinetas: {
+        intro: { tipo: 'comienzo', pose: 'crucero' },
+        orilla: { tipo: 'hallazgo', pose: 'posarse', dialogo: () => L('Miré la orilla primero.', 'I looked at the bank first.') },
+        balanza: { tipo: 'desafio', pose: 'posarse', pensamiento: () => L('¿Qué se gana y qué se pierde?', 'What is gained and what is lost?') },
+        acuerdo: { tipo: 'solucion', pose: 'aterrizaje', dialogo: () => L('Lo decidimos juntos.', 'We decided it together.') },
+        cruce: { tipo: 'meta', pose: 'celebrar', dialogo: () => L('¡La abuela cruzó!', 'Grandma crossed!'), efecto: 'bandera' },
+      },
+    },
+    ep5: {
+      titulos: ['Las voces olvidadas'],
+      aprendi: [
+        { needs: 'TwoVoicesHeard', es: 'El sonido puede rodear algunos obstáculos, por eso a veces oímos un tambor aunque no lo veamos. Al alejarnos suele escucharse más débil.', en: 'Sound can bend around some obstacles, so sometimes we hear a drum even when we cannot see it. As we move away, it usually sounds fainter.' },
+        { needs: 'RuinsRead', es: 'Amazona martinicana (loro de Martinica) y Amazona violacea (amazona de Guadalupe) están extintas según la UICN. Se conocen por relatos: Labat, 1742, y Du Tertre, 1654. No hay restos. El juego no dice cuándo ni por qué dejaron de existir.', en: 'Amazona martinicana (Martinique amazon) and Amazona violacea (Guadeloupe amazon) are extinct according to the IUCN. They are known from accounts: Labat, 1742, and Du Tertre, 1654. There are no remains. The game does not say when or why they ceased to exist.' },
+      ],
+      ensenanza: [
+        { needs: 'RelayBuilt', es: 'La primera prueba se cortó donde no había nadie. Pedí ayuda.', en: 'The first test stopped where nobody was. I asked for help.' },
+        { needs: 'Chapter5Completed', es: 'No lo hice sola: la señal llegó cuando había estaciones y ayuda.', en: 'I did not do it alone: the signal arrived when there were stations and help.' },
+        { needs: 'PlayerCharacterCreated', es: 'Cada aventura empieza con un primer paso.', en: 'Every adventure starts with a first step.' },
+      ],
+      vinetas: {
+        intro: { tipo: 'comienzo', pose: 'crucero' },
+        voces: { tipo: 'hallazgo', pose: 'posarse', pensamiento: () => L('¿Dos voces?', 'Two voices?') },
+        mensaje: { tipo: 'desafio', pose: 'posarse', dialogo: () => L('Ya está en orden.', 'It is in order now.') },
+        ruinas: { tipo: 'solucion', pose: 'aterrizaje', dialogo: () => L('El Guardián recuerda.', 'The Guardian remembers.') },
+        relevo: { tipo: 'regreso', pose: 'crucero', dialogo: () => L('Tres estaciones.', 'Three stations.') },
+        final: { tipo: 'meta', pose: 'celebrar', dialogo: () => L('¡Se oyeron enteras!', 'They were heard in full!'), efecto: 'bandera' },
+      },
+    },
+    ep6: {
+      titulos: ['Mi capítulo 6', 'El pacto de los 36', 'La tripulación'],
+      aprendi: [
+        { needs: 'RaisedTogether', es: 'Para mover una pieza larga o difícil de manejar, puede ser más seguro coordinarse y pedir ayuda, o usar equipo adecuado.', en: 'To move a long or awkward piece, it can be safer to work together and ask for help, or to use the right equipment.' },
+        { needs: 'CircleFormed', es: '36 se reparte en filas iguales de cinco formas: 1×36, 2×18, 3×12, 4×9 y 6×6. 35 solo de dos: 1×35 y 5×7.', en: '36 splits into equal rows in five ways: 1×36, 2×18, 3×12, 4×9 and 6×6. 35 only in two: 1×35 and 5×7.' },
+      ],
+      ensenanza: [
+        { needs: 'PlanStuck', es: 'En mi primer plan solo estaba yo. Hizo falta repartir el trabajo.', en: 'In my first plan it was only me. The work had to be shared.' },
+        { needs: 'GroupsListened', es: 'Escuché a los dos grupos antes de proponer.', en: 'I listened to both groups before I proposed.' },
+        { needs: 'Chapter6Completed', es: 'Los asientos vacíos esperan. El pacto sigue abierto.', en: 'The empty seats are waiting. The pact stays open.' },
+        { needs: 'PlayerCharacterCreated', es: 'Cada aventura empieza con un primer paso.', en: 'Every adventure starts with a first step.' },
+      ],
+      vinetas: {
+        intro: { tipo: 'comienzo', pose: 'crucero' },
+        tarjetas: { tipo: 'hallazgo', pose: 'posarse', dialogo: () => L('Cada uno trae algo.', 'Everyone brings something.') },
+        atasco: { tipo: 'desafio', pose: 'aterrizaje', pensamiento: () => L('¿Y si lo hago sola?', 'What if I do it alone?') },
+        levantada: { tipo: 'solucion', pose: 'crucero', dialogo: () => L('¡Subió!', 'It went up!') },
+        circulo: { tipo: 'regreso', pose: 'posarse', dialogo: () => L('Escuché a los dos.', 'I listened to both.') },
+        pacto: { tipo: 'meta', pose: 'celebrar', dialogo: () => L('El pacto sigue.', 'The pact goes on.'), efecto: 'bandera' },
+      },
+    },
+  };
+  (function aplicarCG37() {
+    const ex = CG37[G.pack && G.pack.id];
+    if (!ex || (C.plantilla && C.plantilla.aprendi && C.plantilla.aprendi.length)) return;
+    if (!C.titulos || !C.titulos.length) C.titulos = ex.titulos.slice();
+    C.plantilla = {
+      titulos: { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!' },
+      aprendi: ex.aprendi.map(o => ({ needs: o.needs, texto: () => L(o.es, o.en) })),
+      ensenanza: ex.ensenanza.map(o => ({ needs: o.needs, texto: () => L(o.es, o.en) })),
+    };
+    const hola = S0 => L('¡Hola! Me llamo ' + ((S0.profile && S0.profile.name) || '') + '.', 'Hi! My name is ' + ((S0.profile && S0.profile.name) || '') + '.');
+    for (const v of C.vinetas || []) {
+      const a = ex.vinetas[v.id];
+      if (!a) continue;
+      if (v.id === 'intro' && v.dialogo == null) v.dialogo = hola;
+      for (const k of Object.keys(a)) if (v[k] == null) v[k] = a[k];
+    }
+  })();
   // QA-105: la casilla de «En la página» medía 22×48 (vacía) y #c-aprendi se salía de la maqueta.
   if (!document.getElementById('cg28-comic')) {
     const st = document.createElement('style'); st.id = 'cg28-comic';
@@ -211,6 +329,22 @@ AVE.module('comic', function (G) {
         () => L('Un día volará libre en el bosque.', 'One day it will fly free in the forest.')] },
   ];
   const VINETAS = (C.vinetas || []).concat(C.vinetasMotor === false ? [] : VMOTOR.filter(v => !(C.vinetas || []).some(p => p.id === v.id)));
+  // CG-45: el primer momento de cada sorpresa de la ciudad entra al cómic. En la prueba (d.prueba) y con G.quiet no se anota.
+  G.on('momento', d => {
+    if (!d || d.prueba || G.quiet || typeof d.id !== 'string') return;
+    const id = 'ciu_' + d.id.replace(/[^\w]/g, '').slice(0, 24);
+    const needs = 'CitySurprise_' + id;
+    if (VINETAS.some(v => v.id === id) || G.eventos.had(needs)) return;
+    if (G.eventos.defs && !G.eventos.defs[needs]) G.eventos.defs[needs] = { type: 'LocationDiscovered', loc: 'ciudad', chars: ['vittata'], scene: 'surprise' };
+    const linea = typeof d.texto === 'string' ? d.texto : '';
+    VINETAS.push({
+      id, img: id, needs, tipo: 'hallazgo', pose: 'celebrar',
+      dialogo: () => L('¡Mira eso!', 'Look at that!'),
+      texto: () => linea,
+    });
+    G.eventos.log(needs, {});
+    revisarEventos();
+  });
 
   // Ganchos de otros sistemas → eventos narrativos (una vez por partida; nunca en las baterías: G.quiet)
   const RAMA_ALTA = 2.5; // m sobre el terreno
@@ -485,17 +619,58 @@ AVE.module('comic', function (G) {
   const MAXV = 6;
   const PL = C.plantilla || {};
   const T = t => (G.idioma && G.idioma.tr ? G.idioma.tr(t) : t);
-  // CG-36: el chapuzón habla de quien juega (la foto es su cotorra). ¡La meta! se parte para no salir diminuta.
+  // CG-37: las narraciones que el pack arma con el nombre o con una rama, en EN, sin tocar el texto del capítulo.
+  function cg37Narracion(t) {
+    if (!enAhora() || typeof t !== 'string') return null;
+    const fijo = {
+      'Miré la pendiente, el suelo y el viento antes de elegir dónde construir.': 'I looked at the slope, the soil and the wind before choosing where to build.',
+      'La primera tormenta encontró un fallo. Lo cambié, probé otra vez… ¡y la casa aguantó!': 'The first storm found a flaw. I changed it, tried again… and the house held!',
+      'La primera botadura falló en una parte. La cambié… ¡y flotó!': 'The first launch failed in one part. I changed it… and it floated!',
+      'Cruzamos la bahía. En Villa Mangle pregunté antes de contar.': 'We crossed the bay. In Villa Mangle I asked before I told.',
+      'Acordamos señales. Yo llevé el timón y ella me cantó el agua.': 'We agreed on signals. I took the helm and she sang the water to me.',
+      'Acordamos señales y le di el timón a quien sabe leer el agua.': 'We agreed on signals and I gave the helm to the one who can read the water.',
+      'Antes de dibujar el puente, miré lo que ya vivía en la orilla.': 'Before drawing the bridge, I looked at what already lived on the bank.',
+      'Decidimos juntos y cuidamos lo que costaba.': 'We decided together and took care of what it cost.',
+      'La abuela cruzó primero. Ninguna opción lo daba todo, pero la elegimos con todos.': 'Grandma crossed first. No option gave everything, but we chose it with everyone.',
+      'En el transmisor había dos ondas, no un eco.': 'In the transmitter there were two waves, not an echo.',
+      'Ordené los pedazos: seguimos aquí, la torre que mira al mar, no lo hagas sola.': 'I put the pieces in order: we are still here, the tower that faces the sea, do not do it alone.',
+      'En las piedras había un 36, dos cotorras y un camino de torres.': 'In the stones there was a 36, two parrots and a path of towers.',
+      'Armé tres estaciones. La primera prueba se cortó donde no había nadie.': 'I set up three stations. The first test stopped where nobody was.',
+      'Pedí ayuda. La señal cruzó hasta la niebla y las dos voces se oyeron enteras.': 'I asked for help. The signal crossed as far as the fog and both voices were heard in full.',
+      'Cada uno trajo algo que sabe hacer y algo que necesita. Los presenté y se quedaron hablando.': 'Each one brought something they can do and something they need. I introduced them and they stayed talking.',
+      'En mi primer plan solo estaba yo. La tabla se quedó a medio levantar.': 'In my first plan it was only me. The plank stayed halfway up.',
+      'Repartimos el trabajo y el más nuevo ató el último nudo. La tabla subió.': 'We shared the work and the newest one tied the last knot. The plank went up.',
+      'Repartimos el trabajo sin que nadie hiciera dos cosas. La tabla subió.': 'We shared the work so nobody did two jobs. The plank went up.',
+      'Cada uno en lo suyo. La tabla subió rápido.': 'Each one did their part. The plank went up fast.',
+      'Escuché a los dos grupos antes de proponer. Luego elegí cómo sentar a los 36.': 'I listened to both groups before I proposed. Then I chose how to seat the 36.',
+      'Los asientos ocupados se encendieron. Los vacíos esperan. Anoté la tripulación.': 'The filled seats lit up. The empty ones are waiting. I wrote down the crew.',
+    };
+    if (fijo[t]) return fijo[t];
+    let m;
+    if ((m = /^Soy (.+) y vi venir otra tormenta\.$/.exec(t))) return 'I am ' + m[1] + ' and I saw another storm coming.';
+    if ((m = /^Soy (.+)\. El plano del bote estaba en la mesa de todos\.$/.exec(t))) return 'I am ' + m[1] + '. The boat plan was on everyone\'s table.';
+    if ((m = /^Soy (.+) y quería unir las dos orillas del río\.$/.exec(t))) return 'I am ' + m[1] + ' and I wanted to join the two banks of the river.';
+    if ((m = /^Soy (.+) y oí dos voces a la vez\.$/.exec(t))) return 'I am ' + m[1] + ' and I heard two voices at once.';
+    if ((m = /^Soy (.+)\. Al amanecer llegaron los primeros por la cadena de señales\.$/.exec(t))) return 'I am ' + m[1] + '. At dawn the first ones arrived along the signal chain.';
+    if ((m = /^Pregunté antes de construir\. Y dije: «([\s\S]*)»$/.exec(t))) return 'I asked before building. And I said: «' + T(m[1]) + '»';
+    if ((m = /^Escuché todas las voces y lo dije: «([\s\S]*)»$/.exec(t))) return 'I listened to every voice and I said: «' + T(m[1]) + '»';
+    if ((m = /^Decidimos juntos: (.+), y cuidamos lo que costaba: «([\s\S]*)»\.$/.exec(t))) return 'We decided together: ' + T(m[1]) + ', and we took care of what it cost: «' + T(m[2]) + '».';
+    return null;
+  }
+  // CG-36: el chapuzón habla de quien juega (la foto es su cotorra). ¡La meta! del cap. 1 se parte para no salir diminuta.
+  // El cap. 5 también usa id «final»: su texto se queda (no es el del transmisor del cap. 1).
   function narracionDe(p) {
     if (p && p.id === 'chapuzon' && !p.eleccion) {
       const nom = (S.profile && S.profile.name) || L('yo', 'I');
       return L('¡Chapuzón! ' + nom + ' descubrió que el río está mojado. Muy mojado.',
         'Splash! ' + nom + ' found out the river is wet. Very wet.');
     }
-    if (p && p.id === 'final' && !p.eleccion) {
+    if (p && p.id === 'final' && !p.eleccion && typeof p.text === 'string' && p.text.indexOf('construiremos un bote') >= 0) {
       return L('El transmisor mostró 36 fragmentos. Desde el mirador vimos otras islas: haremos un bote.',
         'The transmitter showed 36 pieces. From the lookout we saw other islands: we will build a boat.');
     }
+    const propia = cg37Narracion(p && p.text);
+    if (propia) return propia;
     return T(p && p.text);
   }
   const TIT_DEF = { comienzo: 'El comienzo', hallazgo: 'El hallazgo', desafio: 'El desafío', solucion: 'La solución', regreso: 'El regreso', meta: '¡La meta!', vida: '¡Nueva vida!',
@@ -538,7 +713,13 @@ AVE.module('comic', function (G) {
     for (const k of new Set(panels.map(p => p.img).filter(k => k && k !== 'portrait'))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]).catch(() => null) : null;
     const vinetas = [], usados = new Set();
     // Un título de escena no se repite en la página: el segundo del mismo tipo usa el alternativo (pack plantilla.titulosAlt)
-    const titulo = tipo => { let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || ''; if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || 'Y después…'; usados.add(t); return T(t); };
+    const reservaTit = ['Y después…', '¡Otra idea!', '¡Otro reto!', '¡Más alto!', 'Nuevos amigos', '¡Qué alegría!', '¡Una sorpresa!'];
+    const titulo = tipo => {
+      let t = (PL.titulos || {})[tipo] || TIT_DEF[tipo] || '';
+      if (usados.has(t)) t = (PL.titulosAlt || {})[tipo] || TIT_ALT[tipo] || reservaTit[0];
+      if (usados.has(t)) { for (const r of reservaTit) if (!usados.has(r)) { t = r; break; } }
+      usados.add(t); return T(t);
+    };
     for (let i = 0; i < MAXV; i++) {
       const p = panels[i];
       if (!p) { vinetas.push({ id: null, falta: true, look: null, pose: 'celebrar' }); continue; }
@@ -861,6 +1042,30 @@ AVE.module('comic', function (G) {
   // y se exporta a PNG válido (firma, IHDR, 1080×1520, se decodifica y no está en blanco); entrega con y sin 'downloads'.
   // G.S y el guardado real quedan como estaban.
   // =====================================================================================================================
+  async function cg37Comprobar(check) {
+    const ids = ['ep2', 'ep3', 'ep4', 'ep5', 'ep6'];
+    const tablaOk = ids.every(id => {
+      const ex = CG37[id];
+      if (!ex || !ex.titulos.length || ex.aprendi.length < 2 || ex.ensenanza.length < 3) return false;
+      return ex.aprendi.every(o => o.es && o.en && o.es !== o.en && !/[ñ¿]/.test(o.en)) && ex.ensenanza.every(o => o.es && o.en && o.es !== o.en);
+    });
+    check('CG-37 · caps. 2 a 6 traen títulos, ¿Qué aprendí? y enseñanza en ES y EN', tablaOk, ids.map(id => id + ':' + CG37[id].vinetas && Object.keys(CG37[id].vinetas).length).join(' '));
+    const ajena = narracionDe({ id: 'final', eleccion: 0, text: 'Pedí ayuda. La señal cruzó hasta la niebla y las dos voces se oyeron enteras.' });
+    check('CG-37 · el final del cap. 5 no usa el texto de ¡La meta! del cap. 1', ajena.indexOf('haremos un bote') < 0 && ajena.indexOf('Pedí ayuda') >= 0, ajena);
+    const ex = CG37[G.pack && G.pack.id];
+    if (!ex) return;
+    const defs = (C.vinetas || []).filter(v => ex.vinetas[v.id]);
+    check('CG-37 · las viñetas de este capítulo tienen tipo, sin cambiar cuántas hay', defs.length === Object.keys(ex.vinetas).length && defs.every(v => v.tipo && v.pose), defs.map(v => v.id + ':' + v.tipo).join(' '));
+    for (const o of ex.aprendi.concat(ex.ensenanza)) if (!G.eventos.had(o.needs)) G.eventos.log(o.needs, {});
+    if (!(G.idioma && G.idioma.poner && G.idioma.actual)) return;
+    const antes = G.idioma.actual();
+    try {
+      await G.idioma.poner('en');
+      const r = await datosPagina();
+      const tits = r.datos.vinetas.filter(v => !v.falta).map(v => v.sceneTitle);
+      check('CG-37 · en inglés, los títulos y lo aprendido de este capítulo salen en EN', tits.every(t => t && !/[áéíóúñ¡¿]/i.test(t)) && !/[ñ¿]/.test(r.datos.aprendi) && r.datos.aprendi !== ex.aprendi[0].es, (tits.join(' | ') || 'sin títulos') + ' · ' + r.datos.aprendi);
+    } finally { await G.idioma.poner(antes); }
+  }
   async function test(opts) {
     opts = opts || {};
     const out = [];
@@ -1091,6 +1296,7 @@ AVE.module('comic', function (G) {
         const fin = pdf ? new TextDecoder().decode(new Uint8Array(await pdf.slice(pdf.size - 6).arrayBuffer())) : '';
         check('PDF de una página sin librerías (cabecera y cierre)', cab.startsWith('%PDF-1.4') && fin.includes('%%EOF') && pdf.size > 20000, pdf ? Math.round(pdf.size / 1024) + ' KB' : 'sin PDF');
       }
+      await cg37Comprobar(check);
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
