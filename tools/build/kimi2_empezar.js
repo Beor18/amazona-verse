@@ -6,6 +6,7 @@
    tareas largas, heap, texturas y draw calls. N rondas (la aceptación de QA-53 es peor < 500 ms en 4 de 4).
 
    Uso: node tools/build/kimi2_empezar.js [--rondas 4] [--pack cap1] [--cpu 4] [--salida DIR] [--puerto N]
+                                        [--baterias] [--sin-semilla] [--solo a,b] [--capturas] [--vistas "x,z,yaw;…"]
 */
 'use strict';
 const http = require('http');
@@ -36,6 +37,7 @@ const ANCHO = parseInt(arg('--ancho', '375'), 10), ALTO = parseInt(arg('--alto',
 const SALIDA = arg('--salida', path.join(AQUI, 'salida', 'kimi2-empezar'));
 const PERFIL = process.argv.includes('--perfil');
 const FASES = process.argv.includes('--fases');
+const SIN_SEMILLA = process.argv.includes('--sin-semilla'); // comparación A/B: flujo viejo (creador real, sin partida sembrada)
 fs.mkdirSync(SALIDA, { recursive: true });
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
@@ -107,6 +109,39 @@ function analizarPerfil(pr) {
   return { propio, webgl };
 }
 
+// QA-111 · el modo --baterías siembra una partida válida de cap1 en localStorage antes de cargar la página
+// (jugador «existente»: Jugar entra directo al mundo, sin creador). Evita la carrera del creador que reaparecía
+// tras «Empezar» en ~50 % de las corridas (creador reabierto, 0 draw calls, la batería colgada). El save mínimo
+// pasa validSave+migrar (v6, formato 2) y aplicar() rellena el resto con freshState(). Específico de cap1
+// (el modo baterías siempre carga ?qa=1): clave amazonaverse, validar del pack (evaluated/examined), memoria del menú.
+const SEMILLA_SAVE_JS = `try {
+  localStorage.clear(); sessionStorage.clear();
+  localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
+  localStorage.setItem('amazonaverse.save', JSON.stringify({
+    v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-kimi2-' + Math.random().toString(36).slice(2, 10),
+    profile: { created: true, name: 'Estrella de la Bahía', look: null },
+    pos: { x: -8, z: -2.5, y: 0 }, facing: { x: 0, z: 1 }, step: 0,
+    inv: {}, collected: [], complete: false, explorando: false, clock: 0,
+    events: [], captures: {}, missions: {}, field: [], unlocked: [], wear: {},
+    comic: { title: 'Mi cómic', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {}, vinetas: {} },
+    evaluated: { A: false, B: false }, examined: { maquina: false, transmisor: false }
+  }));
+} catch (e) {}`;
+// Con la semilla no hay creador: solo Jugar. Si la semilla no cargó y el creador se abrió, se cierra como el
+// flujo viejo (Empezar); así el preparar es válido con y sin semilla.
+const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), $ = id => document.getElementById(id);
+  const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(100); } try { return !!f(); } catch (e) { return false; } };
+  const t = $('title');
+  if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); if (!b) return 'la portada no tiene el botón Jugar'; b.click();
+    if (!await espera(() => !t.open, 5000)) return 'la portada sigue abierta tras Jugar'; }
+  const cr = $('creator');
+  if (cr && !cr.hidden) { await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000); const s = $('p-save'); if (!s) return 'el creador no tiene Empezar (#p-save)';
+    s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador: ' + (($('p-error') && !$('p-error').hidden && $('p-error').textContent) || 'sin mensaje'); }
+  const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil creado tras entrar';
+  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
+  await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
+  return 'ok: partida sembrada → Jugar (' + S.profile.name + ')'; })()`;
+
 const SONDA_JS = `(() => { const Q = window.__qaM = { dt: [], largas: [], top: [] }; let t = 0, t0 = 0;
   const f = n => { if (!t0) t0 = n; if (t) { const d = n - t; Q.dt.push(d); const e = { d: Math.round(d), t: Math.round((t - t0) / 100) / 10 };
     const i = Q.top.findIndex(x => x.d < e.d); if (i >= 0) Q.top.splice(i, 0, e); else if (Q.top.length < 6) Q.top.push(e); if (Q.top.length > 6) Q.top.pop(); } t = n;
@@ -168,7 +203,7 @@ async function lanzarChrome() {
     return e;
   }
 
-  async function nuevaPestana(movil) {
+  async function nuevaPestana(movil, sembrar) {
     const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
@@ -178,8 +213,26 @@ async function lanzarChrome() {
       await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
       await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     }
-    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: "try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}" + SONDA_JS }, ses);
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: (sembrar ? SEMILLA_SAVE_JS + ' ' : "try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}") + SONDA_JS }, ses);
     return { tid, ses };
+  }
+  // QA-111 · entre baterías: si la portada/creador reapareció o el mundo quedó oculto, se reentra antes de seguir.
+  async function asegurarMundo(ses) {
+    let e;
+    try { e = JSON.parse(await evaluar(cdp, ses, `(() => { const t = document.getElementById('title'), cr = document.getElementById('creator'); return JSON.stringify({ portada: !!(t && t.open), creador: !!(cr && !cr.hidden), mundo: !(window.AV && AV.G && AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()) }); })()`, 10, false) || '{}'); } catch (err) { return 'sin estado: ' + err.message.slice(0, 80); }
+    if (e.mundo && !e.portada && !e.creador) return 'ok';
+    console.log('  · mundo no listo (' + JSON.stringify(e) + '), reentrando…');
+    return String(await evaluar(cdp, ses, PREPARAR_JS, 120));
+  }
+  // QA-111 · si la pestaña crasheó (el eval no contesta: «WebSocket: error de conexión»), se recarga; la semilla
+  // se reinyecta sola al crear el documento y se reentra. Sin esto, cada batería siguiente se comía su timeout de 900 s.
+  async function paginaViva(ses) { try { await evaluar(cdp, ses, '1', 8, false); return true; } catch (e) { return false; } }
+  async function rescatarPagina(ses) {
+    if (await paginaViva(ses)) return false;
+    console.log('  · pestaña caída: recargando y reentrando…');
+    try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses, 20000); } catch (e) { /* sesión muerta */ }
+    if (!(await esperarListo(ses))) return 'la página no arrancó tras recargar';
+    return 'recargada: ' + String(await evaluar(cdp, ses, PREPARAR_JS, 300)).slice(0, 120);
   }
   async function esperarListo(ses) {
     const t0 = Date.now();
@@ -193,23 +246,48 @@ async function lanzarChrome() {
   if (BATERIAS) {
     // Baterías del juego (window.AV) sobre la copia de trabajo servida: sustituye a test.sh, que
     // necesita el python de Blender (no hay python real en esta PC).
-    const { tid, ses } = await nuevaPestana(false);
-    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
-    if (!(await esperarListo(ses))) { console.log('· el juego no arrancó'); process.exit(1); }
-    // Jugador nuevo como test.sh: portada → Jugar → creador → Empezar
-    console.log('· jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
+    // QA-111 · e2eTest prueba el arranque limpio con creador: va en pestaña propia SIN semilla (flujo real);
+    // el resto va con partida sembrada en la pestaña principal.
+    const lista = SOLO ? SOLO.split(',') : LISTA_BATERIAS;
     const informe = {};
-    for (const b of (SOLO ? SOLO.split(',') : LISTA_BATERIAS)) {
-      const t0 = Date.now();
-      try {
-        const r = await evaluar(cdp, ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && (r.passed != null ? r.passed : r.pasan != null ? r.pasan : r.ok), t: r && r.total, ok: r && r.ok, mal: ((r && r.results) || (r && r.checks) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => (x.name || '?') + (x.extra ? ' — ' + String(x.extra).slice(0, 220) : '')).slice(0, 4) }); })()`, 900);
-        const j = JSON.parse(r);
-        informe[b] = j;
-        const falla = (j.t != null && j.p != null && j.p !== j.t) || j.ok === false || (j.mal && j.mal.length);
-        console.log(`  · ${b}: ${j.p}/${j.t}${j.mal && j.mal.length ? ' · falla: ' + j.mal.join(' | ') : ''}${falla ? ' <<<' : ''} (${Math.round((Date.now() - t0) / 1000)} s)`);
-      } catch (e) { informe[b] = { error: e.message.slice(0, 200) }; console.log(`  · ${b}: ERROR ${e.message.slice(0, 160)}`); }
+    let sesUltima = null;
+    async function correrBaterias(ses, baterias) {
+      for (const b of baterias) {
+        const rescate = await rescatarPagina(ses);
+        if (rescate) console.log('  · ' + rescate);
+        const rec = await asegurarMundo(ses);
+        if (rec !== 'ok') console.log('  · aviso: ' + rec);
+        const t0 = Date.now();
+        try {
+          const r = await evaluar(cdp, ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && (r.passed != null ? r.passed : r.pasan != null ? r.pasan : r.ok), t: r && r.total, ok: r && r.ok, mal: ((r && r.results) || (r && r.checks) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => (x.name || '?') + (x.extra ? ' — ' + String(x.extra).slice(0, 220) : '')).slice(0, 4) }); })()`, 900);
+          const j = JSON.parse(r);
+          informe[b] = j;
+          const falla = (j.t != null && j.p != null && j.p !== j.t) || j.ok === false || (j.mal && j.mal.length);
+          console.log(`  · ${b}: ${j.p}/${j.t}${j.mal && j.mal.length ? ' · falla: ' + j.mal.join(' | ') : ''}${falla ? ' <<<' : ''} (${Math.round((Date.now() - t0) / 1000)} s)`);
+        } catch (e) { informe[b] = { error: e.message.slice(0, 200) }; console.log(`  · ${b}: ERROR ${e.message.slice(0, 160)}`); }
+      }
     }
-    const errs = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
+    // Pestaña principal con semilla (QA-111): Jugar entra directo; si algo falló, el preparar cierra el creador.
+    const principal = lista.filter(b => b !== 'e2eTest');
+    if (principal.length) {
+      const { tid, ses } = await nuevaPestana(false, !SIN_SEMILLA);
+      sesUltima = ses;
+      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
+      if (!(await esperarListo(ses))) { console.log('· el juego no arrancó'); process.exit(1); }
+      console.log('· jugador ' + (SIN_SEMILLA ? 'nuevo' : 'sembrado') + ': ' + await evaluar(cdp, ses, SIN_SEMILLA ? CFG.preparar_js : PREPARAR_JS, 300));
+      await correrBaterias(ses, principal);
+      try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10); } catch (e) { /* ya cerrada */ }
+    }
+    // e2eTest en pestaña sin semilla: arranque limpio real (portada → creador → Empezar) como test.sh.
+    if (lista.includes('e2eTest')) {
+      const { tid, ses } = await nuevaPestana(false, false);
+      sesUltima = ses;
+      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
+      if (!(await esperarListo(ses))) { console.log('· el juego no arrancó (e2eTest)'); process.exit(1); }
+      console.log('· jugador nuevo (e2eTest): ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
+      await correrBaterias(ses, ['e2eTest']);
+    }
+    const errs = await evaluar(cdp, sesUltima, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
     console.log('· errores de consola: ' + errs);
     fs.writeFileSync(path.join(SALIDA, 'baterias.json'), JSON.stringify({ informe, errores: JSON.parse(errs || '[]') }, null, 2));
     try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
