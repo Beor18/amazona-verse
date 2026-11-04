@@ -43,8 +43,12 @@ while ($true) {
   Write-Host "[$hora] $Nombre · vuelta $vuelta"
   Add-Content $log "`n===== [$hora] vuelta $vuelta ====="
   Set-Location $Carpeta
-  git pull --rebase origin main 2>&1 | Add-Content $log
-  & $kimi -p $prompt 2>&1 | Tee-Object -FilePath $log -Append
+  # Si quedó trabajo sin subir (la PC se apagó a mitad), se le dice a Kimi que lo revise y lo suba ANTES de seguir
+  $pendiente = (git status --porcelain 2>$null | Out-String).Trim()
+  git pull --rebase --autostash origin main 2>&1 | Add-Content $log
+  $extra = ''
+  if ($pendiente) { $extra = "`nATENCIÓN: en esta carpeta hay cambios sin subir de una vuelta anterior (la PC se apagó o se cortó):`n$pendiente`nPrimero revísalos: si son tuyos y no rompen el juego, termina ese avance, haz commit solo de esas rutas y push; si están a medias y no sirven, déjalos anotados en tu fila y sigue. No borres nada." }
+  & $kimi -p ($prompt + $extra) 2>&1 | Tee-Object -FilePath $log -Append
   Write-Host "[$(Get-Date -Format 'HH:mm')] $Nombre terminó la vuelta $vuelta; la siguiente en $PausaSegundos s (Ctrl+C para parar)."
   Start-Sleep -Seconds $PausaSegundos
 }
