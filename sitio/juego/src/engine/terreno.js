@@ -364,6 +364,11 @@ AVE.module('terreno', function (G) {
   w.y += (mac2.b - 0.5) * 0.45 * bordeT;
   vec2 uv0 = wp * uEsc.x, uv1 = wp * uEsc.y, uv2 = wp * uEsc.z, uv3 = wp * uEsc.w;
   vec4 a0 = texture2D(tA0, uv0), a1 = texture2D(tA1, uv1), a2 = texture2D(tA2, uv2), a3 = texture2D(tA3, uv3);
+  // QA-141: en las laderas la hierba proyectada desde arriba se estira y se borra; se re-muestrea por la cara
+  // lateral dominante (misma idea que la roca triplanar, con una sola cara), con peso según la pendiente
+  float kS = smoothstep(0.9, 0.62, nG.y);
+  vec2 uvG = (abs(nG.x) >= abs(nG.z) ? vWPos.zy : vWPos.xy) * uEsc.x;
+  a0 = mix(a0, texture2D(tA0, uvG), kS);
   #ifdef SPLAT_TRIPLANAR
     // roca triplanar: en acantilados la proyección desde arriba se estira; aquí se proyecta por los tres ejes
     vec3 tpB = pow(abs(nG), vec3(4.0)); tpB /= dot(tpB, vec3(1.0));
@@ -381,7 +386,7 @@ AVE.module('terreno', function (G) {
   #ifdef SPLAT_DOS_ESCALAS
     float far = smoothstep(14.0, 70.0, camD);
     float k2 = clamp(far * 0.75 + (mac2.b - 0.5) * 0.6, 0.0, 1.0);
-    a0 = mix(a0, texture2D(tA0, rotUv(uv0, 1.1) * 0.29), k2);
+    a0 = mix(a0, texture2D(tA0, rotUv(mix(uv0, uvG, kS), 1.1) * 0.29), k2);
     a1 = mix(a1, texture2D(tA1, rotUv(uv1, 2.3) * 0.31), k2);
     #ifdef SPLAT_TRIPLANAR
       a2 = mix(a2, texture2D(tA2, rotUv(uv2, 0.7) * 0.27), k2 * tpB.y); // en la pared no: la proyección desde arriba se estira
@@ -488,7 +493,7 @@ AVE.module('terreno', function (G) {
   const SPLAT_NORMAL = `
   #ifdef SPLAT_NORMALES
   {
-    vec3 n0 = texture2D(tN0, uv0).xyz * 2.0 - 1.0, n1 = texture2D(tN1, uv1).xyz * 2.0 - 1.0;
+    vec3 n0 = mix(texture2D(tN0, uv0).xyz, texture2D(tN0, uvG).xyz, kS) * 2.0 - 1.0, n1 = texture2D(tN1, uv1).xyz * 2.0 - 1.0;
     vec3 n2 = texture2D(tN2, uv2).xyz * 2.0 - 1.0, n3 = texture2D(tN3, uv3).xyz * 2.0 - 1.0;
     vec3 nt = n0 * bw.x + n1 * bw.y + n2 * bw.z + n3 * bw.w;
     nt.xy *= mix(1.1, 0.25, smoothstep(10.0, 80.0, camD));

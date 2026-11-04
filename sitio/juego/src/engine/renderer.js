@@ -547,9 +547,15 @@ AVE.module('renderer', function (G) {
   // flora y los edificios que lleguen después quedan pendientes y se enlazan en los pases siguientes.
   // Así el precalentado empieza en cuanto el mundo existe, no cuando termina la flora (que tarda más).
   let puedeCalentar = false;
+  let texCola = 0; // cuadros hasta la próxima exploración de texturas pendientes (drenado QA-53)
   G.on('mundoListo', () => { puedeCalentar = true; fpsM.warm = 3000; });
   // Un solo controlador a la vez: cuando la resolución dinámica del TA cambia el DPR, los presets esperan a que se asiente
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
+  // QA-53 (post-reveal): al cambiar de calidad, look.js (prio 50) sustituye texturas (recortar por
+  // texMax) y nada las volvía a subir: el primer dibujo que las encuentra pagaba todas las subidas de
+  // golpe (texImage2D 235–293 ms en la ventana +3…7 s post-reveal con CPU ×4). Una ráfaga acotada justo
+  // después del barrido las sube antes de ese dibujo; lo que sobre lo drena el subirTexturas por cuadro.
+  G.on('calidad', () => { if (!puedeCalentar) return; subirTexturas(24, 30); texCola = 0; }, 90);
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
   // visible y sin frustum culling, antes de que el jugador mire alrededor (sin esto cada vista nueva daba tirones: QA-20).
   // Incluye la capa 31 (objetos pequeños lejanos): tras perder el contexto WebGL también hay que volver a subir lo suyo.
@@ -933,6 +939,14 @@ AVE.module('renderer', function (G) {
       calentarPresupuesto(2, 6);
       warmMs = performance.now() - w0;
       fpsM.warm = Math.max(fpsM.warm, 2000);
+    }
+    // QA-53 (post-reveal): las texturas que look.js sustituye al cambiar de calidad (y las de lo que
+    // entra en escena) se subían dentro del primer dibujo que las usa. Se suben unas pocas por cuadro,
+    // antes del dibujo real, con tope de tiempo; sólo las que todavía no están en la GPU. La exploración
+    // cuesta ~8 ms con CPU ×4 (recorre los materiales): con la cola vacía se hace 1 de cada 20 cuadros.
+    if (puedeCalentar && texCola-- <= 0) {
+      if (subirTexturas(4, 6)) texCola = 0;
+      else texCola = 20;
     }
     const f3 = FASES ? performance.now() : 0;
     G.camara.draw(dt);

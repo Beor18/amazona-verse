@@ -14,11 +14,11 @@
   ];
   // Opción por defecto de EP5_GDD §10. El jugador no ve estos marcadores.
   EP.notasKelvin = [
-    '[KELVIN] §10.1 Decidido por Kelvin (2-nov): dos voces distintas, cada una con su onda (dorada y violeta), que se unen al final en una sola; sin verse (que se vean sería arte nuevo). Nombres en §10.3.',
+    'Kelvin 2-nov: §10.1 dos voces distintas, cada una con su onda (dorada y violeta), que se unen al final en una sola; sin verse (que se vean sería arte nuevo). Los nombres están en §10.3.',
     '[KELVIN] §10.2 Por qué hablan desde ahora: aquí no se explica; D4 (DECIDIDO-EQUIPO 30-oct) deja una insinuación al final del ep. 6 y la explicación sigue guardada.',
-    '[KELVIN] §10.3 Decidido por Kelvin (2-nov, definitivo): se llaman Mara (martinicana) y Vela (violacea); lo dicen ellas al final. Iguaca las nombra por la especie, con las fichas de especies.js.',
-    '[KELVIN] §10.4 El Guardián recuerda a pedazos y, al final, un recuerdo: «Eran dos. Las de las islas del sur.» No se explica por qué olvida ni qué forma tiene.',
-    '[KELVIN] §10.5 D5 (DECIDIDO-EQUIPO 30-oct): la medalla es una de las 36 piezas del emblema y cada vez que la toca le devuelve un recuerdo (D6). Sale en el cap. 1 y el ep. 2; se explica aquí. Kelvin 2-nov (definitivo): al final del ep. 6 el Guardián se la da a Vittata, que se la ganó.',
+    'Kelvin 2-nov: §10.3 se llaman Mara (martinicana) y Vela (violacea); lo dicen ellas al final. Iguaca las nombra por la especie, con las fichas de especies.js.',
+    '[KELVIN] §10.4 Por qué olvida el Guardián: al final dice «Eran dos. Las de las islas del sur.» y no se explica el olvido. Kelvin 2-nov: su forma ya está decidida, una cotorra mayor Amazona imperialis.',
+    'Kelvin 2-nov: la medalla es una de las 36 piezas del emblema; al final del cap. 6 el Guardián se la da a Vittata. [KELVIN] §10.5 si al tocarla le vuelve un recuerdo, y por qué, sigue abierto.',
     '[KELVIN] §10.6 Las marcas son las cinco del diseño (36, dos cotorras, camino, fuego, mano). No se dice quién construyó las ruinas.',
     '[KELVIN] §10.7 La luz de más allá de la niebla se enciende y no se explica.',
     '[KELVIN] §10.8 No empiezan de consejeras: solo piden reunir a los que quedan.',
