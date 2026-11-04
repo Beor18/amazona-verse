@@ -1,0 +1,200 @@
+{
+  "etiqueta": "quieto-r1",
+  "cuando": "2026-11-04T18:07:34.810Z",
+  "commit": "76d5d40c",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "kelvin_ruinas_yunque (-33,-136)",
+    "vuelo": "círculo 55 m a +12 m, 0,25 rad/s",
+    "segundos": 60,
+    "ventanaS": 10
+  },
+  "repro": {
+    "asentar": "OK",
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 731.2,
+        "basuraKB": 12153,
+        "retenidoKB": 646,
+        "cuadros": 321
+      },
+      {
+        "v": 1,
+        "h0MB": 731.8,
+        "basuraKB": 30121,
+        "retenidoKB": 444,
+        "cuadros": 333
+      },
+      {
+        "v": 2,
+        "h0MB": 732.2,
+        "basuraKB": 31131,
+        "retenidoKB": 1519,
+        "cuadros": 356
+      },
+      {
+        "v": 3,
+        "h0MB": 733.7,
+        "basuraKB": 2347,
+        "retenidoKB": 25,
+        "cuadros": 427
+      },
+      {
+        "v": 4,
+        "h0MB": 733.7,
+        "basuraKB": 5152,
+        "retenidoKB": 19,
+        "cuadros": 439
+      },
+      {
+        "v": 5,
+        "h0MB": 733.7,
+        "basuraKB": 1833,
+        "retenidoKB": 35,
+        "cuadros": 451
+      }
+    ],
+    "cuadrosTotal": 2327,
+    "heapFinMB": 733.8,
+    "calls": 89,
+    "ktris": 500,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 89,
+      "ktris": 500
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 4218,
+    "top": [
+      {
+        "kb": 1507,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 231,
+        "fn": "frame · renderer.js:1012"
+      },
+      {
+        "kb": 224,
+        "fn": "Ce · three.min.js:6"
+      },
+      {
+        "kb": 116,
+        "fn": "multiplyMatrices · three.min.js:6"
+      },
+      {
+        "kb": 112,
+        "fn": "Float32Array · :0"
+      },
+      {
+        "kb": 112,
+        "fn": "En · three.min.js:6"
+      },
+      {
+        "kb": 106,
+        "fn": "traverse · three.min.js:6"
+      },
+      {
+        "kb": 101,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 96,
+        "fn": "sn · three.min.js:6"
+      },
+      {
+        "kb": 96,
+        "fn": "bombear · streaming.js:125"
+      },
+      {
+        "kb": 91,
+        "fn": "set · :0"
+      },
+      {
+        "kb": 82,
+        "fn": "hypot · :0"
+      },
+      {
+        "kb": 64,
+        "fn": "(anon) · three.min.js:6"
+      },
+      {
+        "kb": 57,
+        "fn": "get · :0"
+      },
+      {
+        "kb": 52,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 51,
+        "fn": "Xn · three.min.js:6"
+      },
+      {
+        "kb": 50,
+        "fn": "crearLote · streaming.js:803"
+      },
+      {
+        "kb": 48,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 47,
+        "fn": "updateMatrixWorld · three.min.js:6"
+      },
+      {
+        "kb": 45,
+        "fn": "(anon) · streaming.js:1129"
+      },
+      {
+        "kb": 36,
+        "fn": "setMode · three.min.js:6"
+      },
+      {
+        "kb": 35,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 33,
+        "fn": "idCalor · renderer.js:614"
+      },
+      {
+        "kb": 32,
+        "fn": "join · :0"
+      },
+      {
+        "kb": 32,
+        "fn": "copy · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "push · :0"
+      },
+      {
+        "kb": 32,
+        "fn": "block · solidos.js:32"
+      },
+      {
+        "kb": 32,
+        "fn": "(anon) · look.js:281"
+      },
+      {
+        "kb": 32,
+        "fn": "Gi · three.min.js:6"
+      },
+      {
+        "kb": 27,
+        "fn": "setAttribute · three.min.js:6"
+      }
+    ]
+  },
+  "errores": []
+}

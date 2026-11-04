@@ -228,6 +228,15 @@ AVE.module('solidos', function (G) {
     });
     modeloActual = null;
   }
+  // KIMI-034: como agregar() pero sin objetos intermedios — streaming.colocar() construía un Group y un Mesh
+  // desechables por parte solo para llegar a encolar(): basura por instancia colocada. Aquí se encola directo,
+  // con el mismo filtro de material que valida() (transparentes/depthWrite false/basic no son sólidos).
+  const validaMat = m => !(m && (m.transparent || m.depthWrite === false || m.isMeshBasicMaterial));
+  function agregarPartes(partes, matriz, modelo) {
+    modeloActual = modelo || null;
+    for (const p of partes) { if (p.geo && p.geo.attributes.position && validaMat(p.mat)) encolar(p.geo, matriz, modelo || ''); }
+    modeloActual = null;
+  }
 
   // ---------- Qué se rasteriza ----------
   const hechos = new Set();
@@ -718,6 +727,6 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn,
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn,
     cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
 });

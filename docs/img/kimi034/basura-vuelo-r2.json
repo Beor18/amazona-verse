@@ -1,0 +1,241 @@
+{
+  "etiqueta": "vuelo-r2",
+  "cuando": "2026-11-04T18:13:52.995Z",
+  "commit": "76d5d40c",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "(-33,-136)",
+    "vuelo": "círculo r=55 m a +12 m, 0,25 rad/s",
+    "segundos": 60,
+    "ventanaS": 10
+  },
+  "repro": {
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 731.5,
+        "basuraKB": 36947,
+        "retenidoKB": 42358,
+        "cuadros": 230
+      },
+      {
+        "v": 1,
+        "h0MB": 772.8,
+        "basuraKB": 339743,
+        "retenidoKB": -63806,
+        "cuadros": 258
+      },
+      {
+        "v": 2,
+        "h0MB": 710.5,
+        "basuraKB": 40598,
+        "retenidoKB": 56617,
+        "cuadros": 215
+      },
+      {
+        "v": 3,
+        "h0MB": 765.8,
+        "basuraKB": 102974,
+        "retenidoKB": -20318,
+        "cuadros": 237
+      },
+      {
+        "v": 4,
+        "h0MB": 746,
+        "basuraKB": 55973,
+        "retenidoKB": -17469,
+        "cuadros": 258
+      },
+      {
+        "v": 5,
+        "h0MB": 728.9,
+        "basuraKB": 19775,
+        "retenidoKB": 74810,
+        "cuadros": 243
+      }
+    ],
+    "cuadrosTotal": 1441,
+    "heapFinMB": 802,
+    "calls": 54,
+    "ktris": 244,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 89,
+      "ktris": 500
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 3296,
+    "top": [
+      {
+        "kb": 1115,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 148,
+        "fn": "serialize · guardado.js:229"
+      },
+      {
+        "kb": 146,
+        "fn": "set · :0"
+      },
+      {
+        "kb": 134,
+        "fn": "frame · renderer.js:1012"
+      },
+      {
+        "kb": 131,
+        "fn": "traverse · three.min.js:6"
+      },
+      {
+        "kb": 100,
+        "fn": "encolar · solidos.js:135"
+      },
+      {
+        "kb": 89,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 73,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 66,
+        "fn": "Xn · three.min.js:6"
+      },
+      {
+        "kb": 65,
+        "fn": "renderBufferDirect · three.min.js:6"
+      },
+      {
+        "kb": 64,
+        "fn": "Float32Array · :0"
+      },
+      {
+        "kb": 64,
+        "fn": "Ce · three.min.js:6"
+      },
+      {
+        "kb": 53,
+        "fn": "updateMatrixWorld · three.min.js:6"
+      },
+      {
+        "kb": 48,
+        "fn": "cullPequenos · renderer.js:495"
+      },
+      {
+        "kb": 48,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 48,
+        "fn": "(anon) · three.min.js:6"
+      },
+      {
+        "kb": 43,
+        "fn": "hypot · :0"
+      },
+      {
+        "kb": 42,
+        "fn": "refreshMaterialUniforms · three.min.js:6"
+      },
+      {
+        "kb": 34,
+        "fn": "get activo · solidos.js:721"
+      },
+      {
+        "kb": 33,
+        "fn": "accumulate · three.min.js:6"
+      },
+      {
+        "kb": 33,
+        "fn": "bloquePasto · vegetacion.js:744"
+      },
+      {
+        "kb": 32,
+        "fn": "setup · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "actualizarColliders · vegetacion.js:939"
+      },
+      {
+        "kb": 27,
+        "fn": "(anon) · vegetacion.js:917"
+      },
+      {
+        "kb": 25,
+        "fn": "At · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "applyMatrix4 · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "copy · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "Jt · three.min.js:6"
+      },
+      {
+        "kb": 20,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 18,
+        "fn": "multiplyMatrices · three.min.js:6"
+      }
+    ],
+    "porArchivo": [
+      {
+        "kb": 1248,
+        "arch": "solidos.js"
+      },
+      {
+        "kb": 934,
+        "arch": "three.min.js"
+      },
+      {
+        "kb": 190,
+        "arch": "renderer.js"
+      },
+      {
+        "kb": 102,
+        "arch": "vegetacion.js"
+      },
+      {
+        "kb": 56,
+        "arch": "streaming.js"
+      },
+      {
+        "kb": 25,
+        "arch": "eventos.js"
+      },
+      {
+        "kb": 8,
+        "arch": "fisica.js"
+      },
+      {
+        "kb": 8,
+        "arch": "fx.js"
+      },
+      {
+        "kb": 8,
+        "arch": "mundo.js"
+      },
+      {
+        "kb": 8,
+        "arch": "terreno.js"
+      }
+    ]
+  },
+  "errores": []
+}

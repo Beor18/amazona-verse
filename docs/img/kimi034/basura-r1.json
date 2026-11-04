@@ -1,0 +1,200 @@
+{
+  "etiqueta": "r1",
+  "cuando": "2026-11-04T18:04:16.867Z",
+  "commit": "76d5d40c",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "kelvin_ruinas_yunque (-33,-136)",
+    "vuelo": "círculo 55 m a +12 m, 0,25 rad/s",
+    "segundos": 60,
+    "ventanaS": 10
+  },
+  "repro": {
+    "asentar": "OK",
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 731.3,
+        "basuraKB": 48133,
+        "retenidoKB": -2655,
+        "cuadros": 213
+      },
+      {
+        "v": 1,
+        "h0MB": 728.7,
+        "basuraKB": 88490,
+        "retenidoKB": -54247,
+        "cuadros": 229
+      },
+      {
+        "v": 2,
+        "h0MB": 675.7,
+        "basuraKB": 21770,
+        "retenidoKB": 57986,
+        "cuadros": 199
+      },
+      {
+        "v": 3,
+        "h0MB": 732.4,
+        "basuraKB": 74533,
+        "retenidoKB": -21527,
+        "cuadros": 222
+      },
+      {
+        "v": 4,
+        "h0MB": 711.3,
+        "basuraKB": 60026,
+        "retenidoKB": -16508,
+        "cuadros": 235
+      },
+      {
+        "v": 5,
+        "h0MB": 695.2,
+        "basuraKB": 67159,
+        "retenidoKB": 73575,
+        "cuadros": 224
+      }
+    ],
+    "cuadrosTotal": 1322,
+    "heapFinMB": 767.1,
+    "calls": 54,
+    "ktris": 245,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 89,
+      "ktris": 500
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 5689,
+    "top": [
+      {
+        "kb": 1427,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 225,
+        "fn": "Ce · three.min.js:6"
+      },
+      {
+        "kb": 206,
+        "fn": "(anon) · three.min.js:6"
+      },
+      {
+        "kb": 154,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 148,
+        "fn": "serialize · guardado.js:229"
+      },
+      {
+        "kb": 131,
+        "fn": "set · :0"
+      },
+      {
+        "kb": 122,
+        "fn": "hypot · :0"
+      },
+      {
+        "kb": 113,
+        "fn": "renderBufferDirect · three.min.js:6"
+      },
+      {
+        "kb": 112,
+        "fn": "Float32Array · :0"
+      },
+      {
+        "kb": 112,
+        "fn": "En · three.min.js:6"
+      },
+      {
+        "kb": 106,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 84,
+        "fn": "encolar · solidos.js:135"
+      },
+      {
+        "kb": 82,
+        "fn": "Xn · three.min.js:6"
+      },
+      {
+        "kb": 80,
+        "fn": "clone · three.min.js:6"
+      },
+      {
+        "kb": 80,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 80,
+        "fn": "sn · three.min.js:6"
+      },
+      {
+        "kb": 74,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 67,
+        "fn": "push · :0"
+      },
+      {
+        "kb": 65,
+        "fn": "actualizarColliders · vegetacion.js:939"
+      },
+      {
+        "kb": 64,
+        "fn": "colocarKelvin · mundo.js:214"
+      },
+      {
+        "kb": 64,
+        "fn": "Uint16Array · :0"
+      },
+      {
+        "kb": 64,
+        "fn": "ct · three.min.js:6"
+      },
+      {
+        "kb": 64,
+        "fn": "fundir · streaming.js:468"
+      },
+      {
+        "kb": 56,
+        "fn": "bombear · streaming.js:125"
+      },
+      {
+        "kb": 54,
+        "fn": "pintarPm · guia_controles.js:284"
+      },
+      {
+        "kb": 49,
+        "fn": "getZ · three.min.js:6"
+      },
+      {
+        "kb": 49,
+        "fn": "(anon) · streaming.js:1186"
+      },
+      {
+        "kb": 49,
+        "fn": "test · :0"
+      },
+      {
+        "kb": 48,
+        "fn": "(anon) · mundo.js:114"
+      },
+      {
+        "kb": 48,
+        "fn": "block · solidos.js:32"
+      }
+    ]
+  },
+  "errores": []
+}

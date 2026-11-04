@@ -1,0 +1,200 @@
+{
+  "etiqueta": "bahia-r1",
+  "cuando": "2026-11-04T18:10:49.214Z",
+  "commit": "76d5d40c",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "(150,218)",
+    "vuelo": "círculo r=40 m a +15 m, 0,25 rad/s",
+    "segundos": 60,
+    "ventanaS": 10
+  },
+  "repro": {
+    "asentar": "OK",
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 325,
+        "basuraKB": 16936,
+        "retenidoKB": -34260,
+        "cuadros": 303
+      },
+      {
+        "v": 1,
+        "h0MB": 291.6,
+        "basuraKB": 8618,
+        "retenidoKB": 14196,
+        "cuadros": 248
+      },
+      {
+        "v": 2,
+        "h0MB": 305.4,
+        "basuraKB": 30123,
+        "retenidoKB": 20439,
+        "cuadros": 277
+      },
+      {
+        "v": 3,
+        "h0MB": 325.4,
+        "basuraKB": 5372,
+        "retenidoKB": -37736,
+        "cuadros": 347
+      },
+      {
+        "v": 4,
+        "h0MB": 288.5,
+        "basuraKB": 85135,
+        "retenidoKB": 14422,
+        "cuadros": 290
+      },
+      {
+        "v": 5,
+        "h0MB": 302.6,
+        "basuraKB": 102891,
+        "retenidoKB": -22765,
+        "cuadros": 392
+      }
+    ],
+    "cuadrosTotal": 1857,
+    "heapFinMB": 280.4,
+    "calls": 37,
+    "ktris": 107,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 45,
+      "ktris": 146
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 2755,
+    "top": [
+      {
+        "kb": 561,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 152,
+        "fn": "frame · renderer.js:1012"
+      },
+      {
+        "kb": 143,
+        "fn": "traverse · three.min.js:6"
+      },
+      {
+        "kb": 107,
+        "fn": "(anon) · streaming.js:1186"
+      },
+      {
+        "kb": 98,
+        "fn": "setup · three.min.js:6"
+      },
+      {
+        "kb": 96,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 76,
+        "fn": "set · three.min.js:6"
+      },
+      {
+        "kb": 73,
+        "fn": "hypot · :0"
+      },
+      {
+        "kb": 71,
+        "fn": "push · :0"
+      },
+      {
+        "kb": 63,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 48,
+        "fn": "En · three.min.js:6"
+      },
+      {
+        "kb": 48,
+        "fn": "d · three.min.js:6"
+      },
+      {
+        "kb": 48,
+        "fn": "bt · three.min.js:6"
+      },
+      {
+        "kb": 47,
+        "fn": "has · :0"
+      },
+      {
+        "kb": 42,
+        "fn": "setMode · three.min.js:6"
+      },
+      {
+        "kb": 40,
+        "fn": "floraCerca · solidos.js:300"
+      },
+      {
+        "kb": 40,
+        "fn": "multiplyMatrices · three.min.js:6"
+      },
+      {
+        "kb": 36,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 34,
+        "fn": "crearLote · streaming.js:803"
+      },
+      {
+        "kb": 33,
+        "fn": "Xn · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "pintarPm · guia_controles.js:284"
+      },
+      {
+        "kb": 32,
+        "fn": "(anon) · misiones.js:67"
+      },
+      {
+        "kb": 32,
+        "fn": "zo · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "Float32Array · :0"
+      },
+      {
+        "kb": 32,
+        "fn": "ct · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "addEventListener · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "fundir · streaming.js:468"
+      },
+      {
+        "kb": 32,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 28,
+        "fn": "delete · :0"
+      },
+      {
+        "kb": 22,
+        "fn": "get activo · solidos.js:721"
+      }
+    ]
+  },
+  "errores": []
+}

@@ -1012,7 +1012,9 @@ AVE.module('streaming', function (G) {
       if (cfg.colocar) cfg.colocar(I, analisis[kA] || { sol: null, pisos: [], alto: r.alto * I.escala });
       // BM6-1: bohío de puerta abierta compartida: salvo la instancia amueblada, cada una pone su panel (sólido)
       if (G.bohiosAbiertos && G.bohiosAbiertos[I.modelo] && !(G.esBohioAbierto && G.esBohioAbierto(I)) && G.solidos && G.solidos.panelInstancia) G.solidos.panelInstancia(I.modelo, I.m);
-      if (G.solidos && G.solidos.agregar) {
+      // KIMI-034: agregarPartes encola directo; la vía agregar(Group+Mesh) dejaba basura por instancia
+      if (G.solidos && G.solidos.agregarPartes) G.solidos.agregarPartes(r.partes, I.m, I.modelo);
+      else if (G.solidos && G.solidos.agregar) {
         const g = new THREE.Group();
         for (const p of r.partes) { const m = new THREE.Mesh(p.geo, p.mat); m.matrixAutoUpdate = false; m.matrix.copy(I.m); g.add(m); }
         g.userData.modelo = I.modelo; // BM6-3: solidos.js guarda las matrices por nombre de modelo
@@ -1065,11 +1067,24 @@ AVE.module('streaming', function (G) {
       });
       m.geometry.clearGroups();
     }
+    // KIMI-034: runs con objetos reutilizados y comparación estructural — antes armaba array + objetos + clave
+    // (string) nuevos por malla visible en cada cuadro: basura por cuadro en vuelo.
     function tramos(m, quiere) {
-      const runs = [];
-      for (const t of m.userData.tramos) if (quiere(t.z)) { const u = runs[runs.length - 1]; if (u && u.start + u.count === t.start) u.count += t.count; else runs.push({ start: t.start, count: t.count }); }
-      const clave = runs.map(r => r.start + ',' + r.count).join(';');
-      if (clave !== m.userData.clave) { m.userData.clave = clave; m.geometry.clearGroups(); for (const r of runs) m.geometry.addGroup(r.start, r.count, 0); }
+      const pool = m.userData._rp || (m.userData._rp = []), runs = m.userData._ru || (m.userData._ru = []);
+      runs.length = 0;
+      for (const t of m.userData.tramos) if (quiere(t.z)) {
+        const u = runs.length ? runs[runs.length - 1] : null;
+        if (u && u.start + u.count === t.start) u.count += t.count;
+        else { const r = pool[runs.length] || (pool[runs.length] = { start: 0, count: 0 }); r.start = t.start; r.count = t.count; runs.push(r); }
+      }
+      const prev = m.userData._pr || (m.userData._pr = []);
+      let igual = prev.length === runs.length;
+      for (let i = 0; igual && i < runs.length; i++) if (prev[i].start !== runs[i].start || prev[i].count !== runs[i].count) igual = false;
+      if (!igual) {
+        m.geometry.clearGroups(); for (const r of runs) m.geometry.addGroup(r.start, r.count, 0);
+        for (let i = 0; i < runs.length; i++) { const p = prev[i] || (prev[i] = { start: 0, count: 0 }); p.start = runs[i].start; p.count = runs[i].count; }
+        prev.length = runs.length;
+      }
       return runs.length;
     }
     // En las ciudades, todos los _hd comparten la misma vista aérea: se funden por material en vez de dibujar un lote por modelo.
@@ -1611,6 +1626,36 @@ AVE.module('streaming', function (G) {
     const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), esfera = new THREE.Sphere();
     let nCuadro = 0; const candHD = [];
     const vis = { cerca: 0, lejos: 0, hd: 0, mallas: 0, zonas: 0 };
+    // KIMI-034: predicados y despachar viven a nivel de módulo (dentro de cuadro() eran closures nuevas por cuadro).
+    // fusN = nº de cuadro actual: la frescura de I.fus se compara contra él.
+    let fusN = 0;
+    const quiereHD = I => I.fusN === fusN && I.fus === 1, quiereCerca = I => I.fusN === fusN && I.fus === 2;
+    const lejosVeZona = id => !!(zonas[id] && zonas[id].lejosVe);
+    function despachar(I, Z, L, sombra, nC) {
+      // KIMI-Task-011: en las fusiones de zona cada instancia es un tramo; solo se dibujan los tramos de las que quieren esa
+      // versión este cuadro (antes, la fusión entera en cuanto su caja estaba a la vista: el _hd de toda la ciudad a 450 m).
+      if (L.tipo === 'cerca' && Z.usaCercaFusion && Z.cercaModelos.has(I.modelo)) {
+        vis.cerca++; I.fusN = nC; I.fus = 2; Z.cercaVe = true;
+        if (sombra) { if (Z.ciudad) Z.sombraPide = true; else Z.cercaSombra = true; }
+        return;
+      }
+      if (L.tipo === 'hd' && Z.usaHDFusion && Z.hdModelos.has(I.modelo)) {
+        vis.hd++; I.fusN = nC; I.fus = 1; Z.hdVe = true;
+        if (sombra) { if (Z.ciudad) Z.sombraPide = true; else Z.hdSombra = true; }
+        return;
+      }
+      // En la ciudad la sombra la da su malla ligera (capa 1): el _hd no entra en la pasada de sombras.
+      L.lista.push(I); if (sombra) { if (Z.ciudad && Z.sombraMalla) Z.sombraPide = true; else L.sombra = true; }
+    }
+    function globalFus(G2, quiere, so) {
+      const zs = G2.zonas.size ? [...G2.zonas] : []; // 1 array por global y cuadro (antes era 1 por malla)
+      for (const m of G2.mallas) {
+        const n = tramos(m, quiere);
+        m.visible = n > 0;
+        m.castShadow = m.visible && zs.some(id => zonas[id] && zonas[id][so]);
+        vis.mallas += n;
+      }
+    }
     function cuadro() {
       const cam = R.camera; cam.updateMatrixWorld(); if (cam.matrixWorldInverse) cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
       frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
@@ -1619,7 +1664,7 @@ AVE.module('streaming', function (G) {
       const conSombra = !!(R.calidad && R.calidad.sombras && R.sun && R.sun.castShadow), rS = ((R.calidad && R.calidad.sombraRadio) || 0) + CFG.margenSombra;
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
       vis.zonas = vis.hd = vis.cerca = 0;
-      const nC = ++nCuadro;
+      const nC = ++nCuadro; fusN = nC;
       const enVista = h => { const bs = h.geometry.boundingSphere; return cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs); };
       for (const id in zonas) {
         const Z = zonas[id], m = Z.malla;
@@ -1643,7 +1688,7 @@ AVE.module('streaming', function (G) {
         if (m.visible) vis.zonas++;
       }
       for (const m of lejosGlobal.mallas) {
-        const n = tramos(m, id => !!(zonas[id] && zonas[id].lejosVe));
+        const n = tramos(m, lejosVeZona);
         m.visible = n > 0; vis.zonas += n;
       }
       const hdTope = CFG.hdTris[nivelCiudad()] || Infinity;
@@ -1676,7 +1721,7 @@ AVE.module('streaming', function (G) {
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
         if (L.tipo === 'hd' && hdTope < Infinity) { candHD.push({ I, Z, sombra, k: dl - (I.hdPres ? 10 : 0) }); continue; }
-        despachar(I, Z, L, sombra);
+        despachar(I, Z, L, sombra, nC);
       }
       if (candHD.length) {
         candHD.sort((a, b) => a.k - b.k);
@@ -1686,28 +1731,11 @@ AVE.module('streaming', function (G) {
           c.I.hdPres = suma === 0 || suma + t <= hdTope; if (c.I.hdPres) suma += t; // el más cercano entra siempre
           const L = c.I.hdPres ? lotes[c.I.modelo + ':hd'] : (lotes[c.I.modelo + ':cerca'] || lotes[c.I.modelo + ':lejos']);
           if (!c.I.hdPres) c.I.hd = false;
-          if (L) despachar(c.I, c.Z, L, c.sombra && L.tipo !== 'lejos');
+          if (L) despachar(c.I, c.Z, L, c.sombra && L.tipo !== 'lejos', nC);
         }
         candHD.length = 0;
       }
-      function despachar(I, Z, L, sombra) {
-        // KIMI-Task-011: en las fusiones de zona cada instancia es un tramo; solo se dibujan los tramos de las que quieren esa
-        // versión este cuadro (antes, la fusión entera en cuanto su caja estaba a la vista: el _hd de toda la ciudad a 450 m).
-        if (L.tipo === 'cerca' && Z.usaCercaFusion && Z.cercaModelos.has(I.modelo)) {
-          vis.cerca++; I.fusN = nC; I.fus = 2; Z.cercaVe = true;
-          if (sombra) { if (Z.ciudad) Z.sombraPide = true; else Z.cercaSombra = true; }
-          return;
-        }
-        if (L.tipo === 'hd' && Z.usaHDFusion && Z.hdModelos.has(I.modelo)) {
-          vis.hd++; I.fusN = nC; I.fus = 1; Z.hdVe = true;
-          if (sombra) { if (Z.ciudad) Z.sombraPide = true; else Z.hdSombra = true; }
-          return;
-        }
-        // En la ciudad la sombra la da su malla ligera (capa 1): el _hd no entra en la pasada de sombras.
-        L.lista.push(I); if (sombra) { if (Z.ciudad && Z.sombraMalla) Z.sombraPide = true; else L.sombra = true; }
-      }
       vis.lejos = vis.mallas = 0;
-      const quiereHD = I => I.fusN === nC && I.fus === 1, quiereCerca = I => I.fusN === nC && I.fus === 2;
       for (const id in zonas) {
         const Z = zonas[id];
         if (Z.hdVe && !hdGlobal.zonas.has(Z.id)) for (const m of Z.hdMallas) {
@@ -1718,14 +1746,6 @@ AVE.module('streaming', function (G) {
         }
         if (Z.sombraMalla) Z.sombraMalla.visible = Z.sombraPide;
       }
-      const globalFus = (G2, quiere, so) => {
-        for (const m of G2.mallas) {
-          const n = tramos(m, quiere);
-          m.visible = n > 0;
-          m.castShadow = m.visible && [...G2.zonas].some(id => zonas[id] && zonas[id][so]);
-          vis.mallas += n;
-        }
-      };
       globalFus(hdGlobal, quiereHD, 'hdSombra');
       globalFus(cercaGlobal, quiereCerca, 'cercaSombra');
       for (const k in lotes) {

@@ -497,3 +497,42 @@ de consola. Los peores cuadros que quedan son `dibujo` de 300–410 ms por compi
 al dibujar variantes nuevas (familia QA-53 «enlaces del primer dibujo», carril nube/`renderer.js`,
 ya repartido de 2 en 2 por el precalentado) y trabajos `procesar:*` de ≤111 ms.
 Evidencia: `docs/img/kimi031/k031-{base-r1,base-r2,fix-r1,fix-r3,fix-r4}.json`.
+
+## KIMI-034 · basura por cuadro del motor en vuelo (4-nov, avance · Kimi 3)
+
+**Medición** (`tools/build/kimi3_basura.js`, nueva; móvil 375×812 dpr 3, CPU ×4, GPU real RX 5700 XT,
+gc() determinista `--expose-gc`; asentado ST.terminar en (-33,-136) y vuelo en círculo de 55 m a +12 m,
+ventanas de 10 s con gc; sampler V8 de asignaciones SOLO durante el vuelo; evidencia
+`docs/img/kimi034/basura-{r1,quieto-r1,bahia-r1,vuelo-r2,vuelo-r3,post-fix-r1}.json`):
+
+| escenario | basura | retenido (neto) |
+|---|---|---|
+| vuelo ciudad (60 s, 5 ventanas) | 272–414 KB/cuadro (360–596 MB en 60 s) | ≈ 0 (oscila con descargas) |
+| quieto en la ciudad tras asentar | **4–12 KB/cuadro** (estado estacionario limpio) | ≈ 0 |
+| vuelo bahía norte (60 s) | 134 KB/cuadro | ≈ 0 |
+
+El bucle de render/update por cuadro está limpio; la basura la genera el **movimiento**: churn de
+re-rasterización de regiones de `solidos.js` (`insert`/`encolar`/`spans`, 34–38 % del sampler del
+vuelo; los bloques estáticos crecieron +700 en 60 s de vuelo y `tris` rasterizados +163 k) más
+atributos de three.js (`renderBufferDirect`, matrices) al cruzar fronteras de zona/LOD (`retenido`
+osciló ±280 MB por ventana: cargas y liberaciones grandes continuas). La cola de flora se queda con
+~2300 trabajos pendientes sin procesar durante el vuelo (regiones nuevas entrando más rápido que
+los 5 ms/cuadro de presupuesto; los bloques no se hacen, tampoco se descargan).
+
+**Fixes de higiene aplicados (este commit):** `streaming.js` — `colocar()` usa la nueva
+`solidos.agregarPartes(partes, matriz, modelo)` en vez de construir un `THREE.Group` + un `Mesh`
+desechables por parte solo para encolar (mismo filtro de material que `valida()`); `tramos()` con
+runs reutilizados y comparación estructural (era array + objetos + string de clave nuevos por malla
+visible en cada cuadro); `despachar`, `quiereHD/quiereCerca`, `globalFus` y el predicado de
+`lejosGlobal` elevados a nivel de módulo (era 4–6 closures nuevas por cuadro) y `[...G2.zonas]` una
+vez por global y cuadro (era por malla). Baterías: streamingTest 23/24 (rojo = QA-81 intermitente
+conocido, 158 en banda 152–163), movementTest 48/48, 0 errores de consola.
+
+**Verificación post-fix:** la basura por segundo NO bajó (590 MB/60 s ≈ 9,8 MB/s, igual que antes):
+las closures/objetos recortados eran poca cosa frente al churn estructural. El grueso queda en:
+(1) re-rasterización continua de regiones de sólidos al volar (diseño: regiones de 24 m que se
+hacen al acercarse y se tiran al alejarse; en vuelo cruzas ~14 regiones/vuelta); (2) fronteras de
+zona/LOD (`ajustarHD`, fundir/quitar) que cargan y sueltan geometría grande por umbral — candidato
+real para QA-158 (memoria acumulada en vuelo largo). Siguiente palanca: amortiguar el flapping de
+umbral (histéresis mayor / contador de estabilidad) o repartir la re-rasterización de regiones en
+tandas con techo de trabajos pendientes.
