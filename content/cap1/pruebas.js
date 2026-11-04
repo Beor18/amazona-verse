@@ -898,6 +898,14 @@
       AU.borrarProgreso();
       S.edu.registro = null;
       AU.registrar({ pasos_completados: ['p1', 'p2'], perchas_observadas: 2, preguntas: { q1: 1, q2: '' }, objetivos_logrados: ['O1'] });
+      // QA-159: con la pausa abierta ui.busy() sigue false (el popover no cuenta), así que los bucles de
+      // educativa/aula siguen vivos y, en corrida acumulada, un registrar ajeno puede crear otra partida
+      // en caliente. Esta prueba exige el estado de un dispositivo limpio: se queda solo con la suya.
+      const miPartida = S.edu.registro;
+      const aislarPartidas = () => {
+        for (let i = AU.partidas.length - 1; i >= 0; i--) if (AU.partidas[i]._id !== miPartida) AU.partidas.splice(i, 1);
+        if (!AU.partidas.length) { S.edu.registro = null; AU.registrar({ pasos_completados: ['p1', 'p2'], perchas_observadas: 2, preguntas: { q1: 1, q2: '' }, objetivos_logrados: ['O1'] }); }
+      };
       menu.showPopover(); await espera(60);
       check('El menú de pausa congela el juego', G.pausa.motivos.has('menu') && G.camara.juice.hitStop === Infinity);
       check('Sección Aula en la pausa: ES/EN, texto corto y voz', !!menu.querySelector('[data-aula-idioma="en"]') && !!menu.querySelector('[data-aula-op="corto"]') && !!menu.querySelector('[data-aula-op="voz"]'));
@@ -914,6 +922,7 @@
       check('Suma correcta: Modo Maestro abierto y el juego sigue en pausa', AU.maestroAbierto() && G.pausa.motivos.has('maestro') && !menu.matches(':popover-open') && G.camara.juice.hitStop === Infinity);
       const g = AU.LEC.modo_maestro.guia_45_min;
       check('Guía de clase: pregunta guía, antes/durante/después y rúbrica', $('m-panel').textContent.includes(AU.t(g.pregunta_guia)) && $('m-panel').textContent.includes(g.antes.pasos[0]) && /Rúbrica|Rubric/.test($('m-panel').textContent));
+      aislarPartidas();
       $('m-tab-progreso').click();
       check('Progreso de este dispositivo en una tabla', $('m-panel').querySelectorAll('tbody tr').length === AU.partidas.length && AU.partidas.length === 1);
       $('m-tab-fuentes').click();
@@ -925,6 +934,7 @@
       ponerClaude({ use: async n => (n === 'downloads' ? { save: async o => { guardado = o; return { status: 'saved' }; } } : null) });
       $('m-csv').click(); await espera(60);
       check('CSV con la capacidad downloads del artifact', guardado && /^amazonaverse_cap1_Estacion_4_\d{4}-\d{2}-\d{2}\.csv$/.test(guardado.filename) && guardado.data.includes('Estación 4') && guardado.data.includes('pasos_completados'), guardado && guardado.filename);
+      aislarPartidas();
       guardado = null; $('m-json').click(); await espera(60);
       let js = null; try { js = JSON.parse(guardado.data); } catch (e) { js = null; }
       check('JSON con las partidas y sin ids internos', js && js.partidas.length === 1 && !guardado.data.includes('_id') && /\.json$/.test(guardado.filename));
@@ -941,6 +951,7 @@
       check('Sin descargas: copia al portapapeles o deja el texto listo para copiar', /portapapeles|clipboard/.test($('m-estado').textContent) || (!$('m-manual').hidden && $('m-manual').value.includes('estacion')), $('m-estado').textContent);
       const csv = AU.reporteCSV();
       check('Reporte sin datos personales (nombre, saveId, ids)', !csv.includes(S.saveId) && !csv.includes('_id') && (!S.profile.created || !csv.includes(S.profile.name)));
+      aislarPartidas();
       const partidasAntes = AU.partidas.length, perfilKeep = S.profile.created;
       const saveIdAntes = S.saveId, pasoAntes = S.step;
       $('m-nuevo').click();
