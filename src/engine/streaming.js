@@ -316,13 +316,36 @@ AVE.module('streaming', function (G) {
     };
     m.customProgramCacheKey = () => 'av-hd-atlas';
     reducirAtlas(m);
+    subirEnCola(m);
   }
   // BJ1 (QA-52, QA-53): cada atlas de 4096 (difusa y normales) ocupa 85 MB en la GPU; en el móvil, el de la casa junto al punto
   // de aparición llevaba el cap. 1 a 250 MB y subirlo al pulsar «Empezar» congelaba la pantalla. En calidad baja, y en el móvil
   // fuera de alta, se queda en 2048 (celda 512, 21 MB): se dibuja una vez en un lienzo y se suelta el original. Al volver a una
   // calidad mayor sigue en 2048 hasta que la zona se descarga y el modelo vuelve a bajar.
   const MOVIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
-  const atlasMax = () => nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+  // QA-110 (iPhone, 4-nov: se cerró volando sobre la Ciudad de los 36 en bajo): en el móvil, fuera de alta, el atlas baja a 1024
+  // (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85). En el escritorio, en bajo, sigue en 2048.
+  const atlasMax = () => MOVIL && nivelCal() !== 'alto' ? HD.celdas * HD.celda / 4 : nivelCal() === 'bajo' ? HD.celdas * HD.celda / 2 : 0;
+  // QA-110: las texturas del atlas se suben a la GPU de una en una, cada 300 ms (renderer.initTexture), en cuanto se crea el
+  // material y antes de que la ciudad se vea; así no llegan las cuatro en el mismo cuadro al despegar. Una imagen que aún no
+  // ha cargado espera su turno de nuevo (hasta ~30 s); si la escena la dibuja antes, three la sube allí, como antes.
+  const colaSubir = []; let subiendo = false;
+  function subirEnCola(m) {
+    for (const t of [m.map, m.normalMap]) if (t && !colaSubir.some(c => c.t === t)) colaSubir.push({ m, t, n: 0 });
+    if (!subiendo) { subiendo = true; setTimeout(subirSiguiente, 300); }
+  }
+  function subirSiguiente() {
+    const c = colaSubir.shift();
+    if (!c) { subiendo = false; return; }
+    const img = c.t.image;
+    if (!(img && img.width)) { if (++c.n < 100) colaSubir.push(c); }
+    else {
+      reducirAtlas(c.m);
+      const rr = R.renderer;
+      if (rr && rr.initTexture && !(R.contexto && R.contexto.perdido)) { try { rr.initTexture(c.t); } catch (e) { console.warn('AVE streaming: initTexture', e && e.message || e); } }
+    }
+    setTimeout(subirSiguiente, 300);
+  }
   function reducirAtlas(m) {
     const max = atlasMax();
     if (!max || !m.userData.avAtlasEsc) return;
