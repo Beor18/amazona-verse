@@ -182,14 +182,21 @@
 
     // ---------- Historia: la orilla (M1), las voces y la Balanza (M2), la maqueta, el acuerdo y la obra (M3), el cruce ----------
     historia: {
+      // CG-38: 6 pasos. Hablar, volver y la Balanza van dentro del paso que les da sentido.
       pasos: [
-        { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
-        { id: 'orilla', texto: 'Mira los 3 tramos del río y el bosquecillo', progreso: S => ` (${OBS.filter(k => S.collected.includes(k)).length}/4)`,
-          hasta: { mision: 'orilla' }, guia: G => { const k = OBS.find(o => !G.S.collected.includes(o)); const id = k === 'obs_bosque' ? 'bosque' : 'tramo_' + (k ? k.slice(4) : 'a'); const p = G.misiones.at(id); return p ? { id: id, x: p.x, z: p.z } : null; } },
-        { id: 'volver', texto: 'Cuéntale a Iguaca lo que viste', guia: G => G.misiones.at('iguaca') },
-        { id: 'voces', texto: 'Escucha todas las voces', progreso: S => ` (${VOC.filter(k => S.collected.includes(k)).length}/4)`,
-          hasta: { recogido: VOC }, guia: G => G.misiones.at(VIDS.find(v => !G.S.collected.includes('voz_' + v)) || 'iguaca') },
-        { id: 'balanza', texto: 'Pon las tarjetas en la Balanza de la mesa', hasta: { mision: 'voces' }, guia: G => G.misiones.at('mesa') },
+        { id: 'orilla', texto: 'Habla con Iguaca, mira la orilla y cuéntale lo que viste',
+          progreso: S => { const n = OBS.filter(k => S.collected.includes(k)).length; return n ? ` (${n}/4)` : ''; },
+          hasta: { evento: 'ShoreSurveyed' },
+          guia: G => {
+            const S = G.S;
+            if (!(S.edu && S.edu.inicio) || S.missions.orilla) return G.misiones.at('iguaca');
+            const k = OBS.find(o => !S.collected.includes(o)); const id = k === 'obs_bosque' ? 'bosque' : 'tramo_' + (k ? k.slice(4) : 'a');
+            const p = G.misiones.at(id); return p ? { id: id, x: p.x, z: p.z } : null;
+          } },
+        { id: 'voces', texto: 'Escucha las voces y mira la Balanza',
+          progreso: S => ` (${VOC.filter(k => S.collected.includes(k)).length}/4)`,
+          hasta: { mision: 'voces' },
+          guia: G => VOC.every(k => G.S.collected.includes(k)) ? G.misiones.at('mesa') : G.misiones.at(VIDS.find(v => !G.S.collected.includes('voz_' + v)) || 'iguaca') },
         { id: 'maqueta', texto: 'Prueba las 3 opciones en la maqueta', progreso: S => ` (${OIDS.filter(o => S.collected.includes('prueba_' + o)).length}/3)`,
           hasta: { evento: 'ModelTested' }, guia: G => G.misiones.at('mesa') },
         { id: 'acuerdo', texto: 'Haz la asamblea y elige un cuidado', hasta: { evento: 'CareChosen' }, guia: G => G.misiones.at('mesa') },
@@ -325,30 +332,29 @@
 
       // ---------- Iguaca: da cada misión, su tarjeta (M2) y, en medio, una pista del paso en curso ----------
       function hablar() {
-        if (S.step === 0) { decir(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); }); return; }
-        if (S.step === 1) { decir([Lu('Mira los 3 tramos y el bosquecillo. Llevas ' + vistas().length + ' de 4.')]); return; }
-        if (S.step === 2) {
+        if (S.step === 0 && !(S.edu && S.edu.inicio)) { decir(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.check(); }); return; }
+        if (S.step === 0 && !S.missions.orilla) { decir([Lu('Mira los 3 tramos y el bosquecillo. Llevas ' + vistas().length + ' de 4.')]); return; }
+        if (S.step === 0) {
           G.eventos.log('ShoreSurveyed'); G.comic.capture('orilla'); G.audio.play('unlock'); registrar();
-          decir(L('evento:ShoreSurveyed'), () => { G.misiones.advanceTo(3); G.ui.toast('Escucha todas las voces', 3000); });
+          decir(L('evento:ShoreSurveyed'), () => { G.misiones.check(); G.ui.toast('Escucha todas las voces', 3000); });
           return;
         }
-        if (S.step === 3 && !tiene('voz_iguaca')) { voz('iguaca'); return; }
+        if (S.step === 1 && !tiene('voz_iguaca')) { voz('iguaca'); return; }
         if (S.complete && AU.activo && !todasPreguntadas()) {
           elegir('Iguaca', '¡Ya se cruza el río! Cuando quieras, te hago unas preguntas sobre lo que hicimos. Sin prisa y sin nota.',
             [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else decir([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
         const pistas = {
-          3: 'Te faltan voces: la abuela, el papá y la navegante del muelle.',
-          4: 'Las tarjetas te esperan en la Balanza de la mesa.',
-          5: 'Prueba las tres opciones en la maqueta. Mira qué pasa con la canoa, los árboles y la crecida.',
-          6: 'Es hora de la asamblea, en la mesa. Elige una opción y un cuidado para lo que cuesta.',
-          7: 'Ya hay acuerdo. Ve a la orilla y constrúyelo.',
-          8: 'La abuela te espera para cruzar por primera vez.',
+          1: !VOC.every(tiene) ? 'Te faltan voces: la abuela, el papá y la navegante del muelle.' : 'Las tarjetas te esperan en la Balanza de la mesa.',
+          2: 'Prueba las tres opciones en la maqueta. Mira qué pasa con la canoa, los árboles y la crecida.',
+          3: 'Es hora de la asamblea, en la mesa. Elige una opción y un cuidado para lo que cuesta.',
+          4: 'Ya hay acuerdo. Ve a la orilla y constrúyelo.',
+          5: 'La abuela te espera para cruzar por primera vez.',
         };
         decir([Lu(S.complete ? '¡Ya se cruza el río! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
-      G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 ? 'Contarle a Iguaca' : S.step === 3 && !tiene('voz_iguaca') ? 'Escuchar a Iguaca' : 'Hablar con Iguaca', use: hablar });
+      G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 0 && S.missions.orilla && !G.eventos.had('ShoreSurveyed') ? 'Contarle a Iguaca' : (S.step === 1 && !tiene('voz_iguaca') ? 'Escuchar a Iguaca' : 'Hablar con Iguaca'), use: hablar });
 
       // ---------- Misión 1 · «Lo que hay en la orilla»: 3 tramos y el bosquecillo ----------
       for (const id of TIDS) {
@@ -360,7 +366,7 @@
         poste.position.set(x, y + 1.1, t.z); scene.add(poste);
         const cinta = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.3), new THREE.MeshLambertMaterial({ color: '#2f8fd6', side: THREE.DoubleSide }));
         cinta.position.set(x + 0.5, y + 2, t.z); scene.add(cinta);
-        G.interaccion.add({ id: 'tramo_' + id, x, z: t.z, r: 4.5, visible: () => S.step === 1 && !tiene('obs_' + id),
+        G.interaccion.add({ id: 'tramo_' + id, x, z: t.z, r: 4.5, visible: () => S.step === 0 && !!(S.edu && S.edu.inicio) && !tiene('obs_' + id),
           label: () => 'Mirar ' + t.nombre,
           use: () => {
             poner('obs_' + id); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
@@ -370,7 +376,7 @@
       // El bosquecillo: árboles propios (para poder quitarlos o replantarlos según el acuerdo) y una percha para mirar
       const bosque = new THREE.Group(); bosque.name = 'ep4_bosque'; scene.add(bosque);
       const ARB = [[-2.5, -1.5], [0.5, -2.5], [2, 0.5], [-1, 1.8], [-3, 1.2], [1.2, 2.6]];
-      G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 4.5, visible: () => S.step === 1 && !tiene('obs_bosque'),
+      G.interaccion.add({ id: 'bosque', x: BOSQUE.x, z: BOSQUE.z, r: 4.5, visible: () => (S.step === 0 || S.step === 1) && !tiene('obs_bosque'),
         label: () => 'Posarse y mirar el bosquecillo',
         use: () => {
           poner('obs_bosque'); G.eventos.log('ShoreLooked'); G.audio.play('pickup');
@@ -393,23 +399,23 @@
         });
       }
       function abuela() {
-        if (S.step === 3 && !tiene('voz_abuela')) { voz('abuela'); return; }
-        if (S.step === 8) { cruce(); return; }
-        decir([di('Abuela', S.complete ? '¡Qué alegría ir y venir otra vez!' : S.step < 3 ? 'Mi familia vive del otro lado del río. Hace tanto que no la veo…' : 'Gracias por preguntarme, mi niña.')]);
+        if (S.step === 1 && !tiene('voz_abuela')) { voz('abuela'); return; }
+        if (S.step === 5) { cruce(); return; }
+        decir([di('Abuela', S.complete ? '¡Qué alegría ir y venir otra vez!' : S.step < 1 ? 'Mi familia vive del otro lado del río. Hace tanto que no la veo…' : 'Gracias por preguntarme, mi niña.')]);
       }
       function papa() {
-        if (S.step === 3 && !tiene('voz_papa')) { voz('papa'); return; }
-        decir([di('Papá', S.complete ? 'Gracias por cuidar lo que costaba.' : S.step < 3 ? 'Este bosquecillo da buena sombra y buenos huecos.' : 'Que no se te olvide el bosquecillo.')]);
+        if (S.step === 1 && !tiene('voz_papa')) { voz('papa'); return; }
+        decir([di('Papá', S.complete ? 'Gracias por cuidar lo que costaba.' : S.step < 1 ? 'Este bosquecillo da buena sombra y buenos huecos.' : 'Que no se te olvide el bosquecillo.')]);
       }
       function navegante() {
         if (TP()) TP().encontrar(4, 'navegante'); // D32: llega al ep. 6
-        if (S.step === 3 && !tiene('voz_navegante')) { voz('navegante'); return; }
+        if (S.step === 1 && !tiene('voz_navegante')) { voz('navegante'); return; }
         // Nayara vive ahora en Villa Raíz (ep. 3): mira Villa Mangle, la otra orilla, desde este lado.
-        decir([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 3 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
+        decir([di('Navegante', S.complete ? '¡Ahora sí estamos cerca!' : S.step < 1 ? 'Desde el muelle veo la otra orilla cada día. Qué cerca y qué lejos.' : 'Del río vivimos. Que las canoas puedan pasar.')]);
       }
-      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 8 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
-      G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_papa') ? 'Escuchar al papá' : 'Hablar con el papá', use: papa });
-      G.interaccion.add({ id: 'navegante', x: NAVEGA.x, z: NAVEGA.z, r: 2.4, label: () => S.step === 3 && !tiene('voz_navegante') ? 'Escuchar a quien navega' : 'Hablar con quien navega', use: navegante });
+      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 1 && !tiene('voz_abuela') ? 'Escuchar a la abuela' : S.step === 5 ? 'Cruzar con la abuela' : 'Hablar con la abuela', use: abuela });
+      G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 1 && !tiene('voz_papa') ? 'Escuchar al papá' : 'Hablar con el papá', use: papa });
+      G.interaccion.add({ id: 'navegante', x: NAVEGA.x, z: NAVEGA.z, r: 2.4, label: () => S.step === 1 && !tiene('voz_navegante') ? 'Escuchar a quien navega' : 'Hablar con quien navega', use: navegante });
 
       // La Balanza: para cada voz, ¿qué opción le da más? Luego, ¿hay una mejor para todos? (sin castigo: pista y otra vez)
       const A_QUIEN = { abuela: 'la abuela', papa: 'el papá', navegante: 'quien navega', iguaca: 'esta tarjeta' };
@@ -496,10 +502,10 @@
           decir([di('Vittata', PALABRAS[o.v]), di(pierde.quien, 'Gracias por decírmelo de frente. Así sí.'), Lu('¡Hay acuerdo! Ve a la orilla y constrúyelo.')], () => G.misiones.check());
         });
       }
-      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => S.step >= 4,
-        label: () => ({ 4: 'Poner las tarjetas en la Balanza', 5: 'Probar en la maqueta', 6: 'Hacer la asamblea' })[S.step] || 'Mirar la Balanza',
+      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => (S.step === 1 && VOC.every(tiene)) || S.step >= 2,
+        label: () => ({ 1: 'Poner las tarjetas en la Balanza', 2: 'Probar en la maqueta', 3: 'Hacer la asamblea' })[S.step] || 'Mirar la Balanza',
         use: () => {
-          if (S.step === 4) balanza(); else if (S.step === 5) maqueta(); else if (S.step === 6) asamblea();
+          if (S.step === 1) balanza(); else if (S.step === 2) maqueta(); else if (S.step === 3) asamblea();
           else decir(OIDS.map(o => di('Vittata', `${OPCIONES[o].nombre}: ${fila(o === opcion() ? hojasCon(o, cuidado()) : OPCIONES[o].hojas)}`)));
         } });
       // La mesa de la asamblea: tablero con patas y troncos para sentarse alrededor (BF4: antes era una caja sola)
@@ -544,10 +550,10 @@
 
       // ---------- La obra en la orilla y el primer cruce ----------
       const obraPos = () => { const t = TRAMOS[(OPCIONES[opcion()] || OPCIONES.a).tramo]; return { x: RX(t.z + 1.5) - (OR(t.z + 1.5) - 1), z: t.z + 1.5 }; };
-      const obra = G.interaccion.add({ id: 'obra', x: RX(REAL ? DZ : 0) - 5, z: REAL ? DZ : 0, r: 3, visible: () => S.step >= 7 && !!opcion(),
-        label: () => S.step === 7 ? 'Construir lo acordado' : 'Mirar lo construido',
+      const obra = G.interaccion.add({ id: 'obra', x: RX(REAL ? DZ : 0) - 5, z: REAL ? DZ : 0, r: 3, visible: () => S.step >= 4 && !!opcion(),
+        label: () => S.step === 4 ? 'Construir lo acordado' : 'Mirar lo construido',
         use: () => {
-          if (S.step !== 7) { decir([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
+          if (S.step !== 4) { decir([di('Vittata', S.complete ? 'Lo construimos entre todos, y cuidamos lo que costaba.' : 'Aquí está lo acordado.')]); return; }
           poner('construido'); dibujarObra(); colocarAbuela(); encuadrar(); G.eventos.log('ProjectBuilt', { choice: opcion() }); G.audio.play('unlock'); registrar();
           const y = H(obra.x, obra.z);
           G.fx.burst(obra.x, y + 2, obra.z, 'gold', 30);
@@ -648,24 +654,24 @@
           G.guardado.reset(true);
           G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' });
           const ck = conChequeos ? check : () => {};
-          ck('Empieza en el paso 1 de 9', S.step === 0 && $('steps').children.length === 9);
+          ck('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
           useAt('iguaca'); drain();
-          ck('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
+          ck('Iguaca da la misión', S.step === 0 && !!S.edu.inicio, 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
             ck('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
             teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
             ck('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); teleport(vuelta.x, vuelta.z); tick(0.05); }
           for (const t of TIDS) { useAt('tramo_' + t); drain(); }
-          ck('3 tramos observados; falta el bosquecillo', TIDS.every(t => tiene('obs_' + t)) && S.step === 1 && !S.missions.orilla);
+          ck('3 tramos observados; falta el bosquecillo', TIDS.every(t => tiene('obs_' + t)) && S.step === 0 && !S.missions.orilla);
           let dichoBosque = '';
           { const s0 = G.dialogo.say; G.dialogo.say = function (l) { dichoBosque = (l || []).map(x => x.text).join(' '); return s0.apply(this, arguments); }; try { useAt('bosque'); drain(); } finally { G.dialogo.say = s0; } }
           ck('D27 · En el bosquecillo anida uno de los 36, un guardián que ya conoces (sin nombrar especie)', dichoBosque.includes(NIDO_36) && RECLAMO.a.includes('guardián que ya conoces'), dichoBosque.slice(0, 120));
-          ck('M1 · El bosquecillo: huecos de nido con su fuente; misión y lentes', S.missions.orilla && S.step === 2 && S.unlocked.includes('lentes:#2b2b2b:binoculares'));
+          ck('M1 · El bosquecillo: huecos de nido con su fuente; misión y lentes', S.missions.orilla && S.step === 0 && S.unlocked.includes('lentes:#2b2b2b:binoculares'));
           useAt('iguaca'); drain();
-          ck('M1 cerrada con Iguaca: sigue «Todas las voces», sin pantalla de fin', G.eventos.had('ShoreSurveyed') && S.step === 3 && !S.complete && $('end').hidden, 'paso ' + S.step);
+          ck('M1 cerrada con Iguaca: sigue «Todas las voces», sin pantalla de fin', G.eventos.had('ShoreSurveyed') && S.step === 1 && !S.complete && $('end').hidden, 'paso ' + S.step);
           for (const v of ['abuela', 'papa', 'navegante', 'iguaca']) { useAt(v); drain(); }
-          ck('M2 · 4 voces, 4 tarjetas (una por eje)', VOC.every(tiene) && G.eventos.had('VoicesHeard') && S.step === 4, 'paso ' + S.step);
+          ck('M2 · 4 voces, 4 tarjetas (una por eje)', VOC.every(tiene) && G.eventos.had('VoicesHeard') && S.step === 1, 'paso ' + S.step);
           useAt('mesa'); drain();
           if (conChequeos) {
             ck('M2 · La Balanza muestra 3 opciones con iconos y hojas', opciones().length === 3 && opciones().every(x => /●/.test(x) && /🤝/.test(x)), opciones().join(' | '));
@@ -679,10 +685,10 @@
             ck('M2 · «La mejor para todos» no existe: quien pierde lo dice y se repite', !G.eventos.had('TradeoffSeen') && opciones().length === 5);
           }
           pick(FRASES[0]);
-          ck('M2 · Ninguna lo da todo: misión y cuaderno', S.missions.voces && S.step === 5 && S.unlocked.includes('mano:cuaderno') && G.eventos.had('TradeoffSeen'), 'paso ' + S.step);
+          ck('M2 · Ninguna lo da todo: misión y cuaderno', S.missions.voces && S.step === 2 && S.unlocked.includes('mano:cuaderno') && G.eventos.had('TradeoffSeen'), 'paso ' + S.step);
           useAt('mesa'); drain();
           pick(OPCIONES.a.nombre); pick(OPCIONES.b.nombre); pick(OPCIONES.c.nombre);
-          ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 6, 'paso ' + S.step);
+          ck('M3 · Las 3 opciones probadas en la maqueta', OIDS.every(o => tiene('prueba_' + o)) && G.eventos.had('ModelTested') && S.step === 3, 'paso ' + S.step);
           useAt('mesa'); drain();
           ck('D26 · Asamblea tras oír las 4 voces: el jugador elige entre las 3 opciones, sin una correcta', VOC.every(tiene) && opciones().length === 3 && OIDS.every(o => opciones().some(x => x.startsWith(OPCIONES[o].nombre + ':'))), opciones().join(' | '));
           let dichoAsamblea = [];
@@ -700,9 +706,9 @@
             ck('M3 · «Es lo mejor para todos» no vale: se repite', !G.eventos.had('CareChosen') && opciones().length === 3);
           }
           pick(PALABRAS[0]);
-          ck('M3 · Cuidado elegido y acuerdo', tiene('cuidado_' + cu) && G.eventos.had('CareChosen') && S.step === 7, 'paso ' + S.step);
+          ck('M3 · Cuidado elegido y acuerdo', tiene('cuidado_' + cu) && G.eventos.had('CareChosen') && S.step === 4, 'paso ' + S.step);
           useAt('obra'); drain();
-          ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 8 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
+          ck('M3 · Construido a escala real: misión y casco', G.eventos.had('ProjectBuilt') && S.missions.acuerdo && S.step === 5 && S.unlocked.includes('casco:constructor'), 'paso ' + S.step);
           ck('M3 · La abuela espera en la cabecera de lo construido (allí lleva la flecha)', Math.abs(G.interaccion.find('abuela').x - (RX(TRAMOS[OPCIONES[op].tramo].z - 1.8) - OR(TRAMOS[OPCIONES[op].tramo].z - 1.8))) < 1e-6 && Math.abs(G.misiones.guideTarget().z - (TRAMOS[OPCIONES[op].tramo].z - 1.8)) < 0.01);
           const tocones = () => { const b = G.renderer.scene.getObjectByName('ep4_bosque'); return b ? b.children.filter(m => m.geometry && m.geometry.parameters && m.geometry.parameters.height === 0.4).length : -1; };
           check('D26 · El mundo muestra lo decidido (opción ' + op.toUpperCase() + '): el bosquecillo queda en tocones solo con el puente del estrecho', tocones() === (op === 'a' ? 6 : 0), tocones());

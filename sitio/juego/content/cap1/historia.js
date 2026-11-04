@@ -1,5 +1,6 @@
 /* Content pack cap1 · historia "El día que el cielo se rompió" (guion de Kelvin García, v1.0)
-   Los 8 pasos del capítulo son datos (texto, progreso, guía y, si avanzan solos, su disparador "hasta");
+   Los 6 pasos del capítulo son datos (texto, progreso, guía y, si avanzan solos, su disparador "hasta");
+   CG-38: el Guardián va dentro del refugio y el mirador dentro del transmisor. La historia no cambia.
    las escenas con decisiones (terrenos, construir, la crecida, el Guardián, el transmisor y el mirador) son scripts del pack
    que avanzan la historia con G.misiones.advanceTo(n). Las líneas salen de dialogos_cap1.js; las de respaldo están aquí.
    Escenas en pantalla del paquete B (CAP1_PENDIENTE): apertura (negro + viento → taller con luz → brillo y onda → negro), sonido de
@@ -58,13 +59,13 @@
           hasta: { marca: ['evaluated.A', 'evaluated.B'], mision: 'educativa' },
           guia: G => (G.c.edu && G.c.edu.guia()) || at(G, !G.S.evaluated.A ? 'postA' : 'postB') },
         // Mejora 4: durante la crecida el objetivo es salvar lo que arrastra el río (la guía apunta a lo que flota o a tierra seca)
-        { id: 'refugio', texto: S => (S.event ? '¡Crecida! Agarra al vuelo lo que arrastra el río y ponlo a salvo' : 'Elige un terreno y construye el refugio'),
-          guia: G => { const S = G.S; return S.event ? (G.c.crecida ? G.c.crecida.guia() : null) : S.refuge && S.refuge.damaged ? at(G, 'refuge') : S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]); } },
-        { id: 'guardian', texto: 'Habla con el Guardián Constructor', guia: G => at(G, 'guardian') },
-        { id: 'transmisor', texto: 'Repara y activa el transmisor',
-          progreso: (S, G) => S.chorus && !S.missions.m3 ? ` (coquíes ${S.coquis.length}/${G.c.BUSHES.length})` : '',
-          guia: G => { const S = G.S; return !G.objetos.has(REPAIR_COST) ? G.misiones.needItems(REPAIR_COST) : S.chorus && !S.missions.m3 ? G.misiones.closest(G.c.BUSHES.filter(b => !S.coquis.includes(b.id))) : at(G, 'transmisor'); } },
-        { id: 'mirador', texto: 'Sube al mirador de la colina', guia: G => at(G, 'mirador') },
+        // CG-38: la crecida y el Guardián (canon) son el mismo paso. El índice 3 sigue siendo la ruta de la gota.
+        { id: 'refugio', texto: S => (S.event ? '¡Crecida! Agarra al vuelo lo que arrastra el río y ponlo a salvo' : (S.refuge && !S.guardianMet ? 'Habla con el Guardián Constructor' : 'Elige un terreno y construye el refugio')),
+          guia: G => { const S = G.S; return S.event ? (G.c.crecida ? G.c.crecida.guia() : null) : S.refuge && S.refuge.damaged ? at(G, 'refuge') : (S.refuge && !S.guardianMet ? at(G, 'guardian') : (S.refuge ? null : G.misiones.closest([at(G, 'postA'), at(G, 'postB')]))); } },
+        // CG-38: el transmisor, la medalla y el mirador (canon) son el mismo paso.
+        { id: 'transmisor', texto: S => S.transmitterOn ? 'Sube al mirador de la colina' : 'Repara y activa el transmisor',
+          progreso: (S, G) => !S.transmitterOn && S.chorus && !S.missions.m3 ? ` (coquíes ${S.coquis.length}/${G.c.BUSHES.length})` : '',
+          guia: G => { const S = G.S; if (S.transmitterOn) return at(G, 'mirador'); return !G.objetos.has(REPAIR_COST) ? G.misiones.needItems(REPAIR_COST) : S.chorus && !S.missions.m3 ? G.misiones.closest(G.c.BUSHES.filter(b => !S.coquis.includes(b.id))) : at(G, 'transmisor'); } },
       ],
       guiaBloqueada: G => !!G.c.build(),
       // Antes de la crecida los indicadores no se conocen: «por descubrir» en vez de «—» (UI v21 P3)
@@ -248,11 +249,11 @@
       // ---------- Interactuables ----------
       const add = G.interaccion.add;
       add({ id: 'maquina', x: MAQ.x, z: MAQ.z, r: 2.2, label: () => 'Examinar la máquina experimental', use: () => examine('maquina') });
-      add({ id: 'transmisor', x: TRX.x, z: TRX.z, r: 2.2, label: () => S.step === 6 ? 'Reparar y activar el transmisor' : 'Examinar el transmisor', use: useTransmitter });
+      add({ id: 'transmisor', x: TRX.x, z: TRX.z, r: 2.2, label: () => S.step === 5 && !S.transmitterOn ? 'Reparar y activar el transmisor' : 'Examinar el transmisor', use: useTransmitter });
       // (ids internos «luma», LumaHelped, lumaK…: históricos; el personaje se llama Iguaca)
       // Iguaca: su x/z y su visibilidad las lleva el módulo «Iguaca llama desde arriba» (abajo): en la copa solo se le habla posada a su lado
       add({ id: 'luma', x: G.actores.npc('luma').def.x, z: G.actores.npc('luma').def.z, r: 2.4, label: () => 'Hablar con Iguaca', use: talkLuma });
-      add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 3.2, label: () => S.step === 7 ? 'Mirar el horizonte desde el mirador' : 'Asomarte al mirador', use: useMirador });
+      add({ id: 'mirador', x: MIRADOR.x, z: MIRADOR.z, r: 3.2, label: () => S.step === 5 && S.transmitterOn ? 'Mirar el horizonte desde el mirador' : 'Asomarte al mirador', use: useMirador });
       add({ id: 'guardian', x: guardian.def.x, z: guardian.def.z, r: 2.6, visible: () => guardian.sp.visible, label: () => 'Hablar con el Guardián', use: talkGuardian });
       const refugeIt = add({ id: 'refuge', x: 0, z: 0, r: 2.6, visible: () => !!(S.refuge && S.refuge.damaged && !S.event && !S.complete), label: () => 'Desarmar el refugio y recuperar materiales', use: dismantle });
       for (const k of ['A', 'B']) {
@@ -481,7 +482,7 @@
       }
       function afterRain() {
         applyGuardianLook(); applyFamiliaLook();
-        if (S.step === 4) { advanceTo(5); toast(S.guardianIntro ? 'El Guardián te espera en el sendero del sur' : 'Alguien te observa desde el sendero del sur', 3500); }
+        if (S.step === 4 && !S.guardianMet) { checkProgress(); toast(S.guardianIntro ? 'El Guardián te espera en el sendero del sur' : 'Alguien te observa desde el sendero del sur', 3500); }
         else checkProgress();
       }
       function dismantle() {
@@ -496,7 +497,7 @@
       // ---------- Guardián, transmisor y mirador ----------
       function talkGuardian() {
         // KELVIN-2 (equipo, 30-oct): se presenta en el paso de construir (presentacionGuardian); aquí, tras la crecida, regala el banco.
-        if (S.step === 5) {
+        if (S.step === 4 && S.refuge && !S.event && !S.guardianMet) {
           const present = S.refuge && !S.refuge.damaged
             ? L('interact:guardian_refugio', [{ who: 'Guardián', img: IMG.G, text: 'Buen lugar. Un hogar no es solamente lo que construimos. También es lo que cuidamos.' }])
             : [{ who: 'Guardián', img: IMG.G, text: 'Lo levantaste rápido, pero quedó en el agua. Todavía puedes moverlo: un error a tiempo también enseña.' }];
@@ -514,14 +515,14 @@
           log('WorkshopUpgradeUnlocked', { upgrade: 'banco de trabajo' });
           C.applyTallerLook();
           toast('Mejora del taller desbloqueada: banco de trabajo', 3000);
-          advanceTo(6);
+          advanceTo(5);
           return;
         }
         if (S.step === 4 && !S.guardianIntro && !S.refuge) { say(presentacionGuardian(true), () => toast('Elige un terreno y construye: el Guardián te ayudará', 3500), LIBRE); return; }
-        say([{ who: 'Guardián', img: IMG.G, text: S.step > 5 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : S.step === 4 && !S.refuge ? 'Elige bien dónde. Cuando lo levantes, te sostengo las piezas.' : 'Bien. Entonces vamos a comprobarlo.' }], null, LIBRE);
+        say([{ who: 'Guardián', img: IMG.G, text: S.transmitterOn || S.step > 4 ? 'El transmisor está en tu taller. Veamos si todavía habla.' : S.step === 4 && !S.refuge ? 'Elige bien dónde. Cuando lo levantes, te sostengo las piezas.' : 'Bien. Entonces vamos a comprobarlo.' }], null, LIBRE);
       }
       function useTransmitter() {
-        if (S.step !== 6) { examine('transmisor'); return; }
+        if (S.step !== 5 || S.transmitterOn) { examine('transmisor'); return; }
         if (!has(REPAIR_COST)) { toast('Para repararlo te falta ' + missingText(REPAIR_COST)); return; }
         // M3: el transmisor necesita voz; el coro de coquíes lo enciende
         if (!S.missions.m3) { C.startChorus(); return; }
@@ -549,10 +550,10 @@
           showSymbol(false);
           toast('Sube al mirador de la colina, al norte del refugio de la loma', 4000);
         }, LIBRE);
-        advanceTo(7);
+        checkProgress();
       }
       function useMirador() {
-        if (S.step !== 7) { say([{ who: 'Vittata', img: IMG.V, text: 'Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas.' }]); return; }
+        if (!(S.step === 5 && S.transmitterOn)) { say([{ who: 'Vittata', img: IMG.V, text: 'Desde aquí se ve todo el daño de la Ruptura… y a lo lejos, otras islas.' }]); return; }
         // Final (SCRIPT p.12 · NARRATIVA «Final»): la cámara mira a la isla de la luz; Vittata abre el plano del bote (tarjeta en pantalla
         // y chispa de sonido); al seguir, la luz de la niebla parpadea tres veces como respuesta a la señal; el Guardián calla y habla el Narrador.
         const luz = C.luzMirador, I0 = luz ? luz.isla : G.terreno.islas[0];

@@ -40,7 +40,7 @@
     ChickNappedOnFind: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_nap' },
     ChickCopiedGesture: { type: 'CompanionMoment', loc: null, chars: ['vittata'], scene: 'chick_mimic' },
   };
-  const DONE = 8; // pasos de la historia (historia.js)
+  const DONE = 6; // pasos de la historia (historia.js, CG-38)
   // Viñetas de los momentos: el último evento de una clave y el tiempo m:ss.d de la carrera
   const ultimo = (S, key) => { for (let i = S.events.length - 1; i >= 0; i--) if (S.events[i].key === key) return S.events[i]; return null; };
   const reloj = ms => { const d = Math.round(ms / 100), m = Math.floor(d / 600), s = d - m * 600; return `${m}:${String(Math.floor(s / 10)).padStart(2, '0')}.${s % 10}`; };
@@ -75,7 +75,7 @@
     meta: { titulo: 'El día que el cielo se rompió', capitulo: 1, almacen: 'amazonaverse' },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
-      version: 5,
+      version: 6,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
       // guardianIntro: el Guardián ya se presentó antes de construir (KELVIN-2, decisión del equipo 30-oct); false en las partidas viejas.
@@ -118,6 +118,13 @@
             const L = d.refuge && MD.lugares && MD.lugares[d.refuge.parcel];
             if (L) d.refuge = Object.assign({}, d.refuge, { x: L.x, z: L.z - 1.5 });
           }
+        }
+        // v5 -> v6 (CG-38): 8 pasos pasan a 6. El Guardián queda en el refugio y el mirador en el transmisor.
+        if (d && d.v === 5) {
+          d = Object.assign({}, d, { v: 6 });
+          if (d.complete) d.step = DONE;
+          else if (d.step >= 6) d.step = 5;
+          else if (d.step === 5) d.step = 4;
         }
         return d;
       },

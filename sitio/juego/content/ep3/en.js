@@ -17,7 +17,15 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "¡Llegamos a la otra orilla!": "We reached the other shore!",
  "Capítulo 3: construye el primer bote y cruza la bahía. No uses tu nombre real.": "Chapter 3: build the first boat and cross the bay. Don't use your real name.",
 
- // Pasos de la historia
+ // Pasos de la historia (CG-38: 6 pasos)
+ "Habla con el papá, predice y prueba qué flota": "Talk to Dad, predict and test what floats",
+ "Habla con el papá, predice y prueba qué flota ({}/6)": "Talk to Dad, predict and test what floats ({}/6)",
+ "Arma el bote y bótalo": "Build the boat and launch it",
+ "Cambia lo que falló y bótalo otra vez": "Change what failed and launch it again",
+ "Lee el agua con la navegante": "Read the water with the navigator",
+ "Lee el agua con la navegante ({}/4)": "Read the water with the navigator ({}/4)",
+ "Practica en el río y decide quién lleva el timón": "Practice on the river and decide who takes the helm",
+ "Cruza la bahía y saluda en la otra orilla": "Cross the bay and greet the people on the other shore",
  "Baja al astillero y habla con el papá": "Go down to the boatyard and talk to Dad",
  "Predice qué flota en la mesa del plano": "Predict what floats at the blueprint table",
  "Suelta los 6 materiales en la poza": "Drop the 6 materials into the pool",

@@ -243,22 +243,19 @@
     objetos: {}, recursos: [],
 
     historia: {
+      // CG-38: 6 pasos. El pacto con el Guardián se queda solo. La historia no cambia.
       pasos: [
-        { id: 'muelles', texto: 'Baja a los muelles y recibe a quien llega', guia: G => G.misiones.at('v_mira') },
-        { id: 'conocer', texto: 'Conoce a los 6 visitantes', progreso: S => ` (${VISITANTES.filter(v => S.collected.includes('conocido_' + v.id)).length}/6)`,
+        { id: 'conocer', texto: 'Recibe y conoce a los 6 visitantes', progreso: S => ` (${VISITANTES.filter(v => S.collected.includes('conocido_' + v.id)).length}/6)`,
           hasta: { recogido: VISITANTES.map(v => 'conocido_' + v.id) }, guia: G => cercano(G, VISITANTES.filter(x => !G.S.collected.includes('conocido_' + x.id)).map(x => 'v_' + x.id)) },
-        { id: 'observar', texto: 'Dos no dijeron qué necesitan: obsérvalos', progreso: S => ` (${Object.values(OBSERVAR).filter(k => S.collected.includes(k)).length}/2)`,
-          hasta: { recogido: Object.values(OBSERVAR) }, guia: G => cercano(G, [['obs_sombra', 'o_mira'], ['obs_rio', 'o_marea']].filter(o => !G.S.collected.includes(o[0])).map(o => o[1])) },
-        { id: 'parejas', texto: 'Presenta en la mesa a los que se cubren uno al otro', progreso: S => ` (${PAREJAS.filter(p => S.collected.includes('pareja_' + p.join('+'))).length}/3)`,
-          hasta: { evento: 'CardsFilled' }, guia: G => G.misiones.at('mesa') },
-        { id: 'criterios', texto: 'Ve al puente: Iguaca escribe el objetivo y los límites', hasta: { recogido: 'criterios' }, guia: G => G.misiones.at('cuaderno') },
-        { id: 'plan', texto: 'Arma el plan en el tablero y pruébalo', hasta: { evento: 'PlanMade' }, guia: G => G.misiones.at('cuaderno') },
-        { id: 'levantar', texto: 'Pósate en la percha vacía y da la señal', hasta: { recogido: 'levantada' }, guia: G => G.misiones.at('percha_v') },
-        { id: 'tabla', texto: 'Lleva la tabla larga al puente entre dos', hasta: { evento: 'RaisedTogether' }, guia: G => G.misiones.at(G.ep6 && G.ep6.llevando() ? 'colocar' : 'tabla_larga') },
-        { id: 'grupos', texto: 'Llegan dos grupos: escucha a los dos antes de proponer', hasta: { evento: 'GroupsListened' }, guia: G => G.misiones.at('grupos') },
-        { id: 'forma', texto: 'Elige cómo sentar a los 36 en la plaza', hasta: { evento: 'CircleFormed' }, guia: G => G.misiones.at('marcas') },
-        { id: 'sentar', texto: 'Invita a cada uno a su asiento', progreso: S => ` (${SENTABLES.filter(k => S.collected.includes('sentado_' + k)).length}/8)`,
-          hasta: { recogido: SENTABLES.map(k => 'sentado_' + k) }, guia: G => cercano(G, SENTABLES.filter(x => !G.S.collected.includes('sentado_' + x)).map(k => k === 'alta' || k === 'baja' ? 's_' + k : 'v_' + k)) },
+        { id: 'parejas', texto: 'Observa a dos y presenta las parejas', progreso: S => ` (${PAREJAS.filter(p => S.collected.includes('pareja_' + p.join('+'))).length}/3)`,
+          hasta: { evento: 'CardsFilled' },
+          guia: G => Object.values(OBSERVAR).every(k => G.S.collected.includes(k)) ? G.misiones.at('mesa') : cercano(G, [['obs_sombra', 'o_mira'], ['obs_rio', 'o_marea']].filter(o => !G.S.collected.includes(o[0])).map(o => o[1])) },
+        { id: 'plan', texto: 'Escribe el objetivo y arma el plan', hasta: { evento: 'PlanMade' }, guia: G => G.misiones.at('cuaderno') },
+        { id: 'levantar', texto: 'Levanta las tablas entre todos', hasta: { evento: 'RaisedTogether' },
+          guia: G => G.S.collected.includes('levantada') ? G.misiones.at(G.ep6 && G.ep6.llevando() ? 'colocar' : 'tabla_larga') : G.misiones.at('percha_v') },
+        { id: 'circulo', texto: 'Escucha a los dos grupos y sienta a los 36', progreso: (S, G) => G.eventos.had('CircleFormed') ? ` (${SENTABLES.filter(k => S.collected.includes('sentado_' + k)).length}/8)` : '',
+          hasta: { recogido: SENTABLES.map(k => 'sentado_' + k) },
+          guia: G => !G.eventos.had('GroupsListened') ? G.misiones.at('grupos') : (!G.eventos.had('CircleFormed') ? G.misiones.at('marcas') : cercano(G, SENTABLES.filter(x => !G.S.collected.includes('sentado_' + x)).map(k => k === 'alta' || k === 'baja' ? 's_' + k : 'v_' + k))) },
         { id: 'pacto', texto: 'Habla con el Guardián en el centro', guia: G => G.misiones.at('guardian') },
       ],
       fin: () => 'Conociste a cada uno, armaste un plan que funcionó, escuchaste antes de proponer y sentaste a los 36. Iguaca tiene unas preguntas para ti, cuando quieras.',
@@ -492,11 +489,11 @@
           else if (G.eventos.had('CardsFilled')) { const p = cercaPlaza(VISITANTES.indexOf(v), G.eventos.had('RaisedTogether')); ponerNpc(n, p.x, p.z); } // tras las tarjetas, todos cerca de la plaza
           else ponerNpc(n, v.x, v.z);
         }
-        for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + k)) enSuMarca(n, k, 0); }
-        for (const [id, g, x, z] of ACOMPANAN) { const n = npc(id); if (!n) continue; n.setVisible(S.step >= 8); if (tiene('sentado_' + g)) enSuMarca(n, g, id.endsWith('1') ? 1 : 2); else ponerNpc(n, x, z); }
-        const ig = npc('iguaca'); if (ig) { if (S.step >= 4 && S.step <= 7) { const p = EN({ x: PUENTE_W.x - 4.5, z: PUENTE_W.z - 2.5 }, { x: 35, z: -53 }); ponerNpc(ig, p.x, p.z); } else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else { const p = S.step < 4 ? IGUACA_RIO : IGUACA; ponerNpc(ig, p.x, p.z); } }
+        for (const k of ['alta', 'baja']) { const n = npc(k); if (!n) continue; n.setVisible(S.step >= 4); if (tiene('sentado_' + k)) enSuMarca(n, k, 0); }
+        for (const [id, g, x, z] of ACOMPANAN) { const n = npc(id); if (!n) continue; n.setVisible(S.step >= 4); if (tiene('sentado_' + g)) enSuMarca(n, g, id.endsWith('1') ? 1 : 2); else ponerNpc(n, x, z); }
+        const ig = npc('iguaca'); if (ig) { if (S.step === 2 || S.step === 3) { const p = EN({ x: PUENTE_W.x - 4.5, z: PUENTE_W.z - 2.5 }, { x: 35, z: -53 }); ponerNpc(ig, p.x, p.z); } else if (S.complete) ponerNpc(ig, MIRADOR.x + 1.5, MIRADOR.z + 1); else { const p = S.step < 2 ? IGUACA_RIO : IGUACA; ponerNpc(ig, p.x, p.z); } }
         navLlega = llegan().includes('navegante'); const na = npc('navegante'); if (na) na.setVisible(navLlega); // D32
-        const gu = npc('guardian'); if (gu) { if (S.step >= 11 && !S.complete) { if (formaElegida() === 'anillo' || !puntosAsientos().length) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else { const p = puntosAsientos()[2]; ponerNpc(gu, p[0], p[1]); } } else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
+        const gu = npc('guardian'); if (gu) { if (S.step >= 5 && !S.complete) { if (formaElegida() === 'anillo' || !puntosAsientos().length) ponerNpc(gu, PLAZA.x, PLAZA.z + 0.5); else { const p = puntosAsientos()[2]; ponerNpc(gu, p[0], p[1]); } } else if (S.complete) ponerNpc(gu, MIRADOR.x - 1.5, MIRADOR.z + 1); else ponerNpc(gu, GUARDIAN.x, GUARDIAN.z); }
         for (let i = 0; i < 6; i++) tarjetasMesa.children[i].visible = i < conocidos().length;
         tablaGrande.visible = tiene('levantada'); tablaLargaPuente.visible = G.eventos.had('RaisedTogether');
         tablaLarga.visible = !G.eventos.had('RaisedTogether');
@@ -518,9 +515,9 @@
         G.dialogo.say(lineas);
       }
       function hablarVisitante(v) {
-        if (S.step === 10 && !tiene('sentado_' + v.id)) { sentar(v.id); return; }
+        if (S.step === 4 && G.eventos.had('CircleFormed') && !tiene('sentado_' + v.id)) { sentar(v.id); return; }
         if (!tiene('conocido_' + v.id)) {
-          if (S.step === 0) { E().inicio = S.clock; if (!G.eventos.had('GuestsArrived')) G.eventos.log('GuestsArrived'); G.misiones.advanceTo(1); }
+          if (S.step === 0) { E().inicio = S.clock; if (!G.eventos.had('GuestsArrived')) G.eventos.log('GuestsArrived'); }
           poner('conocido_' + v.id); G.audio.play('pickup'); colocarNpcs(); G.misiones.check();
           const ls = [di(v.nombre, v.presenta)];
           if (!v.dice) ls.push(di(v.nombre, SI_NO_DICE));
@@ -539,17 +536,17 @@
         G.ui.showCard(`<h2>${esc(v.nombre)}</h2><p>${esc('Sabe hacer')}</p><ul class="ep6-lista">${sabe}</ul><p>${esc('Necesita')}</p><ul class="ep6-lista">${nec}</ul><div class="row"><button class="btn" id="ch-0" type="button">${esc('Cerrar')}</button></div>`);
         G.util.$('ch-0').onclick = () => G.ui.hideCard(); G.util.$('ch-0').focus();
       }
-      for (const v of VISITANTES) G.interaccion.add({ id: 'v_' + v.id, x: v.x, z: v.z, r: 2.4, label: () => S.step === 10 && !tiene('sentado_' + v.id) ? 'Invitar a ' + v.nombre + ' a su asiento' : tiene('conocido_' + v.id) ? 'Hablar con ' + v.nombre : 'Recibir a quien llega',
+      for (const v of VISITANTES) G.interaccion.add({ id: 'v_' + v.id, x: v.x, z: v.z, r: 2.4, label: () => S.step === 4 && G.eventos.had('CircleFormed') && !tiene('sentado_' + v.id) ? 'Invitar a ' + v.nombre + ' a su asiento' : tiene('conocido_' + v.id) ? 'Hablar con ' + v.nombre : 'Recibir a quien llega',
         use: () => hablarVisitante(v) });
       // Observar: lo que no dijeron (Mira en la sombra, Marea mirando al río)
-      G.interaccion.add({ id: 'o_mira', ...EN({ x: 12.2, z: -12.5 }, { x: 40.5, z: -62 }), r: 2, visible: () => S.step >= 2 && !tiene('obs_sombra'), label: () => 'Observar a Mira',
+      G.interaccion.add({ id: 'o_mira', ...EN({ x: 12.2, z: -12.5 }, { x: 40.5, z: -62 }), r: 2, visible: () => S.step === 1 && !tiene('obs_sombra'), label: () => 'Observar a Mira',
         use: () => { poner('obs_sombra'); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say([Vi(visitante('mira').observa), Lu('Ya lo tengo: necesita sombra.')], finObservar); } });
-      G.interaccion.add({ id: 'o_marea', ...EN({ x: 12.2, z: 12.5 }, { x: 36.5, z: -38 }), r: 2, visible: () => S.step >= 2 && !tiene('obs_rio'), label: () => 'Observar a Marea',
+      G.interaccion.add({ id: 'o_marea', ...EN({ x: 12.2, z: 12.5 }, { x: 36.5, z: -38 }), r: 2, visible: () => S.step === 1 && !tiene('obs_rio'), label: () => 'Observar a Marea',
         use: () => { poner('obs_rio'); G.audio.play('pickup'); G.misiones.check(); G.dialogo.say([Vi(visitante('marea').observa), Lu('La soga se le suelta. Necesita un nudo que aguante.')], finObservar); } });
-      function finObservar() { if (Object.values(OBSERVAR).every(tiene) && S.step === 3) G.ui.toast('Presenta en la mesa a los que se cubren uno al otro', 3200); }
+      function finObservar() { if (Object.values(OBSERVAR).every(tiene) && S.step === 1) G.ui.toast('Presenta en la mesa a los que se cubren uno al otro', 3200); }
       // La mesa: presentar parejas (tocar uno y luego otro; una pareja que no se cubre solo saluda, sin castigo)
       function mesa() {
-        if (S.step < 3) { G.dialogo.say([Lu(S.step < 1 ? 'Aquí pondré las tarjetas de cada uno.' : `Llevo ${conocidos().length} tarjetas de 6. Faltan por conocer u observar.`)]); return; }
+        if (S.step < 1 || !Object.values(OBSERVAR).every(tiene)) { G.dialogo.say([Lu(S.step < 1 ? 'Aquí pondré las tarjetas de cada uno.' : `Llevo ${conocidos().length} tarjetas de 6. Faltan por conocer u observar.`)]); return; }
         if (G.eventos.had('CardsFilled')) { G.dialogo.say([Lu('Las seis tarjetas, llenas. Y tres parejas que se cubren.')]); return; }
         const libres = VISITANTES.filter(v => !PAREJAS.some(p => p.includes(v.id) && tiene('pareja_' + p.join('+'))));
         elegir('Vittata', '¿A quién presento primero?', libres.map(v => ({ label: v.nombre, v: v.id })), a => {
@@ -565,15 +562,15 @@
           });
         });
       }
-      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, label: () => S.step === 3 ? 'Presentar a dos visitantes' : 'Mirar la mesa de las tarjetas', use: mesa });
+      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, label: () => S.step === 1 && Object.values(OBSERVAR).every(tiene) ? 'Presentar a dos visitantes' : 'Mirar la mesa de las tarjetas', use: mesa });
 
       // ---------- Misión 2 · «Nadie lo levanta solo» ----------
       const PL = () => S.plan || (S.plan = { asig: null, pruebas: 0, atasco: '' });
       const asigInicial = () => { const a = {}; for (const t of TAREAS) a[t.id] = 'vittata'; return a; }; // el plan «de la cabeza de Vittata»: solo ella
       function cuaderno() {
-        if (S.step < 4) { G.dialogo.say([Lu('El puente de madera. Le faltan dos tablas para que pasen todos.')]); return; }
-        if (S.step === 4) return criterios();
-        if (S.step === 5) return tablero();
+        if (S.step < 2) { G.dialogo.say([Lu('El puente de madera. Le faltan dos tablas para que pasen todos.')]); return; }
+        if (S.step === 2 && !tiene('criterios')) return criterios();
+        if (S.step === 2) return tablero();
         G.dialogo.say([Lu(G.eventos.had('RaisedTogether') ? 'El puente aguanta a todos. Y lo hicieron entre todos.' : 'El plan ya funciona. Ahora, la obra de verdad.')]);
       }
       function criterios() {
@@ -645,10 +642,10 @@
         poner('plan_' + r.tipo); G.eventos.log('PlanMade', { choice: r.tipo }); G.audio.play('unlock'); colocarNpcs(); G.misiones.check(); registrar();
         G.dialogo.say([Vi('Funciona. Cada uno en lo suyo… y yo en la tercera percha, para dar la señal.'), Lu('Ahora de verdad: la tabla grande se levanta entre tres.')], () => G.ui.toast('Pósate en la percha vacía y da la señal', 3200));
       }
-      G.interaccion.add({ id: 'cuaderno', ...EN({ x: PUENTE_W.x - 1.5, z: PUENTE_W.z - 2.5 }, { x: 33.5, z: -52.5 }), r: 2.6, label: () => ({ 4: 'Escribir el objetivo y los límites', 5: 'Abrir el tablero del plan' })[S.step] || 'Hablar con Iguaca', use: cuaderno });
+      G.interaccion.add({ id: 'cuaderno', ...EN({ x: PUENTE_W.x - 1.5, z: PUENTE_W.z - 2.5 }, { x: 33.5, z: -52.5 }), r: 2.6, label: () => S.step !== 2 ? 'Hablar con Iguaca' : (tiene('criterios') ? 'Abrir el tablero del plan' : 'Escribir el objetivo y los límites'), use: cuaderno });
       // La tabla grande: dos ayudantes en sus perchas (por el plan) y Vittata posada en la tercera, que da la señal
       let subiendo = -1;
-      G.interaccion.add({ id: 'percha_v', x: PERCHAS.v.x, z: PERCHAS.v.z, r: 1.6, visible: () => S.step === 6, label: () => 'Dar la señal desde la percha',
+      G.interaccion.add({ id: 'percha_v', x: PERCHAS.v.x, z: PERCHAS.v.z, r: 1.6, visible: () => S.step === 3 && !tiene('levantada'), label: () => 'Dar la señal desde la percha',
         use: () => {
           if (Math.abs(S.pos.y - perchaV.y) > 0.5) { G.ui.toast('Pósate en la percha vacía (vuela hasta el poste) y da la señal', 2600); return; }
           poner('levantada'); subiendo = 0; encuadrar(PUENTE.x, PUENTE.z); G.audio.play('unlock'); G.misiones.check(); registrar();
@@ -663,7 +660,7 @@
       const ROCA_ALTO = 3.5, PX0 = Math.min(RX(13.5), RX(26.5)), PX1 = Math.max(RX(13.5), RX(26.5));
       const techoRoca = (x, z) => { const a = G.agua.levelAt(x, z); return Math.max(H(x, z), isFinite(a) ? a : -Infinity, x >= PX0 && x <= PX1 && Math.abs(z - RZ(0)) < 1.6 ? topPuente : -Infinity) + ROCA_ALTO; };
       const muyAlto = () => S.pos.y > topPuente + ROCA_ALTO;
-      G.interaccion.add({ id: 'tabla_larga', x: TABLA_LARGA.x, z: TABLA_LARGA.z, r: 2.4, visible: () => S.step === 7 && !llevando, label: () => 'Cargar la tabla larga',
+      G.interaccion.add({ id: 'tabla_larga', x: TABLA_LARGA.x, z: TABLA_LARGA.z, r: 2.4, visible: () => S.step === 3 && tiene('levantada') && !G.eventos.had('RaisedTogether') && !llevando, label: () => 'Cargar la tabla larga',
         use: () => {
           elegir('Vittata', 'La tabla larga pesa. ¿Cómo la llevo?', [{ label: 'Yo sola, de una punta', v: 'sola' }, { label: `Pedirle a ${nombre(cargador())} que agarre la otra punta`, v: 'dos' }], o => {
             if (o.v === 'sola') { G.audio.play('wrong'); G.dialogo.say([Vi('…No se mueve. Una punta sube y la otra se queda en el suelo.')]); return; }
@@ -674,7 +671,7 @@
       // En el real el puente está estirado (K = 1,23): desde la punta de la tabla grande (RX(22)) hay 2,71 m hasta «Colocar»
       // y con r 2,6 no se llegaba andando por el puente (había que caerse al río o volar). El radio se estira igual (3,2 m);
       // Roca va 2,8 m delante y su «Hablar» (r 2,4) sigue fuera de alcance. En el mundo pequeño K = 1: igual que antes.
-      G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6 * K, visible: () => S.step === 7 && llevando, label: () => 'Colocar la tabla larga en el puente',
+      G.interaccion.add({ id: 'colocar', ...PR(24.2, 0), r: 2.6 * K, visible: () => S.step === 3 && tiene('levantada') && llevando, label: () => 'Colocar la tabla larga en el puente',
         use: () => {
           if (muyAlto()) { G.ui.toast(`${nombre(cargador())} no vuela tan alto: baja hasta el puente para colocarla`, 2600); return; }
           llevando = false; avisoAlto = false; encuadrar(RX(24), RZ(0)); G.eventos.log('RaisedTogether'); G.comic.capture('levantada'); G.audio.play('unlock'); const n = npc(cargador()); if (n) n.collider.r = 0.6;
@@ -696,7 +693,7 @@
 
       // ---------- Misión 3 · «El círculo» ----------
       function grupos() {
-        if (S.step < 8) { G.dialogo.say([Lu('La plaza. Aquí cabremos todos… de alguna forma.')]); return; }
+        if (S.step < 4) { G.dialogo.say([Lu('La plaza. Aquí cabremos todos… de alguna forma.')]); return; }
         if (G.eventos.had('GroupsListened')) { G.dialogo.say([Lu('Ya se escucharon. Ahora, los asientos.')]); return; }
         if (!tiene('grupos_intro')) { poner('grupos_intro'); { const p = CI(0, 9.5); encuadrar(p.x, p.z); } G.dialogo.say([di(GRUPOS.alta.who, 'Nosotros decimos el mirador.'), di(GRUPOS.baja.who, 'Y nosotros la plaza. Y no es lo mismo.'), Vi('Yo decido: lo mejor es…'), Lu('(Le toca el ala.) Todavía no. Escucha a uno, luego al otro, y repite lo que oíste.')], escucharA); return; }
         if (!tiene('escucha_alta')) return escucharA();
@@ -726,9 +723,9 @@
           });
         });
       }
-      G.interaccion.add({ id: 'grupos', ...CI(0, 9), r: 3, visible: () => S.step >= 8, label: () => S.step === 8 ? 'Escuchar a los dos grupos' : 'Hablar con los grupos', use: grupos });
+      G.interaccion.add({ id: 'grupos', ...CI(0, 9), r: 3, visible: () => S.step >= 4, label: () => S.step === 4 && !G.eventos.had('GroupsListened') ? 'Escuchar a los dos grupos' : 'Hablar con los grupos', use: grupos });
       function marcas() {
-        if (S.step < 9) { G.dialogo.say([Lu('Treinta y seis marcas de cal. Caben de varias formas.')]); return; }
+        if (S.step < 4 || !G.eventos.had('GroupsListened')) { G.dialogo.say([Lu('Treinta y seis marcas de cal. Caben de varias formas.')]); return; }
         if (G.eventos.had('CircleFormed')) { const f = FORMAS.find(x => tiene('forma_' + x[0])); G.dialogo.say([Lu(f[2]), Lu(f[3])]); return; }
         elegir('Iguaca', 'Son 36 asientos. ¿Cómo los pongo? Todas las formas suman 36.', FORMAS.map(f => ({ label: f[1], v: f[0] })), o => {
           const f = FORMAS.find(x => x[0] === o.v);
@@ -736,7 +733,7 @@
           G.dialogo.say([Lu(f[2]), Lu(f[3]), Vi('Vale. Y yo no me siento primera: voy a invitar a cada uno a su sitio.')], () => G.ui.toast('Invita a cada uno a su asiento', 3000));
         });
       }
-      G.interaccion.add({ id: 'marcas', x: PLAZA.x, z: PLAZA.z - 4, r: 3, visible: () => S.step === 9, label: () => 'Elegir la forma del círculo', use: marcas });
+      G.interaccion.add({ id: 'marcas', x: PLAZA.x, z: PLAZA.z - 4, r: 3, visible: () => S.step === 4 && G.eventos.had('GroupsListened') && !G.eventos.had('CircleFormed'), label: () => 'Elegir la forma del círculo', use: marcas });
       function sentar(k) {
         if (tiene('sentado_' + k)) return;
         poner('sentado_' + k); G.audio.play('pickup'); dibujarAsientos(); colocarNpcs(); G.misiones.check();
@@ -744,10 +741,10 @@
         const l = k === 'alta' || k === 'baja' ? di(quien, 'Venimos todos. Gracias por invitarnos.') : di(quien, 'Voy. Gracias por venir a buscarme.');
         G.dialogo.say([Vi('Este es tu sitio. Siéntate cuando quieras.'), l], () => { if (SENTABLES.every(x => tiene('sentado_' + x))) G.ui.toast('Habla con el Guardián en el centro', 3000); });
       }
-      for (const k of ['alta', 'baja']) G.interaccion.add({ id: 's_' + k, ...CI(k === 'alta' ? -4 : 4, 9), r: 2.2, visible: () => S.step === 10 && !tiene('sentado_' + k), label: () => 'Invitar a su asiento', use: () => sentar(k) });
+      for (const k of ['alta', 'baja']) G.interaccion.add({ id: 's_' + k, ...CI(k === 'alta' ? -4 : 4, 9), r: 2.2, visible: () => S.step === 4 && G.eventos.had('CircleFormed') && !tiene('sentado_' + k), label: () => 'Invitar a su asiento', use: () => sentar(k) });
       // El pacto renovado y el final de temporada [KELVIN-2, 3, 6, 7, 8]
       function guardian() {
-        if (S.step < 11) { G.dialogo.say([Gu(S.step < 8 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
+        if (S.step < 5) { G.dialogo.say([Gu(S.step < 4 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
         if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola, Guardiana.')]); return; }
         encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); poner('medalla'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
@@ -780,7 +777,7 @@
       // La medalla del Guardián en el Cuaderno (Kelvin 2-nov): sección propia del Diario, solo cuando ya se la dio (S.collected 'medalla')
       const seccionMedalla = { id: 'medalla', html: () => (tiene('medalla') ? '<span class="lbl">La medalla del Guardián</span><ul class="diary"><li class="found"><span class="ico pacto" aria-hidden="true"></span><div><b>La medalla del Guardián</b><small>Me la dio el Guardián al renovar el pacto. Es igual a una de las piezas del emblema de los 36.</small></div></li></ul>' : '') };
       if (G.diario && G.diario.seccion) G.diario.seccion(seccionMedalla);
-      G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 11 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
+      G.interaccion.add({ id: 'guardian', x: GUARDIAN.x, z: GUARDIAN.z, r: 2.6, label: () => S.step === 5 ? 'Renovar el pacto' : 'Hablar con el Guardián', use: guardian });
 
       // ---------- Iguaca: pistas del paso en curso y, al final, las preguntas (opcionales) ----------
       function hablar() {
@@ -789,7 +786,7 @@
             [{ label: 'Sí, pregúntame', v: 1 }, { label: 'Ahora no', v: 0 }], o => { if (o.v) formativa(); else G.dialogo.say([Lu('Cuando quieras. Aquí estaré.')]); });
           return;
         }
-        if (S.step === 4 || S.step === 5) return cuaderno();
+        if (S.step === 2) return cuaderno();
         const pistas = {
           0: 'Los muelles están junto al río. Recibe a quien llega.', 1: 'Habla con cada visitante: cuenta qué sabe hacer y qué necesita.',
           2: 'Mira se quedó en la sombra y Marea no deja de mirar el río. Obsérvalas.', 3: 'En la mesa del taller, presenta a dos que se cubran uno al otro.',
@@ -855,12 +852,12 @@
         try {
           G.quiet = true; G.guardado.reset(true);
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
-          check('Empieza en el paso 1 de 12', S.step === 0 && $('steps').children.length === 12);
+          check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
           check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.nota || '')).includes('[KELVIN') && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
           check('6 visitantes inspirados en especies vivas con ficha en especies.js; sus habilidades son del personaje', G.ep6.VISITANTES.length === 6 && G.ep6.VISITANTES.every(v => (window.AV_ESPECIES.especies || []).some(e => e.id === v.especie && e.uicn && e.uicn.categoria !== 'EX') && v.sabe.length === 2 && v.necesita));
           // M1 · Cada quien con lo suyo
           useAt('v_mira'); drain();
-          check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 1 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
+          check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 0 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
             check('Diario · las 5 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 5 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
@@ -869,7 +866,7 @@
           { const g = G.misiones.guideTarget && G.misiones.guideTarget(), it = G.interaccion.find('v_roca');
             check('Guía · la flecha va al visitante pendiente más cercano (Roca, en el mismo muelle), no en orden fijo', !g || (Math.abs(g.x - it.x) < 0.5 && Math.abs(g.z - it.z) < 0.5), g && [g.x, g.z].join()); }
           for (const v of ['roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + v); drain(); }
-          check('M1 · Los 6 conocidos: 6 tarjetas; hay que observar a dos', S.step === 2 && G.interaccion.find('o_mira').visible() && G.interaccion.find('o_marea').visible(), 'paso ' + S.step);
+          check('M1 · Los 6 conocidos: 6 tarjetas; hay que observar a dos', S.step === 1 && G.interaccion.find('o_mira').visible() && G.interaccion.find('o_marea').visible(), 'paso ' + S.step);
           useAt('v_roca'); drain();
           check('M1 · Al volver a hablar: tarjeta o ficha de especie', opciones().length === 3 && opciones().some(x => x.includes('ficha')), opciones().join());
           pick('Ver su tarjeta');
@@ -879,7 +876,7 @@
           check('M1 · Ficha de especie de Mira: nombre científico de especies.js (sin inventar nada)', S.collected.includes('ficha_vista') && /Amazona versicolor|BirdLife/.test($('d-text').textContent), $('d-text').textContent.slice(0, 60));
           drain();
           useAt('o_mira'); drain(); useAt('o_marea'); drain();
-          check('M1 · Observadas las dos: ahora las parejas', S.step === 3 && S.collected.includes('obs_sombra') && S.collected.includes('obs_rio'), 'paso ' + S.step);
+          check('M1 · Observadas las dos: ahora las parejas', S.step === 1 && S.collected.includes('obs_sombra') && S.collected.includes('obs_rio'), 'paso ' + S.step);
           useAt('mesa'); drain();
           check('M1 · La mesa: elegir a quién presentar (6 libres)', opciones().length === 6, opciones().join());
           pick('Mira'); pick('Roca');
@@ -888,7 +885,7 @@
           useAt('mesa'); drain(); pick('Roca'); pick('Eco');
           check('M1 · Dos parejas hechas; quedan 2 libres en la mesa', G.ep6.PAREJAS.filter(p => S.collected.includes('pareja_' + p.join('+'))).length === 2 && (useAt('mesa'), drain(), opciones().length === 2), opciones().join());
           pick('Marea'); pick('Nudo');
-          check('M1 · Tres parejas: tarjetas llenas, misión 1 y el mapa', G.eventos.had('CardsFilled') && S.step === 4 && S.missions.conocer && S.unlocked.includes('mano:mapa'), 'paso ' + S.step);
+          check('M1 · Tres parejas: tarjetas llenas, misión 1 y el mapa', G.eventos.had('CardsFilled') && S.step === 2 && S.missions.conocer && S.unlocked.includes('mano:mapa'), 'paso ' + S.step);
 
           // M2 · Nadie lo levanta solo
           useAt('cuaderno'); drain();
@@ -896,7 +893,7 @@
           pick('Nadie hace algo');
           check('M2 · Un límite no es el objetivo: se explica y se repite', !S.collected.includes('criterios') && opciones().length === 3);
           pick('aguanta a todos');
-          check('M2 · Criterios escritos', S.collected.includes('criterios') && S.step === 5, 'paso ' + S.step);
+          check('M2 · Criterios escritos', S.collected.includes('criterios') && S.step === 2, 'paso ' + S.step);
           useAt('cuaderno'); drain();
           check('M2 · El tablero: 5 tareas, 6 ayudantes y Vittata en todas (el plan de su cabeza)', G.ui.cardOpen && document.querySelectorAll('#card [data-tarea]').length === 5 && document.querySelectorAll('#card [data-ayud]').length === 6 && G.ep6.TAREAS.every(t => G.ep6.PL().asig[t.id] === 'vittata'));
           check('Tablero y tarjetas con botones de 56 px', [...document.querySelectorAll('#card .ep6-tarea, #card .ep6-ayud')].every(b => parseFloat(getComputedStyle(b).minHeight) >= 56));
@@ -914,7 +911,7 @@
           pick('Probar el plan');
           check('M2 · Prueba 3, el plan que enseña: Brote ata junto a Nudo y funciona', G.ui.cardOpen && /Probando el plan/.test($('card').textContent) && !G.ep6.simular(G.ep6.PL().asig).atasco && G.ep6.simular(G.ep6.PL().asig).tipo === 'ensena', JSON.stringify(G.ep6.PL().asig));
           pick('Cerrar'); drain();
-          check('M2 · PlanMade (enseña), 3 pruebas registradas y Vittata a la tercera percha', G.eventos.had('PlanMade') && S.collected.includes('plan_ensena') && S.step === 6 && G.ep6.PL().pruebas === 3, 'paso ' + S.step);
+          check('M2 · PlanMade (enseña), 3 pruebas registradas y Vittata a la tercera percha', G.eventos.had('PlanMade') && S.collected.includes('plan_ensena') && S.step === 3 && G.ep6.PL().pruebas === 3, 'paso ' + S.step);
           check('Ninguna asignación lo maximiza todo: rápido, enseña y descansa son los tres planes que funcionan y cada uno tiene su costo', (() => {
             const s = sim(), base = { cargar: 'roca', sostener: 'vittata', atar: 'nudo', revisar: 'mira', avisar: 'mira' };
             const rap = s(base), des = s(Object.assign({}, base, { avisar: 'aprendiz' })), ens = s(Object.assign({}, base, { avisar: 'brote' }));
@@ -925,7 +922,7 @@
           G.interaccion.action(); drain();
           check('M2 · Sin posarse en la percha no hay señal (aviso, sin castigo)', !S.collected.includes('levantada'));
           S.pos.y = p.y; tick(0.1); G.interaccion.action(); drain();
-          check('M2 · Posada en la tercera percha: la tabla grande sube', S.collected.includes('levantada') && S.step === 7, 'paso ' + S.step);
+          check('M2 · Posada en la tercera percha: la tabla grande sube', S.collected.includes('levantada') && S.step === 3, 'paso ' + S.step);
           check('M2 · La tabla grande ya se pisa (para llevar la larga andando); el tramo de la larga todavía no', (() => { const c = G.ep6.PR(20, 0), l = G.ep6.PR(24.5, 0); return Math.abs(G.fisica.suelo(c.x, c.z, G.ep6.topPuente + 0.3) - G.ep6.topPuente) < 0.05 && G.fisica.suelo(l.x, l.z, G.ep6.topPuente + 0.3) < G.ep6.topPuente - 0.1; })(), [G.ep6.PR(20, 0), G.ep6.PR(24.5, 0)].map(p => G.fisica.suelo(p.x, p.z, G.ep6.topPuente + 0.3)).concat(G.ep6.topPuente).map(x => x.toFixed(2)).join());
           useAt('tabla_larga'); drain(); pick('Yo sola');
           check('M2 · La tabla larga no se mueve con una sola punta', !G.ep6.llevando());
@@ -954,7 +951,7 @@
             } finally { G.ui.toast = toast1; MV.flying = false; MV.landing = false; }
             teleport(c.x, c.z); tick(0.1); }
           if (!G.eventos.had('RaisedTogether')) { useAt('colocar'); drain(); }
-          check('M2 · Colocada: RaisedTogether, misión 2 y el cuaderno; Brote ata el último nudo', G.eventos.had('RaisedTogether') && S.missions.obra && S.unlocked.includes('mano:cuaderno') && S.step === 8, 'paso ' + S.step);
+          check('M2 · Colocada: RaisedTogether, misión 2 y el cuaderno; Brote ata el último nudo', G.eventos.had('RaisedTogether') && S.missions.obra && S.unlocked.includes('mano:cuaderno') && S.step === 4, 'paso ' + S.step);
 
           // M3 · El círculo
           useAt('grupos'); drain();
@@ -970,14 +967,14 @@
           pick('quieren mandar'); pick('nadie se quede fuera');
           check('M3 · Las tres propuestas: nadie se va', opciones().length === 3, opciones().join());
           pick('Una mezcla');
-          check('M3 · GroupsListened con la mezcla', G.eventos.had('GroupsListened') && S.collected.includes('propuesta_mezcla') && S.step === 9, 'paso ' + S.step);
+          check('M3 · GroupsListened con la mezcla', G.eventos.had('GroupsListened') && S.collected.includes('propuesta_mezcla') && S.step === 4, 'paso ' + S.step);
           useAt('marcas'); drain();
           check('M3 · 4 formas para los 36', opciones().length === 4, opciones().join());
           pick('4 filas de 9');
-          check('M3 · Forma 4×9: 36 marcas en la plaza, 4 encendidas (Vittata, Iguaca, el Guardián y el aprendiz)', G.eventos.had('CircleFormed') && G.ep6.asientos.children.length === 36 && G.ep6.sentados() === 4 && S.step === 10, 'paso ' + S.step);
+          check('M3 · Forma 4×9: 36 marcas en la plaza, 4 encendidas (Vittata, Iguaca, el Guardián y el aprendiz)', G.eventos.had('CircleFormed') && G.ep6.asientos.children.length === 36 && G.ep6.sentados() === 4 && S.step === 4, 'paso ' + S.step);
           for (const k of ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote']) { useAt('v_' + k); drain(); } useAt('s_alta'); drain(); useAt('s_baja'); drain();
           check('M3 · Cada invitado queda de pie sobre una marca encendida; las marcas ya no tapan al Guardián', ['mira', 'roca', 'marea', 'nudo', 'eco', 'brote', 'alta', 'baja', 'alta_1', 'baja_2'].every(id => { const n = G.actores.npc(id); return G.ep6.asientos.children.some(m => m.material.emissiveIntensity > 0.5 && Math.hypot(m.position.x - n.def.x, m.position.z - n.def.z) < 0.05); }) && !G.interaccion.find('marcas').visible());
-          check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 11 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());
+          check('M3 · Los 8 invitados: 22 asientos encendidos y 14 esperando', G.ep6.sentados() === 22 && S.step === 5 && G.ep6.asientos.children.filter(m => m.material.emissiveIntensity > 0.5).length === 22, G.ep6.sentados());
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);
           check('M3 · D33: el pacto es un objeto, el emblema de los 36 completo', S.collected.includes('emblema'));

@@ -107,6 +107,9 @@ AVE.module('renderer', function (G) {
     if (n && n <= 2) motivos.push(n + ' núcleos');
     if (m && m <= 2) motivos.push(m + ' GB');
     if (motivos.length) return { nivel: 'bajo', motivos };
+    // QA-107 (3-nov): en el iPhone, en medio, Safari cerraba la pestaña por memoria al volar en el cap. 1 (en bajo no).
+    // Safari no da la memoria ni el modelo: todo iPhone/iPod arranca en bajo y la subida por FPS no lo saca de ahí (techo).
+    if (e.iphone) return { nivel: 'bajo', motivos: ['iPhone (memoria de Safari)'], techo: 'bajo' };
     if ((e.movil || e.chromeos) && (n && n <= 4 || m && m <= 4)) return { nivel: 'bajo', motivos: [(e.chromeos ? 'Chromebook' : 'móvil') + ' con ' + (n || '?') + ' núcleos y ' + (m || '?') + ' GB'] };
     if (e.modesto) motivos.push(e.movil ? 'móvil' : e.chromeos ? 'Chromebook' : 'GPU integrada');
     if (n && n <= 4) motivos.push(n + ' núcleos');
@@ -121,7 +124,8 @@ AVE.module('renderer', function (G) {
     if (fps < objetivo * 0.5) return 'bajo';
     return fps < objetivo * 0.85 ? NIVELES[i - 1] : nivel;
   }
-  const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
+  const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
+  const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, iphone: IPHONE, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
   const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
   const inicial = NIVELES.includes(fromUrl) ? fromUrl : PERFIL.nivel;
@@ -693,7 +697,7 @@ AVE.module('renderer', function (G) {
     fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
-    else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
+    else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2 && !(PERFIL.techo && i >= NIVELES.indexOf(PERFIL.techo))) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
   }
   const medidor = { fps: 0, ms: 0, frames: 0, t0: performance.now() };
   function stats() {
@@ -940,7 +944,7 @@ AVE.module('renderer', function (G) {
   // ---------- Prueba de calidad automática (A3): equipos simulados, sin tocar la calidad real; también corre en contextTest ----------
   function calidadTest() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
-    const p = e => perfilEquipo(Object.assign({ software: false, modesto: false, movil: false, chromeos: false, nucleos: 0, memoria: 0 }, e));
+    const p = e => perfilEquipo(Object.assign({ software: false, modesto: false, movil: false, chromeos: false, iphone: false, nucleos: 0, memoria: 0 }, e));
     const casos = [
       ['Equipo potente (GPU dedicada, 12 núcleos, 8 GB) sigue en alto', { nucleos: 12, memoria: 8 }, 'alto'],
       ['Navegador que no dice núcleos ni memoria y GPU buena: alto', {}, 'alto'],
@@ -951,8 +955,11 @@ AVE.module('renderer', function (G) {
       ['Escritorio de 4 núcleos arranca en medio', { nucleos: 4, memoria: 8 }, 'medio'],
       ['Equipo de 2 GB arranca en bajo', { nucleos: 8, memoria: 2 }, 'bajo'],
       ['GPU por software arranca en bajo', { software: true, nucleos: 16, memoria: 8 }, 'bajo'],
+      ['iPhone (Safari: sin memoria, 6 núcleos) arranca en bajo (QA-107)', { movil: true, modesto: true, iphone: true, nucleos: 6 }, 'bajo'],
     ];
     for (const [nombre, e, nivel] of casos) { const r = p(e); check(nombre, r.nivel === nivel, r.nivel + (r.motivos.length ? ' (' + r.motivos.join(', ') + ')' : '')); }
+    const ip = p({ movil: true, modesto: true, iphone: true, nucleos: 6 });
+    check('iPhone: la subida por FPS no pasa de bajo (techo, QA-107)', ip.techo === 'bajo' && !p({ movil: true, modesto: true, nucleos: 8, memoria: 8 }).techo, ip.techo);
     const d = (fps, n) => decidirArranque(fps, n, 55);
     check('Arranque: a 60 FPS no cambia la calidad', d(60, 'alto') === 'alto' && d(60, 'medio') === 'medio');
     check('Arranque: a 40 FPS baja un nivel', d(40, 'alto') === 'medio' && d(40, 'medio') === 'bajo');

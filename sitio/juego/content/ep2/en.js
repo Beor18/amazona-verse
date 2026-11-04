@@ -16,6 +16,10 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
   "Próximo:": "Next:",
   // ---------- Pasos de la historia y misiones ----------
   "Habla con Iguaca": "Talk to Iguaca",
+  "Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste": "Talk to Iguaca, read the 3 sites and tell her which you chose",
+  "Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste ({}/3)": "Talk to Iguaca, read the 3 sites and tell her which you chose ({}/3)",
+  "Enseña el plano, pregunta qué necesitan y ordena las tarjetas": "Show the plan, ask what they need and sort the cards",
+  "Enseña el plano, pregunta qué necesitan y ordena las tarjetas ({}/7)": "Show the plan, ask what they need and sort the cards ({}/7)",
   "Lee la tierra: observa los 3 sitios y elige uno": "Read the land: look at the 3 sites and choose one",
   "Lee la tierra: observa los 3 sitios y elige uno ({}/3)": "Read the land: look at the 3 sites and choose one ({}/3)",
   "Cuéntale a Iguaca lo que elegiste": "Tell Iguaca what you chose",

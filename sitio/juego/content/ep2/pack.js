@@ -172,19 +172,26 @@
 
     // ---------- Historia: leer la tierra (M1), escuchar (M2) y construir, probar y mejorar (M3) ----------
     historia: {
+      // CG-38: 6 pasos. Hablar, volver y enseñar el plano van dentro del paso que les da sentido. La historia no cambia.
       pasos: [
-        { id: 'hablar', texto: 'Habla con Iguaca', guia: G => G.misiones.at('iguaca') },
-        { id: 'tierra', texto: 'Lee la tierra: observa los 3 sitios y elige uno', progreso: S => ` (${IDS.filter(i => S.collected.includes(lee(i))).length}/3)`,
-          hasta: { mision: 'lee_tierra' }, guia: G => { // con los 3 leídos, la flecha va al sitio más cercano: no empuja hacia ninguno (se elige con evidencia)
-            const S = G.S, i = IDS.find(k => !S.collected.includes(lee(k))), d = k => Math.hypot(SITIOS[k].x - S.pos.x, SITIOS[k].z - S.pos.z);
-            return G.misiones.at('sitio_' + (i || IDS.slice().sort((a, b) => d(a) - d(b))[0])); } },
-        { id: 'volver', texto: 'Cuéntale a Iguaca lo que elegiste', guia: G => G.misiones.at('iguaca') },
-        { id: 'plano', texto: 'Enséñale tu plano a la abuela', hasta: { evento: 'ResidentsMet' }, guia: G => G.misiones.at('abuela') },
-        { id: 'preguntar', texto: 'Pregunta a la abuela y al papá qué necesitan', progreso: S => ` (${NEC.filter(k => S.collected.includes(k)).length}/${NEC.length})`,
-          hasta: { recogido: NEC }, guia: G => G.misiones.at(PREGUNTAS.abuela.some(p => p.tarjeta && !G.S.collected.includes('nec_' + p.tarjeta)) ? 'abuela' : 'papa') },
-        { id: 'ordenar', texto: 'Ordena las tarjetas en la mesa', hasta: { mision: 'escuchar' }, guia: G => G.misiones.at('mesa') },
-        { id: 'construir', texto: 'Dibuja y construye la casa en tu sitio', hasta: { recogido: ['base', 'paredes', 'techo', 'anclaje'].map(p => 'dec_' + p) }, guia: G => G.misiones.at('obra') },
-        { id: 'nido', texto: 'Arma el nido del papá', hasta: { evento: 'HomeBuilt' }, guia: G => G.misiones.at('obra') },
+        { id: 'tierra', texto: 'Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste',
+          progreso: S => { const n = IDS.filter(i => S.collected.includes(lee(i))).length; return n ? ` (${n}/3)` : ''; },
+          hasta: { evento: 'SiteChosen' },
+          guia: G => {
+            const S = G.S, inicio = S.edu && S.edu.inicio;
+            if (!inicio || S.missions.lee_tierra) return G.misiones.at('iguaca');
+            const i = IDS.find(k => !S.collected.includes(lee(k))), d = k => Math.hypot(SITIOS[k].x - S.pos.x, SITIOS[k].z - S.pos.z);
+            return G.misiones.at('sitio_' + (i || IDS.slice().sort((a, b) => d(a) - d(b))[0]));
+          } },
+        { id: 'escuchar', texto: 'Enseña el plano, pregunta qué necesitan y ordena las tarjetas',
+          progreso: S => ` (${NEC.filter(k => S.collected.includes(k)).length}/${NEC.length})`,
+          hasta: { mision: 'escuchar' },
+          guia: G => {
+            if (!G.eventos.had('ResidentsMet')) return G.misiones.at('abuela');
+            if (!NEC.every(k => G.S.collected.includes(k))) return G.misiones.at(PREGUNTAS.abuela.some(p => p.tarjeta && !G.S.collected.includes('nec_' + p.tarjeta)) ? 'abuela' : 'papa');
+            return G.misiones.at('mesa');
+          } },
+        { id: 'obra', texto: 'Construye la casa y el nido', hasta: { evento: 'HomeBuilt' }, guia: G => G.misiones.at('obra') },
         { id: 'prueba1', texto: 'Prueba la casa: espera la tormenta', hasta: { evento: 'StormTested' }, guia: G => G.misiones.at('obra') },
         { id: 'mejorar', texto: 'Cambia solo lo que falló', hasta: { evento: 'HomeImproved' }, guia: G => G.misiones.at('obra') },
         { id: 'prueba2', texto: 'Prueba otra vez', guia: G => G.misiones.at('obra') },
@@ -320,13 +327,14 @@
       } });
 
       // ---------- Iguaca: da cada misión y, en medio, una pista del paso en curso; al final, las preguntas (opcionales) ----------
+      const casaLista = () => ['base', 'paredes', 'techo', 'anclaje'].every(p => tiene('dec_' + p));
       function hablar() {
-        if (S.step === 0) { G.dialogo.say(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.advanceTo(1); }); return; }
-        if (S.step === 1) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
-        if (S.step === 2) {
+        if (S.step === 0 && !(S.edu && S.edu.inicio)) { G.dialogo.say(L('interact:iguaca'), () => { E().inicio = S.clock; G.misiones.check(); }); return; }
+        if (S.step === 0 && !S.missions.lee_tierra) { G.dialogo.say([Lu('Mira los 3 sitios: el llano, la loma y el claro. Llevas ' + leidos().length + ' de 3.')]); return; }
+        if (S.step === 0) {
           G.eventos.log('SiteChosen'); G.comic.capture('sitio'); G.audio.play('unlock'); registrar();
           if (window.AVTemporada) window.AVTemporada.apuntar(2, { sitio: elegido() }); // D11: el ep. 3 nombra la casa en este sitio
-          G.dialogo.say(L('evento:SiteChosen'), () => { G.misiones.advanceTo(3); G.ui.toast('Enséñale tu plano a la abuela', 3000); });
+          G.dialogo.say(L('evento:SiteChosen'), () => { G.misiones.check(); G.ui.toast('Enséñale tu plano a la abuela', 3000); });
           return;
         }
         if (S.complete && AU.activo && !todasPreguntadas()) {
@@ -335,18 +343,15 @@
           return;
         }
         const pistas = {
-          3: 'La abuela está junto al agua. Enséñale tu plano.',
-          4: 'Haz preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.',
-          5: 'Las tarjetas te esperan en la mesa.',
-          6: 'Ve a tu sitio, ' + (SITIOS[elegido()] || SITIOS.a).nombre + ', y dibuja la casa.',
-          7: 'Falta el nido del papá: alto, oscuro y seco.',
-          8: 'Ya está construida. Ahora, la prueba de verdad: la tormenta.',
-          9: 'La tormenta te enseñó qué parte es la más débil. Cambia solo esa.',
-          10: 'Vuelve a probarla. Si aguanta, ¡hay fiesta!',
+          1: !G.eventos.had('ResidentsMet') ? 'La abuela está junto al agua. Enséñale tu plano.' : (!NEC.every(tiene) ? 'Haz preguntas abiertas: las que empiezan por «cómo», «qué» o «por qué» dan más respuesta que un sí o un no.' : 'Las tarjetas te esperan en la mesa.'),
+          2: !casaLista() ? 'Ve a tu sitio, ' + (SITIOS[elegido()] || SITIOS.a).nombre + ', y dibuja la casa.' : 'Falta el nido del papá: alto, oscuro y seco.',
+          3: 'Ya está construida. Ahora, la prueba de verdad: la tormenta.',
+          4: 'La tormenta te enseñó qué parte es la más débil. Cambia solo esa.',
+          5: 'Vuelve a probarla. Si aguanta, ¡hay fiesta!',
         };
         G.dialogo.say([Lu(S.complete ? '¡La casa aguanta! Puedes seguir explorando.' : pistas[S.step] || 'Sigue así.')]);
       }
-      G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 2 ? 'Contarle a Iguaca' : 'Hablar con Iguaca', use: hablar });
+      G.interaccion.add({ id: 'iguaca', x: LUMA.x, z: LUMA.z, r: 2.4, label: () => S.step === 0 && S.missions.lee_tierra && !G.eventos.had('SiteChosen') ? 'Contarle a Iguaca' : 'Hablar con Iguaca', use: hablar });
 
       // Cada sitio: primero se observa (pendiente, suelo, viento); con los 3 leídos, se puede elegir
       const cintas = [];
@@ -358,7 +363,7 @@
         cinta.position.set(s.x + 0.06, y + 2, s.z); G.renderer.scene.add(cinta);
         cintas.push([cinta, s.x, { a: 0.12, b: 0.75, c: 0.35 }[id]]); // la cinta se agita con el viento de cada sitio: se lee a la vista
         G.interaccion.add({ id: 'sitio_' + id, x: s.x, z: s.z, r: 2.4,
-          visible: () => S.step === 1 && !elegido(),
+          visible: () => S.step === 0 && !!(S.edu && S.edu.inicio) && !elegido(),
           label: () => leidos().length === 3 ? 'Elegir ' + s.nombre : 'Observar ' + s.nombre,
           use: () => {
             if (!tiene(lee(id))) {
@@ -394,22 +399,22 @@
         });
       }
       function abuela() {
-        if (S.step < 3) { G.dialogo.say([di('Abuela', 'Dicen que viene otra tormenta. Este refugio no aguanta otra.')]); return; }
-        if (S.step === 3) {
+        if (S.step < 1) { G.dialogo.say([di('Abuela', 'Dicen que viene otra tormenta. Este refugio no aguanta otra.')]); return; }
+        if (S.step === 1 && !G.eventos.had('ResidentsMet')) {
           G.eventos.log('ResidentsMet');
           G.dialogo.say(L('evento:ResidentsMet'), () => { G.misiones.check(); G.ui.toast('Pregúntales qué necesitan', 3000); });
           return;
         }
-        if (S.step === 4) { preguntar('abuela'); return; }
+        if (S.step === 1 && !NEC.every(tiene)) { preguntar('abuela'); return; }
         G.dialogo.say([di('Abuela', S.complete ? '¡Qué bien se está en la casa nueva!' : 'Gracias por preguntarme, mi niña.')]);
       }
       function papa() {
-        if (S.step < 4) { G.dialogo.say([di('Papá', S.step === 3 ? '…' : 'Busco un hueco para el nido antes de la tormenta.')]); return; }
-        if (S.step === 4) { preguntar('papa'); return; }
+        if (S.step === 1 && G.eventos.had('ResidentsMet') && !NEC.every(tiene)) { preguntar('papa'); return; }
+        if (S.step < 2) { G.dialogo.say([di('Papá', S.step === 1 ? '…' : 'Busco un hueco para el nido antes de la tormenta.')]); return; }
         G.dialogo.say([di('Papá', S.complete ? 'El nido está seco y en alto. Gracias.' : 'Alto, oscuro y seco. No se te olvide.')]);
       }
-      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 3 ? 'Enseñar el plano a la abuela' : S.step === 4 ? 'Preguntar a la abuela' : 'Hablar con la abuela', use: abuela });
-      const itPapa = G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 4 ? 'Preguntar al papá' : 'Hablar con el papá', use: papa });
+      const itAbuela = G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => S.step === 1 && !G.eventos.had('ResidentsMet') ? 'Enseñar el plano a la abuela' : (S.step === 1 && !NEC.every(tiene) ? 'Preguntar a la abuela' : 'Hablar con la abuela'), use: abuela });
+      const itPapa = G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 2.4, label: () => S.step === 1 && G.eventos.had('ResidentsMet') && !NEC.every(tiene) ? 'Preguntar al papá' : 'Hablar con el papá', use: papa });
 
       // La mesa: cada tarjeta, ¿criterio o restricción? Si no acierta, una pista y se vuelve a preguntar (sin castigo)
       function ordenar() {
@@ -441,10 +446,10 @@
           G.dialogo.say([di('Vittata', FRASES[o.v] + ' Abajo, la entrada baja para la abuela; arriba, el nido del papá.')].concat(L('evento:ListenChoice')), () => G.misiones.check());
         }));
       }
-      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => S.step >= 5,
-        label: () => S.step === 5 ? 'Ordenar las tarjetas' : 'Mirar las tarjetas',
+      G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.4, visible: () => (S.step === 1 && NEC.every(tiene)) || S.step > 1,
+        label: () => S.step === 1 ? 'Ordenar las tarjetas' : 'Mirar las tarjetas',
         use: () => {
-          if (S.step === 5) { encuadrar(MESA.x, MESA.z, PLANO_MESA); ordenar(); return; }
+          if (S.step === 1) { encuadrar(MESA.x, MESA.z, PLANO_MESA); ordenar(); return; }
           const c = ORDEN.filter(k => TARJETAS[k].tipo === 'criterio').map(k => TARJETAS[k].texto), r = ORDEN.filter(k => TARJETAS[k].tipo === 'restriccion').map(k => TARJETAS[k].texto);
           G.dialogo.say([di('Vittata', 'Criterios: ' + c.join(', ') + '.'), di('Vittata', 'Restricciones: ' + r.join(', ') + '.')]);
         } });
@@ -483,7 +488,7 @@
         let nc = 0, nr = 0;
         for (const m of fichas) {
           const { k, i } = m.userData, t = TARJETAS[k];
-          m.visible = tiene('nec_' + k) || (t.tipo === 'restriccion' && S.step >= 5);
+          m.visible = tiene('nec_' + k) || (t.tipo === 'restriccion' && S.step >= 1 && NEC.every(tiene));
           if (tiene('ord_' + k)) { const c = t.tipo === 'criterio' ? nc++ : nr++; m.position.set(MESA.x + (t.tipo === 'criterio' ? -0.5 + (c % 2) * 0.3 : 0.6), yMesa, MESA.z - 0.36 + Math.floor(c / (t.tipo === 'criterio' ? 2 : 1)) * 0.2); m.rotation.y = 0; }
           else { m.position.set(MESA.x - 0.55 + (i % 5) * 0.27, yMesa, MESA.z - 0.1 + Math.floor(i / 5) * 0.24); m.rotation.y = ((i * 37) % 9 - 4) * 0.06; }
         }
@@ -503,7 +508,7 @@
       function ponerNpc(n, it, x, z) { if (!n) return; n.def.x = x; n.def.z = z; n.sp.position.set(x, H(x, z) + 1.0, z); n.sh.position.set(x, H(x, z) + 0.03, z); if (n.collider) { n.collider.x = x; n.collider.z = z; } if (it) { it.x = x; it.z = z; } }
       let enObra = null;
       function residentes() {
-        const k = S.step >= 6 && elegido() ? elegido() : '';
+        const k = S.step >= 2 && elegido() ? elegido() : '';
         if (k === enObra) return; enObra = k;
         const s = SITIOS[k];
         ponerNpc(npc('abuela'), itAbuela, s ? s.x - 3 - 2.3 : ABUELA.x, s ? s.z + 2.8 : ABUELA.z);
@@ -521,10 +526,11 @@
           b: { parte: 'techo', arreglo: 'techo', que: 'En la loma el viento tiró tanto que aflojó una esquina del techo.' },
           c: { parte: 'paredes', arreglo: 'paredes', que: 'En el claro la lluvia vino de lado y entró por las juntas de las paredes.' } }[sitio];
       }
-      const obra = G.interaccion.add({ id: 'obra', x: 0, z: 0, r: 3, visible: () => S.step >= 6 && !!elegido(),
-        label: () => ({ 6: 'Dibujar y construir la casa', 7: 'Armar el nido', 8: 'Esperar la tormenta', 9: 'Mejorar la casa', 10: 'Probar otra vez' })[S.step] || 'Mirar la casa',
+      const obra = G.interaccion.add({ id: 'obra', x: 0, z: 0, r: 3, visible: () => S.step >= 2 && !!elegido(),
+        label: () => (S.step === 2 ? (casaLista() ? 'Armar el nido' : 'Dibujar y construir la casa') : { 3: 'Esperar la tormenta', 4: 'Mejorar la casa', 5: 'Probar otra vez' }[S.step]) || 'Mirar la casa',
         use: () => {
-          if (S.step === 6) construir(); else if (S.step === 7) armarNido(); else if (S.step === 8) prueba1(); else if (S.step === 9) mejorar(); else if (S.step === 10) prueba2();
+          if (S.step === 2) { if (casaLista()) armarNido(); else construir(); }
+          else if (S.step === 3) prueba1(); else if (S.step === 4) mejorar(); else if (S.step === 5) prueba2();
           else G.dialogo.say([di('Vittata', S.complete ? 'Mi casa. La probé dos veces.' : 'Aquí va la casa.')]);
         } });
       function construir() {
@@ -782,10 +788,10 @@
         const opciones = () => [...document.querySelectorAll('[id^="ch-"]')].map(b => b.textContent);
         G.quiet = true; G.guardado.reset(true);
         check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
-        check('Empieza en el paso 1 de 11', S.step === 0 && $('steps').children.length === 11);
+        check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
         check('Los marcadores [KELVIN] no son canon: van en la nota de la escena, nunca en lo que lee el jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.nota)) && !G.pack.dialogos.datos().escenas.some(e => /\[KELVIN/.test(e.lineas.join(' '))));
         useAt('iguaca'); drain();
-        check('Iguaca da la misión', S.step === 1, 'paso ' + S.step);
+        check('Iguaca da la misión', S.step === 0 && !!S.edu.inicio, 'paso ' + S.step);
         { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
           check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
           const vuelta = { x: S.pos.x, z: S.pos.z };
@@ -793,26 +799,26 @@
           check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); teleport(vuelta.x, vuelta.z); tick(0.05); }
         check('Antes de leer los 3 sitios no se puede elegir', (useAt('sitio_a'), drain(), useAt('sitio_a'), drain(), !S.collected.includes('sitio_a')) && S.collected.includes('lee_a'));
         useAt('sitio_b'); drain(); useAt('sitio_c'); drain();
-        check('Los 3 sitios observados', ['lee_a', 'lee_b', 'lee_c'].every(k => S.collected.includes(k)) && S.step === 1);
+        check('Los 3 sitios observados', ['lee_a', 'lee_b', 'lee_c'].every(k => S.collected.includes(k)) && S.step === 0);
         useAt('sitio_c'); drain();
-        check('Elige un sitio: la misión se completa y llegan los lentes', S.missions.lee_tierra && S.step === 2 && S.unlocked.includes('lentes:#2b2b2b:binoculares'), JSON.stringify(S.missions));
+        check('Elige un sitio: la misión se completa y llegan los lentes', S.missions.lee_tierra && S.step === 0 && S.unlocked.includes('lentes:#2b2b2b:binoculares'), JSON.stringify(S.missions));
         useAt('parada_nido'); drain();
         check('Parada del nido: dato con su fuente y evento', G.eventos.had('DatoNido'));
         useAt('iguaca'); drain();
-        check('M1 cerrada con Iguaca: sigue «Escuchar primero», sin pantalla de fin', G.eventos.had('SiteChosen') && S.step === 3 && !S.complete && $('end').hidden, 'paso ' + S.step);
+        check('M1 cerrada con Iguaca: sigue «Escuchar primero», sin pantalla de fin', G.eventos.had('SiteChosen') && S.step === 1 && !S.complete && $('end').hidden, 'paso ' + S.step);
         check('D11 · El sitio elegido queda en el registro de temporada (el ep. 3 lo nombra)', TP.dato(2, 'sitio') === 'c', JSON.stringify(TP.decision(2)));
 
         // M2 · Escuchar primero
         useAt('abuela'); drain();
-        check('M2 · El plano: la abuela calla, el Guardián pregunta', G.eventos.had('ResidentsMet') && S.step === 4, 'paso ' + S.step);
+        check('M2 · El plano: la abuela calla, el Guardián pregunta', G.eventos.had('ResidentsMet') && S.step === 1, 'paso ' + S.step);
         useAt('abuela'); drain();
         check('M2 · Hay 5 preguntas para la abuela', opciones().length === 5, opciones().length);
         pick('verde');
-        check('M2 · Una pregunta cerrada no da tarjeta ni castiga', S.step === 4 && !NEC.some(k => S.collected.includes(k)) && opciones().length === 4, opciones().length);
+        check('M2 · Una pregunta cerrada no da tarjeta ni castiga', S.step === 1 && !NEC.some(k => S.collected.includes(k)) && opciones().length === 4, opciones().length);
         pick('Cómo entras'); pick('refugio'); pick('Dónde te gusta');
         useAt('papa'); drain();
         pick('Dónde pondrías'); pick('lluvia'); pick('Por qué te fuiste'); pick('tranquilo');
-        check('M2 · 7 tarjetas de las necesidades', NEC.every(k => S.collected.includes(k)) && S.step === 5, 'paso ' + S.step);
+        check('M2 · 7 tarjetas de las necesidades', NEC.every(k => S.collected.includes(k)) && S.step === 1, 'paso ' + S.step);
         useAt('mesa'); drain();
         pick('Restricción');
         check('M2 · Ordenar: un error da pista y se repite la tarjeta', !S.collected.includes('ord_entrada_baja') && opciones().join() === 'Criterio,Restricción');
@@ -821,25 +827,25 @@
         pick('Elegir a la abuela');
         check('M2 · Elegir a uno: el papá lo devuelve, sin castigo', !G.eventos.had('ListenChoice') && opciones().length === 4);
         pick(FRASES[0]);
-        check('M2 · Un diseño para los dos: misión completa y cuaderno', S.missions.escuchar && S.step === 6 && S.unlocked.includes('mano:cuaderno'), 'paso ' + S.step);
+        check('M2 · Un diseño para los dos: misión completa y cuaderno', S.missions.escuchar && S.step === 2 && S.unlocked.includes('mano:cuaderno'), 'paso ' + S.step);
 
         // M3 · Casa que aguanta (en el claro, con techo sin amarrar: falla el techo)
         useAt('obra'); drain();
         pick('Planta baja ancha'); pick('Pilotes'); pick('Tablas'); pick('dos aguas'); pick('No: así');
-        check('M3 · Boceto y 4 decisiones: la casa se ve', S.step === 7 && ['boceto_ancha', 'dec_base_pilotes', 'dec_anclaje_no'].every(k => S.collected.includes(k)), 'paso ' + S.step);
+        check('M3 · Boceto y 4 decisiones: la casa se ve', S.step === 2 && ['boceto_ancha', 'dec_base_pilotes', 'dec_anclaje_no'].every(k => S.collected.includes(k)), 'paso ' + S.step);
         useAt('obra'); drain();
         pick('Abajo');
         check('M3 · Nido: una respuesta mala da la pista del papá', !S.collected.includes('nido_listo') && opciones().length === 2);
         pick('Arriba'); pick('Oscura'); pick('techito');
-        check('M3 · Nido alto, oscuro y seco: casa construida', G.eventos.had('HomeBuilt') && S.step === 8, 'paso ' + S.step);
+        check('M3 · Nido alto, oscuro y seco: casa construida', G.eventos.had('HomeBuilt') && S.step === 3, 'paso ' + S.step);
         useAt('obra'); drain();
-        check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 9 && !G.fx.rain.visible, 'paso ' + S.step);
+        check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 4 && !G.fx.rain.visible, 'paso ' + S.step);
         useAt('obra'); drain();
         pick('Subir la base');
         check('M3 · Mejorar otra parte no vale: pista y se repite', !G.eventos.had('HomeImproved') && opciones().length === 4);
         pick('Reforzar el techo');
         check('M3 · Si falló el techo, reforzarlo también vale (las dos opciones dicen «techo»)', G.eventos.had('HomeImproved') && S.collected.includes('mejora_techo'));
-        check('M3 · Cambia solo lo que falló', G.eventos.had('HomeImproved') && S.step === 10, 'paso ' + S.step);
+        check('M3 · Cambia solo lo que falló', G.eventos.had('HomeImproved') && S.step === 5, 'paso ' + S.step);
         useAt('obra'); drain();
         check('M3 · Prueba 2: aguanta, nido, casco y botas', G.eventos.had('NestPlaced') && S.missions.casa && ['casco:constructor', 'botas:constructor'].every(k => S.unlocked.includes(k)));
         check('Final: fiesta y pantalla de fin', S.complete && S.step === G.misiones.DONE && G.eventos.had('Chapter2Completed') && !$('end').hidden);
