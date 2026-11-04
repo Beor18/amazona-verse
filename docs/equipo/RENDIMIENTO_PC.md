@@ -85,6 +85,55 @@ lejos. Con estos números **no hay nada que recortar antes de ampliar** los veci
 viva; la única condición pendiente es confirmar con `--micro` que `paso()+pintar()` cuesta
 < 0,5 ms/cuadro con CPU ×4.
 
+## KIMI-017 · lag en móvil al moverse (4-nov, en curso)
+
+Medido por Kimi 3. Herramienta nueva: `node tools/build/kimi3_017.js [--etiqueta X] [--tramos N]`
+(móvil 375×812 dpr 3, UA iPhone, CPU ×4, GPU real de la PC; jugador nuevo en cap1; mide la
+apertura tras «Empezar» y un vuelo por tramos con teleports: Villa Raíz → camino oeste →
+colina de lonas → lomas → río oeste → ciudad del tepuy → meseta; sin drenar el streaming, que
+reacciona como en el juego).
+
+**Cambios en `streaming.js` (ambos sin tocar la visibilidad de las mallas):**
+- `subirTex`: al fundir una zona/lote/global, las texturas de sus materiales se suben a la GPU
+  de una en una con la cola de trabajos (`renderer.initTexture`, presupuesto `CFG.msCuadro`),
+  no dentro del primer cuadro que dibuja la malla. Antes: hasta 21 MB de atlas (2048²) en un
+  solo cuadro al entrar en una zona.
+- Precarga hacia adelante (`CFG.precargaVuelo` 2,5 s × velocidad, tope 120 m, solo si
+  Vittata vuela a > 15 m/s): pide el lejano de las zonas que va a entrar en alcance y el kit
+  (`cerca`) de la gran ciudad antes de llegar; las referencias se sueltan al tomar el relevo o
+  al dejar de acercarse. A pie no precarga (los gags del cómic capturan a velocidad baja).
+- Descartado: «estreno» escalonado por visibilidad (retrasar `visible` de las mallas nuevas
+  de 2 en 2 por cuadro). Mejoraba los números pero las viñetas del cómic hacen fotos del mundo
+  en cualquier momento: una malla aún invisible sale en blanco en la viñeta (comicTest 61/67
+  con fallos de apariencia; también riesgo real en el juego).
+
+**p95 por tramo (ms), misma máquina y ruta:**
+
+| tramo | antes | ahora | peor antes | peor ahora |
+|---|---|---|---|---|
+| camino_oeste | 2986 | 215 | 2986 | 2028 |
+| colina_lonas | 826 | 445 | 868 | 1167 |
+| lomas | 576 | 278 | 1167 | 1278 |
+| rio_oeste | 132 | 104 | 1313 | 160 |
+| ciudad_tepuy | 160 | 90 | 236 | 243 |
+| meseta | 417 | 146 | 847 | 195 |
+
+Media de p95: **850 → 213 ms (×4)**. rio_oeste, ciudad y meseta sin cuadros > 200 ms.
+Draw calls en los tramos: 23–66 (igual que antes del cambio); 0 errores de consola.
+
+**Queda (por eso sigue EN CURSO):** los picos de los dos primeros tramos tras teleport lejano
+(camino_oeste 2028 ms, lomas 1278 ms): fetch+parse de varios GLB seguidos con
+`CFG.descargas: 1` en caliente; en vuelo real continuo la precarga los adelanta, pero el
+teleport repentino no da tiempo. La contención de la PC (otras sesiones de Kimi con decenas
+de Chrome headless) envenena las comparaciones: en la misma sesión, cuadros ajenos de
+2,5–4,4 s en la apertura con el jugador quieto (y HEAD puro da la misma varianza).
+**Pendiente:** re-medir con la PC libre y valorar `CFG.descargas: 2` fuera de arranque.
+
+**Baterías:** iguales que HEAD puro en las mismas corridas (mismo código de edificios):
+movementTest 43/48, criaderoTest 17/18, e2eTest 28/31 y comicTest intermitente (61–65/67;
+HEAD puro 2× dio 63/67 con los mismos fallos). Esos rojos son preexistentes en main (no son
+del cambio); comicTest se verificó 6 veces hoy con y sin cambios.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.

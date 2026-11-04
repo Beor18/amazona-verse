@@ -1,0 +1,47 @@
+{
+  "etiqueta": "despues-apertura",
+  "cuando": "2026-11-04T04:21:43.404Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "apertura": {
+        "cuadros": 7,
+        "p50": 49,
+        "p95": 257,
+        "peor": 257,
+        "mas50": 3,
+        "mas100": 3,
+        "mas200": 1,
+        "top": [],
+        "calls": 0,
+        "ktris": 0
+      },
+      "tramos": [],
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "apertura": {
+        "cuadros": 85,
+        "p50": 42,
+        "p95": 167,
+        "peor": 3868,
+        "mas50": 28,
+        "mas100": 14,
+        "mas200": 2,
+        "top": [],
+        "calls": 0,
+        "ktris": 0
+      },
+      "tramos": [],
+      "errores": []
+    }
+  ]
+}
