@@ -1,0 +1,19 @@
+{
+  "etiqueta": "r1-alzar30",
+  "cuando": "2026-11-04T09:48:25.252Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 15,
+  "error": "JS: \"TypeError: ST.alrededor is not a function\\n    at <anonymous>:9:12\\n    at <anonymous>:24:3\""
+}
