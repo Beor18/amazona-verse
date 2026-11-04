@@ -31,6 +31,7 @@ const EXTRA_URL = arg('--extra-url', '');
 const VISTAS = arg('--vistas', '');   // "x,z,yaw;x,z,yaw" (yaw en radianes; vacío = solo la vista de aparición)
 const PREFIJO = arg('--prefijo', PACK);
 const DIR_CAPTURAS = arg('--dir', path.join(RAIZ, 'docs', 'img', 'kimi014'));
+const chromeGlobal = { procs: [] }; // el .catch final los mata a todos (sin huérfanos que roben GPU)
 const LISTA_BATERIAS = ['selfTest', 'missionTest', 'accessoryTest', 'templateTest', 'eduTest', 'maestroTest', 'criaderoTest', 'movementTest', 'saveTest', 'comicTest', 'e2eTest', 'lookCapitulosTest'];
 const SOLO = arg('--solo', '');
 const ANCHO = parseInt(arg('--ancho', '375'), 10), ALTO = parseInt(arg('--alto', '812'), 10), DPR = parseFloat(arg('--dpr', '3'));
@@ -65,7 +66,7 @@ function servir() {
 
 // ---- CDP mínimo (websocket del navegador; sin librerías) ----
 class CDP {
-  constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); this.eventos = []; ws.onerror = e => { for (const [, p] of this.pend) p.re2(new Error('WebSocket: ' + (e.message || 'error de conexión'))); this.pend.clear(); }; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && this.pend.has(d.id)) { const p = this.pend.get(d.id); this.pend.delete(d.id); d.error ? p.re2(new Error(d.error.message + ' ' + JSON.stringify(d.error.data || ''))) : p.re(d.result); } else if (d.method) this.eventos.push(d); }; }
+  constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); this.eventos = []; ws.onerror = e => { for (const [, p] of this.pend) p.re2(new Error('WebSocket: ' + (e.message || 'error de conexión'))); this.pend.clear(); }; ws.onclose = () => { for (const [, p] of this.pend) p.re2(new Error('WebSocket: conexión cerrada')); this.pend.clear(); }; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && this.pend.has(d.id)) { const p = this.pend.get(d.id); this.pend.delete(d.id); d.error ? p.re2(new Error(d.error.message + ' ' + JSON.stringify(d.error.data || ''))) : p.re(d.result); } else if (d.method) this.eventos.push(d); }; }
   listo() { return new Promise(r => { this.ws.onopen = r; }); }
   call(method, params, sessionId, timeoutMs) {
     const id = ++this.id;
@@ -171,6 +172,7 @@ async function lanzarChrome() {
     '--disable-backgrounding-occluded-windows', '--disable-component-update', '--enable-precise-memory-info', '--window-size=500,900'];
   const chrome = spawn(CHROME, args, { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
+  chrome.verStderr = () => err.slice(-500); // diagnóstico del crash de navegador (QA-111)
   const puertoFile = path.join(perf, 'DevToolsActivePort');
   // Chrome 156: el chrome.exe inicial sale enseguida y el navegador real sigue detached;
   // se espera al archivo DevToolsActivePort, no a la salida del proceso padre.
@@ -184,10 +186,27 @@ async function lanzarChrome() {
 (async () => {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
-  const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
-  const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`);
-  const cdp = new CDP(ws);
-  await cdp.listo();
+  // QA-111 · el navegador es rearrancable: si el proceso entero muere (crash de GPU al crear el 2.º contexto
+  // WebGL del criadero bajo contención), se relanza Chrome y se sigue con las baterías que quedan.
+  let chrome = null, cdp = null, perf = '';
+  async function arrancarNavegador() {
+    const l = await lanzarChrome();
+    chrome = l.chrome; perf = l.perf;
+    chromeGlobal.procs.push(chrome);
+    const ws = new WebSocket(`ws://127.0.0.1:${l.puerto}${l.wsPath}`);
+    cdp = new CDP(ws);
+    await cdp.listo();
+  }
+  await arrancarNavegador();
+  async function navegadorVivo() { try { await cdp.call('Browser.getVersion', {}, undefined, 8000); return true; } catch (e) { return false; } }
+  async function reiniciarNavegador() {
+    try { console.log('  · stderr del navegador caído: ' + String(chrome.verStderr && chrome.verStderr()).replace(/\s+/g, ' ').slice(-220)); } catch (e) {}
+    try { chrome.kill(); } catch (e) {}
+    const viejo = perf;
+    await arrancarNavegador();
+    try { fs.rmSync(viejo, { recursive: true, force: true }); } catch (e) { /* perfil en uso; se limpia otro día */ }
+    console.log('  · Chrome rearrancado (perfil ' + perf + ')');
+  }
   const errores = [];
   const res = { movil: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU, pack: PACK }, rondas: [] };
   console.log(`· servidor ${origen} · Chrome en puerto DevTools (perfil ${perf}) · ${ANCHO}×${ALTO} dpr ${DPR} · CPU ×${CPU}`);
@@ -250,16 +269,44 @@ async function lanzarChrome() {
     // el resto va con partida sembrada en la pestaña principal.
     const lista = SOLO ? SOLO.split(',') : LISTA_BATERIAS;
     const informe = {};
-    let sesUltima = null;
-    async function correrBaterias(ses, baterias) {
-      for (const b of baterias) {
-        const rescate = await rescatarPagina(ses);
+    const erroresConsola = [];
+    const ctx = { ses: null, tid: null, preparar: PREPARAR_JS };
+    async function leerErrores(ses) { try { const r = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false); for (const e of JSON.parse(r || '[]')) erroresConsola.push(e); } catch (e) { console.log('· aviso: no se pudieron leer errores de consola (' + e.message.slice(0, 60) + ')'); } }
+    async function pestanaPrincipal(sembrar, preparar) {
+      const { tid, ses } = await nuevaPestana(false, sembrar);
+      ctx.ses = ses; ctx.tid = tid; ctx.preparar = preparar;
+      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
+      if (!(await esperarListo(ses))) throw new Error('el juego no arrancó');
+      console.log('· jugador ' + (sembrar ? 'sembrado' : 'nuevo') + ': ' + await evaluar(cdp, ses, preparar, 300));
+    }
+    // QA-111 · el criadero crea su propio WebGLRenderer; llegado después de 6 baterías pesadas en la misma
+    // página, el proceso de GPU caía a veces al crear el 2.º contexto (WebSocket: error de conexión y el
+    // navegador entero muerto). Recargar antes deja la memoria GPU limpia, como cuando el alumno lo abre.
+    const RECARGA_ANTES = ['criaderoTest'];
+    async function correrBaterias(baterias, sembrar, preparar) {
+      const reintentos = {};
+      for (let i = 0; i < baterias.length; i++) {
+        const b = baterias[i];
+        // Crash del navegador entero (no solo la pestaña): rearrancar Chrome, rehacer la entrada y
+        // repetir la batería interrumpida una vez.
+        if (!(await navegadorVivo())) {
+          console.log('  · el navegador entero cayó antes de ' + b + '; rearrancando…');
+          await reiniciarNavegador();
+          await pestanaPrincipal(sembrar, preparar);
+          if (!reintentos[b]) { reintentos[b] = 1; i--; continue; }
+        }
+        if (RECARGA_ANTES.includes(b) && (await paginaViva(ctx.ses))) {
+          console.log('  · recargando la página antes de ' + b + ' (memoria GPU limpia, QA-111)');
+          try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ctx.ses, 20000); } catch (e) { /* pestaña muerta: lo rescatará rescatarPagina */ }
+          if (await esperarListo(ctx.ses)) console.log('  · reentrada: ' + String(await evaluar(cdp, ctx.ses, ctx.preparar, 300)).slice(0, 90));
+        }
+        const rescate = await rescatarPagina(ctx.ses);
         if (rescate) console.log('  · ' + rescate);
-        const rec = await asegurarMundo(ses);
+        const rec = await asegurarMundo(ctx.ses);
         if (rec !== 'ok') console.log('  · aviso: ' + rec);
         const t0 = Date.now();
         try {
-          const r = await evaluar(cdp, ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && (r.passed != null ? r.passed : r.pasan != null ? r.pasan : r.ok), t: r && r.total, ok: r && r.ok, mal: ((r && r.results) || (r && r.checks) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => (x.name || '?') + (x.extra ? ' — ' + String(x.extra).slice(0, 220) : '')).slice(0, 4) }); })()`, 900);
+          const r = await evaluar(cdp, ctx.ses, `(async () => { const r = await window.AV.${b}(); await new Promise(s => setTimeout(s, 1500)); return JSON.stringify({ p: r && (r.passed != null ? r.passed : r.pasan != null ? r.pasan : r.ok), t: r && r.total, ok: r && r.ok, mal: ((r && r.results) || (r && r.checks) || []).filter(x => x && (x.pass === false || x.ok === false || x.passed === false)).map(x => (x.name || '?') + (x.extra ? ' — ' + String(x.extra).slice(0, 220) : '')).slice(0, 4) }); })()`, 900);
           const j = JSON.parse(r);
           informe[b] = j;
           const falla = (j.t != null && j.p != null && j.p !== j.t) || j.ok === false || (j.mal && j.mal.length);
@@ -270,26 +317,19 @@ async function lanzarChrome() {
     // Pestaña principal con semilla (QA-111): Jugar entra directo; si algo falló, el preparar cierra el creador.
     const principal = lista.filter(b => b !== 'e2eTest');
     if (principal.length) {
-      const { tid, ses } = await nuevaPestana(false, !SIN_SEMILLA);
-      sesUltima = ses;
-      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
-      if (!(await esperarListo(ses))) { console.log('· el juego no arrancó'); process.exit(1); }
-      console.log('· jugador ' + (SIN_SEMILLA ? 'nuevo' : 'sembrado') + ': ' + await evaluar(cdp, ses, SIN_SEMILLA ? CFG.preparar_js : PREPARAR_JS, 300));
-      await correrBaterias(ses, principal);
-      try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10); } catch (e) { /* ya cerrada */ }
+      await pestanaPrincipal(!SIN_SEMILLA, SIN_SEMILLA ? CFG.preparar_js : PREPARAR_JS);
+      await correrBaterias(principal, !SIN_SEMILLA, SIN_SEMILLA ? CFG.preparar_js : PREPARAR_JS);
+      await leerErrores(ctx.ses);
+      try { await cdp.call('Target.closeTarget', { targetId: ctx.tid }, undefined, 10); } catch (e) { /* ya cerrada */ }
     }
     // e2eTest en pestaña sin semilla: arranque limpio real (portada → creador → Empezar) como test.sh.
     if (lista.includes('e2eTest')) {
-      const { tid, ses } = await nuevaPestana(false, false);
-      sesUltima = ses;
-      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
-      if (!(await esperarListo(ses))) { console.log('· el juego no arrancó (e2eTest)'); process.exit(1); }
-      console.log('· jugador nuevo (e2eTest): ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
-      await correrBaterias(ses, ['e2eTest']);
+      await pestanaPrincipal(false, CFG.preparar_js);
+      await correrBaterias(['e2eTest'], false, CFG.preparar_js);
+      await leerErrores(ctx.ses);
     }
-    const errs = await evaluar(cdp, sesUltima, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
-    console.log('· errores de consola: ' + errs);
-    fs.writeFileSync(path.join(SALIDA, 'baterias.json'), JSON.stringify({ informe, errores: JSON.parse(errs || '[]') }, null, 2));
+    console.log('· errores de consola: ' + JSON.stringify(erroresConsola.slice(0, 8)));
+    fs.writeFileSync(path.join(SALIDA, 'baterias.json'), JSON.stringify({ informe, errores: erroresConsola.slice(0, 8) }, null, 2));
     try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
     srv.close();
     console.log('· informe en ' + path.join(SALIDA, 'baterias.json'));
@@ -540,4 +580,11 @@ async function lanzarChrome() {
   srv.close();
   fs.writeFileSync(path.join(SALIDA, 'resultado.json'), JSON.stringify(res, null, 2));
   console.log(`· resultado en ${path.join(SALIDA, 'resultado.json')}`);
-})().catch(e => { console.error('FALLO:', e && e.stack || JSON.stringify(e) || String(e)); process.exit(2); });
+})().catch(e => {
+  console.error('FALLO:', e && e.stack || JSON.stringify(e) || String(e));
+  for (const c of chromeGlobal.procs) {
+    try { c.kill(); } catch (_) {}
+    try { spawn('taskkill', ['/F', '/T', '/PID', String(c.pid)], { stdio: 'ignore' }); } catch (_) {}
+  }
+  process.exit(2);
+});
