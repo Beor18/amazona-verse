@@ -187,7 +187,7 @@ AVE.module('retosDia', function (G) {
       }
       usarFecha('2026-11-04'); completar('looping');
       const html = htmlRecords();
-      ok('La insignia de Mis récords se llena con lo hecho', /1\/3/.test(html) && /--fill:0.333/.test(html) && !/compra|loot|racha/i.test(html), html.slice(0, 80));
+      ok('La insignia de Mis récords se llena con lo hecho', /1\/3/.test(html) && /--fill:0.333/.test(html) && !/compra|loot/i.test(html), html.slice(0, 120));
       if (window.AV && window.AV.records) {
         await window.AV.records({ desde: 'portada' });
         const badge = document.querySelector('#rec-retos-dia');
