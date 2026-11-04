@@ -945,14 +945,16 @@
       if (!aac) check('Este navegador reproduce AAC (.m4a)', false, 'canPlayType vacío');
       else {
         const usados = ids.filter(id => BS.pistas[id].archivo);
-        const meta = await Promise.all(usados.map(id => new Promise(res => {
+        // De uno en uno: con 6 temas a la vez, Chrome deja los elementos de audio en espera y todos agotan el tiempo
+        const meta = [];
+        for (const id of usados) meta.push(await new Promise(res => {
           const el = new Audio(), fin = r => { clearTimeout(to); el.removeAttribute('src'); try { el.load(); } catch (e) { /* nada */ } res(r); };
           const to = setTimeout(() => fin({ id, error: 'tiempo' }), 15000);
           el.preload = 'metadata'; el.muted = true;
           el.addEventListener('loadedmetadata', () => fin({ id, dur: el.duration }), { once: true });
           el.addEventListener('error', () => fin({ id, error: 'código ' + (el.error && el.error.code) }), { once: true });
           el.src = BS.pistas[id].archivo;
-        })));
+        }));
         const mal = meta.filter(m => m.error || Math.abs(m.dur - BS.pistas[m.id].dur) > 0.5);
         check('Los temas en uso (.m4a) existen, el navegador los abre y su duración cuadra con la tabla (±0,5 s)', !mal.length, mal.length ? JSON.stringify(mal) : meta.map(m => m.id + ' ' + m.dur.toFixed(1)).join(' · '));
       }
