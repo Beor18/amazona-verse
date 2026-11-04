@@ -9,6 +9,7 @@ window.AVEscondite = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.escondite';
   const LIMITE = 120;
   let mejor = null, jugando = false, t = 0, sitios = [], pio = 0;
+  const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
   try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (d && d.mejor) mejor = d.mejor; } catch (e) { /* */ }
   const geo = new THREE.SphereGeometry(0.16, 8, 6);
   const mat = new THREE.MeshBasicMaterial({ color: 0xffe27a });
@@ -42,7 +43,7 @@ window.AVEscondite = function (G) {
   function empezar(x, z) {
     armar(x == null ? S.pos.x : x, z == null ? S.pos.z : z);
     jugando = true; t = 0; pintar();
-    if (G.ui && G.ui.toast) G.ui.toast('¡Escondite! Encuentra a los pichones. El pío se oye más fuerte cerca.', 2800);
+    if (G.ui && G.ui.toast) G.ui.toast(en() ? 'Hide-and-seek! Find the chicks. The peep gets louder when you are close.' : '¡Escondite! Encuentra a los pichones. El pío se oye más fuerte cerca.', 2800);
     return sitios;
   }
   function cerca() {
@@ -65,10 +66,10 @@ window.AVEscondite = function (G) {
       jugando = false; malla.visible = false;
       if (mejor == null || t < mejor) { mejor = t; try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* */ } }
       G.emit('record', { modo: 'escondite', segundos: t });
-      if (G.ui && G.ui.toast) G.ui.toast('¡Los encontraste!', 2000);
+      if (G.ui && G.ui.toast) G.ui.toast(en() ? 'You found them!' : '¡Los encontraste!', 2000);
     } else if (t >= LIMITE) {
       jugando = false; malla.visible = false;
-      if (G.ui && G.ui.toast) G.ui.toast('Se escondieron otra vez. Cuando quieras, otra ronda.', 2200);
+      if (G.ui && G.ui.toast) G.ui.toast(en() ? 'They hid again. Another round whenever you want.' : 'Se escondieron otra vez. Cuando quieras, otra ronda.', 2200);
     }
   }
   G.on('update', dt => { if (!G.quiet) paso(Math.min(0.05, dt || 0)); });

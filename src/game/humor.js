@@ -12,6 +12,11 @@ window.AVHumor = function (G) {
   if (G.audio && G.audio.define) {
     try { G.audio.define('humor', (t, a, X) => X.tone(700, t, 0.12, { type: 'square', gain: 0.04 })); } catch (e) { /* ya estaba */ }
   }
+  const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+  const AVISOS = {
+    estornudo: ['¡Achís!', 'Achoo!'], mareo: ['¡Qué mareo!', 'So dizzy!'], resbalon: ['¡Ups, resbalón!', 'Whoops, a slip!'],
+    sacudida: ['¡Sacudida de plumas!', 'Feather shake!'], bostezo: ['Bostezo…', 'Yawn…'], siesta: ['Se quedó dormida.', 'She fell asleep.'], risa: ['¡Ja, ja!', 'Ha, ha!'],
+  };
   const sonar = () => { try { if (G.audio && G.audio.play) G.audio.play('humor'); } catch (e) { /* sin audio */ } };
   const gesto = n => { try { if (G.actores && G.actores.playEmote) G.actores.playEmote(n); } catch (e) { /* sin gesto */ } };
   function hacer(id) {
@@ -23,8 +28,8 @@ window.AVHumor = function (G) {
     else if (id === 'bostezo' || id === 'siesta') { gesto('idea'); if (id === 'siesta' && siestas < 999) { siestas++; try { localStorage.setItem(CLAVE_H, JSON.stringify({ v: 1, siestas })); } catch (e) { /* sin almacén */ } } }
     else if (id === 'risa') gesto('celebrar');
     if (G.ui && G.ui.toast && !G.quiet) {
-      const t = { estornudo: '¡Achís!', mareo: '¡Qué mareo!', resbalon: '¡Ups, resbalón!', sacudida: '¡Sacudida de plumas!', bostezo: 'Bostezo…', siesta: 'Se quedó dormida.', risa: '¡Ja, ja!' };
-      G.ui.toast(t[id] || id, 1600);
+      const t = AVISOS[id];
+      G.ui.toast(t ? t[en() ? 1 : 0] : id, 1600);
     }
     return id;
   }
