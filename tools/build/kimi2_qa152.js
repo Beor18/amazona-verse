@@ -23,6 +23,12 @@
    en los segundos pedidos (con window.gc() justo antes) y difiere los dos agregados: el delta
    positivo grande es el constructor que retiene. Uso (Node con old space grande):
    node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 150 --snap 50,140 --etiqueta snap1
+
+   Fase 5 (--ab, junto a --snap): el diff de la fase 4 dejó el retenido en 'system / JSArrayBufferData'
+   → sub-atribuye cada ArrayBuffer ≥256 KB caminando las aristas inversas del snapshot hasta el primer
+   retenedor con nombre específico (con 2 saltos de contexto) y agrupa por esa cadena: atribuye el
+   binario a su dueño real en el motor (audio, geometría, fusión/instanciado, parse de GLB...).
+   node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 160 --snap 60,150 --etiqueta ab1 --ab
 */
 'use strict';
 const http = require('http');
@@ -39,6 +45,7 @@ const SECS = +(arg('--secs', '30'));
 const CAP = +(arg('--cap', '1'));
 const ETIQUETA = arg('--etiqueta', '');
 const PERFIL = process.argv.includes('--perfil');
+const AB = process.argv.includes('--ab'); // sub-atribuir los ArrayBuffer grandes por retenedor
 const SNAP = arg('--snap', ''); // p. ej. "50,140": segundos de snapshot con gc previo
 const SNAP_T = SNAP ? SNAP.split(',').map(x => +x).filter(x => x > 0) : [];
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi152');
@@ -91,6 +98,7 @@ function tomarSnap(cdp, ses, t) {
 function agregarSnap(snap) {
   const d = JSON.parse(snap.chunks.join(''));
   snap.chunks = null;
+  snap.raw = d; // lo usa subAtribuirAB (--ab); se libera tras sub-atribuir
   const meta = d.snapshot.meta, nf = meta.node_fields, str = d.strings;
   const iName = nf.indexOf('name'), iSize = nf.indexOf('self_size');
   const nodos = d.nodes, por = new Map();
@@ -113,6 +121,81 @@ function difSnaps(a, b) {
   for (const [ctor, szB] of mb) out.push({ ctor, aMB: Math.round((ma.get(ctor) || 0) / 1048576 * 100) / 100, bMB: Math.round(szB / 1048576 * 100) / 100, deltaMB: Math.round((szB - (ma.get(ctor) || 0)) / 1048576 * 100) / 100 });
   for (const [ctor, szA] of ma) if (!mb.has(ctor)) out.push({ ctor, aMB: Math.round(szA / 1048576 * 100) / 100, bMB: 0, deltaMB: -Math.round(szA / 1048576 * 100) / 100 });
   return out.sort((x, y) => y.deltaMB - x.deltaMB);
+}
+
+// --- Fase 5: sub-atribución de los ArrayBuffer grandes (fase 4 dejó el retenido en
+// 'system / JSArrayBufferData'; esto camina las aristas inversas del snapshot y agrupa
+// cada JSArrayBufferData ≥256 KB por la cadena de retenedores hasta el primer nombre
+// específico: atribuye el binario retenido a su dueño real en el motor). ---
+function subAtribuirAB(snap) {
+  const d = snap.raw; if (!d) return null;
+  const meta = d.snapshot.meta, nf = meta.node_fields, ef = meta.edge_fields, str = d.strings;
+  const iName = nf.indexOf('name'), iSize = nf.indexOf('self_size'), iNEdges = nf.indexOf('edge_count');
+  const iEType = ef.indexOf('type'), iEName = ef.indexOf('name_or_index'), iETo = ef.indexOf('to_node');
+  const nodos = d.nodes, aristas = d.edges, nN = Math.floor(nodos.length / nf.length);
+  const nE = Math.floor(aristas.length / ef.length);
+  // adyacencia inversa compacta: arista e va de -> a; para cada nodo, lista de aristas entrantes
+  const cab = new Int32Array(nN).fill(-1), sig = new Int32Array(nE), de = new Int32Array(nE), nomA = new Int32Array(nE);
+  let pos = 0;
+  for (let o = 0; o < nN; o++) {
+    const ne = nodos[o * nf.length + iNEdges];
+    for (let k = 0; k < ne; k++) {
+      const e = pos++;
+      const to = Math.floor(aristas[e * ef.length + iETo] / nf.length);
+      de[e] = o; nomA[e] = aristas[e * ef.length + iEName];
+      sig[e] = cab[to]; cab[to] = e;
+    }
+  }
+  const nomNodo = o => str[nodos[o * nf.length + iName]] || '';
+  const etiqueta = e => {
+    const t = meta.edge_types[0][aristas[e * ef.length + iEType]];
+    if (t === 'element') return '[' + aristas[e * ef.length + iEName] + ']';
+    if (t === 'hidden') return '';
+    return str[aristas[e * ef.length + iEName]] || '';
+  };
+  const GENERICO = new Set(['', 'Object', 'Array', 'JSArrayBufferData', 'ArrayBuffer', 'system', '(anonymous)', 'NativeContext', 'WeakNativeContextSet']);
+  const esAB = o => /ArrayBufferData/.test(nomNodo(o));
+  const GRANDE = 64 * 1024;
+  const grupos = new Map(); let totalAB = 0, nAB = 0, huerfanos = 0;
+  const cubetas = { '64-256K': [0, 0], '256K-1M': [0, 0], '1-4M': [0, 0], '>4M': [0, 0] }; // [n, bytes]
+  // vistos con marca de generación: un solo array para todos los BFS (un Uint8Array por nodo
+  // haría miles de allocaciones de ~1 MB en snapshots de 800 k nodos)
+  const vistosGen = new Int32Array(nN); let gen = 0;
+  for (let o = 0; o < nN; o++) {
+    const sz = nodos[o * nf.length + iSize];
+    if (!esAB(o)) continue;
+    const cb = sz < 262144 ? '64-256K' : sz < 1048576 ? '256K-1M' : sz < 4194304 ? '1-4M' : '>4M';
+    cubetas[cb][0]++; cubetas[cb][1] += sz;
+    if (sz < GRANDE) continue;
+    totalAB += sz; nAB++;
+    // BFS ascendente: primer nombre específico (con 2 saltos de contexto más)
+    let nivel = [{ o, camino: [] }], firma = null;
+    gen++; vistosGen[o] = gen;
+    for (let paso = 0; paso < 7 && !firma; paso++) {
+      const sigNivel = [];
+      for (const { o: actual, camino } of nivel) {
+        for (let e = cab[actual]; e !== -1; e = sig[e]) {
+          const padre = de[e];
+          if (vistosGen[padre] === gen) continue; vistosGen[padre] = gen;
+          const nPadre = nomNodo(padre);
+          const nBase = nPadre.replace(/^system \/ /, '');
+          const c2 = camino.concat((etiqueta(e) || '·') + '→' + nPadre);
+          if (paso >= 1 && !GENERICO.has(nBase) && !/^[\d.,]+$/.test(nBase)) { firma = c2.slice(-3); break; }
+          sigNivel.push({ o: padre, camino: c2 });
+        }
+        if (firma) break;
+      }
+      nivel = sigNivel;
+      if (!nivel.length) break;
+    }
+    if (!firma) { firma = [nivel.length ? 'profundo>7' : 'huérfano']; if (!nivel.length) huerfanos++; }
+    const clave = firma.join('  ‹  ');
+    const g = grupos.get(clave) || { b: 0, n: 0 }; g.b += sz; g.n++; grupos.set(clave, g);
+  }
+  return { umbralKB: GRANDE / 1024, totalMB: Math.round(totalAB / 1048576 * 10) / 10, n: nAB, huerfanos,
+    cubetas: Object.fromEntries(Object.entries(cubetas).map(([k, [n, b]]) => [k, { n, mb: Math.round(b / 1048576 * 100) / 100 }])),
+    top: [...grupos.entries()].sort((a, b) => b[1].b - a[1].b).slice(0, 25)
+      .map(([clave, g]) => ({ clave, mb: Math.round(g.b / 1048576 * 100) / 100, n: g.n })) };
 }
 
 // Semilla de cap1 (jugador existente: Jugar entra directo, sin creador) — misma que kimi2_qa53.js (QA-111)
@@ -198,13 +281,21 @@ async function lanzarChrome() {
         console.log(`  [snap] #${snapIdx} a los ~${T}s: gc + takeHeapSnapshot...`);
         try { await ev(cdp, ses, `window.gc()`, 15, false); } catch (e) {}
         await cdp.bombear(0.7);
-        try { const s = agregarSnap(await tomarSnap(cdp, ses, T)); snaps.push(s); console.log(`  [snap] #${snapIdx} listo: ${s.nodos} nodos, self_size total ${s.totalMB} MB, ${s.porCtor.length} constructores`); }
+        try {
+          const s = agregarSnap(await tomarSnap(cdp, ses, T)); snaps.push(s);
+          console.log(`  [snap] #${snapIdx} listo: ${s.nodos} nodos, self_size total ${s.totalMB} MB, ${s.porCtor.length} constructores`);
+          if (AB) {
+            s.abDet = subAtribuirAB(s); s.raw = null;
+            if (s.abDet) console.log(`  [ab] ArrayBuffer ≥${s.abDet.umbralKB} KB: ${s.abDet.totalMB} MB en ${s.abDet.n} buffers` +
+              (s.abDet.top.length ? '\n    ' + s.abDet.top.slice(0, 10).map(g => `${g.mb} MB ×${g.n}  ${g.clave}`).join('\n    ') : ''));
+          }
+        }
         catch (e) { console.log('  [snap] falló: ' + e.message); }
       }
       try { const m = await ev(cdp, ses, MUESTRA_JS, 5, false); if (m) { m.s = Math.round((Date.now() - t0) / 100) / 10; m.gc = nMuestra % 20 === 0; res.muestras.push(m); } } catch (e) { /* aún no hay AV */ }
     }
     if (snaps.length) {
-      res.snaps = snaps.map(s => ({ t: s.t, totalMB: s.totalMB, nodos: s.nodos, top: s.porCtor.slice(0, 40).map(([ctor, sz]) => ({ ctor, mb: Math.round(sz / 1048576 * 100) / 100 })) }));
+      res.snaps = snaps.map(s => ({ t: s.t, totalMB: s.totalMB, nodos: s.nodos, top: s.porCtor.slice(0, 40).map(([ctor, sz]) => ({ ctor, mb: Math.round(sz / 1048576 * 100) / 100 })), abDet: s.abDet || null }));
       if (snaps.length >= 2) {
         res.snapDiff = difSnaps(snaps[0], snaps[1]).slice(0, 60);
         console.log('\nSNAP DIFF (por constructor, self_size):');

@@ -1,0 +1,2556 @@
+{
+ "movil": {
+  "ancho": 375,
+  "alto": 812,
+  "dpr": 3,
+  "cpu": 4,
+  "secs": 160,
+  "cap": 4,
+  "etiqueta": "ab1"
+ },
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "muestras": [
+  {
+   "t": 765,
+   "heapUsado": 3643546,
+   "heapTotal": 5304282,
+   "geometries": null,
+   "textures": null,
+   "programas": 0,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "sombras": null,
+   "zonas": null,
+   "px": null,
+   "pz": null,
+   "s": 0.8,
+   "gc": false
+  },
+  {
+   "t": 2867,
+   "heapUsado": 17871178,
+   "heapTotal": 24839290,
+   "geometries": 0,
+   "textures": 1,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 0,
+    "mats": 0,
+    "inst": 0,
+    "descargando": 2
+   },
+   "px": null,
+   "pz": null,
+   "s": 2.9,
+   "gc": false
+  },
+  {
+   "t": 4740,
+   "heapUsado": 27930571,
+   "heapTotal": 51333627,
+   "geometries": 0,
+   "textures": 1,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 0,
+    "mats": 0,
+    "inst": 0,
+    "descargando": 2
+   },
+   "px": null,
+   "pz": null,
+   "s": 4.8,
+   "gc": false
+  },
+  {
+   "t": 5379,
+   "heapUsado": 30264636,
+   "heapTotal": 47548876,
+   "geometries": 0,
+   "textures": 1,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 0,
+    "mats": 0,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 5.4,
+   "gc": false
+  },
+  {
+   "t": 6159,
+   "heapUsado": 31828080,
+   "heapTotal": 48283772,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 6.2,
+   "gc": false
+  },
+  {
+   "t": 6727,
+   "heapUsado": 33837063,
+   "heapTotal": 48909447,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 6.7,
+   "gc": false
+  },
+  {
+   "t": 7279,
+   "heapUsado": 34158743,
+   "heapTotal": 49740259,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 18,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 7.3,
+   "gc": false
+  },
+  {
+   "t": 7811,
+   "heapUsado": 31280814,
+   "heapTotal": 50527722,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 25,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 7.8,
+   "gc": false
+  },
+  {
+   "t": 8338,
+   "heapUsado": 35711251,
+   "heapTotal": 50527779,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 25,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 8.4,
+   "gc": false
+  },
+  {
+   "t": 9146,
+   "heapUsado": 42225626,
+   "heapTotal": 61203346,
+   "geometries": 1,
+   "textures": 13,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 17,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 9.2,
+   "gc": false
+  },
+  {
+   "t": 14351,
+   "heapUsado": 56530771,
+   "heapTotal": 91322343,
+   "geometries": 21,
+   "textures": 38,
+   "programas": 9,
+   "calls": 34,
+   "tris": 19577,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 422,
+    "descargando": 165
+   },
+   "px": null,
+   "pz": null,
+   "s": 14.4,
+   "gc": false
+  },
+  {
+   "t": 15016,
+   "heapUsado": 62112888,
+   "heapTotal": 94111252,
+   "geometries": 21,
+   "textures": 41,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 510,
+    "mats": 8,
+    "inst": 422,
+    "descargando": 162
+   },
+   "px": null,
+   "pz": null,
+   "s": 15,
+   "gc": false
+  },
+  {
+   "t": 15682,
+   "heapUsado": 67803952,
+   "heapTotal": 95210864,
+   "geometries": 21,
+   "textures": 45,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 510,
+    "mats": 8,
+    "inst": 422,
+    "descargando": 160
+   },
+   "px": null,
+   "pz": null,
+   "s": 15.7,
+   "gc": false
+  },
+  {
+   "t": 16478,
+   "heapUsado": 57766095,
+   "heapTotal": 91657119,
+   "geometries": 21,
+   "textures": 45,
+   "programas": 9,
+   "calls": 14,
+   "tris": 14,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 940,
+    "mats": 10,
+    "inst": 422,
+    "descargando": 159
+   },
+   "px": null,
+   "pz": null,
+   "s": 16.5,
+   "gc": false
+  },
+  {
+   "t": 17085,
+   "heapUsado": 67346230,
+   "heapTotal": 93611358,
+   "geometries": 21,
+   "textures": 47,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 1044,
+    "mats": 10,
+    "inst": 422,
+    "descargando": 160
+   },
+   "px": null,
+   "pz": null,
+   "s": 17.1,
+   "gc": false
+  },
+  {
+   "t": 17868,
+   "heapUsado": 55530759,
+   "heapTotal": 92546259,
+   "geometries": 21,
+   "textures": 49,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 2237,
+    "mats": 11,
+    "inst": 422,
+    "descargando": 154
+   },
+   "px": null,
+   "pz": null,
+   "s": 17.9,
+   "gc": false
+  },
+  {
+   "t": 18427,
+   "heapUsado": 67436867,
+   "heapTotal": 95483603,
+   "geometries": 21,
+   "textures": 49,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 3120,
+    "mats": 11,
+    "inst": 422,
+    "descargando": 144
+   },
+   "px": null,
+   "pz": null,
+   "s": 18.4,
+   "gc": false
+  },
+  {
+   "t": 18997,
+   "heapUsado": 64791262,
+   "heapTotal": 98007946,
+   "geometries": 21,
+   "textures": 49,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 14,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 3422,
+    "mats": 14,
+    "inst": 422,
+    "descargando": 130
+   },
+   "px": null,
+   "pz": null,
+   "s": 19,
+   "gc": false
+  },
+  {
+   "t": 19577,
+   "heapUsado": 75137167,
+   "heapTotal": 102190183,
+   "geometries": 21,
+   "textures": 40,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 4283,
+    "mats": 14,
+    "inst": 422,
+    "descargando": 115
+   },
+   "px": null,
+   "pz": null,
+   "s": 19.6,
+   "gc": false
+  },
+  {
+   "t": 20425,
+   "heapUsado": 68234386,
+   "heapTotal": 104401426,
+   "geometries": 21,
+   "textures": 40,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 11,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 8992,
+    "mats": 15,
+    "inst": 422,
+    "descargando": 104
+   },
+   "px": null,
+   "pz": null,
+   "s": 20.4,
+   "gc": true
+  },
+  {
+   "t": 21017,
+   "heapUsado": 74841800,
+   "heapTotal": 111274612,
+   "geometries": 21,
+   "textures": 41,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 9655,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 90
+   },
+   "px": null,
+   "pz": null,
+   "s": 21,
+   "gc": false
+  },
+  {
+   "t": 21621,
+   "heapUsado": 97904862,
+   "heapTotal": 120927694,
+   "geometries": 21,
+   "textures": 41,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 11,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 11086,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 86
+   },
+   "px": null,
+   "pz": null,
+   "s": 21.6,
+   "gc": false
+  },
+  {
+   "t": 22207,
+   "heapUsado": 101421133,
+   "heapTotal": 126449737,
+   "geometries": 21,
+   "textures": 42,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 12523,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 77
+   },
+   "px": null,
+   "pz": null,
+   "s": 22.2,
+   "gc": false
+  },
+  {
+   "t": 22794,
+   "heapUsado": 105484366,
+   "heapTotal": 131526830,
+   "geometries": 21,
+   "textures": 42,
+   "programas": 9,
+   "calls": 0,
+   "tris": 0,
+   "fps": 11,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 13762,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 69
+   },
+   "px": null,
+   "pz": null,
+   "s": 22.8,
+   "gc": false
+  },
+  {
+   "t": 29078,
+   "heapUsado": 101814604,
+   "heapTotal": 132360852,
+   "geometries": 21,
+   "textures": 56,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 13985,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 69
+   },
+   "px": null,
+   "pz": null,
+   "s": 29.1,
+   "gc": false
+  },
+  {
+   "t": 29600,
+   "heapUsado": 110866440,
+   "heapTotal": 133305148,
+   "geometries": 21,
+   "textures": 56,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 14951,
+    "mats": 17,
+    "inst": 422,
+    "descargando": 69
+   },
+   "px": null,
+   "pz": null,
+   "s": 29.6,
+   "gc": false
+  },
+  {
+   "t": 30417,
+   "heapUsado": 89018845,
+   "heapTotal": 117968713,
+   "geometries": 21,
+   "textures": 56,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 15364,
+    "mats": 17,
+    "inst": 422,
+    "descargando": 66
+   },
+   "px": null,
+   "pz": null,
+   "s": 30.4,
+   "gc": false
+  },
+  {
+   "t": 30964,
+   "heapUsado": 96344703,
+   "heapTotal": 121534235,
+   "geometries": 21,
+   "textures": 57,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 15804,
+    "mats": 17,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 31,
+   "gc": false
+  },
+  {
+   "t": 31872,
+   "heapUsado": 87272112,
+   "heapTotal": 126335676,
+   "geometries": 21,
+   "textures": 58,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 14,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 18629,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 31.9,
+   "gc": false
+  },
+  {
+   "t": 32471,
+   "heapUsado": 101212980,
+   "heapTotal": 125231428,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 19241,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 32.5,
+   "gc": false
+  },
+  {
+   "t": 32990,
+   "heapUsado": 97582558,
+   "heapTotal": 136086226,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 21015,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 33,
+   "gc": false
+  },
+  {
+   "t": 33605,
+   "heapUsado": 120558396,
+   "heapTotal": 145894564,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 28142,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 33.6,
+   "gc": false
+  },
+  {
+   "t": 34173,
+   "heapUsado": 122046764,
+   "heapTotal": 145929892,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 34.2,
+   "gc": false
+  },
+  {
+   "t": 34701,
+   "heapUsado": 119795028,
+   "heapTotal": 145975972,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 21,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 34.7,
+   "gc": false
+  },
+  {
+   "t": 41276,
+   "heapUsado": 118529790,
+   "heapTotal": 146428366,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 0,
+   "tris": 0,
+   "fps": 21,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 41.3,
+   "gc": false
+  },
+  {
+   "t": 41793,
+   "heapUsado": 110848753,
+   "heapTotal": 146434621,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 41.8,
+   "gc": false
+  },
+  {
+   "t": 42366,
+   "heapUsado": 121870071,
+   "heapTotal": 146437019,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 18,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 42.4,
+   "gc": false
+  },
+  {
+   "t": 43013,
+   "heapUsado": 108184518,
+   "heapTotal": 145384886,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 19,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 43,
+   "gc": true
+  },
+  {
+   "t": 43559,
+   "heapUsado": 119824564,
+   "heapTotal": 145386104,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 17,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 43.6,
+   "gc": false
+  },
+  {
+   "t": 44080,
+   "heapUsado": 107674824,
+   "heapTotal": 139860456,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 19,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 44.1,
+   "gc": false
+  },
+  {
+   "t": 44612,
+   "heapUsado": 116833764,
+   "heapTotal": 139862760,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 23,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 44.6,
+   "gc": false
+  },
+  {
+   "t": 45155,
+   "heapUsado": 112332308,
+   "heapTotal": 139862760,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 24,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 45.2,
+   "gc": false
+  },
+  {
+   "t": 45693,
+   "heapUsado": 105599724,
+   "heapTotal": 139875816,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 28,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 45.7,
+   "gc": false
+  },
+  {
+   "t": 46231,
+   "heapUsado": 106622222,
+   "heapTotal": 139886118,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 19,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 46.2,
+   "gc": false
+  },
+  {
+   "t": 46826,
+   "heapUsado": 120541718,
+   "heapTotal": 141743398,
+   "geometries": 21,
+   "textures": 59,
+   "programas": 11,
+   "calls": 14,
+   "tris": 14,
+   "fps": 19,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 46.8,
+   "gc": false
+  },
+  {
+   "t": 56713,
+   "heapUsado": 123669664,
+   "heapTotal": 173750828,
+   "geometries": 97,
+   "textures": 101,
+   "programas": 42,
+   "calls": 14,
+   "tris": 14,
+   "fps": 19,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 4,
+    "kbGeo": 37932,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 56.7,
+   "gc": false
+  },
+  {
+   "t": 58259,
+   "heapUsado": 118525177,
+   "heapTotal": 178193185,
+   "geometries": 118,
+   "textures": 104,
+   "programas": 47,
+   "calls": 14,
+   "tris": 14,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 4,
+    "kbGeo": 36844,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 68
+   },
+   "px": null,
+   "pz": null,
+   "s": 58.3,
+   "gc": false
+  },
+  {
+   "t": 58925,
+   "heapUsado": 124888940,
+   "heapTotal": 178251820,
+   "geometries": 111,
+   "textures": 102,
+   "programas": 47,
+   "calls": 193,
+   "tris": 1438285,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 4,
+    "kbGeo": 36844,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 68
+   },
+   "px": null,
+   "pz": null,
+   "s": 58.9,
+   "gc": false
+  },
+  {
+   "t": 59596,
+   "heapUsado": 144599681,
+   "heapTotal": 181383881,
+   "geometries": 119,
+   "textures": 104,
+   "programas": 48,
+   "calls": 122,
+   "tris": 724654,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 4,
+    "kbGeo": 36844,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 68
+   },
+   "px": null,
+   "pz": null,
+   "s": 59.6,
+   "gc": false
+  },
+  {
+   "t": 82841,
+   "heapUsado": 113256768,
+   "heapTotal": 116000324,
+   "geometries": 148,
+   "textures": 112,
+   "programas": 48,
+   "calls": 106,
+   "tris": 741358,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 82.8,
+   "gc": false
+  },
+  {
+   "t": 83472,
+   "heapUsado": 116601497,
+   "heapTotal": 121665537,
+   "geometries": 151,
+   "textures": 114,
+   "programas": 50,
+   "calls": 99,
+   "tris": 739034,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 63
+   },
+   "px": null,
+   "pz": null,
+   "s": 83.5,
+   "gc": false
+  },
+  {
+   "t": 84031,
+   "heapUsado": 120181908,
+   "heapTotal": 124270508,
+   "geometries": 154,
+   "textures": 115,
+   "programas": 51,
+   "calls": 14,
+   "tris": 14,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 61
+   },
+   "px": null,
+   "pz": null,
+   "s": 84,
+   "gc": false
+  },
+  {
+   "t": 85525,
+   "heapUsado": 126752157,
+   "heapTotal": 133585933,
+   "geometries": 154,
+   "textures": 117,
+   "programas": 51,
+   "calls": 1854,
+   "tris": 16278190,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 55
+   },
+   "px": null,
+   "pz": null,
+   "s": 85.5,
+   "gc": false
+  },
+  {
+   "t": 86578,
+   "heapUsado": 129019104,
+   "heapTotal": 135462852,
+   "geometries": 154,
+   "textures": 119,
+   "programas": 51,
+   "calls": 1010,
+   "tris": 8868310,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 54
+   },
+   "px": null,
+   "pz": null,
+   "s": 86.6,
+   "gc": false
+  },
+  {
+   "t": 88026,
+   "heapUsado": 157622514,
+   "heapTotal": 167346782,
+   "geometries": 153,
+   "textures": 123,
+   "programas": 50,
+   "calls": 998,
+   "tris": 8867542,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 7,
+    "kbGeo": 37239,
+    "mats": 26,
+    "inst": 422,
+    "descargando": 53
+   },
+   "px": null,
+   "pz": null,
+   "s": 88,
+   "gc": false
+  },
+  {
+   "t": 88616,
+   "heapUsado": 167188727,
+   "heapTotal": 176137995,
+   "geometries": 153,
+   "textures": 125,
+   "programas": 50,
+   "calls": 14,
+   "tris": 14,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 9,
+    "kbGeo": 38308,
+    "mats": 27,
+    "inst": 422,
+    "descargando": 52
+   },
+   "px": null,
+   "pz": null,
+   "s": 88.6,
+   "gc": false
+  },
+  {
+   "t": 89372,
+   "heapUsado": 153207944,
+   "heapTotal": 161265340,
+   "geometries": 153,
+   "textures": 126,
+   "programas": 50,
+   "calls": 14,
+   "tris": 14,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 17,
+    "kbGeo": 46286,
+    "mats": 27,
+    "inst": 422,
+    "descargando": 47
+   },
+   "px": null,
+   "pz": null,
+   "s": 89.4,
+   "gc": true
+  },
+  {
+   "t": 90071,
+   "heapUsado": 177787745,
+   "heapTotal": 191509821,
+   "geometries": 153,
+   "textures": 126,
+   "programas": 50,
+   "calls": 14,
+   "tris": 14,
+   "fps": 7,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 20,
+    "kbGeo": 58710,
+    "mats": 30,
+    "inst": 422,
+    "descargando": 43
+   },
+   "px": null,
+   "pz": null,
+   "s": 90.1,
+   "gc": false
+  },
+  {
+   "t": 90863,
+   "heapUsado": 181464716,
+   "heapTotal": 195595376,
+   "geometries": 156,
+   "textures": 129,
+   "programas": 51,
+   "calls": 156,
+   "tris": 1482980,
+   "fps": 7,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 23,
+    "kbGeo": 60243,
+    "mats": 30,
+    "inst": 422,
+    "descargando": 41
+   },
+   "px": null,
+   "pz": null,
+   "s": 90.9,
+   "gc": false
+  },
+  {
+   "t": 194297,
+   "heapUsado": 148004641,
+   "heapTotal": 152379733,
+   "geometries": 200,
+   "textures": 136,
+   "programas": 62,
+   "calls": 14,
+   "tris": 14,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 22,
+    "kbGeo": 56412,
+    "mats": 29,
+    "inst": 422,
+    "descargando": 54
+   },
+   "px": null,
+   "pz": null,
+   "s": 194.3,
+   "gc": false
+  }
+ ],
+ "red": {
+  "totalMB": 98.1,
+  "n": 446,
+  "fallos": 75,
+  "porExt": {
+   "css": 0.1430187225341797,
+   "js": 3.5250463485717773,
+   "png": 1.460017204284668,
+   "html": 0.06739044189453125,
+   "?": 0.0002880096435546875,
+   "woff2": 0.050452232360839844,
+   "jpg": 49.84600067138672,
+   "glb": 42.838321685791016,
+   "json": 0.0042247772216796875,
+   "webp": 0.13817882537841797
+  },
+  "top": [
+   {
+    "u": "tex_hd/hd_ancient_n.jpg",
+    "mb": 13.65,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_hd/hd_savage_n.jpg",
+    "mb": 13.36,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_grande_f_hd.glb",
+    "mb": 6.53,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_e_hd.glb",
+    "mb": 5.84,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_hd/hd_savage.jpg",
+    "mb": 5.16,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/muro_templo_hd.glb",
+    "mb": 4.17,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_hd/hd_ancient.jpg",
+    "mb": 4.13,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "models/vittata.glb",
+    "mb": 1.25,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/complejo_ruinas.glb",
+    "mb": 0.95,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_sculptM_Normal.jpg",
+    "mb": 0.79,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_damageM_Normal.jpg",
+    "mb": 0.69,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_bricksM_Normal.jpg",
+    "mb": 0.68,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_decoM_Normal.jpg",
+    "mb": 0.63,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_wallL_Normal.jpg",
+    "mb": 0.58,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "mapa/terreno_so.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_se.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_no.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_ne.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "build/three.min.js",
+    "mb": 0.58,
+    "mime": "text/javascript"
+   },
+   {
+    "u": "edificios/templo_grande_e_lejos.glb",
+    "mb": 0.55,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_stoneM_Normal.jpg",
+    "mb": 0.54,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_pillarsM_Normal.jpg",
+    "mb": 0.52,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_grande_f_lejos.glb",
+    "mb": 0.52,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_mudM_Normal.jpg",
+    "mb": 0.51,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_mudDarkM_Normal.jpg",
+    "mb": 0.51,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_grande_a_lejos.glb",
+    "mb": 0.49,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/ruina_torre_f_hd.glb",
+    "mb": 0.48,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/ruina_torre_c_hd.glb",
+    "mb": 0.48,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_beams_Normal.jpg",
+    "mb": 0.47,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_floorDarkM_Normal.jpg",
+    "mb": 0.46,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "entorno/ceiba.glb",
+    "mb": 0.45,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_damageM_Diffuse.jpg",
+    "mb": 0.45,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_mediano_h_lejos.glb",
+    "mb": 0.42,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/ruina_torre_hd.glb",
+    "mb": 0.4,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_floorM_Normal.jpg",
+    "mb": 0.4,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_pillarsM_Diffuse.jpg",
+    "mb": 0.39,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "ropa/botas_constructor.glb",
+    "mb": 0.39,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_floorM_Diffuse.jpg",
+    "mb": 0.36,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_floorDarkM_Diffuse.jpg",
+    "mb": 0.36,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "ropa/botas_aventura.glb",
+    "mb": 0.36,
+    "mime": "model/gltf-binary"
+   }
+  ]
+ },
+ "snaps": [
+  {
+   "t": 60,
+   "totalMB": 112.1,
+   "nodos": 630773,
+   "top": [
+    {
+     "ctor": "system / JSArrayBufferData",
+     "mb": 78.68
+    },
+    {
+     "ctor": "system / ExternalStringData",
+     "mb": 6.51
+    },
+    {
+     "ctor": "system / InstructionStream",
+     "mb": 4.01
+    },
+    {
+     "ctor": "(object elements)",
+     "mb": 2.64
+    },
+    {
+     "ctor": "ArrayBuffer",
+     "mb": 1.93
+    },
+    {
+     "ctor": "Object",
+     "mb": 1.43
+    },
+    {
+     "ctor": "Uint32Array",
+     "mb": 1.33
+    },
+    {
+     "ctor": "system / TrustedByteArray",
+     "mb": 0.89
+    },
+    {
+     "ctor": "(sin nombre)",
+     "mb": 0.77
+    },
+    {
+     "ctor": "heap number",
+     "mb": 0.77
+    },
+    {
+     "ctor": "system / BytecodeArray",
+     "mb": 0.73
+    },
+    {
+     "ctor": "Array",
+     "mb": 0.46
+    },
+    {
+     "ctor": "system / Map",
+     "mb": 0.45
+    },
+    {
+     "ctor": "(object properties)",
+     "mb": 0.37
+    },
+    {
+     "ctor": "system / FeedbackVector",
+     "mb": 0.31
+    },
+    {
+     "ctor": "system / DescriptorArray",
+     "mb": 0.28
+    },
+    {
+     "ctor": "system / FunctionTemplateInfo",
+     "mb": 0.25
+    },
+    {
+     "ctor": "Int16Array",
+     "mb": 0.24
+    },
+    {
+     "ctor": "Int8Array",
+     "mb": 0.24
+    },
+    {
+     "ctor": "system / ProtectedFixedArray",
+     "mb": 0.21
+    },
+    {
+     "ctor": "Float32Array",
+     "mb": 0.21
+    },
+    {
+     "ctor": "blink::ScriptResource",
+     "mb": 0.2
+    },
+    {
+     "ctor": "system / WeakArrayList",
+     "mb": 0.2
+    },
+    {
+     "ctor": "Lt",
+     "mb": 0.17
+    },
+    {
+     "ctor": "system / Code",
+     "mb": 0.17
+    },
+    {
+     "ctor": "(constant pool)",
+     "mb": 0.16
+    },
+    {
+     "ctor": "se",
+     "mb": 0.15
+    },
+    {
+     "ctor": "system / ScopeInfo",
+     "mb": 0.15
+    },
+    {
+     "ctor": "Uint8Array",
+     "mb": 0.13
+    },
+    {
+     "ctor": "blink::ImmutableCSSPropertyValueSet",
+     "mb": 0.13
+    },
+    {
+     "ctor": "blink::NetworkResourcesData::ResourceData",
+     "mb": 0.12
+    },
+    {
+     "ctor": "sn",
+     "mb": 0.12
+    },
+    {
+     "ctor": "blink::GridSizingTrackCollection",
+     "mb": 0.12
+    },
+    {
+     "ctor": "system / PropertyArray",
+     "mb": 0.11
+    },
+    {
+     "ctor": "system / FeedbackMetadata",
+     "mb": 0.11
+    },
+    {
+     "ctor": "blink::StyleRule",
+     "mb": 0.11
+    },
+    {
+     "ctor": "system / ArrayList",
+     "mb": 0.1
+    },
+    {
+     "ctor": "blink::ComputedStyleBase::StyleSurroundData",
+     "mb": 0.1
+    },
+    {
+     "ctor": "blink::ComputedStyleBase::StyleMisc2Data",
+     "mb": 0.09
+    },
+    {
+     "ctor": "ta",
+     "mb": 0.09
+    }
+   ],
+   "abDet": {
+    "umbralKB": 256,
+    "totalMB": 0,
+    "n": 0,
+    "huerfanos": 0,
+    "top": []
+   }
+  },
+  {
+   "t": 150,
+   "totalMB": 144.3,
+   "nodos": 774561,
+   "top": [
+    {
+     "ctor": "system / JSArrayBufferData",
+     "mb": 104.37
+    },
+    {
+     "ctor": "system / ExternalStringData",
+     "mb": 7.12
+    },
+    {
+     "ctor": "system / InstructionStream",
+     "mb": 4.62
+    },
+    {
+     "ctor": "(object elements)",
+     "mb": 3.66
+    },
+    {
+     "ctor": "ArrayBuffer",
+     "mb": 2.18
+    },
+    {
+     "ctor": "Object",
+     "mb": 1.76
+    },
+    {
+     "ctor": "Uint32Array",
+     "mb": 1.36
+    },
+    {
+     "ctor": "(sin nombre)",
+     "mb": 1.21
+    },
+    {
+     "ctor": "system / TrustedByteArray",
+     "mb": 1
+    },
+    {
+     "ctor": "heap number",
+     "mb": 0.99
+    },
+    {
+     "ctor": "system / BytecodeArray",
+     "mb": 0.87
+    },
+    {
+     "ctor": "Array",
+     "mb": 0.61
+    },
+    {
+     "ctor": "(object properties)",
+     "mb": 0.49
+    },
+    {
+     "ctor": "system / Map",
+     "mb": 0.48
+    },
+    {
+     "ctor": "system / FeedbackVector",
+     "mb": 0.36
+    },
+    {
+     "ctor": "Int16Array",
+     "mb": 0.32
+    },
+    {
+     "ctor": "Int8Array",
+     "mb": 0.32
+    },
+    {
+     "ctor": "system / DescriptorArray",
+     "mb": 0.29
+    },
+    {
+     "ctor": "Float32Array",
+     "mb": 0.26
+    },
+    {
+     "ctor": "system / FunctionTemplateInfo",
+     "mb": 0.25
+    },
+    {
+     "ctor": "system / WeakArrayList",
+     "mb": 0.25
+    },
+    {
+     "ctor": "system / ProtectedFixedArray",
+     "mb": 0.24
+    },
+    {
+     "ctor": "se",
+     "mb": 0.23
+    },
+    {
+     "ctor": "Lt",
+     "mb": 0.22
+    },
+    {
+     "ctor": "system / PropertyArray",
+     "mb": 0.21
+    },
+    {
+     "ctor": "{\"v\":6,\"formato\":2,\"escrito\":1793798375394,\"saveId\":\"4bfadf4ab6c48649\",\"profile\":{\"created\":true,\"name\":\"Nube Azul\",\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}}},\"comic\":{\"title\":\"Mi primera reconstrucción\",\"cover\":\"vittata\",\"layout\":\"grid\",\"order\":[0,1,2,3],\"captions\":{},\"vinetas\":{\"intro\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":1},\"taller\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":5},\"refugio\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":16},\"final\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"li",
+     "mb": 0.21
+    },
+    {
+     "ctor": "system / Code",
+     "mb": 0.2
+    },
+    {
+     "ctor": "blink::ScriptResource",
+     "mb": 0.2
+    },
+    {
+     "ctor": "(constant pool)",
+     "mb": 0.19
+    },
+    {
+     "ctor": "system / ScopeInfo",
+     "mb": 0.18
+    },
+    {
+     "ctor": "Uint8Array",
+     "mb": 0.17
+    },
+    {
+     "ctor": "blink::ImmutableCSSPropertyValueSet",
+     "mb": 0.16
+    },
+    {
+     "ctor": "blink::ImageResource",
+     "mb": 0.16
+    },
+    {
+     "ctor": "(concatenated string)",
+     "mb": 0.14
+    },
+    {
+     "ctor": "blink::NetworkResourcesData::ResourceData",
+     "mb": 0.14
+    },
+    {
+     "ctor": "sn",
+     "mb": 0.14
+    },
+    {
+     "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::ShapeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::ShapeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+     "mb": 0.14
+    },
+    {
+     "ctor": "system / FeedbackMetadata",
+     "mb": 0.13
+    },
+    {
+     "ctor": "ta",
+     "mb": 0.12
+    },
+    {
+     "ctor": "blink::StyleRule",
+     "mb": 0.11
+    }
+   ],
+   "abDet": {
+    "umbralKB": 256,
+    "totalMB": 0,
+    "n": 0,
+    "huerfanos": 0,
+    "top": []
+   }
+  }
+ ],
+ "snapDiff": [
+  {
+   "ctor": "system / JSArrayBufferData",
+   "aMB": 78.68,
+   "bMB": 104.37,
+   "deltaMB": 25.69
+  },
+  {
+   "ctor": "(object elements)",
+   "aMB": 2.64,
+   "bMB": 3.66,
+   "deltaMB": 1.02
+  },
+  {
+   "ctor": "system / ExternalStringData",
+   "aMB": 6.51,
+   "bMB": 7.12,
+   "deltaMB": 0.61
+  },
+  {
+   "ctor": "system / InstructionStream",
+   "aMB": 4.01,
+   "bMB": 4.62,
+   "deltaMB": 0.61
+  },
+  {
+   "ctor": "(sin nombre)",
+   "aMB": 0.77,
+   "bMB": 1.21,
+   "deltaMB": 0.44
+  },
+  {
+   "ctor": "Object",
+   "aMB": 1.43,
+   "bMB": 1.76,
+   "deltaMB": 0.33
+  },
+  {
+   "ctor": "ArrayBuffer",
+   "aMB": 1.93,
+   "bMB": 2.18,
+   "deltaMB": 0.25
+  },
+  {
+   "ctor": "heap number",
+   "aMB": 0.77,
+   "bMB": 0.99,
+   "deltaMB": 0.23
+  },
+  {
+   "ctor": "{\"v\":6,\"formato\":2,\"escrito\":1793798375394,\"saveId\":\"4bfadf4ab6c48649\",\"profile\":{\"created\":true,\"name\":\"Nube Azul\",\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}}},\"comic\":{\"title\":\"Mi primera reconstrucción\",\"cover\":\"vittata\",\"layout\":\"grid\",\"order\":[0,1,2,3],\"captions\":{},\"vinetas\":{\"intro\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":1},\"taller\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":5},\"refugio\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"liso\"}}},\"seq\":16},\"final\":{\"look\":{\"species\":\"versicolor\",\"accessories\":{\"eyes\":{\"id\":\"gafas\",\"color\":\"#5a3a22\"},\"neck\":{\"id\":\"panuelo\",\"color\":\"#3d8fb0\",\"style\":\"li",
+   "aMB": 0,
+   "bMB": 0.21,
+   "deltaMB": 0.21
+  },
+  {
+   "ctor": "Array",
+   "aMB": 0.46,
+   "bMB": 0.61,
+   "deltaMB": 0.15
+  },
+  {
+   "ctor": "system / BytecodeArray",
+   "aMB": 0.73,
+   "bMB": 0.87,
+   "deltaMB": 0.14
+  },
+  {
+   "ctor": "(object properties)",
+   "aMB": 0.37,
+   "bMB": 0.49,
+   "deltaMB": 0.12
+  },
+  {
+   "ctor": "system / TrustedByteArray",
+   "aMB": 0.89,
+   "bMB": 1,
+   "deltaMB": 0.11
+  },
+  {
+   "ctor": "system / PropertyArray",
+   "aMB": 0.11,
+   "bMB": 0.21,
+   "deltaMB": 0.1
+  },
+  {
+   "ctor": "blink::ImageResource",
+   "aMB": 0.08,
+   "bMB": 0.16,
+   "deltaMB": 0.08
+  },
+  {
+   "ctor": "(concatenated string)",
+   "aMB": 0.07,
+   "bMB": 0.14,
+   "deltaMB": 0.08
+  },
+  {
+   "ctor": "Int16Array",
+   "aMB": 0.24,
+   "bMB": 0.32,
+   "deltaMB": 0.07
+  },
+  {
+   "ctor": "Int8Array",
+   "aMB": 0.24,
+   "bMB": 0.32,
+   "deltaMB": 0.07
+  },
+  {
+   "ctor": "se",
+   "aMB": 0.15,
+   "bMB": 0.23,
+   "deltaMB": 0.07
+  },
+  {
+   "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::ShapeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::ShapeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+   "aMB": 0.08,
+   "bMB": 0.14,
+   "deltaMB": 0.06
+  },
+  {
+   "ctor": "system / FeedbackVector",
+   "aMB": 0.31,
+   "bMB": 0.36,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "Float32Array",
+   "aMB": 0.21,
+   "bMB": 0.26,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "system / WeakArrayList",
+   "aMB": 0.2,
+   "bMB": 0.25,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "Lt",
+   "aMB": 0.17,
+   "bMB": 0.22,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "Uint8Array",
+   "aMB": 0.13,
+   "bMB": 0.17,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "system / Context / scope @297111",
+   "aMB": 0,
+   "bMB": 0.04,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "system / ProtectedFixedArray",
+   "aMB": 0.21,
+   "bMB": 0.24,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "system / Code",
+   "aMB": 0.17,
+   "bMB": 0.2,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "(constant pool)",
+   "aMB": 0.16,
+   "bMB": 0.19,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "system / ScopeInfo",
+   "aMB": 0.15,
+   "bMB": 0.18,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "blink::ImmutableCSSPropertyValueSet",
+   "aMB": 0.13,
+   "bMB": 0.16,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "ta",
+   "aMB": 0.09,
+   "bMB": 0.12,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "No",
+   "aMB": 0.06,
+   "bMB": 0.09,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "blink::DocumentLoader",
+   "aMB": 0.05,
+   "bMB": 0.08,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "WebGLUniformLocation",
+   "aMB": 0.05,
+   "bMB": 0.08,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "blink::HashTrieNode<blink::CSSVariableData>",
+   "aMB": 0.05,
+   "bMB": 0.08,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "Uint32Array",
+   "aMB": 1.33,
+   "bMB": 1.36,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / Map",
+   "aMB": 0.45,
+   "bMB": 0.48,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::NetworkResourcesData::ResourceData",
+   "aMB": 0.12,
+   "bMB": 0.14,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "sn",
+   "aMB": 0.12,
+   "bMB": 0.14,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / FeedbackMetadata",
+   "aMB": 0.11,
+   "bMB": 0.13,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::CSSVariableData",
+   "aMB": 0.08,
+   "bMB": 0.1,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "Text",
+   "aMB": 0.07,
+   "bMB": 0.09,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "WebGLBuffer",
+   "aMB": 0.06,
+   "bMB": 0.08,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::UniqueElementData",
+   "aMB": 0.05,
+   "bMB": 0.07,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "At",
+   "aMB": 0.05,
+   "bMB": 0.07,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "fe",
+   "aMB": 0.05,
+   "bMB": 0.07,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "XMLDocument",
+   "aMB": 0.03,
+   "bMB": 0.06,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::NodeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::NodeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+   "aMB": 0.02,
+   "bMB": 0.04,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::CachedMatchedProperties",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / DescriptorArray",
+   "aMB": 0.28,
+   "bMB": 0.29,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / WeakFixedArray",
+   "aMB": 0.09,
+   "bMB": 0.09,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / ObjectBoilerplateDescription",
+   "aMB": 0.08,
+   "bMB": 0.09,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "Promise",
+   "aMB": 0.07,
+   "bMB": 0.08,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / SharedFunctionInfo",
+   "aMB": 0.07,
+   "bMB": 0.08,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "CanvasRenderingContext2D",
+   "aMB": 0.06,
+   "bMB": 0.07,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "(script line ends)",
+   "aMB": 0.06,
+   "bMB": 0.07,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / LoadHandler",
+   "aMB": 0.05,
+   "bMB": 0.06,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "blink::ElementAnimations",
+   "aMB": 0.05,
+   "bMB": 0.06,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "PerformanceResourceTiming",
+   "aMB": 0.05,
+   "bMB": 0.05,
+   "deltaMB": 0.01
+  }
+ ]
+}
