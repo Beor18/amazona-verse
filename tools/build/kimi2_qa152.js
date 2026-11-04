@@ -17,6 +17,12 @@
    Activa HeapProfiler.startSampling (~32 KB) desde el segundo 40 y vuelca las pilas con más
    selfSize: atribuye qué módulo retiene la memoria. Uso:
    node tools/build/kimi2_qa152.js --cap 4 --secs 150 --perfil --etiqueta perf1
+
+   Fase 4 (--snap T1,T2): el sampling apenas capturó MBs → sospecha de ArrayBuffers/binarios o
+   estructuras no muestreadas. Toma HeapProfiler.takeHeapSnapshot (self_size agregado por constructor)
+   en los segundos pedidos (con window.gc() justo antes) y difiere los dos agregados: el delta
+   positivo grande es el constructor que retiene. Uso (Node con old space grande):
+   node --max-old-space-size=6144 tools/build/kimi2_qa152.js --cap 4 --secs 150 --snap 50,140 --etiqueta snap1
 */
 'use strict';
 const http = require('http');
@@ -33,6 +39,8 @@ const SECS = +(arg('--secs', '30'));
 const CAP = +(arg('--cap', '1'));
 const ETIQUETA = arg('--etiqueta', '');
 const PERFIL = process.argv.includes('--perfil');
+const SNAP = arg('--snap', ''); // p. ej. "50,140": segundos de snapshot con gc previo
+const SNAP_T = SNAP ? SNAP.split(',').map(x => +x).filter(x => x > 0) : [];
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi152');
 fs.mkdirSync(SALIDA, { recursive: true });
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
@@ -65,6 +73,46 @@ async function ev(cdp, ses, exp, t, aw) {
   const r = await cdp.call('Runtime.evaluate', { expression: exp, returnByValue: true, awaitPromise: aw !== false }, ses, (t || 30) * 1000);
   if (r.exceptionDetails) throw new Error('JS: ' + JSON.stringify(r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text).slice(0, 400));
   return r.result ? r.result.value : undefined;
+}
+
+// --- Fase 4: snapshots por constructor (self_size) ---
+let snapActual = null; // { t, chunks:[], resolver }
+function tomarSnap(cdp, ses, t) {
+  return new Promise(async (re, re2) => {
+    const snap = { t, chunks: [] };
+    snapActual = snap; // los chunks van llegando por evento hasta que el comando responde
+    const to = setTimeout(() => { if (snapActual === snap) snapActual = null; re2(new Error('timeout snapshot')); }, 285000);
+    // OJO: no resolver en reportHeapSnapshotProgress(finished): puede llegar ANTES que los
+    // últimos addHeapSnapshotChunk y perderíamos la cola del JSON (fase 4, 1ª corrida).
+    try { await cdp.call('HeapProfiler.takeHeapSnapshot', { reportProgress: false }, ses, 280000); clearTimeout(to); re(snap); }
+    catch (e) { clearTimeout(to); if (snapActual === snap) snapActual = null; re2(e); }
+  });
+}
+function agregarSnap(snap) {
+  const d = JSON.parse(snap.chunks.join(''));
+  snap.chunks = null;
+  const meta = d.snapshot.meta, nf = meta.node_fields, str = d.strings;
+  const iName = nf.indexOf('name'), iSize = nf.indexOf('self_size');
+  const nodos = d.nodes, por = new Map();
+  let total = 0;
+  for (let i = 0; i < nodos.length; i += nf.length) {
+    const sz = nodos[i + iSize];
+    if (!sz) continue;
+    total += sz;
+    const nombre = str[nodos[i + iName]] || '(sin nombre)';
+    por.set(nombre, (por.get(nombre) || 0) + sz);
+  }
+  snap.porCtor = [...por.entries()].sort((a, b) => b[1] - a[1]);
+  snap.totalMB = Math.round(total / 1048576 * 10) / 10;
+  snap.nodos = Math.round(nodos.length / nf.length);
+  return snap;
+}
+function difSnaps(a, b) {
+  const ma = new Map(a.porCtor), mb = new Map(b.porCtor);
+  const out = [];
+  for (const [ctor, szB] of mb) out.push({ ctor, aMB: Math.round((ma.get(ctor) || 0) / 1048576 * 100) / 100, bMB: Math.round(szB / 1048576 * 100) / 100, deltaMB: Math.round((szB - (ma.get(ctor) || 0)) / 1048576 * 100) / 100 });
+  for (const [ctor, szA] of ma) if (!mb.has(ctor)) out.push({ ctor, aMB: Math.round(szA / 1048576 * 100) / 100, bMB: 0, deltaMB: -Math.round(szA / 1048576 * 100) / 100 });
+  return out.sort((x, y) => y.deltaMB - x.deltaMB);
 }
 
 // Semilla de cap1 (jugador existente: Jugar entra directo, sin creador) — misma que kimi2_qa53.js (QA-111)
@@ -120,7 +168,8 @@ async function lanzarChrome() {
   const cdp = new CDP(ws); await cdp.listo();
   const net = { urls: {}, total: 0, porExt: {}, fallos: 0, n: 0 };
   cdp.onEvent = d => {
-    if (d.method === 'Network.responseReceived') { const r = d.params.response; net.urls[d.params.requestId] = { u: r.url, mb: 0, mime: r.mimeType }; }
+    if (d.method === 'HeapProfiler.addHeapSnapshotChunk') { if (snapActual) snapActual.chunks.push(d.params.chunk); }
+    else if (d.method === 'Network.responseReceived') { const r = d.params.response; net.urls[d.params.requestId] = { u: r.url, mb: 0, mime: r.mimeType }; }
     else if (d.method === 'Network.loadingFinished') { const e = net.urls[d.params.requestId]; if (e) { e.mb = (d.params.encodedDataLength || 0) / 1048576; net.total += e.mb; net.n++;
       const ext = (e.u.match(/\.(\w+)(?:[?#]|$)/) || [,'?'])[1].toLowerCase(); net.porExt[ext] = (net.porExt[ext] || 0) + e.mb; } }
     else if (d.method === 'Network.loadingFailed') { net.fallos++; }
@@ -135,14 +184,33 @@ async function lanzarChrome() {
     const t0 = Date.now();
     await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=' + CAP }, ses);
     const limiteMs = SECS * 1000;
-    let nMuestra = 0, perfilando = false;
+    let nMuestra = 0, perfilando = false, snapIdx = 0;
+    const snaps = [];
     while (Date.now() - t0 < limiteMs) {
       await cdp.bombear(0.5);
       // gc cada ~10 s para separar heap retenido de basura (muestra marcada gc=true)
       if (++nMuestra % 20 === 0) { try { await ev(cdp, ses, `window.gc()`, 5, false); } catch (e) {} }
       // muestreo de asignaciones desde el segundo 40 (post-reveal: atribuye el crecimiento, no la carga)
       if (PERFIL && !perfilando && nMuestra >= 80) { try { await cdp.call('HeapProfiler.startSampling', { samplingInterval: 32768 }, ses); perfilando = true; } catch (e) {} }
+      // snapshots en los segundos pedidos (gc justo antes para medir retenido)
+      if (snapIdx < SNAP_T.length && (Date.now() - t0) / 1000 >= SNAP_T[snapIdx]) {
+        const T = SNAP_T[snapIdx]; snapIdx++;
+        console.log(`  [snap] #${snapIdx} a los ~${T}s: gc + takeHeapSnapshot...`);
+        try { await ev(cdp, ses, `window.gc()`, 15, false); } catch (e) {}
+        await cdp.bombear(0.7);
+        try { const s = agregarSnap(await tomarSnap(cdp, ses, T)); snaps.push(s); console.log(`  [snap] #${snapIdx} listo: ${s.nodos} nodos, self_size total ${s.totalMB} MB, ${s.porCtor.length} constructores`); }
+        catch (e) { console.log('  [snap] falló: ' + e.message); }
+      }
       try { const m = await ev(cdp, ses, MUESTRA_JS, 5, false); if (m) { m.s = Math.round((Date.now() - t0) / 100) / 10; m.gc = nMuestra % 20 === 0; res.muestras.push(m); } } catch (e) { /* aún no hay AV */ }
+    }
+    if (snaps.length) {
+      res.snaps = snaps.map(s => ({ t: s.t, totalMB: s.totalMB, nodos: s.nodos, top: s.porCtor.slice(0, 40).map(([ctor, sz]) => ({ ctor, mb: Math.round(sz / 1048576 * 100) / 100 })) }));
+      if (snaps.length >= 2) {
+        res.snapDiff = difSnaps(snaps[0], snaps[1]).slice(0, 60);
+        console.log('\nSNAP DIFF (por constructor, self_size):');
+        for (const d of res.snapDiff.filter(x => Math.abs(x.deltaMB) >= 1).slice(0, 30))
+          console.log(`  ${d.deltaMB >= 0 ? '+' : ''}${d.deltaMB} MB  ${d.ctor}  (${d.aMB} → ${d.bMB})`);
+      }
     }
     if (perfilando) {
       try {
