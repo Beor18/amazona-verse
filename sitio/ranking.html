@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top récords · Amazona Verse</title>
+<meta name="description" content="Los mejores récords de los minijuegos de Amazona Verse, con apodos de animales de la isla (nunca nombres).">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/web.css">
+<link rel="canonical" href="https://www.amazonaverse.com/ranking.html">
+<style>body{background:var(--ink,#0f2416);color:var(--paper,#fff8e8)} .rk-wrap{max-width:760px;margin:0 auto;padding:28px 16px 64px} .rk-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap} .rk-top a{color:var(--gold,#ffd27a)} .rk-lang{background:rgba(255,255,255,.1);color:inherit;border:0;border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}</style>
+</head>
+<body>
+<main class="rk-wrap">
+  <div class="rk-top">
+    <a href="./" style="font:700 1.4rem/1 var(--font-display,Fredoka,sans-serif);text-decoration:none">Amazona Verse</a>
+    <button class="rk-lang" type="button" id="rk-lang"><span data-l="es">English</span><span data-l="en">Español</span></button>
+  </div>
+    <div class="top-records" id="top-records" aria-labelledby="h-top">
+      <h3 class="h3" id="h-top"><span data-l="es">Top récords de Amazona Verse</span><span data-l="en">Amazona Verse top records</span></h3>
+      <div class="tr-tabs" role="tablist"></div>
+      <ol class="tr-lista" aria-live="polite"></ol>
+      <p class="tr-nota"><span data-l="es">Los jugadores salen con un apodo de cotorra o de animal de la isla, nunca con su nombre. Juega, supera tu marca y publícala desde la pantalla de resultados.</span><span data-l="en">Players appear under a parrot or island-animal nickname, never their name. Play, beat your mark and publish it from the results screen.</span></p>
+    </div>
+    <style>
+      .top-records { margin-top: 32px; padding: 20px; border-radius: 18px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 2px rgba(255,210,122,.35); }
+      .top-records .h3 { margin: 0 0 12px; font-family: var(--font-display); color: var(--gold); }
+      .tr-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+      .tr-tabs button { font: 700 var(--fs-xs, 14px)/1 var(--font-display); padding: 8px 14px; border-radius: 999px; border: 0; cursor: pointer; background: rgba(255,255,255,.1); color: var(--paper); }
+      .tr-tabs button[aria-selected="true"] { background: var(--gold); color: var(--ink); }
+      .tr-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; min-height: 2em; }
+      .tr-lista li { display: flex; gap: 12px; align-items: baseline; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.06); }
+      .tr-lista li b { min-width: 2.2em; color: var(--gold); }
+      .tr-lista li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .tr-lista li em { font-style: normal; font-weight: 700; }
+      .tr-nota { margin: 12px 0 0; color: var(--muted); font-size: .92em; }
+    </style>
+    <script>
+    (function () {
+      var API = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records';
+      var RETOS = [['flight', 'Amazona Flight', 'Amazona Flight', 'obstáculos', 'obstacles'], ['banquete', '¡Banquete!', 'Feast!', 'puntos', 'points'], ['tormenta', '¡Escapa de la tormenta!', 'Escape the storm!', 'puntos', 'points'], ['carrera', 'Carrera', 'Race', '', ''], ['rio', 'Contrarreloj del río', 'River time trial', '', ''], ['rio_rush', 'River Rush', 'River Rush', 'puntos', 'points']];;
+      var caja = document.getElementById('top-records'); if (!caja) return;
+      var tabs = caja.querySelector('.tr-tabs'), lista = caja.querySelector('.tr-lista'), datos = null, actual = 'flight';
+      var en = function () { return document.documentElement.lang === 'en'; };
+      var reloj = function (ms) { var s = ms / 1000, m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
+      function pintar() {
+        tabs.innerHTML = ''; RETOS.forEach(function (r) { var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(r[0] === actual)); b.textContent = en() ? r[2] : r[1]; b.onclick = function () { actual = r[0]; pintar(); }; tabs.appendChild(b); });
+        lista.innerHTML = '';
+        var r = RETOS.filter(function (x) { return x[0] === actual; })[0], t = datos && datos[actual] ? datos[actual].top : null;
+        var vacio = function (txt) { var li = document.createElement('li'); li.textContent = txt; lista.appendChild(li); };
+        if (!datos) return vacio(en() ? 'Loading records…' : 'Cargando récords…');
+        if (!t || !t.length) return vacio(en() ? 'No records yet. Be the first!' : 'Todavía no hay récords. ¡Sé el primero!');
+        t.forEach(function (f) { var li = document.createElement('li'), b = document.createElement('b'), s = document.createElement('span'), e = document.createElement('em');
+          b.textContent = f.puesto + '.'; s.textContent = f.alias; e.textContent = r[3] ? f.valor + ' ' + (en() ? r[4] : r[3]) : reloj(f.valor);
+          li.appendChild(b); li.appendChild(s); li.appendChild(e); lista.appendChild(li); });
+      }
+      pintar();
+      fetch(API + '?n=10').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { datos = j || {}; pintar(); }).catch(function () { datos = {}; pintar(); });
+      new MutationObserver(pintar).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    })();
+    </script>
+  <p style="margin-top:24px"><a class="btn leaf" href="juego/" data-icon="play"><span data-l="es">Jugar ahora</span><span data-l="en">Play now</span></a> &nbsp; <a href="./"><span data-l="es">Volver al inicio</span><span data-l="en">Back home</span></a></p>
+</main>
+<script>
+document.getElementById('rk-lang').addEventListener('click', function () { var h = document.documentElement; h.lang = h.lang === 'en' ? 'es' : 'en'; try { localStorage.setItem('av-lang', h.lang); } catch (e) {} });
+try { var l = localStorage.getItem('av-lang'); if (l === 'en' || l === 'es') document.documentElement.lang = l; } catch (e) {}
+</script>
+</body>
+</html>

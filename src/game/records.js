@@ -708,7 +708,7 @@
     // Ranking global (tools/supabase, función amazona-records): apodo «Animal Adjetivo NN» de listas fijas (sin texto libre),
     // id de dispositivo aleatorio y nada personal. Las partidas de prueba nunca publican (salvo con o.fetch simulado).
     // =================================================================================================================
-    const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/#top-records';
+    const RANK_URL = 'https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records', RANK_VER = 'https://amazonaverse.com/ranking.html';
     const ANIMALES = ['Cotorra', 'Coquí', 'Guaraguao', 'Colibrí', 'Iguaca', 'Tinglar', 'Manatí', 'Reinita', 'Múcaro', 'Lagartijo'];
     const ADJETIVOS = ['Veloz', 'Valiente', 'Curioso', 'Brillante', 'Alegre', 'Audaz', 'Sabio', 'Feliz', 'Ágil', 'Sereno'];
     const RANK_RETOS = ['carrera', 'rio', 'tormenta', 'banquete', 'flight', 'rio_rush', 'tren']; // rio_rush: River Rush clásico, por puntos (AC2)
