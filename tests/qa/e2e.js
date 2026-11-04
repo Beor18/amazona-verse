@@ -194,18 +194,26 @@
       const desdeSuelo = LU ? useAt('luma') : null;                              // bajo la copa, desde el suelo, no se le puede hablar
       const guiaLuma = G.misiones.guideTarget();
       primerVuelo = { seg: Math.round(seg(reloj, false)), segLeyendo: Math.round(seg(reloj, true) + reloj.carLibres / CAR_POR_SEG), alturaPercha: perchaL ? +(perchaL.y - H0(perchaL.x, perchaL.z)).toFixed(1) : null, donde: LU ? LU.donde() : null };
-      let posada = false, llamada = null, charla = false, lumaOk = false;
+      let posada = false, llamada = null, charla = false, lumaOk = false, otraVez = null;
       if (perchaL) {
         volar(perchaL.x + 0.6, perchaL.y + 1.6, perchaL.z); G.fisica.MOVE.flying = false; tick(1.2);   // despegar, llegar y posarse a su lado
         posada = LU.junto() && !G.fisica.MOVE.flying;
         llamada = G.dialogo.libre() ? G.dialogo.actual() : null;                 // Iguaca llamó desde arriba al acercarse (bocadillo)
         const nbL = G.interaccion.nearest(); lumaOk = !!nbL && nbL.id === 'luma'; ultimoCercano = nbL ? nbL.id : 'ninguno'; diagL = { pos: [+S.pos.x.toFixed(1), +S.pos.y.toFixed(1), +S.pos.z.toFixed(1)], perY: +perchaL.y.toFixed(1), lista: G.interaccion.list.map(i => ({ id: i.id, d: +Math.hypot(S.pos.x - i.x, S.pos.z - i.z).toFixed(1), r: i.r, v: i.visible ? !!i.visible() : true })).filter(o => o.d < 6) };
         if (lumaOk) { G.interaccion.action(); reloj.acciones++; }
-        charla = G.dialogo.open(); drain();
+        charla = G.dialogo.open();
+        // PLAYTEST-cap1-paso1: pasada la caja, el resto de la charla sale en bocadillos; otro toque en «Hablar con Iguaca» pasa la
+        // línea y no empieza otra charla (antes la reabría y el final, el que da las tablas, no llegaba si se pulsaba seguido)
+        for (let i = 0; i < 4 && G.dialogo.open(); i++) G.dialogo.next();
+        const nbL2 = G.interaccion.nearest();
+        if (lumaOk && G.dialogo.libre() && nbL2 && nbL2.id === 'luma') { G.interaccion.action(); otraVez = { caja: G.dialogo.open(), paso: S.step }; }
+        drain();
       }
       check('4.2', 'Iguaca llama desde la copa: desde el suelo no se le habla; hay que despegar, posarse a su lado y hablar (la llamada en bocadillo, la charla en la caja; Vittata acepta ayudar y recibe 3 tablas)',
         !!LU && desdeSuelo === false && !!guiaLuma && guiaLuma.y != null && posada && !!llamada && llamada.who === 'Iguaca' && lumaOk && charla && S.step >= 1 && had('LumaHelped') && S.inv.madera >= 3 && !LU.arriba(),
         { desdeSuelo, guia: guiaLuma && { y: +guiaLuma.y.toFixed(1) }, posada, llamada: llamada && llamada.text.slice(0, 30), charla, lumaOk, paso: S.step, madera: S.inv.madera, arriba: LU && LU.arriba(), cercano: lumaOk ? null : ultimoCercano, diagL: lumaOk ? null : diagL, atajo: 'vuelo directo a la percha de la copa' }, 700);
+      check('4.2', 'Pulsar otra vez «Hablar con Iguaca» mientras pasan los bocadillos de la charla no la reabre, y la charla da las tablas (PLAYTEST-cap1-paso1)',
+        !!otraVez && !otraVez.caja && S.step >= 1 && S.events.filter(e => e.key === 'LumaHelped').length === 1, { otraVez, paso: S.step, veces: S.events.filter(e => e.key === 'LumaHelped').length });
       check('4.2', 'El primer vuelo del capítulo llega antes de 90 s (medida de DIVERSION_CAP1, mejora 1)', !!primerVuelo && primerVuelo.seg < 90 && primerVuelo.segLeyendo < 90, primerVuelo);
       if (corte('4.2', S.step >= 1)) return fin();
 
