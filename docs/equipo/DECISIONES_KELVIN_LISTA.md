@@ -12,6 +12,20 @@ Las pruebas de los capítulos 2, 3, 4 y 6 exigen que quede al menos una nota con
 
 «K8 C, K25 B, K32 B, K35 B, K36 B, K42 B, K47 B. K35 B sujeto a verificar la secuencia del Guardián antes de aplicarlo. Todas las demás A.» Además, K38: elegida la propuesta A de CG-60. Las aplica Grok en CG-62 y CG-63.
 
+## K35 · secuencia del Guardián (verificada, no aplicada)
+
+Kelvin pidió la B (llega después de la crecida) solo si no rompe la misión. Hoy el capítulo 1 hace esto:
+
+1. Pasos 0 a 3: Iguaca, taller y materiales. El Guardián no está.
+2. Al entrar al paso 4 (construir), `applyGuardianLook` lo muestra en el sendero y sale el aviso «Alguien te observa desde el sendero del sur».
+3. Si se le habla antes de colocar el refugio, `presentacionGuardian(true)` dice las líneas de la p.7 («¿Y usted quién es?», «primero quiero escuchar tu idea») y no adelanta el paso.
+4. Al colocar el refugio, si no se había presentado, se presenta entonces y dice la p.8 («¿Segura de que funcionará?» / «No completamente.» / «vamos a comprobarlo.»). Enseguida empieza la crecida y él se oculta (`!S.event`).
+5. Tras la crecida, al hablarle, regala el banco.
+
+La prueba del propio capítulo lo exige: `content/cap1/pruebas.js` comprueba que aparece al llegar al paso de construir y que la p.7 se oye antes de construir, sin adelantar el paso. Cambiar el orden rompe esa misión y esas comprobaciones. **K35 B no se aplica.** Se queda el orden de ahora hasta que Kelvin diga cómo rehacer el paso 4 y la p.8.
+
+K36 B queda anotado: el detalle visible de la medalla espera arte. No se inventó ninguno.
+
 ## Ya decidido (no hace falta volver a decirlo)
 
 | Qué | Fecha | Dónde quedó la nota |

@@ -12,20 +12,19 @@
                 D32 (DECIDIDO-EQUIPO 30-oct): llegan los guardianes que el jugador encontró en la temporada (registro de temporada,
                 src/game/temporada.js: quien navega, eps. 3–4, y el guardián del bosquecillo, ep. 4), más los 6 de la historia (mínimo 6),
                 y los 14 asientos que esperan (36 − 22) se ven como luces lejanas sobre el mar. Sin arte nuevo: sprites que ya existen.
-     [KELVIN-2] D33 (DECIDIDO-EQUIPO 30-oct): el pacto es un objeto, el emblema de los 36 completo, con la promesa grabada
+     Kelvin 4-nov (K23 A): el pacto sigue siendo el emblema completo, con la promesa grabada
                 («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
-     [KELVIN-3] Las dos voces extintas hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
+     Kelvin 4-nov (K24 A): las dos voces hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
                 Kelvin 2-nov (definitivo): se llaman Mara (martinicana) y Vela (violacea); son dos voces distintas que se unen al
                 final, así que la insinuación de por qué hablan «desde ahora» (D4) la dicen las dos juntas («Voces»), sin explicar.
      Kelvin 2-nov (definitivo): al renovar el pacto el Guardián le da su medalla a Vittata (se la ganó) y queda
                 en el Cuaderno como sección propia (G.diario.seccion). Solo diálogo y Diario: sin mecánica nueva ni modelo 3D.
-     [KELVIN-4] D34 (DECIDIDO-EQUIPO 30-oct): la Ciudad de los 36 si el mapa lo permite; si no, la plaza de Villa Raíz.
-                Este pack tiene su propio mundo analítico (sin la Ciudad, que está en el mapa del cap. 1): queda la plaza; pedido en PEDIDOS.md.
-     [KELVIN-5] Los grupos: isla alta (mirador, volver mañana) e isla baja
-                (plaza, volver hoy); nadie tiene la culpa. [KELVIN-6] El Guardián recuerda a medias y deja que lo cuenten entre todos.
-     [KELVIN-7] D36 (DECIDIDO-EQUIPO 30-oct): le dan el título «Guardiana del Pacto» (solo texto; su diseño no cambia). [KELVIN-8] Quedan 14 asientos esperando (36 − 22 llegados); gancho «La tripulación».
-     [KELVIN-9] Martinicana y violacea no se formalizan como consejeras aquí. [KELVIN-10] Recompensa final: la pava; sin música concreta.
-     [KELVIN-11] El cómic de cierre de temporada no se hace aquí (se deja para la temporada 6).
+     Kelvin 4-nov (K25 B y K33 A): el círculo es en la Ciudad de los 36. El río, los muelles y el puente se quedan abajo.
+     Kelvin 4-nov (K26 A): isla alta (mirador, volver mañana) e isla baja
+                (plaza, volver hoy); nadie tiene la culpa. Kelvin 4-nov (K27 A): el Guardián recuerda a medias y deja que lo cuenten entre todos.
+     Kelvin 4-nov (K28 A): el título sigue siendo «Guardiana del Pacto» (solo texto). Kelvin 4-nov (K29 A): quedan 14 asientos esperando; gancho «La tripulación».
+     Kelvin 4-nov (K30 A): no se formalizan como consejeras. Kelvin 4-nov (K31 A): la recompensa sigue siendo la pava, sin música nueva.
+     Kelvin 4-nov (K32 B): al terminar el capítulo se abre el cómic con las viñetas ya jugadas y la plantilla de Kelvin. El título es «El cierre de la temporada».
    La simulación del plan es determinista (valores del juego, sin azar): cada tarea dura lo que dice su tarjeta. El inglés va en
    content/ep6/en.js (pack.idioma, después del de cap1). Todo el estado va en S.collected (se guarda solo). */
 (function () {
@@ -169,7 +168,7 @@
   const lineasInicio = G => G.dialogo.L('inicio:ep6').map(l => (l.text === LLEGAN_DEF ? Object.assign({}, l, { text: lineaLlegan() }) : l));
 
   const DIALOGOS = { escenas: [
-    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: 'Kelvin 2-nov: se quedan los seis visitantes y sus nombres. [KELVIN-4: el encuentro de este capítulo es la plaza; falta el sí para la Ciudad de los 36]',
+    { id: 'e_inicio', disparador: 'inicio:ep6', personaje: 'Iguaca', emocion: 'pensando', nota: 'Kelvin 2-nov: se quedan los seis visitantes y sus nombres. Kelvin 4-nov (K25 B): el círculo es en la Ciudad de los 36. El río y el puente se quedan abajo.',
       lineas: ['… once, doce… La cadena de señales sigue encendida hasta la niebla. Mara y Vela pidieron buscar a los que quedan, y hay luces nuevas en el horizonte.', LLEGAN_DEF, 'Una canoa asoma por el río. Y detrás, alguien volando bajo.'] },
     { id: 'e_inicio_v', disparador: 'inicio:ep6', personaje: 'Vittata', emocion: 'idea', lineas: ['Llegan hoy. Yo preparo el puente, la comida, los sitios…', 'Es más rápido si lo hago yo. ¡A los muelles!'] },
     { id: 'e_tarjetas', disparador: 'evento:CardsFilled', personaje: 'Vittata', emocion: 'pensando', lineas: ['Se quedaron hablando sin mí. No me necesitaron para eso.'] },
@@ -315,7 +314,7 @@
     } },
     dialogos: { datos: () => DIALOGOS, retratos: IMG, retratoDefecto: 'assets/vittata.png' },
     comic: {
-      marca: 'EL PACTO DE LOS 36', tituloDefecto: 'Mi capítulo 6', archivo: 'ep6-mi-comic', pdfTitulo: 'El pacto de los 36',
+      marca: 'EL PACTO DE LOS 36', tituloDefecto: 'El cierre de la temporada', archivo: 'ep6-mi-comic', pdfTitulo: 'El pacto de los 36',
       capturas: ['tarjetas', 'atasco', 'levantada', 'circulo', 'pacto'], portadas: {},
       vinetas: [
         { id: 'intro', img: 'portrait', needs: 'PlayerCharacterCreated', texto: S => `Soy ${S.profile.name}. Al amanecer llegaron los primeros por la cadena de señales.` },
@@ -853,7 +852,7 @@
           G.quiet = true; G.guardado.reset(true);
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
           check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
-          check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.nota || '')).includes('[KELVIN') && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
+          check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN|^Kelvin /.test(e.nota || '')) && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
           check('6 visitantes inspirados en especies vivas con ficha en especies.js; sus habilidades son del personaje', G.ep6.VISITANTES.length === 6 && G.ep6.VISITANTES.every(v => (window.AV_ESPECIES.especies || []).some(e => e.id === v.especie && e.uicn && e.uicn.categoria !== 'EX') && v.sabe.length === 2 && v.necesita));
           // M1 · Cada quien con lo suyo
           useAt('v_mira'); drain();

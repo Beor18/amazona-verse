@@ -129,7 +129,7 @@ AVE.module('comic', function (G) {
       },
     },
     ep6: {
-      titulos: ['Mi capítulo 6', 'El pacto de los 36', 'La tripulación'],
+      titulos: ['El cierre de la temporada', 'Mi capítulo 6', 'El pacto de los 36', 'La tripulación'],
       aprendi: [
         { needs: 'RaisedTogether', es: 'Para mover una pieza larga o difícil de manejar, puede ser más seguro coordinarse y pedir ayuda, o usar equipo adecuado.', en: 'To move a long or awkward piece, it can be safer to work together and ask for help, or to use the right equipment.' },
         { needs: 'CircleFormed', es: '36 se reparte en filas iguales de cinco formas: 1×36, 2×18, 3×12, 4×9 y 6×6. 35 solo de dos: 1×35 y 5×7.', en: '36 splits into equal rows in five ways: 1×36, 2×18, 3×12, 4×9 and 6×6. 35 only in two: 1×35 and 5×7.' },

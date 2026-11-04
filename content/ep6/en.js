@@ -16,6 +16,7 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "El pacto de los 36": "The Pact of the 36",
  "EL PACTO DE LOS 36": "THE PACT OF THE 36",
  "Mi capítulo 6": "My chapter 6",
+  "El cierre de la temporada": "The season's closing",
  "Capítulo 6 · Villa Raíz": "Chapter 6 · Villa Raíz",
  "Capítulo 6 · El pacto de los 36": "Chapter 6 · The Pact of the 36",
  "¡El pacto, renovado!": "The pact, renewed!",
