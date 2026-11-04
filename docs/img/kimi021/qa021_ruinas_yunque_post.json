@@ -1,0 +1,18 @@
+{
+  "pos": {
+    "x": -4,
+    "y": 25.4,
+    "z": -84.8
+  },
+  "zona": "kelvin_ruinas_yunque",
+  "stats": {
+    "fps": 40,
+    "calls": 121,
+    "triangulos": 2645492,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  }
+}
