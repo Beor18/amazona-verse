@@ -1075,7 +1075,10 @@ AVE.module('renderer', function (G) {
           gl.readPixels(x, y, cw, ch, gl.RGBA, gl.UNSIGNED_BYTE, 0);
           gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
           if (gl.getError()) { gl.deleteBuffer(pbo); pbo = null; }
-          else fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+          else {
+            fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+            gl.flush(); // sin flush algunos drivers (SwiftShader de la nube) no procesan la copia y la cerca nunca se resuelve
+          }
         } catch (e) { if (pbo) { try { gl.deleteBuffer(pbo); } catch (e2) { /* ya no está */ } } pbo = null; fence = null; }
       }
       if (!pbo || !fence) { // sin WebGL2/PBO: lectura síncrona de antes, mismo resultado
@@ -1084,10 +1087,11 @@ AVE.module('renderer', function (G) {
         return;
       }
       FOTOS.diferidas++;
-      FOTOS.cola.push({ pbo, fence, cw, ch, w, h, quality, probar, resolve });
+      FOTOS.cola.push({ pbo, fence, cw, ch, w, h, quality, probar, resolve, t0: performance.now() });
     });
   }
-  // Se llama al final de update(): una foto por paso, sin esperar a la GPU (clientWaitSync con timeout 0).
+  // Se llama al final de update(): una foto por paso, sin esperar a la GPU (clientWaitSync con timeout 0). Si la
+  // cerca lleva >300 ms sin resolverse (SwiftShader), esa foto se lee síncrona de respaldo para no perderla.
   function fotoPaso() {
     if (!FOTOS.cola.length) return;
     const gl = renderer.getContext();
@@ -1103,13 +1107,19 @@ AVE.module('renderer', function (G) {
         const st = gl.clientWaitSync(f.fence, 0, 0);
         lista = st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED;
       } catch (e) { lista = true; } // la cerca falló: se intenta leer igual
+      if (!lista && performance.now() - f.t0 > 300) {
+        // La cerca no se resolvió en ~300 ms (p. ej. SwiftShader en la nube): lectura síncrona de respaldo del
+        // mismo PBO — getBufferSubData hace la espera implícita a la GPU —, así la foto nunca se pierde (0m).
+        FOTOS.sync++; // cuenta como lectura síncrona: es lo que era
+        lista = true;
+      }
       if (!lista) continue;
       FOTOS.cola.splice(i, 1);
       let url = null;
       try {
         const buf = new Uint8Array(f.cw * f.ch * 4);
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, f.pbo);
-        gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, buf);
+        gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, buf); // con la cerca señalada no espera; en el respaldo, sí
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
         if (!f.probar || f.probar(buf)) {
           // readPixels entrega las filas de abajo arriba: se voltean al orden del lienzo 2D

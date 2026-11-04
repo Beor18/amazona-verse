@@ -1112,8 +1112,9 @@ AVE.module('comic', function (G) {
       // Evento real por el mismo camino que el juego (G.eventos.log) y un cuadro del bucle
       G.eventos.log(def.needs, {});
       G.renderer.update(0.05);
-      // CG-64: la captura se dibuja en el momento pero el JPEG se codifica 1–2 cuadros después (sin congelar)
-      if (def.img !== 'portrait' && lienzoListo()) { for (let i = 0; i < 40 && !S.captures[def.img]; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } }
+      // CG-64: la captura se dibuja en el momento pero el JPEG se codifica 1–2 cuadros después (sin congelar).
+      // 0m: la espera da tiempo real de pared (en la nube la cerca puede tardar >300 ms y va por respaldo síncrono).
+      if (def.img !== 'portrait' && lienzoListo()) { for (let i = 0; i < 100 && !S.captures[def.img]; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } }
       const reg = vin()[def.id], p = comicPanels().find(q => q.id === def.id);
       check('Evento real → viñeta', !!p && G.eventos.had(def.needs) && !!reg, `${def.needs} → ${def.id}`);
       check('La viñeta guarda la apariencia del jugador de ese momento', reg && claveLook(reg.look) === claveLook(lookActual()), reg && reg.look ? reg.look.species : 'sin look');
@@ -1169,7 +1170,7 @@ AVE.module('comic', function (G) {
         }
         check('La eclosión usa la foto de la escena del criadero', S.captures.eclosion === foto);
         for (let i = 0; i < 8; i++) G.renderer.update(0.05); // las posadas se fotografían un instante después
-        if (lienzoListo()) for (let i = 0; i < 40 && !(S.captures.techo && S.captures.rama); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } // CG-64: lectura diferida
+        if (lienzoListo()) for (let i = 0; i < 100 && !(S.captures.techo && S.captures.rama); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: lectura diferida; 0m: espera con tiempo real (nube)
         if (lienzoListo()) check('Techo y rama: foto encuadrada desde un ángulo libre (QA-32)', /^data:image\/jpeg/.test(S.captures.techo || '') && /^data:image\/jpeg/.test(S.captures.rama || ''));
         const solBk = G.solidos;
         try { G.solidos = { activo: true, dentro: () => 99 }; check('Si un sólido tapa todos los ángulos, no hay foto tapada (rama: ilustración)', fotoPosada() === null); }
@@ -1278,7 +1279,7 @@ AVE.module('comic', function (G) {
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;
           let okF = false; try { okF = lienzoListo() ? M.tomarFoto(A.EMOTE_KEYS[2]) : false; } finally { G.quiet = true; if (G.ui.hideToast) G.ui.hideToast(); const f = document.getElementById('foto-flash'); if (f) f.remove(); }
-          if (lienzoListo() && okF) for (let i = 0; i < 40 && !comicPanels().some(q => q.id === 'foto'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } // CG-64: la foto se completa 1–2 cuadros después
+          if (lienzoListo() && okF) for (let i = 0; i < 100 && !comicPanels().some(q => q.id === 'foto'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: la foto se completa 1–2 cuadros después; 0m: espera con tiempo real (nube)
           if (lienzoListo()) check('La foto con pose entra al cómic como viñeta', okF && comicPanels().some(q => q.id === 'foto'));
         }
         const url3 = await exportComic('png'), R3 = ultimoRender, alto3 = H;

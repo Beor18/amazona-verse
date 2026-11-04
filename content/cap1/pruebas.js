@@ -49,8 +49,10 @@
 
   // CG-64: la foto del mundo se codifica 1–2 cuadros después (lectura diferida de la GPU, no congela el juego).
   // La prueba va en bloque síncrono y el alta de la captura es una microtarea: se bombean cuadros hasta que llega.
+  // 0m: la foto es una promesa y en la nube (SwiftShader) puede tardar >300 ms (respaldo síncrono): la espera debe
+  // dar tiempo real de pared, no solo cuadros, o acaba antes de que la GPU entregue la foto.
   async function esperaFoto(G, T, clave) {
-    for (let i = 0; i < 20 && !G.S.captures[clave]; i++) { T.tick(0.1); await new Promise(r => setTimeout(r, 0)); }
+    for (let i = 0; i < 100 && !G.S.captures[clave]; i++) { T.tick(0.1); await new Promise(r => setTimeout(r, 10)); }
   }
 
   async function selfTest(G, T, opts) {

@@ -284,12 +284,12 @@ AVE.module('momentos', function (G) {
       // Foto con pose: de frente, al cómic; una foto nueva reemplaza la anterior en la misma viñeta
       if (lienzoListo()) {
         const ok1 = tomarFoto('bailar');
-        for (let i = 0; i < 40 && !had('PhotoTaken'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } // CG-64: la foto se completa 1–2 cuadros después
+        for (let i = 0; i < 100 && !had('PhotoTaken'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: la foto se completa 1–2 cuadros después; 0m: tiempo real (nube)
         const pF = panel('foto'), cap1 = S.captures[imgDe('PhotoTaken') || 'foto'];
         check('«Foto» con un gesto → PhotoTaken → viñeta «foto» con la pose en el texto', ok1 && had('PhotoTaken') && esImagen(cap1) && !!pF && /bailar/i.test(pF.text), pF ? pF.text : 'sin viñeta');
         check('Al tomar la foto se avisa en el HUD', !$('toast').hidden && /Foto al cómic/.test($('toast').textContent), $('toast').textContent);
         const ok2 = tomarFoto('idea');
-        for (let i = 0; i < 40 && cuenta('PhotoTaken') < 2; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 0)); } // CG-64
+        for (let i = 0; i < 100 && cuenta('PhotoTaken') < 2; i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64; 0m: tiempo real (nube)
         const pF2 = panel('foto');
         check('Otra foto: reemplaza la imagen y el texto de la misma viñeta (sigue habiendo una) y queda como evento', ok2 && cuenta('PhotoTaken') === 2 && G.comic.comicPanels().filter(p => p.id === 'foto').length === 1 && !!pF2 && /idea/i.test(pF2.text), pF2 ? pF2.text : 'sin viñeta');
         check('Sin pose no hay foto', pedirFoto('') === false);
