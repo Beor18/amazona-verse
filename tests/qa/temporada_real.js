@@ -1,4 +1,6 @@
-/* CG-23 · la temporada en el mapa real, seguida, en español (AV.temporadaRealTest).
+/* CG-23 · la temporada en el mapa real, seguida (AV.temporadaRealTest).
+   CG-51: la misma vuelta en inglés es AV.temporadaRealEnTest. En cada capítulo, el primer gesto
+   carga trucos, vecinos, sorpresas y Maraña (boot.js); el recorrido juega con ellos encendidos.
    Juega los capítulos 2 a 6 con los recorridos que ya caminan o vuelan (AV.ep2e2eTest … AV.ep6e2eTest,
    y esos llaman a AV.epCaminar salvo el 2, que es el recorrido del que salió). No modifica ep_caminar.js.
    Entre un capítulo y el siguiente guarda y recarga ese capítulo: al cerrarse su iframe se copia la partida
@@ -122,5 +124,8 @@
     }
     const passed = out.filter(x => x.ok).length;
     return { ok: passed === out.length, passed, total: out.length, results: out };
+  };
+  window.AV.temporadaRealEnTest = function (opts) {
+    return window.AV.temporadaRealTest(Object.assign({}, opts || {}, { idioma: 'en' }));
   };
 })();
