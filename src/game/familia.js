@@ -228,18 +228,18 @@ window.AVFamilia = function (G) {
       ok('Con 4 jugadores nadie se queda sin premio', cuatro.length === 4 && m4.length === 4 && m4.every(m => m.premio), m4.map(m => m.premio).join(' · '));
 
       abrir();
-      ok('QA-111 hay botones de Escondite y de la Maraña', !!$('fam-juego-escondite') && !!$('fam-juego-marana') && !!$('fam-juego-trucos'));
+      ok('QA-116 hay botones de Escondite y de la Maraña', !!$('fam-juego-escondite') && !!$('fam-juego-marana') && !!$('fam-juego-trucos'));
       $('fam-juego-marana').click();
       [...$('fam-fila').children].find(b => b.textContent === '2').click();
-      ok('QA-111 el turno usa el minijuego elegido, no trucos', G.familia.juego === 'marana' && /Maraña|Tangle/.test($('fam-texto').textContent), G.familia.juego + ' · ' + $('fam-texto').textContent);
+      ok('QA-116 el turno usa el minijuego elegido, no trucos', G.familia.juego === 'marana' && /Maraña|Tangle/.test($('fam-texto').textContent), G.familia.juego + ' · ' + $('fam-texto').textContent);
       const nombres = [...$('fam-fila').querySelectorAll('button')].map(b => b.textContent);
-      ok('QA-115 salen con el nombre común, no el id en latín', nombres.length === 6 && nombres.every(t => !/^(vittata|agilis|albifrons|guildingii|versicolor|festiva)$/.test(t) && !/^Amazona /.test(t)) && /puertorriqueña|Puerto Rican/i.test(nombres.join(' ')), nombres.join(' | '));
+      ok('QA-120 salen con el nombre común, no el id en latín', nombres.length === 6 && nombres.every(t => !/^(vittata|agilis|albifrons|guildingii|versicolor|festiva)$/.test(t) && !/^Amazona /.test(t)) && /puertorriqueña|Puerto Rican/i.test(nombres.join(' ')), nombres.join(' | '));
       if (aj) aj.idioma = 'en';
       G.emit('aula', 'idioma', 'en');
       empezar(2, 'trucos');
-      ok('QA-113 el nombre del modo sale en inglés', /Tricks/.test($('fam-texto').textContent) && !/\btrucos\b/.test($('fam-texto').textContent), $('fam-texto').textContent);
+      ok('QA-118 el nombre del modo sale en inglés', /Tricks/.test($('fam-texto').textContent) && !/\btrucos\b/.test($('fam-texto').textContent), $('fam-texto').textContent);
       const bp = $('b-familia');
-      ok('QA-114 la pausa dice Family', !!bp && bp.textContent === 'Family', bp && bp.textContent);
+      ok('QA-119 la pausa dice Family', !!bp && bp.textContent === 'Family', bp && bp.textContent);
       if (aj) aj.idioma = idi || 'es';
       G.emit('aula', 'idioma', idi || 'es');
 
@@ -248,9 +248,9 @@ window.AVFamilia = function (G) {
       const quiet = G.quiet; G.quiet = true;
       const ronda = empezar(2, 'escondite');
       $('fam-ok').click(); await listo;
-      ok('QA-112 Jugar abre el escondite y no anota 1 punto', raiz.hidden && !fin.hidden && ronda[0].puntos === 0 && G.escondite && G.escondite.cerca().quien, 'puntos ' + ronda[0].puntos);
+      ok('QA-117 Jugar abre el escondite y no anota 1 punto', raiz.hidden && !fin.hidden && ronda[0].puntos === 0 && G.escondite && G.escondite.cerca().quien, 'puntos ' + ronda[0].puntos);
       fin.click();
-      ok('QA-112 sin jugar no son 1 punto y 10 s', ronda[0].puntos === 0 && ronda[0].segundos !== 10, ronda[0].puntos + ' · ' + ronda[0].segundos + 's');
+      ok('QA-117 sin jugar no son 1 punto y 10 s', ronda[0].puntos === 0 && ronda[0].segundos !== 10, ronda[0].puntos + ' · ' + ronda[0].segundos + 's');
       $('fam-ok').click(); await listo;
       let guard = 0;
       while (G.escondite.cerca().quien && guard++ < 6) {
@@ -258,14 +258,14 @@ window.AVFamilia = function (G) {
         G.S.pos.x = q.x; G.S.pos.z = q.z;
         G.escondite.paso(0.2);
       }
-      ok('QA-112 el premio sigue el puntaje, no el orden del jugador', ronda[1].puntos === 3 && /Jugador 2|Player 2/.test($('fam-marca').querySelector('.marca').textContent) && /valiente|bravest/.test($('fam-marca').querySelector('.marca').textContent), $('fam-marca').textContent.slice(0, 180));
+      ok('QA-117 el premio sigue el puntaje, no el orden del jugador', ronda[1].puntos === 3 && /Jugador 2|Player 2/.test($('fam-marca').querySelector('.marca').textContent) && /valiente|bravest/.test($('fam-marca').querySelector('.marca').textContent), $('fam-marca').textContent.slice(0, 180));
       const tr = empezar(2, 'trucos');
       $('fam-ok').click(); await listo;
       G.S.clock = (G.S.clock || 0) + 1; G.trucos.anotar('tonel');
       G.S.clock += 1; G.trucos.anotar('looping');
       G.S.clock += 1; G.trucos.anotar('barrena');
       fin.click();
-      ok('QA-112 los trucos cuentan el combo del turno', tr[0].puntos === 3, String(tr[0].puntos));
+      ok('QA-117 los trucos cuentan el combo del turno', tr[0].puntos === 3, String(tr[0].puntos));
       G.quiet = quiet;
     } catch (e) { ok('sin excepciones', false, e && (e.stack || e.message || e)); }
     cerrar(); raiz.hidden = antes;
