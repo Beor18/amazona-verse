@@ -1,14 +1,14 @@
 {
- "codigo": "b309174fe23ba43fdd2faa7ba854dcc1c89b9ea9",
+ "codigo": "424ee7f998856ee327f09ba56a374ec31c0b6987",
  "sitio": null,
- "fecha": "2026-11-04T16:48:20Z",
+ "fecha": "2026-11-04T19:35:27Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-04T16:37:55+00:00",
-  "duracion_s": 610.4,
+  "inicio": "2026-11-04T19:22:39+00:00",
+  "duracion_s": 743.7,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "5be5547e47246d8ab9b9818f3e65ec714580456c165d5dd88eb7a3d3ff0ab9c0",
+  "huella_build": "a1c6a9360d60ce1fa281ce2df521ea4ec1e7f0353f22f9ea9805e8a5394a6aff",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -21,8 +21,8 @@
   },
   "missionTest": {
    "requerida": true,
-   "passed": 77,
-   "total": 77,
+   "passed": 79,
+   "total": 79,
    "ok": true
   },
   "accessoryTest": {
@@ -57,14 +57,14 @@
   },
   "movementTest": {
    "requerida": true,
-   "passed": 48,
-   "total": 48,
+   "passed": 50,
+   "total": 50,
    "ok": true
   },
   "saveTest": {
    "requerida": true,
-   "passed": 62,
-   "total": 62,
+   "passed": 63,
+   "total": 63,
    "ok": true
   },
   "comicTest": {
@@ -91,10 +91,8 @@
   "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 7.3,
- "heap_mb": 149.8,
+ "carga_inicial_mb": 7.31,
+ "heap_mb": 101.9,
  "fallas": [],
- "avisos": [
-  "presupuesto: 149.8 MB de heap a ~9 s (límite 120)"
- ]
+ "avisos": []
 }

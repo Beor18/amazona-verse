@@ -17,7 +17,7 @@ AVE.module('guiaControles', function (G) {
   'use strict';
   const S = G.S, $ = G.util.$;
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.guia';
-  const AJ = { listo: 0.8, cierre: 0.45, gracia: 0.8, suelo: 10, repetirVolar: 75, vueloSinAterrizar: 14, pista: 5.5, alto: 2.5, cerca: 2.6 };
+  const AJ = { listo: 0.8, cierre: 0.45, gracia: 0.8, suelo: 10, repetirVolar: 75, vueloSinAterrizar: 14, nadoSinBucear: 3, pista: 5.5, alto: 2.5, cerca: 2.6 };
 
   // ---------- Estado guardado en el dispositivo ----------
   function leer() {
@@ -329,7 +329,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     const v = Math.hypot(M.vx, M.vz), ux = v > 0.5 ? M.vx / v : S.facing.x, uz = v > 0.5 ? M.vz / v : S.facing.z;
     for (const d of [1, 1.8, AJ.cerca]) { const t = SO.altoEn(S.pos.x + ux * d, S.pos.z + uz * d, S.pos.y + 50); if (t > S.pos.y + AJ.alto) { altoDelante = true; return; } }
   }
-  let listoT = 0, sueloT = 0, sinVolarT = 0, vueloT = 0, subirT = 0, movT = 0, volando = null;
+  let listoT = 0, sueloT = 0, sinVolarT = 0, vueloT = 0, nadoT = 0, subirT = 0, movT = 0, volando = null;
   function actualizar(dt) {
     marcarModo();
     pmTick(dt || 0);
@@ -337,6 +337,8 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     // Lo aprendido (para no repetir lo que ya sabe)
     if (M.flying && G.input.jumpHeld && (subirT += dt) > 0.4) hecho('subir');
     if (M.flying && M.landing) hecho('aterrizar');
+    // Bucear: en el agua, mantener C (en el táctil sale el botón «Bucear» en el sitio de «Volar»)
+    if (M.swimming) { nadoT += dt; if (G.input.keys && G.input.keys.has('c')) hecho('bucear'); } else nadoT = 0;
     if (!M.flying && M.speed > 1 && (movT += dt) > 0.5) hecho('mover');
     // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse.
     // Espera a que acaben los bocadillos libres: si no, tapa el gancho del capítulo (la apertura en negro va en bocadillos)
@@ -368,6 +370,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       if (!M.flying && M.grounded && !enSesion.altoSuelo) { enSesion.altoSuelo = 1; pista('alto', `¿Quieres subir ahí? Pulsa ${kbd(t.volar)} para volar y mantén ${kbd('Espacio')}`); return; }
     }
     if (M.flying && vueloT > AJ.vueloSinAterrizar && !est.hecho.aterrizar && !enSesion.aterrizar) { pista('aterrizar', `Para dejar de volar, pulsa ${kbd(t.aterrizar)}`); return; }
+    if (M.swimming && nadoT > AJ.nadoSinBucear && !est.hecho.bucear && !enSesion.bucear) { pista('bucear', `Mantén ${kbd('C')} para bucear`); return; }
   }
   G.on('update', dt => actualizar(dt || 0), 90);
   marcarModo();
@@ -378,7 +381,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     get forzado() { return forzado; }, set forzado(v) { forzado = v; }, get est() { return est; }, set est(v) { est = v; },
     get panelAbierto() { return panelAbierto; }, get pistaId() { return pistaId; }, enSesion, AJ, CLAVE, nombre,
     actualizar, mostrar, cerrar, leyenda, ocultarPista, enJuego, el: { panel, ley, pista: pistaEl, pastilla, boton },
-    reiniciar() { listoT = 0; sinVolarT = 0; vueloT = 0; volando = null; vientoT = libreT = -1e9; },
+    reiniciar() { listoT = 0; sinVolarT = 0; vueloT = 0; nadoT = 0; volando = null; vientoT = libreT = -1e9; },
   };
 
   function primerosMinutosTest() {

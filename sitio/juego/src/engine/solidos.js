@@ -90,19 +90,22 @@ AVE.module('solidos', function (G) {
   const va = new THREE.Vector3(), vb = new THREE.Vector3(), vc = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), nn = new THREE.Vector3();
   // Un triángulo puede muestrear cientos de celdas: triEmpezar lo prepara y triSeguir inserta
   // hasta agotar el presupuesto del cuadro. insert y block quedan repartidos en esos pasos.
+  // KIMI-035: el estado del triángulo se reutiliza (era 1 objeto nuevo por triángulo; en vuelo, cientos por
+  // cuadro al rasterizar regiones). Solo hay un triángulo a medias por cola (trabajar va de uno en uno), así
+  // que un solo slot basta: triSeguir lo sigue donde lo dejó triEmpezar tras el corte por presupuesto.
+  const TRI = { ax: 0, ay: 0, az: 0, e1x: 0, e1y: 0, e1z: 0, e2x: 0, e2y: 0, e2z: 0, steep: false, gx: 0, gz: 0, ymin: 0, ymax: 0, nu: 1, nv: 1, i: 0, j: 0, lastC: NaN };
   function triEmpezar(a, b, c) {
     e1.subVectors(b, a); e2.subVectors(c, a); nn.crossVectors(e1, e2);
     const len = nn.length(); if (len < 1e-9) return null;
     triangulos++;
     const ny = nn.y / len, steep = Math.abs(ny) < 0.3;
     const st = CELL * 0.7;
-    return {
-      ax: a.x, ay: a.y, az: a.z, e1x: e1.x, e1y: e1.y, e1z: e1.z, e2x: e2.x, e2y: e2.y, e2z: e2.z,
-      steep, gx: steep ? 0 : -nn.x / nn.y, gz: steep ? 0 : -nn.z / nn.y,
-      ymin: Math.min(a.y, b.y, c.y), ymax: Math.max(a.y, b.y, c.y),
-      nu: Math.min(400, Math.max(1, Math.ceil(e1.length() / st))), nv: Math.min(400, Math.max(1, Math.ceil(e2.length() / st))),
-      i: 0, j: 0, lastC: NaN,
-    };
+    TRI.ax = a.x; TRI.ay = a.y; TRI.az = a.z; TRI.e1x = e1.x; TRI.e1y = e1.y; TRI.e1z = e1.z; TRI.e2x = e2.x; TRI.e2y = e2.y; TRI.e2z = e2.z;
+    TRI.steep = steep; TRI.gx = steep ? 0 : -nn.x / nn.y; TRI.gz = steep ? 0 : -nn.z / nn.y;
+    TRI.ymin = Math.min(a.y, b.y, c.y); TRI.ymax = Math.max(a.y, b.y, c.y);
+    TRI.nu = Math.min(400, Math.max(1, Math.ceil(e1.length() / st))); TRI.nv = Math.min(400, Math.max(1, Math.ceil(e2.length() / st)));
+    TRI.i = 0; TRI.j = 0; TRI.lastC = NaN;
+    return TRI;
   }
   function triSeguir(P, t0, msMax) {
     let pasos = 0;
@@ -132,9 +135,18 @@ AVE.module('solidos', function (G) {
   // Primero lo estático (edificios, estructuras, contenido); al terminarlo se tapan los huecos (rellenar); luego la flora.
   const cola = [], colaFlora = [], geosHechos = new WeakSet(), matricesDe = new WeakMap();
   const matricesPorModelo = {}; let modeloActual = null; // BM6-3: las matrices por NOMBRE de modelo (la geometría se libera y se recrea)
+  // KIMI-035: pool de matrices para los trabajos de región (flora y edificios instanciados cerca): en vuelo se
+  // encolan cientos de instancias y el clone() de cada una era basura por cuadro. Los trabajos estáticos siguen
+  // clonándose porque matricesDe/matricesPorModelo los retienen para los paneles de puerta (BM6-2).
+  const poolM = [];
+  const pendReg = new Map(); // región → nº de sus trabajos en colaFlora: el descarga ya no barre la cola entera
   function encolar(geo, matriz, etiqueta, region) {
     const pos = geo.attributes.position, idx = geo.index, nt = idx ? idx.count / 3 : pos.count / 3;
-    const m = matriz.clone();
+    let m;
+    if (region) {
+      m = poolM.length ? poolM.pop().copy(matriz) : matriz.clone();
+      pendReg.set(region, (pendReg.get(region) || 0) + 1);
+    } else m = matriz.clone();
     geosHechos.add(geo);
     // La puerta se funde después: si el edificio ya se encoló, los paneles salen con la misma matriz.
     if (!region) { let arr = matricesDe.get(geo); if (!arr) matricesDe.set(geo, arr = []); arr.push(m); }
@@ -189,6 +201,16 @@ AVE.module('solidos', function (G) {
     return true;
   }
   let rellenas = 0, version = 0; // version sube cada vez que termina una pieza (fisica renueva su caché de colliders)
+  // KIMI-035: quita el trabajo de la cola y devuelve su matriz al pool si era de región (pendReg al día)
+  function sacar(Q, J) {
+    Q.shift(); version++;
+    if (J.region) {
+      const n = pendReg.get(J.region) || 0;
+      if (n <= 1) pendReg.delete(J.region); else pendReg.set(J.region, n - 1);
+      if (poolM.length < 256) poolM.push(J.m);
+    }
+    if (Q === cola && !cola.length) { destino = blocks; rellenarInicio(); }
+  }
   function trabajar(msMax, soloEstatico) {
     const t0 = performance.now();
     if (rellenoJob && !rellenarSigue(t0, msMax)) { destino = blocks; regionActual = null; return false; }
@@ -196,7 +218,7 @@ AVE.module('solidos', function (G) {
       const Q = cola.length ? cola : colaFlora, J = Q[0], p = J.pos, I = J.idx, m = J.m;
       destino = J.region ? flora : blocks; regionActual = J.region || null; tipoActual = /^(edificios|estructura)/.test(J.etiqueta || '') ? 0 : /roca|piedras/.test(J.etiqueta || '') ? 2 : 1;
       if (!J.parcial) {
-        if (J.t >= J.nt) { Q.shift(); version++; if (Q === cola && !cola.length) { destino = blocks; rellenarInicio(); } continue; }
+        if (J.t >= J.nt) { sacar(Q, J); continue; }
         const t = J.t;
         const i0 = I ? I.getX(t * 3) : t * 3, i1 = I ? I.getX(t * 3 + 1) : t * 3 + 1, i2 = I ? I.getX(t * 3 + 2) : t * 3 + 2;
         va.fromBufferAttribute(p, i0).applyMatrix4(m); vb.fromBufferAttribute(p, i1).applyMatrix4(m); vc.fromBufferAttribute(p, i2).applyMatrix4(m);
@@ -206,7 +228,7 @@ AVE.module('solidos', function (G) {
       }
       if (!triSeguir(J.parcial, t0, msMax)) break;
       J.parcial = null;
-      if (J.t >= J.nt) { Q.shift(); version++; if (Q === cola && !cola.length) { destino = blocks; rellenarInicio(); } }
+      if (J.t >= J.nt) sacar(Q, J);
       if (rellenoJob && !rellenarSigue(t0, msMax)) break;
     }
     destino = blocks; regionActual = null;
@@ -226,6 +248,15 @@ AVE.module('solidos', function (G) {
       if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mPieza); encolar(o.geometry, mPieza.premultiply(o.matrixWorld), o.name); }
       else encolar(o.geometry, o.matrixWorld, o.name);
     });
+    modeloActual = null;
+  }
+  // KIMI-034: como agregar() pero sin objetos intermedios — streaming.colocar() construía un Group y un Mesh
+  // desechables por parte solo para llegar a encolar(): basura por instancia colocada. Aquí se encola directo,
+  // con el mismo filtro de material que valida() (transparentes/depthWrite false/basic no son sólidos).
+  const validaMat = m => !(m && (m.transparent || m.depthWrite === false || m.isMeshBasicMaterial));
+  function agregarPartes(partes, matriz, modelo) {
+    modeloActual = modelo || null;
+    for (const p of partes) { if (p.geo && p.geo.attributes.position && validaMat(p.mat)) encolar(p.geo, matriz, modelo || ''); }
     modeloActual = null;
   }
 
@@ -297,22 +328,24 @@ AVE.module('solidos', function (G) {
     }
   }
   const mInst = new THREE.Matrix4();
+  const SIN_ITEMS = []; // KIMI-035: porRegion.get(k) || SIN_ITEMS: sin array nueva por región vacía y cuadro
   function floraCerca() {
     if (!porRegion) return;
     const r = Math.ceil(SO.regionR / SO.regionM), cx = Math.floor(S.pos.x / SO.regionM), cz = Math.floor(S.pos.z / SO.regionM);
     for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
-      const k = (cx + dx) + ',' + (cz + dz); if (regiones.has(k)) continue;
-      regiones.set(k, true);
-      for (const it of porRegion.get(k) || []) { if (it.mat) mInst.fromArray(it.mat); else mInst.fromArray(it.P.mat, it.i * 16); for (const g of it.geos) encolar(g, mInst, it.m, k); }
+      const rx = cx + dx, rz = cz + dz, k = rx + ',' + rz; if (regiones.has(k)) continue;
+      // valor = coordenadas empaquetadas (mismo esquema que key): el descarga ya no parte strings por cuadro
+      regiones.set(k, (rx + 32768) * 65536 + (rz + 32768));
+      for (const it of porRegion.get(k) || SIN_ITEMS) { if (it.mat) mInst.fromArray(it.mat); else mInst.fromArray(it.P.mat, it.i * 16); for (const g of it.geos) encolar(g, mInst, it.m, k); }
     }
     // Lejos (más de regionR + 2 regiones): se descarga la flora de esa región (vuelve a hacerse al acercarse)
     const lejos = (SO.regionR + SO.regionM * 2) / SO.regionM;
     for (const k of regiones.keys()) {
-      const [rx, rz] = k.split(',').map(Number);
+      const pk = regiones.get(k), rx = Math.floor(pk / 65536) - 32768, rz = (pk % 65536) - 32768;
       if (Math.abs(rx - cx) <= lejos && Math.abs(rz - cz) <= lejos) continue;
-      if (colaFlora.some(J => J.region === k)) continue;
+      if (pendReg.get(k)) continue; // sus trabajos aún en cola: la región se descarga cuando terminen
       regiones.delete(k);
-      for (const bk of regionBloques.get(k) || []) { const b = flora.get(bk); if (!b) continue; b.duenos.delete(k); if (!b.duenos.size) flora.delete(bk); }
+      for (const bk of regionBloques.get(k) || SIN_ITEMS) { const b = flora.get(bk); if (!b) continue; b.duenos.delete(k); if (!b.duenos.size) flora.delete(bk); }
       regionBloques.delete(k);
     }
   }
@@ -718,6 +751,6 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, terminar, stats, altoEn,
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn,
     cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
 });
