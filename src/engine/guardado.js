@@ -329,6 +329,9 @@ AVE.module('guardado', function (G) {
   addEventListener('pagehide', alOcultar);
   document.addEventListener('freeze', alOcultar);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') alOcultar(); });
+  // QA-158: en el iPhone, perder el contexto WebGL suele ser el aviso previo a que Safari mate la pestaña por memoria (vuelve
+  // a la portada). El renderer emite 'contexto' false al perderlo: se guarda ya, para que «Continuar» retome desde aquí.
+  G.on('contexto', ok => { if (!ok) alOcultar(); });
 
   // ---------- Lectura ----------
   // La mejor partida de un contexto: { d, fuente: 'principal'|'temporal'|'anterior'|'memoria'|null, danada }
@@ -616,6 +619,12 @@ AVE.module('guardado', function (G) {
         let rO = null; try { rO = alOcultar(); } finally { suspendido = true; almacen = antes.almacen; S.profile.created = pc; saveDebounce = sd; }
         const dO = leerJSON(F.get(SAVE_KEY));
         check('Al ocultar la pestaña (pagehide, freeze o oculta) se guarda la partida empezada sin esperar al autoguardado', rO === true && !!dO && dO.step === 9, String(rO) + ' · paso ' + (dO && dO.step));
+        // QA-158: al perderse el contexto WebGL (antesala de que Safari cierre la pestaña) también se guarda
+        const F2 = almacenFalso(), pc2 = S.profile.created, sd2 = saveDebounce;
+        almacen = F2; suspendido = false; S.profile.created = true; saveDebounce = 0; S.step = 11;
+        try { G.emit('contexto', false); } finally { suspendido = true; almacen = antes.almacen; S.profile.created = pc2; saveDebounce = sd2; }
+        const dC = leerJSON(F2.get(SAVE_KEY));
+        check('Al perderse el contexto WebGL se guarda la partida (QA-158: Safari puede cerrar la pestaña justo después)', !!dC && dC.step === 11, 'paso ' + (dC && dC.step));
       }
       // 6b. Cuota llena: sin .prev; si aun así no cabe, sin capturas; si no cabe nada, en memoria
       S.captures = Object.assign({}, S.captures, { prueba: 'data:image/jpeg;base64,' + 'A'.repeat(60000) });
