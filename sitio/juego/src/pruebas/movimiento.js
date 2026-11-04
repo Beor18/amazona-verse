@@ -50,6 +50,14 @@ window.AVMovimientoTest = function (G) {
     // Dirección de cámara → tecla: 'w' avanza alejándose de la cámara
     const fwd = () => ({ x: -Math.sin(G.camara.yaw), z: -Math.cos(G.camara.yaw) });
     // Sitio de pruebas: llano, seco y sin obstáculos cerca del jugador (o el pedido)
+    let troncosC = null;
+    const troncos = () => {
+      if (troncosC) return troncosC;
+      troncosC = [];
+      const V = G.vegetacion, P = V && V.instancias, inf = V && V.info;
+      if (P && inf) for (const m in P) { const q = P[m], d = inf[m]; if (!q || !d || !(d.tronco >= 0.08)) continue; for (let i = 0; i < q.n; i++) troncosC.push([q.pos[i * 4], q.pos[i * 4 + 2]]); }
+      return troncosC;
+    };
     function sitio(rechazados) {
       if (opts.lugar) return opts.lugar;
       const c = G.pack.jugador && G.pack.jugador.aparicion || keep.pos;
@@ -64,6 +72,11 @@ window.AVMovimientoTest = function (G) {
         if ([10, 20, 30].some(d => [0, 1, 2, 3, 4, 5, 6, 7].some(b => { const ax = x + Math.cos(b * Math.PI / 4) * d, az = z + Math.sin(b * Math.PI / 4) * d; return G.agua.levelAt(ax, az) > H(ax, az) - 0.3; }))) continue;
         if (F.colliders.some(k => k.r > 0 && (!k.when || k.when()) && Math.hypot(k.x - x, k.z - z) < 12 + (k.r || 0) + Math.max(k.hx || 0, k.hz || 0))) continue;
         if (F.perchas.some(p => Math.hypot(p.x - x, p.z - z) < 12 + p.r)) continue;
+        // ni un tronco de la flora a menos de 8 m: sus colliders a mano solo existen cerca del jugador (y con solidos.js activo
+        // quedan apagados), así que la línea de arriba no los ve; el sitio se elegía a ciegas en el bosque y solo el chequeo de
+        // abajo (con la flora ya rasterizada) lo descartaba, hasta agotar los 10 intentos (KIMI-006: con la flora resembrada
+        // acababa junto a un tronco y el vuelo de prueba chocaba con las copas)
+        if (troncos().some(t => Math.abs(t[0] - x) < 8 && Math.abs(t[1] - z) < 8 && Math.hypot(t[0] - x, t[1] - z) < 8)) continue;
         // nada encima en 14 m (un toldo o un alero sobre el sitio frenaría la prueba de subir): se mira el centro y un anillo de 3 m
         if (G.solidos && G.solidos.activo && G.solidos.libre(x, z, H(x, z) + 0.5, 3) < 14) continue;
         if (rechazados && rechazados.some(q => q.x === x && q.z === z)) continue;
@@ -502,7 +515,11 @@ window.AVMovimientoTest = function (G) {
             for (const ang of [0.5, 2.6, 4.7]) {
               const sx = bx + Math.cos(ang) * 9, sz = bz + Math.sin(ang) * 9, sy = F.suelo(sx, sz, H(sx, sz) + 0.3);
               if (SO.penetra(sx, sz, sy) || G.agua.levelAt(sx, sz) > sy - 0.2) continue;
-              reset(sx, sz); n++;
+              reset(sx, sz);
+              // la flora de alrededor se rasteriza en reset: si el punto de partida cae dentro de un árbol o una roca, tampoco vale
+              // (antes solo se miraba antes de rasterizarla y la prueba empezaba metida en el árbol: «se mete 8» sin tocar el edificio)
+              if (SO.penetra(S.pos.x, S.pos.z, S.pos.y, cuerpo())) continue;
+              n++;
               const st = toStick(bx - sx, bz - sz);
               // a ras de suelo (subirse a un alero bajo no cuenta como meterse)
               // 110 cuadros, o menos si se queda parada contra la pared (los cuadros que siguen son idénticos)

@@ -77,7 +77,10 @@ AVE.module('vegetacion', function (G) {
   }
   const dens = {};
   for (const k in FD.densidad || {}) dens[k] = b64u8(FD.densidad[k]);
-  const enAgua = (x, z, y) => G.agua.levelAt(x, z) > y - 0.15;
+  // KIMI-006: sin malla visible debajo (borde de la isla, mar abierto) tampoco se siembra: la altura de juego allí es la del
+  // relleno bajo el mar de mapa_cap1_altura.js, y una piedra en esa franja se veía flotando sobre el agua
+  const sinSuelo = (x, z) => T.mapa && T.exacto && T.splatAt && !T.splatAt(x, z);
+  const enAgua = (x, z, y) => G.agua.levelAt(x, z) > y - 0.15 || sinSuelo(x, z);
   const cercaAgua = (x, z, r) => { for (const [dx, dz] of [[r, 0], [-r, 0], [0, r], [0, -r]]) if (G.agua.levelAt(x + dx, z + dz) > -Infinity && G.agua.levelAt(x + dx, z + dz) > T.height(x + dx, z + dz) - 0.3) return true; return false; };
 
   // ---------- Carga de modelos ----------
@@ -247,6 +250,24 @@ AVE.module('vegetacion', function (G) {
     // sitios que deben quedar despejados (objetos, hallazgos, coquíes, NPC): ni árboles ni matas encima
     const despejar = (typeof FL.evitar === 'function' ? FL.evitar(G.pack) : FL.evitar || []).concat(G.pack.npcs || []).filter(e => e && e.x != null);
     const tapado = (x, z, r) => despejar.some(e => Math.hypot(e.x - x, e.z - z) < (e.r || 0) + r);
+    // KIMI-006/008: ningún árbol en la tierra pisada de una pieza de Kelvin (el mismo disco que pinta sueloPlazas: 4,5 m las
+    // de madera, 3 m las de piedra; sin canoas ni puentes). Antes salían arbolitos bajo la lona de los toldos y, con la altura
+    // regenerada, uno cerraba el paso junto a un toldo de las ruinas (movementTest: «se mete 8»).
+    const PZ = new Map(), PZC = 8;
+    for (const e of (MAPA.escenaKelvin && MAPA.escenaKelvin.compacto) || []) {
+      if (/^(canoa|puente_madera)$/.test(e.modelo)) continue;
+      const r = /^(templo|ruina|muro_templo|plataforma|bloque|losa|complejo)/.test(e.modelo) ? 3 : 4.5;
+      for (const v of e.inst) {
+        const x = v.length >= 16 ? v[12] : v[0], z = v.length >= 16 ? v[14] : v[2], k = Math.floor(x / PZC) * 4096 + Math.floor(z / PZC);
+        let l = PZ.get(k); if (!l) PZ.set(k, l = []); l.push([x, z, r]);
+      }
+    }
+    const enPieza = (x, z) => {
+      const ix = Math.floor(x / PZC), iz = Math.floor(z / PZC);
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const p of PZ.get((ix + a) * 4096 + iz + b) || []) if (Math.hypot(p[0] - x, p[1] - z) < p[2]) return true;
+      return false;
+    };
+    const tapadoArbol = (x, z) => tapado(x, z, 3) || enPieza(x, z);
     const cel = FD.celda, area = cel * cel / 100;
     const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
     for (const esp of FD.especies || []) {
@@ -266,7 +287,7 @@ AVE.module('vegetacion', function (G) {
           if (!ok) continue;
           const y = T.height(x, z);
           if (enAgua(x, z, y)) continue;
-          if (tapado(x, z, esArb ? 3 : 1.6)) continue;
+          if (esArb ? tapadoArbol(x, z) : tapado(x, z, 1.6)) continue;
           if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
           if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
@@ -304,7 +325,7 @@ AVE.module('vegetacion', function (G) {
       const palma = r2() < CU.palma, md = MODELOS[palma ? 'palma_sierra' : 'tabonuco_enano'];
       const s = (md.escala || 1) * (0.8 + r2() * 0.4), r = (palma ? 1.8 : 3.2) * s;
       const y = T.height(x, z);
-      if (y < CU.desde || !libre(x, z) || enAgua(x, z, y) || tapado(x, z, 3) || T.normalAt(x, z).y < 0.72 || !libreDe(x, z, r)) continue;
+      if (y < CU.desde || !libre(x, z) || enAgua(x, z, y) || tapadoArbol(x, z) || T.normalAt(x, z).y < 0.72 || !libreDe(x, z, r)) continue;
       marcar(x, z, r);
       add(md.kit[0], x, z, s, { rank: r2() });
       n++;
@@ -329,7 +350,7 @@ AVE.module('vegetacion', function (G) {
         const md = MODELOS[especie(T.height(x, z), r3())], u = r3(), s0 = r3(), rk = r3();
         if (!md || !libre(x, z)) continue;
         const y = T.height(x, z);
-        if (y < 0.8 || enAgua(x, z, y) || T.normalAt(x, z).y < 0.72 || tapado(x, z, 3)) continue;
+        if (y < 0.8 || enAgua(x, z, y) || T.normalAt(x, z).y < 0.72 || tapadoArbol(x, z)) continue;
         const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.8 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.8; // dosel cerrado: las copas del relleno se tocan algo más
         if (!libreDe(x, z, r)) continue;
         marcar(x, z, r);
@@ -353,7 +374,7 @@ AVE.module('vegetacion', function (G) {
         if (r4() >= w || !libre(x, z)) continue;
         const y = T.height(x, z), ny = T.normalAt(x, z).y, md = MODELOS[especie(y, r4())], u = r4(), s0 = r4();
         // BM101 (Kelvin, 1-nov: «árboles metidos en la roca»): nada en pendientes de más de ~44° (antes hasta ~72°, hundidos en el risco)
-        if (!md || y < 4 || ny < 0.72 || enAgua(x, z, y) || tapado(x, z, 3)) continue;
+        if (!md || y < 4 || ny < 0.72 || enAgua(x, z, y) || tapadoArbol(x, z)) continue;
         const m = md.kit[Math.floor(u * md.kit.length)], s = (md.escala || 1) * (0.75 + s0 * 0.4), r = (radioArbol[baseDe(m)] || 2) * s * 0.75;
         if (enCiudad(x, z, r) || !libreDe(x, z, r)) continue;
         marcar(x, z, r);
