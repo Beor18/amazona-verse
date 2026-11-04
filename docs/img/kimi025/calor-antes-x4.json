@@ -1,0 +1,290 @@
+{
+  "etiqueta": "antes-x4",
+  "cuando": "2026-11-04T15:01:56.153Z",
+  "commit": "b3707d26",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 8,
+    "yaw": 3.141592653589793
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "asiento": {
+        "tope": false,
+        "pos": "-33,105,-136"
+      },
+      "medida": {
+        "cuadros": 177,
+        "dt_p50": 41.7,
+        "dt_p95": 62.5,
+        "dt_max": 76.4,
+        "fps_p50": 24,
+        "calls": 65,
+        "ktris": 500,
+        "geo": 260,
+        "tex": 157,
+        "progs": 95,
+        "heapMB": 791.2,
+        "dibujables": 827,
+        "pendCalor": 0,
+        "texPend": 0,
+        "calidad": "bajo",
+        "dpr": 1,
+        "post": false,
+        "gpuReal": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "perfil": {
+        "desdeMs": 57093069,
+        "hastaMs": 57102919,
+        "ventanaMs": 8226.8,
+        "top": [
+          {
+            "ms": 1155.4,
+            "fn": "(program) · :0"
+          },
+          {
+            "ms": 494,
+            "fn": "triQuery · terreno.js:183"
+          },
+          {
+            "ms": 459.9,
+            "fn": "insert · solidos.js:45"
+          },
+          {
+            "ms": 362.1,
+            "fn": "updateMatrixWorld · three.min.js:6"
+          },
+          {
+            "ms": 337.3,
+            "fn": "ocultarPendientes · renderer.js:619"
+          },
+          {
+            "ms": 335.4,
+            "fn": "siguienteCalor · renderer.js:614"
+          },
+          {
+            "ms": 254.9,
+            "fn": "triSeguir · solidos.js:107"
+          },
+          {
+            "ms": 238.6,
+            "fn": "cuadro · streaming.js:1541"
+          },
+          {
+            "ms": 214.4,
+            "fn": "multiplyMatrices · three.min.js:6"
+          },
+          {
+            "ms": 204,
+            "fn": "texturasDe · renderer.js:703"
+          },
+          {
+            "ms": 203.9,
+            "fn": "traverse · three.min.js:6"
+          },
+          {
+            "ms": 189.6,
+            "fn": "At · three.min.js:6"
+          },
+          {
+            "ms": 162.6,
+            "fn": "getClientRects · :0"
+          },
+          {
+            "ms": 121.6,
+            "fn": "THREE.Material.customProgramCacheKey · look.js:107"
+          },
+          {
+            "ms": 119.5,
+            "fn": "It · three.min.js:6"
+          },
+          {
+            "ms": 119.3,
+            "fn": "pushOut · fisica.js:173"
+          },
+          {
+            "ms": 115.1,
+            "fn": "render · renderer.js:944"
+          },
+          {
+            "ms": 111.2,
+            "fn": "(anon) · three.min.js:6"
+          },
+          {
+            "ms": 98.7,
+            "fn": "renderBufferDirect · three.min.js:6"
+          },
+          {
+            "ms": 89.6,
+            "fn": "drawScene · renderer.js:535"
+          }
+        ],
+        "interesa": [
+          {
+            "ms": 337.3,
+            "fn": "ocultarPendientes · renderer.js:619"
+          },
+          {
+            "ms": 335.4,
+            "fn": "siguienteCalor · renderer.js:614"
+          },
+          {
+            "ms": 40.5,
+            "fn": "texturasPendientes · renderer.js:711"
+          },
+          {
+            "ms": 3.5,
+            "fn": "objPendiente · renderer.js:603"
+          }
+        ]
+      },
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "asiento": {
+        "tope": false,
+        "pos": "-33,105,-136"
+      },
+      "medida": {
+        "cuadros": 166,
+        "dt_p50": 48.6,
+        "dt_p95": 62.6,
+        "dt_max": 104.2,
+        "fps_p50": 20.6,
+        "calls": 65,
+        "ktris": 500,
+        "geo": 254,
+        "tex": 157,
+        "progs": 95,
+        "heapMB": 805.5,
+        "dibujables": 827,
+        "pendCalor": 0,
+        "texPend": 0,
+        "calidad": "bajo",
+        "dpr": 1,
+        "post": false,
+        "gpuReal": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "perfil": {
+        "desdeMs": 57180435,
+        "hastaMs": 57190486,
+        "ventanaMs": 8273.4,
+        "top": [
+          {
+            "ms": 1192.4,
+            "fn": "(program) · :0"
+          },
+          {
+            "ms": 515.6,
+            "fn": "triQuery · terreno.js:183"
+          },
+          {
+            "ms": 449.8,
+            "fn": "insert · solidos.js:45"
+          },
+          {
+            "ms": 350.2,
+            "fn": "siguienteCalor · renderer.js:614"
+          },
+          {
+            "ms": 331.4,
+            "fn": "updateMatrixWorld · three.min.js:6"
+          },
+          {
+            "ms": 307.1,
+            "fn": "ocultarPendientes · renderer.js:619"
+          },
+          {
+            "ms": 300.7,
+            "fn": "cuadro · streaming.js:1541"
+          },
+          {
+            "ms": 212.8,
+            "fn": "triSeguir · solidos.js:107"
+          },
+          {
+            "ms": 193.4,
+            "fn": "texturasDe · renderer.js:703"
+          },
+          {
+            "ms": 193.3,
+            "fn": "getClientRects · :0"
+          },
+          {
+            "ms": 191.4,
+            "fn": "At · three.min.js:6"
+          },
+          {
+            "ms": 180.9,
+            "fn": "traverse · three.min.js:6"
+          },
+          {
+            "ms": 166.9,
+            "fn": "multiplyMatrices · three.min.js:6"
+          },
+          {
+            "ms": 147.8,
+            "fn": "pushOut · fisica.js:173"
+          },
+          {
+            "ms": 118.2,
+            "fn": "THREE.Material.customProgramCacheKey · look.js:107"
+          },
+          {
+            "ms": 114.6,
+            "fn": "render · renderer.js:944"
+          },
+          {
+            "ms": 113.2,
+            "fn": "renderBufferDirect · three.min.js:6"
+          },
+          {
+            "ms": 106.7,
+            "fn": "It · three.min.js:6"
+          },
+          {
+            "ms": 104.6,
+            "fn": "drawScene · renderer.js:535"
+          },
+          {
+            "ms": 103.7,
+            "fn": "(anon) · three.min.js:6"
+          }
+        ],
+        "interesa": [
+          {
+            "ms": 350.2,
+            "fn": "siguienteCalor · renderer.js:614"
+          },
+          {
+            "ms": 307.1,
+            "fn": "ocultarPendientes · renderer.js:619"
+          },
+          {
+            "ms": 9.6,
+            "fn": "texturasPendientes · renderer.js:711"
+          },
+          {
+            "ms": 2,
+            "fn": "matsDe · renderer.js:600"
+          },
+          {
+            "ms": 1.5,
+            "fn": "objPendiente · renderer.js:603"
+          }
+        ]
+      },
+      "errores": []
+    }
+  ]
+}

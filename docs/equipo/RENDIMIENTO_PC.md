@@ -378,6 +378,40 @@ imagen de los edificios de cerca → **Kelvin** (es el mismo pedido del rojo con
 sin cambio visual → seguro, carril `vegetacion.js` (Kimi 1). (c) dedupe de la textura de
 Vittata/familia: ~6–10 MB → carril personaje.
 
+## KIMI-025 · clave de calor por material (parche 0j.2) en móvil con GPU real (4-nov, hecha · Kimi 3)
+
+Medición local pendiente de la fila KIMI-024: ¿cuánto ahorra de verdad el caché de la clave de
+calor por material (`c8fbbb7f`) en esta PC con GPU real? Herramienta nueva
+`tools/build/kimi3_calor.js`: móvil 375×812 dpr 3, CPU ×4, GPU real RX 5700 XT (ANGLE/D3D11),
+jugador nuevo, asentado en la Ciudad de los 36 ((-33,-136) +8 m, yaw π, cola de streaming agotada
+con `ST.terminar()`), ventana de 8 s de juego con FPS por cuadro + CPU profile (CDP) atribuyendo
+self-time. A/B: HEAD (con parche) contra `c8fbbb7f^` (`renderer.js` previo al parche, todo lo demás
+idéntico; swap temporal del archivo verificado por SHA-256 antes y después). 2 rondas por variante,
+misma escena en las 4 corridas (65 draw calls / 500 k tris / 95 programas / 157 texturas /
+827 dibujables / heap 786–805 MB — el retenido conocido de la ciudad, QA-153, no del parche).
+Evidencia: `docs/img/kimi025/calor-{despues,antes}-x4.json`. 0 errores de consola en las 4 rondas.
+
+Self-time del escaneo de dibujables por cuadro (siguienteCalor + ocultarPendientes + texturasPendientes + idCalor/objPendiente):
+
+| Variante | Ronda | Cuadros en 8 s | Escaneo total | ms/cuadro | dt p50 | dt p95 | peor |
+|---|---|---|---|---|---|---|---|
+| sin parche (c8fbbb7f^) | 1 | 177 | 716,7 ms | 4,05 | 41,7 ms | 62,5 ms | 76,4 ms |
+| sin parche | 2 | 166 | 670,4 ms | 4,04 | 48,6 ms | 62,6 ms | 104,2 ms |
+| con parche (HEAD) | 1 | 201 | 397,6 ms | 1,98 | 34,8 ms | 48,7 ms | 55,6 ms |
+| con parche | 2 | 191 | 415,6 ms | 2,18 | 41,6 ms | 55,5 ms | 62,6 ms |
+
+**Resultado: el escaneo baja de ~4,04 a ~2,08 ms/cuadro con CPU ×4 (−49 %, −1,96 ms/cuadro;
+a CPU ×1 ≈ −0,5 ms/cuadro).** Mismo orden que el micro-banco de la nube que escribió el parche
+(4000 dibujables ×2 pasadas: ~8 → ~1,5 ms CPU ×4). Consecuencia directa: +24/+25 cuadros renders
+en la misma ventana de 8 s (166–177 → 191–201) y p50 ~7 ms más ligero en las dos rondas. Las
+funciones que armaban la clave con cadenas nuevas (`siguienteCalor` 335–350 → 176–178 ms y
+`ocultarPendientes` 307–337 → 80–104 ms en la ventana) son las que agarran el ahorro;
+`texturasPendientes` queda en ruido de muestreo (9,6–137,6 ms entre rondas, misma semántica en
+ambas versiones). El resto del cuadro no cambia (mismas calls/tris, misma imagen; las 12 baterías
+ya estaban verdes en KIMI-024). El cuadro de móvil CPU ×4 en la ciudad sigue dominado por otros
+costes (`triQuery` ~500–600 ms, `insert` de sólidos ~450–530 ms, `(program)` ~1,2 s en la ventana):
+el parche es un ahorro real pero parcial dentro de ese presupuesto.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.
