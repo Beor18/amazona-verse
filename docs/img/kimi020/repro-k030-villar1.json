@@ -1,0 +1,1740 @@
+{
+  "etiqueta": "k030-villar1",
+  "cuando": "2026-11-04T17:14:08.617Z",
+  "ancla": {
+    "x": 134,
+    "z": 182,
+    "alzar": 8,
+    "yaw": 0.8
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 15,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 3,
+    "pos": "134,13,182",
+    "heapBase": {
+      "heap": 97,
+      "total": 132
+    },
+    "heapPico": {
+      "heap": 100,
+      "total": 132
+    },
+    "atribBase": {
+      "escena": [
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 8,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Savage",
+          "n": 1,
+          "mb": 5,
+          "vis": 0
+        },
+        {
+          "p": "edificiosInst:complejo_ruinas",
+          "n": 8,
+          "mb": 4,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZona:global",
+          "n": 2,
+          "mb": 4,
+          "vis": 1
+        },
+        {
+          "p": "edificiosZonaSombra:kelvin_aldea_colina",
+          "n": 1,
+          "mb": 3,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 3,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 3,
+          "vis": 0
+        },
+        {
+          "p": "(sin nombre)",
+          "n": 207,
+          "mb": 2,
+          "vis": 199
+        },
+        {
+          "p": "edificiosInst:monumento_f",
+          "n": 5,
+          "mb": 2,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_aldea_rio_este_2",
+          "n": 2,
+          "mb": 2,
+          "vis": 0
+        },
+        {
+          "p": "terreno:terreno_no",
+          "n": 1,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "terreno:terreno_ne",
+          "n": 1,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "terreno:terreno_so",
+          "n": 1,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "terreno:terreno_se",
+          "n": 1,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "Vittata_2",
+          "n": 2,
+          "mb": 1,
+          "vis": 2
+        },
+        {
+          "p": "edificiosInst:casa_plataforma",
+          "n": 5,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "edificiosInst:mirador_escalonado",
+          "n": 5,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "edificiosInst:casa_paja_a",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosInst:torre_vigia_b",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosInst:torre_vigia",
+          "n": 5,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_b",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_a",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosInst:portal_puas",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosInst:puente_madera",
+          "n": 5,
+          "mb": 1,
+          "vis": 1
+        },
+        {
+          "p": "edificiosZona:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZonaHD:villa",
+          "n": 1,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "edificiosZonaCercaGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 1,
+          "vis": 0
+        },
+        {
+          "p": "cielo",
+          "n": 1,
+          "mb": 0,
+          "vis": 1
+        },
+        {
+          "p": "cielo-nubes",
+          "n": 1,
+          "mb": 0,
+          "vis": 1
+        },
+        {
+          "p": "fondoMarino",
+          "n": 16,
+          "mb": 0,
+          "vis": 16
+        }
+      ],
+      "recursos": {
+        "porTipo": {
+          "cerca:listo": {
+            "n": 18
+          },
+          "lejos:listo": {
+            "n": 30
+          },
+          "hd:cola": {
+            "n": 8
+          },
+          "hd:listo": {
+            "n": 14
+          },
+          "lejos:cola": {
+            "n": 33
+          },
+          "cerca:cola": {
+            "n": 8
+          }
+        },
+        "listosRefs": [
+          {
+            "n": "complejo_ruinas",
+            "t": "hd",
+            "refs": 1,
+            "mb": 3
+          },
+          {
+            "n": "monumento_f",
+            "t": "hd",
+            "refs": 1,
+            "mb": 2
+          },
+          {
+            "n": "casa_plataforma",
+            "t": "hd",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "mirador_escalonado",
+            "t": "hd",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "torre_vigia_b",
+            "t": "hd",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "torre_vigia",
+            "t": "hd",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "puente_madera",
+            "t": "hd",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "complejo_ruinas",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 1
+          },
+          {
+            "n": "bohio_redondo",
+            "t": "cerca",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "bohio_redondo",
+            "t": "lejos",
+            "refs": 5,
+            "mb": 0
+          },
+          {
+            "n": "toldo_pequeno",
+            "t": "cerca",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "toldo_pequeno",
+            "t": "lejos",
+            "refs": 14,
+            "mb": 0
+          },
+          {
+            "n": "casa_plataforma",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "casa_plataforma",
+            "t": "lejos",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "casa_paja_a",
+            "t": "lejos",
+            "refs": 3,
+            "mb": 0
+          },
+          {
+            "n": "casa_paja_a",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "casa_paja_a",
+            "t": "hd",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "mirador_escalonado",
+            "t": "lejos",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "mirador_escalonado",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "templo_mediano_h",
+            "t": "lejos",
+            "refs": 3,
+            "mb": 0
+          },
+          {
+            "n": "ruina_torre",
+            "t": "lejos",
+            "refs": 2,
+            "mb": 0
+          },
+          {
+            "n": "losa_piedra",
+            "t": "lejos",
+            "refs": 3,
+            "mb": 0
+          },
+          {
+            "n": "losa_piedra",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "losa_piedra",
+            "t": "hd",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "monumento_g",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "monumento_g",
+            "t": "lejos",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "torre_vigia_b",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "torre_vigia_b",
+            "t": "lejos",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "torre_vigia",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "torre_vigia",
+            "t": "lejos",
+            "refs": 3,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_b",
+            "t": "cerca",
+            "refs": 2,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_b",
+            "t": "lejos",
+            "refs": 5,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_b",
+            "t": "hd",
+            "refs": 2,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_a",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_a",
+            "t": "lejos",
+            "refs": 3,
+            "mb": 0
+          },
+          {
+            "n": "muralla_atalaya_a",
+            "t": "hd",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "empalizada",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "empalizada",
+            "t": "lejos",
+            "refs": 4,
+            "mb": 0
+          },
+          {
+            "n": "empalizada",
+            "t": "hd",
+            "refs": 1,
+            "mb": 0
+          },
+          {
+            "n": "portal_puas",
+            "t": "cerca",
+            "refs": 1,
+            "mb": 0
+          }
+        ]
+      }
+    },
+    "calls": 64,
+    "ktris": 243,
+    "snaps": [
+      {
+        "t": 3,
+        "d": {
+          "enVuelo": 0,
+          "quieto": true,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [
+            {
+              "n": "bohio_redondo",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande_d",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_mediano_h",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "caney_largo",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "cercado_redondo",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "bohio_puntiagudo",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "casa_paja_b",
+              "tipo": "hd",
+              "estado": "cola",
+              "prio": 87,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande_d",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_mediano_h",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "monumento_d",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "caney_largo",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "cercado_redondo",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "bohio_puntiagudo",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "casa_paja_b",
+              "tipo": "cerca",
+              "estado": "cola",
+              "prio": 88,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "canoa",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 157,
+              "refs": 6,
+              "fijo": false
+            },
+            {
+              "n": "monumento_a",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 157,
+              "refs": 3,
+              "fijo": false
+            },
+            {
+              "n": "monumento_c",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 159,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "corral",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 159,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "carpa_a",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 3,
+              "fijo": false
+            },
+            {
+              "n": "carpa_b",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 3,
+              "fijo": false
+            },
+            {
+              "n": "muro_roca",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "carpa_c",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "carpa_d",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "carpa_f",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "carpa_g",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 195,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "plataforma_piedra",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "muro_templo",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande_e",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande_f",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre_b",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre_e",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre_c",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_mirador",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "ruina_pilar",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "ruina_altar",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_portal",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "ruina_torre_f",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_grande_a",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 229,
+              "refs": 2,
+              "fijo": false
+            },
+            {
+              "n": "monumento_b",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 245,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "tienda_pequena",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 245,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "bloque_piedra",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 327,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_mediano_g",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 327,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_mediano_f",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 327,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "templo_mediano",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 327,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "campamento_f",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 329,
+              "refs": 1,
+              "fijo": false
+            },
+            {
+              "n": "campamento_a",
+              "tipo": "lejos",
+              "estado": "cola",
+              "prio": 329,
+              "refs": 1,
+              "fijo": false
+            }
+          ],
+          "trabajos": [
+            "fundirHD:kelvin_aldea_rio_este",
+            "fundirCercaGlobal",
+            "fundirCerca:kelvin_aldea_rio_este",
+            "fundirCerca:kelvin_aldea_rio_este_2"
+          ]
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirPaso:kelvin_aldea_rio_este_2",
+        "ms": 95
+      },
+      {
+        "n": "fundirHD:villa",
+        "ms": 62
+      },
+      {
+        "n": "procesar:monumento_f:cerca",
+        "ms": 99
+      },
+      {
+        "n": "fundirSombra:kelvin_aldea_colina",
+        "ms": 33
+      },
+      {
+        "n": "fundirHD:kelvin_aldea_colina",
+        "ms": 211
+      },
+      {
+        "n": "fundirHD:kelvin_aldea_colina",
+        "ms": 124
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 121
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 35
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 39
+      },
+      {
+        "n": "fundirCerca:kelvin_aldea_colina",
+        "ms": 96
+      }
+    ]
+  },
+  "heap": {
+    "base": {
+      "heap": 97,
+      "total": 132
+    },
+    "pico": {
+      "heap": 100,
+      "total": 132
+    },
+    "retenido": {
+      "heap": 131,
+      "total": 132
+    },
+    "vuelta": {
+      "pos": [
+        134,
+        7,
+        182
+      ],
+      "heap": 132,
+      "total": 133,
+      "geoViva": {
+        "mb": 93,
+        "mallas": 406
+      },
+      "st": {
+        "fps": 78,
+        "calls": 66,
+        "triangulos": 247920,
+        "calidad": "bajo",
+        "dpr": 1.5,
+        "post": false,
+        "sombras": false,
+        "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    },
+    "atrib": {
+      "prefijos": [
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Savage",
+          "n": 1,
+          "mb": 18,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 12,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 8,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCercaGlobal:AV_HD_Savage",
+          "n": 1,
+          "mb": 8,
+          "vis": 1,
+          "visMb": 8
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 5,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:complejo_ruinas",
+          "n": 8,
+          "mb": 4,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:global",
+          "n": 2,
+          "mb": 4,
+          "vis": 1,
+          "visMb": 2
+        },
+        {
+          "p": "edificiosZonaSombra:kelvin_aldea_colina",
+          "n": 1,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "(sin nombre)",
+          "n": 207,
+          "mb": 2,
+          "vis": 199,
+          "visMb": 2
+        },
+        {
+          "p": "edificiosInst:monumento_f",
+          "n": 5,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_aldea_rio_este_2",
+          "n": 2,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "terreno:terreno_no",
+          "n": 1,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 1
+        },
+        {
+          "p": "terreno:terreno_ne",
+          "n": 1,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 1
+        },
+        {
+          "p": "terreno:terreno_so",
+          "n": 1,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 1
+        },
+        {
+          "p": "terreno:terreno_se",
+          "n": 1,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 1
+        },
+        {
+          "p": "Vittata_2",
+          "n": 2,
+          "mb": 1,
+          "vis": 2,
+          "visMb": 1
+        },
+        {
+          "p": "edificiosInst:casa_plataforma",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:mirador_escalonado",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:casa_paja_a",
+          "n": 5,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:torre_vigia_b",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:torre_vigia",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_b",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:muralla_atalaya_a",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:portal_puas",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:puente_madera",
+          "n": 5,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:villa",
+          "n": 1,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCercaGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 1,
+          "vis": 0,
+          "visMb": 0
+        }
+      ],
+      "stStats": {
+        "zonas": 17,
+        "zonasCerca": 2,
+        "zonasLejos": 15,
+        "instancias": 422,
+        "colocadas": 47,
+        "modelosCerca": 18,
+        "modelosLejos": 30,
+        "modelosHD": 14,
+        "materiales": 14,
+        "kbGeometria": 84655,
+        "visiblesCerca": 4,
+        "visiblesLejos": 16,
+        "visiblesHD": 0,
+        "hd": true,
+        "drawEdificios": 5,
+        "zonasFundidas": 7,
+        "descargando": 49,
+        "trabajos": 0,
+        "omitidos": []
+      },
+      "porTipo": {
+        "cerca:listo": {
+          "n": 18
+        },
+        "lejos:listo": {
+          "n": 30
+        },
+        "hd:cola": {
+          "n": 8
+        },
+        "hd:listo": {
+          "n": 14
+        },
+        "lejos:cola": {
+          "n": 33
+        },
+        "cerca:cola": {
+          "n": 8
+        }
+      },
+      "listosRefs": [
+        {
+          "n": "complejo_ruinas",
+          "t": "hd",
+          "refs": 1,
+          "mb": 3
+        },
+        {
+          "n": "monumento_f",
+          "t": "hd",
+          "refs": 1,
+          "mb": 2
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "mirador_escalonado",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia_b",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "torre_vigia",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "puente_madera",
+          "t": "hd",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "complejo_ruinas",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 1
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "cerca",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "bohio_redondo",
+          "t": "lejos",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "cerca",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "toldo_pequeno",
+          "t": "lejos",
+          "refs": 14,
+          "mb": 0
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "casa_plataforma",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "casa_paja_a",
+          "t": "lejos",
+          "refs": 3,
+          "mb": 0
+        },
+        {
+          "n": "casa_paja_a",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "casa_paja_a",
+          "t": "hd",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "mirador_escalonado",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "mirador_escalonado",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "templo_mediano_h",
+          "t": "lejos",
+          "refs": 3,
+          "mb": 0
+        },
+        {
+          "n": "ruina_torre",
+          "t": "lejos",
+          "refs": 2,
+          "mb": 0
+        },
+        {
+          "n": "losa_piedra",
+          "t": "lejos",
+          "refs": 3,
+          "mb": 0
+        },
+        {
+          "n": "losa_piedra",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "losa_piedra",
+          "t": "hd",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "monumento_g",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "monumento_g",
+          "t": "lejos",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "torre_vigia_b",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "torre_vigia_b",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "torre_vigia",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "torre_vigia",
+          "t": "lejos",
+          "refs": 3,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_b",
+          "t": "cerca",
+          "refs": 2,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_b",
+          "t": "lejos",
+          "refs": 5,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_b",
+          "t": "hd",
+          "refs": 2,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_a",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_a",
+          "t": "lejos",
+          "refs": 3,
+          "mb": 0
+        },
+        {
+          "n": "muralla_atalaya_a",
+          "t": "hd",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "empalizada",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "empalizada",
+          "t": "lejos",
+          "refs": 4,
+          "mb": 0
+        },
+        {
+          "n": "empalizada",
+          "t": "hd",
+          "refs": 1,
+          "mb": 0
+        },
+        {
+          "n": "portal_puas",
+          "t": "cerca",
+          "refs": 1,
+          "mb": 0
+        }
+      ],
+      "lotes": [
+        "bohio_redondo:cerca",
+        "toldo_pequeno:cerca",
+        "casa_plataforma:lejos",
+        "mirador_escalonado:lejos",
+        "monumento_g:lejos",
+        "ruina_torre:lejos",
+        "losa_piedra:lejos",
+        "toldo_pequeno:lejos",
+        "casa_paja_a:lejos",
+        "bohio_redondo:lejos",
+        "torre_vigia_b:lejos",
+        "torre_vigia:lejos",
+        "muralla_atalaya_b:lejos",
+        "muralla_atalaya_a:lejos",
+        "empalizada:lejos",
+        "portal_puas:lejos",
+        "puente_madera:lejos",
+        "campamento_c:lejos",
+        "carpa_e:lejos",
+        "portal_madera_b:lejos",
+        "monumento_d:lejos",
+        "caney_largo:lejos",
+        "cercado_redondo:lejos",
+        "bohio_puntiagudo:lejos",
+        "casa_paja_b:lejos",
+        "templo_mediano_h:lejos",
+        "templo_grande_d:lejos",
+        "complejo_ruinas:lejos",
+        "monumento_f:lejos",
+        "monumento_e:lejos",
+        "portal_madera_c:lejos",
+        "portal_madera_a:lejos",
+        "casa_plataforma:cerca",
+        "casa_plataforma:hd",
+        "monumento_g:cerca",
+        "casa_paja_a:cerca",
+        "torre_vigia_b:cerca",
+        "torre_vigia:cerca",
+        "muralla_atalaya_b:cerca",
+        "muralla_atalaya_a:cerca",
+        "empalizada:cerca",
+        "portal_puas:cerca",
+        "puente_madera:cerca",
+        "campamento_c:cerca",
+        "casa_paja_a:hd",
+        "torre_vigia_b:hd",
+        "torre_vigia:hd",
+        "muralla_atalaya_a:hd",
+        "empalizada:hd",
+        "portal_puas:hd",
+        "puente_madera:hd",
+        "muralla_atalaya_b:hd",
+        "losa_piedra:cerca",
+        "complejo_ruinas:cerca",
+        "carpa_e:cerca",
+        "monumento_f:cerca",
+        "mirador_escalonado:cerca",
+        "losa_piedra:hd",
+        "complejo_ruinas:hd",
+        "carpa_e:hd",
+        "monumento_f:hd",
+        "mirador_escalonado:hd"
+      ],
+      "zonas": [
+        {
+          "id": "villa",
+          "nivel": 2,
+          "ciudad": false,
+          "hd": true,
+          "d": 21,
+          "hdM": 1,
+          "cerM": 1,
+          "som": false,
+          "mal": true,
+          "nInst": 1
+        },
+        {
+          "id": "lomas",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 234,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": true,
+          "nInst": 1
+        },
+        {
+          "id": "colina",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 108,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": true,
+          "nInst": 1
+        },
+        {
+          "id": "kelvin_ruinas_yunque",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 228,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 61
+        },
+        {
+          "id": "kelvin_aldea_rio_este",
+          "nivel": 2,
+          "ciudad": false,
+          "hd": true,
+          "d": 30,
+          "hdM": 1,
+          "cerM": 1,
+          "som": false,
+          "mal": true,
+          "nInst": 46
+        },
+        {
+          "id": "kelvin_aldea_rio_oeste",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 243,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 39
+        },
+        {
+          "id": "kelvin_aldea_lomas",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 194,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 38
+        },
+        {
+          "id": "kelvin_aldea_rio_este_2",
+          "nivel": 1,
+          "ciudad": true,
+          "hd": true,
+          "d": 87,
+          "hdM": 0,
+          "cerM": 1,
+          "som": false,
+          "mal": true,
+          "nInst": 32
+        },
+        {
+          "id": "kelvin_aldea_mina",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 237,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 27
+        },
+        {
+          "id": "kelvin_aldea_meandros",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 158,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 28
+        },
+        {
+          "id": "kelvin_ruinas_yunque_2",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 325,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 26
+        },
+        {
+          "id": "kelvin_aldea_colina",
+          "nivel": 1,
+          "ciudad": true,
+          "hd": true,
+          "d": 66,
+          "hdM": 2,
+          "cerM": 2,
+          "som": true,
+          "mal": true,
+          "nInst": 25
+        },
+        {
+          "id": "kelvin_aldea_mina_2",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 155,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 26
+        },
+        {
+          "id": "kelvin_aldea_rio_este_3",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 94,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": true,
+          "nInst": 24
+        },
+        {
+          "id": "kelvin_aldea_rio_oeste_2",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 327,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 21
+        },
+        {
+          "id": "kelvin_aldea_yunque",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 248,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 13
+        },
+        {
+          "id": "kelvin_aldea_meandros_2",
+          "nivel": 1,
+          "ciudad": false,
+          "hd": false,
+          "d": 284,
+          "hdM": 0,
+          "cerM": 0,
+          "som": false,
+          "mal": false,
+          "nInst": 13
+        }
+      ]
+    }
+  },
+  "errores": []
+}

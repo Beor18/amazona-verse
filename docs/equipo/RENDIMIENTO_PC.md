@@ -435,14 +435,22 @@ e índices de cada malla) + posición real.
 | k030-r1 | sí | 878 | 858 | 762 | (fallo de instrumentación, sin número) | — | — |
 | k030-r2 | no | 117 | 767 | 761 | **650** | 602 MB / 659 mallas | 62 |
 | k030-r3 | no | (id.) | — | — | **650** · pos verificada (134,7,182) | 602 MB / 659 mallas | 62 |
+| k030-atrib-r2 | no | 97 | 766 | 761 | **650** | 602 MB / 659 mallas | 62 |
+| **k030-fix-r1** (ciudadGracia 8 s) | no | 108 | 767 | 761 | **356** | 308 MB / 520 mallas | 62 |
+| k030-villar2 (villa asentida, **sin** visitar la ciudad) | no | — | — | — | **348** | 308 MB / 520 mallas | 67 |
 
-Conclusión: la retención de QA-153 **también se da al alejarse de verdad** — no es un artefacto de quedarse volando
-sobre la ciudad. En la villa quedan ~650 MB (vs línea base de villa ~120–175 MB, KIMI-023) y el 92 % es geometría
-viva en la escena, no basura de GC: unas ~400–500 MB de geometría con referencias vivas no se sueltan al descargar
-las zonas de la ciudad. La revisión fila a fila del ciclo de vida en `streaming.js` no muestra el retenedor
-(`quitarHDZona`/`quitarCercaZona`/`liberar`/`soltar`/`conTramos`/`encolar` de sólidos sueltan lo suyo);
-falta la atribución por prefijo de malla (`edificiosZona*` vs terreno/flora) — pendiente de la próxima vuelta.
-Evidencia: `docs/img/kimi020/repro-k030-r{1,2,3}.json`. 0 errores de consola en las 3 corridas.
+**Raíz (atribución por prefijo, `repro-k030-atrib-r{1,2}.json`):** lo retenido eran las fusiones
+`edificiosZonaHD:kelvin_ruinas_yunque` (126 MB), `edificiosZonaHDGlobal:AV_HD_Ancient` (194 MB),
+`…:AV_HD_Savage` (29 MB) y las de cerca/sombra/globales — la bandera `ciudad` no se apagaba: la salida era
+`d < ciudadVista.bajo(220) + histéresis(30)` y la villa está a d=228 m: la banda [220, 250] la contenía entera,
+así que tras una visita el kit de la ciudad quedaba cargado para siempre en «bajo». **Fix (commit de esta fila):**
+gracia de tiempo `CFG.ciudadGracia` 8 s en `streaming.js` en vez de histéresis pura de distancia; fuera de la
+banda se suelta ya. Con el fix, `kelvin_ruinas_yunque` vuelve a la villa con `ciudad:false` y sus fusiones fuera;
+lo residual (308 MB) es línea de diseño: `kelvin_aldea_rio_este_2` (d=87) y `kelvin_aldea_colina` (d=66) son
+zonas-ciudad dentro de `ciudadVista.bajo` de la villa y retienen su kit por diseño aprobado (1-nov), como un
+spawn asentido. **Retención cero demostrada:** la villa asentida sin visitar la ciudad da 348 MB / 308 MB / 520
+mallas (`repro-k030-villar2.json`, quieto roto con un teleport de ~14 m) — los mismos números que tras visitarla
+y volver (356 / 308 / 520). 0 errores de consola.
 
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 

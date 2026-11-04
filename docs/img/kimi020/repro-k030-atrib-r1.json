@@ -1,0 +1,447 @@
+{
+  "etiqueta": "k030-atrib-r1",
+  "cuando": "2026-11-04T17:04:43.287Z",
+  "ancla": {
+    "x": -33,
+    "z": -136,
+    "alzar": 30,
+    "yaw": 2.827433388230814
+  },
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "tope_s": 15,
+  "repro": {
+    "res": "OK",
+    "valor": null,
+    "ms": 14708,
+    "pos": "-33,123,-136",
+    "heapBase": {
+      "heap": 127,
+      "total": 154
+    },
+    "heapPico": {
+      "heap": 766,
+      "total": 829
+    },
+    "calls": 72,
+    "ktris": 443,
+    "snaps": [
+      {
+        "t": 2659,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHD:kelvin_aldea_meandros_2",
+            "fundirCercaGlobal:AV_HD_Ancient",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirHD:kelvin_aldea_rio_este_2",
+            "fundirHD:kelvin_ruinas_yunque_2",
+            "fundirLejosGlobal:AV_Lejos"
+          ]
+        }
+      },
+      {
+        "t": 5098,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirLejosGlobal:AV_Lejos",
+            "fundirCercaGlobal:AV_HD_Savage",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_ruinas_yunque",
+            "fundirSombra:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_aldea_rio_este_2",
+            "fundirSombra:kelvin_aldea_rio_este_2",
+            "fundirCerca:kelvin_ruinas_yunque_2",
+            "fundirSombra:kelvin_ruinas_yunque_2",
+            "fundirCerca:kelvin_aldea_colina",
+            "fundirSombra:kelvin_aldea_colina",
+            "fundirHD:kelvin_aldea_rio_este_2"
+          ]
+        }
+      },
+      {
+        "t": 7594,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirCercaGlobal:AV_HD_Savage",
+            "fundirHD:kelvin_ruinas_yunque",
+            "fundirCerca:kelvin_aldea_rio_este_2",
+            "fundirHDGlobal",
+            "fundirLejosGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 12181,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 13440,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": [
+            "fundirHDGlobal:AV_HD_Ancient"
+          ]
+        }
+      },
+      {
+        "t": 14708,
+        "d": {
+          "enVuelo": 0,
+          "quieto": false,
+          "arrancando": false,
+          "precarga": false,
+          "cola": [],
+          "trabajos": []
+        }
+      }
+    ],
+    "lentos": [
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque_2",
+        "ms": 54
+      },
+      {
+        "n": "fundirHD:kelvin_aldea_rio_este_2",
+        "ms": 76
+      },
+      {
+        "n": "fundirCerca:kelvin_aldea_meandros_2",
+        "ms": 71
+      },
+      {
+        "n": "fundirSombra:kelvin_ruinas_yunque",
+        "ms": 27
+      },
+      {
+        "n": "fundirHD:kelvin_aldea_yunque",
+        "ms": 185
+      },
+      {
+        "n": "fundirHD:kelvin_ruinas_yunque",
+        "ms": 70
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 40
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Ancient",
+        "ms": 769
+      },
+      {
+        "n": "fundirHDGlobal",
+        "ms": 30
+      },
+      {
+        "n": "fundirHDGlobal:AV_HD_Savage",
+        "ms": 39
+      }
+    ]
+  },
+  "heap": {
+    "base": {
+      "heap": 127,
+      "total": 154
+    },
+    "pico": {
+      "heap": 766,
+      "total": 829
+    },
+    "retenido": {
+      "heap": 761,
+      "total": 763
+    },
+    "vuelta": {
+      "pos": [
+        134,
+        7,
+        182
+      ],
+      "heap": 650,
+      "total": 651,
+      "geoViva": {
+        "mb": 602,
+        "mallas": 659
+      },
+      "st": {
+        "fps": 37,
+        "calls": 62,
+        "triangulos": 159645,
+        "calidad": "bajo",
+        "dpr": 1,
+        "post": false,
+        "sombras": false,
+        "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    },
+    "atrib": {
+      "prefijos": [
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 194,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_ruinas_yunque",
+          "n": 1,
+          "mb": 126,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_rio_este_2",
+          "n": 2,
+          "mb": 72,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHDGlobal:AV_HD_Savage",
+          "n": 1,
+          "mb": 29,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:global",
+          "n": 2,
+          "mb": 17,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 16,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_mediano_h",
+          "n": 16,
+          "mb": 15,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_grande_d",
+          "n": 15,
+          "mb": 10,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_grande",
+          "n": 15,
+          "mb": 9,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCercaGlobal:AV_HD_Savage",
+          "n": 1,
+          "mb": 9,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaHD:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 8,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_grande_f",
+          "n": 14,
+          "mb": 7,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_ruinas_yunque",
+          "n": 2,
+          "mb": 7,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_grande_e",
+          "n": 15,
+          "mb": 6,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:templo_grande_a",
+          "n": 16,
+          "mb": 6,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_rio_este",
+          "n": 1,
+          "mb": 5,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCercaGlobal:AV_HD_Ancient",
+          "n": 1,
+          "mb": 5,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:complejo_ruinas",
+          "n": 8,
+          "mb": 4,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosInst:muro_templo",
+          "n": 5,
+          "mb": 4,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaSombra:kelvin_aldea_rio_este_2",
+          "n": 1,
+          "mb": 4,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaSombra:kelvin_aldea_colina",
+          "n": 1,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_colina",
+          "n": 2,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaSombra:kelvin_ruinas_yunque",
+          "n": 1,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_ruinas_yunque",
+          "n": 3,
+          "mb": 3,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "(sin nombre)",
+          "n": 207,
+          "mb": 2,
+          "vis": 199,
+          "visMb": 2
+        },
+        {
+          "p": "edificiosInst:monumento_f",
+          "n": 5,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_aldea_rio_este_2",
+          "n": 2,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZona:kelvin_ruinas_yunque_2",
+          "n": 2,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "edificiosZonaCerca:kelvin_aldea_rio_este_2",
+          "n": 3,
+          "mb": 2,
+          "vis": 0,
+          "visMb": 0
+        },
+        {
+          "p": "terreno:terreno_ne",
+          "n": 1,
+          "mb": 1,
+          "vis": 1,
+          "visMb": 1
+        }
+      ],
+      "stStats": {
+        "zonas": 17,
+        "zonasCerca": 2,
+        "zonasLejos": 15,
+        "instancias": 422,
+        "colocadas": 160,
+        "modelosCerca": 40,
+        "modelosLejos": 63,
+        "modelosHD": 36,
+        "materiales": 34,
+        "kbGeometria": 598168,
+        "visiblesCerca": 0,
+        "visiblesLejos": 0,
+        "visiblesHD": 0,
+        "hd": true,
+        "drawEdificios": 0,
+        "zonasFundidas": 17,
+        "descargando": 0,
+        "trabajos": 0,
+        "omitidos": []
+      }
+    }
+  },
+  "errores": []
+}

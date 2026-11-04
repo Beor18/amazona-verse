@@ -88,6 +88,17 @@ const PROBAR_JS = `(async () => {
   try { AV.debug.camYaw(${YAW}); } catch (e) {}
   const mem = () => ({ heap: Math.round(performance.memory.usedJSHeapSize / 1048576), total: Math.round(performance.memory.totalJSHeapSize / 1048576) });
   const heapBase = ${HEAP} ? mem() : null;
+  const bGeo = g => { let b = 0; if (!g) return 0; const at = g.attributes; for (const k in at) if (at[k].array) b += at[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
+  const atribEscena = () => { const grupos = {}; (G.renderer.scene || G.scene).traverse(o => { if (!(o.isMesh && o.geometry)) return;
+      const b = bGeo(o.geometry), p = (o.name || '(sin nombre)').split(':').slice(0, 2).join(':');
+      const g = grupos[p] || (grupos[p] = { n: 0, mb: 0, vis: 0 }); g.n++; g.mb += b; if (o.visible) g.vis++; });
+    return Object.entries(grupos).map(([p, g]) => ({ p, n: g.n, mb: Math.round(g.mb / 1048576), vis: g.vis })).sort((a, b) => b.mb - a.mb).slice(0, 30); };
+  const atribRecursos = () => { const porTipo = {}, listosRefs = []; for (const n in ST.recursos) for (const t in ST.recursos[n]) {
+      const r = ST.recursos[n][t]; if (r.estado === 'nada') continue;
+      const k = t + ':' + r.estado, g = porTipo[k] || (porTipo[k] = { n: 0 }); g.n++;
+      if (r.estado === 'listo' && r.refs > 0) { let mb = 0; if (r.partes) for (const p of r.partes) mb += bGeo(p.geo); if (r.geo) mb += bGeo(r.geo); listosRefs.push({ n, t, refs: r.refs, mb: Math.round(mb / 1048576) }); } }
+    return { porTipo, listosRefs: listosRefs.sort((a, b) => b.mb - a.mb).slice(0, 40) }; };
+  const atribBase = ${HEAP} ? { escena: atribEscena(), recursos: atribRecursos() } : null;
   const diag = () => { try { return ST._diag ? ST._diag() : null; } catch (e) { return String(e && e.message || e); } };
   await ST.alrededor(S.pos.x, S.pos.z); // esto resuelve (Kimi 1 cuelga en el paso siguiente)
   await sleep(1500); // deja que la revisión periódica y el bucle de cuadros reactiven la cola
@@ -101,7 +112,7 @@ const PROBAR_JS = `(async () => {
   const heapPico = ${HEAP} ? mem() : null;
   const st = (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })();
   return JSON.stringify({ res, valor, ms: Math.round(performance.now() - t0), pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.y) + ',' + Math.round(S.pos.z),
-    heapBase, heapPico,
+    heapBase, heapPico, atribBase,
     calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
     snaps, lentos: ((G.trabajosLentos || []).slice(-10)) });
 })()`;
@@ -200,6 +211,37 @@ function limpiarHuerfanos() {
             geoViva: bytesGeo(), st: (() => { try { return G.renderer.stats(); } catch (e) { return {}; } })() }; })())`, 30, false);
         res.heap.vuelta = JSON.parse(vuelta);
         console.log(`· heap tras volver + gc: ${res.heap.vuelta.heap} MB · pos ${JSON.stringify(res.heap.vuelta.pos)} · geo viva en escena: ${res.heap.vuelta.geoViva.mb} MB en ${res.heap.vuelta.geoViva.mallas} mallas · ${res.heap.vuelta.st.calls} calls`);
+        // KIMI-030: atribución — desglose de la geometría retenida por prefijo de nombre + conteo interno de streaming
+        const atrib = await evaluar(cdp, ses, `JSON.stringify((() => { const AV = window.AV, G = AV.G;
+          const ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
+          const bGeo = g => { let b = 0; if (!g) return 0; const at = g.attributes; for (const k in at) if (at[k].array) b += at[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
+          const grupos = {}, sinNombre = { n: 0, mb: 0, vis: 0 };
+          (G.renderer.scene || G.scene).traverse(o => { if (!(o.isMesh && o.geometry)) return;
+            const b = bGeo(o.geometry);
+            const nom = o.name || '(sin nombre)';
+            const p = nom.split(':').slice(0, 2).join(':');
+            const g = grupos[p] || (grupos[p] = { n: 0, mb: 0, vis: 0, visMb: 0 });
+            g.n++; g.mb += b; if (o.visible) { g.vis++; g.visMb += b; } });
+          const prefijos = Object.entries(grupos).map(([p, g]) => ({ p, n: g.n, mb: Math.round(g.mb / 1048576), vis: g.vis, visMb: Math.round(g.visMb / 1048576) }))
+            .sort((a, b) => b.mb - a.mb).slice(0, 30);
+          let stStats = null; try { stStats = ST.stats(); } catch (e) {}
+          const porTipo = {}, listosRefs = [];
+          for (const n in ST.recursos) for (const t in ST.recursos[n]) {
+            const r = ST.recursos[n][t]; if (r.estado === 'nada') continue;
+            const kk = t + ':' + r.estado, g = porTipo[kk] || (porTipo[kk] = { n: 0 }); g.n++;
+            if (r.estado === 'listo' && r.refs > 0) { let mb = 0; if (r.partes) for (const p of r.partes) mb += bGeo(p.geo); if (r.geo) mb += bGeo(r.geo); listosRefs.push({ n, t, refs: r.refs, mb: Math.round(mb / 1048576) }); } }
+          listosRefs.sort((a, b) => b.mb - a.mb);
+          const zonas = Object.entries(ST.zonas || {}).map(([id, Z]) => ({ id, nivel: Z.nivel, ciudad: !!Z.ciudad, hd: !!Z.hd, d: Math.round(Z.d || 0),
+            hdM: (Z.hdMallas || []).length, cerM: (Z.cercaMallas || []).length, som: !!Z.sombraMalla, mal: !!Z.malla, nInst: Z.inst.length }));
+          return { prefijos, stStats, porTipo, listosRefs: listosRefs.slice(0, 40), lotes: Object.keys(ST.lotes || {}), zonas }; })())`, 30, false);
+        res.heap.atrib = JSON.parse(atrib);
+        console.log('· atribución por prefijo (MB en escena, todas las mallas):');
+        for (const g of res.heap.atrib.prefijos) console.log(`    ${String(g.mb).padStart(5)} MB · ${String(g.n).padStart(4)} mallas (${String(g.vis).padStart(4)} vis) · ${g.p}`);
+        const ks = res.heap.atrib.stStats && res.heap.atrib.stStats.kbGeometria;
+        console.log(`· streaming ST.stats(): kbGeometria=${ks} · modelosCerca=${res.heap.atrib.stStats && res.heap.atrib.stStats.modelosCerca} · modelosHD=${res.heap.atrib.stStats && res.heap.atrib.stStats.modelosHD} · modelosLejos=${res.heap.atrib.stStats && res.heap.atrib.stStats.modelosLejos} · zonasCerca=${res.heap.atrib.stStats && res.heap.atrib.stStats.zonasCerca}`);
+        console.log('· recursos con refs > 0 (listos, top por MB): ' + JSON.stringify((res.heap.atrib.listosRefs || []).slice(0, 15)));
+        console.log('· recursos por tipo:estado: ' + JSON.stringify(res.heap.atrib.porTipo) + ' · lotes vivos: ' + (res.heap.atrib.lotes || []).length);
+        console.log('· zonas: ' + JSON.stringify(res.heap.atrib.zonas));
       }
     }
     for (const s of r.snaps || []) {

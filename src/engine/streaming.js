@@ -79,6 +79,11 @@ AVE.module('streaming', function (G) {
     // 1-nov (Kelvin: «de lejos se ve blanco y de cerca de otra forma»): en «alto» los templos se ven con su modelo texturizado
     // desde casi toda la isla, no con el lejano crema sin textura (AV_Lejos). En «bajo» queda como antes (el spawn no carga la ciudad).
     ciudadVista: { bajo: 220, medio: 420, alto: 650 }, // m al borde de la zona: carga el kit
+    // KIMI-030/QA-153: la salida del kit era `d < ciudadVista + histéresis(30)` y la villa queda a d=228 m de la ciudad:
+    // en «bajo» (tope 220) la banda [220, 250] contenía la villa entera, así que tras visitar la ciudad el kit
+    // (~450 MB de fusiones/lotes) quedaba cargado para siempre. La histéresis de distancia se cambia por gracia de
+    // tiempo: al entrar en rango se recarga la cuenta; al salir, el kit se suelta pasados estos segundos.
+    ciudadGracia: 8,                                 // s fuera de rango antes de soltar el kit de la ciudad
     ciudadMalla: { bajo: 340, medio: 450, alto: 700 }, // m a la superficie: lo que se dibuja es el _hd o el ligero con textura, no el lejano
     // KIMI-Task-011 (iPad, 2-nov: 8,1 M triángulos sobre Villa Raíz): en la ciudad, el _hd (hasta 460 000 triángulos por templo)
     // llega a 45 / 150 m (y al tope hdTris); más allá se ve el ligero con textura hasta ciudadMalla. En «alto», como antes.
@@ -761,7 +766,7 @@ AVE.module('streaming', function (G) {
         I.r = rad * I.escala; bajarRuina(I); I.cx = I.pos[0]; I.cy = I.pos[1] + I.r * 0.4; I.cz = I.pos[2];
         inst.push(I);
         (porModelo[c.n] || (porModelo[c.n] = [])).push(I);
-        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, d: Infinity });
+        const Z = zonas[c.zona] || (zonas[c.zona] = { id: c.zona, inst: [], modelos: new Set(), cx: 0, cz: 0, r: 0, nivel: 0, forzada: false, ciudad: false, ciudadHasta: 0, d: Infinity });
         Z.inst.push(I); Z.modelos.add(c.n);
       }
       for (const id in zonas) {
@@ -1469,6 +1474,7 @@ AVE.module('streaming', function (G) {
       else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
       const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
       const anticipo = vueloAnticipo(x, z);
+      const ahora = performance.now();
       for (const id in zonas) {
         const Z = zonas[id];
         Z.d = Math.max(0, Math.hypot(x - Z.cx, z - Z.cz) - Z.r);
@@ -1478,7 +1484,13 @@ AVE.module('streaming', function (G) {
         // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado
         // cuando Vittata la mira desde el aire y se suelta al volver al spawn. No alarga el _hd del resto del mapa.
         if (esCiudad(Z.id)) {
-          const quiere = hdActivo() && Z.nivel >= 1 && Z.d < CFG.ciudadVista[nivelCiudad()] + (Z.ciudad ? H : 0);
+          const limite = CFG.ciudadVista[nivelCiudad()];
+          const enRango = Z.d < limite;
+          if (hdActivo() && Z.nivel >= 1 && enRango) Z.ciudadHasta = ahora + CFG.ciudadGracia * 1000;
+          // En rango: siempre encendida. Fuera de la banda de histéresis: se suelta ya. Dentro de la banda: se
+          // mantiene solo lo que dure la gracia desde la última vez en rango (así la villa, a 228 m, no retiene
+          // el kit para siempre), y para RE-encenderla hay que volver a rango (contrato del test: en frío no carga).
+          const quiere = hdActivo() && Z.nivel >= 1 && (enRango || (Z.ciudad && Z.d < limite + H && Z.ciudadHasta > ahora));
           if (Z.ciudad !== quiere) {
             Z.ciudad = quiere;
             for (const n of Z.modelos) {
