@@ -40,7 +40,8 @@ const srv = http.createServer((q, r) => { const p = decodeURIComponent(q.url.spl
     const c = Object.assign({}, base, v, { encuadre: Object.assign({}, base.encuadre, v.encuadre), fondo: Object.assign({}, base.fondo, v.fondo) });
     if (comparar) { // docs/img/retratos/comparacion_juego.jpg: el juego (cuadro real y misma cámara) frente al retrato nuevo y el anterior
       const o = Object.assign({ piel: 'vittata', region: region.vittata, acento: pal.vittata || null, semilla: 7, formato: 'jpg' }, c, CFG.salida);
-      await pg.evaluate(() => { try { window.AV.G.ui.hideToast(); } catch (e) { /* sin HUD */ } }); await pg.waitForTimeout(1500);
+      await pg.evaluate(() => { try { window.AV.G.ui.hideToast(); } catch (e) { /* sin HUD */ } }); await pg.waitForTimeout(4000);
+      await pg.waitForFunction(() => { const p = window.AV.G.actores.player3D.root; let v = true; p.traverseAncestors(a => { if (!a.visible) v = false; }); return v && p.visible; }, null, { timeout: 30000 });
       const caja = await pg.evaluate(() => window.AVRetratoCaja());
       const real = (await pg.screenshot({ type: 'png' })).toString('base64');
       const juego = await pg.evaluate(o => window.AVRetratoJuego(o, o.w2, o.h2), o);
