@@ -19,6 +19,7 @@ window.AVMarana = function (G) {
   G.renderer.scene.add(malla);
   const dummy = new THREE.Object3D();
   const notas = [];
+  const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.marana';
   const limpios = [];
   function guardarLimpios() { try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, limpios })); } catch (e) { /* sin almacén */ } }
@@ -47,7 +48,7 @@ window.AVMarana = function (G) {
     const linea = 'Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.';
     notas.push(linea);
     G.emit('momento', { id: 'marana-' + r.id, texto: linea });
-    if (G.ui && G.ui.toast) G.ui.toast('La bandada desenredó un rastro de fantasía.', 2200);
+    if (G.ui && G.ui.toast) G.ui.toast(en() ? 'The flock cleared a make-believe trail.' : 'La bandada desenredó un rastro de fantasía.', 2200);
     if (G.fx && G.fx.burst) G.fx.burst(r.x, r.y, r.z, 'leaves', 8);
     if (!limpios.includes(r.id)) { limpios.push(r.id); guardarLimpios(); }
     pintar();
@@ -67,7 +68,7 @@ window.AVMarana = function (G) {
     for (let i = 0; i < rastros.length; i++) {
       const r = rastros[i];
       const d = Math.hypot(S.pos.x - r.x, S.pos.z - r.z);
-      if (!r.visto && d < 18) { r.visto = true; if (G.ui) G.ui.toast('Hay un rastro gris entre las hojas. Es la Maraña, un cuento.', 2400); }
+      if (!r.visto && d < 18) { r.visto = true; if (G.ui) G.ui.toast(en() ? 'A gray trail hides in the leaves. It is a flock story.' : 'Hay un rastro gris entre las hojas. Es la Maraña, un cuento.', 2400); }
       if (!r.limpio && d < 4) limpiar(r);
     }
   }
