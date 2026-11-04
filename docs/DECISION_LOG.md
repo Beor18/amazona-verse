@@ -315,3 +315,4 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **24c · Iguaca y las mentoras: APROBACIÓN CONDICIONADA.** Se amplían diálogos y personalidades, pero Kelvin revisa el texto exacto antes de que entre al canon (propuesta en `docs/equipo/PROPUESTA_MENTORAS_24C.md`). Iguaca con iniciativa y personalidad propia; mentoras con voces diferenciadas, que orienten sin resolverlo todo y sin diálogos excesivamente educativos.
 - **Música:** aprobada la dirección de dos temas originales (ciudad de noche y sorpresas). Pendientes los MP3 y la verificación de derechos de uso comercial.
 - **Importante:** no alterar el canon establecido, las 36 especies, los seis capítulos ni las mecánicas existentes para introducir estos elementos.
+- **4-nov · 24c APROBADA por Kelvin («todas ✅»):** las líneas de Iguaca y las cinco mentoras de `docs/equipo/PROPUESTA_MENTORAS_24C.md` entran tal cual (ES y EN) en `src/game/dones.js`.

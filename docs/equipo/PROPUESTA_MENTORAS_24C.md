@@ -2,7 +2,7 @@
 
 Kelvin, 4-nov: «Apruebo ampliar sus diálogos y desarrollar sus personalidades, pero antes de incorporar las líneas nuevas al canon definitivo necesito revisar el texto exacto. Iguaca debe tener iniciativa y personalidad propia. Las mentoras deben tener voces diferenciadas, orientar sin resolverlo todo y evitar diálogos excesivamente educativos.»
 
-**Nada de esto está en el juego todavía.** Hoy el juego tiene las líneas de la columna «Hoy» (`src/game/dones.js`). Marca cada propuesta con ✅, ✏️ (con tu cambio) o ❌, y la coordinadora pasa al juego solo lo aprobado (ES y EN), sin tocar las mecánicas, las 36 especies ni los seis capítulos.
+**✅ Aprobado por Kelvin el 4-nov («todas ✅») y ya en el juego (`src/game/dones.js`).** Hoy el juego tiene las líneas de la columna «Hoy» (`src/game/dones.js`). Marca cada propuesta con ✅, ✏️ (con tu cambio) o ❌, y la coordinadora pasa al juego solo lo aprobado (ES y EN), sin tocar las mecánicas, las 36 especies ni los seis capítulos.
 
 Reglas que siguen todas las propuestas: frases cortas para niños; la mentora da una **pista**, no la solución; nada de lección; humor ligero; el don es fantasía del juego (no se presenta como algo que las cotorras reales hacen).
 

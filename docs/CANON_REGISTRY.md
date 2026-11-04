@@ -44,4 +44,4 @@ Estados: **CONFIRMADO** (aprobado por Kelvin o en sus archivos) · **PROVISIONAL
 | Faroles en el cap. 1 (Kelvin, 4-nov): sí, luz cálida, legible, optimizada y coherente con `vibrant_toon`; la noche debe ser atractiva y jugable, nunca demasiado oscura. Prototipo pequeño medido en móvil antes de ampliar | CONFIRMADO | Kelvin, 4 nov 2026 |
 | La ciudad viva se descubre (Kelvin, 4-nov): en cada visita el jugador encuentra pequeños comportamientos distintos (sorpresas que rotan), no solo una vista bonita | CONFIRMADO | Kelvin, 4 nov 2026 |
 | La Maraña (24b): elemento fantástico del universo, con misterio, exploración y función narrativa o jugable; nunca presentada como hecho histórico de Puerto Rico | CONFIRMADO | Kelvin, 4 nov 2026 |
-| Iguaca y las mentoras (24c): se amplían diálogos y personalidades; el texto exacto lo aprueba Kelvin antes de entrar al canon | CONDICIONADO | Kelvin, 4 nov 2026 |
+| Iguaca y las mentoras (24c): voces aprobadas tal cual en `docs/equipo/PROPUESTA_MENTORAS_24C.md` (Iguaca con iniciativa; Vinacea calma, Festiva fiestera, Oratrix teatral, Lilacina preguntona, Versicolor soñadora) | CONFIRMADO | Kelvin, 4 nov 2026 («todas ✅») |

@@ -81,7 +81,7 @@
     };
     // Mentoras que ya se pueden jugar. Otra entra aquí o en pack.mentoras:
     // { id, don, es: [{ who, text }], en: [{ who, text }], aviso: { es, en }, cabe: () => bool }.
-    // [KELVIN] Nombres de A.5 (Lilacina, Oratrix y la familia). Las dos líneas son neutras: no cambian la historia.
+    // Kelvin 4-nov (24c, «todas ✅»): voces de las mentoras de docs/equipo/PROPUESTA_MENTORAS_24C.md (Iguaca con iniciativa; cada una con su voz).
     function posOk(x, z) {
       const S = G.S;
       if (!S || !S.pos || !S.profile || !S.profile.created || S.event) return false;
@@ -106,12 +106,14 @@
       {
         id: 'iguaca', don: 'llamada',
         es: [
-          { who: 'Iguaca', text: 'Una sola cotorra no se oye. Cuando llamas a la bandada, el viento te devuelve el canto.' },
-          { who: 'Vittata', text: 'Entonces no vuelo sola. Mantengo el impulso… ¡y llamo!' }
+          { who: 'Iguaca', text: "¡Por fin llegas! No me mires así: hoy no vuelas sola. ¿Tienes voz o solo plumas?" },
+          { who: 'Vittata', text: "¿Y si llamo y nadie viene?" },
+          { who: 'Iguaca', text: "Vendrán. Yo ya les avisé. Mantén el impulso y grita como si fuera tu cumpleaños." }
         ],
         en: [
-          { who: 'Iguaca', text: 'One parrot alone is not heard. When you call the flock, the wind brings the song back.' },
-          { who: 'Vittata', text: 'Then I do not fly alone. I hold the dash… and I call!' }
+          { who: 'Iguaca', text: "Finally! Don't look at me like that: today you don't fly alone. Got a voice, or just feathers?" },
+          { who: 'Vittata', text: "What if I call and nobody comes?" },
+          { who: 'Iguaca', text: "They'll come. I already told them. Hold the dash and shout like it's your birthday." }
         ],
         aviso: { es: 'Nuevo don: Llamada de la bandada. Mantén Impulso.', en: 'New gift: Flock Call. Hold Dash.' },
         cabe() {
@@ -127,12 +129,14 @@
       {
         id: 'vinacea', don: 'plumas',
         es: [
-          { who: 'Vinacea', text: 'Quieta, las hojas te cubren y nadie huye.' },
-          { who: 'Vittata', text: 'Me quedo quieta. Que las hojas me envuelvan.' }
+          { who: 'Vinacea', text: "Shhh… ¿Oyes eso? Nada. Así suena alguien bien escondido." },
+          { who: 'Vittata', text: "¿Y cuánto tiempo me quedo quieta?" },
+          { who: 'Vinacea', text: "Hasta que una hoja te confunda con su hermana." }
         ],
         en: [
-          { who: 'Vinacea', text: 'Stay still. The leaves cover you and no one flees.' },
-          { who: 'Vittata', text: 'I stay still. Let the leaves wrap around me.' }
+          { who: 'Vinacea', text: "Shhh… Hear that? Nothing. That's what a good hider sounds like." },
+          { who: 'Vittata', text: "How long do I stay still?" },
+          { who: 'Vinacea', text: "Until a leaf thinks you're its sister." }
         ],
         aviso: { es: 'Nuevo don: Plumas de hoja. Mantén Impulso.', en: 'New gift: Leaf Feathers. Hold Dash.' },
         cabe: cabeEn('ep2', { x: -5, z: -18 }, { x: -11, z: 53 })
@@ -140,12 +144,14 @@
       {
         id: 'festiva', don: 'rasante',
         es: [
-          { who: 'Festiva', text: 'A ras del agua el río te lleva. Sostén el impulso.' },
-          { who: 'Vittata', text: 'Bajo y lo sostengo. El río me empuja.' }
+          { who: 'Festiva', text: "¡Carrera hasta la piedra grande! El último invita a mangos. ¡Ja, ja!" },
+          { who: 'Vittata', text: "¡Pero tú vuelas pegada al agua! ¿Cómo no te mojas?" },
+          { who: 'Festiva', text: "¡Sí me mojo! Esa es la gracia. Bájate y no sueltes el impulso." }
         ],
         en: [
-          { who: 'Festiva', text: 'Skim the water and the river carries you. Hold the dash.' },
-          { who: 'Vittata', text: 'I go low and hold it. The river pushes me.' }
+          { who: 'Festiva', text: "Race you to the big rock! Last one buys the mangoes. Ha!" },
+          { who: 'Vittata', text: "But you fly right on the water! How don't you get wet?" },
+          { who: 'Festiva', text: "I do get wet! That's the fun. Go low and don't let go of the dash." }
         ],
         aviso: { es: 'Nuevo don: Rasante de río. Mantén Impulso.', en: 'New gift: River Skim. Hold Dash.' },
         cabe: cabeEn('ep3', { x: 7.6, z: 16.4 }, { x: 195.6, z: 204.4 })
@@ -153,12 +159,14 @@
       {
         id: 'oratrix', don: 'rafaga',
         es: [
-          { who: 'Oratrix', text: 'Si sostienes el impulso, sale otra vez. Es fantasía.' },
-          { who: 'Vittata', text: 'Lo sostengo… ¡y salgo dos veces!' }
+          { who: 'Oratrix', text: "¡Silencio, público! Lo que vas a ver no lo hace cualquier cotorra." },
+          { who: 'Vittata', text: "¿Y yo puedo?" },
+          { who: 'Oratrix', text: "Con talento como el mío, no. Pero inténtalo: sostén el impulso… y aplaudiré. Quizás." }
         ],
         en: [
-          { who: 'Oratrix', text: 'If you hold the dash, it comes again. It is fantasy.' },
-          { who: 'Vittata', text: 'I hold it… and I dash twice!' }
+          { who: 'Oratrix', text: "Quiet, audience! What you're about to see, not just any parrot can do." },
+          { who: 'Vittata', text: "Can I do it?" },
+          { who: 'Oratrix', text: "With talent like mine? No. But try: hold the dash… and I'll clap. Maybe." }
         ],
         aviso: { es: 'Nuevo don: Ráfaga doble. Mantén Impulso.', en: 'New gift: Double Gust. Hold Dash.' },
         cabe: cabeEn('ep4', { x: 12, z: 0 }, { x: 205, z: 160 })
@@ -166,12 +174,14 @@
       {
         id: 'lilacina', don: 'ojo',
         es: [
-          { who: 'Lilacina', text: 'Desde aquí se ve lo escondido. Sostén el impulso.' },
-          { who: 'Vittata', text: 'Lo sostengo. Quiero ver más lejos.' }
+          { who: 'Lilacina', text: "¿Qué ves desde aquí arriba? ¿Y qué no ves?" },
+          { who: 'Vittata', text: "Veo árboles… muchos árboles." },
+          { who: 'Lilacina', text: "¿Y si sostienes el impulso un ratito? ¿Seguirán siendo solo árboles?" }
         ],
         en: [
-          { who: 'Lilacina', text: 'From here you see what is hidden. Hold the dash.' },
-          { who: 'Vittata', text: 'I hold it. I want to see farther.' }
+          { who: 'Lilacina', text: "What do you see from up here? And what don't you see?" },
+          { who: 'Vittata', text: "I see trees… lots of trees." },
+          { who: 'Lilacina', text: "And if you hold the dash a little? Will they still be just trees?" }
         ],
         aviso: { es: 'Nuevo don: Ojo de cumbre. Mantén Impulso.', en: 'New gift: Summit Eye. Hold Dash.' },
         cabe: cabeEn('ep5', { x: 0, z: 2 }, { x: -63, z: -146 })
@@ -179,12 +189,14 @@
       {
         id: 'versicolor', don: 'columna',
         es: [
-          { who: 'Versicolor', text: 'El aire sube en columna. Sostén el impulso y remonta.' },
-          { who: 'Vittata', text: 'Lo sostengo. La nube me sube.' }
+          { who: 'Versicolor', text: "Esa nube parece un pichón dormido… ay, perdona. ¿Qué te decía?" },
+          { who: 'Vittata', text: "¡Que el aire sube!" },
+          { who: 'Versicolor', text: "¡Eso! Entra en la nube, sostén el impulso y déjate subir. Salúdame al pichón." }
         ],
         en: [
-          { who: 'Versicolor', text: 'The air rises in a column. Hold the dash and climb.' },
-          { who: 'Vittata', text: 'I hold it. The cloud lifts me.' }
+          { who: 'Versicolor', text: "That cloud looks like a sleeping chick… oh, sorry. What was I saying?" },
+          { who: 'Vittata', text: "That the air goes up!" },
+          { who: 'Versicolor', text: "Right! Fly into the cloud, hold the dash and let it lift you. Say hi to the chick for me." }
         ],
         aviso: { es: 'Nuevo don: Columna de nube. Mantén Impulso.', en: 'New gift: Cloud Column. Hold Dash.' },
         cabe: cabeEn('ep6', { x: -20, z: -20 }, { x: -40, z: -117 })
@@ -482,7 +494,7 @@
           const listaM = mentoras();
           check('En el capítulo 1 solo Iguaca enseña; las otras cinco esperan su capítulo', listaM.length === 6 && listaM[0].id === 'iguaca' && listaM[0].don === 'llamada' && ['vinacea', 'festiva', 'oratrix', 'lilacina', 'versicolor'].every(id => listaM.some(m => m.id === id)) && listaM.filter(m => m.id !== 'iguaca').every(m => !m.cabe()));
           const iguaca = listaM[0];
-          check('Las dos líneas caben en un globo y el aviso trae inglés', iguaca.es.length === 2 && iguaca.en.length === 2 && iguaca.es.every(l => l.text.length < 100) && iguaca.en.every(l => l.text.length < 100) && iguaca.aviso.en === 'New gift: Flock Call. Hold Dash.');
+          check('Las tres líneas caben en un globo y el aviso trae inglés', iguaca.es.length === 3 && iguaca.en.length === 3 && iguaca.es.every(l => l.text.length < 100) && iguaca.en.every(l => l.text.length < 100) && iguaca.aviso.en === 'New gift: Flock Call. Hold Dash.');
           check('La partida guarda los dones aprendidos', !!(G.guardado && G.guardado.KEYS && G.guardado.KEYS.includes('dones')) && Array.isArray(G.guardado.freshState().dones));
           G.quiet = false; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false;
           G.S.event = null;
