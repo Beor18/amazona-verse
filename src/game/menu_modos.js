@@ -46,7 +46,8 @@
       const pasos = (G.misiones && G.misiones.steps) || [];
       if (!(S.profile && S.profile.created)) return L('Empezar la historia', 'Start the story');
       if (S.complete) { const n = (P.meta && P.meta.capitulo) || 1; return L(`Capítulo ${n} completado · seguir explorando`, `Chapter ${n} complete · keep exploring`); }
-      if (S.step > 0 || (S.events && S.events.length)) return L('Continuar · paso ', 'Continue · step ') + Math.min(S.step + 1, pasos.length || S.step + 1) + (pasos.length ? '/' + pasos.length : '');
+      const nc = (P.meta && P.meta.capitulo) || 1; // que diga a qué capítulo entras (bug de Kelvin 4-nov)
+      if (S.step > 0 || (S.events && S.events.length)) return L(`Continuar el capítulo ${nc} · paso `, `Continue chapter ${nc} · step `) + Math.min(S.step + 1, pasos.length || S.step + 1) + (pasos.length ? '/' + pasos.length : '');
       return L('Empezar la historia', 'Start the story');
     }
 
@@ -143,6 +144,7 @@
       if (!MODOS.includes(modo)) return Promise.resolve(false);
       if (modo === 'nido' || modo === 'records') return lanzar(modo); // encima del menú; no cuentan como «lo último que jugaste»
       recordar(modo);
+      if (modo === 'aventura' && !G.quiet) apuntarCapitulo(P.id); // al volver a entrar se abre este capítulo (boot.js)
       const primera = !(S.profile && S.profile.created);
       if (primera) pendiente = modo; // antes de cerrar: el evento close no debe tomarlo por un cierre sin valor
       if (portada && portada.open) { portada.returnValue = ''; portada.close(); }
@@ -383,6 +385,13 @@
       img: Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2; return `<circle cx="${(32 + 21 * Math.cos(a)).toFixed(1)}" cy="${(32 + 21 * Math.sin(a)).toFixed(1)}" r="4" fill="${i % 3 ? '#ffe2ec' : 'var(--gold)'}"/>`; }).join('') + '<circle cx="32" cy="32" r="8" fill="var(--gold)"/>' },
   ];
   const TEMP = 'amazonaverse.temporada';
+  // Último capítulo elegido o jugado: boot.js lo abre al volver a entrar sin un clic en el sitio. Solo la página de arriba
+  // (los iframes de las pruebas no lo tocan).
+  const CAPK = 'amazonaverse.capitulo';
+  function apuntarCapitulo(id) {
+    if (window.top !== window || !CAPS.some(c => c.id === id)) return;
+    try { localStorage.setItem(CAPK, JSON.stringify({ v: 1, id })); } catch (e) { /* sin almacén */ }
+  }
 
   function temporada(G, h) {
     const S = G.S, P = G.pack, $ = G.util.$, L = h.L;
@@ -393,7 +402,7 @@
     // ---------- Progreso ----------
     const leer = () => { try { const d = JSON.parse(localStorage.getItem(TEMP) || 'null'); if (d && d.v === 1) return Object.assign({ terminados: {}, decisiones: {} }, d); } catch (e) { /* corrupto: se empieza de nuevo */ } return { v: 1, terminados: {}, decisiones: {} }; };
     const escribir = d => { try { localStorage.setItem(TEMP, JSON.stringify(d)); } catch (e) { /* sin almacén */ } };
-    G.on('nuevoEstudiante', () => { try { localStorage.removeItem(TEMP); } catch (e) { /* sin almacén */ } });
+    G.on('nuevoEstudiante', () => { try { localStorage.removeItem(TEMP); localStorage.removeItem(CAPK); } catch (e) { /* sin almacén */ } });
     function partida(n) {
       if (n === actual) return S;
       try { return JSON.parse(localStorage.getItem(cap(n).almacen + '.save') || 'null'); } catch (e) { return null; }
@@ -426,6 +435,7 @@
       return u.pathname + u.search;
     }
     function jugar(n) {
+      apuntarCapitulo(cap(n).id); // lo que eligió el jugador manda al volver a entrar (boot.js)
       if (n === actual) { cerrar(); const t = $('title'); if (t && t.open) h.elegir('aventura'); return null; }
       const url = urlDe(n); G.guardado.autosave && G.guardado.autosave(); navegar(url); return url;
     }
@@ -493,7 +503,7 @@
       const quiet0 = G.quiet; G.quiet = true;
       const snap = G.guardado.instantanea(); G.guardado.suspender(true);
       const creador = $('creator'), creador0 = !!(creador && !creador.hidden); // para reabrir el creador al final si estaba abierto (antes no se definía: ReferenceError)
-      const claves = [TEMP].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
+      const claves = [TEMP, CAPK].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
       const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); localStorage.removeItem(k); } catch (e) { /* sin almacén */ } }
       const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
       const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
@@ -611,6 +621,55 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test };
+    // Prueba: AV.capituloElegidoTest(). Con progreso hasta el cap. 4, elegir el cap. 1 en «Capítulos» y volver a entrar (aunque
+    // sea con el enlace viejo ?pack=ep4 sin clic) abre el cap. 1; recargar o un clic en el sitio respetan la URL; nada se pierde.
+    async function capituloTest() {
+      const out = [], check = (n, ok, det) => { out.push({ name: n, ok: !!ok, detail: ok ? undefined : det }); if (!ok) console.warn('capituloElegidoTest ✗', n, det || ''); };
+      const dec = window.AVE.capituloAlEntrar, claves = [CAPK, TEMP, 'ep4.save'];
+      const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); } catch (e) { /* sin almacén */ } }
+      const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
+      const quiet0 = G.quiet; G.quiet = true;
+      try {
+        check('boot.js expone la regla de entrada', typeof dec === 'function');
+        if (typeof dec !== 'function') return { passed: 0, total: out.length, results: out };
+        const g = id => ({ v: 1, id }), base = { top: true, nav: 'navigate', clicEnSitio: false };
+        check('Cap. 1 elegido + enlace viejo ?pack=ep4 sin clic (autocompletar, marcador) → cap. 1', dec(Object.assign({}, base, { urlPack: 'ep4', guardado: g('cap1') })) === 'cap1');
+        check('Cap. 4 jugado + /juego/ sin ?pack → cap. 4', dec(Object.assign({}, base, { urlPack: null, guardado: g('ep4') })) === 'ep4');
+        check('Clic en un enlace del sitio con ?pack=ep4 → manda la URL', dec(Object.assign({}, base, { urlPack: 'ep4', clicEnSitio: true, guardado: g('cap1') })) === null);
+        check('Recargar respeta la URL', dec(Object.assign({}, base, { nav: 'reload', urlPack: 'ep4', guardado: g('cap1') })) === null);
+        check('Atrás/adelante respeta la URL', dec(Object.assign({}, base, { nav: 'back_forward', urlPack: 'ep4', guardado: g('cap1') })) === null);
+        check('En un iframe (pruebas) manda la URL', dec(Object.assign({}, base, { top: false, urlPack: 'ep4', guardado: g('cap1') })) === null);
+        check('Sin nada apuntado o dañado manda la URL', dec(Object.assign({}, base, { urlPack: 'ep4', guardado: null })) === null && dec(Object.assign({}, base, { urlPack: null, guardado: { v: 1, id: 'x"><' } })) === null);
+        check('Mismo capítulo que la URL: no hace nada', dec(Object.assign({}, base, { urlPack: null, guardado: g('cap1') })) === null && dec(Object.assign({}, base, { urlPack: 'ep4', guardado: g('ep4') })) === null);
+        // El flujo de Kelvin con la pantalla «Capítulos»: progreso en el 4, se elige el 1
+        localStorage.setItem(CAPK, JSON.stringify(g('ep4')));
+        const prog4 = JSON.stringify({ v: 1, step: 3, profile: { created: true }, events: ['x'] });
+        localStorage.setItem('ep4.save', prog4);
+        const otro = actual === 1 ? 4 : 1;
+        abrir();
+        const b = lista && lista.querySelector(`[data-cap="${otro}"] .cap-jugar`);
+        check(`«Capítulos» muestra el capítulo ${otro} con su número`, b && new RegExp(otro).test(b.getAttribute('aria-label') || ''), b && b.getAttribute('aria-label'));
+        if (b) b.click();
+        let ap = null; try { ap = JSON.parse(localStorage.getItem(CAPK) || 'null'); } catch (e) { /* */ }
+        check(`Jugar en el capítulo ${otro} lo apunta`, ap && ap.id === cap(otro).id, JSON.stringify(ap));
+        check(`…y navega a su URL`, fueA && (otro === 1 ? !new URL(fueA, location.href).searchParams.get('pack') : new URL(fueA, location.href).searchParams.get('pack') === cap(otro).id), fueA);
+        check(`Al volver a entrar con el enlace del otro capítulo, sin clic, abre el ${otro}`, dec(Object.assign({}, base, { urlPack: otro === 1 ? 'ep4' : null, guardado: ap })) === (otro === 1 ? 'cap1' : cap(otro).id));
+        check('El progreso del cap. 4 sigue intacto', localStorage.getItem('ep4.save') === prog4);
+        // «Seguir aquí» en el capítulo de esta página también cuenta como elección
+        localStorage.setItem(CAPK, JSON.stringify(g(cap(otro).id))); abrir();
+        const aqui = lista && lista.querySelector('.es-actual .cap-jugar'), t = $('title');
+        if (aqui && !(t && t.open)) aqui.click(); else apuntarCapitulo(P.id); // con la portada abierta el clic abriría Aventura
+        try { ap = JSON.parse(localStorage.getItem(CAPK) || 'null'); } catch (e) { ap = null; }
+        check('«Seguir aquí» apunta este capítulo', ap && ap.id === P.id, JSON.stringify(ap));
+      } catch (e) {
+        check('sin excepciones', false, String(e && e.stack || e));
+      } finally {
+        navegar = nav0; G.quiet = quiet0; cerrar();
+        for (const k of claves) { try { if (antes[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, antes[k]); } catch (e) { /* sin almacén */ } }
+      }
+      return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+    }
+
+    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test, capituloTest };
   }
 })();

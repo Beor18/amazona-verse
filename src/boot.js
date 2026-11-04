@@ -7,7 +7,30 @@
   const AVE = window.AVE;
   const cfg = AVE.config || {};
   const fromUrl = new URLSearchParams(location.search).get('pack');
-  const want = fromUrl && /^[a-z0-9_-]+$/.test(fromUrl) ? fromUrl : cfg.pack || Object.keys(AVE.packs)[0];
+  // Último capítulo elegido o jugado (menu_modos.js lo apunta en `amazonaverse.capitulo` al pulsar Jugar en «Capítulos» o al
+  // entrar en Aventura). Al volver a entrar sin un clic en el sitio (sin ?pack, o con un ?pack de autocompletar, marcador o
+  // pantalla de inicio) se abre ese y no el del enlace viejo. Recargar, atrás/adelante, un iframe y un clic en el sitio respetan
+  // la URL. Bug de Kelvin 4-nov: «pongo capítulo 1, vuelvo a entrar y me envía para el 4». Prueba: AV.capituloElegidoTest().
+  const CAP_IDS = ['cap1', 'ep2', 'ep3', 'ep4', 'ep5', 'ep6'];
+  AVE.capituloAlEntrar = function (o) {
+    if (!o.top || (o.nav && o.nav !== 'navigate') || o.especial) return null;
+    if (o.urlPack && o.clicEnSitio) return null; // enlace pulsado en la web o en el juego: manda la URL
+    const id = o.guardado && o.guardado.v === 1 ? o.guardado.id : null;
+    if (!CAP_IDS.includes(id) || id === (o.urlPack || 'cap1')) return null;
+    return id;
+  };
+  let recordado = null;
+  try {
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    let clic = false; try { clic = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) { /* referrer raro */ }
+    recordado = AVE.capituloAlEntrar({ top: window.top === window, nav: nav && nav.type, urlPack: fromUrl, clicEnSitio: clic,
+      especial: /[?&](mini|manga|partida|hud|atardecer)=/.test(location.search), guardado: JSON.parse(localStorage.getItem('amazonaverse.capitulo') || 'null') });
+  } catch (e) { recordado = null; /* sin almacén: manda la URL */ }
+  if (recordado) {
+    try { const u = new URL(location.href); if (recordado === 'cap1') u.searchParams.delete('pack'); else u.searchParams.set('pack', recordado); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) { /* la URL se queda */ }
+  }
+  const pedido = recordado || fromUrl;
+  const want = pedido && /^[a-z0-9_-]+$/.test(pedido) ? pedido : cfg.pack || Object.keys(AVE.packs)[0];
   // ?hud=0: sin interfaz (capturas de video del tráiler, BM11). Solo oculta el HUD del mundo; no cambia el juego.
   if (/[?&]hud=0\b/.test(location.search)) { const st = document.createElement('style'); st.textContent = '#top, #acts, #stick, #keyhint, #tag, #toast, #prompt, #emotes, .guia-hud, .hud-btn, #minimap, #minimapa, .fl-hud, .fl-salir, .fl-pista, .mz-hud, .mz-salir, .mz-pista, .mz-ayuda, .mz-mapa, .rr-hud, .rr-barra, .rr-modos, .rr-salir, .rr-pista { display: none !important; }'; document.head.appendChild(st); }
 
@@ -62,7 +85,13 @@
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
     if (G.bohiosFactor > 1) { const bohios = aDemanda('src/game/bohios.js', 'AVBohios'); AV.bohios = bohios; AV.bohiosTest = o => bohios().then(b => b.test(o)); alPrimerGesto(bohios); } // src/game/bohios.js (G27: interior del bohío de Villa Raíz)
     if (G.vegetacion && G.vegetacion.listo && G.terreno.mapa && G.terreno.mapa.flora) { const dosel = aDemanda('src/engine/dosel.js', 'AVDosel'); AV.dosel = () => dosel().then(d => d.listo.then(() => d)); AV.doselTest = o => dosel().then(d => d.test(o)); alPrimerGesto(() => G.vegetacion.listo.then(dosel)); } // src/engine/dosel.js (dosel por celdas, AW3)
-    if (G.guardado.test) AV.saveTest = o => G.guardado.test(o); // src/engine/guardado.js
+    if (G.guardado.test) AV.saveTest = async o => { // src/engine/guardado.js + el capítulo elegido al volver a entrar (AV.capituloElegidoTest)
+      const r = await G.guardado.test(o);
+      if (!AV.capituloElegidoTest || !r || !Array.isArray(r.results)) return r;
+      const c = await AV.capituloElegidoTest();
+      const results = r.results.concat(c.results.map(x => Object.assign({}, x, { name: 'Capítulo elegido: ' + x.name })));
+      return Object.assign({}, r, { passed: results.filter(x => x.ok).length, total: results.length, results });
+    };
     if (G.comic.test) AV.comicTest = o => G.comic.test(o); // src/game/comic.js
     if (G.renderer.contextTest) AV.contextTest = o => G.renderer.contextTest(o); // src/engine/renderer.js
     if (G.streaming && G.streaming.test) AV.streamingTest = o => G.streaming.test(o); // src/engine/streaming.js
@@ -157,7 +186,7 @@
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
     // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
-    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)) }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); }
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)) }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); AV.capituloElegidoTest = o => menu.temporada.capituloTest(o); }
     const recAlm = (P.meta && P.meta.almacen) || P.id, recRetos = recAlm + '.retos', recCasa = recAlm + '.records', recEquipos = recAlm + '.equipos', recDones = recRetos + '.dones'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro, la bandada, Retos «Con dones» y los descubrimientos)
     const recDesc = [recAlm + '.trucos', recAlm + '.escondite', recAlm + '.ciudadVisitas', recAlm + '.marana', recAlm + '.vecinos', recAlm + '.humor', recAlm + '.retosDia'];
     AV.retosDiaTest = o => Promise.resolve(G.retosDia.test(o)); // CG-52
