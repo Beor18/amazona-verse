@@ -432,6 +432,10 @@
       // La mesa: cada tarjeta, ¿criterio o restricción? Si no acierta, una pista y se vuelve a preguntar (sin castigo)
       function ordenar() {
         const k = ORDEN.find(t => !tiene('ord_' + t));
+        // PLAYTEST-cap2-paso2: el choque ya resuelto no se repite. Antes, volver a la mesa mientras pasaban los bocadillos de la
+        // respuesta abría otra vez el choque (otro ListenChoice); la charla nueva dejaba sin efecto el final de la anterior (época
+        // de dialogo.say) y la misión no se cerraba nunca: el paso 2 no terminaba. Ahora la mesa cierra la misión.
+        if (!k && G.eventos.had('ListenChoice')) { G.misiones.check(); return; }
         if (!k) { choque(); return; }
         const t = TARJETAS[k], quien = t.tipo === 'restriccion' ? 'Iguaca te da' : 'Tarjeta';
         elegir('Iguaca', // la definición completa en las 2 primeras tarjetas; luego, la pregunta corta (9 tarjetas: no se repite lo mismo 9 veces)
@@ -542,6 +546,9 @@
       const obra = G.interaccion.add({ id: 'obra', x: 0, z: 0, r: 3, visible: () => S.step >= 2 && !!elegido(),
         label: () => (S.step === 2 ? (casaLista() ? 'Armar el nido' : 'Dibujar y construir la casa') : { 3: 'Probar la tormenta', 4: 'Mejorar la casa', 5: 'Probar la tormenta otra vez' }[S.step]) || 'Mirar la casa',
         use: () => {
+          // PLAYTEST-cap2-paso2: con la tormenta en marcha (su última línea va en bocadillo), pulsar otra vez pasa la línea; antes
+          // la empezaba de nuevo, el final de la primera (StormTested) no llegaba y la luz de la escena quedaba a oscuras
+          if (temporal) { if (G.dialogo.activo()) { G.dialogo.next(); return; } calma(); }
           if (S.step === 2) { if (casaLista()) armarNido(); else construir(); }
           else if (S.step === 3) prueba1(); else if (S.step === 4) mejorar(); else if (S.step === 5) prueba2();
           else G.dialogo.say([di('Vittata', S.complete ? 'Mi casa. La probé dos veces.' : 'Aquí va la casa.')]);
@@ -839,7 +846,13 @@
         check('M2 · Tarjetas en criterios y restricciones', ORDEN.every(k => S.collected.includes('ord_' + k)) && G.eventos.had('NeedsListed'));
         pick('Elegir a la abuela');
         check('M2 · Elegir a uno: el papá lo devuelve, sin castigo', !G.eventos.had('ListenChoice') && opciones().length === 4);
-        pick(FRASES[0]);
+        { const b = [...document.querySelectorAll('[id^="ch-"]')].find(x => x.textContent.includes(FRASES[0])); if (b) b.click(); }
+        for (let i = 0; i < 4 && G.dialogo.open(); i++) G.dialogo.next(); // pasada la caja, el resto de la respuesta va en bocadillos
+        const enBocadillos = !!G.dialogo.libre();
+        useAt('mesa'); drain(); // el niño vuelve a la mesa antes de que acaben
+        const repetido = G.ui.cardOpen; if (repetido) pick(FRASES[0]);
+        check('M2 · Volver a la mesa mientras pasan los bocadillos no repite el choque y cierra la misión (PLAYTEST-cap2-paso2)',
+          enBocadillos && !repetido && S.events.filter(e => e.key === 'ListenChoice').length === 1 && S.missions.escuchar, JSON.stringify({ enBocadillos, repetido, paso: S.step }));
         check('M2 · Un diseño para los dos: misión completa y cuaderno', S.missions.escuchar && S.step === 2 && S.unlocked.includes('mano:cuaderno'), 'paso ' + S.step);
 
         // M3 · Casa que aguanta (en el claro, con techo sin amarrar: falla el techo)
@@ -853,7 +866,12 @@
         check('M3 · Nido alto, oscuro y seco: casa construida', G.eventos.had('HomeBuilt') && S.step === 3, 'paso ' + S.step);
         const ve = (es) => { const t = $('steps').textContent, en = G.idioma && G.idioma.tr ? G.idioma.tr(es) : es; return t.includes(es) || t.includes(en); };
         check('M3 · El objetivo y el botón piden probar la tormenta en la casa', ve('Ve a la casa y prueba la tormenta') && G.interaccion.find('obra').label() === 'Probar la tormenta' && !/espera la tormenta|Esperar la tormenta|wait for the storm/i.test($('steps').textContent));
-        useAt('obra'); drain();
+        useAt('obra');
+        for (let i = 0; i < 4 && G.dialogo.open(); i++) G.dialogo.next(); // pasada la caja, la última línea va en bocadillo
+        const tormentaLibre = !!G.dialogo.libre();
+        useAt('obra'); const reabre = G.dialogo.open(); drain(); // el niño pulsa otra vez antes de que acabe
+        check('M3 · Pulsar otra vez «Probar la tormenta» mientras pasa el bocadillo no la repite y la prueba cuenta (PLAYTEST-cap2-paso2)',
+          tormentaLibre && !reabre && S.events.filter(e => e.key === 'StormTested').length === 1 && S.step === 4 && !G.fx.rain.visible, JSON.stringify({ tormentaLibre, reabre, veces: S.events.filter(e => e.key === 'StormTested').length, paso: S.step }));
         check('M3 · Prueba 1: falla la parte más débil (sin amarras, el techo)', G.eventos.had('StormTested') && S.collected.includes('falla_techo') && S.step === 4 && !G.fx.rain.visible, 'paso ' + S.step);
         useAt('obra'); drain();
         pick('Subir la base');
