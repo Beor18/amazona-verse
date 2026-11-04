@@ -588,8 +588,12 @@
       else if (!S.complete) check('La historia llega al final en ' + (cfg.maxIter || 260) + ' acciones', false, 'paso ' + S.step);
       else check('Toda la historia jugada sin teleport (' + pasos.length + ' pasos)', true, atascos.map(a => a.que).join('; '));
       // ---------- Final ----------
+      // K32 B (cap. 6): al terminar se abre solo el cómic de cierre; un niño lo mira y toca «Cerrar», y vuelve el panel final
+      const cerrarComic = async () => { const cm = $('comic'), x = $('c-close'); if (cm && !cm.hidden && x) { await clic(x); return true; } return false; };
+      await until(() => !$('end').hidden || ($('comic') && !$('comic').hidden), 3000);
+      await cerrarComic();
       await until(() => !$('end').hidden, 3000);
-      if (opts.pulgar) for (let i = 0; i < 480 && $('end').hidden && S.complete; i++) { if (ocupado()) await resolver(); else await jugar(0.25); } // el final llega con el tiempo del juego (la fiesta, la última línea)
+      if (opts.pulgar) for (let i = 0; i < 480 && $('end').hidden && S.complete; i++) { if (await cerrarComic()) continue; if (ocupado()) await resolver(); else await jugar(0.25); } // el final llega con el tiempo del juego (la fiesta, la última línea)
       const fin = !$('end').hidden;
       if (!fin) log('sin pantalla de fin', s({ abierta: G.dialogo.open(), libre: G.dialogo.libre() && G.dialogo.libre().text, carta: G.ui.cardOpen, explorando: S.explorando, ultimas: (S.events || []).slice(-5) }));
       const ev = cfg.finEvento || 'Chapter' + cfg.n + 'Completed'; // el cap. 1 registra «ChapterCompleted» (tests/qa/e2e.js, content/cap1/pruebas.js)
