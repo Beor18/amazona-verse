@@ -112,9 +112,6 @@ html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !impor
 #pm-pista[hidden] { display: none; }
 #pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
 #pm-pista.pm-atascado::before { border-bottom-color: #7fd3ff; }
-#pm-pista[data-paso="mover"] { left: 28px; bottom: 36px; }
-#pm-pista[data-paso="despegar"], #pm-pista[data-paso="posar"] { right: 28px; bottom: 168px; }
-#pm-pista[data-paso="impulso"] { right: 118px; bottom: 48px; }
 #pm-pista[data-paso="truco"] { left: 0; right: 0; top: 22%; margin: auto; }
 html.guia-tactil #pm-pista { display: block; }
 html.guia-tactil #pm-pista[hidden] { display: none; }
@@ -218,10 +215,15 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const PM_BORDE = 6, PM_SOMBRA = 2;
   const sePisan = (a, b, margen) => a.width > 0 && b.width > 0 && a.left - margen < b.right && b.left < a.right + margen && a.top - margen < b.bottom && b.top < a.bottom + margen;
   function colocarPm() {
-    const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
-    const caja = el && el.getClientRects().length ? el.getBoundingClientRect() : null;
-    if (!caja || caja.width < 8) {
+    if (pm.dataset.paso === 'truco') {
       pm.style.left = pm.style.top = pm.style.width = pm.style.height = pm.style.right = pm.style.bottom = '';
+      return;
+    }
+    const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
+    const caja = el && !el.hidden && el.getClientRects().length ? el.getBoundingClientRect() : null;
+    if (!caja || caja.width < 8) {
+      pm.style.width = pm.style.height = '96px';
+      pm.style.left = '-400px'; pm.style.top = '0px'; pm.style.right = 'auto'; pm.style.bottom = 'auto';
       return;
     }
     const otros = [...document.querySelectorAll('#acts .btn, #stick')].filter(n => n !== el && !n.hidden && n.getClientRects().length);
@@ -383,10 +385,20 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       const vecinos = [...document.querySelectorAll('#b-act, #b-jump')].filter(n => !n.hidden && n.getClientRects().length);
       const toca = vecinos.filter(n => sePisan(rH, n.getBoundingClientRect(), PM_SOMBRA + 1)).map(n => n.id);
       ok('En horizontal el anillo no roza Acción ni Saltar', pm.dataset.paso === 'impulso' && vecinos.length === 2 && toca.length === 0 && rodeaH, toca.join(',') || 'libre');
+      const fly = document.getElementById('b-fly');
+      if (fly) fly.hidden = true;
+      pmE.hecho = { mover: true }; pmE.t = 0; pmE.volaba = false;
+      M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
+      pmTick(0.05);
+      const rOff = pm.getBoundingClientRect();
+      ok('Sin el botón de volar el anillo no cae sobre Impulso', pm.dataset.paso === 'despegar' && rOff.right < 0 && !sePisan(rOff, dash.getBoundingClientRect(), 0),
+        'paso ' + pm.dataset.paso + ' left ' + Math.round(rOff.left));
+      if (fly) fly.hidden = false;
       if (lg0) raiz.style.setProperty('--tap-lg', lg0); else raiz.style.removeProperty('--tap-lg');
       if (xl0) raiz.style.setProperty('--tap-xl', xl0); else raiz.style.removeProperty('--tap-xl');
       if (acts) { acts.style.gap = ''; acts.style.display = disp; }
     } catch (e) { ok('sin excepciones', false, e && e.message); }
+    const flyFin = document.getElementById('b-fly'); if (flyFin) flyFin.hidden = false;
     M.speed = guarda.speed; M.flying = guarda.flying; M.grounded = guarda.grounded; M.dashT = guarda.dashT;
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
