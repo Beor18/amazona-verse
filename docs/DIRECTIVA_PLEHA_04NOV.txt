@@ -1,0 +1,140 @@
+AMAZONA VERSE — DIRECTIVA DE KELVIN
+4 de noviembre de 2026 | Decisiones P, L, E, H y A
+(Copia fiel de lo que Kelvin pegó en la sesión coordinadora web, 4-nov ~21:00 UTC. Respuestas a docs/equipo/LO_DE_KELVIN_04NOV.md.)
+
+1. VISIÓN DEL CREADOR
+
+Amazona Verse es un videojuego 3D de aventura, fantasía, exploración y aprendizaje para niños y familias.
+
+La protagonista es Vittata, una cotorra puertorriqueña. El universo incluye 36 cotorras, seis capítulos de la primera temporada, comunidades, guardianes, poderes, misterios, personajes, criaturas y aventuras.
+
+PRINCIPIO FUNDAMENTAL:
+La realidad inspira Amazona Verse. La fantasía construye su universo. La diversión es la prioridad.
+
+No quiero un simulador científico ni una enciclopedia interactiva. Quiero un videojuego que los niños disfruten, exploren, recuerden y quieran volver a jugar.
+
+Libertad creativa. Está permitido que:
+* Las cotorras hablen, construyan, usen herramientas, tengan poderes y desarrollen habilidades extraordinarias.
+* Existan huevos mágicos, guardianes, medallas, portales, civilizaciones antiguas y criaturas fantásticas.
+* Las especies históricas aparezcan como personajes del universo.
+* Los personajes tengan profesiones, ropa, accesorios, vehículos y aventuras imposibles en la naturaleza.
+* Las islas, ciudades y acontecimientos mezclen inspiración real con fantasía.
+* Existan desafíos, secretos, sorpresas y recompensas imaginarias.
+
+No pedir justificación científica para elementos declarados como fantasía.
+
+Educación sin limitar la diversión. Distinguir tres categorías:
+1. Dato real: información presentada explícitamente como educativa. Debe tener una fuente confiable.
+2. Inspiración real: elementos inspirados en especies, ecosistemas, historia o cultura, pero adaptados al videojuego.
+3. Fantasía de Amazona Verse: elementos inventados que no requieren respaldo científico.
+
+No eliminar una mecánica divertida por ser ficticia. Tampoco presentar como hecho histórico o biológico algo que hemos inventado.
+El aprendizaje debe integrarse naturalmente mediante descubrimientos, exploración y retos, sin interrumpir constantemente la aventura.
+
+2. DECISIONES P — PRUEBAS REALES
+
+P1 — iPhone / QA-110. Estado: PENDIENTE DE PRUEBA FÍSICA. No declarar resuelto el problema de pantalla blanca o cierre inesperado hasta probar despegue, vuelo, llegada a la ciudad y regreso. Mantener las optimizaciones existentes y priorizar estabilidad.
+P2 — iPad / QA-106. Estado: PENDIENTE DE PRUEBA FÍSICA. Medir FPS, memoria y carga gráfica durante un recorrido real. No asumir que las optimizaciones resolvieron el problema.
+P3 — Android. Estado: PENDIENTE DE CONFIRMACIÓN. Verificar que se pueda completar el capítulo 1, incluidos controles, diálogos, vuelo, misiones y cierre.
+P4 — Prueba infantil. Estado: PENDIENTE. Realizar una prueba del capítulo 1 sin explicar previamente los controles. Observar: cuánto tarda el niño en comenzar a jugar; dónde se confunde; si entiende las misiones; si disfruta explorar; si desea continuar después de terminar. No convertir una cifra arbitraria de segundos en requisito si la experiencia real demuestra otra cosa.
+P5 — Router. Revisar únicamente si continúa el bloqueo de GitHub. No modificar indiscriminadamente los controles de seguridad de la red.
+
+3. DECISIONES L — LEGAL, PRIVACIDAD Y NEGOCIO
+
+L1 — Licencias de recursos 3D. Decisión: A + B según corresponda. Archivar los comprobantes de compra existentes. Comprar, sustituir o retirar los recursos que no tengan derechos de uso comprobables. No eliminar recursos legítimamente licenciados por una política excesivamente restrictiva.
+L2 — Política de recursos. Decisión: A. Permitir recursos CC0 y recursos comerciales con licencias válidas para el uso previsto. Esto incluye revisar las condiciones específicas de KitBash3D, Suno y cualquier otro proveedor.
+L3 — Privacidad infantil. Decisión: A. Realizar revisión legal antes de activar funciones públicas que puedan recopilar información de menores. El ranking en internet permanece DESACTIVADO. Los niños pueden seguir jugando y guardando récords locales. Verificar también que no existan otros envíos de identificadores o datos infantiles desde el juego.
+L5 — Google Fonts. Decisión: A. Servir las fuentes localmente desde el juego, siempre que sus licencias lo permitan.
+L6 — Bandera de Puerto Rico. Decisión: A. Revisar los requisitos legales aplicables a productos comerciales. No eliminar la identidad puertorriqueña del juego por precaución excesiva.
+L7 — Precios y licencias escolares. Decisión: B. No publicar cifras comerciales definitivas todavía. Preparar propuestas internas para escuelas, familias y posibles patrocinadores.
+L8 — Cartas del Álbum. Decisión: B. No venderlas por ahora. Conservarlas como elementos de colección y recompensa dentro del juego.
+L9 — Modo creador. Decisión: A. Las creaciones permanecen en el dispositivo hasta implementar una solución de publicación apropiada para menores.
+L10 — Tamaño de la build. Decisión: B. Establecer presupuestos técnicos por dispositivo. Priorizar tiempos de carga, memoria, estabilidad y rendimiento sin sacrificar innecesariamente la calidad artística.
+
+4. DECISIONES E — EDUCACIÓN Y FANTASÍA
+
+La educación es parte de Amazona Verse, pero no debe convertirse en una barrera para la creatividad.
+E1 — Reproducción y radiotransmisores. Conservar el contenido educativo, verificando las cifras exactas antes de etiquetarlo como dato real. Las aventuras con huevos, incubación fantástica y poderes pueden seguir siendo imaginarias.
+E2 — Canto del coquí. Decisión: C. Utilizar una descripción educativa prudente sobre el canto al atardecer y durante la noche. En la fantasía, los coquíes pueden hablar, cantar canciones o participar en misiones.
+E3 — Las 36 cotorras. Mantener las 36 especies o personajes establecidos en el canon. No reducir el universo a 34. No presentar automáticamente «34 vivas y 2 extintas» como clasificación científica definitiva sin verificar el estatus taxonómico. Amazona martinicana y Amazona violacea conservan su papel narrativo como Mara y Vela.
+E4 — Discrepancias entre especies. Decisión: C. Revisar las 13 discrepancias individualmente utilizando fuentes científicas confiables. No modificar personajes, poderes, habilidades o disponibilidad jugable como consecuencia automática de un cambio de clasificación científica.
+E5 — Mariposas. Conservar provisionalmente la mariposa cebra. Verificar las afirmaciones sobre su distribución únicamente cuando aparezcan como datos reales. Las mariposas fantásticas no necesitan corresponder exactamente a una especie natural.
+E6 — Canoas y nasas taínas. Decisión: A. Verificar las afirmaciones históricas específicas antes de publicarlas como información educativa. El juego puede tener embarcaciones imaginarias inspiradas en la cultura caribeña.
+E7 — Fiesta de techado y décima. Decisión: A. Verificar las afirmaciones históricas cuando se presenten como hechos. La fiesta del videojuego puede incorporar música, tradiciones reinterpretadas y celebraciones inventadas.
+E8 — Zocos. Mantener como elemento narrativo de la casa del juego hasta encontrar una fuente histórica adecuada. No eliminarlo simplemente porque sea ficticio.
+E9 — Casa criolla. Conservar provisionalmente la ficha actual. Revisar que la fuente citada respalde las afirmaciones concretas sobre materiales y arquitectura. No limitar la arquitectura fantástica de Amazona Verse a construcciones históricamente documentadas.
+
+5. DECISIONES H — HISTORIA Y CANON
+
+H1 — Guion del capítulo 1. Decisión: C, provisional. Mantener el capítulo jugable actual. El guion completo queda pendiente de revisión final, sin detener las mejoras técnicas y visuales.
+H2 — Llegada del Guardián. Decisión: A. Mantener su entrada actual al construir, porque el documento indica que cambiarla rompe una misión. Esta decisión sustituye la recomendación anterior de K35 B. No reescribir una misión funcional sin una mejora clara de la experiencia.
+H3 — Origen de las voces. Decisión: A. Mantener el misterio. No explicar inmediatamente por qué Mara y Vela pueden hablar. La revelación puede desarrollarse en temporadas posteriores.
+H4 — Mara y Vela como consejeras. Decisión: mantener el canon anterior. Durante la primera temporada pueden orientar, advertir y ayudar mediante sus voces, sin nombramiento formal como consejeras. No interpretar esto como prohibición de que puedan asumir ese papel en una temporada futura. Las opciones disponibles no representan exactamente esta decisión; documentarla explícitamente.
+H5 — Recuerdos del Guardián. Decisión: A. Recuerda fragmentos relacionados con los 36 y las torres, pero no todos los nombres ni acontecimientos. Su memoria incompleta forma parte del misterio.
+H6 — Pacto antiguo. Decisión: B. El pacto está representado por un emblema físico. Conservar también la promesa: «Nos conocemos, nos ayudamos y nos seguimos buscando».
+H7 — La Voz en el capítulo 4. Decisión: B. Mantener el silencio y la estática. La ausencia de respuesta ayuda a construir el misterio.
+H8 — Luz de la niebla. Decisión: mantener el misterio. No revelar todavía quién enciende la luz. Ninguna de las dos opciones propuestas representa esta decisión.
+H9 — Símbolo de los 36. Decisión: B provisional. No introducir una segunda mitad del símbolo sin una justificación narrativa clara. Se pueden descubrir otros símbolos o pistas en temporadas futuras.
+H10 — Hogar del capítulo 2. Decisión: A. Mantener el enfoque comunitario. La familia de Iguaca conserva su identidad dentro de una comunidad que se ayuda mutuamente.
+H11 — Canoa del capítulo 3. Conservar las decisiones anteriores: canoa sin nombre obligatorio; el Guardián despide desde el muelle; Nayara conoce el agua y guía; mantener el intercambio actual entre comunidades. El jugador podrá tener embarcaciones personalizadas en futuras ampliaciones, pero no introducir esa función ahora sin necesidad.
+H12 — Torres del capítulo 5. Mantener desconocido quién las construyó. No decidir todavía entre guardianes o habitantes anteriores a la Gran Ruptura. Mara y Vela piden reunir a quienes quedan del pacto.
+H13 — Capítulo 6. Conservar las decisiones K ya aprobadas. Mantener los seis visitantes, la mediación comunitaria, el emblema, la promesa y el título de Guardiana del Pacto. El encuentro final se realiza en la Ciudad de los 36, manteniendo las actividades del río en su ubicación correspondiente. Incorporar el cómic de cierre de temporada utilizando el sistema existente.
+H14 — Aprendiz y huevo. Aprendiz: A. Puede acompañar sin líneas adicionales obligatorias. El huevo permanece como elemento narrativo. No fijar todavía una fecha de nacimiento si no es necesaria para la historia. El universo permite huevos y nacimientos extraordinarios.
+H15 — Continuidad entre capítulos. Decisión: B, por etapas. Las decisiones importantes del jugador deben producir consecuencias visibles cuando sea técnicamente viable. No convertir cada elección menor en una rama narrativa costosa. Priorizar consecuencias divertidas y reconocibles.
+H16 — Idiomas. Decisión: A. Mantener español e inglés. La identidad puertorriqueña debe sentirse auténtica en la versión española.
+H17 — Duración. Objetivo: 20–30 minutos por capítulo para una primera partida exploratoria. Incluir objetivos cortos que puedan completarse en sesiones de aproximadamente 10–15 minutos. No alargar artificialmente los capítulos. La diversión, el ritmo y la rejugabilidad importan más que alcanzar una duración exacta.
+H18 — Zonas por capítulo. Decisión: A. Conservar las zonas propuestas: Capítulo 2: Caney del Meandro. Capítulo 3: Puerto de La Mina. Capítulo 4: río al este de Villa Raíz. Capítulo 5: Los Miradores de noche. Capítulo 6: Ciudad de los 36. No reconstruir el mapa innecesariamente.
+H19 — Temporadas futuras. Decisión: B. Conservar las seis temporadas documentadas. No introducir ahora una estructura alternativa de 14 capítulos o multiverso que contradiga STORY_BIBLE.md. La fantasía futura puede expandirse sin alterar la estructura aprobada.
+H20 — Amazona Maze y el tren. Decisión: A. Mantenerlos fuera del menú público hasta que sean jugables y estén probados. No eliminarlos de la visión futura.
+
+6. DECISIONES A — ARTE Y PERSONAJES
+
+La dirección artística debe buscar un videojuego 3D vibrante, atractivo, expresivo y con personalidad, cercano al lenguaje visual toon de aventuras modernas. La referencia de calidad visual es una estética colorida y estilizada tipo Fortnite, sin copiar personajes, recursos protegidos ni identidad de otros juegos.
+A1 — Guardián. Decisión: A provisional. Mantener el render actual de Amazona imperialis. El arte definitivo y el detalle de la medalla podrán incorporarse posteriormente.
+A2 — Retratos 2D. Decisión: A provisional. Los retratos 2D pueden convivir con personajes 3D durante el piloto. Buscar coherencia de estilo sin bloquear el desarrollo por la ausencia de modelos definitivos.
+A3 — Familia de Iguaca. Decisión: B. Diferenciar visualmente a Iguaca, la Abuela y el Papá. Mantener su especie Amazona vittata. Buscar primero diferencias de expresión, vestuario, accesorios y retratos. No modificar el modelo ni el rig oficial de Vittata.
+A4 — Mara y Vela. Decisión: C por ahora. Mantener su presencia mediante voces, luces y efectos narrativos. No mostrar modelos físicos durante la revelación de la primera temporada. Eso no impide crear modelos jugables o apariciones futuras.
+A5 — Máquina y transmisor. Decisión: A. Conservar los recursos actuales mientras funcionen adecuadamente.
+A6 — Aprendiz. Decisión: A provisional. Mantener el retrato actual hasta poder vincularlo correctamente con la personalización del jugador.
+A7 — Pretrei y tucumana. Decisión: B. Revisar sus apariencias usando referencias fiables. No eliminar sus diseños actuales sin tener una alternativa visual superior.
+A8 — Ropero. Decisión: A. Mantener aparcada la ampliación de 15 trajes. Conservar todos los atuendos y accesorios ya implementados. La personalización sigue siendo importante para el futuro.
+A9 — Ciudad de los 36. Estado: PENDIENTE DE APROBACIÓN VISUAL. Presentar las capturas actualizadas de BM133 y BM134. La ciudad debe sentirse viva, atractiva, colorida y memorable. No aprobar el resultado definitivo sin revisar imágenes.
+
+7. REGLAS PARA TODOS LOS AGENTES
+
+Proteger lo que ya funciona. No modificar ni eliminar sin autorización: el modelo y rig oficial de Vittata; las 36 cotorras del universo; los seis capítulos existentes; las mecánicas ya implementadas; los sistemas de vuelo, exploración, huevos, retos, puntuación y personalización; los elementos narrativos aprobados; los recursos originales y legalmente utilizables; la identidad cultural puertorriqueña.
+
+Prioridad: experiencia del jugador. Antes de proponer una función, evaluar: 1. ¿Hace el juego más divertido? 2. ¿Mejora la exploración o el descubrimiento? 3. ¿Hace que el niño quiera continuar? 4. ¿Aporta personalidad al mundo? 5. ¿Funciona correctamente en los dispositivos objetivo? No añadir complejidad únicamente por parecer técnicamente impresionante.
+
+Autonomía de los agentes. Pueden resolver sin consultar cada detalle menor: animaciones secundarias; ajustes de iluminación; efectos visuales; transiciones; errores de interfaz; mejoras de rendimiento; detalles ambientales; mejoras menores de diálogos que no alteren el canon; correcciones de accesibilidad.
+Deben consultar antes de: cambiar personajes principales; alterar el canon aprobado; eliminar mecánicas importantes; cambiar el diseño oficial de Vittata; introducir monetización; activar funciones públicas que afecten la privacidad infantil; modificar sustancialmente la estructura de capítulos o temporadas.
+
+No confundir propuesta con implementación. Toda tarea debe indicar: qué estaba implementado antes; qué se cambió realmente; qué pruebas se ejecutaron; qué quedó pendiente; qué necesita aprobación del creador. No marcar como terminado algo que solamente está diseñado, documentado o aprobado.
+
+8. PRIORIDADES DE PRODUCCIÓN
+
+Prioridad 1 — Estabilidad: resolver los problemas críticos de iPhone, iPad y Android.
+Prioridad 2 — Diversión: mejorar animaciones, controles, ritmo, claridad de misiones y respuesta visual del mundo.
+Prioridad 3 — Primera temporada: garantizar que los seis capítulos sean coherentes, jugables y tengan un cierre satisfactorio.
+Prioridad 4 — Mundo vivo: conservar la sensación de comunidades habitadas, especialmente en configuraciones gráficas bajas.
+Prioridad 5 — Piloto familiar y escolar: preparar una experiencia segura, fácil de comenzar y atractiva para niños, sin convertirla en una clase obligatoria.
+
+9. RESUMEN DE RESPUESTAS
+
+P1 pendiente, P2 pendiente, P3 pendiente, P4 pendiente, P5 revisar si persiste el bloqueo.
+L1 a+b según licencia, L2 a, L3 a, L5 a, L6 a, L7 b, L8 b, L9 a, L10 b.
+E1 verificar dato real, E2 c, E3 mantener canon y verificar clasificación, E4 c, E5 mantener provisional, E6 a, E7 a, E8 narrativo, E9 conservar provisional y revisar fuente.
+H1 c, H2 a, H3 a, H4 sin nombramiento formal en temporada 1, H5 a, H6 b, H7 b, H8 mantener misterio, H9 b provisional, H10 a, H11 conservar decisiones K, H12 origen sin revelar, H13 conservar canon K, H14 aprendiz a y nacimiento pendiente, H15 b por etapas, H16 a, H17 20–30 minutos con sesiones cortas, H18 a, H19 b, H20 a.
+A1 a provisional, A2 a provisional, A3 b, A4 c por ahora, A5 a, A6 a provisional, A7 b, A8 a, A9 pendiente de capturas.
+Las decisiones K del 4 de noviembre ya aplicadas se conservan, excepto K35 B, que queda sustituida por H2 A para no romper la misión.
+
+10. INSTRUCCIÓN FINAL DE KELVIN
+
+Amazona Verse debe ser primero un videojuego extraordinariamente divertido.
+Quiero aventura, fantasía, emoción, humor, personajes memorables, misterios, descubrimientos, retos, exploración y sorpresas.
+Quiero que los niños puedan aprender mientras juegan, pero sin sentir que están haciendo una asignación escolar.
+No quiero que los agentes frenen la imaginación con discusiones innecesarias sobre si una cotorra puede hablar, construir una casa, tener poderes o viajar entre islas fantásticas. Dentro de nuestro universo, esas cosas son posibles.
+Tampoco quiero que cada decisión pequeña vuelva a mi escritorio.
+Utilicen criterio creativo y técnico. Respeten el canon, protejan lo que funciona, comprueben los cambios importantes y sigan construyendo.
+La meta no es crear el videojuego científicamente más estricto. La meta es crear un universo que los niños amen.
+Amazona Verse: un mundo para descubrir, proteger y disfrutar.

@@ -2,6 +2,8 @@
 
 Lista única para trabajar con otra IA. Junta lo abierto de `PENDIENTES_KELVIN.md`, `DECISIONES_KELVIN_LISTA.md`, `BUGS.md` y la Directiva V17. Las respuestas K del 4-nov («K8 C, K25 B… todas las demás A») ya están aplicadas y no se repiten aquí.
 
+**4-nov ~21:00 UTC · Kelvin contestó P, L, E, H y A:** respuestas completas en `docs/DIRECTIVA_PLEHA_04NOV.txt` y resumen en `docs/DECISION_LOG.md`. Siguen abiertas solo las pruebas físicas P1–P4 y A9 (capturas de BM133/BM134).
+
 **Cómo devolverlo:** escribe el número y la letra, por ejemplo «P3 a, E2 b, D7 sí». Si un punto no se contesta, se queda como está hoy.
 
 ---
