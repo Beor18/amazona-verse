@@ -33,7 +33,7 @@ window.AVSorpresas = function (G) {
     try { G.audio.define('sorpresa', (t, a, X) => { X.tone(660, t, 0.12, { type: 'triangle', gain: 0.05 }); X.tone(880, t + 0.1, 0.18, { type: 'sine', gain: 0.04 }); }); } catch (e) { /* ya estaba */ }
   }
   const notas = [];
-  let hecha = false, activas = [];
+  let hecha = false, activas = [], enPrueba = false;
 
   function elegir(ultima) {
     const prohibidos = new Set(ultima || []);
@@ -76,7 +76,7 @@ window.AVSorpresas = function (G) {
     return lista;
   }
   G.on('update', () => {
-    if (hecha || G.quiet) return;
+    if (hecha || G.quiet || enPrueba) return;
     if (Math.hypot(S.pos.x - 11, S.pos.z + 76) < 40) visitar(S.pos.x, S.pos.z);
   });
 
@@ -89,6 +89,7 @@ window.AVSorpresas = function (G) {
     G.on('momento', oyente);
     try {
       ok('Hay al menos 12 momentos', MOMENTOS.length >= 12, String(MOMENTOS.length));
+      enPrueba = true;
       memoria = { visitas: 0, ultima: [], vistos: [] }; hecha = false; activas = [];
       const a = elegir([]);
       memoria.ultima = a.map(m => m.id); memoria.visitas = 1;
@@ -109,10 +110,13 @@ window.AVSorpresas = function (G) {
       const c1 = una();
       if (G.fx) G.fx.burst = burst;
       ok('No suma draw calls nuevos (no hay malla propia)', c1 - c0 <= 0 && !G.renderer.scene.children.some(o => o && o.name === 'sorpresas'), c0 + ' → ' + c1);
-      ok('El contador de visitas sube', memoria.visitas >= 2, String(memoria.visitas));
+      hecha = false;
+      const v0 = memoria.visitas;
+      visitar(11, -76);
+      ok('El contador de visitas sube', memoria.visitas === v0 + 1, String(memoria.visitas));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
-    S.pos.x = antes.x; S.pos.z = antes.z; G.quiet = antes.quiet; hecha = true;
+    S.pos.x = antes.x; S.pos.z = antes.z; G.quiet = antes.quiet; hecha = true; enPrueba = false;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
   G.sorpresas = { test, MOMENTOS, elegir, jugar, visitar, estado: () => ({ visitas: memoria.visitas, ultima: memoria.ultima.slice(), notas: notas.slice() }) };
