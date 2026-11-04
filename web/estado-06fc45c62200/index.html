@@ -1,0 +1,888 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>Amazona Verse · Estado real</title>
+<style>:root{--bg:#f7f4ec;--tx:#1f2a1f;--mu:#5b6b5b;--ac:#2e7d32;--bd:#d9d2c0;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#121712;--tx:#e8efe6;--mu:#9fb09f;--ac:#7bd37f;--bd:#2c372c;--card:#1a221a}}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:920px;margin:0 auto;padding:24px 16px 80px}h1{font-size:1.8rem;margin:.2em 0}h2{margin-top:2em;border-bottom:2px solid var(--bd);padding-bottom:.2em;color:var(--ac)}
+h3{margin-top:1.5em}code{background:var(--card);border:1px solid var(--bd);border-radius:4px;padding:0 4px;font-size:.88em;word-break:break-word}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;margin:.8em 0;background:var(--card)}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top;font-size:.92em}
+blockquote{margin:.6em 0;padding:.4em 1em;border-left:4px solid var(--ac);background:var(--card)}.t{font-size:.75em;padding:1px 6px;border-radius:9px;white-space:nowrap}
+.ok{background:#2e7d3222;color:var(--ac)}.rep{background:#b0882022;color:#b08820}.no{background:#c6282822;color:#c62828}.meta{color:var(--mu);font-size:.9em}</style></head>
+<body><main><p class="meta">Página interna de trabajo (no aparece en el menú). Se actualiza sola desde el repositorio. Sin datos privados ni legales.</p>
+<h1>ESTADO REAL DE AMAZONA VERSE · 4 de noviembre de 2026</h1>
+<p><strong>Preparado por:</strong> sesión coordinadora en la nube (Claude), a pedido de Kelvin García. <strong>Corte:</strong> <code>origin/main</code> en <code>6f778914</code> (4-nov-2026, 04:11 UTC / 00:11 AST, «CG-57: en curso»). <strong>Naturaleza:</strong> auditoría de solo lectura. Para este informe no se cambió código, no se publicó nada, no se gastaron créditos de la API y no se corrieron pruebas nuevas ni Chrome. Los resultados de pruebas citados son de corridas anteriores, y cada uno dice de cuál. <strong>Base de comparación:</strong> el informe del 2-nov (corte <code>d8400ff</code>, 2-nov 09:55 UTC). Entre los dos cortes hay <strong>545 commits</strong>.</p>
+<p><strong>Cómo leer las etiquetas</strong></p>
+<ul>
+<li><strong><span class="t ok">Comprobado</span>:</strong> lo vi en el código, en un commit, en un archivo de medidas o en el informe de pruebas que guarda cada publicación (<code>docs/equipo/ultima_publicacion.json</code>).</li>
+<li><strong><span class="t rep">Reportado</span>:</strong> lo dice un documento del repo, el mensaje de un commit o el informe de otro agente, y no lo volví a comprobar.</li>
+<li><strong><span class="t no">No verificado</span>:</strong> inferencia, o no encontré evidencia.</li>
+</ul>
+<p><strong>Datos privados:</strong> este informe no incluye facturas, precios, montos de crédito, cuentas, correos, claves ni el origen de compra de los recursos. Lo legal se nombra solo como «pendiente de Kelvin».</p>
+<hr>
+<h2>0. Qué falta de verdad (lista corta y verificable)</h2>
+<h3>0.1 Bugs abiertos en <code>docs/equipo/BUGS.md</code> <span class="t ok">Comprobado</span></h3>
+<div class="tw"><table><thead><tr><th>Bug</th><th>Severidad</th><th>Qué es</th><th>Quién</th><th>Estado</th></tr></thead><tbody>
+<tr><td><strong>QA-110</strong></td><td>crítica, mitigado</td><td>iPhone/Safari (Kelvin, 3-nov): al despegar tras caminar, pantalla en blanco y el juego se cierra. Causa medida: picos de memoria de GPU en calidad «medio». Arreglos <code>04c1a925</code> (el iPhone arranca en «bajo») y <code>89756f8c</code> (un búfer MSAA menos, ciudad con rangos de «bajo» en el móvil). El 4-nov no se repitió</td><td>nube</td><td><strong>Falta probarlo en el iPhone de Kelvin.</strong> Queda una decisión de arte: bajar el atlas <code>_hd</code> a 1024 px en el móvil (menos nítido)</td></tr>
+<tr><td><strong>QA-111</strong></td><td>media</td><td>Android (Kelvin, 4-nov): la pista de los primeros minutos (CG-48) tapa el botón «Impulso»</td><td>Grok (CG-57)</td><td>EN CURSO, sin publicar</td></tr>
+<tr><td><strong>QA-106</strong></td><td>alta, corregido</td><td>iPad: 8,1 M triángulos y 28 FPS (mín. 6). Corregido por KIMI-011 (<code>33fb0e2</code>)</td><td>nube</td><td><strong>Falta medir <code>#fps</code> en el iPad real</strong></td></tr>
+<tr><td>QA-107</td><td>baja (visual)</td><td>Cap. 3: una mesa sobre la línea del agua</td><td>Kimi 1 o dueño de <code>content/ep3</code></td><td>abierto</td></tr>
+<tr><td>QA-108</td><td>baja (visual)</td><td>Cap. 6: una cerca blanca medio dentro del río</td><td>Kimi 1 o dueño de <code>content/ep6</code></td><td>abierto</td></tr>
+<tr><td>QA-109</td><td>baja (por verificar)</td><td>Cap. 1: la bahía de Villa Raíz se ve muy pálida desde el muelle</td><td>Kimi 1</td><td>abierto</td></tr>
+<tr><td>QA-81</td><td>baja (extras)</td><td><code>streamingTest</code> 152–163 draw calls en las ruinas (tope 150); <code>lookTest</code> 42/44</td><td>carril de streaming</td><td>abierto</td></tr>
+<tr><td>CG-51</td><td>baja</td><td>En inglés, la ficha «canoa» del cap. 3 enseña su fuente con palabras en español</td><td>Kelvin (texto educativo)</td><td>abierto</td></tr>
+<tr><td>QA-53</td><td>media</td><td>Tirón al pulsar «Empezar» en móvil. <strong>La fila sigue «Abierto»</strong>, pero KIMI-012/BM119 lo dejó en 4 de 4 por debajo de 500 ms (móvil emulado con GPU real). Lo que queda es la carga durante el vuelo (KIMI-017)</td><td>Kimi 3</td><td>la fila está desfasada</td></tr>
+</tbody></table></div>
+<h3>0.2 Tareas abiertas por carril <span class="t ok">Comprobado: cada <code>TAREAS_*.md</code> en <code>6f778914</code></span></h3>
+<ul>
+<li><strong>Grok (Cursor), <code>TAREAS_CURSOR_GROK.md</code>:</strong></li>
+<ul>
+<li>EN CURSO: CG-54 (accesibilidad que suma diversión), CG-55 (pulido de diversión de los caps. 2 a 6) y CG-57 (la pista que tapa «Impulso», prioridad 1).</li>
+<li>Libre: CG-56 (bugs no gráficos, continua).</li>
+<li>CG-1 a CG-53 hechas, salvo CG-1 (descartada), CG-5 (no es de este carril) y CG-39 (cancelada por Kelvin: los datos educativos son suyos).</li>
+</ul>
+<li><strong>Kimi (3 sesiones en la PC), <code>TAREAS_KIMI.md</code>:</strong></li>
+<ul>
+<li>Libres: KIMI-013 (ronda visual de los 6 capítulos), KIMI-017 (lag al moverse en móvil e iPad, prioridad 1) y KIMI-018 (faroles del cap. 1, prioridad 1).</li>
+<li>Pasan a la Mac: KIMI-003 (Ciudad de los 36 de cerca, = BM133) y KIMI-007 (28 de 64 edificios rotos, = BM134).</li>
+<li>KIMI-016: la auditoría está hecha; los arreglos quedan como QA-107 a QA-109.</li>
+<li>Hechas desde el 2-nov: 001, 002, 004, 005, 006, 008, 009, 010, 011, 012, 014, 015 y 019.</li>
+</ul>
+<li><strong>Mac (API), <code>TAREAS_API.md</code>:</strong> BM133 y BM134 <strong>aprobadas por Kelvin</strong> (3 y 4-nov: «gástalos todos hoy»), sin empezar en el repo.</li>
+<li><strong>Agente web, <code>TAREAS_WEB.md</code>:</strong> W1 a W14 hechas. No quedan tareas en su tabla.</li>
+<li><strong>Nube, <code>TAREAS_NUBE.md</code>:</strong> N1 a N17 hechas. Lleva QA-110.</li>
+</ul>
+<h3>0.3 Lo que espera a Kelvin</h3>
+<ol>
+<li><strong>Probar en sus equipos:</strong> el iPhone (QA-110), <code>#fps</code> en el iPad después de KIMI-011 y un Chromebook escolar, que nunca se ha medido.</li>
+<li><strong>Arte:</strong> el atlas <code>_hd</code> a 1024 px en el móvil (QA-110); la captura de la Ciudad de los 36 de cerca (KIMI-003); el arte definitivo del Guardián; los retratos de Iguaca, la Abuela y el Papá, que se ven iguales a Vittata.</li>
+<li><strong>Texto educativo:</strong> la fuente de la ficha «canoa» en inglés (CG-51) y la ficha «esperan» del cap. 6 («34 vivas y 2 extintas», sin fuente).</li>
+<li><strong>Canon:</strong> 42 de los 49 puntos de <code>PENDIENTES_KELVIN.md</code> siguen sin marcarse como decididos. Ahí no cuentan 24b y 24c, que se decidieron el 4-nov. Los <code>[KELVIN]</code> abiertos en el contenido son 7, 6, 6, 2 y 19 en los caps. 2 a 6.</li>
+<li><strong>Publicar</strong> lo que ya está en <code>main</code> y no salió: CG-51, CG-52 (retos del día), CG-53 (modo familia), CG-55, las líneas 24c de las mentoras y KIMI-010 (lonas).</li>
+</ol>
+<hr>
+<h2>0b. Para pegar en ChatGPT</h2>
+<blockquote><strong>Amazona Verse: resumen técnico (4 de noviembre de 2026)</strong></blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Qué es.</strong> Un juego 3D de aventura que se juega en el navegador. Es de Puerto Rico y su creador es Kelvin García. La protagonista es Vittata, la cotorra puertorriqueña (<em>Amazona vittata</em>). Es para niños, jóvenes y familias. El lema es «Vuela, explora y salva tu isla con Vittata». Lo primero es la diversión: volar, explorar, humor y jugar en familia. Lo educativo va dentro del juego, con datos verificados y su fuente. Se publica en amazona-verse.vercel.app (el juego está en <code>/juego/</code>). Es bilingüe (español e inglés).</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Motor.</strong> Motor propio sobre Three.js r128, con scripts clásicos y sin bundler: 21 módulos de motor (unas 10.600 líneas), 62 módulos de juego (unas 29.800) y 4 del personaje (unas 2.200). Tiene render con post-proceso, terreno por mapa de alturas, física y colisiones propias y cámara de seguimiento con anticolisión. Los edificios se cargan por zonas, con niveles de detalle: HD, cercano, lejano e impostores, instanciados y fundidos por material. El guardado es local y atómico, con copias de rescate y migraciones. Hay audio con buses, música y efectos. La resolución se ajusta sola por FPS, con tres calidades: bajo, medio y alto. Si se pierde el contexto WebGL, el juego se recupera. Los modelos se publican como glTF comprimido con meshopt y cuantización, y las texturas en WebP o JPG.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Personaje.</strong> Un solo modelo y un solo rig (28 k triángulos, 60 huesos) para las 36 especies de <em>Amazona</em>. Cada especie es una piel (textura) distinta: hay 37 pieles, con las dos extintas. La animación es procedural: andar sin patinar, IK de patas, vuelo, picado, aterrizaje por etapas, posarse, nadar y bucear, pico que habla y parpadeo. El modelo y el rig no se cambian (regla del creador).</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Sistemas que funcionan, con prueba automática.</strong></blockquote>
+<blockquote>- Vuelo y movimiento, con trucos en combo: tonel, looping y barrena.</blockquote>
+<blockquote>- Misiones e historia, y el Diario de campo con fichas de ciencia.</blockquote>
+<blockquote>- El criadero: huevos, crías y crecimiento, sin castigos.</blockquote>
+<blockquote>- Ropero y accesorios, y el creador de personaje.</blockquote>
+<blockquote>- Cómic personal: una página con la plantilla del creador, 6 viñetas de lo que jugó cada niño, exportable.</blockquote>
+<blockquote>- Aula y Modo Maestro, con Nivel 1 y Nivel 2.</blockquote>
+<blockquote>- Retos (carrera, río, tormenta, fantasma) y Mis récords con insignias.</blockquote>
+<blockquote>- Seis «dones» de fantasía, cada uno enseñado por una mentora, y secretos por capítulo («el mapa en pedazos»).</blockquote>
+<blockquote>- Mundo vivo: cotorras residentes, bandadas, comunidades con rutinas y la Ciudad de los 36 viva, de día y de noche, con sorpresas que rotan en cada visita.</blockquote>
+<blockquote>- Vecinos que no son cotorras: coquíes, lagartijos y mariposas.</blockquote>
+<blockquote>- Humor físico: estornudo, mareo, siesta. Escondite con los pichones y un misterio de fantasía (la Maraña).</blockquote>
+<blockquote>- Álbum de las 36 con retratos 3D. Minimapa. Música (7 temas originales) y efectos.</blockquote>
+<blockquote>- Accesibilidad: tamaños de texto, alto contraste, subtítulos, modo relajado, zurdo, teclas remapeables y «vuelo fácil» para los más pequeños.</blockquote>
+<blockquote>- Controles táctiles: el joystick aparece bajo el dedo.</blockquote>
+<blockquote></blockquote>
+<blockquote>Hay 84 pruebas automáticas en el navegador. Doce son obligatorias para publicar, y además el juego tiene que dar 0 errores de consola.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Capítulos.</strong> Seis capítulos de la temporada 1, todos en un solo mapa (la isla del capítulo 1). Cada capítulo tiene su zona, y la zona se abre al avanzar: una barrera de viento con aviso. Desde el 3-nov cada capítulo tiene 6 pasos, más cortos y más fáciles.</blockquote>
+<blockquote>1. «El día que el cielo se rompió»: completo (28 de 28 hitos). Lo jugaron niños de la familia en 16 minutos.</blockquote>
+<blockquote>2. «Un lugar para todos»: buscar dónde vivir, escuchar a los vecinos, construir una casa que aguante la tormenta.</blockquote>
+<blockquote>3. «Más allá de la bahía»: qué flota, construir una canoa, leer el agua, llegar a otra comunidad.</blockquote>
+<blockquote>4. «El precio del progreso»: elegir entre tres proyectos para cruzar el río, con beneficios y costos.</blockquote>
+<blockquote>5. «Las voces olvidadas»: de noche; transmisor, ruinas, relevo de señales y la memoria del Guardián.</blockquote>
+<blockquote>6. «El pacto de los 36»: obra cooperativa en la Ciudad de los 36 y cierre de la temporada.</blockquote>
+<blockquote></blockquote>
+<blockquote>Los seis se juegan de principio a fin. Las pruebas los recorren a pie, sin teletransporte, en español y en inglés.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Rendimiento medido.</strong></blockquote>
+<blockquote>- Android (Chrome, calidad media, medido por el creador el 4-nov): 60 FPS, mínimo 60, unos 923 k triángulos.</blockquote>
+<blockquote>- PC con GPU real (1080p): 138 a 144 FPS en los seis capítulos, 98 a 165 draw calls.</blockquote>
+<blockquote>- iPad: antes del último arreglo daba 28 FPS con 8,1 M triángulos. El arreglo baja los triángulos a 0,6–1,4 M en calidad media, pero falta medirlo en el iPad.</blockquote>
+<blockquote>- iPhone: se cerraba por memoria de GPU. Ahora arranca en calidad baja, que usa unos 120 a 170 MB de GPU frente a unos 260 a 300 MB en media (medido en emulación). El 4-nov no se repitió, pero falta confirmarlo en el aparato.</blockquote>
+<blockquote>- Pulsar «Empezar» en un móvil emulado da menos de 500 ms en el peor cuadro.</blockquote>
+<blockquote>- La descarga inicial es de 5,9 MB.</blockquote>
+<blockquote>- Chromebook escolar: sin medir.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Qué falta.</strong></blockquote>
+<blockquote>- Confirmar en el iPhone y en el iPad.</blockquote>
+<blockquote>- Quitar los tirones al cargar zonas nuevas en vuelo.</blockquote>
+<blockquote>- Arreglar edificios que se ven mal de cerca: la Ciudad de los 36 y 28 de 64 modelos con defectos.</blockquote>
+<blockquote>- Algunos objetos mal asentados en la orilla.</blockquote>
+<blockquote>- Faroles nocturnos (aprobados).</blockquote>
+<blockquote>- Un playtest con niños de los capítulos 2 a 6.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Lo que no existe a propósito:</strong> pesca, PvP, economía o tienda, loot boxes, presión de compra, anillos de vuelo, chat.</blockquote>
+<blockquote><strong>Lo que no existe todavía:</strong> el modo creador de mundos, escalada, profesiones y clips de vídeo.</blockquote>
+<blockquote></blockquote>
+<blockquote><strong>Equipo.</strong> Agentes de IA por carriles:</blockquote>
+<blockquote>- Claude coordina, integra y publica.</blockquote>
+<blockquote>- Grok (en Cursor) hace la jugabilidad y la diversión.</blockquote>
+<blockquote>- Kimi hace el 3D, los edificios y el terreno.</blockquote>
+<blockquote>- Una Mac con GPU real publica cada cierto tiempo.</blockquote>
+<blockquote></blockquote>
+<blockquote>Todo trabajo se publica solo con las pruebas en verde.</blockquote>
+<hr>
+<h2>Resumen ejecutivo (para quien solo lea esto)</h2>
+<ol>
+<li><strong>Producción:</strong> la última publicación es el sitio <code>47033312</code>, que publica el código <code>85ee868</code> (4-nov, 02:47 UTC, desde la nube). Las 12 obligatorias están en verde, con 0 errores de consola, una carga inicial de 5,86 MB y un heap de 85,9 MB <span class="t ok">Comprobado: <code>docs/equipo/ultima_publicacion.json</code></span>. Desde el 2-nov hubo <strong>48 publicaciones</strong> («Sitio: publica …»): 36 desde la Mac con GPU real y 12 desde la nube <span class="t ok">Comprobado: <code>git log</code></span>. En <code>main</code> hay código posterior sin publicar (§0.3, punto 6).</li>
+<li><strong>Lo jugable hoy:</strong> <strong>los 6 capítulos en el mapa real</strong> (los caps. 5 y 6 se encendieron el 3-nov, <code>cf88e2ab</code>). <strong>Cada capítulo tiene 6 pasos</strong> (CG-38). Hay recorridos a pie en verde en todos (ep2e2e 87/87, ep3e2e a ep6e2e 41–43/41–43, temporadaRealTest 10/10 en español) <span class="t rep">Reportado: fila CG-38</span>.</li>
+<li><strong>Rendimiento:</strong></li>
+<ul>
+<li>El iPad pasó de 8,1 M triángulos a como mucho 1,5 M (KIMI-011, <code>33fb0e2</code>), pero falta medirlo en el aparato.</li>
+<li>El iPhone se cerraba; ya arranca en «bajo» (QA-110), pero falta confirmarlo en el aparato.</li>
+<li>Android: 60 FPS, mínimo 60 (Kelvin, 4-nov) <span class="t rep">Reportado: commit <code>8b258d01</code></span>.</li>
+<li>«Empezar» por debajo de 500 ms (KIMI-012).</li>
+<li>Texturas de edificios de 322 a 81 MiB (KIMI-002).</li>
+</ul>
+<li><strong>Diversión nueva (Grok, CG-40 a CG-53):</strong> controles táctiles, trucos de vuelo, humor, escondite, vecinos, sorpresas que rotan, la Maraña, primeros minutos, Mis récords, vuelo fácil, retos del día y modo familia. Además, la Ciudad de los 36 viva (N17), retratos 3D de las 36 (N9) y el cómic con la plantilla de Kelvin en los 6 capítulos.</li>
+<li><strong>Riesgos principales:</strong></li>
+<ul>
+<li>El iPhone y el iPad sin confirmar en el aparato.</li>
+<li>Los tirones al cargar zonas en vuelo (KIMI-017, libre).</li>
+<li>Edificios rotos de cerca (BM133 y BM134, aprobadas y sin empezar).</li>
+<li>Las licencias de terceros siguen pendientes del día legal de Kelvin.</li>
+<li><strong>En el iPhone, al arrancar en «bajo», no se cargan la bandada, las comunidades ni la ciudad viva</strong> <span class="t ok">Comprobado: <code>src/boot.js:99-111</code></span>.</li>
+</ul>
+</ol>
+<hr>
+<h2>1. Estado general</h2>
+<h3>1.1 Versión, commit y despliegue</h3>
+<div class="tw"><table><thead><tr><th>Qué</th><th>Valor</th><th>Etiqueta</th></tr></thead><tbody>
+<tr><td>Rama</td><td><code>main</code> (única rama de trabajo). En el remoto hay 12 ramas más: <code>api-<em></code>, <code>respaldo/</em></code>, <code>archivo-spider-*</code>, <code>modelos-3d</code> (0 commits por delante de main) y <code>cursor/qa-cg34-cg17-informativas-1961</code></td><td><span class="t ok">Comprobado: <code>git branch -r</code></span></td></tr>
+<tr><td>Último commit</td><td><code>6f778914</code> (4-nov 04:11 UTC): «CG-57: en curso»</td><td><span class="t ok">Comprobado</span></td></tr>
+<tr><td>Código en producción</td><td><code>85ee868</code>, sitio <code>47033312</code> (4-nov 02:47 UTC), desde la nube, 12/12 obligatorias</td><td><span class="t ok">Comprobado: <code>ultima_publicacion.json</code></span></td></tr>
+<tr><td>Último publicado desde la Mac</td><td><code>96f4fde</code>, sitio <code>3df54983</code> (4-nov 02:00 UTC), «13 baterías» (en el informe: <code>requeridas 12</code>)</td><td><span class="t ok">Comprobado</span></td></tr>
+<tr><td>Dominio</td><td>amazona-verse.vercel.app (el juego está en <code>/juego/</code>)</td><td><span class="t rep">Reportado: CLAUDE.md</span></td></tr>
+<tr><td>Tamaño publicado</td><td><code>sitio/juego</code> mide 300,7 MB en 788 archivos (el 2-nov eran 223 MB en 602). <code>sitio/</code> entero, 344,7 MB. Carga inicial: 5,86 MB (antes 8,9)</td><td><span class="t ok">Comprobado: <code>git ls-tree -l</code>, <code>ultima_publicacion.json</code></span></td></tr>
+<tr><td>Pastilla</td><td>total 97 · cap1 100 · tareas 93 (<code>sitio/progreso.json</code>, sha <code>1177323</code>)</td><td><span class="t ok">Comprobado</span></td></tr>
+<tr><td>Actividad desde el 2-nov 09:55 UTC</td><td>545 commits: Claude 220, Cursor Agent (Grok) 192, Kelvin García/Garcia 92 (la Mac y las sesiones de Kimi en la PC firman así), Fernando Lopez 30, bot 9, «Kimi (agente 3D)» 2</td><td><span class="t ok">Comprobado: <code>git log</code></span></td></tr>
+<tr><td>Historial</td><td>2.148 commits en <code>main</code>; 3.814 archivos versionados</td><td><span class="t ok">Comprobado</span></td></tr>
+</tbody></table></div>
+<h3>1.2 Qué se completó desde el 2 de noviembre</h3>
+<ul>
+<li><strong>Mundo único completo:</strong></li>
+<ul>
+<li>Caps. 5 y 6 en el mapa real, encendidos por Kelvin (<code>cf88e2ab</code>, 3-nov). <code>?mapa=pequeno</code> vuelve al mundo pequeño, para pruebas.</li>
+<li>Los secretos de los caps. 5 y 6 también van en el mapa real (CG-20, <code>f6d77025</code>).</li>
+<li>El cap. 6 se juega hasta el final (N13, <code>b8b055c</code> + CG-32 <code>15a16f6d</code>).</li>
+</ul>
+<li><strong>Recorte a 6 pasos por capítulo</strong> (CG-38, <code>99f4e51c</code>, <code>cf05f57c</code>, <code>44a3beae</code>; <code>docs/equipo/RECORTE_PASOS.md</code>). La historia no cambia: se unieron los «camina hasta X y habla». <span class="t ok">Comprobado</span></li>
+<li><strong>Rendimiento:</strong></li>
+<ul>
+<li>KIMI-011: LOD por distancia en las fusiones de edificios. En el iPad, de 8,1 M a 0,6–1,4 M triángulos en medio (<code>33fb0e2</code>).</li>
+<li>KIMI-012: «Empezar» por debajo de 500 ms. El commit real es <code>75c531f7</code>; la fila cita <code>a7240cc8</code>, un hash de antes del rebase que no existe.</li>
+<li>KIMI-002: texturas de edificios de 322 a 81 MiB (<code>8586f72</code>).</li>
+<li>KIMI-001: 150 draw calls en las ruinas (<code>b5bf103</code>).</li>
+<li>QA-110, el iPhone: <code>04c1a925</code> y <code>89756f8c</code>.</li>
+</ul>
+<li><strong>Terreno y flora:</strong> el mapa de alturas se regeneró desde la malla visible. La flora sobre el agua pasó de 1.094 a 0 (KIMI-006 y 008, <code>b0056c00</code>). <strong>Ojo:</strong> la coordinadora tuvo que volver dos veces a la altura anterior porque rompía <code>movementTest</code> junto al toldo de las ruinas (<code>5ba68dd0</code>, <code>34e915f0</code>). La altura nueva <strong>no está activa</strong> en lo publicado <span class="t ok">Comprobado: mensajes de commit; el estado final del archivo no lo bisequé</span>.</li>
+<li><strong>Edificios:</strong> KIMI-004, color dorado de las ruinas, aprobado por Kelvin (<code>d09bb94</code>). KIMI-005 (QA-71 a 0,0 m), KIMI-009 (8 <code>_hd</code> boca abajo apagados) y KIMI-010 (lonas al atlas, <code>bee2cd27</code>, sin publicar).</li>
+<li><strong>Cómic:</strong></li>
+<ul>
+<li>Página completa con la plantilla de Kelvin, de 6 viñetas con 65 piezas PNG (<code>3885115b</code>, <code>75a2ef4c</code>).</li>
+<li>La foto lleva la pose de Vittata (CG-30).</li>
+<li>El cómic del cap. 1 lleno, en español y en inglés (CG-33).</li>
+<li>Detalles corregidos (CG-36) y el cómic de los caps. 2 a 6 (CG-37, <code>1c46a7f2</code>).</li>
+<li>comicTest pasó de 32/32 a 67/67.</li>
+</ul>
+<li><strong>Álbum de las 36:</strong> los 36 retratos 3D, con la silueta de las especies sin descubrir (N9, <code>b1696b05</code>, <code>cf9f084f</code>; 74 WebP en <code>assets/retratos_album/</code>). <span class="t ok">Comprobado</span></li>
+<li><strong>Mundo vivo:</strong></li>
+<ul>
+<li>Colonias por hábitat, y Mara y Vela en el Álbum (N10, <code>9acb698</code>).</li>
+<li>Comunidades con rutinas en tres orillas (CG-21).</li>
+<li><strong>La Ciudad de los 36 viva</strong> (N17, <code>src/game/ciudad_viva.js</code>, 425 líneas): 16, 10 o 4 cotorras según la calidad, con rutinas de día y de noche, +1 draw call; ciudadVivaTest 20/20.</li>
+</ul>
+<li><strong>Diversión (Grok):</strong></li>
+<ul>
+<li>CG-40: controles táctiles.</li>
+<li>CG-41: trucos de vuelo.</li>
+<li>CG-42: humor.</li>
+<li>CG-43: escondite.</li>
+<li>CG-44: vecinos.</li>
+<li>CG-45: sorpresas que rotan, 12 momentos.</li>
+<li>CG-46: la Maraña.</li>
+<li>CG-48: primeros minutos.</li>
+<li>CG-49: Mis récords, con 6 insignias.</li>
+<li>CG-50: vuelo fácil.</li>
+<li>CG-52: retos del día, sin racha (sin publicar).</li>
+<li>CG-53: modo familia por turnos, de 2 a 4 jugadores (sin publicar).</li>
+</ul>
+<li><strong>Dones y mentoras:</strong> las cinco mentoras enseñan su don (CG-19). Kelvin aprobó tal cual las líneas de Iguaca y de las mentoras (24c, <code>9fc4c660</code>, sin publicar).</li>
+<li><strong>Rendimiento de lo nuevo:</strong> los seis módulos juntos cuestan 0,0086 ms por cuadro cerca, con un tope de 2 ms (CG-47, <code>docs/equipo/RENDIMIENTO_MODULOS.md</code>). Medido con SwiftShader. <span class="t rep">Reportado</span></li>
+<li><strong>Inglés:</strong> la temporada en inglés da 10/10 (CG-34). Con todo lo nuevo encendido, 9/10 (CG-51, por la ficha «canoa»).</li>
+<li><strong>Música:</strong> dos temas nuevos de Kelvin hechos con Suno: «La Ciudad de los 36 — Noche Encantada» y «Las Sorpresas — ¡Algo se Esconde!» (<code>c3da3dd3</code>). Kelvin confirmó la licencia (<code>392b534a</code>). Ahora hay 7 temas. <span class="t ok">Comprobado: <code>BANDA_SONORA.md</code></span></li>
+<li><strong>Datos educativos:</strong> el 4-nov se comprobaron una a una las citas de ChatGPT y de Gemini. Hay 23 códigos de indicadores DEPR 2022 sacados del PDF oficial (<code>6d7ac6f0</code>, <code>EDUCATIVO_EP2_EP6.md</code>). Ver §4.</li>
+<li><strong>Canon:</strong> «canoa» en lugar de «cayuco» en lo que ve el jugador (Kelvin, 4-nov: «acá se usa canoa», <code>8bc1808f</code>). El resto del canon nuevo está en §3.</li>
+<li><strong>Herramientas:</strong></li>
+<ul>
+<li>Cada publicación guarda su informe de pruebas en <code>docs/equipo/ultima_publicacion.json</code> (CG-2, <code>e008dee</code>). Así se pueden verificar las cifras, que era una propuesta del informe del 2-nov.</li>
+<li>Panel «Así vamos» en la web (<code>sitio/estado.json</code>).</li>
+<li>Bucle automático para Kimi (<code>tools/kimi/bucle_kimi.ps1</code>).</li>
+<li>Canal con el PM (<code>docs/equipo/NOTAS_PM.md</code>).</li>
+</ul>
+</ul>
+<h3>1.3 Eliminado o reemplazado</h3>
+<ul>
+<li><strong>El mundo de relleno</strong> ya no se usa en ningún capítulo por defecto. Solo queda con <code>?mapa=pequeno</code>, para pruebas. <span class="t ok">Comprobado: <code>MAPA_REAL = true</code> en <code>content/ep5/pack.js:25</code></span></li>
+<li><strong>Pasos de historia:</strong> de 8, 11, 14, 9, 13 y 12 a <strong>6 por capítulo</strong> (CG-38).</li>
+<li><strong>CG-39 (suavizar datos sin fuente):</strong> cancelada por Kelvin y revertida (<code>e4356a9f</code>).</li>
+<li><strong>La altura nueva del terreno:</strong> revertida dos veces en lo publicado (ver §1.2).</li>
+<li><strong>Límites de tamaño de la build:</strong> siguen en 0 (<code>tools/build/config.json</code>, <code>limites</code>). La build publicable creció de 223 a 300,7 MB. <span class="t ok">Comprobado</span></li>
+<li><strong>Maze y Tren:</strong> siguen congelados.</li>
+</ul>
+<h3>1.4 Producción frente a desarrollo</h3>
+<div class="tw"><table><thead><tr><th>En <code>main</code>, sin publicar (después de <code>85ee868</code>)</th><th>Commit</th></tr></thead><tbody>
+<tr><td>CG-51: los avisos nuevos salen en inglés</td><td><code>93c03105</code></td></tr>
+<tr><td>CG-52: tres retos del día, sin racha</td><td><code>2ef3da5a</code>, <code>ba99cd15</code></td></tr>
+<tr><td>CG-53: modo familia por turnos</td><td><code>b5d35b07</code></td></tr>
+<tr><td>CG-55: en el cap. 2, la tormenta se prueba en la casa</td><td><code>d7a91c39</code></td></tr>
+<tr><td>24c: líneas de Iguaca y de las 5 mentoras (español e inglés)</td><td><code>9fc4c660</code></td></tr>
+<tr><td>KIMI-010: lonas al atlas, y los lejanos a la caja del ligero</td><td><code>bee2cd27</code></td></tr>
+</tbody></table></div>
+<p><span class="t ok">Comprobado: <code>git log 85ee8685..origin/main -- src content assets</code></span></p>
+<div class="tw"><table><thead><tr><th>Prototipo u oculto</th><th>Dónde</th></tr></thead><tbody>
+<tr><td>Manga Toon Story Creator</td><td>En producción pero oculto (<code>?manga=demo</code>)</td></tr>
+<tr><td>Modo creador de mundos</td><td>No hay código</td></tr>
+</tbody></table></div>
+<h3>1.5 Qué funciona y qué es prototipo</h3>
+<ul>
+<li><strong>Terminado y probado con batería obligatoria:</strong></li>
+<ul>
+<li>vuelo, movimiento y aterrizaje;</li>
+<li>misiones del cap. 1;</li>
+<li>criadero;</li>
+<li>ropero;</li>
+<li>cómic (ya con la plantilla y los 6 capítulos);</li>
+<li>Aula y Maestro;</li>
+<li>guardado;</li>
+<li>creador de personaje.</li>
+</ul>
+<li><strong>Funciona, con prueba extra:</strong></li>
+<ul>
+<li>minimapa;</li>
+<li>Retos y retos del día;</li>
+<li>Flight, River Rush y Banquete;</li>
+<li>Ríos Vivos;</li>
+<li>música;</li>
+<li>Diario y Álbum;</li>
+<li>accesibilidad;</li>
+<li>bilingüe;</li>
+<li>dones y secretos;</li>
+<li>mundo vivo (residentes, comunidades, ciudad viva);</li>
+<li>trucos, humor, escondite, vecinos, sorpresas y Maraña;</li>
+<li>Mis récords;</li>
+<li>vuelo fácil;</li>
+<li>controles táctiles;</li>
+<li>modo familia.</li>
+</ul>
+<li><strong>Prototipo:</strong> Manga Creator; vecinos y faroles (Kelvin pidió explícitamente «prototipo pequeño medido en móvil»; los faroles todavía no existen).</li>
+<li><strong>No iniciado:</strong></li>
+<ul>
+<li>escalada;</li>
+<li>PvP y arena;</li>
+<li>constructor de mundos;</li>
+<li>pesca (excluida a propósito);</li>
+<li>profesiones;</li>
+<li>economía dentro del juego;</li>
+<li>clips de vídeo.</li>
+</ul>
+</ul>
+<hr>
+<h2>2. Los seis capítulos</h2>
+<h3>Resumen</h3>
+<div class="tw"><table><thead><tr><th>Cap.</th><th>Título</th><th>%</th><th>Tipo de %</th><th>Mundo</th><th>Pasos</th><th>Recorrido a pie (prueba)</th></tr></thead><tbody>
+<tr><td>1</td><td>El día que el cielo se rompió</td><td><strong>100 %</strong></td><td>Oficial (28/28 hitos)</td><td>Mapa real, Villa Raíz</td><td>6</td><td>e2eTest 48/48 (obligatoria)</td></tr>
+<tr><td>2</td><td>Un lugar para todos</td><td><strong>≈ 60 %</strong></td><td>Estimación</td><td>Mapa real, Caney del Meandro</td><td>6</td><td>ep2e2e 87/87</td></tr>
+<tr><td>3</td><td>Más allá de la bahía</td><td><strong>≈ 60 %</strong></td><td>Estimación</td><td>Mapa real, desembocadura y laguna</td><td>6</td><td>ep3e2e 43/43</td></tr>
+<tr><td>4</td><td>El precio del progreso</td><td><strong>≈ 60 %</strong></td><td>Estimación</td><td>Mapa real, río al este de Villa Raíz</td><td>6</td><td>ep4e2e 43/43</td></tr>
+<tr><td>5</td><td>Las voces olvidadas</td><td><strong>≈ 60 %</strong></td><td>Estimación</td><td>Mapa real, Los Miradores y el tepuy</td><td>6</td><td>ep5e2e 41/41</td></tr>
+<tr><td>6</td><td>El pacto de los 36</td><td><strong>≈ 60 %</strong></td><td>Estimación</td><td>Mapa real, la Ciudad de los 36</td><td>6</td><td>ep6e2e 43/43</td></tr>
+</tbody></table></div>
+<p>[Recorridos: Reportado, fila CG-38 de <code>TAREAS_CURSOR_GROK.md</code>. e2eTest 48/48: Comprobado, <code>ultima_publicacion.json</code>]</p>
+<h4>Cómo sale cada porcentaje</h4>
+<ul>
+<li><strong>Cap. 1 (oficial):</strong> <code>progreso.sh</code> lee la tabla de hitos de <code>CAP1_PENDIENTE.md</code>. Hay 28 hechos, 0 parciales y 0 que falten <span class="t ok">Comprobado: <code>sitio/estado.json</code></span>.</li>
+<li><strong>Caps. 2 a 6:</strong> son una estimación de este informe, con los mismos 5 criterios del 2-nov, de 20 % cada uno.</li>
+<ul>
+<li>(a) Historia y misiones jugables, con su prueba en verde: sí en los cinco.</li>
+<li>(b) En el mapa real: <strong>sí en los cinco</strong> (antes, solo los caps. 2 a 4).</li>
+<li>(c) Recorrido a pie sin teletransporte: <strong>sí en los cinco</strong> (antes, solo el cap. 2).</li>
+<li>(d) Medido con personas, duración y FPS en un equipo real: no en ninguno.</li>
+<li>(e) Canon y arte sin <code>[KELVIN]</code> abiertos: no en ninguno (7, 6, 6, 2 y 19 marcas).</li>
+</ul>
+<li>Resultado: los cinco al <strong>≈ 60 %</strong>. El cap. 5 es el más cerca de (e), con 2 marcas.</li>
+<li>Los caps. 3 a 6 suben de 30–50 % a 60 % respecto del 2-nov.</li>
+</ul>
+<h3>Cómo se llega a cada capítulo</h3>
+<ul>
+<li>Portada «¿Cómo quieres jugar?», luego Aventura o la pantalla «Capítulos». No hay candado entre capítulos. <span class="t rep">Reportado del 2-nov; no lo volví a leer</span></li>
+<li><strong>Zonas</strong> (<code>src/game/zonas.js</code>): hoy actúan en los caps. 2 a 6. <span class="t ok">Comprobado: líneas 18-29</span></li>
+<ul>
+<li>Zona 5: Los Miradores (−52, −132), con un segundo círculo.</li>
+<li>Zona 6: la Ciudad de los 36, con el río al pie del tepuy y el paso entre los dos (4 círculos).</li>
+<li>Las zonas de los caps. 3 y 4 siguen sin ser las del plan (<code>PENDIENTES_KELVIN</code> n.º 47).</li>
+</ul>
+<li><strong>Interruptor:</strong> <code>MAPA_REAL = true</code> en ep5 y ep6. <code>?mapa=pequeno</code> vuelve al mundo pequeño. <span class="t ok">Comprobado</span></li>
+</ul>
+<h3>Pruebas obligatorias y estado publicado</h3>
+<ul>
+<li><code>tools/build/config.json</code> sigue con <strong>12 obligatorias</strong>: selfTest, missionTest, accessoryTest, templateTest, eduTest, maestroTest, criaderoTest, movementTest, saveTest, comicTest, e2eTest y lookCapitulosTest. Además inyecta 11 guiones de <code>tests/qa/</code>, entre ellos <code>ep3_e2e.js</code> a <code>ep6_e2e.js</code>, <code>ep_caminar.js</code> y <code>temporada_real.js</code>. <span class="t ok">Comprobado</span></li>
+<ul>
+<li>La Mac sigue escribiendo «13 baterías» en sus mensajes, pero su informe dice <code>requeridas: 12</code>. <span class="t ok">Comprobado: <code>3df54983</code></span></li>
+</ul>
+<li><strong>Última publicación</strong> (<code>85ee868</code>, nube) <span class="t ok">Comprobado: <code>ultima_publicacion.json</code></span>:</li>
+<ul>
+<li>selfTest 103/103, missionTest 76/76, accessoryTest 12/12, templateTest 19/19;</li>
+<li>eduTest 79/79, maestroTest 26/26, criaderoTest 51/51, movementTest 48/48;</li>
+<li>saveTest 45/45, comicTest 67/67, e2eTest 48/48, lookCapitulosTest 12/12;</li>
+<li>0 errores y 0 avisos de consola. Duró 856 s, con Chrome 153.</li>
+</ul>
+</ul>
+<hr>
+<h3>Capítulo 1 · «El día que el cielo se rompió»</h3>
+<p><strong>Estado:</strong> 100 % oficial. <span class="t ok">Comprobado</span></p>
+<ul>
+<li><strong>Pasos:</strong> 6 (antes 8).</li>
+<ul>
+<li>0 vuelo.</li>
+<li>1 taller.</li>
+<li>2 recolectar.</li>
+<li>3 ruta de la gota.</li>
+<li>4 refugio y Guardián (el Guardián entra al terminar la crecida).</li>
+<li>5 transmisor, medalla y mirador.</li>
+</ul>
+</ul>
+<p><span class="t ok">Comprobado: <code>RECORTE_PASOS.md</code></span></p>
+<ul>
+<li><strong>Contenido:</strong> 7.113 líneas en <code>content/cap1/*.js</code>. <span class="t ok">Comprobado</span></li>
+<li><strong>Nuevo desde el 2-nov:</strong></li>
+<ul>
+<li>5 secretos (CG-12).</li>
+<li>Primeros minutos con pista visual (CG-48).</li>
+<li>El objetivo inicial dice «Despega, vuela hasta Iguaca y pósate a su lado» (CG-35).</li>
+<li>La crecida se juega durante 20 s (CG-7).</li>
+<li>El diálogo largo sale en bocadillos (CG-8).</li>
+<li>La ruta de la gota se vuela (CG-9).</li>
+<li>Juice de vuelo (<code>c98a8d97</code>).</li>
+<li>Cómic lleno, en español y en inglés (CG-33).</li>
+</ul>
+<li><strong>Medidas con personas:</strong> los 16 min de los sobrinos (1-nov) siguen siendo la única duración real. No se repitió tras el recorte. <span class="t rep">Reportado</span></li>
+<li><strong>Pendiente:</strong></li>
+<ul>
+<li>Faroles (KIMI-018, libre).</li>
+<li>La bahía pálida (QA-109).</li>
+<li>La aprobación del guion (<code>PENDIENTES_KELVIN</code> n.º 2).</li>
+<li>Retratos 2D sustitutos de Iguaca y del Guardián.</li>
+</ul>
+</ul>
+<h3>Capítulo 2 · «Un lugar para todos»</h3>
+<p><strong>Estado:</strong> ≈ 60 %.</p>
+<ul>
+<li><strong>Pasos (6):</strong></li>
+<ul>
+<li>0 hablar, leer la tierra y contarlo.</li>
+<li>1 plano, preguntas y tarjetas.</li>
+<li>2 casa y nido.</li>
+<li>3 tormenta.</li>
+<li>4 mejorar.</li>
+<li>5 probar otra vez.</li>
+</ul>
+</ul>
+<p><span class="t ok">Comprobado: <code>RECORTE_PASOS.md</code></span></p>
+<ul>
+<li><strong>Contenido:</strong> 1.608 líneas; 7 <code>[KELVIN]</code>. <span class="t ok">Comprobado</span></li>
+<li><strong>Pruebas:</strong> ep2e2e 87/87 a pie. CG-55 hace que la tormenta se pruebe en la casa (<code>d7a91c39</code>, sin publicar). <span class="t rep">Reportado</span></li>
+<li><strong>Rendimiento:</strong> en PC con GPU real (KIMI-015), 143 FPS y 138/123 draw calls en alto/medio. <span class="t rep">Reportado: <code>RENDIMIENTO_PC.md</code></span></li>
+</ul>
+<h3>Capítulo 3 · «Más allá de la bahía»</h3>
+<p><strong>Estado:</strong> ≈ 60 %.</p>
+<ul>
+<li><strong>Pasos (6):</strong></li>
+<ul>
+<li>0 papá, predecir y probar.</li>
+<li>1 armar y botar.</li>
+<li>2 ajustar y botar otra vez.</li>
+<li>3 Nayara, leer el agua y señales.</li>
+<li>4 práctica y timón.</li>
+<li>5 bahía y saludo.</li>
+</ul>
+<li><strong>Canon:</strong> la navegante es <strong>Nayara</strong> (<em>A. ventralis</em> de La Española) y la otra comunidad es <strong>Villa Mangle</strong> (Kelvin, 2-nov). Lo que ve el jugador dice «canoa» (Kelvin, 4-nov). <span class="t ok">Comprobado: <code>CANON_REGISTRY.md</code>, <code>8bc1808f</code></span></li>
+<li><strong>Contenido:</strong> 1.780 líneas; 6 <code>[KELVIN]</code>.</li>
+<li><strong>Bugs:</strong> QA-107, la mesa en el agua. CG-51, la fuente de la ficha «canoa» en inglés. QA-100 y QA-101 están resueltos (CG-25).</li>
+<li><strong>Rendimiento (PC):</strong> 113/98 draw calls en alto/medio, 891/475 k triángulos.</li>
+<li><strong>Pendiente:</strong> el sprite de Nayara en el cap. 3 sigue siendo el sustituto <em>agilis</em> <span class="t rep">Reportado: <code>DECISION_LOG.md</code> 2-nov</span>.</li>
+</ul>
+<h3>Capítulo 4 · «El precio del progreso»</h3>
+<p><strong>Estado:</strong> ≈ 60 %.</p>
+<ul>
+<li><strong>Pasos (6):</strong></li>
+<ul>
+<li>0 hablar, orilla y contarlo.</li>
+<li>1 voces y Balanza.</li>
+<li>2 maqueta.</li>
+<li>3 asamblea.</li>
+<li>4 construir.</li>
+<li>5 primer cruce.</li>
+</ul>
+<li><strong>Canon:</strong> el jugador elige entre los tres proyectos; Vittata facilita y la asamblea participa (Kelvin, 2-nov).</li>
+<li><strong>Contenido:</strong> 1.294 líneas; 6 <code>[KELVIN]</code>.</li>
+<li><strong>Bugs:</strong> QA-102 resuelto (CG-26). QA-98 (el secreto se ganaba sin bucear) resuelto.</li>
+<li><strong>Pendiente:</strong> confirmar la zona (<code>PENDIENTES_KELVIN</code> n.º 47).</li>
+</ul>
+<h3>Capítulo 5 · «Las voces olvidadas»</h3>
+<p><strong>Estado:</strong> ≈ 60 %. <strong>Cambio grande: ya está en el mapa real</strong> (Los Miradores y la meseta del tepuy).</p>
+<ul>
+<li><strong>Pasos (6):</strong></li>
+<ul>
+<li>0 hablar y separar las ondas.</li>
+<li>1 patrón y mensaje.</li>
+<li>2 ruinas y Guardián (con Mara, Vela y la medalla del recuerdo).</li>
+<li>3 antena y señal.</li>
+<li>4 estaciones y relevo.</li>
+<li>5 ayuda y niebla.</li>
+</ul>
+<li><strong>Canon:</strong> la Voz son <strong>Mara</strong> (<em>A. martinicana</em>, onda dorada) y <strong>Vela</strong> (<em>A. violacea</em>, onda violeta), que hablan juntas al final. El Guardián es una <em>imperialis</em> mayor (Kelvin, 2-nov). <span class="t ok">Comprobado: <code>CANON_REGISTRY.md</code></span></li>
+<li><strong>Noche:</strong> luna fría y baja, faroles, cucubanos y estrellas (N8). <span class="t rep">Reportado</span></li>
+<li><strong>Contenido:</strong> 1.799 líneas; 2 <code>[KELVIN]</code>.</li>
+<li><strong>Rendimiento:</strong> es el pico de triángulos del juego. En PC, 2,2 M en alto y 1,25 M en medio con 115/107 draw calls. En la nube, tras KIMI-011, 1,41 M en medio y 0,73 M en bajo. <strong>El iPad dio 6,9 M en bajo y 31/16 FPS el 2-nov, antes del arreglo; falta repetir esa medida.</strong> <span class="t rep">Reportado: <code>RENDIMIENTO_PC.md</code>, <code>TAREAS_KIMI.md</code>, <code>3d5ea1f2</code></span></li>
+<li><strong>Bugs:</strong> QA-103 resuelto (CG-27). KIMI-014, la mancha blanca, corregido por KIMI-011.</li>
+</ul>
+<h3>Capítulo 6 · «El pacto de los 36»</h3>
+<p><strong>Estado:</strong> ≈ 60 %. <strong>Ya está en el mapa real:</strong> el río al pie del tepuy y la Ciudad de los 36.</p>
+<ul>
+<li><strong>Pasos (6):</strong></li>
+<ul>
+<li>0 recibir a los 6.</li>
+<li>1 observar y parejas.</li>
+<li>2 objetivo y plan.</li>
+<li>3 levantar las tablas.</li>
+<li>4 grupos, círculo y asientos.</li>
+<li>5 pacto con el Guardián, que da la medalla a Vittata (canon definitivo, 2-nov).</li>
+</ul>
+<li><strong>Canon:</strong> se quedan los seis visitantes con sus nombres: Mira, Roca, Marea, Nudo, Eco y Brote.</li>
+<li><strong>Contenido:</strong> 1.754 líneas; <strong>19 <code>[KELVIN]</code></strong>, el más alto de la temporada. <span class="t ok">Comprobado</span></li>
+<li><strong>Bugs:</strong> QA-104 y QA-99 resueltos (CG-32). QA-89: la tabla se puede llevar volando (Kelvin). Abierto: QA-108, la cerca en el río.</li>
+<li><strong>Pendiente:</strong> la ficha «esperan» («34 vivas y 2 extintas», <code>por_verificar</code>, [KELVIN]). <span class="t rep">Reportado: <code>EDUCATIVO_EP2_EP6.md</code></span></li>
+</ul>
+<h3>Contenido escrito frente a experiencia jugable</h3>
+<ul>
+<li>Los 6 capítulos están escritos, implementados en español y en inglés y en el mapa real, con recorrido a pie. <span class="t ok">Comprobado / Reportado</span></li>
+<li><strong>Solo el cap. 1 se ha medido con personas.</strong> Los caps. 2 a 6 no tienen playtest con niños, ni antes ni después del recorte. <span class="t rep">Reportado</span></li>
+<li>FPS por capítulo: solo en la PC de Kelvin con GPU real (KIMI-015). No hay iPad ni Android por capítulo.</li>
+</ul>
+<hr>
+<h2>3. Personajes y las 36 cotorras</h2>
+<h3>A.1 Recuento</h3>
+<ul>
+<li>36 especies: 34 vivas y 2 extintas. <strong>Las 36 tienen piel</strong>: hay 37 jpg en <code>assets/textures/pieles/</code>, contando <code>ochrocephala_panamensis</code>, una subespecie sin id. <span class="t ok">Comprobado: <code>git ls-tree</code></span></li>
+<ul>
+<li>Agilis, albifrons y festiva entraron con BM124. Martinicana y violacea, con su piel pintada según los relatos antiguos (Kelvin, 2-nov: «Busca cómo se veían y hazlas»).</li>
+<li>QA-66 está cerrado (pielesTest 14/14). <span class="t rep">Reportado: BUGS.md</span></li>
+</ul>
+<li><strong>UICN:</strong> Kelvin decidió el 2-nov que los 12 estados verificados sustituyen a los del catálogo. <em>A. tresmariae</em> no tiene estado propio. <span class="t ok">Comprobado: <code>DECISION_LOG.md</code></span></li>
+<li><strong>Retratos 3D de las 36</strong> en el Álbum (N9), con la silueta de las que no se han descubierto. <span class="t ok">Comprobado: <code>assets/retratos_album/</code> (74 WebP)</span></li>
+</ul>
+<h3>A.2 Tabla de especies (cambios respecto del 2-nov)</h3>
+<div class="tw"><table><thead><tr><th>id</th><th>Piel</th><th>Papel en el juego (canon)</th></tr></thead><tbody>
+<tr><td>vittata</td><td>sí (verde v4)</td><td>Protagonista. Iguaca, la Abuela y el Papá también son <em>vittata</em></td></tr>
+<tr><td>imperialis</td><td>sí</td><td><strong>El Guardián</strong> (canon del 2-nov: cotorra mayor, sabia y protectora); falta el arte definitivo</td></tr>
+<tr><td>ventralis</td><td>sí</td><td><strong>Nayara</strong>, la navegante (caps. 3, 4 y 6)</td></tr>
+<tr><td>martinicana</td><td><strong>sí (nueva)</strong></td><td><strong>Mara</strong>, una de las dos voces (onda dorada)</td></tr>
+<tr><td>violacea</td><td><strong>sí (nueva)</strong></td><td><strong>Vela</strong>, la otra voz (onda violeta)</td></tr>
+<tr><td>agilis</td><td><strong>sí (nueva, BM124)</strong></td><td>Retrato sustituto de Nayara en el cap. 3</td></tr>
+<tr><td>albifrons</td><td><strong>sí (nueva, BM124)</strong></td><td>Rival en Retos</td></tr>
+<tr><td>festiva</td><td><strong>sí (nueva, BM124)</strong></td><td>Mentora (don). El iris no tiene fuente: naranja neutro <span class="t rep">Reportado: BM124</span></td></tr>
+<tr><td>vinacea, oratrix, lilacina, versicolor</td><td>sí</td><td><strong>Mentoras</strong>, cada una con su don (CG-19). Voces aprobadas (24c): Vinacea calma, Festiva fiestera, Oratrix teatral, Lilacina preguntona, Versicolor soñadora</td></tr>
+<tr><td>arausiaca, guildingii, leucocephala, collaria, barbadensis</td><td>sí</td><td>Marea, Roca, Nudo, Eco y Brote, visitantes del cap. 6 (los 6 con Mira, <em>versicolor</em>)</td></tr>
+<tr><td>las demás</td><td>sí</td><td>Residentes del mundo vivo y Álbum</td></tr>
+</tbody></table></div>
+<p><span class="t ok">Comprobado: <code>CANON_REGISTRY.md</code>, <code>DECISION_LOG.md</code>. El origen de cada piel (de Kelvin o pintada) no cambió para las 31 del 2-nov</span></p>
+<h3>A.3 Modelo y rig de Vittata (regla: no se cambian)</h3>
+<ul>
+<li><code>vittata.glb</code>: el último cambio sigue siendo <code>fceb7da</code> (24-oct). <strong>La regla se cumple.</strong> <span class="t ok">Comprobado: <code>git log</code></span></li>
+<li><code>character.js</code> sí cambió (+118 líneas): el gesto de posarse y las patas recogidas en vuelo (N7). Es animación procedural; el rig no se toca. <span class="t ok">Comprobado: diffstat</span></li>
+<li>28.268 triángulos, 60 joints, 5 clips (del 2-nov, el binario no cambió). <span class="t ok">Comprobado el 2-nov</span></li>
+</ul>
+<h3>A.4 Ropero, habilidades y animación</h3>
+<ul>
+<li>Sin cambios de fondo desde el 2-nov: 9 ranuras y 40 GLB de ropa. <span class="t rep">Reportado</span></li>
+<li><strong>Habilidades nuevas:</strong></li>
+<ul>
+<li>trucos (tonel, looping, barrena);</li>
+<li>seis dones (mantener Impulso 0,6 s);</li>
+<li>vuelo fácil (asistencia de altura y giro, aterrizaje automático);</li>
+<li>un latigazo táctil para despegar o aterrizar.</li>
+</ul>
+</ul>
+<p><span class="t rep">Reportado: filas CG</span></p>
+<h3>A.5 Problemas visuales conocidos</h3>
+<ul>
+<li>Iguaca, la Abuela y el Papá se ven iguales a Vittata (<code>PENDIENTES_KELVIN</code> n.º 31). <span class="t rep">Reportado</span></li>
+<li>Hay retratos 2D sustitutos junto a la Vittata 3D (n.º 27). <span class="t rep">Reportado</span></li>
+<li>Pretrei y tucumana están hechas solo con fuentes, sin render de Kelvin (n.º 29).</li>
+</ul>
+<hr>
+<h2>4. Sistemas y experiencias</h2>
+<p><strong>Criterio estricto (igual que el 2-nov):</strong> «terminado y probado» exige una batería en verde y una entrada en la interfaz. Sin prueba, la nota máxima es «prototipo».</p>
+<h3>0. Base de pruebas</h3>
+<ul>
+<li><strong>Obligatorias:</strong> 12 (ver §2). **Pruebas <code>AV.*Test</code> registradas: 84** (el 2-nov eran 61). <span class="t ok">Comprobado: grep de <code>AV.xxxTest =</code> en <code>src</code>, <code>content</code> y <code>tests</code></span></li>
+<li><strong>Informe guardado en cada publicación:</strong> sí, desde CG-2. Ya se puede verificar qué pasó en cada publicación. <span class="t ok">Comprobado</span></li>
+<li><code>publicar_nube.sh</code> sigue tolerando el fallo de «Arranque» de movementTest con SwiftShader. <span class="t rep">Reportado del 2-nov</span></li>
+</ul>
+<h3>1. Tabla de sistemas (solo lo nuevo o lo que cambió)</h3>
+<div class="tw"><table><thead><tr><th>Sistema</th><th>Clasificación</th><th>Código</th><th>Prueba · último resultado</th><th>Notas</th></tr></thead><tbody>
+<tr><td>Controles táctiles (CG-40)</td><td>Terminado (extra)</td><td><code>src/engine/input.js</code> (+180)</td><td>tactilTest 9/9, teclasTest 18/18</td><td>El joystick aparece bajo el dedo, el otro dedo gira la cámara y vibra al posarse</td></tr>
+<tr><td>Trucos de vuelo (CG-41)</td><td>Terminado (extra)</td><td><code>src/game/trucos.js</code></td><td>trucosTest 7/7</td><td>Combos «¡Plumas al viento!», «¡Cotorra loca!»; récord. Sin anillos</td></tr>
+<tr><td>Humor (CG-42)</td><td>Terminado (extra)</td><td><code>src/game/humor.js</code></td><td>humorTest 4/4</td><td>Estornudo, mareo tras 3 loopings, sacudida y siesta</td></tr>
+<tr><td>Escondite (CG-43)</td><td>Terminado (extra)</td><td><code>src/game/escondite.js</code></td><td>esconditeTest 5/5</td><td>Copa, muelle y tejado</td></tr>
+<tr><td>Vecinos (CG-44)</td><td><strong>Prototipo</strong> (lo pidió Kelvin)</td><td><code>src/game/vecinos.js</code></td><td>vecinosTest 10/10</td><td>1 malla; +1 draw call, +840 triángulos en medio. En bajo no se siembran</td></tr>
+<tr><td>Sorpresas (CG-45)</td><td>Terminado (extra)</td><td><code>src/game/sorpresas.js</code></td><td>sorpresasTest 10/10</td><td>12 momentos, 1 o 2 por visita, sin repetir; la primera entra al cómic y al Diario</td></tr>
+<tr><td>La Maraña (CG-46)</td><td>Terminado (extra)</td><td><code>src/game/marana.js</code></td><td>maranaTest 5/5</td><td>Fantasía: rastros grises que se limpian volando</td></tr>
+<tr><td>Rendimiento de módulos (CG-47)</td><td>Medido</td><td><code>src/game/rendimiento_modulos.js</code></td><td>rendimientoModulosTest 21/21</td><td>0,0086 ms los seis, cerca (SwiftShader)</td></tr>
+<tr><td>Primeros minutos (CG-48)</td><td>Funcional con problemas</td><td><code>src/game/guia_controles.js</code></td><td>primerosMinutosTest 8/8</td><td><strong>QA-111:</strong> tapa «Impulso» en Android (CG-57 en curso)</td></tr>
+<tr><td>Mis récords (CG-49)</td><td>Terminado (extra)</td><td><code>src/game/records.js</code></td><td>recordsTest 53/53</td><td>6 insignias, solo en el dispositivo</td></tr>
+<tr><td>Vuelo fácil (CG-50)</td><td>Terminado (extra)</td><td><code>src/game/ninos.js</code></td><td>ninosTest 6/6</td><td>Sensibilidad, eje invertido, botones grandes</td></tr>
+<tr><td>Retos del día (CG-52)</td><td>Terminado (extra), <strong>sin publicar</strong></td><td><code>src/game/retos_dia.js</code></td><td>retosDiaTest 11/11</td><td>La fecha es la semilla; sin rachas ni presión</td></tr>
+<tr><td>Modo familia (CG-53)</td><td>Terminado (extra), <strong>sin publicar</strong></td><td><code>src/game/familia.js</code></td><td>familiaTest 8/8</td><td>De 2 a 4 jugadores en el mismo dispositivo, sin datos personales</td></tr>
+<tr><td>Ciudad viva (N17)</td><td>Terminado (extra)</td><td><code>src/game/ciudad_viva.js</code></td><td>ciudadVivaTest 20/20</td><td><strong>No se carga si el juego arranca en «bajo»</strong> (<code>boot.js:111</code>), y el iPhone ahora arranca en «bajo»</td></tr>
+<tr><td>Comunidades (CG-21) y residentes</td><td>Terminado (extra)</td><td><code>comunidades.js</code>, <code>residentes.js</code></td><td>comunidadesTest 19/19</td><td>Mismo apunte: no se cargan en «bajo» (<code>boot.js:105</code>)</td></tr>
+<tr><td>Dones y mentoras (CG-10 a CG-19, 24c)</td><td>Terminado (extra)</td><td><code>src/game/dones.js</code></td><td>donesTest 46/46</td><td>Las líneas de 24c están en <code>main</code>, sin publicar</td></tr>
+<tr><td>Secretos (CG-12 a CG-14, CG-20)</td><td>Terminado (extra)</td><td><code>src/game/secretos.js</code>, <code>content/epN/secretos.js</code></td><td>secretosTest 19/19</td><td>El «Mapa en pedazos»: un pedazo por capítulo</td></tr>
+<tr><td>Bandada de la casa (CG-18)</td><td>Terminado (extra)</td><td><code>src/game/equipos.js</code></td><td>equiposTest 28/28</td><td>Sin red</td></tr>
+<tr><td>Álbum de las 36 (N4, N9, N10)</td><td>Terminado (extra)</td><td><code>src/game/album.js</code></td><td>—</td><td>36 retratos 3D</td></tr>
+<tr><td>Cómic (N11, CG-28 a CG-37)</td><td><strong>Terminado y probado (obligatoria)</strong></td><td><code>comic.js</code>, <code>comic_plantilla.js</code></td><td>comicTest 67/67</td><td>Plantilla de Kelvin en los 6 capítulos</td></tr>
+<tr><td>Bilingüe</td><td>Funcional con problemas</td><td><code>idioma.js</code>, <code>content/*/en.js</code></td><td>idiomaTest 31/31; temporada EN 9/10</td><td>CG-51</td></tr>
+<tr><td>Accesibilidad</td><td>Funcional</td><td><code>accesibilidad.js</code></td><td>accesibilidadTest 41/41 (BM116 cerrada)</td><td>CG-54 en curso. Sigue sin prueba con lector de pantalla ni auditoría WCAG</td></tr>
+<tr><td>Música</td><td>Terminado (extra)</td><td><code>musica.js</code> y 7 m4a</td><td>musicaTest con 7 temas</td><td>El test abre los temas de uno en uno (<code>958f4251</code>)</td></tr>
+<tr><td>Datos educativos</td><td>Funcional con problemas</td><td><code>content/*/lecciones.js</code></td><td>eduTest 79/79</td><td>Ver abajo</td></tr>
+</tbody></table></div>
+<p>[Resultados: Reportado, filas CG y N de sus tablas, con «las 12 en verde» en la build de cada tarea]</p>
+<p><strong>Sin cambios desde el 2-nov:</strong> vuelo, movimiento, aterrizaje, criadero, rareza, ropero, Aula y Maestro, guardado, minimapa, Retos y minijuegos. Lo que no existe sigue igual: escalada, PvP, profesiones, economía y clips.</p>
+<h3>2. Datos educativos (4-nov) <span class="t ok">Comprobado: <code>docs/equipo/EDUCATIVO_EP2_EP6.md</code>, commit <code>6d7ac6f0</code></span></h3>
+<ul>
+<li>Kelvin pasó los 19 datos pendientes a ChatGPT y a Gemini. Cada cita se abrió en su página, y <strong>solo cuenta como verificada si la frase está en la página.</strong></li>
+<li><strong>Resultado de los 19 datos:</strong></li>
+<ul>
+<li>17 quedan verificados (5 de ellos con el texto ajustado).</li>
+<li>1 queda parcial con el texto ajustado (cayuco).</li>
+<li>1 sin fuente, tratado como narrativo (zocos).</li>
+</ul>
+<li><strong>Citas de las IA:</strong> muchas eran falsas o no se encontraron. Varias páginas no existían (404), por ejemplo en weather.gov, osha.gov y fws.gov. Otras páginas abrían pero no decían lo citado (NGSS 4-PS4-2, CASEL). Las del DLE no se pudieron abrir. <strong>Lección: ninguna cita de IA entra sin abrir la página.</strong></li>
+<li><strong>Indicadores DEPR 2022:</strong> 23 códigos sacados del PDF oficial de Estándares de Ciencias (julio 2022). Hay 3 objetivos sin indicador de Ciencias claro (cooperar, grupos iguales y escuchar y acordar).</li>
+<li><strong>Pendiente de Kelvin:</strong> la ficha «esperan» del cap. 6 (por el revert de CG-39) y la fuente de «canoa» en inglés (CG-51).</li>
+</ul>
+<h3>3. Seguridad infantil (sin cambios de fondo)</h3>
+<ul>
+<li><code>SEGURIDAD_INFANTIL.md</code> §5 ya menciona el ranking (BM125) y lo deja «sin decidir». <span class="t rep">Reportado: BM125</span></li>
+<li><strong>Todo lo nuevo es local:</strong> retos del día, modo familia, bandada de la casa, insignias y la Maraña, sin red. <span class="t rep">Reportado: filas CG-18, CG-49, CG-52, CG-53</span></li>
+<li>Decisión de Kelvin: <code>PENDIENTES_KELVIN.md</code> §0, punto 3.</li>
+</ul>
+<hr>
+<h2>5. Arquitectura y cambios técnicos</h2>
+<h3>5.1 Capas y motor</h3>
+<ul>
+<li>Igual que el 2-nov: motor propio (AVE) sobre Three.js r128, con scripts clásicos. <code>G</code> es el canal único. <span class="t ok">Comprobado el 2-nov</span></li>
+<li><strong>Tamaño actual:</strong> <code>src/engine/</code> tiene 21 módulos y 10.617 líneas; <code>streaming.js</code>, 1.682. <code>src/game/</code> tiene 62 módulos y 29.758 líneas. <code>src/personaje/</code>, 4 y 2.194. <span class="t ok">Comprobado</span></li>
+<li><strong>Módulos nuevos de juego:</strong> <code>album</code>, <code>ciudad_viva</code>, <code>comic_plantilla</code>, <code>comunidades</code>, <code>descubrir</code>, <code>dones</code>, <code>equipos</code>, <code>escondite</code>, <code>familia</code>, <code>gags</code>, <code>humor</code>, <code>juice</code>, <code>marana</code>, <code>ninos</code>, <code>rendimiento_modulos</code>, <code>residentes</code>, <code>retos_dia</code>, <code>secretos</code>, <code>sorpresas</code>, <code>trucos</code> y <code>vecinos</code>. <span class="t ok">Comprobado: diffstat <code>d8400ff..origin/main</code></span></li>
+<li><strong>Carga por calidad:</strong> en «bajo» no se cargan la bandada, las comunidades ni la ciudad viva (<code>boot.js:95-111</code>). Ahorra memoria, pero <strong>el iPhone, que ahora arranca en «bajo», se queda sin esa vida.</strong> <span class="t ok">Comprobado</span></li>
+</ul>
+<h3>5.2 Cambios técnicos grandes desde el 2-nov</h3>
+<div class="tw"><table><thead><tr><th>Cambio</th><th>Commit(s)</th><th>Estado</th></tr></thead><tbody>
+<tr><td>LOD por distancia de las fusiones de edificios (tramos de índice por instancia y zona; <code>_hd</code> de la ciudad a 45/150 m en bajo/medio; tope <code>CFG.hdTris</code> 0,4/0,9 M)</td><td><code>33fb0e2</code> (KIMI-011)</td><td><span class="t ok">Comprobado: BUGS QA-106</span></td></tr>
+<tr><td>iPhone en «bajo» desde el arranque; un búfer MSAA menos (<code>grade.needsSwap = false</code>); ciudad con rangos de «bajo» en móvil medio</td><td><code>04c1a925</code>, <code>89756f8c</code></td><td><span class="t ok">Comprobado: commits y BUGS QA-110</span></td></tr>
+<tr><td>Precalentado de shaders repartido desde <code>mundoListo</code>, 2 por cuadro</td><td><code>75c531f7</code> (KIMI-012)</td><td><span class="t rep">Reportado: «Empezar» 4/4 &lt; 500 ms</span></td></tr>
+<tr><td>Mapa de alturas regenerado desde la malla visible</td><td><code>b0056c00</code></td><td><span class="t rep">Reportado</span> Revertido dos veces en lo publicado por movementTest (<code>5ba68dd0</code>, <code>34e915f0</code>)</td></tr>
+<tr><td>Cámara: sin zoom en bucle en táctil, sin tirones junto a muros</td><td><code>082c710a</code>, <code>773f8c70</code>, <code>4d1b07fb</code>, <code>39838094</code></td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>Mundo único con los 6 capítulos</td><td><code>cf88e2ab</code></td><td><span class="t ok">Comprobado</span></td></tr>
+<tr><td>Informe de pruebas en cada publicación</td><td><code>e008dee</code> (CG-2)</td><td><span class="t ok">Comprobado</span></td></tr>
+</tbody></table></div>
+<h3>5.3 Pipeline GLB y tamaños</h3>
+<ul>
+<li>El pipeline no cambió: <code>build.sh</code>, luego <code>avbuild.py</code> (validación, poda, sips, WebP y gltfpack). <span class="t rep">Reportado del 2-nov</span></li>
+<li><strong>Tamaño publicable:</strong> <code>sitio/juego</code> mide 300,7 MB en 788 archivos (+78 MB y +186 archivos desde el 2-nov). Ya no hay topes. <span class="t ok">Comprobado</span></li>
+<li><strong>La carga inicial bajó</strong> a 5,86 MB (antes 8,9). <span class="t ok">Comprobado</span></li>
+</ul>
+<h3>5.4 Rendimiento y memoria (ver también §6.4)</h3>
+<ul>
+<li><strong>Draw calls:</strong></li>
+<ul>
+<li>Ruinas a 150 (KIMI-001).</li>
+<li>En PC con GPU real, 98 a 165 draw calls en los 6 capítulos (tope 200).</li>
+<li>streamingTest sigue dando 152–163 en la vista de las ruinas (QA-81, extras).</li>
+</ul>
+</ul>
+<p><span class="t rep">Reportado</span></p>
+<ul>
+<li><strong>Memoria de texturas:</strong></li>
+<ul>
+<li>Texturas de edificios de 322 a 81 MiB (KIMI-002).</li>
+<li>En el iPhone emulado (QA-110): medio ≈ 260–300 MB de GPU, bajo ≈ 120–170 MB.</li>
+<li>En el móvil emulado con GPU real (KIMI-019): 377 MB en Villa Raíz y 403 MB en la ciudad.</li>
+<li>El 2-nov se midieron 678–683 MB en el iMac en alto, antes de KIMI-002. <strong>No hay una medida nueva del iMac en alto</strong> para comparar cara a cara. <span class="t rep">Reportado</span></li>
+</ul>
+<li><strong>Lo que queda:</strong></li>
+<ul>
+<li>El salto de +75 MB al despegar en «medio» (los atlas <code>_hd</code>).</li>
+<li>Los cuadros de 62 a 104 ms al girar hacia zonas nuevas (KIMI-015).</li>
+<li>Las aperturas de 708 a 1.264 ms medidas por Kimi 2 (KIMI-017, libre).</li>
+</ul>
+</ul>
+<p><span class="t rep">Reportado</span></p>
+<h3>5.5 Guardado</h3>
+<ul>
+<li>Sin cambios de fondo. saveTest 45/45 en la última publicación. <span class="t ok">Comprobado</span></li>
+</ul>
+<h3>5.6 Pruebas automáticas</h3>
+<ul>
+<li>Las 12 obligatorias están en verde en <code>85ee868</code> (§2). <span class="t ok">Comprobado</span></li>
+<li><strong>Recorridos a pie de los 6 capítulos</strong>, sin teletransporte y en los dos idiomas (<code>ep3_e2e.js</code> a <code>ep6_e2e.js</code>, <code>ep_caminar.js</code>, <code>temporada_real.js</code>). Era el principal hueco del 2-nov y ya está cubierto. <span class="t ok">Comprobado: <code>config.json</code> los inyecta</span></li>
+<li><strong>Qué no cubren todavía:</strong></li>
+<ul>
+<li>FPS y memoria en equipos reales (no hay tope que haga fallar).</li>
+<li>Tamaño publicable (sin tope).</li>
+<li>Safari, iPhone, iPad y Chromebook reales.</li>
+<li>La calidad visual de los edificios.</li>
+<li>Que una pista no tape un botón (CG-57 añadirá esa comprobación a accesibilidadTest).</li>
+</ul>
+</ul>
+<h3>5.7 Git</h3>
+<ul>
+<li>2.148 commits en <code>main</code> y 3.814 archivos versionados. <span class="t ok">Comprobado</span></li>
+<li><strong>Ramas extra en el remoto:</strong> 12. Son nuevas <code>modelos-3d</code> (0 commits por delante) y <code>cursor/qa-cg34-cg17-informativas-1961</code>, que ya se unió en <code>d57f22a1</code>. <span class="t ok">Comprobado</span></li>
+<li><strong>Commits de trámite:</strong></li>
+<ul>
+<li>72 de «me la asigno» o «EN CURSO» y 24 de «hash tras el rebase».</li>
+</ul>
+<li><strong>Hashes que no existen</strong> en las tablas:</li>
+<ul>
+<li>KIMI-012 cita <code>a7240cc8</code>; el real es <code>75c531f7</code>.</li>
+<li>KIMI-005 dice «este commit».</li>
+</ul>
+</ul>
+<p><span class="t ok">Comprobado</span></p>
+<h3>5.8 Publicación</h3>
+<ul>
+<li>La Mac publica cada ~30 min con GPU real. La nube publica cuando integra.</li>
+<li>48 publicaciones desde el 2-nov (36 de la Mac y 12 de la nube). Todas dicen «en verde»; no encontré ninguna «con pruebas omitidas» en este tramo. <span class="t ok">Comprobado: <code>git log --grep</code></span></li>
+</ul>
+<hr>
+<h2>6. Gráficos y calidad visual</h2>
+<h3>6.1 Mejoras visuales del 2 al 4 de noviembre</h3>
+<ul>
+<li><strong>Ciudad de los 36:</strong> color de piedra dorada aprobado por Kelvin (KIMI-004). La mancha blanca de cerca ya no sale (KIMI-014). Ciudad viva con cotorras posadas en tejados.</li>
+<li><strong>Flora:</strong> 0 árboles sobre el agua con la altura nueva (KIMI-006 y 008), pero esa altura no está publicada (ver §1.2).</li>
+<li><strong>Lonas</strong> de un solo color de atlas (KIMI-010, sin publicar).</li>
+<li><strong>Noche del cap. 5:</strong> luna, faroles, cucubanos y estrellas (N8).</li>
+<li><strong>Juice de vuelo:</strong> rasante, picado, aterrizaje perfecto y pétalos del flamboyán.</li>
+<li><strong>Cómic</strong> con la plantilla de Kelvin y retratos 3D de las 36.</li>
+</ul>
+<h3>6.2 Estado por elemento</h3>
+<div class="tw"><table><thead><tr><th>Elemento</th><th>Estado</th><th>Evidencia</th></tr></thead><tbody>
+<tr><td>Terreno y orillas</td><td>Funcional. QA-107, QA-108 y QA-109 abiertos (objetos en la línea del agua, bahía pálida)</td><td>KIMI-016, <code>docs/img/kimi016/</code> <span class="t rep">Reportado</span></td></tr>
+<tr><td>Vegetación</td><td>Mejor en la copia de Kimi; lo publicado sigue con la altura anterior</td><td>§1.2</td></tr>
+<tr><td>Arquitectura</td><td><strong>Sigue siendo lo más débil:</strong> la Ciudad de los 36 de cerca (BM133) y 28 de 64 edificios con defectos (BM134), aprobadas y sin empezar</td><td><code>TAREAS_API.md</code> <span class="t ok">Comprobado</span></td></tr>
+<tr><td>Personajes</td><td>Buena calidad; un solo modelo; los retratos de la familia de Iguaca siguen iguales a Vittata</td><td>§3</td></tr>
+<tr><td>Animación</td><td>Se añadieron el gesto de posarse, las patas recogidas y los trucos</td><td>N7, CG-41</td></tr>
+</tbody></table></div>
+<h3>6.3 Elementos provisionales que todavía se ven</h3>
+<ul>
+<li>Retratos 2D sustitutos (Guardián, Nayara en el cap. 3) junto a la Vittata 3D.</li>
+<li>Edificios con el ligero equivocado y la Ciudad de los 36 decimada de cerca.</li>
+<li>Objetos de los campamentos mal asentados en la orilla.</li>
+</ul>
+<h3>6.4 Rendimiento medido (FPS por dispositivo)</h3>
+<div class="tw"><table><thead><tr><th>Dispositivo</th><th>Escena</th><th>FPS</th><th>Draw calls</th><th>Triángulos</th><th>Memoria</th><th>Fuente</th><th>Etiqueta</th></tr></thead><tbody>
+<tr><td><strong>Android de Kelvin</strong> (Chrome, medio)</td><td>juego publicado, 4-nov</td><td><strong>60 (mín. 60)</strong></td><td>—</td><td>923 k</td><td>—</td><td>commit <code>8b258d01</code></td><td><span class="t rep">Reportado por Kelvin</span></td></tr>
+<tr><td>iPad de Kelvin (medio)</td><td>cap. 1, Villa Raíz → tepuy, 2-nov 21:37, <strong>antes de KIMI-011</strong></td><td>28 (mín. 6)</td><td>106</td><td>8,1 M</td><td>—</td><td>BUGS QA-106</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>iPad de Kelvin (bajo)</td><td>cap. 5, tepuy, 2-nov, antes de KIMI-011</td><td>31 / 16</td><td>—</td><td>6,9 M</td><td>—</td><td><code>3d5ea1f2</code></td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>iPad, <strong>después de KIMI-011</strong></td><td>—</td><td><strong>sin medir</strong></td><td>—</td><td>0,64–1,41 M (medido en la nube)</td><td>—</td><td>QA-106</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>iPhone de Kelvin</td><td>cap. 1, al despegar</td><td><strong>se cerraba</strong> (QA-110); el 4-nov no se repitió</td><td>—</td><td>—</td><td>—</td><td>BUGS QA-110</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>iPhone emulado en la nube (SwiftShader, 390×844)</td><td>Villa Raíz → ciudad</td><td>—</td><td>—</td><td>—</td><td>GPU: medio 260–300 MB, bajo 120–170 MB</td><td>QA-110</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>PC de Kelvin (GPU AMD real, 1080p)</td><td>los 6 capítulos, alto y medio</td><td>138–144</td><td>98–165</td><td>385 k – 2,2 M</td><td>—</td><td>KIMI-015, <code>RENDIMIENTO_PC.md</code></td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>Móvil emulado con GPU real (CPU ×4)</td><td>Villa Raíz / ciudad, medio</td><td>sin concluir (PC compartida)</td><td>101 / 110–122</td><td>496 k / 772–835 k</td><td>377 / 403 MB</td><td>KIMI-019</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>Móvil emulado con GPU real</td><td>«Empezar»</td><td>peor cuadro 236–292 ms (4/4 &lt; 500)</td><td>—</td><td>—</td><td>—</td><td>KIMI-012</td><td><span class="t rep">Reportado</span></td></tr>
+<tr><td>Chromebook escolar</td><td>—</td><td><strong>nunca medido</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody></table></div>
+<p><strong>Lectura:</strong></p>
+<ul>
+<li>El Android ya va a 60 FPS estables.</li>
+<li>El riesgo se movió a <strong>iOS</strong>: el iPad está sin medir tras el arreglo y el iPhone sin confirmar.</li>
+<li>Las medidas de PC y de móvil emulado no sustituyen a un aparato real.</li>
+</ul>
+<h3>6.5 Qué falta para la calidad artística buscada</h3>
+<ol>
+<li><strong>La Ciudad de los 36 de cerca y los edificios rotos</strong> (BM133 y BM134).</li>
+<li><strong>Publicar la altura nueva del terreno</strong> sin romper movementTest (flora asentada).</li>
+<li><strong>Tirones al cargar en vuelo</strong> (KIMI-017).</li>
+<li><strong>Faroles del cap. 1</strong> (KIMI-018).</li>
+<li><strong>Ronda visual de los 6 capítulos</strong> (KIMI-013) y QA-107 a QA-109.</li>
+<li><strong>Medir en el iPad, el iPhone y un Chromebook.</strong></li>
+<li>Arte de los personajes secundarios (decisión de Kelvin).</li>
+</ol>
+<hr>
+<h2>9. Riesgos y prioridades</h2>
+<h3>P0 · Críticos (antes de un piloto escolar o de difundir más)</h3>
+<div class="tw"><table><thead><tr><th>#</th><th>Problema</th><th>Por qué</th><th>Depende de</th><th>Evidencia</th></tr></thead><tbody>
+<tr><td>P0-1</td><td><strong>iOS sin confirmar:</strong> el iPhone se cerraba (QA-110, mitigado) y el iPad no se ha medido después de KIMI-011</td><td>Las escuelas usan iPad. Un cierre es lo peor que puede ver un niño</td><td>Kelvin prueba en sus equipos; arte: atlas a 1024 en el móvil</td><td>BUGS QA-110, QA-106</td></tr>
+</tbody></table></div>
+<h3>P1 · Importantes</h3>
+<ul>
+<li><strong>Tirones al cargar en vuelo</strong> (KIMI-017, libre, prioridad 1).</li>
+<li><strong>QA-111:</strong> la pista tapa «Impulso» (CG-57, en curso).</li>
+<li><strong>En el iPhone en «bajo» no hay bandada, comunidades ni ciudad viva.</strong> Hay que decidir si se carga una versión mínima (4 cotorras) en «bajo» o si se acepta.</li>
+<li><strong>Edificios:</strong> la Ciudad de los 36 y 28 de 64 modelos (BM133 y BM134).</li>
+<li><strong>Altura del terreno</strong> sin publicar (flora asentada).</li>
+<li><strong>Playtest con niños de los caps. 2 a 6</strong> tras el recorte a 6 pasos.</li>
+<li><strong>Publicar</strong> lo que está en <code>main</code> (CG-51 a CG-55, 24c, KIMI-010).</li>
+<li>Tamaño publicable sin tope: 300,7 MB.</li>
+</ul>
+<h3>P2 · Mejoras</h3>
+<ul>
+<li><strong>Documentos desfasados:</strong></li>
+<ul>
+<li><code>docs/PROJECT_STATUS.md</code> (2-nov: «caps. 5 y 6 en su mundo pequeño»).</li>
+<li><code>ROADMAP.md</code> (3-nov: «faltan Lilacina y Oratrix», «006 y 008 en curso»).</li>
+<li>La fila de QA-53, que sigue «Abierto».</li>
+<li>El párrafo de 24c en <code>PENDIENTES_KELVIN</code>.</li>
+<li>«13 baterías» en CLAUDE.md y en la Mac, frente a las 12 de <code>config.json</code>.</li>
+</ul>
+<li>Hashes inexistentes en las tablas (KIMI-012).</li>
+<li>QA-107 a QA-109 (visuales, baja).</li>
+<li>Accesibilidad: lector de pantalla y WCAG.</li>
+<li>Rareza por sorteo (sin compra): sigue como decisión de Kelvin.</li>
+</ul>
+<h3>P3 · Expansiones futuras (no iniciadas)</h3>
+<ul>
+<li>PvP y arena.</li>
+<li>Profesiones.</li>
+<li>Economía.</li>
+<li>Clips de vídeo.</li>
+<li>Escalada.</li>
+<li>Manga Creator.</li>
+</ul>
+<h3>Dependencias reales</h3>
+<ul>
+<li><strong>Kelvin:</strong> iOS, el día legal, el canon pendiente y el arte.</li>
+<li><strong>Kimi:</strong> KIMI-013, 017 y 018. <strong>La Mac:</strong> BM133 y BM134. <strong>Grok:</strong> CG-54 a CG-57.</li>
+<li><strong>Nadie tiene un Chromebook.</strong></li>
+</ul>
+<hr>
+<h2>10. Comparación con el informe del 2 de noviembre</h2>
+<div class="tw"><table><thead><tr><th>Tema</th><th>2-nov (<code>d8400ff</code>)</th><th>4-nov (<code>6f778914</code>)</th><th>Qué cambió</th><th>Evidencia</th><th>Próximo paso</th></tr></thead><tbody>
+<tr><td>Código en producción</td><td><code>2d6257b</code></td><td><code>85ee868</code></td><td>48 publicaciones</td><td><code>ultima_publicacion.json</code></td><td>Publicar CG-51 a CG-55, 24c y KIMI-010</td></tr>
+<tr><td>Caps. en el mapa real</td><td>2, 3 y 4</td><td><strong>Los 6</strong></td><td>Caps. 5 y 6 encendidos</td><td><code>cf88e2ab</code></td><td>Medir en iPad</td></tr>
+<tr><td>Pasos por capítulo</td><td>8 a 14</td><td><strong>6</strong></td><td>Recorte de Kelvin</td><td>CG-38</td><td>Playtest con niños</td></tr>
+<tr><td>E2E a pie</td><td>Solo cap. 1 y 2</td><td><strong>Los 6, en español y en inglés</strong></td><td>CG-3, CG-23, CG-32, CG-38</td><td><code>config.json</code></td><td>—</td></tr>
+<tr><td>% caps. 2–6 (estimación)</td><td>60/50/50/30/30</td><td>60 en los cinco</td><td>Mapa real y recorrido a pie</td><td>§2</td><td>Playtest y <code>[KELVIN]</code></td></tr>
+<tr><td>iPad</td><td>39 FPS (1-nov); 28 y 8,1 M (2-nov noche)</td><td>Arreglo con 0,6–1,4 M</td><td>KIMI-011</td><td><code>33fb0e2</code></td><td><code>#fps</code> en el iPad</td></tr>
+<tr><td>iPhone</td><td>Sin datos</td><td>Se cerraba; mitigado</td><td>QA-110</td><td><code>04c1a925</code>, <code>89756f8c</code></td><td>Probar en el iPhone</td></tr>
+<tr><td>Android</td><td>89 FPS, mín. 40</td><td><strong>60, mín. 60</strong> (923 k)</td><td>Medida nueva</td><td><code>8b258d01</code></td><td>—</td></tr>
+<tr><td>«Empezar» en móvil</td><td>483–533 ms</td><td>236–292 ms</td><td>KIMI-012</td><td><code>75c531f7</code></td><td>Cerrar la fila de QA-53</td></tr>
+<tr><td>Draw calls de las ruinas</td><td>178 (copia de Kimi)</td><td>150</td><td>KIMI-001</td><td><code>b5bf103</code></td><td>—</td></tr>
+<tr><td>Texturas de edificios</td><td>313–322 MiB</td><td>81 MiB</td><td>KIMI-002</td><td><code>8586f72</code></td><td>—</td></tr>
+<tr><td>Flora en el agua</td><td>KIMI-006/008 libres</td><td>Hechas en la copia de Kimi; revertidas en lo publicado</td><td>movementTest</td><td><code>b0056c00</code>, <code>34e915f0</code></td><td>Arreglar junto al toldo y publicar</td></tr>
+<tr><td>Ciudad de los 36</td><td>KIMI-003 libre</td><td>Color aprobado; de cerca → BM133</td><td>KIMI-004, KIMI-014</td><td><code>d09bb94</code></td><td>BM133</td></tr>
+<tr><td>Edificios rotos</td><td>28 de 64</td><td>Igual (→ BM134)</td><td>—</td><td><code>TAREAS_API.md</code></td><td>BM134</td></tr>
+<tr><td>Pieles</td><td>31 especies</td><td><strong>36 especies, 37 pieles</strong></td><td>BM124 y las extintas</td><td>QA-66 cerrado</td><td>—</td></tr>
+<tr><td>Retratos</td><td>11</td><td><strong>36 en 3D</strong> (Álbum)</td><td>N9</td><td><code>b1696b05</code></td><td>Familia de Iguaca distinguible</td></tr>
+<tr><td>Cómic</td><td>comicTest 32/32</td><td><strong>67/67</strong>, plantilla de Kelvin, 6 capítulos</td><td>N11, CG-30 a CG-37</td><td>§4</td><td>—</td></tr>
+<tr><td>Diversión</td><td>Retos y minijuegos</td><td>+12 sistemas (CG-40 a CG-53)</td><td>Grok</td><td>§4</td><td>CG-54, 55 y 57</td></tr>
+<tr><td>Datos educativos</td><td>10 verificados, 9 parciales, 10 por verificar</td><td>17 de 19 verificados (+1 parcial, 1 narrativo); 23 códigos DEPR</td><td>Verificación con citas literales</td><td><code>6d7ac6f0</code></td><td>Ficha «esperan», CG-51</td></tr>
+<tr><td>Canon</td><td>8 decisiones del 2-nov</td><td>+ vecinos, faroles, ciudad viva, Maraña, 24c, «canoa»</td><td>Kelvin, 4-nov</td><td><code>DECISION_LOG.md</code></td><td>42 puntos abiertos</td></tr>
+<tr><td>Música</td><td>5 temas</td><td>7 temas</td><td>Kelvin (Suno)</td><td><code>c3da3dd3</code></td><td>—</td></tr>
+<tr><td>Informe de pruebas en git</td><td>No</td><td><strong>Sí</strong>, en cada publicación</td><td>CG-2</td><td><code>e008dee</code></td><td>—</td></tr>
+<tr><td>Pruebas <code>AV.*Test</code></td><td>61</td><td>84</td><td>—</td><td>grep</td><td>—</td></tr>
+<tr><td>Tamaño publicado</td><td>223 MB</td><td>300,7 MB</td><td>Sin topes</td><td><code>git ls-tree</code></td><td>Kelvin decide los topes</td></tr>
+<tr><td>Carga inicial</td><td>8,9 MB</td><td>5,86 MB</td><td>Mejor</td><td><code>ultima_publicacion.json</code></td><td>—</td></tr>
+<tr><td>Ranking sin puerta</td><td>Hallazgo</td><td>Igual</td><td>—</td><td><code>records.js:796</code></td><td>Día legal</td></tr>
+<tr><td>Commits de pago inútiles</td><td>142</td><td>1</td><td>Regla anti-duplicados y bucles sin API</td><td><code>git log</code></td><td>—</td></tr>
+</tbody></table></div>
+<p><strong>Directivas que pueden estar desactualizadas:</strong></p>
+<ol>
+<li>«Caps. 5 y 6 en su mundo pequeño» (<code>PROJECT_STATUS.md</code>): ya están en el mapa real.</li>
+<li>«Faltan las mentoras Lilacina y Oratrix» (<code>ROADMAP.md</code>): ya están (CG-19).</li>
+<li>«QA-53 abierto»: KIMI-012 lo resolvió en emulación.</li>
+<li>«13 baterías»: son 12.</li>
+</ol>
+<hr>
+<h2>11. Recomendaciones (como director técnico)</h2>
+<p><strong>1. Qué conservar tal como está</strong></p>
+<ul>
+<li>Vittata: el modelo y el rig.</li>
+<li>Un solo modelo con pieles.</li>
+<li>El motor propio.</li>
+<li>El mundo único con zonas.</li>
+<li>Los 6 pasos por capítulo.</li>
+<li>La disciplina de publicar solo con pruebas, ahora verificable en git.</li>
+<li>El criterio de «cita abierta o no entra» para lo educativo.</li>
+</ul>
+<p><strong>2. Qué necesita corrección urgente</strong> (las decisiones son de Kelvin)</p>
+<ol>
+<li>Confirmar iOS en aparatos reales: el iPhone y <code>#fps</code> en el iPad.</li>
+<li>Las licencias de terceros.</li>
+</ol>
+<p><strong>3. Sistemas suficientemente desarrollados</strong> (no invertir más por ahora)</p>
+<ul>
+<li>Vuelo y movimiento.</li>
+<li>Cámara.</li>
+<li>Criadero.</li>
+<li>Ropero.</li>
+<li>Cómic.</li>
+<li>Aula.</li>
+<li>Guardado.</li>
+<li>Retos.</li>
+<li>Dones y secretos.</li>
+<li>Mis récords.</li>
+<li>Música.</li>
+</ul>
+<p><strong>4. Propuestas que serían redundantes</strong></p>
+<ul>
+<li>Otro sistema de onboarding: ya existe CG-48.</li>
+<li>Otra capa de vida en la ciudad: ya están N17, CG-44 y CG-45. Primero hay que medirlas en un aparato.</li>
+<li>Otro sistema de trucos o de récords.</li>
+<li>Migrar de motor.</li>
+</ul>
+<p><strong>5. Sobre las respuestas de ChatGPT y Gemini (4-nov)</strong></p>
+<ul>
+<li>Sirvieron como pista, pero <strong>muchas citas eran inventadas o no decían lo citado.</strong></li>
+<li>Regla: toda cita de una IA se abre y se copia la frase literal antes de entrar al juego.</li>
+</ul>
+<ol>
+<li>Que la prueba falle si una pista o un aviso tapa un botón (CG-57).</li>
+<li>Una medida en un aparato real después de cada arreglo de rendimiento, antes de cerrar la fila.</li>
+<li>Quitar los commits de trámite: «me la asigno» y «hash tras el rebase» son el 18 % del tramo.</li>
+<li>Una sola cifra de baterías.</li>
+</ol>
+<p><strong>7. Siguiente conjunto mínimo que más mejoraría la experiencia</strong></p>
+<ol>
+<li>CG-57: la pista que tapa «Impulso». Lo ve todo niño nuevo en móvil.</li>
+<li>Publicar lo que está en <code>main</code>.</li>
+<li>Kelvin prueba el iPhone y el iPad.</li>
+<li>KIMI-017: tirones en vuelo.</li>
+<li>Una versión mínima de la vida de la ciudad en «bajo», para que el iPhone no se quede sin ella.</li>
+<li>BM133: la Ciudad de los 36 de cerca.</li>
+<li>Playtest con niños de los caps. 2 a 6.</li>
+</ol>
+<hr>
+<h2>12. Lo que no pude verificar</h2>
+<ul>
+<li>Que amazona-verse.vercel.app sirva hoy exactamente <code>47033312</code>: no consulté el sitio en vivo.</li>
+<li>Las medidas de Kelvin del 4-nov en Android: solo están en el mensaje de commit <code>8b258d01</code>, sin captura ni archivo de medidas.</li>
+<li>Si QA-110 está resuelto de verdad en el iPhone real.</li>
+<li>El estado final del mapa de alturas en <code>main</code>: vi las dos reversiones, pero no comparé el archivo.</li>
+<li>Las licencias de terceros: no hay documentos en el repo, y no corresponde ponerlos.</li>
+<li>Los resultados de las pruebas de cada tarea CG o KIMI: son los que dice su fila; no los volví a correr.</li>
+</ul><h2>Perfiles que harían falta (para terminar y seguir)</h2>
+<div class="tw"><table><thead><tr><th>Perfil</th><th>Para qué</th><th>Urgencia</th></tr></thead><tbody>
+<tr><td><strong>QA en dispositivos reales</strong> (iPhone, iPad, Android de gama baja, Chromebook escolar)</td><td>Jugar la temporada en aparatos reales, medir FPS y memoria y reportar con capturas. Hoy solo se mide en la familia de Kelvin.</td><td>Alta</td></tr>
+<tr><td><strong>Artista 3D técnico</strong> (Blender, optimización para web)</td><td>Versiones de detalle medio de los edificios, LOD y texturas ligeras para móvil sin perder calidad.</td><td>Alta</td></tr>
+<tr><td><strong>Diseñador de juego / nivel</strong></td><td>Afinar la diversión de cada capítulo de 6 pasos, el ritmo y los minijuegos con pruebas con niños.</td><td>Media</td></tr>
+<tr><td><strong>Testers niños y familias</strong> (con permiso de los padres)</td><td>Sesiones de juego observadas: qué confunde, qué aburre, qué hace reír.</td><td>Media</td></tr>
+<tr><td><strong>Educador/a revisor</strong></td><td>Revisar las fichas educativas y su correspondencia con los estándares del DEPR 2022.</td><td>Media</td></tr>
+<tr><td><strong>Abogado/a (propiedad intelectual y privacidad infantil)</strong></td><td>El día legal: licencias, privacidad de menores y condiciones de uso antes del lanzamiento amplio.</td><td>Antes del lanzamiento</td></tr>
+<tr><td><strong>Compositor/a o diseñador/a de sonido</strong></td><td>Efectos de sonido propios y más temas para momentos concretos.</td><td>Baja</td></tr>
+</tbody></table></div>
+</main></body></html>
