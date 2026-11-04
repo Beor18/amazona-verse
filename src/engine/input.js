@@ -1,5 +1,6 @@
 /* AVE · entrada
    Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, T/G mirar arriba/abajo (los lee camara.js), 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
+   CG-40: en el móvil el joystick nace bajo el dedo (mitad del pulgar; a la derecha si el modo es zurdo), con zona muerta y una curva que acelera al empujar más. El otro dedo gira la cámara y no suelta el palo. Un latigazo vertical en el lado de los botones despega (arriba) o pide aterrizar (abajo). Al tocar suelo o recoger una cosa, una vibración corta.
    Solo traduce entrada a llamadas: G.fisica (saltar, soltar el salto, impulso, volar/aterrizar), G.actores (gestos), G.interaccion (acción).
    Volar y dejar de volar: V (o el botón Volar) despega; volando, V (o el botón, que pasa a decir "Aterrizar") baja suave hasta el
    suelo; otra vez V o Saltar sigue volando. Volando sin tocar nada se queda cernida en el sitio; Espacio sube y C baja.
@@ -162,18 +163,60 @@ AVE.module('input', function (G) {
   montar(); pintar();
 
   const stickEl = $('stick'), knob = $('knob');
-  let stickId = null;
-  stickEl.addEventListener('pointerdown', e => { stickId = e.pointerId; stickEl.setPointerCapture(e.pointerId); moveStick(e); });
-  stickEl.addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); });
-  const endStick = e => { if (e.pointerId !== stickId) return; stickId = null; stick.x = stick.y = 0; knob.style.transform = ''; };
-  stickEl.addEventListener('pointerup', endStick); stickEl.addEventListener('pointercancel', endStick);
+  let stickId = null, gesto = null, vibrarPrueba = false, nRec = -1, ultimaVibra = 0;
+  const MUERTA = 0.2, CURVA = 1.45; // por debajo no hay marcha; a partir de ahí la salida crece más rápido que el dedo
+  const ladoPalo = () => { const n = parseFloat(getComputedStyle(stickEl).width); return n > 20 ? n : 136; };
+  const zurdo = () => document.documentElement.classList.contains('a11y-zurdo');
+  const zonaPalo = x => (zurdo() ? x > innerWidth * 0.55 : x < innerWidth * 0.45);
+  function colocarPalo(x, y) {
+    const lado = ladoPalo();
+    stickEl.style.left = Math.max(8, Math.min(innerWidth - lado - 8, x - lado / 2)) + 'px';
+    stickEl.style.top = Math.max(8, Math.min(innerHeight - lado - 8, y - lado / 2)) + 'px';
+    stickEl.style.right = 'auto'; stickEl.style.bottom = 'auto';
+    stickEl.classList.add('flotando');
+  }
+  function soltarPalo() { stickId = null; stick.x = stick.y = 0; knob.style.transform = ''; }
   function moveStick(e) {
     const r = stickEl.getBoundingClientRect();
-    let dx = (e.clientX - r.left - r.width / 2) / (r.width / 2), dy = (e.clientY - r.top - r.height / 2) / (r.height / 2);
-    const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; }
-    stick.x = dx; stick.y = dy;
-    knob.style.transform = `translate(${dx * 35}px, ${dy * 35}px)`;
+    const radio = Math.max(24, (r.width > 2 ? r.width : ladoPalo()) / 2);
+    const cx = r.width > 2 ? r.left + radio : e.clientX, cy = r.height > 2 ? r.top + radio : e.clientY;
+    let dx = (e.clientX - cx) / radio, dy = (e.clientY - cy) / radio;
+    const mag = Math.hypot(dx, dy) || 1, vis = Math.min(1, mag);
+    knob.style.transform = `translate(${dx / mag * vis * 35}px, ${dy / mag * vis * 35}px)`;
+    if (mag < MUERTA) { stick.x = stick.y = 0; return; }
+    const n = Math.min(1, (mag - MUERTA) / (1 - MUERTA)), a = Math.pow(n, CURVA);
+    stick.x = dx / mag * a; stick.y = dy / mag * a;
   }
+  function tomarPalo(e) {
+    if (paused() || stickId != null) return false;
+    const toque = !e.pointerType || e.pointerType === 'touch' || e.pointerType === 'pen';
+    if (!toque) return false;
+    colocarPalo(e.clientX, e.clientY);
+    stickId = e.pointerId;
+    try { stickEl.setPointerCapture(e.pointerId); } catch (err) { /* el dedo sigue en el lienzo */ }
+    moveStick(e);
+    return true;
+  }
+  stickEl.addEventListener('pointerdown', e => { e.preventDefault(); tomarPalo(e); });
+  addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); }, true);
+  addEventListener('pointerup', e => { if (e.pointerId === stickId) soltarPalo(); }, true);
+  addEventListener('pointercancel', e => { if (e.pointerId === stickId) soltarPalo(); }, true);
+  // Vibración corta al posarse y al recoger. En el escritorio no se llama: Chrome lo anota si no hubo un toque.
+  function zumba(ms) {
+    if (!vibrarPrueba && !(G.renderer && G.renderer.MOBILE)) return;
+    ultimaVibra = ms;
+    if (!navigator.vibrate) return;
+    if (navigator.userActivation && navigator.userActivation.hasBeenActive === false) return;
+    try { navigator.vibrate(ms); } catch (e) { /* este aparato no vibra */ }
+  }
+  function mirarRecogido() {
+    const n = (G.S && G.S.collected && G.S.collected.length) || 0;
+    if (nRec < 0) { nRec = n; return; }
+    if (n === nRec + 1) zumba(14);
+    nRec = n;
+  }
+  G.on('update', mirarRecogido);
+  G.on('vuelo', on => { if (!on) zumba(20); });
   const jumpBtn = $('b-jump');
   jumpBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (paused()) return; jumpHeld = true; G.fisica.tryJump(); });
   const jumpUp = () => { if (jumpHeld) G.fisica.releaseJump(); jumpHeld = false; };
@@ -217,17 +260,39 @@ AVE.module('input', function (G) {
   let dragId = null, dragX = 0, dragY = 0, dragVivo = false, dosDedos = false;
   canvas.addEventListener('pointerdown', e => {
     enLienzo.add(e.pointerId);
-    if (enLienzo.size > 1) { dosDedos = true; dragId = null; return; }
+    if (e.pointerId === stickId) return;
+    const toque = e.pointerType === 'touch' || e.pointerType === 'pen';
+    if (toque && stickId == null && zonaPalo(e.clientX) && tomarPalo(e)) return;
+    // Dos dedos en el lienzo, y ninguno es el joystick: es un pellizco, no un giro. Si uno ya es el palo, el otro sí gira.
+    if (enLienzo.size > 1 && stickId == null) { dosDedos = true; dragId = null; return; }
     dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; dragVivo = !(ZONA_MUERTA[e.pointerType] > 0);
+    gesto = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), yaw: G.camara.yaw, pitch: 0, derecha: !zonaPalo(e.clientX) };
   });
   canvas.addEventListener('pointermove', e => {
-    if (e.pointerId !== dragId || dosDedos) return;
+    if (e.pointerId === stickId || e.pointerId !== dragId || dosDedos) return;
     if (!dragVivo) { if (Math.hypot(e.clientX - dragX, e.clientY - dragY) < ZONA_MUERTA[e.pointerType]) return; dragVivo = true; dragX = e.clientX; dragY = e.clientY; return; }
     G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX;
-    if (G.camara.inclinar) G.camara.inclinar((dragY - e.clientY) * 0.005); dragY = e.clientY;
+    const dPitch = (dragY - e.clientY) * 0.005;
+    if (gesto && gesto.id === e.pointerId) gesto.pitch += dPitch;
+    if (G.camara.inclinar) G.camara.inclinar(dPitch); dragY = e.clientY;
     if (G.camara.manual) G.camara.manual();
   });
-  const endDrag = e => { enLienzo.delete(e.pointerId); if (e.pointerId === dragId) dragId = null; if (!enLienzo.size) dosDedos = false; };
+  const endDrag = e => {
+    enLienzo.delete(e.pointerId);
+    if (gesto && gesto.id === e.pointerId) {
+      const dt = performance.now() - gesto.t, dy = e.clientY - gesto.y, dx = e.clientX - gesto.x;
+      const toque = e.pointerType === 'touch' || e.pointerType === 'pen';
+      if (toque && gesto.derecha && dt < 340 && Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(dx) * 1.6 && !paused()) {
+        G.camara.yaw = gesto.yaw;
+        if (gesto.pitch && G.camara.inclinar) G.camara.inclinar(-gesto.pitch);
+        if (dy < 0 && !G.fisica.MOVE.flying) G.fisica.startFlying();
+        else if (dy > 0 && G.fisica.MOVE.flying) G.fisica.land();
+      }
+      gesto = null;
+    }
+    if (e.pointerId === dragId) dragId = null;
+    if (!enLienzo.size) dosDedos = false;
+  };
   addEventListener('pointerup', endDrag, true); addEventListener('pointercancel', endDrag, true); // en window: el dedo puede levantarse sobre un botón del HUD
 
   // ---------- Pruebas (AV.teclasTest) ----------
@@ -276,6 +341,65 @@ AVE.module('input', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
+  // Toques sintéticos (AV.tactilTest). Deja la cámara, el vuelo y el palo como estaban.
+  function tactil() {
+    const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
+    const canvas = G.renderer.canvas;
+    const ev = (tipo, o) => canvas.dispatchEvent(new PointerEvent(tipo, Object.assign({ bubbles: true, cancelable: true, pointerType: 'touch', clientX: 0, clientY: 0 }, o)));
+    const estilo = ['left', 'top', 'right', 'bottom', 'display'].reduce((a, k) => (a[k] = stickEl.style[k], a), {});
+    const yaw0 = G.camara.yaw, fly = G.fisica.startFlying, aterr = G.fisica.land, vibra = navigator.vibrate;
+    let despegues = 0, bajadas = 0;
+    G.fisica.startFlying = () => { despegues++; };
+    G.fisica.land = () => { bajadas++; };
+    vibrarPrueba = true;
+    try { navigator.vibrate = n => { ms = n; return true; }; } catch (e) { /* vibrate es de solo lectura en algún navegador */ }
+    try {
+      stickEl.style.display = 'block';
+      const y = Math.round(innerHeight * 0.72), x = 72;
+      ev('pointerdown', { pointerId: 11, clientX: x, clientY: y });
+      ok('el joystick aparece bajo el dedo', stickEl.classList.contains('flotando') && stickId === 11, stickEl.style.left);
+      ev('pointermove', { pointerId: 11, clientX: x + 6, clientY: y });
+      ok('zona muerta: un temblor no mueve', stick.x === 0 && stick.y === 0, stick.x + ',' + stick.y);
+      ev('pointermove', { pointerId: 11, clientX: x + 52, clientY: y });
+      ok('a media caña la marcha es suave', stick.x > 0.05 && stick.x < 0.85, String(stick.x));
+      const sx = stick.x, y1 = Math.round(innerHeight * 0.42);
+      ev('pointerdown', { pointerId: 12, clientX: innerWidth - 80, clientY: y1 });
+      ev('pointermove', { pointerId: 12, clientX: innerWidth - 60, clientY: y1 }); // cruza la zona muerta de la cámara
+      ev('pointermove', { pointerId: 12, clientX: innerWidth - 20, clientY: y1 });
+      ok('el otro dedo gira la cámara y el joystick sigue', G.camara.yaw !== yaw0 && stickId === 11 && Math.abs(stick.x - sx) < 0.08, 'yaw ' + G.camara.yaw + ' palo ' + stick.x);
+      ev('pointerup', { pointerId: 12, clientX: innerWidth - 30, clientY: y1 });
+      ev('pointerup', { pointerId: 11, clientX: x + 52, clientY: y });
+      ok('al soltar, el joystick vuelve a cero', stickId == null && stick.x === 0 && stick.y === 0);
+      G.camara.yaw = yaw0;
+      const xr = innerWidth - 90, yr = Math.round(innerHeight * 0.5);
+      ev('pointerdown', { pointerId: 13, clientX: xr, clientY: yr });
+      ev('pointerup', { pointerId: 13, clientX: xr + 4, clientY: yr - 96 });
+      ok('latigazo hacia arriba: despegar', despegues === 1 && bajadas === 0, despegues + '/' + bajadas);
+      G.fisica.MOVE.flying = true;
+      ev('pointerdown', { pointerId: 14, clientX: xr, clientY: yr - 40 });
+      ev('pointerup', { pointerId: 14, clientX: xr - 4, clientY: yr + 50 });
+      ok('latigazo hacia abajo: aterrizar', bajadas === 1, String(bajadas));
+      G.fisica.MOVE.flying = false; G.fisica.MOVE.landing = false;
+      G.emit('vuelo', false);
+      ok('al posarse vibra un momento', ultimaVibra === 20, String(ultimaVibra));
+      ultimaVibra = 0;
+      const col = G.S.collected;
+      col.push('__tactil'); mirarRecogido();
+      ok('al recoger una cosa vibra', ultimaVibra === 14, String(ultimaVibra));
+      col.pop(); mirarRecogido();
+    } catch (e) { ok('sin excepciones', false, e && e.message); }
+    G.fisica.startFlying = fly; G.fisica.land = aterr;
+    G.fisica.MOVE.flying = false; G.fisica.MOVE.landing = false;
+    const marca = G.S.collected.indexOf('__tactil'); if (marca >= 0) G.S.collected.splice(marca, 1);
+    try { navigator.vibrate = vibra; } catch (e) { /* igual */ }
+    vibrarPrueba = false; mirarRecogido();
+    soltarPalo(); gesto = null; dragId = null; dosDedos = false; enLienzo.clear();
+    stickEl.classList.remove('flotando');
+    for (const k of Object.keys(estilo)) stickEl.style[k] = estilo[k];
+    G.camara.yaw = yaw0;
+    return { passed: results.filter(r => r.ok).length, total: results.length, results };
+  }
+
   return { keys, stick, get jumpHeld() { return jumpHeld; }, set jumpHeld(v) { jumpHeld = v; }, actBtn, syncSwimButtons,
-    ACCIONES, DEFECTO, get mapa() { return Object.assign({}, mapa); }, asignar, restablecer, es, test };
+    ACCIONES, DEFECTO, get mapa() { return Object.assign({}, mapa); }, asignar, restablecer, es, test, tactil, mirarRecogido };
 });
