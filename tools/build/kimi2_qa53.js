@@ -3,9 +3,12 @@
    El adaptativo cambia de calidad (~3 s tras el reveal) y todas las familias con luz pedían programa nuevo
    (USE_SHADOWMAP) dentro del primer dibujo: tirón de 100–600 ms. Fix en renderer.js: genLuz entra en la clave
    del precalentado de las familias con luz y el recalentado las re-enlaza por tandas (6/cuadro) fuera del dibujo.
-   Esta herramienta: entra con partida sembrada (móvil 375×812 dpr 3, CPU ×4, GPU real), deja pasar el reveal,
-   fuerza setCalidad medio→bajo (sombras OFF, la tormenta) y mide los cuadros siguientes. Control visual:
-   draw calls y píxeles no negros a los 5 s (nada queda oculto). Salida: consola + docs/img/kimi053/qa53.json.
+   Esta herramienta: entra con partida sembrada (móvil 375×812 dpr 3, CPU ×4, GPU real), SALTA la apertura del
+   cap1 (botón «Saltar»/tecla, como missionTest), espera el asentado REAL (calls>30 + precalentado 0 +
+   cola de streaming 0, 8 muestras), asienta el medio (pend 0) y fuerza medio→bajo (sombras OFF, la tormenta),
+   midiendo los cuadros siguientes. Control visual: draw calls + píxeles no negros leídos EN el cuadro del
+   render (leer el buffer presentado daba negro siempre) + captura CDP qa53_rN_control.png + capa #c1-fade.
+   Salida: consola + docs/img/kimi053/qa53.json.
    Uso: node tools/build/kimi2_qa53.js [--rondas 2]
 */
 'use strict';
@@ -81,9 +84,26 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
   if (cr && !cr.hidden) { await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000); const s = $('p-save'); if (!s) return 'sin Empezar';
     s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador'; }
   const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil creado tras entrar';
-  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
-  const visible = await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
-  if (!visible) return 'mundo no visible en 20 s (carga atascada o PC contencionada)';
+  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(20000);
+  const visible = await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 15000);
+  if (!visible) return 'mundo no visible en 15 s (carga atascada o PC contencionada)';
+  // QA-111: la entrada sembrada es intermitente — a veces ST.arrancar() se atasca y mundoListo NO llega
+  // (decenas de recursos congelados en cola) o el hilo se queda bloqueado. El arnés de baterías reintenta
+  // con recarga; este flujo, también (el node recarga y reentra ante este RESCATE o ante un timeout).
+  const listoOk = await Promise.race([
+    (window.AV.G.mundo && window.AV.G.mundo.listo || Promise.resolve()).then(() => true),
+    sleep(60000).then(() => false)
+  ]);
+  if (!listoOk) return 'RESCATE: mundoListo no llegó en 60 s (entrada atascada, flake QA-111)';
+  // QA-53: saltar la apertura del cap1 (AP1: botón «Saltar» o cualquier tecla, mismo final). Sin esto la intro
+  // mantiene la cámara fuera de la villa y el streaming nunca asienta; las baterías la saltan y asientan en ~9 s.
+  try {
+    let salto = false;
+    const t0 = performance.now();
+    while (performance.now() - t0 < 10000) { const b = $('c1-saltar'); if (b) { b.click(); salto = true; break; } await sleep(200); }
+    if (!salto) dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  } catch (e) {}
+  await sleep(600);
   return 'ok'; })()`;
 // Mide la ventana [t0,t1] s desde el arranque de la sonda: cuadros largos + estado del renderer
 const VENTANA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), Q = window.__qaM;
@@ -95,24 +115,50 @@ const VENTANA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeo
   const out = { n, p50: q(0.5), p95: q(0.95), peor: n ? Math.round(d[n - 1]) : 0, mas100: d.filter(x => x > 100).length, mas200: d.filter(x => x > 200).length, top: Q.top.slice(0, 6), marcas };
   Q.dt = []; Q.top = [];
   return JSON.stringify(out); })()`;
-// Fuerza la tormenta: sombras ON → OFF (medio → bajo) y mide 4 s; control a los 5 s: el mundo se ve (calls y píxeles)
+// Fuerza la tormenta: sombras ON → OFF (medio → bajo) y mide 4 s; control: el mundo se ve (calls y píxeles)
 const TORMENTA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), R = AV.G.renderer;
-  // QA-157: esperar a que la carga asiente (evento mundoListo → precarga activa) y el mundo dibuje de verdad
-  // antes de forzar la tormenta; si no, las ventanas miden la pantalla de carga y la ronda no vale.
-  const t0 = performance.now(); let ok = false;
-  while (performance.now() - t0 < 120000) { try { if (R.precarga.programas() >= 0 && R.stats().calls > 30) { ok = true; break; } } catch (e) {} await sleep(500); }
-  if (!ok) return JSON.stringify({ error: 'mundo no asentado en 120 s (CPU ×4 + calidad alta: carga lenta; sospechar QA-157 solo si hay fotos sync con GPU real — con el fix v3 sync solo dispara en GPU de software)' });
-  R.setCalidad('medio', true); await sleep(2500);   // base asentada CON sombras
+  const ST = (AV.G.mundo && AV.G.mundo.streaming) || (AV.G.streaming && AV.G.streaming.gestor);
+  const cola = () => { try { const s = ST.stats(); return s.trabajos + s.descargando; } catch (e) { return 0; } };
+  // 1) Asentado LOCAL: el check viejo (una muestra de calls>30) disparaba en plena carga y la ventana medía el
+  //    drenado (inválida). Ahora: calls>30 + precalentado de programas en 0 (programas enlazados), 8 muestras
+  //    seguidas (4 s). NO se exige cola de streaming a 0: en la villa (d=228) la ciudad oscila cargando/soltando
+  //    por diseño (QA-158) y esos recursos lejanos no contaminan el dibujo local. Timeout 150 s.
+  const t0 = performance.now(); let seg = 0, asentado = false, ultima = {};
+  while (performance.now() - t0 < 150000) {
+    let calls = 0, pend = -1, trab = -1, desc = -1;
+    try { calls = R.stats().calls; pend = R.precarga.programas(); } catch (e) {}
+    try { const s = ST.stats(); trab = s.trabajos; desc = s.descargando; } catch (e) {}
+    ultima = { calls, pend, trabajos: trab, descargando: desc, seg };
+    if (calls > 30 && pend === 0) { seg++; if (seg >= 8) { asentado = true; break; } } else seg = 0;
+    await sleep(500);
+  }
+  if (!asentado) return JSON.stringify({ error: 'mundo no asentado en 150 s', ultima });
+  const asentadoMs = Math.round(performance.now() - t0);
+  // 2) Base CON sombras: dejar que el precalentado del medio drene (pend === 0) antes de la tormenta;
+  //    si no, los enlaces del medio contaminan la ventana del bajo.
+  R.setCalidad('medio', true);
+  const tm = performance.now();
+  while (performance.now() - tm < 60000) { try { if (R.precarga.programas() === 0) break; } catch (e) {} await sleep(500); }
+  const medioMs = Math.round(performance.now() - tm);
   const antes = R.stats();
-  R.setCalidad('bajo', true);                        // ← tormenta: todas las familias con luz piden programa nuevo
+  // 3) Tormenta: bajo = sombras OFF → todas las familias con luz piden programa nuevo (fix 849cba57: el
+  //    recalentado las re-enlaza por tandas fuera del dibujo; pend>0 al inicio de la ventana es ESPERADO).
+  R.setCalidad('bajo', true);
+  try { if (window.__fases) window.__fases.length = 0; } catch (e) {} // el log tiene tope de 400 filas: vaciarlo para que cubra la ventana
   const r = JSON.parse(await (${VENTANA_JS}));
+  r.fases = (window.__fases || []).slice();
+  // 4) Control: píxeles leídos EN EL MISMO cuadro que el render (el buffer WebGL se presenta y se limpia:
+  //    leerlo tras un sleep daba negro siempre — artefacto que invalidaba el control viejo).
   await sleep(1000);
   const control = await (async () => { const s = R.stats(); let pix = null;
-    try { const c = document.createElement('canvas'); c.width = 64; c.height = 64; const x = c.getContext('2d');
-      x.drawImage(R.renderer.domElement, 0, 0, 64, 64); const d = x.getImageData(0, 0, 64, 64).data; let n = 0;
-      for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 24) n++; pix = Math.round(100 * n / (d.length / 4)); } catch (e) {}
-    return { calls: s.calls, tris: s.triangulos, fps: s.fps, pixNoNegros: pix, pend: R.precarga.programas() }; })();
-  return JSON.stringify({ antes: { calidad: antes.calidad, calls: antes.calls, fps: antes.fps }, tormenta: r, control }); })()`;
+    try { pix = await new Promise(res => { const cv = R.renderer.domElement;
+      requestAnimationFrame(() => { try { const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+        const x = c.getContext('2d'); x.drawImage(cv, 0, 0, 64, 64); const d = x.getImageData(0, 0, 64, 64).data; let n = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 24) n++; res(Math.round(100 * n / (d.length / 4)));
+      } catch (e) { res(null); } }); }); } catch (e) {}
+    let fade = null; try { const f = document.getElementById('c1-fade'); fade = f ? String(f.style.opacity || getComputedStyle(f).opacity) : 'ausente'; } catch (e) {}
+    return { calls: s.calls, tris: s.triangulos, fps: s.fps, pixNoNegros: pix, fade, pend: R.precarga.programas(), cola: cola() }; })();
+  return JSON.stringify({ asentadoMs, medioMs, antes: { calidad: antes.calidad, calls: antes.calls, fps: antes.fps }, tormenta: r, control }); })()`;
 
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi2-'));
@@ -139,23 +185,44 @@ async function lanzarChrome() {
   const cdp = new CDP(ws); await cdp.listo();
   try {
     for (let ronda = 1; ronda <= RONDAS; ronda++) {
-      const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
-      const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
-      for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
-      await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: true }, ses);
-      await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
-      await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS + ' ' + SONDA_JS }, ses);
-      await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&fases=1' }, ses);
-      { // esperar a que el juego arranque (actores listos) antes de reentrar
+      let tid = null, ses = null;
+      const nuevaPagina = async () => {
+        if (tid) { try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10000); } catch (e) {} await cdp.bombear(0.5); }
+        tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
+        ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
+        for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
+        await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: true }, ses);
+        await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
+        await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS + ' ' + SONDA_JS }, ses);
+        await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&fases=1' }, ses);
         const t0 = Date.now(); let listo = false;
         while (Date.now() - t0 < 90000) { try { if (await ev(cdp, ses, `!!(window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D))`, 10, false)) { listo = true; break; } } catch (e) { /* aún no */ } await cdp.bombear(0.5); }
         if (!listo) throw new Error('el juego no arrancó en 90 s');
+      };
+      // QA-111: la entrada sembrada es intermitente (mundoListo puede no llegar o el hilo bloquearse);
+      // ante RESCATE, timeout o cualquier error de entrada: recargar y reentrar (máx 2), y la ronda se
+      // registra como fallida sin matar la corrida.
+      let rescates = 0, prepOk = false;
+      while (rescates <= 2) {
+        try {
+          await nuevaPagina();
+          const prep = await ev(cdp, ses, PREPARAR_JS, 110);
+          if (String(prep).startsWith('ok')) { prepOk = true; break; }
+          if (String(prep).startsWith('RESCATE')) { rescates++; console.log(`  · ronda ${ronda}: ${String(prep).slice(0, 56)} — recargando (${rescates}/2)`); continue; }
+          throw new Error('preparar: ' + prep);
+        } catch (e) {
+          rescates++;
+          if (rescates > 2) { res.rondas.push({ ronda, error: 'sin entrada: ' + e.message }); console.log(`  · ronda ${ronda} ⚠ SIN ENTRADA tras 2 rescates: ${String(e.message).slice(0, 80)}`); break; }
+          console.log(`  · ronda ${ronda}: entrada falló (${String(e.message).slice(0, 56)}) — recargando (${rescates}/2)`);
+        }
       }
-      const prep = await ev(cdp, ses, PREPARAR_JS, 90);
-      if (!String(prep).startsWith('ok')) throw new Error('preparar: ' + prep);
+      if (!prepOk) { await cdp.bombear(1); continue; }
+      if (rescates) res['rescates_r' + ronda] = rescates;
+      res['preparar_r' + ronda] = 'ok';
       if (ronda === 1) { try { res.gpu = await ev(cdp, ses, `(() => { const gl = AV.G.renderer.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'sin debug_info'; })()`, 15); } catch (e) { res.gpu = 'n/d'; } }
       const reveal = JSON.parse(await ev(cdp, ses, VENTANA_JS, 30)); // 4 s post-reveal (el adaptativo dispara ~3 s)
-      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 150));
+      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 240));
+      try { const shot = await cdp.call('Page.captureScreenshot', { format: 'png' }, ses); fs.writeFileSync(path.join(SALIDA, `qa53_r${ronda}_control.png`), Buffer.from(shot.data, 'base64')); } catch (e) {}
       if (tormenta.error) {
         res.rondas.push({ reveal, tormenta, valida: false });
         console.log(`  · ronda ${ronda} ⚠ ABORTADA: ${tormenta.error}`);
@@ -165,7 +232,7 @@ async function lanzarChrome() {
       }
       const valida = tormenta.control.calls > 0 && tormenta.control.pixNoNegros > 0;
       res.rondas.push({ reveal, tormenta, valida });
-      console.log(`  · ronda ${ronda}${valida ? '' : ' ⚠ NO VÁLIDA (mundo sin dibujar: carga atascada o contención)'}: reveal p50 ${reveal.p50} p95 ${reveal.p95} peor ${reveal.peor} ms (>200: ${reveal.mas200}) · tormenta peor ${tormenta.tormenta.peor} ms p95 ${tormenta.tormenta.p95} (>200: ${tormenta.tormenta.mas200}) · control ${tormenta.control.calls} calls ${tormenta.control.pixNoNegros}% px · cal ${tormenta.control.calls > 0 ? tormenta.tormenta.marcas.map(m => m.cal).join('>') : '??'}`);
+      console.log(`  · ronda ${ronda}${valida ? '' : ' ⚠ NO VÁLIDA (mundo sin dibujar)'}: reveal p50 ${reveal.p50} p95 ${reveal.p95} peor ${reveal.peor} ms · asentado ${tormenta.asentadoMs / 1000}s · medio ${tormenta.medioMs / 1000}s · tormenta peor ${tormenta.tormenta.peor} ms p95 ${tormenta.tormenta.p95} (>200: ${tormenta.tormenta.mas200}) · control ${tormenta.control.calls} calls ${tormenta.control.pixNoNegros}% px fade ${tormenta.control.fade} · pend ${tormenta.tormenta.marcas.map(m => m.pend).join('>')}`);
       try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}
       await cdp.bombear(1);
     }
