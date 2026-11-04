@@ -24,6 +24,8 @@ Kelvin pidió la B (llega después de la crecida) solo si no rompe la misión. H
 
 La prueba del propio capítulo lo exige: `content/cap1/pruebas.js` comprueba que aparece al llegar al paso de construir y que la p.7 se oye antes de construir, sin adelantar el paso. Cambiar el orden rompe esa misión y esas comprobaciones. **K35 B no se aplica.** Se queda el orden de ahora hasta que Kelvin diga cómo rehacer el paso 4 y la p.8.
 
+**Revisado otra vez el 4-nov (agente web, W16)** contra el código de hoy: `content/cap1/historia.js` 264–266 (`applyGuardianLook`: visible desde el paso 4 o con algo construido, oculto durante la crecida), 287–301 (p.7, presentación antes de construir) y 411–414 (p.8 al levantar el refugio, justo antes de la crecida); `content/cap1/pruebas.js` 107–117, 134 y 148–149 lo comprueban. Para aplicar la B haría falta que el Guardián no salga en el paso 4 y mover o reescribir la p.7 y la p.8 («vamos a comprobarlo» anuncia la crecida). Eso es historia: **lo decide Kelvin**. Hasta entonces K35 B sigue sin aplicarse y no se tocó `historia.js`.
+
 K36 B queda anotado: el detalle visible de la medalla espera arte. No se inventó ninguno.
 
 ## Ya decidido (no hace falta volver a decirlo)
