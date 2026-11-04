@@ -555,7 +555,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       u.num.textContent = String(J.puntos);
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
-      const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; u.rank.hidden = !(J.nuevo && claveRec === ALMACEN && J.puntos > 0); // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
+      const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; u.rank.hidden = !(G.RANKING_EN_LINEA === true && J.nuevo && claveRec === ALMACEN && J.puntos > 0); /* L3: ranking en línea apagado */ // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
       u.fin.hidden = false; u.fin.querySelector('[data-compartir]').hidden = !J.mejor;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }

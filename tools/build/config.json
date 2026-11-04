@@ -26,12 +26,8 @@
       "cdnjs.cloudflare.com",
       "cdn.jsdelivr.net"
     ],
-    "estilos": [
-      "fonts.googleapis.com"
-    ],
-    "fuentes": [
-      "fonts.gstatic.com"
-    ],
+    "estilos": [],
+    "fuentes": [],
     "conexiones": [
       "muxxdjyxwjxaoziczkcz.supabase.co"
     ]
