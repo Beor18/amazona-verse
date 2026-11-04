@@ -17,7 +17,7 @@
   - Falla con cualquier 404, error de consola o base64 retenido. Con `--solo-medir`, no corre las baterías.
 - **Publicar (solo el coordinador):** `file_path` = `site/index.html`, `files` = `files_map` y la `url` del artifact. No se pasa `capabilities`, para conservar `downloads`.
 - **Entorno:** el Python de Blender (`lib.sh` lo busca; también sirve `AV_PYTHON`), nunca `python3` del sistema. Ajustes en `tools/build/config.json`. `salida/` no se versiona.
-- **Límites de build:** `archivos_max`, `total_max_mb`, `archivo_max_mb` y `objetivo_mb` en `0` desactivan todos los límites de cantidad y tamaño.
+- **Límites de build (CG-61):** `archivos_max` 1100, `total_max_mb` 460 y `archivo_max_mb` 40. `build.sh` falla si se pasan. Un `0` en cualquiera de esos tres lo apaga. `objetivo_mb` sigue en 0 (no es un tope). La carga inicial la falla `test.sh`: `pruebas.presupuestos.descarga_inicial_mb` 28, y está en `fallan`. El mismo 28 está en `limites.carga_inicial_max_mb` para que el número viva en un solo sitio; `build.sh` no lo mide. Medido aquí: 371,34 MB, 871 archivos, mayor archivo 20,13 MB (`templo_mediano_h_hd_glb.js`), carga inicial 10,46 MB. La última publicación anotada trae 19,95 MB de carga. La nota de la tarea citaba 300,7 MB y 5,86 MB: con compresión de geometría la build baja, y estos topes también la dejan pasar.
 
 ## Compresión de geometría y WebP (QA-10)
 - **Paso `geometria` de la build** (`avbuild.py`, `config.json` → `geometria`; se desactiva con `--sin-geometria`):
