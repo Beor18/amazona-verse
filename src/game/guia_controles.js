@@ -206,7 +206,14 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];
   const pmE = { hecho: {}, t: 0, volaba: false };
   let pmForzar = false;
-  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k]) || '';
+  function pmPuede(k) {
+    if (k === 'truco') return true;
+    const tactil = [...document.querySelectorAll('#acts .btn, #stick')].some(n => !n.hidden && n.getClientRects().length);
+    if (!tactil) return true;
+    const el = document.getElementById(PM_BLANCO[k] || '');
+    return !!(el && !el.hidden && el.getClientRects().length && el.getBoundingClientRect().width >= 8);
+  }
+  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k] && pmPuede(k)) || '';
   function pmMarcar(k) {
     if (!k || pmE.hecho[k]) return;
     pmE.hecho[k] = true; pmE.t = 0;
@@ -288,8 +295,10 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (M.flying) { pmMarcar('despegar'); pmE.volaba = true; }
     if (pmE.volaba && !M.flying && M.grounded) pmMarcar('posar');
     if ((M.dashT || 0) > 0 || (G.input.keys && G.input.keys.has('f'))) pmMarcar('impulso');
-    const antes = pmPaso();
-    if (antes) pmE.t += dt || 0; else pmE.t = 0;
+    const id = pmPaso();
+    if (pmE.visto && id !== pmE.visto) pmE.t = 0;
+    pmE.visto = id;
+    if (id) pmE.t += dt || 0; else pmE.t = 0;
     pintarPm();
   }
   G.on('truco', () => { pmMarcar('truco'); pintarPm(); });
@@ -442,13 +451,21 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
         h.huecos.map(x => x.id + ' ' + x.px.toFixed(1)).join(', ') + ' sombra ' + h.som);
       const fly = document.getElementById('b-fly');
       if (fly) fly.hidden = true;
-      pmE.hecho = { mover: true }; pmE.t = 0; pmE.volaba = false;
+      pmE.hecho = { mover: true, posar: true, impulso: true, truco: true }; pmE.t = 19; pmE.visto = 'despegar'; pmE.volaba = false;
       M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
+      pmTick(5);
+      const qOff = document.getElementById('quest');
+      ok('Si despegar no se puede, su contador no señala la misión', pm.hidden && !pm.classList.contains('pm-atascado') && !(qOff && qOff.classList.contains('pm-senala')) && pmE.t < 20,
+        't ' + pmE.t + ' paso ' + (pm.dataset.paso || ''));
+      pmE.hecho = { mover: true }; pmE.t = 19; pmE.visto = 'despegar'; pmE.volaba = false;
       pmTick(0.05);
       const rOff = pm.getBoundingClientRect();
-      ok('Sin el botón de volar el anillo no cae sobre Impulso', pm.dataset.paso === 'despegar' && rOff.right < 0 && huecoPm(rOff, dash.getBoundingClientRect()) >= 0,
-        'paso ' + pm.dataset.paso + ' left ' + Math.round(rOff.left));
+      ok('Sin el botón de volar, despegar no sigue activo y el anillo no cae sobre Impulso', pm.dataset.paso === 'impulso' && !pm.hidden && pmE.t < 1 && huecoPm(rOff, dash.getBoundingClientRect()) < 0,
+        'paso ' + pm.dataset.paso + ' t ' + pmE.t + ' left ' + Math.round(rOff.left));
       if (fly) fly.hidden = false;
+      pmTick(0.05);
+      ok('Al volver el botón de volar, despegar cuenta de nuevo sin el atasco', pm.dataset.paso === 'despegar' && pmE.t < 1 && !pm.classList.contains('pm-atascado'),
+        't ' + pmE.t);
       if (lg0) raiz.style.setProperty('--tap-lg', lg0); else raiz.style.removeProperty('--tap-lg');
       if (xl0) raiz.style.setProperty('--tap-xl', xl0); else raiz.style.removeProperty('--tap-xl');
       if (jump) { if (sz0) jump.style.setProperty('--sz', sz0); else jump.style.removeProperty('--sz'); }
@@ -459,7 +476,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
     const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
-    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pintarPm();
+    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; pintarPm();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
