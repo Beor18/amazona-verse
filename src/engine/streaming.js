@@ -91,7 +91,7 @@ AVE.module('streaming', function (G) {
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
     precargaVuelo: 2.5, precargaVueloMax: 120, precargaVueloMin: 15, // KIMI-Task-017: anticipo (s × velocidad), tope en m y velocidad mínima (m/s): solo en vuelo rápido, no a pie (los gags del cómic capturan a velocidad baja)
-    descargas: 1, descargasArranque: 3,            // descargas a la vez
+    descargas: 2, descargasArranque: 3,            // descargas a la vez (KIMI-017: 2 en caliente; los picos al teleport lejos del spawn eran N GLB con 1 descarga a la vez)
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
     sombraChica: 4,                                // m de radio: por debajo, la sombra solo hasta la mitad del radio de sombras

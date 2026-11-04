@@ -1,0 +1,205 @@
+{
+  "etiqueta": "base-pclibre",
+  "cuando": "2026-11-04T05:58:34.659Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "apertura": {
+        "cuadros": 8,
+        "p50": 90,
+        "p95": 1660,
+        "peor": 1660,
+        "mas50": 5,
+        "mas100": 3,
+        "mas200": 1,
+        "top": [],
+        "calls": 0,
+        "ktris": 0
+      },
+      "tramos": [
+        {
+          "id": "camino_oeste",
+          "cuadros": 22,
+          "p50": 97,
+          "p95": 451,
+          "peor": 1333,
+          "mas50": 14,
+          "mas100": 10,
+          "mas200": 8,
+          "top": [],
+          "calls": 47,
+          "ktris": 177
+        },
+        {
+          "id": "colina_lonas",
+          "cuadros": 81,
+          "p50": 28,
+          "p95": 181,
+          "peor": 479,
+          "mas50": 10,
+          "mas100": 8,
+          "mas200": 4,
+          "top": [],
+          "calls": 59,
+          "ktris": 240
+        },
+        {
+          "id": "lomas",
+          "cuadros": 103,
+          "p50": 28,
+          "p95": 42,
+          "peor": 507,
+          "mas50": 3,
+          "mas100": 2,
+          "mas200": 2,
+          "top": [],
+          "calls": 50,
+          "ktris": 201
+        },
+        {
+          "id": "rio_oeste",
+          "cuadros": 93,
+          "p50": 28,
+          "p95": 69,
+          "peor": 646,
+          "mas50": 6,
+          "mas100": 2,
+          "mas200": 1,
+          "top": [],
+          "calls": 49,
+          "ktris": 197
+        },
+        {
+          "id": "ciudad_tepuy",
+          "cuadros": 79,
+          "p50": 35,
+          "p95": 160,
+          "peor": 465,
+          "mas50": 11,
+          "mas100": 5,
+          "mas200": 2,
+          "top": [],
+          "calls": 61,
+          "ktris": 222
+        },
+        {
+          "id": "meseta",
+          "cuadros": 96,
+          "p50": 28,
+          "p95": 70,
+          "peor": 528,
+          "mas50": 8,
+          "mas100": 4,
+          "mas200": 1,
+          "top": [],
+          "calls": 61,
+          "ktris": 197
+        }
+      ],
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "apertura": {
+        "cuadros": 8,
+        "p50": 90,
+        "p95": 1597,
+        "peor": 1597,
+        "mas50": 5,
+        "mas100": 3,
+        "mas200": 1,
+        "top": [],
+        "calls": 0,
+        "ktris": 0
+      },
+      "tramos": [
+        {
+          "id": "camino_oeste",
+          "cuadros": 50,
+          "p50": 42,
+          "p95": 201,
+          "peor": 500,
+          "mas50": 18,
+          "mas100": 8,
+          "mas200": 3,
+          "top": [],
+          "calls": 54,
+          "ktris": 183
+        },
+        {
+          "id": "colina_lonas",
+          "cuadros": 107,
+          "p50": 28,
+          "p95": 63,
+          "peor": 431,
+          "mas50": 6,
+          "mas100": 3,
+          "mas200": 1,
+          "top": [],
+          "calls": 58,
+          "ktris": 275
+        },
+        {
+          "id": "lomas",
+          "cuadros": 69,
+          "p50": 28,
+          "p95": 111,
+          "peor": 1264,
+          "mas50": 5,
+          "mas100": 4,
+          "mas200": 2,
+          "top": [],
+          "calls": 50,
+          "ktris": 201
+        },
+        {
+          "id": "rio_oeste",
+          "cuadros": 117,
+          "p50": 28,
+          "p95": 63,
+          "peor": 264,
+          "mas50": 6,
+          "mas100": 2,
+          "mas200": 1,
+          "top": [],
+          "calls": 47,
+          "ktris": 197
+        },
+        {
+          "id": "ciudad_tepuy",
+          "cuadros": 88,
+          "p50": 28,
+          "p95": 90,
+          "peor": 431,
+          "mas50": 8,
+          "mas100": 3,
+          "mas200": 1,
+          "top": [],
+          "calls": 63,
+          "ktris": 237
+        },
+        {
+          "id": "meseta",
+          "cuadros": 96,
+          "p50": 28,
+          "p95": 83,
+          "peor": 521,
+          "mas50": 9,
+          "mas100": 3,
+          "mas200": 1,
+          "top": [],
+          "calls": 67,
+          "ktris": 198
+        }
+      ],
+      "errores": []
+    }
+  ]
+}

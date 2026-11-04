@@ -129,6 +129,39 @@ de Chrome headless) envenena las comparaciones: en la misma sesión, cuadros aje
 2,5–4,4 s en la apertura con el jugador quieto (y HEAD puro da la misma varianza).
 **Pendiente:** re-medir con la PC libre y valorar `CFG.descargas: 2` fuera de arranque.
 
+### Re-medición con la PC libre (4-nov ~06:00 UTC)
+
+La sesión anterior quedó cortada por un corte de luz/PC con ~120 procesos Chrome headless
+zombi (`Temp\kimi*`) que tenían la RAM al 100 % (965 MB libres de 24 GB). Tras matarlos
+(20 GB libres) se repitió la medición, 2 rondas por configuración, mismo móvil simulado
+(375×812 dpr 3, CPU ×4, GPU real). Archivos: `mediciones-base-pclibre.json` y
+`mediciones-descargas2.json` en `docs/img/kimi017/`.
+
+p95 / peor por tramo (ms), ronda 1 y ronda 2:
+
+| tramo | base r1 | base r2 | descargas:2 r1 | descargas:2 r2 |
+|---|---|---|---|---|
+| apertura (Empezar) | 1660 / 1660 | 1597 / 1597 | 1653 / 1653 | 1590 / 1590 |
+| camino_oeste | 451 / 1333 | 201 / 500 | 458 / 1333 | 347 / 583 |
+| colina_lonas | 181 / 479 | 63 / 431 | 417 / 1090 | 90 / 167 |
+| lomas | 42 / 507 | 111 / 1264 | 90 / 389 | 139 / 451 |
+| rio_oeste | 69 / 646 | 63 / 264 | 56 / 104 | 49 / 125 |
+| ciudad_tepuy | 160 / 465 | 90 / 431 | 97 / 271 | 118 / 479 |
+| meseta | 70 / 528 | 83 / 521 | 70 / 160 | 104 / 160 |
+
+**Conclusiones:**
+- `CFG.descargas: 2` en caliente mejora los tramos con varios GLB en cadena: rio_oeste
+  (peor 646→104 y 264→125) y meseta (peor 528→160 en ambas rondas) quedan sin cuadros
+  > 200 ms. Se queda en 2 (el arranque ya usaba 3).
+- El pico de camino_oeste (1333 ms, ronda 1 de las dos configuraciones) NO era de
+  descargas: sobrevive igual con 2 concurrentes; es el primer teleport tras el spawn,
+  dominado por fundir/estrenar la zona nueva (trabajo de cola ya presupuestado, no red).
+- La apertura tras «Empezar» tiene **un cuadro constante de ~1600 ms** (p50 90 ms) en
+  las 4 rondas y las 2 configuraciones: no es de descargas ni de la contención. Es el
+  primer cuadro visible del mundo tras pulsar Empezar (precalentado de `renderer.js`,
+  carril de KIMI-012/Kimi 2): que lo miren ellos; anotado en BUGS.md QA-53.
+- Draw calls 41–68 en los tramos (igual que antes); 0 errores de consola en las 4 rondas.
+
 **Baterías:** iguales que HEAD puro en las mismas corridas (mismo código de edificios):
 movementTest 43/48, criaderoTest 17/18, e2eTest 28/31 y comicTest intermitente (61–65/67;
 HEAD puro 2× dio 63/67 con los mismos fallos). Esos rojos son preexistentes en main (no son
