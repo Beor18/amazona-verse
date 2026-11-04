@@ -16,7 +16,7 @@ window.AVControlesTest = function (G) {
     let crudo = null; try { crudo = localStorage.getItem(X.CLAVE); } catch (e) { /* sin almacenamiento */ }
     const claveTeclas = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.teclas';
     let crudoTeclas = null; try { crudoTeclas = localStorage.getItem(claveTeclas); } catch (e) { /* sin almacenamiento */ }
-    const mapa0 = I.mapa, antes = { forzado: X.forzado, est: X.est, panel: X.panelAbierto, enSesion: Object.assign({}, X.enSesion), fly: M.flying, landing: M.landing, gr: M.grounded };
+    const mapa0 = I.mapa, antes = { forzado: X.forzado, est: X.est, panel: X.panelAbierto, enSesion: Object.assign({}, X.enSesion), fly: M.flying, landing: M.landing, gr: M.grounded, swim: M.swimming };
     const limpiarSesion = () => { for (const k in X.enSesion) delete X.enSesion[k]; };
     const mostrado = el => !el.hidden && getComputedStyle(el).display !== 'none' && el.getClientRects().length > 0;
     const ciclo = (n, dt) => { for (let i = 0; i < n; i++) X.actualizar(dt || 1 / 60); };
@@ -73,6 +73,12 @@ window.AVControlesTest = function (G) {
         X.ocultarPista(); X.est.hecho.volar = true; M.flying = true; M.landing = false; ciclo(20, 0.1);
         ok('Al volar la primera vez, pista «Mantén Espacio para subir»', mostrado(E.pista) && X.pistaId === 'subir' && /Espacio/.test(E.pista.textContent), E.pista.textContent);
         X.ocultarPista(); M.flying = false; ciclo(2);
+        // En el agua sin bucear: pista «Mantén C para bucear»; al mantener C queda aprendido
+        X.ocultarPista(); M.swimming = true; M.grounded = false; ciclo(Math.ceil(AJ.nadoSinBucear * 10) + 5, 0.1);
+        ok('Nadando sin bucear, pista «Mantén C para bucear»', mostrado(E.pista) && X.pistaId === 'bucear' && /bucear/.test(E.pista.textContent) && E.pista.querySelector('kbd').textContent === 'C', E.pista.textContent);
+        K.add('c'); ciclo(1); K.delete('c');
+        ok('Al bucear con C queda aprendido (no vuelve a salir)', !!X.est.hecho.bucear);
+        X.ocultarPista(); M.swimming = false; M.grounded = true; ciclo(2);
       } else ok('Pistas en contexto', true, 'el juego no está jugable ahora: sin pistas');
       X.reiniciar(); G.emit('viento', true); G.emit('viento', false);
       ok('Aviso de viento fuerte en el techo de vuelo', mostrado(E.pista) && X.pistaId === 'viento' && /viento/i.test(E.pista.textContent), E.pista.textContent);
@@ -91,7 +97,7 @@ window.AVControlesTest = function (G) {
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     // Todo como estaba
     X.forzado = antes.forzado; X.est = antes.est; limpiarSesion(); Object.assign(X.enSesion, antes.enSesion);
-    M.flying = antes.fly; M.landing = antes.landing; M.grounded = antes.gr; K.delete('w');
+    M.flying = antes.fly; M.landing = antes.landing; M.grounded = antes.gr; M.swimming = antes.swim; K.delete('w'); K.delete('c');
     if (I.mapa.volar !== mapa0.volar) I.asignar('volar', mapa0.volar);
     try { if (crudo == null) localStorage.removeItem(X.CLAVE); else localStorage.setItem(X.CLAVE, crudo); } catch (e) { /* sin almacenamiento */ }
     try { if (crudoTeclas == null) localStorage.removeItem(claveTeclas); else localStorage.setItem(claveTeclas, crudoTeclas); } catch (e) { /* sin almacenamiento */ }

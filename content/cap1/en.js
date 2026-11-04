@@ -733,6 +733,7 @@ window.AV_EN = {
  "Pantalón": "Pants",
  "Para compartir hace falta un adulto. Resuelve esta suma:": "Sharing needs a grown-up. Solve this sum:",
  "Para dejar de volar, pulsa {}": "To stop flying, press {}",
+ "Mantén {} para bucear": "Hold {} to dive",
  "Para docentes: ¿cuánto es": "For teachers: what is",
  "Para la clase": "For class",
  "Para la foto, posa en el suelo y quieta.": "For the photo, pose on the ground and keep still.",
