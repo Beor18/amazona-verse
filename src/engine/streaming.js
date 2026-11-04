@@ -796,6 +796,7 @@ AVE.module('streaming', function (G) {
     // El resto espera en cola, con referencia, hasta que Vittata se mueve.
     function puedeAhora(r) {
       if (!(arrancando || quieto)) return true;
+      if (precarga && !arrancando && r.prio <= precarga.radio) return true; // pantalla de carga: la zona de inicio entera
       const pre = CFG.precarga[nivelCal()] || 50, lq = CFG.lejosQuieto[nivelCal()] || 150;
       return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
     }
@@ -1536,18 +1537,18 @@ AVE.module('streaming', function (G) {
       },
       listo: null,
       revisar, alrededor,
-      // Pantalla de carga (src/ui/carga.js): pide ya lo que el streaming cargaría en los primeros segundos de juego al moverse
-      // Vittata (el modelo completo y el _hd de lo cercano, el kit de la ciudad si está a la vista, los lejanos) con los mismos
-      // rangos y CFG de siempre, y mide lo que falta de las zonas a menos de `radio` m. Solo cambia el ritmo mientras dura:
-      // o.descargas a la vez y o.ms por tanda (el mundo está tapado); terminar() vuelve al de siempre y lo que quede sigue
-      // en segundo plano como hoy. Devuelve { radio, total(), faltan(), progreso(), hecho(), terminar() }, o null sin arrancar.
+      // Pantalla de carga (src/ui/carga.js): baja ya lo que el streaming pediría al primer paso de Vittata en la zona de inicio
+      // y sus vecinas: el modelo completo de las zonas cercanas y su _hd dentro de su rango según la calidad (CFG.cerca y CFG.hd
+      // + histéresis; lo que ya está pedido y en cola). No cambia rangos ni CFG ni el modo quieto: el kit de la ciudad lejana
+      // y el resto siguen llegando al moverse, como hoy (no sube el pico de memoria del arranque). Mientras dura solo cambia el
+      // ritmo: o.descargas a la vez y o.ms por tanda (el mundo está tapado); terminar() vuelve al de siempre.
+      // Devuelve { radio, total(), faltan(), progreso(), hecho(), terminar() }, o null sin arrancar.
       precargarZona(x, z, o) {
         o = o || {};
         if (!iniciado || arrancando) return null;
         if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
-        const radio = o.radio != null ? o.radio : Math.max(CFG.ciudadVista[nivelCiudad()] || 0, radioCerca());
-        precarga = { descargas: Math.max(1, o.descargas || CFG.descargas), ms: Math.max(2, o.ms || CFG.msCuadro) };
-        quieto = false; // lo mismo que cuando Vittata anda CFG.moverse m desde el inicio
+        const radio = o.radio != null ? o.radio : Math.max(radioCerca(), hdActivo() ? CFG.hd[nivelCal()] || 0 : 0) + CFG.histeresis;
+        precarga = { radio, descargas: Math.max(1, o.descargas || CFG.descargas), ms: Math.max(2, o.ms || CFG.msCuadro) };
         revisar(x, z); siguiente();
         const objetivo = new Set();
         const recoger = () => {
