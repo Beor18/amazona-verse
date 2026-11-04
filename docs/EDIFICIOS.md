@@ -122,6 +122,18 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
 - Se guarda ya comprimido con el gltfpack de la build. Las texturas van en `tex_hd/` y no en `tex/`, porque la build pasa `tex/` a WebP y no reescribe las uris de un glTF ya comprimido.
 - Streaming: se pide con la zona en nivel cerca, en calidad media (hasta 40 m) o alta (hasta 90 m), con WebGL2 y cuando el jugador ya se movió. En calidad baja se queda el ligero. Los grandes (más de 10 m de radio) cuentan la distancia desde su mitad cercana, tanto en el LOD como en el _hd.
 - **Colisiones, pisos y vanos salen siempre del ligero**: son iguales en todos los equipos.
+- **Lonas (KIMI-Task-010, 3-nov).** Los `_hd` de `carpa_a`, `carpa_e` y `carpa_f` vinieron de la integración de TransferNow
+  (`integrar_originales.py`) con los materiales crudos (3-5 por modelo, texturas embebidas): colores distintos al ligero y
+  3-7 draw calls por modelo. `tools/blender/edificios_lonas_atlas.js` (Node, sin dependencias) los convirtió al formato del
+  atlas: 1 material `AV_HD_Savage`, TEXCOORD_1 con la celda y texturas por URI `tex_hd/`. Los `_lejos` de las cinco lonas
+  (`campamento_c`, `carpa_a`, `carpa_e`, `carpa_f`, `toldo_pequeno`) quedaron más chicos que el ligero: el mismo script los
+  reescala a su caja exacta (≤ 0,3 m). `campamento_c` y `toldo_pequeno` tienen `hd: false`: su `_hd` es otra forma
+  distorsionada por el fit del integrador; toca rehacerlos con `edificios_hd.py` (Blender) desde el migrado.
+  Verificación con GPU real (Chrome headless, 1920×1080, calidad alta, `tools/build/kimi3_lonas.js`, 3-nov):
+  auditoría de materiales en las 3 aldeas con lonas sin materiales crudos (solo `AV_HD_Savage`/`AV_HD_Ancient`);
+  95–139 draw calls y 0,74–1,79 M tris a ~142–143 FPS en lomas/colina/rio_oeste_2. `streamingTest` 21/23 y
+  `lookTest` 42/44 (los rojos son los conocidos: QA-81 draw calls 152–163 en kelvin_ruinas_yunque + «el kit del
+  tepuy al volver», y QA-81 texturas grandes a 512 px). Capturas y medidas en `docs/img/kimi010/`.
 
 | _hd | tris ligero → _hd | KB del _hd (js) |
 |---|---|---|
