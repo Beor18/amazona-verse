@@ -67,6 +67,7 @@ AVE.module('streaming', function (G) {
     // desde cualquier punto de la isla (470 m) en todas las calidades; antes, en el móvil solo llegaban 8 de 17 zonas
     zonaLejos: { bajo: 650, medio: 650, alto: 650 },
     histeresis: 30,                                // m de más para bajar de nivel
+    bajarEspera: 1.5,                              // KIMI-038: s que una bajada de nivel/HD debe pedirse seguido antes de aplicarse (anti-flapping en vuelo)
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
@@ -1026,9 +1027,11 @@ AVE.module('streaming', function (G) {
 
     // --- niveles de las zonas ---
     let activas = [];
+    let transNivel = 0, transHD = 0; // KIMI-038: contador de transiciones aplicadas (medición del flapping en vuelo)
     function nivelZona(Z, quiere) {
       const antes = Z.nivel; if (quiere === antes) return;
       Z.nivel = quiere;
+      transNivel++;
       for (const n of Z.modelos) {
         if (antes < 2 && quiere === 2) pedir(res(n, 'cerca'), Z.d).catch(err => respaldo(Z, n, err));
         if (antes === 2 && quiere < 2) soltar(res(n, 'cerca'));
@@ -1388,6 +1391,7 @@ AVE.module('streaming', function (G) {
     function ajustarHD(Z, quiere) {
       if (!!Z.hd === quiere) return;
       Z.hd = quiere;
+      transHD++;
       if (!quiere) quitarHDZona(Z);
       for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
       if (quiere) encolar(() => fundirHD(Z), 'fundirHD:' + Z.id);
@@ -2104,6 +2108,7 @@ AVE.module('streaming', function (G) {
 
   return { iniciar, material, soltarMaterial, generarLejos, CFG, test,
     rafagasListas: () => rafagaPaso >= 1 && rafagas.length > 0,
+    transiciones: () => ({ nivel: transNivel, hd: transHD }), // KIMI-038: flapping de nivel/HD medido en vuelo (herramientas kimi3_*)
     get gestor() { return ST; },
     modelo: n => ST ? ST.modelo(n) : Promise.reject(new Error('streaming sin iniciar')) };
 });
