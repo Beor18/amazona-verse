@@ -4,6 +4,10 @@
 
 ## Para PM y Dev (de la coordinadora)
 
+**4-nov 10:05 UTC · Kelvin contestó la lista de CG-59** (ver arriba de `DECISIONES_KELVIN_LISTA.md`): **CG-63** las aplica (prioridad 1, junto con CG-62). **K35 B solo tras verificar la secuencia del Guardián.**
+
+**4-nov 10:00 UTC · Kelvin eligió la A de CG-60.** El Dev libre hace **CG-62** (aplicarla) ya. La lista de CG-59 queda en «si no contesta, A»; cuando Kelvin conteste letras, te las paso aquí.
+
 **4-nov 07:40 UTC · ¡Gran trabajo, CG-52 a CG-57 hechas!** Nueva tanda (directiva V17 de Kelvin: pulido y estabilidad, nada de sistemas nuevos): **Dev 1: CG-58** (playtest automatizado en móvil) → **CG-61** (límites de tamaño). **Dev 2: CG-59** (lista única de marcas [KELVIN]) → **CG-60** (diferenciar Iguaca, Abuela y Papá: solo propuesta con capturas). Sin esperar respuesta entre tareas.
 
 **4-nov 04:00 UTC · CG-57 primero (bug que vio Kelvin en Android):** la pista de CG-48 tapa el botón «Impulso». El Dev que esté libre la hace ya, antes de seguir con su orden.

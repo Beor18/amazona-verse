@@ -8,6 +8,10 @@
 
 Las pruebas de los capítulos 2, 3, 4 y 6 exigen que quede al menos una nota con la palabra `[KELVIN]`. La del capítulo 5 exige que cada nota lleve `[KELVIN]` o empiece por `Kelvin <fecha>`. Por eso una decisión cerrada puede seguir junto a una pregunta abierta en la misma nota. El jugador no ve esas notas.
 
+## Respuestas de Kelvin (4-nov)
+
+«K8 C, K25 B, K32 B, K35 B, K36 B, K42 B, K47 B. K35 B sujeto a verificar la secuencia del Guardián antes de aplicarlo. Todas las demás A.» Además, K38: elegida la propuesta A de CG-60. Las aplica Grok en CG-62 y CG-63.
+
 ## Ya decidido (no hace falta volver a decirlo)
 
 | Qué | Fecha | Dónde quedó la nota |
