@@ -308,3 +308,4 @@ Fernando libera lo gráfico, que estaba reservado a Kimi/Fernando hasta que él 
 5. Verificar retratos de las 36, pruebas, compilación y el commit publicado en main.
 6. Mantener ~12 GB libres en la nube como referencia y evitar copias innecesarias de agentes.
 Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar rendimiento, jugabilidad ni la identidad de Amazona Verse.
+7. **Dirección artística (Kelvin, 4-nov):** la ciudad no es solo bonita para mirar: el jugador descubre **pequeños comportamientos diferentes cada vez que la visita**. Eso es lo que la hace sentirse viva.
