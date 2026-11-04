@@ -98,16 +98,24 @@ const INVENTARIO_JS = `function __inv() { const AV = window.AV, G = AV.G, R = G.
     const cs0 = sunRef.castShadow; sunRef.castShadow = false; const sinCS = contar(); sunRef.castShadow = cs0;
     const sinSombras = { smE0, sinSM, sinCS };
     const cfgSombra = (() => { try { const s = R.stats(); return { calidad: s.calidad, sombras: s.sombras }; } catch (e) { return null; } })();
+    // ablación por grupo: ocultar todo un prefijo y contar cuántos calls aporta EN ESTA VISTA
+    const prefDe = o => { const n = o.name || ''; if (n.indexOf('edificios') === 0) return n.slice(0, 28); if (!n) return 'SIN_NOMBRE'; return n.split(':')[0]; };
+    const ablar = pref => { const objs = []; R.scene.traverse(o => { if ((o.isMesh || o.isLine || o.isPoints || o.isSprite) && prefDe(o).indexOf(pref) === 0) objs.push(o); });
+      objs.forEach(o => o.visible = false); const c = contar(); objs.forEach(o => o.visible = true); return { pref, calls: c, delta: st.calls - c, objs: objs.length }; };
+    const ablacion = ['flora', 'SIN_NOMBRE', 'edificiosInst', 'edificiosZona', 'terreno', 'estructura', 'spark', 'esfera', 'cielo'].map(ablar);
     ${INVENTARIO_JS};
     const inv = JSON.parse(__inv());
     const posJ = [Math.round(G.S.pos.x), Math.round(G.S.pos.y), Math.round(G.S.pos.z)], camP = [Math.round(G.camara.pos ? G.camara.pos.x : -999), Math.round(G.camara.pos ? G.camara.pos.y : -999), Math.round(G.camara.pos ? G.camara.pos.z : -999)];
-    return JSON.stringify({ zona: ZM.id, instancias: ZM.inst.length, porYaw, peor: st, invoc, sinSombras, cfgSombra, posJ, camP, inv }); })()`, 300));
+    return JSON.stringify({ zona: ZM.id, instancias: ZM.inst.length, porYaw, peor: st, invoc, sinSombras, cfgSombra, ablacion, posJ, camP, inv }); })()`, 300));
   console.log('· zona:', r.zona, '· instancias:', r.instancias, '· por yaw:', r.porYaw.join('  '));
+  console.log('· jugador:', r.posJ.join(','), '· cámara:', r.camP.join(','));
   console.log('· peor vista: yaw', r.peor.yaw, '=', r.peor.calls, 'calls (cuadro entero: sombra+escena+post)');
   console.log('· invocaciones de renderer.render (1ª=escena+sombra, resto=post):', r.invoc.join(' + '), '= ', r.invoc.reduce((a, b) => a + b, 0));
   console.log('· sin shadowMap: ', r.sinSombras, 'calls (ahorro sombra =', r.peor.calls - r.sinSombras + ')');
   console.log('· calidad/stats:', JSON.stringify(r.cfgSombra));
   console.log('· totales por recorrido de escena: escena', r.inv.totEscena, '· sombra(castShadow)', r.inv.totSombra, '· post+sombras reales = peor - escena =', r.peor.calls - r.inv.totEscena);
+  console.log('· ablación por grupo (delta = calls que aporta en la peor vista):');
+  for (const a of r.ablacion) console.log('   ', String(a.delta).padStart(4), 'calls ·', String(a.objs).padStart(4), 'obj ocultos →', a.pref);
   console.log('· grupos (prefijo · objetos · calls · tris · castShadow · ejemplos):');
   for (const g of r.inv.lista) console.log('   ', String(g.calls).padStart(4), 'calls', String(g.objetos).padStart(4), 'obj', String(Math.round(g.tris / 1000) + 'k').padStart(7), 'tris', 'sombra', String(g.sombra).padStart(3), '|', g.prefijo, '·', g.ejemplos.slice(0, 3).join(' / '));
   console.log('· ANÓNIMOS detalle (' + r.inv.anoniDet.length + ' objetos):');
