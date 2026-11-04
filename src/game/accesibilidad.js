@@ -102,7 +102,8 @@ AVE.module('accesibilidad', function (G) {
   }
   let escala = 1; // multiplica los tiempos (la prueba los acorta)
   let notas = [];
-  const vivos = new Map(); // clave → { el, t }
+  const vivos = new Map(); // clave → { el, t, origen }
+  const pendientes = []; // subtítulos con retraso: el texto se arma al mostrarse, no al programarse
   const cont = document.createElement('div');
   cont.id = 'subtitulos'; cont.className = 'hud'; cont.hidden = true;
   cont.setAttribute('role', 'log'); cont.setAttribute('aria-live', 'polite'); cont.setAttribute('aria-relevant', 'additions');
@@ -113,37 +114,66 @@ AVE.module('accesibilidad', function (G) {
     if (k === 'coqui') notas = [];
     if (!vivos.size) cont.hidden = true;
   }
-  function limpiar() { for (const k of [...vivos.keys()]) quitar(k); cont.hidden = true; }
-  function mostrar(k, texto, ms) {
-    let v = vivos.get(k);
-    if (!v) {
-      const el = document.createElement('p'); el.className = 'sub'; el.dataset.k = k; el.textContent = texto;
-      cont.appendChild(el); v = { el, t: 0 }; vivos.set(k, v);
-      while (vivos.size > MAXIMO) quitar(vivos.keys().next().value);
-      colocar();
-    } else if (v.el.textContent !== texto) v.el.textContent = texto;
-    cont.hidden = false;
-    clearTimeout(v.t); v.t = setTimeout(() => quitar(k), ms * escala);
+  function cancelarPendientes() {
+    for (const p of pendientes) clearTimeout(p.t);
+    pendientes.length = 0;
   }
-  // Lo llama G.audio.play (src/engine/audio.js) con cada sonido; devuelve true si hay subtítulo para él y están activados
+  function limpiar() { cancelarPendientes(); for (const k of [...vivos.keys()]) quitar(k); cont.hidden = true; }
   function textoDe(d, arg) {
     if (d.umbral != null && typeof arg === 'number' && arg >= d.umbral && d.cercaEs) return L(d.cercaEs, d.cercaEn);
     return L(d.es, d.en);
   }
+  // El idioma se lee aquí, en el momento de pintar. Un cambio de idioma no deja el texto que había al programar el retraso.
+  function textoAhora(d, arg) {
+    if (d.nota) {
+      if (!vivos.has('coqui')) notas = [];
+      notas.push(d.nota); if (notas.length > 7) notas.shift();
+      return { texto: L(`[Un coquí canta: ${notas.join(' · ')}]`, `[A coquí frog sings: ${notas.join(' · ')}]`), origen: { nota: true, notas: notas.slice() } };
+    }
+    return { texto: textoDe(d, arg), origen: { d, arg } };
+  }
+  function textoDeOrigen(origen) {
+    if (!origen) return '';
+    if (origen.nota) return L(`[Un coquí canta: ${origen.notas.join(' · ')}]`, `[A coquí frog sings: ${origen.notas.join(' · ')}]`);
+    return textoDe(origen.d, origen.arg);
+  }
+  function refrescarSubs() {
+    for (const v of vivos.values()) {
+      const texto = textoDeOrigen(v.origen);
+      if (texto && v.el.textContent !== texto) v.el.textContent = texto;
+    }
+  }
+  function mostrar(k, texto, ms, origen) {
+    let v = vivos.get(k);
+    if (!v) {
+      const el = document.createElement('p'); el.className = 'sub'; el.dataset.k = k; el.textContent = texto;
+      cont.appendChild(el); v = { el, t: 0, origen }; vivos.set(k, v);
+      while (vivos.size > MAXIMO) quitar(vivos.keys().next().value);
+      colocar();
+    } else {
+      v.origen = origen;
+      if (v.el.textContent !== texto) v.el.textContent = texto;
+    }
+    cont.hidden = false;
+    clearTimeout(v.t); v.t = setTimeout(() => quitar(k), ms * escala);
+  }
+  // Lo llama G.audio.play (src/engine/audio.js) con cada sonido; devuelve true si hay subtítulo para él y están activados.
+  // Con retraso (el BIP suena después del coro) el texto se resuelve al salir, no al programar el temporizador.
   function subtitular(nombre, arg) {
     const d = SUB[nombre];
     if (!d || !leer().subtitulos) return false;
-    const poner = () => {
+    const salir = () => {
       if (!leer().subtitulos) return;
-      let texto;
-      if (d.nota) {
-        if (!vivos.has('coqui')) notas = [];
-        notas.push(d.nota); if (notas.length > 7) notas.shift();
-        texto = L(`[Un coquí canta: ${notas.join(' · ')}]`, `[A coquí frog sings: ${notas.join(' · ')}]`);
-      } else texto = textoDe(d, arg);
-      mostrar(d.k || nombre, texto, d.ms);
+      const hecho = textoAhora(d, arg);
+      mostrar(d.k || nombre, hecho.texto, d.ms, hecho.origen);
     };
-    if (d.retraso) setTimeout(poner, d.retraso * escala); else poner();
+    if (!d.retraso) { salir(); return true; }
+    const p = {};
+    p.t = setTimeout(() => {
+      const i = pendientes.indexOf(p); if (i >= 0) pendientes.splice(i, 1);
+      salir();
+    }, d.retraso * escala);
+    pendientes.push(p);
     return true;
   }
   if (G.audio && G.audio.alSonar) G.audio.alSonar(subtitular);
@@ -226,7 +256,7 @@ AVE.module('accesibilidad', function (G) {
     sync();
   }, 50);
   G.on('nuevoEstudiante', () => { ultimo = null; }); // equipo compartido: el siguiente niño empieza sin ajustes
-  G.on('aula', k => { if (k === 'idioma') { rotular(); limpiar(); } });
+  G.on('aula', k => { if (k === 'idioma') { rotular(); refrescarSubs(); } });
 
   // ---------- Pruebas ----------
   const lum = c => {
@@ -453,31 +483,36 @@ AVE.module('accesibilidad', function (G) {
       check('Con los subtítulos apagados no sale nada', !cont.children.length && cont.hidden);
       set('subtitulos', true); escala = 50; // los subtítulos se quedan mientras se mira
       G.audio.vol.muted = true; // aunque el sonido esté apagado el subtítulo sale
-      // QA-135: las frases se comprueban en el idioma activo y en el otro. Si la partida está en inglés, no se busca el texto en español.
+      // Cada caso tiene su nombre: si falla, se ve el idioma y el sonido. /BIP/ también casa con BEEP, así que el español pide la frase entera.
       const FRASE = {
-        es: { lluvia: /llueve/i, trueno: /trueno/i, crecida: /r[ií]o/i, construir: /martillazos/i, chorus: /coro de coqu/i, bip: /BIP/, pio: /¡Pío!/, cerca: /¡Pío cerca!/, lejosNo: /cerca/, coqui: /coquí/i },
-        en: { lluvia: /rain falls/i, trueno: /thunder/i, crecida: /river/i, construir: /hammer/i, chorus: /chorus of coqu/i, bip: /BEEP/, pio: /Peep!/, cerca: /Peep nearby/i, lejosNo: /nearby/i, coqui: /Coquí/i },
+        es: { lluvia: /llueve/i, trueno: /trueno/i, crecida: /r[ií]o crece/i, construir: /martillazos/i, chorus: /coro de coqu/i, bip: /suena el transmisor/, pio: /¡Pío!/, cerca: /¡Pío cerca!/, lejosNo: /cerca/, coqui: /\[¡Coquí!\]/ },
+        en: { lluvia: /rain falls/i, trueno: /thunder/i, crecida: /river rises/i, construir: /hammer/i, chorus: /chorus of coqu/i, bip: /the transmitter sounds/, pio: /Peep!/, cerca: /Peep nearby/i, lejosNo: /nearby/i, coqui: /\[Coquí!\]/ },
       };
-      const malIdioma = [];
       for (const id of ['es', 'en']) {
         if (ajIdi) ajIdi.idioma = id;
         const F = FRASE[id];
         escala = 50;
         for (const n of ['lluvia', 'trueno', 'crecida', 'construir', 'chorus']) {
-          limpiar(); G.audio.play(n); const t = cont.textContent;
-          if (!F[n].test(t) || cont.hidden) malIdioma.push(`${id} ${n}: «${t}»`);
+          limpiar(); G.audio.play(n);
+          check(`Subtítulo ${id} · ${n}`, F[n].test(cont.textContent) && !cont.hidden, cont.textContent);
         }
         limpiar(); escala = 0.2; G.audio.play('bip'); const antesB = cont.children.length; await espera(320);
-        if (antesB || !F.bip.test(cont.textContent)) malIdioma.push(`${id} bip: «${cont.textContent}»`);
+        check(`Subtítulo ${id} · bip`, !antesB && F.bip.test(cont.textContent), cont.textContent);
         escala = 50; limpiar();
         G.audio.play('pio_escondite', 0.2); const lejosP = cont.textContent;
         G.audio.play('pio_escondite', 0.9);
-        if (!(cont.children.length === 1 && F.pio.test(lejosP) && !F.lejosNo.test(lejosP) && F.cerca.test(cont.textContent))) malIdioma.push(`${id} pío: «${lejosP}» → «${cont.textContent}»`);
+        check(`Subtítulo ${id} · pío`, cont.children.length === 1 && F.pio.test(lejosP) && !F.lejosNo.test(lejosP) && F.cerca.test(cont.textContent), lejosP + ' → ' + cont.textContent);
         limpiar(); G.audio.play('vecino_coqui');
-        if (!F.coqui.test(cont.textContent)) malIdioma.push(`${id} coquí: «${cont.textContent}»`);
+        check(`Subtítulo ${id} · coquí`, F.coqui.test(cont.textContent), cont.textContent);
       }
+      // QA-142: el BIP se programa en un idioma y el cambio llega antes de que salga. El texto es el de ahora.
+      if (ajIdi) ajIdi.idioma = 'es';
+      escala = 1; limpiar();
+      G.audio.play('bip');
+      if (ajIdi) ajIdi.idioma = 'en';
+      await espera(1100);
+      check('Subtítulo en · bip pendiente', /the transmitter sounds/.test(cont.textContent) && !/suena el transmisor/.test(cont.textContent), cont.textContent);
       if (ajIdi) ajIdi.idioma = idi0 || 'es';
-      check('Los subtítulos de lluvia, trueno, río, martillazos, coro, BIP, pío y coquí salen en español y en inglés', !malIdioma.length, malIdioma.slice(0, 3).join('; '));
       escala = 50; limpiar();
       G.audio.play('lluvia'); G.audio.play('lluvia');
       check('El mismo sonido repetido (la lluvia cada segundo) no apila líneas', cont.querySelectorAll('[data-k="lluvia"]').length === 1 && cont.children.length === 1);
