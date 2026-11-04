@@ -213,10 +213,16 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     const el = document.getElementById(PM_BLANCO[k] || '');
     return !!(el && !el.hidden && el.getClientRects().length && el.getBoundingClientRect().width >= 8);
   }
-  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k] && pmPuede(k)) || '';
+  // pmPuede mira el layout (getClientRects): en móvil eso fuerza un reflow. Se recalcula como mucho cada 250 ms (o al forzar).
+  const pmCache = { id: '', t: -1e9 };
+  const pmPaso = (forzar) => {
+    const ahora = performance.now();
+    if (forzar || pmForzar || ahora - pmCache.t > 250) { pmCache.id = PM_ORDEN.find(k => !pmE.hecho[k] && pmPuede(k)) || ''; pmCache.t = ahora; }
+    return pmCache.id;
+  };
   function pmMarcar(k) {
     if (!k || pmE.hecho[k]) return;
-    pmE.hecho[k] = true; pmE.t = 0;
+    pmE.hecho[k] = true; pmE.t = 0; pmCache.t = -1e9;
   }
   const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', impulso: 'b-dash' };
   const PM_BORDE = 6, PM_BORDE_MIN = 2, PM_SOMBRA = 2, PM_AIRE = 6;
@@ -274,16 +280,19 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       poner();
     }
   }
-  function pintarPm() {
-    const id = pmPaso();
+  let pmColocado = { id: null, t: -1e9 };
+  function pintarPm(forzar) {
+    const id = pmPaso(forzar);
     pm.hidden = !id;
     if (id) pm.dataset.paso = id;
     pm.classList.toggle('pm-atascado', !!id && pmE.t >= 20);
     const q = document.getElementById('quest');
     if (q) q.classList.toggle('pm-senala', !!id && pmE.t >= 20);
-    if (id) colocarPm();
+    // colocar el anillo también mide el layout: solo al cambiar de paso o cada 500 ms (el botón no se mueve solo)
+    const ahora = performance.now();
+    if (id && (forzar || pmForzar || pmColocado.id !== id || ahora - pmColocado.t > 500)) { colocarPm(); pmColocado = { id, t: ahora }; }
   }
-  addEventListener('resize', () => { if (!pm.hidden) colocarPm(); });
+  addEventListener('resize', () => { if (!pm.hidden) { colocarPm(); pmColocado.t = performance.now(); } });
   function pmTick(dt) {
     const M = G.fisica.MOVE, jugando = pmForzar || enJuego();
     if (!jugando || (G.quiet && !pmForzar)) {
@@ -301,7 +310,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (id) pmE.t += dt || 0; else pmE.t = 0;
     pintarPm();
   }
-  G.on('truco', () => { pmMarcar('truco'); pintarPm(); });
+  G.on('truco', () => { pmMarcar('truco'); pintarPm(true); });
 
   // ---------- Cada cuadro ----------
   function enJuego() {
@@ -481,5 +490,5 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
 
-  return { mostrar, cerrar, leyenda, estado: () => ({ panel: panelAbierto, leyenda: !ley.hidden, pista: pistaId, hecho: Object.assign({}, est.hecho), tactil: tactil(), primeros: pmPaso() }), prueba };
+  return { mostrar, cerrar, leyenda, estado: () => ({ panel: panelAbierto, leyenda: !ley.hidden, pista: pistaId, hecho: Object.assign({}, est.hecho), tactil: tactil(), primeros: pmPaso(true) }), prueba };
 });

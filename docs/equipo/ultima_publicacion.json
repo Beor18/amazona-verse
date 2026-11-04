@@ -1,14 +1,14 @@
 {
- "codigo": "2b911cd944ce707d9484f4e2927db93c82be90f5",
+ "codigo": "542f1c771c642fc536b4db72179e2375dfd3d3fd",
  "sitio": null,
- "fecha": "2026-11-04T12:02:05Z",
+ "fecha": "2026-11-04T13:03:14Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-04T11:46:56+00:00",
-  "duracion_s": 904.1,
+  "inicio": "2026-11-04T12:47:41+00:00",
+  "duracion_s": 911.4,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "aa74b5b556f1571cf2f106cf019638ada8bfc7908d25bbba6866f5f67e4787e7",
+  "huella_build": "4c1c1135b3b00bf35a98fe99c0437c9e6e594f6af670c1d2abbe2e6147906a55",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -63,8 +63,8 @@
   },
   "saveTest": {
    "requerida": true,
-   "passed": 60,
-   "total": 60,
+   "passed": 62,
+   "total": 62,
    "ok": true
   },
   "comicTest": {
@@ -91,10 +91,10 @@
   "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 7.27,
- "heap_mb": 144.3,
+ "carga_inicial_mb": 7.28,
+ "heap_mb": 143.8,
  "fallas": [],
  "avisos": [
-  "presupuesto: 144.3 MB de heap a ~9 s (límite 120)"
+  "presupuesto: 143.8 MB de heap a ~9 s (límite 120)"
  ]
 }

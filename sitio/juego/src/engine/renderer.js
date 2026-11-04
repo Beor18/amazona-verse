@@ -279,8 +279,15 @@ AVE.module('renderer', function (G) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   sun.shadow.bias = -0.00035; sun.shadow.normalBias = 0.035;
+  // QA-53 (variantes por sombras): encender/apagar las sombras cambia el estado de luces de three y todas las
+  // familias de material con luz piden programa nuevo (USE_SHADOWMAP) en su siguiente dibujo. genLuz entra en la
+  // clave del precalentado de las familias con luz: al cambiar, vuelven a estar pendientes y se re-enlazan por
+  // tandas fuera del dibujo real, en vez de compilarlas de golpe dentro del primer cuadro (tirón del adaptativo).
+  let genLuz = 0, sombraOn = null;
   function aplicarSombras(C) {
     const on = C.sombras > 0;
+    if (sombraOn !== null && sombraOn !== on) genLuz++;
+    sombraOn = on;
     sun.castShadow = on;
     if (!on) return;
     if (sun.shadow.mapSize.x !== C.sombras) { sun.shadow.mapSize.set(C.sombras, C.sombras); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
@@ -586,10 +593,13 @@ AVE.module('renderer', function (G) {
     try { k = m.customProgramCacheKey ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
     return genCalor + '|' + renderer.toneMapping + '|' + k;
   }
-  // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph.
+  // El mismo material puede pedir otro programa si la malla tiene huesos, instancias o morph. Solo las
+  // familias CON LUZ se invalidan al cambiar genLuz (mismo criterio que needsLights de three r128): las de
+  // MeshBasic/Shader sin luces no recompilan al encender/apagar sombras y no se ocultan innecesariamente.
   function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
-  function idCalor(o, m) { return claveDe(m) + '|' + rasgos(o); }
+  function conLuz(m) { return !!(m.isMeshLambertMaterial || m.isMeshToonMaterial || m.isMeshPhongMaterial || m.isMeshStandardMaterial || m.isShadowMaterial || (m.isShaderMaterial && m.lights === true)); }
+  function idCalor(o, m) { return claveDe(m) + (conLuz(m) ? '|L' + genLuz : '') + '|' + rasgos(o); }
   function objPendiente(o) { return matsDe(o).some(m => m && !calorHecho.has(idCalor(o, m))); }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
@@ -656,17 +666,24 @@ AVE.module('renderer', function (G) {
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally { for (const [obj, vis] of guard) obj.visible = vis; if (R) { R.enabled = r0; post.grade.uniforms.uRayos.value = u0; } }
   }
-  // Unos pocos programas por cuadro, con tope de tiempo, para que ni la portada, ni el creador ni
+  // Unas pocas familias de material por cuadro, con tope de tiempo, para que ni la portada, ni el creador ni
   // «Empezar» se queden congelados. Detrás del creador (mundo oculto) se enlazan hasta 8 por cuadro;
   // con el mundo ya visible, de 2 como mucho: el cuadro de «Empezar» no apila ocho enlaces de
   // programas seguidos antes del primer dibujo (QA-53: el peor cuadro quedaba en 483–903 ms).
+  // Se enlaza por FAMILIA (clave de material × rasgos), no por objeto: muchas mallas comparten familia y
+  // un solo warmUno enlaza el programa para todas; así una tormenta de re-enlaces (p. ej. al cambiar las
+  // sombras) calienta ~8 familias por cuadro y no 8 objetos de la misma familia.
   function calentarPresupuesto(maxN, ms) {
     const t0 = performance.now();
+    const vistos = new Set();
     let n = 0;
-    while (n < maxN && performance.now() - t0 < ms) {
-      const o = siguienteCalor();
-      if (!o) break;
+    for (const o of dibujables()) {
+      if (n >= maxN || performance.now() - t0 > ms) break;
+      const claves = [];
+      for (const m of matsDe(o)) { if (m) { const k = idCalor(o, m); if (!calorHecho.has(k)) claves.push(k); } }
+      if (!claves.length || claves.every(k => vistos.has(k))) continue;
       warmUno(o); n++;
+      for (const k of claves) vistos.add(k);
     }
     // El post se enlaza en cuanto queda presupuesto en un cuadro (no espera a agotar la escena):
     // si no, el primer dibujo de verdad —el cuadro de «Empezar»— compilaría bloom/gradación allí.
@@ -932,11 +949,15 @@ AVE.module('renderer', function (G) {
     const f1 = FASES ? performance.now() : 0;
     // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Con el mundo visible el
     // tope es de 2 familias y ~6 ms: el cuadro no apila enlaces antes del primer dibujo (QA-53).
+    // Si quedan muchas familias pendientes (tormenta tras un cambio de sombras: variantes con/sin
+    // USE_SHADOWMAP), se pasa un rato a ritmo de caliente (6/cuadro, ~12 ms) para repartir la
+    // compilación en varios cuadros en vez de un tirón de 100–600 ms en el primero.
     const f2 = FASES ? performance.now() : 0;
     let warmMs = 0;
     if (puedeCalentar && siguienteCalor()) {
       const w0 = performance.now();
-      calentarPresupuesto(2, 6);
+      const muchos = programasPendientes() > 12;
+      calentarPresupuesto(muchos ? 6 : 2, muchos ? 12 : 6);
       warmMs = performance.now() - w0;
       fpsM.warm = Math.max(fpsM.warm, 2000);
     }

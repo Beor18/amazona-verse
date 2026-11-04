@@ -434,12 +434,45 @@ AVE.module('vegetacion', function (G) {
   }
   const grupos = {}; // modelo -> { prims: [{ cerca, lejos, lod }], cap }
   const BOXY = {}; // modelo -> alto para las celdas
+  // KIMI-021 (QA-81): unir en una sola geometría las primitivas de un modelo que comparten material
+  // (mismo tipo y mapa): 1 draw call por banda en vez de 1 por malla del GLB, misma imagen.
+  // Ojo: todos los GLB de flora van indexados; al concatenar hay que expandir a no-indexado,
+  // porque concatenar vértices conservando el orden del buffer sin su índice dibuja triángulos basura.
+  function mergeGeos(gs) {
+    if (gs.length === 1) return gs[0];
+    const partes = gs.map(g => (g.index ? g.toNonIndexed() : g));
+    const attrs = {};
+    for (const nom in partes[0].attributes) attrs[nom] = partes[0].attributes[nom].itemSize;
+    for (const g of partes) for (const nom in attrs) if (!g.attributes[nom]) delete attrs[nom];
+    let total = 0; for (const g of partes) total += g.attributes.position.count;
+    const out = new THREE.BufferGeometry();
+    for (const nom in attrs) {
+      const sz = attrs[nom], arr = new Float32Array(total * sz);
+      let off = 0;
+      for (const g of partes) { const a = g.attributes[nom]; arr.set(a.array.subarray(0, a.count * sz), off); off += a.count * sz; }
+      out.setAttribute(nom, new THREE.BufferAttribute(arr, sz));
+    }
+    out.computeBoundingBox(); out.computeBoundingSphere();
+    return out;
+  }
   function crearMallas(m) {
     const P = porModelo[m], prims = geos[m]; if (!P || !prims) return;
     const own = windUniforms(m), cat = CAT(m);
-    const g = { prims: [], cat, own, tris: 0 };
-    for (const p of prims) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
+    const fus = {};
     for (const p of prims) {
+      const k = p.tipo + '|' + (p.src.map ? p.src.map.uuid : '-') + '|' + (p.src.side || 0) + '|' + (p.src.normalMap ? p.src.normalMap.uuid : '-');
+      (fus[k] = fus[k] || []).push(p);
+    }
+    const partes = [];
+    for (const k in fus) {
+      const ls = fus[k];
+      const ok = ls.length > 1 && ls.every(q => q.geo.attributes.position && q.geo.attributes.normal && q.geo.attributes.uv && q.geo.attributes.aViento);
+      if (ok) partes.push({ tipo: ls[0].tipo, src: ls[0].src, geo: mergeGeos(ls.map(q => q.geo)) });
+      else partes.push(...ls);
+    }
+    const g = { prims: [], cat, own, tris: 0 };
+    for (const p of partes) g.tris += (p.geo.index ? p.geo.index.count : p.geo.attributes.position.count) / 3;
+    for (const p of partes) {
       const mat = p.tipo === 'hoja' ? hojaMaterial(p.src, m, own) : solidoMaterial(p.src, own, p.tipo === 'roca');
       const geoL = cat === 'arbol' && p.tipo === 'hoja' ? geoLOD(p.geo) : p.geo;
       const mk = (sombra, lod) => {
@@ -453,7 +486,7 @@ AVE.module('vegetacion', function (G) {
         scene.add(im);
         return im;
       };
-      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false), lod: cat === 'arbol' ? mk(false, true) : null, trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
+      g.prims.push({ cerca: cat === 'arbol' ? mk(true) : null, lejos: mk(false), lod: cat === 'arbol' && p.tipo === 'hoja' ? mk(false, true) : null, sinLod: cat === 'arbol' && p.tipo !== 'hoja', trisLod: (geoL.index ? geoL.index.count : geoL.attributes.position.count) / 3 });
       g.trisLod = (g.trisLod || 0) + g.prims[g.prims.length - 1].trisLod;
       mats.push(mat);
     }
@@ -797,14 +830,16 @@ AVE.module('vegetacion', function (G) {
           if (g.cat === 'arbol' && IMP.tile[m] && d > finMalla - banda) imp.push(i);
         }
       }
-      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; nLod += medio.length; }
+      if (g.cat === 'arbol') { nMalla += cerca.length + lejos.length; trisMalla += (cerca.length + lejos.length) * g.tris; nLod += medio.length; } // OJO: la banda medio no se suma aquí (cuenta histórica; ver fila KIMI-021)
       for (const pr of g.prims) {
         // QA-81 (KIMI-013): con sombras ('alto') la pareja cerca/lejos duplicaba draw calls con la misma geometría y material.
         // Una sola malla ('cerca', la que proyecta sombra y lleva customDepthMaterial) cubre todo el tramo de malla; el coste
         // añadido en el mapa de sombras son solo vértices de instancias fuera de su caja ortográfica (se recortan en hardware).
         // Además la flora no-árbol a menos de sombraR ya no cae en una lista cuya malla es null (antes desaparecía en 'alto').
-        if (sombraR && pr.cerca) { llenar(pr.cerca, P, cerca.concat(lejos)); llenar(pr.lejos, P, []); }
-        else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, cerca.concat(lejos)); }
+        // KIMI-021: la corteza/rocas usan la geometría completa en ambas bandas (solo la hoja tiene LOD
+        // decimado): una sola malla cubre cerca+lejos+medio y la banda lod desaparece para esas prims (−1 call por modelo).
+        if (sombraR && pr.cerca) { llenar(pr.cerca, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); llenar(pr.lejos, P, []); }
+        else { llenar(pr.cerca, P, []); llenar(pr.lejos, P, pr.sinLod ? cerca.concat(lejos, medio) : cerca.concat(lejos)); }
         if (pr.lod) llenar(pr.lod, P, medio);
         const mt = pr.lejos.material; // fundido hacia el impostor
         g.own.uFade.value.set(finMalla - banda, finMalla); // BM101: sin impostor (plantas, rocas, troncos) el fundido tramado también cubre el final de la distancia: sin «pop»

@@ -645,6 +645,8 @@ window.AV_EN = {
  "Mirar: parada de ciencias": "Look: science stop",
  "Mis plumas todavía van a toda velocidad.": "My feathers are still going full speed.",
  "Mis récords": "My records",
+ "Página de inicio": "Home page",
+ "← Página de inicio": "← Home page",
  "Misiones y Diario": "Missions and Journal",
  "Misión": "Mission",
  "Mochila PR": "PR backpack",
