@@ -831,6 +831,8 @@ AVE.module('streaming', function (G) {
 
     // --- carga y liberación de recursos (conteo de referencias por zonas) ---
     const cola = []; let enVuelo = 0;
+    // BM133: _hd de 400 k triángulos de complejo_ruinas (complejo_ruinas_hd400): APAGADO; solo se enciende a mano con ?hd400=1
+    const HD400 = (() => { try { return new URLSearchParams(location.search).get('hd400') === '1'; } catch (e) { return false; } })();
     const cargarGLB = clave => G.assets.loadGLB(base + clave + '.glb', { b64: () => (window[B64] || {})[clave], script: base + clave + '_glb.js', base, error: 'edificio no disponible: ' + clave });
     const tieneLejos = n => { const k = KIT(); return !!(k && k[n] && k[n].lejos); };
     const tieneHD = n => { const k = KIT(); return !!(k && k[n] && k[n].hd); };
@@ -903,7 +905,7 @@ AVE.module('streaming', function (G) {
         if (r.estado !== 'cola') continue;
         if (!r.refs && !r.fijo) { r.estado = 'nada'; continue; }
         r.estado = 'bajando'; enVuelo++;
-        cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.tipo === 'hd' ? r.n + '_hd' : r.n)
+        cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.tipo === 'hd' ? r.n + (HD400 && r.n === 'complejo_ruinas' ? '_hd400' : '_hd') : r.n)
           .then(gltf => encolar(() => procesar(r, gltf.scene), 'procesar:' + r.n + ':' + r.tipo), err => { r.estado = 'error'; r.error = err; r.mal(err); })
           .then(() => { enVuelo--; siguiente(); });
       }
