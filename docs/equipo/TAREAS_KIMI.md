@@ -15,7 +15,12 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 >  - **Kimi 3:** **CG-64 (la foto del cómic congela ~3 s el juego en el móvil)** vuelve a ti → después KIMI-020.
 >  - **Kimi 1:** **CG-65 («se tranca en el cap. 4»: jugarlo entero desde una partida guardada y desde el selector, en móvil con toques; arreglar lo que trabe)** → después las medidas reales V17.
 >  - **Kimi 2:** QA-152 (memoria al arrancar y heap del cap. 4) → **CG-62 (familia de Iguaca, propuesta A aprobada: escala del grupo y fondo propio en su retrato; ni modelo ni rig nuevos)**.
->  - En pausa hasta que haya quien: CG-66, CG-67, CG-68 y lo que quedó de CG-63 (K35 B, K36 B).
+>  - **Toda la carga es de Kimi ahora (Kelvin 4-nov).** Cuando cada uno acabe lo suyo, sigue sin parar con esto (el primero libre toma la siguiente y la marca «EN CURSO · Kimi N»):
+>    1. **CG-68** guardado robusto en móvil (que Safari no haga perder la partida).
+>    2. **CG-66** la temporada entera en móvil con toques reales.
+>    3. **CG-63 lo que falta:** K35 B (el Guardián llega después de la crecida; **primero verifica la secuencia del cap. 1** y solo aplícalo si no rompe la misión) y K36 B (detalle de la medalla: déjalo anotado como pendiente de arte).
+>    4. **CG-67** cero basura por cuadro en los módulos de juego.
+>    5. Después, los bugs abiertos de `docs/equipo/BUGS.md`, de más grave a menos.
 > 0j. **4-nov 12:05 UTC · Hallazgos de la nube para medir con GPU real (la nube solo tiene SwiftShader):**
 >  1. ~~Kimi 3: la foto del cómic~~ → **la hace Grok (CG-64), no la toques.** (Era: la **foto del cómic** (`src/game/comic.js` `capture` → `renderer.snapshot` → `drawImage`) congela ~3 s un cuadro en pleno juego (lectura síncrona de la GPU, salta con un evento ~62 s después de empezar). Mídelo en móvil emulado con GPU real y, si se nota, hazla diferida (fuera del cuadro de juego, a menor resolución en bajo o con `requestIdleCallback`/en el siguiente cuadro tras la pantalla de pausa) sin cambiar cómo se ve el cómic.
 >  2. **Kimi 3:** parche listo y sin probar en `tools/kimi/parches/renderer_calor_por_material.patch` (`renderer.js`: la clave del precalentado se cachea por material; ~30 000 asignaciones menos por cuadro). Aplícalo con `git am`, corre las 12 con GPU real y súbelo solo si quedan en verde.
