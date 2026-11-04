@@ -1,0 +1,1418 @@
+{
+  "etiqueta": "k042-post1",
+  "cuando": "2026-11-04T22:09:13.485Z",
+  "commit": "82ae046c",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "escenario": {
+    "ancla": "(-33,-136)",
+    "vuelo": "círculo r=55 m a +12 m, 0,25 rad/s",
+    "segundos": 60,
+    "ventanaS": 10
+  },
+  "repro": {
+    "ventanas": [
+      {
+        "v": 0,
+        "h0MB": 104.3,
+        "basuraKB": 11801,
+        "retenidoKB": 1886,
+        "cuadros": 304,
+        "trans": 28
+      },
+      {
+        "v": 1,
+        "h0MB": 106.2,
+        "basuraKB": 8076,
+        "retenidoKB": -1651,
+        "cuadros": 351,
+        "trans": 2
+      },
+      {
+        "v": 2,
+        "h0MB": 104.6,
+        "basuraKB": 24750,
+        "retenidoKB": 7167,
+        "cuadros": 331,
+        "trans": 4
+      },
+      {
+        "v": 3,
+        "h0MB": 111.6,
+        "basuraKB": 8726,
+        "retenidoKB": 165,
+        "cuadros": 348,
+        "trans": 3
+      },
+      {
+        "v": 4,
+        "h0MB": 111.7,
+        "basuraKB": 12501,
+        "retenidoKB": 87,
+        "cuadros": 421,
+        "trans": 2
+      },
+      {
+        "v": 5,
+        "h0MB": 111.8,
+        "basuraKB": 30812,
+        "retenidoKB": 1116,
+        "cuadros": 472,
+        "trans": 5
+      }
+    ],
+    "solidosT": [
+      {
+        "t": 1,
+        "solidos": {
+          "bloques": 1510,
+          "bloquesFlora": 0,
+          "triangulos": 317470,
+          "rellenas": 129,
+          "pendientes": 844,
+          "regiones": 30,
+          "kb": 1227,
+          "kbFlora": 0
+        },
+        "mallasEscena": 531,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 25,
+          "hd": 0
+        }
+      },
+      {
+        "t": 2,
+        "solidos": {
+          "bloques": 1513,
+          "bloquesFlora": 0,
+          "triangulos": 319575,
+          "rellenas": 129,
+          "pendientes": 1028,
+          "regiones": 35,
+          "kb": 1229,
+          "kbFlora": 0
+        },
+        "mallasEscena": 533,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 3,
+        "solidos": {
+          "bloques": 1527,
+          "bloquesFlora": 0,
+          "triangulos": 321777,
+          "rellenas": 129,
+          "pendientes": 1023,
+          "regiones": 35,
+          "kb": 1241,
+          "kbFlora": 0
+        },
+        "mallasEscena": 533,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 4,
+        "solidos": {
+          "bloques": 1537,
+          "bloquesFlora": 0,
+          "triangulos": 323245,
+          "rellenas": 129,
+          "pendientes": 1003,
+          "regiones": 35,
+          "kb": 1249,
+          "kbFlora": 0
+        },
+        "mallasEscena": 533,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 5,
+        "solidos": {
+          "bloques": 1539,
+          "bloquesFlora": 0,
+          "triangulos": 323858,
+          "rellenas": 129,
+          "pendientes": 1033,
+          "regiones": 35,
+          "kb": 1250,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 6,
+        "solidos": {
+          "bloques": 1539,
+          "bloquesFlora": 0,
+          "triangulos": 324963,
+          "rellenas": 129,
+          "pendientes": 950,
+          "regiones": 34,
+          "kb": 1250,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 7,
+        "solidos": {
+          "bloques": 1539,
+          "bloquesFlora": 0,
+          "triangulos": 325933,
+          "rellenas": 129,
+          "pendientes": 945,
+          "regiones": 34,
+          "kb": 1250,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 8,
+        "solidos": {
+          "bloques": 1551,
+          "bloquesFlora": 0,
+          "triangulos": 329467,
+          "rellenas": 129,
+          "pendientes": 932,
+          "regiones": 33,
+          "kb": 1260,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 9,
+        "solidos": {
+          "bloques": 1603,
+          "bloquesFlora": 0,
+          "triangulos": 342835,
+          "rellenas": 129,
+          "pendientes": 904,
+          "regiones": 33,
+          "kb": 1302,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 10,
+        "solidos": {
+          "bloques": 1678,
+          "bloquesFlora": 0,
+          "triangulos": 350605,
+          "rellenas": 129,
+          "pendientes": 1050,
+          "regiones": 35,
+          "kb": 1363,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 2,
+          "hd": 0
+        }
+      },
+      {
+        "t": 11,
+        "solidos": {
+          "bloques": 1694,
+          "bloquesFlora": 0,
+          "triangulos": 353250,
+          "rellenas": 129,
+          "pendientes": 1000,
+          "regiones": 35,
+          "kb": 1376,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 12,
+        "solidos": {
+          "bloques": 1710,
+          "bloquesFlora": 0,
+          "triangulos": 354066,
+          "rellenas": 129,
+          "pendientes": 1214,
+          "regiones": 35,
+          "kb": 1389,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 13,
+        "solidos": {
+          "bloques": 1750,
+          "bloquesFlora": 0,
+          "triangulos": 354870,
+          "rellenas": 129,
+          "pendientes": 1210,
+          "regiones": 35,
+          "kb": 1422,
+          "kbFlora": 0
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 14,
+        "solidos": {
+          "bloques": 1757,
+          "bloquesFlora": 0,
+          "triangulos": 355629,
+          "rellenas": 129,
+          "pendientes": 1300,
+          "regiones": 34,
+          "kb": 1428,
+          "kbFlora": 0
+        },
+        "mallasEscena": 540,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 15,
+        "solidos": {
+          "bloques": 1785,
+          "bloquesFlora": 0,
+          "triangulos": 357437,
+          "rellenas": 129,
+          "pendientes": 1277,
+          "regiones": 34,
+          "kb": 1450,
+          "kbFlora": 0
+        },
+        "mallasEscena": 540,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 16,
+        "solidos": {
+          "bloques": 1946,
+          "bloquesFlora": 0,
+          "triangulos": 388166,
+          "rellenas": 129,
+          "pendientes": 1161,
+          "regiones": 36,
+          "kb": 1581,
+          "kbFlora": 0
+        },
+        "mallasEscena": 531,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 17,
+        "solidos": {
+          "bloques": 2065,
+          "bloquesFlora": 0,
+          "triangulos": 426386,
+          "rellenas": 129,
+          "pendientes": 1116,
+          "regiones": 36,
+          "kb": 1678,
+          "kbFlora": 0
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 18,
+        "solidos": {
+          "bloques": 2183,
+          "bloquesFlora": 0,
+          "triangulos": 445281,
+          "rellenas": 129,
+          "pendientes": 934,
+          "regiones": 35,
+          "kb": 1774,
+          "kbFlora": 0
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 19,
+        "solidos": {
+          "bloques": 2226,
+          "bloquesFlora": 0,
+          "triangulos": 463231,
+          "rellenas": 129,
+          "pendientes": 918,
+          "regiones": 35,
+          "kb": 1809,
+          "kbFlora": 0
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 20,
+        "solidos": {
+          "bloques": 2276,
+          "bloquesFlora": 0,
+          "triangulos": 479701,
+          "rellenas": 129,
+          "pendientes": 712,
+          "regiones": 34,
+          "kb": 1849,
+          "kbFlora": 0
+        },
+        "mallasEscena": 516,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 21,
+        "solidos": {
+          "bloques": 2350,
+          "bloquesFlora": 0,
+          "triangulos": 500354,
+          "rellenas": 129,
+          "pendientes": 680,
+          "regiones": 34,
+          "kb": 1909,
+          "kbFlora": 0
+        },
+        "mallasEscena": 518,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 22,
+        "solidos": {
+          "bloques": 2393,
+          "bloquesFlora": 0,
+          "triangulos": 528907,
+          "rellenas": 129,
+          "pendientes": 627,
+          "regiones": 33,
+          "kb": 1944,
+          "kbFlora": 0
+        },
+        "mallasEscena": 518,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 23,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 0,
+          "triangulos": 544281,
+          "rellenas": 129,
+          "pendientes": 630,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 0
+        },
+        "mallasEscena": 507,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 24,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 94,
+          "triangulos": 567651,
+          "rellenas": 470,
+          "pendientes": 585,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 76
+        },
+        "mallasEscena": 521,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 25,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 254,
+          "triangulos": 603302,
+          "rellenas": 470,
+          "pendientes": 532,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 206
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 26,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 403,
+          "triangulos": 642278,
+          "rellenas": 470,
+          "pendientes": 458,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 327
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 27,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 500,
+          "triangulos": 678947,
+          "rellenas": 470,
+          "pendientes": 384,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 406
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 28,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 642,
+          "triangulos": 715258,
+          "rellenas": 470,
+          "pendientes": 318,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 522
+        },
+        "mallasEscena": 526,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 29,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 682,
+          "triangulos": 748343,
+          "rellenas": 470,
+          "pendientes": 314,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 554
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 30,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 827,
+          "triangulos": 781800,
+          "rellenas": 470,
+          "pendientes": 259,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 672
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 31,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 769,
+          "triangulos": 812143,
+          "rellenas": 470,
+          "pendientes": 188,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 625
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 32,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 934,
+          "triangulos": 850442,
+          "rellenas": 470,
+          "pendientes": 125,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 759
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 33,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 970,
+          "triangulos": 887239,
+          "rellenas": 470,
+          "pendientes": 150,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 788
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 34,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1092,
+          "triangulos": 925689,
+          "rellenas": 470,
+          "pendientes": 73,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 887
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 35,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1149,
+          "triangulos": 965180,
+          "rellenas": 470,
+          "pendientes": 239,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 934
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 36,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1294,
+          "triangulos": 1005313,
+          "rellenas": 470,
+          "pendientes": 151,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1051
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 37,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1247,
+          "triangulos": 1039960,
+          "rellenas": 470,
+          "pendientes": 390,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1013
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 38,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1362,
+          "triangulos": 1074640,
+          "rellenas": 470,
+          "pendientes": 325,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1107
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 39,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1253,
+          "triangulos": 1109966,
+          "rellenas": 470,
+          "pendientes": 439,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 1018
+        },
+        "mallasEscena": 540,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 40,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1355,
+          "triangulos": 1144956,
+          "rellenas": 470,
+          "pendientes": 361,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 1101
+        },
+        "mallasEscena": 540,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 41,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1016,
+          "triangulos": 1175001,
+          "rellenas": 470,
+          "pendientes": 352,
+          "regiones": 33,
+          "kb": 1997,
+          "kbFlora": 826
+        },
+        "mallasEscena": 531,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 42,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1186,
+          "triangulos": 1215288,
+          "rellenas": 470,
+          "pendientes": 339,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 964
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 43,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1146,
+          "triangulos": 1257670,
+          "rellenas": 470,
+          "pendientes": 197,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 931
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 44,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1336,
+          "triangulos": 1305894,
+          "rellenas": 470,
+          "pendientes": 106,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1086
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 45,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1193,
+          "triangulos": 1347888,
+          "rellenas": 470,
+          "pendientes": 31,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 969
+        },
+        "mallasEscena": 530,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 46,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1255,
+          "triangulos": 1364112,
+          "rellenas": 470,
+          "pendientes": 0,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 1020
+        },
+        "mallasEscena": 518,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 47,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1086,
+          "triangulos": 1384670,
+          "rellenas": 470,
+          "pendientes": 110,
+          "regiones": 33,
+          "kb": 1997,
+          "kbFlora": 882
+        },
+        "mallasEscena": 516,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 48,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1237,
+          "triangulos": 1434752,
+          "rellenas": 470,
+          "pendientes": 45,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 1005
+        },
+        "mallasEscena": 507,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 49,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1302,
+          "triangulos": 1454542,
+          "rellenas": 470,
+          "pendientes": 0,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 1058
+        },
+        "mallasEscena": 515,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 50,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1141,
+          "triangulos": 1470872,
+          "rellenas": 470,
+          "pendientes": 93,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 927
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 51,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1299,
+          "triangulos": 1515874,
+          "rellenas": 470,
+          "pendientes": 17,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1055
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 1,
+          "hd": 0
+        }
+      },
+      {
+        "t": 52,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1148,
+          "triangulos": 1553308,
+          "rellenas": 470,
+          "pendientes": 61,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 933
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 53,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1301,
+          "triangulos": 1596203,
+          "rellenas": 470,
+          "pendientes": 8,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 1057
+        },
+        "mallasEscena": 522,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 54,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1073,
+          "triangulos": 1621123,
+          "rellenas": 470,
+          "pendientes": 149,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 872
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 2,
+          "hd": 0
+        }
+      },
+      {
+        "t": 55,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1244,
+          "triangulos": 1667641,
+          "rellenas": 470,
+          "pendientes": 68,
+          "regiones": 36,
+          "kb": 1997,
+          "kbFlora": 1011
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 56,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1145,
+          "triangulos": 1712925,
+          "rellenas": 470,
+          "pendientes": 39,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 930
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 57,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1238,
+          "triangulos": 1734473,
+          "rellenas": 470,
+          "pendientes": 0,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1006
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 58,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1111,
+          "triangulos": 1752583,
+          "rellenas": 470,
+          "pendientes": 94,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 903
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 59,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1269,
+          "triangulos": 1798787,
+          "rellenas": 470,
+          "pendientes": 0,
+          "regiones": 34,
+          "kb": 1997,
+          "kbFlora": 1031
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      },
+      {
+        "t": 60,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1198,
+          "triangulos": 1822229,
+          "rellenas": 470,
+          "pendientes": 212,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 973
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 2,
+          "hd": 0
+        }
+      },
+      {
+        "t": 61,
+        "solidos": {
+          "bloques": 2458,
+          "bloquesFlora": 1405,
+          "triangulos": 1873618,
+          "rellenas": 470,
+          "pendientes": 116,
+          "regiones": 35,
+          "kb": 1997,
+          "kbFlora": 1142
+        },
+        "mallasEscena": 542,
+        "mallasEdificios": 0,
+        "trans": {
+          "nivel": 0,
+          "hd": 0
+        }
+      }
+    ],
+    "transFin": {
+      "nivel": 44,
+      "hd": 0,
+      "evitadas": 0
+    },
+    "dbgRes": {
+      "gs": "object",
+      "gst": "function",
+      "stt": "undefined"
+    },
+    "cuadrosTotal": 2227,
+    "heapFinMB": 112.9,
+    "calls": 63,
+    "ktris": 153,
+    "calidad": "bajo",
+    "stats0": {
+      "calls": 92,
+      "ktris": 330
+    }
+  },
+  "perfilAsign": {
+    "totalKB": 3524,
+    "top": [
+      {
+        "kb": 1793,
+        "fn": "insert · solidos.js:45"
+      },
+      {
+        "kb": 152,
+        "fn": "Set · :0"
+      },
+      {
+        "kb": 135,
+        "fn": "set · :0"
+      },
+      {
+        "kb": 123,
+        "fn": "hypot · :0"
+      },
+      {
+        "kb": 106,
+        "fn": "get · :0"
+      },
+      {
+        "kb": 97,
+        "fn": "(IDLE_EXTERNAL) · :0"
+      },
+      {
+        "kb": 76,
+        "fn": "serialize · guardado.js:229"
+      },
+      {
+        "kb": 64,
+        "fn": "update · three.min.js:6"
+      },
+      {
+        "kb": 59,
+        "fn": "frame · renderer.js:1024"
+      },
+      {
+        "kb": 57,
+        "fn": "renderBufferDirect · three.min.js:6"
+      },
+      {
+        "kb": 47,
+        "fn": "setMode · three.min.js:6"
+      },
+      {
+        "kb": 40,
+        "fn": "addEventListener · three.min.js:6"
+      },
+      {
+        "kb": 38,
+        "fn": "add · :0"
+      },
+      {
+        "kb": 35,
+        "fn": "pintarPm · guia_controles.js:284"
+      },
+      {
+        "kb": 33,
+        "fn": "bombear · streaming.js:130"
+      },
+      {
+        "kb": 32,
+        "fn": "Xo · three.min.js:6"
+      },
+      {
+        "kb": 32,
+        "fn": "idCalor · renderer.js:614"
+      },
+      {
+        "kb": 26,
+        "fn": "actualizarColliders · vegetacion.js:947"
+      },
+      {
+        "kb": 25,
+        "fn": "Xn · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "Ce · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "setup · three.min.js:6"
+      },
+      {
+        "kb": 24,
+        "fn": "multiplyMatrices · three.min.js:6"
+      },
+      {
+        "kb": 20,
+        "fn": "colocarKelvin · mundo.js:214"
+      },
+      {
+        "kb": 20,
+        "fn": "ki · three.min.js:6"
+      },
+      {
+        "kb": 18,
+        "fn": "push · :0"
+      },
+      {
+        "kb": 17,
+        "fn": "parse · GLTFLoader.js:163"
+      },
+      {
+        "kb": 17,
+        "fn": "traverse · three.min.js:6"
+      },
+      {
+        "kb": 16,
+        "fn": "bloquePasto · vegetacion.js:747"
+      },
+      {
+        "kb": 16,
+        "fn": "descubrimiento · fx.js:142"
+      },
+      {
+        "kb": 16,
+        "fn": "indexarSub · terreno.js:135"
+      }
+    ],
+    "porArchivo": [
+      {
+        "kb": 1826,
+        "arch": "solidos.js"
+      },
+      {
+        "kb": 466,
+        "arch": "three.min.js"
+      },
+      {
+        "kb": 114,
+        "arch": "renderer.js"
+      },
+      {
+        "kb": 50,
+        "arch": "vegetacion.js"
+      },
+      {
+        "kb": 50,
+        "arch": "streaming.js"
+      },
+      {
+        "kb": 20,
+        "arch": "mundo.js"
+      },
+      {
+        "kb": 16,
+        "arch": "eventos.js"
+      },
+      {
+        "kb": 16,
+        "arch": "fx.js"
+      },
+      {
+        "kb": 16,
+        "arch": "terreno.js"
+      },
+      {
+        "kb": 16,
+        "arch": "agua.js"
+      }
+    ]
+  },
+  "errores": []
+}

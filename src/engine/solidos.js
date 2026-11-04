@@ -343,7 +343,20 @@ AVE.module('solidos', function (G) {
     for (const k of regiones.keys()) {
       const pk = regiones.get(k), rx = Math.floor(pk / 65536) - 32768, rz = (pk % 65536) - 32768;
       if (Math.abs(rx - cx) <= lejos && Math.abs(rz - cz) <= lejos) continue;
-      if (pendReg.get(k)) continue; // sus trabajos aún en cola: la región se descarga cuando terminen
+      // KIMI-042: sus trabajos pendientes se cancelan. En vuelo la cola crece más deprisa que el
+      // presupuesto y retenerlos (la guarda vieja) impedía la descarga para siempre: regiones y
+      // pendientes crecían sin tope y el FIFO rasterizaba primero las regiones de atrás, no la del
+      // jugador. Los bloques ya insertados se limpian igual (regionBloques); el trabajo parcial del
+      // frente es seguro de quitar: TRI se reinicia en el siguiente triEmpezar.
+      if (pendReg.get(k)) {
+        for (let i = colaFlora.length - 1; i >= 0; i--) {
+          const J = colaFlora[i];
+          if (J.region !== k) continue;
+          if (poolM.length < 256) poolM.push(J.m);
+          colaFlora.splice(i, 1);
+        }
+        pendReg.delete(k);
+      }
       regiones.delete(k);
       for (const bk of regionBloques.get(k) || SIN_ITEMS) { const b = flora.get(bk); if (!b) continue; b.duenos.delete(k); if (!b.duenos.size) flora.delete(bk); }
       regionBloques.delete(k);
@@ -364,12 +377,27 @@ AVE.module('solidos', function (G) {
     try { oculto = !!(G.ui && G.ui.worldHidden && G.ui.worldHidden()); } catch (e) { oculto = false; }
     return oculto ? 18 : SO.msCuadro; // detrás del creador se adelanta el trabajo, sin comerle el cuadro a «Empezar»
   }
+  let ordSig = 0; // KIMI-042: la cola de flora se reordena por distancia cada 15 cuadros (no cada uno)
   G.on('update', () => {
     const ms = msSolidos(), t0 = performance.now();
     bombearVanos(ms * 0.4); // BM6-4: la búsqueda de puertas no se come todo el presupuesto; el resto rasteriza triángulos
     const queda = ms - (performance.now() - t0);
     if (!cola.length && !colaFlora.length && !estaticosListos && blocks.size && porRegion) { estaticosListos = true; resolver(); }
     floraCerca();
+    // KIMI-042: en vuelo la cola crece más deprisa que el presupuesto; en FIFO el rasterizado
+    // seguía el orden de creación (el barrido crea la región del jugador en el medio), así el
+    // presupuesto se gastaba en regiones ya dejadas atrás. Se reordena por distancia al jugador:
+    // primero las de aquí y las de delante; las de atrás se cancelan al descargarse (floraCerca).
+    if (colaFlora.length > 1 && S.pos && (++ordSig % 15) === 0) {
+      const px = Math.floor(S.pos.x / SO.regionM), pz = Math.floor(S.pos.z / SO.regionM);
+      const d2 = J => {
+        const v = regiones.get(J.region);
+        if (v == null) return Infinity;
+        const dx = Math.floor(v / 65536) - 32768 - px, dz = (v % 65536) - 32768 - pz;
+        return dx * dx + dz * dz;
+      };
+      colaFlora.sort((a, b) => d2(a) - d2(b));
+    }
     if (queda > 0.4 && (cola.length || colaFlora.length || rellenoJob)) trabajar(queda);
   }, 96);
   // Termina todo lo pendiente ya (pruebas y capturas): vanos, triángulos y huecos, de un tirón
