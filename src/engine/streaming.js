@@ -831,7 +831,11 @@ AVE.module('streaming', function (G) {
 
     // --- carga y liberación de recursos (conteo de referencias por zonas) ---
     const cola = []; let enVuelo = 0;
-    // BM133: _hd de 400 k triángulos de complejo_ruinas (complejo_ruinas_hd400): APAGADO; solo se enciende a mano con ?hd400=1
+    // BM133: _hd de 400 k triángulos de complejo_ruinas (complejo_ruinas_hd400): APAGADO por defecto; solo se enciende a
+    // mano con ?hd400=1. KIMI-022 midió el criterio de encendido con GPU real (docs/img/kimi022/, matriz «limpia-*»):
+    // escritorio medio ON fpsMed 111,8 (p50 142,9 = tope) ≥ 50 exigido. Pero al dejarlo ON por defecto streamingTest
+    // cae a 21/24 con dos interacciones aún sin diagnosticar (16/17 _hd 'listos' en ruinas_yunque y AV_HD_Ancient ausente
+    // en la vista aérea; A/B en la misma contención con hd400=0: 23/24). Se mantiene APAGADO hasta diagnosticarlas.
     const HD400 = (() => { try { return new URLSearchParams(location.search).get('hd400') === '1'; } catch (e) { return false; } })();
     const cargarGLB = clave => G.assets.loadGLB(base + clave + '.glb', { b64: () => (window[B64] || {})[clave], script: base + clave + '_glb.js', base, error: 'edificio no disponible: ' + clave });
     const tieneLejos = n => { const k = KIT(); return !!(k && k[n] && k[n].lejos); };

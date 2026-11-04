@@ -1,0 +1,151 @@
+[22:56:04] INICIA medio-hd0-a :: --modo escritorio --calidad media --hd400 0 --etiqueta limpia-m0-a
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-m0-a.json
+{
+ "etiqueta": "limpia-m0-a",
+ "ok": true,
+ "medida": {
+  "fpsMed": 118.98,
+  "fpsP50": 142.86,
+  "fpsP10": 71.43,
+  "peorMs": 201,
+  "calls": 187,
+  "ktris": 810,
+  "calidad": "medio",
+  "heapMB": 830.4,
+  "infoMem": {
+   "geo": 307,
+   "tex": 173
+  },
+  "lookTexturasMB": 633,
+  "cargadoHd400": 0,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[22:56:40] FIN medio-hd0-a (exit 0)
+[22:56:41] INICIA medio-hd1-a :: --modo escritorio --calidad media --hd400 1 --etiqueta limpia-m1-a
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-m1-a.json
+{
+ "etiqueta": "limpia-m1-a",
+ "ok": true,
+ "medida": {
+  "fpsMed": 111.81,
+  "fpsP50": 142.86,
+  "fpsP10": 71.43,
+  "peorMs": 243,
+  "calls": 185,
+  "ktris": 1065,
+  "calidad": "medio",
+  "heapMB": 931.4,
+  "infoMem": {
+   "geo": 307,
+   "tex": 172
+  },
+  "lookTexturasMB": 633,
+  "cargadoHd400": 1,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[22:57:19] FIN medio-hd1-a (exit 0)
+[22:57:19] INICIA medio-hd0-b :: --modo escritorio --calidad media --hd400 0 --etiqueta limpia-m0-b
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-m0-b.json
+{
+ "etiqueta": "limpia-m0-b",
+ "ok": true,
+ "medida": {
+  "fpsMed": 88.53,
+  "fpsP50": 142.86,
+  "fpsP10": 47.62,
+  "peorMs": 278,
+  "calls": 185,
+  "ktris": 706,
+  "calidad": "medio",
+  "heapMB": 838,
+  "infoMem": {
+   "geo": 302,
+   "tex": 173
+  },
+  "lookTexturasMB": 633,
+  "cargadoHd400": 0,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[22:58:00] FIN medio-hd0-b (exit 0)
+[22:58:00] INICIA medio-hd1-b :: --modo escritorio --calidad media --hd400 1 --etiqueta limpia-m1-b
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-m1-b.json
+{
+ "etiqueta": "limpia-m1-b",
+ "ok": true,
+ "medida": {
+  "fpsMed": 66.79,
+  "fpsP50": 71.43,
+  "fpsP10": 35.71,
+  "peorMs": 320,
+  "calls": 186,
+  "ktris": 1157,
+  "calidad": "medio",
+  "heapMB": 872.4,
+  "infoMem": {
+   "geo": 314,
+   "tex": 173
+  },
+  "lookTexturasMB": 633,
+  "cargadoHd400": 1,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[22:58:42] FIN medio-hd1-b (exit 0)
+[22:58:42] INICIA alto-hd0 :: --modo escritorio --calidad alta --hd400 0 --etiqueta limpia-a0
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-a0.json
+{
+ "etiqueta": "limpia-a0",
+ "ok": true,
+ "medida": {
+  "fpsMed": 52.43,
+  "fpsP50": 71.43,
+  "fpsP10": 28.57,
+  "peorMs": 528,
+  "calls": 188,
+  "ktris": 706,
+  "calidad": "medio",
+  "heapMB": 572.7,
+  "infoMem": {
+   "geo": 291,
+   "tex": 173
+  },
+  "lookTexturasMB": 633,
+  "cargadoHd400": 0,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[22:59:24] FIN alto-hd0 (exit 0)
+[22:59:24] INICIA alto-hd1 :: --modo escritorio --calidad alta --hd400 1 --etiqueta limpia-a1
+DATOS C:\Users\kelvi\amazonaversegame\docs\img\kimi022\k022-limpia-a1.json
+{
+ "etiqueta": "limpia-a1",
+ "ok": true,
+ "medida": {
+  "fpsMed": 54.12,
+  "fpsP50": 142.86,
+  "fpsP10": 35.71,
+  "peorMs": 1236,
+  "calls": 140,
+  "ktris": 503,
+  "calidad": "bajo",
+  "heapMB": 135.5,
+  "infoMem": {
+   "geo": 233,
+   "tex": 141
+  },
+  "lookTexturasMB": 169.6,
+  "cargadoHd400": 1,
+  "desvio0": 0.2
+ },
+ "errores": []
+}
+[23:00:09] FIN alto-hd1 (exit 0)
+[23:00:09] MATRIZ COMPLETA

@@ -22,7 +22,7 @@ const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Applica
 const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; };
 const MODO = arg('--modo', 'escritorio');
 const CALIDAD = (arg('--calidad', null) || '').replace(/^media$/, 'medio') || null;
-const HD400 = arg('--hd400', '0');
+const HD400 = arg('--hd400', '0'); // 'auto' = no añadir ?hd400 (verifica el valor por defecto del código)
 const ETIQUETA = arg('--etiqueta', `${MODO}-${CALIDAD || 'natural'}-hd${HD400}`);
 const DUR = parseInt(arg('--secs', '16'), 10);
 const ES_MOVIL = MODO === 'movil';
@@ -213,7 +213,7 @@ async function matarChrome(chrome, perf) {
   const origen = `http://127.0.0.1:${puerto}`;
   const qs = [];
   if (CALIDAD) qs.push('calidad=' + CALIDAD);
-  qs.push('hd400=' + HD400);
+  if (HD400 !== 'auto') qs.push('hd400=' + HD400);
   const url = origen + '/index.html?' + qs.join('&');
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1x22-'));
   const res = { etiqueta: ETIQUETA, modo: MODO, calidadForzada: CALIDAD, hd400: HD400, url, pantalla: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU }, durOrbitaS: DUR };
@@ -226,6 +226,10 @@ async function matarChrome(chrome, perf) {
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: ES_MOVIL }, ses);
+    if (ES_MOVIL) {
+      await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
+      await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses);
+    }
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
     await cdp.call('Network.enable', {}, ses);
