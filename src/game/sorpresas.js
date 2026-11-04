@@ -54,6 +54,7 @@ window.AVSorpresas = function (G) {
     const y = H(x, z) + 1.2;
     activas.push({ id: m.id, x, z, y });
     if (G.fx && G.fx.burst) G.fx.burst(x, y, z, 'leaves', 8);
+    G.emit('sorpresa');
     if (G.audio && G.audio.play) { try { G.audio.play('sorpresa'); } catch (e) { /* sin audio */ } }
     const nuevo = !memoria.vistos.includes(m.id);
     const linea = (nuevo ? (en() ? 'You saw something new in the city: ' : 'Viste algo nuevo en la ciudad: ') : '') + texto(m);
