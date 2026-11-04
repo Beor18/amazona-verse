@@ -105,14 +105,15 @@ async function lanzarChrome() {
     }
     const prep = await ev(cdp, ses, PREP_JS, 60);
     const t0 = Date.now();
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 40; i++) {
       await cdp.bombear(1);
-      const s = await ev(cdp, ses, MUESTRA_JS, 10);
-      res.muestras.push(JSON.parse(s));
+      try { const s = await ev(cdp, ses, MUESTRA_JS, 25); res.muestras.push(JSON.parse(s)); }
+      catch (e) { res.muestras.push({ error: String(e && e.message || e).slice(0, 60), calls: -1 }); }
     }
+    try { res.fases = await ev(cdp, ses, `(() => { const f = window.__fases || []; return f.slice(-60); })()`, 15); } catch (e) { res.fases = 'n/d: ' + e.message; }
     try { res.gpu = await ev(cdp, ses, `(() => { const gl = AV.G.renderer.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'sin debug_info'; })()`, 15); } catch (e) { res.gpu = 'n/d'; }
     console.log('t+' + Math.round((Date.now() - t0) / 1000) + 's de muestreo');
-    for (const [i, m] of res.muestras.entries()) console.log(`  s${i + 1}: calls ${m.calls} tris ${m.tris} fps ${m.fps} cal ${m.cal} progs ${m.progs} lost ${m.lost}/${m.restored} listo ${m.mundoListo} hidden ${m.hidden}`);
+    for (const [i, m] of res.muestras.entries()) console.log(m.error ? `  s${i + 1}: EVAL TIMEOUT (>25 s de hilo bloqueado)` : `  s${i + 1}: calls ${m.calls} tris ${m.tris} fps ${m.fps} cal ${m.cal} progs ${m.progs} lost ${m.lost}/${m.restored} listo ${m.mundoListo} hidden ${m.hidden} fotos ${JSON.stringify(m.fotos)} fasesN ${m.fasesN} vivo ${m.vivo}`);
     console.log('excepciones:', res.excepciones.length ? JSON.stringify(res.excepciones.slice(0, 6), null, 1) : 'ninguna');
     console.log('errores consola:', res.erroresConsola.length ? JSON.stringify(res.erroresConsola.slice(0, 8), null, 1) : 'ninguno');
     try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}

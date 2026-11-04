@@ -82,7 +82,8 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
     s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador'; }
   const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil creado tras entrar';
   if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
-  await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
+  const visible = await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
+  if (!visible) return 'mundo no visible en 20 s (carga atascada o PC contencionada)';
   return 'ok'; })()`;
 // Mide la ventana [t0,t1] s desde el arranque de la sonda: cuadros largos + estado del renderer
 const VENTANA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), Q = window.__qaM;
@@ -96,6 +97,11 @@ const VENTANA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeo
   return JSON.stringify(out); })()`;
 // Fuerza la tormenta: sombras ON → OFF (medio → bajo) y mide 4 s; control a los 5 s: el mundo se ve (calls y píxeles)
 const TORMENTA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), R = AV.G.renderer;
+  // QA-157: esperar a que la carga asiente (evento mundoListo → precarga activa) y el mundo dibuje de verdad
+  // antes de forzar la tormenta; si no, las ventanas miden la pantalla de carga y la ronda no vale.
+  const t0 = performance.now(); let ok = false;
+  while (performance.now() - t0 < 45000) { try { if (R.precarga.programas() >= 0 && R.stats().calls > 30) { ok = true; break; } } catch (e) {} await sleep(500); }
+  if (!ok) return JSON.stringify({ error: 'mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)' });
   R.setCalidad('medio', true); await sleep(2500);   // base asentada CON sombras
   const antes = R.stats();
   R.setCalidad('bajo', true);                        // ← tormenta: todas las familias con luz piden programa nuevo
@@ -149,18 +155,29 @@ async function lanzarChrome() {
       if (!String(prep).startsWith('ok')) throw new Error('preparar: ' + prep);
       if (ronda === 1) { try { res.gpu = await ev(cdp, ses, `(() => { const gl = AV.G.renderer.renderer.getContext(); const ext = gl.getExtension('WEBGL_debug_renderer_info'); return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'sin debug_info'; })()`, 15); } catch (e) { res.gpu = 'n/d'; } }
       const reveal = JSON.parse(await ev(cdp, ses, VENTANA_JS, 30)); // 4 s post-reveal (el adaptativo dispara ~3 s)
-      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 60));
-      res.rondas.push({ reveal, tormenta });
-      console.log(`  · ronda ${ronda}: reveal p50 ${reveal.p50} p95 ${reveal.p95} peor ${reveal.peor} ms (>200: ${reveal.mas200}) · tormenta peor ${tormenta.tormenta.peor} ms p95 ${tormenta.tormenta.p95} (>200: ${tormenta.tormenta.mas200}) · control ${tormenta.control.calls} calls ${tormenta.control.pixNoNegros}% px · cal ${tormenta.control.calls > 0 ? tormenta.tormenta.marcas.map(m => m.cal).join('>') : '??'}`);
+      const tormenta = JSON.parse(await ev(cdp, ses, TORMENTA_JS, 90));
+      if (tormenta.error) {
+        res.rondas.push({ reveal, tormenta, valida: false });
+        console.log(`  · ronda ${ronda} ⚠ ABORTADA: ${tormenta.error}`);
+        try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}
+        await cdp.bombear(1);
+        continue;
+      }
+      const valida = tormenta.control.calls > 0 && tormenta.control.pixNoNegros > 0;
+      res.rondas.push({ reveal, tormenta, valida });
+      console.log(`  · ronda ${ronda}${valida ? '' : ' ⚠ NO VÁLIDA (mundo sin dibujar: carga atascada o contención)'}: reveal p50 ${reveal.p50} p95 ${reveal.p95} peor ${reveal.peor} ms (>200: ${reveal.mas200}) · tormenta peor ${tormenta.tormenta.peor} ms p95 ${tormenta.tormenta.p95} (>200: ${tormenta.tormenta.mas200}) · control ${tormenta.control.calls} calls ${tormenta.control.pixNoNegros}% px · cal ${tormenta.control.calls > 0 ? tormenta.tormenta.marcas.map(m => m.cal).join('>') : '??'}`);
       try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}
       await cdp.bombear(1);
     }
   } finally {
+    try { ws.close(); } catch (e) {}
     try { chromeL.chrome.kill(); } catch (e) {}
     for (const p of fs.readdirSync(os.tmpdir()).filter(x => x.startsWith('kimi2-'))) { try { fs.rmSync(path.join(os.tmpdir(), p), { recursive: true, force: true }); } catch (e) {} }
     srv.close();
   }
   fs.writeFileSync(path.join(SALIDA, 'qa53.json'), JSON.stringify(res, null, 1));
+  const validas = res.rondas.filter(r => r.valida).length;
+  if (validas < res.rondas.length) console.log(`  ⚠ ${res.rondas.length - validas}/${res.rondas.length} rondas NO válidas: este qa53.json no sirve como validación (reintentar con la PC libre)`);
   const peores = res.rondas.map(r => r.tormenta.tormenta.peor), peorReveal = Math.max(...res.rondas.map(r => r.reveal.peor));
   console.log(`RESULTADO ${RONDAS} rondas · GPU: ${res.gpu}`);
   console.log(`  reveal: peor ${peorReveal} ms · tormenta sombras: peor ${Math.max(...peores)} ms (rondas: ${peores.join(', ')})`);

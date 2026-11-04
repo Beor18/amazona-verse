@@ -1,312 +1,12 @@
 {
  "erroresConsola": [
   {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358059
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358098
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358100
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358102
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358103
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358104
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358105
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358106
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358176
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358179
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358182
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358184
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358186
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358188
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358190
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358237
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358239
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358241
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358243
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358245
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358247
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358249
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358369
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358373
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358376
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358379
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358382
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358383
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358385
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358630
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358632
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358634
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358635
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358638
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358641
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358643
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358860
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358863
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358865
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358867
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358869
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358870
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358873
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358947
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358949
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358951
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358953
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358954
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358956
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809358958
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359008
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359011
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359014
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359041
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359043
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359045
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359047
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359112
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359116
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359120
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359121
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359123
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359125
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359126
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359463
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359466
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359469
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359472
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359474
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359474
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359475
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359718
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359720
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359722
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 403 (Forbidden)",
-   "t": 1793809359723
+   "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "t": 1793812087432
   },
   {
    "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-   "t": 1793809359751
-  },
-  {
-   "texto": "Failed to load resource: the server responded with a status of 404 (Not Found)",
-   "t": 1793809359833
+   "t": 1793812087850
   }
  ],
  "excepciones": [],
@@ -315,35 +15,54 @@
   {
    "calls": 0,
    "tris": 0,
-   "fps": 81,
+   "fps": 89,
    "cal": "alto",
    "progs": 9,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 17,
+   "faseUlt": [
+    3587,
+    7,
+    4,
+    0,
+    0,
+    5
+   ],
+   "vivo": true
   },
   {
    "calls": 20,
    "tris": 19563,
-   "fps": 19,
+   "fps": 11,
    "cal": "alto",
    "progs": 9,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
-  },
-  {
-   "calls": 0,
-   "tris": 0,
-   "fps": 13,
-   "cal": "alto",
-   "progs": 9,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 17,
+   "faseUlt": [
+    3587,
+    7,
+    4,
+    0,
+    0,
+    5
+   ],
+   "vivo": true
   },
   {
    "calls": 0,
@@ -354,84 +73,100 @@
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 17,
+   "faseUlt": [
+    3587,
+    7,
+    4,
+    0,
+    0,
+    5
+   ],
+   "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 16,
+   "fps": 18,
    "cal": "alto",
    "progs": 9,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 17,
+   "faseUlt": [
+    3587,
+    7,
+    4,
+    0,
+    0,
+    5
+   ],
+   "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 16,
+   "fps": 17,
    "cal": "alto",
    "progs": 9,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 17,
+   "faseUlt": [
+    3587,
+    7,
+    4,
+    0,
+    0,
+    5
+   ],
+   "vivo": true
   },
   {
    "calls": 0,
    "tris": 0,
-   "fps": 16,
-   "cal": "alto",
-   "progs": 9,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": true
-  },
-  {
-   "calls": 0,
-   "tris": 0,
-   "fps": 15,
-   "cal": "alto",
-   "progs": 9,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": true
-  },
-  {
-   "calls": 0,
-   "tris": 0,
-   "fps": 15,
-   "cal": "alto",
-   "progs": 9,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": true
-  },
-  {
-   "calls": 1920,
-   "tris": 1920,
-   "fps": 0,
+   "fps": 18,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
-  },
-  {
-   "calls": 0,
-   "tris": 0,
-   "fps": 20,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 137,
+   "faseUlt": [
+    19518,
+    22,
+    5,
+    0,
+    0,
+    4
+   ],
+   "vivo": true
   },
   {
    "calls": 0,
@@ -442,40 +177,74 @@
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": true
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 137,
+   "faseUlt": [
+    19518,
+    22,
+    5,
+    0,
+    0,
+    4
+   ],
+   "vivo": true
   },
   {
-   "calls": 14,
-   "tris": 14,
-   "fps": 29,
+   "calls": 0,
+   "tris": 0,
+   "fps": 31,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": true,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 137,
+   "faseUlt": [
+    19518,
+    22,
+    5,
+    0,
+    0,
+    4
+   ],
+   "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 37,
+   "fps": 30,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 41,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 174,
+   "faseUlt": [
+    24724,
+    11,
+    3,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
    "calls": 14,
@@ -486,107 +255,1219 @@
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 349,
+   "faseUlt": [
+    27982,
+    7,
+    3,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 35,
+   "fps": 51,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 42,
+   "fps": 49,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 46,
+   "fps": 54,
    "cal": "alto",
    "progs": 11,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 0,
+    "sync": 0,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": false
   },
   {
    "calls": 14,
    "tris": 14,
-   "fps": 42,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 41,
-   "cal": "alto",
-   "progs": 11,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false
-  },
-  {
-   "calls": 14,
-   "tris": 14,
-   "fps": 47,
-   "cal": "alto",
-   "progs": 42,
-   "lost": 0,
-   "restored": 0,
-   "mundoListo": true,
-   "hidden": false
-  },
-  {
-   "calls": 191,
-   "tris": 1478140,
-   "fps": 6,
+   "fps": 54,
    "cal": "alto",
    "progs": 48,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 1,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
    "calls": 106,
    "tris": 762354,
-   "fps": 5,
+   "fps": 7,
+   "cal": "alto",
+   "progs": 48,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 1,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 1810,
+   "tris": 16628540,
+   "fps": 13,
+   "cal": "alto",
+   "progs": 51,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 1,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 21,
    "cal": "alto",
    "progs": 50,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 1,
+    "sync": 1,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   },
   {
-   "calls": 99,
-   "tris": 752210,
+   "error": "timeout Runtime.evaluate",
+   "calls": -1
+  },
+  {
+   "calls": 239,
+   "tris": 1603854,
    "fps": 5,
    "cal": "alto",
-   "progs": 49,
+   "progs": 61,
    "lost": 0,
    "restored": 0,
    "mundoListo": true,
-   "hidden": false
+   "hidden": false,
+   "fotos": {
+    "diferidas": 4,
+    "sync": 2,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 60,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 4,
+    "sync": 2,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 20,
+   "cal": "alto",
+   "progs": 58,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 4,
+    "sync": 2,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 67,
+   "tris": 377895,
+   "fps": 44,
+   "cal": "alto",
+   "progs": 59,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 6,
+    "sync": 3,
+    "cola": 1
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 1,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 6,
+    "sync": 3,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 218,
+   "tris": 1608298,
+   "fps": 6,
+   "cal": "alto",
+   "progs": 64,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 2,
+   "cal": "alto",
+   "progs": 62,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 62,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 7,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 4,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 0,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 4,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 3,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": false
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 4,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 9,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 4,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 7,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 16,
+   "tris": 16,
+   "fps": 5,
+   "cal": "alto",
+   "progs": 61,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 9,
+    "sync": 6,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "error": "timeout Runtime.evaluate",
+   "calls": -1
+  },
+  {
+   "error": "timeout Runtime.evaluate",
+   "calls": -1
+  },
+  {
+   "calls": 70,
+   "tris": 70,
+   "fps": 0,
+   "cal": "alto",
+   "progs": 62,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 11,
+    "sync": 8,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
+  },
+  {
+   "calls": 14,
+   "tris": 14,
+   "fps": 16,
+   "cal": "alto",
+   "progs": 62,
+   "lost": 0,
+   "restored": 0,
+   "mundoListo": true,
+   "hidden": false,
+   "fotos": {
+    "diferidas": 11,
+    "sync": 8,
+    "cola": 0
+   },
+   "fasesN": 400,
+   "faseUlt": [
+    28988,
+    8,
+    2,
+    0,
+    0,
+    3
+   ],
+   "vivo": true
   }
  ],
- "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "fases": [
+  [
+   27815,
+   8,
+   5,
+   0,
+   0,
+   3
+  ],
+  [
+   27839,
+   7,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   27862,
+   11,
+   2,
+   0,
+   0,
+   5
+  ],
+  [
+   27879,
+   8,
+   5,
+   0,
+   0,
+   4
+  ],
+  [
+   27901,
+   9,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   27921,
+   9,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   27940,
+   8,
+   6,
+   0,
+   0,
+   3
+  ],
+  [
+   27963,
+   10,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   27982,
+   7,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28003,
+   8,
+   3,
+   0,
+   0,
+   4
+  ],
+  [
+   28023,
+   8,
+   6,
+   0,
+   0,
+   4
+  ],
+  [
+   28046,
+   9,
+   4,
+   0,
+   0,
+   3
+  ],
+  [
+   28066,
+   9,
+   4,
+   0,
+   0,
+   3
+  ],
+  [
+   28085,
+   7,
+   3,
+   0,
+   0,
+   5
+  ],
+  [
+   28106,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28127,
+   10,
+   6,
+   0,
+   0,
+   3
+  ],
+  [
+   28147,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28166,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28186,
+   8,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28205,
+   8,
+   3,
+   0,
+   0,
+   4
+  ],
+  [
+   28225,
+   8,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28245,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28265,
+   8,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28285,
+   8,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28307,
+   12,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28322,
+   7,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28339,
+   8,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28356,
+   8,
+   7,
+   0,
+   0,
+   3
+  ],
+  [
+   28381,
+   11,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28396,
+   8,
+   3,
+   0,
+   0,
+   5
+  ],
+  [
+   28416,
+   9,
+   6,
+   0,
+   0,
+   3
+  ],
+  [
+   28437,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28454,
+   7,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28473,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28492,
+   8,
+   4,
+   0,
+   0,
+   4
+  ],
+  [
+   28513,
+   8,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28532,
+   9,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28550,
+   9,
+   5,
+   0,
+   0,
+   3
+  ],
+  [
+   28571,
+   9,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28590,
+   8,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28606,
+   7,
+   6,
+   0,
+   0,
+   3
+  ],
+  [
+   28628,
+   8,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28647,
+   10,
+   3,
+   0,
+   0,
+   4
+  ],
+  [
+   28664,
+   8,
+   6,
+   0,
+   0,
+   4
+  ],
+  [
+   28686,
+   8,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28704,
+   8,
+   2,
+   0,
+   0,
+   5
+  ],
+  [
+   28724,
+   9,
+   6,
+   0,
+   0,
+   4
+  ],
+  [
+   28746,
+   8,
+   3,
+   0,
+   0,
+   4
+  ],
+  [
+   28766,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28785,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28807,
+   11,
+   6,
+   0,
+   0,
+   4
+  ],
+  [
+   28827,
+   8,
+   3,
+   0,
+   0,
+   6
+  ],
+  [
+   28848,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28868,
+   9,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28890,
+   11,
+   3,
+   0,
+   0,
+   5
+  ],
+  [
+   28915,
+   11,
+   3,
+   0,
+   0,
+   3
+  ],
+  [
+   28931,
+   8,
+   2,
+   0,
+   0,
+   4
+  ],
+  [
+   28951,
+   9,
+   5,
+   0,
+   0,
+   3
+  ],
+  [
+   28971,
+   7,
+   2,
+   0,
+   0,
+   3
+  ],
+  [
+   28988,
+   8,
+   2,
+   0,
+   0,
+   3
+  ]
+ ]
 }
