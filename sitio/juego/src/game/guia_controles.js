@@ -107,7 +107,7 @@ AVE.module('guiaControles', function (G) {
 @media (prefers-reduced-motion: reduce) { .guia-pastilla { animation: none; } }
 @media (max-width: 560px) { #guia-panel .guia-fila, .guia-fila { grid-template-columns: 96px minmax(0, 1fr); } #guia-panel .guia-filas { grid-template-columns: 1fr; } }
 html.guia-tactil :is(#guia-hud, #guia-panel, .pause-guia) { display: none !important; }
-#pm-pista { position: fixed; z-index: 7; box-sizing: border-box; width: 96px; height: 96px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 2px rgba(255, 196, 60, 0.45); background: transparent; }
+#pm-pista { position: fixed; z-index: 7; box-sizing: border-box; width: 96px; height: 96px; margin: 0; pointer-events: none; border-radius: 50%; border: 6px solid #ffe08a; box-shadow: 0 0 0 var(--pm-sombra, 2px) rgba(255, 196, 60, 0.45); background: transparent; }
 #pm-pista::before { content: ""; position: absolute; left: 50%; top: -34px; margin-left: -14px; border: 14px solid transparent; border-bottom-color: #ffe08a; }
 #pm-pista[hidden] { display: none; }
 #pm-pista.pm-atascado { border-color: #7fd3ff; box-shadow: 0 0 0 10px rgba(80, 180, 255, 0.45); }
@@ -206,17 +206,36 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];
   const pmE = { hecho: {}, t: 0, volaba: false };
   let pmForzar = false;
-  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k]) || '';
+  function pmPuede(k) {
+    if (k === 'truco') return true;
+    const tactil = [...document.querySelectorAll('#acts .btn, #stick')].some(n => !n.hidden && n.getClientRects().length);
+    if (!tactil) return true;
+    const el = document.getElementById(PM_BLANCO[k] || '');
+    return !!(el && !el.hidden && el.getClientRects().length && el.getBoundingClientRect().width >= 8);
+  }
+  const pmPaso = () => PM_ORDEN.find(k => !pmE.hecho[k] && pmPuede(k)) || '';
   function pmMarcar(k) {
     if (!k || pmE.hecho[k]) return;
     pmE.hecho[k] = true; pmE.t = 0;
   }
   const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', impulso: 'b-dash' };
-  const PM_BORDE = 6, PM_SOMBRA = 2;
-  const sePisan = (a, b, margen) => a.width > 0 && b.width > 0 && a.left - margen < b.right && b.left < a.right + margen && a.top - margen < b.bottom && b.top < a.bottom + margen;
+  const PM_BORDE = 6, PM_BORDE_MIN = 2, PM_SOMBRA = 2, PM_AIRE = 6;
+  const huecoPm = (a, b) => {
+    const dx = Math.max(b.left - a.right, a.left - b.right);
+    const dy = Math.max(b.top - a.bottom, a.top - b.bottom);
+    if (dx < 0 && dy < 0) return Math.max(dx, dy);
+    if (dx < 0) return dy;
+    if (dy < 0) return dx;
+    return Math.hypot(dx, dy);
+  };
+  function limpiarPmFijo() {
+    pm.style.borderWidth = '';
+    pm.style.removeProperty('--pm-sombra');
+  }
   function colocarPm() {
     if (pm.dataset.paso === 'truco') {
       pm.style.left = pm.style.top = pm.style.width = pm.style.height = pm.style.right = pm.style.bottom = '';
+      limpiarPmFijo();
       return;
     }
     const el = document.getElementById(PM_BLANCO[pm.dataset.paso] || '');
@@ -224,20 +243,35 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (!caja || caja.width < 8) {
       pm.style.width = pm.style.height = '96px';
       pm.style.left = '-400px'; pm.style.top = '0px'; pm.style.right = 'auto'; pm.style.bottom = 'auto';
+      limpiarPmFijo();
       return;
     }
     const otros = [...document.querySelectorAll('#acts .btn, #stick')].filter(n => n !== el && !n.hidden && n.getClientRects().length);
-    const poner = extra => {
-      const size = Math.ceil(Math.max(caja.width, caja.height) + PM_BORDE * 2 + extra * 2);
+    let borde = PM_BORDE, sombra = PM_SOMBRA, extra = 8;
+    const poner = () => {
+      const size = Math.ceil(Math.max(caja.width, caja.height) + borde * 2 + extra * 2);
+      pm.style.borderWidth = borde + 'px';
+      pm.style.setProperty('--pm-sombra', sombra + 'px');
       pm.style.width = size + 'px'; pm.style.height = size + 'px';
       pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
       pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
       pm.style.right = 'auto'; pm.style.bottom = 'auto';
     };
-    let extra = 8;
-    poner(extra);
-    while (extra > 0 && otros.some(o => sePisan(pm.getBoundingClientRect(), o.getBoundingClientRect(), PM_SOMBRA + 1))) {
-      extra -= 2; poner(extra);
+    const peor = () => {
+      const r = pm.getBoundingClientRect();
+      const inflada = { left: r.left - sombra, right: r.right + sombra, top: r.top - sombra, bottom: r.bottom + sombra };
+      let m = Infinity;
+      otros.forEach(o => { const g = huecoPm(inflada, o.getBoundingClientRect()); if (g < m) m = g; });
+      return m;
+    };
+    poner();
+    let guard = 0;
+    while (peor() < PM_AIRE && guard++ < 24) {
+      if (extra > 0) extra -= 2;
+      else if (borde > PM_BORDE_MIN) borde -= 1;
+      else if (sombra > 0) sombra -= 1;
+      else break;
+      poner();
     }
   }
   function pintarPm() {
@@ -261,8 +295,10 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (M.flying) { pmMarcar('despegar'); pmE.volaba = true; }
     if (pmE.volaba && !M.flying && M.grounded) pmMarcar('posar');
     if ((M.dashT || 0) > 0 || (G.input.keys && G.input.keys.has('f'))) pmMarcar('impulso');
-    const antes = pmPaso();
-    if (antes) pmE.t += dt || 0; else pmE.t = 0;
+    const id = pmPaso();
+    if (pmE.visto && id !== pmE.visto) pmE.t = 0;
+    pmE.visto = id;
+    if (id) pmE.t += dt || 0; else pmE.t = 0;
     pintarPm();
   }
   G.on('truco', () => { pmMarcar('truco'); pintarPm(); });
@@ -371,39 +407,76 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmE.volaba = true;
       M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
       pmTick(0.05);
-      const b = dash.getBoundingClientRect(), r = pm.getBoundingClientRect(), borde = 6;
-      const rodea = r.left + borde <= b.left + 1 && r.top + borde <= b.top + 1 && r.right - borde >= b.right - 1 && r.bottom - borde >= b.bottom - 1;
+      const bordeDe = () => parseFloat(getComputedStyle(pm).borderTopWidth) || 0;
+      const sombraDe = () => {
+        const px = (getComputedStyle(pm).boxShadow.match(/-?[\d.]+px/g) || []).map(s => Math.abs(parseFloat(s)));
+        return px.length >= 4 ? px[3] : 0;
+      };
+      const rodeaA = (anillo, boton) => {
+        const borde = bordeDe();
+        return anillo.left + borde <= boton.left + 1 && anillo.top + borde <= boton.top + 1 && anillo.right - borde >= boton.right - 1 && anillo.bottom - borde >= boton.bottom - 1;
+      };
+      const margenDe = () => {
+        const som = sombraDe(), rI = pm.getBoundingClientRect();
+        const vecinos = [...document.querySelectorAll('#b-act, #b-jump')].filter(n => !n.hidden && n.getClientRects().length);
+        const huecos = vecinos.map(n => ({ id: n.id, px: huecoPm({ left: rI.left - som, right: rI.right + som, top: rI.top - som, bottom: rI.bottom + som }, n.getBoundingClientRect()) }));
+        return { som, rodea: rodeaA(rI, dash.getBoundingClientRect()), huecos, peor: huecos.reduce((m, h) => Math.min(m, h.px), Infinity) };
+      };
+      const b = dash.getBoundingClientRect(), r = pm.getBoundingClientRect();
       const flecha = getComputedStyle(pm, '::before').top;
-      ok('El anillo del impulso rodea el botón y la flecha queda fuera', pm.dataset.paso === 'impulso' && b.width >= 44 && rodea && parseFloat(flecha) < 0,
+      ok('El anillo del impulso rodea el botón y la flecha queda fuera', pm.dataset.paso === 'impulso' && b.width >= 44 && rodeaA(r, b) && parseFloat(flecha) < 0,
         'botón ' + Math.round(b.width) + '×' + Math.round(b.height) + ' anillo ' + Math.round(r.width) + ' flecha ' + flecha);
       const raiz = document.documentElement, lg0 = raiz.style.getPropertyValue('--tap-lg'), xl0 = raiz.style.getPropertyValue('--tap-xl');
-      raiz.style.setProperty('--tap-lg', '58px'); raiz.style.setProperty('--tap-xl', '80px');
-      if (acts) acts.style.gap = '8px';
-      pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmTick(0.05);
-      const rH = pm.getBoundingClientRect(), bH = dash.getBoundingClientRect();
-      const rodeaH = rH.left + borde <= bH.left + 1 && rH.top + borde <= bH.top + 1 && rH.right - borde >= bH.right - 1 && rH.bottom - borde >= bH.bottom - 1;
-      const vecinos = [...document.querySelectorAll('#b-act, #b-jump')].filter(n => !n.hidden && n.getClientRects().length);
-      const toca = vecinos.filter(n => sePisan(rH, n.getBoundingClientRect(), PM_SOMBRA + 1)).map(n => n.id);
-      ok('En horizontal el anillo no roza Acción ni Saltar', pm.dataset.paso === 'impulso' && vecinos.length === 2 && toca.length === 0 && rodeaH, toca.join(',') || 'libre');
+      const cols0 = acts ? acts.style.gridTemplateColumns : '', rows0 = acts ? acts.style.gridTemplateRows : '', gap0 = acts ? acts.style.gap : '';
+      const jump = document.getElementById('b-jump'), sz0 = jump ? jump.style.getPropertyValue('--sz') : '';
+      const ponerMandos = (modo) => {
+        if (modo === 'vertical') {
+          raiz.style.setProperty('--tap-lg', '56px'); raiz.style.setProperty('--tap-xl', '68px');
+          if (acts) { acts.style.gridTemplateColumns = '60px var(--tap-xl)'; acts.style.gridTemplateRows = '56px var(--tap-xl)'; acts.style.gap = '8px'; }
+          if (jump) jump.style.setProperty('--sz', '60px');
+        } else {
+          raiz.style.setProperty('--tap-lg', '58px'); raiz.style.setProperty('--tap-xl', '80px');
+          if (acts) { acts.style.gridTemplateColumns = ''; acts.style.gridTemplateRows = ''; acts.style.gap = '8px'; }
+          if (jump) { if (sz0) jump.style.setProperty('--sz', sz0); else jump.style.removeProperty('--sz'); }
+        }
+        pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmTick(0.05);
+      };
+      ponerMandos('vertical');
+      const v = margenDe();
+      ok('En vertical la sombra del impulso queda a más de un píxel de Acción y de Saltar', pm.dataset.paso === 'impulso' && v.huecos.length === 2 && v.rodea && v.peor >= PM_AIRE,
+        v.huecos.map(h => h.id + ' ' + h.px.toFixed(1)).join(', ') + ' sombra ' + v.som);
+      ponerMandos('horizontal');
+      const h = margenDe();
+      ok('En horizontal la sombra del impulso queda a más de un píxel de Acción y de Saltar', pm.dataset.paso === 'impulso' && h.huecos.length === 2 && h.rodea && h.peor >= PM_AIRE,
+        h.huecos.map(x => x.id + ' ' + x.px.toFixed(1)).join(', ') + ' sombra ' + h.som);
       const fly = document.getElementById('b-fly');
       if (fly) fly.hidden = true;
-      pmE.hecho = { mover: true }; pmE.t = 0; pmE.volaba = false;
+      pmE.hecho = { mover: true, posar: true, impulso: true, truco: true }; pmE.t = 19; pmE.visto = 'despegar'; pmE.volaba = false;
       M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
+      pmTick(5);
+      const qOff = document.getElementById('quest');
+      ok('Si despegar no se puede, su contador no señala la misión', pm.hidden && !pm.classList.contains('pm-atascado') && !(qOff && qOff.classList.contains('pm-senala')) && pmE.t < 20,
+        't ' + pmE.t + ' paso ' + (pm.dataset.paso || ''));
+      pmE.hecho = { mover: true }; pmE.t = 19; pmE.visto = 'despegar'; pmE.volaba = false;
       pmTick(0.05);
       const rOff = pm.getBoundingClientRect();
-      ok('Sin el botón de volar el anillo no cae sobre Impulso', pm.dataset.paso === 'despegar' && rOff.right < 0 && !sePisan(rOff, dash.getBoundingClientRect(), 0),
-        'paso ' + pm.dataset.paso + ' left ' + Math.round(rOff.left));
+      ok('Sin el botón de volar, despegar no sigue activo y el anillo no cae sobre Impulso', pm.dataset.paso === 'impulso' && !pm.hidden && pmE.t < 1 && huecoPm(rOff, dash.getBoundingClientRect()) < 0,
+        'paso ' + pm.dataset.paso + ' t ' + pmE.t + ' left ' + Math.round(rOff.left));
       if (fly) fly.hidden = false;
+      pmTick(0.05);
+      ok('Al volver el botón de volar, despegar cuenta de nuevo sin el atasco', pm.dataset.paso === 'despegar' && pmE.t < 1 && !pm.classList.contains('pm-atascado'),
+        't ' + pmE.t);
       if (lg0) raiz.style.setProperty('--tap-lg', lg0); else raiz.style.removeProperty('--tap-lg');
       if (xl0) raiz.style.setProperty('--tap-xl', xl0); else raiz.style.removeProperty('--tap-xl');
-      if (acts) { acts.style.gap = ''; acts.style.display = disp; }
+      if (jump) { if (sz0) jump.style.setProperty('--sz', sz0); else jump.style.removeProperty('--sz'); }
+      if (acts) { acts.style.gridTemplateColumns = cols0; acts.style.gridTemplateRows = rows0; acts.style.gap = gap0; acts.style.display = disp; }
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     const flyFin = document.getElementById('b-fly'); if (flyFin) flyFin.hidden = false;
     M.speed = guarda.speed; M.flying = guarda.flying; M.grounded = guarda.grounded; M.dashT = guarda.dashT;
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
     const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
-    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pintarPm();
+    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; pintarPm();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
