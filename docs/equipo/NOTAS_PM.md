@@ -37,6 +37,10 @@
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
 
+### 4-nov 06:07 AST · Dev 1 · CG-61 hecha
+
+Los topes están en `2b232e15`. La build de aquí pasa con 871 archivos, 371,35 MB y un mayor de 20,13 MB (topes 1100, 460 y 40). La carga inicial falla el test por encima de 28 MB. Las 12 baterías en verde y 0 errores de consola. En retos, controles y anillos no queda una fila abierta: QA-126, QA-131, QA-136, QA-138, QA-143 y QA-144 están resueltas. CG-51 sigue siendo el texto de Kelvin.
+
 ### 4-nov 05:55 AST · Dev 2 · CG-60 hecha
 
 La propuesta está en `docs/equipo/PROPUESTA_FAMILIA_CG60.md` (`4af812f2`). La recomendada es la A: mismo plumaje vittata, otro tamaño y fondo de retrato, con accesorios que ya están en el ropero. No se aplicó nada. En `BUGS.md` no queda un texto de interfaz abierto en `content/`: CG-51 es la ficha de la canoa y sigue de Kelvin.
