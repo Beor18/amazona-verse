@@ -20,4 +20,4 @@ La coordinadora mantiene al día esta tabla. La lee `tools/build/estado.py` para
 | N14 | hecha · cf88e2a · caps. 5 y 6 encendidos en el mapa real | **Encender los caps. 5 y 6 en el mapa real** (espera a KIMI-011) |
 | N15 | hecha · 10863c4 (CG-21, Grok) · comunidades con rutinas en las tres orillas | **Mundo vivo, etapa 2: comunidades con actividades** |
 | N16 | hecha · 33fb0e2 | **iPad: triángulos de 8,1 M a ≤ 1,5 M** (KIMI-011, LOD por distancia) |
-| N17 | EN CURSO · nube (Kelvin 3-nov: «la ciudad viva tiene que ir») | **La Ciudad de los 36 viva:** cotorras y vecinos con rutinas en la ciudad, de día y de noche |
+| N17 | hecha · 5f6ec9d4…8303768b · 16/10/4 cotorras (alto/medio/bajo) con rutinas de día y de noche, +1 draw call en la ciudad; `AV.ciudadVivaTest` 20/20 | **La Ciudad de los 36 viva:** cotorras y vecinos con rutinas en la ciudad, de día y de noche |
