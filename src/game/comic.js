@@ -281,13 +281,15 @@ AVE.module('comic', function (G) {
     }
   }
   G.on('update', dt => { if (posadas.length) fotografiarPosadas(dt); }, 79);
-  let esperaCaptura = 0;
+  let esperaCaptura = 0, esperaBase = 0.5;
   G.on('update', dt => {
     if (!pendientes.size || (esperaCaptura -= dt) > 0) return;
-    esperaCaptura = 0.5;
-    if (!lienzoListo()) return;
+    esperaCaptura = esperaBase;
+    if (!lienzoListo()) { esperaBase = Math.min(esperaBase * 2, 30); return; } // sin lienzo: tanteo más espaciado (QA-157)
+    const n = pendientes.size;
     for (const k of Array.from(pendientes)) if (S.captures[k] || capture(k)) pendientes.delete(k);
-    if (!pendientes.size) G.guardado.autosave();
+    if (!pendientes.size) { esperaBase = 0.5; G.guardado.autosave(); }
+    else if (pendientes.size >= n) esperaBase = Math.min(esperaBase * 2, 30); // nada válido esta ronda: reintento más espaciado
   }, 79);
 
   // ---------- Viñetas que nacen de eventos reales, con la apariencia del jugador de ese momento ----------

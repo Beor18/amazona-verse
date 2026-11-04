@@ -1046,7 +1046,7 @@ AVE.module('renderer', function (G) {
   // cuadro algo más largo en vez de la congelación). La promesa devuelta resuelve en 1–2 cuadros. Si no hay
   // WebGL2 o la lectura falla, se usa dentro de la promesa la lectura antigua (drawImage): la foto sale igual,
   // con la espera de antes. Con el contexto perdido snapshot() devuelve null (el cómic reintenta, QA-21).
-  const FOTOS = { cola: [], diferidas: 0, sync: 0 };
+  const FOTOS = { cola: [], diferidas: 0, sync: 0, esperas: 0 };
   function fotoSync(x, y, cw, ch, w, h, quality, probar) {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const cx = c.getContext('2d');
@@ -1091,7 +1091,10 @@ AVE.module('renderer', function (G) {
     });
   }
   // Se llama al final de update(): una foto por paso, sin esperar a la GPU (clientWaitSync con timeout 0). Si la
-  // cerca lleva >300 ms sin resolverse (SwiftShader), esa foto se lee síncrona de respaldo para no perderla.
+  // cerca lleva >300 ms sin resolverse (cola de la GPU llena, p. ej. reveal con DPR 3, o SwiftShader), se espera de
+  // forma incremental y acotada (~2 ms de hilo como mucho por cuadro, una foto por paso): la foto se resuelve en
+  // cuanto la GPU la copia, sin el bloqueo de >25 s del respaldo síncrono con la cola llena (QA-157). Como último
+  // recurso, si una foto lleva >8 s sin señalar (cerca rota), se lee síncrona de respaldo UNA vez por foto.
   function fotoPaso() {
     if (!FOTOS.cola.length) return;
     const gl = renderer.getContext();
@@ -1100,6 +1103,7 @@ AVE.module('renderer', function (G) {
       for (const f of cola) { try { gl.deleteSync(f.fence); gl.deleteBuffer(f.pbo); } catch (e) { /* contexto perdido */ } f.resolve(null); }
       return;
     }
+    let esperas = 0; // presupuesto de espera incremental del paso: como mucho una (≤ ~2 ms de hilo por cuadro)
     for (let i = FOTOS.cola.length - 1; i >= 0; i--) {
       const f = FOTOS.cola[i];
       let lista = false;
@@ -1107,11 +1111,26 @@ AVE.module('renderer', function (G) {
         const st = gl.clientWaitSync(f.fence, 0, 0);
         lista = st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED;
       } catch (e) { lista = true; } // la cerca falló: se intenta leer igual
-      if (!lista && performance.now() - f.t0 > 300) {
-        // La cerca no se resolvió en ~300 ms (p. ej. SwiftShader en la nube): lectura síncrona de respaldo del
-        // mismo PBO — getBufferSubData hace la espera implícita a la GPU —, así la foto nunca se pierde (0m).
-        FOTOS.sync++; // cuenta como lectura síncrona: es lo que era
-        lista = true;
+      if (!lista) {
+        const edad = performance.now() - f.t0;
+        if (edad > 300 && esperas < 1) {
+          // Espera incremental: SYNC_FLUSH_COMMANDS_BIT hace avanzar la cola del driver; el hilo espera como
+          // mucho ~2 ms y la cerca se resuelve en cuanto la GPU copia (QA-157: antes un getBufferSubData aquí
+          // bloqueaba >25 s con la cola llena).
+          try {
+            const st = gl.clientWaitSync(f.fence, gl.SYNC_FLUSH_COMMANDS_BIT || 1, 2000000);
+            lista = st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED;
+          } catch (e) { lista = true; }
+          esperas++;
+          if (!lista) FOTOS.esperas++;
+        }
+        if (!lista && !f.respaldo && edad > 8000) {
+          // Último recurso (p. ej. SwiftShader con la cerca rota): lectura síncrona de respaldo del mismo PBO —
+          // getBufferSubData hace la espera implícita a la GPU —, una sola vez por foto, así la foto no se pierde.
+          FOTOS.sync++; // cuenta como lectura síncrona: es lo que era
+          f.respaldo = true;
+          lista = true;
+        }
       }
       if (!lista) continue;
       FOTOS.cola.splice(i, 1);
@@ -1321,7 +1340,7 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
-    fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, cola: FOTOS.cola.length }),
+    fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });

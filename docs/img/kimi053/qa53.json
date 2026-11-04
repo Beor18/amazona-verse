@@ -9,55 +9,48 @@
  "rondas": [
   {
    "reveal": {
-    "n": 136,
+    "n": 131,
     "p50": 14,
-    "p95": 118,
-    "peor": 1847,
-    "mas100": 10,
-    "mas200": 2,
+    "p95": 167,
+    "peor": 3556,
+    "mas100": 19,
+    "mas200": 4,
     "top": [
      {
-      "d": 1847,
-      "t": 4.1
+      "d": 3556,
+      "t": 7.8
      },
      {
-      "d": 688,
-      "t": 0.5
+      "d": 1306,
+      "t": 1
      },
      {
-      "d": 431,
-      "t": 1.3
+      "d": 1042,
+      "t": 2.4
      },
      {
-      "d": 299,
-      "t": 7.1
+      "d": 486,
+      "t": 13.9
      },
      {
-      "d": 264,
+      "d": 479,
       "t": 0
      },
      {
-      "d": 222,
-      "t": 0.3
+      "d": 299,
+      "t": 0.5
      }
     ],
     "marcas": [
      {
-      "n": 92,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 20,
-      "progs": 9
-     },
-     {
-      "n": 97,
+      "n": 83,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 102,
+      "n": 101,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -71,14 +64,21 @@
       "progs": 9
      },
      {
-      "n": 110,
+      "n": 108,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 20,
+      "progs": 9
+     },
+     {
+      "n": 113,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 115,
+      "n": 117,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -92,21 +92,21 @@
       "progs": 9
      },
      {
-      "n": 127,
+      "n": 126,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 133,
+      "n": 130,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
       "progs": 9
      },
      {
-      "n": 136,
+      "n": 131,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -115,213 +115,47 @@
     ]
    },
    "tormenta": {
-    "antes": {
-     "calidad": "medio",
-     "calls": 0,
-     "fps": 18
-    },
-    "tormenta": {
-     "n": 104,
-     "p50": 28,
-     "p95": 63,
-     "peor": 3417,
-     "mas100": 4,
-     "mas200": 2,
-     "top": [
-      {
-       "d": 3417,
-       "t": 14.8
-      },
-      {
-       "d": 1396,
-       "t": 12.1
-      },
-      {
-       "d": 306,
-       "t": 9.5
-      },
-      {
-       "d": 243,
-       "t": 9.2
-      },
-      {
-       "d": 160,
-       "t": 11.9
-      },
-      {
-       "d": 132,
-       "t": 10.2
-      }
-     ],
-     "marcas": [
-      {
-       "n": 8,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 16,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 25,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 34,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 45,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 56,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 68,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 80,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 92,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 104,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      }
-     ]
-    },
-    "control": {
-     "calls": 0,
-     "tris": 0,
-     "fps": 33,
-     "pixNoNegros": 0,
-     "pend": -1
-    }
+    "error": "mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)"
    },
    "valida": false
   },
   {
    "reveal": {
-    "n": 103,
-    "p50": 35,
+    "n": 128,
+    "p50": 14,
     "p95": 132,
-    "peor": 1868,
-    "mas100": 12,
+    "peor": 3465,
+    "mas100": 19,
     "mas200": 4,
     "top": [
      {
-      "d": 1868,
-      "t": 3.7
+      "d": 3465,
+      "t": 7.3
      },
      {
-      "d": 708,
-      "t": 0.5
+      "d": 1299,
+      "t": 1.1
      },
      {
-      "d": 431,
-      "t": 1.4
+      "d": 826,
+      "t": 2.6
      },
      {
-      "d": 299,
-      "t": 6.8
+      "d": 396,
+      "t": 12.6
+     },
+     {
+      "d": 368,
+      "t": 13
      },
      {
       "d": 264,
-      "t": 9.1
-     },
-     {
-      "d": 250,
       "t": 0
      }
     ],
     "marcas": [
      {
-      "n": 53,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 57,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 63,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 65,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 71,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 77,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 82,
-      "pend": -1,
-      "cal": "alto",
-      "calls": 0,
-      "progs": 9
-     },
-     {
-      "n": 89,
+      "n": 83,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -335,7 +169,56 @@
       "progs": 9
      },
      {
+      "n": 102,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
       "n": 103,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 20,
+      "progs": 9
+     },
+     {
+      "n": 108,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 113,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 117,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 121,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 123,
+      "pend": -1,
+      "cal": "alto",
+      "calls": 0,
+      "progs": 9
+     },
+     {
+      "n": 128,
       "pend": -1,
       "cal": "alto",
       "calls": 0,
@@ -344,124 +227,7 @@
     ]
    },
    "tormenta": {
-    "antes": {
-     "calidad": "medio",
-     "calls": 0,
-     "fps": 12
-    },
-    "tormenta": {
-     "n": 101,
-     "p50": 28,
-     "p95": 62,
-     "peor": 3438,
-     "mas100": 2,
-     "mas200": 2,
-     "top": [
-      {
-       "d": 3438,
-       "t": 14.4
-      },
-      {
-       "d": 1250,
-       "t": 12.5
-      },
-      {
-       "d": 299,
-       "t": 9.9
-      },
-      {
-       "d": 264,
-       "t": 11.8
-      },
-      {
-       "d": 167,
-       "t": 12
-      },
-      {
-       "d": 153,
-       "t": 11.1
-      }
-     ],
-     "marcas": [
-      {
-       "n": 8,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 19,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 21,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 31,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 42,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 54,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 66,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 78,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 90,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      },
-      {
-       "n": 101,
-       "pend": -1,
-       "cal": "bajo",
-       "calls": 0,
-       "progs": 9
-      }
-     ]
-    },
-    "control": {
-     "calls": 0,
-     "tris": 0,
-     "fps": 34,
-     "pixNoNegros": 0,
-     "pend": -1
-    }
+    "error": "mundo no asentado en 45 s (carga atascada o contención; sospechar QA-157 si hay fotos sync)"
    },
    "valida": false
   }

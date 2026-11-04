@@ -178,8 +178,8 @@ async function lanzarChrome() {
   fs.writeFileSync(path.join(SALIDA, 'qa53.json'), JSON.stringify(res, null, 1));
   const validas = res.rondas.filter(r => r.valida).length;
   if (validas < res.rondas.length) console.log(`  ⚠ ${res.rondas.length - validas}/${res.rondas.length} rondas NO válidas: este qa53.json no sirve como validación (reintentar con la PC libre)`);
-  const peores = res.rondas.map(r => r.tormenta.tormenta.peor), peorReveal = Math.max(...res.rondas.map(r => r.reveal.peor));
+  const peores = res.rondas.map(r => r.tormenta.tormenta ? r.tormenta.tormenta.peor : NaN).filter(x => !isNaN(x)), peorReveal = Math.max(...res.rondas.map(r => r.reveal.peor));
   console.log(`RESULTADO ${RONDAS} rondas · GPU: ${res.gpu}`);
-  console.log(`  reveal: peor ${peorReveal} ms · tormenta sombras: peor ${Math.max(...peores)} ms (rondas: ${peores.join(', ')})`);
-  for (const r of res.rondas) console.log('  top tormenta:', r.tormenta.tormenta.top.map(x => x.d + 'ms@' + x.t + 's').join(', ') + ' · marcas pend: ' + r.tormenta.tormenta.marcas.map(m => m.pend).join('>'));
+  console.log(`  reveal: peor ${peorReveal} ms · tormenta sombras: peor ${peores.length ? Math.max(...peores) : 'n/d'} ms (rondas: ${peores.join(', ') || 'ninguna válida'})`);
+  for (const r of res.rondas) console.log('  top tormenta:', r.tormenta.tormenta ? r.tormenta.tormenta.top.map(x => x.d + 'ms@' + x.t + 's').join(', ') + ' · marcas pend: ' + r.tormenta.tormenta.marcas.map(m => m.pend).join('>') : '(abortada: ' + (r.tormenta.error || 'sin datos') + ')');
 })().catch(e => { console.error('FALLO:', e.message); process.exit(1); });
