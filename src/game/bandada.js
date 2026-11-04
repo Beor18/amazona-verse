@@ -6,8 +6,8 @@
    la acompaña unos 18 s dando vueltas a su alrededor y luego se va. Nunca en las baterías (G.quiet) ni antes de crear el personaje.
    - Se carga al pedirlo (boot.js la trae tras 'listo'): no suma a la descarga inicial. window.AVBandada(G) → { pedir, estado, test }.
    - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): cotorra de ~110 triángulos de cerca
-     y de ~24 a más de 55 m; el aleteo va en el vertex shader. Respeta la calidad automática de renderer.js: bajo = ninguna,
-     medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
+     y de ~24 a más de 55 m; el aleteo va en el vertex shader. Respeta la calidad automática de renderer.js: bajo = 6 (QA-110: el
+     iPhone arranca en bajo y el mundo no debe quedar vacío; nunca más de 6, ni la de 20 de M3), medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
    - Color: el verde del cuerpo y el color de la cabeza de la piel de cada especie (G.album.colores: tabla medida sobre
      assets/textures/pieles, sin descargar ninguna textura); ≤ 6 especies vivas por bandada (las extintas nunca vuelan aquí), y
      siempre del hábitat de su ruta (residentes.js especiesEn; docs/equipo/MUNDO_VIVO_ECOLOGIA.md): sobre Villa Raíz, puertorriqueñas.
@@ -24,7 +24,7 @@ window.AVBandada = function (G) {
   if (G.bandada && G.bandada.api) return G.bandada.api; // una sola bandada aunque la pidan boot.js y AV.vivoTest
   const S = G.S, scene = G.renderer.scene, AVE = window.AVE;
   const H = (x, z) => G.terreno.height(x, z);
-  const NIVEL_N = { bajo: 0, medio: 12, alto: 20 };
+  const NIVEL_N = { bajo: 6, medio: 12, alto: 20 };
   const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 46, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
   const TARDE_MIN = 150, TARDE_VAR = 150;
   const PALETA = ['#3c9a45', '#5fae3c', '#2f8a4f', '#7bb83e', '#c9a227', '#3f8f6a']; // si no hay pieles
@@ -184,9 +184,10 @@ window.AVBandada = function (G) {
   };
   function aparecer(motivo, o) {
     o = o || {};
-    const n = o.n != null ? o.n : cuentaPara(nivel());
+    const tope = nivel() === 'bajo' ? cuentaPara('bajo') : Infinity; // QA-110: en bajo, la mínima (también la de 20 de M3)
+    const n = Math.min(o.n != null ? o.n : cuentaPara(nivel()), tope);
     if (n <= 0 || F.estado !== 'off') return false;
-    if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false; // BM20: con calidad «bajo» tampoco sale la de 20
+    if (!o.forzar && (!permitido() || cuentaPara(nivel()) === 0)) return false;
     F.pasadas = o.pasadas || 1; F.opts = o;
     if (o.destino) mezclar(o.destino.x, o.destino.z); else if (!o.mismas) mezclar(S.pos.x, S.pos.z); // especies del hábitat de su ruta
     if (o.destino) return aparecerViaje(motivo, o, n);
@@ -371,8 +372,8 @@ window.AVBandada = function (G) {
     const espera = ms => new Promise(r => setTimeout(r, ms)), cuadros = n => new Promise(r => { const f = () => (--n <= 0 ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); });
     try {
       terminar(); pend = null;
-      ok('Cantidad por calidad: bajo 0, medio 12, alto 20', cuentaPara('bajo') === 0 && cuentaPara('medio') === 12 && cuentaPara('alto') === 20);
-      ok('Con calidad baja no sale ninguna', (() => { const q = G.renderer.calidad.nivel; G.renderer.calidad.nivel = 'bajo'; const r = aparecer('prueba', { forzar: true }); G.renderer.calidad.nivel = q; return r === false && F.estado === 'off'; })());
+      ok('Cantidad por calidad: bajo 6, medio 12, alto 20', cuentaPara('bajo') === 6 && cuentaPara('medio') === 12 && cuentaPara('alto') === 20);
+      ok('Con calidad baja sale la mínima: como mucho 6, también si piden 20 (QA-110)', (() => { const q = G.renderer.calidad.nivel; G.renderer.calidad.nivel = 'bajo'; const r = aparecer('prueba', { forzar: true, n: 20 }); const nAves = F.aves.length; terminar(); G.renderer.calidad.nivel = q; return r !== false && nAves > 0 && nAves <= 6 && F.estado === 'off'; })());
       G.quiet = true; S.profile = S.profile || { created: false };
       ok('En las baterías (G.quiet) los disparadores no sacan la bandada', pedir('mision') === false && aparecer('tarde') === false && F.estado === 'off');
       ok('«pedir» forzado deja el aviso pendiente', pedir('despertar', { forzar: true, en: 5 }) === true && pend && pend.motivo === 'despertar'); pend = null;
