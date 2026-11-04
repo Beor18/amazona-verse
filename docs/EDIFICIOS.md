@@ -129,6 +129,17 @@ Kelvin: «terminar los edificios que faltan… la ciudad era hermosa». Su captu
   (`campamento_c`, `carpa_a`, `carpa_e`, `carpa_f`, `toldo_pequeno`) quedaron más chicos que el ligero: el mismo script los
   reescala a su caja exacta (≤ 0,3 m). `campamento_c` y `toldo_pequeno` tienen `hd: false`: su `_hd` es otra forma
   distorsionada por el fit del integrador; toca rehacerlos con `edificios_hd.py` (Blender) desde el migrado.
+  - **Diagnóstico 4-nov (Kimi 3, PC):** los `_hd` actuales de `campamento_c` y `toldo_pequeno` no son una lona
+    distorsionada sino **otro modelo**: un muro de púas `Multi_Pikes` de 3 282 tris con 3 materiales crudos
+    (`Fabric_KB3D_TarpFabricDamaged_diffuse`, `Multi_Pikes_KB3D_WoodHewn_Diffuse`,
+    `Multi_Pikes.001_KB3D_BarkCharred_diffuse`) y 6 texturas de `tex_original` referenciadas; cajas
+    16,4 × 17,4 × 7,1 m y 9,4 × 8,9 × 8,8 m frente al ligero 5,5 × 2,4 × 5,9 m y 3,5 × 3,3 × 3,3 m. El juego no los
+    carga nunca (`streaming.js` solo pide `_hd` cuando `kit[id].hd === true`), así que son inertes y la imagen
+    cercana la da el ligero. **Falta reexportarlos en la Mac** (tiene Blender y el migrado):
+    `Blender -b --python tools/blender/edificios_hd.py -- --ids campamento_c,toldo_pequeno --out assets/models/edificios --kit`
+    (de paso pone `hd: true` y los `trisHD` nuevos en kit.js). En la PC de Kelvin no es posible: no están
+    `~/AmazonaVerse/04_Mapa_3D/migrado` ni Blender/gltfpack. Invariante de regresión repetible:
+    `node tools/build/kimi3_hd_audit.js` (falla si un `_hd` hd:true vuelve a traer materiales `Fabric_*`/`Multi_*`).
   Verificación con GPU real (Chrome headless, 1920×1080, calidad alta, `tools/build/kimi3_lonas.js`, 3-nov):
   auditoría de materiales en las 3 aldeas con lonas sin materiales crudos (solo `AV_HD_Savage`/`AV_HD_Ancient`);
   95–139 draw calls y 0,74–1,79 M tris a ~142–143 FPS en lomas/colina/rio_oeste_2. `streamingTest` 21/23 y

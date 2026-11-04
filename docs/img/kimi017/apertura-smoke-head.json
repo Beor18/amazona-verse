@@ -1,0 +1,123 @@
+{
+  "etiqueta": "x",
+  "cuando": "2026-11-04T09:32:05.072Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "carga": [
+        {
+          "ms": 12829,
+          "motivo": "listo",
+          "cuadroRevelar": 504,
+          "tCargado": 11610,
+          "msGPU": 65,
+          "texSubidas": 93,
+          "maxProg": 133,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 19876,
+          "update": 7,
+          "ganchos": 30,
+          "dibujo": 13,
+          "warm": 27,
+          "postYDibujo": 930,
+          "total": 1007
+        },
+        {
+          "t": 21182,
+          "update": 12,
+          "ganchos": 5,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 289,
+          "total": 307
+        },
+        {
+          "t": 22334,
+          "update": 12,
+          "ganchos": 9,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 104,
+          "total": 126
+        },
+        {
+          "t": 23410,
+          "update": 10,
+          "ganchos": 5,
+          "dibujo": 2,
+          "warm": 0,
+          "postYDibujo": 166,
+          "total": 183
+        },
+        {
+          "t": 27377,
+          "update": 10,
+          "ganchos": 7,
+          "dibujo": 13,
+          "warm": 437,
+          "postYDibujo": 103,
+          "total": 570
+        }
+      ],
+      "top": [
+        {
+          "d": 2250,
+          "t": 0.5
+        },
+        {
+          "d": 1681,
+          "t": 6.4
+        },
+        {
+          "d": 1035,
+          "t": 19.8
+        },
+        {
+          "d": 653,
+          "t": 11.3
+        },
+        {
+          "d": 597,
+          "t": 27.2
+        },
+        {
+          "d": 542,
+          "t": 4
+        },
+        {
+          "d": 514,
+          "t": 2.9
+        },
+        {
+          "d": 507,
+          "t": 21.5
+        }
+      ],
+      "nFases": 195,
+      "perfil": null,
+      "errores": []
+    }
+  ]
+}
