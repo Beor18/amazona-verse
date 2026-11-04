@@ -1,11 +1,11 @@
 {
- "cuando": "2026-11-04T12:31:07.066Z",
+ "cuando": "2026-11-04T12:40:04.909Z",
  "maquina": "PC Windows · Chrome headless GPU real · 390×844 dpr 3 · CPU ×4 · calidad bajo",
  "idiomas": {
   "es": {
    "ok": true,
-   "passed": 23,
-   "total": 23,
+   "passed": 30,
+   "total": 30,
    "results": [
     {
      "name": "ES · Partida nueva en el paso 1 (orilla)",
@@ -51,6 +51,41 @@
      "name": "ES · Al reanudar, la guía señala algo alcanzable",
      "ok": true,
      "extra": "196,147"
+    },
+    {
+     "name": "ES · A3 · Paso 2 · 4/4 voces oídas",
+     "ok": true,
+     "extra": "voz_abuela,voz_papa,voz_navegante,voz_iguaca"
+    },
+    {
+     "name": "ES · A3 · Paso 2 · Balanza completa (TradeoffSeen) y paso 3",
+     "ok": true,
+     "extra": "step 2"
+    },
+    {
+     "name": "ES · A3 · Paso 3 · maqueta probada (ModelTested) y paso 4",
+     "ok": true,
+     "extra": "step 3"
+    },
+    {
+     "name": "ES · A3 · Paso 4 · acuerdo (AgreementMade + CareChosen) y paso 5",
+     "ok": true,
+     "extra": "step 4"
+    },
+    {
+     "name": "ES · A3 · Paso 5 · obra construida (ProjectBuilt) y paso 6",
+     "ok": true,
+     "extra": "step 5"
+    },
+    {
+     "name": "ES · A3 · Paso 6 · la abuela cruzó (Chapter4Completed)",
+     "ok": true,
+     "extra": "step 6 · complete true"
+    },
+    {
+     "name": "ES · A3 · pantalla de fin visible tras cruzar",
+     "ok": true,
+     "extra": "end"
     },
     {
      "name": "ES · El capítulo tiene 6 pasos",
@@ -126,8 +161,8 @@
   },
   "en": {
    "ok": true,
-   "passed": 24,
-   "total": 24,
+   "passed": 31,
+   "total": 31,
    "results": [
     {
      "name": "EN · El juego arranca en inglés",
@@ -178,6 +213,41 @@
      "name": "EN · Al reanudar, la guía señala algo alcanzable",
      "ok": true,
      "extra": "196,147"
+    },
+    {
+     "name": "EN · A3 · Paso 2 · 4/4 voces oídas",
+     "ok": true,
+     "extra": "voz_abuela,voz_papa,voz_navegante,voz_iguaca"
+    },
+    {
+     "name": "EN · A3 · Paso 2 · Balanza completa (TradeoffSeen) y paso 3",
+     "ok": true,
+     "extra": "step 2"
+    },
+    {
+     "name": "EN · A3 · Paso 3 · maqueta probada (ModelTested) y paso 4",
+     "ok": true,
+     "extra": "step 3"
+    },
+    {
+     "name": "EN · A3 · Paso 4 · acuerdo (AgreementMade + CareChosen) y paso 5",
+     "ok": true,
+     "extra": "step 4"
+    },
+    {
+     "name": "EN · A3 · Paso 5 · obra construida (ProjectBuilt) y paso 6",
+     "ok": true,
+     "extra": "step 5"
+    },
+    {
+     "name": "EN · A3 · Paso 6 · la abuela cruzó (Chapter4Completed)",
+     "ok": true,
+     "extra": "step 6 · complete true"
+    },
+    {
+     "name": "EN · A3 · pantalla de fin visible tras cruzar",
+     "ok": true,
+     "extra": "end"
     },
     {
      "name": "EN · El capítulo tiene 6 pasos",

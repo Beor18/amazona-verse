@@ -85,7 +85,7 @@ async function lanzar() {
     { const t1 = Date.now(); let hay = false; while (Date.now() - t1 < 15000) { try { if (await ev(cdp, ses, `typeof (window.AV && AV.ep4GuardadoTest)`, 5, false) === 'function') { hay = true; break; } } catch (e) { } await cdp.bombear(0.3); } if (!hay) throw new Error('ep4_guardado.js no cargó'); }
     for (const idioma of IDIOMAS) {
       console.log(`  · vuelta ${idioma}…`);
-      const r = await ev(cdp, ses, `window.AV.ep4GuardadoTest({ idioma: '${idioma}' })`, 420);
+      const r = await ev(cdp, ses, `window.AV.ep4GuardadoTest({ idioma: '${idioma}' })`, 600);
       resultados.idiomas[idioma] = r;
       for (const o of (r.results || [])) console.log(`    ${o.ok ? '✓' : '✗'} ${o.name}${o.extra ? ' · ' + o.extra : ''}`);
       console.log(`  · ${idioma}: ${r.passed}/${r.total}${r.ok ? ' · OK' : ' · ROJO'}`);

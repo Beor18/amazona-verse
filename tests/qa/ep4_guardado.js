@@ -4,6 +4,9 @@
    (QA-149) y el juego entero a pie ep4e2eTest/temporadaRealTest; aquí lo que falta:
    A) Juega el paso 1 (orilla) entero con Acción, empieza el paso 2 (voces) y GUARDA a mitad; RECARGA y comprueba que reanuda
       en el paso 2 con lo hecho y la guía señalando algo alcanzable.
+   A3) Del guardado al final: termina las voces, resuelve la Balanza, la maqueta, la asamblea (opción, cuidado y palabra),
+      construye la obra y cruza con la abuela, todo con el botón táctil de Acción y los botones reales de las tarjetas
+      (las tarjetas se contestan como un niño: en orden; si la tarjeta vuelve igual, la siguiente opción no probada).
    B) Los 6 pasos: con el estado que les toca, la guía (pack.historia.pasos[i].guia) devuelve un punto no nulo, en tierra seca
       y dentro de la zona abierta del viento (si apuntara al agua o fuera de la zona, el niño se trancaría: QA-149).
    C) El viento de zonas.js devuelve siempre a tierra seca DENTRO de la zona: se sale por 5 rumbos (norte, sur, este, oeste y
@@ -56,7 +59,41 @@
         if (!seco(p.x, p.z) && !(p.y != null && p.y > G.terreno.height(p.x, p.z) + 0.5)) return 'en el agua (' + p.x.toFixed(0) + ',' + p.z.toFixed(0) + ')';
         return null;
       };
-      return { tecla, tick, pasarDialogos, accion, ir, seco, alcanzable };
+      // Tarjetas de elección (G.dialogo.choose → botones reales ch-N): como un niño, en orden; si la tarjeta vuelve igual
+      // (la opción no sirve: pista y se repite), la siguiente no probada; las «✓ …» (ya hechas) van al final.
+      const probado = new Map();
+      const tarjeta = async (maxIter) => {
+        let n = 0;
+        while (n++ < (maxIter || 500)) {
+          if (G.dialogo.open()) { tecla('e'); tick(0.15); await sleep(20); continue; }
+          const card = $('card');
+          if (G.ui.cardOpen && card && !card.hidden) {
+            if (card.querySelector('.edu-opt')) { // «Iguaca te pregunta» (no sale en la historia, pero por si acaso)
+              const sg = $('edu-seguir');
+              if (sg && !sg.hidden) { sg.click(); tick(0.15); await sleep(20); continue; }
+              const b0 = card.querySelector('.edu-opt:not([disabled])');
+              if (!b0) break;
+              b0.click(); tick(0.15); await sleep(20); continue;
+            }
+            const bs = Array.prototype.slice.call(card.querySelectorAll('[id^="ch-"]'));
+            if (!bs.length) { // tarjeta informativa: solo «seguir»
+              const sg = $('b-seguir');
+              if (sg && !sg.hidden) { sg.click(); tick(0.15); await sleep(20); continue; }
+              break;
+            }
+            const clave = ((card.querySelector('h2') || {}).textContent || '') + '|' + ((card.querySelector('p') || {}).textContent || '');
+            const vistos = probado.get(clave) || [];
+            if (vistos.length >= bs.length) break; // todas probadas y la tarjeta sigue: bug real (lo verá el chequeo)
+            const orden = bs.map((b, i) => i).sort((a, b2) =>
+              ((vistos.indexOf(a) >= 0 || /^✓/.test(bs[a].textContent)) ? 1 : 0) - ((vistos.indexOf(b2) >= 0 || /^✓/.test(bs[b2].textContent)) ? 1 : 0));
+            const i = orden[0];
+            probado.set(clave, vistos.concat(i));
+            bs[i].click(); tick(0.2); await sleep(30); continue;
+          }
+          break;
+        }
+      };
+      return { tecla, tick, pasarDialogos, accion, ir, seco, alcanzable, tarjeta };
     };
     let H = null;
     const abrir = async extra => {
@@ -111,6 +148,38 @@
       check('Reanuda en el paso 2 con lo ya hecho', S.step === 1 && ['obs_a', 'obs_b', 'obs_c', 'obs_bosque', 'voz_abuela'].every(k => S.collected.includes(k)), 'step ' + S.step + ' · ' + S.collected.length + ' collected');
       const g1 = G.misiones.guideTarget();
       check('Al reanudar, la guía señala algo alcanzable', !H.alcanzable(g1), g1 ? (g1.id || g1.x.toFixed(0) + ',' + g1.z.toFixed(0)) : 'null');
+
+      // ---------- A3) del guardado al final, con Acción táctil y los botones reales de las tarjetas ----------
+      const vozOk = ['voz_abuela', 'voz_papa', 'voz_navegante', 'voz_iguaca'];
+      if (S.step === 1) { // si ya se completó antes (defensa), saltar a lo que falte
+        for (const id of ['papa', 'navegante', 'iguaca']) {
+          const p = H.ir(id); if (!p) { check('A3 · existe el punto «' + id + '»', false, ''); continue; }
+          await H.accion(); await H.tarjeta();
+        }
+        check('A3 · Paso 2 · 4/4 voces oídas', vozOk.every(k => S.collected.includes(k)), S.collected.filter(c => c.indexOf('voz_') === 0).join(','));
+        await H.ir('mesa'); await H.accion(); await H.tarjeta(); // la Balanza: 4 tarjetas + la frase común
+        check('A3 · Paso 2 · Balanza completa (TradeoffSeen) y paso 3', S.step === 2 && G.eventos.had('TradeoffSeen'), 'step ' + S.step);
+      }
+      if (S.step === 2) {
+        await H.ir('mesa'); await H.accion(); await H.tarjeta(); // la maqueta: las 3 opciones
+        check('A3 · Paso 3 · maqueta probada (ModelTested) y paso 4', S.step === 3 && G.eventos.had('ModelTested'), 'step ' + S.step);
+      }
+      if (S.step === 3) {
+        await H.ir('mesa'); await H.accion(); await H.tarjeta(); // asamblea: opción, cuidado y palabra (con pistas si no sirve)
+        check('A3 · Paso 4 · acuerdo (AgreementMade + CareChosen) y paso 5', S.step === 4 && G.eventos.had('AgreementMade') && G.eventos.had('CareChosen'), 'step ' + S.step);
+      }
+      if (S.step === 4) {
+        await H.ir('obra'); await H.accion(); await H.tarjeta(); // construir lo acordado
+        check('A3 · Paso 5 · obra construida (ProjectBuilt) y paso 6', S.step === 5 && G.eventos.had('ProjectBuilt'), 'step ' + S.step);
+      }
+      if (S.step === 5 && !S.complete) {
+        await H.ir('abuela'); await H.accion(); await H.tarjeta(); // el primer cruce
+        check('A3 · Paso 6 · la abuela cruzó (Chapter4Completed)', S.complete && G.eventos.had('Chapter4Completed'), 'step ' + S.step + ' · complete ' + S.complete);
+      }
+      if (S.complete) {
+        const fin = await until(() => { const e = $('end'); return e && !e.hidden; }, 10000);
+        check('A3 · pantalla de fin visible tras cruzar', !!fin, 'end');
+      }
 
       // ---------- B) los 6 pasos: la guía siempre a algo alcanzable ----------
       const steps = G.misiones.steps;
