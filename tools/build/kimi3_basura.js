@@ -245,7 +245,10 @@ function agregarPerfil(profile) {
     res.error = e && e.message || String(e);
     console.log('· FALLO: ' + res.error);
   }
-  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
+  // KIMI-035: cerrar el ÁRBOL entero de Chrome: en Windows chrome.kill() solo mata al padre y los procesos
+  // gpu/renderer quedan zombi robando GPU a las siguientes corridas (mismo arreglo que kimi2_empezar.js, QA-111)
+  try { await cdp.call('Browser.close', {}, undefined, 4000); } catch (e) { /* se recoge con taskkill */ }
+  try { execSync(`taskkill //PID ${chrome.pid} //T //F`, { stdio: 'ignore' }); } catch (e) { try { chrome.kill(); } catch (e2) { /* ya muerto */ } }
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { /* lo recoge el SO */ }
   srv.close();
   const ruta = path.join(SALIDA, `basura-${ETIQUETA}.json`);

@@ -536,3 +536,49 @@ zona/LOD (`ajustarHD`, fundir/quitar) que cargan y sueltan geometría grande por
 real para QA-158 (memoria acumulada en vuelo largo). Siguiente palanca: amortiguar el flapping de
 umbral (histéresis mayor / contador de estabilidad) o repartir la re-rasterización de regiones en
 tandas con techo de trabajos pendientes.
+
+
+## KIMI-037 · basura en vuelo: higiene de `solidos.js` (4-nov · Kimi 3; renumerada desde KIMI-035 — ese ID quedó asignado a la flora de Kimi 1)
+
+**Cambios** (`src/engine/solidos.js`): (1) el estado de `triEmpezar` se reutiliza (era 1 objeto nuevo por
+cada triángulo rasterizado; en vuelo hay cientos por cuadro — solo puede haber un triángulo a medias por
+cola, así que un slot basta); (2) pool de `Matrix4` para los trabajos de región de `colaFlora` (el
+`clone()` por instancia encolada era basura en ráfagas al entrar regiones; los trabajos estáticos siguen
+clonándose porque `matricesDe`/`matricesPorModelo` los retienen para los paneles de puerta); (3)
+`floraCerca` sin strings por cuadro: las coordenadas de región van empaquetadas en el valor del mapa
+(antes `k.split(',').map(Number)` por región y cuadro) y sin array nueva por región vacía
+(`|| SIN_ITEMS`); (4) el guarda de descarga ya no barre la cola: contador `pendReg` región → trabajos
+pendientes (antes `colaFlora.some(...)` por región y cuadro: O(~49 regiones × ~2000 trabajos) ≈ 100 k
+comparaciones/cuadro en vuelo, ahora ~50 lookups). Semántica de colisiones intacta: mismos bloques, mismos
+tramos, mismo `version`, mismos sólidos.
+
+**Medición** (`tools/build/kimi3_basura.js` — tree-kill del Chrome añadido: antes el primer Chrome podía
+quedar zombi robando GPU a las corridas siguientes; móvil 375×812 dpr 3, CPU ×4, GPU real RX 5700 XT,
+gc() determinista, vuelo de 60 s en círculo de 55 m a +12 m sobre la Ciudad de los 36; A/B con worktree de
+HEAD (`wt-k035-base`); evidencia `docs/img/kimi034/basura-k035-{base,base2,post,post2}.json`):
+
+| corrida | ventanas KB/cuadro | media | v2–4 (vuelo asentado) |
+|---|---|---|---|
+| base r1 (HEAD) | 88, 36, 365, 368, 344, 91 | 210 | 359 |
+| base r2 (HEAD) | 16, 77, 315, 312, 330, 141 | 199 | 319 |
+| post r1 | 1569*, 267, 100, 404, 414, 261 | 497 | 306 |
+| post r2 | 98, 156, 291, 336, 345, 425 | 277 | 324 |
+
+\* la ventana 0 incluye el asentado residual y su tamaño depende del estado del GC al inicio (en las base
+salió pequeña por casualidad; en post r1 no — por eso las medias totales no comparan: mírense las v2–4).
+
+**Lectura:** la banda de vuelo asentado queda en 306–359 KB/cuadro con y sin fix (mediana de ventanas:
+post 315 vs base 339). El grueso de la basura en vuelo es el ciclo crear/destruir **bloques de región**
+(los 5 typed arrays por bloque nuevo, que el sampler atribuye a `insert`: 794–1248 KB muestreados por
+corrida) — datos necesarios del mapa de colisiones, no desperdicio. Lo recortado aquí era poca cosa en KB
+pero **CPU segura por cuadro** (el guarda de descarga pasa de ~100 k comparaciones a ~50 lookups y el
+rasterizado deja de asignar objetos/matrices por triángulo e instancia). 0 errores de consola en las 4
+corridas. La palanca que moverá el total sigue siendo estructural: **KIMI-038** (histéresis de frontera
+zona/LOD en `streaming.js`, la que dispara las re-colocaciones estáticas: +700 bloques estáticos y +163 k
+tris rasterizados en 60 s de vuelo, KIMI-034).
+
+**Baterías (GPU real, móvil 375×812 dpr 3, CPU ×4):** streamingTest **23/24** (rojo = QA-81
+intermitente conocido: 158 draw calls en la banda histórica 152–163, rojo también en HEAD; verdes
+«las colisiones siguen activas tras liberar», «sin fugas», y el kit de la ciudad) · movementTest
+**48/48** (todos los de sólidos: estaca real, torre maciza 9,75 m, techo, rama, cuerda, toldo,
+«173 edificios: no se atraviesan y tienen dónde pararse»). 0 errores de consola.
