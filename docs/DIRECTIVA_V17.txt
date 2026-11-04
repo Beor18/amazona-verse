@@ -1,210 +1,316 @@
-                 DIRECTIVA MAESTRA PROPUESTA · V17
+                                    DIRECTIVA MAESTRA V17
 
- Amazona Verse | Contexto actualizado, decisiones de
-    canon, arte, móvil, cómic, música y pruebas
- 4 de noviembre de 2026 · Documento para entregar a Claude y agentes
+                    ACTUALIZADA CON AUDITORÍA REAL · 4 NOV 2026
+ Documento de dirección, prioridades y prompt para Claude. Base principal:
+ ESTADO_REAL_AMAZONA_VERSE_04_NOV_2026.md, auditoría de solo lectura con corte origin/main
+ 6f778914 (04:11 UTC). No constituye una auditoría nueva ni prueba de lo que está en producción ahora.
 
 
- Control de versiones y certeza
- La última base documental encontrada entre los archivos disponibles es V16.6. No se encontró un texto
- V17 anterior confirmado. Este archivo es una propuesta nueva V17, no una reconstrucción literal de una
- versión perdida. La información posterior proviene de los reportes y decisiones compartidos en esta
- conversación; no se verificó el repositorio en vivo.
+ La fotografía correcta del proyecto
 
- [A] aprobado por el fundador · [R] reportado por Claude/agentes · [P] pendiente de prueba o
- implementación.
+   Componente                Estado al corte                                Consecuencia
 
 
- Instrucción principal lista para Claude
- Trabaja desde el estado real de main; inspecciona código, pruebas y assets antes de editar. Conserva la
- visión y lo que ya funciona. No reduzcas el elenco de 36 especies ni los seis capítulos. No sustituyas el
- logo, personajes, cómic o mapas por arte genérico. Entrega cada cambio con commit, evidencia visual,
- pruebas y métricas reales en iPhone.
+                             Jugables en mapa real; cap. 1 100%; caps.
+   Seis capítulos                                                           No declarar temporada terminada.
+                             2–6 ≈60% estimado
 
 
+                             main 6f778914; producción 85ee868 (sitio
+   Código y publicación                                                     Hay commits posteriores sin desplegar.
+                             47033312)
 
 
- Referencia visual del personaje aportada en los materiales del proyecto; no autoriza cambiar su modelo 3D.
+                             12/12 obligatorias verdes en última
+   Pruebas                                                                  No sustituyen QA físico ni visual.
+                             publicación; 0 errores de consola
 
 
+                             65 piezas PNG, seis viñetas, seis capítulos;
+   Cómic                                                                    No reconstruir ni rediseñar.
+                             comicTest 67/67
 
 
-AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                   1
- 1 | Estado reciente de la Ciudad de los 36
- • [R] Claude informa que la ciudad viva pasó de commit 5f6ec9d4 a cec77c13 en main. Confirmar HEAD
- y despliegue.
+   Especies                  36 especies, 37 pieles y 36 retratos 3D        Conservar modelo y rig.
 
- • [R] Conductas diurnas: vuelos entre torres, perchas, grupos conversando, comida en plaza, reparación
- de techo y persecuciones. Nocturnas: dormir en pareja.
 
- • [R] Coste declarado: un draw call adicional, ~1.500 triángulos; 4 aves en calidad baja, 10 media, 16
- alta; 20/20 pruebas. Son cifras reportadas, no medición independiente.
+                             7 temas, incluidos 2 nuevos; licencia
+   Música                                                                   No pedir nuevos temas sin necesidad.
+                             declarada
 
- • [R] Espacio de disco: pasó de menos de 1 GB a 12 GB libres tras limpiar copias de agentes terminados;
- conservar trabajos activos y comprobar nuevamente antes de compilar.
 
 
- 2 | Decisiones de canon aprobadas
- • [A] La Maraña entra como lugar fantástico con misterio y función jugable. No presentarla como hecho
- histórico.
+ Criterio de evidencia
+ Comprobado: auditoría de código, commit o informe guardado. Reportado: resultados de agentes o
+ mediciones consignadas, sin repetición independiente. Pendiente: no cerrado en dispositivo real o sin
+ aprobación. No transformar un «reportado» en «verificado».
 
- • [A] Vecinos ambientales no cotorras: comenzar con coquíes, lagartijos y mariposas; mantener a las 36
- Amazona como protagonistas.
 
- • [A] Faroles cálidos en la ciudad del capítulo 1, especialmente para visibilidad nocturna, con
- presupuesto móvil.
 
- • [A] Iguaca, Vinacea, Festiva, Oratrix, Lilacina y Versicolor: aprobadas las seis líneas principales
- resumidas en conversación; usar el texto completo del documento de diálogos, no inventar frases
- faltantes.
 
- • [A] iPhone: opción A para texturas de edificios a media resolución solo en móviles; escritorio y tablet
- sin cambios. Validar calidad y estabilidad en hardware real.
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                              1
+ 1 · Prioridades de lanzamiento: resolver primero lo que rompe el juego
 
+   Orden      Trabajo                                                   Criterio de cierre
 
- 3 | Historia y alcance intocables
- • Seis capítulos jugables; colección/selección de 36 especies, incluidas las dos históricas A. martinicana y
- A. violacea con tratamiento taxonómico cuidadoso.
 
- • Personajes, guardianes, huevos, minijuegos, carreras, Arena PvP, clips y Creator Lab conservan su
- visión; ninguna expansión se implementa sin ticket y aprobación.
+              QA-110: iPhone se cerraba al despegar; arrancar en bajo   Prueba iPhone real: despegar, volar a la ciudad,
+   P0         mitigó el problema. Kelvin aprobó reducir atlas HD a      entrar/salir, sin pantalla blanca; medir
+              1024 px solo en teléfonos.                                memoria/FPS.
 
- • No introducir Smarlin ni sistemas que requieran datos de menores. No afirmar contenido histórico o
- científico sin fuente verificable.
 
+              QA-106: iPad antes 8,1 M triángulos / 28 FPS; arreglo     Medir #fps y triángulos en iPad físico después del
+   P0
+              KIMI-011 aplicado, no medido en equipo real.              cambio.
 
 
+              Ranking en línea sin puerta de adulto; licencias 3D y     Desactivar publicación infantil hasta revisión legal;
+   P0
+              texturas sin origen documentado.                          revisar licencias antes de difusión escolar.
 
- Imagen comparativa del capítulo 5 disponible en materiales previos; validar contra el estado actual.
 
+              QA-111: pista tapa botón Impulso en Android; CG-57 en
+   P1                                                                   Prueba visual y de accesibilidad en pantalla táctil.
+              curso.
 
 
+              KIMI-017: tirones durante vuelo/carga de zonas; QA-53     Medir picos de cuadros durante vuelo y evitar
+   P1
+              está desfasada.                                           regresiones.
 
-AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                     2
- 4 | Cómic del juego: contrato visual
- La plantilla aprobada tiene seis viñetas dinámicas. El paquete de 65 PNG representa elementos
- separados, no 65 pantallas. Deben componerse como capas: fondo de escena real, marcos, título,
- globos, texto, retrato circular del jugador y secciones de aprendizaje. El personaje debe ser la especie y
- skin real del jugador, con ropa y corona seleccionadas; nunca inventar cotorras genéricas.
 
- Usar únicamente el logo oficial PNG original, sin redibujar, recolorear ni reescribir. El sistema debe
- exportar PNG/PDF y permitir ver, editar y compartir. Inspeccionar la transparencia de cada recorte antes
- de integrarlo; algunos son recortes con fondo y no capas limpias.
+              BM133: Ciudad de los 36 de cerca; BM134: 28 de 64         Capturas reales antes/después y prueba de
+   P1
+              edificios defectuosos.                                    rendimiento.
 
 
 
+ La contradicción más importante
+ El iPhone ahora inicia en calidad baja, pero boot.js:95-111 omite en ese nivel la bandada, las comunidades y
+ la Ciudad de los 36 viva. El arreglo de estabilidad sacrifica precisamente la característica central del juego.
+ Propuesta nueva, no implementada: evaluar una versión mínima de cuatro cotorras con memoria acotada,
+ solo después de confirmar estabilidad real. No reactivar todo a ciegas.
 
- Ejemplo visual existente del cómic; referencia de composición, no captura demostrativa del motor.
 
+ Decisión A ya aprobada
+ Bajar texturas HD de edificios a 1024 px solo en teléfonos, sin afectar por defecto computadora o tableta.
+ Medir el ahorro de GPU y comparar capturas. El informe lo marca como decisión de arte pendiente de
+ aplicar, no como trabajo completado.
 
- 5 | Retratos de las 36 especies
- [R] Claude indicó que se publicarían los retratos de las 36 especies y el trabajo reciente de Grok. Verificar
- existencia, correspondencia con modelos 3D reales, skins, siluetas para no descubiertas y nombres
- ocultos de Mara/Vela hasta el capítulo 5. Muestrear tres especies antes de aceptar el lote completo.
 
 
 
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                                         2
+ 2 · Mundo, historia y canon
 
-AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                      3
- 6 | Música original: dos pistas aprobadas en concepto
- Ciudad de noche: aventura fantástica tropical, cálida y misteriosa; marimba suave, cuerdas pulsadas
- inspiradas en el cuatro, flautas de madera, celesta y ambiente nocturno sutil. Instrumental, sin voz, sin
- ritmo comercial ni merengue; objetivo aproximado 82 BPM y 90 s, adaptable a bucle.
+   Capítulo                            Estado                             Bloqueo principal
 
- Sorpresas: curiosidad juguetona y descubrimientos; pizzicato, marimba, celesta, percusión ligera y
- motivo musical original compartido con la ciudad. Instrumental, sin voces ni pop; objetivo aproximado
- 112 BPM y 60–90 s.
 
- Los prompts son instrucciones creativas, no garantía de duración ni bucle perfecto. Guardar MP3
- originales, fecha, cuenta/plan y comprobante de derechos comerciales; Claude normaliza volumen y
- edita bucles sin saltos.
+                                       100% oficial; 6 pasos; 16 min en   Faroles cap. 1; bahía pálida; retratos; guion por
+   1 · El día que el cielo se rompió
+                                       prueba familiar previa             aprobar.
 
 
- 7 | Educación: correcciones obligatorias
- • 19 afirmaciones de capítulos 2–6 revisadas en conversación: distinguir CORRECTA, CON MATIZ y SIN
- FUENTE. No convertir la revisión en una certificación científica automática.
+   2 · Un lugar para todos             ≈60%; 6 pasos; e2e 87/87           7 marcas [KELVIN]; prueba infantil.
 
- • La afirmación de “zocos” como tradición de casas rurales de Puerto Rico quedó SIN FUENTE; mantener
- como fantasía si se desea, sin atribución histórica.
 
- • “Canoa” sustituye a “cayuco” en la narrativa según reporte del usuario; verificar todos los idiomas y
- diálogos.
+                                       ≈60%; canoa; Nayara y Villa
+   3 · Más allá de la bahía                                               6 marcas; mesa en agua; ficha canoa EN.
+                                       Mangle
 
- • Adjuntar citas reales y enlaces directos a fuentes gubernamentales, museos, diccionarios, NGSS o
- artículos con DOI. No inventar códigos DEPR.
 
+   4 · El precio del progreso          ≈60%; tres proyectos a elegir      6 marcas; zona por confirmar.
 
- 8 | Rendimiento móvil: puerta de calidad
- • Aplicar texturas de edificios a 50% en teléfonos únicamente, con selección de calidad por dispositivo y
- fallback. No alterar por defecto tablet o escritorio.
 
- • Probar iPhone real: inicio, carga de ciudad, transición día/noche, memoria, cierres, temperatura,
- controles táctiles, audio, cómic y reentrada.
+   5 · Las voces olvidadas             ≈60%; mapa real; Mara y Vela       2 marcas; rendimiento real iPad.
 
- • Registrar modelo de iPhone, versión iOS, navegador, FPS p50/p10, memoria estimada, tiempo de carga
- y fallos. Las 20/20 pruebas lógicas no reemplazan QA físico.
 
- • Mantener carga diferida, actualización por distancia, culling y límites de luces; comparar capturas
- antes/después de texturas reducidas.
+                                       ≈60%; ciudad viva y medalla del
+   6 · El pacto de los 36                                                 19 marcas; ficha educativa «esperan».
+                                       Guardián
 
 
 
+ Canon aprobado y ya reflejado en main según la auditoría
+ • La Maraña es fantasía jugable; no se vende como historia documentada.
 
- Diagrama de ecosistema de una directiva anterior; orientación, no estado probado del HEAD actual.
+ • Iguaca y las cinco mentoras: seis voces aprobadas tal cual (24c), commit 9fc4c660, aún sin publicar en el
+ corte.
 
+ • Vecinos: coquíes, lagartijos y mariposas; prototipo pequeño, no expansión masiva.
 
+ • Faroles del capítulo 1 aprobados, KIMI-018 todavía libre; no confundir con los faroles del capítulo 5.
 
+ • Nayara es Amazona ventralis; Mara y Vela son las dos voces históricas fantásticas; el Guardián es una
+ imperialis mayor.
 
-AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                  4
- 9 | Orden operativo de ejecución
- 1. Auditoría. Confirmar main, commits, espacio libre, agentes activos y pruebas reproducibles.
+ • La palabra visible en capítulo 3 es «canoa», no «cayuco».
 
- 2. Móvil. Aplicar opción A, medir iPhone y comprobar que la ciudad no se cierra.
+ • Conservar las 36 especies; no tocar vittata.glb ni su rig de 60 huesos.
 
- 3. Arte. Verificar modelos, 36 retratos, identidad, luces nocturnas y fauna ambiental.
 
- 4. Narrativa. Integrar La Maraña, las seis voces aprobadas y correcciones educativas.
+ Las decisiones no están terminadas
+ El registro aún muestra 42 de 49 decisiones sin marcar como cerradas. Hay 40 marcas [KELVIN] en
+ capítulos 2 a 6 (7 + 6 + 6 + 2 + 19). Claude debe presentar una lista consolidada y priorizada, no pedir
+ decisiones repetidas ni inventar aprobaciones.
 
- 5. Cómic. Reconstruir seis viñetas desde capas reales y capturas del juego; probar exportaciones.
 
- 6. Música. Integrar solo MP3 con licencia y bucles validados; documentar procedencia.
 
- 7. Publicación. Pruebas automatizadas + manuales + capturas; integrar con control de versiones y
- rollback.
 
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                                       3
+ Referencia visual de la plantilla; no es evidencia de una captura actual del motor.
 
- 10 | Evidencia exigida en el informe final
- • Tabla de funciones: implementada / parcial / no implementada, con rutas reales de archivos y commits.
 
- • Capturas reales del juego de día y noche, iPhone y escritorio, 36 retratos y cómic de seis viñetas.
 
- • Resultados de tests y pruebas manuales con dispositivo y fecha; errores abiertos y riesgos de
- publicación.
 
- • Medición antes/después de rendimiento, tamaño de texturas, uso de memoria, espacio libre y fallos.
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                4
+ 3 · Arte, cómic, educación y música: conservar lo construido
 
- • Lista de cambios, nuevos assets, licencias, decisiones pendientes y qué NO se modificó.
+ Arte y arquitectura
+ • BM133 y BM134 están aprobadas, pero sin empezar en el corte: priorizar edificios visibles de cerca antes
+ de añadir más decorado.
 
+ • KIMI-010 (lonas) está en main sin publicar; corregir objetos en la orilla QA-107/108/109.
 
- 11 | Preguntas abiertas: no inventar respuestas
- El usuario mencionó “cora”, pero no se identificó un módulo, personaje o tarea con ese nombre en los
- materiales revisados. Solicitar precisión antes de modificar algo bajo ese término. Tampoco consta en
- esta conversación una segunda decisión A/B completa: solo está confirmada la decisión 1 = A.
+ • Iguaca, la Abuela y el Papá se parecen demasiado a Vittata; diferenciar retratos sin alterar modelo ni rig
+ base.
 
+ • Las 36 especies ya tienen retratos 3D; no generar aves genéricas para sustituirlos.
 
- MENSAJE PARA COPIAR A CLAUDE
- Esta es la directiva V17 propuesta. Integra exclusivamente las decisiones aprobadas y audita el estado
- real antes de programar. Prioriza estabilidad iPhone, arte fiel, ciudad viva, cómic por capas y pruebas
- reproducibles. No declares completado nada sin evidencias de repositorio y dispositivo. Informa bloqueos
- y preguntas concretas; no gastes recursos en expansiones no aprobadas.
 
+ Cómic de seis viñetas
+ El sistema ya existe en comic.js y comic_plantilla.js, usa las 65 piezas y cubre los seis capítulos; comicTest
+ 67/67. No encargar otro cómic ni modificar el formato. Solo corregir defectos observables. Usar el logo
+ original sin redibujarlo; las escenas deben provenir del juego y el retrato de la especie/skin/equipo real del
+ jugador.
 
 
 
- Coordinación técnica del equipo: diagrama de referencia de versiones anteriores.
 
+ Plantilla visual vacía existente, usada únicamente como referencia de diseño.
 
 
+ Educación
+ La auditoría reporta 17 de 19 afirmaciones verificadas, 1 parcial ajustada y 1 sin fuente («zocos», tratado
+ como narrativo). La revisión abrió páginas reales porque varias citas anteriores de IA resultaron falsas o
+ imprecisas. Regla: conservar solo citas cuya frase literal exista en la página. Pendientes: ficha «canoa» en
+ inglés y ficha «esperan» del capítulo 6 («34 vivas y 2 extintas»). Se reportan 23 indicadores DEPR 2022
+ tomados del PDF oficial.
 
-AMAZONA VERSE · V17 PROPUESTA · 04 NOV 2026                                                                 5
+
+ Música
+ Los temas «La Ciudad de los 36 — Noche Encantada» y «Las Sorpresas — ¡Algo se Esconde!» ya fueron
+ incorporados según commits c3da3dd3 y 392b534a; total 7 pistas. No volver a pedir prompts ni generar
+ MP3 duplicados. Conservar registro de licencias y verificar bucles y volumen.
+
+
+
+
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                           5
+ 4 · Publicación y pruebas que faltan
+ Última publicación examinada: 85ee868, sitio 47033312. main estaba en 6f778914; hay trabajo aún no
+ desplegado. Claude debe comparar el HEAD actual con la última publicación real antes de ejecutar
+ cualquier orden.
+
+ • Publicar, con 12/12 obligatorias y 0 errores: CG-51 (avisos EN), CG-52 (retos del día), CG-53 (modo
+ familia), CG-55 (tormenta cap. 2), 24c (mentoras), KIMI-010 (lonas), siempre que sigan pendientes.
+
+ • No confundir 84 pruebas registradas con 84 pruebas obligatorias: obligatorias son 12.
+
+ • Playtest infantil de capítulos 2 a 6: todavía no realizado; medir comprensión, diversión, bloqueos, duración
+ y abandono.
+
+ • Chromebook escolar: no hay mediciones; no declararlo compatible por extrapolación.
+
+ • Build publicada: 300,7 MB en sitio/juego, 5,86 MB iniciales; los topes de tamaño están en cero. Proponer
+ límites medidos antes de añadir recursos.
+
+ • El mapa de alturas que quitaba flora del agua fue revertido dos veces por movementTest; no darlo por
+ publicado.
+
+
+ 5 · Instrucción ejecutiva lista para Claude
+ ACTÚA COMO DIRECTOR TÉCNICO DE AMAZONA VERSE. Usa como punto de partida el estado real del
+ repositorio, no una lista de deseos. La auditoría base tiene corte origin/main 6f778914, 4-nov-2026. Primero
+ compara HEAD actual, última publicación, BUGS.md, TAREAS_*.md, PENDIENTES_KELVIN.md y
+ ultima_publicacion.json. Identifica cambios posteriores; nunca reviertas trabajo nuevo sin justificarlo.
+
+ ORDEN: (1) QA-110 iPhone real y decisión A de atlas HD 1024 en teléfonos; (2) QA-106 iPad real; (3) CG-57
+ botón Impulso; (4) publicar lo pendiente con 12 pruebas y 0 errores; (5) KIMI-017 tirones; (6) BM133/BM134
+ edificios; (7) versión mínima medida de ciudad viva en bajo; (8) KIMI-018 faroles cap. 1; (9) playtest infantil
+ caps. 2-6; (10) decisiones [KELVIN] y revisión legal.
+
+ PROHIBIDO: recrear el cómic, los 36 retratos, las siete pistas, el motor o el sistema de vuelo; cambiar el
+ logo, modelo o rig; añadir PvP, economía, pesca, clips o mundos nuevos sin decisión. No afirmar que el
+ ranking es seguro mientras carezca de revisión y controles parentales.
+
+ ENTREGA: commits exactos, rutas editadas, capturas reales, FPS/memoria por dispositivo, pruebas con
+ fecha, fallos pendientes, estado de despliegue y un listado de decisiones concretas que necesita Kelvin. No
+ cierres bugs con emulación si exigen equipo físico.
+
+
+
+
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                            6
+ 6 · Matriz de aceptación y alcance
+
+   Criterio                             Aceptar solo cuando...
+
+
+   Estabilidad iPhone                   La sesión real supera inicio, despegue, vuelo, ciudad y regreso sin cierres.
+
+
+   Rendimiento iPad                     Se registran FPS y triángulos en iPad físico después de KIMI-011.
+
+
+   Ciudad viva móvil                    Se observa una versión estable, o se documenta explícitamente la desactivación.
+
+
+   Publicación                          El commit desplegado está identificado; 12/12 pruebas, consola limpia.
+
+
+   Arte                                 Capturas comparativas de edificios y personajes; sin cambio de rig ni logo.
+
+
+   Cómic                                Seis viñetas reales, skin/equipo correcto, exportación sin defectos.
+
+
+   Educación                            Cada afirmación factual conserva frase literal y enlace comprobado.
+
+
+   Privacidad infantil                  Ranking desactivado o aprobado tras evaluación legal y controles apropiados.
+
+
+   Licencias                            Términos y derechos de cada kit/textura revisados para distribución web.
+
+
+   Diversión                            Niños prueban caps. 2–6; se registran problemas y mejoras.
+
+
+
+ Riesgos no resueltos que NO se deben esconder
+ • La política «solo CC0» contradice el uso reportado de kits 3D de pago y música de Suno; decidir política
+ real y documentarla.
+
+ • El ranking publica apodo de lista, marca e identificador de dispositivo; no tiene puerta de adulto.
+
+ • Hay texturas con origen sin documentar, entre ellas canoa.jpg y assets/tex/*.
+
+ • La ciudad viva no carga en calidad baja, aunque iPhone ahora arranca en baja.
+
+ • Los caps. 2–6 están jugables, pero sin pruebas con niños y con canon/arte pendientes.
+
+
+ Fuente y límites de esta versión
+ Fuente primaria: ESTADO_REAL_AMAZONA_VERSE_04_NOV_2026.md, auditoría de Claude de solo lectura,
+ 884 líneas, corte 6f778914. Material visual: logo PNG original y ejemplos de plantilla ya aportados por el
+ creador. Esta V17 es una directiva actualizada, no un informe de pruebas nuevas ni confirmación del sitio
+ en vivo. El estado pudo cambiar después del corte.
+
+ Fin de la directiva V17 actualizada.
+
+
+
+
+AMAZONA VERSE · DIRECTIVA V17 ACTUALIZADA · 04 NOV 2026                                                                   7
 
