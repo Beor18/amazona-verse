@@ -20,6 +20,9 @@
      crías del criadero que tengan `especie` (content/comun/huevos.js). El nombre sale de content/comun/especies.js.
    - Récords de la casa: el mejor de cada nombre de cotorra. El gancho 'retosResultado' (retos.js) anota cada partida a nombre de
      la cotorra que jugaba; los récords que ya existían antes se adoptan una sola vez para la cotorra actual.
+   - Descubrimientos (CG-49), solo lectura de claves del dispositivo: `<almacen>.trucos` (mejor combo), `.escondite` (mejor
+     tiempo en segundos), `.ciudadVisitas` (vistos, de 12), `.marana` (limpios, de 5), `.vecinos` (coquí, lagartijo, mariposa)
+     y `.humor` (siestas). Insignias que se llenan. Sin compras ni cajas. «Nuevo estudiante» las borra en boot.js.
 
    COMPARTIR (sin subir nada a ningún servidor)
    - Puerta para adultos: «Pide ayuda a un adulto», una suma de dos cifras al azar con 3 opciones. Tres fallos cierran la puerta.
@@ -37,7 +40,8 @@
     const S = G.S, $ = G.util.$;
     const ALM = (G.pack.meta && G.pack.meta.almacen) || G.pack.id;
     // Claves del dispositivo (las pruebas las cambian un momento por claves `.prueba`)
-    const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records' };
+    const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
+      trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor' };
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -71,6 +75,14 @@
       criadero: ['Criadero', 'Hatchery'], huevos: ['Huevos', 'Eggs'], crias: ['Crías', 'Chicks'], libres: ['En libertad', 'Set free'],
       sinCriadero: ['Aún no hay huevos. ¡Abre el criadero!', 'No eggs yet. Open the hatchery!'],
       casa: ['Récords de la casa', 'House records'], tu: ['tú', 'you'], casaNota: ['Cuando jueguen varias cotorras en este dispositivo, aquí verás el mejor récord de cada una.', 'When several parrots play on this device, you will see each one\'s best record here.'],
+      descubrimientos: ['Mis descubrimientos', 'My discoveries'], descNota: ['Se llenan al lograrlas. Solo en este dispositivo.', 'They fill as you do them. Only on this device.'],
+      combo: ['Mejor combo', 'Best combo'], sinCombo: ['Aún sin combo', 'No combo yet'], unTruco: ['Un truco', 'One trick'],
+      plumas: ['¡Plumas al viento!', 'Feathers in the wind!'], loca: ['¡Cotorra loca!', 'Silly parrot!'],
+      escondite: ['Escondite', 'Hide-and-seek'], sinEscondite: ['Aún sin tiempo', 'No time yet'],
+      ciudad: ['Sorpresas de la ciudad', 'City surprises'], deVistas: ['Momentos distintos', 'Different moments'],
+      marana: ['Rastros de Maraña', 'Maraña trails'], deLimpios: ['Cuento de la bandada', 'A flock story'],
+      vecinos: ['Vecinos vistos', 'Neighbors seen'], coqui: ['Coquí', 'Coquí'], lagartijo: ['Lagartijo', 'Anole'], mariposa: ['Mariposa', 'Butterfly'],
+      siestas: ['Siestas de Vittata', 'Vittata\'s naps'], sinSiesta: ['Aún ninguna', 'None yet'], siestasHechas: ['Se quedó dormida', 'She fell asleep'],
       carreraCorta: ['Carrera', 'Race'], tormentaCorta: ['Tormenta', 'Storm'],
       rescate: ['¡Salva al pichón!', 'Save the Parrot'], // src/game/rescate.js
       banquete: ['¡Banquete!', 'Feast!'], frutos: ['Frutos en una partida', 'Fruit in one round'],
@@ -214,6 +226,29 @@
         rescate: (casa.jugadores[nombreDe(s)] || {}).rescate || null, // src/game/rescate.js
         especies: { total: cat.vivas.length, vistas: ids.filter(id => vistas.has(id)).map(id => ({ id, nombre: nombreEspecie(id, cat) })) },
         casa: Object.entries(casa.jugadores).sort(ordenCasa).map(([nombre, e]) => ({ nombre, carrera: e.carrera, tormenta: e.tormenta })),
+        descubrimientos: descubrimientosDe(),
+      };
+    }
+    function idsDe(d, campo, tope) {
+      if (!esObj(d) || !Array.isArray(d[campo])) return [];
+      const out = [];
+      for (const id of d[campo]) {
+        if (typeof id !== 'string' || !/^[a-z0-9_-]{1,24}$/.test(id) || out.includes(id)) continue;
+        out.push(id);
+        if (out.length >= tope) break;
+      }
+      return out;
+    }
+    function descubrimientosDe() {
+      const tr = leerJSON(CLAVE.trucos), es = leerJSON(CLAVE.escondite), ci = leerJSON(CLAVE.ciudad);
+      const ma = leerJSON(CLAVE.marana), ve = leerJSON(CLAVE.vecinos), hu = leerJSON(CLAVE.humor);
+      const vecinosOk = ['coqui', 'lagartijo', 'mariposa'];
+      return {
+        combo: tr ? ent(tr.mejor, 99) : 0, tiempo: es ? num(es.mejor) : null,
+        sorpresas: idsDe(ci, 'vistos', 12).length, sorpresasTotal: 12,
+        marana: idsDe(ma, 'limpios', 5).length, maranaTotal: 5,
+        vecinos: idsDe(ve, 'vistos', 3).filter(id => vecinosOk.includes(id)),
+        siestas: hu ? ent(hu.siestas, 999) : 0,
       };
     }
     function especiesDeCrias(d) {
@@ -377,6 +412,15 @@
 #records .rec-casa b { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
 #records .rec-casa .rec-m { width: 26px; height: 26px; font-size: var(--fs-xs); display: inline-grid; vertical-align: middle; margin-right: 4px; box-shadow: 0 0 0 2px #fff; }
 #records .rec-casa em { font-style: normal; font-size: var(--fs-xs); color: var(--c-ink-muted); }
+#records .rec-insignias { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr)); gap: var(--sp-2); }
+#records .rec-insignias li { display: grid; justify-items: center; gap: 4px; min-width: 0; padding: var(--sp-3); text-align: center; background: #fffaf0; border: 2px solid var(--c-paper-edge); border-radius: var(--r-md); }
+#records .rec-ins { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(#3f9a55 calc(var(--fill, 0) * 1turn), #e6e0d2 0); }
+#records .rec-ins > span { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: #fffaf0; font: 700 var(--fs-xs)/1 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
+#records .rec-insignias b { font: 700 var(--fs-sm)/1.2 var(--font-display); color: var(--c-ink); }
+#records .rec-insignias small { font: 500 var(--fs-xs)/1.3 var(--font-body); color: var(--c-ink-muted); overflow-wrap: anywhere; }
+#records .rec-vecinos { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+#records .rec-vecinos i { font-style: normal; padding: 1px 8px; border-radius: var(--r-pill); border: 1px solid #cfc7b4; color: var(--c-ink-muted); }
+#records .rec-vecinos i.llena { background: #e3f6e6; border-color: #3f9a55; color: var(--c-ink); }
 #records .rec-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-5) max(var(--sp-3), env(safe-area-inset-bottom, 0px)); border-top: 3px dotted var(--c-paper-edge); }
 #records .rec-estado { flex: 1 1 200px; min-width: 0; margin: 0; font-size: var(--fs-sm); color: var(--c-ink-muted); }
 #records .rec-pie .btn[aria-disabled="true"] { filter: grayscale(.6); opacity: .6; }
@@ -495,12 +539,27 @@
         }).join('')}</ol>` : `<p class="rec-nota">${esc(tx('casaNota'))}</p>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-casa"><h3 id="rec-h-casa">${esc(tx('casa'))}</h3>${lista}</section>`;
     }
+    function htmlDescubrimientos(d) {
+      const u = d.descubrimientos, tope = n => Math.max(0, Math.min(1, n));
+      const comboTxt = !u.combo ? tx('sinCombo') : u.combo >= 3 ? tx('loca') : u.combo === 2 ? tx('plumas') : tx('unTruco');
+      const tiempoFill = u.tiempo ? Math.max(0.35, Math.min(1, 1 - (u.tiempo - 15) / 105)) : 0;
+      const ins = (f, valor, titulo, detalle) => `<li><span class="rec-ins" style="--fill:${tope(f).toFixed(3)}" role="img" aria-label="${esc(titulo)}"><span>${valor}</span></span><b>${esc(titulo)}</b><small>${detalle}</small></li>`;
+      const vecinos = `<span class="rec-vecinos">${['coqui', 'lagartijo', 'mariposa'].map(id => `<i class="${u.vecinos.includes(id) ? 'llena' : 'falta'}">${esc(tx(id))}</i>`).join('')}</span>`;
+      return `<section class="rec-sec" id="rec-descubrimientos" aria-labelledby="rec-h-desc"><h3 id="rec-h-desc">${esc(tx('descubrimientos'))} <small>${esc(tx('descNota'))}</small></h3><ul class="rec-insignias">
+        ${ins(u.combo / 3, u.combo ? '×' + u.combo : '·', tx('combo'), esc(comboTxt))}
+        ${ins(tiempoFill, u.tiempo ? '★' : '·', tx('escondite'), u.tiempo ? esc(reloj(u.tiempo)) : esc(tx('sinEscondite')))}
+        ${ins(u.sorpresas / u.sorpresasTotal, u.sorpresas + '/' + u.sorpresasTotal, tx('ciudad'), esc(tx('deVistas')))}
+        ${ins(u.marana / u.maranaTotal, u.marana + '/' + u.maranaTotal, tx('marana'), esc(tx('deLimpios')))}
+        ${ins(u.vecinos.length / 3, u.vecinos.length + '/3', tx('vecinos'), vecinos)}
+        ${ins(u.siestas / 3, String(u.siestas), tx('siestas'), esc(u.siestas ? tx('siestasHechas') : tx('sinSiesta')))}
+      </ul></section>`;
+    }
     function pintar() {
       if (!root) return;
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
@@ -911,10 +970,11 @@
       const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event', 'marcador']; // marcador: el cronómetro sigue contando mientras corre la prueba
       const comparable = () => JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !VOLATIL.includes(k))));
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, G.pack.aula && G.pack.aula.clave].filter(Boolean);
+      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, G.pack.aula && G.pack.aula.clave].filter(Boolean);
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
-      const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba' };
+      const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -952,12 +1012,31 @@
         check('Los botones del panel miden 44 px o más', grande.length === 0, grande.length + ' pequeños');
         const rb = root.querySelector('.rec-box'), cuerpo = root.querySelector('.rec-body');
         check('Nada se desborda a lo ancho', rb.scrollWidth <= rb.clientWidth + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1 && rb.getBoundingClientRect().right <= innerWidth + 1, `${cuerpo.scrollWidth}/${cuerpo.clientWidth} en ${innerWidth}`);
+        check('Sin logros, las seis insignias salen vacías', /Mis descubrimientos/.test(txt) && /Aún sin combo/.test(txt) && /Aún sin tiempo/.test(txt) && root.querySelectorAll('#rec-descubrimientos .rec-ins').length === 6);
+        localStorage.setItem(pruebas.trucos, JSON.stringify({ v: 1, mejor: 3 }));
+        localStorage.setItem(pruebas.escondite, JSON.stringify({ v: 1, mejor: 42.5 }));
+        localStorage.setItem(pruebas.ciudad, JSON.stringify({ visitas: 2, ultima: ['fruta'], vistos: ['fruta', 'cuerda', 'coqui'], notas: [] }));
+        localStorage.setItem(pruebas.marana, JSON.stringify({ v: 1, limpios: ['loma', 'poza'] }));
+        localStorage.setItem(pruebas.vecinos, JSON.stringify({ v: 1, vistos: ['coqui', 'mariposa'] }));
+        localStorage.setItem(pruebas.humor, JSON.stringify({ v: 1, siestas: 2 }));
+        pintar();
+        const desc = root.querySelector('#rec-descubrimientos'), dt = desc ? desc.textContent.replace(/\s+/g, ' ') : '';
+        check('Los descubrimientos muestran combo, escondite, ciudad, Maraña, vecinos y siestas', /¡Cotorra loca!/.test(dt) && /×3/.test(dt) && /0:42\.5/.test(dt) && /3\/12/.test(dt) && /2\/5/.test(dt) && /2\/3/.test(dt) && /Coquí/.test(dt) && /Lagartijo/.test(dt) && /Mariposa/.test(dt), dt.slice(0, 200));
+        const fills = [...desc.querySelectorAll('.rec-ins')].map(el => parseFloat(el.style.getPropertyValue('--fill')));
+        check('Las insignias se llenan según lo logrado y el lagartijo sigue vacío', fills.length === 6 && fills[0] === 1 && fills[1] > 0.3 && Math.abs(fills[2] - 0.25) < 0.001 && Math.abs(fills[3] - 0.4) < 0.001 && fills[4] > 0.6 && fills[5] > 0.6 && desc.querySelectorAll('.rec-vecinos i.llena').length === 2 && desc.querySelector('.rec-vecinos i.falta'), fills.map(n => n.toFixed(2)).join(','));
+        check('No hay cajas ni compras', !/loot|compra|tienda|caja/i.test(dt));
         if (G.aula && G.aula.aj) {
           G.aula.aj.idioma = 'en'; pintar();
           const en = root.textContent;
           check('También en inglés', /Challenge mode/.test(en) && /Best time/.test(en) && /Gold/.test(en) && /Finished/.test(en) && /Field Journal/.test(en) && /Share my record/.test(root.querySelector('#rec-compartir').textContent));
+          const enD = (root.querySelector('#rec-descubrimientos') || {}).textContent || '';
+          check('Los descubrimientos también en inglés', /My discoveries/.test(enD) && /Silly parrot!/.test(enD) && /Hide-and-seek/.test(enD) && /3\/12/.test(enD) && /City surprises/.test(enD) && /Anole/.test(enD) && /Vittata's naps/.test(enD));
           G.aula.aj.idioma = idiomaAntes; pintar();
         }
+        localStorage.setItem(pruebas.trucos, 'basura');
+        localStorage.setItem(pruebas.ciudad, JSON.stringify({ vistos: [1, 'fruta', 'fruta', '<script>'] }));
+        pintar();
+        check('Datos dañados de descubrimientos no rompen el panel', !!root.querySelector('#rec-descubrimientos') && /Aún sin combo/.test(root.textContent) && /1\/12/.test(root.querySelector('#rec-descubrimientos').textContent));
         // ---------- La casa ----------
         check('Con una sola cotorra la casa explica que aquí saldrán las demás', /varias cotorras/.test(root.textContent) && !root.querySelector('.rec-casa'));
         const ana = nuevoS('Ana Luna'), beto = nuevoS('Beto Mar'), tel = nuevoS('Cielo 787 555 0123');

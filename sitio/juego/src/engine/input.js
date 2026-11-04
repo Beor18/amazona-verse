@@ -271,8 +271,9 @@ AVE.module('input', function (G) {
   canvas.addEventListener('pointermove', e => {
     if (e.pointerId === stickId || e.pointerId !== dragId || dosDedos) return;
     if (!dragVivo) { if (Math.hypot(e.clientX - dragX, e.clientY - dragY) < ZONA_MUERTA[e.pointerType]) return; dragVivo = true; dragX = e.clientX; dragY = e.clientY; return; }
-    G.camara.yaw -= (e.clientX - dragX) * 0.006; dragX = e.clientX;
-    const dPitch = (dragY - e.clientY) * 0.005;
+    const ninosCam = (G.ninos && G.ninos.camara) || { sensibilidad: 1, invertir: 1 };
+    G.camara.yaw -= (e.clientX - dragX) * 0.006 * ninosCam.sensibilidad; dragX = e.clientX;
+    const dPitch = (dragY - e.clientY) * 0.005 * ninosCam.sensibilidad * ninosCam.invertir;
     if (gesto && gesto.id === e.pointerId) gesto.pitch += dPitch;
     if (G.camara.inclinar) G.camara.inclinar(dPitch); dragY = e.clientY;
     if (G.camara.manual) G.camara.manual();
