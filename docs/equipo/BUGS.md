@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-136 | media | 4-nov, QA: en horizontal los anillos de los primeros minutos rozan «Acción» y «Saltar». | `src/game/guia_controles.js` el anillo sale con 18 px de hueco y una sombra de 8 px, y en horizontal los botones quedan más juntos. | Grok | resuelto · el anillo se encoge hasta no pisar los botones de al lado |
 | QA-135 | media | 4-nov, QA sobre CG-54: `accesibilidadTest` en inglés falla porque compara los subtítulos contra el texto en español («llueve», «trueno», «¡Pío cerca!»). | `src/game/accesibilidad.js` `test()` no mira `G.aula.aj.idioma` al leer el subtítulo. | Grok | resuelto · las mismas frases se comprueban en español y en inglés |
 | QA-134 | baja | 4-nov, QA sobre CG-54: con Una mano y zurdo a la vez, el aviso «Cargando River Rush…» tapa el botón Volar. | En el móvil el aviso ocupa casi todo el ancho a la altura de los botones. Con el pulgar a la derecha, Volar queda debajo. `src/ui/ui.css`. | Grok | resuelto · el aviso se queda en el lado libre |
 | QA-133 | media | 4-nov, QA sobre CG-54: con Daltonismo, el aro de la pista de los primeros minutos se rellena de rayas y tapa el joystick. Tiene que verse solo el borde. | `src/ui/ui.css`, `html.a11y-daltonismo #pm-pista` pintaba el disco con un degradado repetido. No se toca `guia_controles.js` (Dev 1, CG-57). | Grok | resuelto · el centro queda transparente y el color sigue en el borde |

@@ -836,7 +836,7 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
    No hay filtro sobre el lienzo: el mundo y las cotorras se quedan como están. */
 html.a11y-daltonismo #pm-pista {
   border-color: #0072B2; border-style: solid;
-  box-shadow: 0 0 0 8px rgba(0, 114, 178, 0.45);
+  box-shadow: 0 0 0 2px rgba(0, 114, 178, 0.45);
   background: transparent;
 }
 html.a11y-daltonismo #pm-pista::before { border-bottom-color: #0072B2; }
