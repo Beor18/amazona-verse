@@ -53,7 +53,7 @@
      la zona (si faltan, salen de sus instancias) y valores por defecto de sus entradas (la entrada manda).
 
    API (G.streaming): iniciar(cfg) → gestor { arrancar(), listo, zonas, instancias, revisar(x, z), alrededor(x, z),
-   cargarTodo(), soltarTodo(), liberarYa(), terminar(), stats() }; modelo(n) → Promise<{ partes, radio, alto }> fijo (piezas del
+   cargarTodo(), soltarTodo(), liberarYa(), terminar(), stats(), precargarZona(x, z, o) }; modelo(n) → Promise<{ partes, radio, alto }> fijo (piezas del
    contenido: no se libera nunca); material(src, fijo); test(opts) (AV.streamingTest). */
 AVE.module('streaming', function (G) {
   'use strict';
@@ -113,12 +113,13 @@ AVE.module('streaming', function (G) {
   // ---------- Trabajo troceado ----------
   const trabajos = [];
   let programado = false, arrancando = true, quieto = true; // quieto: el jugador no se ha movido desde el inicio
+  let precarga = null; // precargarZona (pantalla de carga, src/ui/carga.js): { descargas, ms } mientras dura; null = lo de siempre
   const ric = window.requestIdleCallback ? (fn => window.requestIdleCallback(fn, { timeout: 60 })) : (fn => setTimeout(fn, 16));
   function programar() { if (!programado && trabajos.length) { programado = true; ric(bombear); } }
   function bombear(dl) {
     programado = false;
     const libre = dl && dl.timeRemaining ? dl.timeRemaining() : CFG.msCuadro;
-    const presupuesto = arrancando ? CFG.msArranque : Math.max(2, Math.min(CFG.msCuadro, libre));
+    const presupuesto = arrancando ? CFG.msArranque : precarga ? precarga.ms : Math.max(2, Math.min(CFG.msCuadro, libre));
     const t0 = performance.now();
     while (trabajos.length && (performance.now() - t0 < presupuesto || performance.now() === t0)) {
       const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); }
@@ -799,7 +800,7 @@ AVE.module('streaming', function (G) {
       return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
     }
     function siguiente() {
-      const max = arrancando ? CFG.descargasArranque : CFG.descargas;
+      const max = arrancando ? CFG.descargasArranque : precarga ? precarga.descargas : CFG.descargas;
       while (enVuelo < max && cola.length) {
         cola.sort((a, b) => a.prio - b.prio);
         const i = cola.findIndex(puedeAhora);
@@ -1535,6 +1536,48 @@ AVE.module('streaming', function (G) {
       },
       listo: null,
       revisar, alrededor,
+      // Pantalla de carga (src/ui/carga.js): pide ya lo que el streaming cargaría en los primeros segundos de juego al moverse
+      // Vittata (el modelo completo y el _hd de lo cercano, el kit de la ciudad si está a la vista, los lejanos) con los mismos
+      // rangos y CFG de siempre, y mide lo que falta de las zonas a menos de `radio` m. Solo cambia el ritmo mientras dura:
+      // o.descargas a la vez y o.ms por tanda (el mundo está tapado); terminar() vuelve al de siempre y lo que quede sigue
+      // en segundo plano como hoy. Devuelve { radio, total(), faltan(), progreso(), hecho(), terminar() }, o null sin arrancar.
+      precargarZona(x, z, o) {
+        o = o || {};
+        if (!iniciado || arrancando) return null;
+        if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
+        const radio = o.radio != null ? o.radio : Math.max(CFG.ciudadVista[nivelCiudad()] || 0, radioCerca());
+        precarga = { descargas: Math.max(1, o.descargas || CFG.descargas), ms: Math.max(2, o.ms || CFG.msCuadro) };
+        quieto = false; // lo mismo que cuando Vittata anda CFG.moverse m desde el inicio
+        revisar(x, z); siguiente();
+        const objetivo = new Set();
+        const recoger = () => {
+          for (const n in recursos) for (const t in recursos[n]) {
+            const r = recursos[n][t];
+            if (r.estado !== 'nada' && (r.refs || r.fijo) && r.prio != null && r.prio <= radio) objetivo.add(r);
+          }
+        };
+        const pendiente = r => r.estado !== 'listo' && r.estado !== 'error' && r.estado !== 'nada';
+        const sinColocar = () => { let n = 0; for (const I of inst) if (!I.colocado && zonas[I.zona].nivel === 2 && zonas[I.zona].d <= radio && res(I.modelo, 'cerca').estado === 'listo') n++; return n; };
+        const faltan = () => { recoger(); let f = 0; for (const r of objetivo) if (pendiente(r)) f++; return f + sinColocar(); };
+        const total = () => { recoger(); return objetivo.size + 1; };
+        // Hecho: lo de la zona bajado y colocado, y sus fusiones en la cola de trabajo hechas (o 1,5 s más: los lejanos del
+        // resto del mapa siguen llegando y encolando las suyas, y esas no se esperan)
+        let fin = false, tCola = 0;
+        const zona = {
+          radio, total, faltan,
+          progreso: () => { if (fin) return 1; const t = total(); return Math.max(0, Math.min(1, (t - faltan() - (trabajos.length ? 1 : 0)) / t)); },
+          hecho: () => {
+            if (fin) return true;
+            if (faltan()) { tCola = 0; if (!programado) drenarColocar(); return false; }
+            if (!trabajos.length) return true;
+            if (!tCola) tCola = performance.now();
+            return performance.now() - tCola > 1500;
+          },
+          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); },
+        };
+        const estado = precarga;
+        return zona;
+      },
       cargarTodo() { for (const id in zonas) zonas[id].forzada = true; return alrededor(); },
       soltarTodo() { for (const id in zonas) zonas[id].forzada = false; revisar(); },
       liberarYa() { for (const n in recursos) for (const t in recursos[n]) { const r = recursos[n][t]; if (r.soltarEn) r.soltarEn = 1; } liberarVencidos(performance.now()); },

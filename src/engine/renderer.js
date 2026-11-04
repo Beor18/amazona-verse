@@ -668,6 +668,41 @@ AVE.module('renderer', function (G) {
     if (!post.composer) postCalor = false;
     return n;
   }
+  // Pantalla de carga (src/ui/carga.js): cuánto falta del precalentado y subida de texturas por tandas. Solo lee el estado de
+  // arriba y llama a renderer.initTexture (lo mismo que haría el primer dibujo con esa textura); no cambia el bucle.
+  // programasPendientes: objetos con alguna familia de material sin enlazar (+1 si falta el post), o -1 antes de mundoListo.
+  function programasPendientes() {
+    if (!puedeCalentar) return -1;
+    let n = 0;
+    for (const o of dibujables()) if (objPendiente(o)) n++;
+    return n + (post.composer && !postCalor ? 1 : 0);
+  }
+  function texturasDe(o, out) {
+    for (const m of matsDe(o)) {
+      if (!m) continue;
+      for (const k in m) { const v = m[k]; if (v && v.isTexture) out.add(v); }
+      if (m.uniforms) for (const k in m.uniforms) { const u = m.uniforms[k], v = u && u.value; if (v && v.isTexture) out.add(v); }
+    }
+  }
+  // Texturas 2D de lo que hay en la escena con imagen ya lista y todavía sin subir a la GPU
+  function texturasPendientes() {
+    const todas = new Set(), out = [];
+    for (const o of dibujables()) texturasDe(o, todas);
+    for (const t of todas) {
+      if (t.isCubeTexture || t.isDataTexture3D || t.isDataTexture2DArray || !(t.version > 0) || !t.image) continue;
+      if (!renderer.properties.get(t).__webglTexture) out.push(t);
+    }
+    return out;
+  }
+  function subirTexturas(maxN, ms) {
+    const t0 = performance.now(); let n = 0;
+    for (const t of texturasPendientes()) {
+      if (n >= maxN || (n && performance.now() - t0 > ms)) break;
+      try { renderer.initTexture(t); } catch (e) { /* la sube el primer dibujo, como antes */ }
+      n++;
+    }
+    return n;
+  }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
     const keep = { manual: !!manual || calidad.manual, gpu: GPU, objetivo: OBJETIVO, texMax: calidad.texMax };
@@ -1113,5 +1148,6 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
+    precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
 });
