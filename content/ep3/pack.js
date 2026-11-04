@@ -200,7 +200,7 @@
             const falta = HUNDEN.filter(m => !S.collected.includes('recuperado_' + m.id)).length;
             if (!n) return '';
             if (n < 6 || !falta) return ` (${n}/6)`;
-            return ` · bucea (${2 - falta}/2)`;
+            return ` · saca del fondo lo hundido (${2 - falta}/2)`;
           },
           hasta: { evento: 'MaterialsTested' },
           guia: G => {
@@ -929,7 +929,7 @@
           check('M1 · Predicción anotada: a probar', S.step === 0 && S.collected.includes('prediccion_grande'), 'paso ' + S.step);
           for (const m of ['piedra', 'tronco', 'bambu', 'tabla', 'coco', 'clavo']) { useAt('mat_' + m); drain(); }
           check('M1 · Los 6 en la poza: flotan 4, se hunden 2 y hay que bucear por ellos', ['piedra', 'clavo'].every(m => G.interaccion.find('fondo_' + m).visible()) && !G.eventos.had('MaterialsTested'));
-          check('M1 · Con los 6 en la poza el objetivo pide bucear y no marca 6/6', /bucea \(0\/2\)/.test($('steps').textContent) && !/\(6\/6\)/.test($('steps').textContent), $('steps').textContent.replace(/\s+/g, ' ').slice(0, 180));
+          check('M1 · Con los 6 en la poza el objetivo pide sacar lo hundido y no marca 6/6', /saca del fondo lo hundido \(0\/2\)/.test($('steps').textContent) && !/\(6\/6\)/.test($('steps').textContent) && !/bucea \(/.test($('steps').textContent), $('steps').textContent.replace(/\s+/g, ' ').slice(0, 200));
           useAt('fondo_piedra'); drain(); useAt('fondo_clavo'); drain();
           check('M1 · Recuperados los hundidos: tabla de flotación completa', G.eventos.had('MaterialsTested') && S.step === 1, 'paso ' + S.step);
           useAt('astillero'); drain();
