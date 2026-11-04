@@ -889,6 +889,12 @@ html.a11y-unamano.a11y-zurdo .a11y-controles-extra {
 html.a11y-unamano.a11y-zurdo #sys {
   right: auto; left: max(var(--sp-3), env(safe-area-inset-left, 0px));
 }
+/* QA-134: el aviso («Cargando River Rush…») se queda en el lado libre y no llega al botón Volar. */
+html.a11y-unamano.a11y-zurdo #toast {
+  left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+  right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + var(--tap-xl, 92px) + 78px + 28px);
+  margin-inline: 0; width: auto; max-width: none; overflow-wrap: anywhere;
+}
 #pause-ninos input[type="checkbox"] {
   width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin: 0;
   accent-color: var(--c-primary, #1f6a37);

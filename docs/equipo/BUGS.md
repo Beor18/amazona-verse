@@ -26,6 +26,7 @@ Dueño del tablero: QA / troubleshooting. Cada dueño cambia el **estado** de su
 
 | id | severidad | pasos | causa raíz probable (archivo:línea) | dueño | estado |
 |---|---|---|---|---|---|
+| QA-134 | baja | 4-nov, QA sobre CG-54: con Una mano y zurdo a la vez, el aviso «Cargando River Rush…» tapa el botón Volar. | En el móvil el aviso ocupa casi todo el ancho a la altura de los botones. Con el pulgar a la derecha, Volar queda debajo. `src/ui/ui.css`. | Grok | resuelto · el aviso se queda en el lado libre |
 | QA-133 | media | 4-nov, QA sobre CG-54: con Daltonismo, el aro de la pista de los primeros minutos se rellena de rayas y tapa el joystick. Tiene que verse solo el borde. | `src/ui/ui.css`, `html.a11y-daltonismo #pm-pista` pintaba el disco con un degradado repetido. No se toca `guia_controles.js` (Dev 1, CG-57). | Grok | resuelto · el centro queda transparente y el color sigue en el borde |
 | QA-132 | baja | 4-nov, ronda de textos: en el cap. 4, tras el cuidado, el botón dice «Explicar con cariño lo que cuesta». No dice a quién ni qué cuesta. | `content/ep4/pack.js`, la etiqueta de la mesa cuando la opción ya está elegida. | Grok | resuelto · nombra a la persona y el costo de esa opción (el papá y el bosquecillo, Iguaca y el trabajo, o la abuela y el cruce), en ES y EN |
 | QA-131 | media | 4-nov, QA: `controlesTest` da 14/18 en vertical táctil porque mide casos de teclado que allí no salen. | `src/pruebas/controles.js` fuerza el modo teclado aunque la pantalla sea un teléfono vertical. | Grok | resuelto · en vertical táctil esos casos se saltan |

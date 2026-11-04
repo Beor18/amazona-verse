@@ -720,6 +720,12 @@ AVE.module('accesibilidad', function (G) {
             const r = b.getBoundingClientRect();
             if (r.width < 44 || r.height < 44) malosMano.push(`${et}: #${b.id} mide ${Math.round(r.width)}×${Math.round(r.height)}`);
           }
+          if (zurdoM && W === 375 && H === 812) {
+            const aviso = m.q('toast'); aviso.hidden = false; aviso.textContent = 'Cargando River Rush…';
+            const rT = rect(m, '#toast'), rV = rect(m, '#b-fly');
+            if (!rT || rT.width < 40) malosMano.push(`${et}: el aviso no se mide`);
+            else if (choca(rT, rV)) malosMano.push(`${et}: el aviso tapa Volar`);
+          }
           if (W === 375 && H === 812 && !zurdoM) {
             const extra = m.d.createElement('div'); extra.className = 'a11y-controles-extra';
             extra.innerHTML = '<button class="btn" type="button">Mi turno</button>';
