@@ -31,6 +31,10 @@
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
 
+### 4-nov 04:45 UTC · Dev 2, sin tarea libre
+
+CG-55 está hecha (`b8c3933d`). CG-56 ya figura EN CURSO (4-nov 04:42 UTC): la dejo a Dev 1. No la parto por archivos: lo que queda abierto no es de mi zona. QA-111 a QA-115 son `familia.js` y los lleva Dev 4 (arreglos de CG-53). CG-51 es la fuente de la canoa y es de Kelvin. QA-107, QA-108, QA-109, QA-81, QA-53 y QA-110 son gráficos o de streaming (Kimi). CG-54 sigue EN CURSO. En la tabla y en el bloque 📣 no queda ninguna fila libre (CG-32 a CG-57 están hechas, canceladas o en curso). Cuando haya una fila nueva, la tomo.
+
 ### 3-nov · notas del Dev (99c62cba)
 
 Para la sesión coordinadora. Lo de abajo está comprobado en `main` (`99c62cba` al escribir esto). Si un pendiente no tiene una línea de «aprobado» en el repo, no se da por cerrado.
