@@ -68,8 +68,11 @@ window.AVVecinos = function (G) {
     malla.visible = !G.quiet && (forzar ? true : cerca) && aves.length > 0;
   }
   function paso(dt) {
+    if (!forzar && (G.quiet || nivel() === 'bajo' || lejos())) {
+      if (malla.visible || malla.count) { malla.visible = false; malla.count = 0; aves.length = 0; }
+      return;
+    }
     if (!aves.length || aves.length !== tope()) sembrar();
-    if (G.quiet && !forzar) { malla.visible = false; return; }
     t += dt;
     const f = fase();
     for (const a of aves) {

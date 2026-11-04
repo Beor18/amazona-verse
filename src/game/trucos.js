@@ -61,7 +61,8 @@ window.AVTrucos = function (G) {
     if (dt < 340 && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) anotar('tonel');
     flick = null;
   });
-  G.on('update', dt => {
+  function paso(dt) {
+    if (G.quiet) return;
     const d = Math.min(0.05, dt || 0);
     if (chipT > 0) { chipT -= d; if (chipT <= 0) chip.hidden = true; }
     if (!M.flying) { aire = 0; return; }
@@ -73,7 +74,8 @@ window.AVTrucos = function (G) {
     const girando = !!(G.input && (G.input.keys.has('a') || G.input.keys.has('d') || Math.abs(G.input.stick.x) > 0.45));
     if (G.input && G.input.keys.has('c') && girando) teclas.giro += d; else teclas.giro = 0;
     if (teclas.giro > 0.4) { teclas.giro = -2; anotar('barrena'); }
-  });
+  }
+  G.on('update', paso);
   G.on('vuelo', on => { if (!on && aire > 0 && aire < 2.2) anotar('perfecto'); if (!on) aire = 0; });
 
   function test() {
@@ -110,6 +112,6 @@ window.AVTrucos = function (G) {
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.trucos = { anotar, test, get combo() { return combo; }, get mejor() { return mejor; } };
+  G.trucos = { anotar, paso, test, get combo() { return combo; }, get mejor() { return mejor; } };
   return G.trucos;
 };

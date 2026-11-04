@@ -42,16 +42,25 @@ window.AVMarana = function (G) {
     pintar();
     return true;
   }
-  G.on('update', () => {
-    if (G.quiet) { malla.visible = false; return; }
+  function paso() {
+    const bajo = G.renderer.calidad && G.renderer.calidad.nivel === 'bajo';
+    if (G.quiet || bajo) { malla.visible = false; return; }
+    let cerca = false;
+    for (let i = 0; i < rastros.length; i++) {
+      const r = rastros[i];
+      if (!r.limpio && Math.hypot(S.pos.x - r.x, S.pos.z - r.z) < 80) cerca = true;
+    }
+    if (!cerca) { malla.visible = false; return; }
     pintar();
     if (!M.flying) return;
-    for (const r of rastros) {
+    for (let i = 0; i < rastros.length; i++) {
+      const r = rastros[i];
       const d = Math.hypot(S.pos.x - r.x, S.pos.z - r.z);
       if (!r.visto && d < 18) { r.visto = true; if (G.ui) G.ui.toast('Hay un rastro gris entre las hojas. Es la Maraña, un cuento.', 2400); }
       if (!r.limpio && d < 4) limpiar(r);
     }
-  });
+  }
+  G.on('update', paso);
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const q = G.quiet, fly = M.flying, px = S.pos.x, pz = S.pos.z;
@@ -74,6 +83,6 @@ window.AVMarana = function (G) {
     G.quiet = q; M.flying = fly; S.pos.x = px; S.pos.z = pz; pintar();
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.marana = { test, rastros, limpiar, notas, pintar };
+  G.marana = { test, rastros, limpiar, notas, pintar, paso };
   return G.marana;
 };

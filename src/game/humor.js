@@ -62,6 +62,6 @@ window.AVHumor = function (G) {
     G.quiet = q; quieta = 0; loops = 0;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.humor = { hacer, test, get ultimo() { return ultimo; } };
+  G.humor = { hacer, paso, test, get ultimo() { return ultimo; } };
   return G.humor;
 };

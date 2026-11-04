@@ -179,6 +179,6 @@ window.AVSorpresas = function (G) {
     enPrueba = false; fuera = true;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.sorpresas = { test, MOMENTOS, elegir, jugar, visitar, estado: () => ({ visitas: memoria.visitas, ultima: memoria.ultima.slice(), notas: memoria.notas.slice() }) };
+  G.sorpresas = { test, paso: alMover, MOMENTOS, elegir, jugar, visitar, estado: () => ({ visitas: memoria.visitas, ultima: memoria.ultima.slice(), notas: memoria.notas.slice() }) };
   return G.sorpresas;
 };
