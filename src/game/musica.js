@@ -954,7 +954,7 @@
           el.src = BS.pistas[id].archivo;
         })));
         const mal = meta.filter(m => m.error || Math.abs(m.dur - BS.pistas[m.id].dur) > 0.5);
-        check('Los 4 temas en uso (.m4a) existen, el navegador los abre y su duración cuadra con la tabla (±0,5 s)', !mal.length, mal.length ? JSON.stringify(mal) : meta.map(m => m.id + ' ' + m.dur.toFixed(1)).join(' · '));
+        check('Los temas en uso (.m4a) existen, el navegador los abre y su duración cuadra con la tabla (±0,5 s)', !mal.length, mal.length ? JSON.stringify(mal) : meta.map(m => m.id + ' ' + m.dur.toFixed(1)).join(' · '));
       }
       // d) El reproductor con dobles: una pista a la vez, fundidos, bucle, silencio, salida, alternativa
       const montar = opciones => {
