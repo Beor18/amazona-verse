@@ -29,20 +29,28 @@ fs.mkdirSync(SALIDA, { recursive: true });
 // Vistas ancla por capítulo (coordenadas del mapa real; yaw en radianes, 0 = −z)
 const VISTAS = {
   cap1: [
-    { id: 'ciudad_yunque', x: -4, z: -127, yaw: Math.PI, alzar: 1.5 },
-    { id: 'ciudad_aerea_vuelo', x: -20, z: -133, yaw: Math.PI, alzar: 30 },
+    // El centro de la ciudad (-4,-127) es sólido: la toma caía en el campamento costero (Vittata reaparece junto al spawn).
+    // La puerta oeste (-20,-133) es suelo abierto y mira a la ciudad al norte (yaw π).
+    { id: 'ciudad_yunque', x: -20, z: -133, yaw: Math.PI, alzar: 2 },
+    // QA-139: el alzar ≥ 26 m cuelga el eval (ST.terminar() no agota la cola en vuelo; streaming.js lo mira Kimi 3): a +8 m hasta entonces.
+    { id: 'ciudad_aerea_vuelo', x: -33, z: -136, yaw: Math.PI * 0.9, alzar: 6 },
     { id: 'bahia_norte_qa109', x: 150, z: 218, yaw: 0, alzar: 4, horas: [10, 17.8] },
+    // Las empalizadas de la mina (QA-108) ya quedaron verificadas por Kimi 2 (docs/img/kimi016/, in vivo en main); los
+    // teleports de la herramienta cerca de la mina no asientan (Vittata reaparece lejos: sólido/agua), así que no hay ancla aquí.
+    // La aérea se toma desde antes de la puerta (x -33): dentro del callejón la cámara choca con el muro y la toma sale pegada a Vittata.
   ],
-  ep2: [{ id: 'detras_spawn', rel: [26, 14], yaw: null, alzar: 4 }],
+  ep2: [{ id: 'detras_spawn', rel: [26, 14], yaw: null, alzar: 10 }], // alzar 10: a +4 m la cámara quedaba dentro de las copas de palma
   ep3: [
     { id: 'rio_oeste_qa107', x: 150, z: 208, yaw: Math.PI * 0.5, alzar: 4 },
     { id: 'muelle_llegada', x: 157, z: 221, yaw: 0, alzar: 4 },
   ],
-  ep4: [{ id: 'rio_puente', rel: [30, 0], yaw: Math.PI * 0.5, alzar: 4 }],
+  ep4: [{ id: 'rio_puente', rel: [16, -6], yaw: -Math.PI / 2, alzar: 4 }],
   ep5: [{ id: 'meseta_ciudad', x: -40, z: -131, yaw: Math.PI, alzar: 8 }],
   ep6: [
     { id: 'campamento_rio', x: 36, z: -50, yaw: Math.PI * 0.75, alzar: 4 },
-    { id: 'mina_empalizadas_qa108', x: 92, z: -38, yaw: Math.PI * 1.05, alzar: 4 },
+    // La mina (89,-38) queda FUERA de las zonas abiertas del ep6: el viento la devuelve (ZONAS[6], zonas.js), y en cap1 los
+    // teleports junto a la mina tampoco asientan (sólido/agua). QA-108 quedó verificada por Kimi 2 (docs/img/kimi016/, in vivo).
+    { id: 'ciudad_meseta', x: -40, z: -131, yaw: Math.PI, alzar: 8 },
   ],
 };
 
@@ -84,20 +92,25 @@ const FASE_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(
   await sleep(1200);
   return 'ok'; })()`;
 
-// teleport + asentar (5 s, re-ancla suave) + stats + captura; hora opcional
+// teleport + asentar (5 s, re-ancla suave) + stats + captura; hora opcional. Si tras el asentado Vittata queda a >5 m del
+// objetivo (sólido/zona que la devuelve), reintenta una vez y reporta desvio_m en el JSON para flaggear anclas malas.
 const TOMA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G, S = G.S;
   const P = ${'${PAYLOAD}'};
+  let y0 = 0;
+  const asentar = async n => { for (let i = 0; i < n; i++) { await sleep(500); S.pos.x = P.x; S.pos.z = P.z; S.pos.y = y0; S.vy = 0; if (P.yaw != null) AV.debug.camYaw(P.yaw); } };
   if (P.hora != null) { S.hora = P.hora; if (G.atardecer && G.atardecer.forzar) { P.hora < 12 ? G.atardecer.forzar(false) : G.atardecer.forzar(true); if (G.atardecer.avanzar) G.atardecer.avanzar(9); } }
   AV.teleport(P.x, P.z); AV.G.S.pos.y += (P.alzar || 0.5); AV.G.S.vy = 0; AV.G.fisica.MOVE.flying = true;
   if (P.yaw != null) AV.debug.camYaw(P.yaw);
-  const y0 = S.pos.y;
+  y0 = S.pos.y;
   const ST = G.mundo && G.mundo.streaming;
   if (ST) { if (ST.alrededor) await ST.alrededor(P.x, P.z); if (ST.terminar) await ST.terminar(); }
-  for (let i = 0; i < 10; i++) { await sleep(500); AV.G.S.pos.x = P.x; AV.G.S.pos.z = P.z; AV.G.S.pos.y = y0; AV.G.S.vy = 0; if (P.yaw != null) AV.debug.camYaw(P.yaw); }
+  await asentar(10);
   await sleep(1000);
+  let desvio = Math.hypot(S.pos.x - P.x, S.pos.z - P.z);
+  if (desvio > 5) { AV.teleport(P.x, P.z); S.pos.y = y0; S.vy = 0; if (P.yaw != null) AV.debug.camYaw(P.yaw); await asentar(3); await sleep(400); desvio = Math.hypot(S.pos.x - P.x, S.pos.z - P.z); }
   const png = G.renderer.snapshot(${ANCHO}, ${ALTO}, 0.9);
   const st = G.renderer.stats();
-  return JSON.stringify({ pos: { x: +S.pos.x.toFixed(1), y: +S.pos.y.toFixed(1), z: +S.pos.z.toFixed(1) }, hora: S.hora, stats: st, png }); })()`;
+  return JSON.stringify({ pos: { x: +S.pos.x.toFixed(1), y: +S.pos.y.toFixed(1), z: +S.pos.z.toFixed(1) }, desvio_m: +desvio.toFixed(1), hora: S.hora, stats: st, png }); })()`;
 
 async function lanzar() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1r-'));
@@ -106,7 +119,7 @@ async function lanzar() {
   let e0 = null; c.on('error', e => { e0 = e; });
   const pf = path.join(perf, 'DevToolsActivePort');
   for (let i = 0; i < 300; i++) {
-    if (fs.existsSync(pf)) { const l = fs.readFileSync(pf, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) return { c, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; }
+    if (fs.existsSync(pf)) { try { const l = fs.readFileSync(pf, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) return { c, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; } catch (e) { /* EBUSY: el perfil se está abriendo; se reintenta */ } }
     if (e0) throw new Error('spawn: ' + e0.message);
     await new Promise(r => setTimeout(r, 200));
   }
@@ -129,7 +142,7 @@ async function lanzar() {
     m.pack = pack; m.vista = id; m.archivo = path.basename(f);
     tomas.push(m);
     const s = m.stats || {};
-    console.log(`  · ${pack}/${id}: pos ${JSON.stringify(m.pos)} hora ${m.hora} · ${s.fps != null ? s.fps + ' fps' : '?'} · ${s.calls != null ? s.calls + ' calls' : '?'} · ${s.triangulos != null ? Math.round(s.triangulos / 1000) + ' k tris' : '?'}`);
+    console.log(`  · ${pack}/${id}: pos ${JSON.stringify(m.pos)}${m.desvio_m > 5 ? ' DESVIO ' + m.desvio_m + ' m' : ''} hora ${m.hora} · ${s.fps != null ? s.fps + ' fps' : '?'} · ${s.calls != null ? s.calls + ' calls' : '?'} · ${s.triangulos != null ? Math.round(s.triangulos / 1000) + ' k tris' : '?'}`);
   }
 
   for (const pack of PACKS) {

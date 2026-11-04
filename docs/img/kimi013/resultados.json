@@ -1,18 +1,19 @@
 {
- "cuando": "2026-11-04T06:46:08.534Z",
+ "cuando": "2026-11-04T09:08:01.633Z + 2026-11-04T09:04:30.817Z (unidos 04-11 ~10:05 UTC)",
  "maquina": "PC Windows · Chrome headless GPU real · 1600×900 dpr 1 · calidad media",
  "tomas": [
   {
    "pos": {
-    "x": 134,
-    "y": 5.2,
-    "z": 182.5
+    "x": 150,
+    "y": 5,
+    "z": 170
    },
+   "desvio_m": 0,
    "stats": {
-    "fps": 1,
-    "calls": 145,
-    "triangulos": 616910,
-    "calidad": "medio",
+    "fps": 142,
+    "calls": 105,
+    "triangulos": 962045,
+    "calidad": "alto",
     "dpr": 1,
     "post": true,
     "sombras": true,
@@ -24,15 +25,16 @@
   },
   {
    "pos": {
-    "x": -4,
-    "y": 98.8,
-    "z": -127
+    "x": -19.6,
+    "y": 97.7,
+    "z": -133
    },
+   "desvio_m": 0.4,
    "stats": {
-    "fps": 1,
-    "calls": 106,
-    "triangulos": 1309020,
-    "calidad": "medio",
+    "fps": 4,
+    "calls": 103,
+    "triangulos": 7526102,
+    "calidad": "alto",
     "dpr": 1,
     "post": true,
     "sombras": true,
@@ -43,8 +45,215 @@
    "archivo": "cap1_ciudad_yunque.jpg"
   },
   {
+   "pos": {
+    "x": -33,
+    "y": 102.3,
+    "z": -136
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 25,
+    "calls": 126,
+    "triangulos": 3354800,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
    "pack": "cap1",
-   "error": "timeout Runtime.evaluate"
+   "vista": "ciudad_aerea_vuelo",
+   "archivo": "cap1_ciudad_aerea_vuelo.jpg"
+  },
+  {
+   "pos": {
+    "x": 150,
+    "y": 3.4,
+    "z": 218
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 64,
+    "calls": 160,
+    "triangulos": 4591021,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "bahia_norte_qa109_h10",
+   "archivo": "cap1_bahia_norte_qa109_h10.jpg"
+  },
+  {
+   "pos": {
+    "x": 150,
+    "y": 1.3,
+    "z": 218
+   },
+   "desvio_m": 0,
+   "hora": 18.75,
+   "stats": {
+    "fps": 144,
+    "calls": 163,
+    "triangulos": 961461,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "cap1",
+   "vista": "bahia_norte_qa109_h17_8",
+   "archivo": "cap1_bahia_norte_qa109_h17_8.jpg"
+  },
+  {
+   "pos": {
+    "x": -20.5,
+    "y": 12.2,
+    "z": 33.5
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 47,
+    "calls": 147,
+    "triangulos": 996903,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep2",
+   "vista": "aparicion",
+   "archivo": "ep2_aparicion.jpg"
+  },
+  {
+   "pos": {
+    "x": 5.5,
+    "y": 28.2,
+    "z": 47.5
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 112,
+    "calls": 144,
+    "triangulos": 915577,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep2",
+   "vista": "detras_spawn",
+   "archivo": "ep2_detras_spawn.jpg"
+  },
+  {
+   "pos": {
+    "x": 172,
+    "y": 3.6,
+    "z": 174
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 35,
+    "calls": 252,
+    "triangulos": 2088222,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep3",
+   "vista": "aparicion",
+   "archivo": "ep3_aparicion.jpg"
+  },
+  {
+   "pos": {
+    "x": 150,
+    "y": 3.8,
+    "z": 208
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 22,
+    "calls": 99,
+    "triangulos": 816962,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep3",
+   "vista": "rio_oeste_qa107",
+   "archivo": "ep3_rio_oeste_qa107.jpg"
+  },
+  {
+   "pos": {
+    "x": 157,
+    "y": -0.6,
+    "z": 221
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 57,
+    "calls": 136,
+    "triangulos": 767280,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep3",
+   "vista": "muelle_llegada",
+   "archivo": "ep3_muelle_llegada.jpg"
+  },
+  {
+   "pos": {
+    "x": 191.1,
+    "y": 3.7,
+    "z": 165
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 22,
+    "calls": 483,
+    "triangulos": 2495547,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep4",
+   "vista": "aparicion",
+   "archivo": "ep4_aparicion.jpg"
+  },
+  {
+   "pos": {
+    "x": 207.1,
+    "y": 4.5,
+    "z": 159
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 21,
+    "calls": 65,
+    "triangulos": 434482,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep4",
+   "vista": "rio_puente",
+   "archivo": "ep4_rio_puente.jpg"
   },
   {
    "pos": {
@@ -52,11 +261,12 @@
     "y": 96.8,
     "z": -121
    },
+   "desvio_m": 0,
    "hora": 21,
    "stats": {
-    "fps": 4,
-    "calls": 115,
-    "triangulos": 1893925,
+    "fps": 26,
+    "calls": 119,
+    "triangulos": 3807529,
     "calidad": "alto",
     "dpr": 1,
     "post": true,
@@ -73,11 +283,12 @@
     "y": 104.8,
     "z": -131
    },
+   "desvio_m": 0,
    "hora": 21,
    "stats": {
-    "fps": 46,
-    "calls": 143,
-    "triangulos": 2855312,
+    "fps": 64,
+    "calls": 0,
+    "triangulos": 0,
     "calidad": "alto",
     "dpr": 1,
     "post": true,
@@ -87,6 +298,69 @@
    "pack": "ep5",
    "vista": "meseta_ciudad",
    "archivo": "ep5_meseta_ciudad.jpg"
+  },
+  {
+   "pos": {
+    "x": 44,
+    "y": 12.6,
+    "z": -62
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 23,
+    "calls": 113,
+    "triangulos": 676096,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep6",
+   "vista": "aparicion",
+   "archivo": "ep6_aparicion.jpg"
+  },
+  {
+   "pos": {
+    "x": 36,
+    "y": 15.8,
+    "z": -50
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 47,
+    "calls": 0,
+    "triangulos": 0,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep6",
+   "vista": "campamento_rio",
+   "archivo": "ep6_campamento_rio.jpg"
+  },
+  {
+   "pos": {
+    "x": -40,
+    "y": 96.8,
+    "z": -131
+   },
+   "desvio_m": 0,
+   "stats": {
+    "fps": 28,
+    "calls": 150,
+    "triangulos": 3062516,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "pack": "ep6",
+   "vista": "ciudad_meseta",
+   "archivo": "ep6_ciudad_meseta.jpg"
   }
  ]
 }
