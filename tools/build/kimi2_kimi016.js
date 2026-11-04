@@ -99,6 +99,6 @@ async function lanzarChrome() {
     } catch (e) { console.log(`· ${pack} ${id}: ERROR ${e.message}`); }
   }
   console.log(`· ${hechas.length}/${VISTAS.length} capturas en ${SALIDA}`);
-  try { chrome.kill(); } catch (e) { }
+  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
   srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

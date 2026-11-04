@@ -176,7 +176,6 @@ async function lanzarChrome() {
 
   fs.writeFileSync(path.join(SALIDA, 'resultados.json'), JSON.stringify({ cuando: new Date().toISOString(), maquina: 'PC Windows · Chrome headless GPU (ANGLE/D3D11) · ' + ANCHO + '×' + ALTO + ' dpr 1', tomas }, null, 1));
   console.log(`· listo: ${tomas.length} tomas → ${path.join(SALIDA, 'resultados.json')}`);
-  try { chrome.kill(); } catch (e) { /* ya murió */ }
-  srv.close();
-  process.exit(0);
+  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
+  srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

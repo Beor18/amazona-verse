@@ -172,6 +172,6 @@ async function lanzarChrome() {
       for (const i of v.inst.filter(i => i.d < 80)) console.log(`    ${i.id} ${i.m} d=${i.d} lod=${i.lod} hd=${i.hd} col=${i.col} erg=${i.erg} | cerca=${i.cerca} hd=${i.hdR} lejos=${i.lejos}`);
     }
   }
-  try { chrome.kill(); } catch (e) { }
+  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
   srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

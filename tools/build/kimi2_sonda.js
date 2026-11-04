@@ -39,5 +39,6 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
       mundoEsReal: !!(window.AVE.mundoReal && TM === window.AVE.mundoReal.mapa),
       zonas: Object.keys(ST.zonas).length, inst: ST.instancias.length }); })()`, 60, false));
   console.log(JSON.stringify(d, null, 1));
-  try { chrome.kill(); } catch (e) { } srv.close(); process.exit(0);
+  try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { chrome.kill(); }
+  srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
