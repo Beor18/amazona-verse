@@ -885,7 +885,7 @@
         opt(correcta('q1')).click();
         check('Acierta en el 2.º intento: retroalimentación y botón Seguir', card.querySelector('.edu-retro.ok') && $('edu-seguir'));
         $('edu-seguir').click();
-        check('Se registra el intento (2) y sigue la q2', S.edu.formativa.q1 === 2 && /cinta de lluvia/i.test(card.textContent), card.textContent.slice(0, 60));
+        check('Se registra el intento (2) y sigue la q2', S.edu.formativa.q1 === 2 && /cinta de lluvia|rain ribbon/i.test(card.textContent), card.textContent.slice(0, 80));
         for (const id of QS.slice(1)) { opt(correcta(id)).click(); const sg = $('edu-seguir'); if (sg) sg.click(); }
         drain();
         check('Las 6 respondidas: la tarjeta se cierra e Iguaca cierra', QS.every(id => S.edu.formativa[id]) && !G.ui.cardOpen, JSON.stringify(S.edu.formativa));
