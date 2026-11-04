@@ -1,0 +1,44 @@
+{
+ "cuando": "2026-11-04T07:39:31.285Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 1600×900 dpr 1 · calidad media",
+ "tomas": [
+  {
+   "pos": {
+    "x": 191.1,
+    "y": 3.7,
+    "z": 165
+   },
+   "stats": {
+    "fps": 144,
+    "calls": 94,
+    "triangulos": 673933,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "v_costa",
+   "archivo": "qa141_v_costa_post4.jpg"
+  },
+  {
+   "pos": {
+    "x": 133,
+    "y": 10.6,
+    "z": 144
+   },
+   "stats": {
+    "fps": 1,
+    "calls": 90,
+    "triangulos": 867597,
+    "calidad": "alto",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "vista": "v_pozo",
+   "archivo": "qa141_v_pozo_post4.jpg"
+  }
+ ]
+}
