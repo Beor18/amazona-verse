@@ -218,7 +218,7 @@
     // D11: la canoa del ep. 3 con su nombre (registro de temporada)
     'Nuestra canoa, «{}», ya cruza la bahía. Ahora toca cruzar el río.': 'Our canoe, «{}», already sails the bay. Now it\'s time to cross the river.',
     // Fuentes de las fichas del Diario (Ciencia): salen en el aviso y en el Diario al ganarlas (G.aula.enlazar, 2-nov)
-    "USDA Forest Service, Southern Research Station, GTR SRS-109 (franjas ribereñas); USGS, SIR 2023-5140 (refugios térmicos)": "USDA Forest Service, Southern Research Station, GTR SRS-109 (riparian buffers); USGS, SIR 2023-5140 (thermal refuges)",
+    "USGS, SIR 2023-5140 (sombra de la orilla y refugios térmicos); Fuller y otros, Restoration Ecology 2022, con el USDA Forest Service": "USGS, SIR 2023-5140 (riparian shade and thermal refuges); Fuller and others, Restoration Ecology 2022, with the USDA Forest Service",
     "USDA NRCS, norma 391 Riparian Forest Buffer (2018): hojarasca para organismos acuáticos": "USDA NRCS, practice standard 391 Riparian Forest Buffer (2018): leaf litter for aquatic organisms",
     "U.S. National Park Service, Green River Ferry Navigational System Repairs (ejemplo de Estados Unidos)": "U.S. National Park Service, Green River Ferry Navigational System Repairs (a United States example)",
     "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, norma 391 Riparian Forest Buffer (2018)": "Maryland Department of Natural Resources, Forest Service, Riparian Forest Buffers; USDA NRCS, practice standard 391 Riparian Forest Buffer (2018)",

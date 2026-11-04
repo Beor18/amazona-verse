@@ -24,7 +24,7 @@ window.AV_LECCIONES_EP2 = {
     },
     "fuentes_estandares": {
       "depr_2022": "https://dedigital.dde.pr/mod/resource/view.php?id=2854",
-      "depr_formato": "Los indicadores DEPR 2022 de este episodio van por verificar: sacarlos del documento oficial, no inventarlos (EP2_MISIONES.md §1).",
+      "depr_formato": "Códigos sacados del PDF oficial del DEPR (Estándares de Contenido y Expectativas de Grado, Programa de Ciencias, julio 2022, 119 págs.; abierto el 4-nov-2026 en https://dedigital.dde.pr/pluginfile.php/145100/mod_resource/content/4/Est%C3%A1ndares%20y%20Expectativas%20Programa%20de%20Ciencias.pdf). La correspondencia de cada objetivo con su indicador es una propuesta para que la revise un maestro; los objetivos que siguen «por verificar» no tienen un indicador de Ciencias claro.",
       "ngss": "https://www.nextgenscience.org/"
     }
   },
@@ -33,19 +33,19 @@ window.AV_LECCIONES_EP2 = {
     { "id": "E1", "tema": "terreno", "grados": "3-6",
       "enunciado": { "es": "Compara tres sitios por pendiente, drenaje del suelo y exposición al viento, y elige uno con evidencia.", "en": "Compares three sites by slope, soil drainage and wind exposure, and chooses one with evidence." },
       "evidencia": "M1: 3 sitios observados y sitio elegido; q1, q2.", "criterio_logro": "Los 3 sitios observados y q1 y q2 correctas en 2 intentos o menos.",
-      "depr_2022": ["por verificar"], "ngss": ["4-ESS2-1", "4-ESS3-2"] },
+      "depr_2022": ["4.CT2.2", "4.CT2.6"], "ngss": ["4-ESS2-1", "4-ESS3-2"] },
     { "id": "E2", "tema": "necesidades", "grados": "3-6",
       "enunciado": { "es": "Convierte lo que dicen dos usuarios en criterios y restricciones de un diseño.", "en": "Turns what two users say into design criteria and constraints." },
       "evidencia": "M2: 7 tarjetas y mesa ordenada; q3.", "criterio_logro": "Tarjetas ordenadas y q3 correcta en 2 intentos o menos.",
-      "depr_2022": ["por verificar"], "ngss": ["3-5-ETS1-1"] },
+      "depr_2022": ["3.IT1.7", "4.IT1.6"], "ngss": ["3-5-ETS1-1"] },
     { "id": "E3", "tema": "diseno_y_prueba", "grados": "3-6",
       "enunciado": { "es": "Compara dos diseños, prueba uno, identifica qué falló y lo mejora.", "en": "Compares two designs, tests one, identifies what failed and improves it." },
       "evidencia": "M3: prueba 1 → cambio → prueba 2; q4, q5.", "criterio_logro": "Mejora la parte que falló y q4 y q5 correctas en 2 intentos o menos.",
-      "depr_2022": ["por verificar"], "ngss": ["3-5-ETS1-2", "3-5-ETS1-3", "3-ESS3-1"] },
+      "depr_2022": ["3.IT1.7", "4.IT1.6", "4.IT1.7", "3.CT2.4"], "ngss": ["3-5-ETS1-2", "3-5-ETS1-3", "3-ESS3-1"] },
     { "id": "E4", "tema": "habitat", "grados": "3-6",
       "enunciado": { "es": "Explica por qué perder cavidades de nido afecta a la cotorra y nombra una solución humana.", "en": "Explains why losing nest cavities affects the parrot and names a human solution." },
       "evidencia": "M3: nido del papá; q6.", "criterio_logro": "Nido alto, oscuro y seco armado y q6 correcta en 2 intentos o menos.",
-      "depr_2022": ["por verificar"], "ngss": ["3-LS4-3", "3-LS4-4"] }
+      "depr_2022": ["3.CB2.6", "3.CB2.8"], "ngss": ["3-LS4-3", "3-LS4-4"] }
   ],
 
   // 6 hallazgos del Diario del ep. 2 (§7): 3 de ciencia del terreno y 3 de cultura de la construcción en Puerto Rico. Cuatro
