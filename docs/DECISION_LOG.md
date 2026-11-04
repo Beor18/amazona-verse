@@ -299,3 +299,12 @@ Los 12 estados UICN verificados de `docs/equipo/ESPECIES_DISCREPANCIAS.md` susti
 
 ## 2-nov-2026 · Fernando: «hagan lo que quieran»
 Fernando libera lo gráfico, que estaba reservado a Kimi/Fernando hasta que él dijera. Otros carriles pueden tomar tareas visuales (edificios, ciudad, terreno) sin pisar las que Kimi tenga EN CURSO. La Mac toma KIMI-Task-003 (BM133) y 007 (BM134).
+
+## 4-nov-2026 · Kelvin: canon aprobado para la ciudad viva
+1. Sí a vecinos que no sean cotorras: coquíes, lagartijos y mariposas, progresivamente y con comportamientos propios; las 36 *Amazona* siguen de protagonistas.
+2. Sí a faroles en el cap. 1: cálidos, legibles, optimizados, coherentes con `vibrant_toon`; noche atractiva y jugable, nunca demasiado oscura.
+3. No se rediseña la ciudad ni se alteran los modelos oficiales de las cotorras.
+4. Prototipo pequeño primero y medir rendimiento real en móvil antes de ampliar poblaciones o luces.
+5. Verificar retratos de las 36, pruebas, compilación y el commit publicado en main.
+6. Mantener ~12 GB libres en la nube como referencia y evitar copias innecesarias de agentes.
+Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar rendimiento, jugabilidad ni la identidad de Amazona Verse.
