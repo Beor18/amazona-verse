@@ -167,7 +167,18 @@ AVE.module('input', function (G) {
   const MUERTA = 0.2, CURVA = 1.45; // por debajo no hay marcha; a partir de ahí la salida crece más rápido que el dedo
   const ladoPalo = () => { const n = parseFloat(getComputedStyle(stickEl).width); return n > 20 ? n : 136; };
   const zurdo = () => document.documentElement.classList.contains('a11y-zurdo');
-  const zonaPalo = x => (zurdo() ? x > innerWidth * 0.55 : x < innerWidth * 0.45);
+  const unaMano = () => document.documentElement.classList.contains('a11y-unamano');
+  // Con una mano el palo se queda en su esquina: solo lo agarra un toque encima de él. El resto de la pantalla gira la cámara.
+  const zonaPalo = (x, y) => {
+    if (unaMano()) {
+      const r = stickEl.getBoundingClientRect();
+      if (r.width < 8) return false;
+      const dentroX = x >= r.left - 12 && x <= r.right + 12;
+      if (y == null) return dentroX;
+      return dentroX && y >= r.top - 12 && y <= r.bottom + 12;
+    }
+    return zurdo() ? x > innerWidth * 0.55 : x < innerWidth * 0.45;
+  };
   function colocarPalo(x, y) {
     const lado = ladoPalo();
     stickEl.style.left = Math.max(8, Math.min(innerWidth - lado - 8, x - lado / 2)) + 'px';
@@ -191,7 +202,8 @@ AVE.module('input', function (G) {
     if (paused() || stickId != null) return false;
     const toque = !e.pointerType || e.pointerType === 'touch' || e.pointerType === 'pen';
     if (!toque) return false;
-    colocarPalo(e.clientX, e.clientY);
+    if (unaMano()) stickEl.classList.remove('flotando');
+    else colocarPalo(e.clientX, e.clientY);
     stickId = e.pointerId;
     try { stickEl.setPointerCapture(e.pointerId); } catch (err) { /* el dedo sigue en el lienzo */ }
     moveStick(e);
@@ -262,11 +274,11 @@ AVE.module('input', function (G) {
     enLienzo.add(e.pointerId);
     if (e.pointerId === stickId) return;
     const toque = e.pointerType === 'touch' || e.pointerType === 'pen';
-    if (toque && stickId == null && zonaPalo(e.clientX) && tomarPalo(e)) return;
+    if (toque && stickId == null && zonaPalo(e.clientX, e.clientY) && tomarPalo(e)) return;
     // Dos dedos en el lienzo, y ninguno es el joystick: es un pellizco, no un giro. Si uno ya es el palo, el otro sí gira.
     if (enLienzo.size > 1 && stickId == null) { dosDedos = true; dragId = null; return; }
     dragId = e.pointerId; dragX = e.clientX; dragY = e.clientY; dragVivo = !(ZONA_MUERTA[e.pointerType] > 0);
-    gesto = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), yaw: G.camara.yaw, pitch: 0, derecha: !zonaPalo(e.clientX) };
+    gesto = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), yaw: G.camara.yaw, pitch: 0, derecha: !zonaPalo(e.clientX, e.clientY) };
   });
   canvas.addEventListener('pointermove', e => {
     if (e.pointerId === stickId || e.pointerId !== dragId || dosDedos) return;

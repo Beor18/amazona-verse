@@ -7,27 +7,33 @@
    - Modo relajado: la flecha de guía (src/engine/fx.js) siempre se ve, más grande y de cerca, el haz brilla más y el objetivo del móvil
      no se corta. El capítulo no tiene tiempos; los modos con reloj (Modo Retos, src/game/retos.js) pueden leer G.accesibilidad.relajado().
    - Modo zurdo (solo pantalla táctil): el joystick pasa a la derecha y los botones de acción a la izquierda (CSS, sin tocar input.js).
-   Se guardan en la partida (S.profile.a11y = { texto: 0|1|2, contraste, subtitulos, relajado, zurdo }) y se aplican al cargar o reiniciar.
+   - CG-54: subtítulos del pío del escondite («¡Pío cerca!») y del coquí vecino, además del trueno que ya estaba.
+     Modo daltonismo: solo las pistas (flecha, anillo, chip de truco) cambian de color y de trama. El mundo y las cotorras no.
+     Una mano (táctil): joystick, volar y trucos juntos en el lado del pulgar. Los botones de un módulo nuevo pueden usar .a11y-controles-extra.
+   Se guardan en la partida (S.profile.a11y = { texto: 0|1|2, contraste, subtitulos, relajado, zurdo, daltonismo, unamano }) y se aplican al cargar o reiniciar.
    «Comenzar de cero» (y cargar una partida vieja, sin ajustes) conserva lo elegido en esta sesión; «Nuevo estudiante» lo olvida.
-   Pinta clases en <html>: a11y-t1 / a11y-t2 / a11y-contraste / a11y-relajado / a11y-zurdo (estilos en src/ui/ui.css, sección 7b).
-   API: leer(), set(clave, valor), subtitulos(), relajado(), zurdo(), subtitular(nombre, arg), maqueta(ancho, alto, clases) + rect() (pruebas de
+   Pinta clases en <html>: a11y-t1 / a11y-t2 / a11y-contraste / a11y-relajado / a11y-zurdo / a11y-daltonismo / a11y-unamano (estilos en src/ui/ui.css, sección 7b).
+   API: leer(), set(clave, valor), subtitulos(), relajado(), zurdo(), daltonismo(), unaMano(), subtitular(nombre, arg), maqueta(ancho, alto, clases) + rect() (pruebas de
    maquetación móvil de cualquier módulo: un iframe con el HUD y las hojas de estilo reales).
-   PRUEBAS: G.accesibilidad.test() (AV.accesibilidadTest) comprueba niveles, contraste, subtítulos, modo relajado, modo zurdo, guardado y, en
+   PRUEBAS: G.accesibilidad.test() (AV.accesibilidadTest) comprueba niveles, contraste, subtítulos, modo relajado, modo zurdo, daltonismo, una mano, guardado y, en
    una maqueta móvil (iframe con las hojas de estilo reales y copias del HUD: 375×812, 320×568, 812×375…), que nada desborda ni se tapa. */
 AVE.module('accesibilidad', function (G) {
   'use strict';
   const S = G.S, $ = G.util.$, raiz = document.documentElement;
   const NIVELES = 3;
-  const BOOLS = ['contraste', 'subtitulos', 'relajado', 'zurdo'];
+  const BOOLS = ['contraste', 'subtitulos', 'relajado', 'zurdo', 'daltonismo', 'unamano'];
   const esObj = o => !!o && typeof o === 'object' && !Array.isArray(o);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
   const TX = () => ({
     titulo: L('Accesibilidad', 'Accessibility'), texto: L('Texto', 'Text'),
     niveles: [L('Normal', 'Normal'), L('Grande', 'Large'), L('Muy grande', 'Extra large')],
     bool: { contraste: L('Alto contraste', 'High contrast'), subtitulos: L('Subtítulos de sonido', 'Sound captions'),
-      relajado: L('Modo relajado', 'Relaxed mode'), zurdo: L('Modo zurdo', 'Left-handed mode') },
+      relajado: L('Modo relajado', 'Relaxed mode'), zurdo: L('Modo zurdo', 'Left-handed mode'),
+      daltonismo: L('Daltonismo', 'Colorblind cues'), unamano: L('Una mano', 'One hand') },
     notaRelajado: L('Modo relajado: la flecha de guía siempre se ve y el capítulo no tiene tiempos.', 'Relaxed mode: the guide arrow is always visible and the chapter has no timers.'),
     notaZurdo: L('Modo zurdo (pantalla táctil): el joystick pasa a la derecha y los botones de acción a la izquierda.', 'Left-handed mode (touch screens): the joystick moves to the right and the action buttons to the left.'),
+    notaDaltonismo: L('Pistas para daltonismo: la flecha y los anillos cambian de color y de trama. El mundo y las cotorras siguen igual.', 'Colorblind cues: the arrow and the rings change color and pattern. The world and the parrots stay the same.'),
+    notaMano: L('Una mano (pantalla táctil): el joystick, volar y los trucos quedan juntos, en el lado del pulgar.', 'One hand (touch screens): the joystick, fly and the tricks sit together, on the thumb side.'),
     subs: L('Subtítulos de sonido', 'Sound captions'),
   });
 
@@ -71,7 +77,17 @@ AVE.module('accesibilidad', function (G) {
     estatica: { ms: 2200, es: '[Estática de radio]', en: '[Radio static]' },
     parpadeo: { ms: 2200, es: '[Una campanita suena con cada destello]', en: '[A little bell chimes with each flash]' },
     guiro: { ms: 2000, es: '[Suena un güiro]', en: '[A güiro rasps]' },
+    // CG-54. El pío del escondite trae la cercanía (0 lejos … 1 encima) en el argumento de G.audio.play.
+    pio_escondite: { ms: 1600, umbral: 0.55, es: '[¡Pío!]', en: '[Peep!]', cercaEs: '[¡Pío cerca!]', cercaEn: '[Peep nearby!]' },
+    vecino_coqui: { ms: 2200, es: '[¡Coquí!]', en: '[Coquí!]' },
   };
+  // Esos dos sonidos los definen escondite.js y vecinos.js al primer gesto. Si aún no están, un silencio
+  // ocupa el nombre para que el subtítulo pueda salir; el módulo dueño lo reemplaza al cargar.
+  for (const n of ['pio_escondite', 'vecino_coqui']) {
+    if (G.audio && G.audio.define && !G.audio.has(n)) {
+      try { G.audio.define(n, () => {}); } catch (e) { /* el módulo del sonido lo pone al cargar */ }
+    }
+  }
   const MAXIMO = 3; // líneas a la vez: la más vieja sale
   // Móvil (hasta 560 px): bajo el objetivo y el inventario, que crecen con la letra grande; tableta (hasta 944 px): bajo el inventario y los
   // botones de la derecha; escritorio: el sitio fijo de ui.css. Solo pone la variable --sub-top (así ui.css puede mandar en otros casos).
@@ -110,7 +126,11 @@ AVE.module('accesibilidad', function (G) {
     clearTimeout(v.t); v.t = setTimeout(() => quitar(k), ms * escala);
   }
   // Lo llama G.audio.play (src/engine/audio.js) con cada sonido; devuelve true si hay subtítulo para él y están activados
-  function subtitular(nombre) {
+  function textoDe(d, arg) {
+    if (d.umbral != null && typeof arg === 'number' && arg >= d.umbral && d.cercaEs) return L(d.cercaEs, d.cercaEn);
+    return L(d.es, d.en);
+  }
+  function subtitular(nombre, arg) {
     const d = SUB[nombre];
     if (!d || !leer().subtitulos) return false;
     const poner = () => {
@@ -120,7 +140,7 @@ AVE.module('accesibilidad', function (G) {
         if (!vivos.has('coqui')) notas = [];
         notas.push(d.nota); if (notas.length > 7) notas.shift();
         texto = L(`[Un coquí canta: ${notas.join(' · ')}]`, `[A coquí frog sings: ${notas.join(' · ')}]`);
-      } else texto = L(d.es, d.en);
+      } else texto = textoDe(d, arg);
       mostrar(d.k || nombre, texto, d.ms);
     };
     if (d.retraso) setTimeout(poner, d.retraso * escala); else poner();
@@ -142,8 +162,11 @@ AVE.module('accesibilidad', function (G) {
       <button class="chip" type="button" data-a11y-bool="contraste"></button>
       <button class="chip" type="button" data-a11y-bool="subtitulos"></button>
       <button class="chip" type="button" data-a11y-bool="relajado" aria-describedby="a11y-nota-relajado"></button>
-      <button class="chip a11y-solo-tactil" type="button" data-a11y-bool="zurdo" aria-describedby="a11y-nota-zurdo"></button></div>
-      <p class="note" id="a11y-nota-relajado"></p><p class="note a11y-solo-tactil" id="a11y-nota-zurdo"></p>`;
+      <button class="chip a11y-solo-tactil" type="button" data-a11y-bool="zurdo" aria-describedby="a11y-nota-zurdo"></button>
+      <button class="chip" type="button" data-a11y-bool="daltonismo" aria-describedby="a11y-nota-daltonismo"></button>
+      <button class="chip a11y-solo-tactil" type="button" data-a11y-bool="unamano" aria-describedby="a11y-nota-mano"></button></div>
+      <p class="note" id="a11y-nota-relajado"></p><p class="note a11y-solo-tactil" id="a11y-nota-zurdo"></p>
+      <p class="note" id="a11y-nota-daltonismo"></p><p class="note a11y-solo-tactil" id="a11y-nota-mano"></p>`;
     const tras = menu.querySelector('.pause-aula') || menu.querySelector('.pause-grid');
     if (tras) tras.after(sec); else menu.appendChild(sec);
     sec.addEventListener('click', e => {
@@ -162,18 +185,39 @@ AVE.module('accesibilidad', function (G) {
     sec.querySelectorAll('[data-a11y-bool]').forEach(b => { b.textContent = T.bool[b.dataset.a11yBool]; });
     sec.querySelector('#a11y-nota-relajado').textContent = T.notaRelajado;
     sec.querySelector('#a11y-nota-zurdo').textContent = T.notaZurdo;
+    sec.querySelector('#a11y-nota-daltonismo').textContent = T.notaDaltonismo;
+    sec.querySelector('#a11y-nota-mano').textContent = T.notaMano;
+    const tonel = $('b-tonel'), loop = $('b-loop');
+    if (tonel) tonel.textContent = L('Tonel', 'Roll');
+    if (loop) loop.textContent = L('Loop', 'Loop');
+  }
+  function pedirTruco(id) {
+    if (G.trucos && G.trucos.anotar) G.trucos.anotar(id);
+  }
+  function montarTrucos() {
+    const acts = $('acts'); if (!acts || $('b-tonel')) return;
+    const hacer = (id, truco) => {
+      const el = document.createElement('button');
+      el.id = id; el.type = 'button'; el.className = 'btn round a11y-truco'; el.hidden = true;
+      el.addEventListener('pointerdown', e => { e.preventDefault(); pedirTruco(truco); });
+      acts.appendChild(el);
+    };
+    hacer('b-tonel', 'tonel'); hacer('b-loop', 'looping');
   }
   function sync() {
     const a = leer();
     for (let i = 1; i < NIVELES; i++) raiz.classList.toggle('a11y-t' + i, a.texto === i);
     for (const k of BOOLS) raiz.classList.toggle('a11y-' + k, a[k]);
     if (!a.subtitulos) limpiar();
+    const tonel = $('b-tonel'), loop = $('b-loop');
+    if (tonel) tonel.hidden = !a.unamano;
+    if (loop) loop.hidden = !a.unamano;
     if (!sec) return;
     sec.querySelectorAll('[data-a11y-texto]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.a11yTexto === a.texto)));
     sec.querySelectorAll('[data-a11y-bool]').forEach(b => b.setAttribute('aria-pressed', String(a[b.dataset.a11yBool])));
   }
 
-  montar(); rotular(); sync();
+  montar(); montarTrucos(); rotular(); sync();
   // Cargar, reiniciar o restaurar una partida: se aplican sus ajustes; si la partida no trae (nueva o vieja), quedan los de la sesión
   G.on('apply', () => {
     const p = S.profile || {};
@@ -356,7 +400,7 @@ AVE.module('accesibilidad', function (G) {
     const perfil0 = S.profile, ultimo0 = ultimo, mudo0 = G.audio.vol.muted, abierto0 = (() => { try { return menu.matches(':popover-open'); } catch (e) { return false; } })();
     guardarAlCambiar = false;
     try {
-      check('Sección «Accesibilidad» en el menú de pausa: 3 niveles de texto, alto contraste, subtítulos, modo relajado y modo zurdo',
+      check('Sección «Accesibilidad» en el menú de pausa: texto, contraste, subtítulos, relajado, zurdo, daltonismo y una mano',
         !!sec && sec.querySelectorAll('[data-a11y-texto]').length === 3 && BOOLS.every(k => !!sec.querySelector(`[data-a11y-bool="${k}"]`)));
       check('Los ajustes nuevos están apagados de entrada', (() => { S.profile = Object.assign({}, perfil0, { a11y: undefined }); const a = leer(); return a.texto === 0 && BOOLS.every(k => a[k] === false); })());
       check('QA-97 · sin documento o sin caja no se llama a querySelectorAll', (() => {
@@ -424,6 +468,23 @@ AVE.module('accesibilidad', function (G) {
       check('Cada subtítulo se va solo y el contenedor se oculta', hay === 1 && !cont.children.length && cont.hidden);
       escala = 50; limpiar(); G.audio.play('trueno'); set('subtitulos', false);
       check('Apagar los subtítulos quita los que hay', !cont.children.length && cont.hidden);
+      set('subtitulos', true); escala = 50; limpiar();
+      G.audio.play('pio_escondite', 0.2);
+      const pioLejos = cont.textContent;
+      G.audio.play('pio_escondite', 0.9);
+      check('El pío del escondite dice «¡Pío!» y, si está cerca, «¡Pío cerca!», en una sola línea',
+        cont.children.length === 1 && /¡Pío!/.test(pioLejos) && !/cerca/.test(pioLejos) && /¡Pío cerca!/.test(cont.textContent), pioLejos + ' → ' + cont.textContent);
+      limpiar(); G.audio.play('vecino_coqui');
+      check('El coquí vecino se subtitula', /coquí/i.test(cont.textContent), cont.textContent);
+      limpiar(); G.audio.play('trueno');
+      check('El trueno sigue subtitulado', /trueno/i.test(cont.textContent), cont.textContent);
+      const ajIdi = G.aula && G.aula.aj, idi0 = ajIdi ? ajIdi.idioma : null;
+      if (ajIdi) ajIdi.idioma = 'en';
+      limpiar(); G.audio.play('pio_escondite', 0.8); G.audio.play('vecino_coqui');
+      const enPio = /Peep nearby/i.test(cont.textContent) && /Coquí/i.test(cont.textContent);
+      if (ajIdi) ajIdi.idioma = idi0;
+      check('Esos subtítulos salen en inglés', enPio, cont.textContent);
+      limpiar();
       set('subtitulos', true); G.audio.play('chorus');
       const sub = cont.querySelector('.sub'), csub = getComputedStyle(sub);
       check('Los subtítulos no capturan toques (el juego sigue recibiéndolos) y se anuncian como registro', csub.pointerEvents === 'none' && cont.getAttribute('role') === 'log' && cont.getAttribute('aria-live') === 'polite');
@@ -442,6 +503,33 @@ AVE.module('accesibilidad', function (G) {
       set('relajado', true);
       check('G.accesibilidad.relajado() y la clase de <html> siguen al ajuste (para los modos con reloj)', relajado() === true && raiz.classList.contains('a11y-relajado'));
       set('relajado', false);
+
+      // ---------- CG-54: daltonismo, solo en las pistas ----------
+      const lejosD = { x: S.pos.x + 12, z: S.pos.z };
+      set('daltonismo', false); G.fx.guide(lejosD, 0);
+      const hex0 = G.fx.guideArrow.material.color.getHex(), wire0 = G.fx.guideArrow.material.wireframe, haz0 = G.fx.guideBeam.material.color.getHex();
+      set('daltonismo', true); G.fx.guide(lejosD, 0);
+      const hex1 = G.fx.guideArrow.material.color.getHex(), wire1 = G.fx.guideArrow.material.wireframe, haz1 = G.fx.guideBeam.material.color.getHex();
+      const filtroCuerpo = getComputedStyle(document.body).filter, filtroLienzo = G.renderer && G.renderer.canvas ? getComputedStyle(G.renderer.canvas).filter : 'none';
+      const sinFiltro = (filtroCuerpo === 'none' || filtroCuerpo === '') && (filtroLienzo === 'none' || filtroLienzo === '');
+      const pm = $('pm-pista'); let pistaOk = false, pistaExtra = 'sin #pm-pista';
+      if (pm) {
+        const ocultoPm = pm.hidden; pm.hidden = false; pm.classList.remove('pm-atascado');
+        const azul = getComputedStyle(pm).borderTopColor;
+        pm.classList.add('pm-atascado');
+        const naranja = getComputedStyle(pm).borderTopColor, trama = getComputedStyle(pm).borderTopStyle;
+        const rgb = s => (String(s).match(/[\d.]+/g) || []).map(Number);
+        const a = rgb(azul), b = rgb(naranja);
+        pistaOk = a.length >= 3 && b.length >= 3 && a[2] > a[0] && b[0] > b[2] && trama === 'dashed';
+        pistaExtra = `anillo ${azul} / atascado ${naranja} ${trama}`;
+        pm.classList.remove('pm-atascado'); pm.hidden = ocultoPm;
+      }
+      G.fx.guide(null, 0); set('daltonismo', false); G.fx.guide(lejosD, 0); G.fx.guide(null, 0);
+      check('Daltonismo: la flecha pasa a azul en alambre y el haz a bermellón; al quitarlo vuelven al naranja',
+        hex0 === 0xf2a03d && !wire0 && haz0 === 0xfff1b0 && hex1 === 0x0072b2 && wire1 && haz1 === 0xd55e00 && G.fx.guideArrow.material.color.getHex() === 0xf2a03d && !G.fx.guideArrow.material.wireframe,
+        hex0.toString(16) + '→' + hex1.toString(16) + ' haz ' + haz0.toString(16) + '→' + haz1.toString(16));
+      check('Daltonismo: el anillo de los primeros minutos es azul y, si te atascas, naranja a rayas', pistaOk, pistaExtra);
+      check('Daltonismo no tiñe el mundo ni a las cotorras', sinFiltro && raiz.classList.contains('a11y-daltonismo') === false, filtroCuerpo + ' / ' + filtroLienzo);
 
       // ---------- Maqueta móvil ----------
       const COLOCADOS = ['quest', 'inv', 'sys', 'toast', 'prompt', 'emotes', 'stick', 'acts'];
@@ -594,6 +682,56 @@ AVE.module('accesibilidad', function (G) {
       }
       const chipZ = sec.querySelector('[data-a11y-bool="zurdo"]'), esTactil = !(matchMedia('(hover: hover) and (pointer: fine)').matches);
       check('El modo zurdo solo se ofrece en pantallas táctiles', (getComputedStyle(chipZ).display !== 'none') === esTactil, esTactil ? 'táctil' : 'ratón');
+      const chipMano = sec.querySelector('[data-a11y-bool="unamano"]');
+      check('Una mano solo se ofrece en pantallas táctiles', !!chipMano && (getComputedStyle(chipMano).display !== 'none') === esTactil, esTactil ? 'táctil' : 'ratón');
+
+      // ---------- CG-54: una mano (trucos, escondite, retos y el gancho de familia) ----------
+      const trucos0 = G.trucos, anots = [];
+      try {
+        G.trucos = { anotar(id) { anots.push(id); return 1; } };
+        set('unamano', false);
+        check('Sin una mano, Tonel y Loop no estorban', !!$('b-tonel') && $('b-tonel').hidden && $('b-loop').hidden);
+        set('unamano', true);
+        $('b-tonel').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));
+        $('b-loop').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));
+        check('Tonel y Loop llaman al truco (se puede hacer el combo con un dedo)', anots.join(',') === 'tonel,looping', anots.join(','));
+      } finally { G.trucos = trucos0; }
+      const malosMano = [];
+      for (const [W, H, zurdoM] of [[375, 812, false], [320, 568, false], [812, 375, false], [375, 812, true]]) {
+        const m = await maqueta(W, H, 'a11y-unamano' + (zurdoM ? ' a11y-zurdo' : ''));
+        try {
+          m.q('dialog').hidden = true; m.q('emotes').hidden = true; m.q('toast').hidden = true; m.q('subtitulos').hidden = true;
+          const et = `${W}×${H} ${zurdoM ? 'pulgar derecho' : 'pulgar izquierdo'}`;
+          const rS = rect(m, '#stick'), rA = rect(m, '#acts'), rAct = rect(m, '#b-act'), rJump = rect(m, '#b-jump'), rFly = rect(m, '#b-fly'), rTonel = rect(m, '#b-tonel'), rLoop = rect(m, '#b-loop');
+          if (!rS || !rA || !rAct || !rJump || !rFly || !rTonel || !rLoop) { malosMano.push(`${et}: faltan controles`); continue; }
+          const medio = W / 2;
+          const enLado = r => zurdoM ? (r.left + r.right) / 2 > medio - 1 : (r.left + r.right) / 2 < medio + 1;
+          if (!enLado(rS) || !enLado(rA) || !enLado(rFly) || !enLado(rTonel)) malosMano.push(`${et}: el joystick y los botones no caben en una mano`);
+          if (choca(rS, rA)) malosMano.push(`${et}: el joystick pisa los botones`);
+          for (const [n, r] of [['joystick', rS], ['botones', rA], ['volar', rFly], ['tonel', rTonel], ['loop', rLoop]]) {
+            if (r.left < -1 || r.right > W + 1 || r.top < -1 || r.bottom > H + 1) malosMano.push(`${et}: ${n} se sale`);
+          }
+          if (zurdoM ? !(rAct.left > rJump.left) : !(rAct.left < rJump.left)) malosMano.push(`${et}: Acción no queda en la esquina de fuera`);
+          for (const id of ['sys', 'quest', 'inv']) if (choca(rS, rect(m, '#' + id)) || choca(rA, rect(m, '#' + id))) malosMano.push(`${et}: los controles tapan #${id}`);
+          for (const b of m.d.querySelectorAll('#b-fly, #b-dash, #b-jump, #b-act, #b-tonel, #b-loop')) {
+            if (!visible(b)) { malosMano.push(`${et}: #${b.id} oculto`); continue; }
+            const r = b.getBoundingClientRect();
+            if (r.width < 44 || r.height < 44) malosMano.push(`${et}: #${b.id} mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+          }
+          if (W === 375 && H === 812 && !zurdoM) {
+            const extra = m.d.createElement('div'); extra.className = 'a11y-controles-extra';
+            extra.innerHTML = '<button class="btn" type="button">Mi turno</button>';
+            m.d.body.appendChild(extra);
+            const rE = extra.getBoundingClientRect(), bE = extra.querySelector('button').getBoundingClientRect();
+            if (!enLado(rE)) malosMano.push(`${et}: el panel de familia no está en el lado del pulgar`);
+            if (bE.width < 44 || bE.height < 44) malosMano.push(`${et}: el botón de turno mide ${Math.round(bE.width)}×${Math.round(bE.height)}`);
+            if (choca(rE, rS) || choca(rE, rA)) malosMano.push(`${et}: el panel de familia pisa los controles`);
+          }
+        } catch (e) { malosMano.push(`${W}×${H}: ${e.message}`); }
+        m.cerrar();
+      }
+      set('unamano', false);
+      check('Una mano en 375×812, 320×568 y 812×375: joystick, volar, trucos y el turno de familia en el lado del pulgar, botones ≥ 44 px, sin pisarse', !malosMano.length, malosMano.slice(0, 4).join('; '));
 
       // 3. Subtítulos con otros tamaños de pantalla (tableta, escritorio): no tapan el objetivo, el inventario ni los botones, ni el diálogo
       for (const [W, H] of [[812, 375], [800, 600], [1280, 720]]) {
@@ -616,16 +754,16 @@ AVE.module('accesibilidad', function (G) {
       }
 
       // ---------- Guardado ----------
-      set('texto', 2); set('contraste', true); set('subtitulos', true); set('relajado', true); set('zurdo', true);
+      set('texto', 2); set('contraste', true); set('subtitulos', true); set('relajado', true); set('zurdo', true); set('daltonismo', true); set('unamano', true);
       const d = JSON.parse(G.guardado.serialize(true)), a0 = d.profile && d.profile.a11y;
-      check('La partida guardada lleva los ajustes', a0 && a0.texto === 2 && a0.contraste === true && a0.subtitulos === true && a0.relajado === true && a0.zurdo === true, JSON.stringify(a0));
+      check('La partida guardada lleva los ajustes', a0 && a0.texto === 2 && a0.contraste === true && a0.subtitulos === true && a0.relajado === true && a0.zurdo === true && a0.daltonismo === true && a0.unamano === true, JSON.stringify(a0));
       S.profile = Object.assign({}, perfil0, { a11y: { texto: 0, contraste: false } }); sync();
       check('Con todo apagado no queda ninguna clase puesta', !/a11y-/.test(raiz.className));
       S.profile = d.profile; G.emit('apply');
-      check('Al cargar la partida se aplican los ajustes', ['a11y-t2', 'a11y-contraste', 'a11y-relajado', 'a11y-zurdo'].every(c => raiz.classList.contains(c)) && subtitulos());
+      check('Al cargar la partida se aplican los ajustes', ['a11y-t2', 'a11y-contraste', 'a11y-relajado', 'a11y-zurdo', 'a11y-daltonismo', 'a11y-unamano'].every(c => raiz.classList.contains(c)) && subtitulos());
       // «Comenzar de cero» (perfil nuevo, sin ajustes) y una partida vieja sin ajustes conservan lo elegido
       S.profile = { created: false, name: 'Aprendiz', look: null }; G.emit('apply');
-      check('«Comenzar de cero» conserva texto, contraste, subtítulos, modo relajado y modo zurdo', ['a11y-t2', 'a11y-contraste', 'a11y-relajado', 'a11y-zurdo'].every(c => raiz.classList.contains(c)) && leer().texto === 2 && subtitulos());
+      check('«Comenzar de cero» conserva texto, contraste, subtítulos, relajado, zurdo, daltonismo y una mano', ['a11y-t2', 'a11y-contraste', 'a11y-relajado', 'a11y-zurdo', 'a11y-daltonismo', 'a11y-unamano'].every(c => raiz.classList.contains(c)) && leer().texto === 2 && subtitulos() && leer().daltonismo && leer().unamano);
       ultimo = null; S.profile = { created: false, name: 'Aprendiz', look: null }; G.emit('apply');
       check('Sin nada elegido en la sesión, una partida sin ajustes queda con todo apagado', !/a11y-/.test(raiz.className));
       S.profile = Object.assign({}, perfil0, { a11y: { texto: 9, contraste: 'sí', subtitulos: 1, relajado: 'true', zurdo: {} } }); sync();
@@ -634,12 +772,13 @@ AVE.module('accesibilidad', function (G) {
       check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {
       S.profile = perfil0; ultimo = ultimo0; escala = 1; G.audio.vol.muted = mudo0; limpiar(); sync(); guardarAlCambiar = true;
-      try { G.fx.guide(null, 0); } catch (e) { /* sin guía */ }
+      try { const tg = { x: S.pos.x + 12, z: S.pos.z }; G.fx.guide(tg, 0); G.fx.guide(null, 0); } catch (e) { /* sin guía */ }
       try { if (menu && !abierto0 && menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
     }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
   const subtitulos = () => leer().subtitulos, relajado = () => leer().relajado, zurdo = () => leer().zurdo;
-  return { leer, set, sync, subtitulos, relajado, zurdo, subtitular, SUB, maqueta, rect, test };
+  const daltonismo = () => leer().daltonismo, unaMano = () => leer().unamano;
+  return { leer, set, sync, subtitulos, relajado, zurdo, daltonismo, unaMano, subtitular, SUB, maqueta, rect, test };
 });

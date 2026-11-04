@@ -204,6 +204,12 @@ AVE.module('fx', function (G) {
     guideBeam.visible = !!tg; guideArrow.visible = false;
     if (!tg) return;
     const relajado = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
+    // CG-54: daltonismo solo en esta pista (flecha azul en alambre, haz bermellón). El mundo y las cotorras no cambian.
+    const dalton = !!(G.accesibilidad && G.accesibilidad.daltonismo && G.accesibilidad.daltonismo());
+    const colFlecha = dalton ? 0x0072b2 : 0xf2a03d, colHaz = dalton ? 0xd55e00 : 0xfff1b0;
+    if (guideArrow.material.color.getHex() !== colFlecha) guideArrow.material.color.setHex(colFlecha);
+    if (guideBeam.material.color.getHex() !== colHaz) guideBeam.material.color.setHex(colHaz);
+    guideArrow.material.wireframe = dalton;
     const gy = tg.y != null ? tg.y - 20 : G.terreno.height(tg.x, tg.z) + 20;
     guideBeam.position.set(tg.x, gy, tg.z);
     // Con la cámara pegada al haz, el cilindro aditivo tapaba media pantalla (QA-22): se desvanece entre 8 y 2,5 m del eje

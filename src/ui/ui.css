@@ -826,6 +826,73 @@ body:has(#title[open]) #subtitulos, body:has(:is(#creator, #comic):not([hidden])
 @media (hover: hover) and (pointer: fine) { .a11y-solo-tactil { display: none; } }
 .pause-a11y .note { margin: var(--sp-2) 0 0; }
 
+/* CG-54 · Daltonismo: solo las pistas. Azul #0072B2 y naranja #E69F00, con tramas distintas.
+   No hay filtro sobre el lienzo: el mundo y las cotorras se quedan como están. */
+html.a11y-daltonismo #pm-pista {
+  border-color: #0072B2; border-style: solid;
+  box-shadow: 0 0 0 8px rgba(0, 114, 178, 0.45);
+  background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(0, 114, 178, 0.55) 5px 7px);
+}
+html.a11y-daltonismo #pm-pista::before { border-bottom-color: #0072B2; }
+html.a11y-daltonismo #pm-pista.pm-atascado {
+  border-color: #E69F00; border-style: dashed;
+  box-shadow: 0 0 0 10px rgba(230, 159, 0, 0.55);
+  background: repeating-linear-gradient(90deg, transparent 0 4px, rgba(230, 159, 0, 0.7) 4px 8px);
+}
+html.a11y-daltonismo #pm-pista.pm-atascado::before { border-bottom-color: #E69F00; }
+html.a11y-daltonismo #truco-chip {
+  border-color: #E69F00 !important;
+  background-image: repeating-linear-gradient(135deg, #10324a 0 8px, #1d4e38 8px 11px) !important;
+}
+
+/* CG-54 · Una mano: joystick y botones en el mismo lado (el del pulgar). El botón grande queda en la esquina de fuera.
+   .a11y-controles-extra: un módulo nuevo (familia, retos del día) deja ahí sus botones y viajan con el pulgar. */
+html.a11y-unamano #stick:not(.flotando) {
+  left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px); right: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px);
+}
+html.a11y-unamano #acts {
+  right: auto; left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + var(--stick, 136px) + 12px);
+  grid-template-columns: var(--tap-xl) 78px;
+  grid-template-rows: 48px 68px var(--tap-xl);
+  grid-template-areas: "tonel loop" "dash fly" "act jump";
+}
+html.a11y-unamano #b-tonel { grid-area: tonel; }
+html.a11y-unamano #b-loop { grid-area: loop; }
+html.a11y-unamano :is(#b-tonel, #b-loop) { --sz: 48px; width: 48px; height: 48px; min-width: 44px; min-height: 44px; font-size: 11px; padding: 0; }
+html.a11y-unamano.a11y-zurdo #stick:not(.flotando) {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+}
+html.a11y-unamano.a11y-zurdo #acts {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+  grid-template-columns: 78px var(--tap-xl);
+  grid-template-areas: "loop tonel" "fly dash" "jump act";
+}
+html.ninos-grande.a11y-unamano #acts { bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + 180px); }
+html.a11y-unamano .a11y-controles-extra {
+  position: fixed; z-index: var(--z-controls); display: flex; gap: 8px;
+  left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px); right: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px + var(--stick, 136px) + 270px);
+}
+html.a11y-unamano .a11y-controles-extra :is(button, .btn) { min-width: 44px; min-height: 44px; }
+html.a11y-unamano.a11y-zurdo .a11y-controles-extra {
+  left: auto; right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px);
+}
+@media (max-height: 520px) {
+  html.a11y-unamano #stick:not(.flotando) { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  html.a11y-unamano #acts {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    left: calc(max(var(--sp-4), env(safe-area-inset-left, 0px)) + 4px + var(--stick, 116px) + 8px);
+  }
+  html.a11y-unamano.a11y-zurdo #acts {
+    left: auto;
+    right: calc(max(var(--sp-4), env(safe-area-inset-right, 0px)) + 4px + var(--stick, 116px) + 8px);
+  }
+  html.ninos-grande.a11y-unamano #acts { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  html.a11y-unamano .a11y-controles-extra { bottom: auto; top: 8px; }
+}
+
 /* ---------- 8. Catálogo de iconos (generado; 24×24, trazo 2.4) ---------- */
 :root {
   --i-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M8 5.2v13.6L19 12z'/%3E%3C/svg%3E");
