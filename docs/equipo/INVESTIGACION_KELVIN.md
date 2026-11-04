@@ -2,6 +2,14 @@
 
 Kelvin, 2-nov: «lo que es investigación lo hago yo con ChatGPT o Gemini Pro». Grok no la hace.
 
+> **Resuelto el 4-nov-2026.** Se abrieron las fuentes de las respuestas de ChatGPT y Gemini; el detalle está en `EDUCATIVO_EP2_EP6.md`, sección «Verificación 4-nov».
+> - **Los 19 datos:** 16 con la fuente verificada (frase literal en la página). Hay 2 parciales, la 6 (canoa) y la 7 (cayuco), porque el DLE no abre desde esta red: su texto se ajustó a lo que sí se leyó. La 4 (zocos) sigue sin fuente y queda como ficha narrativa.
+> - **Textos que cambiaron:** 6 (canoa: «de una lengua indígena de las Antillas»), 7 (cayuco: «canoa pequeña hecha de un tronco ahuecado»), 13 (espejo: sin «a distancia») y 19 (acuerdo: sin «puntos en común»).
+> - **Enlaces nuevos:** 9 (sombra: USGS), 14 (tambor: FHWA) y 15 (banderas: el PDF del museo que sí abre).
+> - **Punto 20 (DEPR):** el PDF oficial se abrió (dedigital.dde.pr, julio 2022, 119 págs.) y los objetivos de los caps. 2 a 6 ya tienen 23 códigos sacados de él. Quedan 3 «por verificar» porque no tienen un indicador de Ciencias claro.
+> - **Citas de las IA que resultaron falsas:** la mayoría son de Gemini, y la lista está en `EDUCATIVO_EP2_EP6.md`. ChatGPT no tuvo ninguna falsa; solo la 1 quedó parcial (su frase exacta no está en el USGS).
+> - **Pendiente de Kelvin:** abrir dle.rae.es/canoa y dle.rae.es/cayuco desde tu computadora. Si dicen lo que citó ChatGPT, se pueden volver a los textos de antes.
+
 **El trabajo:** son 19 datos que el juego enseña en las fichas del Diario de los caps. 2 a 6. Para cada uno hay que encontrar **una fuente que diga el dato tal cual** y que se pueda abrir. Además está el punto 20, los indicadores del DEPR.
 - Ya están bien, no hace falta buscarlos: los 10 verificados y los 2 de canon. El detalle está en `docs/equipo/EDUCATIVO_EP2_EP6.md`.
 - El cap. 1 ya está hecho, con sus fuentes en `docs/equipo/FUENTES_CAP1.md`.
