@@ -122,31 +122,48 @@ AVE.module('streaming', function (G) {
     const presupuesto = arrancando ? CFG.msArranque : precarga ? precarga.ms : Math.max(2, Math.min(CFG.msCuadro, libre));
     const t0 = performance.now();
     while (trabajos.length && (performance.now() - t0 < presupuesto || performance.now() === t0)) {
-      const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); }
+      const j = trabajos.shift();
+      const ta = performance.now();
+      try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); }
+      const d = performance.now() - ta;
+      if (d > 25) { // KIMI-017: diagnóstico de tirones (tools/build/kimi3_017.js --fases); en juego normal casi nunca dispara
+        if (!G.trabajosLentos) G.trabajosLentos = [];
+        const L = G.trabajosLentos;
+        L.push({ n: j.avNombre || j.name || 'job', ms: Math.round(d) });
+        if (L.length > 40) L.shift();
+      }
     }
     programar();
   }
-  function encolar(fn) { trabajos.push(fn); programar(); }
+  function encolar(fn, nombre) { if (nombre) fn.avNombre = nombre; trabajos.push(fn); programar(); }
   function drenar() { while (trabajos.length) { const j = trabajos.shift(); try { j(); } catch (e) { console.warn('AVE streaming:', e && e.message || e); } } }
 
   // ---------- Subida de texturas en tandas (KIMI-Task-017) ----------
   // Los atlas de las fusiones (hasta 2048², 21 MB) se subían a la GPU dentro del primer cuadro que dibujaba
   // la malla: al entrar una zona, ese cuadro se dispara (lag en móvil/iPad al moverse). La visibilidad no
   // se toca (el cómic hace fotos del mundo en cualquier momento); en su lugar las texturas de cada malla
-  // nueva se suben aquí, de una en una, con la cola de trabajos (presupuesto CFG.msCuadro por tanda). El
-  // calentador del renderer sigue compilando programas y subiendo geometrías de 2 en 2 por cuadro.
+  // nueva se suben aquí, UNA POR TRABAJO (medido 4-nov: un solo trabajo con todas las de una fusión daba
+  // un trabajo de ~470 ms que congelaba el cuadro; así el presupuesto de la cola las reparte en cuadros).
+  // El calentador del renderer sigue compilando programas y subiendo geometrías de 2 en 2 por cuadro.
   function subirTex(m) {
     if (!m) return;
-    encolar(() => {
-      const W = R.renderer; if (!W || !W.initTexture) return;
-      for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
-        if (!mat) continue;
-        for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap']) {
-          const t = mat[k];
-          if (t && t.image && !(t.userData && t.userData.avSubida)) { t.userData = t.userData || {}; t.userData.avSubida = 1; W.initTexture(t); }
+    const pendientes = [];
+    for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+      if (!mat) continue;
+      for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap']) {
+        const t = mat[k];
+        if (t && t.image) {
+          const ud = t.userData || (t.userData = {}); // hay mapas «placeholder» sin userData (construir/crearLote)
+          if (!ud.avSubida) { ud.avSubida = 1; pendientes.push(t); }
         }
       }
-    });
+    }
+    for (const t of pendientes) {
+      encolar(() => {
+        const W = R.renderer; if (!W || !W.initTexture || (R.contexto && R.contexto.perdido)) return;
+        try { W.initTexture(t); } catch (e) { console.warn('AVE streaming: initTexture', e && e.message || e); }
+      }, 'subirTex');
+    }
   }
 
   // ---------- Precarga del programa de las ráfagas ----------
@@ -811,7 +828,7 @@ AVE.module('streaming', function (G) {
         if (!r.refs && !r.fijo) { r.estado = 'nada'; continue; }
         r.estado = 'bajando'; enVuelo++;
         cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.tipo === 'hd' ? r.n + '_hd' : r.n)
-          .then(gltf => encolar(() => procesar(r, gltf.scene)), err => { r.estado = 'error'; r.error = err; r.mal(err); })
+          .then(gltf => encolar(() => procesar(r, gltf.scene), 'procesar:' + r.n + ':' + r.tipo), err => { r.estado = 'error'; r.error = err; r.mal(err); })
           .then(() => { enVuelo--; siguiente(); });
       }
     }
@@ -878,12 +895,12 @@ AVE.module('streaming', function (G) {
       crearLote(r);
       r.ok(r);
       if (r.tipo === 'lejos') zonasDe(r.n);
-      if (r.tipo === 'hd') for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]));
+      if (r.tipo === 'hd') for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) encolar(() => fundirHD(zonas[id]), 'fundirHD:' + id);
       if (r.tipo === 'cerca') {
         for (const id in zonas) if ((zonas[id].ciudad || zonas[id].nivel === 2) && zonas[id].modelos.has(r.n)) {
-          encolar(() => fundirCercaZona(zonas[id])); encolar(() => fundirSombraZona(zonas[id]));
+          encolar(() => fundirCercaZona(zonas[id]), 'fundirCerca:' + id); encolar(() => fundirSombraZona(zonas[id]), 'fundirSombra:' + id);
         }
-        for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I));
+        for (const I of porModelo[r.n] || []) if (!I.colocado && zonas[I.zona].nivel === 2) encolar(() => colocar(I), 'colocar:' + I.modelo);
       }
     }
     function actualizarEsferas(n, esf) {
@@ -937,7 +954,7 @@ AVE.module('streaming', function (G) {
         G.solidos.agregar(g);
       }
       const Z = zonas[I.zona];
-      if ((Z.ciudad || Z.nivel === 2) && Z.cercaMallas) encolar(() => fundirCercaZona(Z));
+      if ((Z.ciudad || Z.nivel === 2) && Z.cercaMallas) encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id);
     }
 
     // --- niveles de las zonas ---
@@ -952,8 +969,8 @@ AVE.module('streaming', function (G) {
         if (antes >= 1 && quiere < 1) soltar(res(n, 'lejos'));
       }
       if (antes === 2 && quiere < 2 && !Z.ciudad) quitarCercaZona(Z);
-      if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I));
-      if (quiere >= 1) encolar(() => fundirZona(Z)); else quitarZona(Z);
+      if (quiere === 2) for (const I of Z.inst) if (!I.colocado && res(I.modelo, 'cerca').estado === 'listo') encolar(() => colocar(I), 'colocar:' + I.modelo);
+      if (quiere >= 1) encolar(() => fundirZona(Z), 'fundirZona:' + Z.id); else quitarZona(Z);
       activas = inst.filter(I => zonas[I.zona].nivel >= 1);
     }
     // Distancia al modelo más cercano de la zona (prioridad de descarga: lo que tienes delante entra antes que el resto).
@@ -993,12 +1010,13 @@ AVE.module('streaming', function (G) {
     // En las ciudades, todos los _hd comparten la misma vista aérea: se funden por material en vez de dibujar un lote por modelo.
     function quitarHDZona(Z) {
       Z.hdFundiendo = false;
+      if (Z.hdF) { for (const g of Z.hdF.temporales) g.dispose(); Z.hdF = null; }
       for (const m of Z.hdMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat); }
       Z.hdMallas = null; Z.hdModelos = new Set();
       programarHDGlobal();
     }
     function fundirHD(Z, forzar) {
-      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdFundiendo || (!forzar && cargasPendientes(Z, 'hd'))) return;
+      if ((!Z.ciudad && Z.nivel < 2) || !Z.hd || Z.hdF || (!forzar && cargasPendientes(Z, 'hd'))) return;
       const modelos = new Set([...Z.modelos].filter(n => tieneHD(n) && res(n, 'hd').estado === 'listo'));
       if (!modelos.size) return;
       if (Z.hdMallas) {
@@ -1006,34 +1024,47 @@ AVE.module('streaming', function (G) {
         quitarHDZona(Z);
       }
       Z.hdFundiendo = true;
-      const grupos = new Map(), temporales = [], ms = [];
+      Z.hdF = { i: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id);
+    }
+    // KIMI-Task-017: se funde en tandas de ~6 ms por trabajo (el fundido entero de una zona eran 100–420 ms
+    // de CPU en un solo trabajo: al teleportar, un cuadro largo). Mientras se refunde, la zona dibuja los
+    // lotes por instancia (más draw calls unos cuadros, mismo aspecto).
+    function fundirHDPaso(Z) {
+      const F = Z.hdF; if (!F) return;
+      const limpiar = () => { for (const g of F.temporales) g.dispose(); F.temporales = []; };
+      const t0 = performance.now();
       try {
-        for (const I of Z.inst) {
-          if (!modelos.has(I.modelo)) continue;
+        while (F.i < Z.inst.length && performance.now() - t0 < 6) {
+          const I = Z.inst[F.i++];
+          if (!F.modelos.has(I.modelo)) continue;
           for (const p of res(I.modelo, 'hd').partes) {
             const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
-            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
+            let gr = F.grupos.get(mat.name); if (!gr) F.grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
             const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
-            temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
+            F.temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
           }
         }
-        for (const gr of grupos.values()) {
+        if (F.i < Z.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
+        for (const gr of F.grupos.values()) {
           const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
           const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
           conTramos(m, gr.mat, gr.geos, gr.ins);
           m.name = 'edificiosZonaHD:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
           m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
           const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); ms.push(m); subirTex(m);
+          scene.add(m); F.ms.push(m); subirTex(m);
         }
-        Z.hdMallas = ms; Z.hdModelos = modelos;
-        encolar(() => fundirCercaZona(Z)); programarHDGlobal();
+        Z.hdMallas = F.ms; Z.hdModelos = F.modelos;
+        limpiar();
+        Z.hdF = null; Z.hdFundiendo = false;
+        encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); programarHDGlobal();
       } catch (e) {
-        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
+        for (const m of F.ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
         console.warn('AVE streaming: no se pudo fundir el _hd de ' + Z.id, e && e.message || e);
-      } finally {
-        for (const g of temporales) g.dispose();
-        Z.hdFundiendo = false;
+        limpiar();
+        Z.hdF = null; Z.hdFundiendo = false;
+        programarHDGlobal();
       }
     }
     const hdGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set() };
@@ -1067,50 +1098,61 @@ AVE.module('streaming', function (G) {
     function programarHDGlobal() {
       if (hdGlobal.pendiente) return;
       hdGlobal.pendiente = true;
-      encolar(() => { hdGlobal.pendiente = false; fundirHDGlobal(); });
+      encolar(() => { hdGlobal.pendiente = false; fundirHDGlobal(); }, 'fundirHDGlobal');
     }
     function quitarCercaZona(Z) {
       Z.cercaFundiendo = false;
+      if (Z.cercaF) { for (const g of Z.cercaF.temporales) g.dispose(); Z.cercaF = null; }
       for (const m of Z.cercaMallas || []) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat); }
       Z.cercaMallas = null; Z.cercaModelos = new Set();
       programarCercaGlobal();
     }
     function fundirCercaZona(Z, forzar) {
-      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaFundiendo || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
+      if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
       // KIMI-Task-011: los modelos con _hd también entran (cada instancia es un tramo: se dibuja el _hd o el ligero, no los dos)
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
       quitarCercaZona(Z);
       if (!modelos.size) return;
       Z.cercaFundiendo = true;
-      const grupos = new Map(), temporales = [], ms = [];
+      Z.cercaF = { i: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
+    }
+    // KIMI-Task-017: en tandas de ~6 ms por trabajo (el fundido entero eran hasta ~150 ms de CPU seguidos).
+    function fundirCercaPaso(Z) {
+      const F = Z.cercaF; if (!F) return;
+      const t0 = performance.now();
       try {
-        for (const I of Z.inst) {
-          if (!modelos.has(I.modelo)) continue;
+        while (F.i < Z.inst.length && performance.now() - t0 < 6) {
+          const I = Z.inst[F.i++];
+          if (!F.modelos.has(I.modelo)) continue;
           for (const p of res(I.modelo, 'cerca').partes) {
             const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
-            let gr = grupos.get(mat.name); if (!gr) grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
+            let gr = F.grupos.get(mat.name); if (!gr) F.grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
             const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
-            temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
+            F.temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
           }
         }
-        for (const gr of grupos.values()) {
+        if (F.i < Z.inst.length) { encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id); return; }
+        for (const gr of F.grupos.values()) {
           const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
           const m = new THREE.Mesh(atlas ? fundirTex(gr.geos) : fundir(gr.geos, false), gr.mat);
           conTramos(m, gr.mat, gr.geos, gr.ins);
           m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
           m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
           const it = mats[gr.mat.name]; if (it) it.refs++;
-          scene.add(m); ms.push(m); subirTex(m);
+          scene.add(m); F.ms.push(m); subirTex(m);
         }
-        Z.cercaMallas = ms; Z.cercaModelos = modelos;
+        Z.cercaMallas = F.ms; Z.cercaModelos = F.modelos;
+        for (const g of F.temporales) g.dispose();
+        Z.cercaF = null; Z.cercaFundiendo = false;
         programarCercaGlobal();
       } catch (e) {
-        for (const m of ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
+        for (const m of F.ms) { scene.remove(m); m.geometry.dispose(); soltarMaterial(m.userData.mat || m.material); }
         console.warn('AVE streaming: no se pudo fundir el cercano de ' + Z.id, e && e.message || e);
-      } finally {
-        for (const g of temporales) g.dispose();
-        Z.cercaFundiendo = false;
+        for (const g of F.temporales) g.dispose();
+        Z.cercaF = null; Z.cercaFundiendo = false;
+        programarCercaGlobal();
       }
     }
     const cercaGlobal = { mallas: [], ids: '', pendiente: false, zonas: new Set() };
@@ -1144,30 +1186,46 @@ AVE.module('streaming', function (G) {
     function programarCercaGlobal() {
       if (cercaGlobal.pendiente) return;
       cercaGlobal.pendiente = true;
-      encolar(() => { cercaGlobal.pendiente = false; fundirCercaGlobal(); });
+      encolar(() => { cercaGlobal.pendiente = false; fundirCercaGlobal(); }, 'fundirCercaGlobal');
     }
     function quitarSombraZona(Z) {
+      if (Z.sombraF) { for (const g of Z.sombraF.geos) g.dispose(); Z.sombraF = null; }
       if (!Z.sombraMalla) return;
       scene.remove(Z.sombraMalla); Z.sombraMalla.geometry.dispose(); Z.sombraMalla = null; Z.sombraModelos = new Set();
     }
     function fundirSombraZona(Z) {
-      if (!Z.ciudad || cargasPendientes(Z, 'cerca')) return;
+      if (!Z.ciudad || Z.sombraF || cargasPendientes(Z, 'cerca')) return;
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo'));
       if (Z.sombraMalla && modelos.size === Z.sombraModelos.size && [...modelos].every(n => Z.sombraModelos.has(n))) return;
       quitarSombraZona(Z);
       if (!modelos.size) return;
-      const geos = [];
-      for (const I of Z.inst) {
-        if (!modelos.has(I.modelo)) continue;
-        for (const p of res(I.modelo, 'cerca').partes) geos.push(p.geo.clone().applyMatrix4(I.m));
+      Z.sombraF = { i: 0, modelos, geos: [] };
+      encolar(() => fundirSombraPaso(Z), 'fundirSombra:' + Z.id);
+    }
+    function fundirSombraPaso(Z) {
+      const F = Z.sombraF; if (!F) return;
+      const t0 = performance.now();
+      try {
+        while (F.i < Z.inst.length && performance.now() - t0 < 6) {
+          const I = Z.inst[F.i++];
+          if (!F.modelos.has(I.modelo)) continue;
+          for (const p of res(I.modelo, 'cerca').partes) F.geos.push(p.geo.clone().applyMatrix4(I.m));
+        }
+        if (F.i < Z.inst.length) { encolar(() => fundirSombraPaso(Z), 'fundirSombra:' + Z.id); return; }
+        const m = new THREE.Mesh(fundir(F.geos, false), matSombra);
+        for (const g of F.geos) g.dispose();
+        F.geos = [];
+        m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
+        m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
+        m.layers.set(1);
+        if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
+        scene.add(m); Z.sombraMalla = m; Z.sombraModelos = F.modelos; subirTex(m);
+        Z.sombraF = null;
+      } catch (e) {
+        for (const g of F.geos) g.dispose();
+        Z.sombraF = null;
+        console.warn('AVE streaming: no se pudo fundir la sombra de ' + Z.id, e && e.message || e);
       }
-      const m = new THREE.Mesh(fundir(geos, false), matSombra);
-      for (const g of geos) g.dispose();
-      m.name = 'edificiosZonaSombra:' + Z.id; m.userData.sinSolido = true;
-      m.visible = false; m.castShadow = true; m.receiveShadow = false; m.matrixAutoUpdate = false;
-      m.layers.set(1);
-      if (R.sun && R.sun.shadow && R.sun.shadow.camera) R.sun.shadow.camera.layers.enable(1);
-      scene.add(m); Z.sombraMalla = m; Z.sombraModelos = modelos; subirTex(m);
     }
     // Versión _hd de los modelos de la zona: se pide en nivel cerca, en cualquier calidad, y se suelta al salir.
     function ajustarHD(Z, quiere) {
@@ -1175,7 +1233,7 @@ AVE.module('streaming', function (G) {
       Z.hd = quiere;
       if (!quiere) quitarHDZona(Z);
       for (const n of Z.modelos) if (tieneHD(n)) { if (quiere) pedir(res(n, 'hd'), Z.d + 1).catch(() => {}); else soltar(res(n, 'hd')); }
-      if (quiere) encolar(() => fundirHD(Z));
+      if (quiere) encolar(() => fundirHD(Z), 'fundirHD:' + Z.id);
     }
     // Zona vista de lejos: todos sus lejanos fundidos en una malla (un draw call por zona; el frustum la descarta entera). Se
     // usa en nivel lejos y también en nivel cerca mientras toda la zona quede más allá de la distancia de LOD de la cámara.
@@ -1185,7 +1243,7 @@ AVE.module('streaming', function (G) {
       const rs = [...Z.modelos].map(n => res(n, 'lejos'));
       if (!rs.every(r => r.estado === 'listo' && r.geo)) return;
       Z.fundir = { i: 0, geos: [], tex: [], mat: null };
-      encolar(() => fundirPaso(Z));
+      encolar(() => fundirPaso(Z), 'fundirPaso:' + Z.id);
     }
     function fundirPaso(Z) {
       const F = Z.fundir;
@@ -1198,7 +1256,7 @@ AVE.module('streaming', function (G) {
         (rl.mat ? F.tex : F.geos).push(geo.clone().applyMatrix4(I.m));
         if (rl.mat) F.mat = rl.mat;
       }
-      if (F.i < Z.inst.length || performance.now() - t0 >= 6) { encolar(() => (Z.fundir && Z.fundir.i < Z.inst.length) ? fundirPaso(Z) : fundirCerrar(Z)); return; }
+      if (F.i < Z.inst.length || performance.now() - t0 >= 6) { encolar(() => (Z.fundir && Z.fundir.i < Z.inst.length) ? fundirPaso(Z) : fundirCerrar(Z), 'fundirPaso:' + Z.id); return; }
       fundirCerrar(Z);
     }
     function fundirCerrar(Z) {
@@ -1264,9 +1322,9 @@ AVE.module('streaming', function (G) {
     function programarLejosGlobal() {
       if (lejosGlobal.pendiente) return;
       lejosGlobal.pendiente = true;
-      encolar(() => { lejosGlobal.pendiente = false; fundirLejosGlobal(); });
+      encolar(() => { lejosGlobal.pendiente = false; fundirLejosGlobal(); }, 'fundirLejosGlobal');
     }
-    function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z)); } }
+    function zonasDe(n) { for (const id in zonas) { const Z = zonas[id]; if (Z.nivel >= 1 && !Z.malla && Z.modelos.has(n)) encolar(() => fundirZona(Z), 'fundirZona:' + Z.id); } }
     const avisados = new Set();
     function respaldo(Z, n, err) {
       if (!avisados.has(n)) { avisados.add(n); console.warn('AVE edificios:', err && err.message || err); }
@@ -1319,7 +1377,7 @@ AVE.module('streaming', function (G) {
               else soltar(res(n, 'cerca'));
             }
           }
-          if (quiere) { encolar(() => fundirCercaZona(Z)); encolar(() => fundirSombraZona(Z)); }
+          if (quiere) { encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); encolar(() => fundirSombraZona(Z), 'fundirSombra:' + Z.id); }
           else { quitarCercaZona(Z); quitarSombraZona(Z); }
         }
         ajustarHD(Z, hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // forzada de lejos (cargarTodo): sin _hd

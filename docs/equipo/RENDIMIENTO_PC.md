@@ -167,6 +167,37 @@ movementTest 43/48, criaderoTest 17/18, e2eTest 28/31 y comicTest intermitente (
 HEAD puro 2× dio 63/67 con los mismos fallos). Esos rojos son preexistentes en main (no son
 del cambio); comicTest se verificó 6 veces hoy con y sin cambios.
 
+### Diagnóstico con atribución y troceo de trabajos (4-nov ~06:30–07:30 UTC)
+
+`kimi3_017.js` crece con `--fases` (reparte los cuadros largos: update / ganchos render /
+calentado / dibujo, vía `?fases=1` de renderer.js) y con atribución de trabajos de streaming
+> 25 ms (`G.trabajosLentos`, nombre por `encolar(fn, nombre)`).
+
+Medición limpia (PC sin otras sesiones, `mediciones-fases-r1.json`): el pico de
+camino_oeste (1076 ms) se reparte así — trabajos de cola: **subirTex 467 ms en UN solo
+trabajo** (la fusión nueva subía todas sus texturas de golpe; el troceo por malla no era
+suficiente), fundirPaso 35+108 ms, fundirLejosGlobal 97 ms; y en tramos posteriores
+fundirHD 421 ms (kelvin_aldea_colina) y fundirCerca 148 ms: fusiones de zona monolíticas.
+
+Fix en `streaming.js` (KIMI-017):
+- `subirTex`: UNA textura por trabajo de cola (antes, todas las de la malla en uno).
+- `fundirHD` / `fundirCercaZona` / `fundirSombraZona`: en tandas de ~6 ms por trabajo
+  (mismo patrón que `fundirPaso` del lejano). Mientras se refunde, la zona dibuja los lotes
+  por instancia (más draw calls unos cuadros, mismo aspecto; `terminar()` sigue drenando
+  la cola, las baterías no cambian).
+- Bug propio del troceo: hay mapas «placeholder» sin `userData` (construir/crearLote en
+  frío); el chequeo de `avSubida` ahora los crea. Sin este fix el mundo no arrancaba en
+  frío (streamingTest 0/1 «corre sin excepciones»).
+
+Verificación post-fix: streamingTest 22/23 (el rojo es el conocido alto/ciudadVista-650;
+draw calls 146 ≤ 150 en la peor vista) y movementTest 48/48 (colisiones, vuelo, toldos).
+
+**Pendiente:** re-medición de los tramos con la PC libre. La corrida post-fix
+(`mediciones-troceado-r1r2.json`) coincidió con las otras dos sesiones de Kimi en la PC
+(8+ Chrome headless ajenos): picos de hasta 5,3 s con solo 28 draw calls y 39 k tris (GPU
+robada, no representativa); en los datos, los trabajos de streaming > 25 ms ya no pasan de
+~190 ms (fundirPaso de una instancia grande) y subirTex quedó en ≤ 27 ms por trabajo.
+
 ## Recomendaciones (sin hacer, deciden Kelvin/Fernando)
 
 - PC: nada urgente. El presupuesto de 200 calls / 50 FPS se cumple con margen en las 24 tomas.

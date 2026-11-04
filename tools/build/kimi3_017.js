@@ -35,6 +35,7 @@ const TRAMOS = [
 ];
 const NTRAMOS = parseInt((() => { const i = process.argv.indexOf('--tramos'); return i > 0 ? process.argv[i + 1] : String(TRAMOS.length - 1); })(), 10);
 const SEG_TRAMO = 3.5;
+const FASES = process.argv.includes('--fases'); // KIMI-017: reparte los cuadros largos (update/ganchos/calentado/dibujo) + trabajos de streaming >25 ms
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 function servir() {
@@ -82,14 +83,17 @@ const MEDIR_JS = `(() => { const Q = window.__qaM || { dt: [], top: [] }; const 
   Q.dt = []; Q.top = [];
   return JSON.stringify({ cuadros: n, p50: q(0.5), p95: q(0.95), peor: n ? Math.round(orden[n - 1]) : 0, mas50: d.filter(x => x > 50).length, mas100: d.filter(x => x > 100).length, mas200: d.filter(x => x > 200).length, top: (Q.top || []).slice(0, 5), calls: st.calls != null ? st.calls : null, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null }); })()`;
 // mueve a Vittata a un tramo mirando al siguiente (sin drenar el streaming: reacciona como en el juego)
-const TRAMO_JS = (v, sig) => `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G, S = G.S;
+const TRAMO_JS = (v, sig, nLentos) => `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G, S = G.S;
+  const t0 = performance.now();
   let y = 30; try { y = (G.terreno.height ? G.terreno.height(${v.x}, ${v.z}) : 30) + 2; } catch (e) {}
   S.pos.x = ${v.x}; S.pos.y = y + 12; S.pos.z = ${v.z}; // 12 m de altura: vuelo rasante, la zona entra por el borde
   try { const M = G.fisica.MOVE; M.flying = true; M.posado = ''; M.grounded = false; M.speed = 30; } catch (e) {}
   try { const dx = ${sig.x} - ${v.x}, dz = ${sig.z} - ${v.z}; G.camara.yaw = Math.atan2(dx, dz); G.camara.place(true); } catch (e) {}
   await sleep(${Math.round(SEG_TRAMO * 1000)});
   const st = (() => { try { return AV.G.renderer.stats(); } catch (e) { return {}; } })();
-  return JSON.stringify({ pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.z), calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null }); })()`;
+  return JSON.stringify({ pos: Math.round(S.pos.x) + ',' + Math.round(S.pos.z), calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
+    fases: (window.__fases || []).filter(e => e[0] >= t0),
+    lentos: (((window.AV && AV.G && AV.G.trabajosLentos) || []).slice(${nLentos})) }); })()`;
 
 async function lanzarChrome(intentos) {
   let ultimo = '';
@@ -161,7 +165,7 @@ function limpiarHuerfanos() {
     await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: "try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}" + SONDA_JS }, ses);
-    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
+    await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1${FASES ? '&fases=1' : ''}` }, ses);
     if (!(await esperarListo(ses))) { console.log('  · el juego no arrancó'); res.rondas.push({ ronda, error: 'no arrancó' }); continue; }
     await cdp.bombear(2.0);
     await evaluar(cdp, ses, MEDIR_JS, 30, false); // vacía el registro
@@ -173,10 +177,12 @@ function limpiarHuerfanos() {
     for (let i = 1; i < TRAMOS.length && i <= NTRAMOS; i++) {
       const v = TRAMOS[i], sig = TRAMOS[Math.min(i + 1, TRAMOS.length - 1)];
       await evaluar(cdp, ses, MEDIR_JS, 30, false); // vacía: solo este tramo
-      const stats = JSON.parse(await evaluar(cdp, ses, TRAMO_JS(v, sig), 60));
+      const nLentos = await evaluar(cdp, ses, '((window.AV && AV.G && AV.G.trabajosLentos) || []).length', 10, false);
+      const stats = JSON.parse(await evaluar(cdp, ses, TRAMO_JS(v, sig, nLentos || 0), 60));
       const me = JSON.parse(await evaluar(cdp, ses, MEDIR_JS, 30, false));
-      tramos.push({ id: v.id, ...me });
-      console.log(`  · vuelo ${v.id}: p50 ${me.p50} p95 ${me.p95} peor ${me.peor} ms (>100: ${me.mas100} · >200: ${me.mas200}) · ${stats.calls} calls · ${stats.ktris} k tris`);
+      tramos.push({ id: v.id, ...me, fases: FASES ? stats.fases : undefined, lentos: stats.lentos && stats.lentos.length ? stats.lentos : undefined });
+      console.log(`  · vuelo ${v.id}: p50 ${me.p50} p95 ${me.p95} peor ${me.peor} ms (>100: ${me.mas100} · >200: ${me.mas200}) · ${stats.calls} calls · ${stats.ktris} k tris` +
+        (stats.lentos && stats.lentos.length ? ` · trabajos >25 ms: ${stats.lentos.map(l => l.n + ' ' + l.ms + 'ms').join(', ')}` : ''));
     }
     const errores = await evaluar(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false);
     console.log('  · errores de consola: ' + errores);
