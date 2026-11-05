@@ -18,7 +18,8 @@
      de Vittata; la mitad de las veces la bandada se posa allí en grupo (copas, ramas y techos: perchas()) 25–45 s, picotea y
      mira alrededor, y luego despega y se va. Si Vittata se acerca a menos de 4 m de una posada, despegan antes.
    - Las mismas dos mallas dibujan las cotorras residentes (src/game/residentes.js, que se carga desde aquí), las comunidades y
-     la ciudad viva (comunidades.js, ciudad_viva.js; RES_MAX = 46 instancias para todas): todo junto sigue en 2 draw calls. Por instancia: fase del aleteo, pose (alas abiertas/plegadas, cabeceo y giro de
+     la ciudad viva (comunidades.js, ciudad_viva.js; RES_MAX = 74 instancias para todas: hasta 48 de la ciudad viva
+     KIMI-081 + 26 de residentes/comunidades): todo junto sigue en 2 draw calls. Por instancia: fase del aleteo, pose (alas abiertas/plegadas, cabeceo y giro de
      la cabeza) y el color de la cabeza (iAcento, cob).
    Prueba: AV.bandadaTest(); con los residentes y el álbum, AV.vivoTest() (src/game/album.js). */
 window.AVBandada = function (G) {
@@ -27,7 +28,7 @@ window.AVBandada = function (G) {
   const S = G.S, scene = G.renderer.scene, AVE = window.AVE;
   const H = (x, z) => G.terreno.height(x, z);
   const NIVEL_N = { bajo: 6, medio: 12, alto: 20 };
-  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 46, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
+  const VELO = 13, ACOMPANA_S = 18, CERCA = 30, LOD_LEJOS = 55, RES_MAX = 74, POSA_MIN = 25, POSA_VAR = 20, VIAJE_P = 0.6;
   const TARDE_MIN = 150, TARDE_VAR = 150;
   const PALETA = ['#3c9a45', '#5fae3c', '#2f8a4f', '#7bb83e', '#c9a227', '#3f8f6a']; // si no hay pieles
 
@@ -88,7 +89,7 @@ window.AVBandada = function (G) {
     transformed = q + vec3(0.0, 0.03, 0.12);
   }`);
   };
-  const MAXN = NIVEL_N.alto + RES_MAX; // la bandada (hasta 20) + los residentes (hasta RES_MAX) en las mismas mallas
+  const MAXN = NIVEL_N.alto + RES_MAX; // la bandada (hasta 20) + residentes/comunidades/ciudad viva (hasta RES_MAX) en las mismas mallas
   function instanciada(geo) {
     const im = new THREE.InstancedMesh(geo, mat, MAXN);
     im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 3).fill(1), 3);

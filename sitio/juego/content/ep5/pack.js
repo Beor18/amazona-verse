@@ -118,7 +118,7 @@
       // La luna baja con su propio solPos: sin él heredaba el sol de mediodía del cap. 1 ([-42, 70, 46]) y se veía de día (BM127).
       // Los valores de la noche son los del look (src/game/look.js, vibrant_toon.noche); las nubes, apagadas y frías (nubeLuz).
       exposicion: 0.72,
-      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nubeSombra: '#28345a', nubeLuz: 0.4, permiso: 'noche' }),
+      cielo: Object.assign({}, window.AVE.mundoReal.cielo, { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nubeSombra: '#141c3a', nubeLuz: 0.12, permiso: 'noche' }),
       luces: Object.assign({}, window.AVE.mundoReal.luces, { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0, solPos: [-36, 20, 40] }),
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },
@@ -133,7 +133,7 @@
     }) : {
       tamano: 46, segmentos: 64,
       exposicion: 0.72,
-      cielo: { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nieblaAltura: [6, 48], nubeSombra: '#28345a', nubeLuz: 0.4, permiso: 'noche' },
+      cielo: { color: '#43588c', cenit: '#0d1840', sol: '#c4cdea', niebla: [60, 900], nieblaAltura: [6, 48], nubeSombra: '#141c3a', nubeLuz: 0.12, permiso: 'noche' },
       luces: { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0, solPos: [-24, 14, 30] },
       post: { saturacion: 1.08, contraste: 1.04, bloom: 0.2, vineta: 0.2 },
       mar: { laguna: '#3d8f96', somero: '#1a7a86', hondo: '#0b3a62' },

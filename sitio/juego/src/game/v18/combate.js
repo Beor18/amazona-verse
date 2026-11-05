@@ -32,7 +32,7 @@ window.AVV18Combate = function (G) {
     ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.',
     ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
-    bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
+    bloquea: '¡Bloqueado!', rompe: '¡Escudo roto!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
     ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.'
   };
   // Generador con semilla: la IA decide igual en cada prueba
@@ -107,29 +107,24 @@ window.AVV18Combate = function (G) {
   }
 
   // ---------- Contexto para las habilidades ----------
-  const ESC = H.get('escudo_plumas') || { reduceEmpuje: 0.4, reduceMareo: 0.35 };
   function golpear(de, blanco, g) {
     if (C.fase !== 'lucha' || !blanco) return false;
-    let n = g.plumas || 0, empuje = g.empuje || 0, mareo = g.mareo || 0, parcial = false;
-    if (blanco.escudo > 0) {
+    if (blanco.escudo > 0 && g.rompeEscudo) { quitarEscudo(blanco); flotante(TXT.rompe, 1.2); } // Ala fuerte: rompe el escudo y el golpe entra entero
+    const rc = H.recibir(de, blanco, g); // regla común (habilidades.js): escudo, invulnerabilidad, plumas, mareo, empujón
+    if (rc.escudo) {
       // Escudo de plumas: un golpe normal se para del todo; el grito se reduce, no se anula. En los dos casos se dispersa.
       C.stats.bloqueos++;
       quitarEscudo(blanco);
-      if (!g.interrumpe) {
+      if (rc.r === 'bloqueado') {
         fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar('land');
         if (blanco.ia) flotante(TXT.bloquea);
         emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: 0, bloqueado: true });
         return false;
       }
-      n = 0; empuje *= ESC.reduceEmpuje; mareo *= ESC.reduceMareo; parcial = true;
       if (blanco.ia || !de.ia) flotante(TXT.reduce, 1.2);
     }
-    if (blanco.inv > 0 && !g.forzar) return false;
-    const dir = g.dir || H.dirA(de, blanco);
-    blanco.plumas = Math.max(0, blanco.plumas - n);
-    blanco.mareo = Math.max(blanco.mareo, mareo);
-    if (n > 0) blanco.inv = mareo + 0.25;
-    blanco.kb.x = dir.x * empuje; blanco.kb.z = dir.z * empuje; blanco.kb.t = 0.3;
+    if (rc.r !== 'ok') return false;
+    const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
     fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z);
@@ -432,7 +427,7 @@ window.AVV18Combate = function (G) {
     r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
     // Defensa: una semilla del jugador que viene cerca → escudo (si es arausiaca y lo tiene) o un quiebro de lado
     const viene = C.balas.find(b => b.de === j && Math.hypot(b.m.position.x - r.pos.x, b.m.position.z - r.pos.z) < 5.5);
-    if (viene && r.esquivaT <= 0) {
+    if (viene && r.esquivaT <= 0 && !(r.marcada > 0)) {
       r.esquivaT = 2.4;
       if (r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < 0.55) { usar(r, 'escudo_plumas'); return; }
       if (azar() < 0.55) { r.lado = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * r.lado * 9; r.mov.z = d.x * r.lado * 9; r.mov.t = 0.28; C.stats.esquivas++; return; }
@@ -493,8 +488,10 @@ window.AVV18Combate = function (G) {
   function pasoBalas(dt) {
     for (let i = C.balas.length - 1; i >= 0; i--) {
       const b = C.balas[i], p = b.m.position;
-      b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const blanco = b.de === C.j ? C.r : C.j;
+      if (blanco.marcada > 0) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6);
+        b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k; } // Ojo del cenote: la semilla busca a la marcada
+      b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z;
       let fin = b.t >= b.vida || p.y < G.terreno.height(p.x, p.z) - 0.1;
       if (!fin && dx * dx + dy * dy + dz * dz < b.radio * b.radio) {
