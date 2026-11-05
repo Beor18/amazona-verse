@@ -273,8 +273,9 @@ window.AVV18Fx = function (G) {
       let dentro = true;
       for (let i = 0; i < 32; i++) { const dx = pPos[i * 3] - S.pos.x, dy = pPos[i * 3 + 1] - (S.pos.y + 1.35), dz = pPos[i * 3 + 2] - S.pos.z; if (pPos[i * 3 + 1] > -100 && Math.hypot(dx, dy, dz) > 2) dentro = false; }
       check('Las plumas giran alrededor de la cotorra (≤2 m del centro)', dentro);
-      avanza(0.5);                                   // pasa su duración: se dispara la dispersión sola
-      check('Al acabar el tiempo el escudo se dispersa solo', escudos.length === 0 || escudos[0].fase === 'dispersa');
+      avanza(0.6);                                   // pasa su duración (0,5 s; con margen: 5 pasos de 0,1 sumados a un tFx grande quedan a veces en 0,4999…): se dispersa sola
+      const eYo = escudos.find(x => x.clave === 'yo');
+      check('Al acabar el tiempo el escudo se dispersa solo', !eYo || eYo.fase === 'dispersa', eYo ? eYo.fase + ' t=' + (tFx - eYo.t0).toFixed(4) : 'ya no está');
       avanza(1.2);
       check('Tras la dispersión el escudo desaparece del todo', estado().escudos === 0 && !plumas.visible);
       escudo(null, 10); escudo('rival', 10);
