@@ -3,11 +3,13 @@
    src/engine/mundo.js, malla 'estructura:puente' y piso tipo 'puente' en terreno.plataformas). worldChangeId 'puente_villa'.
    - 'roto' (por defecto): faltan las tablas del centro (se ocultan sus triángulos en la malla existente, sin modelos nuevos)
      y el piso del puente no sostiene (when() del piso: se cae al río, se nada y se sale; nada de daño).
-     Dos maderas del puente quedaron en la orilla (modelo de la madera del pack): se recogen con Acción.
+     Dos maderas del puente quedaron en la orilla (modelo de la madera del pack): se recogen con Acción y van a S.inv.madera.
    - 'reparado': el aspecto de siempre, el piso vuelve a sostener (atajo a pie sobre el río) y en el centro sube la
      «corriente del puente»: volando dentro de ella, Vittata sube alto para planear lejos.
-   - Coste: 1 pluma de rival (G.v18, rewardKey 'combate_1' del frente A) + 2 maderas del puente (G.v18 'madera_puente').
-     No usa la madera de S.inv: la historia del cap. 1 la necesita toda (refugio y transmisor) y no se puede gastar aquí.
+   - Coste (Kelvin 5-nov, respuestas a las 18 preguntas): 2 maderas + 1 piedra del inventario de siempre (S.inv), con
+     G.objetos.has()/pay() del cap. 1: nada de inventario aparte ni de pluma de rival. Vías (decisión 9, también sin pelear):
+     ganar el duelo de la explanada (frente A) o juntar madera y piedra por el bosque (recursos del cap. 1 y las 2 maderas
+     de la orilla). Margen del cap. 1: hay 5 maderas + 3 de Luma y 4 piedras para 4 maderas y 2 piedras de la historia.
    - Persistencia: solo G.v18 (progreso.js). Se aplica al iniciar, en G.on('apply') y con cada evento v18 de tipo 'mundo'.
    Prueba: AV.v18RepararTest(). Solo se carga con la bandera V18 (src/boot.js). */
 window.AVV18Reparar = function (G) {
@@ -15,8 +17,12 @@ window.AVV18Reparar = function (G) {
   if (G.v18Reparar) return G.v18Reparar;
   const V = G.v18 || window.AVV18Progreso(G);
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
-  const ID = 'puente_villa', PIEZA = 'pluma_rival', MADERA = 'madera_puente';
-  const COSTE = { [PIEZA]: 1, [MADERA]: 2 };
+  const ID = 'puente_villa';
+  const COSTE = { madera: 2, piedra: 1 };
+  const inv = k => (S.inv && S.inv[k]) || 0;
+  const tiene = c => (G.objetos && G.objetos.has ? G.objetos.has(c) : Object.keys(c).every(k => inv(k) >= c[k]));
+  const pagar = c => { if (G.objetos && G.objetos.pay) G.objetos.pay(c); else for (const k in c) S.inv[k] -= c[k]; };
+  const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { G.guardado.autosave(); } catch (e) { /* sin guardado */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
   const sonar = n => { try { G.audio.play(n); } catch (e) { /* sin audio */ } };
   const estado = () => V.mundo(ID) || 'roto';
@@ -88,32 +94,31 @@ window.AVV18Reparar = function (G) {
   }
   // cada madera recogida es un cambio del mundo que se recuerda (G.v18.mundo); otorgar() es idempotente por la misma clave
   const cogida = M => V.mundo(M.key) === 'recogida';
+  // primero se recuerda en G.v18 (se guarda al momento) y luego suma a S.inv: nunca da dos veces la misma madera
   function recoger(M) {
-    if (cogida(M) || !V.otorgar(M.key, MADERA, 1)) return false;
-    V.cambiarMundo(M.key, 'recogida');
+    if (cogida(M) || !V.cambiarMundo(M.key, 'recogida')) return false;
+    S.inv.madera = inv('madera') + 1;
+    refrescarInv();
+    try { G.misiones.check(); } catch (e) { /* sin misiones */ }
     sonar('pickup');
     try { G.fx.recoger(M.x, M.y + 0.6, M.z, 'feathers', 12); } catch (e) { /* sin fx */ }
-    const n = V.cuantos(MADERA);
-    toast('+1 madera del puente (' + Math.min(n, 2) + '/2)');
+    toast('+1 madera del puente (' + Math.min(inv('madera'), COSTE.madera) + '/' + COSTE.madera + ')');
     sincronizar();
     return true;
   }
   function sincronizar() { for (const M of maderas) M.g.visible = !reparado() && !cogida(M); }
 
   // ---------- Reparar (interacción en la cabecera del lado de Villa Raíz) ----------
-  // qué falta: { pluma, madera } (0 si no falta)
-  function faltan() { return { pluma: Math.max(0, COSTE[PIEZA] - V.cuantos(PIEZA)), madera: Math.max(0, COSTE[MADERA] - V.cuantos(MADERA)) }; }
-  function textoFalta(f) {
-    if (f.pluma && f.madera) return 'Te falta 1 pluma de rival y ' + f.madera + (f.madera > 1 ? ' maderas' : ' madera') + '. Gana la pluma en el duelo de la explanada y busca las maderas en la orilla.';
-    if (f.pluma) return 'Te falta 1 pluma de rival. Gana una pluma en el duelo de la explanada.';
-    return f.madera > 1 ? 'Te faltan ' + f.madera + ' maderas del puente. Búscalas en la orilla, junto al puente.' : 'Te falta 1 madera del puente. Búscala en la orilla, junto al puente.';
-  }
+  // qué falta: { madera, piedra } (0 si no falta)
+  function faltan() { return { madera: Math.max(0, COSTE.madera - inv('madera')), piedra: Math.max(0, COSTE.piedra - inv('piedra')) }; }
+  const textoFalta = () => 'Para reparar el puente necesitas 2 maderas y 1 piedra (tienes ' + inv('madera') + ' y ' + inv('piedra') + '). Gana el duelo de la explanada o junta madera y piedra por el bosque.';
   function reparar() {
     if (reparado()) { toast('El puente ya está reparado. ¡Prueba la corriente del centro!'); return false; }
-    const f = faltan();
-    if (f.pluma || f.madera) { sonar('wrong'); toast(textoFalta(f), 4500); return false; }
-    if (!V.gastar(PIEZA, COSTE[PIEZA]) || !V.gastar(MADERA, COSTE[MADERA])) return false; // faltan() ya comprobó los dos
-    V.cambiarMundo(ID, 'reparado');
+    if (!tiene(COSTE)) { sonar('wrong'); toast(textoFalta(), 5000); return false; }
+    // el estado del mundo se guarda primero (G.v18, al momento) y luego se cobra: si algo corta en medio, nunca queda cobrado sin reparar
+    if (!V.cambiarMundo(ID, 'reparado')) return false;
+    pagar(COSTE);
+    refrescarInv();
     aplicar();
     sonar('unlock');
     const c = centro();
@@ -127,7 +132,7 @@ window.AVV18Reparar = function (G) {
     if (itReparar || !P.eje) return;
     const p = punto(-0.06);
     itReparar = G.interaccion.add({ id: 'v18_reparar_puente', x: p.x, z: p.z, r: 3.2, visible: () => !reparado(),
-      label: () => 'Reparar el puente: 1 pluma de rival + 2 maderas', use: reparar });
+      label: () => 'Reparar el puente: 2 maderas + 1 piedra', use: reparar });
   }
 
   // ---------- Corriente del puente (solo reparado): volando, sube hasta 28 m sobre el tablero ----------
@@ -175,35 +180,52 @@ window.AVV18Reparar = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const clave = V.clave();
     let crudo = null; try { crudo = localStorage.getItem(clave); } catch (e) { /* sin almacenamiento */ }
+    const invOrig = Object.assign({}, S.inv);
     const toasts = [], toastOrig = G.ui.toast;
     G.ui.toast = (t, ms) => { toasts.push(String(t)); return toastOrig.call(G.ui, t, ms); };
+    const ponerInv = (m, p) => { S.inv.madera = m; S.inv.piedra = p; };
+    const dosVias = t => /duelo de la explanada/.test(t) && /junta madera y piedra por el bosque/.test(t);
     try {
       for (let i = 0; i < 60 && !(aplicar() && P.rotoIdx); i++) await new Promise(r => setTimeout(r, 250));
       check('Encuentra el puente real (piso y malla)', P.piso && P.malla && P.ocultos > 20, 'triángulos del centro: ' + P.ocultos);
-      // limpio: sin pluma ni maderas, puente sin cambiar
-      V.borrar(); aplicar();
+      // limpio: sin materiales, puente sin cambiar
+      V.borrar(); aplicar(); ponerInv(0, 0);
       const c = centro(), idx = () => P.malla.geometry.index.array;
       const igual = (a, b) => { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; };
       check('Roto por defecto: estado, tablas del centro ocultas y el piso no sostiene',
         estado() === 'roto' && igual(idx(), P.rotoIdx) && !igual(idx(), P.idx0) && P.piso.when() === false);
       const sinPiso = T.plataformas.filter(p => p.id === 'puente' && (!p.when || p.when())).length === 0;
       check('Roto: no hay piso activo del puente ni corriente', sinPiso && !enCorriente(c.x, c.z, c.y + 1));
-      check('Interacción visible junto al puente con el coste', itReparar && itReparar.visible() && /1 pluma de rival \+ 2 maderas/.test(itReparar.label()));
+      check('Interacción visible junto al puente con el coste en madera y piedra', itReparar && itReparar.visible() && /2 maderas \+ 1 piedra/.test(itReparar.label()) && !/pluma/.test(itReparar.label()), itReparar && itReparar.label());
       toasts.length = 0;
-      check('Sin recursos no repara y dice qué falta y cómo conseguirlo',
-        reparar() === false && estado() === 'roto' && toasts.some(t => /pluma de rival/.test(t) && /duelo de la explanada/.test(t) && /2 maderas/.test(t)), toasts.join(' | '));
-      // pluma sola: sigue faltando madera
-      V.otorgar('prueba_b', PIEZA, 1); toasts.length = 0;
-      check('Con la pluma pero sin maderas no repara ni cobra', reparar() === false && V.cuantos(PIEZA) === 1 && toasts.some(t => /2 maderas/.test(t) && !/pluma/.test(t)), toasts.join(' | '));
-      // maderas en la orilla, recogidas con Acción
+      check('Sin materiales no repara y el aviso nombra las dos vías (duelo o juntar por el bosque)',
+        reparar() === false && estado() === 'roto' && toasts.some(t => dosVias(t) && /2 maderas y 1 piedra/.test(t)), toasts.join(' | '));
+      // con una pluma de rival (lo que antes pedía) sigue sin repararse: ya no cuenta
+      V.otorgar('prueba_b', 'pluma_rival', 1); toasts.length = 0;
+      check('La pluma de rival ya no paga el puente', reparar() === false && estado() === 'roto' && toasts.some(dosVias));
+      // materiales a medias: 2 maderas sin piedra, y 1 madera + 1 piedra
+      ponerInv(2, 0); toasts.length = 0;
+      const r1 = reparar();
+      ponerInv(1, 1);
+      const r2 = reparar();
+      check('Con materiales a medias no repara ni cobra', !r1 && !r2 && estado() === 'roto' && inv('madera') === 1 && inv('piedra') === 1 && toasts.filter(dosVias).length === 2, toasts.join(' | '));
+      // los recursos recolectables del cap. 1 dan madera y piedra al mismo S.inv (G.objetos)
+      const rec = (G.objetos && G.objetos.recursos) || [];
+      const tipos = t => rec.filter(r => r.tipo === t);
+      const lejos = t => tipos(t).reduce((m, r) => Math.min(m, Math.hypot(r.x - c.x, r.z - c.z)), Infinity);
+      check('Hay madera y piedra recolectables en el mundo (G.objetos, S.inv)', tipos('madera').length >= 2 && tipos('piedra').length >= 1 && G.objetos.has({ madera: 1, piedra: 1 }),
+        tipos('madera').length + ' maderas a ' + lejos('madera').toFixed(0) + ' m y ' + tipos('piedra').length + ' piedras a ' + lejos('piedra').toFixed(0) + ' m del centro del puente');
+      // maderas en la orilla, recogidas con Acción: van a S.inv.madera, una sola vez
+      ponerInv(0, 0);
       check('Hay 2 maderas del puente en la orilla', maderas.length === 2 && maderas.every(M => M.g.visible && M.it.visible()));
       maderas.forEach(M => M.it.use());
-      check('Recoger da 1 madera cada una, una sola vez', !recoger(maderas[0]) && V.cuantos(MADERA) === 2 && maderas.every(M => !M.g.visible && !M.it.visible()));
-      V.otorgar('prueba_b_extra', MADERA, 1); // una de sobra: debe quedar
+      check('Recoger la orilla da 1 madera de S.inv cada una, una sola vez', !recoger(maderas[0]) && inv('madera') === 2 && maderas.every(M => !M.g.visible && !M.it.visible()), 'madera ' + inv('madera'));
+      // una piedra del bosque y una madera de sobra (debe quedar)
+      S.inv.piedra = 1; S.inv.madera += 1;
       toasts.length = 0;
       const ok = reparar();
-      check('Con recursos repara y gasta exactamente 1 pluma y 2 maderas', ok && estado() === 'reparado' && V.cuantos(PIEZA) === 0 && V.cuantos(MADERA) === 1,
-        'pluma ' + V.cuantos(PIEZA) + ', madera ' + V.cuantos(MADERA));
+      check('Con materiales repara y descuenta exactamente 2 maderas y 1 piedra', ok && estado() === 'reparado' && inv('madera') === 1 && inv('piedra') === 0 && V.cuantos('pluma_rival') === 1,
+        'madera ' + inv('madera') + ', piedra ' + inv('piedra') + ', pluma ' + V.cuantos('pluma_rival'));
       check('Reparado: vuelve el tablero completo y el piso sostiene', igual(idx(), P.idx0) && P.piso.when() === true && !itReparar.visible() && toasts.some(t => /Puente reparado/.test(t)));
       const top = T.platformTop(P.piso, c.x, c.z);
       check('Utilidad: se cruza a pie (piso en el centro sobre el río)', top === top && Math.abs(top - c.y) < 0.2, 'top ' + top + ' / ' + c.y.toFixed(2));
@@ -214,15 +236,16 @@ window.AVV18Reparar = function (G) {
       const subio = S.pos.y - y0;
       Object.assign(S.pos, { x: guard.x, y: guard.y, z: guard.z }); M.flying = guard.flying; S.vy = guard.vy;
       check('Utilidad: la corriente del centro sube a Vittata volando', enCorriente(c.x, c.z, c.y + 3) && subio > 3, 'subió ' + subio.toFixed(2) + ' m');
-      // recarga: sigue reparado y no vuelve a cobrar
+      // recarga: sigue reparado y no vuelve a cobrar (aunque haya materiales de sobra)
       V.recargar(); P.malla.geometry.index.array.set(P.rotoIdx); aplicar();
       check('Tras recargar y volver a aplicar sigue reparado (malla, piso y estado)', estado() === 'reparado' && igual(idx(), P.idx0) && P.piso.when() === true);
-      toasts.length = 0;
-      check('Tras recargar no vuelve a cobrar', reparar() === false && V.cuantos(PIEZA) === 0 && V.cuantos(MADERA) === 1 && !V.otorgar('prueba_b', PIEZA, 1));
+      ponerInv(5, 5); toasts.length = 0;
+      check('Tras recargar no vuelve a cobrar', reparar() === false && inv('madera') === 5 && inv('piedra') === 5 && maderas.every(M => !M.g.visible && !recoger(M)));
       let guardado = null; try { guardado = JSON.parse(localStorage.getItem(clave)); } catch (e) { /* sin almacenamiento */ }
       check('Evidencia de guardado: <almacen>.v18 tiene mundo.puente_villa = reparado', guardado && guardado.mundo && guardado.mundo[ID] === 'reparado', clave);
     } catch (e) { check('Sin excepciones', false, e && e.stack); }
     G.ui.toast = toastOrig;
+    Object.assign(S.inv, invOrig); refrescarInv();
     try { if (crudo == null) localStorage.removeItem(clave); else localStorage.setItem(clave, crudo); } catch (e) { /* sin almacenamiento */ }
     V.recargar(); aplicar();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
