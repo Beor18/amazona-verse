@@ -23,9 +23,12 @@ Directiva: `docs/DIRECTIVA_V18_1.txt` (Kelvin, 5-nov). Ciclo a demostrar: **desc
 | Guardado | `<almacen>.v18` = `{ v: 1, especies, inv, otorgados, mundo, sel }`. Cambios de esquema: subir `v` y migrar en `progreso.js` | D |
 | Eventos de progreso | `G.emit('v18', { tipo: 'especie' \| 'inv' \| 'mundo' \| 'recompensa', … })` | D |
 
-## Demo D7 (provisional, reversible)
+## Demo D7 (decidido por Kelvin el 5-nov, ver DECISION_LOG)
 
-- **Especies:** Vittata (Isleñas) y *A. arausiaca* (Montañeras, Dominica), con dones distintos ya existentes como base.
-- **Rival IA:** una cotorra de entrenamiento con otra piel, sin canon nuevo (no es un enemigo ni la Maraña).
-- **Recompensa:** `pluma_rival` (rewardKey `combate_1`).
-- **Estructura:** un elemento roto ya presente en una zona existente; repararlo abre un atajo o un acceso útil.
+- **Especies y poderes:** Vittata «Grito del Yunque» (familia técnica PICO: abre el pico, ondas sonoras que empujan e interrumpen, alcance limitado, recuperación) y *A. arausiaca* «Escudo de plumas» (familia PLUMAS: alas abiertas, plumas que giran, reduce o bloquea un ataque un momento, recuperación; contrarresta en parte el grito).
+- **Ataques básicos de todas:** golpe de ala (cerca) y semilla (a distancia). El grito no es básico.
+- **Resistencia:** 5 plumas; energía de poderes aparte.
+- **Rival IA:** «Campeona de la Explanada», cotorra existente sin canon nuevo.
+- **Recompensa:** materiales del inventario existente (`S.inv`: madera, piedra…), con `G.v18.otorgar(rewardKey, …)` solo como registro idempotente de que esa victoria ya pagó; nada de moneda nueva. También se consiguen sin pelear.
+- **Estructura:** puente colgante junto a Villa Raíz (`puente_villa`), se paga con esos materiales y abre un atajo.
+- **Familias técnicas de poderes** para la matriz de las 36: PICO, OJOS, PLUMAS, ALAS.
