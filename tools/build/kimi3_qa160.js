@@ -167,9 +167,13 @@ const PROBAR_JS = `(async () => {
     // post-mortem: el test corrió sin wrapper (condiciones de arnés). m1 = estado al terminar; m2 = ~1,5 s de
     // juego después (revisar/liberarVencidos sueltan lo de gracia): lo que PERMANEZCA retenido con refs>0 es el leak.
     m1 = snap();
+    const faseQA = () => { try { const el = document.querySelector('#avqa-panel .avqa-msg'); return el ? String(el.textContent).slice(0, 80) : null; } catch (e) { return null; } };
+    const faseM1 = faseQA();
     await new Promise(r => setTimeout(r, 1500));
     m2 = snap(); seC = m2;
+    const faseM2 = faseQA();
     window.__qa160.push(m1, m2);
+    window.__qa160fase = { m1: faseM1, m2: faseM2 };
   }
   const snaps = window.__qa160 || [];
   const sinFugas = resTest && resTest.results ? resTest.results.filter(c => /Sin fugas/.test(c.name)).map(c => ({ ok: c.ok, extra: c.extra })) : null;
@@ -211,7 +215,7 @@ const PROBAR_JS = `(async () => {
     }
     nuevasGeo.sort((a, b) => b.dkb - a.dkb); }
   return JSON.stringify({
-    errorTest, sinFugas, passed: resTest && resTest.passed, total: resTest && resTest.total,
+    errorTest, sinFugas, faseQA: window.__qa160fase || null, passed: resTest && resTest.passed, total: resTest && resTest.total,
     hitos: window.__qa160p,
     heapM1: m1.heap, heapM2: m2.heap, kbM1: kb(m1), kbM2: kb(m2),
     nListosM1: Object.keys(listosM1).length, nListosM2: listosM2.length,
