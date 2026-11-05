@@ -8,6 +8,9 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 N="${1:-3}"; LOGS="$HOME/AmazonaVerse/logs_api"; mkdir -p "$LOGS"
 # 1-nov: tope de trabajadores vivos (con 9 la Mac se quedó sin memoria, los builds murieron con 143 y el publicador
 # no pasó las pruebas). Cuenta los que ya corren y solo arranca hasta AV_MAX (por defecto 3). Para más: AV_MAX=5.
+# 5-nov: Blender y las herramientas del build en el PATH de los trabajadores (sin esto, BM133 creyó que no había Blender).
+[ -d "$HOME/Applications/Blender.app/Contents/MacOS" ] && export PATH="$HOME/Applications/Blender.app/Contents/MacOS:$PATH"
+[ -d "$PWD/tools/build/bin" ] && export PATH="$PWD/tools/build/bin:$PATH"
 MAX="${AV_MAX:-3}"; VIVOS=$(pgrep -f 'ejecutor.py --cola' | wc -l | tr -d ' ')
 if [ "$VIVOS" -ge "$MAX" ]; then echo "Ya hay $VIVOS trabajadores vivos (tope $MAX); no arranco más. Para pararlos: pkill -f ejecutor.py"; exit 0; fi
 [ $((VIVOS + N)) -gt "$MAX" ] && { N=$((MAX - VIVOS)); echo "Hay $VIVOS vivos; arranco solo $N (tope $MAX)."; }
