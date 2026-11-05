@@ -135,7 +135,8 @@ AVE.module('actores', function (G) {
   G.on('voz', ev => { if (ev && ev.charIndex != null) mouth.vChar = ev.charIndex; });
   function mouthFor(dt, mine) {
     const dlg = $('dialog');
-    if (!mine || !dlg || dlg.hidden) { mouth.src = ''; mouth.open = 0; return null; }
+    if (!mine) { mouth.src = ''; mouth.open = 0; return null; }
+    if (!dlg || dlg.hidden) { mouth.src = ''; mouth.open = 0; return undefined; } // bocadillo (sin caja): ritmo genérico mientras dura la línea
     const text = ($('d-text') && $('d-text').textContent) || '';
     if (text !== mouth.text) { mouth.text = text; mouth.cur = 0; mouth.last = -1; mouth.t = 1; mouth.vStart = 0; mouth.vChar = null; } // la primera sílaba abre ya
     let speaking = false; try { speaking = !!(window.speechSynthesis && speechSynthesis.speaking); } catch (e) { speaking = false; }
@@ -274,7 +275,9 @@ AVE.module('actores', function (G) {
       P.groundY = MOVE.groundY; P.groundAt = MOVE.grounded ? groundAt : null;
       if (MOVE.shake) { P.shakeT = 0.7; MOVE.shake = false; }
       // Habla y expresión en diálogos; si escucha a otro, lo mira y atiende con curiosidad
-      const inDialog = G.dialogo.open(), mine = inDialog && talk.who === J.nombre;
+      // Kelvin 5-nov: «la cotorra nunca mueve el pico». Las líneas de la protagonista dicen «Vittata» (no el nombre que eligió
+      // el niño) y desde CG-8 casi todas van en bocadillos (libre), no en la caja: las dos cosas cuentan como hablar.
+      const inDialog = G.dialogo.open() || !!(G.dialogo.libre && G.dialogo.libre()), mine = inDialog && esYo(talk.who);
       const m = mouthFor(dt, mine);
       if (m === undefined) { P.mouth = null; P.talking = mine && performance.now() < talk.until; }
       else { P.mouth = mine ? m : null; P.talking = mine && mouth.src !== ''; }
@@ -350,7 +353,9 @@ AVE.module('actores', function (G) {
     C.wingMode = flying ? (sp < 2.5 ? 'hover' : 'fly') : air ? 'flap' : moving ? 'walk' : 'idle';
     C.groundY = ground; C.groundAt = !air ? groundAt : null;
     // Mira a Vittata cuando ella habla; se alegra cuando ella recoge algo
-    C.lookAt = G.dialogo.open() && G.dialogo.talk.who === J.nombre && player3D ? player3D.root.position.clone().setY(player3D.root.position.y + 1.4) : null;
+    const enCharla = G.dialogo.open() || !!(G.dialogo.libre && G.dialogo.libre()), tk = G.dialogo.talk;
+    C.talking = enCharla && tk.who === 'Aprendiz' && performance.now() < tk.until; // el aprendiz también mueve el pico al hablar
+    C.lookAt = enCharla && esYo(tk.who) && player3D ? player3D.root.position.clone().setY(player3D.root.position.y + 1.4) : null;
     C.expression = joy.t > 0 ? 'happy' : G.dialogo.open() ? 'curious' : flying ? 'happy' : 'neutral';
     if (compa.vest) compa.vest.antes();
     C.update(dt);
@@ -361,6 +366,7 @@ AVE.module('actores', function (G) {
   function groundAt(x, z) { return G.fisica.suelo(x, z, S.pos.y + 0.05); }
   // Dónde mirar en un diálogo: al NPC que habla (por nombre) o, si habla Vittata, al NPC visible más cercano (a menos de 7 m)
   const speakTarget = new THREE.Vector3();
+  function esYo(who) { return who === J.nombre || who === 'Vittata'; }
   function speakerPos(who) {
     let best = null, bd = 7;
     for (const id in npcs) {

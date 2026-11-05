@@ -302,6 +302,18 @@ window.AVMovimientoTest = function (G) {
         met.picoAperturas = flaps; met.picoHz = r2(flaps / (frase.length / 45));
         check('El pico se abre y cierra al ritmo del texto y se cierra al terminar', flaps >= 4 && met.picoHz <= 10 && tail, flaps + ' aperturas, ' + met.picoHz + ' por segundo');
         G.dialogo.clear(); dlg.classList.remove('is-typing'); anim(3);
+        // Kelvin 5-nov: «la cotorra nunca mueve el pico». Las líneas dicen «Vittata» (no el nombre que eligió el niño) y casi
+        // todas van en bocadillos (libre): ahí también tiene que hablar con el pico; y no cuando habla otra.
+        if (G.dialogo.libre && P3.bones && P3.bones.pico) {
+          const pico = P3.bones.pico, rango = () => { const v = []; for (let fr = 0; fr < 30; fr++) { anim(1); v.push(pico.rotation.x); } return Math.max(...v) - Math.min(...v); };
+          G.dialogo.say([{ who: 'Vittata', text: 'Mira, en un bocadillo también muevo el pico mientras hablo contigo.' }], null, { libre: true });
+          const habla = rango(), hablaFlag = !!P3.talking;
+          G.dialogo.clear(); anim(3);
+          G.dialogo.say([{ who: 'Iguaca', text: 'Ahora hablo yo y Vittata escucha.' }], null, { libre: true });
+          const escucha = !P3.talking;
+          G.dialogo.clear(); anim(3);
+          check('En un bocadillo, la línea de «Vittata» mueve el pico; cuando habla otra, no', hablaFlag && habla > 0.08 && escucha, 'rango ' + r2(habla) + ' rad · habla ' + hablaFlag + ' · escucha ' + escucha);
+        }
       }
       lap('pico');
       // 7. Agarrar → llevar → soltar (un objeto de prueba en el suelo)
