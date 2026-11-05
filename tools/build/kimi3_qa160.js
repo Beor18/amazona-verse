@@ -21,6 +21,8 @@ const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Applica
 const ETIQUETA = (() => { const i = process.argv.indexOf('--etiqueta'); return i > 0 ? process.argv[i + 1] : 'r1'; })();
 const CPU = parseFloat((() => { const i = process.argv.indexOf('--cpu'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
 const RONDAS = parseInt((() => { const i = process.argv.indexOf('--rondas'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
+const FRESCO = process.argv.includes('--fresco'); // misma historia que el arnés oficial: sin asentado previo extra
+const TRAZAR = process.argv.includes('--trazar'); // tracer entrada/salida (solo depuración de cuelgues; perturba el timing)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi160');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -67,10 +69,14 @@ const PROBAR_JS = `(async () => {
   const AV = window.AV, G = AV.G;
   const ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
   if (!ST) return JSON.stringify({ error: 'sin streaming' });
-  const tZonas = performance.now();
+  window.__qa160p = ['inicio'];
+  ${FRESCO ? '' : `const tZonas = performance.now();
   while (!Object.keys(ST.zonas).length && performance.now() - tZonas < 120000) await new Promise(r => setTimeout(r, 250));
+  window.__qa160p.push('zonas ' + Object.keys(ST.zonas).length);
   if (G.mundo && G.mundo.listo) await G.mundo.listo;
+  window.__qa160p.push('mundo.listo');
   await ST.listo; await ST.terminar();
+  window.__qa160p.push('previo listo+terminar');`}
   const bGeo = g => { let b = 0; if (!g) return 0; const at = g.attributes; for (const k in at) if (at[k].array) b += at[k].array.byteLength; if (g.index) b += g.index.array.byteLength; return b; };
   const mbCache = {};
   const mbDe = r => { const k = r.n + ':' + r.t; if (!(k in mbCache)) { let mb = 0; if (r.partes) for (const p of r.partes) mb += bGeo(p.geo); if (r.geo) mb += bGeo(r.geo); mbCache[k] = Math.round(mb / 1024); } return mbCache[k]; };
@@ -88,8 +94,30 @@ const PROBAR_JS = `(async () => {
   window.__qa160 = [];
   const origStats = ST.stats;
   ST.stats = function () { try { window.__qa160.push(snap()); } catch (e) {} return origStats.apply(this, arguments); };
+  window.__qa160p.push('wrapper puesto');
+  // trazador de funciones (opcional: perturba el timing, solo para depurar cuelgues)
+  ${TRAZAR ? `const marca = m => { const p = window.__qa160p; if (p.length > 60) p.splice(0, 20); p.push(m); };
+  const trazar = (obj, nom) => {
+    const orig = obj[nom];
+    if (typeof orig !== 'function') return;
+    obj[nom] = function () {
+      marca('→' + nom + ' ' + Math.round(performance.now()));
+      let r;
+      try { r = orig.apply(this, arguments); }
+      catch (e) { marca('←' + nom + ' THROW'); throw e; }
+      if (r && typeof r.then === 'function') return r.then(v => { marca('←' + nom); return v; },
+        e => { marca('←' + nom + ' REJ'); throw e; });
+      marca('←' + nom);
+      return r;
+    };
+  };
+  try {
+    trazar(ST, 'terminar'); trazar(ST, 'alrededor'); trazar(ST, 'revisar'); trazar(ST, 'liberarYa'); trazar(ST, 'soltarTodo');
+    trazar(G.renderer, 'render'); trazar(G.renderer, 'update'); trazar(G.camara, 'place');
+  } catch (e) { marca('trazar err ' + e); }` : ''}
   let resTest = null, errorTest = null;
   try { resTest = await AV.streamingTest(); } catch (e) { errorTest = String(e && e.message || e); }
+  window.__qa160p.push('test devuelto ' + (resTest ? resTest.passed + '/' + resTest.total : 'null') + (errorTest ? ' err:' + errorTest : ''));
   try { ST.stats = origStats; } catch (e) {}
   const snaps = window.__qa160 || [];
   const sinFugas = resTest && resTest.results ? resTest.results.filter(c => /Sin fugas/.test(c.name)).map(c => ({ ok: c.ok, extra: c.extra })) : null;
@@ -118,6 +146,7 @@ const PROBAR_JS = `(async () => {
   const kb = s => { let b = 0; for (const r of s.recursos) if (r.e === 'listo') b += r.mb; return b; };
   return JSON.stringify({
     errorTest, sinFugas, passed: resTest && resTest.passed, total: resTest && resTest.total,
+    hitos: window.__qa160p,
     heapM1: m1.heap, heapM2: m2.heap, kbM1: kb(m1), kbM2: kb(m2),
     nListosM1: Object.keys(listosM1).length, nListosM2: listosM2.length,
     nuevos: nuevos.slice(0, 50),
@@ -131,6 +160,9 @@ const PROBAR_JS = `(async () => {
 // sin creador — más rápido y con la misma historia de estado que el repro original de QA-160.
 const SEMILLA_SAVE_JS = `try {
   localStorage.clear(); sessionStorage.clear();
+  window.__qa160err = [];
+  window.addEventListener('error', e => { try { window.__qa160err.push('err: ' + String((e.error && e.error.stack) || e.message || e)); } catch (_) {} });
+  window.addEventListener('unhandledrejection', e => { try { window.__qa160err.push('rej: ' + String((e.reason && e.reason.stack) || e.reason)); } catch (_) {} });
   localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
   localStorage.setItem('amazonaverse.save', JSON.stringify({
     v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-kimi3q160-' + Math.random().toString(36).slice(2, 10),
@@ -225,8 +257,24 @@ function limpiarHuerfanos() {
       // progreso: el wrapper acumula una captura por cada ST.stats() del test (11 en total: 4 yaw, 2 medio,
       // 2 bajo, m1, m2, ciudad aérea). Si el test se atasca, esto dice en qué stats-call quedó.
       const progreso = setInterval(async () => {
-        try { const n = await evaluar(cdp, ses, 'window.__qa160 ? window.__qa160.length : -1', 15, false); console.log(`  · …progreso stats-calls=${n}`); } catch (e) { /* la página ocupada */ }
-      }, 30000);
+        try {
+          const p = await evaluar(cdp, ses, `JSON.stringify({p: (window.__qa160p || []).slice(-3), n: (window.__qa160 || []).length, err: (window.__qa160err || []).slice(-3),
+            sinColocar: (() => { try { const G = window.AV.G, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
+              const out = { nadaConPromesa: [], colaRefs0: [] };
+              for (const n in ST.recursos) for (const t in ST.recursos[n]) {
+                const r = ST.recursos[n][t];
+                if (r.estado === 'nada' && r.promesa) out.nadaConPromesa.push(n + ':' + t);
+                if (r.estado === 'cola' && !r.refs && !r.fijo) out.colaRefs0.push(n + ':' + t);
+              }
+              out.nadaConPromesa = out.nadaConPromesa.slice(0, 10); out.colaRefs0 = out.colaRefs0.slice(0, 10); return out; } catch (e) { return String(e && e.message || e); } })(),
+            diag: (() => { try { const G = window.AV.G, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
+              const d = ST._diag ? ST._diag() : null; if (!d) return null;
+              return { enVuelo: d.enVuelo, quieto: d.quieto, cola: d.cola.length, trabajos: d.trabajos.length,
+                colaPrimeras: d.cola.slice(0, 5).map(c => c.tipo + ':' + c.n + ' ' + c.estado + ' p' + c.prio + ' r' + c.refs),
+                trabPrimeros: d.trabajos.slice(0, 6) }; } catch (e) { return String(e && e.message || e); } })() })`, 20, false);
+          console.log(`  · …progreso ${p}`);
+        } catch (e) { /* la página ocupada */ }
+      }, 25000);
       let r;
       try { r = JSON.parse(await evaluar(cdp, ses, PROBAR_JS, 900, true)); }
       finally { clearInterval(progreso); }

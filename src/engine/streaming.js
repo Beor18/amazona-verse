@@ -933,7 +933,11 @@ AVE.module('streaming', function (G) {
         if (i < 0) break;
         const r = cola.splice(i, 1)[0];
         if (r.estado !== 'cola') continue;
-        if (!r.refs && !r.fijo) { r.estado = 'nada'; continue; }
+        // QA-160: un recurso pedido y luego soltado mientras aún estaba en cola (la zona cambió de nivel antes
+        // de que la descarga arrancara) se descarta aquí; hay que resolver su promesa, si no queda colgada para
+        // siempre y el Promise.all de listasCerca() (alrededor) espera un recurso que nadie necesita → cuelgue
+        // del test/herramienta con la cola vacía (medido 5-nov: carpa_a:cerca, monumento_b:cerca… nada+promesa).
+        if (!r.refs && !r.fijo) { r.estado = 'nada'; const ok = r.ok; r.ok = r.mal = r.promesa = null; if (ok) ok(r); continue; }
         r.estado = 'bajando'; enVuelo++;
         cargarGLB(r.tipo === 'lejos' ? r.n + '_lejos' : r.tipo === 'hd' ? r.n + (HD400 && r.n === 'complejo_ruinas' ? '_hd400' : '_hd') : r.n)
           .then(gltf => encolar(() => procesar(r, gltf.scene), 'procesar:' + r.n + ':' + r.tipo), err => { r.estado = 'error'; r.error = err; r.mal(err); })
