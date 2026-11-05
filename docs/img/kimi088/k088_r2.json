@@ -1,0 +1,186 @@
+{
+ "etiqueta": "r2",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "parte": "todas",
+ "chromeAjenosAlInicio": 0,
+ "head": "desconocido",
+ "partes": {
+  "ciclo": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 47.4,
+     "fpsP10": 40.7,
+     "peorMs": 40,
+     "n": 230,
+     "callsMed": 61,
+     "trisMed": 229228,
+     "callsMax": 61,
+     "trisMax": 229241,
+     "ult": {
+      "calls": 60,
+      "tris": 229177,
+      "geo": 85,
+      "tex": 123,
+      "prog": 43
+     },
+     "heap": 121
+    },
+    "fx": {
+     "passed": 17,
+     "total": 17,
+     "fallos": []
+    },
+    "ciclo": {
+     "passed": 22,
+     "total": 22,
+     "fallos": []
+    },
+    "sombraDispersa": null,
+    "puente": null,
+    "mundo": {
+     "calls": 50,
+     "tris": 214570,
+     "geo": 155,
+     "tex": 132,
+     "prog": 61,
+     "heap": 118
+    }
+   }
+  },
+  "amenaza": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "amenaza": {
+     "passed": 20,
+     "total": 20,
+     "fallos": []
+    },
+    "centro": {
+     "x": 167.3,
+     "z": 126.1
+    },
+    "fase": "lucha",
+    "sombra": {
+     "fpsMed": 43.7,
+     "fpsP10": 32.2,
+     "peorMs": 64,
+     "n": 319,
+     "callsMed": 82,
+     "trisMed": 266809,
+     "callsMax": 82,
+     "trisMax": 266809,
+     "ult": {
+      "calls": 82,
+      "tris": 266809,
+      "geo": 157,
+      "tex": 127,
+      "prog": 60
+     },
+     "heap": 126
+    },
+    "estadoSombra": {
+     "fase": "lucha",
+     "aciertos": 0,
+     "plumas": 5,
+     "visible": true
+    }
+   }
+  },
+  "misterio": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "misterio": {
+     "passed": 6,
+     "total": 7,
+     "fallos": [
+      "Los ojos se abren cerca y siguen al jugador :: apertura 0.00 · ojos 0"
+     ]
+    },
+    "rastro": {
+     "x": 166.9,
+     "z": 141.3
+    },
+    "marana": {
+     "fpsMed": 43.7,
+     "fpsP10": 39.1,
+     "peorMs": 32,
+     "n": 215,
+     "callsMed": 77,
+     "trisMed": 256290,
+     "callsMax": 77,
+     "trisMax": 256333,
+     "ult": {
+      "calls": 77,
+      "tris": 256289,
+      "geo": 133,
+      "tex": 122,
+      "prog": 56
+     },
+     "heap": 114
+    },
+    "ojos": null
+   }
+  }
+ }
+}

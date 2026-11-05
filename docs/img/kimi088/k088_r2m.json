@@ -1,0 +1,62 @@
+{
+ "etiqueta": "r2m",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "parte": "misterio",
+ "chromeAjenosAlInicio": 0,
+ "head": "desconocido",
+ "partes": {
+  "misterio": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "medio",
+     "sombras": 1024,
+     "sombraRadio": 22,
+     "sombraTerreno": false,
+     "post": 1,
+     "normalesSuelo": true,
+     "dosEscalas": false,
+     "texMax": 1024,
+     "flora": 0.8,
+     "floraDist": 0.8,
+     "pasto": 0.6,
+     "sombraFlora": true,
+     "agua": 1,
+     "particulas": 0.7,
+     "manual": true,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "misterio": {
+     "passed": 7,
+     "total": 7,
+     "fallos": []
+    },
+    "rastro": {
+     "x": 166.9,
+     "z": 141.3
+    },
+    "marana": {
+     "fpsMed": 30.1,
+     "fpsP10": 23.5,
+     "peorMs": 86,
+     "n": 141,
+     "callsMed": 127,
+     "trisMed": 477738,
+     "callsMax": 128,
+     "trisMax": 479909,
+     "ult": {
+      "calls": 127,
+      "tris": 479909,
+      "geo": 182,
+      "tex": 172,
+      "prog": 101
+     },
+     "heap": 421
+    },
+    "ojos": null
+   }
+  }
+ }
+}

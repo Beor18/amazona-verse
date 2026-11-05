@@ -1,0 +1,139 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "parte": "todas",
+ "chromeAjenosAlInicio": 0,
+ "head": "desconocido",
+ "partes": {
+  "ciclo": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 47.6,
+     "fpsP10": 40.5,
+     "peorMs": 34,
+     "n": 232,
+     "callsMed": 61,
+     "trisMed": 229227,
+     "callsMax": 61,
+     "trisMax": 229241,
+     "ult": {
+      "calls": 61,
+      "tris": 229241,
+      "geo": 83,
+      "tex": 123,
+      "prog": 44
+     },
+     "heap": 163
+    },
+    "fx": {
+     "passed": 17,
+     "total": 17,
+     "fallos": []
+    },
+    "ciclo": {
+     "passed": 19,
+     "total": 22,
+     "fallos": [
+      "7 · Pista del segundo objetivo opcional (reto extra con la otra cotorra) y bandera a la explanada :: ",
+      "9 · Tras un golpe al escudo, el aviso «¡Bloqueado!» de la rival se borra solo (sin quedarse en pantalla) :: {\"antes\":\"\",\"despues\":\"\"}",
+      "9 · Con dos cotorras distintas el reto extra queda cumplido (una vez) :: "
+     ]
+    },
+    "sombraDispersa": null,
+    "puente": null,
+    "mundo": {
+     "calls": 50,
+     "tris": 214218,
+     "geo": 157,
+     "tex": 133,
+     "prog": 61,
+     "heap": 127
+    }
+   }
+  },
+  "amenaza": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "amenaza": {
+     "passed": 20,
+     "total": 20,
+     "fallos": []
+    },
+    "centro": {
+     "x": 167.3,
+     "z": 126.1
+    },
+    "fase": "lucha",
+    "sombra": {
+     "fpsMed": 45.7,
+     "fpsP10": 40.8,
+     "peorMs": 35,
+     "n": 356,
+     "callsMed": 82,
+     "trisMed": 266812,
+     "callsMax": 83,
+     "trisMax": 267241,
+     "ult": {
+      "calls": 82,
+      "tris": 266809,
+      "geo": 165,
+      "tex": 127,
+      "prog": 60
+     },
+     "heap": 138
+    },
+    "estadoSombra": {
+     "fase": "lucha",
+     "aciertos": 0,
+     "plumas": 5,
+     "visible": true
+    }
+   }
+  },
+  "misterio": {
+   "erroresConsola": [],
+   "error": "JS@23:32: \"TypeError: Cannot read properties of undefined (reading 'x')\\n    at <anonymous>:23:32\""
+  }
+ }
+}
