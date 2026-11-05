@@ -10,6 +10,8 @@
      G.objetos.has()/pay() del cap. 1: nada de inventario aparte ni de pluma de rival. Vías (decisión 9, también sin pelear):
      ganar el duelo de la explanada (frente A) o juntar madera y piedra por el bosque (recursos del cap. 1 y las 2 maderas
      de la orilla). Margen del cap. 1: hay 5 maderas + 3 de Luma y 4 piedras para 4 maderas y 2 piedras de la historia.
+   - Materiales sin pelear (decisión 9): 2 piedras y 2 fibras recogibles (BM148) junto al puente y en el camino desde
+     Villa Raíz; la piedra va a S.inv.piedra y la fibra cuenta como madera (S.inv.madera); cada una una sola vez (G.v18.mundo).
    - Persistencia: solo G.v18 (progreso.js). Se aplica al iniciar, en G.on('apply') y con cada evento v18 de tipo 'mundo'.
    Prueba: AV.v18RepararTest(). Solo se carga con la bandera V18 (src/boot.js). */
 window.AVV18Reparar = function (G) {
@@ -106,7 +108,80 @@ window.AVV18Reparar = function (G) {
     sincronizar();
     return true;
   }
-  function sincronizar() { for (const M of maderas) M.g.visible = !reparado() && !cogida(M); }
+  function sincronizar() { for (const M of maderas) M.g.visible = !reparado() && !cogida(M); for (const R of materiales) R.g.visible = !cogida(R); }
+
+  // ---------- Materiales sin pelear (decisión 9 de Kelvin: también se consiguen explorando) ----------
+  // BM148: piedra_recogible.glb y fibra_recogible.glb (assets/models/mapa, copia base64 AV_MAPA_B64.<nombre> en _glb.js).
+  // Dos piedras y dos fibras: una de cada junto a la cabecera del puente (lado de Villa Raíz) y otra de cada en el camino
+  // de Villa Raíz al puente. Cada una se recoge una sola vez (G.v18.mundo['v18_<clave>'] = 'recogida', se guarda al momento).
+  // La piedra suma a S.inv.piedra. La fibra suma a S.inv.madera: el inventario de siempre no tiene «fibra» y la fibra sirve
+  // para atar las tablas, así que cuenta como material de madera (nada de tipo nuevo en S.inv, en el HUD ni en el guardado).
+  // Siguen ahí con el puente ya reparado: son del mundo (sirven también para el refugio del cap. 1). Siempre con ?v18=1.
+  const TIPOS = {
+    piedra: { glb: 'piedra_recogible', inv: 'piedra', label: 'Recoger piedra', aviso: '+1 piedra', color: '#9aa0a3' },
+    fibra: { glb: 'fibra_recogible', inv: 'madera', label: 'Recoger fibra', aviso: '+1 fibra (cuenta como madera)', color: '#8a9a4a' }
+  };
+  const modelos = {};
+  function modelo(tipo) {
+    const n = TIPOS[tipo].glb, url = 'assets/models/mapa/' + n + '.glb';
+    if (!modelos[n]) modelos[n] = G.assets.loadGLB(url, { b64: () => (window.AV_MAPA_B64 || {})[n], script: url.replace(/\.glb$/, '_glb.js'), base: '', error: 'recogible no disponible: ' + n })
+      .then(g => g.scene, () => null);
+    return modelos[n];
+  }
+  // respaldo liso (si el .glb no carga): la forma de los recursos del cap. 1
+  function respaldo(tipo) {
+    const m = new THREE.Mesh(tipo === 'piedra' ? new THREE.DodecahedronGeometry(0.28, 0) : new THREE.CylinderGeometry(0.12, 0.18, 0.5, 6), new THREE.MeshLambertMaterial({ color: TIPOS[tipo].color }));
+    m.position.y = 0.25; return m;
+  }
+  const materiales = [];
+  // sitio en el suelo seco cerca de (x, z): prueba un anillo y se queda con el primer punto fuera del agua y sin muro
+  function enSeco(x, z) {
+    const seco = (px, pz) => {
+      try {
+        const h = T.height(px, pz);
+        if (G.agua && G.agua.levelAt(px, pz) > h - 0.2) return false;
+        const F = G.fisica, q = { x: px, z: pz, y: h };
+        if (F && F.pushOut) for (const c of F.colliders) { F.pushOut(q, c, 0.7); if (q.x !== px || q.z !== pz) return false; }
+      } catch (e) { /* sin consulta */ }
+      return true;
+    };
+    if (seco(x, z)) return { x, z };
+    for (let r = 1.5; r <= 6; r += 1.5) for (let a = 0; a < 8; a++) { const px = x + Math.cos(a * 0.785) * r, pz = z + Math.sin(a * 0.785) * r; if (seco(px, pz)) return { x: px, z: pz }; }
+    return { x, z };
+  }
+  function sitiosMateriales() {
+    const L = (T.mapa && T.mapa.lugares) || {};
+    const a = punto(-0.08), v = L.villa ? { x: L.villa.x, z: L.villa.z } : punto(-1.2);
+    const camino = f => ({ x: v.x + (a.x - v.x) * f, z: v.z + (a.z - v.z) * f });
+    const p1 = punto(-0.2, -4.6), f1 = punto(-0.3, 4.2), p2 = camino(0.6), f2 = camino(0.35);
+    return [['piedra', 'piedra_1', p1], ['fibra', 'fibra_1', f1], ['piedra', 'piedra_2', { x: p2.x - 2.5, z: p2.z + 1.5 }], ['fibra', 'fibra_2', { x: f2.x + 2, z: f2.z - 1.5 }]];
+  }
+  function ponerMateriales() {
+    if (materiales.length || !P.eje) return;
+    for (const [tipo, k, s] of sitiosMateriales()) {
+      const p = enSeco(s.x, s.z), y = T.height(p.x, p.z), key = 'v18_' + k;
+      const g = new THREE.Group(); g.name = 'v18-recogible-' + k; g.rotation.y = materiales.length * 1.7;
+      g.position.set(p.x, y, p.z); scene.add(g);
+      const R = { key, tipo, x: p.x, z: p.z, y, g, modelo: null };
+      modelo(tipo).then(m => { const o = m ? m.clone(true) : respaldo(tipo); R.modelo = m ? 'glb' : 'respaldo'; g.add(o); });
+      R.it = G.interaccion.add({ id: 'v18_recogible_' + k, x: p.x, z: p.z, r: 2.2, visible: () => !cogida(R), label: () => TIPOS[tipo].label, use: () => recogerMaterial(R) });
+      materiales.push(R);
+    }
+    sincronizar();
+  }
+  // como las maderas de la orilla: primero la marca en G.v18 (al momento) y luego suma a S.inv; nunca da dos veces
+  function recogerMaterial(R) {
+    if (cogida(R) || !V.cambiarMundo(R.key, 'recogida')) return false;
+    const T0 = TIPOS[R.tipo];
+    S.inv[T0.inv] = inv(T0.inv) + 1;
+    refrescarInv();
+    try { G.misiones.check(); } catch (e) { /* sin misiones */ }
+    sonar('pickup');
+    try { G.fx.recoger(R.x, R.y + 0.5, R.z, 'leaves', 10); } catch (e) { /* sin fx */ }
+    toast(T0.aviso, 2400);
+    sincronizar();
+    return true;
+  }
 
   // ---------- Reparar (interacción en la cabecera del lado de Villa Raíz) ----------
   // qué falta: { madera, piedra } (0 si no falta)
@@ -161,7 +236,7 @@ window.AVV18Reparar = function (G) {
   // ---------- Aplicar el estado guardado ----------
   function aplicar() {
     if (!buscarPiso()) return false;
-    ponerInteraccion(); ponerMaderas(); sincronizar();
+    ponerInteraccion(); ponerMaderas(); ponerMateriales(); sincronizar();
     pintar();
     return true;
   }
@@ -243,6 +318,33 @@ window.AVV18Reparar = function (G) {
       check('Tras recargar no vuelve a cobrar', reparar() === false && inv('madera') === 5 && inv('piedra') === 5 && maderas.every(M => !M.g.visible && !recoger(M)));
       let guardado = null; try { guardado = JSON.parse(localStorage.getItem(clave)); } catch (e) { /* sin almacenamiento */ }
       check('Evidencia de guardado: <almacen>.v18 tiene mundo.puente_villa = reparado', guardado && guardado.mundo && guardado.mundo[ID] === 'reparado', clave);
+
+      // ---- Materiales sin pelear (decisión 9): piedras y fibras recogibles (BM148) cerca de Villa Raíz y del puente ----
+      V.borrar(); aplicar(); ponerInv(0, 0); toasts.length = 0;
+      for (let i = 0; i < 40 && materiales.some(R => !R.modelo); i++) await new Promise(r => setTimeout(r, 250));
+      const cuenta = t => materiales.filter(R => R.tipo === t).length;
+      const L = (T.mapa && T.mapa.lugares) || {}, vi = L.villa;
+      const dist = R => Math.round(Math.min(Math.hypot(R.x - c.x, R.z - c.z), vi ? Math.hypot(R.x - vi.x, R.z - vi.z) : Infinity));
+      check('Hay 2 piedras y 2 fibras recogibles (modelos BM148) visibles cerca de Villa Raíz y del puente',
+        cuenta('piedra') === 2 && cuenta('fibra') === 2 && materiales.every(R => R.g.visible && R.it.visible() && R.modelo === 'glb' && R.g.children.length && dist(R) < 90),
+        materiales.map(R => R.tipo + ' ' + R.modelo + ' a ' + dist(R) + ' m').join(', '));
+      check('Cada recogible está en suelo seco (fuera del agua)', materiales.every(R => !(G.agua && G.agua.levelAt(R.x, R.z) > R.y - 0.2)));
+      const piedra1 = materiales.find(R => R.tipo === 'piedra'), fibra1 = materiales.find(R => R.tipo === 'fibra');
+      piedra1.it.use(); fibra1.it.use();
+      check('Recoger suma al inventario de siempre: piedra → S.inv.piedra, fibra → S.inv.madera, con aviso corto',
+        inv('piedra') === 1 && inv('madera') === 1 && !piedra1.g.visible && !fibra1.it.visible() && toasts.some(t => t === '+1 piedra') && toasts.some(t => /^\+1 fibra/.test(t)) && toasts.every(t => t.length < 40),
+        'madera ' + inv('madera') + ', piedra ' + inv('piedra') + ' · ' + toasts.join(' | '));
+      check('Recoger otra vez no suma', !recogerMaterial(piedra1) && !recogerMaterial(fibra1) && inv('piedra') === 1 && inv('madera') === 1);
+      V.recargar(); aplicar();
+      check('Tras recargar siguen recogidos (marca en G.v18) y no se repiten', V.mundo(piedra1.key) === 'recogida' && V.mundo(fibra1.key) === 'recogida' && !piedra1.g.visible && !piedra1.it.visible() && !recogerMaterial(piedra1) && !recogerMaterial(fibra1) && inv('piedra') === 1 && inv('madera') === 1);
+      // el puente se paga sin pelear: 1 piedra recogida + 1 fibra + 1 madera de la orilla, sin el duelo
+      maderas[0].it.use();
+      toasts.length = 0;
+      const sinPelear = !V.otorgado('combate_1') && reparar();
+      check('El puente se paga sin pelear (piedra y fibra recogidas + madera de la orilla), sin el premio del duelo',
+        sinPelear && estado() === 'reparado' && inv('madera') === 0 && inv('piedra') === 0 && !V.otorgado('combate_1'), 'madera ' + inv('madera') + ', piedra ' + inv('piedra'));
+      const resto = materiales.filter(R => !cogida(R));
+      check('Con el puente reparado, los demás recogibles siguen en el mundo', resto.length === 2 && resto.every(R => R.g.visible && R.it.visible()));
     } catch (e) { check('Sin excepciones', false, e && e.stack); }
     G.ui.toast = toastOrig;
     Object.assign(S.inv, invOrig); refrescarInv();
@@ -251,6 +353,6 @@ window.AVV18Reparar = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18Reparar = { ID, COSTE, estado, reparar, faltan, enCorriente, aplicar, maderas, P, test };
+  G.v18Reparar = { ID, COSTE, estado, reparar, faltan, enCorriente, aplicar, maderas, materiales, recogerMaterial, P, test };
   return G.v18Reparar;
 };
