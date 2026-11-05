@@ -325,6 +325,7 @@ function limpiarHuerfanos() {
     await cdp.bombear(1.5);
   }
   srv.close();
+  limpiarHuerfanos(); // Chrome 156: el navegador queda detached tras chrome.kill(); no dejar zombis que roben GPU
   const out = path.join(SALIDA, `qa160-${ETIQUETA}.json`);
   fs.writeFileSync(out, JSON.stringify(res, null, 1));
   console.log('· evidencia: ' + out);
