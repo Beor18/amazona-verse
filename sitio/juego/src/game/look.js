@@ -204,6 +204,21 @@ window.AVLook = function (G) {
   // normal de la flora (corteza y roca) va a la mitad del tope: se nota poco y ahorra ~18 MB en el móvil.
   const esBitmap = img => typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap;
   function topeK(max, k, flora) { return flora && max && k === 'normalMap' && R.calidad.nivel !== 'alto' ? max >> 1 : max; }
+  // KIMI-055: al conmutar la calidad, encoger recortaba TODAS las texturas de la escena dentro del
+  // mismo evento (un lienzo + drawImage por textura: ~0,4-0,5 s de hilo a CPU ×4 en el flip, QA-53).
+  // Con diferirRec el evento solo apunta el recorte y los cuadros siguientes lo reparten (tope de
+  // tiempo por cuadro); el re-subido a la GPU lo drena después subirTexturas (renderer.js), que ya
+  // recoge las «stale» por versión (KIMI-054). Aplicar/quitar look invalida la cola (recGen) para
+  // no pisar un recorte más reciente.
+  const colaRec = [], enCola = new Set();
+  let diferirRec = false, recGen = 0;
+  function recortarYa(t, max) {
+    const o = imagenes.get(t);
+    if (!o) return;
+    if (t.image && t.image.width === max && t.image !== o) return;
+    const c = document.createElement('canvas'); c.width = Math.min(max, o.width); c.height = Math.min(max, o.height);
+    try { c.getContext('2d').drawImage(o, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; } catch (e) { /* imagen sin leer: se queda */ }
+  }
   function encoger(t, max, k, flora) {
     const img = t.image;
     if (t.isCanvasTexture && !imagenes.has(t) && !(flora && esBitmap(img))) return;
@@ -216,9 +231,21 @@ window.AVLook = function (G) {
     if (!imagenes.has(t)) { if (!(img.width > max && img.height > max)) return; imagenes.set(t, img); }
     const o = imagenes.get(t);
     if (!max) { if (t.image !== o) { t.image = o; t.needsUpdate = true; } return; }
-    if (t.image && t.image.width === max && t.image !== o) return;
-    const c = document.createElement('canvas'); c.width = Math.min(max, o.width); c.height = Math.min(max, o.height);
-    try { c.getContext('2d').drawImage(o, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; } catch (e) { /* imagen sin leer: se queda */ }
+    if (diferirRec) { // KIMI-055: el flip apunta y la cola recorta por cuadros
+      if (enCola.has(t)) for (let i = colaRec.length - 1; i >= 0; i--) if (colaRec[i].t === t) { colaRec[i].max = max; colaRec[i].gen = recGen; break; }
+      else { colaRec.push({ t, max, gen: recGen }); enCola.add(t); }
+      return;
+    }
+    recortarYa(t, max);
+  }
+  function pasarColaRec() {
+    if (!colaRec.length) return;
+    const t0 = performance.now(); let n = 0;
+    while (colaRec.length && (n === 0 || performance.now() - t0 < 3)) {
+      const e = colaRec.shift(); enCola.delete(e.t);
+      if (e.gen !== recGen) continue;
+      recortarYa(e.t, e.max); n++;
+    }
   }
   // Especie de un material de hoja: índice estable (nombre de la textura o de su imagen; si no, orden de llegada) → paleta
   const especieDe = new WeakMap(); let especies = 0;
@@ -346,6 +373,7 @@ window.AVLook = function (G) {
     const L = LOOKS[nombre] || null;
     if (!L) { quitar(); try { sessionStorage.setItem('ave.look', 'fabrica'); } catch (e) { /* sin almacén */ } return null; } // «Fábrica» elegido a propósito: no vuelve el DEFECTO
     actual = nombre;
+    recGen++; colaRec.length = 0; enCola.clear(); // KIMI-055: un look nuevo recorta ya de forma síncrona
     aplicarChunks(L); aplicarAmbiente(ambienteDe(L)); barrer(L, true);
     G.emit('contexto', true); // el atlas de impostores de la flora se repinta con el look
     try { sessionStorage.setItem('ave.look', nombre); } catch (e) { /* sin almacén */ }
@@ -355,6 +383,7 @@ window.AVLook = function (G) {
   function quitar() {
     if (!actual) return null;
     actual = null;
+    recGen++; colaRec.length = 0; enCola.clear(); // KIMI-055
     aplicarChunks(null); aplicarAmbiente(null); barrer(null, true);
     G.emit('contexto', true);
     try { sessionStorage.removeItem('ave.look'); } catch (e) { /* sin almacén */ }
@@ -371,12 +400,17 @@ window.AVLook = function (G) {
   let huella = -1;
   const huellaDe = () => { const m = R.renderer.info.memory; return m.geometries * 4096 + m.textures; };
   G.on('render', () => {
+    pasarColaRec(); // KIMI-055: reparte el recorte de texturas del flip en varios cuadros
     if (!actual) { const h = huellaDe(); if (h !== huella) { huella = h; recortar(); } return; } // fábrica: solo el tope de la calidad
     const h = huellaDe(), nuevo = h !== huella; huella = h;
     if (nuevo || ++barridoN % 90 === 0) { barrer(LOOKS[actual], false); gradoFabrica(LOOKS[actual]); if (!nuevo && !pausaAmbiente && climaQuieto()) aplicarAmbiente(ambienteDe(LOOKS[actual])); }
   }, 90);
   G.on('mundoListo', () => { if (actual) barrer(LOOKS[actual], false); });
-  G.on('calidad', () => { if (actual) barrer(LOOKS[actual], false); else recortar(); });
+  G.on('calidad', () => { // KIMI-055: el flip apunta los recortes; los cuadros siguientes los hacen
+    diferirRec = true;
+    try { if (actual) barrer(LOOKS[actual], false); else recortar(); }
+    finally { diferirRec = false; }
+  });
 
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
   function medir() {

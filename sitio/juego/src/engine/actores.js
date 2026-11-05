@@ -181,7 +181,7 @@ AVE.module('actores', function (G) {
   // la percha, en el último metro las patas se estiran más con los dedos abiertos y la cabeza mira dónde se va a posar.
   // Solo postura (character.js posarPose y ANIM.posar): la física no cambia. dur en s; cabeceo en rad (+ de pico); nido en m;
   // salto: fuerza del gesto si llega saltando (no volando). n cuenta los gestos (pruebas).
-  const POSAR = { dur: 1.1, cabeceo: 0.16, hz: 2.2, amort: 3.4, nido: 2.2, salto: 0.6 };
+  const POSAR = { dur: 1.1, red: 1.2, cabeceo: 0.16, hz: 2.2, amort: 3.4, nido: 2.2, salto: 0.6 };
   const posa = { aire: false, t: 9, tipo: '', fuerza: 0, n: 0 };
   function nidoCerca(x, z) {
     const it = G.interaccion && G.interaccion.find && G.interaccion.find('nido_criadero');
@@ -221,14 +221,34 @@ AVE.module('actores', function (G) {
       const alto = S.pos.y - MOVE.groundY, fh = F.TUNING.flareHeight, ate = fase === 'aterrizaje';
       const pre = ate ? suave((fh + LAND.pre - alto) / LAND.pre) : 0, fl = ate ? suave((fh - alto) / LAND.flare) : 0;
       const alc = ate ? suave(LAND.alcance - alto) : 0;
-      if (aterr.vol && !MOVE.flying && MOVE.grounded && !snap) aterr.t = 0; // acaba de posarse volando
+      // acaba de posarse (volando o cayendo): empieza la ventana de la red de apoyo. La señal de física
+      // MOVE.land (aplastón, squashTime) cubre el aterrizaje que se resuelve dentro de un solo step y sync3D
+      // no llegó a ver ningún cuadro aéreo (visto en movementTest «Posarse» bajo contención, BUG-QA81: con
+      // posa.aire y aterr.vol stale ni la vía 'aire' ni la red evalúan y el gesto de posarse no dispara).
+      const aplaston = MOVE.land > 0 && MOVE.land >= F.TUNING.squashTime - dt * 1.5;
+      if ((aterr.vol || aplaston) && !MOVE.flying && MOVE.grounded && !snap) { aterr.t = 0; posa.landN = posa.n; }
       aterr.vol = MOVE.flying; aterr.t = snap ? 9 : aterr.t + dt;
       // Posarse: al tocar una percha (viniendo del aire, volando o saltando) empieza el gesto; mientras dura, no hay asentarse general
       const enSuelo = MOVE.grounded && !MOVE.swimming;
       posa.t = snap ? 9 : posa.t + dt;
       if (enSuelo && posa.aire && !snap) {
         const tipo = tipoPosada(F, MOVE, false);
+        (posa.hist || (posa.hist = [])).push({ via: 'aire', t: Math.round(posa.t * 100) / 100, tipo: tipo || '', posado: MOVE.posado || '', que: (G.solidos && G.solidos.que) ? (G.solidos.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '') : '', gy: Math.round(MOVE.groundY * 100) / 100, hy: Math.round(H(S.pos.x, S.pos.z) * 100) / 100, y: Math.round(S.pos.y * 100) / 100, fly: MOVE.flying ? 1 : 0 });
+        if (posa.hist.length > 10) posa.hist.shift();
         if (tipo) { posa.t = dt; posa.tipo = tipo; posa.fuerza = aterr.t <= dt * 1.5 ? 1 : POSAR.salto; posa.n++; }
+      } else if (enSuelo && !snap && posa.n === posa.landN && aterr.t <= POSAR.red && !moving) {
+        // Red de apoyo: el cuadro exacto del contacto puede evaluar sin tipo (consulta de sólidos a mitad de rasterizar,
+        // o un place(snap) ese cuadro — visto en movementTest «Posarse» con GPU real bajo contención, 3/3 en paralelo).
+        // Si este aterrizaje no disparó el gesto (posa.n === posa.landN), se re-evalúa cada cuadro quieto y recién
+        // posada volando (aterr.t <= POSAR.red; en saltos aterr.t vale 9 y queda fuera) hasta que la rasterización
+        // devuelve el sólido: el mismo gesto arranca algo más tarde (solo bajo carga extrema). El guarda
+        // posa.n === posa.landN la apaga en cuanto el gesto dispara, por 'aire' o por la propia red (sin doble disparo).
+        const tipo = tipoPosada(F, MOVE, false);
+        if (tipo) {
+          (posa.hist || (posa.hist = [])).push({ via: 'red', t: Math.round(posa.t * 100) / 100, tipo, posado: MOVE.posado || '', que: (G.solidos && G.solidos.que) ? (G.solidos.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '') : '', gy: Math.round(MOVE.groundY * 100) / 100, hy: Math.round(H(S.pos.x, S.pos.z) * 100) / 100, y: Math.round(S.pos.y * 100) / 100, fly: MOVE.flying ? 1 : 0 });
+          if (posa.hist.length > 10) posa.hist.shift();
+          posa.t = dt; posa.tipo = tipo; posa.fuerza = 1; posa.n++; posa.red = (posa.red || 0) + 1;
+        }
       }
       posa.aire = !MOVE.grounded && !MOVE.swimming;
       const posando = enSuelo && posa.t < POSAR.dur && !moving;
