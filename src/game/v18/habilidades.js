@@ -1,12 +1,15 @@
 /* Juego · V18.1 frente A · motor de habilidades por especie (D7). Contrato abilityId en docs/equipo/V18_CONTRATOS.md:
-   { id, especies | familias, coste (energía), cooldown (s), efecto: fn(ctx), fx, nombre }.
-   - Tres ataques básicos comunes: golpe de ala (cerca), semilla (a distancia) y grito (empuja, sin quitar plumas).
-   - Un poder exclusivo por familia, basado en los dones de src/game/dones.js (sin tocarlo; solo se lee G.dones.de):
-       Isleñas (Vittata)      · «Ráfaga doble»     = dos acometidas seguidas que empujan (el impulso encadenado del don rafaga).
-       Montañeras (arausiaca) · «Columna de nube»  = sube y esquiva todo un rato, y aparta a quien esté cerca (don columna: vy 6, burbujas).
-   - Energía 0–100 que se recarga sola; cada habilidad tiene su espera.
-   - El motor no sabe de duelos: el efecto recibe ctx = { yo, otro, golpear(blanco, {plumas, empuje, mareo, dir}), lanzar(p),
-     mover(luchador, vx, vz, s), subir(luchador, alto, s), fx(tipo, x, y, z), sonar(nombre) } y lo arma quien lo usa (combate.js).
+   { id, especies | familias, tecnica, coste (energía), cooldown (s), efecto: fn(ctx), fx, nombre }.
+   Kelvin 5-nov (respuestas definitivas, Demo D7):
+   - Dos ataques básicos comunes a TODAS: golpe de ala (cerca) y semilla (a distancia). El grito ya no es básico.
+   - Un poder por especie/familia:
+       Isleñas (Vittata)      · «Grito del Yunque»  (técnica PICO): abre el pico y lanza ondas sonoras hacia donde mira, con
+                                alcance limitado; empujan a la rival e interrumpen lo que hacía un momento. Hay que apuntar.
+       Montañeras (arausiaca) · «Escudo de plumas»  (técnica PLUMAS): abre las alas y giran plumas de luz a su alrededor;
+                                para UN golpe normal durante poco tiempo y, si es el grito, lo reduce sin anularlo. Luego se dispersan.
+   - Energía 0–100 que se recarga sola (indicador aparte de las plumas); cada habilidad tiene su espera.
+   - El motor no sabe de duelos: el efecto recibe ctx = { yo, otro, golpear(blanco, g), lanzar(p), despues(s, fn), fx(tipo, x, y, z),
+     sonar(nombre), onda(origen, dir, alcance), escudo(luchador, s), poder(ev) } y lo arma quien lo usa (combate.js).
    Solo con la bandera V18. Lo prueba AV.v18CombateTest() (combate.js). */
 window.AVV18Habilidades = function (G) {
   'use strict';
@@ -17,6 +20,11 @@ window.AVV18Habilidades = function (G) {
   const familia = sp => (G.dones && G.dones.de && G.dones.de[sp]) || (sp === 'arausiaca' ? 'montaneras' : 'islenas');
   const dirA = (a, b) => { const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d = Math.hypot(dx, dz) || 1; return { x: dx / d, z: dz / d, d }; };
   const dist = (a, b) => Math.hypot(b.pos.x - a.pos.x, (b.pos.y - a.pos.y) * 0.6, b.pos.z - a.pos.z);
+  // Hacia dónde mira un luchador: el jugador, adonde mira Vittata (hay que apuntar); la IA, hacia su rival
+  function mira(yo, otro) {
+    if (!yo.ia && yo.mira) { const f = yo.mira(); const n = f && Math.hypot(f.x, f.z); if (n > 0.01) return { x: f.x / n, z: f.z / n }; }
+    const d = dirA(yo, otro); return { x: d.x, z: d.z };
+  }
 
   function registrar(def) {
     if (!def || !def.id || typeof def.efecto !== 'function') return false;
@@ -26,13 +34,13 @@ window.AVV18Habilidades = function (G) {
     return true;
   }
   const get = id => REG.get(id) || null;
-  // El poder exclusivo de una especie: por lista de especies y, si no, por familia (cualquier Isleña hereda la Ráfaga doble)
+  // El poder de una especie: por lista de especies y, si no, por familia (cualquier Isleña hereda el Grito del Yunque)
   function poderDe(sp) {
     for (const d of REG.values()) if (!d.basico && d.especies && d.especies.includes(sp)) return d.id;
-    return PODER_DE_FAMILIA[familia(sp)] || 'rafaga_doble';
+    return PODER_DE_FAMILIA[familia(sp)] || 'grito_yunque';
   }
 
-  // ---------- Básicos comunes ----------
+  // ---------- Básicos comunes (todas las especies) ----------
   registrar({ id: 'golpe_ala', basico: true, nombre: 'Golpe de ala', coste: 0, cooldown: 0.55, alcance: 2.4, fx: 'feathers',
     efecto(ctx) {
       const { yo, otro } = ctx; ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('aleteo');
@@ -49,34 +57,37 @@ window.AVV18Habilidades = function (G) {
         vida: this.alcance / 16, radio: 1.0, golpe: { plumas: 1, empuje: 3.5, mareo: 0.45 } });
       ctx.sonar('dash'); return { ok: true };
     } });
-  registrar({ id: 'grito', basico: true, nombre: 'Grito', coste: 25, cooldown: 3, alcance: 5, fx: 'ring',
-    efecto(ctx) {
-      const { yo, otro } = ctx; ctx.fx('ring', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('has');
-      if (dist(yo, otro) > this.alcance) return { ok: true, acierto: false };
-      return { ok: true, acierto: ctx.golpear(otro, { plumas: 0, empuje: 12, mareo: 0.9, dir: dirA(yo, otro) }) };
-    } });
 
-  // ---------- Poderes exclusivos ----------
-  registrar({ id: 'rafaga_doble', nombre: 'Ráfaga doble', especies: ['vittata'], familias: ['islenas'], coste: 40, cooldown: 6,
-    don: 'rafaga', fx: 'feathers', vel: 22, tramo: 0.18, pausa: 0.12, alcance: 2.0,
+  // ---------- Poderes por especie ----------
+  // Grito del Yunque: cono de 7 m hacia donde mira (±35°); la onda viaja a 16 m/s y, si alcanza, empuja e interrumpe (sin quitar plumas)
+  registrar({ id: 'grito_yunque', nombre: 'Grito del Yunque', especies: ['vittata'], familias: ['islenas'], tecnica: 'pico', coste: 35, cooldown: 5,
+    fx: 'onda', alcance: 7, cono: 0.82, vel: 16, empuje: 15, interrumpe: 1.1, pico: 0.7,
     efecto(ctx) {
-      const { yo, otro } = ctx, h = this;
-      // Dos acometidas: cada una corre hacia la rival y, si la alcanza, empuja fuerte (le quita una pluma la primera que pega)
-      const acometida = n => {
-        const d = dirA(yo, otro); ctx.mover(yo, d.x * h.vel, d.z * h.vel, h.tramo); ctx.sonar('dash');
-        ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.8, yo.pos.z);
-        ctx.despues(h.tramo, () => { if (dist(yo, otro) <= h.alcance + 0.6) ctx.golpear(otro, { plumas: n === 0 ? 1 : 0, empuje: 10, mareo: 0.9, dir: dirA(yo, otro), forzar: n > 0 }); });
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+      yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (hueso «pico» del rig, vía mouth) mientras grita
+      ctx.onda(origen, dir, h.alcance); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
+      const alcanza = () => {
+        const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+        if (d > h.alcance + 0.6) return false;
+        return d < 1.2 || (dx * dir.x + dz * dir.z) / d >= h.cono;
       };
-      acometida(0); ctx.despues(h.tramo + h.pausa, () => acometida(1));
-      return { ok: true };
+      const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+      ctx.despues(Math.min(h.alcance, d0) / h.vel, () => {
+        if (!alcanza()) return;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.interrumpe, interrumpe: true, sonido: true, dir: { x: dir.x, z: dir.z }, forzar: true });
+      });
+      return { ok: true, acierto: null, dir };
     } });
-  registrar({ id: 'columna_nube', nombre: 'Columna de nube', especies: ['arausiaca'], familias: ['montaneras'], coste: 40, cooldown: 7,
-    don: 'columna', fx: 'bubbles', dura: 1.8, alto: 2.6, radio: 3.2,
+  // Escudo de plumas: 2,5 s; para un golpe normal o reduce el grito (empuje ×0,4, interrupción ×0,35) y se dispersa. Espera 7 s.
+  registrar({ id: 'escudo_plumas', nombre: 'Escudo de plumas', especies: ['arausiaca'], familias: ['montaneras'], tecnica: 'plumas', coste: 35, cooldown: 7,
+    fx: 'escudo', dura: 2.5, reduceEmpuje: 0.4, reduceMareo: 0.35,
     efecto(ctx) {
-      const { yo, otro } = ctx;
-      yo.escudo = this.dura; ctx.subir(yo, this.alto, this.dura);
-      ctx.fx('bubbles', yo.pos.x, yo.pos.y + 0.4, yo.pos.z); ctx.fx('ring', yo.pos.x, yo.pos.y + 0.5, yo.pos.z); ctx.sonar('unlock');
-      if (dist(yo, otro) <= this.radio) ctx.golpear(otro, { plumas: 0, empuje: 8, mareo: 0.6, dir: dirA(yo, otro) });
+      const { yo } = ctx;
+      yo.escudo = this.dura; yo.alasT = this.dura;
+      ctx.escudo(yo, this.dura); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
       return { ok: true };
     } });
 
@@ -84,7 +95,8 @@ window.AVV18Habilidades = function (G) {
   function luchador(o) {
     const sp = o.especie || 'vittata';
     return Object.assign({ id: 'jugador', nombre: '', especie: sp, familia: familia(sp), poder: poderDe(sp), pos: { x: 0, y: 0, z: 0 },
-      plumas: 5, plumasMax: 5, energia: ENERGIA_MAX, energiaMax: ENERGIA_MAX, cd: {}, mareo: 0, inv: 0, escudo: 0, ia: false }, o, { familia: familia(sp), poder: o.poder || poderDe(sp) });
+      plumas: 5, plumasMax: 5, energia: ENERGIA_MAX, energiaMax: ENERGIA_MAX, cd: {}, mareo: 0, inv: 0, escudo: 0, picoT: 0, alasT: 0, ia: false },
+    o, { familia: familia(sp), poder: o.poder || poderDe(sp) });
   }
   function listo(f, id) {
     const h = get(id); if (!h) return { ok: false, motivo: 'no existe' };
@@ -94,17 +106,21 @@ window.AVV18Habilidades = function (G) {
     if (!h.basico && f.poder !== id) return { ok: false, motivo: 'no es suyo' };
     return { ok: true, h };
   }
+  const nada = () => {};
   function usar(f, id, ctx) {
     const l = listo(f, id); if (!l.ok) return l;
     f.energia -= l.h.coste; f.cd[id] = l.h.cooldown;
-    const r = l.h.efecto(Object.assign({ yo: f }, ctx)) || { ok: true };
+    const c = Object.assign({ yo: f, onda: nada, escudo: nada, poder: nada, despues: (s, fn) => fn(), fx: nada, sonar: nada, lanzar: nada }, ctx);
+    const r = l.h.efecto(c) || { ok: true };
     return Object.assign({ ok: true, id }, r);
   }
   function paso(f, dt) {
     f.energia = Math.min(f.energiaMax, f.energia + RECARGA * dt);
     for (const k in f.cd) f.cd[k] = Math.max(0, f.cd[k] - dt);
     f.mareo = Math.max(0, f.mareo - dt); f.inv = Math.max(0, f.inv - dt); f.escudo = Math.max(0, f.escudo - dt);
+    f.picoT = Math.max(0, (f.picoT || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
+    if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
-  G.v18hab = { ENERGIA_MAX, RECARGA, registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, paso, dist, dirA };
+  G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, paso, dist, dirA, mira };
   return G.v18hab;
 };
