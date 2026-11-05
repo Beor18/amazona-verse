@@ -1,0 +1,58 @@
+[18:35:51] lanzando Chrome y entrando al juego (v18=1)...
+[18:35:53] juego listo, entrando...
+[18:35:56] …latido
+[18:36:01] …latido
+[18:36:06] …latido
+[18:36:11] …latido
+[18:36:11] entrada ok, preparando módulos v18...
+[18:36:14] prep ok
+[18:36:14] calidad bajo (=bajo)
+[18:36:14] esperando asentado...
+[18:36:16] …latido
+[18:36:17] asentado
+[18:36:17] midiendo bajo/base...
+[18:36:21] …latido
+[18:36:26] …latido
+[18:36:28] [bajo/base] fpsPorSeg=[34,33,35,35,35,48] fpsMed=37 min=33 peorMs=42 calls=105 tris=517206
+[18:36:29] midiendo bajo/duelo...
+[18:36:31] …latido
+[18:36:36] …latido
+[18:36:41] …latido
+[18:36:45] [bajo/duelo] fpsPorSeg=[53,55,59,51,51,54,62,56,57,59,52,59,37,37,39] fpsMed=52 min=37 peorMs=51 calls=79 tris=237981
+[18:36:45] midiendo bajo/sombra...
+[18:36:46] …latido
+[18:36:51] …latido
+[18:36:56] …latido
+[18:37:01] …latido
+[18:37:03] [bajo/sombra] fpsPorSeg=[30,37,38,38,37,37,40,39,40,38,36,39,40,39,40] fpsMed=38 min=30 peorMs=54 calls=62 tris=239180
+[18:37:04] midiendo bajo/puente...
+[18:37:06] …latido
+[18:37:11] …latido
+[18:37:16] …latido
+[18:37:18] [bajo/puente] fpsPorSeg=[61,60,63,57,61,64,61,61,62,62,61] fpsMed=61 min=57 peorMs=42 calls=71 tris=238527
+[18:37:18] calidad medio (=medio)
+[18:37:18] esperando asentado...
+[18:37:21] …latido
+[18:37:21] asentado
+[18:37:21] midiendo medio/base...
+[18:37:26] …latido
+[18:37:31] …latido
+[18:37:31] [medio/base] fpsPorSeg=[33,36,36,34,36,36] fpsMed=35 min=33 peorMs=41 calls=113 tris=384001
+[18:37:32] midiendo medio/duelo...
+[18:37:36] …latido
+[18:37:41] …latido
+[18:37:46] …latido
+[18:37:47] [medio/duelo] fpsPorSeg=[39,41,42,40,39,42,42,41,41,37,38,37,30,28,29] fpsMed=38 min=28 peorMs=64 calls=113 tris=385327
+[18:37:48] midiendo medio/sombra...
+[18:37:51] …latido
+[18:37:56] …latido
+[18:38:01] …latido
+[18:38:06] …latido
+[18:38:06] [medio/sombra] fpsPorSeg=[26,28,29,29,29,24,26,27,25,26,28,28,28,28,28] fpsMed=27 min=24 peorMs=133 calls=95 tris=388242
+[18:38:07] midiendo medio/puente...
+[18:38:11] …latido
+[18:38:16] …latido
+[18:38:21] [medio/puente] fpsPorSeg=[40,40,40,40,40,40,41,40,40,41,41] fpsMed=40 min=40 peorMs=38 calls=105 tris=389569
+[18:38:21] …latido
+[18:38:21] errores de consola: []
+[18:38:22] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi085\k085_libre-r1.json
