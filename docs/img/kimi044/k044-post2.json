@@ -1,0 +1,218 @@
+{
+ "etiqueta": "post2",
+ "cuando": "2026-11-05T01:40:59.730Z",
+ "escenario": "k044-drenado-ciudad-alto",
+ "escritorio": {
+  "ancho": 1280,
+  "alto": 800,
+  "dpr": 1,
+  "cpu": 4,
+  "gpu": "PC real (ANGLE/D3D11)"
+ },
+ "ancla": {
+  "x": -33,
+  "z": -136,
+  "alzar": 30
+ },
+ "drenado": {
+  "terminar": null,
+  "terminarMs": 1,
+  "basePre": 855,
+  "pos": [
+   -33,
+   127,
+   -136
+  ],
+  "calls": 88,
+  "ktris": 2978,
+  "calidad": "alto",
+  "prog": null,
+  "heapAsentado": 1064
+ },
+ "muestras": [
+  {
+   "t": 427,
+   "heap": 785,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 720,
+   "heap": 992,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1029,
+   "heap": 991,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1320,
+   "heap": 992,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1608,
+   "heap": 993,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1904,
+   "heap": 759,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2188,
+   "heap": 760,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2478,
+   "heap": 761,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2787,
+   "heap": 847,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3090,
+   "heap": 849,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3423,
+   "heap": 835,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3642,
+   "heap": 838,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3922,
+   "heap": 841,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 4230,
+   "heap": 844,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 4526,
+   "heap": 848,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 4830,
+   "heap": 852,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 5119,
+   "heap": 855,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 5702,
+   "heap": 863,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 6079,
+   "heap": 848,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 6342,
+   "heap": 856,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 6620,
+   "heap": 865,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 6946,
+   "heap": 855,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 7244,
+   "heap": 863,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 7545,
+   "heap": 871,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 7882,
+   "heap": 1083,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 8131,
+   "heap": 1058,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 8438,
+   "heap": 1066,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 8743,
+   "heap": 1076,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 9042,
+   "heap": 1051,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 9340,
+   "heap": 1059,
+   "geo": 0,
+   "tex": 0
+  }
+ ],
+ "baseHeap": 785,
+ "heapMax": 1083,
+ "heapMaxEn": 7882,
+ "errores": []
+}

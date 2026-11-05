@@ -1,0 +1,121 @@
+{
+ "etiqueta": "base1",
+ "cuando": "2026-11-04T23:42:30.163Z",
+ "escenario": "k044-drenado-ciudad-alto",
+ "escritorio": {
+  "ancho": 1280,
+  "alto": 800,
+  "dpr": 1,
+  "cpu": 4,
+  "gpu": "PC real (ANGLE/D3D11)"
+ },
+ "ancla": {
+  "x": -33,
+  "z": -136,
+  "alzar": 30
+ },
+ "drenado": {
+  "terminar": null,
+  "terminarMs": 4,
+  "pos": [
+   -33,
+   127,
+   -136
+  ],
+  "calls": 165,
+  "ktris": 2626,
+  "calidad": "alto",
+  "prog": null,
+  "heapAsentado": 463
+ },
+ "muestras": [
+  {
+   "t": 497,
+   "heap": 326,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 699,
+   "heap": 333,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 964,
+   "heap": 349,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1281,
+   "heap": 353,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1652,
+   "heap": 398,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 1867,
+   "heap": 378,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2179,
+   "heap": 401,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2488,
+   "heap": 419,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 2734,
+   "heap": 443,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3032,
+   "heap": 450,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3361,
+   "heap": 459,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3656,
+   "heap": 432,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 3947,
+   "heap": 449,
+   "geo": 0,
+   "tex": 0
+  },
+  {
+   "t": 4250,
+   "heap": 460,
+   "geo": 0,
+   "tex": 0
+  }
+ ],
+ "baseHeap": 326,
+ "heapMax": 460,
+ "heapMaxEn": 4250,
+ "errores": []
+}

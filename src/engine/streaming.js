@@ -863,13 +863,37 @@ AVE.module('streaming', function (G) {
       }
       return mats[k].mat;
     }
-    function convertirAtlas(geo, mat) {
+    // KIMI-044: clave de celda del atlas SIN clonar la geometría.
+    function atlasCelda(geo, mat) {
       if ((geo.attributes.avCelda && /^AV_HD_/.test(mat.name)) || !geo.attributes.uv) return null;
-      const c = CELDAS.find(c => c[2].test(mat.name)); if (!c) return null;
-      const out = geo.clone(), n = out.attributes.position.count, uv = new Float32Array(n * 2);
-      for (let i = 0; i < n; i++) { uv[i * 2] = (c[1] % 4) / 4; uv[i * 2 + 1] = Math.floor(c[1] / 4) / 4; }
-      out.setAttribute('avCelda', new THREE.BufferAttribute(uv, 2)); out.deleteAttribute('uv2');
-      return { geo: out, mat: materialAtlas(c[0]) };
+      return CELDAS.find(c => c[2].test(mat.name)) || null;
+    }
+    // KIMI-044: la fase 1 de la fusión (_hd/cercano) solo apila {geo fuente, matriz de instancia, celda del
+    // atlas}; el clon (con su avCelda) se materializa al cerrar CADA GRUPO, en tandas de ~6 ms, y se dispone
+    // al terminar ese grupo. Antes convertirAtlas clonaba cada parte por instancia en la fase 1 y todos los
+    // clones vivían hasta cerrar el último grupo: en el drenado de la ciudad el pico transitorio de heap era
+    // fuente + todos los clones + lo ya fundido (+134 MB medidos en k044-base1.json; palanca «soltar lo ya
+    // consumido por la fusión» de QA-152 fase 7 / QA-153).
+    function apilarParte(F, p, I) {
+      const c = atlasCelda(p.geo, p.mat), mat = c ? materialAtlas(c[0]) : p.mat;
+      let gr = F.grupos.get(mat.name); if (!gr) F.grupos.set(mat.name, gr = { mat, partes: [], ins: [], modelos: new Set() });
+      gr.partes.push({ geo: p.geo, m: I.m, celda: c });
+      gr.ins.push(I); gr.modelos.add(I.modelo);
+    }
+    function materializarGrupo(F, gr, ms) {
+      if (!gr.tmp) { gr.tmp = []; gr.geos = []; gr.pi = 0; F.temporales = gr.tmp; }
+      const t0 = performance.now();
+      while (gr.pi < gr.partes.length && performance.now() - t0 < ms) {
+        const d = gr.partes[gr.pi++], g = d.geo.clone();
+        if (d.celda) {
+          const n = g.attributes.position.count, uv = new Float32Array(n * 2);
+          for (let i = 0; i < n; i++) { uv[i * 2] = (d.celda[1] % 4) / 4; uv[i * 2 + 1] = Math.floor(d.celda[1] / 4) / 4; }
+          g.setAttribute('avCelda', new THREE.BufferAttribute(uv, 2)); g.deleteAttribute('uv2');
+        }
+        g.applyMatrix4(d.m);
+        gr.tmp.push(g); gr.geos.push(g);
+      }
+      return gr.pi >= gr.partes.length;
     }
     const hdActivo = () => (CFG.hd[nivelCal()] || 0) > 0 && hdGL2();
     // QA-158 (4-nov, iPhone Safari recarga tras 5–10 min de vuelo): en «bajo» no se funde el _hd de zona ni el global.
@@ -1172,12 +1196,7 @@ AVE.module('streaming', function (G) {
         while (F.i < Z.inst.length && performance.now() - t0 < 6) {
           const I = Z.inst[F.i++];
           if (!F.modelos.has(I.modelo)) continue;
-          for (const p of res(I.modelo, 'hd').partes) {
-            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
-            let gr = F.grupos.get(mat.name); if (!gr) F.grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
-            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
-            F.temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
-          }
+          for (const p of res(I.modelo, 'hd').partes) apilarParte(F, p, I);
         }
         if (F.i < Z.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
         // KIMI-020/031: el cierre (fundirTex/fundir por material) también se trocea en tandas de ~6 ms, un grupo
@@ -1193,6 +1212,9 @@ AVE.module('streaming', function (G) {
           encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); programarHDGlobal();
           return;
         }
+        // KIMI-044: los clones del grupo se materializan aquí en tandas (la fase 1 solo apiló fuentes) y
+        // se disponen al cerrar el grupo: el transitorio deja de acumular los clones de todos los grupos.
+        if (!materializarGrupo(F, gr, 6)) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
         const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
         fusionLenta(gr.geos, atlas ? 'tex' : 'plana', 6,
           sig => encolar(sig, 'fundirHD:' + Z.id),
@@ -1204,6 +1226,7 @@ AVE.module('streaming', function (G) {
             m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
             const it = mats[gr.mat.name]; if (it) it.refs++;
             scene.add(m); F.ms.push(m); subirTex(m);
+            for (const g of gr.tmp) g.dispose(); gr.tmp = null; F.temporales = [];
             F.g++;
             encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id);
           });
@@ -1297,12 +1320,7 @@ AVE.module('streaming', function (G) {
         while (F.i < Z.inst.length && performance.now() - t0 < 6) {
           const I = Z.inst[F.i++];
           if (!F.modelos.has(I.modelo)) continue;
-          for (const p of res(I.modelo, 'cerca').partes) {
-            const c = convertirAtlas(p.geo, p.mat), mat = c ? c.mat : p.mat;
-            let gr = F.grupos.get(mat.name); if (!gr) F.grupos.set(mat.name, gr = { mat, geos: [], ins: [], modelos: new Set() });
-            const geo = (c ? c.geo : p.geo.clone()).applyMatrix4(I.m);
-            F.temporales.push(geo); gr.geos.push(geo); gr.ins.push(I); gr.modelos.add(I.modelo);
-          }
+          for (const p of res(I.modelo, 'cerca').partes) apilarParte(F, p, I);
         }
         if (F.i < Z.inst.length) { encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id); return; }
         // KIMI-031: el cierre por grupos era un solo trabajo sin presupuesto que fundía cada material de
@@ -1317,6 +1335,8 @@ AVE.module('streaming', function (G) {
           programarCercaGlobal();
           return;
         }
+        // KIMI-044: clon del grupo materializado aquí en tandas y dispuesto al cerrar (mismo reparto que el HD)
+        if (!materializarGrupo(F, gr, 6)) { encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id); return; }
         const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
         fusionLenta(gr.geos, atlas ? 'tex' : 'plana', 6,
           sig => encolar(sig, 'fundirCerca:' + Z.id),
@@ -1328,6 +1348,7 @@ AVE.module('streaming', function (G) {
             m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
             const it = mats[gr.mat.name]; if (it) it.refs++;
             scene.add(m); F.ms.push(m); subirTex(m);
+            for (const g of gr.tmp) g.dispose(); gr.tmp = null; F.temporales = [];
             F.g++;
             encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
           });
