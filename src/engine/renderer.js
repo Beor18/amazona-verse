@@ -570,9 +570,11 @@ AVE.module('renderer', function (G) {
   G.on('dpr', () => { fpsM.bajo = 0; fpsM.alto = 0; fpsM.warm = Math.max(fpsM.warm, 2500); });
   // QA-53 (post-reveal): al cambiar de calidad, look.js (prio 50) sustituye texturas (recortar por
   // texMax) y nada las volvía a subir: el primer dibujo que las encuentra pagaba todas las subidas de
-  // golpe (texImage2D 235–293 ms en la ventana +3…7 s post-reveal con CPU ×4). Una ráfaga acotada justo
-  // después del barrido las sube antes de ese dibujo; lo que sobre lo drena el subirTexturas por cuadro.
-  G.on('calidad', () => { if (!puedeCalentar) return; subirTexturas(24, 30); texCola = 0; }, 90);
+  // golpe (texImage2D 235–293 ms en la ventana +3…7 s post-reveal con CPU ×4). Una ráfaga ACOTADA justo
+  // después del barrido adelanta las primeras y el resto lo drena subirTexturas por cuadro, que desde
+  // KIMI-054 también recoge las versiones «stale» (recortes por needsUpdate): el re-subido se reparte
+  // en varios cuadros en vez de concentrarse en el primero (peor cuadro del flip 1285 → ~p95).
+  G.on('calidad', () => { if (!puedeCalentar) return; subirTexturas(8, 8); texCola = 0; }, 90);
   // Precalentar: compila los programas y sube todas las texturas del mundo en un render fuera de pantalla (32×32), con todo
   // visible y sin frustum culling, antes de que el jugador mire alrededor (sin esto cada vista nueva daba tirones: QA-20).
   // Incluye la capa 31 (objetos pequeños lejanos): tras perder el contexto WebGL también hay que volver a subir lo suyo.
@@ -801,7 +803,10 @@ AVE.module('renderer', function (G) {
       if (m.uniforms) for (const k in m.uniforms) { const u = m.uniforms[k], v = u && u.value; if (v && v.isTexture) out.add(v); }
     }
   }
-  // Texturas 2D de lo que hay en la escena con imagen ya lista y todavía sin subir a la GPU
+  // Texturas 2D de lo que hay en la escena con imagen ya lista y todavía sin subir a la GPU, o subidas
+  // a otra versión («stale»: look.js encoge con needsUpdate al cambiar de calidad y antes se re-subían
+  // dentro del primer dibujo que las tocaba — QA-53/KIMI-054). Las de vídeo quedan fuera: su versión
+  // cambia en cada cuadro y no son candidatas a precalentado.
   function texturasPendientes() {
     const todas = new Set(), vistos = new Set(), out = [];
     for (const o of dibujables()) {  // cada material una vez (muchos objetos lo comparten; for…in por material es lo caro)
@@ -810,8 +815,9 @@ AVE.module('renderer', function (G) {
       else if (m && !vistos.has(m)) { vistos.add(m); texturasDe(o, todas); }
     }
     for (const t of todas) {
-      if (t.isCubeTexture || t.isDataTexture3D || t.isDataTexture2DArray || !(t.version > 0) || !t.image) continue;
-      if (!renderer.properties.get(t).__webglTexture) out.push(t);
+      if (t.isCubeTexture || t.isDataTexture3D || t.isDataTexture2DArray || t.isVideoTexture || !(t.version > 0) || !t.image) continue;
+      const p = renderer.properties.get(t);
+      if (!p.__webglTexture || p.__version !== t.version) out.push(t);
     }
     return out;
   }

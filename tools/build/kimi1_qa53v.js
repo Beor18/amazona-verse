@@ -102,18 +102,25 @@ const ESTADO_JS = `(() => { const G = AV.G, r = G.renderer, R = r.renderer;
     progs: R.info.programs.length, tex: R.info.memory.textures, geo: R.info.memory.geometries,
     prec: { hechos: r._precalentar.hechos, otra: r._precalentar.otra }, pend }); })()`;
 
-// Conmutación + muestreo de 5 s: devuelve métricas de la ventana
+// Conmutación + muestreo de 5 s: devuelve métricas de la ventana. evMs = tiempo que setCalidad
+// bloquea el hilo dentro del eval (ganchos 'calidad': encoger/recortar de look.js, subirTexturas,
+// vegetación, streaming…); fases = desglose por cuadro de render() cuando la página va con ?fases=1
+// ([abs, update, ganchosRender, preDraw(drenado tex), warm, draw] de los cuadros >200 ms).
 const FLIP_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), v = window.__k53v, G = AV.G, r = G.renderer;
   const P = ${'${PAYLOAD}'};
   const marco0 = v.cuadros.length, t0 = performance.now();
+  if (window.__fases) window.__fases.length = 0; // el log de fases se llena (tope 400) durante la carga: se vacía aquí para capturar el flip
+  const q0 = performance.now();
   r.setCalidad(P.nivel); // manual ya puesto: el adaptativo no interviene
+  const evMs = Math.round(performance.now() - q0);
   await sleep(5000);
   const marco1 = v.cuadros.length, t1 = performance.now();
   const w = v.cuadros.slice(marco0, marco1).sort((a, b) => a - b);
   const pq = q => (w.length ? w[Math.min(w.length - 1, Math.floor(w.length * q))] : null);
   const png = await r.snapshot(${ANCHO * 2}, ${ALTO * 2}, 0.85);
-  return JSON.stringify({ a: P.a, fps: w.length && t1 > t0 ? +(w.length / ((t1 - t0) / 1000)).toFixed(1) : null,
-    p50: pq(0.5), p95: pq(0.95), peor: pq(1), n200: w.filter(x => x > 200).length, n500: w.filter(x => x > 500).length, png }); })()`;
+  const fases = (window.__fases || []).filter(f => f[0] >= t0 - 200 && f[0] <= t0 + 6000).slice(0, 40);
+  return JSON.stringify({ a: P.a, evMs, fps: w.length && t1 > t0 ? +(w.length / ((t1 - t0) / 1000)).toFixed(1) : null,
+    p50: pq(0.5), p95: pq(0.95), peor: pq(1), n200: w.filter(x => x > 200).length, n500: w.filter(x => x > 500).length, fases, png }); })()`;
 
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1-q53v-'));
@@ -134,6 +141,13 @@ async function lanzarChrome() {
 function matarChrome(chrome) {
   try { chrome.kill(); } catch (e) {}
   try { execSync(`taskkill /PID ${chrome.pid} /T /F 2>NUL`, { stdio: 'ignore' }); } catch (e) {}
+  // Red de seguridad (k054): taskkill /T no siempre limpia el árbol en Windows headless; se
+  // remata por el nombre del perfil (práctica de kimi1_039_extras, 0 zombis verificados).
+  try {
+    spawn('powershell', ['-NoProfile', '-Command',
+      "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -like '*kimi1-q53v-*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"],
+      { stdio: 'ignore' }).unref();
+  } catch (e) {}
 }
 
 async function sesion(cdp, srv, origen, urlExtra, nombre) {
@@ -219,9 +233,9 @@ async function sesion(cdp, srv, origen, urlExtra, nombre) {
       return g;
     })();
     console.log('· GPU: ' + resultado.gpu);
-    resultado.escenarios.base = await sesion(cdp, srv, origen, '?calidad=medio&otra=0', 'base');
-    console.log('· BASE (?calidad=medio&otra=0) listo: ' + JSON.stringify({ asentado: resultado.escenarios.base.asentado, flip1: resultado.escenarios.base.flip1 }));
-    resultado.escenarios.post = await sesion(cdp, srv, origen, '?calidad=medio', 'post');
+    resultado.escenarios.base = await sesion(cdp, srv, origen, '?calidad=medio&otra=0&fases=1', 'base');
+    console.log('· BASE (?calidad=medio&otra=0&fases=1) listo: ' + JSON.stringify({ asentado: resultado.escenarios.base.asentado, flip1: resultado.escenarios.base.flip1 }));
+    resultado.escenarios.post = await sesion(cdp, srv, origen, '?calidad=medio&fases=1', 'post');
     console.log('· POST listo: ' + JSON.stringify({ asentado: resultado.escenarios.post.asentado, flip1: resultado.escenarios.post.flip1 }));
     resultado.errores = erroresDe(cdp);
     console.log('· errores de consola: ' + JSON.stringify(resultado.errores));

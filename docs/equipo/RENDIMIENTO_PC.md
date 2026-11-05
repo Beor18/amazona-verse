@@ -623,3 +623,33 @@ flushar la bajada HD pendiente) y «sin fugas». movementTest: **2 intentos sin 
 del arnés murió a mitad de la batería (familia QA-111) con la PC compartida con Kimi 1; re-correr en PC
 libre (`node tools/build/kimi2_una_bateria.js movementTest`); el cambio no toca la lógica de colisiones
 (`colocar`/sólidos inalterados: las bajadas solo aplazan la liberación de recursos).
+
+## KIMI-054 · QA-53 (resto): drenado de texturas «stale» y ráfaga del flip de calidad (5-nov · Kimi 1)
+
+Qué había antes: al conmutar la calidad (`setCalidad`), look.js recorta las texturas por `texMax`
+(`encoger`: lienzo nuevo + `needsUpdate`) y las que ya estaban en la GPU se re-subían **dentro del
+primer dibujo que las tocaba** (el drenado `subirTexturas` por cuadro solo recogía texturas nunca
+subidas), y el gancho `calidad` de renderer.js pagaba una ráfaga de 24 texturas / 30 ms de golpe.
+
+Qué cambió (`src/engine/renderer.js`): `texturasPendientes()` ahora también devuelve las texturas
+subidas a otra versión (`__version !== t.version`), con `isVideoTexture` excluida (su versión cambia
+en cada cuadro); el gancho `calidad` baja su ráfaga a 8 texturas / 8 ms y el resto lo reparte el
+drenado por cuadro (4 tex / 6 ms). El re-subido por `needsUpdate` deja de pagarse en el dibujo.
+
+Medido (`tools/build/kimi1_qa53v.js`, móvil 375×812 dpr 3, CPU ×4, GPU real RX 5700 XT; corridas
+con otras sesiones de Kimi activas en la PC — números con contención, veredictos de estado):
+el `setCalidad` en sí bloquea ~0,4–0,5 s (`evMs` 367–535 ms: encoger de look.js + ráfaga + la
+vegetación), y con el `?fases=1` (la herramienta ahora vuelca `fases`+`evMs`) se vio el **primer
+cuadro tras el flip dibujando 968 ms** en BASE: son las ~30 re-subidas «stale» visibles que el drenado
+(4 tex / 6 ms por cuadro más la ráfaga de 8) no llega a adelantar — el trabajo GL total (~40 texturas
+× ~25 ms a CPU ×4 ≈ 1 s) es irreducible en el hilo; repartirlo en serio exige el corte perezoso de
+`encoger` en look.js (cola de recortes por cuadro) = palabra siguiente. El flip de vuelta bajo→medio,
+que re-sube más bytes (1024), no tiene ningún cuadro >111 ms: las re-subidas solas no explican el pico,
+es la concentración en el primer dibujo. Con el precalentado de la variante contraria (POST), la
+tormenta de re-enlaces de programas desaparece (BASE sin ella: `warm` 281 ms + `draw` 299 ms en el
+2.º cuadro; POST: n200=1 frente a n200=6-7 de BASE).
+p50 del flip 14–28 ms, fps 20–38 en contención; 0 errores de consola en las 5 corridas.
+
+Evidencia: `docs/img/kimi053/qa53v_k054-r{1..r5}.json` (+capturas `qa53v_k054-*_flip1.jpg`).
+Palabra siguiente de la fila: corte perezoso de `encoger` (look.js) para repartir el re-subido en
+~40 cuadros y la medición limpia del flip con la PC libre.
