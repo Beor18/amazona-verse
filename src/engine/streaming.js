@@ -2148,11 +2148,27 @@ AVE.module('streaming', function (G) {
       // aún no recogida y solo se informa (la memoria propia de los edificios sí se exige estable)
       const gc = typeof window.gc === 'function', tolHeap = gc ? 8 : 32;
       const foto = () => { if (gc) window.gc(); const s2 = ST.stats(); return { g: M.geometries, t: M.textures, kb: s2.kbGeometria, mats: s2.materiales, mod: s2.modelosCerca + s2.modelosLejos + s2.modelosHD, heap: heap() }; };
+      // QA-160: con otra batería QA corriendo concurrente en la página (qa.js autoarranca con ?qa=1 y
+      // teletransporta por el mapa), sus teleports pueden dejar justo antes de una foto zonas a nivel 2
+      // con referencias legítimas; el post-mortem del probe lo confirma (0 retenidos sin dueño estructural,
+      // docs/img/kimi160/qa160-r24-qa.json). Es estado vivo ajeno, no una fuga de este test: se asienta el
+      // mundo en el spawn (soltar lo que quedó lejos y dejar correr cuadros para que drenen trabajos y
+      // descargas en marcha) antes de cada foto. Una fuga real seguiría con refs>0 sin dueño y saltaría igual.
+      const asentar = async () => {
+        for (let i = 0; i < 3; i++) {
+          ST.revisar(x0, z0); ST.liberarYa(); dibujar();
+          await new Promise(r => setTimeout(r, 120));
+        }
+        const s = ST.stats();
+        return 'descargando ' + s.descargando + '/trabajos ' + s.trabajos;
+      };
+      const as1 = await asentar();
       const m1 = foto();
       for (let v = 0; v < 2; v++) { await ir(bx, bz, 0, -1); await ir(x0, z0); ST.liberarYa(); dibujar(); }
+      const as2 = await asentar();
       const m2 = foto();
       check('Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB)', m2.kb <= m1.kb * 1.02 + 16 && m2.mats <= m1.mats && m2.mod <= m1.mod && !(gc && m2.heap - m1.heap > tolHeap),
-        'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc: no se exige)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t);
+        'KB ' + m1.kb + '→' + m2.kb + ' · materiales ' + m1.mats + '→' + m2.mats + ' · modelos ' + m1.mod + '→' + m2.mod + ' · heap ' + r2(m1.heap) + '→' + r2(m2.heap) + ' MB' + (gc ? ' (gc)' : ' (sin gc: no se exige)') + ' · three geo ' + m1.g + '→' + m2.g + ', tex ' + m1.t + '→' + m2.t + ' · asentado ' + as1 + ' | ' + as2);
       // La ciudad del tepuy, desde el aire (150 m al borde, más lejos que el _hd general): el kit, no la silueta beige.
       const ZC = ST.zonas.kelvin_ruinas_yunque;
       if (ZC && hdGL2()) {
