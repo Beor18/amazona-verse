@@ -21,6 +21,8 @@ const ETIQUETA = (() => { const i = process.argv.indexOf('--etiqueta'); return i
 const RONDAS = parseInt((() => { const i = process.argv.indexOf('--rondas'); return i > 0 ? process.argv[i + 1] : '1'; })(), 10);
 const CPU = parseFloat((() => { const i = process.argv.indexOf('--cpu'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
 const PERFIL = process.argv.includes('--perfil'); // CPU profile (CDP Profiler) del reveal: atribuye cuadroRevelar
+const BOMBA = parseInt((() => { const i = process.argv.indexOf('--bomba'); return i > 0 ? process.argv[i + 1] : '8'; })(), 10); // segundos de juego bombeados tras preparar (el ancla del perfil)
+const REVELAR_AT = parseFloat((() => { const i = process.argv.indexOf('--revelarAt'); return i > 0 ? process.argv[i + 1] : String(Math.max(0.5, BOMBA - 11)); })(), 10); // segundos antes del fin del perfil donde cae el reveal (la carga dura ~10-12 s)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi017');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -150,14 +152,12 @@ async function lanzarChromeUnaVez() {
     await cdp.bombear(2.0);
     if (PERFIL) { await cdp.call('Profiler.enable', {}, ses); await cdp.call('Profiler.start', {}, ses); }
     console.log('  · jugador nuevo: ' + await evaluar(cdp, ses, CFG.preparar_js, 300));
-    const tPrepar = PERFIL ? parseFloat(await evaluar(cdp, ses, 'performance.now()', 10, false)) : 0;
-    await cdp.bombear(8.0); // primeros segundos de juego con el revelado hecho
+    await cdp.bombear(BOMBA); // primeros segundos de juego con el revelado hecho
     let perfil = null;
     if (PERFIL) {
       const p = (await cdp.call('Profiler.stop', {}, ses, 60000)).profile;
-      // El reveal fue ~8 s antes del fin del perfil (bombear(8) justo después de preparar). El reloj del
-      // perfil (monotonicTime, µs) no comparte época con performance.now(): se ancla al propio perfil.
-      const ancla = (p.endTime || 0) - 8000000;
+      // El reveal cae ~REVELAR_AT s antes del fin del perfil (carga ~10-12 s tras preparar, luego bombear(BOMBA)).
+      const ancla = (p.endTime || 0) - REVELAR_AT * 1000000;
       const A = resumirPerfil(p, ancla - 1600000, ancla + 1600000); // reveal ±1,6 s (cuadroRevelar)
       const B = resumirPerfil(p, ancla + 3000000, ancla + 7000000); // +3…7 s: el warm-link post-reveal
       perfil = { revelar: A, despues: B };

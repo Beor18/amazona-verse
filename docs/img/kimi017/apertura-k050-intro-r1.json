@@ -1,0 +1,282 @@
+{
+  "etiqueta": "k050-intro-r1",
+  "cuando": "2026-11-05T06:59:47.725Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "carga": [
+        {
+          "ms": 12498,
+          "motivo": "listo",
+          "cuadroRevelar": 326,
+          "tCargado": 11336,
+          "msGPU": 72,
+          "texSubidas": 92,
+          "maxProg": 292,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 20802,
+          "update": 8,
+          "ganchos": 36,
+          "dibujo": 9,
+          "warm": 24,
+          "postYDibujo": 910,
+          "total": 987
+        },
+        {
+          "t": 22096,
+          "update": 8,
+          "ganchos": 5,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 289,
+          "total": 303
+        },
+        {
+          "t": 22861,
+          "update": 8,
+          "ganchos": 14,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 109,
+          "total": 132
+        },
+        {
+          "t": 27396,
+          "update": 8,
+          "ganchos": 7,
+          "dibujo": 8,
+          "warm": 447,
+          "postYDibujo": 99,
+          "total": 569
+        },
+        {
+          "t": 28891,
+          "update": 7,
+          "ganchos": 2,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 160,
+          "total": 170
+        }
+      ],
+      "top": [
+        {
+          "d": 2278,
+          "t": 0.5
+        },
+        {
+          "d": 1917,
+          "t": 6.4
+        },
+        {
+          "d": 1007,
+          "t": 20.7
+        },
+        {
+          "d": 861,
+          "t": 8.4
+        },
+        {
+          "d": 701,
+          "t": 11.7
+        },
+        {
+          "d": 604,
+          "t": 27.2
+        },
+        {
+          "d": 514,
+          "t": 4.1
+        },
+        {
+          "d": 472,
+          "t": 3
+        }
+      ],
+      "nFases": 400,
+      "perfil": {
+        "revelar": {
+          "desdeMs": 114511572,
+          "hastaMs": 114514772,
+          "ventanaMs": 3199.4,
+          "top": [
+            {
+              "ms": 684.5,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 109.3,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 88.8,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 85.5,
+              "fn": "traverse · three.min.js:6"
+            },
+            {
+              "ms": 79.1,
+              "fn": "multiplyMatrices · three.min.js:6"
+            },
+            {
+              "ms": 73.5,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 64.9,
+              "fn": "At · three.min.js:6"
+            },
+            {
+              "ms": 64.3,
+              "fn": "toArray · three.min.js:6"
+            },
+            {
+              "ms": 62.5,
+              "fn": "updateMatrixWorld · three.min.js:6"
+            },
+            {
+              "ms": 55.3,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 53.4,
+              "fn": "bindBuffer · :0"
+            },
+            {
+              "ms": 50.8,
+              "fn": "Cr.upload · three.min.js:6"
+            },
+            {
+              "ms": 49.2,
+              "fn": "idCalor · renderer.js:614"
+            },
+            {
+              "ms": 46.5,
+              "fn": "bindVertexArray · :0"
+            },
+            {
+              "ms": 45.8,
+              "fn": "update · three.min.js:6"
+            },
+            {
+              "ms": 43.6,
+              "fn": "vertexAttribPointer · :0"
+            },
+            {
+              "ms": 42.8,
+              "fn": "compose · three.min.js:6"
+            },
+            {
+              "ms": 40.8,
+              "fn": "updateMatrix · three.min.js:6"
+            }
+          ]
+        },
+        "despues": {
+          "desdeMs": 114516172,
+          "hastaMs": 114520172,
+          "ventanaMs": 3998.7,
+          "top": [
+            {
+              "ms": 892.5,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 119.9,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 118.5,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 115.7,
+              "fn": "traverse · three.min.js:6"
+            },
+            {
+              "ms": 110.7,
+              "fn": "At · three.min.js:6"
+            },
+            {
+              "ms": 101.5,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 98.6,
+              "fn": "multiplyMatrices · three.min.js:6"
+            },
+            {
+              "ms": 66.7,
+              "fn": "bindVertexArray · :0"
+            },
+            {
+              "ms": 65.9,
+              "fn": "updateMatrixWorld · three.min.js:6"
+            },
+            {
+              "ms": 65.5,
+              "fn": "Cr.upload · three.min.js:6"
+            },
+            {
+              "ms": 63.2,
+              "fn": "bindBuffer · :0"
+            },
+            {
+              "ms": 62.7,
+              "fn": "vertexAttribPointer · :0"
+            },
+            {
+              "ms": 62.3,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 61.7,
+              "fn": "toArray · three.min.js:6"
+            },
+            {
+              "ms": 58.1,
+              "fn": "It · three.min.js:6"
+            },
+            {
+              "ms": 58,
+              "fn": "compose · three.min.js:6"
+            },
+            {
+              "ms": 54.9,
+              "fn": "Oi · three.min.js:6"
+            },
+            {
+              "ms": 54.2,
+              "fn": "getProgramCacheKey · three.min.js:6"
+            }
+          ]
+        }
+      },
+      "errores": []
+    }
+  ]
+}

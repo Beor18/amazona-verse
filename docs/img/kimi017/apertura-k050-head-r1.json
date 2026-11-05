@@ -1,0 +1,524 @@
+{
+  "etiqueta": "k050-head-r1",
+  "cuando": "2026-11-05T06:50:50.264Z",
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "PC real (ANGLE/D3D11)"
+  },
+  "rondas": [
+    {
+      "ronda": 1,
+      "carga": [
+        {
+          "ms": 12431,
+          "motivo": "listo",
+          "cuadroRevelar": 318,
+          "tCargado": 11780,
+          "msGPU": 54,
+          "texSubidas": 88,
+          "maxProg": 291,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 21477,
+          "update": 8,
+          "ganchos": 36,
+          "dibujo": 8,
+          "warm": 28,
+          "postYDibujo": 392,
+          "total": 472
+        },
+        {
+          "t": 22255,
+          "update": 9,
+          "ganchos": 7,
+          "dibujo": 2,
+          "warm": 0,
+          "postYDibujo": 291,
+          "total": 309
+        },
+        {
+          "t": 22985,
+          "update": 9,
+          "ganchos": 7,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 105,
+          "total": 122
+        },
+        {
+          "t": 27546,
+          "update": 8,
+          "ganchos": 6,
+          "dibujo": 8,
+          "warm": 438,
+          "postYDibujo": 102,
+          "total": 562
+        },
+        {
+          "t": 28478,
+          "update": 7,
+          "ganchos": 2,
+          "dibujo": 1,
+          "warm": 0,
+          "postYDibujo": 160,
+          "total": 170
+        }
+      ],
+      "top": [
+        {
+          "d": 2292,
+          "t": 0.5
+        },
+        {
+          "d": 1938,
+          "t": 6.6
+        },
+        {
+          "d": 1278,
+          "t": 11.9
+        },
+        {
+          "d": 875,
+          "t": 8.6
+        },
+        {
+          "d": 597,
+          "t": 27.4
+        },
+        {
+          "d": 535,
+          "t": 4.1
+        },
+        {
+          "d": 507,
+          "t": 3
+        },
+        {
+          "d": 500,
+          "t": 21.4
+        }
+      ],
+      "nFases": 251,
+      "perfil": {
+        "revelar": {
+          "desdeMs": 113963608,
+          "hastaMs": 113966808,
+          "ventanaMs": 3199.3,
+          "top": [
+            {
+              "ms": 594.1,
+              "fn": "getProgramParameter · :0"
+            },
+            {
+              "ms": 333.1,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 91.9,
+              "fn": "avanzar · streaming.js:516"
+            },
+            {
+              "ms": 73.9,
+              "fn": "block · solidos.js:32"
+            },
+            {
+              "ms": 69.1,
+              "fn": "triSeguir · solidos.js:110"
+            },
+            {
+              "ms": 62.3,
+              "fn": "getClientRects · :0"
+            },
+            {
+              "ms": 62,
+              "fn": "trabajar · solidos.js:214"
+            },
+            {
+              "ms": 60,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 56.2,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 52.3,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 49.7,
+              "fn": "getX · three.min.js:6"
+            },
+            {
+              "ms": 47.7,
+              "fn": "update · three.min.js:6"
+            },
+            {
+              "ms": 47.7,
+              "fn": "It · three.min.js:6"
+            },
+            {
+              "ms": 39.8,
+              "fn": "traverse · three.min.js:6"
+            },
+            {
+              "ms": 39,
+              "fn": "insert · solidos.js:45"
+            },
+            {
+              "ms": 38.7,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 38.5,
+              "fn": "actualizar · vegetacion.js:819"
+            },
+            {
+              "ms": 37.7,
+              "fn": "triQuery · terreno.js:183"
+            }
+          ]
+        },
+        "despues": {
+          "desdeMs": 113968208,
+          "hastaMs": 113972208,
+          "ventanaMs": 3999.5,
+          "top": [
+            {
+              "ms": 450,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 407.4,
+              "fn": "getProgramParameter · :0"
+            },
+            {
+              "ms": 237.3,
+              "fn": "texImage2D · :0"
+            },
+            {
+              "ms": 138.2,
+              "fn": "block · solidos.js:32"
+            },
+            {
+              "ms": 116.1,
+              "fn": "triSeguir · solidos.js:110"
+            },
+            {
+              "ms": 86.4,
+              "fn": "trabajar · solidos.js:214"
+            },
+            {
+              "ms": 81.2,
+              "fn": "avanzar · streaming.js:516"
+            },
+            {
+              "ms": 80.6,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 77.2,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 72.7,
+              "fn": "traverse · three.min.js:6"
+            },
+            {
+              "ms": 69.2,
+              "fn": "spans · solidos.js:75"
+            },
+            {
+              "ms": 62.6,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 61.7,
+              "fn": "At · three.min.js:6"
+            },
+            {
+              "ms": 56.5,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 51.6,
+              "fn": "bindBuffer · :0"
+            },
+            {
+              "ms": 50.7,
+              "fn": "getX · three.min.js:6"
+            },
+            {
+              "ms": 50.4,
+              "fn": "update · three.min.js:6"
+            },
+            {
+              "ms": 45.3,
+              "fn": "toArray · three.min.js:6"
+            }
+          ]
+        }
+      },
+      "errores": []
+    },
+    {
+      "ronda": 2,
+      "carga": [
+        {
+          "ms": 9961,
+          "motivo": "listo",
+          "cuadroRevelar": 131,
+          "tCargado": 9571,
+          "msGPU": 76,
+          "texSubidas": 90,
+          "maxProg": 271,
+          "etapas": {
+            "mundo": 1,
+            "zona": 1,
+            "texturas": 0,
+            "programas": 0
+          },
+          "zona": {
+            "radio": 150,
+            "total": 78,
+            "faltan": 0
+          },
+          "ligero": false
+        }
+      ],
+      "largas": [
+        {
+          "t": 18039,
+          "update": 8,
+          "ganchos": 34,
+          "dibujo": 9,
+          "warm": 31,
+          "postYDibujo": 130,
+          "total": 212
+        },
+        {
+          "t": 23269,
+          "update": 7,
+          "ganchos": 6,
+          "dibujo": 8,
+          "warm": 169,
+          "postYDibujo": 104,
+          "total": 294
+        }
+      ],
+      "top": [
+        {
+          "d": 1903,
+          "t": 5.4
+        },
+        {
+          "d": 1806,
+          "t": 0.5
+        },
+        {
+          "d": 889,
+          "t": 7.4
+        },
+        {
+          "d": 465,
+          "t": 2.5
+        },
+        {
+          "d": 438,
+          "t": 10.5
+        },
+        {
+          "d": 326,
+          "t": 23.2
+        },
+        {
+          "d": 285,
+          "t": 3.4
+        },
+        {
+          "d": 271,
+          "t": 14.1
+        }
+      ],
+      "nFases": 290,
+      "perfil": {
+        "revelar": {
+          "desdeMs": 113990406,
+          "hastaMs": 113993606,
+          "ventanaMs": 3200.5,
+          "top": [
+            {
+              "ms": 406.6,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 116.1,
+              "fn": "avanzar · streaming.js:516"
+            },
+            {
+              "ms": 100.2,
+              "fn": "block · solidos.js:32"
+            },
+            {
+              "ms": 92.7,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 92.7,
+              "fn": "getProgramParameter · :0"
+            },
+            {
+              "ms": 92.5,
+              "fn": "trabajar · solidos.js:214"
+            },
+            {
+              "ms": 73.1,
+              "fn": "getClientRects · :0"
+            },
+            {
+              "ms": 68,
+              "fn": "triSeguir · solidos.js:110"
+            },
+            {
+              "ms": 54.9,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 53.9,
+              "fn": "update · three.min.js:6"
+            },
+            {
+              "ms": 52,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 49.9,
+              "fn": "It · three.min.js:6"
+            },
+            {
+              "ms": 48.2,
+              "fn": "insert · solidos.js:45"
+            },
+            {
+              "ms": 44.7,
+              "fn": "now · :0"
+            },
+            {
+              "ms": 42.1,
+              "fn": "multiplyMatrices · three.min.js:6"
+            },
+            {
+              "ms": 41.1,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 38.3,
+              "fn": "vertexAttribPointer · :0"
+            },
+            {
+              "ms": 35.2,
+              "fn": "actualizar · vegetacion.js:819"
+            }
+          ]
+        },
+        "despues": {
+          "desdeMs": 113995006,
+          "hastaMs": 113999006,
+          "ventanaMs": 4000.5,
+          "top": [
+            {
+              "ms": 567.9,
+              "fn": "(program) · :0"
+            },
+            {
+              "ms": 242.7,
+              "fn": "texImage2D · :0"
+            },
+            {
+              "ms": 99.5,
+              "fn": "block · solidos.js:32"
+            },
+            {
+              "ms": 94.8,
+              "fn": "traverse · three.min.js:6"
+            },
+            {
+              "ms": 88.3,
+              "fn": "trabajar · solidos.js:214"
+            },
+            {
+              "ms": 86.3,
+              "fn": "avanzar · streaming.js:516"
+            },
+            {
+              "ms": 84.1,
+              "fn": "triSeguir · solidos.js:110"
+            },
+            {
+              "ms": 77.1,
+              "fn": "renderBufferDirect · three.min.js:6"
+            },
+            {
+              "ms": 74.5,
+              "fn": "cuadro · streaming.js:1748"
+            },
+            {
+              "ms": 74.1,
+              "fn": "bindBuffer · :0"
+            },
+            {
+              "ms": 72.3,
+              "fn": "(anon) · three.min.js:6"
+            },
+            {
+              "ms": 67.6,
+              "fn": "bindVertexArray · :0"
+            },
+            {
+              "ms": 67.1,
+              "fn": "updateMatrixWorld · three.min.js:6"
+            },
+            {
+              "ms": 65.1,
+              "fn": "spans · solidos.js:75"
+            },
+            {
+              "ms": 60.4,
+              "fn": "multiplyMatrices · three.min.js:6"
+            },
+            {
+              "ms": 59.6,
+              "fn": "texturasDe · renderer.js:723"
+            },
+            {
+              "ms": 58.1,
+              "fn": "At · three.min.js:6"
+            },
+            {
+              "ms": 52.2,
+              "fn": "toArray · three.min.js:6"
+            }
+          ]
+        }
+      },
+      "errores": []
+    }
+  ]
+}
