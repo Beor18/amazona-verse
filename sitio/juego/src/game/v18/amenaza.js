@@ -209,6 +209,7 @@ window.AVV18Amenaza = function (G) {
   function tecla(e) {
     if ((e.key || '').toLowerCase() !== 'g' || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     e.stopImmediatePropagation();
+    if (G.pausa && G.pausa.activa && G.pausa.activa()) return; // con la pausa abierta no se juega
     if (!e.repeat && A.fase === 'lucha') usarPoder();
   }
   function enganchar() {
