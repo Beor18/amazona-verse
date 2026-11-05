@@ -26,16 +26,16 @@ window.AVV18Descubrir = function (G) {
     pistaInicio: 'Pista: una cotorra visitante canta cerca de Villa Raíz. Búscala en el minimapa.',
     pistaCerca: '¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.',
     descubre: 'Descubriste una cotorra de Dominica',
-    descubreMas: 'Descubriste una cotorra de Dominica. Acércate y pulsa Acción para seguirla.',
+    descubreMas: 'Descubriste una cotorra de Dominica. Acércate y dale a Acción para seguirla.',
     mirar: 'Mirar la cotorra que canta', seguir: 'Seguir a la cotorra de Dominica', elegir: 'Elegir con qué cotorra jugar el duelo',
-    empieza: '¡Síguela volando de copa en copa! Tienes 50 segundos.',
+    empieza: '¡Síguela de copa en copa! Tienes 50 segundos.',
     bien: '¡La alcanzaste! Sigue, que se va otra vez.',
     poco: '¡Rápido, que se escapa!',
-    falla: 'Se fue a su rama a descansar. Pulsa Acción junto a ella para intentarlo otra vez.',
+    falla: 'Se fue a su rama a descansar. Dale a Acción a su lado y vuelve a intentarlo.',
     lejos: 'Te alejaste y volvió a su rama. Inténtalo otra vez cuando quieras.',
-    gana: '¡La cotorra de Dominica ya vuela contigo! Elígela para el duelo en el menú de pausa (Mis cotorras).',
+    gana: '¡La cotorra de Dominica ya vuela contigo! Búscala en Pausa → Mis cotorras.',
     titulo: '¿Con qué cotorra juegas el duelo?',
-    nota: 'Solo cambia el poder del duelo. Tu personaje se queda igual.',
+    nota: 'Cambia tu poder en el duelo. Tú sigues siendo tú.',
     listo: 'Listo', poder: 'Poder', boton: 'Mis cotorras', elegida: 'Para el duelo:'
   };
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };

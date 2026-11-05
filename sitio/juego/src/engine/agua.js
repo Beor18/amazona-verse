@@ -281,8 +281,11 @@ AVE.module('agua', function (G) {
   const seaY = MAPA ? seaLevel : O.y != null ? O.y : -2.6;
   let mar = null;
   {
-    // Rejilla radial: densa cerca de la cámara (oleaje y orilla) y gruesa hasta el horizonte
-    const RINGS = 56, SEG = 96, RMAX = R.camera.far * 0.85, pos = [0, 0, 0], idx = [];
+    // Rejilla radial: densa cerca de la cámara (oleaje y orilla) y gruesa hasta el horizonte.
+    // KIMI-071: el radio llega hasta el plano far (antes far*0,85): la banda de fondo del terreno
+    // (roca/arena del arrecife) que quedaba seca entre el borde del mar y el far plane se veía
+    // desde las alturas como una franja gris clara en el horizonte de noche.
+    const RINGS = 56, SEG = 96, RMAX = R.camera.far, pos = [0, 0, 0], idx = [];
     for (let r = 1; r <= RINGS; r++) {
       const rad = 2.5 * Math.pow(RMAX / 2.5, (r - 1) / (RINGS - 1));
       for (let s = 0; s < SEG; s++) { const a = s / SEG * Math.PI * 2; pos.push(Math.cos(a) * rad, 0, Math.sin(a) * rad); }
