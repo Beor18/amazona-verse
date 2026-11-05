@@ -1,0 +1,12 @@
+{
+  "informe": {
+    "streamingTest": {
+      "p": 24,
+      "t": 24,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    }
+  },
+  "errores": []
+}

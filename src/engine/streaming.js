@@ -2111,10 +2111,15 @@ AVE.module('streaming', function (G) {
       const g0 = M.geometries, t0 = M.textures;
       // Entrar en Z por el borde sur, mirando al centro
       const bx = Z.cx, bz = Z.cz + Math.min(Z.r, 40) + 6;
-      await ir(bx, bz, 0, -1);
+      // QA-160: con la batería QA concurrente en la página (qa.js autoarranca con ?qa=1), un teleport
+      // ajeno justo tras ir() deja la zona a mitad de colocar; se re-ir() con reintento acotado (una
+      // zona realmente rota falla las 5) antes de darla por mala.
+      const zonaColocada = () => Z.nivel === 2 && modelosZ.every(n => ST.recursos[n] && ST.recursos[n].cerca && ST.recursos[n].cerca.estado === 'listo') && Z.inst.every(I => I.colocado);
+      let intentos = 0;
+      while (intentos < 5 && !zonaColocada()) { await ir(bx, bz, 0, -1); intentos++; }
       const cargados = modelosZ.every(n => ST.recursos[n] && ST.recursos[n].cerca && ST.recursos[n].cerca.estado === 'listo');
       check('Al entrar, la zona carga sus modelos y coloca sus instancias', Z.nivel === 2 && cargados && Z.inst.every(I => I.colocado),
-        Z.id + ': ' + Z.inst.length + ' instancias, ' + modelosZ.length + ' modelos');
+        Z.id + ': ' + Z.inst.length + ' instancias, ' + modelosZ.length + ' modelos' + (intentos ? ' · reintento ×' + intentos : ''));
       const sinSolido = Z.inst.filter(I => {
         if (!I.erguido || (I.r < 1.2)) return false;
         const hay = G.fisica.colliders.some(c => c.id === I.id) || (G.solidos && G.solidos.altoEn && G.solidos.altoEn(I.pos[0], I.pos[2], 1e4) > G.terreno.height(I.pos[0], I.pos[2]) + 0.3);
@@ -2154,13 +2159,20 @@ AVE.module('streaming', function (G) {
       // docs/img/kimi160/qa160-r24-qa.json). Es estado vivo ajeno, no una fuga de este test: se asienta el
       // mundo en el spawn (soltar lo que quedó lejos y dejar correr cuadros para que drenen trabajos y
       // descargas en marcha) antes de cada foto. Una fuga real seguiría con refs>0 sin dueño y saltaría igual.
+      // El asentado exige estabilidad real (cola de trabajos y descargas vacías 2 pasadas seguidas): 3 pasadas
+      // fijas no bastan cuando la batería concurrente funde la ciudad en la ventana (r26-fix: m2 con 149 trabajos).
+      // El tope (~12 s) es mayor que la gracia de la ciudad (8 s): lo que la batería visitó hace >8 s cae en el
+      // spawn (d=228, fuera de rango) y liberarYa lo suelta antes de la foto.
       const asentar = async () => {
-        for (let i = 0; i < 3; i++) {
+        let estables = 0, s = ST.stats(), pasadas = 0;
+        while (pasadas < 4 || (pasadas < 40 && estables < 2)) {
           ST.revisar(x0, z0); ST.liberarYa(); dibujar();
-          await new Promise(r => setTimeout(r, 120));
+          await new Promise(r => setTimeout(r, 300));
+          s = ST.stats();
+          estables = (s.descargando === 0 && s.trabajos === 0) ? estables + 1 : 0;
+          pasadas++;
         }
-        const s = ST.stats();
-        return 'descargando ' + s.descargando + '/trabajos ' + s.trabajos;
+        return 'descargando ' + s.descargando + '/trabajos ' + s.trabajos + ' · ' + pasadas + ' pasadas';
       };
       const as1 = await asentar();
       const m1 = foto();

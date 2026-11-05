@@ -1,0 +1,57 @@
+{
+  "informe": {
+    "streamingTest": {
+      "p": 24,
+      "t": 24,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 14.34,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 0.57,
+          "hy": 0.57,
+          "y": 0.57,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 10.27,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 7.28,
+          "hy": 1.8,
+          "y": 7.28,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 5.24,
+          "hy": 5.24,
+          "y": 5.24,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 9.04,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 5.24,
+          "hy": 5.24,
+          "y": 5.24,
+          "fly": 0
+        }
+      ]
+    }
+  },
+  "errores": []
+}

@@ -1,0 +1,171 @@
+{
+  "informe": {
+    "movementTest": {
+      "p": 52,
+      "t": 52,
+      "mal": [],
+      "mp": {
+        "rama": {
+          "gestos": 1,
+          "tipo": "rama",
+          "peso": 1,
+          "alasEquilibrio": true,
+          "asentarGeneral": 0,
+          "red": 1
+        },
+        "posado": "fino",
+        "suelo": {
+          "gestos": 0,
+          "tipo": "rama",
+          "peso": 0,
+          "alasEquilibrio": false,
+          "asentarGeneral": 0.93,
+          "red": 1
+        },
+        "aterrizarRama": {
+          "cuadros": 1,
+          "volando": false,
+          "posado": "fino",
+          "que": "rama",
+          "altoSobreTerreno": 5.26
+        },
+        "aterrizarSuelo": {
+          "cuadros": 94,
+          "volando": false,
+          "posado": "",
+          "que": "",
+          "altoSobreTerreno": 0
+        },
+        "hist": [
+          {
+            "via": "aire",
+            "t": 13.71,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 23.26,
+            "hy": 16.01,
+            "y": 23.26,
+            "fly": 0
+          },
+          {
+            "via": "red",
+            "t": 9.02,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 17.62,
+            "hy": 12.36,
+            "y": 17.62,
+            "fly": 0
+          },
+          {
+            "via": "aire",
+            "t": 2.25,
+            "tipo": "",
+            "posado": "",
+            "que": "",
+            "gy": 25.14,
+            "hy": 25.14,
+            "y": 25.14,
+            "fly": 0
+          }
+        ]
+      },
+      "mc": {
+        "y0": 29.36,
+        "y1": 29.51,
+        "techoVuelo": 54.48,
+        "groundY": 25.14,
+        "perchY": null,
+        "vy1": 0,
+        "landing": false,
+        "fly1": true,
+        "take1": -0.02
+      },
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 13.71,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        }
+      ]
+    },
+    "comicTest": {
+      "p": 63,
+      "t": 67,
+      "mal": [
+        "Las viñetas nuevas que van en la página (como mucho 6) no están en blanco —  · 4 en la página",
+        "Las viñetas siguen la plantilla: el comienzo (si lo hay) primero, ¡La meta! (si la hay) en la última y sin títulos repetidos — intro · taller · final · refugio | El comienzo · El hallazgo · ¡La meta! · La solución",
+        "«Mis escenas»: la página lleva justo las escenas elegidas",
+        "Las viñetas de los gags (foto, captura o ilustración) y la foto con pose no están en blanco — pichon_cae, pichon_mariposa, pichon_duerme, pichon_imita"
+      ],
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 13.71,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        }
+      ]
+    }
+  },
+  "errores": []
+}

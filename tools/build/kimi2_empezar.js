@@ -44,7 +44,11 @@ fs.mkdirSync(SALIDA, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 
 function servir() {
-  const QA_TAG = '<script src="tests/qa/qa.js" charset="utf-8"></script>';
+  // QA-160/KIMI-052: la batería de qa.js NO autoarranca en las páginas del arnés (AVQA_OPTS.autorun=false,
+  // interruptor oficial de qa.js): si no, teletransporta y funde zonas concurrente con las AV.*Test que el
+  // arnés llama por CDP y contamina las mediciones globales (streamingTest «Sin fugas», cómic «Mis escenas»).
+  // qa.js sigue cargado (helpers check/status y ?qa=1 del juego intactos); sus usos directos (nube) autoarrancan igual.
+  const QA_TAG = '<script>window.AVQA_OPTS=Object.assign(window.AVQA_OPTS||{},{autorun:false});</script><script src="tests/qa/qa.js" charset="utf-8"></script>';
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
     const qa = /[?&]qa=1(?:&|$)/.test(req.url);

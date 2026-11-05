@@ -1,0 +1,188 @@
+{
+  "informe": {
+    "movementTest": {
+      "p": 52,
+      "t": 52,
+      "mal": [],
+      "mp": {
+        "rama": {
+          "gestos": 1,
+          "tipo": "rama",
+          "peso": 1,
+          "alasEquilibrio": true,
+          "asentarGeneral": 0,
+          "red": 1
+        },
+        "posado": "fino",
+        "suelo": {
+          "gestos": 0,
+          "tipo": "rama",
+          "peso": 0,
+          "alasEquilibrio": false,
+          "asentarGeneral": 0.93,
+          "red": 1
+        },
+        "aterrizarRama": {
+          "cuadros": 1,
+          "volando": false,
+          "posado": "fino",
+          "que": "rama",
+          "altoSobreTerreno": 5.26
+        },
+        "aterrizarSuelo": {
+          "cuadros": 94,
+          "volando": false,
+          "posado": "",
+          "que": "",
+          "altoSobreTerreno": 0
+        },
+        "hist": [
+          {
+            "via": "aire",
+            "t": 13.74,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 23.26,
+            "hy": 16.01,
+            "y": 23.26,
+            "fly": 0
+          },
+          {
+            "via": "red",
+            "t": 9.02,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 17.62,
+            "hy": 12.36,
+            "y": 17.62,
+            "fly": 0
+          },
+          {
+            "via": "aire",
+            "t": 2.25,
+            "tipo": "",
+            "posado": "",
+            "que": "",
+            "gy": 25.14,
+            "hy": 25.14,
+            "y": 25.14,
+            "fly": 0
+          }
+        ]
+      },
+      "mc": {
+        "y0": 29.36,
+        "y1": 29.51,
+        "techoVuelo": 54.48,
+        "groundY": 25.14,
+        "perchY": null,
+        "vy1": 0,
+        "landing": false,
+        "fly1": true,
+        "take1": -0.02
+      },
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 13.74,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.35,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    },
+    "comicTest": {
+      "p": 67,
+      "t": 67,
+      "mal": [],
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 13.74,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.35,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    }
+  },
+  "errores": []
+}

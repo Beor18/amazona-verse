@@ -1,0 +1,70 @@
+{
+  "informe": {
+    "streamingTest": {
+      "p": 23,
+      "t": 24,
+      "mal": [
+        "Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB) — KB 723101→432057 · materiales 38→38 · modelos 158→168 · heap 1246.4→917 MB (sin gc: no se exige) · three geo 560→567, tex 196→201 · asentado descargando 14/trabajos 1 · 40 pasadas | descargando 0/trabajos 271 · 40 pasadas"
+      ],
+      "posaRed": 0,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 14.35,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 0.57,
+          "hy": 0.57,
+          "y": 0.57,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 10.27,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 7.28,
+          "hy": 1.8,
+          "y": 7.28,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 5.24,
+          "hy": 5.24,
+          "y": 5.24,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 9.12,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 9.05,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 26.64,
+          "hy": 26.64,
+          "y": 26.64,
+          "fly": 0
+        }
+      ]
+    }
+  },
+  "errores": []
+}

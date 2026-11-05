@@ -1,0 +1,49 @@
+{
+  "informe": {
+    "streamingTest": {
+      "p": 22,
+      "t": 24,
+      "mal": [
+        "Draw calls de la vista más cargada ≤ 150 — kelvin_ruinas_yunque (giro 1.6): 162 draw calls, edificios 28 (33 instancias cerca, 13 _hd, 0 lejos sueltas, 17 zonas fundidas) · alto",
+        "Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB) — KB 760008→509342 · materiales 36→38 · modelos 154→172 · heap 895.1→975.8 MB (sin gc: no se exige) · three geo 450→541, tex 194→195 · asentado descargando 0/trabajos 0 · 4 pasadas | descargando 0/trabajos 28 · 40 pasadas"
+      ],
+      "posaRed": 0,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 14.15,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 0.57,
+          "hy": 0.57,
+          "y": 0.57,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 10.27,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 7.28,
+          "hy": 1.8,
+          "y": 7.28,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 5.24,
+          "hy": 5.24,
+          "y": 5.24,
+          "fly": 0
+        }
+      ]
+    }
+  },
+  "errores": []
+}

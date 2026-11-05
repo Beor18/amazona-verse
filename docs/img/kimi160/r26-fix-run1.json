@@ -1,0 +1,15 @@
+{
+  "informe": {
+    "streamingTest": {
+      "p": 22,
+      "t": 24,
+      "mal": [
+        "Al entrar, la zona carga sus modelos y coloca sus instancias — kelvin_aldea_rio_oeste_2: 21 instancias, 5 modelos",
+        "Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB) — KB 730393→760008 · materiales 36→36 · modelos 152→154 · heap 853.5→902.8 MB (sin gc: no se exige) · three geo 400→478, tex 179→200 · asentado descargando 0/trabajos 2 | descargando 0/trabajos 0"
+      ],
+      "posaRed": 0,
+      "posaHist": null
+    }
+  },
+  "errores": []
+}
