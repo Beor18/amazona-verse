@@ -374,3 +374,6 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 
 ## 5-nov-2026 · Supabase en etapa de pruebas (Kelvin)
 «Estamos en etapa de pruebas, no quites nada de Supabase, que quizás dañamos algo que Fernando haya configurado.» Nadie del equipo borra ni cambia nada en Supabase. El borrado de `amazona.records` que recomienda el análisis preliminar COPPA (`docs/legal/ANALISIS_PRELIMINAR_COPPA_5NOV.md`) queda para antes del lanzamiento público, coordinado con Fernando.
+
+## 5-nov-2026 · Amazona Mini Golf: La Ruta de las Semillas (Kelvin)
+Propuesta aprobada para prototipo, complementaria a V18.1 (no la retrasa). Directiva: `docs/DIRECTIVA_MINIGOLF_V18_1.md`. Se juega dentro de ciudades existentes; semilla gigante → nido; un poder por hoyo (primero el Grito del Yunque); récord local, sin ranking ni monedas. Primera misión: **un hoyo** completo en móvil y computadora, detrás de bandera, antes de pensar en seis.
