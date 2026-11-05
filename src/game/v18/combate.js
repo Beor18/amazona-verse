@@ -80,17 +80,20 @@ window.AVV18Combate = function (G) {
     return mx - mn;
   }
   // Rejilla cada 3 m en ±18 m del punto preferido (al este de la plaza, como pidió Kelvin): plano (≤ 1,6 m), seco, sin
-  // edificios; gana uno sin troncos si lo hay y, si no, el más plano y cercano (como antes). En el mapa actual no hay ningún
-  // hueco seco y plano sin árboles a menos de 90 m de la plaza (medido): los 3 candidatos tienen 27–30 troncos y elegir
-  // «el de menos» no cambia nada a la vista. Despejar el círculo es decisión de Kelvin (ver BUGS QA-174).
+  // edificios; gana el más plano y cercano. En el mapa no hay ningún hueco seco y plano sin árboles a menos de 90 m de la
+  // plaza (medido), así que la vegetación ya no cuenta para elegir: el círculo se despeja (despejarSitio, abajo).
   // Solo lo grande y fijo del mapa (edificios, estructuras, taller): los objetos sueltos, bancos, estacas y vecinos entran
-  // con el streaming o se mueven, y hacían que el sitio dependiera del momento de la carga
+  // con el streaming o se mueven, y hacían que el sitio dependiera del momento de la carga. Las estructuras propias del mapa
+  // (mapa.estructuras: el refugio) cuentan desde el principio aunque su collider llegue después: (176,175) y (179,172) salían
+  // en las cargas en que el refugio aún no tenía collider.
   const FIJOS = new Set(['edificio', 'estructura', 'taller']);
   function candidatos() {
     const pl = G.terreno.places || {}, v = pl.villa || pl.plaza || { x: S.pos.x, z: S.pos.z };
     const pref = pl.villa ? { x: v.x + 26, z: v.z + 5 } : { x: v.x + 10, z: v.z }, A = 18, R = A + ARENA_R + 6;
-    const lista = flora(pref.x, pref.z, A + 14 + LIBRE_R + 4);
-    const cols = (F.colliders || []).filter(c => c && FIJOS.has(c.kind) && c.x != null && c.z != null && Math.abs(c.x - pref.x) < R + (c.r || 1) && Math.abs(c.z - pref.z) < R + (c.r || 1));
+    const lista = [];
+    const cerca = c => c && c.x != null && c.z != null && Math.abs(c.x - pref.x) < R + (c.r || 1) && Math.abs(c.z - pref.z) < R + (c.r || 1);
+    const cols = (F.colliders || []).filter(c => c && FIJOS.has(c.kind) && cerca(c))
+      .concat(((G.terreno.mapa && G.terreno.mapa.estructuras) || []).filter(e => e && e.pos && !e.mundo).map(e => ({ x: e.pos[0], z: e.pos[2], r: 5 })).filter(cerca));
     const out = [];
     for (let dx = -A; dx <= A; dx += 3) for (let dz = -A; dz <= A; dz += 3) {
       const x = pref.x + dx, z = pref.z + dz, d = plano(x, z, cols); if (!isFinite(d) || d > 1.6) continue;
@@ -101,11 +104,26 @@ window.AVV18Combate = function (G) {
   }
   function buscarSitio() {
     const { pref, out } = candidatos(); let mejor = null;
-    for (const c of out) if (!mejor || (c.peso === 0) > (mejor.peso === 0) || ((c.peso === 0) === (mejor.peso === 0) && c.p < mejor.p)) mejor = c;
+    for (const c of out) if (!mejor || c.p < mejor.p) mejor = c;
     if (!mejor) mejor = { x: pref.x, z: pref.z };
     return { x: mejor.x, z: mejor.z, y: G.terreno.height(mejor.x, mejor.z) };
   }
   const sitio = buscarSitio();
+  // QA-174: el círculo despejado (solo existe con la V18.1). Se quitan del bosque, en marcha, las instancias de flora con el pie
+  // en el círculo (+1 m), los árboles cuya copa entra más de 2 m en él (al llegar volando se aterrizaba en sus ramas a 10-12 m)
+  // y los que tapan la cámara del duelo (pasillo al oeste del punto de salida, x − 4 … x − 18). El resto del bosque no cambia.
+  const despeje = { clave: '', n: 0 };
+  const enDespeje = (x, z, inf, sc) => {
+    const copa = inf && inf.ancho ? 0.4 * inf.ancho * (sc || 1) : 0, d = Math.hypot(x - sitio.x, z - sitio.z);
+    return d < ARENA_R + 1 || d - copa < ARENA_R - 2 || (x < sitio.x - 4 && x > sitio.x - 18 && Math.abs(z - sitio.z) - copa < 2.5);
+  };
+  function despejarSitio() {
+    const V = G.vegetacion, k = sitio.x + ',' + sitio.z;
+    if (!V || !V.despejar || !V.instancias || despeje.clave === k) return 0;
+    const n = V.despejar(sitio.x - ARENA_R - 22, sitio.z - ARENA_R - 8, sitio.x + ARENA_R + 8, sitio.z + ARENA_R + 8, (x, z, m, inf, sc) => enDespeje(x, z, inf, sc));
+    if (V.instancias && Object.keys(V.instancias).length) { despeje.clave = k; despeje.n += n; }
+    return n;
+  }
 
   // ---------- Escena: círculo de la explanada, semillas ----------
   // Anillo pintado en el suelo (textura canvas en runtime, 0 assets): banda de oro de borde suave con filete toon
@@ -638,8 +656,8 @@ window.AVV18Combate = function (G) {
   let recolocar = false;
   function moverSitio() {
     recolocar = false;
-    const n = buscarSitio(); if (n.x === sitio.x && n.z === sitio.z) return false;
-    Object.assign(sitio, n); marca.position.set(sitio.x, sitio.y + 0.06, sitio.z);
+    const n = buscarSitio(); if (n.x === sitio.x && n.z === sitio.z) { despejarSitio(); return false; }
+    Object.assign(sitio, n); despejarSitio(); marca.position.set(sitio.x, sitio.y + 0.06, sitio.z);
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos); it.x = rivalPos.x; it.z = rivalPos.z;
     if (C.ch) C.ch.root.position.set(rivalPos.x, rivalPos.y, rivalPos.z);
     return true;
@@ -687,7 +705,22 @@ window.AVV18Combate = function (G) {
         S.pos.x = sitio.x + 400; S.pos.z = sitio.z + 300; refresca(); const b = buscarSitio();
         S.pos.x = px; S.pos.z = pz; refresca();
         const yo = cands.find(c => c.x === sitio.x && c.z === sitio.z), libres = cands.filter(c => !c.peso);
-        check('QA-174: la explanada es plana, seca y sin edificios; si hay un sitio sin troncos, es ese', !!yo && (libres.length ? !aqui.length : cands.every(c => c.p >= yo.p)),
+        despejarSitio();
+        const dentro = flora(sitio.x, sitio.z, 40).filter(o => Math.hypot(o.x - sitio.x, o.z - sitio.z) < ARENA_R + 0.5);
+        // y sin sólidos de flora: ni troncos a la altura del cuerpo ni ramas encima (se aterrizaba en copas a 10-12 m)
+        let duros = 0, puntos = 0;
+        const SOL = G.solidos, p0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+        if (SOL && SOL.terminar) {
+          try { S.pos.x = sitio.x; S.pos.z = sitio.z; SOL.terminar(); } finally { Object.assign(S.pos, p0); }
+          for (let ox = -11; ox <= 11; ox += 1.5) for (let oz = -11; oz <= 11; oz += 1.5) {
+            if (Math.hypot(ox, oz) > 11) continue;
+            const x = sitio.x + ox, z = sitio.z + oz, h = G.terreno.height(x, z); puntos++;
+            if (SOL.penetra(x, z, h + 0.05) || SOL.altoEn(x, z, h + 30) > h + 1) duros++;
+          }
+        }
+        check('QA-174: el círculo está despejado (ni troncos, ni rocas, ni ramas encima; quitados en marcha solo con la V18.1)', despeje.clave === sitio.x + ',' + sitio.z && despeje.n > 0 && !dentro.length && puntos > 100 && !duros,
+          'quitadas ' + despeje.n + ' instancias · troncos dentro: ' + dentro.length + ' · puntos con sólido: ' + duros + '/' + puntos + ' · antes, en el pasillo de la cámara: ' + aqui.length);
+        check('QA-174: la explanada es plana, seca, sin edificios y la mejor de la rejilla', !!yo && cands.every(c => c.p >= yo.p),
           JSON.stringify({ sitio: [sitio.x, sitio.z], troncos: aqui.length, peso: aqui.peso, pesoMax: Math.max(0, ...cands.map(c => c.peso)), candidatos: cands.length, libres: libres.length, pref: (() => { const q = candidatos().pref, h = G.terreno.height(q.x, q.z); let mn = h, mx = h, ag = 0; for (let a = 0; a < 16; a++) for (const r of [4, 8, ARENA_R]) { const px = q.x + Math.cos(a / 16 * 6.2832) * r, pz = q.z + Math.sin(a / 16 * 6.2832) * r, hh = G.terreno.height(px, pz); mn = Math.min(mn, hh); mx = Math.max(mx, hh); if (G.agua.levelAt(px, pz) > hh - 0.3) ag++; } return [q.x, q.z, Math.round((mx - mn) * 100) / 100, ag]; })(), flora40m: cerca.length }));
         check('QA-174: el sitio sale igual esté donde esté la jugadora (estable entre cargas)', a.x === sitio.x && a.z === sitio.z && b.x === sitio.x && b.z === sitio.z,
           JSON.stringify({ sitio: [sitio.x, sitio.z], cerca: [a.x, a.z], lejos: [b.x, b.z] }));
